@@ -1,0 +1,9 @@
+
+# directories for outputs
+**/bin/
+**/obj/
+
+# temp/local files
+*.suo
+*.user
+*.bak
