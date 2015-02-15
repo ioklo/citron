@@ -220,7 +220,7 @@ Exp =
                 ));
 
             var rules = new RuleSet(SpecRule, TokenDecl, StringExp, RegexExp, RuleDecl, SequenceExp, OneOrMoreExp, OptionalExp, ZeroOrMoreExp, ParenExp, BarExp, SymbolExp, PrecDecl, Entry, LessThan );
-            Gum.Translator.Parser.Parser.Accept2(rules, 
+            // Gum.Translator.Parser.Parser.Accept2(rules, 
         }
 
         [TestMethod]

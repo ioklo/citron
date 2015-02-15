@@ -21,16 +21,9 @@ namespace Gum.Translator.Parser
             ReduceSymbol = reduceSymbol;
             Exp = exp;
             Assoc = assoc;
-        }
+        }        
 
-        // Generic Visitor
-        // IExpVisitor<Action<A, B>>
-        // IExpVisitor<Func<
-
-        
-        
-
-        class GetFirstSymbolsAndEmpty : IExpVisitor<List<Symbol>, Object>
+        class GetFirstSymbolsAndEmpty : IExpVisitor<IEnumerable<Symbol>, Object>
         {
             public IEnumerable<Symbol> Visit(StarExp exp, object a)
             {
@@ -59,13 +52,19 @@ namespace Gum.Translator.Parser
             {
                 yield return exp.Symbol;
             }
+
+            public static IEnumerable<Symbol> Apply(Exp e)
+            {
+                var visitor = new GetFirstSymbolsAndEmpty();
+                return e.Visit(visitor, null);
+            }
         }
 
         public IEnumerable<Symbol> FirstSymbol
         {
             get
             {
-                Exp.Visit()
+                return GetFirstSymbolsAndEmpty.Apply(Exp);
             }
         }
 

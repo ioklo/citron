@@ -14,4 +14,12 @@ namespace Gum.Translator.Parser
         Ret Visit(SequenceExp exp, Arg a);
         Ret Visit(SymbolExp exp, Arg a);
     }
+
+    public static class IExpVisitorHelper
+    {
+        static Arg Apply<Ret, Arg>(this IExpVisitor<Ret, Arg> Visitor, Exp e)
+        {
+            return default(Arg);
+        }    
+    }
 }

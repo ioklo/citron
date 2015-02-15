@@ -452,47 +452,47 @@ namespace Gum.Translator.Parser
     //    }
 
         // string -> string
-        public string PreprocessComment(string input)
-        {
-            string ret = Regex.Replace(input, @"/\*.*?\*/", " ", RegexOptions.Singleline);
-            return Regex.Replace(ret, @"//[^\n]*\n", " ");
-        }
+        //public string PreprocessComment(string input)
+        //{
+        //    string ret = Regex.Replace(input, @"/\*.*?\*/", " ", RegexOptions.Singleline);
+        //    return Regex.Replace(ret, @"//[^\n]*\n", " ");
+        //}
 
-        private int FindNextTokenStart(string input, int start)
-        {
-            while (start < input.Length)
-            {
-                if (!char.IsWhiteSpace(input[start])) break;
-                start++;
-            }
+        //private int FindNextTokenStart(string input, int start)
+        //{
+        //    while (start < input.Length)
+        //    {
+        //        if (!char.IsWhiteSpace(input[start])) break;
+        //        start++;
+        //    }
 
-            return start;
-        }
+        //    return start;
+        //}
 
-        // 현재 delimeter = \s 
-        public IEnumerable<Token> Tokenizer(string input)
-        {            
-            int cur = FindNextTokenStart(input, 0);            
+        //// 현재 delimeter = \s 
+        //public IEnumerable<Token> Tokenizer(string input)
+        //{            
+        //    int cur = FindNextTokenStart(input, 0);            
 
-            while( cur < input.Length )
-            {
-                // rule 중에서 만족하는 input을 찾는다
-                bool bFound = false;
-                foreach(var tokenRule in tokenRules)
-                {
-                    int next;
-                    if( tokenRule.Accept(input, cur, out next) )
-                    {
-                        yield return new Token(tokenRule, input.Substring(cur, next - cur));
-                        cur = FindNextTokenStart(input, next);
-                        bFound = true;
-                        break;
-                    }
-                }
+        //    while( cur < input.Length )
+        //    {
+        //        // rule 중에서 만족하는 input을 찾는다
+        //        bool bFound = false;
+        //        foreach(var tokenRule in tokenRules)
+        //        {
+        //            int next;
+        //            if( tokenRule.Accept(input, cur, out next) )
+        //            {
+        //                yield return new Token(tokenRule, input.Substring(cur, next - cur));
+        //                cur = FindNextTokenStart(input, next);
+        //                bFound = true;
+        //                break;
+        //            }
+        //        }
 
-                if (!bFound) throw new Exception();
-            }
-        }
+        //        if (!bFound) throw new Exception();
+        //    }
+        //}
 
     //    public AST Parse(string input, Rule startRule)
     //    {
