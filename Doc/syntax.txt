@@ -1,0 +1,81 @@
+1차 스펙
+
+        T tuple := T (',' T)*
+             id := <일반적인 의미에서의 이름, 키워드와 겹치지 않아야 한다>
+           type := 'bool' | 'byte' | 'int' | 'string' | id      
+
+       var-decl := type (id ('=' exp)?) tuple ';'
+
+     bool-const := 'true' | 'false'
+     byte-const := <0~255>
+      int-const := <숫자>
+   string-const := <"로 둘러싸인 글자.. (이스케이프 시퀀스 지원) | @" "로 시작하는 글자.. (이스케이프 시퀀스 미지원, "는 ""로 표현)>
+
+     assign-exp := id '=' exp
+        var-exp := id
+       call-exp := id '(' exp tuple ')'
+          un-op := '-' | '!'
+         bin-op := '+' | '-' | '*' | '/' | '%' 
+                 | '<' | '>' 
+                 | '<=' | '>=' | '==' | '!=' 
+                 | '&&' | '||' | '++' | '--'
+
+            exp := assign-exp
+                 | var-exp
+                 | bool-const
+                 | byte-const
+                 | int-const
+                 | string-const
+                 | un-op exp 
+                 | exp bin-op exp
+                 | call-exp
+
+for-initializer := var-decl
+                 | exp
+                 | null-stmt
+
+      null-stmt := ';'
+  var-decl-stmt := var-decl
+       exp-stmt := exp ';'
+        if-stmt := 'if' '(' exp ')' stmt 'else' stmt
+       for-stmt := 'for' '(' for-initializer ';' exp ';' exp ')' stmt
+  do-while-stmt := 'do' stmt 'while' '(' exp ')' ';'
+     while-stmt := 'while' '(' exp ')' stmt
+    return-stmt := 'return' exp ';'
+     block-stmt := '{' stmt* '}'
+
+           stmt := null-stmt
+                 | var-decl-stmt
+                 | exp-stmt
+                 | if-stmt
+                 | for-stmt
+                 | do-while-stmt
+                 | while-stmt
+                 | return-stmt
+                 | block-stmt    // for convenience
+
+      func-decl := type id '(' (type id) tuple ')' block-stmt
+
+        ns-decl := (var-decl | func-decl )*
+
+
+1. 네임스페이스 namespace
+
+각 파일은 최상위 네임스페이스의 정의 declaration 부분을 나타낸다.
+
+    ns-decl := (var-decl | func-decl) list
+
+(나중에 추가할 내용)
+    - 중첩 네임스페이스 
+    - public/private 한정자 추가
+
+2. 변수 정의
+
+변수는 타입과 변수 이름, 그리고 옵션으로 값을 정의할 수 있다.
+
+    
+3. 함수 정의
+
+    func(1, 2, 3);
+
+4. 

@@ -1,0 +1,24 @@
+// class reference
+// 기본이 private, 공개하고 싶은 것 public과 protected는 따로 써주어야 한다
+
+class C
+{
+    int a;
+    int b;
+
+    public C() { } // 생성자    
+
+    public virtual int VFunc() { return 3; }
+}
+
+class D : C
+{
+    // consistency: 원래 public 이었던 virtual function은 꼭 public으로 선언해주어야 한다.
+    public override void VFunc() { return 4; }
+}
+
+bool test()
+{
+    C c = new D();
+	return c.VFunc();
+}

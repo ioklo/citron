@@ -1,0 +1,19 @@
+﻿
+class Field
+{
+    public int i;
+	public string s;
+}
+
+bool test()
+{
+    Field f1 = new Field(), f2 = new Field();
+
+	f1.i = 1;
+	f1.s = "2";
+
+	f2.i = 3;
+	f2.s = "4";
+
+	return f1.i == 1 && f1.s == "2" && f2.i == 3 && f2.s == "4";
+}

@@ -1,0 +1,56 @@
+
+파서 테스트 케이스
+
+// var-decl test
+int a;  // global namespace에서 허용, 다른 linkage가 값을 갖고 있을 수 있다
+byte b;
+int c;
+string d;
+
+// var-decl test 2
+int a, b = 0, c = a;
+byte i = 77, j;
+string a = "hi";
+
+// assign-exp, var-exp
+int a = 0;
+
+void test()
+{
+    int b;
+    b = a;
+}
+
+
+// assign-exp
+int test()
+{
+    int a = 0, b, c, d, e;
+    e = d = c = b = a;
+    return e;
+}
+
+// call-exp
+
+
+// 1. value 
+bool test()
+{
+    return true;
+}
+
+byte test()
+{
+    return 3;
+}
+
+int test()
+{
+    return 777777777;
+}
+
+string test()
+{
+    return "my-string";
+}
+

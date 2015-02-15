@@ -1,0 +1,20 @@
+// Func 값을 나타내는 특별한 type
+// return type, arg1 type, arg2 type..
+
+// closer
+() => 1  // Func<void, int>
+a => a + 1 // Func<int, int>
+a => a // Func<T, T>
+
+// illegal, 이런거 못만듦
+Func<T, T> id = (a => a);
+
+// late bind function type
+// like dynamic, doesn't check type
+// late bind
+Func id = (a => a);        // 가능
+Func<T, T> func = (a => a); 
+
+id(3);            // 가능
+id("string");     // 가능
+
