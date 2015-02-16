@@ -50,6 +50,7 @@
     <Compile Include="ExpPosition.cs" />
     <Compile Include="ExpTraceSet.cs" />
     <Compile Include="IExpVisitor.cs" />
+    <Compile Include="Lexer.cs" />
     <Compile Include="OptionalExp.cs" />
     <Compile Include="PlusExp.cs" />
     <Compile Include="RuleExp.cs" />
@@ -73,6 +74,7 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <Import Project="..\Gum.props" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

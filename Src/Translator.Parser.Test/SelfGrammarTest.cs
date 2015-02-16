@@ -5,39 +5,49 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Gum.Translator.Parser;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Gum.SandBox
+namespace Gum.Translator.Parser.Test
 {
-    public class SelfParser
+    [TestClass]
+    public class SelfGrammarTest
     {
-        public RegexTokenType STRING = new RegexTokenType("STRING", @"\""([^\\""]|\\"")*""");
-        public RegexTokenType REGEX = new RegexTokenType("REGEX", @"r\""([^\\""]|\\"")*""");
-        public StringTokenType STAR = new StringTokenType("STAR", "*");
-        public StringTokenType PLUS = new StringTokenType("PLUS", "+");
-        public StringTokenType QUESTION = new StringTokenType("QUESTION", "?");
-        public StringTokenType EQUAL = new StringTokenType("EQUAL", "=");
-        public StringTokenType LPAREN = new StringTokenType("LPAREN", "(");
-        public StringTokenType RPAREN = new StringTokenType("RPAREN", ")");
-        public StringTokenType LBRACE = new StringTokenType("LBRACE", "{");
-        public StringTokenType RBRACE = new StringTokenType("RBRACE", "}");
-        public StringTokenType LBRACKET = new StringTokenType("LBRACKET", "[");
-        public StringTokenType RBRACKET = new StringTokenType("RBRACKET", "]");
-        public StringTokenType LESSTHAN = new StringTokenType("LESSTHAN", "<");
-        public StringTokenType BAR = new StringTokenType("BAR", "|");
-        public StringTokenType COMMA = new StringTokenType("COMMA", ",");
-        public RegexTokenType ID = new RegexTokenType("ID", @"[_a-zA-Z][_a-zA-Z0-9]*");
+        [TestMethod]
+        public void SelfGrammarTestMain()
+        {
+            // Multiline comment는 다음줄에
+            // string ret = Regex.Replace(input, @"/\*.*?\*/", " ", RegexOptions.Singleline);
+            RegexTokenType COMMENT = new RegexTokenType("COMMENT", @"//[^\n]*\n");
+            RegexTokenType WHITESPACE = new RegexTokenType("WHITESPACE", @"\s+");
 
-        public NonTerminal Spec = new NonTerminal("Spec");
-        public NonTerminal Decl = new NonTerminal("Decl");
-        public NonTerminal TokenExp = new NonTerminal("TokenExp");
-        public NonTerminal RuleExp = new NonTerminal("RuleExp");
-        public NonTerminal PrecExp = new NonTerminal("PrecExp");
+            RegexTokenType STRING = new RegexTokenType("STRING", @"""([^\""]|\""|\\)*""");
+            RegexTokenType REGEX = new RegexTokenType("REGEX",  @"r""([^\""]|\""|\\)*""");
+            StringTokenType STAR = new StringTokenType("STAR", "*");
+            StringTokenType PLUS = new StringTokenType("PLUS", "+");
+            StringTokenType QUESTION = new StringTokenType("QUESTION", "?");
+            StringTokenType EQUAL = new StringTokenType("EQUAL", "=");
+            StringTokenType LPAREN = new StringTokenType("LPAREN", "(");
+            StringTokenType RPAREN = new StringTokenType("RPAREN", ")");
+            StringTokenType LBRACE = new StringTokenType("LBRACE", "{");
+            StringTokenType RBRACE = new StringTokenType("RBRACE", "}");
+            StringTokenType LBRACKET = new StringTokenType("LBRACKET", "[");
+            StringTokenType RBRACKET = new StringTokenType("RBRACKET", "]");
+            StringTokenType LESSTHAN = new StringTokenType("LESSTHAN", "<");
+            StringTokenType BAR = new StringTokenType("BAR", "|");
+            StringTokenType COMMA = new StringTokenType("COMMA", ",");
+            RegexTokenType ID = new RegexTokenType("ID", @"[_a-zA-Z][_a-zA-Z0-9]*");
 
-        public string code = @"
+            NonTerminal Spec = new NonTerminal("Spec");
+            NonTerminal Decl = new NonTerminal("Decl");
+            NonTerminal TokenExp = new NonTerminal("TokenExp");
+            NonTerminal RuleExp = new NonTerminal("RuleExp");
+            NonTerminal PrecExp = new NonTerminal("PrecExp");
+
+            string code = @"
 // TokenDecl
 ID = r""[_a-zA-Z][_a-zA-Z0-9]*""
-STRING = r""\""([^\]|\"")*\""""
-REGEX = r""r\""([^\]|\"")*\""""
+STRING = r""\""([^\\\""]|\\""|\\\\)*\""""
+REGEX = r""r\""([^\\\""]|\\""|\\\\next)*\""""
 STAR = ""*""
 PLUS = ""+""
 QUESTION = ""?""
@@ -73,10 +83,7 @@ PrecExp Entry(ID rule, ID assoc) { LBRACE rule (COMMA rule)* RBRACE (LBRACKET as
 PrecExp LessThan(PrecExp e1, PrecExp e2) { e1 LESSTHAN e2 }
 
 {Entry} < {LessThan}[Left]
-";
-
-        public SelfParser()
-        {
+";      
             var SpecRule = new Rule("SpecRule", Spec, new PlusExp(new SymbolExp(Decl, "decl")));
             var TokenDecl = new Rule("TokenDecl", Decl, new SequenceExp(new SymbolExp(ID, "name"), new SymbolExp(EQUAL), new SymbolExp(TokenExp, "exp")));
 
@@ -128,16 +135,16 @@ PrecExp LessThan(PrecExp e1, PrecExp e2) { e1 LESSTHAN e2 }
                 ));
 
             var rules = new RuleSet(SpecRule, TokenDecl, StringExp, RegexExp, RuleDecl, SequenceExp, OneOrMoreExp, OptionalExp, ZeroOrMoreExp, ParenExp, BarExp, SymbolExp, PrecDecl, Entry, LessThan );
-            
-            
-            
-            // Gum.Translator.Parser.Parser.Accept2(rules,  
-        }
 
-        public void DefaultTest()
-        {
+            var lexer = new Lexer();
+            lexer.AddSkipToken(COMMENT, WHITESPACE);
+            lexer.AddToken(STRING, REGEX, STAR, PLUS, QUESTION, EQUAL, LPAREN, RPAREN, LBRACE, RBRACE, 
+                LBRACKET, RBRACKET, LESSTHAN, BAR, COMMA, ID);
 
-            //parser.Parse(code);
+            var parser = new Parser(rules);
+
+            ASTNode result;
+            parser.Parse(lexer.Lex(code), out result);
         }
     }
 }

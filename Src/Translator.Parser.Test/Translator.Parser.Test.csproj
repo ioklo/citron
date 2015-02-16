@@ -1,13 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{2883834C-8959-4476-A4EE-7982C7C99516}</ProjectGuid>
+    <ProjectGuid>{5A9DDA99-214B-49A1-B61E-868FD1523CAA}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Gum.Test</RootNamespace>
-    <AssemblyName>Gum.Test</AssemblyName>
+    <RootNamespace>Gum.Translator.Parser.Test</RootNamespace>
+    <AssemblyName>Gum.Translator.Parser.Test</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -21,6 +21,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -28,13 +29,13 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="System.Data" />
   </ItemGroup>
   <Choose>
     <When Condition="('$(VisualStudioVersion)' == '10.0' or '$(VisualStudioVersion)' == '') and '$(TargetFrameworkVersion)' == 'v3.5'">
@@ -49,46 +50,16 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="GumCompilerTest.cs" />
-    <Compile Include="Parser\ParserTest.cs" />
+    <Compile Include="Gum1GrammarTest.cs" />
+    <Compile Include="SelfGrammarTest.cs" />
     <Compile Include="UnitTest1.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="VM\BasicTest.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\App.Compiler\Compiler.csproj">
-      <Project>{59f067fa-4420-4182-96e3-a7d01ac32e4a}</Project>
-      <Name>Compiler</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Core.IL\Core.IL.csproj">
-      <Project>{68f5a016-e914-44e8-92e9-d3d6a3834853}</Project>
-      <Name>Core.IL</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\App.VM\VM.csproj">
-      <Project>{a1a3a0de-ab02-448d-a911-ffaf49bd6a22}</Project>
-      <Name>VM</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Translator.Parser\Translator.Parser.csproj">
       <Project>{8d52ed06-fabb-422d-a6ba-03d6d5e258d5}</Project>
       <Name>Translator.Parser</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Lexer\" />
-    <Folder Include="ParserGenerator\" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="tests\class\field.gum" />
-    <None Include="tests\for.gum" />
-    <None Include="tests\if.gum" />
-    <None Include="tests\integer.gum" />
-    <None Include="tests\class\virtual.gum" />
-    <None Include="tests\module\interface.gum" />
-    <None Include="tests\module\namespace.gum" />
-    <None Include="tests\shortcircuit.gum" />
-    <None Include="tests\template\classT.gum" />
-    <None Include="tests\template\FuncType.gum" />
-    <None Include="tests\template\namespaceT.gum" />
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">

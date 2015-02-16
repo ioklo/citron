@@ -63,10 +63,10 @@ namespace Gum.Sandbox
                 new TokenNode(STAR, "*"), 
                 new TokenNode(DIGIT, "3") };
 
-            ASTNode result;
-            Parser.Accept2(ruleSet, tokens, out result);
+            // ASTNode result;
+            // Parser.Accept2(ruleSet, tokens, out result);
 
-            Console.WriteLine(result.ToString(""));
+            // Console.WriteLine(result.ToString(""));
         }
     }
 }

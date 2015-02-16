@@ -99,9 +99,9 @@
     <Compile Include="Worklist.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Core.IL\IL.csproj">
+    <ProjectReference Include="..\Core.IL\Core.IL.csproj">
       <Project>{68f5a016-e914-44e8-92e9-d3d6a3834853}</Project>
-      <Name>IL</Name>
+      <Name>Core.IL</Name>
       <Private>False</Private>
     </ProjectReference>
   </ItemGroup>

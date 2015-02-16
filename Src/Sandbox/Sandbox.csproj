@@ -47,16 +47,15 @@
     <Compile Include="CalcTest.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SelfParser.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Translator.Parser\Parser.csproj">
+    <ProjectReference Include="..\Translator.Parser\Translator.Parser.csproj">
       <Project>{8d52ed06-fabb-422d-a6ba-03d6d5e258d5}</Project>
-      <Name>Parser</Name>
+      <Name>Translator.Parser</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="..\Gum.props" />
