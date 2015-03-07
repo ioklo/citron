@@ -70,7 +70,8 @@ Decl RuleDecl(ID reducedSymbol, ID ruleName, ID captureSymbol, ID captureVar, Ru
     reducedSymbol ruleName LPAREN (captureSymbol captureVar (COMMA captureSymbol captureVar)*)? RPAREN
     LBRACE
         ruleExp
-    RBRACE}
+    RBRACE
+}
 RuleExp SequenceExp(RuleExp exp) { exp+ }
 RuleExp OneOrMoreExp(RuleExp exp) { exp PLUS }
 RuleExp ZeroOrMoreExp(RuleExp exp) { exp STAR }
@@ -135,6 +136,10 @@ PrecExp LessThan(PrecExp e1, PrecExp e2) { e1 LESSTHAN e2 }
                 ));
 
             var rules = new RuleSet(SpecRule, TokenDecl, StringExp, RegexExp, RuleDecl, SequenceExp, OneOrMoreExp, OptionalExp, ZeroOrMoreExp, ParenExp, BarExp, SymbolExp, PrecDecl, Entry, LessThan );
+
+            rules.AddOrder(TokenDecl);
+            rules.AddOrder(SymbolExp);
+            
 
             var lexer = new Lexer();
             lexer.AddSkipToken(COMMENT, WHITESPACE);
