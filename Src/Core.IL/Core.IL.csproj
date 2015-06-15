@@ -39,21 +39,6 @@
   <ItemGroup>
     <Compile Include="Block.cs" />
     <Compile Include="BoolValue.cs" />
-    <Compile Include="Commands\IfNotJump.cs" />
-    <Compile Include="Commands\FieldRef.cs" />
-    <Compile Include="Commands\GlobalRef.cs" />
-    <Compile Include="Commands\ICommand.cs" />
-    <Compile Include="Commands\ICommandVisitor.cs" />
-    <Compile Include="Commands\Jump.cs" />
-    <Compile Include="Commands\Load.cs" />
-    <Compile Include="Commands\LocalRef.cs" />
-    <Compile Include="Commands\Move.cs" />
-    <Compile Include="Commands\MoveReg.cs" />
-    <Compile Include="Commands\New.cs" />
-    <Compile Include="Commands\Return.cs" />
-    <Compile Include="Commands\StaticCall.cs" />
-    <Compile Include="Commands\Store.cs" />
-    <Compile Include="Commands\VirtualCall.cs" />
     <Compile Include="DefaultType.cs" />
     <Compile Include="Domain.cs" />
     <Compile Include="FieldInfo.cs" />

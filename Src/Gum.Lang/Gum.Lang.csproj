@@ -42,11 +42,9 @@
     <Compile Include="AbstractSyntax\Generated.cs" />
     <Compile Include="CoreIL\Generated.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TypedAbstractSyntax\Generated.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="TypedAbstractSyntax\Decl\" />
-    <Folder Include="TypedAbstractSyntax\Interfaces\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="..\Gum.Props" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

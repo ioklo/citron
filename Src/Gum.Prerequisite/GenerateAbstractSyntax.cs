@@ -18,14 +18,19 @@ namespace Gum.Prerequisite
             var intType = structure.CreatePrimitive("int");
             var boolType = structure.CreatePrimitive("bool");
 
+            // enumeration
             var unaryExpKind = structure.CreateEnum("UnaryExpKind");
             var binaryExpKind = structure.CreateEnum("BinaryExpKind");
-            var funcParamModifier = structure.CreateEnum("FuncModifier");
+            var funcParamModifier = structure.CreateEnum("FuncParamModifier");
+            var memberFuncModifier = structure.CreateEnum("MemberFuncModifier");
+            var accessModifier = structure.CreateEnum("AccessModifier");
+            var virtualModifier = structure.CreateEnum("VirtualModifier");
 
             var stmtComponent = structure.CreateComponent("IStmtComponent");
             var expComponent = structure.CreateComponent("IExpComponent");
             var namespaceComponent = structure.CreateComponent("INamespaceComponent");
             var fileUnitComponent = structure.CreateComponent("IFileUnitComponent");
+            var memberComponent = structure.CreateComponent("IMemberComponent");
 
             // directives
             var usingDirective = structure.CreateStruct("UsingDirective");
@@ -36,6 +41,8 @@ namespace Gum.Prerequisite
             var varDecl = structure.CreateStruct("VarDecl");
             var classDecl = structure.CreateStruct("ClassDecl");
             var structDecl = structure.CreateStruct("StructDecl");
+            var memberFuncDecl = structure.CreateStruct("MemberFuncDecl");
+            var memberVarDecl = structure.CreateStruct("MemberVarDecl");
 
             // Stmts
             var blockStmt = structure.CreateStruct("BlockStmt");
@@ -172,14 +179,54 @@ namespace Gum.Prerequisite
                 .Var(expComponent, "Operand");
 
             variableExp
-                .Var(stringType, "VarName");
-
+                .Var(stringType, "Name");
 
             funcDecl
                 .Var(stringType, "ReturnType")
-                .Var(stringType, "VarName")
+                .Var(stringType, "Name")
                 .Vars(funcParam, "FuncParams")
                 .Var(blockStmt, "Body"); // TODO: BlockStmt?
+
+            memberFuncModifier
+                .Add("Static")
+                .Add("New");
+
+            accessModifier
+                .Add("Public")
+                .Add("Protected")
+                .Add("Private");
+
+            virtualModifier
+                .Add("Virtual")
+                .Add("Override");
+
+            memberFuncDecl
+                .Vars(memberFuncModifier, "FuncModifiers")
+                .Var(accessModifier, "AccessModifier")
+                .Var(virtualModifier, "VirtualModifier")
+                .Var(stringType, "ReturnType")
+                .Var(stringType, "Name")
+                .Vars(funcParam, "FuncParams")
+                .Var(blockStmt, "Block");
+
+            memberVarDecl
+                .Vars(accessModifier, "AccessModifier")
+                .Var(stringType, "Type")
+                .Var(stringType, "Name");
+
+            memberComponent
+                .Add(memberFuncDecl)
+                .Add(memberVarDecl);
+
+            classDecl
+                .Var(stringType, "Name")
+                .Vars(stringType, "BaseTypes")
+                .Vars(memberComponent, "Components");
+
+            structDecl
+                .Var(stringType, "Name")
+                .Vars(stringType, "BaseTypes")
+                .Vars(memberComponent, "Components");
 
             // stmtComponent
             stmtComponent

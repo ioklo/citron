@@ -17,7 +17,7 @@ namespace Gum.Prerequisite
             var stringType = structure.CreatePrimitive("string");
             var intType = structure.CreatePrimitive("int");
             var boolType = structure.CreatePrimitive("bool");
-            var valueType = structure.CreatePrimitive("IValue");
+            // var valueType = structure.CreatePrimitive("IValue");
             
             var globalRefCmd = structure.CreateStruct("GlobalRefCmd");
             var localRefCmd = structure.CreateStruct("LocalRefCmd");
@@ -78,7 +78,7 @@ namespace Gum.Prerequisite
 
             moveCmd
                 .Var(intType, "Dest")
-                .Var(valueType, "Value");
+                .Var(intType, "ValueIndex");
 
             moveRegCmd
                 .Var(intType, "DestReg")
