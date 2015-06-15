@@ -4,59 +4,84 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Gum.Core.IL;
+using System.Collections.Immutable;
+using Gum.Core.Runtime;
 
 namespace Gum.App.VM
 {
-    // State = 현재 실행 위치 * Memory(Location -> Handle) * Local Varaibles..(int -> Value) * Call Stacks
     public class State
     {
-        public StackFrame CurFrame { get { return Context.CurFrame; } }
-        public Context Context { get; set; }
-        public bool Pause { get; set; }
+        private Stack<Frame> frameStack = new Stack<Frame>();
+        private Frame curFrame = null;
+        private List<IValue> globalValues = new List<IValue>();
+
+        public int ReturnDest { get { return curFrame.ReturnDest;  } }
+
+        public State(IEnumerable<IType> localTypes)
+        {
+            Block emptyBlock = new Block();
+
+            Function func = new Function("<init>", GlobalDomain.VoidType, Enumerable.Empty<IType>(), localTypes, Enumerable.Repeat(emptyBlock, 1));
+            curFrame = new Frame(this, -1, func);
+        }
+                
+        public void SetLocalValue(int regIndex, IValue value)
+        {
+            curFrame.SetLocalValue(regIndex, value);            
+        }
+
+        public T GetLocalValue<T>(int regIndex) where T : class, IValue
+        {
+            return curFrame.GetLocalValue<T>(regIndex);
+        }
+
+        public T GetGlobalValue<T>(int globalIndex) where T : class, IValue
+        {
+            return globalValues[globalIndex] as T;
+        }
         
-        public State()
+        public void SetValue(RefValue refValue, IValue value)
         {
-            Context = null;
-        }
+            // refValue가 가리키는 곳에 value값을 복사합니다.
+            refValue.Value.CopyFrom(value);
+        }        
 
-        public void Push(object val)
+        public T GetValue<T>(RefValue refValue) where T : class, IValue
         {
-            CurFrame.Stack.Push(val);
-        }
-
-        public void Dup()
-        {
-            CurFrame.Stack.Push(CurFrame.Stack.Peek());
-        }
-
-        public object Pop()
-        {
-            return CurFrame.Stack.Pop();
+            return refValue.Value as T;
         }
         
-        public void SetLocalValue(int reg, object value)
+        public void PushFrame(int retIndex, Function func)
         {
-            CurFrame.Locals[reg] = value;
-        }
-
-        public object GetLocalValue(int reg)
-        {
-            return CurFrame.Locals[reg];
-        }
-
-        public void PushFrame(int locals, FuncInfo fi)
-        {
-            Context.PushFrame(locals, fi);
+            frameStack.Push(curFrame);
+            curFrame = new Frame(this, retIndex, func);
         }
 
         public void PopFrame()
         {
-            Context.PopFrame();
+            curFrame = frameStack.Pop();
+        }
+        
+        public void SetExecutionPoint(int block, int index)
+        {
+            curFrame.SetExecutionPoint(block, index);
         }
 
-        public void Jump(int i)
+        public IValue CreateValue(IType type)
         {
-            Context.Point = i;
+            if (type is RefType)
+                return new RefValue(null);
+
+            if (type == GlobalDomain.IntType)
+                return new IntValue(0);
+
+            if (type == GlobalDomain.BoolType)
+                return new BoolValue(false);
+
+            if (type is FunctionType)
+                return new FuncValue(null);
+
+            throw new NotImplementedException();
         }
     }
 }

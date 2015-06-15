@@ -2,34 +2,35 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Gum.App.Compiler.AST;
+using Gum.Core.AbstractSyntax;
+using Gum.Core.IL;
 
 namespace Gum.App.Compiler
 {
     internal class TypeCheckerContext
     {
         // manage whole types
-        public TypeManager TypeManager { get; private set; }
+        public Domain Domain { get; private set; }
 
-        public List<Tuple<string, TypeInfo>> VarTypes { get; private set; }
+        public List<Tuple<string, IType>> VarTypes { get; private set; }
         public FuncDecl CurFunc { get; set; }
         public List<FuncDecl> FuncDecls { get; set; }
 
         Stack<int> scopes = new Stack<int>();
 
-        public TypeCheckerContext(TypeManager tm)
+        public TypeCheckerContext(Domain domain)
         {
             FuncDecls = new List<FuncDecl>();
             VarTypes = new List<Tuple<string, TypeInfo>>();
-            TypeManager = tm;
+            Domain = domain;
         }
 
-        public void AddVarType(string var, TypeInfo type)
+        public void AddVarType(string var, IType type)
         {
             VarTypes.Add(Tuple.Create(var, type));
         }
 
-        public bool TryGetVarType(string var, out TypeInfo type)
+        public bool TryGetVarType(string var, out IType type)
         {
             int index = VarTypes.FindLastIndex(tuple => tuple.Item1 == var);
             if (index == -1)
@@ -44,7 +45,7 @@ namespace Gum.App.Compiler
 
         public FuncDecl GetFunc(string p)
         {
-            return FuncDecls.Find(decl => decl.Name == p);
+            return FuncDecls.Find(decl => decl.Name.Value == p);
         }
 
         internal void PushScope()

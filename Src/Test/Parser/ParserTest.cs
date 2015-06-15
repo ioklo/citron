@@ -1,7 +1,8 @@
 ﻿using System;
-using Gum.App.Compiler;
-using Gum.App.Compiler.AST;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Gum.Core.AbstractSyntax;
+using Gum.App.Compiler; 
+
 
 namespace Gum.Test.Parser
 {
@@ -85,9 +86,9 @@ namespace Gum.Test.Parser
         public void ParserExpTest1()
         {
             Parser parser = new Parser();
-            Program pgm;
+            FileUnit fileUnit;
 
-            bool res = parser.ParseProgram("bool a = (7 + 8 * 9 - (2 + 4) * 8 == 6);", out pgm);
+            bool res = parser.ParseFileUnit("bool a = (7 + 8 * 9 - (2 + 4) * 8 == 6);", out fileUnit);
 
             Assert.AreEqual(res, true);
         }
@@ -96,9 +97,9 @@ namespace Gum.Test.Parser
         public void ParserTest2()
         {
             Parser parser = new Parser();
-            Program pgm;
+            FileUnit fileUnit;
 
-            bool res = parser.ParseProgram(
+            bool res = parser.ParseFileUnit(
 
 @"
 int main(int g, int f)
@@ -111,7 +112,7 @@ int main(int g, int f)
 
     return 0;
 }
-", out pgm);
+", out fileUnit);
 
             Assert.AreEqual(res, true);
         }

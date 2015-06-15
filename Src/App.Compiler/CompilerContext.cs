@@ -1,134 +1,73 @@
-﻿using System;
+﻿using Gum.Core.AbstractSyntax;
+using Gum.Core.IL;
+using Gum.Core.Runtime;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using Gum.App.Compiler.AST;
-using Gum.Core.IL;
 
 namespace Gum.App.Compiler
 {
     public class CompilerContext
     {
-        Stack<Tuple<int, int>> loopScopeInfo = new Stack<Tuple<int, int>>();
-
-        // 레지스터 관리
-        Stack<int> listSizes = new Stack<int>();
-        List<string> locals = new List<string>();
-        EmitResult emitResult = new EmitResult();
-
-        int tempLocalCount;
-        int maxLocalCount;
-
-        // Global Table
-        Dictionary<string, object> globalVariables = new Dictionary<string, object>();
-
-        public Core.IL.Program Program { get; private set; }
-        public TypeManager TypeManager { get; private set; }
-        public EmitResult EmitResult { get { return emitResult; } }
-
-        public CompilerContext()
+        internal void PushLocalScope()
         {
-            Program = new Core.IL.Program();
-            TypeManager = new TypeManager();
-
-            foreach(var kv in TypeManager.Types)
-            {
-                Program.Types[kv.Key] = new Core.IL.TypeInfo(kv.Key, kv.Value.Fields.Count);
-            }
+            throw new NotImplementedException();
         }
 
-        public void PushLocalScope()
+        internal void PopLocalScope()
         {
-            listSizes.Push(locals.Count);
+            throw new NotImplementedException();
         }
 
-        public void PopLocalScope()
+        internal int AddLocal(string typeName, string varName)
         {
-            int count = listSizes.Pop();
-            locals.RemoveRange(count, locals.Count - count);
+            throw new NotImplementedException();
         }
 
-
-        public int AddLocal(string varName)
+        internal int AddLocal(string typeName)
         {
-            locals.Add(varName);
-            maxLocalCount = Math.Max(maxLocalCount, locals.Count);
-            return locals.Count - 1;
+            throw new NotImplementedException();
         }
 
-        public int AddTempLocal()
+        internal bool GetLocalIndex(out int localIndex, string p)
         {
-            int idx = AddLocal("@t" + tempLocalCount);
-            tempLocalCount++;
-            return idx;
+            throw new NotImplementedException();
         }
 
-        public int GetLocal(string p)
+        internal bool GetGlobalIndex(out int globalIndex, string p)
         {
-            return locals.LastIndexOf(p);
+            throw new NotImplementedException();
         }
 
-        public void ClearLocal()
+        internal string GetLocalType(int result1)
         {
-            locals.Clear();
-            listSizes.Clear();
-            maxLocalCount = 0;
-            tempLocalCount = 0;
+            throw new NotImplementedException();
         }
 
-        public int MaxLocalCount
+        internal string GetGlobalType(int globalIndex)
         {
-            get { return maxLocalCount; }
+            throw new NotImplementedException();
         }
 
-        
-        // 루프 처리 Optional
-        public int ContinuePoint
+        internal FuncValue GetBinOpFunc(BinaryExpKind kind, string type1, string type2)
         {
-            get
-            {
-                if (loopScopeInfo.Count < 1) return -1;
-                return loopScopeInfo.Peek().Item1;
-            }
-        }
-        public int BreakPoint
-        {
-            get
-            {
-                if (loopScopeInfo.Count < 1) return -1;
-                return loopScopeInfo.Peek().Item2;
-            }
-        }
-        
-        public void AddGlobal(string name, object v)
-        {
-            globalVariables.Add(name, v);
+            throw new NotImplementedException();
         }
 
-        public bool GetGlobal(string name, out object val)
+        internal FuncValue GetUnOpFunc(UnaryExpKind kind, string type)
         {
-            return globalVariables.TryGetValue(name, out val);
+            throw new NotImplementedException();
         }
 
-        public void PushLoopScope(int continuePoint, int breakPoint)
+        internal TypeValue GetTypeValue(string typeArgName)
         {
-            loopScopeInfo.Push(Tuple.Create(continuePoint, breakPoint));
+            throw new NotImplementedException();
         }
 
-        public void PopLoopScope()
+        internal FuncValue GetFuncValue(string type, string funcName)
         {
-            loopScopeInfo.Pop();
-        }
-
-        public void ClearLoopScope()
-        {
-            loopScopeInfo.Clear();
-        }
-
-        public void ClearJumpPoints()
-        {
-            EmitResult.JumpIndice.Clear();
+            throw new NotImplementedException();
         }
     }
 }

@@ -1,0 +1,39 @@
+﻿<Window x:Class="Gum.App.Gummy.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:my="clr-namespace:Gum.App.Gummy"
+        Title="Gummy" Height="350" Width="525">
+    
+    <Window.CommandBindings>
+        <CommandBinding Command="my:MainWindow.ToggleShowInputBox"
+                        Executed="ToggleShowInputBox_Executed" />
+    </Window.CommandBindings>
+    
+    <Window.InputBindings>
+        <KeyBinding Modifiers="Alt"
+                    Key="C"
+                    Command="my:MainWindow.ToggleShowInputBox" />
+    </Window.InputBindings>
+    <Grid x:Name="MainGrid">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="100" />
+        </Grid.RowDefinitions>
+
+        <RichTextBox x:Name="ConsoleBox" Padding="0,4" FontFamily="Consolas" FontSize="14" Background="Navy" Foreground="White" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" >
+                     
+            <FlowDocument>
+                <Paragraph x:Name="Output" LineHeight="20" >
+                </Paragraph>                
+            </FlowDocument>
+        </RichTextBox>
+
+        <GridSplitter Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Height="5"/>
+        
+        <TextBox x:Name="InputBox" Grid.Row="2" TextWrapping="Wrap" AcceptsReturn="True" FontFamily="Consolas" FontSize="14" Padding="0, 4" PreviewKeyDown="InputBox_PreviewKeyDown"/>
+
+        <!-- Console 입력 가능한 창 (Enter로 다음줄로 이어지게 할 수 있음) -->
+        <!-- 길게 입력 가능한 창 -->
+    </Grid>
+</Window>

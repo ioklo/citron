@@ -1,0 +1,12 @@
+﻿
+bool boolValue = false;
+byte byteValue = 2;
+char charValue = 'a';
+int intValue = 53
+string stringValue = "hi";
+
+assert(boolValue, false);
+assert(byteValue, 2);
+assert(charValue, 'a');
+assert(intValue, 53);
+assert(stringValue, "hi");

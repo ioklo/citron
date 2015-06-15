@@ -4,291 +4,199 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Gum.Core.IL;
+using Gum.Core.Runtime;
+using Gum.Core.IL.Commands;
 
 namespace Gum.App.VM
 {
+    // 인터프리터
     public class Interpreter : ICommandVisitor
-    {
+    {   
+        // 내부에 스테이트를 갖고 있고, 
         State state;
-        Program prog;
+
+        // 미리 갖고 있는 ExternalMap을 갖고 있습니다
         Dictionary<string, Func<object[], object>> externFuncMap = new Dictionary<string, Func<object[], object>>();
 
-        public Interpreter(Program p)
+        // 그리고 프로그램
+        public Interpreter(IEnumerable<IType> locals)
         {
-            prog = p;
-            state = new State();
+            state = new State(locals);
         }
 
-        public void Visit(Push p)
+        // 1. GlobalRef
+        public void Visit(GlobalRef globalRef)
         {
-            state.Push(p.Value);
+            // 현 상태에서 globalRef를 가져옵니다.
+            IValue globalValue = state.GetGlobalValue<IValue>(globalRef.Index);
+            RefValue refValue = state.GetLocalValue<RefValue>(globalRef.DestReg);
+
+            refValue.Set(globalValue);
         }
 
-        public void Visit(Dup p)
+        // 2. LocalRef
+        public void Visit(LocalRef localRef)
         {
-            state.Dup();
+            // 현 상태에서 localRef를 가져옵니다.
+            IValue localValue = state.GetLocalValue<IValue>(localRef.Index);
+            RefValue refValue = state.GetLocalValue<RefValue>(localRef.DestReg);
+
+            refValue.Set(localValue);
         }
 
-        public void Visit(Pop p)
+        // 3. FieldRef
+        public void Visit(FieldRef fieldRef)
         {
-            state.Pop();
+            RefValue srcRef = state.GetLocalValue<RefValue>(fieldRef.SrcRefReg);
+            CompositeValue compValue = srcRef.Value as CompositeValue;
+            IValue value = compValue.Fields[fieldRef.Index];
+
+            RefValue refValue = state.GetLocalValue<RefValue>(fieldRef.DestReg);
+            refValue.Set(value);            
         }        
 
-        // 
-        public void Visit(New p)
+        // 4. New
+        public void Visit(New newCmd)
         {
-            var obj = new Object(p.TypeInfo.FieldCount);
-            state.Push(obj);
+            RefValue typeRefValue = state.GetLocalValue<RefValue>(newCmd.Type);
+            TypeValue typeValue = (TypeValue)typeRefValue.Value;
+
+            var compValue = new CompositeValue(state, typeValue.Value);
+
+            RefValue refValue = state.GetLocalValue<RefValue>(newCmd.DestReg);
+            refValue.Set(compValue);
         }
 
-        public void Visit(LoadField p)
+        // 5. Load
+        public void Visit(Load load)
         {
-            Object obj = (Object)state.Pop();
-            state.Push(obj.Fields[p.FieldIndex]);
-        }
+            IValue val = state.GetLocalValue<IValue>(load.Dest);
+            RefValue srcRef = state.GetLocalValue<RefValue>(load.SrcRef);
 
-        public void Visit(StoreField p)
-        {
-            Object obj = (Object)state.Pop();
-            object val = state.Pop();
-
-            obj.Fields[p.FieldIndex] = val;
-        }
-
-        public void Visit(Operator u)
-        {
-            switch (u.Kind)
-            {
-                case OperatorKind.Equal:
-                    {
-                        object i2 = state.Pop();
-                        object i1 = state.Pop();
-
-                        state.Push(i1.Equals(i2));
-
-                        return;
-                    }
-
-                case OperatorKind.NotEqual:
-                    {
-                        object i2 = state.Pop();
-                        object i1 = state.Pop();
-
-                        state.Push(!i1.Equals(i2));
-
-                        return;
-                    }
-
-                case OperatorKind.Less:
-                    {
-                        int i2 = (int)state.Pop();
-                        int i1 = (int)state.Pop();
-
-                        state.Push(i1 < i2);
-
-                        return;
-                    }
-
-                case OperatorKind.Greater:
-                    {
-                        int i2 = (int)state.Pop();
-                        int i1 = (int)state.Pop();
-
-                        state.Push(i1 > i2);
-                        return;                        
-                    }
-
-                case OperatorKind.Neg:
-                    {
-                        int i = (int)state.Pop();
-                        state.Push(-i);
-                        return;
-                    }
-
-                case OperatorKind.Not:
-                    {
-                        bool b = (bool)state.Pop();
-                        state.Push(!b);
-                        return;
-                    }
-
-                case OperatorKind.And:
-                    {
-                        bool b2 = (bool)state.Pop();
-                        bool b1 = (bool)state.Pop();
-
-                        state.Push(b1 && b2);
-                        return;
-                    }
-
-                case OperatorKind.Or:
-                    {
-                        bool b2 = (bool)state.Pop();
-                        bool b1 = (bool)state.Pop();
-
-                        state.Push(b1 || b2);
-                        return;
-                    }
-
-                case OperatorKind.Add:
-                    {
-                        int i2 = (int)state.Pop();
-                        int i1 = (int)state.Pop();
-
-                        state.Push(i1 + i2);
-                        return;
-                    }
-
-                case OperatorKind.Sub:
-                    {
-                        int i2 = (int)state.Pop();
-                        int i1 = (int)state.Pop();
-
-                        state.Push(i1 - i2);
-                        return;
-                    }
-            }
-
-            throw new NotImplementedException();
+            val.CopyFrom(srcRef.Value);
         }
         
-        // 해당 위치로 점프
-        // JumpAddr
-        public void Visit(Jump p)
+        // 6. Store 
+        public void Visit(Store store)
         {
-            // 노드는 들어오는 노드 여러개.. 나가는 노드 1개
-            var i = state.CurFrame.Func.JumpTable[p.Point];
-            state.Jump(i);
+            RefValue destRef = state.GetLocalValue<RefValue>(store.DestRef);
+            IValue val = state.GetLocalValue<IValue>(store.Src);
+
+            destRef.Value.CopyFrom(val);
         }
 
-        // Cond, JumpAddr
-        public void Visit(IfJump p)
+        // 7. Move 
+        public void Visit(Move move)
         {
-            bool cond = (bool)state.Pop();
-
-            if (cond)
-            {
-                var i = state.CurFrame.Func.JumpTable[p.Point];
-                state.Jump(i);
-            }
+            IValue val = state.GetLocalValue<IValue>(move.Dest);
+            val.CopyFrom(move.Value);
         }
 
-        public void Visit(IfNotJump p)
+        public void Visit(MoveReg moveReg)
         {
-            bool cond = (bool)state.Pop();
-
-            if (!cond)
-            {
-                var i = state.CurFrame.Func.JumpTable[p.Point];
-                state.Jump(i);
-            }
+            IValue srcVal = state.GetLocalValue<IValue>(moveReg.Src);
+            IValue destVal = state.GetLocalValue<IValue>(moveReg.Dest);
+            destVal.CopyFrom(srcVal);
+        }
+        
+        // 8. Jump, 현재 실행 블럭을 옮깁니다
+        public void Visit(Jump jump)
+        {
+            state.SetExecutionPoint(jump.Block, 0);
         }
 
+        // 9. CondJump
+        public void Visit(IfNotJump condJump)
+        {
+            BoolValue boolValue = state.GetLocalValue<BoolValue>(condJump.Cond);
+            if (!boolValue.Value)
+                state.SetExecutionPoint(condJump.Block, 0);
+        }
+        
+        // 10. StaticCall staticCallCmd);
         // arg1, ..., argN, MethodInfo
-        public void Visit(StaticCall p)
+        public void Visit(StaticCall staticCall)
         {
-            FuncInfo func = p.FuncInfo;           
+            // 1. 함수 가져오기
+            var funcValue = state.GetLocalValue<FuncValue>(staticCall.Func);
 
-            // local 변수에 집어넣기..
-            object[] args = new object[func.ArgCount];
-            for (int t = func.ArgCount - 1; t >= 0; t--)
-                args[t] = state.Pop();
+            // 2. 인자 가져오기
+            IValue[] values = new IValue[funcValue.Value.ArgTypes.Count];
 
-            if (func.Extern)
-            {
-                // 외부 함수 
-                Func<object[], object> externFunc;
-                if (!externFuncMap.TryGetValue(p.FuncInfo.Name, out externFunc))
-                    throw new NotImplementedException();
+            for (int t = 0; t < staticCall.Args.Count; t++)
+                values[t] = state.GetLocalValue<IValue>(staticCall.Args[t]);
 
-                var res = externFunc(args);
+            // 내부 함수라면
+            if (funcValue.Value is Function)
+            {   
+                // 3. 새 프레임을 만들고 인자를 복사하기
+                state.PushFrame(staticCall.Ret, (Function)funcValue.Value);
 
-                if (p.FuncInfo.RetValCount == 1)
-                    state.Push(res);
+                for (int t = 0; t < values.Length; t++)
+                    state.SetLocalValue(t, values[t]);
             }
-            else
+            else if (funcValue.Value is ExternFunction)
             {
-                state.PushFrame(func.LocalCount, func);                
+                ExternFunction externFunc = funcValue.Value as ExternFunction;
+                var res = externFunc.Instance(values);
 
-                for (int t = 0; t < args.Length; t++)
-                    state.SetLocalValue(t, args[t]);
-            }
+                if (externFunc.RetType != GlobalDomain.VoidType)
+                    state.SetLocalValue(staticCall.Ret, (IValue)res);
+            }           
         }
 
-        // 함수가 끝났을 때, return 하는 개수만큼 제외한다
-        public void Visit(Return p)
+        // VirtualCall
+        public void Visit(VirtualCall virtualCall)
         {
-            int retCount = state.CurFrame.Func.RetValCount;
-            object[] retVals = new object[retCount];
+            throw new NotImplementedException();
+        }
 
-            for (int t = retCount - 1; t >= 0; t--)
-                retVals[t] = state.Pop();
-            
+        // 12. Return
+        public void Visit(Return returnCmd)
+        {
+            int retDest= state.ReturnDest; // PopFrame을 하면, ReturnDest가 달라지므로 미리 저장해야 합니다
+            IValue retValue = state.GetLocalValue<IValue>(returnCmd.Value);
+
             state.PopFrame();
-
-            foreach( var retVal in retVals)
-                state.Push(retVal);
+            state.SetLocalValue(retDest, retValue);
         }
 
-        // 로컬 변수의 값을 저장한다..
-        public void Visit(StoreLocal p)
-        {
-            object val = state.Pop();
-            state.SetLocalValue(p.Index, val);
-        }
+        //public object Call(Domain domain, string name, params object[] args)
+        //{
+        //    IValue value;
+        //    if (!domain.TryGetValue(name, out value))
+        //        throw new InvalidOperationException();
 
-        // 로컬 변수의 값을 가져온다
-        public void Visit(LoadLocal p)
-        {
-            state.Push(state.GetLocalValue(p.Index));
-        }
+        //    var info = value as IFunction;
 
-        public void Visit(Yield p)
-        {
-            state.Pause = true;
-        }
+        //    if (info == null)
+        //        throw new InvalidOperationException();
 
-        public void Run(bool bIgnoreYield)
-        {
-            state.Pause = false;
-            while (state.CurFrame.Func != null && state.Context.Point < state.CurFrame.Func.Commands.Count)
-            {
-                if (!bIgnoreYield && state.Pause) break;
+        //    var prevCtx = state.Context;
+        //    state.Context = new Context();
 
-                ICommand cmd = state.CurFrame.Func.Commands[state.Context.Point];
-                state.Context.Point++;
-                 
-                // 실행
-                cmd.Visit(this);
-            }
-        }
+        //    // Call 만들기
+        //    foreach (object arg in args)
+        //        state.Push(arg);
 
-        public object Call(string name, params object[] args)
-        {            
-            var info = prog.GetFuncInfo(name);
-
-            if (info == null)
-                throw new InvalidOperationException();
-
-            var prevCtx = state.Context;
-            state.Context = new Context();
-
-            // Call 만들기
-            foreach (object arg in args)
-                state.Push(arg);
-
-            new StaticCall(info).Visit(this);
+        //    new StaticCall(info).Visit(this);
             
-            Run(true);
+        //    Run(true);
 
-            object retVal = state.Pop();
-            state.Context = prevCtx;
-            return retVal;
-        }
+        //    object retVal = state.Pop();
+        //    state.Context = prevCtx;
+        //    return retVal;
+        //}
 
         public void AddExternFunc(string name, Func<object[], object> func)
         {
             externFuncMap.Add(name, func);
         }
+
+
+
+
+
+
     }
 }

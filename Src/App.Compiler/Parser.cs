@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Gum.App.Compiler.AST;
+using Gum.Core.AbstractSyntax;
 
 namespace Gum.App.Compiler
 {
@@ -185,7 +185,7 @@ namespace Gum.App.Compiler
                     if (lexer.Kind == Lexer.TokenKind.Dot ||
                         lexer.Kind == Lexer.TokenKind.LBracket)
                     {
-                        VariableExp ve = new VariableExp() { Name = id };
+                        VariableExp ve = new VariableExp(id);
                         if (!ParseOffset(lexer, ve))
                         {
                             exp = null;
@@ -268,35 +268,35 @@ namespace Gum.App.Compiler
             return true;
         }
 
-        public bool ParseOffset(Lexer lexer, VariableExp v)
-        {
-            using (LexerScope scope = lexer.CreateScope())
-            {                
-                while (!lexer.End)
-                {
-                    if (lexer.Consume(Lexer.TokenKind.Dot))
-                    {
-                        string fieldName;
-                        if (!lexer.Consume(Lexer.TokenKind.Identifier, out fieldName))
-                            return false; // 복구 불가능
+        //public bool ParseOffset(Lexer lexer, VariableExp v)
+        //{
+        //    using (LexerScope scope = lexer.CreateScope())
+        //    {                
+        //        while (!lexer.End)
+        //        {
+        //            if (lexer.Consume(Lexer.TokenKind.Dot))
+        //            {
+        //                string fieldName;
+        //                if (!lexer.Consume(Lexer.TokenKind.Identifier, out fieldName))
+        //                    return false; // 복구 불가능
 
-                        v.Offsets.Add(new StringOffset() { Field = fieldName });
-                    }
-                    else if (lexer.Consume(Lexer.TokenKind.LBracket))
-                    {
-                        string index;
-                        if (!lexer.Consume(Lexer.TokenKind.IntValue, out index))
-                            return false;
+        //                v.Offsets.Add(new StringOffset() { Field = fieldName });
+        //            }
+        //            else if (lexer.Consume(Lexer.TokenKind.LBracket))
+        //            {
+        //                string index;
+        //                if (!lexer.Consume(Lexer.TokenKind.IntValue, out index))
+        //                    return false;
 
-                        v.Offsets.Add(new IndexOffset() { Index = int.Parse(index) });
-                    }
-                    else break;
-                }
+        //                v.Offsets.Add(new IndexOffset() { Index = int.Parse(index) });
+        //            }
+        //            else break;
+        //        }
 
-                scope.Accept();
-                return true;
-            }
-        }
+        //        scope.Accept();
+        //        return true;
+        //    }
+        //}
 
         public bool ParseNewExp(Lexer lexer, out NewExp ne)
         {
@@ -535,7 +535,7 @@ namespace Gum.App.Compiler
             return false;
         }
 
-        bool ParseVarDeclStmt(Lexer lexer, out VarDeclStmt vd)
+        bool ParseVarDeclStmt(Lexer lexer, out VarDecl vd)
         {
             VarDecl varDecl;
             if (!ParseVarDecl(lexer, out varDecl))
@@ -544,7 +544,7 @@ namespace Gum.App.Compiler
                 return false;
             }
 
-            vd = new VarDeclStmt(varDecl);
+            vd = varDecl;
             return true;
         }
 
@@ -560,7 +560,8 @@ namespace Gum.App.Compiler
                     return false;
                 }
 
-                vd = new VarDecl(typeName);
+                var typeID = new TypeIdentifier(typeName);
+                var nameAndExps = new List<NameAndExp>();
 
                 do
                 {
@@ -574,7 +575,7 @@ namespace Gum.App.Compiler
                     IExp exp;
                     ParseInitializer(lexer, out exp);
                     
-                    vd.NameAndExps.Add(new NameAndExp() { Name = name, Exp = exp });
+                    nameAndExps.Add(new NameAndExp() { Name = name, Exp = exp });
 
                 } while (lexer.Consume(Lexer.TokenKind.Comma));
 
@@ -584,6 +585,7 @@ namespace Gum.App.Compiler
                     return false;
                 }
 
+                vd = new VarDecl(typeID, nameAndExps);                
                 scope.Accept();
                 return true;
             }
@@ -621,8 +623,9 @@ namespace Gum.App.Compiler
                     name = typeName;
                     typeName = null;
                 }
-
-                FuncDecl res = new FuncDecl(typeName, name);
+        
+                var parameters = new List<FuncParameter>();
+                var funcBodyStmts = new List<IFuncStmt>();
                 
                 // argument list 파싱
                 // (
@@ -643,7 +646,8 @@ namespace Gum.App.Compiler
                         return false;
                     }
                     
-                    res.Parameters.Add(new TypeAndName(typeName, name));
+                    // TODO: Parameter Modifier 미구현 
+                    parameters.Add(new FuncParameter(FuncParamModifier.None, new TypeIdentifier(typeName), new VarIdentifier(name)));
 
                     while (lexer.Consume(Lexer.TokenKind.Comma))
                     {
@@ -655,7 +659,7 @@ namespace Gum.App.Compiler
                             return false;
                         }
 
-                        res.Parameters.Add(new TypeAndName(typeName, name));
+                        parameters.Add(new FuncParameter(FuncParamModifier.None, new TypeIdentifier(typeName), new VarIdentifier(name)));
                     }
 
                     if (!lexer.Consume(Lexer.TokenKind.RParen))
@@ -666,26 +670,32 @@ namespace Gum.App.Compiler
                     }
                 }
 
-                if (lexer.Consume(Lexer.TokenKind.SemiColon))
+                if (!lexer.Consume(Lexer.TokenKind.LBrace))
                 {
-                    // extern 함수
-                    res.Body = null;
-                    fd = res;
-                    scope.Accept();
-                    return true;
-                }
-
-                // 함수 바디 불러오기..
-                BlockStmt block;
-                if (!ParseBlock(lexer, out block))
-                {
-                    fd = null;                    
+                    fd = null;
                     return false;
                 }
 
-                res.Body = block;
+                while(!lexer.Consume(Lexer.TokenKind.RBrace))
+                {
+                    IStmt stmt;
+                    if (!ParseStatement(lexer, out stmt))
+                    {
+                        fd = null;
+                        return false;
+                    }
 
-                fd = res;
+                    IFuncStmt funcStmt = stmt as IFuncStmt;
+                    if (funcStmt == null)
+                    {
+                        fd = null;
+                        return false;
+                    }
+
+                    funcBodyStmts.Add(funcStmt);
+                }                
+
+                fd = new FuncDecl(new TypeIdentifier(typeName), new VarIdentifier(name), parameters, funcBodyStmts );
                 scope.Accept();
                 return true;
             }
@@ -761,7 +771,6 @@ namespace Gum.App.Compiler
         bool ParseStatement(Lexer lexer, out IStmt stmt)
         {
             // Statement 
-            // 1. Null Statement (';' Only)
             // 2. 변수 선언 Variable Declaration ;
             // - If            
             // - For, Do, While
@@ -770,21 +779,12 @@ namespace Gum.App.Compiler
             // - Block { }
 
             using (LexerScope scope = lexer.CreateScope())
-            {   
-                // 1. Null Statement 
-                if (lexer.Kind == Lexer.TokenKind.SemiColon)
-                {
-                    lexer.NextToken();
-                    stmt = new NullStmt();
-                    scope.Accept();
-                    return true;
-                }
-
+            {
                 // 2. Variable Declaration with ';'
-                VarDeclStmt vd;
-                if (ParseVarDeclStmt(lexer, out vd))
+                VarDecl varDecl;
+                if (ParseVarDeclStmt(lexer, out varDecl))
                 {
-                    stmt = vd;
+                    stmt = varDecl;
                     scope.Accept();
                     return true;
                 }
@@ -903,7 +903,7 @@ namespace Gum.App.Compiler
                 // Variable Declaration With Initial value
                 // Expression
                 IStmt init = null;
-                VarDeclStmt vd;
+                VarDecl vd;
                 ExpStmt expStmt;
                 if (ParseVarDeclStmt(lexer, out vd))
                 {
@@ -1101,13 +1101,13 @@ namespace Gum.App.Compiler
                 switch(tokenKind)
                 {
                     case Lexer.TokenKind.Equal:
-                        aStmt = new AssignExp() { Var = varExp, Exp = exp };
+                        aStmt = new AssignExp() { Left = varExp, Exp = exp };
                         break;
 
                     case Lexer.TokenKind.PlusEqual:
                         aStmt = new AssignExp()
                         {
-                            Var = varExp,
+                            Left = varExp,
                             Exp = new BinaryExp() { Operand1 = varExp, Operand2 = exp, Operation = BinaryExpKind.Add }
                         };
                         break;
@@ -1115,7 +1115,7 @@ namespace Gum.App.Compiler
                     case Lexer.TokenKind.MinusEqual:
                         aStmt = new AssignExp()
                         {
-                            Var = varExp,
+                            Left = varExp,
                             Exp = new BinaryExp() { Operand1 = varExp, Operand2 = exp, Operation = BinaryExpKind.Add }
                         };
                         break;
@@ -1123,7 +1123,7 @@ namespace Gum.App.Compiler
                     case Lexer.TokenKind.StarEqual:
                         aStmt = new AssignExp()
                         {
-                            Var = varExp,
+                            Left = varExp,
                             Exp = new BinaryExp() { Operand1 = varExp, Operand2 = exp, Operation = BinaryExpKind.Mul }
                         };
                         break;
@@ -1131,7 +1131,7 @@ namespace Gum.App.Compiler
                     case Lexer.TokenKind.SlashEqual:
                         aStmt = new AssignExp()
                         {
-                            Var = varExp,
+                            Left = varExp,
                             Exp = new BinaryExp() { Operand1 = varExp, Operand2 = exp, Operation = BinaryExpKind.Div }
                         };
                         break;
@@ -1155,11 +1155,11 @@ namespace Gum.App.Compiler
                 lexer.NextToken();
 
                 VariableExp ve = new VariableExp() { Name = id };
-                if (!ParseOffset(lexer, ve))
-                {
-                    varExp = null;
-                    return false;
-                }
+                //if (!ParseOffset(lexer, ve))
+                //{
+                //    varExp = null;
+                //    return false;
+                //}
 
                 varExp = ve;
                 scope.Accept();
@@ -1167,132 +1167,177 @@ namespace Gum.App.Compiler
             }
         }
 
-        public bool ParseClassDecl(Lexer lexer, out ClassDecl classDecl)
+        //public bool ParseClassDecl(Lexer lexer, out ClassDecl classDecl)
+        //{
+        //    using (var scope = lexer.CreateScope())
+        //    {
+        //        string className;
+
+        //        if (!lexer.Consume(Lexer.TokenKind.Class) ||
+        //            !lexer.Consume(Lexer.TokenKind.Identifier, out className))
+        //        {
+        //            classDecl = null;
+        //            return false;
+        //        }
+
+        //        // 상속 목록
+        //        // : ID(, ID)*
+
+        //        var baseTypes = new List<TypeIdentifier>();
+
+        //        if (lexer.Consume(Lexer.TokenKind.Colon))
+        //        {
+        //            string baseTypeName;
+
+        //            if (!lexer.Consume(Lexer.TokenKind.Identifier, out baseTypeName))
+        //            {
+        //                // 복구 불가능한 오류
+        //                classDecl = null;
+        //                return false;
+        //            }
+
+        //            baseTypes.Add(new TypeIdentifier(baseTypeName));
+        //            while(lexer.Consume(Lexer.TokenKind.Comma))
+        //            {
+        //                if (!lexer.Consume(Lexer.TokenKind.Identifier, out baseTypeName))
+        //                {
+        //                    // 복구 불가능한 오류
+        //                    classDecl = null;
+        //                    return false;
+        //                }
+        //                baseTypes.Add(new TypeIdentifier(baseTypeName));
+        //            }
+        //        }
+
+        //        if (!lexer.Consume(Lexer.TokenKind.LBrace))
+        //        {
+        //            classDecl = null;
+        //            return false;
+        //        }
+
+        //        var funcDecls = new List<ClassFuncDecl>();
+        //        var varDecls = new List<ClassVarDecl>();
+
+        //        while (!lexer.Consume(Lexer.TokenKind.RBrace))
+        //        {
+        //            ClassFuncDecl cfd;
+        //            if (ParseClassFuncDecl(lexer, out cfd))
+        //            {
+        //                funcDecls.Add(cfd);
+        //                continue;
+        //            }
+
+        //            ClassVarDecl cvd;
+        //            if (ParseClassVarDecl(lexer, out cvd))
+        //            {
+        //                varDecls.Add(cvd);
+        //                continue;
+        //            }
+        //        }
+
+        //        classDecl = new ClassDecl(new TypeIdentifier(className), funcDecls, varDecls, baseTypes);
+        //        scope.Accept();
+        //        return true;
+        //    }
+        //}
+
+        //private bool ParseClassVarDecl(Lexer lexer, out ClassVarDecl cvd)
+        //{
+        //    // option, accessor (기본 private)
+        //    using (var scope = lexer.CreateScope())
+        //    {
+        //        // option, accessor
+        //        Lexer.TokenKind accessModifierToken;
+        //        Gum.Core.AbstractSyntax.AccessModifier accessModifier = Gum.Core.AbstractSyntax.AccessModifier.None;
+        //        if (!lexer.ConsumeAny(out accessModifierToken, Lexer.TokenKind.Public, Lexer.TokenKind.Private, Lexer.TokenKind.Protected))
+        //            accessModifierToken = Lexer.TokenKind.Private;
+
+        //        switch(accessModifierToken)
+        //        {
+        //            case Lexer.TokenKind.Public: accessModifier = Gum.Core.AbstractSyntax.AccessModifier.Public; break;
+        //            case Lexer.TokenKind.Private: accessModifier = Gum.Core.AbstractSyntax.AccessModifier.Private; break;
+        //            case Lexer.TokenKind.Protected: accessModifier = Gum.Core.AbstractSyntax.AccessModifier.Protected; break;
+        //        }
+
+        //        VarDecl varDecl;
+        //        if (!ParseVarDecl(lexer, out varDecl))
+        //        {
+        //            cvd = null;
+        //            return false;
+        //        }
+
+        //        cvd = new ClassVarDecl(varDecl.Type, varDecl.NameAndExps, accessModifier);
+        //        scope.Accept();
+        //        return true;
+        //    }
+        //}
+
+        //private bool ParseClassFuncDecl(Lexer lexer, out ClassFuncDecl cfd)
+        //{
+        //    using (var scope = lexer.CreateScope())
+        //    {
+        //        // option, accessor
+        //        Lexer.TokenKind accessorKind;
+        //        if (!lexer.ConsumeAny(out accessorKind, Lexer.TokenKind.Public, Lexer.TokenKind.Private, Lexer.TokenKind.Protected))
+        //            accessorKind = Lexer.TokenKind.Private;
+
+        //        // virtual, override, new
+        //        // new virtual
+        //        Lexer.TokenKind inheritKind;
+        //        if (!lexer.ConsumeAny(out inheritKind, Lexer.TokenKind.Virtual, Lexer.TokenKind.Override, Lexer.TokenKind.New))
+        //            inheritKind = Lexer.TokenKind.New;
+
+        //        FuncDecl funcDecl;
+        //        if (!ParseFuncDecl(lexer, out funcDecl))
+        //        {
+        //            cfd = null;
+        //            return false;
+        //        }
+
+        //        // 가능한 함수의 정의
+        //        // 일반, virtual(이전 정의가 없을 때), override, sealed 
+        //        // new virtual(이전 정의가 있을 때), new 일반(이전 정의가 있을 때)                
+
+        //        cfd = new ClassFuncDecl(accessorKind, inheritKind, funcDecl,  );
+        //        scope.Accept();
+        //        return true;
+        //    }            
+        //}
+
+        public bool ParseREPLStmt(string str, out IREPLStmt replStmt)
         {
-            using (var scope = lexer.CreateScope())
+            var lexer = new Lexer(str);
+            lexer.NextToken();
+
+            FuncDecl funcDecl;
+            if (ParseFuncDecl(lexer, out funcDecl))
             {
-                string className;
-
-                if (!lexer.Consume(Lexer.TokenKind.Class) ||
-                    !lexer.Consume(Lexer.TokenKind.Identifier, out className))
-                {
-                    classDecl = null;
-                    return false;
-                }
-
-                classDecl = new ClassDecl(className);
-
-                // 상속 목록
-                // : ID(, ID)*
-
-                if (lexer.Consume(Lexer.TokenKind.Colon))
-                {
-                    string baseTypeName;
-
-                    if (!lexer.Consume(Lexer.TokenKind.Identifier, out baseTypeName))
-                    {
-                        // 복구 불가능한 오류
-                        classDecl = null;
-                        return false;
-                    }
-
-                    classDecl.BaseTypes.Add(baseTypeName);
-
-                    while(lexer.Consume(Lexer.TokenKind.Comma))
-                    {
-                        if (!lexer.Consume(Lexer.TokenKind.Identifier, out baseTypeName))
-                        {
-                            // 복구 불가능한 오류
-                            classDecl = null;
-                            return false;
-                        }
-
-                        classDecl.BaseTypes.Add(baseTypeName);
-                    }
-                }
-
-                if (!lexer.Consume(Lexer.TokenKind.LBrace))
-                {
-                    classDecl = null;
-                    return false;
-                }
-
-                while (!lexer.Consume(Lexer.TokenKind.RBrace))
-                {
-                    ClassFuncDecl cfd;
-                    if (ParseClassFuncDecl(lexer, out cfd))
-                    {
-                        classDecl.FuncDecls.Add(cfd);
-                        continue;
-                    }
-
-                    ClassVarDecl cvd;
-                    if (ParseClassVarDecl(lexer, out cvd))
-                    {
-                        classDecl.VarDecls.Add(cvd);
-                        continue;
-                    }
-                }
-
-                scope.Accept();
+                replStmt = funcDecl;
                 return true;
             }
-        }
 
-        private bool ParseClassVarDecl(Lexer lexer, out ClassVarDecl cvd)
-        {
-            // option, accessor (기본 private)
-            using (var scope = lexer.CreateScope())
+            ExpStmt expStmt;
+            if (ParseExpStmt(lexer, out expStmt))
             {
-                // option, accessor
-                Lexer.TokenKind accessorKind;
-                if (!lexer.ConsumeAny(out accessorKind, Lexer.TokenKind.Public, Lexer.TokenKind.Private, Lexer.TokenKind.Protected))
-                    accessorKind = Lexer.TokenKind.Private;
-
-                VarDecl varDecl;
-                if (!ParseVarDecl(lexer, out varDecl))
-                {
-                    cvd = null;
-                    return false;
-                }
-
-                cvd = new ClassVarDecl(accessorKind, varDecl);
-                scope.Accept();
+                replStmt = expStmt;
                 return true;
             }
-        }
 
-        private bool ParseClassFuncDecl(Lexer lexer, out ClassFuncDecl cfd)
-        {
-            using (var scope = lexer.CreateScope())
+            VarDecl varDecl;
+            if (ParseVarDecl(lexer, out varDecl))
             {
-                // option, accessor
-                Lexer.TokenKind accessorKind;
-                if (!lexer.ConsumeAny(out accessorKind, Lexer.TokenKind.Public, Lexer.TokenKind.Private, Lexer.TokenKind.Protected))
-                    accessorKind = Lexer.TokenKind.Private;
-
-                // virtual, override, new
-                Lexer.TokenKind inheritKind;
-                if (!lexer.ConsumeAny(out inheritKind, Lexer.TokenKind.Virtual, Lexer.TokenKind.Override, Lexer.TokenKind.New))
-                    inheritKind = Lexer.TokenKind.New;
-
-                FuncDecl funcDecl;
-                if (!ParseFuncDecl(lexer, out funcDecl))
-                {
-                    cfd = null;
-                    return false;
-                }
-
-                cfd = new ClassFuncDecl(accessorKind, inheritKind, funcDecl);
-                scope.Accept();
+                replStmt = varDecl;
                 return true;
-            }            
+            }
+
+            replStmt = null;
+            return false;
         }
 
-        public bool ParseProgram(string str, out Program pgm)
+        public bool ParseFileUnit(string str, out FileUnit fileUnit)
         {
-            pgm = null;
-            Program res = new Program();
+            fileUnit = null;
+            List<IFileUnitDecl> decls = new List<IFileUnitDecl>();
 
             var lexer = new Lexer(str);
             lexer.NextToken();
@@ -1302,18 +1347,18 @@ namespace Gum.App.Compiler
                 // 프로그램은 변수 선언/ 함수 선언 두가지 경우
 
                 // class definition인가
-                ClassDecl cd;
-                if (ParseClassDecl(lexer, out cd))
-                {
-                    res.Decls.Add(cd);
-                    continue;
-                }
+                //ClassDecl cd;
+                //if (ParseClassDecl(lexer, out cd))
+                //{
+                //    res.Decls.Add(cd);
+                //    continue;
+                //}
 
                 // Function인가?                 
                 FuncDecl fd;
                 if (ParseFuncDecl(lexer, out fd))
                 {
-                    res.Decls.Add(fd);
+                    decls.Add(fd);
                     continue;
                 }
 
@@ -1321,14 +1366,14 @@ namespace Gum.App.Compiler
                 VarDecl vd;
                 if (ParseVarDecl(lexer, out vd))
                 {
-                    res.Decls.Add(vd);
+                    decls.Add(vd);
                     continue;
                 }
                 
                 return false;
             }
 
-            pgm = res;
+            fileUnit = new FileUnit(decls);
             return true;
         }        
     }

@@ -7,7 +7,13 @@ namespace Gum.Core.IL
 {
     public class FieldInfo
     {
-        public int Offset { get; private set; }
+        public IType Type { get; private set; }
+        public int Index { get; private set; }
 
+        public FieldInfo(IType type, int index)
+        {
+            Type = type;
+            Index = index;
+        }
     }
 }

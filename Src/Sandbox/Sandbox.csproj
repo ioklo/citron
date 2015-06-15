@@ -52,12 +52,6 @@
     <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Translator.Parser\Translator.Parser.csproj">
-      <Project>{8d52ed06-fabb-422d-a6ba-03d6d5e258d5}</Project>
-      <Name>Translator.Parser</Name>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="..\Gum.props" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

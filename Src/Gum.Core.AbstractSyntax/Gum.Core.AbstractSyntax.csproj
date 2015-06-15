@@ -1,0 +1,97 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{E86D749B-9BAB-474F-B2AA-102BC5FA3E88}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Gum.Core.AbstractSyntax</RootNamespace>
+    <AssemblyName>Gum.Core.AbstractSyntax</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Decl\AccessModifier.cs" />
+    <Compile Include="Decl\ClassDecl.cs" />
+    <Compile Include="Decl\ClassFuncDecl.cs" />
+    <Compile Include="Decl\ClassVarDecl.cs" />
+    <Compile Include="Decl\FuncDecl.cs" />
+    <Compile Include="Decl\FuncParameter.cs" />
+    <Compile Include="Decl\FuncParamModifier.cs" />
+    <Compile Include="Decl\IFuncStmt.cs" />
+    <Compile Include="Decl\IFuncStmtVisitor.cs" />
+    <Compile Include="Decl\VirtualModifier.cs" />
+    <Compile Include="Exp\FieldExp.cs" />
+    <Compile Include="IFileUnitDecl.cs" />
+    <Compile Include="IFileUnitDeclVisitor.cs" />
+    <Compile Include="IREPLStmt.cs" />
+    <Compile Include="IREPLStmtVisitor.cs" />
+    <Compile Include="VarIdentifier.cs" />
+    <Compile Include="TypeIdentifier.cs" />
+    <Compile Include="Decl\VarDecl.cs" />
+    <Compile Include="Exp\AssignExp.cs" />
+    <Compile Include="Exp\BinaryExp.cs" />
+    <Compile Include="Exp\BinaryExpKind.cs" />
+    <Compile Include="Exp\BoolExp.cs" />
+    <Compile Include="Exp\CallExp.cs" />
+    <Compile Include="Exp\IntegerExp.cs" />
+    <Compile Include="Exp\NewExp.cs" />
+    <Compile Include="Exp\StringExp.cs" />
+    <Compile Include="Exp\UnaryExp.cs" />
+    <Compile Include="Exp\UnaryExpKind.cs" />
+    <Compile Include="Exp\VariableExp.cs" />
+    <Compile Include="IExp.cs" />
+    <Compile Include="IExpVisitor.cs" />
+    <Compile Include="IStmtVisitor.cs" />
+    <Compile Include="NameAndExp.cs" />
+    <Compile Include="FileUnit.cs" />
+    <Compile Include="Stmt\BlockStmt.cs" />
+    <Compile Include="Stmt\BreakStmt.cs" />
+    <Compile Include="Stmt\ContinueStmt.cs" />
+    <Compile Include="Stmt\DoWhileStmt.cs" />
+    <Compile Include="Stmt\ExpStmt.cs" />
+    <Compile Include="Stmt\ForStmt.cs" />
+    <Compile Include="Stmt\IfStmt.cs" />
+    <Compile Include="Stmt\IStmt.cs" />
+    <Compile Include="Stmt\ReturnStmt.cs" />
+    <Compile Include="Stmt\WhileStmt.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <Import Project="..\Gum.props" />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

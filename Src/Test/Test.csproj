@@ -54,29 +54,27 @@
     <Compile Include="UnitTest1.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VM\BasicTest.cs" />
+    <Compile Include="VM\ExternFunction.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\App.Compiler\Compiler.csproj">
+    <ProjectReference Include="..\App.Compiler\Gum.App.Compiler.csproj">
       <Project>{59f067fa-4420-4182-96e3-a7d01ac32e4a}</Project>
-      <Name>Compiler</Name>
+      <Name>Gum.App.Compiler</Name>
     </ProjectReference>
     <ProjectReference Include="..\Core.IL\Core.IL.csproj">
       <Project>{68f5a016-e914-44e8-92e9-d3d6a3834853}</Project>
       <Name>Core.IL</Name>
     </ProjectReference>
-    <ProjectReference Include="..\App.VM\VM.csproj">
+    <ProjectReference Include="..\App.VM\Gum.App.VM.csproj">
       <Project>{a1a3a0de-ab02-448d-a911-ffaf49bd6a22}</Project>
-      <Name>VM</Name>
+      <Name>Gum.App.VM</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Translator.Parser\Translator.Parser.csproj">
-      <Project>{8d52ed06-fabb-422d-a6ba-03d6d5e258d5}</Project>
-      <Name>Translator.Parser</Name>
+    <ProjectReference Include="..\Gum.Core.AbstractSyntax\Gum.Core.AbstractSyntax.csproj">
+      <Project>{e86d749b-9bab-474f-b2aa-102bc5fa3e88}</Project>
+      <Name>Gum.Core.AbstractSyntax</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Lexer\" />
-    <Folder Include="ParserGenerator\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <None Include="tests\class\field.gum" />
     <None Include="tests\for.gum" />

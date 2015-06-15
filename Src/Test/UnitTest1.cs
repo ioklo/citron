@@ -21,11 +21,13 @@ namespace Gum.Test
                 new Return() 
             };
 
-            Program prog = new Program();
-            prog.AddFunc("myF", 0, 0, 1, cmds, new List<int>());
+            Domain domain = new Domain();
+            domain.AddVariable("myF", new Function("myF", 0, 0, 1, cmds, new List<int>()));
+
+            Program prog = new Program(domain);
   
-            Interpreter interp = new Interpreter(prog);
-            int iv = (int)interp.Call("myF");
+            Interpreter interp = new Interpreter();
+            int iv = (int)interp.Call(domain, "myF");
             Assert.AreEqual(iv, 7);
         }
 

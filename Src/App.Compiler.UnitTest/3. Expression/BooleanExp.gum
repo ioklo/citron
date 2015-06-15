@@ -1,0 +1,25 @@
+﻿
+// constant
+assert(true, true);
+
+// variable
+bool x = true;
+assert(x, true);
+
+// 0b0000_0000_0000_1010
+// 0b0000_0000_0000_1001
+assert(true && true, true);
+assert(true && false, false);
+assert(false && true, false);
+assert(false && false, false);
+
+assert(true || true, true);
+assert(true || false, true);
+assert(false || true, true);
+assert(false || false, false);
+
+assert(!true, false);
+assert(!false, true);
+
+assert(true == false, false);
+assert(true != false, true);

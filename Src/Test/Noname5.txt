@@ -1,0 +1,67 @@
+
+// A a 가 ValueType
+
+1. a = 1;
+push addr of local var(a)
+push value (1)
+store 
+
+2. a + 1
+push addr of local var(a)
+load addr
+push value (1)
+add (int add의 경우)
+
+3. a.b = 1
+push addr of local var(a)
+get field addr(A.b)
+push value(1)
+store 
+
+4. a.b + 1
+push local("a"), RefType
+field(A.b), int*
+load
+push value(1)
+add
+
+// a 가 Ref Type
+5. a.b = 1
+push local(a), RefType
+load // load가 한번 더 들어간다
+field(A.b)
+push value(1)
+store
+
+6. a.b + 1
+push local(a)
+load
+field(A.b)
+load
+value(1)
+
+7. f().a
+call f, -> ret결과가 struct라면 local에 저장됩니다.. 그리고 결과는 push local(ret*)
+field (A.a)
+load
+
+둘다 valuetype일때
+8. a = b
+push local(a)
+push local(b)
+store ;
+
+// ref type일 때 
+9. a = b
+push local(a)
+push local(b)
+load
+store
+
+
+// 이름을 명확히 합시다
+
+Emit(Var x)
+{
+    x.Name
+}

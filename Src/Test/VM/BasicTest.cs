@@ -10,6 +10,7 @@ namespace Gum.Test.VM
     using Parser = Gum.App.Compiler.Parser;
     using Program = Gum.Core.IL.Program;
     using System.Collections.Generic;
+    using Gum.Core.IL.Commands;
 
     [TestClass]
     public class BasicTest
@@ -20,8 +21,9 @@ namespace Gum.Test.VM
             using (var reader = new StreamReader(fileName))
                 code = reader.ReadToEnd();
             
-            Compiler compiler = new Compiler();
-            return compiler.Compile(code);
+            Domain domain = new Domain();
+
+            return Compiler.Compile(domain, code);
         }
 
         [TestMethod]
@@ -34,11 +36,13 @@ namespace Gum.Test.VM
             cmds.Add(new Push(input));
             cmds.Add(new Return());
 
-            Program prog = new Program();
-            prog.AddFunc("main", 0, 0, 1, cmds, new List<int>());
+            Domain domain = new Domain();
+            domain.AddVariable("main", new Function("main", 0, 0, 1, cmds, new List<int>()));
+
+            Program prog = new Program(domain);           
             
-            Gum.App.VM.Interpreter interp = new Gum.App.VM.Interpreter(prog);
-            int ret = (int)interp.Call("main");
+            Gum.App.VM.Interpreter interp = new Gum.App.VM.Interpreter();
+            int ret = (int)interp.Call(domain, "main");
 
             Assert.AreEqual(input, ret);
         }
@@ -67,9 +71,13 @@ namespace Gum.Test.VM
             {
                 Program prog = Compile(file);
 
-                Gum.App.VM.Interpreter interpreter = new Gum.App.VM.Interpreter(prog);
+                Domain domain = new Domain();
+                ExternFunction externFunc = new Gum.Core.IL.ExternFunction("WriteLine", 1, 1);
+                domain.AddVariable("WriteLine", externFunc);
+                 
+                Gum.App.VM.Interpreter interpreter = new Gum.App.VM.Interpreter();
                 interpreter.AddExternFunc("WriteLine", WriteLine);
-                var obj = interpreter.Call("test");
+                var obj = interpreter.Call(domain, "test");
 
                 Assert.IsTrue((bool)obj);
             }

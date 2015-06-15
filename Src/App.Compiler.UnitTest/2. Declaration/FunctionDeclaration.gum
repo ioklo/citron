@@ -1,0 +1,24 @@
+﻿
+// 목표: 기본적인 함수 선언이 잘 되는지 확인합니다
+// 원하는 결과: 컴파일 완료
+
+int a(int x)
+{
+    return x + 7;
+}
+
+assert(a(3), 10);
+
+int b(int x, int y)
+{
+    return x + y;
+}
+
+assert(b(3, 8), 11);
+
+string c(int x, int y, int z)
+{
+    return "hi";
+}
+
+assert(c(0, 0, 0), "hi");

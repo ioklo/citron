@@ -37,15 +37,44 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Command.cs" />
+    <Compile Include="Block.cs" />
+    <Compile Include="BoolValue.cs" />
+    <Compile Include="Commands\IfNotJump.cs" />
+    <Compile Include="Commands\FieldRef.cs" />
+    <Compile Include="Commands\GlobalRef.cs" />
+    <Compile Include="Commands\ICommand.cs" />
+    <Compile Include="Commands\ICommandVisitor.cs" />
+    <Compile Include="Commands\Jump.cs" />
+    <Compile Include="Commands\Load.cs" />
+    <Compile Include="Commands\LocalRef.cs" />
+    <Compile Include="Commands\Move.cs" />
+    <Compile Include="Commands\MoveReg.cs" />
+    <Compile Include="Commands\New.cs" />
+    <Compile Include="Commands\Return.cs" />
+    <Compile Include="Commands\StaticCall.cs" />
+    <Compile Include="Commands\Store.cs" />
+    <Compile Include="Commands\VirtualCall.cs" />
+    <Compile Include="DefaultType.cs" />
+    <Compile Include="Domain.cs" />
     <Compile Include="FieldInfo.cs" />
+    <Compile Include="FunctionType.cs" />
+    <Compile Include="GlobalDomain.cs" />
+    <Compile Include="IFunction.cs" />
+    <Compile Include="IntValue.cs" />
+    <Compile Include="IValue.cs" />
+    <Compile Include="RefType.cs" />
+    <Compile Include="RefValue.cs" />
+    <Compile Include="StringValue.cs" />
+    <Compile Include="TypeValue.cs" />
     <Compile Include="Util.cs" />
     <Compile Include="Location.cs" />
     <Compile Include="FuncInfo.cs" />
     <Compile Include="Operator.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TypeInfo.cs" />
+    <Compile Include="IType.cs" />
+    <Compile Include="ValueType.cs" />
+    <Compile Include="VoidType.cs" />
   </ItemGroup>
   <Import Project="..\Gum.props" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

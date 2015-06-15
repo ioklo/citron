@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Gum.Core.IL.Commands;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -6,39 +7,31 @@ using System.Text;
 
 namespace Gum.Core.IL
 {
-    public class FuncInfo
+    // 실제 함수 정보
+    public class Function : IFunction
     {
-        public bool Extern { get; private set; }
         public string Name { get; private set; }
-        public int ArgCount {get; private set;}
-        public int RetValCount { get; private set; }
-        public int LocalCount { get; private set; }
-        public IReadOnlyList<int> JumpTable { get { return jumpTable; } }
-        public IReadOnlyList<ICommand> Commands { get { return commands; } }
+        public IType RetType { get; private set; }
+        public IReadOnlyList<IType> ArgTypes { get; private set; }
+        public IReadOnlyList<IType> LocalTypes { get; private set; }
 
-        List<int> jumpTable;
-        List<ICommand> commands; 
-
-        public FuncInfo(string name, int args, int returns)
+        public Block StartBlock { get { return Blocks.First(); } }
+        public IReadOnlyList<Block> Blocks { get; private set; }
+        
+        public Function(
+            string name,
+            IType retType, 
+            IEnumerable<IType> argTypes,
+            IEnumerable<IType> localTypes,             
+            IEnumerable<Block> blocks)
         {
             Name = name;
-            ArgCount = args;
-            RetValCount = RetValCount;
-            Debug.Assert(RetValCount <= 1);
-            Extern = true;
-            jumpTable = null;
-            commands = null;
-        }
 
-        public FuncInfo(string name, int args, int locals, int returns, IEnumerable<ICommand> cmds, IEnumerable<int> jt)
-        {
-            Name = name;
-            ArgCount = args;
-            LocalCount = locals;
-            RetValCount = returns;
+            RetType = retType;
+            ArgTypes = argTypes.ToList();
+            LocalTypes = localTypes.ToList();
 
-            commands = new List<ICommand>(cmds);
-            jumpTable = new List<int>(jt);
+            Blocks = blocks.ToList();
         }
     }
 }

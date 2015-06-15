@@ -3,21 +3,210 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Gum.App.Compiler.AST;
+using Gum.Core.AbstractSyntax;
 using Gum.App.Compiler.Exception;
+
+using Domain = Gum.Core.IL.Domain;
+using Gum.Core.IL;
+using Gum.Core.Runtime;
 
 namespace Gum.App.Compiler
 {    
     // Making type information and checking expression's type
-    class TypeChecker : IStmtVisitor, IExpVisitor<TypeInfo>
+    class TypeChecker : IStmtVisitor, IFuncStmtVisitor, IREPLStmtVisitor
     {
-        TypeCheckerContext ctx;
-        TypeManager typeManager;
-
-        public TypeChecker(TypeManager tm)
+        class ExpTypeChecker : IExpVisitor
         {
-            ctx = new TypeCheckerContext(tm);
-            typeManager = tm;
+            IType expType;
+            TypeCheckerContext ctx;
+
+            public static IType TypeCheckExp(IExp exp, TypeCheckerContext ctx)
+            {
+                var typeChecker = new ExpTypeChecker(ctx);
+                exp.Visit(typeChecker);
+                return typeChecker.expType;
+            }
+
+            public ExpTypeChecker(TypeCheckerContext ctx)
+            {
+                this.ctx = ctx;
+            }
+
+            // assignExp a.b.c = 1;
+            // abstract syntax만 보고 판별하기
+            public void Visit(AssignExp exp)
+            {
+                throw new NotImplementedException();
+                //if (!ctx.TryGetVarType(exp.Left.Name, out type))
+                //    throw new LocalVarNotDeclaredException();
+
+                //foreach (var offset in exp.Left.Offsets)
+                //{
+                //    RefType refType = type as RefType;
+                //    if (refType == null)
+                //        throw new InvalidOperationException();
+
+                //    var stringOffset = offset as StringOffset;
+                //    if (stringOffset == null)
+                //        throw new NotImplementedException();
+
+                //    exp.Left.IndexOffsets.Add(refType.Fields[stringOffset.Field].Index);
+                //    type = refType.Fields[stringOffset.Field].TypeInfo;
+                //}
+
+                //var expType = exp.Exp.Visit(this);
+
+                //if (type != expType)
+                //    throw new TypeMismatchException();
+
+                //return type;
+            }
+
+            public void Visit(VariableExp exp)
+            {
+                throw new NotImplementedException();
+                //IType varType;
+
+                //if (!ctx.TryGetVarType(exp.Name, out varType))
+                //    throw new LocalVarNotDeclaredException();
+
+                //foreach (var offset in exp.Offsets)
+                //{
+                //    var stringOffset = offset as StringOffset;
+                //    if (stringOffset == null)
+                //        throw new NotImplementedException();
+
+                //    exp.IndexOffsets.Add(varType.Fields[stringOffset.Field].Index);
+                //    varType = varType.Fields[stringOffset.Field].TypeInfo;
+                //}
+
+                //return varType;
+            }
+
+            public void Visit(IntegerExp exp)
+            {
+                expType = GlobalDomain.IntType;
+            }
+
+            public void Visit(StringExp exp)
+            {
+                expType = GlobalDomain.StringType;
+            }
+
+            public void Visit(BoolExp exp)
+            {
+                expType = GlobalDomain.BoolType;
+            }
+
+            public void Visit(BinaryExp exp)
+            {
+                var type1 = TypeCheckExp(exp.Operand1, ctx);
+                var type2 = TypeCheckExp(exp.Operand2, ctx);
+
+                switch (exp.Operation)
+                {
+                    // 동치 비교
+                    case BinaryExpKind.Equal:
+                    case BinaryExpKind.NotEqual:
+                        if (type1 != type2 ||
+                            (type1 != ctx.TypeManager.IntType && type1 != ctx.TypeManager.StringType && type1 != ctx.TypeManager.VoidType))
+                            throw new TypeMismatchException();
+                        expType = ctx.TypeManager.BoolType;
+                        return;
+
+                    // Complete Order 비교
+                    case BinaryExpKind.Less:
+                    case BinaryExpKind.Greater:
+                    case BinaryExpKind.LessEqual:
+                    case BinaryExpKind.GreaterEqual:
+                        if (type1 != type2 ||
+                            (type1 != ctx.TypeManager.IntType && type1 != ctx.TypeManager.StringType))
+                            throw new TypeMismatchException();
+                        expType = ctx.TypeManager.BoolType;
+                        return;
+
+                    // boolean 
+                    case BinaryExpKind.And:
+                    case BinaryExpKind.Or:
+                        if (type1 != type2 || type1 != ctx.TypeManager.BoolType)
+                            throw new TypeMismatchException();
+                        expType = type1;
+                        return;
+
+                    case BinaryExpKind.Add:
+                        if (type1 != type2 ||
+                            (type1 != ctx.TypeManager.IntType && type1 != ctx.TypeManager.StringType))
+                            throw new TypeMismatchException();
+                        expType = type1;
+                        return;
+
+                    case BinaryExpKind.Sub:
+                    case BinaryExpKind.Mul:
+                    case BinaryExpKind.Div:
+                    case BinaryExpKind.Mod:
+                        if (type1 != type2 || type1 != ctx.TypeManager.IntType)
+                            throw new TypeMismatchException();
+                        expType = type1;
+                        return;
+                }
+
+                throw new NotImplementedException();
+            }
+
+            public void Visit(UnaryExp exp)
+            {
+                switch (exp.Operation)
+                {
+                    case UnaryExpKind.Neg:
+                    case UnaryExpKind.PostfixInc:
+                    case UnaryExpKind.PostfixDec:
+                    case UnaryExpKind.PrefixInc:
+                    case UnaryExpKind.PrefixDec:
+                        if (exp.Operand.Visit(this) != ctx.TypeManager.IntType)
+                            throw new TypeMismatchException();
+                        expType = ctx.TypeManager.IntType;
+                        return;
+
+                    case UnaryExpKind.Not:
+                        if (exp.Operand.Visit(this) != ctx.TypeManager.BoolType)
+                            throw new TypeMismatchException();
+                        expType = ctx.TypeManager.BoolType;
+                        return;
+                }
+
+                throw new NotImplementedException();
+            }
+
+            public void Visit(NewExp exp)
+            {
+                expType = ctx.TypeManager.Types[exp.TypeName];
+            }
+
+            public void Visit(CallExp exp)
+            {
+                FuncDecl decl = ctx.GetFunc(exp.FuncName);
+
+                if (decl == null)
+                    throw new FuncNotDeclaredException();
+
+                if (decl.Parameters.Count != exp.Args.Count)
+                    throw new System.Exception("인자 개수가 맞지 않습니다");
+
+                for (int t = 0; t < decl.Parameters.Count; t++)
+                {
+                    if (exp.Args[t].Visit(this) != ctx.TypeManager.Types[decl.Parameters[t].Type.Value])
+                        throw new TypeMismatchException();
+                }
+
+                expType = ctx.TypeManager.Types[decl.ReturnType.Value];
+            }
+        }      
+
+        
+
+        public TypeChecker(Domain domain)
+        {
+            ctx = new TypeCheckerContext(domain);            
         }
 
         public void Visit(BlockStmt stmt)
@@ -30,21 +219,22 @@ namespace Gum.App.Compiler
             ctx.PopScope();
         }
 
-        public void Visit(VarDeclStmt stmt)
+        public void Visit(VarDecl varDecl)
         {
-            var varType = ctx.TypeManager.Types[stmt.Decl.TypeName];
+            IType type;
 
-            foreach( var entry in stmt.Decl.NameAndExps)
+            if( !ctx.Domain.TryGetType(varDecl.Type.Value, out type) )
+                throw new InvalidOperationException();
+
+            foreach( var entry in varDecl.NameAndExps)
             {
-                ctx.AddVarType(entry.Name, varType);
+                ctx.AddVarType(entry.Name, type);
                 if (entry.Exp == null) continue;
 
                 var expType = entry.Exp.Visit(this);
 
-                if (varType != expType)
+                if (type != expType)
                     throw new TypeMismatchException();
-             
-                
             }
         }
 
@@ -62,7 +252,7 @@ namespace Gum.App.Compiler
         {
             ctx.PushScope();
 
-            if (stmt.CondExp.Visit(this) != ctx.TypeManager.BoolType)
+            if (stmt.CondExp.Visit(this) != GlobalDomain.BoolType)
                 throw new TypeMismatchException();
 
             stmt.Body.Visit(this);
@@ -76,7 +266,7 @@ namespace Gum.App.Compiler
 
             stmt.Body.Visit(this);
 
-            if (stmt.CondExp.Visit(this) != ctx.TypeManager.BoolType)
+            if (stmt.CondExp.Visit(this) != GlobalDomain.BoolType)
                 throw new TypeMismatchException();
 
             ctx.PopScope();
@@ -84,7 +274,7 @@ namespace Gum.App.Compiler
 
         public void Visit(IfStmt stmt)
         {
-            if (stmt.CondExp.Visit(this) != ctx.TypeManager.BoolType)
+            if (stmt.CondExp.Visit(this) != GlobalDomain.BoolType)
                 throw new TypeMismatchException();
 
             ctx.PushScope();
@@ -102,10 +292,6 @@ namespace Gum.App.Compiler
             }
         }
 
-        public void Visit(NullStmt stmt)
-        {
-        }
-
         public void Visit(ExpStmt stmt)
         {
             stmt.Exp.Visit(this);
@@ -115,12 +301,16 @@ namespace Gum.App.Compiler
         {
             if (stmt.ReturnExp != null)
             {
-                if (stmt.ReturnExp.Visit(this) != ctx.TypeManager.Types[ctx.CurFunc.ReturnTypeName])
+                IType retType;
+                if (!ctx.Domain.TryGetType(ctx.CurFunc.ReturnType.Value, out retType))
+                    throw new InvalidOperationException();
+
+                if (stmt.ReturnExp.Visit(this) != retType)
                     throw new TypeMismatchException();
             }
             else
             {
-                if (stmt.ReturnExp.Visit(this) != ctx.TypeManager.VoidType)
+                if (stmt.ReturnExp.Visit(this) != GlobalDomain.VoidType)
                     throw new TypeMismatchException();
             }
         }
@@ -133,220 +323,57 @@ namespace Gum.App.Compiler
         {            
         }
 
-        public TypeInfo Visit(AssignExp exp)
+        
+        //private void VisitClassDecl(ClassDecl decl, TypeCheckerContext typeCtx)
+        //{
+        //    TypeInfo ti = new TypeInfo(decl.Name);
+
+        //    // because type declaration should know type itself, putting type information although it's not complete
+        //    typeCtx.TypeManager.Types.Add(ti.Name, ti);
+
+        //    // TODO: getting function declarations
+
+        //    // fill typeinfo with variable declarations
+        //    foreach (var cvd in decl.VarDecls)
+        //    {
+        //        foreach( var ne in cvd.VarDecl.NameAndExps)
+        //        {
+        //            AccessModifier am = AccessModifier.Private;
+
+        //            if (cvd.AccessorKind == Lexer.TokenKind.Private)
+        //                am = AccessModifier.Private;
+        //            else if (cvd.AccessorKind == Lexer.TokenKind.Protected)
+        //                am = AccessModifier.Protected;
+        //            else if (cvd.AccessorKind == Lexer.TokenKind.Public)
+        //                am = AccessModifier.Public;
+
+        //            ti.AddField(am, typeCtx.TypeManager.Types[cvd.VarDecl.TypeName], ne.Name);
+        //        }
+        //    }
+        //}
+
+        public void Visit(FuncDecl funcDecl)
         {
-            TypeInfo varType;
+            ctx.FuncDecls.Add(funcDecl); // for recursives
+            ctx.CurFunc = funcDecl;
 
-            if (!ctx.TryGetVarType(exp.Var.Name, out varType))
-                throw new LocalVarNotDeclaredException();
+            foreach(var bodyStmt in funcDecl.BodyStmts)
+                bodyStmt.Visit(this);
+        }
 
-            foreach(var offset in exp.Var.Offsets)
+        internal void Check(FileUnit fileUnit)
+        {
+            foreach(var decl in fileUnit.Decls)
             {
-                var stringOffset = offset as StringOffset;
-                if (stringOffset == null)
-                    throw new NotImplementedException();
-
-                exp.Var.IndexOffsets.Add(varType.Fields[stringOffset.Field].Index);
-                varType = varType.Fields[stringOffset.Field].TypeInfo;                
-            }
-            
-
-            var expType = exp.Exp.Visit(this);
-
-            if (varType != expType)
-                throw new TypeMismatchException();
-
-            return varType;
-        }
-
-        public TypeInfo Visit(VariableExp exp)
-        {
-            TypeInfo varType;
-
-            if (!ctx.TryGetVarType(exp.Name, out varType))
-                throw new LocalVarNotDeclaredException();
-
-            foreach (var offset in exp.Offsets)
-            {
-                var stringOffset = offset as StringOffset;
-                if (stringOffset == null)
-                    throw new NotImplementedException();
-
-                exp.IndexOffsets.Add(varType.Fields[stringOffset.Field].Index);
-                varType = varType.Fields[stringOffset.Field].TypeInfo;                
-            }
-
-            return varType;
-        }
-
-        public TypeInfo Visit(IntegerExp exp)
-        {
-            return ctx.TypeManager.IntType;
-        }
-
-        public TypeInfo Visit(StringExp exp)
-        {
-            return ctx.TypeManager.StringType;
-        }
-
-        public TypeInfo Visit(BoolExp exp)
-        {
-            return ctx.TypeManager.BoolType;
-        }
-
-        public TypeInfo Visit(BinaryExp exp)
-        {
-            var type1 = exp.Operand1.Visit(this);
-            var type2 = exp.Operand2.Visit(this);
-
-            switch (exp.Operation)
-            {
-                // 동치 비교
-                case BinaryExpKind.Equal:                    
-                case BinaryExpKind.NotEqual:
-                    if (type1 != type2 || 
-                        (type1 != ctx.TypeManager.IntType && type1 != ctx.TypeManager.StringType && type1 != ctx.TypeManager.VoidType))
-                        throw new TypeMismatchException();
-                    return ctx.TypeManager.BoolType;
-
-                // Complete Order 비교
-                case BinaryExpKind.Less:   
-                case BinaryExpKind.Greater:
-                case BinaryExpKind.LessEqual:
-                case BinaryExpKind.GreaterEqual:
-                    if (type1 != type2 || 
-                        (type1 != ctx.TypeManager.IntType && type1 != ctx.TypeManager.StringType))
-                        throw new TypeMismatchException();
-                    return ctx.TypeManager.BoolType;
-
-                // boolean 
-                case BinaryExpKind.And:   
-                case BinaryExpKind.Or:
-                    if (type1 != type2 || type1 != ctx.TypeManager.BoolType)
-                        throw new TypeMismatchException();
-                    return type1;
-
-                case BinaryExpKind.Add:
-                    if (type1 != type2 || 
-                        (type1 != ctx.TypeManager.IntType && type1 != ctx.TypeManager.StringType))
-                        throw new TypeMismatchException();
-                    return type1;
-
-                case BinaryExpKind.Sub:   
-                case BinaryExpKind.Mul:   
-                case BinaryExpKind.Div:
-                case BinaryExpKind.Mod:
-                    if (type1 != type2 || type1 != ctx.TypeManager.IntType)
-                        throw new TypeMismatchException();
-                    return type1;
-            }
-
-            throw new NotImplementedException();
-        }
-
-        public TypeInfo Visit(UnaryExp exp)
-        {
-            switch (exp.Operation)
-            {
-                case UnaryExpKind.Neg:
-                case UnaryExpKind.PostfixInc:
-                case UnaryExpKind.PostfixDec:
-                case UnaryExpKind.PrefixInc:
-                case UnaryExpKind.PrefixDec:
-                    if (exp.Operand.Visit(this) != ctx.TypeManager.IntType)
-                        throw new TypeMismatchException();
-                    return ctx.TypeManager.IntType;
-
-                case UnaryExpKind.Not:
-                    if (exp.Operand.Visit(this) != ctx.TypeManager.BoolType)
-                        throw new TypeMismatchException();
-                    return ctx.TypeManager.BoolType;                    
-            }
-
-            throw new NotImplementedException();
-        }
-
-        public TypeInfo Visit(NewExp exp)
-        {
-            return ctx.TypeManager.Types[exp.TypeName];
-        }
-
-        public TypeInfo Visit(CallExp exp)
-        {
-            FuncDecl decl = ctx.GetFunc(exp.FuncName);
-
-            if (decl == null)
-                throw new FuncNotDeclaredException();
-
-            if (decl.Parameters.Count != exp.Args.Count)
-                throw new System.Exception("인자 개수가 맞지 않습니다");
-
-            for(int t = 0; t < decl.Parameters.Count; t++)
-            {
-                if (exp.Args[t].Visit(this) != ctx.TypeManager.Types[decl.Parameters[t].TypeName])
-                    throw new TypeMismatchException();
-            }            
-
-            return ctx.TypeManager.Types[decl.ReturnTypeName];
-        }
-
-        private void VisitClassDecl(ClassDecl decl, TypeCheckerContext typeCtx)
-        {
-            TypeInfo ti = new TypeInfo(decl.Name);
-
-            // because type declaration should know type itself, putting type information although it's not complete
-            typeCtx.TypeManager.Types.Add(ti.Name, ti);
-
-            // TODO: getting function declarations
-
-            // fill typeinfo with variable declarations
-            foreach (var cvd in decl.VarDecls)
-            {
-                foreach( var ne in cvd.VarDecl.NameAndExps)
-                {
-                    AccessModifier am = AccessModifier.Private;
-
-                    if (cvd.AccessorKind == Lexer.TokenKind.Private)
-                        am = AccessModifier.Private;
-                    else if (cvd.AccessorKind == Lexer.TokenKind.Protected)
-                        am = AccessModifier.Protected;
-                    else if (cvd.AccessorKind == Lexer.TokenKind.Public)
-                        am = AccessModifier.Public;
-
-                    ti.AddField(am, typeCtx.TypeManager.Types[cvd.VarDecl.TypeName], ne.Name);
-                }
+                if (decl is FuncDecl) Visit(decl as FuncDecl);
+                if (decl is VarDecl) Visit(decl as VarDecl);
             }
         }
 
-        internal void Check(Program prog)
-        {            
-            var funcs = prog.Decls.Where(decl => decl is FuncDecl).Cast<FuncDecl>().ToList();
-
-            foreach (var decl in prog.Decls)
-            {
-                if (decl is ClassDecl)
-                {
-                    VisitClassDecl((ClassDecl)decl, ctx);
-                }
-
-                if (decl is FuncDecl)
-                {
-                    var funcDecl = decl as FuncDecl;
-                    ctx.FuncDecls.Add(funcDecl); // for recursives
-                    ctx.CurFunc = funcDecl;
-
-                    if( funcDecl.Body != null)
-                        funcDecl.Body.Visit(this);
-                }
-                
-                if (decl is VarDecl)
-                {
-                    VarDecl varDecl = decl as VarDecl;
-
-                    foreach (var ne in varDecl.NameAndExps)
-                        ctx.AddVarType(ne.Name, ctx.TypeManager.Types[varDecl.TypeName]);
-                }
-            }
+        internal void Check(IREPLStmt stmt)
+        {
+            stmt.Visit(this);
         }
+
     }
 }

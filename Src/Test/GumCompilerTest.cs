@@ -1,7 +1,7 @@
 ﻿using System;
-using Gum.App.Compiler;
-using Gum.App.Compiler.AST;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Gum.App.Compiler;
+using Gum.Core.AbstractSyntax;
 
 namespace Gum.Test
 {
@@ -42,12 +42,12 @@ namespace Gum.Test
         public void ParserTest1()
         {
             Gum.App.Compiler.Parser parser = new Gum.App.Compiler.Parser();
-            Program pgm;
+            FileUnit fileUnit;
 
-            bool res = parser.ParseProgram("int a = 0; \r\n int b; string g = \"aaaa\";", out pgm);
+            bool res = parser.ParseFileUnit("int a = 0; \r\n int b; string g = \"aaaa\";", out fileUnit);
 
             Assert.AreEqual(res, true);
-            Assert.AreEqual(pgm.Decls.Count, 3);                    
+            Assert.AreEqual(fileUnit.Decls.Count, 3);                    
         }
 
         // 함수..
@@ -61,13 +61,10 @@ namespace Gum.Test
         [TestMethod]
         public void  CompilerTest()
         {
-            Gum.App.Compiler.Parser parser = new Gum.App.Compiler.Parser();
             string code =
 @"
 int a = 0;
 string g = ""aaaa"";
-
-void WriteLine(string val);
 
 int main()
 {
@@ -76,18 +73,21 @@ int main()
     WriteLine(g);
     return 0;
 }
-";            
-            Gum.App.Compiler.Compiler compiler = new Gum.App.Compiler.Compiler();
-            var compiledPgm = compiler.Compile(code);
+";
+            IL.Domain domain = new IL.Domain();
+            IL.ExternFunction externFunc = new IL.ExternFunction("WriteLine", 1, 1);
+            domain.AddVariable("WriteLine", externFunc);
+
+            var compiledPgm = Gum.App.Compiler.Compiler.Compile(domain, code);
 
             // 컴파일러는 프로그램을 만들고 VM 인터프리터는 그것을 실행한다
-            var vm = new Gum.App.VM.Interpreter(compiledPgm);            
+            var vm = new Gum.App.VM.Interpreter();            
 
             // WriteLine이란 함수는 외부함수..
             vm.AddExternFunc("WriteLine", WriteLine);
 
             // main 부분을 실행한다
-            vm.Call("main");          
+            vm.Call(domain, "main");          
 
         }
 

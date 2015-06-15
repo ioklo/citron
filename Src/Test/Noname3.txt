@@ -1,0 +1,58 @@
+
+
+1개짜리 Visitor로 함수 구현하기
+
+public class SampleVisitor<F> : ISampleVisitor<F>
+{
+    // Visit는 사실 if문을 없애기 위해 있는 것이다
+    F Visit(SampleA a) { return ProcA; }
+    F Visit(SampleB b) { return ProcB; }
+
+    Ret Proc(ISample sample, arg1, arg2)
+    {
+        // Get Detailed type Information
+        sample.Visit(this)(sample, arg1, arg2);
+    }
+
+    Ret ProcA(SampleA sample, arg1, arg2)
+    {
+        // 여기서 프로세싱
+    }
+}
+
+// 그냥 이정도가 대안일 듯 싶다
+public struct SampleVisitor : ISampleVisitor<F>
+{
+    // Return Value;
+    Ret r;
+
+    // Arguments
+    A arg1;
+    A arg2;
+
+    void Visit(SampleA a)
+    {
+        arg1, arg2;
+
+        // 문제 ;ㅁ, 시그니처가 다를테니 문제는 없을 것 같다.
+        Visit(b);
+        ret = Proc(b, a , d );
+    }
+
+    void Visit(SampleB b)
+
+    // 함수 시뮬레이션
+    static Ret Proc(ISample sample, arg1, arg2)
+    {
+        SampleVisitor visitor = new SampleVisitor(arg1, arg2);
+        sample.Visit(visitor);    
+        return visitor.ret;
+    }
+}
+
+
+SampleA a;
+SampleVisitor v;
+
+// visitor에다가 argument를 줍니다
+int i = v.Proc(a, 1, 2);

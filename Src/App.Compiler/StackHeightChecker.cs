@@ -4,91 +4,92 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Gum.App.Compiler.Exception;
+using Gum.Core.IL.Commands;
 using Gum.Core.IL;
 
 namespace Gum.App.Compiler
 {
-    class StackHeightChecker : Gum.Core.IL.ICommandVisitor
+    class StackHeightChecker : ICommandVisitor
     {
-        public FuncInfo CurFunc { get; set; }
+        public Function CurFunc { get; set; }
         public Program Program { get; set; }
         public int StackHeight { get; set; }
 
-        public void Visit(Core.IL.StoreLocal p)
+        public void Visit(Store p)
         {
             StackHeight--;
         }
 
-        public void Visit(Core.IL.LoadLocal p)
+        public void Visit(Load p)
         {
             StackHeight++;
         }
 
-        public void Visit(Core.IL.New p)
+        public void Visit(New p)
         {
             StackHeight++;
         }
 
-        public void Visit(Core.IL.LoadField p)
+        public void Visit(LoadField p)
         {
             // 
             
         }
 
-        public void Visit(Core.IL.StoreField p)
+        public void Visit(StoreField p)
         {
             StackHeight -= 2;
         }
 
-        public void Visit(Core.IL.Jump p)
+        public void Visit(Jump p)
         {
             
         }
 
-        public void Visit(Core.IL.IfJump p)
+        public void Visit(IfJump p)
         {
             StackHeight--;
         }
 
-        public void Visit(Core.IL.IfNotJump p)
+        public void Visit(IfNotJump p)
         {
             StackHeight--;
         }
 
-        public void Visit(Core.IL.StaticCall p)
+        public void Visit(StaticCall p)
         {
             // FuncInfo
-            StackHeight = StackHeight - p.FuncInfo.ArgCount + p.FuncInfo.RetValCount;
+            StackHeight = StackHeight - p.Func.ArgCount + p.Func.RetValCount;
         }
 
-        public void Visit(Core.IL.Return p)
+        public void Visit(Return p)
         {
             // FuncInfo
             StackHeight -= CurFunc.RetValCount;
         }
 
-        public void Visit(Core.IL.Yield p)
+        public void Visit(Yield p)
         {
             throw new NotImplementedException();
             // StackHeight -= CurFunc.RetValCount;
         }
 
-        public void Visit(Core.IL.Push p)
+        public void Visit(Push p)
         {
             StackHeight++;
         }
 
-        public void Visit(Core.IL.Dup p)
+        public void Visit(Dup p)
         {
             StackHeight++;
         }
 
-        public void Visit(Core.IL.Pop p)
+        public void Visit(Pop p)
         {
             StackHeight--;
         }
 
-        public void Visit(Core.IL.Operator op)
+        public void Visit(Operator op)
         {
             StackHeight = StackHeight - op.Kind.ArgCount() + op.Kind.RetValCount();
         }
@@ -123,9 +124,10 @@ namespace Gum.App.Compiler
             Program = prog;
 
             // 함수 단위로 체크
-            foreach (var func in prog.Funcs)
+            foreach (var variable in prog.Domain.Values)
             {
-                if (func.Extern) continue;
+                Function func = variable as Function;
+                if (func == null) continue;
 
                 CurFunc = func;
 

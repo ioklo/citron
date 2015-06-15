@@ -1,31 +1,36 @@
-﻿using System;
+﻿using Gum.Core.IL.Commands;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Gum.App.Compiler
 {
     public class EmitResult
     {
-        public List<Core.IL.ICommand> Commands { get; private set; }
-        public List<int> JumpIndice { get; private set; }
-        
-        public EmitResult()
+        internal void Push(EmitResult condStmt)
         {
-            Commands = new List<Core.IL.ICommand>();
-            JumpIndice = new List<int>();
+            throw new NotImplementedException();
         }
 
-        public int NewPoint()
+        internal void Push(ICommand cmd)
         {
-            JumpIndice.Add(-1);
-            return JumpIndice.Count - 1;
+            throw new NotImplementedException();
+        }        
+
+        internal void PushLabel(string p)
+        {
+            throw new NotImplementedException();
         }
 
-        public void SetPoint(int t, int n)
+        internal void PushIfNotJump(int condResult, string p)
         {
-            JumpIndice[t] = n;
+            throw new NotImplementedException();
+        }
+
+        internal void PushJump(string p)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -3,126 +3,157 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Gum.App.Compiler.AST;
+using Gum.Core.AbstractSyntax;
 
 namespace Gum.App.Compiler
 {
-    class ConstantEvaluator : IExpVisitor<object>
+    public class ConstantEvaluator : IExpVisitor
     {
+        // return 
+        object ret;
+
+        // variable
         CompilerContext ctx;
+
+        public static object Visit(IExp exp, CompilerContext ctx)
+        {
+            var visitor = new ConstantEvaluator(ctx);
+            exp.Visit(visitor);
+            return visitor.ret;
+        }
 
         public ConstantEvaluator(CompilerContext ctx)
         {
             this.ctx = ctx;
         }
 
-        public object Visit(AssignExp exp)
+        public void Visit(AssignExp exp)
         {
             throw new NotImplementedException();
         }
 
-        public object Visit(VariableExp ve)
-        {
-            if (ve.Offsets.Count != 0)
+        public void Visit(VariableExp ve)
+        {            
+            if (!ctx.GetGlobal(ve.Name, out ret))
                 throw new NotSupportedException();
-
-            object v;
-            if (!ctx.GetGlobal(ve.Name, out v))
-                throw new NotSupportedException();
-
-            return v;
         }
 
-        public object Visit(IntegerExp exp)
+        public void Visit(IntegerExp exp)
         {
-            return exp.Value;
+            ret = exp.Value;
         }
 
-        public object Visit(StringExp exp)
+        public void Visit(StringExp exp)
         {
-            return exp.Value;
+            ret = exp.Value;
         }
 
-        public object Visit(BoolExp exp)
+        public void Visit(BoolExp exp)
         {
-            return exp.Value;
+            ret = exp.Value;
         }
 
-        public object Visit(BinaryExp exp)
+        public void Visit(BinaryExp exp)
         {
-            object o1 = exp.Operand1.Visit(this);
-            object o2 = exp.Operand2.Visit(this);
+            object o1 = Visit(exp.Operand1, ctx);
+            object o2 = Visit(exp.Operand2, ctx);
 
             switch (exp.Operation)
             {
                 case BinaryExpKind.Equal: // Bool: String: Integer
-                    return o1 == o2;
+                    ret = o1 == o2;
+                    return;
 
                 case BinaryExpKind.NotEqual: // Bool: String: Integer
-                    return o1 != o2;
+                    ret = o1 != o2;
+                    return;
 
                 case BinaryExpKind.And:   // Bool
-                    return (bool)o1 && (bool)o2;
+                    ret = (bool)o1 && (bool)o2;
+                    return;
 
                 case BinaryExpKind.Or:    // Bool
-                    return (bool)o1 || (bool)o2;
+                    ret = (bool)o1 || (bool)o2;
+                    return;
 
                 case BinaryExpKind.Add:   // Integer: String
                     if (o1 is int && o2 is int)
-                        return (int)o1 + (int)o2;
+                    {
+                        ret = (int)o1 + (int)o2;
+                        return;
+                    }
+
                     if (o1 is string && o2 is string)
-                        return (string)o1 + (string)o2;
+                    {
+                        ret = (string)o1 + (string)o2;
+                        return;
+                    }
                     throw new NotImplementedException();
 
                 case BinaryExpKind.Sub:   // Integer
-                    return (int)o1 - (int)o2;
+                    ret = (int)o1 - (int)o2;
+                    return;
 
                 case BinaryExpKind.Mul:   // Integer
-                    return (int)o1 * (int)o2;
+                    ret = (int)o1 * (int)o2;
+                    return;
 
                 case BinaryExpKind.Div:   // Integer
-                    return (int)o1 / (int)o2;
+                    ret = (int)o1 / (int)o2;
+                    return;
 
                 case BinaryExpKind.Mod:   // Integer 
-                    return (int)o1 % (int)o2;
+                    ret = (int)o1 % (int)o2;
+                    return;
 
                 case BinaryExpKind.Less:  // Integer
-                    return (int)o1 < (int)o2;
+                    ret = (int)o1 < (int)o2;
+                    return;
 
                 case BinaryExpKind.Greater: // Integer
-                    return (int)o1 > (int)o2;
+                    ret = (int)o1 > (int)o2;
+                    return;
 
                 case BinaryExpKind.LessEqual: // Integer
-                    return (int)o1 <= (int)o2;
+                    ret = (int)o1 <= (int)o2;
+                    return;
 
                 case BinaryExpKind.GreaterEqual: // Integer
-                    return (int)o1 >= (int)o2;
+                    ret = (int)o1 >= (int)o2;
+                    return;
             }
 
             throw new NotImplementedException();
         }
 
-        public object Visit(UnaryExp exp)
+        public void Visit(UnaryExp exp)
         {
-            object o = exp.Operand.Visit(this);
+            object o = Visit(exp.Operand, ctx);
 
             switch (exp.Operation)
             {
                 case UnaryExpKind.Neg: // '-' Integer
-                    return -(int)o;
+                    ret = -(int)o;
+                    return;
                 case UnaryExpKind.Not: // !   Bool
-                    return !(bool)o;
+                    ret = !(bool)o;
+                    return;
             }
 
             throw new NotImplementedException();
         }
 
-        public object Visit(CallExp exp)
+        public void Visit(CallExp exp)
         {
             throw new NotImplementedException();
         }
 
-        public object Visit(NewExp exp)
+        public void Visit(NewExp exp)
+        {
+            throw new NotImplementedException();
+        }
+        
+        public void Visit(FieldExp exp)
         {
             throw new NotImplementedException();
         }

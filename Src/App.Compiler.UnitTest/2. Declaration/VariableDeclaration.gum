@@ -1,0 +1,21 @@
+﻿
+// 목표: bool, byte, char, int, string 변수 선언이 잘 되는지 확인합니다
+// 원하는 결과: 컴파일 완료
+
+bool boolValue;
+byte byteValue;
+char charValue;
+int intValue;
+string stringValue;
+
+boolValue = false;
+byteValue = 5;
+charValue = 'a';
+intValue = 4;
+stringValue = "sss";
+
+assert(boolValue, false);
+assert(byteValue, 5);
+assert(charValue, 'a');
+assert(intValue, 4);
+assert(stringValue, "sss");

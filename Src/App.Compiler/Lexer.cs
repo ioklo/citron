@@ -41,6 +41,8 @@ namespace Gum.App.Compiler
 
             Class, Public, Private, Protected, Virtual, Override,          // class 용
 
+            Out, Params,
+
             New, 
         }
 
