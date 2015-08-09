@@ -11,9 +11,9 @@ namespace Gum.Prerequisite.Generator
     {
         public void Print(StructElem structElem, TextWriter Writer)
         {
-            Writer.Write("{0}(", structElem.Name);
+            var header = string.Format("{0}(", structElem.Name);
 
-            string.Join(", ", structElem.Variables.Select(var =>
+            var list = string.Join(", ", structElem.Variables.Select(var =>
             {
                 if (var.VarType == VarType.Single)
                     return string.Format("{0} {1}", var.Type.Name, var.Name);
@@ -21,7 +21,9 @@ namespace Gum.Prerequisite.Generator
                     return string.Format("{0}[] {1}", var.Type.Name, var.Name);
             }));
 
-            Writer.WriteLine(")");
+            var footer = ")";
+
+            Writer.WriteLine("{0}{1}{2}", header, list, footer);
         }
 
         public void Print(EnumElem enumElem, TextWriter Writer)

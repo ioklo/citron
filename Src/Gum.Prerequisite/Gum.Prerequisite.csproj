@@ -41,7 +41,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="GenerateTypedAbstractSyntax.cs" />
     <Compile Include="GenerateCoreIL.cs" />
     <Compile Include="GenerateAbstractSyntax.cs" />
     <Compile Include="Generator\BaseElement.cs" />
@@ -64,7 +63,8 @@
   <Import Project="..\Gum.Props" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>$(TargetPath)</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

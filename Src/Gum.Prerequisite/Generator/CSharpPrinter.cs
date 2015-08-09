@@ -120,6 +120,13 @@ namespace Gum.Prerequisite.Generator
         {
             Writer.WriteLine("    public interface {0}", compElem.Name);
             Writer.WriteLine("    {");
+
+            // ComponentVariables
+            foreach(var variable in compElem.Variables)
+            {
+                Writer.WriteLine("        {0} {1} {{ get; }}", variable.Type.Name, variable.Name);
+            }
+            
             Writer.WriteLine("        void Visit({0}Visitor visitor);", compElem.Name);
             Writer.WriteLine("    }");
 

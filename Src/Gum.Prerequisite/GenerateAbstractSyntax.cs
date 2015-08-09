@@ -10,6 +10,9 @@ namespace Gum.Prerequisite
 {
     class GenerateAbstractSyntax
     {
+        // FuncParam, Call일때만 Argument
+
+
         static Structure GenerateStucture()
         {
             var structure = new Structure();
@@ -59,18 +62,20 @@ namespace Gum.Prerequisite
             var assignExp = structure.CreateStruct("AssignExp");
             var binaryExp = structure.CreateStruct("BinaryExp");
             var boolExp = structure.CreateStruct("BoolExp");
-            var callExp = structure.CreateStruct("CallExp");
-            var fieldExp = structure.CreateStruct("FieldExp");
+            var callExp = structure.CreateStruct("CallExp");     // <>(); expression
+            var memberExp = structure.CreateStruct("MemberExp"); // a.b
             var integerExp = structure.CreateStruct("IntegerExp");
             var newExp = structure.CreateStruct("NewExp");
             var stringExp = structure.CreateStruct("StringExp");
             var unaryExp = structure.CreateStruct("UnaryExp");
-            var variableExp = structure.CreateStruct("VariableExp");
+            var idExp = structure.CreateStruct("IDExp");
 
             var fileUnit = structure.CreateStruct("FileUnit");
 
             var nameAndExp = structure.CreateStruct("NameAndExp");
             var funcParam = structure.CreateStruct("FuncParam");
+            var idWithTypeArg = structure.CreateStruct("IDWithTypeArg");
+            
 
             unaryExpKind
                 .Add("Neg")
@@ -97,7 +102,7 @@ namespace Gum.Prerequisite
 
             funcParamModifier
                 .Add("Out")
-                .Add("Params");
+                .Add("Parameters");
 
             // 
             fileUnit
@@ -110,22 +115,30 @@ namespace Gum.Prerequisite
                 .Add(funcDecl);
 
             usingDirective
-                .Var(stringType, "NamespaceName");
+                .Vars(stringType, "Names");
 
             namespaceDecl
-                .Var(stringType, "VarName")
+                .Vars(stringType, "Names")
                 .Vars(namespaceComponent, "Comps");
 
             namespaceComponent
+                .Add(namespaceDecl)
                 .Add(varDecl)
                 .Add(funcDecl)
                 .Add(classDecl)
                 .Add(structDecl);
 
+            // Name<Arg0, Arg1>
+            idWithTypeArg
+                .Var(stringType, "Name")
+                .Vars(idWithTypeArg, "Args");
+
+            // Type NameAndExps0.Name = NameAndExps0.Exp, NameAndExps1.Name = NameAndExps1.Exp;
             varDecl
-                .Var(stringType, "Type")
+                .Var(idWithTypeArg, "Type")
                 .Vars(nameAndExp, "NameAndExps");
 
+            // VarName = Exp
             nameAndExp
                 .Var(stringType, "VarName")
                 .Var(expComponent, "Exp");
@@ -136,57 +149,69 @@ namespace Gum.Prerequisite
                 .Add(binaryExp)
                 .Add(boolExp)
                 .Add(callExp)
-                .Add(fieldExp)
+                .Add(memberExp)
                 .Add(integerExp)
                 .Add(newExp)
                 .Add(stringExp)
                 .Add(unaryExp)
-                .Add(variableExp);
+                .Add(idExp);
 
+            // Left = Right
             assignExp
                 .Var(expComponent, "Left")
                 .Var(expComponent, "Right");
 
+            // Operand1 Operation Operand2
             binaryExp
                 .Var(binaryExpKind, "Operation")
                 .Var(expComponent, "Operand1")
                 .Var(expComponent, "Operand2");
 
+            // Value 
             boolExp
                 .Var(boolType, "Value");
-
+            
+            // FuncExp<TypeArg0, TypeArg1>(Arg0, Arg1)
             callExp
                 .Var(expComponent, "FuncExp")
+                .Vars(idWithTypeArg, "TypeArgs")
                 .Vars(expComponent, "Args");
 
-            fieldExp
+            // Exp.(ID.Name)
+            memberExp
                 .Var(expComponent, "Exp")
-                .Var(stringType, "ID");
+                .Var(stringType, "MemberName");
 
+            // Value(0, .. )
             integerExp
                 .Var(intType, "Value");
 
+            // new Type(Arg0, Arg1)
             newExp
-                .Var(stringType, "Type")
-                .Vars(stringType, "TypeArgs")
+                .Var(idWithTypeArg, "Type")
                 .Vars(expComponent, "Args");
 
+            // Value("1")
             stringExp
                 .Var(stringType, "Value");
 
+            // Operation Operand
             unaryExp
                 .Var(unaryExpKind, "Operation")
                 .Var(expComponent, "Operand");
 
-            variableExp
-                .Var(stringType, "Name");
+            // f<int>
+            idExp
+                .Var(idWithTypeArg, "Name");
 
+            // List<int> IFunc<String>.Func(int a) { }
             funcDecl
-                .Var(stringType, "ReturnType")
-                .Var(stringType, "Name")
-                .Vars(funcParam, "FuncParams")
+                .Vars(stringType, "TypeVars")
+                .Var(idWithTypeArg, "ReturnType")
+                .Var(stringType, "Name") 
+                .Vars(funcParam, "Parameters")
                 .Var(blockStmt, "Body"); // TODO: BlockStmt?
-
+           
             memberFuncModifier
                 .Add("Static")
                 .Add("New");
@@ -204,28 +229,34 @@ namespace Gum.Prerequisite
                 .Vars(memberFuncModifier, "FuncModifiers")
                 .Var(accessModifier, "AccessModifier")
                 .Var(virtualModifier, "VirtualModifier")
-                .Var(stringType, "ReturnType")
+                
+                .Vars(stringType, "TypeParams")                
+                .Var(idWithTypeArg, "ReturnType")
+                .Var(idWithTypeArg, "InterfaceType" )
                 .Var(stringType, "Name")
-                .Vars(funcParam, "FuncParams")
-                .Var(blockStmt, "Block");
+                .Vars(funcParam, "Parameters")
+                .Var(blockStmt, "Body");
 
             memberVarDecl
                 .Vars(accessModifier, "AccessModifier")
-                .Var(stringType, "Type")
-                .Var(stringType, "Name");
+                .Var(idWithTypeArg, "Type")
+                .Vars(stringType, "Names");
 
             memberComponent
                 .Add(memberFuncDecl)
                 .Add(memberVarDecl);
 
+            // class Name<TypeVar0, TypeVar1> : BaseType0, BaseType1 { Components }
             classDecl
+                .Vars(stringType, "TypeVars") // 선언에는 typeID가 필요없다                
                 .Var(stringType, "Name")
-                .Vars(stringType, "BaseTypes")
+                .Vars(idWithTypeArg, "BaseTypes")
                 .Vars(memberComponent, "Components");
 
             structDecl
+                .Vars(stringType, "TypeVars")
                 .Var(stringType, "Name")
-                .Vars(stringType, "BaseTypes")
+                .Vars(idWithTypeArg, "BaseTypes")
                 .Vars(memberComponent, "Components");
 
             // stmtComponent
@@ -272,8 +303,8 @@ namespace Gum.Prerequisite
 
             funcParam
                 .Vars(funcParamModifier, "Modifiers")
-                .Var(stringType, "Type")
-                .Var(stringType, "VarName");
+                .Var(idWithTypeArg, "Type")
+                .Var(stringType, "VarName");            
 
             return structure;
         }
@@ -283,12 +314,14 @@ namespace Gum.Prerequisite
             var structure = GenerateStucture();
 
             // Src
+            Directory.CreateDirectory(@"..\..\Src\Gum.Lang\AbstractSyntax");
             using(var streamWriter = new StreamWriter(@"..\..\Src\Gum.Lang\AbstractSyntax\Generated.cs"))
             {
                 var printer = new CSharpPrinter("Gum.Lang.AbstractSyntax");
-
-                
                 structure.Print(printer, streamWriter);
+
+                // var printer = new SimplePrinter();
+                // structure.Print(printer, Console.Out);
             }
         }
     }

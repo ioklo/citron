@@ -42,14 +42,10 @@
     <Compile Include="AnnotateType.cs" />
     <Compile Include="Blocks.cs" />
     <Compile Include="CompilerContext.cs" />
-    <Compile Include="CondFlowNode.cs" />
     <Compile Include="ConstantEvaluator.cs" />
     <Compile Include="EmitResult.cs" />
-    <Compile Include="EmptyFlowNode.cs" />
     <Compile Include="GlobalInfo.cs" />
-    <Compile Include="IFlowNode.cs" />
     <Compile Include="LocalInfo.cs" />
-    <Compile Include="TypedAST\Stmt.cs" />
     <Compile Include="ValueEmitter.cs" />
     <Compile Include="FieldInfo.cs" />
     <Compile Include="Emitter.cs" />
@@ -64,7 +60,6 @@
     <Compile Include="Parser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Exception\TypeMismatchException.cs" />
-    <Compile Include="StackHeightChecker.cs" />
     <Compile Include="Exception\StackHeightMismatchException.cs" />
     <Compile Include="TypeChecker.cs" />
     <Compile Include="TypeCheckerContext.cs" />

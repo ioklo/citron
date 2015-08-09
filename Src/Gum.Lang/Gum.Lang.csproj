@@ -42,7 +42,6 @@
     <Compile Include="AbstractSyntax\Generated.cs" />
     <Compile Include="CoreIL\Generated.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TypedAbstractSyntax\Generated.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="..\Gum.Props" />

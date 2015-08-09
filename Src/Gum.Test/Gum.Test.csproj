@@ -41,28 +41,35 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="CollectTypeDefinitions.cs" />
+    <Compile Include="BuildMetadata.cs" />
+    <Compile Include="CollectTypeNames.cs" />
+    <Compile Include="Map.cs" />
+    <Compile Include="Metadata\FuncDef.cs" />
+    <Compile Include="Metadata\GumMetadata.cs" />
+    <Compile Include="Metadata\IMetadata.cs" />
+    <Compile Include="Metadata\MemberFuncDef.cs" />
+    <Compile Include="Metadata\MemberVarDef.cs" />
+    <Compile Include="Environment.cs" />
+    <Compile Include="TypeInst\ObjectTypeVar.cs" />
+    <Compile Include="TypeInst\FuncTypeVar.cs" />
+    <Compile Include="TypeInst\ITypeInst.cs" />
+    <Compile Include="Metadata\MetadataComponent.cs" />
+    <Compile Include="Metadata\Namespace.cs" />
+    <Compile Include="Metadata\TopNamespace.cs" />
+    <Compile Include="Metadata\TypeDef.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Metadata\VarDef.cs" />
+    <Compile Include="TypeInst\TypeInst.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\App.Compiler\Gum.App.Compiler.csproj">
-      <Project>{59f067fa-4420-4182-96e3-a7d01ac32e4a}</Project>
-      <Name>Gum.App.Compiler</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\App.VM\Gum.App.VM.csproj">
-      <Project>{a1a3a0de-ab02-448d-a911-ffaf49bd6a22}</Project>
-      <Name>Gum.App.VM</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Core.IL\Core.IL.csproj">
-      <Project>{68f5a016-e914-44e8-92e9-d3d6a3834853}</Project>
-      <Name>Core.IL</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Gum.Core.AbstractSyntax\Gum.Core.AbstractSyntax.csproj">
-      <Project>{e86d749b-9bab-474f-b2aa-102bc5fa3e88}</Project>
-      <Name>Gum.Core.AbstractSyntax</Name>
+    <ProjectReference Include="..\Gum.Lang\Gum.Lang.csproj">
+      <Project>{fbef3555-487f-48e9-906d-6bc1f89ce56d}</Project>
+      <Name>Gum.Lang</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

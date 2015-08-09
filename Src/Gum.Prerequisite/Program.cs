@@ -11,8 +11,8 @@ namespace Gum.Prerequisite
         public static void Main(string[] args)
         {
             GenerateAbstractSyntax.GenerateCSharpFile();
-            GenerateTypedAbstractSyntax.GenerateCSharpFile();
-            GenerateCoreIL.GenerateCSharpFile();
+            // GenerateTypedAbstractSyntax.Print();
+            // GenerateCoreIL.GenerateCSharpFile();
         }
     }
 }

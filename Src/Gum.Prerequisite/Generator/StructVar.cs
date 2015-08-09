@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace Gum.Prerequisite.Generator
 {
-    class StructVar
+    class ElementVar
     {
         public VarType VarType { get; private set; }
         public BaseElement Type { get; private set; }
         public string Name { get; private set; }
 
-        public StructVar(VarType varType, BaseElement type, string name)
+        public ElementVar(VarType varType, BaseElement type, string name)
         {
             VarType = varType;
             Type = type;

@@ -112,6 +112,7 @@ namespace Gum.Prerequisite
             var structure = GenerateStucture();
 
             // Src
+            Directory.CreateDirectory(@"..\..\Src\Gum.Lang\CoreIL");
             using(var streamWriter = new StreamWriter(@"..\..\Src\Gum.Lang\CoreIL\Generated.cs"))
             {
                 var printer = new CSharpPrinter("Gum.Lang.CoreIL");

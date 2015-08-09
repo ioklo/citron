@@ -9,8 +9,21 @@ namespace Gum.Prerequisite.Generator
 {
     class StructElem : BaseElement
     {
-        List<StructVar> variables = new List<StructVar>();
-        public IReadOnlyList<StructVar> Variables { get { return variables; } }
+        List<ElementVar> variables = new List<ElementVar>();
+        public IReadOnlyList<ElementVar> Variables 
+        {
+            get 
+            {
+                var list = new List<ElementVar>();
+                
+                foreach (var comp in Comps)
+                    list.AddRange(comp.Variables);
+
+                list.AddRange(variables);
+
+                return list;
+            }
+        }
 
         public StructElem(string name)
             : base(name)
@@ -19,13 +32,13 @@ namespace Gum.Prerequisite.Generator
 
         internal StructElem Var(BaseElement element, string name)
         {
-            variables.Add(new StructVar(VarType.Single, element, name));
+            variables.Add(new ElementVar(VarType.Single, element, name));
             return this;
         }
 
         internal StructElem Vars(BaseElement element, string name)
         {
-            variables.Add(new StructVar(VarType.List, element, name));
+            variables.Add(new ElementVar(VarType.List, element, name));
             return this;
         }
 
