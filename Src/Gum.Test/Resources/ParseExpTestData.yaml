@@ -1,0 +1,223 @@
+﻿# BoolExp
+  - Text: "true"
+    Result: !BoolExp
+        Value: true
+
+  - Text: "false"
+    Result: !BoolExp
+        Value: false
+
+# CharExp 
+
+  - Text: |
+        '3'
+    Result: !CharExp
+        Value: 51
+
+  - Text: |
+         '가'
+
+    Result: !CharExp
+        Value: 0xAC00
+
+# IntegerExp
+
+  - Text: "3"
+    Result: !IntegerExp
+        Value: 3
+
+  - Text: "-3"
+    Result: !IntegerExp
+        Value: -3
+
+  - Text: "0x3"
+    Result: !IntegerExp
+        Value: 3
+
+  - Text: "0b00000000_00000000_00000000_00000001"
+    Result: !IntegerExp
+        Value: 1
+
+# String Expression
+
+  - Text: |
+        String Test
+
+    Result: !StringExp
+        Value: "String Test"
+
+  - Text: 
+        String Test\n
+
+    Result: !StringExp
+        Value: "String Test\n"
+
+# IDExp
+
+  - Text: "x"
+    Result: !IDExp
+        Name: !IDWithTypeArgs            
+            Name: "x"
+            Args: []
+
+
+# MemberExp
+
+  - Text: "SomeNamespace.SomeClass<T>.SomeStaticMember.a"
+    Result: !MemberExp        
+        Exp: !MemberExp            
+            Exp: !MemberExp
+                Exp: !IDExp
+                    Name: !IDWithTypeArgs
+                        Name: "SomeNamespace"
+                        Args: []
+
+                MemberName: !IDWithTypeArgs                    
+                    Name: "SomeClass"
+                    Args:
+                      - !IDWithTypeArgs
+                        Name: "T"
+                        Args: []
+
+            MemberName: !IDWithTypeArgs
+                Name: "SomeStaticMember"
+                Args: []
+
+        MemberName: !IDWithTypeArgs            
+            Name: "a"
+            Args: []
+
+# CallExp
+
+  - Text: "TSomeFunc<T>(2, false, 4)"
+
+# T를 함수 인자로 생각할 경우, TSomeFunc, T [2, false, 4]로 쪼개지는 것이 맞다
+# T를 TSomeFunc에서 지칭을 좀더 구체화 시키는 역할이라면, TSomeFunc<T>, [2, false, 4]로 쪼개져야 한다
+# 임의의 delegate f 에 대해서 
+#   var f = TSomeFunc<T>; 
+#   f(2, false, 4); 
+# 만 가능할 것이므로 TSomeFunc<T>, [2, false, 4]로 쪼개야 할 것이다.
+
+    Result: !CallExp
+        FuncExp: !IDExp
+            Name: !IDWithTypeArgs 
+                Name: "TSomeFunc" 
+                Args: 
+                  - !IDWithTypeArgs
+                    Name: "T"
+                    Args: []
+
+        Args:
+          - !IntegerExp
+            Value: 2
+
+          - !BoolExp
+            Value: false
+
+          - !IntegerExp
+            Value: 4
+
+# CallExp with MemberCall
+  - Text: "SomeNamespace.SomeClass<T>.SomeStaticMember.a<int>(3, 4)"
+
+    Result: !MemberExp
+        Exp: !MemberExp            
+            Exp: !MemberExp
+                Exp: !IDExp                    
+                    Name: !IDWithTypeArgs
+                        Name: "SomeNamespace"
+                        Args: []
+
+                MemberName: !IDWithTypeArgs                    
+                    Name: "SomeClass"
+                    Args:
+                      - !IDWithTypeArgs
+                        Name: "T"
+                        Args: []
+            MemberName: !IDWithTypeArgs
+                Name: "SomeStaticMember"
+                Args: []
+        MemberName: !IDWithTypeArgs            
+            Name: "a"
+            Args: []
+
+# NewExp
+
+  - Text: "new MyList<T>(3)"
+    Result: !NewExp
+        TypeName: !IDWithTypeArgs # Type -> TypeName으로 바꿔야 함
+            Name: "MyList"
+            Args:
+              - !IDWithTypeArgs
+                Name: "T"
+                Args: []
+        Args:
+          - !IntegerExp
+            Value: 3
+
+
+
+# UnaryExp
+
+# UnaryExp.Minus
+  - Text: "- (3)"
+
+    Result: !UnaryExp
+        Operation: !UnaryExpKind 
+            Minus
+        Operand: !IntegerExp
+            Value: 3
+
+# UnaryExp.Negation
+  - Text: "~ 0b00000000_00000000_00000000_00000001"
+    Result: !UnaryExp        
+        Operation: !UnaryExpKind
+            Neg
+        Operand: !IntegerExp
+            Value: 1
+
+# UnaryExp.Not
+  - Text: "! false"
+    Result: !UnaryExp        
+        Operation: !UnaryExpKind            
+            Not
+        Operand: !BoolExp
+            Value: false
+
+# UnaryExp.PrefixInc
+  - Text: "++i"
+    Result: !UnaryExp        
+        Operation: !UnaryExpKind            
+            PrefixInc
+        Operand: !IDExp
+            Name: !IDWithTypeArgs
+                Name: "i"
+                Args: []
+
+  - Text: "--i"
+    Result: !UnaryExp        
+        Operation: !UnaryExpKind
+            PrefixDec
+        Operand: !IDExp            
+            Name: !IDWithTypeArgs                
+                Name: "i"
+                Args: []
+
+  - Text: "i++"
+    Result: !UnaryExp        
+        Operation: !UnaryExpKind            
+            PostfixInc
+        Operand: !IDExp            
+            Name: !IDWithTypeArgs                
+                Name: "i"
+                Args: []
+
+  - Text: "i--"
+    Result: !UnaryExp        
+        Operation: !UnaryExpKind            
+            PostfixDec
+        Operand: !IDExp            
+            Name: !IDWithTypeArgs                
+                Name: "i"
+                Args: []
+...

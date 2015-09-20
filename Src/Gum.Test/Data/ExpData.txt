@@ -1,0 +1,208 @@
+﻿Tests:
+
+# BoolExp
+  - Text: "true"
+    Result: 
+        BoolExp:
+            Value: true
+
+  - Text: "false"
+    Result:
+        BoolExp:
+            Value: false
+
+# CharExp 
+
+  - Text: |
+        '3'
+    Result:
+        CharExp:
+            Value: 51
+
+  - Text: |
+         '가'
+
+    Result:
+        CharExp:
+            Value: 0xAC00
+
+# IntegerExp
+
+  - Text: "3"
+    Result:
+        IntegerExp:
+            Value: 3
+
+  - Text: "-3"
+    Result:
+        IntegerExp:
+           Value: -3
+
+  - Text: "0x3"
+    Result:
+        IntegerExp:
+            Value: 3
+
+  - Text: "0b00000000_00000000_00000000_00000001
+    Result:
+        IntegerExp:
+            Value: 1
+
+# String Expression
+
+  - Text: |
+        String Test
+
+    Result:
+        StringExp: 
+            Value: "String Test"
+
+  - Text: 
+        String Test\n
+
+    Result:
+        StringExp: 
+            Value: "String Test\n"
+
+# IDExp
+
+  - Text: "x"
+    Result:
+        IDExp:
+            Name: 
+                Name: "x"
+                Args: []
+
+# CallExp
+  - Text: "TSomeFunc<T>(2, false, 4)"
+    Result:
+        FuncExp:
+            IDExp:
+                Name: "TSomeFunc" 
+                TypeArgs:
+                  - Name: "T"
+                    Args: []
+
+        Args:
+          - IntegerExp:
+                Value: 2
+
+          - boolExp:
+                Value: false
+
+          - IntegerExp:
+                Value: 4
+
+
+# MemberExp
+  - Text: "SomeNamespace.SomeClass<T>.SomeStaticMember.a"
+    Result:
+        MemberExp:
+            Exp:
+                MemberExp:
+                    Exp:
+                        MemberExp:
+                            Exp:
+                                IDExp:
+                                    Name: "SomeNamespace"
+                            MemberName:
+                                Name: "SomeClass"
+                                TypeArgs:
+                                  - Name: "T"
+                                    TypeArgs: []
+                    MemberName:
+                        Name: "SomeStaticMember"
+                        TypeArgs: []
+            MemberName:
+                Name: "a"
+                TypeArgs: []
+                            
+            
+
+# NewExp
+
+  - Text: "new MyList<T>(3)"
+    Result:
+        NewExp:
+            Type:
+                Name: "MyList"
+                TypeArgs:
+                  - Name: "T"
+                    TypeArgs: []
+            Args:
+              - IntegerExp:
+                    Value: 3
+
+
+
+# UnaryExp
+
+# UnaryExp.Minus
+  - Text: "- (3)"
+
+    Result: 
+        UnaryExp:
+            Operation: UnaryExpKind.Minus
+            Operand:
+                IntegerExp:
+                    Value: 3
+
+# UnaryExp.Negation
+  - Text: "~ 0b00000000_00000000_00000000_00000001"
+    Result:
+        UnaryExp:
+            Operation: UnaryExpKind.Neg
+            Operand:
+                IntegerExp:
+                    Value: 1
+
+
+# UnaryExp.Not
+  - Text: "! false"
+    Result:
+        UnaryExp:
+            Operation: UnaryExpKind.Not
+            Operand:
+                BoolExp:
+                    Name: false
+
+# UnaryExp.PrefixInc
+  - Text: "++i"
+    Result:
+        UnaryExp:
+            Operation: UnaryExpKind.PrefixInc
+            Operand:
+                IDExp:
+                    Name: 
+                        Name: "i"
+                        Args: []
+
+  - Text: "--i"
+    Result:
+        UnaryExp:
+            Operation: UnaryExpKind.PrefixDec
+            Operand:
+                IDExp:
+                    Name: 
+                        Name: "i"
+                        Args: []
+
+  - Text: "i++"
+    Result:
+        UnaryExp:
+            Operation: UnaryExpKind.PostfixInc
+            Operand:
+                IDExp:
+                    Name: 
+                        Name: "i"
+                        Args: []
+
+  - Text: "i--"
+    Result:
+        UnaryExp:
+            Operation: UnaryExpKind.PostfixDec
+            Operand:
+                IDExp:
+                    Name: 
+                        Name: "i"
+                        Args: []

@@ -20,6 +20,7 @@ namespace Gum.Prerequisite
             var stringType = structure.CreatePrimitive("string");
             var intType = structure.CreatePrimitive("int");
             var boolType = structure.CreatePrimitive("bool");
+            var charType = structure.CreatePrimitive("char");
 
             // enumeration
             var unaryExpKind = structure.CreateEnum("UnaryExpKind");
@@ -62,6 +63,7 @@ namespace Gum.Prerequisite
             var assignExp = structure.CreateStruct("AssignExp");
             var binaryExp = structure.CreateStruct("BinaryExp");
             var boolExp = structure.CreateStruct("BoolExp");
+            var charExp = structure.CreateStruct("CharExp");
             var callExp = structure.CreateStruct("CallExp");     // <>(); expression
             var memberExp = structure.CreateStruct("MemberExp"); // a.b
             var integerExp = structure.CreateStruct("IntegerExp");
@@ -74,10 +76,11 @@ namespace Gum.Prerequisite
 
             var nameAndExp = structure.CreateStruct("NameAndExp");
             var funcParam = structure.CreateStruct("FuncParam");
-            var idWithTypeArg = structure.CreateStruct("IDWithTypeArg");
+            var idWithTypeArgs = structure.CreateStruct("IDWithTypeArgs");
             
 
             unaryExpKind
+                .Add("Minus")
                 .Add("Neg")
                 .Add("Not")
                 .Add("PrefixInc")
@@ -129,13 +132,13 @@ namespace Gum.Prerequisite
                 .Add(structDecl);
 
             // Name<Arg0, Arg1>
-            idWithTypeArg
+            idWithTypeArgs
                 .Var(stringType, "Name")
-                .Vars(idWithTypeArg, "Args");
+                .Vars(idWithTypeArgs, "Args");
 
             // Type NameAndExps0.Name = NameAndExps0.Exp, NameAndExps1.Name = NameAndExps1.Exp;
             varDecl
-                .Var(idWithTypeArg, "Type")
+                .Var(idWithTypeArgs, "Type")
                 .Vars(nameAndExp, "NameAndExps");
 
             // VarName = Exp
@@ -148,6 +151,7 @@ namespace Gum.Prerequisite
                 .Add(assignExp)
                 .Add(binaryExp)
                 .Add(boolExp)
+                .Add(charExp)
                 .Add(callExp)
                 .Add(memberExp)
                 .Add(integerExp)
@@ -170,11 +174,13 @@ namespace Gum.Prerequisite
             // Value 
             boolExp
                 .Var(boolType, "Value");
+
+            charExp
+                .Var(charType, "Value");
             
-            // FuncExp<TypeArg0, TypeArg1>(Arg0, Arg1)
+            // FuncExp(Arg0, Arg1)
             callExp
                 .Var(expComponent, "FuncExp")
-                .Vars(idWithTypeArg, "TypeArgs")
                 .Vars(expComponent, "Args");
 
             // Exp.(ID.Name)
@@ -188,7 +194,7 @@ namespace Gum.Prerequisite
 
             // new Type(Arg0, Arg1)
             newExp
-                .Var(idWithTypeArg, "Type")
+                .Var(idWithTypeArgs, "TypeName")
                 .Vars(expComponent, "Args");
 
             // Value("1")
@@ -202,12 +208,12 @@ namespace Gum.Prerequisite
 
             // f<int>
             idExp
-                .Var(idWithTypeArg, "Name");
+                .Var(idWithTypeArgs, "Name");
 
             // List<int> IFunc<String>.Func(int a) { }
             funcDecl
                 .Vars(stringType, "TypeVars")
-                .Var(idWithTypeArg, "ReturnType")
+                .Var(idWithTypeArgs, "ReturnType")
                 .Var(stringType, "Name") 
                 .Vars(funcParam, "Parameters")
                 .Var(blockStmt, "Body"); // TODO: BlockStmt?
@@ -231,15 +237,15 @@ namespace Gum.Prerequisite
                 .Var(virtualModifier, "VirtualModifier")
                 
                 .Vars(stringType, "TypeParams")                
-                .Var(idWithTypeArg, "ReturnType")
-                .Var(idWithTypeArg, "InterfaceType" )
+                .Var(idWithTypeArgs, "ReturnType")
+                .Var(idWithTypeArgs, "InterfaceType" )
                 .Var(stringType, "Name")
                 .Vars(funcParam, "Parameters")
                 .Var(blockStmt, "Body");
 
             memberVarDecl
                 .Vars(accessModifier, "AccessModifier")
-                .Var(idWithTypeArg, "Type")
+                .Var(idWithTypeArgs, "Type")
                 .Vars(stringType, "Names");
 
             memberComponent
@@ -250,13 +256,13 @@ namespace Gum.Prerequisite
             classDecl
                 .Vars(stringType, "TypeVars") // 선언에는 typeID가 필요없다                
                 .Var(stringType, "Name")
-                .Vars(idWithTypeArg, "BaseTypes")
+                .Vars(idWithTypeArgs, "BaseTypes")
                 .Vars(memberComponent, "Components");
 
             structDecl
                 .Vars(stringType, "TypeVars")
                 .Var(stringType, "Name")
-                .Vars(idWithTypeArg, "BaseTypes")
+                .Vars(idWithTypeArgs, "BaseTypes")
                 .Vars(memberComponent, "Components");
 
             // stmtComponent
@@ -303,7 +309,7 @@ namespace Gum.Prerequisite
 
             funcParam
                 .Vars(funcParamModifier, "Modifiers")
-                .Var(idWithTypeArg, "Type")
+                .Var(idWithTypeArgs, "Type")
                 .Var(stringType, "VarName");            
 
             return structure;

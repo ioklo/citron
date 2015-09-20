@@ -63,35 +63,41 @@ namespace Gum.Prerequisite.Generator
                 if (variable.VarType == VarType.Single)
                     Writer.WriteLine("        public {0} {1} {{ get; private set; }}", variable.Type.Name, variable.Name);
                 else if( variable.VarType == VarType.List)
-                    Writer.WriteLine("        public IReadOnlyList<{0}> {1} {{ get; private set; }}", variable.Type.Name, variable.Name);
+                    Writer.WriteLine("        public IEnumerable<{0}> {1} {{ get; private set; }}", variable.Type.Name, variable.Name);
             }
 
             Writer.WriteLine();
+
+            // default constructor
+            Writer.WriteLine("        public {0}() {{ }}", structElem.Name);
+
             // constructor            
-            Writer.WriteLine("        public {0}({1})",
-                structElem.Name,
-                string.Join(", ", structElem.Variables.Select(var => 
-                    {
-                        if (var.VarType == VarType.Single)
-                            return string.Format("{0} {1}", var.Type.Name, VarName(var.Name));
-                        else if (var.VarType == VarType.List)
-                            return string.Format("IEnumerable<{0}> {1}", var.Type.Name, VarName(var.Name));
-
-                        return "";
-                    }))
-                );
-            Writer.WriteLine("        {");
-            
-            foreach (var variable in structElem.Variables)
+            if (0 < structElem.Variables.Count)
             {
-                if (variable.VarType == VarType.List)
-                    Writer.WriteLine("            this.{0} = {1}.ToList();", variable.Name, VarName(variable.Name));
-                else if (variable.VarType == VarType.Single)
-                    Writer.WriteLine("            this.{0} = {1};", variable.Name, VarName(variable.Name));
+                Writer.WriteLine("        public {0}({1})",
+                    structElem.Name,
+                    string.Join(", ", structElem.Variables.Select(var =>
+                        {
+                            if (var.VarType == VarType.Single)
+                                return string.Format("{0} {1}", var.Type.Name, VarName(var.Name));
+                            else if (var.VarType == VarType.List)
+                                return string.Format("IEnumerable<{0}> {1}", var.Type.Name, VarName(var.Name));
+
+                            return "";
+                        }))
+                    );
+                Writer.WriteLine("        {");
+
+                foreach (var variable in structElem.Variables)
+                {
+                    if (variable.VarType == VarType.List)
+                        Writer.WriteLine("            this.{0} = {1}.ToList();", variable.Name, VarName(variable.Name));
+                    else if (variable.VarType == VarType.Single)
+                        Writer.WriteLine("            this.{0} = {1};", variable.Name, VarName(variable.Name));
+                }
+
+                Writer.WriteLine("        }");
             }
-
-            Writer.WriteLine("        }");
-
 
             foreach (var comp in structElem.Comps)
             {
@@ -99,6 +105,11 @@ namespace Gum.Prerequisite.Generator
                 Writer.WriteLine("        public void Visit({0}Visitor visitor)", comp.Name);
                 Writer.WriteLine("        {");
                 Writer.WriteLine("            visitor.Visit(this);");
+                Writer.WriteLine("        }");
+                Writer.WriteLine();
+                Writer.WriteLine("        public Ret Visit<Ret>({0}Visitor<Ret> visitor)", comp.Name);
+                Writer.WriteLine("        {");
+                Writer.WriteLine("            return visitor.Visit(this);");
                 Writer.WriteLine("        }");
             }
 
@@ -128,6 +139,7 @@ namespace Gum.Prerequisite.Generator
             }
             
             Writer.WriteLine("        void Visit({0}Visitor visitor);", compElem.Name);
+            Writer.WriteLine("        Ret Visit<Ret>({0}Visitor<Ret> visitor);", compElem.Name);
             Writer.WriteLine("    }");
 
             Writer.WriteLine();
@@ -138,6 +150,18 @@ namespace Gum.Prerequisite.Generator
             foreach (var elem in compElem.Elements)
             {
                 Writer.WriteLine("        void Visit({0} {1});", elem.Name, VarName(elem.Name));
+            }
+
+            Writer.WriteLine("    }");
+
+            Writer.WriteLine();
+
+            Writer.WriteLine("    public interface {0}Visitor<Ret>", compElem.Name);
+            Writer.WriteLine("    {");
+
+            foreach (var elem in compElem.Elements)
+            {
+                Writer.WriteLine("        Ret Visit({0} {1});", elem.Name, VarName(elem.Name));
             }
 
             Writer.WriteLine("    }");
