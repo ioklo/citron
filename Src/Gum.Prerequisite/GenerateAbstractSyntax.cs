@@ -51,7 +51,7 @@ namespace Gum.Prerequisite
             // Stmts
             var blockStmt = structure.CreateStruct("BlockStmt");
             var breakStmt = structure.CreateStruct("BreakStmt");
-            var continueStmt = structure.CreateStruct("ContineStmt");
+            var continueStmt = structure.CreateStruct("ContinueStmt");
             var doWhileStmt = structure.CreateStruct("DoWhileStmt");
             var expStmt = structure.CreateStruct("ExpStmt");
             var forStmt = structure.CreateStruct("ForStmt");
@@ -267,6 +267,7 @@ namespace Gum.Prerequisite
 
             // stmtComponent
             stmtComponent
+                .Add(varDecl)
                 .Add(blockStmt)
                 .Add(breakStmt)
                 .Add(continueStmt)

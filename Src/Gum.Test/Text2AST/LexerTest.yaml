@@ -1,0 +1,46 @@
+﻿  - TestName: Equal Token
+    Text: =
+    Results: 
+      - Type: Equal
+        Value: =
+  
+  - TestName: Basic String
+    Text: '""'
+    Results: 
+      - Type: StringValue
+        Value: '""'
+
+  - TestName: Identifier
+    Text: 'int a; '
+    Results:
+      - Type: Identifier
+        Value: int
+
+      - Type: Identifier
+        Value: a
+
+      - Type: SemiColon
+        Value: ;
+
+  - TestName: Keyword List
+    Text: |
+        true false return if else for while do break continue class public private protected virtual override new
+    Results:
+      - { Type: TrueValue, Value: true }
+      - { Type: FalseValue, Value: false }
+      - { Type: Return, Value: return }
+      - { Type: If, Value: if }
+      - { Type: Else, Value: else }
+      - { Type: For, Value: for }
+      - { Type: While, Value: while }
+      - { Type: Do, Value: do }
+      - { Type: Break, Value: break }
+      - { Type: Continue, Value: continue }
+      - { Type: Class, Value: class }
+      - { Type: Public, Value: public }
+      - { Type: Private, Value: private }
+      - { Type: Protected, Value: protected }
+      - { Type: Virtual, Value: virtual }
+      - { Type: Override, Value: override }
+      - { Type: New, Value: new }
+

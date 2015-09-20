@@ -20,9 +20,18 @@ namespace Gum.Test
             return new IDWithTypeArgs(name, Enumerable.Empty<IDWithTypeArgs>());
         }
 
+        static void Test<TestClass>(byte[] testResource) where TestClass : ITest, new()
+        {
+            var tester = new TestClass();
+            tester.Test(testResource);
+        }
+
         static void Main(string[] args)
         {
-            Gum.Test.Parser.ParseExpTest.Test();
+            Test<Gum.Test.Text2AST.LexerTest>(TestResource.LexerTest);
+            Test<Gum.Test.Text2AST.ParseExpTest>(TestResource.ParseExpTestData);
+            
+            // Gum.Test.Parser.ParseExpTest.Test();
             
             /*using (var reader = new StreamReader(@"..\..\Src\Gum.Test\TestData\ExpData.yaml"))
             {

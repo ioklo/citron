@@ -7,10 +7,11 @@
     <ProjectGuid>{C4B8E041-7D2C-4F6C-A2E9-CF96FF39B0F2}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Gum.Parser</RootNamespace>
-    <AssemblyName>Gum.Parser</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <RootNamespace>Gum.Translator</RootNamespace>
+    <AssemblyName>Gum.Translator</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -41,7 +42,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Text2AST\Text2ASTConverter.cs" />
+    <Compile Include="Text2AST\Lexer.cs" />
+    <Compile Include="Text2AST\LexerScope.cs" />
+    <Compile Include="Text2AST\LexerState.cs" />
+    <Compile Include="Text2AST\Parser.cs" />
+    <Compile Include="Text2AST\Token.cs" />
+    <Compile Include="Text2AST\TokenType.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Gum.Lang\Gum.Lang.csproj">

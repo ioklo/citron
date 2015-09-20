@@ -1,4 +1,5 @@
 ﻿using Gum.Lang.AbstractSyntax;
+using Gum.Translator.Text2AST;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -7,22 +8,19 @@ using System.Text;
 using System.Threading.Tasks;
 using YamlDotNet.Serialization;
 
-namespace Gum.Test.Parser
+namespace Gum.Test.Text2AST
 {
-    public class ParseExpTest
+    class ParseExpTestCase : ITestCase
     {
-        public class TestCase
-        {
-            public string Text { get; private set; }
-            public IExpComponent Result { get; private set; }
-        }        
+        public string TestName { get; private set; }
+        public string Text { get; private set; }
+        public IExpComponent Result { get; private set; }
+    }
 
-        public static void Test()
+    class ParseExpTest : TestBase<ParseExpTestCase>
+    {
+        public override void ConfigDeserializer(Deserializer deserializer)
         {
-            var memoryStream = new MemoryStream(TestResource.ParseExpTestData);
-            var reader = new StreamReader(memoryStream, Encoding.UTF8);
-
-            var deserializer = new Deserializer();            
             deserializer.RegisterTagMapping("!BoolExp", typeof(BoolExp));
             deserializer.RegisterTagMapping("!CharExp", typeof(CharExp));
             deserializer.RegisterTagMapping("!IntegerExp", typeof(IntegerExp));
@@ -33,14 +31,19 @@ namespace Gum.Test.Parser
             deserializer.RegisterTagMapping("!CallExp", typeof(CallExp));
             deserializer.RegisterTagMapping("!NewExp", typeof(NewExp));
             deserializer.RegisterTagMapping("!UnaryExp", typeof(UnaryExp));
-                        
             deserializer.RegisterTagMapping("!UnaryExpKind", typeof(UnaryExpKind));
-            var testCases = deserializer.Deserialize<List<TestCase>>(reader);
+        }
 
-            foreach( var testCase in testCases )
-            {
+        public override bool Test(ParseExpTestCase testCase)
+        {
+            var lexer = new Lexer(testCase.Text);
+            var parser = new Parser();
 
-            }
+            IExpComponent exp;
+            if (!parser.ParseExp(lexer, out exp))
+                return false;
+
+            return true;
         }
     }
 }

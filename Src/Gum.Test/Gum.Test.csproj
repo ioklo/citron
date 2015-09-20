@@ -48,6 +48,7 @@
     <None Include="CollectTypeDefinitions.cs" />
     <Compile Include="BuildMetadata.cs" />
     <Compile Include="CollectTypeNames.cs" />
+    <Compile Include="ITest.cs" />
     <Compile Include="Map.cs" />
     <Compile Include="Metadata\FuncDef.cs" />
     <Compile Include="Metadata\GumMetadata.cs" />
@@ -55,12 +56,16 @@
     <Compile Include="Metadata\MemberFuncDef.cs" />
     <Compile Include="Metadata\MemberVarDef.cs" />
     <Compile Include="Environment.cs" />
-    <Compile Include="Parser\ParseExpTest.cs" />
+    <Compile Include="Text2AST\ParseExpTest.cs" />
     <Compile Include="TestResource.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>TestResource.resx</DependentUpon>
     </Compile>
+    <Compile Include="Text2AST\LexerTest.cs" />
+    <Compile Include="TestCaseBase.cs" />
+    <Compile Include="Text2AST\TestBase.cs" />
+    <Compile Include="Text2AST\TestUtil.cs" />
     <Compile Include="TypeAnnotator.cs" />
     <Compile Include="TypeInst\ObjectTypeVar.cs" />
     <Compile Include="TypeInst\FuncTypeVar.cs" />
@@ -74,8 +79,9 @@
     <Compile Include="Metadata\VarDef.cs" />
     <Compile Include="TypeInst\TypeInst.cs" />
     <None Include="TestData\Test.yaml" />
-    <None Include="Resources\ParseExpTestData.yaml" />
+    <None Include="Text2AST\ParseExpTestData.yaml" />
     <None Include="packages.config" />
+    <None Include="Text2AST\LexerTest.yaml" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -85,6 +91,10 @@
       <Project>{fbef3555-487f-48e9-906d-6bc1f89ce56d}</Project>
       <Name>Gum.Lang</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Gum.Translator\Gum.Translator.csproj">
+      <Project>{c4b8e041-7d2c-4f6c-a2e9-cf96ff39b0f2}</Project>
+      <Name>Gum.Translator</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="TestResource.resx">
@@ -92,6 +102,7 @@
       <LastGenOutput>TestResource.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="..\Gum.Props" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -120,7 +120,7 @@ namespace Gum.AST
         {
         }
 
-        public void Visit(ContineStmt contineStmt)
+        public void Visit(ContinueStmt contineStmt)
         {
         }
 

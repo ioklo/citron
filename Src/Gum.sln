@@ -17,7 +17,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gum.Prerequisite", "Gum.Pre
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gum.Test", "Gum.Test\Gum.Test.csproj", "{EF94A9DC-7FB8-4A2A-A0C9-078932ED7E4D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gum.Translator", "Gum.Parser\Gum.Translator.csproj", "{C4B8E041-7D2C-4F6C-A2E9-CF96FF39B0F2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gum.Translator", "Gum.Translator\Gum.Translator.csproj", "{C4B8E041-7D2C-4F6C-A2E9-CF96FF39B0F2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
