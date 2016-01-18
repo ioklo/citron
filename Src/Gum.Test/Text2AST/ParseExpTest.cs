@@ -32,6 +32,8 @@ namespace Gum.Test.Text2AST
             deserializer.RegisterTagMapping("!NewExp", typeof(NewExp));
             deserializer.RegisterTagMapping("!UnaryExp", typeof(UnaryExp));
             deserializer.RegisterTagMapping("!UnaryExpKind", typeof(UnaryExpKind));
+            deserializer.RegisterTagMapping("!BinaryExp", typeof(BinaryExp));
+            deserializer.RegisterTagMapping("!BinaryExpKind", typeof(BinaryExpKind));
         }
 
         public override bool Test(ParseExpTestCase testCase)
@@ -41,6 +43,16 @@ namespace Gum.Test.Text2AST
 
             IExpComponent exp;
             if (!parser.ParseExp(lexer, out exp))
+                return false;
+
+            var serializer = new Serializer(SerializationOptions.Roundtrip);
+            var stringWriter1 = new StringWriter();
+            serializer.Serialize(stringWriter1, exp);
+
+            var stringWriter2 = new StringWriter();
+            serializer.Serialize(stringWriter2, testCase.Result);
+
+            if (stringWriter1.ToString() != stringWriter2.ToString())
                 return false;
 
             return true;

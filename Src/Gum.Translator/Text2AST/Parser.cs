@@ -79,8 +79,8 @@ namespace Gum.Translator.Text2AST
         {
             switch(binOp)
             {
-                case BinaryExpKind.And: return 1;
-                case BinaryExpKind.Or: return 1;
+                case BinaryExpKind.ConditionalAnd: return 1;
+                case BinaryExpKind.ConditionalOr: return 1;
             
                 case BinaryExpKind.Equal: return 2;
                 case BinaryExpKind.NotEqual: return 2;
@@ -230,6 +230,58 @@ namespace Gum.Translator.Text2AST
                 return true;
             }
         }
+
+        UnaryExpKind? ConvertUnaryOperation(TokenType tokenType)
+        {
+            switch(tokenType)
+            {
+                case TokenType.Plus: return UnaryExpKind.Plus;
+                case TokenType.Minus: return UnaryExpKind.Minus;
+                case TokenType.Exclamation: return UnaryExpKind.Not;
+                case TokenType.Tilde: return UnaryExpKind.Neg;
+            }
+
+            return null;
+        }
+
+        UnaryExpKind? ConvertPreUnaryOperation(TokenType tokenType)
+        {
+            if (tokenType == TokenType.PlusPlus)
+                return UnaryExpKind.PrefixInc;
+            else if (tokenType == TokenType.MinusMinus)
+                return UnaryExpKind.PrefixDec;
+
+            return ConvertUnaryOperation(tokenType);
+        }
+        
+        BinaryExpKind? ConvertBinaryOperation(TokenType tokenType)
+        {
+            switch (tokenType)
+            {
+                case TokenType.AmperAmper: return BinaryExpKind.ConditionalAnd;
+                case TokenType.BarBar: return BinaryExpKind.ConditionalOr;
+
+                case TokenType.EqualEqual: return BinaryExpKind.Equal;
+                case TokenType.NotEqual: return BinaryExpKind.NotEqual;
+
+                case TokenType.Less: return BinaryExpKind.Less;
+                case TokenType.LessEqual: return BinaryExpKind.LessEqual;
+                case TokenType.Greater: return BinaryExpKind.Greater;
+                case TokenType.GreaterEqual: return BinaryExpKind.GreaterEqual;
+                case TokenType.Plus: return BinaryExpKind.Add;
+                case TokenType.Minus: return BinaryExpKind.Sub;
+                case TokenType.Star: return BinaryExpKind.Mul;
+                case TokenType.Slash: return BinaryExpKind.Div;
+                case TokenType.Percent: return BinaryExpKind.Mod;
+
+                case TokenType.Equal: return BinaryExpKind.Assign;
+                case TokenType.LessLess: return BinaryExpKind.ShiftLeft;
+                case TokenType.GreaterGreater: return BinaryExpKind.ShiftRight;
+
+            }
+
+            return null;
+        }
         
         public bool ParseBinaryOperation(Lexer lexer, out BinaryExpKind? binOp)
         {
@@ -241,8 +293,8 @@ namespace Gum.Translator.Text2AST
 
             switch(lexer.TokenType)
             {
-                case TokenType.AmperAmper: binOp = BinaryExpKind.And; break;
-                case TokenType.BarBar:  binOp = BinaryExpKind.Or; break;
+                case TokenType.AmperAmper: binOp = BinaryExpKind.ConditionalAnd; break;
+                case TokenType.BarBar:  binOp = BinaryExpKind.ConditionalOr; break;
 
                 case TokenType.EqualEqual: binOp = BinaryExpKind.Equal; break;
                 case TokenType.NotEqual: binOp = BinaryExpKind.NotEqual; break;
@@ -406,134 +458,500 @@ namespace Gum.Translator.Text2AST
             return;
         }
 
-        // TODO: PreUnary는 무엇인가?
-        bool ParsePreUnaryAndOperand(Lexer lexer, out IExpComponent exp)
-        {
-            using (LexerScope scope = lexer.CreateScope())
-            {
-                UnaryExpKind? prefixUnOp;
-                ConsumePrefixUnary(lexer, out prefixUnOp);
+        
 
-                if (!ParseOperand(lexer, out exp))
+        // 1. x.y, f(x), a[x], x++, x--, new, typeof default checked unchecked delegate?
+        bool ParsePrimaryExp(Lexer lexer, out IExpComponent exp)
+        {
+            exp = null;
+
+            using (var lexerScope = lexer.CreateScope())
+            {
+                if (lexer.Consume(TokenType.TrueValue))
                 {
-                    // expression은 operand로 시작해야 합니다.
-                    exp = null;
-                    return false;
+                    exp = new BoolExp(true);
+                    lexerScope.Accept();
+                    return true;
                 }
 
-                if (prefixUnOp.HasValue)
-                    exp = new UnaryExp(prefixUnOp.Value, exp);
+                if (lexer.Consume(TokenType.FalseValue))
+                {
+                    exp = new BoolExp(false);
+                    lexerScope.Accept();
+                    return true;
+                }
 
-                scope.Accept();
+                // TODO: 일단 실험적으로 Identifier만 받습니다.
+                string id;
+                if (!lexer.Consume(TokenType.Identifier, out id)) return false;
+
+                exp = new IDExp(CreateSingleID(id));
+                lexerScope.Accept();
+                return true;
+
+
+                // 1. variable
+                // 2. call
+                // 3. array member
+                // 4. postfix ++
+                // 5. postfix --
+                // 6. new 
+            }
+        }
+
+        // 2. + - ! ~ ++x --x // (T)x
+        bool ParseUnaryExp(Lexer lexer, out IExpComponent exp)
+        {
+            exp = null;
+
+            using (var lexerScope = lexer.CreateScope())
+            {
+                if (ParsePrimaryExp(lexer, out exp))
+                {
+                    lexerScope.Accept();
+                    return true;
+                }
+
+                TokenType tokenType;
+                if (!lexer.ConsumeAny(out tokenType, TokenType.Plus, TokenType.Minus,
+                    TokenType.Exclamation, TokenType.Tilde, TokenType.PlusPlus, TokenType.MinusMinus))
+                    return false;
+
+                UnaryExpKind? unaryExpKind = ConvertPreUnaryOperation(tokenType);
+                if (!unaryExpKind.HasValue) return false;
+
+                IExpComponent operandExp;
+                if (!ParseUnaryExp(lexer, out operandExp)) return false;
+
+                exp = new UnaryExp(unaryExpKind.Value, operandExp);
+                lexerScope.Accept();
                 return true;
             }
         }
-        
+
+        // 3. * / %
+        // Unary
+        // MultiplicativeExp (*/%) Unary
+        bool ParseMultiplicativeExp(Lexer lexer, out IExpComponent exp)
+        {
+            exp = null;
+
+            using (var lexerScope = lexer.CreateScope())
+            {
+                IExpComponent leftExp;
+                if (!ParseUnaryExp(lexer, out leftExp)) return false;
+
+                TokenType tokenType;
+                while (lexer.ConsumeAny(out tokenType,
+                    TokenType.Star, TokenType.Slash, TokenType.Percent))
+                {
+                    var binExpKind = ConvertBinaryOperation(tokenType);
+                    if (!binExpKind.HasValue) return false;
+
+                    IExpComponent rightExp;
+                    if (!ParseUnaryExp(lexer, out rightExp)) return false;
+
+                    leftExp = new BinaryExp(binExpKind.Value, leftExp, rightExp);
+                }
+
+                exp = leftExp;
+                lexerScope.Accept();
+                return true;
+            }
+        }
+
+        // 4. + - 
+        bool ParseAdditiveExp(Lexer lexer, out IExpComponent exp)
+        {
+            exp = null;
+
+            using (var lexerScope = lexer.CreateScope())
+            {
+                IExpComponent leftExp;
+                if (!ParseMultiplicativeExp(lexer, out leftExp)) return false;
+
+                TokenType tokenType;
+                while (lexer.ConsumeAny(out tokenType,
+                    TokenType.Plus,
+                    TokenType.Minus))
+                {
+                    var binExpKind = ConvertBinaryOperation(tokenType);
+                    if (!binExpKind.HasValue) return false;
+
+                    IExpComponent rightExp;
+                    if (!ParseMultiplicativeExp(lexer, out rightExp)) return false;
+
+                    leftExp = new BinaryExp(binExpKind.Value, leftExp, rightExp);
+                }
+
+                exp = leftExp;
+                lexerScope.Accept();
+                return true;
+            }
+        }
+
+        // 5. << >>
+        bool ParseShiftExp(Lexer lexer, out IExpComponent exp)
+        {
+            exp = null;
+
+            using (var lexerScope = lexer.CreateScope())
+            {
+                IExpComponent leftExp;
+                if (!ParseAdditiveExp(lexer, out leftExp)) return false;
+
+                TokenType tokenType;
+                while (lexer.ConsumeAny(out tokenType,
+                    TokenType.LessLess,
+                    TokenType.GreaterGreater))
+                {
+                    var binExpKind = ConvertBinaryOperation(tokenType);
+                    if (!binExpKind.HasValue) return false;
+
+                    IExpComponent rightExp;
+                    if (!ParseAdditiveExp(lexer, out rightExp)) return false;
+
+                    leftExp = new BinaryExp(binExpKind.Value, leftExp, rightExp);
+                }
+
+                exp = leftExp;
+                lexerScope.Accept();
+                return true;
+            }
+        }
+
+        // 6. Relational and type testing 
+        // < > <= >=  // is as
+        bool ParseRelationalAndTypeTestingExp(Lexer lexer, out IExpComponent exp)
+        {
+            exp = null;
+
+            using (var lexerScope = lexer.CreateScope())
+            {
+                IExpComponent leftExp;
+                if (!ParseShiftExp(lexer, out leftExp)) return false;
+
+                TokenType tokenType;
+                while (lexer.ConsumeAny(out tokenType, 
+                    TokenType.Less,
+                    TokenType.Greater, 
+                    TokenType.LessEqual,
+                    TokenType.GreaterEqual))
+                {
+                    var binExpKind = ConvertBinaryOperation(tokenType);
+                    if (!binExpKind.HasValue) return false;
+
+                    IExpComponent rightExp;
+                    if (!ParseShiftExp(lexer, out rightExp)) return false;
+
+                    leftExp = new BinaryExp(binExpKind.Value, leftExp, rightExp);
+                }
+
+                exp = leftExp;
+                lexerScope.Accept();
+                return true;
+            }
+        }
+
+        // 7. == !=
+        bool ParseEqualityExp(Lexer lexer, out IExpComponent exp)
+        {
+            exp = null;
+
+            using (var lexerScope = lexer.CreateScope())
+            {
+                IExpComponent leftExp;
+                if (!ParseRelationalAndTypeTestingExp(lexer, out leftExp)) return false;
+
+                TokenType tokenType;
+                while (lexer.ConsumeAny(out tokenType, TokenType.EqualEqual, TokenType.NotEqual))
+                {
+                    var binExpKind = ConvertBinaryOperation(tokenType);
+                    if (!binExpKind.HasValue) return false;
+
+                    IExpComponent rightExp;
+                    if (!ParseRelationalAndTypeTestingExp(lexer, out rightExp)) return false;
+
+                    leftExp = new BinaryExp(binExpKind.Value, leftExp, rightExp);
+                }
+
+                exp = leftExp;
+                lexerScope.Accept();
+                return true;
+            }
+        }
+
+        // 8. &
+        bool ParseLogicalAND(Lexer lexer, out IExpComponent exp)
+        {
+            exp = null;
+
+            using (var lexerScope = lexer.CreateScope())
+            {
+                IExpComponent leftExp;
+                if (!ParseEqualityExp(lexer, out leftExp)) return false;
+
+                while (lexer.Consume(TokenType.Amper))
+                {
+                    IExpComponent rightExp;
+                    if (!ParseEqualityExp(lexer, out rightExp)) return false;
+
+                    leftExp = new BinaryExp(BinaryExpKind.LogicalAnd, leftExp, rightExp);
+                }
+
+                exp = leftExp;
+                lexerScope.Accept();
+                return true;
+            }
+        }
+
+        // 9. ^
+        bool ParseLogicalXOR(Lexer lexer, out IExpComponent exp)
+        {
+            exp = null;
+
+            using (var lexerScope = lexer.CreateScope())
+            {
+                IExpComponent leftExp;
+                if (!ParseLogicalAND(lexer, out leftExp)) return false;
+
+                while (lexer.Consume(TokenType.Caret))
+                {
+                    IExpComponent rightExp;
+                    if (!ParseLogicalAND(lexer, out rightExp)) return false;
+
+                    leftExp = new BinaryExp(BinaryExpKind.LogicalXor, leftExp, rightExp);
+                }
+
+                exp = leftExp;
+                lexerScope.Accept();
+                return true;
+            }
+        }
+
+
+        // 10. |
+        bool ParseLogicalOR(Lexer lexer, out IExpComponent exp)
+        {
+            exp = null;
+
+            using (var lexerScope = lexer.CreateScope())
+            {
+                IExpComponent leftExp;
+                if (!ParseLogicalXOR(lexer, out leftExp)) return false;
+
+                while (lexer.Consume(TokenType.Bar))
+                {
+                    IExpComponent rightExp;
+                    if (!ParseLogicalXOR(lexer, out rightExp)) return false;
+
+                    leftExp = new BinaryExp(BinaryExpKind.LogicalOr, leftExp, rightExp);
+                }
+
+                exp = leftExp;
+                lexerScope.Accept();
+                return true;
+            }
+        }
+
+        // 11. &&
+        bool ParseConditionalAND(Lexer lexer, out IExpComponent exp)
+        {
+            exp = null;
+
+            using (var lexerScope = lexer.CreateScope())
+            {
+                IExpComponent leftExp;
+                if (!ParseLogicalOR(lexer, out leftExp)) return false;
+
+                while (lexer.Consume(TokenType.AmperAmper))
+                {
+                    IExpComponent rightExp;
+                    if (!ParseLogicalOR(lexer, out rightExp)) return false;
+
+                    leftExp = new BinaryExp(BinaryExpKind.ConditionalAnd, leftExp, rightExp);
+                }
+
+                exp = leftExp;
+                lexerScope.Accept();
+                return true;
+            }
+        }
+
+        // 12. ||, left associativity
+        bool ParseConditionalOR(Lexer lexer, out IExpComponent exp)
+        {
+            exp = null;
+
+            using (var lexerScope = lexer.CreateScope())
+            {
+                IExpComponent leftExp;
+                if (!ParseConditionalAND(lexer, out leftExp)) return false;
+
+                while (lexer.Consume(TokenType.BarBar))
+                {
+                    IExpComponent rightExp;
+                    if (!ParseConditionalAND(lexer, out rightExp)) return false;
+
+                    leftExp = new BinaryExp(BinaryExpKind.ConditionalOr, leftExp, rightExp);
+                }
+
+                exp = leftExp;
+                lexerScope.Accept();
+                return true;
+            }
+        }
+
+        // 
+
+        // 13. ?? Null coalescing -> skip, right-associative
+        // 14. ?: , right associative
+        /*bool ParseConditionalExp(Lexer lexer, out IExpComponent exp)
+        {
+            exp = null;
+
+            IExpComponent condExp, leftExp, rightExp;
+
+            if (!ParseConditionalOR(lexer, out condExp)) return false;
+            if (!lexer.Consume(TokenType.Question)) return false;
+            if (!ParseExp(lexer, out leftExp)) return false;
+            if (!lexer.Consume(TokenType.Colon)) return false;
+            if (!ParseExp(lexer, out rightExp)) return false;
+
+            // 끝까지 가서 먹어버리는 일 없게 하기..
+            return true;
+        }*/
+
+        // 15. Assignment and (lambda expression '=>', not supported), right associative
+        // = *= /= %= += -= <<= >>= &= ^= |= 
+        bool ParseAssignmentExp(Lexer lexer, out IExpComponent exp)
+        {
+            TokenType[] assignmentTokenTypes = new[]
+                {
+                TokenType.Equal, TokenType.StarEqual, TokenType.SlashEqual, TokenType.PercentEqual,
+                TokenType.PlusEqual, TokenType.MinusEqual, TokenType.LessLessEqual, TokenType.GreaterGreaterEqual,
+                TokenType.AmperEqual, TokenType.CaretEqual, TokenType.BarEqual
+            };
+
+            using (var lexerScope = lexer.CreateScope())
+            {
+                exp = null;
+
+                // Right Associativity의 경우 Stack을 사용합니다.. 안쓰면 어떻게 되나요
+                // a = b = c = d;
+                // Assign(a, Assign(b, Assign(c, d))))
+                Stack<IExpComponent> operandExps = new Stack<IExpComponent>();
+                Stack<BinaryExpKind> operators = new Stack<BinaryExpKind>();
+
+                IExpComponent operandExp;
+                if (!ParseConditionalOR(lexer, out operandExp)) return false;
+
+                operandExps.Push(operandExp);
+
+                TokenType tokenType;
+                while (lexer.ConsumeAny(out tokenType, assignmentTokenTypes))
+                {
+                    var binOp = ConvertBinaryOperation(tokenType);
+                    if (binOp == null) throw new NotImplementedException("Assignment Token을 BinaryExpKind로 변환하는데 실패했습니다");
+
+                    operators.Push(binOp.Value);
+
+                    if (!ParseConditionalOR(lexer, out operandExp)) return false;
+                    operandExps.Push(operandExp);
+                }
+
+                while (operandExps.Count != 1)
+                {
+                    var rightExp = operandExps.Pop();
+                    var leftExp = operandExps.Pop();
+                    var binOp = operators.Pop();
+
+                    operandExps.Push(new BinaryExp(binOp, leftExp, rightExp));
+                }
+
+                exp = operandExps.Pop();
+                lexerScope.Accept();
+                return true;
+            }
+        }
+
         public bool ParseExp(Lexer lexer, out IExpComponent exp)
         {
-            using (LexerScope scope = lexer.CreateScope())
-            {
-                Stack<IExpComponent> operands = new Stack<IExpComponent>();
-                Stack<BinaryExpKind> ops = new Stack<BinaryExpKind>();
-
-                IExpComponent operand;
-
-                if (!ParsePreUnaryAndOperand(lexer, out operand))
-                {
-                    // expression은 operand로 시작해야 합니다.
-                    exp = null;
-                    return false;
-                }
-
-                operands.Push(operand);
-
-                while (!lexer.End)
-                {
-                    UnaryExpKind? postfixUnOp;
-
-                    // Unary 는 가장 먼저 묶는다
-                    if (ParsePostfixUnary(lexer, out postfixUnOp))
-                    {
-                        IExpComponent unOperand = operands.Pop();
-                        if (unOperand is UnaryExp)
-                        {
-                            throw new System.Exception("단항연산자는 중복될 수 없습니다");
-                        }
-
-                        IExpComponent unExp = new UnaryExp(postfixUnOp.Value, unOperand);
-                        operands.Push(unExp);
-                        continue;
-                    }
-
-                    // BinaryExpKind을 가져온다
-                    BinaryExpKind? binOp;
-                    if (!ParseBinaryOperation(lexer, out binOp))
-                    {
-                        // 더 이상 BinaryExpKind이 없을 경우 나머지 처리를 하고 정상종료를 한다.
-                        break;
-                    }
-
-                    if (!ParsePreUnaryAndOperand(lexer, out operand))
-                    {
-                        // BinaryExpKind의 대상이 없습니다
-                        exp = null;
-                        return false;
-                    }
-
-                    ArrangeOperations(operands, ops, binOp.Value, operand);
-                }
-
-                // 이제 남은 것들을 뒤에서 부터 묶는다.
-                IExpComponent right = operands.Pop();
-                Debug.Assert(operands.Count == ops.Count);
-                while (ops.Count != 0)
-                {
-                    BinaryExpKind op = ops.Pop();
-                    IExpComponent left = operands.Pop();
-
-                    right = new BinaryExp(op, left, right);
-                }
-
-                exp = right;
-                scope.Accept();
-                return true;
-            }
+            return ParseAssignmentExp(lexer, out exp);
         }
+        
+        //public bool ParseExp(Lexer lexer, out IExpComponent exp)
+        //{
+        //    using (LexerScope scope = lexer.CreateScope())
+        //    {
+        //        Stack<IExpComponent> operands = new Stack<IExpComponent>();
+        //        Stack<BinaryExpKind> ops = new Stack<BinaryExpKind>();
 
-        bool ConsumePrefixUnary(Lexer lexer, out UnaryExpKind? prefixUnOp)
-        {
-            switch(lexer.TokenType)
-            {
-                case TokenType.Not:
-                    prefixUnOp = UnaryExpKind.Not;
-                    break;
+        //        IExpComponent operand;
 
-                case TokenType.Minus:
-                    prefixUnOp = UnaryExpKind.Neg;
-                    break;
+        //        if (!ParsePreUnaryAndOperand(lexer, out operand))
+        //        {
+        //            // expression은 operand로 시작해야 합니다.
+        //            exp = null;
+        //            return false;
+        //        }
 
-                case TokenType.PlusPlus:
-                    prefixUnOp = UnaryExpKind.PrefixInc;
-                    break;
+        //        operands.Push(operand);
 
-                case TokenType.MinusMinus:
-                    prefixUnOp = UnaryExpKind.PrefixDec;
-                    break;
+        //        while (!lexer.End)
+        //        {
+        //            UnaryExpKind? postfixUnOp;
 
-                default: 
-                    prefixUnOp = null;
-                    break;
-            }
+        //            // Unary 는 가장 먼저 묶는다
+        //            if (ParsePostfixUnary(lexer, out postfixUnOp))
+        //            {
+        //                IExpComponent unOperand = operands.Pop();
+        //                if (unOperand is UnaryExp)
+        //                {
+        //                    throw new System.Exception("단항연산자는 중복될 수 없습니다");
+        //                }
 
-            if (prefixUnOp != null)
-            {
-                lexer.NextToken();
-                return true;
-            }
+        //                IExpComponent unExp = new UnaryExp(postfixUnOp.Value, unOperand);
+        //                operands.Push(unExp);
+        //                continue;
+        //            }
 
-            return false;
-        }
+        //            // BinaryExpKind을 가져온다
+        //            BinaryExpKind? binOp;
+        //            if (!ParseBinaryOperation(lexer, out binOp))
+        //            {
+        //                // 더 이상 BinaryExpKind이 없을 경우 나머지 처리를 하고 정상종료를 한다.
+        //                break;
+        //            }
 
+        //            if (!ParsePreUnaryAndOperand(lexer, out operand))
+        //            {
+        //                // BinaryExpKind의 대상이 없습니다
+        //                exp = null;
+        //                return false;
+        //            }
+
+        //            ArrangeOperations(operands, ops, binOp.Value, operand);
+        //        }
+
+        //        // 이제 남은 것들을 뒤에서 부터 묶는다.
+        //        IExpComponent right = operands.Pop();
+        //        Debug.Assert(operands.Count == ops.Count);
+        //        while (ops.Count != 0)
+        //        {
+        //            BinaryExpKind op = ops.Pop();
+        //            IExpComponent left = operands.Pop();
+
+        //            right = new BinaryExp(op, left, right);
+        //        }
+
+        //        exp = right;
+        //        scope.Accept();
+        //        return true;
+        //    }
+        //}
+
+        
         bool ParseVarDeclStmt(Lexer lexer, out VarDecl vd)
         {
             VarDecl varDecl;
@@ -1322,6 +1740,352 @@ namespace Gum.Translator.Text2AST
             return false;
         } */
 
+        public bool ParseNamespaceIDs(Lexer lexer, out List<string> outNamespaceIDs)
+        {
+            using (var lexerScope = lexer.CreateScope())
+            {
+                outNamespaceIDs = null;
+                var namespaceIDs = new List<string>();
+
+                string namespaceID;
+
+                // at least one namespace identifier                
+                if (!lexer.Consume(TokenType.Identifier, out namespaceID)) return false;
+                namespaceIDs.Add(namespaceID);
+
+                while (lexer.Consume(TokenType.Dot))
+                {
+                    if (!lexer.Consume(TokenType.Identifier, out namespaceID)) return false;
+                    namespaceIDs.Add(namespaceID);
+                }
+
+                outNamespaceIDs = namespaceIDs;
+                lexerScope.Accept();
+                return true;
+            }
+        }
+
+
+        // using namespaceID.namespaceID;
+        public bool ParseUsingDirective(Lexer lexer, out UsingDirective usingDirective)
+        {         
+            using (var lexerScope = lexer.CreateScope())
+            {
+                usingDirective = null;                
+
+                // first start with 'using' keyword
+                if (!lexer.Consume(TokenType.Using)) return false;
+                
+                List<string> namespaceIDs;
+                if (!ParseNamespaceIDs(lexer, out namespaceIDs)) return false;
+
+                if (!lexer.Consume(TokenType.SemiColon)) return false;
+
+                usingDirective = new UsingDirective(namespaceIDs);
+                lexerScope.Accept();
+                return true;
+            }
+        }
+
+        // ID<TypeArg0, TypeArg1, ... >
+        public bool ParseIDWithTypeArgs(Lexer lexer, out IDWithTypeArgs outIDWithTypeArgs)
+        {
+            using (var lexerScope = lexer.CreateScope())
+            {
+                outIDWithTypeArgs = null;
+
+                string id;
+                if (!lexer.Consume(TokenType.Identifier, out id)) return false;
+
+                // typeArguments are optional
+                if (!lexer.Consume(TokenType.Less))
+                {
+                    outIDWithTypeArgs = new IDWithTypeArgs(id, Enumerable.Empty<IDWithTypeArgs>());
+                    lexerScope.Accept();
+                    return true;
+                }
+
+                // comma-separated
+                var idWithTypeArgsList = new List<IDWithTypeArgs>();
+
+                IDWithTypeArgs idWithTypeArgs;
+                if (!ParseIDWithTypeArgs(lexer, out idWithTypeArgs)) return false;
+                idWithTypeArgsList.Add(idWithTypeArgs);
+
+                while(lexer.Consume(TokenType.Comma))
+                {
+                    if (!ParseIDWithTypeArgs(lexer, out idWithTypeArgs)) return false;
+                    idWithTypeArgsList.Add(idWithTypeArgs);
+                }
+
+                if (!lexer.Consume(TokenType.Greater)) return false;
+
+                outIDWithTypeArgs = new IDWithTypeArgs(id, idWithTypeArgsList);
+                lexerScope.Accept();
+                return true;
+            }
+        }
+
+        public bool ParseMemberFuncModifier(Lexer lexer, out MemberFuncModifier? outMemberFuncModifier)
+        {
+            if (lexer.Consume(TokenType.Static))
+            {
+                outMemberFuncModifier = MemberFuncModifier.Static;
+                return true;
+            }
+            else if (lexer.Consume(TokenType.New))
+            {
+                outMemberFuncModifier = MemberFuncModifier.New;
+                return true;
+            }
+            else
+            {
+                outMemberFuncModifier = null;
+                return false;
+            }
+        }
+        
+        public bool ParseMemberFuncDecl(Lexer lexer, out MemberFuncDecl outMemberFuncDecl)
+        {
+            using (var lexerScope = lexer.CreateScope())
+            {
+                outMemberFuncDecl = null;
+
+                var memberFuncModifiers = new List<MemberFuncModifier>();
+                AccessModifier? accessModifier = null;
+                VirtualModifier? virtualModifier = null;
+
+                while (true)
+                {
+                    MemberFuncModifier? memberFuncModifier;
+                    if (ParseMemberFuncModifier(lexer, out memberFuncModifier))
+                    {
+                        // check duplicated modifier
+                        if (memberFuncModifiers.IndexOf(memberFuncModifier.Value) != -1) return false;
+                        
+                        memberFuncModifiers.Add(memberFuncModifier.Value);
+                        continue;
+                    }
+
+                    AccessModifier? parsedAccessModifier;
+                    if( ParseAccessModifier(lexer, out parsedAccessModifier) )
+                    {
+                        if (accessModifier.HasValue) return false;
+                        accessModifier = parsedAccessModifier;
+                        continue;
+                    }
+
+
+                    VirtualModifier? parsedVirtualModifier;
+                    if (ParseVirtualModifier(lexer, out virtualModifier))
+                    {
+                        if (virtualModifier.HasValue) return false;
+                        virtualModifier = parsedVirtualModifier;
+
+                        continue;
+                    }
+
+                    break;
+                }                
+                
+
+                var typeParams = new List<string>();
+                IDWithTypeArgs returnType;
+                string funcName;
+                var Parameters = new List<FuncParam>();
+                BlockStmt bodyStmt;
+
+                outMemberFuncDecl = new MemberFuncDecl(memberFuncModifiers, accessModifier, virtualModifier, typeParams, returnType, funcName, funcParams, bodyStmt);
+                lexerScope.Accept();
+                return true;
+            }
+        }
+
+        // class ClassName : BaseType { }
+        public bool ParseClassDecl(Lexer lexer, out ClassDecl outClassDecl)
+        {
+            using (var lexerScope = lexer.CreateScope())
+            {
+                outClassDecl = null;
+
+                // typeVars, baseTypes, IMemberComponents                
+
+                // first start with 'class' keyword
+                if (!lexer.Consume(TokenType.Class)) return false;
+
+                // then parse class name
+                string className;
+                if (!lexer.Consume(TokenType.Identifier, out className)) return false;
+
+                // Parse typeVars, don't allow type-instantiation style, only accept identifier
+                var typeVars = new List<string>();
+                if( lexer.Consume(TokenType.Less) )
+                {
+                    string typeVar;
+                    if (!lexer.Consume(TokenType.Identifier, out typeVar)) return false;
+                    typeVars.Add(typeVar);
+
+                    while ( lexer.Consume(TokenType.Comma) )
+                    {
+                        if (!lexer.Consume(TokenType.Identifier, out typeVar)) return false;
+                        typeVars.Add(typeVar);
+                    }
+
+                    if (!lexer.Consume(TokenType.Greater)) return false;
+                }
+
+                // optional baseTypes
+                var baseTypes = new List<IDWithTypeArgs>();
+                if( lexer.Consume(TokenType.Colon))
+                {
+                    // comma-separated list
+                    IDWithTypeArgs idWithTypeArgs;
+                    if (!ParseIDWithTypeArgs(lexer, out idWithTypeArgs)) return false;
+                    baseTypes.Add(idWithTypeArgs);
+
+                    while(lexer.Consume(TokenType.Comma))
+                    {
+                        if (!ParseIDWithTypeArgs(lexer, out idWithTypeArgs)) return false;
+                        baseTypes.Add(idWithTypeArgs);
+                    }
+                }
+
+                if (!lexer.Consume(TokenType.LBrace)) return false;
+
+                // IMemberComponent
+                var memberComponents = new List<IMemberComponent>();
+                while (!lexer.Consume(TokenType.RBrace))
+                {
+                    MemberFuncDecl memberFuncDecl;
+                    if (ParseMemberFuncDecl(lexer, out memberFuncDecl))
+                    {
+                        memberComponents.Add(memberFuncDecl);
+                        continue;
+                    }
+
+                    MemberVarDecl memberVarDecl;
+                    if( ParseMemberVarDecl(lexer, out memberVarDecl))
+                    {
+                        memberComponents.Add(memberVarDecl);
+                        continue;
+                    }
+
+                    return false;
+                }
+
+                outClassDecl = new ClassDecl(typeVars, className, baseTypes, memberComponents);
+                lexerScope.Accept();
+                return true;
+            }
+        }
+
+        // namespace namespaceID.namespaceID { }
+        public bool ParseNamespaceDecl(Lexer lexer, out NamespaceDecl outNamespaceDecl)
+        {            
+            using (var lexerScope = lexer.CreateScope())
+            {
+                outNamespaceDecl = null;
+
+                // first start with 'namespace' keyword                
+                if (!lexer.Consume(TokenType.Namespace)) return false;
+
+                List<string> namespaceIDs;
+                if (!ParseNamespaceIDs(lexer, out namespaceIDs)) return false;
+
+                if (!lexer.Consume(TokenType.LBrace)) return false;
+
+                var namespaceComponents = new List<INamespaceComponent>();
+                while( !lexer.Consume(TokenType.RBrace))
+                {
+                    NamespaceDecl namespaceDecl;
+                    if( ParseNamespaceDecl(lexer, out namespaceDecl) )
+                    {
+                        namespaceComponents.Add(namespaceDecl);
+                        continue;
+                    }
+
+                    ClassDecl classDecl;
+                    if( ParseClassDecl(lexer, out classDecl ))
+                    {
+                        namespaceComponents.Add(classDecl);
+                        continue;
+                    }
+
+                    StructDecl structDecl;
+                    if( ParseStructDecl(lexer, out structDecl ))
+                    {
+                        namespaceComponents.Add(structDecl);
+                        continue;
+                    }
+
+                    VarDecl varDecl;
+                    if( ParseVarDecl(lexer, out varDecl ))
+                    {
+                        namespaceComponents.Add(varDecl);
+                        continue;
+                    }
+
+                    FuncDecl funcDecl;
+                    if( ParseFuncDecl(lexer, out funcDecl ))
+                    {
+                        namespaceComponents.Add(funcDecl);
+                        continue;
+                    }
+                }
+
+                outNamespaceDecl = new NamespaceDecl(namespaceIDs, namespaceComponents);
+                lexerScope.Accept();
+                return true;
+            }
+        }
+        
+        public bool ParseFileUnit(Lexer lexer, out FileUnit fileUnit)
+        {
+            using (var lexerScope = lexer.CreateScope())
+            {
+                fileUnit = null;
+                var fileUnitComponents = new List<IFileUnitComponent>();
+
+                // 끝날때까지 
+                while (!lexer.End)
+                {
+                    UsingDirective usingDirective;
+                    if (ParseUsingDirective(lexer, out usingDirective))
+                    {
+                        fileUnitComponents.Add(usingDirective);
+                        continue;
+                    }
+
+                    NamespaceDecl namespaceDecl;
+                    if (ParseNamespaceDecl(lexer, out namespaceDecl))
+                    {
+                        fileUnitComponents.Add(namespaceDecl);
+                        continue;
+                    }
+
+                    FuncDecl funcDecl;
+                    if (ParseFuncDecl(lexer, out funcDecl))
+                    {
+                        fileUnitComponents.Add(funcDecl);
+                        continue;
+                    }
+
+                    VarDecl varDecl;
+                    if (ParseVarDecl(lexer, out varDecl))
+                    {
+                        fileUnitComponents.Add(varDecl);
+                        continue;
+                    }
+
+                    return false;
+                }
+
+                lexerScope.Accept();
+                fileUnit = new FileUnit(fileUnitComponents);
+                return true;
+            }
+        }
+        
         public bool ParseFileUnit(string str, out FileUnit fileUnit)
         {
             fileUnit = null;

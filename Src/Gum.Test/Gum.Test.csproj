@@ -63,7 +63,7 @@
       <DependentUpon>TestResource.resx</DependentUpon>
     </Compile>
     <Compile Include="Text2AST\LexerTest.cs" />
-    <Compile Include="TestCaseBase.cs" />
+    <Compile Include="ITestCase.cs" />
     <Compile Include="Text2AST\TestBase.cs" />
     <Compile Include="Text2AST\TestUtil.cs" />
     <Compile Include="TypeAnnotator.cs" />

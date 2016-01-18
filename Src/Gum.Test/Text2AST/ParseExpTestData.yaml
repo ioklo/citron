@@ -7,6 +7,104 @@
     Result: !BoolExp
         Value: false
 
+# operators
+  - TestName: Plus Minus - Left Associativity
+    Text: x + y - z + w
+    Result: !BinaryExp
+        Operation: Add
+        Operand1: !BinaryExp
+            Operation: Sub
+            Operand1: !BinaryExp
+                Operation: Add
+                Operand1: !IDExp { Name: { Name: x, Args: [] } }
+                Operand2: !IDExp { Name: { Name: y, Args: [] } }        
+            Operand2: !IDExp { Name: { Name: z, Args: [] } }
+        Operand2: !IDExp { Name: { Name: w, Args: [] } }
+
+  - TestName: Assignment - Right Associativity
+    Text: x = y = z
+    Result: !BinaryExp        
+        Operation: Assign        
+        Operand1: !IDExp { Name: { Name: x, Args: [] } }
+        Operand2: !BinaryExp
+            Operation: Assign
+            Operand1: !IDExp { Name: { Name: y, Args: [] } }
+            Operand2: !IDExp { Name: { Name: z, Args: [] } }
+
+  - TestName: Complex Precedence
+    Text: |
+        x1 = x2 * x3 / x4 % x5 + x6 - x7 << x8 >> x9 < x10 > x11 <= x12 >= x13 == x14 != x15 & x16 ^ x17 | x18 && x19 || x20
+    Result: !BinaryExp
+        Operation: Assign
+        Operand1: !IDExp { Name: { Name: x1, Args: [] } }
+        Operand2: !BinaryExp
+            Operation: ConditionalOr
+            Operand1: !BinaryExp
+                Operation: ConditionalAnd
+                Operand1: !BinaryExp
+                    Operation: LogicalOr
+                    Operand1: !BinaryExp
+                        Operation: LogicalXor
+                        Operand1: !BinaryExp
+                            Operation: LogicalAnd
+                            Operand1: !BinaryExp
+                                Operation: NotEqual
+                                Operand1: !BinaryExp
+                                    Operand1: !BinaryExp
+                                        Operation: GreaterEqual
+                                        Operand1: !BinaryExp
+                                            Operation: LessEqual
+                                            Operand1: !BinaryExp
+                                                Operation: Greater
+                                                Operand1: !BinaryExp
+                                                    Operation: Less
+                                                    Operand1: !BinaryExp
+                                                        Operation: ShiftRight
+                                                        Operand1: !BinaryExp
+                                                            Operation: ShiftLeft
+                                                            Operand1: !BinaryExp
+                                                                Operation: Sub
+                                                                Operand1: !BinaryExp
+                                                                    Operation: Add
+                                                                    Operand1: !BinaryExp
+                                                                        Operation: Mod
+                                                                        Operand1: !BinaryExp
+                                                                            Operation: Div
+                                                                            Operand1: !BinaryExp
+                                                                                Operation: Mul
+                                                                                Operand1: !IDExp { Name: { Name: x2, Args: [] } }
+                                                                                Operand2: !IDExp { Name: { Name: x3, Args: [] } }
+                                                                            Operand2: !IDExp { Name: { Name: x4, Args: [] } }
+                                                                        Operand2: !IDExp { Name: { Name: x5, Args: [] } }
+                                                                    Operand2: !IDExp { Name: { Name: x6, Args: [] } }
+                                                                Operand2: !IDExp { Name: { Name: x7, Args: [] } }
+                                                            Operand2: !IDExp { Name: { Name: x8, Args: [] } }
+                                                        Operand2: !IDExp { Name: { Name: x9, Args: [] } }
+                                                    Operand2: !IDExp { Name: { Name: x10, Args: [] } }
+                                                Operand2: !IDExp { Name: { Name: x11, Args: [] } }
+                                            Operand2: !IDExp { Name: { Name: x12, Args: [] } }
+                                        Operand2: !IDExp { Name: { Name: x13, Args: [] } }
+                                    Operand2: !IDExp { Name: { Name: x14, Args: [] } }
+                                Operand2: !IDExp { Name: { Name: x15, Args: [] } }
+                            Operand2: !IDExp { Name: { Name: x16, Args: [] } }
+                        Operand2: !IDExp { Name: { Name: x17, Args: [] } }
+                    Operand2: !IDExp { Name: { Name: x18, Args: [] } }
+                Operand2: !IDExp { Name: { Name: x19, Args: [] } }
+            Operand2: !IDExp { Name: { Name: x20, Args: [] } }
+
+  - TestName: Operators
+    Text: x * y + z * w
+    Result: !BinaryExp
+        Operation: Add
+        Operand1: !BinaryExp
+            Operation: Mul
+            Operand1: !IDExp { Name: { Name: x, Args: [] } }
+            Operand2: !IDExp { Name: { Name: y, Args: [] } }
+        Operand2: !BinaryExp
+            Operation: Mul
+            Operand1: !IDExp { Name: { Name: z, Args: [] } }
+            Operand2: !IDExp { Name: { Name: w, Args: [] } }
+
 # CharExp 
 
   - Text: |
@@ -69,7 +167,7 @@
             Exp: !MemberExp
                 Exp: !IDExp
                     Name: !IDWithTypeArgs
-                        Name: "SomeNamespace"
+                        Name: "Some1Namespace"
                         Args: []
 
                 MemberName: !IDWithTypeArgs                    

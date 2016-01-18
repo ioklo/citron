@@ -80,6 +80,7 @@ namespace Gum.Prerequisite
             
 
             unaryExpKind
+                .Add("Plus")
                 .Add("Minus")
                 .Add("Neg")
                 .Add("Not")
@@ -91,8 +92,11 @@ namespace Gum.Prerequisite
             binaryExpKind
                 .Add("Equal")
                 .Add("NotEqual")
-                .Add("And")
-                .Add("Or")
+                .Add("ConditionalAnd")
+                .Add("ConditionalOr")
+                .Add("LogicalAnd")
+                .Add("LogicalXor")
+                .Add("LogicalOr")
                 .Add("Add")
                 .Add("Sub")
                 .Add("Mul")
@@ -101,7 +105,10 @@ namespace Gum.Prerequisite
                 .Add("Less")
                 .Add("Greater")
                 .Add("LessEqual")
-                .Add("GreaterEqual");
+                .Add("GreaterEqual")
+                .Add("Assign")
+                .Add("ShiftLeft")
+                .Add("ShiftRight");
 
             funcParamModifier
                 .Add("Out")
@@ -179,7 +186,7 @@ namespace Gum.Prerequisite
                 .Var(charType, "Value");
             
             // FuncExp(Arg0, Arg1)
-            callExp
+            callExp 
                 .Var(expComponent, "FuncExp")
                 .Vars(expComponent, "Args");
 
@@ -235,10 +242,8 @@ namespace Gum.Prerequisite
                 .Vars(memberFuncModifier, "FuncModifiers")
                 .Var(accessModifier, "AccessModifier")
                 .Var(virtualModifier, "VirtualModifier")
-                
                 .Vars(stringType, "TypeParams")                
-                .Var(idWithTypeArgs, "ReturnType")
-                .Var(idWithTypeArgs, "InterfaceType" )
+                .Var(idWithTypeArgs, "ReturnType")                
                 .Var(stringType, "Name")
                 .Vars(funcParam, "Parameters")
                 .Var(blockStmt, "Body");

@@ -34,6 +34,15 @@ namespace Gum.Translator.Text2AST
             new Token(TokenType.Virtual, "virtual"),
             new Token(TokenType.Override, "override"),
             new Token(TokenType.New, "new"),
+            new Token(TokenType.Using, "using"),
+            new Token(TokenType.Namespace, "namespace"),
+            new Token(TokenType.Static, "static"),
+        };
+
+        public static Token[] threeLetterTokens = new Token[]
+        {
+            new Token(TokenType.LessLessEqual, "<<="), // 3
+            new Token(TokenType.GreaterGreaterEqual, ">>="), // 3
         };
 
         public static Token[] twoLetterTokens = new Token[] {
@@ -47,15 +56,24 @@ namespace Gum.Translator.Text2AST
             new Token(TokenType.MinusEqual, "-="),
             new Token(TokenType.StarEqual, "*="),
             new Token(TokenType.SlashEqual, "/="),
+            new Token(TokenType.PercentEqual, "%="),
+            
+            new Token(TokenType.AmperEqual, "&="),
+            new Token(TokenType.CaretEqual, "^="),
+            new Token(TokenType.BarEqual, "|="),
             new Token(TokenType.PlusPlus, "++"),
             new Token(TokenType.MinusMinus, "--"),
+
+            new Token(TokenType.LessLess, "<<"),
+            new Token(TokenType.GreaterGreater, ">>"),
         };
 
         // 인터페이스가?
         public Lexer(string s)
         {            
             source = s;
-            state = new LexerState(0, 0, TokenType.Invalid);
+            NextToken();
+            
         }
 
         public LexerScope CreateScope()
@@ -84,8 +102,21 @@ namespace Gum.Translator.Text2AST
                 state = new LexerState(source.Length, 0, TokenType.Invalid);
                 return false;
             }
-            
+
             //IntValue, StringValue,                            // [0-9], "st\\ri\"ng" @"a""b\" <- 우선순위 밀림..
+
+            // 세개짜리 먼저 <<= >>=
+            if( startIdx + 2 < source.Length)
+            {
+                string p = source.Substring(startIdx, 3);
+
+                foreach (var info in threeLetterTokens)
+                    if (info.Value == p)
+                    {
+                        state = new LexerState(startIdx, 2, info.Type);
+                        return true;
+                    }
+            }
 
             // 두개짜리 먼저 == != <= >= && ||
             if (startIdx + 1 < source.Length)
@@ -138,16 +169,22 @@ namespace Gum.Translator.Text2AST
                 case ';': state = new LexerState(startIdx, 1, TokenType.SemiColon); return true;
                 case ':': state = new LexerState(startIdx, 1, TokenType.Colon); return true;
                 case '.': state = new LexerState(startIdx, 1, TokenType.Dot); return true;
-                case '!': state = new LexerState(startIdx, 1, TokenType.Not); return true;
 
                 case '+': state = new LexerState(startIdx, 1, TokenType.Plus); return true;
                 case '-': state = new LexerState(startIdx, 1, TokenType.Minus); return true;
                 case '*': state = new LexerState(startIdx, 1, TokenType.Star); return true;
                 case '/': state = new LexerState(startIdx, 1, TokenType.Slash); return true;
+                case '%': state = new LexerState(startIdx, 1, TokenType.Percent); return true;
+                case '^': state = new LexerState(startIdx, 1, TokenType.Caret); return true;
 
                 case '<': state = new LexerState(startIdx, 1, TokenType.Less); return true;
                 case '>': state = new LexerState(startIdx, 1, TokenType.Greater); return true;
                 case '=': state = new LexerState(startIdx, 1, TokenType.Equal); return true;
+
+                case '&': state = new LexerState(startIdx, 1, TokenType.Amper); return true;
+                case '!': state = new LexerState(startIdx, 1, TokenType.Exclamation); return true;
+                case '~': state = new LexerState(startIdx, 1, TokenType.Tilde); return true;
+                case '|': state = new LexerState(startIdx, 1, TokenType.Bar); return true;
             }
 
             // string 처리

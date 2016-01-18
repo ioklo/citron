@@ -17,14 +17,24 @@ namespace Gum.Translator.Text2AST
         SemiColon,          // ;
         Dot,                // .
         Colon,              // :
-
-        PlusEqual, MinusEqual, StarEqual, SlashEqual, // +=, -=, *=, /=
+        Question,           // ?
+        Bar,                // |
+        Amper,              // &
+        Exclamation,        // !
+        Tilde,              // ~
+        
         PlusPlus, MinusMinus, // ++, --
 
-        Plus, Minus, Star, Slash,   // + - * /
+        Plus, Minus, Star, Slash, Percent, Caret,  // + - * / % ^
         EqualEqual, NotEqual, Less, LessEqual, Greater, GreaterEqual, // == != < <= > >=
-        AmperAmper, BarBar, Not, // && || !
+        AmperAmper, BarBar, // && || !        
+        LessLess, GreaterGreater, // << >>
+
+        PlusEqual, MinusEqual, StarEqual, SlashEqual, PercentEqual, // +=, -=, *=, /=, %=
+        LessLessEqual, GreaterGreaterEqual, // <<= >>=
+        AmperEqual, CaretEqual, BarEqual, // &= ^= |=
         Equal,  // =
+        
 
         // 한 종류가 여러가지 값을 가질 수 있는 것들
         Identifier,                                       // [a-zA-Z_][a-zA-Z0-9_]*
@@ -40,7 +50,8 @@ namespace Gum.Translator.Text2AST
         Class, Public, Private, Protected, Virtual, Override,          // class 용
 
         Out, Params,
-
         New,
+
+        Using, Namespace, Static
     }
 }

@@ -28,8 +28,9 @@ namespace Gum.Test
 
         static void Main(string[] args)
         {
-            Test<Gum.Test.Text2AST.LexerTest>(TestResource.LexerTest);
+            // Test<Gum.Test.Text2AST.LexerTest>(TestResource.LexerTest);
             Test<Gum.Test.Text2AST.ParseExpTest>(TestResource.ParseExpTestData);
+            return;
             
             // Gum.Test.Parser.ParseExpTest.Test();
             
