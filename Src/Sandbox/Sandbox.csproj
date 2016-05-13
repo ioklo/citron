@@ -1,0 +1,175 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{D0B6AE84-04F4-43AD-84D8-F15CFC1CC2EE}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Gum</RootNamespace>
+    <AssemblyName>Gum.Sandbox</AssemblyName>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+    <Reference Include="YamlDotNet">
+      <HintPath>..\..\packages\YamlDotNet.3.8.0\lib\net35\YamlDotNet.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Lang\AbstractSyntax\Generated.cs" />
+    <Compile Include="Lang\CoreIL\Generated.cs" />
+    <Compile Include="Metadatas\FuncDef.cs" />
+    <Compile Include="Metadatas\GumMetadata.cs" />
+    <Compile Include="Metadatas\IMetadata.cs" />
+    <Compile Include="Metadatas\IType.cs" />
+    <Compile Include="Metadatas\MemberFuncDef.cs" />
+    <Compile Include="Metadatas\MemberVarDef.cs" />
+    <Compile Include="Metadatas\MetadataComponent.cs" />
+    <Compile Include="Metadatas\Namespace.cs" />
+    <Compile Include="Metadatas\TopNamespace.cs" />
+    <Compile Include="Metadatas\TypeDef.cs" />
+    <Compile Include="Metadatas\VarDef.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Test\BuildMetadata.cs" />
+    <None Include="packages.config" />
+    <None Include="Test\CollectTypeDefinitions.cs" />
+    <Compile Include="Test\Environment.cs" />
+    <Compile Include="Test\ITest.cs" />
+    <Compile Include="Test\ITestCase.cs" />
+    <Compile Include="Test\Map.cs" />
+    <Compile Include="Test\Program.cs" />
+    <Compile Include="Test\TestResource.Designer.cs">
+      <DependentUpon>TestResource.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Test\Text2AST\LexerTest.cs" />
+    <Compile Include="Test\Text2AST\ParseExpTest.cs" />
+    <Compile Include="Test\Text2AST\TestBase.cs" />
+    <Compile Include="Test\Text2AST\TestUtil.cs" />
+    <Compile Include="Test\TypeAnnotator.cs" />
+    <Compile Include="Test\TypeInst\FuncTypeVar.cs" />
+    <Compile Include="Test\TypeInst\ITypeInst.cs" />
+    <Compile Include="Test\TypeInst\ObjectTypeVar.cs" />
+    <Compile Include="Test\TypeInst\TypeInst.cs" />
+    <Compile Include="Text2AST\EntireParser.cs" />
+    <Compile Include="Text2AST\Lexer.cs" />
+    <Compile Include="Text2AST\LexerScope.cs" />
+    <Compile Include="Text2AST\LexerState.cs" />
+    <Compile Include="Text2AST\Parsing\AdditiveExpParser.cs" />
+    <Compile Include="Text2AST\Parsing\AssignExpParser.cs" />
+    <Compile Include="Text2AST\Parsing\BinExpParser.cs" />
+    <Compile Include="Text2AST\Parsing\BlockStmtParser.cs" />
+    <Compile Include="Text2AST\Parsing\BreakStmtParser.cs" />
+    <Compile Include="Text2AST\Parsing\ClassDeclParser.cs" />
+    <Compile Include="Text2AST\Parsing\ConditionalANDExpParser.cs" />
+    <Compile Include="Text2AST\Parsing\ConditionalORExpParser.cs" />
+    <Compile Include="Text2AST\Parsing\ContinueStmtParser.cs" />
+    <Compile Include="Text2AST\Parsing\DoWhileStmtParser.cs" />
+    <Compile Include="Text2AST\Parsing\EqualityExpParser.cs" />
+    <Compile Include="Text2AST\Parsing\ExpComponentParser.cs" />
+    <Compile Include="Text2AST\Parsing\ExpStmtParser.cs" />
+    <Compile Include="Text2AST\Parsing\FileUnitParser.cs" />
+    <Compile Include="Text2AST\Parsing\ForInitComponentParser.cs" />
+    <Compile Include="Text2AST\Parsing\ForStmtParser.cs" />
+    <Compile Include="Text2AST\Parsing\FuncParamModifierParser.cs" />
+    <Compile Include="Text2AST\Parsing\IDWithTypeArgsParser.cs" />
+    <Compile Include="Text2AST\Parsing\IfStmtParser.cs" />
+    <Compile Include="Text2AST\Parsing\LeftAssocBinExpParser.cs" />
+    <Compile Include="Text2AST\Parsing\LogicalANDExpParser.cs" />
+    <Compile Include="Text2AST\Parsing\LogicalORExpParser.cs" />
+    <Compile Include="Text2AST\Parsing\LogicalXORExpParser.cs" />
+    <Compile Include="Text2AST\Parsing\MemberFuncDeclParser.cs" />
+    <Compile Include="Text2AST\Parsing\MemberFuncModifierParser.cs" />
+    <Compile Include="Text2AST\Parsing\MemberVarDeclParser.cs" />
+    <Compile Include="Text2AST\Parsing\MultiplicativeExpParser.cs" />
+    <Compile Include="Text2AST\Parsing\NamespaceDeclParser.cs" />
+    <Compile Include="Text2AST\Parsing\NamespaceIDParser.cs" />
+    <Compile Include="Text2AST\Parsing\NewExpParser.cs" />
+    <Compile Include="Text2AST\Parsing\ParingBinaryOperationFailedException.cs" />
+    <Compile Include="Text2AST\Parsing\Parser.cs" />
+    <Compile Include="Text2AST\Parsing\ParsingExpFailedException.cs" />
+    <Compile Include="Text2AST\Parsing\ParsingExpFailedException1.cs" />
+    <Compile Include="Text2AST\Parsing\ParsingExpTokenFailedException.cs" />
+    <Compile Include="Text2AST\Parsing\ParsingFailedException.cs" />
+    <Compile Include="Text2AST\Parsing\ParsingFileUnitComponentFailedException.cs" />
+    <Compile Include="Text2AST\Parsing\ParsingMemberFuncDeclDuplicatedModifierException.cs" />
+    <Compile Include="Text2AST\Parsing\ParsingPreUnaryOperationFailedException.cs" />
+    <Compile Include="Text2AST\Parsing\ParsingPrimarySingleExpFailed.cs" />
+    <Compile Include="Text2AST\Parsing\ParsingThisExpFailedException.cs" />
+    <Compile Include="Text2AST\Parsing\ParsingTokenFailedException.cs" />
+    <Compile Include="Text2AST\Parsing\PrimaryExpParser.cs" />
+    <Compile Include="Text2AST\Parsing\RelationalAndTypeTestingExpParser.cs" />
+    <Compile Include="Text2AST\Parsing\ReturnStmtParser.cs" />
+    <Compile Include="Text2AST\Parsing\RightAssocBinExpParser.cs" />
+    <Compile Include="Text2AST\Parsing\ShiftExpParser.cs" />
+    <Compile Include="Text2AST\Parsing\StmtComponentParser.cs" />
+    <Compile Include="Text2AST\Parsing\TypeIDParser.cs" />
+    <Compile Include="Text2AST\Parsing\UnaryExpParser.cs" />
+    <Compile Include="Text2AST\Parsing\UsingDirectiveParser.cs" />
+    <Compile Include="Text2AST\Parsing\VarDeclParser.cs" />
+    <Compile Include="Text2AST\Parsing\VarDeclStmtParser.cs" />
+    <Compile Include="Text2AST\Parsing\WhileStmtParser.cs" />
+    <Compile Include="Text2AST\Token.cs" />
+    <Compile Include="Text2AST\TokenType.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\Tests\00_Print.gum">
+      <Link>Tests\00_Print.gum</Link>
+    </None>
+    <None Include="..\..\Tests\HelloWorld.gum">
+      <Link>Tests\HelloWorld.gum</Link>
+    </None>
+    <None Include="App.config" />
+    <None Include="Test\TestData\Test.yaml" />
+    <None Include="Test\Text2AST\LexerTest.yaml" />
+    <None Include="Test\Text2AST\ParseExpTestData.yaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Test\TestResource.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>TestResource.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <Import Project="..\Gum.Props" />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

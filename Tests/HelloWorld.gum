@@ -1,0 +1,4 @@
+// Gum 전용 메타데이타 
+// gum HelloWorld.gum 
+
+Print("Hello World");
