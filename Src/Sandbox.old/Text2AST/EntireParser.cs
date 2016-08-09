@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Gum.Lang.AbstractSyntax;
+using Gum.Data.AbstractSyntax;
 
 namespace Gum.Translator.Text2AST
 {

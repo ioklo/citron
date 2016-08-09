@@ -7,7 +7,7 @@
     <ProjectGuid>{35418E13-7094-4DBE-BF10-5046FD1B054C}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Gum.Sandbox</RootNamespace>
+    <RootNamespace>Gum</RootNamespace>
     <AssemblyName>Gum.Sandbox</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -43,12 +43,74 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Compiler\ParsingBinaryOperationFailedException.cs" />
+    <Compile Include="Compiler\Lexer.cs" />
+    <Compile Include="Compiler\Lexer.Scope.cs" />
+    <Compile Include="Compiler\Lexer.State.cs" />
+    <Compile Include="Compiler\Parser.AdditiveExpParser.cs" />
+    <Compile Include="Compiler\Parser.AssignExpParser.cs" />
+    <Compile Include="Compiler\Parser.BinExpParser.cs" />
+    <Compile Include="Compiler\Parser.BlockStmtParser.cs" />
+    <Compile Include="Compiler\Parser.BreakStmtParser.cs" />
+    <Compile Include="Compiler\Parser.ClassDeclParser.cs" />
+    <Compile Include="Compiler\Parser.ConditionalANDExpParser.cs" />
+    <Compile Include="Compiler\Parser.ConditionalORExpParser.cs" />
+    <Compile Include="Compiler\Parser.ContinueStmtParser.cs" />
+    <Compile Include="Compiler\Parser.DoWhileStmtParser.cs" />
+    <Compile Include="Compiler\Parser.EqualityExpParser.cs" />
+    <Compile Include="Compiler\Parser.ExpComponentParser.cs" />
+    <Compile Include="Compiler\Parser.ExpStmtParser.cs" />
+    <Compile Include="Compiler\Parser.FileUnitParser.cs" />
+    <Compile Include="Compiler\Parser.ForInitComponentParser.cs" />
+    <Compile Include="Compiler\Parser.ForStmtParser.cs" />
+    <Compile Include="Compiler\Parser.FuncParamModifierParser.cs" />
+    <Compile Include="Compiler\Parser.IDExpParser.cs" />
+    <Compile Include="Compiler\Parser.IDWithTypeArgsParser.cs" />
+    <Compile Include="Compiler\Parser.IfStmtParser.cs" />
+    <Compile Include="Compiler\Parser.LeftAssocBinExpParser.cs" />
+    <Compile Include="Compiler\Parser.LogicalANDExpParser.cs" />
+    <Compile Include="Compiler\Parser.LogicalORExpParser.cs" />
+    <Compile Include="Compiler\Parser.LogicalXORExpParser.cs" />
+    <Compile Include="Compiler\Parser.MemberFuncDeclParser.cs" />
+    <Compile Include="Compiler\Parser.MemberFuncModifierParser.cs" />
+    <Compile Include="Compiler\Parser.MemberVarDeclParser.cs" />
+    <Compile Include="Compiler\Parser.MultiplicativeExpParser.cs" />
+    <Compile Include="Compiler\Parser.NamespaceDeclParser.cs" />
+    <Compile Include="Compiler\Parser.NamespaceIDParser.cs" />
+    <Compile Include="Compiler\Parser.NewExpParser.cs" />
+    <Compile Include="Compiler\Parser.cs" />
+    <Compile Include="Compiler\ParsingExpFailedException.cs" />
+    <Compile Include="Compiler\ParsingExpFailedException1.cs" />
+    <Compile Include="Compiler\ParsingExpTokenFailedException.cs" />
+    <Compile Include="Compiler\ParsingFailedException.cs" />
+    <Compile Include="Compiler\ParsingFileUnitComponentFailedException.cs" />
+    <Compile Include="Compiler\ParsingMemberFuncDeclDuplicatedModifierException.cs" />
+    <Compile Include="Compiler\ParsingPreUnaryOperationFailedException.cs" />
+    <Compile Include="Compiler\ParsingPrimarySingleExpFailed.cs" />
+    <Compile Include="Compiler\ParsingThisExpFailedException.cs" />
+    <Compile Include="Compiler\ParsingTokenFailedException.cs" />
+    <Compile Include="Compiler\Parser.PrimaryExpParser.cs" />
+    <Compile Include="Compiler\Parser.RelationalAndTypeTestingExpParser.cs" />
+    <Compile Include="Compiler\Parser.ReturnStmtParser.cs" />
+    <Compile Include="Compiler\Parser.RightAssocBinExpParser.cs" />
+    <Compile Include="Compiler\Parser.ShiftExpParser.cs" />
+    <Compile Include="Compiler\Parser.StmtComponentParser.cs" />
+    <Compile Include="Compiler\Parser.TypeIDParser.cs" />
+    <Compile Include="Compiler\Parser.UnaryExpParser.cs" />
+    <Compile Include="Compiler\Parser.UsingDirectiveParser.cs" />
+    <Compile Include="Compiler\Parser.VarDeclParser.cs" />
+    <Compile Include="Compiler\Parser.VarDeclStmtParser.cs" />
+    <Compile Include="Compiler\Parser.WhileStmtParser.cs" />
+    <Compile Include="Compiler\Token.cs" />
+    <Compile Include="Compiler\TokenType.cs" />
+    <Compile Include="Data\AbstractSyntax\Generated.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="..\Gum.Props" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

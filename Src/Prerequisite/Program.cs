@@ -30,7 +30,6 @@ namespace Gum.Prerequisite
             }
             else
             {
-
                 Directory.CreateDirectory(fi.DirectoryName);
                 using (var streamWriter = new StreamWriter(fi.FullName))
                     streamWriter.Write(target);
@@ -39,8 +38,8 @@ namespace Gum.Prerequisite
 
         public static void Main(string[] args)
         {
-            GenerateCSharpFile("Gum.Lang.AbstractSyntax", @"..\..\Src\Sandbox\Lang\AbstractSyntax\Generated.cs", AbstractSyntaxGenerator.Generate());
-            GenerateCSharpFile("Gum.Lang.CoreIL", @"..\..\Src\Sandbox\Lang\CoreIL\Generated.cs", CoreILGenerator.Generate());
+            GenerateCSharpFile("Gum.Data.AbstractSyntax", @"..\..\Src\Sandbox\Data\AbstractSyntax\Generated.cs", AbstractSyntaxGenerator.Generate());
+            // GenerateCSharpFile("Gum.CoreIL", @"..\..\Src\Sandbox\Lang\CoreIL\Generated.cs", CoreILGenerator.Generate());
         }
     }
 }

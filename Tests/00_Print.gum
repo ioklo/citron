@@ -1,6 +1,6 @@
-// ��ǥ0. ����Ʈ �ϱ�
-//   - �Լ� ȣ��
-//   - ���� ���� �ٸ� Ÿ�� �Լ� ȣ���ϱ�
+﻿// 목표0. 프린트 하기
+//   - 함수 호출
+//   - 값에 따라서 다른 타입 함수 호출하기
 
 Console.WriteLine(1);
 Console.WriteLine("String");
