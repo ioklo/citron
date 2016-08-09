@@ -16,7 +16,7 @@ namespace Gum.Test
     {   
         static TypeID SingleType(string name)
         {
-            return new TypeID(new[] { new IDWithTypeArgs(name, Enumerable.Empty<TypeID>() )});
+            return new TypeID(new[] { new IDWithTypeArgs(name, new TypeID[] { } )});
         }
 
         static void Test<TestClass>(byte[] testResource) where TestClass : ITest, new()

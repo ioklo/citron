@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Gum.Translator.Text2AST
 {
-    // 렉서
+    // 텍스트를 토큰단위로 끊어줍니다
     public class Lexer
     {
         string source;
@@ -73,7 +73,6 @@ namespace Gum.Translator.Text2AST
         {            
             source = s;
             NextToken();
-            
         }
 
         public LexerScope CreateScope()

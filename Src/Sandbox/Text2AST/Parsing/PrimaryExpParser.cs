@@ -20,9 +20,9 @@ namespace Gum.Translator.Text2AST.Parsing
             if( lexer.Consume(TokenType.IntValue, out intValue))
                 return new IntegerExp(int.Parse(intValue));
 
-            string id;
-            if (lexer.Consume(TokenType.Identifier, out id))
-                return new IDExp(id);
+            IDExp idExp = Parser<IDExp, IDExpParser>.Parse(lexer);
+            if (idExp != null)
+                return idExp;
 
             if (lexer.Consume(TokenType.TrueValue))
                 return new BoolExp(true);
@@ -58,6 +58,35 @@ namespace Gum.Translator.Text2AST.Parsing
             return new CallExp(leftExp, args);
         }
 
+        private MemberExp ParseMemberExp(IExpComponent leftExp, Lexer lexer)
+        {   
+            string memberID;
+            if (!lexer.Consume(TokenType.Identifier, out memberID))
+                throw new ParsingExpTokenFailedException<MemberExp>(TokenType.Identifier);
+
+            // comma-separated
+            var typeIDs = new List<TypeID>();
+            if (lexer.Consume(TokenType.Less))
+            {
+                var typeID = Parse<TypeID, TypeIDParser>(lexer);
+                if (typeID == null)
+                    throw new ParsingExpFailedException<MemberExp, TypeID>();
+                typeIDs.Add(typeID);
+
+                while (lexer.Consume(TokenType.Comma))
+                {
+                    typeID = Parse<TypeID, TypeIDParser>(lexer);
+                    if (typeID == null)
+                        throw new ParsingExpFailedException<MemberExp, TypeID>();
+                    typeIDs.Add(typeID);
+                }
+
+                if (!lexer.Consume(TokenType.Greater))
+                    throw new ParsingExpTokenFailedException<MemberExp>(TokenType.Greater);
+            }
+
+            return new MemberExp(leftExp, memberID, typeIDs);
+        }
 
         protected override IExpComponent ParseInner(Lexer lexer)
         {
@@ -82,37 +111,10 @@ namespace Gum.Translator.Text2AST.Parsing
 
                 if (lexer.Consume(TokenType.Dot))
                 {
-                    string memberID;
-                    if (!lexer.Consume(TokenType.Identifier, out memberID))
-                        throw new ParsingExpTokenFailedException<MemberExp>(TokenType.Identifier);
 
-                    leftExp = new MemberExp(leftExp, memberID);
-                    continue;
-                }
 
-                if (lexer.Consume(TokenType.Less))
-                {
-                    // comma-separated
-                    var typeIDs = new List<TypeID>();
-
-                    var typeID = Parse<TypeID, TypeIDParser>(lexer);
-                    if (typeID == null)
-                        throw new ParsingExpFailedException<TypeArgsExp,TypeID>();
-                    typeIDs.Add(typeID);
-
-                    while (lexer.Consume(TokenType.Comma))
-                    {
-                        typeID = Parse<TypeID, TypeIDParser>(lexer);
-                        if (typeID == null)
-                            throw new ParsingExpFailedException<TypeArgsExp,TypeID>();
-                        typeIDs.Add(typeID);
-                    }
-
-                    if (!lexer.Consume(TokenType.Greater))
-                        throw new ParsingExpTokenFailedException<TypeArgsExp>(TokenType.Greater);
-
-                    leftExp = new TypeArgsExp(leftExp, typeIDs);
-                    continue;
+                    leftExp = ParseMemberExp(leftExp, lexer);
+                    continue;                    
                 }
 
                 if( lexer.Consume(TokenType.LBracket))

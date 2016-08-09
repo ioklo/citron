@@ -68,7 +68,7 @@ namespace Gum.Prerequisite.Generator
                         Writer.WriteLine("        public {0} {1} {{ get; private set; }}", variable.Type.Name, variable.Name);
                 }
                 else if (variable.VarType == VarType.List)
-                    Writer.WriteLine("        public IEnumerable<{0}> {1} {{ get; private set; }}", variable.Type.Name, variable.Name);
+                    Writer.WriteLine("        public IReadOnlyList<{0}> {1} {{ get; private set; }}", variable.Type.Name, variable.Name);
             }
 
             Writer.WriteLine();
@@ -91,7 +91,7 @@ namespace Gum.Prerequisite.Generator
                                     return string.Format("{0} {1}", var.Type.Name, VarName(var.Name));
                             }
                             else if (var.VarType == VarType.List)
-                                return string.Format("IEnumerable<{0}> {1}", var.Type.Name, VarName(var.Name));
+                                return string.Format("IReadOnlyList<{0}> {1}", var.Type.Name, VarName(var.Name));
 
                             return "";
                         }))
@@ -123,6 +123,16 @@ namespace Gum.Prerequisite.Generator
                 Writer.WriteLine("        public void Visit<Arg0>({0}Visitor<Arg0> visitor, Arg0 arg0)", comp.Name);
                 Writer.WriteLine("        {");
                 Writer.WriteLine("            visitor.Visit(this, arg0);");
+                Writer.WriteLine("        }");
+                Writer.WriteLine();
+                Writer.WriteLine("        public Ret VisitRet<Ret>({0}VisitorRet<Ret> visitor)", comp.Name);
+                Writer.WriteLine("        {");
+                Writer.WriteLine("            return visitor.VisitRet(this);");
+                Writer.WriteLine("        }");
+                Writer.WriteLine();
+                Writer.WriteLine("        public Ret VisitRet<Ret, Arg0>({0}VisitorRet<Ret, Arg0> visitor, Arg0 arg0)", comp.Name);
+                Writer.WriteLine("        {");
+                Writer.WriteLine("            return visitor.VisitRet(this, arg0);");
                 Writer.WriteLine("        }");
             }
 
@@ -157,32 +167,40 @@ namespace Gum.Prerequisite.Generator
             
             Writer.WriteLine("        void Visit({0}Visitor visitor);", compElem.Name);
             Writer.WriteLine("        void Visit<Arg0>({0}Visitor<Arg0> visitor, Arg0 arg0);", compElem.Name);
+            Writer.WriteLine("        Ret VisitRet<Ret>({0}VisitorRet<Ret> visitor);", compElem.Name);
+            Writer.WriteLine("        Ret VisitRet<Ret, Arg0>({0}VisitorRet<Ret, Arg0> visitor, Arg0 arg0);", compElem.Name);
             Writer.WriteLine("    }");
 
             Writer.WriteLine();
 
             Writer.WriteLine("    public interface {0}Visitor", compElem.Name);
             Writer.WriteLine("    {");
-
             foreach (var elem in compElem.Elements)
-            {
                 Writer.WriteLine("        void Visit({0} {1});", elem.Name, VarName(elem.Name));
-            }
-
             Writer.WriteLine("    }");
-
             Writer.WriteLine();
 
             Writer.WriteLine("    public interface {0}Visitor<Arg0>", compElem.Name);
             Writer.WriteLine("    {");
-
             foreach (var elem in compElem.Elements)
-            {
                 Writer.WriteLine("        void Visit({0} {1}, Arg0 arg0);", elem.Name, VarName(elem.Name));
-            }
-
             Writer.WriteLine("    }");
 
+            Writer.WriteLine();
+
+            Writer.WriteLine("    public interface {0}VisitorRet<Ret>", compElem.Name);
+            Writer.WriteLine("    {");
+            foreach (var elem in compElem.Elements)
+                Writer.WriteLine("        Ret VisitRet({0} {1});", elem.Name, VarName(elem.Name));
+            Writer.WriteLine("    }");
+
+            Writer.WriteLine();
+
+            Writer.WriteLine("    public interface {0}VisitorRet<Ret, Arg0>", compElem.Name);
+            Writer.WriteLine("    {");
+            foreach (var elem in compElem.Elements)
+                Writer.WriteLine("        Ret VisitRet({0} {1}, Arg0 arg0);", elem.Name, VarName(elem.Name));
+            Writer.WriteLine("    }");
         }
 
         public void Print(PrimitiveElem primitiveELem, TextWriter Writer)

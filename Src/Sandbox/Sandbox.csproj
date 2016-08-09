@@ -47,6 +47,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Evaluator\ASTEvaluator.cs" />
     <Compile Include="Lang\AbstractSyntax\Generated.cs" />
     <Compile Include="Lang\CoreIL\Generated.cs" />
     <Compile Include="Metadatas\FuncDef.cs" />
@@ -63,6 +64,8 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Test\BuildMetadata.cs" />
+    <Compile Include="Evaluator\ASTEvaluator.TypeChecker.cs" />
+    <Compile Include="Evaluator\ASTEvaluator.TypeResolver.cs" />
     <None Include="packages.config" />
     <None Include="Test\CollectTypeDefinitions.cs" />
     <Compile Include="Test\Environment.cs" />
@@ -105,6 +108,7 @@
     <Compile Include="Text2AST\Parsing\ForInitComponentParser.cs" />
     <Compile Include="Text2AST\Parsing\ForStmtParser.cs" />
     <Compile Include="Text2AST\Parsing\FuncParamModifierParser.cs" />
+    <Compile Include="Text2AST\Parsing\IDExpParser.cs" />
     <Compile Include="Text2AST\Parsing\IDWithTypeArgsParser.cs" />
     <Compile Include="Text2AST\Parsing\IfStmtParser.cs" />
     <Compile Include="Text2AST\Parsing\LeftAssocBinExpParser.cs" />

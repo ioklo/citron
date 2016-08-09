@@ -22,7 +22,7 @@ namespace Gum.Test.Text2AST
         public override void ConfigDeserializer(Deserializer deserializer)
         {
             deserializer.RegisterTagMapping("!BoolExp", typeof(BoolExp));
-            deserializer.RegisterTagMapping("!CharExp", typeof(CharExp));
+            // deserializer.RegisterTagMapping("!CharExp", typeof(CharExp));
             deserializer.RegisterTagMapping("!IntegerExp", typeof(IntegerExp));
             deserializer.RegisterTagMapping("!StringExp", typeof(StringExp));
             deserializer.RegisterTagMapping("!IDExp", typeof(IDExp));

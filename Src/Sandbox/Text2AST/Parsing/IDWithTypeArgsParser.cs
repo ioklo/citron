@@ -15,7 +15,7 @@ namespace Gum.Translator.Text2AST.Parsing
 
             // typeArguments are optional
             if (!lexer.Consume(TokenType.Less))
-                return new IDWithTypeArgs(id, Enumerable.Empty<TypeID>());
+                return new IDWithTypeArgs(id, new TypeID[]{ });
 
             // comma-separated
             var typeIDs = new List<TypeID>();

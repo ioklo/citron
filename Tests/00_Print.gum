@@ -2,6 +2,6 @@
 //   - 함수 호출
 //   - 값에 따라서 다른 타입 함수 호출하기
 
-Print(1);
-Print("String");
-Print(true);
+Console.WriteLine(1);
+Console.WriteLine("String");
+Console.WriteLine(true);

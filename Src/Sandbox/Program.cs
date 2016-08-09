@@ -1,4 +1,5 @@
-﻿using Gum.Lang.AbstractSyntax;
+﻿using Gum.Evaluator;
+using Gum.Lang.AbstractSyntax;
 using Gum.Translator.Text2AST;
 using Gum.Translator.Text2AST.Parsing;
 using System;
@@ -11,6 +12,7 @@ using System.Threading.Tasks;
 
 namespace Gum.Sandbox
 {
+    // Gum 개발 중 빠르게 실험해 보고 싶을때 쓰는 클래스
     class Program
     {
         static void Main(string[] args)
@@ -22,6 +24,9 @@ namespace Gum.Sandbox
 
             var lexer = new Lexer(code);
             var ast = Parser<FileUnit, FileUnitParser>.Parse(lexer);
+
+            // ASTEvaluator.Eval(ast);
+
 
             // ASTPrinter.Print(ast);
 

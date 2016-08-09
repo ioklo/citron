@@ -18,8 +18,8 @@ namespace Gum.Prerequisite
             var stringType = structure.CreatePrimitive("string");
             var intType = structure.CreatePrimitive("int");
             var boolType = structure.CreatePrimitive("bool");
-            var charType = structure.CreatePrimitive("char");
-
+            var typeType = structure.CreatePrimitive("IType");
+            
             // enumeration
             var unaryExpKind = structure.CreateEnum("UnaryExpKind");
             var binaryExpKind = structure.CreateEnum("BinaryExpKind");
@@ -63,7 +63,6 @@ namespace Gum.Prerequisite
             var assignExp = structure.CreateStruct("AssignExp");
             var binaryExp = structure.CreateStruct("BinaryExp");
             var boolExp = structure.CreateStruct("BoolExp");
-            var charExp = structure.CreateStruct("CharExp");
             var callExp = structure.CreateStruct("CallExp");     // <>(); expression
             var memberExp = structure.CreateStruct("MemberExp"); // a.b
             var integerExp = structure.CreateStruct("IntegerExp");
@@ -72,7 +71,6 @@ namespace Gum.Prerequisite
             var unaryExp = structure.CreateStruct("UnaryExp");
             var idExp = structure.CreateStruct("IDExp");
             var arrayExp = structure.CreateStruct("ArrayExp");
-            var typeArgsExp = structure.CreateStruct("TypeArgsExp");
 
             var fileUnit = structure.CreateStruct("FileUnit");
 
@@ -171,7 +169,6 @@ namespace Gum.Prerequisite
                 .Add(assignExp)
                 .Add(binaryExp)
                 .Add(boolExp)
-                .Add(charExp)
                 .Add(callExp)
                 .Add(memberExp)
                 .Add(integerExp)
@@ -179,8 +176,7 @@ namespace Gum.Prerequisite
                 .Add(stringExp)
                 .Add(unaryExp)
                 .Add(idExp)
-                .Add(arrayExp)
-                .Add(typeArgsExp);
+                .Add(arrayExp);
 
             // Left = Right
             assignExp
@@ -197,9 +193,6 @@ namespace Gum.Prerequisite
             boolExp
                 .Var(boolType, "Value");
 
-            charExp
-                .Var(charType, "Value");
-            
             // FuncExp(Arg0, Arg1)
             callExp 
                 .Var(expComponent, "FuncExp")
@@ -208,7 +201,8 @@ namespace Gum.Prerequisite
             // Exp.(ID.Name)
             memberExp
                 .Var(expComponent, "Exp")
-                .Var(stringType, "MemberName");
+                .Var(stringType, "MemberName")
+                .Vars(typeID, "TypeArgs");
 
             // Value(0, .. )
             integerExp
@@ -230,16 +224,13 @@ namespace Gum.Prerequisite
 
             // f<int>
             idExp
-                .Var(stringType, "ID");
+                .Var(stringType, "ID")
+                .Vars(typeID, "typeArgs");
 
             arrayExp
                 .Var(expComponent, "Exp")
                 .Var(expComponent, "Index");
-
-            typeArgsExp
-                .Var(expComponent, "Exp")
-                .Vars(typeID, "Types");
-
+            
             // List<int> IFunc<String>.Func<int>(int a) { }
             //funcDecl
             //    .Var(typeID, "ReturnType")
