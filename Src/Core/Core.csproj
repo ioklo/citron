@@ -4,17 +4,15 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{35418E13-7094-4DBE-BF10-5046FD1B054C}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <ProjectGuid>{B1569A3E-9A6C-4CC9-AFE6-D52E74E2D28C}</ProjectGuid>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Gum</RootNamespace>
-    <AssemblyName>Gum.Sandbox</AssemblyName>
+    <AssemblyName>Gum.Core</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -24,7 +22,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -43,17 +40,33 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Program.cs" />
+    <Compile Include="Compiler\Lexer.cs" />
+    <Compile Include="Compiler\Lexer.Scope.cs" />
+    <Compile Include="Compiler\Lexer.State.cs" />
+    <Compile Include="Compiler\Parser.ClassDeclParser.cs" />
+    <Compile Include="Compiler\Parser.cs" />
+    <Compile Include="Compiler\Parser.Exp.cs" />
+    <Compile Include="Compiler\Parser.FileUnitParser.cs" />
+    <Compile Include="Compiler\Parser.ForInitComponentParser.cs" />
+    <Compile Include="Compiler\Parser.FuncParamModifierParser.cs" />
+    <Compile Include="Compiler\Parser.IDExpParser.cs" />
+    <Compile Include="Compiler\Parser.IDWithTypeArgsParser.cs" />
+    <Compile Include="Compiler\Parser.MemberFuncDeclParser.cs" />
+    <Compile Include="Compiler\Parser.MemberFuncModifierParser.cs" />
+    <Compile Include="Compiler\Parser.MemberVarDeclParser.cs" />
+    <Compile Include="Compiler\Parser.NamespaceDeclParser.cs" />
+    <Compile Include="Compiler\Parser.NamespaceIDParser.cs" />
+    <Compile Include="Compiler\Parser.NewExpParser.cs" />
+    <Compile Include="Compiler\Parser.Stmt.cs" />
+    <Compile Include="Compiler\Parser.TypeIDParser.cs" />
+    <Compile Include="Compiler\Parser.UsingDirectiveParser.cs" />
+    <Compile Include="Compiler\Parser.VarDeclParser.cs" />
+    <Compile Include="Compiler\ParsingFailedException.cs" />
+    <Compile Include="Compiler\ParsingMemberFuncDeclDuplicatedModifierException.cs" />
+    <Compile Include="Compiler\Token.cs" />
+    <Compile Include="Compiler\TokenType.cs" />
+    <Compile Include="Data\AbstractSyntax\Generated.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Core\Core.csproj">
-      <Project>{b1569a3e-9a6c-4cc9-afe6-d52e74e2d28c}</Project>
-      <Name>Core</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="..\Gum.Props" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

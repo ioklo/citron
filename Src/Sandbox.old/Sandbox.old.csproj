@@ -41,8 +41,9 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
-    <Reference Include="YamlDotNet">
-      <HintPath>..\..\packages\YamlDotNet.3.8.0\lib\net35\YamlDotNet.dll</HintPath>
+    <Reference Include="YamlDotNet, Version=3.9.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\YamlDotNet.3.9.0\lib\net35\YamlDotNet.dll</HintPath>
       <Private>True</Private>
     </Reference>
   </ItemGroup>
@@ -69,8 +70,6 @@
     <None Include="packages.config" />
     <None Include="Test\CollectTypeDefinitions.cs" />
     <Compile Include="Test\Environment.cs" />
-    <Compile Include="Test\ITest.cs" />
-    <Compile Include="Test\ITestCase.cs" />
     <Compile Include="Test\Map.cs" />
     <Compile Include="Test\Program.cs" />
     <Compile Include="Test\TestResource.Designer.cs">
@@ -78,10 +77,7 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
-    <Compile Include="Test\Text2AST\LexerTest.cs" />
     <Compile Include="Test\Text2AST\ParseExpTest.cs" />
-    <Compile Include="Test\Text2AST\TestBase.cs" />
-    <Compile Include="Test\Text2AST\TestUtil.cs" />
     <Compile Include="Test\TypeAnnotator.cs" />
     <Compile Include="Test\TypeInst\FuncTypeVar.cs" />
     <Compile Include="Test\TypeInst\ITypeInst.cs" />
@@ -98,13 +94,13 @@
     </None>
     <None Include="App.config" />
     <None Include="Test\TestData\Test.yaml" />
-    <None Include="Test\Text2AST\LexerTest.yaml" />
     <None Include="Test\Text2AST\ParseExpTestData.yaml" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Test\TestResource.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>TestResource.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="..\Gum.Props" />

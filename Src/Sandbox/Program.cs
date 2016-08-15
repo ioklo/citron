@@ -7,7 +7,6 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using static Gum.Compiler.Parser;
 
 namespace Gum.Sandbox
 {
@@ -17,11 +16,11 @@ namespace Gum.Sandbox
         {
             string code = File.ReadAllText(@"..\..\Tests\00_Print.gum");
 
-            // preprocessing
+            // TODO: preprocessing -> lexer에서 집어넣고 무시시켜야 할 듯
             code = Regex.Replace(code, "//.*$", " ", RegexOptions.Multiline);
 
             var lexer = new Lexer(code);
-            var ast = Parser<FileUnit, FileUnitParser>.Parse(lexer);
+            var ast = Parser.ParseFileUnit(lexer);
         }
     }
 }

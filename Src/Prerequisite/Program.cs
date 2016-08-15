@@ -38,7 +38,7 @@ namespace Gum.Prerequisite
 
         public static void Main(string[] args)
         {
-            GenerateCSharpFile("Gum.Data.AbstractSyntax", @"..\..\Src\Sandbox\Data\AbstractSyntax\Generated.cs", AbstractSyntaxGenerator.Generate());
+            GenerateCSharpFile("Gum.Data.AbstractSyntax", @"..\..\Src\Core\Data\AbstractSyntax\Generated.cs", AbstractSyntaxGenerator.Generate());
             // GenerateCSharpFile("Gum.CoreIL", @"..\..\Src\Sandbox\Lang\CoreIL\Generated.cs", CoreILGenerator.Generate());
         }
     }
