@@ -1,0 +1,3 @@
+﻿// HomeDir
+
+@${env.HomeDir}

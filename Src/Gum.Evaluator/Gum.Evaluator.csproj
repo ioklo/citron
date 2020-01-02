@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Gum</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Collections.Immutable" Version="1.7.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Gum.Infra\Gum.Infra.csproj" />
+    <ProjectReference Include="..\Gum.Runtime\Gum.Runtime.csproj" />
+    <ProjectReference Include="..\Gum.StaticAnalysis\Gum.StaticAnalysis.csproj" />
+    <ProjectReference Include="..\Gum.TextAnalysis\Gum.TextAnalysis.csproj" />
+  </ItemGroup>
+
+</Project>
