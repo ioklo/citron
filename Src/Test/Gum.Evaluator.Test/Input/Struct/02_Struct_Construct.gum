@@ -1,0 +1,15 @@
+﻿public struct B
+{
+}
+
+struct S : B
+{
+    int x; // default public
+    protected int y;
+    private int z;
+
+    void Func() // default public
+    {
+    }
+}
+
