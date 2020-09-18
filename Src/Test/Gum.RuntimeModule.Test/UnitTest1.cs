@@ -2,7 +2,6 @@ using Gum.CompileTime;
 using Gum.Runtime;
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using Xunit;
@@ -16,7 +15,7 @@ namespace Gum.Runtime
         {
             var runtimeModule = new RuntimeModule(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), Directory.GetCurrentDirectory());
 
-            ModuleInfoService moduleInfoService = new ModuleInfoService(ImmutableArray.Create<IModuleInfo>(runtimeModule));
+            ModuleInfoService moduleInfoService = new ModuleInfoService(new IModuleInfo[] { runtimeModule });
 
             DomainService domainService = new DomainService();
 
@@ -40,7 +39,7 @@ namespace Gum.Runtime
 
             // List<int>.Add(list, 3)
             if( funcInst is NativeFuncInst nativeFuncInst )
-                nativeFuncInst.CallAsync(list, ImmutableArray.Create<Value>(runtimeModule.MakeInt(3)), VoidValue.Instance);
+                nativeFuncInst.CallAsync(list, new Value[] { runtimeModule.MakeInt(3) }, VoidValue.Instance);
 
             // [1, 2, 3]
             Assert.True(list is ObjectValue objValue && 

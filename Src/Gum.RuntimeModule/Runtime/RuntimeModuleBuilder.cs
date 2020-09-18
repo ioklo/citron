@@ -1,7 +1,6 @@
 ﻿using Gum.CompileTime;
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Reflection;
 using System.Threading.Tasks;
 using Invoker = Gum.Runtime.RuntimeModuleMisc.Invoker;
@@ -67,7 +66,7 @@ namespace Gum.Runtime
             bool bThisCall,
             IReadOnlyList<string> typeParams,
             TypeValue retTypeValue,
-            ImmutableArray<TypeValue> paramTypeValues,
+            IEnumerable<TypeValue> paramTypeValues,
             Invoker invoker)
         {
             funcInfos.Add(new FuncInfo(outerId, funcId, bSeqCall, bThisCall, typeParams, retTypeValue, paramTypeValues));

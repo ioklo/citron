@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading.Tasks;
 using System.Linq;
+using static Gum.ParserMisc;
 
 namespace Gum
 {
@@ -83,78 +84,28 @@ namespace Gum
         public ValueTask<ParseResult<Stmt>> ParseStmtAsync(ParserContext context)
         {
             return stmtParser.ParseStmtAsync(context);
-        }
-
-        #region Utilities
-        bool Accept<TToken>(LexResult lexResult, ref ParserContext context)
-        {
-            if (lexResult.HasValue && lexResult.Token is TToken)
-            {
-                context = context.Update(lexResult.Context);
-                return true;
-            }
-
-            return false;
-        }
-
-        bool Accept<TToken>(LexResult lexResult, ref ParserContext context, [NotNullWhen(returnValue:true)] out TToken? token) where TToken : Token
-        {
-            if (lexResult.HasValue && lexResult.Token is TToken resultToken)
-            {
-                context = context.Update(lexResult.Context);
-                token = resultToken;
-                return true;
-            }
-
-            token = null;
-            return false;
-        }
-
-        bool Peek<TToken>(LexResult lexResult) where TToken : Token
-        {
-            return lexResult.HasValue && lexResult.Token is TToken;
-        }
-
-        bool Parse<TSyntaxElem>(
-            ParseResult<TSyntaxElem> parseResult, 
-            ref ParserContext context, 
-            [MaybeNullWhen(returnValue: false)] out TSyntaxElem elem)
-        {
-            if (!parseResult.HasValue)
-            {
-                elem = default;
-                return false;
-            }
-            else
-            {
-                elem = parseResult.Elem;
-                context = parseResult.Context;
-                return true;
-            }
-        }
-
-        #endregion
+        }       
 
         async ValueTask<ParseResult<TypeExp>> ParseTypeIdExpAsync(ParserContext context)
         {
             if (!Accept<IdentifierToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context, out var idToken))
                 return ParseResult<TypeExp>.Invalid;
 
-            var typeArgsBuilder = ImmutableArray.CreateBuilder<TypeExp>();
+            var typeArgs = new List<TypeExp>();
             if (Accept<LessThanToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                 while(!Accept<GreaterThanToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                 {
-                    if (0 < typeArgsBuilder.Count)
+                    if (0 < typeArgs.Count)
                         if (!Accept<CommaToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                             return ParseResult<TypeExp>.Invalid;
 
                     if (!Parse(await ParseTypeExpAsync(context), ref context, out var typeArg))
                         return ParseResult<TypeExp>.Invalid;
 
-                    typeArgsBuilder.Add(typeArg);
+                    typeArgs.Add(typeArg);
                 }
 
-            return new ParseResult<TypeExp>(new IdTypeExp(idToken.Value, typeArgsBuilder.ToImmutable()), context);
+            return new ParseResult<TypeExp>(new IdTypeExp(idToken.Value, typeArgs), context);
         }
 
         async ValueTask<ParseResult<TypeExp>> ParsePrimaryTypeExpAsync(ParserContext context)
@@ -174,7 +125,7 @@ namespace Gum
                         return ParseResult<TypeExp>.Invalid;
 
                     // TODO: typeApp(T.S<>) 처리도 추가
-                    exp = new MemberTypeExp(exp, memberName.Value, ImmutableArray<TypeExp>.Empty);
+                    exp = new MemberTypeExp(exp, memberName.Value, Enumerable.Empty<TypeExp>());
                     continue;
                 }
 
@@ -309,7 +260,7 @@ namespace Gum
             if (!Accept<LBraceToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                 return ParseResult<EnumDecl>.Invalid;
 
-            var elements = ImmutableArray.CreateBuilder<EnumDeclElement>();
+            var elements = new List<EnumDeclElement>();
             while (!Accept<RBraceToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
             {
                 if (0 < elements.Count)

@@ -3,7 +3,6 @@ using Gum.StaticAnalysis;
 using Gum.Syntax;
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -135,7 +134,7 @@ namespace Gum.Runtime
 
                     oldValue.SetValue(loc);
 
-                    await evaluator.EvaluateFuncInstAsync(null, operatorInst, ImmutableArray.Create(oldValue), loc, context);
+                    await evaluator.EvaluateFuncInstAsync(null, operatorInst, new Value[] { oldValue }, loc, context);
 
                     result.SetValue(oldValue);
                 }
@@ -148,7 +147,7 @@ namespace Gum.Runtime
 
                     oldValue.SetValue(loc);
 
-                    await evaluator.EvaluateFuncInstAsync(null, operatorInst, ImmutableArray.Create(oldValue), loc, context);
+                    await evaluator.EvaluateFuncInstAsync(null, operatorInst, new Value[] { oldValue }, loc, context);
 
                     result.SetValue(loc);
                 }
@@ -185,7 +184,7 @@ namespace Gum.Runtime
                     await evaluator.EvaluateFuncInstAsync(thisValue, getterInst, argValues, v0, context);
 
                     // v1 = operatorInc(v0);
-                    await evaluator.EvaluateFuncInstAsync(null, operatorInst, ImmutableArray.Create(v0), v1, context);
+                    await evaluator.EvaluateFuncInstAsync(null, operatorInst, new Value[] { v0 }, v1, context);
 
                     // obj.SetX(v1)
                     argValues.Add(v1);
@@ -206,7 +205,7 @@ namespace Gum.Runtime
                     await evaluator.EvaluateFuncInstAsync(thisValue, getterInst, argValues, v0, context);
 
                     // v1 = operatorInc(v0);
-                    await evaluator.EvaluateFuncInstAsync(null, operatorInst, ImmutableArray.Create(v0), v1, context);
+                    await evaluator.EvaluateFuncInstAsync(null, operatorInst, new Value[] { v0 }, v1, context);
 
                     // obj.SetX(v1)
                     argValues.Add(v1);
@@ -303,7 +302,7 @@ namespace Gum.Runtime
                 argValues.Add(value);
 
                 var setterInst = context.DomainService.GetFuncInst(callSetterInfo.Setter);
-                await evaluator.EvaluateFuncInstAsync(thisValue, setterInst, argValues.ToImmutableArray(), VoidValue.Instance, context);
+                await evaluator.EvaluateFuncInstAsync(thisValue, setterInst, argValues, VoidValue.Instance, context);
 
                 // 4. result는 operand1실행 결과
                 result.SetValue(value);
@@ -753,7 +752,7 @@ namespace Gum.Runtime
             await EvalAsync(exp.Index, indexValue, context);
             var funcInst = context.DomainService.GetFuncInst(info.FuncValue);
 
-            await evaluator.EvaluateFuncInstAsync(thisValue, funcInst, ImmutableArray.Create(indexValue), result, context);
+            await evaluator.EvaluateFuncInstAsync(thisValue, funcInst, new Value[] { indexValue }, result, context);
         }
 
         async ValueTask EvalMemberCallExpAsync(MemberCallExp exp, Value result, EvalContext context)
@@ -826,9 +825,9 @@ namespace Gum.Runtime
                     throw new NotImplementedException();
             }
 
-            async ValueTask<ImmutableArray<Value>> EvaluateArgsAsync(IEnumerable<TypeValue> argTypeValues, ImmutableArray<Exp> argExps)
+            async ValueTask<List<Value>> EvaluateArgsAsync(IEnumerable<TypeValue> argTypeValues, IReadOnlyCollection<Exp> argExps)
             {
-                var argsBuilder = ImmutableArray.CreateBuilder<Value>(argExps.Length);
+                var argsBuilder = new List<Value>(argExps.Count);
 
                 foreach (var (typeValue, argExp) in Zip(argTypeValues, argExps))
                 {
@@ -839,7 +838,7 @@ namespace Gum.Runtime
                     await EvalAsync(argExp, argValue, context);
                 }
 
-                return argsBuilder.MoveToImmutable();
+                return argsBuilder;
             }
         }
 

@@ -113,7 +113,8 @@ namespace Gum
             { "public", PublicToken.Instance },
             { "protected", ProtectedToken.Instance },
             { "private", PrivateToken.Instance },
-            { "static", StaticToken.Instance }
+            { "static", StaticToken.Instance },
+            { "new", NewToken.Instance },
         };
 
         private static (string Text, Func<Token> Constructor)[] infos = new (string Text, Func<Token> Constructor)[]

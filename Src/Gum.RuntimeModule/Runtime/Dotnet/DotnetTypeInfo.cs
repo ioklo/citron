@@ -1,7 +1,6 @@
 ﻿using Gum.CompileTime;
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
@@ -81,7 +80,7 @@ namespace Gum.Runtime.Dotnet
 
         public IReadOnlyList<string> GetTypeParams()
         {
-            return typeInfo.GenericTypeParameters.Select(typeInfo => typeInfo.Name).ToImmutableArray();                
+            return typeInfo.GenericTypeParameters.Select(typeInfo => typeInfo.Name).ToList();                
         }
     }
 }

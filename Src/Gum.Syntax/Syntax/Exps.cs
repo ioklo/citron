@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Gum.Infra;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -45,9 +46,9 @@ namespace Gum.Syntax
     {
         public ImmutableArray<StringExpElement> Elements { get; }
         
-        public StringExp(ImmutableArray<StringExpElement> elements)
+        public StringExp(IEnumerable<StringExpElement> elements)
         {
-            Elements = elements;
+            Elements = elements.ToImmutableArray();
         }
 
         public StringExp(params StringExpElement[] elements)
@@ -215,17 +216,17 @@ namespace Gum.Syntax
         // TODO: params, out, 등 처리를 하려면 Exp가 아니라 다른거여야 한다
         public ImmutableArray<Exp> Args { get; }
 
-        public CallExp(Exp callable, ImmutableArray<TypeExp> typeArgs, ImmutableArray<Exp> args)
+        public CallExp(Exp callable, IEnumerable<TypeExp> typeArgs, IEnumerable<Exp> args)
         {
             Callable = callable;
-            TypeArgs = typeArgs;
-            Args = args;
+            TypeArgs = typeArgs.ToImmutableArray();
+            Args = args.ToImmutableArray();
         }
 
-        public CallExp(Exp callable, ImmutableArray<TypeExp> typeArgs, params Exp[] args)
+        public CallExp(Exp callable, IEnumerable<TypeExp> typeArgs, params Exp[] args)
         {
             Callable = callable;
-            TypeArgs = typeArgs;
+            TypeArgs = typeArgs.ToImmutableArray();
             Args = ImmutableArray.Create(args);
         }
 
@@ -292,9 +293,9 @@ namespace Gum.Syntax
         public ImmutableArray<LambdaExpParam> Params { get; }
         public Stmt Body { get; }
 
-        public LambdaExp(ImmutableArray<LambdaExpParam> parameters, Stmt body)
+        public LambdaExp(IEnumerable<LambdaExpParam> parameters, Stmt body)
         {
-            Params = parameters;
+            Params = parameters.ToImmutableArray();
             Body = body;
         }
 
@@ -369,19 +370,19 @@ namespace Gum.Syntax
         public ImmutableArray<TypeExp> MemberTypeArgs { get; }
         public ImmutableArray<Exp> Args { get; }
 
-        public MemberCallExp(Exp obj, string memberName, ImmutableArray<TypeExp> typeArgs, ImmutableArray<Exp> args)
+        public MemberCallExp(Exp obj, string memberName, IEnumerable<TypeExp> typeArgs, IEnumerable<Exp> args)
         {
             Object = obj;
             MemberName = memberName;
-            MemberTypeArgs = typeArgs;
-            Args = args;
+            MemberTypeArgs = typeArgs.ToImmutableArray();
+            Args = args.ToImmutableArray();
         }
 
-        public MemberCallExp(Exp obj, string memberName, ImmutableArray<TypeExp> typeArgs, params Exp[] args)
+        public MemberCallExp(Exp obj, string memberName, IEnumerable<TypeExp> typeArgs, params Exp[] args)
         {
             Object = obj;
             MemberName = memberName;
-            MemberTypeArgs = typeArgs;
+            MemberTypeArgs = typeArgs.ToImmutableArray();
             Args = ImmutableArray.Create(args);
         }
 
@@ -416,11 +417,11 @@ namespace Gum.Syntax
         public string MemberName { get; }
         public ImmutableArray<TypeExp> MemberTypeArgs { get; }
 
-        public MemberExp(Exp obj, string memberName, ImmutableArray<TypeExp> memberTypeArgs)
+        public MemberExp(Exp obj, string memberName, IEnumerable<TypeExp> memberTypeArgs)
         {
             Object = obj;
             MemberName = memberName;
-            MemberTypeArgs = memberTypeArgs;
+            MemberTypeArgs = memberTypeArgs.ToImmutableArray();
         }
 
         public override bool Equals(object? obj)
@@ -452,10 +453,10 @@ namespace Gum.Syntax
         TypeExp? ElemType { get; }
         public ImmutableArray<Exp> Elems { get; }
 
-        public ListExp(TypeExp? elemType, ImmutableArray<Exp> elems)
+        public ListExp(TypeExp? elemType, IEnumerable<Exp> elems)
         {
             ElemType = elemType;
-            Elems = elems;
+            Elems = elems.ToImmutableArray();
         }
 
         public ListExp(TypeExp? elemType, params Exp[] elems)
@@ -482,6 +483,47 @@ namespace Gum.Syntax
         }
 
         public static bool operator !=(ListExp? left, ListExp? right)
+        {
+            return !(left == right);
+        }
+    }
+
+    // new Type(2, 3, 4);
+    public class NewExp : Exp
+    {
+        public TypeExp Type { get; }
+
+        // TODO: params, out, 등 처리를 하려면 Exp가 아니라 다른거여야 한다
+        public ImmutableArray<Exp> Args { get; }
+        
+        public NewExp(TypeExp type, IEnumerable<Exp> args)
+        {
+            Type = type;
+            Args = args.ToImmutableArray();
+        }
+
+        public override bool Equals(object? obj)
+        {
+            return obj is NewExp exp &&
+                   EqualityComparer<TypeExp>.Default.Equals(Type, exp.Type) &&
+                   SeqEqComparer.Equals(Args, exp.Args);
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = new HashCode();
+            hashCode.Add(Type);
+            SeqEqComparer.AddHash(ref hashCode, Args);
+
+            return hashCode.ToHashCode();
+        }
+
+        public static bool operator ==(NewExp? left, NewExp? right)
+        {
+            return EqualityComparer<NewExp?>.Default.Equals(left, right);
+        }
+
+        public static bool operator !=(NewExp? left, NewExp? right)
         {
             return !(left == right);
         }

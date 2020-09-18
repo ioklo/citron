@@ -12,9 +12,9 @@ namespace Gum.StaticAnalysis
     {
         public static class Misc
         {
-            public static ImmutableArray<TypeValue> GetTypeValues(ImmutableArray<TypeExp> typeExps, Context context)
+            public static ImmutableArray<TypeValue> GetTypeValues(IEnumerable<TypeExp> typeExps, Context context)
             {
-                return ImmutableArray.CreateRange(typeExps, typeExp => context.GetTypeValueByTypeExp(typeExp));
+                return typeExps.Select(typeExp => context.GetTypeValueByTypeExp(typeExp)).ToImmutableArray();
             }
 
             public static bool IsVarStatic(ModuleItemId varId, Context context)

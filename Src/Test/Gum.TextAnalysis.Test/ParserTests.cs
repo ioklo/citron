@@ -1,7 +1,6 @@
 using Gum.Syntax;
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -44,7 +43,7 @@ namespace Gum
             var expected = new FuncDecl(
                 false,
                 new IdTypeExp("void"),
-                "Func", ImmutableArray<string>.Empty,
+                "Func", Enumerable.Empty<string>(),
                 new FuncParamInfo(
                     new TypeAndName[] {
                         new TypeAndName(new IdTypeExp("int"), "x"),
@@ -71,7 +70,7 @@ enum X
             var enumDecl = await parser.ParseEnumDeclAsync(context);
 
             var expected = new EnumDecl("X",
-                ImmutableArray<string>.Empty,
+                Enumerable.Empty<string>(),
                 new EnumDeclElement("First"),
                 new EnumDeclElement("Second", new TypeAndName(new IdTypeExp("int"), "i")),
                 new EnumDeclElement("Third"));

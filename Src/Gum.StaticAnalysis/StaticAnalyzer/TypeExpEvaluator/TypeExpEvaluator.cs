@@ -116,16 +116,16 @@ namespace Gum.StaticAnalysis
                 return false;
             }
 
-            var typeArgsBuilder = ImmutableArray.CreateBuilder<TypeValue>(exp.TypeArgs.Length);
+            var typeArgs = new List<TypeValue>(exp.TypeArgs.Length);
             foreach (var typeArgExp in exp.TypeArgs)
             {
                 if (!EvaluateTypeExp(typeArgExp, context, out var typeArg))
                     return false;
 
-                typeArgsBuilder.Add(typeArg);
+                typeArgs.Add(typeArg);
             }
 
-            if (!GetMemberTypeValue(context, parentNTV, exp.MemberName, typeArgsBuilder.MoveToImmutable(), out typeValue))
+            if (!GetMemberTypeValue(context, parentNTV, exp.MemberName, typeArgs, out typeValue))
             {
                 context.AddError(exp, $"{parentTypeValue}에서 {exp.MemberName}을 찾을 수 없습니다");
                 return false;
@@ -140,7 +140,7 @@ namespace Gum.StaticAnalysis
             Context context,
             TypeValue.Normal parent, 
             string memberName, 
-            ImmutableArray<TypeValue> typeArgs, 
+            IReadOnlyCollection<TypeValue> typeArgs, 
             [NotNullWhen(returnValue: true)] out TypeValue? outTypeValue)
         {
             outTypeValue = null;
@@ -151,7 +151,7 @@ namespace Gum.StaticAnalysis
             if (!context.GetSkeleton(normalParent.TypeId, out var parentSkeleton))
                 return false;
 
-            if (parentSkeleton.GetMemberTypeId(memberName, typeArgs.Length, out var childTypeId))
+            if (parentSkeleton.GetMemberTypeId(memberName, typeArgs.Count, out var childTypeId))
             {
                 outTypeValue = TypeValue.MakeNormal(childTypeId, TypeArgumentList.Make(parent.TypeArgList, typeArgs));
                 return true;

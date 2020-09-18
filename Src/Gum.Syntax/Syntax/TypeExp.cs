@@ -14,7 +14,7 @@ namespace Gum.Syntax
     {
         public string Name { get; }
         public ImmutableArray<TypeExp> TypeArgs { get; }
-        public IdTypeExp(string name, ImmutableArray<TypeExp> typeArgs) { Name = name; TypeArgs = typeArgs; }
+        public IdTypeExp(string name, IEnumerable<TypeExp> typeArgs) { Name = name; TypeArgs = typeArgs.ToImmutableArray(); }
         public IdTypeExp(string name, params TypeExp[] typeArgs) { Name = name; TypeArgs = ImmutableArray.Create(typeArgs); }
 
         public override bool Equals(object? obj)
@@ -46,11 +46,11 @@ namespace Gum.Syntax
         public string MemberName { get; }
         public ImmutableArray<TypeExp> TypeArgs { get; }
 
-        public MemberTypeExp(TypeExp parent, string memberName, ImmutableArray<TypeExp> typeArgs)
+        public MemberTypeExp(TypeExp parent, string memberName, IEnumerable<TypeExp> typeArgs)
         {
             Parent = parent;
             MemberName = memberName;
-            TypeArgs = typeArgs;
+            TypeArgs = typeArgs.ToImmutableArray();
         }
     }
 }

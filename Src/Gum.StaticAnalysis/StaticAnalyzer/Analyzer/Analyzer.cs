@@ -37,7 +37,7 @@ namespace Gum.StaticAnalysis
             // 3. var x = initExp // initExp의 타입을 알아내고 x를 추가
             // 4. var x = 1, y = "string"; // 각각 한다
 
-            var elemsBuilder = ImmutableArray.CreateBuilder<VarDeclInfo.Element>(varDecl.Elems.Length);
+            var elems = new List<VarDeclInfo.Element>(varDecl.Elems.Length);
             var declTypeValue = context.GetTypeValueByTypeExp(varDecl.Type);
 
             foreach (var elem in varDecl.Elems)
@@ -80,7 +80,7 @@ namespace Gum.StaticAnalysis
                 }
             }
 
-            context.AddNodeInfo(varDecl, new VarDeclInfo(elemsBuilder.MoveToImmutable()));
+            context.AddNodeInfo(varDecl, new VarDeclInfo(elems));
             return true;
 
             void AddElement(string name, TypeValue typeValue, Context context)
@@ -89,12 +89,12 @@ namespace Gum.StaticAnalysis
                 if (context.IsGlobalScope())
                 {
                     int varId = context.AddPrivateGlobalVarInfo(name, typeValue);
-                    elemsBuilder.Add(new VarDeclInfo.Element(typeValue, StorageInfo.MakePrivateGlobal(varId)));
+                    elems.Add(new VarDeclInfo.Element(typeValue, StorageInfo.MakePrivateGlobal(varId)));
                 }
                 else
                 {
                     int localVarIndex = context.AddLocalVarInfo(name, typeValue);
-                    elemsBuilder.Add(new VarDeclInfo.Element(typeValue, StorageInfo.MakeLocal(localVarIndex)));
+                    elems.Add(new VarDeclInfo.Element(typeValue, StorageInfo.MakeLocal(localVarIndex)));
                 }
             }
         }        
@@ -121,7 +121,7 @@ namespace Gum.StaticAnalysis
 
         public bool AnalyzeLambda(
             Stmt body,
-            ImmutableArray<LambdaExpParam> parameters,
+            ImmutableArray<LambdaExpParam> parameters, // LambdaExp에서 바로 받기 때문에 ImmutableArray로 존재하면 편하다
             Context context,
             [NotNullWhen(returnValue: true)] out CaptureInfo? outCaptureInfo,
             [NotNullWhen(returnValue: true)] out TypeValue.Func? outFuncTypeValue,
@@ -145,7 +145,7 @@ namespace Gum.StaticAnalysis
             var funcContext = new FuncContext(lambdaFuncId, null, false);
 
             // 필요한 변수들을 찾는다
-            var elemsBuilder = ImmutableArray.CreateBuilder<CaptureInfo.Element>();
+            var elems = new List<CaptureInfo.Element>();
             foreach (var needCapture in captureResult.NeedCaptures)
             {
                 if (context.GetIdentifierInfo(needCapture.VarName, ImmutableArray<TypeValue>.Empty, null, out var idInfo))
@@ -156,7 +156,7 @@ namespace Gum.StaticAnalysis
                         {
                             // 지역 변수라면 
                             case StorageInfo.Local localStorage:
-                                elemsBuilder.Add(new CaptureInfo.Element(needCapture.Kind, localStorage));
+                                elems.Add(new CaptureInfo.Element(needCapture.Kind, localStorage));
                                 funcContext.AddLocalVarInfo(needCapture.VarName, varIdInfo.TypeValue);
                                 break;
 
@@ -176,7 +176,7 @@ namespace Gum.StaticAnalysis
                 return false;                
             }            
 
-            var paramTypeValuesBuilder = ImmutableArray.CreateBuilder<TypeValue>(parameters.Length);
+            var paramTypeValues = new List<TypeValue>(parameters.Length);
             foreach (var param in parameters)
             {
                 if (param.Type == null)
@@ -187,7 +187,7 @@ namespace Gum.StaticAnalysis
 
                 var paramTypeValue = context.GetTypeValueByTypeExp(param.Type);
 
-                paramTypeValuesBuilder.Add(paramTypeValue);
+                paramTypeValues.Add(paramTypeValue);
                 funcContext.AddLocalVarInfo(param.Name, paramTypeValue);
             }
 
@@ -198,10 +198,10 @@ namespace Gum.StaticAnalysis
                 bResult &= AnalyzeStmt(body, context);
             });
 
-            outCaptureInfo = new CaptureInfo(false, elemsBuilder.ToImmutable());
+            outCaptureInfo = new CaptureInfo(false, elems);
             outFuncTypeValue = TypeValue.MakeFunc(
                 funcContext.GetRetTypeValue() ?? TypeValue.MakeVoid(),
-                paramTypeValuesBuilder.MoveToImmutable());
+                paramTypeValues);
             outLocalVarCount = funcContext.GetLocalVarCount();
 
             return bResult;

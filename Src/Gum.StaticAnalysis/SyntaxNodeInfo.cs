@@ -375,9 +375,9 @@ namespace Gum
         
         public ImmutableArray<Element> Elems;
 
-        public VarDeclInfo(ImmutableArray<Element> elems)
+        public VarDeclInfo(IEnumerable<Element> elems)
         {
-            Elems = elems;
+            Elems = elems.ToImmutableArray();
         }
     }
 

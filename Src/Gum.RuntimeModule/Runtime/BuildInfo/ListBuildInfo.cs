@@ -1,7 +1,6 @@
 ﻿using Gum.CompileTime;
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -13,39 +12,37 @@ namespace Gum.Runtime
     class ListBuildInfo : RuntimeModuleTypeBuildInfo.Class
     {
         public ListBuildInfo()
-            : base(null, RuntimeModule.ListId, ImmutableArray.Create("T"), null, () => new ObjectValue(null))
+            : base(null, RuntimeModule.ListId, new[] { "T" }, null, () => new ObjectValue(null))
         {
         }       
 
         public override void Build(RuntimeModuleTypeBuilder builder)
         {
             TypeValue intTypeValue = TypeValue.MakeNormal(RuntimeModule.IntId);
-            TypeValue listElemTypeValue = TypeValue.MakeTypeVar(RuntimeModule.ListId, "T");            
-
-            var memberFuncIdsBuilder = ImmutableArray.CreateBuilder<ModuleItemId>();
+            TypeValue listElemTypeValue = TypeValue.MakeTypeVar(RuntimeModule.ListId, "T");
 
             // List<T>.Add
             builder.AddMemberFunc(Name.MakeText("Add"),
-                bSeqCall: false, bThisCall: true, ImmutableArray<string>.Empty,
-                TypeValue.MakeVoid(), ImmutableArray.Create(listElemTypeValue), ListObject.NativeAdd);
+                bSeqCall: false, bThisCall: true, Array.Empty<string>(),
+                TypeValue.MakeVoid(), new[] { listElemTypeValue }, ListObject.NativeAdd);
 
             // List<T>.RemoveAt(int index)     
             builder.AddMemberFunc(Name.MakeText("RemoveAt"),
-                bSeqCall: false, bThisCall: true, ImmutableArray<string>.Empty,
-                TypeValue.MakeVoid(), ImmutableArray.Create(intTypeValue), ListObject.NativeRemoveAt);
+                bSeqCall: false, bThisCall: true, Array.Empty<string>(),
+                TypeValue.MakeVoid(), new[] { intTypeValue }, ListObject.NativeRemoveAt);
 
             // Enumerator<T> List<T>.GetEnumerator()
             Invoker wrappedGetEnumerator =
                 (domainService, typeArgs, thisValue, args, result) => ListObject.NativeGetEnumerator(domainService, RuntimeModule.EnumeratorId, typeArgs, thisValue, args, result);
 
             builder.AddMemberFunc(Name.MakeText("GetEnumerator"),
-                bSeqCall: false, bThisCall: true, ImmutableArray<string>.Empty,
-                TypeValue.MakeNormal(RuntimeModule.EnumeratorId, TypeArgumentList.Make(listElemTypeValue)), ImmutableArray<TypeValue>.Empty, wrappedGetEnumerator);
+                bSeqCall: false, bThisCall: true, Array.Empty<string>(),
+                TypeValue.MakeNormal(RuntimeModule.EnumeratorId, TypeArgumentList.Make(listElemTypeValue)), Enumerable.Empty<TypeValue>(), wrappedGetEnumerator);
 
             // T List<T>.Indexer(int index)
             builder.AddMemberFunc(SpecialNames.IndexerGet,
-                bSeqCall: false, bThisCall: true, ImmutableArray<string>.Empty,
-                listElemTypeValue, ImmutableArray.Create(intTypeValue), ListObject.NativeIndexer);
+                bSeqCall: false, bThisCall: true, Array.Empty<string>(),
+                listElemTypeValue, new[] { intTypeValue }, ListObject.NativeIndexer);
             
             return;
         }

@@ -1,8 +1,8 @@
 ﻿using Gum.CompileTime;
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -13,7 +13,7 @@ namespace Gum.Runtime
         RuntimeModule runtimeModule;
 
         public IntBuildInfo(RuntimeModule runtimeModule)
-            : base(null, RuntimeModule.IntId, ImmutableArray<string>.Empty, null, () => runtimeModule.MakeInt(0))
+            : base(null, RuntimeModule.IntId, Enumerable.Empty<string>(), null, () => runtimeModule.MakeInt(0))
         {
             this.runtimeModule = runtimeModule;
         }
@@ -22,8 +22,8 @@ namespace Gum.Runtime
         {
             TypeValue intTypeValue = TypeValue.MakeNormal(RuntimeModule.IntId);
 
-            builder.AddMemberFunc(SpecialNames.OpInc, false, false, ImmutableArray<string>.Empty, intTypeValue, ImmutableArray.Create(intTypeValue), OperatorInc);
-            builder.AddMemberFunc(SpecialNames.OpDec, false, false, ImmutableArray<string>.Empty, intTypeValue, ImmutableArray.Create(intTypeValue), OperatorDec);
+            builder.AddMemberFunc(SpecialNames.OpInc, false, false, Array.Empty<string>(), intTypeValue, new TypeValue[] { intTypeValue }, OperatorInc);
+            builder.AddMemberFunc(SpecialNames.OpDec, false, false, Array.Empty<string>(), intTypeValue, new TypeValue[] { intTypeValue }, OperatorDec);
         }
 
         ValueTask OperatorInc(DomainService domainService, TypeArgumentList typeArgList, Value? thisValue, IReadOnlyList<Value> argValues, Value resultValue)

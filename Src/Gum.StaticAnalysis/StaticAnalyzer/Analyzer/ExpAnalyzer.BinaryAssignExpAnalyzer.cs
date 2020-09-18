@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Text;
 using System.Linq;
 using System.Diagnostics.CodeAnalysis;
@@ -75,7 +74,7 @@ namespace Gum.StaticAnalysis
                 if (!analyzer.AnalyzeExp(exp.Operand1, null, context, out var operandTypeValue1))
                     return null;
 
-                var setterArgTypeValues = args.Select(a => a.TypeValue).Append(operandTypeValue1).ToImmutableArray();
+                var setterArgTypeValues = args.Select(a => a.TypeValue).Append(operandTypeValue1).ToList();
                 if (!analyzer.CheckParamTypes(objExp, setterTypeValue.Params, setterArgTypeValues, context))
                     return null;
 

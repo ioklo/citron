@@ -3,7 +3,6 @@ using Gum.Infra;
 using Gum.Syntax;
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -27,9 +26,9 @@ namespace Gum.StaticAnalysis
             ModuleItemId funcId,
             bool bSeqCall,
             bool bThisCall,            
-            ImmutableArray<string> typeParams,
+            IEnumerable<string> typeParams,
             TypeValue retTypeValue,
-            ImmutableArray<TypeValue> argTypeValues,
+            IEnumerable<TypeValue> argTypeValues,
             Context context)
         {   
             var funcInfo = new FuncInfo(outerId, funcId, bSeqCall, bThisCall, typeParams, retTypeValue, argTypeValues);
@@ -96,7 +95,7 @@ namespace Gum.StaticAnalysis
                 bThisCall,
                 funcDecl.TypeParams,
                 context.GetTypeValue(funcDecl.RetType),
-                funcDecl.ParamInfo.Parameters.Select(typeAndName => context.GetTypeValue(typeAndName.Type)).ToImmutableArray(),
+                funcDecl.ParamInfo.Parameters.Select(typeAndName => context.GetTypeValue(typeAndName.Type)),
                 context);
         }
 

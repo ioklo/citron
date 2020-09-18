@@ -31,7 +31,7 @@ namespace Gum.StaticAnalysis
             {
                 var operatorName = GetOperatorName();
 
-                if (!context.TypeValueService.GetMemberFuncValue(typeValue, operatorName, ImmutableArray<TypeValue>.Empty, out var operatorValue))
+                if (!context.TypeValueService.GetMemberFuncValue(typeValue, operatorName, Array.Empty<TypeValue>(), out var operatorValue))
                 {
                     context.ErrorCollector.Add(exp, "해당 타입에 operator++이 없습니다");
                     return null;
@@ -108,7 +108,7 @@ namespace Gum.StaticAnalysis
 
                 // 2. 
                 var operatorName = GetOperatorName();
-                if (!context.TypeValueService.GetMemberFuncValue(getterTypeValue.Return, operatorName, ImmutableArray<TypeValue>.Empty, out var operatorValue))
+                if (!context.TypeValueService.GetMemberFuncValue(getterTypeValue.Return, operatorName, Array.Empty<TypeValue>(), out var operatorValue))
                 {
                     context.ErrorCollector.Add(objExp, $"{objExp}에서 {operatorName} 함수를 찾을 수 없습니다");
                     return null;

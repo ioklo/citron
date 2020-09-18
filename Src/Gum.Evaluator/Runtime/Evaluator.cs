@@ -65,7 +65,7 @@ namespace Gum.Runtime
                 case TypeValue.Func ftv:
                     {
                         var appliedReturn = ApplyTypeValue(ftv.Return, typeEnv);
-                        var appliedParams = ImmutableArray.CreateRange(ftv.Params, param => ApplyTypeValue(param, typeEnv));
+                        var appliedParams = ftv.Params.Select(param => ApplyTypeValue(param, typeEnv));
 
                         return TypeValue.MakeFunc(appliedReturn, appliedParams);
                     }
@@ -104,9 +104,9 @@ namespace Gum.Runtime
             return typeInst.MakeDefaultValue();
         }
 
-        public ImmutableArray<Value> MakeCaptures(ImmutableArray<CaptureInfo.Element> captureElems, EvalContext context)
+        public IEnumerable<Value> MakeCaptures(ImmutableArray<CaptureInfo.Element> captureElems, EvalContext context)
         {
-            var captures = ImmutableArray.CreateBuilder<Value>(captureElems.Length);
+            var captures = new List<Value>(captureElems.Length);
             foreach (var captureElem in captureElems)
             {
                 Value origValue;
@@ -129,7 +129,7 @@ namespace Gum.Runtime
                 captures.Add(value);
             }
 
-            return captures.ToImmutable();
+            return captures;
         }
 
         async IAsyncEnumerable<Value> EvaluateScriptFuncInstSeqAsync(

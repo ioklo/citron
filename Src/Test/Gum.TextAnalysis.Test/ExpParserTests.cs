@@ -1,9 +1,9 @@
 using Gum.Syntax;
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -89,7 +89,7 @@ namespace Gum
 
             var expected = new UnaryOpExp(UnaryOpKind.PostfixInc,
                 new BinaryOpExp(BinaryOpKind.Modulo,
-                    new CallExp(new UnaryOpExp(UnaryOpKind.PostfixInc, new IdentifierExp("c")), ImmutableArray<TypeExp>.Empty, new IdentifierExp("e"), new IdentifierExp("f")),
+                    new CallExp(new UnaryOpExp(UnaryOpKind.PostfixInc, new IdentifierExp("c")), Enumerable.Empty<TypeExp>(), new IdentifierExp("e"), new IdentifierExp("f")),
                     new IdentifierExp("d")));
 
             Assert.Equal(expected, expResult.Elem);
@@ -127,13 +127,13 @@ namespace Gum
             var expected =
                 new MemberExp(
                     new MemberCallExp(
-                        new MemberExp(new IdentifierExp("a"), "b", ImmutableArray<TypeExp>.Empty),
+                        new MemberExp(new IdentifierExp("a"), "b", Enumerable.Empty<TypeExp>()),
                         "c",
-                        ImmutableArray<TypeExp>.Empty,
+                        Enumerable.Empty<TypeExp>(),
                         new IntLiteralExp(1),
                         new StringExp(new TextStringExpElement("str"))),
                     "d",
-                    ImmutableArray<TypeExp>.Empty);
+                    Enumerable.Empty<TypeExp>());
 
             Assert.Equal(expected, expResult.Elem);
         }
@@ -152,6 +152,26 @@ namespace Gum
                 new IntLiteralExp(2),
                 new IntLiteralExp(3));
                 
+            Assert.Equal(expected, expResult.Elem);
+        }
+
+        [Fact]
+        public async Task TestParseNewExpAsync()
+        {
+            var input = "new MyType<X>(2, false, \"string\")";
+            (var expParser, var context) = await PrepareAsync(input);
+
+            var expResult = await expParser.ParseExpAsync(context);
+
+            var expected = new NewExp(
+                new IdTypeExp("MyType", new IdTypeExp("X")),
+                new Exp[]
+                {
+                    new IntLiteralExp(2),
+                    new BoolLiteralExp(false),
+                    new StringExp(new TextStringExpElement("string")),
+                });
+
             Assert.Equal(expected, expResult.Elem);
         }
 

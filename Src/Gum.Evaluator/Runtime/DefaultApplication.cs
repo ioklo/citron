@@ -5,7 +5,6 @@ using Gum.Runtime;
 using Gum.StaticAnalysis;
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -34,13 +33,10 @@ namespace Gum.Runtime
         }
         
         public async ValueTask<int?> RunAsync(
-            string moduleName, string input, IRuntimeModule runtimeModule, ImmutableArray<IModule> modulesExceptRuntimeModule, IErrorCollector errorCollector) // 레퍼런스를 포함
+            string moduleName, string input, IRuntimeModule runtimeModule, IEnumerable<IModule> modulesExceptRuntimeModule, IErrorCollector errorCollector) // 레퍼런스를 포함
         {
-            var moduleInfos = new List<IModuleInfo>(modulesExceptRuntimeModule.Length + 1);
-
-            moduleInfos.Add(runtimeModule);
-            foreach(var module in modulesExceptRuntimeModule)
-                moduleInfos.Add(module);
+            IEnumerable<IModuleInfo> RuntimeModuleInfos() { yield return runtimeModule; }
+            var moduleInfos = RuntimeModuleInfos().Concat(modulesExceptRuntimeModule);
 
             // 파싱 ParserContext -> Script
             var script = await parser.ParseScriptAsync(input);

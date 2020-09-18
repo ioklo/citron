@@ -19,7 +19,7 @@ namespace Gum.Runtime
         public int LocalVarCount { get; }
         public Stmt Body { get; }
 
-        public ScriptFuncInst(TypeValue? seqElemTypeValue, bool bThisCall, Value? capturedThis, ImmutableArray<Value> captures, int localVarCount, Stmt body)
+        public ScriptFuncInst(TypeValue? seqElemTypeValue, bool bThisCall, Value? capturedThis, IEnumerable<Value> captures, int localVarCount, Stmt body)
         {
             // 둘 중 하나는 false여야 한다
             Debug.Assert(!bThisCall || capturedThis == null);
@@ -27,7 +27,7 @@ namespace Gum.Runtime
             SeqElemTypeValue = seqElemTypeValue;
             this.bThisCall = bThisCall;
             CapturedThis = capturedThis;
-            Captures = captures;
+            Captures = captures.ToImmutableArray();
             LocalVarCount = localVarCount;
             Body = body;
         }

@@ -1,10 +1,11 @@
 using System;
-using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Gum.LexicalAnalysis;
 using Gum.Syntax;
+using static Gum.ParserMisc;
+using System.Collections.Generic;
 
 namespace Gum
 {
@@ -12,55 +13,7 @@ namespace Gum
     {
         Parser parser;
         Lexer lexer;
-
-        #region Utilities
-        bool Accept<TToken>(LexResult lexResult, ref ParserContext context) where TToken : Token
-        {
-            if (lexResult.HasValue && lexResult.Token is TToken)
-            {
-                context = context.Update(lexResult.Context);
-                return true;
-            }
-
-            return false;
-        }
-
-        bool Accept<TToken>(LexResult lexResult, ref ParserContext context, out TToken? token) where TToken : Token
-        {
-            if (lexResult.HasValue && lexResult.Token is TToken resultToken)
-            {
-                context = context.Update(lexResult.Context);
-                token = resultToken;
-                return true;
-            }
-
-            token = null;
-            return false;
-        }
-
-        bool Peek<TToken>(LexResult lexResult) where TToken : Token
-        {
-            return lexResult.HasValue && lexResult.Token is TToken;
-        }
-
-        bool Parse<TSyntaxElem>(ParseResult<TSyntaxElem> parseResult, ref ParserContext context, out TSyntaxElem? elem) where TSyntaxElem : class
-        {
-            if (!parseResult.HasValue)
-            {
-                elem = null;
-                return false;
-            }
-            else
-            {
-                elem = parseResult.Elem;
-                context = parseResult.Context;
-                return true;
-            }
-        }
-
-
-        #endregion
-
+        
         public StmtParser(Parser parser, Lexer lexer)
         {
             this.parser = parser;
@@ -113,7 +66,7 @@ namespace Gum
             if (!Parse(await parser.ParseTypeExpAsync(context), ref context, out var varType))
                 return Invalid();
 
-            var elems = ImmutableArray.CreateBuilder<VarDeclElement>();
+            var elems = new List<VarDeclElement>();
             do
             {
                 if (!Accept<IdentifierToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context, out var varIdResult))
@@ -131,7 +84,7 @@ namespace Gum
 
             } while (Accept<CommaToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context)); // ,가 나오면 계속한다
 
-            return new ParseResult<VarDecl>(new VarDecl(varType!, elems.ToImmutable()), context);
+            return new ParseResult<VarDecl>(new VarDecl(varType!, elems), context);
 
             static ParseResult<VarDecl> Invalid() => ParseResult<VarDecl>.Invalid;
         }
@@ -235,7 +188,7 @@ namespace Gum
             if (!Accept<LBraceToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                 return ParseResult<BlockStmt>.Invalid;
 
-            var stmts = ImmutableArray.CreateBuilder<Stmt>();
+            var stmts = new List<Stmt>();
             while (!Accept<RBraceToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
             {
                 if (Parse(await ParseStmtAsync(context), ref context, out var stmt))
@@ -247,7 +200,7 @@ namespace Gum
                 return ParseResult<BlockStmt>.Invalid;
             }
 
-            return new ParseResult<BlockStmt>(new BlockStmt(stmts.ToImmutable()), context);
+            return new ParseResult<BlockStmt>(new BlockStmt(stmts), context);
         }
 
         internal async ValueTask<ParseResult<BlankStmt>> ParseBlankStmtAsync(ParserContext context)
@@ -319,7 +272,7 @@ namespace Gum
 
         async ValueTask<ParseResult<StringExp>> ParseSingleCommandAsync(ParserContext context, bool bStopRBrace)
         {
-            var stringElems = ImmutableArray.CreateBuilder<StringExpElement>();
+            var stringElems = new List<StringExpElement>();
 
             // 새 줄이거나 끝에 다다르면 종료
             while (!context.LexerContext.Pos.IsReachEnd())
@@ -360,7 +313,7 @@ namespace Gum
                 return ParseResult<StringExp>.Invalid;
             }
             
-            return new ParseResult<StringExp>(new StringExp(stringElems.ToImmutable()), context);
+            return new ParseResult<StringExp>(new StringExp(stringElems), context);
         }
 
         internal async ValueTask<ParseResult<ForeachStmt>> ParseForeachStmtAsync(ParserContext context)
@@ -413,7 +366,7 @@ namespace Gum
             if (Accept<LBraceToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
             {
                 // 새줄이거나 끝에 다다르거나 }가 나오면 종료, 
-                var commands = ImmutableArray.CreateBuilder<StringExp>();
+                var commands = new List<StringExp>();
                 while (true)
                 {
                     if (Accept<RBraceToken>(await lexer.LexCommandModeAsync(context.LexerContext), ref context))
@@ -437,7 +390,7 @@ namespace Gum
                     return ParseResult<CommandStmt>.Invalid;
                 }
 
-                return new ParseResult<CommandStmt>(new CommandStmt(commands.ToImmutable()), context);
+                return new ParseResult<CommandStmt>(new CommandStmt(commands), context);
             }
             else // 싱글 커맨드, 엔터가 나오면 끝난다
             {

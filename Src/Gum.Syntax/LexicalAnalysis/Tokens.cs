@@ -61,6 +61,7 @@ namespace Gum.LexicalAnalysis
     public class ProtectedToken : Token { public static ProtectedToken Instance { get; } = new ProtectedToken(); private ProtectedToken() { } }
     public class PrivateToken : Token { public static PrivateToken Instance { get; } = new PrivateToken(); private PrivateToken() { } }
     public class StaticToken : Token { public static StaticToken Instance { get; } = new StaticToken(); private StaticToken() { } }
+    public class NewToken : Token { public static NewToken Instance { get; } = new NewToken(); private NewToken() { } }
 
     public class ColonToken : Token { public static ColonToken Instance { get; } = new ColonToken(); private ColonToken() { } }
 

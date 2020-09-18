@@ -34,6 +34,16 @@ public S<T> operator+<T>(S<T>& x, S<T>& y)
     return new S<T>(x.a + y.a, x.x + y.x, x.y + y.y, x.z + y.z); // can access private members
 }
 
+// 기본 기능
+var s = new S(2, 3);
+
+// 1. 
+Assert(s.x == 2);
+
+// 2. 
+Assert(s.y == 2);
+
+
 // 일단 다 적고 나중에 분리
 {
     var s = new S<int>(1, 2, 3, 4); // a, x, y, z

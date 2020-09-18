@@ -3,7 +3,6 @@ using Gum.Runtime;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -82,7 +81,7 @@ namespace Gum.Runtime
 
             var runtimeModule = new RuntimeModule(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), Directory.GetCurrentDirectory());
             var errorCollector = new TestErrorCollector();
-            var runResult = await app.RunAsync(Path.GetFileNameWithoutExtension(data.Path), text, runtimeModule, ImmutableArray<IModule>.Empty, errorCollector);
+            var runResult = await app.RunAsync(Path.GetFileNameWithoutExtension(data.Path), text, runtimeModule, Enumerable.Empty<IModule>(), errorCollector);
 
             Assert.True((runResult == null) == (errorCollector.HasError), "실행은 중간에 멈췄는데 에러로그가 남지 않았습니다");
             Assert.False(errorCollector.HasError, errorCollector.GetMessages());

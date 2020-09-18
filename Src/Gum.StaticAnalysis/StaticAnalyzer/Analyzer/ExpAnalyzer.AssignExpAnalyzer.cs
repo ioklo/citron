@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using static Gum.StaticAnalysis.Analyzer.Misc;
@@ -104,16 +103,16 @@ namespace Gum.StaticAnalysis
                 context.TypeValueService.GetMemberFuncValue(
                     objTypeValue,
                     SpecialNames.IndexerSet,
-                    ImmutableArray<TypeValue>.Empty,
+                    Array.Empty<TypeValue>(),
                     out var setter);
 
                 context.TypeValueService.GetMemberFuncValue(
                     objTypeValue,
                     SpecialNames.IndexerGet,
-                    ImmutableArray<TypeValue>.Empty,
+                    Array.Empty<TypeValue>(),
                     out var getter);
 
-                return AnalyzeCall(objTypeValue, indexerExp0.Object, getter, setter, ImmutableArray.Create((indexerExp0.Index, indexTypeValue)));
+                return AnalyzeCall(objTypeValue, indexerExp0.Object, getter, setter, new[] { (indexerExp0.Index, indexTypeValue) });
             }
 
             public bool Analyze([NotNullWhen(returnValue: true)] out TypeValue? outTypeValue)

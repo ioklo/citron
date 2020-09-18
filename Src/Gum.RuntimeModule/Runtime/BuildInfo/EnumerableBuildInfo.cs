@@ -1,8 +1,9 @@
 ﻿using Gum.CompileTime;
 using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,7 +14,7 @@ namespace Gum.Runtime
     class EnumerableBuildInfo : RuntimeModuleTypeBuildInfo.Class
     {
         public EnumerableBuildInfo()
-            : base(null, RuntimeModule.EnumerableId, ImmutableArray.Create("T"), null, () => new ObjectValue(null))
+            : base(null, RuntimeModule.EnumerableId, new string[] { "T" }, null, () => new ObjectValue(null))
         {
         }
 
@@ -28,13 +29,11 @@ namespace Gum.Runtime
             // Enumerator<T>
             var enumeratorTypeValue = TypeValue.MakeNormal(enumeratorId, TypeArgumentList.Make(elemTypeValue));
 
-            var funcIdsBuilder = ImmutableArray.CreateBuilder<ModuleItemId>();
-
             Invoker wrappedGetEnumerator = 
                 (domainService, typeArgs, thisValue, args, result) => EnumerableObject.NativeGetEnumerator(domainService, enumeratorId, typeArgs, thisValue, args, result);
 
             builder.AddMemberFunc(Name.MakeText("GetEnumerator"),
-                false, true, ImmutableArray<string>.Empty, enumeratorTypeValue, ImmutableArray<TypeValue>.Empty,
+                false, true, Array.Empty<string>(), enumeratorTypeValue, Enumerable.Empty<TypeValue>(),
                 wrappedGetEnumerator);
         }
         

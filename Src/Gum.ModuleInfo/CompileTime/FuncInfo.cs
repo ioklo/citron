@@ -15,7 +15,7 @@ namespace Gum.CompileTime
         public TypeValue RetTypeValue { get; }
         public ImmutableArray<TypeValue> ParamTypeValues { get; }
 
-        public FuncInfo(ModuleItemId? outerId, ModuleItemId funcId, bool bSeqCall, bool bThisCall, IReadOnlyList<string> typeParams, TypeValue retTypeValue, ImmutableArray<TypeValue> paramTypeValues)
+        public FuncInfo(ModuleItemId? outerId, ModuleItemId funcId, bool bSeqCall, bool bThisCall, IEnumerable<string> typeParams, TypeValue retTypeValue, IEnumerable<TypeValue> paramTypeValues)
         {
             OuterId = outerId;
             FuncId = funcId;
@@ -23,10 +23,10 @@ namespace Gum.CompileTime
             this.bThisCall = bThisCall;            
             TypeParams = typeParams.ToImmutableArray();
             RetTypeValue = retTypeValue;
-            ParamTypeValues = paramTypeValues;
+            ParamTypeValues = paramTypeValues.ToImmutableArray();
         }
 
-        public FuncInfo(ModuleItemId? outerId, ModuleItemId funcId, bool bSeqCall, bool bThisCall, IReadOnlyList<string> typeParams, TypeValue retTypeValues, params TypeValue[] paramTypeValues)
+        public FuncInfo(ModuleItemId? outerId, ModuleItemId funcId, bool bSeqCall, bool bThisCall, IEnumerable<string> typeParams, TypeValue retTypeValues, params TypeValue[] paramTypeValues)
         {
             OuterId = outerId;
             FuncId = funcId;

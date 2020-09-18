@@ -22,10 +22,10 @@ namespace Gum.StaticAnalysis
         public bool bCaptureThis { get; }
         public ImmutableArray<Element> Captures { get; }
 
-        public CaptureInfo(bool bCaptureThis, ImmutableArray<Element> captures)
+        public CaptureInfo(bool bCaptureThis, IEnumerable<Element> captures)
         {
             this.bCaptureThis = bCaptureThis;
-            this.Captures = captures;
+            this.Captures = captures.ToImmutableArray();
         }
     }
 }

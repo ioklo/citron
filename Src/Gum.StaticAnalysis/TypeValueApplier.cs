@@ -1,7 +1,6 @@
 ﻿using Gum.CompileTime;
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 
@@ -65,9 +64,7 @@ namespace Gum
         {
             return TypeValue.MakeFunc(
                 ApplyTypeEnv(typeValue.Return, typeEnv),
-                ImmutableArray.CreateRange(
-                    typeValue.Params,
-                    paramTypeValue => ApplyTypeEnv(paramTypeValue, typeEnv)));
+                typeValue.Params.Select(parameter => ApplyTypeEnv(parameter, typeEnv)));
         }
 
         // T, [T -> ]

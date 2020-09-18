@@ -1,9 +1,9 @@
 using Gum.Syntax;
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -85,12 +85,12 @@ xxx
 
             var expected = new IfStmt(new IdentifierExp("b"),
                 null,
-                new BlockStmt(ImmutableArray<Stmt>.Empty),                
+                new BlockStmt(),
                 new IfStmt(
                     new IdentifierExp("c"),
                     null,
-                    new BlockStmt(ImmutableArray<Stmt>.Empty),
-                    new BlockStmt(ImmutableArray<Stmt>.Empty)));
+                    new BlockStmt(),
+                    new BlockStmt()));
 
             Assert.Equal(expected, ifStmt.Elem);
         }
@@ -104,12 +104,12 @@ xxx
 
             var expected = new IfStmt(new IdentifierExp("b"),
                 new IdTypeExp("T"),
-                new BlockStmt(ImmutableArray<Stmt>.Empty),
+                new BlockStmt(),
                 new IfStmt(
                     new IdentifierExp("c"),
                     null,
-                    new BlockStmt(ImmutableArray<Stmt>.Empty),
-                    new BlockStmt(ImmutableArray<Stmt>.Empty)));
+                    new BlockStmt(),
+                    new BlockStmt()));
 
             Assert.Equal(expected, ifStmt.Elem);
         }
@@ -124,7 +124,7 @@ for (f(); g; h + g) ;
             var result = await parser.ParseForStmtAsync(context);
 
             var expected = new ForStmt(
-                new ExpForStmtInitializer(new CallExp(new IdentifierExp("f"), ImmutableArray<TypeExp>.Empty)),
+                new ExpForStmtInitializer(new CallExp(new IdentifierExp("f"), Enumerable.Empty<TypeExp>())),
                 new IdentifierExp("g"),
                 new BinaryOpExp(BinaryOpKind.Add, new IdentifierExp("h"), new IdentifierExp("g")),
                 BlankStmt.Instance);
@@ -183,7 +183,7 @@ for (f(); g; h + g) ;
                 new IdentifierExp("a"),
                 new BinaryOpExp(BinaryOpKind.Multiply,
                     new IdentifierExp("b"),
-                    new CallExp(new IdentifierExp("c"), ImmutableArray<TypeExp>.Empty, new IntLiteralExp(1)))));
+                    new CallExp(new IdentifierExp("c"), Enumerable.Empty<TypeExp>(), new IntLiteralExp(1)))));
                 
 
             Assert.Equal(expected, expResult.Elem);

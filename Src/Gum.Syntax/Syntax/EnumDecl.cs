@@ -59,10 +59,10 @@ namespace Gum.Syntax
             Elems = elems.ToImmutableArray();
         }
 
-        public EnumDecl(string name, ImmutableArray<string> typeParams, params EnumDeclElement[] elems)
+        public EnumDecl(string name, IEnumerable<string> typeParams, params EnumDeclElement[] elems)
         {
             Name = name;
-            TypeParams = typeParams;
+            TypeParams = typeParams.ToImmutableArray();
             Elems = ImmutableArray.Create(elems);
         }
 

@@ -289,7 +289,7 @@ namespace Gum.StaticAnalysis
 
                 var globalFunc = globalFuncs[0];
 
-                var typeArgs = ImmutableArray.CreateRange(exp.TypeArgs, typeArg => context.GetTypeValueByTypeExp(typeArg));
+                var typeArgs = exp.TypeArgs.Select(typeArg => context.GetTypeValueByTypeExp(typeArg));
 
                 var funcValue = new FuncValue(globalFunc.FuncId, TypeArgumentList.Make(null, typeArgs));
                 var funcTypeValue = context.TypeValueService.GetTypeValue(funcValue);
@@ -458,7 +458,7 @@ namespace Gum.StaticAnalysis
 
             var funcTypeValue = context.TypeValueService.GetTypeValue(funcValue);
 
-            if (!analyzer.CheckParamTypes(exp, funcTypeValue.Params, ImmutableArray.Create(indexTypeValue), context))
+            if (!analyzer.CheckParamTypes(exp, funcTypeValue.Params, new[] { indexTypeValue }, context))
                 return false;
 
             context.AddNodeInfo(exp, new IndexerExpInfo(funcValue, objTypeValue, indexTypeValue));

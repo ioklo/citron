@@ -1,8 +1,8 @@
 ﻿using Gum.CompileTime;
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -11,15 +11,13 @@ namespace Gum.Runtime
     class EnumeratorBuildInfo : RuntimeModuleTypeBuildInfo.Class
     {
         public EnumeratorBuildInfo()
-            : base(null, RuntimeModule.EnumeratorId, ImmutableArray.Create("T"), null, () => new ObjectValue(null))
+            : base(null, RuntimeModule.EnumeratorId, new string[] { "T" }, null, () => new ObjectValue(null))
         {
         }
 
         public override void Build(RuntimeModuleTypeBuilder builder)
         {
-            var enumeratorId = RuntimeModule.EnumeratorId;
-
-            var funcIdsBuilder = ImmutableArray.CreateBuilder<ModuleItemId>();
+            var enumeratorId = RuntimeModule.EnumeratorId;            
             var elemTypeValue = TypeValue.MakeTypeVar(enumeratorId, "T");
             var boolTypeValue = TypeValue.MakeNormal(RuntimeModule.BoolId);
 
@@ -27,13 +25,13 @@ namespace Gum.Runtime
             builder.AddMemberFunc(
                 Name.MakeText("MoveNext"),
                 false, true,
-                ImmutableArray<string>.Empty, boolTypeValue, ImmutableArray<TypeValue>.Empty,
+                Array.Empty<string>(), boolTypeValue, Enumerable.Empty<TypeValue>(),
                 EnumeratorObject.NativeMoveNext);
 
             // T Enumerator<T>.GetCurrent()
             builder.AddMemberFunc(Name.MakeText("GetCurrent"),
                 false, true,
-                ImmutableArray<string>.Empty, elemTypeValue, ImmutableArray<TypeValue>.Empty,
+                Array.Empty<string>(), elemTypeValue, Enumerable.Empty<TypeValue>(),
                 EnumeratorObject.NativeGetCurrent);
         }
     }
