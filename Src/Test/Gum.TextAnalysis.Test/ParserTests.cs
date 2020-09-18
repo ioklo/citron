@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -27,7 +28,7 @@ namespace Gum
             var context = await MakeContextAsync("@ls -al");
             var script = await parser.ParseScriptAsync(context);
 
-            var expected = new Script(new StmtScriptElement(new CommandStmt(new StringExp(new TextStringExpElement("ls -al")))));
+            var expected = new Script(new Script.StmtElement(new CommandStmt(new StringExp(new TextStringExpElement("ls -al")))));
 
             Assert.Equal(expected, script.Elem);
         }
@@ -41,13 +42,16 @@ namespace Gum
             var funcDecl = await parser.ParseFuncDeclAsync(context);
 
             var expected = new FuncDecl(
-                FuncKind.Normal,
+                false,
                 new IdTypeExp("void"),
-                "Func", ImmutableArray<string>.Empty, 1,
-                new BlockStmt(new VarDeclStmt(new VarDecl(new IdTypeExp("int"), new VarDeclElement("a", new IntLiteralExp(0))))),
-                new TypeAndName(new IdTypeExp("int"), "x"),
-                new TypeAndName(new IdTypeExp("string"), "y"),
-                new TypeAndName(new IdTypeExp("int"), "z"));
+                "Func", ImmutableArray<string>.Empty,
+                new FuncParamInfo(
+                    new TypeAndName[] {
+                        new TypeAndName(new IdTypeExp("int"), "x"),
+                        new TypeAndName(new IdTypeExp("string"), "y"),
+                        new TypeAndName(new IdTypeExp("int"), "z") },
+                    1),
+                new BlockStmt(new VarDeclStmt(new VarDecl(new IdTypeExp("int"), new VarDeclElement("a", new IntLiteralExp(0))))));
 
             Assert.Equal(expected, funcDecl.Elem);
         }
@@ -76,6 +80,60 @@ enum X
         }
 
         [Fact]
+        public async Task TestParseStructDeclAsync()
+        {
+            var lexer = new Lexer();
+            var parser = new Parser(lexer);
+            var context = await MakeContextAsync(@"
+public struct S<T> : B, I
+{
+    int x1, x2;
+    protected string y;
+    private int z;
+
+    static void Func<X>(string s) { }
+    private seq int F2<T>() { yield 4; }
+}
+");
+            var structDecl = await parser.ParseStructDeclAsync(context);
+
+            var expected = new StructDecl(AccessModifier.Public, "S",
+                new string[] { "T" },
+
+                new TypeExp[] { new IdTypeExp("B"), new IdTypeExp("I") },
+
+                new StructDecl.Element[]
+                {
+                    StructDecl.MakeVarDeclElement(AccessModifier.Public, new IdTypeExp("int"), new[] { "x1", "x2" }),
+                    StructDecl.MakeVarDeclElement(AccessModifier.Protected, new IdTypeExp("string"), new[] { "y" }),
+                    StructDecl.MakeVarDeclElement(AccessModifier.Private, new IdTypeExp("int"), new[] { "z" }),
+
+                    StructDecl.MakeFuncDeclElement(
+                        AccessModifier.Public,
+                        bStatic: true,
+                        bSequence: false,
+                        new IdTypeExp("void"),
+                        "Func",
+                        new string[] { "X" },
+                        new FuncParamInfo(new TypeAndName[] { new TypeAndName(new IdTypeExp("string"), "s") }, null),
+                        new BlockStmt()),
+
+                    StructDecl.MakeFuncDeclElement(
+                        AccessModifier.Private,
+                        bStatic: false,
+                        bSequence: true,
+                        new IdTypeExp("int"),
+                        "F2",
+                        new string[] { "T" },
+                        new FuncParamInfo(Enumerable.Empty<TypeAndName>(), null),
+                        new BlockStmt(new YieldStmt(new IntLiteralExp(4))))
+                });
+
+            Assert.Equal(expected, structDecl.Elem);
+
+        }
+
+        [Fact]
         public async Task TestParseComplexScriptAsync()
         {
             var lexer = new Lexer();
@@ -98,8 +156,8 @@ for (int i = 0; i < 5; i++)
             var script = await parser.ParseScriptAsync(context);
 
             var expected = new Script(
-                new StmtScriptElement(new VarDeclStmt(new VarDecl(new IdTypeExp("int"), new VarDeclElement("sum", new IntLiteralExp(0))))),
-                new StmtScriptElement(new ForStmt(
+                new Script.StmtElement(new VarDeclStmt(new VarDecl(new IdTypeExp("int"), new VarDeclElement("sum", new IntLiteralExp(0))))),
+                new Script.StmtElement(new ForStmt(
                     new VarDeclForStmtInitializer(new VarDecl(new IdTypeExp("int"), new VarDeclElement("i", new IntLiteralExp(0)))),
                     new BinaryOpExp(BinaryOpKind.LessThan, new IdentifierExp("i"), new IntLiteralExp(5)),
                     new UnaryOpExp(UnaryOpKind.PostfixInc, new IdentifierExp("i")),
@@ -114,7 +172,7 @@ for (int i = 0; i < 5; i++)
                                         new IdentifierExp("sum"),
                                         new BinaryOpExp(BinaryOpKind.Add, new IdentifierExp("sum"), new IdentifierExp("i")))),
                                 new CommandStmt(new StringExp(new TextStringExpElement("        echo hi "))))))),
-                new StmtScriptElement(new CommandStmt(new StringExp(
+                new Script.StmtElement(new CommandStmt(new StringExp(
                     new TextStringExpElement("echo "),
                     new ExpStringExpElement(new IdentifierExp("sum")),
                     new TextStringExpElement(" Completed!")))));

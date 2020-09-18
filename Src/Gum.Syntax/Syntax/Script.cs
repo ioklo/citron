@@ -7,17 +7,17 @@ using System.Linq;
 namespace Gum.Syntax
 {   
     // 가장 외곽
-    public class Script : ISyntaxNode
+    public partial class Script : ISyntaxNode
     {
-        public ImmutableArray<ScriptElement> Elements { get; }
-        public Script(ImmutableArray<ScriptElement> elements)
+        public ImmutableArray<Element> Elements { get; }
+        public Script(IEnumerable<Element> elements)
         {
-            Elements = elements;
+            Elements = elements.ToImmutableArray();
         }
 
-        public Script(params ScriptElement[] elements)
+        public Script(params Element[] elements)
         {
-            Elements = ImmutableArray.Create(elements);
+            Elements = elements.ToImmutableArray();
         }
 
         public override bool Equals(object? obj)

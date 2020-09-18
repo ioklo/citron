@@ -108,8 +108,12 @@ namespace Gum
             { "yield", YieldToken.Instance },
             { "seq", SeqToken.Instance },
             { "enum", EnumToken.Instance },
+            { "struct", StructToken.Instance },
             { "is", IsToken.Instance },
-
+            { "public", PublicToken.Instance },
+            { "protected", ProtectedToken.Instance },
+            { "private", PrivateToken.Instance },
+            { "static", StaticToken.Instance }
         };
 
         private static (string Text, Func<Token> Constructor)[] infos = new (string Text, Func<Token> Constructor)[]
@@ -144,6 +148,7 @@ namespace Gum
             ("%", () => PercentToken.Instance),
             ("!", () => ExclToken.Instance),
             (".", () => DotToken.Instance),
+            (":", () => ColonToken.Instance)
         };
 
         public async ValueTask<LexResult> LexNormalModeAsync(LexerContext context, bool bSkipNewLine)

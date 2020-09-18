@@ -12,10 +12,10 @@ namespace Gum.Syntax
         public string Name { get; }
         public ImmutableArray<TypeAndName> Params { get; }        
 
-        public EnumDeclElement(string name, ImmutableArray<TypeAndName> parameters)
+        public EnumDeclElement(string name, IEnumerable<TypeAndName> parameters)
         {
             Name = name;
-            Params = parameters;
+            Params = parameters.ToImmutableArray();
         }
 
         public EnumDeclElement(string name, params TypeAndName[] parameters)
@@ -52,11 +52,11 @@ namespace Gum.Syntax
         public string Name { get; }
         public ImmutableArray<string> TypeParams { get; }
         public ImmutableArray<EnumDeclElement> Elems { get; }
-        public EnumDecl(string name, ImmutableArray<string> typeParams, ImmutableArray<EnumDeclElement> elems)
+        public EnumDecl(string name, IEnumerable<string> typeParams, IEnumerable<EnumDeclElement> elems)
         {
             Name = name;
-            TypeParams = typeParams;
-            Elems = elems;
+            TypeParams = typeParams.ToImmutableArray();
+            Elems = elems.ToImmutableArray();
         }
 
         public EnumDecl(string name, ImmutableArray<string> typeParams, params EnumDeclElement[] elems)

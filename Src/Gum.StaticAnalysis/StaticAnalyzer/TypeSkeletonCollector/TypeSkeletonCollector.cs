@@ -34,12 +34,12 @@ namespace Gum.StaticAnalysis
             {
                 switch(scriptElem)
                 {
-                    case EnumDeclScriptElement enumElem:
+                    case Script.EnumDeclElement enumElem:
                         if (!CollectEnumDecl(enumElem.EnumDecl, context))
                             return false;
                         break;
 
-                    case FuncDeclScriptElement funcElem:
+                    case Script.FuncDeclElement funcElem:
                         if (!CollectFuncDecl(funcElem.FuncDecl, context))
                             return false;
                         break;

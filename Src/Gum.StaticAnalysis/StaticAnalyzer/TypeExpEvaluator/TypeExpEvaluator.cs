@@ -198,7 +198,7 @@ namespace Gum.StaticAnalysis
         {
             EvaluateTypeExp(funcDecl.RetType, context, out var _);
 
-            foreach(var param in funcDecl.Params)
+            foreach(var param in funcDecl.ParamInfo.Parameters)
                 EvaluateTypeExp(param.Type, context, out var _);
 
             var funcId = context.GetFuncId(funcDecl);
@@ -464,9 +464,9 @@ namespace Gum.StaticAnalysis
             {
                 switch(elem)
                 {
-                    case EnumDeclScriptElement enumDeclElem: EvaluateEnumDecl(enumDeclElem.EnumDecl, context); break;
-                    case FuncDeclScriptElement funcDeclElem: EvaluateFuncDecl(funcDeclElem.FuncDecl, context);  break;
-                    case StmtScriptElement stmtDeclElem: EvaluateStmt(stmtDeclElem.Stmt, context);  break;
+                    case Script.EnumDeclElement enumDeclElem: EvaluateEnumDecl(enumDeclElem.EnumDecl, context); break;
+                    case Script.FuncDeclElement funcDeclElem: EvaluateFuncDecl(funcDeclElem.FuncDecl, context);  break;
+                    case Script.StmtElement stmtDeclElem: EvaluateStmt(stmtDeclElem.Stmt, context);  break;
                     default:
                         throw new NotImplementedException();
                 }

@@ -257,7 +257,7 @@ namespace Gum.Runtime
             {
                 foreach (var elem in script.Elements)
                 {
-                    if (elem is StmtScriptElement statementElem)
+                    if (elem is Script.StmtElement statementElem)
                     {
                         await foreach (var value in stmtEvaluator.EvaluateStmtAsync(statementElem.Stmt, context))
                         {

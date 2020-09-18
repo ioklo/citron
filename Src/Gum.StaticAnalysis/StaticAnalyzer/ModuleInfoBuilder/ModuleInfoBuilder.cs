@@ -92,11 +92,11 @@ namespace Gum.StaticAnalysis
                 funcDecl,
                 outerId,                
                 context.GetFuncId(funcDecl),
-                funcDecl.FuncKind == FuncKind.Sequence,
+                funcDecl.IsSequence,
                 bThisCall,
                 funcDecl.TypeParams,
                 context.GetTypeValue(funcDecl.RetType),
-                funcDecl.Params.Select(typeAndName => context.GetTypeValue(typeAndName.Type)).ToImmutableArray(),
+                funcDecl.ParamInfo.Parameters.Select(typeAndName => context.GetTypeValue(typeAndName.Type)).ToImmutableArray(),
                 context);
         }
 
@@ -122,15 +122,15 @@ namespace Gum.StaticAnalysis
             {
                 switch (elem)
                 {
-                    case EnumDeclScriptElement enumElem:
+                    case Script.EnumDeclElement enumElem:
                         BuildEnumDecl(enumElem.EnumDecl, context);
                         break;
 
-                    case FuncDeclScriptElement funcElem:
+                    case Script.FuncDeclElement funcElem:
                         BuildFuncDecl(funcElem.FuncDecl, context);
                         break;
 
-                    case StmtScriptElement stmtElem:
+                    case Script.StmtElement stmtElem:
                         BuildGlobalStmt(stmtElem.Stmt, context);
                         break;
                 }

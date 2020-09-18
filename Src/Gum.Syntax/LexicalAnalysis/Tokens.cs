@@ -54,7 +54,17 @@ namespace Gum.LexicalAnalysis
     public class YieldToken : Token { public static YieldToken Instance { get; } = new YieldToken(); private YieldToken() { } }
     public class SeqToken : Token { public static SeqToken Instance { get; } = new SeqToken(); private SeqToken() { } }
     public class EnumToken : Token { public static EnumToken Instance { get; } = new EnumToken(); private EnumToken() { } }
+    public class StructToken : Token { public static StructToken Instance { get; } = new StructToken(); private StructToken() { } }
     public class IsToken : Token { public static IsToken Instance { get; } = new IsToken(); private IsToken() { } }
+
+    public class PublicToken : Token { public static PublicToken Instance { get; } = new PublicToken(); private PublicToken() { } }
+    public class ProtectedToken : Token { public static ProtectedToken Instance { get; } = new ProtectedToken(); private ProtectedToken() { } }
+    public class PrivateToken : Token { public static PrivateToken Instance { get; } = new PrivateToken(); private PrivateToken() { } }
+    public class StaticToken : Token { public static StaticToken Instance { get; } = new StaticToken(); private StaticToken() { } }
+
+    public class ColonToken : Token { public static ColonToken Instance { get; } = new ColonToken(); private ColonToken() { } }
+
+
 
     public class WhitespaceToken : Token { public static WhitespaceToken Instance { get; } = new WhitespaceToken(); private WhitespaceToken() { } } // \s
     public class NewLineToken : Token { public static NewLineToken Instance { get; } = new NewLineToken(); private NewLineToken() { } }     // \r \n \r\n

@@ -1,4 +1,5 @@
-﻿using Gum.Syntax;
+﻿using Gum.Infra;
+using Gum.Syntax;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -14,57 +15,49 @@ namespace Gum.Syntax
     // a<T>(int b, params T x, int d);
     public class FuncDecl : ISyntaxNode
     {
-        public FuncKind FuncKind { get; }
+        public bool IsSequence { get; } // seq 함수인가        
         public TypeExp RetType { get; }
         public string Name { get; }
         public ImmutableArray<string> TypeParams { get; }
-        public ImmutableArray<TypeAndName> Params { get; }
-        public int? VariadicParamIndex { get; } 
+        public FuncParamInfo ParamInfo { get; }
         public BlockStmt Body { get; }
 
         public FuncDecl(
-            FuncKind funcKind, 
-            TypeExp retType, string name, ImmutableArray<string> typeParams, 
-            ImmutableArray<TypeAndName> parameters, int? variadicParamIndex, BlockStmt body)
+            bool bSequence,
+            TypeExp retType, string name, IEnumerable<string> typeParams, 
+            FuncParamInfo paramInfo, BlockStmt body)
         {
-            FuncKind = funcKind;
+            IsSequence = bSequence;
             RetType = retType;
             Name = name;
-            TypeParams = typeParams;
-            Params = parameters;
-            VariadicParamIndex = variadicParamIndex;
+            TypeParams = typeParams.ToImmutableArray();
+            ParamInfo = paramInfo;
             Body = body;
         }
-
-        public FuncDecl(
-            FuncKind funcKind, 
-            TypeExp retType, string name, ImmutableArray<string> typeParams, 
-            int? variadicParamIndex, BlockStmt body, params TypeAndName[] parameters)
-        {
-            FuncKind = funcKind;
-            RetType = retType;
-            Name = name;
-            TypeParams = typeParams;
-            Params = ImmutableArray.Create(parameters);
-            VariadicParamIndex = variadicParamIndex;
-            Body = body;
-        }
-
+        
         public override bool Equals(object? obj)
         {
             return obj is FuncDecl decl &&                   
-                   FuncKind == decl.FuncKind &&
+                   IsSequence == decl.IsSequence &&
                    EqualityComparer<TypeExp>.Default.Equals(RetType, decl.RetType) &&
                    Name == decl.Name &&
                    Enumerable.SequenceEqual(TypeParams, decl.TypeParams) &&
-                   Enumerable.SequenceEqual(Params, decl.Params) &&
-                   VariadicParamIndex == decl.VariadicParamIndex &&
+                   EqualityComparer<FuncParamInfo>.Default.Equals(ParamInfo, decl.ParamInfo) &&                   
                    EqualityComparer<BlockStmt>.Default.Equals(Body, decl.Body);
         }
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(RetType, Name, Params, VariadicParamIndex, Body);
+            var hashCode = new HashCode();
+
+            hashCode.Add(IsSequence);
+            hashCode.Add(RetType);
+            hashCode.Add(Name);
+            SeqEqComparer.AddHash(ref hashCode, TypeParams);
+            hashCode.Add(ParamInfo);
+            hashCode.Add(Body);
+
+            return hashCode.ToHashCode();
         }
 
         public static bool operator ==(FuncDecl? left, FuncDecl? right)

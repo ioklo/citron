@@ -48,9 +48,9 @@ namespace Gum
         {
             var lexer = new Lexer();
             var context = await MakeContextAsync(
-                "if else for continue break exec task params return async await foreach in yield seq enum is " + 
+                "if else for continue break exec task params return async await foreach in yield seq enum struct is public protected private static " + 
                 "++ -- <= >= => == != " +
-                "@ < > ; , = { } ( ) [ ] + - * / % ! .");
+                "@ < > ; , = { } ( ) [ ] + - * / % ! . :");
 
             var tokens = await ProcessNormalAsync(lexer, context);
             var expectedTokens = new Token[]
@@ -71,7 +71,13 @@ namespace Gum
                 YieldToken.Instance,
                 SeqToken.Instance,
                 EnumToken.Instance,
+                StructToken.Instance,
                 IsToken.Instance,
+
+                PublicToken.Instance,
+                ProtectedToken.Instance,
+                PrivateToken.Instance,
+                StaticToken.Instance,
 
                 PlusPlusToken.Instance,
                 MinusMinusToken.Instance,
@@ -101,6 +107,8 @@ namespace Gum
                 PercentToken.Instance,
                 ExclToken.Instance,
                 DotToken.Instance,
+
+                ColonToken.Instance,
             };
 
             Assert.Equal(expectedTokens, tokens);

@@ -228,11 +228,11 @@ namespace Gum.StaticAnalysis
             
             context.ExecInFuncScope(funcContext, () =>
             {   
-                if (0 < funcDecl.TypeParams.Length || funcDecl.VariadicParamIndex != null)
+                if (0 < funcDecl.TypeParams.Length || funcDecl.ParamInfo.VariadicParamIndex != null)
                     throw new NotImplementedException();
                 
                 // 파라미터 순서대로 추가
-                foreach (var param in funcDecl.Params)
+                foreach (var param in funcDecl.ParamInfo.Parameters)
                 {
                     var paramTypeValue = context.GetTypeValueByTypeExp(param.Type);
                     context.AddLocalVarInfo(param.Name, paramTypeValue);
@@ -243,7 +243,7 @@ namespace Gum.StaticAnalysis
                 // TODO: Body가 실제로 리턴을 제대로 하는지 확인해야 할 필요가 있다
                 context.AddTemplate(ScriptTemplate.MakeFunc(
                     funcInfo.FuncId,
-                    funcDecl.FuncKind == FuncKind.Sequence ? funcInfo.RetTypeValue : null,
+                    funcInfo.bSeqCall ? funcInfo.RetTypeValue : null,
                     funcInfo.bThisCall, context.GetLocalVarCount(), funcDecl.Body));
             });
 
@@ -270,7 +270,7 @@ namespace Gum.StaticAnalysis
             {
                 switch (elem)
                 {
-                    case StmtScriptElement stmtElem: 
+                    case Script.StmtElement stmtElem: 
                         bResult &= AnalyzeStmt(stmtElem.Stmt, context); 
                         break;
                 }
@@ -282,11 +282,11 @@ namespace Gum.StaticAnalysis
                 switch (elem)
                 {
                     // TODO: classDecl
-                    case FuncDeclScriptElement funcElem: 
+                    case Script.FuncDeclElement funcElem: 
                         bResult &= AnalyzeFuncDecl(funcElem.FuncDecl, context);
                         break;
 
-                    case EnumDeclScriptElement enumElem:
+                    case Script.EnumDeclElement enumElem:
                         bResult &= AnalyzeEnumDecl(enumElem.EnumDecl, context);
                         break;
                 }
