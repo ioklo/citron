@@ -1,6 +1,8 @@
 ﻿using Gum.CompileTime;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Gum.Runtime
@@ -10,9 +12,9 @@ namespace Gum.Runtime
     // null   : QsNullValue
     // int    : Value<int> 
     // bool   : Value<bool>
-    // int &  : QsRefValue(Value<int>)
-    // X &    : QsRefValue(Value) 
-    // string : QsObjectValue(QsStringObject) 
+    // int &  : RefValue(Value<int>)
+    // X &    : RefValue(Value) 
+    // string : ObjectValue(QsStringObject) 
     // class T -> { type: typeInfo, ... } : QsObjectValue(QsClassObject) // 
     // { captures..., Invoke: func } 
     // () => { }
@@ -164,5 +166,87 @@ namespace Gum.Runtime
         }
     }
     
+    public class RefValue : Value
+    {
+        public Value? target;
+
+        public RefValue(Value? target)
+        {
+            this.target = target;
+        }
+
+        public override Value MakeCopy()
+        {
+            return new RefValue(target);
+        }
+
+        public override void SetValue(Value fromValue)
+        {
+            target = ((RefValue)fromValue).target;
+        }
+
+        public Value GetTarget()
+        {
+            return target!;
+        }
+
+        public void SetTarget(Value target)
+        {
+            this.target = target;
+        }
+    }
+
+    public class CompValue : Value
+    {
+        ImmutableArray<Value> values;
+
+        public CompValue(IEnumerable<Value> values)
+        {
+            this.values = values.ToImmutableArray();
+        }
+
+        public Value GetValue(int index)
+        {
+            return values[index];
+        }
+
+        public override Value MakeCopy()
+        {
+            return new CompValue(values.Select(value => value.MakeCopy()));
+        }
+
+        public override void SetValue(Value fromValue)
+        {
+            var fromValues = ((CompValue)fromValue).values;
+
+            for (int i = 0; i < values.Length; i++)
+                values[i].SetValue(fromValues[i]);
+        }
+    }
+
+    // TODO: 임시, IR0Evaluator에서 사용
+    public class StringValue : Value
+    {
+        string value;
+        public StringValue(string value)
+        {
+            this.value = value;
+        }
+
+        public override Value MakeCopy()
+        {
+            return new StringValue(value);
+        }
+
+        public override void SetValue(Value fromValue)
+        {
+            ((StringValue)fromValue).value = value;
+        }
+
+        public string GetValue()
+        {
+            return value;
+        }
+    }
 }
 

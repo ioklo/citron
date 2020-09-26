@@ -114,7 +114,7 @@ namespace Gum.Runtime
                     case VarDeclForStmtInitializer varDeclInitializer:
                         await evaluator.EvaluateVarDeclAsync(varDeclInitializer.VarDecl, context);
                         break;
-
+                        
                     default:
                         throw new NotImplementedException();
                 }
