@@ -132,9 +132,9 @@ namespace Gum.IR0 // TODO: namespace 정책 변경..
     {
         public FuncId Id { get; }
         public ImmutableArray<Reg> Regs { get; }
-        public Command Body { get; }
+        public Command.Scope Body { get; }
 
-        public Func(FuncId id, IEnumerable<Reg> regs, Command body)
+        public Func(FuncId id, IEnumerable<Reg> regs, Command.Scope body)
         {
             Id = id;
             Regs = regs.ToImmutableArray();
@@ -191,11 +191,6 @@ namespace Gum.IR0 // TODO: namespace 정책 변경..
 
     public abstract class Command
     {
-        // 아무일도 하지 않는다
-        public class Nop: Command
-        {
-        }
-
         public class Scope : Command
         {
             public ScopeId Id { get; }
@@ -229,13 +224,39 @@ namespace Gum.IR0 // TODO: namespace 정책 변경..
             }
         }
 
+        // *p = i;
+        public class AssignRef : Command
+        {
+            public RegId DestRefId { get; }
+            public RegId SrcId { get; }
+
+            public AssignRef(RegId destRefId, RegId srcId)
+            {
+                DestRefId = destRefId;
+                SrcId = srcId;
+            }
+        }
+
+        // p = *i;
+        public class Deref : Command
+        {
+            public RegId DestId { get; }
+            public RegId SrcRefId { get; }
+
+            public Deref(RegId destId, RegId srcRefId)
+            {
+                DestId = destId;
+                SrcRefId = srcRefId;
+            }
+        }
+
         public class Call : Command
         {
             public RegId? ResultId { get; }
             public FuncId FuncId { get; }
             public ImmutableArray<RegId> ArgIds { get; }
 
-            public Call(RegId resultId, FuncId funcId, IEnumerable<RegId> argIds)
+            public Call(RegId? resultId, FuncId funcId, IEnumerable<RegId> argIds)
             {
                 ResultId = resultId;
                 FuncId = funcId;
@@ -364,12 +385,6 @@ namespace Gum.IR0 // TODO: namespace 정책 변경..
             {
                 ValueId = valueId;
             }
-        }
-
-        // 10. Return
-        public class Return : Command
-        {
-            public Return() { }
         }
 
         // 11. Yield

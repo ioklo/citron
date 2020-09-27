@@ -87,6 +87,24 @@ namespace Gum.Runtime
             destValue.SetValue(srcValue);
         }
 
+        void RunAssignRef(Command.AssignRef assignRefCmd, Context context)
+        {
+            var destRefValue = context.GetRegValue<RefValue>(assignRefCmd.DestRefId);
+            var destValue = destRefValue.GetTarget();
+            var srcValue = context.GetRegValue<Value>(assignRefCmd.SrcId);
+
+            destValue.SetValue(srcValue);
+        }
+
+        void RunDeref(Command.Deref derefCmd, Context context)
+        {
+            var destValue = context.GetRegValue<Value>(derefCmd.DestId);            
+            var srcRefValue = context.GetRegValue<RefValue>(derefCmd.SrcRefId);
+            var srcValue = srcRefValue.GetTarget();
+
+            destValue.SetValue(srcValue);
+        }
+
         async ValueTask RunCallAsync(Command.Call callCmd, Context context) 
         {            
             var func = context.GetFunc(callCmd.FuncId);
@@ -235,11 +253,7 @@ namespace Gum.Runtime
             destValue.SetValue(srcValue);
         }
 
-        void RunReturn(Command.Return returnCmd, Context context) 
-        {
-            context.SetControlReturn();
-        }
-
+        
         void RunYield(Command.Yield yieldCmd, Context context) { throw new NotImplementedException(); }
         void RunTask(Command.Task taskCmd, Context context) { throw new NotImplementedException(); }
         void RunAsync(Command.Async asyncCmd, Context context) { throw new NotImplementedException(); }
@@ -274,10 +288,11 @@ namespace Gum.Runtime
         {
             switch(cmd)
             {
-                case Command.Nop nopCmd: break;
                 case Command.Scope scopeCmd: await RunScopeAsync(scopeCmd, context); break;
                 case Command.Sequence seqCmd: await RunSequenceAsync(seqCmd, context); break;
                 case Command.Assign assignCmd: RunAssign(assignCmd, context); break;
+                case Command.AssignRef assignRefCmd: RunAssignRef(assignRefCmd, context); break;
+                case Command.Deref derefCmd: RunDeref(derefCmd, context); break;
                 case Command.Call callCmd: await RunCallAsync(callCmd, context); break;
                 case Command.ExternalCall exCallCmd: RunExternalCall(exCallCmd, context); break;
                 case Command.HeapAlloc heapAllocCmd: RunHeapAlloc(heapAllocCmd, context); break;
@@ -290,7 +305,6 @@ namespace Gum.Runtime
                 case Command.Break breakCmd: RunBreak(breakCmd, context); break;
                 case Command.Continue continueCmd: RunContinue(continueCmd, context); break;
                 case Command.SetReturnValue setReturnValueCmd: RunSetReturnValue(setReturnValueCmd, context); break;
-                case Command.Return returnCmd: RunReturn(returnCmd, context); break;
                 case Command.Yield yieldCmd: RunYield(yieldCmd, context); break;
                 case Command.Task taskCmd: RunTask(taskCmd, context); break;
                 case Command.Async asyncCmd: RunAsync(asyncCmd, context); break;

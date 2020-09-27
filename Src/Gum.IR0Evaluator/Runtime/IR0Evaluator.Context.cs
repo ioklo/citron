@@ -61,12 +61,7 @@ namespace Gum.Runtime
             {
                 controlInfo = ControlInfo.Continue(scopeId);
             }
-
-            public void SetControlReturn()
-            {
-                controlInfo = ControlInfo.Return;
-            }
-
+            
             public bool ShouldOutOfScope()
             {
                 return controlInfo.Flag != ControlFlag.None;

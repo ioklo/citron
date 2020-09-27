@@ -12,7 +12,6 @@ namespace Gum.Runtime
             None,
             Break,
             Continue,
-            Return
         }
 
         struct ControlInfo
@@ -21,8 +20,6 @@ namespace Gum.Runtime
             public ScopeId? ScopeId { get; }
 
             public static ControlInfo None { get; } = new ControlInfo(ControlFlag.None, null);
-            public static ControlInfo Return { get; } = new ControlInfo(ControlFlag.Return, null);
-
             public static ControlInfo Break(ScopeId scopeId) => new ControlInfo(ControlFlag.Break, scopeId);
             public static ControlInfo Continue(ScopeId scopeId) => new ControlInfo(ControlFlag.Continue, scopeId);
 
