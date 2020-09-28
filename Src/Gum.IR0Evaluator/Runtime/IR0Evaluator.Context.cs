@@ -28,9 +28,8 @@ namespace Gum.Runtime
                 this.exFuncInsts = exFuncInsts.ToImmutableArray();
                 this.funcs = funcs.ToImmutableArray();
             }
-
-            // for MakeEnumerator Command
-            public Context(Context other, RefValue yieldValueRef, IEnumerable<Value> regValues)
+            
+            public Context(Context other, RefValue? yieldValueRef, IEnumerable<Value> regValues)
             {
                 this.yieldValueRef = yieldValueRef;
                 this.frame = new Frame(null, regValues);
@@ -119,6 +118,21 @@ namespace Gum.Runtime
             public RefValue GetYieldValueRef()
             {
                 return yieldValueRef!;
+            }
+
+            public void AddTask(Task task)
+            {
+                frame.AddTask(task);
+            }
+
+            public IEnumerable<Task> GetTasks()
+            {
+                return frame.GetTasks();
+            }
+
+            public IAsyncEnumerable<Value> RunInNewAwaitAsync(Func<IAsyncEnumerable<Value>> func)
+            {
+                return frame.RunInNewAwaitAsync(func);
             }
         }
     }

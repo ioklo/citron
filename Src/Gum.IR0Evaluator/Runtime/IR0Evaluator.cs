@@ -136,7 +136,7 @@ namespace Gum.Runtime
             });
         }
 
-        void RunExternalCall(Command.ExternalCall cmd, Context context) 
+        ValueTask RunExternalCallAsync(Command.ExternalCall cmd, Context context) 
         {
             // 
             ref readonly var exFuncInst = ref context.GetExternalFuncInst(cmd.FuncId);
@@ -157,7 +157,7 @@ namespace Gum.Runtime
             else
                 retValue = null;
 
-            exFuncInst.Delegate.Invoke(retValue, regValues);
+            return exFuncInst.Delegate.Invoke(retValue, regValues);
         }
 
         Value AllocValue(AllocInfoId allocInfoId, Context context)
@@ -187,7 +187,7 @@ namespace Gum.Runtime
             destValue.SetInt(cmd.Value);
         }
 
-        void RunMakeStringRef(Command.MakeStringRef cmd, Context context) 
+        void RunMakeString(Command.MakeString cmd, Context context) 
         {
             var destValue = context.GetRegValue<RefValue>(cmd.ResultId);
 
@@ -200,7 +200,7 @@ namespace Gum.Runtime
             destValue.SetBool(cmd.Value);
         }
 
-        void RunMakeEnumeratorRef(Command.MakeEnumeratorRef cmd, Context context) 
+        void RunMakeEnumerator(Command.MakeEnumerator cmd, Context context) 
         {
             var func = context.GetFunc(cmd.FuncId);
 
@@ -311,9 +311,70 @@ namespace Gum.Runtime
             return target;
         }
 
-        void RunTask(Command.Task cmd, Context context) { throw new NotImplementedException(); }
-        void RunAsync(Command.Async cmd, Context context) { throw new NotImplementedException(); }
-        void RunAwait(Command.Await cmd, Context context) { throw new NotImplementedException(); }
+        void RunTask(Command.Task cmd, Context context) 
+        {
+            var func = context.GetFunc(cmd.FuncId);
+
+            // 1. 레지스터 할당
+            var regValues = func.Regs.Select(reg => AllocValue(reg.AllocInfoId, context)).ToList();
+
+            // 2. 인자 복사
+            for (int i = 0; i < cmd.ArgIds.Length; i++)
+            {
+                var argValue = context.GetRegValue<Value>(cmd.ArgIds[i]);
+                regValues[i].SetValue(argValue);
+            }
+
+            var newContext = new Context(context, null, regValues);
+
+            var task = Task.Run(async () =>
+            {
+                await foreach (var _ in RunCommandAsync(func.Body, newContext)) { }
+            });
+
+            // context.AddTask 추가한다
+            context.AddTask(task);
+        }
+
+        void RunAsync(Command.Async cmd, Context context)
+        {
+            var func = context.GetFunc(cmd.FuncId);
+
+            // 1. 레지스터 할당
+            var regValues = func.Regs.Select(reg => AllocValue(reg.AllocInfoId, context)).ToList();
+
+            // 2. 인자 복사
+            for (int i = 0; i < cmd.ArgIds.Length; i++)
+            {
+                var argValue = context.GetRegValue<Value>(cmd.ArgIds[i]);
+                regValues[i].SetValue(argValue);
+            }
+
+            var newContext = new Context(context, null, regValues);
+
+            Func<Task> asyncFunc = async () =>
+            {
+                await foreach (var _ in RunCommandAsync(func.Body, newContext)) { }
+            };
+
+            var task = asyncFunc.Invoke();
+
+            // context.AddTask 추가한다
+            context.AddTask(task);
+        }
+
+        IAsyncEnumerable<Value> RunAwaitAsync(Command.Await cmd, Context context)
+        {
+            async IAsyncEnumerable<Value> Wrapper()
+            {
+                await foreach (var yieldValue in RunCommandAsync(cmd.Command, context))
+                    yield return yieldValue;
+
+                await Task.WhenAll(context.GetTasks());
+            }
+
+            return context.RunInNewAwaitAsync(Wrapper);
+        }
 
         void RunGetGlobalRef(Command.GetGlobalRef cmd, Context context)
         {
@@ -358,12 +419,12 @@ namespace Gum.Runtime
                 case Command.AssignRef assignRefCmd: RunAssignRef(assignRefCmd, context); break;
                 case Command.Deref derefCmd: RunDeref(derefCmd, context); break;
                 case Command.Call callCmd: await RunCallAsync(callCmd, context); break;
-                case Command.ExternalCall exCallCmd: RunExternalCall(exCallCmd, context); break;
+                case Command.ExternalCall exCallCmd: await RunExternalCallAsync(exCallCmd, context); break;
                 case Command.HeapAlloc heapAllocCmd: RunHeapAlloc(heapAllocCmd, context); break;
                 case Command.MakeInt makeIntCmd: RunMakeInt(makeIntCmd, context); break;
-                case Command.MakeStringRef makeStringRefCmd: RunMakeStringRef(makeStringRefCmd, context); break;
+                case Command.MakeString makeStringCmd: RunMakeString(makeStringCmd, context); break;
                 case Command.MakeBool makeBoolCmd: RunMakeBool(makeBoolCmd, context); break;
-                case Command.MakeEnumeratorRef makeEnumeratorCmd: RunMakeEnumeratorRef(makeEnumeratorCmd, context); break;
+                case Command.MakeEnumerator makeEnumeratorCmd: RunMakeEnumerator(makeEnumeratorCmd, context); break;
                 case Command.ConcatStrings concatStringsCmd: RunConcatStrings(concatStringsCmd, context); break;
                 case Command.If ifCmd:
                     await foreach (var yieldValue in RunIfAsync(ifCmd, context))
@@ -379,7 +440,11 @@ namespace Gum.Runtime
                     yield return RunYield(yieldCmd, context); break;
                 case Command.Task taskCmd: RunTask(taskCmd, context); break;
                 case Command.Async asyncCmd: RunAsync(asyncCmd, context); break;
-                case Command.Await awaitCmd : RunAwait(awaitCmd, context); break;
+                case Command.Await awaitCmd:
+                    await foreach (var yieldValue in RunAwaitAsync(awaitCmd, context))
+                        yield return yieldValue;
+                    break;
+
                 case Command.GetGlobalRef getGlobalRefCmd: RunGetGlobalRef(getGlobalRefCmd, context); break;
                 case Command.GetMemberRef getMemberRefCmd: RunGetMemberRef(getMemberRefCmd, context); break;
                 case Command.ExternalGetMemberRef exGetMemberRefCmd: RunExternalGetMemberRef(exGetMemberRefCmd, context); break;

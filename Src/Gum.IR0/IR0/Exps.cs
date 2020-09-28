@@ -301,11 +301,11 @@ namespace Gum.IR0 // TODO: namespace 정책 변경..
             }
         }
         
-        public class MakeStringRef : Command
+        public class MakeString : Command
         {
             public RegId ResultId { get; }
             public string Value { get; }
-            public MakeStringRef(RegId resultId, string value)
+            public MakeString(RegId resultId, string value)
             {
                 ResultId = resultId;
                 Value = value;
@@ -323,14 +323,14 @@ namespace Gum.IR0 // TODO: namespace 정책 변경..
             }
         }
 
-        public class MakeEnumeratorRef : Command
+        public class MakeEnumerator : Command
         {
             public RegId ResultId { get; }
             public FuncId FuncId { get; }
             public AllocInfoId YieldAllocId { get; }
             public ImmutableArray<RegId> ArgIds { get; }            
 
-            public MakeEnumeratorRef(RegId resultId, FuncId funcId, AllocInfoId yieldAllocId, IEnumerable<RegId> argIds)
+            public MakeEnumerator(RegId resultId, FuncId funcId, AllocInfoId yieldAllocId, IEnumerable<RegId> argIds)
             {
                 ResultId = resultId;
                 FuncId = funcId;

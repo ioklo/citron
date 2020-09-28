@@ -36,41 +36,64 @@ namespace Gum.Runtime
                 if (funcId.Value == "TraceBool")
                     return TraceBool;
 
+                if (funcId.Value == "Sleep")
+                    return Sleep;
+
                 throw new InvalidOperationException();
             }
 
-            public void TraceString(Value? retValue, params Value[] values)
+            public ValueTask TraceString(Value? retValue, params Value[] values)
             {
                 var strValue = (StringValue)((RefValue)values[0]).GetTarget();
 
                 var text = strValue.GetString();
-                sb.Append(text);
+                lock (sb) 
+                    sb.Append(text);
+
+                return new ValueTask(Task.CompletedTask);
             }
 
-            public void TraceInt(Value? retValue, params Value[] values)
+            public ValueTask TraceInt(Value? retValue, params Value[] values)
             {
                 int value = ((IntValue)values[0]).GetInt();
-                sb.Append(value);
+                lock (sb) 
+                    sb.Append(value);
+
+                return new ValueTask(Task.CompletedTask);
             }
 
-            public void TraceBool(Value? retValue, params Value[] values)
+            public ValueTask TraceBool(Value? retValue, params Value[] values)
             {
                 bool value = ((BoolValue)values[0]).GetBool();
-                sb.Append(value);
+
+                lock(sb)
+                    sb.Append(value);
+                
+
+                return new ValueTask(Task.CompletedTask);
+            }
+
+            public async ValueTask Sleep(Value? retValue, params Value[] values)
+            {
+                var sec = ((IntValue)values[0]).GetInt();
+
+                await Task.Delay(1000 * sec);
             }
         }
 
         ExternalFuncId traceStringId = new ExternalFuncId(0);
         ExternalFuncId traceIntId = new ExternalFuncId(1);
         ExternalFuncId traceBoolId = new ExternalFuncId(2);
+        ExternalFuncId sleepId = new ExternalFuncId(3);
 
         async ValueTask<string> EvaluateAsync(FuncId entryId, params Func[] funcs)
         {
             var exFunc0 = new ExternalFunc(traceStringId, new ExternalDriverId("Test"), new ExternalDriverFuncId("TraceString"), new[] { AllocInfoId.RefId });
             var exFunc1 = new ExternalFunc(traceIntId, new ExternalDriverId("Test"), new ExternalDriverFuncId("TraceInt"), new[] { AllocInfoId.IntId });
             var exFunc2 = new ExternalFunc(traceBoolId, new ExternalDriverId("Test"), new ExternalDriverFuncId("TraceBool"), new[] { AllocInfoId.BoolId });
+            var exFunc3 = new ExternalFunc(sleepId, new ExternalDriverId("Test"), new ExternalDriverFuncId("Sleep"), new[] { AllocInfoId.IntId });
 
-            var script = new Script(new[] { exFunc0, exFunc1, exFunc2 }, funcs, entryId);
+            var script = new Script(new[] { exFunc0, exFunc1, exFunc2, exFunc3 }, funcs, entryId);
 
             var sb = new StringBuilder();
             var externalDriverFactory = new ExternalDriverFactory();
@@ -100,7 +123,7 @@ namespace Gum.Runtime
                 new Reg(new RegId(2), AllocInfoId.BoolId),
             };
             var body = new Scope(new ScopeId(0), new Sequence(new Command[] {
-                new MakeStringRef(new RegId(0), "Hello World"),
+                new MakeString(new RegId(0), "Hello World"),
                 new ExternalCall(null, traceStringId, new[] { new RegId(0) }),
 
                 new MakeInt(new RegId(1), 3),
@@ -150,8 +173,8 @@ namespace Gum.Runtime
             var body = new Scope(new ScopeId(0), new Sequence(new Command[] {
 
                 new MakeBool(new RegId(0), false),
-                new MakeStringRef(new RegId(1), "1"),
-                new MakeStringRef(new RegId(2), "2"),
+                new MakeString(new RegId(1), "1"),
+                new MakeString(new RegId(2), "2"),
 
                 new Scope(new ScopeId(1), new Sequence(new Command[]{
                     new ExternalCall(null, traceStringId, new []{ new RegId(1) }),
@@ -308,7 +331,7 @@ namespace Gum.Runtime
 
             var mainBody = new Scope(new ScopeId(2), new Sequence(new Command[] {
                 new MakeInt(new RegId(1), 1),
-                new MakeStringRef(new RegId(2), "x"),
+                new MakeString(new RegId(2), "x"),
                 new Call(new RegId(0), func0Id, new [] { new RegId(1), new RegId(2) }),
 
                 new ExternalCall(null, traceBoolId, new []{ new RegId(0) }),
@@ -384,9 +407,9 @@ namespace Gum.Runtime
 
             var mainBody = new Scope(new ScopeId(0), new Sequence(new Command[] {
 
-                new MakeStringRef(new RegId(0), "Hello"),
-                new MakeStringRef(new RegId(1), " World"),
-                new MakeStringRef(new RegId(2), " From Gum"),
+                new MakeString(new RegId(0), "Hello"),
+                new MakeString(new RegId(1), " World"),
+                new MakeString(new RegId(2), " From Gum"),
 
                 new ConcatStrings(new RegId(3), new []{ new RegId(0), new RegId(1), new RegId(2) }),
                 new ConcatStrings(new RegId(4), new []{ new RegId(3), new RegId(2) }),
@@ -402,9 +425,7 @@ namespace Gum.Runtime
             Assert.Equal("Hello World From GumHello World From Gum From Gum", result);
         }
 
-        // MakeEnumerator, EnumeratorNext, EnumeratorValue
-        // Yield       
-
+        // MakeEnumerator, EnumeratorNext, EnumeratorValue,  Yield
         // Func GetNumbers(Int [0], Int [1], String [2])
         //    [2] MakeString "Start"
         //    ExCall TraceString [2]        
@@ -446,13 +467,13 @@ namespace Gum.Runtime
 
             var getNumbersBody = new Scope(new ScopeId(0), new Sequence(new Command[] {
 
-                new MakeStringRef(new RegId(2), "Start"),
+                new MakeString(new RegId(2), "Start"),
                 new ExternalCall(null, traceStringId, new []{ new RegId(2) }),
 
                 new Yield(new RegId(0)),
                 new Yield(new RegId(1)),
 
-                new MakeStringRef(new RegId(2), "End"),
+                new MakeString(new RegId(2), "End"),
                 new ExternalCall(null, traceStringId, new []{ new RegId(2) }),
 
             }));
@@ -471,7 +492,7 @@ namespace Gum.Runtime
                 new MakeInt(new RegId(0), 3),
                 new MakeInt(new RegId(1), 4),
 
-                new MakeEnumeratorRef(new RegId(2), getNumbersId, AllocInfoId.IntId, new [] {new RegId(0), new RegId(1) } ),
+                new MakeEnumerator(new RegId(2), getNumbersId, AllocInfoId.IntId, new [] {new RegId(0), new RegId(1) } ),
 
                 new EnumeratorMoveNext(new RegId(3), new RegId(2)),
                 new ExternalCall(null, traceBoolId, new []{ new RegId(3) }),
@@ -495,12 +516,155 @@ namespace Gum.Runtime
 
             Assert.Equal("StartTrue3True4EndFalse", result);
         }
-        // Task
+
+        // Task Await 
+        // f0(arg string [0], string [1], string [2])
+        // {        
+        //     [1] MakeString "Finish "
+        //     [2] ConcatStrings [0] [1]
+        //     ExCall TraceString [0]
+        // }
+        //
+        // main(string [0])
+        // {
+        //     Await  
+        //         [0] MakeString "1"
+        //         Task "f0" [0]
+        // 
+        //         [0] MakeString "2"
+        //         Task "f0" [0]
+        // 
+        //     [0] MakeString "End"
+        //     ExCall TraceString [0]
+        // }
+        [Fact]
+        public async Task AwaitCommandWaitsTaskCommand()
+        {
+            var f0Id = new FuncId(0);
+            var mainId = new FuncId(1);
+
+            var f0Regs = new List<Reg>() {
+                new Reg(new RegId(0), AllocInfoId.RefId),
+                new Reg(new RegId(1), AllocInfoId.RefId),
+                new Reg(new RegId(2), AllocInfoId.RefId) };
+
+            var f0Body = new Scope(new ScopeId(0), new Sequence(new Command[] {
+
+                new MakeString(new RegId(1), "Finish "),
+                new ConcatStrings(new RegId(2), new [] { new RegId(1), new RegId(0) }),
+                new ExternalCall(null, traceStringId, new [] { new RegId(2) })
+
+            }));
+
+            var f0 = new Func(f0Id, f0Regs, f0Body);
+
+            var mainRegs = new List<Reg>() {
+                new Reg(new RegId(0), AllocInfoId.RefId) 
+            };
+
+            var mainBody = new Scope(new ScopeId(1), new Sequence(new Command[] {
+
+                new Await(new Sequence(new Command[] {
+                    new MakeString(new RegId(0), "Task1"),
+                    new IR0Task(f0Id, new []{ new RegId(0) }),
+
+                    new MakeString(new RegId(0), "Task2"),
+                    new IR0Task(f0Id, new []{ new RegId(0) }),
+                })),
+
+                new MakeString(new RegId(0), "End"),
+                new ExternalCall(null, traceStringId, new []{ new RegId(0) })
+            }));
+            
+            var main = new Func(mainId, mainRegs, mainBody);
+
+            var result = await EvaluateAsync(mainId, f0, main);
+
+            // 둘 중의 하나
+            Assert.True(result == "Finish Task1Finish Task2End" ||
+                result == "Finish Task2Finish Task1End" );
+        }
+
         // Async
-        // Await 
-        // GetGlobalRef
+        // f0(arg int [0], ref [1])
+        // {        
+        //     [1] MakeString "Wait"
+        //     ExCall TraceString [1]
+        //     ExCall TraceInt [0]
+
+        //     ExCall "Sleep" [0]
+
+        //     [1] MakeString "Finish"
+        //     ExCall TraceString [1]
+        //     ExCall TraceInt [0]
+        // }
+        //
+        // main(int [0], string [1])
+        // {
+        //     Await  
+        //         [0] MakeInt 1
+        //         Async "f0" [0]
+        // 
+        //         [0] MakeInt 2
+        //         Async "f0" [0]
+        // 
+        //     [1] MakeString "End"
+        //     ExCall TraceString [1]
+        // }
+        [Fact]
+        public async Task AsyncCommandExecutesFuncAsyncronously()
+        {
+            var f0Id = new FuncId(0);
+            var mainId = new FuncId(1);
+
+            var f0Regs = new List<Reg>() {
+                new Reg(new RegId(0), AllocInfoId.IntId),
+                new Reg(new RegId(1), AllocInfoId.RefId) };
+
+            var f0Body = new Scope(new ScopeId(0), new Sequence(new Command[] {
+
+                new MakeString(new RegId(1), "Wait"),
+                new ExternalCall(null, traceStringId, new [] { new RegId(1) }),
+                new ExternalCall(null, traceIntId, new [] { new RegId(0) }),
+
+                new ExternalCall(null, sleepId, new [] { new RegId(0) }),
+
+                new MakeString(new RegId(1), "Finish"),
+                new ExternalCall(null, traceStringId, new [] { new RegId(1) }),
+                new ExternalCall(null, traceIntId, new [] { new RegId(0) }),
+            }));
+
+            var f0 = new Func(f0Id, f0Regs, f0Body);
+
+            var mainRegs = new List<Reg>() {
+                new Reg(new RegId(0), AllocInfoId.IntId),
+                new Reg(new RegId(1), AllocInfoId.RefId)
+            };
+
+            var mainBody = new Scope(new ScopeId(1), new Sequence(new Command[] {
+
+                new Await(new Sequence(new Command[] {
+                    new MakeInt(new RegId(0), 1),
+                    new Async(f0Id, new []{ new RegId(0) }),
+
+                    new MakeInt(new RegId(0), 2),
+                    new Async(f0Id, new []{ new RegId(0) }),
+                })),
+
+                new MakeString(new RegId(1), "End"),
+                new ExternalCall(null, traceStringId, new []{ new RegId(1) })
+            }));
+
+            var main = new Func(mainId, mainRegs, mainBody);
+
+            var result = await EvaluateAsync(mainId, f0, main);
+
+            Assert.Equal("Wait1Wait2Finish1Finish2End", result);
+        }
+
+        // GetGlobalRef        
+
         // GetMemberRef
         // ExternalGetMemberRef
-
     }
 }
