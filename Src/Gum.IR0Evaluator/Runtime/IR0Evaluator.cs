@@ -13,14 +13,10 @@ namespace Gum.Runtime
     public partial class IR0Evaluator
     {
         // Services
-        DomainService domainService;
-        IRuntimeModule runtimeModule;
         ExternalDriverFactory externalDriverFactory;
 
-        public IR0Evaluator(DomainService domainService, IRuntimeModule runtimeModule, ExternalDriverFactory externalDriverFactory)
+        public IR0Evaluator(ExternalDriverFactory externalDriverFactory)
         {
-            this.domainService = domainService;
-            this.runtimeModule = runtimeModule;
             this.externalDriverFactory = externalDriverFactory;
         }
 
@@ -35,28 +31,29 @@ namespace Gum.Runtime
             });
 
             // ExFunc는 ExFuncInst로 변형했지만, Func는 변형할 필요가 없었다
-            var context = Context.MakeContext(exFuncInsts, script.Funcs);
+            var context = new Context(exFuncInsts, script.Funcs);
 
             // Entry부터 시작
             var func = context.GetFunc(script.EntryId);
 
             var regValues = func.Regs.Select(reg => AllocValue(reg.AllocInfoId, context)).ToList();
 
-            await context.RunInNewFrameAsync(null, regValues, () =>
+            await context.RunInNewFrameAsync(null, regValues, async () =>
             {
-                return RunCommandAsync(func.Body, context);
+                await foreach (var _ in RunCommandAsync(func.Body, context)) { }
             });
 
             return 1;
         }
 
         // Scope
-        async ValueTask RunScopeAsync(Command.Scope scopeCmd, Context context) 
+        async IAsyncEnumerable<Value> RunScopeAsync(Command.Scope cmd, Context context) 
         {
             cont:
-            await RunCommandAsync(scopeCmd.Command, context);
+            await foreach (var yieldValue in RunCommandAsync(cmd.Command, context))
+                yield return yieldValue;
 
-            if (context.IsControlTarget(scopeCmd.Id))
+            if (context.IsControlTarget(cmd.Id))
             {
                 if (context.IsControlContinue())
                 {
@@ -68,63 +65,64 @@ namespace Gum.Runtime
             }   
         }
 
-        async ValueTask RunSequenceAsync(Command.Sequence seqCmd, Context context)
+        async IAsyncEnumerable<Value> RunSequenceAsync(Command.Sequence cmd, Context context)
         {
-            foreach(var cmd in seqCmd.Commands)
+            foreach(var innerCmd in cmd.Commands)
             {
-                await RunCommandAsync(cmd, context);
+                await foreach (var yieldValue in RunCommandAsync(innerCmd, context))
+                    yield return yieldValue;
 
                 if (context.ShouldOutOfScope())
-                    return;
+                    yield break;
             }
         }
 
-        void RunAssign(Command.Assign assignCmd, Context context) 
+        void RunAssign(Command.Assign cmd, Context context) 
         {
-            var destValue = context.GetRegValue<Value>(assignCmd.DestId);
-            var srcValue = context.GetRegValue<Value>(assignCmd.SrcId);
+            var destValue = context.GetRegValue<Value>(cmd.DestId);
+            var srcValue = context.GetRegValue<Value>(cmd.SrcId);
 
             destValue.SetValue(srcValue);
         }
 
-        void RunAssignRef(Command.AssignRef assignRefCmd, Context context)
+        void RunAssignRef(Command.AssignRef cmd, Context context)
         {
-            var destRefValue = context.GetRegValue<RefValue>(assignRefCmd.DestRefId);
+            var destRefValue = context.GetRegValue<RefValue>(cmd.DestRefId);
             var destValue = destRefValue.GetTarget();
-            var srcValue = context.GetRegValue<Value>(assignRefCmd.SrcId);
+            var srcValue = context.GetRegValue<Value>(cmd.SrcId);
 
             destValue.SetValue(srcValue);
         }
 
-        void RunDeref(Command.Deref derefCmd, Context context)
+        void RunDeref(Command.Deref cmd, Context context)
         {
-            var destValue = context.GetRegValue<Value>(derefCmd.DestId);            
-            var srcRefValue = context.GetRegValue<RefValue>(derefCmd.SrcRefId);
+            var destValue = context.GetRegValue<Value>(cmd.DestId);            
+            var srcRefValue = context.GetRegValue<RefValue>(cmd.SrcRefId);
             var srcValue = srcRefValue.GetTarget();
 
             destValue.SetValue(srcValue);
         }
 
-        async ValueTask RunCallAsync(Command.Call callCmd, Context context) 
+        async ValueTask RunCallAsync(Command.Call cmd, Context context) 
         {            
-            var func = context.GetFunc(callCmd.FuncId);
+            var func = context.GetFunc(cmd.FuncId);
 
             // 1. 레지스터 할당
             var regValues = func.Regs.Select(reg => AllocValue(reg.AllocInfoId, context)).ToList();
 
             // 2. 인자 복사
-            for (int i = 0; i < callCmd.ArgIds.Length; i++)
+            for (int i = 0; i < cmd.ArgIds.Length; i++)
             {
-                var argValue = context.GetRegValue<Value>(callCmd.ArgIds[i]);
+                var argValue = context.GetRegValue<Value>(cmd.ArgIds[i]);
                 regValues[i].SetValue(argValue);
             }
 
             // 3. returnValue 할당
             RefValue? retValueRef;
 
-            if (callCmd.ResultId != null)
+            if (cmd.ResultId != null)
             {
-                var retValue = context.GetRegValue<Value>(callCmd.ResultId.Value);
+                var retValue = context.GetRegValue<Value>(cmd.ResultId.Value);
                 retValueRef = new RefValue(retValue);
             }
             else
@@ -132,33 +130,30 @@ namespace Gum.Runtime
                 retValueRef = null;
             }
             
-            await context.RunInNewFrameAsync(retValueRef, regValues, () =>
+            await context.RunInNewFrameAsync(retValueRef, regValues, async () =>
             {
-                return RunCommandAsync(func.Body, context);
+                await foreach (var _ in RunCommandAsync(func.Body, context)) { }
             });
-
-            // return으로 인한 control 복원
-            context.SetControlNone();
         }
 
-        void RunExternalCall(Command.ExternalCall exCallCmd, Context context) 
+        void RunExternalCall(Command.ExternalCall cmd, Context context) 
         {
             // 
-            ref readonly var exFuncInst = ref context.GetExternalFuncInst(exCallCmd.FuncId);
+            ref readonly var exFuncInst = ref context.GetExternalFuncInst(cmd.FuncId);
 
             // 1. 레지스터 할당
             var regValues = exFuncInst.AllocInfoIds.Select(allocInfoId => AllocValue(allocInfoId, context)).ToArray();
 
             // 2. 인자 복사
-            for (int i = 0; i < exCallCmd.ArgIds.Length; i++)
+            for (int i = 0; i < cmd.ArgIds.Length; i++)
             {
-                var argValue = context.GetRegValue<Value>(exCallCmd.ArgIds[i]);
+                var argValue = context.GetRegValue<Value>(cmd.ArgIds[i]);
                 regValues[i].SetValue(argValue);
             }
 
             Value? retValue;
-            if (exCallCmd.ResultId != null)
-                retValue = context.GetRegValue<Value>(exCallCmd.ResultId.Value);
+            if (cmd.ResultId != null)
+                retValue = context.GetRegValue<Value>(cmd.ResultId.Value);
             else
                 retValue = null;
 
@@ -170,96 +165,157 @@ namespace Gum.Runtime
             switch(allocInfoId.Value)
             {
                 case AllocInfoId.RefValue: return new RefValue(null);
-                case AllocInfoId.BoolValue: return runtimeModule.MakeBool(false);
-                case AllocInfoId.IntValue: return runtimeModule.MakeInt(0);
+                case AllocInfoId.BoolValue: return new BoolValue(false);
+                case AllocInfoId.IntValue: return new IntValue(0);
             }
 
             ref var compAllocInfo = ref context.GetCompAllocInfo(allocInfoId);
             return new CompValue(compAllocInfo.MemberIds.Select(memberId => AllocValue(memberId, context)));
         }
 
-        void RunHeapAlloc(Command.HeapAlloc heapAllocCmd, Context context)
+        void RunHeapAlloc(Command.HeapAlloc cmd, Context context)
         {
-            var value = AllocValue(heapAllocCmd.AllocInfoId, context);
+            var value = AllocValue(cmd.AllocInfoId, context);
 
-            var refValue = context.GetRegValue<RefValue>(heapAllocCmd.ResultRefId);
+            var refValue = context.GetRegValue<RefValue>(cmd.ResultRefId);
             refValue.SetTarget(value);
         }
 
-        void RunMakeInt(Command.MakeInt makeIntCmd, Context context) 
+        void RunMakeInt(Command.MakeInt cmd, Context context) 
         {
-            var destValue = context.GetRegValue<Value>(makeIntCmd.ResultId);
-            runtimeModule.SetInt(destValue, makeIntCmd.Value);
+            var destValue = context.GetRegValue<IntValue>(cmd.ResultId);
+            destValue.SetInt(cmd.Value);
         }
 
-        void RunMakeString(Command.MakeString makeStringCmd, Context context) 
+        void RunMakeStringRef(Command.MakeStringRef cmd, Context context) 
         {
-            var destValue = context.GetRegValue<RefValue>(makeStringCmd.ResultId);
+            var destValue = context.GetRegValue<RefValue>(cmd.ResultId);
 
-            destValue.SetTarget(new StringValue(makeStringCmd.Value));
+            destValue.SetTarget(new StringValue(cmd.Value));
         }
 
-        void RunMakeBool(Command.MakeBool makeBoolCmd, Context context) 
+        void RunMakeBool(Command.MakeBool cmd, Context context) 
         {
-            var destValue = context.GetRegValue<Value>(makeBoolCmd.ResultId);
-            runtimeModule.SetBool(destValue, makeBoolCmd.Value);
+            var destValue = context.GetRegValue<BoolValue>(cmd.ResultId);
+            destValue.SetBool(cmd.Value);
         }
 
-        void RunMakeEnumerator(Command.MakeEnumerator makeEnumeratorCmd, Context context) { throw new NotImplementedException(); }
+        void RunMakeEnumeratorRef(Command.MakeEnumeratorRef cmd, Context context) 
+        {
+            var func = context.GetFunc(cmd.FuncId);
 
-        void RunConcatStrings(Command.ConcatStrings concatStringsCmd, Context context) 
+            // 1. 레지스터 할당
+            var regValues = func.Regs.Select(reg => AllocValue(reg.AllocInfoId, context)).ToList();
+
+            // 2. 인자 복사
+            for (int i = 0; i < cmd.ArgIds.Length; i++)
+            {
+                var argValue = context.GetRegValue<Value>(cmd.ArgIds[i]);
+                regValues[i].SetValue(argValue);
+            }
+
+            // 3. yieldValue 할당
+            var yieldValue = AllocValue(cmd.YieldAllocId, context);
+            var yieldValueRef = new RefValue(yieldValue);
+
+            var newContext = new Context(context, yieldValueRef, regValues);
+
+            var asyncEnumerable = RunCommandAsync(func.Body, newContext);
+            var asyncEnumerator = asyncEnumerable.GetAsyncEnumerator();
+            var enumeratorValue = new EnumeratorValue(asyncEnumerator);
+
+            var destRefValue = context.GetRegValue<RefValue>(cmd.ResultId);
+            destRefValue.SetTarget(enumeratorValue);
+        }
+
+        void RunConcatStrings(Command.ConcatStrings cmd, Context context) 
         {
             var sb = new StringBuilder();
-            foreach (var strReg in concatStringsCmd.StringIds)
+            foreach (var strReg in cmd.StringIds)
             {
                 var strValueRef = context.GetRegValue<RefValue>(strReg);
-                var str = ((StringValue)strValueRef.GetTarget()).GetValue();
+                var str = ((StringValue)strValueRef.GetTarget()).GetString();
                 sb.Append(str);
             }
 
-            var destValueRef = context.GetRegValue<RefValue>(concatStringsCmd.ResultId);
+            var destValueRef = context.GetRegValue<RefValue>(cmd.ResultId);
             var newString = new StringValue(sb.ToString());
             destValueRef.SetTarget(newString);
         }
 
-        async ValueTask RunIfAsync(Command.If ifCmd, Context context) 
+        IAsyncEnumerable<Value> RunIfAsync(Command.If cmd, Context context) 
         {
-            var condValue = context.GetRegValue<Value>(ifCmd.CondId);
-            var cond = runtimeModule.GetBool(condValue);
+            var condValue = context.GetRegValue<BoolValue>(cmd.CondId);
+            var cond = condValue.GetBool();
 
             if (cond)
-                await RunCommandAsync(ifCmd.ThenCommand, context);
-            else if(ifCmd.ElseCommand != null)
-                await RunCommandAsync(ifCmd.ElseCommand, context);
+                return RunCommandAsync(cmd.ThenCommand, context);
+            else if(cmd.ElseCommand != null)
+                return RunCommandAsync(cmd.ElseCommand, context);
+
+            return AsyncEnumerable.Empty<Value>();
         }
         
-        void RunBreak(Command.Break breakCmd, Context context) 
+        void RunBreak(Command.Break cmd, Context context) 
         {
-            context.SetControlBreak(breakCmd.ScopeId);            
+            context.SetControlBreak(cmd.ScopeId);            
         }
 
-        void RunContinue(Command.Continue continueCmd, Context context) 
+        void RunContinue(Command.Continue cmd, Context context) 
         {
-            context.SetControlContinue(continueCmd.ScopeId);
+            context.SetControlContinue(cmd.ScopeId);
         }
 
-        void RunSetReturnValue(Command.SetReturnValue setReturnValueCmd, Context context) 
+        void RunSetReturnValue(Command.SetReturnValue cmd, Context context) 
         {
             var retValueRef = context.GetRetValueRef()!;
 
             var destValue = retValueRef.GetTarget();
-            var srcValue = context.GetRegValue<Value>(setReturnValueCmd.ValueId);
+            var srcValue = context.GetRegValue<Value>(cmd.ValueId);
 
             destValue.SetValue(srcValue);
         }
 
-        
-        void RunYield(Command.Yield yieldCmd, Context context) { throw new NotImplementedException(); }
-        void RunTask(Command.Task taskCmd, Context context) { throw new NotImplementedException(); }
-        void RunAsync(Command.Async asyncCmd, Context context) { throw new NotImplementedException(); }
-        void RunAwait(Command.Await awaitCmd, Context context) { throw new NotImplementedException(); }
+        async ValueTask RunEnumeratorMoveNextAsync(Command.EnumeratorMoveNext cmd, Context context)
+        {
+            var enumeratorRefValue = context.GetRegValue<RefValue>(cmd.EnumeratorRefId);
+            var ev = (EnumeratorValue)enumeratorRefValue.GetTarget();
 
-        void RunGetGlobalRef(Command.GetGlobalRef getGlobalRefCmd, Context context)
+            var destValue = context.GetRegValue<BoolValue>(cmd.DestId);
+
+            var enumerator = ev.GetEnumerator();
+            bool result = await enumerator.MoveNextAsync();
+
+            destValue.SetBool(result);
+        }
+
+        void RunEnumeratorGetValue(Command.EnumeratorGetValue cmd, Context context)
+        {
+            var enumeratorRefValue = context.GetRegValue<RefValue>(cmd.EnumeratorRefId);
+            var ev = (EnumeratorValue)enumeratorRefValue.GetTarget();
+            var destValue = context.GetRegValue<Value>(cmd.DestId);
+
+            var enumerator = ev.GetEnumerator();
+
+            destValue.SetValue(enumerator.Current);
+        }
+        
+        Value RunYield(Command.Yield cmd, Context context) 
+        {
+            var srcValue = context.GetRegValue<Value>(cmd.ValueId);
+
+            var yieldValueRef = context.GetYieldValueRef();
+            var target = yieldValueRef.GetTarget();
+            target.SetValue(srcValue);
+
+            return target;
+        }
+
+        void RunTask(Command.Task cmd, Context context) { throw new NotImplementedException(); }
+        void RunAsync(Command.Async cmd, Context context) { throw new NotImplementedException(); }
+        void RunAwait(Command.Await cmd, Context context) { throw new NotImplementedException(); }
+
+        void RunGetGlobalRef(Command.GetGlobalRef cmd, Context context)
         {
             throw new NotImplementedException();
             //var index = context.GetGlobalVarIndex(getGlobalRefCmd.GlobalVarId);
@@ -269,27 +325,35 @@ namespace Gum.Runtime
             //destValue.SetTarget(value);
         }
 
-        void RunGetMemberRef(Command.GetMemberRef getMemberRefCmd, Context context) 
+        void RunGetMemberRef(Command.GetMemberRef cmd, Context context) 
         {
             // [0] // RefValue
             // [1] GetMemberVar [0] "x"
-            var instanceRefValue = context.GetRegValue<RefValue>(getMemberRefCmd.InstanceRefId);
+            var instanceRefValue = context.GetRegValue<RefValue>(cmd.InstanceRefId);
             var compValue = (CompValue)instanceRefValue.GetTarget();
-            var index = context.GetMemberVarIndex(getMemberRefCmd.MemberVarId);
+            var index = context.GetMemberVarIndex(cmd.MemberVarId);
             var value = compValue.GetValue(index);
 
-            var destValue = context.GetRegValue<RefValue>(getMemberRefCmd.ResultId);
+            var destValue = context.GetRegValue<RefValue>(cmd.ResultId);
             destValue.SetTarget(value);
         }
 
-        void RunExternalGetMemberRef(Command.ExternalGetMemberRef exGetMemberRefCmd, Context context) { throw new NotImplementedException(); }
-
-        async ValueTask RunCommandAsync(Command cmd, Context context)
+        void RunExternalGetMemberRef(Command.ExternalGetMemberRef cmd, Context context) { throw new NotImplementedException(); }
+        
+        async IAsyncEnumerable<Value> RunCommandAsync(Command cmd, Context context)
         {
             switch(cmd)
             {
-                case Command.Scope scopeCmd: await RunScopeAsync(scopeCmd, context); break;
-                case Command.Sequence seqCmd: await RunSequenceAsync(seqCmd, context); break;
+                case Command.Scope scopeCmd: 
+                    await foreach(var yieldValue in RunScopeAsync(scopeCmd, context)) 
+                        yield return yieldValue; 
+                    break;
+
+                case Command.Sequence seqCmd:
+                    await foreach (var yieldValue in RunSequenceAsync(seqCmd, context))
+                        yield return yieldValue;
+                    break;
+
                 case Command.Assign assignCmd: RunAssign(assignCmd, context); break;
                 case Command.AssignRef assignRefCmd: RunAssignRef(assignRefCmd, context); break;
                 case Command.Deref derefCmd: RunDeref(derefCmd, context); break;
@@ -297,15 +361,22 @@ namespace Gum.Runtime
                 case Command.ExternalCall exCallCmd: RunExternalCall(exCallCmd, context); break;
                 case Command.HeapAlloc heapAllocCmd: RunHeapAlloc(heapAllocCmd, context); break;
                 case Command.MakeInt makeIntCmd: RunMakeInt(makeIntCmd, context); break;
-                case Command.MakeString makeStringCmd: RunMakeString(makeStringCmd, context); break;
+                case Command.MakeStringRef makeStringRefCmd: RunMakeStringRef(makeStringRefCmd, context); break;
                 case Command.MakeBool makeBoolCmd: RunMakeBool(makeBoolCmd, context); break;
-                case Command.MakeEnumerator makeEnumeratorCmd: RunMakeEnumerator(makeEnumeratorCmd, context); break;
+                case Command.MakeEnumeratorRef makeEnumeratorCmd: RunMakeEnumeratorRef(makeEnumeratorCmd, context); break;
                 case Command.ConcatStrings concatStringsCmd: RunConcatStrings(concatStringsCmd, context); break;
-                case Command.If ifCmd: await RunIfAsync(ifCmd, context); break;                
+                case Command.If ifCmd:
+                    await foreach (var yieldValue in RunIfAsync(ifCmd, context))
+                        yield return yieldValue;
+                    break;                
+
                 case Command.Break breakCmd: RunBreak(breakCmd, context); break;
                 case Command.Continue continueCmd: RunContinue(continueCmd, context); break;
                 case Command.SetReturnValue setReturnValueCmd: RunSetReturnValue(setReturnValueCmd, context); break;
-                case Command.Yield yieldCmd: RunYield(yieldCmd, context); break;
+                case Command.EnumeratorMoveNext enumNextCmd: await RunEnumeratorMoveNextAsync(enumNextCmd, context); break;
+                case Command.EnumeratorGetValue enumValueCmd: RunEnumeratorGetValue(enumValueCmd, context); break;
+                case Command.Yield yieldCmd: 
+                    yield return RunYield(yieldCmd, context); break;
                 case Command.Task taskCmd: RunTask(taskCmd, context); break;
                 case Command.Async asyncCmd: RunAsync(asyncCmd, context); break;
                 case Command.Await awaitCmd : RunAwait(awaitCmd, context); break;

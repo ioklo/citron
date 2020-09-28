@@ -12,24 +12,32 @@ namespace Gum.Runtime
     {
         class Context
         {
+            RefValue? yieldValueRef;
             Frame frame;
             ControlInfo controlInfo;
 
             ImmutableArray<ExternalFuncInst> exFuncInsts;
             ImmutableArray<Func> funcs;            
 
-            public static Context MakeContext(IEnumerable<ExternalFuncInst> exFuncInsts, IEnumerable<Func> funcs)
+            public Context(IEnumerable<ExternalFuncInst> exFuncInsts, IEnumerable<Func> funcs)
             {
-                return new Context(exFuncInsts, funcs);
-            }
-
-            private Context(IEnumerable<ExternalFuncInst> exFuncInsts, IEnumerable<Func> funcs)
-            {
+                this.yieldValueRef = null;
                 this.frame = new Frame(null, Enumerable.Empty<Value>());
                 this.controlInfo = ControlInfo.None;
 
                 this.exFuncInsts = exFuncInsts.ToImmutableArray();
                 this.funcs = funcs.ToImmutableArray();
+            }
+
+            // for MakeEnumerator Command
+            public Context(Context other, RefValue yieldValueRef, IEnumerable<Value> regValues)
+            {
+                this.yieldValueRef = yieldValueRef;
+                this.frame = new Frame(null, regValues);
+                this.controlInfo = ControlInfo.None;
+
+                exFuncInsts = other.exFuncInsts;
+                funcs = other.funcs;
             }
 
             public TValue GetRegValue<TValue>(RegId regId) where TValue : Value
@@ -106,6 +114,11 @@ namespace Gum.Runtime
             public ref readonly ExternalFuncInst GetExternalFuncInst(ExternalFuncId funcId)
             {
                 return ref exFuncInsts.ItemRef(funcId.Value);
+            }
+
+            public RefValue GetYieldValueRef()
+            {
+                return yieldValueRef!;
             }
         }
     }

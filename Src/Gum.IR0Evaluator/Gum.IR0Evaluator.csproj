@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="System.Linq.Async" Version="4.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Gum.Infra\Gum.Infra.csproj" />
     <ProjectReference Include="..\Gum.IR0\Gum.IR0.csproj" />
     <ProjectReference Include="..\Gum.Runtime\Gum.Runtime.csproj" />

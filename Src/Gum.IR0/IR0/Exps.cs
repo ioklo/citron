@@ -301,11 +301,11 @@ namespace Gum.IR0 // TODO: namespace 정책 변경..
             }
         }
         
-        public class MakeString : Command
+        public class MakeStringRef : Command
         {
             public RegId ResultId { get; }
             public string Value { get; }
-            public MakeString(RegId resultId, string value)
+            public MakeStringRef(RegId resultId, string value)
             {
                 ResultId = resultId;
                 Value = value;
@@ -323,12 +323,19 @@ namespace Gum.IR0 // TODO: namespace 정책 변경..
             }
         }
 
-        public class MakeEnumerator : Command
+        public class MakeEnumeratorRef : Command
         {
+            public RegId ResultId { get; }
             public FuncId FuncId { get; }
-            public MakeEnumerator(FuncId funcId)
+            public AllocInfoId YieldAllocId { get; }
+            public ImmutableArray<RegId> ArgIds { get; }            
+
+            public MakeEnumeratorRef(RegId resultId, FuncId funcId, AllocInfoId yieldAllocId, IEnumerable<RegId> argIds)
             {
+                ResultId = resultId;
                 FuncId = funcId;
+                YieldAllocId = yieldAllocId;
+                ArgIds = argIds.ToImmutableArray();
             }
         }
 
@@ -343,7 +350,6 @@ namespace Gum.IR0 // TODO: namespace 정책 변경..
             }
         }
 
-        // If 
         public class If : Command
         {
             public RegId CondId { get; }
@@ -357,7 +363,6 @@ namespace Gum.IR0 // TODO: namespace 정책 변경..
             }
         }
 
-        // 7. Break
         public class Break : Command
         {
             public ScopeId ScopeId { get; }
@@ -367,7 +372,6 @@ namespace Gum.IR0 // TODO: namespace 정책 변경..
             }
         }
 
-        // 8. Continue
         public class Continue : Command
         {
             public ScopeId ScopeId { get; }
@@ -377,7 +381,6 @@ namespace Gum.IR0 // TODO: namespace 정책 변경..
             }
         }
 
-        // 9. SetReturnValue
         public class SetReturnValue : Command
         {
             public RegId ValueId { get; }
@@ -387,14 +390,35 @@ namespace Gum.IR0 // TODO: namespace 정책 변경..
             }
         }
 
-        // 11. Yield
+        public class EnumeratorMoveNext : Command
+        {
+            public RegId DestId { get; }
+            public RegId EnumeratorRefId { get; }
+
+            public EnumeratorMoveNext(RegId destId, RegId enumeratorRefId)
+            {
+                DestId = destId;
+                EnumeratorRefId = enumeratorRefId;
+            }
+        }
+
+        public class EnumeratorGetValue : Command
+        {
+            public RegId DestId { get; }
+            public RegId EnumeratorRefId { get; }
+            public EnumeratorGetValue(RegId destId, RegId enumeratorRefId)
+            {
+                DestId = destId;
+                EnumeratorRefId = enumeratorRefId;
+            }
+        }
+
         public class Yield : Command
         {
             public RegId ValueId { get; }
             public Yield(RegId valueId) { ValueId = valueId; }
         }
 
-        // 12. Task
         public class Task : Command
         {
             public FuncId FuncId { get; }
@@ -406,7 +430,6 @@ namespace Gum.IR0 // TODO: namespace 정책 변경..
             }
         }
 
-        // 13. Async
         public class Async : Command
         {
             public FuncId FuncId { get; }
@@ -418,7 +441,6 @@ namespace Gum.IR0 // TODO: namespace 정책 변경..
             }
         }
 
-        // 14. Await
         public class Await : Command
         {
             public Command Command { get; }
@@ -428,7 +450,6 @@ namespace Gum.IR0 // TODO: namespace 정책 변경..
             }
         }
 
-        // 
         public class GetGlobalRef : Command
         {
             public RegId ResultId { get; }

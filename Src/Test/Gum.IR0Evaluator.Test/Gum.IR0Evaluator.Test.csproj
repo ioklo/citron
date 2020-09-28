@@ -17,7 +17,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Gum.IR0Evaluator\Gum.IR0Evaluator.csproj" />
-    <ProjectReference Include="..\..\Gum.RuntimeModule\Gum.RuntimeModule.csproj" />
   </ItemGroup>
 
 </Project>

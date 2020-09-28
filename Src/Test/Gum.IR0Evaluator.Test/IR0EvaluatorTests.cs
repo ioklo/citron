@@ -6,6 +6,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Text;
 using Gum.CompileTime;
+using static Gum.Runtime.IR0Evaluator;
+using static Gum.IR0.Command;
+
+using Task = System.Threading.Tasks.Task;
+using IR0Task = Gum.IR0.Command.Task;
 
 namespace Gum.Runtime
 {
@@ -13,12 +18,10 @@ namespace Gum.Runtime
     {
         class TestExternalDriver : IExternalDriver
         {
-            IRuntimeModule runtimeModule;
             StringBuilder sb;
 
-            public TestExternalDriver(IRuntimeModule runtimeModule, StringBuilder sb)
+            public TestExternalDriver(StringBuilder sb)
             {
-                this.runtimeModule = runtimeModule;
                 this.sb = sb;
             }
 
@@ -40,19 +43,19 @@ namespace Gum.Runtime
             {
                 var strValue = (StringValue)((RefValue)values[0]).GetTarget();
 
-                var text = strValue.GetValue();
+                var text = strValue.GetString();
                 sb.Append(text);
             }
 
             public void TraceInt(Value? retValue, params Value[] values)
             {
-                int value = runtimeModule.GetInt(values[0]);
+                int value = ((IntValue)values[0]).GetInt();
                 sb.Append(value);
             }
 
             public void TraceBool(Value? retValue, params Value[] values)
             {
-                bool value = runtimeModule.GetBool(values[0]);
+                bool value = ((BoolValue)values[0]).GetBool();
                 sb.Append(value);
             }
         }
@@ -69,13 +72,10 @@ namespace Gum.Runtime
 
             var script = new Script(new[] { exFunc0, exFunc1, exFunc2 }, funcs, entryId);
 
-            var domainService = new DomainService();
-            var runtimeModule = new RuntimeModule("HomeDir", "ScriptDir");
-
             var sb = new StringBuilder();
             var externalDriverFactory = new ExternalDriverFactory();
-            externalDriverFactory.Register(new ExternalDriverId("Test"), new TestExternalDriver(runtimeModule, sb));
-            var evaluator = new IR0Evaluator(domainService, runtimeModule, externalDriverFactory);
+            externalDriverFactory.Register(new ExternalDriverId("Test"), new TestExternalDriver(sb));
+            var evaluator = new IR0Evaluator(externalDriverFactory);
 
             // execute 
             await evaluator.RunScriptAsync(script);
@@ -99,15 +99,15 @@ namespace Gum.Runtime
                 new Reg(new RegId(1), AllocInfoId.IntId),
                 new Reg(new RegId(2), AllocInfoId.BoolId),
             };
-            var body = new Command.Scope(new ScopeId(0), new Command.Sequence(new Command[] {
-                new Command.MakeString(new RegId(0), "Hello World"),
-                new Command.ExternalCall(null, traceStringId, new[] { new RegId(0) }),
+            var body = new Scope(new ScopeId(0), new Sequence(new Command[] {
+                new MakeStringRef(new RegId(0), "Hello World"),
+                new ExternalCall(null, traceStringId, new[] { new RegId(0) }),
 
-                new Command.MakeInt(new RegId(1), 3),
-                new Command.ExternalCall(null, traceIntId, new[] { new RegId(1) }),
+                new MakeInt(new RegId(1), 3),
+                new ExternalCall(null, traceIntId, new[] { new RegId(1) }),
 
-                new Command.MakeBool(new RegId(2), false),
-                new Command.ExternalCall(null, traceBoolId, new[] { new RegId(2) }),
+                new MakeBool(new RegId(2), false),
+                new ExternalCall(null, traceBoolId, new[] { new RegId(2) }),
             }));
             var func = new Func(funcId, regs, body);
 
@@ -147,18 +147,18 @@ namespace Gum.Runtime
                 new Reg(new RegId(1), AllocInfoId.RefId),
                 new Reg(new RegId(2), AllocInfoId.RefId) };
 
-            var body = new Command.Scope(new ScopeId(0), new Command.Sequence(new Command[] {
+            var body = new Scope(new ScopeId(0), new Sequence(new Command[] {
 
-                new Command.MakeBool(new RegId(0), false),
-                new Command.MakeString(new RegId(1), "1"),
-                new Command.MakeString(new RegId(2), "2"),
+                new MakeBool(new RegId(0), false),
+                new MakeStringRef(new RegId(1), "1"),
+                new MakeStringRef(new RegId(2), "2"),
 
-                new Command.Scope(new ScopeId(1), new Command.Sequence(new Command[]{
-                    new Command.ExternalCall(null, traceStringId, new []{ new RegId(1) }),
-                    new Command.If(new RegId(0), new Command.Break(new ScopeId(1)), null),
-                    new Command.ExternalCall(null, traceStringId, new []{ new RegId(2) }),
-                    new Command.MakeBool(new RegId(0), true),
-                    new Command.Continue(new ScopeId(1)) })) }));
+                new Scope(new ScopeId(1), new Sequence(new Command[]{
+                    new ExternalCall(null, traceStringId, new []{ new RegId(1) }),
+                    new If(new RegId(0), new Break(new ScopeId(1)), null),
+                    new ExternalCall(null, traceStringId, new []{ new RegId(2) }),
+                    new MakeBool(new RegId(0), true),
+                    new Continue(new ScopeId(1)) })) }));
 
             var func = new Func(funcId, regs, body);
 
@@ -183,14 +183,14 @@ namespace Gum.Runtime
                 new Reg(new RegId(0), AllocInfoId.IntId),
                 new Reg(new RegId(1), AllocInfoId.IntId) };
 
-            var body = new Command.Scope(new ScopeId(0), new Command.Sequence(new Command[] {
+            var body = new Scope(new ScopeId(0), new Sequence(new Command[] {
 
-                new Command.MakeInt(new RegId(0), 3),
-                new Command.MakeInt(new RegId(1), 4),
+                new MakeInt(new RegId(0), 3),
+                new MakeInt(new RegId(1), 4),
 
-                new Command.ExternalCall(null, traceIntId, new []{ new RegId(0) }),
-                new Command.Assign(new RegId(0), new RegId(1)),
-                new Command.ExternalCall(null, traceIntId, new []{ new RegId(0) })
+                new ExternalCall(null, traceIntId, new []{ new RegId(0) }),
+                new Assign(new RegId(0), new RegId(1)),
+                new ExternalCall(null, traceIntId, new []{ new RegId(0) })
             }));
 
             var func = new Func(funcId, regs, body);
@@ -223,7 +223,7 @@ namespace Gum.Runtime
                 new Reg(new RegId(0), AllocInfoId.IntId),
                 new Reg(new RegId(1), AllocInfoId.IntId) };
 
-            var selectorBody = new Command.Scope(new ScopeId(0), new Command.SetReturnValue(new RegId(1)));
+            var selectorBody = new Scope(new ScopeId(0), new SetReturnValue(new RegId(1)));
 
             var selectorFunc = new Func(selectorId, selectorRegs, selectorBody);
 
@@ -234,12 +234,12 @@ namespace Gum.Runtime
                 new Reg(new RegId(2), AllocInfoId.IntId),
             };
 
-            var mainBody = new Command.Scope(new ScopeId(1), new Command.Sequence(new Command[]
+            var mainBody = new Scope(new ScopeId(1), new Sequence(new Command[]
             {
-                new Command.MakeInt(new RegId(0), 35),
-                new Command.MakeInt(new RegId(1), 37),
-                new Command.Call(new RegId(2), selectorId, new [] { new RegId(0), new RegId(1) } ),
-                new Command.ExternalCall(null, new ExternalFuncId(1), new [] { new RegId(2) } )
+                new MakeInt(new RegId(0), 35),
+                new MakeInt(new RegId(1), 37),
+                new Call(new RegId(2), selectorId, new [] { new RegId(0), new RegId(1) } ),
+                new ExternalCall(null, new ExternalFuncId(1), new [] { new RegId(2) } )
             }));
 
             var mainFunc = new Func(mainId, mainRegs, mainBody);
@@ -281,9 +281,9 @@ namespace Gum.Runtime
                 new Reg(new RegId(1), AllocInfoId.RefId),
                 new Reg(new RegId(2), AllocInfoId.BoolId) };
 
-            var func0Body = new Command.Scope(new ScopeId(0), new Command.Sequence(new Command[] {
-                new Command.Call(new RegId(2), func1Id, new []{ new RegId(1), new RegId(0) }),
-                new Command.SetReturnValue(new RegId(2)) }));
+            var func0Body = new Scope(new ScopeId(0), new Sequence(new Command[] {
+                new Call(new RegId(2), func1Id, new []{ new RegId(1), new RegId(0) }),
+                new SetReturnValue(new RegId(2)) }));
 
             var func0 = new Func(func0Id, func0Regs, func0Body);
 
@@ -292,11 +292,11 @@ namespace Gum.Runtime
                 new Reg(new RegId(1), AllocInfoId.IntId),
                 new Reg(new RegId(2), AllocInfoId.BoolId) };
 
-            var func1Body = new Command.Scope(new ScopeId(1), new Command.Sequence(new Command[] {
-                new Command.ExternalCall(null, traceStringId, new []{ new RegId(0) }),
-                new Command.ExternalCall(null, traceIntId, new[] { new RegId(1)}),
-                new Command.MakeBool(new RegId(2), true),
-                new Command.SetReturnValue(new RegId(2))
+            var func1Body = new Scope(new ScopeId(1), new Sequence(new Command[] {
+                new ExternalCall(null, traceStringId, new []{ new RegId(0) }),
+                new ExternalCall(null, traceIntId, new[] { new RegId(1)}),
+                new MakeBool(new RegId(2), true),
+                new SetReturnValue(new RegId(2))
             }));
 
             var func1 = new Func(func1Id, func1Regs, func1Body);
@@ -306,12 +306,12 @@ namespace Gum.Runtime
                 new Reg(new RegId(1), AllocInfoId.IntId),
                 new Reg(new RegId(2), AllocInfoId.RefId) };
 
-            var mainBody = new Command.Scope(new ScopeId(2), new Command.Sequence(new Command[] {
-                new Command.MakeInt(new RegId(1), 1),
-                new Command.MakeString(new RegId(2), "x"),
-                new Command.Call(new RegId(0), func0Id, new [] { new RegId(1), new RegId(2) }),
+            var mainBody = new Scope(new ScopeId(2), new Sequence(new Command[] {
+                new MakeInt(new RegId(1), 1),
+                new MakeStringRef(new RegId(2), "x"),
+                new Call(new RegId(0), func0Id, new [] { new RegId(1), new RegId(2) }),
 
-                new Command.ExternalCall(null, traceBoolId, new []{ new RegId(0) }),
+                new ExternalCall(null, traceBoolId, new []{ new RegId(0) }),
             }));
 
             var main = new Func(mainId, mainRegs, mainBody);
@@ -343,15 +343,15 @@ namespace Gum.Runtime
                 new Reg(new RegId(1), AllocInfoId.IntId),
                 new Reg(new RegId(2), AllocInfoId.IntId) };
 
-            var mainBody = new Command.Scope(new ScopeId(0), new Command.Sequence(new Command[] {
+            var mainBody = new Scope(new ScopeId(0), new Sequence(new Command[] {
 
-                new Command.HeapAlloc(new RegId(0), AllocInfoId.IntId),
-                new Command.MakeInt(new RegId(2), 2),
-                new Command.AssignRef(new RegId(0), new RegId(2)),
+                new HeapAlloc(new RegId(0), AllocInfoId.IntId),
+                new MakeInt(new RegId(2), 2),
+                new AssignRef(new RegId(0), new RegId(2)),
 
-                new Command.Deref(new RegId(1), new RegId(0)),
+                new Deref(new RegId(1), new RegId(0)),
 
-                new Command.ExternalCall(null, traceIntId, new []{ new RegId(1) }),
+                new ExternalCall(null, traceIntId, new []{ new RegId(1) }),
             }));
 
             var main = new Func(mainId, mainRegs, mainBody);
@@ -360,8 +360,7 @@ namespace Gum.Runtime
 
             Assert.Equal("2", result);
         }
-
-        // MakeEnumerator
+        
         // ConcatStrings
         // main(string [0], string [1], string [2])
         // [0] = MakeString "Hello"
@@ -383,17 +382,17 @@ namespace Gum.Runtime
                 new Reg(new RegId(3), AllocInfoId.RefId),
                 new Reg(new RegId(4), AllocInfoId.RefId) };
 
-            var mainBody = new Command.Scope(new ScopeId(0), new Command.Sequence(new Command[] {
+            var mainBody = new Scope(new ScopeId(0), new Sequence(new Command[] {
 
-                new Command.MakeString(new RegId(0), "Hello"),
-                new Command.MakeString(new RegId(1), " World"),
-                new Command.MakeString(new RegId(2), " From Gum"),
+                new MakeStringRef(new RegId(0), "Hello"),
+                new MakeStringRef(new RegId(1), " World"),
+                new MakeStringRef(new RegId(2), " From Gum"),
 
-                new Command.ConcatStrings(new RegId(3), new []{ new RegId(0), new RegId(1), new RegId(2) }),
-                new Command.ConcatStrings(new RegId(4), new []{ new RegId(3), new RegId(2) }),
+                new ConcatStrings(new RegId(3), new []{ new RegId(0), new RegId(1), new RegId(2) }),
+                new ConcatStrings(new RegId(4), new []{ new RegId(3), new RegId(2) }),
 
-                new Command.ExternalCall(null, traceStringId, new []{ new RegId(3) }),
-                new Command.ExternalCall(null, traceStringId, new []{ new RegId(4) }),
+                new ExternalCall(null, traceStringId, new []{ new RegId(3) }),
+                new ExternalCall(null, traceStringId, new []{ new RegId(4) }),
             }));
 
             var main = new Func(mainId, mainRegs, mainBody);
@@ -402,8 +401,100 @@ namespace Gum.Runtime
 
             Assert.Equal("Hello World From GumHello World From Gum From Gum", result);
         }
-        
-        // Yield
+
+        // MakeEnumerator, EnumeratorNext, EnumeratorValue
+        // Yield       
+
+        // Func GetNumbers(Int [0], Int [1], String [2])
+        //    [2] MakeString "Start"
+        //    ExCall TraceString [2]        
+        //    Yield [0]
+        //    Yield [1]
+        //    [2] MakeString "End"
+        //    ExCall TraceString [2]
+
+        // Func Main(int [0], int [1], ref [2], bool [3], int [4])
+        //     [0] MakeInt 3
+        //     [1] MakeInt 4
+        //     [2] MakeEnum "GetNumbers" Int [0] [1]
+
+        //     [3] EnumNext [2]
+        //     ExCall TraceBool [3]
+
+        //     [4] EnumValue [2]
+        //     ExCall TraceInt [4]
+
+        //     [3] EnumNext [2]
+        //     ExCall TraceBool[3]
+
+        //     [4] EnumValue [2]
+        //     ExCall TraceInt [4]
+
+        //     [3] EnumNext [2]
+        //     ExCall TraceBool [3]
+
+        [Fact]
+        public async Task SequenceFunctionWorks()
+        {
+            var getNumbersId = new FuncId(0);
+            var mainId = new FuncId(1);
+
+            var getNumbersRegs = new List<Reg>() {                
+                new Reg(new RegId(0), AllocInfoId.IntId),
+                new Reg(new RegId(1), AllocInfoId.IntId),
+                new Reg(new RegId(2), AllocInfoId.RefId) };
+
+            var getNumbersBody = new Scope(new ScopeId(0), new Sequence(new Command[] {
+
+                new MakeStringRef(new RegId(2), "Start"),
+                new ExternalCall(null, traceStringId, new []{ new RegId(2) }),
+
+                new Yield(new RegId(0)),
+                new Yield(new RegId(1)),
+
+                new MakeStringRef(new RegId(2), "End"),
+                new ExternalCall(null, traceStringId, new []{ new RegId(2) }),
+
+            }));
+
+            var getNumbers = new Func(getNumbersId, getNumbersRegs, getNumbersBody);
+
+            var mainRegs = new List<Reg>() {
+                new Reg(new RegId(0), AllocInfoId.IntId),
+                new Reg(new RegId(1), AllocInfoId.IntId),
+                new Reg(new RegId(2), AllocInfoId.RefId),
+                new Reg(new RegId(3), AllocInfoId.BoolId),
+                new Reg(new RegId(4), AllocInfoId.IntId) };
+
+            var mainBody = new Scope(new ScopeId(1), new Sequence(new Command[] {
+
+                new MakeInt(new RegId(0), 3),
+                new MakeInt(new RegId(1), 4),
+
+                new MakeEnumeratorRef(new RegId(2), getNumbersId, AllocInfoId.IntId, new [] {new RegId(0), new RegId(1) } ),
+
+                new EnumeratorMoveNext(new RegId(3), new RegId(2)),
+                new ExternalCall(null, traceBoolId, new []{ new RegId(3) }),
+
+                new EnumeratorGetValue(new RegId(4), new RegId(2)),
+                new ExternalCall(null, traceIntId, new []{ new RegId(4) }),
+
+                new EnumeratorMoveNext(new RegId(3), new RegId(2)),
+                new ExternalCall(null, traceBoolId, new []{ new RegId(3) }),
+
+                new EnumeratorGetValue(new RegId(4), new RegId(2)),
+                new ExternalCall(null, traceIntId, new []{ new RegId(4) }),
+
+                new EnumeratorMoveNext(new RegId(3), new RegId(2)),
+                new ExternalCall(null, traceBoolId, new []{ new RegId(3) }),
+            }));
+
+            var main = new Func(mainId, mainRegs, mainBody);
+
+            var result = await EvaluateAsync(mainId, getNumbers, main);
+
+            Assert.Equal("StartTrue3True4EndFalse", result);
+        }
         // Task
         // Async
         // Await 
