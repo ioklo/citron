@@ -297,7 +297,7 @@ namespace Gum.StaticAnalysis
             return bResult;
         }
 
-        // IR0.Script가 나와야
+        // IR1.Script가 나와야
         // 
         public (int PrivateGlobalVarCount, 
             ImmutableDictionary<ISyntaxNode, SyntaxNodeInfo> InfosByNode,

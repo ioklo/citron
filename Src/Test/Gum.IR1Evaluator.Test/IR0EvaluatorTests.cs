@@ -1,4 +1,4 @@
-using Gum.IR0;
+using Gum.IR1;
 using System;
 using System.Collections.Generic;
 using Xunit;
@@ -6,15 +6,15 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Text;
 using Gum.CompileTime;
-using static Gum.Runtime.IR0Evaluator;
-using static Gum.IR0.Command;
+using static Gum.Runtime.IR1Evaluator;
+using static Gum.IR1.Command;
 
 using Task = System.Threading.Tasks.Task;
-using IR0Task = Gum.IR0.Command.Task;
+using IR1Task = Gum.IR1.Command.Task;
 
 namespace Gum.Runtime
 {
-    public class IR0EvaluatorTests
+    public class IR1EvaluatorTests
     {
         class TestExternalDriver : IExternalDriver
         {
@@ -111,7 +111,7 @@ namespace Gum.Runtime
             var sb = new StringBuilder();
             var externalDriverFactory = new ExternalDriverFactory();
             externalDriverFactory.Register(new ExternalDriverId("Test"), new TestExternalDriver(sb));
-            var evaluator = new IR0Evaluator(externalDriverFactory);
+            var evaluator = new IR1Evaluator(externalDriverFactory);
 
             // execute 
             await evaluator.RunScriptAsync(script);
@@ -119,7 +119,7 @@ namespace Gum.Runtime
             return sb.ToString();
         }
 
-        // °¡Àå ±âº»ÀûÀ¸·Î ExCall Trace°¡ µ¿ÀÛÇÏ´ÂÁö Å×½ºÆ®
+        // ï¿½ï¿½ï¿½ï¿½ ï¿½âº»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ExCall Traceï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ï¿½ï¿½ ï¿½×½ï¿½Æ®
         // Func([0]String)
         // {
         //     [0] MakeString "Hello World"
@@ -154,7 +154,7 @@ namespace Gum.Runtime
         }
 
 
-        // Continue°¡ ³ª¿ÔÀ» ¶§, Scope¾ÕÀ¸·Î Àß °¡´ÂÁö
+        // Continueï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½, Scopeï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         // 
         // Func([0]Bool, [1]String, [2]String)
         // {
@@ -579,10 +579,10 @@ namespace Gum.Runtime
 
                 new Await(new Sequence(new Command[] {
                     new MakeString(new RegId(0), "Task1"),
-                    new IR0Task(f0Id, new []{ new RegId(0) }),
+                    new IR1Task(f0Id, new []{ new RegId(0) }),
 
                     new MakeString(new RegId(0), "Task2"),
-                    new IR0Task(f0Id, new []{ new RegId(0) }),
+                    new IR1Task(f0Id, new []{ new RegId(0) }),
                 })),
 
                 new MakeString(new RegId(0), "End"),
@@ -593,7 +593,7 @@ namespace Gum.Runtime
 
             var result = await EvaluateAsync(mainId, f0, main);
 
-            // µÑ ÁßÀÇ ÇÏ³ª
+            // ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ï³ï¿½
             Assert.True(result == "Finish Task1Finish Task2End" ||
                 result == "Finish Task2Finish Task1End" );
         }
@@ -716,6 +716,25 @@ namespace Gum.Runtime
         }
 
         // GetMemberRef
+        // 1. ï¿½Ú±ï¿½ ï¿½ï¿½â¿¡ï¿½ï¿½ MemberIndexï¿½ï¿½ È®ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½.. Translationï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ È®ï¿½ï¿½ï¿½ï¿½ ï¿½ÈµÈ»ï¿½ï¿½Â·ï¿½ ï¿½ï¿½ï¿½É¾î°¡ ï¿½Û¼ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ö´ï¿½
+        // 2. IR1ï¿½ï¿½ ï¿½Û¼ï¿½ï¿½ï¿½ ï¿½Ù¸ï¿½ ï¿½ï¿½â¿¡ï¿½ï¿½ MemberIndexï¿½ï¿½ È®ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¾ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ö´ï¿½
+        // 3. IR1ï¿½ï¿½ ï¿½Û¼ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ù¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ExternalGetMemberRefï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ñ´ï¿½
+        // 4. IR1ï¿½ï¿½ ï¿½Û¼ï¿½ï¿½ï¿½ ï¿½Ù¸ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ExternalGetMemberRefï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ø¾ï¿½ ï¿½Ï´Â°ï¿½ ï¿½Æ´Ñ°ï¿½ => ï¿½Æ´Ñ°ï¿½ ï¿½ï¿½ï¿½ï¿½. Valueï¿½ï¿½ ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ù¸ï¿½ï¿½ï¿½..ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½É¾î¸¦ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ñ´ï¿½
+        // Types 
+        //     0, { "T", { (intId, "x"), ("y"), ("z") } }
+        //     1, { "S", { 
+        // 
+        // MemberVars
+        //     0, { TypeId "S", "x" }
+        //     1, { TypeId "S", "y" }
+        // 
+        // ï¿½Îµï¿½ï¿½ï¿½ 
+        // CompAllocInfos // ï¿½Ì°ï¿½ ï¿½Îµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ø¾ï¿½ ï¿½Ú´ï¿½
+        //     0, { IntId, StringId, RefId }
+        // 
+        // 
+
+
         // ExternalGetMemberRef
     }
 }

@@ -1,4 +1,4 @@
-﻿using Gum.IR0;
+﻿using Gum.IR1;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Gum.Runtime
 {
-    public partial class IR0Evaluator
+    public partial class IR1Evaluator
     {
         struct ExternalFuncInst
         {

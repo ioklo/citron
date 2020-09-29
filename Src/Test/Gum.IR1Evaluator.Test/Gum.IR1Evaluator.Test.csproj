@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Gum.IR0Evaluator\Gum.IR0Evaluator.csproj" />
+    <ProjectReference Include="..\..\Gum.IR1Evaluator\Gum.IR1Evaluator.csproj" />
   </ItemGroup>
 
 </Project>

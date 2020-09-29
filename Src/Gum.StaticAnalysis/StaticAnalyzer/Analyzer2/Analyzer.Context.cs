@@ -11,7 +11,7 @@ using System.Text;
 
 namespace Gum.StaticAnalysis
 {
-    // Syntax에서 IR0로 변환하기
+    // Syntax에서 IR1로 변환하기
     public partial class Analyzer2
     {
         // Analyzer는 backtracking이 없어서, MutableContext를 쓴다 

@@ -31,11 +31,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gum.StaticAnalysis.Test", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gum.TextAnalysis.Test", "Test\Gum.TextAnalysis.Test\Gum.TextAnalysis.Test.csproj", "{37BA17B8-5A9D-4BD6-82B1-05E5624A1EC1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gum.IR0", "Gum.IR0\Gum.IR0.csproj", "{E43CC8F8-4A58-4BC0-8AB5-4566A93BCD50}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gum.IR1", "Gum.IR1\Gum.IR1.csproj", "{E43CC8F8-4A58-4BC0-8AB5-4566A93BCD50}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gum.IR0Evaluator", "Gum.IR0Evaluator\Gum.IR0Evaluator.csproj", "{85D6134F-138F-4C54-B7C2-F3CBDF1782CC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gum.IR1Evaluator", "Gum.IR1Evaluator\Gum.IR1Evaluator.csproj", "{85D6134F-138F-4C54-B7C2-F3CBDF1782CC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gum.IR0Evaluator.Test", "Test\Gum.IR0Evaluator.Test\Gum.IR0Evaluator.Test.csproj", "{C9D4F4D8-9F4C-494A-A969-4207A6F34C32}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gum.IR1Evaluator.Test", "Test\Gum.IR1Evaluator.Test\Gum.IR1Evaluator.Test.csproj", "{C9D4F4D8-9F4C-494A-A969-4207A6F34C32}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

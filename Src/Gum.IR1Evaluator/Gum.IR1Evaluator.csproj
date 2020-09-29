@@ -12,7 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Gum.Infra\Gum.Infra.csproj" />
-    <ProjectReference Include="..\Gum.IR0\Gum.IR0.csproj" />
+    <ProjectReference Include="..\Gum.IR1\Gum.IR1.csproj" />
     <ProjectReference Include="..\Gum.Runtime\Gum.Runtime.csproj" />
   </ItemGroup>
 

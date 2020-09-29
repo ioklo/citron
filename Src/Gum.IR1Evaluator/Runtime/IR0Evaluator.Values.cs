@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace Gum.Runtime
 {
-    public partial class IR0Evaluator
+    public partial class IR1Evaluator
     {
         public class RefValue : Value
         {
@@ -104,7 +104,7 @@ namespace Gum.Runtime
             public override Value MakeCopy() { throw new NotImplementedException(); }
         }
 
-        // TODO: 임시, IR0Evaluator에서 사용
+        // TODO: 임시, IR1Evaluator에서 사용
         public class StringValue : Value
         {
             string value;

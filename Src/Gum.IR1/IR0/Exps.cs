@@ -5,7 +5,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 
-namespace Gum.IR0 // TODO: namespace 정책 변경..
+namespace Gum.IR1 // TODO: namespace 정책 변경..
 {
     // 범위: 전역
     public struct ExternalDriverId
