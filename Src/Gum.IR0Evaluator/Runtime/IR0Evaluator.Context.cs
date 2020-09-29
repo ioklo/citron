@@ -17,14 +17,17 @@ namespace Gum.Runtime
             ControlInfo controlInfo;
 
             ImmutableArray<ExternalFuncInst> exFuncInsts;
-            ImmutableArray<Func> funcs;            
-
-            public Context(IEnumerable<ExternalFuncInst> exFuncInsts, IEnumerable<Func> funcs)
+            ImmutableArray<Value> globalValues;
+            ImmutableArray<Func> funcs;
+           
+            public Context(IEnumerable<ExternalFuncInst> exFuncInsts, IEnumerable<Func> funcs, Func<Context, ImmutableArray<Value>> globalValueInitializer)
             {
                 this.yieldValueRef = null;
                 this.frame = new Frame(null, Enumerable.Empty<Value>());
                 this.controlInfo = ControlInfo.None;
 
+                // after compallocinfo
+                this.globalValues = globalValueInitializer.Invoke(this);
                 this.exFuncInsts = exFuncInsts.ToImmutableArray();
                 this.funcs = funcs.ToImmutableArray();
             }
@@ -35,6 +38,8 @@ namespace Gum.Runtime
                 this.frame = new Frame(null, regValues);
                 this.controlInfo = ControlInfo.None;
 
+                // TODO: reference로 변경해야 할 것 같다
+                globalValues = other.globalValues;
                 exFuncInsts = other.exFuncInsts;
                 funcs = other.funcs;
             }
@@ -133,6 +138,11 @@ namespace Gum.Runtime
             public IAsyncEnumerable<Value> RunInNewAwaitAsync(Func<IAsyncEnumerable<Value>> func)
             {
                 return frame.RunInNewAwaitAsync(func);
+            }
+
+            public Value GetGlobalValue(int value)
+            {
+                return globalValues[value];
             }
         }
     }

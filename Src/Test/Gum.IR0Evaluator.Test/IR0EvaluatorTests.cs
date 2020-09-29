@@ -86,14 +86,27 @@ namespace Gum.Runtime
         ExternalFuncId traceBoolId = new ExternalFuncId(2);
         ExternalFuncId sleepId = new ExternalFuncId(3);
 
-        async ValueTask<string> EvaluateAsync(FuncId entryId, params Func[] funcs)
+        ValueTask<string> EvaluateAsync(FuncId entryId, params Func[] funcs)
+        {
+            return EvaluateAsync(entryId, Enumerable.Empty<AllocInfoId>(), funcs);
+        }
+
+        async ValueTask<string> EvaluateAsync(FuncId entryId, IEnumerable<AllocInfoId> globalAllocInfoIds, params Func[] funcs)
         {
             var exFunc0 = new ExternalFunc(traceStringId, new ExternalDriverId("Test"), new ExternalDriverFuncId("TraceString"), new[] { AllocInfoId.RefId });
             var exFunc1 = new ExternalFunc(traceIntId, new ExternalDriverId("Test"), new ExternalDriverFuncId("TraceInt"), new[] { AllocInfoId.IntId });
             var exFunc2 = new ExternalFunc(traceBoolId, new ExternalDriverId("Test"), new ExternalDriverFuncId("TraceBool"), new[] { AllocInfoId.BoolId });
             var exFunc3 = new ExternalFunc(sleepId, new ExternalDriverId("Test"), new ExternalDriverFuncId("Sleep"), new[] { AllocInfoId.IntId });
 
-            var script = new Script(new[] { exFunc0, exFunc1, exFunc2, exFunc3 }, funcs, entryId);
+            var globalVars = new List<GlobalVar>();
+            int i = 0;
+            foreach(var allocInfoId in globalAllocInfoIds)
+            {
+                globalVars.Add(new GlobalVar(new GlobalVarId(i), allocInfoId));
+                i++;
+            }
+
+            var script = new Script(new[] { exFunc0, exFunc1, exFunc2, exFunc3 }, globalVars, funcs, entryId);
 
             var sb = new StringBuilder();
             var externalDriverFactory = new ExternalDriverFactory();
@@ -662,7 +675,45 @@ namespace Gum.Runtime
             Assert.Equal("Wait1Wait2Finish1Finish2End", result);
         }
 
-        // GetGlobalRef        
+        // GetGlobalRef, AssignRef, Deref
+        // GlobalVar(int g0)
+        // 
+        // main(ref [0], int [1], ref [2] int [3])
+        //     [0] GetGlobalRef "g0"
+        //     [1] MakeInt 3
+        //     AssignRef [0] [1]
+        //     [0] GetGlobalRef "g0"
+        //     [3] Deref [2]
+        //     ExCall TraceInt [3]
+        // "3"
+
+        [Fact]
+        async Task GetGlobalRefCommandGetReferenceOfGlobalVariable()
+        {
+            var mainId = new FuncId(0);
+
+            var mainRegs = new List<Reg>() {
+                new Reg(new RegId(0), AllocInfoId.RefId),
+                new Reg(new RegId(1), AllocInfoId.IntId),
+                new Reg(new RegId(2), AllocInfoId.RefId),
+                new Reg(new RegId(3), AllocInfoId.IntId),
+            };
+
+            var mainBody = new Scope(new ScopeId(1), new Sequence(new Command[] {
+                new GetGlobalRef(new RegId(0), new GlobalVarId(0)),
+                new MakeInt(new RegId(1), 3),
+                new AssignRef(new RegId(0), new RegId(1)),
+
+                new GetGlobalRef(new RegId(2), new GlobalVarId(0)),
+                new Deref(new RegId(3), new RegId(2)),
+                new ExternalCall(null, traceIntId, new [] { new RegId(3) })
+            }));
+
+            var main = new Func(mainId, mainRegs, mainBody);
+
+            var result = await EvaluateAsync(mainId, new[] { AllocInfoId.IntId }, main);
+            Assert.Equal("3", result);
+        }
 
         // GetMemberRef
         // ExternalGetMemberRef

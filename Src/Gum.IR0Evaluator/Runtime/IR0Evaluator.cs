@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Gum.IR0;
 using Gum.Infra;
 using System.Diagnostics.CodeAnalysis;
+using System.Collections.Immutable;
 
 namespace Gum.Runtime
 {
@@ -30,8 +31,11 @@ namespace Gum.Runtime
                 return new ExternalFuncInst(exFunc.AllocInfoIds, exFuncDelegate);
             });
 
+            Func<Context, ImmutableArray<Value>> globalValueInitializer = context =>
+                script.GlobalVars.Select(globalVar => AllocValue(globalVar.AllocInfoId, context)).ToImmutableArray();
+
             // ExFunc는 ExFuncInst로 변형했지만, Func는 변형할 필요가 없었다
-            var context = new Context(exFuncInsts, script.Funcs);
+            var context = new Context(exFuncInsts, script.Funcs, globalValueInitializer);
 
             // Entry부터 시작
             var func = context.GetFunc(script.EntryId);
@@ -378,12 +382,10 @@ namespace Gum.Runtime
 
         void RunGetGlobalRef(Command.GetGlobalRef cmd, Context context)
         {
-            throw new NotImplementedException();
-            //var index = context.GetGlobalVarIndex(getGlobalRefCmd.GlobalVarId);
-            //var value = context.GetGlobalValue(index);
+            var value = context.GetGlobalValue(cmd.GlobalVarId.Value);
 
-            //var destValue = context.GetRegValue<RefValue>(getGlobalRefCmd.ResultId);
-            //destValue.SetTarget(value);
+            var destRefValue = context.GetRegValue<RefValue>(cmd.ResultId);
+            destRefValue.SetTarget(value);
         }
 
         void RunGetMemberRef(Command.GetMemberRef cmd, Context context) 

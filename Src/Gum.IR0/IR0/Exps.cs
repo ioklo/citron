@@ -57,6 +57,12 @@ namespace Gum.IR0 // TODO: namespace 정책 변경..
         public MemberVarId(int value) { Value = value; }
     }
 
+    public struct ExternalMemberVarId
+    {
+        public int Value { get; }
+        public ExternalMemberVarId(int value) { Value = value; }
+    }
+
     public struct ExternalFuncId
     {
         public int Value { get; }
@@ -145,6 +151,12 @@ namespace Gum.IR0 // TODO: namespace 정책 변경..
     public class GlobalVar
     {
         public GlobalVarId Id { get; }
+        public AllocInfoId AllocInfoId { get; }
+        public GlobalVar(GlobalVarId id, AllocInfoId allocInfoId)
+        {
+            Id = id;
+            AllocInfoId = allocInfoId;
+        }
     }
 
     public class MemberVar
@@ -176,14 +188,15 @@ namespace Gum.IR0 // TODO: namespace 정책 변경..
 
     // 
     public class Script
-    {
+    {   
         public ImmutableArray<ExternalFunc> ExFuncs { get; }
+        public ImmutableArray<GlobalVar> GlobalVars { get; }
         public ImmutableArray<Func> Funcs { get; }
         public FuncId EntryId { get; }
-
-        public Script(IEnumerable<ExternalFunc> exFuncs, IEnumerable<Func> funcs, FuncId entryId)
+        public Script(IEnumerable<ExternalFunc> exFuncs, IEnumerable<GlobalVar> globalVars, IEnumerable<Func> funcs, FuncId entryId)
         {
             ExFuncs = exFuncs.ToImmutableArray();
+            GlobalVars = globalVars.ToImmutableArray();
             Funcs = funcs.ToImmutableArray();
             EntryId = entryId;
         }
@@ -480,8 +493,8 @@ namespace Gum.IR0 // TODO: namespace 정책 변경..
         {
             public RegId ResultId { get; }
             public RegId InstanceRefId { get; }
-            public MemberVarId MemberVarId { get; }
-            public ExternalGetMemberRef(RegId resultId, RegId instanceRefId, MemberVarId memberVarId)
+            public ExternalMemberVarId MemberVarId { get; }
+            public ExternalGetMemberRef(RegId resultId, RegId instanceRefId, ExternalMemberVarId memberVarId)
             {
                 ResultId = resultId;
                 InstanceRefId = instanceRefId;
