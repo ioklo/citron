@@ -1,21 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Text;
+using System.Collections.Immutable;
 
-namespace Gum.StaticAnalysis
-{   
+namespace Gum.IR0
+{
     public class CaptureInfo
     {
         public struct Element
-        {   
+        {
             public CaptureKind CaptureKind { get; }
-            public StorageInfo StorageInfo { get; }
+            public int LocalVarIndex { get; }
 
-            public Element(CaptureKind captureKind, StorageInfo storageInfo)
+            public Element(CaptureKind captureKind, int localVarIndex)
             {
                 CaptureKind = captureKind;
-                StorageInfo = storageInfo;
+                LocalVarIndex = localVarIndex;
             }
         }
 

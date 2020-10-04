@@ -22,7 +22,7 @@ namespace Gum.StaticAnalysis
             this.enumElemNames = enumElemNames.ToImmutableHashSet();
         }
 
-        public bool GetMemberTypeId(string name, int typeParamCount, [NotNullWhen(returnValue: true)] out ModuleItemId? outTypeId)
+        public bool GetMemberTypeId(string name, int typeParamCount, [NotNullWhen(true)] out ModuleItemId? outTypeId)
         {
             return memberTypeIds.TryGetValue(new ModuleItemIdElem(name, typeParamCount), out outTypeId);
         }

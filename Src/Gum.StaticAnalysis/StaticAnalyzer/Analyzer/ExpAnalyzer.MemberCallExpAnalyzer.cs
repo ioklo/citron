@@ -1,7 +1,8 @@
 ﻿using Gum.CompileTime;
-using Gum.Syntax;
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Linq;
 using static Gum.StaticAnalysis.Analyzer;
 using static Gum.StaticAnalysis.Analyzer.Misc;
@@ -15,49 +16,43 @@ namespace Gum.StaticAnalysis
             public struct Result
             {
                 public TypeValue.Func TypeValue { get; }
-                public MemberCallExpInfo NodeInfo { get; }
-                public ImmutableArray<TypeValue> ArgTypeValues { get; }
+                public IR0.Exp Exp { get; }                
 
-                public Result(TypeValue.Func typeValue, MemberCallExpInfo nodeInfo, ImmutableArray<TypeValue> argTypeValues)
+                public Result(TypeValue.Func typeValue, IR0.Exp exp)
                 {
                     TypeValue = typeValue;
-                    NodeInfo = nodeInfo;
-                    ArgTypeValues = argTypeValues;
+                    Exp = exp;
                 }
             }
 
-            ExpAnalyzer expAnalyzer;
-            MemberCallExp exp;
+            Analyzer analyzer;
+            Syntax.MemberCallExp exp;
             Context context;
-            ImmutableArray<TypeValue> args;
 
-            public MemberCallExpAnalyzer(ExpAnalyzer expAnalyzer, MemberCallExp exp, Context context)
+            public MemberCallExpAnalyzer(Analyzer analyzer, Syntax.MemberCallExp exp, Context context)
             {
-                this.expAnalyzer = expAnalyzer;
+                this.analyzer = analyzer;
                 this.exp = exp;
                 this.context = context;
             }
 
             public Result? Analyze()
             {
-                if (!expAnalyzer.AnalyzeExps(exp.Args, context, out args))
-                    return null;
-
                 // id인 경우는 따로 처리
-                if (exp.Object is IdentifierExp objIdExp)
+                if (exp.Object is Syntax.IdentifierExp objIdExp)
                 {
                     return AnalyzeObjectIdExp(objIdExp);
                 }
                 else
                 {
-                    if (!expAnalyzer.AnalyzeExp(exp.Object, null, context, out var objTypeValue))
+                    if (!analyzer.AnalyzeExp(exp.Object, null, context, out var ir0Exp, out var objTypeValue))
                         return null;
 
-                    return Analyze_Instance(objTypeValue);
+                    return Analyze_Instance(ir0Exp, objTypeValue);
                 }
             }
 
-            private Result? AnalyzeObjectIdExp(IdentifierExp objIdExp)
+            private Result? AnalyzeObjectIdExp(Syntax.IdentifierExp objIdExp)
             {
                 var typeArgs = GetTypeValues(objIdExp.TypeArgs, context);
 
@@ -70,39 +65,47 @@ namespace Gum.StaticAnalysis
                 }
                 else if (idInfo is IdentifierInfo.Func funcIdInfo)
                 {
-                    var objTypeValue = context.TypeValueService.GetTypeValue(funcIdInfo.FuncValue);
-                    return Analyze_Instance(objTypeValue);
+                    // ? 'Func'.m(...) 꼴 은 허용을 하지 않는다
+                    context.ErrorCollector.Add(exp, $"{objIdExp.Value}가 함수입니다. 함수는 멤버를 가질 수 없습니다.");
+                    return null;
                 }
                 else if (idInfo is IdentifierInfo.Var varIdInfo)
                 {
-                    var objTypeValue = varIdInfo.TypeValue;
-                    return Analyze_Instance(objTypeValue);
+                    if (!analyzer.AnalyzeExp(exp.Object, null, context, out var ir0Exp, out var objTypeValue))
+                        return null;
+
+                    // 두번 계산;
+                    Debug.Assert(objTypeValue == varIdInfo.TypeValue);
+
+                    return Analyze_Instance(ir0Exp, objTypeValue);
                 }
 
                 throw new InvalidOperationException();
             }
 
-            private Result? Analyze_Instance(TypeValue objTypeValue)
+            private Result? Analyze_Instance(IR0.Exp instanceExp, TypeValue instanceType)
             {
                 var memberTypeArgs = GetTypeValues(exp.MemberTypeArgs, context);
 
                 // 1. 함수에서 찾기.. FuncValue도 같이 주는것이 좋을 듯 하다
-                if (context.TypeValueService.GetMemberFuncValue(objTypeValue, Name.MakeText(exp.MemberName), memberTypeArgs, out var funcValue))
+                if (context.TypeValueService.GetMemberFuncValue(instanceType, Name.MakeText(exp.MemberName), memberTypeArgs, out var funcValue))
                 {
-                    // staticObject인 경우는 StaticFunc만, 아니라면 모든 함수가 가능 
                     var funcTypeValue = context.TypeValueService.GetTypeValue(funcValue);
 
-                    var nodeInfo = IsFuncStatic(funcValue.FuncId, context)
-                        ? MemberCallExpInfo.MakeStaticFunc(objTypeValue, args, funcValue)
-                        : MemberCallExpInfo.MakeInstanceFunc(objTypeValue, args, funcValue);
+                    if (!analyzer.AnalyzeExps(exp.Args, context, out var argInfos))
+                        return null;
 
-                    return new Result(funcTypeValue, nodeInfo, args);
+                    if (!analyzer.CheckParamTypes(exp, funcTypeValue.Params, argInfos.Select(argInfo => argInfo.TypeValue).ToList(), context))
+                        return null;
+
+                    var ir0Exp = new IR0.CallFuncExp(funcValue, (instanceExp, instanceType), argInfos.Select(argInfo => new IR0.ExpAndType(argInfo.Exp, argInfo.TypeValue)));
+                    return new Result(funcTypeValue, ir0Exp);
                 }
 
                 // 2. 변수에서 찾기
                 if (memberTypeArgs.Length == 0)
                 {
-                    if (context.TypeValueService.GetMemberVarValue(objTypeValue, Name.MakeText(exp.MemberName), out var varValue))
+                    if (context.TypeValueService.GetMemberVarValue(instanceType, Name.MakeText(exp.MemberName), out var varValue))
                     {
                         // TODO: as 대신 함수로 의미 부여하기, 호출 가능하면? 쿼리하는 함수로 변경
                         var varFuncTypeValue = context.TypeValueService.GetTypeValue(varValue) as TypeValue.Func;
@@ -113,11 +116,16 @@ namespace Gum.StaticAnalysis
                             return null;
                         }
 
-                        var nodeInfo = IsVarStatic(varValue.VarId, context)
-                            ? MemberCallExpInfo.MakeStaticLambda(objTypeValue, args, varValue)
-                            : MemberCallExpInfo.MakeInstanceLambda(objTypeValue, args, varValue.VarId.Name);
+                        if (!analyzer.AnalyzeExps(exp.Args, context, out var argInfos))
+                            return null;
 
-                        return new Result(varFuncTypeValue, nodeInfo, args);
+                        if (!analyzer.CheckParamTypes(exp, varFuncTypeValue.Params, argInfos.Select(argInfo => argInfo.TypeValue).ToList(), context))
+                            return null;
+
+                        var callableExp = new IR0.MemberValueExp(instanceExp, exp.MemberName);
+                        var ir0Exp = new IR0.CallValueExp(callableExp, varFuncTypeValue, argInfos.Select(argInfo => new IR0.ExpAndType(argInfo.Exp, argInfo.TypeValue)));
+
+                        return new Result(varFuncTypeValue, ir0Exp);
                     }
                 }
 
@@ -157,8 +165,16 @@ namespace Gum.StaticAnalysis
                     var funcTypeValue = TypeValue.MakeFunc(typeIdInfo.TypeValue, paramTypes);
                     var appliedFuncTypeValue = context.TypeValueService.Apply(typeIdInfo.TypeValue, funcTypeValue);
 
+                    var members = new List<IR0.EnumExp.Elem>();
+
+                    exp.Args.
+
                     var nodeInfo = MemberCallExpInfo.MakeEnumValue(null, args, elemInfo.Value);
-                    return new Result(funcTypeValue, nodeInfo, args);
+
+                    var ir0Exp = new IR0.EnumExp(elemInfo.Value.Name,  )
+
+
+                    return new Result(funcTypeValue, ir0Exp);
                 }
 
                 return Analyze_Type(typeIdInfo);

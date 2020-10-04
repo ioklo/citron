@@ -70,7 +70,7 @@ namespace Gum.StaticAnalysis
                 return typeValuesByTypeExp.ToImmutableWithComparer();
             }
 
-            public bool GetTypeVar(string name, [NotNullWhen(returnValue: true)] out TypeValue.TypeVar? typeValue)
+            public bool GetTypeVar(string name, [NotNullWhen(true)] out TypeValue.TypeVar? typeValue)
             {
                 return typeEnv.TryGetValue(name, out typeValue);
             }

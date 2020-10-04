@@ -147,7 +147,7 @@ namespace Gum.StaticAnalysis
         internal bool AnalyzeUnaryAssignExp(
             UnaryOpExp unaryOpExp,
             Context context,
-            [NotNullWhen(returnValue: true)] out TypeValue? outTypeValue)
+            [NotNullWhen(true)] out TypeValue? outTypeValue)
         {
             var assignAnalyzer = new UnaryAssignExpAnalyzer(analyzer, context, unaryOpExp);
             return assignAnalyzer.Analyze(out outTypeValue);

@@ -9,8 +9,8 @@ namespace Gum.CompileTime
     {
         string ModuleName { get; }
         
-        bool GetTypeInfo(ModuleItemId id, [NotNullWhen(returnValue: true)] out ITypeInfo? typeInfo);
-        bool GetFuncInfo(ModuleItemId id, [NotNullWhen(returnValue: true)] out FuncInfo? funcInfo);
-        bool GetVarInfo(ModuleItemId id, [NotNullWhen(returnValue: true)] out VarInfo? varInfo);
+        bool GetTypeInfo(ModuleItemId id, [NotNullWhen(true)] out ITypeInfo? typeInfo);
+        bool GetFuncInfo(ModuleItemId id, [NotNullWhen(true)] out FuncInfo? funcInfo);
+        bool GetVarInfo(ModuleItemId id, [NotNullWhen(true)] out VarInfo? varInfo);
     }
 }

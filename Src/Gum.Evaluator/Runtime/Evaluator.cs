@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Gum.CompileTime;
 using Gum.Infra;
-using Gum.Syntax;
+using Gum.IR0;
 using Gum.Runtime;
 using Gum.StaticAnalysis;
 using Gum;
@@ -109,11 +109,7 @@ namespace Gum.Runtime
             var captures = new List<Value>(captureElems.Length);
             foreach (var captureElem in captureElems)
             {
-                Value origValue;
-                if (captureElem.StorageInfo is StorageInfo.Local localVar)
-                    origValue = context.GetLocalVar(localVar.Index);
-                else
-                    throw new NotImplementedException();
+                Value origValue = context.GetLocalValue(captureElem.LocalVarIndex);
 
                 Value value;
                 if (captureElem.CaptureKind == CaptureKind.Copy)
@@ -139,7 +135,7 @@ namespace Gum.Runtime
         {
             // NOTICE: args가 미리 할당되서 나온 상태
             for (int i = 0; i < args.Count; i++)
-                context.InitLocalVar(i, args[i]);
+                context.AddLocalVar(i, args[i]);
 
             await foreach (var value in EvaluateStmtAsync(scriptFuncInst.Body, context))
             {
@@ -147,44 +143,19 @@ namespace Gum.Runtime
             }
         }
 
-        public async ValueTask EvaluateVarDeclAsync(VarDecl varDecl, EvalContext context)
+        public async ValueTask EvaluateLocalVarDeclAsync(LocalVarDecl localVarDecl, EvalContext context)
         {
-            var info = context.GetNodeInfo<VarDeclInfo>(varDecl);
-
-            Debug.Assert(info.Elems.Length == varDecl.Elems.Length);
-            for(int i = 0; i < varDecl.Elems.Length; i++)
+            foreach (var elem in localVarDecl.Elems)
             {
-                var varDeclElem = varDecl.Elems[i];
-                var varDeclInfoElem = info.Elems[i];
-
-                var value = GetDefaultValue(varDeclInfoElem.TypeValue, context);
-
-                switch (varDeclInfoElem.StorageInfo)
-                {
-                    case StorageInfo.ModuleGlobal storage:
-                        context.DomainService.InitGlobalValue(storage.VarId, value);
-                        break;
-
-                    case StorageInfo.PrivateGlobal storage:
-                        context.InitPrivateGlobalVar(storage.Index, value);
-                        break;
-
-                    case StorageInfo.Local storage:
-                        context.InitLocalVar(storage.Index, value);
-                        break;
-
-                    default:
-                        throw new NotImplementedException();
-                }
+                var value = GetDefaultValue(localVarDecl.Type, context);
+                context.AddLocalVar(elem.Name, value);
 
                 // InitExp가 있으면 
-                if (varDeclElem.InitExp != null)
-                {
-                    await expValueEvaluator.EvalAsync(varDeclElem.InitExp, value, context);
-                }          
+                if (elem.InitExp != null)
+                    await expValueEvaluator.EvalAsync(elem.InitExp, value, context);
             }
         }
-
+        
         public ValueTask EvaluateFuncInstAsync(Value? thisValue, FuncInst funcInst, IReadOnlyList<Value> args, Value result, EvalContext context)
         {            
             if (funcInst is ScriptFuncInst scriptFuncInst)
@@ -268,12 +239,11 @@ namespace Gum.Runtime
                         break;
                 }
             }
-
-            var info = context.GetNodeInfo<ScriptInfo>(script);
+            
             var retValue = context.RuntimeModule.MakeInt(0);
 
             await context.ExecInNewFuncFrameAsync(
-                new Value?[info.LocalVarCount], 
+                new Value?[script.LocalVarCount], 
                 EvalFlowControl.None, 
                 ImmutableArray<Task>.Empty, 
                 null, 
@@ -285,7 +255,7 @@ namespace Gum.Runtime
 
         public async ValueTask<int?> EvaluateScriptAsync(
             string moduleName,
-            Script script,             
+            Syntax.Script script,             
             IRuntimeModule runtimeModule,
             IEnumerable<IModuleInfo> moduleInfos,
             IErrorCollector errorCollector)
@@ -311,10 +281,9 @@ namespace Gum.Runtime
                 runtimeModule, 
                 domainService, 
                 analyzeResult.TypeValueService,                 
-                analyzeResult.PrivateGlobalVarCount,
-                analyzeResult.InfosByNode);
+                analyzeResult.Script.PrivateGlobalVarCount);
 
-            return await EvaluateScriptAsync(script, context);
+            return await EvaluateScriptAsync(analyzeResult.Script, context);
         }
         
         internal Value GetMemberValue(Value value, Name varName)

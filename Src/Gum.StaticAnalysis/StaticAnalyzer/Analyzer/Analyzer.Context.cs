@@ -18,11 +18,11 @@ namespace Gum.StaticAnalysis
         {
             public struct PrivateGlobalVarInfo
             {
-                public int Index { get; }
+                public string Name { get; }
                 public TypeValue TypeValue { get; }
-                public PrivateGlobalVarInfo(int index, TypeValue typeValue)
+                public PrivateGlobalVarInfo(string name, TypeValue typeValue)
                 {
-                    Index = index;
+                    Name = name;
                     TypeValue = typeValue;
                 }
             }
@@ -41,8 +41,7 @@ namespace Gum.StaticAnalysis
             private ImmutableDictionary<FuncDecl, FuncInfo> funcInfosByDecl;
             private ImmutableDictionary<EnumDecl, EnumInfo> enumInfosByDecl;
             private TypeExpTypeValueService typeExpTypeValueService;
-            private Dictionary<string, PrivateGlobalVarInfo> privateGlobalVarInfos;
-            private Dictionary<ISyntaxNode, SyntaxNodeInfo> infosByNode;
+            private Dictionary<string, PrivateGlobalVarInfo> privateGlobalVarInfos;            
             private List<ScriptTemplate> templates;
 
             public Context(
@@ -65,29 +64,19 @@ namespace Gum.StaticAnalysis
                 curFunc = new FuncContext(null, null, false);
                 bGlobalScope = true;
                 privateGlobalVarInfos = new Dictionary<string, PrivateGlobalVarInfo>();
-
-                infosByNode = new Dictionary<ISyntaxNode, SyntaxNodeInfo>(RefEqComparer<ISyntaxNode>.Instance);
+                
                 templates = new List<ScriptTemplate>();
-            }
-
-            public void AddNodeInfo(ISyntaxNode node, SyntaxNodeInfo info)
-            {
-                infosByNode.Add(node, info);
-            }
+            }            
 
             public void AddOverrideVarInfo(StorageInfo storageInfo, TypeValue testTypeValue)
             {
                 curFunc.AddOverrideVarInfo(storageInfo, testTypeValue);
             }
 
-            public int AddPrivateGlobalVarInfo(string name, TypeValue typeValue)
+            public void AddPrivateGlobalVarInfo(string name, TypeValue typeValue)
             {
-                int index = privateGlobalVarInfos.Count;
-
-                privateGlobalVarInfos.Add(name, new PrivateGlobalVarInfo(index, typeValue));
-                return index;
+                privateGlobalVarInfos.Add(name, new PrivateGlobalVarInfo(name, typeValue));
             }
-
 
             public bool GetPrivateGlobalVarInfo(string value, out PrivateGlobalVarInfo privateGlobalVarInfo)
             {
@@ -156,12 +145,7 @@ namespace Gum.StaticAnalysis
             {
                 return typeExpTypeValueService.GetTypeValue(typeExp);
             }
-
-            public ImmutableDictionary<ISyntaxNode, SyntaxNodeInfo> MakeInfosByNode()
-            {
-                return infosByNode.ToImmutableWithComparer();
-            }
-
+            
             public void AddTemplate(ScriptTemplate funcTempl)
             {
                 templates.Add(funcTempl);
@@ -178,7 +162,7 @@ namespace Gum.StaticAnalysis
             // 지역 스코프에서 
             private bool GetLocalIdentifierInfo(
                 string idName, IReadOnlyList<TypeValue> typeArgs,
-                [NotNullWhen(returnValue: true)] out IdentifierInfo? outIdInfo)
+                [NotNullWhen(true)] out IdentifierInfo? outIdInfo)
             {
                 // 지역 스코프에는 변수만 있고, 함수, 타입은 없으므로 이름이 겹치는 것이 있는지 검사하지 않아도 된다
                 if (typeArgs.Count == 0)
@@ -197,7 +181,7 @@ namespace Gum.StaticAnalysis
 
             private bool GetThisIdentifierInfo(
                 string idName, IReadOnlyList<TypeValue> typeArgs,
-                [NotNullWhen(returnValue: true)] out IdentifierInfo? idInfo)
+                [NotNullWhen(true)] out IdentifierInfo? idInfo)
             {
                 // TODO: implementation
 
@@ -207,7 +191,7 @@ namespace Gum.StaticAnalysis
 
             private bool GetPrivateGlobalVarIdentifierInfo(
                 string idName, IReadOnlyList<TypeValue> typeArgs,
-                [NotNullWhen(returnValue: true)] out IdentifierInfo? outIdInfo)
+                [NotNullWhen(true)] out IdentifierInfo? outIdInfo)
             {
                 if (typeArgs.Count == 0)
                     if (privateGlobalVarInfos.TryGetValue(idName, out var privateGlobalVarInfo))
@@ -226,7 +210,7 @@ namespace Gum.StaticAnalysis
             private bool GetModuleGlobalIdentifierInfo(
                 string idName, IReadOnlyList<TypeValue> typeArgs,
                 TypeValue? hintTypeValue,
-                [NotNullWhen(returnValue: true)] out IdentifierInfo? outIdInfo)
+                [NotNullWhen(true)] out IdentifierInfo? outIdInfo)
             {
                 var itemId = ModuleItemId.Make(idName, typeArgs.Count);
 
@@ -288,7 +272,7 @@ namespace Gum.StaticAnalysis
             public bool GetIdentifierInfo(
                 string idName, IReadOnlyList<TypeValue> typeArgs,
                 TypeValue? hintTypeValue,
-                [NotNullWhen(returnValue: true)] out IdentifierInfo? idInfo)
+                [NotNullWhen(true)] out IdentifierInfo? idInfo)
             {
                 // 1. local 변수, local 변수에서는 힌트를 쓸 일이 없다
                 if (GetLocalIdentifierInfo(idName, typeArgs, out idInfo))
@@ -325,9 +309,9 @@ namespace Gum.StaticAnalysis
             }
 
             // curFunc
-            public int AddLocalVarInfo(string name, TypeValue typeValue)
+            public void AddLocalVarInfo(string name, TypeValue typeValue)
             {
-                return curFunc.AddLocalVarInfo(name, typeValue);
+                curFunc.AddLocalVarInfo(name, typeValue);
             }
 
             public bool IsSeqFunc()
@@ -343,11 +327,6 @@ namespace Gum.StaticAnalysis
             internal void SetRetTypeValue(TypeValue retTypeValue)
             {
                 curFunc.SetRetTypeValue(retTypeValue);
-            }
-
-            public int GetLocalVarCount()
-            {
-                return curFunc.GetLocalVarCount();
             }
 
             // 1. exp가 무슨 타입을 가지는지

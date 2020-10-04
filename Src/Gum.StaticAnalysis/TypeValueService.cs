@@ -19,7 +19,7 @@ namespace Gum
             this.typeValueApplier = typeValueApplier;
         }
 
-        //private bool GetMemberVarInfo(QsMetaItemId typeId, QsName name, [NotNullWhen(returnValue: true)] out QsVarInfo? outVarInfo)
+        //private bool GetMemberVarInfo(QsMetaItemId typeId, QsName name, [NotNullWhen(true)] out QsVarInfo? outVarInfo)
         //{
         //    outVarInfo = null;
 
@@ -34,7 +34,7 @@ namespace Gum
         //    return outVarInfo != null;
         //}
 
-        //public bool GetMemberVarTypeValue(QsTypeValue typeValue, QsName name, [NotNullWhen(returnValue: true)] out QsTypeValue? outTypeValue)
+        //public bool GetMemberVarTypeValue(QsTypeValue typeValue, QsName name, [NotNullWhen(true)] out QsTypeValue? outTypeValue)
         //{
         //    outTypeValue = null;
 
@@ -90,7 +90,7 @@ namespace Gum
         //    QsTypeValue.Normal typeValue,
         //    QsName memberFuncId,
         //    ImmutableArray<QsTypeValue> typeArgs,
-        //    [NotNullWhen(returnValue: true)] out QsTypeValue.Func? funcTypeValue)
+        //    [NotNullWhen(true)] out QsTypeValue.Func? funcTypeValue)
         //{
         //    funcTypeValue = null;
 
@@ -115,7 +115,7 @@ namespace Gum
         //    QsTypeValue typeValue,
         //    QsName memberFuncId,
         //    ImmutableArray<QsTypeValue> typeArgs,
-        //    [NotNullWhen(returnValue: true)] out QsTypeValue.Func? funcTypeValue)
+        //    [NotNullWhen(true)] out QsTypeValue.Func? funcTypeValue)
         //{
         //    // var / typeVar / normal / func
 
@@ -156,7 +156,7 @@ namespace Gum
             TypeValue objTypeValue, 
             Name funcName, 
             IReadOnlyCollection<TypeValue> typeArgs,
-            [NotNullWhen(returnValue: true)] out FuncValue? funcValue)
+            [NotNullWhen(true)] out FuncValue? funcValue)
         {
             funcValue = null;
 
@@ -196,7 +196,7 @@ namespace Gum
         public bool GetMemberVarValue(
             TypeValue objTypeValue, 
             Name varName,
-            [NotNullWhen(returnValue: true)] out VarValue? outVarValue)
+            [NotNullWhen(true)] out VarValue? outVarValue)
         {
             outVarValue = null;
 

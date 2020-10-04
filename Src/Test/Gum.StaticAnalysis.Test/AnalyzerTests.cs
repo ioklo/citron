@@ -16,6 +16,7 @@ namespace Gum.StaticAnalysis
 {
     public class AnalyzerTests
     {
+
         //[Fact]
         //void TestAnalyzeIntLiteralExp()
         //{

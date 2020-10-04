@@ -9,12 +9,12 @@ namespace Gum.StaticAnalysis
     {
         public class LocalVarInfo
         {
-            public int Index { get; }
+            public string Name { get; }
             public TypeValue TypeValue { get; }
 
-            public LocalVarInfo(int index, TypeValue typeValue)
+            public LocalVarInfo(string name, TypeValue typeValue)
             {
-                Index = index;
+                Name = name;
                 TypeValue = typeValue;
             }
         }

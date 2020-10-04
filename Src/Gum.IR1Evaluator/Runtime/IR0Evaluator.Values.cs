@@ -103,8 +103,7 @@ namespace Gum.Runtime
 
             public override Value MakeCopy() { throw new NotImplementedException(); }
         }
-
-        // TODO: 임시, IR1Evaluator에서 사용
+        
         public class StringValue : Value
         {
             string value;

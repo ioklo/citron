@@ -1,6 +1,5 @@
 ﻿using Gum.Runtime;
 using Gum.StaticAnalysis;
-using Gum.Syntax;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -12,10 +11,12 @@ using static Gum.Runtime.Evaluator;
 using static Gum.Infra.CollectionExtensions;
 using Gum.CompileTime;
 using Gum;
+using Gum.IR0;
+using System.Collections.Immutable;
 
 namespace Gum.Runtime
 {
-    class ExpEvaluator
+    public partial class ExpEvaluator
     {
         private Evaluator evaluator;
 
@@ -34,11 +35,11 @@ namespace Gum.Runtime
 
                 // 스크립트
                 case StorageInfo.PrivateGlobal pgs:
-                    return context.GetPrivateGlobalVar(pgs.Index);
+                    return context.GetPrivateGlobalValue(pgs.Index);
 
                 // 함수
                 case StorageInfo.Local ls:
-                    return context.GetLocalVar(ls.Index);
+                    return context.GetLocalValue(ls.Index);
 
                 // enum값
                 case StorageInfo.EnumElem ees:
@@ -68,16 +69,54 @@ namespace Gum.Runtime
                     throw new NotImplementedException();
             };
         }
-        
-        async ValueTask EvalIdExpAsync(IdentifierExp idExp, Value result, EvalContext context)
+
+        async ValueTask<Value> GetValueAsync(Exp exp, EvalContext context)
         {
-            var info = context.GetNodeInfo<IdentifierExpInfo>(idExp);
+            switch(exp)
+            {
+                case ExternalGlobalVarExp egvExp:
+                    throw new NotImplementedException();
 
-            var value = await GetValueAsync(info.StorageInfo, context);
+                case PrivateGlobalVarExp pgvExp:
+                    return context.GetPrivateGlobalValue(pgvExp.Name);
 
-            result.SetValue(value);
+                case LocalVarExp localVarExp:
+                    return context.GetLocalValue(localVarExp.Name);
+                
+                case StructMemberExp structMemberExp:
+                    var instValue = (StructValue)await GetValueAsync(structMemberExp.Object, context);
+                    return instValue.GetMemberValue(structMemberExp.MemberName);
+
+                case ClassMemberExp classMemberExp:
+                    var instValue = (ClassValue)await GetValueAsync(classMemberExp.Object, context);
+                    return instValue.GetMemberValue(classMemberExp.MemberName);
+
+                case EnumMemberExp enumMemberExp:
+                    var instValue = (EnumValue)await GetValueAsync(enumMemberExp.Object, context);
+                    return instValue.GetMemberValue(enumMemberExp.MemberName);
+
+                default: 
+                    throw new InvalidOperationException();
+            }
         }
 
+        void EvalExternalGlobalVarExp(ExternalGlobalVarExp exp, Value result, EvalContext context)
+        {
+            throw new NotImplementedException();
+        }
+
+        void EvalPrivateGlobalVarExp(PrivateGlobalVarExp exp, Value result, EvalContext context)
+        {
+            var globalValue = context.GetPrivateGlobalValue(exp.Name);
+            result.SetValue(globalValue);
+        }
+
+        void EvalLocalVarExp(LocalVarExp exp, Value result, EvalContext context)
+        {
+            var localValue = context.GetLocalValue(exp.Name);
+            result.SetValue(localValue);
+        }        
+        
         void EvalBoolLiteralExp(BoolLiteralExp boolLiteralExp, Value result, EvalContext context)
         {
             context.RuntimeModule.SetBool(result, boolLiteralExp.Value);
@@ -102,8 +141,7 @@ namespace Gum.Runtime
 
                     case ExpStringExpElement expElem:
                         {
-                            var expStringExpElementInfo = context.GetNodeInfo<ExpStringExpElementInfo>(expElem);
-                            var tempValue = evaluator.GetDefaultValue(expStringExpElementInfo.ExpTypeValue, context);
+                            var tempValue = evaluator.GetDefaultValue(expElem.ExpTypeValue, context);
 
                             await EvalAsync(expElem.Exp, tempValue, context);
                             var strValue = context.RuntimeModule.GetString(tempValue!);
@@ -117,7 +155,27 @@ namespace Gum.Runtime
             }
 
             context.RuntimeModule.SetString(context.DomainService, result, sb.ToString());
-        }        
+        }
+
+        async ValueTask EvalAssignExpAsync(AssignExp exp, Value result, EvalContext context)
+        {
+            var destValue = await GetValueAsync(exp.Dest, context);
+
+            await EvalAsync(exp.Src, destValue, context);
+
+            result.SetValue(destValue);
+        }
+
+        // ++x; => x.Inc(); result = x;
+        async ValueTask EvalPrefixExpAsync(PrefixExp exp, Value result, EvalContext context)
+        {
+            var operand = await GetValueAsync(exp.Operand, context);
+
+
+            await EvalAsync(exp.Exp, VoidValue.Instance, context);
+            
+
+        }
 
         async ValueTask EvalUnaryOpExpAssignAsync(UnaryOpExp exp, Value result, EvalContext context)
         {
@@ -246,8 +304,6 @@ namespace Gum.Runtime
                         return;
                     }
 
-                
-
                 case UnaryOpKind.Minus: // -i
                     {
                         // 타입이 같으므로 재사용
@@ -272,7 +328,7 @@ namespace Gum.Runtime
                 await evaluator.EvalExpAsync(exp.Operand1, loc, context);
                 result.SetValue(loc);
             }
-
+             
             // property, indexer
             async ValueTask EvalCallSetterAsync(BinaryOpExpAssignInfo.CallSetter callSetterInfo)
             {
@@ -668,179 +724,176 @@ namespace Gum.Runtime
             throw new NotImplementedException();
         }
 
-        async ValueTask EvalCallExpAsync(CallExp exp, Value result, EvalContext context)
-        {
-            var info = context.GetNodeInfo<CallExpInfo>(exp);
+        async ValueTask EvalCallFuncExpAsync(CallFuncExp exp, Value result, EvalContext context)
+        {   
+            var funcInst = context.DomainService.GetFuncInst(exp.FuncValue);
 
-            if (info is CallExpInfo.EnumValue enumInfo)
+            Value? instValue = null;
+            if (exp.Instance != null)
             {
-                var args = new List<Value>(exp.Args.Length);
-
-                foreach (var (typeValue, argExp) in Zip(enumInfo.ArgTypeValues, exp.Args))
-                {
-                    // 타입을 통해서 value를 만들어 낼 수 있는가..
-                    var argValue = evaluator.GetDefaultValue(typeValue, context);
-                    args.Add(argValue);
-
-                    await EvalAsync(argExp, argValue, context);
-                }
-
-                var fields = enumInfo.ElemInfo.FieldInfos.Zip(args, (fieldInfo, arg) => (fieldInfo.Name, arg));
-                ((EnumValue)result).SetValue(enumInfo.ElemInfo.Name, fields);
+                instValue = evaluator.GetDefaultValue(exp.Instance.Value.Type, context);
+                await EvalAsync(exp.Instance.Value.Exp, instValue, context); 
             }
-            else if (info is CallExpInfo.Normal normalInfo)
-            {
-                FuncInst funcInst;
-                if (normalInfo.FuncValue != null)
-                {
-                    // TODO: 1. thisFunc, (TODO: 현재 class가 없으므로 virtual staticFunc 패스)            
 
-                    // 2. globalFunc (localFunc는 없으므로 패스), or 
+            var args = await EvalExpsAsync(exp.Args, context);
 
-                    // var typeInstArgs = MakeTypeInstArgs(funcValue, context.TypeEnv);
-                    // TODO: 일단 TypeInst를 Empty로 둔다 .. List때문에 문제지만 List는 내부에서 TypeInst를 안쓴다
-                    funcInst = context.DomainService.GetFuncInst(normalInfo.FuncValue);
-                }
-                else
-                {
-                    // TODO: 이거 여기서 해도 되는 것인지 확인
-                    var funcInstValue = new FuncInstValue();
-
-                    await EvalAsync(exp.Callable, funcInstValue, context);
-                    funcInst = funcInstValue.FuncInst!;
-                }
-
-                var args = new List<Value>(exp.Args.Length);
-
-                foreach (var (typeValue, argExp) in Zip(normalInfo.ArgTypeValues, exp.Args))
-                {
-                    // 타입을 통해서 value를 만들어 낼 수 있는가..
-                    var argValue = evaluator.GetDefaultValue(typeValue, context);
-                    args.Add(argValue);
-
-                    await EvalAsync(argExp, argValue, context);
-                }
-
-                await evaluator.EvaluateFuncInstAsync(funcInst.bThisCall ? context.GetThisValue() : null, funcInst, args, result, context);
-            }
+            await evaluator.EvaluateFuncInstAsync(funcInst.bThisCall ? instValue : null, funcInst, args, result, context);
         }
-        
+
+        async ValueTask EvalCallValueExpAsync(CallValueExp exp, Value result, EvalContext context)
+        {
+            var callableValue = (FuncInstValue)evaluator.GetDefaultValue(exp.CallableType, context);
+
+            await EvalAsync(exp.CallableExp, callableValue, context);
+            FuncInst funcInst = callableValue.FuncInst!;
+
+            var args = await EvalExpsAsync(exp.Args, context);
+
+            await evaluator.EvaluateFuncInstAsync(funcInst.bThisCall ? context.GetThisValue() : null, funcInst, args, result, context);
+        }
+
+        async ValueTask<List<Value>> EvalExpsAsync(IEnumerable<ExpAndType> expAndTypes, EvalContext context)
+        {
+            var args = new List<Value>();
+
+            foreach (var expAndType in expAndTypes)
+            {
+                var argValue = evaluator.GetDefaultValue(expAndType.TypeValue, context);
+                args.Add(argValue);
+
+                await EvalAsync(expAndType.Exp, argValue, context);
+            }
+
+            return args;
+        }
+
+        async ValueTask EvalEnumExpAsync(EnumExp exp, Value result, EvalContext context)
+        {
+            var members = new List<(string, Value)>();
+
+            foreach (var member in exp.Members)
+            {
+                var argValue = evaluator.GetDefaultValue(member.Type, context);
+                members.Add((exp.Name, argValue));
+
+                await EvalAsync(member.Exp, argValue, context);
+            }
+            
+            ((EnumValue)result).SetValue(exp.Name, members);
+        }        
+
         void EvalLambdaExp(LambdaExp exp, Value result, EvalContext context)
         {
-            var info = context.GetNodeInfo<LambdaExpInfo>(exp);
-
-            var captures = evaluator.MakeCaptures(info.CaptureInfo.Captures, context);
+            var captures = evaluator.MakeCaptures(exp.CaptureInfo.Captures, context);
 
             ((FuncInstValue)result).SetFuncInst(new ScriptFuncInst(
                 null,
                 false,
-                info.CaptureInfo.bCaptureThis ? context.GetThisValue() : null,
+                exp.CaptureInfo.bCaptureThis ? context.GetThisValue() : null,
                 captures,
-                info.LocalVarCount,
                 exp.Body));
         }
 
         // a[x] => a.Func(x)
         async ValueTask EvalIndexerExpAsync(IndexerExp exp, Value result, EvalContext context)
         {
-            var info = context.GetNodeInfo<IndexerExpInfo>(exp);
-            var thisValue = evaluator.GetDefaultValue(info.ObjectTypeValue, context);
-            var indexValue = evaluator.GetDefaultValue(info.IndexTypeValue, context);
+            var thisValue = evaluator.GetDefaultValue(exp.ObjectType, context);
+            var indexValue = evaluator.GetDefaultValue(exp.IndexType, context);
             
             await EvalAsync(exp.Object, thisValue, context);
 
             await EvalAsync(exp.Index, indexValue, context);
-            var funcInst = context.DomainService.GetFuncInst(info.FuncValue);
+            var funcInst = context.DomainService.GetFuncInst(exp.FuncValue);
 
             await evaluator.EvaluateFuncInstAsync(thisValue, funcInst, new Value[] { indexValue }, result, context);
         }
 
-        async ValueTask EvalMemberCallExpAsync(MemberCallExp exp, Value result, EvalContext context)
-        {
-            var info = context.GetNodeInfo<MemberCallExpInfo>(exp);
+        //async ValueTask EvalMemberCallExpAsync(MemberCallExp exp, Value result, EvalContext context)
+        //{
+        //    var info = context.GetNodeInfo<MemberCallExpInfo>(exp);
 
-            switch (info)
-            {
-                case MemberCallExpInfo.InstanceFuncCall instanceFuncCall:
-                    {
-                        var thisValue = evaluator.GetDefaultValue(info.ObjectTypeValue!, context);
+        //    switch (info)
+        //    {
+        //        case MemberCallExpInfo.InstanceFuncCall instanceFuncCall:
+        //            {
+        //                var thisValue = evaluator.GetDefaultValue(info.ObjectTypeValue!, context);
 
-                        await EvalAsync(exp.Object, thisValue, context);
-                        var args = await EvaluateArgsAsync(info.ArgTypeValues, exp.Args);
-                        var funcInst = context.DomainService.GetFuncInst(instanceFuncCall.FuncValue);
-                        await evaluator.EvaluateFuncInstAsync(thisValue, funcInst, args, result, context);
-                        return;
-                    }
+        //                await EvalAsync(exp.Object, thisValue, context);
+        //                var args = await EvaluateArgsAsync(info.ArgTypeValues, exp.Args);
+        //                var funcInst = context.DomainService.GetFuncInst(instanceFuncCall.FuncValue);
+        //                await evaluator.EvaluateFuncInstAsync(thisValue, funcInst, args, result, context);
+        //                return;
+        //            }
 
-                case MemberCallExpInfo.StaticFuncCall staticFuncCall:
-                    {
-                        if (staticFuncCall.bEvaluateObject)                        
-                        {
-                            var thisValue = evaluator.GetDefaultValue(info.ObjectTypeValue!, context);
-                            await EvalAsync(exp.Object, thisValue, context);
-                        }
+        //        case MemberCallExpInfo.StaticFuncCall staticFuncCall:
+        //            {
+        //                if (staticFuncCall.bEvaluateObject)                        
+        //                {
+        //                    var thisValue = evaluator.GetDefaultValue(info.ObjectTypeValue!, context);
+        //                    await EvalAsync(exp.Object, thisValue, context);
+        //                }
 
-                        var args = await EvaluateArgsAsync(info.ArgTypeValues, exp.Args);
-                        var funcInst = context.DomainService.GetFuncInst(staticFuncCall.FuncValue);
-                        await evaluator.EvaluateFuncInstAsync(null, funcInst, args, result, context);
-                        return;
-                    }
+        //                var args = await EvaluateArgsAsync(info.ArgTypeValues, exp.Args);
+        //                var funcInst = context.DomainService.GetFuncInst(staticFuncCall.FuncValue);
+        //                await evaluator.EvaluateFuncInstAsync(null, funcInst, args, result, context);
+        //                return;
+        //            }
 
-                case MemberCallExpInfo.InstanceLambdaCall instanceLambdaCall:
-                    {
-                        var thisValue = evaluator.GetDefaultValue(info.ObjectTypeValue!, context);
+        //        case MemberCallExpInfo.InstanceLambdaCall instanceLambdaCall:
+        //            {
+        //                var thisValue = evaluator.GetDefaultValue(info.ObjectTypeValue!, context);
 
-                        await EvalAsync(exp.Object, thisValue, context);
-                        var args = await EvaluateArgsAsync(info.ArgTypeValues, exp.Args);
-                        var memberValue = evaluator.GetMemberValue(thisValue, instanceLambdaCall.VarName);
-                        var funcInst = ((FuncInstValue)memberValue).FuncInst!;
-                        await evaluator.EvaluateFuncInstAsync(thisValue, funcInst, args, result, context);
-                        return;
-                    }
+        //                await EvalAsync(exp.Object, thisValue, context);
+        //                var args = await EvaluateArgsAsync(info.ArgTypeValues, exp.Args);
+        //                var memberValue = evaluator.GetMemberValue(thisValue, instanceLambdaCall.VarName);
+        //                var funcInst = ((FuncInstValue)memberValue).FuncInst!;
+        //                await evaluator.EvaluateFuncInstAsync(thisValue, funcInst, args, result, context);
+        //                return;
+        //            }
 
-                case MemberCallExpInfo.StaticLambdaCall staticLambdaCall:
-                    {
-                        if (staticLambdaCall.bEvaluateObject)
-                        {
-                            var thisValue = evaluator.GetDefaultValue(info.ObjectTypeValue!, context);
-                            await EvalAsync(exp.Object, thisValue, context);
-                        }
+        //        case MemberCallExpInfo.StaticLambdaCall staticLambdaCall:
+        //            {
+        //                if (staticLambdaCall.bEvaluateObject)
+        //                {
+        //                    var thisValue = evaluator.GetDefaultValue(info.ObjectTypeValue!, context);
+        //                    await EvalAsync(exp.Object, thisValue, context);
+        //                }
 
-                        var args = await EvaluateArgsAsync(info.ArgTypeValues, exp.Args);                        
-                        var memberValue = context.GetStaticValue(staticLambdaCall.VarValue);
-                        var funcInst = ((FuncInstValue)memberValue).FuncInst!;
-                        await evaluator.EvaluateFuncInstAsync(null, funcInst, args, result, context);
-                        return;
-                    }
+        //                var args = await EvaluateArgsAsync(info.ArgTypeValues, exp.Args);                        
+        //                var memberValue = context.GetStaticValue(staticLambdaCall.VarValue);
+        //                var funcInst = ((FuncInstValue)memberValue).FuncInst!;
+        //                await evaluator.EvaluateFuncInstAsync(null, funcInst, args, result, context);
+        //                return;
+        //            }
 
-                case MemberCallExpInfo.EnumValue enumValueInfo:
-                    {
-                        var args = await EvaluateArgsAsync(info.ArgTypeValues, exp.Args);
-                        var memberValues = enumValueInfo.ElemInfo.FieldInfos.Zip(args, (fieldInfo, arg) => (fieldInfo.Name, arg));
-                        ((EnumValue)result).SetValue(enumValueInfo.ElemInfo.Name, memberValues);
-                        return;
-                    }
+        //        case MemberCallExpInfo.EnumValue enumValueInfo:
+        //            {
+        //                var args = await EvaluateArgsAsync(info.ArgTypeValues, exp.Args);
+        //                var memberValues = enumValueInfo.ElemInfo.FieldInfos.Zip(args, (fieldInfo, arg) => (fieldInfo.Name, arg));
+        //                ((EnumValue)result).SetValue(enumValueInfo.ElemInfo.Name, memberValues);
+        //                return;
+        //            }
 
-                default:
-                    throw new NotImplementedException();
-            }
+        //        default:
+        //            throw new NotImplementedException();
+        //    }
 
-            async ValueTask<List<Value>> EvaluateArgsAsync(IEnumerable<TypeValue> argTypeValues, IReadOnlyCollection<Exp> argExps)
-            {
-                var argsBuilder = new List<Value>(argExps.Count);
+        //    async ValueTask<List<Value>> EvaluateArgsAsync(IEnumerable<TypeValue> argTypeValues, IReadOnlyCollection<Exp> argExps)
+        //    {
+        //        var argsBuilder = new List<Value>(argExps.Count);
 
-                foreach (var (typeValue, argExp) in Zip(argTypeValues, argExps))
-                {
-                    // 타입을 통해서 value를 만들어 낼 수 있는가..
-                    var argValue = evaluator.GetDefaultValue(typeValue, context);
-                    argsBuilder.Add(argValue);
+        //        foreach (var (typeValue, argExp) in Zip(argTypeValues, argExps))
+        //        {
+        //            // 타입을 통해서 value를 만들어 낼 수 있는가..
+        //            var argValue = evaluator.GetDefaultValue(typeValue, context);
+        //            argsBuilder.Add(argValue);
 
-                    await EvalAsync(argExp, argValue, context);
-                }
+        //            await EvalAsync(argExp, argValue, context);
+        //        }
 
-                return argsBuilder;
-            }
-        }
+        //        return argsBuilder;
+        //    }
+        //}
 
         async ValueTask EvalMemberExpAsync(MemberExp exp, Value result, EvalContext context)
         {
@@ -883,34 +936,36 @@ namespace Gum.Runtime
             }
         }
 
-        async ValueTask EvalListExpAsync(ListExp listExp, Value result, EvalContext context)
+        async ValueTask EvalListExpAsync(ListExp exp, Value result, EvalContext context)
         {
-            var info = context.GetNodeInfo<ListExpInfo>(listExp);
+            var elems = new List<Value>(exp.Elems.Length);
 
-            var elems = new List<Value>(listExp.Elems.Length);
-
-            foreach (var elemExp in listExp.Elems)
+            foreach (var elemExp in exp.Elems)
             {
-                var elemValue = evaluator.GetDefaultValue(info.ElemTypeValue, context);
+                var elemValue = evaluator.GetDefaultValue(exp.ElemType, context);
                 elems.Add(elemValue);
 
                 await EvalAsync(elemExp, elemValue, context);
             }
 
-            context.RuntimeModule.SetList(context.DomainService, result, info.ElemTypeValue, elems);
+            context.RuntimeModule.SetList(context.DomainService, result, exp.ElemType, elems);
         }
 
         internal async ValueTask EvalAsync(Exp exp, Value result, EvalContext context)
         {
             switch(exp)
             {
-                case IdentifierExp idExp: await EvalIdExpAsync(idExp, result, context); break;
+                case ExternalGlobalVarExp egvExp: EvalExternalGlobalVarExp(egvExp, result, context); break;
+                case PrivateGlobalVarExp pgvExp: EvalPrivateGlobalVarExp(pgvExp, result, context); break;
+                case LocalVarExp localVarExp: EvalLocalVarExp(localVarExp, result, context); break;
                 case BoolLiteralExp boolExp: EvalBoolLiteralExp(boolExp, result, context); break;
                 case IntLiteralExp intExp: EvalIntLiteralExp(intExp, result, context); break;
                 case StringExp stringExp: await EvalStringExpAsync(stringExp, result, context); break;
                 case UnaryOpExp unaryOpExp: await EvalUnaryOpExpAsync(unaryOpExp, result, context); break;
                 case BinaryOpExp binaryOpExp: await EvalBinaryOpExpAsync(binaryOpExp, result, context); break;
-                case CallExp callExp: await EvalCallExpAsync(callExp, result, context); break;
+                case CallFuncExp callFuncExp: await EvalCallFuncExpAsync(callFuncExp, result, context); break;
+                case CallValueExp callValueExp: await EvalCallValueExpAsync(callValueExp, result, context); break;
+                case EnumExp enumExp: await EvalEnumExpAsync(enumExp, result, context); break;
                 case LambdaExp lambdaExp: EvalLambdaExp(lambdaExp, result, context); break;
                 case IndexerExp indexerExp: await EvalIndexerExpAsync(indexerExp, result, context); break;
                 case MemberCallExp memberCallExp: await EvalMemberCallExpAsync(memberCallExp, result, context); break;

@@ -1,4 +1,5 @@
-﻿using Gum.Syntax;
+﻿using Gum.IR0;
+using Gum.Syntax;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -9,12 +10,6 @@ using System.Text;
 
 namespace Gum.StaticAnalysis
 {
-    public enum CaptureKind
-    {
-        Copy,
-        Ref
-    }
-
     public class CaptureResult
     {
         public ImmutableArray<(string VarName, CaptureKind Kind)> NeedCaptures { get; }
@@ -444,7 +439,7 @@ namespace Gum.StaticAnalysis
         }
 
         // entry
-        public bool Capture(IEnumerable<string> initBoundVars, Stmt stmt, [NotNullWhen(returnValue: true)] out CaptureResult? outCaptureResult)
+        public bool Capture(IEnumerable<string> initBoundVars, Syntax.Stmt stmt, [NotNullWhen(true)] out CaptureResult? outCaptureResult)
         {
             var context = new CaptureContext(initBoundVars);
 

@@ -8,7 +8,6 @@ using System.Net;
 using System.Text;
 using Gum.CompileTime;
 using Gum.Infra;
-using Gum.Syntax;
 
 namespace Gum.StaticAnalysis
 {
@@ -30,16 +29,16 @@ namespace Gum.StaticAnalysis
             this.stmtAnalyzer = new StmtAnalyzer(this);
         }
         
-        internal bool AnalyzeVarDecl(VarDecl varDecl, Context context)
+        internal bool AnalyzeVarDecl<TVarDecl>(Syntax.VarDecl varDecl, VarDeclVisitor<TVarDecl> varDeclVisitor, Context context, [MaybeNullWhen(false)] out TVarDecl outVarDecl)
         {
             // 1. int x  // x를 추가
             // 2. int x = initExp // x 추가, initExp가 int인지 검사
             // 3. var x = initExp // initExp의 타입을 알아내고 x를 추가
             // 4. var x = 1, y = "string"; // 각각 한다
 
-            var elems = new List<VarDeclInfo.Element>(varDecl.Elems.Length);
+            outVarDecl = default;
             var declTypeValue = context.GetTypeValueByTypeExp(varDecl.Type);
-
+            
             foreach (var elem in varDecl.Elems)
             {
                 if (elem.InitExp == null)
@@ -51,23 +50,24 @@ namespace Gum.StaticAnalysis
                     }
                     else
                     {
-                        AddElement(elem.VarName, declTypeValue, context);
+                        varDeclVisitor.VisitElement(elem.VarName, declTypeValue, null, context);
                     }
                 }
                 else
                 {
                     // var 처리
+                    IR0.Exp? ir0InitExp = null;
                     TypeValue typeValue;
                     if (declTypeValue is TypeValue.Var)
                     {
-                        if (!AnalyzeExp(elem.InitExp, null, context, out var initExpTypeValue))
+                        if (!AnalyzeExp(elem.InitExp, null, context, out ir0InitExp, out var initExpTypeValue))
                             return false;
 
                         typeValue = initExpTypeValue;
                     }
                     else
                     {
-                        if (!AnalyzeExp(elem.InitExp, declTypeValue, context, out var initExpTypeValue))
+                        if (!AnalyzeExp(elem.InitExp, declTypeValue, context, out ir0InitExp, out var initExpTypeValue))
                             return false;
 
                         typeValue = declTypeValue;
@@ -76,60 +76,48 @@ namespace Gum.StaticAnalysis
                             context.ErrorCollector.Add(elem, $"타입 {initExpTypeValue}의 값은 타입 {varDecl.Type}의 변수 {elem.VarName}에 대입할 수 없습니다.");
                     }
 
-                    AddElement(elem.VarName, typeValue, context);
+                    varDeclVisitor.VisitElement(elem.VarName, typeValue, ir0InitExp, context);
                 }
             }
 
-            context.AddNodeInfo(varDecl, new VarDeclInfo(elems));
+            outVarDecl = varDeclVisitor.Build();
             return true;
-
-            void AddElement(string name, TypeValue typeValue, Context context)
-            {
-                // TODO: globalScope에서 public인 경우는, globalStorage로 
-                if (context.IsGlobalScope())
-                {
-                    int varId = context.AddPrivateGlobalVarInfo(name, typeValue);
-                    elems.Add(new VarDeclInfo.Element(typeValue, StorageInfo.MakePrivateGlobal(varId)));
-                }
-                else
-                {
-                    int localVarIndex = context.AddLocalVarInfo(name, typeValue);
-                    elems.Add(new VarDeclInfo.Element(typeValue, StorageInfo.MakeLocal(localVarIndex)));
-                }
-            }
         }        
 
-        public bool AnalyzeStringExpElement(StringExpElement elem, Context context)
+        public bool AnalyzeStringExpElement(
+            Syntax.StringExpElement elem, 
+            Context context, 
+            [NotNullWhen(true)] out IR0.StringExpElement? outElem)
         {
-            bool bResult = true;
-
-            if (elem is ExpStringExpElement expElem)
+            if (elem is Syntax.ExpStringExpElement expElem)
             {
                 // TODO: exp의 결과 string으로 변환 가능해야 하는 조건도 고려해야 한다
-                if (AnalyzeExp(expElem.Exp, null, context, out var expTypeValue))
+                if (AnalyzeExp(expElem.Exp, null, context, out var ir0Exp, out var expTypeValue))
                 {
-                    context.AddNodeInfo(elem, new ExpStringExpElementInfo(expTypeValue));
-                }
-                else
-                {
-                    bResult = false;
-                }
+                    outElem = new IR0.ExpStringExpElement(ir0Exp, expTypeValue);
+                    return true;
+                }                
+            }
+            else if (elem is Syntax.TextStringExpElement textElem)
+            {
+                outElem = new IR0.TextStringExpElement(textElem.Text);
+                return true;
             }
 
-            return bResult;
+            throw new InvalidOperationException();
         }
 
         public bool AnalyzeLambda(
-            Stmt body,
-            ImmutableArray<LambdaExpParam> parameters, // LambdaExp에서 바로 받기 때문에 ImmutableArray로 존재하면 편하다
+            Syntax.Stmt body,
+            ImmutableArray<Syntax.LambdaExpParam> parameters, // LambdaExp에서 바로 받기 때문에 ImmutableArray로 존재하면 편하다
             Context context,
-            [NotNullWhen(returnValue: true)] out CaptureInfo? outCaptureInfo,
-            [NotNullWhen(returnValue: true)] out TypeValue.Func? outFuncTypeValue,
-            out int outLocalVarCount)
+            [NotNullWhen(true)] out IR0.Stmt? outBody,
+            [NotNullWhen(true)] out IR0.CaptureInfo? outCaptureInfo,
+            [NotNullWhen(true)] out TypeValue.Func? outFuncTypeValue)
         {
+            outBody = null;
             outCaptureInfo = null;
-            outFuncTypeValue = null;
-            outLocalVarCount = 0;
+            outFuncTypeValue = null;            
 
             // capture에 필요한 정보를 가져옵니다
             if (!capturer.Capture(parameters.Select(param => param.Name), body, out var captureResult))
@@ -145,7 +133,7 @@ namespace Gum.StaticAnalysis
             var funcContext = new FuncContext(lambdaFuncId, null, false);
 
             // 필요한 변수들을 찾는다
-            var elems = new List<CaptureInfo.Element>();
+            var elems = new List<IR0.CaptureInfo.Element>();
             foreach (var needCapture in captureResult.NeedCaptures)
             {
                 if (context.GetIdentifierInfo(needCapture.VarName, ImmutableArray<TypeValue>.Empty, null, out var idInfo))
@@ -156,8 +144,7 @@ namespace Gum.StaticAnalysis
                         {
                             // 지역 변수라면 
                             case StorageInfo.Local localStorage:
-                                elems.Add(new CaptureInfo.Element(needCapture.Kind, localStorage));
-                                funcContext.AddLocalVarInfo(needCapture.VarName, varIdInfo.TypeValue);
+                                elems.Add(new IR0.CaptureInfo.Element(needCapture.Kind, localStorage.Index));
                                 break;
 
                             case StorageInfo.ModuleGlobal moduleGlobalStorage:
@@ -192,39 +179,48 @@ namespace Gum.StaticAnalysis
             }
 
             bool bResult = true;
+            IR0.Stmt? stmt = null;
 
             context.ExecInFuncScope(funcContext, () =>
             {
-                bResult &= AnalyzeStmt(body, context);
+                if (!AnalyzeStmt(body, context, out stmt))
+                    bResult = false;
             });
 
-            outCaptureInfo = new CaptureInfo(false, elems);
+            if (!bResult)
+                return false;
+
+            outBody = stmt!;
+            outCaptureInfo = new IR0.CaptureInfo(false, elems);
             outFuncTypeValue = TypeValue.MakeFunc(
                 funcContext.GetRetTypeValue() ?? TypeValue.MakeVoid(),
                 paramTypeValues);
-            outLocalVarCount = funcContext.GetLocalVarCount();
 
-            return bResult;
+            return true;
         }
 
-        public bool AnalyzeExp(Exp exp, TypeValue? hintTypeValue, Context context, [NotNullWhen(returnValue: true)] out TypeValue? typeValue)
+        public bool AnalyzeExp(
+            Syntax.Exp exp, 
+            TypeValue? hintTypeValue, 
+            Context context, 
+            [NotNullWhen(true)] out IR0.Exp? outIR0Exp, 
+            [NotNullWhen(true)] out TypeValue? outTypeValue)
         {
-            return expAnalyzer.AnalyzeExp(exp, hintTypeValue, context, out typeValue);
+            return expAnalyzer.AnalyzeExp(exp, hintTypeValue, context, out outIR0Exp, out outTypeValue);
         }
 
-        public bool AnalyzeStmt(Stmt stmt, Context context)
+        public bool AnalyzeStmt(Syntax.Stmt stmt, Context context, [NotNullWhen(true)] out IR0.Stmt? outStmt)
         {
-            return stmtAnalyzer.AnalyzeStmt(stmt, context);
+            return stmtAnalyzer.AnalyzeStmt(stmt, context, out outStmt);
         }
         
-        public bool AnalyzeFuncDecl(FuncDecl funcDecl, Context context)
+        public bool AnalyzeFuncDecl(Syntax.FuncDecl funcDecl, Context context, out IR0.FuncDecl outFuncDecl)
         {
             var funcInfo = context.GetFuncInfoByDecl(funcDecl);
 
             var bResult = true;
             
             var funcContext = new FuncContext(funcInfo.FuncId, funcInfo.RetTypeValue, funcInfo.bSeqCall);
-
             
             context.ExecInFuncScope(funcContext, () =>
             {   
@@ -247,6 +243,8 @@ namespace Gum.StaticAnalysis
                     funcInfo.bThisCall, context.GetLocalVarCount(), funcDecl.Body));
             });
 
+            outFuncDecl = new IR0.FuncDecl()
+
             return bResult;
         }
 
@@ -261,7 +259,8 @@ namespace Gum.StaticAnalysis
             return true;
         }
 
-        bool AnalyzeScript(Script script, Context context)
+        bool AnalyzeScript(Syntax.Script script, Context context, 
+            [NotNullWhen(true)] out IR0.Script? outScript)
         {
             bool bResult = true;
 
@@ -270,7 +269,7 @@ namespace Gum.StaticAnalysis
             {
                 switch (elem)
                 {
-                    case Script.StmtElement stmtElem: 
+                    case Syntax.Script.StmtElement stmtElem: 
                         bResult &= AnalyzeStmt(stmtElem.Stmt, context); 
                         break;
                 }
@@ -282,30 +281,35 @@ namespace Gum.StaticAnalysis
                 switch (elem)
                 {
                     // TODO: classDecl
-                    case Script.FuncDeclElement funcElem: 
+                    case Syntax.Script.FuncDeclElement funcElem: 
                         bResult &= AnalyzeFuncDecl(funcElem.FuncDecl, context);
                         break;
 
-                    case Script.EnumDeclElement enumElem:
+                    case Syntax.Script.EnumDeclElement enumElem:
                         bResult &= AnalyzeEnumDecl(enumElem.EnumDecl, context);
                         break;
                 }
             }
 
-            context.AddNodeInfo(script, new ScriptInfo(context.GetLocalVarCount()));
-
-            return bResult;
+            if (bResult)
+            {
+                outScript = new IR0.Script(context.GetPrivateGlobalVarCount(), context.GetLocalVarCount());
+                return true;
+            }
+            else
+            {
+                outScript = null;
+                return false;
+            }
         }
 
-        public (int PrivateGlobalVarCount, 
-            ImmutableDictionary<ISyntaxNode, SyntaxNodeInfo> InfosByNode,
+        public (IR0.Script Script, 
             ImmutableArray<ScriptTemplate> Templates,
             TypeValueService TypeValueService,
-            ScriptModuleInfo ModuleInfo)? 
-
+            ScriptModuleInfo ModuleInfo)?
             AnalyzeScript(
             string moduleName,
-            Script script,
+            Syntax.Script script,
             IEnumerable<IModuleInfo> moduleInfos,
             IErrorCollector errorCollector)
         {
@@ -326,18 +330,16 @@ namespace Gum.StaticAnalysis
                 buildResult.EnumInfosByDecl,
                 errorCollector);
 
-            bool bResult = AnalyzeScript(script, context);
-
-            if (!bResult || errorCollector.HasError)
-            {
+            if (!AnalyzeScript(script, context, out var ir0Script))
                 return null;
-            }
 
-            return (
-                context.GetPrivateGlobalVarCount(),
-                context.MakeInfosByNode(),
+            if (errorCollector.HasError)
+                return null;
+
+            return (ir0Script,
                 context.GetTemplates().ToImmutableArray(), 
-                typeValueService, buildResult.ModuleInfo);
+                typeValueService, 
+                buildResult.ModuleInfo);
         }
 
         public bool IsAssignable(TypeValue toTypeValue, TypeValue fromTypeValue, Context context)
@@ -380,7 +382,7 @@ namespace Gum.StaticAnalysis
             MemberExp memberExp,
             TypeValue objTypeValue,
             Context context,
-            [NotNullWhen(returnValue: true)] out VarValue? outVarValue)
+            [NotNullWhen(true)] out VarValue? outVarValue)
         {
             outVarValue = null;
 
@@ -406,10 +408,10 @@ namespace Gum.StaticAnalysis
         }
 
         public bool CheckStaticMember(
-            MemberExp memberExp,
+            Syntax.MemberExp memberExp,
             TypeValue.Normal objNormalTypeValue,
             Context context,
-            [NotNullWhen(returnValue: true)] out VarValue? outVarValue)
+            [NotNullWhen(true)] out VarValue? outVarValue)
         {
             outVarValue = null;
 
@@ -434,15 +436,15 @@ namespace Gum.StaticAnalysis
             return true;
         }
 
-        public bool CheckParamTypes(object objForErrorMsg, ImmutableArray<TypeValue> parameters, IReadOnlyList<TypeValue> args, Context context)
+        public bool CheckParamTypes(object objForErrorMsg, IReadOnlyList<TypeValue> parameters, IReadOnlyList<TypeValue> args, Context context)
         {
-            if (parameters.Length != args.Count)
+            if (parameters.Count != args.Count)
             {
-                context.ErrorCollector.Add(objForErrorMsg, $"함수는 인자를 {parameters.Length}개 받는데, 호출 인자는 {args.Count} 개입니다");
+                context.ErrorCollector.Add(objForErrorMsg, $"함수는 인자를 {parameters.Count}개 받는데, 호출 인자는 {args.Count} 개입니다");
                 return false;
             }
 
-            for (int i = 0; i < parameters.Length; i++)
+            for (int i = 0; i < parameters.Count; i++)
             {
                 if (!IsAssignable(parameters[i], args[i], context))
                 {
@@ -451,6 +453,25 @@ namespace Gum.StaticAnalysis
                 }
             }
 
+            return true;
+        }
+
+        // TODO: Hint를 받을 수 있게 해야 한다
+        public bool AnalyzeExps(IEnumerable<Syntax.Exp> exps, Context context, out ImmutableArray<(IR0.Exp Exp, TypeValue TypeValue)> outInfos)
+        {
+            outInfos = ImmutableArray<(IR0.Exp, TypeValue)>.Empty;
+
+            var infos = new List<(IR0.Exp, TypeValue)>();
+
+            foreach (var exp in exps)
+            {
+                if (!AnalyzeExp(exp, null, context, out var ir0Exp, out var typeValue))
+                    return false;
+
+                infos.Add((ir0Exp, typeValue));
+            }
+
+            outInfos = outInfos.ToImmutableArray();
             return true;
         }
 

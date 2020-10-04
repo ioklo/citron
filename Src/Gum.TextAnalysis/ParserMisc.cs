@@ -19,7 +19,7 @@ namespace Gum
             return false;
         }
 
-        public static bool Accept<TToken>(LexResult lexResult, ref ParserContext context, [NotNullWhen(returnValue: true)] out TToken? token) where TToken : Token
+        public static bool Accept<TToken>(LexResult lexResult, ref ParserContext context, [NotNullWhen(true)] out TToken? token) where TToken : Token
         {
             if (lexResult.HasValue && lexResult.Token is TToken resultToken)
             {
@@ -40,7 +40,7 @@ namespace Gum
         public static bool Parse<TSyntaxElem>(
             ParseResult<TSyntaxElem> parseResult,
             ref ParserContext context,
-            [MaybeNullWhen(returnValue: false)] out TSyntaxElem elem)
+            [MaybeNullWhen(false)] out TSyntaxElem elem)
         {
             if (!parseResult.HasValue)
             {

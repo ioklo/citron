@@ -32,13 +32,12 @@ namespace Gum.StaticAnalysis
                 this.overriddenTypeValues = ImmutableDictionary<StorageInfo, TypeValue>.Empty;
             }
 
-            public int AddLocalVarInfo(string name, TypeValue typeValue)
+            public void AddLocalVarInfo(string name, TypeValue typeValue)
             {
-                var localVarInfo = new LocalVarInfo(localVarInfos.Count, typeValue);
+                var localVarInfo = new LocalVarInfo(name, typeValue);
                 localVarInfos.Add(localVarInfo);
 
                 localVarsByName = localVarsByName.SetItem(name, localVarInfo);
-                return localVarInfo.Index;
             }
 
             public void AddOverrideVarInfo(StorageInfo storageInfo, TypeValue typeValue)
@@ -46,7 +45,7 @@ namespace Gum.StaticAnalysis
                 overriddenTypeValues = overriddenTypeValues.SetItem(storageInfo, typeValue);
             }
 
-            public bool GetLocalVarInfo(string varName, [NotNullWhen(returnValue: true)] out LocalVarInfo? localVarInfo)
+            public bool GetLocalVarInfo(string varName, [NotNullWhen(true)] out LocalVarInfo? localVarInfo)
             {
                 return localVarsByName.TryGetValue(varName, out localVarInfo);
             }
@@ -80,11 +79,6 @@ namespace Gum.StaticAnalysis
                 return bSequence;
             }
 
-            public int GetLocalVarCount()
-            {
-                return localVarInfos.Count;
-            }
-
             public void ExecInLocalScope(Action action)
             {
                 var prevLocalVarsByName = localVarsByName;
@@ -104,7 +98,7 @@ namespace Gum.StaticAnalysis
             public bool ShouldOverrideTypeValue(
                 StorageInfo storageInfo,
                 TypeValue typeValue,
-                [NotNullWhen(returnValue: true)] out TypeValue? overriddenTypeValue)
+                [NotNullWhen(true)] out TypeValue? overriddenTypeValue)
             {
                 return overriddenTypeValues.TryGetValue(storageInfo, out overriddenTypeValue);
             }

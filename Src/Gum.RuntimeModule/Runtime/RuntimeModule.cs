@@ -37,17 +37,17 @@ namespace Gum.Runtime
         public static ModuleItemId envId = ModuleItemId.Make("env");
 
         // TODO: localId와 globalId를 나눠야 할 것 같다. 내부에서는 LocalId를 쓰고, Runtime은 GlobalId로 구분해야 할 것 같다
-        public bool GetTypeInfo(ModuleItemId id, [NotNullWhen(returnValue: true)] out ITypeInfo? outTypeInfo)
+        public bool GetTypeInfo(ModuleItemId id, [NotNullWhen(true)] out ITypeInfo? outTypeInfo)
         {
             return typeInfos.TryGetValue(id, out outTypeInfo);
         }
 
-        public bool GetFuncInfo(ModuleItemId id, [NotNullWhen(returnValue:true)] out FuncInfo? outFuncInfo)
+        public bool GetFuncInfo(ModuleItemId id, [NotNullWhen(true)] out FuncInfo? outFuncInfo)
         {
             return funcInfos.TryGetValue(id, out outFuncInfo);
         }
 
-        public bool GetVarInfo(ModuleItemId id, [NotNullWhen(returnValue: true)] out VarInfo? outVarInfo)
+        public bool GetVarInfo(ModuleItemId id, [NotNullWhen(true)] out VarInfo? outVarInfo)
         {
             return varInfos.TryGetValue(id, out outVarInfo);
         }

@@ -37,6 +37,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gum.IR1Evaluator", "Gum.IR1
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gum.IR1Evaluator.Test", "Test\Gum.IR1Evaluator.Test\Gum.IR1Evaluator.Test.csproj", "{C9D4F4D8-9F4C-494A-A969-4207A6F34C32}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gum.IR0", "Gum.IR0\Gum.IR0.csproj", "{3A5FF16B-BFE3-4709-AEF8-78D6D4C47372}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -107,6 +109,10 @@ Global
 		{C9D4F4D8-9F4C-494A-A969-4207A6F34C32}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C9D4F4D8-9F4C-494A-A969-4207A6F34C32}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C9D4F4D8-9F4C-494A-A969-4207A6F34C32}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3A5FF16B-BFE3-4709-AEF8-78D6D4C47372}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3A5FF16B-BFE3-4709-AEF8-78D6D4C47372}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3A5FF16B-BFE3-4709-AEF8-78D6D4C47372}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3A5FF16B-BFE3-4709-AEF8-78D6D4C47372}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

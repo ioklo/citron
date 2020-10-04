@@ -115,7 +115,7 @@ namespace Gum.StaticAnalysis
                 return AnalyzeCall(objTypeValue, indexerExp0.Object, getter, setter, new[] { (indexerExp0.Index, indexTypeValue) });
             }
 
-            public bool Analyze([NotNullWhen(returnValue: true)] out TypeValue? outTypeValue)
+            public bool Analyze([NotNullWhen(true)] out TypeValue? outTypeValue)
             {
                 var locExp = GetTargetExp();
 

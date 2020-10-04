@@ -1,5 +1,4 @@
 ﻿using Gum.CompileTime;
-using Gum.Syntax;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -12,6 +11,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using static Gum.StaticAnalysis.Analyzer;
 using static Gum.StaticAnalysis.Analyzer.Misc;
+using static Gum.Infra.CollectionExtensions;
 
 namespace Gum.StaticAnalysis
 {
@@ -26,8 +26,14 @@ namespace Gum.StaticAnalysis
         }
 
         // x
-        internal bool AnalyzeIdExp(IdentifierExp idExp, TypeValue? hintTypeValue, Context context, [NotNullWhen(returnValue: true)] out TypeValue? outTypeValue)
+        internal bool AnalyzeIdExp(
+            Syntax.IdentifierExp idExp, 
+            TypeValue? hintTypeValue, 
+            Context context,
+            [NotNullWhen(true)] out IR0.Exp? outExp,
+            [NotNullWhen(true)] out TypeValue? outTypeValue)
         {
+            outExp = null;
             outTypeValue = null;
 
             var typeArgs = GetTypeValues(idExp.TypeArgs, context);
@@ -41,16 +47,41 @@ namespace Gum.StaticAnalysis
             if (idInfo is IdentifierInfo.Var varIdInfo)
             {
                 outTypeValue = varIdInfo.TypeValue;
-                context.AddNodeInfo(idExp, new IdentifierExpInfo(varIdInfo.StorageInfo));
+
+                switch(varIdInfo.StorageInfo)
+                {
+                    case StorageInfo.ModuleGlobal mgs:          // x => global of external module
+                        outExp = new IR0.ExternalGlobalVarExp(mgs.VarId);
+                        break; 
+
+                    case StorageInfo.PrivateGlobal pgs:         // x => global of this module
+                        outExp = new IR0.PrivateGlobalVarExp(pgs.Index);
+                        break;
+
+                    case StorageInfo.Local ls:                  // x => local x
+                        outExp = new IR0.LocalVarExp(ls.Index);
+                        break;
+                    
+                    case StorageInfo.StaticMember sms:          // x => T.x
+                        outExp = new IR0.StaticMemberVarExp();
+                        break;
+
+                    case StorageInfo.InstanceMember ims: // x => this.x
+                        outExp = new IR0.InstanceMemberVarExp();
+                        break;
+
+                    default:
+                        throw new InvalidOperationException();
+                }
+                
                 return true;
             }
-            else if (idInfo is IdentifierInfo.EnumElem enumElemInfo)
+            else if (idInfo is IdentifierInfo.EnumElem enumElemInfo) // S => E.S, 힌트를 사용하면 나올 수 있다, ex) E e = S; 
             {
                 if (enumElemInfo.ElemInfo.FieldInfos.Length == 0)
                 {
                     outTypeValue = enumElemInfo.EnumTypeValue;
-                    // TODO: IdentifierExpInfo를 EnumElem에 맞게 분기시켜야 할 것 같다, EnumElem이 StorageInfo는 아니다
-                    context.AddNodeInfo(idExp, new IdentifierExpInfo(StorageInfo.MakeEnumElem(enumElemInfo.ElemInfo.Name)));
+                    outExp = new IR0.EnumExp(enumElemInfo.ElemInfo.Name); // TODO: StorageInfo.EnumElem 삭제
                     return true;
                 }
                 else
@@ -64,35 +95,67 @@ namespace Gum.StaticAnalysis
             return false;
         }
 
-        internal bool AnalyzeBoolLiteralExp(BoolLiteralExp boolExp, Context context, [NotNullWhen(returnValue: true)] out TypeValue? typeValue)
-        {   
-            typeValue = analyzer.GetBoolTypeValue();
+        internal bool AnalyzeBoolLiteralExp(Syntax.BoolLiteralExp boolExp, Context context,
+            [NotNullWhen(true)] out IR0.Exp? outExp,
+            [NotNullWhen(true)] out TypeValue? outTypeValue)
+        {
+            outExp = new IR0.BoolLiteralExp(boolExp.Value);
+            outTypeValue = analyzer.GetBoolTypeValue();
             return true;
         }
 
-        internal bool AnalyzeIntLiteralExp(IntLiteralExp intExp, Context context, [NotNullWhen(returnValue: true)] out TypeValue? typeValue)
+        internal bool AnalyzeIntLiteralExp(Syntax.IntLiteralExp intExp, Context context,
+            [NotNullWhen(true)] out IR0.Exp? outExp,
+            [NotNullWhen(true)] out TypeValue? outTypeValue)
         {
-            typeValue = analyzer.GetIntTypeValue();
+            outExp = new IR0.IntLiteralExp(intExp.Value);
+            outTypeValue= analyzer.GetIntTypeValue();
             return true;
         }
 
-        internal bool AnalyzeStringExp(StringExp stringExp, Context context, [NotNullWhen(returnValue: true)] out TypeValue? typeValue)
+        internal bool AnalyzeStringExp(Syntax.StringExp stringExp, Context context,
+            [NotNullWhen(true)] out IR0.Exp? outExp,
+            [NotNullWhen(true)] out TypeValue? outTypeValue)
         {
-            foreach(var elem in stringExp.Elements)
-                analyzer.AnalyzeStringExpElement(elem, context);
+            bool bResult = true;
+            var strExpElems = new List<IR0.StringExpElement>();
+            foreach (var elem in stringExp.Elements)
+            {
+                if (analyzer.AnalyzeStringExpElement(elem, context, out var strExpElem))
+                {
+                    strExpElems.Add(strExpElem);
+                }
+                else
+                {
+                    bResult = false;
+                }
+            }
 
-            typeValue = analyzer.GetStringTypeValue();
-            return true;
+            if (bResult)
+            {
+                outExp = new IR0.StringExp(strExpElems);
+                outTypeValue = analyzer.GetStringTypeValue();
+                return true;
+            }
+            else
+            {
+                outExp = null;
+                outTypeValue = null;
+                return false;
+            }
         }
 
-        internal bool AnalyzeUnaryOpExp(UnaryOpExp unaryOpExp, Context context, [NotNullWhen(returnValue: true)] out TypeValue? typeValue)
+        internal bool AnalyzeUnaryOpExp(Syntax.UnaryOpExp unaryOpExp, Context context,
+            [NotNullWhen(true)] out IR0.Exp? outExp,
+            [NotNullWhen(true)] out TypeValue? outTypeValue)
         {
-            typeValue = null;
+            outExp = null;
+            outTypeValue = null;
 
             var boolTypeValue = analyzer.GetBoolTypeValue();
             var intTypeValue = analyzer.GetIntTypeValue();
             
-            if (!AnalyzeExp(unaryOpExp.Operand, null, context, out var operandTypeValue))            
+            if (!AnalyzeExp(unaryOpExp.Operand, null, context, out var ir0Operand, out var operandTypeValue))
                 return false; // AnalyzeExp에서 에러가 생겼으므로 내부에서 에러를 추가했을 것이다. 여기서는 더 추가 하지 않는다
 
             switch (unaryOpExp.Kind)
@@ -104,8 +167,8 @@ namespace Gum.StaticAnalysis
                             context.ErrorCollector.Add(unaryOpExp, $"{unaryOpExp.Operand}에 !를 적용할 수 없습니다. bool 타입이어야 합니다");                            
                             return false;
                         }
-
-                        typeValue = boolTypeValue;
+                        
+                        outTypeValue = boolTypeValue;
                         return true;
                     }
                 
@@ -113,7 +176,7 @@ namespace Gum.StaticAnalysis
                 case UnaryOpKind.PostfixDec:
                 case UnaryOpKind.PrefixInc:
                 case UnaryOpKind.PrefixDec:
-                    return AnalyzeUnaryAssignExp(unaryOpExp, context, out typeValue);
+                    return AnalyzeUnaryAssignExp(unaryOpExp, context, out outTypeValue);
 
                 case UnaryOpKind.Minus:
                     {
@@ -123,7 +186,7 @@ namespace Gum.StaticAnalysis
                             return false;
                         }
 
-                        typeValue = intTypeValue;
+                        outTypeValue = intTypeValue;
                         return true;
                     }
 
@@ -133,14 +196,15 @@ namespace Gum.StaticAnalysis
             }
         }        
 
-        
-
-        internal bool AnalyzeBinaryOpExp(BinaryOpExp binaryOpExp, Context context, [NotNullWhen(returnValue: true)] out TypeValue? typeValue)
+        internal bool AnalyzeBinaryOpExp(
+            Syntax.BinaryOpExp binaryOpExp, Context context, 
+            [NotNullWhen(true)] out IR0.Exp? outExp,
+            [NotNullWhen(true)] out TypeValue? outTypeValue)
         {   
             if (binaryOpExp.Kind == BinaryOpKind.Assign)
-                return AnalyzeBinaryAssignExp(binaryOpExp, context, out typeValue);
+                return AnalyzeBinaryAssignExp(binaryOpExp, context, out outTypeValue);
 
-            typeValue = null;
+            outTypeValue = null;
 
             var boolTypeValue = analyzer.GetBoolTypeValue();
             var intTypeValue = analyzer.GetIntTypeValue();
@@ -181,7 +245,7 @@ namespace Gum.StaticAnalysis
                     return false;
                 }
 
-                typeValue = boolTypeValue;
+                outTypeValue = boolTypeValue;
                 return true;
             }
 
@@ -219,14 +283,14 @@ namespace Gum.StaticAnalysis
                     case BinaryOpKind.Modulo:
                     case BinaryOpKind.Add:
                     case BinaryOpKind.Subtract:
-                        typeValue = intTypeValue;
+                        outTypeValue = intTypeValue;
                         return true;
 
                     case BinaryOpKind.LessThan:
                     case BinaryOpKind.GreaterThan:
                     case BinaryOpKind.LessThanOrEqual:
                     case BinaryOpKind.GreaterThanOrEqual:
-                        typeValue = boolTypeValue;
+                        outTypeValue = boolTypeValue;
                         return true;
 
                     default:
@@ -248,14 +312,14 @@ namespace Gum.StaticAnalysis
                 switch (binaryOpExp.Kind)
                 {
                     case BinaryOpKind.Add:
-                        typeValue = stringTypeValue;
+                        outTypeValue = stringTypeValue;
                         return true;
 
                     case BinaryOpKind.LessThan:
                     case BinaryOpKind.GreaterThan:
                     case BinaryOpKind.LessThanOrEqual:
                     case BinaryOpKind.GreaterThanOrEqual:
-                        typeValue = boolTypeValue;
+                        outTypeValue = boolTypeValue;
                         return true;
 
                     default:
@@ -269,71 +333,70 @@ namespace Gum.StaticAnalysis
         }
 
         bool AnalyzeCallableIdentifierExp(
-            IdentifierExp exp, ImmutableArray<TypeValue> args, Context context,
-            [NotNullWhen(returnValue: true)] out (FuncValue? FuncValue, TypeValue.Func TypeValue)? outValue)
+            Syntax.IdentifierExp callableExp, ImmutableArray<(IR0.Exp Exp, TypeValue TypeValue)> argInfos, Context context,
+            [NotNullWhen(true)] out IR0.Exp? outExp,
+            [NotNullWhen(true)] out TypeValue? outTypeValue)
         {
+            outExp = null;
+            outTypeValue = null;
+
             // 1. this 검색
 
             // 2. global 검색
-            var funcId = ModuleItemId.Make(exp.Value, exp.TypeArgs.Length);
+            var funcId = ModuleItemId.Make(callableExp.Value, callableExp.TypeArgs.Length);
             var globalFuncs = context.ModuleInfoService.GetFuncInfos(funcId).ToImmutableArray();
 
             if (0 < globalFuncs.Length)
             {                
                 if (1 < globalFuncs.Length)
                 {
-                    context.ErrorCollector.Add(exp, $"이름이 {exp.Value}인 전역 함수가 여러 개 있습니다");
-                    outValue = null;
-                    return false;                    
+                    context.ErrorCollector.Add(callableExp, $"이름이 {callableExp.Value}인 전역 함수가 여러 개 있습니다");
+                    return false;
                 }
 
                 var globalFunc = globalFuncs[0];
 
-                var typeArgs = exp.TypeArgs.Select(typeArg => context.GetTypeValueByTypeExp(typeArg));
+                var typeArgs = callableExp.TypeArgs.Select(typeArg => context.GetTypeValueByTypeExp(typeArg));
 
                 var funcValue = new FuncValue(globalFunc.FuncId, TypeArgumentList.Make(null, typeArgs));
                 var funcTypeValue = context.TypeValueService.GetTypeValue(funcValue);
 
-                if (!analyzer.CheckParamTypes(exp, funcTypeValue.Params, args, context))
-                {
-                    outValue = null;
+                if (!analyzer.CheckParamTypes(callableExp, funcTypeValue.Params, argInfos.Select(info => info.TypeValue).ToList(), context))
                     return false;
-                }
-                
-                outValue = (funcValue, funcTypeValue);
+
+                outExp = new IR0.CallFuncExp(funcValue, null, argInfos.Select(info => new IR0.ExpAndType(info.Exp, info.TypeValue)));
+                outTypeValue = funcTypeValue;
                 return true;
             }
 
             // 3. 일반 exp
-            return AnalyzeCallableElseExp(exp, args, context, out outValue);
+            return AnalyzeCallableElseExp(callableExp, argInfos, context, out outExp, out outTypeValue);
         }
 
-
         bool AnalyzeCallableElseExp(
-            Exp exp, ImmutableArray<TypeValue> args, Context context,
-            [NotNullWhen(returnValue: true)] out (FuncValue? FuncValue, TypeValue.Func TypeValue)? outValue)
+            Syntax.Exp callableExp, ImmutableArray<(IR0.Exp Exp, TypeValue TypeValue)> argInfos, Context context,
+            [NotNullWhen(true)] out IR0.Exp? outExp,
+            [NotNullWhen(true)] out TypeValue? outTypeValue)
         {
-            if (!AnalyzeExp(exp, null, context, out var typeValue))
-            {
-                outValue = null;
+            outExp = null;
+            outTypeValue = null;
+
+            if (!AnalyzeExp(callableExp, null, context, out var ir0Exp, out var typeValue))
                 return false;
-            }
 
             var funcTypeValue = typeValue as TypeValue.Func;
             if (funcTypeValue == null)
             {
-                context.ErrorCollector.Add(exp, $"호출 가능한 타입이 아닙니다");
-                outValue = null;
+                context.ErrorCollector.Add(callableExp, $"호출 가능한 타입이 아닙니다");
                 return false;
             }
 
-            if (!analyzer.CheckParamTypes(exp, funcTypeValue.Params, args, context))
-            {
-                outValue = null;
+            if (!analyzer.CheckParamTypes(callableExp, funcTypeValue.Params, argInfos.Select(info => info.TypeValue).ToList(), context))
                 return false;
-            }
 
-            outValue = (null, funcTypeValue);
+            // TODO: 사실 Type보다 Allocation정보가 들어가야 한다
+            outExp = new IR0.CallValueExp(ir0Exp, funcTypeValue, argInfos.Select(info => new IR0.ExpAndType(info.Exp, info.TypeValue)));
+            outTypeValue = funcTypeValue;
             return true;
         }
         
@@ -342,109 +405,107 @@ namespace Gum.StaticAnalysis
         //   -> AnalyzeCallableExp(F, [Int])
         //        -> FuncValue(
         bool AnalyzeCallableExp(
-            Exp exp, 
-            ImmutableArray<TypeValue> args, Context context, 
-            [NotNullWhen(returnValue: true)] out (FuncValue? FuncValue, TypeValue.Func TypeValue)? outValue)
+            Syntax.Exp exp, 
+            ImmutableArray<(IR0.Exp Exp, TypeValue TypeValue)> argInfos, Context context,
+            [NotNullWhen(true)] out IR0.Exp? outExp,
+            [NotNullWhen(true)] out TypeValue? outTypeValue)
         {
-            if (exp is IdentifierExp idExp)
-                return AnalyzeCallableIdentifierExp(idExp, args, context, out outValue);
+            if (exp is Syntax.IdentifierExp idExp)
+                return AnalyzeCallableIdentifierExp(idExp, argInfos, context, out outExp, out outTypeValue);
             else
-                return AnalyzeCallableElseExp(exp, args, context, out outValue);
+                return AnalyzeCallableElseExp(exp, argInfos, context, out outExp, out outTypeValue);
         }
         
-        internal bool AnalyzeCallExp(CallExp exp, TypeValue? hintTypeValue, Context context, [NotNullWhen(returnValue: true)] out TypeValue? outTypeValue) 
+        internal bool AnalyzeCallExp(
+            Syntax.CallExp exp, TypeValue? hintTypeValue, Context context,
+            [NotNullWhen(true)] out IR0.Exp? outExp,
+            [NotNullWhen(true)] out TypeValue? outTypeValue) 
         {
-            (SyntaxNodeInfo NodeInfo, TypeValue TypeValue)? AnalyzeEnumValueOrNormal(ImmutableArray<TypeValue> args)
-            {
-                if (exp.Callable is IdentifierExp idExp)
-                {
-                    var typeArgs = GetTypeValues(idExp.TypeArgs, context);                    
-                    if (context.GetIdentifierInfo(idExp.Value, typeArgs, hintTypeValue, out var idInfo))
-                    {
-                        if (idInfo is IdentifierInfo.EnumElem enumElem)
-                        {
-                            // typeArgs가 있으면 enumElem을 주지 않는다
-                            Debug.Assert(idExp.TypeArgs.Length == 0);
-
-                            // 인자 개수가 맞는지 확인
-                            if (enumElem.ElemInfo.FieldInfos.Length != args.Length)
-                            {
-                                context.ErrorCollector.Add(exp, "enum인자 개수가 맞지 않습니다");
-                                return null;
-                            }
-
-                            var argTypeValues = new List<TypeValue>();
-                            foreach (var fieldInfo in enumElem.ElemInfo.FieldInfos)
-                            {
-                                var appliedTypeValue = context.TypeValueService.Apply(enumElem.EnumTypeValue, fieldInfo.TypeValue);
-                                argTypeValues.Add(appliedTypeValue);
-                            }
-
-                            var nodeInfo = CallExpInfo.MakeEnumValue(enumElem.ElemInfo, argTypeValues);
-                            var typeValue = enumElem.EnumTypeValue;
-
-                            return (nodeInfo, typeValue);
-                        }
-                    }
-                }
-
-                return AnalyzeNormal(args);
-            }
-
-            (SyntaxNodeInfo NodeInfo, TypeValue TypeValue)? AnalyzeNormal(ImmutableArray<TypeValue> args)
-            {
-                // 'f'(), 'F'(), 'GetFunc()'()
-                if (!AnalyzeCallableExp(exp.Callable, args, context, out var callableInfo))
-                    return null;
-
-                var nodeInfo = CallExpInfo.MakeNormal(callableInfo.Value.FuncValue, args);
-                var typeValue = callableInfo.Value.TypeValue.Return;
-                return (nodeInfo, typeValue);
-            }
-
             // 여기서 분석해야 할 것은 
             // 1. 해당 Exp가 함수인지, 변수인지, 함수라면 FuncId를 넣어준다
             // 2. Callable 인자에 맞게 잘 들어갔는지 -> 완료
             // 3. 잘 들어갔다면 리턴타입 -> 완료
-            outTypeValue = null;            
 
-            if (!AnalyzeExps(exp.Args, context, out var args))
+            outExp = null;
+            outTypeValue = null;
+
+            if (!analyzer.AnalyzeExps(exp.Args, context, out var argInfos))
                 return false;
 
-            var result = AnalyzeEnumValueOrNormal(args);
-            if (result == null)
-                return false;
+            // Enum인지 확인
+            if (exp.Callable is Syntax.IdentifierExp idExp)
+            {
+                var typeArgs = GetTypeValues(idExp.TypeArgs, context);
+                if (context.GetIdentifierInfo(idExp.Value, typeArgs, hintTypeValue, out var idInfo))
+                {
+                    if (idInfo is IdentifierInfo.EnumElem enumElem)
+                    {
+                        // typeArgs가 있으면 enumElem을 주지 않는다
+                        Debug.Assert(idExp.TypeArgs.Length == 0);
 
-            context.AddNodeInfo(exp, result.Value.NodeInfo);
-            outTypeValue = result.Value.TypeValue;
-            return true;
+                        // 인자 개수가 맞는지 확인
+                        if (enumElem.ElemInfo.FieldInfos.Length != argInfos.Length)
+                        {
+                            context.ErrorCollector.Add(exp, "enum인자 개수가 맞지 않습니다");
+                            return false;
+                        }
+
+                        var members = new List<IR0.EnumExp.Elem>();
+                        foreach (var (fieldInfo, argInfo) in Zip(enumElem.ElemInfo.FieldInfos, argInfos))
+                        {
+                            var appliedTypeValue = context.TypeValueService.Apply(enumElem.EnumTypeValue, fieldInfo.TypeValue);
+                            if (!analyzer.IsAssignable(appliedTypeValue, argInfo.TypeValue, context))
+                            {
+                                context.ErrorCollector.Add(exp, "enum의 {0}번째 인자 형식이 맞지 않습니다");
+                                return false;
+                            }
+
+                            members.Add(new IR0.EnumExp.Elem(fieldInfo.Name, argInfo.Exp, argInfo.TypeValue));
+                        }
+
+                        outExp = new IR0.EnumExp(enumElem.ElemInfo.Name, members);
+                        outTypeValue = enumElem.EnumTypeValue;
+
+                        return true;
+                    }
+                }
+            }
+
+            // 'f'(), 'F'(), 'GetFunc()'()
+            return AnalyzeCallableExp(exp.Callable, argInfos, context, out outExp, out outTypeValue);
         }
         
-        internal bool AnalyzeLambdaExp(LambdaExp lambdaExp, Context context, [NotNullWhen(returnValue: true)] out TypeValue? outTypeValue)
+        internal bool AnalyzeLambdaExp(Syntax.LambdaExp exp, Context context,             
+            [NotNullWhen(true)] out IR0.Exp? outExp,
+            [NotNullWhen(true)] out TypeValue? outTypeValue)
         {
-            if (!analyzer.AnalyzeLambda(lambdaExp.Body, lambdaExp.Params, context, out var captureInfo, out var funcTypeValue, out var localVarCount))
+            if (!analyzer.AnalyzeLambda(exp.Body, exp.Params, context, out var body, out var captureInfo, out var funcTypeValue))
             {
+                outExp = null;
                 outTypeValue = null;
                 return false;
             }
 
+            outExp = new IR0.LambdaExp(captureInfo, body);
             outTypeValue = funcTypeValue;
-            context.AddNodeInfo(lambdaExp, new LambdaExpInfo(captureInfo, localVarCount));
             return true;
         }
 
-        bool AnalyzeIndexerExp(IndexerExp exp, Context context, [NotNullWhen(returnValue: true)] out TypeValue? outTypeValue)
+        bool AnalyzeIndexerExp(Syntax.IndexerExp exp, Context context,
+            [NotNullWhen(true)] out IR0.Exp? outExp,
+            [NotNullWhen(true)] out TypeValue? outTypeValue)
         {
+            outExp = null;
             outTypeValue = null;
 
-            if (!AnalyzeExp(exp.Object, null, context, out var objTypeValue))
+            if (!AnalyzeExp(exp.Object, null, context, out var obj, out var objType))
                 return false;
 
-            if (!AnalyzeExp(exp.Index, null, context, out var indexTypeValue))
+            if (!AnalyzeExp(exp.Index, null, context, out var index, out var indexType))
                 return false;
 
             // objTypeValue에 indexTypeValue를 인자로 갖고 있는 indexer가 있는지
-            if (!context.TypeValueService.GetMemberFuncValue(objTypeValue, SpecialNames.IndexerGet, ImmutableArray<TypeValue>.Empty, out var funcValue))
+            if (!context.TypeValueService.GetMemberFuncValue(objType, SpecialNames.IndexerGet, ImmutableArray<TypeValue>.Empty, out var funcValue))
             {
                 context.ErrorCollector.Add(exp, "객체에 indexer함수가 없습니다");
                 return false;
@@ -458,50 +519,31 @@ namespace Gum.StaticAnalysis
 
             var funcTypeValue = context.TypeValueService.GetTypeValue(funcValue);
 
-            if (!analyzer.CheckParamTypes(exp, funcTypeValue.Params, new[] { indexTypeValue }, context))
+            if (!analyzer.CheckParamTypes(exp, funcTypeValue.Params, new[] { indexType }, context))
                 return false;
 
-            context.AddNodeInfo(exp, new IndexerExpInfo(funcValue, objTypeValue, indexTypeValue));
-
+            outExp = new IR0.IndexerExp(funcValue, obj, objType, index, indexType);
             outTypeValue = funcTypeValue.Return;
             return true;
         }
 
-        // TODO: Hint를 받을 수 있게 해야 한다
-        bool AnalyzeExps(IEnumerable<Exp> exps, Context context, out ImmutableArray<TypeValue> outTypeValues)
+        internal bool AnalyzeMemberCallExp(Syntax.MemberCallExp exp, Context context,
+            [NotNullWhen(true)] out IR0.Exp? outExp,
+            [NotNullWhen(true)] out TypeValue? outTypeValue)
         {
-            var typeValues = new List<TypeValue>();
-            foreach (var exp in exps)
-            {
-                if (!AnalyzeExp(exp, null, context, out var typeValue))
-                {
-                    outTypeValues = ImmutableArray<TypeValue>.Empty;
-                    return false;
-                }
-
-                typeValues.Add(typeValue);
-            }
-
-            outTypeValues = typeValues.ToImmutableArray();
-            return true;
-        }
-
-        internal bool AnalyzeMemberCallExp(MemberCallExp exp, Context context, [NotNullWhen(returnValue: true)] out TypeValue? outTypeValue)
-        {
+            outExp = null;
             outTypeValue = null;
 
             var result = new MemberCallExpAnalyzer(this, exp, context).Analyze();
             if (result == null) return false;
 
-            if (!analyzer.CheckParamTypes(exp, result.Value.TypeValue.Params, result.Value.ArgTypeValues, context))
-                return false;
-
             context.AddNodeInfo(exp, result.Value.NodeInfo);
+            outExp = result.Value.Exp;
             outTypeValue = result.Value.TypeValue.Return;
             return true;
         }
 
-        internal bool AnalyzeMemberExp(MemberExp memberExp, Context context, [NotNullWhen(returnValue: true)] out TypeValue? outTypeValue) 
+        internal bool AnalyzeMemberExp(MemberExp memberExp, Context context, [NotNullWhen(true)] out TypeValue? outTypeValue) 
         {
             var memberExpAnalyzer = new MemberExpAnalyzer(analyzer, memberExp, context);
             var result = memberExpAnalyzer.Analyze();
@@ -519,15 +561,22 @@ namespace Gum.StaticAnalysis
             }
         }
 
-        internal bool AnalyzeListExp(ListExp listExp, Context context, [NotNullWhen(returnValue: true)] out TypeValue? typeValue)
+        internal bool AnalyzeListExp(Syntax.ListExp listExp, Context context, 
+            [NotNullWhen(true)] out IR0.Exp? outExp,
+            [NotNullWhen(true)] out TypeValue? outTypeValue)
         {
-            typeValue = null;
+            outExp = null;
+            outTypeValue = null;
+
+            var elemExps = new List<IR0.Exp>();
             TypeValue? curElemTypeValue = null;
 
             foreach (var elem in listExp.Elems)
             {
-                if (!AnalyzeExp(elem, null, context, out var elemTypeValue))
+                if (!AnalyzeExp(elem, null, context, out var elemExp, out var elemTypeValue))
                     return false;
+
+                elemExps.Add(elemExp);
 
                 if (curElemTypeValue == null)
                 {
@@ -557,27 +606,32 @@ namespace Gum.StaticAnalysis
                 return false;
             }
 
-            typeValue = TypeValue.MakeNormal(typeInfos[0].TypeId, TypeArgumentList.Make(curElemTypeValue));
-            context.AddNodeInfo(listExp, new ListExpInfo(curElemTypeValue));
+            outExp = new IR0.ListExp(curElemTypeValue, elemExps);
+            outTypeValue = TypeValue.MakeNormal(typeInfos[0].TypeId, TypeArgumentList.Make(curElemTypeValue));
             return true;
         }
 
-        public bool AnalyzeExp(Exp exp, TypeValue? hintTypeValue, Context context, [NotNullWhen(returnValue: true)] out TypeValue? typeValue)
+        public bool AnalyzeExp(
+            Syntax.Exp exp, 
+            TypeValue? hintTypeValue, 
+            Context context, 
+            [NotNullWhen(true)] out IR0.Exp? outExp,
+            [NotNullWhen(true)] out TypeValue? outTypeValue)
         {
             switch(exp)
             {
-                case IdentifierExp idExp: return AnalyzeIdExp(idExp, hintTypeValue, context, out typeValue);
-                case BoolLiteralExp boolExp: return AnalyzeBoolLiteralExp(boolExp, context, out typeValue);
-                case IntLiteralExp intExp: return AnalyzeIntLiteralExp(intExp, context, out typeValue);
-                case StringExp stringExp: return AnalyzeStringExp(stringExp, context, out typeValue);
-                case UnaryOpExp unaryOpExp: return AnalyzeUnaryOpExp(unaryOpExp, context, out typeValue);
-                case BinaryOpExp binaryOpExp: return AnalyzeBinaryOpExp(binaryOpExp, context, out typeValue);
-                case CallExp callExp: return AnalyzeCallExp(callExp, hintTypeValue, context, out typeValue);        
-                case LambdaExp lambdaExp: return AnalyzeLambdaExp(lambdaExp, context, out typeValue);
-                case IndexerExp indexerExp: return AnalyzeIndexerExp(indexerExp, context, out typeValue);
-                case MemberCallExp memberCallExp: return AnalyzeMemberCallExp(memberCallExp, context, out typeValue);
-                case MemberExp memberExp: return AnalyzeMemberExp(memberExp, context, out typeValue);
-                case ListExp listExp: return AnalyzeListExp(listExp, context, out typeValue);
+                case Syntax.IdentifierExp idExp: return AnalyzeIdExp(idExp, hintTypeValue, context, out outExp, out outTypeValue);
+                case Syntax.BoolLiteralExp boolExp: return AnalyzeBoolLiteralExp(boolExp, context, out outExp, out outTypeValue);
+                case Syntax.IntLiteralExp intExp: return AnalyzeIntLiteralExp(intExp, context, out outExp, out outTypeValue);
+                case Syntax.StringExp stringExp: return AnalyzeStringExp(stringExp, context, out outExp, out outTypeValue);
+                case Syntax.UnaryOpExp unaryOpExp: return AnalyzeUnaryOpExp(unaryOpExp, context, out outExp, out outTypeValue);
+                case Syntax.BinaryOpExp binaryOpExp: return AnalyzeBinaryOpExp(binaryOpExp, context, out outExp, out outTypeValue);
+                case Syntax.CallExp callExp: return AnalyzeCallExp(callExp, hintTypeValue, context, out outExp, out outTypeValue);        
+                case Syntax.LambdaExp lambdaExp: return AnalyzeLambdaExp(lambdaExp, context, out outExp, out outTypeValue);
+                case Syntax.IndexerExp indexerExp: return AnalyzeIndexerExp(indexerExp, context, out outExp, out outTypeValue);
+                case Syntax.MemberCallExp memberCallExp: return AnalyzeMemberCallExp(memberCallExp, context, out outExp, out outTypeValue);
+                case Syntax.MemberExp memberExp: return AnalyzeMemberExp(memberExp, context, out outExp, out outTypeValue);
+                case Syntax.ListExp listExp: return AnalyzeListExp(listExp, context, out outExp, out outTypeValue);
                 default: throw new NotImplementedException();
             }
         }

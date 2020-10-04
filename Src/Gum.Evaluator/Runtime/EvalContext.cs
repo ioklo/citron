@@ -1,5 +1,4 @@
 ﻿using Gum.CompileTime;
-using Gum.Syntax;
 using Gum.Runtime;
 using Gum.StaticAnalysis;
 using System;
@@ -8,6 +7,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
 using Gum;
+using Gum.IR0;
 
 namespace Gum.Runtime
 {   
@@ -16,32 +16,27 @@ namespace Gum.Runtime
         public IRuntimeModule RuntimeModule { get; }
         public DomainService DomainService { get; }
         public TypeValueService TypeValueService { get; }
-
-        private Value?[] privateGlobalVars;
-        private Value?[] localVars;
+        
+        private ImmutableDictionary<string, Value> privateGlobalVars;
+        private ImmutableDictionary<string, Value> localVars;
 
         private EvalFlowControl flowControl;
         private ImmutableArray<Task> tasks;
         private Value? thisValue;
         private Value retValue;
 
-        private ImmutableDictionary<ISyntaxNode, SyntaxNodeInfo> infosByNode;
-
         public EvalContext(
             IRuntimeModule runtimeModule, 
             DomainService domainService, 
             TypeValueService typeValueService,
-            int privateGlobalVarCount,
-            ImmutableDictionary<ISyntaxNode, SyntaxNodeInfo> infosByNode)
+            int privateGlobalVarCount)
         {
             RuntimeModule = runtimeModule;
             DomainService = domainService;
             TypeValueService = typeValueService;
-            
-            this.infosByNode = infosByNode;
-            
-            localVars = new Value?[0];
-            privateGlobalVars = new Value?[privateGlobalVarCount];
+
+            privateGlobalVars = ImmutableDictionary<string, Value>.Empty;
+            localVars = ImmutableDictionary<string, Value>.Empty;
             flowControl = EvalFlowControl.None;
             tasks = ImmutableArray<Task>.Empty; ;
             thisValue = null;
@@ -50,7 +45,7 @@ namespace Gum.Runtime
 
         public EvalContext(
             EvalContext other,
-            Value?[] localVars,
+            ImmutableDictionary<string, Value> localVars,
             EvalFlowControl flowControl,
             ImmutableArray<Task> tasks,
             Value? thisValue,
@@ -59,7 +54,6 @@ namespace Gum.Runtime
             RuntimeModule = other.RuntimeModule;
             DomainService = other.DomainService;
             TypeValueService = other.TypeValueService;
-            this.infosByNode = other.infosByNode;
             privateGlobalVars = other.privateGlobalVars;
 
             this.localVars = localVars;
@@ -86,7 +80,7 @@ namespace Gum.Runtime
         }
 
         public async ValueTask ExecInNewFuncFrameAsync(
-            Value?[] newLocalVars, 
+            ImmutableDictionary<string, Value> newLocalVars, 
             EvalFlowControl newFlowControl, 
             ImmutableArray<Task> newTasks, 
             Value? newThisValue, 
@@ -106,36 +100,31 @@ namespace Gum.Runtime
             }
         }
 
-        public TSyntaxNodeInfo GetNodeInfo<TSyntaxNodeInfo>(ISyntaxNode node) where TSyntaxNodeInfo : SyntaxNodeInfo
-        {
-            return (TSyntaxNodeInfo)infosByNode[node];
-        }
-
         public Value GetStaticValue(VarValue varValue)
         {
             throw new NotImplementedException();
         }
 
-        public Value GetPrivateGlobalVar(int index)
+        public Value GetPrivateGlobalValue(string name)
         {
-            return privateGlobalVars[index]!;
+            return privateGlobalVars[name];
         }
 
-        public void InitPrivateGlobalVar(int index, Value value)
+        public void AddPrivateGlobalVar(string name, Value value)
         {
-            privateGlobalVars[index] = value;
+            privateGlobalVars = privateGlobalVars.Add(name, value);
         }
 
-        public Value GetLocalVar(int index)
+        public Value GetLocalValue(string name)
         {
-            return localVars[index]!;
+            return localVars[name];
         }
 
-        public void InitLocalVar(int i, Value value)
+        public void AddLocalVar(string name, Value value)
         {
             // for문 내부에서 decl할 경우 재사용하기 때문에 assert를 넣으면 안된다
             // Debug.Assert(context.LocalVars[storage.LocalIndex] == null);
-            localVars[i] = value;
+            localVars = localVars.Add(name, value);
         }
 
         public bool IsFlowControl(EvalFlowControl testValue)

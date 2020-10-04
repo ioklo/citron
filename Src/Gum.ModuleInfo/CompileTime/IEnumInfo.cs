@@ -30,7 +30,7 @@ namespace Gum.CompileTime
 
     public interface IEnumInfo : ITypeInfo
     {
-        bool GetElemInfo(string idName, [NotNullWhen(returnValue: true)] out EnumElemInfo? outElemInfo);
+        bool GetElemInfo(string idName, [NotNullWhen(true)] out EnumElemInfo? outElemInfo);
         EnumElemInfo GetDefaultElemInfo();
     }
 }

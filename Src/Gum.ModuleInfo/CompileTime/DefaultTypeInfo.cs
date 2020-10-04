@@ -50,7 +50,7 @@ namespace Gum.CompileTime
             return baseTypeValue;
         }
 
-        public bool GetMemberTypeId(string name, [NotNullWhen(returnValue: true)] out ModuleItemId? outTypeId)
+        public bool GetMemberTypeId(string name, [NotNullWhen(true)] out ModuleItemId? outTypeId)
         {
             if (memberTypeIds.TryGetValue(Name.MakeText(name), out var typeId))
             {
@@ -64,7 +64,7 @@ namespace Gum.CompileTime
             }
         }
 
-        public bool GetMemberFuncId(Name memberFuncName, [NotNullWhen(returnValue: true)] out ModuleItemId? outFuncId)
+        public bool GetMemberFuncId(Name memberFuncName, [NotNullWhen(true)] out ModuleItemId? outFuncId)
         {
             // TODO: 같은 이름 체크?
             if (memberFuncIds.TryGetValue(memberFuncName, out var funcId))
@@ -77,7 +77,7 @@ namespace Gum.CompileTime
             return false;
         }
 
-        public bool GetMemberVarId(Name varName, [NotNullWhen(returnValue: true)] out ModuleItemId? outVarId)
+        public bool GetMemberVarId(Name varName, [NotNullWhen(true)] out ModuleItemId? outVarId)
         {
             // TODO: 같은 이름 체크
             if (memberVarIds.TryGetValue(varName, out var varId))

@@ -1,6 +1,5 @@
 ﻿using Gum.Runtime;
 using Gum.StaticAnalysis;
-using Gum.Syntax;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -12,6 +11,7 @@ using System.Threading.Tasks;
 using static Gum.Runtime.Evaluator;
 using Gum.CompileTime;
 using Gum;
+using Gum.IR0;
 
 namespace Gum.Runtime
 {
@@ -40,48 +40,72 @@ namespace Gum.Runtime
             }
         }
 
-        internal ValueTask EvaluateVarDeclStmtAsync(VarDeclStmt stmt, EvalContext context)
+        public async ValueTask EvaluatePrivateGlobalVarDeclStmtAsync(PrivateGlobalVarDeclStmt stmt, EvalContext context)
         {
-            return evaluator.EvaluateVarDeclAsync(stmt.VarDecl, context);
+            foreach (var elem in stmt.Elems)
+            {
+                var value = evaluator.GetDefaultValue(elem.Type, context);
+                context.AddPrivateGlobalVar(elem.Name, value);
+
+                // InitExp가 있으면 
+                if (elem.InitExp != null)
+                    await evaluator.EvalExpAsync(elem.InitExp, value, context);
+            }
+        }
+
+        internal ValueTask EvaluateLocalVarDeclStmtAsync(LocalVarDeclStmt stmt, EvalContext context)
+        {
+            return evaluator.EvaluateLocalVarDeclAsync(stmt.VarDecl, context);
+        }
+
+        internal async IAsyncEnumerable<Value> EvaluateIfTestEnumStmtAsync(IfTestEnumStmt stmt, EvalContext context)
+        {
+            var targetValue = (EnumValue)evaluator.GetDefaultValue(stmt.TargetType, context);
+            await evaluator.EvalExpAsync(stmt.Target, targetValue, context);
+
+            var bTestPassed = (targetValue.ElemName == stmt.ElemName);
+                
+            if (bTestPassed)
+            {
+                await foreach (var value in EvaluateStmtAsync(stmt.Body, context))
+                    yield return value;
+            }
+            else
+            {
+                if (stmt.ElseBody != null)
+                    await foreach (var value in EvaluateStmtAsync(stmt.ElseBody, context))
+                        yield return value;
+            }
         }
 
         internal async IAsyncEnumerable<Value> EvaluateIfStmtAsync(IfStmt stmt, EvalContext context)
         {
-            bool bTestPassed;
-            if (stmt.TestType == null)
-            {
-                var condValue = context.RuntimeModule.MakeBool(false);
-                await evaluator.EvalExpAsync(stmt.Cond, condValue, context);
+            var condValue = context.RuntimeModule.MakeBool(false);
+            await evaluator.EvalExpAsync(stmt.Cond, condValue, context);
 
-                bTestPassed = context.RuntimeModule.GetBool(condValue);
+            if (context.RuntimeModule.GetBool(condValue))
+            {
+                await foreach (var value in EvaluateStmtAsync(stmt.Body, context))
+                    yield return value;
             }
             else
             {
-                // 분석기가 미리 계산해 놓은 TypeValue를 가져온다
-                var ifStmtInfo = context.GetNodeInfo<IfStmtInfo>(stmt);
-
-                if (ifStmtInfo is IfStmtInfo.TestEnum testEnumInfo)
-                {
-                    var tempEnumValue = (EnumValue)evaluator.GetDefaultValue(testEnumInfo.TestTargetTypeValue, context);
-                    await evaluator.EvalExpAsync(stmt.Cond, tempEnumValue, context);
-
-                    bTestPassed = (tempEnumValue.ElemName == testEnumInfo.ElemName);
-                }
-                else if (ifStmtInfo is IfStmtInfo.TestClass testClassInfo)
-                {
-                    var tempValue = (ObjectValue)evaluator.GetDefaultValue(testClassInfo.TestTargetTypeValue, context);
-                    await evaluator.EvalExpAsync(stmt.Cond, tempValue, context);
-
-                    var condValueTypeValue = tempValue.GetTypeInst().GetTypeValue();
-
-                    Debug.Assert(condValueTypeValue is TypeValue.Normal);
-                    bTestPassed = evaluator.IsType((TypeValue.Normal)condValueTypeValue, testClassInfo.TestTypeValue, context);
-                }
-                else
-                {
-                    throw new InvalidOperationException();
-                }
+                if (stmt.ElseBody != null)
+                    await foreach (var value in EvaluateStmtAsync(stmt.ElseBody, context))
+                        yield return value;
             }
+        }
+
+        internal async IAsyncEnumerable<Value> EvaluateIfTestClassStmtAsync(IfTestClassStmt stmt, EvalContext context)
+        {  
+            // 분석기가 미리 계산해 놓은 TypeValue를 가져온다                
+            var targetValue = (ObjectValue)evaluator.GetDefaultValue(stmt.TargetType, context);
+            await evaluator.EvalExpAsync(stmt.Target, targetValue, context);
+
+            var targetType = targetValue.GetTypeInst().GetTypeValue();
+
+            Debug.Assert(targetType is TypeValue.Normal);
+            var bTestPassed = evaluator.IsType((TypeValue.Normal)targetType, stmt.TestType, context);
 
             if (bTestPassed)
             {
@@ -98,21 +122,19 @@ namespace Gum.Runtime
 
         internal async IAsyncEnumerable<Value> EvaluateForStmtAsync(ForStmt forStmt, EvalContext context)
         {
-            var forStmtInfo = context.GetNodeInfo<ForStmtInfo>(forStmt);
-            var contValue = forStmtInfo.ContTypeValue != null ? evaluator.GetDefaultValue(forStmtInfo.ContTypeValue, context) : null;
+            var contValue = forStmt.ContinueExpInfo != null ? evaluator.GetDefaultValue(forStmt.ContinueExpInfo.Value.TypeValue, context) : null;
 
             if (forStmt.Initializer != null)
             {
                 switch (forStmt.Initializer)
                 {
-                    case ExpForStmtInitializer expInitializer:
-                        var expInitInfo = context.GetNodeInfo<ExpForStmtInitializerInfo>(expInitializer);
-                        var value = evaluator.GetDefaultValue(expInitInfo.ExpTypeValue, context);
-                        await evaluator.EvalExpAsync(expInitializer.Exp, value, context);
+                    case VarDeclForStmtInitializer varDeclInitializer:
+                        await evaluator.EvaluateLocalVarDeclAsync(varDeclInitializer.VarDecl, context);
                         break;
 
-                    case VarDeclForStmtInitializer varDeclInitializer:
-                        await evaluator.EvaluateVarDeclAsync(varDeclInitializer.VarDecl, context);
+                    case ExpForStmtInitializer expInitializer:                        
+                        var value = evaluator.GetDefaultValue(expInitializer.ExpType, context);
+                        await evaluator.EvalExpAsync(expInitializer.Exp, value, context);
                         break;
                         
                     default:
@@ -154,9 +176,9 @@ namespace Gum.Runtime
                     Debug.Assert(context.GetFlowControl() == EvalFlowControl.None);
                 }
 
-                if (forStmt.ContinueExp != null)
+                if (forStmt.ContinueExpInfo != null)
                 {   
-                    await evaluator.EvalExpAsync(forStmt.ContinueExp, contValue!, context);
+                    await evaluator.EvalExpAsync(forStmt.ContinueExpInfo.Value.Exp, contValue!, context);
                 }
             }
         }
@@ -201,28 +223,24 @@ namespace Gum.Runtime
 
         internal async ValueTask EvaluateExpStmtAsync(ExpStmt expStmt, EvalContext context)
         {
-            var expStmtInfo = context.GetNodeInfo<ExpStmtInfo>(expStmt);
-            var temp = evaluator.GetDefaultValue(expStmtInfo.ExpTypeValue, context);
+            var temp = evaluator.GetDefaultValue(expStmt.ExpType, context);
 
             await evaluator.EvalExpAsync(expStmt.Exp, temp, context);
         }
 
         internal void EvaluateTaskStmt(TaskStmt taskStmt, EvalContext context)
         {
-            var info = context.GetNodeInfo<TaskStmtInfo>(taskStmt);
-
             // 1. funcInst로 캡쳐
-            var captures = evaluator.MakeCaptures(info.CaptureInfo.Captures, context);
+            var captures = evaluator.MakeCaptures(taskStmt.CaptureInfo.Captures, context);
             
             var funcInst = new ScriptFuncInst(
                 null,
                 false,
-                info.CaptureInfo.bCaptureThis ? context.GetThisValue() : null,
+                taskStmt.CaptureInfo.bCaptureThis ? context.GetThisValue() : null,
                 captures,
-                info.LocalVarCount,
                 taskStmt.Body);
 
-            var newContext = new EvalContext(context, new Value?[0], EvalFlowControl.None, ImmutableArray<Task>.Empty, null, VoidValue.Instance);
+            var newContext = new EvalContext(context, ImmutableDictionary<string, Value>.Empty, EvalFlowControl.None, ImmutableArray<Task>.Empty, null, VoidValue.Instance);
 
             // 2. 그 funcInst를 바로 실행하기
             var task = Task.Run(async () =>
@@ -248,19 +266,16 @@ namespace Gum.Runtime
 
         internal void EvaluateAsyncStmt(AsyncStmt asyncStmt, EvalContext context)
         {
-            var info = context.GetNodeInfo<AsyncStmtInfo>(asyncStmt);
-
-            var captures = evaluator.MakeCaptures(info.CaptureInfo.Captures, context);
+            var captures = evaluator.MakeCaptures(asyncStmt.CaptureInfo.Captures, context);
 
             var funcInst = new ScriptFuncInst(
                 null,
                 false,
-                info.CaptureInfo.bCaptureThis ? context.GetThisValue() : null,
+                asyncStmt.CaptureInfo.bCaptureThis ? context.GetThisValue() : null,
                 captures,
-                info.LocalVarCount,
                 asyncStmt.Body);
 
-            var newContext = new EvalContext(context, new Value?[0], EvalFlowControl.None, ImmutableArray<Task>.Empty, null, VoidValue.Instance);
+            var newContext = new EvalContext(context, ImmutableDictionary<string, Value>.Empty, EvalFlowControl.None, ImmutableArray<Task>.Empty, null, VoidValue.Instance);
 
             Func<Task> asyncFunc = async () =>
             {
@@ -271,23 +286,22 @@ namespace Gum.Runtime
             context.AddTask(task);
         }
 
-        internal async IAsyncEnumerable<Value> EvaluateForeachStmtAsync(ForeachStmt foreachStmt, EvalContext context)
+        internal async IAsyncEnumerable<Value> EvaluateForeachStmtAsync(ForeachStmt stmt, EvalContext context)
         {
-            var info = context.GetNodeInfo<ForeachStmtInfo>(foreachStmt);
-
-            var objValue = evaluator.GetDefaultValue(info.ObjTypeValue, context);
-            var enumeratorValue = evaluator.GetDefaultValue(info.EnumeratorTypeValue, context);
+            var objValue = evaluator.GetDefaultValue(stmt.ObjType, context);
+            var enumeratorValue = evaluator.GetDefaultValue(stmt.EnumeratorType, context);
             var moveNextResult = context.RuntimeModule.MakeBool(false);
 
-            await evaluator.EvalExpAsync(foreachStmt.Obj, objValue, context);
-            var getEnumeratorInst = context.DomainService.GetFuncInst(info.GetEnumeratorValue);
+            await evaluator.EvalExpAsync(stmt.Obj, objValue, context);
+            var getEnumeratorInst = context.DomainService.GetFuncInst(stmt.GetEnumerator);
 
             await evaluator.EvaluateFuncInstAsync(objValue, getEnumeratorInst, ImmutableArray<Value>.Empty, enumeratorValue, context);
-            var moveNextInst = context.DomainService.GetFuncInst(info.MoveNextValue);
-            var getCurrentInst = context.DomainService.GetFuncInst(info.GetCurrentValue);
+            var moveNextInst = context.DomainService.GetFuncInst(stmt.MoveNext);
+            var getCurrentInst = context.DomainService.GetFuncInst(stmt.GetCurrent);
 
-            var elemTypeInst = context.DomainService.GetTypeInst(info.ElemTypeValue);
-            context.InitLocalVar(info.ElemLocalIndex, elemTypeInst.MakeDefaultValue());
+            var elemTypeInst = context.DomainService.GetTypeInst(stmt.ElemType);
+            var elemValue = elemTypeInst.MakeDefaultValue();
+            context.AddLocalVar(stmt.ElemName, elemValue);
 
             while (true)
             {
@@ -295,9 +309,9 @@ namespace Gum.Runtime
                 if (!context.RuntimeModule.GetBool(moveNextResult)) break;
 
                 // GetCurrent
-                await evaluator.EvaluateFuncInstAsync(enumeratorValue, getCurrentInst, ImmutableArray<Value>.Empty, context.GetLocalVar(info.ElemLocalIndex), context);
+                await evaluator.EvaluateFuncInstAsync(enumeratorValue, getCurrentInst, ImmutableArray<Value>.Empty, elemValue, context);
 
-                await foreach (var value in EvaluateStmtAsync(foreachStmt.Body, context))
+                await foreach (var value in EvaluateStmtAsync(stmt.Body, context))
                 {
                     yield return value;
                 }
@@ -338,12 +352,26 @@ namespace Gum.Runtime
                     await EvaluateCommandStmtAsync(cmdStmt, context); 
                     break;
 
-                case VarDeclStmt varDeclStmt: 
-                    await EvaluateVarDeclStmtAsync(varDeclStmt, context); 
+                case PrivateGlobalVarDeclStmt pgvdStmt:
+                    await EvaluatePrivateGlobalVarDeclStmtAsync(pgvdStmt, context);
+                    break;
+
+                case LocalVarDeclStmt localVarDeclStmt:
+                    await EvaluateLocalVarDeclStmtAsync(localVarDeclStmt, context);
                     break;
 
                 case IfStmt ifStmt:
                     await foreach (var value in EvaluateIfStmtAsync(ifStmt, context))
+                        yield return value;
+                    break;
+
+                case IfTestClassStmt ifTestClassStmt:
+                    await foreach (var value in EvaluateIfTestClassStmtAsync(ifTestClassStmt, context))
+                        yield return value;
+                    break;
+
+                case IfTestEnumStmt ifTestEnumStmt:
+                    await foreach (var value in EvaluateIfTestEnumStmtAsync(ifTestEnumStmt, context))
                         yield return value;
                     break;
 

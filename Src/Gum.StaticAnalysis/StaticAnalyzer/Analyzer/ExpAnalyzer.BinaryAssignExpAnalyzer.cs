@@ -107,7 +107,7 @@ namespace Gum.StaticAnalysis
         internal bool AnalyzeBinaryAssignExp(
             BinaryOpExp binaryOpExp,
             Context context,
-            [NotNullWhen(returnValue: true)] out TypeValue? outTypeValue)
+            [NotNullWhen(true)] out TypeValue? outTypeValue)
         {
             var assignAnalyzer = new BinaryAssignExpAnalyzer(analyzer, binaryOpExp, context);
             return assignAnalyzer.Analyze(out outTypeValue);

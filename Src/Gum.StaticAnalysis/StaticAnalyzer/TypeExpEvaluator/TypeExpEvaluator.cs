@@ -21,7 +21,7 @@ namespace Gum.StaticAnalysis
             this.typeSkeletonCollector = typeSkeletonCollector;
         }
 
-        bool EvaluateIdTypeExp(IdTypeExp exp, Context context, [NotNullWhen(returnValue: true)] out TypeValue? outTypeValue)
+        bool EvaluateIdTypeExp(IdTypeExp exp, Context context, [NotNullWhen(true)] out TypeValue? outTypeValue)
         {
             outTypeValue = null;
 
@@ -102,7 +102,7 @@ namespace Gum.StaticAnalysis
             }
         }
         
-        bool EvaluateMemberTypeExp(MemberTypeExp exp, Context context, [NotNullWhen(returnValue: true)] out TypeValue? typeValue)
+        bool EvaluateMemberTypeExp(MemberTypeExp exp, Context context, [NotNullWhen(true)] out TypeValue? typeValue)
         {
             typeValue = null;
 
@@ -141,7 +141,7 @@ namespace Gum.StaticAnalysis
             TypeValue.Normal parent, 
             string memberName, 
             IReadOnlyCollection<TypeValue> typeArgs, 
-            [NotNullWhen(returnValue: true)] out TypeValue? outTypeValue)
+            [NotNullWhen(true)] out TypeValue? outTypeValue)
         {
             outTypeValue = null;
             
@@ -165,7 +165,7 @@ namespace Gum.StaticAnalysis
             return false;
         }
 
-        bool EvaluateTypeExp(TypeExp exp, Context context, [NotNullWhen(returnValue:true)] out TypeValue? typeValue)
+        bool EvaluateTypeExp(TypeExp exp, Context context, [NotNullWhen(true)] out TypeValue? typeValue)
         {
             if (exp is IdTypeExp idExp)
                 return EvaluateIdTypeExp(idExp, context, out typeValue);

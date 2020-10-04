@@ -2,15 +2,17 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
-    <RootNamespace>Gum</RootNamespace>
     <Nullable>enable</Nullable>
+    <RootNamespace>Gum</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="System.Collections.Immutable" Version="1.7.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Gum.Infra\Gum.Infra.csproj" />
-    <ProjectReference Include="..\Gum.IR0\Gum.IR0.csproj" />
     <ProjectReference Include="..\Gum.ModuleInfo\Gum.ModuleInfo.csproj" />
-    <ProjectReference Include="..\Gum.Syntax\Gum.Syntax.csproj" />
   </ItemGroup>
 
 </Project>
