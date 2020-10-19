@@ -55,11 +55,11 @@ namespace Gum.StaticAnalysis
                         break; 
 
                     case StorageInfo.PrivateGlobal pgs:         // x => global of this module
-                        outExp = new IR0.PrivateGlobalVarExp(pgs.Index);
+                        outExp = new IR0.PrivateGlobalVarExp(pgs.Name);
                         break;
 
                     case StorageInfo.Local ls:                  // x => local x
-                        outExp = new IR0.LocalVarExp(ls.Index);
+                        outExp = new IR0.LocalVarExp(ls.Name);
                         break;
                     
                     case StorageInfo.StaticMember sms:          // x => T.x
@@ -81,7 +81,7 @@ namespace Gum.StaticAnalysis
                 if (enumElemInfo.ElemInfo.FieldInfos.Length == 0)
                 {
                     outTypeValue = enumElemInfo.EnumTypeValue;
-                    outExp = new IR0.EnumExp(enumElemInfo.ElemInfo.Name); // TODO: StorageInfo.EnumElem 삭제
+                    outExp = new IR0.NewEnumExp(enumElemInfo.ElemInfo.Name); // TODO: StorageInfo.EnumElem 삭제
                     return true;
                 }
                 else
@@ -145,6 +145,57 @@ namespace Gum.StaticAnalysis
             }
         }
 
+        internal bool IsAssignableExp(IR0.Exp exp)
+        {
+            switch (exp)
+            {
+                case IR0.ExternalGlobalVarExp _:
+                case IR0.PrivateGlobalVarExp _:
+                case IR0.LocalVarExp _:
+                case IR0.ListIndexerExp _:
+                case IR0.MemberExp _:
+                    return true;
+
+                default:
+                    return false;
+            }
+            
+        }
+
+        // int만 지원한다
+        internal bool AnalyzeIntUnaryAssignExp(
+            Syntax.Exp operand,
+            IR0.InternalUnaryAssignOperator op, 
+            Context context,
+            [NotNullWhen(true)] out IR0.Exp? outExp,
+            [NotNullWhen(true)] out TypeValue? outTypeValue)
+        {
+            var intTypeValue = analyzer.GetIntTypeValue();
+
+            outExp = null;
+            outTypeValue = null;
+
+            if (!analyzer.AnalyzeExp(operand, null, context, out var ir0Operand, out var ir0OperandType))
+                return false;
+
+            // int type 검사
+            if (!analyzer.IsAssignable(intTypeValue, ir0OperandType, context))
+            {
+                context.ErrorCollector.Add(operand, "++ --는 int 타입만 지원합니다");
+                return false;
+            }
+
+            if (!IsAssignableExp(ir0Operand))
+            {
+                context.ErrorCollector.Add(operand, "++ --는 대입 가능한 식에만 적용할 수 있습니다");
+                return false;
+            }
+
+            outExp = new IR0.CallInternalUnaryAssignOperator(IR0.InternalUnaryAssignOperator.PrefixDec_Int_Int, ir0Operand);
+            outTypeValue = intTypeValue;
+            return true;
+        }
+
         internal bool AnalyzeUnaryOpExp(Syntax.UnaryOpExp unaryOpExp, Context context,
             [NotNullWhen(true)] out IR0.Exp? outExp,
             [NotNullWhen(true)] out TypeValue? outTypeValue)
@@ -155,180 +206,189 @@ namespace Gum.StaticAnalysis
             var boolTypeValue = analyzer.GetBoolTypeValue();
             var intTypeValue = analyzer.GetIntTypeValue();
             
-            if (!AnalyzeExp(unaryOpExp.Operand, null, context, out var ir0Operand, out var operandTypeValue))
+            if (!AnalyzeExp(unaryOpExp.Operand, null, context, out var ir0Operand, out var operandType))
                 return false; // AnalyzeExp에서 에러가 생겼으므로 내부에서 에러를 추가했을 것이다. 여기서는 더 추가 하지 않는다
 
             switch (unaryOpExp.Kind)
             {
-                case UnaryOpKind.LogicalNot:
+                case Syntax.UnaryOpKind.LogicalNot:
                     {
-                        if (!analyzer.IsAssignable(boolTypeValue, operandTypeValue, context))
+                        if (!analyzer.IsAssignable(boolTypeValue, operandType, context))
                         {
                             context.ErrorCollector.Add(unaryOpExp, $"{unaryOpExp.Operand}에 !를 적용할 수 없습니다. bool 타입이어야 합니다");                            
                             return false;
                         }
-                        
+
+                        outExp = new IR0.CallInternalUnaryOperatorExp(IR0.InternalUnaryOperator.LogicalNot_Bool_Bool, new IR0.ExpInfo(ir0Operand, operandType));
                         outTypeValue = boolTypeValue;
                         return true;
                     }
-                
-                case UnaryOpKind.PostfixInc: // e.m++ 등
-                case UnaryOpKind.PostfixDec:
-                case UnaryOpKind.PrefixInc:
-                case UnaryOpKind.PrefixDec:
-                    return AnalyzeUnaryAssignExp(unaryOpExp, context, out outTypeValue);
 
-                case UnaryOpKind.Minus:
+                case Syntax.UnaryOpKind.Minus:
                     {
-                        if (!analyzer.IsAssignable(intTypeValue, operandTypeValue, context))
+                        if (!analyzer.IsAssignable(intTypeValue, operandType, context))
                         {
                             context.ErrorCollector.Add(unaryOpExp, $"{unaryOpExp.Operand}에 -를 적용할 수 없습니다. int 타입이어야 합니다");
                             return false;
                         }
 
+                        outExp = new IR0.CallInternalUnaryOperatorExp(IR0.InternalUnaryOperator.UnaryMinus_Int_Int, new IR0.ExpInfo(ir0Operand, operandType));
                         outTypeValue = intTypeValue;
                         return true;
                     }
 
-                default:
-                    context.ErrorCollector.Add(unaryOpExp, $"{operandTypeValue}를 지원하는 연산자가 없습니다");
-                    return false;
-            }
-        }        
+                case Syntax.UnaryOpKind.PostfixInc: // e.m++ 등
+                    return AnalyzeIntUnaryAssignExp(unaryOpExp, IR0.InternalUnaryAssignOperator.PostfixInc_Int_Int, context, out outExp, out outTypeValue);
 
+                case Syntax.UnaryOpKind.PostfixDec:
+                    return AnalyzeIntUnaryAssignExp(unaryOpExp, IR0.InternalUnaryAssignOperator.PostfixDec_Int_Int, context, out outExp, out outTypeValue);
+
+                case Syntax.UnaryOpKind.PrefixInc:
+                    return AnalyzeIntUnaryAssignExp(unaryOpExp, IR0.InternalUnaryAssignOperator.PrefixInc_Int_Int, context, out outExp, out outTypeValue);
+
+                case Syntax.UnaryOpKind.PrefixDec:
+                    return AnalyzeIntUnaryAssignExp(unaryOpExp, IR0.InternalUnaryAssignOperator.PrefixDec_Int_Int, context, out outExp, out outTypeValue);
+
+                default:
+                    throw new InvalidOperationException();
+            }
+        }                
+
+        struct InternalBinaryOperatorInfo
+        {
+            public TypeValue OperandType0 { get; }
+            public TypeValue OperandType1 { get; }
+            public TypeValue ResultType { get; }
+            public IR0.InternalBinaryOperator IR0Operator { get; }
+
+            public InternalBinaryOperatorInfo(
+                TypeValue operandType0,
+                TypeValue operandType1,
+                TypeValue resultType,
+                IR0.InternalBinaryOperator ir0Operator)            
+            {
+                SyntaxOperator = syntaxOperator;
+                OperandType0 = operandType0;
+                OperandType1 = operandType1;
+                ResultType = resultType;
+                IR0Operator = ir0Operator;
+            }
+
+            public static Dictionary<Syntax.BinaryOpKind, InternalBinaryOperatorInfo[]> Infos { get; }
+            static InternalBinaryOperatorInfo()
+            {
+                var boolType = TypeValue.MakeNormal(ModuleItemId.Make("bool"));
+                var intType = TypeValue.MakeNormal(ModuleItemId.Make("bool"));
+                var stringType = TypeValue.MakeNormal(ModuleItemId.Make("string"));
+
+                Infos = new Dictionary<Syntax.BinaryOpKind, InternalBinaryOperatorInfo[]>()
+                {
+                    { Syntax.BinaryOpKind.Multiply, new[]{ new InternalBinaryOperatorInfo(intType, intType, intType, IR0.InternalBinaryOperator.Multiply_Int_Int_Int) } },
+                    { Syntax.BinaryOpKind.Divide, new[]{ new InternalBinaryOperatorInfo(intType, intType, intType, IR0.InternalBinaryOperator.Divide_Int_Int_Int) } },
+                    { Syntax.BinaryOpKind.Modulo, new[]{ new InternalBinaryOperatorInfo(intType, intType, intType, IR0.InternalBinaryOperator.Modulo_Int_Int_Int) } },
+                    { Syntax.BinaryOpKind.Add,  new[]{
+                        new InternalBinaryOperatorInfo(intType, intType, intType, IR0.InternalBinaryOperator.Add_Int_Int_Int),
+                        new InternalBinaryOperatorInfo(stringType, stringType, stringType, IR0.InternalBinaryOperator.Add_String_String_String) } },
+
+                    { Syntax.BinaryOpKind.Subtract, new[]{ new InternalBinaryOperatorInfo(intType, intType, intType, IR0.InternalBinaryOperator.Subtract_Int_Int_Int) } },
+
+                    { Syntax.BinaryOpKind.LessThan, new[]{
+                        new InternalBinaryOperatorInfo(intType, intType, boolType, IR0.InternalBinaryOperator.LessThan_Int_Int_Bool),
+                        new InternalBinaryOperatorInfo(stringType, stringType, boolType, IR0.InternalBinaryOperator.LessThan_String_String_Bool) } },
+
+                    { Syntax.BinaryOpKind.GreaterThan, new[]{
+                        new InternalBinaryOperatorInfo(intType, intType, boolType, IR0.InternalBinaryOperator.GreaterThan_Int_Int_Bool),
+                        new InternalBinaryOperatorInfo(stringType, stringType, boolType, IR0.InternalBinaryOperator.GreaterThan_String_String_Bool) } },
+
+                    { Syntax.BinaryOpKind.LessThanOrEqual, new[]{
+                        new InternalBinaryOperatorInfo(intType, intType, boolType, IR0.InternalBinaryOperator.LessThanOrEqual_Int_Int_Bool),
+                        new InternalBinaryOperatorInfo(stringType, stringType, boolType, IR0.InternalBinaryOperator.LessThanOrEqual_String_String_Bool) } },
+
+                    { Syntax.BinaryOpKind.GreaterThanOrEqual, new[]{
+                        new InternalBinaryOperatorInfo(intType, intType, boolType, IR0.InternalBinaryOperator.GreaterThanOrEqual_Int_Int_Bool),
+                        new InternalBinaryOperatorInfo(stringType, stringType, boolType, IR0.InternalBinaryOperator.GreaterThanOrEqual_String_String_Bool) } },
+
+                    { Syntax.BinaryOpKind.Equal, new[]{
+                        new InternalBinaryOperatorInfo(intType, intType, boolType, IR0.InternalBinaryOperator.Equal_Int_Int_Bool),
+                        new InternalBinaryOperatorInfo(boolType, boolType, boolType, IR0.InternalBinaryOperator.Equal_Bool_Bool_Bool),
+                        new InternalBinaryOperatorInfo(stringType, stringType, boolType, IR0.InternalBinaryOperator.Equal_String_String_Bool) } },
+                };
+
+            }
+        }
+        
         internal bool AnalyzeBinaryOpExp(
             Syntax.BinaryOpExp binaryOpExp, Context context, 
             [NotNullWhen(true)] out IR0.Exp? outExp,
             [NotNullWhen(true)] out TypeValue? outTypeValue)
-        {   
-            if (binaryOpExp.Kind == BinaryOpKind.Assign)
-                return AnalyzeBinaryAssignExp(binaryOpExp, context, out outTypeValue);
-
+        {
+            outExp = null;
             outTypeValue = null;
 
-            var boolTypeValue = analyzer.GetBoolTypeValue();
-            var intTypeValue = analyzer.GetIntTypeValue();
-            var stringTypeValue = analyzer.GetStringTypeValue();
+            var boolType = analyzer.GetBoolTypeValue();
 
-            if (!AnalyzeExp(binaryOpExp.Operand0, null, context, out var operandTypeValue0))
+            if (!AnalyzeExp(binaryOpExp.Operand0, null, context, out var operand0, out var operandType0))
                 return false;
 
-            if (!AnalyzeExp(binaryOpExp.Operand1, null, context, out var operandTypeValue1))
+            if (!AnalyzeExp(binaryOpExp.Operand1, null, context, out var operand1, out var operandType1))
                 return false;
 
-            if (binaryOpExp.Kind == BinaryOpKind.Equal || binaryOpExp.Kind == BinaryOpKind.NotEqual)
-            {   
-                if (!EqualityComparer<TypeValue>.Default.Equals(operandTypeValue0, operandTypeValue1))
+            // 1. Assign 먼저 처리
+            if (binaryOpExp.Kind == Syntax.BinaryOpKind.Assign)
+            {
+                if (!analyzer.IsAssignable(operandType0, operandType1, context))
                 {
-                    context.ErrorCollector.Add(binaryOpExp, $"{operandTypeValue0}와 {operandTypeValue1}을 비교할 수 없습니다");
+                    context.ErrorCollector.Add(binaryOpExp, "대입 가능하지 않습니다");
                     return false;
                 }
 
-                if (analyzer.IsAssignable(boolTypeValue, operandTypeValue0, context) &&
-                    analyzer.IsAssignable(boolTypeValue, operandTypeValue1, context))
-                {
-                    context.AddNodeInfo(binaryOpExp, new BinaryOpExpInfo(BinaryOpExpInfo.OpType.Bool));
-                }
-                else if (analyzer.IsAssignable(intTypeValue, operandTypeValue0, context) &&
-                    analyzer.IsAssignable(intTypeValue, operandTypeValue1, context))
-                {
-                    context.AddNodeInfo(binaryOpExp, new BinaryOpExpInfo(BinaryOpExpInfo.OpType.Integer));
-                }
-                else if (analyzer.IsAssignable(stringTypeValue, operandTypeValue0, context) &&
-                    analyzer.IsAssignable(stringTypeValue, operandTypeValue1, context))
-                {
-                    context.AddNodeInfo(binaryOpExp, new BinaryOpExpInfo(BinaryOpExpInfo.OpType.String));
-                }
-                else
-                {
-                    context.ErrorCollector.Add(binaryOpExp, $"bool, int, string만 비교를 지원합니다");
-                    return false;
-                }
-
-                outTypeValue = boolTypeValue;
+                outExp = new IR0.AssignExp(operand0, operand1, operandType1);
+                outTypeValue = operandType0;
                 return true;
             }
 
-            // TODO: 일단 하드코딩, Evaluator랑 지원하는 것들이 똑같아야 한다
-            if (analyzer.IsAssignable(boolTypeValue, operandTypeValue0, context))
+            var infos = InternalBinaryOperatorInfo.Infos;
+
+            // 2. NotEqual 처리
+            if (binaryOpExp.Kind == Syntax.BinaryOpKind.NotEqual)
             {
-                if (!analyzer.IsAssignable(boolTypeValue, operandTypeValue1, context))
+                if (infos.TryGetValue(Syntax.BinaryOpKind.Equal, out var equalInfos))
                 {
-                    context.ErrorCollector.Add(binaryOpExp, $"{operandTypeValue1}은 bool 형식이어야 합니다");
-                    return false;
-                }
+                    foreach (var info in equalInfos)
+                    {
+                        // NOTICE: 우선순위별로 정렬되어 있기 때문에 먼저 매칭되는 것을 선택한다
+                        if (analyzer.IsAssignable(info.OperandType0, operandType0, context) &&
+                            analyzer.IsAssignable(info.OperandType1, operandType1, context))
+                        {
+                            var equalExp = new IR0.CallInternalBinaryOperatorExp(info.IR0Operator, new IR0.ExpInfo(operand0, operandType0), new IR0.ExpInfo(operand1, operandType1));
+                            var notEqualOperand = new IR0.ExpInfo(equalExp, boolType);
 
-                switch (binaryOpExp.Kind)
-                {
-                    default:
-                        context.ErrorCollector.Add(binaryOpExp, $"bool 형식에 적용할 수 있는 연산자가 아닙니다");
-                        return false;
-                }
-            }
-            else if (analyzer.IsAssignable(intTypeValue, operandTypeValue0, context))
-            {
-                if (!analyzer.IsAssignable(intTypeValue, operandTypeValue1, context))
-                {
-                    context.ErrorCollector.Add(binaryOpExp, $"{operandTypeValue1}은 int 형식이어야 합니다");
-                    return false;
-                }
-
-                // 하드코딩
-                context.AddNodeInfo(binaryOpExp, new BinaryOpExpInfo(BinaryOpExpInfo.OpType.Integer));
-
-                switch (binaryOpExp.Kind)
-                {
-                    case BinaryOpKind.Multiply:
-                    case BinaryOpKind.Divide:
-                    case BinaryOpKind.Modulo:
-                    case BinaryOpKind.Add:
-                    case BinaryOpKind.Subtract:
-                        outTypeValue = intTypeValue;
-                        return true;
-
-                    case BinaryOpKind.LessThan:
-                    case BinaryOpKind.GreaterThan:
-                    case BinaryOpKind.LessThanOrEqual:
-                    case BinaryOpKind.GreaterThanOrEqual:
-                        outTypeValue = boolTypeValue;
-                        return true;
-
-                    default:
-                        context.ErrorCollector.Add(binaryOpExp, $"int 형식에 적용할 수 있는 연산자가 아닙니다");
-                        return false;
-                }
-            }
-            else if (analyzer.IsAssignable(stringTypeValue, operandTypeValue0, context))
-            {
-                if (!analyzer.IsAssignable(stringTypeValue, operandTypeValue1, context))
-                {
-                    context.ErrorCollector.Add(binaryOpExp, $"{operandTypeValue1}은 string 형식이어야 합니다");
-                    return false;
-                }
-
-                // 하드코딩
-                context.AddNodeInfo(binaryOpExp, new BinaryOpExpInfo(BinaryOpExpInfo.OpType.String));
-
-                switch (binaryOpExp.Kind)
-                {
-                    case BinaryOpKind.Add:
-                        outTypeValue = stringTypeValue;
-                        return true;
-
-                    case BinaryOpKind.LessThan:
-                    case BinaryOpKind.GreaterThan:
-                    case BinaryOpKind.LessThanOrEqual:
-                    case BinaryOpKind.GreaterThanOrEqual:
-                        outTypeValue = boolTypeValue;
-                        return true;
-
-                    default:
-                        context.ErrorCollector.Add(binaryOpExp, $"string 형식에 적용할 수 있는 연산자가 아닙니다");
-                        return false;
+                            outExp = new IR0.CallInternalUnaryOperatorExp(IR0.InternalUnaryOperator.LogicalNot_Bool_Bool, notEqualOperand);
+                            outTypeValue = info.ResultType;
+                            return true;
+                        }
+                    }
                 }
             }
 
-            context.ErrorCollector.Add(binaryOpExp, $"{operandTypeValue0}와 {operandTypeValue1}를 지원하는 연산자가 없습니다");
+            // 3. InternalOperator에서 검색            
+            if (infos.TryGetValue(binaryOpExp.Kind, out var matchedInfos))
+            {
+                foreach (var info in matchedInfos)
+                {
+                    // NOTICE: 우선순위별로 정렬되어 있기 때문에 먼저 매칭되는 것을 선택한다
+                    if (analyzer.IsAssignable(info.OperandType0, operandType0, context) && 
+                        analyzer.IsAssignable(info.OperandType1, operandType1, context))
+                    {
+                        outExp = new IR0.CallInternalBinaryOperatorExp(info.IR0Operator, new IR0.ExpInfo(operand0, operandType0), new IR0.ExpInfo(operand1, operandType1));
+                        outTypeValue = info.ResultType;
+                        return true;
+                    }
+                }
+            }
+
+            // Operator를 찾을 수 없습니다
+            context.ErrorCollector.Add(binaryOpExp, $"{operandType0}와 {operandType1}를 지원하는 연산자가 없습니다");
             return false;
         }
 
@@ -364,7 +424,7 @@ namespace Gum.StaticAnalysis
                 if (!analyzer.CheckParamTypes(callableExp, funcTypeValue.Params, argInfos.Select(info => info.TypeValue).ToList(), context))
                     return false;
 
-                outExp = new IR0.CallFuncExp(funcValue, null, argInfos.Select(info => new IR0.ExpAndType(info.Exp, info.TypeValue)));
+                outExp = new IR0.CallFuncExp(funcValue, null, argInfos.Select(info => new IR0.ExpInfo(info.Exp, info.TypeValue)));
                 outTypeValue = funcTypeValue;
                 return true;
             }
@@ -395,7 +455,7 @@ namespace Gum.StaticAnalysis
                 return false;
 
             // TODO: 사실 Type보다 Allocation정보가 들어가야 한다
-            outExp = new IR0.CallValueExp(ir0Exp, funcTypeValue, argInfos.Select(info => new IR0.ExpAndType(info.Exp, info.TypeValue)));
+            outExp = new IR0.CallValueExp(ir0Exp, funcTypeValue, argInfos.Select(info => new IR0.ExpInfo(info.Exp, info.TypeValue)));
             outTypeValue = funcTypeValue;
             return true;
         }
@@ -450,7 +510,7 @@ namespace Gum.StaticAnalysis
                             return false;
                         }
 
-                        var members = new List<IR0.EnumExp.Elem>();
+                        var members = new List<IR0.NewEnumExp.Elem>();
                         foreach (var (fieldInfo, argInfo) in Zip(enumElem.ElemInfo.FieldInfos, argInfos))
                         {
                             var appliedTypeValue = context.TypeValueService.Apply(enumElem.EnumTypeValue, fieldInfo.TypeValue);
@@ -460,10 +520,10 @@ namespace Gum.StaticAnalysis
                                 return false;
                             }
 
-                            members.Add(new IR0.EnumExp.Elem(fieldInfo.Name, argInfo.Exp, argInfo.TypeValue));
+                            members.Add(new IR0.NewEnumExp.Elem(fieldInfo.Name, argInfo.Exp, argInfo.TypeValue));
                         }
 
-                        outExp = new IR0.EnumExp(enumElem.ElemInfo.Name, members);
+                        outExp = new IR0.NewEnumExp(enumElem.ElemInfo.Name, members);
                         outTypeValue = enumElem.EnumTypeValue;
 
                         return true;
@@ -522,7 +582,7 @@ namespace Gum.StaticAnalysis
             if (!analyzer.CheckParamTypes(exp, funcTypeValue.Params, new[] { indexType }, context))
                 return false;
 
-            outExp = new IR0.IndexerExp(funcValue, obj, objType, index, indexType);
+            outExp = new IR0.ListIndexerExp(obj, objType, index, indexType);
             outTypeValue = funcTypeValue.Return;
             return true;
         }

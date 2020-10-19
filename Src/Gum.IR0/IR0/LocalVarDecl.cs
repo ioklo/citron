@@ -9,13 +9,13 @@ namespace Gum.IR0
         public struct Element
         {
             public string Name { get; }
-            public TypeValue Type { get; }
+            public TypeId TypeId { get; }
             public IR0.Exp? InitExp { get; }
 
-            public Element(string name, TypeValue type, IR0.Exp? initExp)
+            public Element(string name, TypeId typeId, IR0.Exp? initExp)
             {
                 Name = name;
-                Type = type;
+                TypeId = typeId;
                 InitExp = initExp;
             }
         }

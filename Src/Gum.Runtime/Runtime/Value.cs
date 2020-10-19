@@ -26,16 +26,16 @@ namespace Gum.Runtime
         public abstract Value MakeCopy();
     }
 
-    public class FuncInstValue : Value
+    public class LambdaValue : Value
     {
         public FuncInst? FuncInst { get; private set; }
 
-        public FuncInstValue()
+        public LambdaValue()
         {
             FuncInst = null;
         }
 
-        public FuncInstValue(FuncInst? funcInst)
+        public LambdaValue(FuncInst? funcInst)
         {
             FuncInst = funcInst;
         }
@@ -47,13 +47,13 @@ namespace Gum.Runtime
         
         public override void SetValue(Value fromValue)
         {
-            FuncInst = ((FuncInstValue)fromValue).FuncInst;
+            FuncInst = ((LambdaValue)fromValue).FuncInst;
         }
 
         public override Value MakeCopy()
         {
             // ReferenceCopy
-            return new FuncInstValue(FuncInst);
+            return new LambdaValue(FuncInst);
         }
     }
     

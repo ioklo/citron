@@ -139,79 +139,79 @@ namespace Gum
             => new CallSetter(objTypeValue, obj, setter, arguments, valueTypeValue);
     }
 
-    public class UnaryOpExpAssignInfo : SyntaxNodeInfo
-    {
-        public class Direct : UnaryOpExpAssignInfo
-        {
-            public StorageInfo StorageInfo { get; }
-            public FuncValue OperatorValue { get; }
-            public bool bReturnPrevValue { get; }
-            public TypeValue ValueTypeValue { get; }
+    //public class UnaryOpExpAssignInfo : SyntaxNodeInfo
+    //{
+    //    public class Direct : UnaryOpExpAssignInfo
+    //    {
+    //        public StorageInfo StorageInfo { get; }
+    //        public FuncValue OperatorValue { get; }
+    //        public bool bReturnPrevValue { get; }
+    //        public TypeValue ValueTypeValue { get; }
 
-            public Direct(StorageInfo storageInfo, FuncValue operatorValue, bool bReturnPrevValue, TypeValue valueTypeValue) 
-            { 
-                StorageInfo = storageInfo;
-                OperatorValue = operatorValue;
-                this.bReturnPrevValue = bReturnPrevValue;
-                ValueTypeValue = valueTypeValue;
-            }
-        }
+    //        public Direct(StorageInfo storageInfo, FuncValue operatorValue, bool bReturnPrevValue, TypeValue valueTypeValue) 
+    //        { 
+    //            StorageInfo = storageInfo;
+    //            OperatorValue = operatorValue;
+    //            this.bReturnPrevValue = bReturnPrevValue;
+    //            ValueTypeValue = valueTypeValue;
+    //        }
+    //    }
 
-        public class CallFunc : UnaryOpExpAssignInfo
-        {
-            public Exp? ObjectExp { get; }
-            public TypeValue? ObjectTypeValue { get; }
+    //    public class CallFunc : UnaryOpExpAssignInfo
+    //    {
+    //        public Exp? ObjectExp { get; }
+    //        public TypeValue? ObjectTypeValue { get; }
 
-            public TypeValue ValueTypeValue0 { get; }
-            public TypeValue ValueTypeValue1 { get; }
-            public bool bReturnPrevValue { get; }
+    //        public TypeValue ValueTypeValue0 { get; }
+    //        public TypeValue ValueTypeValue1 { get; }
+    //        public bool bReturnPrevValue { get; }
 
-            // Getter/setter Arguments without setter value
-            public ImmutableArray<(Exp Exp, TypeValue TypeValue)> Arguments { get; }
+    //        // Getter/setter Arguments without setter value
+    //        public ImmutableArray<(Exp Exp, TypeValue TypeValue)> Arguments { get; }
 
-            public FuncValue Getter { get; }            
-            public FuncValue Setter { get; }
-            public FuncValue Operator { get; }
+    //        public FuncValue Getter { get; }            
+    //        public FuncValue Setter { get; }
+    //        public FuncValue Operator { get; }
 
-            public CallFunc(
-                Exp? objectExp,
-                TypeValue? objectTypeValue,
-                TypeValue valueTypeValue0,
-                TypeValue valueTypeValue1,
-                bool bReturnPrevValue,
-                IEnumerable<(Exp Exp, TypeValue TypeValue)> arguments,
-                FuncValue getter,
-                FuncValue setter,
-                FuncValue op)
-            {
-                ObjectExp = objectExp;
-                ObjectTypeValue = objectTypeValue;
-                ValueTypeValue0 = valueTypeValue0;
-                ValueTypeValue1 = valueTypeValue1;
-                this.bReturnPrevValue= bReturnPrevValue;
+    //        public CallFunc(
+    //            Exp? objectExp,
+    //            TypeValue? objectTypeValue,
+    //            TypeValue valueTypeValue0,
+    //            TypeValue valueTypeValue1,
+    //            bool bReturnPrevValue,
+    //            IEnumerable<(Exp Exp, TypeValue TypeValue)> arguments,
+    //            FuncValue getter,
+    //            FuncValue setter,
+    //            FuncValue op)
+    //        {
+    //            ObjectExp = objectExp;
+    //            ObjectTypeValue = objectTypeValue;
+    //            ValueTypeValue0 = valueTypeValue0;
+    //            ValueTypeValue1 = valueTypeValue1;
+    //            this.bReturnPrevValue= bReturnPrevValue;
 
-                Arguments = arguments.ToImmutableArray();
-                Getter = getter;
-                Setter = setter;
-                Operator = op;
-            }
-        }
+    //            Arguments = arguments.ToImmutableArray();
+    //            Getter = getter;
+    //            Setter = setter;
+    //            Operator = op;
+    //        }
+    //    }
 
-        public static Direct MakeDirect(StorageInfo storageInfo, FuncValue operatorValue, bool bReturnPrevValue, TypeValue valueTypeValue)
-            => new Direct(storageInfo, operatorValue, bReturnPrevValue, valueTypeValue);
+    //    public static Direct MakeDirect(StorageInfo storageInfo, FuncValue operatorValue, bool bReturnPrevValue, TypeValue valueTypeValue)
+    //        => new Direct(storageInfo, operatorValue, bReturnPrevValue, valueTypeValue);
 
-        public static CallFunc MakeCallFunc(
-            Exp? objectExp,
-            TypeValue? objectTypeValue,
-            TypeValue valueTypeValue0,
-            TypeValue valueTypeValue1,
-            bool bReturnPrevValue,
-            IEnumerable<(Exp Exp, TypeValue TypeValue)> arguments,
-            FuncValue getter,
-            FuncValue setter,
-            FuncValue op)
-            => new CallFunc(objectExp, objectTypeValue, valueTypeValue0, valueTypeValue1, bReturnPrevValue, arguments, getter, setter, op);
-    }
+    //    public static CallFunc MakeCallFunc(
+    //        Exp? objectExp,
+    //        TypeValue? objectTypeValue,
+    //        TypeValue valueTypeValue0,
+    //        TypeValue valueTypeValue1,
+    //        bool bReturnPrevValue,
+    //        IEnumerable<(Exp Exp, TypeValue TypeValue)> arguments,
+    //        FuncValue getter,
+    //        FuncValue setter,
+    //        FuncValue op)
+    //        => new CallFunc(objectExp, objectTypeValue, valueTypeValue0, valueTypeValue1, bReturnPrevValue, arguments, getter, setter, op);
+    //}
 
     //public class MemberCallExpInfo : SyntaxNodeInfo
     //{

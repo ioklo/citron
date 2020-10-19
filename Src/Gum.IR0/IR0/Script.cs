@@ -1,18 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Linq;
 using System.Text;
+
+using Type = Gum.IR0.Type;
 
 namespace Gum.IR0
 {
     public partial class Script
     {
-        public int PrivateGlobalVarCount { get; }
-        public int LocalVarCount { get; }
+        public ImmutableArray<Type> Types { get; }
+        public ImmutableArray<Func> Funcs { get; }
+        public ImmutableArray<SeqFunc> SeqFuncs { get; }
 
-        public Script(int privateGlobalVarCount, int localVarCount)
-        {
-            PrivateGlobalVarCount = privateGlobalVarCount;
-            LocalVarCount = localVarCount;
+        public ImmutableArray<Stmt> TopLevelStmts { get; }
+
+        public Script(IEnumerable<Type> types, IEnumerable<Func> funcs, IEnumerable<SeqFunc> seqFuncs, IEnumerable<Stmt> topLevelStmts)
+        {            
+            Types = types.ToImmutableArray();
+
+            Funcs = funcs.ToImmutableArray();
+            SeqFuncs = seqFuncs.ToImmutableArray();
+
+            TopLevelStmts = topLevelStmts.ToImmutableArray();
         }
     }
 }

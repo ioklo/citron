@@ -7,24 +7,38 @@ namespace Gum.IR0
 {
     public class CaptureInfo
     {
-        public struct Element
+        public abstract class Element
         {
-            public CaptureKind CaptureKind { get; }
-            public int LocalVarIndex { get; }
+        }
 
-            public Element(CaptureKind captureKind, int localVarIndex)
+        public class CopyLocalElement : Element
+        {
+            public TypeId TypeId { get; }
+            public string LocalVarName { get; }
+
+            public CopyLocalElement(TypeId typeId, string localVarName)
             {
-                CaptureKind = captureKind;
-                LocalVarIndex = localVarIndex;
+                TypeId = typeId;
+                LocalVarName = localVarName;
             }
         }
 
-        public bool bCaptureThis { get; }
+        public class RefLocalElement : Element
+        {
+            public string LocalVarName { get; }
+
+            public RefLocalElement(string localVarName)
+            {
+                LocalVarName = localVarName;
+            }
+        }
+
+        public bool bShouldCaptureThis { get; }
         public ImmutableArray<Element> Captures { get; }
 
         public CaptureInfo(bool bCaptureThis, IEnumerable<Element> captures)
         {
-            this.bCaptureThis = bCaptureThis;
+            this.bShouldCaptureThis = bCaptureThis;
             this.Captures = captures.ToImmutableArray();
         }
     }

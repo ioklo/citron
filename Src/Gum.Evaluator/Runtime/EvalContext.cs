@@ -1,6 +1,5 @@
 ﻿using Gum.CompileTime;
 using Gum.Runtime;
-using Gum.StaticAnalysis;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -13,32 +12,35 @@ namespace Gum.Runtime
 {   
     public class EvalContext
     {
-        public IRuntimeModule RuntimeModule { get; }
-        public DomainService DomainService { get; }
-        public TypeValueService TypeValueService { get; }
-        
-        private ImmutableDictionary<string, Value> privateGlobalVars;
-        private ImmutableDictionary<string, Value> localVars;
+        class SharedData
+        {
+            public ImmutableArray<Func> Funcs { get; }
+            public ImmutableArray<SeqFunc> SeqFuncs { get; }
+            public Dictionary<string, Value> PrivateGlobalVars { get; }
 
+            public SharedData(IEnumerable<Func> funcs, IEnumerable<SeqFunc> seqFuncs)
+            {
+                Funcs = funcs.ToImmutableArray();
+                SeqFuncs = seqFuncs.ToImmutableArray();
+                PrivateGlobalVars = new Dictionary<string, Value>();
+            }
+        }
+
+        private SharedData sharedData;
+
+        private ImmutableDictionary<string, Value> localVars;
         private EvalFlowControl flowControl;
         private ImmutableArray<Task> tasks;
         private Value? thisValue;
         private Value retValue;
 
-        public EvalContext(
-            IRuntimeModule runtimeModule, 
-            DomainService domainService, 
-            TypeValueService typeValueService,
-            int privateGlobalVarCount)
+        public EvalContext(IEnumerable<Func> funcs, IEnumerable<SeqFunc> seqFuncs)
         {
-            RuntimeModule = runtimeModule;
-            DomainService = domainService;
-            TypeValueService = typeValueService;
-
-            privateGlobalVars = ImmutableDictionary<string, Value>.Empty;
+            sharedData = new SharedData(funcs, seqFuncs);
+            
             localVars = ImmutableDictionary<string, Value>.Empty;
             flowControl = EvalFlowControl.None;
-            tasks = ImmutableArray<Task>.Empty; ;
+            tasks = ImmutableArray<Task>.Empty;
             thisValue = null;
             retValue = VoidValue.Instance;
         }
@@ -51,16 +53,18 @@ namespace Gum.Runtime
             Value? thisValue,
             Value retValue)
         {
-            RuntimeModule = other.RuntimeModule;
-            DomainService = other.DomainService;
-            TypeValueService = other.TypeValueService;
-            privateGlobalVars = other.privateGlobalVars;
+            this.sharedData = other.sharedData;
 
             this.localVars = localVars;
             this.flowControl = flowControl;
             this.tasks = tasks;
             this.thisValue = thisValue;
             this.retValue = retValue;
+        }
+
+        public TypeInst GetTypeInst(TypeId typeId)
+        {
+            throw new NotImplementedException();
         }
 
         public EvalContext SetTasks(ImmutableArray<Task> newTasks)
@@ -100,19 +104,19 @@ namespace Gum.Runtime
             }
         }
 
-        public Value GetStaticValue(VarValue varValue)
+        public Value GetStaticValue(TypeId type)
         {
             throw new NotImplementedException();
         }
 
         public Value GetPrivateGlobalValue(string name)
         {
-            return privateGlobalVars[name];
+            return sharedData.PrivateGlobalVars[name];
         }
 
         public void AddPrivateGlobalVar(string name, Value value)
         {
-            privateGlobalVars = privateGlobalVars.Add(name, value);
+            sharedData.PrivateGlobalVars.Add(name, value);
         }
 
         public Value GetLocalValue(string name)
@@ -121,10 +125,8 @@ namespace Gum.Runtime
         }
 
         public void AddLocalVar(string name, Value value)
-        {
-            // for문 내부에서 decl할 경우 재사용하기 때문에 assert를 넣으면 안된다
-            // Debug.Assert(context.LocalVars[storage.LocalIndex] == null);
-            localVars = localVars.Add(name, value);
+        {   
+            localVars = localVars.SetItem(name, value);
         }
 
         public bool IsFlowControl(EvalFlowControl testValue)
@@ -162,5 +164,33 @@ namespace Gum.Runtime
             
             tasks = prevTasks;
         }
-    }
+
+        public async IAsyncEnumerable<Value> ExecInNewScopeAsync(Func<IAsyncEnumerable<Value>> action)
+        {
+            var prevLocalVars = localVars;
+
+            try
+            {
+                var enumerable = action.Invoke();
+                await foreach(var yieldValue in enumerable)
+                {
+                    yield return yieldValue;
+                }
+            }
+            finally 
+            {
+                localVars = prevLocalVars;
+            }
+        }
+
+        public Func GetFunc(FuncId funcId)
+        {
+            return sharedData.Funcs[funcId.Value];
+        }
+
+        public SeqFunc GetSeqFunc(SeqFuncId seqFuncId)
+        {
+            return sharedData.SeqFuncs[seqFuncId.Value];
+        }
+    }    
 }

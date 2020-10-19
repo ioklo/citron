@@ -4,7 +4,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using static Gum.StaticAnalysis.Analyzer.Misc;
 using static Gum.StaticAnalysis.Analyzer;
-using Gum.Syntax;
 using Gum.CompileTime;
 
 namespace Gum.StaticAnalysis
@@ -13,6 +12,17 @@ namespace Gum.StaticAnalysis
     {   
         abstract class AssignExpAnalyzer
         {
+            protected struct Result
+            {
+                public IR0.Exp Exp { get; }
+                public TypeValue Type { get; }
+                public Result(IR0.Exp exp, TypeValue type)
+                {
+                    Exp = exp;
+                    Type = type;
+                }
+            }
+
             Analyzer analyzer;
             Context context;
 
@@ -22,16 +32,16 @@ namespace Gum.StaticAnalysis
                 this.context = context;
             }
 
-            protected abstract Exp GetTargetExp();
-            protected abstract TypeValue? AnalyzeDirect(TypeValue typeValue, StorageInfo storageInfo);
-            protected abstract TypeValue? AnalyzeCall(
+            protected abstract Syntax.Exp GetTargetExp();
+            protected abstract Result? AnalyzeDirect(TypeValue typeValue, StorageInfo storageInfo);
+            protected abstract Result? AnalyzeCall(
                 TypeValue objTypeValue,
-                Exp objExp,
+                Syntax.Exp objExp,
                 FuncValue? getter,
                 FuncValue? setter,
-                IEnumerable<(Exp Exp, TypeValue TypeValue)> args);
+                IEnumerable<(Syntax.Exp Exp, TypeValue TypeValue)> args);
 
-            TypeValue? AnalyzeAssignToIdExp(IdentifierExp idExp)
+            Result? AnalyzeAssignToIdExp(Syntax.IdentifierExp idExp)
             {
                 var typeArgs = GetTypeValues(idExp.TypeArgs, context);
 
@@ -45,10 +55,10 @@ namespace Gum.StaticAnalysis
                 return null;
             }
 
-            TypeValue? AnalyzeAssignToMemberExp(MemberExp memberExp)
+            Result? AnalyzeAssignToMemberExp(Syntax.MemberExp memberExp)
             {
                 // i.m = e1
-                if (memberExp.Object is IdentifierExp objIdExp)
+                if (memberExp.Object is Syntax.IdentifierExp objIdExp)
                 {
                     var typeArgs = GetTypeValues(objIdExp.TypeArgs, context);
                     if (!context.GetIdentifierInfo(objIdExp.Value, typeArgs, null, out var idInfo))
@@ -65,7 +75,7 @@ namespace Gum.StaticAnalysis
                 return AnalyzeAssignToInstanceMember(memberExp, objTypeValue);
             }
 
-            TypeValue? AnalyzeAssignToStaticMember(MemberExp memberExp, TypeValue.Normal objNormalTypeValue)
+            Result? AnalyzeAssignToStaticMember(Syntax.MemberExp memberExp, TypeValue.Normal objNormalTypeValue)
             {
                 if (!analyzer.CheckStaticMember(memberExp, objNormalTypeValue, context, out var varValue))
                     return null;
@@ -75,7 +85,7 @@ namespace Gum.StaticAnalysis
                 return AnalyzeDirect(typeValue, StorageInfo.MakeStaticMember(null, varValue));
             }
 
-            TypeValue? AnalyzeAssignToInstanceMember(MemberExp memberExp, TypeValue objTypeValue)
+            Result? AnalyzeAssignToInstanceMember(Syntax.MemberExp memberExp, TypeValue objTypeValue)
             {
                 if (!analyzer.CheckInstanceMember(memberExp, objTypeValue, context, out var varValue))
                     return null;
@@ -92,7 +102,7 @@ namespace Gum.StaticAnalysis
                 return AnalyzeDirect(typeValue, storageInfo);
             }
 
-            TypeValue? AnalyzeAssignToIndexerExp(IndexerExp indexerExp0)
+            Result? AnalyzeAssignToIndexerExp(Syntax.IndexerExp indexerExp0)
             {
                 if (!analyzer.AnalyzeExp(indexerExp0.Object, null, context, out var objTypeValue))
                     return null;
@@ -115,32 +125,42 @@ namespace Gum.StaticAnalysis
                 return AnalyzeCall(objTypeValue, indexerExp0.Object, getter, setter, new[] { (indexerExp0.Index, indexTypeValue) });
             }
 
-            public bool Analyze([NotNullWhen(true)] out TypeValue? outTypeValue)
+            public bool Analyze([NotNullWhen(true)] out IR0.Exp? outExp, [NotNullWhen(true)] out TypeValue? outTypeValue)
             {
                 var locExp = GetTargetExp();
 
+                Result? result;
                 // x = e1, x++
-                if (locExp is IdentifierExp idExp)
+                if (locExp is Syntax.IdentifierExp idExp)
                 {
-                    outTypeValue = AnalyzeAssignToIdExp(idExp);
+                    result = AnalyzeAssignToIdExp(idExp);
                 }
                 // eo.m = e1, eo.m++
-                else if (locExp is MemberExp memberExp)
+                else if (locExp is Syntax.MemberExp memberExp)
                 {
-                    outTypeValue = AnalyzeAssignToMemberExp(memberExp);
+                    result = AnalyzeAssignToMemberExp(memberExp);
                 }
                 // eo[ei] = e1
-                else if (locExp is IndexerExp indexerExp)
+                else if (locExp is Syntax.IndexerExp indexerExp)
                 {
-                    outTypeValue = AnalyzeAssignToIndexerExp(indexerExp);
+                    result = AnalyzeAssignToIndexerExp(indexerExp);
                 }
                 else
                 {
                     context.ErrorCollector.Add(locExp, "식별자, 멤버 변수, 멤버 프로퍼티, 인덱서 에만 대입할 수 있습니다");
-                    outTypeValue = null;
+                    result = null;
                 }
 
-                return outTypeValue != null;
+                if (result == null)
+                {
+                    outExp = null;
+                    outTypeValue = null;
+                    return false;
+                }
+
+                outExp = result.Value.Exp;
+                outTypeValue = result.Value.Type;
+                return true;
             }
         }
     }

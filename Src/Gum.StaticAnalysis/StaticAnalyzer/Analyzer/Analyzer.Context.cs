@@ -168,7 +168,7 @@ namespace Gum.StaticAnalysis
                 if (typeArgs.Count == 0)
                     if (curFunc.GetLocalVarInfo(idName, out var localVarInfo))
                     {
-                        var storageInfo = StorageInfo.MakeLocal(localVarInfo.Index);
+                        var storageInfo = StorageInfo.MakeLocal(localVarInfo.Name);
                         var typeValue = localVarInfo.TypeValue;
 
                         outIdInfo = MakeVarIdentifierInfo(storageInfo, typeValue);

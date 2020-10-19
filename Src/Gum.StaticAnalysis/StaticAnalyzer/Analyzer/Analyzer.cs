@@ -214,7 +214,7 @@ namespace Gum.StaticAnalysis
             return stmtAnalyzer.AnalyzeStmt(stmt, context, out outStmt);
         }
         
-        public bool AnalyzeFuncDecl(Syntax.FuncDecl funcDecl, Context context, out IR0.FuncDecl outFuncDecl)
+        public bool AnalyzeFuncDecl(Syntax.FuncDecl funcDecl, Context context)
         {
             var funcInfo = context.GetFuncInfoByDecl(funcDecl);
 
@@ -243,12 +243,11 @@ namespace Gum.StaticAnalysis
                     funcInfo.bThisCall, context.GetLocalVarCount(), funcDecl.Body));
             });
 
-            outFuncDecl = new IR0.FuncDecl()
-
+            context.AddFunc(new IR0.Func());
             return bResult;
         }
 
-        public bool AnalyzeEnumDecl(EnumDecl enumDecl, Context context)
+        public bool AnalyzeEnumDecl(Enum enumDecl, Context context)
         {
             var enumInfo = context.GetEnumInfoByDecl(enumDecl);
             var defaultElemInfo = enumInfo.GetDefaultElemInfo();
@@ -375,11 +374,11 @@ namespace Gum.StaticAnalysis
 
         public TypeValue GetStringTypeValue()
         {
-            return TypeValue.MakeNormal(ModuleItemId.Make("string")); ;
+            return TypeValue.MakeNormal(ModuleItemId.Make("string"));
         }
 
         public bool CheckInstanceMember(
-            MemberExp memberExp,
+            Syntax.MemberExp memberExp,
             TypeValue objTypeValue,
             Context context,
             [NotNullWhen(true)] out VarValue? outVarValue)

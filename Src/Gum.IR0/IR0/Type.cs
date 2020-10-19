@@ -4,9 +4,7 @@ using System.Text;
 
 namespace Gum.IR0
 {
-    public enum CaptureKind
+    public class Type
     {
-        Copy,
-        Ref
     }
 }

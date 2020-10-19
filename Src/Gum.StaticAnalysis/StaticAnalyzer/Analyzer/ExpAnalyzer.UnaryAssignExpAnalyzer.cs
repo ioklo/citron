@@ -1,5 +1,4 @@
 ﻿using Gum.CompileTime;
-using Gum.Syntax;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -17,9 +16,9 @@ namespace Gum.StaticAnalysis
         {
             Analyzer analyzer;
             Context context;
-            UnaryOpExp exp;
+            Syntax.UnaryOpExp exp;
 
-            public UnaryAssignExpAnalyzer(Analyzer analyzer, Context context, UnaryOpExp exp)
+            public UnaryAssignExpAnalyzer(Analyzer analyzer, Context context, Syntax.UnaryOpExp exp)
                 : base(analyzer, context)
             {
                 this.analyzer = analyzer;
@@ -27,39 +26,28 @@ namespace Gum.StaticAnalysis
                 this.exp = exp;
             }
 
-            protected override TypeValue? AnalyzeDirect(TypeValue typeValue, StorageInfo storageInfo)
+            protected override Result? AnalyzeDirect(TypeValue typeValue, StorageInfo storageInfo)
             {
-                var operatorName = GetOperatorName();
-
-                if (!context.TypeValueService.GetMemberFuncValue(typeValue, operatorName, Array.Empty<TypeValue>(), out var operatorValue))
+                // InternalOperator에서 처리할 수 있는지
+                if (analyzer.IsAssignable(typeValue, intType, context))
                 {
-                    context.ErrorCollector.Add(exp, "해당 타입에 operator++이 없습니다");
-                    return null;
+                    var internalOp = GetInternalOp();
+
+                    return new Result(new IR0.CallInternalUnaryAssignOperator(internalOp), typeValue);
                 }
 
-                if (!IsFuncStatic(operatorValue.FuncId, context))
-                {
-                    context.ErrorCollector.Add(exp, "operator++은 static이어야 합니다");
-                    return null;
-                }
-
-                var bReturnPrevValue = ShouldReturnPrevValue();
-                context.AddNodeInfo(exp, UnaryOpExpAssignInfo.MakeDirect(storageInfo, operatorValue, bReturnPrevValue, typeValue));
-
-                return typeValue;
+                context.ErrorCollector.Add(exp, "int type만 operator++을 사용할 수 있습니다");
+                return null;
             }
 
-            private bool ShouldReturnPrevValue()
+            private IR0.InternalUnaryAssignOperator GetInternalOp()
             {
                 switch (exp.Kind)
                 {
-                    case UnaryOpKind.PostfixDec:
-                    case UnaryOpKind.PostfixInc:
-                        return true;
-
-                    case UnaryOpKind.PrefixDec:
-                    case UnaryOpKind.PrefixInc:
-                        return false;
+                    case Syntax.UnaryOpKind.PostfixDec: return IR0.InternalUnaryAssignOperator.PostfixDec_Int_Int;
+                    case Syntax.UnaryOpKind.PostfixInc: return IR0.InternalUnaryAssignOperator.PostfixInc_Int_Int;
+                    case Syntax.UnaryOpKind.PrefixDec: return IR0.InternalUnaryAssignOperator.PrefixDec_Int_Int;
+                    case Syntax.UnaryOpKind.PrefixInc: return IR0.InternalUnaryAssignOperator.PrefixInc_Int_Int;
                 }
 
                 throw new InvalidOperationException();
@@ -69,16 +57,16 @@ namespace Gum.StaticAnalysis
             {
                 switch (exp.Kind)
                 {
-                    case UnaryOpKind.PostfixDec: return SpecialNames.OpDec;
-                    case UnaryOpKind.PostfixInc: return SpecialNames.OpInc;
-                    case UnaryOpKind.PrefixDec: return SpecialNames.OpDec;
-                    case UnaryOpKind.PrefixInc: return SpecialNames.OpInc;
+                    case Syntax.UnaryOpKind.PostfixDec: return SpecialNames.OpDec;
+                    case Syntax.UnaryOpKind.PostfixInc: return SpecialNames.OpInc;
+                    case Syntax.UnaryOpKind.PrefixDec: return SpecialNames.OpDec;
+                    case Syntax.UnaryOpKind.PrefixInc: return SpecialNames.OpInc;
                 }
 
                 throw new InvalidOperationException();
             }
 
-            protected override TypeValue? AnalyzeCall(TypeValue objTypeValue, Exp objExp, FuncValue? getter, FuncValue? setter, IEnumerable<(Exp Exp, TypeValue TypeValue)> args)
+            protected override Result? AnalyzeCall(TypeValue objTypeValue, Syntax.Exp objExp, FuncValue? getter, FuncValue? setter, IEnumerable<(Exp Exp, TypeValue TypeValue)> args)
             {
                 // e.x++;
                 // e.x가 프로퍼티(GetX, SetX) 라면,
@@ -87,6 +75,8 @@ namespace Gum.StaticAnalysis
                 // let v1 = v0.operator++(); 
                 // Eval.Call(o, SetX, [a...]@[v1]) 
                 // return v0
+
+                // e.x
 
                 if (getter == null || setter == null)
                 {
@@ -144,14 +134,15 @@ namespace Gum.StaticAnalysis
             }
         }
 
-        internal bool AnalyzeUnaryAssignExp(
-            UnaryOpExp unaryOpExp,
-            Context context,
-            [NotNullWhen(true)] out TypeValue? outTypeValue)
-        {
-            var assignAnalyzer = new UnaryAssignExpAnalyzer(analyzer, context, unaryOpExp);
-            return assignAnalyzer.Analyze(out outTypeValue);
-        }
+        //internal bool AnalyzeUnaryAssignExp(
+        //    UnaryOpExp unaryOpExp,
+        //    Context context,
+        //    [NotNullWhen(true)] out IR0.Exp? outExp,
+        //    [NotNullWhen(true)] out TypeValue? outTypeValue)
+        //{
+        //    var assignAnalyzer = new UnaryAssignExpAnalyzer(analyzer, context, unaryOpExp);
+        //    return assignAnalyzer.Analyze(out outExp, out outTypeValue);
+        //}
 
     }
 }

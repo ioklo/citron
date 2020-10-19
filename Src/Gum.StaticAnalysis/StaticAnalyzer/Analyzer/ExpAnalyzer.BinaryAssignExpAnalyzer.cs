@@ -104,14 +104,15 @@ namespace Gum.StaticAnalysis
         // 2. Normal중 MemberExpInfo라면 QsMemberExpInfo를 붙이고, IdExpInfo라면 QsIdentifierExpInfo를 붙인다. =? 이건 기존의 Analyzer에 넣으면 될듯
         // 3. Normal의 나머지 케이스에 대해서는 에러를 낸다
         // 4. CallSetter는 일단 Indexer일때만 
-        internal bool AnalyzeBinaryAssignExp(
-            BinaryOpExp binaryOpExp,
-            Context context,
-            [NotNullWhen(true)] out TypeValue? outTypeValue)
-        {
-            var assignAnalyzer = new BinaryAssignExpAnalyzer(analyzer, binaryOpExp, context);
-            return assignAnalyzer.Analyze(out outTypeValue);
-        }
+        //internal bool AnalyzeBinaryAssignExp(
+        //    BinaryOpExp binaryOpExp,
+        //    Context context,
+        //    [NotNullWhen(true)] out IR0.Exp? outExp,
+        //    [NotNullWhen(true)] out TypeValue? outTypeValue)
+        //{
+        //    var assignAnalyzer = new BinaryAssignExpAnalyzer(analyzer, binaryOpExp, context);
+        //    return assignAnalyzer.Analyze(out outTypeValue);
+        //}
 
     }
 }

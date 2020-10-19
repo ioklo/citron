@@ -10,21 +10,21 @@ namespace Gum.Runtime
 {
     public partial class ExpEvaluator
     {
-        ValueTask<TValue> EvalExpAndTypeAsync<TValue>(ExpAndType expAndType, EvalContext context)
+        ValueTask<TValue> EvalExpAsync<TValue>(ExpInfo expInfo, EvalContext context)
             where TValue : Value
-            => EvalExpAndTypeAsync<TValue>(expAndType.Exp, expAndType.TypeValue, context);
+            => EvalExpAsync<TValue>(expInfo.Exp, expInfo.TypeId, context);
 
-        async ValueTask<TValue> EvalExpAndTypeAsync<TValue>(Exp exp, TypeValue type, EvalContext context)
+        async ValueTask<TValue> EvalExpAsync<TValue>(Exp exp, TypeId typeId, EvalContext context)
             where TValue : Value
         {
-            var value0 = evaluator.GetDefaultValue(type, context);
-            await EvalAsync(exp, value0, context);
-            return (TValue)value0;
+            var operand0 = evaluator.AllocValue(typeId, context);
+            await EvalAsync(exp, operand0, context);
+            return (TValue)operand0;
         }
 
-        void Operator_LogicalNot_Bool_Bool(BoolValue arg0, BoolValue result)
+        void Operator_LogicalNot_Bool_Bool(BoolValue operand, BoolValue result)
         {
-            result.SetBool(!arg0.GetBool());
+            result.SetBool(!operand.GetBool());
         }
 
         // y = ++x;
@@ -32,240 +32,181 @@ namespace Gum.Runtime
         // y = x++;
         // y = x; x.Inc();
 
-        void Operator_Inc_Int_Void(IntValue arg0)
+        void Operator_Inc_Int_Void(IntValue operand)
         {
-            arg0.SetInt(arg0.GetInt() + 1);
+            operand.SetInt(operand.GetInt() + 1);
         }
 
-        void Operator_Dec_Int_Void(IntValue arg0, EvalContext context)
+        void Operator_Dec_Int_Void(IntValue operand)
         {
-            arg0.SetInt(arg0.GetInt() - 1);
+            operand.SetInt(operand.GetInt() - 1);
         }
 
-        async ValueTask Operator_UnaryMinus_Int_Int(ImmutableArray<ExpAndType> operands, Value result, EvalContext context)
+        void Operator_UnaryMinus_Int_Int(IntValue operand, IntValue result)
         {
-            var value0 = await EvalExpAndTypeAsync<IntValue>(operands[0], context);
-            ((IntValue)result).SetInt(-value0.GetInt());
+            result.SetInt(-operand.GetInt());
         }
 
-        async ValueTask Operator_Multiply_Int_Int_Int(ImmutableArray<ExpAndType> operands, Value result, EvalContext context)
+        void Operator_ToString_Int_String(IntValue operand, StringValue result)
         {
-            var value0 = await EvalExpAndTypeAsync<IntValue>(operands[0], context);
-            var value1 = await EvalExpAndTypeAsync<IntValue>(operands[1], context);
-
-            ((IntValue)result).SetInt(value0.GetInt() * value1.GetInt());
+            result.SetString(operand.GetInt().ToString());
         }
 
-        async ValueTask Operator_Divide_Int_Int_Int(ImmutableArray<ExpAndType> operands, Value result, EvalContext context)
+        void Operator_Multiply_Int_Int_Int(IntValue operand0, IntValue operand1, IntValue result)
         {
-            var value0 = await EvalExpAndTypeAsync<IntValue>(operands[0], context);
-            var value1 = await EvalExpAndTypeAsync<IntValue>(operands[1], context);
-
-            ((IntValue)result).SetInt(value0.GetInt() / value1.GetInt());
+            result.SetInt(operand0.GetInt() * operand1.GetInt());
         }
 
-        async ValueTask Operator_Modulo_Int_Int_Int(ImmutableArray<ExpAndType> operands, Value result, EvalContext context)
+        void Operator_Divide_Int_Int_Int(IntValue operand0, IntValue operand1, IntValue result)
         {
-            var value0 = await EvalExpAndTypeAsync<IntValue>(operands[0], context);
-            var value1 = await EvalExpAndTypeAsync<IntValue>(operands[1], context);
-
-            ((IntValue)result).SetInt(value0.GetInt() % value1.GetInt());
+            result.SetInt(operand0.GetInt() / operand1.GetInt());
         }
 
-        async ValueTask Operator_Add_Int_Int_Int(ImmutableArray<ExpAndType> operands, Value result, EvalContext context)
+        void Operator_Modulo_Int_Int_Int(IntValue operand0, IntValue operand1, IntValue result)
         {
-            var value0 = await EvalExpAndTypeAsync<IntValue>(operands[0], context);
-            var value1 = await EvalExpAndTypeAsync<IntValue>(operands[1], context);
-
-            ((IntValue)result).SetInt(value0.GetInt() + value1.GetInt());
+            result.SetInt(operand0.GetInt() % operand1.GetInt());
         }
 
-        async ValueTask Operator_Add_String_String_String(ImmutableArray<ExpAndType> operands, Value result, EvalContext context)
+        void Operator_Add_Int_Int_Int(IntValue operand0, IntValue operand1, IntValue result)
         {
-            var value0 = await EvalExpAndTypeAsync<StringValue>(operands[0], context);
-            var value1 = await EvalExpAndTypeAsync<StringValue>(operands[1], context);
-
-            ((StringValue)result).SetString(value0.GetString() + value1.GetString());
+            result.SetInt(operand0.GetInt() + operand1.GetInt());
         }
 
-        async ValueTask Operator_Substract_Int_Int_Int(ImmutableArray<ExpAndType> operands, Value result, EvalContext context)
+        void Operator_Add_String_String_String(StringValue operand0, StringValue operand1, StringValue result)
         {
-            var value0 = await EvalExpAndTypeAsync<IntValue>(operands[0], context);
-            var value1 = await EvalExpAndTypeAsync<IntValue>(operands[1], context);
-
-            ((IntValue)result).SetInt(value0.GetInt() - value1.GetInt());
+            result.SetString(operand0.GetString() + operand1.GetString());
         }
 
-        async ValueTask Operator_LessThan_Int_Int_Bool(ImmutableArray<ExpAndType> operands, Value result, EvalContext context)
+        void Operator_Subtract_Int_Int_Int(IntValue operand0, IntValue operand1, IntValue result)
         {
-            var value0 = await EvalExpAndTypeAsync<IntValue>(operands[0], context);
-            var value1 = await EvalExpAndTypeAsync<IntValue>(operands[1], context);
-
-            ((BoolValue)result).SetBool(value0.GetInt() < value1.GetInt());
+            result.SetInt(operand0.GetInt() - operand1.GetInt());
         }
 
-        async ValueTask Operator_LessThan_String_String_Bool(ImmutableArray<ExpAndType> operands, Value result, EvalContext context)
+        void Operator_LessThan_Int_Int_Bool(IntValue operand0, IntValue operand1, BoolValue result)
+        {
+            result.SetBool(operand0.GetInt() < operand1.GetInt());
+        }
+
+        void Operator_LessThan_String_String_Bool(StringValue operand0, StringValue operand1, BoolValue result)
         {   
-            var value0 = await EvalExpAndTypeAsync<StringValue>(operands[0], context);
-            var value1 = await EvalExpAndTypeAsync<StringValue>(operands[1], context);
-
-            ((BoolValue)result).SetBool(value0.GetString().CompareTo(value1.GetString()) < 0);
+            result.SetBool(operand0.GetString().CompareTo(operand1.GetString()) < 0);
         }
 
-        async ValueTask Operator_GreaterThan_Int_Int_Bool(ImmutableArray<ExpAndType> operands, Value result, EvalContext context)
+        void Operator_GreaterThan_Int_Int_Bool(IntValue operand0, IntValue operand1, BoolValue result)
         {
-            var value0 = await EvalExpAndTypeAsync<IntValue>(operands[0], context);
-            var value1 = await EvalExpAndTypeAsync<IntValue>(operands[1], context);
-
-            ((BoolValue)result).SetBool(value0.GetInt() > value1.GetInt());
+            result.SetBool(operand0.GetInt() > operand1.GetInt());
         }
 
-        async ValueTask Operator_GreaterThan_String_String_Bool(ImmutableArray<ExpAndType> operands, Value result, EvalContext context)
+        void Operator_GreaterThan_String_String_Bool(StringValue operand0, StringValue operand1, BoolValue result)
         {
-            var value0 = await EvalExpAndTypeAsync<StringValue>(operands[0], context);
-            var value1 = await EvalExpAndTypeAsync<StringValue>(operands[1], context);
-
-            ((BoolValue)result).SetBool(value0.GetString().CompareTo(value1.GetString()) > 0);
+            result.SetBool(operand0.GetString().CompareTo(operand1.GetString()) > 0);
         }
 
-        async ValueTask Operator_LessThanOrEqual_Int_Int_Bool(ImmutableArray<ExpAndType> operands, Value result, EvalContext context)
+        void Operator_LessThanOrEqual_Int_Int_Bool(IntValue operand0, IntValue operand1, BoolValue result)
         {
-            var value0 = await EvalExpAndTypeAsync<IntValue>(operands[0], context);
-            var value1 = await EvalExpAndTypeAsync<IntValue>(operands[1], context);
-
-            ((BoolValue)result).SetBool(value0.GetInt() <= value1.GetInt());
+            result.SetBool(operand0.GetInt() <= operand1.GetInt());
         }
 
-        async ValueTask Operator_LessThanOrEqual_String_String_Bool(ImmutableArray<ExpAndType> operands, Value result, EvalContext context)
+        void Operator_LessThanOrEqual_String_String_Bool(StringValue operand0, StringValue operand1, BoolValue result)
         {
-            var value0 = await EvalExpAndTypeAsync<StringValue>(operands[0], context);
-            var value1 = await EvalExpAndTypeAsync<StringValue>(operands[1], context);
-
-            ((BoolValue)result).SetBool(value0.GetString().CompareTo(value1.GetString()) <= 0);
+            result.SetBool(operand0.GetString().CompareTo(operand1.GetString()) <= 0);
         }
 
-        async ValueTask Operator_GreaterThanOrEqual_Int_Int_Bool(ImmutableArray<ExpAndType> operands, Value result, EvalContext context)
+        void Operator_GreaterThanOrEqual_Int_Int_Bool(IntValue operand0, IntValue operand1, BoolValue result)
         {
-            var value0 = await EvalExpAndTypeAsync<IntValue>(operands[0], context);
-            var value1 = await EvalExpAndTypeAsync<IntValue>(operands[1], context);
-
-            ((BoolValue)result).SetBool(value0.GetInt() >= value1.GetInt());
+            result.SetBool(operand0.GetInt() >= operand1.GetInt());
         }
 
-        async ValueTask Operator_GreaterThanOrEqual_String_String_Bool(ImmutableArray<ExpAndType> operands, Value result, EvalContext context)
+        void Operator_GreaterThanOrEqual_String_String_Bool(StringValue operand0, StringValue operand1, BoolValue result)
         {
-            var value0 = await EvalExpAndTypeAsync<StringValue>(operands[0], context);
-            var value1 = await EvalExpAndTypeAsync<StringValue>(operands[1], context);
-
-            ((BoolValue)result).SetBool(value0.GetString().CompareTo(value1.GetString()) >= 0);
+            result.SetBool(operand0.GetString().CompareTo(operand1.GetString()) >= 0);
         }
 
-        async ValueTask Operator_Equal_Int_Int_Bool(ImmutableArray<ExpAndType> operands, Value result, EvalContext context)
+        void Operator_Equal_Int_Int_Bool(IntValue operand0, IntValue operand1, BoolValue result)
         {
-            var value0 = await EvalExpAndTypeAsync<IntValue>(operands[0], context);
-            var value1 = await EvalExpAndTypeAsync<IntValue>(operands[1], context);
-
-            ((BoolValue)result).SetBool(value0.GetInt() == value1.GetInt());
+            result.SetBool(operand0.GetInt() == operand1.GetInt());
         }
 
-        async ValueTask Operator_Equal_Bool_Bool_Bool(ImmutableArray<ExpAndType> operands, Value result, EvalContext context)
+        void Operator_Equal_Bool_Bool_Bool(BoolValue operand0, BoolValue operand1, BoolValue result)
         {
-            var value0 = await EvalExpAndTypeAsync<BoolValue>(operands[0], context);
-            var value1 = await EvalExpAndTypeAsync<BoolValue>(operands[1], context);
-
-            ((BoolValue)result).SetBool(value0.GetBool() == value1.GetBool());
+            result.SetBool(operand0.GetBool() == operand1.GetBool());
         }
 
-        async ValueTask Operator_Equal_String_String_Bool(ImmutableArray<ExpAndType> operands, Value result, EvalContext context)
+        void Operator_Equal_String_String_Bool(StringValue operand0, StringValue operand1, BoolValue result)
         {
-            var value0 = await EvalExpAndTypeAsync<StringValue>(operands[0], context);
-            var value1 = await EvalExpAndTypeAsync<StringValue>(operands[1], context);
-
-            ((BoolValue)result).SetBool(value0.GetString().CompareTo(value1.GetString()) == 0);
+            result.SetBool(operand0.GetString().CompareTo(operand1.GetString()) == 0);
         }
 
-        async ValueTask EvalCallInternalOperatorExpAsync(CallInternalOperatorExp exp, Value result, EvalContext context)
-        {
-            var operandValues = new List<Value>();
-            foreach (var operand in exp.Operands)
-            {
-                var operandValue = evaluator.GetDefaultValue(operand.TypeValue, context);
-                operandValues.Add(operandValue);
+        async ValueTask EvalCallInternalBinaryOperatorExpAsync(CallInternalBinaryOperatorExp exp, Value result, EvalContext context)
+        {   
+            var operand0 = evaluator.AllocValue(exp.Operand0.TypeId, context);
+            await EvalAsync(exp.Operand0.Exp, operand0, context);
 
-                await EvalAsync(operand.Exp, operandValue, context);
-            }
+            var operand1 = evaluator.AllocValue(exp.Operand1.TypeId, context);
+            await EvalAsync(exp.Operand1.Exp, operand1, context);
 
             switch (exp.Operator)
             {
-                case InternalOperator.LogicalNot_Bool_Bool:
-                    Operator_LogicalNot_Bool_Bool((BoolValue)operandValues[0], (BoolValue)result);
-                    return;
+                case InternalBinaryOperator.Multiply_Int_Int_Int: Operator_Multiply_Int_Int_Int((IntValue)operand0, (IntValue)operand1, (IntValue)result); break;
+                case InternalBinaryOperator.Divide_Int_Int_Int: Operator_Divide_Int_Int_Int((IntValue)operand0, (IntValue)operand1, (IntValue)result); break;
+                case InternalBinaryOperator.Modulo_Int_Int_Int: Operator_Modulo_Int_Int_Int((IntValue)operand0, (IntValue)operand1, (IntValue)result); break;
+                case InternalBinaryOperator.Add_Int_Int_Int: Operator_Add_Int_Int_Int((IntValue)operand0, (IntValue)operand1, (IntValue)result); break;
+                case InternalBinaryOperator.Add_String_String_String: Operator_Add_String_String_String((StringValue)operand0, (StringValue)operand1, (StringValue)result); break;
+                case InternalBinaryOperator.Subtract_Int_Int_Int: Operator_Subtract_Int_Int_Int((IntValue)operand0, (IntValue)operand1, (IntValue)result); break;
+                case InternalBinaryOperator.LessThan_Int_Int_Bool: Operator_LessThan_Int_Int_Bool((IntValue)operand0, (IntValue)operand1, (BoolValue)result); break;
+                case InternalBinaryOperator.LessThan_String_String_Bool: Operator_LessThan_String_String_Bool((StringValue)operand0, (StringValue)operand1, (BoolValue)result); break;
+                case InternalBinaryOperator.GreaterThan_Int_Int_Bool: Operator_GreaterThan_Int_Int_Bool((IntValue)operand0, (IntValue)operand1, (BoolValue)result); break;
+                case InternalBinaryOperator.GreaterThan_String_String_Bool: Operator_GreaterThan_String_String_Bool((StringValue)operand0, (StringValue)operand1, (BoolValue)result); break;
+                case InternalBinaryOperator.LessThanOrEqual_Int_Int_Bool: Operator_LessThanOrEqual_Int_Int_Bool((IntValue)operand0, (IntValue)operand1, (BoolValue)result); break;
+                case InternalBinaryOperator.LessThanOrEqual_String_String_Bool: Operator_LessThanOrEqual_String_String_Bool((StringValue)operand0, (StringValue)operand1, (BoolValue)result); break;
+                case InternalBinaryOperator.GreaterThanOrEqual_Int_Int_Bool: Operator_GreaterThanOrEqual_Int_Int_Bool((IntValue)operand0, (IntValue)operand1, (BoolValue)result); break;
+                case InternalBinaryOperator.GreaterThanOrEqual_String_String_Bool: Operator_GreaterThanOrEqual_String_String_Bool((StringValue)operand0, (StringValue)operand1, (BoolValue)result); break;
+                case InternalBinaryOperator.Equal_Int_Int_Bool: Operator_Equal_Int_Int_Bool((IntValue)operand0, (IntValue)operand1, (BoolValue)result); break;
+                case InternalBinaryOperator.Equal_Bool_Bool_Bool: Operator_Equal_Bool_Bool_Bool((BoolValue)operand0, (BoolValue)operand1, (BoolValue)result); break;
+                case InternalBinaryOperator.Equal_String_String_Bool: Operator_Equal_String_String_Bool((StringValue)operand0, (StringValue)operand1, (BoolValue)result); break;
+                default: throw new InvalidOperationException();
+            }
+        }
 
-                case InternalOperator.Inc_Int_Void:
-                    var arg0 = await EvalExpAndTypeAsync<IntValue>(exp.Operands[0], context);
-                    Operator_Inc_Int_Void(arg0, context);
-                        return;
-                    }
+        async ValueTask EvalCallInternalUnaryOperatorExpAsync(CallInternalUnaryOperatorExp exp, Value result, EvalContext context)
+        {
+            var operand = evaluator.AllocValue(exp.Operand.TypeId, context);
+            await EvalAsync(exp.Operand.Exp, operand, context);
 
-                case InternalOperator.Dec_Int_Void:
-                    return Operator_Dec_Int_Void(exp.Operands, result, context);
+            switch (exp.Operator)
+            {
+                case InternalUnaryOperator.LogicalNot_Bool_Bool: Operator_LogicalNot_Bool_Bool((BoolValue)operand, (BoolValue)result); break;
+                case InternalUnaryOperator.UnaryMinus_Int_Int: Operator_UnaryMinus_Int_Int((IntValue)operand, (IntValue)result); break;
+                case InternalUnaryOperator.ToString_Int_String: Operator_ToString_Int_String((IntValue)operand, (StringValue)result);break;
+                default: throw new InvalidOperationException();
+            }
+        }
 
-                case InternalOperator.UnaryMinus_Int_Int:
-                    return Operator_UnaryMinus_Int_Int(exp.Operands, result, context);
+        async ValueTask EvalCallInternalUnaryAssignOperatorExpAsync(CallInternalUnaryAssignOperator exp, Value result, EvalContext context)
+        {
+            var operand = await GetValueAsync(exp.Operand, context);
 
-                case InternalOperator.Multiply_Int_Int_Int:
-                    return Operator_Multiply_Int_Int_Int(exp.Operands, result, context);
+            switch(exp.Operator)
+            {
+                case InternalUnaryAssignOperator.PrefixInc_Int_Int:                    
+                    Operator_Inc_Int_Void((IntValue)operand);
+                    result.SetValue(operand);
+                    break;
 
-                case InternalOperator.Divide_Int_Int_Int:
-                    return Operator_Divide_Int_Int_Int(exp.Operands, result, context);
+                case InternalUnaryAssignOperator.PrefixDec_Int_Int:                    
+                    Operator_Dec_Int_Void((IntValue)operand);
+                    result.SetValue(operand);
+                    break;
 
-                case InternalOperator.Modulo_Int_Int_Int:
-                    return Operator_Modulo_Int_Int_Int(exp.Operands, result, context);
+                case InternalUnaryAssignOperator.PostfixInc_Int_Int:
+                    result.SetValue(operand);
+                    Operator_Inc_Int_Void((IntValue)operand);
+                    break;
 
-                case InternalOperator.Add_Int_Int_Int:
-                    return Operator_Add_Int_Int_Int(exp.Operands, result, context);
-
-                case InternalOperator.Add_String_String_String:
-                    return Operator_Add_String_String_String(exp.Operands, result, context);
-
-                case InternalOperator.Substract_Int_Int_Int:
-                    return Operator_Substract_Int_Int_Int(exp.Operands, result, context);
-
-                case InternalOperator.LessThan_Int_Int_Bool:
-                    return Operator_LessThan_Int_Int_Bool(exp.Operands, result, context);
-
-                case InternalOperator.LessThan_String_String_Bool:
-                    return Operator_LessThan_String_String_Bool(exp.Operands, result, context);
-
-                case InternalOperator.GreaterThan_Int_Int_Bool:
-                    return Operator_GreaterThan_Int_Int_Bool(exp.Operands, result, context);
-
-                case InternalOperator.GreaterThan_String_String_Bool:
-                    return Operator_GreaterThan_String_String_Bool(exp.Operands, result, context);
-
-                case InternalOperator.LessThanOrEqual_Int_Int_Bool:
-                    return Operator_LessThanOrEqual_Int_Int_Bool(exp.Operands, result, context);
-
-                case InternalOperator.LessThanOrEqual_String_String_Bool:
-                    return Operator_LessThanOrEqual_String_String_Bool(exp.Operands, result, context);
-
-                case InternalOperator.GreaterThanOrEqual_Int_Int_Bool:
-                    return Operator_GreaterThanOrEqual_Int_Int_Bool(exp.Operands, result, context);
-
-                case InternalOperator.GreaterThanOrEqual_String_String_Bool:
-                    return Operator_GreaterThanOrEqual_String_String_Bool(exp.Operands, result, context);
-
-                case InternalOperator.Equal_Int_Int_Bool:
-                    return Operator_Equal_Int_Int_Bool(exp.Operands, result, context);
-
-                case InternalOperator.Equal_Bool_Bool_Bool:
-                    return Operator_Equal_Bool_Bool_Bool(exp.Operands, result, context);
-
-                case InternalOperator.Equal_String_String_Bool:
-                    return Operator_Equal_String_String_Bool(exp.Operands, result, context);
-
-                default:
-                    throw new InvalidOperationException();
+                case InternalUnaryAssignOperator.PostfixDec_Int_Int:
+                    result.SetValue(operand);
+                    Operator_Dec_Int_Void((IntValue)operand);
+                    break;
             }
         }
     }

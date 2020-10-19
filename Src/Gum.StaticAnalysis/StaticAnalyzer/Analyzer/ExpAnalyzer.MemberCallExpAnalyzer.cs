@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using static Gum.StaticAnalysis.Analyzer;
 using static Gum.StaticAnalysis.Analyzer.Misc;
+using Gum.Infra;
 
 namespace Gum.StaticAnalysis
 {
@@ -98,7 +99,7 @@ namespace Gum.StaticAnalysis
                     if (!analyzer.CheckParamTypes(exp, funcTypeValue.Params, argInfos.Select(argInfo => argInfo.TypeValue).ToList(), context))
                         return null;
 
-                    var ir0Exp = new IR0.CallFuncExp(funcValue, (instanceExp, instanceType), argInfos.Select(argInfo => new IR0.ExpAndType(argInfo.Exp, argInfo.TypeValue)));
+                    var ir0Exp = new IR0.CallFuncExp(funcValue, (instanceExp, instanceType), argInfos.Select(argInfo => new IR0.ExpInfo(argInfo.Exp, argInfo.TypeValue)));
                     return new Result(funcTypeValue, ir0Exp);
                 }
 
@@ -123,7 +124,7 @@ namespace Gum.StaticAnalysis
                             return null;
 
                         var callableExp = new IR0.MemberValueExp(instanceExp, exp.MemberName);
-                        var ir0Exp = new IR0.CallValueExp(callableExp, varFuncTypeValue, argInfos.Select(argInfo => new IR0.ExpAndType(argInfo.Exp, argInfo.TypeValue)));
+                        var ir0Exp = new IR0.CallValueExp(callableExp, varFuncTypeValue, argInfos.Select(argInfo => new IR0.ExpInfo(argInfo.Exp, argInfo.TypeValue)));
 
                         return new Result(varFuncTypeValue, ir0Exp);
                     }
@@ -139,40 +140,50 @@ namespace Gum.StaticAnalysis
                 var typeInfo = context.ModuleInfoService.GetTypeInfos(typeIdInfo.TypeValue.TypeId).Single();
                 if (typeInfo is IEnumInfo enumTypeInfo)
                 {
+                    // E<T>.Second<S> 는 허용하지 않음
                     if (exp.MemberTypeArgs.Length != 0)
                     {
                         context.ErrorCollector.Add(exp, "enum 생성자는 타입인자를 가질 수 없습니다");
                         return null;
                     }
 
+                    // 'First'로 E<T>.First 정보 찾기
                     if (!enumTypeInfo.GetElemInfo(exp.MemberName, out var elemInfo))
                     {
                         context.ErrorCollector.Add(exp, $"{exp.MemberName}에 해당하는 enum 생성자를 찾을 수 없습니다");
                         return null;
                     }
-
-
+                    
+                    // E<T>.First 인 경우, 인자를 받지 않으므로 에러
                     if (elemInfo.Value.FieldInfos.Length == 0)
                     {
                         context.ErrorCollector.Add(exp, $"{exp.MemberName} enum 값은 인자를 받지 않습니다");
                         return null;
                     }
 
-                    // E<T>.Second(int i, T t);                    
-
-                    // (int, T) => E<T>
-                    var paramTypes = elemInfo.Value.FieldInfos.Select(fieldInfo => fieldInfo.TypeValue);
+                    // E<T>.Second(int i, T t) 에서 (int, T)가져오기
+                    var paramTypes = elemInfo.Value.FieldInfos.Select(fieldInfo => fieldInfo.TypeValue).ToList();
                     var funcTypeValue = TypeValue.MakeFunc(typeIdInfo.TypeValue, paramTypes);
                     var appliedFuncTypeValue = context.TypeValueService.Apply(typeIdInfo.TypeValue, funcTypeValue);
 
-                    var members = new List<IR0.EnumExp.Elem>();
+                    var members = new List<IR0.NewEnumExp.Elem>();
 
-                    exp.Args.
+                    if (!analyzer.AnalyzeExps(exp.Args, context, out var argInfos))
+                        return null;
 
+                    if (!analyzer.CheckParamTypes(exp, paramTypes, argInfos.Select(argInfo => argInfo.TypeValue).ToList(), context))
+                        return null;
+
+                    Enumerable.Zip(elemInfo.Value.FieldInfos, argInfos, (fieldInfo, argInfo) => 
+                        new IR0.NewEnumExp.Elem(fieldInfo.Name, new IR0.ExpInfo(argInfo.Exp, argInfo.TypeValue)));
+
+                    foreach (var (fieldInfo, argInfos) in Zip(elemInfo.Value.FieldInfos, argInfos))
+                    {
+
+                    }
                     var nodeInfo = MemberCallExpInfo.MakeEnumValue(null, args, elemInfo.Value);
 
-                    var ir0Exp = new IR0.EnumExp(elemInfo.Value.Name,  )
-
+                    var ir0Exp = new IR0.NewEnumExp(elemInfo.Value.Name, );
 
                     return new Result(funcTypeValue, ir0Exp);
                 }

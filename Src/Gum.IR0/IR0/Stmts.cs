@@ -36,14 +36,14 @@ namespace Gum.IR0
         public class Element
         {
             public string Name { get; }
-            public TypeValue Type { get; }
+            public TypeId TypeId { get; }
 
             public IR0.Exp? InitExp { get; }            
             
-            public Element(string name, TypeValue type, IR0.Exp? initExp)
+            public Element(string name, TypeId typeId, IR0.Exp? initExp)
             {
                 Name = name;
-                Type = type;
+                TypeId = typeId;
                 InitExp = initExp;
             }
         }
@@ -78,16 +78,14 @@ namespace Gum.IR0
 
     public class IfTestClassStmt : Stmt
     {
-        public Exp Target { get; }
-        public TypeValue TargetType { get; }
-        public TypeValue TestType { get; }
+        public ExpInfo Target { get; }
+        public TypeId TestType { get; }
         public Stmt Body { get; }
         public Stmt? ElseBody { get; }
 
-        public IfTestClassStmt(Exp target, TypeValue targetType, TypeValue testType, Stmt body, Stmt? elseBody)
+        public IfTestClassStmt(ExpInfo target, TypeId testType, Stmt body, Stmt? elseBody)
         {
             Target = target;
-            TargetType = targetType;
             TestType = testType;
             Body = body;
             ElseBody = elseBody;
@@ -96,16 +94,14 @@ namespace Gum.IR0
 
     public class IfTestEnumStmt : Stmt
     {
-        public Exp Target { get; }
-        public TypeValue TargetType { get; }
+        public ExpInfo Target { get; }
         public string ElemName { get; }
         public Stmt Body { get; }
         public Stmt? ElseBody { get; }        
 
-        public IfTestEnumStmt(Exp target, TypeValue targetType, string elemName, Stmt body, Stmt? elseBody)
+        public IfTestEnumStmt(ExpInfo target, string elemName, Stmt body, Stmt? elseBody)
         {
             Target = target;
-            TargetType = targetType;
             ElemName = elemName;
             Body = body;
             ElseBody = elseBody;
@@ -117,15 +113,15 @@ namespace Gum.IR0
         // InitExp Or VarDecl
         public ForStmtInitializer? Initializer { get; }
         public Exp? CondExp { get; }
-        public ExpAndType? ContinueExpInfo { get; }
+        public ExpInfo? ContinueInfo { get; }
 
         public Stmt Body { get; }
 
-        public ForStmt(ForStmtInitializer? initializer, Exp? condExp, ExpAndType? continueExpInfo, Stmt bodyStmt)
+        public ForStmt(ForStmtInitializer? initializer, Exp? condExp, ExpInfo? continueInfo, Stmt bodyStmt)
         {
             Initializer = initializer;
             CondExp = condExp;
-            ContinueExpInfo = continueExpInfo;
+            ContinueInfo = continueInfo;
             Body = bodyStmt;
         }       
     }
@@ -146,27 +142,6 @@ namespace Gum.IR0
     {
         public Exp? Value { get; }
         public ReturnStmt(Exp? value) { Value = value; }
-
-        public override bool Equals(object? obj)
-        {
-            return obj is ReturnStmt stmt &&
-                   EqualityComparer<Exp?>.Default.Equals(Value, stmt.Value);
-        }
-
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(Value);
-        }
-
-        public static bool operator ==(ReturnStmt? left, ReturnStmt? right)
-        {
-            return EqualityComparer<ReturnStmt?>.Default.Equals(left, right);
-        }
-
-        public static bool operator !=(ReturnStmt? left, ReturnStmt? right)
-        {
-            return !(left == right);
-        }
     }
 
     public class BlockStmt : Stmt
@@ -181,31 +156,6 @@ namespace Gum.IR0
         {
             Stmts = ImmutableArray.Create(stmts);
         }
-
-        public override bool Equals(object? obj)
-        {
-            return obj is BlockStmt stmt && Enumerable.SequenceEqual(Stmts, stmt.Stmts);
-        }
-
-        public override int GetHashCode()
-        {
-            var hashCode = new HashCode();
-
-            foreach (var stmt in Stmts)
-                hashCode.Add(stmt);
-
-            return hashCode.ToHashCode();
-        }
-
-        public static bool operator ==(BlockStmt? left, BlockStmt? right)
-        {
-            return EqualityComparer<BlockStmt?>.Default.Equals(left, right);
-        }
-
-        public static bool operator !=(BlockStmt? left, BlockStmt? right)
-        {
-            return !(left == right);
-        }
     }
 
     public class BlankStmt : Stmt
@@ -216,34 +166,11 @@ namespace Gum.IR0
 
     public class ExpStmt : Stmt
     {
-        public Exp Exp { get; }
-        public TypeValue ExpType { get; }
+        public ExpInfo ExpInfo { get; }
 
-        public ExpStmt(Exp exp, TypeValue expType)
+        public ExpStmt(ExpInfo expInfo)
         {
-            Exp = exp;
-            ExpType = expType;
-        }
-
-        public override bool Equals(object? obj)
-        {
-            return obj is ExpStmt stmt &&
-                   EqualityComparer<Exp>.Default.Equals(Exp, stmt.Exp);
-        }
-
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(Exp);
-        }
-
-        public static bool operator ==(ExpStmt? left, ExpStmt? right)
-        {
-            return EqualityComparer<ExpStmt?>.Default.Equals(left, right);
-        }
-
-        public static bool operator !=(ExpStmt? left, ExpStmt? right)
-        {
-            return !(left == right);
+            ExpInfo = expInfo;
         }
     }
 
@@ -275,38 +202,21 @@ namespace Gum.IR0
 
     public class ForeachStmt : Stmt
     {
-        public TypeValue ElemType { get; }
+        public TypeId ElemTypeId { get; set; }
         public string ElemName { get; }
 
-        public Exp Obj { get; }
-        public TypeValue ObjType { get; }
-        public TypeValue EnumeratorType { get; }        
-        
-        public FuncValue GetEnumerator { get; }
-        public FuncValue MoveNext { get; }
-        public FuncValue GetCurrent { get; }
-
+        public ExpInfo ObjInfo { get; }        
         public Stmt Body { get; }
 
         public ForeachStmt(
-            TypeValue elemType, 
+            TypeId elemTypeId,
             string elemName, 
-            Exp obj, 
-            TypeValue objType, 
-            TypeValue enumeratorType, 
-            FuncValue getEnumerator, 
-            FuncValue moveNext, 
-            FuncValue getCurrent,
+            ExpInfo objInfo, 
             Stmt body)
         {
-            ElemType = elemType;
+            ElemTypeId = elemTypeId;
             ElemName = elemName;
-            Obj = obj;
-            ObjType = objType;
-            EnumeratorType = enumeratorType;
-            GetEnumerator = getEnumerator;
-            MoveNext = moveNext;
-            GetCurrent = getCurrent;
+            ObjInfo = objInfo;
             Body = body;
         }
     }

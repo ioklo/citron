@@ -9,8 +9,9 @@ using Gum.CompileTime;
 using Gum.Infra;
 using Gum.IR0;
 using Gum.Runtime;
-using Gum.StaticAnalysis;
 using Gum;
+using System.Diagnostics.CodeAnalysis;
+using static Gum.Infra.CollectionExtensions;
 
 namespace Gum.Runtime
 {
@@ -18,280 +19,231 @@ namespace Gum.Runtime
     // TODO: Small Step으로 가야하지 않을까 싶다 (yield로 실행 point 잡는거 해보면 재미있을 것 같다)
     public class Evaluator
     {
-        private Analyzer analyzer;
-        private ExpEvaluator expValueEvaluator;
+        private ExpEvaluator expEvaluator;
         private StmtEvaluator stmtEvaluator;        
 
-        public Evaluator(Analyzer analyzer, ICommandProvider commandProvider)
+        public Evaluator(ICommandProvider commandProvider)
         {
-            this.analyzer = analyzer;
-            this.expValueEvaluator = new ExpEvaluator(this);
+            this.expEvaluator = new ExpEvaluator(this);
             this.stmtEvaluator = new StmtEvaluator(this, commandProvider);
         }        
         
-        public ValueTask EvaluateStringExpAsync(StringExp command, Value result, EvalContext context)
+        internal ValueTask EvalStringExpAsync(StringExp command, Value result, EvalContext context)
         {
-            return expValueEvaluator.EvalStringExpAsync(command, result, context);
+            return expEvaluator.EvalStringExpAsync(command, result, context);
         }
 
-        TypeArgumentList ApplyTypeArgumentList(TypeArgumentList typeArgList, ImmutableDictionary<TypeValue.TypeVar, TypeValue> typeEnv)
+        public bool GetBaseType(TypeId typeId, EvalContext context, [NotNullWhen(true)] out TypeId? outBaseTypeId)
         {
-            TypeArgumentList? appliedOuter = null;
+            var typeInst = context.GetTypeInst(typeId);
 
-            if (typeArgList.Outer != null)
-                appliedOuter = ApplyTypeArgumentList(typeArgList.Outer, typeEnv);
-
-            var appliedArgs = typeArgList.Args.Select(arg => ApplyTypeValue(arg, typeEnv));
-
-            return TypeArgumentList.Make(appliedOuter, appliedArgs);
-        }
-
-        TypeValue ApplyTypeValue(TypeValue typeValue, ImmutableDictionary<TypeValue.TypeVar, TypeValue> typeEnv)
-        {
-            switch(typeValue)
+            if (typeInst is ClassInst classInst)
             {
-                case TypeValue.TypeVar typeVar: 
-                    return typeEnv[typeVar];
+                var baseTypeId = classInst.GetBaseTypeId();
+                if (baseTypeId != null)
+                {
+                    outBaseTypeId = baseTypeId;
+                    return true;
+                }
+            }
 
-                case TypeValue.Normal ntv:
-                    {
-                        var appliedTypeArgList = ApplyTypeArgumentList(ntv.TypeArgList, typeEnv);
-                        return TypeValue.MakeNormal(ntv.TypeId, appliedTypeArgList);
-                    }
-
-                case TypeValue.Void vtv: 
-                    return typeValue;
-
-                case TypeValue.Func ftv:
-                    {
-                        var appliedReturn = ApplyTypeValue(ftv.Return, typeEnv);
-                        var appliedParams = ftv.Params.Select(param => ApplyTypeValue(param, typeEnv));
-
-                        return TypeValue.MakeFunc(appliedReturn, appliedParams);
-                    }
-
-                default:
-                    throw new NotImplementedException();
-            }            
+            outBaseTypeId = null;
+            return false;
         }
-
+        
         // xType이 y타입인가 묻는 것
-        public bool IsType(TypeValue xTypeValue, TypeValue yTypeValue, EvalContext context)
+        public bool IsType(TypeId xTypeId, TypeId yTypeId, EvalContext context)
         {
-            TypeValue? curTypeValue = xTypeValue;
+            TypeId? curType = xTypeId;
 
-            while (curTypeValue != null)
+            while (curType != null)
             {
-                if (EqualityComparer<TypeValue?>.Default.Equals(curTypeValue, yTypeValue))
+                if (EqualityComparer<TypeId?>.Default.Equals(curType, yTypeId))
                     return true;
 
-                if (!context.TypeValueService.GetBaseTypeValue(curTypeValue, out var baseTypeValue))
+                if (!GetBaseType(curType.Value, context, out var baseTypeValue))
                     throw new InvalidOperationException();
 
                 if (baseTypeValue == null)
                     break;
 
-                curTypeValue = baseTypeValue;
+                curType = baseTypeValue;
             }
 
             return false;
         }
 
-        // DefaultValue란 무엇인가, 그냥 선언만 되어있는 상태        
-        public Value GetDefaultValue(TypeValue typeValue, EvalContext context)
+        public TValue AllocValue<TValue>(TypeId typeId, EvalContext context)
+            where TValue : Value
         {
-            var typeInst = context.DomainService.GetTypeInst(typeValue);
-            return typeInst.MakeDefaultValue();
+            return (TValue)AllocValue(typeId, context);
         }
 
-        public IEnumerable<Value> MakeCaptures(ImmutableArray<CaptureInfo.Element> captureElems, EvalContext context)
+        // typeId는 ir0 syntax의 일부분이다
+        public Value AllocValue(TypeId typeId, EvalContext context)
         {
-            var captures = new List<Value>(captureElems.Length);
+            switch(typeId.Value)
+            {
+                case (int)TypeId.PredefinedValue.Void:
+                    return VoidValue.Instance;
+
+                case (int)TypeId.PredefinedValue.Bool:
+                    return new BoolValue();
+
+                case (int)TypeId.PredefinedValue.Int:
+                    return new IntValue();
+
+                case (int)TypeId.PredefinedValue.String:
+                    return new StringValue();
+
+                case (int)TypeId.PredefinedValue.Enumerable:
+                    return new AsyncEnumerableValue();
+            }
+
+            throw new NotImplementedException();
+        }        
+
+        public ImmutableDictionary<string, Value> MakeCaptures(ImmutableArray<CaptureInfo.Element> captureElems, EvalContext context)
+        {
+            var capturesBuilder = ImmutableDictionary.CreateBuilder<string, Value>();
             foreach (var captureElem in captureElems)
             {
-                Value origValue = context.GetLocalValue(captureElem.LocalVarIndex);
-
-                Value value;
-                if (captureElem.CaptureKind == CaptureKind.Copy)
+                if (captureElem is CaptureInfo.CopyLocalElement copyElem)
                 {
-                    value = origValue!.MakeCopy();
+                    var origValue = context.GetLocalValue(copyElem.LocalVarName);
+                    var value = AllocValue(copyElem.TypeId, context);
+                    value.SetValue(origValue);
+                    capturesBuilder.Add(copyElem.LocalVarName, value);
+                }
+                else if (captureElem is CaptureInfo.RefLocalElement refElem)
+                {
+                    var value = context.GetLocalValue(refElem.LocalVarName);
+                    capturesBuilder.Add(refElem.LocalVarName, value);
                 }
                 else
                 {
-                    Debug.Assert(captureElem.CaptureKind == CaptureKind.Ref);
-                    value = origValue!;
+                    throw new InvalidOperationException();
                 }
-
-                captures.Add(value);
             }
 
-            return captures;
+            return capturesBuilder.ToImmutable();
         }
 
-        async IAsyncEnumerable<Value> EvaluateScriptFuncInstSeqAsync(
-            ScriptFuncInst scriptFuncInst,
-            IReadOnlyList<Value> args,
-            EvalContext context)
+        public async ValueTask<ImmutableDictionary<string, Value>> EvalArgumentsAsync(IEnumerable<string> paramNames, IEnumerable<ExpInfo> expInfos, EvalContext context)
         {
-            // NOTICE: args가 미리 할당되서 나온 상태
-            for (int i = 0; i < args.Count; i++)
-                context.AddLocalVar(i, args[i]);
+            var argsBuilder = ImmutableDictionary.CreateBuilder<string, Value>();
 
-            await foreach (var value in EvaluateStmtAsync(scriptFuncInst.Body, context))
+            foreach (var (paramName, expInfo) in Zip(paramNames, expInfos))
             {
-                yield return value;
+                var argValue = AllocValue(expInfo.TypeId, context);
+                argsBuilder.Add(paramName, argValue);
+
+                await expEvaluator.EvalAsync(expInfo.Exp, argValue, context);
             }
+
+            return argsBuilder.ToImmutable();
         }
 
-        public async ValueTask EvaluateLocalVarDeclAsync(LocalVarDecl localVarDecl, EvalContext context)
+        public async ValueTask EvalLambdaAsync(Lambda lambda, IEnumerable<ExpInfo> args, Value result, EvalContext context)
+        {
+            var argVars = await EvalArgumentsAsync(lambda.ParamNames, args, context);
+
+            var thisValue = lambda.CapturedThis;
+            var localVars = lambda.Captures.AddRange(argVars);
+
+            await context.ExecInNewFuncFrameAsync(localVars, EvalFlowControl.None, ImmutableArray<Task>.Empty, thisValue, result, async () =>
+            {
+                await foreach (var _ in EvalStmtAsync(lambda.Body, context)) { }
+            });
+        }
+
+        public async ValueTask EvalLocalVarDeclAsync(LocalVarDecl localVarDecl, EvalContext context)
         {
             foreach (var elem in localVarDecl.Elems)
             {
-                var value = GetDefaultValue(localVarDecl.Type, context);
+                var value = AllocValue(elem.TypeId, context);
                 context.AddLocalVar(elem.Name, value);
 
                 // InitExp가 있으면 
                 if (elem.InitExp != null)
-                    await expValueEvaluator.EvalAsync(elem.InitExp, value, context);
-            }
-        }
-        
-        public ValueTask EvaluateFuncInstAsync(Value? thisValue, FuncInst funcInst, IReadOnlyList<Value> args, Value result, EvalContext context)
-        {            
-            if (funcInst is ScriptFuncInst scriptFuncInst)
-            {
-                async ValueTask InnerBodyAsync()
-                {
-                    await foreach (var _ in EvaluateStmtAsync(scriptFuncInst.Body, context)) { }
-                }
-
-                // (Capture한 곳의 this), (MemberExp의 this), Static의 경우 this
-                if (scriptFuncInst.CapturedThis != null)
-                    thisValue = scriptFuncInst.CapturedThis;
-                else if (!scriptFuncInst.bThisCall)
-                    thisValue = null;
-
-                var localVars = new Value?[scriptFuncInst.LocalVarCount];
-                for (int i = 0; i < scriptFuncInst.Captures.Length; i++)
-                    localVars[i] = scriptFuncInst.Captures[i];
-
-                int argEndIndex = scriptFuncInst.Captures.Length + args.Count;
-                for (int i = scriptFuncInst.Captures.Length; i < argEndIndex; i++)
-                    localVars[i] = args[i];
-                
-                // Seq Call 이라면
-                if (scriptFuncInst.SeqElemTypeValue != null)
-                {
-                    // yield에 사용할 공간
-                    var yieldValue = GetDefaultValue(scriptFuncInst.SeqElemTypeValue, context);
-
-                    // context 복제
-                    var newContext = new EvalContext(
-                        context,
-                        localVars,
-                        EvalFlowControl.None,
-                        ImmutableArray<Task>.Empty,
-                        thisValue,
-                        yieldValue);
-
-                    var asyncEnum = EvaluateScriptFuncInstSeqAsync(scriptFuncInst, args, newContext);
-                    context.RuntimeModule.SetEnumerable(context.DomainService, result, scriptFuncInst.SeqElemTypeValue, asyncEnum);
-
-                    return new ValueTask(Task.CompletedTask);
-                }
-
-                return context.ExecInNewFuncFrameAsync(localVars, EvalFlowControl.None, ImmutableArray<Task>.Empty, thisValue, result, InnerBodyAsync);
-            }
-            else if (funcInst is NativeFuncInst nativeFuncInst)
-            {
-                return nativeFuncInst.CallAsync(thisValue, args, result);
-            }
-            else
-            {
-                throw new InvalidOperationException();
+                    await expEvaluator.EvalAsync(elem.InitExp, value, context);
             }
         }
 
         public ValueTask EvalExpAsync(Exp exp, Value result, EvalContext context)
         {
-            return expValueEvaluator.EvalAsync(exp, result, context);
+            return expEvaluator.EvalAsync(exp, result, context);
         }
 
-        public IAsyncEnumerable<Value> EvaluateStmtAsync(Stmt stmt, EvalContext context)
+        public IAsyncEnumerable<Value> EvalStmtAsync(Stmt stmt, EvalContext context)
         {
-            return stmtEvaluator.EvaluateStmtAsync(stmt, context);
+            return stmtEvaluator.EvalStmtAsync(stmt, context);
         }
         
-        async ValueTask<int> EvaluateScriptAsync(Script script, EvalContext context)
+        async ValueTask<int> EvalScriptAsync(Script script, EvalContext context)
         {
-            async ValueTask InnerBodyAsync()
-            {
-                foreach (var elem in script.Elements)
-                {
-                    if (elem is Script.StmtElement statementElem)
-                    {
-                        await foreach (var value in stmtEvaluator.EvaluateStmtAsync(statementElem.Stmt, context))
-                        {
-                        }
-                    }
-
-                    if (context.GetFlowControl() == EvalFlowControl.Return)
-                        break;
-                }
-            }
-            
-            var retValue = context.RuntimeModule.MakeInt(0);
+            var retValue = AllocValue<IntValue>(TypeId.Int, context);
 
             await context.ExecInNewFuncFrameAsync(
-                new Value?[script.LocalVarCount], 
+                ImmutableDictionary<string, Value>.Empty, 
                 EvalFlowControl.None, 
                 ImmutableArray<Task>.Empty, 
                 null, 
                 retValue, 
-                InnerBodyAsync);
+                async () =>
+                {
+                    foreach (var topLevelStmt in script.TopLevelStmts)
+                    {
+                        await foreach (var value in stmtEvaluator.EvalStmtAsync(topLevelStmt, context))
+                        {
+                        }
 
-            return context.RuntimeModule.GetInt(retValue);
+                        if (context.GetFlowControl() == EvalFlowControl.Return)
+                            break;
+                    }
+                });
+
+            return retValue.GetInt();
         }
 
-        public async ValueTask<int?> EvaluateScriptAsync(
-            string moduleName,
-            Syntax.Script script,             
-            IRuntimeModule runtimeModule,
-            IEnumerable<IModuleInfo> moduleInfos,
-            IErrorCollector errorCollector)
+        public ValueTask<int> EvalScriptAsync(Script script)
         {
-            // 4. stmt를 분석하고, 전역 변수 타입 목록을 만든다 (3의 함수정보가 필요하다)
-            var optionalAnalyzeResult = analyzer.AnalyzeScript(moduleName, script, moduleInfos, errorCollector);
-            if (optionalAnalyzeResult == null)
-                return null;
-
-            var analyzeResult = optionalAnalyzeResult.Value;
-
-            var scriptModule = new ScriptModule(
-                analyzeResult.ModuleInfo,
-                scriptModule => new TypeValueApplier(new ModuleInfoService(moduleInfos.Append(scriptModule))),
-                analyzeResult.Templates);
-
-            var domainService = new DomainService();
-
-            domainService.LoadModule(runtimeModule);
-            domainService.LoadModule(scriptModule);
-
-            var context = new EvalContext(
-                runtimeModule, 
-                domainService, 
-                analyzeResult.TypeValueService,                 
-                analyzeResult.Script.PrivateGlobalVarCount);
-
-            return await EvaluateScriptAsync(analyzeResult.Script, context);
+            var context = new EvalContext(script.Funcs, script.SeqFuncs);
+            return EvalScriptAsync(script, context);
         }
-        
-        internal Value GetMemberValue(Value value, Name varName)
-        {
-            if (value is ObjectValue objValue)
-                return objValue.GetMemberValue(varName);
-            else
-                throw new InvalidOperationException();
-        }
+
+        // TODO: DefaultApplication이랑 같이 어디론가 옮긴다
+        //public async ValueTask<int?> EvaluateScriptAsync(
+        //    string moduleName,
+        //    Syntax.Script script,             
+        //    IRuntimeModule runtimeModule,
+        //    IEnumerable<IModuleInfo> moduleInfos,
+        //    IErrorCollector errorCollector)
+        //{
+        //    // 4. stmt를 분석하고, 전역 변수 타입 목록을 만든다 (3의 함수정보가 필요하다)
+        //    var optionalAnalyzeResult = analyzer.AnalyzeScript(moduleName, script, moduleInfos, errorCollector);
+        //    if (optionalAnalyzeResult == null)
+        //        return null;
+
+        //    var analyzeResult = optionalAnalyzeResult.Value;
+
+        //    var scriptModule = new ScriptModule(
+        //        analyzeResult.ModuleInfo,
+        //        scriptModule => new TypeValueApplier(new ModuleInfoService(moduleInfos.Append(scriptModule))),
+        //        analyzeResult.Templates);
+
+        //    var domainService = new DomainService();
+
+        //    domainService.LoadModule(runtimeModule);
+        //    domainService.LoadModule(scriptModule);
+
+        //    var context = new EvalContext(
+        //        runtimeModule, 
+        //        domainService, 
+        //        analyzeResult.TypeValueService,                 
+        //        analyzeResult.Script.PrivateGlobalVarCount);
+
+        //    return await EvaluateScriptAsync(analyzeResult.Script, context);
+        //}
     }
 }

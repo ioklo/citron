@@ -8,7 +8,7 @@ using System.Text;
 namespace Gum
 {
 #pragma warning disable CS0660, CS0661
-    public abstract class StorageInfo
+    abstract class StorageInfo
     {
         public class ModuleGlobal : StorageInfo
         {
@@ -29,35 +29,35 @@ namespace Gum
 
         public class PrivateGlobal : StorageInfo
         {
-            public int Index { get; }
-            public PrivateGlobal(int index) { Index = index; }
+            public string Name { get; }
+            public PrivateGlobal(string name) { Name = name; }
 
             public override bool Equals(object? obj)
             {
                 return obj is PrivateGlobal global &&
-                       Index == global.Index;
+                       Name == global.Name;
             }
 
             public override int GetHashCode()
             {
-                return HashCode.Combine(Index);
+                return HashCode.Combine(Name);
             }
         }
 
         public class Local : StorageInfo
         {
-            public int Index { get; }
-            public Local(int localIndex) { Index = localIndex; }
+            public string Name { get; }
+            public Local(string name) { Name = name; }
 
             public override bool Equals(object? obj)
             {
                 return obj is Local local &&
-                       Index == local.Index;
+                       Name == local.Name;
             }
 
             public override int GetHashCode()
             {
-                return HashCode.Combine(Index);
+                return HashCode.Combine(Name);
             }
         }
 
@@ -126,11 +126,11 @@ namespace Gum
         public static ModuleGlobal MakeModuleGlobal(ModuleItemId varId) 
             => new ModuleGlobal(varId);
 
-        public static PrivateGlobal MakePrivateGlobal(int index) 
-            => new PrivateGlobal(index);
+        public static PrivateGlobal MakePrivateGlobal(string name) 
+            => new PrivateGlobal(name);
 
-        public static Local MakeLocal(int index) 
-            => new Local(index);
+        public static Local MakeLocal(string name) 
+            => new Local(name);
 
         public static EnumElem MakeEnumElem(string elemName)
             => new EnumElem(elemName);

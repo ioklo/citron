@@ -16,13 +16,13 @@ namespace Gum.IR0
 
     public class ExternalGlobalVarExp : Exp
     {
-        public ModuleItemId VarId { get; } // ExternalGlobalVarId
-        public ExternalGlobalVarExp(ModuleItemId varId) { VarId = varId; }
+        public ExternalGlobalVarId VarId { get; } // ExternalGlobalVarId
+        public ExternalGlobalVarExp(ExternalGlobalVarId varId) { VarId = varId; }
     }
 
     public class PrivateGlobalVarExp : Exp
     {
-        public string Name { get; } // GlobalVarId;
+        public string Name { get; }
         public PrivateGlobalVarExp(string name) { Name = name; }
     }
 
@@ -31,34 +31,8 @@ namespace Gum.IR0
         public string Name { get; } // LocalVarId;
         public LocalVarExp(string name) { Name = name; }
     }    
-
-    public class EnumExp : Exp
-    {
-        public struct Elem
-        {
-            public string Name { get; }
-            public Exp Exp { get; }
-            public TypeValue Type { get; }
-
-            public Elem(string name, Exp exp, TypeValue type)
-            {
-                Name = name;
-                Exp = exp;
-                Type = type;
-            }
-        }
-
-        public string Name { get; }
-
-        public ImmutableArray<Elem> Members { get; }
-
-        public EnumExp(string name, IEnumerable<Elem> members)
-        {
-            Name = name;
-            Members = members.ToImmutableArray();
-        }
-    }
-
+    
+    // "dskfjslkf $abc "
     public class StringExp : Exp
     {
         public ImmutableArray<StringExpElement> Elements { get; }
@@ -72,136 +46,46 @@ namespace Gum.IR0
         {
             Elements = ImmutableArray.Create(elements);
         }
-
-        public override bool Equals(object? obj)
-        {
-            return obj is StringExp exp && Enumerable.SequenceEqual(Elements, exp.Elements);                   
-        }
-
-        public override int GetHashCode()
-        {
-            HashCode hashCode = new HashCode();
-
-            foreach (var elem in Elements)
-                hashCode.Add(elem);
-
-            return hashCode.ToHashCode();
-        }
-
-        public static bool operator ==(StringExp? left, StringExp? right)
-        {
-            return EqualityComparer<StringExp?>.Default.Equals(left, right);
-        }
-
-        public static bool operator !=(StringExp? left, StringExp? right)
-        {
-            return !(left == right);
-        }
     }
 
+    // 1
     public class IntLiteralExp : Exp
     {
         public int Value { get; }
         public IntLiteralExp(int value) { Value = value; }
-
-        public override bool Equals(object? obj)
-        {
-            return obj is IntLiteralExp exp &&
-                   Value == exp.Value;
-        }
-
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(Value);
-        }
-
-        public static bool operator ==(IntLiteralExp? left, IntLiteralExp? right)
-        {
-            return EqualityComparer<IntLiteralExp?>.Default.Equals(left, right);
-        }
-
-        public static bool operator !=(IntLiteralExp? left, IntLiteralExp? right)
-        {
-            return !(left == right);
-        }
     }
 
+    // false
     public class BoolLiteralExp : Exp
     {
         public bool Value { get; }
         public BoolLiteralExp(bool value) { Value = value; }
-
-        public override bool Equals(object? obj)
-        {
-            return obj is BoolLiteralExp exp &&
-                   Value == exp.Value;
-        }
-
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(Value);
-        }
-
-        public static bool operator ==(BoolLiteralExp? left, BoolLiteralExp? right)
-        {
-            return EqualityComparer<BoolLiteralExp?>.Default.Equals(left, right);
-        }
-
-        public static bool operator !=(BoolLiteralExp? left, BoolLiteralExp? right)
-        {
-            return !(left == right);
-        }
     }
 
-    //public class BinaryOpExp : Exp
-    //{
-    //    public BinaryOpKind Kind { get; }
-    //    public Exp Operand0 { get; }
-    //    public Exp Operand1 { get; }
-        
-    //    public BinaryOpExp(BinaryOpKind kind, Exp operand0, Exp operand1)
-    //    {
-    //        Kind = kind;
-    //        Operand0 = operand0;
-    //        Operand1 = operand1;
-    //    }
-
-    //    public override bool Equals(object? obj)
-    //    {
-    //        return obj is BinaryOpExp exp &&
-    //               Kind == exp.Kind &&
-    //               EqualityComparer<Exp>.Default.Equals(Operand0, exp.Operand0) &&
-    //               EqualityComparer<Exp>.Default.Equals(Operand1, exp.Operand1);
-    //    }
-
-    //    public override int GetHashCode()
-    //    {
-    //        return HashCode.Combine(Kind, Operand0, Operand1);
-    //    }
-
-    //    public static bool operator ==(BinaryOpExp? left, BinaryOpExp? right)
-    //    {
-    //        return EqualityComparer<BinaryOpExp?>.Default.Equals(left, right);
-    //    }
-
-    //    public static bool operator !=(BinaryOpExp? left, BinaryOpExp? right)
-    //    {
-    //        return !(left == right);
-    //    }
-    //}
-
-    public enum InternalOperator
+    public enum InternalUnaryOperator
     {
         LogicalNot_Bool_Bool,
-        PrefixInc_Int_Void,
-        PrefixDec_Int_Void,
         UnaryMinus_Int_Int,
+
+        ToString_Int_String,
+    }
+
+    public enum InternalUnaryAssignOperator
+    {
+        PrefixInc_Int_Int,
+        PrefixDec_Int_Int,
+        PostfixInc_Int_Int,
+        PostfixDec_Int_Int,
+    }
+
+    public enum InternalBinaryOperator
+    {
         Multiply_Int_Int_Int,
         Divide_Int_Int_Int,
         Modulo_Int_Int_Int,
         Add_Int_Int_Int,
         Add_String_String_String,
-        Substract_Int_Int_Int,
+        Subtract_Int_Int_Int,
         LessThan_Int_Int_Bool,
         LessThan_String_String_Bool,
         GreaterThan_Int_Int_Bool,
@@ -213,342 +97,242 @@ namespace Gum.IR0
         Equal_Int_Int_Bool,
         Equal_Bool_Bool_Bool,
         Equal_String_String_Bool
-    }
+    }   
 
-    public class CallInternalOperatorExp : Exp
+    public class CallInternalUnaryOperatorExp : Exp
     {
-        public InternalOperator Operator { get; }
-        public ImmutableArray<ExpAndType> Operands { get; }
+        public InternalUnaryOperator Operator { get; }
+        public ExpInfo Operand { get; }
 
-        public CallInternalOperatorExp(InternalOperator op, IEnumerable<ExpAndType> operands) 
-        { 
+        public CallInternalUnaryOperatorExp(InternalUnaryOperator op, ExpInfo operand)
+        {
             Operator = op;
-            Operands = operands.ToImmutableArray();
+            Operand = operand;
         }
     }
 
-    public class PrefixExp : Exp
+    public class CallInternalUnaryAssignOperator : Exp
     {
+        public InternalUnaryAssignOperator Operator { get; }
         public Exp Operand { get; }
-        public PrefixExp(Exp operand) { Operand = operand; }
+        public CallInternalUnaryAssignOperator(InternalUnaryAssignOperator op, Exp operand)
+        {
+            Operator = op;
+            Operand = operand;
+        }
     }
 
-    public class PostfixExp : Exp
+    public class CallInternalBinaryOperatorExp : Exp
     {
-        public Exp Operand { get; }
-        public PostfixExp(Exp operand) { Operand = operand; }
+        public InternalBinaryOperator Operator { get; }
+        public ExpInfo Operand0 { get; }
+        public ExpInfo Operand1 { get; }
+
+        public CallInternalBinaryOperatorExp(InternalBinaryOperator op, ExpInfo operand0, ExpInfo operand1)
+        {
+            Operator = op;
+            Operand0 = operand0;
+            Operand1 = operand1;
+        }
     }
 
+    // a = b
     public class AssignExp : Exp
     {
         public Exp Dest { get; }
-        public Exp Src { get; }
-        public TypeValue SrcType { get; }
+        public Exp Src { get; }        
 
-        public AssignExp(Exp dest, Exp src, TypeValue srcType)
+        public AssignExp(Exp dest, Exp src)
         {
             Dest = dest;
             Src = src;
-            SrcType = srcType;
-        }
-
-    }
-
-    //public class UnaryOpExp : Exp
-    //{
-    //    public UnaryOpKind Kind { get; }
-    //    public Exp Operand{ get; }
-    //    public UnaryOpExp(UnaryOpKind kind, Exp operand)
-    //    {
-    //        Kind = kind;
-    //        Operand = operand;
-    //    }
-
-    //    public override bool Equals(object? obj)
-    //    {
-    //        return obj is UnaryOpExp exp &&
-    //               Kind == exp.Kind &&
-    //               EqualityComparer<Exp>.Default.Equals(Operand, exp.Operand);
-    //    }
-
-    //    public override int GetHashCode()
-    //    {
-    //        return HashCode.Combine(Kind, Operand);
-    //    }
-
-    //    public static bool operator ==(UnaryOpExp? left, UnaryOpExp? right)
-    //    {
-    //        return EqualityComparer<UnaryOpExp?>.Default.Equals(left, right);
-    //    }
-
-    //    public static bool operator !=(UnaryOpExp? left, UnaryOpExp? right)
-    //    {
-    //        return !(left == right);
-    //    }
-    //}
-
-    public struct ExpAndType
-    {
-        public Exp Exp { get; }
-        public TypeValue TypeValue { get; }
-
-        public ExpAndType(Exp exp, TypeValue typeValue)
-        {
-            Exp = exp;
-            TypeValue = typeValue;
         }
     }
 
+    // F(2, 3)
     public class CallFuncExp : Exp
     {
-        public FuncValue FuncValue { get; }
-        public (Exp Exp, TypeValue Type)? Instance { get; }
-        public ImmutableArray<ExpAndType> Args { get; }
+        public FuncId FuncId { get; }
+        public ImmutableArray<TypeId> TypeArgs { get; }
+        public ExpInfo? Instance { get; }
+        public ImmutableArray<ExpInfo> Args { get; }
 
-        public CallFuncExp(FuncValue funcValue, (Exp Exp, TypeValue Type)? instance, IEnumerable<ExpAndType> args)
+        public CallFuncExp(FuncId funcId, ExpInfo? instance, IEnumerable<ExpInfo> args)
         {
-            FuncValue = funcValue;
+            FuncId = funcId;
             Instance = instance;
             Args = args.ToImmutableArray();
         }
     }
 
-    public class CallValueExp : Exp
+    public class CallSeqFuncExp : Exp
     {
-        public Exp CallableExp { get; }
-        public TypeValue CallableType { get; }
-        public ImmutableArray<ExpAndType> Args { get; }
+        public SeqFuncId SeqFuncId { get; }
+        public ExpInfo? Instance { get; }
+        public ImmutableArray<ExpInfo> Args { get; }
 
-        public CallValueExp(Exp callableExp, TypeValue callableType, IEnumerable<ExpAndType> args)
+        public CallSeqFuncExp(SeqFuncId seqFuncId, ExpInfo? instance, IEnumerable<ExpInfo> args)
         {
-            CallableExp = callableExp;
-            CallableType = callableType;
+            SeqFuncId = seqFuncId;
+            Instance = instance;
             Args = args.ToImmutableArray();
         }
-
-
-
-
     }
 
+    // f(2, 3)
+    public class CallValueExp : Exp
+    {
+        public ExpInfo Callable { get; }        
+        public ImmutableArray<ExpInfo> Args { get; }
 
-    //public class CallExp : Exp
-    //{
-    //    public Exp Callable { get; }
-
-    //    public ImmutableArray<TypeValue> TypeArgs { get; }
-
-    //    // TODO: params, out, 등 처리를 하려면 Exp가 아니라 다른거여야 한다
-    //    public ImmutableArray<Exp> Args { get; }
-
-    //    public CallExp(Exp callable, IEnumerable<TypeValue> typeArgs, IEnumerable<Exp> args)
-    //    {
-    //        Callable = callable;
-    //        TypeArgs = typeArgs.ToImmutableArray();
-    //        Args = args.ToImmutableArray();
-    //    }
-
-    //    public CallExp(Exp callable, IEnumerable<TypeValue> typeArgs, params Exp[] args)
-    //    {
-    //        Callable = callable;
-    //        TypeArgs = typeArgs.ToImmutableArray();
-    //        Args = ImmutableArray.Create(args);
-    //    }
-
-    //    public override bool Equals(object? obj)
-    //    {
-    //        return obj is CallExp exp &&
-    //               EqualityComparer<Exp>.Default.Equals(Callable, exp.Callable) &&
-    //               Enumerable.SequenceEqual(TypeArgs, exp.TypeArgs) &&
-    //               Enumerable.SequenceEqual(Args, exp.Args);
-    //    }
-
-    //    public override int GetHashCode()
-    //    {
-    //        return HashCode.Combine(Callable, Args);
-    //    }
-
-    //    public static bool operator ==(CallExp? left, CallExp? right)
-    //    {
-    //        return EqualityComparer<CallExp?>.Default.Equals(left, right);
-    //    }
-
-    //    public static bool operator !=(CallExp? left, CallExp? right)
-    //    {
-    //        return !(left == right);
-    //    }
-    //}
-        
+        public CallValueExp(ExpInfo callable, IEnumerable<ExpInfo> args)
+        {
+            Callable = callable;
+            Args = args.ToImmutableArray();
+        }
+    }
+    
+    // () => { return 1; }
     public class LambdaExp : Exp
     {
         public CaptureInfo CaptureInfo { get; }
+        public ImmutableArray<string> ParamNames { get; }
         public Stmt Body { get; }
 
-        public LambdaExp(CaptureInfo captureInfo, Stmt body)
+        public LambdaExp(CaptureInfo captureInfo, IEnumerable<string> paramNames, Stmt body)
         {
             CaptureInfo = captureInfo;
+            ParamNames = paramNames.ToImmutableArray();
             Body = body;
         }
     }
     
-    // a[b]
-    public class IndexerExp : Exp
+    // l[b], l is list
+    public class ListIndexerExp : Exp
     {
-        public FuncValue FuncValue { get; }
+        public ExpInfo ListInfo { get; }
+        public ExpInfo IndexInfo { get; }
 
-        public Exp Object { get; }
-        public TypeValue ObjectType { get; }
-        public Exp Index { get; }
-        public TypeValue IndexType { get; }
-
-
-        public IndexerExp(FuncValue funcValue, Exp obj, TypeValue objType, Exp index, TypeValue indexType)
+        public ListIndexerExp(ExpInfo listInfo, ExpInfo indexInfo)
         {
-            FuncValue = funcValue;
-            Object = obj;
-            ObjectType = objType;
-            Index = index;
-            IndexType = indexType;
+            ListInfo = listInfo;
+            IndexInfo = indexInfo;
         }
     }
 
-    public class MemberCallExp : Exp
+    public class StaticMemberExp : Exp
     {
-        public Exp Object { get; }
+        public TypeId TypeId { get; }
         public string MemberName { get; }
-        public ImmutableArray<TypeValue> MemberTypeArgs { get; }
-        public ImmutableArray<Exp> Args { get; }
 
-        public MemberCallExp(Exp obj, string memberName, IEnumerable<TypeValue> typeArgs, IEnumerable<Exp> args)
+        public StaticMemberExp(TypeId typeId, string memberName)
         {
-            Object = obj;
+            TypeId = typeId;
             MemberName = memberName;
-            MemberTypeArgs = typeArgs.ToImmutableArray();
-            Args = args.ToImmutableArray();
-        }
-
-        public MemberCallExp(Exp obj, string memberName, IEnumerable<TypeValue> typeArgs, params Exp[] args)
-        {
-            Object = obj;
-            MemberName = memberName;
-            MemberTypeArgs = typeArgs.ToImmutableArray();
-            Args = ImmutableArray.Create(args);
-        }
-
-        public override bool Equals(object? obj)
-        {
-            return obj is MemberCallExp exp &&
-                   EqualityComparer<Exp>.Default.Equals(Object, exp.Object) &&
-                   MemberName == exp.MemberName &&
-                   Enumerable.SequenceEqual(MemberTypeArgs, exp.MemberTypeArgs) &&
-                   Enumerable.SequenceEqual(Args, exp.Args);
-        }
-
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(Object, MemberName, Args);
-        }
-
-        public static bool operator ==(MemberCallExp? left, MemberCallExp? right)
-        {
-            return EqualityComparer<MemberCallExp?>.Default.Equals(left, right);
-        }
-
-        public static bool operator !=(MemberCallExp? left, MemberCallExp? right)
-        {
-            return !(left == right);
         }
     }
 
-    public class MemberExp : Exp
+    public class StructMemberExp : Exp
     {
-        public Exp Object { get; }
+        public Exp Instance { get; }
         public string MemberName { get; }
-        public ImmutableArray<TypeValue> MemberTypeArgs { get; }
 
-        public MemberExp(Exp obj, string memberName, IEnumerable<TypeValue> memberTypeArgs)
+        public StructMemberExp(Exp instance, string memberName)
         {
-            Object = obj;
+            Instance = instance;
             MemberName = memberName;
-            MemberTypeArgs = memberTypeArgs.ToImmutableArray();
-        }
-
-        public override bool Equals(object? obj)
-        {
-            return obj is MemberExp exp &&
-                   EqualityComparer<Exp>.Default.Equals(Object, exp.Object) &&
-                   MemberName == exp.MemberName &&
-                   Enumerable.SequenceEqual(MemberTypeArgs, exp.MemberTypeArgs);
-        }
-
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(Object, MemberName);
-        }
-
-        public static bool operator ==(MemberExp? left, MemberExp? right)
-        {
-            return EqualityComparer<MemberExp?>.Default.Equals(left, right);
-        }
-
-        public static bool operator !=(MemberExp? left, MemberExp? right)
-        {
-            return !(left == right);
         }
     }
 
+    public class ClassMemberExp : Exp
+    {
+        public Exp Instance { get; }
+        public string MemberName { get; }
+        public ClassMemberExp(Exp instance, string memberName)
+        {
+            Instance = instance;
+            MemberName = memberName;
+        }
+    }
+
+    public class EnumMemberExp : Exp
+    {
+        public Exp Instance { get; }
+        public string MemberName { get; }
+        public EnumMemberExp(Exp instance, string memberName)
+        {
+            Instance = instance;
+            MemberName = memberName;
+        }
+
+    }
+
+    // [1, 2, 3]
     public class ListExp : Exp
     {
-        public TypeValue ElemType { get; }
+        public TypeId ElemTypeId { get; }
         public ImmutableArray<Exp> Elems { get; }
 
-        public ListExp(TypeValue elemType, IEnumerable<Exp> elems)
+        public ListExp(TypeId elemTypeId, IEnumerable<Exp> elems)
         {
-            ElemType = elemType;
+            ElemTypeId = elemTypeId;
             Elems = elems.ToImmutableArray();
         }
     }
 
-    // new Type(2, 3, 4);
-    public class NewExp : Exp
+    // enum construction, E.First or E.Second(2, 3)
+    public class NewEnumExp : Exp
     {
-        public TypeValue Type { get; }
+        public struct Elem
+        {
+            public string Name { get; }
+            public ExpInfo ExpInfo { get; }
+
+            public Elem(string name, ExpInfo expInfo)
+            {
+                Name = name;
+                ExpInfo = expInfo;
+            }
+        }
+
+        public string Name { get; }
+
+        public ImmutableArray<Elem> Members { get; }
+
+        public NewEnumExp(string name, IEnumerable<Elem> members)
+        {
+            Name = name;
+            Members = members.ToImmutableArray();
+        }
+    }
+
+    // new S(2, 3, 4);
+    public class NewStructExp : Exp
+    {
+        public TypeId Type { get; }
 
         // TODO: params, out, 등 처리를 하려면 Exp가 아니라 다른거여야 한다
-        public ImmutableArray<Exp> Args { get; }
-        
-        public NewExp(TypeValue type, IEnumerable<Exp> args)
+        public ImmutableArray<ExpInfo> Args { get; }
+
+        public NewStructExp(TypeId type, IEnumerable<ExpInfo> args)
         {
             Type = type;
             Args = args.ToImmutableArray();
         }
-
-        public override bool Equals(object? obj)
-        {
-            return obj is NewExp exp &&
-                   EqualityComparer<TypeValue>.Default.Equals(Type, exp.Type) &&
-                   SeqEqComparer.Equals(Args, exp.Args);
-        }
-
-        public override int GetHashCode()
-        {
-            var hashCode = new HashCode();
-            hashCode.Add(Type);
-            SeqEqComparer.AddHash(ref hashCode, Args);
-
-            return hashCode.ToHashCode();
-        }
-
-        public static bool operator ==(NewExp? left, NewExp? right)
-        {
-            return EqualityComparer<NewExp?>.Default.Equals(left, right);
-        }
-
-        public static bool operator !=(NewExp? left, NewExp? right)
-        {
-            return !(left == right);
-        }
     }
 
+    // new C(2, 3, 4);
+    public class NewClassExp : Exp
+    {
+        public TypeId Type { get; }
 
+        // TODO: params, out, 등 처리를 하려면 Exp가 아니라 다른거여야 한다
+        public ImmutableArray<ExpInfo> Args { get; }
+        
+        public NewClassExp(TypeId type, IEnumerable<ExpInfo> args)
+        {
+            Type = type;
+            Args = args.ToImmutableArray();
+        }
+    }
 }

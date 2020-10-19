@@ -39,7 +39,7 @@ namespace Gum.Runtime
 
         public override Value MakeDefaultValue()
         {
-            return new FuncInstValue();
+            return new LambdaValue();
         }
     }
 

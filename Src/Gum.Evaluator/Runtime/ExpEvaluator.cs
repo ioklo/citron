@@ -1,5 +1,4 @@
 ﻿using Gum.Runtime;
-using Gum.StaticAnalysis;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -25,51 +24,7 @@ namespace Gum.Runtime
             this.evaluator = evaluator;
         }
         
-        public async ValueTask<Value> GetValueAsync(StorageInfo storageInfo, EvalContext context)
-        {
-            switch(storageInfo)
-            {
-                // 모듈
-                case StorageInfo.ModuleGlobal mgs:
-                    return context.DomainService.GetGlobalValue(mgs.VarId);
-
-                // 스크립트
-                case StorageInfo.PrivateGlobal pgs:
-                    return context.GetPrivateGlobalValue(pgs.Index);
-
-                // 함수
-                case StorageInfo.Local ls:
-                    return context.GetLocalValue(ls.Index);
-
-                // enum값
-                case StorageInfo.EnumElem ees:
-                    return new EnumValue(ees.Name, Enumerable.Empty<(string, Value)>());
-
-                case StorageInfo.StaticMember sms:
-                    {
-                        if (sms.ObjectInfo != null)
-                        {
-                            var objValue = evaluator.GetDefaultValue(sms.ObjectInfo.Value.TypeValue, context);
-                            await evaluator.EvalExpAsync(sms.ObjectInfo.Value.Exp, objValue, context);
-                        }
-
-                        // object와는 별개로 static value를 가져온다
-                        return context.GetStaticValue(sms.VarValue);
-                    }
-
-                case StorageInfo.InstanceMember ims:
-                    {
-                        var objValue = evaluator.GetDefaultValue(ims.ObjectTypeValue, context);
-                        await evaluator.EvalExpAsync(ims.ObjectExp, objValue, context);
-
-                        return evaluator.GetMemberValue(objValue, ims.VarName);
-                    }
-
-                default:
-                    throw new NotImplementedException();
-            };
-        }
-
+        
         async ValueTask<Value> GetValueAsync(Exp exp, EvalContext context)
         {
             switch(exp)
@@ -82,18 +37,22 @@ namespace Gum.Runtime
 
                 case LocalVarExp localVarExp:
                     return context.GetLocalValue(localVarExp.Name);
+
+                case StaticMemberExp staticMemberExp:
+                    var staticValue = (StaticValue)context.GetStaticValue(staticMemberExp.TypeId);
+                    return staticValue.GetMemberValue(staticMemberExp.MemberName);
                 
                 case StructMemberExp structMemberExp:
-                    var instValue = (StructValue)await GetValueAsync(structMemberExp.Object, context);
-                    return instValue.GetMemberValue(structMemberExp.MemberName);
+                    var structValue = (StructValue)await GetValueAsync(structMemberExp.Instance, context);
+                    return structValue.GetMemberValue(structMemberExp.MemberName);
 
                 case ClassMemberExp classMemberExp:
-                    var instValue = (ClassValue)await GetValueAsync(classMemberExp.Object, context);
-                    return instValue.GetMemberValue(classMemberExp.MemberName);
+                    var classValue = (ClassValue)await GetValueAsync(classMemberExp.Instance, context);
+                    return classValue.GetMemberValue(classMemberExp.MemberName);
 
                 case EnumMemberExp enumMemberExp:
-                    var instValue = (EnumValue)await GetValueAsync(enumMemberExp.Object, context);
-                    return instValue.GetMemberValue(enumMemberExp.MemberName);
+                    var enumValue = (EnumValue)await GetValueAsync(enumMemberExp.Instance, context);
+                    return enumValue.GetMemberValue(enumMemberExp.MemberName);
 
                 default: 
                     throw new InvalidOperationException();
@@ -116,15 +75,43 @@ namespace Gum.Runtime
             var localValue = context.GetLocalValue(exp.Name);
             result.SetValue(localValue);
         }        
-        
+
+        void EvalStaticMemberExp(StaticMemberExp exp, Value result, EvalContext context)
+        {
+            var staticValue = (StaticValue)context.GetStaticValue(exp.TypeId);
+            var memberValue = staticValue.GetMemberValue(exp.MemberName);
+            result.SetValue(memberValue);
+        }
+
+        async ValueTask EvalStructMemberExpAsync(StructMemberExp exp, Value result, EvalContext context)
+        {
+            var structValue = (StructValue)await GetValueAsync(exp.Instance, context);
+            var memberValue = structValue.GetMemberValue(exp.MemberName);
+            result.SetValue(memberValue);
+        }
+
+        async ValueTask EvalClassMemberExpAsync(ClassMemberExp exp, Value result, EvalContext context)
+        {
+            var classValue = (ClassValue)await GetValueAsync(exp.Instance, context);
+            var memberValue = classValue.GetMemberValue(exp.MemberName);
+            result.SetValue(memberValue);
+        }
+
+        async ValueTask EvalEnumMemberExpAsync(EnumMemberExp exp, Value result, EvalContext context)
+        {
+            var enumValue = (EnumValue)await GetValueAsync(exp.Instance, context);
+            var memberValue = enumValue.GetMemberValue(exp.MemberName);
+            result.SetValue(memberValue);
+        }
+
         void EvalBoolLiteralExp(BoolLiteralExp boolLiteralExp, Value result, EvalContext context)
         {
-            context.RuntimeModule.SetBool(result, boolLiteralExp.Value);
+            ((BoolValue)result).SetBool(boolLiteralExp.Value);
         }
 
         void EvalIntLiteralExp(IntLiteralExp intLiteralExp, Value result, EvalContext context)
         {
-            context.RuntimeModule.SetInt(result, intLiteralExp.Value);
+            ((IntValue)result).SetInt(intLiteralExp.Value);
         }
 
         internal async ValueTask EvalStringExpAsync(StringExp stringExp, Value result, EvalContext context)
@@ -141,11 +128,9 @@ namespace Gum.Runtime
 
                     case ExpStringExpElement expElem:
                         {
-                            var tempValue = evaluator.GetDefaultValue(expElem.ExpTypeValue, context);
-
-                            await EvalAsync(expElem.Exp, tempValue, context);
-                            var strValue = context.RuntimeModule.GetString(tempValue!);
-                            sb.Append(strValue);
+                            var strValue = evaluator.AllocValue<StringValue>(expElem.Exp.TypeId, context);
+                            await EvalAsync(expElem.Exp.Exp, strValue, context);
+                            sb.Append(strValue.GetString());
                             break;
                         }
 
@@ -154,7 +139,7 @@ namespace Gum.Runtime
                 }
             }
 
-            context.RuntimeModule.SetString(context.DomainService, result, sb.ToString());
+            ((StringValue)result).SetString(sb.ToString());
         }
 
         async ValueTask EvalAssignExpAsync(AssignExp exp, Value result, EvalContext context)
@@ -164,648 +149,114 @@ namespace Gum.Runtime
             await EvalAsync(exp.Src, destValue, context);
 
             result.SetValue(destValue);
-        }
-
-        // ++x; => x.Inc(); result = x;
-        async ValueTask EvalPrefixExpAsync(PrefixExp exp, Value result, EvalContext context)
-        {
-            var operand = await GetValueAsync(exp.Operand, context);
-
-
-            await EvalAsync(exp.Exp, VoidValue.Instance, context);
-            
-
-        }
-
-        async ValueTask EvalUnaryOpExpAssignAsync(UnaryOpExp exp, Value result, EvalContext context)
-        {
-            async ValueTask EvalDirectAsync(UnaryOpExpAssignInfo.Direct directInfo)
-            {
-                // postfix
-                if (directInfo.bReturnPrevValue)
-                {
-                    var oldValue = evaluator.GetDefaultValue(directInfo.ValueTypeValue, context);
-                    var operatorInst = context.DomainService.GetFuncInst(directInfo.OperatorValue);
-
-                    // universal getValue 
-                    var loc = await GetValueAsync(directInfo.StorageInfo, context);
-
-                    oldValue.SetValue(loc);
-
-                    await evaluator.EvaluateFuncInstAsync(null, operatorInst, new Value[] { oldValue }, loc, context);
-
-                    result.SetValue(oldValue);
-                }
-                else
-                {
-                    var oldValue = evaluator.GetDefaultValue(directInfo.ValueTypeValue, context);
-                    var operatorInst = context.DomainService.GetFuncInst(directInfo.OperatorValue);
-
-                    var loc = await GetValueAsync(directInfo.StorageInfo, context);
-
-                    oldValue.SetValue(loc);
-
-                    await evaluator.EvaluateFuncInstAsync(null, operatorInst, new Value[] { oldValue }, loc, context);
-
-                    result.SetValue(loc);
-                }
-            }
-
-            async ValueTask EvalCallFuncAsync(UnaryOpExpAssignInfo.CallFunc callFuncInfo)
-            {
-                Value? thisValue = null;
-
-                if (callFuncInfo.ObjectExp != null)
-                {
-                    thisValue = evaluator.GetDefaultValue(callFuncInfo.ObjectTypeValue!, context);
-                    await evaluator.EvalExpAsync(callFuncInfo.ObjectExp, thisValue, context);
-                }
-
-                var argValues = new List<Value>(callFuncInfo.Arguments.Length);
-                foreach (var arg in callFuncInfo.Arguments)
-                {
-                    var argValue = evaluator.GetDefaultValue(arg.TypeValue, context);
-                    await evaluator.EvalExpAsync(arg.Exp, argValue, context);
-                    argValues.Add(argValue);
-                }
-
-                // postfix
-                if (callFuncInfo.bReturnPrevValue)
-                {
-                    var v0 = evaluator.GetDefaultValue(callFuncInfo.ValueTypeValue0, context);
-                    var v1 = evaluator.GetDefaultValue(callFuncInfo.ValueTypeValue1, context);
-                    var getterInst = context.DomainService.GetFuncInst(callFuncInfo.Getter);
-                    var operatorInst = context.DomainService.GetFuncInst(callFuncInfo.Operator);
-                    var setterInst = context.DomainService.GetFuncInst(callFuncInfo.Setter);
-
-                    // v0 = obj.GetX()
-                    await evaluator.EvaluateFuncInstAsync(thisValue, getterInst, argValues, v0, context);
-
-                    // v1 = operatorInc(v0);
-                    await evaluator.EvaluateFuncInstAsync(null, operatorInst, new Value[] { v0 }, v1, context);
-
-                    // obj.SetX(v1)
-                    argValues.Add(v1);
-                    await evaluator.EvaluateFuncInstAsync(thisValue, setterInst, argValues, VoidValue.Instance, context);
-
-                    // return v0
-                    result.SetValue(v0);
-                }
-                else
-                {
-                    var v0 = evaluator.GetDefaultValue(callFuncInfo.ValueTypeValue0, context);
-                    var v1 = evaluator.GetDefaultValue(callFuncInfo.ValueTypeValue1, context);
-                    var getterInst = context.DomainService.GetFuncInst(callFuncInfo.Getter);
-                    var operatorInst = context.DomainService.GetFuncInst(callFuncInfo.Operator);
-                    var setterInst = context.DomainService.GetFuncInst(callFuncInfo.Setter);
-
-                    // v0 = obj.GetX()
-                    await evaluator.EvaluateFuncInstAsync(thisValue, getterInst, argValues, v0, context);
-
-                    // v1 = operatorInc(v0);
-                    await evaluator.EvaluateFuncInstAsync(null, operatorInst, new Value[] { v0 }, v1, context);
-
-                    // obj.SetX(v1)
-                    argValues.Add(v1);
-                    await evaluator.EvaluateFuncInstAsync(thisValue, setterInst, argValues, VoidValue.Instance, context);
-
-                    // return v1
-                    result.SetValue(v1);
-                }
-            }
-
-            var info = context.GetNodeInfo<UnaryOpExpAssignInfo>(exp);
-
-            if (info is UnaryOpExpAssignInfo.Direct directInfo)
-                await EvalDirectAsync(directInfo);
-            else if (info is UnaryOpExpAssignInfo.CallFunc callFuncInfo)
-                await EvalCallFuncAsync(callFuncInfo);
-            else
-                throw new InvalidOperationException();
-        }
-
-        async ValueTask EvalUnaryOpExpAsync(UnaryOpExp exp, Value result, EvalContext context)
-        {
-            switch (exp.Kind)
-            {
-                case UnaryOpKind.PostfixInc:  // i++                
-                case UnaryOpKind.PostfixDec: // i--
-                case UnaryOpKind.PrefixInc: // ++i
-                case UnaryOpKind.PrefixDec: // --i
-                    await EvalUnaryOpExpAssignAsync(exp, result, context);
-                    return;
-
-                case UnaryOpKind.LogicalNot:
-                    {
-                        // 같은 타입이니 result 재사용
-                        await EvalAsync(exp.Operand, result, context);
-                        var boolValue = context.RuntimeModule.GetBool(result);
-                        context.RuntimeModule.SetBool(result, !boolValue);
-                        return;
-                    }
-
-                case UnaryOpKind.Minus: // -i
-                    {
-                        // 타입이 같으므로 재사용
-                        await EvalAsync(exp.Operand, result, context);
-                        var intValue = context.RuntimeModule.GetInt(result);
-                        context.RuntimeModule.SetInt(result, -intValue);
-                        return;
-                    }
-            }
-
-            throw new NotImplementedException();
-        }
-
-        private ValueTask EvalBinaryAssignExpAsync(BinaryOpExp exp, Value result, EvalContext context)
-        {
-            // 내부함수는 꼭 필요하지 않은 이상 한 단계 아래로 만들지 않기로
-
-            // x = 3, e.m = 3, C.m = 3, ...
-            async ValueTask EvalDirectAsync(BinaryOpExpAssignInfo.Direct directInfo)
-            {
-                var loc = await GetValueAsync(directInfo.StorageInfo, context);
-                await evaluator.EvalExpAsync(exp.Operand1, loc, context);
-                result.SetValue(loc);
-            }
-             
-            // property, indexer
-            async ValueTask EvalCallSetterAsync(BinaryOpExpAssignInfo.CallSetter callSetterInfo)
-            {
-                Value? thisValue = null;
-
-                // 1. Object 부분 실행
-                if (callSetterInfo.Object != null)
-                {
-                    thisValue = evaluator.GetDefaultValue(callSetterInfo.ObjectTypeValue!, context);
-                    await evaluator.EvalExpAsync(callSetterInfo.Object, thisValue, context);
-                }
-
-                var argValues = new List<Value>(callSetterInfo.Arguments.Length);
-
-                // 2. operand1 실행
-                var value = evaluator.GetDefaultValue(callSetterInfo.ValueTypeValue, context);
-                await evaluator.EvalExpAsync(exp.Operand1, value, context);
-
-                // 3. set value 호출 Object.Setter(Operand1)
-                foreach (var arg in callSetterInfo.Arguments)
-                {
-                    var argValue = evaluator.GetDefaultValue(arg.TypeValue, context);
-                    await evaluator.EvalExpAsync(arg.Exp, argValue, context);
-                    argValues.Add(argValue);
-                }
-
-                argValues.Add(value);
-
-                var setterInst = context.DomainService.GetFuncInst(callSetterInfo.Setter);
-                await evaluator.EvaluateFuncInstAsync(thisValue, setterInst, argValues, VoidValue.Instance, context);
-
-                // 4. result는 operand1실행 결과
-                result.SetValue(value);
-            }
-
-            // BODY
-            var info = context.GetNodeInfo<BinaryOpExpAssignInfo>(exp);
-
-            if (info is BinaryOpExpAssignInfo.Direct directInfo)
-                return EvalDirectAsync(directInfo);
-            else if (info is BinaryOpExpAssignInfo.CallSetter callSetterInfo)
-                return EvalCallSetterAsync(callSetterInfo);
-            else
-                throw new InvalidOperationException();
-        }
-
-        async ValueTask EvalBinaryOpExpAsync(BinaryOpExp exp, Value result, EvalContext context)
-        {
-            switch (exp.Kind)
-            {
-                case BinaryOpKind.Multiply:
-                    {
-                        await EvalAsync(exp.Operand0, result, context);
-                        var intValue0 = context.RuntimeModule.GetInt(result);
-
-                        await EvalAsync(exp.Operand1, result, context);                        
-                        var intValue1 = context.RuntimeModule.GetInt(result);
-
-                        context.RuntimeModule.SetInt(result, intValue0 * intValue1);
-                        return;
-                    }
-
-                case BinaryOpKind.Divide:
-                    {
-                        await EvalAsync(exp.Operand0, result, context);
-                        var intValue0 = context.RuntimeModule.GetInt(result);
-
-                        await EvalAsync(exp.Operand1, result, context);
-                        var intValue1 = context.RuntimeModule.GetInt(result);
-
-                        context.RuntimeModule.SetInt(result, intValue0 / intValue1);
-                        return;
-                    }
-
-                case BinaryOpKind.Modulo:
-                    {
-                        await EvalAsync(exp.Operand0, result, context);
-                        var intValue0 = context.RuntimeModule.GetInt(result);
-
-                        await EvalAsync(exp.Operand1, result, context);
-                        var intValue1 = context.RuntimeModule.GetInt(result);
-
-                        context.RuntimeModule.SetInt(result, intValue0 % intValue1);
-                        return;
-                    }
-
-                case BinaryOpKind.Add:
-                    {
-                        var info = context.GetNodeInfo<BinaryOpExpInfo>(exp);
-
-                        // TODO: 이쪽은 operator+로 교체될 것이므로 임시로 하드코딩
-                        if (info.Type == BinaryOpExpInfo.OpType.Integer)
-                        {
-                            await EvalAsync(exp.Operand0, result, context);
-                            var intValue0 = context.RuntimeModule.GetInt(result);
-
-                            await EvalAsync(exp.Operand1, result, context);
-                            var intValue1 = context.RuntimeModule.GetInt(result);
-
-                            context.RuntimeModule.SetInt(result, intValue0 + intValue1);
-                            return;
-                        }
-                        else if (info.Type == BinaryOpExpInfo.OpType.String)
-                        {
-                            await EvalAsync(exp.Operand0, result, context);
-                            var strValue0 = context.RuntimeModule.GetString(result);
-
-                            await EvalAsync(exp.Operand1, result, context);
-                            var strValue1 = context.RuntimeModule.GetString(result);
-
-                            context.RuntimeModule.SetString(context.DomainService, result, strValue0 + strValue1);
-                            return;
-                        }
-                        else
-                        {
-                            throw new InvalidOperationException();
-                        }
-                    }
-
-                case BinaryOpKind.Subtract:
-                    {
-                        await EvalAsync(exp.Operand0, result, context);
-                        var intValue0 = context.RuntimeModule.GetInt(result);
-
-                        await EvalAsync(exp.Operand1, result, context);
-                        var intValue1 = context.RuntimeModule.GetInt(result);
-
-                        context.RuntimeModule.SetInt(result, intValue0 - intValue1);
-                        return;
-                    }
-
-                case BinaryOpKind.LessThan:
-                    {
-                        // TODO: 이쪽은 operator<로 교체될 것이므로 임시로 하드코딩
-                        var info = context.GetNodeInfo<BinaryOpExpInfo>(exp);
-
-                        if (info.Type == BinaryOpExpInfo.OpType.Integer)
-                        {
-                            // TODO: 이것도 지역변수로 할당해야 한다
-                            var tempInt = context.RuntimeModule.MakeInt(0);
-
-                            await EvalAsync(exp.Operand0, tempInt, context);
-                            var intValue0 = context.RuntimeModule.GetInt(tempInt);
-
-                            await EvalAsync(exp.Operand1, tempInt, context);
-                            var intValue1 = context.RuntimeModule.GetInt(tempInt);
-
-                            context.RuntimeModule.SetBool(result, intValue0 < intValue1);
-                            return;
-                        }
-                        else if (info.Type == BinaryOpExpInfo.OpType.String)
-                        {
-                            var tempStr = context.RuntimeModule.MakeNullObject();
-
-                            await EvalAsync(exp.Operand0, tempStr, context);
-                            var strValue0 = context.RuntimeModule.GetString(tempStr);
-
-                            await EvalAsync(exp.Operand1, tempStr, context);
-                            var strValue1 = context.RuntimeModule.GetString(tempStr);
-
-                            context.RuntimeModule.SetBool(result, strValue0.CompareTo(strValue1) < 0);
-                            return;
-                        }
-                        else
-                        {
-                            throw new InvalidOperationException();
-                        }
-                    }
-
-                case BinaryOpKind.GreaterThan:
-                    {
-                        // TODO: 이쪽은 operator> 로 교체될 것이므로 임시로 하드코딩
-                        var info = context.GetNodeInfo<BinaryOpExpInfo>(exp);
-
-                        if (info.Type == BinaryOpExpInfo.OpType.Integer)
-                        {
-                            // TODO: 이것도 지역변수로 할당해야 한다
-                            var tempInt = context.RuntimeModule.MakeInt(0);
-
-                            await EvalAsync(exp.Operand0, tempInt, context);
-                            var intValue0 = context.RuntimeModule.GetInt(tempInt);
-
-                            await EvalAsync(exp.Operand1, tempInt, context);
-                            var intValue1 = context.RuntimeModule.GetInt(tempInt);
-
-                            context.RuntimeModule.SetBool(result, intValue0 > intValue1);
-                            return;
-                        }
-                        else if (info.Type == BinaryOpExpInfo.OpType.String)
-                        {
-                            var tempStr = context.RuntimeModule.MakeNullObject();
-
-                            await EvalAsync(exp.Operand0, tempStr, context);
-                            var strValue0 = context.RuntimeModule.GetString(tempStr);
-
-                            await EvalAsync(exp.Operand1, tempStr, context);
-                            var strValue1 = context.RuntimeModule.GetString(tempStr);
-
-                            context.RuntimeModule.SetBool(result, strValue0.CompareTo(strValue1) > 0);
-                            return;
-                        }
-                        else
-                        {
-                            throw new InvalidOperationException();
-                        }
-                    }
-
-                case BinaryOpKind.LessThanOrEqual:
-                    {
-                        // TODO: 이쪽은 operator<=로 교체될 것이므로 임시로 하드코딩
-                        var info = context.GetNodeInfo<BinaryOpExpInfo>(exp);
-
-                        if (info.Type == BinaryOpExpInfo.OpType.Integer)
-                        {
-                            // TODO: 이것도 지역변수로 할당해야 한다
-                            var tempInt = context.RuntimeModule.MakeInt(0);
-
-                            await EvalAsync(exp.Operand0, tempInt, context);
-                            var intValue0 = context.RuntimeModule.GetInt(tempInt);
-
-                            await EvalAsync(exp.Operand1, tempInt, context);
-                            var intValue1 = context.RuntimeModule.GetInt(tempInt);
-
-                            context.RuntimeModule.SetBool(result, intValue0 <= intValue1);
-                            return;
-                        }
-                        else if (info.Type == BinaryOpExpInfo.OpType.String)
-                        {
-                            var tempStr = context.RuntimeModule.MakeNullObject();
-
-                            await EvalAsync(exp.Operand0, tempStr, context);
-                            var strValue0 = context.RuntimeModule.GetString(tempStr);
-
-                            await EvalAsync(exp.Operand1, tempStr, context);
-                            var strValue1 = context.RuntimeModule.GetString(tempStr);
-
-                            context.RuntimeModule.SetBool(result, strValue0.CompareTo(strValue1) <= 0);
-                            return;
-                        }
-                        else
-                        {
-                            throw new InvalidOperationException();
-                        }
-                    }
-
-                case BinaryOpKind.GreaterThanOrEqual:
-                    {
-                        // TODO: 이쪽은 operator>=로 교체될 것이므로 임시로 하드코딩
-                        var info = context.GetNodeInfo<BinaryOpExpInfo>(exp);
-
-                        if (info.Type == BinaryOpExpInfo.OpType.Integer)
-                        {
-                            // TODO: 이것도 지역변수로 할당해야 한다
-                            var tempInt = context.RuntimeModule.MakeInt(0);
-
-                            await EvalAsync(exp.Operand0, tempInt, context);
-                            var intValue0 = context.RuntimeModule.GetInt(tempInt);
-
-                            await EvalAsync(exp.Operand1, tempInt, context);
-                            var intValue1 = context.RuntimeModule.GetInt(tempInt);
-
-                            context.RuntimeModule.SetBool(result, intValue0 >= intValue1);
-                            return;
-                        }
-                        else if (info.Type == BinaryOpExpInfo.OpType.String)
-                        {
-                            var tempStr = context.RuntimeModule.MakeNullObject();
-
-                            await EvalAsync(exp.Operand0, tempStr, context);
-                            var strValue0 = context.RuntimeModule.GetString(tempStr);
-
-                            await EvalAsync(exp.Operand1, tempStr, context);
-                            var strValue1 = context.RuntimeModule.GetString(tempStr);
-
-                            context.RuntimeModule.SetBool(result, strValue0.CompareTo(strValue1) >= 0);
-                            return;
-                        }
-                        else
-                        {
-                            throw new InvalidOperationException();
-                        }
-                    }
-
-                case BinaryOpKind.Equal:
-                    {
-                        // TODO: 이쪽은 operator>=로 교체될 것이므로 임시로 하드코딩
-                        var info = context.GetNodeInfo<BinaryOpExpInfo>(exp);
-
-                        if (info.Type == BinaryOpExpInfo.OpType.Integer)
-                        {
-                            // TODO: 이것도 지역변수로 할당해야 한다
-                            var tempInt = context.RuntimeModule.MakeInt(0);
-
-                            await EvalAsync(exp.Operand0, tempInt, context);
-                            var intValue0 = context.RuntimeModule.GetInt(tempInt);
-
-                            await EvalAsync(exp.Operand1, tempInt, context);
-                            var intValue1 = context.RuntimeModule.GetInt(tempInt);
-
-                            context.RuntimeModule.SetBool(result, intValue0 == intValue1);
-                            return;
-                        }
-                        else if (info.Type == BinaryOpExpInfo.OpType.String)
-                        {
-                            var tempStr = context.RuntimeModule.MakeNullObject();
-
-                            await EvalAsync(exp.Operand0, tempStr, context);
-                            var strValue0 = context.RuntimeModule.GetString(tempStr);
-
-                            await EvalAsync(exp.Operand1, tempStr, context);
-                            var strValue1 = context.RuntimeModule.GetString(tempStr);
-
-                            context.RuntimeModule.SetBool(result, strValue0.CompareTo(strValue1) == 0);
-                            return;
-                        }
-                        else if (info.Type == BinaryOpExpInfo.OpType.Bool)
-                        {
-                            var tempBool = context.RuntimeModule.MakeBool(false);
-
-                            await EvalAsync(exp.Operand0, tempBool, context);
-                            var boolValue0 = context.RuntimeModule.GetBool(tempBool);
-
-                            await EvalAsync(exp.Operand1, tempBool, context);
-                            var boolValue1 = context.RuntimeModule.GetBool(tempBool);
-
-                            context.RuntimeModule.SetBool(result, boolValue0 == boolValue1);
-                            return;
-                        }
-                        else
-                        {
-                            throw new InvalidOperationException();
-                        }
-                    }
-
-                case BinaryOpKind.NotEqual:
-                    {
-                        // TODO: 이쪽은 operator>=로 교체될 것이므로 임시로 하드코딩
-                        var info = context.GetNodeInfo<BinaryOpExpInfo>(exp);
-
-                        if (info.Type == BinaryOpExpInfo.OpType.Integer)
-                        {
-                            // TODO: 이것도 지역변수로 할당해야 한다
-                            var tempInt = context.RuntimeModule.MakeInt(0);
-
-                            await EvalAsync(exp.Operand0, tempInt, context);
-                            var intValue0 = context.RuntimeModule.GetInt(tempInt);
-
-                            await EvalAsync(exp.Operand1, tempInt, context);
-                            var intValue1 = context.RuntimeModule.GetInt(tempInt);
-
-                            context.RuntimeModule.SetBool(result, intValue0 != intValue1);
-                            return;
-                        }
-                        else if (info.Type == BinaryOpExpInfo.OpType.String)
-                        {
-                            var tempStr = context.RuntimeModule.MakeNullObject();
-
-                            await EvalAsync(exp.Operand0, tempStr, context);
-                            var strValue0 = context.RuntimeModule.GetString(tempStr);
-
-                            await EvalAsync(exp.Operand1, tempStr, context);
-                            var strValue1 = context.RuntimeModule.GetString(tempStr);
-
-                            context.RuntimeModule.SetBool(result, strValue0.CompareTo(strValue1) != 0);
-                            return;
-                        }
-                        else if (info.Type == BinaryOpExpInfo.OpType.Bool)
-                        {
-                            var tempBool = context.RuntimeModule.MakeBool(false);
-
-                            await EvalAsync(exp.Operand0, tempBool, context);
-                            var boolValue0 = context.RuntimeModule.GetBool(tempBool);
-
-                            await EvalAsync(exp.Operand1, tempBool, context);
-                            var boolValue1 = context.RuntimeModule.GetBool(tempBool);
-
-                            context.RuntimeModule.SetBool(result, boolValue0 != boolValue1);
-                            return;
-                        }
-                        else
-                        {
-                            throw new InvalidOperationException();
-                        }
-                    }
-
-                case BinaryOpKind.Assign:
-                    {
-                        await EvalBinaryAssignExpAsync(exp, result, context);                        
-                        return;
-                    }
-            }
-
-            throw new NotImplementedException();
-        }
-
+        }        
+        
         async ValueTask EvalCallFuncExpAsync(CallFuncExp exp, Value result, EvalContext context)
         {   
-            var funcInst = context.DomainService.GetFuncInst(exp.FuncValue);
+            var func = context.GetFunc(exp.FuncId);
 
-            Value? instValue = null;
+            // 함수는 this call이지만 instance가 없는 경우는 없다.
+            Debug.Assert(!(func.IsThisCall && exp.Instance == null));
+
+            Value? thisValue = null;
             if (exp.Instance != null)
             {
-                instValue = evaluator.GetDefaultValue(exp.Instance.Value.Type, context);
-                await EvalAsync(exp.Instance.Value.Exp, instValue, context); 
+                var instValue = evaluator.AllocValue(exp.Instance.Value.TypeId, context);
+                await EvalAsync(exp.Instance.Value.Exp, instValue, context);
+
+                // this call인 경우만 세팅한다
+                if (func.IsThisCall)
+                    thisValue = instValue;
             }
 
-            var args = await EvalExpsAsync(exp.Args, context);
+            // 인자를 계산 해서 처음 로컬 variable에 집어 넣는다
+            var args = await evaluator.EvalArgumentsAsync(func.ParamNames, exp.Args, context);
 
-            await evaluator.EvaluateFuncInstAsync(funcInst.bThisCall ? instValue : null, funcInst, args, result, context);
+            await context.ExecInNewFuncFrameAsync(args, EvalFlowControl.None, ImmutableArray<Task>.Empty, thisValue, result, async () =>
+            {
+                await foreach (var _ in evaluator.EvalStmtAsync(func.Body, context)) { }
+            });
+        }
+
+        async ValueTask EvalCallSeqFuncExpAsync(CallSeqFuncExp exp, Value result, EvalContext context)
+        {
+            var func = context.GetSeqFunc(exp.SeqFuncId);
+
+            // 함수는 this call이지만 instance가 없는 경우는 없다.
+            Debug.Assert(!(func.IsThisCall && exp.Instance == null));
+
+            Value? thisValue = null;
+            if (exp.Instance != null)
+            {
+                var instValue = evaluator.AllocValue(exp.Instance.Value.TypeId, context);
+                await EvalAsync(exp.Instance.Value.Exp, instValue, context);
+
+                // this call인 경우만 세팅한다
+                if (func.IsThisCall)
+                    thisValue = instValue;
+            }
+
+            var localVars = await evaluator.EvalArgumentsAsync(func.ParamNames, exp.Args, context);
+            
+            // yield에 사용할 공간
+            var yieldValue = evaluator.AllocValue(func.ElemTypeId, context);
+
+            // context 복제
+            var newContext = new EvalContext(
+                context,
+                localVars,
+                EvalFlowControl.None,
+                ImmutableArray<Task>.Empty,
+                thisValue,
+                yieldValue);
+
+            // asyncEnum을 만들기 위해서 내부 함수를 씁니다
+            async IAsyncEnumerable<Value> WrapAsyncEnum()
+            {
+                await foreach (var value in evaluator.EvalStmtAsync(func.Body, newContext))
+                {
+                    yield return value;
+                }
+            }
+
+            var asyncEnum = WrapAsyncEnum();
+
+            ((AsyncEnumerableValue)result).SetEnumerable(asyncEnum);
         }
 
         async ValueTask EvalCallValueExpAsync(CallValueExp exp, Value result, EvalContext context)
         {
-            var callableValue = (FuncInstValue)evaluator.GetDefaultValue(exp.CallableType, context);
+            var callableValue = (LambdaValue)evaluator.AllocValue(exp.Callable.TypeId, context);
 
-            await EvalAsync(exp.CallableExp, callableValue, context);
-            FuncInst funcInst = callableValue.FuncInst!;
+            await EvalAsync(exp.Callable.Exp, callableValue, context);
+            var lambda = callableValue.GetLambda();
 
-            var args = await EvalExpsAsync(exp.Args, context);
-
-            await evaluator.EvaluateFuncInstAsync(funcInst.bThisCall ? context.GetThisValue() : null, funcInst, args, result, context);
-        }
-
-        async ValueTask<List<Value>> EvalExpsAsync(IEnumerable<ExpAndType> expAndTypes, EvalContext context)
-        {
-            var args = new List<Value>();
-
-            foreach (var expAndType in expAndTypes)
-            {
-                var argValue = evaluator.GetDefaultValue(expAndType.TypeValue, context);
-                args.Add(argValue);
-
-                await EvalAsync(expAndType.Exp, argValue, context);
-            }
-
-            return args;
-        }
-
-        async ValueTask EvalEnumExpAsync(EnumExp exp, Value result, EvalContext context)
-        {
-            var members = new List<(string, Value)>();
-
-            foreach (var member in exp.Members)
-            {
-                var argValue = evaluator.GetDefaultValue(member.Type, context);
-                members.Add((exp.Name, argValue));
-
-                await EvalAsync(member.Exp, argValue, context);
-            }
-            
-            ((EnumValue)result).SetValue(exp.Name, members);
+            await evaluator.EvalLambdaAsync(lambda, exp.Args, result, context);
         }        
-
+        
         void EvalLambdaExp(LambdaExp exp, Value result, EvalContext context)
         {
             var captures = evaluator.MakeCaptures(exp.CaptureInfo.Captures, context);
 
-            ((FuncInstValue)result).SetFuncInst(new ScriptFuncInst(
-                null,
-                false,
-                exp.CaptureInfo.bCaptureThis ? context.GetThisValue() : null,
+            ((LambdaValue)result).SetLambda(new Lambda(
+                exp.CaptureInfo.bShouldCaptureThis ? context.GetThisValue() : null,
                 captures,
+                exp.ParamNames,
                 exp.Body));
         }
 
-        // a[x] => a.Func(x)
-        async ValueTask EvalIndexerExpAsync(IndexerExp exp, Value result, EvalContext context)
+        // l[x]
+        async ValueTask EvalListIndexerExpAsync(ListIndexerExp exp, Value result, EvalContext context)
         {
-            var thisValue = evaluator.GetDefaultValue(exp.ObjectType, context);
-            var indexValue = evaluator.GetDefaultValue(exp.IndexType, context);
+            var listValue = (ListValue)evaluator.AllocValue(exp.ListInfo.TypeId, context);
+            var indexValue = (IntValue)evaluator.AllocValue(exp.IndexInfo.TypeId, context);
             
-            await EvalAsync(exp.Object, thisValue, context);
+            await EvalAsync(exp.ListInfo.Exp, listValue, context);
+            await EvalAsync(exp.IndexInfo.Exp, indexValue, context);
 
-            await EvalAsync(exp.Index, indexValue, context);
-            var funcInst = context.DomainService.GetFuncInst(exp.FuncValue);
+            var elemValue = listValue.GetElemValue(indexValue.GetInt());
 
-            await evaluator.EvaluateFuncInstAsync(thisValue, funcInst, new Value[] { indexValue }, result, context);
+            result.SetValue(elemValue);
         }
 
         //async ValueTask EvalMemberCallExpAsync(MemberCallExp exp, Value result, EvalContext context)
@@ -895,60 +346,44 @@ namespace Gum.Runtime
         //    }
         //}
 
-        async ValueTask EvalMemberExpAsync(MemberExp exp, Value result, EvalContext context)
-        {
-            // TODO: namespace가 있으면 Global(N.x의 경우) 이 될수 있다.  
-            // 지금은 Instance(obj.id) / Static(Type.id)으로 나눠진다
-            var info = context.GetNodeInfo<MemberExpInfo>(exp);
-
-            if (info is MemberExpInfo.Instance instanceKind)
-            {
-                var objValue = evaluator.GetDefaultValue(instanceKind.ObjectTypeValue, context);
-                await EvalAsync(exp.Object, objValue, context);
-
-                result.SetValue(evaluator.GetMemberValue(objValue, instanceKind.VarName));
-            }
-            else if (info is MemberExpInfo.Static staticKind)
-            {
-                if (staticKind.bEvaluateObject)
-                {
-                    var objValue = evaluator.GetDefaultValue(staticKind.ObjectTypeValue!, context);
-                    await EvalAsync(exp.Object, objValue, context);
-                }
-
-                // object와는 별개로 static value를 가져온다
-                result.SetValue(context.GetStaticValue(staticKind.VarValue));
-            }
-            else if (info is MemberExpInfo.EnumElem enumElemKind)
-            {
-                ((EnumValue)result).SetValue(enumElemKind.Name, Enumerable.Empty<(string, Value)>());
-            }
-            else if (info is MemberExpInfo.EnumElemField enumElemField)
-            {
-                var objValue = evaluator.GetDefaultValue(enumElemField.ObjectTypeValue, context);
-                await EvalAsync(exp.Object, objValue, context);
-
-                result.SetValue(((EnumValue)objValue).GetValue(exp.MemberName));
-            }
-            else
-            {
-                throw new NotImplementedException();
-            }
-        }
-
         async ValueTask EvalListExpAsync(ListExp exp, Value result, EvalContext context)
         {
-            var elems = new List<Value>(exp.Elems.Length);
+            var list = new List<Value>(exp.Elems.Length);
 
             foreach (var elemExp in exp.Elems)
             {
-                var elemValue = evaluator.GetDefaultValue(exp.ElemType, context);
-                elems.Add(elemValue);
+                var elemValue = evaluator.AllocValue(exp.ElemTypeId, context);
+                list.Add(elemValue);
 
                 await EvalAsync(elemExp, elemValue, context);
             }
 
-            context.RuntimeModule.SetList(context.DomainService, result, exp.ElemType, elems);
+            ((ListValue)result).SetList(list); 
+        }
+
+        async ValueTask EvalNewEnumExpAsync(NewEnumExp exp, Value result, EvalContext context)
+        {
+            var members = new List<NamedValue>();
+
+            foreach (var member in exp.Members)
+            {
+                var argValue = evaluator.AllocValue(member.ExpInfo.TypeId, context);
+                members.Add((exp.Name, argValue));
+
+                await EvalAsync(member.ExpInfo.Exp, argValue, context);
+            }
+
+            ((EnumValue)result).SetEnum(exp.Name, members);
+        }
+
+        ValueTask EvalNewStructExpAsync(NewStructExp exp, Value result, EvalContext context)
+        {
+            throw new NotImplementedException();
+        }
+
+        ValueTask EvalNewClassExpAsync(NewClassExp exp, Value result, EvalContext context)
+        {
+            throw new NotImplementedException();
         }
 
         internal async ValueTask EvalAsync(Exp exp, Value result, EvalContext context)
@@ -957,20 +392,28 @@ namespace Gum.Runtime
             {
                 case ExternalGlobalVarExp egvExp: EvalExternalGlobalVarExp(egvExp, result, context); break;
                 case PrivateGlobalVarExp pgvExp: EvalPrivateGlobalVarExp(pgvExp, result, context); break;
-                case LocalVarExp localVarExp: EvalLocalVarExp(localVarExp, result, context); break;
-                case BoolLiteralExp boolExp: EvalBoolLiteralExp(boolExp, result, context); break;
-                case IntLiteralExp intExp: EvalIntLiteralExp(intExp, result, context); break;
+                case LocalVarExp localVarExp: EvalLocalVarExp(localVarExp, result, context); break;                
                 case StringExp stringExp: await EvalStringExpAsync(stringExp, result, context); break;
-                case UnaryOpExp unaryOpExp: await EvalUnaryOpExpAsync(unaryOpExp, result, context); break;
-                case BinaryOpExp binaryOpExp: await EvalBinaryOpExpAsync(binaryOpExp, result, context); break;
+                case IntLiteralExp intExp: EvalIntLiteralExp(intExp, result, context); break;
+                case BoolLiteralExp boolExp: EvalBoolLiteralExp(boolExp, result, context); break;
+                case CallInternalUnaryOperatorExp ciuoExp: await EvalCallInternalUnaryOperatorExpAsync(ciuoExp, result, context); break;
+                case CallInternalUnaryAssignOperator ciuaoExp: await EvalCallInternalUnaryAssignOperatorExpAsync(ciuaoExp, result, context); break;
+                case CallInternalBinaryOperatorExp ciboExp: await EvalCallInternalBinaryOperatorExpAsync(ciboExp, result, context); break;
+                case AssignExp assignExp: await EvalAssignExpAsync(assignExp, result, context); break;                
                 case CallFuncExp callFuncExp: await EvalCallFuncExpAsync(callFuncExp, result, context); break;
+                case CallSeqFuncExp callSeqFuncExp: await EvalCallSeqFuncExpAsync(callSeqFuncExp, result, context); break;
                 case CallValueExp callValueExp: await EvalCallValueExpAsync(callValueExp, result, context); break;
-                case EnumExp enumExp: await EvalEnumExpAsync(enumExp, result, context); break;
                 case LambdaExp lambdaExp: EvalLambdaExp(lambdaExp, result, context); break;
-                case IndexerExp indexerExp: await EvalIndexerExpAsync(indexerExp, result, context); break;
-                case MemberCallExp memberCallExp: await EvalMemberCallExpAsync(memberCallExp, result, context); break;
-                case MemberExp memberExp: await EvalMemberExpAsync(memberExp, result, context); break;
+                case ListIndexerExp indexerExp: await EvalListIndexerExpAsync(indexerExp, result, context); break;
+                case StaticMemberExp staticMemberExp: EvalStaticMemberExp(staticMemberExp, result, context); break;
+                case StructMemberExp structMemberExp: await EvalStructMemberExpAsync(structMemberExp, result, context); break;
+                case ClassMemberExp classMemberExp: await EvalClassMemberExpAsync(classMemberExp, result, context); break;
+                case EnumMemberExp enumMemberExp: await EvalEnumMemberExpAsync(enumMemberExp, result, context); break;
                 case ListExp listExp: await EvalListExpAsync(listExp, result, context); break;
+                case NewEnumExp enumExp: await EvalNewEnumExpAsync(enumExp, result, context); break;
+                case NewStructExp newStructExp: await EvalNewStructExpAsync(newStructExp, result, context); break;
+                case NewClassExp newClassExp: await EvalNewClassExpAsync(newClassExp, result, context); break;
+
                 default:  throw new NotImplementedException();
             }
         }

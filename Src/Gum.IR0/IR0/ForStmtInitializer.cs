@@ -9,9 +9,8 @@ namespace Gum.IR0
 
     public class ExpForStmtInitializer : ForStmtInitializer
     {
-        public Exp Exp { get; }
-        public TypeValue ExpType { get; }
-        public ExpForStmtInitializer(Exp exp, TypeValue type) { Exp = exp; ExpType = expType; }
+        public ExpInfo ExpInfo { get; }
+        public ExpForStmtInitializer(ExpInfo expInfo) { ExpInfo = expInfo; }
     }
 
     public class VarDeclForStmtInitializer : ForStmtInitializer

@@ -13,7 +13,7 @@ namespace Gum.Infra
         public static ImmutableDictionary<TKey, TValue> ToImmutableWithComparer<TKey, TValue>(this Dictionary<TKey, TValue> dict)
         {
             return dict.ToImmutableDictionary(dict.Comparer);
-        }
+        }           
 
         public static IEnumerable<(TFirst, TSecond)> Zip<TFirst, TSecond>(IEnumerable<TFirst> firsts, IEnumerable<TSecond> seconds)
         {

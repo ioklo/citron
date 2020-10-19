@@ -294,7 +294,7 @@ namespace Gum.StaticAnalysis
 
             IR0.ForStmtInitializer? initializer = null;
             IR0.Exp? cond = null;
-            IR0.ExpAndType? continueInfo = null;
+            IR0.ExpInfo? continueInfo = null;
             IR0.Stmt? body = null;
 
             context.ExecInLocalScope(() =>
@@ -321,7 +321,7 @@ namespace Gum.StaticAnalysis
                 {
                     if (analyzer.AnalyzeExp(forStmt.ContinueExp, null, context, out var contExp, out var contExpType))
                     {
-                        continueInfo = new IR0.ExpAndType(contExp, contExpType);
+                        continueInfo = new IR0.ExpInfo(contExp, contExpType);
                     }
                     else
                     {
