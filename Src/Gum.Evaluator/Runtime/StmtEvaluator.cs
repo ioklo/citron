@@ -207,7 +207,7 @@ namespace Gum.Runtime
             context.SetFlowControl(EvalFlowControl.Return);
         }
 
-        internal async IAsyncEnumerable<Value> EvalBlockStmtAsync(BlockStmt blockStmt, EvalContext context)
+        internal IAsyncEnumerable<Value> EvalBlockStmtAsync(BlockStmt blockStmt, EvalContext context)
         {
             async IAsyncEnumerable<Value> InnerAsync()
             {
@@ -226,8 +226,7 @@ namespace Gum.Runtime
                 }
             }
 
-            await foreach (var yieldValue in context.ExecInNewScopeAsync(InnerAsync))
-                yield return yieldValue;
+            return context.ExecInNewScopeAsync(InnerAsync);
         }
 
         internal async ValueTask EvalExpStmtAsync(ExpStmt expStmt, EvalContext context)

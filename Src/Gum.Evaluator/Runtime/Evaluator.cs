@@ -115,11 +115,6 @@ namespace Gum.Runtime
                     value.SetValue(origValue);
                     capturesBuilder.Add(copyElem.LocalVarName, value);
                 }
-                else if (captureElem is CaptureInfo.RefLocalElement refElem)
-                {
-                    var value = context.GetLocalValue(refElem.LocalVarName);
-                    capturesBuilder.Add(refElem.LocalVarName, value);
-                }
                 else
                 {
                     throw new InvalidOperationException();

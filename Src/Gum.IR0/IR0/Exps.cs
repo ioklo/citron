@@ -67,6 +67,7 @@ namespace Gum.IR0
         LogicalNot_Bool_Bool,
         UnaryMinus_Int_Int,
 
+        ToString_Bool_String,
         ToString_Int_String,
     }
 

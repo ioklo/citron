@@ -47,6 +47,11 @@ namespace Gum.Runtime
             result.SetInt(-operand.GetInt());
         }
 
+        void Operator_ToString_Bool_String(BoolValue operand, StringValue result)
+        {
+            result.SetString(operand.GetBool().ToString());
+        }
+
         void Operator_ToString_Int_String(IntValue operand, StringValue result)
         {
             result.SetString(operand.GetInt().ToString());
@@ -177,7 +182,10 @@ namespace Gum.Runtime
             {
                 case InternalUnaryOperator.LogicalNot_Bool_Bool: Operator_LogicalNot_Bool_Bool((BoolValue)operand, (BoolValue)result); break;
                 case InternalUnaryOperator.UnaryMinus_Int_Int: Operator_UnaryMinus_Int_Int((IntValue)operand, (IntValue)result); break;
-                case InternalUnaryOperator.ToString_Int_String: Operator_ToString_Int_String((IntValue)operand, (StringValue)result);break;
+
+                case InternalUnaryOperator.ToString_Bool_String: Operator_ToString_Bool_String((BoolValue)operand, (StringValue)result); break;
+                case InternalUnaryOperator.ToString_Int_String: Operator_ToString_Int_String((IntValue)operand, (StringValue)result); break;
+                
                 default: throw new InvalidOperationException();
             }
         }

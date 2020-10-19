@@ -23,15 +23,16 @@ namespace Gum.IR0
             }
         }
 
-        public class RefLocalElement : Element
-        {
-            public string LocalVarName { get; }
+        // TODO: 막는다
+        //public class RefLocalElement : Element
+        //{
+        //    public string LocalVarName { get; }
 
-            public RefLocalElement(string localVarName)
-            {
-                LocalVarName = localVarName;
-            }
-        }
+        //    public RefLocalElement(string localVarName)
+        //    {
+        //        LocalVarName = localVarName;
+        //    }
+        //}
 
         public bool bShouldCaptureThis { get; }
         public ImmutableArray<Element> Captures { get; }
