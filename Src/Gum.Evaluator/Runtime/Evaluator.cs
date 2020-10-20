@@ -98,6 +98,12 @@ namespace Gum.Runtime
 
                 case (int)TypeId.PredefinedValue.Enumerable:
                     return new AsyncEnumerableValue();
+
+                case (int)TypeId.PredefinedValue.Lambda:
+                    return new LambdaValue();
+
+                case (int)TypeId.PredefinedValue.List:
+                    return new ListValue();
             }
 
             throw new NotImplementedException();

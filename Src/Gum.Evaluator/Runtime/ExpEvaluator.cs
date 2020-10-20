@@ -254,9 +254,9 @@ namespace Gum.Runtime
             await EvalAsync(exp.ListInfo.Exp, listValue, context);
             await EvalAsync(exp.IndexInfo.Exp, indexValue, context);
 
-            var elemValue = listValue.GetElemValue(indexValue.GetInt());
+            var list = listValue.GetList();
 
-            result.SetValue(elemValue);
+            result.SetValue(list[indexValue.GetInt()]);
         }
 
         //async ValueTask EvalMemberCallExpAsync(MemberCallExp exp, Value result, EvalContext context)

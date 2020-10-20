@@ -101,7 +101,7 @@ namespace Gum.Runtime
 
         public override void SetValue(Value value)
         {
-            throw new NotImplementedException();
+            enumerable = ((AsyncEnumerableValue)value).enumerable;
         }
 
         public void SetEnumerable(IAsyncEnumerable<Value> enumerable) { this.enumerable = enumerable; }
@@ -191,15 +191,10 @@ namespace Gum.Runtime
     class ListValue : Value
     {
         List<Value>? list;
-
-        public Value GetElemValue(int index)
-        {
-            throw new NotImplementedException();
-        }
-
+        
         public override void SetValue(Value value)
         {
-            throw new NotImplementedException();
+            list = ((ListValue)value).list;
         }
 
         public void SetList(List<Value> list)
