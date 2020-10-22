@@ -7,32 +7,17 @@ namespace Gum.IR0
 {
     public class CaptureInfo
     {
-        public abstract class Element
-        {
-        }
-
-        public class CopyLocalElement : Element
+        public class Element
         {
             public TypeId TypeId { get; }
             public string LocalVarName { get; }
 
-            public CopyLocalElement(TypeId typeId, string localVarName)
+            public Element(TypeId typeId, string localVarName)
             {
                 TypeId = typeId;
                 LocalVarName = localVarName;
             }
         }
-
-        // TODO: 막는다
-        //public class RefLocalElement : Element
-        //{
-        //    public string LocalVarName { get; }
-
-        //    public RefLocalElement(string localVarName)
-        //    {
-        //        LocalVarName = localVarName;
-        //    }
-        //}
 
         public bool bShouldCaptureThis { get; }
         public ImmutableArray<Element> Captures { get; }

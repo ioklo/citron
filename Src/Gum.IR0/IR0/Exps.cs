@@ -158,9 +158,10 @@ namespace Gum.IR0
         public ExpInfo? Instance { get; }
         public ImmutableArray<ExpInfo> Args { get; }
 
-        public CallFuncExp(FuncId funcId, ExpInfo? instance, IEnumerable<ExpInfo> args)
+        public CallFuncExp(FuncId funcId, IEnumerable<TypeId> typeArgs, ExpInfo? instance, IEnumerable<ExpInfo> args)
         {
             FuncId = funcId;
+            TypeArgs = typeArgs.ToImmutableArray();
             Instance = instance;
             Args = args.ToImmutableArray();
         }
@@ -169,12 +170,14 @@ namespace Gum.IR0
     public class CallSeqFuncExp : Exp
     {
         public SeqFuncId SeqFuncId { get; }
+        public ImmutableArray<TypeId> TypeArgs { get; }
         public ExpInfo? Instance { get; }
         public ImmutableArray<ExpInfo> Args { get; }
 
-        public CallSeqFuncExp(SeqFuncId seqFuncId, ExpInfo? instance, IEnumerable<ExpInfo> args)
+        public CallSeqFuncExp(SeqFuncId seqFuncId, IEnumerable<TypeId> typeArgs, ExpInfo? instance, IEnumerable<ExpInfo> args)
         {
             SeqFuncId = seqFuncId;
+            TypeArgs = typeArgs.ToImmutableArray();
             Instance = instance;
             Args = args.ToImmutableArray();
         }
@@ -310,14 +313,14 @@ namespace Gum.IR0
     // new S(2, 3, 4);
     public class NewStructExp : Exp
     {
-        public TypeId Type { get; }
+        public TypeId TypeId { get; }
 
         // TODO: params, out, 등 처리를 하려면 Exp가 아니라 다른거여야 한다
         public ImmutableArray<ExpInfo> Args { get; }
 
-        public NewStructExp(TypeId type, IEnumerable<ExpInfo> args)
+        public NewStructExp(TypeId typeId, IEnumerable<ExpInfo> args)
         {
-            Type = type;
+            TypeId = typeId;
             Args = args.ToImmutableArray();
         }
     }
@@ -325,14 +328,14 @@ namespace Gum.IR0
     // new C(2, 3, 4);
     public class NewClassExp : Exp
     {
-        public TypeId Type { get; }
+        public TypeId TypeId { get; }
 
         // TODO: params, out, 등 처리를 하려면 Exp가 아니라 다른거여야 한다
         public ImmutableArray<ExpInfo> Args { get; }
         
-        public NewClassExp(TypeId type, IEnumerable<ExpInfo> args)
+        public NewClassExp(TypeId typeId, IEnumerable<ExpInfo> args)
         {
-            Type = type;
+            TypeId = typeId;
             Args = args.ToImmutableArray();
         }
     }

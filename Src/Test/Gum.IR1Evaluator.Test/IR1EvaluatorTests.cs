@@ -6,13 +6,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Text;
 using Gum.CompileTime;
-using static Gum.Runtime.IR1Evaluator;
+using static Gum.IR1.Runtime.Evaluator;
 using static Gum.IR1.Command;
 
 using Task = System.Threading.Tasks.Task;
 using IR1Task = Gum.IR1.Command.Task;
 
-namespace Gum.Runtime
+namespace Gum.IR1.Runtime
 {
     public class IR1EvaluatorTests
     {
@@ -111,7 +111,7 @@ namespace Gum.Runtime
             var sb = new StringBuilder();
             var externalDriverFactory = new ExternalDriverFactory();
             externalDriverFactory.Register(new ExternalDriverId("Test"), new TestExternalDriver(sb));
-            var evaluator = new IR1Evaluator(externalDriverFactory);
+            var evaluator = new Evaluator(externalDriverFactory);
 
             // execute 
             await evaluator.RunScriptAsync(script);

@@ -26,6 +26,7 @@ namespace Gum.IR0
 
     public class Enum
     {
+        public TypeId Id { get; }
         public string Name { get; }
         public ImmutableArray<string> TypeParams { get; }
         public ImmutableArray<EnumElement> Elems { get; }

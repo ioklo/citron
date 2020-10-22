@@ -38,9 +38,9 @@ namespace Gum.IR0
             public string Name { get; }
             public TypeId TypeId { get; }
 
-            public IR0.Exp? InitExp { get; }            
+            public Exp? InitExp { get; }
             
-            public Element(string name, TypeId typeId, IR0.Exp? initExp)
+            public Element(string name, TypeId typeId, Exp? initExp)
             {
                 Name = name;
                 TypeId = typeId;
