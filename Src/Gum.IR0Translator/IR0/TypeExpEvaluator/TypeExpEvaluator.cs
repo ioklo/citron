@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection.Emit;
 using System.Text;
+using static Gum.IR0.AnalyzeErrorCode;
 
 using S = Gum.Syntax;
 
@@ -22,6 +23,20 @@ namespace Gum.IR0
             this.typeSkeletonCollector = typeSkeletonCollector;
         }
 
+        private bool HandleBuiltInType(S.IdTypeExp exp, string name, Context context, [NotNullWhen(true)] out TypeValue? outTypeValue)
+        {
+            if (exp.TypeArgs.Length != 0)
+            {
+                context.AddError(T0101_IdTypeExp_TypeDoesntHaveTypeParams, exp, $"{name}은 타입 인자를 가질 수 없습니다");
+                outTypeValue = null;
+                return false;
+            }
+
+            outTypeValue = TypeValue.MakeNormal(ModuleItemId.Make(name));
+            context.AddTypeValue(exp, outTypeValue);
+            return true;
+        }
+
         bool EvaluateIdTypeExp(S.IdTypeExp exp, Context context, [NotNullWhen(true)] out TypeValue? outTypeValue)
         {
             outTypeValue = null;
@@ -30,7 +45,7 @@ namespace Gum.IR0
             {
                 if (exp.TypeArgs.Length != 0)
                 {
-                    context.AddError(exp, "var는 타입 인자를 가질 수 없습니다");
+                    context.AddError(T0102_IdTypeExp_VarTypeCantApplyTypeArgs, exp, "var는 타입 인자를 가질 수 없습니다");
                     return false;
                 }
 
@@ -42,13 +57,27 @@ namespace Gum.IR0
             {
                 if (exp.TypeArgs.Length != 0)
                 {
-                    context.AddError(exp, "var는 타입 인자를 가질 수 없습니다");
+                    context.AddError(T0101_IdTypeExp_TypeDoesntHaveTypeParams, exp, "void는 타입 인자를 가질 수 없습니다");
                     return false;
                 }
 
                 outTypeValue = TypeValue.MakeVoid();
                 context.AddTypeValue(exp, outTypeValue);
                 return true;
+            }
+
+            // built-in
+            else if (exp.Name == "bool")
+            {
+                return HandleBuiltInType(exp, "bool", context, out outTypeValue);
+            }
+            else if (exp.Name == "int")
+            {
+                return HandleBuiltInType(exp, "int", context, out outTypeValue);
+            }
+            else if (exp.Name == "string")
+            {
+                return HandleBuiltInType(exp, "string", context, out outTypeValue);
             }
 
             // 1. TypeVar에서 먼저 검색
@@ -93,12 +122,12 @@ namespace Gum.IR0
             }
             else if (1 < candidates.Count)
             {
-                context.AddError(exp, $"이름이 같은 {exp} 타입이 여러개 입니다");
+                context.AddError(T0103_IdTypeExp_MultipleTypesOfSameName, exp, $"이름이 같은 {exp} 타입이 여러개 입니다");
                 return false;
             }
             else
             {
-                context.AddError(exp, $"{exp}를 찾지 못했습니다");
+                context.AddError(T0104_IdTypeExp_TypeNotFound, exp, $"{exp}를 찾지 못했습니다");
                 return false;
             }
         }
@@ -113,7 +142,7 @@ namespace Gum.IR0
             var parentNTV = parentTypeValue as TypeValue.Normal;
             if (parentNTV == null)
             {
-                context.AddError(exp.Parent, "멤버가 있는 타입이 아닙니다");
+                context.AddError(T0201_MemberTypeExp_TypeIsNotNormalType, exp.Parent, "멤버가 있는 타입이 아닙니다");
                 return false;
             }
 
@@ -128,7 +157,7 @@ namespace Gum.IR0
 
             if (!GetMemberTypeValue(context, parentNTV, exp.MemberName, typeArgs, out typeValue))
             {
-                context.AddError(exp, $"{parentTypeValue}에서 {exp.MemberName}을 찾을 수 없습니다");
+                context.AddError(T0202_MemberTypeExp_MemberTypeNotFound, exp, $"{parentTypeValue}에서 {exp.MemberName}을 찾을 수 없습니다");
                 return false;
             }
 

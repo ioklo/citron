@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net.Http.Headers;
 using System.Text;
 
+using static Gum.IR0.AnalyzeErrorCode;
 using S = Gum.Syntax;
 
 namespace Gum.IR0
@@ -57,7 +58,7 @@ namespace Gum.IR0
 
             if (!CollectScript(script, context))
             {
-                errorCollector.Add(script, $"타입 정보 모으기에 실패했습니다");
+                errorCollector.Add(new AnalyzeError(S0101_Failed, script, $"타입 정보 모으기에 실패했습니다"));
                 return null;
             }
 

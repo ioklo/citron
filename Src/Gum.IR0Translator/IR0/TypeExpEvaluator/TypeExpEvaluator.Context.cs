@@ -56,9 +56,9 @@ namespace Gum.IR0
                 return typeSkeletonsByTypeId.TryGetValue(itemId, out outTypeSkeleton);
             }
 
-            public void AddError(S.ISyntaxNode node, string msg)
+            public void AddError(AnalyzeErrorCode code, S.ISyntaxNode node, string msg)
             {
-                errorCollector.Add(node, msg);
+                errorCollector.Add(new AnalyzeError(code, node, msg));
             }
 
             public void AddTypeValue(S.TypeExp exp, TypeValue typeValue)

@@ -12,6 +12,7 @@ using System.Text;
 using static Gum.IR0.Analyzer;
 using static Gum.IR0.Analyzer.Misc;
 using static Gum.Infra.CollectionExtensions;
+using static Gum.IR0.AnalyzeErrorCode;
 
 using S = Gum.Syntax;
 
@@ -42,7 +43,7 @@ namespace Gum.IR0
 
             if (!context.GetIdentifierInfo(idExp.Value, typeArgs, hintTypeValue, out var idInfo))
             {
-                context.ErrorCollector.Add(idExp, $"{idExp.Value}을 찾을 수 없습니다");
+                context.AddError(A0501_IdExp_VariableNotFound, idExp, $"{idExp.Value}을 찾을 수 없습니다");
                 return false;
             }
 
@@ -188,13 +189,13 @@ namespace Gum.IR0
             // int type 검사
             if (!analyzer.IsAssignable(intTypeValue, ir0OperandType, context))
             {
-                context.ErrorCollector.Add(operand, "++ --는 int 타입만 지원합니다");
+                context.AddError(A0601_UnaryAssignOp_IntTypeIsAllowedOnly, operand, "++ --는 int 타입만 지원합니다");
                 return false;
             }
 
             if (!IsAssignableExp(ir0Operand))
             {
-                context.ErrorCollector.Add(operand, "++ --는 대입 가능한 식에만 적용할 수 있습니다");
+                context.AddError(A0602_UnaryAssignOp_AssignableExpressionIsAllowedOnly, operand, "++ --는 대입 가능한 식에만 적용할 수 있습니다");
                 return false;
             }
 
@@ -222,7 +223,7 @@ namespace Gum.IR0
                     {
                         if (!analyzer.IsAssignable(boolTypeValue, operandType, context))
                         {
-                            context.ErrorCollector.Add(unaryOpExp, $"{unaryOpExp.Operand}에 !를 적용할 수 없습니다. bool 타입이어야 합니다");                            
+                            context.AddError(A0701_UnaryOp_LogicalNotOperatorIsAppliedToBoolTypeOperandOnly, unaryOpExp, $"{unaryOpExp.Operand}에 !를 적용할 수 없습니다. bool 타입이어야 합니다");                            
                             return false;
                         }
 
@@ -236,7 +237,7 @@ namespace Gum.IR0
                     {
                         if (!analyzer.IsAssignable(intTypeValue, operandType, context))
                         {
-                            context.ErrorCollector.Add(unaryOpExp, $"{unaryOpExp.Operand}에 -를 적용할 수 없습니다. int 타입이어야 합니다");
+                            context.AddError(A0702_UnaryOp_UnaryMinusOperatorIsAppliedToIntTypeOperandOnly, unaryOpExp, $"{unaryOpExp.Operand}에 -를 적용할 수 없습니다. int 타입이어야 합니다");
                             return false;
                         }
 
@@ -344,7 +345,7 @@ namespace Gum.IR0
             {
                 if (!analyzer.IsAssignable(operandType0, operandType1, context))
                 {
-                    context.ErrorCollector.Add(binaryOpExp, "대입 가능하지 않습니다");
+                    context.AddError(A0801_BinaryOp_LeftOperandTypeIsNotCompatibleWithRightOperandType, binaryOpExp, "대입 가능하지 않습니다");
                     return false;
                 }
 
@@ -400,7 +401,7 @@ namespace Gum.IR0
             }
 
             // Operator를 찾을 수 없습니다
-            context.ErrorCollector.Add(binaryOpExp, $"{operandType0}와 {operandType1}를 지원하는 연산자가 없습니다");
+            context.AddError(A0802_BinaryOp_OperatorNotFound, binaryOpExp, $"{operandType0}와 {operandType1}를 지원하는 연산자가 없습니다");
             return false;
         }
 
@@ -422,7 +423,7 @@ namespace Gum.IR0
             {                
                 if (1 < globalFuncs.Length)
                 {
-                    context.ErrorCollector.Add(callableExp, $"이름이 {callableExp.Value}인 전역 함수가 여러 개 있습니다");
+                    context.AddError(A0901_CallExp_ThereAreMultipleGlobalFunctionsHavingSameSignature, callableExp, $"이름이 {callableExp.Value}인 전역 함수가 여러 개 있습니다");
                     return false;
                 }
 
@@ -471,7 +472,7 @@ namespace Gum.IR0
             var funcTypeValue = typeValue as TypeValue.Func;
             if (funcTypeValue == null)
             {
-                context.ErrorCollector.Add(callableExp, $"호출 가능한 타입이 아닙니다");
+                context.AddError(A0902_CallExp_CallableExpressionIsNotCallable, callableExp, $"호출 가능한 타입이 아닙니다");
                 return false;
             }
 
@@ -538,7 +539,7 @@ namespace Gum.IR0
                         // 인자 개수가 맞는지 확인
                         if (enumElem.ElemInfo.FieldInfos.Length != argInfos.Length)
                         {
-                            context.ErrorCollector.Add(exp, "enum인자 개수가 맞지 않습니다");
+                            context.AddError(A0903_CallExp_MismatchEnumConstructorArgCount, exp, "enum인자 개수가 맞지 않습니다");
                             return false;
                         }
 
@@ -548,7 +549,7 @@ namespace Gum.IR0
                             var appliedTypeValue = context.TypeValueService.Apply(enumElem.EnumTypeValue, fieldInfo.TypeValue);
                             if (!analyzer.IsAssignable(appliedTypeValue, argInfo.TypeValue, context))
                             {
-                                context.ErrorCollector.Add(exp, "enum의 {0}번째 인자 형식이 맞지 않습니다");
+                                context.AddError(A0903_CallExp_MismatchBetweenEnumParamTypeAndEnumArgType, exp, "enum의 {0}번째 인자 형식이 맞지 않습니다");
                                 return false;
                             }
 
@@ -572,7 +573,7 @@ namespace Gum.IR0
             [NotNullWhen(true)] out Exp? outExp,
             [NotNullWhen(true)] out TypeValue? outTypeValue)
         {
-            if (!analyzer.AnalyzeLambda(exp.Body, exp.Params, context, out var body, out var captureInfo, out var funcTypeValue))
+            if (!analyzer.AnalyzeLambda(exp, exp.Body, exp.Params, context, out var body, out var captureInfo, out var funcTypeValue))
             {
                 outExp = null;
                 outTypeValue = null;

@@ -12,7 +12,7 @@ namespace Gum.IR0
 {
     public class CaptureResult
     {
-        public ImmutableArray<string> NeedCaptures { get; }
+        public ImmutableArray<string> NeedCaptures { get; } // Local변수 .. 
         public CaptureResult(IEnumerable<string> needCaptures)
         {
             NeedCaptures = needCaptures.ToImmutableArray();
@@ -284,7 +284,7 @@ namespace Gum.IR0
 
         bool RefCaptureIdExp(S.IdentifierExp idExp, CaptureContext context)
         {
-            // 에러: 레퍼런스는 캡쳐할 수 없게 한다
+            // 에러: 레퍼런스는 캡쳐할 수 없게 한다.. 단 GlobalVariable은 가능하므로 여기서 에러를 내면 안된다
             return false;            
         }
 
@@ -304,7 +304,7 @@ namespace Gum.IR0
                 S.MemberExp memberExp => CaptureMemberExp(memberExp, context),
                 S.ListExp listExp => throw new InvalidOperationException(),
 
-                _ => throw new NotImplementedException()
+                _ => throw new InvalidOperationException()
             };
         }
 

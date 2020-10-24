@@ -56,7 +56,7 @@ namespace Gum.Syntax
         }
     }
 
-    public struct VarDeclElement
+    public struct VarDeclElement : ISyntaxNode
     {
         public string VarName { get; }
         public Exp? InitExp { get; }

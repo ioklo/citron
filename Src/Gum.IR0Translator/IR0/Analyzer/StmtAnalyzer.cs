@@ -9,6 +9,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using static Gum.IR0.Analyzer;
 using static Gum.IR0.Analyzer.Misc;
+using static Gum.IR0.AnalyzeErrorCode;
 
 using S = Gum.Syntax;
 
@@ -175,22 +176,22 @@ namespace Gum.IR0
             var idExpCond = ifStmt.Cond as S.IdentifierExp;
             if (idExpCond == null)
             {
-                context.ErrorCollector.Add(ifStmt.Cond, "if (exp is Type) 구문은 exp가 identifier여야 합니다");
+                context.AddError(A1001_IfStmt_TestTargetShouldBeVariable, ifStmt.Cond, "if (exp is Type) 구문은 exp가 identifier여야 합니다");
                 return false;
             }
 
             var typeArgs = GetTypeValues(idExpCond.TypeArgs, context);
             if (!context.GetIdentifierInfo(idExpCond.Value, typeArgs, null, out var idInfo))
             {
-                context.ErrorCollector.Add(ifStmt.Cond, $"{idExpCond.Value}를 찾지 못했습니다");
+                context.AddError(A1002_IfStmt_TestTargetIdentifierNotFound, ifStmt.Cond, $"{idExpCond.Value}를 찾지 못했습니다");
                 return false;
             }
-
+            
             var varIdInfo = idInfo as IdentifierInfo.Var;
 
             if (varIdInfo == null)
             {
-                context.ErrorCollector.Add(ifStmt.Cond, "if (exp is Type) 구문은 exp가 변수여야 합니다");
+                context.AddError(A1001_IfStmt_TestTargetShouldBeVariable, ifStmt.Cond, "if (exp is Type) 구문은 exp가 변수여야 합니다");
                 return false;
             }
 
@@ -212,7 +213,7 @@ namespace Gum.IR0
             }
             else
             {
-                context.ErrorCollector.Add(testTypeExp, "if (exp is Test) 구문은 Test부분이 타입이거나 enum값이어야 합니다");
+                context.AddError(A1003_IfStmt_TestTypeShouldBeEnumOrClass, testTypeExp, "if (exp is Test) 구문은 Test부분이 타입이거나 enum값이어야 합니다");
                 return false;
             }
         }
@@ -229,7 +230,7 @@ namespace Gum.IR0
             {
                 if (!analyzer.IsAssignable(boolTypeValue, condTypeValue, context))
                 {
-                    context.ErrorCollector.Add(ifStmt, "if 조건 식은 항상 bool형식이어야 합니다");
+                    context.AddError(A1004_IfStmt_ConditionShouldBeBool, ifStmt.Cond, "if 조건 식은 항상 bool형식이어야 합니다");
                     bResult = false;
                 }
             }
@@ -263,7 +264,6 @@ namespace Gum.IR0
 
         bool AnalyzeForStmtInitializer(S.ForStmtInitializer forInit, Context context, [NotNullWhen(true)] out ForStmtInitializer? outInitializer)
         {
-
             switch (forInit)
             {
                 case S.VarDeclForStmtInitializer varDeclInit:
@@ -321,7 +321,7 @@ namespace Gum.IR0
 
                     // 에러가 나면 에러를 추가하고 계속 진행
                     if (!analyzer.IsAssignable(boolTypeValue, condExpTypeValue, context))
-                        context.ErrorCollector.Add(forStmt.CondExp, $"{forStmt.CondExp}는 bool 형식이어야 합니다");
+                        context.AddError(A1104_ForStmt_ConditionShouldBeBool, forStmt.CondExp, $"{forStmt.CondExp}는 bool 형식이어야 합니다");
                 }
                 
                 if (forStmt.ContinueExp != null)
@@ -376,7 +376,7 @@ namespace Gum.IR0
             {
                 if (!context.IsSeqFunc() && context.GetRetTypeValue() != TypeValue.MakeVoid())
                 {
-                    context.ErrorCollector.Add(returnStmt.Value!, $"이 함수는 {context.GetRetTypeValue()}을 반환해야 합니다");
+                    context.AddError(A1201_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType, returnStmt, $"이 함수는 {context.GetRetTypeValue()}을 반환해야 합니다");
                     return false;
                 }
 
@@ -386,7 +386,7 @@ namespace Gum.IR0
             
             if (context.IsSeqFunc())
             {
-                context.ErrorCollector.Add(returnStmt, $"seq 함수는 빈 return만 허용됩니다");
+                context.AddError(A1202_ReturnStmt_SeqFuncShouldReturnVoid, returnStmt, $"seq 함수는 빈 return만 허용됩니다");
                 return false;
             }                
 
@@ -401,7 +401,7 @@ namespace Gum.IR0
                 // 현재 함수 시그니처랑 맞춰서 같은지 확인한다
                 if (!analyzer.IsAssignable(retTypeValue, valueType, context))
                 {
-                    context.ErrorCollector.Add(returnStmt.Value, $"반환값의 타입 {valueType}는 이 함수의 반환타입과 맞지 않습니다");
+                    context.AddError(A1201_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType, returnStmt.Value, $"반환값의 타입 {valueType}는 이 함수의 반환타입과 맞지 않습니다");
                     return false;
                 }
             }
@@ -458,7 +458,7 @@ namespace Gum.IR0
                 !(expStmt.Exp is S.CallExp) &&
                 !(expStmt.Exp is S.MemberCallExp))
             {
-                context.ErrorCollector.Add(expStmt, "대입, 함수 호출만 구문으로 사용할 수 있습니다");
+                context.AddError(A1301_ExpStmt_ExpressionShouldBeAssignOrCall, expStmt, "대입, 함수 호출만 구문으로 사용할 수 있습니다");
                 bResult = false;
             }
 
@@ -483,7 +483,7 @@ namespace Gum.IR0
 
         bool AnalyzeTaskStmt(S.TaskStmt taskStmt, Context context, [NotNullWhen(true)] out Stmt? outStmt)
         {
-            if (!analyzer.AnalyzeLambda(taskStmt.Body, ImmutableArray<S.LambdaExpParam>.Empty, context, out var body, out var captureInfo, out var funcTypeValue))
+            if (!analyzer.AnalyzeLambda(taskStmt, taskStmt.Body, ImmutableArray<S.LambdaExpParam>.Empty, context, out var body, out var captureInfo, out var funcTypeValue))
             {
                 outStmt = null;
                 return false;
@@ -519,7 +519,7 @@ namespace Gum.IR0
 
         bool AnalyzeAsyncStmt(S.AsyncStmt asyncStmt, Context context, [NotNullWhen(true)] out Stmt? outStmt)
         {
-            if (!analyzer.AnalyzeLambda(asyncStmt.Body, ImmutableArray<S.LambdaExpParam>.Empty, context, out var body, out var captureInfo, out var funcTypeValue))
+            if (!analyzer.AnalyzeLambda(asyncStmt, asyncStmt.Body, ImmutableArray<S.LambdaExpParam>.Empty, context, out var body, out var captureInfo, out var funcTypeValue))
             {
                 outStmt = null;
                 return false;
@@ -527,106 +527,70 @@ namespace Gum.IR0
 
             outStmt = new AsyncStmt(body, captureInfo);
             return true;
-        }
+        }        
         
         bool AnalyzeForeachStmt(S.ForeachStmt foreachStmt, Context context, [NotNullWhen(true)] out Stmt? outStmt)
         {
             outStmt = null;
 
-            var boolType = analyzer.GetBoolTypeValue();            
-
             if (!analyzer.AnalyzeExp(foreachStmt.Obj, null, context, out var obj, out var objType))
                 return false;
 
-            var elemType = context.GetTypeValueByTypeExp(foreachStmt.Type);
+            // in에 오는 것들은 
+            throw new NotImplementedException();
 
-            if (!context.TypeValueService.GetMemberFuncValue(
-                objType,
-                Name.MakeText("GetEnumerator"), ImmutableArray<TypeValue>.Empty,
-                out var getEnumerator))
-            {
-                context.ErrorCollector.Add(foreachStmt.Obj, "foreach ... in 뒤 객체는 IEnumerator<T> GetEnumerator() 함수가 있어야 합니다.");
-                return false;
-            }
+            //var elemType = context.GetTypeValueByTypeExp(foreachStmt.Type);
 
-            // TODO: 일단 인터페이스가 없으므로, bool MoveNext()과 T GetCurrent()가 있는지 본다
-            // TODO: 각 함수들이 thiscall인지도 확인해야 한다
+            //if (!context.TypeValueService.GetMemberFuncValue(
+            //    objType,
+            //    Name.MakeText("GetEnumerator"), ImmutableArray<TypeValue>.Empty,
+            //    out var getEnumerator))
+            //{
+            //    context.AddError(, foreachStmt.Obj, "foreach ... in 뒤 객체는 IEnumerator<T> GetEnumerator() 함수가 있어야 합니다.");
+            //    return false;
+            //}
 
-            // 1. elemTypeValue가 VarTypeValue이면 GetEnumerator의 리턴값으로 판단한다
-            var getEnumeratorType = context.TypeValueService.GetTypeValue(getEnumerator);
+            //// TODO: 일단 인터페이스가 없으므로, bool MoveNext()과 T GetCurrent()가 있는지 본다
+            //// TODO: 각 함수들이 thiscall인지도 확인해야 한다            
+            //if (elemType is TypeValue.Var)
+            //{
+            //    elemType = getCurrentType.Return;
 
-            if (!context.TypeValueService.GetMemberFuncValue(
-                getEnumeratorType.Return,
-                Name.MakeText("MoveNext"), ImmutableArray<TypeValue>.Empty, 
-                out var moveNext))
-            {
-                context.ErrorCollector.Add(foreachStmt.Obj, "enumerator doesn't have 'bool MoveNext()' function");
-                return false;
-            }
+            //    //var interfaces = typeValueService.GetInterfaces("IEnumerator", 1, funcTypeValue.RetTypeValue);
 
-            var moveNextType = context.TypeValueService.GetTypeValue(moveNext);
+            //    //if (1 < interfaces.Count)
+            //    //{
+            //    //    context.ErrorCollector.Add(foreachStmt.Obj, "변수 타입으로 var를 사용하였는데, IEnumerator<T>가 여러개라 어느 것을 사용할지 결정할 수 없습니다.");
+            //    //    return;
+            //    //}
+            //}
+            //else
+            //{
+            //    if (!analyzer.IsAssignable(elemType, getCurrentType.Return, context))
+            //        context.ErrorCollector.Add(foreachStmt, $"foreach(T ... in obj) 에서 obj.GetEnumerator().GetCurrent()의 결과를 {elemType} 타입으로 캐스팅할 수 없습니다");
+            //}
 
-            if (!analyzer.IsAssignable(boolType, moveNextType.Return, context))
-            {
-                context.ErrorCollector.Add(foreachStmt.Obj, "enumerator doesn't have 'bool MoveNext()' function");
-                return false;
-            }
+            //bool bResult = true;
+            //Stmt? body = null;
 
-            if (!context.TypeValueService.GetMemberFuncValue(
-                getEnumeratorType.Return, 
-                Name.MakeText("GetCurrent"), ImmutableArray<TypeValue>.Empty, 
-                out var getCurrent))
-            {
-                context.ErrorCollector.Add(foreachStmt.Obj, "enumerator doesn't have 'GetCurrent()' function");
-                return false;
-            }
+            //context.ExecInLocalScope(() =>
+            //{
+            //    context.AddLocalVarInfo(foreachStmt.VarName, elemType);
+            //    if (!AnalyzeStmt(foreachStmt.Body, context, out body))
+            //        bResult = false;
+            //});
 
-            var getCurrentType = context.TypeValueService.GetTypeValue(getCurrent);
-            if (getCurrentType.Return is TypeValue.Void)
-            {
-                context.ErrorCollector.Add(foreachStmt.Obj, "'GetCurrent()' function cannot return void");
-                return false;
-            }
+            //if (!bResult)
+            //{
+            //    outStmt = null;
+            //    return false;
+            //}
 
-            if (elemType is TypeValue.Var)
-            {   
-                elemType = getCurrentType.Return;
-
-                //var interfaces = typeValueService.GetInterfaces("IEnumerator", 1, funcTypeValue.RetTypeValue);
-
-                //if (1 < interfaces.Count)
-                //{
-                //    context.ErrorCollector.Add(foreachStmt.Obj, "변수 타입으로 var를 사용하였는데, IEnumerator<T>가 여러개라 어느 것을 사용할지 결정할 수 없습니다.");
-                //    return;
-                //}
-            }
-            else
-            {
-                if (!analyzer.IsAssignable(elemType, getCurrentType.Return, context))
-                    context.ErrorCollector.Add(foreachStmt, $"foreach(T ... in obj) 에서 obj.GetEnumerator().GetCurrent()의 결과를 {elemType} 타입으로 캐스팅할 수 없습니다");
-            }
-
-            bool bResult = true;
-            Stmt? body = null;
-
-            context.ExecInLocalScope(() =>
-            {
-                context.AddLocalVarInfo(foreachStmt.VarName, elemType);
-                if (!AnalyzeStmt(foreachStmt.Body, context, out body))
-                    bResult = false;
-            });
-
-            if (!bResult)
-            {
-                outStmt = null;
-                return false;
-            }
-
-            Debug.Assert(body != null);
-            var elemTypeId = context.GetTypeId(elemType);
-            var objTypeId = context.GetTypeId(objType);
-            outStmt = new ForeachStmt(elemTypeId, foreachStmt.VarName, new ExpInfo(obj, objTypeId), body);
-            return true;
+            //Debug.Assert(body != null);
+            //var elemTypeId = context.GetTypeId(elemType);
+            //var objTypeId = context.GetTypeId(objType);
+            //outStmt = new ForeachStmt(elemTypeId, foreachStmt.VarName, new ExpInfo(obj, objTypeId), body);
+            //return true;
         }
 
         bool AnalyzeYieldStmt(S.YieldStmt yieldStmt, Context context, [NotNullWhen(true)] out Stmt? outStmt)
@@ -635,7 +599,7 @@ namespace Gum.IR0
 
             if (!context.IsSeqFunc())
             {
-                context.ErrorCollector.Add(yieldStmt, "seq 함수 내부에서만 yield를 사용할 수 있습니다");
+                context.AddError(A1401_YieldStmt_YieldShouldBeInSeqFunc, yieldStmt, "seq 함수 내부에서만 yield를 사용할 수 있습니다");
                 return false;
             }            
 
@@ -649,7 +613,7 @@ namespace Gum.IR0
 
             if (!analyzer.IsAssignable(retTypeValue, valueType, context))
             {
-                context.ErrorCollector.Add(yieldStmt.Value, $"반환 값의 {valueType} 타입은 이 함수의 반환 타입과 맞지 않습니다");
+                context.AddError(A1402_YieldStmt_MismatchBetweenYieldValueAndSeqFuncYieldType, yieldStmt.Value, $"반환 값의 {valueType} 타입은 이 함수의 반환 타입과 맞지 않습니다");
                 return false;
             }
 

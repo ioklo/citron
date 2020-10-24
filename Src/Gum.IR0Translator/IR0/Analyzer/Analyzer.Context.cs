@@ -32,7 +32,7 @@ namespace Gum.IR0
 
             public TypeValueService TypeValueService { get; }
 
-            public IErrorCollector ErrorCollector { get; }
+            IErrorCollector errorCollector;
 
             // 현재 실행되고 있는 함수
             private FuncContext curFunc;
@@ -62,7 +62,7 @@ namespace Gum.IR0
                 this.enumInfosByDecl = enumInfosByDecl;
                 this.typeExpTypeValueService = typeExpTypeValueService;
 
-                ErrorCollector = errorCollector;
+                this.errorCollector = errorCollector;
 
                 curFunc = new FuncContext(null, null, false);
                 bGlobalScope = true;
@@ -71,6 +71,11 @@ namespace Gum.IR0
                 types = new List<Type>();
                 funcs = new List<Func>();
                 seqFuncs = new List<SeqFunc>();
+            }
+
+            public void AddError(AnalyzeErrorCode code, S.ISyntaxNode node, string msg)
+            {
+                errorCollector.Add(new AnalyzeError(code, node, msg));
             }
 
             public ExternalGlobalVarId GetExternalGlobalVarId(ModuleItemId varId)

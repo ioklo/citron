@@ -8,10 +8,10 @@ using Gum.CompileTime;
 namespace Gum.IR0
 {
     // 외부 인터페이스
-    public class IR0Translator
+    public class Translator
     {
         Analyzer analyzer;
-        public IR0Translator()
+        public Translator()
         {
             var typeSkeletonCollector = new TypeSkeletonCollector();
             var typeExpEvaluator = new TypeExpEvaluator(typeSkeletonCollector);

@@ -33,18 +33,18 @@ namespace Gum.IR0.Runtime
 
     class TestErrorCollector : IErrorCollector
     {
-        List<(object, string)> messages = new List<(object, string)>();
+        List<IError> errors = new List<IError>();
 
-        public bool HasError => messages.Count != 0;
+        public bool HasError => errors.Count != 0;
 
-        public void Add(object obj, string msg)
+        public void Add(IError error)
         {
-            messages.Add((obj, msg));
+            errors.Add(error);
         }
 
         public string GetMessages()
         {
-            return string.Join("\r\n", messages.Select(message => message.Item2));
+            return string.Join("\r\n", errors.Select(error => error.Message));
         }
     }
 

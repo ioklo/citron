@@ -9,6 +9,8 @@ using System.Text;
 using Gum.CompileTime;
 using Gum.Infra;
 
+using static Gum.IR0.AnalyzeErrorCode;
+
 using S = Gum.Syntax;
 
 namespace Gum.IR0
@@ -47,7 +49,7 @@ namespace Gum.IR0
                 {
                     if (declTypeValue is TypeValue.Var)
                     {
-                        context.ErrorCollector.Add(elem, $"{elem.VarName}의 타입을 추론할 수 없습니다");
+                        context.AddError(A0101_VarDecl_CantInferVarType, elem, $"{elem.VarName}의 타입을 추론할 수 없습니다");
                         return false;
                     }
                     else
@@ -75,7 +77,7 @@ namespace Gum.IR0
                         typeValue = declTypeValue;
 
                         if (!IsAssignable(declTypeValue, initExpTypeValue, context))
-                            context.ErrorCollector.Add(elem, $"타입 {initExpTypeValue}의 값은 타입 {varDecl.Type}의 변수 {elem.VarName}에 대입할 수 없습니다.");
+                            context.AddError(A0102_VarDecl_MismatchBetweenDeclTypeAndInitExpType, elem, $"타입 {initExpTypeValue}의 값은 타입 {varDecl.Type}의 변수 {elem.VarName}에 대입할 수 없습니다.");
                     }
 
                     varDeclVisitor.VisitElement(elem.VarName, typeValue, ir0InitExp, context);
@@ -111,6 +113,7 @@ namespace Gum.IR0
         }
 
         public bool AnalyzeLambda(
+            S.ISyntaxNode nodeForErrorReport,
             S.Stmt body,
             ImmutableArray<S.LambdaExpParam> parameters, // LambdaExp에서 바로 받기 때문에 ImmutableArray로 존재하면 편하다
             Context context,
@@ -125,8 +128,9 @@ namespace Gum.IR0
             // capture에 필요한 정보를 가져옵니다
             if (!capturer.Capture(parameters.Select(param => param.Name), body, out var captureResult))
             {
-                context.ErrorCollector.Add(body, "변수 캡쳐에 실패했습니다");
-                return false;
+                throw new NotImplementedException();
+                // context.AddError(body, "변수 캡쳐에 실패했습니다");
+                // return false;
             }
 
             // 람다 함수 컨텍스트를 만든다
@@ -163,8 +167,9 @@ namespace Gum.IR0
                     }
                 }
 
-                context.ErrorCollector.Add(body, "캡쳐실패");
-                return false;                
+                throw new NotImplementedException();
+                // context.ErrorCollector.Add(body, "캡쳐실패");
+                // return false;                
             }            
 
             var paramTypeValues = new List<TypeValue>(parameters.Length);
@@ -172,7 +177,7 @@ namespace Gum.IR0
             {
                 if (param.Type == null)
                 {
-                    context.ErrorCollector.Add(param, "람다 인자 타입추론은 아직 지원하지 않습니다");
+                    context.AddError(A9901_NotSupported_LambdaParameterInference, nodeForErrorReport, "람다 인자 타입추론은 아직 지원하지 않습니다");
                     return false;
                 }
 
@@ -404,16 +409,16 @@ namespace Gum.IR0
 
             if (objNormalTypeValue == null)
             {
-                context.ErrorCollector.Add(memberExp, "멤버를 가져올 수 없습니다");
+                context.AddError(A0301_MemberExp_InstanceTypeIsNotNormalType, memberExp, "멤버를 가져올 수 있는 타입이 아닙니다");
                 return false;
             }
 
             if (0 < memberExp.MemberTypeArgs.Length)
-                context.ErrorCollector.Add(memberExp, "멤버변수에는 타입인자를 붙일 수 없습니다");
+                context.AddError(A0302_MemberExp_TypeArgsForMemberVariableIsNotAllowed, memberExp, "멤버변수에는 타입인자를 붙일 수 없습니다");
 
             if (!context.TypeValueService.GetMemberVarValue(objNormalTypeValue, Name.MakeText(memberExp.MemberName), out outVarValue))
             {
-                context.ErrorCollector.Add(memberExp, $"{memberExp.MemberName}은 {objNormalTypeValue}의 멤버가 아닙니다");
+                context.AddError(A0303_MemberExp_MemberVarNotFound, memberExp, $"{memberExp.MemberName}은 {objNormalTypeValue}의 멤버가 아닙니다");
                 return false;
             }
 
@@ -430,30 +435,30 @@ namespace Gum.IR0
 
             if (!context.TypeValueService.GetMemberVarValue(objNormalTypeValue, Name.MakeText(memberExp.MemberName), out outVarValue))
             {
-                context.ErrorCollector.Add(memberExp, "멤버가 존재하지 않습니다");
+                context.AddError(A0303_MemberExp_MemberVarNotFound, memberExp, "멤버가 존재하지 않습니다");
                 return false;
             }
 
             if (0 < memberExp.MemberTypeArgs.Length)
             {
-                context.ErrorCollector.Add(memberExp, "멤버변수에는 타입인자를 붙일 수 없습니다");
+                context.AddError(A0302_MemberExp_TypeArgsForMemberVariableIsNotAllowed, memberExp, "멤버변수에는 타입인자를 붙일 수 없습니다");
                 return false;
             }
 
             if (!Misc.IsVarStatic(outVarValue.VarId, context))
             {
-                context.ErrorCollector.Add(memberExp, "정적 변수가 아닙니다");
+                context.AddError(A0304_MemberExp_MemberVariableIsNotStatic, memberExp, "정적 변수가 아닙니다");
                 return false;
             }
 
             return true;
         }
 
-        public bool CheckParamTypes(object objForErrorMsg, IReadOnlyList<TypeValue> parameters, IReadOnlyList<TypeValue> args, Context context)
+        public bool CheckParamTypes(S.ISyntaxNode nodeForErrorReport, IReadOnlyList<TypeValue> parameters, IReadOnlyList<TypeValue> args, Context context)
         {
             if (parameters.Count != args.Count)
             {
-                context.ErrorCollector.Add(objForErrorMsg, $"함수는 인자를 {parameters.Count}개 받는데, 호출 인자는 {args.Count} 개입니다");
+                context.AddError(A0401_Parameter_MismatchBetweenParamCountAndArgCount, nodeForErrorReport, $"함수는 인자를 {parameters.Count}개 받는데, 호출 인자는 {args.Count} 개입니다");
                 return false;
             }
 
@@ -461,7 +466,7 @@ namespace Gum.IR0
             {
                 if (!IsAssignable(parameters[i], args[i], context))
                 {
-                    context.ErrorCollector.Add(objForErrorMsg, $"함수의 {i + 1}번 째 매개변수 타입은 {parameters[i]} 인데, 호출 인자 타입은 {args[i]} 입니다");
+                    context.AddError(A0402_Parameter_MismatchBetweenParamTypeAndArgType, nodeForErrorReport, $"함수의 {i + 1}번 째 매개변수 타입은 {parameters[i]} 인데, 호출 인자 타입은 {args[i]} 입니다");
                     return false;
                 }
             }

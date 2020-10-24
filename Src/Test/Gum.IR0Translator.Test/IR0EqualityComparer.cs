@@ -10,6 +10,7 @@ namespace Gum
 {
     class IR0EqualityComparer 
         : IEqualityComparer<Script?>
+        , IEqualityComparer<Func>
         , IEqualityComparer<Stmt>
         , IEqualityComparer<Exp>
         , IEqualityComparer<StringExpElement>
@@ -49,8 +50,9 @@ namespace Gum
             if (x.Types.Length != 0)
                 throw new NotImplementedException();
 
-            if (x.Funcs.Length != 0)
-                throw new NotImplementedException();
+            for (int i = 0; i < x.Funcs.Length; i++)
+                if (!Equals(x.Funcs[i], y.Funcs[i]))
+                    return false;
 
             if (x.SeqFuncs.Length != 0)
                 throw new NotImplementedException();
@@ -65,6 +67,23 @@ namespace Gum
         public int GetHashCode([DisallowNull] Script obj)
         {
             throw new System.NotImplementedException();
+        }
+
+        public bool Equals([AllowNull] Func x, [AllowNull] Func y)
+        {
+            if (x == null && y == null) return true;
+            if (x == null || y == null) return false;
+
+            return Equals(x.Id, y.Id) &&
+                x.IsThisCall == y.IsThisCall &&
+                x.TypeParams.SequenceEqual(y.TypeParams) && // string이라 this 없이 호출
+                x.ParamNames.SequenceEqual(y.ParamNames) &&
+                Equals(x.Body, y.Body);
+        }
+
+        public int GetHashCode([DisallowNull] Func obj)
+        {
+            throw new NotImplementedException();
         }
 
         public bool Equals([AllowNull] Stmt x, [AllowNull] Stmt y)
@@ -427,5 +446,7 @@ namespace Gum
         {
             throw new NotImplementedException();
         }
+
+        
     }
 }
