@@ -277,9 +277,9 @@ namespace Gum.IR0
                     outInitializer = null;
                     return false;
 
-                case S.ExpForStmtInitializer expInit:
+                case S.ExpForStmtInitializer expInit:                   
                     
-                    if (analyzer.AnalyzeExp(expInit.Exp, null, context, out var ir0ExpInit, out var expInitType))
+                    if (analyzer.AnalyzeTopLevelExp(expInit.Exp, null, A1102_ForStmt_ExpInitializerShouldBeAssignOrCall, context, out var ir0ExpInit, out var expInitType))
                     {
                         var expInitTypeId = context.GetTypeId(expInitType);
                         outInitializer = new ExpForStmtInitializer(new ExpInfo(ir0ExpInit, expInitTypeId));
@@ -321,12 +321,12 @@ namespace Gum.IR0
 
                     // 에러가 나면 에러를 추가하고 계속 진행
                     if (!analyzer.IsAssignable(boolTypeValue, condExpTypeValue, context))
-                        context.AddError(A1104_ForStmt_ConditionShouldBeBool, forStmt.CondExp, $"{forStmt.CondExp}는 bool 형식이어야 합니다");
+                        context.AddError(A1101_ForStmt_ConditionShouldBeBool, forStmt.CondExp, $"{forStmt.CondExp}는 bool 형식이어야 합니다");
                 }
                 
                 if (forStmt.ContinueExp != null)
                 {
-                    if (analyzer.AnalyzeExp(forStmt.ContinueExp, null, context, out var contExp, out var contExpType))
+                    if (analyzer.AnalyzeTopLevelExp(forStmt.ContinueExp, null, A1103_ForStmt_ContinueExpShouldBeAssignOrCall, context, out var contExp, out var contExpType))
                     {
                         var contExpTypeId = context.GetTypeId(contExpType);
                         continueInfo = new ExpInfo(contExp, contExpTypeId);
@@ -337,8 +337,11 @@ namespace Gum.IR0
                     }
                 }
 
-                if (!AnalyzeStmt(forStmt.Body, context, out body))
-                    bResult = false;                
+                context.ExecInLoop(() =>
+                {
+                    if (!AnalyzeStmt(forStmt.Body, context, out body))
+                        bResult = false;
+                });
             });
 
             if (bResult)
@@ -356,14 +359,26 @@ namespace Gum.IR0
 
         bool AnalyzeContinueStmt(S.ContinueStmt continueStmt, Context context, [NotNullWhen(true)] out Stmt? outStmt)
         {
-            // TODO: loop안에 있는지 확인한다
+            if (!context.IsInLoop())
+            {
+                outStmt = null;
+                context.AddError(A1501_ContinueStmt_ShouldUsedInLoop, continueStmt, "continue는 루프 안에서만 사용할 수 있습니다");
+                return false;
+            }
+            
             outStmt = ContinueStmt.Instance;
             return true;
         }
 
         bool AnalyzeBreakStmt(S.BreakStmt breakStmt, Context context, [NotNullWhen(true)] out Stmt? outStmt)
         {
-            // loop안에 있는지 확인해야 한다
+            if (!context.IsInLoop())
+            {
+                outStmt = null;
+                context.AddError(A1601_BreakStmt_ShouldUsedInLoop, breakStmt, "break는 루프 안에서만 사용할 수 있습니다");
+                return false;
+            }
+
             outStmt = BreakStmt.Instance;
             return true;
         }
@@ -372,9 +387,30 @@ namespace Gum.IR0
         {
             outStmt = null;
 
+            // seq 함수는 여기서 모두 처리 
+            if (context.IsSeqFunc())
+            {
+                if (returnStmt.Value != null)
+                {
+                    context.AddError(A1202_ReturnStmt_SeqFuncShouldReturnVoid, returnStmt, $"seq 함수는 빈 return만 허용됩니다");
+                    return false;
+                }
+
+                outStmt = new ReturnStmt(null);
+                return true;
+            }           
+
+            // 리턴 값이 없을 경우
             if (returnStmt.Value == null)
             {
-                if (!context.IsSeqFunc() && context.GetRetTypeValue() != TypeValue.MakeVoid())
+                var retTypeValue = context.GetRetTypeValue();
+                var voidTypeValue = TypeValue.MakeVoid();
+
+                if (retTypeValue == null)
+                {
+                    context.SetRetTypeValue(voidTypeValue);
+                }
+                else if (retTypeValue != TypeValue.MakeVoid())
                 {
                     context.AddError(A1201_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType, returnStmt, $"이 함수는 {context.GetRetTypeValue()}을 반환해야 합니다");
                     return false;
@@ -383,35 +419,32 @@ namespace Gum.IR0
                 outStmt = new ReturnStmt(null);
                 return true;
             }
-            
-            if (context.IsSeqFunc())
+            else
             {
-                context.AddError(A1202_ReturnStmt_SeqFuncShouldReturnVoid, returnStmt, $"seq 함수는 빈 return만 허용됩니다");
-                return false;
-            }                
+                var retTypeValue = context.GetRetTypeValue();
 
-            var retTypeValue = context.GetRetTypeValue();
-
-            // NOTICE: 리턴타입을 힌트로 넣었다
-            if (!analyzer.AnalyzeExp(returnStmt.Value, retTypeValue, context, out var ir0Value, out var valueType))
-                return false;
-
-            if (retTypeValue != null)
-            {
-                // 현재 함수 시그니처랑 맞춰서 같은지 확인한다
-                if (!analyzer.IsAssignable(retTypeValue, valueType, context))
-                {
-                    context.AddError(A1201_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType, returnStmt.Value, $"반환값의 타입 {valueType}는 이 함수의 반환타입과 맞지 않습니다");
+                // NOTICE: 리턴타입을 힌트로 넣었다
+                if (!analyzer.AnalyzeExp(returnStmt.Value, retTypeValue, context, out var ir0Value, out var valueType))
                     return false;
-                }
-            }
-            else // 리턴타입이 정해지지 않았을 경우가 있다
-            {
-                context.SetRetTypeValue(valueType);
-            }
 
-            outStmt = new ReturnStmt(ir0Value);
-            return true;
+                // 리턴타입이 정해지지 않았을 경우가 있다
+                if (retTypeValue == null)
+                {
+                    context.SetRetTypeValue(valueType);
+                }
+                else 
+                {
+                    // 현재 함수 시그니처랑 맞춰서 같은지 확인한다
+                    if (!analyzer.IsAssignable(retTypeValue, valueType, context))
+                    {
+                        context.AddError(A1201_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType, returnStmt.Value, $"반환값의 타입 {valueType}는 이 함수의 반환타입과 맞지 않습니다");
+                        return false;
+                    }
+                }
+
+                outStmt = new ReturnStmt(ir0Value);
+                return true;
+            }
         }
 
         bool AnalyzeBlockStmt(S.BlockStmt blockStmt, Context context, [NotNullWhen(true)] out Stmt? outStmt)
@@ -444,25 +477,13 @@ namespace Gum.IR0
                 outStmt = null;
                 return false;
             }
-        }
+        }       
 
         bool AnalyzeExpStmt(S.ExpStmt expStmt, Context context, [NotNullWhen(true)] out Stmt? outStmt)
         {
             bool bResult = true;
-
-            if ((expStmt.Exp is S.UnaryOpExp unOpExp && (unOpExp.Kind != S.UnaryOpKind.PostfixInc || 
-                    unOpExp.Kind != S.UnaryOpKind.PostfixDec ||
-                    unOpExp.Kind != S.UnaryOpKind.PrefixInc ||
-                    unOpExp.Kind != S.UnaryOpKind.PrefixDec)) && 
-                (expStmt.Exp is S.BinaryOpExp binOpExp && binOpExp.Kind != S.BinaryOpKind.Assign) &&
-                !(expStmt.Exp is S.CallExp) &&
-                !(expStmt.Exp is S.MemberCallExp))
-            {
-                context.AddError(A1301_ExpStmt_ExpressionShouldBeAssignOrCall, expStmt, "대입, 함수 호출만 구문으로 사용할 수 있습니다");
-                bResult = false;
-            }
-
-            if (!analyzer.AnalyzeExp(expStmt.Exp, null, context, out var exp, out var expType))
+            
+            if (!analyzer.AnalyzeTopLevelExp(expStmt.Exp, null, A1301_ExpStmt_ExpressionShouldBeAssignOrCall, context, out var exp, out var expType))
                 bResult = false;
 
             if( bResult)

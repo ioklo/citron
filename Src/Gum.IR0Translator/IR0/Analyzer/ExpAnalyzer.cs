@@ -287,7 +287,7 @@ namespace Gum.IR0
             static InternalBinaryOperatorInfo()
             {
                 var boolType = TypeValue.MakeNormal(ModuleItemId.Make("bool"));
-                var intType = TypeValue.MakeNormal(ModuleItemId.Make("bool"));
+                var intType = TypeValue.MakeNormal(ModuleItemId.Make("int"));
                 var stringType = TypeValue.MakeNormal(ModuleItemId.Make("string"));
 
                 Infos = new Dictionary<S.BinaryOpKind, InternalBinaryOperatorInfo[]>()

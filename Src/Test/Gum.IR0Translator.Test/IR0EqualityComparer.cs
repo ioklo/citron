@@ -11,6 +11,7 @@ namespace Gum
     class IR0EqualityComparer 
         : IEqualityComparer<Script?>
         , IEqualityComparer<Func>
+        , IEqualityComparer<SeqFunc>
         , IEqualityComparer<Stmt>
         , IEqualityComparer<Exp>
         , IEqualityComparer<StringExpElement>
@@ -25,7 +26,7 @@ namespace Gum
         , IEqualityComparer<CaptureInfo.Element>        
         , IEqualityComparer<FuncId>
         , IEqualityComparer<SeqFuncId>
-        , IEqualityComparer<NewEnumExp.Elem>
+        , IEqualityComparer<NewEnumExp.Elem>        
     {
         public static IR0EqualityComparer Instance { get; } = new IR0EqualityComparer();
 
@@ -54,8 +55,9 @@ namespace Gum
                 if (!Equals(x.Funcs[i], y.Funcs[i]))
                     return false;
 
-            if (x.SeqFuncs.Length != 0)
-                throw new NotImplementedException();
+            for (int i = 0; i < x.SeqFuncs.Length; i++)
+                if (!Equals(x.SeqFuncs[i], y.SeqFuncs[i]))
+                    return false;
             
             for (int i = 0; i < x.TopLevelStmts.Length; i++)
                 if (!Equals(x.TopLevelStmts[i], y.TopLevelStmts[i]))
@@ -86,10 +88,31 @@ namespace Gum
             throw new NotImplementedException();
         }
 
+        public bool Equals([AllowNull] SeqFunc x, [AllowNull] SeqFunc y)
+        {
+            if (x == null && y == null) return true;
+            if (x == null || y == null) return false;
+
+            return Equals(x.Id, y.Id) &&
+                Equals(x.ElemTypeId, y.ElemTypeId) &&
+                x.IsThisCall == y.IsThisCall &&
+                x.TypeParams.SequenceEqual(y.TypeParams) && // string이라 this를 넣지 않는다
+                x.ParamNames.SequenceEqual(y.ParamNames) && // string이라 this를 넣지 않는다
+                Equals(x.Body, y.Body);
+        }
+
+        public int GetHashCode([DisallowNull] SeqFunc obj)
+        {
+            throw new NotImplementedException();
+        }
+
         public bool Equals([AllowNull] Stmt x, [AllowNull] Stmt y)
         {
             switch ((x, y))
             {
+                case (null, null):
+                    return true;
+
                 case (CommandStmt csx, CommandStmt csy):
                     return csx.Commands.SequenceEqual<Exp>(csy.Commands, this);
 
@@ -174,6 +197,9 @@ namespace Gum
         {
             switch ((x, y))
             {
+                case (null, null):
+                    return true;
+
                 case (ExternalGlobalVarExp externalGlobalVarExpX, ExternalGlobalVarExp externalGlobalVarExpY): 
                     return Equals(externalGlobalVarExpX.VarId, externalGlobalVarExpY.VarId);
 
@@ -266,6 +292,8 @@ namespace Gum
                     return Equals(newClassExpX.TypeId, newClassExpY.TypeId) &&
                         newClassExpX.Args.SequenceEqual(newClassExpY.Args, this);
 
+                
+
                 default:
                     return false;
             }
@@ -280,6 +308,9 @@ namespace Gum
         {
             switch((x, y))
             {
+                case (null, null):
+                    return true;
+
                 case (TextStringExpElement tx, TextStringExpElement ty):
                     return tx.Text == ty.Text;
 
@@ -363,6 +394,9 @@ namespace Gum
         {
             switch((x, y))
             {
+                case (null, null):
+                    return true;
+
                 case (ExpForStmtInitializer ex, ExpForStmtInitializer ey):
                     return Equals(ex.ExpInfo, ey.ExpInfo);
 
@@ -445,8 +479,6 @@ namespace Gum
         public int GetHashCode([DisallowNull] NewEnumExp.Elem obj)
         {
             throw new NotImplementedException();
-        }
-
-        
+        }        
     }
 }

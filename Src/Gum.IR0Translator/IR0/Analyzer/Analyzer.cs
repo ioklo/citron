@@ -96,12 +96,15 @@ namespace Gum.IR0
             if (elem is S.ExpStringExpElement expElem)
             {
                 // TODO: exp의 결과 string으로 변환 가능해야 하는 조건도 고려해야 한다
-                if (AnalyzeExp(expElem.Exp, null, context, out var ir0Exp, out var expTypeValue))
+                if (!AnalyzeExp(expElem.Exp, null, context, out var ir0Exp, out var expTypeValue))
                 {
-                    var expTypeId = context.GetTypeId(expTypeValue);
-                    outElem = new ExpStringExpElement(new ExpInfo(ir0Exp, expTypeId));
-                    return true;
-                }                
+                    outElem = null;
+                    return false;
+                }
+                
+                var expTypeId = context.GetTypeId(expTypeValue);
+                outElem = new ExpStringExpElement(new ExpInfo(ir0Exp, expTypeId));
+                return true;                
             }
             else if (elem is S.TextStringExpElement textElem)
             {
@@ -216,6 +219,47 @@ namespace Gum.IR0
             [NotNullWhen(true)] out TypeValue? outTypeValue)
         {
             return expAnalyzer.AnalyzeExp(exp, hintTypeValue, context, out outIR0Exp, out outTypeValue);
+        }
+
+        bool IsTopLevelExp(S.Exp exp)
+        {
+            switch (exp)
+            {
+                case S.UnaryOpExp unOpExp:
+                    return unOpExp.Kind == S.UnaryOpKind.PostfixInc ||
+                        unOpExp.Kind == S.UnaryOpKind.PostfixDec ||
+                        unOpExp.Kind == S.UnaryOpKind.PrefixInc ||
+                        unOpExp.Kind == S.UnaryOpKind.PrefixDec;
+
+                case S.BinaryOpExp binOpExp:
+                    return binOpExp.Kind == S.BinaryOpKind.Assign;
+
+                case S.CallExp _:
+                case S.MemberCallExp _:
+                    return true;
+
+                default:
+                    return false;
+            }
+        }
+
+        public bool AnalyzeTopLevelExp(
+            S.Exp exp, 
+            TypeValue? hintTypeValue, 
+            AnalyzeErrorCode code,
+            Context context,             
+            [NotNullWhen(true)] out Exp? outExp, 
+            [NotNullWhen(true)] out TypeValue? outTypeValue)
+        {
+            if (!IsTopLevelExp(exp))
+            {
+                context.AddError(code, exp, "대입, 함수 호출만 구문으로 사용할 수 있습니다");
+                outExp = null;
+                outTypeValue = null;
+                return false;
+            }
+
+            return AnalyzeExp(exp, hintTypeValue, context, out outExp, out outTypeValue);
         }
 
         public bool AnalyzeStmt(S.Stmt stmt, Context context, [NotNullWhen(true)] out Stmt? outStmt)

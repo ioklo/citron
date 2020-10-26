@@ -57,7 +57,9 @@ namespace Gum.IR0
         A1003_IfStmt_TestTypeShouldBeEnumOrClass,
         A1004_IfStmt_ConditionShouldBeBool,
 
-        A1104_ForStmt_ConditionShouldBeBool,
+        A1101_ForStmt_ConditionShouldBeBool,
+        A1102_ForStmt_ExpInitializerShouldBeAssignOrCall,
+        A1103_ForStmt_ContinueExpShouldBeAssignOrCall,
 
         A1201_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType,
         A1202_ReturnStmt_SeqFuncShouldReturnVoid,
@@ -67,6 +69,9 @@ namespace Gum.IR0
         A1401_YieldStmt_YieldShouldBeInSeqFunc,
         A1402_YieldStmt_MismatchBetweenYieldValueAndSeqFuncYieldType,
 
+        A1501_ContinueStmt_ShouldUsedInLoop,
+
+        A1601_BreakStmt_ShouldUsedInLoop,
 
         A9901_NotSupported_LambdaParameterInference
 

@@ -39,6 +39,7 @@ namespace Gum.IR0
 
             // CurFunc와 bGlobalScope를 나누는 이유는, globalScope에서 BlockStmt 안으로 들어가면 global이 아니기 때문이다
             private bool bGlobalScope;
+            private bool bInLoop;
             private ImmutableDictionary<S.FuncDecl, FuncInfo> funcInfosByDecl;
             private ImmutableDictionary<S.EnumDecl, EnumInfo> enumInfosByDecl;
             private TypeExpTypeValueService typeExpTypeValueService;
@@ -64,8 +65,9 @@ namespace Gum.IR0
 
                 this.errorCollector = errorCollector;
 
-                curFunc = new FuncContext(null, null, false);
+                curFunc = new FuncContext(null, TypeValue.MakeNormal(ModuleItemId.Make("int")), false);
                 bGlobalScope = true;
+                bInLoop = false;
                 privateGlobalVarInfos = new Dictionary<string, PrivateGlobalVarInfo>();
 
                 types = new List<Type>();
@@ -111,6 +113,21 @@ namespace Gum.IR0
                 curFunc.ExecInLocalScope(action);
 
                 bGlobalScope = bPrevGlobalScope;
+            }
+
+            public void ExecInLoop(Action action)
+            {
+                var bPrevInLoop = bInLoop;
+                bInLoop = true;
+
+                try
+                {
+                    action.Invoke();
+                }
+                finally
+                {
+                    bInLoop = bPrevInLoop;
+                }
             }
 
             public TypeId GetTypeId(TypeValue typeValue)
@@ -175,6 +192,11 @@ namespace Gum.IR0
             public bool IsGlobalScope()
             {
                 return bGlobalScope;
+            }
+
+            public bool IsInLoop()
+            {
+                return bInLoop;
             }
 
             public void SetGlobalScope(bool bNewGlobalScope)
