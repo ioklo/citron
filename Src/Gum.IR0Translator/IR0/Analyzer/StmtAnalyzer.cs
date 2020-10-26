@@ -486,7 +486,7 @@ namespace Gum.IR0
             if (!analyzer.AnalyzeTopLevelExp(expStmt.Exp, null, A1301_ExpStmt_ExpressionShouldBeAssignOrCall, context, out var exp, out var expType))
                 bResult = false;
 
-            if( bResult)
+            if (bResult)
             {
                 Debug.Assert(exp != null);
                 Debug.Assert(expType != null);
@@ -504,7 +504,7 @@ namespace Gum.IR0
 
         bool AnalyzeTaskStmt(S.TaskStmt taskStmt, Context context, [NotNullWhen(true)] out Stmt? outStmt)
         {
-            if (!analyzer.AnalyzeLambda(taskStmt, taskStmt.Body, ImmutableArray<S.LambdaExpParam>.Empty, context, out var body, out var captureInfo, out var funcTypeValue))
+            if (!analyzer.AnalyzeLambda(taskStmt, taskStmt.Body, ImmutableArray<S.LambdaExpParam>.Empty, context, out var body, out var captureInfo, out var _))
             {
                 outStmt = null;
                 return false;
@@ -540,7 +540,7 @@ namespace Gum.IR0
 
         bool AnalyzeAsyncStmt(S.AsyncStmt asyncStmt, Context context, [NotNullWhen(true)] out Stmt? outStmt)
         {
-            if (!analyzer.AnalyzeLambda(asyncStmt, asyncStmt.Body, ImmutableArray<S.LambdaExpParam>.Empty, context, out var body, out var captureInfo, out var funcTypeValue))
+            if (!analyzer.AnalyzeLambda(asyncStmt, asyncStmt.Body, ImmutableArray<S.LambdaExpParam>.Empty, context, out var body, out var captureInfo, out var _))
             {
                 outStmt = null;
                 return false;

@@ -321,7 +321,7 @@ namespace Gum.IR0
 
 
         [Fact]
-        public void ForStmt_ChecksConditionShouldBeBool()
+        public void ForStmt_ChecksConditionIsBool()
         {
             S.Exp cond;
 
@@ -339,7 +339,7 @@ namespace Gum.IR0
 
 
         [Fact]
-        public void ForStmt_ChecksExpInitializerShouldBeAssignOrCall()
+        public void ForStmt_ChecksExpInitializerIsAssignOrCall()
         {
             S.Exp exp;
 
@@ -356,7 +356,7 @@ namespace Gum.IR0
         }
 
         [Fact]
-        public void ForStmt_ChecksContinueExpShouldBeAssignOrCall()
+        public void ForStmt_ChecksContinueExpIsAssignOrCall()
         {
             S.Exp continueExp;
 
@@ -564,7 +564,247 @@ namespace Gum.IR0
             var errors = TranslateWithErrors(syntaxScript);
 
             VerifyError(errors, A0501_IdExp_VariableNotFound, exp);
-        }        
+        }   
+        
+        [Fact]
+        public void ExpStmt_TranslatesTrivially()
+        {
+            var syntaxScript = SimpleSScript(
+                SimpleSVarDeclStmt(intTypeExp, "x"),
+                new S.ExpStmt(new S.BinaryOpExp(S.BinaryOpKind.Assign, new S.IdentifierExp("x"), SimpleSInt(3)))
+            );
+
+            var script = Translate(syntaxScript);
+
+            var expected = SimpleScript(null, null, null, new Stmt[] {                
+                new PrivateGlobalVarDeclStmt(MakeArray(new PrivateGlobalVarDeclStmt.Element("x", TypeId.Int, null))),
+                new ExpStmt(new ExpInfo(new AssignExp(new PrivateGlobalVarExp("x"), SimpleInt(3)), TypeId.Int))
+            });
+
+            Assert.Equal(expected, script, IR0EqualityComparer.Instance);
+        }
+
+        [Fact]
+        public void ExpStmt_ChecksExpIsAssignOrCall()
+        {
+            S.Exp exp;
+            var syntaxScript = SimpleSScript(
+                new S.ExpStmt(exp = SimpleSInt(3))
+            );
+
+            var errors = TranslateWithErrors(syntaxScript);
+
+            VerifyError(errors, A1301_ExpStmt_ExpressionShouldBeAssignOrCall, exp);
+        }
+
+        [Fact]
+        public void TaskStmt_TranslatesWithGlobalVariable()
+        {
+            var syntaxScript = SimpleSScript(
+                SimpleSVarDeclStmt(intTypeExp, "x"),
+                new S.TaskStmt(
+                    new S.ExpStmt(
+                        new S.BinaryOpExp(S.BinaryOpKind.Assign, new S.IdentifierExp("x"), SimpleSInt(3))
+                    )
+                )
+            );
+
+            var script = Translate(syntaxScript);
+
+            var expected = SimpleScript(null, null, null, new Stmt[] {
+                new PrivateGlobalVarDeclStmt(MakeArray(new PrivateGlobalVarDeclStmt.Element("x", TypeId.Int, null))),
+                new TaskStmt(
+                    new ExpStmt(new ExpInfo(new AssignExp(new PrivateGlobalVarExp("x"), SimpleInt(3)), TypeId.Int)),
+                    new CaptureInfo(false, Array.Empty<CaptureInfo.Element>())
+                )
+            });
+
+            Assert.Equal(expected, script, IR0EqualityComparer.Instance);
+        }
+
+        [Fact]
+        public void TaskStmt_TranslatesWithLocalVariable()
+        {
+            var syntaxScript = SimpleSScript(
+                new S.BlockStmt(
+                    SimpleSVarDeclStmt(intTypeExp, "x"),
+                    new S.TaskStmt(
+                        new S.ExpStmt(
+                            new S.BinaryOpExp(S.BinaryOpKind.Assign, new S.IdentifierExp("x"), SimpleSInt(3))
+                        )
+                    )
+                )
+            );
+
+            var script = Translate(syntaxScript);
+
+            var expected = SimpleScript(null, null, null, new Stmt[] {
+                new BlockStmt(
+                    SimpleLocalVarDeclStmt(TypeId.Int, "x"),
+                    new TaskStmt(
+                        new ExpStmt(new ExpInfo(new AssignExp(new LocalVarExp("x"), SimpleInt(3)), TypeId.Int)),
+                        new CaptureInfo(false, new [] { new CaptureInfo.Element(TypeId.Int, "x") })
+                    )
+                )
+            });
+
+            Assert.Equal(expected, script, IR0EqualityComparer.Instance);
+        }
+
+        [Fact]
+        public void AwaitStmt_TranslatesTrivially()
+        {
+            var syntaxScript = SimpleSScript(
+                new S.AwaitStmt(
+                    S.BlankStmt.Instance
+                )
+            );
+
+            var script = Translate(syntaxScript);
+
+            var expected = SimpleScript(null, null, null, new Stmt[] { new AwaitStmt(BlankStmt.Instance) });
+
+            Assert.Equal(expected, script, IR0EqualityComparer.Instance);
+        }
+
+        [Fact]
+        public void AwaitStmt_ChecksLocalVariableScope()
+        {
+            S.Exp exp;
+
+            var syntaxScript = SimpleSScript(
+                new S.AwaitStmt(
+                    SimpleSVarDeclStmt(stringTypeExp, "x", SimpleSString("Hello"))
+                ),
+
+                new S.CommandStmt(new S.StringExp(new S.ExpStringExpElement(exp = new S.IdentifierExp("x"))))
+            );
+
+            var errors = TranslateWithErrors(syntaxScript);
+
+            VerifyError(errors, A0501_IdExp_VariableNotFound, exp);
+        }
+
+        [Fact]
+        public void AsyncStmt_TranslatesWithGlobalVariable()
+        {
+            var syntaxScript = SimpleSScript(
+                SimpleSVarDeclStmt(intTypeExp, "x"),
+                new S.AsyncStmt(
+                    new S.ExpStmt(
+                        new S.BinaryOpExp(S.BinaryOpKind.Assign, new S.IdentifierExp("x"), SimpleSInt(3))
+                    )
+                )
+            );
+
+            var script = Translate(syntaxScript);
+
+            var expected = SimpleScript(null, null, null, new Stmt[] {
+                new PrivateGlobalVarDeclStmt(MakeArray(new PrivateGlobalVarDeclStmt.Element("x", TypeId.Int, null))),
+                new AsyncStmt(
+                    new ExpStmt(new ExpInfo(new AssignExp(new PrivateGlobalVarExp("x"), SimpleInt(3)), TypeId.Int)),
+                    new CaptureInfo(false, Array.Empty<CaptureInfo.Element>())
+                )
+            });
+
+            Assert.Equal(expected, script, IR0EqualityComparer.Instance);
+        }
+
+        [Fact]
+        public void AsyncStmt_TranslatesWithLocalVariable()
+        {
+            var syntaxScript = SimpleSScript(
+                new S.BlockStmt(
+                    SimpleSVarDeclStmt(intTypeExp, "x"),
+                    new S.AsyncStmt(
+                        new S.ExpStmt(
+                            new S.BinaryOpExp(S.BinaryOpKind.Assign, new S.IdentifierExp("x"), SimpleSInt(3))
+                        )
+                    )
+                )
+            );
+
+            var script = Translate(syntaxScript);
+
+            var expected = SimpleScript(null, null, null, new Stmt[] {
+                new BlockStmt(
+                    SimpleLocalVarDeclStmt(TypeId.Int, "x"),
+                    new AsyncStmt(
+                        new ExpStmt(new ExpInfo(new AssignExp(new LocalVarExp("x"), SimpleInt(3)), TypeId.Int)),
+                        new CaptureInfo(false, new [] { new CaptureInfo.Element(TypeId.Int, "x") })
+                    )
+                )
+            });
+
+            Assert.Equal(expected, script, IR0EqualityComparer.Instance);
+        }
+
+        [Fact]
+        public void ForeachStmt_TranslateTrivially()
+        {
+            throw new PrerequisiteRequiredException("Implementation");
+        }
+
+        [Fact]
+        public void YieldStmt_TranslateTrivially()
+        {
+            var syntaxScript = new S.Script(
+                new S.Script.FuncDeclElement(new S.FuncDecl(
+                    true, intTypeExp, "Func", Array.Empty<string>(), new S.FuncParamInfo(Array.Empty<S.TypeAndName>(), null),
+                    new S.BlockStmt(
+                        new S.YieldStmt(SimpleSInt(3))
+                    )
+                ))
+            );
+
+            var script = Translate(syntaxScript);
+
+            var seqFunc = new SeqFunc(new SeqFuncId(0), TypeId.Int, false, Array.Empty<string>(), Array.Empty<string>(), new BlockStmt(
+                new YieldStmt(SimpleInt(3))
+            ));
+
+            var expected = SimpleScript(null, null, new[] { seqFunc }, Array.Empty<Stmt>());
+
+            Assert.Equal(expected, script, IR0EqualityComparer.Instance);
+        }
+
+        [Fact]
+        public void YieldStmt_ChecksYieldStmtUsedInSeqFunc()
+        {
+            S.YieldStmt yieldStmt;
+
+            var syntaxScript = new S.Script(
+                new S.Script.FuncDeclElement(new S.FuncDecl(
+                    false, intTypeExp, "Func", Array.Empty<string>(), new S.FuncParamInfo(Array.Empty<S.TypeAndName>(), null),
+                    new S.BlockStmt(
+                        yieldStmt = new S.YieldStmt(SimpleSInt(3))
+                    )
+                ))
+            );
+
+            var errors = TranslateWithErrors(syntaxScript);
+
+            VerifyError(errors, A1401_YieldStmt_YieldShouldBeInSeqFunc, yieldStmt);
+        }
+
+        [Fact]
+        public void YieldStmt_ChecksMatchingYieldType()
+        {
+            S.Exp yieldValue;
+
+            var syntaxScript = new S.Script(
+                new S.Script.FuncDeclElement(new S.FuncDecl(
+                    true, stringTypeExp, "Func", Array.Empty<string>(), new S.FuncParamInfo(Array.Empty<S.TypeAndName>(), null),
+                    new S.BlockStmt(
+                        new S.YieldStmt(yieldValue = SimpleSInt(3))
+                    )
+                ))
+            );
+
+            var errors = TranslateWithErrors(syntaxScript);
+
+            VerifyError(errors, A1402_YieldStmt_MismatchBetweenYieldValueAndSeqFuncYieldType, yieldValue);
+        }
 
         // StringExp
         [Fact]
