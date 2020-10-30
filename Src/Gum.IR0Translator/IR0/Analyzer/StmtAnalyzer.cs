@@ -84,84 +84,84 @@ namespace Gum.IR0
             }
         }
 
-        bool AnalyzeIfTestEnumStmt(
-            IdentifierInfo.Var varIdInfo,
-            Exp target, 
-            S.Stmt thenBody,
-            S.Stmt? elseBody,
-            TypeValue targetType, TypeValue.EnumElem enumElem, Context context, [NotNullWhen(true)] out Stmt? outStmt)
-        {
-            bool bResult = true;
-            Stmt? ir0ThenBody = null;
-            Stmt? ir0ElseBody = null;
+        //bool AnalyzeIfTestEnumStmt(
+        //    IdentifierInfo varIdInfo,
+        //    Exp target, 
+        //    S.Stmt thenBody,
+        //    S.Stmt? elseBody,
+        //    TypeValue targetType, TypeValue.EnumElem enumElem, Context context, [NotNullWhen(true)] out Stmt? outStmt)
+        //{
+        //    bool bResult = true;
+        //    Stmt? ir0ThenBody = null;
+        //    Stmt? ir0ElseBody = null;
 
-            context.ExecInLocalScope(() =>
-            {
-                context.AddOverrideVarInfo(varIdInfo.StorageInfo, targetType);
+        //    context.ExecInLocalScope(() =>
+        //    {
+        //        context.AddOverrideVarInfo(varIdInfo.StorageInfo, targetType);
 
-                if (!AnalyzeStmt(thenBody, context, out ir0ThenBody))
-                    bResult = false;
+        //        if (!AnalyzeStmt(thenBody, context, out ir0ThenBody))
+        //            bResult = false;
 
-                if (elseBody != null)
-                    if (!AnalyzeStmt(elseBody, context, out ir0ElseBody))
-                        bResult = false;
-            });
+        //        if (elseBody != null)
+        //            if (!AnalyzeStmt(elseBody, context, out ir0ElseBody))
+        //                bResult = false;
+        //    });
 
-            if (bResult != false)
-            {
-                Debug.Assert(ir0ThenBody != null);
+        //    if (bResult != false)
+        //    {
+        //        Debug.Assert(ir0ThenBody != null);
 
-                var targetTypeId = context.GetTypeId(targetType);
-                outStmt = new IfTestEnumStmt(new ExpInfo(target, targetTypeId), enumElem.Name, ir0ThenBody, ir0ElseBody);
-                return true;
-            }
-            else
-            {
-                outStmt = null;
-                return false;
-            }
-        }
+        //        var targetTypeId = context.GetTypeId(targetType);
+        //        outStmt = new IfTestEnumStmt(new ExpInfo(target, targetTypeId), enumElem.Name, ir0ThenBody, ir0ElseBody);
+        //        return true;
+        //    }
+        //    else
+        //    {
+        //        outStmt = null;
+        //        return false;
+        //    }
+        //}
 
-        bool AnalyzeIfTestClassStmt(
-            IdentifierInfo.Var varIdInfo,
-            Exp target,
-            S.Stmt thenBody,
-            S.Stmt? elseBody,
-            TypeValue targetType,
-            TypeValue testType,
-            Context context, 
-            [NotNullWhen(true)] out Stmt? outStmt)
-        {
-            bool bResult = true;
-            Stmt? ir0ThenBody = null;
-            Stmt? ir0ElseBody = null;
+        //bool AnalyzeIfTestClassStmt(
+        //    IdentifierInfo.Var varIdInfo,
+        //    Exp target,
+        //    S.Stmt thenBody,
+        //    S.Stmt? elseBody,
+        //    TypeValue targetType,
+        //    TypeValue testType,
+        //    Context context, 
+        //    [NotNullWhen(true)] out Stmt? outStmt)
+        //{
+        //    bool bResult = true;
+        //    Stmt? ir0ThenBody = null;
+        //    Stmt? ir0ElseBody = null;
 
-            context.ExecInLocalScope(() =>
-            {
-                context.AddOverrideVarInfo(varIdInfo.StorageInfo, testType);
+        //    context.ExecInLocalScope(() =>
+        //    {
+        //        context.AddOverrideVarInfo(varIdInfo.StorageInfo, testType);
 
-                if (!AnalyzeStmt(thenBody, context, out ir0ThenBody))
-                    bResult = false;
+        //        if (!AnalyzeStmt(thenBody, context, out ir0ThenBody))
+        //            bResult = false;
 
-                if (elseBody != null)
-                    if (!AnalyzeStmt(elseBody, context, out ir0ElseBody))
-                        bResult = false;
-            });
+        //        if (elseBody != null)
+        //            if (!AnalyzeStmt(elseBody, context, out ir0ElseBody))
+        //                bResult = false;
+        //    });
 
-            if (bResult)
-            {
-                Debug.Assert(ir0ThenBody != null);
-                var targetTypeId = context.GetTypeId(targetType);
-                var testTypeId = context.GetTypeId(testType);
-                outStmt = new IfTestClassStmt(new ExpInfo(target, targetTypeId), testTypeId, ir0ThenBody, ir0ElseBody);
-                return true;
-            }
-            else
-            {
-                outStmt = null;
-                return false;
-            }
-        }
+        //    if (bResult)
+        //    {
+        //        Debug.Assert(ir0ThenBody != null);
+        //        var targetTypeId = context.GetTypeId(targetType);
+        //        var testTypeId = context.GetTypeId(testType);
+        //        outStmt = new IfTestClassStmt(new ExpInfo(target, targetTypeId), testTypeId, ir0ThenBody, ir0ElseBody);
+        //        return true;
+        //    }
+        //    else
+        //    {
+        //        outStmt = null;
+        //        return false;
+        //    }
+        //}
 
         bool AnalyzeIfTestStmt(S.IfStmt ifStmt, S.TypeExp testTypeExp, Context context, [NotNullWhen(true)] out Stmt? outStmt)
         {
@@ -186,36 +186,36 @@ namespace Gum.IR0
                 context.AddError(A1002_IfStmt_TestTargetIdentifierNotFound, ifStmt.Cond, $"{idExpCond.Value}를 찾지 못했습니다");
                 return false;
             }
-            
-            var varIdInfo = idInfo as IdentifierInfo.Var;
 
-            if (varIdInfo == null)
-            {
-                context.AddError(A1001_IfStmt_TestTargetShouldBeVariable, ifStmt.Cond, "if (exp is Type) 구문은 exp가 변수여야 합니다");
-                return false;
-            }
+            throw new NotImplementedException();
 
-            // testTypeValue, 따로 검사 안해도 될것 같다.. 동적 타입 검사
-            // 1. 하위 타입 Base is Derived (Normal)
-            // 2. 인터페이스 Type is Interface (Interface)
-            // 3. enum 하위 타입 Enum is Enum.One (Enum)
+            //if (idInfo)
+            //{
+            //    context.AddError(A1001_IfStmt_TestTargetShouldBeVariable, ifStmt.Cond, "if (exp is Type) 구문은 exp가 변수여야 합니다");
+            //    return false;
+            //}
 
-            // TestType이 있을때만 넣는다
-            var testTypeValue = context.GetTypeValueByTypeExp(testTypeExp);
+            //// testTypeValue, 따로 검사 안해도 될것 같다.. 동적 타입 검사
+            //// 1. 하위 타입 Base is Derived (Normal)
+            //// 2. 인터페이스 Type is Interface (Interface)
+            //// 3. enum 하위 타입 Enum is Enum.One (Enum)
 
-            if (testTypeValue is TypeValue.EnumElem enumElem)
-            {
-                return AnalyzeIfTestEnumStmt(varIdInfo, cond, ifStmt.Body, ifStmt.ElseBody, condTypeValue, enumElem, context, out outStmt);                
-            }
-            else if (testTypeValue is TypeValue.Normal normal)
-            {
-                return AnalyzeIfTestClassStmt(varIdInfo, cond, ifStmt.Body, ifStmt.ElseBody, condTypeValue, testTypeValue, context, out outStmt);
-            }
-            else
-            {
-                context.AddError(A1003_IfStmt_TestTypeShouldBeEnumOrClass, testTypeExp, "if (exp is Test) 구문은 Test부분이 타입이거나 enum값이어야 합니다");
-                return false;
-            }
+            //// TestType이 있을때만 넣는다
+            //var testTypeValue = context.GetTypeValueByTypeExp(testTypeExp);
+
+            //if (testTypeValue is TypeValue.EnumElem enumElem)
+            //{
+            //    return AnalyzeIfTestEnumStmt(varIdInfo, cond, ifStmt.Body, ifStmt.ElseBody, condTypeValue, enumElem, context, out outStmt);                
+            //}
+            //else if (testTypeValue is TypeValue.Normal normal)
+            //{
+            //    return AnalyzeIfTestClassStmt(varIdInfo, cond, ifStmt.Body, ifStmt.ElseBody, condTypeValue, testTypeValue, context, out outStmt);
+            //}
+            //else
+            //{
+            //    context.AddError(A1003_IfStmt_TestTypeShouldBeEnumOrClass, testTypeExp, "if (exp is Test) 구문은 Test부분이 타입이거나 enum값이어야 합니다");
+            //    return false;
+            //}
         }
 
         bool AnalyzeIfStmt(S.IfStmt ifStmt, Context context, [NotNullWhen(true)] out Stmt? outStmt) 

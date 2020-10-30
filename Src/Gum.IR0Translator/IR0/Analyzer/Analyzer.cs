@@ -54,7 +54,7 @@ namespace Gum.IR0
                     }
                     else
                     {
-                        varDeclVisitor.VisitElement(elem.VarName, declTypeValue, null, context);
+                        varDeclVisitor.VisitElement(elem, elem.VarName, declTypeValue, null, context);
                     }
                 }
                 else
@@ -80,7 +80,7 @@ namespace Gum.IR0
                             context.AddError(A0102_VarDecl_MismatchBetweenDeclTypeAndInitExpType, elem, $"타입 {initExpTypeValue}의 값은 타입 {varDecl.Type}의 변수 {elem.VarName}에 대입할 수 없습니다.");
                     }
 
-                    varDeclVisitor.VisitElement(elem.VarName, typeValue, ir0InitExp, context);
+                    varDeclVisitor.VisitElement(elem, elem.VarName, typeValue, ir0InitExp, context);
                 }
             }
 
@@ -118,7 +118,7 @@ namespace Gum.IR0
         public bool AnalyzeLambda(
             S.ISyntaxNode nodeForErrorReport,
             S.Stmt body,
-            ImmutableArray<S.LambdaExpParam> parameters, // LambdaExp에서 바로 받기 때문에 ImmutableArray로 존재하면 편하다
+            IEnumerable<S.LambdaExpParam> parameters, 
             Context context,
             [NotNullWhen(true)] out Stmt? outBody,
             [NotNullWhen(true)] out CaptureInfo? outCaptureInfo,
@@ -128,54 +128,14 @@ namespace Gum.IR0
             outCaptureInfo = null;
             outFuncTypeValue = null;            
 
-            // capture에 필요한 정보를 가져옵니다
-            if (!capturer.Capture(parameters.Select(param => param.Name), body, out var captureResult))
-            {
-                throw new NotImplementedException();
-                // context.AddError(body, "변수 캡쳐에 실패했습니다");
-                // return false;
-            }
+            // 람다 안에서 캡쳐해야할 변수들 목록
+            var capturedLocalVars = new List<CaptureInfo.Element>();
 
-            // 람다 함수 컨텍스트를 만든다
-            var lambdaFuncId = context.MakeLabmdaFuncId();
+            // TODO: 리턴 타입은 타입 힌트를 반영해야 한다
+            TypeValue? retTypeValue = null;
 
-            // 캡쳐된 variable은 새 VarId를 가져야 한다
-            var funcContext = new FuncContext(lambdaFuncId, null, false);
-
-            // 필요한 변수들을 찾는다
-            var elems = new List<CaptureInfo.Element>();
-            foreach (var needCapture in captureResult.NeedCaptures)
-            {
-                if (context.GetIdentifierInfo(needCapture, ImmutableArray<TypeValue>.Empty, null, out var idInfo))
-                {
-                    if (idInfo is IdentifierInfo.Var varIdInfo)
-                    {
-                        switch (varIdInfo.StorageInfo)
-                        {
-                            // 지역 변수라면 
-                            case StorageInfo.Local localStorage:
-                                var varTypeId = context.GetTypeId(varIdInfo.TypeValue);
-                                elems.Add(new CaptureInfo.Element(varTypeId, localStorage.Name));
-                                break;
-
-                            case StorageInfo.ModuleGlobal moduleGlobalStorage:
-                            case StorageInfo.PrivateGlobal privateGlobalStorage:
-                                break;
-
-                            default:
-                                throw new InvalidOperationException();
-                        }
-
-                        continue;
-                    }
-                }
-
-                throw new NotImplementedException();
-                // context.ErrorCollector.Add(body, "캡쳐실패");
-                // return false;                
-            }            
-
-            var paramTypeValues = new List<TypeValue>(parameters.Length);
+            // 파라미터는 람다 함수의 지역변수로 취급한다
+            var paramInfos = new List<(string Name, TypeValue TypeValue)>();
             foreach (var param in parameters)
             {
                 if (param.Type == null)
@@ -186,27 +146,46 @@ namespace Gum.IR0
 
                 var paramTypeValue = context.GetTypeValueByTypeExp(param.Type);
 
-                paramTypeValues.Add(paramTypeValue);
-                funcContext.AddLocalVarInfo(param.Name, paramTypeValue);
+                paramInfos.Add((param.Name, paramTypeValue));
             }
 
-            bool bResult = true;
-            Stmt? stmt = null;
+            Stmt? ir0Body = null;
+            var result = context.ExecInLambdaScope(retTypeValue, () => {
 
-            context.ExecInFuncScope(funcContext, () =>
-            {
-                if (!AnalyzeStmt(body, context, out stmt))
-                    bResult = false;
+                // 람다 파라미터를 지역 변수로 추가한다
+                foreach(var paramInfo in paramInfos)
+                    context.AddLocalVarInfo(paramInfo.Name, paramInfo.TypeValue);
+
+                // 본문 분석
+                if (!AnalyzeStmt(body, context, out ir0Body))
+                    return false;
+                
+                // 성공했으면, 리턴 타입 갱신
+                retTypeValue = context.GetRetTypeValue();
+
+                // CapturedLocalVar 작성
+                foreach (var localVarOutsideLambdaInfo in context.GetLocalVarsOutsideLambda())
+                {
+                    if (localVarOutsideLambdaInfo.bNeedCapture)
+                    {
+                        var typeId = context.GetTypeId(localVarOutsideLambdaInfo.LocalVarInfo.TypeValue);
+                        capturedLocalVars.Add(new CaptureInfo.Element(typeId, localVarOutsideLambdaInfo.LocalVarInfo.Name));
+                    }
+                }
+
+                return true;
             });
 
-            if (!bResult)
+            if (!result.IsSuccess)
                 return false;
 
-            outBody = stmt!;
-            outCaptureInfo = new CaptureInfo(false, elems);
+            Debug.Assert(ir0Body != null);
+
+            outBody = ir0Body;
+            outCaptureInfo = new CaptureInfo(false, capturedLocalVars);
             outFuncTypeValue = TypeValue.MakeFunc(
-                funcContext.GetRetTypeValue() ?? TypeValue.MakeVoid(),
-                paramTypeValues);
+                result.RetTypeValue ?? TypeValue.MakeVoid(),
+                paramInfos.Select(paramInfo => paramInfo.TypeValue));
 
             return true;
         }

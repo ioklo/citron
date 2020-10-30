@@ -76,7 +76,7 @@ namespace Gum.IR0
             var result = errors.OfType<AnalyzeError>()
                 .Any(error => error.Code == code && error.Node == node);
 
-            Assert.True(result);
+            Assert.True(result, $"Errors doesn't contain (Code: {code}, Node: {node})");
         }
 
         S.VarDecl SimpleSVarDecl(S.TypeExp typeExp, string name, S.Exp? initExp = null)
@@ -107,9 +107,10 @@ namespace Gum.IR0
         IntLiteralExp SimpleInt(int v) => new IntLiteralExp(v);
         StringExp SimpleString(string v) => new StringExp(new TextStringExpElement(v));
         
-        S.TypeExp intTypeExp = new S.IdTypeExp("int");
-        S.TypeExp voidTypeExp = new S.IdTypeExp("void");
-        S.TypeExp stringTypeExp = new S.IdTypeExp("string");        
+        S.TypeExp VarTypeExp { get => new S.IdTypeExp("var"); }
+        S.TypeExp IntTypeExp { get => new S.IdTypeExp("int"); }
+        S.TypeExp VoidTypeExp { get => new S.IdTypeExp("void"); }
+        S.TypeExp StringTypeExp { get => new S.IdTypeExp("string"); }
 
 
         // Trivial Cases
@@ -138,7 +139,7 @@ namespace Gum.IR0
         [Fact]
         public void VarDeclStmt_TranslatesIntoPrivateGlobalVarDecl()
         {
-            var syntaxScript = new S.Script(new S.Script.StmtElement(SimpleSVarDeclStmt(intTypeExp, "x", SimpleSInt(1))));
+            var syntaxScript = new S.Script(new S.Script.StmtElement(SimpleSVarDeclStmt(IntTypeExp, "x", SimpleSInt(1))));
             var script = Translate(syntaxScript);
 
             var expected = SimpleScript(null, null, null, MakeArray(
@@ -153,7 +154,7 @@ namespace Gum.IR0
         {
             var syntaxScript = new S.Script(new S.Script.StmtElement(
                 new S.BlockStmt(
-                    SimpleSVarDeclStmt(intTypeExp, "x", SimpleSInt(1))
+                    SimpleSVarDeclStmt(IntTypeExp, "x", SimpleSInt(1))
                 )
             ));
             var script = Translate(syntaxScript);
@@ -171,9 +172,9 @@ namespace Gum.IR0
         public void VarDeclStmt_TranslatesIntoLocalVarDeclInFuncScope()
         {
             var syntaxScript = new S.Script(
-                new S.Script.FuncDeclElement(new S.FuncDecl(false, voidTypeExp, "Func", Array.Empty<string>(), new S.FuncParamInfo(Array.Empty<S.TypeAndName>(), null),
+                new S.Script.FuncDeclElement(new S.FuncDecl(false, VoidTypeExp, "Func", Array.Empty<string>(), new S.FuncParamInfo(Array.Empty<S.TypeAndName>(), null),
                     new S.BlockStmt(
-                        SimpleSVarDeclStmt(intTypeExp, "x", SimpleSInt(1))
+                        SimpleSVarDeclStmt(IntTypeExp, "x", SimpleSInt(1))
                     )
                 ))
             );
@@ -189,6 +190,81 @@ namespace Gum.IR0
             var expected = SimpleScript(null, MakeArray(func), null, MakeArray<Stmt>());
 
             Assert.Equal(expected, script, IR0EqualityComparer.Instance);
+        }
+
+        [Fact]
+        public void VarDeclStmt_InfersVarType()
+        {
+            var syntaxScript = SimpleSScript(
+                new S.VarDeclStmt(new S.VarDecl(VarTypeExp, new S.VarDeclElement("x", SimpleSInt(3))))
+            );
+
+            var script = Translate(syntaxScript);
+
+            var expected = SimpleScript(null, null, null, new Stmt[] {
+                new PrivateGlobalVarDeclStmt(new [] { new PrivateGlobalVarDeclStmt.Element("x", TypeId.Int, SimpleInt(3))})
+            });
+
+            Assert.Equal(expected, script, IR0EqualityComparer.Instance);
+        }
+
+        [Fact]
+        public void VarDeclStmt_ChecksLocalVarNameIsUniqueWithinScope()
+        {
+            S.VarDeclElement elem;
+
+            var syntaxScript = SimpleSScript(new S.BlockStmt(
+                new S.VarDeclStmt(new S.VarDecl(IntTypeExp, new S.VarDeclElement("x", null))),
+                new S.VarDeclStmt(new S.VarDecl(IntTypeExp, elem = new S.VarDeclElement("x", null)))
+
+            ));
+
+            var errors = TranslateWithErrors(syntaxScript);
+            VerifyError(errors, A0103_VarDecl_LocalVarNameShouldBeUniqueWithinScope, elem);
+        }
+
+        [Fact]
+        public void VarDeclStmt_ChecksLocalVarNameIsUniqueWithinScope2()
+        {
+            S.VarDeclElement element;
+
+            var syntaxScript = SimpleSScript(new S.BlockStmt(
+                new S.VarDeclStmt(new S.VarDecl(IntTypeExp, new S.VarDeclElement("x", null), element = new S.VarDeclElement("x", null)))
+            ));
+
+            var errors = TranslateWithErrors(syntaxScript);
+            VerifyError(errors, A0103_VarDecl_LocalVarNameShouldBeUniqueWithinScope, element);
+        }
+
+        [Fact]
+        public void VarDeclStmt_ChecksGlobalVarNameIsUnique()
+        {
+            S.VarDeclElement elem;
+
+            var syntaxScript = SimpleSScript(
+                SimpleSVarDeclStmt(IntTypeExp, "x"),
+                new S.VarDeclStmt(new S.VarDecl(IntTypeExp, elem = new S.VarDeclElement("x", null)))
+
+            );
+
+            var errors = TranslateWithErrors(syntaxScript);
+            VerifyError(errors, A0104_VarDecl_GlobalVariableNameShouldBeUnique, elem);
+        }
+
+        [Fact]
+        public void VarDeclStmt_ChecksGlobalVarNameIsUnique2()
+        {
+            S.VarDeclElement elem;
+
+            var syntaxScript = SimpleSScript(
+                new S.VarDeclStmt(new S.VarDecl(IntTypeExp, 
+                    new S.VarDeclElement("x", null),
+                    elem = new S.VarDeclElement("x", null)
+                ))
+            );
+
+            var errors = TranslateWithErrors(syntaxScript);
+            VerifyError(errors, A0104_VarDecl_GlobalVariableNameShouldBeUnique, elem);
         }
 
         [Fact]
@@ -246,11 +322,11 @@ namespace Gum.IR0
             var syntaxScript = new S.Script(
                 
                 new S.Script.StmtElement(new S.ForStmt(
-                    new S.VarDeclForStmtInitializer(SimpleSVarDecl(intTypeExp, "x")),
+                    new S.VarDeclForStmtInitializer(SimpleSVarDecl(IntTypeExp, "x")),
                     null, null, S.BlankStmt.Instance
                 )),
 
-                new S.Script.StmtElement(SimpleSVarDeclStmt(stringTypeExp, "x")),
+                new S.Script.StmtElement(SimpleSVarDeclStmt(StringTypeExp, "x")),
 
                 new S.Script.StmtElement(new S.ForStmt(
                     new S.ExpForStmtInitializer(new S.BinaryOpExp(S.BinaryOpKind.Assign, new S.IdentifierExp("x"), SimpleSString("Hello"))),
@@ -284,10 +360,10 @@ namespace Gum.IR0
         {
             var syntaxScript = new S.Script(
 
-                new S.Script.StmtElement(SimpleSVarDeclStmt(stringTypeExp, "x")),
+                new S.Script.StmtElement(SimpleSVarDeclStmt(StringTypeExp, "x")),
 
                 new S.Script.StmtElement(new S.ForStmt(
-                    new S.VarDeclForStmtInitializer(SimpleSVarDecl(intTypeExp, "x")), // x의 범위는 ForStmt내부에서
+                    new S.VarDeclForStmtInitializer(SimpleSVarDecl(IntTypeExp, "x")), // x의 범위는 ForStmt내부에서
                     new S.BinaryOpExp(S.BinaryOpKind.Equal, new S.IdentifierExp("x"), SimpleSInt(3)),
                     null, S.BlankStmt.Instance
                 )),
@@ -327,7 +403,7 @@ namespace Gum.IR0
 
             var syntaxScript = new S.Script(
                 new S.Script.StmtElement(new S.ForStmt(
-                    new S.VarDeclForStmtInitializer(SimpleSVarDecl(intTypeExp, "x")),
+                    new S.VarDeclForStmtInitializer(SimpleSVarDecl(IntTypeExp, "x")),
                     cond = SimpleSInt(3),
                     null, S.BlankStmt.Instance
                 ))
@@ -381,7 +457,7 @@ namespace Gum.IR0
         {
             var syntaxScript = SimpleSScript(
                 new S.ForStmt(null, null, null, S.ContinueStmt.Instance),
-                new S.ForeachStmt(intTypeExp, "x", new S.ListExp(intTypeExp), S.ContinueStmt.Instance)
+                new S.ForeachStmt(IntTypeExp, "x", new S.ListExp(IntTypeExp), S.ContinueStmt.Instance)
             );
 
             var script = Translate(syntaxScript);
@@ -410,7 +486,7 @@ namespace Gum.IR0
         {
             var syntaxScript = SimpleSScript(
                 new S.ForStmt(null, null, null, S.BreakStmt.Instance),
-                    new S.ForeachStmt(intTypeExp, "x", new S.ListExp(intTypeExp), S.BreakStmt.Instance)
+                    new S.ForeachStmt(IntTypeExp, "x", new S.ListExp(IntTypeExp), S.BreakStmt.Instance)
             );
 
             var script = Translate(syntaxScript);
@@ -452,7 +528,7 @@ namespace Gum.IR0
         public void ReturnStmt_TranslatesReturnStmtInSeqFuncTrivially()
         {
             var syntaxScript = new S.Script(new S.Script.FuncDeclElement(new S.FuncDecl(
-                true, intTypeExp, "Func", Array.Empty<string>(), new S.FuncParamInfo(Array.Empty<S.TypeAndName>(), null),
+                true, IntTypeExp, "Func", Array.Empty<string>(), new S.FuncParamInfo(Array.Empty<S.TypeAndName>(), null),
                 new S.BlockStmt(
                     new S.ReturnStmt(null)
                 )
@@ -472,7 +548,7 @@ namespace Gum.IR0
         {
             S.Exp retValue;
 
-            var funcDecl = new S.FuncDecl(false, intTypeExp, "Func", Array.Empty<string>(), new S.FuncParamInfo(Array.Empty<S.TypeAndName>(), null), new S.BlockStmt(
+            var funcDecl = new S.FuncDecl(false, IntTypeExp, "Func", Array.Empty<string>(), new S.FuncParamInfo(Array.Empty<S.TypeAndName>(), null), new S.BlockStmt(
                 new S.ReturnStmt(retValue = SimpleSString("Hello"))
             ));
 
@@ -487,7 +563,7 @@ namespace Gum.IR0
         {
             S.ReturnStmt retStmt;
 
-            var funcDecl = new S.FuncDecl(false, intTypeExp, "Func", Array.Empty<string>(), new S.FuncParamInfo(Array.Empty<S.TypeAndName>(), null), new S.BlockStmt(
+            var funcDecl = new S.FuncDecl(false, IntTypeExp, "Func", Array.Empty<string>(), new S.FuncParamInfo(Array.Empty<S.TypeAndName>(), null), new S.BlockStmt(
                 retStmt = new S.ReturnStmt(null)
             ));
 
@@ -502,7 +578,7 @@ namespace Gum.IR0
         {
             S.ReturnStmt retStmt;
 
-            var funcDecl = new S.FuncDecl(true, intTypeExp, "Func", Array.Empty<string>(), new S.FuncParamInfo(Array.Empty<S.TypeAndName>(), null), new S.BlockStmt(
+            var funcDecl = new S.FuncDecl(true, IntTypeExp, "Func", Array.Empty<string>(), new S.FuncParamInfo(Array.Empty<S.TypeAndName>(), null), new S.BlockStmt(
                 retStmt = new S.ReturnStmt(SimpleSInt(2))
             ));
 
@@ -523,11 +599,17 @@ namespace Gum.IR0
         }
 
         [Fact]
+        public void ReturnStmt_UsesHintType()
+        {
+            throw new PrerequisiteRequiredException("Enum, HintType");
+        }
+
+        [Fact]
         public void BlockStmt_TranslatesVarDeclStmtWithinBlockStmtOfTopLevelStmtIntoLocalVarDeclStmt()
         {
             var syntaxScript = SimpleSScript(
                 new S.BlockStmt(
-                    SimpleSVarDeclStmt(stringTypeExp, "x", SimpleSString("Hello"))
+                    SimpleSVarDeclStmt(StringTypeExp, "x", SimpleSString("Hello"))
                 )
             );
 
@@ -555,7 +637,7 @@ namespace Gum.IR0
 
             var syntaxScript = SimpleSScript(
                 new S.BlockStmt(
-                    SimpleSVarDeclStmt(stringTypeExp, "x", SimpleSString("Hello"))
+                    SimpleSVarDeclStmt(StringTypeExp, "x", SimpleSString("Hello"))
                 ),
 
                 new S.CommandStmt(new S.StringExp(new S.ExpStringExpElement(exp = new S.IdentifierExp("x"))))
@@ -570,7 +652,7 @@ namespace Gum.IR0
         public void ExpStmt_TranslatesTrivially()
         {
             var syntaxScript = SimpleSScript(
-                SimpleSVarDeclStmt(intTypeExp, "x"),
+                SimpleSVarDeclStmt(IntTypeExp, "x"),
                 new S.ExpStmt(new S.BinaryOpExp(S.BinaryOpKind.Assign, new S.IdentifierExp("x"), SimpleSInt(3)))
             );
 
@@ -601,7 +683,7 @@ namespace Gum.IR0
         public void TaskStmt_TranslatesWithGlobalVariable()
         {
             var syntaxScript = SimpleSScript(
-                SimpleSVarDeclStmt(intTypeExp, "x"),
+                SimpleSVarDeclStmt(IntTypeExp, "x"),
                 new S.TaskStmt(
                     new S.ExpStmt(
                         new S.BinaryOpExp(S.BinaryOpKind.Assign, new S.IdentifierExp("x"), SimpleSInt(3))
@@ -623,15 +705,33 @@ namespace Gum.IR0
         }
 
         [Fact]
+        public void TaskStmt_ChecksAssignToLocalVariableOutsideLambda()
+        {
+            S.Exp exp;
+
+            var syntaxScript = SimpleSScript(
+                new S.BlockStmt(
+                    SimpleSVarDeclStmt(IntTypeExp, "x"),
+                    new S.TaskStmt(
+                        new S.ExpStmt(
+                            new S.BinaryOpExp(S.BinaryOpKind.Assign, exp = new S.IdentifierExp("x"), SimpleSInt(3))
+                        )
+                    )
+                )
+            );
+
+            var errors = TranslateWithErrors(syntaxScript);
+            VerifyError(errors, A0803_BinaryOp_LeftOperandIsNotAssignable, exp);
+        }
+
+        [Fact]
         public void TaskStmt_TranslatesWithLocalVariable()
         {
             var syntaxScript = SimpleSScript(
                 new S.BlockStmt(
-                    SimpleSVarDeclStmt(intTypeExp, "x"),
+                    SimpleSVarDeclStmt(IntTypeExp, "x"),
                     new S.TaskStmt(
-                        new S.ExpStmt(
-                            new S.BinaryOpExp(S.BinaryOpKind.Assign, new S.IdentifierExp("x"), SimpleSInt(3))
-                        )
+                        SimpleSVarDeclStmt(IntTypeExp, "x", new S.IdentifierExp("x"))
                     )
                 )
             );
@@ -642,7 +742,7 @@ namespace Gum.IR0
                 new BlockStmt(
                     SimpleLocalVarDeclStmt(TypeId.Int, "x"),
                     new TaskStmt(
-                        new ExpStmt(new ExpInfo(new AssignExp(new LocalVarExp("x"), SimpleInt(3)), TypeId.Int)),
+                        SimpleLocalVarDeclStmt(TypeId.Int, "x", new LocalVarExp("x")),
                         new CaptureInfo(false, new [] { new CaptureInfo.Element(TypeId.Int, "x") })
                     )
                 )
@@ -674,7 +774,7 @@ namespace Gum.IR0
 
             var syntaxScript = SimpleSScript(
                 new S.AwaitStmt(
-                    SimpleSVarDeclStmt(stringTypeExp, "x", SimpleSString("Hello"))
+                    SimpleSVarDeclStmt(StringTypeExp, "x", SimpleSString("Hello"))
                 ),
 
                 new S.CommandStmt(new S.StringExp(new S.ExpStringExpElement(exp = new S.IdentifierExp("x"))))
@@ -689,7 +789,7 @@ namespace Gum.IR0
         public void AsyncStmt_TranslatesWithGlobalVariable()
         {
             var syntaxScript = SimpleSScript(
-                SimpleSVarDeclStmt(intTypeExp, "x"),
+                SimpleSVarDeclStmt(IntTypeExp, "x"),
                 new S.AsyncStmt(
                     new S.ExpStmt(
                         new S.BinaryOpExp(S.BinaryOpKind.Assign, new S.IdentifierExp("x"), SimpleSInt(3))
@@ -711,15 +811,33 @@ namespace Gum.IR0
         }
 
         [Fact]
+        public void AsyncStmt_ChecksAssignToLocalVariableOutsideLambda()
+        {
+            S.Exp exp;
+
+            var syntaxScript = SimpleSScript(
+                new S.BlockStmt(
+                    SimpleSVarDeclStmt(IntTypeExp, "x"),
+                    new S.AsyncStmt(
+                        new S.ExpStmt(
+                            new S.BinaryOpExp(S.BinaryOpKind.Assign, exp = new S.IdentifierExp("x"), SimpleSInt(3))
+                        )
+                    )
+                )
+            );
+
+            var errors = TranslateWithErrors(syntaxScript);
+            VerifyError(errors, A0803_BinaryOp_LeftOperandIsNotAssignable, exp);
+        }
+
+        [Fact]
         public void AsyncStmt_TranslatesWithLocalVariable()
         {
             var syntaxScript = SimpleSScript(
                 new S.BlockStmt(
-                    SimpleSVarDeclStmt(intTypeExp, "x"),
+                    SimpleSVarDeclStmt(IntTypeExp, "x"),
                     new S.AsyncStmt(
-                        new S.ExpStmt(
-                            new S.BinaryOpExp(S.BinaryOpKind.Assign, new S.IdentifierExp("x"), SimpleSInt(3))
-                        )
+                        SimpleSVarDeclStmt(IntTypeExp, "x", new S.IdentifierExp("x"))
                     )
                 )
             );
@@ -730,7 +848,7 @@ namespace Gum.IR0
                 new BlockStmt(
                     SimpleLocalVarDeclStmt(TypeId.Int, "x"),
                     new AsyncStmt(
-                        new ExpStmt(new ExpInfo(new AssignExp(new LocalVarExp("x"), SimpleInt(3)), TypeId.Int)),
+                        SimpleLocalVarDeclStmt(TypeId.Int, "x", new LocalVarExp("x")),
                         new CaptureInfo(false, new [] { new CaptureInfo.Element(TypeId.Int, "x") })
                     )
                 )
@@ -750,7 +868,7 @@ namespace Gum.IR0
         {
             var syntaxScript = new S.Script(
                 new S.Script.FuncDeclElement(new S.FuncDecl(
-                    true, intTypeExp, "Func", Array.Empty<string>(), new S.FuncParamInfo(Array.Empty<S.TypeAndName>(), null),
+                    true, IntTypeExp, "Func", Array.Empty<string>(), new S.FuncParamInfo(Array.Empty<S.TypeAndName>(), null),
                     new S.BlockStmt(
                         new S.YieldStmt(SimpleSInt(3))
                     )
@@ -775,7 +893,7 @@ namespace Gum.IR0
 
             var syntaxScript = new S.Script(
                 new S.Script.FuncDeclElement(new S.FuncDecl(
-                    false, intTypeExp, "Func", Array.Empty<string>(), new S.FuncParamInfo(Array.Empty<S.TypeAndName>(), null),
+                    false, IntTypeExp, "Func", Array.Empty<string>(), new S.FuncParamInfo(Array.Empty<S.TypeAndName>(), null),
                     new S.BlockStmt(
                         yieldStmt = new S.YieldStmt(SimpleSInt(3))
                     )
@@ -794,7 +912,7 @@ namespace Gum.IR0
 
             var syntaxScript = new S.Script(
                 new S.Script.FuncDeclElement(new S.FuncDecl(
-                    true, stringTypeExp, "Func", Array.Empty<string>(), new S.FuncParamInfo(Array.Empty<S.TypeAndName>(), null),
+                    true, StringTypeExp, "Func", Array.Empty<string>(), new S.FuncParamInfo(Array.Empty<S.TypeAndName>(), null),
                     new S.BlockStmt(
                         new S.YieldStmt(yieldValue = SimpleSInt(3))
                     )
@@ -804,6 +922,12 @@ namespace Gum.IR0
             var errors = TranslateWithErrors(syntaxScript);
 
             VerifyError(errors, A1402_YieldStmt_MismatchBetweenYieldValueAndSeqFuncYieldType, yieldValue);
+        }
+
+        [Fact]
+        public void YieldStmt_UsesHintTypeValue()
+        {
+            throw new PrerequisiteRequiredException("Enum HintType");
         }
 
         // StringExp

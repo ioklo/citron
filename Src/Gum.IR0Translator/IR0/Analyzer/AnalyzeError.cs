@@ -25,6 +25,8 @@ namespace Gum.IR0
         // Analyzer
         A0101_VarDecl_CantInferVarType,
         A0102_VarDecl_MismatchBetweenDeclTypeAndInitExpType,
+        A0103_VarDecl_LocalVarNameShouldBeUniqueWithinScope,
+        A0104_VarDecl_GlobalVariableNameShouldBeUnique,
 
         A0201_Capturer_ReferencingLocalVariableIsNotAllowed,
 
@@ -46,6 +48,8 @@ namespace Gum.IR0
 
         A0801_BinaryOp_LeftOperandTypeIsNotCompatibleWithRightOperandType,
         A0802_BinaryOp_OperatorNotFound,
+
+        A0803_BinaryOp_LeftOperandIsNotAssignable,
 
         A0901_CallExp_ThereAreMultipleGlobalFunctionsHavingSameSignature,
         A0902_CallExp_CallableExpressionIsNotCallable,

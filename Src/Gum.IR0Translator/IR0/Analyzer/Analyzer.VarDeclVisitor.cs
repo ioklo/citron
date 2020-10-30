@@ -1,5 +1,7 @@
 ﻿using Gum.CompileTime;
 using System.Collections.Generic;
+using static Gum.IR0.AnalyzeErrorCode;
+using S = Gum.Syntax;
 
 namespace Gum.IR0
 {
@@ -8,7 +10,7 @@ namespace Gum.IR0
         public abstract class VarDeclVisitor<TVarDecl>
         {
             internal VarDeclVisitor() { }
-            public abstract void VisitElement(string name, TypeValue typeValue, Exp? initExp, Context context);
+            public abstract void VisitElement(S.ISyntaxNode nodeForErrorReport, string name, TypeValue typeValue, Exp? initExp, Context context);
             public abstract TVarDecl Build();
         }
 
@@ -23,11 +25,18 @@ namespace Gum.IR0
                 this.context = context;
             }
 
-            public override void VisitElement(string name, TypeValue typeValue, Exp? initExp, Context context)
+            public override void VisitElement(S.ISyntaxNode nodeForErrorReport, string name, TypeValue typeValue, Exp? initExp, Context context)
             {
-                context.AddPrivateGlobalVarInfo(name, typeValue);
-                var typeId = context.GetTypeId(typeValue);
-                elems.Add(new PrivateGlobalVarDeclStmt.Element(name, typeId, initExp));
+                if (context.DoesPrivateGlobalVarNameExist(name))
+                {
+                    context.AddError(A0104_VarDecl_GlobalVariableNameShouldBeUnique, nodeForErrorReport, $"전역 변수 {name}가 이미 선언되었습니다");
+                }
+                else
+                {
+                    context.AddPrivateGlobalVarInfo(name, typeValue);
+                    var typeId = context.GetTypeId(typeValue);
+                    elems.Add(new PrivateGlobalVarDeclStmt.Element(name, typeId, initExp));
+                }
             }
 
             public override PrivateGlobalVarDeclStmt Build()
@@ -47,11 +56,18 @@ namespace Gum.IR0
                 this.context = context;
             }
 
-            public override void VisitElement(string name, TypeValue typeValue, Exp? initExp, Context context)
+            public override void VisitElement(S.ISyntaxNode nodeForErrorReport, string name, TypeValue typeValue, Exp? initExp, Context context)
             {
-                context.AddLocalVarInfo(name, typeValue);
-                var typeId = context.GetTypeId(typeValue);
-                elems.Add(new LocalVarDecl.Element(name, typeId, initExp));
+                if (context.DoesLocalVarNameExistInScope(name))
+                {
+                    context.AddError(A0103_VarDecl_LocalVarNameShouldBeUniqueWithinScope, nodeForErrorReport, $"지역 변수 {name}이 같은 범위에 이미 선언되었습니다");
+                }
+                else
+                {
+                    context.AddLocalVarInfo(name, typeValue);
+                    var typeId = context.GetTypeId(typeValue);
+                    elems.Add(new LocalVarDecl.Element(name, typeId, initExp));
+                }
             }
 
             public override LocalVarDecl Build()

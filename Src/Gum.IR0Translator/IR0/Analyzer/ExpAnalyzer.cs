@@ -47,57 +47,54 @@ namespace Gum.IR0
                 return false;
             }
 
-            if (idInfo is IdentifierInfo.Var varIdInfo)
+            switch (idInfo)
             {
-                outTypeValue = varIdInfo.TypeValue;
-
-                switch(varIdInfo.StorageInfo)
-                {
-                    case StorageInfo.ModuleGlobal mgs:          // x => global of external module
-                        var varId = context.GetExternalGlobalVarId(mgs.VarId);
-                        outExp = new ExternalGlobalVarExp(varId);
-                        break; 
-
-                    case StorageInfo.PrivateGlobal pgs:         // x => global of this module
-                        outExp = new PrivateGlobalVarExp(pgs.Name);
-                        break;
-
-                    case StorageInfo.Local ls:                  // x => local x
-                        outExp = new LocalVarExp(ls.Name);
-                        break;
-                    
-                    case StorageInfo.StaticMember sms:          // x => T.x
-                        throw new NotImplementedException();
-                        // outExp = new StaticMemberExp();
-
-                        // 
-                    case StorageInfo.InstanceMember ims: // x => this.x
-                        throw new NotImplementedException();
-                        //outExp = new InstanceMemberExp();
-
-                    default:
-                        throw new InvalidOperationException();
-                }
-                
-                return true;
-            }
-            else if (idInfo is IdentifierInfo.EnumElem enumElemInfo) // S => E.S, 힌트를 사용하면 나올 수 있다, ex) E e = S; 
-            {
-                if (enumElemInfo.ElemInfo.FieldInfos.Length == 0)
-                {
-                    outTypeValue = enumElemInfo.EnumTypeValue;
-                    outExp = new NewEnumExp(enumElemInfo.ElemInfo.Name, Array.Empty<NewEnumExp.Elem>()); // TODO: StorageInfo.EnumElem 삭제
+                case IdentifierInfo.ModuleGlobal mgs:          // x => global of external module
+                    var varId = context.GetExternalGlobalVarId(mgs.VarId);
+                    outExp = new ExternalGlobalVarExp(varId);
+                    outTypeValue = mgs.TypeValue;
                     return true;
-                }
-                else
-                {
-                    // TODO: Func일때 감싸기
-                    throw new NotImplementedException();
-                }
-            }
 
-            // TODO: Func
-            return false;
+                case IdentifierInfo.PrivateGlobal pgs:         // x => global of this module
+                    outExp = new PrivateGlobalVarExp(pgs.Name);
+                    outTypeValue = pgs.TypeValue;
+                    return true;
+                
+                case IdentifierInfo.LocalOutsideLambda localOutsideLambda:
+                    outExp = new LocalVarExp(localOutsideLambda.Info.LocalVarInfo.Name);
+                    outTypeValue = localOutsideLambda.Info.LocalVarInfo.TypeValue;
+                    localOutsideLambda.Info.bNeedCapture = true;
+                    return true;
+
+                case IdentifierInfo.Local ls:                  // x => local x
+                    outExp = new LocalVarExp(ls.Name);
+                    outTypeValue = ls.TypeValue;
+                    return true;
+
+                case IdentifierInfo.StaticMember sms:          // x => T.x
+                    throw new NotImplementedException();
+                    // outExp = new StaticMemberExp();
+                
+                case IdentifierInfo.InstanceMember ims:        // x => this.x
+                    throw new NotImplementedException();
+                //outExp = new InstanceMemberExp();
+
+                case IdentifierInfo.EnumElem enumElem:         // S => E.S, 힌트를 사용하면 나올 수 있다, ex) E e = S; 
+                    if (enumElem.ElemInfo.FieldInfos.Length == 0)
+                    {
+                        outTypeValue = enumElem.EnumTypeValue;
+                        outExp = new NewEnumExp(enumElem.ElemInfo.Name, Array.Empty<NewEnumExp.Elem>());
+                        return true;
+                    }
+                    else
+                    {
+                        // TODO: Func일때 감싸기
+                        throw new NotImplementedException();
+                    }
+
+                default:
+                    throw new InvalidOperationException();
+            }
         }
 
         internal bool AnalyzeBoolLiteralExp(S.BoolLiteralExp boolExp, Context context,
@@ -150,13 +147,20 @@ namespace Gum.IR0
             }
         }
 
-        internal bool IsAssignableExp(Exp exp)
+        bool IsAssignableExp(Exp exp, Context context)
         {
             switch (exp)
             {
+                case LocalVarExp localVarExp:
+
+                    // 람다 바깥에 있다면 대입 불가능하다
+                    if (context.IsLocalVarOutsideLambda(localVarExp.Name))
+                        return false;
+
+                    return true;
+
                 case ExternalGlobalVarExp _:
-                case PrivateGlobalVarExp _:
-                case LocalVarExp _:
+                case PrivateGlobalVarExp _:                    
                 case ListIndexerExp _:
                 case StaticMemberExp _:
                 case StructMemberExp _:
@@ -193,7 +197,7 @@ namespace Gum.IR0
                 return false;
             }
 
-            if (!IsAssignableExp(ir0Operand))
+            if (!IsAssignableExp(ir0Operand, context))
             {
                 context.AddError(A0602_UnaryAssignOp_AssignableExpressionIsAllowedOnly, operand, "++ --는 대입 가능한 식에만 적용할 수 있습니다");
                 return false;
@@ -346,6 +350,12 @@ namespace Gum.IR0
                 if (!analyzer.IsAssignable(operandType0, operandType1, context))
                 {
                     context.AddError(A0801_BinaryOp_LeftOperandTypeIsNotCompatibleWithRightOperandType, binaryOpExp, "대입 가능하지 않습니다");
+                    return false;
+                }
+                
+                if (!IsAssignableExp(operand0, context))
+                {
+                    context.AddError(A0803_BinaryOp_LeftOperandIsNotAssignable, binaryOpExp.Operand0, "대입 가능하지 않은 식에 대입하려고 했습니다");
                     return false;
                 }
 

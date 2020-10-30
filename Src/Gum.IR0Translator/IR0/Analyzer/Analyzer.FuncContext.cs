@@ -1,68 +1,61 @@
 ﻿using Gum.CompileTime;
+using Gum.Misc;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 namespace Gum.IR0
 {
     partial class Analyzer
     {
+        public class LocalVarOutsideLambdaInfo
+        {
+            public bool bNeedCapture { get; set; }
+            public LocalVarInfo LocalVarInfo { get; }
+
+            public LocalVarOutsideLambdaInfo(LocalVarInfo localVarInfo)
+            {
+                bNeedCapture = false;
+                LocalVarInfo = localVarInfo;
+            }
+        }
+
         // 현재 함수 정보
         public class FuncContext
         {
             private ModuleItemId? funcId;
             private TypeValue? retTypeValue; // 리턴 타입이 미리 정해져 있다면 이걸 쓴다
             private bool bSequence; // 시퀀스 여부
-            private int lambdaCount;
 
-            private List<LocalVarInfo> localVarInfos;
-            private ImmutableDictionary<string, LocalVarInfo> localVarsByName;
-            private ImmutableDictionary<StorageInfo, TypeValue> overriddenTypeValues;
+            private ScopedDictionary<string, LocalVarOutsideLambdaInfo> localVarsOutsideLambda; // 람다 구문 바깥에 있는 로컬 변수, 캡쳐대상이다
+            private ScopedDictionary<string, LocalVarInfo> localVarsByName;
 
             public FuncContext(ModuleItemId? funcId, TypeValue? retTypeValue, bool bSequence)
             {
                 this.funcId = funcId;
                 this.retTypeValue = retTypeValue;
                 this.bSequence = bSequence;
-                this.lambdaCount = 0;
 
-                this.localVarInfos = new List<LocalVarInfo>();
-                this.localVarsByName = ImmutableDictionary<string, LocalVarInfo>.Empty;
-                this.overriddenTypeValues = ImmutableDictionary<StorageInfo, TypeValue>.Empty;
+                this.localVarsOutsideLambda = new ScopedDictionary<string, LocalVarOutsideLambdaInfo>();
+                this.localVarsByName = new ScopedDictionary<string, LocalVarInfo>();
             }
 
             public void AddLocalVarInfo(string name, TypeValue typeValue)
             {
-                var localVarInfo = new LocalVarInfo(name, typeValue);
-                localVarInfos.Add(localVarInfo);
+                localVarsByName.Add(name, new LocalVarInfo(name, typeValue));
+            }            
 
-                localVarsByName = localVarsByName.SetItem(name, localVarInfo);
-            }
-
-            public void AddOverrideVarInfo(StorageInfo storageInfo, TypeValue typeValue)
+            public bool GetLocalVarOutsideLambdaInfo(string varName, [NotNullWhen(true)] out LocalVarOutsideLambdaInfo? outInfo)
             {
-                overriddenTypeValues = overriddenTypeValues.SetItem(storageInfo, typeValue);
+                return localVarsOutsideLambda.TryGetValue(varName, out outInfo);
             }
 
             public bool GetLocalVarInfo(string varName, [NotNullWhen(true)] out LocalVarInfo? localVarInfo)
             {
                 return localVarsByName.TryGetValue(varName, out localVarInfo);
-            }
-
-            internal ModuleItemId MakeLambdaFuncId()
-            {
-                ModuleItemId id;
-
-                if (funcId == null)
-                    id = ModuleItemId.Make(Name.MakeAnonymousLambda(lambdaCount.ToString()), 0);
-                else
-                    id = funcId.Append(Name.MakeAnonymousLambda(lambdaCount.ToString()), 0);
-
-                lambdaCount++;
-
-                return id;
-            }
+            }            
 
             public TypeValue? GetRetTypeValue()
             {
@@ -79,10 +72,45 @@ namespace Gum.IR0
                 return bSequence;
             }
 
+            public (bool IsSuccess, TypeValue? RetTypeValue) ExecInLambdaScope(TypeValue? lambdaRetTypeValue, Func<bool> action)
+            {
+                localVarsOutsideLambda.Push();
+                var prevLocalVarsByName = localVarsByName;
+                var prevRetTypeValue = retTypeValue;
+                retTypeValue = lambdaRetTypeValue;
+
+                // Merge
+                foreach (var (name, info) in localVarsByName)
+                    localVarsOutsideLambda.Add(name, new LocalVarOutsideLambdaInfo(info));
+                
+                localVarsByName = new ScopedDictionary<string, LocalVarInfo>();
+
+                bool bSuccess = false;
+                TypeValue? resultRetTypeValue = null;
+
+                try
+                {
+                    bSuccess = action.Invoke();
+                    resultRetTypeValue = retTypeValue;
+                }
+                finally
+                {
+                    localVarsOutsideLambda.Pop();
+                    localVarsByName = prevLocalVarsByName;
+                    retTypeValue = prevRetTypeValue;
+                }
+
+                return (bSuccess, resultRetTypeValue);
+            }
+
+            public bool DoesLocalVarNameExistInScope(string name)
+            {
+                return localVarsByName.ContainsKeyOutmostScope(name);
+            }
+
             public void ExecInLocalScope(Action action)
             {
-                var prevLocalVarsByName = localVarsByName;
-                var prevOverriddenTypeValues = overriddenTypeValues;
+                localVarsByName.Push();
 
                 try
                 {
@@ -90,17 +118,25 @@ namespace Gum.IR0
                 }
                 finally
                 {
-                    localVarsByName = prevLocalVarsByName;
-                    overriddenTypeValues = prevOverriddenTypeValues;
+                    localVarsByName.Pop();
                 }
             }
 
-            public bool ShouldOverrideTypeValue(
-                StorageInfo storageInfo,
-                TypeValue typeValue,
-                [NotNullWhen(true)] out TypeValue? overriddenTypeValue)
+            public IEnumerable<LocalVarOutsideLambdaInfo> GetLocalVarsOutsideLambda()
             {
-                return overriddenTypeValues.TryGetValue(storageInfo, out overriddenTypeValue);
+                return localVarsOutsideLambda.Select(kv => kv.Value);
+            }
+
+            public bool IsLocalVarOutsideLambda(string name)
+            {
+                if (localVarsByName.ContainsKey(name))
+                    return false;
+
+                if (localVarsOutsideLambda.ContainsKey(name))
+                    return true;
+
+                // 아무데서도 못찾았으면 false
+                return false;
             }
         }
     }

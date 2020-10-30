@@ -56,7 +56,7 @@ namespace Gum.Syntax
         }
     }
 
-    public struct VarDeclElement : ISyntaxNode
+    public class VarDeclElement : ISyntaxNode
     {
         public string VarName { get; }
         public Exp? InitExp { get; }
@@ -65,28 +65,6 @@ namespace Gum.Syntax
         {
             VarName = varName;
             InitExp = initExp;
-        }
-
-        public override bool Equals(object? obj)
-        {
-            return obj is VarDeclElement element &&
-                   VarName == element.VarName &&
-                   EqualityComparer<Exp?>.Default.Equals(InitExp, element.InitExp);
-        }
-
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(VarName, InitExp);
-        }
-
-        public static bool operator ==(VarDeclElement left, VarDeclElement right)
-        {
-            return left.Equals(right);
-        }
-
-        public static bool operator !=(VarDeclElement left, VarDeclElement right)
-        {
-            return !(left == right);
         }
     }
 
