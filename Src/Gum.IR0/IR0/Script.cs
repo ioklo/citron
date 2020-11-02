@@ -10,18 +10,17 @@ namespace Gum.IR0
 {
     public partial class Script
     {
-        public ImmutableArray<Type> Types { get; }
-        public ImmutableArray<Func> Funcs { get; }
-        public ImmutableArray<SeqFunc> SeqFuncs { get; }
-
+        public ImmutableArray<TypeDecl> TypeDecls { get; } // class struct enum interface
+        public ImmutableArray<FuncDecl> FuncDecls { get; } // normal sequence
         public ImmutableArray<Stmt> TopLevelStmts { get; }
 
-        public Script(IEnumerable<Type> types, IEnumerable<Func> funcs, IEnumerable<SeqFunc> seqFuncs, IEnumerable<Stmt> topLevelStmts)
-        {            
-            Types = types.ToImmutableArray();
-
-            Funcs = funcs.ToImmutableArray();
-            SeqFuncs = seqFuncs.ToImmutableArray();
+        public Script(
+            IEnumerable<TypeDecl> typeDecls,
+            IEnumerable<FuncDecl> funcDecls,
+            IEnumerable<Stmt> topLevelStmts)
+        {
+            TypeDecls = typeDecls.ToImmutableArray();
+            FuncDecls = funcDecls.ToImmutableArray();
 
             TopLevelStmts = topLevelStmts.ToImmutableArray();
         }

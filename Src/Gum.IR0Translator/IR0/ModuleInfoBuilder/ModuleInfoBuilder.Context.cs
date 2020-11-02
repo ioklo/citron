@@ -33,8 +33,8 @@ namespace Gum.IR0
                 typeInfos = new List<ITypeInfo>();
                 funcInfos = new List<FuncInfo>();
                 varInfos = new List<VarInfo>();
-                funcInfosByDecl = new Dictionary<S.FuncDecl, FuncInfo>(RefEqComparer<S.FuncDecl>.Instance);
-                enumInfosByDecl = new Dictionary<S.EnumDecl, EnumInfo>(RefEqComparer<S.EnumDecl>.Instance);
+                funcInfosByDecl = new Dictionary<S.FuncDecl, FuncInfo>();
+                enumInfosByDecl = new Dictionary<S.EnumDecl, EnumInfo>();
             }
 
             public ModuleItemId GetTypeId(S.ISyntaxNode node)
@@ -95,12 +95,12 @@ namespace Gum.IR0
 
             public ImmutableDictionary<S.FuncDecl, FuncInfo> GetFuncsByFuncDecl()
             {
-                return funcInfosByDecl.ToImmutableWithComparer();
+                return funcInfosByDecl.ToImmutableDictionary();
             }
 
             public ImmutableDictionary<S.EnumDecl, EnumInfo> GetEnumInfosByDecl()
             {
-                return enumInfosByDecl.ToImmutableWithComparer();
+                return enumInfosByDecl.ToImmutableDictionary();
             }
 
             

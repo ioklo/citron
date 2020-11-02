@@ -31,32 +31,33 @@ namespace Gum.IR0.Runtime
             return expEvaluator.EvalStringExpAsync(command, result, context);
         }
 
-        public bool GetBaseType(TypeId typeId, EvalContext context, [NotNullWhen(true)] out TypeId? outBaseTypeId)
+        public bool GetBaseType(Type type, EvalContext context, [NotNullWhen(true)] out Type? outBaseType)
         {
-            var typeInst = context.GetTypeInst(typeId);
+            throw new NotImplementedException();
+            //var typeInst = context.GetTypeInst(type);
 
-            if (typeInst is ClassInst classInst)
-            {
-                var baseTypeId = classInst.GetBaseTypeId();
-                if (baseTypeId != null)
-                {
-                    outBaseTypeId = baseTypeId;
-                    return true;
-                }
-            }
+            //if (typeInst is ClassInst classInst)
+            //{
+            //    var baseType = classInst.GetBaseType();
+            //    if (baseType != null)
+            //    {
+            //        outBaseType = baseType;
+            //        return true;
+            //    }
+            //}
 
-            outBaseTypeId = null;
-            return false;
+            //outBaseType = null;
+            //return false;
         }
         
         // xType이 y타입인가 묻는 것
-        public bool IsType(TypeId xTypeId, TypeId yTypeId, EvalContext context)
+        public bool IsType(Type xType, Type yType, EvalContext context)
         {
-            TypeId? curType = xTypeId;
+            Type? curType = xType;
 
             while (curType != null)
             {
-                if (EqualityComparer<TypeId?>.Default.Equals(curType, yTypeId))
+                if (EqualityComparer<Type?>.Default.Equals(curType, yType))
                     return true;
 
                 if (!GetBaseType(curType.Value, context, out var baseTypeValue))
@@ -71,36 +72,38 @@ namespace Gum.IR0.Runtime
             return false;
         }
 
-        public TValue AllocValue<TValue>(TypeId typeId, EvalContext context)
+        public TValue AllocValue<TValue>(Type type, EvalContext context)
             where TValue : Value
         {
-            return (TValue)AllocValue(typeId, context);
+            return (TValue)AllocValue(type, context);
         }
 
-        // typeId는 ir0 syntax의 일부분이다
-        public Value AllocValue(TypeId typeId, EvalContext context)
+        // type은 ir0 syntax의 일부분이다
+        public Value AllocValue(Type type, EvalContext context)
         {
-            switch(typeId.Value)
+            switch(type.DeclId.Value)
             {
-                case (int)TypeId.PredefinedValue.Void:
+                case (int)TypeDeclId.PredefinedValue.Void:
                     return VoidValue.Instance;
 
-                case (int)TypeId.PredefinedValue.Bool:
+                case (int)TypeDeclId.PredefinedValue.Bool:
                     return new BoolValue();
 
-                case (int)TypeId.PredefinedValue.Int:
+                case (int)TypeDeclId.PredefinedValue.Int:
                     return new IntValue();
 
-                case (int)TypeId.PredefinedValue.String:
+                case (int)TypeDeclId.PredefinedValue.String:
                     return new StringValue();
 
-                case (int)TypeId.PredefinedValue.Enumerable:
+                // TODO: typeArgs
+                case (int)TypeDeclId.PredefinedValue.Enumerable:
                     return new AsyncEnumerableValue();
 
-                case (int)TypeId.PredefinedValue.Lambda:
+                case (int)TypeDeclId.PredefinedValue.Lambda:
                     return new LambdaValue();
 
-                case (int)TypeId.PredefinedValue.List:
+                // TODO: typeArgs
+                case (int)TypeDeclId.PredefinedValue.List:
                     return new ListValue();
             }
 
@@ -113,7 +116,7 @@ namespace Gum.IR0.Runtime
             foreach (var captureElem in captureElems)
             {
                 var origValue = context.GetLocalValue(captureElem.LocalVarName);
-                var value = AllocValue(captureElem.TypeId, context);
+                var value = AllocValue(captureElem.Type, context);
                 value.SetValue(origValue);
                 capturesBuilder.Add(captureElem.LocalVarName, value);
             }
@@ -127,7 +130,7 @@ namespace Gum.IR0.Runtime
 
             foreach (var (paramName, expInfo) in Zip(paramNames, expInfos))
             {
-                var argValue = AllocValue(expInfo.TypeId, context);
+                var argValue = AllocValue(expInfo.Type, context);
                 argsBuilder.Add(paramName, argValue);
 
                 await expEvaluator.EvalAsync(expInfo.Exp, argValue, context);
@@ -153,7 +156,7 @@ namespace Gum.IR0.Runtime
         {
             foreach (var elem in localVarDecl.Elems)
             {
-                var value = AllocValue(elem.TypeId, context);
+                var value = AllocValue(elem.Type, context);
                 context.AddLocalVar(elem.Name, value);
 
                 // InitExp가 있으면 
@@ -174,7 +177,7 @@ namespace Gum.IR0.Runtime
         
         async ValueTask<int> EvalScriptAsync(Script script, EvalContext context)
         {
-            var retValue = AllocValue<IntValue>(TypeId.Int, context);
+            var retValue = AllocValue<IntValue>(Type.Int, context);
 
             await context.ExecInNewFuncFrameAsync(
                 ImmutableDictionary<string, Value>.Empty, 
@@ -200,7 +203,7 @@ namespace Gum.IR0.Runtime
 
         public ValueTask<int> EvalScriptAsync(Script script)
         {
-            var context = new EvalContext(script.Funcs, script.SeqFuncs);
+            var context = new EvalContext(script.FuncDecls);
             return EvalScriptAsync(script, context);
         }
 

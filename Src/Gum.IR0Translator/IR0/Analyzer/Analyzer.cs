@@ -102,7 +102,7 @@ namespace Gum.IR0
                     return false;
                 }
                 
-                var expTypeId = context.GetTypeId(expTypeValue);
+                var expTypeId = context.GetType(expTypeValue);
                 outElem = new ExpStringExpElement(new ExpInfo(ir0Exp, expTypeId));
                 return true;                
             }
@@ -168,7 +168,7 @@ namespace Gum.IR0
                 {
                     if (localVarOutsideLambdaInfo.bNeedCapture)
                     {
-                        var typeId = context.GetTypeId(localVarOutsideLambdaInfo.LocalVarInfo.TypeValue);
+                        var typeId = context.GetType(localVarOutsideLambdaInfo.LocalVarInfo.TypeValue);
                         capturedLocalVars.Add(new CaptureInfo.Element(typeId, localVarOutsideLambdaInfo.LocalVarInfo.Name));
                     }
                 }
@@ -269,13 +269,13 @@ namespace Gum.IR0
                     if( funcDecl.IsSequence)
                     {
                         // TODO: Body가 실제로 리턴을 제대로 하는지 확인해야 할 필요가 있다
-                        var retTypeId = context.GetTypeId(funcInfo.RetTypeValue);
+                        var retTypeId = context.GetType(funcInfo.RetTypeValue);
                         context.AddSeqFunc(retTypeId, false, funcDecl.TypeParams, funcDecl.ParamInfo.Parameters.Select(param => param.Name), body);
                     }
                     else
                     {
                         // TODO: Body가 실제로 리턴을 제대로 하는지 확인해야 할 필요가 있다
-                        context.AddFunc(bThisCall: false, funcDecl.TypeParams, funcDecl.ParamInfo.Parameters.Select(param => param.Name), body);
+                        context.AddFuncDecl(bThisCall: false, funcDecl.TypeParams, funcDecl.ParamInfo.Parameters.Select(param => param.Name), body);
                     }
                 }
                 else
@@ -336,7 +336,7 @@ namespace Gum.IR0
 
             if (bResult)
             {
-                outScript = new Script(context.GetTypes(), context.GetFuncs(), context.GetSeqFuncs(), topLevelStmts);
+                outScript = new Script(context.GetTypeDecls(), context.GetFuncDecls(), topLevelStmts);
                 return true;
             }
             else

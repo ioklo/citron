@@ -341,6 +341,9 @@ namespace Gum.IR0
 
         void EvaluateListExp(S.ListExp listExp, Context context)
         {
+            if (listExp.ElemType != null)
+                EvaluateTypeExp(listExp.ElemType, context, out var _);
+
             foreach (var elem in listExp.Elems)
                 EvaluateExp(elem, context);
         }
@@ -456,7 +459,7 @@ namespace Gum.IR0
         void EvaluateForeachStmt(S.ForeachStmt foreachStmt, Context context) 
         {
             EvaluateTypeExp(foreachStmt.Type, context, out var _);
-            EvaluateExp(foreachStmt.Obj, context);
+            EvaluateExp(foreachStmt.Iterator, context);
             EvaluateStmt(foreachStmt.Body, context);
         }
 

@@ -114,7 +114,7 @@ namespace Gum
                 ColonToken.Instance,
             };
 
-            Assert.Equal(expectedTokens, tokens);
+            Assert.Equal(expectedTokens, tokens, TokenEqualityComparer.Instance);
         }
 
         [Fact]
@@ -130,7 +130,7 @@ namespace Gum
                 new BoolToken(false),
             };
 
-            Assert.Equal(expectedTokens, tokens);
+            Assert.Equal(expectedTokens, tokens, TokenEqualityComparer.Instance);
         }
 
         [Fact]
@@ -140,7 +140,7 @@ namespace Gum
             var token = await lexer.LexNormalModeAsync(await MakeContextAsync("x"), false);
 
             Assert.True(token.HasValue);
-            Assert.Equal(new IdentifierToken("x"), token.Token);
+            Assert.Equal(new IdentifierToken("x"), token.Token, TokenEqualityComparer.Instance);
         }
 
         [Fact]
@@ -152,9 +152,9 @@ namespace Gum
             var result1 = await lexer.LexStringModeAsync(result0.Context);
             var result2 = await lexer.LexStringModeAsync(result1.Context);
 
-            Assert.Equal(DoubleQuoteToken.Instance, result0.Token);
-            Assert.Equal(new TextToken("aaa bbb "), result1.Token);
-            Assert.Equal(DoubleQuoteToken.Instance, result2.Token);
+            Assert.Equal(DoubleQuoteToken.Instance, result0.Token, TokenEqualityComparer.Instance);
+            Assert.Equal(new TextToken("aaa bbb "), result1.Token, TokenEqualityComparer.Instance);
+            Assert.Equal(DoubleQuoteToken.Instance, result2.Token, TokenEqualityComparer.Instance);
         }
 
         // stringMode
@@ -168,7 +168,7 @@ namespace Gum
 
             var expectedToken = new TextToken("\"");
 
-            Assert.Equal(expectedToken, tokenResult.Token);
+            Assert.Equal(expectedToken, tokenResult.Token, TokenEqualityComparer.Instance);
         }
 
         [Fact]
@@ -179,7 +179,7 @@ namespace Gum
 
             var tokenResult = await lexer.LexStringModeAsync(context);
             var expectedToken = new TextToken("$");
-            Assert.Equal(expectedToken, tokenResult.Token);
+            Assert.Equal(expectedToken, tokenResult.Token, TokenEqualityComparer.Instance);
         }
 
         [Fact]
@@ -190,7 +190,7 @@ namespace Gum
 
             var tokenResult = await lexer.LexStringModeAsync(context);
             var expectedToken = new IdentifierToken("ccc");
-            Assert.Equal(expectedToken, tokenResult.Token);
+            Assert.Equal(expectedToken, tokenResult.Token, TokenEqualityComparer.Instance);
         }
 
         [Fact]
@@ -208,7 +208,7 @@ namespace Gum
                 new TextToken(" ddd"),
             };
 
-            Assert.Equal(expectedTokens, tokens);
+            Assert.Equal(expectedTokens, tokens, TokenEqualityComparer.Instance);
         }
 
         [Fact]
@@ -242,7 +242,7 @@ namespace Gum
                 new TextToken(" ddd"),
             };
 
-            Assert.Equal(expectedTokens, tokens);
+            Assert.Equal(expectedTokens, tokens, TokenEqualityComparer.Instance);
         }
 
         [Fact]
@@ -306,7 +306,7 @@ namespace Gum
                 DoubleQuoteToken.Instance,
             };
 
-            Assert.Equal(expectedTokens, tokens);
+            Assert.Equal(expectedTokens, tokens, TokenEqualityComparer.Instance);
         }
 
         [Fact]
@@ -318,7 +318,7 @@ namespace Gum
             var result = await lexer.LexNormalModeAsync(context, false);
             var expectedToken = new IntToken(1234);
 
-            Assert.Equal(expectedToken, result.Token);
+            Assert.Equal(expectedToken, result.Token, TokenEqualityComparer.Instance);
         }
 
         [Fact]
@@ -360,7 +360,7 @@ namespace Gum
                 new IntToken(1234)
             };
 
-            Assert.Equal(expectedTokens, tokens);
+            Assert.Equal(expectedTokens, tokens, TokenEqualityComparer.Instance);
         }
 
         [Fact]
@@ -386,7 +386,7 @@ namespace Gum
                 new IntToken(55)
             };
 
-            Assert.Equal(expectedTokens, tokens);
+            Assert.Equal(expectedTokens, tokens, TokenEqualityComparer.Instance);
         }
     }
 }

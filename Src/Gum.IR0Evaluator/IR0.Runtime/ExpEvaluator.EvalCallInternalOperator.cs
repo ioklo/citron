@@ -11,12 +11,12 @@ namespace Gum.IR0.Runtime
     {
         ValueTask<TValue> EvalExpAsync<TValue>(ExpInfo expInfo, EvalContext context)
             where TValue : Value
-            => EvalExpAsync<TValue>(expInfo.Exp, expInfo.TypeId, context);
+            => EvalExpAsync<TValue>(expInfo.Exp, expInfo.Type, context);
 
-        async ValueTask<TValue> EvalExpAsync<TValue>(Exp exp, TypeId typeId, EvalContext context)
+        async ValueTask<TValue> EvalExpAsync<TValue>(Exp exp, Type type, EvalContext context)
             where TValue : Value
         {
-            var operand0 = evaluator.AllocValue(typeId, context);
+            var operand0 = evaluator.AllocValue(type, context);
             await EvalAsync(exp, operand0, context);
             return (TValue)operand0;
         }
@@ -143,10 +143,10 @@ namespace Gum.IR0.Runtime
 
         async ValueTask EvalCallInternalBinaryOperatorExpAsync(CallInternalBinaryOperatorExp exp, Value result, EvalContext context)
         {   
-            var operand0 = evaluator.AllocValue(exp.Operand0.TypeId, context);
+            var operand0 = evaluator.AllocValue(exp.Operand0.Type, context);
             await EvalAsync(exp.Operand0.Exp, operand0, context);
 
-            var operand1 = evaluator.AllocValue(exp.Operand1.TypeId, context);
+            var operand1 = evaluator.AllocValue(exp.Operand1.Type, context);
             await EvalAsync(exp.Operand1.Exp, operand1, context);
 
             switch (exp.Operator)
@@ -174,7 +174,7 @@ namespace Gum.IR0.Runtime
 
         async ValueTask EvalCallInternalUnaryOperatorExpAsync(CallInternalUnaryOperatorExp exp, Value result, EvalContext context)
         {
-            var operand = evaluator.AllocValue(exp.Operand.TypeId, context);
+            var operand = evaluator.AllocValue(exp.Operand.Type, context);
             await EvalAsync(exp.Operand.Exp, operand, context);
 
             switch (exp.Operator)

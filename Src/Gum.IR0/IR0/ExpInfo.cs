@@ -3,12 +3,12 @@
     public struct ExpInfo
     {
         public Exp Exp { get; }
-        public TypeId TypeId { get; }
+        public Type Type { get; }
 
-        public ExpInfo(Exp exp, TypeId typeId)
+        public ExpInfo(Exp exp, Type type)
         {
             Exp = exp;
-            TypeId = typeId;
+            Type = type;
         }
     }
 }

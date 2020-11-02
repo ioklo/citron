@@ -34,7 +34,7 @@ namespace Gum.IR0
                 else
                 {
                     context.AddPrivateGlobalVarInfo(name, typeValue);
-                    var typeId = context.GetTypeId(typeValue);
+                    var typeId = context.GetType(typeValue);
                     elems.Add(new PrivateGlobalVarDeclStmt.Element(name, typeId, initExp));
                 }
             }
@@ -65,7 +65,7 @@ namespace Gum.IR0
                 else
                 {
                     context.AddLocalVarInfo(name, typeValue);
-                    var typeId = context.GetTypeId(typeValue);
+                    var typeId = context.GetType(typeValue);
                     elems.Add(new LocalVarDecl.Element(name, typeId, initExp));
                 }
             }

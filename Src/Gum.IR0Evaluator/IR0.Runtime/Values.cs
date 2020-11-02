@@ -148,7 +148,7 @@ namespace Gum.IR0.Runtime
             throw new NotImplementedException();
         }
 
-        public TypeId GetTypeId()
+        public new Type GetType()
         {
             throw new NotImplementedException();
         }

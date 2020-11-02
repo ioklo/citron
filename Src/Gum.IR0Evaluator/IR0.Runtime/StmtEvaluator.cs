@@ -26,7 +26,7 @@ namespace Gum.IR0.Runtime
         // TODO: CommandProvider가 Parser도 제공해야 할 것 같다
         internal async ValueTask EvalCommandStmtAsync(CommandStmt stmt, EvalContext context)
         {
-            var tempStr = evaluator.AllocValue<StringValue>(TypeId.String, context);
+            var tempStr = evaluator.AllocValue<StringValue>(Type.String, context);
 
             foreach (var command in stmt.Commands)
             {
@@ -41,7 +41,7 @@ namespace Gum.IR0.Runtime
         {
             foreach (var elem in stmt.Elems)
             {
-                var value = evaluator.AllocValue(elem.TypeId, context);
+                var value = evaluator.AllocValue(elem.Type, context);
                 context.AddPrivateGlobalVar(elem.Name, value);
 
                 // InitExp가 있으면 
@@ -57,7 +57,7 @@ namespace Gum.IR0.Runtime
 
         internal async IAsyncEnumerable<Value> EvalIfStmtAsync(IfStmt stmt, EvalContext context)
         {
-            var condValue = evaluator.AllocValue<BoolValue>(TypeId.Bool, context);
+            var condValue = evaluator.AllocValue<BoolValue>(Type.Bool, context);
             await evaluator.EvalExpAsync(stmt.Cond, condValue, context);
 
             if (condValue.GetBool())
@@ -75,7 +75,7 @@ namespace Gum.IR0.Runtime
 
         internal async IAsyncEnumerable<Value> EvalIfTestEnumStmtAsync(IfTestEnumStmt stmt, EvalContext context)
         {
-            var targetValue = evaluator.AllocValue<EnumValue>(stmt.Target.TypeId, context);
+            var targetValue = evaluator.AllocValue<EnumValue>(stmt.Target.Type, context);
             await evaluator.EvalExpAsync(stmt.Target.Exp, targetValue, context);
 
             var bTestPassed = (targetValue.GetElemName() == stmt.ElemName);
@@ -96,10 +96,10 @@ namespace Gum.IR0.Runtime
         internal async IAsyncEnumerable<Value> EvalIfTestClassStmtAsync(IfTestClassStmt stmt, EvalContext context)
         {  
             // 분석기가 미리 계산해 놓은 TypeValue를 가져온다                
-            var targetValue = evaluator.AllocValue<ClassValue>(stmt.Target.TypeId, context);
+            var targetValue = evaluator.AllocValue<ClassValue>(stmt.Target.Type, context);
             await evaluator.EvalExpAsync(stmt.Target.Exp, targetValue, context);
 
-            var targetType = targetValue.GetTypeId();
+            var targetType = targetValue.GetType();
 
             var bTestPassed = evaluator.IsType(targetType, stmt.TestType, context);
 
@@ -120,7 +120,7 @@ namespace Gum.IR0.Runtime
         {
             async IAsyncEnumerable<Value> InnerAsync()
             {
-                var contValue = forStmt.ContinueInfo != null ? evaluator.AllocValue(forStmt.ContinueInfo.Value.TypeId, context) : null;
+                var contValue = forStmt.ContinueInfo != null ? evaluator.AllocValue(forStmt.ContinueInfo.Value.Type, context) : null;
 
                 if (forStmt.Initializer != null)
                 {
@@ -131,7 +131,7 @@ namespace Gum.IR0.Runtime
                             break;
 
                         case ExpForStmtInitializer expInitializer:
-                            var value = evaluator.AllocValue(expInitializer.ExpInfo.TypeId, context);
+                            var value = evaluator.AllocValue(expInitializer.ExpInfo.Type, context);
                             await evaluator.EvalExpAsync(expInitializer.ExpInfo.Exp, value, context);
                             break;
 
@@ -144,7 +144,7 @@ namespace Gum.IR0.Runtime
                 {
                     if (forStmt.CondExp != null)
                     {
-                        var condValue = evaluator.AllocValue<BoolValue>(TypeId.Bool, context);
+                        var condValue = evaluator.AllocValue<BoolValue>(Type.Bool, context);
                         await evaluator.EvalExpAsync(forStmt.CondExp, condValue, context);
 
                         if (!condValue.GetBool())
@@ -229,7 +229,7 @@ namespace Gum.IR0.Runtime
 
         internal async ValueTask EvalExpStmtAsync(ExpStmt expStmt, EvalContext context)
         {
-            var temp = evaluator.AllocValue(expStmt.ExpInfo.TypeId, context);
+            var temp = evaluator.AllocValue(expStmt.ExpInfo.Type, context);
 
             await evaluator.EvalExpAsync(expStmt.ExpInfo.Exp, temp, context);
         }
@@ -302,8 +302,8 @@ namespace Gum.IR0.Runtime
 
             async IAsyncEnumerable<Value> InnerScopeAsync()
             {
-                var objValue = evaluator.AllocValue(stmt.ObjInfo.TypeId, context);
-                await evaluator.EvalExpAsync(stmt.ObjInfo.Exp, objValue, context);
+                var objValue = evaluator.AllocValue(stmt.IteratorInfo.Type, context);
+                await evaluator.EvalExpAsync(stmt.IteratorInfo.Exp, objValue, context);
 
                 // TODO: objValue는 ListValue일 수 있고, EnumerableValue일 수 있다. Custom은 나중에 만드는 것으로.
                 IAsyncEnumerable<Value> enumerable;
@@ -315,7 +315,7 @@ namespace Gum.IR0.Runtime
                     throw new InvalidOperationException();
 
                 var enumerator = enumerable.GetAsyncEnumerator();
-                var elemValue = evaluator.AllocValue(stmt.ElemTypeId, context);
+                var elemValue = evaluator.AllocValue(stmt.ElemType, context);
 
                 context.AddLocalVar(stmt.ElemName, elemValue);
 

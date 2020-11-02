@@ -28,32 +28,6 @@ namespace Gum.Syntax
             Debug.Assert(0 < commands.Length);
             Commands = ImmutableArray.Create(commands);
         }
-
-        public override bool Equals(object? obj)
-        {
-            return obj is CommandStmt statement &&
-                   Enumerable.SequenceEqual(Commands, statement.Commands);
-        }
-
-        public override int GetHashCode()
-        {
-            var hashCode = new HashCode();
-
-            foreach (var command in Commands)
-                hashCode.Add(command);
-
-            return hashCode.ToHashCode();
-        }
-
-        public static bool operator ==(CommandStmt? left, CommandStmt? right)
-        {
-            return EqualityComparer<CommandStmt?>.Default.Equals(left, right);
-        }
-
-        public static bool operator !=(CommandStmt? left, CommandStmt? right)
-        {
-            return !(left == right);
-        }
     }
 
     public class VarDeclElement : ISyntaxNode
@@ -84,28 +58,6 @@ namespace Gum.Syntax
             Type = type;
             Elems = ImmutableArray.Create(elems);
         }
-
-        public override bool Equals(object? obj)
-        {
-            return obj is VarDecl decl &&
-                   EqualityComparer<TypeExp>.Default.Equals(Type, decl.Type) &&
-                   Enumerable.SequenceEqual(Elems, decl.Elems);
-        }
-
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(Type, Elems);
-        }
-
-        public static bool operator ==(VarDecl? left, VarDecl? right)
-        {
-            return EqualityComparer<VarDecl?>.Default.Equals(left, right);
-        }
-
-        public static bool operator !=(VarDecl? left, VarDecl? right)
-        {
-            return !(left == right);
-        }
     }
 
     // int a = 0, b, c;
@@ -116,27 +68,6 @@ namespace Gum.Syntax
         public VarDeclStmt(VarDecl varDecl)
         {
             VarDecl = varDecl;
-        }
-
-        public override bool Equals(object? obj)
-        {
-            return obj is VarDeclStmt stmt &&
-                   EqualityComparer<VarDecl>.Default.Equals(VarDecl, stmt.VarDecl);
-        }
-
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(VarDecl);
-        }
-
-        public static bool operator ==(VarDeclStmt? left, VarDeclStmt? right)
-        {
-            return EqualityComparer<VarDeclStmt?>.Default.Equals(left, right);
-        }
-
-        public static bool operator !=(VarDeclStmt? left, VarDeclStmt? right)
-        {
-            return !(left == right);
         }
     }
 
@@ -154,30 +85,6 @@ namespace Gum.Syntax
             Body = body;
             ElseBody = elseBody;
         }
-
-        public override bool Equals(object? obj)
-        {
-            return obj is IfStmt stmt &&
-                   EqualityComparer<Exp>.Default.Equals(Cond, stmt.Cond) &&
-                   EqualityComparer<TypeExp?>.Default.Equals(TestType, stmt.TestType) &&
-                   EqualityComparer<Stmt>.Default.Equals(Body, stmt.Body) &&
-                   EqualityComparer<Stmt?>.Default.Equals(ElseBody, stmt.ElseBody);
-        }
-
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(Cond, Body, ElseBody);
-        }
-
-        public static bool operator ==(IfStmt? left, IfStmt? right)
-        {
-            return EqualityComparer<IfStmt?>.Default.Equals(left, right);
-        }
-
-        public static bool operator !=(IfStmt? left, IfStmt? right)
-        {
-            return !(left == right);
-        }
     }
 
     
@@ -186,28 +93,8 @@ namespace Gum.Syntax
     {
         public Exp Exp { get; }
         public ExpForStmtInitializer(Exp exp) { Exp = exp; }
-
-        public override bool Equals(object? obj)
-        {
-            return obj is ExpForStmtInitializer initializer &&
-                   EqualityComparer<Exp>.Default.Equals(Exp, initializer.Exp);
-        }
-
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(Exp);
-        }
-
-        public static bool operator ==(ExpForStmtInitializer? left, ExpForStmtInitializer? right)
-        {
-            return EqualityComparer<ExpForStmtInitializer?>.Default.Equals(left, right);
-        }
-
-        public static bool operator !=(ExpForStmtInitializer? left, ExpForStmtInitializer? right)
-        {
-            return !(left == right);
-        }
     }
+
     public class VarDeclForStmtInitializer : ForStmtInitializer
     {
         public VarDecl VarDecl { get; }
@@ -250,30 +137,6 @@ namespace Gum.Syntax
             ContinueExp = continueExp;
             Body = bodyStmt;
         }
-
-        public override bool Equals(object? obj)
-        {
-            return obj is ForStmt stmt &&
-                   EqualityComparer<ForStmtInitializer?>.Default.Equals(Initializer, stmt.Initializer) &&
-                   EqualityComparer<Exp?>.Default.Equals(CondExp, stmt.CondExp) &&
-                   EqualityComparer<Exp?>.Default.Equals(ContinueExp, stmt.ContinueExp) &&
-                   EqualityComparer<Stmt>.Default.Equals(Body, stmt.Body);
-        }
-
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(Initializer, CondExp, ContinueExp, Body);
-        }
-
-        public static bool operator ==(ForStmt? left, ForStmt? right)
-        {
-            return EqualityComparer<ForStmt?>.Default.Equals(left, right);
-        }
-
-        public static bool operator !=(ForStmt? left, ForStmt? right)
-        {
-            return !(left == right);
-        }
     }
 
     public class ContinueStmt : Stmt
@@ -292,27 +155,6 @@ namespace Gum.Syntax
     {
         public Exp? Value { get; }
         public ReturnStmt(Exp? value) { Value = value; }
-
-        public override bool Equals(object? obj)
-        {
-            return obj is ReturnStmt stmt &&
-                   EqualityComparer<Exp?>.Default.Equals(Value, stmt.Value);
-        }
-
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(Value);
-        }
-
-        public static bool operator ==(ReturnStmt? left, ReturnStmt? right)
-        {
-            return EqualityComparer<ReturnStmt?>.Default.Equals(left, right);
-        }
-
-        public static bool operator !=(ReturnStmt? left, ReturnStmt? right)
-        {
-            return !(left == right);
-        }
     }
 
     public class BlockStmt : Stmt
@@ -326,31 +168,6 @@ namespace Gum.Syntax
         public BlockStmt(params Stmt[] stmts)
         {
             Stmts = ImmutableArray.Create(stmts);
-        }
-
-        public override bool Equals(object? obj)
-        {
-            return obj is BlockStmt stmt && Enumerable.SequenceEqual(Stmts, stmt.Stmts);
-        }
-
-        public override int GetHashCode()
-        {
-            var hashCode = new HashCode();
-
-            foreach (var stmt in Stmts)
-                hashCode.Add(stmt);
-
-            return hashCode.ToHashCode();
-        }
-
-        public static bool operator ==(BlockStmt? left, BlockStmt? right)
-        {
-            return EqualityComparer<BlockStmt?>.Default.Equals(left, right);
-        }
-
-        public static bool operator !=(BlockStmt? left, BlockStmt? right)
-        {
-            return !(left == right);
         }
     }
 
@@ -366,27 +183,6 @@ namespace Gum.Syntax
         public ExpStmt(Exp exp)
         {
             Exp = exp;
-        }
-
-        public override bool Equals(object? obj)
-        {
-            return obj is ExpStmt stmt &&
-                   EqualityComparer<Exp>.Default.Equals(Exp, stmt.Exp);
-        }
-
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(Exp);
-        }
-
-        public static bool operator ==(ExpStmt? left, ExpStmt? right)
-        {
-            return EqualityComparer<ExpStmt?>.Default.Equals(left, right);
-        }
-
-        public static bool operator !=(ExpStmt? left, ExpStmt? right)
-        {
-            return !(left == right);
         }
     }
 
@@ -412,66 +208,21 @@ namespace Gum.Syntax
     {
         public TypeExp Type { get; }
         public string VarName { get; }
-        public Exp Obj { get; }
+        public Exp Iterator { get; }
         public Stmt Body { get; }
 
-        public ForeachStmt(TypeExp type, string varName, Exp obj, Stmt body)
+        public ForeachStmt(TypeExp type, string varName, Exp iterator, Stmt body)
         {
             Type = type;
             VarName = varName;
-            Obj = obj;
+            Iterator = iterator;
             Body = body;
-        }
-
-        public override bool Equals(object? obj)
-        {
-            return obj is ForeachStmt stmt &&
-                   EqualityComparer<TypeExp>.Default.Equals(Type, stmt.Type) &&
-                   VarName == stmt.VarName &&
-                   EqualityComparer<Exp>.Default.Equals(Obj, stmt.Obj) &&
-                   EqualityComparer<Stmt>.Default.Equals(Body, stmt.Body);
-        }
-
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(Type, VarName, Obj, Body);
-        }
-
-        public static bool operator ==(ForeachStmt? left, ForeachStmt? right)
-        {
-            return EqualityComparer<ForeachStmt?>.Default.Equals(left, right);
-        }
-
-        public static bool operator !=(ForeachStmt? left, ForeachStmt? right)
-        {
-            return !(left == right);
-        }
+        }       
     }
 
     public class YieldStmt : Stmt
     {
         public Exp Value { get; }
         public YieldStmt(Exp value) { Value = value; }
-
-        public override bool Equals(object? obj)
-        {
-            return obj is YieldStmt stmt &&
-                   EqualityComparer<Exp>.Default.Equals(Value, stmt.Value);
-        }
-
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(Value);
-        }
-
-        public static bool operator ==(YieldStmt? left, YieldStmt? right)
-        {
-            return EqualityComparer<YieldStmt?>.Default.Equals(left, right);
-        }
-
-        public static bool operator !=(YieldStmt? left, YieldStmt? right)
-        {
-            return !(left == right);
-        }
     }
 }

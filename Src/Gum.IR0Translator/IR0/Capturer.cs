@@ -241,7 +241,7 @@ namespace Gum.IR0
         {
             var prevBoundVars = context.GetBoundVars();
 
-            if (!CaptureExp(foreachStmt.Obj, context))
+            if (!CaptureExp(foreachStmt.Iterator, context))
                 return false;
 
             context.AddBind(foreachStmt.VarName);

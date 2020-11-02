@@ -231,7 +231,7 @@ namespace Gum.IR0
                             return false;
                         }
 
-                        var operandTypeId = context.GetTypeId(operandType);
+                        var operandTypeId = context.GetType(operandType);
                         outExp = new CallInternalUnaryOperatorExp(InternalUnaryOperator.LogicalNot_Bool_Bool, new ExpInfo(ir0Operand, operandTypeId));
                         outTypeValue = boolTypeValue;
                         return true;
@@ -245,7 +245,7 @@ namespace Gum.IR0
                             return false;
                         }
 
-                        var operandTypeId = context.GetTypeId(operandType);
+                        var operandTypeId = context.GetType(operandType);
                         outExp = new CallInternalUnaryOperatorExp(InternalUnaryOperator.UnaryMinus_Int_Int, new ExpInfo(ir0Operand, operandTypeId));
                         outTypeValue = intTypeValue;
                         return true;
@@ -377,11 +377,11 @@ namespace Gum.IR0
                         if (analyzer.IsAssignable(info.OperandType0, operandType0, context) &&
                             analyzer.IsAssignable(info.OperandType1, operandType1, context))
                         {
-                            var operandTypeId0 = context.GetTypeId(operandType0);
-                            var operandTypeId1 = context.GetTypeId(operandType1);
+                            var operandTypeId0 = context.GetType(operandType0);
+                            var operandTypeId1 = context.GetType(operandType1);
 
                             var equalExp = new CallInternalBinaryOperatorExp(info.IR0Operator, new ExpInfo(operand0, operandTypeId0), new ExpInfo(operand1, operandTypeId1));
-                            var notEqualOperand = new ExpInfo(equalExp, TypeId.Bool);
+                            var notEqualOperand = new ExpInfo(equalExp, Type.Bool);
 
                             outExp = new CallInternalUnaryOperatorExp(InternalUnaryOperator.LogicalNot_Bool_Bool, notEqualOperand);
                             outTypeValue = info.ResultType;
@@ -400,8 +400,8 @@ namespace Gum.IR0
                     if (analyzer.IsAssignable(info.OperandType0, operandType0, context) && 
                         analyzer.IsAssignable(info.OperandType1, operandType1, context))
                     {
-                        var operandTypeId0 = context.GetTypeId(operandType0);
-                        var operandTypeId1 = context.GetTypeId(operandType1);
+                        var operandTypeId0 = context.GetType(operandType0);
+                        var operandTypeId1 = context.GetType(operandType1);
 
                         outExp = new CallInternalBinaryOperatorExp(info.IR0Operator, new ExpInfo(operand0, operandTypeId0), new ExpInfo(operand1, operandTypeId1));
                         outTypeValue = info.ResultType;
@@ -447,16 +447,17 @@ namespace Gum.IR0
                 if (!analyzer.CheckParamTypes(callableExp, funcTypeValue.Params, argInfos.Select(info => info.TypeValue).ToList(), context))
                     return false;
 
-                var ir0FuncId = context.GetFuncId(funcValue);
+                var funcDeclId = context.GetFuncDeclId(globalFunc.FuncId);
+
                 var args = argInfos.Select(info =>
                 {
-                    var typeId = context.GetTypeId(info.TypeValue);
+                    var typeId = context.GetType(info.TypeValue);
                     return new ExpInfo(info.Exp, typeId);
                 }).ToArray();
                 
                 outExp = new CallFuncExp(
-                    ir0FuncId, 
-                    typeArgs.Select(typeArg => context.GetTypeId(typeArg)), 
+                    funcDeclId, 
+                    typeArgs.Select(typeArg => context.GetType(typeArg)), 
                     null, 
                     args);
 
@@ -489,11 +490,11 @@ namespace Gum.IR0
             if (!analyzer.CheckParamTypes(callableExp, funcTypeValue.Params, argInfos.Select(info => info.TypeValue).ToList(), context))
                 return false;
 
-            var callableTypeId = context.GetTypeId(funcTypeValue);
+            var callableTypeId = context.GetType(funcTypeValue);
 
             var args = argInfos.Select(info =>
             {
-                var typeId = context.GetTypeId(info.TypeValue);
+                var typeId = context.GetType(info.TypeValue);
                 return new ExpInfo(info.Exp, typeId);
             }).ToArray();
 
@@ -563,7 +564,7 @@ namespace Gum.IR0
                                 return false;
                             }
 
-                            var typeId = context.GetTypeId(argInfo.TypeValue);
+                            var typeId = context.GetType(argInfo.TypeValue);
                             members.Add(new NewEnumExp.Elem(fieldInfo.Name, new ExpInfo(argInfo.Exp, typeId)));
                         }
 
@@ -683,52 +684,45 @@ namespace Gum.IR0
             [NotNullWhen(true)] out Exp? outExp,
             [NotNullWhen(true)] out TypeValue? outTypeValue)
         {
-            throw new NotImplementedException();
+            outExp = null;
+            outTypeValue = null;
 
-            //outExp = null;
-            //outTypeValue = null;
+            var elemExps = new List<Exp>();
 
-            //var elemExps = new List<Exp>();
-            //TypeValue? curElemTypeValue = null;
+            TypeValue? curElemTypeValue = (listExp.ElemType != null) ? context.GetTypeValueByTypeExp(listExp.ElemType) : null;
 
-            //foreach (var elem in listExp.Elems)
-            //{
-            //    if (!AnalyzeExp(elem, null, context, out var elemExp, out var elemTypeValue))
-            //        return false;
+            foreach (var elem in listExp.Elems)
+            {
+                if (!AnalyzeExp(elem, null, context, out var elemExp, out var elemTypeValue))
+                    return false;
 
-            //    elemExps.Add(elemExp);
+                elemExps.Add(elemExp);
 
-            //    if (curElemTypeValue == null)
-            //    {
-            //        curElemTypeValue = elemTypeValue;
-            //        continue;
-            //    }
+                if (curElemTypeValue == null)
+                {
+                    curElemTypeValue = elemTypeValue;
+                    continue;
+                }
 
-            //    if (!EqualityComparer<TypeValue>.Default.Equals(curElemTypeValue, elemTypeValue))
-            //    {
-            //        // TODO: 둘의 공통 조상을 찾아야 하는지 결정을 못했다..
-            //        context.ErrorCollector.Add(listExp, $"원소 {elem}의 타입이 {curElemTypeValue} 가 아닙니다");
-            //        return false;
-            //    }
-            //}
+                if (!EqualityComparer<TypeValue>.Default.Equals(curElemTypeValue, elemTypeValue))
+                {
+                    // TODO: 둘의 공통 조상을 찾아야 하는지 결정을 못했다..
+                    context.AddError(A1702_ListExp_MismatchBetweenElementTypes, elem, $"원소 {elem}의 타입이 {curElemTypeValue} 가 아닙니다");
+                    return false;
+                }
+            }
 
-            //if (curElemTypeValue == null)
-            //{
-            //    context.ErrorCollector.Add(listExp, $"리스트의 타입을 결정하지 못했습니다");
-            //    return false;
-            //}
-
-            //var typeInfos = context.ModuleInfoService.GetTypeInfos(ModuleItemId.Make("List", 1)).ToImmutableArray();            
-
-            //if (typeInfos.Length != 1)
-            //{
-            //    Debug.Fail("Runtime에 적합한 리스트가 없습니다");
-            //    return false;
-            //}
-
-            //outExp = new ListExp(curElemTypeValue, elemExps);
-            //outTypeValue = TypeValue.MakeNormal(typeInfos[0].TypeId, TypeArgumentList.Make(curElemTypeValue));
-            //return true;
+            if (curElemTypeValue == null)
+            {
+                context.AddError(A1701_ListExp_CantInferElementTypeWithEmptyElement, listExp, $"리스트의 타입을 결정하지 못했습니다");
+                return false;
+            }
+            
+            var typeId = context.GetType(curElemTypeValue);
+            outExp = new ListExp(typeId, elemExps);
+            // TODO: System.List가 되어야 한다
+            outTypeValue = TypeValue.MakeNormal(ModuleItemId.Make("List", 1), TypeArgumentList.Make(curElemTypeValue));
+            return true;
         }
 
         public bool AnalyzeExp(

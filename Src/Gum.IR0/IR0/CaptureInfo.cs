@@ -9,12 +9,12 @@ namespace Gum.IR0
     {
         public class Element
         {
-            public TypeId TypeId { get; }
+            public Type Type { get; }
             public string LocalVarName { get; }
 
-            public Element(TypeId typeId, string localVarName)
+            public Element(Type type, string localVarName)
             {
-                TypeId = typeId;
+                Type = type;
                 LocalVarName = localVarName;
             }
         }

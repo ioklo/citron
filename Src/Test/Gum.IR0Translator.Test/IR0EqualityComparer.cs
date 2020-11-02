@@ -6,31 +6,64 @@ using Gum.Infra;
 using System;
 using System.Linq;
 
+using Type = Gum.IR0.Type;
+
 namespace Gum
 {
     class IR0EqualityComparer 
         : IEqualityComparer<Script?>
-        , IEqualityComparer<Func>
-        , IEqualityComparer<SeqFunc>
         , IEqualityComparer<Stmt>
         , IEqualityComparer<Exp>
         , IEqualityComparer<StringExpElement>
         , IEqualityComparer<ExpInfo?> 
         , IEqualityComparer<ExpInfo>  // struct
-        , IEqualityComparer<TypeId>   // struct
+        , IEqualityComparer<Type>     // struct
         , IEqualityComparer<PrivateGlobalVarDeclStmt.Element>
         , IEqualityComparer<LocalVarDecl>
         , IEqualityComparer<LocalVarDecl.Element> // struct
         , IEqualityComparer<ForStmtInitializer>
         , IEqualityComparer<CaptureInfo>
-        , IEqualityComparer<CaptureInfo.Element>        
-        , IEqualityComparer<FuncId>
-        , IEqualityComparer<SeqFuncId>
+        , IEqualityComparer<CaptureInfo.Element>
+        , IEqualityComparer<FuncDeclId>
         , IEqualityComparer<NewEnumExp.Elem>        
+        , IEqualityComparer<TypeDecl>
     {
         public static IR0EqualityComparer Instance { get; } = new IR0EqualityComparer();
 
         private IR0EqualityComparer() { }
+
+        bool IEqualityComparer<Script?>.Equals([AllowNull] Script x, [AllowNull] Script y) => EqualsScript(x, y);
+        int IEqualityComparer<Script?>.GetHashCode([DisallowNull] Script obj) => throw new NotImplementedException();
+        bool IEqualityComparer<Stmt>.Equals([AllowNull] Stmt x, [AllowNull] Stmt y) => EqualsStmt(x, y);
+        int IEqualityComparer<Stmt>.GetHashCode([DisallowNull] Stmt obj) => throw new NotImplementedException();
+        bool IEqualityComparer<Exp>.Equals([AllowNull] Exp x, [AllowNull] Exp y) => EqualsExp(x, y);
+        int IEqualityComparer<Exp>.GetHashCode([DisallowNull] Exp obj) => throw new NotImplementedException();
+        bool IEqualityComparer<StringExpElement>.Equals([AllowNull] StringExpElement x, [AllowNull] StringExpElement y) => EqualsStringExpElement(x, y);
+        int IEqualityComparer<StringExpElement>.GetHashCode([DisallowNull] StringExpElement obj) => throw new NotImplementedException();
+        bool IEqualityComparer<ExpInfo?>.Equals([AllowNull] ExpInfo? x, [AllowNull] ExpInfo? y) => EqualsExpInfoOptional(x, y);
+        int IEqualityComparer<ExpInfo?>.GetHashCode([DisallowNull] ExpInfo? obj) => throw new NotImplementedException();
+        bool IEqualityComparer<ExpInfo>.Equals([AllowNull] ExpInfo x, [AllowNull] ExpInfo y) => EqualsExpInfo(x, y);  // struct
+        int IEqualityComparer<ExpInfo>.GetHashCode([DisallowNull] ExpInfo obj) => throw new NotImplementedException();
+        bool IEqualityComparer<Type>.Equals([AllowNull] Type x, [AllowNull] Type y) => EqualsType(x, y);     // struct
+        int IEqualityComparer<Type>.GetHashCode([DisallowNull] Type obj) => throw new NotImplementedException();
+        bool IEqualityComparer<PrivateGlobalVarDeclStmt.Element>.Equals([AllowNull] PrivateGlobalVarDeclStmt.Element x, [AllowNull] PrivateGlobalVarDeclStmt.Element y) => EqualsPrivateGlobalVarDeclStmtElement(x, y);
+        int IEqualityComparer<PrivateGlobalVarDeclStmt.Element>.GetHashCode([DisallowNull] PrivateGlobalVarDeclStmt.Element obj) => throw new NotImplementedException();
+        bool IEqualityComparer<LocalVarDecl>.Equals([AllowNull] LocalVarDecl x, [AllowNull] LocalVarDecl y) => EqualsLocalVarDecl(x, y);
+        int IEqualityComparer<LocalVarDecl>.GetHashCode([DisallowNull] LocalVarDecl obj) => throw new NotImplementedException();
+        bool IEqualityComparer<LocalVarDecl.Element>.Equals([AllowNull] LocalVarDecl.Element x, [AllowNull] LocalVarDecl.Element y) => EqualsLocalVarDeclElement(x, y); // struct
+        int IEqualityComparer<LocalVarDecl.Element>.GetHashCode([DisallowNull] LocalVarDecl.Element obj) => throw new NotImplementedException();
+        bool IEqualityComparer<ForStmtInitializer>.Equals([AllowNull] ForStmtInitializer x, [AllowNull] ForStmtInitializer y) => EqualsForStmtInitializer(x, y);
+        int IEqualityComparer<ForStmtInitializer>.GetHashCode([DisallowNull] ForStmtInitializer obj) => throw new NotImplementedException();
+        bool IEqualityComparer<CaptureInfo>.Equals([AllowNull] CaptureInfo x, [AllowNull] CaptureInfo y) => EqualsCaptureInfo(x, y);
+        int IEqualityComparer<CaptureInfo>.GetHashCode([DisallowNull] CaptureInfo obj) => throw new NotImplementedException();
+        bool IEqualityComparer<CaptureInfo.Element>.Equals([AllowNull] CaptureInfo.Element x, [AllowNull] CaptureInfo.Element y) => EqualsCaptureInfoElement(x, y);
+        int IEqualityComparer<CaptureInfo.Element>.GetHashCode([DisallowNull] CaptureInfo.Element obj) => throw new NotImplementedException();
+        bool IEqualityComparer<FuncDeclId>.Equals([AllowNull] FuncDeclId x, [AllowNull] FuncDeclId y) => EqualsFuncDeclId(x, y);
+        int IEqualityComparer<FuncDeclId>.GetHashCode([DisallowNull] FuncDeclId obj) => throw new NotImplementedException();
+        bool IEqualityComparer<NewEnumExp.Elem>.Equals([AllowNull] NewEnumExp.Elem x, [AllowNull] NewEnumExp.Elem y) => EqualsNewEnumExpElem(x, y);
+        int IEqualityComparer<NewEnumExp.Elem>.GetHashCode([DisallowNull] NewEnumExp.Elem obj) => throw new NotImplementedException();
+        bool IEqualityComparer<TypeDecl>.Equals([AllowNull] TypeDecl x, [AllowNull] TypeDecl y) => EqualsTypeDecl(x, y);
+        int IEqualityComparer<TypeDecl>.GetHashCode([DisallowNull] TypeDecl obj) => throw new NotImplementedException();
 
         private static new bool Equals(object x, object y)
         {
@@ -38,75 +71,57 @@ namespace Gum
             throw new InvalidOperationException();
         }
 
-        public bool Equals([AllowNull] Script x, [AllowNull] Script y)
+        bool EqualsScript([AllowNull] Script x, [AllowNull] Script y)
         {
             if (x == null && y == null) return true;
             if (x == null || y == null) return false;
 
-            if (x.Types.Length != y.Types.Length) return false;
-            if (x.Funcs.Length != y.Funcs.Length) return false;
-            if (x.SeqFuncs.Length != y.SeqFuncs.Length) return false;
+            if (x.TypeDecls.Length != y.TypeDecls.Length) return false;
+            if (x.FuncDecls.Length != y.FuncDecls.Length) return false;
             if (x.TopLevelStmts.Length != y.TopLevelStmts.Length) return false;
 
-            if (x.Types.Length != 0)
+            if (x.TypeDecls.Length != 0)
                 throw new NotImplementedException();
 
-            for (int i = 0; i < x.Funcs.Length; i++)
-                if (!Equals(x.Funcs[i], y.Funcs[i]))
-                    return false;
-
-            for (int i = 0; i < x.SeqFuncs.Length; i++)
-                if (!Equals(x.SeqFuncs[i], y.SeqFuncs[i]))
+            for (int i = 0; i < x.FuncDecls.Length; i++)
+                if (!EqualsFuncDecl(x.FuncDecls[i], y.FuncDecls[i]))
                     return false;
             
             for (int i = 0; i < x.TopLevelStmts.Length; i++)
-                if (!Equals(x.TopLevelStmts[i], y.TopLevelStmts[i]))
+                if (!EqualsStmt(x.TopLevelStmts[i], y.TopLevelStmts[i]))
                     return false;
 
             return true;
-        }
-
-        public int GetHashCode([DisallowNull] Script obj)
+        }        
+        
+        bool EqualsFuncDecl([AllowNull] FuncDecl x, [AllowNull] FuncDecl y)
         {
-            throw new System.NotImplementedException();
-        }
+            switch((x, y))
+            {
+                case (null, null):
+                    return true;
 
-        public bool Equals([AllowNull] Func x, [AllowNull] Func y)
-        {
-            if (x == null && y == null) return true;
-            if (x == null || y == null) return false;
+                case (FuncDecl.Normal normalX, FuncDecl.Normal normalY):
+                    return EqualsFuncDeclId(normalX.Id, normalY.Id) &&
+                        normalX.IsThisCall == normalY.IsThisCall &&
+                        normalX.TypeParams.SequenceEqual(normalY.TypeParams) && // string이라 this 없이 호출
+                        normalX.ParamNames.SequenceEqual(normalY.ParamNames) &&
+                        EqualsStmt(normalX.Body, normalY.Body);
 
-            return Equals(x.Id, y.Id) &&
-                x.IsThisCall == y.IsThisCall &&
-                x.TypeParams.SequenceEqual(y.TypeParams) && // string이라 this 없이 호출
-                x.ParamNames.SequenceEqual(y.ParamNames) &&
-                Equals(x.Body, y.Body);
-        }
+                case (FuncDecl.Sequence seqX, FuncDecl.Sequence seqY):
+                    return EqualsFuncDeclId(seqX.Id, seqY.Id) &&
+                        EqualsType(seqX.ElemType, seqX.ElemType) &&
+                        seqX.IsThisCall == seqY.IsThisCall &&
+                        seqX.TypeParams.SequenceEqual(seqY.TypeParams) && // string이라 this를 넣지 않는다
+                        seqX.ParamNames.SequenceEqual(seqY.ParamNames) && // string이라 this를 넣지 않는다
+                        EqualsStmt(seqX.Body, seqY.Body);
 
-        public int GetHashCode([DisallowNull] Func obj)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool Equals([AllowNull] SeqFunc x, [AllowNull] SeqFunc y)
-        {
-            if (x == null && y == null) return true;
-            if (x == null || y == null) return false;
-
-            return Equals(x.Id, y.Id) &&
-                Equals(x.ElemTypeId, y.ElemTypeId) &&
-                x.IsThisCall == y.IsThisCall &&
-                x.TypeParams.SequenceEqual(y.TypeParams) && // string이라 this를 넣지 않는다
-                x.ParamNames.SequenceEqual(y.ParamNames) && // string이라 this를 넣지 않는다
-                Equals(x.Body, y.Body);
-        }
-
-        public int GetHashCode([DisallowNull] SeqFunc obj)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool Equals([AllowNull] Stmt x, [AllowNull] Stmt y)
+                default:
+                    return false;
+            }            
+        }        
+        
+        bool EqualsStmt([AllowNull] Stmt x, [AllowNull] Stmt y)
         {
             switch ((x, y))
             {
@@ -120,30 +135,30 @@ namespace Gum
                     return px.Elems.SequenceEqual(py.Elems, this);
 
                 case (LocalVarDeclStmt localVarDeclX, LocalVarDeclStmt localVarDeclY):
-                    return Equals(localVarDeclX.VarDecl, localVarDeclY.VarDecl);
+                    return EqualsLocalVarDecl(localVarDeclX.VarDecl, localVarDeclY.VarDecl);
 
                 case (IfStmt ifStmtX, IfStmt ifStmtY):
-                    return Equals(ifStmtX.Cond, ifStmtY.Cond) &&
-                        Equals(ifStmtX.Body, ifStmtY.Body) &&
-                        Equals(ifStmtX.ElseBody, ifStmtY.ElseBody);
+                    return EqualsExp(ifStmtX.Cond, ifStmtY.Cond) &&
+                        EqualsStmt(ifStmtX.Body, ifStmtY.Body) &&
+                        EqualsStmt(ifStmtX.ElseBody, ifStmtY.ElseBody);
 
                 case (IfTestClassStmt ifTestClassX, IfTestClassStmt ifTestClassY):
-                    return Equals(ifTestClassX.Target, ifTestClassY.Target) &&
-                        Equals(ifTestClassX.TestType, ifTestClassY.TestType) &&
-                        Equals(ifTestClassX.Body, ifTestClassY.Body) &&
-                        Equals(ifTestClassX.ElseBody, ifTestClassY.ElseBody);
+                    return EqualsExpInfo(ifTestClassX.Target, ifTestClassY.Target) &&
+                        EqualsType(ifTestClassX.TestType, ifTestClassY.TestType) &&
+                        EqualsStmt(ifTestClassX.Body, ifTestClassY.Body) &&
+                        EqualsStmt(ifTestClassX.ElseBody, ifTestClassY.ElseBody);
 
                 case (IfTestEnumStmt ifTestEnumStmtX, IfTestEnumStmt ifTestEnumStmtY):
-                    return Equals(ifTestEnumStmtX.Target, ifTestEnumStmtY.Target) &&
+                    return EqualsExpInfo(ifTestEnumStmtX.Target, ifTestEnumStmtY.Target) &&
                         ifTestEnumStmtX.ElemName == ifTestEnumStmtY.ElemName &&
-                        Equals(ifTestEnumStmtX.Body, ifTestEnumStmtY.Body) &&
-                        Equals(ifTestEnumStmtX.ElseBody, ifTestEnumStmtY.ElseBody);
+                        EqualsStmt(ifTestEnumStmtX.Body, ifTestEnumStmtY.Body) &&
+                        EqualsStmt(ifTestEnumStmtX.ElseBody, ifTestEnumStmtY.ElseBody);
 
                 case (ForStmt forStmtX, ForStmt forStmtY):
-                    return Equals(forStmtX.Initializer, forStmtY.Initializer) &&
-                        Equals(forStmtX.CondExp, forStmtY.CondExp) &&
-                        Equals(forStmtX.ContinueInfo, forStmtY.ContinueInfo) &&
-                        Equals(forStmtX.Body, forStmtY.Body);
+                    return EqualsForStmtInitializer(forStmtX.Initializer, forStmtY.Initializer) &&
+                        EqualsExp(forStmtX.CondExp, forStmtY.CondExp) &&
+                        EqualsExpInfoOptional(forStmtX.ContinueInfo, forStmtY.ContinueInfo) &&
+                        EqualsStmt(forStmtX.Body, forStmtY.Body);
 
                 case (ContinueStmt continueStmtX, ContinueStmt continueStmtY):
                     return true;
@@ -152,7 +167,7 @@ namespace Gum
                     return true;
 
                 case (ReturnStmt returnStmtX, ReturnStmt returnStmtY):
-                    return Equals(returnStmtX.Value, returnStmtY.Value);
+                    return EqualsExp(returnStmtX.Value, returnStmtY.Value);
 
                 case (BlockStmt blockStmtX, BlockStmt blockStmtY):
                     return blockStmtX.Stmts.SequenceEqual(blockStmtY.Stmts, this);
@@ -161,39 +176,34 @@ namespace Gum
                     return true;
 
                 case (ExpStmt expStmtX, ExpStmt expStmtY):
-                    return Equals(expStmtX.ExpInfo, expStmtY.ExpInfo);
+                    return EqualsExpInfo(expStmtX.ExpInfo, expStmtY.ExpInfo);
 
                 case (TaskStmt taskStmtX, TaskStmt taskStmtY):
-                    return Equals(taskStmtX.Body, taskStmtY.Body) &&
-                        Equals(taskStmtX.CaptureInfo, taskStmtY.CaptureInfo);
+                    return EqualsStmt(taskStmtX.Body, taskStmtY.Body) &&
+                        EqualsCaptureInfo(taskStmtX.CaptureInfo, taskStmtY.CaptureInfo);
 
                 case (AwaitStmt awaitStmtX, AwaitStmt awaitStmtY):
-                    return Equals(awaitStmtX.Body, awaitStmtY.Body);
+                    return EqualsStmt(awaitStmtX.Body, awaitStmtY.Body);
 
                 case (AsyncStmt asyncStmtX, AsyncStmt asyncStmtY):
-                    return Equals(asyncStmtX.Body, asyncStmtY.Body) &&
-                        Equals(asyncStmtX.CaptureInfo, asyncStmtY.CaptureInfo);
+                    return EqualsStmt(asyncStmtX.Body, asyncStmtY.Body) &&
+                        EqualsCaptureInfo(asyncStmtX.CaptureInfo, asyncStmtY.CaptureInfo);
 
                 case (ForeachStmt foreachStmtX, ForeachStmt foreachStmtY):
-                    return Equals(foreachStmtX.ElemTypeId, foreachStmtY.ElemTypeId) &&
+                    return EqualsType(foreachStmtX.ElemType, foreachStmtY.ElemType) &&
                         foreachStmtX.ElemName == foreachStmtY.ElemName &&
-                        Equals(foreachStmtX.ObjInfo, foreachStmtY.ObjInfo) &&
-                        Equals(foreachStmtX.Body, foreachStmtY.Body);
+                        EqualsExpInfo(foreachStmtX.IteratorInfo, foreachStmtY.IteratorInfo) &&
+                        EqualsStmt(foreachStmtX.Body, foreachStmtY.Body);
 
                 case (YieldStmt yieldStmtX, YieldStmt yieldStmtY):
-                    return Equals(yieldStmtX.Value, yieldStmtY.Value);
+                    return EqualsExp(yieldStmtX.Value, yieldStmtY.Value);
 
                 default:
                     return false;
             }
         }
-
-        public int GetHashCode([DisallowNull] Stmt obj)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool Equals([AllowNull] Exp x, [AllowNull] Exp y)
+        
+        bool EqualsExp([AllowNull] Exp x, [AllowNull] Exp y)
         {
             switch ((x, y))
             {
@@ -201,7 +211,7 @@ namespace Gum
                     return true;
 
                 case (ExternalGlobalVarExp externalGlobalVarExpX, ExternalGlobalVarExp externalGlobalVarExpY): 
-                    return Equals(externalGlobalVarExpX.VarId, externalGlobalVarExpY.VarId);
+                    return EqualsExternalGlobalVarId(externalGlobalVarExpX.VarId, externalGlobalVarExpY.VarId);
 
                 case (PrivateGlobalVarExp privateGlobalVarExpX, PrivateGlobalVarExp privateGlobalVarExpY):
                     return privateGlobalVarExpX.Name == privateGlobalVarExpY.Name;
@@ -220,64 +230,64 @@ namespace Gum
 
                 case (CallInternalUnaryOperatorExp callInternalUnaryOperatorExpX, CallInternalUnaryOperatorExp callInternalUnaryOperatorExpY):
                     return callInternalUnaryOperatorExpX.Operator == callInternalUnaryOperatorExpY.Operator &&
-                        Equals(callInternalUnaryOperatorExpX.Operand, callInternalUnaryOperatorExpY.Operand);
+                        EqualsExpInfo(callInternalUnaryOperatorExpX.Operand, callInternalUnaryOperatorExpY.Operand);
 
                 case (CallInternalUnaryAssignOperator callInternalUnaryAssignOperatorX, CallInternalUnaryAssignOperator callInternalUnaryAssignOperatorY):
                     return callInternalUnaryAssignOperatorX.Operator == callInternalUnaryAssignOperatorY.Operator &&
-                        Equals(callInternalUnaryAssignOperatorX.Operand, callInternalUnaryAssignOperatorY.Operand);
+                        EqualsExp(callInternalUnaryAssignOperatorX.Operand, callInternalUnaryAssignOperatorY.Operand);
 
                 case (CallInternalBinaryOperatorExp callInternalBinaryOperatorExpX, CallInternalBinaryOperatorExp callInternalBinaryOperatorExpY):
                     return callInternalBinaryOperatorExpX.Operator == callInternalBinaryOperatorExpY.Operator &&
-                        Equals(callInternalBinaryOperatorExpX.Operand0, callInternalBinaryOperatorExpY.Operand0) &&
-                        Equals(callInternalBinaryOperatorExpX.Operand1, callInternalBinaryOperatorExpY.Operand1);
+                        EqualsExpInfo(callInternalBinaryOperatorExpX.Operand0, callInternalBinaryOperatorExpY.Operand0) &&
+                        EqualsExpInfo(callInternalBinaryOperatorExpX.Operand1, callInternalBinaryOperatorExpY.Operand1);
 
                 case (AssignExp assignExpX, AssignExp assignExpY):
-                    return Equals(assignExpX.Dest, assignExpY.Dest) &&
-                        Equals(assignExpX.Src, assignExpY.Src);
+                    return EqualsExp(assignExpX.Dest, assignExpY.Dest) &&
+                        EqualsExp(assignExpX.Src, assignExpY.Src);
 
                 case (CallFuncExp callFuncExpX, CallFuncExp callFuncExpY):
-                    return Equals(callFuncExpX.FuncId, callFuncExpY.FuncId) && 
+                    return EqualsFuncDeclId(callFuncExpX.FuncDeclId, callFuncExpY.FuncDeclId) && 
                         callFuncExpX.TypeArgs.SequenceEqual(callFuncExpY.TypeArgs, this) &&
-                        Equals(callFuncExpX.Instance, callFuncExpY.Instance) &&
+                        EqualsExpInfoOptional(callFuncExpX.Instance, callFuncExpY.Instance) &&
                         callFuncExpX.Args.SequenceEqual(callFuncExpY.Args, this);
 
                 case (CallSeqFuncExp callSeqFuncExpX, CallSeqFuncExp callSeqFuncExpY):
-                    return Equals(callSeqFuncExpX.SeqFuncId, callSeqFuncExpY.SeqFuncId) &&
+                    return EqualsFuncDeclId(callSeqFuncExpX.FuncDeclId, callSeqFuncExpY.FuncDeclId) &&
                         callSeqFuncExpX.TypeArgs.SequenceEqual(callSeqFuncExpY.TypeArgs, this) &&
-                        Equals(callSeqFuncExpX.Instance, callSeqFuncExpY.Instance) &&
+                        EqualsExpInfoOptional(callSeqFuncExpX.Instance, callSeqFuncExpY.Instance) &&
                         callSeqFuncExpX.Args.SequenceEqual(callSeqFuncExpY.Args, this);
 
                 case (CallValueExp callValueExpX, CallValueExp callValueExpY):
-                    return Equals(callValueExpX.Callable, callValueExpY.Callable) &&
+                    return EqualsExpInfo(callValueExpX.Callable, callValueExpY.Callable) &&
                         callValueExpX.Args.SequenceEqual(callValueExpY.Args, this);
 
                 case (LambdaExp lambdaExpX, LambdaExp lambdaExpY):
-                    return Equals(lambdaExpX.CaptureInfo, lambdaExpY.CaptureInfo) &&
+                    return EqualsCaptureInfo(lambdaExpX.CaptureInfo, lambdaExpY.CaptureInfo) &&
                         lambdaExpX.ParamNames.SequenceEqual(lambdaExpY.ParamNames) && // string이므로 this를 넣지 않는다
-                        Equals(lambdaExpX.Body, lambdaExpY.Body);
+                        EqualsStmt(lambdaExpX.Body, lambdaExpY.Body);
 
                 case (ListIndexerExp listIndexerExpX, ListIndexerExp listIndexerExpY):
-                    return Equals(listIndexerExpX.ListInfo, listIndexerExpY.ListInfo) &&
-                        Equals(listIndexerExpX.IndexInfo, listIndexerExpY.IndexInfo);
+                    return EqualsExpInfo(listIndexerExpX.ListInfo, listIndexerExpY.ListInfo) &&
+                        EqualsExpInfo(listIndexerExpX.IndexInfo, listIndexerExpY.IndexInfo);
 
                 case (StaticMemberExp staticMemberExpX, StaticMemberExp staticMemberExpY):
-                    return Equals(staticMemberExpX.TypeId, staticMemberExpY.TypeId) &&
+                    return EqualsType(staticMemberExpX.Type, staticMemberExpY.Type) &&
                         staticMemberExpX.MemberName == staticMemberExpY.MemberName;
 
                 case (StructMemberExp structMemberExpX, StructMemberExp structMemberExpY):
-                    return Equals(structMemberExpX.Instance, structMemberExpY.Instance) &&
+                    return EqualsExp(structMemberExpX.Instance, structMemberExpY.Instance) &&
                         structMemberExpX.MemberName == structMemberExpY.MemberName;
 
                 case (ClassMemberExp classMemberExpX, ClassMemberExp classMemberExpY):
-                    return Equals(classMemberExpX.Instance, classMemberExpY.Instance) &&
+                    return EqualsExp(classMemberExpX.Instance, classMemberExpY.Instance) &&
                         classMemberExpX.MemberName == classMemberExpY.MemberName;
 
                 case (EnumMemberExp enumMemberExpX, EnumMemberExp enumMemberExpY):
-                    return Equals(enumMemberExpX.Instance, enumMemberExpY.Instance) &&
+                    return EqualsExp(enumMemberExpX.Instance, enumMemberExpY.Instance) &&
                         enumMemberExpX.MemberName == enumMemberExpY.MemberName;
 
                 case (ListExp listExpX, ListExp listExpY):
-                    return Equals(listExpX.ElemTypeId, listExpY.ElemTypeId) &&
+                    return EqualsType(listExpX.ElemType, listExpY.ElemType) &&
                         listExpX.Elems.SequenceEqual(listExpY.Elems, this);
 
                 case (NewEnumExp newEnumExpX, NewEnumExp newEnumExpY):
@@ -285,26 +295,19 @@ namespace Gum
                         newEnumExpX.Members.SequenceEqual(newEnumExpY.Members, this);
 
                 case (NewStructExp newStructExpX, NewStructExp newStructExpY):
-                    return Equals(newStructExpX.TypeId, newStructExpY.TypeId) &&
+                    return EqualsType(newStructExpX.Type, newStructExpY.Type) &&
                         newStructExpX.Args.SequenceEqual(newStructExpY.Args, this);
 
                 case (NewClassExp newClassExpX, NewClassExp newClassExpY):
-                    return Equals(newClassExpX.TypeId, newClassExpY.TypeId) &&
-                        newClassExpX.Args.SequenceEqual(newClassExpY.Args, this);
-
-                
+                    return EqualsType(newClassExpX.Type, newClassExpY.Type) &&
+                        newClassExpX.Args.SequenceEqual(newClassExpY.Args, this);                
 
                 default:
                     return false;
             }
         }
-
-        public int GetHashCode([DisallowNull] Exp obj)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool Equals([AllowNull] StringExpElement x, [AllowNull] StringExpElement y)
+        
+        bool EqualsStringExpElement([AllowNull] StringExpElement x, [AllowNull] StringExpElement y)
         {
             switch((x, y))
             {
@@ -315,82 +318,58 @@ namespace Gum
                     return tx.Text == ty.Text;
 
                 case (ExpStringExpElement ex, ExpStringExpElement ey):
-                    return Equals(ex.Exp, ey.Exp);
+                    return EqualsExpInfo(ex.Exp, ey.Exp);
 
                 default:
                     return false;
             }
         }
-
-        public int GetHashCode([DisallowNull] StringExpElement obj)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool Equals([AllowNull] ExpInfo? x, [AllowNull] ExpInfo? y)
+        
+        bool EqualsExpInfoOptional([AllowNull] ExpInfo? x, [AllowNull] ExpInfo? y)
         {
             if (x == null && y == null) return true;
             if (x == null || y == null) return false;
 
-            return Equals(x.Value, y.Value);
-        }
+            return EqualsExpInfo(x.Value, y.Value);
+        }        
 
-        public int GetHashCode([DisallowNull] ExpInfo? obj)
+        bool EqualsType([AllowNull] Type x, [AllowNull] Type y)
         {
-            throw new NotImplementedException();
+            return EqualsTypeDeclId(x.DeclId, y.DeclId) &&
+                x.TypeArgs.SequenceEqual(y.TypeArgs, this);
         }
 
-        public bool Equals([AllowNull] TypeId x, [AllowNull] TypeId y)
+        bool EqualsTypeDeclId([AllowNull] TypeDeclId x, [AllowNull] TypeDeclId y)
         {
             return x.Value == y.Value;
         }
 
-        public int GetHashCode([DisallowNull] TypeId obj)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool Equals([AllowNull] PrivateGlobalVarDeclStmt.Element x, [AllowNull] PrivateGlobalVarDeclStmt.Element y)
+        bool EqualsPrivateGlobalVarDeclStmtElement([AllowNull] PrivateGlobalVarDeclStmt.Element x, [AllowNull] PrivateGlobalVarDeclStmt.Element y)
         {
             if (x == null && y == null) return true;
             if (x == null || y == null) return false;
 
             return x.Name == y.Name &&
-                Equals(x.TypeId, y.TypeId) &&
-                Equals(x.InitExp, y.InitExp);
+                EqualsType(x.Type, y.Type) &&
+                EqualsExp(x.InitExp, y.InitExp);
         }
 
-        public int GetHashCode([DisallowNull] PrivateGlobalVarDeclStmt.Element obj)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool Equals([AllowNull] LocalVarDecl x, [AllowNull] LocalVarDecl y)
+        bool EqualsLocalVarDecl([AllowNull] LocalVarDecl x, [AllowNull] LocalVarDecl y)
         {
             if (x == null && y == null) return true;
             if (x == null || y == null) return false;
 
             return x.Elems.SequenceEqual(y.Elems, this);
         }
-
-        public int GetHashCode([DisallowNull] LocalVarDecl obj)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool Equals([AllowNull] LocalVarDecl.Element x, [AllowNull] LocalVarDecl.Element y)
+        
+        bool EqualsLocalVarDeclElement([AllowNull] LocalVarDecl.Element x, [AllowNull] LocalVarDecl.Element y)
         {
             return x.Name == y.Name &&
-                Equals(x.TypeId, y.TypeId) &&
-                Equals(x.InitExp, y.InitExp);
+                EqualsType(x.Type, y.Type) &&
+                EqualsExp(x.InitExp, y.InitExp);
         }
-
-        public int GetHashCode([DisallowNull] LocalVarDecl.Element obj)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool Equals([AllowNull] ForStmtInitializer x, [AllowNull] ForStmtInitializer y)
+        
+        bool EqualsForStmtInitializer([AllowNull] ForStmtInitializer x, [AllowNull] ForStmtInitializer y)
         {
             switch((x, y))
             {
@@ -398,21 +377,16 @@ namespace Gum
                     return true;
 
                 case (ExpForStmtInitializer ex, ExpForStmtInitializer ey):
-                    return Equals(ex.ExpInfo, ey.ExpInfo);
+                    return EqualsExpInfo(ex.ExpInfo, ey.ExpInfo);
 
                 case (VarDeclForStmtInitializer vx, VarDeclForStmtInitializer vy):
-                    return Equals(vx.VarDecl, vy.VarDecl);
+                    return EqualsLocalVarDecl(vx.VarDecl, vy.VarDecl);
             }
 
             return false;
         }
-
-        public int GetHashCode([DisallowNull] ForStmtInitializer obj)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool Equals([AllowNull] CaptureInfo x, [AllowNull] CaptureInfo y)
+        
+        bool EqualsCaptureInfo([AllowNull] CaptureInfo x, [AllowNull] CaptureInfo y)
         {
             if (x == null && y == null) return true;
             if (x == null || y == null) return false;
@@ -420,65 +394,40 @@ namespace Gum
             return x.bShouldCaptureThis == y.bShouldCaptureThis &&
                 x.Captures.SequenceEqual(y.Captures, this);
         }
-
-        public int GetHashCode([DisallowNull] CaptureInfo obj)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool Equals([AllowNull] CaptureInfo.Element x, [AllowNull] CaptureInfo.Element y)
+        
+        bool EqualsCaptureInfoElement([AllowNull] CaptureInfo.Element x, [AllowNull] CaptureInfo.Element y)
         {
             if (x == null && y == null) return true;
             if (x == null || y == null) return false;
 
-            return Equals(x.TypeId, y.TypeId) &&
+            return EqualsType(x.Type, y.Type) &&
                 x.LocalVarName == y.LocalVarName;
         }
 
-        public int GetHashCode([DisallowNull] CaptureInfo.Element obj)
+        bool EqualsExpInfo([AllowNull] ExpInfo x, [AllowNull] ExpInfo y)
         {
-            throw new NotImplementedException();
+            return EqualsExp(x.Exp, y.Exp) && EqualsType(x.Type, y.Type);
         }
-
-        public bool Equals([AllowNull] ExpInfo x, [AllowNull] ExpInfo y)
-        {
-            return Equals(x.Exp, y.Exp) && Equals(x.TypeId, y.TypeId);
-        }
-
-        public int GetHashCode([DisallowNull] ExpInfo obj)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool Equals([AllowNull] FuncId x, [AllowNull] FuncId y)
+        
+        bool EqualsFuncDeclId([AllowNull] FuncDeclId x, [AllowNull] FuncDeclId y)
         {
             return x.Value == y.Value;
-        }
+        }        
 
-        public int GetHashCode([DisallowNull] FuncId obj)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool Equals([AllowNull] SeqFuncId x, [AllowNull] SeqFuncId y)
-        {
-            return x.Value == y.Value;
-        }
-
-        public int GetHashCode([DisallowNull] SeqFuncId obj)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool Equals([AllowNull] NewEnumExp.Elem x, [AllowNull] NewEnumExp.Elem y)
+        bool EqualsNewEnumExpElem([AllowNull] NewEnumExp.Elem x, [AllowNull] NewEnumExp.Elem y)
         {
             return x.Name == y.Name &&
-                Equals(x.ExpInfo, y.ExpInfo);
+                EqualsExpInfo(x.ExpInfo, y.ExpInfo);
         }
-
-        public int GetHashCode([DisallowNull] NewEnumExp.Elem obj)
+        
+        bool EqualsTypeDecl([AllowNull] TypeDecl x, [AllowNull] TypeDecl y)
         {
             throw new NotImplementedException();
-        }        
+        }
+
+        bool EqualsExternalGlobalVarId([AllowNull] ExternalGlobalVarId x, [AllowNull] ExternalGlobalVarId y)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

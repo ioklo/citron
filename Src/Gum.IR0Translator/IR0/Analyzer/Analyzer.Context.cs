@@ -44,9 +44,8 @@ namespace Gum.IR0
             private ImmutableDictionary<S.EnumDecl, EnumInfo> enumInfosByDecl;
             private TypeExpTypeValueService typeExpTypeValueService;
             private Dictionary<string, PrivateGlobalVarInfo> privateGlobalVarInfos;
-            private List<Type> types;
-            private List<Func> funcs;
-            private List<SeqFunc> seqFuncs;
+            private List<TypeDecl> typeDecls;
+            private List<FuncDecl> funcDecls;
 
             public Context(
                 ModuleInfoService moduleInfoService,
@@ -69,10 +68,9 @@ namespace Gum.IR0
                 bGlobalScope = true;
                 bInLoop = false;
                 privateGlobalVarInfos = new Dictionary<string, PrivateGlobalVarInfo>();
-
-                types = new List<Type>();
-                funcs = new List<Func>();
-                seqFuncs = new List<SeqFunc>();
+                
+                typeDecls = new List<TypeDecl>();
+                funcDecls = new List<FuncDecl>();
             }
 
             public bool DoesLocalVarNameExistInScope(string name)
@@ -130,7 +128,7 @@ namespace Gum.IR0
                 }
             }
 
-            public TypeId GetTypeId(TypeValue typeValue)
+            public Type GetType(TypeValue typeValue)
             {
                 // 일단 predefined부터 걸러냅니다.
                 if (typeValue is TypeValue.Normal ntv)
@@ -138,15 +136,27 @@ namespace Gum.IR0
                     if (ntv.TypeArgList.GetTotalLength() == 0)
                     {
                         if (ntv.TypeId == ModuleItemId.Make("bool"))
-                            return TypeId.Bool;
+                            return Type.Bool;
 
                         else if (ntv.TypeId == ModuleItemId.Make("int"))
-                            return TypeId.Int;
+                            return Type.Int;
 
-                        if (ntv.TypeId == ModuleItemId.Make("string"))
-                            return TypeId.String;
+                        else if (ntv.TypeId == ModuleItemId.Make("string"))
+                            return Type.String;
+                        else
+                            throw new NotImplementedException();
+                    }
+                    else if (ntv.TypeArgList.GetTotalLength() == 1)
+                    {   
+                        if (ntv.TypeId == ModuleItemId.Make("List", 1))
+                        {
+                            var elemType = GetType(ntv.TypeArgList.Args[0]);
+                            return Type.List(elemType);
+                        }                        
                     }
                 }
+                else if (typeValue is TypeValue.Void)
+                    return Type.Void;
 
                 throw new NotImplementedException();
             }
@@ -154,11 +164,6 @@ namespace Gum.IR0
             public IEnumerable<LocalVarOutsideLambdaInfo> GetLocalVarsOutsideLambda()
             {
                 return curFunc.GetLocalVarsOutsideLambda();
-            }
-
-            public FuncId GetFuncId(FuncValue funcValue)
-            {
-                throw new NotImplementedException();
             }
 
             public (bool IsSuccess, TypeValue? RetTypeValue) ExecInLambdaScope(TypeValue? lambdaRetTypeValue, Func<bool> action)
@@ -341,16 +346,26 @@ namespace Gum.IR0
                 return false;
             }
 
-            public void AddFunc(bool bThisCall, IEnumerable<string> typeParams, IEnumerable<string> paramNames, Stmt body)
+            public void AddFuncDecl(bool bThisCall, IEnumerable<string> typeParams, IEnumerable<string> paramNames, Stmt body)
             {
-                var funcId = new FuncId(funcs.Count);
-                funcs.Add(new Func(funcId, bThisCall, typeParams, paramNames, body));
+                var id = new FuncDeclId(funcDecls.Count);
+                funcDecls.Add(new FuncDecl.Normal(id, bThisCall, typeParams, paramNames, body));
             }
 
-            public void AddSeqFunc(TypeId retTypeId, bool bThisCall, IEnumerable<string> typeParams, IEnumerable<string> paramNames, Stmt body)
+            public IEnumerable<TypeDecl> GetTypeDecls()
             {
-                var seqFuncId = new SeqFuncId(seqFuncs.Count);
-                seqFuncs.Add(new SeqFunc(seqFuncId, retTypeId, bThisCall, typeParams, paramNames,body));
+                return typeDecls;
+            }
+
+            public IEnumerable<FuncDecl> GetFuncDecls()
+            {
+                return funcDecls;
+            }
+
+            public void AddSeqFunc(Type retTypeId, bool bThisCall, IEnumerable<string> typeParams, IEnumerable<string> paramNames, Stmt body)
+            {
+                var id = new FuncDeclId(funcDecls.Count);
+                funcDecls.Add(new FuncDecl.Sequence(id, retTypeId, bThisCall, typeParams, paramNames,body));
             }
 
             public bool GetIdentifierInfo(
@@ -384,23 +399,7 @@ namespace Gum.IR0
                 outIdInfo = null;
                 return false;
             }
-
             
-            public IEnumerable<Type> GetTypes()
-            {
-                return types;
-            }
-
-            public IEnumerable<Func> GetFuncs()
-            {
-                return funcs;
-            }
-
-            public IEnumerable<SeqFunc> GetSeqFuncs()
-            {
-                return seqFuncs;
-            }
-
             // curFunc
             public void AddLocalVarInfo(string name, TypeValue typeValue)
             {
@@ -425,6 +424,11 @@ namespace Gum.IR0
             public bool DoesPrivateGlobalVarNameExist(string name)
             {
                 return privateGlobalVarInfos.ContainsKey(name);
+            }
+
+            public FuncDeclId GetFuncDeclId(ModuleItemId funcId)
+            {
+                throw new NotImplementedException();
             }
 
             // 1. exp가 무슨 타입을 가지는지

@@ -79,98 +79,24 @@ namespace Gum.LexicalAnalysis
     {
         public int Value { get; }
         public IntToken(int value) { Value = value; }
-
-        public override bool Equals(object? obj)
-        {
-            return obj is IntToken token &&
-                   Value == token.Value;
-        }
-
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(Value);
-        }
-
-        public static bool operator ==(IntToken? left, IntToken? right)
-        {
-            return EqualityComparer<IntToken?>.Default.Equals(left, right);
-        }
-
-        public static bool operator !=(IntToken? left, IntToken? right)
-        {
-            return !(left == right);
-        }
     }
 
     public class BoolToken : Token 
     { 
         public bool Value { get; }
         public BoolToken(bool value) { Value = value; }
-
-        public override bool Equals(object? obj)
-        {
-            return obj is BoolToken token &&
-                   Value == token.Value;
-        }
-
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(Value);
-        }
-
-        public static bool operator ==(BoolToken? left, BoolToken? right)
-        {
-            return EqualityComparer<BoolToken?>.Default.Equals(left, right);
-        }
-
-        public static bool operator !=(BoolToken? left, BoolToken? right)
-        {
-            return !(left == right);
-        }
     }
 
     public class TextToken : Token
     {
         public string Text { get; }
         public TextToken(string text) { Text = text; }
-
-        public override bool Equals(object? obj)
-        {
-            return obj is TextToken token &&
-                   Text == token.Text;
-        }
-
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(Text);
-        }
-
-        public static bool operator ==(TextToken? left, TextToken? right)
-        {
-            return EqualityComparer<TextToken?>.Default.Equals(left, right);
-        }
-
-        public static bool operator !=(TextToken? left, TextToken? right)
-        {
-            return !(left == right);
-        }
     }
     
     public class IdentifierToken : Token
     {
         public string Value { get; }
         public IdentifierToken(string value) { Value = value; }
-
-        public override bool Equals(object? obj)
-        {
-            return obj is IdentifierToken token &&
-                   Value == token.Value;
-        }
-
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(Value);
-        }
     }
 
     // TODO: QuickSC Token으로 내리기

@@ -153,14 +153,14 @@ namespace Gum.IR0
     // F(2, 3)
     public class CallFuncExp : Exp
     {
-        public FuncId FuncId { get; }
-        public ImmutableArray<TypeId> TypeArgs { get; }
+        public FuncDeclId FuncDeclId { get; }
+        public ImmutableArray<Type> TypeArgs { get; }
         public ExpInfo? Instance { get; }
         public ImmutableArray<ExpInfo> Args { get; }
 
-        public CallFuncExp(FuncId funcId, IEnumerable<TypeId> typeArgs, ExpInfo? instance, IEnumerable<ExpInfo> args)
+        public CallFuncExp(FuncDeclId funcDeclId, IEnumerable<Type> typeArgs, ExpInfo? instance, IEnumerable<ExpInfo> args)
         {
-            FuncId = funcId;
+            FuncDeclId = funcDeclId;
             TypeArgs = typeArgs.ToImmutableArray();
             Instance = instance;
             Args = args.ToImmutableArray();
@@ -169,14 +169,14 @@ namespace Gum.IR0
 
     public class CallSeqFuncExp : Exp
     {
-        public SeqFuncId SeqFuncId { get; }
-        public ImmutableArray<TypeId> TypeArgs { get; }
+        public FuncDeclId FuncDeclId{ get; }
+        public ImmutableArray<Type> TypeArgs { get; }
         public ExpInfo? Instance { get; }
         public ImmutableArray<ExpInfo> Args { get; }
 
-        public CallSeqFuncExp(SeqFuncId seqFuncId, IEnumerable<TypeId> typeArgs, ExpInfo? instance, IEnumerable<ExpInfo> args)
+        public CallSeqFuncExp(FuncDeclId funcDeclId, IEnumerable<Type> typeArgs, ExpInfo? instance, IEnumerable<ExpInfo> args)
         {
-            SeqFuncId = seqFuncId;
+            FuncDeclId = funcDeclId;
             TypeArgs = typeArgs.ToImmutableArray();
             Instance = instance;
             Args = args.ToImmutableArray();
@@ -226,12 +226,12 @@ namespace Gum.IR0
 
     public class StaticMemberExp : Exp
     {
-        public TypeId TypeId { get; }
+        public Type Type { get; }
         public string MemberName { get; }
 
-        public StaticMemberExp(TypeId typeId, string memberName)
+        public StaticMemberExp(Type type, string memberName)
         {
-            TypeId = typeId;
+            Type = type;
             MemberName = memberName;
         }
     }
@@ -274,12 +274,12 @@ namespace Gum.IR0
     // [1, 2, 3]
     public class ListExp : Exp
     {
-        public TypeId ElemTypeId { get; }
+        public Type ElemType { get; }
         public ImmutableArray<Exp> Elems { get; }
 
-        public ListExp(TypeId elemTypeId, IEnumerable<Exp> elems)
+        public ListExp(Type elemType, IEnumerable<Exp> elems)
         {
-            ElemTypeId = elemTypeId;
+            ElemType = elemType;
             Elems = elems.ToImmutableArray();
         }
     }
@@ -313,14 +313,14 @@ namespace Gum.IR0
     // new S(2, 3, 4);
     public class NewStructExp : Exp
     {
-        public TypeId TypeId { get; }
+        public Type Type { get; }
 
         // TODO: params, out, 등 처리를 하려면 Exp가 아니라 다른거여야 한다
         public ImmutableArray<ExpInfo> Args { get; }
 
-        public NewStructExp(TypeId typeId, IEnumerable<ExpInfo> args)
+        public NewStructExp(Type type, IEnumerable<ExpInfo> args)
         {
-            TypeId = typeId;
+            Type = type;
             Args = args.ToImmutableArray();
         }
     }
@@ -328,14 +328,14 @@ namespace Gum.IR0
     // new C(2, 3, 4);
     public class NewClassExp : Exp
     {
-        public TypeId TypeId { get; }
+        public Type Type { get; }
 
         // TODO: params, out, 등 처리를 하려면 Exp가 아니라 다른거여야 한다
         public ImmutableArray<ExpInfo> Args { get; }
         
-        public NewClassExp(TypeId typeId, IEnumerable<ExpInfo> args)
+        public NewClassExp(Type type, IEnumerable<ExpInfo> args)
         {
-            TypeId = typeId;
+            Type = type;
             Args = args.ToImmutableArray();
         }
     }

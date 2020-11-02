@@ -32,7 +32,7 @@ namespace Gum.IR0
                 this.typeSkeletonsByTypeId = typeSkeletons.ToImmutableDictionary(skeleton => skeleton.TypeId);
                 this.errorCollector = errorCollector;
 
-                typeValuesByTypeExp = new Dictionary<S.TypeExp, TypeValue>(RefEqComparer<S.TypeExp>.Instance);
+                typeValuesByTypeExp = new Dictionary<S.TypeExp, TypeValue>();
                 typeEnv = ImmutableDictionary<string, TypeValue.TypeVar>.Empty;
             }            
 
@@ -68,7 +68,7 @@ namespace Gum.IR0
 
             public ImmutableDictionary<S.TypeExp, TypeValue> GetTypeValuesByTypeExp()
             {
-                return typeValuesByTypeExp.ToImmutableWithComparer();
+                return typeValuesByTypeExp.ToImmutableDictionary();
             }
 
             public bool GetTypeVar(string name, [NotNullWhen(true)] out TypeValue.TypeVar? typeValue)

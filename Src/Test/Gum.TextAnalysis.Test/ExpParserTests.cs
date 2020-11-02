@@ -30,7 +30,7 @@ namespace Gum
 
             var expResult = await expParser.ParseExpAsync(context);
 
-            Assert.Equal(new IdentifierExp("x"), expResult.Elem);
+            Assert.Equal(new IdentifierExp("x"), expResult.Elem, SyntaxEqualityComparer.Instance);
         }
 
         [Fact]
@@ -48,7 +48,7 @@ namespace Gum
                     new ExpStringExpElement(new IdentifierExp("ddd")))),
                 new TextStringExpElement(" ddd"));
 
-            Assert.Equal(expected, expResult.Elem);
+            Assert.Equal(expected, expResult.Elem, SyntaxEqualityComparer.Instance);
         }
 
         [Theory]
@@ -62,7 +62,7 @@ namespace Gum
 
             var expected = new BoolLiteralExp(bExpectedResult);
 
-            Assert.Equal(expected, expResult.Elem);
+            Assert.Equal(expected, expResult.Elem, SyntaxEqualityComparer.Instance);
         }
 
         [Fact]
@@ -76,7 +76,7 @@ namespace Gum
 
             var expected = new IntLiteralExp(1234);
 
-            Assert.Equal(expected, expResult.Elem);
+            Assert.Equal(expected, expResult.Elem, SyntaxEqualityComparer.Instance);
         }
 
         [Fact]
@@ -92,7 +92,7 @@ namespace Gum
                     new CallExp(new UnaryOpExp(UnaryOpKind.PostfixInc, new IdentifierExp("c")), Enumerable.Empty<TypeExp>(), new IdentifierExp("e"), new IdentifierExp("f")),
                     new IdentifierExp("d")));
 
-            Assert.Equal(expected, expResult.Elem);
+            Assert.Equal(expected, expResult.Elem, SyntaxEqualityComparer.Instance);
         }        
 
         [Fact]
@@ -113,7 +113,7 @@ namespace Gum
                             new LambdaExpParam(new IdTypeExp("int"), "d"))),
                     new LambdaExpParam(null, "b")));
 
-            Assert.Equal(expected, expResult.Elem);
+            Assert.Equal(expected, expResult.Elem, SyntaxEqualityComparer.Instance);
         }
 
         [Fact]
@@ -135,7 +135,7 @@ namespace Gum
                     "d",
                     Enumerable.Empty<TypeExp>());
 
-            Assert.Equal(expected, expResult.Elem);
+            Assert.Equal(expected, expResult.Elem, SyntaxEqualityComparer.Instance);
         }
 
         [Fact]
@@ -152,7 +152,7 @@ namespace Gum
                 new IntLiteralExp(2),
                 new IntLiteralExp(3));
                 
-            Assert.Equal(expected, expResult.Elem);
+            Assert.Equal(expected, expResult.Elem, SyntaxEqualityComparer.Instance);
         }
 
         [Fact]
@@ -172,7 +172,7 @@ namespace Gum
                     new StringExp(new TextStringExpElement("string")),
                 });
 
-            Assert.Equal(expected, expResult.Elem);
+            Assert.Equal(expected, expResult.Elem, SyntaxEqualityComparer.Instance);
         }
 
         [Fact]
@@ -208,7 +208,7 @@ namespace Gum
                             new IntLiteralExp(3)),
                         new BoolLiteralExp(false))));
 
-            Assert.Equal(expected, expResult.Elem);
+            Assert.Equal(expected, expResult.Elem, SyntaxEqualityComparer.Instance);
         }
     }
 }

@@ -61,7 +61,7 @@ namespace Gum.IR0.Runtime
 
     //    public TypeInst GetTypeInst(DomainService domainService, TypeValue.Normal typeValue)
     //    {
-    //        var templ = templatesById[typeValue.TypeId];
+    //        var templ = templatesById[typeValue.Type];
 
     //        if (templ is ScriptTemplate.Enum enumTempl)
     //        {

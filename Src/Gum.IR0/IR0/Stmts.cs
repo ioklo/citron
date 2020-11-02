@@ -36,14 +36,14 @@ namespace Gum.IR0
         public class Element
         {
             public string Name { get; }
-            public TypeId TypeId { get; }
+            public Type Type { get; }
 
             public Exp? InitExp { get; }
             
-            public Element(string name, TypeId typeId, Exp? initExp)
+            public Element(string name, Type type, Exp? initExp)
             {
                 Name = name;
-                TypeId = typeId;
+                Type = type;
                 InitExp = initExp;
             }
         }
@@ -79,11 +79,11 @@ namespace Gum.IR0
     public class IfTestClassStmt : Stmt
     {
         public ExpInfo Target { get; }
-        public TypeId TestType { get; }
+        public Type TestType { get; }
         public Stmt Body { get; }
         public Stmt? ElseBody { get; }
 
-        public IfTestClassStmt(ExpInfo target, TypeId testType, Stmt body, Stmt? elseBody)
+        public IfTestClassStmt(ExpInfo target, Type testType, Stmt body, Stmt? elseBody)
         {
             Target = target;
             TestType = testType;
@@ -202,21 +202,21 @@ namespace Gum.IR0
 
     public class ForeachStmt : Stmt
     {
-        public TypeId ElemTypeId { get; set; }
+        public Type ElemType { get; set; }
         public string ElemName { get; }
 
-        public ExpInfo ObjInfo { get; }        
+        public ExpInfo IteratorInfo { get; }        
         public Stmt Body { get; }
 
         public ForeachStmt(
-            TypeId elemTypeId,
+            Type elemType,
             string elemName, 
-            ExpInfo objInfo, 
+            ExpInfo iteratorInfo, 
             Stmt body)
         {
-            ElemTypeId = elemTypeId;
+            ElemType = elemType;
             ElemName = elemName;
-            ObjInfo = objInfo;
+            IteratorInfo = iteratorInfo;
             Body = body;
         }
     }

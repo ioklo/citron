@@ -27,37 +27,5 @@ namespace Gum.Syntax
             BaseTypes = baseTypes.ToImmutableArray();
             Elems = elems.ToImmutableArray();
         }
-
-        public override bool Equals(object? obj)
-        {
-            return obj is StructDecl decl &&
-                   AccessModifier == decl.AccessModifier &&
-                   Name == decl.Name &&
-                   SeqEqComparer.Equals(TypeParams, decl.TypeParams) &&
-                   SeqEqComparer.Equals(BaseTypes, decl.BaseTypes) &&
-                   SeqEqComparer.Equals(Elems, decl.Elems);
-        }
-
-        public override int GetHashCode()
-        {
-            var hashCode = new HashCode();
-            hashCode.Add(AccessModifier);
-            hashCode.Add(Name);
-            SeqEqComparer.AddHash(ref hashCode, TypeParams);
-            SeqEqComparer.AddHash(ref hashCode, BaseTypes);
-            SeqEqComparer.AddHash(ref hashCode, Elems);
-
-            return hashCode.ToHashCode();
-        }
-
-        public static bool operator ==(StructDecl? left, StructDecl? right)
-        {
-            return EqualityComparer<StructDecl?>.Default.Equals(left, right);
-        }
-
-        public static bool operator !=(StructDecl? left, StructDecl? right)
-        {
-            return !(left == right);
-        }
     }
 }

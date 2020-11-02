@@ -6,11 +6,11 @@ namespace Gum.IR0
     // int a
     public struct TypeAndName
     {
-        public TypeId Type { get; }
+        public Type Type { get; }
         public string Name { get; }
 
         // out int& a
-        public TypeAndName(TypeId type, string name)
+        public TypeAndName(Type type, string name)
         {
             Type = type;
             Name = name;

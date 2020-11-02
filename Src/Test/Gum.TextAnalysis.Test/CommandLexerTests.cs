@@ -83,7 +83,7 @@ namespace Gum
                 RBraceToken.Instance,
             };
 
-            Assert.Equal(expectedTokens, tokens);
+            Assert.Equal(expectedTokens, tokens, TokenEqualityComparer.Instance);
         }
 
         [Fact]
@@ -99,7 +99,7 @@ namespace Gum
                 new TextToken("ls -al")
             };
 
-            Assert.Equal(expectedTokens, result);
+            Assert.Equal(expectedTokens, result, TokenEqualityComparer.Instance);
         }
 
         [Fact]
@@ -123,7 +123,7 @@ hello world \n
                 RBraceToken.Instance
             };
 
-            Assert.Equal(expected, tokens);
+            Assert.Equal(expected, tokens, TokenEqualityComparer.Instance);
         }
 
         [Fact]
@@ -141,7 +141,7 @@ hello world \n
                 new TextToken("bb"),
             };
 
-            Assert.Equal(expectedTokens, result);
+            Assert.Equal(expectedTokens, result, TokenEqualityComparer.Instance);
         }
     }
 }

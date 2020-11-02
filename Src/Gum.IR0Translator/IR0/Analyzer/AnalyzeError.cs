@@ -77,6 +77,11 @@ namespace Gum.IR0
 
         A1601_BreakStmt_ShouldUsedInLoop,
 
+        A1701_ListExp_CantInferElementTypeWithEmptyElement,
+        A1702_ListExp_MismatchBetweenElementTypes,
+
+        A1801_ForeachStmt_IteratorShouldBeListOrEnumerable, // TODO: 추후에 더 일반적으로 바뀌어야 한다
+
         A9901_NotSupported_LambdaParameterInference
 
     }

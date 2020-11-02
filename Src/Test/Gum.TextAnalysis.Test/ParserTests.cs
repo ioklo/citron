@@ -29,7 +29,7 @@ namespace Gum
 
             var expected = new Script(new Script.StmtElement(new CommandStmt(new StringExp(new TextStringExpElement("ls -al")))));
 
-            Assert.Equal(expected, script.Elem);
+            Assert.Equal(expected, script.Elem, SyntaxEqualityComparer.Instance);
         }
 
         [Fact]
@@ -52,7 +52,7 @@ namespace Gum
                     1),
                 new BlockStmt(new VarDeclStmt(new VarDecl(new IdTypeExp("int"), new VarDeclElement("a", new IntLiteralExp(0))))));
 
-            Assert.Equal(expected, funcDecl.Elem);
+            Assert.Equal(expected, funcDecl.Elem, SyntaxEqualityComparer.Instance);
         }
 
         [Fact]
@@ -75,7 +75,7 @@ enum X
                 new EnumDeclElement("Second", new TypeAndName(new IdTypeExp("int"), "i")),
                 new EnumDeclElement("Third"));
 
-            Assert.Equal(expected, enumDecl.Elem);
+            Assert.Equal(expected, enumDecl.Elem, SyntaxEqualityComparer.Instance);
         }
 
         [Fact]
@@ -128,7 +128,7 @@ public struct S<T> : B, I
                         new BlockStmt(new YieldStmt(new IntLiteralExp(4))))
                 });
 
-            Assert.Equal(expected, structDecl.Elem);
+            Assert.Equal(expected, structDecl.Elem, SyntaxEqualityComparer.Instance);
 
         }
 
@@ -176,7 +176,7 @@ for (int i = 0; i < 5; i++)
                     new ExpStringExpElement(new IdentifierExp("sum")),
                     new TextStringExpElement(" Completed!")))));
                     
-            Assert.Equal(expected, script.Elem);
+            Assert.Equal(expected, script.Elem, SyntaxEqualityComparer.Instance);
         }
     }
 }

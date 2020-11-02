@@ -15,27 +15,5 @@ namespace Gum.Syntax
             Type = type;
             Name = name;
         }
-
-        public override bool Equals(object? obj)
-        {
-            return obj is TypeAndName param &&
-                   EqualityComparer<TypeExp>.Default.Equals(Type, param.Type) &&
-                   Name == param.Name;
-        }
-
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(Type, Name);
-        }
-
-        public static bool operator ==(TypeAndName left, TypeAndName right)
-        {
-            return left.Equals(right);
-        }
-
-        public static bool operator !=(TypeAndName left, TypeAndName right)
-        {
-            return !(left == right);
-        }
     }
 }

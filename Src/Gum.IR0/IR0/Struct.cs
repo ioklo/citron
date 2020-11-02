@@ -11,14 +11,14 @@ namespace Gum.IR0
         public AccessModifier AccessModifier { get; }
         public string Name { get; }
         public ImmutableArray<string> TypeParams { get; }
-        public ImmutableArray<TypeId> BaseTypes { get; }
+        public ImmutableArray<Type> BaseTypes { get; }
         // public ImmutableArray<Element> Elems { get; }
 
         public Struct(
             AccessModifier accessModifier,
             string name,
             IEnumerable<string> typeParams,
-            IEnumerable<TypeId> baseTypes
+            IEnumerable<Type> baseTypes
             // IEnumerable<Element> elems
             )
         {

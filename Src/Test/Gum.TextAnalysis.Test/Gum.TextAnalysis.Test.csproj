@@ -6,6 +6,8 @@
     <IsPackable>false</IsPackable>
 
     <RootNamespace>Gum</RootNamespace>
+
+    <Nullable>warnings</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

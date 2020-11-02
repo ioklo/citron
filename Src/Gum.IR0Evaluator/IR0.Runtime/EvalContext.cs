@@ -12,14 +12,12 @@ namespace Gum.IR0.Runtime
     {
         class SharedData
         {
-            public ImmutableArray<Func> Funcs { get; }
-            public ImmutableArray<SeqFunc> SeqFuncs { get; }
+            public ImmutableArray<FuncDecl> FuncDecls { get; }
             public Dictionary<string, Value> PrivateGlobalVars { get; }
 
-            public SharedData(IEnumerable<Func> funcs, IEnumerable<SeqFunc> seqFuncs)
+            public SharedData(IEnumerable<FuncDecl> funcDecls)
             {
-                Funcs = funcs.ToImmutableArray();
-                SeqFuncs = seqFuncs.ToImmutableArray();
+                FuncDecls = funcDecls.ToImmutableArray();
                 PrivateGlobalVars = new Dictionary<string, Value>();
             }
         }
@@ -32,9 +30,9 @@ namespace Gum.IR0.Runtime
         private Value? thisValue;
         private Value retValue;
 
-        public EvalContext(IEnumerable<Func> funcs, IEnumerable<SeqFunc> seqFuncs)
+        public EvalContext(IEnumerable<FuncDecl> funcDecls)
         {
-            sharedData = new SharedData(funcs, seqFuncs);
+            sharedData = new SharedData(funcDecls);
             
             localVars = ImmutableDictionary<string, Value>.Empty;
             flowControl = EvalFlowControl.None;
@@ -58,12 +56,7 @@ namespace Gum.IR0.Runtime
             this.tasks = tasks;
             this.thisValue = thisValue;
             this.retValue = retValue;
-        }
-
-        public TypeInst GetTypeInst(TypeId typeId)
-        {
-            throw new NotImplementedException();
-        }
+        }       
 
         public EvalContext SetTasks(ImmutableArray<Task> newTasks)
         {
@@ -102,7 +95,7 @@ namespace Gum.IR0.Runtime
             }
         }
 
-        public Value GetStaticValue(TypeId type)
+        public Value GetStaticValue(Type type)
         {
             throw new NotImplementedException();
         }
@@ -181,14 +174,9 @@ namespace Gum.IR0.Runtime
             }
         }
 
-        public Func GetFunc(FuncId funcId)
+        public FuncDecl GetFuncDecl(FuncDeclId funcDeclId)
         {
-            return sharedData.Funcs[funcId.Value];
-        }
-
-        public SeqFunc GetSeqFunc(SeqFuncId seqFuncId)
-        {
-            return sharedData.SeqFuncs[seqFuncId.Value];
+            return sharedData.FuncDecls[funcDeclId.Value];
         }
     }    
 }

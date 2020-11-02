@@ -6,28 +6,17 @@ using System.Linq;
 
 namespace Gum.IR0
 {   
-    public class Func
-    {
-        public FuncId Id { get; }
-        public bool IsThisCall { get; set; }        
+    //public class Func
+    //{
+    //    public FuncId Id { get; }
+    //    public FuncDeclId DeclId { get; }
+    //    public ImmutableArray<TypeId> TypeArgs { get; }
 
-        public ImmutableArray<string> TypeParams { get; }
-        public ImmutableArray<string> ParamNames { get; }        
-        public Stmt Body { get; }
-
-        public Func(
-            FuncId id,
-            bool bThisCall,
-            IEnumerable<string> typeParams, 
-            IEnumerable<string> paramNames, 
-            Stmt body)
-        {
-            Id = id;
-            IsThisCall = bThisCall;
-
-            TypeParams = typeParams.ToImmutableArray();
-            ParamNames = paramNames.ToImmutableArray();
-            Body = body;
-        }
-    }
+    //    public Func(FuncId id, FuncDeclId declId, IEnumerable<TypeId> typeArgs)
+    //    {
+    //        Id = id;
+    //        DeclId = declId;
+    //        TypeArgs = typeArgs.ToImmutableArray();
+    //    }
+    //}
 }

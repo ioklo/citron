@@ -281,7 +281,7 @@ namespace Gum.IR0
                     
                     if (analyzer.AnalyzeTopLevelExp(expInit.Exp, null, A1102_ForStmt_ExpInitializerShouldBeAssignOrCall, context, out var ir0ExpInit, out var expInitType))
                     {
-                        var expInitTypeId = context.GetTypeId(expInitType);
+                        var expInitTypeId = context.GetType(expInitType);
                         outInitializer = new ExpForStmtInitializer(new ExpInfo(ir0ExpInit, expInitTypeId));
                         return true;
                     }
@@ -328,7 +328,7 @@ namespace Gum.IR0
                 {
                     if (analyzer.AnalyzeTopLevelExp(forStmt.ContinueExp, null, A1103_ForStmt_ContinueExpShouldBeAssignOrCall, context, out var contExp, out var contExpType))
                     {
-                        var contExpTypeId = context.GetTypeId(contExpType);
+                        var contExpTypeId = context.GetType(contExpType);
                         continueInfo = new ExpInfo(contExp, contExpTypeId);
                     }
                     else
@@ -491,7 +491,7 @@ namespace Gum.IR0
                 Debug.Assert(exp != null);
                 Debug.Assert(expType != null);
 
-                var expTypeId = context.GetTypeId(expType);
+                var expTypeId = context.GetType(expType);
                 outStmt = new ExpStmt(new ExpInfo(exp, expTypeId));
                 return true;
             }
@@ -554,64 +554,68 @@ namespace Gum.IR0
         {
             outStmt = null;
 
-            if (!analyzer.AnalyzeExp(foreachStmt.Obj, null, context, out var obj, out var objType))
+            // iterator
+            if (!analyzer.AnalyzeExp(foreachStmt.Iterator, null, context, out var iterator, out var iteratorType))
                 return false;
 
-            // in에 오는 것들은 
-            throw new NotImplementedException();
+            var elemType = context.GetTypeValueByTypeExp(foreachStmt.Type);
 
-            //var elemType = context.GetTypeValueByTypeExp(foreachStmt.Type);
+            // var 라면, objType을 보고 결정한다
+            if (elemType is TypeValue.Var)
+            {
+                // TODO: 여기 함수로 빼기
+                // 1. List<T>
+                // 2. Enumerable<T>, seq 함수일경우
+                if (iteratorType is TypeValue.Normal normalIteratorType)
+                {   
+                    if (normalIteratorType.TypeId == ModuleItemId.Make("List", 1) && 
+                        normalIteratorType.TypeArgList.Args.Length == 1)
+                    {
+                        // List에 outer가 없으므로 만들어 질 수 없다
+                        Debug.Assert(normalIteratorType.TypeArgList.Outer == null);
+                        elemType = normalIteratorType.TypeArgList.Args[0];
+                    }
+                    else if (normalIteratorType.TypeId == ModuleItemId.Make("Enumerable", 1) &&
+                            normalIteratorType.TypeArgList.Args.Length == 1)
+                    {
+                        Debug.Assert(normalIteratorType.TypeArgList.Outer == null);
+                        elemType = normalIteratorType.TypeArgList.Args[0];
+                    }
+                    else
+                    {
+                        context.AddError(A1801_ForeachStmt_IteratorShouldBeListOrEnumerable, foreachStmt.Iterator, "foreach의 반복자 부분은 List<>, Enumerable<>타입이어야 합니다");
+                    }
+                }
+                else
+                {
+                    context.AddError(A1801_ForeachStmt_IteratorShouldBeListOrEnumerable, foreachStmt.Iterator, "foreach의 반복자 부분은 List<>, Enumerable<>타입이어야 합니다");
+                }
+            }
 
-            //if (!context.TypeValueService.GetMemberFuncValue(
-            //    objType,
-            //    Name.MakeText("GetEnumerator"), ImmutableArray<TypeValue>.Empty,
-            //    out var getEnumerator))
-            //{
-            //    context.AddError(, foreachStmt.Obj, "foreach ... in 뒤 객체는 IEnumerator<T> GetEnumerator() 함수가 있어야 합니다.");
-            //    return false;
-            //}
+            // varname
+            // body
 
-            //// TODO: 일단 인터페이스가 없으므로, bool MoveNext()과 T GetCurrent()가 있는지 본다
-            //// TODO: 각 함수들이 thiscall인지도 확인해야 한다            
-            //if (elemType is TypeValue.Var)
-            //{
-            //    elemType = getCurrentType.Return;
+            Stmt? body = null;
+            context.ExecInLocalScope(() =>
+            {
+                context.AddLocalVarInfo(foreachStmt.VarName, elemType);
 
-            //    //var interfaces = typeValueService.GetInterfaces("IEnumerator", 1, funcTypeValue.RetTypeValue);
+                context.ExecInLoop(() =>
+                {
+                    AnalyzeStmt(foreachStmt.Body, context, out body);                        
+                });
+            });
 
-            //    //if (1 < interfaces.Count)
-            //    //{
-            //    //    context.ErrorCollector.Add(foreachStmt.Obj, "변수 타입으로 var를 사용하였는데, IEnumerator<T>가 여러개라 어느 것을 사용할지 결정할 수 없습니다.");
-            //    //    return;
-            //    //}
-            //}
-            //else
-            //{
-            //    if (!analyzer.IsAssignable(elemType, getCurrentType.Return, context))
-            //        context.ErrorCollector.Add(foreachStmt, $"foreach(T ... in obj) 에서 obj.GetEnumerator().GetCurrent()의 결과를 {elemType} 타입으로 캐스팅할 수 없습니다");
-            //}
+            if (body == null)
+            {
+                outStmt = null;
+                return false;
+            }
 
-            //bool bResult = true;
-            //Stmt? body = null;
-
-            //context.ExecInLocalScope(() =>
-            //{
-            //    context.AddLocalVarInfo(foreachStmt.VarName, elemType);
-            //    if (!AnalyzeStmt(foreachStmt.Body, context, out body))
-            //        bResult = false;
-            //});
-
-            //if (!bResult)
-            //{
-            //    outStmt = null;
-            //    return false;
-            //}
-
-            //Debug.Assert(body != null);
-            //var elemTypeId = context.GetTypeId(elemType);
-            //var objTypeId = context.GetTypeId(objType);
-            //outStmt = new ForeachStmt(elemTypeId, foreachStmt.VarName, new ExpInfo(obj, objTypeId), body);
-            //return true;
+            var elemTypeId = context.GetType(elemType);
+            var iteratorTypeId = context.GetType(iteratorType);
+            outStmt = new ForeachStmt(elemTypeId, foreachStmt.VarName, new ExpInfo(iterator, iteratorTypeId), body);
+            return true;
         }
 
         bool AnalyzeYieldStmt(S.YieldStmt yieldStmt, Context context, [NotNullWhen(true)] out Stmt? outStmt)

@@ -16,28 +16,6 @@ namespace Gum.Syntax
         public ImmutableArray<TypeExp> TypeArgs { get; }
         public IdTypeExp(string name, IEnumerable<TypeExp> typeArgs) { Name = name; TypeArgs = typeArgs.ToImmutableArray(); }
         public IdTypeExp(string name, params TypeExp[] typeArgs) { Name = name; TypeArgs = ImmutableArray.Create(typeArgs); }
-
-        public override bool Equals(object? obj)
-        {
-            return obj is IdTypeExp exp &&
-                   Name == exp.Name &&
-                   Enumerable.SequenceEqual(TypeArgs, exp.TypeArgs);
-        }
-
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(Name, TypeArgs);
-        }
-
-        public static bool operator ==(IdTypeExp? left, IdTypeExp? right)
-        {
-            return EqualityComparer<IdTypeExp?>.Default.Equals(left, right);
-        }
-
-        public static bool operator !=(IdTypeExp? left, IdTypeExp? right)
-        {
-            return !(left == right);
-        }
     }
 
     public class MemberTypeExp : TypeExp

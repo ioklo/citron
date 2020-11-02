@@ -29,34 +29,6 @@ namespace Gum.Syntax
                 VarType = VarType;
                 VarNames = varNames.ToImmutableArray();
             }
-
-            public override bool Equals(object? obj)
-            {
-                return obj is VarDeclElement element &&
-                       AccessModifier == element.AccessModifier &&
-                       EqualityComparer<TypeExp>.Default.Equals(VarType, element.VarType) &&
-                       SeqEqComparer.Equals(VarNames, element.VarNames);
-            }
-
-            public override int GetHashCode()
-            {
-                var hashCode = new HashCode();
-                hashCode.Add(AccessModifier);
-                hashCode.Add(VarType);
-                SeqEqComparer.AddHash(ref hashCode, VarNames);
-
-                return hashCode.ToHashCode();
-            }
-
-            public static bool operator ==(VarDeclElement? left, VarDeclElement? right)
-            {
-                return EqualityComparer<VarDeclElement?>.Default.Equals(left, right);
-            }
-
-            public static bool operator !=(VarDeclElement? left, VarDeclElement? right)
-            {
-                return !(left == right);
-            }
         }
 
         public class FuncDeclElement : Element
@@ -88,43 +60,6 @@ namespace Gum.Syntax
                 TypeParams = typeParams.ToImmutableArray();
                 ParamInfo = paramInfo;
                 Body = body;
-            }
-
-            public override bool Equals(object? obj)
-            {
-                return obj is FuncDeclElement element &&
-                       AccessModifier == element.AccessModifier &&
-                       IsStatic == element.IsStatic &&
-                       IsSequence == element.IsSequence &&
-                       EqualityComparer<TypeExp>.Default.Equals(RetType, element.RetType) &&
-                       Name == element.Name &&
-                       SeqEqComparer.Equals(TypeParams, element.TypeParams) &&
-                       EqualityComparer<FuncParamInfo>.Default.Equals(ParamInfo, element.ParamInfo) &&
-                       EqualityComparer<BlockStmt>.Default.Equals(Body, element.Body);
-            }
-
-            public override int GetHashCode()
-            {
-                var hashCode = new HashCode();
-                hashCode.Add(AccessModifier);
-                hashCode.Add(IsStatic);
-                hashCode.Add(IsSequence);
-                hashCode.Add(RetType);
-                hashCode.Add(Name);
-                SeqEqComparer.AddHash(ref hashCode, TypeParams);
-                hashCode.Add(ParamInfo);
-                hashCode.Add(Body);
-                return hashCode.ToHashCode();
-            }
-
-            public static bool operator ==(FuncDeclElement? left, FuncDeclElement? right)
-            {
-                return EqualityComparer<FuncDeclElement?>.Default.Equals(left, right);
-            }
-
-            public static bool operator !=(FuncDeclElement? left, FuncDeclElement? right)
-            {
-                return !(left == right);
             }
         }
 

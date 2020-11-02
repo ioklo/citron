@@ -58,17 +58,17 @@ namespace Gum.IR0
             return values;
         }
 
-        Script SimpleScript(IEnumerable<Type>? types, IEnumerable<Func>? funcs, IEnumerable<SeqFunc>? seqFuncs, IEnumerable<Stmt> topLevelStmts)
+        Script SimpleScript(IEnumerable<TypeDecl>? typeDecls, IEnumerable<FuncDecl>? funcDecls, IEnumerable<Stmt> topLevelStmts)
         {
             // TODO: Validator
             int i = 0;
-            foreach(var func in funcs ?? Array.Empty<Func>())
+            foreach(var funcDecl in funcDecls ?? Array.Empty<FuncDecl>())
             {
-                Assert.Equal(i, func.Id.Value);
+                Assert.Equal(i, funcDecl.Id.Value);
                 i++;
             }
 
-            return new Script(types ?? Array.Empty<Type>(), funcs ?? Array.Empty<Func>(), seqFuncs ?? Array.Empty<SeqFunc>(), topLevelStmts);
+            return new Script(typeDecls ?? Array.Empty<TypeDecl>(), funcDecls ?? Array.Empty<FuncDecl>(), topLevelStmts);
         }
 
         void VerifyError(IEnumerable<IError> errors, AnalyzeErrorCode code, S.ISyntaxNode node)
@@ -98,10 +98,10 @@ namespace Gum.IR0
 
         S.StringExp SimpleSString(string s) => new S.StringExp(new S.TextStringExpElement(s));
 
-        LocalVarDeclStmt SimpleLocalVarDeclStmt(TypeId typeId, string name, Exp? initExp = null)
+        LocalVarDeclStmt SimpleLocalVarDeclStmt(Type typeId, string name, Exp? initExp = null)
             => new LocalVarDeclStmt(SimpleLocalVarDecl(typeId, name, initExp));
 
-        LocalVarDecl SimpleLocalVarDecl(TypeId typeId, string name, Exp? initExp = null) 
+        LocalVarDecl SimpleLocalVarDecl(Type typeId, string name, Exp? initExp = null) 
             => new LocalVarDecl(MakeArray(new LocalVarDecl.Element(name, typeId, initExp)));
 
         IntLiteralExp SimpleInt(int v) => new IntLiteralExp(v);
@@ -129,9 +129,9 @@ namespace Gum.IR0
             var expectedStmt = new CommandStmt(
                 new StringExp(
                     new TextStringExpElement("Hello "),
-                    new ExpStringExpElement(new ExpInfo(new StringExp(new TextStringExpElement("World")), TypeId.String))));
+                    new ExpStringExpElement(new ExpInfo(new StringExp(new TextStringExpElement("World")), Type.String))));
 
-            var expected = new Script(Array.Empty<Type>(), Array.Empty<Func>(), Array.Empty<SeqFunc>(), new[] { expectedStmt });
+            var expected = new Script(Array.Empty<TypeDecl>(), Array.Empty<FuncDecl>(), new[] { expectedStmt });
 
             Assert.Equal(expected, script, IR0EqualityComparer.Instance);
         }
@@ -142,8 +142,8 @@ namespace Gum.IR0
             var syntaxScript = new S.Script(new S.Script.StmtElement(SimpleSVarDeclStmt(IntTypeExp, "x", SimpleSInt(1))));
             var script = Translate(syntaxScript);
 
-            var expected = SimpleScript(null, null, null, MakeArray(
-                new PrivateGlobalVarDeclStmt(MakeArray(new PrivateGlobalVarDeclStmt.Element("x", TypeId.Int, SimpleInt(1))))
+            var expected = SimpleScript(null, null, MakeArray(
+                new PrivateGlobalVarDeclStmt(MakeArray(new PrivateGlobalVarDeclStmt.Element("x", Type.Int, SimpleInt(1))))
             ));
 
             Assert.Equal(expected, script, IR0EqualityComparer.Instance);
@@ -159,9 +159,9 @@ namespace Gum.IR0
             ));
             var script = Translate(syntaxScript);
 
-            var expected = SimpleScript(null, null, null, MakeArray(
+            var expected = SimpleScript(null, null, MakeArray(
                 new BlockStmt(
-                    new LocalVarDeclStmt(new LocalVarDecl(MakeArray(new LocalVarDecl.Element("x", TypeId.Int, SimpleInt(1)))))
+                    new LocalVarDeclStmt(new LocalVarDecl(MakeArray(new LocalVarDecl.Element("x", Type.Int, SimpleInt(1)))))
                 )
             ));
 
@@ -181,13 +181,13 @@ namespace Gum.IR0
 
             var script = Translate(syntaxScript);
 
-            var func = new Func(new FuncId(0), false, Array.Empty<string>(), Array.Empty<string>(), new BlockStmt(
+            var funcDecl = new FuncDecl.Normal(new FuncDeclId(0), false, Array.Empty<string>(), Array.Empty<string>(), new BlockStmt(
 
-                new LocalVarDeclStmt(new LocalVarDecl(MakeArray(new LocalVarDecl.Element("x", TypeId.Int, SimpleInt(1)))))
+                new LocalVarDeclStmt(new LocalVarDecl(MakeArray(new LocalVarDecl.Element("x", Type.Int, SimpleInt(1)))))
 
             ));
 
-            var expected = SimpleScript(null, MakeArray(func), null, MakeArray<Stmt>());
+            var expected = SimpleScript(null, MakeArray(funcDecl), MakeArray<Stmt>());
 
             Assert.Equal(expected, script, IR0EqualityComparer.Instance);
         }
@@ -201,8 +201,8 @@ namespace Gum.IR0
 
             var script = Translate(syntaxScript);
 
-            var expected = SimpleScript(null, null, null, new Stmt[] {
-                new PrivateGlobalVarDeclStmt(new [] { new PrivateGlobalVarDeclStmt.Element("x", TypeId.Int, SimpleInt(3))})
+            var expected = SimpleScript(null, null, new Stmt[] {
+                new PrivateGlobalVarDeclStmt(new [] { new PrivateGlobalVarDeclStmt.Element("x", Type.Int, SimpleInt(3))})
             });
 
             Assert.Equal(expected, script, IR0EqualityComparer.Instance);
@@ -278,7 +278,7 @@ namespace Gum.IR0
 
             var script = Translate(syntaxScript);
 
-            var expected = SimpleScript(null, null, null, MakeArray(
+            var expected = SimpleScript(null, null, MakeArray(
 
                 new IfStmt(new BoolLiteralExp(false), BlankStmt.Instance, BlankStmt.Instance)
 
@@ -336,17 +336,17 @@ namespace Gum.IR0
 
             var script = Translate(syntaxScript);
 
-            var expected = SimpleScript(null, null, null, new Stmt[] { 
+            var expected = SimpleScript(null, null, new Stmt[] { 
 
                 new ForStmt(
-                    new VarDeclForStmtInitializer(SimpleLocalVarDecl(TypeId.Int, "x")),
+                    new VarDeclForStmtInitializer(SimpleLocalVarDecl(Type.Int, "x")),
                     null, null, BlankStmt.Instance
                 ),
 
-                new PrivateGlobalVarDeclStmt(new [] { new PrivateGlobalVarDeclStmt.Element("x", TypeId.String, null) }),
+                new PrivateGlobalVarDeclStmt(new [] { new PrivateGlobalVarDeclStmt.Element("x", Type.String, null) }),
 
                 new ForStmt(
-                    new ExpForStmtInitializer(new ExpInfo(new AssignExp(new PrivateGlobalVarExp("x"), SimpleString("Hello")), TypeId.String)),
+                    new ExpForStmtInitializer(new ExpInfo(new AssignExp(new PrivateGlobalVarExp("x"), SimpleString("Hello")), Type.String)),
                     null, null, BlankStmt.Instance
                 )
             });
@@ -373,23 +373,23 @@ namespace Gum.IR0
 
             var script = Translate(syntaxScript);
 
-            var expected = SimpleScript(null, null, null, new Stmt[] {
+            var expected = SimpleScript(null, null, new Stmt[] {
 
-                new PrivateGlobalVarDeclStmt(new [] { new PrivateGlobalVarDeclStmt.Element("x", TypeId.String, null) }),
+                new PrivateGlobalVarDeclStmt(new [] { new PrivateGlobalVarDeclStmt.Element("x", Type.String, null) }),
 
                 new ForStmt(
-                    new VarDeclForStmtInitializer(SimpleLocalVarDecl(TypeId.Int, "x")),
+                    new VarDeclForStmtInitializer(SimpleLocalVarDecl(Type.Int, "x")),
 
                     // cond
                     new CallInternalBinaryOperatorExp(
                         InternalBinaryOperator.Equal_Int_Int_Bool,
-                        new ExpInfo(new LocalVarExp("x"), TypeId.Int),
-                        new ExpInfo(SimpleInt(3), TypeId.Int)
+                        new ExpInfo(new LocalVarExp("x"), Type.Int),
+                        new ExpInfo(SimpleInt(3), Type.Int)
                     ),
                     null, BlankStmt.Instance
                 ),
 
-                new ExpStmt(new ExpInfo(new AssignExp(new PrivateGlobalVarExp("x"), SimpleString("Hello")), TypeId.String)),
+                new ExpStmt(new ExpInfo(new AssignExp(new PrivateGlobalVarExp("x"), SimpleString("Hello")), Type.String)),
             });
 
             Assert.Equal(expected, script, IR0EqualityComparer.Instance);
@@ -462,9 +462,9 @@ namespace Gum.IR0
 
             var script = Translate(syntaxScript);
 
-            var expected = SimpleScript(null, null, null, new Stmt[] {
+            var expected = SimpleScript(null, null, new Stmt[] {
                 new ForStmt(null, null, null, ContinueStmt.Instance),
-                new ForeachStmt(TypeId.Int, "x", new ExpInfo(new ListExp(TypeId.Int, Array.Empty<Exp>()), TypeId.List), ContinueStmt.Instance)
+                new ForeachStmt(Type.Int, "x", new ExpInfo(new ListExp(Type.Int, Array.Empty<Exp>()), Type.List(Type.Int)), ContinueStmt.Instance)
             });
 
             Assert.Equal(expected, script, IR0EqualityComparer.Instance);
@@ -491,9 +491,9 @@ namespace Gum.IR0
 
             var script = Translate(syntaxScript);
 
-            var expected = SimpleScript(null, null, null, new Stmt[] {
+            var expected = SimpleScript(null, null, new Stmt[] {
                 new ForStmt(null, null, null, BreakStmt.Instance),
-                new ForeachStmt(TypeId.Int, "x", new ExpInfo(new ListExp(TypeId.Int, Array.Empty<Exp>()), TypeId.List), BreakStmt.Instance)
+                new ForeachStmt(Type.Int, "x", new ExpInfo(new ListExp(Type.Int, Array.Empty<Exp>()), Type.List(Type.Int)), BreakStmt.Instance)
             });
 
             Assert.Equal(expected, script, IR0EqualityComparer.Instance);
@@ -516,7 +516,7 @@ namespace Gum.IR0
             var syntaxScript = SimpleSScript(new S.ReturnStmt(SimpleSInt(2)));
 
             var script = Translate(syntaxScript);
-            var expected = SimpleScript(null, null, null, new Stmt[]
+            var expected = SimpleScript(null, null, new Stmt[]
             {
                 new ReturnStmt(SimpleInt(2))
             });
@@ -536,9 +536,9 @@ namespace Gum.IR0
 
             var script = Translate(syntaxScript);
 
-            var seqFunc = new SeqFunc(new SeqFuncId(0), TypeId.Int, false, Array.Empty<string>(), Array.Empty<string>(), new BlockStmt(new ReturnStmt(null)));
+            var seqFunc = new FuncDecl.Sequence(new FuncDeclId(0), Type.Int, false, Array.Empty<string>(), Array.Empty<string>(), new BlockStmt(new ReturnStmt(null)));
 
-            var expected = SimpleScript(null, null, new[] { seqFunc }, Array.Empty<Stmt>());
+            var expected = SimpleScript(null, new[] { seqFunc }, Array.Empty<Stmt>());
 
             Assert.Equal(expected, script, IR0EqualityComparer.Instance);
         }
@@ -615,9 +615,9 @@ namespace Gum.IR0
 
             var script = Translate(syntaxScript);
 
-            var expected = SimpleScript(null, null, null, MakeArray(
+            var expected = SimpleScript(null, null, MakeArray(
                 new BlockStmt(
-                    SimpleLocalVarDeclStmt(TypeId.String, "x", SimpleString("Hello")) // not PrivateGlobalVarDecl
+                    SimpleLocalVarDeclStmt(Type.String, "x", SimpleString("Hello")) // not PrivateGlobalVarDecl
                 )
             ));
 
@@ -658,9 +658,9 @@ namespace Gum.IR0
 
             var script = Translate(syntaxScript);
 
-            var expected = SimpleScript(null, null, null, new Stmt[] {                
-                new PrivateGlobalVarDeclStmt(MakeArray(new PrivateGlobalVarDeclStmt.Element("x", TypeId.Int, null))),
-                new ExpStmt(new ExpInfo(new AssignExp(new PrivateGlobalVarExp("x"), SimpleInt(3)), TypeId.Int))
+            var expected = SimpleScript(null, null, new Stmt[] {                
+                new PrivateGlobalVarDeclStmt(MakeArray(new PrivateGlobalVarDeclStmt.Element("x", Type.Int, null))),
+                new ExpStmt(new ExpInfo(new AssignExp(new PrivateGlobalVarExp("x"), SimpleInt(3)), Type.Int))
             });
 
             Assert.Equal(expected, script, IR0EqualityComparer.Instance);
@@ -693,10 +693,10 @@ namespace Gum.IR0
 
             var script = Translate(syntaxScript);
 
-            var expected = SimpleScript(null, null, null, new Stmt[] {
-                new PrivateGlobalVarDeclStmt(MakeArray(new PrivateGlobalVarDeclStmt.Element("x", TypeId.Int, null))),
+            var expected = SimpleScript(null, null, new Stmt[] {
+                new PrivateGlobalVarDeclStmt(MakeArray(new PrivateGlobalVarDeclStmt.Element("x", Type.Int, null))),
                 new TaskStmt(
-                    new ExpStmt(new ExpInfo(new AssignExp(new PrivateGlobalVarExp("x"), SimpleInt(3)), TypeId.Int)),
+                    new ExpStmt(new ExpInfo(new AssignExp(new PrivateGlobalVarExp("x"), SimpleInt(3)), Type.Int)),
                     new CaptureInfo(false, Array.Empty<CaptureInfo.Element>())
                 )
             });
@@ -738,12 +738,12 @@ namespace Gum.IR0
 
             var script = Translate(syntaxScript);
 
-            var expected = SimpleScript(null, null, null, new Stmt[] {
+            var expected = SimpleScript(null, null, new Stmt[] {
                 new BlockStmt(
-                    SimpleLocalVarDeclStmt(TypeId.Int, "x"),
+                    SimpleLocalVarDeclStmt(Type.Int, "x"),
                     new TaskStmt(
-                        SimpleLocalVarDeclStmt(TypeId.Int, "x", new LocalVarExp("x")),
-                        new CaptureInfo(false, new [] { new CaptureInfo.Element(TypeId.Int, "x") })
+                        SimpleLocalVarDeclStmt(Type.Int, "x", new LocalVarExp("x")),
+                        new CaptureInfo(false, new [] { new CaptureInfo.Element(Type.Int, "x") })
                     )
                 )
             });
@@ -762,7 +762,7 @@ namespace Gum.IR0
 
             var script = Translate(syntaxScript);
 
-            var expected = SimpleScript(null, null, null, new Stmt[] { new AwaitStmt(BlankStmt.Instance) });
+            var expected = SimpleScript(null, null, new Stmt[] { new AwaitStmt(BlankStmt.Instance) });
 
             Assert.Equal(expected, script, IR0EqualityComparer.Instance);
         }
@@ -799,10 +799,10 @@ namespace Gum.IR0
 
             var script = Translate(syntaxScript);
 
-            var expected = SimpleScript(null, null, null, new Stmt[] {
-                new PrivateGlobalVarDeclStmt(MakeArray(new PrivateGlobalVarDeclStmt.Element("x", TypeId.Int, null))),
+            var expected = SimpleScript(null, null, new Stmt[] {
+                new PrivateGlobalVarDeclStmt(MakeArray(new PrivateGlobalVarDeclStmt.Element("x", Type.Int, null))),
                 new AsyncStmt(
-                    new ExpStmt(new ExpInfo(new AssignExp(new PrivateGlobalVarExp("x"), SimpleInt(3)), TypeId.Int)),
+                    new ExpStmt(new ExpInfo(new AssignExp(new PrivateGlobalVarExp("x"), SimpleInt(3)), Type.Int)),
                     new CaptureInfo(false, Array.Empty<CaptureInfo.Element>())
                 )
             });
@@ -844,12 +844,12 @@ namespace Gum.IR0
 
             var script = Translate(syntaxScript);
 
-            var expected = SimpleScript(null, null, null, new Stmt[] {
+            var expected = SimpleScript(null, null, new Stmt[] {
                 new BlockStmt(
-                    SimpleLocalVarDeclStmt(TypeId.Int, "x"),
+                    SimpleLocalVarDeclStmt(Type.Int, "x"),
                     new AsyncStmt(
-                        SimpleLocalVarDeclStmt(TypeId.Int, "x", new LocalVarExp("x")),
-                        new CaptureInfo(false, new [] { new CaptureInfo.Element(TypeId.Int, "x") })
+                        SimpleLocalVarDeclStmt(Type.Int, "x", new LocalVarExp("x")),
+                        new CaptureInfo(false, new [] { new CaptureInfo.Element(Type.Int, "x") })
                     )
                 )
             });
@@ -877,11 +877,11 @@ namespace Gum.IR0
 
             var script = Translate(syntaxScript);
 
-            var seqFunc = new SeqFunc(new SeqFuncId(0), TypeId.Int, false, Array.Empty<string>(), Array.Empty<string>(), new BlockStmt(
+            var seqFunc = new FuncDecl.Sequence(new FuncDeclId(0), Type.Int, false, Array.Empty<string>(), Array.Empty<string>(), new BlockStmt(
                 new YieldStmt(SimpleInt(3))
             ));
 
-            var expected = SimpleScript(null, null, new[] { seqFunc }, Array.Empty<Stmt>());
+            var expected = SimpleScript(null, new[] { seqFunc }, Array.Empty<Stmt>());
 
             Assert.Equal(expected, script, IR0EqualityComparer.Instance);
         }

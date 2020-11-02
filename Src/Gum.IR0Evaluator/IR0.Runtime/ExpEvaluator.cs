@@ -37,7 +37,7 @@ namespace Gum.IR0.Runtime
                     return context.GetLocalValue(localVarExp.Name);
 
                 case StaticMemberExp staticMemberExp:
-                    var staticValue = (StaticValue)context.GetStaticValue(staticMemberExp.TypeId);
+                    var staticValue = (StaticValue)context.GetStaticValue(staticMemberExp.Type);
                     return staticValue.GetMemberValue(staticMemberExp.MemberName);
                 
                 case StructMemberExp structMemberExp:
@@ -76,7 +76,7 @@ namespace Gum.IR0.Runtime
 
         void EvalStaticMemberExp(StaticMemberExp exp, Value result, EvalContext context)
         {
-            var staticValue = (StaticValue)context.GetStaticValue(exp.TypeId);
+            var staticValue = (StaticValue)context.GetStaticValue(exp.Type);
             var memberValue = staticValue.GetMemberValue(exp.MemberName);
             result.SetValue(memberValue);
         }
@@ -126,7 +126,7 @@ namespace Gum.IR0.Runtime
 
                     case ExpStringExpElement expElem:
                         {
-                            var strValue = evaluator.AllocValue<StringValue>(expElem.Exp.TypeId, context);
+                            var strValue = evaluator.AllocValue<StringValue>(expElem.Exp.Type, context);
                             await EvalAsync(expElem.Exp.Exp, strValue, context);
                             sb.Append(strValue.GetString());
                             break;
@@ -151,53 +151,55 @@ namespace Gum.IR0.Runtime
         
         async ValueTask EvalCallFuncExpAsync(CallFuncExp exp, Value result, EvalContext context)
         {   
-            var func = context.GetFunc(exp.FuncId);
+            var funcDecl = context.GetFuncDecl(exp.FuncDeclId);
+
+            // TODO: func.TypeArgs
 
             // 함수는 this call이지만 instance가 없는 경우는 없다.
-            Debug.Assert(!(func.IsThisCall && exp.Instance == null));
+            Debug.Assert(!(funcDecl.IsThisCall && exp.Instance == null));
 
             Value? thisValue = null;
             if (exp.Instance != null)
             {
-                var instValue = evaluator.AllocValue(exp.Instance.Value.TypeId, context);
+                var instValue = evaluator.AllocValue(exp.Instance.Value.Type, context);
                 await EvalAsync(exp.Instance.Value.Exp, instValue, context);
 
                 // this call인 경우만 세팅한다
-                if (func.IsThisCall)
+                if (funcDecl.IsThisCall)
                     thisValue = instValue;
             }
 
             // 인자를 계산 해서 처음 로컬 variable에 집어 넣는다
-            var args = await evaluator.EvalArgumentsAsync(func.ParamNames, exp.Args, context);
+            var args = await evaluator.EvalArgumentsAsync(funcDecl.ParamNames, exp.Args, context);
 
             await context.ExecInNewFuncFrameAsync(args, EvalFlowControl.None, ImmutableArray<Task>.Empty, thisValue, result, async () =>
             {
-                await foreach (var _ in evaluator.EvalStmtAsync(func.Body, context)) { }
+                await foreach (var _ in evaluator.EvalStmtAsync(funcDecl.Body, context)) { }
             });
         }
 
         async ValueTask EvalCallSeqFuncExpAsync(CallSeqFuncExp exp, Value result, EvalContext context)
         {
-            var func = context.GetSeqFunc(exp.SeqFuncId);
+            var funcDecl = (FuncDecl.Sequence)context.GetFuncDecl(exp.FuncDeclId);
 
             // 함수는 this call이지만 instance가 없는 경우는 없다.
-            Debug.Assert(!(func.IsThisCall && exp.Instance == null));
+            Debug.Assert(!(funcDecl.IsThisCall && exp.Instance == null));
 
             Value? thisValue = null;
             if (exp.Instance != null)
             {
-                var instValue = evaluator.AllocValue(exp.Instance.Value.TypeId, context);
+                var instValue = evaluator.AllocValue(exp.Instance.Value.Type, context);
                 await EvalAsync(exp.Instance.Value.Exp, instValue, context);
 
                 // this call인 경우만 세팅한다
-                if (func.IsThisCall)
+                if (funcDecl.IsThisCall)
                     thisValue = instValue;
             }
 
-            var localVars = await evaluator.EvalArgumentsAsync(func.ParamNames, exp.Args, context);
+            var localVars = await evaluator.EvalArgumentsAsync(funcDecl.ParamNames, exp.Args, context);
             
             // yield에 사용할 공간
-            var yieldValue = evaluator.AllocValue(func.ElemTypeId, context);
+            var yieldValue = evaluator.AllocValue(funcDecl.ElemType, context);
 
             // context 복제
             var newContext = new EvalContext(
@@ -211,7 +213,7 @@ namespace Gum.IR0.Runtime
             // asyncEnum을 만들기 위해서 내부 함수를 씁니다
             async IAsyncEnumerable<Value> WrapAsyncEnum()
             {
-                await foreach (var value in evaluator.EvalStmtAsync(func.Body, newContext))
+                await foreach (var value in evaluator.EvalStmtAsync(funcDecl.Body, newContext))
                 {
                     yield return value;
                 }
@@ -224,7 +226,7 @@ namespace Gum.IR0.Runtime
 
         async ValueTask EvalCallValueExpAsync(CallValueExp exp, Value result, EvalContext context)
         {
-            var callableValue = (LambdaValue)evaluator.AllocValue(exp.Callable.TypeId, context);
+            var callableValue = (LambdaValue)evaluator.AllocValue(exp.Callable.Type, context);
 
             await EvalAsync(exp.Callable.Exp, callableValue, context);
             var lambda = callableValue.GetLambda();
@@ -246,8 +248,8 @@ namespace Gum.IR0.Runtime
         // l[x]
         async ValueTask EvalListIndexerExpAsync(ListIndexerExp exp, Value result, EvalContext context)
         {
-            var listValue = (ListValue)evaluator.AllocValue(exp.ListInfo.TypeId, context);
-            var indexValue = (IntValue)evaluator.AllocValue(exp.IndexInfo.TypeId, context);
+            var listValue = (ListValue)evaluator.AllocValue(exp.ListInfo.Type, context);
+            var indexValue = (IntValue)evaluator.AllocValue(exp.IndexInfo.Type, context);
             
             await EvalAsync(exp.ListInfo.Exp, listValue, context);
             await EvalAsync(exp.IndexInfo.Exp, indexValue, context);
@@ -350,7 +352,7 @@ namespace Gum.IR0.Runtime
 
             foreach (var elemExp in exp.Elems)
             {
-                var elemValue = evaluator.AllocValue(exp.ElemTypeId, context);
+                var elemValue = evaluator.AllocValue(exp.ElemType, context);
                 list.Add(elemValue);
 
                 await EvalAsync(elemExp, elemValue, context);
@@ -365,7 +367,7 @@ namespace Gum.IR0.Runtime
 
             foreach (var member in exp.Members)
             {
-                var argValue = evaluator.AllocValue(member.ExpInfo.TypeId, context);
+                var argValue = evaluator.AllocValue(member.ExpInfo.Type, context);
                 members.Add((exp.Name, argValue));
 
                 await EvalAsync(member.ExpInfo.Exp, argValue, context);
