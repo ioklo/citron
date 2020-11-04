@@ -17,7 +17,7 @@ namespace Gum.IR0
 
     public class ExpStringExpElement : StringExpElement
     {
-        public ExpInfo Exp { get; }
-        public ExpStringExpElement(ExpInfo exp) { Exp = exp; }
+        public Exp Exp { get; }
+        public ExpStringExpElement(Exp exp) { Exp = exp; }
     }
 }

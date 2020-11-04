@@ -560,35 +560,48 @@ namespace Gum.IR0
 
             var elemType = context.GetTypeValueByTypeExp(foreachStmt.Type);
 
-            // var 라면, objType을 보고 결정한다
-            if (elemType is TypeValue.Var)
+            // TODO: 여기 함수로 빼기
+            // 1. List<T>
+            // 2. Enumerable<T>, seq 함수일경우
+            TypeValue iteratorElemType;
+            if (iteratorType is TypeValue.Normal normalIteratorType)
             {
-                // TODO: 여기 함수로 빼기
-                // 1. List<T>
-                // 2. Enumerable<T>, seq 함수일경우
-                if (iteratorType is TypeValue.Normal normalIteratorType)
-                {   
-                    if (normalIteratorType.TypeId == ModuleItemId.Make("List", 1) && 
+                if (normalIteratorType.TypeId == ModuleItemId.Make("List", 1) &&
+                    normalIteratorType.TypeArgList.Args.Length == 1)
+                {
+                    // List에 outer가 없으므로 만들어 질 수 없다
+                    Debug.Assert(normalIteratorType.TypeArgList.Outer == null);
+                    iteratorElemType = normalIteratorType.TypeArgList.Args[0];
+                }
+                else if (normalIteratorType.TypeId == ModuleItemId.Make("Enumerable", 1) &&
                         normalIteratorType.TypeArgList.Args.Length == 1)
-                    {
-                        // List에 outer가 없으므로 만들어 질 수 없다
-                        Debug.Assert(normalIteratorType.TypeArgList.Outer == null);
-                        elemType = normalIteratorType.TypeArgList.Args[0];
-                    }
-                    else if (normalIteratorType.TypeId == ModuleItemId.Make("Enumerable", 1) &&
-                            normalIteratorType.TypeArgList.Args.Length == 1)
-                    {
-                        Debug.Assert(normalIteratorType.TypeArgList.Outer == null);
-                        elemType = normalIteratorType.TypeArgList.Args[0];
-                    }
-                    else
-                    {
-                        context.AddError(A1801_ForeachStmt_IteratorShouldBeListOrEnumerable, foreachStmt.Iterator, "foreach의 반복자 부분은 List<>, Enumerable<>타입이어야 합니다");
-                    }
+                {
+                    Debug.Assert(normalIteratorType.TypeArgList.Outer == null);
+                    iteratorElemType = normalIteratorType.TypeArgList.Args[0];
                 }
                 else
                 {
                     context.AddError(A1801_ForeachStmt_IteratorShouldBeListOrEnumerable, foreachStmt.Iterator, "foreach의 반복자 부분은 List<>, Enumerable<>타입이어야 합니다");
+                    return false;
+                }
+            }
+            else
+            {
+                context.AddError(A1801_ForeachStmt_IteratorShouldBeListOrEnumerable, foreachStmt.Iterator, "foreach의 반복자 부분은 List<>, Enumerable<>타입이어야 합니다");
+                return false;
+            }
+            
+            if (elemType is TypeValue.Var) // var 라면, iteratorElemType을 쓴다
+            {
+                elemType = iteratorElemType;
+            }
+            else // 아니라면 둘이 호환되는지 확인한다
+            {
+                // TODO: Cast
+                if (!analyzer.IsAssignable(elemType, iteratorElemType, context))
+                {
+                    context.AddError(A1802_ForeachStmt_MismatchBetweenElemTypeAndIteratorElemType, foreachStmt, "foreach 변수에 반복자 원소를 대입 할 수 없습니다");
+                    return false;
                 }
             }
 

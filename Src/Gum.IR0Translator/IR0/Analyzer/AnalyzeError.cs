@@ -48,7 +48,6 @@ namespace Gum.IR0
 
         A0801_BinaryOp_LeftOperandTypeIsNotCompatibleWithRightOperandType,
         A0802_BinaryOp_OperatorNotFound,
-
         A0803_BinaryOp_LeftOperandIsNotAssignable,
 
         A0901_CallExp_ThereAreMultipleGlobalFunctionsHavingSameSignature,
@@ -81,6 +80,9 @@ namespace Gum.IR0
         A1702_ListExp_MismatchBetweenElementTypes,
 
         A1801_ForeachStmt_IteratorShouldBeListOrEnumerable, // TODO: 추후에 더 일반적으로 바뀌어야 한다
+        A1802_ForeachStmt_MismatchBetweenElemTypeAndIteratorElemType,
+
+        A1901_StringExp_ExpElementShouldBeBoolOrIntOrString, // TODO: 보다 일반적으로 바뀌어야 한다. ToString을 구현한 애들이 가능
 
         A9901_NotSupported_LambdaParameterInference
 

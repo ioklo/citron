@@ -318,7 +318,7 @@ namespace Gum
                     return tx.Text == ty.Text;
 
                 case (ExpStringExpElement ex, ExpStringExpElement ey):
-                    return EqualsExpInfo(ex.Exp, ey.Exp);
+                    return EqualsExp(ex.Exp, ey.Exp);
 
                 default:
                     return false;

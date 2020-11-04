@@ -4,13 +4,27 @@ using System.Text;
 
 namespace Gum.Misc
 {
+    public enum Prerequisite
+    {
+        Class,
+        Enum,
+        TypeHint,
+        IfTestClassStmt,
+        IfTestEnumStmt,
+        Generics,
+        External,
+        Static,
+        Struct,
+        Interface,
+    }
+
     public class PrerequisiteRequiredException : Exception
     {        
         public override string Message { get; }            
 
-        public PrerequisiteRequiredException(string prerequisite)
+        public PrerequisiteRequiredException(params Prerequisite[] prerequisites)
         {
-            Message = $"{prerequisite}이 필요해서 아직 구현하지 않았습니다";
+            Message = $"{string.Join(',', prerequisites)} 구현이 필요합니다";
         }
     }
 }

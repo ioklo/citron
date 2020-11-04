@@ -95,16 +95,44 @@ namespace Gum.IR0
         {
             if (elem is S.ExpStringExpElement expElem)
             {
-                // TODO: exp의 결과 string으로 변환 가능해야 하는 조건도 고려해야 한다
                 if (!AnalyzeExp(expElem.Exp, null, context, out var ir0Exp, out var expTypeValue))
                 {
                     outElem = null;
                     return false;
+                }                
+
+                // 캐스팅이 필요하다면 
+                if (expTypeValue == GetIntTypeValue())
+                {
+                    outElem = new ExpStringExpElement(
+                        new CallInternalUnaryOperatorExp(
+                            InternalUnaryOperator.ToString_Int_String,
+                            new ExpInfo(ir0Exp, Type.Int)
+                        )
+                    );
+                    return true;
                 }
-                
-                var expTypeId = context.GetType(expTypeValue);
-                outElem = new ExpStringExpElement(new ExpInfo(ir0Exp, expTypeId));
-                return true;                
+                else if (expTypeValue == GetBoolTypeValue())
+                {
+                    outElem = new ExpStringExpElement(
+                            new CallInternalUnaryOperatorExp(
+                            InternalUnaryOperator.ToString_Bool_String,
+                            new ExpInfo(ir0Exp, Type.Bool)
+                        )
+                    );
+                    return true;
+                }
+                else if (expTypeValue == GetStringTypeValue())
+                {
+                    outElem = new ExpStringExpElement(ir0Exp);
+                    return true;
+                }
+                else
+                {
+                    context.AddError(A1901_StringExp_ExpElementShouldBeBoolOrIntOrString, expElem.Exp, "문자열 내부에서 사용되는 식은 bool, int, string 이어야 합니다");
+                    outElem = null;
+                    return false;
+                }
             }
             else if (elem is S.TextStringExpElement textElem)
             {

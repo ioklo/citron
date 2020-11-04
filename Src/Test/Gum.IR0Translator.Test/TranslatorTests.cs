@@ -35,9 +35,9 @@ namespace Gum.IR0
             }
         }
 
-        Script? Translate(S.Script syntaxScript)
+        Script? Translate(S.Script syntaxScript, bool raiseAssertFailed = false)
         {
-            var testErrorCollector = new TestErrorCollector(false);
+            var testErrorCollector = new TestErrorCollector(raiseAssertFailed);
             var translator = new Translator();
 
             return translator.Translate("Test", syntaxScript, Array.Empty<IModuleInfo>(), testErrorCollector);
@@ -53,12 +53,12 @@ namespace Gum.IR0
             return testErrorCollector.Errors;
         }
 
-        T[] MakeArray<T>(params T[] values)
+        static T[] MakeArray<T>(params T[] values)
         {
             return values;
         }
 
-        Script SimpleScript(IEnumerable<TypeDecl>? typeDecls, IEnumerable<FuncDecl>? funcDecls, IEnumerable<Stmt> topLevelStmts)
+        static Script SimpleScript(IEnumerable<TypeDecl>? typeDecls, IEnumerable<FuncDecl>? funcDecls, params Stmt[] topLevelStmts)
         {
             // TODO: Validator
             int i = 0;
@@ -79,38 +79,45 @@ namespace Gum.IR0
             Assert.True(result, $"Errors doesn't contain (Code: {code}, Node: {node})");
         }
 
-        S.VarDecl SimpleSVarDecl(S.TypeExp typeExp, string name, S.Exp? initExp = null)
+        static S.VarDecl SimpleSVarDecl(S.TypeExp typeExp, string name, S.Exp? initExp = null)
         {
             return new S.VarDecl(typeExp, MakeArray(new S.VarDeclElement(name, initExp)));
         }
 
-        S.VarDeclStmt SimpleSVarDeclStmt(S.TypeExp typeExp, string name, S.Exp? initExp = null)
+        static S.VarDeclStmt SimpleSVarDeclStmt(S.TypeExp typeExp, string name, S.Exp? initExp = null)
         {
             return new S.VarDeclStmt(SimpleSVarDecl(typeExp, name, initExp));
         }
 
-        S.Script SimpleSScript(params S.Stmt[] stmts)
+        static S.Script SimpleSScript(params S.Stmt[] stmts)
         {
             return new S.Script(stmts.Select(stmt => new S.Script.StmtElement(stmt)));
         }
 
-        S.IntLiteralExp SimpleSInt(int v) => new S.IntLiteralExp(v);
+        static S.IntLiteralExp SimpleSInt(int v) => new S.IntLiteralExp(v);
+        static S.BoolLiteralExp SimpleSBool(bool v) => new S.BoolLiteralExp(v);
+        static S.IdentifierExp SimpleSId(string name) => new S.IdentifierExp(name);
 
-        S.StringExp SimpleSString(string s) => new S.StringExp(new S.TextStringExpElement(s));
+        static S.StringExp SimpleSString(string s) => new S.StringExp(new S.TextStringExpElement(s));
 
-        LocalVarDeclStmt SimpleLocalVarDeclStmt(Type typeId, string name, Exp? initExp = null)
+        static PrivateGlobalVarDeclStmt SimpleGlobalVarDeclStmt(Type type, string name, Exp? initExp = null)
+            => new PrivateGlobalVarDeclStmt(MakeArray(new PrivateGlobalVarDeclStmt.Element(name, type, initExp)));
+
+        static LocalVarDeclStmt SimpleLocalVarDeclStmt(Type typeId, string name, Exp? initExp = null)
             => new LocalVarDeclStmt(SimpleLocalVarDecl(typeId, name, initExp));
 
-        LocalVarDecl SimpleLocalVarDecl(Type typeId, string name, Exp? initExp = null) 
+        static LocalVarDecl SimpleLocalVarDecl(Type typeId, string name, Exp? initExp = null) 
             => new LocalVarDecl(MakeArray(new LocalVarDecl.Element(name, typeId, initExp)));
 
-        IntLiteralExp SimpleInt(int v) => new IntLiteralExp(v);
-        StringExp SimpleString(string v) => new StringExp(new TextStringExpElement(v));
+        static IntLiteralExp SimpleInt(int v) => new IntLiteralExp(v);
+        static BoolLiteralExp SimpleBool(bool v) => new BoolLiteralExp(v);
+        static StringExp SimpleString(string v) => new StringExp(new TextStringExpElement(v));
         
-        S.TypeExp VarTypeExp { get => new S.IdTypeExp("var"); }
-        S.TypeExp IntTypeExp { get => new S.IdTypeExp("int"); }
-        S.TypeExp VoidTypeExp { get => new S.IdTypeExp("void"); }
-        S.TypeExp StringTypeExp { get => new S.IdTypeExp("string"); }
+        static S.TypeExp VarTypeExp { get => new S.IdTypeExp("var"); }
+        static S.TypeExp IntTypeExp { get => new S.IdTypeExp("int"); }
+        static S.TypeExp BoolTypeExp { get => new S.IdTypeExp("bool"); }
+        static S.TypeExp VoidTypeExp { get => new S.IdTypeExp("void"); }
+        static S.TypeExp StringTypeExp { get => new S.IdTypeExp("string"); }
 
 
         // Trivial Cases
@@ -129,7 +136,7 @@ namespace Gum.IR0
             var expectedStmt = new CommandStmt(
                 new StringExp(
                     new TextStringExpElement("Hello "),
-                    new ExpStringExpElement(new ExpInfo(new StringExp(new TextStringExpElement("World")), Type.String))));
+                    new ExpStringExpElement(new StringExp(new TextStringExpElement("World")))));
 
             var expected = new Script(Array.Empty<TypeDecl>(), Array.Empty<FuncDecl>(), new[] { expectedStmt });
 
@@ -142,9 +149,9 @@ namespace Gum.IR0
             var syntaxScript = new S.Script(new S.Script.StmtElement(SimpleSVarDeclStmt(IntTypeExp, "x", SimpleSInt(1))));
             var script = Translate(syntaxScript);
 
-            var expected = SimpleScript(null, null, MakeArray(
-                new PrivateGlobalVarDeclStmt(MakeArray(new PrivateGlobalVarDeclStmt.Element("x", Type.Int, SimpleInt(1))))
-            ));
+            var expected = SimpleScript(null, null, 
+                SimpleGlobalVarDeclStmt(Type.Int, "x", SimpleInt(1))
+            );
 
             Assert.Equal(expected, script, IR0EqualityComparer.Instance);
         }
@@ -159,11 +166,11 @@ namespace Gum.IR0
             ));
             var script = Translate(syntaxScript);
 
-            var expected = SimpleScript(null, null, MakeArray(
+            var expected = SimpleScript(null, null, 
                 new BlockStmt(
                     new LocalVarDeclStmt(new LocalVarDecl(MakeArray(new LocalVarDecl.Element("x", Type.Int, SimpleInt(1)))))
                 )
-            ));
+            );
 
             Assert.Equal(expected, script, IR0EqualityComparer.Instance);
         }
@@ -187,7 +194,7 @@ namespace Gum.IR0
 
             ));
 
-            var expected = SimpleScript(null, MakeArray(funcDecl), MakeArray<Stmt>());
+            var expected = SimpleScript(null, MakeArray(funcDecl));
 
             Assert.Equal(expected, script, IR0EqualityComparer.Instance);
         }
@@ -201,9 +208,9 @@ namespace Gum.IR0
 
             var script = Translate(syntaxScript);
 
-            var expected = SimpleScript(null, null, new Stmt[] {
-                new PrivateGlobalVarDeclStmt(new [] { new PrivateGlobalVarDeclStmt.Element("x", Type.Int, SimpleInt(3))})
-            });
+            var expected = SimpleScript(null, null, 
+                SimpleGlobalVarDeclStmt(Type.Int, "x", SimpleInt(3))            
+            );
 
             Assert.Equal(expected, script, IR0EqualityComparer.Instance);
         }
@@ -278,11 +285,11 @@ namespace Gum.IR0
 
             var script = Translate(syntaxScript);
 
-            var expected = SimpleScript(null, null, MakeArray(
+            var expected = SimpleScript(null, null,
 
                 new IfStmt(new BoolLiteralExp(false), BlankStmt.Instance, BlankStmt.Instance)
 
-            ));
+            );
 
             Assert.Equal(expected, script, IR0EqualityComparer.Instance);
         }
@@ -307,13 +314,13 @@ namespace Gum.IR0
         public void IfStmt_TranslatesIntoIfTestClassStmt()
         {
             // Prerequisite
-            throw new PrerequisiteRequiredException("Class");
+            throw new PrerequisiteRequiredException(Prerequisite.Class);
         }
 
         [Fact]
         public void IfStmt_TranslatesIntoIfTestEnumStmt()
         {
-            throw new PrerequisiteRequiredException("Enum");
+            throw new PrerequisiteRequiredException(Prerequisite.Enum);
         }
 
         [Fact]
@@ -329,27 +336,27 @@ namespace Gum.IR0
                 new S.Script.StmtElement(SimpleSVarDeclStmt(StringTypeExp, "x")),
 
                 new S.Script.StmtElement(new S.ForStmt(
-                    new S.ExpForStmtInitializer(new S.BinaryOpExp(S.BinaryOpKind.Assign, new S.IdentifierExp("x"), SimpleSString("Hello"))),
+                    new S.ExpForStmtInitializer(new S.BinaryOpExp(S.BinaryOpKind.Assign, SimpleSId("x"), SimpleSString("Hello"))),
                     null, null, S.BlankStmt.Instance
                 ))
             );            
 
             var script = Translate(syntaxScript);
 
-            var expected = SimpleScript(null, null, new Stmt[] { 
+            var expected = SimpleScript(null, null, 
 
                 new ForStmt(
                     new VarDeclForStmtInitializer(SimpleLocalVarDecl(Type.Int, "x")),
                     null, null, BlankStmt.Instance
                 ),
 
-                new PrivateGlobalVarDeclStmt(new [] { new PrivateGlobalVarDeclStmt.Element("x", Type.String, null) }),
+                SimpleGlobalVarDeclStmt(Type.String, "x", null),
 
                 new ForStmt(
                     new ExpForStmtInitializer(new ExpInfo(new AssignExp(new PrivateGlobalVarExp("x"), SimpleString("Hello")), Type.String)),
                     null, null, BlankStmt.Instance
                 )
-            });
+            );
 
             Assert.Equal(expected, script, IR0EqualityComparer.Instance);
         }
@@ -364,18 +371,18 @@ namespace Gum.IR0
 
                 new S.Script.StmtElement(new S.ForStmt(
                     new S.VarDeclForStmtInitializer(SimpleSVarDecl(IntTypeExp, "x")), // x의 범위는 ForStmt내부에서
-                    new S.BinaryOpExp(S.BinaryOpKind.Equal, new S.IdentifierExp("x"), SimpleSInt(3)),
+                    new S.BinaryOpExp(S.BinaryOpKind.Equal, SimpleSId("x"), SimpleSInt(3)),
                     null, S.BlankStmt.Instance
                 )),
 
-                new S.Script.StmtElement(new S.ExpStmt(new S.BinaryOpExp(S.BinaryOpKind.Assign, new S.IdentifierExp("x"), SimpleSString("Hello"))))
+                new S.Script.StmtElement(new S.ExpStmt(new S.BinaryOpExp(S.BinaryOpKind.Assign, SimpleSId("x"), SimpleSString("Hello"))))
             );
 
             var script = Translate(syntaxScript);
 
-            var expected = SimpleScript(null, null, new Stmt[] {
+            var expected = SimpleScript(null, null, 
 
-                new PrivateGlobalVarDeclStmt(new [] { new PrivateGlobalVarDeclStmt.Element("x", Type.String, null) }),
+                SimpleGlobalVarDeclStmt(Type.String, "x", null),
 
                 new ForStmt(
                     new VarDeclForStmtInitializer(SimpleLocalVarDecl(Type.Int, "x")),
@@ -389,8 +396,8 @@ namespace Gum.IR0
                     null, BlankStmt.Instance
                 ),
 
-                new ExpStmt(new ExpInfo(new AssignExp(new PrivateGlobalVarExp("x"), SimpleString("Hello")), Type.String)),
-            });
+                new ExpStmt(new ExpInfo(new AssignExp(new PrivateGlobalVarExp("x"), SimpleString("Hello")), Type.String))
+            );
 
             Assert.Equal(expected, script, IR0EqualityComparer.Instance);
         }
@@ -462,10 +469,10 @@ namespace Gum.IR0
 
             var script = Translate(syntaxScript);
 
-            var expected = SimpleScript(null, null, new Stmt[] {
+            var expected = SimpleScript(null, null, 
                 new ForStmt(null, null, null, ContinueStmt.Instance),
                 new ForeachStmt(Type.Int, "x", new ExpInfo(new ListExp(Type.Int, Array.Empty<Exp>()), Type.List(Type.Int)), ContinueStmt.Instance)
-            });
+            );
 
             Assert.Equal(expected, script, IR0EqualityComparer.Instance);
         }
@@ -491,10 +498,10 @@ namespace Gum.IR0
 
             var script = Translate(syntaxScript);
 
-            var expected = SimpleScript(null, null, new Stmt[] {
+            var expected = SimpleScript(null, null, 
                 new ForStmt(null, null, null, BreakStmt.Instance),
                 new ForeachStmt(Type.Int, "x", new ExpInfo(new ListExp(Type.Int, Array.Empty<Exp>()), Type.List(Type.Int)), BreakStmt.Instance)
-            });
+            );
 
             Assert.Equal(expected, script, IR0EqualityComparer.Instance);
         }
@@ -516,10 +523,7 @@ namespace Gum.IR0
             var syntaxScript = SimpleSScript(new S.ReturnStmt(SimpleSInt(2)));
 
             var script = Translate(syntaxScript);
-            var expected = SimpleScript(null, null, new Stmt[]
-            {
-                new ReturnStmt(SimpleInt(2))
-            });
+            var expected = SimpleScript(null, null, new ReturnStmt(SimpleInt(2)));
 
             Assert.Equal(expected, script, IR0EqualityComparer.Instance);
         }
@@ -538,7 +542,7 @@ namespace Gum.IR0
 
             var seqFunc = new FuncDecl.Sequence(new FuncDeclId(0), Type.Int, false, Array.Empty<string>(), Array.Empty<string>(), new BlockStmt(new ReturnStmt(null)));
 
-            var expected = SimpleScript(null, new[] { seqFunc }, Array.Empty<Stmt>());
+            var expected = SimpleScript(null, new[] { seqFunc });
 
             Assert.Equal(expected, script, IR0EqualityComparer.Instance);
         }
@@ -601,7 +605,7 @@ namespace Gum.IR0
         [Fact]
         public void ReturnStmt_UsesHintType()
         {
-            throw new PrerequisiteRequiredException("Enum, HintType");
+            throw new PrerequisiteRequiredException(Prerequisite.Enum, Prerequisite.TypeHint);
         }
 
         [Fact]
@@ -615,11 +619,11 @@ namespace Gum.IR0
 
             var script = Translate(syntaxScript);
 
-            var expected = SimpleScript(null, null, MakeArray(
+            var expected = SimpleScript(null, null, 
                 new BlockStmt(
                     SimpleLocalVarDeclStmt(Type.String, "x", SimpleString("Hello")) // not PrivateGlobalVarDecl
                 )
-            ));
+            );
 
             Assert.Equal(expected, script, IR0EqualityComparer.Instance);
         }
@@ -627,7 +631,7 @@ namespace Gum.IR0
         [Fact]
         public void BlockStmt_ChecksIsolatingOverridenTypesOfVariables()
         {
-            throw new PrerequisiteRequiredException("IfTestClassStmt, IfTestEnumStmt");
+            throw new PrerequisiteRequiredException(Prerequisite.IfTestClassStmt, Prerequisite.IfTestEnumStmt);
         }
 
         [Fact]
@@ -640,7 +644,7 @@ namespace Gum.IR0
                     SimpleSVarDeclStmt(StringTypeExp, "x", SimpleSString("Hello"))
                 ),
 
-                new S.CommandStmt(new S.StringExp(new S.ExpStringExpElement(exp = new S.IdentifierExp("x"))))
+                new S.CommandStmt(new S.StringExp(new S.ExpStringExpElement(exp = SimpleSId("x"))))
             );
 
             var errors = TranslateWithErrors(syntaxScript);
@@ -653,15 +657,15 @@ namespace Gum.IR0
         {
             var syntaxScript = SimpleSScript(
                 SimpleSVarDeclStmt(IntTypeExp, "x"),
-                new S.ExpStmt(new S.BinaryOpExp(S.BinaryOpKind.Assign, new S.IdentifierExp("x"), SimpleSInt(3)))
+                new S.ExpStmt(new S.BinaryOpExp(S.BinaryOpKind.Assign, SimpleSId("x"), SimpleSInt(3)))
             );
 
             var script = Translate(syntaxScript);
 
-            var expected = SimpleScript(null, null, new Stmt[] {                
-                new PrivateGlobalVarDeclStmt(MakeArray(new PrivateGlobalVarDeclStmt.Element("x", Type.Int, null))),
+            var expected = SimpleScript(null, null, 
+                SimpleGlobalVarDeclStmt(Type.Int, "x", null),
                 new ExpStmt(new ExpInfo(new AssignExp(new PrivateGlobalVarExp("x"), SimpleInt(3)), Type.Int))
-            });
+            );
 
             Assert.Equal(expected, script, IR0EqualityComparer.Instance);
         }
@@ -686,20 +690,20 @@ namespace Gum.IR0
                 SimpleSVarDeclStmt(IntTypeExp, "x"),
                 new S.TaskStmt(
                     new S.ExpStmt(
-                        new S.BinaryOpExp(S.BinaryOpKind.Assign, new S.IdentifierExp("x"), SimpleSInt(3))
+                        new S.BinaryOpExp(S.BinaryOpKind.Assign, SimpleSId("x"), SimpleSInt(3))
                     )
                 )
             );
 
             var script = Translate(syntaxScript);
 
-            var expected = SimpleScript(null, null, new Stmt[] {
-                new PrivateGlobalVarDeclStmt(MakeArray(new PrivateGlobalVarDeclStmt.Element("x", Type.Int, null))),
+            var expected = SimpleScript(null, null, 
+                SimpleGlobalVarDeclStmt(Type.Int, "x", null),
                 new TaskStmt(
                     new ExpStmt(new ExpInfo(new AssignExp(new PrivateGlobalVarExp("x"), SimpleInt(3)), Type.Int)),
                     new CaptureInfo(false, Array.Empty<CaptureInfo.Element>())
                 )
-            });
+            );
 
             Assert.Equal(expected, script, IR0EqualityComparer.Instance);
         }
@@ -714,7 +718,7 @@ namespace Gum.IR0
                     SimpleSVarDeclStmt(IntTypeExp, "x"),
                     new S.TaskStmt(
                         new S.ExpStmt(
-                            new S.BinaryOpExp(S.BinaryOpKind.Assign, exp = new S.IdentifierExp("x"), SimpleSInt(3))
+                            new S.BinaryOpExp(S.BinaryOpKind.Assign, exp = SimpleSId("x"), SimpleSInt(3))
                         )
                     )
                 )
@@ -731,14 +735,14 @@ namespace Gum.IR0
                 new S.BlockStmt(
                     SimpleSVarDeclStmt(IntTypeExp, "x"),
                     new S.TaskStmt(
-                        SimpleSVarDeclStmt(IntTypeExp, "x", new S.IdentifierExp("x"))
+                        SimpleSVarDeclStmt(IntTypeExp, "x", SimpleSId("x"))
                     )
                 )
             );
 
             var script = Translate(syntaxScript);
 
-            var expected = SimpleScript(null, null, new Stmt[] {
+            var expected = SimpleScript(null, null, 
                 new BlockStmt(
                     SimpleLocalVarDeclStmt(Type.Int, "x"),
                     new TaskStmt(
@@ -746,7 +750,7 @@ namespace Gum.IR0
                         new CaptureInfo(false, new [] { new CaptureInfo.Element(Type.Int, "x") })
                     )
                 )
-            });
+            );
 
             Assert.Equal(expected, script, IR0EqualityComparer.Instance);
         }
@@ -762,7 +766,7 @@ namespace Gum.IR0
 
             var script = Translate(syntaxScript);
 
-            var expected = SimpleScript(null, null, new Stmt[] { new AwaitStmt(BlankStmt.Instance) });
+            var expected = SimpleScript(null, null, new AwaitStmt(BlankStmt.Instance));
 
             Assert.Equal(expected, script, IR0EqualityComparer.Instance);
         }
@@ -777,7 +781,7 @@ namespace Gum.IR0
                     SimpleSVarDeclStmt(StringTypeExp, "x", SimpleSString("Hello"))
                 ),
 
-                new S.CommandStmt(new S.StringExp(new S.ExpStringExpElement(exp = new S.IdentifierExp("x"))))
+                new S.CommandStmt(new S.StringExp(new S.ExpStringExpElement(exp = SimpleSId("x"))))
             );
 
             var errors = TranslateWithErrors(syntaxScript);
@@ -792,20 +796,20 @@ namespace Gum.IR0
                 SimpleSVarDeclStmt(IntTypeExp, "x"),
                 new S.AsyncStmt(
                     new S.ExpStmt(
-                        new S.BinaryOpExp(S.BinaryOpKind.Assign, new S.IdentifierExp("x"), SimpleSInt(3))
+                        new S.BinaryOpExp(S.BinaryOpKind.Assign, SimpleSId("x"), SimpleSInt(3))
                     )
                 )
             );
 
             var script = Translate(syntaxScript);
 
-            var expected = SimpleScript(null, null, new Stmt[] {
-                new PrivateGlobalVarDeclStmt(MakeArray(new PrivateGlobalVarDeclStmt.Element("x", Type.Int, null))),
+            var expected = SimpleScript(null, null, 
+                SimpleGlobalVarDeclStmt(Type.Int, "x", null),
                 new AsyncStmt(
                     new ExpStmt(new ExpInfo(new AssignExp(new PrivateGlobalVarExp("x"), SimpleInt(3)), Type.Int)),
                     new CaptureInfo(false, Array.Empty<CaptureInfo.Element>())
                 )
-            });
+            );
 
             Assert.Equal(expected, script, IR0EqualityComparer.Instance);
         }
@@ -820,7 +824,7 @@ namespace Gum.IR0
                     SimpleSVarDeclStmt(IntTypeExp, "x"),
                     new S.AsyncStmt(
                         new S.ExpStmt(
-                            new S.BinaryOpExp(S.BinaryOpKind.Assign, exp = new S.IdentifierExp("x"), SimpleSInt(3))
+                            new S.BinaryOpExp(S.BinaryOpKind.Assign, exp = SimpleSId("x"), SimpleSInt(3))
                         )
                     )
                 )
@@ -837,14 +841,14 @@ namespace Gum.IR0
                 new S.BlockStmt(
                     SimpleSVarDeclStmt(IntTypeExp, "x"),
                     new S.AsyncStmt(
-                        SimpleSVarDeclStmt(IntTypeExp, "x", new S.IdentifierExp("x"))
+                        SimpleSVarDeclStmt(IntTypeExp, "x", SimpleSId("x"))
                     )
                 )
             );
 
             var script = Translate(syntaxScript);
 
-            var expected = SimpleScript(null, null, new Stmt[] {
+            var expected = SimpleScript(null, null, 
                 new BlockStmt(
                     SimpleLocalVarDeclStmt(Type.Int, "x"),
                     new AsyncStmt(
@@ -852,19 +856,57 @@ namespace Gum.IR0
                         new CaptureInfo(false, new [] { new CaptureInfo.Element(Type.Int, "x") })
                     )
                 )
-            });
+            );
 
             Assert.Equal(expected, script, IR0EqualityComparer.Instance);
         }
 
         [Fact]
-        public void ForeachStmt_TranslateTrivially()
+        public void ForeachStmt_TranslatesTrivially()
         {
-            throw new PrerequisiteRequiredException("Implementation");
+            var scriptSyntax = SimpleSScript(new S.ForeachStmt(IntTypeExp, "x", new S.ListExp(IntTypeExp), S.BlankStmt.Instance));
+
+            var script = Translate(scriptSyntax);
+
+            var expected = SimpleScript(null, null, new ForeachStmt(Type.Int, "x",
+                new ExpInfo(new ListExp(Type.Int, Array.Empty<Exp>()),
+                Type.List(Type.Int)), BlankStmt.Instance
+            ));
+
+            Assert.Equal(expected, script, IR0EqualityComparer.Instance);
         }
 
         [Fact]
-        public void YieldStmt_TranslateTrivially()
+        public void ForeachStmt_ChecksIteratorIsListOrEnumerable()
+        {
+            S.Exp iterator;
+            var scriptSyntax = SimpleSScript(new S.ForeachStmt(IntTypeExp, "x", iterator = SimpleSInt(3), S.BlankStmt.Instance));
+
+            var errors = TranslateWithErrors(scriptSyntax);
+
+            VerifyError(errors, A1801_ForeachStmt_IteratorShouldBeListOrEnumerable, iterator);
+        }
+
+        [Fact]
+        public void ForeachStmt_ChecksIteratorIsListOrEnumerable2()
+        {
+            // iterator type이 normal type이 아닐때.. 재현하기 쉽지 않은것 같다
+            throw new PrerequisiteRequiredException(Prerequisite.Generics);
+        }
+
+        [Fact]
+        public void ForeachStmt_ChecksElemTypeIsAssignableFromIteratorElemType()
+        {
+            S.ForeachStmt foreachStmt;
+            var scriptSyntax = SimpleSScript(foreachStmt = new S.ForeachStmt(StringTypeExp, "x", new S.ListExp(IntTypeExp), S.BlankStmt.Instance));
+
+            var errors = TranslateWithErrors(scriptSyntax);
+
+            VerifyError(errors, A1802_ForeachStmt_MismatchBetweenElemTypeAndIteratorElemType, foreachStmt);
+        }
+
+        [Fact]
+        public void YieldStmt_TranslatesTrivially()
         {
             var syntaxScript = new S.Script(
                 new S.Script.FuncDeclElement(new S.FuncDecl(
@@ -881,7 +923,7 @@ namespace Gum.IR0
                 new YieldStmt(SimpleInt(3))
             ));
 
-            var expected = SimpleScript(null, new[] { seqFunc }, Array.Empty<Stmt>());
+            var expected = SimpleScript(null, new[] { seqFunc });
 
             Assert.Equal(expected, script, IR0EqualityComparer.Instance);
         }
@@ -927,25 +969,405 @@ namespace Gum.IR0
         [Fact]
         public void YieldStmt_UsesHintTypeValue()
         {
-            throw new PrerequisiteRequiredException("Enum HintType");
+            throw new PrerequisiteRequiredException(Prerequisite.Enum, Prerequisite.TypeHint);
         }
 
-        // StringExp
+        // IdExp
         [Fact]
-        public void StringExp_ChecksStringExpElementIsNotStringType()
-        {   
-            var syntaxCmdStmt = new S.ExpStmt(
-                new S.StringExp(
-                    new S.ExpStringExpElement(SimpleSInt(3))));
+        public void IdExp_TranslatesIntoExternalGlobal()
+        {
+            throw new PrerequisiteRequiredException(Prerequisite.External);
+        }
 
-            var syntaxScript = new S.Script(new S.Script.StmtElement(syntaxCmdStmt));
+        [Fact]
+        public void IdExp_TranslatesIntoPrivateGlobalVarExp()
+        {
+            var syntaxScript = SimpleSScript(
+                SimpleSVarDeclStmt(IntTypeExp, "x", SimpleSInt(3)),
+                SimpleSVarDeclStmt(IntTypeExp, "y", SimpleSId("x"))
+            );
+
+            var script = Translate(syntaxScript);
+            var expected = SimpleScript(null, null,
+                SimpleGlobalVarDeclStmt(Type.Int, "x", SimpleInt(3)),
+                SimpleGlobalVarDeclStmt(Type.Int, "y", new PrivateGlobalVarExp("x"))
+            );
+
+            Assert.Equal(expected, script, IR0EqualityComparer.Instance);
+        }
+
+        [Fact]
+        public void IdExp_TranslatesLocalVarOutsideLambdaIntoLocalVarExp()
+        {
+            throw new NotImplementedException();
+        }
+
+        [Fact]
+        public void IdExp_TranslatesIntoLocalVarExp()
+        {
+            var syntaxScript = SimpleSScript(new S.BlockStmt(
+                SimpleSVarDeclStmt(IntTypeExp, "x", SimpleSInt(3)),
+                SimpleSVarDeclStmt(IntTypeExp, "y", SimpleSId("x"))
+            ));
+
+            var script = Translate(syntaxScript);
+            var expected = SimpleScript(null, null, new BlockStmt(
+                SimpleLocalVarDeclStmt(Type.Int, "x", SimpleInt(3)),
+                SimpleLocalVarDeclStmt(Type.Int, "y", new LocalVarExp("x"))
+            ));
+
+            Assert.Equal(expected, script, IR0EqualityComparer.Instance);
+        }
+
+        [Fact]
+        public void IdExp_TranslatesIntoStaticMemberExp() 
+        {
+            throw new PrerequisiteRequiredException(Prerequisite.Static);
+        }
+
+        [Fact]
+        public void IdExp_TranslatesIntoClassMemberExp()
+        {
+            throw new PrerequisiteRequiredException(Prerequisite.Class);
+        }
+
+        [Fact]
+        public void IdExp_TranslatesIntoStructMemberExp()
+        {
+            throw new PrerequisiteRequiredException(Prerequisite.Struct);
+        }
+
+        [Fact]
+        public void IdExp_TranslatesIntoEnumMemberExp()
+        {
+            throw new PrerequisiteRequiredException(Prerequisite.Enum);
+        }
+
+        [Fact]
+        public void IdExp_TranslatesIntoInterfaceMemberExp()
+        {
+            throw new PrerequisiteRequiredException(Prerequisite.Interface);
+        }
+
+        [Fact]
+        public void IdExp_TranslatesIntoNewEnumExp()
+        {
+            throw new PrerequisiteRequiredException(Prerequisite.Enum);
+        }
+
+        [Fact]
+        public void BoolLiteralExp_TranslatesTrivially()
+        {
+            var syntaxScript = SimpleSScript(
+                SimpleSVarDeclStmt(BoolTypeExp, "b1", new S.BoolLiteralExp(false)),
+                SimpleSVarDeclStmt(BoolTypeExp, "b2", new S.BoolLiteralExp(true)));
+
+            var script = Translate(syntaxScript);
+            var expected = SimpleScript(null, null, 
+                SimpleGlobalVarDeclStmt(Type.Bool, "b1", new BoolLiteralExp(false)),
+                SimpleGlobalVarDeclStmt(Type.Bool, "b2", new BoolLiteralExp(true))                    
+            );
+
+            Assert.Equal(expected, script, IR0EqualityComparer.Instance);
+        }
+
+        [Fact]
+        public void IntLiteralExp_TranslatesTrivially()
+        {
+            var syntaxScript = SimpleSScript(
+                SimpleSVarDeclStmt(IntTypeExp, "i", new S.IntLiteralExp(34)));                
+
+            var script = Translate(syntaxScript);
+            var expected = SimpleScript(null, null, 
+                SimpleGlobalVarDeclStmt(Type.Int, "i", new IntLiteralExp(34))
+            );
+
+            Assert.Equal(expected, script, IR0EqualityComparer.Instance);
+        }
+
+        [Fact]
+        public void StringExp_TranslatesTrivially()
+        {
+            var syntaxScript = SimpleSScript(
+                SimpleSVarDeclStmt(StringTypeExp, "s", SimpleSString("Hello")));
+
+            var script = Translate(syntaxScript);
+            var expected = SimpleScript(null, null, 
+                SimpleGlobalVarDeclStmt(Type.String, "s", SimpleString("Hello"))
+            );
+
+            Assert.Equal(expected, script, IR0EqualityComparer.Instance);
+        }
+
+        [Fact]
+        public void StringExp_WrapsExpStringExpElementWhenExpIsBoolOrInt()
+        {
+            var syntaxScript = SimpleSScript(
+                SimpleSVarDeclStmt(StringTypeExp, "s1", new S.StringExp(new S.ExpStringExpElement(SimpleSInt(3)))),
+                SimpleSVarDeclStmt(StringTypeExp, "s2", new S.StringExp(new S.ExpStringExpElement(SimpleSBool(true))))
+            );
+
+            var script = Translate(syntaxScript, true);
+
+            var expected = SimpleScript(null, null, 
+
+                SimpleGlobalVarDeclStmt(Type.String, "s1", new StringExp(new ExpStringExpElement(
+                    new CallInternalUnaryOperatorExp(InternalUnaryOperator.ToString_Int_String, new ExpInfo(SimpleInt(3), Type.Int))
+                ))),
+
+                SimpleGlobalVarDeclStmt(Type.String, "s2", new StringExp(new ExpStringExpElement(
+                    new CallInternalUnaryOperatorExp(InternalUnaryOperator.ToString_Bool_String, new ExpInfo(SimpleBool(true), Type.Bool))
+                )))
+            );
+
+            Assert.Equal(expected, script, IR0EqualityComparer.Instance);
+        }
+
+        [Fact]
+        public void StringExp_ChecksStringExpElementIsStringConvertible()
+        {
+            S.Exp exp;
+            // convertible가능하지 않은 것,, Lambda?
+            var syntaxScript = SimpleSScript(
+                SimpleSVarDeclStmt(StringTypeExp, "s", new S.StringExp(new S.ExpStringExpElement(exp = new S.LambdaExp(
+                    new S.LambdaExpParam[] { },
+                    S.BlankStmt.Instance                    
+                ))))
+            );
 
             var errors = TranslateWithErrors(syntaxScript);
 
-            // Assert.True(errors.Exists(error => error.Code == A1004_IfStmt_ConditionShouldBeBool && error.Node == (S.ISyntaxNode)cond));
-
-            throw new PrerequisiteRequiredException("AnalyzeStringExpElement");
+            VerifyError(errors, A1901_StringExp_ExpElementShouldBeBoolOrIntOrString, exp);
         }
+
+        [Fact]
+        public void UnaryOpExp_TranslatesTrivially()
+        {
+            var syntaxScript = SimpleSScript(
+                SimpleSVarDeclStmt(VarTypeExp, "x1", new S.UnaryOpExp(S.UnaryOpKind.LogicalNot, SimpleSBool(false))),
+                SimpleSVarDeclStmt(VarTypeExp, "x2", new S.UnaryOpExp(S.UnaryOpKind.Minus, SimpleSInt(3))),
+                SimpleSVarDeclStmt(VarTypeExp, "x3", new S.UnaryOpExp(S.UnaryOpKind.PrefixInc, SimpleSId("x2"))),
+                SimpleSVarDeclStmt(VarTypeExp, "x4", new S.UnaryOpExp(S.UnaryOpKind.PrefixDec, SimpleSId("x2"))),
+                SimpleSVarDeclStmt(VarTypeExp, "x5", new S.UnaryOpExp(S.UnaryOpKind.PostfixInc, SimpleSId("x2"))),
+                SimpleSVarDeclStmt(VarTypeExp, "x6", new S.UnaryOpExp(S.UnaryOpKind.PostfixDec, SimpleSId("x2")))
+            );
+
+            var script = Translate(syntaxScript);
+
+            var expected = SimpleScript(null, null,
+                SimpleGlobalVarDeclStmt(Type.Bool, "x1", new CallInternalUnaryOperatorExp(InternalUnaryOperator.LogicalNot_Bool_Bool, new ExpInfo(SimpleBool(false), Type.Bool))),
+                SimpleGlobalVarDeclStmt(Type.Int, "x2", new CallInternalUnaryOperatorExp(InternalUnaryOperator.UnaryMinus_Int_Int, new ExpInfo(SimpleInt(3), Type.Int))),
+                SimpleGlobalVarDeclStmt(Type.Int, "x3", new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PrefixInc_Int_Int, new PrivateGlobalVarExp("x2"))),
+                SimpleGlobalVarDeclStmt(Type.Int, "x4", new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PrefixDec_Int_Int, new PrivateGlobalVarExp("x2"))),
+                SimpleGlobalVarDeclStmt(Type.Int, "x5", new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PostfixInc_Int_Int, new PrivateGlobalVarExp("x2"))),
+                SimpleGlobalVarDeclStmt(Type.Int, "x6", new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PostfixDec_Int_Int, new PrivateGlobalVarExp("x2")))
+            );
+
+            Assert.Equal(expected, script, IR0EqualityComparer.Instance);
+        }
+
+        [Fact]
+        public void UnaryOpExp_ChecksOperandOfUnaryAssignExpIsIntType()
+        {
+            S.Exp operand;
+            var syntaxScript = SimpleSScript(
+                SimpleSVarDeclStmt(StringTypeExp, "x", SimpleSString("Hello")),
+                SimpleSVarDeclStmt(VarTypeExp, "i", new S.UnaryOpExp(S.UnaryOpKind.PrefixInc, operand = SimpleSId("x")))
+            );
+
+            var errors = TranslateWithErrors(syntaxScript);
+            VerifyError(errors, A0601_UnaryAssignOp_IntTypeIsAllowedOnly, operand);
+        }
+
+        [Fact]
+        public void UnaryOpExp_ChecksOperandOfUnaryAssignExpIsAssignable()
+        {
+            S.Exp operand;
+            var syntaxScript = SimpleSScript(
+                SimpleSVarDeclStmt(VarTypeExp, "i", new S.UnaryOpExp(S.UnaryOpKind.PrefixInc, operand = SimpleSInt(3)))
+            );
+
+            var errors = TranslateWithErrors(syntaxScript);
+            VerifyError(errors, A0602_UnaryAssignOp_AssignableExpressionIsAllowedOnly, operand);
+        }
+
+        [Fact]
+        public void UnaryOpExp_ChecksOperandOfLogicalNotIsBoolType()
+        {
+            S.Exp operand;
+            var syntaxScript = SimpleSScript(
+                SimpleSVarDeclStmt(VarTypeExp, "b", new S.UnaryOpExp(S.UnaryOpKind.LogicalNot, operand = SimpleSInt(3)))
+            );
+
+            var errors = TranslateWithErrors(syntaxScript);
+            VerifyError(errors, A0701_UnaryOp_LogicalNotOperatorIsAppliedToBoolTypeOperandOnly, operand);
+        }
+
+        [Fact]
+        public void UnaryOpExp_ChecksOperandOfUnaryMinusIsIntType()
+        {
+            S.Exp operand;
+            var syntaxScript = SimpleSScript(
+                SimpleSVarDeclStmt(VarTypeExp, "i", new S.UnaryOpExp(S.UnaryOpKind.Minus, operand = SimpleSBool(false)))
+            );
+
+            var errors = TranslateWithErrors(syntaxScript);
+            VerifyError(errors, A0702_UnaryOp_UnaryMinusOperatorIsAppliedToIntTypeOperandOnly, operand);
+        }
+
+        [Fact]
+        void BinaryOpExp_TranslatesIntoAssignExp()
+        {
+            var syntaxScript = SimpleSScript(
+                SimpleSVarDeclStmt(IntTypeExp, "x"),
+                new S.ExpStmt(new S.BinaryOpExp(S.BinaryOpKind.Assign, SimpleSId("x"), SimpleSInt(3)))
+            );
+
+            var script = Translate(syntaxScript);
+            var expected = SimpleScript(null, null,
+                SimpleGlobalVarDeclStmt(Type.Int, "x"),
+                new ExpStmt(new ExpInfo(new AssignExp(new PrivateGlobalVarExp("x"), SimpleInt(3)), Type.Int))
+            );
+
+            Assert.Equal(expected, script, IR0EqualityComparer.Instance);
+        }
+
+        [Fact]
+        void BinaryOpExp_ChecksCompatibleBetweenOperandsOnAssignOperation()
+        {
+            S.BinaryOpExp binOpExp;
+            var syntaxScript = SimpleSScript(
+                SimpleSVarDeclStmt(IntTypeExp, "x"),
+                new S.ExpStmt(binOpExp = new S.BinaryOpExp(S.BinaryOpKind.Assign, SimpleSId("x"), SimpleSBool(true)))
+            );
+
+            var errors = TranslateWithErrors(syntaxScript);
+            VerifyError(errors, A0801_BinaryOp_LeftOperandTypeIsNotCompatibleWithRightOperandType, binOpExp);
+        }
+
+        [Fact]
+        void BinaryOpExp_ChecksLeftOperandIsAssignableOnAssignOperation()
+        {
+            S.Exp exp;
+            var syntaxScript = SimpleSScript(
+                new S.ExpStmt(new S.BinaryOpExp(S.BinaryOpKind.Assign, exp = SimpleSInt(3), SimpleSInt(4)))
+            );
+
+            var errors = TranslateWithErrors(syntaxScript);
+            VerifyError(errors, A0803_BinaryOp_LeftOperandIsNotAssignable, exp);
+        }
+
+        [Fact]
+        void BinaryOpExp_ChecksOperatorNotFound()
+        {
+            S.Exp exp;
+            var syntaxScript = SimpleSScript(
+                SimpleSVarDeclStmt(StringTypeExp, "x", exp = new S.BinaryOpExp(S.BinaryOpKind.Multiply, SimpleSString("Hello"), SimpleSInt(4)))
+            );
+
+            var errors = TranslateWithErrors(syntaxScript);
+            VerifyError(errors, A0802_BinaryOp_OperatorNotFound, exp);
+        }
+
+        static IEnumerable<object[]> Data_BinaryOpExp_TranslatesIntoCallInternalBinaryOperatorExp_Trivial()
+        {
+            Func<S.Exp> SInt = () => SimpleSInt(1);
+            Func<ExpInfo> IntInfo = () => new ExpInfo(SimpleInt(1), Type.Int);
+
+            yield return new object[] { S.BinaryOpKind.Multiply, SInt, IntInfo, Type.Int, InternalBinaryOperator.Multiply_Int_Int_Int };
+            yield return new object[] { S.BinaryOpKind.Divide, SInt, IntInfo, Type.Int, InternalBinaryOperator.Divide_Int_Int_Int};
+            yield return new object[] { S.BinaryOpKind.Modulo, SInt, IntInfo, Type.Int, InternalBinaryOperator.Modulo_Int_Int_Int };
+            yield return new object[] { S.BinaryOpKind.Add, SInt, IntInfo, Type.Int, InternalBinaryOperator.Add_Int_Int_Int };
+            yield return new object[] { S.BinaryOpKind.Subtract, SInt, IntInfo, Type.Int, InternalBinaryOperator.Subtract_Int_Int_Int };
+            yield return new object[] { S.BinaryOpKind.LessThan, SInt, IntInfo, Type.Bool, InternalBinaryOperator.LessThan_Int_Int_Bool };
+            yield return new object[] { S.BinaryOpKind.GreaterThan, SInt, IntInfo, Type.Bool, InternalBinaryOperator.GreaterThan_Int_Int_Bool };
+            yield return new object[] { S.BinaryOpKind.LessThanOrEqual, SInt, IntInfo, Type.Bool, InternalBinaryOperator.LessThanOrEqual_Int_Int_Bool };
+            yield return new object[] { S.BinaryOpKind.GreaterThanOrEqual, SInt, IntInfo, Type.Bool, InternalBinaryOperator.GreaterThanOrEqual_Int_Int_Bool };
+            yield return new object[] { S.BinaryOpKind.Equal, SInt, IntInfo, Type.Bool, InternalBinaryOperator.Equal_Int_Int_Bool };
+
+            Func<S.Exp> SString = () => SimpleSString("Hello");
+            Func<ExpInfo> StringInfo = () => new ExpInfo(SimpleString("Hello"), Type.String);
+
+            yield return new object[] { S.BinaryOpKind.Add, SString, StringInfo, Type.String, InternalBinaryOperator.Add_String_String_String };
+            yield return new object[] { S.BinaryOpKind.LessThan, SString, StringInfo, Type.Bool, InternalBinaryOperator.LessThan_String_String_Bool };
+            yield return new object[] { S.BinaryOpKind.GreaterThan, SString, StringInfo, Type.Bool, InternalBinaryOperator.GreaterThan_String_String_Bool };
+            yield return new object[] { S.BinaryOpKind.LessThanOrEqual, SString, StringInfo, Type.Bool, InternalBinaryOperator.LessThanOrEqual_String_String_Bool };
+            yield return new object[] { S.BinaryOpKind.GreaterThanOrEqual, SString, StringInfo, Type.Bool, InternalBinaryOperator.GreaterThanOrEqual_String_String_Bool };
+            yield return new object[] { S.BinaryOpKind.Equal, SString, StringInfo, Type.Bool, InternalBinaryOperator.Equal_String_String_Bool };
+
+            Func<S.Exp> SBool = () => SimpleSBool(true);
+            Func<ExpInfo> BoolInfo = () => new ExpInfo(SimpleBool(true), Type.Bool);
+
+            yield return new object[] { S.BinaryOpKind.Equal, SBool, BoolInfo, Type.Bool, InternalBinaryOperator.Equal_Bool_Bool_Bool};
+
+            // NotEqual
+        }
+
+        [Theory]
+        [MemberData(nameof(Data_BinaryOpExp_TranslatesIntoCallInternalBinaryOperatorExp_Trivial))]
+        public void BinaryOpExp_TranslatesIntoCallInternalBinaryOperatorExp_Trivial(
+            S.BinaryOpKind syntaxOpKind, Func<S.Exp> newSOperand, Func<ExpInfo> newOperandInfo, Type resultType, InternalBinaryOperator ir0BinOp)
+        {
+            var syntaxScript = SimpleSScript(
+                SimpleSVarDeclStmt(VarTypeExp, "x", new S.BinaryOpExp(syntaxOpKind, newSOperand.Invoke(), newSOperand.Invoke()))
+            );
+
+            var script = Translate(syntaxScript);
+            var expected = SimpleScript(null, null,
+                SimpleGlobalVarDeclStmt(resultType, "x", new CallInternalBinaryOperatorExp(ir0BinOp,
+                    newOperandInfo.Invoke(),
+                    newOperandInfo.Invoke()
+                ))
+            );
+
+            Assert.Equal(expected, script, IR0EqualityComparer.Instance);
+        }
+
+        static IEnumerable<object[]> Data_BinaryOpExp_TranslatesIntoCallInternalBinaryOperatorExp_NotEqual()
+        {
+            Func<S.Exp> SBool = () => SimpleSBool(true);
+            Func<ExpInfo> BoolInfo = () => new ExpInfo(SimpleBool(true), Type.Bool);
+
+            Func<S.Exp> SInt = () => SimpleSInt(1);
+            Func<ExpInfo> IntInfo = () => new ExpInfo(SimpleInt(1), Type.Int);
+
+            Func<S.Exp> SString = () => SimpleSString("Hello");
+            Func<ExpInfo> StringInfo = () => new ExpInfo(SimpleString("Hello"), Type.String);
+
+            yield return new object[] { SBool, BoolInfo, InternalBinaryOperator.Equal_Bool_Bool_Bool };
+            yield return new object[] { SInt, IntInfo, InternalBinaryOperator.Equal_Int_Int_Bool };
+            yield return new object[] { SString, StringInfo, InternalBinaryOperator.Equal_String_String_Bool };
+        }
+
+        [Theory]
+        [MemberData(nameof(Data_BinaryOpExp_TranslatesIntoCallInternalBinaryOperatorExp_NotEqual))]
+        public void BinaryOpExp_TranslatesIntoCallInternalBinaryOperatorExp_NotEqual(
+            Func<S.Exp> newSOperand, Func<ExpInfo> newOperandInfo, InternalBinaryOperator ir0BinOperator)
+        {
+            var syntaxScript = SimpleSScript(
+                SimpleSVarDeclStmt(VarTypeExp, "x", new S.BinaryOpExp(S.BinaryOpKind.NotEqual, newSOperand.Invoke(), newSOperand.Invoke()))
+            );
+
+            var script = Translate(syntaxScript);
+            var expected = SimpleScript(null, null,
+                SimpleGlobalVarDeclStmt(Type.Bool, "x", 
+                    new CallInternalUnaryOperatorExp(InternalUnaryOperator.LogicalNot_Bool_Bool, new ExpInfo(
+                        new CallInternalBinaryOperatorExp(ir0BinOperator, newOperandInfo.Invoke(), newOperandInfo.Invoke()),
+                        Type.Bool
+                    ))
+                )
+            );
+
+            Assert.Equal(expected, script, IR0EqualityComparer.Instance);
+        }
+
+
+        //case S.CallExp callExp: return AnalyzeCallExp(callExp, hintTypeValue, context, out outExp, out outTypeValue);        
+        //case S.LambdaExp lambdaExp: return AnalyzeLambdaExp(lambdaExp, context, out outExp, out outTypeValue);
+        //case S.IndexerExp indexerExp: return AnalyzeIndexerExp(indexerExp, context, out outExp, out outTypeValue);
+        //case S.MemberCallExp memberCallExp: return AnalyzeMemberCallExp(memberCallExp, context, out outExp, out outTypeValue);
+        //case S.MemberExp memberExp: return AnalyzeMemberExp(memberExp, context, out outExp, out outTypeValue);
+        //case S.ListExp listExp: return AnalyzeListExp(listExp, context, out outExp, out outTypeValue);
 
     }
 }

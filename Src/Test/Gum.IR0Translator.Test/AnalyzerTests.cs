@@ -10,8 +10,7 @@ using S = Gum.Syntax;
 namespace Gum.IR0
 {
     public class AnalyzerTests
-    {
-        
+    {   
 
         //[Fact]
         //void TestAnalyzeIntLiteralExp()

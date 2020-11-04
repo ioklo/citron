@@ -203,7 +203,7 @@ namespace Gum.IR0
                 return false;
             }
 
-            outExp = new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PrefixDec_Int_Int, ir0Operand);
+            outExp = new CallInternalUnaryAssignOperator(op, ir0Operand);
             outTypeValue = intTypeValue;
             return true;
         }
@@ -227,7 +227,7 @@ namespace Gum.IR0
                     {
                         if (!analyzer.IsAssignable(boolTypeValue, operandType, context))
                         {
-                            context.AddError(A0701_UnaryOp_LogicalNotOperatorIsAppliedToBoolTypeOperandOnly, unaryOpExp, $"{unaryOpExp.Operand}에 !를 적용할 수 없습니다. bool 타입이어야 합니다");                            
+                            context.AddError(A0701_UnaryOp_LogicalNotOperatorIsAppliedToBoolTypeOperandOnly, unaryOpExp.Operand, $"{unaryOpExp.Operand}에 !를 적용할 수 없습니다. bool 타입이어야 합니다");                            
                             return false;
                         }
 
@@ -241,7 +241,7 @@ namespace Gum.IR0
                     {
                         if (!analyzer.IsAssignable(intTypeValue, operandType, context))
                         {
-                            context.AddError(A0702_UnaryOp_UnaryMinusOperatorIsAppliedToIntTypeOperandOnly, unaryOpExp, $"{unaryOpExp.Operand}에 -를 적용할 수 없습니다. int 타입이어야 합니다");
+                            context.AddError(A0702_UnaryOp_UnaryMinusOperatorIsAppliedToIntTypeOperandOnly, unaryOpExp.Operand, $"{unaryOpExp.Operand}에 -를 적용할 수 없습니다. int 타입이어야 합니다");
                             return false;
                         }
 
@@ -252,16 +252,16 @@ namespace Gum.IR0
                     }
 
                 case S.UnaryOpKind.PostfixInc: // e.m++ 등
-                    return AnalyzeIntUnaryAssignExp(unaryOpExp, InternalUnaryAssignOperator.PostfixInc_Int_Int, context, out outExp, out outTypeValue);
+                    return AnalyzeIntUnaryAssignExp(unaryOpExp.Operand, InternalUnaryAssignOperator.PostfixInc_Int_Int, context, out outExp, out outTypeValue);
 
                 case S.UnaryOpKind.PostfixDec:
-                    return AnalyzeIntUnaryAssignExp(unaryOpExp, InternalUnaryAssignOperator.PostfixDec_Int_Int, context, out outExp, out outTypeValue);
+                    return AnalyzeIntUnaryAssignExp(unaryOpExp.Operand, InternalUnaryAssignOperator.PostfixDec_Int_Int, context, out outExp, out outTypeValue);
 
                 case S.UnaryOpKind.PrefixInc:
-                    return AnalyzeIntUnaryAssignExp(unaryOpExp, InternalUnaryAssignOperator.PrefixInc_Int_Int, context, out outExp, out outTypeValue);
+                    return AnalyzeIntUnaryAssignExp(unaryOpExp.Operand, InternalUnaryAssignOperator.PrefixInc_Int_Int, context, out outExp, out outTypeValue);
 
                 case S.UnaryOpKind.PrefixDec:
-                    return AnalyzeIntUnaryAssignExp(unaryOpExp, InternalUnaryAssignOperator.PrefixDec_Int_Int, context, out outExp, out outTypeValue);
+                    return AnalyzeIntUnaryAssignExp(unaryOpExp.Operand, InternalUnaryAssignOperator.PrefixDec_Int_Int, context, out outExp, out outTypeValue);
 
                 default:
                     throw new InvalidOperationException();

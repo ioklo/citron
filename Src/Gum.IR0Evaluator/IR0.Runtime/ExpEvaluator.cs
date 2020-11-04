@@ -126,8 +126,8 @@ namespace Gum.IR0.Runtime
 
                     case ExpStringExpElement expElem:
                         {
-                            var strValue = evaluator.AllocValue<StringValue>(expElem.Exp.Type, context);
-                            await EvalAsync(expElem.Exp.Exp, strValue, context);
+                            var strValue = evaluator.AllocValue<StringValue>(Type.String, context);
+                            await EvalAsync(expElem.Exp, strValue, context);
                             sb.Append(strValue.GetString());
                             break;
                         }

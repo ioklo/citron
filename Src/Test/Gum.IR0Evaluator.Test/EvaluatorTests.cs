@@ -1,4 +1,5 @@
 ﻿using Gum.IR0;
+using Gum.Misc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -46,24 +47,21 @@ namespace Gum.IR0.Runtime
         {
             return new CommandStmt(new StringExp(
                 new TextStringExpElement("#Sleep"),
-                new ExpStringExpElement(
-                    new ExpInfo(
-                        new CallInternalUnaryOperatorExp(
-                            InternalUnaryOperator.ToString_Int_String,
-                            new ExpInfo(new IntLiteralExp(i), Type.Int)),
-                        Type.String
-                    )
+                new ExpStringExpElement(                    
+                    new CallInternalUnaryOperatorExp(
+                        InternalUnaryOperator.ToString_Int_String,
+                        new ExpInfo(new IntLiteralExp(i), Type.Int))                    
                 )
             ));
         }
 
         CommandStmt PrintBoolCmdStmt(Exp exp)
         {
-            return new CommandStmt(new StringExp(new ExpStringExpElement(new ExpInfo(
+            return new CommandStmt(new StringExp(new ExpStringExpElement(
                 new CallInternalUnaryOperatorExp(
                     InternalUnaryOperator.ToString_Bool_String,
-                    new ExpInfo(exp, Type.Bool)),
-                Type.String))));
+                    new ExpInfo(exp, Type.Bool))
+            )));
         }
 
         LocalVarDeclStmt SimpleLocalVarDecl(string name, Type typeId, Exp? initExp)
@@ -73,21 +71,21 @@ namespace Gum.IR0.Runtime
 
         CommandStmt PrintIntCmdStmt(Exp varExp)
         {
-            return new CommandStmt(new StringExp(new ExpStringExpElement(new ExpInfo(
+            return new CommandStmt(new StringExp(new ExpStringExpElement(
                 new CallInternalUnaryOperatorExp(
                     InternalUnaryOperator.ToString_Int_String,
-                    new ExpInfo(varExp, Type.Int)), 
-                Type.String))));
+                    new ExpInfo(varExp, Type.Int))
+            )));
         }
         
         CommandStmt PrintStringCmdStmt(Exp varExp)
         {
-            return new CommandStmt(new StringExp(new ExpStringExpElement(new ExpInfo(varExp, Type.String))));
+            return new CommandStmt(new StringExp(new ExpStringExpElement(varExp)));
         }
 
         CommandStmt PrintStringCmdStmt(string text)
         {
-            return new CommandStmt(new StringExp(new ExpStringExpElement(new ExpInfo(SimpleString(text), Type.String))));
+            return new CommandStmt(new StringExp(new TextStringExpElement(text)));
         }
 
         StringExp SimpleString(string text)
@@ -287,28 +285,25 @@ namespace Gum.IR0.Runtime
         [Fact]
         public Task IfTestEnumStmt_SelectThenBranchWhenTestPassed()
         {
-            // 준비물, Enum Decl
-            throw new NotImplementedException(); // 일단 제외
+            throw new PrerequisiteRequiredException(Prerequisite.IfTestEnumStmt);
         }
 
         [Fact]
         public Task IfTestEnumStmt_OverrideVariableType()
         {
-            // 준비물, EnumDecl, Enum Element Type
-            throw new NotImplementedException();
+            throw new PrerequisiteRequiredException(Prerequisite.IfTestEnumStmt);            
         }
 
         [Fact]
         public Task IfTestClassStmt_SelectThenBranchWhenTestPassed()
         {
-            // 준비물 ClassDecl
-            throw new NotImplementedException();
+            throw new PrerequisiteRequiredException(Prerequisite.IfTestClassStmt);
         }
 
         [Fact]
         public Task TaskIfTestClassStmt_OverrideVariableType()
         {
-            throw new NotImplementedException();
+            throw new PrerequisiteRequiredException(Prerequisite.IfTestClassStmt);
         }
 
         // var decl for initializer, 
@@ -777,7 +772,7 @@ namespace Gum.IR0.Runtime
         [Fact]
         public Task ExternalGlobalVarExp_GetGlobalValue()
         {
-            throw new NotImplementedException();
+            throw new PrerequisiteRequiredException(Prerequisite.External);
         }
         
         // PrivateGlobalVarExp 둘다 위에서 함
@@ -786,25 +781,25 @@ namespace Gum.IR0.Runtime
         [Fact]
         public Task StaticMemberExp_GetStaticMemberValue()
         {
-            throw new NotImplementedException();
+            throw new PrerequisiteRequiredException(Prerequisite.Static);
         }
 
         [Fact]
         public Task StructMemberExp_GetStructMemberValue()
         {
-            throw new NotImplementedException();
+            throw new PrerequisiteRequiredException(Prerequisite.Struct);
         }
 
         [Fact]
         public Task ClassMemberExp_GetClassMemberValue()
         {
-            throw new NotImplementedException();
+            throw new PrerequisiteRequiredException(Prerequisite.Class);
         }
 
         [Fact]
         public Task EnumMemberExp_GetEnumMemberValue()
         {
-            throw new NotImplementedException();
+            throw new PrerequisiteRequiredException(Prerequisite.Enum);
         }
         
         [Fact]
@@ -855,7 +850,7 @@ namespace Gum.IR0.Runtime
 
                 PrintStringCmdStmt(new StringExp(
                     new TextStringExpElement("Hello "),
-                    new ExpStringExpElement(new ExpInfo(new LocalVarExp("x"), Type.String)),
+                    new ExpStringExpElement(new LocalVarExp("x")),
                     new TextStringExpElement("World")))
             };
 
@@ -1028,7 +1023,7 @@ namespace Gum.IR0.Runtime
         [Fact]
         public Task LambdaExp_CapturesThisWithReferencing()
         {
-            throw new NotImplementedException();
+            throw new PrerequisiteRequiredException(Prerequisite.Class);
         }
 
         // Lambda Purity
@@ -1102,7 +1097,7 @@ namespace Gum.IR0.Runtime
         [Fact]
         public Task NewEnumExp_MakesEnumValue()
         {
-            throw new NotImplementedException();
+            throw new PrerequisiteRequiredException(Prerequisite.Enum);
         }
 
 
@@ -1110,14 +1105,14 @@ namespace Gum.IR0.Runtime
         [Fact]
         public Task NewStructExp_MakesStructValue()
         {
-            throw new NotImplementedException();
+            throw new PrerequisiteRequiredException(Prerequisite.Struct);
         }
 
         // NewClass
         [Fact]
         public Task NewClassExp_MakesClassValue()
         {
-            throw new NotImplementedException();
+            throw new PrerequisiteRequiredException(Prerequisite.Class);
         }
     }
 }
