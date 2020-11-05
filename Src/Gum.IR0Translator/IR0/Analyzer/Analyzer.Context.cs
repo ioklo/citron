@@ -46,6 +46,7 @@ namespace Gum.IR0
             private Dictionary<string, PrivateGlobalVarInfo> privateGlobalVarInfos;
             private List<TypeDecl> typeDecls;
             private List<FuncDecl> funcDecls;
+            private Dictionary<ModuleItemId, FuncDeclId> funcDeclsById;
 
             public Context(
                 ModuleInfoService moduleInfoService,
@@ -71,6 +72,7 @@ namespace Gum.IR0
                 
                 typeDecls = new List<TypeDecl>();
                 funcDecls = new List<FuncDecl>();
+                funcDeclsById = new Dictionary<ModuleItemId, FuncDeclId>();
             }
 
             public bool DoesLocalVarNameExistInScope(string name)
@@ -346,10 +348,11 @@ namespace Gum.IR0
                 return false;
             }
 
-            public void AddFuncDecl(bool bThisCall, IEnumerable<string> typeParams, IEnumerable<string> paramNames, Stmt body)
+            public void AddFuncDecl(ModuleItemId itemId, bool bThisCall, IEnumerable<string> typeParams, IEnumerable<string> paramNames, Stmt body)
             {
                 var id = new FuncDeclId(funcDecls.Count);
                 funcDecls.Add(new FuncDecl.Normal(id, bThisCall, typeParams, paramNames, body));
+                funcDeclsById.Add(itemId, id);
             }
 
             public IEnumerable<TypeDecl> GetTypeDecls()
@@ -362,10 +365,11 @@ namespace Gum.IR0
                 return funcDecls;
             }
 
-            public void AddSeqFunc(Type retTypeId, bool bThisCall, IEnumerable<string> typeParams, IEnumerable<string> paramNames, Stmt body)
+            public void AddSeqFunc(ModuleItemId itemId, Type retTypeId, bool bThisCall, IEnumerable<string> typeParams, IEnumerable<string> paramNames, Stmt body)
             {
                 var id = new FuncDeclId(funcDecls.Count);
                 funcDecls.Add(new FuncDecl.Sequence(id, retTypeId, bThisCall, typeParams, paramNames,body));
+                funcDeclsById.Add(itemId, id);
             }
 
             public bool GetIdentifierInfo(
@@ -426,9 +430,12 @@ namespace Gum.IR0
                 return privateGlobalVarInfos.ContainsKey(name);
             }
 
-            public FuncDeclId GetFuncDeclId(ModuleItemId funcId)
+            public FuncDeclId? GetFuncDeclId(ModuleItemId funcId)
             {
-                throw new NotImplementedException();
+                if (funcDeclsById.TryGetValue(funcId, out var funcDeclId))
+                    return funcDeclId;
+                else
+                    return null;
             }
 
             // 1. exp가 무슨 타입을 가지는지

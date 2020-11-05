@@ -298,12 +298,12 @@ namespace Gum.IR0
                     {
                         // TODO: Body가 실제로 리턴을 제대로 하는지 확인해야 할 필요가 있다
                         var retTypeId = context.GetType(funcInfo.RetTypeValue);
-                        context.AddSeqFunc(retTypeId, false, funcDecl.TypeParams, funcDecl.ParamInfo.Parameters.Select(param => param.Name), body);
+                        context.AddSeqFunc(ModuleItemId.Make(funcDecl.Name, funcDecl.TypeParams.Length), retTypeId, false, funcDecl.TypeParams, funcDecl.ParamInfo.Parameters.Select(param => param.Name), body);
                     }
                     else
                     {
                         // TODO: Body가 실제로 리턴을 제대로 하는지 확인해야 할 필요가 있다
-                        context.AddFuncDecl(bThisCall: false, funcDecl.TypeParams, funcDecl.ParamInfo.Parameters.Select(param => param.Name), body);
+                        context.AddFuncDecl(ModuleItemId.Make(funcDecl.Name, funcDecl.TypeParams.Length), bThisCall: false, funcDecl.TypeParams, funcDecl.ParamInfo.Parameters.Select(param => param.Name), body);
                     }
                 }
                 else
@@ -540,7 +540,7 @@ namespace Gum.IR0
                 infos.Add((ir0Exp, typeValue));
             }
 
-            outInfos = outInfos.ToImmutableArray();
+            outInfos = infos.ToImmutableArray();
             return true;
         }
 

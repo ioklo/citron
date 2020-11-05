@@ -447,22 +447,30 @@ namespace Gum.IR0
                 if (!analyzer.CheckParamTypes(callableExp, funcTypeValue.Params, argInfos.Select(info => info.TypeValue).ToList(), context))
                     return false;
 
+                // 내부함수인지 확인을..                
                 var funcDeclId = context.GetFuncDeclId(globalFunc.FuncId);
-
-                var args = argInfos.Select(info =>
+                if (funcDeclId != null)
                 {
-                    var typeId = context.GetType(info.TypeValue);
-                    return new ExpInfo(info.Exp, typeId);
-                }).ToArray();
-                
-                outExp = new CallFuncExp(
-                    funcDeclId, 
-                    typeArgs.Select(typeArg => context.GetType(typeArg)), 
-                    null, 
-                    args);
+                    var args = argInfos.Select(info =>
+                    {
+                        var typeId = context.GetType(info.TypeValue);
+                        return new ExpInfo(info.Exp, typeId);
+                    }).ToArray();
 
-                outTypeValue = funcTypeValue;
-                return true;
+                    outExp = new CallFuncExp(
+                        funcDeclId.Value,
+                        typeArgs.Select(typeArg => context.GetType(typeArg)),
+                        null,
+                        args);
+
+                    outTypeValue = funcTypeValue;
+                    return true;
+                }
+                else
+                {
+                    // 외부함수 처리
+                    throw new NotImplementedException();
+                }
             }
 
             // 3. 일반 exp
@@ -560,7 +568,7 @@ namespace Gum.IR0
                             var appliedTypeValue = context.TypeValueService.Apply(enumElem.EnumTypeValue, fieldInfo.TypeValue);
                             if (!analyzer.IsAssignable(appliedTypeValue, argInfo.TypeValue, context))
                             {
-                                context.AddError(A0903_CallExp_MismatchBetweenEnumParamTypeAndEnumArgType, exp, "enum의 {0}번째 인자 형식이 맞지 않습니다");
+                                context.AddError(A0904_CallExp_MismatchBetweenEnumParamTypeAndEnumArgType, exp, "enum의 {0}번째 인자 형식이 맞지 않습니다");
                                 return false;
                             }
 
@@ -689,6 +697,7 @@ namespace Gum.IR0
 
             var elemExps = new List<Exp>();
 
+            // TODO: 타입 힌트도 이용해야 할 것 같다
             TypeValue? curElemTypeValue = (listExp.ElemType != null) ? context.GetTypeValueByTypeExp(listExp.ElemType) : null;
 
             foreach (var elem in listExp.Elems)

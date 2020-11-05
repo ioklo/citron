@@ -53,7 +53,7 @@ namespace Gum.IR0
             return testErrorCollector.Errors;
         }
 
-        static T[] MakeArray<T>(params T[] values)
+        static T[] Arr<T>(params T[] values)
         {
             return values;
         }
@@ -81,7 +81,7 @@ namespace Gum.IR0
 
         static S.VarDecl SimpleSVarDecl(S.TypeExp typeExp, string name, S.Exp? initExp = null)
         {
-            return new S.VarDecl(typeExp, MakeArray(new S.VarDeclElement(name, initExp)));
+            return new S.VarDecl(typeExp, Arr(new S.VarDeclElement(name, initExp)));
         }
 
         static S.VarDeclStmt SimpleSVarDeclStmt(S.TypeExp typeExp, string name, S.Exp? initExp = null)
@@ -101,13 +101,13 @@ namespace Gum.IR0
         static S.StringExp SimpleSString(string s) => new S.StringExp(new S.TextStringExpElement(s));
 
         static PrivateGlobalVarDeclStmt SimpleGlobalVarDeclStmt(Type type, string name, Exp? initExp = null)
-            => new PrivateGlobalVarDeclStmt(MakeArray(new PrivateGlobalVarDeclStmt.Element(name, type, initExp)));
+            => new PrivateGlobalVarDeclStmt(Arr(new PrivateGlobalVarDeclStmt.Element(name, type, initExp)));
 
         static LocalVarDeclStmt SimpleLocalVarDeclStmt(Type typeId, string name, Exp? initExp = null)
             => new LocalVarDeclStmt(SimpleLocalVarDecl(typeId, name, initExp));
 
         static LocalVarDecl SimpleLocalVarDecl(Type typeId, string name, Exp? initExp = null) 
-            => new LocalVarDecl(MakeArray(new LocalVarDecl.Element(name, typeId, initExp)));
+            => new LocalVarDecl(Arr(new LocalVarDecl.Element(name, typeId, initExp)));
 
         static IntLiteralExp SimpleInt(int v) => new IntLiteralExp(v);
         static BoolLiteralExp SimpleBool(bool v) => new BoolLiteralExp(v);
@@ -168,7 +168,7 @@ namespace Gum.IR0
 
             var expected = SimpleScript(null, null, 
                 new BlockStmt(
-                    new LocalVarDeclStmt(new LocalVarDecl(MakeArray(new LocalVarDecl.Element("x", Type.Int, SimpleInt(1)))))
+                    new LocalVarDeclStmt(new LocalVarDecl(Arr(new LocalVarDecl.Element("x", Type.Int, SimpleInt(1)))))
                 )
             );
 
@@ -190,11 +190,11 @@ namespace Gum.IR0
 
             var funcDecl = new FuncDecl.Normal(new FuncDeclId(0), false, Array.Empty<string>(), Array.Empty<string>(), new BlockStmt(
 
-                new LocalVarDeclStmt(new LocalVarDecl(MakeArray(new LocalVarDecl.Element("x", Type.Int, SimpleInt(1)))))
+                new LocalVarDeclStmt(new LocalVarDecl(Arr(new LocalVarDecl.Element("x", Type.Int, SimpleInt(1)))))
 
             ));
 
-            var expected = SimpleScript(null, MakeArray(funcDecl));
+            var expected = SimpleScript(null, Arr(funcDecl));
 
             Assert.Equal(expected, script, IR0EqualityComparer.Instance);
         }
@@ -1361,13 +1361,261 @@ namespace Gum.IR0
             Assert.Equal(expected, script, IR0EqualityComparer.Instance);
         }
 
+        [Fact]
+        void CallExp_TranslatesIntoNewEnumExp()
+        {
+            throw new PrerequisiteRequiredException(Prerequisite.Enum);
+        }
 
-        //case S.CallExp callExp: return AnalyzeCallExp(callExp, hintTypeValue, context, out outExp, out outTypeValue);        
-        //case S.LambdaExp lambdaExp: return AnalyzeLambdaExp(lambdaExp, context, out outExp, out outTypeValue);
-        //case S.IndexerExp indexerExp: return AnalyzeIndexerExp(indexerExp, context, out outExp, out outTypeValue);
-        //case S.MemberCallExp memberCallExp: return AnalyzeMemberCallExp(memberCallExp, context, out outExp, out outTypeValue);
+        [Fact]
+        void CallExp_TranslatesIntoCallFuncExp()
+        {
+            var syntaxScript = new S.Script(
+                new S.Script.FuncDeclElement(new S.FuncDecl(
+                    false, IntTypeExp, "Func", Arr("T"), 
+                    new S.FuncParamInfo(Arr(new S.TypeAndName(IntTypeExp, "x")), null),
+                    new S.BlockStmt(new S.ReturnStmt(SimpleSId("x")))
+                )),
+
+                new S.Script.StmtElement(
+                    new S.ExpStmt(new S.CallExp(SimpleSId("Func"), Arr( IntTypeExp ), SimpleSInt(3)))
+                )
+            );
+
+            var script = Translate(syntaxScript);
+
+            var expected = SimpleScript(null,
+                Arr(
+                    new FuncDecl.Normal(
+                        new FuncDeclId(0), false, Arr("T"), Arr("x"), new BlockStmt(new ReturnStmt(new LocalVarExp("x")))
+                    )
+                )
+            );
+
+            Assert.Equal(expected, script, IR0EqualityComparer.Instance);
+        }
+
+        // TODO: TypeArgument지원하면 General버전이랑 통합하기
+        [Fact]
+        void CallExp_TranslatesIntoCallFuncExpWithoutTypeArgument()
+        {
+            var syntaxScript = new S.Script(
+                new S.Script.FuncDeclElement(new S.FuncDecl(
+                    false, IntTypeExp, "Func", Arr<string>(),
+                    new S.FuncParamInfo(Arr(new S.TypeAndName(IntTypeExp, "x")), null),
+                    new S.BlockStmt(new S.ReturnStmt(SimpleSId("x")))
+                )),
+
+                new S.Script.StmtElement(
+                    new S.ExpStmt(new S.CallExp(SimpleSId("Func"), Arr<S.TypeExp>(), SimpleSInt(3)))
+                )
+            );
+
+            var script = Translate(syntaxScript);
+
+            var expected = SimpleScript(null,
+                Arr(
+                    new FuncDecl.Normal(
+                        new FuncDeclId(0), false, Arr<string>(), Arr("x"), new BlockStmt(new ReturnStmt(new LocalVarExp("x")))
+                    )
+                ),
+
+                new ExpStmt(new ExpInfo(new CallFuncExp(new FuncDeclId(0), Arr<Type>(), null, Arr(new ExpInfo(SimpleInt(3), Type.Int))), Type.Int))
+            );
+
+            Assert.Equal(expected, script, IR0EqualityComparer.Instance);
+        }
+
+        [Fact]
+        void CallExp_TranslatesIntoCallValueExp()
+        {
+            throw new NotImplementedException();
+        }
+
+        // A0901
+        [Fact]
+        void CallExp_ChecksMultipleCandidates()
+        {
+            throw new NotImplementedException();
+        }
+
+        // A0902
+        [Fact]
+        void CallExp_ChecksCallableExpressionIsNotCallable()
+        {
+            throw new NotImplementedException();
+        }
+
+        // A0903
+        [Fact]
+        void CallExp_ChecksEnumConstructorArgumentCount()
+        {
+            throw new NotImplementedException();
+        }
+
+        // A0904
+        [Fact]
+        void CallExp_ChecksEnumConstructorArgumentType()
+        {
+            throw new NotImplementedException();
+        }        
+
+        [Fact]
+        void LambdaExp_TranslatesTrivially()
+        {
+            // int x; // global
+            // {
+            //     int y; // local
+            //     var l = (int param) => { x = 3; return param + x + y; };
+            // 
+            // }
+
+            throw new NotImplementedException();
+        }
+
+        [Fact]
+        void LambdaExp_ChecksAssignToLocalVaraiableOutsideLambda()
+        {
+            throw new NotImplementedException();
+        }
+
+        [Fact]
+        void IndexerExp_TranslatesTrivially()
+        {
+            // var s = [1, 2, 3, 4];
+            // var i = s[3];
+
+            throw new NotImplementedException();
+        }
+        
+        [Fact]
+        void IndexerExp_ChecksInstanceIsList() // TODO: Indexable로 확장
+        {
+            throw new NotImplementedException();
+        }
+
+        [Fact]
+        void IndexerExp_ChecksIndexIsInt() // TODO: Indexable인자 타입에 따라 달라짐
+        {
+            throw new NotImplementedException();
+        }
+
+        // MemberCallExp
+        // 1. x.F();     // instance call (class, struct, interface)
+        // 2. C.F();     // static call (class static, struct static, global)
+        // 3. E.F(1, 2); // enum constructor
+        // 4. x.f();     // instance lambda call (class, struct, interface)
+        // 5. C.f();     // static lambda call (class static, struct static, global)
+
+        [Fact]
+        void MemberCallExp_TranslatesIntoCallFuncExp() // 1, 2
+        {
+            
+            throw new NotImplementedException();
+        }
+
+        [Fact]
+        void MemberCallExp_TranslatesIntoNewEnumExp() // 3
+        {   
+            throw new NotImplementedException();
+        }
+
+        [Fact]
+        void MemberCallExp_TranslatesIntoCallValueExp() // 4, 5
+        {
+            
+            throw new NotImplementedException();
+        }
+
+        [Fact]
+        void MemberCallExp_ChecksCallableExpressionIsNotCallable() // 4, 5
+        {
+            throw new NotImplementedException();
+        }
+
+        [Fact]
+        void MemberCallExp_EnumConstructorArgumentCount() // 3
+        {
+            throw new NotImplementedException();
+        }
+
+        [Fact]
+        void MemberCallExp_EnumConstructorArgumentType() // 3
+        {
+            throw new NotImplementedException();
+        }
+
+        [Fact]
+        void MemberCallExp_ChecksMultipleCandidates() // 1, 2, 4, 5
+        {
+            throw new NotImplementedException();
+        }
+
+        // MemberExp
+        // 1. E.Second  // enum constructor without parameter
+        // 2. e.X       // enum field (EnumMemberExp)        
+        // 3. C.x       // static 
+        // 4. c.x       // instance  (class, struct, interface)
+        [Fact]
+        void MemberExp_TranslatesIntoNewEnumExp() // 1.
+        {
+            throw new NotImplementedException();
+        }
+
+        [Fact]
+        void MemberExp_TranslatesIntoEnumMemberExp() // 2
+        {
+            throw new NotImplementedException();
+        }
+
+        [Fact]
+        void MemberExp_TranslatesIntoStaticMemberExp() // 3
+        {
+            throw new NotImplementedException();
+        }
+
+        [Fact]
+        void MemberExp_TranslatesIntoStructMemberExp() // 4
+        {
+            throw new NotImplementedException();
+        }
+
+        [Fact]
+        void MemberExp_TranslatesIntoClassMemberExp() // 4
+        {
+            throw new NotImplementedException();
+        }
+
+        [Fact]
+        void MemberExp_ChecksMemberNotFound() // TODO: enum, class, struct, interface 각각의 경우에 해야 하지 않는가
+        {
+            throw new NotImplementedException();
+        }
+
         //case S.MemberExp memberExp: return AnalyzeMemberExp(memberExp, context, out outExp, out outTypeValue);
-        //case S.ListExp listExp: return AnalyzeListExp(listExp, context, out outExp, out outTypeValue);
 
+        [Fact]
+        void ListExp_TranslatesTrivially() // TODO: 타입이 적힌 빈 리스트도 포함, <int>[]
+        {
+            throw new NotImplementedException();
+        }
+
+        [Fact]
+        void ListExp_UsesHintTypeToInferElementType() // List<int> s = []; 
+        {
+            throw new NotImplementedException();
+        }
+
+        [Fact]
+        void ListExp_ChecksCantInferEmptyElementType() // var x = []; // ???
+        {
+            throw new NotImplementedException();
+        }
+
+        [Fact]
+        void ListExp_ChecksCantInferElementType() // var = ["string", 1, false];
+        {
+            throw new NotImplementedException();
+        }
     }
 }

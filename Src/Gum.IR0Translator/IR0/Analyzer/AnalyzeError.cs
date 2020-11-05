@@ -53,7 +53,7 @@ namespace Gum.IR0
         A0901_CallExp_ThereAreMultipleGlobalFunctionsHavingSameSignature,
         A0902_CallExp_CallableExpressionIsNotCallable,
         A0903_CallExp_MismatchEnumConstructorArgCount,
-        A0903_CallExp_MismatchBetweenEnumParamTypeAndEnumArgType,
+        A0904_CallExp_MismatchBetweenEnumParamTypeAndEnumArgType,
 
         A1001_IfStmt_TestTargetShouldBeVariable,
         A1002_IfStmt_TestTargetIdentifierNotFound,
