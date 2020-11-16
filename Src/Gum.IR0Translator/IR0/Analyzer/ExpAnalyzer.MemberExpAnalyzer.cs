@@ -87,7 +87,7 @@ namespace Gum.IR0
         //        // instance이지만 static 이라면, exp는 실행하고, static변수에서 가져온다
         //        var nodeInfo = IsVarStatic(varValue.VarId, context)
         //            ? MemberExpInfo.MakeStatic(objTypeValue, varValue)
-        //            : MemberExpInfo.MakeInstance(objTypeValue, Name.MakeText(memberExp.MemberName));
+        //            : MemberExpInfo.MakeInstance(objTypeValue, memberExp.MemberName);
 
         //        var typeValue = context.TypeValueService.GetTypeValue(varValue);
 

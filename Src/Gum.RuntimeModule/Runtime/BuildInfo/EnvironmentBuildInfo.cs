@@ -9,16 +9,16 @@ namespace Gum.Runtime
     class EnvironmentBuildInfo : RuntimeModuleTypeBuildInfo.Class
     {
         public EnvironmentBuildInfo()
-            : base(null, ModuleItemId.Make("Environment"), Enumerable.Empty<string>(), null, () => new ObjectValue(null))
+            : base(null, new ItemId("Environment"), Enumerable.Empty<string>(), null, () => new ObjectValue(null))
         {
         }
 
         public override void Build(RuntimeModuleTypeBuilder builder)
         {
-            var stringTypeValue = TypeValue.MakeNormal(RuntimeModule.StringId);
+            var stringTypeValue = new TypeValue.Normal(RuntimeModule.StringId);
 
-            builder.AddMemberVar(Name.MakeText("HomeDir"), false, stringTypeValue);
-            builder.AddMemberVar(Name.MakeText("ScriptDir"), false, stringTypeValue);
+            builder.AddMemberVar("HomeDir", false, stringTypeValue);
+            builder.AddMemberVar("ScriptDir", false, stringTypeValue);
         }
     }
 

@@ -245,6 +245,17 @@ namespace Gum
             return new ParseResult<List<string>>(typeParams, context);
         }
 
+        internal async ValueTask<ParseResult<TypeDecl>> ParseTypeDeclAsync(ParserContext context)
+        {
+            if (Parse(await ParseEnumDeclAsync(context), ref context, out var enumDecl))
+                return new ParseResult<TypeDecl>(enumDecl, context);
+
+            if (Parse(await ParseStructDeclAsync(context), ref context, out var structDecl))
+                return new ParseResult<TypeDecl>(structDecl, context);
+
+            return ParseResult<TypeDecl>.Invalid;
+        }
+
         internal async ValueTask<ParseResult<EnumDecl>> ParseEnumDeclAsync(ParserContext context)
         {
             // enum E<T1, T2> { a , b () } 
@@ -339,7 +350,7 @@ namespace Gum
             if (!Accept<SemiColonToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                 return ParseResult<StructDecl.VarDeclElement>.Invalid;
 
-            var varDeclElem = StructDecl.MakeVarDeclElement(accessModifier, varType, varNames);
+            var varDeclElem = new StructDecl.VarDeclElement(accessModifier, varType, varNames);
             return new ParseResult<StructDecl.VarDeclElement>(varDeclElem, context);
         }
 
@@ -373,7 +384,7 @@ namespace Gum
             if (!Parse(await stmtParser.ParseBlockStmtAsync(context), ref context, out var body))
                 return Invalid();
 
-            var funcDeclElem = StructDecl.MakeFuncDeclElement(accessModifier, bStatic, bSequence, retType, funcName.Value, typeParams, paramInfo, body);
+            var funcDeclElem = new StructDecl.FuncDeclElement(accessModifier, bStatic, bSequence, retType, funcName.Value, typeParams, paramInfo, body);
 
             return new ParseResult<StructDecl.FuncDeclElement>(funcDeclElem, context);
         }
@@ -448,12 +459,9 @@ namespace Gum
 
         async ValueTask<ParseResult<Script.Element>> ParseScriptElementAsync(ParserContext context)
         {
-            if (Parse(await ParseEnumDeclAsync(context), ref context, out var enumDecl))
-                return new ParseResult<Script.Element>(new Script.EnumDeclElement(enumDecl), context);
-
-            if (Parse(await ParseStructDeclAsync(context), ref context, out var structDecl))
-                return new ParseResult<Script.Element>(new Script.StructDeclElement(structDecl), context);
-
+            if (Parse(await ParseTypeDeclAsync(context), ref context, out var typeDecl))
+                return new ParseResult<Script.Element>(new Script.TypeDeclElement(typeDecl), context);
+            
             if (Parse(await ParseFuncDeclAsync(context), ref context, out var funcDecl))
                 return new ParseResult<Script.Element>(new Script.FuncDeclElement(funcDecl), context);
 

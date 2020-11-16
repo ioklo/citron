@@ -4,17 +4,14 @@ using System.Text;
 
 namespace Gum.CompileTime
 {
-    public class StructInfo : DefaultTypeInfo, IStructInfo
+    public class StructInfo : TypeInfo
     {
         public StructInfo(
-            ModuleItemId? outerTypeId,
-            ModuleItemId typeId,
+            ItemId id,
             IEnumerable<string> typeParams,
             TypeValue? baseTypeValue,
-            IEnumerable<ModuleItemId> memberTypeIds,
-            IEnumerable<ModuleItemId> memberFuncIds,
-            IEnumerable<ModuleItemId> memberVarIds)
-            : base(outerTypeId, typeId, typeParams, baseTypeValue, memberTypeIds, memberFuncIds, memberVarIds)
+            IEnumerable<ItemInfo> memberInfos)
+            : base(id, typeParams, baseTypeValue, memberInfos)
         {
         }
     }

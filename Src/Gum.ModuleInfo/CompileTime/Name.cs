@@ -74,5 +74,7 @@ namespace Gum.CompileTime
                 default: return $"${Kind}";
             }
         }
+
+        public static implicit operator Name(string s) => new Name(SpecialName.Normal, s);
     }
 }

@@ -8,23 +8,38 @@ namespace Gum.IR0
     {
         class TypeBuilder
         {
-            private TypeValue.Normal thisTypeValue;
-            private Dictionary<Name, ModuleItemId> memberTypeIds;
-            private Dictionary<Name, ModuleItemId> memberFuncIds;
-            private Dictionary<Name, ModuleItemId> memberVarIds;
+            private AppliedItemPath thisTypePath;
 
-            public TypeBuilder(TypeValue.Normal thisTypeValue)
+            private List<TypeInfo> typeInfos;
+            private List<FuncInfo> funcInfos;
+            private List<VarInfo> varInfos;
+
+            public TypeBuilder(AppliedItemPath thisTypePath)
             {
-                this.thisTypeValue = thisTypeValue;
-
-                memberTypeIds = new Dictionary<Name, ModuleItemId>();
-                memberFuncIds = new Dictionary<Name, ModuleItemId>();
-                memberVarIds = new Dictionary<Name, ModuleItemId>();
+                this.thisTypePath = thisTypePath;
+                typeInfos = new List<TypeInfo>();
+                funcInfos = new List<FuncInfo>();
+                varInfos = new List<VarInfo>();
             }
 
-            public TypeValue.Normal GetThisTypeValue()
+            public AppliedItemPath GetThisTypeAppliedPath()
             {
-                return thisTypeValue;
+                return thisTypePath;
+            }
+
+            internal void AddTypeInfo(TypeInfo typeInfo)
+            {
+                throw new NotImplementedException();
+            }
+
+            internal void AddFuncInfo(FuncInfo funcInfo)
+            {
+                throw new NotImplementedException();
+            }
+
+            internal void AddVarInfo(VarInfo varInfo)
+            {
+                throw new NotImplementedException();
             }
         }
     }

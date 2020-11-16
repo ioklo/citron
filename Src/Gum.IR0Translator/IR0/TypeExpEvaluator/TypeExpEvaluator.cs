@@ -3,6 +3,7 @@ using Gum.Infra;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection.Emit;
@@ -14,7 +15,7 @@ using S = Gum.Syntax;
 namespace Gum.IR0
 {
     // TypeExp를 TypeValue로 바꿔서 저장합니다.
-    partial class TypeExpEvaluator
+    internal partial class TypeExpEvaluator
     {
         TypeSkeletonCollector typeSkeletonCollector;
 
@@ -23,23 +24,38 @@ namespace Gum.IR0
             this.typeSkeletonCollector = typeSkeletonCollector;
         }
 
-        private bool HandleBuiltInType(S.IdTypeExp exp, string name, Context context, [NotNullWhen(true)] out TypeValue? outTypeValue)
+        private bool HandleBuiltInType(S.IdTypeExp exp, string name, ItemId itemId, Context context, [NotNullWhen(true)] out TypeExpInfo? outInfo)
         {
             if (exp.TypeArgs.Length != 0)
             {
                 context.AddError(T0101_IdTypeExp_TypeDoesntHaveTypeParams, exp, $"{name}은 타입 인자를 가질 수 없습니다");
-                outTypeValue = null;
+                outInfo = null;
                 return false;
             }
 
-            outTypeValue = TypeValue.MakeNormal(ModuleItemId.Make(name));
-            context.AddTypeValue(exp, outTypeValue);
+            outInfo = new TypeExpInfo.NoMember(new TypeValue.Normal(itemId));
+            context.AddTypeValue(exp, new TypeValue.Normal(itemId)); // NOTICE: no type args
             return true;
         }
-
-        bool EvaluateIdTypeExp(S.IdTypeExp exp, Context context, [NotNullWhen(true)] out TypeValue? outTypeValue)
+        
+        private IEnumerable<TypeExpInfo> GetTypeExpInfos(AppliedItemPath appliedItemPath, Context context)
         {
-            outTypeValue = null;
+            var itemPath = appliedItemPath.GetItemPath();
+
+            if (context.GetSkeleton(itemPath, out var skeleton))
+            {
+                // global이니까 outer는 null
+                yield return new TypeExpInfo.Internal(skeleton, new TypeValue.Normal(ModuleName.Internal, appliedItemPath));
+            }
+
+            // 3-2. Reference에서 검색, GlobalTypeSkeletons에 이름이 겹치지 않아야 한다.. ModuleInfo들 끼리도 이름이 겹칠 수 있다
+            foreach (var typeInfo in context.GetReferenceTypeInfos(itemPath))
+                yield return new TypeExpInfo.External(typeInfo, new TypeValue.Normal(typeInfo.GetId().ModuleName, appliedItemPath));
+        }
+        
+        bool EvaluateIdTypeExp(S.IdTypeExp exp, Context context, [NotNullWhen(true)] out TypeExpInfo? outInfo)
+        {
+            outInfo = null;
 
             if (exp.Name == "var")
             {
@@ -49,8 +65,8 @@ namespace Gum.IR0
                     return false;
                 }
 
-                outTypeValue = TypeValue.MakeVar();
-                context.AddTypeValue(exp, outTypeValue);
+                outInfo = new TypeExpInfo.NoMember(TypeValue.Var.Instance);
+                context.AddTypeValue(exp, TypeValue.Var.Instance);
                 return true;
             }
             else if (exp.Name == "void")
@@ -61,63 +77,57 @@ namespace Gum.IR0
                     return false;
                 }
 
-                outTypeValue = TypeValue.MakeVoid();
-                context.AddTypeValue(exp, outTypeValue);
+                outInfo = new TypeExpInfo.NoMember(TypeValue.Void.Instance);
+                context.AddTypeValue(exp, TypeValue.Void.Instance);
                 return true;
             }
 
             // built-in
             else if (exp.Name == "bool")
             {
-                return HandleBuiltInType(exp, "bool", context, out outTypeValue);
+                return HandleBuiltInType(exp, "bool", ItemIds.Bool, context, out outInfo);
             }
             else if (exp.Name == "int")
             {
-                return HandleBuiltInType(exp, "int", context, out outTypeValue);
+                return HandleBuiltInType(exp, "int", ItemIds.Int, context, out outInfo);
             }
             else if (exp.Name == "string")
             {
-                return HandleBuiltInType(exp, "string", context, out outTypeValue);
+                return HandleBuiltInType(exp, "string", ItemIds.String, context, out outInfo);
             }
 
             // 1. TypeVar에서 먼저 검색
             if (context.GetTypeVar(exp.Name, out var typeVar))
             {   
-                outTypeValue = typeVar;
+                outInfo = new TypeExpInfo.NoMember(typeVar);
                 context.AddTypeValue(exp, typeVar);
                 return true;
             }
 
             // TODO: 2. 현재 This Context에서 검색
-
             var typeArgs = new List<TypeValue>(exp.TypeArgs.Length);
             foreach (var typeArgExp in exp.TypeArgs)
             {
                 if (!EvaluateTypeExp(typeArgExp, context, out var typeArg))
                     return false; // 그냥 진행하면 개수가 맞지 않을 것이므로
 
-                typeArgs.Add(typeArg);
+                typeArgs.Add(typeArg.GetTypeValue());
             }
 
-            var typeArgList = TypeArgumentList.Make(null, typeArgs);
-            var itemId = ModuleItemId.Make(exp.Name, typeArgs.Count);
+            // 3. 전역에서 검색, 
+            // TODO: 현재 namespace 상황에 따라서 Namespace.Root대신 인자를 집어넣어야 한다.
 
-            // 3-1. GlobalSkeleton에서 검색
-            List <TypeValue> candidates = new List<TypeValue>();
-            if (context.GetSkeleton(itemId, out var skeleton))
-            {
-                // global이니까 outer는 null
-                candidates.Add(TypeValue.MakeNormal(skeleton.TypeId, typeArgList));
-            }
+            var candidates = new List<TypeExpInfo>();
 
-            // 3-2. Reference에서 검색, GlobalTypeSkeletons에 이름이 겹치지 않아야 한다.. ModuleInfo들 끼리도 이름이 겹칠 수 있다
-            foreach (var type in context.GetTypeInfos(itemId))
-                candidates.Add(TypeValue.MakeNormal(type.TypeId, typeArgList));
+            var path = new AppliedItemPath(NamespacePath.Root, new AppliedItemPathEntry(exp.Name, string.Empty, typeArgs));
+
+            foreach (var typeExpInfo in GetTypeExpInfos(path, context))
+                candidates.Add(typeExpInfo);
 
             if (candidates.Count == 1)
             {
-                outTypeValue = candidates[0];
-                context.AddTypeValue(exp, outTypeValue);
+                outInfo = candidates[0];
+                context.AddTypeValue(exp, candidates[0].GetTypeValue());
                 return true;
             }
             else if (1 < candidates.Count)
@@ -132,86 +142,77 @@ namespace Gum.IR0
             }
         }
         
-        bool EvaluateMemberTypeExp(S.MemberTypeExp exp, Context context, [NotNullWhen(true)] out TypeValue? typeValue)
+        // X<T>.Y<U, V>
+        bool EvaluateMemberTypeExp(S.MemberTypeExp exp, Context context, [NotNullWhen(true)] out TypeExpInfo? outInfo)
         {
-            typeValue = null;
+            outInfo = null;
 
-            if (!EvaluateTypeExp(exp.Parent, context, out var parentTypeValue))
+            // X<T>
+            if (!EvaluateTypeExp(exp.Parent, context, out var parentInfo))
                 return false;
 
-            var parentNTV = parentTypeValue as TypeValue.Normal;
-            if (parentNTV == null)
+            // U, V
+            var typeArgs = new List<TypeValue>(exp.TypeArgs.Length);
+            foreach (var typeArg in exp.TypeArgs)
+            {
+                if (!EvaluateTypeExp(typeArg, context, out var typeArgInfo))
+                    return false;
+
+                typeArgs.Add(typeArgInfo.GetTypeValue());
+            }
+
+            if (parentInfo is TypeExpInfo.NoMember)
             {
                 context.AddError(T0201_MemberTypeExp_TypeIsNotNormalType, exp.Parent, "멤버가 있는 타입이 아닙니다");
                 return false;
             }
 
-            var typeArgs = new List<TypeValue>(exp.TypeArgs.Length);
-            foreach (var typeArgExp in exp.TypeArgs)
+            var memberInfo = parentInfo.GetMemberInfo(exp.MemberName, typeArgs);
+            if (memberInfo == null)
             {
-                if (!EvaluateTypeExp(typeArgExp, context, out var typeArg))
-                    return false;
-
-                typeArgs.Add(typeArg);
-            }
-
-            if (!GetMemberTypeValue(context, parentNTV, exp.MemberName, typeArgs, out typeValue))
-            {
-                context.AddError(T0202_MemberTypeExp_MemberTypeNotFound, exp, $"{parentTypeValue}에서 {exp.MemberName}을 찾을 수 없습니다");
+                context.AddError(T0202_MemberTypeExp_MemberTypeNotFound, exp, $"{parentInfo.GetTypeValue()}에서 {exp.MemberName}을 찾을 수 없습니다");
                 return false;
             }
 
-            context.AddTypeValue(exp, typeValue);
+            outInfo = memberInfo;
+            context.AddTypeValue(exp, memberInfo.GetTypeValue());
             return true;
         }
-
-        // Error를 만들지 않습니다
-        private bool GetMemberTypeValue(
-            Context context,
-            TypeValue.Normal parent, 
-            string memberName, 
-            IReadOnlyCollection<TypeValue> typeArgs, 
-            [NotNullWhen(true)] out TypeValue? outTypeValue)
-        {
-            outTypeValue = null;
-            
-            if (!(parent is TypeValue.Normal normalParent))
-                return false;
-            
-            if (!context.GetSkeleton(normalParent.TypeId, out var parentSkeleton))
-                return false;
-
-            if (parentSkeleton.GetMemberTypeId(memberName, typeArgs.Count, out var childTypeId))
-            {
-                outTypeValue = TypeValue.MakeNormal(childTypeId, TypeArgumentList.Make(parent.TypeArgList, typeArgs));
-                return true;
-            }
-            else if (parentSkeleton.ContainsEnumElem(memberName))
-            {
-                outTypeValue = TypeValue.MakeEnumElem(parent, memberName);
-                return true;
-            }
-
-            return false;
-        }
-
-        bool EvaluateTypeExp(S.TypeExp exp, Context context, [NotNullWhen(true)] out TypeValue? typeValue)
+        
+        bool EvaluateTypeExp(S.TypeExp exp, Context context, [NotNullWhen(true)] out TypeExpInfo? outInfo)
         {
             if (exp is S.IdTypeExp idExp)
-                return EvaluateIdTypeExp(idExp, context, out typeValue);
+                return EvaluateIdTypeExp(idExp, context, out outInfo);
 
             else if (exp is S.MemberTypeExp memberExp)
-                return EvaluateMemberTypeExp(memberExp, context, out typeValue);
+                return EvaluateMemberTypeExp(memberExp, context, out outInfo);
 
             else 
                 throw new NotImplementedException();
         }
 
+        void EvaluateTypeDecl(S.TypeDecl typeDecl, Context context)
+        {
+            switch(typeDecl)
+            {
+                case S.EnumDecl enumDecl:
+                    EvaluateEnumDecl(enumDecl, context);
+                    return;
+
+                case S.StructDecl structDecl:
+                    EvaluateStructDecl(structDecl, context);
+                    return;
+
+                default:
+                    throw new InvalidOperationException();
+            }
+        }
+
         void EvaluateEnumDecl(S.EnumDecl enumDecl, Context context)
         {
-            var typeId = context.GetTypeId(enumDecl);
+            var typePath = context.GetTypePath(enumDecl);
 
-            context.ExecInScope(typeId, enumDecl.TypeParams, () =>
+            context.ExecInScope(typePath, enumDecl.TypeParams, () =>
             {
                 foreach (var elem in enumDecl.Elems)
                 {
@@ -219,6 +220,31 @@ namespace Gum.IR0
                     {
                         // 성공여부와 상관없이 계속 진행한다
                         EvaluateTypeExp(param.Type, context, out var _);
+                    }
+                }
+            });
+        }
+        
+        void EvaluateStructDecl(S.StructDecl structDecl, Context context)
+        {
+            var typePath = context.GetTypePath(structDecl);
+            context.ExecInScope(typePath, structDecl.TypeParams, () =>
+            {
+                foreach(var elem in structDecl.Elems)
+                {
+                    switch (elem)
+                    {
+                        case S.StructDecl.TypeDeclElement typeElem:
+                            EvaluateTypeDecl(typeElem.TypeDecl, context);
+                            break;
+
+                        case S.StructDecl.FuncDeclElement funcElem:
+                            EvaluateStructFuncDeclElem(funcElem, context);
+                            break;
+
+                        case S.StructDecl.VarDeclElement varElem:
+                            EvaluateTypeExp(varElem.VarType, context, out var _);
+                            break;
                     }
                 }
             });
@@ -231,10 +257,25 @@ namespace Gum.IR0
             foreach(var param in funcDecl.ParamInfo.Parameters)
                 EvaluateTypeExp(param.Type, context, out var _);
 
-            var funcId = context.GetFuncId(funcDecl);
+            var funcPath = context.GetFuncPath(funcDecl);
 
-            context.ExecInScope(funcId, funcDecl.TypeParams, () =>
+            context.ExecInScope(funcPath, funcDecl.TypeParams, () =>
             {   
+                EvaluateStmt(funcDecl.Body, context);
+            });
+        }
+
+        void EvaluateStructFuncDeclElem(S.StructDecl.FuncDeclElement funcDecl, Context context)
+        {
+            EvaluateTypeExp(funcDecl.RetType, context, out var _);
+
+            foreach (var param in funcDecl.ParamInfo.Parameters)
+                EvaluateTypeExp(param.Type, context, out var _);
+
+            var funcPath = context.GetFuncPath(funcDecl);
+
+            context.ExecInScope(funcPath, funcDecl.TypeParams, () =>
+            {
                 EvaluateStmt(funcDecl.Body, context);
             });
         }
@@ -265,6 +306,23 @@ namespace Gum.IR0
         {
             foreach (var typeExp in typeExps)
                 EvaluateTypeExp(typeExp, context, out var _);
+        }
+
+        bool EvaluateTypeExps(ImmutableArray<S.TypeExp> typeExps, Context context, [NotNullWhen(true)] out ImmutableArray<TypeValue> outInfos)
+        {
+            bool bResult = true;
+
+            var builder = ImmutableArray.CreateBuilder<TypeValue>();            
+            foreach(var typeExp in typeExps)
+            {
+                if (EvaluateTypeExp(typeExp, context, out var typeInfo))
+                    builder.Add(typeInfo.GetTypeValue());
+                else
+                    bResult = false; // 에러 수집을 위해서 바로 종료시키지 않는다
+            }
+
+            outInfos = builder.ToImmutable();
+            return bResult;
         }
 
         void EvaluateIdExp(S.IdentifierExp idExp, Context context) 
@@ -322,10 +380,68 @@ namespace Gum.IR0
 
             EvaluateExp(exp.Index, context);
         }
+       
+        // 타입이었다면 TypeExpInfo를 리턴한다
+        TypeExpInfo? EvaluateMemberExpParent(S.Exp exp, Context context)
+        {
+            // IdentifierExp, MemberExp일 경우만 따로 처리, 나머지
+            if (exp is S.IdentifierExp idExp)
+            {
+                // 내부에서 에러가 생겼을 때, 더 진행하면 정보가 부정확해지므로 그만둔다
+                if (!EvaluateTypeExps(idExp.TypeArgs, context, out var typeArgs))
+                    return null; // TODO: 타입이 아니라고 null을 리턴한건지, 에러가 생겨서 null을 리턴한건지 명확하지 않다
+
+                // TODO: NamespacePath.Root 부분은 네임 스페이스 선언 상황에 따라 달라질 수 있다
+                var infos = GetTypeExpInfos(
+                    new AppliedItemPath(
+                        NamespacePath.Root, 
+                        new AppliedItemPathEntry(idExp.Value, string.Empty, typeArgs)),
+                    context).ToList();
+
+                if (infos.Count == 1)
+                    return infos[0];
+
+                if (infos.Count != 0)
+                    context.AddError(T0103_IdTypeExp_MultipleTypesOfSameName, exp, $"이름이 같은 {exp} 타입이 여러개 입니다");
+                
+                return null;
+            }            
+            else if (exp is S.MemberExp memberExp)
+            {
+                // NOTICE: EvaluateMemberExp랑 return memberInfo하는 부분 빼고 같다. 수정할때 같이 수정해줘야 한다
+                var parentInfo = EvaluateMemberExpParent(memberExp.Parent, context);
+                if (parentInfo == null)
+                {
+                    EvaluateTypeExps(memberExp.MemberTypeArgs, context);
+                    return null;
+                }
+                else
+                {
+                    EvaluateTypeExps(memberExp.MemberTypeArgs, context, out var typeArgs);
+                    var memberInfo = parentInfo.GetMemberInfo(memberExp.MemberName, typeArgs);
+                    if (memberInfo != null)
+                    {
+                        // 타입이었다면 상위에 바로 알려준다
+                        return memberInfo;                        
+                    }
+                    else
+                    {
+                        // 부모는 타입인데 나는 타입이 아니라면, 부모 타입이 최외각이므로 매핑을 추가한다
+                        context.AddTypeValue(memberExp.Parent, parentInfo.GetTypeValue());
+                        return null;
+                    }
+                }
+            }
+            else
+            {
+                EvaluateExp(exp, context);
+                return null;
+            }
+        }
 
         void EvaluateMemberCallExp(S.MemberCallExp memberCallExp, Context context)
         {
-            EvaluateExp(memberCallExp.Object, context);
+            EvaluateMemberExpParent(memberCallExp.Object, context);
             EvaluateTypeExps(memberCallExp.MemberTypeArgs, context);
 
             foreach (var arg in memberCallExp.Args)
@@ -334,9 +450,26 @@ namespace Gum.IR0
 
         void EvaluateMemberExp(S.MemberExp memberExp, Context context)
         {
-            EvaluateExp(memberExp.Object, context);
-
-            EvaluateTypeExps(memberExp.MemberTypeArgs, context);
+            // NOTICE: EvaluateMemberExpParent의 memberExp 처리 부분이랑 거의 같다. 수정할때 같이 수정해줘야 한다
+            var parentInfo = EvaluateMemberExpParent(memberExp.Parent, context);
+            if (parentInfo == null) 
+            {
+                EvaluateTypeExps(memberExp.MemberTypeArgs, context);
+            }
+            else
+            {
+                EvaluateTypeExps(memberExp.MemberTypeArgs, context, out var typeArgs);
+                var memberInfo = parentInfo.GetMemberInfo(memberExp.MemberName, typeArgs);
+                if (memberInfo != null)
+                {
+                    // 최상위 부분이므로, 타입이었다면 에러 
+                    context.AddError(T0203_MemberTypeExp_ExpShouldNotBeType, memberExp, "식이 들어갈 부분이 타입으로 계산되었습니다");
+                }
+                else
+                {
+                    context.AddTypeValue(memberExp.Parent, parentInfo.GetTypeValue());
+                }
+            }            
         }
 
         void EvaluateListExp(S.ListExp listExp, Context context)
@@ -497,7 +630,7 @@ namespace Gum.IR0
             {
                 switch(elem)
                 {
-                    case S.Script.EnumDeclElement enumDeclElem: EvaluateEnumDecl(enumDeclElem.EnumDecl, context); break;
+                    case S.Script.TypeDeclElement typeDeclElem: EvaluateTypeDecl(typeDeclElem.TypeDecl, context); break;
                     case S.Script.FuncDeclElement funcDeclElem: EvaluateFuncDecl(funcDeclElem.FuncDecl, context);  break;
                     case S.Script.StmtElement stmtDeclElem: EvaluateStmt(stmtDeclElem.Stmt, context);  break;
                     default:
@@ -516,10 +649,11 @@ namespace Gum.IR0
             if (collectResult == null)
                 return null;
 
-            var moduleInfoService = new ModuleInfoService(moduleInfos);
+            var moduleInfoRepo = new ModuleInfoRepository(moduleInfos);
+            var itemInfoService = new ItemInfoRepository(moduleInfoRepo);
 
             var context = new Context(
-                moduleInfoService,
+                itemInfoService,
                 collectResult.Value.SyntaxNodeModuleItemService,
                 collectResult.Value.TypeSkeletons,
                 errorCollector);
@@ -531,7 +665,7 @@ namespace Gum.IR0
                 return null;
             }
 
-            var typeExpTypeValueService = new TypeExpTypeValueService(context.GetTypeValuesByTypeExp());
+            var typeExpTypeValueService = new TypeExpTypeValueService(context.GetTypeValuesByTypeExp(), context.GetTypeValuesByExp());
 
             return (collectResult.Value.SyntaxNodeModuleItemService, typeExpTypeValueService);
         }

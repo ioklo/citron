@@ -8,7 +8,7 @@ namespace Gum.IR0
 {
     public abstract class ScriptTemplate
     {
-        public ModuleItemId Id { get; }
+        public ItemId Id { get; }
 
         public class Func : ScriptTemplate
         {
@@ -17,7 +17,7 @@ namespace Gum.IR0
             public int LocalVarCount { get; }
             public Stmt Body { get; }
 
-            internal Func(ModuleItemId funcId, TypeValue? seqElemTypeValue, bool bThisCall, int localVarCount, Stmt body)
+            internal Func(ItemId funcId, TypeValue? seqElemTypeValue, bool bThisCall, int localVarCount, Stmt body)
                 : base(funcId)
             {
                 SeqElemTypeValue = seqElemTypeValue;
@@ -32,7 +32,7 @@ namespace Gum.IR0
             public string DefaultElemName { get; }
             public ImmutableArray<(string Name, TypeValue TypeValue)> DefaultFields { get; }
 
-            public Enum(ModuleItemId enumId, string defaultElemName, IEnumerable<(string Name, TypeValue TypeValue)> defaultFields)
+            public Enum(ItemId enumId, string defaultElemName, IEnumerable<(string Name, TypeValue TypeValue)> defaultFields)
                 : base(enumId)
             {
                 DefaultElemName = defaultElemName;
@@ -40,15 +40,15 @@ namespace Gum.IR0
             }
         }
 
-        public ScriptTemplate(ModuleItemId funcId)
+        public ScriptTemplate(ItemId funcId)
         {
             Id = funcId;
         }
 
-        public static Func MakeFunc(ModuleItemId funcId, TypeValue? seqElemTypeValue, bool bThisCall, int localVarCount, Stmt body)
+        public static Func MakeFunc(ItemId funcId, TypeValue? seqElemTypeValue, bool bThisCall, int localVarCount, Stmt body)
             => new Func(funcId, seqElemTypeValue, bThisCall, localVarCount, body);
 
-        public static Enum MakeEnum(ModuleItemId enumId, string defaultElemName, IEnumerable<(string Name, TypeValue TypeValue)> defaultFields)
+        public static Enum MakeEnum(ItemId enumId, string defaultElemName, IEnumerable<(string Name, TypeValue TypeValue)> defaultFields)
             => new Enum(enumId, defaultElemName, defaultFields);
     }
 

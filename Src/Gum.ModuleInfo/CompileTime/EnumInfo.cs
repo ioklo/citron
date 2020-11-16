@@ -7,57 +7,48 @@ using System.Text;
 
 namespace Gum.CompileTime
 {
-    public class EnumInfo : IEnumInfo
+    public struct EnumElemFieldInfo
     {
-        public ModuleItemId? OuterTypeId { get; }
-        public ModuleItemId TypeId { get; }
+        public TypeValue TypeValue { get; }
+        public string Name { get; }
 
+        public EnumElemFieldInfo(TypeValue typeValue, string name)
+        {
+            TypeValue = typeValue;
+            Name = name;
+        }
+    }
+
+    public struct EnumElemInfo
+    {
+        public string Name { get; }
+        public ImmutableArray<EnumElemFieldInfo> FieldInfos { get; }
+
+        public EnumElemInfo(string name, IEnumerable<EnumElemFieldInfo> fieldInfos)
+        {
+            Name = name;
+            FieldInfos = fieldInfos.ToImmutableArray();
+        }
+    }
+
+    public class EnumInfo : TypeInfo
+    {
         ImmutableArray<string> typeParams;
         ImmutableDictionary<string, EnumElemInfo> elemInfosByName;
         EnumElemInfo defaultElemInfo;
 
         public EnumInfo(
-            ModuleItemId? outerTypeId,
-            ModuleItemId typeId,
+            ItemId id,
             IEnumerable<string> typeParams,
             IEnumerable<EnumElemInfo> elemInfos)
-        {
-            OuterTypeId = outerTypeId;
-            TypeId = typeId;
+            : base(id, typeParams, null, Array.Empty<ItemInfo>())
+        {   
             this.typeParams = typeParams.ToImmutableArray();
 
             defaultElemInfo = elemInfos.First();
             this.elemInfosByName = elemInfos.ToImmutableDictionary(elemInfo => elemInfo.Name);
         }
-
-        public IReadOnlyList<string> GetTypeParams()
-        {
-            return typeParams;
-        }
-
-        public TypeValue? GetBaseTypeValue()
-        {
-            return null;
-        }
-
-        public bool GetMemberTypeId(string name, [NotNullWhen(true)] out ModuleItemId? outTypeId)
-        {
-            outTypeId = null;
-            return false;
-        }
-
-        public bool GetMemberFuncId(Name memberFuncId, [NotNullWhen(true)] out ModuleItemId? outFuncId)
-        {
-            outFuncId = null;
-            return false;
-        }
-
-        public bool GetMemberVarId(Name name, [NotNullWhen(true)] out ModuleItemId? outVarId)
-        {
-            outVarId = null;
-            return false;
-        }
-
+        
         public bool GetElemInfo(string idName, [NotNullWhen(true)] out EnumElemInfo? outElemInfo)
         {
             if (elemInfosByName.TryGetValue(idName, out var elemInfo))

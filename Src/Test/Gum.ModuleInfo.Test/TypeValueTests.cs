@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Text;
 using Xunit;
 
@@ -11,13 +13,21 @@ namespace Gum.CompileTime
         [Fact]
         public void TestMakeNormal()
         {
-            // List<int>만들어 보기 
-            var listId = ModuleItemId.Make("List");
-            var intId = ModuleItemId.Make("int");
-            var tv = TypeValue.MakeNormal(listId, TypeArgumentList.Make(TypeValue.MakeNormal(intId)));
+            // System.List<System.Int32>만들어 보기
+            var appliedInt = new TypeValue.Normal("System.Runtime", new AppliedItemPath(new NamespacePath("System"), new AppliedItemPathEntry("Int32")));
 
-            Assert.Equal(tv.TypeId, listId);
-            Assert.Equal(tv.TypeArgList.Args[0], TypeValue.MakeNormal(intId));
+            var appliedList = new TypeValue.Normal("System.Runtime", 
+                new AppliedItemPath(
+                    new NamespacePath("System"),
+                    new AppliedItemPathEntry("List", string.Empty, new[] { appliedInt })));
+            
+            Assert.Equal(appliedList.ModuleName, (ModuleName)"System.Runtime");
+            Assert.True(appliedList.NamespacePath.Entries.Length == 1 && appliedList.NamespacePath.Entries[0].Value == "System");
+            Assert.True(appliedList.OuterEntries.Length == 0);            
+            Assert.Equal(appliedList.Entry.Name, (Name)"List");
+            Assert.Equal(appliedList.Entry.ParamHash, string.Empty);
+            Assert.True(appliedList.Entry.TypeArgs.Length == 1 && 
+                ModuleInfoEqualityComparer.EqualsTypeValue(appliedList.Entry.TypeArgs[0], appliedInt));
         }
 
         [Fact]
@@ -26,18 +36,25 @@ namespace Gum.CompileTime
             // class X<T> { class Y<T> { class Z<U> { } } }
             // X<int>.Y<short>.Z<int> 만들어 보기            
 
-            var intId = ModuleItemId.Make("int");
-            var shortId = ModuleItemId.Make("short");
-            var zId = ModuleItemId.Make(new ModuleItemIdElem("X", 1), new ModuleItemIdElem("Y", 1), new ModuleItemIdElem("Z", 1));
+            var intId = new ItemId("System.Runtime", new NamespacePath("System"), new ItemPathEntry("Int32"));
+            var shortId = new ItemId("System.Runtime", new NamespacePath("System"), new ItemPathEntry("Int16"));
+            var zId = new ItemId(ModuleName.Internal, NamespacePath.Root, new ItemPathEntry("X", 1), new ItemPathEntry("Y", 1), new ItemPathEntry("Z", 1));
 
-            var tv = TypeValue.MakeNormal(zId, TypeArgumentList.Make(
-                TypeValue.MakeNormal(intId), TypeValue.MakeNormal(intId), TypeValue.MakeNormal(shortId)));
+            var intTV = new TypeValue.Normal("System.Runtime", new AppliedItemPath(new NamespacePath("System"), new AppliedItemPathEntry("Int32")));
+            var shortTV = new TypeValue.Normal("System.Runtime", new AppliedItemPath(new NamespacePath("System"), new AppliedItemPathEntry("Int16")));
+            var zTV = new TypeValue.Normal(ModuleName.Internal, NamespacePath.Root,
+                new[] {
+                    new AppliedItemPathEntry("X", string.Empty, new[]{ intTV }),
+                    new AppliedItemPathEntry("Y", string.Empty, new[]{ intTV }),                    
+                },
+                new AppliedItemPathEntry("Z", string.Empty, new[] { shortTV })
+            );
 
-            Assert.Equal(tv.TypeId, zId);
-            Assert.Equal(tv.TypeArgList.Args[0], TypeValue.MakeNormal(intId));
-            Assert.Equal(tv.TypeArgList.Args[1], TypeValue.MakeNormal(intId));
-            Assert.Equal(tv.TypeArgList.Args[2], TypeValue.MakeNormal(shortId));
+            Assert.True(ModuleInfoEqualityComparer.EqualsModuleName(zTV.ModuleName, ModuleName.Internal));
+            Assert.True(ModuleInfoEqualityComparer.EqualsNamespacePath(zTV.NamespacePath, NamespacePath.Root));
+            Assert.True(ModuleInfoEqualityComparer.EqualsAppliedItemPathEntry(zTV.OuterEntries[0], new AppliedItemPathEntry("X", string.Empty, new[] { intTV })));
+            Assert.True(ModuleInfoEqualityComparer.EqualsAppliedItemPathEntry(zTV.OuterEntries[1], new AppliedItemPathEntry("Y", string.Empty, new[] { intTV })));
+            Assert.True(ModuleInfoEqualityComparer.EqualsAppliedItemPathEntry(zTV.Entry, new AppliedItemPathEntry("Z", string.Empty, new[] { shortTV })));
         }
-
     }
 }

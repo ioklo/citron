@@ -10,10 +10,9 @@ namespace Gum.IR0
         {
             public class ModuleGlobal : IdentifierInfo
             {
-                public ModuleItemId VarId { get; }
+                public VarValue VarValue { get; }
                 public TypeValue TypeValue { get; }
-
-                internal ModuleGlobal(ModuleItemId varId, TypeValue typeValue) { VarId = varId; TypeValue = typeValue; }
+                internal ModuleGlobal(VarValue varValue, TypeValue typeValue) { VarValue = varValue; TypeValue = typeValue; }
             }
 
             public class PrivateGlobal : IdentifierInfo

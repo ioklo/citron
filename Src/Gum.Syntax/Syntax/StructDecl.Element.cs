@@ -6,12 +6,21 @@ using Gum.Infra;
 
 namespace Gum.Syntax
 {
-    public partial class StructDecl
+    public partial class StructDecl : TypeDecl
     {
-        public abstract class Element
+        public abstract class Element : ISyntaxNode
         {
             // 외부에서 상속 금지
             internal Element() { }
+        }
+
+        public class TypeDeclElement : Element
+        {
+            public TypeDecl TypeDecl { get; }
+            public TypeDeclElement(TypeDecl typeDecl)
+            {
+                TypeDecl = typeDecl;
+            }
         }
 
         public class VarDeclElement : Element
@@ -20,13 +29,13 @@ namespace Gum.Syntax
             public TypeExp VarType { get; }
             public ImmutableArray<string> VarNames { get; }
 
-            internal VarDeclElement(
+            public VarDeclElement(
                 AccessModifier accessModifier,             
                 TypeExp varType,
                 IEnumerable<string> varNames)
             {
                 AccessModifier = accessModifier;
-                VarType = VarType;
+                VarType = varType;
                 VarNames = varNames.ToImmutableArray();
             }
         }
@@ -42,7 +51,7 @@ namespace Gum.Syntax
             public FuncParamInfo ParamInfo { get; }
             public BlockStmt Body { get; }
 
-            internal FuncDeclElement(
+            public FuncDeclElement(
                 AccessModifier accessModifier,
                 bool bStatic,
                 bool bSequence,
@@ -61,20 +70,6 @@ namespace Gum.Syntax
                 ParamInfo = paramInfo;
                 Body = body;
             }
-        }
-
-        public static VarDeclElement MakeVarDeclElement(AccessModifier accessModifier, TypeExp varType, IEnumerable<string> varNames)
-            => new VarDeclElement(accessModifier, varType, varNames);
-
-        public static FuncDeclElement MakeFuncDeclElement(
-            AccessModifier accessModifier,
-            bool bStatic,
-            bool bSequence,
-            TypeExp retType,
-            string name,
-            IEnumerable<string> typeParams,
-            FuncParamInfo paramInfo,
-            BlockStmt body)
-            => new FuncDeclElement(accessModifier, bStatic, bSequence, retType, name, typeParams, paramInfo, body);
+        }        
     }
 }

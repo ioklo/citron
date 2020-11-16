@@ -3,7 +3,7 @@ using Gum.Infra;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-
+using System.Linq;
 using S = Gum.Syntax;
 
 namespace Gum.IR0
@@ -16,11 +16,11 @@ namespace Gum.IR0
             private TypeExpTypeValueService typeExpTypeValueService;
 
             private TypeBuilder? typeBuilder;
-            private List<ITypeInfo> typeInfos; // All Types
-            private List<FuncInfo> funcInfos; // All Funcs
-            private List<VarInfo> varInfos; // Type의 Variable
+            private List<TypeInfo> globalTypeInfos; // global 타입 정보
+            private List<FuncInfo> globalFuncInfos; // All Funcs
+            private List<VarInfo> globalVarInfos;   // global Variable정보
             private Dictionary<S.FuncDecl, FuncInfo> funcInfosByDecl;
-            private Dictionary<S.EnumDecl, EnumInfo> enumInfosByDecl;
+            private Dictionary<S.TypeDecl, TypeInfo> typeInfosByDecl;
 
             public Context(
                 SyntaxNodeModuleItemService syntaxNodeModuleItemService,
@@ -30,16 +30,16 @@ namespace Gum.IR0
                 this.typeExpTypeValueService = typeExpTypeValueService;
 
                 typeBuilder = null;
-                typeInfos = new List<ITypeInfo>();
-                funcInfos = new List<FuncInfo>();
-                varInfos = new List<VarInfo>();
+                globalTypeInfos = new List<TypeInfo>();
+                globalFuncInfos = new List<FuncInfo>();
+                globalVarInfos = new List<VarInfo>();
                 funcInfosByDecl = new Dictionary<S.FuncDecl, FuncInfo>();
-                enumInfosByDecl = new Dictionary<S.EnumDecl, EnumInfo>();
+                typeInfosByDecl = new Dictionary<S.TypeDecl, TypeInfo>();
             }
 
-            public ModuleItemId GetTypeId(S.ISyntaxNode node)
+            public ItemPath GetTypePath(S.ISyntaxNode node)
             {
-                return syntaxNodeModuleItemService.GetTypeId(node);
+                return syntaxNodeModuleItemService.GetTypePath(node);
             }
 
             public TypeValue GetTypeValue(S.TypeExp typeExp)
@@ -47,50 +47,45 @@ namespace Gum.IR0
                 return typeExpTypeValueService.GetTypeValue(typeExp);
             }
 
-            public ModuleItemId GetFuncId(S.ISyntaxNode node)
+            public ItemPath GetFuncPath(S.ISyntaxNode node)
             {
-                return syntaxNodeModuleItemService.GetFuncId(node);
+                return syntaxNodeModuleItemService.GetFuncPath(node);
             }
 
-            public TypeValue.Normal? GetThisTypeValue()
+            public ItemPath? GetThisTypePath()
             {
                 if (typeBuilder == null)
                     return null;
 
-                return typeBuilder.GetThisTypeValue();
+                return typeBuilder.GetThisTypeAppliedPath().GetItemPath();
             }
 
-            public void AddEnumInfo(S.EnumDecl enumDecl, EnumInfo enumInfo)
+            public void AddTypeInfo(S.TypeDecl typeDecl, TypeInfo typeInfo)
             {
-                typeInfos.Add(enumInfo);
-                enumInfosByDecl[enumDecl] = enumInfo;
+                if (typeBuilder == null)
+                    globalTypeInfos.Add(typeInfo);
+                else
+                    typeBuilder.AddTypeInfo(typeInfo);
+
+                typeInfosByDecl[typeDecl] = typeInfo;
             }
 
-            public void AddFuncInfo(S.FuncDecl? funcDecl, FuncInfo funcInfo)
+            public void AddFuncInfo(S.FuncDecl funcDecl, FuncInfo funcInfo)
             {
-                funcInfos.Add(funcInfo);
-                if (funcDecl != null)
-                    funcInfosByDecl[funcDecl] = funcInfo;
+                if (typeBuilder == null)
+                    globalFuncInfos.Add(funcInfo);
+                else
+                    typeBuilder.AddFuncInfo(funcInfo);
+
+                funcInfosByDecl[funcDecl] = funcInfo;
             }
 
             public void AddVarInfo(VarInfo varInfo)
             {
-                varInfos.Add(varInfo);
-            }
-
-            public ImmutableArray<ITypeInfo> GetTypeInfos()
-            {
-                return typeInfos.ToImmutableArray();
-            }
-
-            public ImmutableArray<FuncInfo> GetFuncInfos()
-            {
-                return funcInfos.ToImmutableArray();
-            }
-
-            public ImmutableArray<VarInfo> GetVarInfos()
-            {
-                return varInfos.ToImmutableArray();
+                if (typeBuilder == null)
+                    globalVarInfos.Add(varInfo);
+                else
+                    typeBuilder.AddVarInfo(varInfo);
             }
 
             public ImmutableDictionary<S.FuncDecl, FuncInfo> GetFuncsByFuncDecl()
@@ -98,12 +93,17 @@ namespace Gum.IR0
                 return funcInfosByDecl.ToImmutableDictionary();
             }
 
-            public ImmutableDictionary<S.EnumDecl, EnumInfo> GetEnumInfosByDecl()
+            public ImmutableDictionary<S.TypeDecl, TypeInfo> GetTypeInfosByDecl()
             {
-                return enumInfosByDecl.ToImmutableDictionary();
+                return typeInfosByDecl.ToImmutableDictionary();
             }
 
-            
+            public IEnumerable<ItemInfo> GetGlobalItems()
+            {
+                return globalTypeInfos.Cast<ItemInfo>()
+                    .Concat(globalFuncInfos)
+                    .Concat(globalVarInfos);
+            }
         }
     }
 }

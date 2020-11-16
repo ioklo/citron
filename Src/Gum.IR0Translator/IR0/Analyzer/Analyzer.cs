@@ -60,7 +60,7 @@ namespace Gum.IR0
                 else
                 {
                     // var 처리
-                    Exp? ir0InitExp = null;
+                    Exp? ir0InitExp;
                     TypeValue typeValue;
                     if (declTypeValue is TypeValue.Var)
                     {
@@ -102,7 +102,7 @@ namespace Gum.IR0
                 }                
 
                 // 캐스팅이 필요하다면 
-                if (expTypeValue == GetIntTypeValue())
+                if (expTypeValue == TypeValues.Int)
                 {
                     outElem = new ExpStringExpElement(
                         new CallInternalUnaryOperatorExp(
@@ -112,7 +112,7 @@ namespace Gum.IR0
                     );
                     return true;
                 }
-                else if (expTypeValue == GetBoolTypeValue())
+                else if (expTypeValue == TypeValues.Bool)
                 {
                     outElem = new ExpStringExpElement(
                             new CallInternalUnaryOperatorExp(
@@ -122,7 +122,7 @@ namespace Gum.IR0
                     );
                     return true;
                 }
-                else if (expTypeValue == GetStringTypeValue())
+                else if (expTypeValue == TypeValues.String)
                 {
                     outElem = new ExpStringExpElement(ir0Exp);
                     return true;
@@ -211,8 +211,8 @@ namespace Gum.IR0
 
             outBody = ir0Body;
             outCaptureInfo = new CaptureInfo(false, capturedLocalVars);
-            outFuncTypeValue = TypeValue.MakeFunc(
-                result.RetTypeValue ?? TypeValue.MakeVoid(),
+            outFuncTypeValue = new TypeValue.Func(
+                result.RetTypeValue ?? TypeValue.Void.Instance,
                 paramInfos.Select(paramInfo => paramInfo.TypeValue));
 
             return true;
@@ -279,7 +279,7 @@ namespace Gum.IR0
             var funcInfo = context.GetFuncInfoByDecl(funcDecl);
             var bResult = true;
             
-            var funcContext = new FuncContext(funcInfo.FuncId, funcInfo.RetTypeValue, funcInfo.bSeqCall);
+            var funcContext = new FuncContext(funcInfo.RetTypeValue, funcInfo.bSeqCall);
             context.ExecInFuncScope(funcContext, () =>
             {   
                 if (0 < funcDecl.TypeParams.Length || funcDecl.ParamInfo.VariadicParamIndex != null)
@@ -294,16 +294,16 @@ namespace Gum.IR0
 
                 if (AnalyzeStmt(funcDecl.Body, context, out var body))
                 {
-                    if( funcDecl.IsSequence)
-                    {
+                    if (funcDecl.IsSequence)
+                    { 
                         // TODO: Body가 실제로 리턴을 제대로 하는지 확인해야 할 필요가 있다
                         var retTypeId = context.GetType(funcInfo.RetTypeValue);
-                        context.AddSeqFunc(ModuleItemId.Make(funcDecl.Name, funcDecl.TypeParams.Length), retTypeId, false, funcDecl.TypeParams, funcDecl.ParamInfo.Parameters.Select(param => param.Name), body);
+                        context.AddSeqFunc(funcInfo.GetId(), retTypeId, false, funcDecl.TypeParams, funcDecl.ParamInfo.Parameters.Select(param => param.Name), body);
                     }
                     else
                     {
                         // TODO: Body가 실제로 리턴을 제대로 하는지 확인해야 할 필요가 있다
-                        context.AddFuncDecl(ModuleItemId.Make(funcDecl.Name, funcDecl.TypeParams.Length), bThisCall: false, funcDecl.TypeParams, funcDecl.ParamInfo.Parameters.Select(param => param.Name), body);
+                        context.AddFuncDecl(funcInfo.GetId(), bThisCall: false, funcDecl.TypeParams, funcDecl.ParamInfo.Parameters.Select(param => param.Name), body);
                     }
                 }
                 else
@@ -315,9 +315,25 @@ namespace Gum.IR0
             return bResult;
         }
 
+        public bool AnalyzeTypeDecl(S.TypeDecl typeDecl, Context context)
+        {
+            switch(typeDecl)
+            {
+                case S.EnumDecl enumDecl:
+                    return AnalyzeEnumDecl(enumDecl, context);
+
+                case S.StructDecl structDecl:
+                    throw new NotImplementedException();
+
+                default:
+                    throw new InvalidOperationException();
+            }
+        }
+
         public bool AnalyzeEnumDecl(S.EnumDecl enumDecl, Context context)
         {
-            var enumInfo = context.GetEnumInfoByDecl(enumDecl);
+            var enumInfo = context.GetTypeInfoByDecl<EnumInfo>(enumDecl);            
+
             var defaultElemInfo = enumInfo.GetDefaultElemInfo();
             var defaultFields = defaultElemInfo.FieldInfos.Select(fieldInfo => (fieldInfo.Name, fieldInfo.TypeValue));
 
@@ -355,8 +371,8 @@ namespace Gum.IR0
                             bResult = false;
                         break;
 
-                    case S.Script.EnumDeclElement enumElem:
-                        if (!AnalyzeEnumDecl(enumElem.EnumDecl, context))
+                    case S.Script.TypeDeclElement typeElem:
+                        if (!AnalyzeTypeDecl(typeElem.TypeDecl, context))
                             bResult = false;
                         break;
                 }
@@ -388,16 +404,17 @@ namespace Gum.IR0
             if (buildResult == null)
                 return null;
 
-            var moduleInfoService = new ModuleInfoService(moduleInfos.Append(buildResult.ModuleInfo));
-            var typeValueApplier = new TypeValueApplier(moduleInfoService);
-            var typeValueService = new TypeValueService(moduleInfoService, typeValueApplier);
+            var moduleInfoRepo = new ModuleInfoRepository(moduleInfos.Append(buildResult.ModuleInfo));
+            var itemInfoRepo = new ItemInfoRepository(moduleInfoRepo);
+            var typeValueApplier = new TypeValueApplier(moduleInfoRepo);
+            var typeValueService = new TypeValueService(itemInfoRepo, typeValueApplier);
 
             var context = new Context(
-                moduleInfoService,
+                itemInfoRepo,
                 typeValueService,
                 buildResult.TypeExpTypeValueService,
                 buildResult.FuncInfosByDecl,
-                buildResult.EnumInfosByDecl,
+                buildResult.TypeInfosByDecl,
                 errorCollector);
 
             if (!AnalyzeScript(script, context, out var ir0Script))
@@ -430,23 +447,8 @@ namespace Gum.IR0
             }
 
             return false;
-        }
-
-        public TypeValue GetIntTypeValue()
-        {
-            return TypeValue.MakeNormal(ModuleItemId.Make("int"));
-        }
-
-        public TypeValue GetBoolTypeValue()
-        {
-            return TypeValue.MakeNormal(ModuleItemId.Make("bool"));
-        }
-
-        public TypeValue GetStringTypeValue()
-        {
-            return TypeValue.MakeNormal(ModuleItemId.Make("string"));
-        }
-
+        }        
+        
         public bool CheckInstanceMember(
             S.MemberExp memberExp,
             TypeValue objTypeValue,
@@ -467,7 +469,7 @@ namespace Gum.IR0
             if (0 < memberExp.MemberTypeArgs.Length)
                 context.AddError(A0302_MemberExp_TypeArgsForMemberVariableIsNotAllowed, memberExp, "멤버변수에는 타입인자를 붙일 수 없습니다");
 
-            if (!context.TypeValueService.GetMemberVarValue(objNormalTypeValue, Name.MakeText(memberExp.MemberName), out outVarValue))
+            if (!context.TypeValueService.GetMemberVarValue(objNormalTypeValue, memberExp.MemberName, out outVarValue))
             {
                 context.AddError(A0303_MemberExp_MemberVarNotFound, memberExp, $"{memberExp.MemberName}은 {objNormalTypeValue}의 멤버가 아닙니다");
                 return false;
@@ -484,7 +486,7 @@ namespace Gum.IR0
         {
             outVarValue = null;
 
-            if (!context.TypeValueService.GetMemberVarValue(objNormalTypeValue, Name.MakeText(memberExp.MemberName), out outVarValue))
+            if (!context.TypeValueService.GetMemberVarValue(objNormalTypeValue, memberExp.MemberName, out outVarValue))
             {
                 context.AddError(A0303_MemberExp_MemberVarNotFound, memberExp, "멤버가 존재하지 않습니다");
                 return false;
@@ -496,7 +498,7 @@ namespace Gum.IR0
                 return false;
             }
 
-            if (!Misc.IsVarStatic(outVarValue.VarId, context))
+            if (!Misc.IsVarStatic(outVarValue.GetItemId(), context))
             {
                 context.AddError(A0304_MemberExp_MemberVariableIsNotStatic, memberExp, "정적 변수가 아닙니다");
                 return false;

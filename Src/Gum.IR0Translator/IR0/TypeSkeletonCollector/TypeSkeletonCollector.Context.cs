@@ -10,49 +10,73 @@ namespace Gum.IR0
     {
         public class Context
         {
-            private Dictionary<S.ISyntaxNode, ModuleItemId> typeIdsByNode { get; }
-            private Dictionary<S.ISyntaxNode, ModuleItemId> funcIdsByNode { get; }
+            private Dictionary<S.ISyntaxNode, ItemPath> typePathsByNode { get; }
+            private Dictionary<S.ISyntaxNode, ItemPath> funcPathsByNode { get; }
             private List<TypeSkeleton> typeSkeletons { get; }            
 
-            private TypeSkeleton? scopeSkeleton { get; set; }
+            private TypeSkeleton? curSkeleton { get; set; }
 
             public Context()
             {
-                typeIdsByNode = new Dictionary<S.ISyntaxNode, ModuleItemId>();
-                funcIdsByNode = new Dictionary<S.ISyntaxNode, ModuleItemId>();
+                typePathsByNode = new Dictionary<S.ISyntaxNode, ItemPath>();
+                funcPathsByNode = new Dictionary<S.ISyntaxNode, ItemPath>();
                 typeSkeletons = new List<TypeSkeleton>();
-                scopeSkeleton = null;
+                curSkeleton = null;
             }
             
-            internal void AddTypeSkeleton(S.ISyntaxNode node, string name, int typeParamCount, IEnumerable<string> enumElemNames)
+            public TypeSkeleton AddTypeSkeleton(S.ISyntaxNode node, string name, int typeParamCount, IEnumerable<string> enumElemNames)
             {
-                ModuleItemId typeId;                
+                ItemPath typePath;
                 
-                if (scopeSkeleton != null)
-                    typeId = scopeSkeleton.TypeId.Append(name, typeParamCount);
+                if (curSkeleton != null)
+                    typePath = curSkeleton.Path.Append(name, typeParamCount);
                 else
-                    typeId = ModuleItemId.Make(name, typeParamCount);
+                    typePath = new ItemPath(NamespacePath.Root, new ItemPathEntry(name, typeParamCount)); // TODO: NamespaceRoot가 아니라 namespace 선언 상황에 따라 달라진다
 
-                typeIdsByNode.Add(node, typeId);
-                typeSkeletons.Add(new TypeSkeleton(typeId, enumElemNames));
+                typePathsByNode.Add(node, typePath);
 
-                if (scopeSkeleton != null)
-                    scopeSkeleton.AddMemberTypeId(name, typeParamCount, typeId);
+                var typeSkeleton = new TypeSkeleton(typePath, enumElemNames);
+
+                if (curSkeleton != null)
+                    curSkeleton.AddMemberTypeSkeleton(name, typeParamCount, typeSkeleton);
+                else
+                    typeSkeletons.Add(typeSkeleton);
+
+                return typeSkeleton;
             }
 
-            public void AddFuncId(S.ISyntaxNode node, ModuleItemId funcId)
+            public void ExecInNewTypeScope(TypeSkeleton typeSkeleton, Action action)
             {
-                funcIdsByNode.Add(node, funcId);
+                var prevSkeleton = curSkeleton;
+                curSkeleton = typeSkeleton;
+
+                try
+                {
+                    action.Invoke();
+                }
+                finally
+                {
+                    curSkeleton = prevSkeleton;
+                }
             }
 
-            public ImmutableDictionary<S.ISyntaxNode, ModuleItemId> GetTypeIdsByNode()
+            public void AddFunc(S.ISyntaxNode node, Name name, int typeParamCount)
             {
-                return typeIdsByNode.ToImmutableDictionary();
+                // NOTICE: paramHash는 추후에 계산이 된다
+                if (curSkeleton == null)
+                    funcPathsByNode.Add(node, new ItemPath(NamespacePath.Root, new ItemPathEntry(name, typeParamCount, paramHash: string.Empty)));
+                else
+                    funcPathsByNode.Add(node, curSkeleton.Path.Append(name, typeParamCount, paramHash: string.Empty));
             }
 
-            public ImmutableDictionary<S.ISyntaxNode, ModuleItemId> GetFuncIdsByNode()
+            public ImmutableDictionary<S.ISyntaxNode, ItemPath> GetTypePathsByNode()
             {
-                return funcIdsByNode.ToImmutableDictionary();
+                return typePathsByNode.ToImmutableDictionary();
+            }
+
+            public ImmutableDictionary<S.ISyntaxNode, ItemPath> GetFuncPathsByNode()
+            {
+                return funcPathsByNode.ToImmutableDictionary();
             }
 
             public ImmutableArray<TypeSkeleton> GetTypeSkeletons()

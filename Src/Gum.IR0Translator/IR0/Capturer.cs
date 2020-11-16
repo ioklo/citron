@@ -395,7 +395,7 @@ namespace Gum.IR0
 
         bool CaptureMemberExp(S.MemberExp exp, CaptureContext context)
         {
-            return CaptureExp(exp.Object, context);
+            return CaptureExp(exp.Parent, context);
         }
 
         bool CaptureListExp(S.ListExp exp, CaptureContext context)

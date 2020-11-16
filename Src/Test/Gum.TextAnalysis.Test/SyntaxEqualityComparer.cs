@@ -19,9 +19,8 @@ namespace Gum
         , IEqualityComparer<Stmt>
         , IEqualityComparer<Exp>
         , IEqualityComparer<LambdaExpParam>
-        , IEqualityComparer<StructDecl>
         , IEqualityComparer<FuncDecl>
-        , IEqualityComparer<EnumDecl>
+        , IEqualityComparer<TypeDecl>
     {
         public static SyntaxEqualityComparer Instance { get; } = new SyntaxEqualityComparer();
         private SyntaxEqualityComparer() { }
@@ -61,26 +60,22 @@ namespace Gum
 
         bool IEqualityComparer<LambdaExpParam>.Equals([AllowNull] LambdaExpParam x, [AllowNull] LambdaExpParam y) => EqualsLambdaExpParam(x, y);
         int IEqualityComparer<LambdaExpParam>.GetHashCode([DisallowNull] LambdaExpParam obj) => throw new NotImplementedException();
-
-        bool IEqualityComparer<StructDecl>.Equals([AllowNull] StructDecl x, [AllowNull] StructDecl y) => EqualsStructDecl(x, y);
-        int IEqualityComparer<StructDecl>.GetHashCode([DisallowNull] StructDecl obj) => throw new NotImplementedException();
-
+        
         bool IEqualityComparer<FuncDecl>.Equals([AllowNull] FuncDecl x, [AllowNull] FuncDecl y) => EqualsFuncDecl(x, y);
         int IEqualityComparer<FuncDecl>.GetHashCode([DisallowNull] FuncDecl obj) => throw new NotImplementedException();
 
-        bool IEqualityComparer<EnumDecl>.Equals([AllowNull] EnumDecl x, [AllowNull] EnumDecl y) => EqualsEnumDecl(x, y);
-        int IEqualityComparer<EnumDecl>.GetHashCode([DisallowNull] EnumDecl obj) => throw new NotImplementedException();
+        bool IEqualityComparer<TypeDecl>.Equals([AllowNull] TypeDecl x, [AllowNull] TypeDecl y) => EqualsTypeDecl(x, y);
+        int IEqualityComparer<TypeDecl>.GetHashCode([DisallowNull] TypeDecl obj) => throw new NotImplementedException();
 
-
-        bool EqualsScript([AllowNull] Script x, [AllowNull] Script y)
+        public static bool EqualsScript([AllowNull] Script x, [AllowNull] Script y)
         {
             if (x == null && y == null) return true;
             if (x == null || y == null) return false;
 
-            return x.Elements.SequenceEqual(y.Elements, this);
+            return x.Elements.SequenceEqual(y.Elements, Instance);
         }
 
-        bool EqualsScriptElement([AllowNull] Script.Element x, [AllowNull] Script.Element y)
+        public static bool EqualsScriptElement([AllowNull] Script.Element x, [AllowNull] Script.Element y)
         {
             switch((x, y))
             {
@@ -89,16 +84,14 @@ namespace Gum
                     return EqualsFuncDecl(funcDeclElemX.FuncDecl, funcDeclElemY.FuncDecl);
                 case (Script.StmtElement stmtElementX, Script.StmtElement stmtElementY):
                     return EqualsStmt(stmtElementX.Stmt, stmtElementY.Stmt);
-                case (Script.EnumDeclElement enumDeclElementX, Script.EnumDeclElement enumDeclElementY):
-                    return EqualsEnumDecl(enumDeclElementX.EnumDecl, enumDeclElementY.EnumDecl);
-                case (Script.StructDeclElement structDeclElementX, Script.StructDeclElement structDeclElementY):
-                    return EqualsStructDecl(structDeclElementX.StructDecl, structDeclElementY.StructDecl);
+                case (Script.TypeDeclElement typeDeclElementX, Script.TypeDeclElement typeDeclElementY):
+                    return EqualsTypeDecl(typeDeclElementX.TypeDecl, typeDeclElementY.TypeDecl);                
                 default:
                     return false;
             }
         }
 
-        bool EqualsFuncDecl([AllowNull] FuncDecl x, [AllowNull] FuncDecl y)
+        public static bool EqualsFuncDecl([AllowNull] FuncDecl x, [AllowNull] FuncDecl y)
         {
             if (x == null && y == null) return true;
             if (x == null || y == null) return false;
@@ -111,7 +104,7 @@ namespace Gum
                 EqualsStmt(x.Body, y.Body);
         }
 
-        bool EqualsStmt([AllowNull] Stmt x, [AllowNull] Stmt y)
+        public static bool EqualsStmt([AllowNull] Stmt x, [AllowNull] Stmt y)
         {
             switch((x, y))
             {
@@ -119,7 +112,7 @@ namespace Gum
                     return true;
 
                 case (CommandStmt cmdStmtX, CommandStmt cmdStmtY):
-                    return cmdStmtX.Commands.SequenceEqual(cmdStmtY.Commands, this);
+                    return cmdStmtX.Commands.SequenceEqual(cmdStmtY.Commands, Instance);
 
                 case (VarDeclStmt varDeclStmtX, VarDeclStmt varDeclStmtY):
                     return EqualsVarDecl(varDeclStmtX.VarDecl, varDeclStmtY.VarDecl);
@@ -146,7 +139,7 @@ namespace Gum
                     return EqualsExp(returnStmtX.Value, returnStmtY.Value);
 
                 case (BlockStmt blockStmtX, BlockStmt blockStmtY):
-                    return blockStmtX.Stmts.SequenceEqual(blockStmtY.Stmts, this);
+                    return blockStmtX.Stmts.SequenceEqual(blockStmtY.Stmts, Instance);
 
                 case (BlankStmt blankStmtX, BlankStmt blankStmtY):
                     return true;
@@ -178,32 +171,46 @@ namespace Gum
             }
         }
 
-        bool EqualsEnumDecl([AllowNull] EnumDecl x, [AllowNull] EnumDecl y)
+        public static bool EqualsTypeDecl([AllowNull] TypeDecl x, [AllowNull] TypeDecl y)
+        {
+            switch((x, y))
+            {
+                case (null, null): 
+                    return true;
+
+                case (EnumDecl enumDeclX, EnumDecl enumDeclY):
+                    return enumDeclX.Name == enumDeclY.Name &&
+                    enumDeclX.TypeParams.SequenceEqual(enumDeclY.TypeParams) && // string이라서 Instance를 안붙임
+                    enumDeclX.Elems.SequenceEqual(enumDeclY.Elems, Instance);
+
+                case (StructDecl structDeclX, StructDecl structDeclY):
+                    return structDeclX.AccessModifier == structDeclY.AccessModifier &&
+                        structDeclX.Name == structDeclY.Name &&
+                        structDeclX.TypeParams.SequenceEqual(structDeclY.TypeParams) &&
+                        structDeclX.BaseTypes.SequenceEqual(structDeclY.BaseTypes, Instance) &&
+                        structDeclX.Elems.SequenceEqual(structDeclY.Elems, Instance);
+
+                default: 
+                    return false;
+            }
+        }
+
+        public static bool EqualsEnumDeclElement([AllowNull] EnumDeclElement x, [AllowNull] EnumDeclElement y)
         {
             if (x == null && y == null) return true;
             if (x == null || y == null) return false;
 
             return x.Name == y.Name &&
-                x.TypeParams.SequenceEqual(y.TypeParams) && // string이라서 this를 안붙임
-                x.Elems.SequenceEqual(y.Elems, this);
+                x.Params.SequenceEqual(y.Params, Instance);
         }
 
-        bool EqualsEnumDeclElement([AllowNull] EnumDeclElement x, [AllowNull] EnumDeclElement y)
-        {
-            if (x == null && y == null) return true;
-            if (x == null || y == null) return false;
-
-            return x.Name == y.Name &&
-                x.Params.SequenceEqual(y.Params, this);
-        }
-
-        bool EqualsTypeAndName([AllowNull] TypeAndName x, [AllowNull] TypeAndName y)
+        public static bool EqualsTypeAndName([AllowNull] TypeAndName x, [AllowNull] TypeAndName y)
         {
             return EqualsTypeExp(x.Type, y.Type) &&
                 x.Name == y.Name;
         }
 
-        bool EqualsTypeExp([AllowNull] TypeExp x, [AllowNull] TypeExp y)
+        public static bool EqualsTypeExp([AllowNull] TypeExp x, [AllowNull] TypeExp y)
         {
             switch((x, y))
             {
@@ -212,31 +219,19 @@ namespace Gum
 
                 case (IdTypeExp idTypeExpX, IdTypeExp idTypeExpY):
                     return idTypeExpX.Name == idTypeExpY.Name &&
-                        idTypeExpX.TypeArgs.SequenceEqual(idTypeExpY.TypeArgs, this);
+                        idTypeExpX.TypeArgs.SequenceEqual(idTypeExpY.TypeArgs, Instance);
 
                 case (MemberTypeExp memberTypeExpX, MemberTypeExp memberTypeExpY):
                     return EqualsTypeExp(memberTypeExpX.Parent, memberTypeExpY.Parent) &&
                         memberTypeExpX.MemberName == memberTypeExpY.MemberName &&
-                        memberTypeExpX.TypeArgs.SequenceEqual(memberTypeExpY.TypeArgs, this);
+                        memberTypeExpX.TypeArgs.SequenceEqual(memberTypeExpY.TypeArgs, Instance);
 
                 default:
                     return false;
             }
         }
 
-        bool EqualsStructDecl([AllowNull] StructDecl x, [AllowNull] StructDecl y)
-        {
-            if (x == null && y == null) return true;
-            if (x == null || y == null) return false;
-
-            return x.AccessModifier == y.AccessModifier &&
-                x.Name == y.Name &&
-                x.TypeParams.SequenceEqual(y.TypeParams) &&
-                x.BaseTypes.SequenceEqual(y.BaseTypes, this) &&
-                x.Elems.SequenceEqual(y.Elems, this);
-        }
-
-        bool EqualsStructDeclElement([AllowNull] StructDecl.Element x, [AllowNull] StructDecl.Element y)
+        public static bool EqualsStructDeclElement([AllowNull] StructDecl.Element x, [AllowNull] StructDecl.Element y)
         {
             switch((x, y))
             {
@@ -254,7 +249,7 @@ namespace Gum
                         funcDeclElemX.IsSequence == funcDeclElemY.IsSequence &&
                         EqualsTypeExp(funcDeclElemX.RetType, funcDeclElemY.RetType) &&
                         funcDeclElemX.Name == funcDeclElemY.Name &&
-                        funcDeclElemX.TypeParams.SequenceEqual(funcDeclElemX.TypeParams) && // string이라서 this 안집어넣음
+                        funcDeclElemX.TypeParams.SequenceEqual(funcDeclElemX.TypeParams) && // string이라서 Instance 안집어넣음
                         EqualsFuncParamInfo(funcDeclElemX.ParamInfo, funcDeclElemY.ParamInfo) &&
                         EqualsStmt(funcDeclElemX.Body, funcDeclElemY.Body);
 
@@ -263,22 +258,22 @@ namespace Gum
             }
         }
 
-        bool EqualsFuncParamInfo([AllowNull] FuncParamInfo x, [AllowNull] FuncParamInfo y)
+        public static bool EqualsFuncParamInfo([AllowNull] FuncParamInfo x, [AllowNull] FuncParamInfo y)
         {
-            return x.Parameters.SequenceEqual(y.Parameters, this) &&
+            return x.Parameters.SequenceEqual(y.Parameters, Instance) &&
                 x.VariadicParamIndex == y.VariadicParamIndex;
         }
 
-        bool EqualsVarDecl([AllowNull] VarDecl x, [AllowNull] VarDecl y)
+        public static bool EqualsVarDecl([AllowNull] VarDecl x, [AllowNull] VarDecl y)
         {
             if (x == null && y == null) return true;
             if (x == null || y == null) return false;
 
             return EqualsTypeExp(x.Type, y.Type) &&
-                x.Elems.SequenceEqual(y.Elems, this);
+                x.Elems.SequenceEqual(y.Elems, Instance);
         }
 
-        bool EqualsVarDeclElement([AllowNull] VarDeclElement x, [AllowNull] VarDeclElement y)
+        public static bool EqualsVarDeclElement([AllowNull] VarDeclElement x, [AllowNull] VarDeclElement y)
         {
             if (x == null && y == null) return true;
             if (x == null || y == null) return false;
@@ -287,7 +282,7 @@ namespace Gum
                 EqualsExp(x.InitExp, y.InitExp);
         }
 
-        bool EqualsExp([AllowNull] Exp x, [AllowNull] Exp y)
+        public static bool EqualsExp([AllowNull] Exp x, [AllowNull] Exp y)
         {
             switch((x, y))
             {
@@ -296,10 +291,10 @@ namespace Gum
 
                 case (IdentifierExp identifierExpX, IdentifierExp identifierExpY):
                     return identifierExpX.Value == identifierExpY.Value &&
-                        identifierExpX.TypeArgs.SequenceEqual(identifierExpY.TypeArgs, this);
+                        identifierExpX.TypeArgs.SequenceEqual(identifierExpY.TypeArgs, Instance);
 
                 case (StringExp stringExpX, StringExp stringExpY):
-                    return stringExpX.Elements.SequenceEqual(stringExpY.Elements, this);
+                    return stringExpX.Elements.SequenceEqual(stringExpY.Elements, Instance);
 
                 case (IntLiteralExp intLiteralExpX, IntLiteralExp intLiteralExpY):
                     return intLiteralExpX.Value == intLiteralExpY.Value;
@@ -318,11 +313,11 @@ namespace Gum
 
                 case (CallExp callExpX, CallExp callExpY):
                     return EqualsExp(callExpX.Callable, callExpY.Callable) &&
-                        callExpX.TypeArgs.SequenceEqual(callExpY.TypeArgs, this) &&
-                        callExpX.Args.SequenceEqual(callExpY.Args, this);
+                        callExpX.TypeArgs.SequenceEqual(callExpY.TypeArgs, Instance) &&
+                        callExpX.Args.SequenceEqual(callExpY.Args, Instance);
 
                 case (LambdaExp lambdaExpX, LambdaExp lambdaExpY):
-                    return lambdaExpX.Params.SequenceEqual(lambdaExpY.Params, this) &&
+                    return lambdaExpX.Params.SequenceEqual(lambdaExpY.Params, Instance) &&
                         EqualsStmt(lambdaExpX.Body, lambdaExpY.Body);
 
                 case (IndexerExp indexerExpX, IndexerExp indexerExpY):
@@ -332,28 +327,28 @@ namespace Gum
                 case (MemberCallExp memberCallExpX, MemberCallExp memberCallExpY):
                     return EqualsExp(memberCallExpX.Object, memberCallExpY.Object) &&
                         memberCallExpX.MemberName == memberCallExpY.MemberName &&
-                        memberCallExpX.MemberTypeArgs.SequenceEqual(memberCallExpY.MemberTypeArgs, this) &&
-                        memberCallExpX.Args.SequenceEqual(memberCallExpY.Args, this);
+                        memberCallExpX.MemberTypeArgs.SequenceEqual(memberCallExpY.MemberTypeArgs, Instance) &&
+                        memberCallExpX.Args.SequenceEqual(memberCallExpY.Args, Instance);
 
                 case (MemberExp memberExpX, MemberExp memberExpY):
-                    return EqualsExp(memberExpX.Object, memberExpY.Object) &&
+                    return EqualsExp(memberExpX.Parent, memberExpY.Parent) &&
                         memberExpX.MemberName == memberExpY.MemberName &&
-                        memberExpX.MemberTypeArgs.SequenceEqual(memberExpY.MemberTypeArgs, this);
+                        memberExpX.MemberTypeArgs.SequenceEqual(memberExpY.MemberTypeArgs, Instance);
 
                 case (ListExp listExpX, ListExp listExpY):
                     return EqualsTypeExp(listExpX.ElemType, listExpY.ElemType) &&
-                        listExpX.Elems.SequenceEqual(listExpY.Elems, this);
+                        listExpX.Elems.SequenceEqual(listExpY.Elems, Instance);
 
                 case (NewExp newExpX, NewExp newExpY):
                     return EqualsTypeExp(newExpX.Type, newExpY.Type) &&
-                        newExpX.Args.SequenceEqual(newExpY.Args, this);
+                        newExpX.Args.SequenceEqual(newExpY.Args, Instance);
 
                 default:
                     return false;
             }
         }
 
-        bool EqualsStringExpElement([AllowNull] StringExpElement x, [AllowNull] StringExpElement y)
+        public static bool EqualsStringExpElement([AllowNull] StringExpElement x, [AllowNull] StringExpElement y)
         {
             switch ((x, y))
             {
@@ -371,13 +366,13 @@ namespace Gum
             }
         }
 
-        bool EqualsLambdaExpParam([AllowNull] LambdaExpParam x, [AllowNull] LambdaExpParam y)
+        public static bool EqualsLambdaExpParam([AllowNull] LambdaExpParam x, [AllowNull] LambdaExpParam y)
         {
             return EqualsTypeExp(x.Type, y.Type) &&
                 x.Name == y.Name;
         }
 
-        bool EqualsForStmtInitializer([AllowNull] ForStmtInitializer x, [AllowNull] ForStmtInitializer y)
+        public static bool EqualsForStmtInitializer([AllowNull] ForStmtInitializer x, [AllowNull] ForStmtInitializer y)
         {
             switch((x, y))
             {

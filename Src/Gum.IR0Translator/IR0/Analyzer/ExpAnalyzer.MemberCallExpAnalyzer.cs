@@ -89,7 +89,7 @@ namespace Gum.IR0
         //        var memberTypeArgs = GetTypeValues(exp.MemberTypeArgs, context);
 
         //        // 1. 함수에서 찾기.. FuncValue도 같이 주는것이 좋을 듯 하다
-        //        if (context.TypeValueService.GetMemberFuncValue(instanceType, Name.MakeText(exp.MemberName), memberTypeArgs, out var funcValue))
+        //        if (context.TypeValueService.GetMemberFuncValue(instanceType, exp.MemberName, memberTypeArgs, out var funcValue))
         //        {
         //            var funcTypeValue = context.TypeValueService.GetTypeValue(funcValue);
 
@@ -106,7 +106,7 @@ namespace Gum.IR0
         //        // 2. 변수에서 찾기
         //        if (memberTypeArgs.Length == 0)
         //        {
-        //            if (context.TypeValueService.GetMemberVarValue(instanceType, Name.MakeText(exp.MemberName), out var varValue))
+        //            if (context.TypeValueService.GetMemberVarValue(instanceType, exp.MemberName, out var varValue))
         //            {
         //                // TODO: as 대신 함수로 의미 부여하기, 호출 가능하면? 쿼리하는 함수로 변경
         //                var varFuncTypeValue = context.TypeValueService.GetTypeValue(varValue) as TypeValue.Func;
@@ -199,7 +199,7 @@ namespace Gum.IR0
         //        var memberTypeArgs = GetTypeValues(exp.MemberTypeArgs, context);
 
         //        // 1. 함수에서 찾기
-        //        if (context.TypeValueService.GetMemberFuncValue(objTypeValue, Name.MakeText(exp.MemberName), memberTypeArgs, out var memberFuncValue))
+        //        if (context.TypeValueService.GetMemberFuncValue(objTypeValue, exp.MemberName, memberTypeArgs, out var memberFuncValue))
         //        {
         //            if (!IsFuncStatic(memberFuncValue.FuncId, context))
         //            {
@@ -217,7 +217,7 @@ namespace Gum.IR0
         //        // 2. 변수에서 찾기
         //        if (memberTypeArgs.Length == 0)
         //        {
-        //            if (context.TypeValueService.GetMemberVarValue(objTypeValue, Name.MakeText(exp.MemberName), out var varValue))
+        //            if (context.TypeValueService.GetMemberVarValue(objTypeValue, exp.MemberName, out var varValue))
         //            {
         //                if (!IsVarStatic(varValue.VarId, context))
         //                {

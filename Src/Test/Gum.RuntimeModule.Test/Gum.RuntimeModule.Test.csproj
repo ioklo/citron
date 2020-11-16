@@ -20,6 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Gum.IR0Translator\Gum.IR0Translator.csproj" />
     <ProjectReference Include="..\..\Gum.RuntimeModule\Gum.RuntimeModule.csproj" />
   </ItemGroup>
 

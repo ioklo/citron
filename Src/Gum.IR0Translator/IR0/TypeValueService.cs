@@ -5,17 +5,18 @@ using System.Text;
 using System.Linq;
 using System.Collections.ObjectModel;
 using Gum.CompileTime;
+using System.Diagnostics;
 
-namespace Gum
+namespace Gum.IR0
 {
-    public class TypeValueService
+    class TypeValueService
     {
-        ModuleInfoService moduleInfoService;
+        ItemInfoRepository itemInfoRepo;
         TypeValueApplier typeValueApplier;
 
-        public TypeValueService(ModuleInfoService moduleInfoService, TypeValueApplier typeValueApplier)
+        public TypeValueService(ItemInfoRepository itemInfoRepo, TypeValueApplier typeValueApplier)
         {
-            this.moduleInfoService = moduleInfoService;
+            this.itemInfoRepo = itemInfoRepo;
             this.typeValueApplier = typeValueApplier;
         }
 
@@ -52,10 +53,18 @@ namespace Gum
         // GetTypeValue(X<int>.Y<short>, x) => Dict<int, short>
         public TypeValue GetTypeValue(VarValue varValue)
         {
-            var varInfo = moduleInfoService.GetVarInfos(varValue.VarId).Single();
+            var varInfo = itemInfoRepo.GetItem<VarInfo>(varValue.GetItemId());
 
-            if (varInfo.OuterId != null)
-                return typeValueApplier.Apply(TypeValue.MakeNormal(varInfo.OuterId, varValue.OuterTypeArgList), varInfo.TypeValue);
+            Debug.Assert(varInfo != null);            
+
+            if (varValue.TypeEntries.Length != 0)
+                return typeValueApplier.Apply(
+                    new TypeValue.Normal(
+                        varValue.ModuleName, 
+                        varValue.NamespacePath, 
+                        varValue.TypeEntries.SkipLast(1), 
+                        varValue.TypeEntries[varValue.TypeEntries.Length - 1]), 
+                    varInfo.TypeValue);
             else
                 return varInfo.TypeValue;
         }
@@ -64,21 +73,21 @@ namespace Gum
         // (V, List<short>) => S<int>
         public TypeValue.Func GetTypeValue(FuncValue funcValue)
         {
-            var funcInfo = moduleInfoService.GetFuncInfos(funcValue.FuncId).Single();
+            var funcInfo = itemInfoRepo.GetItem<FuncInfo>(funcValue.GetFuncId());
+            Debug.Assert(funcInfo != null);
 
             // 
             TypeValue retTypeValue;
             if (funcInfo.bSeqCall)
             {
-                var enumerableId = ModuleItemId.Make("Enumerable", 1);
-                retTypeValue = TypeValue.MakeNormal(enumerableId, TypeArgumentList.Make(funcInfo.RetTypeValue));
+                retTypeValue = new TypeValue.Normal(ItemIds.Enumerable, new[] { new[] { funcInfo.RetTypeValue } });
             }
             else
             {
                 retTypeValue = funcInfo.RetTypeValue;
             }
 
-            return typeValueApplier.Apply_Func(funcValue, TypeValue.MakeFunc(retTypeValue, funcInfo.ParamTypeValues));
+            return typeValueApplier.Apply_Func(funcValue, new TypeValue.Func(retTypeValue, funcInfo.ParamTypeValues));
         }
 
 
@@ -130,7 +139,8 @@ namespace Gum
         {
             outBaseTypeValue = null;
 
-            var typeInfo = moduleInfoService.GetTypeInfos(typeValue.TypeId).SingleOrDefault();
+            var typeId = typeValue.GetTypeId();
+            var typeInfo = itemInfoRepo.GetItem<TypeInfo>(typeId);
             if (typeInfo == null) return false;
 
             var baseTypeValue = typeInfo.GetBaseTypeValue();
@@ -156,21 +166,18 @@ namespace Gum
             TypeValue objTypeValue, 
             Name funcName, 
             IReadOnlyCollection<TypeValue> typeArgs,
-            [NotNullWhen(true)] out FuncValue? funcValue)
+            [NotNullWhen(true)] out FuncValue? outFuncValue)
         {
-            funcValue = null;
+            outFuncValue = null;
 
             TypeValue.Normal? ntv = objTypeValue as TypeValue.Normal;
             if (ntv == null) return false;
 
-            var typeInfo = moduleInfoService.GetTypeInfos(ntv.TypeId).SingleOrDefault();
+            var typeInfo = itemInfoRepo.GetItem<TypeInfo>(ntv.GetTypeId());
             if (typeInfo == null)
                 return false;
 
-            if (!typeInfo.GetMemberFuncId(funcName, out var memberFuncId))
-                return false;
-
-            var funcInfo = moduleInfoService.GetFuncInfos(memberFuncId).SingleOrDefault();
+            var funcInfo = typeInfo.GetFuncs(funcName).SingleOrDefault();
 
             if (funcInfo == null)
                 return false;
@@ -179,12 +186,18 @@ namespace Gum
             if (funcInfo.TypeParams.Length < typeArgs.Count)
                 return false;
 
-            var completedTypeArgs = typeArgs.ToList();
+            var completedTypeArgs = typeArgs.Concat(
+                funcInfo.TypeParams.Skip(typeArgs.Count).Select(typeParam =>
+                   new TypeValue.TypeVar(funcInfo.GetId(), typeParam)
+                )
+            );
 
-            for (int i = typeArgs.Count; i < funcInfo.TypeParams.Length; i++)
-                completedTypeArgs.Add(TypeValue.MakeTypeVar(memberFuncId, funcInfo.TypeParams[i]));
+            outFuncValue = new FuncValue(
+                ntv.ModuleName, 
+                ntv.NamespacePath, 
+                ntv.GetAllEntries(), 
+                new AppliedItemPathEntry(funcInfo.GetLocalId().Name, funcInfo.GetLocalId().ParamHash, completedTypeArgs));
 
-            funcValue = new FuncValue(memberFuncId, TypeArgumentList.Make(ntv.TypeArgList, completedTypeArgs));
             return true;
         }
 
@@ -192,25 +205,28 @@ namespace Gum
         {
             return typeValueApplier.Apply(context, typeValue);
         }
-
+        
         public bool GetMemberVarValue(
-            TypeValue objTypeValue, 
+            TypeValue parentTypeValue, 
             Name varName,
             [NotNullWhen(true)] out VarValue? outVarValue)
         {
             outVarValue = null;
 
-            var ntv = objTypeValue as TypeValue.Normal;
-            if (ntv == null) return false;
+            var parentNTV = parentTypeValue as TypeValue.Normal;
+            if (parentNTV == null) return false;
 
-            var typeInfo = moduleInfoService.GetTypeInfos(ntv.TypeId).SingleOrDefault();
+            var typeId = parentNTV.GetTypeId();
+            var typeInfo = itemInfoRepo.GetItem<TypeInfo>(typeId);
             if (typeInfo == null)
                 return false;
 
-            if (!typeInfo.GetMemberVarId(varName, out var memberVarId))
+            var varInfo = typeInfo.GetVar(varName);
+
+            if (varInfo == null)
                 return false;
 
-            outVarValue = new VarValue(memberVarId, ntv.TypeArgList);
+            outVarValue = new VarValue(parentNTV.ModuleName, parentNTV.NamespacePath, parentNTV.GetAllEntries(), varName);
             return true;
         }
     }

@@ -90,6 +90,8 @@ public struct S<T> : B, I
     protected string y;
     private int z;
 
+    public struct Nested<U> : B, I { int x; }
+
     static void Func<X>(string s) { }
     private seq int F2<T>() { yield 4; }
 }
@@ -103,11 +105,16 @@ public struct S<T> : B, I
 
                 new StructDecl.Element[]
                 {
-                    StructDecl.MakeVarDeclElement(AccessModifier.Public, new IdTypeExp("int"), new[] { "x1", "x2" }),
-                    StructDecl.MakeVarDeclElement(AccessModifier.Protected, new IdTypeExp("string"), new[] { "y" }),
-                    StructDecl.MakeVarDeclElement(AccessModifier.Private, new IdTypeExp("int"), new[] { "z" }),
+                    new StructDecl.VarDeclElement(AccessModifier.Public, new IdTypeExp("int"), new[] { "x1", "x2" }),
+                    new StructDecl.VarDeclElement(AccessModifier.Protected, new IdTypeExp("string"), new[] { "y" }),
+                    new StructDecl.VarDeclElement(AccessModifier.Private, new IdTypeExp("int"), new[] { "z" }),
 
-                    StructDecl.MakeFuncDeclElement(
+                    new StructDecl.TypeDeclElement(new StructDecl(
+                        AccessModifier.Public, "Nested", new[] { "U" }, new[] { new IdTypeExp("B"), new IdTypeExp("I") },
+                        new[] { new StructDecl.VarDeclElement(AccessModifier.Public, new IdTypeExp("int"), new[] {"x"}) }
+                    )),
+
+                    new StructDecl.FuncDeclElement(
                         AccessModifier.Public,
                         bStatic: true,
                         bSequence: false,
@@ -117,7 +124,7 @@ public struct S<T> : B, I
                         new FuncParamInfo(new TypeAndName[] { new TypeAndName(new IdTypeExp("string"), "s") }, null),
                         new BlockStmt()),
 
-                    StructDecl.MakeFuncDeclElement(
+                    new StructDecl.FuncDeclElement(
                         AccessModifier.Private,
                         bStatic: false,
                         bSequence: true,

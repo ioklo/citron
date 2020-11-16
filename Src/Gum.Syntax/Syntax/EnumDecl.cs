@@ -25,7 +25,7 @@ namespace Gum.Syntax
         }
     }
 
-    public class EnumDecl : ISyntaxNode
+    public class EnumDecl : TypeDecl, ISyntaxNode
     {
         public string Name { get; }
         public ImmutableArray<string> TypeParams { get; }

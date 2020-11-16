@@ -50,7 +50,7 @@ namespace Gum.IR0
             switch (idInfo)
             {
                 case IdentifierInfo.ModuleGlobal mgs:          // x => global of external module
-                    var varId = context.GetExternalGlobalVarId(mgs.VarId);
+                    var varId = context.GetExternalGlobalVarId(mgs.VarValue.GetItemId()); // TypeParameter가 들어갈 일이 없으므로 AppliedId가 아니고 Id이다
                     outExp = new ExternalGlobalVarExp(varId);
                     outTypeValue = mgs.TypeValue;
                     return true;
@@ -102,7 +102,7 @@ namespace Gum.IR0
             [NotNullWhen(true)] out TypeValue? outTypeValue)
         {
             outExp = new BoolLiteralExp(boolExp.Value);
-            outTypeValue = analyzer.GetBoolTypeValue();
+            outTypeValue = TypeValues.Bool;
             return true;
         }
 
@@ -111,7 +111,7 @@ namespace Gum.IR0
             [NotNullWhen(true)] out TypeValue? outTypeValue)
         {
             outExp = new IntLiteralExp(intExp.Value);
-            outTypeValue= analyzer.GetIntTypeValue();
+            outTypeValue = TypeValues.Int;
             return true;
         }
 
@@ -136,7 +136,7 @@ namespace Gum.IR0
             if (bResult)
             {
                 outExp = new StringExp(strExpElems);
-                outTypeValue = analyzer.GetStringTypeValue();
+                outTypeValue = TypeValues.String;
                 return true;
             }
             else
@@ -182,8 +182,6 @@ namespace Gum.IR0
             [NotNullWhen(true)] out Exp? outExp,
             [NotNullWhen(true)] out TypeValue? outTypeValue)
         {
-            var intTypeValue = analyzer.GetIntTypeValue();
-
             outExp = null;
             outTypeValue = null;
 
@@ -191,7 +189,7 @@ namespace Gum.IR0
                 return false;
 
             // int type 검사
-            if (!analyzer.IsAssignable(intTypeValue, ir0OperandType, context))
+            if (!analyzer.IsAssignable(TypeValues.Int, ir0OperandType, context))
             {
                 context.AddError(A0601_UnaryAssignOp_IntTypeIsAllowedOnly, operand, "++ --는 int 타입만 지원합니다");
                 return false;
@@ -204,7 +202,7 @@ namespace Gum.IR0
             }
 
             outExp = new CallInternalUnaryAssignOperator(op, ir0Operand);
-            outTypeValue = intTypeValue;
+            outTypeValue = TypeValues.Int;
             return true;
         }
 
@@ -213,10 +211,7 @@ namespace Gum.IR0
             [NotNullWhen(true)] out TypeValue? outTypeValue)
         {
             outExp = null;
-            outTypeValue = null;
-
-            var boolTypeValue = analyzer.GetBoolTypeValue();
-            var intTypeValue = analyzer.GetIntTypeValue();
+            outTypeValue = null;            
             
             if (!AnalyzeExp(unaryOpExp.Operand, null, context, out var ir0Operand, out var operandType))
                 return false; // AnalyzeExp에서 에러가 생겼으므로 내부에서 에러를 추가했을 것이다. 여기서는 더 추가 하지 않는다
@@ -225,7 +220,7 @@ namespace Gum.IR0
             {
                 case S.UnaryOpKind.LogicalNot:
                     {
-                        if (!analyzer.IsAssignable(boolTypeValue, operandType, context))
+                        if (!analyzer.IsAssignable(TypeValues.Bool, operandType, context))
                         {
                             context.AddError(A0701_UnaryOp_LogicalNotOperatorIsAppliedToBoolTypeOperandOnly, unaryOpExp.Operand, $"{unaryOpExp.Operand}에 !를 적용할 수 없습니다. bool 타입이어야 합니다");                            
                             return false;
@@ -233,13 +228,13 @@ namespace Gum.IR0
 
                         var operandTypeId = context.GetType(operandType);
                         outExp = new CallInternalUnaryOperatorExp(InternalUnaryOperator.LogicalNot_Bool_Bool, new ExpInfo(ir0Operand, operandTypeId));
-                        outTypeValue = boolTypeValue;
+                        outTypeValue = TypeValues.Bool;
                         return true;
                     }
 
                 case S.UnaryOpKind.Minus:
                     {
-                        if (!analyzer.IsAssignable(intTypeValue, operandType, context))
+                        if (!analyzer.IsAssignable(TypeValues.Int, operandType, context))
                         {
                             context.AddError(A0702_UnaryOp_UnaryMinusOperatorIsAppliedToIntTypeOperandOnly, unaryOpExp.Operand, $"{unaryOpExp.Operand}에 -를 적용할 수 없습니다. int 타입이어야 합니다");
                             return false;
@@ -247,7 +242,7 @@ namespace Gum.IR0
 
                         var operandTypeId = context.GetType(operandType);
                         outExp = new CallInternalUnaryOperatorExp(InternalUnaryOperator.UnaryMinus_Int_Int, new ExpInfo(ir0Operand, operandTypeId));
-                        outTypeValue = intTypeValue;
+                        outTypeValue = TypeValues.Int;
                         return true;
                     }
 
@@ -290,9 +285,9 @@ namespace Gum.IR0
             public static Dictionary<S.BinaryOpKind, InternalBinaryOperatorInfo[]> Infos { get; }
             static InternalBinaryOperatorInfo()
             {
-                var boolType = TypeValue.MakeNormal(ModuleItemId.Make("bool"));
-                var intType = TypeValue.MakeNormal(ModuleItemId.Make("int"));
-                var stringType = TypeValue.MakeNormal(ModuleItemId.Make("string"));
+                var boolType = TypeValues.Bool;
+                var intType = TypeValues.Int;
+                var stringType = TypeValues.String;
 
                 Infos = new Dictionary<S.BinaryOpKind, InternalBinaryOperatorInfo[]>()
                 {
@@ -425,9 +420,10 @@ namespace Gum.IR0
 
             // 1. this 검색
 
-            // 2. global 검색
-            var funcId = ModuleItemId.Make(callableExp.Value, callableExp.TypeArgs.Length);
-            var globalFuncs = context.ModuleInfoService.GetFuncInfos(funcId).ToImmutableArray();
+            // 2. global 검색            
+            var globalFuncs = context.GetFuncs(NamespacePath.Root, callableExp.Value)
+                .Where(func => callableExp.TypeArgs.Length <= func.TypeParams.Length) // typeParam 개수가 typeArg 개수 보다 더 많거나 같아야 한다.
+                .ToImmutableArray();
 
             if (0 < globalFuncs.Length)
             {                
@@ -439,16 +435,16 @@ namespace Gum.IR0
 
                 var globalFunc = globalFuncs[0];
 
-                var typeArgs = callableExp.TypeArgs.Select(typeArg => context.GetTypeValueByTypeExp(typeArg));
+                var typeArgs = callableExp.TypeArgs.Select(typeArg => context.GetTypeValueByTypeExp(typeArg)).ToArray();
 
-                var funcValue = new FuncValue(globalFunc.FuncId, TypeArgumentList.Make(null, typeArgs));
+                var funcValue = new FuncValue(globalFunc.GetId(), typeArgs);
                 var funcTypeValue = context.TypeValueService.GetTypeValue(funcValue);
 
                 if (!analyzer.CheckParamTypes(callableExp, funcTypeValue.Params, argInfos.Select(info => info.TypeValue).ToList(), context))
                     return false;
 
-                // 내부함수인지 확인을..                
-                var funcDeclId = context.GetFuncDeclId(globalFunc.FuncId);
+                // 내부함수라면
+                var funcDeclId = context.GetFuncDeclId(globalFunc.GetId());
                 if (funcDeclId != null)
                 {
                     var args = argInfos.Select(info =>
@@ -466,9 +462,8 @@ namespace Gum.IR0
                     outTypeValue = funcTypeValue;
                     return true;
                 }
-                else
-                {
-                    // 외부함수 처리
+                else // 외부함수 처리
+                {   
                     throw new NotImplementedException();
                 }
             }
@@ -729,8 +724,7 @@ namespace Gum.IR0
             
             var typeId = context.GetType(curElemTypeValue);
             outExp = new ListExp(typeId, elemExps);
-            // TODO: System.List가 되어야 한다
-            outTypeValue = TypeValue.MakeNormal(ModuleItemId.Make("List", 1), TypeArgumentList.Make(curElemTypeValue));
+            outTypeValue = new TypeValue.Normal(ItemIds.List, new[] { curElemTypeValue });
             return true;
         }
 

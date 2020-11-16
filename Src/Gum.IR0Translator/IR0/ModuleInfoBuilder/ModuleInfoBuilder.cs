@@ -7,7 +7,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Security.Cryptography.X509Certificates;
-
+using System.Text;
 using S = Gum.Syntax;
 
 namespace Gum.IR0
@@ -22,9 +22,8 @@ namespace Gum.IR0
         }        
 
         private FuncInfo MakeFunc(
-            S.FuncDecl? funcDecl,
-            ModuleItemId? outerId,
-            ModuleItemId funcId,
+            S.FuncDecl funcDecl,
+            ItemId funcId,
             bool bSeqCall,
             bool bThisCall,            
             IEnumerable<string> typeParams,
@@ -32,27 +31,42 @@ namespace Gum.IR0
             IEnumerable<TypeValue> argTypeValues,
             Context context)
         {   
-            var funcInfo = new FuncInfo(outerId, funcId, bSeqCall, bThisCall, typeParams, retTypeValue, argTypeValues);
+            var funcInfo = new FuncInfo(funcId, bSeqCall, bThisCall, typeParams, retTypeValue, argTypeValues);
             context.AddFuncInfo(funcDecl, funcInfo);
             return funcInfo;
         }
 
         private VarInfo MakeVar(
-            ModuleItemId? outerId,
-            ModuleItemId varId,
+            ItemId varId,
             bool bStatic,
             TypeValue typeValue,
             Context context)
         {
-            var varInfo = new VarInfo(outerId, varId, bStatic, typeValue);
+            var varInfo = new VarInfo(varId, bStatic, typeValue);
             context.AddVarInfo(varInfo);
 
             return varInfo;
         }
 
+        void BuildTypeDecl(S.TypeDecl typeDecl, Context context)
+        {
+            switch(typeDecl)
+            {
+                case S.EnumDecl enumDecl:
+                    BuildEnumDecl(enumDecl, context);
+                    return;
+
+                case S.StructDecl structDecl:
+                    throw new NotImplementedException();                    
+
+                default:
+                    throw new InvalidOperationException();
+            }
+        }
+
         void BuildEnumDecl(S.EnumDecl enumDecl, Context context)
         {
-            EnumElemInfo MakeElemInfo(ModuleItemId enumTypeId, S.EnumDeclElement elem, Context context)
+            EnumElemInfo MakeElemInfo(S.EnumDeclElement elem, Context context)
             {
                 var fieldInfos = elem.Params.Select(parameter =>
                 {
@@ -63,41 +77,144 @@ namespace Gum.IR0
                 return new EnumElemInfo(elem.Name, fieldInfos);
             }
             
-            var typeId = context.GetTypeId(enumDecl);
+            var typePath = context.GetTypePath(enumDecl);
             
-            var elemInfos = enumDecl.Elems.Select(elem => MakeElemInfo(typeId, elem, context));
+            var elemInfos = enumDecl.Elems.Select(elem => MakeElemInfo(elem, context));
 
             var enumType = new EnumInfo(
-                context.GetThisTypeValue()?.TypeId,
-                typeId,
-                enumDecl.TypeParams, elemInfos);
+                new ItemId(ModuleName.Internal, typePath),                
+                enumDecl.TypeParams, 
+                elemInfos);
 
-            context.AddEnumInfo(enumDecl, enumType);
+            context.AddTypeInfo(enumDecl, enumType);
         }
 
         void BuildFuncDecl(S.FuncDecl funcDecl, Context context)
         {
-            var thisTypeValue = context.GetThisTypeValue();            
+            var thisTypePath = context.GetThisTypePath();
+            var paramHash = GetParamHash(funcDecl.ParamInfo, context);
 
-            ModuleItemId? outerId = null;
-            bool bThisCall = false;
-
-            if (thisTypeValue != null)
-            {
-                outerId = thisTypeValue.TypeId;
+            ItemId funcId;
+            bool bThisCall;
+            if (thisTypePath != null)
+            {                
+                var funcPath = thisTypePath.Value.Append(funcDecl.Name, funcDecl.TypeParams.Length, paramHash);
+                funcId = new ItemId(ModuleName.Internal, funcPath);
                 bThisCall = true; // TODO: static 키워드가 추가되면 그때 다시 고쳐야 한다
             }
+            else
+            {
+                funcId = new ItemId(ModuleName.Internal, NamespacePath.Root, new ItemPathEntry(funcDecl.Name, funcDecl.TypeParams.Length, paramHash));
+                bThisCall = false;
+            }
 
-            var func = MakeFunc(
+            MakeFunc(
                 funcDecl,
-                outerId,                
-                context.GetFuncId(funcDecl),
+                funcId,
                 funcDecl.IsSequence,
                 bThisCall,
                 funcDecl.TypeParams,
                 context.GetTypeValue(funcDecl.RetType),
                 funcDecl.ParamInfo.Parameters.Select(typeAndName => context.GetTypeValue(typeAndName.Type)),
                 context);
+        }
+
+        void GetTypeValueNormalEntryString(AppliedItemPathEntry entry, StringBuilder sb)
+        {
+            sb.Append(entry.Name);
+
+            if (entry.TypeArgs.Length != 0)
+            {
+                sb.Append('<');
+
+                bool bFirst = true;
+                foreach (var typeArg in entry.TypeArgs)
+                {
+                    if (bFirst) bFirst = false;
+                    else sb.Append(',');
+
+                    GetTypeValueString(typeArg, sb);
+                }
+
+                sb.Append('>');
+            }
+        }
+
+        // [ModuleName].Namespace.Namespace.Type...
+        
+
+        private void GetTypeValueString(TypeValue typeValue, StringBuilder sb)
+        {
+            switch (typeValue)
+            {
+                case TypeValue.Var _:
+                    throw new InvalidOperationException();
+
+                case TypeValue.TypeVar typeVar:
+                    sb.Append($"{typeVar.ParentId}.{typeVar.Name}");
+                    return;                    
+
+                case TypeValue.Normal normal:
+                    // [ModuleName]
+                    sb.Append($"[{normal.ModuleName}]");
+
+                    // Namespace
+                    sb.AppendJoin('.', normal.NamespacePath.Entries.Select(entry => entry.Value));
+
+                    if (normal.NamespacePath.Entries.Length != 0)
+                        sb.Append('.');
+
+                    // A<B>.C<D>
+                    bool bFirst = true;
+                    foreach (var outerEntry in normal.OuterEntries)
+                    {
+                        if (bFirst) bFirst = false;
+                        else sb.Append('.');
+                        GetTypeValueNormalEntryString(outerEntry, sb);
+                    }
+
+                    // E            
+                    if (normal.OuterEntries.Length != 0)
+                        sb.Append('.');
+
+                    GetTypeValueNormalEntryString(normal.Entry, sb);
+                    return;
+
+                case TypeValue.Void _:
+                    sb.Append("void");
+                    return;
+
+                case TypeValue.Func _:
+                    throw new InvalidOperationException();
+
+                case TypeValue.EnumElem _:
+                    throw new InvalidOperationException();
+            }
+        }
+
+
+        private string GetTypeValueString(TypeValue typeValue)
+        {
+            var sb = new StringBuilder();
+            GetTypeValueString(typeValue, sb);
+            return sb.ToString();
+        }
+
+        private string GetParamHash(S.FuncParamInfo paramInfo, Context context)
+        {
+            var sb = new StringBuilder();
+
+            bool bFirst = true;
+            foreach (var parameter in paramInfo.Parameters)
+            {
+                if (bFirst) bFirst = false;
+                else sb.Append(" * ");
+
+                var typeValue = context.GetTypeValue(parameter.Type);
+                GetTypeValueString(typeValue, sb);
+            }
+
+            return sb.ToString();
         }
 
         void BuildGlobalStmt(S.Stmt stmt, Context context)
@@ -122,8 +239,8 @@ namespace Gum.IR0
             {
                 switch (elem)
                 {
-                    case S.Script.EnumDeclElement enumElem:
-                        BuildEnumDecl(enumElem.EnumDecl, context);
+                    case S.Script.TypeDeclElement typeDeclElem:
+                        BuildTypeDecl(typeDeclElem.TypeDecl, context);
                         break;
 
                     case S.Script.FuncDeclElement funcElem:
@@ -149,16 +266,14 @@ namespace Gum.IR0
             BuildScript(script, context);
 
             var moduleInfo = new ScriptModuleInfo(
-                moduleName, 
-                context.GetTypeInfos(), 
-                context.GetFuncInfos(), 
-                context.GetVarInfos());
+                Array.Empty<NamespaceInfo>(),
+                context.GetGlobalItems());
 
             return new Result(
                 moduleInfo,
                 typeEvalResult.Value.TypeExpTypeValueService,
                 context.GetFuncsByFuncDecl(),
-                context.GetEnumInfosByDecl());
+                context.GetTypeInfosByDecl());
         }
     }
 }

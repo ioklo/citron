@@ -9,7 +9,7 @@ namespace Gum.Runtime
 {
     class RuntimeModuleBuilder
     {
-        List<ITypeInfo> typeInfos;
+        List<TypeInfo> typeInfos;
         List<FuncInfo> funcInfos;
         List<VarInfo> varInfos;
 
@@ -18,7 +18,7 @@ namespace Gum.Runtime
 
         public RuntimeModuleBuilder()
         {
-            typeInfos = new List<ITypeInfo>();
+            typeInfos = new List<TypeInfo>();
             funcInfos = new List<FuncInfo>();
             varInfos = new List<VarInfo>();
 
@@ -32,13 +32,13 @@ namespace Gum.Runtime
         }
 
         public void AddClassType(
-            ModuleItemId? outerTypeId,
-            ModuleItemId typeId,
+            ItemId? outerTypeId,
+            ItemId typeId,
             IEnumerable<string> typeParams,
             TypeValue? baseTypeValue,
-            IEnumerable<ModuleItemId> memberTypeIds,
-            IEnumerable<ModuleItemId> memberFuncIds,
-            IEnumerable<ModuleItemId> memberVarIds,
+            IEnumerable<ItemId> memberTypeIds,
+            IEnumerable<ItemId> memberFuncIds,
+            IEnumerable<ItemId> memberVarIds,
             Func<Value> defaultValueFactory)
         {
             typeInfos.Add(new ClassInfo(outerTypeId, typeId, typeParams, baseTypeValue, memberTypeIds, memberFuncIds, memberVarIds));
@@ -46,13 +46,13 @@ namespace Gum.Runtime
         }
 
         public void AddStructType(
-            ModuleItemId? outerTypeId,
-            ModuleItemId typeId,
+            ItemId? outerTypeId,
+            ItemId typeId,
             IEnumerable<string> typeParams,
             TypeValue? baseTypeValue,
-            IEnumerable<ModuleItemId> memberTypeIds,
-            IEnumerable<ModuleItemId> memberFuncIds,
-            IEnumerable<ModuleItemId> memberVarIds,
+            IEnumerable<ItemId> memberTypeIds,
+            IEnumerable<ItemId> memberFuncIds,
+            IEnumerable<ItemId> memberVarIds,
             Func<Value> defaultValueFactory)
         {
             typeInfos.Add(new StructInfo(outerTypeId, typeId, typeParams, baseTypeValue, memberTypeIds, memberFuncIds, memberVarIds));
@@ -60,8 +60,8 @@ namespace Gum.Runtime
         }
 
         public void AddFunc(
-            ModuleItemId? outerId,
-            ModuleItemId funcId,
+            ItemId? outerId,
+            ItemId funcId,
             bool bSeqCall,
             bool bThisCall,
             IReadOnlyList<string> typeParams,
@@ -73,12 +73,12 @@ namespace Gum.Runtime
             funcInstantiators.Add(new NativeFuncInstantiator(funcId, bThisCall, invoker));
         }
 
-        public void AddVar(ModuleItemId? outerId, ModuleItemId varId, bool bStatic, TypeValue typeValue)
+        public void AddVar(ItemId? outerId, ItemId varId, bool bStatic, TypeValue typeValue)
         {
             varInfos.Add(new VarInfo(outerId, varId, bStatic, typeValue));
         }
         
-        public IEnumerable<ITypeInfo> GetAllTypeInfos() => typeInfos;
+        public IEnumerable<TypeInfo> GetAllTypeInfos() => typeInfos;
         public IEnumerable<FuncInfo> GetAllFuncInfos() => funcInfos;
         public IEnumerable<VarInfo> GetAllVarInfos() => varInfos;
         public IEnumerable<NativeTypeInstantiator> GetAllTypeInstantiators() => typeInstantiators;

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
@@ -8,7 +9,7 @@ using System.Text;
 namespace Gum.CompileTime
 {
 #pragma warning disable CS0660, CS0661
-    public abstract class TypeValue
+    public abstract partial class TypeValue
     {
         // "var"
         public class Var : TypeValue
@@ -20,49 +21,76 @@ namespace Gum.CompileTime
         // T
         public class TypeVar : TypeValue
         {
-            public ModuleItemId ParentId { get; }
+            public ItemId ParentId { get; }
             public string Name { get; }
 
-            internal TypeVar(ModuleItemId parentId, string name)
+            public TypeVar(ItemId parentId, string name)
             {
                 ParentId = parentId;
                 Name = name;
-            }
-
-            public override bool Equals(object? obj)
-            {
-                return obj is TypeVar value &&
-                       EqualityComparer<ModuleItemId>.Default.Equals(ParentId, value.ParentId) &&
-                       Name == value.Name;
-            }
-
-            public override int GetHashCode()
-            {
-                return HashCode.Combine(ParentId, Name);
             }
         }
         
         public class Normal : TypeValue
         {
-            public ModuleItemId TypeId { get; }
-            public TypeArgumentList TypeArgList { get; }
+            public ModuleName ModuleName { get; }   // global module name, 일단 string
+            public NamespacePath NamespacePath { get => path.NamespacePath; }    // root namespace
+            public ImmutableArray<AppliedItemPathEntry> OuterEntries { get => path.OuterEntries; }
+            public AppliedItemPathEntry Entry { get => path.Entry; }
 
-            internal Normal(ModuleItemId typeId, TypeArgumentList typeArgList)
+            AppliedItemPath path;
+
+            public Normal(ModuleName moduleName, NamespacePath namespacePath, AppliedItemPathEntry entry)
+                : this(moduleName, namespacePath, Array.Empty<AppliedItemPathEntry>(), entry)
             {
-                this.TypeId = typeId;
-                this.TypeArgList = typeArgList;
             }
 
-            public override bool Equals(object? obj)
+            public Normal(ModuleName moduleName, AppliedItemPath path)
             {
-                return obj is Normal value &&
-                       EqualityComparer<ModuleItemId>.Default.Equals(TypeId, value.TypeId) &&
-                       EqualityComparer<TypeArgumentList>.Default.Equals(TypeArgList, value.TypeArgList);
+                ModuleName = moduleName;
+                this.path = path;
             }
 
-            public override int GetHashCode()
+            public Normal(ModuleName moduleName, NamespacePath namespacePath, IEnumerable<AppliedItemPathEntry> outerEntries, AppliedItemPathEntry entry)
             {
-                return HashCode.Combine(TypeId, TypeArgList);
+                ModuleName = moduleName;
+                path = new AppliedItemPath(namespacePath, outerEntries, entry);
+            }
+
+            public Normal(ItemId typeId, params TypeValue[][] typeArgList)
+            {
+                ModuleName = typeId.ModuleName;
+                Debug.Assert(typeId.OuterEntries.Length == typeArgList.Length - 1);
+
+                path = new AppliedItemPath(
+                    typeId.NamespacePath,
+                    typeId.OuterEntries.Zip(typeArgList.SkipLast(1), (entry, typeArgs) => new AppliedItemPathEntry(entry.Name, entry.ParamHash, typeArgs)),
+                    new AppliedItemPathEntry(typeId.Entry.Name, typeId.Entry.ParamHash, typeArgList[typeArgList.Length - 1])
+                );
+            }
+
+            public Normal(ItemId typeId)
+            {
+                ModuleName = typeId.ModuleName;
+
+                Debug.Assert(typeId.OuterEntries.All(entry => entry.TypeParamCount == 0));
+                Debug.Assert(typeId.Entry.TypeParamCount == 0);
+
+                path = new AppliedItemPath(
+                    typeId.NamespacePath,
+                    typeId.OuterEntries.Select(entry => new AppliedItemPathEntry(entry.Name, entry.ParamHash)),
+                    new AppliedItemPathEntry(typeId.Entry.Name, typeId.Entry.ParamHash)
+                );
+            }
+
+            public ItemId GetTypeId()
+            {
+                return new ItemId(ModuleName, NamespacePath, OuterEntries.Select(entry => entry.GetItemPathEntry()), Entry.GetItemPathEntry());
+            }
+
+            public IEnumerable<AppliedItemPathEntry> GetAllEntries()
+            {
+                return OuterEntries.Append(Entry);
             }
         }
 
@@ -84,23 +112,10 @@ namespace Gum.CompileTime
                 Return = ret;
                 Params = parameters.ToImmutableArray();
             }
-
-            public override bool Equals(object? obj)
-            {
-                return obj is Func value &&
-                       EqualityComparer<TypeValue>.Default.Equals(Return, value.Return) &&
-                       Enumerable.SequenceEqual(Params, value.Params);
-            }
-
-            public override int GetHashCode()
-            {
-                return HashCode.Combine(Return, Params);
-            }
         }
 
         public class EnumElem : TypeValue
         {
-            public EnumElemInfo elemInfo { get; }
             public Normal EnumTypeValue { get; }
             public string Name { get; }
 
@@ -109,28 +124,7 @@ namespace Gum.CompileTime
                 EnumTypeValue = enumTypeValue;
                 Name = name;
             }
-        }
-
-        public static Var MakeVar() => Var.Instance;
-        public static TypeVar MakeTypeVar(ModuleItemId parentId, string name) => new TypeVar(parentId, name);
-        public static Normal MakeNormal(ModuleItemId typeId, TypeArgumentList args) => new Normal(typeId, args);
-        public static Normal MakeNormal(ModuleItemId typeId) => new Normal(typeId, TypeArgumentList.Empty);
-        public static Void MakeVoid() => Void.Instance;
-        public static Func MakeFunc(TypeValue ret, IEnumerable<TypeValue> parameters) => new Func(ret, parameters);
-        public static EnumElem MakeEnumElem(Normal enumTypeValue, string name) => new EnumElem(enumTypeValue, name);
-
-        // opeator
-        public static bool operator ==(TypeValue? left, TypeValue? right)
-        {
-            return EqualityComparer<TypeValue?>.Default.Equals(left, right);
-        }
-
-        public static bool operator !=(TypeValue? left, TypeValue? right)
-        {
-            return !(left == right);
-        }
-
-        
+        }        
     }
     
 #pragma warning restore CS0660, CS0661

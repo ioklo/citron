@@ -77,7 +77,7 @@ namespace Gum.IR0
         //        if (!analyzer.CheckParamTypes(objExp, setterTypeValue.Params, setterArgTypeValues, context))
         //            return null;
 
-        //        if (setterTypeValue.Return != TypeValue.MakeVoid())
+        //        if (setterTypeValue.Return != TypeValue.Void.Instance)
         //        {
         //            context.ErrorCollector.Add(objExp, "setter는 void를 반환해야 합니다");
         //            return null;

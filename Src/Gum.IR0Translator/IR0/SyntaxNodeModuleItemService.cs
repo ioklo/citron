@@ -7,25 +7,25 @@ namespace Gum.IR0
 {
     public class SyntaxNodeModuleItemService
     {
-        private ImmutableDictionary<S.ISyntaxNode, ModuleItemId> typeIdsByNode;
-        private ImmutableDictionary<S.ISyntaxNode, ModuleItemId> funcIdsByNode;
+        private ImmutableDictionary<S.ISyntaxNode, ItemPath> typePathsByNode;
+        private ImmutableDictionary<S.ISyntaxNode, ItemPath> funcPathsByNode;
 
         public SyntaxNodeModuleItemService(
-            ImmutableDictionary<S.ISyntaxNode, ModuleItemId> typeIdsByNode, 
-            ImmutableDictionary<S.ISyntaxNode, ModuleItemId> funcIdsByNode)
+            ImmutableDictionary<S.ISyntaxNode, ItemPath> typePathsByNode, 
+            ImmutableDictionary<S.ISyntaxNode, ItemPath> funcPathsByNode)
         {
-            this.typeIdsByNode = typeIdsByNode;
-            this.funcIdsByNode = funcIdsByNode;
+            this.typePathsByNode = typePathsByNode;
+            this.funcPathsByNode = funcPathsByNode;
         }
 
-        public ModuleItemId GetTypeId(S.ISyntaxNode node)
+        public ItemPath GetTypePath(S.ISyntaxNode node)
         {
-            return typeIdsByNode[node];
+            return typePathsByNode[node];
         }
 
-        public ModuleItemId GetFuncId(S.ISyntaxNode node)
+        public ItemPath GetFuncPath(S.ISyntaxNode node)
         {
-            return funcIdsByNode[node];
+            return funcPathsByNode[node];
         }
 
     }

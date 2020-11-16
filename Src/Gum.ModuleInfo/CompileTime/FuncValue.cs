@@ -1,40 +1,48 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Diagnostics;
+using System.Linq;
 using System.Text;
 
 namespace Gum.CompileTime
 {
+    // FuncApp
     public class FuncValue
     {
-        public ModuleItemId FuncId { get; }
-        public TypeArgumentList TypeArgList { get; }
+        public ModuleName ModuleName { get; }   // global module name, 일단 string
+        public NamespacePath NamespacePath { get => path.NamespacePath; }    // root namespace
+        public ImmutableArray<AppliedItemPathEntry> OuterEntries { get => path.OuterEntries; }
+        public AppliedItemPathEntry Entry { get => path.Entry; }
 
-        public FuncValue(ModuleItemId funcId, TypeArgumentList typeArgList)
+        AppliedItemPath path;
+
+        public FuncValue(ModuleName moduleName, NamespacePath namespacePath, AppliedItemPathEntry entry)
+            : this(moduleName, namespacePath, Array.Empty<AppliedItemPathEntry>(), entry)
         {
-            FuncId = funcId;
-            TypeArgList = typeArgList;
         }
 
-        public override bool Equals(object? obj)
+        public FuncValue(ModuleName moduleName, NamespacePath namespacePath, IEnumerable<AppliedItemPathEntry> outerEntries, AppliedItemPathEntry entry)
         {
-            return obj is FuncValue value &&
-                   EqualityComparer<ModuleItemId>.Default.Equals(FuncId, value.FuncId) &&
-                   EqualityComparer<TypeArgumentList>.Default.Equals(TypeArgList, value.TypeArgList);
+            ModuleName = moduleName;
+            path = new AppliedItemPath(namespacePath, outerEntries, entry);
         }
 
-        public override int GetHashCode()
+        public FuncValue(ItemId funcId, params TypeValue[][] typeArgList)
         {
-            return HashCode.Combine(FuncId, TypeArgList);
-        }
+            ModuleName = funcId.ModuleName;
 
-        public static bool operator ==(FuncValue? left, FuncValue? right)
-        {
-            return EqualityComparer<FuncValue?>.Default.Equals(left, right);
-        }
+            Debug.Assert(funcId.OuterEntries.Length == typeArgList.Length - 1);
+            path = new AppliedItemPath(
+                funcId.NamespacePath,            
+                funcId.OuterEntries.Zip(typeArgList.SkipLast(1), (entry, typeArgs) => new AppliedItemPathEntry(entry.Name, entry.ParamHash, typeArgs)),
+                new AppliedItemPathEntry(funcId.Entry.Name, funcId.Entry.ParamHash, typeArgList[typeArgList.Length - 1])
+            );
+        }        
 
-        public static bool operator !=(FuncValue? left, FuncValue? right)
+        public ItemId GetFuncId()
         {
-            return !(left == right);
+            return new ItemId(ModuleName, NamespacePath, OuterEntries.Select(entry => entry.GetItemPathEntry()), Entry.GetItemPathEntry());
         }
     }
 }

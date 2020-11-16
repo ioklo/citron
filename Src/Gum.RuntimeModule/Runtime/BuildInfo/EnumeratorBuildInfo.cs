@@ -18,18 +18,18 @@ namespace Gum.Runtime
         public override void Build(RuntimeModuleTypeBuilder builder)
         {
             var enumeratorId = RuntimeModule.EnumeratorId;            
-            var elemTypeValue = TypeValue.MakeTypeVar(enumeratorId, "T");
-            var boolTypeValue = TypeValue.MakeNormal(RuntimeModule.BoolId);
+            var elemTypeValue = new TypeValue.TypeVar(enumeratorId, "T");
+            var boolTypeValue = new TypeValue.Normal(RuntimeModule.BoolId);
 
             // bool Enumerator<T>.MoveNext()
             builder.AddMemberFunc(
-                Name.MakeText("MoveNext"),
+                "MoveNext",
                 false, true,
                 Array.Empty<string>(), boolTypeValue, Enumerable.Empty<TypeValue>(),
                 EnumeratorObject.NativeMoveNext);
 
             // T Enumerator<T>.GetCurrent()
-            builder.AddMemberFunc(Name.MakeText("GetCurrent"),
+            builder.AddMemberFunc("GetCurrent",
                 false, true,
                 Array.Empty<string>(), elemTypeValue, Enumerable.Empty<TypeValue>(),
                 EnumeratorObject.NativeGetCurrent);

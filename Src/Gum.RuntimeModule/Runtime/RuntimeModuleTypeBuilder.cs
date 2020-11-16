@@ -9,12 +9,12 @@ namespace Gum.Runtime
     class RuntimeModuleTypeBuilder
     {
         RuntimeModuleBuilder moduleBuilder;
-        ModuleItemId? outerTypeId;
-        ModuleItemId typeId;
+        ItemId? outerTypeId;
+        ItemId typeId;
 
-        List<ModuleItemId> memberTypeIds;
-        List<ModuleItemId> memberFuncIds;
-        List<ModuleItemId> memberVarIds;
+        List<ItemId> memberTypeIds;
+        List<ItemId> memberFuncIds;
+        List<ItemId> memberVarIds;
 
         public static void BuildObject(RuntimeModuleBuilder runtimeModuleBuilder, RuntimeModuleTypeBuildInfo buildInfo)
         {
@@ -25,15 +25,15 @@ namespace Gum.Runtime
             objectBuilder.BuildType(buildInfo);
         }
 
-        private RuntimeModuleTypeBuilder(RuntimeModuleBuilder moduleBuilder, ModuleItemId? outerTypeId, ModuleItemId typeId)
+        private RuntimeModuleTypeBuilder(RuntimeModuleBuilder moduleBuilder, ItemId? outerTypeId, ItemId typeId)
         {   
             this.moduleBuilder = moduleBuilder;
             this.outerTypeId = outerTypeId;
             this.typeId = typeId;
 
-            memberTypeIds = new List<ModuleItemId>();
-            memberFuncIds = new List<ModuleItemId>();
-            memberVarIds = new List<ModuleItemId>();
+            memberTypeIds = new List<ItemId>();
+            memberFuncIds = new List<ItemId>();
+            memberVarIds = new List<ItemId>();
         }
 
         private void BuildType(RuntimeModuleTypeBuildInfo buildInfo)

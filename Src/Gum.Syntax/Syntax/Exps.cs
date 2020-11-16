@@ -166,13 +166,13 @@ namespace Gum.Syntax
 
     public class MemberExp : Exp
     {
-        public Exp Object { get; }
+        public Exp Parent { get; }
         public string MemberName { get; }
         public ImmutableArray<TypeExp> MemberTypeArgs { get; }
 
-        public MemberExp(Exp obj, string memberName, IEnumerable<TypeExp> memberTypeArgs)
+        public MemberExp(Exp parent, string memberName, IEnumerable<TypeExp> memberTypeArgs)
         {
-            Object = obj;
+            Parent = parent;
             MemberName = memberName;
             MemberTypeArgs = memberTypeArgs.ToImmutableArray();
         }

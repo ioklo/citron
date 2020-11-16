@@ -20,7 +20,7 @@ namespace Gum.IR0
 
         T0201_MemberTypeExp_TypeIsNotNormalType,
         T0202_MemberTypeExp_MemberTypeNotFound,
-
+        T0203_MemberTypeExp_ExpShouldNotBeType,
 
         // Analyzer
         A0101_VarDecl_CantInferVarType,

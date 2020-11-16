@@ -7,15 +7,15 @@ using System.Reflection;
 
 namespace Gum.Runtime.Dotnet
 {
-    public class DotnetTypeInfo : ITypeInfo
+    public class DotnetTypeInfo : TypeInfo
     {
-        public ModuleItemId? OuterTypeId { get; }
-        public ModuleItemId TypeId { get; }
+        public ItemId? OuterTypeId { get; }
+        public ItemId TypeId { get; }
 
         // it must be open type
         TypeInfo typeInfo;
 
-        public DotnetTypeInfo(ModuleItemId typeId, TypeInfo typeInfo)
+        public DotnetTypeInfo(ItemId typeId, TypeInfo typeInfo)
         {
             if (typeInfo.DeclaringType != null)
                 OuterTypeId = DotnetMisc.MakeTypeId(typeInfo.DeclaringType);
@@ -30,7 +30,7 @@ namespace Gum.Runtime.Dotnet
             throw new NotImplementedException();
         }
 
-        public bool GetMemberFuncId(Name memberFuncId, [NotNullWhen(true)] out ModuleItemId? outFuncId)
+        public bool GetMemberFuncId(Name memberFuncId, [NotNullWhen(true)] out ItemId? outFuncId)
         {
             if (memberFuncId.Kind != SpecialName.Normal)
                 throw new NotImplementedException();
@@ -50,7 +50,7 @@ namespace Gum.Runtime.Dotnet
             }
         }
 
-        public bool GetMemberTypeId(string name, [NotNullWhen(true)] out ModuleItemId? outTypeId)
+        public bool GetMemberTypeId(string name, [NotNullWhen(true)] out ItemId? outTypeId)
         {
             var memberType = typeInfo.GetNestedType(name);
             if (memberType == null)
@@ -63,7 +63,7 @@ namespace Gum.Runtime.Dotnet
             return true;
         }
 
-        public bool GetMemberVarId(Name varName, [NotNullWhen(true)] out ModuleItemId? outVarId)
+        public bool GetMemberVarId(Name varName, [NotNullWhen(true)] out ItemId? outVarId)
         {
             var candidates = new List<MemberInfo>();
             var memberInfos = typeInfo.GetMember(varName.Text!, MemberTypes.Field, BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);

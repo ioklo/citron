@@ -7,19 +7,19 @@ namespace Gum.Runtime
 {
     abstract class RuntimeModuleTypeBuildInfo
     {
-        ModuleItemId? outerTypeId;
-        ModuleItemId id;
+        ItemId? outerTypeId;
+        ItemId id;
         IEnumerable<string> typeParams;
         TypeValue? baseTypeValue;
         Func<Value> defaultValueFactory;
 
-        public ModuleItemId? GetOuterTypeId() => outerTypeId;
-        public ModuleItemId GetId() => id;
+        public ItemId? GetOuterTypeId() => outerTypeId;
+        public ItemId GetId() => id;
         public IEnumerable<string> GetTypeParams() => typeParams;
         public TypeValue? GetBaseTypeValue() => baseTypeValue;
         public Func<Value> GetDefaultValueFactory() => defaultValueFactory;
 
-        public RuntimeModuleTypeBuildInfo(ModuleItemId? outerTypeId, ModuleItemId id, IEnumerable<string> typeParams, TypeValue? baseTypeValue, Func<Value> defaultValueFactory)
+        public RuntimeModuleTypeBuildInfo(ItemId? outerTypeId, ItemId id, IEnumerable<string> typeParams, TypeValue? baseTypeValue, Func<Value> defaultValueFactory)
         {
             this.outerTypeId = outerTypeId;
             this.id = id;
@@ -30,7 +30,7 @@ namespace Gum.Runtime
 
         public abstract class Class : RuntimeModuleTypeBuildInfo
         {   
-            public Class(ModuleItemId? outerTypeId, ModuleItemId id, IEnumerable<string> typeParams, TypeValue? baseTypeValue, Func<Value> defaultValueFactory)
+            public Class(ItemId? outerTypeId, ItemId id, IEnumerable<string> typeParams, TypeValue? baseTypeValue, Func<Value> defaultValueFactory)
                 : base(outerTypeId, id, typeParams, baseTypeValue, defaultValueFactory)
             {   
             }
@@ -38,7 +38,7 @@ namespace Gum.Runtime
 
         public abstract class Struct : RuntimeModuleTypeBuildInfo
         {
-            public Struct(ModuleItemId? outerTypeId, ModuleItemId id, IEnumerable<string> typeParams, TypeValue? baseTypeValue, Func<Value> defaultValueFactory)
+            public Struct(ItemId? outerTypeId, ItemId id, IEnumerable<string> typeParams, TypeValue? baseTypeValue, Func<Value> defaultValueFactory)
                 : base(outerTypeId, id, typeParams, baseTypeValue, defaultValueFactory)
             {
             }

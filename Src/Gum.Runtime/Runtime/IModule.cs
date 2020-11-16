@@ -5,11 +5,11 @@ using System.Text;
 
 namespace Gum.Runtime
 {
-    public interface IModule : IModuleInfo
-    {
-        void OnLoad(DomainService domainService);
+    //public interface IModule : IModuleInfo
+    //{
+    //    void OnLoad(DomainService domainService);
 
-        TypeInst GetTypeInst(DomainService domainService, TypeValue.Normal typeValue);
-        FuncInst GetFuncInst(DomainService domainService, FuncValue funcValue);
-    }
+    //    TypeInst GetTypeInst(DomainService domainService, TypeValue.Normal typeValue);
+    //    FuncInst GetFuncInst(DomainService domainService, FuncValue funcValue);
+    //}
 }

@@ -7,8 +7,11 @@ namespace Gum.CompileTime
 {
     public interface IModuleInfo
     {
-        bool GetTypeInfo(ModuleItemId id, [NotNullWhen(true)] out ITypeInfo? typeInfo);
-        bool GetFuncInfo(ModuleItemId id, [NotNullWhen(true)] out FuncInfo? funcInfo);
-        bool GetVarInfo(ModuleItemId id, [NotNullWhen(true)] out VarInfo? varInfo);
+        ModuleName GetModuleName();
+
+        ItemInfo? GetItem(NamespacePath namespacePath, ItemPathEntry itemIdEntry);            
+
+        IEnumerable<FuncInfo> GetFuncs(NamespacePath namespacePath, Name funcName);
+        VarInfo? GetVar(NamespacePath namespacePath, Name funcName);
     }
 }

@@ -25,16 +25,14 @@ namespace Gum.IR0
         // 현재 함수 정보
         public class FuncContext
         {
-            private ModuleItemId? funcId;
             private TypeValue? retTypeValue; // 리턴 타입이 미리 정해져 있다면 이걸 쓴다
             private bool bSequence; // 시퀀스 여부
 
             private ScopedDictionary<string, LocalVarOutsideLambdaInfo> localVarsOutsideLambda; // 람다 구문 바깥에 있는 로컬 변수, 캡쳐대상이다
             private ScopedDictionary<string, LocalVarInfo> localVarsByName;
 
-            public FuncContext(ModuleItemId? funcId, TypeValue? retTypeValue, bool bSequence)
+            public FuncContext(TypeValue? retTypeValue, bool bSequence)
             {
-                this.funcId = funcId;
                 this.retTypeValue = retTypeValue;
                 this.bSequence = bSequence;
 

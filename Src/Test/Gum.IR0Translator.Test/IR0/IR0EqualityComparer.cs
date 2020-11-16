@@ -6,9 +6,7 @@ using Gum.Infra;
 using System;
 using System.Linq;
 
-using Type = Gum.IR0.Type;
-
-namespace Gum
+namespace Gum.IR0
 {
     class IR0EqualityComparer 
         : IEqualityComparer<Script?>

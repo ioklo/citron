@@ -1,41 +1,50 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Linq;
 using System.Text;
 
 namespace Gum.CompileTime
 {
+    // Type<int>.VarName or VarName
     public class VarValue
     {
-        public ModuleItemId VarId { get; }
-        public TypeArgumentList OuterTypeArgList { get; } // variable은 자체로 타입 인자가 없으므로, TypeValue, FuncValue랑 다르게 outer부터 시작한다
+        public ModuleName ModuleName { get; }   // global module name, 일단 string
+        public NamespacePath NamespacePath { get; }    // root namespace
+        public ImmutableArray<AppliedItemPathEntry> TypeEntries { get; }
+        public Name Name { get; }
 
-        public VarValue(ModuleItemId varId, TypeArgumentList outerTypeArgList)
+        public VarValue(ModuleName moduleName, NamespacePath namespacePath, Name name)
+            : this(moduleName, namespacePath, Array.Empty<AppliedItemPathEntry>(), name)
         {
-            VarId = varId;
-            OuterTypeArgList = outerTypeArgList;
+        }
+        
+        public VarValue(ModuleName moduleName, NamespacePath namespacePath, IEnumerable<AppliedItemPathEntry> typeEntries, Name name)
+        {
+            ModuleName = moduleName;
+            NamespacePath = namespacePath;
+            TypeEntries = typeEntries.ToImmutableArray();
+            Name = name;
         }
 
-        public override bool Equals(object? obj)
+        public VarValue(ItemId id, params TypeValue[][] typeArgList)
         {
-            return obj is VarValue value &&
-                   EqualityComparer<ModuleItemId>.Default.Equals(VarId, value.VarId) &&
-                   EqualityComparer<TypeArgumentList>.Default.Equals(OuterTypeArgList, value.OuterTypeArgList);
+            ModuleName = id.ModuleName;
+            NamespacePath = id.NamespacePath;
+            Debug.Assert(id.OuterEntries.Length == typeArgList.Length);
+            TypeEntries = id.OuterEntries.Zip(typeArgList, (entry, typeArgs) => new AppliedItemPathEntry(entry.Name, entry.ParamHash, typeArgs)).ToImmutableArray();
+            Name = id.Entry.Name;
+
+            Debug.Assert(id.Entry.TypeParamCount == 0 && id.Entry.ParamHash == string.Empty);
         }
 
-        public override int GetHashCode()
+        public ItemId GetItemId()
         {
-            return HashCode.Combine(VarId, OuterTypeArgList);
-        }
-
-        public static bool operator ==(VarValue? left, VarValue? right)
-        {
-            return EqualityComparer<VarValue?>.Default.Equals(left, right);
-        }
-
-        public static bool operator !=(VarValue? left, VarValue? right)
-        {
-            return !(left == right);
+            if (TypeEntries.Length == 0)
+                return new ItemId(ModuleName, NamespacePath, new ItemPathEntry(Name));
+            else
+                return new ItemId(ModuleName, NamespacePath, TypeEntries.Select(entry => entry.GetItemPathEntry()), new ItemPathEntry(Name));
         }
     }
 }

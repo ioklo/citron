@@ -28,7 +28,13 @@ namespace Gum.IR0
                 }
             }
 
-            public ModuleInfoService ModuleInfoService { get; }
+            public TItemInfo? GetItem<TItemInfo>(ItemId id)
+                where TItemInfo : ItemInfo
+            {
+                return itemInfoRepo.GetItem<TItemInfo>(id);
+            }
+            
+            private ItemInfoRepository itemInfoRepo;
 
             public TypeValueService TypeValueService { get; }
 
@@ -41,38 +47,39 @@ namespace Gum.IR0
             private bool bGlobalScope;
             private bool bInLoop;
             private ImmutableDictionary<S.FuncDecl, FuncInfo> funcInfosByDecl;
-            private ImmutableDictionary<S.EnumDecl, EnumInfo> enumInfosByDecl;
+            private ImmutableDictionary<S.TypeDecl, TypeInfo> typeInfosByDecl;
             private TypeExpTypeValueService typeExpTypeValueService;
             private Dictionary<string, PrivateGlobalVarInfo> privateGlobalVarInfos;
             private List<TypeDecl> typeDecls;
             private List<FuncDecl> funcDecls;
-            private Dictionary<ModuleItemId, FuncDeclId> funcDeclsById;
+            private Dictionary<ItemId, FuncDeclId> funcDeclsById;
 
-            public Context(
-                ModuleInfoService moduleInfoService,
+            public Context(                
+                ItemInfoRepository itemInfoRepo,
                 TypeValueService typeValueService,
                 TypeExpTypeValueService typeExpTypeValueService,
                 ImmutableDictionary<S.FuncDecl, FuncInfo> funcInfosByDecl,
-                ImmutableDictionary<S.EnumDecl, EnumInfo> enumInfosByDecl,
+                ImmutableDictionary<S.TypeDecl, TypeInfo> typeInfosByDecl,
                 IErrorCollector errorCollector)
             {
-                ModuleInfoService = moduleInfoService;
+                this.itemInfoRepo = itemInfoRepo;
+
                 TypeValueService = typeValueService;
 
                 this.funcInfosByDecl = funcInfosByDecl;
-                this.enumInfosByDecl = enumInfosByDecl;
+                this.typeInfosByDecl = typeInfosByDecl;
                 this.typeExpTypeValueService = typeExpTypeValueService;
 
                 this.errorCollector = errorCollector;
 
-                curFunc = new FuncContext(null, TypeValue.MakeNormal(ModuleItemId.Make("int")), false);
+                curFunc = new FuncContext(new TypeValue.Normal(ItemIds.Int), false);
                 bGlobalScope = true;
                 bInLoop = false;
                 privateGlobalVarInfos = new Dictionary<string, PrivateGlobalVarInfo>();
                 
                 typeDecls = new List<TypeDecl>();
                 funcDecls = new List<FuncDecl>();
-                funcDeclsById = new Dictionary<ModuleItemId, FuncDeclId>();
+                funcDeclsById = new Dictionary<ItemId, FuncDeclId>();
             }
 
             public bool DoesLocalVarNameExistInScope(string name)
@@ -85,7 +92,7 @@ namespace Gum.IR0
                 errorCollector.Add(new AnalyzeError(code, node, msg));
             }
 
-            public ExternalGlobalVarId GetExternalGlobalVarId(ModuleItemId varId)
+            public ExternalGlobalVarId GetExternalGlobalVarId(ItemId varId)
             {
                 throw new NotImplementedException();
             }
@@ -135,27 +142,14 @@ namespace Gum.IR0
                 // 일단 predefined부터 걸러냅니다.
                 if (typeValue is TypeValue.Normal ntv)
                 {
-                    if (ntv.TypeArgList.GetTotalLength() == 0)
+                    if (ntv == TypeValues.Bool) return Type.Bool;
+                    else if (ntv == TypeValues.Int) return Type.Int;
+                    else if (ntv == TypeValues.String) return Type.String;
+                    else if (ModuleInfoEqualityComparer.EqualsItemId(ntv.GetTypeId(), ItemIds.List))
                     {
-                        if (ntv.TypeId == ModuleItemId.Make("bool"))
-                            return Type.Bool;
-
-                        else if (ntv.TypeId == ModuleItemId.Make("int"))
-                            return Type.Int;
-
-                        else if (ntv.TypeId == ModuleItemId.Make("string"))
-                            return Type.String;
-                        else
-                            throw new NotImplementedException();
-                    }
-                    else if (ntv.TypeArgList.GetTotalLength() == 1)
-                    {   
-                        if (ntv.TypeId == ModuleItemId.Make("List", 1))
-                        {
-                            var elemType = GetType(ntv.TypeArgList.Args[0]);
-                            return Type.List(elemType);
-                        }                        
-                    }
+                        var elemType = GetType(ntv.Entry.TypeArgs[0]);
+                        return Type.List(elemType);
+                    }                    
                 }
                 else if (typeValue is TypeValue.Void)
                     return Type.Void;
@@ -206,9 +200,10 @@ namespace Gum.IR0
                 return funcInfosByDecl[funcDecl];
             }
 
-            public EnumInfo GetEnumInfoByDecl(S.EnumDecl enumDecl)
+            public TTypeInfo GetTypeInfoByDecl<TTypeInfo>(S.EnumDecl enumDecl)
+                where TTypeInfo : TypeInfo
             {
-                return enumInfosByDecl[enumDecl];
+                return (TTypeInfo)typeInfosByDecl[enumDecl];
             }
 
             public bool IsGlobalScope()
@@ -294,42 +289,63 @@ namespace Gum.IR0
                 TypeValue? hintTypeValue,
                 [NotNullWhen(true)] out IdentifierInfo? outIdInfo)
             {
-                var itemId = ModuleItemId.Make(idName, typeArgs.Count);
-
                 var candidates = new List<IdentifierInfo>();
 
-                // id에 typeCount가 들어가므로 typeArgs.Count검사는 하지 않는다
-                foreach (var varInfo in ModuleInfoService.GetVarInfos(itemId))
+                // TODO: root 이외의 namespace 지원                
+                if (typeArgs.Count == 0)
                 {
-                    var idInfo = new IdentifierInfo.ModuleGlobal(itemId, varInfo.TypeValue);
-                    candidates.Add(idInfo);
+                    foreach (var varInfo in itemInfoRepo.GetVars(NamespacePath.Root, idName))
+                    {
+                        var varId = varInfo.GetId();
+                        Debug.Assert(varId.OuterEntries.Length == 0);
+
+                        var idInfo = new IdentifierInfo.ModuleGlobal(
+                            new VarValue(varId.ModuleName, varId.NamespacePath, varId.Entry.Name), varInfo.TypeValue);
+                        candidates.Add(idInfo);
+                    }
                 }
 
                 // Global Identifier이므로 typeArgument의 최상위이다 (outer가 없다)
-                var typeArgList = TypeArgumentList.Make(null, typeArgs);
-
-                foreach (var funcInfo in ModuleInfoService.GetFuncInfos(itemId))
+                foreach (var funcInfo in itemInfoRepo.GetFuncs(NamespacePath.Root, idName))
                 {
-                    var idInfo = new IdentifierInfo.Func(new FuncValue(funcInfo.FuncId, typeArgList));
-                    candidates.Add(idInfo);
-                }
-
-                foreach (var typeInfo in ModuleInfoService.GetTypeInfos(itemId))
-                {
-                    var idInfo = new IdentifierInfo.Type(TypeValue.MakeNormal(typeInfo.TypeId, typeArgList));
-                    candidates.Add(idInfo);
-                }
-
-                // enum 힌트 사용, typeArgs가 있으면 지나간다
-                if (hintTypeValue is TypeValue.Normal hintNTV && typeArgs.Count == 0)
-                {
-                    // hintNTV가 최상위 타입이라는 것을 확인하기 위해 TypeArgList의 Outer를 확인했다.
-                    if (hintNTV.TypeArgList.Outer == null)
+                    // TODO: 인자 타입 추론을 사용하면, typeArgs를 생략할 수 있기 때문에, TypeArgs.Count가 TypeParams.Length보다 적어도 된다
+                    if (typeArgs.Count == funcInfo.TypeParams.Length)
                     {
-                        var hintTypeInfo = ModuleInfoService.GetTypeInfos(hintNTV.TypeId).Single();
-                        if( hintTypeInfo is IEnumInfo enumTypeInfo)
+                        var funcId = funcInfo.GetId();
+                        Debug.Assert(funcId.OuterEntries.Length == 0);
+
+                        var idInfo = new IdentifierInfo.Func(
+                            new FuncValue(funcId.ModuleName, funcId.NamespacePath, new AppliedItemPathEntry(funcId.Entry.Name, funcId.Entry.ParamHash, typeArgs))
+                        );
+
+                        candidates.Add(idInfo);
+                    }
+                }
+
+                foreach (var typeInfo in itemInfoRepo.GetTypes(NamespacePath.Root, new ItemPathEntry(idName, typeArgs.Count)))
+                {
+                    var typeId = typeInfo.GetId();
+
+                    var idInfo = new IdentifierInfo.Type(new TypeValue.Normal(
+                        typeId.ModuleName,
+                        typeId.NamespacePath,
+                        new AppliedItemPathEntry(typeId.Entry.Name, typeId.Entry.ParamHash, typeArgs)                        
+                    ));
+
+                    candidates.Add(idInfo);
+                }
+
+                // 힌트가 E고, First가 써져 있으면 E.First를 검색한다
+                // enum 힌트 사용, typeArgs가 있으면 지나간다
+                if (hintTypeValue is TypeValue.Normal hintNTV)
+                {
+                    // First<T> 같은건 없기 때문에 없을때만 검색한다
+                    if (typeArgs.Count == 0)
+                    {
+                        var enumInfo = itemInfoRepo.GetItem<EnumInfo>(hintNTV.GetTypeId());
+                        if (enumInfo != null)
                         {
-                            if (enumTypeInfo.GetElemInfo(idName, out var elemInfo))
+                            if (enumInfo.GetElemInfo(idName, out var elemInfo))
                             {
                                 var idInfo = new IdentifierInfo.EnumElem(hintNTV, elemInfo.Value);
                                 candidates.Add(idInfo);
@@ -348,7 +364,7 @@ namespace Gum.IR0
                 return false;
             }
 
-            public void AddFuncDecl(ModuleItemId itemId, bool bThisCall, IEnumerable<string> typeParams, IEnumerable<string> paramNames, Stmt body)
+            public void AddFuncDecl(ItemId itemId, bool bThisCall, IEnumerable<string> typeParams, IEnumerable<string> paramNames, Stmt body)
             {
                 var id = new FuncDeclId(funcDecls.Count);
                 funcDecls.Add(new FuncDecl.Normal(id, bThisCall, typeParams, paramNames, body));
@@ -365,7 +381,7 @@ namespace Gum.IR0
                 return funcDecls;
             }
 
-            public void AddSeqFunc(ModuleItemId itemId, Type retTypeId, bool bThisCall, IEnumerable<string> typeParams, IEnumerable<string> paramNames, Stmt body)
+            public void AddSeqFunc(ItemId itemId, Type retTypeId, bool bThisCall, IEnumerable<string> typeParams, IEnumerable<string> paramNames, Stmt body)
             {
                 var id = new FuncDeclId(funcDecls.Count);
                 funcDecls.Add(new FuncDecl.Sequence(id, retTypeId, bThisCall, typeParams, paramNames,body));
@@ -430,12 +446,17 @@ namespace Gum.IR0
                 return privateGlobalVarInfos.ContainsKey(name);
             }
 
-            public FuncDeclId? GetFuncDeclId(ModuleItemId funcId)
+            public FuncDeclId? GetFuncDeclId(ItemId funcId)
             {
                 if (funcDeclsById.TryGetValue(funcId, out var funcDeclId))
                     return funcDeclId;
                 else
                     return null;
+            }
+
+            public IEnumerable<FuncInfo> GetFuncs(NamespacePath root, string value)
+            {
+                return itemInfoRepo.GetFuncs(root, value);
             }
 
             // 1. exp가 무슨 타입을 가지는지

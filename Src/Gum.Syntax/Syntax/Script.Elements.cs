@@ -28,16 +28,10 @@ namespace Gum.Syntax
             }            
         }
 
-        public class EnumDeclElement : Element
+        public class TypeDeclElement : Element
         {
-            public EnumDecl EnumDecl { get; }
-            public EnumDeclElement(EnumDecl enumDecl) { EnumDecl = enumDecl; }
-        }
-
-        public class StructDeclElement : Element
-        {
-            public StructDecl StructDecl { get; }
-            public StructDeclElement(StructDecl structDecl) { StructDecl = structDecl; }
+            public TypeDecl TypeDecl { get; }
+            public TypeDeclElement(TypeDecl typeDecl ) { TypeDecl = typeDecl; }
         }
     }
 }

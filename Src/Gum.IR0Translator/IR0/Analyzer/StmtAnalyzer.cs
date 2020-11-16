@@ -223,12 +223,11 @@ namespace Gum.IR0
             if (ifStmt.TestType != null)
                 return AnalyzeIfTestStmt(ifStmt, ifStmt.TestType, context, out outStmt);
 
-            bool bResult = true;
-            var boolTypeValue = analyzer.GetBoolTypeValue();
+            bool bResult = true;            
 
             if (analyzer.AnalyzeExp(ifStmt.Cond, null, context, out var cond, out var condTypeValue))
             {
-                if (!analyzer.IsAssignable(boolTypeValue, condTypeValue, context))
+                if (!analyzer.IsAssignable(TypeValues.Bool, condTypeValue, context))
                 {
                     context.AddError(A1004_IfStmt_ConditionShouldBeBool, ifStmt.Cond, "if 조건 식은 항상 bool형식이어야 합니다");
                     bResult = false;
@@ -297,7 +296,6 @@ namespace Gum.IR0
         bool AnalyzeForStmt(S.ForStmt forStmt, Context context, [NotNullWhen(true)] out Stmt? outStmt)
         {
             bool bResult = true;
-            var boolTypeValue = analyzer.GetBoolTypeValue();
 
             ForStmtInitializer? initializer = null;
             Exp? cond = null;
@@ -320,7 +318,7 @@ namespace Gum.IR0
                     }
 
                     // 에러가 나면 에러를 추가하고 계속 진행
-                    if (!analyzer.IsAssignable(boolTypeValue, condExpTypeValue, context))
+                    if (!analyzer.IsAssignable(TypeValues.Bool, condExpTypeValue, context))
                         context.AddError(A1101_ForStmt_ConditionShouldBeBool, forStmt.CondExp, $"{forStmt.CondExp}는 bool 형식이어야 합니다");
                 }
                 
@@ -404,13 +402,13 @@ namespace Gum.IR0
             if (returnStmt.Value == null)
             {
                 var retTypeValue = context.GetRetTypeValue();
-                var voidTypeValue = TypeValue.MakeVoid();
+                var voidTypeValue = TypeValue.Void.Instance;
 
                 if (retTypeValue == null)
                 {
                     context.SetRetTypeValue(voidTypeValue);
                 }
-                else if (retTypeValue != TypeValue.MakeVoid())
+                else if (retTypeValue != TypeValue.Void.Instance)
                 {
                     context.AddError(A1201_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType, returnStmt, $"이 함수는 {context.GetRetTypeValue()}을 반환해야 합니다");
                     return false;
@@ -566,18 +564,15 @@ namespace Gum.IR0
             TypeValue iteratorElemType;
             if (iteratorType is TypeValue.Normal normalIteratorType)
             {
-                if (normalIteratorType.TypeId == ModuleItemId.Make("List", 1) &&
-                    normalIteratorType.TypeArgList.Args.Length == 1)
-                {
-                    // List에 outer가 없으므로 만들어 질 수 없다
-                    Debug.Assert(normalIteratorType.TypeArgList.Outer == null);
-                    iteratorElemType = normalIteratorType.TypeArgList.Args[0];
+                var typeId = normalIteratorType.GetTypeId();
+
+                if (ModuleInfoEqualityComparer.EqualsItemId(typeId, ItemIds.List))
+                {   
+                    iteratorElemType = normalIteratorType.Entry.TypeArgs[0];
                 }
-                else if (normalIteratorType.TypeId == ModuleItemId.Make("Enumerable", 1) &&
-                        normalIteratorType.TypeArgList.Args.Length == 1)
-                {
-                    Debug.Assert(normalIteratorType.TypeArgList.Outer == null);
-                    iteratorElemType = normalIteratorType.TypeArgList.Args[0];
+                else if (ModuleInfoEqualityComparer.EqualsItemId(typeId, ItemIds.Enumerable))
+                {                    
+                    iteratorElemType = normalIteratorType.Entry.TypeArgs[0];
                 }
                 else
                 {

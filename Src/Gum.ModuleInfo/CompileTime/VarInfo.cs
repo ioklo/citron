@@ -4,17 +4,14 @@ using System.Text;
 
 namespace Gum.CompileTime
 {
-    public class VarInfo
+    public class VarInfo : ItemInfo
     {   
-        public ModuleItemId? OuterId { get; }
-        public ModuleItemId VarId { get; }
         public bool bStatic { get; }
         public TypeValue TypeValue { get; }
 
-        public VarInfo(ModuleItemId? outerId, ModuleItemId varId, bool bStatic, TypeValue typeValue)
-        {
-            OuterId = outerId;
-            VarId = varId;
+        public VarInfo(ItemId id, bool bStatic, TypeValue typeValue)
+            : base(id)
+        {   
             this.bStatic = bStatic;
             TypeValue = typeValue;
         }

@@ -8,7 +8,7 @@ namespace Gum.Runtime.Dotnet
 {
     static class DotnetMisc
     {
-        public static ModuleItemId? MakeTypeId(Type type)
+        public static ItemId? MakeTypeId(Type type)
         {
             // ([^\s]+(`(\d+))?)([\.+][^\s]+(`(\d+))?)+
             // C20200622_Reflection.Type1`1+Type2`1<T, U>
@@ -16,7 +16,7 @@ namespace Gum.Runtime.Dotnet
             // System.Collections.Generic.List`1
 
             var elems = type.FullName.Split('.', '+');
-            ModuleItemId? curId = null;
+            ItemId? curId = null;
 
             foreach (var elem in elems)
             {
@@ -34,7 +34,7 @@ namespace Gum.Runtime.Dotnet
                 if (curId != null)
                     curId = curId.Append(name, typeParamCount);
                 else
-                    curId = ModuleItemId.Make(name, typeParamCount);
+                    curId = new ItemId(name, typeParamCount);
             }
 
             return curId;

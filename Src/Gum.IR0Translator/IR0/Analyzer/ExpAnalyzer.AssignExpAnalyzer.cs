@@ -97,7 +97,7 @@ namespace Gum.IR0
         //        if (IsVarStatic(varValue.VarId, context))
         //            storageInfo = StorageInfo.MakeStaticMember((objTypeValue, memberExp.Object), varValue);
         //        else
-        //            storageInfo = StorageInfo.MakeInstanceMember(memberExp.Object, objTypeValue, Name.MakeText(memberExp.MemberName));
+        //            storageInfo = StorageInfo.MakeInstanceMember(memberExp.Object, objTypeValue, memberExp.MemberName));
 
         //        return AnalyzeDirect(typeValue, storageInfo);
         //    }

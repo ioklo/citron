@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
-
 using S = Gum.Syntax;
 
 namespace Gum.IR0
@@ -13,47 +12,49 @@ namespace Gum.IR0
     {
         class Context
         {
-            private ModuleInfoService moduleInfoService;
+            private ItemInfoRepository itemInfoRepo;
             private SyntaxNodeModuleItemService syntaxNodeModuleItemService;
-            private ImmutableDictionary<ModuleItemId, TypeSkeleton> typeSkeletonsByTypeId;
+            private ImmutableDictionary<ItemPath, TypeSkeleton> typeSkeletonsByPath;
             private IErrorCollector errorCollector;
 
             private Dictionary<S.TypeExp, TypeValue> typeValuesByTypeExp;
+            private Dictionary<S.Exp, TypeValue> typeValuesByExp;
             private ImmutableDictionary<string, TypeValue.TypeVar> typeEnv;
 
             public Context(
-                ModuleInfoService moduleInfoService,
+                ItemInfoRepository itemInfoRepo,
                 SyntaxNodeModuleItemService syntaxNodeModuleItemService,
                 IEnumerable<TypeSkeleton> typeSkeletons,
                 IErrorCollector errorCollector)
             {
-                this.moduleInfoService = moduleInfoService;
+                this.itemInfoRepo = itemInfoRepo;
                 this.syntaxNodeModuleItemService = syntaxNodeModuleItemService;
-                this.typeSkeletonsByTypeId = typeSkeletons.ToImmutableDictionary(skeleton => skeleton.TypeId);
+                this.typeSkeletonsByPath = typeSkeletons.ToImmutableDictionary(skeleton => skeleton.Path, ModuleInfoEqualityComparer.Instance);
                 this.errorCollector = errorCollector;
 
                 typeValuesByTypeExp = new Dictionary<S.TypeExp, TypeValue>();
+                typeValuesByExp = new Dictionary<S.Exp, TypeValue>();
                 typeEnv = ImmutableDictionary<string, TypeValue.TypeVar>.Empty;
             }            
 
-            public IEnumerable<ITypeInfo> GetTypeInfos(ModuleItemId itemId)
+            public IEnumerable<Gum.CompileTime.TypeInfo> GetReferenceTypeInfos(ItemPath typePath)
             {
-                return moduleInfoService.GetTypeInfos(itemId);
+                return itemInfoRepo.GetTypes(typePath);
             }
 
-            public ModuleItemId GetTypeId(S.ISyntaxNode node)
+            public ItemPath GetTypePath(S.ISyntaxNode node)
             {
-                return syntaxNodeModuleItemService.GetTypeId(node);
+                return syntaxNodeModuleItemService.GetTypePath(node);
             }
 
-            public ModuleItemId GetFuncId(S.ISyntaxNode node)
+            public ItemPath GetFuncPath(S.ISyntaxNode node)
             {
-                return syntaxNodeModuleItemService.GetFuncId(node);
-            }
+                return syntaxNodeModuleItemService.GetFuncPath(node);
+            }            
 
-            public bool GetSkeleton(ModuleItemId itemId, out TypeSkeleton outTypeSkeleton)
+            public bool GetSkeleton(ItemPath path, out TypeSkeleton outTypeSkeleton)
             {
-                return typeSkeletonsByTypeId.TryGetValue(itemId, out outTypeSkeleton);
+                return typeSkeletonsByPath.TryGetValue(path, out outTypeSkeleton);
             }
 
             public void AddError(AnalyzeErrorCode code, S.ISyntaxNode node, string msg)
@@ -71,18 +72,28 @@ namespace Gum.IR0
                 return typeValuesByTypeExp.ToImmutableDictionary();
             }
 
+            public void AddTypeValue(S.Exp exp, TypeValue typeValue)
+            {
+                typeValuesByExp.Add(exp, typeValue);
+            }
+
+            public ImmutableDictionary<S.Exp, TypeValue> GetTypeValuesByExp()
+            {
+                return typeValuesByExp.ToImmutableDictionary();
+            }
+
             public bool GetTypeVar(string name, [NotNullWhen(true)] out TypeValue.TypeVar? typeValue)
             {
                 return typeEnv.TryGetValue(name, out typeValue);
             }
 
-            public void ExecInScope(ModuleItemId itemId, IEnumerable<string> typeParams, Action action)
+            public void ExecInScope(ItemPath itemPath, IEnumerable<string> typeParams, Action action)
             {
                 var prevTypeEnv = typeEnv;
 
                 foreach (var typeParam in typeParams)
                 {
-                    typeEnv = typeEnv.SetItem(typeParam, TypeValue.MakeTypeVar(itemId, typeParam));
+                    typeEnv = typeEnv.SetItem(typeParam, new TypeValue.TypeVar(new ItemId(ModuleName.Internal, itemPath), typeParam));
                 }
 
                 try
@@ -95,6 +106,5 @@ namespace Gum.IR0
                 }
             }
         }
-
     }
 }

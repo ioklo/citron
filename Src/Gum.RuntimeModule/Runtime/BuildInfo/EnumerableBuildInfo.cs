@@ -24,15 +24,15 @@ namespace Gum.Runtime
 
             // T
             var enumerableId = RuntimeModule.EnumerableId;
-            var elemTypeValue = TypeValue.MakeTypeVar(enumerableId, "T");
+            var elemTypeValue = new TypeValue.TypeVar(enumerableId, "T");
 
             // Enumerator<T>
-            var enumeratorTypeValue = TypeValue.MakeNormal(enumeratorId, TypeArgumentList.Make(elemTypeValue));
+            var enumeratorTypeValue = new TypeValue.Normal(enumeratorId, new TypeValue[] { elemTypeValue });
 
             Invoker wrappedGetEnumerator = 
                 (domainService, typeArgs, thisValue, args, result) => EnumerableObject.NativeGetEnumerator(domainService, enumeratorId, typeArgs, thisValue, args, result);
 
-            builder.AddMemberFunc(Name.MakeText("GetEnumerator"),
+            builder.AddMemberFunc("GetEnumerator",
                 false, true, Array.Empty<string>(), enumeratorTypeValue, Enumerable.Empty<TypeValue>(),
                 wrappedGetEnumerator);
         }
@@ -51,14 +51,14 @@ namespace Gum.Runtime
         }
         
         // Enumerator<T> Enumerable<T>.GetEnumerator()
-        internal static ValueTask NativeGetEnumerator(DomainService domainService, ModuleItemId enumeratorId, TypeArgumentList typeArgList, Value? thisValue, IReadOnlyList<Value> args, Value result)
+        internal static ValueTask NativeGetEnumerator(DomainService domainService, ItemId enumeratorId, TypeArgumentList typeArgList, Value? thisValue, IReadOnlyList<Value> args, Value result)
         {
             Debug.Assert(thisValue != null);
             Debug.Assert(result != null);
 
             var enumerableObject = GetObject<EnumerableObject>(thisValue);
 
-            var enumeratorInst = domainService.GetTypeInst(TypeValue.MakeNormal(enumeratorId, typeArgList)); // 같은 TypeArgList를 사용한다
+            var enumeratorInst = domainService.GetTypeInst(new TypeValue.Normal(enumeratorId, typeArgList)); // 같은 TypeArgList를 사용한다
             
             ((ObjectValue)result).SetObject(new EnumeratorObject(enumeratorInst, enumerableObject.enumerable.GetAsyncEnumerator()));
 

@@ -23,11 +23,50 @@ namespace Gum.IR0
             return true;
         }
 
+        bool CollectStructDecl(S.StructDecl structDecl, Context context)
+        {
+            var typeSkeleton = context.AddTypeSkeleton(structDecl, structDecl.Name, structDecl.TypeParams.Length, Array.Empty<string>());
+
+            context.ExecInNewTypeScope(typeSkeleton, () => {
+
+                foreach(var elem in structDecl.Elems)
+                {
+                    switch( elem)
+                    {
+                        case S.StructDecl.TypeDeclElement typeElem:
+                            CollectTypeDecl(typeElem.TypeDecl, context);
+                            break;
+
+                        case S.StructDecl.FuncDeclElement funcElem:
+                            context.AddFunc(funcElem, funcElem.Name, funcElem.TypeParams.Length);
+                            break;
+                    }
+                }
+
+            });
+
+            return true;
+        }
+
         bool CollectFuncDecl(S.FuncDecl funcDecl, Context context)
         {
-            var funcId = ModuleItemId.Make(funcDecl.Name, funcDecl.TypeParams.Length);
-            context.AddFuncId(funcDecl, funcId);
+            context.AddFunc(funcDecl, funcDecl.Name, funcDecl.TypeParams.Length);
             return true;
+        }
+
+        bool CollectTypeDecl(S.TypeDecl typeDecl, Context context)
+        {
+            switch(typeDecl)
+            {
+                case S.EnumDecl enumDecl:
+                    return CollectEnumDecl(enumDecl, context);
+
+                case S.StructDecl structDecl:
+                    return CollectStructDecl(structDecl, context);
+
+                default:
+                    throw new InvalidOperationException();
+            }
         }
 
         bool CollectScript(S.Script script, Context context)
@@ -36,8 +75,8 @@ namespace Gum.IR0
             {
                 switch(scriptElem)
                 {
-                    case S.Script.EnumDeclElement enumElem:
-                        if (!CollectEnumDecl(enumElem.EnumDecl, context))
+                    case S.Script.TypeDeclElement typeDeclElem:                        
+                        if (!CollectTypeDecl(typeDeclElem.TypeDecl, context))
                             return false;
                         break;
 
@@ -63,8 +102,8 @@ namespace Gum.IR0
             }
 
             var syntaxNodeModuleItemService = new SyntaxNodeModuleItemService(
-                context.GetTypeIdsByNode(), 
-                context.GetFuncIdsByNode());
+                context.GetTypePathsByNode(), 
+                context.GetFuncPathsByNode());
 
             return (syntaxNodeModuleItemService, context.GetTypeSkeletons());
         }

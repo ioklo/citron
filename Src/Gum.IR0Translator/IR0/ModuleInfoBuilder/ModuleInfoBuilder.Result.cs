@@ -11,18 +11,18 @@ namespace Gum.IR0
             public ScriptModuleInfo ModuleInfo { get; }
             public TypeExpTypeValueService TypeExpTypeValueService { get; }
             public ImmutableDictionary<S.FuncDecl, FuncInfo> FuncInfosByDecl { get; }
-            public ImmutableDictionary<S.EnumDecl, EnumInfo> EnumInfosByDecl{ get; }
+            public ImmutableDictionary<S.TypeDecl, TypeInfo> TypeInfosByDecl{ get; }
 
             public Result(
                 ScriptModuleInfo moduleInfo,
                 TypeExpTypeValueService typeExpTypeValueService,
                 ImmutableDictionary<S.FuncDecl, FuncInfo> funcInfosbyDecl,
-                ImmutableDictionary<S.EnumDecl, EnumInfo> enumInfosByDecl)
+                ImmutableDictionary<S.TypeDecl, TypeInfo> typeInfosByDecl)
             {
                 ModuleInfo = moduleInfo;
                 TypeExpTypeValueService = typeExpTypeValueService;
                 FuncInfosByDecl = funcInfosbyDecl;
-                EnumInfosByDecl = enumInfosByDecl;
+                TypeInfosByDecl = typeInfosByDecl;
             }
         }
     }
