@@ -252,30 +252,31 @@ namespace Gum.IR0
 
         void EvaluateFuncDecl(S.FuncDecl funcDecl, Context context)
         {
-            EvaluateTypeExp(funcDecl.RetType, context, out var _);
-
-            foreach(var param in funcDecl.ParamInfo.Parameters)
-                EvaluateTypeExp(param.Type, context, out var _);
-
             var funcPath = context.GetFuncPath(funcDecl);
 
             context.ExecInScope(funcPath, funcDecl.TypeParams, () =>
-            {   
+            {
+                EvaluateTypeExp(funcDecl.RetType, context, out var _);
+
+                foreach (var param in funcDecl.ParamInfo.Parameters)
+                    EvaluateTypeExp(param.Type, context, out var _);
+
                 EvaluateStmt(funcDecl.Body, context);
             });
         }
 
         void EvaluateStructFuncDeclElem(S.StructDecl.FuncDeclElement funcDecl, Context context)
-        {
-            EvaluateTypeExp(funcDecl.RetType, context, out var _);
-
-            foreach (var param in funcDecl.ParamInfo.Parameters)
-                EvaluateTypeExp(param.Type, context, out var _);
-
+        {   
             var funcPath = context.GetFuncPath(funcDecl);
 
             context.ExecInScope(funcPath, funcDecl.TypeParams, () =>
             {
+                EvaluateTypeExp(funcDecl.RetType, context, out var _);
+
+                foreach (var param in funcDecl.ParamInfo.Parameters)
+                    EvaluateTypeExp(param.Type, context, out var _);
+
+
                 EvaluateStmt(funcDecl.Body, context);
             });
         }

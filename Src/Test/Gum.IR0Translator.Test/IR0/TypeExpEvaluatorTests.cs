@@ -50,6 +50,7 @@ namespace Gum.IR0
                 new AppliedItemPathEntry(
                     "S", string.Empty, new[] { new TypeValue.Normal(ModuleName.Internal, NamespacePath.Root, new AppliedItemPathEntry("X")) }));
 
+            Debug.Assert(typeValue != null);
             Assert.Equal(expected, typeValue, ModuleInfoEqualityComparer.Instance);
         }
 
@@ -111,6 +112,7 @@ namespace Gum.IR0
                 new AppliedItemPathEntry("B")
             );
 
+            Debug.Assert(typeValue1 != null);
             Assert.Equal(expected1, typeValue1, ModuleInfoEqualityComparer.Instance);
             Assert.Null(typeValue2); // 최외각만 TypeValue 매핑을 준다
         }

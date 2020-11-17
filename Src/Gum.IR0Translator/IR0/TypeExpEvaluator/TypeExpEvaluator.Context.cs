@@ -93,7 +93,7 @@ namespace Gum.IR0
 
                 foreach (var typeParam in typeParams)
                 {
-                    typeEnv = typeEnv.SetItem(typeParam, new TypeValue.TypeVar(new ItemId(ModuleName.Internal, itemPath), typeParam));
+                    typeEnv = typeEnv.SetItem(typeParam, new TypeValue.TypeVar(itemPath.OuterEntries.Length, typeParam));
                 }
 
                 try

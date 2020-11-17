@@ -139,12 +139,14 @@ namespace Gum.IR0
 
             public Type GetType(TypeValue typeValue)
             {
+                bool Equals(TypeValue x, TypeValue y) => ModuleInfoEqualityComparer.EqualsTypeValue(x, y);
+
                 // 일단 predefined부터 걸러냅니다.
                 if (typeValue is TypeValue.Normal ntv)
                 {
-                    if (ntv == TypeValues.Bool) return Type.Bool;
-                    else if (ntv == TypeValues.Int) return Type.Int;
-                    else if (ntv == TypeValues.String) return Type.String;
+                    if (Equals(ntv, TypeValues.Bool)) return Type.Bool;
+                    else if (Equals(ntv, TypeValues.Int)) return Type.Int;
+                    else if (Equals(ntv, TypeValues.String)) return Type.String;
                     else if (ModuleInfoEqualityComparer.EqualsItemId(ntv.GetTypeId(), ItemIds.List))
                     {
                         var elemType = GetType(ntv.Entry.TypeArgs[0]);
@@ -232,11 +234,13 @@ namespace Gum.IR0
             {
                 // 지역 스코프에는 변수만 있고, 함수, 타입은 없으므로 이름이 겹치는 것이 있는지 검사하지 않아도 된다
                 if (typeArgs.Count == 0)
+                {
                     if (curFunc.GetLocalVarOutsideLambdaInfo(idName, out var localVarOutsideInfo))
                     {
-                        outIdInfo = new IdentifierInfo.LocalOutsideLambda(localVarOutsideInfo);                        
+                        outIdInfo = new IdentifierInfo.LocalOutsideLambda(localVarOutsideInfo);
                         return true;
                     }
+                }
 
                 outIdInfo = null;
                 return false;

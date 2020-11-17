@@ -188,7 +188,7 @@ namespace Gum.IR0
 
             var completedTypeArgs = typeArgs.Concat(
                 funcInfo.TypeParams.Skip(typeArgs.Count).Select(typeParam =>
-                   new TypeValue.TypeVar(funcInfo.GetId(), typeParam)
+                   new TypeValue.TypeVar(funcInfo.GetId().OuterEntries.Length, typeParam)
                 )
             );
 

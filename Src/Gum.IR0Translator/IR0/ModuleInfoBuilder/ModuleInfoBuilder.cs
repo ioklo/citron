@@ -12,6 +12,7 @@ using S = Gum.Syntax;
 
 namespace Gum.IR0
 {
+    // Script에서 ModuleInfo 정보를 뽑는 역할
     partial class ModuleInfoBuilder
     {
         TypeExpEvaluator typeExpEvaluator;
@@ -57,7 +58,8 @@ namespace Gum.IR0
                     return;
 
                 case S.StructDecl structDecl:
-                    throw new NotImplementedException();                    
+                    BuildStructDecl(structDecl, context);
+                    return;
 
                 default:
                     throw new InvalidOperationException();
@@ -88,6 +90,11 @@ namespace Gum.IR0
 
             context.AddTypeInfo(enumDecl, enumType);
         }
+        
+        void BuildStructDecl(S.StructDecl structDecl, Context context)
+        {
+            throw new NotImplementedException();
+        }
 
         void BuildFuncDecl(S.FuncDecl funcDecl, Context context)
         {
@@ -117,104 +124,11 @@ namespace Gum.IR0
                 context.GetTypeValue(funcDecl.RetType),
                 funcDecl.ParamInfo.Parameters.Select(typeAndName => context.GetTypeValue(typeAndName.Type)),
                 context);
-        }
-
-        void GetTypeValueNormalEntryString(AppliedItemPathEntry entry, StringBuilder sb)
-        {
-            sb.Append(entry.Name);
-
-            if (entry.TypeArgs.Length != 0)
-            {
-                sb.Append('<');
-
-                bool bFirst = true;
-                foreach (var typeArg in entry.TypeArgs)
-                {
-                    if (bFirst) bFirst = false;
-                    else sb.Append(',');
-
-                    GetTypeValueString(typeArg, sb);
-                }
-
-                sb.Append('>');
-            }
-        }
-
-        // [ModuleName].Namespace.Namespace.Type...
-        
-
-        private void GetTypeValueString(TypeValue typeValue, StringBuilder sb)
-        {
-            switch (typeValue)
-            {
-                case TypeValue.Var _:
-                    throw new InvalidOperationException();
-
-                case TypeValue.TypeVar typeVar:
-                    sb.Append($"{typeVar.ParentId}.{typeVar.Name}");
-                    return;                    
-
-                case TypeValue.Normal normal:
-                    // [ModuleName]
-                    sb.Append($"[{normal.ModuleName}]");
-
-                    // Namespace
-                    sb.AppendJoin('.', normal.NamespacePath.Entries.Select(entry => entry.Value));
-
-                    if (normal.NamespacePath.Entries.Length != 0)
-                        sb.Append('.');
-
-                    // A<B>.C<D>
-                    bool bFirst = true;
-                    foreach (var outerEntry in normal.OuterEntries)
-                    {
-                        if (bFirst) bFirst = false;
-                        else sb.Append('.');
-                        GetTypeValueNormalEntryString(outerEntry, sb);
-                    }
-
-                    // E            
-                    if (normal.OuterEntries.Length != 0)
-                        sb.Append('.');
-
-                    GetTypeValueNormalEntryString(normal.Entry, sb);
-                    return;
-
-                case TypeValue.Void _:
-                    sb.Append("void");
-                    return;
-
-                case TypeValue.Func _:
-                    throw new InvalidOperationException();
-
-                case TypeValue.EnumElem _:
-                    throw new InvalidOperationException();
-            }
-        }
-
-
-        private string GetTypeValueString(TypeValue typeValue)
-        {
-            var sb = new StringBuilder();
-            GetTypeValueString(typeValue, sb);
-            return sb.ToString();
-        }
+        }        
 
         private string GetParamHash(S.FuncParamInfo paramInfo, Context context)
         {
-            var sb = new StringBuilder();
-
-            bool bFirst = true;
-            foreach (var parameter in paramInfo.Parameters)
-            {
-                if (bFirst) bFirst = false;
-                else sb.Append(" * ");
-
-                var typeValue = context.GetTypeValue(parameter.Type);
-                GetTypeValueString(typeValue, sb);
-            }
-
-            return sb.ToString();
+            return Misc.MakeParamHash(paramInfo.Parameters.Select(parameter => context.GetTypeValue(parameter.Type)));
         }
 
         void BuildGlobalStmt(S.Stmt stmt, Context context)
@@ -254,7 +168,7 @@ namespace Gum.IR0
             }
         }
 
-        public Result? BuildScript(string moduleName, IEnumerable<IModuleInfo> moduleInfos, S.Script script, IErrorCollector errorCollector)
+        public Result? BuildScript(IEnumerable<IModuleInfo> moduleInfos, S.Script script, IErrorCollector errorCollector)
         {
             // 2. skeleton과 moduleInfo로 트리의 모든 TypeExp들을 TypeValue로 변환하기            
             var typeEvalResult = typeExpEvaluator.EvaluateScript(script, moduleInfos, errorCollector);

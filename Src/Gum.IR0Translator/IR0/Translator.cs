@@ -21,9 +21,9 @@ namespace Gum.IR0
             analyzer = new Analyzer(moduleInfoBuilder, capturer);
         }
 
-        public IR0.Script? Translate(string moduleName, Syntax.Script script, IEnumerable<IModuleInfo> moduleInfos, IErrorCollector errorCollector)
+        public IR0.Script? Translate(Syntax.Script script, IEnumerable<IModuleInfo> moduleInfos, IErrorCollector errorCollector)
         {   
-            var optionalAnalyzeResult = analyzer.AnalyzeScript(moduleName, script, moduleInfos, errorCollector);
+            var optionalAnalyzeResult = analyzer.AnalyzeScript(script, moduleInfos, errorCollector);
             if (optionalAnalyzeResult == null)
                 return null;
 

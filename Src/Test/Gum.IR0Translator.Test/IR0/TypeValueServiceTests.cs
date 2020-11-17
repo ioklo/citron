@@ -29,9 +29,9 @@ namespace Gum.IR0
             var vId = yId.Append("v");
             var fId = yId.Append("F", 1);                        
 
-            var xtTypeVar = new TypeValue.TypeVar(xId, "T");
-            var yuTypeVar = new TypeValue.TypeVar(yId, "U");
-            var fvTypeVar = new TypeValue.TypeVar(fId, "V");
+            var xtTypeVar = new TypeValue.TypeVar(0, "T");
+            var yuTypeVar = new TypeValue.TypeVar(1, "U");
+            var fvTypeVar = new TypeValue.TypeVar(2, "V");
 
             var gId = MakeItemId(new ItemPathEntry("G", 1));
             var gtTypeValue = new TypeValue.Normal(gId, new[] { xtTypeVar });

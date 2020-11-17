@@ -24,7 +24,7 @@ namespace Gum.Runtime
 
             // T
             var enumerableId = RuntimeModule.EnumerableId;
-            var elemTypeValue = new TypeValue.TypeVar(enumerableId, "T");
+            var elemTypeValue = new TypeValue.TypeVar(0, "T");
 
             // Enumerator<T>
             var enumeratorTypeValue = new TypeValue.Normal(enumeratorId, new TypeValue[] { elemTypeValue });

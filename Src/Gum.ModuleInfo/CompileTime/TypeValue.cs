@@ -18,15 +18,15 @@ namespace Gum.CompileTime
             private Var() { }
         }
 
-        // T
+        // T: depth는 지역적이므로, 주어진 컨텍스트 안에서만 의미가 있다
         public class TypeVar : TypeValue
         {
-            public ItemId ParentId { get; }
+            public int Depth { get; }
             public string Name { get; }
 
-            public TypeVar(ItemId parentId, string name)
+            public TypeVar(int depth, string name)
             {
-                ParentId = parentId;
+                Depth = depth;                
                 Name = name;
             }
         }

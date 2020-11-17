@@ -15,12 +15,12 @@ namespace Gum.IR0
 {
     public class TranslatorTests
     {
-        Script? Translate(S.Script syntaxScript, bool raiseAssertFailed = false)
+        Script? Translate(S.Script syntaxScript, bool raiseAssertFailed = true)
         {
             var testErrorCollector = new TestErrorCollector(raiseAssertFailed);
             var translator = new Translator();
 
-            return translator.Translate("Test", syntaxScript, Array.Empty<IModuleInfo>(), testErrorCollector);
+            return translator.Translate(syntaxScript, Array.Empty<IModuleInfo>(), testErrorCollector);
         }
 
         List<IError> TranslateWithErrors(S.Script syntaxScript, bool raiseAssertionFail = false)
@@ -28,7 +28,7 @@ namespace Gum.IR0
             var testErrorCollector = new TestErrorCollector(raiseAssertionFail);
             var translator = new Translator();
 
-            var script = translator.Translate("Test", syntaxScript, Array.Empty<IModuleInfo>(), testErrorCollector);
+            var script = translator.Translate(syntaxScript, Array.Empty<IModuleInfo>(), testErrorCollector);
 
             return testErrorCollector.Errors;
         }

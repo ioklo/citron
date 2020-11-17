@@ -394,13 +394,12 @@ namespace Gum.IR0
             TypeValueService TypeValueService,
             ScriptModuleInfo ModuleInfo)?
             AnalyzeScript(
-            string moduleName,
             S.Script script,
             IEnumerable<IModuleInfo> moduleInfos,
             IErrorCollector errorCollector)
         {
             // 3. Type, Func만들기, ModuleInfoBuilder
-            var buildResult = moduleInfoBuilder.BuildScript(moduleName, moduleInfos, script, errorCollector);
+            var buildResult = moduleInfoBuilder.BuildScript(moduleInfos, script, errorCollector);
             if (buildResult == null)
                 return null;
 
@@ -437,7 +436,7 @@ namespace Gum.IR0
             TypeValue? curType = fromTypeValue;
             while (curType != null)
             {
-                if (EqualityComparer<TypeValue>.Default.Equals(toTypeValue, curType))
+                if (ModuleInfoEqualityComparer.EqualsTypeValue(toTypeValue, curType))
                     return true;
 
                 if (!context.TypeValueService.GetBaseTypeValue(curType, out var outType))

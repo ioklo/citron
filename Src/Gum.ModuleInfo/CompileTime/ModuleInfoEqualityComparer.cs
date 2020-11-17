@@ -8,18 +8,19 @@ namespace Gum.CompileTime
 {
     public class ModuleInfoEqualityComparer 
         : IEqualityComparer<AppliedItemPathEntry>         
-        , IEqualityComparer<TypeValue?>
+        , IEqualityComparer<TypeValue>
         , IEqualityComparer<ItemPath>
         , IEqualityComparer<ItemPathEntry>
         , IEqualityComparer<NamespaceId>
+        , IEqualityComparer<ItemInfo>
     {
         public static ModuleInfoEqualityComparer Instance { get; } = new ModuleInfoEqualityComparer();
         private ModuleInfoEqualityComparer() { }
 
         bool IEqualityComparer<AppliedItemPathEntry>.Equals(AppliedItemPathEntry x, AppliedItemPathEntry y) => EqualsAppliedItemPathEntry(x, y);
         int IEqualityComparer<AppliedItemPathEntry>.GetHashCode(AppliedItemPathEntry obj) => GetHashCodeAppliedItemPathEntry(obj);
-        bool IEqualityComparer<TypeValue?>.Equals(TypeValue? x, TypeValue? y) => EqualsTypeValue(x, y);
-        int IEqualityComparer<TypeValue?>.GetHashCode(TypeValue? obj) => throw new NotImplementedException();
+        bool IEqualityComparer<TypeValue>.Equals(TypeValue x, TypeValue y) => EqualsTypeValue(x, y);
+        int IEqualityComparer<TypeValue>.GetHashCode([DisallowNull] TypeValue? obj) => GetHashCodeTypeValue(obj);
         bool IEqualityComparer<ItemPath>.Equals(ItemPath x, ItemPath y) => EqualsItemPath(x, y);
         int IEqualityComparer<ItemPath>.GetHashCode(ItemPath obj) => GetHashCodeItemPath(obj);
 
@@ -28,6 +29,9 @@ namespace Gum.CompileTime
 
         bool IEqualityComparer<NamespaceId>.Equals(NamespaceId x, NamespaceId y) => EqualsNamespaceId(x, y);
         int IEqualityComparer<NamespaceId>.GetHashCode(NamespaceId obj) => GetHashCodeNamespaceId(obj);
+
+        bool IEqualityComparer<ItemInfo>.Equals(ItemInfo x, ItemInfo y) => EqualsItemInfo(x, y);
+        int IEqualityComparer<ItemInfo>.GetHashCode(ItemInfo obj) => GetHashCodeItemInfo(obj);
 
         static bool EqualsSequence<T>(ImmutableArray<T> x, ImmutableArray<T> y, IEqualityComparer<T> comparer)
         {
@@ -88,6 +92,10 @@ namespace Gum.CompileTime
                 case (TypeValue.Void _, TypeValue.Void _):
                     return true;
 
+                case (TypeValue.TypeVar typeVarX, TypeValue.TypeVar typeVarY):
+                    return typeVarX.Depth == typeVarY.Depth &&
+                        EqualsName(typeVarX.Name, typeVarY.Name);
+
                 case (TypeValue.Normal normalX, TypeValue.Normal normalY):
                     return EqualsModuleName(normalX.ModuleName, normalY.ModuleName) &&
                         EqualsNamespacePath(normalX.NamespacePath, normalY.NamespacePath) &&
@@ -104,6 +112,43 @@ namespace Gum.CompileTime
 
                 default:
                     return false;
+            }
+        }
+
+        public static int GetHashCodeTypeValue(TypeValue obj)
+        {
+            switch (obj)
+            {
+                case TypeValue.Var _:
+                    return TypeValue.Var.Instance.GetHashCode();
+
+                case TypeValue.Void _:
+                    return TypeValue.Void.Instance.GetHashCode();
+
+                case TypeValue.TypeVar typeVar:
+                    return HashCode.Combine(
+                        typeVar.Depth,                        
+                        typeVar.Name);
+
+                case TypeValue.Normal normal:
+                    return HashCode.Combine(
+                        GetHashCodeModuleName(normal.ModuleName),
+                        GetHashCodeNamespacePath(normal.NamespacePath),
+                        GetHashCodeSequence(normal.OuterEntries, Instance),
+                        GetHashCodeAppliedItemPathEntry(normal.Entry));
+
+                case TypeValue.Func func:
+                    return HashCode.Combine(
+                        GetHashCodeSequence(func.Params, Instance),
+                        GetHashCodeTypeValue(func.Return));
+
+                case TypeValue.EnumElem enumElem:
+                    return HashCode.Combine(
+                        GetHashCodeTypeValue(enumElem.EnumTypeValue),
+                        GetHashCodeName(enumElem.Name));
+
+                default:
+                    throw new InvalidOperationException();
             }
         }
 
@@ -166,6 +211,36 @@ namespace Gum.CompileTime
         public static int GetHashCodeNamespaceId(NamespaceId obj)
         {
             return obj.Value.GetHashCode();
+        }
+
+        public static bool EqualsItemInfo(ItemInfo? x, ItemInfo? y)
+        {
+            switch((x, y))
+            {
+                case (null, null): 
+                    return true;
+
+        //            public bool bSeqCall { get; }
+        //public bool bThisCall { get; }
+        //public ImmutableArray<string> TypeParams { get; }
+        //public TypeValue RetTypeValue { get; }
+        //public ImmutableArray<TypeValue> ParamTypeValues { get; }
+
+                case (FuncInfo funcInfoX, FuncInfo funcInfoY):
+                    return funcInfoX.bSeqCall == funcInfoY.bSeqCall &&
+                        funcInfoX.bThisCall == funcInfoY.bThisCall &&
+                        funcInfoX.TypeParams.SequenceEqual(funcInfoY.TypeParams) && // string
+                        EqualsTypeValue(funcInfoX.RetTypeValue, funcInfoY.RetTypeValue) &&
+                        EqualsSequence(funcInfoX.ParamTypeValues, funcInfoY.ParamTypeValues, Instance);
+
+                default:
+                    throw new NotImplementedException();
+            }
+        }
+
+        public int GetHashCodeItemInfo(ItemInfo obj)
+        {
+            throw new NotImplementedException();
         }
     }
 }

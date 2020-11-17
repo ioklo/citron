@@ -10,7 +10,7 @@ namespace Gum.IR0
 {
     public class TypeValueApplierTests
     {
-        [Fact()]
+        [Fact]
         public void Apply_FuncTest()
         {
             TypeValue MakeTypeValue(string name)
@@ -21,9 +21,9 @@ namespace Gum.IR0
             var yId = xId.Append("Y", 2);
             var funcId = yId.Append("Func", 1);
 
-            var xVTypeVar = new TypeValue.TypeVar(xId, "V");
-            var yUTypeVar = new TypeValue.TypeVar(yId, "U");
-            var funcTTypeVar = new TypeValue.TypeVar(funcId, "T");
+            var xVTypeVar = new TypeValue.TypeVar(0, "V");
+            var yUTypeVar = new TypeValue.TypeVar(1, "U");
+            var funcTTypeVar = new TypeValue.TypeVar(2, "T");
 
             var funcInfo = new FuncInfo(funcId, false, true, new[] { "T" }, xVTypeVar, funcTTypeVar, yUTypeVar);
             var yInfo = new ClassInfo(yId, new string[] { "T", "U" }, null, new[] { funcInfo });
@@ -34,23 +34,25 @@ namespace Gum.IR0
             var moduleInfoRepo = new ModuleInfoRepository(new[] { moduleInfo });
             var applier = new TypeValueApplier(moduleInfoRepo);
 
-            // X<A, B, C>.Y<D, E>.Func<F>
+            
             var funcTypeArgList = new[] {
                 new[] { MakeTypeValue("A"), MakeTypeValue("B"), MakeTypeValue("C") },
                 new[] { MakeTypeValue("D"), MakeTypeValue("E") },
                 new[] { MakeTypeValue("F") } 
             };
-
+            // X<A, B, C>.Y<D, E>.Func<F>
             var funcValue = new FuncValue(funcId, funcTypeArgList);
+
+            // (Tf, Uy) => Vx 
             var funcTypeValue = new TypeValue.Func(xVTypeVar, new[] { funcTTypeVar, yUTypeVar });
 
             var appliedTypeValue = applier.Apply_Func(funcValue, funcTypeValue);
 
             var expectedTypeValue = new TypeValue.Func(MakeTypeValue("C"), new[] { MakeTypeValue("F"), MakeTypeValue("E") });
-            Assert.Equal(expectedTypeValue, appliedTypeValue);
+            Assert.Equal(expectedTypeValue, appliedTypeValue, ModuleInfoEqualityComparer.Instance);
         }
 
-        [Fact()]
+        [Fact]
         public void ApplyTest()
         {
             // class X<T> { class Y<T> { T x; } }
@@ -73,9 +75,9 @@ namespace Gum.IR0
                 new[] { shortValue } };
 
             // Apply(X<int>.Y<short>, TofX) == int
-            var appliedValue = applier.Apply(new TypeValue.Normal(yId, yTypeArgs), new TypeValue.TypeVar(xId, "T"));
+            var appliedValue = applier.Apply(new TypeValue.Normal(yId, yTypeArgs), new TypeValue.TypeVar(0, "T"));
 
-            Assert.Equal(intValue, appliedValue);
+            Assert.Equal(intValue, appliedValue, ModuleInfoEqualityComparer.Instance);
         }
     }
 }
