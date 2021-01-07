@@ -12,7 +12,7 @@ namespace Gum.Infra
 
         private RefEqComparer() { }
 
-        public bool Equals(T x, T y)
+        public bool Equals(T? x, T? y)
         {
             return Object.ReferenceEquals(x, y);
         }

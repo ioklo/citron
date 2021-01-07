@@ -2,6 +2,7 @@
 using Gum.Syntax;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -113,25 +114,25 @@ namespace Gum
             (MinusMinusToken.Instance, UnaryOpKind.PostfixDec),
         };
 
-        async ValueTask<ParseResult<List<Exp>>> ParseCallArgs(ParserContext context)
+        async ValueTask<ParseResult<ImmutableArray<Exp>>> ParseCallArgs(ParserContext context)
         {
             if (!Accept<LParenToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
-                return ParseResult<List<Exp>>.Invalid;
+                return ParseResult<ImmutableArray<Exp>>.Invalid;
             
             var args = new List<Exp>();
             while (!Accept<RParenToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
             {
                 if (0 < args.Count)
                     if (!Accept<CommaToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
-                        return ParseResult<List<Exp>>.Invalid;
+                        return ParseResult<ImmutableArray<Exp>>.Invalid;
 
                 if (!Parse(await ParseExpAsync(context), ref context, out var arg))
-                    return ParseResult<List<Exp>>.Invalid;
+                    return ParseResult<ImmutableArray<Exp>>.Invalid;
 
                 args.Add(arg);
             }
 
-            return new ParseResult<List<Exp>>(args, context);
+            return new ParseResult<ImmutableArray<Exp>>(args.ToImmutableArray(), context);
         }
 
         // TODO: 현재 Primary중 Postfix Unary만 구현했다.
@@ -187,12 +188,12 @@ namespace Gum
                     
                     if (Parse(await ParseCallArgs(context), ref context, out var memberCallArgs))
                     {
-                        exp = new MemberCallExp(exp, idToken.Value, Enumerable.Empty<TypeExp>(), memberCallArgs);
+                        exp = new MemberCallExp(exp, idToken.Value, ImmutableArray<TypeExp>.Empty, memberCallArgs);
                         continue;
                     }
                     else
                     {
-                        exp = new MemberExp(exp, idToken.Value, Enumerable.Empty<TypeExp>());
+                        exp = new MemberExp(exp, idToken.Value, ImmutableArray<TypeExp>.Empty);
                         continue;
                     }
                 }
@@ -200,7 +201,7 @@ namespace Gum
                 // (..., ... )                
                 if (Parse(await ParseCallArgs(context), ref context, out var callArgs))
                 {                    
-                    exp = new CallExp(exp, Enumerable.Empty<TypeExp>(), callArgs);
+                    exp = new CallExp(exp, ImmutableArray<TypeExp>.Empty, callArgs);
                     continue;
                 }
 
@@ -391,7 +392,7 @@ namespace Gum
                 body = new ReturnStmt(expBody);
             }
 
-            return new ExpParseResult(new LambdaExp(parameters, body), context);
+            return new ExpParseResult(new LambdaExp(parameters.ToImmutableArray(), body), context);
 
             static ExpParseResult Invalid() => ExpParseResult.Invalid;
         }

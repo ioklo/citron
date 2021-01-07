@@ -10,7 +10,7 @@ using Gum.Infra;
 
 namespace Gum.IR0
 {
-    partial class ExpAnalyzer
+    partial class Analyzer
     {
         //class MemberCallExpAnalyzer
         //{

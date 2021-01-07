@@ -11,6 +11,7 @@ namespace Gum.Infra
     public static class CollectionExtensions
     {
         public static ImmutableDictionary<TKey, TValue> ToImmutableWithComparer<TKey, TValue>(this Dictionary<TKey, TValue> dict)
+            where TKey : notnull
         {
             return dict.ToImmutableDictionary(dict.Comparer);
         }           

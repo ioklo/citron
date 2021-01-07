@@ -6,13 +6,14 @@ using Gum.Infra;
 
 namespace Gum.Syntax
 {
-    public partial class StructDecl : ISyntaxNode
+    public partial class StructDecl : TypeDecl
     {
         public AccessModifier AccessModifier { get; }
-        public string Name { get; }
         public ImmutableArray<string> TypeParams { get; }
         public ImmutableArray<TypeExp> BaseTypes { get; }
         public ImmutableArray<Element> Elems { get; }
+
+        public override int TypeParamCount { get => TypeParams.Length; }
 
         public StructDecl(
             AccessModifier accessModifier,
@@ -20,9 +21,9 @@ namespace Gum.Syntax
             IEnumerable<string> typeParams,
             IEnumerable<TypeExp> baseTypes,
             IEnumerable<Element> elems)
+            : base(name)
         {
             AccessModifier = accessModifier;
-            Name = name;
             TypeParams = typeParams.ToImmutableArray();
             BaseTypes = baseTypes.ToImmutableArray();
             Elems = elems.ToImmutableArray();

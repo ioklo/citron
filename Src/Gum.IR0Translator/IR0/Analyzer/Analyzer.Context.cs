@@ -41,33 +41,30 @@ namespace Gum.IR0
             IErrorCollector errorCollector;
 
             // 현재 실행되고 있는 함수
-            private FuncContext curFunc;
+            FuncContext curFunc;
 
             // CurFunc와 bGlobalScope를 나누는 이유는, globalScope에서 BlockStmt 안으로 들어가면 global이 아니기 때문이다
-            private bool bGlobalScope;
-            private bool bInLoop;
-            private ImmutableDictionary<S.FuncDecl, FuncInfo> funcInfosByDecl;
-            private ImmutableDictionary<S.TypeDecl, TypeInfo> typeInfosByDecl;
-            private TypeExpTypeValueService typeExpTypeValueService;
-            private Dictionary<string, PrivateGlobalVarInfo> privateGlobalVarInfos;
-            private List<TypeDecl> typeDecls;
-            private List<FuncDecl> funcDecls;
-            private Dictionary<ItemId, FuncDeclId> funcDeclsById;
+            bool bGlobalScope;
+            bool bInLoop;
+            SyntaxItemInfoRepository syntaxItemInfoRepository;
+            TypeExpTypeValueService typeExpTypeValueService;
+            Dictionary<string, PrivateGlobalVarInfo> privateGlobalVarInfos;
+            List<TypeDecl> typeDecls;
+            List<FuncDecl> funcDecls;
+            Dictionary<ItemId, FuncDeclId> funcDeclsById;
 
             public Context(                
                 ItemInfoRepository itemInfoRepo,
+                SyntaxItemInfoRepository syntaxItemInfoRepository,
                 TypeValueService typeValueService,
-                TypeExpTypeValueService typeExpTypeValueService,
-                ImmutableDictionary<S.FuncDecl, FuncInfo> funcInfosByDecl,
-                ImmutableDictionary<S.TypeDecl, TypeInfo> typeInfosByDecl,
+                TypeExpTypeValueService typeExpTypeValueService,                
                 IErrorCollector errorCollector)
             {
                 this.itemInfoRepo = itemInfoRepo;
 
                 TypeValueService = typeValueService;
 
-                this.funcInfosByDecl = funcInfosByDecl;
-                this.typeInfosByDecl = typeInfosByDecl;
+                this.syntaxItemInfoRepository = syntaxItemInfoRepository;                
                 this.typeExpTypeValueService = typeExpTypeValueService;
 
                 this.errorCollector = errorCollector;
@@ -199,13 +196,13 @@ namespace Gum.IR0
 
             public FuncInfo GetFuncInfoByDecl(S.FuncDecl funcDecl)
             {
-                return funcInfosByDecl[funcDecl];
+                return syntaxItemInfoRepository.GetFuncInfoByDecl(funcDecl);
             }
 
             public TTypeInfo GetTypeInfoByDecl<TTypeInfo>(S.EnumDecl enumDecl)
                 where TTypeInfo : TypeInfo
             {
-                return (TTypeInfo)typeInfosByDecl[enumDecl];
+                return (TTypeInfo)syntaxItemInfoRepository.GetTypeInfoByDecl(enumDecl);
             }
 
             public bool IsGlobalScope()

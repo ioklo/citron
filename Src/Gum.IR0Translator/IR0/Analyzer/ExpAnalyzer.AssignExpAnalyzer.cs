@@ -8,7 +8,7 @@ using Gum.CompileTime;
 
 namespace Gum.IR0
 {
-    partial class ExpAnalyzer
+    partial class Analyzer
     {   
         //abstract class AssignExpAnalyzer
         //{

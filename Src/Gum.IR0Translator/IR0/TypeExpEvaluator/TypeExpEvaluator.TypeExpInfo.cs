@@ -7,12 +7,10 @@ namespace Gum.IR0
     partial class TypeExpEvaluator
     {
         // X<int>.Y<T>
-        abstract class TypeExpInfo
+        public abstract class TypeExpInfo
         {
             public abstract TypeValue GetTypeValue();
-
             public abstract TypeExpInfo? GetMemberInfo(string memberName, IEnumerable<TypeValue> typeArgs);
-
 
             // 스켈레톤으로 부터 얻는 타입
             public class Internal : TypeExpInfo
@@ -20,10 +18,10 @@ namespace Gum.IR0
                 // X<int>.Y<T> 면 skeleton은 Y의 스켈레톤을 갖고 있어야 한다
                 // typeValue는 [Internal]X<int>.Y<T>
 
-                TypeSkeleton skeleton; // 멤버를 갖고 오기 위한 수단
+                Skeleton.Type skeleton; // 멤버를 갖고 오기 위한 수단
                 TypeValue.Normal typeValue;
 
-                public Internal(TypeSkeleton skeleton, TypeValue.Normal typeValue) 
+                public Internal(Skeleton.Type skeleton, TypeValue.Normal typeValue) 
                 {
                     this.skeleton = skeleton;
                     this.typeValue = typeValue;
@@ -37,7 +35,7 @@ namespace Gum.IR0
                 public override TypeExpInfo? GetMemberInfo(string memberName, IEnumerable<TypeValue> typeArgsEnum)
                 {
                     var typeArgs = typeArgsEnum.ToArray();
-                    var memberSkeleton = skeleton.GetMemberTypeSkeleton(memberName, typeArgs.Length);
+                    var memberSkeleton = skeleton.GetMember(memberName, typeArgs.Length) as Skeleton.Type;
 
                     if (memberSkeleton == null)
                         return null;

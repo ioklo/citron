@@ -10,10 +10,10 @@ namespace Gum.Syntax
             internal Element() { }
         }
 
-        public class FuncDeclElement : Element
+        public class GlobalFuncDeclElement : Element
         {
-            public FuncDecl FuncDecl { get; }
-            public FuncDeclElement(FuncDecl funcDecl)
+            public GlobalFuncDecl FuncDecl { get; }
+            public GlobalFuncDeclElement(GlobalFuncDecl funcDecl)
             {
                 FuncDecl = funcDecl;
             }

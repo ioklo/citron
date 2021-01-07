@@ -186,10 +186,13 @@ namespace Gum.IR0
             if (funcInfo.TypeParams.Length < typeArgs.Count)
                 return false;
 
+            int i = typeArgs.Count;
             var completedTypeArgs = typeArgs.Concat(
-                funcInfo.TypeParams.Skip(typeArgs.Count).Select(typeParam =>
-                   new TypeValue.TypeVar(funcInfo.GetId().OuterEntries.Length, typeParam)
-                )
+                funcInfo.TypeParams.Skip(typeArgs.Count).Select(typeParam => {
+                    var typeVar = new TypeValue.TypeVar(funcInfo.GetId().OuterEntries.Length, i, typeParam);
+                    i++;
+                    return typeVar;
+                })
             );
 
             outFuncValue = new FuncValue(

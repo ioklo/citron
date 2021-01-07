@@ -17,6 +17,7 @@ namespace Gum.IR0
         T0102_IdTypeExp_VarTypeCantApplyTypeArgs,
         T0103_IdTypeExp_MultipleTypesOfSameName,
         T0104_IdTypeExp_TypeNotFound,
+        T0105_IdTypeExp_TypeVarCantApplyTypeArgs,
 
         T0201_MemberTypeExp_TypeIsNotNormalType,
         T0202_MemberTypeExp_MemberTypeNotFound,

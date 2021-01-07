@@ -22,9 +22,10 @@ namespace Gum.CompileTime
         public class TypeVar : TypeValue
         {
             public int Depth { get; }
+            public int Index { get; }
             public string Name { get; }
 
-            public TypeVar(int depth, string name)
+            public TypeVar(int depth, int index, string name)
             {
                 Depth = depth;                
                 Name = name;

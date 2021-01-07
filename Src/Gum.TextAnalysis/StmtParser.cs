@@ -6,6 +6,7 @@ using Gum.LexicalAnalysis;
 using Gum.Syntax;
 using static Gum.ParserMisc;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 
 namespace Gum
 {
@@ -84,7 +85,7 @@ namespace Gum
 
             } while (Accept<CommaToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context)); // ,가 나오면 계속한다
 
-            return new ParseResult<VarDecl>(new VarDecl(varType!, elems), context);
+            return new ParseResult<VarDecl>(new VarDecl(varType!, elems.ToImmutableArray()), context);
 
             static ParseResult<VarDecl> Invalid() => ParseResult<VarDecl>.Invalid;
         }
@@ -200,7 +201,7 @@ namespace Gum
                 return ParseResult<BlockStmt>.Invalid;
             }
 
-            return new ParseResult<BlockStmt>(new BlockStmt(stmts), context);
+            return new ParseResult<BlockStmt>(new BlockStmt(stmts.ToImmutableArray()), context);
         }
 
         internal async ValueTask<ParseResult<BlankStmt>> ParseBlankStmtAsync(ParserContext context)

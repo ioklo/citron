@@ -25,22 +25,23 @@ namespace Gum.Syntax
         }
     }
 
-    public class EnumDecl : TypeDecl, ISyntaxNode
+    public class EnumDecl : TypeDecl
     {
-        public string Name { get; }
         public ImmutableArray<string> TypeParams { get; }
         public ImmutableArray<EnumDeclElement> Elems { get; }
 
+        public override int TypeParamCount { get => TypeParams.Length; }
+
         public EnumDecl(string name, IEnumerable<string> typeParams, IEnumerable<EnumDeclElement> elems)
+            : base(name)
         {
-            Name = name;
             TypeParams = typeParams.ToImmutableArray();
             Elems = elems.ToImmutableArray();
         }
 
         public EnumDecl(string name, IEnumerable<string> typeParams, params EnumDeclElement[] elems)
-        {
-            Name = name;
+            : base(name)
+        {   
             TypeParams = typeParams.ToImmutableArray();
             Elems = ImmutableArray.Create(elems);
         }        

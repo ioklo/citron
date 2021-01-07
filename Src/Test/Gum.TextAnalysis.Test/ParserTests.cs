@@ -38,9 +38,9 @@ namespace Gum
             var lexer = new Lexer();
             var parser = new Parser(lexer);
             var context = await MakeContextAsync("void Func(int x, params string y, int z) { int a = 0; }");
-            var funcDecl = await parser.ParseFuncDeclAsync(context);
+            var funcDecl = await parser.ParseGlobalFuncDeclAsync(context);
 
-            var expected = new FuncDecl(
+            var expected = new GlobalFuncDecl(
                 false,
                 new IdTypeExp("void"),
                 "Func", Enumerable.Empty<string>(),
@@ -114,7 +114,7 @@ public struct S<T> : B, I
                         new[] { new StructDecl.VarDeclElement(AccessModifier.Public, new IdTypeExp("int"), new[] {"x"}) }
                     )),
 
-                    new StructDecl.FuncDeclElement(
+                    new StructDecl.FuncDeclElement(new StructFuncDecl(
                         AccessModifier.Public,
                         bStatic: true,
                         bSequence: false,
@@ -122,9 +122,10 @@ public struct S<T> : B, I
                         "Func",
                         new string[] { "X" },
                         new FuncParamInfo(new TypeAndName[] { new TypeAndName(new IdTypeExp("string"), "s") }, null),
-                        new BlockStmt()),
+                        new BlockStmt()
+                    )),
 
-                    new StructDecl.FuncDeclElement(
+                    new StructDecl.FuncDeclElement(new StructFuncDecl(
                         AccessModifier.Private,
                         bStatic: false,
                         bSequence: true,
@@ -132,7 +133,8 @@ public struct S<T> : B, I
                         "F2",
                         new string[] { "T" },
                         new FuncParamInfo(Enumerable.Empty<TypeAndName>(), null),
-                        new BlockStmt(new YieldStmt(new IntLiteralExp(4))))
+                        new BlockStmt(new YieldStmt(new IntLiteralExp(4)))
+                    ))
                 });
 
             Assert.Equal(expected, structDecl.Elem, SyntaxEqualityComparer.Instance);

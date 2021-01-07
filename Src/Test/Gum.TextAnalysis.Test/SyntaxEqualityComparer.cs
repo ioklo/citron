@@ -80,7 +80,7 @@ namespace Gum
             switch((x, y))
             {
                 case (null, null): return true;
-                case (Script.FuncDeclElement funcDeclElemX, Script.FuncDeclElement funcDeclElemY):
+                case (Script.GlobalFuncDeclElement funcDeclElemX, Script.GlobalFuncDeclElement funcDeclElemY):
                     return EqualsFuncDecl(funcDeclElemX.FuncDecl, funcDeclElemY.FuncDecl);
                 case (Script.StmtElement stmtElementX, Script.StmtElement stmtElementY):
                     return EqualsStmt(stmtElementX.Stmt, stmtElementY.Stmt);
@@ -231,6 +231,21 @@ namespace Gum
             }
         }
 
+        public static bool EqualsStructFuncDecl(StructFuncDecl? x, StructFuncDecl? y)
+        {
+            if (x == null && y == null) return true;
+            if (x == null || y == null) return false;
+
+            return x.AccessModifier == y.AccessModifier &&
+                x.IsStatic == y.IsStatic &&
+                x.IsSequence == y.IsSequence &&
+                EqualsTypeExp(x.RetType, y.RetType) &&
+                x.Name == y.Name &&
+                x.TypeParams.SequenceEqual(x.TypeParams) && // string이라서 Instance 안집어넣음
+                EqualsFuncParamInfo(x.ParamInfo, y.ParamInfo) &&
+                EqualsStmt(x.Body, y.Body);
+        }
+
         public static bool EqualsStructDeclElement([AllowNull] StructDecl.Element x, [AllowNull] StructDecl.Element y)
         {
             switch((x, y))
@@ -244,14 +259,7 @@ namespace Gum
                         varDeclElemX.VarNames.SequenceEqual(varDeclElemY.VarNames);
 
                 case (StructDecl.FuncDeclElement funcDeclElemX, StructDecl.FuncDeclElement funcDeclElemY):
-                    return funcDeclElemX.AccessModifier == funcDeclElemY.AccessModifier &&
-                        funcDeclElemX.IsStatic == funcDeclElemY.IsStatic &&
-                        funcDeclElemX.IsSequence == funcDeclElemY.IsSequence &&
-                        EqualsTypeExp(funcDeclElemX.RetType, funcDeclElemY.RetType) &&
-                        funcDeclElemX.Name == funcDeclElemY.Name &&
-                        funcDeclElemX.TypeParams.SequenceEqual(funcDeclElemX.TypeParams) && // string이라서 Instance 안집어넣음
-                        EqualsFuncParamInfo(funcDeclElemX.ParamInfo, funcDeclElemY.ParamInfo) &&
-                        EqualsStmt(funcDeclElemX.Body, funcDeclElemY.Body);
+                    return EqualsStructFuncDecl(funcDeclElemX.FuncDecl, funcDeclElemY.FuncDecl);
 
                 default:
                     return false;

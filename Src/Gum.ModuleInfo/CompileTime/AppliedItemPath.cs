@@ -30,5 +30,10 @@ namespace Gum.CompileTime
         {
             return new ItemPath(NamespacePath, OuterEntries.Select(entry => entry.GetItemPathEntry()), Entry.GetItemPathEntry());
         }
+
+        public AppliedItemPath Append(AppliedItemPathEntry entry)
+        {
+            return new AppliedItemPath(NamespacePath, OuterEntries.Append(Entry), entry);
+        }
     }
 }

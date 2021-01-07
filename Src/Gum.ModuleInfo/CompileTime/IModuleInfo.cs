@@ -9,9 +9,9 @@ namespace Gum.CompileTime
     {
         ModuleName GetModuleName();
 
-        ItemInfo? GetItem(NamespacePath namespacePath, ItemPathEntry itemIdEntry);            
+        ItemInfo? GetGlobalItem(NamespacePath namespacePath, ItemPathEntry itemIdEntry);
 
-        IEnumerable<FuncInfo> GetFuncs(NamespacePath namespacePath, Name funcName);
-        VarInfo? GetVar(NamespacePath namespacePath, Name funcName);
+        IEnumerable<FuncInfo> GetGlobalFuncs(NamespacePath namespacePath, Name funcName);
+        VarInfo? GetGlobalVar(NamespacePath namespacePath, Name funcName);
     }
 }

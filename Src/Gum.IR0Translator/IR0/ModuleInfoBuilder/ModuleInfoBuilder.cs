@@ -2,12 +2,11 @@
 using Gum.Infra;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using S = Gum.Syntax;
 
 namespace Gum.IR0
@@ -15,179 +14,168 @@ namespace Gum.IR0
     // Script에서 ModuleInfo 정보를 뽑는 역할
     partial class ModuleInfoBuilder
     {
-        TypeExpEvaluator typeExpEvaluator;
+        TypeExpTypeValueService typeExpTypeValueService;
 
-        public ModuleInfoBuilder(TypeExpEvaluator typeExpEvaluator)
+        TypeBuilder? typeBuilder;
+        List<TypeInfo> globalTypeInfos; // global 타입 정보
+        List<FuncInfo> globalFuncInfos; // All Funcs
+        List<VarInfo> globalVarInfos;   // global Variable정보        
+
+        public ModuleInfoBuilder(TypeExpTypeValueService typeExpTypeValueService)
         {
-            this.typeExpEvaluator = typeExpEvaluator;
-        }        
+            this.typeExpTypeValueService = typeExpTypeValueService;
 
-        private FuncInfo MakeFunc(
-            S.FuncDecl funcDecl,
-            ItemId funcId,
-            bool bSeqCall,
-            bool bThisCall,            
-            IEnumerable<string> typeParams,
-            TypeValue retTypeValue,
-            IEnumerable<TypeValue> argTypeValues,
-            Context context)
-        {   
-            var funcInfo = new FuncInfo(funcId, bSeqCall, bThisCall, typeParams, retTypeValue, argTypeValues);
-            context.AddFuncInfo(funcDecl, funcInfo);
-            return funcInfo;
-        }
-
-        private VarInfo MakeVar(
-            ItemId varId,
-            bool bStatic,
-            TypeValue typeValue,
-            Context context)
-        {
-            var varInfo = new VarInfo(varId, bStatic, typeValue);
-            context.AddVarInfo(varInfo);
-
-            return varInfo;
-        }
-
-        void BuildTypeDecl(S.TypeDecl typeDecl, Context context)
-        {
-            switch(typeDecl)
-            {
-                case S.EnumDecl enumDecl:
-                    BuildEnumDecl(enumDecl, context);
-                    return;
-
-                case S.StructDecl structDecl:
-                    BuildStructDecl(structDecl, context);
-                    return;
-
-                default:
-                    throw new InvalidOperationException();
-            }
-        }
-
-        void BuildEnumDecl(S.EnumDecl enumDecl, Context context)
-        {
-            EnumElemInfo MakeElemInfo(S.EnumDeclElement elem, Context context)
-            {
-                var fieldInfos = elem.Params.Select(parameter =>
-                {
-                    var typeValue = context.GetTypeValue(parameter.Type);
-                    return new EnumElemFieldInfo(typeValue, parameter.Name);
-                });
-
-                return new EnumElemInfo(elem.Name, fieldInfos);
-            }
+            typeBuilder = null;
+            globalTypeInfos = new List<TypeInfo>();
+            globalFuncInfos = new List<FuncInfo>();
+            globalVarInfos = new List<VarInfo>();
             
-            var typePath = context.GetTypePath(enumDecl);
-            
-            var elemInfos = enumDecl.Elems.Select(elem => MakeElemInfo(elem, context));
+        }
 
-            var enumType = new EnumInfo(
-                new ItemId(ModuleName.Internal, typePath),                
-                enumDecl.TypeParams, 
-                elemInfos);
-
-            context.AddTypeInfo(enumDecl, enumType);
+        TypeValue GetTypeValue(S.TypeExp typeExp)
+        {
+            return typeExpTypeValueService.GetTypeValue(typeExp);
         }
         
-        void BuildStructDecl(S.StructDecl structDecl, Context context)
+        void AddTypeInfo(TypeInfo typeInfo)
         {
-            throw new NotImplementedException();
+            if (typeBuilder == null)
+                globalTypeInfos.Add(typeInfo);
+            else
+                typeBuilder.AddTypeInfo(typeInfo);
         }
 
-        void BuildFuncDecl(S.FuncDecl funcDecl, Context context)
+        void AddVarInfo(VarInfo varInfo)
         {
-            var thisTypePath = context.GetThisTypePath();
-            var paramHash = GetParamHash(funcDecl.ParamInfo, context);
+            if (typeBuilder == null)
+                globalVarInfos.Add(varInfo);
+            else
+                typeBuilder.AddVarInfo(varInfo);
+        }
 
-            ItemId funcId;
-            bool bThisCall;
-            if (thisTypePath != null)
-            {                
-                var funcPath = thisTypePath.Value.Append(funcDecl.Name, funcDecl.TypeParams.Length, paramHash);
-                funcId = new ItemId(ModuleName.Internal, funcPath);
-                bThisCall = true; // TODO: static 키워드가 추가되면 그때 다시 고쳐야 한다
+        void ExecInNewTypeScope(Name name, int typeParamCount, Action action)
+        {
+            var prevTypeBuilder = typeBuilder;
+
+            if (typeBuilder != null)
+            {
+                typeBuilder = new TypeBuilder(typeBuilder.GetTypePath().Append(name, typeParamCount));
             }
             else
             {
-                funcId = new ItemId(ModuleName.Internal, NamespacePath.Root, new ItemPathEntry(funcDecl.Name, funcDecl.TypeParams.Length, paramHash));
-                bThisCall = false;
+                // TODO: namespace
+                typeBuilder = new TypeBuilder(new ItemPath(NamespacePath.Root, name, typeParamCount));
             }
 
-            MakeFunc(
-                funcDecl,
-                funcId,
+            try
+            {
+                action.Invoke();
+            }
+            finally
+            {
+                typeBuilder = prevTypeBuilder;
+            }
+        }
+
+        // 현재 위치가 Type안에 있는지
+        bool IsInsideTypeScope()
+        {
+            return typeBuilder != null;
+        }
+
+        public EnumElemInfo BuildEnumElement(S.EnumDeclElement elem)
+        {
+            var fieldInfos = elem.Params.Select(parameter =>
+            {
+                var typeValue = GetTypeValue(parameter.Type);
+                return new EnumElemFieldInfo(typeValue, parameter.Name);
+            });
+
+            return new EnumElemInfo(elem.Name, fieldInfos);
+        }
+
+        public EnumInfo BuildEnum(Skeleton.Enum enumSkel, IEnumerable<EnumElemInfo> elemInfos)
+        {
+            var enumInfo = new EnumInfo(
+                new ItemId(ModuleName.Internal, enumSkel.Path),
+                enumSkel.EnumDecl.TypeParams, 
+                elemInfos);
+
+            AddTypeInfo(enumInfo);
+            return enumInfo;
+        }
+        
+        public StructInfo BuildStruct(Skeleton.Struct structSkel)
+        {
+            // S<T, U> 
+            // 지금 depth는?            
+            //int depth = GetTypeDepth();
+            //int index = 0;
+            //var typeArgs = structDecl.TypeParams.Select(typeParam => {
+            //    var v = new TypeValue.TypeVar(depth, index, typeParam);
+            //    index++;
+            //    return v;
+            //});
+            // var entry = new AppliedItemPathEntry(structDecl.Name, string.Empty, typeArgs);
+
+            StructInfo Make() { throw new NotImplementedException(); }
+
+            var structInfo = Make();
+            AddTypeInfo(structInfo);
+
+            ExecInNewTypeScope(structSkel.StructDecl.Name, structSkel.StructDecl.TypeParams.Length, () => {
+
+            });
+
+            return structInfo;
+        }
+
+        public FuncInfo BuildFunc(Skeleton.Func funcSkel)
+        {
+            var funcDecl = funcSkel.FuncDecl;
+            var paramHash = GetParamHash(funcDecl.ParamInfo);
+
+            bool bThisCall = IsInsideTypeScope(); // TODO: static 키워드가 추가되면 고려하도록 한다
+
+            var funcInfo = new FuncInfo(
+                new ItemId(ModuleName.Internal, funcSkel.Path),
                 funcDecl.IsSequence,
                 bThisCall,
                 funcDecl.TypeParams,
-                context.GetTypeValue(funcDecl.RetType),
-                funcDecl.ParamInfo.Parameters.Select(typeAndName => context.GetTypeValue(typeAndName.Type)),
-                context);
-        }        
+                GetTypeValue(funcDecl.RetType),
+                funcDecl.ParamInfo.Parameters.Select(typeAndName => GetTypeValue(typeAndName.Type))
+            );
 
-        private string GetParamHash(S.FuncParamInfo paramInfo, Context context)
-        {
-            return Misc.MakeParamHash(paramInfo.Parameters.Select(parameter => context.GetTypeValue(parameter.Type)));
+            if (typeBuilder == null)
+                globalFuncInfos.Add(funcInfo);
+            else
+                typeBuilder.AddFuncInfo(funcInfo);
+
+            return funcInfo;
         }
 
-        void BuildGlobalStmt(S.Stmt stmt, Context context)
+        public void BuildVar(Skeleton.Var varSkel)
         {
-            // TODO: public int x; 형식만 모듈단위 외부 전역변수로 노출시킨다
+            var varId = new ItemId(ModuleName.Internal, varSkel.Path);
+            bool bStatic = !IsInsideTypeScope(); // TODO: static 키워드가 추가되면 고려한다
 
-            //var varDeclStmt = stmt as QsVarDeclStmt;
-            //if (varDeclStmt == null) return;
-
-            //var typeValue = context.TypeValuesByTypeExp[varDeclStmt.VarDecl.Type];
-            
-            //foreach(var elem in varDeclStmt.VarDecl.Elems)
-            //{
-            //    // TODO: 인자 bStatic에 true/false가 아니라, Global이라고 체크를 해야 한다
-            //    MakeVar(QsMetaItemId.Make(new QsMetaItemIdElem(elem.VarName)), bStatic: true, typeValue, context);
-            //}
-        }
-        
-        void BuildScript(S.Script script, Context context)
-        {
-            foreach (var elem in script.Elements)
-            {
-                switch (elem)
-                {
-                    case S.Script.TypeDeclElement typeDeclElem:
-                        BuildTypeDecl(typeDeclElem.TypeDecl, context);
-                        break;
-
-                    case S.Script.FuncDeclElement funcElem:
-                        BuildFuncDecl(funcElem.FuncDecl, context);
-                        break;
-
-                    case S.Script.StmtElement stmtElem:
-                        BuildGlobalStmt(stmtElem.Stmt, context);
-                        break;
-                }
-            }
+            var varDecl = varSkel.VarDecl;
+            var varInfo = new VarInfo(varId, bStatic, GetTypeValue(varDecl.Type));
+            AddVarInfo(varInfo);
         }
 
-        public Result? BuildScript(IEnumerable<IModuleInfo> moduleInfos, S.Script script, IErrorCollector errorCollector)
+        string GetParamHash(S.FuncParamInfo paramInfo)
         {
-            // 2. skeleton과 moduleInfo로 트리의 모든 TypeExp들을 TypeValue로 변환하기            
-            var typeEvalResult = typeExpEvaluator.EvaluateScript(script, moduleInfos, errorCollector);
-            if (typeEvalResult == null)
-                return null;
+            return Misc.MakeParamHash(paramInfo.Parameters.Select(parameter => GetTypeValue(parameter.Type)));
+        }
 
-            var context = new Context(typeEvalResult.Value.SyntaxNodeModuleItemService, typeEvalResult.Value.TypeExpTypeValueService);
+        public ScriptModuleInfo Build()
+        {
+            var globalItems = globalTypeInfos.Cast<ItemInfo>()
+                .Concat(globalFuncInfos)
+                .Concat(globalVarInfos);
 
-            BuildScript(script, context);
-
-            var moduleInfo = new ScriptModuleInfo(
-                Array.Empty<NamespaceInfo>(),
-                context.GetGlobalItems());
-
-            return new Result(
-                moduleInfo,
-                typeEvalResult.Value.TypeExpTypeValueService,
-                context.GetFuncsByFuncDecl(),
-                context.GetTypeInfosByDecl());
+            return new ScriptModuleInfo(Array.Empty<NamespaceInfo>(), globalItems);
         }
     }
 }

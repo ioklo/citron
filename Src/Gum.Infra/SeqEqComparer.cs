@@ -28,8 +28,11 @@ namespace Gum.Infra
     {
         public static SeqEqComparer<T, TElem> Instance { get; } = new SeqEqComparer<T, TElem>();
 
-        public bool Equals(T x, T y)
+        public bool Equals(T? x, T? y)
         {
+            if (x == null && y == null) return true;
+            if (x == null || y == null) return false;
+
             return Enumerable.SequenceEqual(x, y);
         }
 

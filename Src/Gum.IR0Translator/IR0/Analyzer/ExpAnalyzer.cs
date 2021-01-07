@@ -19,20 +19,12 @@ using S = Gum.Syntax;
 namespace Gum.IR0
 {
     // 어떤 Exp에서 타입 정보 등을 알아냅니다
-    partial class ExpAnalyzer
-    {
-        Analyzer analyzer;        
-
-        public ExpAnalyzer(Analyzer analyzer)
-        {
-            this.analyzer = analyzer;
-        }
-
+    partial class Analyzer
+    {   
         // x
         internal bool AnalyzeIdExp(
             S.IdentifierExp idExp, 
             TypeValue? hintTypeValue, 
-            Context context,
             [NotNullWhen(true)] out Exp? outExp,
             [NotNullWhen(true)] out TypeValue? outTypeValue)
         {
@@ -97,7 +89,7 @@ namespace Gum.IR0
             }
         }
 
-        internal bool AnalyzeBoolLiteralExp(S.BoolLiteralExp boolExp, Context context,
+        internal bool AnalyzeBoolLiteralExp(S.BoolLiteralExp boolExp, 
             [NotNullWhen(true)] out Exp? outExp,
             [NotNullWhen(true)] out TypeValue? outTypeValue)
         {
@@ -106,7 +98,7 @@ namespace Gum.IR0
             return true;
         }
 
-        internal bool AnalyzeIntLiteralExp(S.IntLiteralExp intExp, Context context,
+        internal bool AnalyzeIntLiteralExp(S.IntLiteralExp intExp, 
             [NotNullWhen(true)] out Exp? outExp,
             [NotNullWhen(true)] out TypeValue? outTypeValue)
         {
@@ -115,7 +107,7 @@ namespace Gum.IR0
             return true;
         }
 
-        internal bool AnalyzeStringExp(S.StringExp stringExp, Context context,
+        internal bool AnalyzeStringExp(S.StringExp stringExp, 
             [NotNullWhen(true)] out Exp? outExp,
             [NotNullWhen(true)] out TypeValue? outTypeValue)
         {
@@ -123,7 +115,7 @@ namespace Gum.IR0
             var strExpElems = new List<StringExpElement>();
             foreach (var elem in stringExp.Elements)
             {
-                if (analyzer.AnalyzeStringExpElement(elem, context, out var strExpElem))
+                if (AnalyzeStringExpElement(elem, out var strExpElem))
                 {
                     strExpElems.Add(strExpElem);
                 }
@@ -147,7 +139,7 @@ namespace Gum.IR0
             }
         }
 
-        bool IsAssignableExp(Exp exp, Context context)
+        bool IsAssignableExp(Exp exp)
         {
             switch (exp)
             {
@@ -178,24 +170,24 @@ namespace Gum.IR0
         internal bool AnalyzeIntUnaryAssignExp(
             S.Exp operand,
             InternalUnaryAssignOperator op, 
-            Context context,
+            
             [NotNullWhen(true)] out Exp? outExp,
             [NotNullWhen(true)] out TypeValue? outTypeValue)
         {
             outExp = null;
             outTypeValue = null;
 
-            if (!analyzer.AnalyzeExp(operand, null, context, out var ir0Operand, out var ir0OperandType))
+            if (!AnalyzeExp(operand, null, out var ir0Operand, out var ir0OperandType))
                 return false;
 
             // int type 검사
-            if (!analyzer.IsAssignable(TypeValues.Int, ir0OperandType, context))
+            if (!IsAssignable(TypeValues.Int, ir0OperandType))
             {
                 context.AddError(A0601_UnaryAssignOp_IntTypeIsAllowedOnly, operand, "++ --는 int 타입만 지원합니다");
                 return false;
             }
 
-            if (!IsAssignableExp(ir0Operand, context))
+            if (!IsAssignableExp(ir0Operand))
             {
                 context.AddError(A0602_UnaryAssignOp_AssignableExpressionIsAllowedOnly, operand, "++ --는 대입 가능한 식에만 적용할 수 있습니다");
                 return false;
@@ -206,21 +198,21 @@ namespace Gum.IR0
             return true;
         }
 
-        internal bool AnalyzeUnaryOpExp(S.UnaryOpExp unaryOpExp, Context context,
+        internal bool AnalyzeUnaryOpExp(S.UnaryOpExp unaryOpExp, 
             [NotNullWhen(true)] out Exp? outExp,
             [NotNullWhen(true)] out TypeValue? outTypeValue)
         {
             outExp = null;
             outTypeValue = null;            
             
-            if (!AnalyzeExp(unaryOpExp.Operand, null, context, out var ir0Operand, out var operandType))
+            if (!AnalyzeExp(unaryOpExp.Operand, null, out var ir0Operand, out var operandType))
                 return false; // AnalyzeExp에서 에러가 생겼으므로 내부에서 에러를 추가했을 것이다. 여기서는 더 추가 하지 않는다
 
             switch (unaryOpExp.Kind)
             {
                 case S.UnaryOpKind.LogicalNot:
                     {
-                        if (!analyzer.IsAssignable(TypeValues.Bool, operandType, context))
+                        if (!IsAssignable(TypeValues.Bool, operandType))
                         {
                             context.AddError(A0701_UnaryOp_LogicalNotOperatorIsAppliedToBoolTypeOperandOnly, unaryOpExp.Operand, $"{unaryOpExp.Operand}에 !를 적용할 수 없습니다. bool 타입이어야 합니다");                            
                             return false;
@@ -234,7 +226,7 @@ namespace Gum.IR0
 
                 case S.UnaryOpKind.Minus:
                     {
-                        if (!analyzer.IsAssignable(TypeValues.Int, operandType, context))
+                        if (!IsAssignable(TypeValues.Int, operandType))
                         {
                             context.AddError(A0702_UnaryOp_UnaryMinusOperatorIsAppliedToIntTypeOperandOnly, unaryOpExp.Operand, $"{unaryOpExp.Operand}에 -를 적용할 수 없습니다. int 타입이어야 합니다");
                             return false;
@@ -247,16 +239,16 @@ namespace Gum.IR0
                     }
 
                 case S.UnaryOpKind.PostfixInc: // e.m++ 등
-                    return AnalyzeIntUnaryAssignExp(unaryOpExp.Operand, InternalUnaryAssignOperator.PostfixInc_Int_Int, context, out outExp, out outTypeValue);
+                    return AnalyzeIntUnaryAssignExp(unaryOpExp.Operand, InternalUnaryAssignOperator.PostfixInc_Int_Int, out outExp, out outTypeValue);
 
                 case S.UnaryOpKind.PostfixDec:
-                    return AnalyzeIntUnaryAssignExp(unaryOpExp.Operand, InternalUnaryAssignOperator.PostfixDec_Int_Int, context, out outExp, out outTypeValue);
+                    return AnalyzeIntUnaryAssignExp(unaryOpExp.Operand, InternalUnaryAssignOperator.PostfixDec_Int_Int, out outExp, out outTypeValue);
 
                 case S.UnaryOpKind.PrefixInc:
-                    return AnalyzeIntUnaryAssignExp(unaryOpExp.Operand, InternalUnaryAssignOperator.PrefixInc_Int_Int, context, out outExp, out outTypeValue);
+                    return AnalyzeIntUnaryAssignExp(unaryOpExp.Operand, InternalUnaryAssignOperator.PrefixInc_Int_Int, out outExp, out outTypeValue);
 
                 case S.UnaryOpKind.PrefixDec:
-                    return AnalyzeIntUnaryAssignExp(unaryOpExp.Operand, InternalUnaryAssignOperator.PrefixDec_Int_Int, context, out outExp, out outTypeValue);
+                    return AnalyzeIntUnaryAssignExp(unaryOpExp.Operand, InternalUnaryAssignOperator.PrefixDec_Int_Int, out outExp, out outTypeValue);
 
                 default:
                     throw new InvalidOperationException();
@@ -326,29 +318,29 @@ namespace Gum.IR0
         }
         
         internal bool AnalyzeBinaryOpExp(
-            S.BinaryOpExp binaryOpExp, Context context, 
+            S.BinaryOpExp binaryOpExp,  
             [NotNullWhen(true)] out Exp? outExp,
             [NotNullWhen(true)] out TypeValue? outTypeValue)
         {
             outExp = null;
             outTypeValue = null;
 
-            if (!AnalyzeExp(binaryOpExp.Operand0, null, context, out var operand0, out var operandType0))
+            if (!AnalyzeExp(binaryOpExp.Operand0, null, out var operand0, out var operandType0))
                 return false;
 
-            if (!AnalyzeExp(binaryOpExp.Operand1, null, context, out var operand1, out var operandType1))
+            if (!AnalyzeExp(binaryOpExp.Operand1, null, out var operand1, out var operandType1))
                 return false;
 
             // 1. Assign 먼저 처리
             if (binaryOpExp.Kind == S.BinaryOpKind.Assign)
             {
-                if (!analyzer.IsAssignable(operandType0, operandType1, context))
+                if (!IsAssignable(operandType0, operandType1))
                 {
                     context.AddError(A0801_BinaryOp_LeftOperandTypeIsNotCompatibleWithRightOperandType, binaryOpExp, "대입 가능하지 않습니다");
                     return false;
                 }
                 
-                if (!IsAssignableExp(operand0, context))
+                if (!IsAssignableExp(operand0))
                 {
                     context.AddError(A0803_BinaryOp_LeftOperandIsNotAssignable, binaryOpExp.Operand0, "대입 가능하지 않은 식에 대입하려고 했습니다");
                     return false;
@@ -369,8 +361,8 @@ namespace Gum.IR0
                     foreach (var info in equalInfos)
                     {
                         // NOTICE: 우선순위별로 정렬되어 있기 때문에 먼저 매칭되는 것을 선택한다
-                        if (analyzer.IsAssignable(info.OperandType0, operandType0, context) &&
-                            analyzer.IsAssignable(info.OperandType1, operandType1, context))
+                        if (IsAssignable(info.OperandType0, operandType0) &&
+                            IsAssignable(info.OperandType1, operandType1))
                         {
                             var operandTypeId0 = context.GetType(operandType0);
                             var operandTypeId1 = context.GetType(operandType1);
@@ -392,8 +384,8 @@ namespace Gum.IR0
                 foreach (var info in matchedInfos)
                 {
                     // NOTICE: 우선순위별로 정렬되어 있기 때문에 먼저 매칭되는 것을 선택한다
-                    if (analyzer.IsAssignable(info.OperandType0, operandType0, context) && 
-                        analyzer.IsAssignable(info.OperandType1, operandType1, context))
+                    if (IsAssignable(info.OperandType0, operandType0) && 
+                        IsAssignable(info.OperandType1, operandType1))
                     {
                         var operandTypeId0 = context.GetType(operandType0);
                         var operandTypeId1 = context.GetType(operandType1);
@@ -411,7 +403,7 @@ namespace Gum.IR0
         }
 
         bool AnalyzeCallableIdentifierExp(
-            S.IdentifierExp callableExp, ImmutableArray<(Exp Exp, TypeValue TypeValue)> argInfos, Context context,
+            S.IdentifierExp callableExp, ImmutableArray<(Exp Exp, TypeValue TypeValue)> argInfos, 
             [NotNullWhen(true)] out Exp? outExp,
             [NotNullWhen(true)] out TypeValue? outTypeValue)
         {
@@ -440,7 +432,7 @@ namespace Gum.IR0
                 var funcValue = new FuncValue(globalFunc.GetId(), typeArgs);
                 var funcTypeValue = context.TypeValueService.GetTypeValue(funcValue);
 
-                if (!analyzer.CheckParamTypes(callableExp, funcTypeValue.Params, argInfos.Select(info => info.TypeValue).ToList(), context))
+                if (!CheckParamTypes(callableExp, funcTypeValue.Params, argInfos.Select(info => info.TypeValue).ToList()))
                     return false;
 
                 // 내부함수라면
@@ -469,18 +461,18 @@ namespace Gum.IR0
             }
 
             // 3. 일반 exp
-            return AnalyzeCallableElseExp(callableExp, argInfos, context, out outExp, out outTypeValue);
+            return AnalyzeCallableElseExp(callableExp, argInfos, out outExp, out outTypeValue);
         }
 
         bool AnalyzeCallableElseExp(
-            S.Exp callableExp, ImmutableArray<(Exp Exp, TypeValue TypeValue)> argInfos, Context context,
+            S.Exp callableExp, ImmutableArray<(Exp Exp, TypeValue TypeValue)> argInfos, 
             [NotNullWhen(true)] out Exp? outExp,
             [NotNullWhen(true)] out TypeValue? outTypeValue)
         {
             outExp = null;
             outTypeValue = null;
 
-            if (!AnalyzeExp(callableExp, null, context, out var ir0Exp, out var typeValue))
+            if (!AnalyzeExp(callableExp, null, out var ir0Exp, out var typeValue))
                 return false;
 
             var funcTypeValue = typeValue as TypeValue.Func;
@@ -490,7 +482,7 @@ namespace Gum.IR0
                 return false;
             }
 
-            if (!analyzer.CheckParamTypes(callableExp, funcTypeValue.Params, argInfos.Select(info => info.TypeValue).ToList(), context))
+            if (!CheckParamTypes(callableExp, funcTypeValue.Params, argInfos.Select(info => info.TypeValue).ToList()))
                 return false;
 
             var callableTypeId = context.GetType(funcTypeValue);
@@ -513,18 +505,18 @@ namespace Gum.IR0
         //        -> FuncValue(
         bool AnalyzeCallableExp(
             S.Exp exp, 
-            ImmutableArray<(Exp Exp, TypeValue TypeValue)> argInfos, Context context,
+            ImmutableArray<(Exp Exp, TypeValue TypeValue)> argInfos, 
             [NotNullWhen(true)] out Exp? outExp,
             [NotNullWhen(true)] out TypeValue? outTypeValue)
         {
             if (exp is S.IdentifierExp idExp)
-                return AnalyzeCallableIdentifierExp(idExp, argInfos, context, out outExp, out outTypeValue);
+                return AnalyzeCallableIdentifierExp(idExp, argInfos, out outExp, out outTypeValue);
             else
-                return AnalyzeCallableElseExp(exp, argInfos, context, out outExp, out outTypeValue);
+                return AnalyzeCallableElseExp(exp, argInfos, out outExp, out outTypeValue);
         }
         
         internal bool AnalyzeCallExp(
-            S.CallExp exp, TypeValue? hintTypeValue, Context context,
+            S.CallExp exp, TypeValue? hintTypeValue, 
             [NotNullWhen(true)] out Exp? outExp,
             [NotNullWhen(true)] out TypeValue? outTypeValue) 
         {
@@ -536,7 +528,7 @@ namespace Gum.IR0
             outExp = null;
             outTypeValue = null;
 
-            if (!analyzer.AnalyzeExps(exp.Args, context, out var argInfos))
+            if (!AnalyzeExps(exp.Args, out var argInfos))
                 return false;
 
             // Enum인지 확인
@@ -561,7 +553,7 @@ namespace Gum.IR0
                         foreach (var (fieldInfo, argInfo) in Zip(enumElem.ElemInfo.FieldInfos, argInfos))
                         {
                             var appliedTypeValue = context.TypeValueService.Apply(enumElem.EnumTypeValue, fieldInfo.TypeValue);
-                            if (!analyzer.IsAssignable(appliedTypeValue, argInfo.TypeValue, context))
+                            if (!IsAssignable(appliedTypeValue, argInfo.TypeValue))
                             {
                                 context.AddError(A0904_CallExp_MismatchBetweenEnumParamTypeAndEnumArgType, exp, "enum의 {0}번째 인자 형식이 맞지 않습니다");
                                 return false;
@@ -580,14 +572,14 @@ namespace Gum.IR0
             }
 
             // 'f'(), 'F'(), 'GetFunc()'()
-            return AnalyzeCallableExp(exp.Callable, argInfos, context, out outExp, out outTypeValue);
+            return AnalyzeCallableExp(exp.Callable, argInfos, out outExp, out outTypeValue);
         }
         
-        internal bool AnalyzeLambdaExp(S.LambdaExp exp, Context context,             
+        internal bool AnalyzeLambdaExp(S.LambdaExp exp,              
             [NotNullWhen(true)] out Exp? outExp,
             [NotNullWhen(true)] out TypeValue? outTypeValue)
         {
-            if (!analyzer.AnalyzeLambda(exp, exp.Body, exp.Params, context, out var body, out var captureInfo, out var funcTypeValue))
+            if (!AnalyzeLambda(exp, exp.Body, exp.Params, out var body, out var captureInfo, out var funcTypeValue))
             {
                 outExp = null;
                 outTypeValue = null;
@@ -599,7 +591,7 @@ namespace Gum.IR0
             return true;
         }
 
-        bool AnalyzeIndexerExp(S.IndexerExp exp, Context context,
+        bool AnalyzeIndexerExp(S.IndexerExp exp, 
             [NotNullWhen(true)] out Exp? outExp,
             [NotNullWhen(true)] out TypeValue? outTypeValue)
         {
@@ -608,10 +600,10 @@ namespace Gum.IR0
             //outExp = null;
             //outTypeValue = null;
 
-            //if (!AnalyzeExp(exp.Object, null, context, out var obj, out var objType))
+            //if (!AnalyzeExp(exp.Object, null, out var obj, out var objType))
             //    return false;
 
-            //if (!AnalyzeExp(exp.Index, null, context, out var index, out var indexType))
+            //if (!AnalyzeExp(exp.Index, null, out var index, out var indexType))
             //    return false;
 
             //// objTypeValue에 indexTypeValue를 인자로 갖고 있는 indexer가 있는지
@@ -621,7 +613,7 @@ namespace Gum.IR0
             //    return false;
             //}
             
-            //if (IsFuncStatic(funcValue.FuncId, context))
+            //if (IsFuncStatic(funcValue.FuncId))
             //{
             //    Debug.Fail("객체에 indexer가 있는데 Static입니다");
             //    return false;
@@ -629,13 +621,13 @@ namespace Gum.IR0
 
             //var funcTypeValue = context.TypeValueService.GetTypeValue(funcValue);
 
-            //if (!analyzer.CheckParamTypes(exp, funcTypeValue.Params, new[] { indexType }, context))
+            //if (!analyzer.CheckParamTypes(exp, funcTypeValue.Params, new[] { indexType }))
             //    return false;
 
             //var listType = analyzer.GetListTypeValue()
 
             //// List타입인가 확인
-            //if (analyzer.IsAssignable(listType, objType, context))
+            //if (analyzer.IsAssignable(listType, objType))
             //{
             //    var objTypeId = context.GetTypeId(objType);
             //    var indexTypeId = context.GetTypeId(indexType);
@@ -646,7 +638,7 @@ namespace Gum.IR0
             //}
         }
 
-        internal bool AnalyzeMemberCallExp(S.MemberCallExp exp, Context context,
+        internal bool AnalyzeMemberCallExp(S.MemberCallExp exp, 
             [NotNullWhen(true)] out Exp? outExp,
             [NotNullWhen(true)] out TypeValue? outTypeValue)
         {
@@ -654,7 +646,7 @@ namespace Gum.IR0
             //outExp = null;
             //outTypeValue = null;
 
-            //var result = new MemberCallExpAnalyzer(this, exp, context).Analyze();
+            //var result = new MemberCallExpAnalyzer(this, exp).Analyze();
             //if (result == null) return false;
 
             //context.AddNodeInfo(exp, result.Value.NodeInfo);
@@ -663,11 +655,11 @@ namespace Gum.IR0
             //return true;
         }
 
-        internal bool AnalyzeMemberExp(S.MemberExp memberExp, Context context, [NotNullWhen(true)] out IR0.Exp? outExp, [NotNullWhen(true)] out TypeValue? outTypeValue) 
+        internal bool AnalyzeMemberExp(S.MemberExp memberExp,  [NotNullWhen(true)] out IR0.Exp? outExp, [NotNullWhen(true)] out TypeValue? outTypeValue) 
         {
             throw new NotImplementedException();
 
-            //var memberExpAnalyzer = new MemberExpAnalyzer(analyzer, memberExp, context);
+            //var memberExpAnalyzer = new MemberExpAnalyzer(analyzer, memberExp);
             //var result = memberExpAnalyzer.Analyze();
 
             //if (result != null)
@@ -683,7 +675,7 @@ namespace Gum.IR0
             //}
         }
 
-        internal bool AnalyzeListExp(S.ListExp listExp, Context context, 
+        internal bool AnalyzeListExp(S.ListExp listExp,  
             [NotNullWhen(true)] out Exp? outExp,
             [NotNullWhen(true)] out TypeValue? outTypeValue)
         {
@@ -697,7 +689,7 @@ namespace Gum.IR0
 
             foreach (var elem in listExp.Elems)
             {
-                if (!AnalyzeExp(elem, null, context, out var elemExp, out var elemTypeValue))
+                if (!AnalyzeExp(elem, null, out var elemExp, out var elemTypeValue))
                     return false;
 
                 elemExps.Add(elemExp);
@@ -731,24 +723,23 @@ namespace Gum.IR0
         public bool AnalyzeExp(
             S.Exp exp, 
             TypeValue? hintTypeValue, 
-            Context context, 
             [NotNullWhen(true)] out Exp? outExp,
             [NotNullWhen(true)] out TypeValue? outTypeValue)
         {
             switch(exp)
             {
-                case S.IdentifierExp idExp: return AnalyzeIdExp(idExp, hintTypeValue, context, out outExp, out outTypeValue);
-                case S.BoolLiteralExp boolExp: return AnalyzeBoolLiteralExp(boolExp, context, out outExp, out outTypeValue);
-                case S.IntLiteralExp intExp: return AnalyzeIntLiteralExp(intExp, context, out outExp, out outTypeValue);
-                case S.StringExp stringExp: return AnalyzeStringExp(stringExp, context, out outExp, out outTypeValue);
-                case S.UnaryOpExp unaryOpExp: return AnalyzeUnaryOpExp(unaryOpExp, context, out outExp, out outTypeValue);
-                case S.BinaryOpExp binaryOpExp: return AnalyzeBinaryOpExp(binaryOpExp, context, out outExp, out outTypeValue);
-                case S.CallExp callExp: return AnalyzeCallExp(callExp, hintTypeValue, context, out outExp, out outTypeValue);        
-                case S.LambdaExp lambdaExp: return AnalyzeLambdaExp(lambdaExp, context, out outExp, out outTypeValue);
-                case S.IndexerExp indexerExp: return AnalyzeIndexerExp(indexerExp, context, out outExp, out outTypeValue);
-                case S.MemberCallExp memberCallExp: return AnalyzeMemberCallExp(memberCallExp, context, out outExp, out outTypeValue);
-                case S.MemberExp memberExp: return AnalyzeMemberExp(memberExp, context, out outExp, out outTypeValue);
-                case S.ListExp listExp: return AnalyzeListExp(listExp, context, out outExp, out outTypeValue);
+                case S.IdentifierExp idExp: return AnalyzeIdExp(idExp, hintTypeValue, out outExp, out outTypeValue);
+                case S.BoolLiteralExp boolExp: return AnalyzeBoolLiteralExp(boolExp, out outExp, out outTypeValue);
+                case S.IntLiteralExp intExp: return AnalyzeIntLiteralExp(intExp, out outExp, out outTypeValue);
+                case S.StringExp stringExp: return AnalyzeStringExp(stringExp, out outExp, out outTypeValue);
+                case S.UnaryOpExp unaryOpExp: return AnalyzeUnaryOpExp(unaryOpExp, out outExp, out outTypeValue);
+                case S.BinaryOpExp binaryOpExp: return AnalyzeBinaryOpExp(binaryOpExp, out outExp, out outTypeValue);
+                case S.CallExp callExp: return AnalyzeCallExp(callExp, hintTypeValue, out outExp, out outTypeValue);        
+                case S.LambdaExp lambdaExp: return AnalyzeLambdaExp(lambdaExp, out outExp, out outTypeValue);
+                case S.IndexerExp indexerExp: return AnalyzeIndexerExp(indexerExp, out outExp, out outTypeValue);
+                case S.MemberCallExp memberCallExp: return AnalyzeMemberCallExp(memberCallExp, out outExp, out outTypeValue);
+                case S.MemberExp memberExp: return AnalyzeMemberExp(memberExp, out outExp, out outTypeValue);
+                case S.ListExp listExp: return AnalyzeListExp(listExp, out outExp, out outTypeValue);
                 default: throw new NotImplementedException();
             }
         }

@@ -17,30 +17,20 @@ namespace Gum.IR0
 {
     partial class Analyzer
     {   
-        ModuleInfoBuilder moduleInfoBuilder;
-        Capturer capturer;
+        Context context;
 
-        ExpAnalyzer expAnalyzer;
-        StmtAnalyzer stmtAnalyzer;        
-
-        public Analyzer(ModuleInfoBuilder moduleInfoBuilder, Capturer capturer)
+        public Analyzer(Context context)
         {
-            this.moduleInfoBuilder = moduleInfoBuilder;
-
-            // 내부 전용 클래스는 new를 써서 직접 만들어도 된다 (DI, 인자로 받을 필요 없이)
-            this.capturer = capturer;
-            this.expAnalyzer = new ExpAnalyzer(this);
-            this.stmtAnalyzer = new StmtAnalyzer(this);
+            this.context = context;
         }
         
-        internal bool AnalyzeVarDecl<TVarDecl>(S.VarDecl varDecl, VarDeclVisitor<TVarDecl> varDeclVisitor, Context context, [MaybeNullWhen(false)] out TVarDecl outVarDecl)
+        internal bool AnalyzeVarDecl<TVarDecl>(S.VarDecl varDecl, VarDeclVisitor<TVarDecl> varDeclVisitor, [MaybeNullWhen(false)] out TVarDecl outVarDecl)
         {
             // 1. int x  // x를 추가
             // 2. int x = initExp // x 추가, initExp가 int인지 검사
             // 3. var x = initExp // initExp의 타입을 알아내고 x를 추가
             // 4. var x = 1, y = "string"; // 각각 한다
 
-            outVarDecl = default;
             var declTypeValue = context.GetTypeValueByTypeExp(varDecl.Type);
             
             foreach (var elem in varDecl.Elems)
@@ -54,7 +44,7 @@ namespace Gum.IR0
                     }
                     else
                     {
-                        varDeclVisitor.VisitElement(elem, elem.VarName, declTypeValue, null, context);
+                        varDeclVisitor.VisitElement(elem, elem.VarName, declTypeValue, null);
                     }
                 }
                 else
@@ -64,23 +54,23 @@ namespace Gum.IR0
                     TypeValue typeValue;
                     if (declTypeValue is TypeValue.Var)
                     {
-                        if (!AnalyzeExp(elem.InitExp, null, context, out ir0InitExp, out var initExpTypeValue))
+                        if (!AnalyzeExp(elem.InitExp, null, out ir0InitExp, out var initExpTypeValue))
                             return false;
 
                         typeValue = initExpTypeValue;
                     }
                     else
                     {
-                        if (!AnalyzeExp(elem.InitExp, declTypeValue, context, out ir0InitExp, out var initExpTypeValue))
+                        if (!AnalyzeExp(elem.InitExp, declTypeValue, out ir0InitExp, out var initExpTypeValue))
                             return false;
 
                         typeValue = declTypeValue;
 
-                        if (!IsAssignable(declTypeValue, initExpTypeValue, context))
+                        if (!IsAssignable(declTypeValue, initExpTypeValue))
                             context.AddError(A0102_VarDecl_MismatchBetweenDeclTypeAndInitExpType, elem, $"타입 {initExpTypeValue}의 값은 타입 {varDecl.Type}의 변수 {elem.VarName}에 대입할 수 없습니다.");
                     }
 
-                    varDeclVisitor.VisitElement(elem, elem.VarName, typeValue, ir0InitExp, context);
+                    varDeclVisitor.VisitElement(elem, elem.VarName, typeValue, ir0InitExp);
                 }
             }
 
@@ -90,12 +80,11 @@ namespace Gum.IR0
 
         public bool AnalyzeStringExpElement(
             S.StringExpElement elem, 
-            Context context, 
             [NotNullWhen(true)] out StringExpElement? outElem)
         {
             if (elem is S.ExpStringExpElement expElem)
             {
-                if (!AnalyzeExp(expElem.Exp, null, context, out var ir0Exp, out var expTypeValue))
+                if (!AnalyzeExp(expElem.Exp, null, out var ir0Exp, out var expTypeValue))
                 {
                     outElem = null;
                     return false;
@@ -147,7 +136,6 @@ namespace Gum.IR0
             S.ISyntaxNode nodeForErrorReport,
             S.Stmt body,
             IEnumerable<S.LambdaExpParam> parameters, 
-            Context context,
             [NotNullWhen(true)] out Stmt? outBody,
             [NotNullWhen(true)] out CaptureInfo? outCaptureInfo,
             [NotNullWhen(true)] out TypeValue.Func? outFuncTypeValue)
@@ -185,7 +173,7 @@ namespace Gum.IR0
                     context.AddLocalVarInfo(paramInfo.Name, paramInfo.TypeValue);
 
                 // 본문 분석
-                if (!AnalyzeStmt(body, context, out ir0Body))
+                if (!AnalyzeStmt(body, out ir0Body))
                     return false;
                 
                 // 성공했으면, 리턴 타입 갱신
@@ -218,16 +206,6 @@ namespace Gum.IR0
             return true;
         }
 
-        public bool AnalyzeExp(
-            S.Exp exp, 
-            TypeValue? hintTypeValue, 
-            Context context, 
-            [NotNullWhen(true)] out Exp? outIR0Exp, 
-            [NotNullWhen(true)] out TypeValue? outTypeValue)
-        {
-            return expAnalyzer.AnalyzeExp(exp, hintTypeValue, context, out outIR0Exp, out outTypeValue);
-        }
-
         bool IsTopLevelExp(S.Exp exp)
         {
             switch (exp)
@@ -254,7 +232,6 @@ namespace Gum.IR0
             S.Exp exp, 
             TypeValue? hintTypeValue, 
             AnalyzeErrorCode code,
-            Context context,             
             [NotNullWhen(true)] out Exp? outExp, 
             [NotNullWhen(true)] out TypeValue? outTypeValue)
         {
@@ -266,15 +243,10 @@ namespace Gum.IR0
                 return false;
             }
 
-            return AnalyzeExp(exp, hintTypeValue, context, out outExp, out outTypeValue);
-        }
-
-        public bool AnalyzeStmt(S.Stmt stmt, Context context, [NotNullWhen(true)] out Stmt? outStmt)
-        {
-            return stmtAnalyzer.AnalyzeStmt(stmt, context, out outStmt);
+            return AnalyzeExp(exp, hintTypeValue, out outExp, out outTypeValue);
         }
         
-        public bool AnalyzeFuncDecl(S.FuncDecl funcDecl, Context context)
+        public bool AnalyzeFuncDecl(S.FuncDecl funcDecl)
         {
             var funcInfo = context.GetFuncInfoByDecl(funcDecl);
             var bResult = true;
@@ -292,7 +264,7 @@ namespace Gum.IR0
                     context.AddLocalVarInfo(param.Name, paramTypeValue);
                 }
 
-                if (AnalyzeStmt(funcDecl.Body, context, out var body))
+                if (AnalyzeStmt(funcDecl.Body, out var body))
                 {
                     if (funcDecl.IsSequence)
                     { 
@@ -315,12 +287,12 @@ namespace Gum.IR0
             return bResult;
         }
 
-        public bool AnalyzeTypeDecl(S.TypeDecl typeDecl, Context context)
+        public bool AnalyzeTypeDecl(S.TypeDecl typeDecl)
         {
             switch(typeDecl)
             {
                 case S.EnumDecl enumDecl:
-                    return AnalyzeEnumDecl(enumDecl, context);
+                    return AnalyzeEnumDecl(enumDecl);
 
                 case S.StructDecl structDecl:
                     throw new NotImplementedException();
@@ -330,7 +302,7 @@ namespace Gum.IR0
             }
         }
 
-        public bool AnalyzeEnumDecl(S.EnumDecl enumDecl, Context context)
+        public bool AnalyzeEnumDecl(S.EnumDecl enumDecl)
         {
             var enumInfo = context.GetTypeInfoByDecl<EnumInfo>(enumDecl);            
 
@@ -341,8 +313,9 @@ namespace Gum.IR0
             throw new NotImplementedException();
         }
 
-        bool AnalyzeScript(S.Script script, Context context, 
-            [NotNullWhen(true)] out Script? outScript)
+        // stmt가 존재하는 곳
+        // GlobalFunc, MemberFunc, TopLevel
+        bool AnalyzeScript(S.Script script, [NotNullWhen(true)] out Script? outScript)
         {
             bool bResult = true;
 
@@ -352,7 +325,7 @@ namespace Gum.IR0
                 switch (elem)
                 {
                     case S.Script.StmtElement stmtElem:
-                        if (!AnalyzeStmt(stmtElem.Stmt, context, out var topLevelStmt))
+                        if (!AnalyzeStmt(stmtElem.Stmt, out var topLevelStmt))
                             bResult = false;
                         else
                             topLevelStmts.Add(topLevelStmt);
@@ -366,13 +339,13 @@ namespace Gum.IR0
                 switch (elem)
                 {
                     // TODO: classDecl
-                    case S.Script.FuncDeclElement funcElem:
-                        if (!AnalyzeFuncDecl(funcElem.FuncDecl, context))
+                    case S.Script.GlobalFuncDeclElement funcElem:
+                        if (!AnalyzeFuncDecl(funcElem.FuncDecl))
                             bResult = false;
                         break;
 
                     case S.Script.TypeDeclElement typeElem:
-                        if (!AnalyzeTypeDecl(typeElem.TypeDecl, context))
+                        if (!AnalyzeTypeDecl(typeElem.TypeDecl))
                             bResult = false;
                         break;
                 }
@@ -390,33 +363,9 @@ namespace Gum.IR0
             }
         }
 
-        public (Script Script,
-            TypeValueService TypeValueService,
-            ScriptModuleInfo ModuleInfo)?
-            AnalyzeScript(
-            S.Script script,
-            IEnumerable<IModuleInfo> moduleInfos,
-            IErrorCollector errorCollector)
+        public AnalyzeScript(S.Script script, IErrorCollector errorCollector)
         {
-            // 3. Type, Func만들기, ModuleInfoBuilder
-            var buildResult = moduleInfoBuilder.BuildScript(moduleInfos, script, errorCollector);
-            if (buildResult == null)
-                return null;
-
-            var moduleInfoRepo = new ModuleInfoRepository(moduleInfos.Append(buildResult.ModuleInfo));
-            var itemInfoRepo = new ItemInfoRepository(moduleInfoRepo);
-            var typeValueApplier = new TypeValueApplier(moduleInfoRepo);
-            var typeValueService = new TypeValueService(itemInfoRepo, typeValueApplier);
-
-            var context = new Context(
-                itemInfoRepo,
-                typeValueService,
-                buildResult.TypeExpTypeValueService,
-                buildResult.FuncInfosByDecl,
-                buildResult.TypeInfosByDecl,
-                errorCollector);
-
-            if (!AnalyzeScript(script, context, out var ir0Script))
+            if (!AnalyzeScript(script, out var ir0Script))
                 return null;
 
             if (errorCollector.HasError)
@@ -427,7 +376,7 @@ namespace Gum.IR0
                 buildResult.ModuleInfo);
         }
 
-        public bool IsAssignable(TypeValue toTypeValue, TypeValue fromTypeValue, Context context)
+        public bool IsAssignable(TypeValue toTypeValue, TypeValue fromTypeValue)
         {
             // B <- D
             // 지금은 fromType의 base들을 찾아가면서 toTypeValue와 맞는 것이 있는지 본다
@@ -451,7 +400,6 @@ namespace Gum.IR0
         public bool CheckInstanceMember(
             S.MemberExp memberExp,
             TypeValue objTypeValue,
-            Context context,
             [NotNullWhen(true)] out VarValue? outVarValue)
         {
             outVarValue = null;
@@ -480,7 +428,6 @@ namespace Gum.IR0
         public bool CheckStaticMember(
             S.MemberExp memberExp,
             TypeValue.Normal objNormalTypeValue,
-            Context context,
             [NotNullWhen(true)] out VarValue? outVarValue)
         {
             outVarValue = null;
@@ -497,7 +444,7 @@ namespace Gum.IR0
                 return false;
             }
 
-            if (!Misc.IsVarStatic(outVarValue.GetItemId(), context))
+            if (!Misc.IsVarStatic(outVarValue.GetItemId()))
             {
                 context.AddError(A0304_MemberExp_MemberVariableIsNotStatic, memberExp, "정적 변수가 아닙니다");
                 return false;
@@ -506,7 +453,7 @@ namespace Gum.IR0
             return true;
         }
 
-        public bool CheckParamTypes(S.ISyntaxNode nodeForErrorReport, IReadOnlyList<TypeValue> parameters, IReadOnlyList<TypeValue> args, Context context)
+        public bool CheckParamTypes(S.ISyntaxNode nodeForErrorReport, IReadOnlyList<TypeValue> parameters, IReadOnlyList<TypeValue> args)
         {
             if (parameters.Count != args.Count)
             {
@@ -516,7 +463,7 @@ namespace Gum.IR0
 
             for (int i = 0; i < parameters.Count; i++)
             {
-                if (!IsAssignable(parameters[i], args[i], context))
+                if (!IsAssignable(parameters[i], args[i]))
                 {
                     context.AddError(A0402_Parameter_MismatchBetweenParamTypeAndArgType, nodeForErrorReport, $"함수의 {i + 1}번 째 매개변수 타입은 {parameters[i]} 인데, 호출 인자 타입은 {args[i]} 입니다");
                     return false;
@@ -527,7 +474,7 @@ namespace Gum.IR0
         }
 
         // TODO: Hint를 받을 수 있게 해야 한다
-        public bool AnalyzeExps(IEnumerable<S.Exp> exps, Context context, out ImmutableArray<(Exp Exp, TypeValue TypeValue)> outInfos)
+        public bool AnalyzeExps(IEnumerable<S.Exp> exps, out ImmutableArray<(Exp Exp, TypeValue TypeValue)> outInfos)
         {
             outInfos = ImmutableArray<(Exp, TypeValue)>.Empty;
 
@@ -535,7 +482,7 @@ namespace Gum.IR0
 
             foreach (var exp in exps)
             {
-                if (!AnalyzeExp(exp, null, context, out var ir0Exp, out var typeValue))
+                if (!AnalyzeExp(exp, null, out var ir0Exp, out var typeValue))
                     return false;
 
                 infos.Add((ir0Exp, typeValue));

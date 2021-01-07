@@ -8,39 +8,41 @@ namespace Gum.IR0
     {
         class TypeBuilder
         {
-            private AppliedItemPath thisTypePath;
+            private ItemPath typePath;
 
             private List<TypeInfo> typeInfos;
             private List<FuncInfo> funcInfos;
             private List<VarInfo> varInfos;
 
-            public TypeBuilder(AppliedItemPath thisTypePath)
+            public TypeBuilder(ItemPath typePath)
             {
-                this.thisTypePath = thisTypePath;
+                this.typePath = typePath;
                 typeInfos = new List<TypeInfo>();
                 funcInfos = new List<FuncInfo>();
                 varInfos = new List<VarInfo>();
             }
 
-            public AppliedItemPath GetThisTypeAppliedPath()
+            public ItemPath GetTypePath()
             {
-                return thisTypePath;
+                return typePath;
             }
 
-            internal void AddTypeInfo(TypeInfo typeInfo)
+            public void AddTypeInfo(TypeInfo typeInfo)
             {
-                throw new NotImplementedException();
+                typeInfos.Add(typeInfo);
             }
 
-            internal void AddFuncInfo(FuncInfo funcInfo)
+            public void AddFuncInfo(FuncInfo funcInfo)
             {
-                throw new NotImplementedException();
+                funcInfos.Add(funcInfo);
             }
 
-            internal void AddVarInfo(VarInfo varInfo)
+            public void AddVarInfo(VarInfo varInfo)
             {
-                throw new NotImplementedException();
+                varInfos.Add(varInfo);
             }
         }
+
+        
     }
 }

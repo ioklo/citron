@@ -1,6 +1,7 @@
 ﻿using Gum.CompileTime;
 using Gum.Infra;
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -13,99 +14,92 @@ using S = Gum.Syntax;
 
 namespace Gum.IR0
 {
-    partial class TypeSkeletonCollector
-    {   
-        bool CollectEnumDecl(S.EnumDecl enumDecl, Context context)
-        {
-            var enumElemNames = enumDecl.Elems.Select(elem => elem.Name);
+    class TypeSkeletonCollector
+    {
+        List<Skeleton> globalSkeletons;
+        Skeleton.Type? curSkeleton;
 
-            context.AddTypeSkeleton(enumDecl, enumDecl.Name, enumDecl.TypeParams.Length, enumElemNames);
-            return true;
+        public TypeSkeletonCollector()
+        {
+            globalSkeletons = new List<Skeleton>();
+            curSkeleton = null;
         }
+        public void ExecInNewEnumScope(S.EnumDecl enumDecl, Action action)
+            => ExecInNewTypeScope(enumDecl, path => new Skeleton.Enum(path, enumDecl), action);
 
-        bool CollectStructDecl(S.StructDecl structDecl, Context context)
+        public void ExecInNewStructScope(S.StructDecl structDecl, Action action)
+            => ExecInNewTypeScope(structDecl, path => new Skeleton.Struct(path, structDecl), action);
+
+        void ExecInNewTypeScope<TSkeleton>(S.TypeDecl typeDecl, Func<ItemPath, TSkeleton> constructor, Action action)
+            where TSkeleton : Skeleton.Type
         {
-            var typeSkeleton = context.AddTypeSkeleton(structDecl, structDecl.Name, structDecl.TypeParams.Length, Array.Empty<string>());
+            var prevSkeleton = curSkeleton;
+            curSkeleton = AddType(typeDecl, constructor);
 
-            context.ExecInNewTypeScope(typeSkeleton, () => {
-
-                foreach(var elem in structDecl.Elems)
-                {
-                    switch( elem)
-                    {
-                        case S.StructDecl.TypeDeclElement typeElem:
-                            CollectTypeDecl(typeElem.TypeDecl, context);
-                            break;
-
-                        case S.StructDecl.FuncDeclElement funcElem:
-                            context.AddFunc(funcElem, funcElem.Name, funcElem.TypeParams.Length);
-                            break;
-                    }
-                }
-
-            });
-
-            return true;
-        }
-
-        bool CollectFuncDecl(S.FuncDecl funcDecl, Context context)
-        {
-            context.AddFunc(funcDecl, funcDecl.Name, funcDecl.TypeParams.Length);
-            return true;
-        }
-
-        bool CollectTypeDecl(S.TypeDecl typeDecl, Context context)
-        {
-            switch(typeDecl)
+            try
             {
-                case S.EnumDecl enumDecl:
-                    return CollectEnumDecl(enumDecl, context);
-
-                case S.StructDecl structDecl:
-                    return CollectStructDecl(structDecl, context);
-
-                default:
-                    throw new InvalidOperationException();
+                action.Invoke();
+            }
+            finally
+            {
+                curSkeleton = prevSkeleton;
             }
         }
 
-        bool CollectScript(S.Script script, Context context)
+        public void AddFunc(S.FuncDecl funcDecl)
         {
-            foreach (var scriptElem in script.Elements)
+            // NOTICE: paramHash는 추후에 계산이 된다 => 테스트 추가할 것
+            if (curSkeleton != null)
             {
-                switch(scriptElem)
-                {
-                    case S.Script.TypeDeclElement typeDeclElem:                        
-                        if (!CollectTypeDecl(typeDeclElem.TypeDecl, context))
-                            return false;
-                        break;
-
-                    case S.Script.FuncDeclElement funcElem:
-                        if (!CollectFuncDecl(funcElem.FuncDecl, context))
-                            return false;
-                        break;
-                }
+                var funcPath = curSkeleton.Path.Append(funcDecl.Name, funcDecl.TypeParams.Length);
+                var funcSkeleton = new Skeleton.Func(funcPath, funcDecl);
+                curSkeleton.AddMember(funcSkeleton);
             }
-
-            return true;
+            else
+            {
+                // TODO: NamespaceRoot가 아니라 namespace 선언 상황에 따라 달라진다
+                var funcPath = new ItemPath(NamespacePath.Root, new ItemPathEntry(funcDecl.Name, funcDecl.TypeParams.Length));
+                var funcSkeleton = new Skeleton.Func(funcPath, funcDecl);
+                globalSkeletons.Add(funcSkeleton);
+            }
         }
 
-        public (SyntaxNodeModuleItemService SyntaxNodeModuleItemService, ImmutableArray<TypeSkeleton> TypeSkeletons)? 
-            CollectScript(S.Script script, IErrorCollector errorCollector)
+        public void AddVar(Name name, S.VarDecl varDecl, int elemIndex)
         {
-            var context = new Context();
-
-            if (!CollectScript(script, context))
+            if (curSkeleton != null)
             {
-                errorCollector.Add(new AnalyzeError(S0101_Failed, script, $"타입 정보 모으기에 실패했습니다"));
-                return null;
+                var varPath = curSkeleton.Path.Append(name);
+                var varSkeleton = new Skeleton.Var(varPath, varDecl, elemIndex);
+                curSkeleton.AddMember(varSkeleton);
             }
+            else
+            {
+                var varPath = new ItemPath(NamespacePath.Root, new ItemPathEntry(name));
+                var varSkeleton = new Skeleton.Var(varPath, varDecl, elemIndex);
+                globalSkeletons.Add(varSkeleton);
+            }
+        }
+        
+        TSkeleton AddType<TSkeleton>(S.TypeDecl decl, Func<ItemPath, TSkeleton> constructor)
+            where TSkeleton : Skeleton.Type
+        {
+            ItemPath typePath = (curSkeleton != null)
+                ? curSkeleton.Path.Append(decl.Name, decl.TypeParamCount)
+                : new ItemPath(NamespacePath.Root, new ItemPathEntry(decl.Name, decl.TypeParamCount)); // TODO: NamespaceRoot가 아니라 namespace 선언 상황에 따라 달라진다
 
-            var syntaxNodeModuleItemService = new SyntaxNodeModuleItemService(
-                context.GetTypePathsByNode(), 
-                context.GetFuncPathsByNode());
+            var typeSkeleton = constructor.Invoke(typePath);
 
-            return (syntaxNodeModuleItemService, context.GetTypeSkeletons());
+            if (curSkeleton != null)
+                curSkeleton.AddMember(typeSkeleton);
+            else
+                globalSkeletons.Add(typeSkeleton);
+
+            return typeSkeleton;
+        }
+
+        public IEnumerable<Skeleton> GetGlobalSkeletons()
+        {
+            return globalSkeletons;
         }
     }
 }

@@ -13,7 +13,7 @@ namespace Gum.Syntax
     // <RBRACE>
     // a(b, params c, d);
     // a<T>(int b, params T x, int d);
-    public class FuncDecl : ISyntaxNode
+    public abstract class FuncDecl : ISyntaxNode
     {
         public bool IsSequence { get; } // seq 함수인가        
         public TypeExp RetType { get; }

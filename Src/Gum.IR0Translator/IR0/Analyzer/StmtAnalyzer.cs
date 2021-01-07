@@ -15,50 +15,16 @@ using S = Gum.Syntax;
 
 namespace Gum.IR0
 {
-    class StmtAnalyzer
+    partial class Analyzer
     {
-        Analyzer analyzer;
-
-        public StmtAnalyzer(Analyzer analyzer)
-        {
-            this.analyzer = analyzer;
-        }
-
         // CommandStmt에 있는 expStringElement를 분석한다
-        bool AnalyzeCommandStmt(S.CommandStmt cmdStmt, Context context, [NotNullWhen(true)] out Stmt? outStmt)
+        public CommandStmt AnalyzeCommandStmt(List<StringExp> stringExps)
         {
-            bool bResult = true;
-
-            var ir0StrExps = new List<StringExp>();
-            foreach (var cmd in cmdStmt.Commands)
-            {
-                var ir0StrExpElems = new List<StringExpElement>();
-                foreach (var elem in cmd.Elements)
-                {
-                    if (!analyzer.AnalyzeStringExpElement(elem, context, out var ir0Elem))
-                    {
-                        bResult = false;
-                        continue;
-                    }
-
-                    ir0StrExpElems.Add(ir0Elem);
-                }
-                
-                ir0StrExps.Add(new StringExp(ir0StrExpElems));
-            }
-
-            if (!bResult)
-            {
-                outStmt = null;
-                return false;
-            }
-
-            outStmt = new CommandStmt(ir0StrExps);
-            return true;
+            return new CommandStmt(stringExps);
         }
 
         // PrivateGlobalVarDecl이 나오거나, LocalVarDecl이 나오거나
-        bool AnalyzeVarDeclStmt(S.VarDeclStmt varDeclStmt, Context context, [NotNullWhen(true)] out Stmt? outStmt)
+        bool AnalyzeVarDeclStmt(S.VarDeclStmt varDeclStmt, [NotNullWhen(true)] out Stmt? outStmt)
         {
             outStmt = null;
 
@@ -66,7 +32,7 @@ namespace Gum.IR0
             {
                 var builder = new PrivateGlobalVarDeclStmtBuilder(context);
 
-                if (!analyzer.AnalyzeVarDecl(varDeclStmt.VarDecl, builder, context, out var privateGlobalVarDeclStmt))
+                if (!AnalyzeVarDecl(varDeclStmt.VarDecl, builder, out var privateGlobalVarDeclStmt))
                     return false;
 
                 outStmt = privateGlobalVarDeclStmt;
@@ -76,7 +42,7 @@ namespace Gum.IR0
             {
                 var builder = new LocalVarDeclBuilder(context);
 
-                if (!analyzer.AnalyzeVarDecl(varDeclStmt.VarDecl, builder, context, out var localVarDecl))
+                if (!AnalyzeVarDecl(varDeclStmt.VarDecl, builder, out var localVarDecl))
                     return false;
                 
                 outStmt = new LocalVarDeclStmt(localVarDecl);
@@ -89,7 +55,7 @@ namespace Gum.IR0
         //    Exp target, 
         //    S.Stmt thenBody,
         //    S.Stmt? elseBody,
-        //    TypeValue targetType, TypeValue.EnumElem enumElem, Context context, [NotNullWhen(true)] out Stmt? outStmt)
+        //    TypeValue targetType, TypeValue.EnumElem enumElem, [NotNullWhen(true)] out Stmt? outStmt)
         //{
         //    bool bResult = true;
         //    Stmt? ir0ThenBody = null;
@@ -99,11 +65,11 @@ namespace Gum.IR0
         //    {
         //        context.AddOverrideVarInfo(varIdInfo.StorageInfo, targetType);
 
-        //        if (!AnalyzeStmt(thenBody, context, out ir0ThenBody))
+        //        if (!AnalyzeStmt(thenBody, out ir0ThenBody))
         //            bResult = false;
 
         //        if (elseBody != null)
-        //            if (!AnalyzeStmt(elseBody, context, out ir0ElseBody))
+        //            if (!AnalyzeStmt(elseBody, out ir0ElseBody))
         //                bResult = false;
         //    });
 
@@ -140,11 +106,11 @@ namespace Gum.IR0
         //    {
         //        context.AddOverrideVarInfo(varIdInfo.StorageInfo, testType);
 
-        //        if (!AnalyzeStmt(thenBody, context, out ir0ThenBody))
+        //        if (!AnalyzeStmt(thenBody, out ir0ThenBody))
         //            bResult = false;
 
         //        if (elseBody != null)
-        //            if (!AnalyzeStmt(elseBody, context, out ir0ElseBody))
+        //            if (!AnalyzeStmt(elseBody, out ir0ElseBody))
         //                bResult = false;
         //    });
 
@@ -163,13 +129,13 @@ namespace Gum.IR0
         //    }
         //}
 
-        bool AnalyzeIfTestStmt(S.IfStmt ifStmt, S.TypeExp testTypeExp, Context context, [NotNullWhen(true)] out Stmt? outStmt)
+        bool AnalyzeIfTestStmt(S.IfStmt ifStmt, S.TypeExp testTypeExp, [NotNullWhen(true)] out Stmt? outStmt)
         {
             outStmt = null;
 
             // TODO: if (Type v = exp as Type) 구문 추가
 
-            if (!analyzer.AnalyzeExp(ifStmt.Cond, null, context, out var cond, out var condTypeValue))
+            if (!AnalyzeExp(ifStmt.Cond, null, out var cond, out var condTypeValue))
                 return false;
 
             // if (exp is X) 구문은 exp가 identifier일때만 가능하다
@@ -205,11 +171,11 @@ namespace Gum.IR0
 
             //if (testTypeValue is TypeValue.EnumElem enumElem)
             //{
-            //    return AnalyzeIfTestEnumStmt(varIdInfo, cond, ifStmt.Body, ifStmt.ElseBody, condTypeValue, enumElem, context, out outStmt);                
+            //    return AnalyzeIfTestEnumStmt(varIdInfo, cond, ifStmt.Body, ifStmt.ElseBody, condTypeValue, enumElem, out outStmt);                
             //}
             //else if (testTypeValue is TypeValue.Normal normal)
             //{
-            //    return AnalyzeIfTestClassStmt(varIdInfo, cond, ifStmt.Body, ifStmt.ElseBody, condTypeValue, testTypeValue, context, out outStmt);
+            //    return AnalyzeIfTestClassStmt(varIdInfo, cond, ifStmt.Body, ifStmt.ElseBody, condTypeValue, testTypeValue, out outStmt);
             //}
             //else
             //{
@@ -218,16 +184,16 @@ namespace Gum.IR0
             //}
         }
 
-        bool AnalyzeIfStmt(S.IfStmt ifStmt, Context context, [NotNullWhen(true)] out Stmt? outStmt) 
+        bool AnalyzeIfStmt(S.IfStmt ifStmt, [NotNullWhen(true)] out Stmt? outStmt) 
         {
             if (ifStmt.TestType != null)
-                return AnalyzeIfTestStmt(ifStmt, ifStmt.TestType, context, out outStmt);
+                return AnalyzeIfTestStmt(ifStmt, ifStmt.TestType, out outStmt);
 
             bool bResult = true;            
 
-            if (analyzer.AnalyzeExp(ifStmt.Cond, null, context, out var cond, out var condTypeValue))
+            if (AnalyzeExp(ifStmt.Cond, null, out var cond, out var condTypeValue))
             {
-                if (!analyzer.IsAssignable(TypeValues.Bool, condTypeValue, context))
+                if (!IsAssignable(TypeValues.Bool, condTypeValue))
                 {
                     context.AddError(A1004_IfStmt_ConditionShouldBeBool, ifStmt.Cond, "if 조건 식은 항상 bool형식이어야 합니다");
                     bResult = false;
@@ -238,12 +204,12 @@ namespace Gum.IR0
                 bResult = false;
             }
 
-            if (!AnalyzeStmt(ifStmt.Body, context, out var thenBody))
+            if (!AnalyzeStmt(ifStmt.Body, out var thenBody))
                 bResult = false;
 
             Stmt? elseBody = null;
             if (ifStmt.ElseBody != null)
-                if (!AnalyzeStmt(ifStmt.ElseBody, context, out elseBody))
+                if (!AnalyzeStmt(ifStmt.ElseBody, out elseBody))
                     bResult = false;
 
             if (bResult)
@@ -261,13 +227,13 @@ namespace Gum.IR0
 
         }
 
-        bool AnalyzeForStmtInitializer(S.ForStmtInitializer forInit, Context context, [NotNullWhen(true)] out ForStmtInitializer? outInitializer)
+        bool AnalyzeForStmtInitializer(S.ForStmtInitializer forInit, [NotNullWhen(true)] out ForStmtInitializer? outInitializer)
         {
             switch (forInit)
             {
                 case S.VarDeclForStmtInitializer varDeclInit:
                     var builder = new LocalVarDeclBuilder(context);
-                    if (analyzer.AnalyzeVarDecl(varDeclInit.VarDecl, builder, context, out var localVarDecl))
+                    if (AnalyzeVarDecl(varDeclInit.VarDecl, builder, out var localVarDecl))
                     {
                         outInitializer = new VarDeclForStmtInitializer(localVarDecl);
                         return true;
@@ -278,7 +244,7 @@ namespace Gum.IR0
 
                 case S.ExpForStmtInitializer expInit:                   
                     
-                    if (analyzer.AnalyzeTopLevelExp(expInit.Exp, null, A1102_ForStmt_ExpInitializerShouldBeAssignOrCall, context, out var ir0ExpInit, out var expInitType))
+                    if (AnalyzeTopLevelExp(expInit.Exp, null, A1102_ForStmt_ExpInitializerShouldBeAssignOrCall, out var ir0ExpInit, out var expInitType))
                     {
                         var expInitTypeId = context.GetType(expInitType);
                         outInitializer = new ExpForStmtInitializer(new ExpInfo(ir0ExpInit, expInitTypeId));
@@ -293,7 +259,7 @@ namespace Gum.IR0
             }
         }
 
-        bool AnalyzeForStmt(S.ForStmt forStmt, Context context, [NotNullWhen(true)] out Stmt? outStmt)
+        bool AnalyzeForStmt(S.ForStmt forStmt, [NotNullWhen(true)] out Stmt? outStmt)
         {
             bool bResult = true;
 
@@ -305,26 +271,26 @@ namespace Gum.IR0
             context.ExecInLocalScope(() =>
             {
                 if (forStmt.Initializer != null)
-                    if (!AnalyzeForStmtInitializer(forStmt.Initializer, context, out initializer))
+                    if (!AnalyzeForStmtInitializer(forStmt.Initializer, out initializer))
                         bResult = false;
 
                 if (forStmt.CondExp != null)
                 {
                     // 밑에서 쓰이므로 분석실패시 종료
-                    if (!analyzer.AnalyzeExp(forStmt.CondExp, null, context, out cond, out var condExpTypeValue))
+                    if (!AnalyzeExp(forStmt.CondExp, null, out cond, out var condExpTypeValue))
                     {
                         bResult = false;
                         return;
                     }
 
                     // 에러가 나면 에러를 추가하고 계속 진행
-                    if (!analyzer.IsAssignable(TypeValues.Bool, condExpTypeValue, context))
+                    if (!IsAssignable(TypeValues.Bool, condExpTypeValue))
                         context.AddError(A1101_ForStmt_ConditionShouldBeBool, forStmt.CondExp, $"{forStmt.CondExp}는 bool 형식이어야 합니다");
                 }
                 
                 if (forStmt.ContinueExp != null)
                 {
-                    if (analyzer.AnalyzeTopLevelExp(forStmt.ContinueExp, null, A1103_ForStmt_ContinueExpShouldBeAssignOrCall, context, out var contExp, out var contExpType))
+                    if (AnalyzeTopLevelExp(forStmt.ContinueExp, null, A1103_ForStmt_ContinueExpShouldBeAssignOrCall, out var contExp, out var contExpType))
                     {
                         var contExpTypeId = context.GetType(contExpType);
                         continueInfo = new ExpInfo(contExp, contExpTypeId);
@@ -337,7 +303,7 @@ namespace Gum.IR0
 
                 context.ExecInLoop(() =>
                 {
-                    if (!AnalyzeStmt(forStmt.Body, context, out body))
+                    if (!AnalyzeStmt(forStmt.Body, out body))
                         bResult = false;
                 });
             });
@@ -355,7 +321,7 @@ namespace Gum.IR0
             }
         }
 
-        bool AnalyzeContinueStmt(S.ContinueStmt continueStmt, Context context, [NotNullWhen(true)] out Stmt? outStmt)
+        bool AnalyzeContinueStmt(S.ContinueStmt continueStmt, [NotNullWhen(true)] out Stmt? outStmt)
         {
             if (!context.IsInLoop())
             {
@@ -368,7 +334,7 @@ namespace Gum.IR0
             return true;
         }
 
-        bool AnalyzeBreakStmt(S.BreakStmt breakStmt, Context context, [NotNullWhen(true)] out Stmt? outStmt)
+        bool AnalyzeBreakStmt(S.BreakStmt breakStmt, [NotNullWhen(true)] out Stmt? outStmt)
         {
             if (!context.IsInLoop())
             {
@@ -381,7 +347,7 @@ namespace Gum.IR0
             return true;
         }
         
-        bool AnalyzeReturnStmt(S.ReturnStmt returnStmt, Context context, [NotNullWhen(true)] out Stmt? outStmt)
+        bool AnalyzeReturnStmt(S.ReturnStmt returnStmt, [NotNullWhen(true)] out Stmt? outStmt)
         {
             outStmt = null;
 
@@ -422,7 +388,7 @@ namespace Gum.IR0
                 var retTypeValue = context.GetRetTypeValue();
 
                 // NOTICE: 리턴타입을 힌트로 넣었다
-                if (!analyzer.AnalyzeExp(returnStmt.Value, retTypeValue, context, out var ir0Value, out var valueType))
+                if (!AnalyzeExp(returnStmt.Value, retTypeValue, out var ir0Value, out var valueType))
                     return false;
 
                 // 리턴타입이 정해지지 않았을 경우가 있다
@@ -433,7 +399,7 @@ namespace Gum.IR0
                 else 
                 {
                     // 현재 함수 시그니처랑 맞춰서 같은지 확인한다
-                    if (!analyzer.IsAssignable(retTypeValue, valueType, context))
+                    if (!IsAssignable(retTypeValue, valueType))
                     {
                         context.AddError(A1201_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType, returnStmt.Value, $"반환값의 타입 {valueType}는 이 함수의 반환타입과 맞지 않습니다");
                         return false;
@@ -445,7 +411,7 @@ namespace Gum.IR0
             }
         }
 
-        bool AnalyzeBlockStmt(S.BlockStmt blockStmt, Context context, [NotNullWhen(true)] out Stmt? outStmt)
+        bool AnalyzeBlockStmt(S.BlockStmt blockStmt, [NotNullWhen(true)] out Stmt? outStmt)
         {
             bool bResult = true;
             var ir0Stmts = new List<Stmt>();
@@ -454,7 +420,7 @@ namespace Gum.IR0
             {
                 foreach (var stmt in blockStmt.Stmts)
                 {
-                    if (!AnalyzeStmt(stmt, context, out var ir0Stmt))
+                    if (!AnalyzeStmt(stmt, out var ir0Stmt))
                     {
                         bResult = false;
                     }
@@ -477,11 +443,11 @@ namespace Gum.IR0
             }
         }       
 
-        bool AnalyzeExpStmt(S.ExpStmt expStmt, Context context, [NotNullWhen(true)] out Stmt? outStmt)
+        bool AnalyzeExpStmt(S.ExpStmt expStmt, [NotNullWhen(true)] out Stmt? outStmt)
         {
             bool bResult = true;
             
-            if (!analyzer.AnalyzeTopLevelExp(expStmt.Exp, null, A1301_ExpStmt_ExpressionShouldBeAssignOrCall, context, out var exp, out var expType))
+            if (!AnalyzeTopLevelExp(expStmt.Exp, null, A1301_ExpStmt_ExpressionShouldBeAssignOrCall, out var exp, out var expType))
                 bResult = false;
 
             if (bResult)
@@ -500,9 +466,9 @@ namespace Gum.IR0
             }
         }
 
-        bool AnalyzeTaskStmt(S.TaskStmt taskStmt, Context context, [NotNullWhen(true)] out Stmt? outStmt)
+        bool AnalyzeTaskStmt(S.TaskStmt taskStmt, [NotNullWhen(true)] out Stmt? outStmt)
         {
-            if (!analyzer.AnalyzeLambda(taskStmt, taskStmt.Body, ImmutableArray<S.LambdaExpParam>.Empty, context, out var body, out var captureInfo, out var _))
+            if (!AnalyzeLambda(taskStmt, taskStmt.Body, ImmutableArray<S.LambdaExpParam>.Empty, out var body, out var captureInfo, out var _))
             {
                 outStmt = null;
                 return false;
@@ -512,14 +478,14 @@ namespace Gum.IR0
             return true;
         }
 
-        bool AnalyzeAwaitStmt(S.AwaitStmt awaitStmt, Context context, [NotNullWhen(true)] out Stmt? outStmt)
+        bool AnalyzeAwaitStmt(S.AwaitStmt awaitStmt, [NotNullWhen(true)] out Stmt? outStmt)
         {
             bool bResult = true;
             Stmt? body = null;
 
             context.ExecInLocalScope(() =>
             {
-                if (!AnalyzeStmt(awaitStmt.Body, context, out body))
+                if (!AnalyzeStmt(awaitStmt.Body, out body))
                     bResult = false;
             });
 
@@ -536,9 +502,9 @@ namespace Gum.IR0
             }
         }
 
-        bool AnalyzeAsyncStmt(S.AsyncStmt asyncStmt, Context context, [NotNullWhen(true)] out Stmt? outStmt)
+        bool AnalyzeAsyncStmt(S.AsyncStmt asyncStmt, [NotNullWhen(true)] out Stmt? outStmt)
         {
-            if (!analyzer.AnalyzeLambda(asyncStmt, asyncStmt.Body, ImmutableArray<S.LambdaExpParam>.Empty, context, out var body, out var captureInfo, out var _))
+            if (!AnalyzeLambda(asyncStmt, asyncStmt.Body, ImmutableArray<S.LambdaExpParam>.Empty, out var body, out var captureInfo, out var _))
             {
                 outStmt = null;
                 return false;
@@ -548,12 +514,12 @@ namespace Gum.IR0
             return true;
         }        
         
-        bool AnalyzeForeachStmt(S.ForeachStmt foreachStmt, Context context, [NotNullWhen(true)] out Stmt? outStmt)
+        bool AnalyzeForeachStmt(S.ForeachStmt foreachStmt, [NotNullWhen(true)] out Stmt? outStmt)
         {
             outStmt = null;
 
             // iterator
-            if (!analyzer.AnalyzeExp(foreachStmt.Iterator, null, context, out var iterator, out var iteratorType))
+            if (!AnalyzeExp(foreachStmt.Iterator, null, out var iterator, out var iteratorType))
                 return false;
 
             var elemType = context.GetTypeValueByTypeExp(foreachStmt.Type);
@@ -593,7 +559,7 @@ namespace Gum.IR0
             else // 아니라면 둘이 호환되는지 확인한다
             {
                 // TODO: Cast
-                if (!analyzer.IsAssignable(elemType, iteratorElemType, context))
+                if (!IsAssignable(elemType, iteratorElemType))
                 {
                     context.AddError(A1802_ForeachStmt_MismatchBetweenElemTypeAndIteratorElemType, foreachStmt, "foreach 변수에 반복자 원소를 대입 할 수 없습니다");
                     return false;
@@ -610,7 +576,7 @@ namespace Gum.IR0
 
                 context.ExecInLoop(() =>
                 {
-                    AnalyzeStmt(foreachStmt.Body, context, out body);                        
+                    AnalyzeStmt(foreachStmt.Body, out body);                        
                 });
             });
 
@@ -626,7 +592,7 @@ namespace Gum.IR0
             return true;
         }
 
-        bool AnalyzeYieldStmt(S.YieldStmt yieldStmt, Context context, [NotNullWhen(true)] out Stmt? outStmt)
+        bool AnalyzeYieldStmt(S.YieldStmt yieldStmt, [NotNullWhen(true)] out Stmt? outStmt)
         {
             outStmt = null;
 
@@ -641,10 +607,10 @@ namespace Gum.IR0
             Debug.Assert(retTypeValue != null);
 
             // NOTICE: 리턴 타입을 힌트로 넣었다
-            if (!analyzer.AnalyzeExp(yieldStmt.Value, retTypeValue, context, out var value, out var valueType))
+            if (!AnalyzeExp(yieldStmt.Value, retTypeValue, out var value, out var valueType))
                 return false;
 
-            if (!analyzer.IsAssignable(retTypeValue, valueType, context))
+            if (!IsAssignable(retTypeValue, valueType))
             {
                 context.AddError(A1402_YieldStmt_MismatchBetweenYieldValueAndSeqFuncYieldType, yieldStmt.Value, $"반환 값의 {valueType} 타입은 이 함수의 반환 타입과 맞지 않습니다");
                 return false;
@@ -652,29 +618,6 @@ namespace Gum.IR0
 
             outStmt = new YieldStmt(value);
             return true;
-        }
-
-        public bool AnalyzeStmt(S.Stmt stmt, Context context, [NotNullWhen(true)] out Stmt? outStmt)
-        {
-            switch (stmt)
-            {
-                case S.CommandStmt cmdStmt: return AnalyzeCommandStmt(cmdStmt, context, out outStmt); 
-                case S.VarDeclStmt varDeclStmt: return AnalyzeVarDeclStmt(varDeclStmt, context, out outStmt); 
-                case S.IfStmt ifStmt: return AnalyzeIfStmt(ifStmt, context, out outStmt); 
-                case S.ForStmt forStmt: return AnalyzeForStmt(forStmt, context, out outStmt); 
-                case S.ContinueStmt continueStmt: return AnalyzeContinueStmt(continueStmt, context, out outStmt); 
-                case S.BreakStmt breakStmt: return AnalyzeBreakStmt(breakStmt, context, out outStmt); 
-                case S.ReturnStmt returnStmt: return AnalyzeReturnStmt(returnStmt, context, out outStmt); 
-                case S.BlockStmt blockStmt: return AnalyzeBlockStmt(blockStmt, context, out outStmt); 
-                case S.BlankStmt _: outStmt = BlankStmt.Instance; return true;
-                case S.ExpStmt expStmt: return AnalyzeExpStmt(expStmt, context, out outStmt); 
-                case S.TaskStmt taskStmt: return AnalyzeTaskStmt(taskStmt, context, out outStmt);
-                case S.AwaitStmt awaitStmt: return AnalyzeAwaitStmt(awaitStmt, context, out outStmt); 
-                case S.AsyncStmt asyncStmt: return AnalyzeAsyncStmt(asyncStmt, context, out outStmt); 
-                case S.ForeachStmt foreachStmt: return AnalyzeForeachStmt(foreachStmt, context, out outStmt); 
-                case S.YieldStmt yieldStmt: return AnalyzeYieldStmt(yieldStmt, context, out outStmt); 
-                default: throw new NotImplementedException();
-            }
-        }
+        }        
     }
 }

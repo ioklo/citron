@@ -21,7 +21,7 @@ namespace Gum.IR0
             Debug.Assert(typeParams.Count == typeArgs.Length);
 
             for (int i = 0; i < typeParams.Count; i++)
-                typeEnv[new TypeValue.TypeVar(depth, typeParams[i])] = typeArgs[i];
+                typeEnv[new TypeValue.TypeVar(depth, i, typeParams[i])] = typeArgs[i];
         }
 
         // MakeTypeEnv_Type(X<T>, [int]) -> [T -> int]

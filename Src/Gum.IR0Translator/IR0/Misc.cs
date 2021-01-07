@@ -41,7 +41,7 @@ namespace Gum.IR0
                     throw new InvalidOperationException();
 
                 case TypeValue.TypeVar typeVar:
-                    sb.Append($"`{typeVar.Depth}{typeVar.Name}");
+                    sb.Append($"`({typeVar.Depth}, {typeVar.Index})");
                     return;
 
                 case TypeValue.Normal normal:
@@ -81,13 +81,7 @@ namespace Gum.IR0
                     throw new InvalidOperationException();
             }
         }
-        static string GetTypeValueString(TypeValue typeValue)
-        {
-            var sb = new StringBuilder();
-            GetTypeValueString(typeValue, sb);
-            return sb.ToString();
-        }
-
+        
 
         public static string MakeParamHash(IEnumerable<TypeValue> typeValues)
         {

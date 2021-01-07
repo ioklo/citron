@@ -6,7 +6,7 @@ using static Gum.IR0.Analyzer.Misc;
 
 namespace Gum.IR0
 {
-    partial class ExpAnalyzer
+    partial class Analyzer
     {
         //class MemberExpAnalyzer
         //{

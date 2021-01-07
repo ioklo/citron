@@ -7,6 +7,7 @@ using System.Text;
 namespace Gum.Misc
 {
     public class ScopedDictionary<TKey, TValue> : IEnumerable<KeyValuePair<TKey, TValue>>
+        where TKey : notnull
     {
         List<Dictionary<TKey, TValue>> stack;
 

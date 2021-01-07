@@ -21,9 +21,9 @@ namespace Gum.IR0
             var yId = xId.Append("Y", 2);
             var funcId = yId.Append("Func", 1);
 
-            var xVTypeVar = new TypeValue.TypeVar(0, "V");
-            var yUTypeVar = new TypeValue.TypeVar(1, "U");
-            var funcTTypeVar = new TypeValue.TypeVar(2, "T");
+            var xVTypeVar = new TypeValue.TypeVar(0, 2, "V");
+            var yUTypeVar = new TypeValue.TypeVar(1, 1, "U");
+            var funcTTypeVar = new TypeValue.TypeVar(2, 0, "T");
 
             var funcInfo = new FuncInfo(funcId, false, true, new[] { "T" }, xVTypeVar, funcTTypeVar, yUTypeVar);
             var yInfo = new ClassInfo(yId, new string[] { "T", "U" }, null, new[] { funcInfo });
@@ -75,7 +75,7 @@ namespace Gum.IR0
                 new[] { shortValue } };
 
             // Apply(X<int>.Y<short>, TofX) == int
-            var appliedValue = applier.Apply(new TypeValue.Normal(yId, yTypeArgs), new TypeValue.TypeVar(0, "T"));
+            var appliedValue = applier.Apply(new TypeValue.Normal(yId, yTypeArgs), new TypeValue.TypeVar(0, 0, "T"));
 
             Assert.Equal(intValue, appliedValue, ModuleInfoEqualityComparer.Instance);
         }

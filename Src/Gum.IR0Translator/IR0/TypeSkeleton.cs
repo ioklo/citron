@@ -5,37 +5,89 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using S = Gum.Syntax;
 
 namespace Gum.IR0
 {
-    // TypeSkeleton 정보, 이름별 TypeId와 부속타입 정보, 타입 파라미터 개수
-    public class TypeSkeleton
+
+    public abstract class Skeleton
     {
         public ItemPath Path { get; }
-        private Dictionary<ItemPathEntry, TypeSkeleton> memberTypeSkeletons;
-        private ImmutableHashSet<string> enumElemNames;
-
-        public TypeSkeleton(ItemPath path, IEnumerable<string> enumElemNames)
+        public Skeleton(ItemPath path)
         {
             Path = path;
-            memberTypeSkeletons = new Dictionary<ItemPathEntry, TypeSkeleton>();
-            this.enumElemNames = enumElemNames.ToImmutableHashSet();
         }
 
-        public TypeSkeleton? GetMemberTypeSkeleton(string name, int typeParamCount)
+        public abstract class Type : Skeleton
         {
-            return memberTypeSkeletons.GetValueOrDefault(new ItemPathEntry(name, typeParamCount));
+            List<Skeleton> members;
+            Dictionary<ItemPathEntry, Skeleton> membersByEntry;
+
+            public Type(ItemPath path)
+                : base(path)
+            {
+                members = new List<Skeleton>();
+                membersByEntry = new Dictionary<ItemPathEntry, Skeleton>(ModuleInfoEqualityComparer.Instance);
+            }
+
+            public IEnumerable<Skeleton> GetMembers()
+            {
+                return members;
+            }
+
+            public void AddMember(Skeleton member)
+            {
+                members.Add(member);
+                membersByEntry.Add(member.Path.Entry, member);
+            }
+
+            public Skeleton? GetMember(string memberName, int typeParamCount)
+            {
+                return membersByEntry.GetValueOrDefault(new ItemPathEntry(memberName, typeParamCount));
+            }
+        }
+        
+        public class Enum : Type
+        {
+            public S.EnumDecl EnumDecl { get; }
+            public Enum(ItemPath path, S.EnumDecl enumDecl)
+                : base(path) 
+            {
+                EnumDecl = enumDecl;
+            }
         }
 
-        public bool ContainsEnumElem(string name)
+        public class Struct : Type
         {
-            return enumElemNames.Contains(name);
+            public S.StructDecl StructDecl { get; }
+            public Struct(ItemPath path, S.StructDecl structDecl)
+                : base(path) 
+            {
+                StructDecl = structDecl;
+            }
         }
 
-        public void AddMemberTypeSkeleton(string name, int typeParamCount, TypeSkeleton skeleton)
+        public class Func : Skeleton
         {
-            Debug.Assert(!enumElemNames.Contains(name));
-            memberTypeSkeletons.Add(new ItemPathEntry(name, typeParamCount), skeleton);
+            public S.FuncDecl FuncDecl { get; }
+            public Func(ItemPath path, S.FuncDecl decl)
+                : base(path)
+            {
+                FuncDecl = decl;
+            }
         }
-    }
+        
+        public class Var : Skeleton
+        {
+            public S.VarDecl VarDecl { get; }
+            public int ElemIndex { get; }
+            
+            public Var(ItemPath path, S.VarDecl varDecl, int elemIndex)
+                : base(path)
+            {
+                VarDecl = varDecl;
+                ElemIndex = elemIndex;
+            }
+        }        
+    }    
 }

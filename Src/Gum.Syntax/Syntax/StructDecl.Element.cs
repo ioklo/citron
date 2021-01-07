@@ -38,37 +38,15 @@ namespace Gum.Syntax
                 VarType = varType;
                 VarNames = varNames.ToImmutableArray();
             }
-        }
+        }        
 
         public class FuncDeclElement : Element
         {
-            public AccessModifier AccessModifier { get; }
-            public bool IsStatic { get; }
-            public bool IsSequence { get; }
-            public TypeExp RetType { get; }
-            public string Name { get; }
-            public ImmutableArray<string> TypeParams { get; }
-            public FuncParamInfo ParamInfo { get; }
-            public BlockStmt Body { get; }
+            public StructFuncDecl FuncDecl { get; }            
 
-            public FuncDeclElement(
-                AccessModifier accessModifier,
-                bool bStatic,
-                bool bSequence,
-                TypeExp retType,
-                string name,
-                IEnumerable<string> typeParams,
-                FuncParamInfo paramInfo,
-                BlockStmt body)
+            public FuncDeclElement(StructFuncDecl funcDecl)
             {
-                AccessModifier = accessModifier;
-                IsStatic = bStatic;
-                IsSequence = bSequence;                
-                RetType = retType;
-                Name = name;
-                TypeParams = typeParams.ToImmutableArray();
-                ParamInfo = paramInfo;
-                Body = body;
+                FuncDecl = funcDecl;
             }
         }        
     }

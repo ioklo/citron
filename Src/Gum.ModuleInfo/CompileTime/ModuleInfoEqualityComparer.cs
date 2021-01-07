@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
@@ -8,19 +9,19 @@ namespace Gum.CompileTime
 {
     public class ModuleInfoEqualityComparer 
         : IEqualityComparer<AppliedItemPathEntry>         
-        , IEqualityComparer<TypeValue>
+        , IEqualityComparer<TypeValue?>    // class
         , IEqualityComparer<ItemPath>
         , IEqualityComparer<ItemPathEntry>
         , IEqualityComparer<NamespaceId>
-        , IEqualityComparer<ItemInfo>
+        , IEqualityComparer<ItemInfo?>      // class
     {
         public static ModuleInfoEqualityComparer Instance { get; } = new ModuleInfoEqualityComparer();
         private ModuleInfoEqualityComparer() { }
 
         bool IEqualityComparer<AppliedItemPathEntry>.Equals(AppliedItemPathEntry x, AppliedItemPathEntry y) => EqualsAppliedItemPathEntry(x, y);
         int IEqualityComparer<AppliedItemPathEntry>.GetHashCode(AppliedItemPathEntry obj) => GetHashCodeAppliedItemPathEntry(obj);
-        bool IEqualityComparer<TypeValue>.Equals(TypeValue x, TypeValue y) => EqualsTypeValue(x, y);
-        int IEqualityComparer<TypeValue>.GetHashCode([DisallowNull] TypeValue? obj) => GetHashCodeTypeValue(obj);
+        bool IEqualityComparer<TypeValue?>.Equals(TypeValue? x, TypeValue? y) => EqualsTypeValue(x, y);
+        int IEqualityComparer<TypeValue?>.GetHashCode(TypeValue obj) => GetHashCodeTypeValue(obj);
         bool IEqualityComparer<ItemPath>.Equals(ItemPath x, ItemPath y) => EqualsItemPath(x, y);
         int IEqualityComparer<ItemPath>.GetHashCode(ItemPath obj) => GetHashCodeItemPath(obj);
 
@@ -30,8 +31,8 @@ namespace Gum.CompileTime
         bool IEqualityComparer<NamespaceId>.Equals(NamespaceId x, NamespaceId y) => EqualsNamespaceId(x, y);
         int IEqualityComparer<NamespaceId>.GetHashCode(NamespaceId obj) => GetHashCodeNamespaceId(obj);
 
-        bool IEqualityComparer<ItemInfo>.Equals(ItemInfo x, ItemInfo y) => EqualsItemInfo(x, y);
-        int IEqualityComparer<ItemInfo>.GetHashCode(ItemInfo obj) => GetHashCodeItemInfo(obj);
+        bool IEqualityComparer<ItemInfo?>.Equals(ItemInfo? x, ItemInfo? y) => EqualsItemInfo(x, y);
+        int IEqualityComparer<ItemInfo?>.GetHashCode(ItemInfo obj) => GetHashCodeItemInfo(obj);
 
         static bool EqualsSequence<T>(ImmutableArray<T> x, ImmutableArray<T> y, IEqualityComparer<T> comparer)
         {
@@ -39,11 +40,14 @@ namespace Gum.CompileTime
         }
 
         static int GetHashCodeSequence<T>(ImmutableArray<T> array, IEqualityComparer<T> comparer)
+            where T : notnull
         {
             var hashCode = new HashCode();
 
             foreach (var elem in array)
+            {
                 hashCode.Add(comparer.GetHashCode(elem));
+            }
 
             return hashCode.ToHashCode();
         }
@@ -94,7 +98,7 @@ namespace Gum.CompileTime
 
                 case (TypeValue.TypeVar typeVarX, TypeValue.TypeVar typeVarY):
                     return typeVarX.Depth == typeVarY.Depth &&
-                        EqualsName(typeVarX.Name, typeVarY.Name);
+                        typeVarX.Index == typeVarY.Index;
 
                 case (TypeValue.Normal normalX, TypeValue.Normal normalY):
                     return EqualsModuleName(normalX.ModuleName, normalY.ModuleName) &&
@@ -128,7 +132,7 @@ namespace Gum.CompileTime
                 case TypeValue.TypeVar typeVar:
                     return HashCode.Combine(
                         typeVar.Depth,                        
-                        typeVar.Name);
+                        typeVar.Index);
 
                 case TypeValue.Normal normal:
                     return HashCode.Combine(

@@ -9,7 +9,7 @@ using Gum.CompileTime;
 
 namespace Gum.IR0
 {
-    partial class ExpAnalyzer
+    partial class Analyzer
     {
         //class BinaryAssignExpAnalyzer : AssignExpAnalyzer
         //{

@@ -31,7 +31,8 @@ namespace Gum.CompileTime
             NamespacePath = namespacePath;
             OuterEntries = outerEntries.ToImmutableArray();
             Entry = entry;
-        }
+        }        
+
         public ItemPath Append(Name name, int typeParamCount = 0, string paramHash = "")
         {
             return new ItemPath(NamespacePath, OuterEntries.Append(Entry), new ItemPathEntry(name, typeParamCount, paramHash));

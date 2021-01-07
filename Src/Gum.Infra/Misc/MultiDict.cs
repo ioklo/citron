@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace Gum.Misc
 {
-    public class MultiDict<TKey, TValue>
+    public class MultiDict<TKey, TValue> where TKey : notnull
     {
         Dictionary<TKey, List<TValue>> data;
 

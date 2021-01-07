@@ -10,7 +10,7 @@ namespace Gum.IR0
         public abstract class VarDeclVisitor<TVarDecl>
         {
             internal VarDeclVisitor() { }
-            public abstract void VisitElement(S.ISyntaxNode nodeForErrorReport, string name, TypeValue typeValue, Exp? initExp, Context context);
+            public abstract void VisitElement(S.ISyntaxNode nodeForErrorReport, string name, TypeValue typeValue, Exp? initExp);
             public abstract TVarDecl Build();
         }
 
@@ -25,7 +25,7 @@ namespace Gum.IR0
                 this.context = context;
             }
 
-            public override void VisitElement(S.ISyntaxNode nodeForErrorReport, string name, TypeValue typeValue, Exp? initExp, Context context)
+            public override void VisitElement(S.ISyntaxNode nodeForErrorReport, string name, TypeValue typeValue, Exp? initExp)
             {
                 if (context.DoesPrivateGlobalVarNameExist(name))
                 {
@@ -56,7 +56,7 @@ namespace Gum.IR0
                 this.context = context;
             }
 
-            public override void VisitElement(S.ISyntaxNode nodeForErrorReport, string name, TypeValue typeValue, Exp? initExp, Context context)
+            public override void VisitElement(S.ISyntaxNode nodeForErrorReport, string name, TypeValue typeValue, Exp? initExp)
             {
                 if (context.DoesLocalVarNameExistInScope(name))
                 {

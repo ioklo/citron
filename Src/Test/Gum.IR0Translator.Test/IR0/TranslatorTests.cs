@@ -9,6 +9,7 @@ using Gum.Misc;
 using System.Linq;
 
 using static Gum.IR0.AnalyzeErrorCode;
+using static Gum.IR0.TestMisc;
 using S = Gum.Syntax;
 
 namespace Gum.IR0
@@ -31,74 +32,7 @@ namespace Gum.IR0
             var script = translator.Translate(syntaxScript, Array.Empty<IModuleInfo>(), testErrorCollector);
 
             return testErrorCollector.Errors;
-        }
-
-        static T[] Arr<T>(params T[] values)
-        {
-            return values;
-        }
-
-        static Script SimpleScript(IEnumerable<TypeDecl>? typeDecls, IEnumerable<FuncDecl>? funcDecls, params Stmt[] topLevelStmts)
-        {
-            // TODO: Validator
-            int i = 0;
-            foreach(var funcDecl in funcDecls ?? Array.Empty<FuncDecl>())
-            {
-                Assert.Equal(i, funcDecl.Id.Value);
-                i++;
-            }
-
-            return new Script(typeDecls ?? Array.Empty<TypeDecl>(), funcDecls ?? Array.Empty<FuncDecl>(), topLevelStmts);
-        }
-
-        void VerifyError(IEnumerable<IError> errors, AnalyzeErrorCode code, S.ISyntaxNode node)
-        {
-            var result = errors.OfType<AnalyzeError>()
-                .Any(error => error.Code == code && error.Node == node);
-
-            Assert.True(result, $"Errors doesn't contain (Code: {code}, Node: {node})");
-        }
-
-        static S.VarDecl SimpleSVarDecl(S.TypeExp typeExp, string name, S.Exp? initExp = null)
-        {
-            return new S.VarDecl(typeExp, Arr(new S.VarDeclElement(name, initExp)));
-        }
-
-        static S.VarDeclStmt SimpleSVarDeclStmt(S.TypeExp typeExp, string name, S.Exp? initExp = null)
-        {
-            return new S.VarDeclStmt(SimpleSVarDecl(typeExp, name, initExp));
-        }
-
-        static S.Script SimpleSScript(params S.Stmt[] stmts)
-        {
-            return new S.Script(stmts.Select(stmt => new S.Script.StmtElement(stmt)));
-        }
-
-        static S.IntLiteralExp SimpleSInt(int v) => new S.IntLiteralExp(v);
-        static S.BoolLiteralExp SimpleSBool(bool v) => new S.BoolLiteralExp(v);
-        static S.IdentifierExp SimpleSId(string name) => new S.IdentifierExp(name);
-
-        static S.StringExp SimpleSString(string s) => new S.StringExp(new S.TextStringExpElement(s));
-
-        static PrivateGlobalVarDeclStmt SimpleGlobalVarDeclStmt(Type type, string name, Exp? initExp = null)
-            => new PrivateGlobalVarDeclStmt(Arr(new PrivateGlobalVarDeclStmt.Element(name, type, initExp)));
-
-        static LocalVarDeclStmt SimpleLocalVarDeclStmt(Type typeId, string name, Exp? initExp = null)
-            => new LocalVarDeclStmt(SimpleLocalVarDecl(typeId, name, initExp));
-
-        static LocalVarDecl SimpleLocalVarDecl(Type typeId, string name, Exp? initExp = null) 
-            => new LocalVarDecl(Arr(new LocalVarDecl.Element(name, typeId, initExp)));
-
-        static IntLiteralExp SimpleInt(int v) => new IntLiteralExp(v);
-        static BoolLiteralExp SimpleBool(bool v) => new BoolLiteralExp(v);
-        static StringExp SimpleString(string v) => new StringExp(new TextStringExpElement(v));
-        
-        static S.TypeExp VarTypeExp { get => new S.IdTypeExp("var"); }
-        static S.TypeExp IntTypeExp { get => new S.IdTypeExp("int"); }
-        static S.TypeExp BoolTypeExp { get => new S.IdTypeExp("bool"); }
-        static S.TypeExp VoidTypeExp { get => new S.IdTypeExp("void"); }
-        static S.TypeExp StringTypeExp { get => new S.IdTypeExp("string"); }
-
+        }       
 
         // Trivial Cases
         [Fact]
@@ -159,7 +93,7 @@ namespace Gum.IR0
         public void VarDeclStmt_TranslatesIntoLocalVarDeclInFuncScope()
         {
             var syntaxScript = new S.Script(
-                new S.Script.FuncDeclElement(new S.FuncDecl(false, VoidTypeExp, "Func", Array.Empty<string>(), new S.FuncParamInfo(Array.Empty<S.TypeAndName>(), null),
+                new S.Script.GlobalFuncDeclElement(new S.GlobalFuncDecl(false, VoidTypeExp, "Func", Array.Empty<string>(), new S.FuncParamInfo(Array.Empty<S.TypeAndName>(), null),
                     new S.BlockStmt(
                         SimpleSVarDeclStmt(IntTypeExp, "x", SimpleSInt(1))
                     )
@@ -511,7 +445,7 @@ namespace Gum.IR0
         [Fact]
         public void ReturnStmt_TranslatesReturnStmtInSeqFuncTrivially()
         {
-            var syntaxScript = new S.Script(new S.Script.FuncDeclElement(new S.FuncDecl(
+            var syntaxScript = new S.Script(new S.Script.GlobalFuncDeclElement(new S.GlobalFuncDecl(
                 true, IntTypeExp, "Func", Array.Empty<string>(), new S.FuncParamInfo(Array.Empty<S.TypeAndName>(), null),
                 new S.BlockStmt(
                     new S.ReturnStmt(null)
@@ -532,11 +466,11 @@ namespace Gum.IR0
         {
             S.Exp retValue;
 
-            var funcDecl = new S.FuncDecl(false, IntTypeExp, "Func", Array.Empty<string>(), new S.FuncParamInfo(Array.Empty<S.TypeAndName>(), null), new S.BlockStmt(
+            var funcDecl = new S.GlobalFuncDecl(false, IntTypeExp, "Func", Array.Empty<string>(), new S.FuncParamInfo(Array.Empty<S.TypeAndName>(), null), new S.BlockStmt(
                 new S.ReturnStmt(retValue = SimpleSString("Hello"))
             ));
 
-            var syntaxScript = new S.Script(new S.Script.FuncDeclElement(funcDecl));
+            var syntaxScript = new S.Script(new S.Script.GlobalFuncDeclElement(funcDecl));
             var errors = TranslateWithErrors(syntaxScript);
 
             VerifyError(errors, A1201_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType, retValue);
@@ -547,11 +481,11 @@ namespace Gum.IR0
         {
             S.ReturnStmt retStmt;
 
-            var funcDecl = new S.FuncDecl(false, IntTypeExp, "Func", Array.Empty<string>(), new S.FuncParamInfo(Array.Empty<S.TypeAndName>(), null), new S.BlockStmt(
+            var funcDecl = new S.GlobalFuncDecl(false, IntTypeExp, "Func", Array.Empty<string>(), new S.FuncParamInfo(Array.Empty<S.TypeAndName>(), null), new S.BlockStmt(
                 retStmt = new S.ReturnStmt(null)
             ));
 
-            var syntaxScript = new S.Script(new S.Script.FuncDeclElement(funcDecl));
+            var syntaxScript = new S.Script(new S.Script.GlobalFuncDeclElement(funcDecl));
             var errors = TranslateWithErrors(syntaxScript);
 
             VerifyError(errors, A1201_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType, retStmt);
@@ -562,11 +496,11 @@ namespace Gum.IR0
         {
             S.ReturnStmt retStmt;
 
-            var funcDecl = new S.FuncDecl(true, IntTypeExp, "Func", Array.Empty<string>(), new S.FuncParamInfo(Array.Empty<S.TypeAndName>(), null), new S.BlockStmt(
+            var funcDecl = new S.GlobalFuncDecl(true, IntTypeExp, "Func", Array.Empty<string>(), new S.FuncParamInfo(Array.Empty<S.TypeAndName>(), null), new S.BlockStmt(
                 retStmt = new S.ReturnStmt(SimpleSInt(2))
             ));
 
-            var syntaxScript = new S.Script(new S.Script.FuncDeclElement(funcDecl));
+            var syntaxScript = new S.Script(new S.Script.GlobalFuncDeclElement(funcDecl));
             var errors = TranslateWithErrors(syntaxScript);
 
             VerifyError(errors, A1202_ReturnStmt_SeqFuncShouldReturnVoid, retStmt);
@@ -889,7 +823,7 @@ namespace Gum.IR0
         public void YieldStmt_TranslatesTrivially()
         {
             var syntaxScript = new S.Script(
-                new S.Script.FuncDeclElement(new S.FuncDecl(
+                new S.Script.GlobalFuncDeclElement(new S.GlobalFuncDecl(
                     true, IntTypeExp, "Func", Array.Empty<string>(), new S.FuncParamInfo(Array.Empty<S.TypeAndName>(), null),
                     new S.BlockStmt(
                         new S.YieldStmt(SimpleSInt(3))
@@ -914,7 +848,7 @@ namespace Gum.IR0
             S.YieldStmt yieldStmt;
 
             var syntaxScript = new S.Script(
-                new S.Script.FuncDeclElement(new S.FuncDecl(
+                new S.Script.GlobalFuncDeclElement(new S.GlobalFuncDecl(
                     false, IntTypeExp, "Func", Array.Empty<string>(), new S.FuncParamInfo(Array.Empty<S.TypeAndName>(), null),
                     new S.BlockStmt(
                         yieldStmt = new S.YieldStmt(SimpleSInt(3))
@@ -933,7 +867,7 @@ namespace Gum.IR0
             S.Exp yieldValue;
 
             var syntaxScript = new S.Script(
-                new S.Script.FuncDeclElement(new S.FuncDecl(
+                new S.Script.GlobalFuncDeclElement(new S.GlobalFuncDecl(
                     true, StringTypeExp, "Func", Array.Empty<string>(), new S.FuncParamInfo(Array.Empty<S.TypeAndName>(), null),
                     new S.BlockStmt(
                         new S.YieldStmt(yieldValue = SimpleSInt(3))
@@ -1351,7 +1285,7 @@ namespace Gum.IR0
         void CallExp_TranslatesIntoCallFuncExp()
         {
             var syntaxScript = new S.Script(
-                new S.Script.FuncDeclElement(new S.FuncDecl(
+                new S.Script.GlobalFuncDeclElement(new S.GlobalFuncDecl(
                     false, IntTypeExp, "Func", Arr("T"), 
                     new S.FuncParamInfo(Arr(new S.TypeAndName(IntTypeExp, "x")), null),
                     new S.BlockStmt(new S.ReturnStmt(SimpleSId("x")))
@@ -1380,7 +1314,7 @@ namespace Gum.IR0
         void CallExp_TranslatesIntoCallFuncExpWithoutTypeArgument()
         {
             var syntaxScript = new S.Script(
-                new S.Script.FuncDeclElement(new S.FuncDecl(
+                new S.Script.GlobalFuncDeclElement(new S.GlobalFuncDecl(
                     false, IntTypeExp, "Func", Arr<string>(),
                     new S.FuncParamInfo(Arr(new S.TypeAndName(IntTypeExp, "x")), null),
                     new S.BlockStmt(new S.ReturnStmt(SimpleSId("x")))

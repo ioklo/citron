@@ -42,7 +42,7 @@ namespace Gum.IR0
             var e = entries.GetEnumerator();
             if (!e.MoveNext()) return null;
 
-            var curTypeInfo = moduleInfo.GetItem(nsPath, e.Current) as TypeInfo;
+            var curTypeInfo = moduleInfo.GetGlobalItem(nsPath, e.Current) as TypeInfo;
             if (curTypeInfo == null) return null;
 
             while (e.MoveNext())
@@ -92,7 +92,7 @@ namespace Gum.IR0
                 foreach (var moduleInfo in moduleInfoRepo.GetAllModules())
                 {
                     // 이름만 갖고 Func를 얻어낸다
-                    foreach (var funcInfo in moduleInfo.GetFuncs(nsPath, funcName))
+                    foreach (var funcInfo in moduleInfo.GetGlobalFuncs(nsPath, funcName))
                         yield return funcInfo;
                 }
             }
@@ -126,7 +126,7 @@ namespace Gum.IR0
             {
                 foreach (var moduleInfo in moduleInfoRepo.GetAllModules())
                 {
-                    var varInfo = moduleInfo.GetVar(nsPath, varName);
+                    var varInfo = moduleInfo.GetGlobalVar(nsPath, varName);
                     if (varInfo != null)
                         yield return varInfo;
                 }

@@ -186,9 +186,9 @@ namespace Gum
             return new ParseResult<FuncParamInfo>(new FuncParamInfo(parameters, variadicParamIndex), context);
         }
 
-        internal async ValueTask<ParseResult<FuncDecl>> ParseFuncDeclAsync(ParserContext context)
+        internal async ValueTask<ParseResult<GlobalFuncDecl>> ParseGlobalFuncDeclAsync(ParserContext context)
         {
-            static ParseResult<FuncDecl> Invalid() => ParseResult<FuncDecl>.Invalid;
+            static ParseResult<GlobalFuncDecl> Invalid() => ParseResult<GlobalFuncDecl>.Invalid;
 
             // <SEQ> <RetTypeName> <FuncName> <LPAREN> <ARGS> <RPAREN>
             // LBRACE>
@@ -210,8 +210,8 @@ namespace Gum
             if (!Parse(await stmtParser.ParseBlockStmtAsync(context), ref context, out var body))
                 return Invalid();
 
-            return new ParseResult<FuncDecl>(
-                new FuncDecl(
+            return new ParseResult<GlobalFuncDecl>(
+                new GlobalFuncDecl(
                     bSequence, 
                     retType, 
                     funcName.Value,
@@ -384,7 +384,9 @@ namespace Gum
             if (!Parse(await stmtParser.ParseBlockStmtAsync(context), ref context, out var body))
                 return Invalid();
 
-            var funcDeclElem = new StructDecl.FuncDeclElement(accessModifier, bStatic, bSequence, retType, funcName.Value, typeParams, paramInfo, body);
+            var funcDeclElem = new StructDecl.FuncDeclElement(new StructFuncDecl(
+                accessModifier, bStatic, bSequence, retType, funcName.Value, typeParams, paramInfo, body
+            ));
 
             return new ParseResult<StructDecl.FuncDeclElement>(funcDeclElem, context);
         }
@@ -462,8 +464,8 @@ namespace Gum
             if (Parse(await ParseTypeDeclAsync(context), ref context, out var typeDecl))
                 return new ParseResult<Script.Element>(new Script.TypeDeclElement(typeDecl), context);
             
-            if (Parse(await ParseFuncDeclAsync(context), ref context, out var funcDecl))
-                return new ParseResult<Script.Element>(new Script.FuncDeclElement(funcDecl), context);
+            if (Parse(await ParseGlobalFuncDeclAsync(context), ref context, out var funcDecl))
+                return new ParseResult<Script.Element>(new Script.GlobalFuncDeclElement(funcDecl), context);
 
             if (Parse(await stmtParser.ParseStmtAsync(context), ref context, out var stmt))
                 return new ParseResult<Script.Element>(new Script.StmtElement(stmt), context);

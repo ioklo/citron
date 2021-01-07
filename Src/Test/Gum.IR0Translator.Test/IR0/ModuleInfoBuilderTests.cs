@@ -17,20 +17,20 @@ namespace Gum.IR0
         public S.TypeExp VoidTypeExp { get => new S.IdTypeExp("void"); }
         ModuleInfoBuilder.Result? Build(S.Script script)
         {
-            var moduleInfoBuilder = new ModuleInfoBuilder(new TypeExpEvaluator(new TypeSkeletonCollector()));
+            var moduleInfoBuilder = new ModuleInfoBuilder(new TypeExpEvaluator());
             var errorCollector = new TestErrorCollector(true);
 
-            return moduleInfoBuilder.BuildScript(Array.Empty<IModuleInfo>(), script, errorCollector);
+            return moduleInfoBuilder.Build(Array.Empty<IModuleInfo>(), script, errorCollector);
         }
 
         [Fact]
         public void ParamHash_TypeVarDifferentNameSameLocation_SameParamHash()
         {
             // F<T>(T t)
-            var paramTypes1 = new TypeValue[] { new TypeValue.TypeVar(0, "T")};
+            var paramTypes1 = new TypeValue[] { new TypeValue.TypeVar(0, 0, "T")};
 
             // F<U>(U u)
-            var paramTypes2 = new TypeValue[] { new TypeValue.TypeVar(0, "U")};
+            var paramTypes2 = new TypeValue[] { new TypeValue.TypeVar(0, 0, "U")};
 
             var paramHash1 = Misc.MakeParamHash(paramTypes1);
             var paramHash2 = Misc.MakeParamHash(paramTypes2);
@@ -41,7 +41,7 @@ namespace Gum.IR0
         [Fact]
         public void Build_FuncDecl_ModuleInfoHasFuncInfo()
         {
-            var script = new S.Script(new S.Script.FuncDeclElement(new S.FuncDecl(
+            var script = new S.Script(new S.Script.GlobalFuncDeclElement(new S.GlobalFuncDecl(
                 bSequence: false,
                 VoidTypeExp,
                 "Func",
@@ -63,7 +63,7 @@ namespace Gum.IR0
             Assert.NotNull(funcInfo);
             Debug.Assert(funcInfo != null);
 
-            var paramTypes = new TypeValue[] { TypeValues.Int, new TypeValue.TypeVar(0, "U"), new TypeValue.TypeVar(0, "T") };
+            var paramTypes = new TypeValue[] { TypeValues.Int, new TypeValue.TypeVar(0, 1, "U"), new TypeValue.TypeVar(0, 0, "T") };
             var funcId = new ItemId(ModuleName.Internal, NamespacePath.Root, new ItemPathEntry("Func", 2, Misc.MakeParamHash(paramTypes)));
 
             var expected = new FuncInfo(
@@ -125,7 +125,7 @@ namespace Gum.IR0
 
             var paramTypeValues = new TypeValue[] {
                 new TypeValue.Normal(sId, new[] { TypeValues.Int }),
-                new TypeValue.TypeVar(1, "U")
+                new TypeValue.TypeVar(1, 1, "U")
             };
             var paramHash = Misc.MakeParamHash(paramTypeValues);
             var sFuncId = sId.Append("Func", 2, paramHash);
@@ -142,7 +142,7 @@ namespace Gum.IR0
                         sFuncId,
                         bSeqCall: false, bThisCall: true,
                         new[] { "T" },
-                        new TypeValue.TypeVar(1, "T"),
+                        new TypeValue.TypeVar(1, 0, "T"),
                         paramTypeValues
                     ),
 
