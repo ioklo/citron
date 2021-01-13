@@ -82,7 +82,7 @@ namespace Gum.IR0
 
             var expected = SimpleScript(null, null, 
                 new BlockStmt(
-                    new LocalVarDeclStmt(new LocalVarDecl(Arr(new LocalVarDecl.Element("x", Type.Int, SimpleInt(1)))))
+                    new LocalVarDeclStmt(new LocalVarDecl(Arr(new VarDeclElement("x", Type.Int, SimpleInt(1)))))
                 )
             );
 
@@ -104,7 +104,7 @@ namespace Gum.IR0
 
             var funcDecl = new FuncDecl.Normal(new FuncDeclId(0), false, Array.Empty<string>(), Array.Empty<string>(), new BlockStmt(
 
-                new LocalVarDeclStmt(new LocalVarDecl(Arr(new LocalVarDecl.Element("x", Type.Int, SimpleInt(1)))))
+                new LocalVarDeclStmt(new LocalVarDecl(Arr(new VarDeclElement("x", Type.Int, SimpleInt(1)))))
 
             ));
 

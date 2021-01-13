@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using S = Gum.Syntax;
 
 namespace Gum.IR0
@@ -30,13 +31,22 @@ namespace Gum.IR0
 
         // Phase3에서는 함수의 Stmt위주로 순회하게 된다
         // TopLevel, GlobalFunc, MemberFunc이다
-        public void Run()
+        public Script? Run()
         {
-            foreach(var stmt in root.GetTopLevelStmts())
-                VisitStmt(stmt);
+            var topLevelStmts = new List<Stmt>();
+
+            foreach (var syntaxStmt in root.GetTopLevelStmts())
+            {
+                var stmtResult = VisitStmt(syntaxStmt);
+                topLevelStmts.Add(stmtResult.Stmt);
+            }
 
             foreach (var func in root.GetAllFuncs())
+            {
                 VisitFunc(func);
+            }
+
+            return new Script(,, topLevelStmts);
         }
     }
 }

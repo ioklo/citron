@@ -48,6 +48,7 @@ namespace Gum.IR0
             bool bInLoop;
             SyntaxItemInfoRepository syntaxItemInfoRepository;
             TypeExpTypeValueService typeExpTypeValueService;
+            
             Dictionary<string, PrivateGlobalVarInfo> privateGlobalVarInfos;
             List<TypeDecl> typeDecls;
             List<FuncDecl> funcDecls;
@@ -89,6 +90,13 @@ namespace Gum.IR0
                 errorCollector.Add(new AnalyzeError(code, node, msg));
             }
 
+            [DoesNotReturn]
+            public void AddFatalError(AnalyzeErrorCode code, S.ISyntaxNode node, string msg)
+            {
+                errorCollector.Add(new AnalyzeError(code, node, msg));
+                throw new FatalAnalyzeException();
+            }
+
             public ExternalGlobalVarId GetExternalGlobalVarId(ItemId varId)
             {
                 throw new NotImplementedException();
@@ -117,6 +125,36 @@ namespace Gum.IR0
                 curFunc.ExecInLocalScope(action);
 
                 bGlobalScope = bPrevGlobalScope;
+            }
+
+            public TResult ExecInLocalScope<TResult>(Func<TResult> func)
+            {
+                var bPrevGlobalScope = bGlobalScope;
+                bGlobalScope = false;
+
+                try
+                {
+                    return curFunc.ExecInLocalScope(func);
+                }
+                finally
+                {
+                    bGlobalScope = bPrevGlobalScope;
+                }
+            }
+
+            public TResult ExecInLoop<TResult>(Func<TResult> func)
+            {
+                var bPrevInLoop = bInLoop;
+                bInLoop = true;
+
+                try
+                {
+                    return func.Invoke();
+                }
+                finally
+                {
+                    bInLoop = bPrevInLoop;
+                }
             }
 
             public void ExecInLoop(Action action)
@@ -161,7 +199,7 @@ namespace Gum.IR0
                 return curFunc.GetLocalVarsOutsideLambda();
             }
 
-            public (bool IsSuccess, TypeValue? RetTypeValue) ExecInLambdaScope(TypeValue? lambdaRetTypeValue, Func<bool> action)
+            public void ExecInLambdaScope(TypeValue? lambdaRetTypeValue, Action action)
             {
                 return curFunc.ExecInLambdaScope(lambdaRetTypeValue, action);
             }
@@ -390,7 +428,7 @@ namespace Gum.IR0
             }
 
             public bool GetIdentifierInfo(
-                string idName, IReadOnlyList<TypeValue> typeArgs,
+                string idName, IEnumerable<TypeValue> typeArgs,
                 TypeValue? hintTypeValue,
                 [NotNullWhen(true)] out IdentifierInfo? outIdInfo)
             {

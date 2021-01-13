@@ -37,6 +37,7 @@ namespace Gum.IR0
 
             var phase3 = phase2.Run();
 
+            return phase3.Run();
         }
     }
 }

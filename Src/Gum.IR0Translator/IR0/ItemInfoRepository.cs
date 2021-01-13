@@ -23,9 +23,9 @@ namespace Gum.IR0
             if (moduleInfo == null) return null;
 
             if (id.OuterEntries.Length == 0)
-                return moduleInfo.GetItem(id.NamespacePath, id.Entry) as TItemInfo;
+                return moduleInfo.GetGlobalItem(id.NamespacePath, id.Entry) as TItemInfo;
 
-            var curTypeInfo = moduleInfo.GetItem(id.NamespacePath, id.OuterEntries[0]) as TypeInfo;
+            var curTypeInfo = moduleInfo.GetGlobalItem(id.NamespacePath, id.OuterEntries[0]) as TypeInfo;
             if (curTypeInfo == null) return null;
 
             for (int i = 1; i < id.OuterEntries.Length; i++)

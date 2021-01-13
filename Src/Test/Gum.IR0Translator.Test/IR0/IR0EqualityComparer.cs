@@ -16,9 +16,8 @@ namespace Gum.IR0
         , IEqualityComparer<ExpInfo?> 
         , IEqualityComparer<ExpInfo>  // struct
         , IEqualityComparer<Type>     // struct
-        , IEqualityComparer<PrivateGlobalVarDeclStmt.Element>
-        , IEqualityComparer<LocalVarDecl>
-        , IEqualityComparer<LocalVarDecl.Element> // struct
+        , IEqualityComparer<VarDeclElement>
+        , IEqualityComparer<LocalVarDecl>        
         , IEqualityComparer<ForStmtInitializer>
         , IEqualityComparer<CaptureInfo>
         , IEqualityComparer<CaptureInfo.Element>
@@ -44,12 +43,10 @@ namespace Gum.IR0
         int IEqualityComparer<ExpInfo>.GetHashCode([DisallowNull] ExpInfo obj) => throw new NotImplementedException();
         bool IEqualityComparer<Type>.Equals([AllowNull] Type x, [AllowNull] Type y) => EqualsType(x, y);     // struct
         int IEqualityComparer<Type>.GetHashCode([DisallowNull] Type obj) => throw new NotImplementedException();
-        bool IEqualityComparer<PrivateGlobalVarDeclStmt.Element>.Equals([AllowNull] PrivateGlobalVarDeclStmt.Element x, [AllowNull] PrivateGlobalVarDeclStmt.Element y) => EqualsPrivateGlobalVarDeclStmtElement(x, y);
-        int IEqualityComparer<PrivateGlobalVarDeclStmt.Element>.GetHashCode([DisallowNull] PrivateGlobalVarDeclStmt.Element obj) => throw new NotImplementedException();
+        bool IEqualityComparer<VarDeclElement>.Equals([AllowNull] VarDeclElement x, [AllowNull] VarDeclElement y) => EqualsVarDeclElement(x, y);
+        int IEqualityComparer<VarDeclElement>.GetHashCode([DisallowNull] VarDeclElement obj) => throw new NotImplementedException();
         bool IEqualityComparer<LocalVarDecl>.Equals([AllowNull] LocalVarDecl x, [AllowNull] LocalVarDecl y) => EqualsLocalVarDecl(x, y);
         int IEqualityComparer<LocalVarDecl>.GetHashCode([DisallowNull] LocalVarDecl obj) => throw new NotImplementedException();
-        bool IEqualityComparer<LocalVarDecl.Element>.Equals([AllowNull] LocalVarDecl.Element x, [AllowNull] LocalVarDecl.Element y) => EqualsLocalVarDeclElement(x, y); // struct
-        int IEqualityComparer<LocalVarDecl.Element>.GetHashCode([DisallowNull] LocalVarDecl.Element obj) => throw new NotImplementedException();
         bool IEqualityComparer<ForStmtInitializer>.Equals([AllowNull] ForStmtInitializer x, [AllowNull] ForStmtInitializer y) => EqualsForStmtInitializer(x, y);
         int IEqualityComparer<ForStmtInitializer>.GetHashCode([DisallowNull] ForStmtInitializer obj) => throw new NotImplementedException();
         bool IEqualityComparer<CaptureInfo>.Equals([AllowNull] CaptureInfo x, [AllowNull] CaptureInfo y) => EqualsCaptureInfo(x, y);
@@ -342,7 +339,7 @@ namespace Gum.IR0
             return x.Value == y.Value;
         }
 
-        bool EqualsPrivateGlobalVarDeclStmtElement([AllowNull] PrivateGlobalVarDeclStmt.Element x, [AllowNull] PrivateGlobalVarDeclStmt.Element y)
+        bool EqualsVarDeclElement([AllowNull] VarDeclElement x, [AllowNull] VarDeclElement y)
         {
             if (x == null && y == null) return true;
             if (x == null || y == null) return false;
@@ -358,14 +355,7 @@ namespace Gum.IR0
             if (x == null || y == null) return false;
 
             return x.Elems.SequenceEqual(y.Elems, this);
-        }
-        
-        bool EqualsLocalVarDeclElement([AllowNull] LocalVarDecl.Element x, [AllowNull] LocalVarDecl.Element y)
-        {
-            return x.Name == y.Name &&
-                EqualsType(x.Type, y.Type) &&
-                EqualsExp(x.InitExp, y.InitExp);
-        }
+        }        
         
         bool EqualsForStmtInitializer([AllowNull] ForStmtInitializer x, [AllowNull] ForStmtInitializer y)
         {

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Gum.CompileTime;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,7 +10,21 @@ namespace Gum.IR0
 {
     partial class Phase3
     {
-        StringExp VisitStringExp(S.StringExp exp)
+        struct ExpResult
+        {
+            AnalyzeExpResult analyzeResult;
+
+            public Exp Exp { get => analyzeResult.Exp; }
+            public TypeValue TypeValue { get => analyzeResult.TypeValue; }
+                    
+            // public AnalyzeExpResult Analyze { get; } // 후에 TypeChecker, TypeResolver, ...
+            public ExpResult(AnalyzeExpResult analyzeResult)
+            {
+                this.analyzeResult = analyzeResult;
+            }
+        }
+        
+        ExpResult VisitStringExp(S.StringExp exp)
         {
             var ir0StrExpElems = new List<StringExpElement>();
             foreach (var elem in exp.Elements)
@@ -21,7 +36,12 @@ namespace Gum.IR0
             return analyzer.AnalyzeStringExp(ir0StrExpElems);
         }
 
-        StringExpElement VisitStringExpElement(S.StringExpElement elem)
+        ExpResult? VisitStringExpElement(S.StringExpElement elem)
+        {
+            throw new NotImplementedException();
+        }
+        
+        ExpResult VisitExp(S.Exp exp, TypeValue? hintType)
         {
             throw new NotImplementedException();
         }

@@ -30,14 +30,11 @@ namespace Gum.IR0
             var moduleInfoRepo = new ModuleInfoRepository(referenceInfos.Append(scriptModuleInfo));
             var itemInfoRepo = new ItemInfoRepository(moduleInfoRepo);
             var typeValueApplier = new TypeValueApplier(moduleInfoRepo);
-            var typeValueService = new TypeValueService(itemInfoRepo, typeValueApplier);
+            var typeValueService = new TypeValueService(itemInfoRepo, typeValueApplier);            
+            
+            var analyzer = new Analyzer(itemInfoRepo, syntaxItemInfoRepo, typeValueService, typeExpTypeValueService, errorCollector);
 
-            var context = new Analyzer.Context(
-                itemInfoRepo, syntaxItemInfoRepo, typeValueService, typeExpTypeValueService, errorCollector);
-
-            var analyzer = new Analyzer(context);
-
-            return new Phase3(analyzer);
+            return new Phase3(analyzer, new Phase3Root());
         }
     }
 }

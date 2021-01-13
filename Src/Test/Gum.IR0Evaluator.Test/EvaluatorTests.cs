@@ -66,7 +66,7 @@ namespace Gum.IR0.Runtime
 
         LocalVarDeclStmt SimpleLocalVarDecl(string name, Type typeId, Exp? initExp)
         {
-            return new LocalVarDeclStmt(new LocalVarDecl(new[] { new LocalVarDecl.Element(name, typeId, initExp) }));
+            return new LocalVarDeclStmt(new LocalVarDecl(new[] { new VarDeclElement(name, typeId, initExp) }));
         }
 
         CommandStmt PrintIntCmdStmt(Exp varExp)
@@ -153,7 +153,7 @@ namespace Gum.IR0.Runtime
             {
                 new PrivateGlobalVarDeclStmt(new []
                 {
-                    new PrivateGlobalVarDeclStmt.Element("x", Type.Int, new IntLiteralExp(3)),
+                    new VarDeclElement("x", Type.Int, new IntLiteralExp(3)),
                 }),
 
                 PrintIntCmdStmt(new PrivateGlobalVarExp("x")),
@@ -172,7 +172,7 @@ namespace Gum.IR0.Runtime
 
             var topLevelStmts = new Stmt[]
             {
-                new PrivateGlobalVarDeclStmt(new [] { new PrivateGlobalVarDeclStmt.Element("x", Type.String, SimpleString("Hello")) }),
+                new PrivateGlobalVarDeclStmt(new [] { new VarDeclElement("x", Type.String, SimpleString("Hello")) }),
 
                 new ExpStmt(new ExpInfo(new CallFuncExp(func0Id, Array.Empty<Type>(), null, Array.Empty<ExpInfo>()), Type.Void))
             };
@@ -245,7 +245,7 @@ namespace Gum.IR0.Runtime
             var stmts = new Stmt[]
             {
                 new PrivateGlobalVarDeclStmt(new [] {
-                    new PrivateGlobalVarDeclStmt.Element("x", Type.Int, new IntLiteralExp(23)) }),
+                    new VarDeclElement("x", Type.Int, new IntLiteralExp(23)) }),
 
                 new BlockStmt(
 
@@ -315,7 +315,7 @@ namespace Gum.IR0.Runtime
                 SimpleLocalVarDecl("x", Type.Int, new IntLiteralExp(34)),
 
                 new ForStmt(
-                    new VarDeclForStmtInitializer(new LocalVarDecl(new[] { new LocalVarDecl.Element("x", Type.Int, new IntLiteralExp(0)) })),
+                    new VarDeclForStmtInitializer(new LocalVarDecl(new[] { new VarDeclElement("x", Type.Int, new IntLiteralExp(0)) })),
                     new CallInternalBinaryOperatorExp(InternalBinaryOperator.Equal_Int_Int_Bool, new ExpInfo(new LocalVarExp("x"), Type.Int), new ExpInfo(new IntLiteralExp(0), Type.Int)),
                     new ExpInfo(new AssignExp(new LocalVarExp("x"), new IntLiteralExp(1)), Type.Int),
                     PrintIntCmdStmt(new LocalVarExp("x"))),
@@ -471,7 +471,7 @@ namespace Gum.IR0.Runtime
             var stmts = new Stmt[] {
 
                 new ForStmt(
-                    new VarDeclForStmtInitializer(new LocalVarDecl(new [] {new LocalVarDecl.Element("i", Type.Int, new IntLiteralExp(0)) })),
+                    new VarDeclForStmtInitializer(new LocalVarDecl(new [] {new VarDeclElement("i", Type.Int, new IntLiteralExp(0)) })),
                     new CallInternalBinaryOperatorExp(InternalBinaryOperator.LessThan_Int_Int_Bool, IntLocalVar("i"), IntValue(2)),
                     new ExpInfo(new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PostfixInc_Int_Int, new LocalVarExp("i")), Type.Int),
 
@@ -480,7 +480,7 @@ namespace Gum.IR0.Runtime
                         PrintIntCmdStmt(new LocalVarExp("i")),
 
                         new ForStmt(
-                            new VarDeclForStmtInitializer(new LocalVarDecl(new [] {new LocalVarDecl.Element("j", Type.Int, new IntLiteralExp(0)) })),
+                            new VarDeclForStmtInitializer(new LocalVarDecl(new [] {new VarDeclElement("j", Type.Int, new IntLiteralExp(0)) })),
                             new CallInternalBinaryOperatorExp(InternalBinaryOperator.LessThan_Int_Int_Bool, IntLocalVar("j"), IntValue(2)),
                             new ExpInfo(new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PostfixInc_Int_Int, new LocalVarExp("j")), Type.Int),
                             new BlockStmt(
@@ -503,7 +503,7 @@ namespace Gum.IR0.Runtime
             var stmts = new Stmt[] {
 
                 new ForStmt(
-                    new VarDeclForStmtInitializer(new LocalVarDecl(new [] {new LocalVarDecl.Element("i", Type.Int, new IntLiteralExp(0)) })),
+                    new VarDeclForStmtInitializer(new LocalVarDecl(new [] {new VarDeclElement("i", Type.Int, new IntLiteralExp(0)) })),
                     new CallInternalBinaryOperatorExp(InternalBinaryOperator.LessThan_Int_Int_Bool, IntLocalVar("i"), IntValue(2)),
                     new ExpInfo(new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PostfixInc_Int_Int, new LocalVarExp("i")), Type.Int),
 
@@ -512,7 +512,7 @@ namespace Gum.IR0.Runtime
                         PrintIntCmdStmt(new LocalVarExp("i")),
 
                         new ForStmt(
-                            new VarDeclForStmtInitializer(new LocalVarDecl(new [] {new LocalVarDecl.Element("j", Type.Int, new IntLiteralExp(0)) })),
+                            new VarDeclForStmtInitializer(new LocalVarDecl(new [] {new VarDeclElement("j", Type.Int, new IntLiteralExp(0)) })),
                             new CallInternalBinaryOperatorExp(InternalBinaryOperator.LessThan_Int_Int_Bool, IntLocalVar("j"), IntValue(2)),
                             new ExpInfo(new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PostfixInc_Int_Int, new LocalVarExp("j")), Type.Int),
                             new BlockStmt(
@@ -616,7 +616,7 @@ namespace Gum.IR0.Runtime
             Stmt PrintNumbersStmt(int count)
             {
                 return new ForStmt(
-                    new VarDeclForStmtInitializer(new LocalVarDecl(new[] { new LocalVarDecl.Element("i", Type.Int, new IntLiteralExp(0)) })),
+                    new VarDeclForStmtInitializer(new LocalVarDecl(new[] { new VarDeclElement("i", Type.Int, new IntLiteralExp(0)) })),
                     new CallInternalBinaryOperatorExp(InternalBinaryOperator.LessThan_Int_Int_Bool, IntLocalVar("i"), IntValue(count)),
                     new ExpInfo(new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PostfixInc_Int_Int, new LocalVarExp("i")), Type.Int),
                     PrintIntCmdStmt(new LocalVarExp("i"))
@@ -662,7 +662,7 @@ namespace Gum.IR0.Runtime
             Stmt PrintNumbersStmt()
             {
                 return new ForStmt(
-                    new VarDeclForStmtInitializer(new LocalVarDecl(new[] { new LocalVarDecl.Element("i", Type.Int, new IntLiteralExp(0)) })),
+                    new VarDeclForStmtInitializer(new LocalVarDecl(new[] { new VarDeclElement("i", Type.Int, new IntLiteralExp(0)) })),
                     new CallInternalBinaryOperatorExp(InternalBinaryOperator.LessThan_Int_Int_Bool, IntLocalVar("i"), IntLocalVar("count")),
                     new ExpInfo(new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PostfixInc_Int_Int, new LocalVarExp("i")), Type.Int),
                     PrintIntCmdStmt(new LocalVarExp("i"))
@@ -712,7 +712,7 @@ namespace Gum.IR0.Runtime
             Stmt PrintNumbersStmt(int count)
             {
                 return new ForStmt(
-                    new VarDeclForStmtInitializer(new LocalVarDecl(new[] { new LocalVarDecl.Element("i", Type.Int, new IntLiteralExp(0)) })),
+                    new VarDeclForStmtInitializer(new LocalVarDecl(new[] { new VarDeclElement("i", Type.Int, new IntLiteralExp(0)) })),
                     new CallInternalBinaryOperatorExp(InternalBinaryOperator.LessThan_Int_Int_Bool, IntLocalVar("i"), IntValue(count)),
                     new ExpInfo(new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PostfixInc_Int_Int, new LocalVarExp("i")), Type.Int),
                     new BlockStmt(

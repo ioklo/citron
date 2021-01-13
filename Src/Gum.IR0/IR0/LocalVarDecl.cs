@@ -6,23 +6,9 @@ namespace Gum.IR0
 {
     public class LocalVarDecl
     {
-        public struct Element
-        {
-            public string Name { get; }
-            public Type Type { get; }
-            public IR0.Exp? InitExp { get; }
+        public ImmutableArray<VarDeclElement> Elems { get; }        
 
-            public Element(string name, Type type, IR0.Exp? initExp)
-            {
-                Name = name;
-                Type = type;
-                InitExp = initExp;
-            }
-        }
-
-        public ImmutableArray<Element> Elems { get; }
-
-        public LocalVarDecl(IEnumerable<Element> elems)
+        public LocalVarDecl(IEnumerable<VarDeclElement> elems)
         {
             Elems = elems.ToImmutableArray();
         }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Gum.CompileTime;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,54 +10,51 @@ using S = Gum.Syntax;
 namespace Gum.IR0
 {
     partial class Phase3
-    {
-        CommandStmt VisitCommandStmt(S.CommandStmt cmdStmt)
+    {   
+        // var a = 0, b = "string"
+        
+        // int a = 0, b = 2;
+        StmtResult VisitVarDeclStmt(S.VarDeclStmt varDeclStmt) 
         {
             // Visit
-            var stringExps = new List<StringExp>();
-            foreach (var cmd in cmdStmt.Commands)
-            {
-                var stringExp = VisitStringExp(cmd);
-                stringExps.Add(stringExp);
-            }
-
-            return analyzer.AnalyzeCommandStmt(stringExps);
-        }
-
-        void VisitVarDeclElement(S.VarDeclElement elem)
-        {
-            analyzer.AnalyzeVarDeclElement(elem);
-        }
-
-        void VisitVarDecl(S.VarDecl varDecl)
-        {
-            foreach(var elem in varDecl.Elems)
-            {
-                VisitVarDeclElement(elem);
-            }
-        }
-        
-        Stmt VisitVarDeclStmt(S.VarDeclStmt varDeclStmt) 
-        {
-            // 이렇게까지 나눠져야 할 일인가
             VisitVarDecl(varDeclStmt.VarDecl);
+
+            var result = analyzer.AnalyzeVarDeclStmt();
+
+            return new StmtResult(result);
         }
 
-        Stmt VisitIfStmt(S.IfStmt ifStmt) { throw new NotImplementedException(); }
-        Stmt VisitForStmt(S.ForStmt forStmt) { throw new NotImplementedException(); }
-        Stmt VisitContinueStmt(S.ContinueStmt continueStmt) { throw new NotImplementedException(); }
-        Stmt VisitBreakStmt(S.BreakStmt breakStmt) { throw new NotImplementedException(); }
-        Stmt VisitReturnStmt(S.ReturnStmt returnStmt) { throw new NotImplementedException(); }
-        Stmt VisitBlockStmt(S.BlockStmt blockStmt) { throw new NotImplementedException(); }
-        BlankStmt VisitBlankStmt(S.BlankStmt _) { return BlankStmt.Instance; }
-        Stmt VisitExpStmt(S.ExpStmt expStmt) { throw new NotImplementedException(); }
-        Stmt VisitTaskStmt(S.TaskStmt taskStmt) { throw new NotImplementedException(); }
-        Stmt VisitAwaitStmt(S.AwaitStmt awaitStmt) { throw new NotImplementedException(); }
-        Stmt VisitAsyncStmt(S.AsyncStmt asyncStmt) { throw new NotImplementedException(); }
-        Stmt VisitForeachStmt(S.ForeachStmt foreachStmt) { throw new NotImplementedException(); }
-        Stmt VisitYieldStmt(S.YieldStmt yieldStmt) { throw new NotImplementedException(); }
+        // 직접 호출이 아니라 IfStmt로부터 호출된다
+        StmtResult VisitIfTestStmt(S.IfStmt ifStmt)
+        {
+            var condResult = VisitExp(ifStmt.Cond, null);
+            var result = analyzer.AnalyzeIfTestStmt(ifStmt);
+            return new StmtResult(result);
+        }
 
-        Stmt VisitStmt(S.Stmt stmt)
+        StmtResult VisitIfStmt(S.IfStmt ifStmt)
+        {
+            
+        }
+
+        StmtResult VisitForStmt(S.ForStmt forStmt) { throw new NotImplementedException(); }
+        StmtResult VisitContinueStmt(S.ContinueStmt continueStmt) { throw new NotImplementedException(); }
+        StmtResult VisitBreakStmt(S.BreakStmt breakStmt) { throw new NotImplementedException(); }
+        StmtResult VisitReturnStmt(S.ReturnStmt returnStmt) { throw new NotImplementedException(); }
+        StmtResult VisitBlockStmt(S.BlockStmt blockStmt) { throw new NotImplementedException(); }
+        StmtResult VisitBlankStmt(S.BlankStmt blankStmt) 
+        {
+            var result = analyzer.AnalyzeBlankStmt(blankStmt);
+            return new StmtResult(result);
+        }
+        StmtResult VisitExpStmt(S.ExpStmt expStmt) { throw new NotImplementedException(); }
+        StmtResult VisitTaskStmt(S.TaskStmt taskStmt) { throw new NotImplementedException(); }
+        StmtResult VisitAwaitStmt(S.AwaitStmt awaitStmt) { throw new NotImplementedException(); }
+        StmtResult VisitAsyncStmt(S.AsyncStmt asyncStmt) { throw new NotImplementedException(); }
+        StmtResult VisitForeachStmt(S.ForeachStmt foreachStmt) { throw new NotImplementedException(); }
+        StmtResult VisitYieldStmt(S.YieldStmt yieldStmt) { throw new NotImplementedException(); }
+
+        StmtResult VisitStmt(S.Stmt stmt)
         {
             switch (stmt)
             {

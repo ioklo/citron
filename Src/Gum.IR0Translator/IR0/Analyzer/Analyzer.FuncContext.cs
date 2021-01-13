@@ -70,7 +70,7 @@ namespace Gum.IR0
                 return bSequence;
             }
 
-            public (bool IsSuccess, TypeValue? RetTypeValue) ExecInLambdaScope(TypeValue? lambdaRetTypeValue, Func<bool> action)
+            public void ExecInLambdaScope(TypeValue? lambdaRetTypeValue, Action action)
             {
                 localVarsOutsideLambda.Push();
                 var prevLocalVarsByName = localVarsByName;
@@ -83,13 +83,9 @@ namespace Gum.IR0
                 
                 localVarsByName = new ScopedDictionary<string, LocalVarInfo>();
 
-                bool bSuccess = false;
-                TypeValue? resultRetTypeValue = null;
-
                 try
                 {
-                    bSuccess = action.Invoke();
-                    resultRetTypeValue = retTypeValue;
+                    action.Invoke();                    
                 }
                 finally
                 {
@@ -97,8 +93,6 @@ namespace Gum.IR0
                     localVarsByName = prevLocalVarsByName;
                     retTypeValue = prevRetTypeValue;
                 }
-
-                return (bSuccess, resultRetTypeValue);
             }
 
             public bool DoesLocalVarNameExistInScope(string name)
@@ -113,6 +107,20 @@ namespace Gum.IR0
                 try
                 {
                     action.Invoke();
+                }
+                finally
+                {
+                    localVarsByName.Pop();
+                }
+            }
+
+            public TResult ExecInLocalScope<TResult>(Func<TResult> func)
+            {
+                localVarsByName.Push();
+
+                try
+                {
+                    return func.Invoke();
                 }
                 finally
                 {

@@ -56,13 +56,13 @@ namespace Gum.IR0
         public static S.StringExp SimpleSString(string s) => new S.StringExp(new S.TextStringExpElement(s));
 
         public static PrivateGlobalVarDeclStmt SimpleGlobalVarDeclStmt(Type type, string name, Exp? initExp = null)
-            => new PrivateGlobalVarDeclStmt(Arr(new PrivateGlobalVarDeclStmt.Element(name, type, initExp)));
+            => new PrivateGlobalVarDeclStmt(Arr(new VarDeclElement(name, type, initExp)));
 
         public static LocalVarDeclStmt SimpleLocalVarDeclStmt(Type typeId, string name, Exp? initExp = null)
             => new LocalVarDeclStmt(SimpleLocalVarDecl(typeId, name, initExp));
 
         public static LocalVarDecl SimpleLocalVarDecl(Type typeId, string name, Exp? initExp = null)
-            => new LocalVarDecl(Arr(new LocalVarDecl.Element(name, typeId, initExp)));
+            => new LocalVarDecl(Arr(new VarDeclElement(name, typeId, initExp)));
 
         public static IntLiteralExp SimpleInt(int v) => new IntLiteralExp(v);
         public static BoolLiteralExp SimpleBool(bool v) => new BoolLiteralExp(v);

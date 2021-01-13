@@ -8,7 +8,7 @@ using System.Net;
 using System.Text;
 using Gum.CompileTime;
 using Gum.Infra;
-
+using Pretune;
 using static Gum.IR0.AnalyzeErrorCode;
 
 using S = Gum.Syntax;
@@ -19,131 +19,185 @@ namespace Gum.IR0
     {   
         Context context;
 
-        public Analyzer(Context context)
+        public Analyzer(
+            ItemInfoRepository itemInfoRepo,
+            SyntaxItemInfoRepository syntaxItemInfoRepository,
+            TypeValueService typeValueService,
+            TypeExpTypeValueService typeExpTypeValueService,
+            IErrorCollector errorCollector)
         {
-            this.context = context;
+            this.context = new Context(itemInfoRepo, syntaxItemInfoRepository, typeValueService, typeExpTypeValueService, errorCollector);
         }
-        
-        internal bool AnalyzeVarDecl<TVarDecl>(S.VarDecl varDecl, VarDeclVisitor<TVarDecl> varDeclVisitor, [MaybeNullWhen(false)] out TVarDecl outVarDecl)
-        {
-            // 1. int x  // x를 추가
-            // 2. int x = initExp // x 추가, initExp가 int인지 검사
-            // 3. var x = initExp // initExp의 타입을 알아내고 x를 추가
-            // 4. var x = 1, y = "string"; // 각각 한다
 
-            var declTypeValue = context.GetTypeValueByTypeExp(varDecl.Type);
-            
-            foreach (var elem in varDecl.Elems)
+        public TypeValue AnalyzeTypeExp(S.TypeExp typeExp)
+        {
+            return context.GetTypeValueByTypeExp(typeExp);
+        }
+
+        [AutoConstructor]
+        partial struct VarDeclElementCoreResult
+        {
+            public VarDeclElement Elem { get; }
+            public TypeValue TypeValue { get; }
+        }
+
+        VarDeclElementCoreResult AnalyzeVarDeclElementCore(S.VarDeclElement elem, TypeValue declType)
+        {
+            if (elem.InitExp == null)
             {
-                if (elem.InitExp == null)
+                // var x; 체크
+                if (declType is TypeValue.Var)
+                    context.AddFatalError(A0101_VarDecl_CantInferVarType, elem, $"{elem.VarName}의 타입을 추론할 수 없습니다");
+
+                var type = context.GetType(declType);
+                return new VarDeclElementCoreResult(new VarDeclElement(elem.VarName, type, null), declType);
+            }
+            else
+            {
+                // var 처리
+                if (declType is TypeValue.Var)
                 {
-                    if (declTypeValue is TypeValue.Var)
-                    {
-                        context.AddError(A0101_VarDecl_CantInferVarType, elem, $"{elem.VarName}의 타입을 추론할 수 없습니다");
-                        return false;
-                    }
-                    else
-                    {
-                        varDeclVisitor.VisitElement(elem, elem.VarName, declTypeValue, null);
-                    }
+                    var initExpResult = AnalyzeExp(elem.InitExp, null);
+                    var type = context.GetType(initExpResult.TypeValue);
+                    return new VarDeclElementCoreResult(new VarDeclElement(elem.VarName, type, initExpResult.Exp), initExpResult.TypeValue);
                 }
                 else
                 {
-                    // var 처리
-                    Exp? ir0InitExp;
-                    TypeValue typeValue;
-                    if (declTypeValue is TypeValue.Var)
-                    {
-                        if (!AnalyzeExp(elem.InitExp, null, out ir0InitExp, out var initExpTypeValue))
-                            return false;
+                    var initExpResult = AnalyzeExp(elem.InitExp, declType);
 
-                        typeValue = initExpTypeValue;
-                    }
-                    else
-                    {
-                        if (!AnalyzeExp(elem.InitExp, declTypeValue, out ir0InitExp, out var initExpTypeValue))
-                            return false;
+                    if (!IsAssignable(declType, initExpResult.TypeValue))
+                        context.AddFatalError(A0102_VarDecl_MismatchBetweenDeclTypeAndInitExpType, elem, $"타입 {initExpResult.TypeValue}의 값은 타입 {varDecl.Type}의 변수 {elem.VarName}에 대입할 수 없습니다.");
 
-                        typeValue = declTypeValue;
-
-                        if (!IsAssignable(declTypeValue, initExpTypeValue))
-                            context.AddError(A0102_VarDecl_MismatchBetweenDeclTypeAndInitExpType, elem, $"타입 {initExpTypeValue}의 값은 타입 {varDecl.Type}의 변수 {elem.VarName}에 대입할 수 없습니다.");
-                    }
-
-                    varDeclVisitor.VisitElement(elem, elem.VarName, typeValue, ir0InitExp);
+                    var type = context.GetType(declType);
+                    return new VarDeclElementCoreResult(new VarDeclElement(elem.VarName, type, initExpResult.Exp), declType);
                 }
             }
+        }
 
-            outVarDecl = varDeclVisitor.Build();
-            return true;
-        }        
+        [AutoConstructor]
+        partial struct VarDeclElementResult
+        {
+            public VarDeclElement VarDeclElement { get; }
+        }
 
-        public bool AnalyzeStringExpElement(
-            S.StringExpElement elem, 
-            [NotNullWhen(true)] out StringExpElement? outElem)
+        VarDeclElementResult AnalyzePrivateGlobalVarDeclElement(S.VarDeclElement elem, TypeValue declType)
+        {
+            var name = elem.VarName;
+
+            if (context.DoesPrivateGlobalVarNameExist(name))            
+                context.AddFatalError(A0104_VarDecl_GlobalVariableNameShouldBeUnique, elem, $"전역 변수 {name}가 이미 선언되었습니다");
+
+            var result = AnalyzeVarDeclElementCore(elem, declType);
+
+            context.AddPrivateGlobalVarInfo(name, result.TypeValue);
+            return new VarDeclElementResult(result.Elem);
+        }
+
+        VarDeclElementResult AnalyzeLocalVarDeclElement(S.VarDeclElement elem, TypeValue declType)
+        {
+            var name = elem.VarName;
+
+            if (context.DoesLocalVarNameExistInScope(name))
+                context.AddFatalError(A0103_VarDecl_LocalVarNameShouldBeUniqueWithinScope, elem, $"지역 변수 {name}이 같은 범위에 이미 선언되었습니다");
+
+            var result = AnalyzeVarDeclElementCore(elem, declType);
+
+            context.AddLocalVarInfo(name, result.TypeValue);
+            return new VarDeclElementResult(result.Elem);
+        }
+
+        [AutoConstructor]
+        partial struct PrivateGlobalVarDeclResult
+        {
+            public ImmutableArray<VarDeclElement> Elems { get; }
+        }
+
+        PrivateGlobalVarDeclResult AnalyzePrivateGlobalVarDecl(S.VarDecl varDecl)
+        {
+            var declType = context.GetTypeValueByTypeExp(varDecl.Type);
+
+            var elems = new List<VarDeclElement>();
+            foreach (var elem in varDecl.Elems)
+            {
+                var result = AnalyzePrivateGlobalVarDeclElement(elem, declType);
+                elems.Add(result.VarDeclElement);
+            }
+
+            return new PrivateGlobalVarDeclResult(elems.ToImmutableArray());
+        }
+
+        [AutoConstructor]
+        partial struct LocalVarDeclResult
+        {
+            public LocalVarDecl VarDecl { get; }
+        }
+
+        LocalVarDeclResult AnalyzeLocalVarDecl(S.VarDecl varDecl)
+        {
+            var declType = context.GetTypeValueByTypeExp(varDecl.Type);
+
+            var elems = new List<VarDeclElement>();
+            foreach (var elem in varDecl.Elems)
+            {
+                var result = AnalyzeLocalVarDeclElement(elem, declType);
+                elems.Add(result.VarDeclElement);
+            }
+
+            return new LocalVarDeclResult(new LocalVarDecl(elems.ToImmutableArray()));
+        }
+
+        StringExpElement AnalyzeStringExpElement(S.StringExpElement elem)
         {
             if (elem is S.ExpStringExpElement expElem)
             {
-                if (!AnalyzeExp(expElem.Exp, null, out var ir0Exp, out var expTypeValue))
-                {
-                    outElem = null;
-                    return false;
-                }                
+                var expResult = AnalyzeExp(expElem.Exp, null);
 
                 // 캐스팅이 필요하다면 
-                if (expTypeValue == TypeValues.Int)
+                if (expResult.TypeValue == TypeValues.Int)
                 {
-                    outElem = new ExpStringExpElement(
+                    return new ExpStringExpElement(
                         new CallInternalUnaryOperatorExp(
                             InternalUnaryOperator.ToString_Int_String,
-                            new ExpInfo(ir0Exp, Type.Int)
+                            new ExpInfo(expResult.Exp, Type.Int)
                         )
                     );
-                    return true;
                 }
-                else if (expTypeValue == TypeValues.Bool)
+                else if (expResult.TypeValue == TypeValues.Bool)
                 {
-                    outElem = new ExpStringExpElement(
+                    return new ExpStringExpElement(
                             new CallInternalUnaryOperatorExp(
                             InternalUnaryOperator.ToString_Bool_String,
-                            new ExpInfo(ir0Exp, Type.Bool)
+                            new ExpInfo(expResult.Exp, Type.Bool)
                         )
                     );
-                    return true;
                 }
-                else if (expTypeValue == TypeValues.String)
+                else if (expResult.TypeValue == TypeValues.String)
                 {
-                    outElem = new ExpStringExpElement(ir0Exp);
-                    return true;
+                    return new ExpStringExpElement(expResult.Exp);
                 }
                 else
                 {
-                    context.AddError(A1901_StringExp_ExpElementShouldBeBoolOrIntOrString, expElem.Exp, "문자열 내부에서 사용되는 식은 bool, int, string 이어야 합니다");
-                    outElem = null;
-                    return false;
+                    context.AddFatalError(A1901_StringExp_ExpElementShouldBeBoolOrIntOrString, expElem.Exp, "문자열 내부에서 사용되는 식은 bool, int, string 이어야 합니다");
                 }
             }
             else if (elem is S.TextStringExpElement textElem)
             {
-                outElem = new TextStringExpElement(textElem.Text);
-                return true;
+                return new TextStringExpElement(textElem.Text);
             }
 
             throw new InvalidOperationException();
         }
 
-        public bool AnalyzeLambda(
-            S.ISyntaxNode nodeForErrorReport,
-            S.Stmt body,
-            IEnumerable<S.LambdaExpParam> parameters, 
-            [NotNullWhen(true)] out Stmt? outBody,
-            [NotNullWhen(true)] out CaptureInfo? outCaptureInfo,
-            [NotNullWhen(true)] out TypeValue.Func? outFuncTypeValue)
+        [AutoConstructor]
+        struct LambdaResult
         {
-            outBody = null;
-            outCaptureInfo = null;
-            outFuncTypeValue = null;            
+            public Stmt Body { get; }
+            public CaptureInfo CaptureInfo { get; }
+            public TypeValue.Func FuncTypeValue { get; }
+        }
 
+        LambdaResult AnalyzeLambda(S.ISyntaxNode nodeForErrorReport, S.Stmt body, ImmutableArray<S.LambdaExpParam> parameters)
+        {   
             // 람다 안에서 캡쳐해야할 변수들 목록
             var capturedLocalVars = new List<CaptureInfo.Element>();
 
@@ -155,26 +209,23 @@ namespace Gum.IR0
             foreach (var param in parameters)
             {
                 if (param.Type == null)
-                {
-                    context.AddError(A9901_NotSupported_LambdaParameterInference, nodeForErrorReport, "람다 인자 타입추론은 아직 지원하지 않습니다");
-                    return false;
-                }
+                    context.AddFatalError(A9901_NotSupported_LambdaParameterInference, nodeForErrorReport, "람다 인자 타입추론은 아직 지원하지 않습니다");
 
                 var paramTypeValue = context.GetTypeValueByTypeExp(param.Type);
 
                 paramInfos.Add((param.Name, paramTypeValue));
             }
 
-            Stmt? ir0Body = null;
-            var result = context.ExecInLambdaScope(retTypeValue, () => {
+            var bodyResult = new StmtResult(); // suppress CS0165
+
+            context.ExecInLambdaScope(retTypeValue, () => {
 
                 // 람다 파라미터를 지역 변수로 추가한다
                 foreach(var paramInfo in paramInfos)
                     context.AddLocalVarInfo(paramInfo.Name, paramInfo.TypeValue);
 
                 // 본문 분석
-                if (!AnalyzeStmt(body, out ir0Body))
-                    return false;
+                bodyResult = AnalyzeStmt(body);
                 
                 // 성공했으면, 리턴 타입 갱신
                 retTypeValue = context.GetRetTypeValue();
@@ -188,22 +239,14 @@ namespace Gum.IR0
                         capturedLocalVars.Add(new CaptureInfo.Element(typeId, localVarOutsideLambdaInfo.LocalVarInfo.Name));
                     }
                 }
-
-                return true;
             });
 
-            if (!result.IsSuccess)
-                return false;
-
-            Debug.Assert(ir0Body != null);
-
-            outBody = ir0Body;
-            outCaptureInfo = new CaptureInfo(false, capturedLocalVars);
-            outFuncTypeValue = new TypeValue.Func(
-                result.RetTypeValue ?? TypeValue.Void.Instance,
-                paramInfos.Select(paramInfo => paramInfo.TypeValue));
-
-            return true;
+            return new LambdaResult(
+                bodyResult.Stmt, 
+                new CaptureInfo(false, capturedLocalVars),
+                new TypeValue.Func(
+                    retTypeValue ?? TypeValue.Void.Instance,
+                    paramInfos.Select(paramInfo => paramInfo.TypeValue)));
         }
 
         bool IsTopLevelExp(S.Exp exp)
@@ -228,22 +271,12 @@ namespace Gum.IR0
             }
         }
 
-        public bool AnalyzeTopLevelExp(
-            S.Exp exp, 
-            TypeValue? hintTypeValue, 
-            AnalyzeErrorCode code,
-            [NotNullWhen(true)] out Exp? outExp, 
-            [NotNullWhen(true)] out TypeValue? outTypeValue)
+        ExpResult AnalyzeTopLevelExp(S.Exp exp, TypeValue? hintTypeValue, AnalyzeErrorCode code)
         {
             if (!IsTopLevelExp(exp))
-            {
-                context.AddError(code, exp, "대입, 함수 호출만 구문으로 사용할 수 있습니다");
-                outExp = null;
-                outTypeValue = null;
-                return false;
-            }
+                context.AddFatalError(code, exp, "대입, 함수 호출만 구문으로 사용할 수 있습니다");
 
-            return AnalyzeExp(exp, hintTypeValue, out outExp, out outTypeValue);
+            return AnalyzeExp(exp, hintTypeValue);
         }
         
         public bool AnalyzeFuncDecl(S.FuncDecl funcDecl)
@@ -363,7 +396,12 @@ namespace Gum.IR0
             }
         }
 
-        public AnalyzeScript(S.Script script, IErrorCollector errorCollector)
+        public Script ToScript()
+        {
+            return new Script(context.GetTypeDecls(), context.GetFuncDecls(), topLevelStmts);
+        }
+
+        public Script? AnalyzeScript(S.Script script, IErrorCollector errorCollector)
         {
             if (!AnalyzeScript(script, out var ir0Script))
                 return null;
@@ -371,9 +409,7 @@ namespace Gum.IR0
             if (errorCollector.HasError)
                 return null;
 
-            return (ir0Script,
-                typeValueService, 
-                buildResult.ModuleInfo);
+            return ir0Script;
         }
 
         public bool IsAssignable(TypeValue toTypeValue, TypeValue fromTypeValue)
@@ -453,12 +489,14 @@ namespace Gum.IR0
             return true;
         }
 
-        public bool CheckParamTypes(S.ISyntaxNode nodeForErrorReport, IReadOnlyList<TypeValue> parameters, IReadOnlyList<TypeValue> args)
+        public void CheckParamTypes(S.ISyntaxNode nodeForErrorReport, IReadOnlyList<TypeValue> parameters, IReadOnlyList<TypeValue> args)
         {
+            bool bFatal = false;
+
             if (parameters.Count != args.Count)
             {
                 context.AddError(A0401_Parameter_MismatchBetweenParamCountAndArgCount, nodeForErrorReport, $"함수는 인자를 {parameters.Count}개 받는데, 호출 인자는 {args.Count} 개입니다");
-                return false;
+                bFatal = true;
             }
 
             for (int i = 0; i < parameters.Count; i++)
@@ -466,30 +504,26 @@ namespace Gum.IR0
                 if (!IsAssignable(parameters[i], args[i]))
                 {
                     context.AddError(A0402_Parameter_MismatchBetweenParamTypeAndArgType, nodeForErrorReport, $"함수의 {i + 1}번 째 매개변수 타입은 {parameters[i]} 인데, 호출 인자 타입은 {args[i]} 입니다");
-                    return false;
+                    bFatal = true;
                 }
             }
 
-            return true;
+            if (bFatal)
+                throw new FatalAnalyzeException();
         }
 
         // TODO: Hint를 받을 수 있게 해야 한다
-        public bool AnalyzeExps(IEnumerable<S.Exp> exps, out ImmutableArray<(Exp Exp, TypeValue TypeValue)> outInfos)
+        ImmutableArray<ExpResult> AnalyzeExps(IEnumerable<S.Exp> exps)
         {
-            outInfos = ImmutableArray<(Exp, TypeValue)>.Empty;
-
-            var infos = new List<(Exp, TypeValue)>();
+            var results = new List<ExpResult>();
 
             foreach (var exp in exps)
             {
-                if (!AnalyzeExp(exp, null, out var ir0Exp, out var typeValue))
-                    return false;
-
-                infos.Add((ir0Exp, typeValue));
+                var expResult = AnalyzeExp(exp, null);
+                results.Add(expResult);
             }
 
-            outInfos = infos.ToImmutableArray();
-            return true;
+            return results.ToImmutableArray();
         }
 
     }

@@ -33,24 +33,14 @@ namespace Gum.IR0
     // 글로벌 변수 선언
     public class PrivateGlobalVarDeclStmt : Stmt
     {
-        public class Element
-        {
-            public string Name { get; }
-            public Type Type { get; }
+        public ImmutableArray<VarDeclElement> Elems { get; }
 
-            public Exp? InitExp { get; }
-            
-            public Element(string name, Type type, Exp? initExp)
-            {
-                Name = name;
-                Type = type;
-                InitExp = initExp;
-            }
+        public PrivateGlobalVarDeclStmt(ImmutableArray<VarDeclElement> elems)
+        {
+            Elems = elems;
         }
 
-        public ImmutableArray<Element> Elems { get; }
-
-        public PrivateGlobalVarDeclStmt(IEnumerable<Element> elems)
+        public PrivateGlobalVarDeclStmt(IEnumerable<VarDeclElement> elems)
         {
             Elems = elems.ToImmutableArray();
         }

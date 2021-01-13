@@ -14,7 +14,7 @@ namespace Gum.IR0
     {
         public static class Misc
         {
-            public static ImmutableArray<TypeValue> GetTypeValues(IEnumerable<S.TypeExp> typeExps, Context context)
+            public static ImmutableArray<TypeValue> GetTypeValues(ImmutableArray<S.TypeExp> typeExps, Context context)
             {
                 return typeExps.Select(typeExp => context.GetTypeValueByTypeExp(typeExp)).ToImmutableArray();
             }

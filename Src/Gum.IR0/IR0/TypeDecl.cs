@@ -6,7 +6,7 @@ namespace Gum.IR0
 {
     public abstract partial class TypeDecl
     {
-        public TypeDeclId Id { get; }        
+        public TypeDeclId Id { get; }
 
         public TypeDecl(TypeDeclId id)
         { 

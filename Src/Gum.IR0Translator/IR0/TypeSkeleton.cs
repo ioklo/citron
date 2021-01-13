@@ -9,8 +9,7 @@ using S = Gum.Syntax;
 
 namespace Gum.IR0
 {
-
-    public abstract class Skeleton
+    abstract class Skeleton
     {
         public ItemPath Path { get; }
         public Skeleton(ItemPath path)
@@ -88,6 +87,6 @@ namespace Gum.IR0
                 VarDecl = varDecl;
                 ElemIndex = elemIndex;
             }
-        }        
+        }
     }    
 }
