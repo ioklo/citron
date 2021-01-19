@@ -7,58 +7,57 @@ using System.Linq;
 
 namespace Gum.IR0
 {
-    public class TypeValueApplier
+    class TypeValueApplier
     {
-        ModuleInfoRepository moduleInfoRepo;
-        
-        public TypeValueApplier(ModuleInfoRepository moduleInfoRepo)
+        ItemInfoRepository itemInfoRepo;
+
+        public TypeValueApplier(ItemInfoRepository itemInfoRepo)
         {
-            this.moduleInfoRepo = moduleInfoRepo;
+            this.itemInfoRepo = itemInfoRepo;
         }
 
-        void FillTypeEnv(int depth, IReadOnlyList<string> typeParams, ImmutableArray<TypeValue> typeArgs, Dictionary<TypeValue.TypeVar, TypeValue> typeEnv)
+        void FillTypeEnv(int depth, ImmutableArray<string> typeParams, ImmutableArray<TypeValue> typeArgs, Dictionary<TypeValue.TypeVar, TypeValue> typeEnv)
         {   
-            Debug.Assert(typeParams.Count == typeArgs.Length);
+            Debug.Assert(typeParams.Length == typeArgs.Length);
 
-            for (int i = 0; i < typeParams.Count; i++)
+            for (int i = 0; i < typeParams.Length ; i++)
                 typeEnv[new TypeValue.TypeVar(depth, i, typeParams[i])] = typeArgs[i];
         }
 
-        // MakeTypeEnv_Type(X<T>, [int]) -> [T -> int]
-        private void MakeTypeEnv_Type(TypeValue.Normal ntv, Dictionary<TypeValue.TypeVar, TypeValue> typeEnv)
+        // class X<T> { class Y<T> { } } 일때
+        // FillTypeEnv(X<int>.Y<short>, env) -> env with {Tx -> int, Ty -> short}
+        (int Depth, TypeInfo ParentTypeInfo) FillTypeEnv(TypeValue.Normal ntv, Dictionary<TypeValue.TypeVar, TypeValue> typeEnv)
         {
-            // IModuleInfo, NamespacePath, OuterEntries, Entry
-            var moduleInfo = moduleInfoRepo.GetModule(ntv.ModuleName);
-            Debug.Assert(moduleInfo != null);
-
-            if (ntv.OuterEntries.Length == 0)
+            // base case 
+            // [Module]Namespace.X
+            var outer = ntv.GetOuter();
+            if (outer == null)
             {
-                var typeInfo = moduleInfo.GetItem(ntv.NamespacePath, ntv.Entry.GetItemPathEntry()) as TypeInfo;
+                var typeInfo = itemInfoRepo.GetItem<TypeInfo>(ntv.GetTypeId());
                 Debug.Assert(typeInfo != null);
 
-                FillTypeEnv(0, typeInfo.GetTypeParams(), ntv.Entry.TypeArgs, typeEnv);
+                // update env
+                FillTypeEnv(0, typeInfo.GetTypeParams().ToImmutableArray(), ntv.Entry.TypeArgs, typeEnv);
+                return (1, typeInfo);
             }
             else
             {
-                var typeInfo = moduleInfo.GetItem(ntv.NamespacePath, ntv.OuterEntries[0].GetItemPathEntry()) as TypeInfo;
+                // [Module]Namespace.X<int>.Y<short>
+                // var parentTypeInfo = FillTypeEnv([Module]Namespace.X<int>, env)
+                // var typeInfo = typeInfo.GetTypeInfo(Y);
+                // update env
+                // return typeInfo;
+
+                var (depth, parentTypeInfo) = FillTypeEnv(outer, typeEnv);
+                var typeInfo = parentTypeInfo.GetItem(ntv.Entry.GetItemPathEntry()) as TypeInfo;
                 Debug.Assert(typeInfo != null);
 
-                FillTypeEnv(0, typeInfo.GetTypeParams(), ntv.OuterEntries[0].TypeArgs, typeEnv);
-
-                for (int i = 1; i < ntv.OuterEntries.Length; i++)
-                {                    
-                    typeInfo = typeInfo.GetItem(ntv.OuterEntries[i].GetItemPathEntry()) as TypeInfo;
-                    Debug.Assert(typeInfo != null);
-
-                    FillTypeEnv(i, typeInfo.GetTypeParams(), ntv.OuterEntries[i].TypeArgs, typeEnv);
-                }
-
-                typeInfo = typeInfo.GetItem(ntv.Entry.GetItemPathEntry()) as TypeInfo;
-                Debug.Assert(typeInfo != null);
-
-                FillTypeEnv(ntv.OuterEntries.Length, typeInfo.GetTypeParams(), ntv.Entry.TypeArgs, typeEnv);
+                FillTypeEnv(depth, typeInfo.GetTypeParams().ToImmutableArray(), ntv.Entry.TypeArgs, typeEnv);
+                return (depth + 1, typeInfo);
             }
-        }
+        }      
+        
+
 
         // ApplyTypeEnv_Normal(Normal (Z, [[T], [U], []]), { T -> int, U -> short })
         // 
@@ -108,7 +107,7 @@ namespace Gum.IR0
         {
             var typeEnv = new Dictionary<TypeValue.TypeVar, TypeValue>(ModuleInfoEqualityComparer.Instance);
 
-            MakeTypeEnv_Type(context, typeEnv);
+            FillTypeEnv(context, typeEnv);
 
             return ApplyTypeEnv(typeValue, typeEnv);
         }
@@ -116,36 +115,25 @@ namespace Gum.IR0
         // 주어진 funcValue 컨텍스트 내에서, typeValue를 치환하기
         public TypeValue.Func Apply_Func(FuncValue context, TypeValue.Func typeValue)
         {
-            var typeEnv = new Dictionary<TypeValue.TypeVar, TypeValue>(ModuleInfoEqualityComparer.Instance);
+            var typeEnv = new Dictionary<TypeValue.TypeVar, TypeValue>(ModuleInfoEqualityComparer.Instance);            
 
-            var moduleInfo = moduleInfoRepo.GetModule(context.ModuleName);
-            Debug.Assert(moduleInfo != null);
-
-            if (context.OuterEntries.Length == 0)
+            var outer = context.GetOuter();
+            if (outer == null)
             {
-                var funcInfo = moduleInfo.GetItem(context.NamespacePath, context.Entry.GetItemPathEntry()) as FuncInfo;
+                var funcInfo = itemInfoRepo.GetItem<FuncInfo>(context.GetFuncId());
                 Debug.Assert(funcInfo != null);
 
                 FillTypeEnv(0, funcInfo.TypeParams, context.Entry.TypeArgs, typeEnv);
             }
             else
             {
-                var typeInfo = moduleInfo.GetItem(context.NamespacePath, context.OuterEntries[0].GetItemPathEntry()) as TypeInfo;
+                var (depth, typeInfo) = FillTypeEnv(outer, typeEnv);
                 Debug.Assert(typeInfo != null);
-                FillTypeEnv(0, typeInfo.GetTypeParams(), context.OuterEntries[0].TypeArgs, typeEnv);
-
-                for (int i = 1; i < context.OuterEntries.Length; i++)
-                {
-                    typeInfo = typeInfo.GetItem(context.OuterEntries[i].GetItemPathEntry()) as TypeInfo;
-                    Debug.Assert(typeInfo != null);
-
-                    FillTypeEnv(i, typeInfo.GetTypeParams(), context.OuterEntries[i].TypeArgs, typeEnv);
-                }
 
                 var funcInfo = typeInfo.GetItem(context.Entry.GetItemPathEntry()) as FuncInfo;
                 Debug.Assert(funcInfo != null);
 
-                FillTypeEnv(context.OuterEntries.Length, funcInfo.TypeParams, context.Entry.TypeArgs, typeEnv);
+                FillTypeEnv(depth, funcInfo.TypeParams, context.Entry.TypeArgs, typeEnv);
             }
 
             return ApplyTypeEnv_Func(typeValue, typeEnv);

@@ -16,17 +16,19 @@ using S = Gum.Syntax;
 namespace Gum.IR0
 {
     partial class Analyzer
-    {   
+    {        
+        TypeSkeletonRepository skelRepo;
         Context context;
 
         public Analyzer(
+            TypeSkeletonRepository skelRepo,            
             ItemInfoRepository itemInfoRepo,
-            SyntaxItemInfoRepository syntaxItemInfoRepository,
             TypeValueService typeValueService,
             TypeExpTypeValueService typeExpTypeValueService,
             IErrorCollector errorCollector)
         {
-            this.context = new Context(itemInfoRepo, syntaxItemInfoRepository, typeValueService, typeExpTypeValueService, errorCollector);
+            this.skelRepo = skelRepo;
+            this.context = new Context(itemInfoRepo, typeValueService, typeExpTypeValueService, errorCollector);
         }
 
         public TypeValue AnalyzeTypeExp(S.TypeExp typeExp)
@@ -66,7 +68,7 @@ namespace Gum.IR0
                     var initExpResult = AnalyzeExp(elem.InitExp, declType);
 
                     if (!IsAssignable(declType, initExpResult.TypeValue))
-                        context.AddFatalError(A0102_VarDecl_MismatchBetweenDeclTypeAndInitExpType, elem, $"타입 {initExpResult.TypeValue}의 값은 타입 {varDecl.Type}의 변수 {elem.VarName}에 대입할 수 없습니다.");
+                        context.AddFatalError(A0102_VarDecl_MismatchBetweenDeclTypeAndInitExpType, elem, $"타입 {initExpResult.TypeValue}의 값은 타입 {declType}의 변수 {elem.VarName}에 대입할 수 없습니다.");
 
                     var type = context.GetType(declType);
                     return new VarDeclElementCoreResult(new VarDeclElement(elem.VarName, type, initExpResult.Exp), declType);
@@ -185,11 +187,11 @@ namespace Gum.IR0
                 return new TextStringExpElement(textElem.Text);
             }
 
-            throw new InvalidOperationException();
+            throw new UnreachableCodeException();
         }
 
         [AutoConstructor]
-        struct LambdaResult
+        partial struct LambdaResult
         {
             public Stmt Body { get; }
             public CaptureInfo CaptureInfo { get; }
@@ -278,74 +280,39 @@ namespace Gum.IR0
 
             return AnalyzeExp(exp, hintTypeValue);
         }
-        
-        public bool AnalyzeFuncDecl(S.FuncDecl funcDecl)
+
+        public void AnalyzeFuncSkel(FuncSkeleton funcSkel)
         {
-            var funcInfo = context.GetFuncInfoByDecl(funcDecl);
-            var bResult = true;
-            
-            var funcContext = new FuncContext(funcInfo.RetTypeValue, funcInfo.bSeqCall);
-            context.ExecInFuncScope(funcContext, () =>
-            {   
+            context.ExecInFuncScope(funcSkel.FuncDecl, () =>
+            {
+                var funcDecl = funcSkel.FuncDecl;
+
                 if (0 < funcDecl.TypeParams.Length || funcDecl.ParamInfo.VariadicParamIndex != null)
                     throw new NotImplementedException();
                 
                 // 파라미터 순서대로 추가
-                foreach (var param in funcDecl.ParamInfo.Parameters)
+                foreach (var param in funcSkel.FuncDecl.ParamInfo.Parameters)
                 {
                     var paramTypeValue = context.GetTypeValueByTypeExp(param.Type);
                     context.AddLocalVarInfo(param.Name, paramTypeValue);
                 }
 
-                if (AnalyzeStmt(funcDecl.Body, out var body))
+                var bodyResult = AnalyzeStmt(funcDecl.Body);
+                
+                if (funcDecl.IsSequence)
                 {
-                    if (funcDecl.IsSequence)
-                    { 
-                        // TODO: Body가 실제로 리턴을 제대로 하는지 확인해야 할 필요가 있다
-                        var retTypeId = context.GetType(funcInfo.RetTypeValue);
-                        context.AddSeqFunc(funcInfo.GetId(), retTypeId, false, funcDecl.TypeParams, funcDecl.ParamInfo.Parameters.Select(param => param.Name), body);
-                    }
-                    else
-                    {
-                        // TODO: Body가 실제로 리턴을 제대로 하는지 확인해야 할 필요가 있다
-                        context.AddFuncDecl(funcInfo.GetId(), bThisCall: false, funcDecl.TypeParams, funcDecl.ParamInfo.Parameters.Select(param => param.Name), body);
-                    }
+                    // TODO: Body가 실제로 리턴을 제대로 하는지 확인해야 할 필요가 있다
+                    var retType = context.GetType(context.GetRetTypeValue());
+                    context.AddSeqFuncDecl(funcSkel.Path, retType, false, funcDecl.TypeParams, funcDecl.ParamInfo.Parameters.Select(param => param.Name), bodyResult.Stmt);
                 }
                 else
                 {
-                    bResult = false;
+                    // TODO: Body가 실제로 리턴을 제대로 하는지 확인해야 할 필요가 있다
+                    context.AddFuncDecl(funcSkel.Path, bThisCall: false, funcDecl.TypeParams, funcDecl.ParamInfo.Parameters.Select(param => param.Name), bodyResult.Stmt);
                 }
             });
-            
-            return bResult;
         }
-
-        public bool AnalyzeTypeDecl(S.TypeDecl typeDecl)
-        {
-            switch(typeDecl)
-            {
-                case S.EnumDecl enumDecl:
-                    return AnalyzeEnumDecl(enumDecl);
-
-                case S.StructDecl structDecl:
-                    throw new NotImplementedException();
-
-                default:
-                    throw new InvalidOperationException();
-            }
-        }
-
-        public bool AnalyzeEnumDecl(S.EnumDecl enumDecl)
-        {
-            var enumInfo = context.GetTypeInfoByDecl<EnumInfo>(enumDecl);            
-
-            var defaultElemInfo = enumInfo.GetDefaultElemInfo();
-            var defaultFields = defaultElemInfo.FieldInfos.Select(fieldInfo => (fieldInfo.Name, fieldInfo.TypeValue));
-
-            //context.AddEnum()
-            throw new NotImplementedException();
-        }
-
+        
         // stmt가 존재하는 곳
         // GlobalFunc, MemberFunc, TopLevel
         bool AnalyzeScript(S.Script script, [NotNullWhen(true)] out Script? outScript)
@@ -366,23 +333,7 @@ namespace Gum.IR0
                 }
             }
 
-            // 5. 각 func body를 분석한다 (4에서 얻게되는 글로벌 변수 정보가 필요하다)
-            foreach (var elem in script.Elements)
-            {
-                switch (elem)
-                {
-                    // TODO: classDecl
-                    case S.Script.GlobalFuncDeclElement funcElem:
-                        if (!AnalyzeFuncDecl(funcElem.FuncDecl))
-                            bResult = false;
-                        break;
-
-                    case S.Script.TypeDeclElement typeElem:
-                        if (!AnalyzeTypeDecl(typeElem.TypeDecl))
-                            bResult = false;
-                        break;
-                }
-            }
+            // 5. 각 func body를 분석한다 (4에서 얻게되는 글로벌 변수 정보가 필요하다)            
 
             if (bResult)
             {
@@ -395,12 +346,7 @@ namespace Gum.IR0
                 return false;
             }
         }
-
-        public Script ToScript()
-        {
-            return new Script(context.GetTypeDecls(), context.GetFuncDecls(), topLevelStmts);
-        }
-
+        
         public Script? AnalyzeScript(S.Script script, IErrorCollector errorCollector)
         {
             if (!AnalyzeScript(script, out var ir0Script))
@@ -480,7 +426,7 @@ namespace Gum.IR0
                 return false;
             }
 
-            if (!Misc.IsVarStatic(outVarValue.GetItemId()))
+            if (!Misc.IsVarStatic(outVarValue.GetItemId(), context))
             {
                 context.AddError(A0304_MemberExp_MemberVariableIsNotStatic, memberExp, "정적 변수가 아닙니다");
                 return false;
@@ -489,7 +435,7 @@ namespace Gum.IR0
             return true;
         }
 
-        public void CheckParamTypes(S.ISyntaxNode nodeForErrorReport, IReadOnlyList<TypeValue> parameters, IReadOnlyList<TypeValue> args)
+        void CheckParamTypes(S.ISyntaxNode nodeForErrorReport, IReadOnlyList<TypeValue> parameters, IReadOnlyList<TypeValue> args)
         {
             bool bFatal = false;
 
@@ -526,5 +472,24 @@ namespace Gum.IR0
             return results.ToImmutableArray();
         }
 
+        public Script Run()
+        {
+            var topLevelStmts = new List<Stmt>();
+
+            foreach (var stmt in skelRepo.GetTopLevelStmts())
+            {
+                var stmtResult = AnalyzeStmt(stmt);
+                topLevelStmts.Add(stmtResult.Stmt);
+            }
+
+            // 현재 func밖에 없으므로
+            foreach (var globalSkel in skelRepo.GetGlobalSkeletons())
+            {
+                if (globalSkel is FuncSkeleton funcSkel)
+                    AnalyzeFuncSkel(funcSkel);
+            }
+
+            return new Script(context.GetTypeDecls(), context.GetFuncDecls(), topLevelStmts);
+        }
     }
 }

@@ -46,6 +46,14 @@ namespace Gum.CompileTime
             {
             }
 
+            public Normal? GetOuter()
+            {
+                var outerPath = path.GetOuter();
+                if (outerPath == null) return null;
+
+                return new Normal(ModuleName, outerPath.Value);
+            }
+
             public Normal(ModuleName moduleName, AppliedItemPath path)
             {
                 ModuleName = moduleName;

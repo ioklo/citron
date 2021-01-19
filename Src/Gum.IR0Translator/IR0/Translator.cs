@@ -11,33 +11,23 @@ namespace Gum.IR0
     // 외부 인터페이스
     public class Translator
     {
-        //Phase0 phase0;        
-
-        //public Translator(Phase0 phase0)
-        //{
-        //    this.phase0 = phase0;
-        //}
-
         public static Script? Translate(IEnumerable<IModuleInfo> referenceInfos, Syntax.Script script, IErrorCollector errorCollector)
         {
-            var moduleInfoRepo = new ModuleInfoRepository(referenceInfos);
-            var itemInfoRepo = new ItemInfoRepository(moduleInfoRepo);
+            var externalModuleInfoRepo = new ModuleInfoRepository(referenceInfos);
 
-            var typeSkeletonCollector = new TypeSkeletonCollector();
-            
-            var phase1Factory = new Phase1Factory(referenceInfos, script, itemInfoRepo, errorCollector);
-            var phase0 = new Phase0(script, typeSkeletonCollector, phase1Factory);
+            var typeSkelRepo = TypeSkeletonCollector.Collect(script);
+            var typeExpTypeValueService = TypeExpEvaluator.Evaluate(script, externalModuleInfoRepo, typeSkelRepo, errorCollector);
 
-            // 1. skeleton을 모은다
-            var phase1 = phase0.Run();
-            if (phase1 == null) return null;
+            var internalModuleInfo = ModuleInfoBuilder.Build(script, typeExpTypeValueService);
 
-            var phase2 = phase1.Run();
-            if (phase1 == null) return null;
+            // Make Analyzer
+            var itemInfoRepo = new ItemInfoRepository(internalModuleInfo, externalModuleInfoRepo);
+            var typeValueApplier = new TypeValueApplier(itemInfoRepo);
+            var typeValueService = new TypeValueService(itemInfoRepo, typeValueApplier);
 
-            var phase3 = phase2.Run();
+            var analyzer = new Analyzer(typeSkelRepo, itemInfoRepo, typeValueService, typeExpTypeValueService, errorCollector);
 
-            return phase3.Run();
+            return analyzer.AnalyzeScript(script, errorCollector);            
         }
     }
 }

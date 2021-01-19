@@ -44,5 +44,13 @@ namespace Gum.CompileTime
         {
             return new ItemId(ModuleName, NamespacePath, OuterEntries.Select(entry => entry.GetItemPathEntry()), Entry.GetItemPathEntry());
         }
+
+        public TypeValue.Normal? GetOuter()
+        {
+            var outerPath = path.GetOuter();
+            if (outerPath == null) return null;
+
+            return new TypeValue.Normal(ModuleName, outerPath.Value);
+        }
     }
 }

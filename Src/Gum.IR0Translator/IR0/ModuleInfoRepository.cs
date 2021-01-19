@@ -15,8 +15,7 @@ namespace Gum.IR0
     {
         ImmutableDictionary<ModuleName, IModuleInfo> modulesByName;
         ImmutableArray<IModuleInfo> moduleInfos;
-
-        // ScriptModuleInfo는 여기서 검색하지 않는다        
+        
         public IEnumerable<IModuleInfo> GetAllModules()
         {
             return moduleInfos;

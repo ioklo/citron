@@ -23,7 +23,7 @@ namespace Gum.IR0
         }
 
         // 현재 함수 정보
-        public class FuncContext
+        class FuncContext
         {
             private TypeValue? retTypeValue; // 리턴 타입이 미리 정해져 있다면 이걸 쓴다
             private bool bSequence; // 시퀀스 여부

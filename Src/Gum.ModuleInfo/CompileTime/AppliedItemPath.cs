@@ -35,5 +35,13 @@ namespace Gum.CompileTime
         {
             return new AppliedItemPath(NamespacePath, OuterEntries.Append(Entry), entry);
         }
+
+        public AppliedItemPath? GetOuter()
+        {
+            if (OuterEntries.Length == 0)
+                return null;
+
+            return new AppliedItemPath(NamespacePath, OuterEntries.RemoveAt(OuterEntries.Length - 1), OuterEntries[OuterEntries.Length - 1]);
+        }
     }
 }

@@ -47,6 +47,11 @@ namespace Gum.CompileTime
             return sb.ToString();
         }
 
+        public ItemPath GetItemPath()
+        {
+            return path;
+        }
+
         public void ToString(StringBuilder sb)
         {
             sb.Append($"[{ModuleName}]{NamespacePath}");

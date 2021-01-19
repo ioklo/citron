@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Gum.Misc;
 
 namespace Gum.CompileTime
 {
@@ -152,7 +153,7 @@ namespace Gum.CompileTime
                         GetHashCodeName(enumElem.Name));
 
                 default:
-                    throw new InvalidOperationException();
+                    throw new UnreachableCodeException();
             }
         }
 

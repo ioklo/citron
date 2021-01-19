@@ -11,8 +11,8 @@ namespace Gum.IR0
     public partial class Script
     {
         public ImmutableArray<TypeDecl> TypeDecls { get; } // class struct enum interface
-        public ImmutableArray<FuncDecl> FuncDecls { get; } // normal sequence
-        public ImmutableArray<Stmt> TopLevelStmts { get; }
+        public ImmutableArray<FuncDecl> FuncDecls { get; } // 
+        public ImmutableArray<Stmt> TopLevelStmts { get; } 
 
         public Script(
             IEnumerable<TypeDecl> typeDecls,

@@ -1,4 +1,5 @@
 ﻿using Gum.IR0;
+using Gum.Misc;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -168,7 +169,7 @@ namespace Gum.IR0.Runtime
                 case InternalBinaryOperator.Equal_Int_Int_Bool: Operator_Equal_Int_Int_Bool((IntValue)operand0, (IntValue)operand1, (BoolValue)result); break;
                 case InternalBinaryOperator.Equal_Bool_Bool_Bool: Operator_Equal_Bool_Bool_Bool((BoolValue)operand0, (BoolValue)operand1, (BoolValue)result); break;
                 case InternalBinaryOperator.Equal_String_String_Bool: Operator_Equal_String_String_Bool((StringValue)operand0, (StringValue)operand1, (BoolValue)result); break;
-                default: throw new InvalidOperationException();
+                default: throw new UnreachableCodeException();
             }
         }
 
@@ -185,7 +186,7 @@ namespace Gum.IR0.Runtime
                 case InternalUnaryOperator.ToString_Bool_String: Operator_ToString_Bool_String((BoolValue)operand, (StringValue)result); break;
                 case InternalUnaryOperator.ToString_Int_String: Operator_ToString_Int_String((IntValue)operand, (StringValue)result); break;
                 
-                default: throw new InvalidOperationException();
+                default: throw new UnreachableCodeException();
             }
         }
 

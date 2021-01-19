@@ -1,4 +1,5 @@
 ﻿using Gum.CompileTime;
+using Gum.Misc;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -43,7 +44,7 @@ namespace Gum.Runtime
             else if (buildInfo is RuntimeModuleTypeBuildInfo.Struct structBuildInfo)
                 moduleBuilder.AddStructType(outerTypeId, typeId, structBuildInfo.GetTypeParams(), structBuildInfo.GetBaseTypeValue(), memberTypeIds, memberFuncIds, memberVarIds, structBuildInfo.GetDefaultValueFactory());
             else
-                throw new InvalidOperationException();
+                throw new UnreachableCodeException();
         }
 
         public void AddMemberFunc(

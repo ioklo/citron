@@ -1,11 +1,12 @@
-﻿using System;
+﻿using Gum.Misc;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using S = Gum.Syntax;
 
 namespace Gum.IR0
 {
-    partial class Phase1
+    partial class TypeExpEvaluator
     {
         void VisitCommandStmt(S.CommandStmt cmdStmt)
         {
@@ -23,7 +24,7 @@ namespace Gum.IR0
             VisitExp(ifStmt.Cond);
 
             if (ifStmt.TestType != null)
-                VisitTypeExpNoResult(ifStmt.TestType);
+                VisitTypeExpNoThrow(ifStmt.TestType);
 
             VisitStmt(ifStmt.Body);
 
@@ -37,8 +38,9 @@ namespace Gum.IR0
             {
                 case S.ExpForStmtInitializer expInit: VisitExp(expInit.Exp); break;
                 case S.VarDeclForStmtInitializer varDeclInit: VisitVarDecl(varDeclInit.VarDecl); break;
-                default: throw new NotImplementedException();
             }
+
+            throw new UnreachableCodeException();
         }
 
         void VisitForStmt(S.ForStmt forStmt)
@@ -97,7 +99,7 @@ namespace Gum.IR0
 
         void VisitForeachStmt(S.ForeachStmt foreachStmt)
         {
-            VisitTypeExpNoResult(foreachStmt.Type);
+            VisitTypeExpNoThrow(foreachStmt.Type);
             VisitExp(foreachStmt.Iterator);
             VisitStmt(foreachStmt.Body);
         }
@@ -126,7 +128,7 @@ namespace Gum.IR0
                 case S.AsyncStmt asyncStmt: VisitAsyncStmt(asyncStmt); break;
                 case S.ForeachStmt foreachStmt: VisitForeachStmt(foreachStmt); break;
                 case S.YieldStmt yieldStmt: VisitYieldStmt(yieldStmt); break;
-                default: throw new InvalidOperationException();
+                default: throw new UnreachableCodeException();
             };
         }
     }

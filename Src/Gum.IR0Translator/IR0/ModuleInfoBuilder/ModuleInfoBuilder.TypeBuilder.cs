@@ -6,6 +6,7 @@ namespace Gum.IR0
 {
     partial class ModuleInfoBuilder
     {
+        // struct, class 류를 빌드하는데 사용
         class TypeBuilder
         {
             private ItemPath typePath;
@@ -41,8 +42,6 @@ namespace Gum.IR0
             {
                 varInfos.Add(varInfo);
             }
-        }
-
-        
+        }        
     }
 }

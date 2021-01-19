@@ -7,7 +7,7 @@ using S = Gum.Syntax;
 
 namespace Gum.IR0
 {
-    public class Misc
+    partial class Misc
     {
         static void GetTypeValueNormalEntryString(AppliedItemPathEntry entry, StringBuilder sb)
         {
@@ -81,7 +81,27 @@ namespace Gum.IR0
                     throw new InvalidOperationException();
             }
         }
-        
+
+        public static void VisitScript(S.Script script, ISyntaxScriptVisitor visitor)
+        {
+            foreach(var elem in script.Elements)
+            {
+                switch(elem)
+                {
+                    case S.Script.GlobalFuncDeclElement globalFuncDeclElem:
+                        visitor.VisitGlobalFuncDecl(globalFuncDeclElem.FuncDecl);
+                        break;
+
+                    case S.Script.StmtElement stmtElem:
+                        visitor.VisitTopLevelStmt(stmtElem.Stmt);
+                        break;
+
+                    case S.Script.TypeDeclElement typeDeclElem:
+                        visitor.VisitTypeDecl(typeDeclElem.TypeDecl);
+                        break;
+                }                
+            }
+        }
 
         public static string MakeParamHash(IEnumerable<TypeValue> typeValues)
         {

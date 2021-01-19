@@ -492,7 +492,7 @@ namespace Gum.IR0
                 case S.AsyncStmt asyncStmt: return AnalyzeAsyncStmt(asyncStmt);
                 case S.ForeachStmt foreachStmt: return AnalyzeForeachStmt(foreachStmt);
                 case S.YieldStmt yieldStmt: return AnalyzeYieldStmt(yieldStmt);
-                default: throw new InvalidOperationException();
+                default: throw new UnreachableCodeException();
             }
         }
     }

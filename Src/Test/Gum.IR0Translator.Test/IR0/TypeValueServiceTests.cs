@@ -42,11 +42,11 @@ namespace Gum.IR0
             var yInfo = new ClassInfo(yId, new[] { "U" }, gtTypeValue, new ItemInfo[] { fInfo, vInfo });
             var xInfo = new ClassInfo(xId, new[] { "T", "U" }, null, new[] { yInfo });
 
-            var moduleInfo = new ScriptModuleInfo(Array.Empty<NamespaceInfo>(), new ItemInfo[] { xInfo });
+            var moduleInfo = new InternalModuleInfo(Array.Empty<NamespaceInfo>(), new ItemInfo[] { xInfo });
 
-            var moduleInfoRepo = new ModuleInfoRepository(new[] { moduleInfo });
-            var itemInfoRepo = new ItemInfoRepository(moduleInfoRepo);
-            var applier = new TypeValueApplier(moduleInfoRepo);
+            var emptyModuleInfoRepo = new ModuleInfoRepository(Enumerable.Empty<IModuleInfo>());
+            var itemInfoRepo = new ItemInfoRepository(moduleInfo, emptyModuleInfoRepo);
+            var applier = new TypeValueApplier(emptyModuleInfoRepo);
 
             return new TypeValueService(itemInfoRepo, applier);
         }

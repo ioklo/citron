@@ -13,24 +13,20 @@ namespace Gum.CompileTime
         public TypeValue RetTypeValue { get; }
         public ImmutableArray<TypeValue> ParamTypeValues { get; }
 
-        public FuncInfo(ItemId id, bool bSeqCall, bool bThisCall, IEnumerable<string> typeParams, TypeValue retTypeValue, IEnumerable<TypeValue> paramTypeValues)
+        public FuncInfo(ItemId id, bool bSeqCall, bool bThisCall, ImmutableArray<string> typeParams, TypeValue retTypeValue, ImmutableArray<TypeValue> paramTypeValues)
             : base(id)
         {
             this.bSeqCall = bSeqCall;
             this.bThisCall = bThisCall;            
-            TypeParams = typeParams.ToImmutableArray();
+            TypeParams = typeParams;
             RetTypeValue = retTypeValue;
-            ParamTypeValues = paramTypeValues.ToImmutableArray();
+            ParamTypeValues = paramTypeValues;
         }
 
-        public FuncInfo(ItemId id, bool bSeqCall, bool bThisCall, IEnumerable<string> typeParams, TypeValue retTypeValues, params TypeValue[] paramTypeValues)
-            : base(id)
-        {
-            this.bSeqCall = bSeqCall;
-            this.bThisCall = bThisCall;
-            TypeParams = typeParams.ToImmutableArray();
-            RetTypeValue = retTypeValues;
-            ParamTypeValues = ImmutableArray.Create(paramTypeValues);
-        }
+        public FuncInfo(ItemId id, bool bSeqCall, bool bThisCall, IEnumerable<string> typeParams, TypeValue retTypeValue, IEnumerable<TypeValue> paramTypeValues)
+            : this(id, bSeqCall, bThisCall, typeParams.ToImmutableArray(), retTypeValue, paramTypeValues.ToImmutableArray()) { }
+
+        public FuncInfo(ItemId id, bool bSeqCall, bool bThisCall, ImmutableArray<string> typeParams, TypeValue retTypeValues, params TypeValue[] paramTypeValues)
+            : this(id, bSeqCall, bThisCall, typeParams, retTypeValues, paramTypeValues.ToImmutableArray()) { }
     }
 }

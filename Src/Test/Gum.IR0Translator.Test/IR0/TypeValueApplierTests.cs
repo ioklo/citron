@@ -29,7 +29,7 @@ namespace Gum.IR0
             var yInfo = new ClassInfo(yId, new string[] { "T", "U" }, null, new[] { funcInfo });
             var xInfo = new ClassInfo(xId, new string[] { "T", "U", "V" }, null, new[] { yInfo });
 
-            IModuleInfo moduleInfo = new ScriptModuleInfo(Array.Empty<NamespaceInfo>(), new ItemInfo[] { xInfo });
+            IModuleInfo moduleInfo = new InternalModuleInfo(Array.Empty<NamespaceInfo>(), new ItemInfo[] { xInfo });
 
             var moduleInfoRepo = new ModuleInfoRepository(new[] { moduleInfo });
             var applier = new TypeValueApplier(moduleInfoRepo);
@@ -62,7 +62,7 @@ namespace Gum.IR0
             var yInfo = new ClassInfo(yId, new string[] { "T" }, null, Array.Empty<ItemInfo>());
             var xInfo = new ClassInfo(xId, new string[] { "T" }, null, new[] { yInfo });
 
-            IModuleInfo moduleInfo = new ScriptModuleInfo(Array.Empty<NamespaceInfo>(), new[] { xInfo });
+            IModuleInfo moduleInfo = new InternalModuleInfo(Array.Empty<NamespaceInfo>(), new[] { xInfo });
                 
             var moduleInfoRepo = new ModuleInfoRepository(new[] { moduleInfo });
             var applier = new TypeValueApplier(moduleInfoRepo);

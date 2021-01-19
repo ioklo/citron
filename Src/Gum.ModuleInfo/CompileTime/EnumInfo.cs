@@ -39,14 +39,14 @@ namespace Gum.CompileTime
 
         public EnumInfo(
             ItemId id,
-            IEnumerable<string> typeParams,
-            IEnumerable<EnumElemInfo> elemInfos)
+            ImmutableArray<string> typeParams,
+            ImmutableArray<EnumElemInfo> elemInfos)
             : base(id, typeParams, null, Array.Empty<ItemInfo>())
         {   
-            this.typeParams = typeParams.ToImmutableArray();
-
-            defaultElemInfo = elemInfos.First();
+            this.typeParams = typeParams;
             this.elemInfosByName = elemInfos.ToImmutableDictionary(elemInfo => elemInfo.Name);
+
+            this.defaultElemInfo = elemInfos.First();
         }
         
         public bool GetElemInfo(string idName, [NotNullWhen(true)] out EnumElemInfo? outElemInfo)

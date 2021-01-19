@@ -24,7 +24,7 @@ namespace Gum.IR0
     partial class Analyzer
     {   
         [AutoConstructor]
-        struct ExpResult
+        partial struct ExpResult
         {
             public Exp Exp { get; }
             public TypeValue TypeValue { get; }
@@ -76,7 +76,7 @@ namespace Gum.IR0
                     }
 
                 default:
-                    throw new InvalidOperationException();
+                    throw new UnreachableCodeException();
             }
         }
 
@@ -91,7 +91,7 @@ namespace Gum.IR0
         }
 
         [AutoConstructor]
-        struct StringExpResult
+        partial struct StringExpResult
         {
             public StringExp Exp { get; }
             public TypeValue TypeValue { get; }
@@ -209,7 +209,7 @@ namespace Gum.IR0
                     return AnalyzeIntUnaryAssignExp(unaryOpExp.Operand, InternalUnaryAssignOperator.PrefixDec_Int_Int);
 
                 default:
-                    throw new InvalidOperationException();
+                    throw new UnreachableCodeException();
             }
         }                
 
@@ -370,25 +370,29 @@ namespace Gum.IR0
                 CheckParamTypes(callableExp, funcTypeValue.Params, argResults.Select(info => info.TypeValue).ToList());
 
                 // 내부함수라면
-                var funcDeclId = context.GetFuncDeclId(globalFunc.GetId());
-                if (funcDeclId != null)
+                var globalFuncId = globalFunc.GetId();
+                if (ModuleInfoEqualityComparer.EqualsModuleName(globalFuncId.ModuleName, ModuleName.Internal))
                 {
-                    var args = argResults.Select(info =>
+                    var funcDeclId = context.GetFuncDeclId(globalFunc.GetId());
+                    if (funcDeclId != null)
                     {
-                        var typeId = context.GetType(info.TypeValue);
-                        return new ExpInfo(info.Exp, typeId);
-                    }).ToArray();
+                        var args = argResults.Select(info =>
+                        {
+                            var typeId = context.GetType(info.TypeValue);
+                            return new ExpInfo(info.Exp, typeId);
+                        }).ToArray();
 
-                    return new ExpResult(
-                        new CallFuncExp(
-                            funcDeclId.Value,
-                            typeArgs.Select(typeArg => context.GetType(typeArg)),
-                            null,
-                            args), 
-                        funcTypeValue);
+                        return new ExpResult(
+                            new CallFuncExp(
+                                funcDeclId.Value,
+                                typeArgs.Select(typeArg => context.GetType(typeArg)),
+                                null,
+                                args),
+                            funcTypeValue);
+                    }
                 }
                 else // 외부함수 처리
-                {   
+                {
                     throw new NotImplementedException();
                 }
             }

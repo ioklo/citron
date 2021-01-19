@@ -10,6 +10,7 @@ using static Gum.Infra.CollectionExtensions;
 using Gum;
 using Gum.IR0;
 using System.Collections.Immutable;
+using Gum.Misc;
 
 namespace Gum.IR0.Runtime
 {
@@ -53,7 +54,7 @@ namespace Gum.IR0.Runtime
                     return enumValue.GetMemberValue(enumMemberExp.MemberName);
 
                 default: 
-                    throw new InvalidOperationException();
+                    throw new UnreachableCodeException();
             }
         }
 
@@ -133,7 +134,7 @@ namespace Gum.IR0.Runtime
                         }
 
                     default:
-                        throw new InvalidOperationException();
+                        throw new UnreachableCodeException();
                 }
             }
 

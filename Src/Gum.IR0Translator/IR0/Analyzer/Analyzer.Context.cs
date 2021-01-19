@@ -45,18 +45,16 @@ namespace Gum.IR0
 
             // CurFunc와 bGlobalScope를 나누는 이유는, globalScope에서 BlockStmt 안으로 들어가면 global이 아니기 때문이다
             bool bGlobalScope;
-            bool bInLoop;
-            SyntaxItemInfoRepository syntaxItemInfoRepository;
+            bool bInLoop;            
             TypeExpTypeValueService typeExpTypeValueService;
             
             Dictionary<string, PrivateGlobalVarInfo> privateGlobalVarInfos;
             List<TypeDecl> typeDecls;
             List<FuncDecl> funcDecls;
-            Dictionary<ItemId, FuncDeclId> funcDeclsById;
+            Dictionary<ItemPath, FuncDeclId> funcDeclsByPath;
 
             public Context(                
-                ItemInfoRepository itemInfoRepo,
-                SyntaxItemInfoRepository syntaxItemInfoRepository,
+                ItemInfoRepository itemInfoRepo,                
                 TypeValueService typeValueService,
                 TypeExpTypeValueService typeExpTypeValueService,                
                 IErrorCollector errorCollector)
@@ -64,10 +62,8 @@ namespace Gum.IR0
                 this.itemInfoRepo = itemInfoRepo;
 
                 TypeValueService = typeValueService;
-
-                this.syntaxItemInfoRepository = syntaxItemInfoRepository;                
+                
                 this.typeExpTypeValueService = typeExpTypeValueService;
-
                 this.errorCollector = errorCollector;
 
                 curFunc = new FuncContext(new TypeValue.Normal(ItemIds.Int), false);
@@ -77,7 +73,7 @@ namespace Gum.IR0
                 
                 typeDecls = new List<TypeDecl>();
                 funcDecls = new List<FuncDecl>();
-                funcDeclsById = new Dictionary<ItemId, FuncDeclId>();
+                funcDeclsByPath = new Dictionary<ItemPath, FuncDeclId>();
             }
 
             public bool DoesLocalVarNameExistInScope(string name)
@@ -201,7 +197,7 @@ namespace Gum.IR0
 
             public void ExecInLambdaScope(TypeValue? lambdaRetTypeValue, Action action)
             {
-                return curFunc.ExecInLambdaScope(lambdaRetTypeValue, action);
+                curFunc.ExecInLambdaScope(lambdaRetTypeValue, action);
             }
 
             internal bool IsLocalVarOutsideLambda(string name)
@@ -209,11 +205,13 @@ namespace Gum.IR0
                 return curFunc.IsLocalVarOutsideLambda(name);
             }
 
-            public void ExecInFuncScope(FuncContext funcContext, Action action)
+            public void ExecInFuncScope(S.FuncDecl funcDecl, Action action)
             {
+                var retTypeValue = GetTypeValueByTypeExp(funcDecl.RetType);
+
                 var (prevFunc, bPrevGlobalScope) = (curFunc, bGlobalScope);
                 bGlobalScope = false;
-                curFunc = funcContext;
+                curFunc = new FuncContext(retTypeValue, funcDecl.IsSequence);
 
                 try
                 {
@@ -230,18 +228,7 @@ namespace Gum.IR0
             public bool GetTypeValueByName(string varName, [NotNullWhen(true)] out TypeValue? localVarTypeValue)
             {
                 throw new NotImplementedException();
-            }
-
-            public FuncInfo GetFuncInfoByDecl(S.FuncDecl funcDecl)
-            {
-                return syntaxItemInfoRepository.GetFuncInfoByDecl(funcDecl);
-            }
-
-            public TTypeInfo GetTypeInfoByDecl<TTypeInfo>(S.EnumDecl enumDecl)
-                where TTypeInfo : TypeInfo
-            {
-                return (TTypeInfo)syntaxItemInfoRepository.GetTypeInfoByDecl(enumDecl);
-            }
+            }            
 
             public bool IsGlobalScope()
             {
@@ -264,11 +251,11 @@ namespace Gum.IR0
             }
 
             private bool GetLocalOutsideLambdaIdentifierInfo(
-                string idName, IReadOnlyList<TypeValue> typeArgs,
+                string idName, ImmutableArray<TypeValue> typeArgs,
                 [NotNullWhen(true)] out IdentifierInfo? outIdInfo)
             {
                 // 지역 스코프에는 변수만 있고, 함수, 타입은 없으므로 이름이 겹치는 것이 있는지 검사하지 않아도 된다
-                if (typeArgs.Count == 0)
+                if (typeArgs.Length == 0)
                 {
                     if (curFunc.GetLocalVarOutsideLambdaInfo(idName, out var localVarOutsideInfo))
                     {
@@ -283,11 +270,11 @@ namespace Gum.IR0
 
             // 지역 스코프에서 
             private bool GetLocalIdentifierInfo(
-                string idName, IReadOnlyList<TypeValue> typeArgs,
+                string idName, ImmutableArray<TypeValue> typeArgs,
                 [NotNullWhen(true)] out IdentifierInfo? outIdInfo)
             {
                 // 지역 스코프에는 변수만 있고, 함수, 타입은 없으므로 이름이 겹치는 것이 있는지 검사하지 않아도 된다
-                if (typeArgs.Count == 0)
+                if (typeArgs.Length == 0)
                     if (curFunc.GetLocalVarInfo(idName, out var localVarInfo))
                     {
                         outIdInfo = new IdentifierInfo.Local(localVarInfo.Name, localVarInfo.TypeValue);
@@ -299,7 +286,7 @@ namespace Gum.IR0
             }
 
             private bool GetThisIdentifierInfo(
-                string idName, IReadOnlyList<TypeValue> typeArgs,
+                string idName, ImmutableArray<TypeValue> typeArgs,
                 [NotNullWhen(true)] out IdentifierInfo? idInfo)
             {
                 // TODO: implementation
@@ -309,10 +296,10 @@ namespace Gum.IR0
             }
 
             private bool GetPrivateGlobalVarIdentifierInfo(
-                string idName, IReadOnlyList<TypeValue> typeArgs,
+                string idName, ImmutableArray<TypeValue> typeArgs,
                 [NotNullWhen(true)] out IdentifierInfo? outIdInfo)
             {
-                if (typeArgs.Count == 0)
+                if (typeArgs.Length == 0)
                     if (privateGlobalVarInfos.TryGetValue(idName, out var privateGlobalVarInfo))
                     {
                         outIdInfo = new IdentifierInfo.PrivateGlobal(privateGlobalVarInfo.Name, privateGlobalVarInfo.TypeValue);
@@ -324,14 +311,14 @@ namespace Gum.IR0
             }
 
             private bool GetModuleGlobalIdentifierInfo(
-                string idName, IReadOnlyList<TypeValue> typeArgs,
+                string idName, ImmutableArray<TypeValue> typeArgs,
                 TypeValue? hintTypeValue,
                 [NotNullWhen(true)] out IdentifierInfo? outIdInfo)
             {
                 var candidates = new List<IdentifierInfo>();
 
                 // TODO: root 이외의 namespace 지원                
-                if (typeArgs.Count == 0)
+                if (typeArgs.Length == 0)
                 {
                     foreach (var varInfo in itemInfoRepo.GetVars(NamespacePath.Root, idName))
                     {
@@ -348,7 +335,7 @@ namespace Gum.IR0
                 foreach (var funcInfo in itemInfoRepo.GetFuncs(NamespacePath.Root, idName))
                 {
                     // TODO: 인자 타입 추론을 사용하면, typeArgs를 생략할 수 있기 때문에, TypeArgs.Count가 TypeParams.Length보다 적어도 된다
-                    if (typeArgs.Count == funcInfo.TypeParams.Length)
+                    if (typeArgs.Length == funcInfo.TypeParams.Length)
                     {
                         var funcId = funcInfo.GetId();
                         Debug.Assert(funcId.OuterEntries.Length == 0);
@@ -361,7 +348,7 @@ namespace Gum.IR0
                     }
                 }
 
-                foreach (var typeInfo in itemInfoRepo.GetTypes(NamespacePath.Root, new ItemPathEntry(idName, typeArgs.Count)))
+                foreach (var typeInfo in itemInfoRepo.GetTypes(NamespacePath.Root, new ItemPathEntry(idName, typeArgs.Length)))
                 {
                     var typeId = typeInfo.GetId();
 
@@ -379,7 +366,7 @@ namespace Gum.IR0
                 if (hintTypeValue is TypeValue.Normal hintNTV)
                 {
                     // First<T> 같은건 없기 때문에 없을때만 검색한다
-                    if (typeArgs.Count == 0)
+                    if (typeArgs.Length == 0)
                     {
                         var enumInfo = itemInfoRepo.GetItem<EnumInfo>(hintNTV.GetTypeId());
                         if (enumInfo != null)
@@ -403,11 +390,11 @@ namespace Gum.IR0
                 return false;
             }
 
-            public void AddFuncDecl(ItemId itemId, bool bThisCall, IEnumerable<string> typeParams, IEnumerable<string> paramNames, Stmt body)
+            public void AddFuncDecl(ItemPath itemPath, bool bThisCall, IEnumerable<string> typeParams, IEnumerable<string> paramNames, Stmt body)
             {
                 var id = new FuncDeclId(funcDecls.Count);
                 funcDecls.Add(new FuncDecl.Normal(id, bThisCall, typeParams, paramNames, body));
-                funcDeclsById.Add(itemId, id);
+                funcDeclsByPath.Add(itemPath, id);
             }
 
             public IEnumerable<TypeDecl> GetTypeDecls()
@@ -420,15 +407,15 @@ namespace Gum.IR0
                 return funcDecls;
             }
 
-            public void AddSeqFunc(ItemId itemId, Type retTypeId, bool bThisCall, IEnumerable<string> typeParams, IEnumerable<string> paramNames, Stmt body)
+            public void AddSeqFuncDecl(ItemPath itemPath, Type retTypeId, bool bThisCall, IEnumerable<string> typeParams, IEnumerable<string> paramNames, Stmt body)
             {
                 var id = new FuncDeclId(funcDecls.Count);
                 funcDecls.Add(new FuncDecl.Sequence(id, retTypeId, bThisCall, typeParams, paramNames,body));
-                funcDeclsById.Add(itemId, id);
+                funcDeclsByPath.Add(itemPath, id);
             }
 
             public bool GetIdentifierInfo(
-                string idName, IEnumerable<TypeValue> typeArgs,
+                string idName, ImmutableArray<TypeValue> typeArgs,
                 TypeValue? hintTypeValue,
                 [NotNullWhen(true)] out IdentifierInfo? outIdInfo)
             {
@@ -485,9 +472,9 @@ namespace Gum.IR0
                 return privateGlobalVarInfos.ContainsKey(name);
             }
 
-            public FuncDeclId? GetFuncDeclId(ItemId funcId)
+            public FuncDeclId? GetFuncDeclId(ItemPath funcPath)
             {
-                if (funcDeclsById.TryGetValue(funcId, out var funcDeclId))
+                if (funcDeclsByPath.TryGetValue(funcPath, out var funcDeclId))
                     return funcDeclId;
                 else
                     return null;

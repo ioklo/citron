@@ -1,6 +1,6 @@
 ﻿using Gum.CompileTime;
 using Gum.Infra;
-using Gum.Syntax;
+using Gum.Misc;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -15,66 +15,99 @@ using S = Gum.Syntax;
 
 namespace Gum.IR0
 {
-    class TypeExpEvaluatorException : Exception 
-    {
-        public AnalyzeError Error { get; }
-        public TypeExpEvaluatorException(AnalyzeError error)
-        {
-            Error = error;
-        }
-    }
-
     // TypeExp를 TypeValue로 바꿔서 저장합니다.
-    internal partial class TypeExpEvaluator
+    partial class TypeExpEvaluator : ISyntaxScriptVisitor
     {
-        ItemInfoRepository itemInfoRepo;
-        SkeletonRepository skelRepo;
+        class TypeExpEvaluatorFatalException : Exception
+        {
+        }
 
+        ModuleInfoRepository externalModuleInfoRepo;
+        TypeSkeletonRepository skelRepo;
+        IErrorCollector errorCollector;
+
+        int nestedTypeDepth;
         Dictionary<S.TypeExp, TypeValue> typeValuesByTypeExp;
-        Dictionary<S.Exp, TypeValue> typeValuesByExp;
         ImmutableDictionary<string, TypeValue.TypeVar> typeEnv;
 
-        public TypeExpEvaluator(ItemInfoRepository itemInfoRepo, SkeletonRepository skelRepo)
+        public static TypeExpTypeValueService Evaluate(
+            S.Script script,
+            ModuleInfoRepository externalModuleInfoRepo,
+            TypeSkeletonRepository skelRepo,
+            IErrorCollector errorCollector)
         {
-            this.itemInfoRepo = itemInfoRepo;
-            this.skelRepo = skelRepo;
+            var evaluator = new TypeExpEvaluator(externalModuleInfoRepo, skelRepo, errorCollector);
 
-            typeValuesByTypeExp = new Dictionary<S.TypeExp, TypeValue>();
-            typeValuesByExp = new Dictionary<S.Exp, TypeValue>();
+            Misc.VisitScript(script, evaluator);
+
+            if (errorCollector.HasError)
+            {
+                // TODO: 검토
+                throw new InvalidOperationException();
+            }
+            
+            return new TypeExpTypeValueService(evaluator.typeValuesByTypeExp.ToImmutableDictionary());
+        }
+
+        TypeExpEvaluator(ModuleInfoRepository externalModuleInfoRepo, TypeSkeletonRepository skelRepo, IErrorCollector errorCollector)
+        {
+            this.externalModuleInfoRepo = externalModuleInfoRepo;
+            this.skelRepo = skelRepo;
+            this.errorCollector = errorCollector;
+
+            nestedTypeDepth = 0;
+            typeValuesByTypeExp = new Dictionary<S.TypeExp, TypeValue>();            
             typeEnv = ImmutableDictionary<string, TypeValue.TypeVar>.Empty;
         }
 
-        [DoesNotReturn]
-        public void Throw(AnalyzeErrorCode code, S.ISyntaxNode node, string msg)
+        #region ISyntaxScriptVisitor implementation
+
+        void ISyntaxScriptVisitor.VisitGlobalFuncDecl(S.FuncDecl funcDecl)
         {
-            throw new TypeExpEvaluatorException(new AnalyzeError(code, node, msg));
+            VisitFuncDecl(funcDecl);
+        }
+        
+        void ISyntaxScriptVisitor.VisitTypeDecl(S.TypeDecl typeDecl)
+        {
+            VisitTypeDecl(typeDecl);
         }
 
-        public void AddTypeValue(S.TypeExp exp, TypeValue typeValue)
+        void ISyntaxScriptVisitor.VisitTopLevelStmt(S.Stmt stmt)
+        {
+            VisitStmt(stmt);
+        }
+
+        #endregion
+
+        [DoesNotReturn]
+        void Throw(AnalyzeErrorCode code, S.ISyntaxNode node, string msg)
+        {
+            errorCollector.Add(new AnalyzeError(code, node, msg));
+            throw new TypeExpEvaluatorFatalException();
+        }
+
+        void AddTypeValue(S.TypeExp exp, TypeValue typeValue)
         {
             typeValuesByTypeExp.Add(exp, typeValue);
         }        
 
-        public void AddTypeValue(S.Exp exp, TypeValue typeValue)
+        TypeValue.TypeVar? GetTypeVar(string name)
         {
-            typeValuesByExp.Add(exp, typeValue);
+            return typeEnv.GetValueOrDefault(name);
         }
 
-        public bool GetTypeVar(string name, [NotNullWhen(true)] out TypeValue.TypeVar? typeValue)
-        {
-            return typeEnv.TryGetValue(name, out typeValue);
-        }
-
-        public void ExecInScope(ItemPath itemPath, IEnumerable<string> typeParams, Action action)
+        void ExecInScope(IEnumerable<string> typeParams, Action action)
         {
             var prevTypeEnv = typeEnv;
 
             int i = 0;
             foreach (var typeParam in typeParams)
             {
-                typeEnv = typeEnv.SetItem(typeParam, new TypeValue.TypeVar(itemPath.OuterEntries.Length, i, typeParam));
+                typeEnv = typeEnv.SetItem(typeParam, new TypeValue.TypeVar(nestedTypeDepth, i, typeParam));
                 i++;
             }
+
+            nestedTypeDepth++;
 
             try
             {
@@ -82,11 +115,12 @@ namespace Gum.IR0
             }
             finally
             {
+                nestedTypeDepth--;
                 typeEnv = prevTypeEnv;
             }
         }
 
-        private TypeExpInfo HandleBuiltInType(S.IdTypeExp exp, string name, ItemId itemId)
+        TypeExpInfo HandleBuiltInType(S.IdTypeExp exp, string name, ItemId itemId)
         {
             if (exp.TypeArgs.Length != 0)
                 Throw(T0101_IdTypeExp_TypeDoesntHaveTypeParams, exp, $"{name}은 타입 인자를 가질 수 없습니다");
@@ -94,163 +128,162 @@ namespace Gum.IR0
             AddTypeValue(exp, new TypeValue.Normal(itemId)); // NOTICE: no type args
             return new TypeExpInfo.NoMember(new TypeValue.Normal(itemId));
         }
-        
-        private IEnumerable<TypeExpInfo> GetTypeExpInfos(AppliedItemPath appliedItemPath)
+
+        TypeInfo? GetExternalType(IModuleInfo moduleInfo, ItemPath path)
+        {
+            if (path.OuterEntries.Length == 0)
+                return moduleInfo.GetGlobalItem(path.NamespacePath, path.Entry) as TypeInfo;
+
+            var curTypeInfo = moduleInfo.GetGlobalItem(path.NamespacePath, path.OuterEntries[0]) as TypeInfo;
+            if (curTypeInfo == null) return null;
+
+            for (int i = 1; i < path.OuterEntries.Length; i++)
+            {
+                curTypeInfo = curTypeInfo.GetItem(path.OuterEntries[i]) as TypeInfo;
+                if (curTypeInfo == null) return null;
+            }
+
+            return curTypeInfo.GetItem(path.Entry) as TypeInfo;
+        }
+
+        IEnumerable<TypeInfo> GetExternalTypes(ItemPath itemPath)
+        {
+            foreach (var externalModuleInfo in externalModuleInfoRepo.GetAllModules())
+            {
+                var typeInfo = GetExternalType(externalModuleInfo, itemPath);
+                if (typeInfo != null)
+                    yield return typeInfo;
+            }
+        }
+
+        IEnumerable<TypeExpInfo> GetTypeExpInfos(AppliedItemPath appliedItemPath)
         {
             var itemPath = appliedItemPath.GetItemPath();
-            var typeSkel = skelRepo.GetSkeleton(itemPath) as Skeleton.Type;
+            var typeSkel = skelRepo.GetTypeSkeleton(itemPath);
 
             if (typeSkel != null)
-            {
                 yield return new TypeExpInfo.Internal(typeSkel, new TypeValue.Normal(ModuleName.Internal, appliedItemPath));
-            }
 
             // 3-2. Reference에서 검색, GlobalTypeSkeletons에 이름이 겹치지 않아야 한다.. ModuleInfo들 끼리도 이름이 겹칠 수 있다
-            foreach (var typeInfo in itemInfoRepo.GetTypes(itemPath))
+            foreach (var typeInfo in GetExternalTypes(itemPath))
                 yield return new TypeExpInfo.External(typeInfo, new TypeValue.Normal(typeInfo.GetId().ModuleName, appliedItemPath));
-        }
-        
-        public TypeExpInfo EvaluateIdTypeExp(S.IdTypeExp exp, IEnumerable<TypeValue> typeArgs)
-        {
-            if (exp.Name == "var")
-            {
-                if (exp.TypeArgs.Length != 0)
-                    Throw(T0102_IdTypeExp_VarTypeCantApplyTypeArgs, exp, "var는 타입 인자를 가질 수 없습니다");
-                
-                AddTypeValue(exp, TypeValue.Var.Instance);
-                return new TypeExpInfo.NoMember(TypeValue.Var.Instance);
-            }
-            else if (exp.Name == "void")
-            {
-                if (exp.TypeArgs.Length != 0)
-                {
-                    Throw(T0101_IdTypeExp_TypeDoesntHaveTypeParams, exp, "void는 타입 인자를 가질 수 없습니다");
-                }
-                
-                AddTypeValue(exp, TypeValue.Void.Instance);
-                return new TypeExpInfo.NoMember(TypeValue.Void.Instance);
-            }
-
-            // built-in
-            else if (exp.Name == "bool")
-            {
-                return HandleBuiltInType(exp, "bool", ItemIds.Bool);
-            }
-            else if (exp.Name == "int")
-            {
-                return HandleBuiltInType(exp, "int", ItemIds.Int);
-            }
-            else if (exp.Name == "string")
-            {
-                return HandleBuiltInType(exp, "string", ItemIds.String);
-            }
-
-            // 1. TypeVar에서 먼저 검색
-            if (GetTypeVar(exp.Name, out var typeVar))
-            {
-                if (exp.TypeArgs.Length != 0)
-                    Throw(T0105_IdTypeExp_TypeVarCantApplyTypeArgs, exp, "타입 변수는 타입 인자를 가질 수 없습니다");                    
-
-                AddTypeValue(exp, typeVar);
-                return new TypeExpInfo.NoMember(typeVar);
-            }
-
-            // TODO: 2. 현재 This Context에서 검색
-            
-            // 3. 전역에서 검색, 
-            // TODO: 현재 namespace 상황에 따라서 Namespace.Root대신 인자를 집어넣어야 한다.
-
-            var candidates = new List<TypeExpInfo>();
-            var path = new AppliedItemPath(NamespacePath.Root, new AppliedItemPathEntry(exp.Name, string.Empty, typeArgs));
-
-            foreach (var typeExpInfo in GetTypeExpInfos(path))
-                candidates.Add(typeExpInfo);
-
-            if (candidates.Count == 1)
-            {
-                AddTypeValue(exp, candidates[0].GetTypeValue());
-                return candidates[0];
-            }
-            else if (1 < candidates.Count)
-            {
-                Throw(T0103_IdTypeExp_MultipleTypesOfSameName, exp, $"이름이 같은 {exp} 타입이 여러개 입니다");
-            }
-            else
-            {
-                Throw(T0104_IdTypeExp_TypeNotFound, exp, $"{exp}를 찾지 못했습니다");
-            }
-        }
-
-        // X<T>.Y<U, V>
-        public TypeExpInfo EvaluateMemberTypeExp(
-            S.MemberTypeExp exp,
-            TypeExpInfo parentInfo,
-            IEnumerable<TypeValue> typeArgs)
-        {
-            if (parentInfo is TypeExpInfo.NoMember)
-                Throw(T0201_MemberTypeExp_TypeIsNotNormalType, exp.Parent, "멤버가 있는 타입이 아닙니다");
-
-            var memberInfo = parentInfo.GetMemberInfo(exp.MemberName, typeArgs);
-            if (memberInfo == null)
-                Throw(T0202_MemberTypeExp_MemberTypeNotFound, exp, $"{parentInfo.GetTypeValue()}에서 {exp.MemberName}을 찾을 수 없습니다");
-            
-            AddTypeValue(exp, memberInfo.GetTypeValue());
-            return memberInfo;
         }        
-
-        // 타입을 찾을수 없다면 null, 
-        // 타입이 하나 있다면 그것을,
-        // 타입이 여러개 있다면 exception
-        public TypeExpInfo? EvaluateMemberExpIdExpParent(S.IdentifierExp idExp, IEnumerable<TypeValue> typeArgs)
+       
+        void VisitEnumDeclElement(S.EnumDeclElement enumDeclElem)
         {
-            // TODO: NamespacePath.Root 부분은 네임 스페이스 선언 상황에 따라 달라질 수 있다
-            var infos = GetTypeExpInfos(
-                new AppliedItemPath(
-                    NamespacePath.Root,
-                    new AppliedItemPathEntry(idExp.Value, string.Empty, typeArgs))
-            ).ToList();
-
-            if (infos.Count == 0) return null;
-            if (infos.Count == 1) return infos[0];
-
-            Throw(T0103_IdTypeExp_MultipleTypesOfSameName, idExp, $"이름이 같은 {idExp} 타입이 여러개 입니다");
+            foreach (var param in enumDeclElem.Params)
+                VisitTypeExpNoThrow(param.Type);
         }
 
-        public TypeExpInfo? EvaluateMemberExpMemberExpParent(S.MemberExp exp, TypeExpInfo? parentInfo, IEnumerable<TypeValue> typeArgs)
+        void VisitEnumDecl(S.EnumDecl enumDecl)
         {
-            if (parentInfo == null) return null;
-            
-            var memberInfo = parentInfo.GetMemberInfo(exp.MemberName, typeArgs);
-            if (memberInfo != null)
+            ExecInScope(enumDecl.TypeParams, () =>
             {
-                // 타입이었다면 상위에 바로 알려준다
-                return memberInfo;
-            }
-            else
+                foreach (var elem in enumDecl.Elems)
+                {
+                    VisitEnumDeclElement(elem);
+                }
+            });
+        }
+
+        void VisitTypeDecl(S.TypeDecl typeDecl)
+        {
+            switch (typeDecl)
             {
-                // 부모는 타입인데, 나는 타입이 아니라면, 부모 타입이 최외각이므로 매핑을 추가한다
-                AddTypeValue(exp.Parent, parentInfo.GetTypeValue());
-                return null;
+                case S.StructDecl structDecl:
+                    VisitStructDecl(structDecl);
+                    break;
+
+                case S.EnumDecl enumDecl:
+                    VisitEnumDecl(enumDecl);
+                    break;
             }
         }
+
+        void VisitStructDecl(S.StructDecl structDecl)
+        {
+            ExecInScope(structDecl.TypeParams, () =>
+            {
+                foreach(var elem in structDecl.Elems)
+                {
+                    switch(elem)
+                    {
+                        case S.StructDecl.TypeDeclElement typeDeclElem:
+                            VisitTypeDecl(typeDeclElem.TypeDecl);
+                            break;
+
+                        case S.StructDecl.FuncDeclElement funcDeclElem:
+                            VisitFuncDecl(funcDeclElem.FuncDecl);
+                            break;
+
+                        case S.StructDecl.VarDeclElement varDeclElem:
+                            VisitTypeExpNoThrow(varDeclElem.VarType);
+                            break;                        
+                    }
+
+                    throw new UnreachableCodeException();
+                }
+            });
+        }
+
+        void VisitFuncDecl(S.FuncDecl funcDecl)
+        {   
+            ExecInScope(funcDecl.TypeParams, () =>
+            {
+                VisitTypeExpNoThrow(funcDecl.RetType);
+
+                foreach (var param in funcDecl.ParamInfo.Parameters)
+                    VisitTypeExpNoThrow(param.Type);
+
+                VisitStmt(funcDecl.Body);
+            });
+        }        
         
-        public void EvaluateMemberExp(S.MemberExp memberExp, TypeExpInfo? parentInfo, IEnumerable<TypeValue> typeArgs)
+        void VisitVarDecl(S.VarDecl varDecl)
         {
-            if (parentInfo == null) return;
+            VisitTypeExpNoThrow(varDecl.Type);
 
-            // NOTICE: EvaluateMemberExpParent의 memberExp 처리 부분이랑 거의 같다. 수정할때 같이 수정해줘야 한다
-            var memberInfo = parentInfo.GetMemberInfo(memberExp.MemberName, typeArgs);
-
-            // 최상위 부분이므로, 타입이었다면 에러 
-            if (memberInfo != null)
-                Throw(T0203_MemberTypeExp_ExpShouldNotBeType, memberExp, "식이 들어갈 부분이 타입으로 계산되었습니다");
-
-            AddTypeValue(memberExp.Parent, parentInfo.GetTypeValue());
+            foreach (var varDeclElem in varDecl.Elems)
+            {
+                if (varDeclElem.InitExp != null)
+                    VisitExp(varDeclElem.InitExp);
+            }
         }
 
-        public TypeExpTypeValueService MakeTypeExpTypeValueService()
+        void VisitStringExpElements(ImmutableArray<S.StringExpElement> elems)
         {
-            return new TypeExpTypeValueService(typeValuesByTypeExp.ToImmutableDictionary(), typeValuesByExp.ToImmutableDictionary());
+            foreach (var elem in elems)
+            {
+                switch (elem)
+                {
+                    case S.TextStringExpElement _: break;
+                    case S.ExpStringExpElement expElem: VisitExp(expElem.Exp); break;
+                    default: throw new UnreachableCodeException();
+                }
+            }
+        }
+
+        List<TypeValue> VisitTypeArgExps(ImmutableArray<S.TypeExp> typeArgExps)
+        {
+            var typeArgs = new List<TypeValue>(typeArgExps.Length);
+            foreach (var typeArgExp in typeArgExps)
+            {
+                var typeArgInfo = VisitTypeExp(typeArgExp);
+                typeArgs.Add(typeArgInfo.GetTypeValue());
+            }
+
+            return typeArgs;
+        }
+
+        void VisitTypeArgExpsNoReturn(ImmutableArray<S.TypeExp> typeArgExps)
+        {
+            try
+            {
+                VisitTypeArgExps(typeArgExps);
+            }
+            catch (TypeExpEvaluatorFatalException)
+            {
+            }
         }
     }
 }

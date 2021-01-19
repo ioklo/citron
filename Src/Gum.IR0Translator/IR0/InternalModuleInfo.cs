@@ -1,4 +1,5 @@
-﻿using Gum.Misc;
+﻿using Gum.CompileTime;
+using Gum.Misc;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -6,22 +7,21 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
-namespace Gum.CompileTime
+namespace Gum.IR0
 {
-    public partial class ScriptModuleInfo : IModuleInfo
+    // Skeleton 다음 단계
+    class InternalModuleInfo
     {
         // 최상위
-        private Dictionary<NamespaceId, NamespaceInfo> globalNamespacesById;
-        private Dictionary<ItemPathEntry, ItemInfo> globalItemsByElem;
-        private MultiDict<Name, FuncInfo> globalFuncsByName;
-        private Dictionary<Name, VarInfo> globalVarsByName;
+        Dictionary<NamespaceId, NamespaceInfo> globalNamespacesById;
+        Dictionary<ItemPathEntry, ItemInfo> globalItemsByElem;
+        MultiDict<Name, FuncInfo> globalFuncsByName;
 
-        public ScriptModuleInfo(IEnumerable<NamespaceInfo> globalNamespaces, IEnumerable<ItemInfo> globalItems)
+        public InternalModuleInfo(IEnumerable<NamespaceInfo> globalNamespaces, IEnumerable<ItemInfo> globalItems)
         {
             this.globalNamespacesById = globalNamespaces.ToDictionary(ns => ns.Id);
             this.globalItemsByElem = new Dictionary<ItemPathEntry, ItemInfo>();
             this.globalFuncsByName = new MultiDict<Name, FuncInfo>();
-            this.globalVarsByName = new Dictionary<Name, VarInfo>();
 
             foreach(var item in globalItems)
             {
@@ -31,12 +31,12 @@ namespace Gum.CompileTime
 
                 if (item is FuncInfo func)
                     globalFuncsByName.Add(item.GetLocalId().Name, func);
-                else if (item is VarInfo var)
-                    globalVarsByName.Add(item.GetLocalId().Name, var);
+                else
+                    throw new InvalidOperationException();
             }
         }
 
-        private bool IsGlobalItem(ItemInfo item)
+        bool IsGlobalItem(ItemInfo item)
         {
             return item.GetId().OuterEntries.Length == 0;
         }
@@ -92,18 +92,6 @@ namespace Gum.CompileTime
                 return Enumerable.Empty<FuncInfo>();
                 
             return curNamespace.GetFuncs(funcName);
-        }
-
-        public VarInfo? GetGlobalVar(NamespacePath path, Name varName)
-        {
-            if (path.Entries.Length == 0)
-                return globalVarsByName.GetValueOrDefault(varName);
-
-            var curNamespace = GetNamespace(path);
-            if (curNamespace == null)
-                return null;
-            
-            return curNamespace.GetVar(varName);
         }
     }
 }

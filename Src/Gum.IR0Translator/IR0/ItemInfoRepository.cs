@@ -1,43 +1,91 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using Gum.CompileTime;
 
 namespace Gum.IR0
 {
+    // Phase3에서 ItemInfo얻어오는 용도, GlobalVar
     class ItemInfoRepository
     {
-        ModuleInfoRepository moduleInfoRepo;
+        InternalModuleInfo internalModuleInfo;
+        ModuleInfoRepository externalModuleInfoRepo;        
 
-        public ItemInfoRepository(ModuleInfoRepository moduleInfoRepo)
+        public ItemInfoRepository(InternalModuleInfo internalModuleInfo, ModuleInfoRepository moduleInfoRepo)
         {
-            this.moduleInfoRepo = moduleInfoRepo;
+            this.internalModuleInfo = internalModuleInfo;
+            this.externalModuleInfoRepo = moduleInfoRepo;
+        }
+
+        TItemInfo? GetInternalItem<TItemInfo>(ItemPath path)
+            where TItemInfo : ItemInfo
+        {
+            if (path.OuterEntries.Length == 0)
+                return internalModuleInfo.GetGlobalItem(path.NamespacePath, path.Entry) as TItemInfo;
+
+            var curTypeInfo = internalModuleInfo.GetGlobalItem(path.NamespacePath, path.OuterEntries[0]) as TypeInfo;
+            if (curTypeInfo == null) return null;
+
+            for (int i = 1; i < path.OuterEntries.Length; i++)
+            {
+                curTypeInfo = curTypeInfo.GetItem(path.OuterEntries[i]) as TypeInfo;
+                if (curTypeInfo == null) return null;
+            }
+
+            return curTypeInfo.GetItem(path.Entry) as TItemInfo;
+        }
+
+        TItemInfo? GetExternalItem<TItemInfo>(IModuleInfo moduleInfo, ItemPath path)
+            where TItemInfo : ItemInfo
+        {
+            if (path.OuterEntries.Length == 0)
+                return moduleInfo.GetGlobalItem(path.NamespacePath, path.Entry) as TItemInfo;
+
+            var curTypeInfo = moduleInfo.GetGlobalItem(path.NamespacePath, path.OuterEntries[0]) as TypeInfo;
+            if (curTypeInfo == null) return null;
+
+            for (int i = 1; i < path.OuterEntries.Length; i++)
+            {
+                curTypeInfo = curTypeInfo.GetItem(path.OuterEntries[i]) as TypeInfo;
+                if (curTypeInfo == null) return null;
+            }
+
+            return curTypeInfo.GetItem(path.Entry) as TItemInfo;
         }
 
         // Id로 바로 찾기
         public TItemInfo? GetItem<TItemInfo>(ItemId id)
             where TItemInfo : ItemInfo
         {
-            var moduleInfo = moduleInfoRepo.GetModule(id.ModuleName);
+            if (ModuleInfoEqualityComparer.EqualsModuleName(id.ModuleName, ModuleName.Internal))
+                return GetInternalItem<TItemInfo>(id.GetItemPath());
+
+            var moduleInfo = externalModuleInfoRepo.GetModule(id.ModuleName);
             if (moduleInfo == null) return null;
 
-            if (id.OuterEntries.Length == 0)
-                return moduleInfo.GetGlobalItem(id.NamespacePath, id.Entry) as TItemInfo;
+            return GetExternalItem<TItemInfo>(moduleInfo, id.GetItemPath());
+        }
 
-            var curTypeInfo = moduleInfo.GetGlobalItem(id.NamespacePath, id.OuterEntries[0]) as TypeInfo;
+        TypeInfo? GetInternalType(NamespacePath nsPath, ImmutableArray<ItemPathEntry> entries)
+        {
+            var e = entries.GetEnumerator();
+            if (!e.MoveNext()) return null;
+
+            var curTypeInfo = internalModuleInfo.GetGlobalItem(nsPath, e.Current) as TypeInfo;
             if (curTypeInfo == null) return null;
 
-            for (int i = 1; i < id.OuterEntries.Length; i++)
+            while (e.MoveNext())
             {
-                curTypeInfo = curTypeInfo.GetItem(id.OuterEntries[i]) as TypeInfo;
+                curTypeInfo = curTypeInfo.GetItem(e.Current) as TypeInfo;
                 if (curTypeInfo == null) return null;
             }
 
-            return curTypeInfo.GetItem(id.Entry) as TItemInfo;
+            return curTypeInfo;
         }
 
-        TypeInfo? GetType(IModuleInfo moduleInfo, NamespacePath nsPath, IEnumerable<ItemPathEntry> entries)
+        TypeInfo? GetExternalType(IModuleInfo moduleInfo, NamespacePath nsPath, ImmutableArray<ItemPathEntry> entries)
         {
             var e = entries.GetEnumerator();
             if (!e.MoveNext()) return null;
@@ -68,9 +116,14 @@ namespace Gum.IR0
         // NS.MyType1<,>.MyType2<> 검색
         public IEnumerable<TypeInfo> GetTypes(NamespacePath nsPath, IEnumerable<ItemPathEntry> outerEntries, ItemPathEntry entry)
         {
-            foreach (var moduleInfo in moduleInfoRepo.GetAllModules())
+            var fullEntries = outerEntries.Append(entry).ToImmutableArray();
+            var internalTypeInfo = GetInternalType(nsPath, fullEntries);
+            if (internalTypeInfo != null)
+                yield return internalTypeInfo;
+
+            foreach (var externalModuleInfo in externalModuleInfoRepo.GetAllModules())
             {
-                var typeInfo = GetType(moduleInfo, nsPath, outerEntries.Append(entry));
+                var typeInfo = GetExternalType(externalModuleInfo, nsPath, fullEntries);
                 if (typeInfo != null)
                     yield return typeInfo;
             }
@@ -79,17 +132,20 @@ namespace Gum.IR0
         // 이름만으로 함수들을 찾는 함수
         public IEnumerable<FuncInfo> GetFuncs(NamespacePath nsPath, Name funcName)
         {
-            return GetFuncs(nsPath, Array.Empty<ItemPathEntry>(), funcName);
+            return GetFuncs(nsPath, ImmutableArray<ItemPathEntry>.Empty, funcName);
         }
 
         public IEnumerable<FuncInfo> GetFuncs(
             NamespacePath nsPath,
-            IEnumerable<ItemPathEntry> outerEntries,
+            ImmutableArray<ItemPathEntry> outerEntries,
             Name funcName)
         {
-            if (outerEntries.Any())
+            if (outerEntries.Length == 0)
             {
-                foreach (var moduleInfo in moduleInfoRepo.GetAllModules())
+                foreach (var internalFuncInfo in internalModuleInfo.GetGlobalFuncs(nsPath, funcName))
+                    yield return internalFuncInfo;
+
+                foreach (var moduleInfo in externalModuleInfoRepo.GetAllModules())
                 {
                     // 이름만 갖고 Func를 얻어낸다
                     foreach (var funcInfo in moduleInfo.GetGlobalFuncs(nsPath, funcName))
@@ -98,9 +154,17 @@ namespace Gum.IR0
             }
             else
             {
-                foreach (var moduleInfo in moduleInfoRepo.GetAllModules())
+                var internalTypeInfo = GetInternalType(nsPath, outerEntries);
+                if (internalTypeInfo != null)
                 {
-                    var typeInfo = GetType(moduleInfo, nsPath, outerEntries);
+                    var funcInfos = internalTypeInfo.GetFuncs(funcName);
+                    foreach (var funcInfo in funcInfos)
+                        yield return funcInfo;
+                }
+
+                foreach (var moduleInfo in externalModuleInfoRepo.GetAllModules())
+                {
+                    var typeInfo = GetExternalType(moduleInfo, nsPath, outerEntries);
                     if (typeInfo == null) continue;
 
                     var funcInfos = typeInfo.GetFuncs(funcName);
@@ -119,12 +183,16 @@ namespace Gum.IR0
 
         public IEnumerable<VarInfo> GetVars(
             NamespacePath nsPath,
-            IEnumerable<ItemPathEntry> outerEntries,
+            ImmutableArray<ItemPathEntry> outerEntries,
             Name varName)
         {
-            if (outerEntries.Any())
+            if (outerEntries.Length == 0)
             {
-                foreach (var moduleInfo in moduleInfoRepo.GetAllModules())
+                var internalVarInfo = internalModuleInfo.GetGlobalVar(nsPath, varName);
+                if (internalVarInfo != null) 
+                    yield return internalVarInfo;
+
+                foreach (var moduleInfo in externalModuleInfoRepo.GetAllModules())
                 {
                     var varInfo = moduleInfo.GetGlobalVar(nsPath, varName);
                     if (varInfo != null)
@@ -133,9 +201,17 @@ namespace Gum.IR0
             }
             else
             {
-                foreach (var moduleInfo in moduleInfoRepo.GetAllModules())
+                var internalTypeInfo = GetInternalType(nsPath, outerEntries);
+                if (internalTypeInfo != null)
                 {
-                    var typeInfo = GetType(moduleInfo, nsPath, outerEntries);
+                    var varInfo = internalTypeInfo.GetVar(varName);
+                    if (varInfo != null)
+                        yield return varInfo;
+                }
+
+                foreach (var moduleInfo in externalModuleInfoRepo.GetAllModules())
+                {
+                    var typeInfo = GetExternalType(moduleInfo, nsPath, outerEntries);
                     if (typeInfo == null) continue;
 
                     var varInfo = typeInfo.GetVar(varName);

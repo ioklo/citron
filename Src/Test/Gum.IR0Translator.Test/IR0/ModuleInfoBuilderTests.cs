@@ -15,12 +15,16 @@ namespace Gum.IR0
 
         public S.TypeExp IntTypeExp { get => new S.IdTypeExp("int"); }
         public S.TypeExp VoidTypeExp { get => new S.IdTypeExp("void"); }
-        ModuleInfoBuilder.Result? Build(S.Script script)
+        InternalModuleInfo Build(S.Script script)
         {
-            var moduleInfoBuilder = new ModuleInfoBuilder(new TypeExpEvaluator());
+            var typeSkelRepo = TypeSkeletonCollector.Collect(script);
+
+            var externalModuleInfoRepo = new ModuleInfoRepository(Array.Empty<IModuleInfo>());
             var errorCollector = new TestErrorCollector(true);
 
-            return moduleInfoBuilder.Build(Array.Empty<IModuleInfo>(), script, errorCollector);
+            var typeExpTypeValueService = TypeExpEvaluator.Evaluate(script, externalModuleInfoRepo, typeSkelRepo, errorCollector);
+
+            return ModuleInfoBuilder.Build(script, typeExpTypeValueService);
         }
 
         [Fact]
@@ -59,7 +63,7 @@ namespace Gum.IR0
             Assert.NotNull(result);
             Debug.Assert(result != null);
 
-            var funcInfo = result.ModuleInfo.GetFuncs(NamespacePath.Root, "Func").SingleOrDefault();
+            var funcInfo = result.GetGlobalFuncs(NamespacePath.Root, "Func").SingleOrDefault();
             Assert.NotNull(funcInfo);
             Debug.Assert(funcInfo != null);
 
@@ -84,7 +88,7 @@ namespace Gum.IR0
                     new[] { "T" },
                     new[] { new S.IdTypeExp("B", IntTypeExp) },
                     new S.StructDecl.Element[] {
-                        new S.StructDecl.FuncDeclElement(
+                        new S.StructDecl.FuncDeclElement(new S.StructFuncDecl(
                             S.AccessModifier.Private,
                             true,
                             false,
@@ -93,7 +97,7 @@ namespace Gum.IR0
                             new[] {"T", "U"},
                             new S.FuncParamInfo(new[] { new S.TypeAndName(new S.IdTypeExp("S", IntTypeExp), "s"), new S.TypeAndName(new S.IdTypeExp("U"), "u") }, null),
                             new S.BlockStmt()
-                        ),
+                        )),
 
                         new S.StructDecl.VarDeclElement(
                             S.AccessModifier.Protected,
@@ -117,7 +121,7 @@ namespace Gum.IR0
             Assert.NotNull(result);
             Debug.Assert(result != null);
 
-            var structInfo = result.ModuleInfo.GetItem(NamespacePath.Root, new ItemPathEntry("S", 1)) as StructInfo;
+            var structInfo = result.GetGlobalItem(NamespacePath.Root, new ItemPathEntry("S", 1)) as StructInfo;
             Assert.NotNull(structInfo);
             Debug.Assert(structInfo != null);
 
@@ -153,7 +157,5 @@ namespace Gum.IR0
 
             Assert.Equal(expected, structInfo, ModuleInfoEqualityComparer.Instance);
         }
-
-
     }
 }

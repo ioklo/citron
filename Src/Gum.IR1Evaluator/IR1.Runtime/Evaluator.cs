@@ -8,6 +8,7 @@ using Gum.IR1;
 using Gum.Infra;
 using System.Diagnostics.CodeAnalysis;
 using System.Collections.Immutable;
+using Gum.Misc;
 
 namespace Gum.IR1.Runtime
 {
@@ -452,7 +453,7 @@ namespace Gum.IR1.Runtime
                 case Command.ExternalGetMemberRef exGetMemberRefCmd: RunExternalGetMemberRef(exGetMemberRefCmd, context); break;
 
                 default:
-                    throw new InvalidOperationException();
+                    throw new UnreachableCodeException();
             }
         }
     }

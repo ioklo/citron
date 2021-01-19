@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Gum.Misc;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
@@ -304,7 +305,7 @@ namespace Gum.IR0
                 S.MemberExp memberExp => CaptureMemberExp(memberExp, context),
                 S.ListExp listExp => throw new InvalidOperationException(),
 
-                _ => throw new InvalidOperationException()
+                _ => throw new UnreachableCodeException()
             };
         }
 

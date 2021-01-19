@@ -18,10 +18,10 @@ namespace Gum.IR0
                 // X<int>.Y<T> 면 skeleton은 Y의 스켈레톤을 갖고 있어야 한다
                 // typeValue는 [Internal]X<int>.Y<T>
 
-                Skeleton.Type skeleton; // 멤버를 갖고 오기 위한 수단
+                TypeSkeleton skeleton; // 멤버를 갖고 오기 위한 수단
                 TypeValue.Normal typeValue;
 
-                public Internal(Skeleton.Type skeleton, TypeValue.Normal typeValue) 
+                public Internal(TypeSkeleton skeleton, TypeValue.Normal typeValue) 
                 {
                     this.skeleton = skeleton;
                     this.typeValue = typeValue;
@@ -35,7 +35,7 @@ namespace Gum.IR0
                 public override TypeExpInfo? GetMemberInfo(string memberName, IEnumerable<TypeValue> typeArgsEnum)
                 {
                     var typeArgs = typeArgsEnum.ToArray();
-                    var memberSkeleton = skeleton.GetMember(memberName, typeArgs.Length) as Skeleton.Type;
+                    var memberSkeleton = skeleton.GetMember(memberName, typeArgs.Length) as TypeSkeleton;
 
                     if (memberSkeleton == null)
                         return null;

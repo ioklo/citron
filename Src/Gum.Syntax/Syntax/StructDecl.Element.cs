@@ -42,7 +42,7 @@ namespace Gum.Syntax
 
         public class FuncDeclElement : Element
         {
-            public StructFuncDecl FuncDecl { get; }            
+            public StructFuncDecl FuncDecl { get; }
 
             public FuncDeclElement(StructFuncDecl funcDecl)
             {
