@@ -1,0 +1,5 @@
+# Storage
+
+- Global
+- Scoped
+- Heap
