@@ -90,20 +90,20 @@
 
 이름 공간
 
-[모듈 Module](%E1%84%80%E1%85%A2%E1%84%82%E1%85%A7%E1%86%B7%20Concept%200f8350f8fa254ca3b0bbf396be8a9da2/%E1%84%86%E1%85%A9%E1%84%83%E1%85%B2%E1%86%AF%20Module%20fdef0879863c4d1dbb3bb7fc759873c4.md)
+[Module](Modules.md)
 
-[식별자 Identifier](%E1%84%80%E1%85%A2%E1%84%82%E1%85%A7%E1%86%B7%20Concept%200f8350f8fa254ca3b0bbf396be8a9da2/%E1%84%89%E1%85%B5%E1%86%A8%E1%84%87%E1%85%A7%E1%86%AF%E1%84%8C%E1%85%A1%20Identifier%20562fecb020464b4eb4f1d323d9185e42.md)
+[식별자 Identifier](Identifiers.md)
 
  
 
-[타입 Types](%E1%84%80%E1%85%A2%E1%84%82%E1%85%A7%E1%86%B7%20Concept%200f8350f8fa254ca3b0bbf396be8a9da2/%E1%84%90%E1%85%A1%E1%84%8B%E1%85%B5%E1%86%B8%20Types%20f2bc5d2a93674a69a85c12fd80bfdda8.md)
+[타입 Types](Types.md)
 
-[함수 Functions](%E1%84%80%E1%85%A2%E1%84%82%E1%85%A7%E1%86%B7%20Concept%200f8350f8fa254ca3b0bbf396be8a9da2/%E1%84%92%E1%85%A1%E1%86%B7%E1%84%89%E1%85%AE%20Functions%20f53c28a5a00946a094ea84d88a3e51cf.md)
+[함수 Functions](Functions.md)
 
-[변수 Variables](%E1%84%80%E1%85%A2%E1%84%82%E1%85%A7%E1%86%B7%20Concept%200f8350f8fa254ca3b0bbf396be8a9da2/%E1%84%87%E1%85%A7%E1%86%AB%E1%84%89%E1%85%AE%20Variables%203d2bdef9083745af88a63d14e6a12876.md)
+[변수 Variables](Variables.md)
 
-[Statements](%E1%84%80%E1%85%A2%E1%84%82%E1%85%A7%E1%86%B7%20Concept%200f8350f8fa254ca3b0bbf396be8a9da2/Statements%201926193350fb4107b4f243282ee2b771.md)
+[Statements](Statements.md)
 
-[Expressions](%E1%84%80%E1%85%A2%E1%84%82%E1%85%A7%E1%86%B7%20Concept%200f8350f8fa254ca3b0bbf396be8a9da2/Expressions%20e3dd393d9c6e4022b5c4e079edd37e5e.md)
+[Expressions](Expressions.md)
 
-[Values](%E1%84%80%E1%85%A2%E1%84%82%E1%85%A7%E1%86%B7%20Concept%200f8350f8fa254ca3b0bbf396be8a9da2/Values%202695ed9117a64deda1fb9b235b1c021f.md)
+[Values](Values.md)

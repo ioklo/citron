@@ -22,4 +22,4 @@ Assert(tuple2.Item1 == "Hello");
 
 ```
 
-[Tuple을 함수 인자로 사용하기](Tuple%20e96ffe590bd440de892ce3b415e3ec17/Tuple%E1%84%8B%E1%85%B3%E1%86%AF%20%E1%84%92%E1%85%A1%E1%86%B7%E1%84%89%E1%85%AE%20%E1%84%8B%E1%85%B5%E1%86%AB%E1%84%8C%E1%85%A1%E1%84%85%E1%85%A9%20%E1%84%89%E1%85%A1%E1%84%8B%E1%85%AD%E1%86%BC%E1%84%92%E1%85%A1%E1%84%80%E1%85%B5%20936fc6e7835143df9220984f4c2df1d8.md)
+[Tuple을 함수 인자로 사용하기](Using%20tuples%20as%20function%20arguments.md)
