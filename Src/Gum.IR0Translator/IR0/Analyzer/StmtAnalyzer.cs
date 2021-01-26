@@ -14,6 +14,7 @@ using static Gum.IR0.AnalyzeErrorCode;
 using S = Gum.Syntax;
 using Pretune;
 using System.Linq;
+using Gum.Misc;
 
 namespace Gum.IR0
 {
@@ -39,18 +40,16 @@ namespace Gum.IR0
         }
 
         // PrivateGlobalVarDecl이 나오거나, LocalVarDecl이 나오거나
-        StmtResult AnalyzeVarDeclStmt(S.VarDeclStmt varDeclStmt)
+        StmtResult AnalyzeGlobalVarDeclStmt(S.VarDeclStmt varDeclStmt)
         {
-            if (context.IsGlobalScope())
-            {
-                var result = AnalyzePrivateGlobalVarDecl(varDeclStmt.VarDecl);
-                return new StmtResult(new PrivateGlobalVarDeclStmt(result.Elems));
-            }
-            else
-            {
-                var result = AnalyzeLocalVarDecl(varDeclStmt.VarDecl);
-                return new StmtResult(new LocalVarDeclStmt(result.VarDecl));
-            }
+            var result = AnalyzeGlobalVarDecl(varDeclStmt.VarDecl);
+            return new StmtResult(new PrivateGlobalVarDeclStmt(result.Elems));
+        }
+
+        StmtResult AnalyzeLocalVarDeclStmt(S.VarDeclStmt varDeclStmt)
+        {
+            var result = AnalyzeLocalVarDecl(varDeclStmt.VarDecl);
+            return new StmtResult(new LocalVarDeclStmt(result.VarDecl));
         }
 
         //bool AnalyzeIfTestEnumStmt(
@@ -190,7 +189,7 @@ namespace Gum.IR0
             StmtResult? elseBodyResult = (ifStmt.ElseBody != null) ? AnalyzeStmt(ifStmt.ElseBody) : null;
 
             // Analyzer 처리
-            if (!IsAssignable(TypeValues.Bool, condResult.TypeValue))
+            if (!context.IsAssignable(TypeValues.Bool, condResult.TypeValue))
                 context.AddFatalError(A1004_IfStmt_ConditionShouldBeBool, ifStmt.Cond, "if 조건 식은 항상 bool형식이어야 합니다");
 
             return new StmtResult(new IfStmt(condResult.Exp, bodyResult.Stmt, elseBodyResult?.Stmt));
@@ -238,7 +237,7 @@ namespace Gum.IR0
                     var condResult = AnalyzeExp(forStmt.CondExp, null);
 
                     // 에러가 나면 에러를 추가하고 계속 진행
-                    if (!IsAssignable(TypeValues.Bool, condResult.TypeValue))
+                    if (!context.IsAssignable(TypeValues.Bool, condResult.TypeValue))
                         context.AddError(A1101_ForStmt_ConditionShouldBeBool, forStmt.CondExp, $"{forStmt.CondExp}는 bool 형식이어야 합니다");
 
                     cond = condResult.Exp;
@@ -323,7 +322,7 @@ namespace Gum.IR0
                 else
                 {
                     // 현재 함수 시그니처랑 맞춰서 같은지 확인한다
-                    if (!IsAssignable(retTypeValue, valueResult.TypeValue))
+                    if (!context.IsAssignable(retTypeValue, valueResult.TypeValue))
                         context.AddFatalError(A1201_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType, returnStmt.Value, $"반환값의 타입 {valueResult.TypeValue}는 이 함수의 반환타입과 맞지 않습니다");
                 }
 
@@ -433,7 +432,7 @@ namespace Gum.IR0
             else // 아니라면 둘이 호환되는지 확인한다
             {
                 // TODO: Cast
-                if (!IsAssignable(elemType, iteratorElemType))
+                if (!context.IsAssignable(elemType, iteratorElemType))
                     context.AddFatalError(A1802_ForeachStmt_MismatchBetweenElemTypeAndIteratorElemType, foreachStmt, "foreach 변수에 반복자 원소를 대입 할 수 없습니다");
             }
 
@@ -467,18 +466,17 @@ namespace Gum.IR0
             // NOTICE: 리턴 타입을 힌트로 넣었다
             var valueResult = AnalyzeExp(yieldStmt.Value, retTypeValue);
 
-            if (!IsAssignable(retTypeValue, valueResult.TypeValue))
+            if (!context.IsAssignable(retTypeValue, valueResult.TypeValue))
                 context.AddFatalError(A1402_YieldStmt_MismatchBetweenYieldValueAndSeqFuncYieldType, yieldStmt.Value, $"반환 값의 {valueResult.TypeValue} 타입은 이 함수의 반환 타입과 맞지 않습니다");
 
             return new StmtResult(new YieldStmt(valueResult.Exp));
         }
 
-        StmtResult AnalyzeStmt(S.Stmt stmt)
+        StmtResult AnalyzeCommonStmt(S.Stmt stmt)
         {
             switch (stmt)
             {
                 case S.CommandStmt cmdStmt: return AnalyzeCommandStmt(cmdStmt);
-                case S.VarDeclStmt varDeclStmt: return AnalyzeVarDeclStmt(varDeclStmt);
                 case S.IfStmt ifStmt: return AnalyzeIfStmt(ifStmt);
                 case S.ForStmt forStmt: return AnalyzeForStmt(forStmt);
                 case S.ContinueStmt continueStmt: return AnalyzeContinueStmt(continueStmt);
@@ -494,6 +492,14 @@ namespace Gum.IR0
                 case S.YieldStmt yieldStmt: return AnalyzeYieldStmt(yieldStmt);
                 default: throw new UnreachableCodeException();
             }
+        }
+
+        StmtResult AnalyzeStmt(S.Stmt stmt)
+        {
+            if (stmt is S.VarDeclStmt varDeclStmt)
+                return AnalyzeLocalVarDeclStmt(varDeclStmt);
+            else
+                return AnalyzeCommonStmt(stmt);
         }
     }
 }

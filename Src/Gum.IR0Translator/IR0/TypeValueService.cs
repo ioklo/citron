@@ -11,14 +11,14 @@ namespace Gum.IR0
 {
     class TypeValueService
     {
-        ItemInfoRepository itemInfoRepo;
+        ITypeInfoRepository typeInfoRepo;
         TypeValueApplier typeValueApplier;
 
-        public TypeValueService(ItemInfoRepository itemInfoRepo, TypeValueApplier typeValueApplier)
+        public TypeValueService(ITypeInfoRepository typeInfoRepo, TypeValueApplier typeValueApplier)
         {
-            this.itemInfoRepo = itemInfoRepo;
+            this.typeInfoRepo = typeInfoRepo;
             this.typeValueApplier = typeValueApplier;
-        }
+        }        
 
         //private bool GetMemberVarInfo(QsMetaItemId typeId, QsName name, [NotNullWhen(true)] out QsVarInfo? outVarInfo)
         //{
@@ -51,29 +51,16 @@ namespace Gum.IR0
         
         // class X<T> { class Y<U> { Dict<T, U> x; } } 
         // GetTypeValue(X<int>.Y<short>, x) => Dict<int, short>
-        public TypeValue GetTypeValue(VarValue varValue)
+        public TypeValue GetTypeValue(MemberVarValue varValue)
         {
-            var varInfo = itemInfoRepo.GetItem<VarInfo>(varValue.GetItemId());
-
-            Debug.Assert(varInfo != null);            
-
-            if (varValue.TypeEntries.Length != 0)
-                return typeValueApplier.Apply(
-                    new TypeValue.Normal(
-                        varValue.ModuleName, 
-                        varValue.NamespacePath, 
-                        varValue.TypeEntries.SkipLast(1), 
-                        varValue.TypeEntries[varValue.TypeEntries.Length - 1]), 
-                    varInfo.TypeValue);
-            else
-                return varInfo.TypeValue;
+            return typeValueApplier.Apply(varValue.Outer, varValue.TypeValue);
         }
 
         // class X<T> { class Y<U> { S<T> F<V>(V v, List<U> u); } } => MakeFuncTypeValue(X<int>.Y<short>, F, context) 
         // (V, List<short>) => S<int>
         public TypeValue.Func GetTypeValue(FuncValue funcValue)
         {
-            var funcInfo = itemInfoRepo.GetItem<FuncInfo>(funcValue.GetFuncId());
+            var funcInfo = typeInfoRepo.GetItem<FuncInfo>(funcValue.GetFuncId());
             Debug.Assert(funcInfo != null);
 
             // 
@@ -140,7 +127,7 @@ namespace Gum.IR0
             outBaseTypeValue = null;
 
             var typeId = typeValue.GetTypeId();
-            var typeInfo = itemInfoRepo.GetItem<TypeInfo>(typeId);
+            var typeInfo = typeInfoRepo.GetItem<TypeInfo>(typeId);
             if (typeInfo == null) return false;
 
             var baseTypeValue = typeInfo.GetBaseTypeValue();
@@ -173,7 +160,7 @@ namespace Gum.IR0
             TypeValue.Normal? ntv = objTypeValue as TypeValue.Normal;
             if (ntv == null) return false;
 
-            var typeInfo = itemInfoRepo.GetItem<TypeInfo>(ntv.GetTypeId());
+            var typeInfo = typeInfoRepo.GetItem<TypeInfo>(ntv.GetTypeId());
             if (typeInfo == null)
                 return false;
 
@@ -209,28 +196,24 @@ namespace Gum.IR0
             return typeValueApplier.Apply(context, typeValue);
         }
         
-        public bool GetMemberVarValue(
-            TypeValue parentTypeValue, 
-            Name varName,
-            [NotNullWhen(true)] out VarValue? outVarValue)
+        // class X<T> { class Y<U> { Dict<T, U> x; } }
+        // GetMemberVarValue(X<int>.Y<short>, x) => MemberVarValue(X<int>.Y<short>, x, Dict<int, short>)
+        public MemberVarValue? GetMemberVarValue(TypeValue outer, Name name)
         {
-            outVarValue = null;
+            var outerNTV = outer as TypeValue.Normal;
+            if (outerNTV == null) return null;
 
-            var parentNTV = parentTypeValue as TypeValue.Normal;
-            if (parentNTV == null) return false;
-
-            var typeId = parentNTV.GetTypeId();
-            var typeInfo = itemInfoRepo.GetItem<TypeInfo>(typeId);
+            var typeId = outerNTV.GetTypeId();
+            var typeInfo = typeInfoRepo.GetType(typeId);
             if (typeInfo == null)
-                return false;
+                return null;
 
-            var varInfo = typeInfo.GetVar(varName);
+            var varInfo = typeInfo.GetVar(name);
 
             if (varInfo == null)
-                return false;
+                return null;
 
-            outVarValue = new VarValue(parentNTV.ModuleName, parentNTV.NamespacePath, parentNTV.GetAllEntries(), varName);
-            return true;
+            return new MemberVarValue(outerNTV, memberVarInfo);            
         }
     }
 }

@@ -2,6 +2,7 @@
 using Gum.Misc;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -106,6 +107,10 @@ namespace Gum.IR0.Runtime
             return new ExpInfo(new IntLiteralExp(i), Type.Int);
         }
 
+        ImmutableArray<T> Empty<T>() => ImmutableArray<T>.Empty;
+
+        ImmutableArray<T> Arr<T>(params T[] elems) => ImmutableArray.Create<T>(elems);
+
         public async Task<string> EvalAsync(IEnumerable<FuncDecl>? funcDecls, IEnumerable<Stmt> topLevelStmts)
         {
             var (output, _) = await EvalAsyncWithRetValue(funcDecls, topLevelStmts);
@@ -167,7 +172,7 @@ namespace Gum.IR0.Runtime
         public async Task PrivateGlobalVariableExp_GetGlobalValueInFunc()
         {
             var func0Id = new FuncDeclId(0);
-            var func0 = new FuncDecl.Normal(func0Id, false,Array.Empty<string>(), Array.Empty<string>(), new BlockStmt(
+            var func0 = new FuncDecl.Normal(func0Id, false, Empty<string>(), Empty<string>(), new BlockStmt(
                 PrintStringCmdStmt(new PrivateGlobalVarExp("x"))));
 
             var topLevelStmts = new Stmt[]
@@ -191,7 +196,7 @@ namespace Gum.IR0.Runtime
         {
             var funcId = new FuncDeclId(0);
 
-            var seqFunc = new FuncDecl.Sequence(funcId, Type.Int, false, Array.Empty<string>(), new[] { "x", "y" }, new BlockStmt(
+            var seqFunc = new FuncDecl.Sequence(funcId, Type.Int, false, Empty<string>(), Arr("x", "y"), new BlockStmt(
 
                 new YieldStmt(
                     new CallInternalBinaryOperatorExp(InternalBinaryOperator.Multiply_Int_Int_Int,
@@ -534,7 +539,7 @@ namespace Gum.IR0.Runtime
         {
             var funcId = new FuncDeclId(0);
 
-            var func = new FuncDecl.Normal(funcId, false, Array.Empty<string>(), Array.Empty<string>(),
+            var func = new FuncDecl.Normal(funcId, false, Empty<string>(), Empty<string>(),
                 new BlockStmt(
                     new ReturnStmt(null),
                     PrintStringCmdStmt("Wrong")
@@ -564,7 +569,7 @@ namespace Gum.IR0.Runtime
         {
             var funcId = new FuncDeclId(0);
 
-            var func = new FuncDecl.Normal(funcId, false, Array.Empty<string>(), Array.Empty<string>(),
+            var func = new FuncDecl.Normal(funcId, false, Empty<string>(), Empty<string>(),
                 new BlockStmt(
                     new ReturnStmt(new IntLiteralExp(77)),
                     PrintStringCmdStmt("Wrong")
@@ -742,7 +747,7 @@ namespace Gum.IR0.Runtime
             var seqFunc0Id = new FuncDeclId(0);
             var seqFunc1Id = new FuncDeclId(1);
 
-            var seqFunc0 = new FuncDecl.Sequence(seqFunc0Id, Type.Int, false, Array.Empty<string>(), Array.Empty<string>(),
+            var seqFunc0 = new FuncDecl.Sequence(seqFunc0Id, Type.Int, false, Empty<string>(), Empty<string>(),
                 new ForeachStmt(Type.Int, "elem", new ExpInfo(new CallSeqFuncExp(seqFunc1Id, Array.Empty<Type>(), null, Array.Empty<ExpInfo>()), Type.Enumerable(Type.Int)),
                     new BlockStmt(
                         PrintIntCmdStmt(new LocalVarExp("elem")),
@@ -751,7 +756,7 @@ namespace Gum.IR0.Runtime
                 )
             );
 
-            var seqFunc1 = new FuncDecl.Sequence(seqFunc1Id, Type.Int, false, Array.Empty<string>(), Array.Empty<string>(),
+            var seqFunc1 = new FuncDecl.Sequence(seqFunc1Id, Type.Int, false, Empty<string>(), Empty<string>(),
                 new BlockStmt(
                     new YieldStmt(new IntLiteralExp(34)),
                     new YieldStmt(new IntLiteralExp(56))
@@ -901,7 +906,7 @@ namespace Gum.IR0.Runtime
             var printFuncId = new FuncDeclId(0);
             var testFuncId = new FuncDeclId(1);
 
-            var printFunc = new FuncDecl.Normal(printFuncId, false, Array.Empty<string>(), new[] { "x" },
+            var printFunc = new FuncDecl.Normal(printFuncId, false, Empty<string>(), Arr("x"),
 
                 new BlockStmt(
                     PrintIntCmdStmt(new LocalVarExp("x")),
@@ -909,7 +914,7 @@ namespace Gum.IR0.Runtime
                 )
             );
 
-            var testFunc = new FuncDecl.Normal(testFuncId, false, Array.Empty<string>(), new[] { "i", "j", "k" },
+            var testFunc = new FuncDecl.Normal(testFuncId, false, Empty<string>(), Arr("i", "j", "k" ),
 
                 PrintStringCmdStmt("TestFunc")
 
@@ -939,7 +944,7 @@ namespace Gum.IR0.Runtime
         public async Task CallFuncExp_ReturnsValueProperly()
         {
             var funcId = new FuncDeclId(0);
-            var func = new FuncDecl.Normal(funcId, false, Array.Empty<string>(), Array.Empty<string>(), new ReturnStmt(SimpleString("Hello World")));
+            var func = new FuncDecl.Normal(funcId, false, Empty<string>(), Empty<string>(), new ReturnStmt(SimpleString("Hello World")));
 
             var stmts = new Stmt[] { PrintStringCmdStmt(new CallFuncExp(funcId, Array.Empty<Type>(), null, Array.Empty<ExpInfo>())) };
 
@@ -952,7 +957,7 @@ namespace Gum.IR0.Runtime
         public async Task CallSeqFuncExp_ReturnsEnumerableType()
         {
             var seqFuncId = new FuncDeclId(0);
-            var seqFunc = new FuncDecl.Sequence(seqFuncId, Type.String, false, Array.Empty<string>(), Array.Empty<string>(), BlankStmt.Instance); // return nothing
+            var seqFunc = new FuncDecl.Sequence(seqFuncId, Type.String, false, Empty<string>(), Empty<string>(), BlankStmt.Instance); // return nothing
 
             var stmts = new Stmt[]
             {
@@ -976,7 +981,7 @@ namespace Gum.IR0.Runtime
             var printFuncId = new FuncDeclId(0);
             var makeLambdaId = new FuncDeclId(1);
 
-            var printFunc = new FuncDecl.Normal(printFuncId, false, Array.Empty<string>(), new[] { "x" },
+            var printFunc = new FuncDecl.Normal(printFuncId, false, Empty<string>(), Arr("x"),
 
                 new BlockStmt(
                     PrintIntCmdStmt(new LocalVarExp("x")),
@@ -984,7 +989,7 @@ namespace Gum.IR0.Runtime
                 )
             );
 
-            var makeLambda = new FuncDecl.Normal(makeLambdaId, false, Array.Empty<string>(), Array.Empty<string>(),
+            var makeLambda = new FuncDecl.Normal(makeLambdaId, false, Empty<string>(), Empty<string>(),
                 new BlockStmt(                    
                     PrintStringCmdStmt("MakeLambda"),
                     
@@ -1068,7 +1073,7 @@ namespace Gum.IR0.Runtime
         public async Task ListExp_EvaluatesElementExpInOrder()
         {
             var printFuncId = new FuncDeclId(0);
-            var printFunc = new FuncDecl.Normal(printFuncId, false, Array.Empty<string>(), new[] { "x" },
+            var printFunc = new FuncDecl.Normal(printFuncId, false, Empty<string>(), Arr("x"),
 
                 new BlockStmt(
                     PrintIntCmdStmt(new LocalVarExp("x")),

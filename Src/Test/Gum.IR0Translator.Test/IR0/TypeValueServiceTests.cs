@@ -45,7 +45,7 @@ namespace Gum.IR0
             var moduleInfo = new InternalModuleInfo(Array.Empty<NamespaceInfo>(), new ItemInfo[] { xInfo });
 
             var emptyModuleInfoRepo = new ModuleInfoRepository(Enumerable.Empty<IModuleInfo>());
-            var itemInfoRepo = new ItemInfoRepository(moduleInfo, emptyModuleInfoRepo);
+            var itemInfoRepo = new TypeInfoRepository(moduleInfo, emptyModuleInfoRepo);
             var applier = new TypeValueApplier(emptyModuleInfoRepo);
 
             return new TypeValueService(itemInfoRepo, applier);
@@ -66,8 +66,11 @@ namespace Gum.IR0
                 new[] { MakeTypeValue("A"), MakeTypeValue("B") },
                 new[] { MakeTypeValue("C") }
             };
+            
+            
+            
 
-            var vValue = new VarValue(vId, yTypeArgList); // outerTypeArgList가 들어간다
+            var vValue = new MemberVarValue(vId, yTypeArgList); // outerTypeArgList가 들어간다
             var result = typeValueService.GetTypeValue(vValue);
             var expected = new TypeValue.Normal(DictId, new[] { new[] { MakeTypeValue("A"), MakeTypeValue("C") } });
 
@@ -166,7 +169,7 @@ namespace Gum.IR0
             }
 
             var vId = yId.Append("v");
-            var expected = new VarValue(vId, 
+            var expected = new MemberVarValue(vId, 
                 new[] { MakeTypeValue("A"), MakeTypeValue("B") },
                 new[] { MakeTypeValue("C") });
 

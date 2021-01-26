@@ -7,26 +7,27 @@ namespace Gum.CompileTime
 {
     public class FuncInfo : ItemInfo
     {
-        public bool bSeqCall { get; }
-        public bool bThisCall { get; }
+        public override Name Name { get; }
+        public bool IsSequenceFunc { get; }
+        public bool IsInstanceFunc { get; }
         public ImmutableArray<string> TypeParams { get; }
-        public TypeValue RetTypeValue { get; }
-        public ImmutableArray<TypeValue> ParamTypeValues { get; }
+        public Type RetType { get; }
+        public ImmutableArray<Type> ParamTypes { get; }
 
-        public FuncInfo(ItemId id, bool bSeqCall, bool bThisCall, ImmutableArray<string> typeParams, TypeValue retTypeValue, ImmutableArray<TypeValue> paramTypeValues)
-            : base(id)
+        public FuncInfo(Name name, bool bSeqCall, bool bThisCall, ImmutableArray<string> typeParams, Type retType, ImmutableArray<Type> paramTypes)
         {
-            this.bSeqCall = bSeqCall;
-            this.bThisCall = bThisCall;            
+            Name = name;
+            IsSequenceFunc = bSeqCall;
+            IsInstanceFunc = bThisCall;
             TypeParams = typeParams;
-            RetTypeValue = retTypeValue;
-            ParamTypeValues = paramTypeValues;
+            RetType = retType;
+            ParamTypes = paramTypes;
         }
 
-        public FuncInfo(ItemId id, bool bSeqCall, bool bThisCall, IEnumerable<string> typeParams, TypeValue retTypeValue, IEnumerable<TypeValue> paramTypeValues)
-            : this(id, bSeqCall, bThisCall, typeParams.ToImmutableArray(), retTypeValue, paramTypeValues.ToImmutableArray()) { }
+        public FuncInfo(Name name, bool bSeqCall, bool bThisCall, IEnumerable<string> typeParams, Type retType, IEnumerable<Type> paramTypes)
+            : this(name, bSeqCall, bThisCall, typeParams.ToImmutableArray(), retType, paramTypes.ToImmutableArray()) { }
 
-        public FuncInfo(ItemId id, bool bSeqCall, bool bThisCall, ImmutableArray<string> typeParams, TypeValue retTypeValues, params TypeValue[] paramTypeValues)
-            : this(id, bSeqCall, bThisCall, typeParams, retTypeValues, paramTypeValues.ToImmutableArray()) { }
+        public FuncInfo(Name name, bool bSeqCall, bool bThisCall, ImmutableArray<string> typeParams, Type retType, params Type[] paramTypes)
+            : this(name, bSeqCall, bThisCall, typeParams, retType, paramTypes.ToImmutableArray()) { }
     }
 }

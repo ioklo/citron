@@ -9,52 +9,47 @@ namespace Gum.CompileTime
 {
     public class TypeValueTests
     {
-        // QsTypeValue.Normal테스트
+
+
         [Fact]
         public void TestMakeNormal()
         {
             // System.List<System.Int32>만들어 보기
-            var appliedInt = new TypeValue.Normal("System.Runtime", new AppliedItemPath(new NamespacePath("System"), new AppliedItemPathEntry("Int32")));
-
-            var appliedList = new TypeValue.Normal("System.Runtime", 
-                new AppliedItemPath(
-                    new NamespacePath("System"),
-                    new AppliedItemPathEntry("List", string.Empty, new[] { appliedInt })));
+            var intType = new ExternalType("System.Runtime", new NamespacePath("System"), "Int32", ImmutableArray<Type>.Empty);
+            var intListType = new ExternalType("System.Runtime", new NamespacePath("System"), "List", ImmutableArray.Create<Type>(intType));
             
-            Assert.Equal(appliedList.ModuleName, (ModuleName)"System.Runtime");
-            Assert.True(appliedList.NamespacePath.Entries.Length == 1 && appliedList.NamespacePath.Entries[0].Value == "System");
-            Assert.True(appliedList.OuterEntries.Length == 0);            
-            Assert.Equal(appliedList.Entry.Name, (Name)"List");
-            Assert.Equal(appliedList.Entry.ParamHash, string.Empty);
-            Assert.True(appliedList.Entry.TypeArgs.Length == 1 && 
-                ModuleInfoEqualityComparer.EqualsTypeValue(appliedList.Entry.TypeArgs[0], appliedInt));
+            Assert.Equal("System.Runtime", intListType.ModuleName);
+            Assert.Equal("System", intListType.NamespacePath.Entries[0].Value);
+            Assert.Equal("List", intListType.Name);
+            Assert.Equal(intType, intListType.TypeArgs[0]);
         }
 
         [Fact]
         public void TestMakeNestedNormal()
         {
             // class X<T> { class Y<T> { class Z<U> { } } }
-            // X<int>.Y<short>.Z<int> 만들어 보기            
-
-            var intId = new ItemId("System.Runtime", new NamespacePath("System"), new ItemPathEntry("Int32"));
-            var shortId = new ItemId("System.Runtime", new NamespacePath("System"), new ItemPathEntry("Int16"));
-            var zId = new ItemId(ModuleName.Internal, NamespacePath.Root, new ItemPathEntry("X", 1), new ItemPathEntry("Y", 1), new ItemPathEntry("Z", 1));
-
-            var intTV = new TypeValue.Normal("System.Runtime", new AppliedItemPath(new NamespacePath("System"), new AppliedItemPathEntry("Int32")));
-            var shortTV = new TypeValue.Normal("System.Runtime", new AppliedItemPath(new NamespacePath("System"), new AppliedItemPathEntry("Int16")));
-            var zTV = new TypeValue.Normal(ModuleName.Internal, NamespacePath.Root,
-                new[] {
-                    new AppliedItemPathEntry("X", string.Empty, new[]{ intTV }),
-                    new AppliedItemPathEntry("Y", string.Empty, new[]{ intTV }),                    
-                },
-                new AppliedItemPathEntry("Z", string.Empty, new[] { shortTV })
+            // X<int>.Y<short>.Z<int> 만들어 보기
+            var intType = new ExternalType("System.Runtime", new NamespacePath("System"), "Int32", ImmutableArray<Type>.Empty);
+            var shortType = new ExternalType("System.Runtime", new NamespacePath("System"), "Int16", ImmutableArray<Type>.Empty);
+            var zType = new MemberType(
+                new MemberType(
+                    new InternalType(NamespacePath.Root, "X", ImmutableArray.Create<Type>(intType)),
+                    "Y",
+                    ImmutableArray.Create<Type>(shortType)
+                ),
+                "Z",
+                ImmutableArray.Create<Type>(intType)
             );
 
-            Assert.True(ModuleInfoEqualityComparer.EqualsModuleName(zTV.ModuleName, ModuleName.Internal));
-            Assert.True(ModuleInfoEqualityComparer.EqualsNamespacePath(zTV.NamespacePath, NamespacePath.Root));
-            Assert.True(ModuleInfoEqualityComparer.EqualsAppliedItemPathEntry(zTV.OuterEntries[0], new AppliedItemPathEntry("X", string.Empty, new[] { intTV })));
-            Assert.True(ModuleInfoEqualityComparer.EqualsAppliedItemPathEntry(zTV.OuterEntries[1], new AppliedItemPathEntry("Y", string.Empty, new[] { intTV })));
-            Assert.True(ModuleInfoEqualityComparer.EqualsAppliedItemPathEntry(zTV.Entry, new AppliedItemPathEntry("Z", string.Empty, new[] { shortTV })));
+            Assert.True(((InternalType)((MemberType)zType.Outer).Outer).NamespacePath.IsRoot);
+            Assert.Equal("X", ((InternalType)((MemberType)zType.Outer).Outer).Name);
+            Assert.Equal(intType, ((InternalType)((MemberType)zType.Outer).Outer).TypeArgs[0]);
+
+            Assert.Equal("Y", ((MemberType)zType.Outer).Name);
+            Assert.Equal(shortType, ((MemberType)zType.Outer).TypeArgs[0]);
+
+            Assert.Equal("Z", zType.Name);
+            Assert.Equal(intType, zType.TypeArgs[0]);
         }
     }
 }

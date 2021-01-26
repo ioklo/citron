@@ -7,9 +7,9 @@ namespace Gum.IR0
 {
     class IdentifierResolver
     {
-        ItemInfoRepository itemInfoRepo;
+        TypeInfoRepository itemInfoRepo;
 
-        public IdentifierResolver(ItemInfoRepository itemInfoRepo)
+        public IdentifierResolver(TypeInfoRepository itemInfoRepo)
         {
             this.itemInfoRepo = itemInfoRepo;
         }

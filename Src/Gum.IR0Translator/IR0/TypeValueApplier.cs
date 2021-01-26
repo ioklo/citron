@@ -9,11 +9,11 @@ namespace Gum.IR0
 {
     class TypeValueApplier
     {
-        ItemInfoRepository itemInfoRepo;
+        ITypeInfoRepository typeInfoRepo;
 
-        public TypeValueApplier(ItemInfoRepository itemInfoRepo)
+        public TypeValueApplier(ITypeInfoRepository typeInfoRepo)
         {
-            this.itemInfoRepo = itemInfoRepo;
+            this.typeInfoRepo = typeInfoRepo;
         }
 
         void FillTypeEnv(int depth, ImmutableArray<string> typeParams, ImmutableArray<TypeValue> typeArgs, Dictionary<TypeValue.TypeVar, TypeValue> typeEnv)
@@ -33,7 +33,7 @@ namespace Gum.IR0
             var outer = ntv.GetOuter();
             if (outer == null)
             {
-                var typeInfo = itemInfoRepo.GetItem<TypeInfo>(ntv.GetTypeId());
+                var typeInfo = typeInfoRepo.GetItem<TypeInfo>(ntv.GetTypeId());
                 Debug.Assert(typeInfo != null);
 
                 // update env
@@ -120,7 +120,7 @@ namespace Gum.IR0
             var outer = context.GetOuter();
             if (outer == null)
             {
-                var funcInfo = itemInfoRepo.GetItem<FuncInfo>(context.GetFuncId());
+                var funcInfo = typeInfoRepo.GetItem<FuncInfo>(context.GetFuncId());
                 Debug.Assert(funcInfo != null);
 
                 FillTypeEnv(0, funcInfo.TypeParams, context.Entry.TypeArgs, typeEnv);

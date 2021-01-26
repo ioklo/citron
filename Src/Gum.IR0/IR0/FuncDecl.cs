@@ -15,15 +15,15 @@ namespace Gum.IR0
 
         internal FuncDecl(FuncDeclId id,
                 bool bThisCall,
-                IEnumerable<string> typeParams,
-                IEnumerable<string> paramNames,
+                ImmutableArray<string> typeParams,
+                ImmutableArray<string> paramNames,
                 Stmt body)
         {
             Id = id;
             IsThisCall = bThisCall;
 
-            TypeParams = typeParams.ToImmutableArray();
-            ParamNames = paramNames.ToImmutableArray();
+            TypeParams = typeParams;
+            ParamNames = paramNames;
             Body = body;
         }
 
@@ -32,8 +32,8 @@ namespace Gum.IR0
             public Normal(
                 FuncDeclId id,
                 bool bThisCall,
-                IEnumerable<string> typeParams,
-                IEnumerable<string> paramNames,
+                ImmutableArray<string> typeParams,
+                ImmutableArray<string> paramNames,
                 Stmt body)
                 : base(id, bThisCall, typeParams, paramNames, body)
             {   
@@ -44,7 +44,7 @@ namespace Gum.IR0
         {
             public Type ElemType { get; }
 
-            public Sequence(FuncDeclId id, Type elemType, bool bThisCall, IEnumerable<string> typeParams, IEnumerable<string> paramNames, Stmt body)
+            public Sequence(FuncDeclId id, Type elemType, bool bThisCall, ImmutableArray<string> typeParams, ImmutableArray<string> paramNames, Stmt body)
                 : base(id, bThisCall, typeParams, paramNames, body)
             {
                 ElemType = elemType;

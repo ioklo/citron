@@ -17,62 +17,46 @@ namespace Gum.IR0
         // Analyzer는 backtracking이 없어서, MutableContext를 쓴다 
         public class Context
         {
-            public struct PrivateGlobalVarInfo
-            {
-                public string Name { get; }
-                public TypeValue TypeValue { get; }
-                public PrivateGlobalVarInfo(string name, TypeValue typeValue)
-                {
-                    Name = name;
-                    TypeValue = typeValue;
-                }
-            }
-
             public TItemInfo? GetItem<TItemInfo>(ItemId id)
                 where TItemInfo : ItemInfo
             {
                 return itemInfoRepo.GetItem<TItemInfo>(id);
             }
             
-            private ItemInfoRepository itemInfoRepo;
-
-            public TypeValueService TypeValueService { get; }
-
+            TypeInfoRepository typeInfoRepo;
+            TypeExpInfoService typeExpTypeValueService;
+            TypeValueService typeValueService;
             IErrorCollector errorCollector;
 
-            // 현재 실행되고 있는 함수
+            // 현재 분석되고 있는 함수
             FuncContext curFunc;
-
-            // CurFunc와 bGlobalScope를 나누는 이유는, globalScope에서 BlockStmt 안으로 들어가면 global이 아니기 때문이다
-            bool bGlobalScope;
-            bool bInLoop;            
-            TypeExpTypeValueService typeExpTypeValueService;
+            bool bInLoop;
             
-            Dictionary<string, PrivateGlobalVarInfo> privateGlobalVarInfos;
             List<TypeDecl> typeDecls;
             List<FuncDecl> funcDecls;
+            List<Stmt> topLevelStmts;
             Dictionary<ItemPath, FuncDeclId> funcDeclsByPath;
 
+            InternalGlobalVariableRepository internalGlobalVarRepo;
+
             public Context(                
-                ItemInfoRepository itemInfoRepo,                
+                TypeInfoRepository typeInfoRepo,
                 TypeValueService typeValueService,
-                TypeExpTypeValueService typeExpTypeValueService,                
+                TypeExpInfoService typeExpTypeValueService,
                 IErrorCollector errorCollector)
             {
-                this.itemInfoRepo = itemInfoRepo;
-
-                TypeValueService = typeValueService;
-                
+                this.typeInfoRepo = typeInfoRepo;
+                this.typeValueService = typeValueService;
                 this.typeExpTypeValueService = typeExpTypeValueService;
                 this.errorCollector = errorCollector;
 
-                curFunc = new FuncContext(new TypeValue.Normal(ItemIds.Int), false);
-                bGlobalScope = true;
+                curFunc = new FuncContext(null, new TypeValue.Normal(ItemIds.Int), false);
                 bInLoop = false;
-                privateGlobalVarInfos = new Dictionary<string, PrivateGlobalVarInfo>();
+                internalGlobalVarRepo = new InternalGlobalVariableRepository();
                 
                 typeDecls = new List<TypeDecl>();
                 funcDecls = new List<FuncDecl>();
+                topLevelStmts = new List<Stmt>();
                 funcDeclsByPath = new Dictionary<ItemPath, FuncDeclId>();
             }
 
@@ -98,44 +82,66 @@ namespace Gum.IR0
                 throw new NotImplementedException();
             }
 
-            public void AddPrivateGlobalVarInfo(string name, TypeValue typeValue)
-            {
-                privateGlobalVarInfos.Add(name, new PrivateGlobalVarInfo(name, typeValue));
+            public bool IsAssignable(TypeValue toTypeValue, TypeValue fromTypeValue)
+            {   
+                // B <- D
+                // 지금은 fromType의 base들을 찾아가면서 toTypeValue와 맞는 것이 있는지 본다
+                // TODO: toTypeValue가 interface라면, fromTypeValue의 interface들을 본다
+
+                TypeValue? curType = fromTypeValue;
+                while (curType != null)
+                {
+                    if (toTypeValue.Equals(curType))
+                        return true;
+
+                    if (!typeValueService.GetBaseTypeValue(curType, out var outType))
+                        return false;
+
+                    curType = outType;
+                }
+
+                return false;
             }
 
-            public bool GetPrivateGlobalVarInfo(string value, out PrivateGlobalVarInfo privateGlobalVarInfo)
+            public bool IsAssignableExp(Exp exp)
             {
-                return privateGlobalVarInfos.TryGetValue(value, out privateGlobalVarInfo);
+                switch (exp)
+                {
+                    case LocalVarExp localVarExp:
+
+                        // 람다 바깥에 있다면 대입 불가능하다
+                        if (curFunc.IsLocalVarOutsideLambda(localVarExp.Name))
+                            return false;
+
+                        return true;
+                    
+                    case PrivateGlobalVarExp _:
+                    case ListIndexerExp _:
+                    case StaticMemberExp _:
+                    case StructMemberExp _:
+                    case ClassMemberExp _:
+                    case EnumMemberExp _:
+                        return true;
+
+                    default:
+                        return false;
+                }
+
             }
 
-            public int GetPrivateGlobalVarCount()
+            public void AddInternalGlobalVarInfo(Name name, TypeValue typeValue)
             {
-                return privateGlobalVarInfos.Count;
+                internalGlobalVarRepo.AddInternalGlobalVariable(name, typeValue);
             }
 
             public void ExecInLocalScope(Action action)
             {
-                var bPrevGlobalScope = bGlobalScope;
-                bGlobalScope = false;
-
                 curFunc.ExecInLocalScope(action);
-
-                bGlobalScope = bPrevGlobalScope;
             }
 
             public TResult ExecInLocalScope<TResult>(Func<TResult> func)
             {
-                var bPrevGlobalScope = bGlobalScope;
-                bGlobalScope = false;
-
-                try
-                {
-                    return curFunc.ExecInLocalScope(func);
-                }
-                finally
-                {
-                    bGlobalScope = bPrevGlobalScope;
-                }
+                return curFunc.ExecInLocalScope(func);                
             }
 
             public TResult ExecInLoop<TResult>(Func<TResult> func)
@@ -167,10 +173,10 @@ namespace Gum.IR0
                     bInLoop = bPrevInLoop;
                 }
             }
-
+            
             public Type GetType(TypeValue typeValue)
             {
-                bool Equals(TypeValue x, TypeValue y) => ModuleInfoEqualityComparer.EqualsTypeValue(x, y);
+                bool Equals(TypeValue x, TypeValue y) => x.Equals(y);
 
                 // 일단 predefined부터 걸러냅니다.
                 if (typeValue is TypeValue.Normal ntv)
@@ -178,7 +184,7 @@ namespace Gum.IR0
                     if (Equals(ntv, TypeValues.Bool)) return Type.Bool;
                     else if (Equals(ntv, TypeValues.Int)) return Type.Int;
                     else if (Equals(ntv, TypeValues.String)) return Type.String;
-                    else if (ModuleInfoEqualityComparer.EqualsItemId(ntv.GetTypeId(), ItemIds.List))
+                    else if (ntv.GetTypeId().Equals(ItemIds.List))
                     {
                         var elemType = GetType(ntv.Entry.TypeArgs[0]);
                         return Type.List(elemType);
@@ -200,18 +206,13 @@ namespace Gum.IR0
                 curFunc.ExecInLambdaScope(lambdaRetTypeValue, action);
             }
 
-            internal bool IsLocalVarOutsideLambda(string name)
-            {
-                return curFunc.IsLocalVarOutsideLambda(name);
-            }
-
             public void ExecInFuncScope(S.FuncDecl funcDecl, Action action)
             {
                 var retTypeValue = GetTypeValueByTypeExp(funcDecl.RetType);
+                var funcPath = GetFuncPath(funcDecl);
 
-                var (prevFunc, bPrevGlobalScope) = (curFunc, bGlobalScope);
-                bGlobalScope = false;
-                curFunc = new FuncContext(retTypeValue, funcDecl.IsSequence);
+                var prevFunc = curFunc;
+                curFunc = new FuncContext(funcPath, retTypeValue, funcDecl.IsSequence);
 
                 try
                 {
@@ -219,117 +220,66 @@ namespace Gum.IR0
                 }
                 finally
                 {
-                    bGlobalScope = bPrevGlobalScope;
                     curFunc = prevFunc;
                 }
             }
 
+            ItemPath GetFuncPath(S.FuncDecl funcDecl)
+            {
+                throw new NotImplementedException();
+            }
 
             public bool GetTypeValueByName(string varName, [NotNullWhen(true)] out TypeValue? localVarTypeValue)
             {
                 throw new NotImplementedException();
-            }            
-
-            public bool IsGlobalScope()
-            {
-                return bGlobalScope;
             }
-
+            
             public bool IsInLoop()
             {
                 return bInLoop;
             }
 
-            public void SetGlobalScope(bool bNewGlobalScope)
-            {
-                bGlobalScope = bNewGlobalScope;
-            }
-
             public TypeValue GetTypeValueByTypeExp(S.TypeExp typeExp)
             {
-                return typeExpTypeValueService.GetTypeValue(typeExp);
+                return typeExpTypeValueService.GetTypeExpInfo(typeExp);
             }
 
-            private bool GetLocalOutsideLambdaIdentifierInfo(
-                string idName, ImmutableArray<TypeValue> typeArgs,
-                [NotNullWhen(true)] out IdentifierInfo? outIdInfo)
+            LocalVarOutsideLambdaInfo? GetLocalVarOutsideLambdaInfo(string idName, ImmutableArray<TypeValue> typeArgs)
             {
                 // 지역 스코프에는 변수만 있고, 함수, 타입은 없으므로 이름이 겹치는 것이 있는지 검사하지 않아도 된다
                 if (typeArgs.Length == 0)
-                {
-                    if (curFunc.GetLocalVarOutsideLambdaInfo(idName, out var localVarOutsideInfo))
-                    {
-                        outIdInfo = new IdentifierInfo.LocalOutsideLambda(localVarOutsideInfo);
-                        return true;
-                    }
-                }
+                    return curFunc.GetLocalVarOutsideLambdaInfo(idName);
 
-                outIdInfo = null;
-                return false;
+                return null;
             }
 
             // 지역 스코프에서 
-            private bool GetLocalIdentifierInfo(
-                string idName, ImmutableArray<TypeValue> typeArgs,
-                [NotNullWhen(true)] out IdentifierInfo? outIdInfo)
+            LocalVarInfo? GetLocalVarInfo(string idName, ImmutableArray<TypeValue> typeArgs)
             {
                 // 지역 스코프에는 변수만 있고, 함수, 타입은 없으므로 이름이 겹치는 것이 있는지 검사하지 않아도 된다
                 if (typeArgs.Length == 0)
-                    if (curFunc.GetLocalVarInfo(idName, out var localVarInfo))
-                    {
-                        outIdInfo = new IdentifierInfo.Local(localVarInfo.Name, localVarInfo.TypeValue);
-                        return true;
-                    }
+                    return curFunc.GetLocalVarInfo(idName);
 
-                outIdInfo = null;
-                return false;
+                return null;
             }
 
-            private bool GetThisIdentifierInfo(
-                string idName, ImmutableArray<TypeValue> typeArgs,
-                [NotNullWhen(true)] out IdentifierInfo? idInfo)
+            IdentifierInfo? GetThisMemberInfo(string idName, ImmutableArray<TypeValue> typeArgs)
             {
                 // TODO: implementation
-
-                idInfo = null;
-                return false;
+                return null;
             }
 
-            private bool GetPrivateGlobalVarIdentifierInfo(
-                string idName, ImmutableArray<TypeValue> typeArgs,
-                [NotNullWhen(true)] out IdentifierInfo? outIdInfo)
+            InternalGlobalVarInfo? GetInternalGlobalVarInfo(string idName, ImmutableArray<TypeValue> typeArgs)
             {
                 if (typeArgs.Length == 0)
-                    if (privateGlobalVarInfos.TryGetValue(idName, out var privateGlobalVarInfo))
-                    {
-                        outIdInfo = new IdentifierInfo.PrivateGlobal(privateGlobalVarInfo.Name, privateGlobalVarInfo.TypeValue);
-                        return true;
-                    }
+                    return internalGlobalVarRepo.GetVariable(idName);
 
-                outIdInfo = null;
-                return false;
-            }
+                return null;
+            }            
 
-            private bool GetModuleGlobalIdentifierInfo(
-                string idName, ImmutableArray<TypeValue> typeArgs,
-                TypeValue? hintTypeValue,
-                [NotNullWhen(true)] out IdentifierInfo? outIdInfo)
+            IdentifierInfo? GetExternalGlobalInfo(string idName, ImmutableArray<TypeValue> typeArgs, TypeValue? hintTypeValue)
             {
                 var candidates = new List<IdentifierInfo>();
-
-                // TODO: root 이외의 namespace 지원                
-                if (typeArgs.Length == 0)
-                {
-                    foreach (var varInfo in itemInfoRepo.GetVars(NamespacePath.Root, idName))
-                    {
-                        var varId = varInfo.GetId();
-                        Debug.Assert(varId.OuterEntries.Length == 0);
-
-                        var idInfo = new IdentifierInfo.ModuleGlobal(
-                            new VarValue(varId.ModuleName, varId.NamespacePath, varId.Entry.Name), varInfo.TypeValue);
-                        candidates.Add(idInfo);
-                    }
-                }
 
                 // Global Identifier이므로 typeArgument의 최상위이다 (outer가 없다)
                 foreach (var funcInfo in itemInfoRepo.GetFuncs(NamespacePath.Root, idName))
@@ -390,11 +340,26 @@ namespace Gum.IR0
                 return false;
             }
 
-            public void AddFuncDecl(ItemPath itemPath, bool bThisCall, IEnumerable<string> typeParams, IEnumerable<string> paramNames, Stmt body)
+            public MemberVarValue? GetMemberVarValue(TypeValue typeValue, string memberName)
+            {
+                return typeValueService.GetMemberVarValue(typeValue, memberName);
+            }
+
+            public ItemPath? GetCurFuncPath()
+            {
+                return curFunc.GetFuncPath();
+            }
+
+            public void AddFuncDecl(ItemPath itemPath, bool bThisCall, ImmutableArray<string> typeParams, ImmutableArray<string> paramNames, Stmt body)
             {
                 var id = new FuncDeclId(funcDecls.Count);
                 funcDecls.Add(new FuncDecl.Normal(id, bThisCall, typeParams, paramNames, body));
                 funcDeclsByPath.Add(itemPath, id);
+            }
+
+            public void AddTopLevelStmt(Stmt stmt)
+            {
+                topLevelStmts.Add(stmt);
             }
 
             public IEnumerable<TypeDecl> GetTypeDecls()
@@ -407,45 +372,51 @@ namespace Gum.IR0
                 return funcDecls;
             }
 
-            public void AddSeqFuncDecl(ItemPath itemPath, Type retTypeId, bool bThisCall, IEnumerable<string> typeParams, IEnumerable<string> paramNames, Stmt body)
+            public IEnumerable<Stmt> GetTopLevelStmts()
+            {
+                return topLevelStmts;
+            }
+
+            public void AddSeqFuncDecl(ItemPath itemPath, Type retTypeId, bool bThisCall, ImmutableArray<string> typeParams, ImmutableArray<string> paramNames, Stmt body)
             {
                 var id = new FuncDeclId(funcDecls.Count);
                 funcDecls.Add(new FuncDecl.Sequence(id, retTypeId, bThisCall, typeParams, paramNames,body));
                 funcDeclsByPath.Add(itemPath, id);
             }
 
-            public bool GetIdentifierInfo(
-                string idName, ImmutableArray<TypeValue> typeArgs,
-                TypeValue? hintTypeValue,
-                [NotNullWhen(true)] out IdentifierInfo? outIdInfo)
+            public IdentifierInfo? GetIdentifierInfo(string idName, ImmutableArray<TypeValue> typeArgs, TypeValue? hintTypeValue)
             {
                 // 0. 람다 바깥의 local 변수
-                if (GetLocalOutsideLambdaIdentifierInfo(idName, typeArgs, out outIdInfo))
-                    return true;
+                var localOutsideInfo = GetLocalVarOutsideLambdaInfo(idName, typeArgs);
+                if (localOutsideInfo != null) return localOutsideInfo;
 
                 // 1. local 변수, local 변수에서는 힌트를 쓸 일이 없다
-                if (GetLocalIdentifierInfo(idName, typeArgs, out outIdInfo))
-                    return true;
+                var localVarInfo = GetLocalVarInfo(idName, typeArgs);
+                if (localVarInfo != null) return localVarInfo;
 
                 // 2. thisType의 {{instance, static} * {변수, 함수}}, 타입. 아직 지원 안함
                 // 힌트는 오버로딩 함수 선택에 쓰일수도 있고,
                 // 힌트가 thisType안의 enum인 경우 elem을 선택할 수도 있다
-                if (GetThisIdentifierInfo(idName, typeArgs, out outIdInfo))
-                    return true;
+                var thisMemberInfo = GetThisMemberInfo(idName, typeArgs);
+                if (thisMemberInfo != null) return thisMemberInfo;
 
-                // 3. private global 'variable', 변수이므로 힌트를 쓸 일이 없다
-                if (GetPrivateGlobalVarIdentifierInfo(idName, typeArgs, out outIdInfo))
-                    return true;
+                // 3. internal global 'variable', 변수이므로 힌트를 쓸 일이 없다
+                var internalGlobalVarInfo = GetInternalGlobalVarInfo(idName, typeArgs);
+                if (internalGlobalVarInfo != null) return internalGlobalVarInfo;
 
-                // 4. module global, 변수, 함수, 타입, 
+                // 4. module global, 함수, 타입, 
                 // 오버로딩 함수 선택, hint가 global enum인 경우, elem선택
-                if (GetModuleGlobalIdentifierInfo(idName, typeArgs, hintTypeValue, out outIdInfo))
-                    return true;
+                var externalGlobalInfo = GetExternalGlobalInfo(idName, typeArgs, hintTypeValue);
+                if (externalGlobalInfo != null) return externalGlobalInfo;
 
-                outIdInfo = null;
-                return false;
+                return null;
             }
-            
+
+            public TypeValue.Func GetTypeValue(FuncValue funcValue)
+            {
+                return typeValueService.GetTypeValue(funcValue);
+            }
+
             // curFunc
             public void AddLocalVarInfo(string name, TypeValue typeValue)
             {
@@ -467,9 +438,9 @@ namespace Gum.IR0
                 curFunc.SetRetTypeValue(retTypeValue);
             }
 
-            public bool DoesPrivateGlobalVarNameExist(string name)
+            public bool DoesInternalGlobalVarNameExist(string name)
             {
-                return privateGlobalVarInfos.ContainsKey(name);
+                return internalGlobalVarRepo.HasVariable(name);
             }
 
             public FuncDeclId? GetFuncDeclId(ItemPath funcPath)
@@ -483,6 +454,11 @@ namespace Gum.IR0
             public IEnumerable<FuncInfo> GetFuncs(NamespacePath root, string value)
             {
                 return itemInfoRepo.GetFuncs(root, value);
+            }
+
+            public TypeValue Apply(TypeValue context, TypeValue typeValue)
+            {
+                return typeValueService.Apply(context, typeValue);
             }
 
             // 1. exp가 무슨 타입을 가지는지

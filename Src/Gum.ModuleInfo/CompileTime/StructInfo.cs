@@ -1,18 +1,20 @@
-﻿using System;
+﻿using Pretune;
+using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Text;
 
 namespace Gum.CompileTime
 {
-    public class StructInfo : TypeInfo
+    [AutoConstructor]
+    public partial class StructInfo : TypeInfo
     {
-        public StructInfo(
-            ItemId id,
-            IEnumerable<string> typeParams,
-            TypeValue? baseTypeValue,
-            IEnumerable<ItemInfo> memberInfos)
-            : base(id, typeParams, baseTypeValue, memberInfos)
-        {
-        }
+        public override Name Name { get; }
+
+        public override ImmutableArray<string> TypeParams { get; }
+        public Type BaseType { get; }
+        public override ImmutableArray<TypeInfo> MemberTypes { get; }
+        public ImmutableArray<FuncInfo> MemberFuncs { get; }
+        public ImmutableArray<MemberVarInfo> MemberVars { get; }
     }
 }

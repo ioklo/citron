@@ -43,6 +43,17 @@ namespace Gum.Misc
             return false;
         }
 
+        public TValue? GetValueOrDefault(TKey key)
+        {
+            for (int i = stack.Count - 1; 0 <= i; i--)
+                if (stack[i].TryGetValue(key, out var value))
+                {
+                    return value;
+                }
+
+            return default;
+        }
+
         public void Add(TKey key, TValue value)
         {
             stack[stack.Count - 1].Add(key, value);

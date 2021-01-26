@@ -10,29 +10,19 @@ namespace Gum.IR0
 {
     partial class Analyzer
     {
-        public class LocalVarOutsideLambdaInfo
-        {
-            public bool bNeedCapture { get; set; }
-            public LocalVarInfo LocalVarInfo { get; }
-
-            public LocalVarOutsideLambdaInfo(LocalVarInfo localVarInfo)
-            {
-                bNeedCapture = false;
-                LocalVarInfo = localVarInfo;
-            }
-        }
-
-        // 현재 함수 정보
+        // 현재 분석되고 있는 함수 정보
         class FuncContext
         {
-            private TypeValue? retTypeValue; // 리턴 타입이 미리 정해져 있다면 이걸 쓴다
-            private bool bSequence; // 시퀀스 여부
+            ItemPath? funcPath;      // null 이면 최상위
+            TypeValue? retTypeValue; // 리턴 타입이 미리 정해져 있다면 이걸 쓴다
+            bool bSequence;          // 시퀀스 여부
 
-            private ScopedDictionary<string, LocalVarOutsideLambdaInfo> localVarsOutsideLambda; // 람다 구문 바깥에 있는 로컬 변수, 캡쳐대상이다
-            private ScopedDictionary<string, LocalVarInfo> localVarsByName;
+            ScopedDictionary<string, LocalVarOutsideLambdaInfo> localVarsOutsideLambda; // 람다 구문 바깥에 있는 로컬 변수, 캡쳐대상이다
+            ScopedDictionary<string, LocalVarInfo> localVarsByName;
 
-            public FuncContext(TypeValue? retTypeValue, bool bSequence)
+            public FuncContext(ItemPath? funcPath, TypeValue? retTypeValue, bool bSequence)
             {
+                this.funcPath = funcPath;
                 this.retTypeValue = retTypeValue;
                 this.bSequence = bSequence;
 
@@ -45,14 +35,19 @@ namespace Gum.IR0
                 localVarsByName.Add(name, new LocalVarInfo(name, typeValue));
             }            
 
-            public bool GetLocalVarOutsideLambdaInfo(string varName, [NotNullWhen(true)] out LocalVarOutsideLambdaInfo? outInfo)
+            public ItemPath? GetFuncPath()
             {
-                return localVarsOutsideLambda.TryGetValue(varName, out outInfo);
+                return funcPath;
             }
 
-            public bool GetLocalVarInfo(string varName, [NotNullWhen(true)] out LocalVarInfo? localVarInfo)
+            public LocalVarOutsideLambdaInfo? GetLocalVarOutsideLambdaInfo(string varName)
             {
-                return localVarsByName.TryGetValue(varName, out localVarInfo);
+                return localVarsOutsideLambda.GetValueOrDefault(varName);
+            }
+
+            public LocalVarInfo? GetLocalVarInfo(string varName)
+            {
+                return localVarsByName.GetValueOrDefault(varName);
             }            
 
             public TypeValue? GetRetTypeValue()

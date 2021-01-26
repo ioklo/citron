@@ -8,6 +8,7 @@ using System.Net;
 using System.Text;
 using Gum.CompileTime;
 using Gum.Infra;
+using Gum.Misc;
 using Pretune;
 using static Gum.IR0.AnalyzeErrorCode;
 
@@ -16,24 +17,33 @@ using S = Gum.Syntax;
 namespace Gum.IR0
 {
     partial class Analyzer
-    {        
-        TypeSkeletonRepository skelRepo;
+    {           
         Context context;
 
-        public Analyzer(
-            TypeSkeletonRepository skelRepo,            
-            ItemInfoRepository itemInfoRepo,
+        public static Script Analyze(
+            S.Script script,
+            TypeInfoRepository itemInfoRepo,
             TypeValueService typeValueService,
-            TypeExpTypeValueService typeExpTypeValueService,
+            TypeExpInfoService typeExpTypeValueService,
             IErrorCollector errorCollector)
         {
-            this.skelRepo = skelRepo;
-            this.context = new Context(itemInfoRepo, typeValueService, typeExpTypeValueService, errorCollector);
+            var context = new Context(itemInfoRepo, typeValueService, typeExpTypeValueService, errorCollector);
+            var analyzer = new Analyzer(context);
+
+            // pass1, pass2
+            var pass1 = new CollectingGlobalVarPass(analyzer);
+            Gum.IR0.Misc.VisitScript(script, pass1);
+
+            var pass2 = new TypeCheckingAndTranslatingPass(analyzer);
+            Gum.IR0.Misc.VisitScript(script, pass2);
+
+            // 5. 각 func body를 분석한다 (4에서 얻게되는 글로벌 변수 정보가 필요하다)
+            return new Script(analyzer.context.GetTypeDecls(), analyzer.context.GetFuncDecls(), analyzer.context.GetTopLevelStmts());
         }
 
-        public TypeValue AnalyzeTypeExp(S.TypeExp typeExp)
+        Analyzer(Context context)
         {
-            return context.GetTypeValueByTypeExp(typeExp);
+            this.context = context;
         }
 
         [AutoConstructor]
@@ -67,7 +77,7 @@ namespace Gum.IR0
                 {
                     var initExpResult = AnalyzeExp(elem.InitExp, declType);
 
-                    if (!IsAssignable(declType, initExpResult.TypeValue))
+                    if (!context.IsAssignable(declType, initExpResult.TypeValue))
                         context.AddFatalError(A0102_VarDecl_MismatchBetweenDeclTypeAndInitExpType, elem, $"타입 {initExpResult.TypeValue}의 값은 타입 {declType}의 변수 {elem.VarName}에 대입할 수 없습니다.");
 
                     var type = context.GetType(declType);
@@ -82,16 +92,16 @@ namespace Gum.IR0
             public VarDeclElement VarDeclElement { get; }
         }
 
-        VarDeclElementResult AnalyzePrivateGlobalVarDeclElement(S.VarDeclElement elem, TypeValue declType)
+        VarDeclElementResult AnalyzeInternalGlobalVarDeclElement(S.VarDeclElement elem, TypeValue declType)
         {
             var name = elem.VarName;
 
-            if (context.DoesPrivateGlobalVarNameExist(name))            
+            if (context.DoesInternalGlobalVarNameExist(name))            
                 context.AddFatalError(A0104_VarDecl_GlobalVariableNameShouldBeUnique, elem, $"전역 변수 {name}가 이미 선언되었습니다");
 
             var result = AnalyzeVarDeclElementCore(elem, declType);
 
-            context.AddPrivateGlobalVarInfo(name, result.TypeValue);
+            context.AddInternalGlobalVarInfo(name, result.TypeValue);
             return new VarDeclElementResult(result.Elem);
         }
 
@@ -109,23 +119,23 @@ namespace Gum.IR0
         }
 
         [AutoConstructor]
-        partial struct PrivateGlobalVarDeclResult
+        partial struct GlobalVarDeclResult
         {
             public ImmutableArray<VarDeclElement> Elems { get; }
         }
 
-        PrivateGlobalVarDeclResult AnalyzePrivateGlobalVarDecl(S.VarDecl varDecl)
+        GlobalVarDeclResult AnalyzeGlobalVarDecl(S.VarDecl varDecl)
         {
             var declType = context.GetTypeValueByTypeExp(varDecl.Type);
 
             var elems = new List<VarDeclElement>();
             foreach (var elem in varDecl.Elems)
             {
-                var result = AnalyzePrivateGlobalVarDeclElement(elem, declType);
+                var result = AnalyzeInternalGlobalVarDeclElement(elem, declType);
                 elems.Add(result.VarDeclElement);
             }
 
-            return new PrivateGlobalVarDeclResult(elems.ToImmutableArray());
+            return new GlobalVarDeclResult(elems.ToImmutableArray());
         }
 
         [AutoConstructor]
@@ -281,158 +291,75 @@ namespace Gum.IR0
             return AnalyzeExp(exp, hintTypeValue);
         }
 
-        public void AnalyzeFuncSkel(FuncSkeleton funcSkel)
+        public void AnalyzeFuncDecl(S.FuncDecl funcDecl)
         {
-            context.ExecInFuncScope(funcSkel.FuncDecl, () =>
+            context.ExecInFuncScope(funcDecl, () =>
             {
-                var funcDecl = funcSkel.FuncDecl;
-
                 if (0 < funcDecl.TypeParams.Length || funcDecl.ParamInfo.VariadicParamIndex != null)
                     throw new NotImplementedException();
                 
                 // 파라미터 순서대로 추가
-                foreach (var param in funcSkel.FuncDecl.ParamInfo.Parameters)
+                foreach (var param in funcDecl.ParamInfo.Parameters)
                 {
                     var paramTypeValue = context.GetTypeValueByTypeExp(param.Type);
                     context.AddLocalVarInfo(param.Name, paramTypeValue);
                 }
 
                 var bodyResult = AnalyzeStmt(funcDecl.Body);
+                var funcPath = context.GetCurFuncPath();
+                Debug.Assert(funcPath != null);
                 
                 if (funcDecl.IsSequence)
                 {
-                    // TODO: Body가 실제로 리턴을 제대로 하는지 확인해야 할 필요가 있다
-                    var retType = context.GetType(context.GetRetTypeValue());
-                    context.AddSeqFuncDecl(funcSkel.Path, retType, false, funcDecl.TypeParams, funcDecl.ParamInfo.Parameters.Select(param => param.Name), bodyResult.Stmt);
+                    // TODO: Body가 실제로 리턴을 제대로 하는지 확인해야 한다
+                    var retTypeValue = context.GetRetTypeValue();
+                    Debug.Assert(retTypeValue != null, "문법상 Sequence 함수의 retValue가 없을수 없습니다");
+
+                    var retType = context.GetType(retTypeValue);
+                    var parameters = funcDecl.ParamInfo.Parameters.Select(param => param.Name).ToImmutableArray();
+                    context.AddSeqFuncDecl(funcPath.Value, retType, false, funcDecl.TypeParams, parameters, bodyResult.Stmt);
                 }
                 else
                 {
-                    // TODO: Body가 실제로 리턴을 제대로 하는지 확인해야 할 필요가 있다
-                    context.AddFuncDecl(funcSkel.Path, bThisCall: false, funcDecl.TypeParams, funcDecl.ParamInfo.Parameters.Select(param => param.Name), bodyResult.Stmt);
+                    // TODO: Body가 실제로 리턴을 제대로 하는지 확인해야 한다
+                    var parameters = funcDecl.ParamInfo.Parameters.Select(param => param.Name).ToImmutableArray();
+                    context.AddFuncDecl(funcPath.Value, bThisCall: false, funcDecl.TypeParams, parameters, bodyResult.Stmt);
                 }
             });
-        }
-        
-        // stmt가 존재하는 곳
-        // GlobalFunc, MemberFunc, TopLevel
-        bool AnalyzeScript(S.Script script, [NotNullWhen(true)] out Script? outScript)
-        {
-            bool bResult = true;
-
-            var topLevelStmts = new List<Stmt>();
-            foreach (var elem in script.Elements)
-            {
-                switch (elem)
-                {
-                    case S.Script.StmtElement stmtElem:
-                        if (!AnalyzeStmt(stmtElem.Stmt, out var topLevelStmt))
-                            bResult = false;
-                        else
-                            topLevelStmts.Add(topLevelStmt);
-                        break;
-                }
-            }
-
-            // 5. 각 func body를 분석한다 (4에서 얻게되는 글로벌 변수 정보가 필요하다)            
-
-            if (bResult)
-            {
-                outScript = new Script(context.GetTypeDecls(), context.GetFuncDecls(), topLevelStmts);
-                return true;
-            }
-            else
-            {
-                outScript = null;
-                return false;
-            }
-        }
-        
-        public Script? AnalyzeScript(S.Script script, IErrorCollector errorCollector)
-        {
-            if (!AnalyzeScript(script, out var ir0Script))
-                return null;
-
-            if (errorCollector.HasError)
-                return null;
-
-            return ir0Script;
-        }
-
-        public bool IsAssignable(TypeValue toTypeValue, TypeValue fromTypeValue)
-        {
-            // B <- D
-            // 지금은 fromType의 base들을 찾아가면서 toTypeValue와 맞는 것이 있는지 본다
-            // TODO: toTypeValue가 interface라면, fromTypeValue의 interface들을 본다
-
-            TypeValue? curType = fromTypeValue;
-            while (curType != null)
-            {
-                if (ModuleInfoEqualityComparer.EqualsTypeValue(toTypeValue, curType))
-                    return true;
-
-                if (!context.TypeValueService.GetBaseTypeValue(curType, out var outType))
-                    return false;
-
-                curType = outType;
-            }
-
-            return false;
         }        
         
-        public bool CheckInstanceMember(
-            S.MemberExp memberExp,
-            TypeValue objTypeValue,
-            [NotNullWhen(true)] out VarValue? outVarValue)
+        public MemberVarValue CheckInstanceMember(S.MemberExp memberExp, TypeValue objTypeValue)
         {
-            outVarValue = null;
-
             // TODO: Func추가
             TypeValue.Normal? objNormalTypeValue = objTypeValue as TypeValue.Normal;
 
             if (objNormalTypeValue == null)
-            {
-                context.AddError(A0301_MemberExp_InstanceTypeIsNotNormalType, memberExp, "멤버를 가져올 수 있는 타입이 아닙니다");
-                return false;
-            }
+                context.AddFatalError(A0301_MemberExp_InstanceTypeIsNotNormalType, memberExp, "멤버를 가져올 수 있는 타입이 아닙니다");
 
             if (0 < memberExp.MemberTypeArgs.Length)
-                context.AddError(A0302_MemberExp_TypeArgsForMemberVariableIsNotAllowed, memberExp, "멤버변수에는 타입인자를 붙일 수 없습니다");
+                context.AddFatalError(A0302_MemberExp_TypeArgsForMemberVariableIsNotAllowed, memberExp, "멤버변수에는 타입인자를 붙일 수 없습니다");
 
-            if (!context.TypeValueService.GetMemberVarValue(objNormalTypeValue, memberExp.MemberName, out outVarValue))
-            {
-                context.AddError(A0303_MemberExp_MemberVarNotFound, memberExp, $"{memberExp.MemberName}은 {objNormalTypeValue}의 멤버가 아닙니다");
-                return false;
-            }
+            var varValue = context.GetMemberVarValue(objNormalTypeValue, memberExp.MemberName);
+            if (varValue == null)
+                context.AddFatalError(A0303_MemberExp_MemberVarNotFound, memberExp, $"{memberExp.MemberName}은 {objNormalTypeValue}의 멤버가 아닙니다");
 
-            return true;
+            return varValue;
         }
 
-        public bool CheckStaticMember(
-            S.MemberExp memberExp,
-            TypeValue.Normal objNormalTypeValue,
-            [NotNullWhen(true)] out VarValue? outVarValue)
+        public MemberVarValue CheckStaticMember(S.MemberExp memberExp, TypeValue.Normal objNormalTypeValue)
         {
-            outVarValue = null;
+            var varValue = context.GetMemberVarValue(objNormalTypeValue, memberExp.MemberName);
 
-            if (!context.TypeValueService.GetMemberVarValue(objNormalTypeValue, memberExp.MemberName, out outVarValue))
-            {
-                context.AddError(A0303_MemberExp_MemberVarNotFound, memberExp, "멤버가 존재하지 않습니다");
-                return false;
-            }
+            if (varValue == null)
+                context.AddFatalError(A0303_MemberExp_MemberVarNotFound, memberExp, "멤버가 존재하지 않습니다");
 
             if (0 < memberExp.MemberTypeArgs.Length)
-            {
-                context.AddError(A0302_MemberExp_TypeArgsForMemberVariableIsNotAllowed, memberExp, "멤버변수에는 타입인자를 붙일 수 없습니다");
-                return false;
-            }
+                context.AddFatalError(A0302_MemberExp_TypeArgsForMemberVariableIsNotAllowed, memberExp, "멤버변수에는 타입인자를 붙일 수 없습니다");
 
-            if (!Misc.IsVarStatic(outVarValue.GetItemId(), context))
-            {
-                context.AddError(A0304_MemberExp_MemberVariableIsNotStatic, memberExp, "정적 변수가 아닙니다");
-                return false;
-            }
-
-            return true;
+            if (!Misc.IsVarStatic(varValue.GetItemId(), context))
+                context.AddFatalError(A0304_MemberExp_MemberVariableIsNotStatic, memberExp, "정적 변수가 아닙니다");
+            
+            return varValue;
         }
 
         void CheckParamTypes(S.ISyntaxNode nodeForErrorReport, IReadOnlyList<TypeValue> parameters, IReadOnlyList<TypeValue> args)
@@ -447,7 +374,7 @@ namespace Gum.IR0
 
             for (int i = 0; i < parameters.Count; i++)
             {
-                if (!IsAssignable(parameters[i], args[i]))
+                if (!context.IsAssignable(parameters[i], args[i]))
                 {
                     context.AddError(A0402_Parameter_MismatchBetweenParamTypeAndArgType, nodeForErrorReport, $"함수의 {i + 1}번 째 매개변수 타입은 {parameters[i]} 인데, 호출 인자 타입은 {args[i]} 입니다");
                     bFatal = true;
@@ -470,26 +397,6 @@ namespace Gum.IR0
             }
 
             return results.ToImmutableArray();
-        }
-
-        public Script Run()
-        {
-            var topLevelStmts = new List<Stmt>();
-
-            foreach (var stmt in skelRepo.GetTopLevelStmts())
-            {
-                var stmtResult = AnalyzeStmt(stmt);
-                topLevelStmts.Add(stmtResult.Stmt);
-            }
-
-            // 현재 func밖에 없으므로
-            foreach (var globalSkel in skelRepo.GetGlobalSkeletons())
-            {
-                if (globalSkel is FuncSkeleton funcSkel)
-                    AnalyzeFuncSkel(funcSkel);
-            }
-
-            return new Script(context.GetTypeDecls(), context.GetFuncDecls(), topLevelStmts);
         }
     }
 }

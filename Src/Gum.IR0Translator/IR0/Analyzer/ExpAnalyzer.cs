@@ -17,6 +17,7 @@ using static Gum.IR0.AnalyzeErrorCode;
 using S = Gum.Syntax;
 using Pretune;
 using System.Diagnostics.Contracts;
+using Gum.Misc;
 
 namespace Gum.IR0
 {    
@@ -35,36 +36,31 @@ namespace Gum.IR0
         {
             var typeArgs = GetTypeValues(idExp.TypeArgs, context);
 
-            if (!context.GetIdentifierInfo(idExp.Value, typeArgs, hintType, out var idInfo))
+            var idInfo = context.GetIdentifierInfo(idExp.Value, typeArgs, hintType);
+            if (idInfo == null)
                 context.AddFatalError(A0501_IdExp_VariableNotFound, idExp, $"{idExp.Value}을 찾을 수 없습니다");
 
             switch (idInfo)
             {
-                case IdentifierInfo.ModuleGlobal mgs:          // x => global of external module
-                    var varId = context.GetExternalGlobalVarId(mgs.VarValue.GetItemId()); // TypeParameter가 들어갈 일이 없으므로 AppliedId가 아니고 Id이다
-                    return new ExpResult(new ExternalGlobalVarExp(varId), mgs.TypeValue);
-
-                case IdentifierInfo.PrivateGlobal pgs:         // x => global of this module
-                    return new ExpResult(new PrivateGlobalVarExp(pgs.Name), pgs.TypeValue);
+                case InternalGlobalVarInfo ig:         // x => global of this module
+                    return new ExpResult(new PrivateGlobalVarExp(igvi.Name), igvi.TypeValue);
                 
-                case IdentifierInfo.LocalOutsideLambda localOutsideLambda:
+                case LocalVarOutsideLambdaInfo lv:
                     // ??????? localOutsideLambda.Info.bNeedCapture = true; 
-                    return new ExpResult(
-                        new LocalVarExp(localOutsideLambda.Info.LocalVarInfo.Name), 
-                        localOutsideLambda.Info.LocalVarInfo.TypeValue);                    
+                    return new ExpResult(new LocalVarExp(lv.LocalVarInfo.Name), lv.LocalVarInfo.TypeValue);                    
 
-                case IdentifierInfo.Local ls:                  // x => local x
-                    return new ExpResult(new LocalVarExp(ls.Name), ls.TypeValue);
+                case LocalVarInfo lv:                  // x => local x
+                    return new ExpResult(new LocalVarExp(lv.Name), lv.TypeValue);
 
-                case IdentifierInfo.StaticMember sms:          // x => T.x
+                case StaticMemberInfo sm:          // x => T.x
                     throw new NotImplementedException();
                     // outExp = new StaticMemberExp();
                 
-                case IdentifierInfo.InstanceMember ims:        // x => this.x
+                case InstanceMemberInfo im:        // x => this.x
                     throw new NotImplementedException();
-                //outExp = new InstanceMemberExp();
+                    //outExp = new InstanceMemberExp();
 
-                case IdentifierInfo.EnumElem enumElem:         // S => E.S, 힌트를 사용하면 나올 수 있다, ex) E e = S; 
+                case EnumElemInfo enumElem:         // S => E.S, 힌트를 사용하면 나올 수 있다, ex) E e = S; 
                     if (enumElem.ElemInfo.FieldInfos.Length == 0)
                     {
                         return new ExpResult(new NewEnumExp(enumElem.ElemInfo.Name, Array.Empty<NewEnumExp.Elem>()), enumElem.EnumTypeValue);
@@ -121,32 +117,7 @@ namespace Gum.IR0
             return new StringExpResult(new StringExp(strExpElems), TypeValues.String);
         }
 
-        bool IsAssignableExp(Exp exp)
-        {
-            switch (exp)
-            {
-                case LocalVarExp localVarExp:
-
-                    // 람다 바깥에 있다면 대입 불가능하다
-                    if (context.IsLocalVarOutsideLambda(localVarExp.Name))
-                        return false;
-
-                    return true;
-
-                case ExternalGlobalVarExp _:
-                case PrivateGlobalVarExp _:                    
-                case ListIndexerExp _:
-                case StaticMemberExp _:
-                case StructMemberExp _:
-                case ClassMemberExp _:
-                case EnumMemberExp _:
-                    return true;
-
-                default:
-                    return false;
-            }
-            
-        }
+        
 
         // int만 지원한다
         ExpResult AnalyzeIntUnaryAssignExp(S.Exp operand, InternalUnaryAssignOperator op)
@@ -154,10 +125,10 @@ namespace Gum.IR0
             var operandResult = AnalyzeExp(operand, null);
 
             // int type 검사
-            if (!IsAssignable(TypeValues.Int, operandResult.TypeValue))
+            if (!context.IsAssignable(TypeValues.Int, operandResult.TypeValue))
                 context.AddFatalError(A0601_UnaryAssignOp_IntTypeIsAllowedOnly, operand, "++ --는 int 타입만 지원합니다");
 
-            if (!IsAssignableExp(operandResult.Exp))
+            if (!context.IsAssignableExp(operandResult.Exp))
                 context.AddFatalError(A0602_UnaryAssignOp_AssignableExpressionIsAllowedOnly, operand, "++ --는 대입 가능한 식에만 적용할 수 있습니다");
 
             return new ExpResult(new CallInternalUnaryAssignOperator(op, operandResult.Exp), TypeValues.Int);
@@ -171,7 +142,7 @@ namespace Gum.IR0
             {
                 case S.UnaryOpKind.LogicalNot:
                     {
-                        if (!IsAssignable(TypeValues.Bool, operandResult.TypeValue))
+                        if (!context.IsAssignable(TypeValues.Bool, operandResult.TypeValue))
                             context.AddFatalError(A0701_UnaryOp_LogicalNotOperatorIsAppliedToBoolTypeOperandOnly, unaryOpExp.Operand, $"{unaryOpExp.Operand}에 !를 적용할 수 없습니다. bool 타입이어야 합니다");                            
 
                         var operandTypeId = context.GetType(operandResult.TypeValue);
@@ -185,7 +156,7 @@ namespace Gum.IR0
 
                 case S.UnaryOpKind.Minus:
                     {
-                        if (!IsAssignable(TypeValues.Int, operandResult.TypeValue))
+                        if (!context.IsAssignable(TypeValues.Int, operandResult.TypeValue))
                             context.AddFatalError(A0702_UnaryOp_UnaryMinusOperatorIsAppliedToIntTypeOperandOnly, unaryOpExp.Operand, $"{unaryOpExp.Operand}에 -를 적용할 수 없습니다. int 타입이어야 합니다");
 
                         var operandTypeId = context.GetType(operandResult.TypeValue);
@@ -283,10 +254,10 @@ namespace Gum.IR0
             // 1. Assign 먼저 처리
             if (binaryOpExp.Kind == S.BinaryOpKind.Assign)
             {
-                if (!IsAssignable(operandResult0.TypeValue, operandResult1.TypeValue))
+                if (!context.IsAssignable(operandResult0.TypeValue, operandResult1.TypeValue))
                     context.AddFatalError(A0801_BinaryOp_LeftOperandTypeIsNotCompatibleWithRightOperandType, binaryOpExp, "대입 가능하지 않습니다");
                     
-                if (!IsAssignableExp(operandResult0.Exp))
+                if (!context.IsAssignableExp(operandResult0.Exp))
                     context.AddFatalError(A0803_BinaryOp_LeftOperandIsNotAssignable, binaryOpExp.Operand0, "대입 가능하지 않은 식에 대입하려고 했습니다");
 
                 return new ExpResult(new AssignExp(operandResult0.Exp, operandResult1.Exp), operandResult0.TypeValue);
@@ -302,8 +273,8 @@ namespace Gum.IR0
                     foreach (var info in equalInfos)
                     {
                         // NOTICE: 우선순위별로 정렬되어 있기 때문에 먼저 매칭되는 것을 선택한다
-                        if (IsAssignable(info.OperandType0, operandResult0.TypeValue) &&
-                            IsAssignable(info.OperandType1, operandResult1.TypeValue))
+                        if (context.IsAssignable(info.OperandType0, operandResult0.TypeValue) &&
+                            context.IsAssignable(info.OperandType1, operandResult1.TypeValue))
                         {
                             var operandTypeId0 = context.GetType(operandResult0.TypeValue);
                             var operandTypeId1 = context.GetType(operandResult1.TypeValue);
@@ -325,8 +296,8 @@ namespace Gum.IR0
                 foreach (var info in matchedInfos)
                 {
                     // NOTICE: 우선순위별로 정렬되어 있기 때문에 먼저 매칭되는 것을 선택한다
-                    if (IsAssignable(info.OperandType0, operandResult0.TypeValue) && 
-                        IsAssignable(info.OperandType1, operandResult1.TypeValue))
+                    if (context.IsAssignable(info.OperandType0, operandResult0.TypeValue) && 
+                        context.IsAssignable(info.OperandType1, operandResult1.TypeValue))
                     {
                         var operandTypeId0 = context.GetType(operandResult0.TypeValue);
                         var operandTypeId1 = context.GetType(operandResult1.TypeValue);
@@ -365,7 +336,7 @@ namespace Gum.IR0
                 var typeArgs = callableExp.TypeArgs.Select(typeArg => context.GetTypeValueByTypeExp(typeArg)).ToArray();
 
                 var funcValue = new FuncValue(globalFunc.GetId(), typeArgs);
-                var funcTypeValue = context.TypeValueService.GetTypeValue(funcValue);
+                var funcTypeValue = context.GetTypeValue(funcValue);
 
                 CheckParamTypes(callableExp, funcTypeValue.Params, argResults.Select(info => info.TypeValue).ToList());
 
@@ -463,8 +434,8 @@ namespace Gum.IR0
                         var members = new List<NewEnumExp.Elem>();
                         foreach (var (fieldInfo, argResult) in Zip(enumElem.ElemInfo.FieldInfos, argResults))
                         {
-                            var appliedTypeValue = context.TypeValueService.Apply(enumElem.EnumTypeValue, fieldInfo.TypeValue);
-                            if (!IsAssignable(appliedTypeValue, argResult.TypeValue))
+                            var appliedTypeValue = context.Apply(enumElem.EnumTypeValue, fieldInfo.TypeValue);
+                            if (!context.IsAssignable(appliedTypeValue, argResult.TypeValue))
                                 context.AddFatalError(A0904_CallExp_MismatchBetweenEnumParamTypeAndEnumArgType, exp, "enum의 {0}번째 인자 형식이 맞지 않습니다");
 
                             var typeId = context.GetType(argResult.TypeValue);

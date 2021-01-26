@@ -6,28 +6,46 @@ using System.Linq;
 
 namespace Gum.CompileTime
 {
-    public struct NamespacePath
+    public struct NamespacePath : IEquatable<NamespacePath>
     {
-        public ImmutableArray<NamespaceId> Entries { get; }
+        public ImmutableArray<NamespaceName> Entries { get; }
 
-        public static NamespacePath Root { get; } = new NamespacePath(ImmutableArray<NamespaceId>.Empty);
+        public static NamespacePath Root { get; } = new NamespacePath(ImmutableArray<NamespaceName>.Empty);
 
-        private NamespacePath(ImmutableArray<NamespaceId> entries)
+        public bool IsRoot { get => Entries.IsEmpty; }
+
+        private NamespacePath(ImmutableArray<NamespaceName> entries)
         {
             Entries = entries;
         }
 
-        public NamespacePath(NamespaceId hdEntry, params NamespaceId[] tlEntries)
+        public NamespacePath(NamespaceName hdEntry, params NamespaceName[] tlEntries)
         {
-            var builder = ImmutableArray.CreateBuilder<NamespaceId>(tlEntries.Length + 1);
+            var builder = ImmutableArray.CreateBuilder<NamespaceName>(tlEntries.Length + 1);
             builder.Add(hdEntry);
             builder.AddRange(tlEntries);
             Entries = builder.MoveToImmutable();
         }
 
-        public NamespacePath(IEnumerable<NamespaceId> entries)
+        public NamespacePath(IEnumerable<NamespaceName> entries)
         {
             Entries = entries.ToImmutableArray();
+        }
+
+        public override bool Equals(object? obj)
+        {
+            return obj is NamespacePath path && Equals(path);
+        }
+
+        public bool Equals(NamespacePath other)
+        {
+            return Entries.SequenceEqual(other.Entries) &&
+                   IsRoot == other.IsRoot;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Entries, IsRoot);
         }
     }
 }

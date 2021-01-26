@@ -13,13 +13,7 @@ namespace Gum.IR0
     {
         internal Exp() { }
     }
-
-    public class ExternalGlobalVarExp : Exp
-    {
-        public ExternalGlobalVarId VarId { get; } // ExternalGlobalVarId
-        public ExternalGlobalVarExp(ExternalGlobalVarId varId) { VarId = varId; }
-    }
-
+    
     public class PrivateGlobalVarExp : Exp
     {
         public string Name { get; }

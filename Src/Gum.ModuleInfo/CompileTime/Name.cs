@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Pretune;
+using System;
 using System.Diagnostics;
 
 namespace Gum.CompileTime
@@ -22,7 +23,8 @@ namespace Gum.CompileTime
         public static Name OpDec { get; } = new Name(SpecialName.OpDec, null);
     }
 
-    public struct Name
+    [ImplementIEquatable]
+    public partial struct Name
     {
         public SpecialName Kind { get;  }
         public string? Text { get; }
@@ -42,29 +44,7 @@ namespace Gum.CompileTime
             Kind = kind;
             Text = text;
         }
-
-        public override bool Equals(object? obj)
-        {
-            return obj is Name id &&
-                   Kind == id.Kind &&
-                   Text == id.Text;
-        }
-
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(Kind, Text);
-        }
-
-        public static bool operator ==(Name left, Name right)
-        {
-            return left.Equals(right);
-        }
-
-        public static bool operator !=(Name left, Name right)
-        {
-            return !(left == right);
-        }
-
+        
         public override string ToString()
         {
             switch(Kind)
