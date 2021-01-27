@@ -10,23 +10,23 @@ using System.Linq;
 namespace Gum.IR0
 {   
     // TODO: using cache after mature    
-    struct ModuleInfoItemQueryService
+    struct GlobalItemQueryService
     {
         ModuleInfo moduleInfo;
 
         public static ItemInfo? GetGlobalItem(ModuleInfo moduleInfo, NamespacePath path, ItemPathEntry entry)
         {
-            var service = new ModuleInfoItemQueryService(moduleInfo);
+            var service = new GlobalItemQueryService(moduleInfo);
             return service.GetGlobalItemCore(path, entry);
         }
 
         public IEnumerable<FuncInfo> GetGlobalFuncs(NamespacePath path, Name funcName)
         {
-            var service = new ModuleInfoItemQueryService(moduleInfo);
+            var service = new GlobalItemQueryService(moduleInfo);
             return service.GetGlobalFuncsCore(path, funcName);
         }
 
-        ModuleInfoItemQueryService(ModuleInfo moduleInfo)
+        GlobalItemQueryService(ModuleInfo moduleInfo)
         {
             this.moduleInfo = moduleInfo;
         }
@@ -78,7 +78,7 @@ namespace Gum.IR0
                         func.Name.Equals(entry.Name))
                     {
                         // TODO: 매번 계산한다
-                        var paramHash = Misc.MakeParamHash(moduleInfo.Name, func.ParamTypes);
+                        var paramHash = Misc.MakeParamHash(func.ParamTypes);
                         if (paramHash == entry.ParamHash)
                             return func;
                     }

@@ -53,7 +53,7 @@ namespace Gum.IR0
         //    }
         //}
 
-        static void FillTypeString(M.ModuleName internalModuleName, M.Name name, ImmutableArray<M.Type> typeArgs, StringBuilder sb)
+        static void FillTypeString(M.Name name, ImmutableArray<M.Type> typeArgs, StringBuilder sb)
         {
             // X
             sb.Append(name);
@@ -69,7 +69,7 @@ namespace Gum.IR0
                     if (bFirst) bFirst = false;
                     else sb.Append(',');
 
-                    FillTypeString(internalModuleName, typeArg, sb);
+                    FillTypeString(typeArg, sb);
                 }
 
                 sb.Append('>');
@@ -91,22 +91,14 @@ namespace Gum.IR0
         // void Func([AModule]MyType m);  // ParamHash
         // void Func([BModule]MyType m);  // ParamHash.. 둘이 다른 타입인데
         // void Func([Internal]MyType m); // Internal이지만, 이름은 있어야 한다.. (Internal은 Func가 나온 모듈)
-        static void FillTypeString(M.ModuleName internalModuleName, M.Type type, StringBuilder sb)
+        static void FillTypeString(M.Type type, StringBuilder sb)
         {
             switch (type)
             {
                 case M.TypeVarType typeVar:
                     sb.Append($"`({typeVar.Depth}, {typeVar.Index})");
                     break;
-
-                case M.InternalType internalType:
-                    // [ModuleName]
-                    sb.Append($"[{internalModuleName}]");
-
-                    FillNamespacePath(internalType.NamespacePath, sb);                   
-
-                    break;
-
+                
                 case M.ExternalType externalType:
                     // [ModuleName]Namespace1.Namespace2.X<int>
 
@@ -117,16 +109,16 @@ namespace Gum.IR0
                     FillNamespacePath(externalType.NamespacePath, sb);
 
                     // X<int>
-                    FillTypeString(internalModuleName, externalType.Name, externalType.TypeArgs, sb);                    
+                    FillTypeString(externalType.Name, externalType.TypeArgs, sb);                    
                     break;
 
                 case M.MemberType memberType: // [ModuleName]N1.N2.X<int, short>.Y<string>
                     // [ModuleName]N1.N2.X<int, short>.
-                    FillTypeString(internalModuleName, memberType.Outer, sb);
+                    FillTypeString(memberType.Outer, sb);
                     sb.Append('.');
 
                     // Y<string>
-                    FillTypeString(internalModuleName, memberType.Name, memberType.TypeArgs, sb);
+                    FillTypeString(memberType.Name, memberType.TypeArgs, sb);
                     break;
 
                 case M.VoidType _:
@@ -166,7 +158,7 @@ namespace Gum.IR0
                 if (bFirst) bFirst = false;
                 else sb.Append(" * ");
 
-                FillTypeString(internalModuleName, type, sb);
+                FillTypeString(type, sb);
             }
 
             return sb.ToString();

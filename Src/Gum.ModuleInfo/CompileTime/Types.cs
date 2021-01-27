@@ -1,4 +1,5 @@
-﻿using Pretune;
+﻿using Gum.Misc;
+using Pretune;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -16,23 +17,38 @@ namespace Gum.CompileTime
     public abstract class NormalType : Type
     {
     }
-
-    // 모듈 내에 존재하는 타입
-    [AutoConstructor, ImplementIEquatable]
-    public partial class InternalType : NormalType
-    {
-        public NamespacePath NamespacePath { get; }
-        public Name Name { get; }
-        public ImmutableArray<Type> TypeArgs { get; }
-    }
-
-    [AutoConstructor, ImplementIEquatable]
-    public partial class ExternalType : NormalType
+    
+    [AutoConstructor]
+    public partial class ExternalType : NormalType, IEquatable<ExternalType?>
     {
         public ModuleName ModuleName { get; }
         public NamespacePath NamespacePath { get; }
         public Name Name { get; }
         public ImmutableArray<Type> TypeArgs { get; }
+
+        public override bool Equals(object? obj)
+        {
+            return Equals(obj as ExternalType);
+        }
+
+        public bool Equals(ExternalType? other)
+        {
+            return other != null &&
+                   ModuleName.Equals(other.ModuleName) &&
+                   NamespacePath.Equals(other.NamespacePath) &&
+                   Name.Equals(other.Name) &&
+                   TypeArgs.SequenceEqual(other.TypeArgs);
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = new HashCode();
+            hashCode.Add(ModuleName);
+            hashCode.Add(NamespacePath);
+            hashCode.Add(Name);
+            hashCode.AddSequence(TypeArgs);
+            return hashCode.ToHashCode();
+        }
     }
 
     [AutoConstructor, ImplementIEquatable]

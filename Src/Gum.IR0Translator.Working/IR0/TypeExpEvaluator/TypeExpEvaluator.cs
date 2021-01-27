@@ -21,6 +21,7 @@ namespace Gum.IR0
         {
         }
 
+        M.ModuleName internalModuleName;
         ModuleInfoRepository externalModuleInfoRepo;
         TypeSkeletonRepository skelRepo;
         IErrorCollector errorCollector;
@@ -30,12 +31,13 @@ namespace Gum.IR0
         ImmutableDictionary<string, M.TypeVarType> typeEnv;
 
         public static TypeExpInfoService Evaluate(
+            M.ModuleName internalModuleName,
             S.Script script,
             ModuleInfoRepository externalModuleInfoRepo,
             TypeSkeletonRepository skelRepo,
             IErrorCollector errorCollector)
         {
-            var evaluator = new TypeExpEvaluator(externalModuleInfoRepo, skelRepo, errorCollector);
+            var evaluator = new TypeExpEvaluator(internalModuleName, externalModuleInfoRepo, skelRepo, errorCollector);
 
             Misc.VisitScript(script, evaluator);
 
@@ -48,8 +50,9 @@ namespace Gum.IR0
             return new TypeExpInfoService(evaluator.infosByTypeExp.ToImmutableDictionary());
         }
 
-        TypeExpEvaluator(ModuleInfoRepository externalModuleInfoRepo, TypeSkeletonRepository skelRepo, IErrorCollector errorCollector)
+        TypeExpEvaluator(M.ModuleName internalModuleName, ModuleInfoRepository externalModuleInfoRepo, TypeSkeletonRepository skelRepo, IErrorCollector errorCollector)
         {
+            this.internalModuleName = internalModuleName;
             this.externalModuleInfoRepo = externalModuleInfoRepo;
             this.skelRepo = skelRepo;
             this.errorCollector = errorCollector;
@@ -126,7 +129,7 @@ namespace Gum.IR0
             var typeSkel = skelRepo.GetTypeSkeleton(itemPath);
             if (typeSkel != null)
             {
-                var mtype = new M.InternalType(namespacePath, name, typeArgs);
+                var mtype = new M.ExternalType(internalModuleName, namespacePath, name, typeArgs);
                 var typeExpInfo = new MTypeTypeExpInfo(mtype);
                 yield return new InternalTypeExpResult(typeSkel, typeExpInfo);
             }
@@ -134,7 +137,7 @@ namespace Gum.IR0
             // 3-2. Reference에서 검색, GlobalTypeSkeletons에 이름이 겹치지 않아야 한다.. ModuleInfo들 끼리도 이름이 겹칠 수 있다
             foreach (var moduleInfo in externalModuleInfoRepo.GetAllModules())
             {
-                var typeInfo = ModuleInfoItemQueryService.GetGlobalItem(moduleInfo, namespacePath, itemPath.Entry) as M.TypeInfo;
+                var typeInfo = GlobalItemQueryService.GetGlobalItem(moduleInfo, namespacePath, itemPath.Entry) as M.TypeInfo;
                 if (typeInfo != null)
                 {
                     var mtype = new M.ExternalType(moduleInfo.Name, namespacePath, name, typeArgs);
@@ -179,6 +182,9 @@ namespace Gum.IR0
         {
             ExecInScope(structDecl.TypeParams, () =>
             {
+                foreach (var baseType in structDecl.BaseTypes)
+                    VisitTypeExpOuterMost(baseType);
+
                 foreach(var elem in structDecl.Elems)
                 {
                     switch(elem)

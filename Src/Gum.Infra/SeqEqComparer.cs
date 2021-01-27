@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -13,11 +14,7 @@ namespace Gum.Infra
             return SeqEqComparer<IEnumerable<TElem>, TElem>.Instance;
         }
 
-        public static void AddHash<TElem>(ref HashCode hashCode, IEnumerable<TElem> e)
-        {
-            hashCode.Add(e, SeqEqComparer<IEnumerable<TElem>, TElem>.Instance);
-        }
-
+        
         public static bool Equals<TElem>(IEnumerable<TElem> e1, IEnumerable<TElem> e2)
         {
             return SeqEqComparer<IEnumerable<TElem>, TElem>.Instance.Equals(e1, e2);

@@ -27,13 +27,15 @@ namespace Gum.CompileTime
         [Fact]
         public void TestMakeNestedNormal()
         {
+            var moduleName = (ModuleName)"MyModule";
+
             // class X<T> { class Y<T> { class Z<U> { } } }
             // X<int>.Y<short>.Z<int> 만들어 보기
             var intType = new ExternalType("System.Runtime", new NamespacePath("System"), "Int32", ImmutableArray<Type>.Empty);
             var shortType = new ExternalType("System.Runtime", new NamespacePath("System"), "Int16", ImmutableArray<Type>.Empty);
             var zType = new MemberType(
                 new MemberType(
-                    new InternalType(NamespacePath.Root, "X", ImmutableArray.Create<Type>(intType)),
+                    new ExternalType(moduleName, NamespacePath.Root, "X", ImmutableArray.Create<Type>(intType)),
                     "Y",
                     ImmutableArray.Create<Type>(shortType)
                 ),
@@ -41,9 +43,10 @@ namespace Gum.CompileTime
                 ImmutableArray.Create<Type>(intType)
             );
 
-            Assert.True(((InternalType)((MemberType)zType.Outer).Outer).NamespacePath.IsRoot);
-            Assert.Equal("X", ((InternalType)((MemberType)zType.Outer).Outer).Name);
-            Assert.Equal(intType, ((InternalType)((MemberType)zType.Outer).Outer).TypeArgs[0]);
+            Assert.Equal("MyModule", ((ExternalType)((MemberType)zType.Outer).Outer).ModuleName);
+            Assert.True(((ExternalType)((MemberType)zType.Outer).Outer).NamespacePath.IsRoot);
+            Assert.Equal("X", ((ExternalType)((MemberType)zType.Outer).Outer).Name);
+            Assert.Equal(intType, ((ExternalType)((MemberType)zType.Outer).Outer).TypeArgs[0]);
 
             Assert.Equal("Y", ((MemberType)zType.Outer).Name);
             Assert.Equal(shortType, ((MemberType)zType.Outer).TypeArgs[0]);

@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Text;
 using S = Gum.Syntax;
 using Xunit;
-using Gum.CompileTime;
+using M = Gum.CompileTime;
 using System.Linq;
 using System.Diagnostics;
+using System.Collections.Immutable;
 
 namespace Gum.IR0
 {    
@@ -13,28 +14,30 @@ namespace Gum.IR0
     {
         // UnitOfWorkName_ScenarioName_ExpectedBehavior
 
+        public M.Type IntType { get => new M.ExternalType("System.Runtime", new M.NamespacePath("System"), "Int32", ImmutableArray<M.Type>.Empty); }
+
         public S.TypeExp IntTypeExp { get => new S.IdTypeExp("int"); }
         public S.TypeExp VoidTypeExp { get => new S.IdTypeExp("void"); }
-        InternalModuleInfo Build(S.Script script)
+        M.ModuleInfo Build(M.ModuleName moduleName, S.Script script)
         {
             var typeSkelRepo = TypeSkeletonCollector.Collect(script);
 
-            var externalModuleInfoRepo = new ModuleInfoRepository(Array.Empty<IModuleInfo>());
+            var externalModuleInfoRepo = new ModuleInfoRepository(ImmutableArray<M.ModuleInfo>.Empty);
             var errorCollector = new TestErrorCollector(true);
 
-            var typeExpTypeValueService = TypeExpEvaluator.Evaluate(script, externalModuleInfoRepo, typeSkelRepo, errorCollector);
+            var typeExpTypeValueService = TypeExpEvaluator.Evaluate(moduleName, script, externalModuleInfoRepo, typeSkelRepo, errorCollector);
 
-            return ModuleInfoBuilder.Build(script, typeExpTypeValueService);
+            return ModuleInfoBuilder.Build(moduleName, script, typeExpTypeValueService);
         }
 
         [Fact]
         public void ParamHash_TypeVarDifferentNameSameLocation_SameParamHash()
         {
             // F<T>(T t)
-            var paramTypes1 = new TypeValue[] { new TypeValue.TypeVar(0, 0, "T")};
+            var paramTypes1 = ImmutableArray.Create<M.Type>(new M.TypeVarType(0, 0, "T"));
 
             // F<U>(U u)
-            var paramTypes2 = new TypeValue[] { new TypeValue.TypeVar(0, 0, "U")};
+            var paramTypes2 = ImmutableArray.Create<M.Type>(new M.TypeVarType(0, 0, "U"));
 
             var paramHash1 = Misc.MakeParamHash(paramTypes1);
             var paramHash2 = Misc.MakeParamHash(paramTypes2);
@@ -58,26 +61,33 @@ namespace Gum.IR0
                 new S.BlockStmt()
             )));
 
-            var result = Build(script);
+            var result = Build("TestModule", script);
 
             Assert.NotNull(result);
             Debug.Assert(result != null);
 
-            var funcInfo = result.GetGlobalFuncs(NamespacePath.Root, "Func").SingleOrDefault();
+            var paramHash = Misc.MakeParamHash(ImmutableArray.Create<M.Type>(IntType, new M.TypeVarType(0, 1, "U"), new M.TypeVarType(0, 0, "T")));
+
+            var funcInfo = GlobalItemQueryService.GetGlobalItem(result, M.NamespacePath.Root, new ItemPathEntry("Func", 2, paramHash));
             Assert.NotNull(funcInfo);
             Debug.Assert(funcInfo != null);
 
-            var paramTypes = new TypeValue[] { TypeValues.Int, new TypeValue.TypeVar(0, 1, "U"), new TypeValue.TypeVar(0, 0, "T") };
-            var funcId = new ItemId(ModuleName.Internal, NamespacePath.Root, new ItemPathEntry("Func", 2, Misc.MakeParamHash(paramTypes)));
+            var paramTypes = new M.Type[] { IntType, new M.TypeVarType(0, 1, "U"), new M.TypeVarType(0, 0, "T") };
 
-            var expected = new FuncInfo(
-                funcId,
-                false, false, new[] { "T", "U" }, TypeValue.Void.Instance, paramTypes
+            var expected = new M.FuncInfo(
+                "Func",
+                false, false, new[] { "T", "U" }, M.VoidType.Instance, paramTypes
             );
 
-            Assert.Equal(expected, funcInfo, ModuleInfoEqualityComparer.Instance);
+            Assert.Equal(expected, funcInfo);
         }
         
+        // public struct S<T> : B<int>
+        // {
+        //     private static T Func<T, U>(S<int> s, U u) { }
+        //     protected int x, y;
+        // }
+        // private struct B<T> { }
         [Fact]
         public void Build_StructDecl_ModuleInfoHasStructInfo()
         {
@@ -90,8 +100,8 @@ namespace Gum.IR0
                     new S.StructDecl.Element[] {
                         new S.StructDecl.FuncDeclElement(new S.StructFuncDecl(
                             S.AccessModifier.Private,
-                            true,
-                            false,
+                            bStatic: true,
+                            bSequence: false,
                             new S.IdTypeExp("T"),
                             "Func",
                             new[] {"T", "U"},
@@ -115,47 +125,43 @@ namespace Gum.IR0
                     Array.Empty<S.StructDecl.Element>()
                 ))
             );
-
-            var result = Build(script);
+            var moduleName = "TestModule";
+            var result = Build(moduleName, script);
 
             Assert.NotNull(result);
             Debug.Assert(result != null);
 
-            var structInfo = result.GetGlobalItem(NamespacePath.Root, new ItemPathEntry("S", 1)) as StructInfo;
+            var structInfo = GlobalItemQueryService.GetGlobalItem(result, M.NamespacePath.Root, new ItemPathEntry("S", 1)) as M.StructInfo;
             Assert.NotNull(structInfo);
             Debug.Assert(structInfo != null);
 
-            var sId = new ItemId(ModuleName.Internal, new ItemPath(NamespacePath.Root, new ItemPathEntry("S", 1)));
+            var expected = new M.StructInfo(
+                "S",
+                ImmutableArray.Create("T"),
+                ImmutableArray.Create<M.Type>(new M.ExternalType(moduleName, M.NamespacePath.Root, "B", ImmutableArray.Create(IntType))),
 
-            var paramTypeValues = new TypeValue[] {
-                new TypeValue.Normal(sId, new[] { TypeValues.Int }),
-                new TypeValue.TypeVar(1, 1, "U")
-            };
-            var paramHash = Misc.MakeParamHash(paramTypeValues);
-            var sFuncId = sId.Append("Func", 2, paramHash);
+                memberTypes: ImmutableArray<M.TypeInfo>.Empty,
+                memberFuncs: ImmutableArray.Create<M.FuncInfo>(
+                    new M.FuncInfo(
+                        "Func",
+                        bSeqCall: false, 
+                        bThisCall: true,
+                        new[] { "T", "U" },
+                        new M.TypeVarType(1, 0, "T"),
+                        ImmutableArray.Create<M.Type>(
+                            new M.ExternalType(moduleName, M.NamespacePath.Root, "S", ImmutableArray.Create<M.Type>(IntType)),
+                            new M.TypeVarType(1, 1, "U")
+                        )
+                    )
+                ),
 
-            var sxId = sId.Append("x");
-            var syId = sId.Append("y");
-
-            var expected = new StructInfo(
-                sId,
-                new[] { "T", "U" },
-                new TypeValue.Normal(ModuleName.Internal, new AppliedItemPath(NamespacePath.Root, new AppliedItemPathEntry("B", string.Empty, new[] { TypeValues.Int }))),
-                new ItemInfo[] {
-                    new FuncInfo(
-                        sFuncId,
-                        bSeqCall: false, bThisCall: true,
-                        new[] { "T" },
-                        new TypeValue.TypeVar(1, 0, "T"),
-                        paramTypeValues
-                    ),
-
-                    new VarInfo(sxId, false, TypeValues.Int),
-                    new VarInfo(syId, false, TypeValues.Int),
-                }
+                memberVars: ImmutableArray.Create<M.MemberVarInfo>(
+                    new M.MemberVarInfo(false, IntType, "x"),
+                    new M.MemberVarInfo(false, IntType, "y")
+                )
             );
 
-            Assert.Equal(expected, structInfo, ModuleInfoEqualityComparer.Instance);
+            Assert.Equal(expected, structInfo);
         }
     }
 }

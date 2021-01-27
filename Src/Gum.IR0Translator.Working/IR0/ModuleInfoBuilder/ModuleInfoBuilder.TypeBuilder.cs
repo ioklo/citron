@@ -1,6 +1,7 @@
 ﻿using Gum.CompileTime;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 
 namespace Gum.IR0
 {
@@ -9,11 +10,10 @@ namespace Gum.IR0
         // struct, class 류를 빌드하는데 사용
         class TypeBuilder
         {
-            private ItemPath typePath;
-
-            private List<TypeInfo> memberTypes;
-            private List<FuncInfo> memberFuncs;
-            private List<MemberVarInfo> memberVars;
+            ItemPath typePath;
+            List<TypeInfo> memberTypes;
+            List<FuncInfo> memberFuncs;
+            List<MemberVarInfo> memberVars;
 
             public TypeBuilder(ItemPath typePath)
             {
@@ -41,6 +41,12 @@ namespace Gum.IR0
             public void AddMemberVarInfo(MemberVarInfo varInfo)
             {
                 memberVars.Add(varInfo);
+            }
+
+            public TTypeInfo MakeTypeInfo<TTypeInfo>(Func<ImmutableArray<TypeInfo>, ImmutableArray<FuncInfo>, ImmutableArray<MemberVarInfo>, TTypeInfo> constructor)
+                where TTypeInfo : TypeInfo
+            {
+                return constructor.Invoke(memberTypes.ToImmutableArray(), memberFuncs.ToImmutableArray(), memberVars.ToImmutableArray());
             }
         }        
     }

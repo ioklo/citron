@@ -11,20 +11,7 @@ namespace Gum.IR0
 {
     struct MTypeTypeValueConverter
     {
-        ModuleName internalModuleName;
-
-        public MTypeTypeValueConverter(ModuleName internalModuleName)
-        {
-            this.internalModuleName = internalModuleName;
-        }
-
-        public static TypeValue ToTypeValue(ModuleName internalModuleName, M.Type mtype)
-        {
-            MTypeTypeValueConverter converter = new MTypeTypeValueConverter(internalModuleName);
-            return converter.ToTypeValue(mtype);
-        }
-
-        ImmutableArray<TypeValue> ToTypeValues(ImmutableArray<M.Type> mtypes)
+        static ImmutableArray<TypeValue> ToTypeValues(ImmutableArray<M.Type> mtypes)
         {
             var builder = ImmutableArray.CreateBuilder<TypeValue>();
             foreach (var mtype in mtypes)
@@ -36,22 +23,13 @@ namespace Gum.IR0
             return builder.ToImmutable();
         }
 
-        TypeValue ToTypeValue(M.Type mtype)
+        public static TypeValue ToTypeValue(M.Type mtype)
         {
             switch (mtype)
             {
                 case TypeVarType typeVar:
                     return new TypeValue.TypeVar(typeVar.Depth, typeVar.Index, typeVar.Name);
-
-                case InternalType internalType:
-                    {
-                        var typeArgs = ToTypeValues(internalType.TypeArgs);
-                        var entry = new AppliedItemPathEntry(internalType.Name, string.Empty, typeArgs);
-                        var path = new AppliedItemPath(internalType.NamespacePath, entry);
-
-                        return new TypeValue.Normal(internalModuleName, path);
-                    }
-
+                
                 case ExternalType externalType:
                     {
                         var typeArgs = ToTypeValues(externalType.TypeArgs);

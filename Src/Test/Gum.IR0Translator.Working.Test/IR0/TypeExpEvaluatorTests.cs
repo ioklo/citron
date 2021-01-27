@@ -13,12 +13,13 @@ namespace Gum.IR0
     {
         TypeExpInfoService Evaluate(S.Script script)
         {
+            M.ModuleName moduleName = "TestModule";
             var errorCollector = new TestErrorCollector(true);
 
             var skelRepo = TypeSkeletonCollector.Collect(script);            
 
             var moduleInfoRepo = new ModuleInfoRepository(ImmutableArray<M.ModuleInfo>.Empty);
-            var result = TypeExpEvaluator.Evaluate(script, moduleInfoRepo, skelRepo, errorCollector);
+            var result = TypeExpEvaluator.Evaluate(moduleName, script, moduleInfoRepo, skelRepo, errorCollector);
 
             Assert.NotNull(result);
             Debug.Assert(result != null);
