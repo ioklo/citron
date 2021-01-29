@@ -24,10 +24,10 @@ namespace Gum.Runtime
 
             // T
             var enumerableId = RuntimeModule.EnumerableId;
-            var elemTypeValue = new TypeValue.TypeVar(0, 0, "T");
+            var elemTypeValue = new TypeVarTypeValue(0, 0, "T");
 
             // Enumerator<T>
-            var enumeratorTypeValue = new TypeValue.Normal(enumeratorId, new TypeValue[] { elemTypeValue });
+            var enumeratorTypeValue = new NormalTypeValue(enumeratorId, new TypeValue[] { elemTypeValue });
 
             Invoker wrappedGetEnumerator = 
                 (domainService, typeArgs, thisValue, args, result) => EnumerableObject.NativeGetEnumerator(domainService, enumeratorId, typeArgs, thisValue, args, result);
@@ -58,7 +58,7 @@ namespace Gum.Runtime
 
             var enumerableObject = GetObject<EnumerableObject>(thisValue);
 
-            var enumeratorInst = domainService.GetTypeInst(new TypeValue.Normal(enumeratorId, typeArgList)); // 같은 TypeArgList를 사용한다
+            var enumeratorInst = domainService.GetTypeInst(new NormalTypeValue(enumeratorId, typeArgList)); // 같은 TypeArgList를 사용한다
             
             ((ObjectValue)result).SetObject(new EnumeratorObject(enumeratorInst, enumerableObject.enumerable.GetAsyncEnumerator()));
 

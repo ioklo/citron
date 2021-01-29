@@ -2,20 +2,21 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using Gum.CompileTime;
+
+using M = Gum.CompileTime;
 
 namespace Gum.IR0
 {
     interface ITypeInfoRepository
     {
-        public TypeInfo? GetType(ItemId id);
-        public IEnumerable<TypeInfo> GetTypes(ItemPath path);
+        public M.TypeInfo? GetType(ItemId id);
+        public IEnumerable<M.TypeInfo> GetTypes(ItemPath path);
     }
 
-    // Phase3에서 ItemInfo얻어오는 용도
+    // Phase3에서 타입을 얻어오는 용도
     class TypeInfoRepository : ITypeInfoRepository
     {
-        ModuleInfo internalModuleInfo;
+        M.ModuleInfo internalModuleInfo;
         ModuleInfoRepository externalModuleInfoRepo;
 
         public TypeInfoRepository(ModuleInfo internalModuleInfo, ModuleInfoRepository moduleInfoRepo)
@@ -73,7 +74,7 @@ namespace Gum.IR0
             return GetExternalItem<TItemInfo>(moduleInfo, id.GetItemPath());
         }
 
-        TypeInfo? GetInternalType(NamespacePath nsPath, ImmutableArray<ItemPathEntry> entries)
+        TypeInfo? GetInternalType(M.NamespacePath nsPath, ImmutableArray<ItemPathEntry> entries)
         {
             var e = entries.GetEnumerator();
             if (!e.MoveNext()) return null;
@@ -108,7 +109,7 @@ namespace Gum.IR0
         }
 
         // TODO: 이 함수 하나만 밖으로 내놓고, 나머지는 정리
-        public IEnumerable<TypeInfo> GetTypes(ItemPath typePath)
+        public IEnumerable<M.TypeInfo> GetTypes(ItemPath typePath)
         {
             return GetTypes(typePath.NamespacePath, typePath.OuterEntries, typePath.Entry);
         }
@@ -131,98 +132,6 @@ namespace Gum.IR0
                 var typeInfo = GetExternalType(externalModuleInfo, nsPath, fullEntries);
                 if (typeInfo != null)
                     yield return typeInfo;
-            }
-        }
-
-        // 이름만으로 함수들을 찾는 함수
-        public IEnumerable<FuncInfo> GetFuncs(NamespacePath nsPath, Name funcName)
-        {
-            return GetFuncs(nsPath, ImmutableArray<ItemPathEntry>.Empty, funcName);
-        }
-
-        public IEnumerable<FuncInfo> GetFuncs(
-            NamespacePath nsPath,
-            ImmutableArray<ItemPathEntry> outerEntries,
-            Name funcName)
-        {
-            if (outerEntries.Length == 0)
-            {
-                foreach (var internalFuncInfo in internalModuleInfo.GetGlobalFuncs(nsPath, funcName))
-                    yield return internalFuncInfo;
-
-                foreach (var moduleInfo in externalModuleInfoRepo.GetAllModules())
-                {
-                    // 이름만 갖고 Func를 얻어낸다
-                    foreach (var funcInfo in moduleInfo.GetGlobalFuncs(nsPath, funcName))
-                        yield return funcInfo;
-                }
-            }
-            else
-            {
-                var internalTypeInfo = GetInternalType(nsPath, outerEntries);
-                if (internalTypeInfo != null)
-                {
-                    var funcInfos = internalTypeInfo.GetFuncs(funcName);
-                    foreach (var funcInfo in funcInfos)
-                        yield return funcInfo;
-                }
-
-                foreach (var moduleInfo in externalModuleInfoRepo.GetAllModules())
-                {
-                    var typeInfo = GetExternalType(moduleInfo, nsPath, outerEntries);
-                    if (typeInfo == null) continue;
-
-                    var funcInfos = typeInfo.GetFuncs(funcName);
-                    foreach (var funcInfo in funcInfos)
-                        yield return funcInfo;
-                }
-            }
-        }
-
-        // 이름으로 변수를 찾는 함수
-
-        public IEnumerable<VarInfo> GetVars(NamespacePath nsPath, Name varName)
-        {
-            return GetVars(nsPath, ImmutableArray<ItemPathEntry>.Empty, varName);
-        }
-
-        public IEnumerable<VarInfo> GetVars(
-            NamespacePath nsPath,
-            ImmutableArray<ItemPathEntry> outerEntries,
-            Name varName)
-        {
-            if (outerEntries.Length == 0)
-            {
-                var internalVarInfo = internalModuleInfo.GetGlobalVar(nsPath, varName);
-                if (internalVarInfo != null) 
-                    yield return internalVarInfo;
-
-                foreach (var moduleInfo in externalModuleInfoRepo.GetAllModules())
-                {
-                    var varInfo = moduleInfo.GetGlobalVar(nsPath, varName);
-                    if (varInfo != null)
-                        yield return varInfo;
-                }
-            }
-            else
-            {
-                var internalTypeInfo = GetInternalType(nsPath, outerEntries);
-                if (internalTypeInfo != null)
-                {
-                    var varInfo = internalTypeInfo.GetVar(varName);
-                    if (varInfo != null)
-                        yield return varInfo;
-                }
-
-                foreach (var moduleInfo in externalModuleInfoRepo.GetAllModules())
-                {
-                    var typeInfo = GetExternalType(moduleInfo, nsPath, outerEntries);
-                    if (typeInfo == null) continue;
-
-                    var varInfo = typeInfo.GetVar(varName);
-                    if (varInfo != null)
-                        yield return varInfo;
-                }
             }
         }
     }

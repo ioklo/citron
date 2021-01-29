@@ -21,4 +21,8 @@
     <PackageReference Include="Pretune" Version="0.6.4" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="IR0\" />
+  </ItemGroup>
+
 </Project>

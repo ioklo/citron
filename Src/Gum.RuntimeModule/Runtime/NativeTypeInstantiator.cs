@@ -14,7 +14,7 @@ namespace Gum.Runtime
     //        this.defaultValueFactory = defaultValueFactory;
     //    }
 
-    //    public TypeInst Instantiate(DomainService domainService, TypeValue.Normal ntv)
+    //    public TypeInst Instantiate(DomainService domainService, NormalTypeValue ntv)
     //    {
     //        return new NativeTypeInst(ntv, defaultValueFactory);
     //    }

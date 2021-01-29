@@ -1,4 +1,4 @@
-﻿using Gum.CompileTime;
+﻿using M = Gum.CompileTime;
 using Gum.Misc;
 using System;
 using System.Collections.Generic;
@@ -12,30 +12,30 @@ namespace Gum.IR0
     // TODO: using cache after mature    
     struct GlobalItemQueryService
     {
-        ModuleInfo moduleInfo;
+        M.ModuleInfo moduleInfo;
 
-        public static ItemInfo? GetGlobalItem(ModuleInfo moduleInfo, NamespacePath path, ItemPathEntry entry)
+        public static M.ItemInfo? GetGlobalItem(M.ModuleInfo moduleInfo, M.NamespacePath path, ItemPathEntry entry)
         {
             var service = new GlobalItemQueryService(moduleInfo);
             return service.GetGlobalItemCore(path, entry);
         }
 
-        public IEnumerable<FuncInfo> GetGlobalFuncs(NamespacePath path, Name funcName)
+        public static IEnumerable<M.FuncInfo> GetGlobalFuncs(M.ModuleInfo moduleInfo, M.NamespacePath path, M.Name funcName)
         {
             var service = new GlobalItemQueryService(moduleInfo);
             return service.GetGlobalFuncsCore(path, funcName);
         }
 
-        GlobalItemQueryService(ModuleInfo moduleInfo)
+        GlobalItemQueryService(M.ModuleInfo moduleInfo)
         {
             this.moduleInfo = moduleInfo;
         }
         
-        NamespaceInfo? GetNamespace(NamespacePath path)
+        M.NamespaceInfo? GetNamespace(M.NamespacePath path)
         {
             Debug.Assert(!path.IsRoot);
 
-            NamespaceInfo? curNamespace = null;
+            M.NamespaceInfo? curNamespace = null;
             foreach (var entry in path.Entries)
             {
                 if (curNamespace == null)
@@ -55,7 +55,7 @@ namespace Gum.IR0
             return curNamespace;
         }
 
-        ItemInfo? GetChildItem(ImmutableArray<TypeInfo> types, ImmutableArray<FuncInfo> funcs, ItemPathEntry entry)
+        M.ItemInfo? GetChildItem(ImmutableArray<M.TypeInfo> types, ImmutableArray<M.FuncInfo> funcs, ItemPathEntry entry)
         {
             // paramHash가 있으면 함수에서만 검색
             if (entry.ParamHash.Length == 0)
@@ -87,7 +87,7 @@ namespace Gum.IR0
             return null;
         }
 
-        ItemInfo? GetGlobalItemCore(NamespacePath path, ItemPathEntry entry)
+        M.ItemInfo? GetGlobalItemCore(M.NamespacePath path, ItemPathEntry entry)
         {
             if (path.IsRoot)
                 return GetChildItem(moduleInfo.Types, moduleInfo.Funcs, entry);
@@ -99,9 +99,9 @@ namespace Gum.IR0
             return GetChildItem(ns.Types, ns.Funcs, entry);
         }
 
-        IEnumerable<FuncInfo> GetGlobalFuncsCore(NamespacePath path, Name funcName)
+        IEnumerable<M.FuncInfo> GetGlobalFuncsCore(M.NamespacePath path, M.Name funcName)
         {
-            IEnumerable<FuncInfo> GetChildFuncs(ImmutableArray<FuncInfo> funcs)
+            IEnumerable<M.FuncInfo> GetChildFuncs(ImmutableArray<M.FuncInfo> funcs)
                 => funcs.Where(func => func.Name.Equals(funcName));
 
             if (path.IsRoot)
@@ -110,7 +110,7 @@ namespace Gum.IR0
             var curNamespace = GetNamespace(path);
 
             if (curNamespace == null)
-                return Enumerable.Empty<FuncInfo>();
+                return Enumerable.Empty<M.FuncInfo>();
                 
             return GetChildFuncs(curNamespace.Funcs);
         }

@@ -16,10 +16,10 @@ namespace Gum.IR0
         //{
         //    public struct Result
         //    {
-        //        public TypeValue.Func TypeValue { get; }
+        //        public FuncTypeValue TypeValue { get; }
         //        public IR0.Exp Exp { get; }                
 
-        //        public Result(TypeValue.Func typeValue, IR0.Exp exp)
+        //        public Result(FuncTypeValue typeValue, IR0.Exp exp)
         //        {
         //            TypeValue = typeValue;
         //            Exp = exp;
@@ -109,7 +109,7 @@ namespace Gum.IR0
         //            if (context.TypeValueService.GetMemberVarValue(instanceType, exp.MemberName, out var varValue))
         //            {
         //                // TODO: as 대신 함수로 의미 부여하기, 호출 가능하면? 쿼리하는 함수로 변경
-        //                var varFuncTypeValue = context.TypeValueService.GetTypeValue(varValue) as TypeValue.Func;
+        //                var varFuncTypeValue = context.TypeValueService.GetTypeValue(varValue) as FuncTypeValue;
 
         //                if (varFuncTypeValue == null)
         //                {
@@ -226,7 +226,7 @@ namespace Gum.IR0
         //                }
 
         //                // TODO: as 대신 함수로 의미 부여하기, 호출 가능하면? 쿼리하는 함수로 변경
-        //                var varFuncTypeValue = context.TypeValueService.GetTypeValue(varValue) as TypeValue.Func;
+        //                var varFuncTypeValue = context.TypeValueService.GetTypeValue(varValue) as FuncTypeValue;
 
         //                if (varFuncTypeValue == null)
         //                {

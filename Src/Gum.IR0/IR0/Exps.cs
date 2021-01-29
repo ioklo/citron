@@ -218,8 +218,7 @@ namespace Gum.IR0
         }
     }
 
-    public class StaticMemberExp : Exp
-    {
+    public class StaticMemberExp : Exp    {
         public Type Type { get; }
         public string MemberName { get; }
 

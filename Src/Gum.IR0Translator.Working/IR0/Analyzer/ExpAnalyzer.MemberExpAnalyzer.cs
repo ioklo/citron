@@ -53,7 +53,7 @@ namespace Gum.IR0
         //    private Result? Analyze_EnumElemOrInstance(TypeValue objTypeValue)
         //    {
         //        // enumElem의 경우
-        //        if (objTypeValue is TypeValue.EnumElem enumElem)
+        //        if (objTypeValue is EnumElemTypeValue enumElem)
         //        {
         //            var enumInfo = (IEnumInfo)context.ModuleInfoService.GetTypeInfos(enumElem.EnumTypeValue.TypeId).Single();
         //            if (!enumInfo.GetElemInfo(enumElem.Name, out var elemInfo))
@@ -94,7 +94,7 @@ namespace Gum.IR0
         //        return new Result(nodeInfo, typeValue);
         //    }
 
-        //    private Result? Analyze_EnumOrType(TypeValue.Normal objNTV)
+        //    private Result? Analyze_EnumOrType(NormalTypeValue objNTV)
         //    {
         //        var typeInfo = context.ModuleInfoService.GetTypeInfos(objNTV.TypeId).Single();
         //        if (typeInfo is IEnumInfo enumTypeInfo)
@@ -119,7 +119,7 @@ namespace Gum.IR0
         //        return Analyze_Type(objNTV);
         //    }
 
-        //    private Result? Analyze_Type(TypeValue.Normal objNTV)
+        //    private Result? Analyze_Type(NormalTypeValue objNTV)
         //    {
         //        if (!analyzer.CheckStaticMember(memberExp, objNTV, context, out var varValue))
         //            return null;

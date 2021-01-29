@@ -43,27 +43,26 @@ namespace Gum.IR0
             switch (idInfo)
             {
                 case InternalGlobalVarInfo ig:         // x => global of this module
-                    return new ExpResult(new PrivateGlobalVarExp(igvi.Name), igvi.TypeValue);
+                    return new ExpResult(new PrivateGlobalVarExp(ig.Name.ToString()), ig.TypeValue);
                 
                 case LocalVarOutsideLambdaInfo lv:
-                    // ??????? localOutsideLambda.Info.bNeedCapture = true; 
-                    return new ExpResult(new LocalVarExp(lv.LocalVarInfo.Name), lv.LocalVarInfo.TypeValue);                    
+                    // TODO: 여기서 이 변수가 캡쳐가 필요하다고 어딘가에 등록한다
+                    context.AddLocalVarNeedCapture(lv.Name);
+                    return new ExpResult(new LocalVarExp(lv.Name), lv.TypeValue);                    
 
                 case LocalVarInfo lv:                  // x => local x
                     return new ExpResult(new LocalVarExp(lv.Name), lv.TypeValue);
-
-                case StaticMemberInfo sm:          // x => T.x
-                    throw new NotImplementedException();
-                    // outExp = new StaticMemberExp();
                 
-                case InstanceMemberInfo im:        // x => this.x
-                    throw new NotImplementedException();
-                    //outExp = new InstanceMemberExp();
+                case ThisMemberInfo im:        // x => this.x or This.x
+                    // type은 어떻게 만드나
+                    //var containerType = context.GetType(sm.VarValue.Outer);
+                    //return new ExpResult(new StaticMemberExp(containerType, sm.VarValue.Name.ToString()), sm.TypeValue);
+                    throw new NotImplementedException();                    
 
                 case EnumElemInfo enumElem:         // S => E.S, 힌트를 사용하면 나올 수 있다, ex) E e = S; 
-                    if (enumElem.ElemInfo.FieldInfos.Length == 0)
+                    if (enumElem.IsStandalone)      // 인자 없이 있는 것
                     {
-                        return new ExpResult(new NewEnumExp(enumElem.ElemInfo.Name, Array.Empty<NewEnumExp.Elem>()), enumElem.EnumTypeValue);
+                        return new ExpResult(new NewEnumExp(enumElem.Name.ToString(), Array.Empty<NewEnumExp.Elem>()), enumElem.EnumTypeValue);
                     }
                     else
                     {
@@ -71,9 +70,20 @@ namespace Gum.IR0
                         throw new NotImplementedException();
                     }
 
-                default:
-                    throw new UnreachableCodeException();
+                // 함수가 오면
+                // 1. hintType이 주어진 경우, 하나로 결정이 될 수 있다. Func<int, short> = F;
+                // 2. 없는 경우, var f = F; // F_int*int, F_short*int 라면 IFunc<int, int>, IFunc<short, int> 둘다 갖는 인터페이스를 생성한다 (TODO)
+                // TODO: Func일때 감싸기
+                case FuncInfo funcInfo:
+                    throw new NotImplementedException();
+
+                // 타입이 오면 에러
+                case TypeInfo typeInfo:
+                    context.AddFatalError(A0502_IdExp_CantUseTypeAsExpression, idExp, "타입을 식으로 사용했습니다");
+                    break;
             }
+
+            throw new UnreachableCodeException();
         }
 
         ExpResult AnalyzeBoolLiteralExp(S.BoolLiteralExp boolExp)
@@ -116,8 +126,6 @@ namespace Gum.IR0
 
             return new StringExpResult(new StringExp(strExpElems), TypeValues.String);
         }
-
-        
 
         // int만 지원한다
         ExpResult AnalyzeIntUnaryAssignExp(S.Exp operand, InternalUnaryAssignOperator op)
@@ -376,7 +384,7 @@ namespace Gum.IR0
         {
             var callableExpResult = AnalyzeExp(callableExp, null);
 
-            var funcTypeValue = callableExpResult.TypeValue as TypeValue.Func;
+            var funcTypeValue = callableExpResult.TypeValue as FuncTypeValue;
             if (funcTypeValue == null)
                 context.AddFatalError(A0902_CallExp_CallableExpressionIsNotCallable, callableExp, $"호출 가능한 타입이 아닙니다");
 
@@ -573,7 +581,7 @@ namespace Gum.IR0
 
             return new ExpResult(
                 new ListExp(typeId, elemExps), 
-                new TypeValue.Normal(ItemIds.List, new[] { curElemTypeValue }));
+                TypeValues.List(curElemTypeValue));
         }
 
         ExpResult AnalyzeExp(S.Exp exp, TypeValue? hintType)

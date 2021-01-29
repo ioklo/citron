@@ -9,7 +9,7 @@ namespace Gum.Runtime
     //{
     //    void OnLoad(DomainService domainService);
 
-    //    TypeInst GetTypeInst(DomainService domainService, TypeValue.Normal typeValue);
+    //    TypeInst GetTypeInst(DomainService domainService, NormalTypeValue typeValue);
     //    FuncInst GetFuncInst(DomainService domainService, FuncValue funcValue);
     //}
 }

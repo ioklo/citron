@@ -30,22 +30,22 @@ namespace Gum.IR0
         //{
         //    switch (typeValue)
         //    {
-        //        case TypeValue.Var _:
+        //        case VarTypeValue _:
         //            return null;
 
-        //        case TypeValue.TypeVar typeVar:
+        //        case TypeVarTypeValue typeVar:
         //            return new TypeVarType(typeVar.Depth, typeVar.Index, typeVar.Name);
 
-        //        case TypeValue.Normal normalTypeValue:
+        //        case NormalTypeValue normalTypeValue:
         //            throw new NotImplementedException();
 
-        //        case TypeValue.Void:
+        //        case VoidTypeValue:
         //            return VoidType.Instance;
 
-        //        case TypeValue.Func:
+        //        case FuncTypeValue:
         //            return null;
 
-        //        case TypeValue.EnumElem:
+        //        case EnumElemTypeValue:
         //            return null;
 
         //        default:

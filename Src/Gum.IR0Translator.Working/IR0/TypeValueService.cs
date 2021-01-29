@@ -39,7 +39,7 @@ namespace Gum.IR0
         //{
         //    outTypeValue = null;
 
-        //    var typeValue_normal = typeValue as QsTypeValue.Normal;
+        //    var typeValue_normal = typeValue as QsNormalTypeValue;
         //    if (typeValue_normal == null) return false;
 
         //    if (!GetMemberVarInfo(typeValue_normal.TypeId, name, out var memberVarInfo))
@@ -58,35 +58,34 @@ namespace Gum.IR0
 
         // class X<T> { class Y<U> { S<T> F<V>(V v, List<U> u); } } => MakeFuncTypeValue(X<int>.Y<short>, F, context) 
         // (V, List<short>) => S<int>
-        public TypeValue.Func GetTypeValue(FuncValue funcValue)
+        public FuncTypeValue GetTypeValue(FuncValue funcValue)
         {
-            var funcInfo = typeInfoRepo.GetItem<FuncInfo>(funcValue.GetFuncId());
+            // var funcInfo = typeInfoRepo.GetItem<FuncInfo>(funcValue.GetFuncId());
             Debug.Assert(funcInfo != null);
 
             // 
             TypeValue retTypeValue;
-            if (funcInfo.bSeqCall)
+            if (funcValue.IsSequence)
             {
-                retTypeValue = new TypeValue.Normal(ItemIds.Enumerable, new[] { new[] { funcInfo.RetTypeValue } });
+                retTypeValue = new NormalTypeValue(ItemIds.Enumerable, new[] { new[] { funcInfo.RetTypeValue } });
             }
             else
             {
-                retTypeValue = funcInfo.RetTypeValue;
+                retTypeValue = funcValue.RetType;
             }
 
-            return typeValueApplier.Apply_Func(funcValue, new TypeValue.Func(retTypeValue, funcInfo.ParamTypeValues));
+            return typeValueApplier.Apply_Func(funcValue, new FuncTypeValue(retTypeValue, funcInfo.ParamTypeValues));
         }
-
 
         // 
         // GetFuncTypeValue_NormalTypeValue(X<int>.Y<short>, "Func", <bool>) =>   (int, short) => bool
         // 
         //private bool GetMemberFuncTypeValue_Normal(
         //    bool bStaticOnly,
-        //    QsTypeValue.Normal typeValue,
+        //    QsNormalTypeValue typeValue,
         //    QsName memberFuncId,
         //    ImmutableArray<QsTypeValue> typeArgs,
-        //    [NotNullWhen(true)] out QsTypeValue.Func? funcTypeValue)
+        //    [NotNullWhen(true)] out QsFuncTypeValue? funcTypeValue)
         //{
         //    funcTypeValue = null;
 
@@ -111,18 +110,18 @@ namespace Gum.IR0
         //    QsTypeValue typeValue,
         //    QsName memberFuncId,
         //    ImmutableArray<QsTypeValue> typeArgs,
-        //    [NotNullWhen(true)] out QsTypeValue.Func? funcTypeValue)
+        //    [NotNullWhen(true)] out QsFuncTypeValue? funcTypeValue)
         //{
         //    // var / typeVar / normal / func
 
-        //    if (typeValue is QsTypeValue.Normal typeValue_normal)
+        //    if (typeValue is QsNormalTypeValue typeValue_normal)
         //        return GetMemberFuncTypeValue_Normal(bStaticOnly, typeValue_normal, memberFuncId, typeArgs, out funcTypeValue);
 
         //    throw new NotImplementedException();
         //}
 
         // class N<T> : B<T> => N.GetBaseType => B<T(N)>
-        private bool GetBaseTypeValue_Normal(TypeValue.Normal typeValue, out TypeValue? outBaseTypeValue)
+        private bool GetBaseTypeValue_Normal(NormalTypeValue typeValue, out TypeValue? outBaseTypeValue)
         {
             outBaseTypeValue = null;
 
@@ -144,7 +143,7 @@ namespace Gum.IR0
 
             return typeValue switch
             {
-                TypeValue.Normal normalTypeValue => GetBaseTypeValue_Normal(normalTypeValue, out baseTypeValue),
+                NormalTypeValue normalTypeValue => GetBaseTypeValue_Normal(normalTypeValue, out baseTypeValue),
                 _ => false
             };
         }
@@ -157,7 +156,7 @@ namespace Gum.IR0
         {
             outFuncValue = null;
 
-            TypeValue.Normal? ntv = objTypeValue as TypeValue.Normal;
+            NormalTypeValue? ntv = objTypeValue as NormalTypeValue;
             if (ntv == null) return false;
 
             var typeInfo = typeInfoRepo.GetItem<TypeInfo>(ntv.GetTypeId());
@@ -176,7 +175,7 @@ namespace Gum.IR0
             int i = typeArgs.Count;
             var completedTypeArgs = typeArgs.Concat(
                 funcInfo.TypeParams.Skip(typeArgs.Count).Select(typeParam => {
-                    var typeVar = new TypeValue.TypeVar(funcInfo.GetId().OuterEntries.Length, i, typeParam);
+                    var typeVar = new TypeVarTypeValue(funcInfo.GetId().OuterEntries.Length, i, typeParam);
                     i++;
                     return typeVar;
                 })
@@ -200,7 +199,7 @@ namespace Gum.IR0
         // GetMemberVarValue(X<int>.Y<short>, x) => MemberVarValue(X<int>.Y<short>, x, Dict<int, short>)
         public MemberVarValue? GetMemberVarValue(TypeValue outer, Name name)
         {
-            var outerNTV = outer as TypeValue.Normal;
+            var outerNTV = outer as NormalTypeValue;
             if (outerNTV == null) return null;
 
             var typeId = outerNTV.GetTypeId();

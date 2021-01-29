@@ -86,7 +86,7 @@ namespace Gum.Runtime.Dotnet
     //        throw new NotImplementedException();
     //    }
 
-    //    public TypeInst GetTypeInst(DomainService domainService, TypeValue.Normal ntv)
+    //    public TypeInst GetTypeInst(DomainService domainService, NormalTypeValue ntv)
     //    {
     //        var dotnetType = assembly.GetType(MakeDotnetName(ntv.TypeId));
     //        var dotnetTypeInfo = dotnetType.GetTypeInfo();

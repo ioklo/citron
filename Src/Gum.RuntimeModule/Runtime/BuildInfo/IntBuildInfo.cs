@@ -20,7 +20,7 @@ namespace Gum.Runtime
 
         public override void Build(RuntimeModuleTypeBuilder builder)
         {
-            TypeValue intTypeValue = new TypeValue.Normal(RuntimeModule.IntId);
+            TypeValue intTypeValue = new NormalTypeValue(RuntimeModule.IntId);
 
             builder.AddMemberFunc(SpecialNames.OpInc, false, false, Array.Empty<string>(), intTypeValue, new TypeValue[] { intTypeValue }, OperatorInc);
             builder.AddMemberFunc(SpecialNames.OpDec, false, false, Array.Empty<string>(), intTypeValue, new TypeValue[] { intTypeValue }, OperatorDec);

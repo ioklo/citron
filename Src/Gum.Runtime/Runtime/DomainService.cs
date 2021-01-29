@@ -17,7 +17,7 @@ namespace Gum.Runtime
 
     //    public override TypeValue GetTypeValue()
     //    {
-    //        return TypeValue.Void.Instance;
+    //        return VoidTypeValue.Instance;
     //    }
 
     //    public override Value MakeDefaultValue()
@@ -28,9 +28,9 @@ namespace Gum.Runtime
 
     //class FuncTypeInst : TypeInst
     //{
-    //    private TypeValue.Func typeValue;
+    //    private FuncTypeValue typeValue;
 
-    //    public FuncTypeInst(TypeValue.Func typeValue) { this.typeValue = typeValue; }
+    //    public FuncTypeInst(FuncTypeValue typeValue) { this.typeValue = typeValue; }
 
     //    public override TypeValue GetTypeValue()
     //    {
@@ -86,11 +86,11 @@ namespace Gum.Runtime
     //        // X<int>.Y<short> => Tx -> int, Ty -> short
     //        switch (typeValue)
     //        {
-    //            case TypeValue.TypeVar tvtv:
+    //            case TypeVarTypeValue tvtv:
     //                Debug.Fail("실행중에 바인드 되지 않은 타입 인자가 나왔습니다");
     //                throw new InvalidOperationException();
 
-    //            case TypeValue.Normal ntv:
+    //            case NormalTypeValue ntv:
     //                {
     //                    foreach (var module in modules)
     //                        if (module.GetTypeInfo(ntv.TypeId, out var _))
@@ -99,10 +99,10 @@ namespace Gum.Runtime
     //                    throw new InvalidOperationException();
     //                }
 
-    //            case TypeValue.Void vtv:
+    //            case VoidTypeValue vtv:
     //                return VoidTypeInst.Instance;
                 
-    //            case TypeValue.Func ftv:
+    //            case FuncTypeValue ftv:
     //                return new FuncTypeInst(ftv);
 
     //            default:

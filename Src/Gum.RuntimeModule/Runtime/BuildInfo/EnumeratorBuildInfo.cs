@@ -18,8 +18,8 @@ namespace Gum.Runtime
         public override void Build(RuntimeModuleTypeBuilder builder)
         {
             var enumeratorId = RuntimeModule.EnumeratorId;            
-            var elemTypeValue = new TypeValue.TypeVar(enumeratorId, "T");
-            var boolTypeValue = new TypeValue.Normal(RuntimeModule.BoolId);
+            var elemTypeValue = new TypeVarTypeValue(enumeratorId, "T");
+            var boolTypeValue = new NormalTypeValue(RuntimeModule.BoolId);
 
             // bool Enumerator<T>.MoveNext()
             builder.AddMemberFunc(

@@ -75,7 +75,7 @@ namespace Gum.IR0
         //        return AnalyzeAssignToInstanceMember(memberExp, objTypeValue);
         //    }
 
-        //    Result? AnalyzeAssignToStaticMember(Syntax.MemberExp memberExp, TypeValue.Normal objNormalTypeValue)
+        //    Result? AnalyzeAssignToStaticMember(Syntax.MemberExp memberExp, NormalTypeValue objNormalTypeValue)
         //    {
         //        if (!analyzer.CheckStaticMember(memberExp, objNormalTypeValue, context, out var varValue))
         //            return null;

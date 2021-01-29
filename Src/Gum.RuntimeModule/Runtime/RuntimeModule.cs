@@ -67,7 +67,7 @@ namespace Gum.Runtime
     //        moduleBuilder.AddBuildInfo(new EnvironmentBuildInfo());
 
     //        // objectInfo를 돌면서
-    //        moduleBuilder.AddVar(null, envId, false, new TypeValue.Normal(EnvironmentId));
+    //        moduleBuilder.AddVar(null, envId, false, new NormalTypeValue(EnvironmentId));
 
     //        typeInfos = moduleBuilder.GetAllTypeInfos().ToImmutableDictionary(typeInfo => typeInfo.TypeId);
     //        funcInfos = moduleBuilder.GetAllFuncInfos().ToImmutableDictionary(funcInfo => funcInfo.FuncId);
@@ -116,19 +116,19 @@ namespace Gum.Runtime
 
     //    public void SetString(DomainService domainService, Value value, string s)
     //    {
-    //        var stringInst = domainService.GetTypeInst(new TypeValue.Normal(StringId));
+    //        var stringInst = domainService.GetTypeInst(new NormalTypeValue(StringId));
     //        ((ObjectValue)value).SetObject(new StringBuildInfo(stringInst, s));
     //    }
 
     //    public void SetList(DomainService domainService, Value value, TypeValue elemTypeValue, List<Value> elems)
     //    {
-    //        var listInst = domainService.GetTypeInst(new TypeValue.Normal(ListId, TypeArgumentList.Make(elemTypeValue)));
+    //        var listInst = domainService.GetTypeInst(new NormalTypeValue(ListId, TypeArgumentList.Make(elemTypeValue)));
     //        ((ObjectValue)value).SetObject(new ListObject(listInst, elems));
     //    }
 
     //    public void SetEnumerable(DomainService domainService, Value value, TypeValue elemTypeValue, IAsyncEnumerable<Value> asyncEnumerable)
     //    {
-    //        var enumerableInst = domainService.GetTypeInst(new TypeValue.Normal(EnumerableId, TypeArgumentList.Make(elemTypeValue)));
+    //        var enumerableInst = domainService.GetTypeInst(new NormalTypeValue(EnumerableId, TypeArgumentList.Make(elemTypeValue)));
     //        ((ObjectValue)value).SetObject(new EnumerableObject(enumerableInst, asyncEnumerable));
     //    }        
         
@@ -144,13 +144,13 @@ namespace Gum.Runtime
 
     //    public Value MakeString(DomainService domainService, string str)
     //    {
-    //        var stringInst = domainService.GetTypeInst(new TypeValue.Normal(StringId));
+    //        var stringInst = domainService.GetTypeInst(new NormalTypeValue(StringId));
     //        return new ObjectValue(new StringBuildInfo(stringInst, str));
     //    }
 
     //    public Value MakeList(DomainService domainService, TypeValue elemTypeValue, List<Value> elems)
     //    {
-    //        var listInst = domainService.GetTypeInst(new TypeValue.Normal(ListId, TypeArgumentList.Make(elemTypeValue)));
+    //        var listInst = domainService.GetTypeInst(new NormalTypeValue(ListId, TypeArgumentList.Make(elemTypeValue)));
 
     //        return new ObjectValue(new ListObject(listInst, elems));
     //    }
@@ -190,7 +190,7 @@ namespace Gum.Runtime
     //        return new ObjectValue(null);
     //    }
 
-    //    public TypeInst GetTypeInst(DomainService domainService, TypeValue.Normal ntv)
+    //    public TypeInst GetTypeInst(DomainService domainService, NormalTypeValue ntv)
     //    {
     //        return typeInstantiators[ntv.TypeId].Instantiate(domainService, ntv);
     //    }

@@ -59,7 +59,7 @@ namespace Gum.IR0.Runtime
     //        throw new InvalidOperationException();
     //    }
 
-    //    public TypeInst GetTypeInst(DomainService domainService, TypeValue.Normal typeValue)
+    //    public TypeInst GetTypeInst(DomainService domainService, NormalTypeValue typeValue)
     //    {
     //        var templ = templatesById[typeValue.Type];
 

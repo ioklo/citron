@@ -16,24 +16,24 @@ namespace Gum.IR0
             this.typeInfoRepo = typeInfoRepo;
         }
 
-        void FillTypeEnv(int depth, ImmutableArray<string> typeParams, ImmutableArray<TypeValue> typeArgs, Dictionary<TypeValue.TypeVar, TypeValue> typeEnv)
+        void FillTypeEnv(int depth, ImmutableArray<string> typeParams, ImmutableArray<TypeValue> typeArgs, Dictionary<TypeVarTypeValue, TypeValue> typeEnv)
         {   
             Debug.Assert(typeParams.Length == typeArgs.Length);
 
             for (int i = 0; i < typeParams.Length ; i++)
-                typeEnv[new TypeValue.TypeVar(depth, i, typeParams[i])] = typeArgs[i];
+                typeEnv[new TypeVarTypeValue(depth, i, typeParams[i])] = typeArgs[i];
         }
 
         // class X<T> { class Y<T> { } } 일때
         // FillTypeEnv(X<int>.Y<short>, env) -> env with {Tx -> int, Ty -> short}
-        (int Depth, TypeInfo ParentTypeInfo) FillTypeEnv(TypeValue.Normal ntv, Dictionary<TypeValue.TypeVar, TypeValue> typeEnv)
+        (int Depth, TypeInfo ParentTypeInfo) FillTypeEnv(NormalTypeValue ntv, Dictionary<TypeVarTypeValue, TypeValue> typeEnv)
         {
             // base case 
             // [Module]Namespace.X
             var outer = ntv.GetOuter();
             if (outer == null)
             {
-                var typeInfo = typeInfoRepo.GetItem<TypeInfo>(ntv.GetTypeId());
+                var typeInfo = typeInfoRepo.GetType(ntv.GetTypeId());
                 Debug.Assert(typeInfo != null);
 
                 // update env
@@ -62,7 +62,7 @@ namespace Gum.IR0
         // ApplyTypeEnv_Normal(Normal (Z, [[T], [U], []]), { T -> int, U -> short })
         // 
         // Normal(Z, [[int], [short], []])
-        private TypeValue ApplyTypeEnv_Normal(TypeValue.Normal ntv, Dictionary<TypeValue.TypeVar, TypeValue> typeEnv)
+        private TypeValue ApplyTypeEnv_Normal(NormalTypeValue ntv, Dictionary<TypeVarTypeValue, TypeValue> typeEnv)
         {
             var appliedOuterEntries = ntv.OuterEntries.Select(outerEntry =>
                 new AppliedItemPathEntry(outerEntry.Name, outerEntry.ParamHash, outerEntry.TypeArgs.Select(typeArg => ApplyTypeEnv(typeArg, typeEnv)))
@@ -70,19 +70,19 @@ namespace Gum.IR0
 
             var appliedEntry = new AppliedItemPathEntry(ntv.Entry.Name, ntv.Entry.ParamHash, ntv.Entry.TypeArgs.Select(typeArg => ApplyTypeEnv(typeArg, typeEnv)));
 
-            return new TypeValue.Normal(ntv.ModuleName, ntv.NamespacePath, appliedOuterEntries, appliedEntry);
+            return new NormalTypeValue(ntv.ModuleName, ntv.NamespacePath, appliedOuterEntries, appliedEntry);
         }
 
         // 
-        private TypeValue.Func ApplyTypeEnv_Func(TypeValue.Func typeValue, Dictionary<TypeValue.TypeVar, TypeValue> typeEnv)
+        private FuncTypeValue ApplyTypeEnv_Func(FuncTypeValue typeValue, Dictionary<TypeVarTypeValue, TypeValue> typeEnv)
         {
-            return new TypeValue.Func(
+            return new FuncTypeValue(
                 ApplyTypeEnv(typeValue.Return, typeEnv),
                 typeValue.Params.Select(parameter => ApplyTypeEnv(parameter, typeEnv)));
         }
 
         // T, [T -> ]
-        private TypeValue ApplyTypeEnv_TypeVar(TypeValue.TypeVar typeValue, Dictionary<TypeValue.TypeVar, TypeValue> typeEnv)
+        private TypeValue ApplyTypeEnv_TypeVar(TypeVarTypeValue typeValue, Dictionary<TypeVarTypeValue, TypeValue> typeEnv)
         {
             if (typeEnv.TryGetValue(typeValue, out var appliedTypeValue))
                 return appliedTypeValue;
@@ -90,22 +90,22 @@ namespace Gum.IR0
             return typeValue;
         }
 
-        private TypeValue ApplyTypeEnv(TypeValue typeValue, Dictionary<TypeValue.TypeVar, TypeValue> typeEnv)
+        private TypeValue ApplyTypeEnv(TypeValue typeValue, Dictionary<TypeVarTypeValue, TypeValue> typeEnv)
         {
             return typeValue switch
             {
-                TypeValue.Normal normalTypeValue => ApplyTypeEnv_Normal(normalTypeValue, typeEnv),
-                TypeValue.Func funcTypeValue => ApplyTypeEnv_Func(funcTypeValue, typeEnv),
-                TypeValue.TypeVar typeVarTypeValue => ApplyTypeEnv_TypeVar(typeVarTypeValue, typeEnv),
-                TypeValue.Void vtv => vtv,
+                NormalTypeValue normalTypeValue => ApplyTypeEnv_Normal(normalTypeValue, typeEnv),
+                FuncTypeValue funcTypeValue => ApplyTypeEnv_Func(funcTypeValue, typeEnv),
+                TypeVarTypeValue typeVarTypeValue => ApplyTypeEnv_TypeVar(typeVarTypeValue, typeEnv),
+                VoidTypeValue vtv => vtv,
                 _ => throw new NotImplementedException()
             };
         }
 
         // class X<T> { class Y<U> { S<T>.List<U> u; } } => ApplyTypeValue_Normal(X<int>.Y<short>, S<T>.List<U>) => S<int>.Dict<short>
-        private TypeValue Apply_Normal(TypeValue.Normal context, TypeValue typeValue)
+        private TypeValue Apply_Normal(NormalTypeValue context, TypeValue typeValue)
         {
-            var typeEnv = new Dictionary<TypeValue.TypeVar, TypeValue>(ModuleInfoEqualityComparer.Instance);
+            var typeEnv = new Dictionary<TypeVarTypeValue, TypeValue>(ModuleInfoEqualityComparer.Instance);
 
             FillTypeEnv(context, typeEnv);
 
@@ -113,9 +113,9 @@ namespace Gum.IR0
         }
 
         // 주어진 funcValue 컨텍스트 내에서, typeValue를 치환하기
-        public TypeValue.Func Apply_Func(FuncValue context, TypeValue.Func typeValue)
+        public FuncTypeValue Apply_Func(FuncValue context, FuncTypeValue typeValue)
         {
-            var typeEnv = new Dictionary<TypeValue.TypeVar, TypeValue>(ModuleInfoEqualityComparer.Instance);            
+            var typeEnv = new Dictionary<TypeVarTypeValue, TypeValue>(ModuleInfoEqualityComparer.Instance);            
 
             var outer = context.GetOuter();
             if (outer == null)
@@ -141,7 +141,7 @@ namespace Gum.IR0
 
         public TypeValue Apply(TypeValue? context, TypeValue typeValue)
         {
-            if (context is TypeValue.Normal context_normal)
+            if (context is NormalTypeValue context_normal)
                 return Apply_Normal(context_normal, typeValue);
 
             return typeValue;

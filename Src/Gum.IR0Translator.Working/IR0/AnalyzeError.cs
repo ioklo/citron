@@ -40,6 +40,7 @@ namespace Gum.IR0
         A0402_Parameter_MismatchBetweenParamTypeAndArgType,
 
         A0501_IdExp_VariableNotFound,
+        A0502_IdExp_CantUseTypeAsExpression,
 
         A0601_UnaryAssignOp_IntTypeIsAllowedOnly,
         A0602_UnaryAssignOp_AssignableExpressionIsAllowedOnly,

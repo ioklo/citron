@@ -26,7 +26,7 @@ namespace Gum.Runtime
             //var listTypeId = RuntimeModule.ListId;
 
             //// int
-            //var intTypeValue = new TypeValue.Normal(intTypeId, TypeArgumentList.Empty);           
+            //var intTypeValue = new NormalTypeValue(intTypeId, TypeArgumentList.Empty);           
             
 
             //// List<int>.Add

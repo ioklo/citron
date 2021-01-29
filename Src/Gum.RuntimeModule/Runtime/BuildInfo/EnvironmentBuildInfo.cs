@@ -15,7 +15,7 @@ namespace Gum.Runtime
 
         public override void Build(RuntimeModuleTypeBuilder builder)
         {
-            var stringTypeValue = new TypeValue.Normal(RuntimeModule.StringId);
+            var stringTypeValue = new NormalTypeValue(RuntimeModule.StringId);
 
             builder.AddMemberVar("HomeDir", false, stringTypeValue);
             builder.AddMemberVar("ScriptDir", false, stringTypeValue);

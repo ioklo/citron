@@ -57,7 +57,7 @@ namespace Gum.IR0
         //    Exp target, 
         //    S.Stmt thenBody,
         //    S.Stmt? elseBody,
-        //    TypeValue targetType, TypeValue.EnumElem enumElem, [NotNullWhen(true)] out Stmt? outStmt)
+        //    TypeValue targetType, EnumElemTypeValue enumElem, [NotNullWhen(true)] out Stmt? outStmt)
         //{
         //    bool bResult = true;
         //    Stmt? ir0ThenBody = null;
@@ -163,11 +163,11 @@ namespace Gum.IR0
             //// TestType이 있을때만 넣는다
             //var testTypeValue = context.GetTypeValueByTypeExp(testTypeExp);
 
-            //if (testTypeValue is TypeValue.EnumElem enumElem)
+            //if (testTypeValue is EnumElemTypeValue enumElem)
             //{
             //    return AnalyzeIfTestEnumStmt(varIdInfo, cond, ifStmt.Body, ifStmt.ElseBody, condTypeValue, enumElem, out outStmt);                
             //}
-            //else if (testTypeValue is TypeValue.Normal normal)
+            //else if (testTypeValue is NormalTypeValue normal)
             //{
             //    return AnalyzeIfTestClassStmt(varIdInfo, cond, ifStmt.Body, ifStmt.ElseBody, condTypeValue, testTypeValue, out outStmt);
             //}
@@ -294,13 +294,13 @@ namespace Gum.IR0
             if (returnStmt.Value == null)
             {
                 var retTypeValue = context.GetRetTypeValue();
-                var voidTypeValue = TypeValue.Void.Instance;
+                var voidTypeValue = VoidTypeValue.Instance;
 
                 if (retTypeValue == null)
                 {
                     context.SetRetTypeValue(voidTypeValue);
                 }
-                else if (retTypeValue != TypeValue.Void.Instance)
+                else if (retTypeValue != VoidTypeValue.Instance)
                 {
                     context.AddFatalError(A1201_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType, returnStmt, $"이 함수는 {context.GetRetTypeValue()}을 반환해야 합니다");
                 }
@@ -403,7 +403,7 @@ namespace Gum.IR0
             // 1. List<T>
             // 2. Enumerable<T>, seq 함수일경우
             TypeValue? iteratorElemType = null;
-            if (iteratorResult.TypeValue is TypeValue.Normal normalIteratorType)
+            if (iteratorResult.TypeValue is NormalTypeValue normalIteratorType)
             {
                 var typeId = normalIteratorType.GetTypeId();
 
@@ -425,7 +425,7 @@ namespace Gum.IR0
                 context.AddFatalError(A1801_ForeachStmt_IteratorShouldBeListOrEnumerable, foreachStmt.Iterator, "foreach의 반복자 부분은 List<>, Enumerable<>타입이어야 합니다");
             }
 
-            if (elemType is TypeValue.Var) // var 라면, iteratorElemType을 쓴다
+            if (elemType is VarTypeValue) // var 라면, iteratorElemType을 쓴다
             {
                 elemType = iteratorElemType;
             }

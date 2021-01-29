@@ -18,18 +18,18 @@ namespace Gum.Runtime
 
         public override void Build(RuntimeModuleTypeBuilder builder)
         {
-            TypeValue intTypeValue = new TypeValue.Normal(RuntimeModule.IntId);
-            TypeValue listElemTypeValue = new TypeValue.TypeVar(RuntimeModule.ListId, "T");
+            TypeValue intTypeValue = new NormalTypeValue(RuntimeModule.IntId);
+            TypeValue listElemTypeValue = new TypeVarTypeValue(RuntimeModule.ListId, "T");
 
             // List<T>.Add
             builder.AddMemberFunc("Add",
                 bSeqCall: false, bThisCall: true, Array.Empty<string>(),
-                TypeValue.Void.Instance, new[] { listElemTypeValue }, ListObject.NativeAdd);
+                VoidTypeValue.Instance, new[] { listElemTypeValue }, ListObject.NativeAdd);
 
             // List<T>.RemoveAt(int index)     
             builder.AddMemberFunc("RemoveAt",
                 bSeqCall: false, bThisCall: true, Array.Empty<string>(),
-                TypeValue.Void.Instance, new[] { intTypeValue }, ListObject.NativeRemoveAt);
+                VoidTypeValue.Instance, new[] { intTypeValue }, ListObject.NativeRemoveAt);
 
             // Enumerator<T> List<T>.GetEnumerator()
             Invoker wrappedGetEnumerator =
@@ -37,7 +37,7 @@ namespace Gum.Runtime
 
             builder.AddMemberFunc("GetEnumerator",
                 bSeqCall: false, bThisCall: true, Array.Empty<string>(),
-                new TypeValue.Normal(RuntimeModule.EnumeratorId, TypeArgumentList.Make(listElemTypeValue)), Enumerable.Empty<TypeValue>(), wrappedGetEnumerator);
+                new NormalTypeValue(RuntimeModule.EnumeratorId, TypeArgumentList.Make(listElemTypeValue)), Enumerable.Empty<TypeValue>(), wrappedGetEnumerator);
 
             // T List<T>.Indexer(int index)
             builder.AddMemberFunc(SpecialNames.IndexerGet,
@@ -68,7 +68,7 @@ namespace Gum.Runtime
             var list = GetObject<ListObject>(thisValue);
 
             // enumerator<T>
-            var enumeratorInst = domainService.GetTypeInst(new TypeValue.Normal(enumeratorId, typeArgList));
+            var enumeratorInst = domainService.GetTypeInst(new NormalTypeValue(enumeratorId, typeArgList));
 
             // TODO: Runtime 메모리 관리자한테 new를 요청해야 합니다
             ((ObjectValue)result).SetObject(new EnumeratorObject(enumeratorInst, ToAsyncEnum(list.Elems).GetAsyncEnumerator()));

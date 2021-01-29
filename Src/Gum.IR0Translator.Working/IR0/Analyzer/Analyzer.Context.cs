@@ -1,5 +1,4 @@
-﻿using Gum.CompileTime;
-using Gum.Infra;
+﻿using Gum.Infra;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -9,6 +8,7 @@ using System.Linq;
 using System.Text;
 
 using S = Gum.Syntax;
+using M = Gum.CompileTime;
 
 namespace Gum.IR0
 {
@@ -22,8 +22,10 @@ namespace Gum.IR0
             {
                 return itemInfoRepo.GetItem<TItemInfo>(id);
             }
-            
-            TypeInfoRepository typeInfoRepo;
+
+            M.ModuleInfo internalModuleInfo;
+
+            ItemInfoRepository itemInfoRepo;
             TypeExpInfoService typeExpTypeValueService;
             TypeValueService typeValueService;
             IErrorCollector errorCollector;
@@ -40,17 +42,17 @@ namespace Gum.IR0
             InternalGlobalVariableRepository internalGlobalVarRepo;
 
             public Context(                
-                TypeInfoRepository typeInfoRepo,
+                ItemInfoRepository itemInfoRepo,
                 TypeValueService typeValueService,
                 TypeExpInfoService typeExpTypeValueService,
                 IErrorCollector errorCollector)
             {
-                this.typeInfoRepo = typeInfoRepo;
+                this.itemInfoRepo = itemInfoRepo;
                 this.typeValueService = typeValueService;
                 this.typeExpTypeValueService = typeExpTypeValueService;
                 this.errorCollector = errorCollector;
 
-                curFunc = new FuncContext(null, new TypeValue.Normal(ItemIds.Int), false);
+                curFunc = new FuncContext(null, TypeValues.Int, false);
                 bInLoop = false;
                 internalGlobalVarRepo = new InternalGlobalVariableRepository();
                 
@@ -179,7 +181,7 @@ namespace Gum.IR0
                 bool Equals(TypeValue x, TypeValue y) => x.Equals(y);
 
                 // 일단 predefined부터 걸러냅니다.
-                if (typeValue is TypeValue.Normal ntv)
+                if (typeValue is NormalTypeValue ntv)
                 {
                     if (Equals(ntv, TypeValues.Bool)) return Type.Bool;
                     else if (Equals(ntv, TypeValues.Int)) return Type.Int;
@@ -190,7 +192,7 @@ namespace Gum.IR0
                         return Type.List(elemType);
                     }                    
                 }
-                else if (typeValue is TypeValue.Void)
+                else if (typeValue is VoidTypeValue)
                     return Type.Void;
 
                 throw new NotImplementedException();
@@ -275,45 +277,73 @@ namespace Gum.IR0
                     return internalGlobalVarRepo.GetVariable(idName);
 
                 return null;
-            }            
+            }
 
-            IdentifierInfo? GetExternalGlobalInfo(string idName, ImmutableArray<TypeValue> typeArgs, TypeValue? hintTypeValue)
+            TypeInfo? GetInternalGlobalTypeInfo(NamespacePath namespacePath, string idName, ImmutableArray<TypeValue> typeArgs, TypeValue? hintTypeValue)
+            {
+                var typeInfo = GlobalItemQueryService.GetGlobalItem(internalModuleInfo, namespacePath, new ItemPathEntry(idName)) as M.TypeInfo;
+                if (typeInfo == null) return null;
+
+                var typeValue = NormalTypeValue.MakeInternalGlobal(namespacePath, typeDeclId, typeInfo, typeArgs);
+                var idInfo = new TypeInfo(typeValue);
+
+                return idInfo;
+            }
+
+            IEnumerable<FuncInfo> GetInternalGlobalFuncInfos(NamespacePath namespacePath, string idName, ImmutableArray<TypeValue> typeArgs, TypeValue? hintTypeValue)
+            {
+                foreach(var mfuncInfo in GlobalItemQueryService.GetGlobalFuncs(internalModuleInfo, namespacePath, idName))
+                {
+                    // TODO: 인자 타입 추론을 사용하면, typeArgs를 생략할 수 있기 때문에, TypeArgs.Count가 TypeParams.Length보다 적어도 된다
+                    if (typeArgs.Length == mfuncInfo.TypeParams.Length)
+                    {
+                        FuncDeclId funcDeclId;
+                        var funcValue = new FuncValue(namespacePath, funcDeclId, mfuncInfo, typeArgs);
+                        var funcInfo = new FuncInfo(funcValue);
+
+                        yield return funcInfo;
+                    }
+                }
+            }
+
+            IEnumerable<TypeInfo> GetExternalGlobalTypeInfos(NamespacePath namespacePath, string idName, ImmutableArray<TypeValue> typeArgs, TypeValue? hintTypeValue)
+            {
+                throw new NotImplementedException();
+            }
+
+            IEnumerable<FuncInfo> GetExternalGlobalFuncInfos(NamespacePath namespacePath, string idName, ImmutableArray<TypeValue> typeArgs, TypeValue? hintTypeValue)
+            {
+                throw new NotImplementedException();
+            }
+
+            IdentifierInfo? GetGlobalInfo(string idName, ImmutableArray<TypeValue> typeArgs, TypeValue? hintTypeValue)
             {
                 var candidates = new List<IdentifierInfo>();
 
+                var curNamespacePath = NamespacePath.Root;
+
+                var internalGlobalTypeInfo = GetInternalGlobalTypeInfo(curNamespacePath, idName, typeArgs, hintTypeValue);
+                if (internalGlobalTypeInfo != null)
+                    candidates.Add(internalGlobalTypeInfo);
+
+                var internalGlobalFuncInfos = GetInternalGlobalFuncInfos(curNamespacePath, idName, typeArgs, hintTypeValue);
+                candidates.AddRange(internalGlobalFuncInfos);
+
+                var externalGlobalTypeInfos = GetExternalGlobalTypeInfos(curNamespacePath, idName, typeArgs, hintTypeValue);
+                candidates.AddRange(externalGlobalTypeInfos);
+
+                var externalGlobalFuncInfos = GetExternalGlobalFuncInfos(curNamespacePath, idName, typeArgs, hintTypeValue);
+                candidates.AddRange(externalGlobalFuncInfos);
+
                 // Global Identifier이므로 typeArgument의 최상위이다 (outer가 없다)
-                foreach (var funcInfo in itemInfoRepo.GetFuncs(NamespacePath.Root, idName))
-                {
-                    // TODO: 인자 타입 추론을 사용하면, typeArgs를 생략할 수 있기 때문에, TypeArgs.Count가 TypeParams.Length보다 적어도 된다
-                    if (typeArgs.Length == funcInfo.TypeParams.Length)
-                    {
-                        var funcId = funcInfo.GetId();
-                        Debug.Assert(funcId.OuterEntries.Length == 0);
-
-                        var idInfo = new IdentifierInfo.Func(
-                            new FuncValue(funcId.ModuleName, funcId.NamespacePath, new AppliedItemPathEntry(funcId.Entry.Name, funcId.Entry.ParamHash, typeArgs))
-                        );
-
-                        candidates.Add(idInfo);
-                    }
-                }
-
                 foreach (var typeInfo in itemInfoRepo.GetTypes(NamespacePath.Root, new ItemPathEntry(idName, typeArgs.Length)))
                 {
-                    var typeId = typeInfo.GetId();
-
-                    var idInfo = new IdentifierInfo.Type(new TypeValue.Normal(
-                        typeId.ModuleName,
-                        typeId.NamespacePath,
-                        new AppliedItemPathEntry(typeId.Entry.Name, typeId.Entry.ParamHash, typeArgs)                        
-                    ));
-
-                    candidates.Add(idInfo);
+                    
                 }
 
                 // 힌트가 E고, First가 써져 있으면 E.First를 검색한다
                 // enum 힌트 사용, typeArgs가 있으면 지나간다
-                if (hintTypeValue is TypeValue.Normal hintNTV)
+                if (hintTypeValue is NormalTypeValue hintNTV)
                 {
                     // First<T> 같은건 없기 때문에 없을때만 검색한다
                     if (typeArgs.Length == 0)
@@ -404,15 +434,15 @@ namespace Gum.IR0
                 var internalGlobalVarInfo = GetInternalGlobalVarInfo(idName, typeArgs);
                 if (internalGlobalVarInfo != null) return internalGlobalVarInfo;
 
-                // 4. module global, 함수, 타입, 
+                // 4. 네임스페이스 -> 바깥 네임스페이스 -> module global, 함수, 타입, 
                 // 오버로딩 함수 선택, hint가 global enum인 경우, elem선택
-                var externalGlobalInfo = GetExternalGlobalInfo(idName, typeArgs, hintTypeValue);
+                var externalGlobalInfo = GetGlobalInfo(idName, typeArgs, hintTypeValue);
                 if (externalGlobalInfo != null) return externalGlobalInfo;
 
                 return null;
             }
 
-            public TypeValue.Func GetTypeValue(FuncValue funcValue)
+            public FuncTypeValue GetTypeValue(FuncValue funcValue)
             {
                 return typeValueService.GetTypeValue(funcValue);
             }

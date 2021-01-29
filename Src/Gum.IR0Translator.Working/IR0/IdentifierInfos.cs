@@ -1,5 +1,7 @@
-﻿using Gum.CompileTime;
+﻿using System;
+
 using S = Gum.Syntax;
+using M = Gum.CompileTime;
 
 namespace Gum.IR0
 {
@@ -11,22 +13,23 @@ namespace Gum.IR0
     // 내부 글로벌 변수, x
     class InternalGlobalVarInfo : IdentifierInfo
     {
-        public Name Name { get; }
+        public M.Name Name { get; }
         public TypeValue TypeValue { get; }
 
-        public InternalGlobalVarInfo(Name name, TypeValue typeValue) { Name = name; TypeValue = typeValue; }
+        public InternalGlobalVarInfo(M.Name name, TypeValue typeValue) { Name = name; TypeValue = typeValue; }
     }
 
     // () => { x }에서 x
     class LocalVarOutsideLambdaInfo : IdentifierInfo
     {
-        public bool bNeedCapture { get; set; }
-        public LocalVarInfo LocalVarInfo { get; }
+        public Name Name { get => localVarInfo.Name; }
+        public TypeValue TypeValue { get => localVarInfo.TypeValue; }
+
+        LocalVarInfo localVarInfo;
 
         public LocalVarOutsideLambdaInfo(LocalVarInfo localVarInfo)
         {
-            bNeedCapture = false;
-            LocalVarInfo = localVarInfo;
+            this.localVarInfo = localVarInfo;
         }
     }
 
@@ -48,33 +51,20 @@ namespace Gum.IR0
         public string Name { get; }
         public EnumFieldInfo(string name) { Name = name; }
     }
-
-    // x => T.x
-    class StaticMemberInfo : IdentifierInfo
-    {   
-        public MemberVarValue VarValue { get; }
-        public StaticMemberInfo(MemberVarValue varValue) { VarValue = varValue; }
-    }
-
+    
     // x => this.x
-    // TODO: ThisMember라고 불리는게 나을 것 같다
-    class InstanceMemberInfo : IdentifierInfo
-    {
-        public S.Exp ObjectExp { get; }
-        public TypeValue ObjectTypeValue { get; }
-        public Name VarName { get; }
-        public InstanceMemberInfo(S.Exp objectExp, TypeValue objectTypeValue, Name varName)
+    class ThisMemberInfo : IdentifierInfo
+    {   
+        public M.Name MemberName { get; }
+        public ThisMemberInfo(M.Name memberName)
         {
-            ObjectExp = objectExp;
-            ObjectTypeValue = objectTypeValue;
-            VarName = varName;
+            MemberName = memberName;
         }
     }
 
     // f 
     class FuncInfo : IdentifierInfo
     {
-        // 함수를 가리키는 레퍼런스
         public FuncValue FuncValue { get; }
         public FuncInfo(FuncValue funcValue)
         {
@@ -86,8 +76,8 @@ namespace Gum.IR0
     class TypeInfo : IdentifierInfo
     {
         // 타입을 가리키는 레퍼런스
-        public TypeValue.Normal TypeValue { get; }
-        public TypeInfo(TypeValue.Normal typeValue)
+        public NormalTypeValue TypeValue { get; }
+        public TypeInfo(NormalTypeValue typeValue)
         {
             TypeValue = typeValue;
         }
@@ -96,13 +86,14 @@ namespace Gum.IR0
     // F => E.F
     class EnumElemInfo : IdentifierInfo
     {
-        public TypeValue.Normal EnumTypeValue { get; }
-        public EnumElemInfo ElemInfo { get; }
+        public NormalTypeValue EnumTypeValue { get; }
+        public M.Name Name { get => throw new NotImplementedException();  }
+        public bool IsStandalone { get; }
 
-        public EnumElemInfo(TypeValue.Normal enumTypeValue, EnumElemInfo elemInfo)
+        public EnumElemInfo(NormalTypeValue enumTypeValue, bool bStandalone)
         {
             EnumTypeValue = enumTypeValue;
-            ElemInfo = elemInfo;
+            IsStandalone = bStandalone;
         }
     }
 }

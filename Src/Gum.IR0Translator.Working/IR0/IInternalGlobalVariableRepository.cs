@@ -2,7 +2,7 @@
 
 namespace Gum.IR0
 {
-    public interface IInternalGlobalVariableRepository
+    interface IInternalGlobalVariableRepository
     {
         InternalGlobalVarInfo? GetVariable(Name path);
     }

@@ -22,7 +22,7 @@ namespace Gum.IR0
 
         public static Script Analyze(
             S.Script script,
-            TypeInfoRepository itemInfoRepo,
+            ItemInfoRepository itemInfoRepo,
             TypeValueService typeValueService,
             TypeExpInfoService typeExpTypeValueService,
             IErrorCollector errorCollector)
@@ -58,7 +58,7 @@ namespace Gum.IR0
             if (elem.InitExp == null)
             {
                 // var x; 체크
-                if (declType is TypeValue.Var)
+                if (declType is VarTypeValue)
                     context.AddFatalError(A0101_VarDecl_CantInferVarType, elem, $"{elem.VarName}의 타입을 추론할 수 없습니다");
 
                 var type = context.GetType(declType);
@@ -67,7 +67,7 @@ namespace Gum.IR0
             else
             {
                 // var 처리
-                if (declType is TypeValue.Var)
+                if (declType is VarTypeValue)
                 {
                     var initExpResult = AnalyzeExp(elem.InitExp, null);
                     var type = context.GetType(initExpResult.TypeValue);
@@ -205,7 +205,7 @@ namespace Gum.IR0
         {
             public Stmt Body { get; }
             public CaptureInfo CaptureInfo { get; }
-            public TypeValue.Func FuncTypeValue { get; }
+            public FuncTypeValue FuncTypeValue { get; }
         }
 
         LambdaResult AnalyzeLambda(S.ISyntaxNode nodeForErrorReport, S.Stmt body, ImmutableArray<S.LambdaExpParam> parameters)
@@ -256,8 +256,8 @@ namespace Gum.IR0
             return new LambdaResult(
                 bodyResult.Stmt, 
                 new CaptureInfo(false, capturedLocalVars),
-                new TypeValue.Func(
-                    retTypeValue ?? TypeValue.Void.Instance,
+                new FuncTypeValue(
+                    retTypeValue ?? VoidTypeValue.Instance,
                     paramInfos.Select(paramInfo => paramInfo.TypeValue)));
         }
 
@@ -331,7 +331,7 @@ namespace Gum.IR0
         public MemberVarValue CheckInstanceMember(S.MemberExp memberExp, TypeValue objTypeValue)
         {
             // TODO: Func추가
-            TypeValue.Normal? objNormalTypeValue = objTypeValue as TypeValue.Normal;
+            NormalTypeValue? objNormalTypeValue = objTypeValue as NormalTypeValue;
 
             if (objNormalTypeValue == null)
                 context.AddFatalError(A0301_MemberExp_InstanceTypeIsNotNormalType, memberExp, "멤버를 가져올 수 있는 타입이 아닙니다");
@@ -346,7 +346,7 @@ namespace Gum.IR0
             return varValue;
         }
 
-        public MemberVarValue CheckStaticMember(S.MemberExp memberExp, TypeValue.Normal objNormalTypeValue)
+        public MemberVarValue CheckStaticMember(S.MemberExp memberExp, NormalTypeValue objNormalTypeValue)
         {
             var varValue = context.GetMemberVarValue(objNormalTypeValue, memberExp.MemberName);
 

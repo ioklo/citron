@@ -8,7 +8,7 @@ namespace Gum.IR0
     public class TypeValueServiceTests
     {
         TypeValue MakeTypeValue(string name)
-            => new TypeValue.Normal(ModuleName.Internal, NamespacePath.Root, new AppliedItemPathEntry(name));
+            => new NormalTypeValue(ModuleName.Internal, NamespacePath.Root, new AppliedItemPathEntry(name));
 
         public ItemId DictId { get; } = new ItemId("System.Runtime", new NamespacePath("System"), new ItemPathEntry("Dict", 2));
         public ItemId ListId { get; } = new ItemId("System.Runtime", new NamespacePath("System"), new ItemPathEntry("List", 1));
@@ -29,15 +29,15 @@ namespace Gum.IR0
             var vId = yId.Append("v");
             var fId = yId.Append("F", 1);                        
 
-            var xtTypeVar = new TypeValue.TypeVar(0, 0, "T");
-            var yuTypeVar = new TypeValue.TypeVar(1, 0, "U");
-            var fvTypeVar = new TypeValue.TypeVar(2, 0, "V");
+            var xtTypeVar = new TypeVarTypeValue(0, 0, "T");
+            var yuTypeVar = new TypeVarTypeValue(1, 0, "U");
+            var fvTypeVar = new TypeVarTypeValue(2, 0, "V");
 
             var gId = MakeItemId(new ItemPathEntry("G", 1));
-            var gtTypeValue = new TypeValue.Normal(gId, new[] { xtTypeVar });
+            var gtTypeValue = new NormalTypeValue(gId, new[] { xtTypeVar });
 
-            var vInfo = new VarInfo(vId, false, new TypeValue.Normal(DictId, new[] { xtTypeVar }, new [] { yuTypeVar }));
-            var fInfo = new FuncInfo(fId, false, true, new[] { "V" }, xtTypeVar, fvTypeVar, new TypeValue.Normal(ListId, new[] { yuTypeVar }));
+            var vInfo = new VarInfo(vId, false, new NormalTypeValue(DictId, new[] { xtTypeVar }, new [] { yuTypeVar }));
+            var fInfo = new FuncInfo(fId, false, true, new[] { "V" }, xtTypeVar, fvTypeVar, new NormalTypeValue(ListId, new[] { yuTypeVar }));
 
             var yInfo = new ClassInfo(yId, new[] { "U" }, gtTypeValue, new ItemInfo[] { fInfo, vInfo });
             var xInfo = new ClassInfo(xId, new[] { "T", "U" }, null, new[] { yInfo });
@@ -72,7 +72,7 @@ namespace Gum.IR0
 
             var vValue = new MemberVarValue(vId, yTypeArgList); // outerTypeArgList가 들어간다
             var result = typeValueService.GetTypeValue(vValue);
-            var expected = new TypeValue.Normal(DictId, new[] { new[] { MakeTypeValue("A"), MakeTypeValue("C") } });
+            var expected = new NormalTypeValue(DictId, new[] { new[] { MakeTypeValue("A"), MakeTypeValue("C") } });
 
             Assert.Equal(expected, result);
         }
@@ -94,9 +94,9 @@ namespace Gum.IR0
 
             var result = typeValueService.GetTypeValue(fValue);
 
-            var expected = new TypeValue.Func(MakeTypeValue("A"), new[] {
+            var expected = new FuncTypeValue(MakeTypeValue("A"), new[] {
                 MakeTypeValue("D"),
-                new TypeValue.Normal(ListId, new [] { MakeTypeValue("C") })});
+                new NormalTypeValue(ListId, new [] { MakeTypeValue("C") })});
 
             Assert.Equal(expected, result);
         }
@@ -109,7 +109,7 @@ namespace Gum.IR0
             var typeValueService = MakeTypeValueService();
 
             var yId = MakeItemId(new ItemPathEntry("X", 2), new ItemPathEntry("Y", 1));
-            var yValue = new TypeValue.Normal(yId, 
+            var yValue = new NormalTypeValue(yId, 
                 new[] { MakeTypeValue("A"), MakeTypeValue("B") },
                 new[] { MakeTypeValue("C") }
             );
@@ -121,7 +121,7 @@ namespace Gum.IR0
             }
 
             var gId = MakeItemId(new ItemPathEntry("G", 1));
-            var expected = new TypeValue.Normal(gId, new[] { MakeTypeValue("A") });
+            var expected = new NormalTypeValue(gId, new[] { MakeTypeValue("A") });
             Assert.Equal(expected, baseTypeValue);
         }
 
@@ -132,7 +132,7 @@ namespace Gum.IR0
 
             // GetMemberFuncValue(X<A, B>.Y<C>, "F", D) => (X<,>.Y<>.F<>, [[A, B], [C], [D]])
             var yId = MakeItemId(new ItemPathEntry("X", 2), new ItemPathEntry("Y", 1));
-            var yValue = new TypeValue.Normal(yId, 
+            var yValue = new NormalTypeValue(yId, 
                 new[] { MakeTypeValue("A"), MakeTypeValue("B") },
                 new[] { MakeTypeValue("C") } );
 
@@ -158,7 +158,7 @@ namespace Gum.IR0
 
             // GetMemberVarValue(X<A, B>.Y<C>, "v") => (X<,>.Y<>.v, [[A, B], [C]])
             var yId = MakeItemId(new ItemPathEntry("X", 2), new ItemPathEntry("Y", 1));
-            var yValue = new TypeValue.Normal(yId, 
+            var yValue = new NormalTypeValue(yId, 
                 new[] { MakeTypeValue("A"), MakeTypeValue("B") },
                 new[] { MakeTypeValue("C") });
 
