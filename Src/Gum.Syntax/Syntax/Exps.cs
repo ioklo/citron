@@ -77,22 +77,18 @@ namespace Gum.Syntax
     {
         public Exp Callable { get; }
 
-        public ImmutableArray<TypeExp> TypeArgs { get; }
-
         // TODO: params, out, 등 처리를 하려면 Exp가 아니라 다른거여야 한다
         public ImmutableArray<Exp> Args { get; }
 
-        public CallExp(Exp callable, IEnumerable<TypeExp> typeArgs, IEnumerable<Exp> args)
+        public CallExp(Exp callable, IEnumerable<Exp> args)
         {
             Callable = callable;
-            TypeArgs = typeArgs.ToImmutableArray();
             Args = args.ToImmutableArray();
         }
 
-        public CallExp(Exp callable, IEnumerable<TypeExp> typeArgs, params Exp[] args)
+        public CallExp(Exp callable, params Exp[] args)
         {
             Callable = callable;
-            TypeArgs = typeArgs.ToImmutableArray();
             Args = ImmutableArray.Create(args);
         }
     }

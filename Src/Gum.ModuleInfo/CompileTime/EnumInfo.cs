@@ -7,17 +7,17 @@ using System.Text;
 
 namespace Gum.CompileTime
 {
-    //public struct EnumElemFieldInfo
-    //{
-    //    public TypeValue TypeValue { get; }
-    //    public string Name { get; }
+    public struct EnumElemFieldInfo
+    {
+        public TypeValue TypeValue { get; }
+        public string Name { get; }
 
-    //    public EnumElemFieldInfo(TypeValue typeValue, string name)
-    //    {
-    //        TypeValue = typeValue;
-    //        Name = name;
-    //    }
-    //}
+        public EnumElemFieldInfo(TypeValue typeValue, string name)
+        {
+            TypeValue = typeValue;
+            Name = name;
+        }
+    }
 
     //public struct EnumElemInfo
     //{
@@ -48,7 +48,7 @@ namespace Gum.CompileTime
 
     //        this.defaultElemInfo = elemInfos.First();
     //    }
-        
+
     //    public bool GetElemInfo(string idName, [NotNullWhen(true)] out EnumElemInfo? outElemInfo)
     //    {
     //        if (elemInfosByName.TryGetValue(idName, out var elemInfo))

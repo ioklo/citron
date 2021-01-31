@@ -326,24 +326,6 @@ namespace Gum.IR0
                     context.AddFuncDecl(funcPath.Value, bThisCall: false, funcDecl.TypeParams, parameters, bodyResult.Stmt);
                 }
             });
-        }        
-        
-        public MemberVarValue CheckInstanceMember(S.MemberExp memberExp, TypeValue objTypeValue)
-        {
-            // TODO: Func추가
-            NormalTypeValue? objNormalTypeValue = objTypeValue as NormalTypeValue;
-
-            if (objNormalTypeValue == null)
-                context.AddFatalError(A0301_MemberExp_InstanceTypeIsNotNormalType, memberExp, "멤버를 가져올 수 있는 타입이 아닙니다");
-
-            if (0 < memberExp.MemberTypeArgs.Length)
-                context.AddFatalError(A0302_MemberExp_TypeArgsForMemberVariableIsNotAllowed, memberExp, "멤버변수에는 타입인자를 붙일 수 없습니다");
-
-            var varValue = context.GetMemberVarValue(objNormalTypeValue, memberExp.MemberName);
-            if (varValue == null)
-                context.AddFatalError(A0303_MemberExp_MemberVarNotFound, memberExp, $"{memberExp.MemberName}은 {objNormalTypeValue}의 멤버가 아닙니다");
-
-            return varValue;
         }
 
         public MemberVarValue CheckStaticMember(S.MemberExp memberExp, NormalTypeValue objNormalTypeValue)
@@ -362,17 +344,17 @@ namespace Gum.IR0
             return varValue;
         }
 
-        void CheckParamTypes(S.ISyntaxNode nodeForErrorReport, IReadOnlyList<TypeValue> parameters, IReadOnlyList<TypeValue> args)
+        void CheckParamTypes(S.ISyntaxNode nodeForErrorReport, ImmutableArray<TypeValue> parameters, ImmutableArray<TypeValue> args)
         {
             bool bFatal = false;
 
-            if (parameters.Count != args.Count)
+            if (parameters.Length != args.Length)
             {
-                context.AddError(A0401_Parameter_MismatchBetweenParamCountAndArgCount, nodeForErrorReport, $"함수는 인자를 {parameters.Count}개 받는데, 호출 인자는 {args.Count} 개입니다");
+                context.AddError(A0401_Parameter_MismatchBetweenParamCountAndArgCount, nodeForErrorReport, $"함수는 인자를 {parameters.Length}개 받는데, 호출 인자는 {args.Length} 개입니다");
                 bFatal = true;
             }
 
-            for (int i = 0; i < parameters.Count; i++)
+            for (int i = 0; i < parameters.Length; i++)
             {
                 if (!context.IsAssignable(parameters[i], args[i]))
                 {

@@ -10,6 +10,16 @@ namespace Gum.IR0
 {
     partial class Analyzer
     {
+        struct LocalVarInfo
+        {   public string Name { get; }
+            public TypeValue TypeValue { get; }
+            public LocalVarInfo(string name, TypeValue typeValue)
+            {
+                Name = name;
+                TypeValue = typeValue;
+            }
+        }
+
         // 현재 분석되고 있는 함수 정보
         class FuncContext
         {
@@ -17,7 +27,7 @@ namespace Gum.IR0
             TypeValue? retTypeValue; // 리턴 타입이 미리 정해져 있다면 이걸 쓴다
             bool bSequence;          // 시퀀스 여부
 
-            ScopedDictionary<string, LocalVarOutsideLambdaInfo> localVarsOutsideLambda; // 람다 구문 바깥에 있는 로컬 변수, 캡쳐대상이다
+            ScopedDictionary<string, LocalVarInfo> localVarsOutsideLambda; // 람다 구문 바깥에 있는 로컬 변수, 캡쳐대상이다
             ScopedDictionary<string, LocalVarInfo> localVarsByName;
 
             public FuncContext(ItemPath? funcPath, TypeValue? retTypeValue, bool bSequence)
@@ -26,7 +36,7 @@ namespace Gum.IR0
                 this.retTypeValue = retTypeValue;
                 this.bSequence = bSequence;
 
-                this.localVarsOutsideLambda = new ScopedDictionary<string, LocalVarOutsideLambdaInfo>();
+                this.localVarsOutsideLambda = new ScopedDictionary<string, LocalVarInfo>();
                 this.localVarsByName = new ScopedDictionary<string, LocalVarInfo>();
             }
 
@@ -40,7 +50,7 @@ namespace Gum.IR0
                 return funcPath;
             }
 
-            public LocalVarOutsideLambdaInfo? GetLocalVarOutsideLambdaInfo(string varName)
+            public LocalVarInfo? GetLocalVarOutsideLambda(string varName)
             {
                 return localVarsOutsideLambda.GetValueOrDefault(varName);
             }
@@ -74,7 +84,7 @@ namespace Gum.IR0
 
                 // Merge
                 foreach (var (name, info) in localVarsByName)
-                    localVarsOutsideLambda.Add(name, new LocalVarOutsideLambdaInfo(info));
+                    localVarsOutsideLambda.Add(name, info);
                 
                 localVarsByName = new ScopedDictionary<string, LocalVarInfo>();
 
@@ -123,7 +133,7 @@ namespace Gum.IR0
                 }
             }
 
-            public IEnumerable<LocalVarOutsideLambdaInfo> GetLocalVarsOutsideLambda()
+            public IEnumerable<LocalVarInfo> GetLocalVarsOutsideLambda()
             {
                 return localVarsOutsideLambda.Select(kv => kv.Value);
             }

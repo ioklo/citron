@@ -37,7 +37,15 @@ namespace Gum.IR0
         }
     }
 
-    //
+    class StructValue : TypeValue
+    {
+        M.StructInfo structInfo;
+        ImmutableArray<TypeValue> typeArgs;
+        public MemberVarValue GetMemberVar();
+    }    
+    
+    // (struct, class, enum) (external/internal) (global/member) type
+
     class NormalTypeValue : TypeValue
     {
         M.ModuleName? moduleName;       // external global
@@ -91,6 +99,7 @@ namespace Gum.IR0
         }
     }
 
+    // S.First, S.Second(int i, short s)
     class EnumElemTypeValue : TypeValue
     {
         public NormalTypeValue EnumTypeValue { get; }

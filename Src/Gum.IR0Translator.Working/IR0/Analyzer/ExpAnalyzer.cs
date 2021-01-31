@@ -1,5 +1,4 @@
-﻿using Gum.CompileTime;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel;
@@ -15,12 +14,13 @@ using static Gum.Infra.CollectionExtensions;
 using static Gum.IR0.AnalyzeErrorCode;
 
 using S = Gum.Syntax;
+using M = Gum.CompileTime;
 using Pretune;
 using System.Diagnostics.Contracts;
 using Gum.Misc;
 
 namespace Gum.IR0
-{    
+{
     // 어떤 Exp에서 타입 정보 등을 알아냅니다
     partial class Analyzer
     {   
@@ -29,37 +29,34 @@ namespace Gum.IR0
         {
             public Exp Exp { get; }
             public TypeValue TypeValue { get; }
-        }
+        }        
 
         // x
         ExpResult AnalyzeIdExp(S.IdentifierExp idExp, TypeValue? hintType)
         {
-            var typeArgs = GetTypeValues(idExp.TypeArgs, context);
+            var result = ResolveIdentifierIdExp(idExp, hintType);
 
-            var idInfo = context.GetIdentifierInfo(idExp.Value, typeArgs, hintType);
-            if (idInfo == null)
-                context.AddFatalError(A0501_IdExp_VariableNotFound, idExp, $"{idExp.Value}을 찾을 수 없습니다");
-
-            switch (idInfo)
+            switch (result)
             {
-                case InternalGlobalVarInfo ig:         // x => global of this module
-                    return new ExpResult(new PrivateGlobalVarExp(ig.Name.ToString()), ig.TypeValue);
-                
-                case LocalVarOutsideLambdaInfo lv:
-                    // TODO: 여기서 이 변수가 캡쳐가 필요하다고 어딘가에 등록한다
-                    context.AddLocalVarNeedCapture(lv.Name);
-                    return new ExpResult(new LocalVarExp(lv.Name), lv.TypeValue);                    
+                case NotFoundErrorIdentifierResult _:
+                    context.AddFatalError(A0501_IdExp_VariableNotFound, idExp, $"{idExp.Value}을 찾을 수 없습니다");
+                    break;
 
-                case LocalVarInfo lv:                  // x => local x
-                    return new ExpResult(new LocalVarExp(lv.Name), lv.TypeValue);
-                
-                case ThisMemberInfo im:        // x => this.x or This.x
-                    // type은 어떻게 만드나
-                    //var containerType = context.GetType(sm.VarValue.Outer);
-                    //return new ExpResult(new StaticMemberExp(containerType, sm.VarValue.Name.ToString()), sm.TypeValue);
-                    throw new NotImplementedException();                    
+                case MultipleCandiatesErrorIdentifierResult _:
+                    context.AddFatalError(A0503_IdExp_MultipleCandidates, idExp, $"{idExp.Value}의 이름을 가진 함수, 변수를 하나로 결정할 수가 없습니다");
+                    break;
 
-                case EnumElemInfo enumElem:         // S => E.S, 힌트를 사용하면 나올 수 있다, ex) E e = S; 
+                case ExpIdentifierResult expResult:
+                    return new ExpResult(expResult.Exp, expResult.TypeValue);
+
+                case FuncIdentifierResult funcResult:
+                    throw new NotImplementedException();
+
+                case TypeIdentifierResult typeResult:
+                    context.AddFatalError(A0502_IdExp_CantUseTypeAsExpression, idExp, $"타입 {idExp.Value}을 식에서 사용할 수 없습니다");
+                    break;
+
+                case EnumElemIdentifierResult enumElemResult:
                     if (enumElem.IsStandalone)      // 인자 없이 있는 것
                     {
                         return new ExpResult(new NewEnumExp(enumElem.Name.ToString(), Array.Empty<NewEnumExp.Elem>()), enumElem.EnumTypeValue);
@@ -69,17 +66,6 @@ namespace Gum.IR0
                         // TODO: Func일때 감싸기
                         throw new NotImplementedException();
                     }
-
-                // 함수가 오면
-                // 1. hintType이 주어진 경우, 하나로 결정이 될 수 있다. Func<int, short> = F;
-                // 2. 없는 경우, var f = F; // F_int*int, F_short*int 라면 IFunc<int, int>, IFunc<short, int> 둘다 갖는 인터페이스를 생성한다 (TODO)
-                // TODO: Func일때 감싸기
-                case FuncInfo funcInfo:
-                    throw new NotImplementedException();
-
-                // 타입이 오면 에러
-                case TypeInfo typeInfo:
-                    context.AddFatalError(A0502_IdExp_CantUseTypeAsExpression, idExp, "타입을 식으로 사용했습니다");
                     break;
             }
 
@@ -324,74 +310,44 @@ namespace Gum.IR0
             context.AddFatalError(A0802_BinaryOp_OperatorNotFound, binaryOpExp, $"{operandResult0.TypeValue}와 {operandResult1.TypeValue}를 지원하는 연산자가 없습니다");
             return default; // suppress CS0161
         }
+        
+        //ExpResult AnalyzeCallExpEnumElemCallable(M.EnumElemInfo enumElem, ImmutableArray<ExpResult> argResults, S.CallExp nodeForErrorReport)
+        //{
+        //    // 인자 개수가 맞는지 확인
+        //    if (enumElem.FieldInfos.Length != argResults.Length)
+        //        context.AddFatalError(A0903_CallExp_MismatchEnumConstructorArgCount, nodeForErrorReport, "enum인자 개수가 맞지 않습니다");
 
-        ExpResult AnalyzeCallableIdentifierExp(S.IdentifierExp callableExp, ImmutableArray<ExpResult> argResults)
-        {   
-            // 1. this 검색
+        //    var members = new List<NewEnumExp.Elem>();
+        //    foreach (var (fieldInfo, argResult) in Zip(enumElem.FieldInfos, argResults))
+        //    {
+        //        var appliedTypeValue = context.Apply(enumElem.EnumTypeValue, fieldInfo.TypeValue);
+        //        if (!context.IsAssignable(appliedTypeValue, argResult.TypeValue))
+        //            context.AddFatalError(A0904_CallExp_MismatchBetweenEnumParamTypeAndEnumArgType, nodeForErrorReport, "enum의 {0}번째 인자 형식이 맞지 않습니다");
 
-            // 2. global 검색            
-            var globalFuncs = context.GetFuncs(NamespacePath.Root, callableExp.Value)
-                .Where(func => callableExp.TypeArgs.Length <= func.TypeParams.Length) // typeParam 개수가 typeArg 개수 보다 더 많거나 같아야 한다.
-                .ToImmutableArray();
+        //        var typeId = context.GetType(argResult.TypeValue);
+        //        members.Add(new NewEnumExp.Elem(fieldInfo.Name, new ExpInfo(argResult.Exp, typeId)));
+        //    }
 
-            if (0 < globalFuncs.Length)
-            {                
-                if (1 < globalFuncs.Length)
-                    context.AddFatalError(A0901_CallExp_ThereAreMultipleGlobalFunctionsHavingSameSignature, callableExp, $"이름이 {callableExp.Value}인 전역 함수가 여러 개 있습니다");
+        //    return new ExpResult(new NewEnumExp(enumElem.Name.ToString(), members), enumElem.EnumTypeValue);
+        //}
 
-                var globalFunc = globalFuncs[0];
-
-                var typeArgs = callableExp.TypeArgs.Select(typeArg => context.GetTypeValueByTypeExp(typeArg)).ToArray();
-
-                var funcValue = new FuncValue(globalFunc.GetId(), typeArgs);
-                var funcTypeValue = context.GetTypeValue(funcValue);
-
-                CheckParamTypes(callableExp, funcTypeValue.Params, argResults.Select(info => info.TypeValue).ToList());
-
-                // 내부함수라면
-                var globalFuncId = globalFunc.GetId();
-                if (ModuleInfoEqualityComparer.EqualsModuleName(globalFuncId.ModuleName, ModuleName.Internal))
-                {
-                    var funcDeclId = context.GetFuncDeclId(globalFunc.GetId());
-                    if (funcDeclId != null)
-                    {
-                        var args = argResults.Select(info =>
-                        {
-                            var typeId = context.GetType(info.TypeValue);
-                            return new ExpInfo(info.Exp, typeId);
-                        }).ToArray();
-
-                        return new ExpResult(
-                            new CallFuncExp(
-                                funcDeclId.Value,
-                                typeArgs.Select(typeArg => context.GetType(typeArg)),
-                                null,
-                                args),
-                            funcTypeValue);
-                    }
-                }
-                else // 외부함수 처리
-                {
-                    throw new NotImplementedException();
-                }
-            }
-
-            // 3. 일반 exp
-            return AnalyzeCallableElseExp(callableExp, argResults);
+        // CallExp분석에서 Callable이 Identifier인 경우 처리
+        ExpResult AnalyzeCallExpFuncCallable(FuncIdentifierResult funcResult, ImmutableArray<ExpResult> argResults)
+        {
+            
         }
 
-        ExpResult AnalyzeCallableElseExp(S.Exp callableExp, ImmutableArray<ExpResult> argResults)
+        // CallExp 분석에서 Callable이 Exp인 경우 처리
+        ExpResult AnalyzeCallExpExpCallable(Exp callable, TypeValue callableType, ImmutableArray<ExpResult> argResults, S.CallExp nodeForErrorReport)
         {
-            var callableExpResult = AnalyzeExp(callableExp, null);
-
-            var funcTypeValue = callableExpResult.TypeValue as FuncTypeValue;
+            var funcTypeValue = callableType as FuncTypeValue;
             if (funcTypeValue == null)
-                context.AddFatalError(A0902_CallExp_CallableExpressionIsNotCallable, callableExp, $"호출 가능한 타입이 아닙니다");
+                context.AddFatalError(A0902_CallExp_CallableExpressionIsNotCallable, nodeForErrorReport.Callable, $"호출 가능한 타입이 아닙니다");
 
-            CheckParamTypes(callableExp, funcTypeValue.Params, argResults.Select(info => info.TypeValue).ToList());
+            var argTypes = ImmutableArray.CreateRange(argResults, info => info.TypeValue);
+            CheckParamTypes(nodeForErrorReport, funcTypeValue.Params, argTypes);
 
             var callableTypeId = context.GetType(funcTypeValue);
-
             var args = argResults.Select(info =>
             {
                 var typeId = context.GetType(info.TypeValue);
@@ -400,20 +356,8 @@ namespace Gum.IR0
 
             // TODO: 사실 Type보다 Allocation정보가 들어가야 한다
             return new ExpResult(
-                new CallValueExp(new ExpInfo(callableExpResult.Exp, callableTypeId), args),
+                new CallValueExp(new ExpInfo(callable, callableTypeId), args),
                 funcTypeValue);
-        }
-        
-        // FuncValue도 같이 리턴한다
-        // CallExp(F, [1]); // F(1)
-        //   -> AnalyzeCallableExp(F, [Int])
-        //        -> FuncValue(
-        ExpResult AnalyzeCallableExp(S.Exp exp, ImmutableArray<ExpResult> argResults)
-        {
-            if (exp is S.IdentifierExp idExp)
-                return AnalyzeCallableIdentifierExp(idExp, argResults);
-            else
-                return AnalyzeCallableElseExp(exp, argResults);
         }
         
         ExpResult AnalyzeCallExp(S.CallExp exp, TypeValue? hintTypeValue) 
@@ -423,40 +367,36 @@ namespace Gum.IR0
             // 2. Callable 인자에 맞게 잘 들어갔는지 -> 완료
             // 3. 잘 들어갔다면 리턴타입 -> 완료
             var argResults = AnalyzeExps(exp.Args);
+            var argTypes = ImmutableArray.CreateRange(argResults, result => result.TypeValue);
 
-            // Enum인지 확인
-            if (exp.Callable is S.IdentifierExp idExp)
+            var callableResult = IdentifierResolver.Resolve(exp.Callable, argTypes, context);
+
+            switch(callableResult)
             {
-                var typeArgs = GetTypeValues(idExp.TypeArgs, context);
-                if (context.GetIdentifierInfo(idExp.Value, typeArgs, hintTypeValue, out var idInfo))
-                {
-                    if (idInfo is IdentifierInfo.EnumElem enumElem)
-                    {
-                        // typeArgs가 있으면 enumElem을 주지 않는다
-                        Debug.Assert(idExp.TypeArgs.Length == 0);
+                case NotFoundErrorIdentifierResult _:
+                    context.AddFatalError();
+                    break;
 
-                        // 인자 개수가 맞는지 확인
-                        if (enumElem.ElemInfo.FieldInfos.Length != argResults.Length)
-                            context.AddFatalError(A0903_CallExp_MismatchEnumConstructorArgCount, exp, "enum인자 개수가 맞지 않습니다");
+                case MultipleCandiatesErrorIdentifierResult _:
+                    context.AddFatalError();
+                    break;
 
-                        var members = new List<NewEnumExp.Elem>();
-                        foreach (var (fieldInfo, argResult) in Zip(enumElem.ElemInfo.FieldInfos, argResults))
-                        {
-                            var appliedTypeValue = context.Apply(enumElem.EnumTypeValue, fieldInfo.TypeValue);
-                            if (!context.IsAssignable(appliedTypeValue, argResult.TypeValue))
-                                context.AddFatalError(A0904_CallExp_MismatchBetweenEnumParamTypeAndEnumArgType, exp, "enum의 {0}번째 인자 형식이 맞지 않습니다");
+                case ExpIdentifierResult expResult:
+                    return AnalyzeCallExpExpCallable(expResult.Exp, expResult.TypeValue, argResults, exp);
 
-                            var typeId = context.GetType(argResult.TypeValue);
-                            members.Add(new NewEnumExp.Elem(fieldInfo.Name, new ExpInfo(argResult.Exp, typeId)));
-                        }
+                case FuncIdentifierResult funcResult:
+                    return AnalyzeCallExpFuncCallable();
 
-                        return new ExpResult(new NewEnumExp(enumElem.ElemInfo.Name, members), enumElem.EnumTypeValue);
-                    }
-                }
+                case TypeIdentifierResult typeResult:
+                    context.AddFatalError(A0902_CallExp_CallableExpressionIsNotCallable, exp.Callable, "");
+                    break;
+
+                case EnumElemIdentifierResult enumElemResult:
+                    throw new NotImplementedException();
+                    // return AnalyzeCallExpEnumElemCallable(enumElemResult.Info, );
             }
 
-            // 'f'(), 'F'(), 'GetFunc()'()
-            return AnalyzeCallableExp(exp.Callable, argResults);
+            throw new UnreachableCodeException();
         }
         
         ExpResult AnalyzeLambdaExp(S.LambdaExp exp)
@@ -526,11 +466,71 @@ namespace Gum.IR0
             //outExp = result.Value.Exp;
             //outTypeValue = result.Value.TypeValue.Return;
             //return true;
+        }        
+
+        ExpResult AnalyzeMemberExpExpParent(S.MemberExp memberExp, Exp parentExp, TypeValue parentType, TypeValue? hintType)
+        {
+            NormalTypeValue? parentNormalType = parentType as NormalTypeValue;
+
+            if (parentNormalType == null)
+                context.AddFatalError(A0301_MemberExp_InstanceTypeIsNotNormalType, memberExp, "멤버를 가져올 수 있는 타입이 아닙니다");
+
+            // MemberResolver
+            
+
+            if (0 < memberExp.MemberTypeArgs.Length)
+                context.AddFatalError(A0302_MemberExp_TypeArgsForMemberVariableIsNotAllowed, memberExp, "멤버변수에는 타입인자를 붙일 수 없습니다");
+
+            var varValue = context.GetMemberVarValue(parentNormalType, memberExp.MemberName);
+            if (varValue == null)
+                context.AddFatalError(A0303_MemberExp_MemberVarNotFound, memberExp, $"{memberExp.MemberName}은 {parentNormalType}의 멤버가 아닙니다");
+
+            return varValue;
+
+            var memberVar = GetInstanceMember(memberExp, parentType);
+
+            // instance이지만 static 이라면, exp는 실행하고, static변수에서 가져온다
+            var nodeInfo = IsVarStatic(varValue.VarId, context)
+                ? MemberExpInfo.MakeStatic(objTypeValue, varValue)
+                : MemberExpInfo.MakeInstance(objTypeValue, memberExp.MemberName);
+
+            var typeValue = context.TypeValueService.GetTypeValue(varValue);
+
+            return new ExpResult(nodeInfo, typeValue);
         }
 
-        ExpResult AnalyzeMemberExp(S.MemberExp memberExp)
+        // parent."x"<>
+        ExpResult AnalyzeMemberExp(S.MemberExp memberExp, TypeValue? hintType)
         {
-            throw new NotImplementedException();
+            var identifierResult = ResolveIdentifier(memberExp, hintType);
+
+            switch(identifierResult)
+            {
+                case NotFoundErrorIdentifierResult _:
+                    context.AddFatalError();
+                    break;
+
+                case MultipleCandiatesErrorIdentifierResult _:
+                    context.AddFatalError();
+                    break;
+
+                case ExpIdentifierResult expResult:
+                    return AnalyzeMemberExpExpParent(expResult.Exp, expResult.TypeValue, hintType);
+
+                case TypeIdentifierResult typeResult:
+                    return AnalyzeMemberExpTypeParent(typeResult.TypeValue);
+
+                case FuncIdentifierResult funcResult:
+                    // 함수는 멤버변수를 가질 수 없습니다
+                    context.AddFatalError();
+                    break;
+
+                case EnumElemIdentifierResult enumElemResult:
+                    // 힌트 없이 EnumElem이 나올 수가 없다
+                    break;
+            }
+
+            throw new UnreachableCodeException();
 
             //var memberExpAnalyzer = new MemberExpAnalyzer(analyzer, memberExp);
             //var result = memberExpAnalyzer.Analyze();

@@ -321,7 +321,6 @@ namespace Gum
 
                 case (CallExp callExpX, CallExp callExpY):
                     return EqualsExp(callExpX.Callable, callExpY.Callable) &&
-                        callExpX.TypeArgs.SequenceEqual(callExpY.TypeArgs, Instance) &&
                         callExpX.Args.SequenceEqual(callExpY.Args, Instance);
 
                 case (LambdaExp lambdaExpX, LambdaExp lambdaExpY):

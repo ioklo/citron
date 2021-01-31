@@ -201,7 +201,7 @@ namespace Gum
                 // (..., ... )                
                 if (Parse(await ParseCallArgs(context), ref context, out var callArgs))
                 {                    
-                    exp = new CallExp(exp, ImmutableArray<TypeExp>.Empty, callArgs);
+                    exp = new CallExp(exp, callArgs);
                     continue;
                 }
 

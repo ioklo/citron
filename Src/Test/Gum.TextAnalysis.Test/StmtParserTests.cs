@@ -124,7 +124,7 @@ for (f(); g; h + g) ;
             var result = await parser.ParseForStmtAsync(context);
 
             var expected = new ForStmt(
-                new ExpForStmtInitializer(new CallExp(new IdentifierExp("f"), Enumerable.Empty<TypeExp>())),
+                new ExpForStmtInitializer(new CallExp(new IdentifierExp("f"))),
                 new IdentifierExp("g"),
                 new BinaryOpExp(BinaryOpKind.Add, new IdentifierExp("h"), new IdentifierExp("g")),
                 BlankStmt.Instance);
@@ -183,7 +183,7 @@ for (f(); g; h + g) ;
                 new IdentifierExp("a"),
                 new BinaryOpExp(BinaryOpKind.Multiply,
                     new IdentifierExp("b"),
-                    new CallExp(new IdentifierExp("c"), Enumerable.Empty<TypeExp>(), new IntLiteralExp(1)))));
+                    new CallExp(new IdentifierExp("c"), new IntLiteralExp(1)))));
                 
 
             Assert.Equal(expected, expResult.Elem, SyntaxEqualityComparer.Instance);

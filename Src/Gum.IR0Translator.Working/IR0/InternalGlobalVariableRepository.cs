@@ -5,8 +5,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using M = Gum.CompileTime;
+
 namespace Gum.IR0
 {
+    class InternalGlobalVarInfo
+    {
+        public M.Name Name { get; }
+        public TypeValue TypeValue { get; }
+
+        public InternalGlobalVarInfo(M.Name name, TypeValue typeValue) { Name = name; TypeValue = typeValue; }
+    }
+
     class InternalGlobalVariableRepository : IInternalGlobalVariableRepository
     {
         // global variable        

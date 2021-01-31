@@ -41,6 +41,7 @@ namespace Gum.IR0
 
         A0501_IdExp_VariableNotFound,
         A0502_IdExp_CantUseTypeAsExpression,
+        A0503_IdExp_MultipleCandidates,
 
         A0601_UnaryAssignOp_IntTypeIsAllowedOnly,
         A0602_UnaryAssignOp_AssignableExpressionIsAllowedOnly,
@@ -85,6 +86,9 @@ namespace Gum.IR0
         A1802_ForeachStmt_MismatchBetweenElemTypeAndIteratorElemType,
 
         A1901_StringExp_ExpElementShouldBeBoolOrIntOrString, // TODO: 보다 일반적으로 바뀌어야 한다. ToString을 구현한 애들이 가능
+
+        // A2001_Identifier_MultipleCandidatesForIdentifier,
+
         A9901_NotSupported_LambdaParameterInference
 
     }

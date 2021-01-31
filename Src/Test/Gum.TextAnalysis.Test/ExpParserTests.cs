@@ -89,7 +89,7 @@ namespace Gum
 
             var expected = new UnaryOpExp(UnaryOpKind.PostfixInc,
                 new BinaryOpExp(BinaryOpKind.Modulo,
-                    new CallExp(new UnaryOpExp(UnaryOpKind.PostfixInc, new IdentifierExp("c")), Enumerable.Empty<TypeExp>(), new IdentifierExp("e"), new IdentifierExp("f")),
+                    new CallExp(new UnaryOpExp(UnaryOpKind.PostfixInc, new IdentifierExp("c")), new IdentifierExp("e"), new IdentifierExp("f")),
                     new IdentifierExp("d")));
 
             Assert.Equal(expected, expResult.Elem, SyntaxEqualityComparer.Instance);
