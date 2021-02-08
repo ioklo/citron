@@ -147,15 +147,13 @@ namespace Gum.IR0
     // F(2, 3)
     public class CallFuncExp : Exp
     {
-        public FuncDeclId FuncDeclId { get; }
-        public ImmutableArray<Type> TypeArgs { get; }
+        public FuncDeclId FuncDeclId { get; } // TypeArgs를 포함하는 FuncDeclId        
         public ExpInfo? Instance { get; }
         public ImmutableArray<ExpInfo> Args { get; }
 
-        public CallFuncExp(FuncDeclId funcDeclId, IEnumerable<Type> typeArgs, ExpInfo? instance, IEnumerable<ExpInfo> args)
+        public CallFuncExp(FuncDeclId funcDeclId, ExpInfo? instance, IEnumerable<ExpInfo> args)
         {
-            FuncDeclId = funcDeclId;
-            TypeArgs = typeArgs.ToImmutableArray();
+            FuncDeclId = funcDeclId;            
             Instance = instance;
             Args = args.ToImmutableArray();
         }
@@ -163,15 +161,13 @@ namespace Gum.IR0
 
     public class CallSeqFuncExp : Exp
     {
-        public FuncDeclId FuncDeclId{ get; }
-        public ImmutableArray<Type> TypeArgs { get; }
+        public FuncDeclId FuncDeclId { get; } // TypeArgs를 포함하는 FuncDeclId
         public ExpInfo? Instance { get; }
         public ImmutableArray<ExpInfo> Args { get; }
 
-        public CallSeqFuncExp(FuncDeclId funcDeclId, IEnumerable<Type> typeArgs, ExpInfo? instance, IEnumerable<ExpInfo> args)
+        public CallSeqFuncExp(FuncDeclId funcDeclId, ExpInfo? instance, IEnumerable<ExpInfo> args)
         {
             FuncDeclId = funcDeclId;
-            TypeArgs = typeArgs.ToImmutableArray();
             Instance = instance;
             Args = args.ToImmutableArray();
         }

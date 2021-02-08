@@ -18,7 +18,7 @@ namespace Gum.IR0
     // => (internal/external) (root/member)
 
     // X<int>.Y<short>.F_T_int_int<S>
-    class FuncValue
+    class FuncValue : ItemValue
     {
         // X<int>.Y<short>
         M.ModuleName? moduleName;       // external root일 경우에만 존재
@@ -30,6 +30,9 @@ namespace Gum.IR0
         M.FuncInfo funcInfo;
 
         ImmutableArray<TypeValue> typeArgs;
+
+        public bool IsStatic { get => !funcInfo.IsInstanceFunc; }
+        public bool IsSequence { get => funcInfo.IsSequenceFunc; }
 
         // external root
         public FuncValue(M.ModuleName moduleName, M.NamespacePath namespacePath, M.FuncInfo funcInfo, ImmutableArray<TypeValue> typeArgs)
@@ -57,6 +60,7 @@ namespace Gum.IR0
             this.typeArgs = typeArgs;
         }
 
-        
+                
+
     }
 }

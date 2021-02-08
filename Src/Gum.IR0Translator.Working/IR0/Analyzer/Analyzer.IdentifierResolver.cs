@@ -7,6 +7,7 @@ using static Gum.IR0.Analyzer.Misc;
 using S = Gum.Syntax;
 using M = Gum.CompileTime;
 using Gum.Misc;
+using System.Diagnostics;
 
 namespace Gum.IR0
 {
@@ -15,41 +16,104 @@ namespace Gum.IR0
         IdentifierResult ResolveIdentifierIdExp(S.IdentifierExp idExp, TypeValue? hintTypeValue)
         {
             var typeArgs = GetTypeValues(idExp.TypeArgs, context);
-            var resolver = new IdentifierResolver(idExp.Value, typeArgs, hintTypeValue, context);
+            var resolver = new IdExpIdentifierResolver(idExp.Value, typeArgs, hintTypeValue, context);
             return resolver.Resolve();
-        }
+        }        
 
+        Exp BuildMemberExp(Exp parent, TypeValue parentType, string memberName)
+        {
+            switch(parentType)
+            {
+                case ClassTypeValue _: return new ClassMemberExp(parent, memberName);
+                case StructTypeValue _: return new StructMemberExp(parent, memberName);
+                case EnumElemTypeValue _: return new EnumMemberExp(parent, memberName);
+            }
+
+            throw new UnreachableCodeException();
+        }
+        
+        // e.x 꼴
         IdentifierResult ResolveIdentifierMemberExpExpParent(Exp parent, TypeValue parentType, string memberName, ImmutableArray<TypeValue> typeArgs, TypeValue? hintType)
         {
-            // Assert.Debug(TypeValue.ConstraintMemberNameMapsEitherVarOrFuncs);
+            // 해당 이름의 타입, 변수, 함수
+            var member = parentType.GetMember(memberName, typeArgs, hintType);
 
-            // memberName
-            if (typeArgs.Length == 0)
+            switch(member)
             {
-                // e.y
-                ClassValue cv = parentType.GetClassValue();
-                
-                if (cv == null)
-                {
-                    cv.GetMemberVar(memberName);
-                }
+                case MultipleCandidatesItemResult:
+                    return MultipleCandiatesErrorIdentifierResult.Instance;
 
-                var memberVar = parentType.GetMemberVar(memberName);
-                {
-                    new ExpIdentifierResult(new ClassMemberExp(parent, memberName), memberType);
-                }
+                case NotFoundItemResult:
+                    return NotFoundIdentifierResult.Instance;
 
-                // e.i
-                EnumElemTypeValue ee;
+                case ValueItemResult itemResult:
+                    switch(itemResult.ItemValue)
+                    {
+                        case TypeValue:
+                            return CantGetTypeMemberThroughInstanceIdentifierResult.Instance;
+
+                        case FuncValue funcValue:
+                            if (funcValue.IsStatic)
+                                return CantGetStaticMemberThroughInstanceIdentifierResult.Instance;
+
+                            return new FuncIdentifierResult(funcValue);
+
+                        case MemberVarValue memberVarValue:
+                            if (memberVarValue.IsStatic)
+                                return CantGetStaticMemberThroughInstanceIdentifierResult.Instance;
+
+                            var exp = BuildMemberExp(parent, parentType, memberName);
+                            return new ExpIdentifierResult(exp, memberVarValue.TypeValue);
+
+                        default:
+                            throw new UnreachableCodeException();
+                    }
             }
 
-            // e.F
-            foreach(var memberFunc in parentType.GetMemberFuncs(memberName))
+            throw new UnreachableCodeException();
+        }
+
+        // T.x 꼴
+        IdentifierResult ResolveIdentifierMemberExpTypeParent(TypeValue parentType, string memberName, ImmutableArray<TypeValue> typeArgs, TypeValue? hintType)
+        {
+            var member = parentType.GetMember(memberName, typeArgs, hintType);
+
+            switch (member)
             {
+                case NotFoundItemResult:
+                    return NotFoundIdentifierResult.Instance;
 
+                case MultipleCandidatesItemResult:
+                    return MultipleCandiatesErrorIdentifierResult.Instance;
+
+                case ValueItemResult itemResult:
+                    switch(itemResult.ItemValue)
+                    {
+                        case TypeValue typeValue: return new TypeIdentifierResult(typeValue);
+                        case FuncValue funcValue:
+
+                            if (!funcValue.IsStatic)
+                                return CantGetInstanceMemberThroughTypeIdentifierResult.Instance;
+
+                            return new FuncIdentifierResult(funcValue);
+
+                        case MemberVarValue memberVarValue:
+
+                            if (!memberVarValue.IsStatic)
+                                return CantGetInstanceMemberThroughTypeIdentifierResult.Instance;
+
+                            var rparentType = context.GetType(parentType);
+
+                            var exp = new StaticMemberExp(rparentType, memberName);
+                            return new ExpIdentifierResult(exp, memberVarValue.TypeValue);
+
+                        default:
+                            throw new UnreachableCodeException();
+                    }
+
+                default:
+                    throw new UnreachableCodeException();
             }
-
-            // TODO: hint 매칭
         }
 
         IdentifierResult ResolveIdentifierMemberExp(S.MemberExp memberExp, TypeValue? hintType)
@@ -61,17 +125,16 @@ namespace Gum.IR0
 
             switch (parentResult)
             {
-                case NotFoundErrorIdentifierResult _:
-                case MultipleCandiatesErrorIdentifierResult _:
+                case ErrorIdentifierResult _:
                     return parentResult;
 
                 case ExpIdentifierResult expResult:
                     return ResolveIdentifierMemberExpExpParent(expResult.Exp, expResult.TypeValue, memberExp.MemberName, typeArgs, hintType);
 
                 case TypeIdentifierResult typeResult:
-                    return ResolveIdentifierMemberExpTypeParent(typeResult.TypeValue);
+                    return ResolveIdentifierMemberExpTypeParent(typeResult.TypeValue, memberExp.MemberName, typeArgs, hintType);
 
-                case FuncIdentifierResult funcResult:
+                case FuncIdentifierResult _:
                     // 함수는 멤버변수를 가질 수 없습니다
                     return FuncCantHaveMemberErrorIdentifierResult.Instance;
 
@@ -79,17 +142,19 @@ namespace Gum.IR0
                     // 힌트 없이 EnumElem이 나올 수가 없다
                     throw new UnreachableCodeException();
             }
+
+            throw new UnreachableCodeException();
         }
 
         IdentifierResult ResolveIdentifier(S.Exp exp, TypeValue? hintTypeValue)
         {
             if (exp is S.IdentifierExp idExp)
             {
-                return ResolveIdentifier(idExp, hintTypeValue);
+                return ResolveIdentifierIdExp(idExp, hintTypeValue);
             }
             else if (exp is S.MemberExp memberExp)
             {
-                return ResolveIdentifier(memberExp, hintTypeValue);
+                return ResolveIdentifierMemberExp(memberExp, hintTypeValue);
             }
             else
             {
@@ -98,14 +163,14 @@ namespace Gum.IR0
             }
         }
 
-        struct IdentifierResolver
+        struct IdExpIdentifierResolver
         {
             string idName;
             ImmutableArray<TypeValue> typeArgs;
             TypeValue? hintTypeValue;
             Context context;
 
-            public IdentifierResolver(string idName, ImmutableArray<TypeValue> typeArgs, TypeValue? hintTypeValue, Context context)
+            public IdExpIdentifierResolver(string idName, ImmutableArray<TypeValue> typeArgs, TypeValue? hintTypeValue, Context context)
             {
                 this.idName = idName;
                 this.typeArgs = typeArgs;
@@ -113,140 +178,138 @@ namespace Gum.IR0
                 this.context = context;
             }
 
-            ExpIdentifierResult? GetLocalVarOutsideLambdaInfo()
+            IdentifierResult GetLocalVarOutsideLambdaInfo()
             {
                 // 지역 스코프에는 변수만 있고, 함수, 타입은 없으므로 이름이 겹치는 것이 있는지 검사하지 않아도 된다
-                if (typeArgs.Length != 0) return null;
+                if (typeArgs.Length != 0) return NotFoundIdentifierResult.Instance;
 
                 var varInfo = context.GetLocalVarOutsideLambda(idName);
-                if (varInfo == null) return null;
+                if (varInfo == null) return NotFoundIdentifierResult.Instance;
 
                 return new ExpIdentifierResult(new LocalVarExp(varInfo.Value.Name), varInfo.Value.TypeValue);
             }
 
-            ExpIdentifierResult? GetLocalVarInfo()
+            IdentifierResult GetLocalVarInfo()
             {
                 // 지역 스코프에는 변수만 있고, 함수, 타입은 없으므로 이름이 겹치는 것이 있는지 검사하지 않아도 된다
-                if (typeArgs.Length != 0) return null;
+                if (typeArgs.Length != 0) return NotFoundIdentifierResult.Instance;
 
                 var varInfo = context.GetLocalVar(idName);
-                if (varInfo == null) return null;
+                if (varInfo == null) return NotFoundIdentifierResult.Instance;
 
                 return new ExpIdentifierResult(new LocalVarExp(varInfo.Value.Name), varInfo.Value.TypeValue);
             }
 
-            ExpIdentifierResult? GetThisMemberInfo()
+            IdentifierResult GetThisMemberInfo()
             {
                 // TODO: implementation
-                return null;
+                return NotFoundIdentifierResult.Instance;
             }
 
-            ExpIdentifierResult? GetInternalGlobalVarInfo()
+            IdentifierResult GetInternalGlobalVarInfo()
             {
-                if (typeArgs.Length != 0) return null;
+                if (typeArgs.Length != 0) return NotFoundIdentifierResult.Instance;
 
                 var varInfo = context.GetInternalGlobalVarInfo(idName);
-                if (varInfo == null) return null;
+                if (varInfo == null) return NotFoundIdentifierResult.Instance;
 
                 return new ExpIdentifierResult(new PrivateGlobalVarExp(varInfo.Name.ToString()), varInfo.TypeValue);
             }
-
-
-            TypeIdentifierResult? GetInternalGlobalTypeInfo(M.NamespacePath namespacePath)
+            
+            IdentifierResult GetGlobalInfo()
             {
-                var typeValue = context.GetInternalGlobalType(namespacePath, idName, typeArgs);
-                if (typeValue == null) return null;
-
-                return new TypeIdentifierResult(typeValue);
-            }
-
-            IEnumerable<FuncIdentifierResult> GetInternalGlobalFuncInfos(M.NamespacePath namespacePath)
-            {
-                return context.GetInternalGlobalFuncInfos(namespacePath, idName, typeArgs).Select(fv => new FuncIdentifierResult(fv));
-            }
-
-            IEnumerable<TypeIdentifierResult> GetExternalGlobalTypeInfos(M.NamespacePath namespacePath)
-            {
-                throw new NotImplementedException();
-            }
-
-            IEnumerable<FuncIdentifierResult> GetExternalGlobalFuncInfos(M.NamespacePath namespacePath)
-            {
-                throw new NotImplementedException();
-            }
-
-            IdentifierResult? GetGlobalInfo(string idName, ImmutableArray<TypeValue> typeArgs, TypeValue? hintTypeValue)
-            {
-                var candidates = new List<IdentifierResult>();
-
-                var curNamespacePath = M.NamespacePath.Root;
-
-                var internalGlobalTypeInfo = GetInternalGlobalTypeInfo(curNamespacePath);
-                if (internalGlobalTypeInfo != null)
-                    candidates.Add(internalGlobalTypeInfo);
-
-                var internalGlobalFuncInfos = GetInternalGlobalFuncInfos(curNamespacePath);
-                candidates.AddRange(internalGlobalFuncInfos);
-
-                var externalGlobalTypeInfos = GetExternalGlobalTypeInfos(curNamespacePath);
-                candidates.AddRange(externalGlobalTypeInfos);
-
-                var externalGlobalFuncInfos = GetExternalGlobalFuncInfos(curNamespacePath);
-                candidates.AddRange(externalGlobalFuncInfos);
-
-                // 힌트가 E고, First가 써져 있으면 E.First를 검색한다
-                // enum 힌트 사용, typeArgs가 있으면 지나간다
-                if (hintTypeValue is NormalTypeValue hintNTV)
+                // TODO: outer namespace까지 다 돌아야 한다
+                var curNamespacePath = M.NamespacePath.Root; 
+                var globalResult = context.GetGlobalItem(curNamespacePath, idName, typeArgs, hintTypeValue);
+                if (globalResult is ValueItemResult itemResult)
                 {
-                    // First<T> 같은건 없기 때문에 없을때만 검색한다
-                    if (typeArgs.Length == 0)
+                    switch(itemResult.ItemValue)
                     {
-                        var enumInfo = hintNTV.GetEnumInfo();
-                        if (enumInfo != null)
-                        {
-                            if (enumInfo.GetElemInfo(idName, out var elemInfo))
-                            {
-                                var idInfo = new EnumElemIdentifierResult(hintNTV, elemInfo.Value);
-                                candidates.Add(idInfo);
-                            }
-                        }
+                        case TypeValue typeValue: return new TypeIdentifierResult(typeValue);
+                        case FuncValue funcValue: return new FuncIdentifierResult(funcValue);
+                        default: throw new UnreachableCodeException();
                     }
                 }
 
-                if (candidates.Count == 1)
-                    return candidates[0];
+                if (globalResult is NotFoundItemResult) return NotFoundIdentifierResult.Instance;
+                if (globalResult is MultipleCandidatesItemResult) return MultipleCandiatesErrorIdentifierResult.Instance;
 
-                if (2 <= candidates.Count)
-                    return MultipleCandiatesErrorIdentifierResult.Instance;
-
-                return null;
+                throw new UnreachableCodeException();
             }
-            public IdentifierResult Resolve()
+
+            IdentifierResult ResolveScope()
             {
                 // 0. local 변수, local 변수에서는 힌트를 쓸 일이 없다
                 var localVarInfo = GetLocalVarInfo();
-                if (localVarInfo != null) return localVarInfo;
+                if (localVarInfo != NotFoundIdentifierResult.Instance) return localVarInfo;
 
                 // 1. 람다 바깥의 local 변수
                 var localOutsideInfo = GetLocalVarOutsideLambdaInfo();
-                if (localOutsideInfo != null) return localOutsideInfo;
+                if (localOutsideInfo != NotFoundIdentifierResult.Instance) return localOutsideInfo;
 
                 // 2. thisType의 {{instance, static} * {변수, 함수}}, 타입. 아직 지원 안함
                 // 힌트는 오버로딩 함수 선택에 쓰일수도 있고,
                 // 힌트가 thisType안의 enum인 경우 elem을 선택할 수도 있다
                 var thisMemberInfo = GetThisMemberInfo();
-                if (thisMemberInfo != null) return thisMemberInfo;
+                if (thisMemberInfo != NotFoundIdentifierResult.Instance) return thisMemberInfo;
 
                 // 3. internal global 'variable', 변수이므로 힌트를 쓸 일이 없다
                 var internalGlobalVarInfo = GetInternalGlobalVarInfo();
-                if (internalGlobalVarInfo != null) return internalGlobalVarInfo;
+                if (internalGlobalVarInfo != NotFoundIdentifierResult.Instance) return internalGlobalVarInfo;
 
                 // 4. 네임스페이스 -> 바깥 네임스페이스 -> module global, 함수, 타입, 
                 // 오버로딩 함수 선택, hint가 global enum인 경우, elem선택
-                var externalGlobalInfo = GetGlobalInfo(idName, typeArgs, hintTypeValue);
-                if (externalGlobalInfo != null) return externalGlobalInfo;
+                var externalGlobalInfo = GetGlobalInfo();
+                if (externalGlobalInfo != NotFoundIdentifierResult.Instance) return externalGlobalInfo;
 
-                return NotFoundErrorIdentifierResult.Instance;
+                return NotFoundIdentifierResult.Instance;
+            }
+
+            IdentifierResult ResolveEnumHint()
+            {
+                // TODO:
+                return NotFoundIdentifierResult.Instance;
+
+                // 힌트가 E고, First가 써져 있으면 E.First를 검색한다
+                // enum 힌트 사용, typeArgs가 있으면 지나간다
+                //if (hintTypeValue is EnumValue hintEnum)
+                //{
+                //    // First<T> 같은건 없기 때문에 없을때만 검색한다
+                //    if (typeArgs.Length == 0)
+                //    {
+                //        if (hintEnum.GetElem(idName, out var elemInfo))
+                //        {
+                //            var idInfo = new EnumElemIdentifierResult(hintNTV, elemInfo.Value);
+                //            candidates.Add(idInfo);
+                //        }
+                //    }
+                //}
+                
+            }
+
+            public IdentifierResult Resolve()
+            {
+                // (로컬/글로벌/멤버)와 enum 힌트는 동급이다
+                // E First;
+                // E e = First; // 누구 말을 들을것인가, 에러.. local First를 지칭할 방법은? local.First, E.First
+
+                var candidates = new Candidates<IdentifierResult>();
+
+                // 로컬 -> ... -> 글로벌
+                var scopeResult = ResolveScope();
+                if (scopeResult is ValidIdentifierResult) candidates.Add(scopeResult);
+                if (scopeResult != NotFoundIdentifierResult.Instance) return scopeResult;
+
+                // enum 힌트
+                var enumResult = ResolveEnumHint();
+                if (enumResult is ValidIdentifierResult) candidates.Add(scopeResult);
+                if (enumResult != NotFoundIdentifierResult.Instance) return enumResult;
+
+                var result = candidates.GetSingle();
+                if (result != null) return result;
+                if (candidates.IsEmpty) return NotFoundIdentifierResult.Instance;
+                if (candidates.HasMultiple) return MultipleCandiatesErrorIdentifierResult.Instance;
+                throw new UnreachableCodeException();
             }
         }
     }

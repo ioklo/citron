@@ -10,20 +10,48 @@ namespace Gum.IR0
     abstract class IdentifierResult
     {   
     }
-    class NotFoundErrorIdentifierResult : IdentifierResult
+
+    // Error, Valid, NotFound
+    abstract class ErrorIdentifierResult : IdentifierResult { }
+    abstract class ValidIdentifierResult : IdentifierResult { }
+    class NotFoundIdentifierResult : IdentifierResult
     {
-        public static readonly NotFoundErrorIdentifierResult Instance = new NotFoundErrorIdentifierResult();
-        private NotFoundErrorIdentifierResult() { }
+        public static readonly NotFoundIdentifierResult Instance = new NotFoundIdentifierResult();
+        private NotFoundIdentifierResult() { }
     }
 
     // TODO: 추후 에러 메세지를 자세하게 만들게 하기 위해 singleton이 아니게 될 수 있다
-    class MultipleCandiatesErrorIdentifierResult : IdentifierResult
+    class MultipleCandiatesErrorIdentifierResult : ErrorIdentifierResult
     {
         public static readonly MultipleCandiatesErrorIdentifierResult Instance = new MultipleCandiatesErrorIdentifierResult();
         private MultipleCandiatesErrorIdentifierResult() { }
     }
-    
-    class ExpIdentifierResult  : IdentifierResult
+
+    class CantGetStaticMemberThroughInstanceIdentifierResult : ErrorIdentifierResult
+    {
+        public static readonly CantGetStaticMemberThroughInstanceIdentifierResult Instance = new CantGetStaticMemberThroughInstanceIdentifierResult();
+        private CantGetStaticMemberThroughInstanceIdentifierResult() { }
+    }
+
+    class CantGetTypeMemberThroughInstanceIdentifierResult : ErrorIdentifierResult
+    {
+        public static readonly CantGetTypeMemberThroughInstanceIdentifierResult Instance = new CantGetTypeMemberThroughInstanceIdentifierResult();
+        private CantGetTypeMemberThroughInstanceIdentifierResult() { }
+    }
+
+    class CantGetInstanceMemberThroughTypeIdentifierResult : ErrorIdentifierResult
+    {
+        public static readonly CantGetInstanceMemberThroughTypeIdentifierResult Instance = new CantGetInstanceMemberThroughTypeIdentifierResult();
+        private CantGetInstanceMemberThroughTypeIdentifierResult() { }
+    }
+
+    class FuncCantHaveMemberErrorIdentifierResult : ErrorIdentifierResult
+    {
+        public static readonly FuncCantHaveMemberErrorIdentifierResult Instance = new FuncCantHaveMemberErrorIdentifierResult();
+        private FuncCantHaveMemberErrorIdentifierResult() { }
+    }
+
+    class ExpIdentifierResult : ValidIdentifierResult
     {
         public Exp Exp { get; }
         public TypeValue TypeValue { get; }
@@ -88,7 +116,7 @@ namespace Gum.IR0
     //}
 
     //// F
-    class FuncIdentifierResult : IdentifierResult
+    class FuncIdentifierResult : ValidIdentifierResult
     {
         public FuncValue FuncValue { get; }
         public FuncIdentifierResult(FuncValue funcValue)
@@ -98,18 +126,18 @@ namespace Gum.IR0
     }
 
     // T
-    class TypeIdentifierResult : IdentifierResult
+    class TypeIdentifierResult : ValidIdentifierResult
     {
         // 타입을 가리키는 레퍼런스
-        public NormalTypeValue TypeValue { get; }
-        public TypeIdentifierResult(NormalTypeValue typeValue)
+        public TypeValue TypeValue { get; }
+        public TypeIdentifierResult(TypeValue typeValue)
         {
             TypeValue = typeValue;
         }
     }
 
     // First => E.First
-    class EnumElemIdentifierResult : IdentifierResult
+    class EnumElemIdentifierResult : ValidIdentifierResult
     {
         public NormalTypeValue EnumTypeValue { get; }
         public M.Name Name { get => throw new NotImplementedException();  }

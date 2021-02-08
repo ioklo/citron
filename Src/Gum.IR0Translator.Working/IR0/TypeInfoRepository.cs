@@ -19,11 +19,26 @@ namespace Gum.IR0
         M.ModuleInfo internalModuleInfo;
         ModuleInfoRepository externalModuleInfoRepo;
 
-        public TypeInfoRepository(ModuleInfo internalModuleInfo, ModuleInfoRepository moduleInfoRepo)
+        public TypeInfoRepository(M.ModuleInfo internalModuleInfo, ModuleInfoRepository moduleInfoRepo)
         {
             this.internalModuleInfo = internalModuleInfo;
             this.externalModuleInfoRepo = moduleInfoRepo;
         }
+
+        public M.TypeInfo? GetType(M.ModuleName moduleName, M.NamespacePath namespacePath, M.Name name, int typeParamCount)
+        {
+            var itemPathEntry = new ItemPathEntry(name, typeParamCount);
+
+            if (internalModuleInfo.Name.Equals(moduleName))
+                return GlobalItemQueryService.GetGlobalItem(internalModuleInfo, namespacePath, itemPathEntry) as M.TypeInfo;
+
+            foreach (var module in externalModuleInfoRepo.GetAllModules())
+                if (module.Name.Equals(moduleName))
+                    return GlobalItemQueryService.GetGlobalItem(module, namespacePath, itemPathEntry) as M.TypeInfo;
+
+            return null;
+        }
+
 
         TItemInfo? GetInternalItem<TItemInfo>(ItemPath path)
             where TItemInfo : ItemInfo

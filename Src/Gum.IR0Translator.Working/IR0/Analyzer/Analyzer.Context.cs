@@ -17,15 +17,8 @@ namespace Gum.IR0
         // Analyzer는 backtracking이 없어서, MutableContext를 쓴다 
         class Context
         {
-            public TItemInfo? GetItem<TItemInfo>(ItemId id)
-                where TItemInfo : ItemInfo
-            {
-                return itemInfoRepo.GetItem<TItemInfo>(id);
-            }
+            GlobalItemValueFactory globalItemValueFactory;
 
-            M.ModuleInfo internalModuleInfo;
-
-            ItemInfoRepository itemInfoRepo;
             TypeExpInfoService typeExpTypeValueService;
             TypeValueService typeValueService;
             IErrorCollector errorCollector;
@@ -42,12 +35,10 @@ namespace Gum.IR0
             InternalGlobalVariableRepository internalGlobalVarRepo;
 
             public Context(                
-                ItemInfoRepository itemInfoRepo,
                 TypeValueService typeValueService,
                 TypeExpInfoService typeExpTypeValueService,
                 IErrorCollector errorCollector)
             {
-                this.itemInfoRepo = itemInfoRepo;
                 this.typeValueService = typeValueService;
                 this.typeExpTypeValueService = typeExpTypeValueService;
                 this.errorCollector = errorCollector;
@@ -77,29 +68,7 @@ namespace Gum.IR0
             {
                 errorCollector.Add(new AnalyzeError(code, node, msg));
                 throw new FatalAnalyzeException();
-            }
-
-            public NormalTypeValue? GetInternalGlobalType(M.NamespacePath namespacePath, string idName, ImmutableArray<TypeValue> typeArgs)
-            {
-                var typeInfo = GlobalItemQueryService.GetGlobalItem(internalModuleInfo, namespacePath, new ItemPathEntry(idName)) as M.TypeInfo;
-                if (typeInfo == null) return null;
-
-                return NormalTypeValue.MakeInternalGlobal(namespacePath, typeDeclId, typeInfo, typeArgs);
-            }
-
-            public IEnumerable<FuncValue> GetInternalGlobalFuncInfos(M.NamespacePath namespacePath, string idName, ImmutableArray<TypeValue> typeArgs)
-            {
-                foreach (var mfuncInfo in GlobalItemQueryService.GetGlobalFuncs(internalModuleInfo, namespacePath, idName))
-                {
-                    // TODO: 인자 타입 추론을 사용하면, typeArgs를 생략할 수 있기 때문에, TypeArgs.Count가 TypeParams.Length보다 적어도 된다
-                    if (typeArgs.Length == mfuncInfo.TypeParams.Length)
-                    {
-                        FuncDeclId funcDeclId;
-                        var funcValue = new FuncValue(namespacePath, funcDeclId, mfuncInfo, typeArgs);
-                        yield return funcValue;
-                    }
-                }
-            }
+            }                                    
 
             public ExternalGlobalVarId GetExternalGlobalVarId(ItemId varId)
             {
@@ -306,6 +275,7 @@ namespace Gum.IR0
                 topLevelStmts.Add(stmt);
             }
 
+            
             public IEnumerable<TypeDecl> GetTypeDecls()
             {
                 return typeDecls;
@@ -329,7 +299,7 @@ namespace Gum.IR0
             }            
 
             public FuncTypeValue GetTypeValue(FuncValue funcValue)
-            {
+            {   
                 return typeValueService.GetTypeValue(funcValue);
             }
 
@@ -376,9 +346,12 @@ namespace Gum.IR0
             {
                 return typeValueService.Apply(context, typeValue);
             }
+            
+            public ItemResult GetGlobalItem(M.NamespacePath namespacePath, string idName, ImmutableArray<TypeValue> typeArgs, TypeValue? hintTypeValue)
+            {
+                return globalItemValueFactory.GetGlobal(namespacePath, idName, typeArgs, hintTypeValue);
+            }
 
-            // 1. exp가 무슨 타입을 가지는지
-            // 2. callExp가 staticFunc을 호출할 경우 무슨 함수를 호출하는지
         }
     }
 }

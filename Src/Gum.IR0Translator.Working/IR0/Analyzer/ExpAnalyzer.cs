@@ -38,35 +38,35 @@ namespace Gum.IR0
 
             switch (result)
             {
-                case NotFoundErrorIdentifierResult _:
+                case NotFoundIdentifierResult:
                     context.AddFatalError(A0501_IdExp_VariableNotFound, idExp, $"{idExp.Value}을 찾을 수 없습니다");
                     break;
 
-                case MultipleCandiatesErrorIdentifierResult _:
+                case MultipleCandiatesErrorIdentifierResult:
                     context.AddFatalError(A0503_IdExp_MultipleCandidates, idExp, $"{idExp.Value}의 이름을 가진 함수, 변수를 하나로 결정할 수가 없습니다");
                     break;
 
                 case ExpIdentifierResult expResult:
                     return new ExpResult(expResult.Exp, expResult.TypeValue);
 
-                case FuncIdentifierResult funcResult:
+                case FuncIdentifierResult:
                     throw new NotImplementedException();
 
-                case TypeIdentifierResult typeResult:
+                case TypeIdentifierResult:
                     context.AddFatalError(A0502_IdExp_CantUseTypeAsExpression, idExp, $"타입 {idExp.Value}을 식에서 사용할 수 없습니다");
                     break;
-
+                
                 case EnumElemIdentifierResult enumElemResult:
-                    if (enumElem.IsStandalone)      // 인자 없이 있는 것
+                    if (enumElemResult.IsStandalone)      // 인자 없이 있는 것
                     {
-                        return new ExpResult(new NewEnumExp(enumElem.Name.ToString(), Array.Empty<NewEnumExp.Elem>()), enumElem.EnumTypeValue);
+                        throw new NotImplementedException();
+                        // return new ExpResult(new NewEnumExp(enumElemResult.Name, Array.Empty<NewEnumExp.Elem>()), enumElem.EnumTypeValue);
                     }
                     else
                     {
                         // TODO: Func일때 감싸기
                         throw new NotImplementedException();
-                    }
-                    break;
+                    }                    
             }
 
             throw new UnreachableCodeException();
@@ -332,9 +332,37 @@ namespace Gum.IR0
         //}
 
         // CallExp분석에서 Callable이 Identifier인 경우 처리
-        ExpResult AnalyzeCallExpFuncCallable(FuncIdentifierResult funcResult, ImmutableArray<ExpResult> argResults)
+        ExpResult AnalyzeCallExpFuncCallable(FuncValue funcValue, ImmutableArray<ExpResult> argResults)
         {
+            var args = ImmutableArray.CreateRange(argResults, argResult =>
+            {
+                var type = context.GetType(argResult.TypeValue);
+                return new ExpInfo(argResult.Exp, type);
+            });
+
+            // 4개의 케이스
+            // (internal/external) (sequence/normal)
+            // FuncValue.
             
+            // 일단 instantiation을 없다고 가정을 했던것 같으니까.. 함수에 타입 인자들을 다 넘겨줄 생각을 해보자
+            // T => X<int>.Y<short>.F<string, T>
+            if (funcValue.IsSequence)
+            {
+                var funcDeclId = context.GetFuncDeclId(funcValue);
+                if (funcDeclId is InternalFuncDeclId internalFuncDeclId)
+                {
+                    if (funcValue.IsStatic)
+                    {
+                        
+                        // CallSeqFuncExp(funcId, <<0, 0, int>, <0, 1, short>, string, bool>
+                        return new ExpResult(new CallSeqFuncExp(internalFuncDeclId, null, args), );
+                    }
+                }
+            }
+            else
+            {
+
+            }
         }
 
         // CallExp 분석에서 Callable이 Exp인 경우 처리
@@ -346,7 +374,7 @@ namespace Gum.IR0
 
             var argTypes = ImmutableArray.CreateRange(argResults, info => info.TypeValue);
             CheckParamTypes(nodeForErrorReport, funcTypeValue.Params, argTypes);
-
+            
             var callableTypeId = context.GetType(funcTypeValue);
             var args = argResults.Select(info =>
             {
@@ -357,7 +385,7 @@ namespace Gum.IR0
             // TODO: 사실 Type보다 Allocation정보가 들어가야 한다
             return new ExpResult(
                 new CallValueExp(new ExpInfo(callable, callableTypeId), args),
-                funcTypeValue);
+                funcTypeValue.Return);
         }
         
         ExpResult AnalyzeCallExp(S.CallExp exp, TypeValue? hintTypeValue) 
@@ -369,11 +397,11 @@ namespace Gum.IR0
             var argResults = AnalyzeExps(exp.Args);
             var argTypes = ImmutableArray.CreateRange(argResults, result => result.TypeValue);
 
-            var callableResult = IdentifierResolver.Resolve(exp.Callable, argTypes, context);
+            var callableResult = IdExpIdentifierResolver.Resolve(exp.Callable, argTypes, context);
 
             switch(callableResult)
             {
-                case NotFoundErrorIdentifierResult _:
+                case NotFoundIdentifierResult _:
                     context.AddFatalError();
                     break;
 
@@ -385,7 +413,7 @@ namespace Gum.IR0
                     return AnalyzeCallExpExpCallable(expResult.Exp, expResult.TypeValue, argResults, exp);
 
                 case FuncIdentifierResult funcResult:
-                    return AnalyzeCallExpFuncCallable();
+                    return AnalyzeCallExpFuncCallable(funcResult.FuncValue, argResults);
 
                 case TypeIdentifierResult typeResult:
                     context.AddFatalError(A0902_CallExp_CallableExpressionIsNotCallable, exp.Callable, "");
@@ -506,7 +534,7 @@ namespace Gum.IR0
 
             switch(identifierResult)
             {
-                case NotFoundErrorIdentifierResult _:
+                case NotFoundIdentifierResult _:
                     context.AddFatalError();
                     break;
 

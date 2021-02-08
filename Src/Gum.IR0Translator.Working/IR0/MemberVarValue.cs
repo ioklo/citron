@@ -1,4 +1,4 @@
-﻿using Gum.CompileTime;
+﻿using M = Gum.CompileTime;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -9,18 +9,22 @@ using System.Text;
 namespace Gum.IR0
 {
     // 분석 과정에서 사용하는 멤버 변수의 간접 참조, 타입 인자 정보를 포함한다
-    class MemberVarValue
+    class MemberVarValue : ItemValue
     {
         // 어느 타입에 속해 있는지
-        public NormalTypeValue Outer { get; }
-        public Name Name { get => info.Name; }
-        public bool IsStatic { get => info.IsStatic; }
-        MemberVarInfo info;
+        // NormalTypeValue outer;
+        // M.MemberVarInfo info;
+        // NormalTypeValue typeValue;
+
+        public M.Name Name { get; }
+        public bool IsStatic { get; }
+        public TypeValue TypeValue { get; }
         
-        public MemberVarValue(NormalTypeValue outer, MemberVarInfo info)
+        public MemberVarValue(M.Name name, bool bStatic, TypeValue typeValue)
         {
-            Outer = outer;
-            this.info = info;
+            Name = name;
+            IsStatic = bStatic;
+            TypeValue = typeValue;
         }
     }
 }

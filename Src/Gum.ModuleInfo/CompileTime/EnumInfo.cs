@@ -9,12 +9,12 @@ namespace Gum.CompileTime
 {
     public struct EnumElemFieldInfo
     {
-        public TypeValue TypeValue { get; }
+        public Type Type { get; }
         public string Name { get; }
 
-        public EnumElemFieldInfo(TypeValue typeValue, string name)
+        public EnumElemFieldInfo(Type type, string name)
         {
-            TypeValue = typeValue;
+            Type = type;
             Name = name;
         }
     }

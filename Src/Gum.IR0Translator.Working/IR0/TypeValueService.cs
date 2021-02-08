@@ -9,6 +9,7 @@ using System.Diagnostics;
 
 namespace Gum.IR0
 {
+    // deprecated, 안의 내용을 보존하지 않아도 된다
     class TypeValueService
     {
         ITypeInfoRepository typeInfoRepo;
@@ -53,7 +54,7 @@ namespace Gum.IR0
         // GetTypeValue(X<int>.Y<short>, x) => Dict<int, short>
         public TypeValue GetTypeValue(MemberVarValue varValue)
         {
-            return typeValueApplier.Apply(varValue.Outer, varValue.TypeValue);
+            return typeValueApplier.Apply(varValue.outer, varValue.TypeValue);
         }
 
         // class X<T> { class Y<U> { S<T> F<V>(V v, List<U> u); } } => MakeFuncTypeValue(X<int>.Y<short>, F, context) 

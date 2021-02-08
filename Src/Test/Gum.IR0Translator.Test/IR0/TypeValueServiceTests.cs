@@ -66,9 +66,8 @@ namespace Gum.IR0
                 new[] { MakeTypeValue("A"), MakeTypeValue("B") },
                 new[] { MakeTypeValue("C") }
             };
-            
-            
-            
+
+            new TypeValueFactory();
 
             var vValue = new MemberVarValue(vId, yTypeArgList); // outerTypeArgList가 들어간다
             var result = typeValueService.GetTypeValue(vValue);

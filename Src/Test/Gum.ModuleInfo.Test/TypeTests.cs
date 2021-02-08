@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Gum.CompileTime
 {
-    public class TypeValueTests
+    public class TypeTests
     {
 
 

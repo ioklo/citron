@@ -29,32 +29,8 @@ namespace Gum.IR0
         GlobalItemQueryService(M.ModuleInfo moduleInfo)
         {
             this.moduleInfo = moduleInfo;
-        }
+        }        
         
-        M.NamespaceInfo? GetNamespace(M.NamespacePath path)
-        {
-            Debug.Assert(!path.IsRoot);
-
-            M.NamespaceInfo? curNamespace = null;
-            foreach (var entry in path.Entries)
-            {
-                if (curNamespace == null)
-                {   
-                    curNamespace = moduleInfo.Namespaces.FirstOrDefault(info => info.Name.Equals(entry));
-                    if (curNamespace == null)
-                        return null;
-                }
-                else
-                {
-                    curNamespace = curNamespace.Namespaces.FirstOrDefault(info => info.Name.Equals(entry));
-                    if (curNamespace == null)
-                        return null;
-                }
-            }
-
-            return curNamespace;
-        }
-
         M.ItemInfo? GetChildItem(ImmutableArray<M.TypeInfo> types, ImmutableArray<M.FuncInfo> funcs, ItemPathEntry entry)
         {
             // paramHash가 있으면 함수에서만 검색
@@ -92,7 +68,7 @@ namespace Gum.IR0
             if (path.IsRoot)
                 return GetChildItem(moduleInfo.Types, moduleInfo.Funcs, entry);
 
-            var ns = GetNamespace(path);
+            var ns = moduleInfo.GetNamespace(path);
             if (ns == null)
                 return null;
             
@@ -107,7 +83,7 @@ namespace Gum.IR0
             if (path.IsRoot)
                 return GetChildFuncs(moduleInfo.Funcs);
 
-            var curNamespace = GetNamespace(path);
+            var curNamespace = moduleInfo.GetNamespace(path);
 
             if (curNamespace == null)
                 return Enumerable.Empty<M.FuncInfo>();
