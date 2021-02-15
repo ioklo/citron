@@ -20,11 +20,13 @@ namespace Gum.IR0
     // X<int>.Y<short>.F_T_int_int<S>
     class FuncValue : ItemValue
     {
+        TypeValueFactory typeValueFactory;
+
         // X<int>.Y<short>
-        M.ModuleName? moduleName;       // external root일 경우에만 존재
-        M.NamespacePath? namespacePath; // (internal/external) root일 경우에만 존재
+        M.ModuleName? moduleName;       // external global일 경우에만 존재
+        M.NamespacePath? namespacePath; // (internal/external) global일 경우에만 존재
         TypeValue? outer;               // (internal/external) member일 경우에만 존재
-        FuncDeclId? funcDeclId;         // internal (root/member)일 경우에만 존재        
+        FuncDeclId? funcDeclId;         // internal (global/member)일 경우에만 존재
 
         // F_int_int
         M.FuncInfo funcInfo;
@@ -50,7 +52,7 @@ namespace Gum.IR0
         public FuncValue(TypeValue outer, FuncDeclId funcDeclId, M.FuncInfo funcInfo, ImmutableArray<TypeValue> typeArgs) 
             : this(null, null, outer, funcDeclId, funcInfo, typeArgs) { }
 
-        FuncValue(M.ModuleName? moduleName, M.NamespacePath? namespacePath, TypeValue? outer, FuncDeclId? funcDeclId, M.FuncInfo funcInfo, ImmutableArray<TypeValue> typeArgs)
+        internal FuncValue(M.ModuleName? moduleName, M.NamespacePath? namespacePath, TypeValue? outer, FuncDeclId? funcDeclId, M.FuncInfo funcInfo, ImmutableArray<TypeValue> typeArgs)
         {
             this.moduleName = moduleName;
             this.namespacePath = namespacePath;
@@ -60,7 +62,55 @@ namespace Gum.IR0
             this.typeArgs = typeArgs;
         }
 
-                
+        internal override int FillTypeEnv(TypeEnvBuilder builder)
+        {
+            int depth;
+            if (outer != null)
+                depth = outer.FillTypeEnv(builder) + 1;
+            else
+                depth = 0;
 
+            for(int i = 0; i < typeArgs.Length; i++)
+                builder.Add(depth, i, typeArgs[i]);
+
+            return depth;
+        }
+        
+        // class X<T> { void Func<U>(T t, U u, int x); }
+        // X<int>.F<bool> => (int, bool, int)
+        public ImmutableArray<TypeValue> GetParamTypes()
+        {
+            var typeEnv = MakeTypeEnv();
+
+            var builder = ImmutableArray.CreateBuilder<TypeValue>(funcInfo.ParamTypes.Length);
+            foreach (var paramType in funcInfo.ParamTypes)
+            {   
+                var paramTypeValue = typeValueFactory.MakeTypeValue(paramType);
+                paramTypeValue.Apply(typeEnv);
+                builder.Add(paramTypeValue);
+            }
+
+            return builder.MoveToImmutable();
+        }
+
+        public TypeValue GetRetType()
+        {
+            var typeEnv = MakeTypeEnv();
+            var retTypeValue = typeValueFactory.MakeTypeValue(funcInfo.RetType);
+            return retTypeValue.Apply(typeEnv);
+        }
+
+        // IR0 Func를 만들어 줍니다
+        public Func MakeFunc()
+        {
+            // 1. GetFuncDeclId();
+            // 2. TypeContext;            
+            // TypeValue -> TypeContext
+
+            if (moduleName != null && namespacePath != null)
+
+            var declId = context.GetFuncDeclId()
+
+        }   
     }
 }

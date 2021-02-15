@@ -99,7 +99,7 @@ namespace Gum.IR0
                     sb.Append($"`({typeVar.Depth}, {typeVar.Index})");
                     break;
                 
-                case M.ExternalType externalType:
+                case M.GlobalType externalType:
                     // [ModuleName]Namespace1.Namespace2.X<int>
 
                     // [ModuleName]

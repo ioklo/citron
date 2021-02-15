@@ -14,7 +14,8 @@ namespace Gum.CompileTime
         public override Name Name { get; }
 
         public override ImmutableArray<string> TypeParams { get; }
-        public ImmutableArray<Type> BaseTypes { get; }
+        public Type? BaseType { get; }
+        public ImmutableArray<Type> Interfaces { get; }
         public override ImmutableArray<TypeInfo> MemberTypes { get; }
         public ImmutableArray<FuncInfo> MemberFuncs { get; }
         public ImmutableArray<MemberVarInfo> MemberVars { get; }
@@ -29,7 +30,8 @@ namespace Gum.CompileTime
             return other != null &&
                    Name.Equals(other.Name) &&
                    TypeParams.SequenceEqual(other.TypeParams) &&
-                   BaseTypes.SequenceEqual(other.BaseTypes) &&
+                   EqualityComparer<Type>.Default.Equals(BaseType, other.BaseType) && 
+                   Interfaces.SequenceEqual(other.Interfaces) &&
                    MemberTypes.SequenceEqual(other.MemberTypes) &&
                    MemberFuncs.SequenceEqual(other.MemberFuncs) &&
                    MemberVars.SequenceEqual(other.MemberVars);
@@ -41,7 +43,8 @@ namespace Gum.CompileTime
             hash.Add(Name);
 
             hash.AddSequence(TypeParams);
-            hash.AddSequence(BaseTypes);
+            hash.Add(BaseType);
+            hash.AddSequence(Interfaces);
             hash.AddSequence(MemberTypes);
             hash.AddSequence(MemberFuncs);
             hash.AddSequence(MemberVars);

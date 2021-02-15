@@ -32,6 +32,6 @@
 
 [Void](Void.md)
 
-[Callable](Callable.md)
+[Lambda, Function(Boxed Lambda)](Lambda,%20Function(Boxed%20Lambda).md)
 
 [Type Expression](Type%20Expression.md)

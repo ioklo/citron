@@ -13,23 +13,31 @@ namespace Gum.IR0
         public static Type Bool = new Type(TypeDeclId.Bool);
         public static Type Int = new Type(TypeDeclId.Int);
         public static Type String = new Type(TypeDeclId.String);
-        public static Type Enumerable(params Type[] typeArgs) => new Type(TypeDeclId.Enumerable, typeArgs);
+        public static Type Enumerable(Type itemType)
+        {
+            var typeContext = new TypeContextBuilder().Add(0, 0, itemType).Build();
+            return new Type(TypeDeclId.Enumerable, typeContext);
+        }
         public static Type Lambda = new Type(TypeDeclId.Lambda);
-        public static Type List(params Type[] typeArgs) => new Type(TypeDeclId.List, typeArgs);
+        public static Type List(Type itemType)
+        {
+            var typeContext = new TypeContextBuilder().Add(0, 0, itemType).Build();
+            return new Type(TypeDeclId.List, typeContext);
+        }
 
-        public TypeDeclId DeclId { get; }        
-        public IReadOnlyList<Type> TypeArgs { get; }
+        public TypeDeclId DeclId { get; }
+        public TypeContext TypeContext { get; }
 
         public Type(TypeDeclId declId)
         {
             DeclId = declId;
-            TypeArgs = Array.Empty<Type>();
+            TypeContext = Gum.IR0.TypeContext.Empty;
         }
 
-        public Type(TypeDeclId declId, IEnumerable<Type> typeArgs)
+        public Type(TypeDeclId declId, TypeContext typeContext)
         {
             DeclId = declId;
-            TypeArgs = typeArgs.ToArray();
+            TypeContext = typeContext;
         }        
     }
 }

@@ -21,7 +21,7 @@ namespace Gum.IR0
             var testErrorCollector = new TestErrorCollector(raiseAssertFailed);
             var translator = new Translator();
 
-            return translator.Translate(syntaxScript, Array.Empty<IModuleInfo>(), testErrorCollector);
+            return translator.Translate(syntaxScript, default, testErrorCollector);
         }
 
         List<IError> TranslateWithErrors(S.Script syntaxScript, bool raiseAssertionFail = false)
@@ -29,7 +29,7 @@ namespace Gum.IR0
             var testErrorCollector = new TestErrorCollector(raiseAssertionFail);
             var translator = new Translator();
 
-            var script = translator.Translate(syntaxScript, Array.Empty<IModuleInfo>(), testErrorCollector);
+            var script = translator.Translate(syntaxScript, default, testErrorCollector);
 
             return testErrorCollector.Errors;
         }       
@@ -267,7 +267,7 @@ namespace Gum.IR0
                 SimpleGlobalVarDeclStmt(Type.String, "x", null),
 
                 new ForStmt(
-                    new ExpForStmtInitializer(new ExpInfo(new AssignExp(new PrivateGlobalVarExp("x"), SimpleString("Hello")), Type.String)),
+                    new ExpForStmtInitializer(new ExpInfo(new AssignExp(new GlobalVarExp("x"), SimpleString("Hello")), Type.String)),
                     null, null, BlankStmt.Instance
                 )
             );
@@ -310,7 +310,7 @@ namespace Gum.IR0
                     null, BlankStmt.Instance
                 ),
 
-                new ExpStmt(new ExpInfo(new AssignExp(new PrivateGlobalVarExp("x"), SimpleString("Hello")), Type.String))
+                new ExpStmt(new ExpInfo(new AssignExp(new GlobalVarExp("x"), SimpleString("Hello")), Type.String))
             );
 
             Assert.Equal(expected, script, IR0EqualityComparer.Instance);
@@ -578,7 +578,7 @@ namespace Gum.IR0
 
             var expected = SimpleScript(null, null, 
                 SimpleGlobalVarDeclStmt(Type.Int, "x", null),
-                new ExpStmt(new ExpInfo(new AssignExp(new PrivateGlobalVarExp("x"), SimpleInt(3)), Type.Int))
+                new ExpStmt(new ExpInfo(new AssignExp(new GlobalVarExp("x"), SimpleInt(3)), Type.Int))
             );
 
             Assert.Equal(expected, script, IR0EqualityComparer.Instance);
@@ -614,7 +614,7 @@ namespace Gum.IR0
             var expected = SimpleScript(null, null, 
                 SimpleGlobalVarDeclStmt(Type.Int, "x", null),
                 new TaskStmt(
-                    new ExpStmt(new ExpInfo(new AssignExp(new PrivateGlobalVarExp("x"), SimpleInt(3)), Type.Int)),
+                    new ExpStmt(new ExpInfo(new AssignExp(new GlobalVarExp("x"), SimpleInt(3)), Type.Int)),
                     new CaptureInfo(false, Array.Empty<CaptureInfo.Element>())
                 )
             );
@@ -720,7 +720,7 @@ namespace Gum.IR0
             var expected = SimpleScript(null, null, 
                 SimpleGlobalVarDeclStmt(Type.Int, "x", null),
                 new AsyncStmt(
-                    new ExpStmt(new ExpInfo(new AssignExp(new PrivateGlobalVarExp("x"), SimpleInt(3)), Type.Int)),
+                    new ExpStmt(new ExpInfo(new AssignExp(new GlobalVarExp("x"), SimpleInt(3)), Type.Int)),
                     new CaptureInfo(false, Array.Empty<CaptureInfo.Element>())
                 )
             );
@@ -894,7 +894,7 @@ namespace Gum.IR0
         }
 
         [Fact]
-        public void IdExp_TranslatesIntoPrivateGlobalVarExp()
+        public void IdExp_TranslatesIntoGlobalVarExp()
         {
             var syntaxScript = SimpleSScript(
                 SimpleSVarDeclStmt(IntTypeExp, "x", SimpleSInt(3)),
@@ -904,7 +904,7 @@ namespace Gum.IR0
             var script = Translate(syntaxScript);
             var expected = SimpleScript(null, null,
                 SimpleGlobalVarDeclStmt(Type.Int, "x", SimpleInt(3)),
-                SimpleGlobalVarDeclStmt(Type.Int, "y", new PrivateGlobalVarExp("x"))
+                SimpleGlobalVarDeclStmt(Type.Int, "y", new GlobalVarExp("x"))
             );
 
             Assert.Equal(expected, script, IR0EqualityComparer.Instance);
@@ -1071,10 +1071,10 @@ namespace Gum.IR0
             var expected = SimpleScript(null, null,
                 SimpleGlobalVarDeclStmt(Type.Bool, "x1", new CallInternalUnaryOperatorExp(InternalUnaryOperator.LogicalNot_Bool_Bool, new ExpInfo(SimpleBool(false), Type.Bool))),
                 SimpleGlobalVarDeclStmt(Type.Int, "x2", new CallInternalUnaryOperatorExp(InternalUnaryOperator.UnaryMinus_Int_Int, new ExpInfo(SimpleInt(3), Type.Int))),
-                SimpleGlobalVarDeclStmt(Type.Int, "x3", new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PrefixInc_Int_Int, new PrivateGlobalVarExp("x2"))),
-                SimpleGlobalVarDeclStmt(Type.Int, "x4", new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PrefixDec_Int_Int, new PrivateGlobalVarExp("x2"))),
-                SimpleGlobalVarDeclStmt(Type.Int, "x5", new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PostfixInc_Int_Int, new PrivateGlobalVarExp("x2"))),
-                SimpleGlobalVarDeclStmt(Type.Int, "x6", new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PostfixDec_Int_Int, new PrivateGlobalVarExp("x2")))
+                SimpleGlobalVarDeclStmt(Type.Int, "x3", new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PrefixInc_Int_Int, new GlobalVarExp("x2"))),
+                SimpleGlobalVarDeclStmt(Type.Int, "x4", new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PrefixDec_Int_Int, new GlobalVarExp("x2"))),
+                SimpleGlobalVarDeclStmt(Type.Int, "x5", new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PostfixInc_Int_Int, new GlobalVarExp("x2"))),
+                SimpleGlobalVarDeclStmt(Type.Int, "x6", new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PostfixDec_Int_Int, new GlobalVarExp("x2")))
             );
 
             Assert.Equal(expected, script, IR0EqualityComparer.Instance);
@@ -1140,7 +1140,7 @@ namespace Gum.IR0
             var script = Translate(syntaxScript);
             var expected = SimpleScript(null, null,
                 SimpleGlobalVarDeclStmt(Type.Int, "x"),
-                new ExpStmt(new ExpInfo(new AssignExp(new PrivateGlobalVarExp("x"), SimpleInt(3)), Type.Int))
+                new ExpStmt(new ExpInfo(new AssignExp(new GlobalVarExp("x"), SimpleInt(3)), Type.Int))
             );
 
             Assert.Equal(expected, script, IR0EqualityComparer.Instance);

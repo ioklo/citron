@@ -35,6 +35,8 @@ namespace Gum.IR0
         A0302_MemberExp_TypeArgsForMemberVariableIsNotAllowed,
         A0303_MemberExp_MemberVarNotFound,
         A0304_MemberExp_MemberVariableIsNotStatic,
+        A0305_MemberExp_MemberVariableIsStatic,
+        A0306_MemberExp_TypeArgsForMemberVariableIsNotAllowed,
 
         A0401_Parameter_MismatchBetweenParamCountAndArgCount,
         A0402_Parameter_MismatchBetweenParamTypeAndArgType,

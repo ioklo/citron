@@ -16,7 +16,7 @@ namespace Gum.Infra
             return dict.ToImmutableDictionary(dict.Comparer);
         }           
 
-        public static IEnumerable<(TFirst, TSecond)> Zip<TFirst, TSecond>(IEnumerable<TFirst> firsts, IEnumerable<TSecond> seconds)
+        public static IEnumerable<(TFirst, TSecond)> Zip<TFirst, TSecond>(ImmutableArray<TFirst> firsts, ImmutableArray<TSecond> seconds)
         {
             var enumFirst = firsts.GetEnumerator();
             var enumSecond = seconds.GetEnumerator();

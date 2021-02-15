@@ -5,18 +5,18 @@ using System.Collections.Immutable;
 using System.Linq;
 
 namespace Gum.IR0
-{   
-    //public class Func
-    //{
-    //    public FuncId Id { get; }
-    //    public FuncDeclId DeclId { get; }
-    //    public ImmutableArray<TypeId> TypeArgs { get; }
+{
+    // TypeDeclId와 TypeContext를 묶어서 Type이라고 했으므로
+    // 보조를 맞추기 위해 FuncDeclId와 TypeContext를 묶어서 Func라 한다
+    public struct Func
+    {
+        public FuncDeclId DeclId { get; }
+        public TypeContext TypeContext { get; }
 
-    //    public Func(FuncId id, FuncDeclId declId, IEnumerable<TypeId> typeArgs)
-    //    {
-    //        Id = id;
-    //        DeclId = declId;
-    //        TypeArgs = typeArgs.ToImmutableArray();
-    //    }
-    //}
+        public Func(FuncDeclId declId, TypeContext typeContext)
+        {
+            DeclId = declId;
+            TypeContext = typeContext;
+        }
+    }
 }

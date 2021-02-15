@@ -19,7 +19,7 @@ namespace Gum.CompileTime
     }
     
     [AutoConstructor]
-    public partial class ExternalType : NormalType, IEquatable<ExternalType?>
+    public partial class GlobalType : NormalType, IEquatable<GlobalType?>
     {
         public ModuleName ModuleName { get; }
         public NamespacePath NamespacePath { get; }
@@ -28,10 +28,10 @@ namespace Gum.CompileTime
 
         public override bool Equals(object? obj)
         {
-            return Equals(obj as ExternalType);
+            return Equals(obj as GlobalType);
         }
 
-        public bool Equals(ExternalType? other)
+        public bool Equals(GlobalType? other)
         {
             return other != null &&
                    ModuleName.Equals(other.ModuleName) &&

@@ -107,20 +107,19 @@ namespace Gum.IR0.Runtime
             return new ExpInfo(new IntLiteralExp(i), Type.Int);
         }
 
-        ImmutableArray<T> Empty<T>() => ImmutableArray<T>.Empty;
+        ImmutableArray<T> Arr<T>() => ImmutableArray<T>.Empty;
 
         ImmutableArray<T> Arr<T>(params T[] elems) => ImmutableArray.Create<T>(elems);
 
-        public async Task<string> EvalAsync(IEnumerable<FuncDecl>? funcDecls, IEnumerable<Stmt> topLevelStmts)
+        public async Task<string> EvalAsync(FuncDecl[]? funcDecls, Stmt[] topLevelStmts)
         {
             var (output, _) = await EvalAsyncWithRetValue(funcDecls, topLevelStmts);
             return output;
         }
-
-        public async Task<(string Output, int RetValue)> EvalAsyncWithRetValue(IEnumerable<FuncDecl>? optionalFuncDecls, IEnumerable<Stmt> topLevelStmts)
+        
+        public async Task<(string Output, int RetValue)> EvalAsyncWithRetValue(FuncDecl[]? optFuncDecls, Stmt[] topLevelStmts)
         {
-            // 입력 검사
-            IEnumerable<FuncDecl> funcDecls = optionalFuncDecls ?? Array.Empty<FuncDecl>();            
+            var funcDecls = optFuncDecls == null ? ImmutableArray<FuncDecl>.Empty : ImmutableArray.Create(optFuncDecls);            
 
             // FuncDeclId validation
             int i = 0;
@@ -133,7 +132,7 @@ namespace Gum.IR0.Runtime
             var commandProvider = new TestCommandProvider();
             var evaluator = new Evaluator(commandProvider);
 
-            var script = new Script(Array.Empty<TypeDecl>(), funcDecls, topLevelStmts);
+            var script = new Script(Arr<TypeDecl>(), funcDecls, ImmutableArray.Create(topLevelStmts));
 
             var retValue = await evaluator.EvalScriptAsync(script);
 
@@ -161,7 +160,7 @@ namespace Gum.IR0.Runtime
                     new VarDeclElement("x", Type.Int, new IntLiteralExp(3)),
                 }),
 
-                PrintIntCmdStmt(new PrivateGlobalVarExp("x")),
+                PrintIntCmdStmt(new GlobalVarExp("x")),
             };
 
             var output = await EvalAsync(null, topLevelStmts);
@@ -172,14 +171,14 @@ namespace Gum.IR0.Runtime
         public async Task PrivateGlobalVariableExp_GetGlobalValueInFunc()
         {
             var func0Id = new FuncDeclId(0);
-            var func0 = new FuncDecl.Normal(func0Id, false, Empty<string>(), Empty<string>(), new BlockStmt(
-                PrintStringCmdStmt(new PrivateGlobalVarExp("x"))));
+            var func0 = new NormalFuncDecl(func0Id, false, Arr<string>(), Arr<string>(), new BlockStmt(
+                PrintStringCmdStmt(new GlobalVarExp("x"))));
 
             var topLevelStmts = new Stmt[]
             {
                 new PrivateGlobalVarDeclStmt(new [] { new VarDeclElement("x", Type.String, SimpleString("Hello")) }),
 
-                new ExpStmt(new ExpInfo(new CallFuncExp(func0Id, Array.Empty<Type>(), null, Array.Empty<ExpInfo>()), Type.Void))
+                new ExpStmt(new ExpInfo(new CallFuncExp(new Func(func0Id, TypeContext.Empty), null, Arr<ExpInfo>()), Type.Void))
             };
 
             var output = await EvalAsync(new [] { func0 }, topLevelStmts);
@@ -196,7 +195,7 @@ namespace Gum.IR0.Runtime
         {
             var funcId = new FuncDeclId(0);
 
-            var seqFunc = new FuncDecl.Sequence(funcId, Type.Int, false, Empty<string>(), Arr("x", "y"), new BlockStmt(
+            var seqFunc = new SequenceFuncDecl(funcId, Type.Int, false, Arr<string>(), Arr("x", "y"), new BlockStmt(
 
                 new YieldStmt(
                     new CallInternalBinaryOperatorExp(InternalBinaryOperator.Multiply_Int_Int_Int,
@@ -211,7 +210,7 @@ namespace Gum.IR0.Runtime
             var stmts = new Stmt[]
             {
                 new ForeachStmt(Type.Int, "e",
-                    new ExpInfo(new CallSeqFuncExp(funcId, Array.Empty<Type>(), null, new []{
+                    new ExpInfo(new CallSeqFuncExp(new Func(funcId, TypeContext.Empty), null, new []{
                         new ExpInfo(new IntLiteralExp(1), Type.Int),
                         new ExpInfo(new IntLiteralExp(2), Type.Int) }), Type.Enumerable(Type.Int)),
 
@@ -259,7 +258,7 @@ namespace Gum.IR0.Runtime
                     PrintStringCmdStmt(new LocalVarExp("x"))
                 ),
 
-                PrintIntCmdStmt(new PrivateGlobalVarExp("x"))
+                PrintIntCmdStmt(new GlobalVarExp("x"))
             };
 
             var output = await EvalAsync(null, stmts);
@@ -539,7 +538,7 @@ namespace Gum.IR0.Runtime
         {
             var funcId = new FuncDeclId(0);
 
-            var func = new FuncDecl.Normal(funcId, false, Empty<string>(), Empty<string>(),
+            var func = new NormalFuncDecl(funcId, false, Arr<string>(), Arr<string>(),
                 new BlockStmt(
                     new ReturnStmt(null),
                     PrintStringCmdStmt("Wrong")
@@ -547,7 +546,7 @@ namespace Gum.IR0.Runtime
             );
 
             var stmts = new Stmt[] { 
-                new ExpStmt(new ExpInfo(new CallFuncExp(funcId, Array.Empty<Type>(), null, Array.Empty<ExpInfo>()), Type.Void)),
+                new ExpStmt(new ExpInfo(new CallFuncExp(new Func(funcId, TypeContext.Empty), null, Arr<ExpInfo>()), Type.Void)),
                 PrintStringCmdStmt("Completed")
             };
 
@@ -569,7 +568,7 @@ namespace Gum.IR0.Runtime
         {
             var funcId = new FuncDeclId(0);
 
-            var func = new FuncDecl.Normal(funcId, false, Empty<string>(), Empty<string>(),
+            var func = new NormalFuncDecl(funcId, false, Arr<string>(), Arr<string>(),
                 new BlockStmt(
                     new ReturnStmt(new IntLiteralExp(77)),
                     PrintStringCmdStmt("Wrong")
@@ -577,7 +576,7 @@ namespace Gum.IR0.Runtime
             );
 
             var stmts = new Stmt[] {
-                PrintIntCmdStmt(new CallFuncExp(funcId, Array.Empty<Type>(), null, Array.Empty<ExpInfo>())),
+                PrintIntCmdStmt(new CallFuncExp(new Func(funcId, TypeContext.Empty), null, Arr<ExpInfo>())),
             };
 
             var output = await EvalAsync(new[] { func }, stmts);
@@ -631,8 +630,8 @@ namespace Gum.IR0.Runtime
             var stmts = new Stmt[] {
                 new AwaitStmt(
                     new BlockStmt(
-                        new TaskStmt(PrintNumbersStmt(5), new CaptureInfo(false, Array.Empty<CaptureInfo.Element>())),
-                        new TaskStmt(PrintNumbersStmt(5), new CaptureInfo(false, Array.Empty<CaptureInfo.Element>()))
+                        new TaskStmt(PrintNumbersStmt(5), new CaptureInfo(false, Arr<CaptureInfo.Element>())),
+                        new TaskStmt(PrintNumbersStmt(5), new CaptureInfo(false, Arr<CaptureInfo.Element>()))
                     )
                 )
             };
@@ -730,8 +729,8 @@ namespace Gum.IR0.Runtime
             var stmts = new Stmt[] {
                 new AwaitStmt(
                     new BlockStmt(
-                        new AsyncStmt(PrintNumbersStmt(5), new CaptureInfo(false, Array.Empty<CaptureInfo.Element>())),
-                        new AsyncStmt(PrintNumbersStmt(5), new CaptureInfo(false, Array.Empty<CaptureInfo.Element>()))
+                        new AsyncStmt(PrintNumbersStmt(5), new CaptureInfo(false, Arr<CaptureInfo.Element>())),
+                        new AsyncStmt(PrintNumbersStmt(5), new CaptureInfo(false, Arr<CaptureInfo.Element>()))
                     )
                 )
             };
@@ -747,8 +746,8 @@ namespace Gum.IR0.Runtime
             var seqFunc0Id = new FuncDeclId(0);
             var seqFunc1Id = new FuncDeclId(1);
 
-            var seqFunc0 = new FuncDecl.Sequence(seqFunc0Id, Type.Int, false, Empty<string>(), Empty<string>(),
-                new ForeachStmt(Type.Int, "elem", new ExpInfo(new CallSeqFuncExp(seqFunc1Id, Array.Empty<Type>(), null, Array.Empty<ExpInfo>()), Type.Enumerable(Type.Int)),
+            var seqFunc0 = new SequenceFuncDecl(seqFunc0Id, Type.Int, false, Arr<string>(), Arr<string>(),
+                new ForeachStmt(Type.Int, "elem", new ExpInfo(new CallSeqFuncExp(new Func(seqFunc1Id, TypeContext.Empty), null, Arr<ExpInfo>()), Type.Enumerable(Type.Int)),
                     new BlockStmt(
                         PrintIntCmdStmt(new LocalVarExp("elem")),
                         new YieldStmt(new LocalVarExp("elem"))
@@ -756,7 +755,7 @@ namespace Gum.IR0.Runtime
                 )
             );
 
-            var seqFunc1 = new FuncDecl.Sequence(seqFunc1Id, Type.Int, false, Empty<string>(), Empty<string>(),
+            var seqFunc1 = new SequenceFuncDecl(seqFunc1Id, Type.Int, false, Arr<string>(), Arr<string>(),
                 new BlockStmt(
                     new YieldStmt(new IntLiteralExp(34)),
                     new YieldStmt(new IntLiteralExp(56))
@@ -764,7 +763,7 @@ namespace Gum.IR0.Runtime
             );
 
             var stmts = new[] {                
-                new ForeachStmt(Type.Int, "x", new ExpInfo(new CallSeqFuncExp(seqFunc0Id, Array.Empty<Type>(), null, Array.Empty<ExpInfo>()), Type.Enumerable(Type.Int)),
+                new ForeachStmt(Type.Int, "x", new ExpInfo(new CallSeqFuncExp(new Func(seqFunc0Id, TypeContext.Empty), null, Arr<ExpInfo>()), Type.Enumerable(Type.Int)),
                     PrintIntCmdStmt(new LocalVarExp("x")))
             };
 
@@ -772,16 +771,6 @@ namespace Gum.IR0.Runtime
 
             Assert.Equal("34345656", output);
         }
-
-        // Exp
-        [Fact]
-        public Task ExternalGlobalVarExp_GetGlobalValue()
-        {
-            throw new PrerequisiteRequiredException(Prerequisite.External);
-        }
-        
-        // PrivateGlobalVarExp 둘다 위에서 함
-        // LocalVarExp
 
         [Fact]
         public Task StaticMemberExp_GetStaticMemberValue()
@@ -906,7 +895,7 @@ namespace Gum.IR0.Runtime
             var printFuncId = new FuncDeclId(0);
             var testFuncId = new FuncDeclId(1);
 
-            var printFunc = new FuncDecl.Normal(printFuncId, false, Empty<string>(), Arr("x"),
+            var printFunc = new NormalFuncDecl(printFuncId, false, Arr<string>(), Arr("x"),
 
                 new BlockStmt(
                     PrintIntCmdStmt(new LocalVarExp("x")),
@@ -914,20 +903,20 @@ namespace Gum.IR0.Runtime
                 )
             );
 
-            var testFunc = new FuncDecl.Normal(testFuncId, false, Empty<string>(), Arr("i", "j", "k" ),
+            var testFunc = new NormalFuncDecl(testFuncId, false, Arr<string>(), Arr("i", "j", "k" ),
 
                 PrintStringCmdStmt("TestFunc")
 
             );
 
             ExpInfo MakePrintCall(int v) =>
-                new ExpInfo(new CallFuncExp(printFuncId, Array.Empty<Type>(), null, new[] { new ExpInfo(new IntLiteralExp(v), Type.Int) }), Type.Int);
+                new ExpInfo(new CallFuncExp(new Func(printFuncId, TypeContext.Empty), null, new[] { new ExpInfo(new IntLiteralExp(v), Type.Int) }), Type.Int);
 
 
             var stmts = new Stmt[]
             {
                 new ExpStmt(new ExpInfo(
-                    new CallFuncExp(testFuncId, Array.Empty<Type>(), null, new [] {
+                    new CallFuncExp(new Func(testFuncId, TypeContext.Empty), null, new [] {
                         MakePrintCall(1),
                         MakePrintCall(2),
                         MakePrintCall(3) }
@@ -944,9 +933,9 @@ namespace Gum.IR0.Runtime
         public async Task CallFuncExp_ReturnsValueProperly()
         {
             var funcId = new FuncDeclId(0);
-            var func = new FuncDecl.Normal(funcId, false, Empty<string>(), Empty<string>(), new ReturnStmt(SimpleString("Hello World")));
+            var func = new NormalFuncDecl(funcId, false, Arr<string>(), Arr<string>(), new ReturnStmt(SimpleString("Hello World")));
 
-            var stmts = new Stmt[] { PrintStringCmdStmt(new CallFuncExp(funcId, Array.Empty<Type>(), null, Array.Empty<ExpInfo>())) };
+            var stmts = new Stmt[] { PrintStringCmdStmt(new CallFuncExp(new Func(funcId, TypeContext.Empty), null, Arr<ExpInfo>())) };
 
             var output = await EvalAsync(new[] { func }, stmts);
             Assert.Equal("Hello World", output);
@@ -957,17 +946,17 @@ namespace Gum.IR0.Runtime
         public async Task CallSeqFuncExp_ReturnsEnumerableType()
         {
             var seqFuncId = new FuncDeclId(0);
-            var seqFunc = new FuncDecl.Sequence(seqFuncId, Type.String, false, Empty<string>(), Empty<string>(), BlankStmt.Instance); // return nothing
+            var seqFunc = new SequenceFuncDecl(seqFuncId, Type.String, false, Arr<string>(), Arr<string>(), BlankStmt.Instance); // return nothing
 
             var stmts = new Stmt[]
             {
                 // 선언하자 마자 대입하기
-                SimpleLocalVarDecl("x", Type.Enumerable(Type.String), new CallSeqFuncExp(seqFuncId, Array.Empty<Type>(), null, Array.Empty<ExpInfo>())),
+                SimpleLocalVarDecl("x", Type.Enumerable(Type.String), new CallSeqFuncExp(new Func(seqFuncId, TypeContext.Empty), null, Arr<ExpInfo>())),
 
                 // TODO: 지금은 value로 얻은 Enumerable을 조작할 수 있는 방법이 없다. foreach에서만 내부적으로 조작할 수 있는데, 그렇게만 하도록 할 것인지 결정을 해야 한다
 
                 // 로컬 변수에 새 값 대입하기
-                new ExpStmt(new ExpInfo(new AssignExp(new LocalVarExp("x"), new CallSeqFuncExp(seqFuncId, Array.Empty<Type>(), null, Array.Empty<ExpInfo>())), Type.Enumerable(Type.String))),
+                new ExpStmt(new ExpInfo(new AssignExp(new LocalVarExp("x"), new CallSeqFuncExp(new Func(seqFuncId, TypeContext.Empty), null, Arr<ExpInfo>())), Type.Enumerable(Type.String))),
             };
 
             await EvalAsync(new[] { seqFunc }, stmts);
@@ -981,7 +970,7 @@ namespace Gum.IR0.Runtime
             var printFuncId = new FuncDeclId(0);
             var makeLambdaId = new FuncDeclId(1);
 
-            var printFunc = new FuncDecl.Normal(printFuncId, false, Empty<string>(), Arr("x"),
+            var printFunc = new NormalFuncDecl(printFuncId, false, Arr<string>(), Arr("x"),
 
                 new BlockStmt(
                     PrintIntCmdStmt(new LocalVarExp("x")),
@@ -989,12 +978,12 @@ namespace Gum.IR0.Runtime
                 )
             );
 
-            var makeLambda = new FuncDecl.Normal(makeLambdaId, false, Empty<string>(), Empty<string>(),
+            var makeLambda = new NormalFuncDecl(makeLambdaId, false, Arr<string>(), Arr<string>(),
                 new BlockStmt(                    
                     PrintStringCmdStmt("MakeLambda"),
                     
                     new ReturnStmt(new LambdaExp(
-                        new CaptureInfo(false, Array.Empty<CaptureInfo.Element>()),
+                        new CaptureInfo(false, Arr<CaptureInfo.Element>()),
                         new[] { "i", "j", "k" },
                         PrintStringCmdStmt("TestFunc")
                     ))
@@ -1002,14 +991,14 @@ namespace Gum.IR0.Runtime
             );
             
             ExpInfo MakePrintCall(int v) =>
-                new ExpInfo(new CallFuncExp(printFuncId, Array.Empty<Type>(), null, new[] { new ExpInfo(new IntLiteralExp(v), Type.Int) }), Type.Int);
+                new ExpInfo(new CallFuncExp(new Func(printFuncId, TypeContext.Empty), null, new[] { new ExpInfo(new IntLiteralExp(v), Type.Int) }), Type.Int);
 
 
             var stmts = new Stmt[]
             {
                 new ExpStmt(new ExpInfo(
                     new CallValueExp(
-                        new ExpInfo(new CallFuncExp(makeLambdaId, Array.Empty<Type>(), null, Array.Empty<ExpInfo>()), Type.Lambda), 
+                        new ExpInfo(new CallFuncExp(new Func(makeLambdaId, TypeContext.Empty), null, Arr<ExpInfo>()), Type.Lambda), 
                         new [] {
                             MakePrintCall(1),
                             MakePrintCall(2),
@@ -1042,13 +1031,13 @@ namespace Gum.IR0.Runtime
                         new CaptureInfo.Element(Type.Int, "x"),
                     }),
 
-                    Array.Empty<string>(),
+                    Arr<string>(),
 
                     PrintIntCmdStmt(new LocalVarExp("x"))
                 )),
 
                 new ExpStmt(new ExpInfo(new AssignExp(new LocalVarExp("x"), new IntLiteralExp(34)), Type.Int)),
-                new ExpStmt(new ExpInfo(new CallValueExp(new ExpInfo(new LocalVarExp("func"), Type.Lambda), Array.Empty<ExpInfo>()), Type.Void))
+                new ExpStmt(new ExpInfo(new CallValueExp(new ExpInfo(new LocalVarExp("func"), Type.Lambda), Arr<ExpInfo>()), Type.Void))
             };
 
             var output = await EvalAsync(null, stmts);
@@ -1073,7 +1062,7 @@ namespace Gum.IR0.Runtime
         public async Task ListExp_EvaluatesElementExpInOrder()
         {
             var printFuncId = new FuncDeclId(0);
-            var printFunc = new FuncDecl.Normal(printFuncId, false, Empty<string>(), Arr("x"),
+            var printFunc = new NormalFuncDecl(printFuncId, false, Arr<string>(), Arr("x"),
 
                 new BlockStmt(
                     PrintIntCmdStmt(new LocalVarExp("x")),
@@ -1082,7 +1071,7 @@ namespace Gum.IR0.Runtime
             );
 
             Exp MakePrintCall(int v) =>
-                new CallFuncExp(printFuncId, Array.Empty<Type>(), null, new[] { new ExpInfo(new IntLiteralExp(v), Type.Int) });
+                new CallFuncExp(new Func(printFuncId, TypeContext.Empty), null, new[] { new ExpInfo(new IntLiteralExp(v), Type.Int) });
 
             var stmts = new Stmt[] {
                 new ExpStmt(new ExpInfo(

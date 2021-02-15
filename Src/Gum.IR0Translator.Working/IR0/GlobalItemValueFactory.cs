@@ -59,7 +59,7 @@ namespace Gum.IR0
                 var result = candidates.GetSingle();
                 if (result != null) return result;
                 if (candidates.IsEmpty) return NotFoundItemResult.Instance;
-                if (candidates.HasMultiple) return MultipleCandidatesItemResult.Instance;
+                if (candidates.HasMultiple) return MultipleCandidatesErrorItemResult.Instance;
 
                 throw new UnreachableCodeException();
             }
@@ -81,14 +81,14 @@ namespace Gum.IR0
                 var candidates = new Candidates<ItemResult>();
 
                 var internalResult = GetGlobalTypeInModule(outer.internalModuleInfo);
-                if (internalResult is MultipleCandidatesItemResult) return internalResult;
+                if (internalResult is ErrorItemResult) return internalResult;
                 if (internalResult is ValueItemResult) candidates.Add(internalResult);
                 // empty 무시
 
                 foreach (var externalModuleInfo in outer.externalModuleRepos.GetAllModules())
                 {
                     var externalResult = GetGlobalTypeInModule(externalModuleInfo);
-                    if (externalResult is MultipleCandidatesItemResult) return externalResult;
+                    if (externalResult is ErrorItemResult) return externalResult;
                     if (externalResult is ValueItemResult) candidates.Add(externalResult);
                     // empty는 무시
                 }
@@ -96,7 +96,7 @@ namespace Gum.IR0
                 var result = candidates.GetSingle();
                 if (result != null) return result;
                 if (candidates.IsEmpty) return NotFoundItemResult.Instance;
-                if (candidates.HasMultiple) return MultipleCandidatesItemResult.Instance;
+                if (candidates.HasMultiple) return MultipleCandidatesErrorItemResult.Instance;
 
                 throw new UnreachableCodeException();
             }
@@ -118,7 +118,7 @@ namespace Gum.IR0
                 var result = candidates.GetSingle();
                 if (result != null) return result;
                 if (candidates.IsEmpty) return NotFoundItemResult.Instance;
-                if (candidates.HasMultiple) return MultipleCandidatesItemResult.Instance;
+                if (candidates.HasMultiple) return MultipleCandidatesErrorItemResult.Instance;
 
                 throw new UnreachableCodeException();
             }
@@ -140,14 +140,14 @@ namespace Gum.IR0
                 var candidates = new Candidates<ItemResult>();
 
                 var internalResult = GetGlobalFuncInModule(outer.internalModuleInfo);
-                if (internalResult is MultipleCandidatesItemResult) return internalResult;
+                if (internalResult is ErrorItemResult) return internalResult;
                 if (internalResult is ValueItemResult) candidates.Add(internalResult);
                 // empty 무시
 
                 foreach (var externalModuleInfo in outer.externalModuleRepos.GetAllModules())
                 {
                     var externalResult = GetGlobalFuncInModule(externalModuleInfo);
-                    if (externalResult is MultipleCandidatesItemResult) return externalResult;
+                    if (externalResult is ErrorItemResult) return externalResult;
                     if (externalResult is ValueItemResult) candidates.Add(externalResult);
                     // empty는 무시
                 }
@@ -155,7 +155,7 @@ namespace Gum.IR0
                 var result = candidates.GetSingle();
                 if (result != null) return result;
                 if (candidates.IsEmpty) return NotFoundItemResult.Instance;
-                if (candidates.HasMultiple) return MultipleCandidatesItemResult.Instance;
+                if (candidates.HasMultiple) return MultipleCandidatesErrorItemResult.Instance;
 
                 throw new UnreachableCodeException();
             }
@@ -166,19 +166,19 @@ namespace Gum.IR0
 
                 // 타입끼리, 함수끼리 module을 건너서 중복체크를 한 뒤, 타입과 함수 결과를 가지고 중복체크를 한다
                 var typeResult = GetGlobalType();
-                if (typeResult is MultipleCandidatesItemResult) return typeResult;
+                if (typeResult is ErrorItemResult) return typeResult;
                 if (typeResult is ValueItemResult) candidates.Add(typeResult);
                 // empty 무시
 
                 var funcResult = GetGlobalFunc();
-                if (funcResult is MultipleCandidatesItemResult) return funcResult;
+                if (funcResult is ErrorItemResult) return funcResult;
                 if (funcResult is ValueItemResult) candidates.Add(funcResult);
                 // empty 무시
 
                 var result = candidates.GetSingle();
                 if (result != null) return result;
                 if (candidates.IsEmpty) return NotFoundItemResult.Instance;
-                if (candidates.HasMultiple) return MultipleCandidatesItemResult.Instance;
+                if (candidates.HasMultiple) return MultipleCandidatesErrorItemResult.Instance;
 
                 throw new UnreachableCodeException();
             }

@@ -205,11 +205,8 @@ namespace Gum.IR0
                 case (null, null):
                     return true;
 
-                case (ExternalGlobalVarExp externalGlobalVarExpX, ExternalGlobalVarExp externalGlobalVarExpY): 
-                    return EqualsExternalGlobalVarId(externalGlobalVarExpX.VarId, externalGlobalVarExpY.VarId);
-
-                case (PrivateGlobalVarExp privateGlobalVarExpX, PrivateGlobalVarExp privateGlobalVarExpY):
-                    return privateGlobalVarExpX.Name == privateGlobalVarExpY.Name;
+                case (GlobalVarExp globalVarExpX, GlobalVarExp globalVarExpY):
+                    return globalVarExpX.Name == globalVarExpY.Name;
 
                 case (LocalVarExp localVarExpX, LocalVarExp localVarExpY):
                     return localVarExpX.Name == localVarExpY.Name;

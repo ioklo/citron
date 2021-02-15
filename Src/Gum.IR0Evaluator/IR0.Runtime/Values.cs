@@ -176,10 +176,10 @@ namespace Gum.IR0.Runtime
             throw new NotImplementedException();
         }
 
-        public void SetEnum(string elemName, IEnumerable<NamedValue> members)
+        public void SetEnum(string elemName, ImmutableArray<NamedValue> members)
         {
             this.elemName = elemName;
-            this.members = members.ToImmutableArray();
+            this.members = members;
         }
 
         public string GetElemName()
@@ -215,11 +215,11 @@ namespace Gum.IR0.Runtime
         public ImmutableArray<string> ParamNames { get; }
         public Stmt Body { get; }
 
-        public Lambda(Value? capturedThis, ImmutableDictionary<string, Value> captures, IEnumerable<string> paramNames, Stmt body)
+        public Lambda(Value? capturedThis, ImmutableDictionary<string, Value> captures, ImmutableArray<string> paramNames, Stmt body)
         {
             CapturedThis = capturedThis;
             Captures = captures;
-            ParamNames = paramNames.ToImmutableArray();
+            ParamNames = paramNames;
             Body = body;
         }
     }

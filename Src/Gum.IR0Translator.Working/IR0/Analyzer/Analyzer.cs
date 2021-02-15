@@ -22,12 +22,10 @@ namespace Gum.IR0
 
         public static Script Analyze(
             S.Script script,
-            ItemInfoRepository itemInfoRepo,
-            TypeValueService typeValueService,
             TypeExpInfoService typeExpTypeValueService,
             IErrorCollector errorCollector)
         {
-            var context = new Context(itemInfoRepo, typeValueService, typeExpTypeValueService, errorCollector);
+            var context = new Context(typeExpTypeValueService, errorCollector);
             var analyzer = new Analyzer(context);
 
             // pass1, pass2
@@ -205,7 +203,7 @@ namespace Gum.IR0
         {
             public Stmt Body { get; }
             public CaptureInfo CaptureInfo { get; }
-            public FuncTypeValue FuncTypeValue { get; }
+            public LambdaTypeValue TypeValue { get; }
         }
 
         LambdaResult AnalyzeLambda(S.ISyntaxNode nodeForErrorReport, S.Stmt body, ImmutableArray<S.LambdaExpParam> parameters)
@@ -256,7 +254,7 @@ namespace Gum.IR0
             return new LambdaResult(
                 bodyResult.Stmt, 
                 new CaptureInfo(false, capturedLocalVars),
-                new FuncTypeValue(
+                new LambdaTypeValue(
                     retTypeValue ?? VoidTypeValue.Instance,
                     paramInfos.Select(paramInfo => paramInfo.TypeValue)));
         }
@@ -317,33 +315,17 @@ namespace Gum.IR0
 
                     var retType = context.GetType(retTypeValue);
                     var parameters = funcDecl.ParamInfo.Parameters.Select(param => param.Name).ToImmutableArray();
-                    context.AddSeqFuncDecl(funcPath.Value, retType, false, funcDecl.TypeParams, parameters, bodyResult.Stmt);
+                    context.AddSequenceFuncDecl(funcPath.Value, retType, false, funcDecl.TypeParams, parameters, bodyResult.Stmt);
                 }
                 else
                 {
                     // TODO: Body가 실제로 리턴을 제대로 하는지 확인해야 한다
                     var parameters = funcDecl.ParamInfo.Parameters.Select(param => param.Name).ToImmutableArray();
-                    context.AddFuncDecl(funcPath.Value, bThisCall: false, funcDecl.TypeParams, parameters, bodyResult.Stmt);
+                    context.AddNormalFuncDecl(funcPath.Value, bThisCall: false, funcDecl.TypeParams, parameters, bodyResult.Stmt);
                 }
             });
         }
-
-        public MemberVarValue CheckStaticMember(S.MemberExp memberExp, NormalTypeValue objNormalTypeValue)
-        {
-            var varValue = context.GetMemberVarValue(objNormalTypeValue, memberExp.MemberName);
-
-            if (varValue == null)
-                context.AddFatalError(A0303_MemberExp_MemberVarNotFound, memberExp, "멤버가 존재하지 않습니다");
-
-            if (0 < memberExp.MemberTypeArgs.Length)
-                context.AddFatalError(A0302_MemberExp_TypeArgsForMemberVariableIsNotAllowed, memberExp, "멤버변수에는 타입인자를 붙일 수 없습니다");
-
-            if (!Misc.IsVarStatic(varValue.GetItemId(), context))
-                context.AddFatalError(A0304_MemberExp_MemberVariableIsNotStatic, memberExp, "정적 변수가 아닙니다");
-            
-            return varValue;
-        }
-
+        
         void CheckParamTypes(S.ISyntaxNode nodeForErrorReport, ImmutableArray<TypeValue> parameters, ImmutableArray<TypeValue> args)
         {
             bool bFatal = false;

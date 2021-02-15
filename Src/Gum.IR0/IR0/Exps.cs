@@ -14,10 +14,10 @@ namespace Gum.IR0
         internal Exp() { }
     }
     
-    public class PrivateGlobalVarExp : Exp
+    public class GlobalVarExp : Exp
     {
         public string Name { get; }
-        public PrivateGlobalVarExp(string name) { Name = name; }
+        public GlobalVarExp(string name) { Name = name; }
     }
 
     public class LocalVarExp : Exp
@@ -147,13 +147,13 @@ namespace Gum.IR0
     // F(2, 3)
     public class CallFuncExp : Exp
     {
-        public FuncDeclId FuncDeclId { get; } // TypeArgs를 포함하는 FuncDeclId        
+        public Func Func { get; }
         public ExpInfo? Instance { get; }
         public ImmutableArray<ExpInfo> Args { get; }
 
-        public CallFuncExp(FuncDeclId funcDeclId, ExpInfo? instance, IEnumerable<ExpInfo> args)
+        public CallFuncExp(Func func, ExpInfo? instance, IEnumerable<ExpInfo> args)
         {
-            FuncDeclId = funcDeclId;            
+            Func = func;
             Instance = instance;
             Args = args.ToImmutableArray();
         }
@@ -161,13 +161,13 @@ namespace Gum.IR0
 
     public class CallSeqFuncExp : Exp
     {
-        public FuncDeclId FuncDeclId { get; } // TypeArgs를 포함하는 FuncDeclId
+        public Func Func { get; }
         public ExpInfo? Instance { get; }
         public ImmutableArray<ExpInfo> Args { get; }
 
-        public CallSeqFuncExp(FuncDeclId funcDeclId, ExpInfo? instance, IEnumerable<ExpInfo> args)
+        public CallSeqFuncExp(Func func, ExpInfo? instance, IEnumerable<ExpInfo> args)
         {
-            FuncDeclId = funcDeclId;
+            Func = func;
             Instance = instance;
             Args = args.ToImmutableArray();
         }
@@ -214,7 +214,8 @@ namespace Gum.IR0
         }
     }
 
-    public class StaticMemberExp : Exp    {
+    public class StaticMemberExp : Exp
+    {
         public Type Type { get; }
         public string MemberName { get; }
 

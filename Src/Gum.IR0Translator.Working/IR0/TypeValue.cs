@@ -15,9 +15,13 @@ namespace Gum.IR0
     // 모두 immutable
     abstract partial class TypeValue : ItemValue
     {
-        public virtual ItemResult? GetMember(M.Name memberName, ImmutableArray<TypeValue> typeArgs, TypeValue? hintType) { return null; }
-        public virtual TypeValue? GetMemberType(M.Name memberName, ImmutableArray<TypeValue> typeArgs) { return null; }
-        public abstract TypeValue Apply(ITypeEnv typeEnv);
+        public virtual TypeValue? GetBaseType() { return null; }
+
+        public virtual ItemResult GetMember(M.Name memberName, ImmutableArray<TypeValue> typeArgs, TypeValue? hintType) { return null; }
+        public virtual TypeValue? GetMemberType(M.Name memberName, ImmutableArray<TypeValue> typeArgs) { return null; }        
+        internal abstract TypeValue Apply(TypeEnv typeEnv);
+
+        public abstract IR0.Type GetRType();
     }
 
     // "var"
@@ -25,7 +29,7 @@ namespace Gum.IR0
     {
         public static VarTypeValue Instance { get; } = new VarTypeValue();
         private VarTypeValue() { }
-        public override TypeValue Apply(ITypeEnv typeEnv) { return this; }
+        internal override TypeValue Apply(TypeEnv typeEnv) { return this; }
     }
 
     // T: depth는 지역적이므로, 주어진 컨텍스트 안에서만 의미가 있다
@@ -41,7 +45,7 @@ namespace Gum.IR0
             Name = name;
         }
 
-        public override TypeValue Apply(ITypeEnv typeEnv)
+        internal override TypeValue Apply(TypeEnv typeEnv)
         {
             var typeValue = typeEnv.GetValue(Depth, Index);
             if (typeValue != null)
@@ -53,7 +57,10 @@ namespace Gum.IR0
 
     class ClassTypeValue : NormalTypeValue
     {
-
+        internal override TypeValue Apply(TypeEnv typeEnv)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     class StructTypeValue : NormalTypeValue
@@ -65,22 +72,27 @@ namespace Gum.IR0
         M.NamespacePath? namespacePath;
 
         // member일 경우
-        NormalTypeValue? outer;
-        ITypeEnv typeEnv;
+        TypeValue? outer;        
 
         M.StructInfo structInfo;
         ImmutableArray<TypeValue> typeArgs;
 
-        public StructTypeValue(TypeValueFactory typeValueFactory, M.ModuleName moduleName, M.NamespacePath namespacePath, ITypeEnv typeEnv, M.StructInfo structInfo, ImmutableArray<TypeValue> typeArgs)
-            : base(typeValueFactory, moduleName, namespacePath, typeEnv)
+        public StructTypeValue(TypeValueFactory typeValueFactory, M.ModuleName moduleName, M.NamespacePath namespacePath, M.StructInfo structInfo, ImmutableArray<TypeValue> typeArgs)
+            : this(typeValueFactory, moduleName, namespacePath, null, structInfo, typeArgs)
         {
-            this.structInfo = structInfo;
-            this.typeArgs = typeArgs;
         }
         
-        public StructTypeValue(TypeValueFactory typeValueFactory, TypeValue outer, M.StructInfo structInfo, ImmutableArray<TypeValue> typeArgs, ITypeEnv typeEnv)
-            : base(typeValueFactory, outer, typeEnv)
+        public StructTypeValue(TypeValueFactory typeValueFactory, TypeValue outer, M.StructInfo structInfo, ImmutableArray<TypeValue> typeArgs)
+            : this(typeValueFactory, null, null, outer, structInfo, typeArgs)
         {
+        }
+
+        StructTypeValue(TypeValueFactory factory, M.ModuleName? moduleName, M.NamespacePath? namespacePath, TypeValue? outer, M.StructInfo structInfo, ImmutableArray<TypeValue> typeArgs)
+        {
+            this.typeValueFactory = factory;
+            this.moduleName = moduleName;
+            this.namespacePath = namespacePath;
+            this.outer = outer;
             this.structInfo = structInfo;
             this.typeArgs = typeArgs;
         }
@@ -100,7 +112,7 @@ namespace Gum.IR0
             }
 
             if (1 < results.Count)
-                return MultipleCandidatesItemResult.Instance;
+                return MultipleCandidatesErrorItemResult.Instance;
 
             if (results.Count == 0)
                 return NotFoundItemResult.Instance;
@@ -124,19 +136,16 @@ namespace Gum.IR0
             }
 
             if (1 < results.Count)
-                return MultipleCandidatesItemResult.Instance;
+                return MultipleCandidatesErrorItemResult.Instance;
 
             if (results.Count == 0)
                 return NotFoundItemResult.Instance;
 
             return results[0];
         }
-
+        
         ItemResult GetMemberVar(M.Name memberName, ImmutableArray<TypeValue> typeArgs, TypeValue? hintType)
         {
-            // 타입 아규먼트가 있다면 이것은 변수가 아니다 (에러 아님)
-            if (typeArgs.Length != 0) return NotFoundItemResult.Instance;
-
             var results = new List<ValueItemResult>();
             foreach (var memberVar in structInfo.MemberVars)
                 if (memberVar.Name.Equals(memberName))
@@ -146,36 +155,49 @@ namespace Gum.IR0
                 }
 
             if (1 < results.Count)
-                return MultipleCandidatesItemResult.Instance;
+                return MultipleCandidatesErrorItemResult.Instance;
 
             if (results.Count == 0)
                 return NotFoundItemResult.Instance;
 
+            // 변수를 찾았는데 타입 아규먼트가 있다면 에러
+            if (typeArgs.Length != 0) 
+                return VarWithTypeArgErrorItemResult.Instance;
+
             return results[0];
-        }        
+        }
+
+        public override TypeValue? GetBaseType()
+        {
+            if (structInfo.BaseType == null) return null;
+
+            var typeEnv = MakeTypeEnv();
+            var typeValue = typeValueFactory.MakeTypeValue(structInfo.BaseType);
+            return typeValue.Apply(typeEnv);
+        }
 
         public override ItemResult GetMember(M.Name memberName, ImmutableArray<TypeValue> typeArgs, TypeValue? hintTypeValue)
         {
             // TODO: caching
             var results = new List<ValueItemResult>();
 
-            // multiple, notfound, found
+            // error, notfound, found
             var typeResult = GetMemberType(memberName, typeArgs, hintTypeValue);
-            if (typeResult is MultipleCandidatesItemResult) return typeResult;
+            if (typeResult is ErrorItemResult) return typeResult;
             if (typeResult is ValueItemResult typeMemberResult) results.Add(typeMemberResult);
 
-            // multiple, notfound, found
+            // error, notfound, found
             var funcResult = GetMemberFunc(memberName, typeArgs, hintTypeValue);
-            if (funcResult is MultipleCandidatesItemResult) return funcResult;
+            if (funcResult is ErrorItemResult) return funcResult;
             if (funcResult is ValueItemResult funcMemberResult) results.Add(funcMemberResult);
 
-            // multiple notfound, found
+            // error, notfound, found
             var varResult = GetMemberVar(memberName, typeArgs, hintTypeValue);
-            if (varResult is MultipleCandidatesItemResult) return varResult;
+            if (varResult is ErrorItemResult) return varResult;
             if (varResult is ValueItemResult varMemberResult) results.Add(varMemberResult);            
 
             if (1 < results.Count)
-                return MultipleCandidatesItemResult.Instance;
+                return MultipleCandidatesErrorItemResult.Instance;
 
             if (results.Count == 0)
                 return NotFoundItemResult.Instance;
@@ -195,24 +217,36 @@ namespace Gum.IR0
             return null;
         }
 
-        public override TypeValue Apply(ITypeEnv typeEnv)
+        internal override int FillTypeEnv(TypeEnvBuilder builder) 
         {
-            // [X<00T>.Y<10U>.Z<20V>].Apply([00 => int, 10 => short, 20 => string])
-            var typeInfo = GetTypeInfo();
-            var typeArgs = GetTypeArgs();
+            int depth;
+            if (outer != null)
+                depth = outer.FillTypeEnv(builder) + 1;
+            else
+                depth = 0;
+
+            for (int i = 0; i < structInfo.TypeParams.Length; i++)
+                builder.Add(depth, i, typeArgs[i]);
+
+            return depth;
+        }
+
+        internal override TypeValue Apply(TypeEnv typeEnv)
+        {
+            // [X<00T>.Y<10U>.Z<20V>].Apply([00 => int, 10 => short, 20 => string])            
 
             if (outer != null)
             {
                 var appliedOuter = outer.Apply(typeEnv);
                 var appliedTypeArgs = ImmutableArray.CreateRange(typeArgs, typeArg => typeArg.Apply(typeEnv));
-                return typeValueFactory.MakeStructType(appliedOuter, typeInfo, appliedTypeArgs);
+                return typeValueFactory.MakeMemberType(appliedOuter, structInfo, appliedTypeArgs);
             }
             else
             {
                 Debug.Assert(moduleName != null && namespacePath != null);
 
                 var appliedTypeArgs = ImmutableArray.CreateRange(typeArgs, typeArg => typeArg.Apply(typeEnv));
-                return typeValueFactory.MakeGlobalType(moduleName.Value, namespacePath.Value, typeInfo, appliedTypeArgs);
+                return typeValueFactory.MakeGlobalType(moduleName.Value, namespacePath.Value, structInfo, appliedTypeArgs);
             }
         }
 
@@ -220,36 +254,7 @@ namespace Gum.IR0
 
     // (struct, class, enum) (external/internal) (global/member) type
     abstract partial class NormalTypeValue : TypeValue
-    {
-        
-        // global
-        protected NormalTypeValue(TypeValueFactory typeValueFactory, M.ModuleName moduleName, M.NamespacePath namespacePath, ITypeEnv typeEnv)
-            : this(typeValueFactory, moduleName, namespacePath, null, typeEnv)
-        {
-        }
-
-        // member
-        protected NormalTypeValue(TypeValueFactory typeValueFactory, NormalTypeValue outer, ITypeEnv typeEnv)
-            : this(typeValueFactory, null, null, outer, typeEnv)
-        {
-        }
-
-        NormalTypeValue(TypeValueFactory typeValueFactory, M.ModuleName? moduleName, M.NamespacePath? namespacePath, NormalTypeValue? outer, ITypeEnv typeEnv)
-        {
-            this.typeValueFactory = typeValueFactory;
-            this.moduleName = moduleName;
-            this.namespacePath = namespacePath;
-            this.outer = outer;
-            this.typeEnv = typeEnv;
-        }
-
-        public ITypeEnv GetTypeEnv()
-        {
-            return typeEnv;
-        }
-
-        protected abstract M.TypeInfo GetTypeInfo();
-        protected abstract ImmutableArray<TypeValue> GetTypeArgs();
+    {   
     }
 
     // "void"
@@ -257,18 +262,31 @@ namespace Gum.IR0
     {
         public static VoidTypeValue Instance { get; } = new VoidTypeValue();
         private VoidTypeValue() { }
+
+        internal override TypeValue Apply(TypeEnv typeEnv)
+        {
+            return this;
+        }
     }
 
     // ArgTypeValues => RetValueTypes
-    class FuncTypeValue : TypeValue
+    class LambdaTypeValue : TypeValue
     {
+        public int LambdaId { get; }
         public TypeValue Return { get; }
         public ImmutableArray<TypeValue> Params { get; }
 
-        public FuncTypeValue(TypeValue ret, IEnumerable<TypeValue> parameters)
+        public LambdaTypeValue(int lambdaId, TypeValue ret, ImmutableArray<TypeValue> parameters)
         {
+            LambdaId = lambdaId;
             Return = ret;
-            Params = parameters.ToImmutableArray();
+            Params = parameters;
+        }
+
+        // lambdatypevalue를 replace할 수 있는가
+        internal override TypeValue Apply(TypeEnv typeEnv)
+        {
+            throw new InvalidOperationException();
         }
     }
 
@@ -282,6 +300,11 @@ namespace Gum.IR0
         {
             EnumTypeValue = enumTypeValue;
             Name = name;
+        }
+
+        internal override TypeValue Apply(TypeEnv typeEnv)
+        {
+            throw new NotImplementedException();
         }
     }
 }

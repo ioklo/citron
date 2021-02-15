@@ -13,7 +13,7 @@ namespace Gum.IR0
         public IEnumerable<M.TypeInfo> GetTypes(ItemPath path);
     }
 
-    // Phase3에서 타입을 얻어오는 용도
+    // reference module에서 타입 정보를 얻어오는 역할    
     class TypeInfoRepository : ITypeInfoRepository
     {
         M.ModuleInfo internalModuleInfo;

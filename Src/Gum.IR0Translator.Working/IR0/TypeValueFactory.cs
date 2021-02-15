@@ -14,26 +14,29 @@ namespace Gum.IR0
     // Low-level ItemValue factory
     internal class TypeValueFactory
     {
-        public TypeValueFactory()
+        TypeInfoRepository typeInfoRepo;
+
+        public TypeValueFactory(TypeInfoRepository typeInfoRepo)
         {
+            this.typeInfoRepo = typeInfoRepo;
         }
 
         public TypeValue MakeGlobalType(M.ModuleName moduleName, M.NamespacePath namespacePath, M.TypeInfo typeInfo, ImmutableArray<TypeValue> typeArgs)
         {
             switch (typeInfo)
             {
-                case M.StructInfo structInfo: return new StructTypeValue(moduleName, namespacePath, typeInfo, typeArgs);
+                case M.StructInfo structInfo: return new StructTypeValue(this, moduleName, namespacePath, structInfo, typeArgs);
             }
 
             throw new UnreachableCodeException();
         }
 
-        public NormalTypeValue MakeMemberType(NormalTypeValue outer, M.TypeInfo typeInfo, ImmutableArray<TypeValue> typeArgs)
+        public NormalTypeValue MakeMemberType(TypeValue outer, M.TypeInfo typeInfo, ImmutableArray<TypeValue> typeArgs)
         {
             switch (typeInfo)
             {
                 case M.StructInfo structInfo:
-                    return new StructTypeValue(this, outer, structInfo, typeArgs, typeEnv);
+                    return new StructTypeValue(this, outer, structInfo, typeArgs);
             }
 
             throw new UnreachableCodeException();
@@ -41,17 +44,7 @@ namespace Gum.IR0
 
         public MemberVarValue MakeMemberVarValue(NormalTypeValue outer, M.MemberVarInfo info)
         {
-            // class X<T> { T x; }
-            // MakeMemberVarValue(X<int>, X<>.x)
-            // X<>.x.Type == TV(0, 0)            
-
-            // X<int>.GetTypeEnv() == [TV(0,0)=>int]
-
-            var memberType = MakeTypeValue(info.Type);         // TV(0, 0)
-            var typeEnv = outer.GetTypeEnv();                  // [TV(0,0) => int]
-            var appliedMemberType = memberType.Apply(typeEnv);
-
-            return new MemberVarValue(info.Name, info.IsStatic, appliedMemberType);
+            return new MemberVarValue(this, outer, info);
         }
 
         ImmutableArray<TypeValue> MakeTypeValues(ImmutableArray<M.Type> mtypes)
@@ -65,7 +58,7 @@ namespace Gum.IR0
 
             return builder.ToImmutable();
         }
-
+        
         public TypeValue MakeTypeValue(M.Type mtype)
         {
             switch (mtype)
@@ -73,19 +66,19 @@ namespace Gum.IR0
                 case M.TypeVarType typeVar:
                     return new TypeVarTypeValue(typeVar.Depth, typeVar.Index, typeVar.Name);
 
-                case M.ExternalType externalType:
-                    {   
+                case M.GlobalType externalType:
+                    {
+                        // typeInfo를 가져와야 한다
+                        var typeInfo = typeInfoRepo.GetType(externalType.ModuleName, externalType.NamespacePath, externalType.Name, externalType.TypeArgs.Length);
                         Debug.Assert(typeInfo != null);
 
                         var typeArgs = MakeTypeValues(externalType.TypeArgs);
-                        return MakeGlobalType(externalType.ModuleName, externalType.NamespacePath, externalType.Name, typeArgs);
+                        return MakeGlobalType(externalType.ModuleName, externalType.NamespacePath, typeInfo, typeArgs);
                     }
 
                 case M.MemberType memberType:
                     {
-                        var outerType = ToTypeValue(memberType.Outer) as NormalTypeValue;
-                        Debug.Assert(outerType != null);
-
+                        var outerType = MakeTypeValue(memberType.Outer);
                         var typeArgs = MakeTypeValues(memberType.TypeArgs);
 
                         var memberTypeValue = outerType.GetMemberType(memberType.Name, typeArgs);
@@ -94,7 +87,7 @@ namespace Gum.IR0
                         return memberTypeValue;
                     }
 
-                case VoidType _:
+                case M.VoidType _:
                     return VoidTypeValue.Instance;
 
                 default:

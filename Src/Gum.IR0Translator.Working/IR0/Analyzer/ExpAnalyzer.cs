@@ -332,17 +332,30 @@ namespace Gum.IR0
         //}
 
         // CallExp분석에서 Callable이 Identifier인 경우 처리
-        ExpResult AnalyzeCallExpFuncCallable(FuncValue funcValue, ImmutableArray<ExpResult> argResults)
+        ExpResult AnalyzeCallExpFuncCallable(S.ISyntaxNode nodeForErrorReport, FuncValue funcValue, ImmutableArray<ExpResult> argResults)
         {
+            // 인자 타입 체크 
+            var argTypes = ImmutableArray.CreateRange(argResults, info => info.TypeValue);            
+            CheckParamTypes(nodeForErrorReport, funcValue.GetParamTypes(), argTypes);
+
             var args = ImmutableArray.CreateRange(argResults, argResult =>
             {
-                var type = context.GetType(argResult.TypeValue);
-                return new ExpInfo(argResult.Exp, type);
+                // rType으로 
+                var rtype = context.GetType(argResult.TypeValue);
+                return new ExpInfo(argResult.Exp, rtype);
             });
 
             // 4개의 케이스
             // (internal/external) (sequence/normal)
-            // FuncValue.
+
+            // 가장 일반적인 케이스 internal / normal
+            if (!funcValue.IsSequence && funcValue.IsInternal)
+            {
+                var func = funcValue.MakeFunc();
+                var retType = funcValue.GetRetType();
+
+                return new ExpResult(new CallFuncExp(func, null, args), retType);
+            }            
             
             // 일단 instantiation을 없다고 가정을 했던것 같으니까.. 함수에 타입 인자들을 다 넘겨줄 생각을 해보자
             // T => X<int>.Y<short>.F<string, T>
@@ -368,14 +381,14 @@ namespace Gum.IR0
         // CallExp 분석에서 Callable이 Exp인 경우 처리
         ExpResult AnalyzeCallExpExpCallable(Exp callable, TypeValue callableType, ImmutableArray<ExpResult> argResults, S.CallExp nodeForErrorReport)
         {
-            var funcTypeValue = callableType as FuncTypeValue;
-            if (funcTypeValue == null)
+            var lambdaType = callableType as LambdaTypeValue;
+            if (lambdaType == null)
                 context.AddFatalError(A0902_CallExp_CallableExpressionIsNotCallable, nodeForErrorReport.Callable, $"호출 가능한 타입이 아닙니다");
 
             var argTypes = ImmutableArray.CreateRange(argResults, info => info.TypeValue);
-            CheckParamTypes(nodeForErrorReport, funcTypeValue.Params, argTypes);
+            CheckParamTypes(nodeForErrorReport, lambdaType.Params, argTypes);
             
-            var callableTypeId = context.GetType(funcTypeValue);
+            var callableTypeId = context.GetType(lambdaType);
             var args = argResults.Select(info =>
             {
                 var typeId = context.GetType(info.TypeValue);
@@ -385,7 +398,7 @@ namespace Gum.IR0
             // TODO: 사실 Type보다 Allocation정보가 들어가야 한다
             return new ExpResult(
                 new CallValueExp(new ExpInfo(callable, callableTypeId), args),
-                funcTypeValue.Return);
+                lambdaType.Return);
         }
         
         ExpResult AnalyzeCallExp(S.CallExp exp, TypeValue? hintTypeValue) 
@@ -433,7 +446,7 @@ namespace Gum.IR0
 
             return new ExpResult(
                 new LambdaExp(lambdaResult.CaptureInfo, exp.Params.Select(param => param.Name), lambdaResult.Body),
-                lambdaResult.FuncTypeValue);
+                lambdaResult.TypeValue);
         }
 
         ExpResult AnalyzeIndexerExp(S.IndexerExp exp)
@@ -496,6 +509,17 @@ namespace Gum.IR0
             //return true;
         }        
 
+        Exp MakeMemberExp(TypeValue typeValue, Exp instance, string name)
+        {
+            switch(typeValue)
+            {
+                case StructTypeValue structType:
+                    return new StructMemberExp(instance, name);
+            }
+
+            throw new NotImplementedException();
+        }
+
         ExpResult AnalyzeMemberExpExpParent(S.MemberExp memberExp, Exp parentExp, TypeValue parentType, TypeValue? hintType)
         {
             NormalTypeValue? parentNormalType = parentType as NormalTypeValue;
@@ -503,36 +527,53 @@ namespace Gum.IR0
             if (parentNormalType == null)
                 context.AddFatalError(A0301_MemberExp_InstanceTypeIsNotNormalType, memberExp, "멤버를 가져올 수 있는 타입이 아닙니다");
 
-            // MemberResolver
-            
+            var typeArgs = GetTypeValues(memberExp.MemberTypeArgs, context);
+            var memberResult = parentType.GetMember(memberExp.MemberName, typeArgs, hintType);
 
-            if (0 < memberExp.MemberTypeArgs.Length)
-                context.AddFatalError(A0302_MemberExp_TypeArgsForMemberVariableIsNotAllowed, memberExp, "멤버변수에는 타입인자를 붙일 수 없습니다");
+            switch(memberResult)
+            {
+                case MultipleCandidatesErrorItemResult:
+                    context.AddFatalError(A0306_MemberExp_TypeArgsForMemberVariableIsNotAllowed, memberExp, "같은 이름의 멤버가 하나이상 있습니다");
+                    break;
 
-            var varValue = context.GetMemberVarValue(parentNormalType, memberExp.MemberName);
-            if (varValue == null)
-                context.AddFatalError(A0303_MemberExp_MemberVarNotFound, memberExp, $"{memberExp.MemberName}은 {parentNormalType}의 멤버가 아닙니다");
+                case VarWithTypeArgErrorItemResult:
+                    context.AddFatalError(A0302_MemberExp_TypeArgsForMemberVariableIsNotAllowed, memberExp, "멤버변수에는 타입인자를 붙일 수 없습니다");
+                    throw new UnreachableCodeException();
 
-            return varValue;
+                case NotFoundItemResult:
+                    context.AddFatalError(A0303_MemberExp_MemberVarNotFound, memberExp, $"{memberExp.MemberName}은 {parentNormalType}의 멤버가 아닙니다");
+                    break;
 
-            var memberVar = GetInstanceMember(memberExp, parentType);
+                case ValueItemResult valueResult:
+                    switch(valueResult.ItemValue)
+                    {
+                        case TypeValue:
+                            context.AddFatalError(A0303_MemberExp_MemberVarNotFound, memberExp, $"{memberExp.MemberName}은 {parentNormalType}의 멤버가 아닙니다");
+                            break;
 
-            // instance이지만 static 이라면, exp는 실행하고, static변수에서 가져온다
-            var nodeInfo = IsVarStatic(varValue.VarId, context)
-                ? MemberExpInfo.MakeStatic(objTypeValue, varValue)
-                : MemberExpInfo.MakeInstance(objTypeValue, memberExp.MemberName);
+                        case FuncValue:
+                            throw new NotImplementedException();
 
-            var typeValue = context.TypeValueService.GetTypeValue(varValue);
+                        case MemberVarValue memberVar:
+                            // static인지 검사
+                            if (memberVar.IsStatic)
+                                context.AddFatalError(A0305_MemberExp_MemberVariableIsStatic, memberExp, $"인스턴스 값에서는 정적 멤버 변수를 참조할 수 없습니다");
 
-            return new ExpResult(nodeInfo, typeValue);
+                            var exp = MakeMemberExp(parentType, parentExp, memberExp.MemberName);
+                            return new ExpResult(exp, memberVar.GetTypeValue());
+                    }
+                    break;
+            }
+
+            throw new UnreachableCodeException();
         }
 
         // parent."x"<>
         ExpResult AnalyzeMemberExp(S.MemberExp memberExp, TypeValue? hintType)
-        {
-            var identifierResult = ResolveIdentifier(memberExp, hintType);
+        {            
+            var parentResult = ResolveIdentifier(memberExp.Parent, null);
 
-            switch(identifierResult)
+            switch(parentResult)
             {
                 case NotFoundIdentifierResult _:
                     context.AddFatalError();
@@ -543,7 +584,7 @@ namespace Gum.IR0
                     break;
 
                 case ExpIdentifierResult expResult:
-                    return AnalyzeMemberExpExpParent(expResult.Exp, expResult.TypeValue, hintType);
+                    return AnalyzeMemberExpExpParent(memberExp, expResult.Exp, expResult.TypeValue, hintType);
 
                 case TypeIdentifierResult typeResult:
                     return AnalyzeMemberExpTypeParent(typeResult.TypeValue);

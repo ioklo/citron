@@ -28,11 +28,8 @@ namespace Gum.IR0.Runtime
         {
             switch(exp)
             {
-                case ExternalGlobalVarExp egvExp:
-                    throw new NotImplementedException();
-
-                case PrivateGlobalVarExp pgvExp:
-                    return context.GetPrivateGlobalValue(pgvExp.Name);
+                case GlobalVarExp pgvExp:
+                    return context.GetGlobalValue(pgvExp.Name);
 
                 case LocalVarExp localVarExp:
                     return context.GetLocalValue(localVarExp.Name);
@@ -56,16 +53,11 @@ namespace Gum.IR0.Runtime
                 default: 
                     throw new UnreachableCodeException();
             }
-        }
+        }        
 
-        void EvalExternalGlobalVarExp(ExternalGlobalVarExp exp, Value result, EvalContext context)
+        void EvalGlobalVarExp(GlobalVarExp exp, Value result, EvalContext context)
         {
-            throw new NotImplementedException();
-        }
-
-        void EvalPrivateGlobalVarExp(PrivateGlobalVarExp exp, Value result, EvalContext context)
-        {
-            var globalValue = context.GetPrivateGlobalValue(exp.Name);
+            var globalValue = context.GetGlobalValue(exp.Name);
             result.SetValue(globalValue);
         }
 
@@ -152,9 +144,7 @@ namespace Gum.IR0.Runtime
         
         async ValueTask EvalCallFuncExpAsync(CallFuncExp exp, Value result, EvalContext context)
         {   
-            var funcDecl = context.GetFuncDecl(exp.FuncDeclId);
-
-            // TODO: func.TypeArgs
+            var funcDecl = context.GetFuncDecl<NormalFuncDecl>(exp.Func.DeclId);
 
             // 함수는 this call이지만 instance가 없는 경우는 없다.
             Debug.Assert(!(funcDecl.IsThisCall && exp.Instance == null));
@@ -181,7 +171,7 @@ namespace Gum.IR0.Runtime
 
         async ValueTask EvalCallSeqFuncExpAsync(CallSeqFuncExp exp, Value result, EvalContext context)
         {
-            var funcDecl = (FuncDecl.Sequence)context.GetFuncDecl(exp.FuncDeclId);
+            var funcDecl = context.GetFuncDecl<SequenceFuncDecl>(exp.Func.DeclId);
 
             // 함수는 this call이지만 instance가 없는 경우는 없다.
             Debug.Assert(!(funcDecl.IsThisCall && exp.Instance == null));
@@ -364,7 +354,7 @@ namespace Gum.IR0.Runtime
 
         async ValueTask EvalNewEnumExpAsync(NewEnumExp exp, Value result, EvalContext context)
         {
-            var members = new List<NamedValue>();
+            var members = ImmutableArray.CreateBuilder<NamedValue>(exp.Members.Length);
 
             foreach (var member in exp.Members)
             {
@@ -374,7 +364,7 @@ namespace Gum.IR0.Runtime
                 await EvalAsync(member.ExpInfo.Exp, argValue, context);
             }
 
-            ((EnumValue)result).SetEnum(exp.Name, members);
+            ((EnumValue)result).SetEnum(exp.Name, members.MoveToImmutable());
         }
 
         ValueTask EvalNewStructExpAsync(NewStructExp exp, Value result, EvalContext context)
@@ -391,8 +381,7 @@ namespace Gum.IR0.Runtime
         {
             switch(exp)
             {
-                case ExternalGlobalVarExp egvExp: EvalExternalGlobalVarExp(egvExp, result, context); break;
-                case PrivateGlobalVarExp pgvExp: EvalPrivateGlobalVarExp(pgvExp, result, context); break;
+                case GlobalVarExp pgvExp: EvalGlobalVarExp(pgvExp, result, context); break;
                 case LocalVarExp localVarExp: EvalLocalVarExp(localVarExp, result, context); break;                
                 case StringExp stringExp: await EvalStringExpAsync(stringExp, result, context); break;
                 case IntLiteralExp intExp: EvalIntLiteralExp(intExp, result, context); break;

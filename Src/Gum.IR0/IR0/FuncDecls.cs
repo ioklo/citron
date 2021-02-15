@@ -25,30 +25,31 @@ namespace Gum.IR0
             TypeParams = typeParams;
             ParamNames = paramNames;
             Body = body;
-        }
+        }       
+        
+    }
 
-        public class Normal : FuncDecl
-        {   
-            public Normal(
-                FuncDeclId id,
-                bool bThisCall,
-                ImmutableArray<string> typeParams,
-                ImmutableArray<string> paramNames,
-                Stmt body)
-                : base(id, bThisCall, typeParams, paramNames, body)
-            {   
-            }
-        }
-
-        public class Sequence : FuncDecl
+    public class NormalFuncDecl : FuncDecl
+    {
+        public NormalFuncDecl(
+            FuncDeclId id,
+            bool bThisCall,
+            ImmutableArray<string> typeParams,
+            ImmutableArray<string> paramNames,
+            Stmt body)
+            : base(id, bThisCall, typeParams, paramNames, body)
         {
-            public Type ElemType { get; }
+        }
+    }
 
-            public Sequence(FuncDeclId id, Type elemType, bool bThisCall, ImmutableArray<string> typeParams, ImmutableArray<string> paramNames, Stmt body)
-                : base(id, bThisCall, typeParams, paramNames, body)
-            {
-                ElemType = elemType;
-            }
+    public class SequenceFuncDecl : FuncDecl
+    {
+        public Type ElemType { get; }
+
+        public SequenceFuncDecl(FuncDeclId id, Type elemType, bool bThisCall, ImmutableArray<string> typeParams, ImmutableArray<string> paramNames, Stmt body)
+            : base(id, bThisCall, typeParams, paramNames, body)
+        {
+            ElemType = elemType;
         }
     }
 }

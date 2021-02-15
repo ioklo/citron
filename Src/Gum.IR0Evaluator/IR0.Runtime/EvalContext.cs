@@ -15,9 +15,9 @@ namespace Gum.IR0.Runtime
             public ImmutableArray<FuncDecl> FuncDecls { get; }
             public Dictionary<string, Value> PrivateGlobalVars { get; }
 
-            public SharedData(IEnumerable<FuncDecl> funcDecls)
+            public SharedData(ImmutableArray<FuncDecl> funcDecls)
             {
-                FuncDecls = funcDecls.ToImmutableArray();
+                FuncDecls = funcDecls;
                 PrivateGlobalVars = new Dictionary<string, Value>();
             }
         }
@@ -30,7 +30,7 @@ namespace Gum.IR0.Runtime
         private Value? thisValue;
         private Value retValue;
 
-        public EvalContext(IEnumerable<FuncDecl> funcDecls)
+        public EvalContext(ImmutableArray<FuncDecl> funcDecls)
         {
             sharedData = new SharedData(funcDecls);
             
@@ -100,7 +100,7 @@ namespace Gum.IR0.Runtime
             throw new NotImplementedException();
         }
 
-        public Value GetPrivateGlobalValue(string name)
+        public Value GetGlobalValue(string name)
         {
             return sharedData.PrivateGlobalVars[name];
         }
@@ -174,9 +174,10 @@ namespace Gum.IR0.Runtime
             }
         }
 
-        public FuncDecl GetFuncDecl(FuncDeclId funcDeclId)
+        public TFuncDecl GetFuncDecl<TFuncDecl>(FuncDeclId funcDeclId)
+            where TFuncDecl : FuncDecl
         {
-            return sharedData.FuncDecls[funcDeclId.Value];
+            return (TFuncDecl)sharedData.FuncDecls[funcDeclId.Value];
         }
     }    
 }

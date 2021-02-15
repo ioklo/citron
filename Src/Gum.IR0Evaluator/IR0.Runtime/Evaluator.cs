@@ -124,7 +124,7 @@ namespace Gum.IR0.Runtime
             return capturesBuilder.ToImmutable();
         }
 
-        public async ValueTask<ImmutableDictionary<string, Value>> EvalArgumentsAsync(IEnumerable<string> paramNames, IEnumerable<ExpInfo> expInfos, EvalContext context)
+        public async ValueTask<ImmutableDictionary<string, Value>> EvalArgumentsAsync(ImmutableArray<string> paramNames, ImmutableArray<ExpInfo> expInfos, EvalContext context)
         {
             var argsBuilder = ImmutableDictionary.CreateBuilder<string, Value>();
 
@@ -139,7 +139,7 @@ namespace Gum.IR0.Runtime
             return argsBuilder.ToImmutable();
         }
 
-        public async ValueTask EvalLambdaAsync(Lambda lambda, IEnumerable<ExpInfo> args, Value result, EvalContext context)
+        public async ValueTask EvalLambdaAsync(Lambda lambda, ImmutableArray<ExpInfo> args, Value result, EvalContext context)
         {
             var argVars = await EvalArgumentsAsync(lambda.ParamNames, args, context);
 

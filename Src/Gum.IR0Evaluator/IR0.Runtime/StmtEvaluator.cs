@@ -242,7 +242,7 @@ namespace Gum.IR0.Runtime
             var lambda = new Lambda(
                 taskStmt.CaptureInfo.bShouldCaptureThis ? context.GetThisValue() : null,
                 captures,
-                Enumerable.Empty<string>(),
+                default,
                 taskStmt.Body);
 
             var newContext = new EvalContext(context, ImmutableDictionary<string, Value>.Empty, EvalFlowControl.None, ImmutableArray<Task>.Empty, null, VoidValue.Instance);
@@ -250,7 +250,7 @@ namespace Gum.IR0.Runtime
             // 2. 그 lambda를 바로 실행하기
             var task = Task.Run(async () =>
             {
-                await evaluator.EvalLambdaAsync(lambda, Enumerable.Empty<ExpInfo>(), VoidValue.Instance, newContext);
+                await evaluator.EvalLambdaAsync(lambda, default, VoidValue.Instance, newContext);
             });
 
             context.AddTask(task);
@@ -276,14 +276,14 @@ namespace Gum.IR0.Runtime
             var lambda = new Lambda(
                 asyncStmt.CaptureInfo.bShouldCaptureThis ? context.GetThisValue() : null,
                 captures,
-                Enumerable.Empty<string>(),
+                default,
                 asyncStmt.Body);
 
             var newContext = new EvalContext(context, ImmutableDictionary<string, Value>.Empty, EvalFlowControl.None, ImmutableArray<Task>.Empty, null, VoidValue.Instance);
 
             Func<Task> asyncFunc = async () =>
             {
-                await evaluator.EvalLambdaAsync(lambda, Enumerable.Empty<ExpInfo>(), VoidValue.Instance, newContext);
+                await evaluator.EvalLambdaAsync(lambda, default, VoidValue.Instance, newContext);
             };
 
             var task = asyncFunc();

@@ -31,17 +31,31 @@ namespace Gum.IR0
 
             throw new UnreachableCodeException();
         }
+
+        static ErrorIdentifierResult ToErrorIdentifierResult(ErrorItemResult errorResult)
+        {
+            switch(errorResult)
+            {
+                case MultipleCandidatesErrorItemResult:
+                    return MultipleCandiatesErrorIdentifierResult.Instance;
+
+                case VarWithTypeArgErrorItemResult:
+                    return VarWithTypeArgErrorIdentifierResult.Instance;
+            }
+
+            throw new UnreachableCodeException();
+        }
         
         // e.x 꼴
         IdentifierResult ResolveIdentifierMemberExpExpParent(Exp parent, TypeValue parentType, string memberName, ImmutableArray<TypeValue> typeArgs, TypeValue? hintType)
         {
             // 해당 이름의 타입, 변수, 함수
-            var member = parentType.GetMember(memberName, typeArgs, hintType);
+            var memberResult = parentType.GetMember(memberName, typeArgs, hintType);
 
-            switch(member)
+            switch(memberResult)
             {
-                case MultipleCandidatesItemResult:
-                    return MultipleCandiatesErrorIdentifierResult.Instance;
+                case ErrorItemResult errorResult:
+                    return ToErrorIdentifierResult(errorResult);
 
                 case NotFoundItemResult:
                     return NotFoundIdentifierResult.Instance;
@@ -63,7 +77,7 @@ namespace Gum.IR0
                                 return CantGetStaticMemberThroughInstanceIdentifierResult.Instance;
 
                             var exp = BuildMemberExp(parent, parentType, memberName);
-                            return new ExpIdentifierResult(exp, memberVarValue.TypeValue);
+                            return new ExpIdentifierResult(exp, memberVarValue.GetTypeValue());
 
                         default:
                             throw new UnreachableCodeException();
@@ -83,8 +97,8 @@ namespace Gum.IR0
                 case NotFoundItemResult:
                     return NotFoundIdentifierResult.Instance;
 
-                case MultipleCandidatesItemResult:
-                    return MultipleCandiatesErrorIdentifierResult.Instance;
+                case ErrorItemResult errorResult:
+                    return ToErrorIdentifierResult(errorResult);
 
                 case ValueItemResult itemResult:
                     switch(itemResult.ItemValue)
@@ -105,7 +119,7 @@ namespace Gum.IR0
                             var rparentType = context.GetType(parentType);
 
                             var exp = new StaticMemberExp(rparentType, memberName);
-                            return new ExpIdentifierResult(exp, memberVarValue.TypeValue);
+                            return new ExpIdentifierResult(exp, memberVarValue.GetTypeValue());
 
                         default:
                             throw new UnreachableCodeException();
@@ -213,7 +227,7 @@ namespace Gum.IR0
                 var varInfo = context.GetInternalGlobalVarInfo(idName);
                 if (varInfo == null) return NotFoundIdentifierResult.Instance;
 
-                return new ExpIdentifierResult(new PrivateGlobalVarExp(varInfo.Name.ToString()), varInfo.TypeValue);
+                return new ExpIdentifierResult(new GlobalVarExp(varInfo.Name.ToString()), varInfo.TypeValue);
             }
             
             IdentifierResult GetGlobalInfo()
@@ -221,18 +235,19 @@ namespace Gum.IR0
                 // TODO: outer namespace까지 다 돌아야 한다
                 var curNamespacePath = M.NamespacePath.Root; 
                 var globalResult = context.GetGlobalItem(curNamespacePath, idName, typeArgs, hintTypeValue);
-                if (globalResult is ValueItemResult itemResult)
-                {
-                    switch(itemResult.ItemValue)
-                    {
-                        case TypeValue typeValue: return new TypeIdentifierResult(typeValue);
-                        case FuncValue funcValue: return new FuncIdentifierResult(funcValue);
-                        default: throw new UnreachableCodeException();
-                    }
-                }
 
-                if (globalResult is NotFoundItemResult) return NotFoundIdentifierResult.Instance;
-                if (globalResult is MultipleCandidatesItemResult) return MultipleCandiatesErrorIdentifierResult.Instance;
+                switch (globalResult)
+                {
+                    case NotFoundItemResult: return NotFoundIdentifierResult.Instance;
+                    case ErrorItemResult errorResult: return ToErrorIdentifierResult(errorResult);
+                    case ValueItemResult itemResult:
+                        switch (itemResult.ItemValue)
+                        {
+                            case TypeValue typeValue: return new TypeIdentifierResult(typeValue);
+                            case FuncValue funcValue: return new FuncIdentifierResult(funcValue);
+                            default: throw new UnreachableCodeException();
+                        }
+                }
 
                 throw new UnreachableCodeException();
             }

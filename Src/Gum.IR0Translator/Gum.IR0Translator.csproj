@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <Folder Include="IR0\" />
+    <Folder Include="PretuneGenerated\IR0\" />
   </ItemGroup>
 
 </Project>

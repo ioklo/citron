@@ -14,6 +14,7 @@ namespace Gum.IR0
     // Error, Valid, NotFound
     abstract class ErrorIdentifierResult : IdentifierResult { }
     abstract class ValidIdentifierResult : IdentifierResult { }
+
     class NotFoundIdentifierResult : IdentifierResult
     {
         public static readonly NotFoundIdentifierResult Instance = new NotFoundIdentifierResult();
@@ -25,6 +26,12 @@ namespace Gum.IR0
     {
         public static readonly MultipleCandiatesErrorIdentifierResult Instance = new MultipleCandiatesErrorIdentifierResult();
         private MultipleCandiatesErrorIdentifierResult() { }
+    }
+
+    class VarWithTypeArgErrorIdentifierResult : ErrorIdentifierResult
+    {
+        public static readonly VarWithTypeArgErrorIdentifierResult Instance = new VarWithTypeArgErrorIdentifierResult();
+        VarWithTypeArgErrorIdentifierResult() { }
     }
 
     class CantGetStaticMemberThroughInstanceIdentifierResult : ErrorIdentifierResult
@@ -49,7 +56,7 @@ namespace Gum.IR0
     {
         public static readonly FuncCantHaveMemberErrorIdentifierResult Instance = new FuncCantHaveMemberErrorIdentifierResult();
         private FuncCantHaveMemberErrorIdentifierResult() { }
-    }
+    } 
 
     class ExpIdentifierResult : ValidIdentifierResult
     {

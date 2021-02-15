@@ -25,12 +25,6 @@ namespace Gum.CompileTime
             ParamTypes = paramTypes;
         }
 
-        public FuncInfo(Name name, bool bSeqCall, bool bThisCall, IEnumerable<string> typeParams, Type retType, IEnumerable<Type> paramTypes)
-            : this(name, bSeqCall, bThisCall, typeParams.ToImmutableArray(), retType, paramTypes.ToImmutableArray()) { }
-
-        public FuncInfo(Name name, bool bSeqCall, bool bThisCall, ImmutableArray<string> typeParams, Type retType, params Type[] paramTypes)
-            : this(name, bSeqCall, bThisCall, typeParams, retType, paramTypes.ToImmutableArray()) { }
-
         public override bool Equals(object? obj)
         {
             return Equals(obj as FuncInfo);

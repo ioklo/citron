@@ -16,15 +16,30 @@ namespace Gum.IR0
         // M.MemberVarInfo info;
         // NormalTypeValue typeValue;
 
-        public M.Name Name { get; }
-        public bool IsStatic { get; }
-        public TypeValue TypeValue { get; }
+        TypeValueFactory factory;
+        TypeValue outer;
+        M.MemberVarInfo info;
+
+        public M.Name Name { get => info.Name; }
+        public bool IsStatic { get => info.IsStatic; }
         
-        public MemberVarValue(M.Name name, bool bStatic, TypeValue typeValue)
+        public MemberVarValue(TypeValueFactory factory, TypeValue outer, M.MemberVarInfo info)
         {
-            Name = name;
-            IsStatic = bStatic;
-            TypeValue = typeValue;
+            this.factory = factory;
+            this.outer = outer;
+            this.info = info;
+        }
+
+        internal override int FillTypeEnv(TypeEnvBuilder builder)
+        {
+            return outer.FillTypeEnv(builder) + 1;
+        }
+
+        public TypeValue GetTypeValue()
+        {
+            var typeEnv = MakeTypeEnv();
+            var typeValue = factory.MakeTypeValue(info.Type);
+            return typeValue.Apply(typeEnv);
         }
     }
 }

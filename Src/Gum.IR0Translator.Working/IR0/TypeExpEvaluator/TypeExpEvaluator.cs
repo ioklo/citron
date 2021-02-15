@@ -129,7 +129,7 @@ namespace Gum.IR0
             var typeSkel = skelRepo.GetTypeSkeleton(itemPath);
             if (typeSkel != null)
             {
-                var mtype = new M.ExternalType(internalModuleName, namespacePath, name, typeArgs);
+                var mtype = new M.GlobalType(internalModuleName, namespacePath, name, typeArgs);
                 var typeExpInfo = new MTypeTypeExpInfo(mtype);
                 yield return new InternalTypeExpResult(typeSkel, typeExpInfo);
             }
@@ -140,7 +140,7 @@ namespace Gum.IR0
                 var typeInfo = GlobalItemQueryService.GetGlobalItem(moduleInfo, namespacePath, itemPath.Entry) as M.TypeInfo;
                 if (typeInfo != null)
                 {
-                    var mtype = new M.ExternalType(moduleInfo.Name, namespacePath, name, typeArgs);
+                    var mtype = new M.GlobalType(moduleInfo.Name, namespacePath, name, typeArgs);
                     var typeExpInfo = new MTypeTypeExpInfo(mtype);
                     yield return new ExternalTypeExpResult(typeExpInfo, typeInfo);
                 }

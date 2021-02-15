@@ -4,25 +4,22 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 
-using Type = Gum.IR0.Type;
-
 namespace Gum.IR0
 {
     public partial class Script
     {
         public ImmutableArray<TypeDecl> TypeDecls { get; } // class struct enum interface
-        public ImmutableArray<FuncDecl> FuncDecls { get; } // 
+        public ImmutableArray<FuncDecl> FuncDecls { get; } // normal / sequence
         public ImmutableArray<Stmt> TopLevelStmts { get; } 
 
         public Script(
-            IEnumerable<TypeDecl> typeDecls,
-            IEnumerable<FuncDecl> funcDecls,
-            IEnumerable<Stmt> topLevelStmts)
+            ImmutableArray<TypeDecl> typeDecls,
+            ImmutableArray<FuncDecl> funcDecls,
+            ImmutableArray<Stmt> topLevelStmts)
         {
-            TypeDecls = typeDecls.ToImmutableArray();
-            FuncDecls = funcDecls.ToImmutableArray();
-
-            TopLevelStmts = topLevelStmts.ToImmutableArray();
+            TypeDecls = typeDecls;
+            FuncDecls = funcDecls;
+            TopLevelStmts = topLevelStmts;
         }
     }
 }

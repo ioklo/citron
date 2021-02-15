@@ -14,7 +14,7 @@ namespace Gum.IR0
     {
         // UnitOfWorkName_ScenarioName_ExpectedBehavior
 
-        public M.Type IntType { get => new M.ExternalType("System.Runtime", new M.NamespacePath("System"), "Int32", ImmutableArray<M.Type>.Empty); }
+        public M.Type IntType { get => new M.GlobalType("System.Runtime", new M.NamespacePath("System"), "Int32", ImmutableArray<M.Type>.Empty); }
 
         public S.TypeExp IntTypeExp { get => new S.IdTypeExp("int"); }
         public S.TypeExp VoidTypeExp { get => new S.IdTypeExp("void"); }
@@ -138,7 +138,7 @@ namespace Gum.IR0
             var expected = new M.StructInfo(
                 "S",
                 ImmutableArray.Create("T"),
-                ImmutableArray.Create<M.Type>(new M.ExternalType(moduleName, M.NamespacePath.Root, "B", ImmutableArray.Create(IntType))),
+                ImmutableArray.Create<M.Type>(new M.GlobalType(moduleName, M.NamespacePath.Root, "B", ImmutableArray.Create(IntType))),
 
                 memberTypes: ImmutableArray<M.TypeInfo>.Empty,
                 memberFuncs: ImmutableArray.Create<M.FuncInfo>(
@@ -149,7 +149,7 @@ namespace Gum.IR0
                         new[] { "T", "U" },
                         new M.TypeVarType(1, 0, "T"),
                         ImmutableArray.Create<M.Type>(
-                            new M.ExternalType(moduleName, M.NamespacePath.Root, "S", ImmutableArray.Create<M.Type>(IntType)),
+                            new M.GlobalType(moduleName, M.NamespacePath.Root, "S", ImmutableArray.Create<M.Type>(IntType)),
                             new M.TypeVarType(1, 1, "U")
                         )
                     )

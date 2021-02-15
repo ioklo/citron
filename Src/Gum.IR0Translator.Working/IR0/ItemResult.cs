@@ -4,8 +4,23 @@ using M = Gum.CompileTime;
 
 namespace Gum.IR0
 {
+    // Error/NotFound/Value
     abstract class ItemResult
     {
+    }
+
+    abstract class ErrorItemResult : ItemResult { }
+
+    class VarWithTypeArgErrorItemResult : ErrorItemResult
+    {
+        public static VarWithTypeArgErrorItemResult Instance { get; } = new VarWithTypeArgErrorItemResult();
+        VarWithTypeArgErrorItemResult() { }
+    }
+
+    class MultipleCandidatesErrorItemResult : ErrorItemResult
+    {
+        public static MultipleCandidatesErrorItemResult Instance { get; } = new MultipleCandidatesErrorItemResult();
+        MultipleCandidatesErrorItemResult() { }
     }
 
     class NotFoundItemResult : ItemResult 
@@ -13,13 +28,7 @@ namespace Gum.IR0
         public static NotFoundItemResult Instance { get; } = new NotFoundItemResult();
         NotFoundItemResult() { }
     }
-
-    class MultipleCandidatesItemResult : ItemResult
-    {
-        public static MultipleCandidatesItemResult Instance { get; } = new MultipleCandidatesItemResult();
-        MultipleCandidatesItemResult() { }
-    }
-
+    
     class ValueItemResult : ItemResult
     {
         public ItemValue ItemValue { get; }

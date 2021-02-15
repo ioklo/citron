@@ -19,8 +19,7 @@ namespace Gum.IR0
         {
             GlobalItemValueFactory globalItemValueFactory;
 
-            TypeExpInfoService typeExpTypeValueService;
-            TypeValueService typeValueService;
+            TypeExpInfoService typeExpTypeValueService;            
             IErrorCollector errorCollector;
 
             // 현재 분석되고 있는 함수
@@ -34,12 +33,10 @@ namespace Gum.IR0
 
             InternalGlobalVariableRepository internalGlobalVarRepo;
 
-            public Context(                
-                TypeValueService typeValueService,
+            public Context(
                 TypeExpInfoService typeExpTypeValueService,
                 IErrorCollector errorCollector)
-            {
-                this.typeValueService = typeValueService;
+            {   
                 this.typeExpTypeValueService = typeExpTypeValueService;
                 this.errorCollector = errorCollector;
 
@@ -87,10 +84,7 @@ namespace Gum.IR0
                     if (toTypeValue.Equals(curType))
                         return true;
 
-                    if (!typeValueService.GetBaseTypeValue(curType, out var outType))
-                        return false;
-
-                    curType = outType;
+                    curType = curType.GetBaseType();
                 }
 
                 return false;
@@ -108,7 +102,7 @@ namespace Gum.IR0
 
                         return true;
                     
-                    case PrivateGlobalVarExp _:
+                    case GlobalVarExp _:
                     case ListIndexerExp _:
                     case StaticMemberExp _:
                     case StructMemberExp _:
@@ -252,21 +246,16 @@ namespace Gum.IR0
             {
                 return internalGlobalVarRepo.GetVariable(idName);
             }
-
-            public MemberVarValue? GetMemberVarValue(TypeValue typeValue, string memberName)
-            {
-                return typeValueService.GetMemberVarValue(typeValue, memberName);
-            }
-
+            
             public ItemPath? GetCurFuncPath()
             {
                 return curFunc.GetFuncPath();
             }
 
-            public void AddFuncDecl(ItemPath itemPath, bool bThisCall, ImmutableArray<string> typeParams, ImmutableArray<string> paramNames, Stmt body)
+            public void AddNormalFuncDecl(ItemPath itemPath, bool bThisCall, ImmutableArray<string> typeParams, ImmutableArray<string> paramNames, Stmt body)
             {
                 var id = new FuncDeclId(funcDecls.Count);
-                funcDecls.Add(new FuncDecl.Normal(id, bThisCall, typeParams, paramNames, body));
+                funcDecls.Add(new NormalFuncDecl(id, bThisCall, typeParams, paramNames, body));
                 funcDeclsByPath.Add(itemPath, id);
             }
 
@@ -291,18 +280,13 @@ namespace Gum.IR0
                 return topLevelStmts;
             }
 
-            public void AddSeqFuncDecl(ItemPath itemPath, Type retTypeId, bool bThisCall, ImmutableArray<string> typeParams, ImmutableArray<string> paramNames, Stmt body)
+            public void AddSequenceFuncDecl(ItemPath itemPath, Type retTypeId, bool bThisCall, ImmutableArray<string> typeParams, ImmutableArray<string> paramNames, Stmt body)
             {
                 var id = new FuncDeclId(funcDecls.Count);
-                funcDecls.Add(new FuncDecl.Sequence(id, retTypeId, bThisCall, typeParams, paramNames,body));
+                funcDecls.Add(new SequenceFuncDecl(id, retTypeId, bThisCall, typeParams, paramNames,body));
                 funcDeclsByPath.Add(itemPath, id);
-            }            
-
-            public FuncTypeValue GetTypeValue(FuncValue funcValue)
-            {   
-                return typeValueService.GetTypeValue(funcValue);
             }
-
+            
             // curFunc
             public void AddLocalVarInfo(string name, TypeValue typeValue)
             {
@@ -337,21 +321,10 @@ namespace Gum.IR0
                     return null;
             }
 
-            public IEnumerable<FuncInfo> GetFuncs(NamespacePath root, string value)
-            {
-                return itemInfoRepo.GetFuncs(root, value);
-            }
-
-            public TypeValue Apply(TypeValue context, TypeValue typeValue)
-            {
-                return typeValueService.Apply(context, typeValue);
-            }
-            
             public ItemResult GetGlobalItem(M.NamespacePath namespacePath, string idName, ImmutableArray<TypeValue> typeArgs, TypeValue? hintTypeValue)
             {
                 return globalItemValueFactory.GetGlobal(namespacePath, idName, typeArgs, hintTypeValue);
             }
-
         }
     }
 }

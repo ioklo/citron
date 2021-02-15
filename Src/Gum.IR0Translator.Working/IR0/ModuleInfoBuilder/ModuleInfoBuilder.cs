@@ -187,16 +187,18 @@ namespace Gum.IR0
         {
             ExecInNewTypeScope(structDecl.Name, structDecl.TypeParams.Length, () => {
 
-                // base type
-                var mbaseTypesBuilder = ImmutableArray.CreateBuilder<M.Type>(structDecl.BaseTypes.Length);
-                foreach (var baseType in structDecl.BaseTypes)
-                {
-                    var mbaseType = GetMType(baseType);
-                    if (mbaseType == null) throw new FatalException();
+                if (structDecl.BaseTypes.Length != 0)
+                    throw new NotImplementedException();
 
-                    mbaseTypesBuilder.Add(mbaseType);
-                }
-                var mbaseTypes = mbaseTypesBuilder.MoveToImmutable();
+                // base & interfaces
+                //var mbaseTypesBuilder = ImmutableArray.CreateBuilder<M.Type>(structDecl.BaseTypes.Length);
+                //foreach (var baseType in structDecl.BaseTypes)
+                //{
+                //    var mbaseType = GetMType(baseType);
+                //    if (mbaseType == null) throw new FatalException();
+                //    mbaseTypesBuilder.Add(mbaseType);
+                //}
+                //var mbaseTypes = mbaseTypesBuilder.MoveToImmutable();
 
                 foreach (var elem in structDecl.Elems)
                 {
@@ -218,7 +220,7 @@ namespace Gum.IR0
 
                 Debug.Assert(typeBuilder != null);
                 var structInfo = typeBuilder.MakeTypeInfo((types, funcs, vars) =>
-                    new M.StructInfo(structDecl.Name, structDecl.TypeParams, mbaseTypes, types, funcs, vars));
+                    new M.StructInfo(structDecl.Name, structDecl.TypeParams, null, ImmutableArray<M.Type>.Empty(), types, funcs, vars));
 
                 AddTypeInfoToOuter(structInfo);
             });            
