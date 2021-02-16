@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Collections.Immutable;
 
-namespace Gum.IR0
+namespace Gum.IR0Translator
 {
     static class TypeValues
     {

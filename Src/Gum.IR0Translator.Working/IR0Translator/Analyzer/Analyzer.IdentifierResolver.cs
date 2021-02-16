@@ -2,14 +2,15 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using static Gum.IR0.Analyzer.Misc;
+using static Gum.IR0Translator.Analyzer.Misc;
 
 using S = Gum.Syntax;
 using M = Gum.CompileTime;
+using R = Gum.IR0;
 using Gum.Misc;
 using System.Diagnostics;
 
-namespace Gum.IR0
+namespace Gum.IR0Translator
 {
     partial class Analyzer
     {
@@ -20,13 +21,13 @@ namespace Gum.IR0
             return resolver.Resolve();
         }        
 
-        Exp BuildMemberExp(Exp parent, TypeValue parentType, string memberName)
+        R.Exp BuildMemberExp(R.Exp parent, TypeValue parentType, string memberName)
         {
             switch(parentType)
             {
-                case ClassTypeValue _: return new ClassMemberExp(parent, memberName);
-                case StructTypeValue _: return new StructMemberExp(parent, memberName);
-                case EnumElemTypeValue _: return new EnumMemberExp(parent, memberName);
+                case ClassTypeValue _: return new R.ClassMemberExp(parent, memberName);
+                case StructTypeValue _: return new R.StructMemberExp(parent, memberName);
+                case EnumElemTypeValue _: return new R.EnumMemberExp(parent, memberName);
             }
 
             throw new UnreachableCodeException();
@@ -47,7 +48,7 @@ namespace Gum.IR0
         }
         
         // e.x 꼴
-        IdentifierResult ResolveIdentifierMemberExpExpParent(Exp parent, TypeValue parentType, string memberName, ImmutableArray<TypeValue> typeArgs, TypeValue? hintType)
+        IdentifierResult ResolveIdentifierMemberExpExpParent(R.Exp parent, TypeValue parentType, string memberName, ImmutableArray<TypeValue> typeArgs, TypeValue? hintType)
         {
             // 해당 이름의 타입, 변수, 함수
             var memberResult = parentType.GetMember(memberName, typeArgs, hintType);
@@ -118,7 +119,7 @@ namespace Gum.IR0
 
                             var rparentType = context.GetType(parentType);
 
-                            var exp = new StaticMemberExp(rparentType, memberName);
+                            var exp = new R.StaticMemberExp(rparentType, memberName);
                             return new ExpIdentifierResult(exp, memberVarValue.GetTypeValue());
 
                         default:
@@ -200,7 +201,7 @@ namespace Gum.IR0
                 var varInfo = context.GetLocalVarOutsideLambda(idName);
                 if (varInfo == null) return NotFoundIdentifierResult.Instance;
 
-                return new ExpIdentifierResult(new LocalVarExp(varInfo.Value.Name), varInfo.Value.TypeValue);
+                return new ExpIdentifierResult(new R.LocalVarExp(varInfo.Value.Name), varInfo.Value.TypeValue);
             }
 
             IdentifierResult GetLocalVarInfo()
@@ -211,7 +212,7 @@ namespace Gum.IR0
                 var varInfo = context.GetLocalVar(idName);
                 if (varInfo == null) return NotFoundIdentifierResult.Instance;
 
-                return new ExpIdentifierResult(new LocalVarExp(varInfo.Value.Name), varInfo.Value.TypeValue);
+                return new ExpIdentifierResult(new R.LocalVarExp(varInfo.Value.Name), varInfo.Value.TypeValue);
             }
 
             IdentifierResult GetThisMemberInfo()
@@ -227,7 +228,7 @@ namespace Gum.IR0
                 var varInfo = context.GetInternalGlobalVarInfo(idName);
                 if (varInfo == null) return NotFoundIdentifierResult.Instance;
 
-                return new ExpIdentifierResult(new GlobalVarExp(varInfo.Name.ToString()), varInfo.TypeValue);
+                return new ExpIdentifierResult(new R.GlobalVarExp(varInfo.Name.ToString()), varInfo.TypeValue);
             }
             
             IdentifierResult GetGlobalInfo()

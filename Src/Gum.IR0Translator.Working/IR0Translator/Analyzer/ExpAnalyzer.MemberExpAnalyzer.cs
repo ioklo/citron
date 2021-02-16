@@ -1,10 +1,10 @@
 ﻿using Gum.CompileTime;
 using System;
 using System.Linq;
-using static Gum.IR0.Analyzer;
-using static Gum.IR0.Analyzer.Misc;
+using static Gum.IR0Translator.Analyzer;
+using static Gum.IR0Translator.Analyzer.Misc;
 
-namespace Gum.IR0
+namespace Gum.IR0Translator
 {
     partial class Analyzer
     {

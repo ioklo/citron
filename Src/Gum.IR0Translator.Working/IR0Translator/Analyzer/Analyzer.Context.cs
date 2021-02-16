@@ -9,8 +9,9 @@ using System.Text;
 
 using S = Gum.Syntax;
 using M = Gum.CompileTime;
+using R = Gum.IR0;
 
-namespace Gum.IR0
+namespace Gum.IR0Translator
 {
     partial class Analyzer
     {
@@ -26,10 +27,10 @@ namespace Gum.IR0
             FuncContext curFunc;
             bool bInLoop;
             
-            List<TypeDecl> typeDecls;
-            List<FuncDecl> funcDecls;
-            List<Stmt> topLevelStmts;
-            Dictionary<ItemPath, FuncDeclId> funcDeclsByPath;
+            List<R.TypeDecl> typeDecls;
+            List<R.FuncDecl> funcDecls;
+            List<R.Stmt> topLevelStmts;
+            Dictionary<ItemPath, R.FuncDeclId> funcDeclsByPath;
 
             InternalGlobalVariableRepository internalGlobalVarRepo;
 
@@ -44,10 +45,10 @@ namespace Gum.IR0
                 bInLoop = false;
                 internalGlobalVarRepo = new InternalGlobalVariableRepository();
                 
-                typeDecls = new List<TypeDecl>();
-                funcDecls = new List<FuncDecl>();
-                topLevelStmts = new List<Stmt>();
-                funcDeclsByPath = new Dictionary<ItemPath, FuncDeclId>();
+                typeDecls = new List<R.TypeDecl>();
+                funcDecls = new List<R.FuncDecl>();
+                topLevelStmts = new List<R.Stmt>();
+                funcDeclsByPath = new Dictionary<ItemPath, R.FuncDeclId>();
             }
 
             public bool DoesLocalVarNameExistInScope(string name)
@@ -67,7 +68,7 @@ namespace Gum.IR0
                 throw new FatalAnalyzeException();
             }                                    
 
-            public ExternalGlobalVarId GetExternalGlobalVarId(ItemId varId)
+            public R.ExternalGlobalVarId GetExternalGlobalVarId(ItemId varId)
             {
                 throw new NotImplementedException();
             }
@@ -90,11 +91,11 @@ namespace Gum.IR0
                 return false;
             }
 
-            public bool IsAssignableExp(Exp exp)
+            public bool IsAssignableExp(R.Exp exp)
             {
                 switch (exp)
                 {
-                    case LocalVarExp localVarExp:
+                    case R.LocalVarExp localVarExp:
 
                         // 람다 바깥에 있다면 대입 불가능하다
                         if (curFunc.IsLocalVarOutsideLambda(localVarExp.Name))
@@ -102,12 +103,12 @@ namespace Gum.IR0
 
                         return true;
                     
-                    case GlobalVarExp _:
-                    case ListIndexerExp _:
-                    case StaticMemberExp _:
-                    case StructMemberExp _:
-                    case ClassMemberExp _:
-                    case EnumMemberExp _:
+                    case R.GlobalVarExp _:
+                    case R.ListIndexerExp _:
+                    case R.StaticMemberExp _:
+                    case R.StructMemberExp _:
+                    case R.ClassMemberExp _:
+                    case R.EnumMemberExp _:
                         return true;
 
                     default:
@@ -116,7 +117,7 @@ namespace Gum.IR0
 
             }
 
-            public void AddInternalGlobalVarInfo(Name name, TypeValue typeValue)
+            public void AddInternalGlobalVarInfo(M.Name name, TypeValue typeValue)
             {
                 internalGlobalVarRepo.AddInternalGlobalVariable(name, typeValue);
             }
@@ -161,16 +162,16 @@ namespace Gum.IR0
                 }
             }
             
-            public Type GetType(TypeValue typeValue)
+            public R.Type GetType(TypeValue typeValue)
             {
                 bool Equals(TypeValue x, TypeValue y) => x.Equals(y);
 
                 // 일단 predefined부터 걸러냅니다.
                 if (typeValue is NormalTypeValue ntv)
                 {
-                    if (Equals(ntv, TypeValues.Bool)) return Type.Bool;
-                    else if (Equals(ntv, TypeValues.Int)) return Type.Int;
-                    else if (Equals(ntv, TypeValues.String)) return Type.String;
+                    if (Equals(ntv, TypeValues.Bool)) return R.Type.Bool;
+                    else if (Equals(ntv, TypeValues.Int)) return R.Type.Int;
+                    else if (Equals(ntv, TypeValues.String)) return R.Type.String;
                     else if (ntv.GetTypeId().Equals(ItemIds.List))
                     {
                         var elemType = GetType(ntv.Entry.TypeArgs[0]);
@@ -178,7 +179,7 @@ namespace Gum.IR0
                     }                    
                 }
                 else if (typeValue is VoidTypeValue)
-                    return Type.Void;
+                    return R.Type.Void;
 
                 throw new NotImplementedException();
             }
@@ -252,38 +253,38 @@ namespace Gum.IR0
                 return curFunc.GetFuncPath();
             }
 
-            public void AddNormalFuncDecl(ItemPath itemPath, bool bThisCall, ImmutableArray<string> typeParams, ImmutableArray<string> paramNames, Stmt body)
+            public void AddNormalFuncDecl(ItemPath itemPath, bool bThisCall, ImmutableArray<string> typeParams, ImmutableArray<string> paramNames, R.Stmt body)
             {
-                var id = new FuncDeclId(funcDecls.Count);
-                funcDecls.Add(new NormalFuncDecl(id, bThisCall, typeParams, paramNames, body));
+                var id = new R.FuncDeclId(funcDecls.Count);
+                funcDecls.Add(new R.NormalFuncDecl(id, bThisCall, typeParams, paramNames, body));
                 funcDeclsByPath.Add(itemPath, id);
             }
 
-            public void AddTopLevelStmt(Stmt stmt)
+            public void AddTopLevelStmt(R.Stmt stmt)
             {
                 topLevelStmts.Add(stmt);
             }
 
             
-            public IEnumerable<TypeDecl> GetTypeDecls()
+            public IEnumerable<R.TypeDecl> GetTypeDecls()
             {
                 return typeDecls;
             }
 
-            public IEnumerable<FuncDecl> GetFuncDecls()
+            public IEnumerable<R.FuncDecl> GetFuncDecls()
             {
                 return funcDecls;
             }
 
-            public IEnumerable<Stmt> GetTopLevelStmts()
+            public IEnumerable<R.Stmt> GetTopLevelStmts()
             {
                 return topLevelStmts;
             }
 
-            public void AddSequenceFuncDecl(ItemPath itemPath, Type retTypeId, bool bThisCall, ImmutableArray<string> typeParams, ImmutableArray<string> paramNames, Stmt body)
+            public void AddSequenceFuncDecl(ItemPath itemPath, R.Type retTypeId, bool bThisCall, ImmutableArray<string> typeParams, ImmutableArray<string> paramNames, R.Stmt body)
             {
-                var id = new FuncDeclId(funcDecls.Count);
-                funcDecls.Add(new SequenceFuncDecl(id, retTypeId, bThisCall, typeParams, paramNames,body));
+                var id = new R.FuncDeclId(funcDecls.Count);
+                funcDecls.Add(new R.SequenceFuncDecl(id, retTypeId, bThisCall, typeParams, paramNames,body));
                 funcDeclsByPath.Add(itemPath, id);
             }
             
@@ -313,7 +314,7 @@ namespace Gum.IR0
                 return internalGlobalVarRepo.HasVariable(name);
             }
 
-            public FuncDeclId? GetFuncDeclId(ItemPath funcPath)
+            public R.FuncDeclId? GetFuncDeclId(ItemPath funcPath)
             {
                 if (funcDeclsByPath.TryGetValue(funcPath, out var funcDeclId))
                     return funcDeclId;

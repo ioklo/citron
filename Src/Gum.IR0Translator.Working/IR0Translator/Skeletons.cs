@@ -7,7 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using S = Gum.Syntax;
 
-namespace Gum.IR0
+namespace Gum.IR0Translator
 {
     abstract class TypeSkeleton
     {

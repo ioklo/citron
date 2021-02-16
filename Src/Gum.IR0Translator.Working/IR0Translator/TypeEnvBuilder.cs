@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Immutable;
 
-namespace Gum.IR0
+namespace Gum.IR0Translator
 {
     internal class TypeEnvBuilder
     {

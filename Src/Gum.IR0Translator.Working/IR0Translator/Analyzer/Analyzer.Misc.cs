@@ -8,11 +8,11 @@ using System.Text;
 
 using S = Gum.Syntax;
 
-namespace Gum.IR0
+namespace Gum.IR0Translator
 {
     partial class Analyzer
     {
-        public static class Misc
+        internal static class Misc
         {
             public static ImmutableArray<TypeValue> GetTypeValues(ImmutableArray<S.TypeExp> typeExps, Context context)
             {

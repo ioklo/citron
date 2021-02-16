@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 using M = Gum.CompileTime;
 
-namespace Gum.IR0
+namespace Gum.IR0Translator
 {
     // 이름만으로 뭔가를 찾고 싶을땐
     class GlobalItemValueFactory

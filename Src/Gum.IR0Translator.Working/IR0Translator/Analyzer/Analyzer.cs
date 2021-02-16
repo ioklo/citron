@@ -6,21 +6,22 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using System.Text;
-using Gum.CompileTime;
+using M = Gum.CompileTime;
 using Gum.Infra;
 using Gum.Misc;
 using Pretune;
-using static Gum.IR0.AnalyzeErrorCode;
+using static Gum.IR0Translator.AnalyzeErrorCode;
 
 using S = Gum.Syntax;
+using R = Gum.IR0;
 
-namespace Gum.IR0
+namespace Gum.IR0Translator
 {
     partial class Analyzer
     {           
         Context context;
 
-        public static Script Analyze(
+        public static R.Script Analyze(
             S.Script script,
             TypeExpInfoService typeExpTypeValueService,
             IErrorCollector errorCollector)
@@ -30,13 +31,13 @@ namespace Gum.IR0
 
             // pass1, pass2
             var pass1 = new CollectingGlobalVarPass(analyzer);
-            Gum.IR0.Misc.VisitScript(script, pass1);
+            IR0Translator.Misc.VisitScript(script, pass1);
 
             var pass2 = new TypeCheckingAndTranslatingPass(analyzer);
-            Gum.IR0.Misc.VisitScript(script, pass2);
+            IR0Translator.Misc.VisitScript(script, pass2);
 
             // 5. 각 func body를 분석한다 (4에서 얻게되는 글로벌 변수 정보가 필요하다)
-            return new Script(analyzer.context.GetTypeDecls(), analyzer.context.GetFuncDecls(), analyzer.context.GetTopLevelStmts());
+            return new R.Script(analyzer.context.GetTypeDecls(), analyzer.context.GetFuncDecls(), analyzer.context.GetTopLevelStmts());
         }
 
         Analyzer(Context context)
@@ -47,7 +48,7 @@ namespace Gum.IR0
         [AutoConstructor]
         partial struct VarDeclElementCoreResult
         {
-            public VarDeclElement Elem { get; }
+            public R.VarDeclElement Elem { get; }
             public TypeValue TypeValue { get; }
         }
 
@@ -60,7 +61,7 @@ namespace Gum.IR0
                     context.AddFatalError(A0101_VarDecl_CantInferVarType, elem, $"{elem.VarName}의 타입을 추론할 수 없습니다");
 
                 var type = context.GetType(declType);
-                return new VarDeclElementCoreResult(new VarDeclElement(elem.VarName, type, null), declType);
+                return new VarDeclElementCoreResult(new R.VarDeclElement(elem.VarName, type, null), declType);
             }
             else
             {
@@ -69,7 +70,7 @@ namespace Gum.IR0
                 {
                     var initExpResult = AnalyzeExp(elem.InitExp, null);
                     var type = context.GetType(initExpResult.TypeValue);
-                    return new VarDeclElementCoreResult(new VarDeclElement(elem.VarName, type, initExpResult.Exp), initExpResult.TypeValue);
+                    return new VarDeclElementCoreResult(new R.VarDeclElement(elem.VarName, type, initExpResult.Exp), initExpResult.TypeValue);
                 }
                 else
                 {
@@ -79,7 +80,7 @@ namespace Gum.IR0
                         context.AddFatalError(A0102_VarDecl_MismatchBetweenDeclTypeAndInitExpType, elem, $"타입 {initExpResult.TypeValue}의 값은 타입 {declType}의 변수 {elem.VarName}에 대입할 수 없습니다.");
 
                     var type = context.GetType(declType);
-                    return new VarDeclElementCoreResult(new VarDeclElement(elem.VarName, type, initExpResult.Exp), declType);
+                    return new VarDeclElementCoreResult(new R.VarDeclElement(elem.VarName, type, initExpResult.Exp), declType);
                 }
             }
         }
@@ -87,7 +88,7 @@ namespace Gum.IR0
         [AutoConstructor]
         partial struct VarDeclElementResult
         {
-            public VarDeclElement VarDeclElement { get; }
+            public R.VarDeclElement VarDeclElement { get; }
         }
 
         VarDeclElementResult AnalyzeInternalGlobalVarDeclElement(S.VarDeclElement elem, TypeValue declType)
@@ -119,14 +120,14 @@ namespace Gum.IR0
         [AutoConstructor]
         partial struct GlobalVarDeclResult
         {
-            public ImmutableArray<VarDeclElement> Elems { get; }
+            public ImmutableArray<R.VarDeclElement> Elems { get; }
         }
 
         GlobalVarDeclResult AnalyzeGlobalVarDecl(S.VarDecl varDecl)
         {
             var declType = context.GetTypeValueByTypeExp(varDecl.Type);
 
-            var elems = new List<VarDeclElement>();
+            var elems = new List<R.VarDeclElement>();
             foreach (var elem in varDecl.Elems)
             {
                 var result = AnalyzeInternalGlobalVarDeclElement(elem, declType);
@@ -139,24 +140,24 @@ namespace Gum.IR0
         [AutoConstructor]
         partial struct LocalVarDeclResult
         {
-            public LocalVarDecl VarDecl { get; }
+            public R.LocalVarDecl VarDecl { get; }
         }
 
         LocalVarDeclResult AnalyzeLocalVarDecl(S.VarDecl varDecl)
         {
             var declType = context.GetTypeValueByTypeExp(varDecl.Type);
 
-            var elems = new List<VarDeclElement>();
+            var elems = new List<R.VarDeclElement>();
             foreach (var elem in varDecl.Elems)
             {
                 var result = AnalyzeLocalVarDeclElement(elem, declType);
                 elems.Add(result.VarDeclElement);
             }
 
-            return new LocalVarDeclResult(new LocalVarDecl(elems.ToImmutableArray()));
+            return new LocalVarDeclResult(new R.LocalVarDecl(elems.ToImmutableArray()));
         }
 
-        StringExpElement AnalyzeStringExpElement(S.StringExpElement elem)
+        R.StringExpElement AnalyzeStringExpElement(S.StringExpElement elem)
         {
             if (elem is S.ExpStringExpElement expElem)
             {
@@ -165,25 +166,25 @@ namespace Gum.IR0
                 // 캐스팅이 필요하다면 
                 if (expResult.TypeValue == TypeValues.Int)
                 {
-                    return new ExpStringExpElement(
-                        new CallInternalUnaryOperatorExp(
-                            InternalUnaryOperator.ToString_Int_String,
-                            new ExpInfo(expResult.Exp, Type.Int)
+                    return new R.ExpStringExpElement(
+                        new R.CallInternalUnaryOperatorExp(
+                            R.InternalUnaryOperator.ToString_Int_String,
+                            new R.ExpInfo(expResult.Exp, R.Type.Int)
                         )
                     );
                 }
                 else if (expResult.TypeValue == TypeValues.Bool)
                 {
-                    return new ExpStringExpElement(
-                            new CallInternalUnaryOperatorExp(
-                            InternalUnaryOperator.ToString_Bool_String,
-                            new ExpInfo(expResult.Exp, Type.Bool)
+                    return new R.ExpStringExpElement(
+                            new R.CallInternalUnaryOperatorExp(
+                            R.InternalUnaryOperator.ToString_Bool_String,
+                            new R.ExpInfo(expResult.Exp, R.Type.Bool)
                         )
                     );
                 }
                 else if (expResult.TypeValue == TypeValues.String)
                 {
-                    return new ExpStringExpElement(expResult.Exp);
+                    return new R.ExpStringExpElement(expResult.Exp);
                 }
                 else
                 {
@@ -192,7 +193,7 @@ namespace Gum.IR0
             }
             else if (elem is S.TextStringExpElement textElem)
             {
-                return new TextStringExpElement(textElem.Text);
+                return new R.TextStringExpElement(textElem.Text);
             }
 
             throw new UnreachableCodeException();
@@ -201,15 +202,15 @@ namespace Gum.IR0
         [AutoConstructor]
         partial struct LambdaResult
         {
-            public Stmt Body { get; }
-            public CaptureInfo CaptureInfo { get; }
+            public R.Stmt Body { get; }
+            public R.CaptureInfo CaptureInfo { get; }
             public LambdaTypeValue TypeValue { get; }
         }
 
         LambdaResult AnalyzeLambda(S.ISyntaxNode nodeForErrorReport, S.Stmt body, ImmutableArray<S.LambdaExpParam> parameters)
         {   
             // 람다 안에서 캡쳐해야할 변수들 목록
-            var capturedLocalVars = new List<CaptureInfo.Element>();
+            var capturedLocalVars = new List<R.CaptureInfo.Element>();
 
             // TODO: 리턴 타입은 타입 힌트를 반영해야 한다
             TypeValue? retTypeValue = null;
@@ -246,14 +247,14 @@ namespace Gum.IR0
                     if (localVarOutsideLambdaInfo.bNeedCapture)
                     {
                         var typeId = context.GetType(localVarOutsideLambdaInfo.LocalVarInfo.TypeValue);
-                        capturedLocalVars.Add(new CaptureInfo.Element(typeId, localVarOutsideLambdaInfo.LocalVarInfo.Name));
+                        capturedLocalVars.Add(new R.CaptureInfo.Element(typeId, localVarOutsideLambdaInfo.LocalVarInfo.Name));
                     }
                 }
             });
 
             return new LambdaResult(
                 bodyResult.Stmt, 
-                new CaptureInfo(false, capturedLocalVars),
+                new R.CaptureInfo(false, capturedLocalVars),
                 new LambdaTypeValue(
                     retTypeValue ?? VoidTypeValue.Instance,
                     paramInfos.Select(paramInfo => paramInfo.TypeValue)));

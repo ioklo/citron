@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 using M = Gum.CompileTime;
 
-namespace Gum.IR0
+namespace Gum.IR0Translator
 {       
     class TypeEnv
     {

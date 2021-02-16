@@ -10,10 +10,10 @@ using System.Linq;
 using System.Net.Http.Headers;
 using System.Text;
 
-using static Gum.IR0.AnalyzeErrorCode;
+using static Gum.IR0Translator.AnalyzeErrorCode;
 using S = Gum.Syntax;
 
-namespace Gum.IR0
+namespace Gum.IR0Translator
 {
     internal class TypeSkeletonCollector
     {

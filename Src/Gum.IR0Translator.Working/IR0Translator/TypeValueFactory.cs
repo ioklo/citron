@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 using M = Gum.CompileTime;
 
-namespace Gum.IR0
+namespace Gum.IR0Translator
 {
     // Low-level ItemValue factory
     internal class TypeValueFactory

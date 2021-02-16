@@ -6,7 +6,7 @@ using Gum.Infra;
 using Gum.CompileTime;
 using System.Collections.Immutable;
 
-namespace Gum.IR0
+namespace Gum.IR0Translator
 {
     // 외부 인터페이스
     public class Translator

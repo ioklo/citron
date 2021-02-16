@@ -8,12 +8,12 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection.Emit;
 using System.Text;
-using static Gum.IR0.AnalyzeErrorCode;
+using static Gum.IR0Translator.AnalyzeErrorCode;
 
 using S = Gum.Syntax;
 using M = Gum.CompileTime;
 
-namespace Gum.IR0
+namespace Gum.IR0Translator
 {
     partial class TypeExpEvaluator : ISyntaxScriptVisitor
     {

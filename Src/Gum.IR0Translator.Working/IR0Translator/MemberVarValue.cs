@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
-namespace Gum.IR0
+namespace Gum.IR0Translator
 {
     // 분석 과정에서 사용하는 멤버 변수의 간접 참조, 타입 인자 정보를 포함한다
     class MemberVarValue : ItemValue

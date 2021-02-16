@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 
-namespace Gum.IR0
+namespace Gum.IR0Translator
 {
     // ModuleName없는 나머지 부분
     public struct ItemPath : IEquatable<ItemPath>

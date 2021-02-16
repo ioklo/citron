@@ -8,7 +8,7 @@ using Gum.Misc;
 using S = Gum.Syntax;
 using M = Gum.CompileTime;
 
-namespace Gum.IR0
+namespace Gum.IR0Translator
 {
     partial class Misc
     {

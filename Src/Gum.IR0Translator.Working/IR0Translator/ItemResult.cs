@@ -2,7 +2,7 @@
 using System.Collections.Immutable;
 using M = Gum.CompileTime;
 
-namespace Gum.IR0
+namespace Gum.IR0Translator
 {
     // Error/NotFound/Value
     abstract class ItemResult

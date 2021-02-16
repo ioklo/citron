@@ -5,9 +5,9 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 
-namespace Gum.IR0
+namespace Gum.IR0Translator
 {
-    public struct AppliedItemPath
+    struct AppliedItemPath
     {
         public NamespacePath NamespacePath { get; }    // root namespace
         public ImmutableArray<AppliedItemPathEntry> OuterEntries { get; }

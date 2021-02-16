@@ -1,4 +1,4 @@
-﻿namespace Gum.IR0
+﻿namespace Gum.IR0Translator
 {
     // TypeValue, FuncValue, MemberVarValue
     abstract class ItemValue

@@ -2,9 +2,10 @@
 
 using S = Gum.Syntax;
 using M = Gum.CompileTime;
+using R = Gum.IR0;
 using System.Collections.Immutable;
 
-namespace Gum.IR0
+namespace Gum.IR0Translator
 {
     // 분석 중에 나타나는 Identifier들의 정보
     abstract class IdentifierResult
@@ -60,10 +61,10 @@ namespace Gum.IR0
 
     class ExpIdentifierResult : ValidIdentifierResult
     {
-        public Exp Exp { get; }
+        public R.Exp Exp { get; }
         public TypeValue TypeValue { get; }
 
-        public ExpIdentifierResult(Exp exp, TypeValue typeValue)
+        public ExpIdentifierResult(R.Exp exp, TypeValue typeValue)
         {
             Exp = exp;
             TypeValue = typeValue;

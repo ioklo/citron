@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 
-namespace Gum.IR0
+namespace Gum.IR0Translator
 {
-    public struct AppliedItemPathEntry
+    struct AppliedItemPathEntry
     {
         public Name Name { get ; }
         public string ParamHash { get ; }   // 함수에서 파라미터에 따라 달라지는 값        

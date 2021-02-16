@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 
-namespace Gum.IR0
+namespace Gum.IR0Translator
 {
     partial class ModuleInfoBuilder
     {

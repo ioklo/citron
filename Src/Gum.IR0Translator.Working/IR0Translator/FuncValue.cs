@@ -7,8 +7,9 @@ using System.Text;
 
 using S = Gum.Syntax;
 using M = Gum.CompileTime;
+using R = Gum.IR0;
 
-namespace Gum.IR0
+namespace Gum.IR0Translator
 {
     // 종류
     // InternalGlobalFuncValue - 내가 모듈이다, FuncDecl
@@ -101,7 +102,7 @@ namespace Gum.IR0
         }
 
         // IR0 Func를 만들어 줍니다
-        public Func MakeFunc()
+        public R.Func MakeFunc()
         {
             // 1. GetFuncDeclId();
             // 2. TypeContext;            

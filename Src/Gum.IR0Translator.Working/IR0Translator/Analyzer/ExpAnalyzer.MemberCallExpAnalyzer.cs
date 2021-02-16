@@ -4,11 +4,11 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
-using static Gum.IR0.Analyzer;
-using static Gum.IR0.Analyzer.Misc;
+using static Gum.IR0Translator.Analyzer;
+using static Gum.IR0Translator.Analyzer.Misc;
 using Gum.Infra;
 
-namespace Gum.IR0
+namespace Gum.IR0Translator
 {
     partial class Analyzer
     {

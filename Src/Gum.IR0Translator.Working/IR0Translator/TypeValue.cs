@@ -10,7 +10,7 @@ using System.Text;
 
 using M = Gum.CompileTime;
 
-namespace Gum.IR0
+namespace Gum.IR0Translator
 {
     // 모두 immutable
     abstract partial class TypeValue : ItemValue

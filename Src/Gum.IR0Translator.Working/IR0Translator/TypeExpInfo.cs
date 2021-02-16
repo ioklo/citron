@@ -5,7 +5,7 @@ using System.Linq;
 
 using M = Gum.CompileTime;
 
-namespace Gum.IR0
+namespace Gum.IR0Translator
 {
     // X<int>.Y<T>
     abstract class TypeExpInfo

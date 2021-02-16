@@ -5,7 +5,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 
-namespace Gum.IR0
+namespace Gum.IR0Translator
 {
     // Root(ModuleName, Namespace) . RootItem . Item
     public struct ItemId : IEquatable<ItemId>

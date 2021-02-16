@@ -1,5 +1,4 @@
-﻿using Gum.CompileTime;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel;
@@ -7,49 +6,50 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Text;
-using static Gum.IR0.Analyzer;
-using static Gum.IR0.Analyzer.Misc;
-using static Gum.IR0.AnalyzeErrorCode;
+using static Gum.IR0Translator.Analyzer;
+using static Gum.IR0Translator.Analyzer.Misc;
+using static Gum.IR0Translator.AnalyzeErrorCode;
 
 using S = Gum.Syntax;
+using R = Gum.IR0;
 using Pretune;
 using System.Linq;
 using Gum.Misc;
 
-namespace Gum.IR0
+namespace Gum.IR0Translator
 {
     partial class Analyzer
     {
         [AutoConstructor]
         partial struct StmtResult
         {
-            public Stmt Stmt { get; }
+            public R.Stmt Stmt { get; }
         }
 
         // CommandStmt에 있는 expStringElement를 분석한다
         StmtResult AnalyzeCommandStmt(S.CommandStmt cmdStmt)
         {
-            var stringExps = new List<StringExp>();
+            var stringExps = new List<R.StringExp>();
             foreach (var cmd in cmdStmt.Commands)
             {
                 var expResult = AnalyzeStringExp(cmd);
                 stringExps.Add(expResult.Exp);
             }
 
-            return new StmtResult(new CommandStmt(stringExps));
+            return new StmtResult(new R.CommandStmt(stringExps));
         }
 
         // PrivateGlobalVarDecl이 나오거나, LocalVarDecl이 나오거나
         StmtResult AnalyzeGlobalVarDeclStmt(S.VarDeclStmt varDeclStmt)
         {
             var result = AnalyzeGlobalVarDecl(varDeclStmt.VarDecl);
-            return new StmtResult(new PrivateGlobalVarDeclStmt(result.Elems));
+            return new StmtResult(new R.PrivateGlobalVarDeclStmt(result.Elems));
         }
 
         StmtResult AnalyzeLocalVarDeclStmt(S.VarDeclStmt varDeclStmt)
         {
             var result = AnalyzeLocalVarDecl(varDeclStmt.VarDecl);
-            return new StmtResult(new LocalVarDeclStmt(result.VarDecl));
+            return new StmtResult(new R.LocalVarDeclStmt(result.VarDecl));
         }
 
         //bool AnalyzeIfTestEnumStmt(
@@ -192,13 +192,13 @@ namespace Gum.IR0
             if (!context.IsAssignable(TypeValues.Bool, condResult.TypeValue))
                 context.AddFatalError(A1004_IfStmt_ConditionShouldBeBool, ifStmt.Cond, "if 조건 식은 항상 bool형식이어야 합니다");
 
-            return new StmtResult(new IfStmt(condResult.Exp, bodyResult.Stmt, elseBodyResult?.Stmt));
+            return new StmtResult(new R.IfStmt(condResult.Exp, bodyResult.Stmt, elseBodyResult?.Stmt));
         }
 
         [AutoConstructor]
         partial struct ForStmtInitializerResult
         {
-            public ForStmtInitializer Initializer { get; }
+            public R.ForStmtInitializer Initializer { get; }
         }
 
         ForStmtInitializerResult AnalyzeForStmtInitializer(S.ForStmtInitializer forInit)
@@ -207,12 +207,12 @@ namespace Gum.IR0
             {
                 case S.VarDeclForStmtInitializer varDeclInit:
                     var varDeclResult = AnalyzeLocalVarDecl(varDeclInit.VarDecl);
-                    return new ForStmtInitializerResult(new VarDeclForStmtInitializer(varDeclResult.VarDecl));
+                    return new ForStmtInitializerResult(new R.VarDeclForStmtInitializer(varDeclResult.VarDecl));
 
                 case S.ExpForStmtInitializer expInit:
                     var expResult = AnalyzeTopLevelExp(expInit.Exp, null, A1102_ForStmt_ExpInitializerShouldBeAssignOrCall);
                     var expInitTypeId = context.GetType(expResult.TypeValue);
-                    return new ForStmtInitializerResult(new ExpForStmtInitializer(new ExpInfo(expResult.Exp, expInitTypeId)));
+                    return new ForStmtInitializerResult(new R.ExpForStmtInitializer(new R.ExpInfo(expResult.Exp, expInitTypeId)));
 
                 default:
                     throw new NotImplementedException();
@@ -223,14 +223,14 @@ namespace Gum.IR0
         {
             var result = context.ExecInLocalScope(() =>
             {
-                ForStmtInitializer? initializer = null;
+                R.ForStmtInitializer? initializer = null;
                 if (forStmt.Initializer != null)
                 {
                     var initializerResult = AnalyzeForStmtInitializer(forStmt.Initializer);
                     initializer = initializerResult.Initializer;
                 }
 
-                Exp? cond = null;
+                R.Exp? cond = null;
                 if (forStmt.CondExp != null)
                 {
                     // 밑에서 쓰이므로 분석실패시 종료
@@ -243,18 +243,18 @@ namespace Gum.IR0
                     cond = condResult.Exp;
                 }
 
-                ExpInfo? continueInfo = null;
+                R.ExpInfo? continueInfo = null;
                 if (forStmt.ContinueExp != null)
                 {
                     var continueResult = AnalyzeTopLevelExp(forStmt.ContinueExp, null, A1103_ForStmt_ContinueExpShouldBeAssignOrCall);
                     var contExpTypeId = context.GetType(continueResult.TypeValue);
-                    continueInfo = new ExpInfo(continueResult.Exp, contExpTypeId);
+                    continueInfo = new R.ExpInfo(continueResult.Exp, contExpTypeId);
                 }
 
                 return context.ExecInLoop(() =>
                 {
                     var bodyResult = AnalyzeStmt(forStmt.Body);
-                    return new ForStmt(initializer, cond, continueInfo, bodyResult.Stmt);
+                    return new R.ForStmt(initializer, cond, continueInfo, bodyResult.Stmt);
                 });
             });
 
@@ -266,7 +266,7 @@ namespace Gum.IR0
             if (!context.IsInLoop())
                 context.AddFatalError(A1501_ContinueStmt_ShouldUsedInLoop, continueStmt, "continue는 루프 안에서만 사용할 수 있습니다");
 
-            return new StmtResult(ContinueStmt.Instance);
+            return new StmtResult(R.ContinueStmt.Instance);
         }
 
         StmtResult AnalyzeBreakStmt(S.BreakStmt breakStmt)
@@ -276,7 +276,7 @@ namespace Gum.IR0
                 context.AddFatalError(A1601_BreakStmt_ShouldUsedInLoop, breakStmt, "break는 루프 안에서만 사용할 수 있습니다");
             }
 
-            return new StmtResult(BreakStmt.Instance);
+            return new StmtResult(R.BreakStmt.Instance);
         }
 
         StmtResult AnalyzeReturnStmt(S.ReturnStmt returnStmt)
@@ -287,7 +287,7 @@ namespace Gum.IR0
                 if (returnStmt.Value != null)
                     context.AddFatalError(A1202_ReturnStmt_SeqFuncShouldReturnVoid, returnStmt, $"seq 함수는 빈 return만 허용됩니다");
 
-                return new StmtResult(new ReturnStmt(null));
+                return new StmtResult(new R.ReturnStmt(null));
             }
 
             // 리턴 값이 없을 경우
@@ -305,7 +305,7 @@ namespace Gum.IR0
                     context.AddFatalError(A1201_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType, returnStmt, $"이 함수는 {context.GetRetTypeValue()}을 반환해야 합니다");
                 }
 
-                return new StmtResult(new ReturnStmt(null));
+                return new StmtResult(new R.ReturnStmt(null));
             }
             else
             {
@@ -326,14 +326,14 @@ namespace Gum.IR0
                         context.AddFatalError(A1201_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType, returnStmt.Value, $"반환값의 타입 {valueResult.TypeValue}는 이 함수의 반환타입과 맞지 않습니다");
                 }
 
-                return new StmtResult(new ReturnStmt(valueResult.Exp));
+                return new StmtResult(new R.ReturnStmt(valueResult.Exp));
             }
         }
 
         StmtResult AnalyzeBlockStmt(S.BlockStmt blockStmt)
         {
             bool bFatal = false;
-            var stmts = new List<Stmt>();
+            var stmts = new List<R.Stmt>();
 
             context.ExecInLocalScope(() =>
             {
@@ -354,12 +354,12 @@ namespace Gum.IR0
             if (bFatal)
                 throw new FatalAnalyzeException();
 
-            return new StmtResult(new BlockStmt(stmts));
+            return new StmtResult(new R.BlockStmt(stmts));
         }
 
         StmtResult AnalyzeBlankStmt()
         {
-            return new StmtResult(BlankStmt.Instance);
+            return new StmtResult(R.BlankStmt.Instance);
         }
 
         StmtResult AnalyzeExpStmt(S.ExpStmt expStmt)
@@ -367,13 +367,13 @@ namespace Gum.IR0
             var expResult = AnalyzeTopLevelExp(expStmt.Exp, null, A1301_ExpStmt_ExpressionShouldBeAssignOrCall);
 
             var expTypeId = context.GetType(expResult.TypeValue);
-            return new StmtResult(new ExpStmt(new ExpInfo(expResult.Exp, expTypeId)));
+            return new StmtResult(new R.ExpStmt(new R.ExpInfo(expResult.Exp, expTypeId)));
         }
 
         StmtResult AnalyzeTaskStmt(S.TaskStmt taskStmt)
         {
             var lambdaResult = AnalyzeLambda(taskStmt, taskStmt.Body, ImmutableArray<S.LambdaExpParam>.Empty);
-            return new StmtResult(new TaskStmt(lambdaResult.Body, lambdaResult.CaptureInfo));
+            return new StmtResult(new R.TaskStmt(lambdaResult.Body, lambdaResult.CaptureInfo));
         }
 
         StmtResult AnalyzeAwaitStmt(S.AwaitStmt awaitStmt)
@@ -384,13 +384,13 @@ namespace Gum.IR0
                 return bodyResult.Stmt;
             });
 
-            return new StmtResult(new AwaitStmt(body));
+            return new StmtResult(new R.AwaitStmt(body));
         }
 
         StmtResult AnalyzeAsyncStmt(S.AsyncStmt asyncStmt)
         {
             var lambdaResult = AnalyzeLambda(asyncStmt, asyncStmt.Body, ImmutableArray<S.LambdaExpParam>.Empty);
-            return new StmtResult(new AsyncStmt(lambdaResult.Body, lambdaResult.CaptureInfo));
+            return new StmtResult(new R.AsyncStmt(lambdaResult.Body, lambdaResult.CaptureInfo));
         }
 
         StmtResult AnalyzeForeachStmt(S.ForeachStmt foreachStmt)
@@ -447,7 +447,7 @@ namespace Gum.IR0
                     var elemTypeId = context.GetType(elemType);
                     var iteratorTypeId = context.GetType(iteratorResult.TypeValue);
 
-                    return new ForeachStmt(elemTypeId, foreachStmt.VarName, new ExpInfo(iteratorResult.Exp, iteratorTypeId), bodyResult.Stmt);
+                    return new R.ForeachStmt(elemTypeId, foreachStmt.VarName, new R.ExpInfo(iteratorResult.Exp, iteratorTypeId), bodyResult.Stmt);
                 });
             });
 
@@ -469,7 +469,7 @@ namespace Gum.IR0
             if (!context.IsAssignable(retTypeValue, valueResult.TypeValue))
                 context.AddFatalError(A1402_YieldStmt_MismatchBetweenYieldValueAndSeqFuncYieldType, yieldStmt.Value, $"반환 값의 {valueResult.TypeValue} 타입은 이 함수의 반환 타입과 맞지 않습니다");
 
-            return new StmtResult(new YieldStmt(valueResult.Exp));
+            return new StmtResult(new R.YieldStmt(valueResult.Exp));
         }
 
         StmtResult AnalyzeCommonStmt(S.Stmt stmt)

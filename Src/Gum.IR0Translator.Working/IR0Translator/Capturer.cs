@@ -9,7 +9,7 @@ using System.Text;
 
 using S = Gum.Syntax;
 
-namespace Gum.IR0
+namespace Gum.IR0Translator
 {
     public class CaptureResult
     {

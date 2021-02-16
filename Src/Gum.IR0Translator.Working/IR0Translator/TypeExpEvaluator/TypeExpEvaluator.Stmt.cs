@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using S = Gum.Syntax;
 
-namespace Gum.IR0
+namespace Gum.IR0Translator
 {
     partial class TypeExpEvaluator
     {

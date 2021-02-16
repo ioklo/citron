@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Text;
 using Gum.Misc;
 
-using static Gum.IR0.AnalyzeErrorCode;
+using static Gum.IR0Translator.AnalyzeErrorCode;
 using S = Gum.Syntax;
 using M = Gum.CompileTime;
 using System.Linq;
 using System.Collections.Immutable;
 
-namespace Gum.IR0
+namespace Gum.IR0Translator
 {
     partial class TypeExpEvaluator
     {

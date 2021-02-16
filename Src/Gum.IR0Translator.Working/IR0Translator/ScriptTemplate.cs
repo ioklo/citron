@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Text;
 
-namespace Gum.IR0
+namespace Gum.IR0Translator
 {
     public abstract class ScriptTemplate
     {

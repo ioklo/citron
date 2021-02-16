@@ -7,7 +7,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
-namespace Gum.IR0
+namespace Gum.IR0Translator
 {   
     // TODO: using cache after mature    
     struct GlobalItemQueryService

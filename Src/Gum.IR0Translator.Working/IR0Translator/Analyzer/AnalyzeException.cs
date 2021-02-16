@@ -2,7 +2,7 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace Gum.IR0
+namespace Gum.IR0Translator
 {
     class FatalAnalyzeException : Exception
     {        

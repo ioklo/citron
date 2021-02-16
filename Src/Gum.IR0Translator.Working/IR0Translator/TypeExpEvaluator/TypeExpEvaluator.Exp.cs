@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using S = Gum.Syntax;
 
-namespace Gum.IR0
+namespace Gum.IR0Translator
 {
     partial class TypeExpEvaluator
     {   
@@ -40,7 +40,6 @@ namespace Gum.IR0
         void VisitCallExp(S.CallExp callExp)
         {
             VisitExp(callExp.Callable);
-            VisitTypeArgExpsOuterMost(callExp.TypeArgs);
 
             foreach (var arg in callExp.Args)
                 VisitExp(arg);

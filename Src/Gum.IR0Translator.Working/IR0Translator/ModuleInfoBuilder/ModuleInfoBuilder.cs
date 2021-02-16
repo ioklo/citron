@@ -11,7 +11,7 @@ using System.Runtime.Serialization;
 using S = Gum.Syntax;
 using M = Gum.CompileTime;
 
-namespace Gum.IR0
+namespace Gum.IR0Translator
 {
     // Script에서 ModuleInfo 정보를 뽑는 역할
     partial class ModuleInfoBuilder : ISyntaxScriptVisitor
@@ -220,7 +220,7 @@ namespace Gum.IR0
 
                 Debug.Assert(typeBuilder != null);
                 var structInfo = typeBuilder.MakeTypeInfo((types, funcs, vars) =>
-                    new M.StructInfo(structDecl.Name, structDecl.TypeParams, null, ImmutableArray<M.Type>.Empty(), types, funcs, vars));
+                    new M.StructInfo(structDecl.Name, structDecl.TypeParams, null, default, types, funcs, vars));
 
                 AddTypeInfoToOuter(structInfo);
             });            
