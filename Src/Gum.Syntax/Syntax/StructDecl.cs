@@ -18,15 +18,15 @@ namespace Gum.Syntax
         public StructDecl(
             AccessModifier accessModifier,
             string name,
-            IEnumerable<string> typeParams,
-            IEnumerable<TypeExp> baseTypes,
-            IEnumerable<Element> elems)
+            ImmutableArray<string> typeParams,
+            ImmutableArray<TypeExp> baseTypes,
+            ImmutableArray<Element> elems)
             : base(name)
         {
             AccessModifier = accessModifier;
-            TypeParams = typeParams.ToImmutableArray();
-            BaseTypes = baseTypes.ToImmutableArray();
-            Elems = elems.ToImmutableArray();
+            TypeParams = typeParams;
+            BaseTypes = baseTypes;
+            Elems = elems;
         }
     }
 }

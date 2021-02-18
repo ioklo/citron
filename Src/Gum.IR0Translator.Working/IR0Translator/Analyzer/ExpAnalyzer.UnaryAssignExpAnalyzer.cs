@@ -6,7 +6,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using static Gum.IR0Translator.Analyzer;
-using static Gum.IR0Translator.Analyzer.Misc;
 
 namespace Gum.IR0Translator
 {

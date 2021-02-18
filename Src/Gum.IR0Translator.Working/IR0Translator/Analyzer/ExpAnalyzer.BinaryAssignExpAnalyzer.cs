@@ -4,7 +4,6 @@ using System.Text;
 using System.Linq;
 using System.Diagnostics.CodeAnalysis;
 using static Gum.IR0Translator.Analyzer;
-using Gum.CompileTime;
 
 namespace Gum.IR0Translator
 {

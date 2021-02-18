@@ -1,5 +1,4 @@
-﻿using Gum.CompileTime;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
@@ -7,33 +6,15 @@ using System.Linq;
 using System.Text;
 
 using S = Gum.Syntax;
+using M = Gum.CompileTime;
 
 namespace Gum.IR0Translator
 {
     partial class Analyzer
-    {
-        internal static class Misc
+    {   
+        static ImmutableArray<TypeValue> GetTypeValues(ImmutableArray<S.TypeExp> typeExps, Context context)
         {
-            public static ImmutableArray<TypeValue> GetTypeValues(ImmutableArray<S.TypeExp> typeExps, Context context)
-            {
-                return typeExps.Select(typeExp => context.GetTypeValueByTypeExp(typeExp)).ToImmutableArray();
-            }
-
-            public static bool IsVarStatic(ItemId varId, Context context)
-            {
-                var varInfo = context.GetItem<VarInfo>(varId);
-                Debug.Assert(varInfo != null);
-
-                return varInfo.bStatic;
-            }
-
-            public static bool IsFuncStatic(ItemId funcId, Context context)
-            {
-                var funcInfo = context.GetItem<FuncInfo>(funcId);
-                Debug.Assert(funcInfo != null);
-
-                return !funcInfo.bThisCall;
-            }
-        }
+            return typeExps.Select(typeExp => context.GetTypeValueByTypeExp(typeExp)).ToImmutableArray();
+        }        
     }
 }

@@ -23,10 +23,12 @@ namespace Gum.IR0Translator
 
         public static R.Script Analyze(
             S.Script script,
+            ItemValueFactory itemValueFactory,
+            GlobalItemValueFactory globalItemValueFactory,
             TypeExpInfoService typeExpTypeValueService,
             IErrorCollector errorCollector)
         {
-            var context = new Context(typeExpTypeValueService, errorCollector);
+            var context = new Context(itemValueFactory, globalItemValueFactory, typeExpTypeValueService, errorCollector);
             var analyzer = new Analyzer(context);
 
             // pass1, pass2
@@ -60,8 +62,8 @@ namespace Gum.IR0Translator
                 if (declType is VarTypeValue)
                     context.AddFatalError(A0101_VarDecl_CantInferVarType, elem, $"{elem.VarName}의 타입을 추론할 수 없습니다");
 
-                var type = context.GetType(declType);
-                return new VarDeclElementCoreResult(new R.VarDeclElement(elem.VarName, type, null), declType);
+                var rtype = declType.GetRType();
+                return new VarDeclElementCoreResult(new R.VarDeclElement(elem.VarName, rtype, null), declType);
             }
             else
             {
@@ -69,8 +71,8 @@ namespace Gum.IR0Translator
                 if (declType is VarTypeValue)
                 {
                     var initExpResult = AnalyzeExp(elem.InitExp, null);
-                    var type = context.GetType(initExpResult.TypeValue);
-                    return new VarDeclElementCoreResult(new R.VarDeclElement(elem.VarName, type, initExpResult.Exp), initExpResult.TypeValue);
+                    var rtype = initExpResult.TypeValue.GetRType();
+                    return new VarDeclElementCoreResult(new R.VarDeclElement(elem.VarName, rtype, initExpResult.Exp), initExpResult.TypeValue);
                 }
                 else
                 {
@@ -79,8 +81,8 @@ namespace Gum.IR0Translator
                     if (!context.IsAssignable(declType, initExpResult.TypeValue))
                         context.AddFatalError(A0102_VarDecl_MismatchBetweenDeclTypeAndInitExpType, elem, $"타입 {initExpResult.TypeValue}의 값은 타입 {declType}의 변수 {elem.VarName}에 대입할 수 없습니다.");
 
-                    var type = context.GetType(declType);
-                    return new VarDeclElementCoreResult(new R.VarDeclElement(elem.VarName, type, initExpResult.Exp), declType);
+                    var rtype = declType.GetRType();
+                    return new VarDeclElementCoreResult(new R.VarDeclElement(elem.VarName, rtype, initExpResult.Exp), declType);
                 }
             }
         }
@@ -164,7 +166,7 @@ namespace Gum.IR0Translator
                 var expResult = AnalyzeExp(expElem.Exp, null);
 
                 // 캐스팅이 필요하다면 
-                if (expResult.TypeValue == TypeValues.Int)
+                if (context.IsIntType(expResult.TypeValue))
                 {
                     return new R.ExpStringExpElement(
                         new R.CallInternalUnaryOperatorExp(
@@ -173,7 +175,7 @@ namespace Gum.IR0Translator
                         )
                     );
                 }
-                else if (expResult.TypeValue == TypeValues.Bool)
+                else if (context.IsBoolType(expResult.TypeValue))
                 {
                     return new R.ExpStringExpElement(
                             new R.CallInternalUnaryOperatorExp(
@@ -182,7 +184,7 @@ namespace Gum.IR0Translator
                         )
                     );
                 }
-                else if (expResult.TypeValue == TypeValues.String)
+                else if (context.IsStringType(expResult.TypeValue))
                 {
                     return new R.ExpStringExpElement(expResult.Exp);
                 }
@@ -208,10 +210,7 @@ namespace Gum.IR0Translator
         }
 
         LambdaResult AnalyzeLambda(S.ISyntaxNode nodeForErrorReport, S.Stmt body, ImmutableArray<S.LambdaExpParam> parameters)
-        {   
-            // 람다 안에서 캡쳐해야할 변수들 목록
-            var capturedLocalVars = new List<R.CaptureInfo.Element>();
-
+        {
             // TODO: 리턴 타입은 타입 힌트를 반영해야 한다
             TypeValue? retTypeValue = null;
 
@@ -229,6 +228,8 @@ namespace Gum.IR0Translator
 
             var bodyResult = new StmtResult(); // suppress CS0165
 
+            R.CaptureInfo? captureInfo = null;
+
             context.ExecInLambdaScope(retTypeValue, () => {
 
                 // 람다 파라미터를 지역 변수로 추가한다
@@ -241,23 +242,17 @@ namespace Gum.IR0Translator
                 // 성공했으면, 리턴 타입 갱신
                 retTypeValue = context.GetRetTypeValue();
 
-                // CapturedLocalVar 작성
-                foreach (var localVarOutsideLambdaInfo in context.GetLocalVarsOutsideLambda())
-                {
-                    if (localVarOutsideLambdaInfo.bNeedCapture)
-                    {
-                        var typeId = context.GetType(localVarOutsideLambdaInfo.LocalVarInfo.TypeValue);
-                        capturedLocalVars.Add(new R.CaptureInfo.Element(typeId, localVarOutsideLambdaInfo.LocalVarInfo.Name));
-                    }
-                }
+                captureInfo = context.MakeCaptureInfo();
             });
 
-            return new LambdaResult(
-                bodyResult.Stmt, 
-                new R.CaptureInfo(false, capturedLocalVars),
-                new LambdaTypeValue(
-                    retTypeValue ?? VoidTypeValue.Instance,
-                    paramInfos.Select(paramInfo => paramInfo.TypeValue)));
+            Debug.Assert(captureInfo != null);
+
+            var lambdaTypeValue = context.NewLambdaTypeValue(
+                retTypeValue ?? VoidTypeValue.Instance,
+                paramInfos.Select(paramInfo => paramInfo.TypeValue)
+            );
+
+            return new LambdaResult(bodyResult.Stmt, captureInfo, lambdaTypeValue);
         }
 
         bool IsTopLevelExp(S.Exp exp)
@@ -314,9 +309,9 @@ namespace Gum.IR0Translator
                     var retTypeValue = context.GetRetTypeValue();
                     Debug.Assert(retTypeValue != null, "문법상 Sequence 함수의 retValue가 없을수 없습니다");
 
-                    var retType = context.GetType(retTypeValue);
+                    var retRType = retTypeValue.GetRType();
                     var parameters = funcDecl.ParamInfo.Parameters.Select(param => param.Name).ToImmutableArray();
-                    context.AddSequenceFuncDecl(funcPath.Value, retType, false, funcDecl.TypeParams, parameters, bodyResult.Stmt);
+                    context.AddSequenceFuncDecl(funcPath.Value, retRType, false, funcDecl.TypeParams, parameters, bodyResult.Stmt);
                 }
                 else
                 {

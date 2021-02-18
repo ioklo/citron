@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using static Gum.IR0Translator.Analyzer.Misc;
 using static Gum.IR0Translator.Analyzer;
-using Gum.CompileTime;
 
 namespace Gum.IR0Translator
 {

@@ -47,6 +47,7 @@ namespace Gum.IR0Translator
                     break;
 
                 case ExpIdentifierResult expResult:
+                    context.AddLambdaCapture(expResult.LambdaCapture);
                     return new ExpResult(expResult.Exp, expResult.TypeValue);
 
                 case FuncIdentifierResult:
@@ -74,12 +75,12 @@ namespace Gum.IR0Translator
 
         ExpResult AnalyzeBoolLiteralExp(S.BoolLiteralExp boolExp)
         {
-            return new ExpResult(new R.BoolLiteralExp(boolExp.Value), TypeValues.Bool);
+            return new ExpResult(new R.BoolLiteralExp(boolExp.Value), context.GetBoolType());
         }
 
         ExpResult AnalyzeIntLiteralExp(S.IntLiteralExp intExp)
         {
-            return new ExpResult(new R.IntLiteralExp(intExp.Value), TypeValues.Int);
+            return new ExpResult(new R.IntLiteralExp(intExp.Value), context.GetIntType());
         }
 
         [AutoConstructor]
@@ -110,7 +111,7 @@ namespace Gum.IR0Translator
             if (bFatal)
                 throw new FatalAnalyzeException();
 
-            return new StringExpResult(new R.StringExp(strExpElems), TypeValues.String);
+            return new StringExpResult(new R.StringExp(strExpElems), context.GetStringType());
         }
 
         // int만 지원한다
@@ -119,13 +120,13 @@ namespace Gum.IR0Translator
             var operandResult = AnalyzeExp(operand, null);
 
             // int type 검사
-            if (!context.IsAssignable(TypeValues.Int, operandResult.TypeValue))
+            if (!context.IsAssignable(context.GetIntType(), operandResult.TypeValue))
                 context.AddFatalError(A0601_UnaryAssignOp_IntTypeIsAllowedOnly, operand, "++ --는 int 타입만 지원합니다");
 
             if (!context.IsAssignableExp(operandResult.Exp))
                 context.AddFatalError(A0602_UnaryAssignOp_AssignableExpressionIsAllowedOnly, operand, "++ --는 대입 가능한 식에만 적용할 수 있습니다");
 
-            return new ExpResult(new R.CallInternalUnaryAssignOperator(op, operandResult.Exp), TypeValues.Int);
+            return new ExpResult(new R.CallInternalUnaryAssignOperator(op, operandResult.Exp), context.GetIntType());
         }
 
         ExpResult AnalyzeUnaryOpExp(S.UnaryOpExp unaryOpExp)
@@ -136,29 +137,29 @@ namespace Gum.IR0Translator
             {
                 case S.UnaryOpKind.LogicalNot:
                     {
-                        if (!context.IsAssignable(TypeValues.Bool, operandResult.TypeValue))
-                            context.AddFatalError(A0701_UnaryOp_LogicalNotOperatorIsAppliedToBoolTypeOperandOnly, unaryOpExp.Operand, $"{unaryOpExp.Operand}에 !를 적용할 수 없습니다. bool 타입이어야 합니다");                            
+                        if (!context.IsAssignable(context.GetBoolType(), operandResult.TypeValue))
+                            context.AddFatalError(A0701_UnaryOp_LogicalNotOperatorIsAppliedToBoolTypeOperandOnly, unaryOpExp.Operand, $"{unaryOpExp.Operand}에 !를 적용할 수 없습니다. bool 타입이어야 합니다");
 
-                        var operandTypeId = context.GetType(operandResult.TypeValue);
+                        var operandRType = operandResult.TypeValue.GetRType();
 
                         return new ExpResult(
                             new R.CallInternalUnaryOperatorExp(
                                 R.InternalUnaryOperator.LogicalNot_Bool_Bool,
-                                new R.ExpInfo(operandResult.Exp, operandTypeId)),
-                            TypeValues.Bool);
+                                new R.ExpInfo(operandResult.Exp, operandRType)),
+                            context.GetBoolType());
                     }
 
                 case S.UnaryOpKind.Minus:
                     {
-                        if (!context.IsAssignable(TypeValues.Int, operandResult.TypeValue))
+                        if (!context.IsAssignable(context.GetIntType(), operandResult.TypeValue))
                             context.AddFatalError(A0702_UnaryOp_UnaryMinusOperatorIsAppliedToIntTypeOperandOnly, unaryOpExp.Operand, $"{unaryOpExp.Operand}에 -를 적용할 수 없습니다. int 타입이어야 합니다");
 
-                        var operandTypeId = context.GetType(operandResult.TypeValue);
+                        var operandRType = operandResult.TypeValue.GetRType();
                         return new ExpResult(
                             new R.CallInternalUnaryOperatorExp(
                                 R.InternalUnaryOperator.UnaryMinus_Int_Int,
-                                new R.ExpInfo(operandResult.Exp, operandTypeId)),
-                            TypeValues.Int);
+                                new R.ExpInfo(operandResult.Exp, operandRType)),
+                            context.GetIntType();
                     }
 
                 case S.UnaryOpKind.PostfixInc: // e.m++ 등
@@ -262,7 +263,7 @@ namespace Gum.IR0Translator
             // 2. NotEqual 처리
             if (binaryOpExp.Kind == S.BinaryOpKind.NotEqual)
             {
-                if (infos.TryGetValue(S.BinaryOpKind.Equal, out var equalInfos))
+                if (context.TryGetValue(S.BinaryOpKind.Equal, out var equalInfos))
                 {
                     foreach (var info in equalInfos)
                     {
@@ -270,10 +271,10 @@ namespace Gum.IR0Translator
                         if (context.IsAssignable(info.OperandType0, operandResult0.TypeValue) &&
                             context.IsAssignable(info.OperandType1, operandResult1.TypeValue))
                         {
-                            var operandTypeId0 = context.GetType(operandResult0.TypeValue);
-                            var operandTypeId1 = context.GetType(operandResult1.TypeValue);
+                            var operandRType0 = operandResult0.TypeValue.GetRType();
+                            var operandRType1 = operandResult1.TypeValue.GetRType();
 
-                            var equalExp = new R.CallInternalBinaryOperatorExp(info.IR0Operator, new R.ExpInfo(operandResult0.Exp, operandTypeId0), new R.ExpInfo(operandResult1.Exp, operandTypeId1));
+                            var equalExp = new R.CallInternalBinaryOperatorExp(info.IR0Operator, new R.ExpInfo(operandResult0.Exp, operandTypeId0), new R.ExpInfo(operandResult1.Exp, operandRType1));
                             var notEqualOperand = new R.ExpInfo(equalExp, R.Type.Bool);
 
                             return new ExpResult(
@@ -293,14 +294,14 @@ namespace Gum.IR0Translator
                     if (context.IsAssignable(info.OperandType0, operandResult0.TypeValue) && 
                         context.IsAssignable(info.OperandType1, operandResult1.TypeValue))
                     {
-                        var operandTypeId0 = context.GetType(operandResult0.TypeValue);
-                        var operandTypeId1 = context.GetType(operandResult1.TypeValue);
+                        var operandRType0 = operandResult0.TypeValue.GetRType();
+                        var operandRType1 = operandResult1.TypeValue.GetRType();
 
                         return new ExpResult(
                             new R.CallInternalBinaryOperatorExp(
                                 info.IR0Operator, 
-                                new R.ExpInfo(operandResult0.Exp, operandTypeId0), 
-                                new R.ExpInfo(operandResult1.Exp, operandTypeId1)),
+                                new R.ExpInfo(operandResult0.Exp, operandRType0), 
+                                new R.ExpInfo(operandResult1.Exp, operandRType1)),
                             info.ResultType);
                     }
                 }
@@ -341,40 +342,22 @@ namespace Gum.IR0Translator
             var args = ImmutableArray.CreateRange(argResults, argResult =>
             {
                 // rType으로 
-                var rtype = context.GetType(argResult.TypeValue);
+                var rtype = argResult.TypeValue.GetRType();
                 return new R.ExpInfo(argResult.Exp, rtype);
             });
 
-            // 4개의 케이스
-            // (internal/external) (sequence/normal)
-
-            // 가장 일반적인 케이스 internal / normal
-            if (!funcValue.IsSequence && funcValue.IsInternal)
-            {
-                var func = funcValue.MakeFunc();
-                var retType = funcValue.GetRetType();
-
-                return new ExpResult(new R.CallFuncExp(func, null, args), retType);
-            }            
+            var rfunc = funcValue.GetRFunc();
+            var retType = funcValue.GetRetType();
             
-            // 일단 instantiation을 없다고 가정을 했던것 같으니까.. 함수에 타입 인자들을 다 넘겨줄 생각을 해보자
-            // T => X<int>.Y<short>.F<string, T>
-            if (funcValue.IsSequence)
+            if (!funcValue.IsSequence)
             {
-                var funcDeclId = context.GetFuncDeclId(funcValue);
-                if (funcDeclId is InternalFuncDeclId internalFuncDeclId)
-                {
-                    if (funcValue.IsStatic)
-                    {
-                        
-                        // CallSeqFuncExp(funcId, <<0, 0, int>, <0, 1, short>, string, bool>
-                        return new ExpResult(new IR0.CallSeqFuncExp(internalFuncDeclId, null, args), );
-                    }
-                }
+                if (funcValue.IsInternal) return new ExpResult(new R.CallFuncExp(rfunc, null, args), retType);
+                else throw new NotImplementedException(); // return new ExpResult(new R.ExCallFuncExp(rfunc, null, args), retType);
             }
             else
             {
-
+                if (funcValue.IsInternal) return new ExpResult(new R.CallSeqFuncExp(rfunc, null, args), retType);
+                else throw new NotImplementedException(); // return new ExpResult(new R.ExCallSeqFuncExp(rfunc, null, args), retType);
             }
         }
 
@@ -387,17 +370,17 @@ namespace Gum.IR0Translator
 
             var argTypes = ImmutableArray.CreateRange(argResults, info => info.TypeValue);
             CheckParamTypes(nodeForErrorReport, lambdaType.Params, argTypes);
-            
-            var callableTypeId = context.GetType(lambdaType);
+
+            var callableRType = lambdaType.GetRType();
             var args = argResults.Select(info =>
             {
-                var typeId = context.GetType(info.TypeValue);
-                return new R.ExpInfo(info.Exp, typeId);
+                var argRType = info.TypeValue.GetRType();
+                return new R.ExpInfo(info.Exp, argRType);
             }).ToArray();
 
             // TODO: 사실 Type보다 Allocation정보가 들어가야 한다
             return new ExpResult(
-                new R.CallValueExp(new R.ExpInfo(callable, callableTypeId), args),
+                new R.CallValueExp(new R.ExpInfo(callable, callableRType), args),
                 lambdaType.Return);
         }
         
@@ -520,7 +503,7 @@ namespace Gum.IR0Translator
             throw new NotImplementedException();
         }
 
-        ExpResult AnalyzeMemberExpExpParent(S.MemberExp memberExp, Exp parentExp, TypeValue parentType, TypeValue? hintType)
+        ExpResult AnalyzeMemberExpExpParent(S.MemberExp memberExp, R.Exp parentExp, TypeValue parentType, TypeValue? hintType)
         {
             NormalTypeValue? parentNormalType = parentType as NormalTypeValue;
 
@@ -584,6 +567,7 @@ namespace Gum.IR0Translator
                     break;
 
                 case ExpIdentifierResult expResult:
+                    context.AddLambdaCapture(expResult.LambdaCapture);
                     return AnalyzeMemberExpExpParent(memberExp, expResult.Exp, expResult.TypeValue, hintType);
 
                 case TypeIdentifierResult typeResult:
@@ -645,11 +629,11 @@ namespace Gum.IR0Translator
 
             if (curElemTypeValue == null)
                 context.AddFatalError(A1701_ListExp_CantInferElementTypeWithEmptyElement, listExp, $"리스트의 타입을 결정하지 못했습니다");
-            
-            var typeId = context.GetType(curElemTypeValue);
+
+            var rtype = curElemTypeValue.GetRType();
 
             return new ExpResult(
-                new R.ListExp(typeId, elemExps), 
+                new R.ListExp(rtype, elemExps), 
                 TypeValues.List(curElemTypeValue));
         }
 

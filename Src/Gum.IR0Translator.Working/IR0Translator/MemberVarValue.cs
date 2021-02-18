@@ -16,14 +16,14 @@ namespace Gum.IR0Translator
         // M.MemberVarInfo info;
         // NormalTypeValue typeValue;
 
-        TypeValueFactory factory;
+        ItemValueFactory factory;
         TypeValue outer;
         M.MemberVarInfo info;
 
         public M.Name Name { get => info.Name; }
         public bool IsStatic { get => info.IsStatic; }
         
-        public MemberVarValue(TypeValueFactory factory, TypeValue outer, M.MemberVarInfo info)
+        public MemberVarValue(ItemValueFactory factory, TypeValue outer, M.MemberVarInfo info)
         {
             this.factory = factory;
             this.outer = outer;

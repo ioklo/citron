@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Xunit;
 
-namespace Gum.IR0
+namespace Gum.IR0Translator.Test
 {
     class TestErrorCollector : IErrorCollector
     {

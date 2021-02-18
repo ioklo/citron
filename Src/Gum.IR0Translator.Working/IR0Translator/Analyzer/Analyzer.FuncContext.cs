@@ -1,10 +1,12 @@
-﻿using Gum.CompileTime;
-using Gum.Misc;
+﻿using Gum.Misc;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+
+using R = Gum.IR0;
 
 namespace Gum.IR0Translator
 {
@@ -30,6 +32,9 @@ namespace Gum.IR0Translator
             ScopedDictionary<string, LocalVarInfo> localVarsOutsideLambda; // 람다 구문 바깥에 있는 로컬 변수, 캡쳐대상이다
             ScopedDictionary<string, LocalVarInfo> localVarsByName;
 
+            bool bCaptureThis;
+            Dictionary<string, TypeValue> localCaptures;
+
             public FuncContext(ItemPath? funcPath, TypeValue? retTypeValue, bool bSequence)
             {
                 this.funcPath = funcPath;
@@ -38,6 +43,9 @@ namespace Gum.IR0Translator
 
                 this.localVarsOutsideLambda = new ScopedDictionary<string, LocalVarInfo>();
                 this.localVarsByName = new ScopedDictionary<string, LocalVarInfo>();
+
+                this.bCaptureThis = false;
+                this.localCaptures = new Dictionary<string, TypeValue>();
             }
 
             public void AddLocalVarInfo(string name, TypeValue typeValue)
@@ -68,6 +76,24 @@ namespace Gum.IR0Translator
             public void SetRetTypeValue(TypeValue retTypeValue)
             {
                 this.retTypeValue = retTypeValue;
+            }
+
+            public void AddLambdaCapture(LambdaCapture lambdaCapture)
+            {
+                switch(lambdaCapture)
+                {
+                    case NoneLambdaCapture: break;
+                    case ThisLambdaCapture: bCaptureThis = true; break;
+                    case LocalLambdaCapture localCapture:
+                        if (localCaptures.TryGetValue(localCapture.Name, out var prevType))
+                            Debug.Assert(prevType.Equals(localCapture.Type));
+                        else
+                            localCaptures.Add(localCapture.Name, localCapture.Type);
+                        break;
+
+                    default:
+                        throw new UnreachableCodeException();
+                }                
             }
 
             public bool IsSeqFunc()
@@ -148,6 +174,17 @@ namespace Gum.IR0Translator
 
                 // 아무데서도 못찾았으면 false
                 return false;
+            }
+
+            public R.CaptureInfo MakeCaptureInfo()
+            {
+                var elems = localCaptures.Select(localCapture => {
+                    var name = localCapture.Key;
+                    var type = localCapture.Value.GetRType();
+                    return new R.CaptureInfo.Element(type, name);
+                }).ToImmutableArray();
+
+                return new R.CaptureInfo(bCaptureThis, elems);
             }
         }
     }

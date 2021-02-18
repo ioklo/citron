@@ -1,6 +1,7 @@
 using Gum.Syntax;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -11,6 +12,8 @@ namespace Gum
 {
     public class ParserTests
     {
+        ImmutableArray<T> Arr<T>(params T[] elems) => ImmutableArray.Create(elems);
+
         async ValueTask<ParserContext> MakeContextAsync(string input)
         {
             var buffer = new Buffer(new StringReader(input));
@@ -99,19 +102,18 @@ public struct S<T> : B, I
             var structDecl = await parser.ParseStructDeclAsync(context);
 
             var expected = new StructDecl(AccessModifier.Public, "S",
-                new string[] { "T" },
+                Arr( "T" ),
 
-                new TypeExp[] { new IdTypeExp("B"), new IdTypeExp("I") },
+                Arr<TypeExp>( new IdTypeExp("B"), new IdTypeExp("I") ),
 
-                new StructDecl.Element[]
-                {
+                Arr<StructDecl.Element>(
                     new StructDecl.VarDeclElement(AccessModifier.Public, new IdTypeExp("int"), new[] { "x1", "x2" }),
                     new StructDecl.VarDeclElement(AccessModifier.Protected, new IdTypeExp("string"), new[] { "y" }),
                     new StructDecl.VarDeclElement(AccessModifier.Private, new IdTypeExp("int"), new[] { "z" }),
 
                     new StructDecl.TypeDeclElement(new StructDecl(
-                        AccessModifier.Public, "Nested", new[] { "U" }, new[] { new IdTypeExp("B"), new IdTypeExp("I") },
-                        new[] { new StructDecl.VarDeclElement(AccessModifier.Public, new IdTypeExp("int"), new[] {"x"}) }
+                        AccessModifier.Public, "Nested", Arr( "U" ), Arr<TypeExp>( new IdTypeExp("B"), new IdTypeExp("I")),
+                        Arr<StructDecl.Element>(new StructDecl.VarDeclElement(AccessModifier.Public, new IdTypeExp("int"), new[] {"x"}))
                     )),
 
                     new StructDecl.FuncDeclElement(new StructFuncDecl(
@@ -135,7 +137,8 @@ public struct S<T> : B, I
                         new FuncParamInfo(Enumerable.Empty<TypeAndName>(), null),
                         new BlockStmt(new YieldStmt(new IntLiteralExp(4)))
                     ))
-                });
+                )
+            );
 
             Assert.Equal(expected, structDecl.Elem, SyntaxEqualityComparer.Instance);
 

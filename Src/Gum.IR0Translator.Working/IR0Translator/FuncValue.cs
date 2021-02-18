@@ -8,6 +8,7 @@ using System.Text;
 using S = Gum.Syntax;
 using M = Gum.CompileTime;
 using R = Gum.IR0;
+using Gum.Misc;
 
 namespace Gum.IR0Translator
 {
@@ -21,13 +22,13 @@ namespace Gum.IR0Translator
     // X<int>.Y<short>.F_T_int_int<S>
     class FuncValue : ItemValue
     {
-        TypeValueFactory typeValueFactory;
+        ItemValueFactory typeValueFactory;
+        IR0ItemFactory ritemFactory;
 
         // X<int>.Y<short>
         M.ModuleName? moduleName;       // external global일 경우에만 존재
         M.NamespacePath? namespacePath; // (internal/external) global일 경우에만 존재
         TypeValue? outer;               // (internal/external) member일 경우에만 존재
-        FuncDeclId? funcDeclId;         // internal (global/member)일 경우에만 존재
 
         // F_int_int
         M.FuncInfo funcInfo;
@@ -36,29 +37,17 @@ namespace Gum.IR0Translator
 
         public bool IsStatic { get => !funcInfo.IsInstanceFunc; }
         public bool IsSequence { get => funcInfo.IsSequenceFunc; }
-
-        // external root
-        public FuncValue(M.ModuleName moduleName, M.NamespacePath namespacePath, M.FuncInfo funcInfo, ImmutableArray<TypeValue> typeArgs)
-            : this(moduleName, namespacePath, null, null, funcInfo, typeArgs) { }
-
-        // external member
-        public FuncValue(TypeValue outer, M.FuncInfo funcInfo, ImmutableArray<TypeValue> typeArgs)
-            : this(null, null, outer, null, funcInfo, typeArgs) { }
-
-        // internal root
-        public FuncValue(M.NamespacePath namespacePath, FuncDeclId funcDeclId, M.FuncInfo funcInfo, ImmutableArray<TypeValue> typeArgs)
-            : this(null, namespacePath, null, funcDeclId, funcInfo, typeArgs) { }
-
-        // internal member
-        public FuncValue(TypeValue outer, FuncDeclId funcDeclId, M.FuncInfo funcInfo, ImmutableArray<TypeValue> typeArgs) 
-            : this(null, null, outer, funcDeclId, funcInfo, typeArgs) { }
-
-        internal FuncValue(M.ModuleName? moduleName, M.NamespacePath? namespacePath, TypeValue? outer, FuncDeclId? funcDeclId, M.FuncInfo funcInfo, ImmutableArray<TypeValue> typeArgs)
+        
+        internal FuncValue(ItemValueFactory typeValueFactory, IR0ItemFactory ritemFactory, M.ModuleName? moduleName, M.NamespacePath? namespacePath, TypeValue? outer, M.FuncInfo funcInfo, ImmutableArray<TypeValue> typeArgs)
         {
+            // 둘중에 하나만 참
+            Debug.Assert((moduleName != null && namespacePath != null) ^ (outer != null));
+            this.typeValueFactory = typeValueFactory;
+            this.ritemFactory = ritemFactory;
+
             this.moduleName = moduleName;
             this.namespacePath = namespacePath;
-            this.outer = outer;
-            this.funcDeclId = funcDeclId;
+            this.outer = outer;            
             this.funcInfo = funcInfo;
             this.typeArgs = typeArgs;
         }
@@ -101,17 +90,36 @@ namespace Gum.IR0Translator
             return retTypeValue.Apply(typeEnv);
         }
 
+        bool IsGlobal()
+        {
+            if (moduleName != null && namespacePath != null)
+                return true;
+
+            else if (outer != null)
+                return false;
+
+            throw new UnreachableCodeException();
+        }
+
         // IR0 Func를 만들어 줍니다
-        public R.Func MakeFunc()
+        public R.Func GetRFunc()
         {
             // 1. GetFuncDeclId();
             // 2. TypeContext;            
             // TypeValue -> TypeContext
-
-            if (moduleName != null && namespacePath != null)
-
-            var declId = context.GetFuncDeclId()
-
+            if (IsGlobal())
+            {
+                Debug.Assert(moduleName != null && namespacePath != null);
+                var rtypeArgs = ImmutableArray.CreateRange(typeArgs, typeArg => typeArg.GetRType());
+                return ritemFactory.MakeGlobalFunc(moduleName.Value, namespacePath.Value, funcInfo, rtypeArgs);
+            }
+            else
+            {
+                Debug.Assert(outer != null);
+                var outerRType = outer.GetRType();
+                var rtypeArgs = ImmutableArray.CreateRange(typeArgs, typeArg => typeArg.GetRType());
+                return ritemFactory.MakeMemberFunc(outerRType, funcInfo, rtypeArgs);
+            }
         }   
     }
 }

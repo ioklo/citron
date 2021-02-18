@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 
 using M = Gum.CompileTime;
+using R = Gum.IR0;
 
 namespace Gum.IR0Translator
 {
@@ -16,11 +17,9 @@ namespace Gum.IR0Translator
     abstract partial class TypeValue : ItemValue
     {
         public virtual TypeValue? GetBaseType() { return null; }
-
-        public virtual ItemResult GetMember(M.Name memberName, ImmutableArray<TypeValue> typeArgs, TypeValue? hintType) { return null; }
+        public virtual ItemResult GetMember(M.Name memberName, ImmutableArray<TypeValue> typeArgs, TypeValue? hintType) { return NotFoundItemResult.Instance; }
         public virtual TypeValue? GetMemberType(M.Name memberName, ImmutableArray<TypeValue> typeArgs) { return null; }        
         internal abstract TypeValue Apply(TypeEnv typeEnv);
-
         public abstract IR0.Type GetRType();
     }
 
@@ -29,20 +28,40 @@ namespace Gum.IR0Translator
     {
         public static VarTypeValue Instance { get; } = new VarTypeValue();
         private VarTypeValue() { }
+        public override bool Equals(object? obj)
+        {
+            return obj == Instance;
+        }
+
         internal override TypeValue Apply(TypeEnv typeEnv) { return this; }
+
+        // var는 translation패스에서 추론되기 때문에 IR0에 없다
+        public override R.Type GetRType() { throw new InvalidOperationException();  }
     }
 
     // T: depth는 지역적이므로, 주어진 컨텍스트 안에서만 의미가 있다
     class TypeVarTypeValue : TypeValue
     {
+        IR0ItemFactory ritemFactory;
+
         public int Depth { get; }
         public int Index { get; }
-        public string Name { get; }
 
-        public TypeVarTypeValue(int depth, int index, string name)
+        public TypeVarTypeValue(IR0ItemFactory ritemFactory, int depth, int index)
         {
+            this.ritemFactory = ritemFactory;
             Depth = depth;
-            Name = name;
+            Index = index;
+        }
+
+        public override bool Equals(object? obj)
+        {
+            return obj is TypeVarTypeValue typeVar && Equals(typeVar);
+        }
+
+        public bool Equals(TypeVarTypeValue other)
+        {
+            return Depth == other.Depth && Index == other.Index;
         }
 
         internal override TypeValue Apply(TypeEnv typeEnv)
@@ -53,19 +72,28 @@ namespace Gum.IR0Translator
 
             return this;
         }
+        public override R.Type GetRType() => ritemFactory.MakeTypeVar(Depth, Index);
     }
 
     class ClassTypeValue : NormalTypeValue
     {
+        public override bool Equals(object? obj)
+        {
+            throw new NotImplementedException();
+        }
+
         internal override TypeValue Apply(TypeEnv typeEnv)
         {
             throw new NotImplementedException();
         }
+
+        public override R.Type GetRType() => throw new NotImplementedException();
     }
 
     class StructTypeValue : NormalTypeValue
     {
-        TypeValueFactory typeValueFactory;
+        ItemValueFactory typeValueFactory;
+        IR0ItemFactory ritemFactory;
 
         // global일 경우
         M.ModuleName? moduleName;
@@ -77,24 +105,29 @@ namespace Gum.IR0Translator
         M.StructInfo structInfo;
         ImmutableArray<TypeValue> typeArgs;
 
-        public StructTypeValue(TypeValueFactory typeValueFactory, M.ModuleName moduleName, M.NamespacePath namespacePath, M.StructInfo structInfo, ImmutableArray<TypeValue> typeArgs)
-            : this(typeValueFactory, moduleName, namespacePath, null, structInfo, typeArgs)
-        {
-        }
-        
-        public StructTypeValue(TypeValueFactory typeValueFactory, TypeValue outer, M.StructInfo structInfo, ImmutableArray<TypeValue> typeArgs)
-            : this(typeValueFactory, null, null, outer, structInfo, typeArgs)
-        {
-        }
-
-        StructTypeValue(TypeValueFactory factory, M.ModuleName? moduleName, M.NamespacePath? namespacePath, TypeValue? outer, M.StructInfo structInfo, ImmutableArray<TypeValue> typeArgs)
+        internal StructTypeValue(ItemValueFactory factory, IR0ItemFactory ritemFactory, M.ModuleName? moduleName, M.NamespacePath? namespacePath, TypeValue? outer, M.StructInfo structInfo, ImmutableArray<TypeValue> typeArgs)
         {
             this.typeValueFactory = factory;
+            this.ritemFactory = ritemFactory;
             this.moduleName = moduleName;
             this.namespacePath = namespacePath;
             this.outer = outer;
             this.structInfo = structInfo;
             this.typeArgs = typeArgs;
+        }
+
+        public override bool Equals(object? obj)
+        {
+            return obj is StructTypeValue structValue && Equals(structValue);
+        }
+
+        public bool Equals(StructTypeValue other)
+        {
+            return moduleName.Equals(other.moduleName) &&
+                namespacePath.Equals(other.namespacePath) &&
+                EqualityComparer<TypeValue>.Default.Equals(outer, other.outer) && // outer null처리를 위해 EqualityComparer
+                structInfo.Equals(other.structInfo) &&
+                typeArgs.SequenceEqual(other.typeArgs);
         }
 
         ItemResult GetMemberType(M.Name memberName, ImmutableArray<TypeValue> typeArgs, TypeValue? hintType)
@@ -250,6 +283,39 @@ namespace Gum.IR0Translator
             }
         }
 
+        bool IsGlobal()
+        {
+            if (moduleName != null && namespacePath != null)
+                return true;
+            else if (outer != null)
+                return false;
+
+            throw new UnreachableCodeException();
+        }
+
+        ImmutableArray<R.Type> GetRTypes(ImmutableArray<TypeValue> typeValues)
+        {
+            return ImmutableArray.CreateRange(typeValues, typeValue => typeValue.GetRType());
+        }
+
+        public override R.Type GetRType()
+        {
+            if (IsGlobal())
+            {
+                Debug.Assert(moduleName != null && namespacePath != null);
+
+                var rtypeArgs = GetRTypes(typeArgs);
+                return ritemFactory.MakeGlobalType(moduleName.Value, namespacePath.Value, structInfo.Name, rtypeArgs);
+            }
+            else
+            {
+                Debug.Assert(outer != null);
+
+                var outerRType = outer.GetRType();
+                var rtypeArgs = GetRTypes(typeArgs);
+                return ritemFactory.MakeMemberType(outerRType, structInfo.Name, rtypeArgs);
+            }
+        }
     }
 
     // (struct, class, enum) (external/internal) (global/member) type
@@ -262,42 +328,81 @@ namespace Gum.IR0Translator
     {
         public static VoidTypeValue Instance { get; } = new VoidTypeValue();
         private VoidTypeValue() { }
+        public override bool Equals(object? obj)
+        {
+            return obj == Instance;
+        }
 
         internal override TypeValue Apply(TypeEnv typeEnv)
         {
             return this;
         }
+
+        public override R.Type GetRType()
+        {
+            return R.Type.Void;
+        }
     }
 
     // ArgTypeValues => RetValueTypes
-    class LambdaTypeValue : TypeValue
+    class LambdaTypeValue : TypeValue, IEquatable<LambdaTypeValue>
     {
+        IR0ItemFactory ritemFactory;
         public int LambdaId { get; }
         public TypeValue Return { get; }
         public ImmutableArray<TypeValue> Params { get; }
 
-        public LambdaTypeValue(int lambdaId, TypeValue ret, ImmutableArray<TypeValue> parameters)
+        public LambdaTypeValue(IR0ItemFactory ritemFactory, int lambdaId, TypeValue ret, ImmutableArray<TypeValue> parameters)
         {
+            this.ritemFactory = ritemFactory;
             LambdaId = lambdaId;
             Return = ret;
             Params = parameters;
         }
 
-        // lambdatypevalue를 replace할 수 있는가
+        public override bool Equals(object? obj)
+        {
+            return Equals(obj as LambdaTypeValue);
+        }
+
+        public bool Equals(LambdaTypeValue? other)
+        {
+            if (other == null) return false;
+
+            // 아이디만 비교한다. 같은 위치에서 다른 TypeContext에서 생성되는 람다는 id도 바뀌어야 한다
+            return LambdaId == other.LambdaId;
+        }
+
+        // lambdatypevalue를 replace할 일이 있는가
+        // void Func<T>()
+        // {
+        //     var l = (T t) => t; // { l => LambdaTypeValue({id}, T, [T]) }
+        // }
+        // 분석중에 Apply할 일은 없고, 실행중에 할 일은 있을 것 같다
         internal override TypeValue Apply(TypeEnv typeEnv)
         {
             throw new InvalidOperationException();
+        }
+
+        public override R.Type GetRType()
+        {
+            var returnRType = Return.GetRType();
+            var paramRTypes = ImmutableArray.CreateRange(Params, parameter => parameter.GetRType());
+
+            return ritemFactory.MakeLambdaType(LambdaId, returnRType, paramRTypes);
         }
     }
 
     // S.First, S.Second(int i, short s)
     class EnumElemTypeValue : TypeValue
     {
+        IR0ItemFactory ritemFactory;
         public NormalTypeValue EnumTypeValue { get; }
         public string Name { get; }
 
-        public EnumElemTypeValue(NormalTypeValue enumTypeValue, string name)
+        public EnumElemTypeValue(IR0ItemFactory ritemFactory, NormalTypeValue enumTypeValue, string name)
         {
+            this.ritemFactory = ritemFactory;
             EnumTypeValue = enumTypeValue;
             Name = name;
         }
@@ -305,6 +410,11 @@ namespace Gum.IR0Translator
         internal override TypeValue Apply(TypeEnv typeEnv)
         {
             throw new NotImplementedException();
+        }
+
+        public override R.Type GetRType()
+        {
+            return ritemFactory.MakeEnumElemType();
         }
     }
 }

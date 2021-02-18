@@ -2,7 +2,6 @@
 using System;
 using System.Linq;
 using static Gum.IR0Translator.Analyzer;
-using static Gum.IR0Translator.Analyzer.Misc;
 
 namespace Gum.IR0Translator
 {

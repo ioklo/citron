@@ -1,5 +1,4 @@
-﻿using Gum.CompileTime;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,28 +16,28 @@ namespace Gum.IR0Translator
         public InternalGlobalVarInfo(M.Name name, TypeValue typeValue) { Name = name; TypeValue = typeValue; }
     }
 
-    class InternalGlobalVariableRepository : IInternalGlobalVariableRepository
+    class InternalGlobalVariableRepository
     {
         // global variable        
-        Dictionary<Name, InternalGlobalVarInfo> internalGlobalVarInfos;
+        Dictionary<M.Name, InternalGlobalVarInfo> internalGlobalVarInfos;
 
         public InternalGlobalVariableRepository()
         {
-            internalGlobalVarInfos = new Dictionary<Name, InternalGlobalVarInfo>();
+            internalGlobalVarInfos = new Dictionary<M.Name, InternalGlobalVarInfo>();
         }
 
-        public InternalGlobalVarInfo? GetVariable(Name name)
+        public InternalGlobalVarInfo? GetVariable(M.Name name)
         {
             return internalGlobalVarInfos.GetValueOrDefault(name);            
         }
 
-        public void AddInternalGlobalVariable(Name name, TypeValue typeValue)
+        public void AddInternalGlobalVariable(M.Name name, TypeValue typeValue)
         {
             var globalVarInfo = new InternalGlobalVarInfo(name, typeValue);
             internalGlobalVarInfos.Add(name, globalVarInfo);
         }
 
-        public bool HasVariable(Name name)
+        public bool HasVariable(M.Name name)
         {
             return internalGlobalVarInfos.ContainsKey(name);
         }

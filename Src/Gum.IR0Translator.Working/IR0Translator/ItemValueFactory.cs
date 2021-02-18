@@ -12,20 +12,38 @@ using M = Gum.CompileTime;
 namespace Gum.IR0Translator
 {
     // Low-level ItemValue factory
-    internal class TypeValueFactory
-    {
+    class ItemValueFactory
+    {   
         TypeInfoRepository typeInfoRepo;
+        IR0ItemFactory ritemFactory;
 
-        public TypeValueFactory(TypeInfoRepository typeInfoRepo)
+        public TypeValue Bool { get; }
+        public TypeValue Int { get; }        
+        public TypeValue String { get; }
+        public TypeValue List(TypeValue typeArg)
         {
+            throw new NotImplementedException();
+        }
+
+        public ItemValueFactory(TypeInfoRepository typeInfoRepo, IR0ItemFactory ritemFactory)
+        {
+            M.TypeInfo MakeEmptyStructInfo(M.Name name) => new M.StructInfo(name, default, null, default, default, default, default);
+
             this.typeInfoRepo = typeInfoRepo;
+            this.ritemFactory = ritemFactory;
+
+            Bool = MakeGlobalType("System.Runtime", new M.NamespacePath("System"), MakeEmptyStructInfo("Boolean"), default);
+            Int = MakeGlobalType("System.Runtime", new M.NamespacePath("System"), MakeEmptyStructInfo("Int32"), default);
+
+            // TODO: 일단 Struct로 만든다
+            String = MakeGlobalType("System.Runtime", new M.NamespacePath("System"), MakeEmptyStructInfo("String"), default);
         }
 
         public TypeValue MakeGlobalType(M.ModuleName moduleName, M.NamespacePath namespacePath, M.TypeInfo typeInfo, ImmutableArray<TypeValue> typeArgs)
         {
             switch (typeInfo)
             {
-                case M.StructInfo structInfo: return new StructTypeValue(this, moduleName, namespacePath, structInfo, typeArgs);
+                case M.StructInfo structInfo: return new StructTypeValue(this, ritemFactory, moduleName, namespacePath, structInfo, typeArgs);
             }
 
             throw new UnreachableCodeException();
@@ -36,7 +54,7 @@ namespace Gum.IR0Translator
             switch (typeInfo)
             {
                 case M.StructInfo structInfo:
-                    return new StructTypeValue(this, outer, structInfo, typeArgs);
+                    return new StructTypeValue(this, ritemFactory, outer, structInfo, typeArgs);
             }
 
             throw new UnreachableCodeException();
@@ -46,7 +64,7 @@ namespace Gum.IR0Translator
         {
             return new MemberVarValue(this, outer, info);
         }
-
+        
         ImmutableArray<TypeValue> MakeTypeValues(ImmutableArray<M.Type> mtypes)
         {
             var builder = ImmutableArray.CreateBuilder<TypeValue>();
@@ -64,7 +82,7 @@ namespace Gum.IR0Translator
             switch (mtype)
             {
                 case M.TypeVarType typeVar:
-                    return new TypeVarTypeValue(typeVar.Depth, typeVar.Index, typeVar.Name);
+                    return MakeTypeVar(typeVar.Depth, typeVar.Index);
 
                 case M.GlobalType externalType:
                     {
@@ -95,21 +113,31 @@ namespace Gum.IR0Translator
             }
         }
 
-        public TypeVarTypeValue MakeTypeVar(int depth, int index, string name)
+        public TypeVarTypeValue MakeTypeVar(int depth, int index)
         {
-            return new TypeVarTypeValue(depth, index, name);
+            return new TypeVarTypeValue(ritemFactory, depth, index);
         }        
 
         // internal
         public FuncValue MakeMemberFunc(TypeValue outer, M.FuncInfo funcInfo, ImmutableArray<TypeValue> typeArgs)
         {
-            return new FuncValue(outer, funcInfo, typeArgs);
+            return new FuncValue(this, ritemFactory, null, null, outer, funcInfo, typeArgs);
         }
 
         // global
-        public FuncValue MakeGlobalFunc(M.ModuleName moduleName, M.NamespacePath namespacePath, M.FuncInfo func, ImmutableArray<TypeValue> typeArgs)
+        public FuncValue MakeGlobalFunc(M.ModuleName moduleName, M.NamespacePath namespacePath, M.FuncInfo funcInfo, ImmutableArray<TypeValue> typeArgs)
         {
-            return new FuncValue(moduleName, namespacePath, func, typeArgs);
+            return new FuncValue(this, ritemFactory, moduleName, namespacePath, null, funcInfo, typeArgs);
+        }
+
+        public LambdaTypeValue MakeLambdaType(int lambdaId, TypeValue retType, ImmutableArray<TypeValue> paramTypes)
+        {
+            return new LambdaTypeValue(ritemFactory, lambdaId, retType, paramTypes);
+        }
+
+        public VarTypeValue MakeVarTypeValue()
+        {
+            return VarTypeValue.Instance;
         }
     }
 }

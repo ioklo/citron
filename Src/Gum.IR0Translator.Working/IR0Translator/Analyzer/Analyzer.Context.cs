@@ -10,6 +10,7 @@ using System.Text;
 using S = Gum.Syntax;
 using M = Gum.CompileTime;
 using R = Gum.IR0;
+using Gum.Misc;
 
 namespace Gum.IR0Translator
 {
@@ -18,10 +19,13 @@ namespace Gum.IR0Translator
         // Analyzer는 backtracking이 없어서, MutableContext를 쓴다 
         class Context
         {
+            ItemValueFactory itemValueFactory;
             GlobalItemValueFactory globalItemValueFactory;
 
             TypeExpInfoService typeExpTypeValueService;            
             IErrorCollector errorCollector;
+
+            int lambdaCount;
 
             // 현재 분석되고 있는 함수
             FuncContext curFunc;
@@ -35,13 +39,19 @@ namespace Gum.IR0Translator
             InternalGlobalVariableRepository internalGlobalVarRepo;
 
             public Context(
+                ItemValueFactory itemValueFactory,
+                GlobalItemValueFactory globalItemValueFactory,
                 TypeExpInfoService typeExpTypeValueService,
                 IErrorCollector errorCollector)
-            {   
+            {
+                this.itemValueFactory = itemValueFactory;
+                this.globalItemValueFactory = globalItemValueFactory;
                 this.typeExpTypeValueService = typeExpTypeValueService;
                 this.errorCollector = errorCollector;
 
-                curFunc = new FuncContext(null, TypeValues.Int, false);
+                lambdaCount = 0;
+
+                curFunc = new FuncContext(null, itemValueFactory.MakeInt(), false);
                 bInLoop = false;
                 internalGlobalVarRepo = new InternalGlobalVariableRepository();
                 
@@ -49,6 +59,11 @@ namespace Gum.IR0Translator
                 funcDecls = new List<R.FuncDecl>();
                 topLevelStmts = new List<R.Stmt>();
                 funcDeclsByPath = new Dictionary<ItemPath, R.FuncDeclId>();
+            }
+
+            public void AddLambdaCapture(LambdaCapture lambdaCapture)
+            {
+                curFunc.AddLambdaCapture(lambdaCapture);
             }
 
             public bool DoesLocalVarNameExistInScope(string name)
@@ -66,12 +81,28 @@ namespace Gum.IR0Translator
             {
                 errorCollector.Add(new AnalyzeError(code, node, msg));
                 throw new FatalAnalyzeException();
-            }                                    
+            }
+
+            public TypeValue GetBoolType()
+            {
+                return itemValueFactory.Bool;
+            }
+            public TypeValue GetIntType()
+            {
+                return itemValueFactory.Int;
+            }
+
+            public TypeValue GetStringType()
+            {
+                return itemValueFactory.String;
+            }
 
             public R.ExternalGlobalVarId GetExternalGlobalVarId(ItemId varId)
             {
                 throw new NotImplementedException();
             }
+
+            
 
             public bool IsAssignable(TypeValue toTypeValue, TypeValue fromTypeValue)
             {   
@@ -115,7 +146,7 @@ namespace Gum.IR0Translator
                         return false;
                 }
 
-            }
+            }            
 
             public void AddInternalGlobalVarInfo(M.Name name, TypeValue typeValue)
             {
@@ -160,31 +191,9 @@ namespace Gum.IR0Translator
                 {
                     bInLoop = bPrevInLoop;
                 }
-            }
+            }            
             
-            public R.Type GetType(TypeValue typeValue)
-            {
-                bool Equals(TypeValue x, TypeValue y) => x.Equals(y);
-
-                // 일단 predefined부터 걸러냅니다.
-                if (typeValue is NormalTypeValue ntv)
-                {
-                    if (Equals(ntv, TypeValues.Bool)) return R.Type.Bool;
-                    else if (Equals(ntv, TypeValues.Int)) return R.Type.Int;
-                    else if (Equals(ntv, TypeValues.String)) return R.Type.String;
-                    else if (ntv.GetTypeId().Equals(ItemIds.List))
-                    {
-                        var elemType = GetType(ntv.Entry.TypeArgs[0]);
-                        return Type.List(elemType);
-                    }                    
-                }
-                else if (typeValue is VoidTypeValue)
-                    return R.Type.Void;
-
-                throw new NotImplementedException();
-            }
-
-            public IEnumerable<LocalVarOutsideLambdaInfo> GetLocalVarsOutsideLambda()
+            public IEnumerable<LocalVarInfo> GetLocalVarsOutsideLambda()
             {
                 return curFunc.GetLocalVarsOutsideLambda();
             }
@@ -212,6 +221,21 @@ namespace Gum.IR0Translator
                 }
             }
 
+            public bool IsBoolType(TypeValue typeValue)
+            {
+                return itemValueFactory.Bool.Equals(typeValue);
+            }
+
+            public bool IsIntType(TypeValue typeValue)
+            {
+                return itemValueFactory.Int.Equals(typeValue);
+            }
+
+            public bool IsStringType(TypeValue typeValue)
+            {
+                return itemValueFactory.String.Equals(typeValue);
+            }
+
             ItemPath GetFuncPath(S.FuncDecl funcDecl)
             {
                 throw new NotImplementedException();
@@ -229,7 +253,14 @@ namespace Gum.IR0Translator
 
             public TypeValue GetTypeValueByTypeExp(S.TypeExp typeExp)
             {
-                return typeExpTypeValueService.GetTypeExpInfo(typeExp);
+                var typeExpInfo = typeExpTypeValueService.GetTypeExpInfo(typeExp);
+
+                if (typeExpInfo is MTypeTypeExpInfo mtypeInfo)
+                    return itemValueFactory.MakeTypeValue(mtypeInfo.Type);
+                else if (typeExpInfo is VarTypeExpInfo)
+                    return itemValueFactory.MakeVarTypeValue();
+                else
+                    throw new UnreachableCodeException();
             }
 
             public LocalVarInfo? GetLocalVarOutsideLambda(string idName)
@@ -287,7 +318,12 @@ namespace Gum.IR0Translator
                 funcDecls.Add(new R.SequenceFuncDecl(id, retTypeId, bThisCall, typeParams, paramNames,body));
                 funcDeclsByPath.Add(itemPath, id);
             }
-            
+
+            public R.CaptureInfo MakeCaptureInfo()
+            {
+                return curFunc.MakeCaptureInfo();
+            }
+
             // curFunc
             public void AddLocalVarInfo(string name, TypeValue typeValue)
             {
@@ -312,6 +348,12 @@ namespace Gum.IR0Translator
             public bool DoesInternalGlobalVarNameExist(string name)
             {
                 return internalGlobalVarRepo.HasVariable(name);
+            }
+
+            public LambdaTypeValue NewLambdaTypeValue(TypeValue retType, IEnumerable<TypeValue> paramTypes)
+            {
+                int lambdaId = lambdaCount++;
+                return itemValueFactory.MakeLambdaType(lambdaId, retType, paramTypes);
             }
 
             public R.FuncDeclId? GetFuncDeclId(ItemPath funcPath)

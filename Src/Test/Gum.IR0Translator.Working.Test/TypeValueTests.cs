@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Gum.IR0Translator;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 using Xunit;
 using M = Gum.CompileTime;
 
-namespace Gum.IR0
+namespace Gum.IR0Translator.Test
 {
     public class TypeValueTests
     {
@@ -30,7 +31,8 @@ namespace Gum.IR0
             var moduleInfo = new M.ModuleInfo(moduleName, default, Arr<M.TypeInfo>(xInfo), default);
 
             var typeInfoRepo = new TypeInfoRepository(moduleInfo, new ModuleInfoRepository(default));
-            var factory = new TypeValueFactory(typeInfoRepo);
+            var ritemFactory = new IR0ItemFactory();
+            var factory = new ItemValueFactory(typeInfoRepo, ritemFactory);
 
             var xmType = new M.GlobalType(moduleName, M.NamespacePath.Root, "X", Arr(MTypes.Int));
             var xType = factory.MakeTypeValue(xmType);
@@ -45,7 +47,8 @@ namespace Gum.IR0
             var externalModuleRepo = new ModuleInfoRepository(default);
 
             var typeInfoRepo = new TypeInfoRepository(internalModuleInfo, externalModuleRepo);
-            var typeValueFactory = new TypeValueFactory(typeInfoRepo);            
+            var ritemFactory = new IR0ItemFactory();
+            var typeValueFactory = new ItemValueFactory(typeInfoRepo, ritemFactory);
             
             // struct X<T> { struct Y<U> { } }
             var xInfo = new M.StructInfo("X", Arr<string>("T"), null, default, default, default, default);
@@ -70,7 +73,7 @@ namespace Gum.IR0
         //     } 
         // }        
         // 
-        TypeValueFactory MakeFactory()
+        ItemValueFactory MakeFactory()
         {   
             var gInfo = new M.StructInfo("G", Arr("T"), null, default, default, default, default);
 
@@ -89,7 +92,8 @@ namespace Gum.IR0
             var testModule = new M.ModuleInfo(moduleName, default, Arr<M.TypeInfo>(xInfo, gInfo), default);
             var externalModuleRepo = new ModuleInfoRepository(default);
             var typeInfoRepo = new TypeInfoRepository(testModule, externalModuleRepo);
-            return new TypeValueFactory(typeInfoRepo);
+            var ritemFactory = new IR0ItemFactory();
+            return new ItemValueFactory(typeInfoRepo, ritemFactory);
         }
 
         // GetBaseTypeValue(X<int, bool>.Y<string>) => G<int>

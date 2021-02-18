@@ -14,11 +14,11 @@ namespace Gum.IR0Translator
     // 이름만으로 뭔가를 찾고 싶을땐
     class GlobalItemValueFactory
     {
-        TypeValueFactory typeValueFactory;
+        ItemValueFactory typeValueFactory;
         M.ModuleInfo internalModuleInfo;
         ModuleInfoRepository externalModuleRepos;
 
-        public GlobalItemValueFactory(TypeValueFactory typeValueFactory, M.ModuleInfo internalModuleInfo, ModuleInfoRepository externalModuleRepos)
+        public GlobalItemValueFactory(ItemValueFactory typeValueFactory, M.ModuleInfo internalModuleInfo, ModuleInfoRepository externalModuleRepos)
         {
             this.typeValueFactory = typeValueFactory;
             this.internalModuleInfo = internalModuleInfo;

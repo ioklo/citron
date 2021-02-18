@@ -5,7 +5,6 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using static Gum.IR0Translator.Analyzer;
-using static Gum.IR0Translator.Analyzer.Misc;
 using Gum.Infra;
 
 namespace Gum.IR0Translator

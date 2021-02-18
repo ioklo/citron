@@ -7,7 +7,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Text;
 using static Gum.IR0Translator.Analyzer;
-using static Gum.IR0Translator.Analyzer.Misc;
 using static Gum.IR0Translator.AnalyzeErrorCode;
 
 using S = Gum.Syntax;
@@ -211,8 +210,8 @@ namespace Gum.IR0Translator
 
                 case S.ExpForStmtInitializer expInit:
                     var expResult = AnalyzeTopLevelExp(expInit.Exp, null, A1102_ForStmt_ExpInitializerShouldBeAssignOrCall);
-                    var expInitTypeId = context.GetType(expResult.TypeValue);
-                    return new ForStmtInitializerResult(new R.ExpForStmtInitializer(new R.ExpInfo(expResult.Exp, expInitTypeId)));
+                    var expInitType = expResult.TypeValue.GetRType();
+                    return new ForStmtInitializerResult(new R.ExpForStmtInitializer(new R.ExpInfo(expResult.Exp, expInitType)));
 
                 default:
                     throw new NotImplementedException();
@@ -247,8 +246,8 @@ namespace Gum.IR0Translator
                 if (forStmt.ContinueExp != null)
                 {
                     var continueResult = AnalyzeTopLevelExp(forStmt.ContinueExp, null, A1103_ForStmt_ContinueExpShouldBeAssignOrCall);
-                    var contExpTypeId = context.GetType(continueResult.TypeValue);
-                    continueInfo = new R.ExpInfo(continueResult.Exp, contExpTypeId);
+                    var contExpType = continueResult.TypeValue.GetRType();
+                    continueInfo = new R.ExpInfo(continueResult.Exp, contExpType);
                 }
 
                 return context.ExecInLoop(() =>
@@ -366,8 +365,8 @@ namespace Gum.IR0Translator
         {
             var expResult = AnalyzeTopLevelExp(expStmt.Exp, null, A1301_ExpStmt_ExpressionShouldBeAssignOrCall);
 
-            var expTypeId = context.GetType(expResult.TypeValue);
-            return new StmtResult(new R.ExpStmt(new R.ExpInfo(expResult.Exp, expTypeId)));
+            var expType = expResult.TypeValue.GetRType();
+            return new StmtResult(new R.ExpStmt(new R.ExpInfo(expResult.Exp, expType)));
         }
 
         StmtResult AnalyzeTaskStmt(S.TaskStmt taskStmt)
@@ -444,10 +443,10 @@ namespace Gum.IR0Translator
                 {
                     var bodyResult = AnalyzeStmt(foreachStmt.Body);
 
-                    var elemTypeId = context.GetType(elemType);
-                    var iteratorTypeId = context.GetType(iteratorResult.TypeValue);
+                    var elemRType = elemType.GetRType();
+                    var iteratorRType = iteratorResult.TypeValue.GetRType();
 
-                    return new R.ForeachStmt(elemTypeId, foreachStmt.VarName, new R.ExpInfo(iteratorResult.Exp, iteratorTypeId), bodyResult.Stmt);
+                    return new R.ForeachStmt(elemRType, foreachStmt.VarName, new R.ExpInfo(iteratorResult.Exp, iteratorRType), bodyResult.Stmt);
                 });
             });
 
