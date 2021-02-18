@@ -43,7 +43,7 @@ namespace Gum.IR0Translator
         {
             switch (typeInfo)
             {
-                case M.StructInfo structInfo: return new StructTypeValue(this, ritemFactory, moduleName, namespacePath, structInfo, typeArgs);
+                case M.StructInfo structInfo: return new StructTypeValue(this, ritemFactory, moduleName, namespacePath, null, structInfo, typeArgs);
             }
 
             throw new UnreachableCodeException();
@@ -54,7 +54,7 @@ namespace Gum.IR0Translator
             switch (typeInfo)
             {
                 case M.StructInfo structInfo:
-                    return new StructTypeValue(this, ritemFactory, outer, structInfo, typeArgs);
+                    return new StructTypeValue(this, ritemFactory, null, null, outer, structInfo, typeArgs);
             }
 
             throw new UnreachableCodeException();

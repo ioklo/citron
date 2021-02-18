@@ -6,7 +6,7 @@ using Gum.Infra;
 using System;
 using System.Linq;
 
-namespace Gum.IR0
+namespace Gum.IR0Translator.Test
 {
     class IR0EqualityComparer 
         : IEqualityComparer<Script?>
@@ -25,7 +25,7 @@ namespace Gum.IR0
         , IEqualityComparer<NewEnumExp.Elem>        
         , IEqualityComparer<TypeDecl>
     {
-        public static IR0EqualityComparer Instance { get; } = new IR0EqualityComparer();
+        public static readonly IR0EqualityComparer Instance = new IR0EqualityComparer();
 
         private IR0EqualityComparer() { }
 

@@ -26,7 +26,7 @@ namespace Gum.IR0Translator
     // "var"
     class VarTypeValue : TypeValue
     {
-        public static VarTypeValue Instance { get; } = new VarTypeValue();
+        public static readonly VarTypeValue Instance = new VarTypeValue();
         private VarTypeValue() { }
         public override bool Equals(object? obj)
         {
@@ -326,7 +326,7 @@ namespace Gum.IR0Translator
     // "void"
     class VoidTypeValue : TypeValue
     {
-        public static VoidTypeValue Instance { get; } = new VoidTypeValue();
+        public static readonly VoidTypeValue Instance = new VoidTypeValue();
         private VoidTypeValue() { }
         public override bool Equals(object? obj)
         {

@@ -114,7 +114,7 @@ namespace Gum.IR0.Runtime
 
     class VoidValue : Value
     {
-        public static Value Instance { get; } = new VoidValue();
+        public static readonly Value Instance = new VoidValue();
         private VoidValue() { }
 
         public override void SetValue(Value value)

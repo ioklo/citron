@@ -8,7 +8,7 @@ namespace Gum.LexicalAnalysis
     public class TokenEqualityComparer 
         : IEqualityComparer<Token>
     {
-        public static TokenEqualityComparer Instance { get; } = new TokenEqualityComparer();
+        public static readonly TokenEqualityComparer Instance = new TokenEqualityComparer();
         private TokenEqualityComparer() { }
 
         public bool Equals([AllowNull] Token x, [AllowNull] Token y)

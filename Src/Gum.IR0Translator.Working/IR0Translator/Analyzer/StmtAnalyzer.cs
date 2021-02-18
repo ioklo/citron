@@ -188,7 +188,7 @@ namespace Gum.IR0Translator
             StmtResult? elseBodyResult = (ifStmt.ElseBody != null) ? AnalyzeStmt(ifStmt.ElseBody) : null;
 
             // Analyzer 처리
-            if (!context.IsAssignable(TypeValues.Bool, condResult.TypeValue))
+            if (!context.IsAssignable(context.GetBoolType(), condResult.TypeValue))
                 context.AddFatalError(A1004_IfStmt_ConditionShouldBeBool, ifStmt.Cond, "if 조건 식은 항상 bool형식이어야 합니다");
 
             return new StmtResult(new R.IfStmt(condResult.Exp, bodyResult.Stmt, elseBodyResult?.Stmt));
@@ -236,7 +236,7 @@ namespace Gum.IR0Translator
                     var condResult = AnalyzeExp(forStmt.CondExp, null);
 
                     // 에러가 나면 에러를 추가하고 계속 진행
-                    if (!context.IsAssignable(TypeValues.Bool, condResult.TypeValue))
+                    if (!context.IsAssignable(context.GetBoolType(), condResult.TypeValue))
                         context.AddError(A1101_ForStmt_ConditionShouldBeBool, forStmt.CondExp, $"{forStmt.CondExp}는 bool 형식이어야 합니다");
 
                     cond = condResult.Exp;

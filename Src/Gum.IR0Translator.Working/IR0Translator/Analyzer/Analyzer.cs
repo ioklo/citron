@@ -18,7 +18,8 @@ using R = Gum.IR0;
 namespace Gum.IR0Translator
 {
     partial class Analyzer
-    {           
+    {
+        InternalBinaryOperatorQueryService internalBinOpQueryService;
         Context context;
 
         public static R.Script Analyze(
@@ -29,7 +30,8 @@ namespace Gum.IR0Translator
             IErrorCollector errorCollector)
         {
             var context = new Context(itemValueFactory, globalItemValueFactory, typeExpTypeValueService, errorCollector);
-            var analyzer = new Analyzer(context);
+            var internalBinOpQueryService = new InternalBinaryOperatorQueryService(itemValueFactory);
+            var analyzer = new Analyzer(internalBinOpQueryService, context);
 
             // pass1, pass2
             var pass1 = new CollectingGlobalVarPass(analyzer);
@@ -42,8 +44,9 @@ namespace Gum.IR0Translator
             return new R.Script(analyzer.context.GetTypeDecls(), analyzer.context.GetFuncDecls(), analyzer.context.GetTopLevelStmts());
         }
 
-        Analyzer(Context context)
+        Analyzer(InternalBinaryOperatorQueryService internalBinOpQueryService, Context context)
         {
+            this.internalBinOpQueryService = internalBinOpQueryService;
             this.context = context;
         }
 

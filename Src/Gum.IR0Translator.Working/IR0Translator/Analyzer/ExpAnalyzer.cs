@@ -39,11 +39,11 @@ namespace Gum.IR0Translator
             switch (result)
             {
                 case NotFoundIdentifierResult:
-                    context.AddFatalError(A0501_IdExp_VariableNotFound, idExp, $"{idExp.Value}을 찾을 수 없습니다");
+                    context.AddFatalError(A2007_ResolveIdentifier_NotFound, idExp, $"{idExp.Value}을 찾을 수 없습니다");
                     break;
 
-                case MultipleCandiatesErrorIdentifierResult:
-                    context.AddFatalError(A0503_IdExp_MultipleCandidates, idExp, $"{idExp.Value}의 이름을 가진 함수, 변수를 하나로 결정할 수가 없습니다");
+                case ErrorIdentifierResult errorResult:
+                    HandleErrorIdentifierResult(idExp, errorResult);
                     break;
 
                 case ExpIdentifierResult expResult:
@@ -54,7 +54,7 @@ namespace Gum.IR0Translator
                     throw new NotImplementedException();
 
                 case TypeIdentifierResult:
-                    context.AddFatalError(A0502_IdExp_CantUseTypeAsExpression, idExp, $"타입 {idExp.Value}을 식에서 사용할 수 없습니다");
+                    context.AddFatalError(A2008_ResolveIdentifier_CantUseTypeAsExpression, idExp, $"타입 {idExp.Value}을 식에서 사용할 수 없습니다");
                     break;
                 
                 case EnumElemIdentifierResult enumElemResult:
@@ -159,7 +159,7 @@ namespace Gum.IR0Translator
                             new R.CallInternalUnaryOperatorExp(
                                 R.InternalUnaryOperator.UnaryMinus_Int_Int,
                                 new R.ExpInfo(operandResult.Exp, operandRType)),
-                            context.GetIntType();
+                            context.GetIntType());
                     }
 
                 case S.UnaryOpKind.PostfixInc: // e.m++ 등
@@ -178,68 +178,6 @@ namespace Gum.IR0Translator
                     throw new UnreachableCodeException();
             }
         }                
-
-        struct InternalBinaryOperatorInfo
-        {
-            public TypeValue OperandType0 { get; }
-            public TypeValue OperandType1 { get; }
-            public TypeValue ResultType { get; }
-            public R.InternalBinaryOperator IR0Operator { get; }
-
-            public InternalBinaryOperatorInfo(
-                TypeValue operandType0,
-                TypeValue operandType1,
-                TypeValue resultType,
-                R.InternalBinaryOperator ir0Operator)            
-            {
-                OperandType0 = operandType0;
-                OperandType1 = operandType1;
-                ResultType = resultType;
-                IR0Operator = ir0Operator;
-            }
-
-            public static Dictionary<S.BinaryOpKind, InternalBinaryOperatorInfo[]> Infos { get; }
-            static InternalBinaryOperatorInfo()
-            {
-                var boolType = TypeValues.Bool;
-                var intType = TypeValues.Int;
-                var stringType = TypeValues.String;
-
-                Infos = new Dictionary<S.BinaryOpKind, InternalBinaryOperatorInfo[]>()
-                {
-                    { S.BinaryOpKind.Multiply, new[]{ new InternalBinaryOperatorInfo(intType, intType, intType, R.InternalBinaryOperator.Multiply_Int_Int_Int) } },
-                    { S.BinaryOpKind.Divide, new[]{ new InternalBinaryOperatorInfo(intType, intType, intType, R.InternalBinaryOperator.Divide_Int_Int_Int) } },
-                    { S.BinaryOpKind.Modulo, new[]{ new InternalBinaryOperatorInfo(intType, intType, intType, R.InternalBinaryOperator.Modulo_Int_Int_Int) } },
-                    { S.BinaryOpKind.Add,  new[]{
-                        new InternalBinaryOperatorInfo(intType, intType, intType, R.InternalBinaryOperator.Add_Int_Int_Int),
-                        new InternalBinaryOperatorInfo(stringType, stringType, stringType, R.InternalBinaryOperator.Add_String_String_String) } },
-
-                    { S.BinaryOpKind.Subtract, new[]{ new InternalBinaryOperatorInfo(intType, intType, intType, R.InternalBinaryOperator.Subtract_Int_Int_Int) } },
-
-                    { S.BinaryOpKind.LessThan, new[]{
-                        new InternalBinaryOperatorInfo(intType, intType, boolType, R.InternalBinaryOperator.LessThan_Int_Int_Bool),
-                        new InternalBinaryOperatorInfo(stringType, stringType, boolType, R.InternalBinaryOperator.LessThan_String_String_Bool) } },
-
-                    { S.BinaryOpKind.GreaterThan, new[]{
-                        new InternalBinaryOperatorInfo(intType, intType, boolType, R.InternalBinaryOperator.GreaterThan_Int_Int_Bool),
-                        new InternalBinaryOperatorInfo(stringType, stringType, boolType, R.InternalBinaryOperator.GreaterThan_String_String_Bool) } },
-
-                    { S.BinaryOpKind.LessThanOrEqual, new[]{
-                        new InternalBinaryOperatorInfo(intType, intType, boolType, R.InternalBinaryOperator.LessThanOrEqual_Int_Int_Bool),
-                        new InternalBinaryOperatorInfo(stringType, stringType, boolType, R.InternalBinaryOperator.LessThanOrEqual_String_String_Bool) } },
-
-                    { S.BinaryOpKind.GreaterThanOrEqual, new[]{
-                        new InternalBinaryOperatorInfo(intType, intType, boolType, R.InternalBinaryOperator.GreaterThanOrEqual_Int_Int_Bool),
-                        new InternalBinaryOperatorInfo(stringType, stringType, boolType, R.InternalBinaryOperator.GreaterThanOrEqual_String_String_Bool) } },
-
-                    { S.BinaryOpKind.Equal, new[]{
-                        new InternalBinaryOperatorInfo(intType, intType, boolType, R.InternalBinaryOperator.Equal_Int_Int_Bool),
-                        new InternalBinaryOperatorInfo(boolType, boolType, boolType, R.InternalBinaryOperator.Equal_Bool_Bool_Bool),
-                        new InternalBinaryOperatorInfo(stringType, stringType, boolType, R.InternalBinaryOperator.Equal_String_String_Bool) } },
-                };
-
-            }
-        }
         
         ExpResult AnalyzeBinaryOpExp(S.BinaryOpExp binaryOpExp)
         {
@@ -256,54 +194,48 @@ namespace Gum.IR0Translator
                     context.AddFatalError(A0803_BinaryOp_LeftOperandIsNotAssignable, binaryOpExp.Operand0, "대입 가능하지 않은 식에 대입하려고 했습니다");
 
                 return new ExpResult(new R.AssignExp(operandResult0.Exp, operandResult1.Exp), operandResult0.TypeValue);
-            }
-
-            var infos = InternalBinaryOperatorInfo.Infos;
+            }            
 
             // 2. NotEqual 처리
             if (binaryOpExp.Kind == S.BinaryOpKind.NotEqual)
             {
-                if (context.TryGetValue(S.BinaryOpKind.Equal, out var equalInfos))
-                {
-                    foreach (var info in equalInfos)
-                    {
-                        // NOTICE: 우선순위별로 정렬되어 있기 때문에 먼저 매칭되는 것을 선택한다
-                        if (context.IsAssignable(info.OperandType0, operandResult0.TypeValue) &&
-                            context.IsAssignable(info.OperandType1, operandResult1.TypeValue))
-                        {
-                            var operandRType0 = operandResult0.TypeValue.GetRType();
-                            var operandRType1 = operandResult1.TypeValue.GetRType();
-
-                            var equalExp = new R.CallInternalBinaryOperatorExp(info.IR0Operator, new R.ExpInfo(operandResult0.Exp, operandTypeId0), new R.ExpInfo(operandResult1.Exp, operandRType1));
-                            var notEqualOperand = new R.ExpInfo(equalExp, R.Type.Bool);
-
-                            return new ExpResult(
-                                new R.CallInternalUnaryOperatorExp(R.InternalUnaryOperator.LogicalNot_Bool_Bool, notEqualOperand),
-                                info.ResultType);                            
-                        }
-                    }
-                }
-            }
-
-            // 3. InternalOperator에서 검색            
-            if (infos.TryGetValue(binaryOpExp.Kind, out var matchedInfos))
-            {
-                foreach (var info in matchedInfos)
+                var equalInfos = internalBinOpQueryService.GetInfos(S.BinaryOpKind.Equal);                
+                foreach (var info in equalInfos)
                 {
                     // NOTICE: 우선순위별로 정렬되어 있기 때문에 먼저 매칭되는 것을 선택한다
-                    if (context.IsAssignable(info.OperandType0, operandResult0.TypeValue) && 
+                    if (context.IsAssignable(info.OperandType0, operandResult0.TypeValue) &&
                         context.IsAssignable(info.OperandType1, operandResult1.TypeValue))
                     {
                         var operandRType0 = operandResult0.TypeValue.GetRType();
                         var operandRType1 = operandResult1.TypeValue.GetRType();
 
+                        var equalExp = new R.CallInternalBinaryOperatorExp(info.IR0Operator, new R.ExpInfo(operandResult0.Exp, operandRType0), new R.ExpInfo(operandResult1.Exp, operandRType1));
+                        var notEqualOperand = new R.ExpInfo(equalExp, R.Type.Bool);
+
                         return new ExpResult(
-                            new R.CallInternalBinaryOperatorExp(
-                                info.IR0Operator, 
-                                new R.ExpInfo(operandResult0.Exp, operandRType0), 
-                                new R.ExpInfo(operandResult1.Exp, operandRType1)),
-                            info.ResultType);
+                            new R.CallInternalUnaryOperatorExp(R.InternalUnaryOperator.LogicalNot_Bool_Bool, notEqualOperand),
+                            info.ResultType);                            
                     }
+                }
+            }
+
+            // 3. InternalOperator에서 검색            
+            var matchedInfos = internalBinOpQueryService.GetInfos(binaryOpExp.Kind);
+            foreach (var info in matchedInfos)
+            {
+                // NOTICE: 우선순위별로 정렬되어 있기 때문에 먼저 매칭되는 것을 선택한다
+                if (context.IsAssignable(info.OperandType0, operandResult0.TypeValue) && 
+                    context.IsAssignable(info.OperandType1, operandResult1.TypeValue))
+                {
+                    var operandRType0 = operandResult0.TypeValue.GetRType();
+                    var operandRType1 = operandResult1.TypeValue.GetRType();
+
+                    return new ExpResult(
+                        new R.CallInternalBinaryOperatorExp(
+                            info.IR0Operator, 
+                            new R.ExpInfo(operandResult0.Exp, operandRType0), 
+                            new R.ExpInfo(operandResult1.Exp, operandRType1)),
+                        info.ResultType);
                 }
             }
 
@@ -393,23 +325,24 @@ namespace Gum.IR0Translator
             var argResults = AnalyzeExps(exp.Args);
             var argTypes = ImmutableArray.CreateRange(argResults, result => result.TypeValue);
 
-            var callableResult = IdExpIdentifierResolver.Resolve(exp.Callable, argTypes, context);
+            // argTypes로 힌트 타입을 만들어야 한다
+            var callableResult = ResolveIdentifier(exp.Callable, argTypes);
 
             switch(callableResult)
             {
                 case NotFoundIdentifierResult _:
-                    context.AddFatalError();
+                    context.AddFatalError(A2007_ResolveIdentifier_NotFound, exp, "");
                     break;
 
-                case MultipleCandiatesErrorIdentifierResult _:
-                    context.AddFatalError();
+                case ErrorIdentifierResult errorResult:
+                    HandleErrorIdentifierResult(exp, errorResult);
                     break;
 
                 case ExpIdentifierResult expResult:
                     return AnalyzeCallExpExpCallable(expResult.Exp, expResult.TypeValue, argResults, exp);
 
                 case FuncIdentifierResult funcResult:
-                    return AnalyzeCallExpFuncCallable(funcResult.FuncValue, argResults);
+                    return AnalyzeCallExpFuncCallable(exp, funcResult.FuncValue, argResults);
 
                 case TypeIdentifierResult typeResult:
                     context.AddFatalError(A0902_CallExp_CallableExpressionIsNotCallable, exp.Callable, "");
@@ -503,35 +436,31 @@ namespace Gum.IR0Translator
             throw new NotImplementedException();
         }
 
+        // exp.x
         ExpResult AnalyzeMemberExpExpParent(S.MemberExp memberExp, R.Exp parentExp, TypeValue parentType, TypeValue? hintType)
-        {
-            NormalTypeValue? parentNormalType = parentType as NormalTypeValue;
-
-            if (parentNormalType == null)
-                context.AddFatalError(A0301_MemberExp_InstanceTypeIsNotNormalType, memberExp, "멤버를 가져올 수 있는 타입이 아닙니다");
-
+        {   
             var typeArgs = GetTypeValues(memberExp.MemberTypeArgs, context);
             var memberResult = parentType.GetMember(memberExp.MemberName, typeArgs, hintType);
 
             switch(memberResult)
             {
                 case MultipleCandidatesErrorItemResult:
-                    context.AddFatalError(A0306_MemberExp_TypeArgsForMemberVariableIsNotAllowed, memberExp, "같은 이름의 멤버가 하나이상 있습니다");
+                    context.AddFatalError(A2001_ResolveIdentifier_MultipleCandidatesForIdentifier, memberExp, "같은 이름의 멤버가 하나이상 있습니다");
                     break;
 
                 case VarWithTypeArgErrorItemResult:
-                    context.AddFatalError(A0302_MemberExp_TypeArgsForMemberVariableIsNotAllowed, memberExp, "멤버변수에는 타입인자를 붙일 수 없습니다");
-                    throw new UnreachableCodeException();
+                    context.AddFatalError(A2002_ResolveIdentifier_VarWithTypeArg, memberExp, "멤버변수에는 타입인자를 붙일 수 없습니다");
+                    break;
 
                 case NotFoundItemResult:
-                    context.AddFatalError(A0303_MemberExp_MemberVarNotFound, memberExp, $"{memberExp.MemberName}은 {parentNormalType}의 멤버가 아닙니다");
+                    context.AddFatalError(A2007_ResolveIdentifier_NotFound, memberExp, $"");
                     break;
 
                 case ValueItemResult valueResult:
                     switch(valueResult.ItemValue)
                     {
                         case TypeValue:
-                            context.AddFatalError(A0303_MemberExp_MemberVarNotFound, memberExp, $"{memberExp.MemberName}은 {parentNormalType}의 멤버가 아닙니다");
+                            context.AddFatalError(A2004_ResolveIdentifier_CantGetTypeMemberThroughInstance, memberExp, $"{memberExp.MemberName}은 타입입니다. 변수, 함수여야 합니다");
                             break;
 
                         case FuncValue:
@@ -540,11 +469,97 @@ namespace Gum.IR0Translator
                         case MemberVarValue memberVar:
                             // static인지 검사
                             if (memberVar.IsStatic)
-                                context.AddFatalError(A0305_MemberExp_MemberVariableIsStatic, memberExp, $"인스턴스 값에서는 정적 멤버 변수를 참조할 수 없습니다");
+                                context.AddFatalError(A2003_ResolveIdentifier_CantGetStaticMemberThroughInstance, memberExp, $"인스턴스 값에서는 정적 멤버 변수를 참조할 수 없습니다");
 
                             var exp = MakeMemberExp(parentType, parentExp, memberExp.MemberName);
                             return new ExpResult(exp, memberVar.GetTypeValue());
                     }
+                    break;
+            }
+
+            throw new UnreachableCodeException();
+        }
+
+        // T.x
+        ExpResult AnalyzeMemberExpTypeParent(S.MemberExp nodeForErrorReport, TypeValue parentType, string memberName, ImmutableArray<S.TypeExp> stypeArgs, TypeValue? hintType)
+        {
+            var typeArgs = GetTypeValues(stypeArgs, context);
+            var member = parentType.GetMember(memberName, typeArgs, hintType);
+
+            switch (member)
+            {
+                case NotFoundItemResult:
+                    context.AddFatalError(A2007_ResolveIdentifier_NotFound, nodeForErrorReport, $"{memberName}은 {parentType}의 멤버가 아닙니다");
+                    throw new UnreachableCodeException();
+
+                case MultipleCandidatesErrorItemResult:
+                    context.AddFatalError(A2001_ResolveIdentifier_MultipleCandidatesForIdentifier, nodeForErrorReport, "같은 이름의 멤버가 하나이상 있습니다");
+                    throw new UnreachableCodeException();
+
+                case VarWithTypeArgErrorItemResult:
+                    context.AddFatalError(A2002_ResolveIdentifier_VarWithTypeArg, nodeForErrorReport, "멤버변수에는 타입인자를 붙일 수 없습니다");
+                    throw new UnreachableCodeException();
+
+                case ValueItemResult itemResult:
+                    switch (itemResult.ItemValue)
+                    {
+                        // 타입이면 값으로 만들 수 없기 때문에 에러
+                        case TypeValue:
+                            context.AddFatalError(A2008_ResolveIdentifier_CantUseTypeAsExpression, nodeForErrorReport, $"{memberName}은 타입입니다. 변수, 함수여야 합니다");
+                            throw new UnreachableCodeException();
+
+                        // TODO: 함수라면 Lambda로 만들어 준다
+                        case FuncValue:
+                            throw new NotImplementedException();
+
+                        // 변수라면
+                        case MemberVarValue memberVarValue:
+
+                            if (!memberVarValue.IsStatic)
+                            {
+                                context.AddFatalError(A2005_ResolveIdentifier_CantGetInstanceMemberThroughType, nodeForErrorReport, $"정적 멤버 변수만 참조할 수 있습니다");
+                                throw new UnreachableCodeException();
+                            }
+
+                            var rparentType = parentType.GetRType();
+                            var exp = new R.StaticMemberExp(rparentType, memberName);
+                            return new ExpResult(exp, memberVarValue.GetTypeValue());
+
+                        default:
+                            throw new UnreachableCodeException();
+                    }
+
+                default:
+                    throw new UnreachableCodeException();
+            }
+        }
+
+        void HandleErrorIdentifierResult(S.ISyntaxNode nodeForErrorReport, ErrorIdentifierResult errorResult)
+        {
+            switch (errorResult)
+            {
+                case MultipleCandiatesErrorIdentifierResult:
+                    context.AddFatalError(A2001_ResolveIdentifier_MultipleCandidatesForIdentifier, nodeForErrorReport, $"해당 이름에 맞는 타임, 함수, 변수를 하나로 결정할 수가 없습니다");
+                    break;
+                
+                case VarWithTypeArgErrorIdentifierResult:
+                    context.AddFatalError(A2002_ResolveIdentifier_VarWithTypeArg, nodeForErrorReport, $"변수인데 타입인자가 들어갔습니다");
+                    break;
+
+                case CantGetStaticMemberThroughInstanceIdentifierResult:
+                    context.AddFatalError(A2003_ResolveIdentifier_CantGetStaticMemberThroughInstance, nodeForErrorReport, $"변수인데 타입인자가 들어갔습니다");
+                    break;
+
+                case CantGetTypeMemberThroughInstanceIdentifierResult:
+                    context.AddFatalError(A2004_ResolveIdentifier_CantGetTypeMemberThroughInstance, nodeForErrorReport, "");
+                    break;
+
+                case CantGetInstanceMemberThroughTypeIdentifierResult:
+                    context.AddFatalError(A2005_ResolveIdentifier_CantGetInstanceMemberThroughType, nodeForErrorReport,"");
+                    break;
+
+                case FuncCantHaveMemberErrorIdentifierResult:
+                    context.AddFatalError(A2006_ResolveIdentifier_FuncCantHaveMember, nodeForErrorReport, "");
                     break;
             }
 
@@ -558,12 +573,12 @@ namespace Gum.IR0Translator
 
             switch(parentResult)
             {
-                case NotFoundIdentifierResult _:
-                    context.AddFatalError();
+                case NotFoundIdentifierResult:
+                    context.AddFatalError(A2007_ResolveIdentifier_NotFound, memberExp, $"");
                     break;
 
-                case MultipleCandiatesErrorIdentifierResult _:
-                    context.AddFatalError();
+                case ErrorIdentifierResult errorResult:
+                    HandleErrorIdentifierResult(memberExp, errorResult);
                     break;
 
                 case ExpIdentifierResult expResult:
@@ -571,14 +586,14 @@ namespace Gum.IR0Translator
                     return AnalyzeMemberExpExpParent(memberExp, expResult.Exp, expResult.TypeValue, hintType);
 
                 case TypeIdentifierResult typeResult:
-                    return AnalyzeMemberExpTypeParent(typeResult.TypeValue);
+                    return AnalyzeMemberExpTypeParent(memberExp, typeResult.TypeValue, memberExp.MemberName, memberExp.MemberTypeArgs, hintType);
 
-                case FuncIdentifierResult funcResult:
+                case FuncIdentifierResult:
                     // 함수는 멤버변수를 가질 수 없습니다
-                    context.AddFatalError();
+                    context.AddFatalError(A2006_ResolveIdentifier_FuncCantHaveMember, memberExp, "");
                     break;
 
-                case EnumElemIdentifierResult enumElemResult:
+                case EnumElemIdentifierResult:
                     // 힌트 없이 EnumElem이 나올 수가 없다
                     break;
             }
@@ -634,7 +649,7 @@ namespace Gum.IR0Translator
 
             return new ExpResult(
                 new R.ListExp(rtype, elemExps), 
-                TypeValues.List(curElemTypeValue));
+                context.GetListType(curElemTypeValue));
         }
 
         ExpResult AnalyzeExp(S.Exp exp, TypeValue? hintType)

@@ -22,7 +22,7 @@ namespace Gum
         , IEqualityComparer<FuncDecl>
         , IEqualityComparer<TypeDecl>
     {
-        public static SyntaxEqualityComparer Instance { get; } = new SyntaxEqualityComparer();
+        public static readonly SyntaxEqualityComparer Instance = new SyntaxEqualityComparer();
         private SyntaxEqualityComparer() { }
 
         bool IEqualityComparer<Script>.Equals([AllowNull] Script x, [AllowNull] Script y) => EqualsScript(x, y);

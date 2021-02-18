@@ -1,8 +1,10 @@
-﻿using System;
+﻿using Gum.Infra;
+using System;
 using System.Collections.Generic;
 using System.Text;
+using Gum.IR0Translator;
 
-namespace Gum.IR0
+namespace Gum.IR0Translator.Test
 {
     static class TestMisc
     {
@@ -24,7 +26,7 @@ namespace Gum.IR0
             return new Script(typeDecls ?? Array.Empty<TypeDecl>(), funcDecls ?? Array.Empty<FuncDecl>(), topLevelStmts);
         }
 
-        void VerifyError(IEnumerable<IError> errors, AnalyzeErrorCode code, S.ISyntaxNode node)
+        static void VerifyError(IEnumerable<IError> errors, AnalyzeErrorCode code, S.ISyntaxNode node)
         {
             var result = errors.OfType<AnalyzeError>()
                 .Any(error => error.Code == code && error.Node == node);

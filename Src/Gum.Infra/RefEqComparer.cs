@@ -8,7 +8,7 @@ namespace Gum.Infra
     // ReferenceEqualityComparer는 .net 5부터 지원
     public class RefEqComparer<T> : IEqualityComparer<T> where T : class
     {
-        public static RefEqComparer<T> Instance { get; } = new RefEqComparer<T>();
+        public static readonly RefEqComparer<T> Instance = new RefEqComparer<T>();
 
         private RefEqComparer() { }
 

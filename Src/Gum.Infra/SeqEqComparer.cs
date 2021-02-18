@@ -23,7 +23,7 @@ namespace Gum.Infra
 
     public class SeqEqComparer<T, TElem> : IEqualityComparer<T> where T : IEnumerable<TElem>
     {
-        public static SeqEqComparer<T, TElem> Instance { get; } = new SeqEqComparer<T, TElem>();
+        public static readonly SeqEqComparer<T, TElem> Instance = new SeqEqComparer<T, TElem>();
 
         public bool Equals(T? x, T? y)
         {

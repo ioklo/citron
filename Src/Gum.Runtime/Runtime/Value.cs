@@ -59,7 +59,7 @@ namespace Gum.Runtime
     
     public class NullValue : Value
     {
-        public static NullValue Instance { get; } = new NullValue();
+        public static readonly NullValue Instance = new NullValue();
         private NullValue() { }
 
         public override void SetValue(Value fromValue)

@@ -97,6 +97,11 @@ namespace Gum.IR0Translator
                 return itemValueFactory.String;
             }
 
+            public TypeValue GetListType(TypeValue elemType)
+            {
+                return itemValueFactory.List(elemType);
+            }
+
             public R.ExternalGlobalVarId GetExternalGlobalVarId(ItemId varId)
             {
                 throw new NotImplementedException();
@@ -368,6 +373,8 @@ namespace Gum.IR0Translator
             {
                 return globalItemValueFactory.GetGlobal(namespacePath, idName, typeArgs, hintTypeValue);
             }
+
+            
         }
     }
 }

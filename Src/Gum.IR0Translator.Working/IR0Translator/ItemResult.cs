@@ -13,19 +13,19 @@ namespace Gum.IR0Translator
 
     class VarWithTypeArgErrorItemResult : ErrorItemResult
     {
-        public static VarWithTypeArgErrorItemResult Instance { get; } = new VarWithTypeArgErrorItemResult();
+        public static readonly VarWithTypeArgErrorItemResult Instance = new VarWithTypeArgErrorItemResult();
         VarWithTypeArgErrorItemResult() { }
     }
 
     class MultipleCandidatesErrorItemResult : ErrorItemResult
     {
-        public static MultipleCandidatesErrorItemResult Instance { get; } = new MultipleCandidatesErrorItemResult();
+        public static readonly MultipleCandidatesErrorItemResult Instance = new MultipleCandidatesErrorItemResult();
         MultipleCandidatesErrorItemResult() { }
     }
 
     class NotFoundItemResult : ItemResult 
     {
-        public static NotFoundItemResult Instance { get; } = new NotFoundItemResult();
+        public static readonly NotFoundItemResult Instance = new NotFoundItemResult();
         NotFoundItemResult() { }
     }
     

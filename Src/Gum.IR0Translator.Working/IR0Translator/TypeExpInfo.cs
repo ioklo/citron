@@ -24,7 +24,7 @@ namespace Gum.IR0Translator
     
     partial class VarTypeExpInfo : TypeExpInfo
     {
-        public static VarTypeExpInfo Instance { get; } = new VarTypeExpInfo();
+        public static readonly VarTypeExpInfo Instance = new VarTypeExpInfo();
         private VarTypeExpInfo() { }
     }
    

@@ -31,19 +31,20 @@ namespace Gum.IR0Translator
 
         A0201_Capturer_ReferencingLocalVariableIsNotAllowed,
 
-        A0301_MemberExp_InstanceTypeIsNotNormalType,
-        A0302_MemberExp_TypeArgsForMemberVariableIsNotAllowed,
-        A0303_MemberExp_MemberVarNotFound,
-        A0304_MemberExp_MemberVariableIsNotStatic,
-        A0305_MemberExp_MemberVariableIsStatic,
-        A0306_MemberExp_TypeArgsForMemberVariableIsNotAllowed,
+        // A0301_MemberExp_InstanceTypeIsNotNormalType,
+        // A0302_MemberExp_TypeArgsForMemberVariableIsNotAllowed,
+        // A0303_MemberExp_MemberNotFound,
+        // A0304_MemberExp_MemberVariableIsNotStatic,
+        // A0305_MemberExp_MemberVariableIsStatic,
+        // A0306_MemberExp_MultipleCandidates,
+        // A0307_MemberExp_MemberIsNotExpression,
 
         A0401_Parameter_MismatchBetweenParamCountAndArgCount,
         A0402_Parameter_MismatchBetweenParamTypeAndArgType,
 
-        A0501_IdExp_VariableNotFound,
-        A0502_IdExp_CantUseTypeAsExpression,
-        A0503_IdExp_MultipleCandidates,
+        // A0501_IdExp_VariableNotFound,
+        // A0502_IdExp_CantUseTypeAsExpression,
+        // A0503_IdExp_MultipleCandidates,
 
         A0601_UnaryAssignOp_IntTypeIsAllowedOnly,
         A0602_UnaryAssignOp_AssignableExpressionIsAllowedOnly,
@@ -89,7 +90,16 @@ namespace Gum.IR0Translator
 
         A1901_StringExp_ExpElementShouldBeBoolOrIntOrString, // TODO: 보다 일반적으로 바뀌어야 한다. ToString을 구현한 애들이 가능
 
-        // A2001_Identifier_MultipleCandidatesForIdentifier,
+        A2001_ResolveIdentifier_MultipleCandidatesForIdentifier,
+        A2002_ResolveIdentifier_VarWithTypeArg,
+        A2003_ResolveIdentifier_CantGetStaticMemberThroughInstance, // instance에서 static 함수, 변수를 가지고 오려고 했을 때, e.F, e.v (F, v가 static인 경우)
+        A2004_ResolveIdentifier_CantGetTypeMemberThroughInstance,   // instance에서 타입을 가지고 오려고 했을 때, e.T
+        A2005_ResolveIdentifier_CantGetInstanceMemberThroughType,
+        A2006_ResolveIdentifier_FuncCantHaveMember,
+        A2007_ResolveIdentifier_NotFound,
+        A2008_ResolveIdentifier_CantUseTypeAsExpression, // Type으로 Resolve는 되지만, 값으로 변경하려고 시도하다가 에러 var x = X.Y;
+
+// A2001_Identifier_MultipleCandidatesForIdentifier,
 
         A9901_NotSupported_LambdaParameterInference
 

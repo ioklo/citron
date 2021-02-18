@@ -118,13 +118,13 @@ namespace Gum.IR0
 
     public class ContinueStmt : Stmt
     {
-        public static ContinueStmt Instance { get; } = new ContinueStmt();
+        public static readonly ContinueStmt Instance = new ContinueStmt();
         private ContinueStmt() { }
     }
 
     public class BreakStmt : Stmt
     {
-        public static BreakStmt Instance { get; } = new BreakStmt();
+        public static readonly BreakStmt Instance = new BreakStmt();
         private BreakStmt() { }
     }
 
@@ -150,7 +150,7 @@ namespace Gum.IR0
 
     public class BlankStmt : Stmt
     {
-        public static BlankStmt Instance { get; } = new BlankStmt();
+        public static readonly BlankStmt Instance = new BlankStmt();
         private BlankStmt() { }
     }
 

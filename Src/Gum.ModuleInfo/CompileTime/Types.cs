@@ -70,7 +70,7 @@ namespace Gum.CompileTime
 
     public class VoidType : Type
     {
-        public static VoidType Instance { get; } = new VoidType();
+        public static readonly VoidType Instance = new VoidType();
         private VoidType() { }
     }
 }
