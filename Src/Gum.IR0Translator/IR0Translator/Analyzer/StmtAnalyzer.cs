@@ -189,7 +189,7 @@ namespace Gum.IR0Translator
 
             // Analyzer 처리
             if (!context.IsAssignable(context.GetBoolType(), condResult.TypeValue))
-                context.AddFatalError(A1004_IfStmt_ConditionShouldBeBool, ifStmt.Cond, "if 조건 식은 항상 bool형식이어야 합니다");
+                context.AddFatalError(A1004_IfStmt_ConditionShouldBeBool, ifStmt.Cond);
 
             return new StmtResult(new R.IfStmt(condResult.Exp, bodyResult.Stmt, elseBodyResult?.Stmt));
         }
@@ -237,7 +237,7 @@ namespace Gum.IR0Translator
 
                     // 에러가 나면 에러를 추가하고 계속 진행
                     if (!context.IsAssignable(context.GetBoolType(), condResult.TypeValue))
-                        context.AddError(A1101_ForStmt_ConditionShouldBeBool, forStmt.CondExp, $"{forStmt.CondExp}는 bool 형식이어야 합니다");
+                        context.AddError(A1101_ForStmt_ConditionShouldBeBool, forStmt.CondExp);
 
                     cond = condResult.Exp;
                 }
@@ -263,7 +263,7 @@ namespace Gum.IR0Translator
         StmtResult AnalyzeContinueStmt(S.ContinueStmt continueStmt)
         {
             if (!context.IsInLoop())
-                context.AddFatalError(A1501_ContinueStmt_ShouldUsedInLoop, continueStmt, "continue는 루프 안에서만 사용할 수 있습니다");
+                context.AddFatalError(A1501_ContinueStmt_ShouldUsedInLoop, continueStmt);
 
             return new StmtResult(R.ContinueStmt.Instance);
         }
@@ -272,7 +272,7 @@ namespace Gum.IR0Translator
         {
             if (!context.IsInLoop())
             {
-                context.AddFatalError(A1601_BreakStmt_ShouldUsedInLoop, breakStmt, "break는 루프 안에서만 사용할 수 있습니다");
+                context.AddFatalError(A1601_BreakStmt_ShouldUsedInLoop, breakStmt);
             }
 
             return new StmtResult(R.BreakStmt.Instance);
@@ -284,7 +284,7 @@ namespace Gum.IR0Translator
             if (context.IsSeqFunc())
             {
                 if (returnStmt.Value != null)
-                    context.AddFatalError(A1202_ReturnStmt_SeqFuncShouldReturnVoid, returnStmt, $"seq 함수는 빈 return만 허용됩니다");
+                    context.AddFatalError(A1202_ReturnStmt_SeqFuncShouldReturnVoid, returnStmt);
 
                 return new StmtResult(new R.ReturnStmt(null));
             }
@@ -301,7 +301,7 @@ namespace Gum.IR0Translator
                 }
                 else if (retTypeValue != VoidTypeValue.Instance)
                 {
-                    context.AddFatalError(A1201_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType, returnStmt, $"이 함수는 {context.GetRetTypeValue()}을 반환해야 합니다");
+                    context.AddFatalError(A1201_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType, returnStmt);
                 }
 
                 return new StmtResult(new R.ReturnStmt(null));
@@ -322,7 +322,7 @@ namespace Gum.IR0Translator
                 {
                     // 현재 함수 시그니처랑 맞춰서 같은지 확인한다
                     if (!context.IsAssignable(retTypeValue, valueResult.TypeValue))
-                        context.AddFatalError(A1201_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType, returnStmt.Value, $"반환값의 타입 {valueResult.TypeValue}는 이 함수의 반환타입과 맞지 않습니다");
+                        context.AddFatalError(A1201_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType, returnStmt.Value);
                 }
 
                 return new StmtResult(new R.ReturnStmt(valueResult.Exp));
@@ -416,12 +416,12 @@ namespace Gum.IR0Translator
                 }
                 else
                 {
-                    context.AddFatalError(A1801_ForeachStmt_IteratorShouldBeListOrEnumerable, foreachStmt.Iterator, "foreach의 반복자 부분은 List<>, Enumerable<>타입이어야 합니다");
+                    context.AddFatalError(A1801_ForeachStmt_IteratorShouldBeListOrEnumerable, foreachStmt.Iterator);
                 }
             }
             else
             {
-                context.AddFatalError(A1801_ForeachStmt_IteratorShouldBeListOrEnumerable, foreachStmt.Iterator, "foreach의 반복자 부분은 List<>, Enumerable<>타입이어야 합니다");
+                context.AddFatalError(A1801_ForeachStmt_IteratorShouldBeListOrEnumerable, foreachStmt.Iterator);
             }
 
             if (elemType is VarTypeValue) // var 라면, iteratorElemType을 쓴다
@@ -432,7 +432,7 @@ namespace Gum.IR0Translator
             {
                 // TODO: Cast
                 if (!context.IsAssignable(elemType, iteratorElemType))
-                    context.AddFatalError(A1802_ForeachStmt_MismatchBetweenElemTypeAndIteratorElemType, foreachStmt, "foreach 변수에 반복자 원소를 대입 할 수 없습니다");
+                    context.AddFatalError(A1802_ForeachStmt_MismatchBetweenElemTypeAndIteratorElemType, foreachStmt);
             }
 
             var stmt = context.ExecInLocalScope(() =>
@@ -456,7 +456,7 @@ namespace Gum.IR0Translator
         StmtResult AnalyzeYieldStmt(S.YieldStmt yieldStmt)
         {
             if (!context.IsSeqFunc())
-                context.AddFatalError(A1401_YieldStmt_YieldShouldBeInSeqFunc, yieldStmt, "seq 함수 내부에서만 yield를 사용할 수 있습니다");
+                context.AddFatalError(A1401_YieldStmt_YieldShouldBeInSeqFunc, yieldStmt);
 
             // yield에서는 retType이 명시되는 경우만 있을 것이다
             var retTypeValue = context.GetRetTypeValue();
@@ -466,7 +466,7 @@ namespace Gum.IR0Translator
             var valueResult = AnalyzeExp(yieldStmt.Value, retTypeValue);
 
             if (!context.IsAssignable(retTypeValue, valueResult.TypeValue))
-                context.AddFatalError(A1402_YieldStmt_MismatchBetweenYieldValueAndSeqFuncYieldType, yieldStmt.Value, $"반환 값의 {valueResult.TypeValue} 타입은 이 함수의 반환 타입과 맞지 않습니다");
+                context.AddFatalError(A1402_YieldStmt_MismatchBetweenYieldValueAndSeqFuncYieldType, yieldStmt.Value);
 
             return new StmtResult(new R.YieldStmt(valueResult.Exp));
         }

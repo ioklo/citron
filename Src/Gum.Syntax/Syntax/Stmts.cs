@@ -17,16 +17,10 @@ namespace Gum.Syntax
     {
         public ImmutableArray<StringExp> Commands { get; }
 
-        public CommandStmt(IEnumerable<StringExp> commands)
+        public CommandStmt(ImmutableArray<StringExp> commands)
         {
             Debug.Assert(0 < commands.Count());
-            Commands = commands.ToImmutableArray();
-        }
-
-        public CommandStmt(params StringExp[] commands)
-        {
-            Debug.Assert(0 < commands.Length);
-            Commands = ImmutableArray.Create(commands);
+            Commands = commands;
         }
     }
 
@@ -47,16 +41,10 @@ namespace Gum.Syntax
         public TypeExp Type { get; }
         public ImmutableArray<VarDeclElement> Elems { get; }
 
-        public VarDecl(TypeExp type, IEnumerable<VarDeclElement> elems)
+        public VarDecl(TypeExp type, ImmutableArray<VarDeclElement> elems)
         {
             Type = type;
-            Elems = elems.ToImmutableArray();
-        }
-
-        public VarDecl(TypeExp type, params VarDeclElement[] elems)
-        {
-            Type = type;
-            Elems = ImmutableArray.Create(elems);
+            Elems = elems;
         }
     }
 
@@ -160,14 +148,9 @@ namespace Gum.Syntax
     public class BlockStmt : Stmt
     {
         public ImmutableArray<Stmt> Stmts { get; }
-        public BlockStmt(IEnumerable<Stmt> stmts)
+        public BlockStmt(ImmutableArray<Stmt> stmts)
         {
-            Stmts = stmts.ToImmutableArray();
-        }
-
-        public BlockStmt(params Stmt[] stmts)
-        {
-            Stmts = ImmutableArray.Create(stmts);
+            Stmts = stmts;
         }
     }
 

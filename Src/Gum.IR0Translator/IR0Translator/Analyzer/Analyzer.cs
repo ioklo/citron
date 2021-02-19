@@ -63,7 +63,7 @@ namespace Gum.IR0Translator
             {
                 // var x; 체크
                 if (declType is VarTypeValue)
-                    context.AddFatalError(A0101_VarDecl_CantInferVarType, elem, $"{elem.VarName}의 타입을 추론할 수 없습니다");
+                    context.AddFatalError(A0101_VarDecl_CantInferVarType, elem);
 
                 var rtype = declType.GetRType();
                 return new VarDeclElementCoreResult(new R.VarDeclElement(elem.VarName, rtype, null), declType);
@@ -82,7 +82,7 @@ namespace Gum.IR0Translator
                     var initExpResult = AnalyzeExp(elem.InitExp, declType);
 
                     if (!context.IsAssignable(declType, initExpResult.TypeValue))
-                        context.AddFatalError(A0102_VarDecl_MismatchBetweenDeclTypeAndInitExpType, elem, $"타입 {initExpResult.TypeValue}의 값은 타입 {declType}의 변수 {elem.VarName}에 대입할 수 없습니다.");
+                        context.AddFatalError(A0102_VarDecl_MismatchBetweenDeclTypeAndInitExpType, elem);
 
                     var rtype = declType.GetRType();
                     return new VarDeclElementCoreResult(new R.VarDeclElement(elem.VarName, rtype, initExpResult.Exp), declType);
@@ -101,7 +101,7 @@ namespace Gum.IR0Translator
             var name = elem.VarName;
 
             if (context.DoesInternalGlobalVarNameExist(name))            
-                context.AddFatalError(A0104_VarDecl_GlobalVariableNameShouldBeUnique, elem, $"전역 변수 {name}가 이미 선언되었습니다");
+                context.AddFatalError(A0104_VarDecl_GlobalVariableNameShouldBeUnique, elem);
 
             var result = AnalyzeVarDeclElementCore(elem, declType);
 
@@ -114,7 +114,7 @@ namespace Gum.IR0Translator
             var name = elem.VarName;
 
             if (context.DoesLocalVarNameExistInScope(name))
-                context.AddFatalError(A0103_VarDecl_LocalVarNameShouldBeUniqueWithinScope, elem, $"지역 변수 {name}이 같은 범위에 이미 선언되었습니다");
+                context.AddFatalError(A0103_VarDecl_LocalVarNameShouldBeUniqueWithinScope, elem);
 
             var result = AnalyzeVarDeclElementCore(elem, declType);
 
@@ -193,7 +193,7 @@ namespace Gum.IR0Translator
                 }
                 else
                 {
-                    context.AddFatalError(A1901_StringExp_ExpElementShouldBeBoolOrIntOrString, expElem.Exp, "문자열 내부에서 사용되는 식은 bool, int, string 이어야 합니다");
+                    context.AddFatalError(A1901_StringExp_ExpElementShouldBeBoolOrIntOrString, expElem.Exp);
                 }
             }
             else if (elem is S.TextStringExpElement textElem)
@@ -222,7 +222,7 @@ namespace Gum.IR0Translator
             foreach (var param in parameters)
             {
                 if (param.Type == null)
-                    context.AddFatalError(A9901_NotSupported_LambdaParameterInference, nodeForErrorReport, "람다 인자 타입추론은 아직 지원하지 않습니다");
+                    context.AddFatalError(A9901_NotSupported_LambdaParameterInference, nodeForErrorReport);
 
                 var paramTypeValue = context.GetTypeValueByTypeExp(param.Type);
 
@@ -283,7 +283,7 @@ namespace Gum.IR0Translator
         ExpResult AnalyzeTopLevelExp(S.Exp exp, TypeValue? hintTypeValue, AnalyzeErrorCode code)
         {
             if (!IsTopLevelExp(exp))
-                context.AddFatalError(code, exp, "대입, 함수 호출만 구문으로 사용할 수 있습니다");
+                context.AddFatalError(code, exp);
 
             return AnalyzeExp(exp, hintTypeValue);
         }
@@ -331,7 +331,7 @@ namespace Gum.IR0Translator
 
             if (parameters.Length != args.Length)
             {
-                context.AddError(A0401_Parameter_MismatchBetweenParamCountAndArgCount, nodeForErrorReport, $"함수는 인자를 {parameters.Length}개 받는데, 호출 인자는 {args.Length} 개입니다");
+                context.AddError(A0401_Parameter_MismatchBetweenParamCountAndArgCount, nodeForErrorReport);
                 bFatal = true;
             }
 
@@ -339,7 +339,7 @@ namespace Gum.IR0Translator
             {
                 if (!context.IsAssignable(parameters[i], args[i]))
                 {
-                    context.AddError(A0402_Parameter_MismatchBetweenParamTypeAndArgType, nodeForErrorReport, $"함수의 {i + 1}번 째 매개변수 타입은 {parameters[i]} 인데, 호출 인자 타입은 {args[i]} 입니다");
+                    context.AddError(A0402_Parameter_MismatchBetweenParamTypeAndArgType, nodeForErrorReport);
                     bFatal = true;
                 }
             }

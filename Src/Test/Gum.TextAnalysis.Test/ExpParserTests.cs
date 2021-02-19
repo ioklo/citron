@@ -7,7 +7,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Gum
+using static Gum.TextAnalysis.Test.TestMisc;
+
+namespace Gum.TextAnalysis.Test
 {
     public class ExpParserTests
     {
@@ -30,7 +32,7 @@ namespace Gum
 
             var expResult = await expParser.ParseExpAsync(context);
 
-            Assert.Equal(new IdentifierExp("x"), expResult.Elem, SyntaxEqualityComparer.Instance);
+            Assert.Equal(SimpleSId("x"), expResult.Elem, SyntaxEqualityComparer.Instance);
         }
 
         [Fact]
@@ -41,12 +43,14 @@ namespace Gum
 
             var expResult = await expParser.ParseExpAsync(context);
 
-            var expected = new StringExp(
+            var expected = new StringExp(Arr<StringExpElement>(
                 new TextStringExpElement("aaa bbb "),
-                new ExpStringExpElement(new StringExp(
+                new ExpStringExpElement(new StringExp(Arr<StringExpElement>(
                     new TextStringExpElement("xxx "),
-                    new ExpStringExpElement(new IdentifierExp("ddd")))),
-                new TextStringExpElement(" ddd"));
+                    new ExpStringExpElement(SimpleSId("ddd"))
+                ))),
+                new TextStringExpElement(" ddd")
+            ));
 
             Assert.Equal(expected, expResult.Elem, SyntaxEqualityComparer.Instance);
         }
@@ -87,10 +91,17 @@ namespace Gum
 
             var expResult = await expParser.ParsePrimaryExpAsync(context);
 
-            var expected = new UnaryOpExp(UnaryOpKind.PostfixInc,
-                new BinaryOpExp(BinaryOpKind.Modulo,
-                    new CallExp(new UnaryOpExp(UnaryOpKind.PostfixInc, new IdentifierExp("c")), new IdentifierExp("e"), new IdentifierExp("f")),
-                    new IdentifierExp("d")));
+            var expected = new UnaryOpExp(
+                UnaryOpKind.PostfixInc,
+                new BinaryOpExp(
+                    BinaryOpKind.Modulo,
+                    new CallExp(
+                        new UnaryOpExp(UnaryOpKind.PostfixInc, SimpleSId("c")), 
+                        Arr<Exp>(SimpleSId("e"), SimpleSId("f"))
+                    ),
+                    SimpleSId("d")
+                )
+            );
 
             Assert.Equal(expected, expResult.Elem, SyntaxEqualityComparer.Instance);
         }        
@@ -104,14 +115,20 @@ namespace Gum
             var expResult = await expParser.ParseExpAsync(context);
 
             var expected = new BinaryOpExp(BinaryOpKind.Assign,
-                new IdentifierExp("a"),
-                new LambdaExp(                    
+                SimpleSId("a"),
+                new LambdaExp(
+                    Arr(new LambdaExpParam(null, "b")),
                     new ReturnStmt(
                         new LambdaExp(
-                            new ReturnStmt(new IdentifierExp("e")),
-                            new LambdaExpParam(null, "c"),
-                            new LambdaExpParam(new IdTypeExp("int"), "d"))),
-                    new LambdaExpParam(null, "b")));
+                            Arr(
+                                new LambdaExpParam(null, "c"),
+                                new LambdaExpParam(new IdTypeExp("int", default), "d")
+                            ),
+                            new ReturnStmt(SimpleSId("e"))
+                        )
+                    )
+                )
+            );
 
             Assert.Equal(expected, expResult.Elem, SyntaxEqualityComparer.Instance);
         }
@@ -127,13 +144,14 @@ namespace Gum
             var expected =
                 new MemberExp(
                     new MemberCallExp(
-                        new MemberExp(new IdentifierExp("a"), "b", Enumerable.Empty<TypeExp>()),
+                        new MemberExp(SimpleSId("a"), "b", default),
                         "c",
-                        Enumerable.Empty<TypeExp>(),
-                        new IntLiteralExp(1),
-                        new StringExp(new TextStringExpElement("str"))),
+                        default,
+                        Arr<Exp>(new IntLiteralExp(1), SimpleSStringExp("str"))
+                    ),                        
                     "d",
-                    Enumerable.Empty<TypeExp>());
+                    default
+                );
 
             Assert.Equal(expected, expResult.Elem, SyntaxEqualityComparer.Instance);
         }
@@ -146,11 +164,11 @@ namespace Gum
 
             var expResult = await expParser.ParseExpAsync(context);
 
-            var expected = new ListExp(
-                null,
+            var expected = new ListExp(null, Arr<Exp>(                
                 new IntLiteralExp(1),
                 new IntLiteralExp(2),
-                new IntLiteralExp(3));
+                new IntLiteralExp(3)
+            ));
                 
             Assert.Equal(expected, expResult.Elem, SyntaxEqualityComparer.Instance);
         }
@@ -164,13 +182,12 @@ namespace Gum
             var expResult = await expParser.ParseExpAsync(context);
 
             var expected = new NewExp(
-                new IdTypeExp("MyType", new IdTypeExp("X")),
-                new Exp[]
-                {
+                new IdTypeExp("MyType", Arr<TypeExp>(new IdTypeExp("X", default))),
+                Arr<Exp>(
                     new IntLiteralExp(2),
                     new BoolLiteralExp(false),
-                    new StringExp(new TextStringExpElement("string")),
-                });
+                    SimpleSStringExp("string")
+                ));
 
             Assert.Equal(expected, expResult.Elem, SyntaxEqualityComparer.Instance);
         }
@@ -184,9 +201,9 @@ namespace Gum
             var expResult = await expParser.ParseExpAsync(context);
 
             var expected = new BinaryOpExp(BinaryOpKind.Assign,
-                new IdentifierExp("a"),
+                SimpleSId("a"),
                 new BinaryOpExp(BinaryOpKind.Assign,
-                    new IdentifierExp("b"),
+                    SimpleSId("b"),
                     new BinaryOpExp(BinaryOpKind.NotEqual,
                         new BinaryOpExp(BinaryOpKind.Equal,
                             new BinaryOpExp(BinaryOpKind.Subtract,
@@ -196,15 +213,15 @@ namespace Gum
                                             new UnaryOpExp(UnaryOpKind.LogicalNot,
                                                 new UnaryOpExp(UnaryOpKind.PostfixInc,
                                                     new BinaryOpExp(BinaryOpKind.Modulo,
-                                                        new IdentifierExp("c"),
-                                                        new IdentifierExp("d"))))),
-                                        new IdentifierExp("e")),
-                                    new IdentifierExp("f")),
+                                                        SimpleSId("c"),
+                                                        SimpleSId("d"))))),
+                                        SimpleSId("e")),
+                                    SimpleSId("f")),
                                 new BinaryOpExp(BinaryOpKind.Modulo,
                                     new BinaryOpExp(BinaryOpKind.Divide,
-                                        new IdentifierExp("g"),
-                                        new IdentifierExp("h")),
-                                    new IdentifierExp("i"))),
+                                        SimpleSId("g"),
+                                        SimpleSId("h")),
+                                    SimpleSId("i"))),
                             new IntLiteralExp(3)),
                         new BoolLiteralExp(false))));
 

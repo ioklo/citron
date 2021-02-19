@@ -67,7 +67,7 @@ namespace Gum
             if (!Parse(await parser.ParseTypeExpAsync(context), ref context, out var varType))
                 return Invalid();
 
-            var elems = new List<VarDeclElement>();
+            var elems = ImmutableArray.CreateBuilder<VarDeclElement>();
             do
             {
                 if (!Accept<IdentifierToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context, out var varIdResult))
@@ -85,7 +85,7 @@ namespace Gum
 
             } while (Accept<CommaToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context)); // ,가 나오면 계속한다
 
-            return new ParseResult<VarDecl>(new VarDecl(varType!, elems.ToImmutableArray()), context);
+            return new ParseResult<VarDecl>(new VarDecl(varType!, elems.ToImmutable()), context);
 
             static ParseResult<VarDecl> Invalid() => ParseResult<VarDecl>.Invalid;
         }
@@ -189,7 +189,7 @@ namespace Gum
             if (!Accept<LBraceToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                 return ParseResult<BlockStmt>.Invalid;
 
-            var stmts = new List<Stmt>();
+            var stmts = ImmutableArray.CreateBuilder<Stmt>();
             while (!Accept<RBraceToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
             {
                 if (Parse(await ParseStmtAsync(context), ref context, out var stmt))
@@ -201,7 +201,7 @@ namespace Gum
                 return ParseResult<BlockStmt>.Invalid;
             }
 
-            return new ParseResult<BlockStmt>(new BlockStmt(stmts.ToImmutableArray()), context);
+            return new ParseResult<BlockStmt>(new BlockStmt(stmts.ToImmutable()), context);
         }
 
         internal async ValueTask<ParseResult<BlankStmt>> ParseBlankStmtAsync(ParserContext context)
@@ -273,7 +273,7 @@ namespace Gum
 
         async ValueTask<ParseResult<StringExp>> ParseSingleCommandAsync(ParserContext context, bool bStopRBrace)
         {
-            var stringElems = new List<StringExpElement>();
+            var stringElems = ImmutableArray.CreateBuilder<StringExpElement>();
 
             // 새 줄이거나 끝에 다다르면 종료
             while (!context.LexerContext.Pos.IsReachEnd())
@@ -301,7 +301,7 @@ namespace Gum
                 // aa$b => $b 이야기
                 if (Accept<IdentifierToken>(await lexer.LexCommandModeAsync(context.LexerContext), ref context, out var idToken))
                 {
-                    stringElems.Add(new ExpStringExpElement(new IdentifierExp(idToken!.Value)));
+                    stringElems.Add(new ExpStringExpElement(new IdentifierExp(idToken!.Value, default)));
                     continue;
                 }
 
@@ -314,7 +314,7 @@ namespace Gum
                 return ParseResult<StringExp>.Invalid;
             }
             
-            return new ParseResult<StringExp>(new StringExp(stringElems), context);
+            return new ParseResult<StringExp>(new StringExp(stringElems.ToImmutable()), context);
         }
 
         internal async ValueTask<ParseResult<ForeachStmt>> ParseForeachStmtAsync(ParserContext context)
@@ -367,7 +367,7 @@ namespace Gum
             if (Accept<LBraceToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
             {
                 // 새줄이거나 끝에 다다르거나 }가 나오면 종료, 
-                var commands = new List<StringExp>();
+                var commands = ImmutableArray.CreateBuilder<StringExp>();
                 while (true)
                 {
                     if (Accept<RBraceToken>(await lexer.LexCommandModeAsync(context.LexerContext), ref context))
@@ -391,12 +391,12 @@ namespace Gum
                     return ParseResult<CommandStmt>.Invalid;
                 }
 
-                return new ParseResult<CommandStmt>(new CommandStmt(commands), context);
+                return new ParseResult<CommandStmt>(new CommandStmt(commands.ToImmutable()), context);
             }
             else // 싱글 커맨드, 엔터가 나오면 끝난다
             {
                 if (Parse(await ParseSingleCommandAsync(context, false), ref context, out var singleCommand) && 0 < singleCommand!.Elements.Length)
-                    return new ParseResult<CommandStmt>(new CommandStmt(singleCommand), context);
+                    return new ParseResult<CommandStmt>(new CommandStmt(ImmutableArray.Create(singleCommand)), context);
 
                 return ParseResult<CommandStmt>.Invalid;
             }

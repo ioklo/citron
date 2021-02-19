@@ -10,14 +10,9 @@ namespace Gum.Syntax
     public partial class Script : ISyntaxNode
     {
         public ImmutableArray<Element> Elements { get; }
-        public Script(IEnumerable<Element> elements)
+        public Script(ImmutableArray<Element> elements)
         {
-            Elements = elements.ToImmutableArray();
-        }
-
-        public Script(params Element[] elements)
-        {
-            Elements = elements.ToImmutableArray();
-        }
+            Elements = elements;
+        }        
     }
 }

@@ -12,16 +12,10 @@ namespace Gum.Syntax
         public string Name { get; }
         public ImmutableArray<TypeAndName> Params { get; }        
 
-        public EnumDeclElement(string name, IEnumerable<TypeAndName> parameters)
+        public EnumDeclElement(string name, ImmutableArray<TypeAndName> parameters)
         {
             Name = name;
-            Params = parameters.ToImmutableArray();
-        }
-
-        public EnumDeclElement(string name, params TypeAndName[] parameters)
-        {
-            Name = name;
-            Params = ImmutableArray.Create(parameters);
+            Params = parameters;
         }
     }
 
@@ -32,18 +26,11 @@ namespace Gum.Syntax
 
         public override int TypeParamCount { get => TypeParams.Length; }
 
-        public EnumDecl(string name, IEnumerable<string> typeParams, IEnumerable<EnumDeclElement> elems)
+        public EnumDecl(string name, ImmutableArray<string> typeParams, ImmutableArray<EnumDeclElement> elems)
             : base(name)
         {
-            TypeParams = typeParams.ToImmutableArray();
-            Elems = elems.ToImmutableArray();
+            TypeParams = typeParams;
+            Elems = elems;
         }
-
-        public EnumDecl(string name, IEnumerable<string> typeParams, params EnumDeclElement[] elems)
-            : base(name)
-        {   
-            TypeParams = typeParams.ToImmutableArray();
-            Elems = ImmutableArray.Create(elems);
-        }        
     }
 }

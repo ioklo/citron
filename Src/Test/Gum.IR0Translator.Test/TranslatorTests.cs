@@ -2,34 +2,33 @@
 using System.Collections.Generic;
 using System.Text;
 using Xunit;
-using Gum.CompileTime;
 
 using Gum.Infra;
 using Gum.Misc;
 using System.Linq;
 
-using static Gum.IR0.AnalyzeErrorCode;
-using static Gum.IR0.TestMisc;
 using S = Gum.Syntax;
+using M = Gum.CompileTime;
+using R = Gum.IR0;
+
+using static Gum.IR0Translator.Test.TestMisc;
 
 namespace Gum.IR0Translator.Test
 {
     public class TranslatorTests
     {
-        Script? Translate(S.Script syntaxScript, bool raiseAssertFailed = true)
+        M.ModuleName ModuleName = "TestModule";
+
+        R.Script? Translate(S.Script syntaxScript, bool raiseAssertFailed = true)
         {
             var testErrorCollector = new TestErrorCollector(raiseAssertFailed);
-            var translator = new Translator();
-
-            return translator.Translate(syntaxScript, default, testErrorCollector);
+            return Translator.Translate(ModuleName, default, syntaxScript, testErrorCollector);
         }
 
         List<IError> TranslateWithErrors(S.Script syntaxScript, bool raiseAssertionFail = false)
         {
             var testErrorCollector = new TestErrorCollector(raiseAssertionFail);
-            var translator = new Translator();
-
-            var script = translator.Translate(syntaxScript, default, testErrorCollector);
+            var script = Translator.Translate(ModuleName, default, syntaxScript, testErrorCollector);
 
             return testErrorCollector.Errors;
         }       

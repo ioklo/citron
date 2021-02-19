@@ -24,13 +24,13 @@ namespace Gum.Syntax
 
         public FuncDecl(
             bool bSequence,
-            TypeExp retType, string name, IEnumerable<string> typeParams, 
+            TypeExp retType, string name, ImmutableArray<string> typeParams, 
             FuncParamInfo paramInfo, BlockStmt body)
         {
             IsSequence = bSequence;
             RetType = retType;
             Name = name;
-            TypeParams = typeParams.ToImmutableArray();
+            TypeParams = typeParams;
             ParamInfo = paramInfo;
             Body = body;
         }

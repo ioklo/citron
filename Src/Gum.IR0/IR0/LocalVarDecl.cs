@@ -8,9 +8,9 @@ namespace Gum.IR0
     {
         public ImmutableArray<VarDeclElement> Elems { get; }        
 
-        public LocalVarDecl(IEnumerable<VarDeclElement> elems)
+        public LocalVarDecl(ImmutableArray<VarDeclElement> elems)
         {
-            Elems = elems.ToImmutableArray();
+            Elems = elems;
         }
     }    
 }

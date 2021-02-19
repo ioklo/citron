@@ -32,11 +32,11 @@ namespace Gum.Syntax
             public VarDeclElement(
                 AccessModifier accessModifier,             
                 TypeExp varType,
-                IEnumerable<string> varNames)
+                ImmutableArray<string> varNames)
             {
                 AccessModifier = accessModifier;
                 VarType = varType;
-                VarNames = varNames.ToImmutableArray();
+                VarNames = varNames;
             }
         }        
 

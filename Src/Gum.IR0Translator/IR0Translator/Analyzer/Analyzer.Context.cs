@@ -71,15 +71,15 @@ namespace Gum.IR0Translator
                 return curFunc.DoesLocalVarNameExistInScope(name);
             }
 
-            public void AddError(AnalyzeErrorCode code, S.ISyntaxNode node, string msg)
+            public void AddError(AnalyzeErrorCode code, S.ISyntaxNode node)
             {
-                errorCollector.Add(new AnalyzeError(code, node, msg));
+                errorCollector.Add(new AnalyzeError(code, node, ""));
             }
 
             [DoesNotReturn]
-            public void AddFatalError(AnalyzeErrorCode code, S.ISyntaxNode node, string msg)
+            public void AddFatalError(AnalyzeErrorCode code, S.ISyntaxNode node)
             {
-                errorCollector.Add(new AnalyzeError(code, node, msg));
+                errorCollector.Add(new AnalyzeError(code, node, ""));
                 throw new FatalAnalyzeException();
             }
 

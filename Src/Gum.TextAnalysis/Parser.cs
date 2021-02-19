@@ -91,7 +91,7 @@ namespace Gum
             if (!Accept<IdentifierToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context, out var idToken))
                 return ParseResult<TypeExp>.Invalid;
 
-            var typeArgs = new List<TypeExp>();
+            var typeArgs = ImmutableArray.CreateBuilder<TypeExp>();
             if (Accept<LessThanToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                 while(!Accept<GreaterThanToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                 {
@@ -105,7 +105,7 @@ namespace Gum
                     typeArgs.Add(typeArg);
                 }
 
-            return new ParseResult<TypeExp>(new IdTypeExp(idToken.Value, typeArgs), context);
+            return new ParseResult<TypeExp>(new IdTypeExp(idToken.Value, typeArgs.ToImmutable()), context);
         }
 
         async ValueTask<ParseResult<TypeExp>> ParsePrimaryTypeExpAsync(ParserContext context)
@@ -125,7 +125,7 @@ namespace Gum
                         return ParseResult<TypeExp>.Invalid;
 
                     // TODO: typeApp(T.S<>) 처리도 추가
-                    exp = new MemberTypeExp(exp, memberName.Value, Enumerable.Empty<TypeExp>());
+                    exp = new MemberTypeExp(exp, memberName.Value, default);
                     continue;
                 }
 
@@ -164,7 +164,7 @@ namespace Gum
             if (!Accept<LParenToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                 return Invalid();
 
-            var parameters = new List<TypeAndName>();
+            var parameters = ImmutableArray.CreateBuilder<TypeAndName>();
             int? variadicParamIndex = null;
             while (!Accept<RParenToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
             {
@@ -183,7 +183,7 @@ namespace Gum
                 context = funcDeclParam.Context;
             }
 
-            return new ParseResult<FuncParamInfo>(new FuncParamInfo(parameters, variadicParamIndex), context);
+            return new ParseResult<FuncParamInfo>(new FuncParamInfo(parameters.ToImmutable(), variadicParamIndex), context);
         }
 
         internal async ValueTask<ParseResult<GlobalFuncDecl>> ParseGlobalFuncDeclAsync(ParserContext context)
@@ -215,7 +215,7 @@ namespace Gum
                     bSequence, 
                     retType, 
                     funcName.Value,
-                    Enumerable.Empty<string>(),
+                    default,
                     paramInfo,
                     body), 
                 context);
@@ -271,7 +271,7 @@ namespace Gum
             if (!Accept<LBraceToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                 return ParseResult<EnumDecl>.Invalid;
 
-            var elements = new List<EnumDeclElement>();
+            var elements = ImmutableArray.CreateBuilder<EnumDeclElement>();
             while (!Accept<RBraceToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
             {
                 if (0 < elements.Count)
@@ -281,7 +281,7 @@ namespace Gum
                 if (!Accept<IdentifierToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context, out var elemName))
                     return ParseResult<EnumDecl>.Invalid;
 
-                var parameters = new List<TypeAndName>();
+                var parameters = ImmutableArray.CreateBuilder<TypeAndName>();
                 if (Accept<LParenToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                 {
                     while (!Accept<RParenToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
@@ -296,10 +296,10 @@ namespace Gum
                     }
                 }
 
-                elements.Add(new EnumDeclElement(elemName.Value, parameters));
+                elements.Add(new EnumDeclElement(elemName.Value, parameters.ToImmutable()));
             }
 
-            return new ParseResult<EnumDecl>(new EnumDecl(enumName.Value, typeParams, elements), context);
+            return new ParseResult<EnumDecl>(new EnumDecl(enumName.Value, typeParams, elements.ToImmutable()), context);
         }
 
         async ValueTask<ParseResult<AccessModifier>> ParseStructElementAccessModifierAsync(ParserContext context)
@@ -332,7 +332,7 @@ namespace Gum
                 return ParseResult<StructDecl.VarDeclElement>.Invalid;
 
             // ex) x, y, z
-            var varNames = new List<string>();            
+            var varNames = ImmutableArray.CreateBuilder<string>();            
             if (!Accept<IdentifierToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context, out var varNameToken0))
                 return ParseResult<StructDecl.VarDeclElement>.Invalid;
 
@@ -350,7 +350,7 @@ namespace Gum
             if (!Accept<SemiColonToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                 return ParseResult<StructDecl.VarDeclElement>.Invalid;
 
-            var varDeclElem = new StructDecl.VarDeclElement(accessModifier, varType, varNames);
+            var varDeclElem = new StructDecl.VarDeclElement(accessModifier, varType, varNames.ToImmutable());
             return new ParseResult<StructDecl.VarDeclElement>(varDeclElem, context);
         }
 
@@ -475,7 +475,7 @@ namespace Gum
 
         public async ValueTask<ParseResult<Script>> ParseScriptAsync(ParserContext context)
         {
-            var elems = new List<Script.Element>();
+            var elems = ImmutableArray.CreateBuilder<Script.Element>();
 
             while (!Accept<EndOfFileToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
             {
@@ -486,7 +486,7 @@ namespace Gum
                 context = elemResult.Context;
             }
 
-            return new ParseResult<Script>(new Script(elems), context);
+            return new ParseResult<Script>(new Script(elems.ToImmutable()), context);
         }
     }
 }

@@ -17,21 +17,15 @@ namespace Gum.Syntax
         public string Value { get; }
         public ImmutableArray<TypeExp> TypeArgs { get; }
         public IdentifierExp(string value, ImmutableArray<TypeExp> typeArgs) { Value = value; TypeArgs = typeArgs; }
-        public IdentifierExp(string value, params TypeExp[] typeArgs) { Value = value; TypeArgs = ImmutableArray.Create(typeArgs); }
     }
 
     public class StringExp : Exp
     {
         public ImmutableArray<StringExpElement> Elements { get; }
         
-        public StringExp(IEnumerable<StringExpElement> elements)
+        public StringExp(ImmutableArray<StringExpElement> elements)
         {
-            Elements = elements.ToImmutableArray();
-        }
-
-        public StringExp(params StringExpElement[] elements)
-        {
-            Elements = ImmutableArray.Create(elements);
+            Elements = elements;
         }
     }
 
@@ -80,17 +74,11 @@ namespace Gum.Syntax
         // TODO: params, out, 등 처리를 하려면 Exp가 아니라 다른거여야 한다
         public ImmutableArray<Exp> Args { get; }
 
-        public CallExp(Exp callable, IEnumerable<Exp> args)
+        public CallExp(Exp callable, ImmutableArray<Exp> args)
         {
             Callable = callable;
-            Args = args.ToImmutableArray();
-        }
-
-        public CallExp(Exp callable, params Exp[] args)
-        {
-            Callable = callable;
-            Args = ImmutableArray.Create(args);
-        }
+            Args = args;
+        }        
     }
 
     public struct LambdaExpParam
@@ -110,17 +98,11 @@ namespace Gum.Syntax
         public ImmutableArray<LambdaExpParam> Params { get; }
         public Stmt Body { get; }
 
-        public LambdaExp(IEnumerable<LambdaExpParam> parameters, Stmt body)
+        public LambdaExp(ImmutableArray<LambdaExpParam> parameters, Stmt body)
         {
-            Params = parameters.ToImmutableArray();
+            Params = parameters;
             Body = body;
-        }
-
-        public LambdaExp(Stmt body, params LambdaExpParam[] parameters)
-        {
-            Params = ImmutableArray.Create(parameters);
-            Body = body;
-        }
+        }        
     }
     
     // a[b]
@@ -143,20 +125,12 @@ namespace Gum.Syntax
         public ImmutableArray<TypeExp> MemberTypeArgs { get; }
         public ImmutableArray<Exp> Args { get; }
 
-        public MemberCallExp(Exp obj, string memberName, IEnumerable<TypeExp> typeArgs, IEnumerable<Exp> args)
+        public MemberCallExp(Exp obj, string memberName, ImmutableArray<TypeExp> typeArgs, ImmutableArray<Exp> args)
         {
             Object = obj;
             MemberName = memberName;
-            MemberTypeArgs = typeArgs.ToImmutableArray();
-            Args = args.ToImmutableArray();
-        }
-
-        public MemberCallExp(Exp obj, string memberName, IEnumerable<TypeExp> typeArgs, params Exp[] args)
-        {
-            Object = obj;
-            MemberName = memberName;
-            MemberTypeArgs = typeArgs.ToImmutableArray();
-            Args = ImmutableArray.Create(args);
+            MemberTypeArgs = typeArgs;
+            Args = args;
         }
     }
 
@@ -166,11 +140,11 @@ namespace Gum.Syntax
         public string MemberName { get; }
         public ImmutableArray<TypeExp> MemberTypeArgs { get; }
 
-        public MemberExp(Exp parent, string memberName, IEnumerable<TypeExp> memberTypeArgs)
+        public MemberExp(Exp parent, string memberName, ImmutableArray<TypeExp> memberTypeArgs)
         {
             Parent = parent;
             MemberName = memberName;
-            MemberTypeArgs = memberTypeArgs.ToImmutableArray();
+            MemberTypeArgs = memberTypeArgs;
         }
     }
 
@@ -179,17 +153,11 @@ namespace Gum.Syntax
         public TypeExp? ElemType { get; }
         public ImmutableArray<Exp> Elems { get; }
 
-        public ListExp(TypeExp? elemType, IEnumerable<Exp> elems)
+        public ListExp(TypeExp? elemType, ImmutableArray<Exp> elems)
         {
             ElemType = elemType;
-            Elems = elems.ToImmutableArray();
-        }
-
-        public ListExp(TypeExp? elemType, params Exp[] elems)
-        {
-            ElemType = elemType;
-            Elems = ImmutableArray.Create(elems);
-        }
+            Elems = elems;
+        }        
     }
 
     // new Type(2, 3, 4);
@@ -200,10 +168,10 @@ namespace Gum.Syntax
         // TODO: params, out, 등 처리를 하려면 Exp가 아니라 다른거여야 한다
         public ImmutableArray<Exp> Args { get; }
         
-        public NewExp(TypeExp type, IEnumerable<Exp> args)
+        public NewExp(TypeExp type, ImmutableArray<Exp> args)
         {
             Type = type;
-            Args = args.ToImmutableArray();
+            Args = args;
         }
     }
 }

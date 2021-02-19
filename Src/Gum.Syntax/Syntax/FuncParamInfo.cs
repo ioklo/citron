@@ -12,9 +12,9 @@ namespace Gum.Syntax
         public ImmutableArray<TypeAndName> Parameters { get; }
         public int? VariadicParamIndex { get; }
 
-        public FuncParamInfo(IEnumerable<TypeAndName> parameters, int? variadicParamIndex)
+        public FuncParamInfo(ImmutableArray<TypeAndName> parameters, int? variadicParamIndex)
         {
-            Parameters = parameters.ToImmutableArray();
+            Parameters = parameters;
             VariadicParamIndex = variadicParamIndex;
         }
     }

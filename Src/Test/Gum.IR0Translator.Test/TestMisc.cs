@@ -2,7 +2,12 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Gum.IR0Translator;
+
+using S = Gum.Syntax;
+using R = Gum.IR0;
+using Xunit;
+using System.Collections.Immutable;
+using System.Linq;
 
 namespace Gum.IR0Translator.Test
 {
@@ -13,17 +18,29 @@ namespace Gum.IR0Translator.Test
             return values;
         }
 
-        public static Script SimpleScript(IEnumerable<TypeDecl>? typeDecls, IEnumerable<FuncDecl>? funcDecls, params Stmt[] topLevelStmts)
+        public static R.Script SimpleScript(IEnumerable<R.TypeDecl>? optTypeDecls, IEnumerable<R.FuncDecl>? optFuncDecls, params R.Stmt[] optTopLevelStmts)
         {
-            // TODO: Validator
-            int i = 0;
-            foreach (var funcDecl in funcDecls ?? Array.Empty<FuncDecl>())
+            ImmutableArray<R.TypeDecl> typeDecls = default;
+            if (optTypeDecls != null)
+                typeDecls = optTypeDecls.ToImmutableArray();
+
+            ImmutableArray<R.FuncDecl> funcDecls = default;
+            if (optFuncDecls != null)
             {
-                Assert.Equal(i, funcDecl.Id.Value);
-                i++;
+                // TODO: Validator
+                int i = 0;
+                foreach (var funcDecl in optFuncDecls)
+                {
+                    Assert.Equal(i, funcDecl.Id.Value);
+                    i++;
+                }
+
+                funcDecls = optFuncDecls.ToImmutableArray();
             }
 
-            return new Script(typeDecls ?? Array.Empty<TypeDecl>(), funcDecls ?? Array.Empty<FuncDecl>(), topLevelStmts);
+            ImmutableArray<R.Stmt> topLevelStmts = optTopLevelStmts.ToImmutableArray();
+
+            return new R.Script(typeDecls, funcDecls, topLevelStmts);
         }
 
         static void VerifyError(IEnumerable<IError> errors, AnalyzeErrorCode code, S.ISyntaxNode node)
@@ -33,8 +50,6 @@ namespace Gum.IR0Translator.Test
 
             Assert.True(result, $"Errors doesn't contain (Code: {code}, Node: {node})");
         }
-
-
 
         public static S.VarDecl SimpleSVarDecl(S.TypeExp typeExp, string name, S.Exp? initExp = null)
         {

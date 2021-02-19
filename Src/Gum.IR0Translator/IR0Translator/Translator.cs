@@ -1,17 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Gum.IR0;
 using Gum.Infra;
 using Gum.CompileTime;
 using System.Collections.Immutable;
+
+using R = Gum.IR0;
 
 namespace Gum.IR0Translator
 {
     // 외부 인터페이스
     public class Translator
     {
-        public static Script? Translate(ModuleName moduleName, ImmutableArray<ModuleInfo> referenceInfos, Syntax.Script sscript, IErrorCollector errorCollector)
+        public static R.Script? Translate(ModuleName moduleName, ImmutableArray<ModuleInfo> referenceInfos, Syntax.Script sscript, IErrorCollector errorCollector)
         {
             var externalModuleInfoRepo = new ModuleInfoRepository(referenceInfos);
 

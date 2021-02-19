@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Collections.Immutable;
 
 namespace Gum.Syntax
 {
@@ -12,7 +13,7 @@ namespace Gum.Syntax
             bool bSequence,
             TypeExp retType,
             string name,
-            IEnumerable<string> typeParams,
+            ImmutableArray<string> typeParams,
             FuncParamInfo paramInfo,
             BlockStmt body)
             : base(bSequence, retType, name, typeParams, paramInfo, body)

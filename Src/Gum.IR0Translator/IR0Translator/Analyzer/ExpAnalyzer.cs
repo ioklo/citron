@@ -39,7 +39,7 @@ namespace Gum.IR0Translator
             switch (result)
             {
                 case NotFoundIdentifierResult:
-                    context.AddFatalError(A2007_ResolveIdentifier_NotFound, idExp, $"{idExp.Value}을 찾을 수 없습니다");
+                    context.AddFatalError(A2007_ResolveIdentifier_NotFound, idExp);
                     break;
 
                 case ErrorIdentifierResult errorResult:
@@ -54,7 +54,7 @@ namespace Gum.IR0Translator
                     throw new NotImplementedException();
 
                 case TypeIdentifierResult:
-                    context.AddFatalError(A2008_ResolveIdentifier_CantUseTypeAsExpression, idExp, $"타입 {idExp.Value}을 식에서 사용할 수 없습니다");
+                    context.AddFatalError(A2008_ResolveIdentifier_CantUseTypeAsExpression, idExp);
                     break;
                 
                 case EnumElemIdentifierResult enumElemResult:
@@ -121,10 +121,10 @@ namespace Gum.IR0Translator
 
             // int type 검사
             if (!context.IsAssignable(context.GetIntType(), operandResult.TypeValue))
-                context.AddFatalError(A0601_UnaryAssignOp_IntTypeIsAllowedOnly, operand, "++ --는 int 타입만 지원합니다");
+                context.AddFatalError(A0601_UnaryAssignOp_IntTypeIsAllowedOnly, operand);
 
             if (!context.IsAssignableExp(operandResult.Exp))
-                context.AddFatalError(A0602_UnaryAssignOp_AssignableExpressionIsAllowedOnly, operand, "++ --는 대입 가능한 식에만 적용할 수 있습니다");
+                context.AddFatalError(A0602_UnaryAssignOp_AssignableExpressionIsAllowedOnly);
 
             return new ExpResult(new R.CallInternalUnaryAssignOperator(op, operandResult.Exp), context.GetIntType());
         }
@@ -138,7 +138,7 @@ namespace Gum.IR0Translator
                 case S.UnaryOpKind.LogicalNot:
                     {
                         if (!context.IsAssignable(context.GetBoolType(), operandResult.TypeValue))
-                            context.AddFatalError(A0701_UnaryOp_LogicalNotOperatorIsAppliedToBoolTypeOperandOnly, unaryOpExp.Operand, $"{unaryOpExp.Operand}에 !를 적용할 수 없습니다. bool 타입이어야 합니다");
+                            context.AddFatalError(A0701_UnaryOp_LogicalNotOperatorIsAppliedToBoolTypeOperandOnly, unaryOpExp.Operand);
 
                         var operandRType = operandResult.TypeValue.GetRType();
 
@@ -152,7 +152,7 @@ namespace Gum.IR0Translator
                 case S.UnaryOpKind.Minus:
                     {
                         if (!context.IsAssignable(context.GetIntType(), operandResult.TypeValue))
-                            context.AddFatalError(A0702_UnaryOp_UnaryMinusOperatorIsAppliedToIntTypeOperandOnly, unaryOpExp.Operand, $"{unaryOpExp.Operand}에 -를 적용할 수 없습니다. int 타입이어야 합니다");
+                            context.AddFatalError(A0702_UnaryOp_UnaryMinusOperatorIsAppliedToIntTypeOperandOnly, unaryOpExp.Operand);
 
                         var operandRType = operandResult.TypeValue.GetRType();
                         return new ExpResult(
@@ -188,10 +188,10 @@ namespace Gum.IR0Translator
             if (binaryOpExp.Kind == S.BinaryOpKind.Assign)
             {
                 if (!context.IsAssignable(operandResult0.TypeValue, operandResult1.TypeValue))
-                    context.AddFatalError(A0801_BinaryOp_LeftOperandTypeIsNotCompatibleWithRightOperandType, binaryOpExp, "대입 가능하지 않습니다");
+                    context.AddFatalError(A0801_BinaryOp_LeftOperandTypeIsNotCompatibleWithRightOperandType, binaryOpExp);
                     
                 if (!context.IsAssignableExp(operandResult0.Exp))
-                    context.AddFatalError(A0803_BinaryOp_LeftOperandIsNotAssignable, binaryOpExp.Operand0, "대입 가능하지 않은 식에 대입하려고 했습니다");
+                    context.AddFatalError(A0803_BinaryOp_LeftOperandIsNotAssignable, binaryOpExp.Operand0);
 
                 return new ExpResult(new R.AssignExp(operandResult0.Exp, operandResult1.Exp), operandResult0.TypeValue);
             }            
@@ -240,7 +240,7 @@ namespace Gum.IR0Translator
             }
 
             // Operator를 찾을 수 없습니다
-            context.AddFatalError(A0802_BinaryOp_OperatorNotFound, binaryOpExp, $"{operandResult0.TypeValue}와 {operandResult1.TypeValue}를 지원하는 연산자가 없습니다");
+            context.AddFatalError(A0802_BinaryOp_OperatorNotFound, binaryOpExp);
             return default; // suppress CS0161
         }
         
@@ -298,7 +298,7 @@ namespace Gum.IR0Translator
         {
             var lambdaType = callableType as LambdaTypeValue;
             if (lambdaType == null)
-                context.AddFatalError(A0902_CallExp_CallableExpressionIsNotCallable, nodeForErrorReport.Callable, $"호출 가능한 타입이 아닙니다");
+                context.AddFatalError(A0902_CallExp_CallableExpressionIsNotCallable, nodeForErrorReport.Callable);
 
             var argTypes = ImmutableArray.CreateRange(argResults, info => info.TypeValue);
             CheckParamTypes(nodeForErrorReport, lambdaType.Params, argTypes);
@@ -331,7 +331,7 @@ namespace Gum.IR0Translator
             switch(callableResult)
             {
                 case NotFoundIdentifierResult _:
-                    context.AddFatalError(A2007_ResolveIdentifier_NotFound, exp, "");
+                    context.AddFatalError(A2007_ResolveIdentifier_NotFound, exp);
                     break;
 
                 case ErrorIdentifierResult errorResult:
@@ -345,7 +345,7 @@ namespace Gum.IR0Translator
                     return AnalyzeCallExpFuncCallable(exp, funcResult.FuncValue, argResults);
 
                 case TypeIdentifierResult typeResult:
-                    context.AddFatalError(A0902_CallExp_CallableExpressionIsNotCallable, exp.Callable, "");
+                    context.AddFatalError(A0902_CallExp_CallableExpressionIsNotCallable, exp.Callable);
                     break;
 
                 case EnumElemIdentifierResult enumElemResult:
@@ -445,22 +445,22 @@ namespace Gum.IR0Translator
             switch(memberResult)
             {
                 case MultipleCandidatesErrorItemResult:
-                    context.AddFatalError(A2001_ResolveIdentifier_MultipleCandidatesForIdentifier, memberExp, "같은 이름의 멤버가 하나이상 있습니다");
+                    context.AddFatalError(A2001_ResolveIdentifier_MultipleCandidatesForIdentifier, memberExp);
                     break;
 
                 case VarWithTypeArgErrorItemResult:
-                    context.AddFatalError(A2002_ResolveIdentifier_VarWithTypeArg, memberExp, "멤버변수에는 타입인자를 붙일 수 없습니다");
+                    context.AddFatalError(A2002_ResolveIdentifier_VarWithTypeArg, memberExp);
                     break;
 
                 case NotFoundItemResult:
-                    context.AddFatalError(A2007_ResolveIdentifier_NotFound, memberExp, $"");
+                    context.AddFatalError(A2007_ResolveIdentifier_NotFound, memberExp);
                     break;
 
                 case ValueItemResult valueResult:
                     switch(valueResult.ItemValue)
                     {
                         case TypeValue:
-                            context.AddFatalError(A2004_ResolveIdentifier_CantGetTypeMemberThroughInstance, memberExp, $"{memberExp.MemberName}은 타입입니다. 변수, 함수여야 합니다");
+                            context.AddFatalError(A2004_ResolveIdentifier_CantGetTypeMemberThroughInstance, memberExp);
                             break;
 
                         case FuncValue:
@@ -469,7 +469,7 @@ namespace Gum.IR0Translator
                         case MemberVarValue memberVar:
                             // static인지 검사
                             if (memberVar.IsStatic)
-                                context.AddFatalError(A2003_ResolveIdentifier_CantGetStaticMemberThroughInstance, memberExp, $"인스턴스 값에서는 정적 멤버 변수를 참조할 수 없습니다");
+                                context.AddFatalError(A2003_ResolveIdentifier_CantGetStaticMemberThroughInstance, memberExp);
 
                             var exp = MakeMemberExp(parentType, parentExp, memberExp.MemberName);
                             return new ExpResult(exp, memberVar.GetTypeValue());
@@ -489,15 +489,15 @@ namespace Gum.IR0Translator
             switch (member)
             {
                 case NotFoundItemResult:
-                    context.AddFatalError(A2007_ResolveIdentifier_NotFound, nodeForErrorReport, $"{memberName}은 {parentType}의 멤버가 아닙니다");
+                    context.AddFatalError(A2007_ResolveIdentifier_NotFound, nodeForErrorReport);
                     throw new UnreachableCodeException();
 
                 case MultipleCandidatesErrorItemResult:
-                    context.AddFatalError(A2001_ResolveIdentifier_MultipleCandidatesForIdentifier, nodeForErrorReport, "같은 이름의 멤버가 하나이상 있습니다");
+                    context.AddFatalError(A2001_ResolveIdentifier_MultipleCandidatesForIdentifier, nodeForErrorReport);
                     throw new UnreachableCodeException();
 
                 case VarWithTypeArgErrorItemResult:
-                    context.AddFatalError(A2002_ResolveIdentifier_VarWithTypeArg, nodeForErrorReport, "멤버변수에는 타입인자를 붙일 수 없습니다");
+                    context.AddFatalError(A2002_ResolveIdentifier_VarWithTypeArg, nodeForErrorReport);
                     throw new UnreachableCodeException();
 
                 case ValueItemResult itemResult:
@@ -505,7 +505,7 @@ namespace Gum.IR0Translator
                     {
                         // 타입이면 값으로 만들 수 없기 때문에 에러
                         case TypeValue:
-                            context.AddFatalError(A2008_ResolveIdentifier_CantUseTypeAsExpression, nodeForErrorReport, $"{memberName}은 타입입니다. 변수, 함수여야 합니다");
+                            context.AddFatalError(A2008_ResolveIdentifier_CantUseTypeAsExpression, nodeForErrorReport);
                             throw new UnreachableCodeException();
 
                         // TODO: 함수라면 Lambda로 만들어 준다
@@ -517,7 +517,7 @@ namespace Gum.IR0Translator
 
                             if (!memberVarValue.IsStatic)
                             {
-                                context.AddFatalError(A2005_ResolveIdentifier_CantGetInstanceMemberThroughType, nodeForErrorReport, $"정적 멤버 변수만 참조할 수 있습니다");
+                                context.AddFatalError(A2005_ResolveIdentifier_CantGetInstanceMemberThroughType, nodeForErrorReport);
                                 throw new UnreachableCodeException();
                             }
 
@@ -539,27 +539,27 @@ namespace Gum.IR0Translator
             switch (errorResult)
             {
                 case MultipleCandiatesErrorIdentifierResult:
-                    context.AddFatalError(A2001_ResolveIdentifier_MultipleCandidatesForIdentifier, nodeForErrorReport, $"해당 이름에 맞는 타임, 함수, 변수를 하나로 결정할 수가 없습니다");
+                    context.AddFatalError(A2001_ResolveIdentifier_MultipleCandidatesForIdentifier, nodeForErrorReport);
                     break;
                 
                 case VarWithTypeArgErrorIdentifierResult:
-                    context.AddFatalError(A2002_ResolveIdentifier_VarWithTypeArg, nodeForErrorReport, $"변수인데 타입인자가 들어갔습니다");
+                    context.AddFatalError(A2002_ResolveIdentifier_VarWithTypeArg, nodeForErrorReport);
                     break;
 
                 case CantGetStaticMemberThroughInstanceIdentifierResult:
-                    context.AddFatalError(A2003_ResolveIdentifier_CantGetStaticMemberThroughInstance, nodeForErrorReport, $"변수인데 타입인자가 들어갔습니다");
+                    context.AddFatalError(A2003_ResolveIdentifier_CantGetStaticMemberThroughInstance, nodeForErrorReport);
                     break;
 
                 case CantGetTypeMemberThroughInstanceIdentifierResult:
-                    context.AddFatalError(A2004_ResolveIdentifier_CantGetTypeMemberThroughInstance, nodeForErrorReport, "");
+                    context.AddFatalError(A2004_ResolveIdentifier_CantGetTypeMemberThroughInstance, nodeForErrorReport);
                     break;
 
                 case CantGetInstanceMemberThroughTypeIdentifierResult:
-                    context.AddFatalError(A2005_ResolveIdentifier_CantGetInstanceMemberThroughType, nodeForErrorReport,"");
+                    context.AddFatalError(A2005_ResolveIdentifier_CantGetInstanceMemberThroughType, nodeForErrorReport);
                     break;
 
                 case FuncCantHaveMemberErrorIdentifierResult:
-                    context.AddFatalError(A2006_ResolveIdentifier_FuncCantHaveMember, nodeForErrorReport, "");
+                    context.AddFatalError(A2006_ResolveIdentifier_FuncCantHaveMember, nodeForErrorReport);
                     break;
             }
 
@@ -574,7 +574,7 @@ namespace Gum.IR0Translator
             switch(parentResult)
             {
                 case NotFoundIdentifierResult:
-                    context.AddFatalError(A2007_ResolveIdentifier_NotFound, memberExp, $"");
+                    context.AddFatalError(A2007_ResolveIdentifier_NotFound, memberExp);
                     break;
 
                 case ErrorIdentifierResult errorResult:
@@ -590,7 +590,7 @@ namespace Gum.IR0Translator
 
                 case FuncIdentifierResult:
                     // 함수는 멤버변수를 가질 수 없습니다
-                    context.AddFatalError(A2006_ResolveIdentifier_FuncCantHaveMember, memberExp, "");
+                    context.AddFatalError(A2006_ResolveIdentifier_FuncCantHaveMember, memberExp);
                     break;
 
                 case EnumElemIdentifierResult:
@@ -638,12 +638,12 @@ namespace Gum.IR0Translator
                 if (!EqualityComparer<TypeValue>.Default.Equals(curElemTypeValue, elemResult.TypeValue))
                 {
                     // TODO: 둘의 공통 조상을 찾아야 하는지 결정을 못했다..
-                    context.AddFatalError(A1702_ListExp_MismatchBetweenElementTypes, elem, $"원소 {elem}의 타입이 {curElemTypeValue} 가 아닙니다");
+                    context.AddFatalError(A1702_ListExp_MismatchBetweenElementTypes, elem);
                 }
             }
 
             if (curElemTypeValue == null)
-                context.AddFatalError(A1701_ListExp_CantInferElementTypeWithEmptyElement, listExp, $"리스트의 타입을 결정하지 못했습니다");
+                context.AddFatalError(A1701_ListExp_CantInferElementTypeWithEmptyElement, listExp);
 
             var rtype = curElemTypeValue.GetRType();
 

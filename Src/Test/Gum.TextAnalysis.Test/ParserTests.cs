@@ -8,7 +8,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Gum
+using static Gum.TextAnalysis.Test.TestMisc;
+
+namespace Gum.TextAnalysis.Test
 {
     public class ParserTests
     {
@@ -30,7 +32,11 @@ namespace Gum
             var context = await MakeContextAsync("@ls -al");
             var script = await parser.ParseScriptAsync(context);
 
-            var expected = new Script(new Script.StmtElement(new CommandStmt(new StringExp(new TextStringExpElement("ls -al")))));
+            var expected = SimpleSScript(
+                new Script.StmtElement(new CommandStmt(Arr(
+                    new StringExp(Arr<StringExpElement>(new TextStringExpElement("ls -al")))
+                )))
+            );
 
             Assert.Equal(expected, script.Elem, SyntaxEqualityComparer.Instance);
         }
@@ -45,15 +51,17 @@ namespace Gum
 
             var expected = new GlobalFuncDecl(
                 false,
-                new IdTypeExp("void"),
-                "Func", Enumerable.Empty<string>(),
+                SimpleSIdTypeExp("void"),
+                "Func", default,
                 new FuncParamInfo(
-                    new TypeAndName[] {
-                        new TypeAndName(new IdTypeExp("int"), "x"),
-                        new TypeAndName(new IdTypeExp("string"), "y"),
-                        new TypeAndName(new IdTypeExp("int"), "z") },
-                    1),
-                new BlockStmt(new VarDeclStmt(new VarDecl(new IdTypeExp("int"), new VarDeclElement("a", new IntLiteralExp(0))))));
+                    Arr(
+                        new TypeAndName(SimpleSIdTypeExp("int"), "x"),
+                        new TypeAndName(SimpleSIdTypeExp("string"), "y"),
+                        new TypeAndName(SimpleSIdTypeExp("int"), "z")
+                    ),
+                    1
+                ),
+                SimpleSBlockStmt(new VarDeclStmt(new VarDecl(SimpleSIdTypeExp("int"), Arr(new VarDeclElement("a", new IntLiteralExp(0)))))));
 
             Assert.Equal(expected, funcDecl.Elem, SyntaxEqualityComparer.Instance);
         }
@@ -73,10 +81,13 @@ enum X
             var enumDecl = await parser.ParseEnumDeclAsync(context);
 
             var expected = new EnumDecl("X",
-                Enumerable.Empty<string>(),
-                new EnumDeclElement("First"),
-                new EnumDeclElement("Second", new TypeAndName(new IdTypeExp("int"), "i")),
-                new EnumDeclElement("Third"));
+                default,
+                Arr(
+                    new EnumDeclElement("First", default),
+                    new EnumDeclElement("Second", Arr(new TypeAndName(SimpleSIdTypeExp("int"), "i"))),
+                    new EnumDeclElement("Third", default)
+                )
+            );
 
             Assert.Equal(expected, enumDecl.Elem, SyntaxEqualityComparer.Instance);
         }
@@ -104,38 +115,38 @@ public struct S<T> : B, I
             var expected = new StructDecl(AccessModifier.Public, "S",
                 Arr( "T" ),
 
-                Arr<TypeExp>( new IdTypeExp("B"), new IdTypeExp("I") ),
+                Arr<TypeExp>( SimpleSIdTypeExp("B"), SimpleSIdTypeExp("I") ),
 
                 Arr<StructDecl.Element>(
-                    new StructDecl.VarDeclElement(AccessModifier.Public, new IdTypeExp("int"), new[] { "x1", "x2" }),
-                    new StructDecl.VarDeclElement(AccessModifier.Protected, new IdTypeExp("string"), new[] { "y" }),
-                    new StructDecl.VarDeclElement(AccessModifier.Private, new IdTypeExp("int"), new[] { "z" }),
+                    new StructDecl.VarDeclElement(AccessModifier.Public, SimpleSIdTypeExp("int"), Arr("x1", "x2")),
+                    new StructDecl.VarDeclElement(AccessModifier.Protected, SimpleSIdTypeExp("string"), Arr("y")),
+                    new StructDecl.VarDeclElement(AccessModifier.Private, SimpleSIdTypeExp("int"), Arr("z")),
 
                     new StructDecl.TypeDeclElement(new StructDecl(
-                        AccessModifier.Public, "Nested", Arr( "U" ), Arr<TypeExp>( new IdTypeExp("B"), new IdTypeExp("I")),
-                        Arr<StructDecl.Element>(new StructDecl.VarDeclElement(AccessModifier.Public, new IdTypeExp("int"), new[] {"x"}))
+                        AccessModifier.Public, "Nested", Arr( "U" ), Arr<TypeExp>( SimpleSIdTypeExp("B"), SimpleSIdTypeExp("I")),
+                        Arr<StructDecl.Element>(new StructDecl.VarDeclElement(AccessModifier.Public, SimpleSIdTypeExp("int"), Arr("x")))
                     )),
 
                     new StructDecl.FuncDeclElement(new StructFuncDecl(
                         AccessModifier.Public,
                         bStatic: true,
                         bSequence: false,
-                        new IdTypeExp("void"),
+                        SimpleSIdTypeExp("void"),
                         "Func",
-                        new string[] { "X" },
-                        new FuncParamInfo(new TypeAndName[] { new TypeAndName(new IdTypeExp("string"), "s") }, null),
-                        new BlockStmt()
+                        Arr("X"),
+                        new FuncParamInfo(Arr(new TypeAndName(SimpleSIdTypeExp("string"), "s")), null),
+                        SimpleSBlockStmt()
                     )),
 
                     new StructDecl.FuncDeclElement(new StructFuncDecl(
                         AccessModifier.Private,
                         bStatic: false,
                         bSequence: true,
-                        new IdTypeExp("int"),
+                        SimpleSIdTypeExp("int"),
                         "F2",
-                        new string[] { "T" },
-                        new FuncParamInfo(Enumerable.Empty<TypeAndName>(), null),
-                        new BlockStmt(new YieldStmt(new IntLiteralExp(4)))
+                        Arr("T"),
+                        new FuncParamInfo(default, null),
+                        SimpleSBlockStmt(new YieldStmt(new IntLiteralExp(4)))
                     ))
                 )
             );
@@ -166,27 +177,27 @@ for (int i = 0; i < 5; i++)
 ");
             var script = await parser.ParseScriptAsync(context);
 
-            var expected = new Script(
-                new Script.StmtElement(new VarDeclStmt(new VarDecl(new IdTypeExp("int"), new VarDeclElement("sum", new IntLiteralExp(0))))),
+            var expected = SimpleSScript(
+                new Script.StmtElement(SimpleSVarDeclStmt(SimpleSIdTypeExp("int"), new VarDeclElement("sum", new IntLiteralExp(0)))),
                 new Script.StmtElement(new ForStmt(
-                    new VarDeclForStmtInitializer(new VarDecl(new IdTypeExp("int"), new VarDeclElement("i", new IntLiteralExp(0)))),
-                    new BinaryOpExp(BinaryOpKind.LessThan, new IdentifierExp("i"), new IntLiteralExp(5)),
-                    new UnaryOpExp(UnaryOpKind.PostfixInc, new IdentifierExp("i")),
-                    new BlockStmt(
+                    new VarDeclForStmtInitializer(SimpleSVarDecl(SimpleSIdTypeExp("int"), new VarDeclElement("i", new IntLiteralExp(0)))),
+                    new BinaryOpExp(BinaryOpKind.LessThan, SimpleSId("i"), new IntLiteralExp(5)),
+                    new UnaryOpExp(UnaryOpKind.PostfixInc, SimpleSId("i")),
+                    SimpleSBlockStmt(
                         new IfStmt(
                                 new BinaryOpExp(BinaryOpKind.Equal,
-                                    new BinaryOpExp(BinaryOpKind.Modulo, new IdentifierExp("i"), new IntLiteralExp(2)),
+                                    new BinaryOpExp(BinaryOpKind.Modulo, SimpleSId("i"), new IntLiteralExp(2)),
                                     new IntLiteralExp(0)),
                                 null,
                                 new ExpStmt(
                                     new BinaryOpExp(BinaryOpKind.Assign,
-                                        new IdentifierExp("sum"),
-                                        new BinaryOpExp(BinaryOpKind.Add, new IdentifierExp("sum"), new IdentifierExp("i")))),
-                                new CommandStmt(new StringExp(new TextStringExpElement("        echo hi "))))))),
-                new Script.StmtElement(new CommandStmt(new StringExp(
+                                        SimpleSId("sum"),
+                                        new BinaryOpExp(BinaryOpKind.Add, SimpleSId("sum"), SimpleSId("i")))),
+                                new CommandStmt(Arr(SimpleSStringExp("        echo hi "))))))),
+                new Script.StmtElement(new CommandStmt(Arr(new StringExp(Arr<StringExpElement>(
                     new TextStringExpElement("echo "),
-                    new ExpStringExpElement(new IdentifierExp("sum")),
-                    new TextStringExpElement(" Completed!")))));
+                    new ExpStringExpElement(SimpleSId("sum")),
+                    new TextStringExpElement(" Completed!")))))));
                     
             Assert.Equal(expected, script.Elem, SyntaxEqualityComparer.Instance);
         }

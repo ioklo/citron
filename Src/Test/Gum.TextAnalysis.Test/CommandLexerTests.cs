@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Gum
+namespace Gum.TextAnalysis.Test
 {   
     public class CommandLexerTests
     {

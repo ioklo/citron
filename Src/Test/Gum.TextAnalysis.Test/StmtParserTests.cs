@@ -6,8 +6,9 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
+using static Gum.TextAnalysis.Test.TestMisc;
 
-namespace Gum
+namespace Gum.TextAnalysis.Test
 {
     public class StmtParserTests
     {
@@ -31,11 +32,13 @@ namespace Gum
             
             var cmdStmt = await parser.ParseCommandStmtAsync(context);
 
-            var expected = new CommandStmt(
-                new StringExp(
+            var expected = new CommandStmt(Arr(
+                new StringExp(Arr<StringExpElement>(
                     new TextStringExpElement("echo "),
-                    new ExpStringExpElement(new IdentifierExp("a")),
-                    new TextStringExpElement("bbb  ")));
+                    new ExpStringExpElement(SimpleSId("a")),
+                    new TextStringExpElement("bbb  ")
+                ))
+            ));
 
             Assert.Equal(expected, cmdStmt.Elem, SyntaxEqualityComparer.Instance);
         }
@@ -53,12 +56,14 @@ xxx
 
             var cmdStmt = await parser.ParseCommandStmtAsync(context);
 
-            var expected = new CommandStmt(
-                new StringExp(
+            var expected = new CommandStmt(Arr(
+                new StringExp(Arr<StringExpElement>(
                     new TextStringExpElement("    echo "),
-                    new ExpStringExpElement(new IdentifierExp("a")),
-                    new TextStringExpElement(" bbb   ")),
-                new StringExp(new TextStringExpElement("xxx")));
+                    new ExpStringExpElement(SimpleSId("a")),
+                    new TextStringExpElement(" bbb   ")
+                )),
+                SimpleSStringExp("xxx")
+            ));
 
             Assert.Equal(expected, cmdStmt.Elem, SyntaxEqualityComparer.Instance);
         }
@@ -70,10 +75,12 @@ xxx
             
             var varDeclStmt = await parser.ParseVarDeclStmtAsync(context);
 
-            var expected = new VarDeclStmt(new VarDecl(new IdTypeExp("string"),
-                new VarDeclElement("a", new StringExp(new TextStringExpElement("hello")))));
+            var expected = SimpleSVarDeclStmt(
+                SimpleSIdTypeExp("string"),
+                new VarDeclElement("a", SimpleSStringExp("hello"))
+            );
 
-            Assert.Equal(expected, varDeclStmt.Elem, SyntaxEqualityComparer.Instance);
+            Assert.Equal<Stmt>(expected, varDeclStmt.Elem, SyntaxEqualityComparer.Instance);
         }
         
         [Fact]
@@ -83,14 +90,14 @@ xxx
             
             var ifStmt = await parser.ParseIfStmtAsync(context);
 
-            var expected = new IfStmt(new IdentifierExp("b"),
+            var expected = new IfStmt(SimpleSId("b"),
                 null,
-                new BlockStmt(),
+                SimpleSBlockStmt(),
                 new IfStmt(
-                    new IdentifierExp("c"),
+                    SimpleSId("c"),
                     null,
-                    new BlockStmt(),
-                    new BlockStmt()));
+                    SimpleSBlockStmt(),
+                    SimpleSBlockStmt()));
 
             Assert.Equal(expected, ifStmt.Elem, SyntaxEqualityComparer.Instance);
         }
@@ -102,14 +109,14 @@ xxx
 
             var ifStmt = await parser.ParseIfStmtAsync(context);
 
-            var expected = new IfStmt(new IdentifierExp("b"),
-                new IdTypeExp("T"),
-                new BlockStmt(),
+            var expected = new IfStmt(SimpleSId("b"),
+                SimpleSIdTypeExp("T"),
+                SimpleSBlockStmt(),
                 new IfStmt(
-                    new IdentifierExp("c"),
+                    SimpleSId("c"),
                     null,
-                    new BlockStmt(),
-                    new BlockStmt()));
+                    SimpleSBlockStmt(),
+                    SimpleSBlockStmt()));
 
             Assert.Equal(expected, ifStmt.Elem, SyntaxEqualityComparer.Instance);
         }
@@ -124,9 +131,9 @@ for (f(); g; h + g) ;
             var result = await parser.ParseForStmtAsync(context);
 
             var expected = new ForStmt(
-                new ExpForStmtInitializer(new CallExp(new IdentifierExp("f"))),
-                new IdentifierExp("g"),
-                new BinaryOpExp(BinaryOpKind.Add, new IdentifierExp("h"), new IdentifierExp("g")),
+                new ExpForStmtInitializer(new CallExp(SimpleSId("f"), default)),
+                SimpleSId("g"),
+                new BinaryOpExp(BinaryOpKind.Add, SimpleSId("h"), SimpleSId("g")),
                 BlankStmt.Instance);
 
             Assert.Equal(expected, result.Elem, SyntaxEqualityComparer.Instance);
@@ -156,9 +163,9 @@ for (f(); g; h + g) ;
             (var parser, var context) = await PrepareAsync(@"{ { } { ; } ; }");
             var blockResult = await parser.ParseBlockStmtAsync(context);
 
-            var expected = new BlockStmt(
-                new BlockStmt(),
-                new BlockStmt(BlankStmt.Instance),
+            var expected = SimpleSBlockStmt(
+                SimpleSBlockStmt(),
+                SimpleSBlockStmt(BlankStmt.Instance),
                 BlankStmt.Instance);
 
             Assert.Equal(expected, blockResult.Elem, SyntaxEqualityComparer.Instance);
@@ -180,10 +187,10 @@ for (f(); g; h + g) ;
             var expResult = await parser.ParseExpStmtAsync(context);
 
             var expected = new ExpStmt(new BinaryOpExp(BinaryOpKind.Assign,
-                new IdentifierExp("a"),
+                SimpleSId("a"),
                 new BinaryOpExp(BinaryOpKind.Multiply,
-                    new IdentifierExp("b"),
-                    new CallExp(new IdentifierExp("c"), new IntLiteralExp(1)))));
+                    SimpleSId("b"),
+                    new CallExp(SimpleSId("c"), Arr<Exp>(new IntLiteralExp(1))))));
                 
 
             Assert.Equal(expected, expResult.Elem, SyntaxEqualityComparer.Instance);
@@ -195,7 +202,7 @@ for (f(); g; h + g) ;
             var (parser, context) = await PrepareAsync("foreach( var x in l ) { } ");
             var stmtResult = await parser.ParseForeachStmtAsync(context);
 
-            var expected = new ForeachStmt(new IdTypeExp("var"), "x", new IdentifierExp("l"), new BlockStmt());
+            var expected = new ForeachStmt(SimpleSIdTypeExp("var"), "x", SimpleSId("l"), SimpleSBlockStmt());
 
             Assert.Equal(expected, stmtResult.Elem, SyntaxEqualityComparer.Instance);
         }
