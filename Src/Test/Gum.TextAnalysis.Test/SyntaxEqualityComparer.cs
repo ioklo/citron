@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using Gum.Misc;
+using Gum.Infra;
 using Gum.Syntax;
 
 namespace Gum.TextAnalysis.Test

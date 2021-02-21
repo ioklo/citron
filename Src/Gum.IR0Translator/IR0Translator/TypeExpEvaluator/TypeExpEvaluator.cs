@@ -1,5 +1,4 @@
 ﻿using Gum.Infra;
-using Gum.Misc;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -98,7 +97,7 @@ namespace Gum.IR0Translator
             return typeEnv.GetValueOrDefault(name);
         }
 
-        void ExecInScope(IEnumerable<string> typeParams, Action action)
+        void ExecInScope(ImmutableArray<string> typeParams, Action action)
         {
             var prevTypeEnv = typeEnv;
 

@@ -13,7 +13,7 @@ using S = Gum.Syntax;
 using R = Gum.IR0;
 using Pretune;
 using System.Linq;
-using Gum.Misc;
+using Gum.Infra;
 
 namespace Gum.IR0Translator
 {

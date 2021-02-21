@@ -5,7 +5,7 @@
 
     <IsPackable>false</IsPackable>
 
-    <RootNamespace>Gum</RootNamespace>
+    <RootNamespace>Gum.IR0Translator.Test</RootNamespace>
 
     <Nullable>enable</Nullable>
   </PropertyGroup>

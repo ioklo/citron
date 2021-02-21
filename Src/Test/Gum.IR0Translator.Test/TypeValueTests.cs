@@ -12,8 +12,7 @@ using M = Gum.CompileTime;
 namespace Gum.IR0Translator.Test
 {
     public class TypeValueTests
-    {
-        static ImmutableArray<T> Arr<T>(params T[] items) => ImmutableArray.Create(items);
+    {   
         M.ModuleName moduleName;
 
         public TypeValueTests()

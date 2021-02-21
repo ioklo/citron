@@ -1,5 +1,4 @@
 ﻿using Gum.IR0;
-using Gum.Misc;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -8,6 +7,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
+
+using static Gum.Infra.Misc;
 
 namespace Gum.IR0.Runtime
 {
@@ -106,11 +107,7 @@ namespace Gum.IR0.Runtime
         {
             return new ExpInfo(new IntLiteralExp(i), Type.Int);
         }
-
-        ImmutableArray<T> Arr<T>() => ImmutableArray<T>.Empty;
-
-        ImmutableArray<T> Arr<T>(params T[] elems) => ImmutableArray.Create<T>(elems);
-
+        
         public async Task<string> EvalAsync(FuncDecl[]? funcDecls, Stmt[] topLevelStmts)
         {
             var (output, _) = await EvalAsyncWithRetValue(funcDecls, topLevelStmts);

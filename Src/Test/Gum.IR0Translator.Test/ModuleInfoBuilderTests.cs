@@ -1,25 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using S = Gum.Syntax;
-using Xunit;
-using M = Gum.CompileTime;
-using System.Linq;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Collections.Immutable;
+
+using Xunit;
+
+using static Gum.Infra.Misc;
+
+using S = Gum.Syntax;
+using M = Gum.CompileTime;
 
 namespace Gum.IR0Translator.Test
 {    
     public class ModuleInfoBuilderTests
     {
         // UnitOfWorkName_ScenarioName_ExpectedBehavior
-
-        public ImmutableArray<T> Arr<T>(params T[] elems) => ImmutableArray.Create<T>(elems);
-
         public M.Type IntType { get => new M.GlobalType("System.Runtime", new M.NamespacePath("System"), "Int32", default); }
 
-        public S.TypeExp IntTypeExp { get => new S.IdTypeExp("int"); }
-        public S.TypeExp VoidTypeExp { get => new S.IdTypeExp("void"); }
+        public S.TypeExp IntTypeExp { get => new S.IdTypeExp("int", default); }
+        public S.TypeExp VoidTypeExp { get => new S.IdTypeExp("void", default); }
         M.ModuleInfo Build(M.ModuleName moduleName, S.Script script)
         {
             var typeSkelRepo = TypeSkeletonCollector.Collect(script);

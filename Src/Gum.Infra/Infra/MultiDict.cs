@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace Gum.Misc
+namespace Gum.Infra
 {
     public class MultiDict<TKey, TValue> where TKey : notnull
     {

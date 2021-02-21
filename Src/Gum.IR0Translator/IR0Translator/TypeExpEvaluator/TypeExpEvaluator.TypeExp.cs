@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Gum.Misc;
+using Gum.Infra;
 
 using static Gum.IR0Translator.AnalyzeErrorCode;
 using S = Gum.Syntax;

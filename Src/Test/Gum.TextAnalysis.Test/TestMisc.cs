@@ -6,6 +6,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using static Gum.Infra.Misc;
+
 namespace Gum.TextAnalysis.Test
 {
     static class TestMisc

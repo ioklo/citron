@@ -31,11 +31,11 @@ namespace Gum.IR0Translator
             }
             else
             {
-                path = new ItemPath(nsPath, entries.Prepend(entry0).SkipLast(1), entries[entries.Length - 1]);
+                path = new ItemPath(nsPath, entries.Prepend(entry0).SkipLast(1).ToImmutableArray(), entries[entries.Length - 1]);
             }
         }
 
-        public ItemId(ModuleName moduleName, NamespacePath nsPath, IEnumerable<ItemPathEntry> outerEntries, ItemPathEntry entry)
+        public ItemId(ModuleName moduleName, NamespacePath nsPath, ImmutableArray<ItemPathEntry> outerEntries, ItemPathEntry entry)
         {
             ModuleName = moduleName;
             path = new ItemPath(nsPath, outerEntries, entry);

@@ -8,14 +8,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
+using static Gum.Infra.Misc;
 using static Gum.TextAnalysis.Test.TestMisc;
 
 namespace Gum.TextAnalysis.Test
 {
     public class ParserTests
     {
-        ImmutableArray<T> Arr<T>(params T[] elems) => ImmutableArray.Create(elems);
-
         async ValueTask<ParserContext> MakeContextAsync(string input)
         {
             var buffer = new Buffer(new StringReader(input));

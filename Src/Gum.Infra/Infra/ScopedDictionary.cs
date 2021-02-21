@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
-namespace Gum.Misc
+namespace Gum.Infra
 {
     public class ScopedDictionary<TKey, TValue> : IEnumerable<KeyValuePair<TKey, TValue>>
         where TKey : notnull

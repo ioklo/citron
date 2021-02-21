@@ -28,7 +28,7 @@ namespace Gum.IR0Translator
             Entry = entry;
         }
 
-        public ItemPath(NamespacePath namespacePath, IEnumerable<ItemPathEntry> outerEntries, ItemPathEntry entry)
+        public ItemPath(NamespacePath namespacePath, ImmutableArray<ItemPathEntry> outerEntries, ItemPathEntry entry)
         {
             NamespacePath = namespacePath;
             OuterEntries = outerEntries.ToImmutableArray();
@@ -37,7 +37,7 @@ namespace Gum.IR0Translator
 
         public ItemPath Append(Name name, int typeParamCount = 0, string paramHash = "")
         {
-            return new ItemPath(NamespacePath, OuterEntries.Append(Entry), new ItemPathEntry(name, typeParamCount, paramHash));
+            return new ItemPath(NamespacePath, OuterEntries.Append(Entry).ToImmutableArray(), new ItemPathEntry(name, typeParamCount, paramHash));
         }
 
         public override bool Equals(object? obj)

@@ -20,12 +20,7 @@ namespace Gum.IR0Translator
             Path = path;
             members = new List<TypeSkeleton>();
             membersByEntry = new Dictionary<ItemPathEntry, TypeSkeleton>();
-        }
-
-        public IEnumerable<TypeSkeleton> GetTypeMembers()
-        {
-            return members;
-        }
+        }        
 
         public void AddMember(TypeSkeleton member)
         {

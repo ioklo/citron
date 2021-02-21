@@ -1,9 +1,12 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+using System.Collections.Immutable;
+
+using static Gum.Infra.Misc;
 
 using S = Gum.Syntax;
 using R = Gum.IR0;
-using System.Linq;
-using System.Collections.Immutable;
+
 
 namespace Gum.IR0Translator
 {
@@ -74,7 +77,7 @@ namespace Gum.IR0Translator
                 if (infos.TryGetValue(kind, out var result))
                     return result;
 
-                return Enumerable.Empty<InternalBinaryOperatorInfo>();
+                return default;
             }
         }
     }

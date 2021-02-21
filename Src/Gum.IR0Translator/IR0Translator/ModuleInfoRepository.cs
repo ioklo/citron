@@ -20,7 +20,7 @@ namespace Gum.IR0Translator
             this.moduleInfos = moduleInfos;
         }
 
-        public IEnumerable<ModuleInfo> GetAllModules()
+        public ImmutableArray<ModuleInfo> GetAllModules()
         {
             return moduleInfos;
         }

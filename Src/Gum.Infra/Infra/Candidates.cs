@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Gum.Misc
+namespace Gum.Infra
 {
     public struct Candidates<T> where T : notnull
     {

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Gum.Misc
+namespace Gum.Infra
 {
     public enum Prerequisite
     {
