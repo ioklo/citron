@@ -31,14 +31,9 @@ namespace Gum.IR0
     {
         public ImmutableArray<StringExpElement> Elements { get; }
         
-        public StringExp(IEnumerable<StringExpElement> elements)
+        public StringExp(ImmutableArray<StringExpElement> elements)
         {
-            Elements = elements.ToImmutableArray();
-        }
-
-        public StringExp(params StringExpElement[] elements)
-        {
-            Elements = ImmutableArray.Create(elements);
+            Elements = elements;
         }
     }
 
@@ -151,11 +146,11 @@ namespace Gum.IR0
         public ExpInfo? Instance { get; }
         public ImmutableArray<ExpInfo> Args { get; }
 
-        public CallFuncExp(Func func, ExpInfo? instance, IEnumerable<ExpInfo> args)
+        public CallFuncExp(Func func, ExpInfo? instance, ImmutableArray<ExpInfo> args)
         {
             Func = func;
             Instance = instance;
-            Args = args.ToImmutableArray();
+            Args = args;
         }
     }
 
@@ -165,11 +160,11 @@ namespace Gum.IR0
         public ExpInfo? Instance { get; }
         public ImmutableArray<ExpInfo> Args { get; }
 
-        public CallSeqFuncExp(Func func, ExpInfo? instance, IEnumerable<ExpInfo> args)
+        public CallSeqFuncExp(Func func, ExpInfo? instance, ImmutableArray<ExpInfo> args)
         {
             Func = func;
             Instance = instance;
-            Args = args.ToImmutableArray();
+            Args = args;
         }
     }
 
@@ -179,10 +174,10 @@ namespace Gum.IR0
         public ExpInfo Callable { get; }        
         public ImmutableArray<ExpInfo> Args { get; }
 
-        public CallValueExp(ExpInfo callable, IEnumerable<ExpInfo> args)
+        public CallValueExp(ExpInfo callable, ImmutableArray<ExpInfo> args)
         {
             Callable = callable;
-            Args = args.ToImmutableArray();
+            Args = args;
         }
     }
     
@@ -193,10 +188,10 @@ namespace Gum.IR0
         public ImmutableArray<string> ParamNames { get; }
         public Stmt Body { get; }
 
-        public LambdaExp(CaptureInfo captureInfo, IEnumerable<string> paramNames, Stmt body)
+        public LambdaExp(CaptureInfo captureInfo, ImmutableArray<string> paramNames, Stmt body)
         {
             CaptureInfo = captureInfo;
-            ParamNames = paramNames.ToImmutableArray();
+            ParamNames = paramNames;
             Body = body;
         }
     }
@@ -267,10 +262,10 @@ namespace Gum.IR0
         public Type ElemType { get; }
         public ImmutableArray<Exp> Elems { get; }
 
-        public ListExp(Type elemType, IEnumerable<Exp> elems)
+        public ListExp(Type elemType, ImmutableArray<Exp> elems)
         {
             ElemType = elemType;
-            Elems = elems.ToImmutableArray();
+            Elems = elems;
         }
     }
 
@@ -293,10 +288,10 @@ namespace Gum.IR0
 
         public ImmutableArray<Elem> Members { get; }
 
-        public NewEnumExp(string name, IEnumerable<Elem> members)
+        public NewEnumExp(string name, ImmutableArray<Elem> members)
         {
             Name = name;
-            Members = members.ToImmutableArray();
+            Members = members;
         }
     }
 
@@ -308,10 +303,10 @@ namespace Gum.IR0
         // TODO: params, out, 등 처리를 하려면 Exp가 아니라 다른거여야 한다
         public ImmutableArray<ExpInfo> Args { get; }
 
-        public NewStructExp(Type type, IEnumerable<ExpInfo> args)
+        public NewStructExp(Type type, ImmutableArray<ExpInfo> args)
         {
             Type = type;
-            Args = args.ToImmutableArray();
+            Args = args;
         }
     }
 
@@ -323,10 +318,10 @@ namespace Gum.IR0
         // TODO: params, out, 등 처리를 하려면 Exp가 아니라 다른거여야 한다
         public ImmutableArray<ExpInfo> Args { get; }
         
-        public NewClassExp(Type type, IEnumerable<ExpInfo> args)
+        public NewClassExp(Type type, ImmutableArray<ExpInfo> args)
         {
             Type = type;
-            Args = args.ToImmutableArray();
+            Args = args;
         }
     }
 }

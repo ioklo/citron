@@ -13,12 +13,12 @@ namespace Gum.IR0Translator.Test
 {
     static class TestMisc
     {
-        public static T[] Arr<T>(params T[] values)
+        public static ImmutableArray<T> Arr<T>(params T[] values)
         {
-            return values;
+            return values.ToImmutableArray();
         }
 
-        public static R.Script SimpleScript(IEnumerable<R.TypeDecl>? optTypeDecls, IEnumerable<R.FuncDecl>? optFuncDecls, params R.Stmt[] optTopLevelStmts)
+        public static R.Script SimpleRScript(IEnumerable<R.TypeDecl>? optTypeDecls, IEnumerable<R.FuncDecl>? optFuncDecls, params R.Stmt[] optTopLevelStmts)
         {
             ImmutableArray<R.TypeDecl> typeDecls = default;
             if (optTypeDecls != null)
@@ -63,7 +63,7 @@ namespace Gum.IR0Translator.Test
 
         public static S.Script SimpleSScript(params S.Stmt[] stmts)
         {
-            return new S.Script(stmts.Select(stmt => new S.Script.StmtElement(stmt)));
+            return new S.Script(stmts.Select(stmt => (S.ScriptElement)new S.StmtScriptElement(stmt)).ToImmutableArray());
         }
 
         public static S.IntLiteralExp SimpleSInt(int v) => new S.IntLiteralExp(v);

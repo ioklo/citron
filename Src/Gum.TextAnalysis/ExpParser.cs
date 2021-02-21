@@ -119,20 +119,20 @@ namespace Gum
             if (!Accept<LParenToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                 return ParseResult<ImmutableArray<Exp>>.Invalid;
             
-            var args = ImmutableArray.CreateBuilder<Exp>();
+            var builder = ImmutableArray.CreateBuilder<Exp>();
             while (!Accept<RParenToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
             {
-                if (0 < args.Count)
+                if (0 < builder.Count)
                     if (!Accept<CommaToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                         return ParseResult<ImmutableArray<Exp>>.Invalid;
 
                 if (!Parse(await ParseExpAsync(context), ref context, out var arg))
                     return ParseResult<ImmutableArray<Exp>>.Invalid;
 
-                args.Add(arg);
+                builder.Add(arg);
             }
 
-            return new ParseResult<ImmutableArray<Exp>>(args.ToImmutable(), context);
+            return new ParseResult<ImmutableArray<Exp>>(builder.ToImmutable(), context);
         }
 
         // TODO: 현재 Primary중 Postfix Unary만 구현했다.
@@ -342,20 +342,20 @@ namespace Gum
         #region LambdaExpression, Right Assoc
         async ValueTask<ExpParseResult> ParseLambdaExpAsync(ParserContext context)
         {
-            var parameters = ImmutableArray.CreateBuilder<LambdaExpParam>();
+            var paramsBuilder = ImmutableArray.CreateBuilder<LambdaExpParam>();
 
             // (), (a, b)
             // (int a)
             // a            
             if (Accept<IdentifierToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context, out var idToken))
             {
-                parameters.Add(new LambdaExpParam(null, idToken.Value));
+                paramsBuilder.Add(new LambdaExpParam(null, idToken.Value));
             }
             else if (Accept<LParenToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
             {
                 while(!Accept<RParenToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                 {
-                    if (0 < parameters.Count)
+                    if (0 < paramsBuilder.Count)
                         if (!Accept<CommaToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                             return Invalid();
 
@@ -364,9 +364,9 @@ namespace Gum
                         return Invalid();
 
                     if (!Accept<IdentifierToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context, out var secondIdToken))                    
-                        parameters.Add(new LambdaExpParam(null, firstIdToken.Value));
+                        paramsBuilder.Add(new LambdaExpParam(null, firstIdToken.Value));
                     else
-                        parameters.Add(new LambdaExpParam(new IdTypeExp(firstIdToken.Value, default), secondIdToken.Value));
+                        paramsBuilder.Add(new LambdaExpParam(new IdTypeExp(firstIdToken.Value, default), secondIdToken.Value));
                 }
             }
 
@@ -392,7 +392,7 @@ namespace Gum
                 body = new ReturnStmt(expBody);
             }
 
-            return new ExpParseResult(new LambdaExp(parameters.ToImmutable(), body), context);
+            return new ExpParseResult(new LambdaExp(paramsBuilder.ToImmutable(), body), context);
 
             static ExpParseResult Invalid() => ExpParseResult.Invalid;
         }
@@ -454,18 +454,18 @@ namespace Gum
             if (!Accept<DoubleQuoteToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                 return StringExpParseResult.Invalid;
 
-            var elems = ImmutableArray.CreateBuilder<StringExpElement>();
+            var builder = ImmutableArray.CreateBuilder<StringExpElement>();
             while (!Accept<DoubleQuoteToken>(await lexer.LexStringModeAsync(context.LexerContext), ref context))
             {
                 if (Accept<TextToken>(await lexer.LexStringModeAsync(context.LexerContext), ref context, out var textToken))
                 {
-                    elems.Add(new TextStringExpElement(textToken.Text));
+                    builder.Add(new TextStringExpElement(textToken.Text));
                     continue;
                 }
                 
                 if (Accept<IdentifierToken>(await lexer.LexStringModeAsync(context.LexerContext), ref context, out var idToken))
                 {
-                    elems.Add(new ExpStringExpElement(new IdentifierExp(idToken.Value, default)));
+                    builder.Add(new ExpStringExpElement(new IdentifierExp(idToken.Value, default)));
                     continue;
                 }
 
@@ -479,7 +479,7 @@ namespace Gum
                     if (!Accept<RBraceToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                         return StringExpParseResult.Invalid;
 
-                    elems.Add(new ExpStringExpElement(exp));
+                    builder.Add(new ExpStringExpElement(exp));
                     continue;
                 }
 
@@ -487,7 +487,7 @@ namespace Gum
                 return StringExpParseResult.Invalid;
             }
 
-            return new StringExpParseResult(new StringExp(elems.ToImmutable()), context);
+            return new StringExpParseResult(new StringExp(builder.ToImmutable()), context);
         }
 
         public async ValueTask<ExpParseResult> ParseListExpAsync(ParserContext context)
@@ -495,20 +495,20 @@ namespace Gum
             if (!Accept<LBracketToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                 return ExpParseResult.Invalid;
 
-            var elems = ImmutableArray.CreateBuilder<Exp>();
+            var builder = ImmutableArray.CreateBuilder<Exp>();
             while (!Accept<RBracketToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
             {
-                if (0 < elems.Count)
+                if (0 < builder.Count)
                     if (!Accept<CommaToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                         return ExpParseResult.Invalid;
 
                 if (!Parse(await ParseExpAsync(context), ref context, out var elem))
                     return ExpParseResult.Invalid;
 
-                elems.Add(elem);
+                builder.Add(elem);
             }
 
-            return new ExpParseResult(new ListExp(null, elems.ToImmutable()), context);
+            return new ExpParseResult(new ListExp(null, builder.ToImmutable()), context);
         }
 
         async ValueTask<ExpParseResult> ParseIdentifierExpAsync(ParserContext context)

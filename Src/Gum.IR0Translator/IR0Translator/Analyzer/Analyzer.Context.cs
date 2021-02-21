@@ -51,7 +51,7 @@ namespace Gum.IR0Translator
 
                 lambdaCount = 0;
 
-                curFunc = new FuncContext(null, itemValueFactory.MakeInt(), false);
+                curFunc = new FuncContext(null, itemValueFactory.Int, false);
                 bInLoop = false;
                 internalGlobalVarRepo = new InternalGlobalVariableRepository();
                 
@@ -197,11 +197,6 @@ namespace Gum.IR0Translator
                     bInLoop = bPrevInLoop;
                 }
             }            
-            
-            public IEnumerable<LocalVarInfo> GetLocalVarsOutsideLambda()
-            {
-                return curFunc.GetLocalVarsOutsideLambda();
-            }
 
             public void ExecInLambdaScope(TypeValue? lambdaRetTypeValue, Action action)
             {
@@ -302,19 +297,19 @@ namespace Gum.IR0Translator
             }
 
             
-            public IEnumerable<R.TypeDecl> GetTypeDecls()
+            public ImmutableArray<R.TypeDecl> GetTypeDecls()
             {
-                return typeDecls;
+                return typeDecls.ToImmutableArray();
             }
 
-            public IEnumerable<R.FuncDecl> GetFuncDecls()
+            public ImmutableArray<R.FuncDecl> GetFuncDecls()
             {
-                return funcDecls;
+                return funcDecls.ToImmutableArray();
             }
 
-            public IEnumerable<R.Stmt> GetTopLevelStmts()
+            public ImmutableArray<R.Stmt> GetTopLevelStmts()
             {
-                return topLevelStmts;
+                return topLevelStmts.ToImmutableArray();
             }
 
             public void AddSequenceFuncDecl(ItemPath itemPath, R.Type retTypeId, bool bThisCall, ImmutableArray<string> typeParams, ImmutableArray<string> paramNames, R.Stmt body)
@@ -355,7 +350,7 @@ namespace Gum.IR0Translator
                 return internalGlobalVarRepo.HasVariable(name);
             }
 
-            public LambdaTypeValue NewLambdaTypeValue(TypeValue retType, IEnumerable<TypeValue> paramTypes)
+            public LambdaTypeValue NewLambdaTypeValue(TypeValue retType, ImmutableArray<TypeValue> paramTypes)
             {
                 int lambdaId = lambdaCount++;
                 return itemValueFactory.MakeLambdaType(lambdaId, retType, paramTypes);

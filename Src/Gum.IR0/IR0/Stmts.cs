@@ -17,17 +17,11 @@ namespace Gum.IR0
     {
         public ImmutableArray<StringExp> Commands { get; }
 
-        public CommandStmt(IEnumerable<StringExp> commands)
+        public CommandStmt(ImmutableArray<StringExp> commands)
         {
             Debug.Assert(0 < commands.Count());
-            Commands = commands.ToImmutableArray();
-        }
-
-        public CommandStmt(params StringExp[] commands)
-        {
-            Debug.Assert(0 < commands.Length);
-            Commands = ImmutableArray.Create(commands);
-        }
+            Commands = commands;
+        }        
     }
 
     // 글로벌 변수 선언
@@ -38,11 +32,6 @@ namespace Gum.IR0
         public PrivateGlobalVarDeclStmt(ImmutableArray<VarDeclElement> elems)
         {
             Elems = elems;
-        }
-
-        public PrivateGlobalVarDeclStmt(IEnumerable<VarDeclElement> elems)
-        {
-            Elems = elems.ToImmutableArray();
         }
     }   
     
@@ -137,14 +126,9 @@ namespace Gum.IR0
     public class BlockStmt : Stmt
     {
         public ImmutableArray<Stmt> Stmts { get; }
-        public BlockStmt(IEnumerable<Stmt> stmts)
+        public BlockStmt(ImmutableArray<Stmt> stmts)
         {
-            Stmts = stmts.ToImmutableArray();
-        }
-
-        public BlockStmt(params Stmt[] stmts)
-        {
-            Stmts = ImmutableArray.Create(stmts);
+            Stmts = stmts;
         }
     }
 

@@ -35,7 +35,7 @@ namespace Gum.IR0Translator.Test
             S.IdTypeExp intTypeExp = new S.IdTypeExp("int");
 
             var script = new S.Script(
-                new S.Script.StmtElement(new S.VarDeclStmt(new S.VarDecl(
+                new S.StmtScriptElement(new S.VarDeclStmt(new S.VarDecl(
                     intTypeExp, new S.VarDeclElement("x", null)
                 )))
             );
@@ -56,14 +56,14 @@ namespace Gum.IR0Translator.Test
             var typeExp = new S.MemberTypeExp(innerTypeExp, "Y", Array.Empty<S.TypeExp>());
 
             var script = new S.Script(
-                new S.Script.TypeDeclElement(new S.StructDecl(
-                    S.AccessModifier.Public, "X", new[] { "T" }, Array.Empty<S.TypeExp>(), new S.StructDecl.Element[] {
-                        new S.StructDecl.TypeDeclElement(new S.StructDecl(
-                            S.AccessModifier.Public, "Y", Array.Empty<string>(), Array.Empty<S.TypeExp>(), Array.Empty<S.StructDecl.Element>()
+                new S.TypeDeclScriptElement(new S.StructDecl(
+                    S.AccessModifier.Public, "X", new[] { "T" }, Array.Empty<S.TypeExp>(), new S.StructDeclElement[] {
+                        new S.TypeStructDeclElement(new S.StructDecl(
+                            S.AccessModifier.Public, "Y", Array.Empty<string>(), Array.Empty<S.TypeExp>(), Array.Empty<S.StructDeclElement>()
                         ))
                     }
                 )),
-                new S.Script.StmtElement(new S.VarDeclStmt(new S.VarDecl(
+                new S.StmtScriptElement(new S.VarDeclStmt(new S.VarDecl(
                     typeExp, new S.VarDeclElement("x", null)
                 )))
             );

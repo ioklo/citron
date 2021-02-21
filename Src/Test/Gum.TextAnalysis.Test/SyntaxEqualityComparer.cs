@@ -3,18 +3,19 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Gum.Misc;
 using Gum.Syntax;
 
 namespace Gum.TextAnalysis.Test
 {
     class SyntaxEqualityComparer
         : IEqualityComparer<Script>
-        , IEqualityComparer<Script.Element>
+        , IEqualityComparer<ScriptElement>
         , IEqualityComparer<StringExp>
         , IEqualityComparer<EnumDeclElement>
         , IEqualityComparer<TypeAndName>
         , IEqualityComparer<TypeExp>
-        , IEqualityComparer<StructDecl.Element>
+        , IEqualityComparer<StructDeclElement>
         , IEqualityComparer<VarDeclElement>
         , IEqualityComparer<StringExpElement>
         , IEqualityComparer<Stmt>
@@ -29,8 +30,8 @@ namespace Gum.TextAnalysis.Test
         bool IEqualityComparer<Script>.Equals([AllowNull] Script x, [AllowNull] Script y) => EqualsScript(x, y);
         int IEqualityComparer<Script>.GetHashCode([DisallowNull] Script obj) => throw new NotImplementedException();
 
-        bool IEqualityComparer<Script.Element>.Equals([AllowNull] Script.Element x, [AllowNull] Script.Element y) => EqualsScriptElement(x, y);
-        int IEqualityComparer<Script.Element>.GetHashCode([DisallowNull] Script.Element obj) => throw new NotImplementedException();
+        bool IEqualityComparer<ScriptElement>.Equals([AllowNull] ScriptElement x, [AllowNull] ScriptElement y) => EqualsScriptElement(x, y);
+        int IEqualityComparer<ScriptElement>.GetHashCode([DisallowNull] ScriptElement obj) => throw new NotImplementedException();
 
         bool IEqualityComparer<StringExp>.Equals([AllowNull] StringExp x, [AllowNull] StringExp y) => EqualsExp (x, y);
         int IEqualityComparer<StringExp>.GetHashCode([DisallowNull] StringExp obj) => throw new NotImplementedException();
@@ -44,8 +45,8 @@ namespace Gum.TextAnalysis.Test
         bool IEqualityComparer<TypeExp>.Equals([AllowNull] TypeExp x, [AllowNull] TypeExp y) => EqualsTypeExp(x, y);
         int IEqualityComparer<TypeExp>.GetHashCode([DisallowNull] TypeExp obj) => throw new NotImplementedException();
 
-        bool IEqualityComparer<StructDecl.Element>.Equals([AllowNull] StructDecl.Element x, [AllowNull] StructDecl.Element y) => EqualsStructDeclElement(x, y);
-        int IEqualityComparer<StructDecl.Element>.GetHashCode([DisallowNull] StructDecl.Element obj) => throw new NotImplementedException();
+        bool IEqualityComparer<StructDeclElement>.Equals([AllowNull] StructDeclElement x, [AllowNull] StructDeclElement y) => EqualsStructDeclElement(x, y);
+        int IEqualityComparer<StructDeclElement>.GetHashCode([DisallowNull] StructDeclElement obj) => throw new NotImplementedException();
 
         bool IEqualityComparer<VarDeclElement>.Equals([AllowNull] VarDeclElement x, [AllowNull] VarDeclElement y) => EqualsVarDeclElement(x, y);
         int IEqualityComparer<VarDeclElement>.GetHashCode([DisallowNull] VarDeclElement obj) => throw new NotImplementedException();
@@ -76,19 +77,19 @@ namespace Gum.TextAnalysis.Test
             return SequenceEqual(x.Elements, y.Elements, Instance);
         }
 
-        public static bool EqualsScriptElement([AllowNull] Script.Element x, [AllowNull] Script.Element y)
+        public static bool EqualsScriptElement([AllowNull] ScriptElement x, [AllowNull] ScriptElement y)
         {
             switch((x, y))
             {
                 case (null, null): return true;
-                case (Script.GlobalFuncDeclElement funcDeclElemX, Script.GlobalFuncDeclElement funcDeclElemY):
+                case (GlobalFuncDeclScriptElement funcDeclElemX, GlobalFuncDeclScriptElement funcDeclElemY):
                     return EqualsFuncDecl(funcDeclElemX.FuncDecl, funcDeclElemY.FuncDecl);
-                case (Script.StmtElement stmtElementX, Script.StmtElement stmtElementY):
+                case (StmtScriptElement stmtElementX, StmtScriptElement stmtElementY):
                     return EqualsStmt(stmtElementX.Stmt, stmtElementY.Stmt);
-                case (Script.TypeDeclElement typeDeclElementX, Script.TypeDeclElement typeDeclElementY):
+                case (TypeDeclScriptElement typeDeclElementX, TypeDeclScriptElement typeDeclElementY):
                     return EqualsTypeDecl(typeDeclElementX.TypeDecl, typeDeclElementY.TypeDecl);                
                 default:
-                    return false;
+                    throw new UnreachableCodeException();
             }
         }
 
@@ -166,9 +167,8 @@ namespace Gum.TextAnalysis.Test
                 case (YieldStmt yieldStmtX, YieldStmt yieldStmtY):
                     return EqualsExp(yieldStmtX.Value, yieldStmtY.Value);
 
-
                 default:
-                    return false;
+                    throw new UnreachableCodeException();
             }
         }
 
@@ -191,8 +191,8 @@ namespace Gum.TextAnalysis.Test
                         SequenceEqual(structDeclX.BaseTypes, structDeclY.BaseTypes, Instance) &&
                         SequenceEqual(structDeclX.Elems, structDeclY.Elems, Instance);
 
-                default: 
-                    return false;
+                default:
+                    throw new UnreachableCodeException();
             }
         }
 
@@ -228,7 +228,7 @@ namespace Gum.TextAnalysis.Test
                         SequenceEqual(memberTypeExpX.TypeArgs, memberTypeExpY.TypeArgs, Instance);
 
                 default:
-                    return false;
+                    throw new UnreachableCodeException();
             }
         }
 
@@ -247,23 +247,26 @@ namespace Gum.TextAnalysis.Test
                 EqualsStmt(x.Body, y.Body);
         }
 
-        public static bool EqualsStructDeclElement([AllowNull] StructDecl.Element x, [AllowNull] StructDecl.Element y)
+        public static bool EqualsStructDeclElement([AllowNull] StructDeclElement x, [AllowNull] StructDeclElement y)
         {
             switch((x, y))
             {
                 case (null, null):
                     return true;
 
-                case (StructDecl.VarDeclElement varDeclElemX, StructDecl.VarDeclElement varDeclElemY):
+                case (TypeStructDeclElement typeDeclElemX, TypeStructDeclElement typeDeclElemY):
+                    return EqualsTypeDecl(typeDeclElemX.TypeDecl, typeDeclElemY.TypeDecl);
+
+                case (VarStructDeclElement varDeclElemX, VarStructDeclElement varDeclElemY):
                     return varDeclElemX.AccessModifier == varDeclElemY.AccessModifier &&
                         EqualsTypeExp(varDeclElemX.VarType, varDeclElemY.VarType) &&
                         SequenceEqual(varDeclElemX.VarNames, varDeclElemY.VarNames);
 
-                case (StructDecl.FuncDeclElement funcDeclElemX, StructDecl.FuncDeclElement funcDeclElemY):
+                case (FuncStructDeclElement funcDeclElemX, FuncStructDeclElement funcDeclElemY):
                     return EqualsStructFuncDecl(funcDeclElemX.FuncDecl, funcDeclElemY.FuncDecl);
 
                 default:
-                    return false;
+                    throw new UnreachableCodeException();
             }
         }
 
@@ -352,7 +355,7 @@ namespace Gum.TextAnalysis.Test
                         SequenceEqual(newExpX.Args, newExpY.Args, Instance);
 
                 default:
-                    return false;
+                    throw new UnreachableCodeException();
             }
         }
 
@@ -370,7 +373,7 @@ namespace Gum.TextAnalysis.Test
                     return EqualsExp(expStringExpElemX.Exp, expStringExpElemY.Exp);
 
                 default:
-                    return false;
+                    throw new UnreachableCodeException();
             }
         }
 
@@ -394,7 +397,7 @@ namespace Gum.TextAnalysis.Test
                     return EqualsExp(expForStmtInitX.Exp, expForStmtInitY.Exp);                
 
                 default:
-                    return false;
+                    throw new UnreachableCodeException();
             }
         }
 
@@ -403,8 +406,8 @@ namespace Gum.TextAnalysis.Test
 
         static bool SequenceEqual<TElem>(ImmutableArray<TElem> x, ImmutableArray<TElem> y, IEqualityComparer<TElem> comparer)
         {
-            if (x.IsDefault && y.IsDefault) return true;
-            if (x.IsDefault || y.IsDefault) return false;
+            if (x.IsDefaultOrEmpty && y.IsDefaultOrEmpty) return true;
+            if (x.IsDefaultOrEmpty || y.IsDefaultOrEmpty) return false;
 
             return ImmutableArrayExtensions.SequenceEqual(x, y, comparer);
         }

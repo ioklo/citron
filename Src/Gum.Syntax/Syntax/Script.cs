@@ -9,8 +9,8 @@ namespace Gum.Syntax
     // 가장 외곽
     public partial class Script : ISyntaxNode
     {
-        public ImmutableArray<Element> Elements { get; }
-        public Script(ImmutableArray<Element> elements)
+        public ImmutableArray<ScriptElement> Elements { get; }
+        public Script(ImmutableArray<ScriptElement> elements)
         {
             Elements = elements;
         }        

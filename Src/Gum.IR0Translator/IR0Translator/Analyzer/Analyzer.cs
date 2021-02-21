@@ -349,7 +349,7 @@ namespace Gum.IR0Translator
         }
 
         // TODO: Hint를 받을 수 있게 해야 한다
-        ImmutableArray<ExpResult> AnalyzeExps(IEnumerable<S.Exp> exps)
+        ImmutableArray<ExpResult> AnalyzeExps(ImmutableArray<S.Exp> exps)
         {
             var results = new List<ExpResult>();
 

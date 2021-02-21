@@ -204,15 +204,15 @@ namespace Gum.IR0Translator
                 {
                     switch (elem)
                     {
-                        case S.StructDecl.FuncDeclElement funcDeclElem:
+                        case S.FuncStructDeclElement funcDeclElem:
                             VisitFuncDecl(funcDeclElem.FuncDecl);
                             break;
 
-                        case S.StructDecl.TypeDeclElement typeDeclElem:
+                        case S.TypeStructDeclElement typeDeclElem:
                             VisitTypeDecl(typeDeclElem.TypeDecl);
                             break;
 
-                        case S.StructDecl.VarDeclElement varDeclElem:
+                        case S.VarStructDeclElement varDeclElem:
                             VisitStructVarDeclElement(varDeclElem);
                             break;
                     }
@@ -256,7 +256,7 @@ namespace Gum.IR0Translator
                 typeBuilder.AddFuncInfo(funcInfo);
         }
 
-        void VisitStructVarDeclElement(S.StructDecl.VarDeclElement varDeclElem)
+        void VisitStructVarDeclElement(S.VarStructDeclElement varDeclElem)
         {
             Debug.Assert(typeBuilder != null);
 

@@ -89,7 +89,7 @@ namespace Gum.IR0Translator
                 {
                     switch (elem)
                     {
-                        case S.StructDecl.TypeDeclElement typeElem:
+                        case S.TypeStructDeclElement typeElem:
                             VisitTypeDecl(typeElem.TypeDecl);
                             break;
                     }
@@ -111,7 +111,7 @@ namespace Gum.IR0Translator
         {
             foreach (var scriptElem in script.Elements)
             {
-                if (scriptElem is S.Script.TypeDeclElement typeDeclElem)
+                if (scriptElem is S.TypeDeclScriptElement typeDeclElem)
                     VisitTypeDecl(typeDeclElem.TypeDecl);
             }
         }

@@ -59,10 +59,10 @@ namespace Gum.IR0Translator.Test
         [Fact]
         public void VarDeclStmt_TranslatesIntoPrivateGlobalVarDecl()
         {
-            var syntaxScript = new S.Script(new S.Script.StmtElement(SimpleSVarDeclStmt(IntTypeExp, "x", SimpleSInt(1))));
+            var syntaxScript = new S.Script(new S.StmtScriptElement(SimpleSVarDeclStmt(IntTypeExp, "x", SimpleSInt(1))));
             var script = Translate(syntaxScript);
 
-            var expected = SimpleScript(null, null, 
+            var expected = SimpleRScript(null, null, 
                 SimpleGlobalVarDeclStmt(Type.Int, "x", SimpleInt(1))
             );
 
@@ -72,14 +72,14 @@ namespace Gum.IR0Translator.Test
         [Fact]
         public void VarDeclStmt_TranslatesIntoLocalVarDeclInTopLevelScope()
         {
-            var syntaxScript = new S.Script(new S.Script.StmtElement(
+            var syntaxScript = new S.Script(new S.StmtScriptElement(
                 new S.BlockStmt(
                     SimpleSVarDeclStmt(IntTypeExp, "x", SimpleSInt(1))
                 )
             ));
             var script = Translate(syntaxScript);
 
-            var expected = SimpleScript(null, null, 
+            var expected = SimpleRScript(null, null, 
                 new BlockStmt(
                     new LocalVarDeclStmt(new LocalVarDecl(Arr(new VarDeclElement("x", Type.Int, SimpleInt(1)))))
                 )
@@ -92,7 +92,7 @@ namespace Gum.IR0Translator.Test
         public void VarDeclStmt_TranslatesIntoLocalVarDeclInFuncScope()
         {
             var syntaxScript = new S.Script(
-                new S.Script.GlobalFuncDeclElement(new S.GlobalFuncDecl(false, VoidTypeExp, "Func", Array.Empty<string>(), new S.FuncParamInfo(Array.Empty<S.TypeAndName>(), null),
+                new S.GlobalFuncDeclScriptElement(new S.GlobalFuncDecl(false, VoidTypeExp, "Func", Array.Empty<string>(), new S.FuncParamInfo(Array.Empty<S.TypeAndName>(), null),
                     new S.BlockStmt(
                         SimpleSVarDeclStmt(IntTypeExp, "x", SimpleSInt(1))
                     )
@@ -107,7 +107,7 @@ namespace Gum.IR0Translator.Test
 
             ));
 
-            var expected = SimpleScript(null, Arr(funcDecl));
+            var expected = SimpleRScript(null, Arr(funcDecl));
 
             Assert.Equal(expected, script, IR0EqualityComparer.Instance);
         }
@@ -121,7 +121,7 @@ namespace Gum.IR0Translator.Test
 
             var script = Translate(syntaxScript);
 
-            var expected = SimpleScript(null, null, 
+            var expected = SimpleRScript(null, null, 
                 SimpleGlobalVarDeclStmt(Type.Int, "x", SimpleInt(3))            
             );
 
@@ -190,7 +190,7 @@ namespace Gum.IR0Translator.Test
         [Fact]
         public void IfStmt_TranslatesTrivially()
         {
-            var syntaxScript = new S.Script(new S.Script.StmtElement(
+            var syntaxScript = new S.Script(new S.StmtScriptElement(
 
                 new S.IfStmt(new S.BoolLiteralExp(false), null, S.BlankStmt.Instance, S.BlankStmt.Instance)
                 
@@ -198,7 +198,7 @@ namespace Gum.IR0Translator.Test
 
             var script = Translate(syntaxScript);
 
-            var expected = SimpleScript(null, null,
+            var expected = SimpleRScript(null, null,
 
                 new IfStmt(new BoolLiteralExp(false), BlankStmt.Instance, BlankStmt.Instance)
 
@@ -212,7 +212,7 @@ namespace Gum.IR0Translator.Test
         {
             S.Exp cond;
 
-            var syntaxScript = new S.Script(new S.Script.StmtElement(
+            var syntaxScript = new S.Script(new S.StmtScriptElement(
 
                 new S.IfStmt(cond = SimpleSInt(3), null, S.BlankStmt.Instance, S.BlankStmt.Instance)
 
@@ -241,14 +241,14 @@ namespace Gum.IR0Translator.Test
         {
             var syntaxScript = new S.Script(
                 
-                new S.Script.StmtElement(new S.ForStmt(
+                new S.StmtScriptElement(new S.ForStmt(
                     new S.VarDeclForStmtInitializer(SimpleSVarDecl(IntTypeExp, "x")),
                     null, null, S.BlankStmt.Instance
                 )),
 
-                new S.Script.StmtElement(SimpleSVarDeclStmt(StringTypeExp, "x")),
+                new S.StmtScriptElement(SimpleSVarDeclStmt(StringTypeExp, "x")),
 
-                new S.Script.StmtElement(new S.ForStmt(
+                new S.StmtScriptElement(new S.ForStmt(
                     new S.ExpForStmtInitializer(new S.BinaryOpExp(S.BinaryOpKind.Assign, SimpleSId("x"), SimpleSString("Hello"))),
                     null, null, S.BlankStmt.Instance
                 ))
@@ -256,7 +256,7 @@ namespace Gum.IR0Translator.Test
 
             var script = Translate(syntaxScript);
 
-            var expected = SimpleScript(null, null, 
+            var expected = SimpleRScript(null, null, 
 
                 new ForStmt(
                     new VarDeclForStmtInitializer(SimpleLocalVarDecl(Type.Int, "x")),
@@ -280,20 +280,20 @@ namespace Gum.IR0Translator.Test
         {
             var syntaxScript = new S.Script(
 
-                new S.Script.StmtElement(SimpleSVarDeclStmt(StringTypeExp, "x")),
+                new S.StmtScriptElement(SimpleSVarDeclStmt(StringTypeExp, "x")),
 
-                new S.Script.StmtElement(new S.ForStmt(
+                new S.StmtScriptElement(new S.ForStmt(
                     new S.VarDeclForStmtInitializer(SimpleSVarDecl(IntTypeExp, "x")), // x의 범위는 ForStmt내부에서
                     new S.BinaryOpExp(S.BinaryOpKind.Equal, SimpleSId("x"), SimpleSInt(3)),
                     null, S.BlankStmt.Instance
                 )),
 
-                new S.Script.StmtElement(new S.ExpStmt(new S.BinaryOpExp(S.BinaryOpKind.Assign, SimpleSId("x"), SimpleSString("Hello"))))
+                new S.StmtScriptElement(new S.ExpStmt(new S.BinaryOpExp(S.BinaryOpKind.Assign, SimpleSId("x"), SimpleSString("Hello"))))
             );
 
             var script = Translate(syntaxScript);
 
-            var expected = SimpleScript(null, null, 
+            var expected = SimpleRScript(null, null, 
 
                 SimpleGlobalVarDeclStmt(Type.String, "x", null),
 
@@ -322,7 +322,7 @@ namespace Gum.IR0Translator.Test
             S.Exp cond;
 
             var syntaxScript = new S.Script(
-                new S.Script.StmtElement(new S.ForStmt(
+                new S.StmtScriptElement(new S.ForStmt(
                     new S.VarDeclForStmtInitializer(SimpleSVarDecl(IntTypeExp, "x")),
                     cond = SimpleSInt(3),
                     null, S.BlankStmt.Instance
@@ -340,7 +340,7 @@ namespace Gum.IR0Translator.Test
             S.Exp exp;
 
             var syntaxScript = new S.Script(
-                new S.Script.StmtElement(new S.ForStmt(
+                new S.StmtScriptElement(new S.ForStmt(
                     new S.ExpForStmtInitializer(exp = SimpleSInt(3)), // error
                     null, null, S.BlankStmt.Instance
                 ))
@@ -358,7 +358,7 @@ namespace Gum.IR0Translator.Test
 
             var syntaxScript = new S.Script(
 
-                new S.Script.StmtElement(new S.ForStmt(
+                new S.StmtScriptElement(new S.ForStmt(
                     null,
                     null,
                     continueExp = SimpleSInt(3), 
@@ -382,7 +382,7 @@ namespace Gum.IR0Translator.Test
 
             var script = Translate(syntaxScript);
 
-            var expected = SimpleScript(null, null, 
+            var expected = SimpleRScript(null, null, 
                 new ForStmt(null, null, null, ContinueStmt.Instance),
                 new ForeachStmt(Type.Int, "x", new ExpInfo(new ListExp(Type.Int, Array.Empty<Exp>()), Type.List(Type.Int)), ContinueStmt.Instance)
             );
@@ -411,7 +411,7 @@ namespace Gum.IR0Translator.Test
 
             var script = Translate(syntaxScript);
 
-            var expected = SimpleScript(null, null, 
+            var expected = SimpleRScript(null, null, 
                 new ForStmt(null, null, null, BreakStmt.Instance),
                 new ForeachStmt(Type.Int, "x", new ExpInfo(new ListExp(Type.Int, Array.Empty<Exp>()), Type.List(Type.Int)), BreakStmt.Instance)
             );
@@ -436,7 +436,7 @@ namespace Gum.IR0Translator.Test
             var syntaxScript = SimpleSScript(new S.ReturnStmt(SimpleSInt(2)));
 
             var script = Translate(syntaxScript);
-            var expected = SimpleScript(null, null, new ReturnStmt(SimpleInt(2)));
+            var expected = SimpleRScript(null, null, new ReturnStmt(SimpleInt(2)));
 
             Assert.Equal(expected, script, IR0EqualityComparer.Instance);
         }
@@ -444,7 +444,7 @@ namespace Gum.IR0Translator.Test
         [Fact]
         public void ReturnStmt_TranslatesReturnStmtInSeqFuncTrivially()
         {
-            var syntaxScript = new S.Script(new S.Script.GlobalFuncDeclElement(new S.GlobalFuncDecl(
+            var syntaxScript = new S.Script(new S.GlobalFuncDeclScriptElement(new S.GlobalFuncDecl(
                 true, IntTypeExp, "Func", Array.Empty<string>(), new S.FuncParamInfo(Array.Empty<S.TypeAndName>(), null),
                 new S.BlockStmt(
                     new S.ReturnStmt(null)
@@ -455,7 +455,7 @@ namespace Gum.IR0Translator.Test
 
             var seqFunc = new FuncDecl.Sequence(new FuncDeclId(0), Type.Int, false, Array.Empty<string>(), Array.Empty<string>(), new BlockStmt(new ReturnStmt(null)));
 
-            var expected = SimpleScript(null, new[] { seqFunc });
+            var expected = SimpleRScript(null, new[] { seqFunc });
 
             Assert.Equal(expected, script, IR0EqualityComparer.Instance);
         }
@@ -469,7 +469,7 @@ namespace Gum.IR0Translator.Test
                 new S.ReturnStmt(retValue = SimpleSString("Hello"))
             ));
 
-            var syntaxScript = new S.Script(new S.Script.GlobalFuncDeclElement(funcDecl));
+            var syntaxScript = new S.Script(new S.GlobalFuncDeclScriptElement(funcDecl));
             var errors = TranslateWithErrors(syntaxScript);
 
             VerifyError(errors, A1201_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType, retValue);
@@ -484,7 +484,7 @@ namespace Gum.IR0Translator.Test
                 retStmt = new S.ReturnStmt(null)
             ));
 
-            var syntaxScript = new S.Script(new S.Script.GlobalFuncDeclElement(funcDecl));
+            var syntaxScript = new S.Script(new S.GlobalFuncDeclScriptElement(funcDecl));
             var errors = TranslateWithErrors(syntaxScript);
 
             VerifyError(errors, A1201_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType, retStmt);
@@ -499,7 +499,7 @@ namespace Gum.IR0Translator.Test
                 retStmt = new S.ReturnStmt(SimpleSInt(2))
             ));
 
-            var syntaxScript = new S.Script(new S.Script.GlobalFuncDeclElement(funcDecl));
+            var syntaxScript = new S.Script(new S.GlobalFuncDeclScriptElement(funcDecl));
             var errors = TranslateWithErrors(syntaxScript);
 
             VerifyError(errors, A1202_ReturnStmt_SeqFuncShouldReturnVoid, retStmt);
@@ -532,7 +532,7 @@ namespace Gum.IR0Translator.Test
 
             var script = Translate(syntaxScript);
 
-            var expected = SimpleScript(null, null, 
+            var expected = SimpleRScript(null, null, 
                 new BlockStmt(
                     SimpleLocalVarDeclStmt(Type.String, "x", SimpleString("Hello")) // not PrivateGlobalVarDecl
                 )
@@ -575,7 +575,7 @@ namespace Gum.IR0Translator.Test
 
             var script = Translate(syntaxScript);
 
-            var expected = SimpleScript(null, null, 
+            var expected = SimpleRScript(null, null, 
                 SimpleGlobalVarDeclStmt(Type.Int, "x", null),
                 new ExpStmt(new ExpInfo(new AssignExp(new GlobalVarExp("x"), SimpleInt(3)), Type.Int))
             );
@@ -610,7 +610,7 @@ namespace Gum.IR0Translator.Test
 
             var script = Translate(syntaxScript);
 
-            var expected = SimpleScript(null, null, 
+            var expected = SimpleRScript(null, null, 
                 SimpleGlobalVarDeclStmt(Type.Int, "x", null),
                 new TaskStmt(
                     new ExpStmt(new ExpInfo(new AssignExp(new GlobalVarExp("x"), SimpleInt(3)), Type.Int)),
@@ -655,7 +655,7 @@ namespace Gum.IR0Translator.Test
 
             var script = Translate(syntaxScript);
 
-            var expected = SimpleScript(null, null, 
+            var expected = SimpleRScript(null, null, 
                 new BlockStmt(
                     SimpleLocalVarDeclStmt(Type.Int, "x"),
                     new TaskStmt(
@@ -679,7 +679,7 @@ namespace Gum.IR0Translator.Test
 
             var script = Translate(syntaxScript);
 
-            var expected = SimpleScript(null, null, new AwaitStmt(BlankStmt.Instance));
+            var expected = SimpleRScript(null, null, new AwaitStmt(BlankStmt.Instance));
 
             Assert.Equal(expected, script, IR0EqualityComparer.Instance);
         }
@@ -716,7 +716,7 @@ namespace Gum.IR0Translator.Test
 
             var script = Translate(syntaxScript);
 
-            var expected = SimpleScript(null, null, 
+            var expected = SimpleRScript(null, null, 
                 SimpleGlobalVarDeclStmt(Type.Int, "x", null),
                 new AsyncStmt(
                     new ExpStmt(new ExpInfo(new AssignExp(new GlobalVarExp("x"), SimpleInt(3)), Type.Int)),
@@ -761,7 +761,7 @@ namespace Gum.IR0Translator.Test
 
             var script = Translate(syntaxScript);
 
-            var expected = SimpleScript(null, null, 
+            var expected = SimpleRScript(null, null, 
                 new BlockStmt(
                     SimpleLocalVarDeclStmt(Type.Int, "x"),
                     new AsyncStmt(
@@ -781,7 +781,7 @@ namespace Gum.IR0Translator.Test
 
             var script = Translate(scriptSyntax);
 
-            var expected = SimpleScript(null, null, new ForeachStmt(Type.Int, "x",
+            var expected = SimpleRScript(null, null, new ForeachStmt(Type.Int, "x",
                 new ExpInfo(new ListExp(Type.Int, Array.Empty<Exp>()),
                 Type.List(Type.Int)), BlankStmt.Instance
             ));
@@ -822,7 +822,7 @@ namespace Gum.IR0Translator.Test
         public void YieldStmt_TranslatesTrivially()
         {
             var syntaxScript = new S.Script(
-                new S.Script.GlobalFuncDeclElement(new S.GlobalFuncDecl(
+                new S.GlobalFuncDeclScriptElement(new S.GlobalFuncDecl(
                     true, IntTypeExp, "Func", Array.Empty<string>(), new S.FuncParamInfo(Array.Empty<S.TypeAndName>(), null),
                     new S.BlockStmt(
                         new S.YieldStmt(SimpleSInt(3))
@@ -836,7 +836,7 @@ namespace Gum.IR0Translator.Test
                 new YieldStmt(SimpleInt(3))
             ));
 
-            var expected = SimpleScript(null, new[] { seqFunc });
+            var expected = SimpleRScript(null, new[] { seqFunc });
 
             Assert.Equal(expected, script, IR0EqualityComparer.Instance);
         }
@@ -847,7 +847,7 @@ namespace Gum.IR0Translator.Test
             S.YieldStmt yieldStmt;
 
             var syntaxScript = new S.Script(
-                new S.Script.GlobalFuncDeclElement(new S.GlobalFuncDecl(
+                new S.GlobalFuncDeclScriptElement(new S.GlobalFuncDecl(
                     false, IntTypeExp, "Func", Array.Empty<string>(), new S.FuncParamInfo(Array.Empty<S.TypeAndName>(), null),
                     new S.BlockStmt(
                         yieldStmt = new S.YieldStmt(SimpleSInt(3))
@@ -866,7 +866,7 @@ namespace Gum.IR0Translator.Test
             S.Exp yieldValue;
 
             var syntaxScript = new S.Script(
-                new S.Script.GlobalFuncDeclElement(new S.GlobalFuncDecl(
+                new S.GlobalFuncDeclScriptElement(new S.GlobalFuncDecl(
                     true, StringTypeExp, "Func", Array.Empty<string>(), new S.FuncParamInfo(Array.Empty<S.TypeAndName>(), null),
                     new S.BlockStmt(
                         new S.YieldStmt(yieldValue = SimpleSInt(3))
@@ -901,7 +901,7 @@ namespace Gum.IR0Translator.Test
             );
 
             var script = Translate(syntaxScript);
-            var expected = SimpleScript(null, null,
+            var expected = SimpleRScript(null, null,
                 SimpleGlobalVarDeclStmt(Type.Int, "x", SimpleInt(3)),
                 SimpleGlobalVarDeclStmt(Type.Int, "y", new GlobalVarExp("x"))
             );
@@ -924,7 +924,7 @@ namespace Gum.IR0Translator.Test
             ));
 
             var script = Translate(syntaxScript);
-            var expected = SimpleScript(null, null, new BlockStmt(
+            var expected = SimpleRScript(null, null, new BlockStmt(
                 SimpleLocalVarDeclStmt(Type.Int, "x", SimpleInt(3)),
                 SimpleLocalVarDeclStmt(Type.Int, "y", new LocalVarExp("x"))
             ));
@@ -976,7 +976,7 @@ namespace Gum.IR0Translator.Test
                 SimpleSVarDeclStmt(BoolTypeExp, "b2", new S.BoolLiteralExp(true)));
 
             var script = Translate(syntaxScript);
-            var expected = SimpleScript(null, null, 
+            var expected = SimpleRScript(null, null, 
                 SimpleGlobalVarDeclStmt(Type.Bool, "b1", new BoolLiteralExp(false)),
                 SimpleGlobalVarDeclStmt(Type.Bool, "b2", new BoolLiteralExp(true))                    
             );
@@ -991,7 +991,7 @@ namespace Gum.IR0Translator.Test
                 SimpleSVarDeclStmt(IntTypeExp, "i", new S.IntLiteralExp(34)));                
 
             var script = Translate(syntaxScript);
-            var expected = SimpleScript(null, null, 
+            var expected = SimpleRScript(null, null, 
                 SimpleGlobalVarDeclStmt(Type.Int, "i", new IntLiteralExp(34))
             );
 
@@ -1005,7 +1005,7 @@ namespace Gum.IR0Translator.Test
                 SimpleSVarDeclStmt(StringTypeExp, "s", SimpleSString("Hello")));
 
             var script = Translate(syntaxScript);
-            var expected = SimpleScript(null, null, 
+            var expected = SimpleRScript(null, null, 
                 SimpleGlobalVarDeclStmt(Type.String, "s", SimpleString("Hello"))
             );
 
@@ -1022,7 +1022,7 @@ namespace Gum.IR0Translator.Test
 
             var script = Translate(syntaxScript, true);
 
-            var expected = SimpleScript(null, null, 
+            var expected = SimpleRScript(null, null, 
 
                 SimpleGlobalVarDeclStmt(Type.String, "s1", new StringExp(new ExpStringExpElement(
                     new CallInternalUnaryOperatorExp(InternalUnaryOperator.ToString_Int_String, new ExpInfo(SimpleInt(3), Type.Int))
@@ -1067,7 +1067,7 @@ namespace Gum.IR0Translator.Test
 
             var script = Translate(syntaxScript);
 
-            var expected = SimpleScript(null, null,
+            var expected = SimpleRScript(null, null,
                 SimpleGlobalVarDeclStmt(Type.Bool, "x1", new CallInternalUnaryOperatorExp(InternalUnaryOperator.LogicalNot_Bool_Bool, new ExpInfo(SimpleBool(false), Type.Bool))),
                 SimpleGlobalVarDeclStmt(Type.Int, "x2", new CallInternalUnaryOperatorExp(InternalUnaryOperator.UnaryMinus_Int_Int, new ExpInfo(SimpleInt(3), Type.Int))),
                 SimpleGlobalVarDeclStmt(Type.Int, "x3", new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PrefixInc_Int_Int, new GlobalVarExp("x2"))),
@@ -1137,7 +1137,7 @@ namespace Gum.IR0Translator.Test
             );
 
             var script = Translate(syntaxScript);
-            var expected = SimpleScript(null, null,
+            var expected = SimpleRScript(null, null,
                 SimpleGlobalVarDeclStmt(Type.Int, "x"),
                 new ExpStmt(new ExpInfo(new AssignExp(new GlobalVarExp("x"), SimpleInt(3)), Type.Int))
             );
@@ -1226,7 +1226,7 @@ namespace Gum.IR0Translator.Test
             );
 
             var script = Translate(syntaxScript);
-            var expected = SimpleScript(null, null,
+            var expected = SimpleRScript(null, null,
                 SimpleGlobalVarDeclStmt(resultType, "x", new CallInternalBinaryOperatorExp(ir0BinOp,
                     newOperandInfo.Invoke(),
                     newOperandInfo.Invoke()
@@ -1262,7 +1262,7 @@ namespace Gum.IR0Translator.Test
             );
 
             var script = Translate(syntaxScript);
-            var expected = SimpleScript(null, null,
+            var expected = SimpleRScript(null, null,
                 SimpleGlobalVarDeclStmt(Type.Bool, "x", 
                     new CallInternalUnaryOperatorExp(InternalUnaryOperator.LogicalNot_Bool_Bool, new ExpInfo(
                         new CallInternalBinaryOperatorExp(ir0BinOperator, newOperandInfo.Invoke(), newOperandInfo.Invoke()),
@@ -1284,20 +1284,20 @@ namespace Gum.IR0Translator.Test
         void CallExp_TranslatesIntoCallFuncExp()
         {
             var syntaxScript = new S.Script(
-                new S.Script.GlobalFuncDeclElement(new S.GlobalFuncDecl(
+                new S.GlobalFuncDeclScriptElement(new S.GlobalFuncDecl(
                     false, IntTypeExp, "Func", Arr("T"), 
                     new S.FuncParamInfo(Arr(new S.TypeAndName(IntTypeExp, "x")), null),
                     new S.BlockStmt(new S.ReturnStmt(SimpleSId("x")))
                 )),
 
-                new S.Script.StmtElement(
+                new S.StmtScriptElement(
                     new S.ExpStmt(new S.CallExp(SimpleSId("Func"), Arr( IntTypeExp ), SimpleSInt(3)))
                 )
             );
 
             var script = Translate(syntaxScript);
 
-            var expected = SimpleScript(null,
+            var expected = SimpleRScript(null,
                 Arr(
                     new FuncDecl.Normal(
                         new FuncDeclId(0), false, Arr("T"), Arr("x"), new BlockStmt(new ReturnStmt(new LocalVarExp("x")))
@@ -1313,20 +1313,20 @@ namespace Gum.IR0Translator.Test
         void CallExp_TranslatesIntoCallFuncExpWithoutTypeArgument()
         {
             var syntaxScript = new S.Script(
-                new S.Script.GlobalFuncDeclElement(new S.GlobalFuncDecl(
+                new S.GlobalFuncDeclScriptElement(new S.GlobalFuncDecl(
                     false, IntTypeExp, "Func", Arr<string>(),
                     new S.FuncParamInfo(Arr(new S.TypeAndName(IntTypeExp, "x")), null),
                     new S.BlockStmt(new S.ReturnStmt(SimpleSId("x")))
                 )),
 
-                new S.Script.StmtElement(
+                new S.StmtScriptElement(
                     new S.ExpStmt(new S.CallExp(SimpleSId("Func"), Arr<S.TypeExp>(), SimpleSInt(3)))
                 )
             );
 
             var script = Translate(syntaxScript);
 
-            var expected = SimpleScript(null,
+            var expected = SimpleRScript(null,
                 Arr(
                     new FuncDecl.Normal(
                         new FuncDeclId(0), false, Arr<string>(), Arr("x"), new BlockStmt(new ReturnStmt(new LocalVarExp("x")))

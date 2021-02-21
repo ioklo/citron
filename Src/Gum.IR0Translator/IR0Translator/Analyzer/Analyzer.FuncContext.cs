@@ -158,12 +158,7 @@ namespace Gum.IR0Translator
                     localVarsByName.Pop();
                 }
             }
-
-            public IEnumerable<LocalVarInfo> GetLocalVarsOutsideLambda()
-            {
-                return localVarsOutsideLambda.Select(kv => kv.Value);
-            }
-
+            
             public bool IsLocalVarOutsideLambda(string name)
             {
                 if (localVarsByName.ContainsKey(name))

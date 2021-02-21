@@ -10,8 +10,6 @@ namespace Gum.TextAnalysis.Test
 {
     static class TestMisc
     {
-        public static ImmutableArray<T> Arr<T>(params T[] elems) => ImmutableArray.Create(elems);
-
         public static StringExp SimpleSStringExp(string value)
             => new StringExp(Arr<StringExpElement>(new TextStringExpElement(value)));
 
@@ -24,7 +22,7 @@ namespace Gum.TextAnalysis.Test
         public static BlockStmt SimpleSBlockStmt(params Stmt[] stmts)
             => new BlockStmt(stmts.ToImmutableArray());
 
-        public static Script SimpleSScript(params Script.Element[] elems)
+        public static Script SimpleSScript(params ScriptElement[] elems)
             => new Script(elems.ToImmutableArray());
 
         public static VarDeclStmt SimpleSVarDeclStmt(TypeExp typeExp, params VarDeclElement[] elems)

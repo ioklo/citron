@@ -3,6 +3,7 @@
 using S = Gum.Syntax;
 using R = Gum.IR0;
 using System.Linq;
+using System.Collections.Immutable;
 
 namespace Gum.IR0Translator
 {
@@ -30,51 +31,45 @@ namespace Gum.IR0Translator
 
         struct InternalBinaryOperatorQueryService
         {
-            Dictionary<S.BinaryOpKind, InternalBinaryOperatorInfo[]> infos;
+            Dictionary<S.BinaryOpKind, ImmutableArray<InternalBinaryOperatorInfo>> infos;
 
             public InternalBinaryOperatorQueryService(ItemValueFactory itemValueFactory)
             {
-                infos = new Dictionary<S.BinaryOpKind, InternalBinaryOperatorInfo[]>();
+                infos = new Dictionary<S.BinaryOpKind, ImmutableArray<InternalBinaryOperatorInfo>>();
 
                 var boolType = itemValueFactory.Bool;
                 var intType = itemValueFactory.Int;
                 var stringType = itemValueFactory.String;
 
-                infos = new Dictionary<S.BinaryOpKind, InternalBinaryOperatorInfo[]>()
+                infos = new Dictionary<S.BinaryOpKind, ImmutableArray<InternalBinaryOperatorInfo>>()
                 {
-                    { S.BinaryOpKind.Multiply, new[]{ new InternalBinaryOperatorInfo(intType, intType, intType, R.InternalBinaryOperator.Multiply_Int_Int_Int) } },
-                    { S.BinaryOpKind.Divide, new[]{ new InternalBinaryOperatorInfo(intType, intType, intType, R.InternalBinaryOperator.Divide_Int_Int_Int) } },
-                    { S.BinaryOpKind.Modulo, new[]{ new InternalBinaryOperatorInfo(intType, intType, intType, R.InternalBinaryOperator.Modulo_Int_Int_Int) } },
-                    { S.BinaryOpKind.Add,  new[]{
-                        new InternalBinaryOperatorInfo(intType, intType, intType, R.InternalBinaryOperator.Add_Int_Int_Int),
-                        new InternalBinaryOperatorInfo(stringType, stringType, stringType, R.InternalBinaryOperator.Add_String_String_String) } },
+                    { S.BinaryOpKind.Multiply, Arr(new InternalBinaryOperatorInfo(intType, intType, intType, R.InternalBinaryOperator.Multiply_Int_Int_Int) ) },
+                    { S.BinaryOpKind.Divide, Arr(new InternalBinaryOperatorInfo(intType, intType, intType, R.InternalBinaryOperator.Divide_Int_Int_Int) ) },
+                    { S.BinaryOpKind.Modulo, Arr(new InternalBinaryOperatorInfo(intType, intType, intType, R.InternalBinaryOperator.Modulo_Int_Int_Int) ) },
+                    { S.BinaryOpKind.Add,  Arr(new InternalBinaryOperatorInfo(intType, intType, intType, R.InternalBinaryOperator.Add_Int_Int_Int),
+                        new InternalBinaryOperatorInfo(stringType, stringType, stringType, R.InternalBinaryOperator.Add_String_String_String) ) },
 
-                    { S.BinaryOpKind.Subtract, new[]{ new InternalBinaryOperatorInfo(intType, intType, intType, R.InternalBinaryOperator.Subtract_Int_Int_Int) } },
+                    { S.BinaryOpKind.Subtract, Arr(new InternalBinaryOperatorInfo(intType, intType, intType, R.InternalBinaryOperator.Subtract_Int_Int_Int) ) },
 
-                    { S.BinaryOpKind.LessThan, new[]{
-                        new InternalBinaryOperatorInfo(intType, intType, boolType, R.InternalBinaryOperator.LessThan_Int_Int_Bool),
-                        new InternalBinaryOperatorInfo(stringType, stringType, boolType, R.InternalBinaryOperator.LessThan_String_String_Bool) } },
+                    { S.BinaryOpKind.LessThan, Arr(new InternalBinaryOperatorInfo(intType, intType, boolType, R.InternalBinaryOperator.LessThan_Int_Int_Bool),
+                        new InternalBinaryOperatorInfo(stringType, stringType, boolType, R.InternalBinaryOperator.LessThan_String_String_Bool) ) },
 
-                    { S.BinaryOpKind.GreaterThan, new[]{
-                        new InternalBinaryOperatorInfo(intType, intType, boolType, R.InternalBinaryOperator.GreaterThan_Int_Int_Bool),
-                        new InternalBinaryOperatorInfo(stringType, stringType, boolType, R.InternalBinaryOperator.GreaterThan_String_String_Bool) } },
+                    { S.BinaryOpKind.GreaterThan, Arr(new InternalBinaryOperatorInfo(intType, intType, boolType, R.InternalBinaryOperator.GreaterThan_Int_Int_Bool),
+                        new InternalBinaryOperatorInfo(stringType, stringType, boolType, R.InternalBinaryOperator.GreaterThan_String_String_Bool) ) },
 
-                    { S.BinaryOpKind.LessThanOrEqual, new[]{
-                        new InternalBinaryOperatorInfo(intType, intType, boolType, R.InternalBinaryOperator.LessThanOrEqual_Int_Int_Bool),
-                        new InternalBinaryOperatorInfo(stringType, stringType, boolType, R.InternalBinaryOperator.LessThanOrEqual_String_String_Bool) } },
+                    { S.BinaryOpKind.LessThanOrEqual, Arr(new InternalBinaryOperatorInfo(intType, intType, boolType, R.InternalBinaryOperator.LessThanOrEqual_Int_Int_Bool),
+                        new InternalBinaryOperatorInfo(stringType, stringType, boolType, R.InternalBinaryOperator.LessThanOrEqual_String_String_Bool) ) },
 
-                    { S.BinaryOpKind.GreaterThanOrEqual, new[]{
-                        new InternalBinaryOperatorInfo(intType, intType, boolType, R.InternalBinaryOperator.GreaterThanOrEqual_Int_Int_Bool),
-                        new InternalBinaryOperatorInfo(stringType, stringType, boolType, R.InternalBinaryOperator.GreaterThanOrEqual_String_String_Bool) } },
+                    { S.BinaryOpKind.GreaterThanOrEqual, Arr(new InternalBinaryOperatorInfo(intType, intType, boolType, R.InternalBinaryOperator.GreaterThanOrEqual_Int_Int_Bool),
+                        new InternalBinaryOperatorInfo(stringType, stringType, boolType, R.InternalBinaryOperator.GreaterThanOrEqual_String_String_Bool) ) },
 
-                    { S.BinaryOpKind.Equal, new[]{
-                        new InternalBinaryOperatorInfo(intType, intType, boolType, R.InternalBinaryOperator.Equal_Int_Int_Bool),
+                    { S.BinaryOpKind.Equal, Arr(new InternalBinaryOperatorInfo(intType, intType, boolType, R.InternalBinaryOperator.Equal_Int_Int_Bool),
                         new InternalBinaryOperatorInfo(boolType, boolType, boolType, R.InternalBinaryOperator.Equal_Bool_Bool_Bool),
-                        new InternalBinaryOperatorInfo(stringType, stringType, boolType, R.InternalBinaryOperator.Equal_String_String_Bool) } },
+                        new InternalBinaryOperatorInfo(stringType, stringType, boolType, R.InternalBinaryOperator.Equal_String_String_Bool) ) },
                 };
             }
 
-            public IEnumerable<InternalBinaryOperatorInfo> GetInfos(S.BinaryOpKind kind)
+            public ImmutableArray<InternalBinaryOperatorInfo> GetInfos(S.BinaryOpKind kind)
             {
                 if (infos.TryGetValue(kind, out var result))
                     return result;

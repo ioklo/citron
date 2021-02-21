@@ -133,15 +133,15 @@ namespace Gum.IR0Translator
             {
                 switch(elem)
                 {
-                    case S.Script.GlobalFuncDeclElement globalFuncDeclElem:
+                    case S.GlobalFuncDeclScriptElement globalFuncDeclElem:
                         visitor.VisitGlobalFuncDecl(globalFuncDeclElem.FuncDecl);
                         break;
 
-                    case S.Script.StmtElement stmtElem:
+                    case S.StmtScriptElement stmtElem:
                         visitor.VisitTopLevelStmt(stmtElem.Stmt);
                         break;
 
-                    case S.Script.TypeDeclElement typeDeclElem:
+                    case S.TypeDeclScriptElement typeDeclElem:
                         visitor.VisitTypeDecl(typeDeclElem.TypeDecl);
                         break;
                 }                

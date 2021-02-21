@@ -33,7 +33,7 @@ namespace Gum.TextAnalysis.Test
             var script = await parser.ParseScriptAsync(context);
 
             var expected = SimpleSScript(
-                new Script.StmtElement(new CommandStmt(Arr(
+                new StmtScriptElement(new CommandStmt(Arr(
                     new StringExp(Arr<StringExpElement>(new TextStringExpElement("ls -al")))
                 )))
             );
@@ -117,17 +117,17 @@ public struct S<T> : B, I
 
                 Arr<TypeExp>( SimpleSIdTypeExp("B"), SimpleSIdTypeExp("I") ),
 
-                Arr<StructDecl.Element>(
-                    new StructDecl.VarDeclElement(AccessModifier.Public, SimpleSIdTypeExp("int"), Arr("x1", "x2")),
-                    new StructDecl.VarDeclElement(AccessModifier.Protected, SimpleSIdTypeExp("string"), Arr("y")),
-                    new StructDecl.VarDeclElement(AccessModifier.Private, SimpleSIdTypeExp("int"), Arr("z")),
+                Arr<StructDeclElement>(
+                    new VarStructDeclElement(AccessModifier.Public, SimpleSIdTypeExp("int"), Arr("x1", "x2")),
+                    new VarStructDeclElement(AccessModifier.Protected, SimpleSIdTypeExp("string"), Arr("y")),
+                    new VarStructDeclElement(AccessModifier.Private, SimpleSIdTypeExp("int"), Arr("z")),
 
-                    new StructDecl.TypeDeclElement(new StructDecl(
+                    new TypeStructDeclElement(new StructDecl(
                         AccessModifier.Public, "Nested", Arr( "U" ), Arr<TypeExp>( SimpleSIdTypeExp("B"), SimpleSIdTypeExp("I")),
-                        Arr<StructDecl.Element>(new StructDecl.VarDeclElement(AccessModifier.Public, SimpleSIdTypeExp("int"), Arr("x")))
+                        Arr<StructDeclElement>(new VarStructDeclElement(AccessModifier.Public, SimpleSIdTypeExp("int"), Arr("x")))
                     )),
 
-                    new StructDecl.FuncDeclElement(new StructFuncDecl(
+                    new FuncStructDeclElement(new StructFuncDecl(
                         AccessModifier.Public,
                         bStatic: true,
                         bSequence: false,
@@ -138,7 +138,7 @@ public struct S<T> : B, I
                         SimpleSBlockStmt()
                     )),
 
-                    new StructDecl.FuncDeclElement(new StructFuncDecl(
+                    new FuncStructDeclElement(new StructFuncDecl(
                         AccessModifier.Private,
                         bStatic: false,
                         bSequence: true,
@@ -178,8 +178,8 @@ for (int i = 0; i < 5; i++)
             var script = await parser.ParseScriptAsync(context);
 
             var expected = SimpleSScript(
-                new Script.StmtElement(SimpleSVarDeclStmt(SimpleSIdTypeExp("int"), new VarDeclElement("sum", new IntLiteralExp(0)))),
-                new Script.StmtElement(new ForStmt(
+                new StmtScriptElement(SimpleSVarDeclStmt(SimpleSIdTypeExp("int"), new VarDeclElement("sum", new IntLiteralExp(0)))),
+                new StmtScriptElement(new ForStmt(
                     new VarDeclForStmtInitializer(SimpleSVarDecl(SimpleSIdTypeExp("int"), new VarDeclElement("i", new IntLiteralExp(0)))),
                     new BinaryOpExp(BinaryOpKind.LessThan, SimpleSId("i"), new IntLiteralExp(5)),
                     new UnaryOpExp(UnaryOpKind.PostfixInc, SimpleSId("i")),
@@ -194,7 +194,7 @@ for (int i = 0; i < 5; i++)
                                         SimpleSId("sum"),
                                         new BinaryOpExp(BinaryOpKind.Add, SimpleSId("sum"), SimpleSId("i")))),
                                 new CommandStmt(Arr(SimpleSStringExp("        echo hi "))))))),
-                new Script.StmtElement(new CommandStmt(Arr(new StringExp(Arr<StringExpElement>(
+                new StmtScriptElement(new CommandStmt(Arr(new StringExp(Arr<StringExpElement>(
                     new TextStringExpElement("echo "),
                     new ExpStringExpElement(SimpleSId("sum")),
                     new TextStringExpElement(" Completed!")))))));

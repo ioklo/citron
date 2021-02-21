@@ -11,17 +11,11 @@ namespace Gum.IR0
         public string Name { get; }
         public ImmutableArray<TypeAndName> Params { get; }
 
-        public EnumElement(string name, IEnumerable<TypeAndName> parameters)
+        public EnumElement(string name, ImmutableArray<TypeAndName> parameters)
         {
             Name = name;
-            Params = parameters.ToImmutableArray();
-        }
-
-        public EnumElement(string name, params TypeAndName[] parameters)
-        {
-            Name = name;
-            Params = ImmutableArray.Create(parameters);
-        }
+            Params = parameters;
+        }        
     }
 
     public class EnumDecl : TypeDecl

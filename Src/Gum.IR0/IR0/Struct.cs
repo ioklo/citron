@@ -17,15 +17,15 @@ namespace Gum.IR0
         public Struct(
             AccessModifier accessModifier,
             string name,
-            IEnumerable<string> typeParams,
-            IEnumerable<Type> baseTypes
+            ImmutableArray<string> typeParams,
+            ImmutableArray<Type> baseTypes
             // IEnumerable<Element> elems
             )
         {
             AccessModifier = accessModifier;
             Name = name;
-            TypeParams = typeParams.ToImmutableArray();
-            BaseTypes = baseTypes.ToImmutableArray();
+            TypeParams = typeParams;
+            BaseTypes = baseTypes;
         }
     }
 }

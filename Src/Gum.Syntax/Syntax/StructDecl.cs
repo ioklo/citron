@@ -11,7 +11,7 @@ namespace Gum.Syntax
         public AccessModifier AccessModifier { get; }
         public ImmutableArray<string> TypeParams { get; }
         public ImmutableArray<TypeExp> BaseTypes { get; }
-        public ImmutableArray<Element> Elems { get; }
+        public ImmutableArray<StructDeclElement> Elems { get; }
 
         public override int TypeParamCount { get => TypeParams.Length; }
 
@@ -20,7 +20,7 @@ namespace Gum.Syntax
             string name,
             ImmutableArray<string> typeParams,
             ImmutableArray<TypeExp> baseTypes,
-            ImmutableArray<Element> elems)
+            ImmutableArray<StructDeclElement> elems)
             : base(name)
         {
             AccessModifier = accessModifier;

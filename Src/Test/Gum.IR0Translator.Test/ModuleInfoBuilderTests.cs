@@ -50,7 +50,7 @@ namespace Gum.IR0Translator.Test
         [Fact]
         public void Build_FuncDecl_ModuleInfoHasFuncInfo()
         {
-            var script = new S.Script(new S.Script.GlobalFuncDeclElement(new S.GlobalFuncDecl(
+            var script = new S.Script(new S.GlobalFuncScriptElement(new S.GlobalFuncDecl(
                 bSequence: false,
                 VoidTypeExp,
                 "Func",
@@ -94,13 +94,13 @@ namespace Gum.IR0Translator.Test
         public void Build_StructDecl_ModuleInfoHasStructInfo()
         {
             var script = new S.Script(
-                new S.Script.TypeDeclElement(new S.StructDecl(
+                new S.TypeDeclScriptElement(new S.StructDecl(
                     S.AccessModifier.Public,
                     "S",
                     Arr("T"),
                     Arr<S.TypeExp>(new S.IdTypeExp("B", IntTypeExp)),
-                    Arr<S.StructDecl.Element>(
-                        new S.StructDecl.FuncDeclElement(new S.StructFuncDecl(
+                    Arr<S.StructDeclElement>(
+                        new S.FuncStructDeclElement(new S.StructFuncDecl(
                             S.AccessModifier.Private,
                             bStatic: true,
                             bSequence: false,
@@ -111,7 +111,7 @@ namespace Gum.IR0Translator.Test
                             new S.BlockStmt()
                         )),
 
-                        new S.StructDecl.VarDeclElement(
+                        new S.VarStructDeclElement(
                             S.AccessModifier.Protected,
                             IntTypeExp,
                             new[] {"x", "y"}                        
@@ -119,7 +119,7 @@ namespace Gum.IR0Translator.Test
                     )
                 )),
 
-                new S.Script.TypeDeclElement(new S.StructDecl(
+                new S.TypeDeclScriptElement(new S.StructDecl(
                     S.AccessModifier.Private,
                     "B",
                     Arr("T"),

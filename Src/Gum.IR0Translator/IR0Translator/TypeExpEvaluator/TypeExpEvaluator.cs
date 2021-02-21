@@ -189,15 +189,15 @@ namespace Gum.IR0Translator
                 {
                     switch(elem)
                     {
-                        case S.StructDecl.TypeDeclElement typeDeclElem:
+                        case S.TypeStructDeclElement typeDeclElem:
                             VisitTypeDecl(typeDeclElem.TypeDecl);
                             break;
 
-                        case S.StructDecl.FuncDeclElement funcDeclElem:
+                        case S.FuncStructDeclElement funcDeclElem:
                             VisitFuncDecl(funcDeclElem.FuncDecl);
                             break;
 
-                        case S.StructDecl.VarDeclElement varDeclElem:
+                        case S.VarStructDeclElement varDeclElem:
                             VisitTypeExpOuterMost(varDeclElem.VarType);
                             break;
 

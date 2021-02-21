@@ -354,17 +354,17 @@ namespace Gum.IR0.Runtime
 
         async ValueTask EvalNewEnumExpAsync(NewEnumExp exp, Value result, EvalContext context)
         {
-            var members = ImmutableArray.CreateBuilder<NamedValue>(exp.Members.Length);
+            var builder = ImmutableArray.CreateBuilder<NamedValue>(exp.Members.Length);
 
             foreach (var member in exp.Members)
             {
                 var argValue = evaluator.AllocValue(member.ExpInfo.Type, context);
-                members.Add((exp.Name, argValue));
+                builder.Add((exp.Name, argValue));
 
                 await EvalAsync(member.ExpInfo.Exp, argValue, context);
             }
 
-            ((EnumValue)result).SetEnum(exp.Name, members.MoveToImmutable());
+            ((EnumValue)result).SetEnum(exp.Name, builder.MoveToImmutable());
         }
 
         ValueTask EvalNewStructExpAsync(NewStructExp exp, Value result, EvalContext context)

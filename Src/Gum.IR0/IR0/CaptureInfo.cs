@@ -22,10 +22,10 @@ namespace Gum.IR0
         public bool bShouldCaptureThis { get; }
         public ImmutableArray<Element> Captures { get; }
 
-        public CaptureInfo(bool bCaptureThis, IEnumerable<Element> captures)
+        public CaptureInfo(bool bCaptureThis, ImmutableArray<Element> captures)
         {
             this.bShouldCaptureThis = bCaptureThis;
-            this.Captures = captures.ToImmutableArray();
+            this.Captures = captures;
         }
     }
 }
