@@ -336,7 +336,7 @@ namespace Gum.TextAnalysis.Test
                         EqualsExp(indexerExpX.Index, indexerExpY.Index);
 
                 case (MemberCallExp memberCallExpX, MemberCallExp memberCallExpY):
-                    return EqualsExp(memberCallExpX.Object, memberCallExpY.Object) &&
+                    return EqualsExp(memberCallExpX.Parent, memberCallExpY.Parent) &&
                         memberCallExpX.MemberName == memberCallExpY.MemberName &&
                         SequenceEqual(memberCallExpX.MemberTypeArgs, memberCallExpY.MemberTypeArgs, Instance) &&
                         SequenceEqual(memberCallExpX.Args, memberCallExpY.Args, Instance);

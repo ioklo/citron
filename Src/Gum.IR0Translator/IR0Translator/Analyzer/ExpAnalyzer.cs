@@ -410,9 +410,128 @@ namespace Gum.IR0Translator
             //}
         }
 
-        ExpResult AnalyzeMemberCallExp(S.MemberCallExp exp)
+        ExpResult AnalyzeMemberCallExpStaticFuncCallable(S.ISyntaxNode nodeForErrorReport, FuncValue funcValue, ImmutableArray<ExpResult> argResults)
         {
-            throw new NotImplementedException();
+            if (!funcValue.IsStatic)
+                context.AddFatalError(A2005_ResolveIdentifier_CantGetInstanceMemberThroughType, nodeForErrorReport);
+
+            // 인자 타입 체크 
+            var argTypes = ImmutableArray.CreateRange(argResults, info => info.TypeValue);
+            CheckParamTypes(nodeForErrorReport, funcValue.GetParamTypes(), argTypes);
+
+            var args = ImmutableArray.CreateRange(argResults, argResult =>
+            {
+                // rType으로 
+                var rtype = argResult.TypeValue.GetRType();
+                return new R.ExpInfo(argResult.Exp, rtype);
+            });
+
+            var rfunc = funcValue.GetRFunc();
+            var retType = funcValue.GetRetType();
+
+            if (!funcValue.IsSequence)
+            {
+                if (funcValue.IsInternal) return new ExpResult(new R.CallFuncExp(rfunc, null, args), retType);
+                else throw new NotImplementedException(); // return new ExpResult(new R.ExCallFuncExp(rfunc, null, args), retType);
+            }
+            else
+            {
+                if (funcValue.IsInternal) return new ExpResult(new R.CallSeqFuncExp(rfunc, null, args), retType);
+                else throw new NotImplementedException(); // return new ExpResult(new R.ExCallSeqFuncExp(rfunc, null, args), retType);
+            }
+        }
+
+        ExpResult AnalyzeMemberCallExpTypeParent(
+            S.MemberCallExp nodeForErrorReport, 
+            TypeValue parentType, 
+            string memberName, 
+            ImmutableArray<S.TypeExp> stypeArgs, 
+            ImmutableArray<S.Exp> args,
+            TypeValue? hintType) // 리턴 타입이다. Result r = m.X(2, 3)
+        {
+            var typeArgs = GetTypeValues(stypeArgs, context);
+
+            var argResults = AnalyzeExps(args);
+            var argTypes = ImmutableArray.CreateRange(argResults, result => result.TypeValue);
+
+            // argTypes와 리턴타입으로 힌트 타입을 만들어야 한다
+            var member = parentType.GetMember(memberName, typeArgs, argTypes);
+
+            switch (member)
+            {
+                case NotFoundItemResult:
+                    context.AddFatalError(A2007_ResolveIdentifier_NotFound, nodeForErrorReport);
+                    break;
+
+                case MultipleCandidatesErrorItemResult:
+                    context.AddFatalError(A2001_ResolveIdentifier_MultipleCandidatesForIdentifier, nodeForErrorReport);
+                    break;
+
+                case VarWithTypeArgErrorItemResult:
+                    context.AddFatalError(A2002_ResolveIdentifier_VarWithTypeArg, nodeForErrorReport);
+                    break;
+
+                case ValueItemResult itemResult:
+                    switch (itemResult.ItemValue)
+                    {
+                        // 타입이면 호출할 수 없기 때문에 에러
+                        case TypeValue:
+                            context.AddFatalError(A2008_ResolveIdentifier_CantUseTypeAsExpression, nodeForErrorReport);
+                            break;
+
+                        // static 함수
+                        case FuncValue funcValue:
+                            return AnalyzeMemberCallExpStaticFuncCallable(nodeForErrorReport, funcValue, argResults);
+
+                        // static 변수
+                        case MemberVarValue memberVarValue:
+
+                            if (!memberVarValue.IsStatic)
+                            {
+                                context.AddFatalError(A2005_ResolveIdentifier_CantGetInstanceMemberThroughType, nodeForErrorReport);
+                                throw new UnreachableCodeException();
+                            }
+
+                            var rparentType = parentType.GetRType();
+                            var exp = new R.StaticMemberExp(rparentType, memberName);
+                            return new ExpResult(exp, memberVarValue.GetTypeValue());
+                    }
+                    break;
+            }
+
+            throw new UnreachableCodeException();
+        }
+
+        ExpResult AnalyzeMemberCallExp(S.MemberCallExp exp, TypeValue? hintType)
+        {
+            // exp.id ( args )
+            var parentResult = ResolveIdentifier(exp.Parent, null);
+            switch(parentResult)
+            {
+                case NotFoundIdentifierResult:
+                    context.AddFatalError(A2007_ResolveIdentifier_NotFound, exp);
+                    break;
+
+                case ErrorIdentifierResult errorResult:
+                    HandleErrorIdentifierResult(exp, errorResult);
+                    break;
+
+                // T.id()
+                case TypeIdentifierResult typeResult:
+                    return AnalyzeMemberCallExpTypeParent(exp, typeResult.TypeValue, exp.MemberName, exp.MemberTypeArgs, exp.Args, hintType);
+
+                // F.id()
+                case FuncIdentifierResult:
+                    context.AddFatalError(A2006_ResolveIdentifier_FuncCantHaveMember, exp);
+                    break;
+
+                // exp.id()
+                case ExpIdentifierResult expResult:
+                    return AnalyzeMemberCallExpExpParent(expResult.Exp)
+            }
+
+
+            throw new UnreachableCodeException();
             //outExp = null;
             //outTypeValue = null;
 

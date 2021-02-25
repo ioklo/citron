@@ -399,12 +399,21 @@ namespace Gum.IR0Translator
             var elemType = context.GetTypeValueByTypeExp(foreachStmt.Type);
 
             // TODO: 여기 함수로 빼기
-            // 1. List<T>
-            // 2. Enumerable<T>, seq 함수일경우
+            // 1. seq<T> 인터페이스
+            // 2. seq<T> 인터페이스를 가지고 있는 struct
+            
+            // SeqTypeValue(NormalTypeValue) // seq<T>인터페이스를 가지고 있는 struct
+            // BoxTypeValue(SeqTypeValue(NormalTypeValue)) // 
+            // RefTypeValue(SeqTypeValue(NormalTypeValue)) // 
+            // InterfaceTypeValue(SeqTypeValue(NormalTypeValue)) // 네가지
+
+
+            
+
             TypeValue? iteratorElemType = null;
             if (iteratorResult.TypeValue is NormalTypeValue normalIteratorType)
             {
-                var typeId = normalIteratorType.GetTypeId();
+                var typeId = normalIteratorType.GetTypeId( );
 
                 if (ModuleInfoEqualityComparer.EqualsItemId(typeId, ItemIds.List))
                 {

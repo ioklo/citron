@@ -62,7 +62,7 @@ namespace Gum.IR0Translator
         
         void VisitMemberCallExp(S.MemberCallExp memberCallExp)
         {
-            VisitExp(memberCallExp.Object);
+            VisitExp(memberCallExp.Parent);
             VisitTypeArgExpsOuterMost(memberCallExp.MemberTypeArgs);
 
             foreach (var arg in memberCallExp.Args)

@@ -120,14 +120,14 @@ namespace Gum.Syntax
 
     public class MemberCallExp : Exp
     {
-        public Exp Object { get; }
+        public Exp Parent { get; }
         public string MemberName { get; }
         public ImmutableArray<TypeExp> MemberTypeArgs { get; }
         public ImmutableArray<Exp> Args { get; }
 
         public MemberCallExp(Exp obj, string memberName, ImmutableArray<TypeExp> typeArgs, ImmutableArray<Exp> args)
         {
-            Object = obj;
+            Parent = obj;
             MemberName = memberName;
             MemberTypeArgs = typeArgs;
             Args = args;
