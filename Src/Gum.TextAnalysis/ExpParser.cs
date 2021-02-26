@@ -180,22 +180,17 @@ namespace Gum
                     continue;
                 }
 
-                // . id (..., ...)
+                // . id < >
                 if (Accept<DotToken>(lexResult, ref context))
                 {
                     if (!Accept<IdentifierToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context, out var idToken))
                         return ExpParseResult.Invalid;
-                    
-                    if (Parse(await ParseCallArgs(context), ref context, out var memberCallArgs))
-                    {
-                        exp = new MemberCallExp(exp, idToken.Value, default, memberCallArgs);
-                        continue;
-                    }
-                    else
-                    {
-                        exp = new MemberExp(exp, idToken.Value, default);
-                        continue;
-                    }
+
+                    // <
+                    Parse(await parser.ParseTypeArgs(context), ref context, out var typeArgs);
+
+                    exp = new MemberExp(exp, idToken.Value, typeArgs);
+                    continue;                    
                 }
 
                 // (..., ... )                
@@ -513,10 +508,13 @@ namespace Gum
 
         async ValueTask<ExpParseResult> ParseIdentifierExpAsync(ParserContext context)
         {   
-            if (Accept<IdentifierToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context, out var idToken))
-                return new ExpParseResult(new IdentifierExp(idToken.Value, default), context);
+            if (!Accept<IdentifierToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context, out var idToken))
+                return ExpParseResult.Invalid;
 
-            return ExpParseResult.Invalid;
+            // 실패해도 괜찮다            
+            Parse(await Try(parser.ParseTypeArgs, context), ref context, out var typeArgs);
+
+            return new ExpParseResult(new IdentifierExp(idToken.Value, typeArgs), context);
         }
     }
 }

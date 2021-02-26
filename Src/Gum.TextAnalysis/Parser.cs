@@ -86,26 +86,36 @@ namespace Gum
             return stmtParser.ParseStmtAsync(context);
         }       
 
+        public async ValueTask<ParseResult<ImmutableArray<TypeExp>>> ParseTypeArgs(ParserContext context)
+        {
+            var typeArgsBuilder = ImmutableArray.CreateBuilder<TypeExp>();
+
+            if (!Accept<LessThanToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
+                return ParseResult<ImmutableArray<TypeExp>>.Invalid;
+
+            while (!Accept<GreaterThanToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
+            {
+                if (0 < typeArgsBuilder.Count)
+                    if (!Accept<CommaToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
+                        throw new ParseFatalException();
+
+                if (!Parse(await ParseTypeExpAsync(context), ref context, out var typeArg))
+                    throw new ParseFatalException();
+
+                typeArgsBuilder.Add(typeArg);
+            }
+
+            return new ParseResult<ImmutableArray<TypeExp>>(typeArgsBuilder.ToImmutable(), context);
+        }
+
         async ValueTask<ParseResult<TypeExp>> ParseTypeIdExpAsync(ParserContext context)
         {
             if (!Accept<IdentifierToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context, out var idToken))
                 return ParseResult<TypeExp>.Invalid;
+            
+            Parse(await ParseTypeArgs(context), ref context, out var typeArgs);
 
-            var typeArgsBuilder = ImmutableArray.CreateBuilder<TypeExp>();
-            if (Accept<LessThanToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
-                while(!Accept<GreaterThanToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
-                {
-                    if (0 < typeArgsBuilder.Count)
-                        if (!Accept<CommaToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
-                            return ParseResult<TypeExp>.Invalid;
-
-                    if (!Parse(await ParseTypeExpAsync(context), ref context, out var typeArg))
-                        return ParseResult<TypeExp>.Invalid;
-
-                    typeArgsBuilder.Add(typeArg);
-                }
-
-            return new ParseResult<TypeExp>(new IdTypeExp(idToken.Value, typeArgsBuilder.ToImmutable()), context);
+            return new ParseResult<TypeExp>(new IdTypeExp(idToken.Value, typeArgs), context);
         }
 
         async ValueTask<ParseResult<TypeExp>> ParsePrimaryTypeExpAsync(ParserContext context)

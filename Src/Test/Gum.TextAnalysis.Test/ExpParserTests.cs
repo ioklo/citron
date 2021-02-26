@@ -37,6 +37,17 @@ namespace Gum.TextAnalysis.Test
         }
 
         [Fact]
+        public async Task TestParseIdentifierExpWithTypeArgsAsync()
+        {
+            // x<T> vs (x < T) > 
+            (var expParser, var context) = await PrepareAsync("x<T>");
+
+            var expResult = await expParser.ParseExpAsync(context);
+
+            Assert.Equal(new IdentifierExp("x", Arr<TypeExp>(new IdTypeExp("T", default))), expResult.Elem, SyntaxEqualityComparer.Instance);
+        }
+
+        [Fact]
         public async Task TestParseStringExpAsync()
         {
             var input = "\"aaa bbb ${\"xxx ${ddd}\"} ddd\"";
@@ -137,19 +148,24 @@ namespace Gum.TextAnalysis.Test
         [Fact]
         public async Task TestParseComplexMemberExpAsync()
         {
-            var input = "a.b.c(1, \"str\").d";
+            var input = "a.b.c<int, list<int>>(1, \"str\").d";
             (var expParser, var context) = await PrepareAsync(input);
 
             var expResult = await expParser.ParseExpAsync(context);
 
             var expected =
                 new MemberExp(
-                    new MemberCallExp(
-                        new MemberExp(SimpleSId("a"), "b", default),
-                        "c",
-                        default,
+                    new CallExp(
+                        new MemberExp(
+                            new MemberExp(SimpleSId("a"), "b", default),
+                            "c",
+                            Arr<TypeExp>(
+                                new IdTypeExp("int", default), 
+                                new IdTypeExp("list", Arr<TypeExp>(new IdTypeExp("int", default)))
+                            )
+                        ),
                         Arr<Exp>(new IntLiteralExp(1), SimpleSStringExp("str"))
-                    ),                        
+                    ),
                     "d",
                     default
                 );

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Gum
 {
@@ -52,6 +53,19 @@ namespace Gum
                 elem = parseResult.Elem;
                 context = parseResult.Context;
                 return true;
+            }
+        }
+
+        public static async ValueTask<ParseResult<TSyntaxElem>> Try<TSyntaxElem>(
+            Func<ParserContext, ValueTask<ParseResult<TSyntaxElem>>> parseFunc, ParserContext context)
+        {
+            try
+            {
+                return await parseFunc.Invoke(context);
+            }
+            catch (ParseFatalException)
+            {
+                return ParseResult<TSyntaxElem>.Invalid;
             }
         }
 
