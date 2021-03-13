@@ -1,0 +1,107 @@
+{
+  "main": {
+    "id": "dc87493fd22caf44",
+    "type": "split",
+    "children": [
+      {
+        "id": "ab5907cafb08822c",
+        "type": "leaf",
+        "active": true,
+        "state": {
+          "type": "markdown",
+          "state": {
+            "file": "인덱스.md",
+            "mode": "source"
+          }
+        },
+        "group": "6b1dbb455dd64c66"
+      },
+      {
+        "id": "4ac86d962a68d11a",
+        "type": "leaf",
+        "state": {
+          "type": "markdown",
+          "state": {
+            "file": "인덱스.md",
+            "mode": "preview"
+          }
+        },
+        "group": "6b1dbb455dd64c66"
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "bbd85de1cdfdc52f",
+    "type": "split",
+    "children": [
+      {
+        "id": "eb8041cf2e8beeeb",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "95a2cfb3b81bb1cb",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {}
+            }
+          },
+          {
+            "id": "3e6574ea8607f8a8",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "2effa7cdb4b2e9f3",
+    "type": "split",
+    "children": [
+      {
+        "id": "b33c8d7a38f70011",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "861fc80dd09f6c24",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "인덱스.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "lastOpenFiles": [
+    "Untitled.md",
+    "실행 환경.md",
+    "구조체.md",
+    "클래스 값.md"
+  ]
+}
