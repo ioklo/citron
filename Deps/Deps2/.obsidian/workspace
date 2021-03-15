@@ -4,29 +4,16 @@
     "type": "split",
     "children": [
       {
-        "id": "ab5907cafb08822c",
+        "id": "2c5d7587d4294528",
         "type": "leaf",
         "active": true,
         "state": {
           "type": "markdown",
           "state": {
-            "file": "인덱스.md",
-            "mode": "source"
-          }
-        },
-        "group": "6b1dbb455dd64c66"
-      },
-      {
-        "id": "4ac86d962a68d11a",
-        "type": "leaf",
-        "state": {
-          "type": "markdown",
-          "state": {
-            "file": "인덱스.md",
+            "file": "action/open-namespace.md",
             "mode": "preview"
           }
-        },
-        "group": "6b1dbb455dd64c66"
+        }
       }
     ],
     "direction": "vertical"
@@ -66,7 +53,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 419
   },
   "right": {
     "id": "2effa7cdb4b2e9f3",
@@ -82,7 +69,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "인덱스.md",
+                "file": "action/open-namespace.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -99,9 +86,15 @@
     "collapsed": true
   },
   "lastOpenFiles": [
-    "Untitled.md",
-    "실행 환경.md",
-    "구조체.md",
-    "클래스 값.md"
+    "action/open-namespace.md",
+    "action/open-new-local-variable-scope.md",
+    "action/reference-box-member-varable.md",
+    "action/reference-dict-element.md",
+    "action/reference-global-variable.md",
+    "action/reference-enum-element-member-variable.md",
+    "action/reference-instance-class-member-variable.md",
+    "action/reference-instance-struct-member-variable.md",
+    "action/reference-list-element.md",
+    "action/reference-local-variable.md"
   ]
 }
