@@ -6,10 +6,23 @@ int y;
 // 1. 완전 생략형
 var l1 = x => x + y;
 
-// 2. 완전체형
-var l2 = (int x) : int => {
+// 2. throw 시그니처 생략형
+var l2 = x => throw E; // 리턴은 void, throw는 E
+
+// 3. 완전체형
+enum E { NotImplemented }
+var l2 = [y](int x) : int throw E => {
+
+    if (x == 3) throw NotImplemented;
+
     return x + y;
 }
+
+// 4. 멤버 함수 호출 생략형
+struct C1 { void F1(string s) throw E { } }
+C c = new C1();
+
+var l = c.F1; // s => c.F1(s); 
 
 class C
 {

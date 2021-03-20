@@ -96,14 +96,14 @@ namespace Gum.IR0Translator.Test
                 case (null, null):
                     return true;
 
-                case (FuncDecl.Normal normalX, FuncDecl.Normal normalY):
+                case (NormalFuncDecl normalX, NormalFuncDecl normalY):
                     return EqualsFuncDeclId(normalX.Id, normalY.Id) &&
                         normalX.IsThisCall == normalY.IsThisCall &&
                         normalX.TypeParams.SequenceEqual(normalY.TypeParams) && // string이라 this 없이 호출
                         normalX.ParamNames.SequenceEqual(normalY.ParamNames) &&
                         EqualsStmt(normalX.Body, normalY.Body);
 
-                case (FuncDecl.Sequence seqX, FuncDecl.Sequence seqY):
+                case (SequenceFuncDecl seqX, SequenceFuncDecl seqY):
                     return EqualsFuncDeclId(seqX.Id, seqY.Id) &&
                         EqualsType(seqX.ElemType, seqX.ElemType) &&
                         seqX.IsThisCall == seqY.IsThisCall &&
@@ -325,7 +325,7 @@ namespace Gum.IR0Translator.Test
             return EqualsExpInfo(x.Value, y.Value);
         }        
 
-        bool EqualsType([AllowNull] Type x, [AllowNull] Type y)
+        bool EqualsType([AllowNull] IR0.Type x, [AllowNull] IR0.Type y)
         {
             return EqualsTypeDeclId(x.DeclId, y.DeclId) &&
                 x.TypeArgs.SequenceEqual(y.TypeArgs, this);

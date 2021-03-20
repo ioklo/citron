@@ -58,17 +58,8 @@ namespace Gum.IR0Translator
         {
             VisitExp(exp.Object);
             VisitExp(exp.Index);
-        }
+        }        
         
-        void VisitMemberCallExp(S.MemberCallExp memberCallExp)
-        {
-            VisitExp(memberCallExp.Parent);
-            VisitTypeArgExpsOuterMost(memberCallExp.MemberTypeArgs);
-
-            foreach (var arg in memberCallExp.Args)
-                VisitExp(arg);
-        }
-
         // T<int, short>.x
         void VisitMemberExp(S.MemberExp memberExp)
         {
@@ -100,7 +91,6 @@ namespace Gum.IR0Translator
                     case S.CallExp callExp: VisitCallExp(callExp); break;
                     case S.LambdaExp lambdaExp: VisitLambdaExp(lambdaExp); break;
                     case S.IndexerExp indexerExp: VisitIndexerExp(indexerExp); break;
-                    case S.MemberCallExp memberCallExp: VisitMemberCallExp(memberCallExp); break;
                     case S.MemberExp memberExp: VisitMemberExp(memberExp); break;
                     case S.ListExp listExp: VisitListExp(listExp); break;
                     default: throw new UnreachableCodeException();

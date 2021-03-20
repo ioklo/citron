@@ -1,0 +1,4 @@
+[[ClassToInterfaceCast]]
+[[ClassToClassCast]]
+[[InterfaceToClassCast]]
+[[InterfaceToInterfaceCast]]

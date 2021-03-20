@@ -2,12 +2,14 @@
 
 ```csharp 
 RetType FuncName<covariant_modifier TypeArg0...>(ArgType0 arg0, ...)
+    throw ExceptionType
     where constraints
 {
     Body Statements...
 }
 
 void F<T, U, V>(T t, ref<U>, u, params arglist<V> vs)
+    throw T
     where T : I
 {
 }

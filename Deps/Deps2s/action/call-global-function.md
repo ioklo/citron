@@ -1,0 +1,2 @@
+# call-global-function
+

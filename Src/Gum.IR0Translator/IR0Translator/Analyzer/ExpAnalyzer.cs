@@ -32,7 +32,7 @@ namespace Gum.IR0Translator
         }        
 
         // x
-        ExpResult AnalyzeIdExp(S.IdentifierExp idExp, TypeValue? hintType)
+        ExpResult AnalyzeIdExp(S.IdentifierExp idExp, TypeHint hintType)
         {
             var result = ResolveIdentifierIdExp(idExp, hintType);
 
@@ -50,7 +50,10 @@ namespace Gum.IR0Translator
                     context.AddLambdaCapture(expResult.LambdaCapture);
                     return new ExpResult(expResult.Exp, expResult.TypeValue);
 
-                case FuncIdentifierResult:
+                case InstanceFuncIdentifierResult:
+                    throw new NotImplementedException();
+
+                case StaticFuncIdentifierResult:
                     throw new NotImplementedException();
 
                 case TypeIdentifierResult:
@@ -94,13 +97,13 @@ namespace Gum.IR0Translator
         {
             var bFatal = false;
 
-            var strExpElems = new List<R.StringExpElement>();
+            var builder = ImmutableArray.CreateBuilder<R.StringExpElement>();
             foreach (var elem in stringExp.Elements)
             {
                 try 
                 {
                     var expElem = AnalyzeStringExpElement(elem);
-                    strExpElems.Add(expElem);
+                    builder.Add(expElem);
                 }
                 catch(FatalAnalyzeException)
                 {
@@ -111,27 +114,27 @@ namespace Gum.IR0Translator
             if (bFatal)
                 throw new FatalAnalyzeException();
 
-            return new StringExpResult(new R.StringExp(strExpElems), context.GetStringType());
+            return new StringExpResult(new R.StringExp(builder.ToImmutable()), context.GetStringType());
         }
 
         // int만 지원한다
         ExpResult AnalyzeIntUnaryAssignExp(S.Exp operand, R.InternalUnaryAssignOperator op)
         {
-            var operandResult = AnalyzeExp(operand, null);
+            var operandResult = AnalyzeExp(operand, NontTypeHint.Instance);
 
             // int type 검사
             if (!context.IsAssignable(context.GetIntType(), operandResult.TypeValue))
                 context.AddFatalError(A0601_UnaryAssignOp_IntTypeIsAllowedOnly, operand);
 
             if (!context.IsAssignableExp(operandResult.Exp))
-                context.AddFatalError(A0602_UnaryAssignOp_AssignableExpressionIsAllowedOnly);
+                context.AddFatalError(A0602_UnaryAssignOp_AssignableExpressionIsAllowedOnly, operand);
 
             return new ExpResult(new R.CallInternalUnaryAssignOperator(op, operandResult.Exp), context.GetIntType());
         }
 
         ExpResult AnalyzeUnaryOpExp(S.UnaryOpExp unaryOpExp)
         {
-            var operandResult = AnalyzeExp(unaryOpExp.Operand, null);            
+            var operandResult = AnalyzeExp(unaryOpExp.Operand, NontTypeHint.Instance);            
 
             switch (unaryOpExp.Kind)
             {
@@ -181,8 +184,8 @@ namespace Gum.IR0Translator
         
         ExpResult AnalyzeBinaryOpExp(S.BinaryOpExp binaryOpExp)
         {
-            var operandResult0 = AnalyzeExp(binaryOpExp.Operand0, null);
-            var operandResult1 = AnalyzeExp(binaryOpExp.Operand1, null);
+            var operandResult0 = AnalyzeExp(binaryOpExp.Operand0, NontTypeHint.Instance);
+            var operandResult1 = AnalyzeExp(binaryOpExp.Operand1, NontTypeHint.Instance);
 
             // 1. Assign 먼저 처리
             if (binaryOpExp.Kind == S.BinaryOpKind.Assign)
@@ -265,7 +268,7 @@ namespace Gum.IR0Translator
         //}
 
         // CallExp분석에서 Callable이 Identifier인 경우 처리
-        ExpResult AnalyzeCallExpFuncCallable(S.ISyntaxNode nodeForErrorReport, FuncValue funcValue, ImmutableArray<ExpResult> argResults)
+        ExpResult AnalyzeCallExpFuncCallable(S.ISyntaxNode nodeForErrorReport, R.ExpInfo? instance, FuncValue funcValue, ImmutableArray<ExpResult> argResults)
         {
             // 인자 타입 체크 
             var argTypes = ImmutableArray.CreateRange(argResults, info => info.TypeValue);            
@@ -283,13 +286,20 @@ namespace Gum.IR0Translator
             
             if (!funcValue.IsSequence)
             {
-                if (funcValue.IsInternal) return new ExpResult(new R.CallFuncExp(rfunc, null, args), retType);
-                else throw new NotImplementedException(); // return new ExpResult(new R.ExCallFuncExp(rfunc, null, args), retType);
+                // TODO:
+                //if (!funcValue.IsInternal)
+                //    throw new NotImplementedException(); // return new ExpResult(new R.ExCallFuncExp(rfunc, null, args), retType);
+
+                return new ExpResult(new R.CallFuncExp(rfunc, instance, args), retType);
             }
             else
             {
-                if (funcValue.IsInternal) return new ExpResult(new R.CallSeqFuncExp(rfunc, null, args), retType);
-                else throw new NotImplementedException(); // return new ExpResult(new R.ExCallSeqFuncExp(rfunc, null, args), retType);
+                // TODO:
+                //if (!funcValue.IsInternal)
+                //  throw new NotImplementedException(); // return new ExpResult(new R.ExCallSeqFuncExp(rfunc, null, args), retType);
+
+                return new ExpResult(new R.CallSeqFuncExp(rfunc, instance, args), retType);
+                
             }
         }
 
@@ -308,7 +318,7 @@ namespace Gum.IR0Translator
             {
                 var argRType = info.TypeValue.GetRType();
                 return new R.ExpInfo(info.Exp, argRType);
-            }).ToArray();
+            }).ToImmutableArray();
 
             // TODO: 사실 Type보다 Allocation정보가 들어가야 한다
             return new ExpResult(
@@ -316,7 +326,7 @@ namespace Gum.IR0Translator
                 lambdaType.Return);
         }
         
-        ExpResult AnalyzeCallExp(S.CallExp exp, TypeValue? hintTypeValue) 
+        ExpResult AnalyzeCallExp(S.CallExp exp, TypeHint hintType) 
         {
             // 여기서 분석해야 할 것은 
             // 1. 해당 Exp가 함수인지, 변수인지, 함수라면 FuncId를 넣어준다
@@ -324,6 +334,10 @@ namespace Gum.IR0Translator
             // 3. 잘 들어갔다면 리턴타입 -> 완료
             var argResults = AnalyzeExps(exp.Args);
             var argTypes = ImmutableArray.CreateRange(argResults, result => result.TypeValue);
+
+            // E e = First(2, 3); => E e = E.First(2, 3);
+            // EnumHint, 
+            // ArgumentTypes
 
             // argTypes로 힌트 타입을 만들어야 한다
             var callableResult = ResolveIdentifier(exp.Callable, argTypes);
@@ -341,8 +355,12 @@ namespace Gum.IR0Translator
                 case ExpIdentifierResult expResult:
                     return AnalyzeCallExpExpCallable(expResult.Exp, expResult.TypeValue, argResults, exp);
 
-                case FuncIdentifierResult funcResult:
-                    return AnalyzeCallExpFuncCallable(exp, funcResult.FuncValue, argResults);
+                case InstanceFuncIdentifierResult instFuncResult:
+                    var instanceType = instFuncResult.InstanceType.GetRType();
+                    return AnalyzeCallExpFuncCallable(exp, new R.ExpInfo(instFuncResult.Instance, instanceType), instFuncResult.FuncValue, argResults);
+
+                case StaticFuncIdentifierResult staticFuncResult:
+                    return AnalyzeCallExpFuncCallable(exp, null, staticFuncResult.FuncValue, argResults);
 
                 case TypeIdentifierResult typeResult:
                     context.AddFatalError(A0902_CallExp_CallableExpressionIsNotCallable, exp.Callable);
@@ -359,9 +377,10 @@ namespace Gum.IR0Translator
         ExpResult AnalyzeLambdaExp(S.LambdaExp exp)
         {
             var lambdaResult = AnalyzeLambda(exp, exp.Body, exp.Params);
+            var paramNames = ImmutableArray.CreateRange(exp.Params, param => param.Name);
 
             return new ExpResult(
-                new R.LambdaExp(lambdaResult.CaptureInfo, exp.Params.Select(param => param.Name), lambdaResult.Body),
+                new R.LambdaExp(lambdaResult.CaptureInfo, paramNames, lambdaResult.Body),
                 lambdaResult.TypeValue);
         }
 
@@ -409,141 +428,7 @@ namespace Gum.IR0Translator
             //    return true;
             //}
         }
-
-        ExpResult AnalyzeMemberCallExpStaticFuncCallable(S.ISyntaxNode nodeForErrorReport, FuncValue funcValue, ImmutableArray<ExpResult> argResults)
-        {
-            if (!funcValue.IsStatic)
-                context.AddFatalError(A2005_ResolveIdentifier_CantGetInstanceMemberThroughType, nodeForErrorReport);
-
-            // 인자 타입 체크 
-            var argTypes = ImmutableArray.CreateRange(argResults, info => info.TypeValue);
-            CheckParamTypes(nodeForErrorReport, funcValue.GetParamTypes(), argTypes);
-
-            var args = ImmutableArray.CreateRange(argResults, argResult =>
-            {
-                // rType으로 
-                var rtype = argResult.TypeValue.GetRType();
-                return new R.ExpInfo(argResult.Exp, rtype);
-            });
-
-            var rfunc = funcValue.GetRFunc();
-            var retType = funcValue.GetRetType();
-
-            if (!funcValue.IsSequence)
-            {
-                if (funcValue.IsInternal) return new ExpResult(new R.CallFuncExp(rfunc, null, args), retType);
-                else throw new NotImplementedException(); // return new ExpResult(new R.ExCallFuncExp(rfunc, null, args), retType);
-            }
-            else
-            {
-                if (funcValue.IsInternal) return new ExpResult(new R.CallSeqFuncExp(rfunc, null, args), retType);
-                else throw new NotImplementedException(); // return new ExpResult(new R.ExCallSeqFuncExp(rfunc, null, args), retType);
-            }
-        }
-
-        ExpResult AnalyzeMemberCallExpTypeParent(
-            S.MemberCallExp nodeForErrorReport, 
-            TypeValue parentType, 
-            string memberName, 
-            ImmutableArray<S.TypeExp> stypeArgs, 
-            ImmutableArray<S.Exp> args,
-            TypeValue? hintType) // 리턴 타입이다. Result r = m.X(2, 3)
-        {
-            var typeArgs = GetTypeValues(stypeArgs, context);
-
-            var argResults = AnalyzeExps(args);
-            var argTypes = ImmutableArray.CreateRange(argResults, result => result.TypeValue);
-
-            // argTypes와 리턴타입으로 힌트 타입을 만들어야 한다
-            var member = parentType.GetMember(memberName, typeArgs, argTypes);
-
-            switch (member)
-            {
-                case NotFoundItemResult:
-                    context.AddFatalError(A2007_ResolveIdentifier_NotFound, nodeForErrorReport);
-                    break;
-
-                case MultipleCandidatesErrorItemResult:
-                    context.AddFatalError(A2001_ResolveIdentifier_MultipleCandidatesForIdentifier, nodeForErrorReport);
-                    break;
-
-                case VarWithTypeArgErrorItemResult:
-                    context.AddFatalError(A2002_ResolveIdentifier_VarWithTypeArg, nodeForErrorReport);
-                    break;
-
-                case ValueItemResult itemResult:
-                    switch (itemResult.ItemValue)
-                    {
-                        // 타입이면 호출할 수 없기 때문에 에러
-                        case TypeValue:
-                            context.AddFatalError(A2008_ResolveIdentifier_CantUseTypeAsExpression, nodeForErrorReport);
-                            break;
-
-                        // static 함수
-                        case FuncValue funcValue:
-                            return AnalyzeMemberCallExpStaticFuncCallable(nodeForErrorReport, funcValue, argResults);
-
-                        // static 변수
-                        case MemberVarValue memberVarValue:
-
-                            if (!memberVarValue.IsStatic)
-                            {
-                                context.AddFatalError(A2005_ResolveIdentifier_CantGetInstanceMemberThroughType, nodeForErrorReport);
-                                throw new UnreachableCodeException();
-                            }
-
-                            var rparentType = parentType.GetRType();
-                            var exp = new R.StaticMemberExp(rparentType, memberName);
-                            return new ExpResult(exp, memberVarValue.GetTypeValue());
-                    }
-                    break;
-            }
-
-            throw new UnreachableCodeException();
-        }
-
-        ExpResult AnalyzeMemberCallExp(S.MemberCallExp exp, TypeValue? hintType)
-        {
-            // exp.id ( args )
-            var parentResult = ResolveIdentifier(exp.Parent, null);
-            switch(parentResult)
-            {
-                case NotFoundIdentifierResult:
-                    context.AddFatalError(A2007_ResolveIdentifier_NotFound, exp);
-                    break;
-
-                case ErrorIdentifierResult errorResult:
-                    HandleErrorIdentifierResult(exp, errorResult);
-                    break;
-
-                // T.id()
-                case TypeIdentifierResult typeResult:
-                    return AnalyzeMemberCallExpTypeParent(exp, typeResult.TypeValue, exp.MemberName, exp.MemberTypeArgs, exp.Args, hintType);
-
-                // F.id()
-                case FuncIdentifierResult:
-                    context.AddFatalError(A2006_ResolveIdentifier_FuncCantHaveMember, exp);
-                    break;
-
-                // exp.id()
-                case ExpIdentifierResult expResult:
-                    return AnalyzeMemberCallExpExpParent(expResult.Exp)
-            }
-
-
-            throw new UnreachableCodeException();
-            //outExp = null;
-            //outTypeValue = null;
-
-            //var result = new MemberCallExpAnalyzer(this, exp).Analyze();
-            //if (result == null) return false;
-
-            //context.AddNodeInfo(exp, result.Value.NodeInfo);
-            //outExp = result.Value.Exp;
-            //outTypeValue = result.Value.TypeValue.Return;
-            //return true;
-        }
-
+        
         R.Exp MakeMemberExp(TypeValue typeValue, R.Exp instance, string name)
         {
             switch(typeValue)
@@ -556,7 +441,7 @@ namespace Gum.IR0Translator
         }
 
         // exp.x
-        ExpResult AnalyzeMemberExpExpParent(S.MemberExp memberExp, R.Exp parentExp, TypeValue parentType, TypeValue? hintType)
+        ExpResult AnalyzeMemberExpExpParent(S.MemberExp memberExp, R.Exp parentExp, TypeValue parentType, TypeHint hintType)
         {   
             var typeArgs = GetTypeValues(memberExp.MemberTypeArgs, context);
             var memberResult = parentType.GetMember(memberExp.MemberName, typeArgs, hintType);
@@ -600,7 +485,7 @@ namespace Gum.IR0Translator
         }
 
         // T.x
-        ExpResult AnalyzeMemberExpTypeParent(S.MemberExp nodeForErrorReport, TypeValue parentType, string memberName, ImmutableArray<S.TypeExp> stypeArgs, TypeValue? hintType)
+        ExpResult AnalyzeMemberExpTypeParent(S.MemberExp nodeForErrorReport, TypeValue parentType, string memberName, ImmutableArray<S.TypeExp> stypeArgs, TypeHint hintType)
         {
             var typeArgs = GetTypeValues(stypeArgs, context);
             var member = parentType.GetMember(memberName, typeArgs, hintType);
@@ -686,9 +571,9 @@ namespace Gum.IR0Translator
         }
 
         // parent."x"<>
-        ExpResult AnalyzeMemberExp(S.MemberExp memberExp, TypeValue? hintType)
+        ExpResult AnalyzeMemberExp(S.MemberExp memberExp, TypeHint hintType)
         {            
-            var parentResult = ResolveIdentifier(memberExp.Parent, null);
+            var parentResult = ResolveIdentifier(memberExp.Parent, NontTypeHint.Instance);
 
             switch(parentResult)
             {
@@ -707,7 +592,12 @@ namespace Gum.IR0Translator
                 case TypeIdentifierResult typeResult:
                     return AnalyzeMemberExpTypeParent(memberExp, typeResult.TypeValue, memberExp.MemberName, memberExp.MemberTypeArgs, hintType);
 
-                case FuncIdentifierResult:
+                case StaticFuncIdentifierResult:
+                    // 함수는 멤버변수를 가질 수 없습니다
+                    context.AddFatalError(A2006_ResolveIdentifier_FuncCantHaveMember, memberExp);
+                    break;
+
+                case InstanceFuncIdentifierResult:
                     // 함수는 멤버변수를 가질 수 없습니다
                     context.AddFatalError(A2006_ResolveIdentifier_FuncCantHaveMember, memberExp);
                     break;
@@ -737,16 +627,16 @@ namespace Gum.IR0Translator
 
         ExpResult AnalyzeListExp(S.ListExp listExp)
         {   
-            var elemExps = new List<R.Exp>();
+            var builder = ImmutableArray.CreateBuilder<R.Exp>();
 
             // TODO: 타입 힌트도 이용해야 할 것 같다
             TypeValue? curElemTypeValue = (listExp.ElemType != null) ? context.GetTypeValueByTypeExp(listExp.ElemType) : null;
 
             foreach (var elem in listExp.Elems)
             {
-                var elemResult = AnalyzeExp(elem, null);                    
+                var elemResult = AnalyzeExp(elem, NontTypeHint.Instance);                    
 
-                elemExps.Add(elemResult.Exp);
+                builder.Add(elemResult.Exp);
 
                 if (curElemTypeValue == null)
                 {
@@ -767,11 +657,11 @@ namespace Gum.IR0Translator
             var rtype = curElemTypeValue.GetRType();
 
             return new ExpResult(
-                new R.ListExp(rtype, elemExps), 
+                new R.ListExp(rtype, builder.ToImmutable()), 
                 context.GetListType(curElemTypeValue));
         }
 
-        ExpResult AnalyzeExp(S.Exp exp, TypeValue? hintType)
+        ExpResult AnalyzeExp(S.Exp exp, TypeHint hintType)
         {
             switch(exp)
             {
@@ -788,7 +678,6 @@ namespace Gum.IR0Translator
                 case S.CallExp callExp: return AnalyzeCallExp(callExp, hintType);        
                 case S.LambdaExp lambdaExp: return AnalyzeLambdaExp(lambdaExp);
                 case S.IndexerExp indexerExp: return AnalyzeIndexerExp(indexerExp);
-                case S.MemberCallExp memberCallExp: return AnalyzeMemberCallExp(memberCallExp);
                 case S.MemberExp memberExp: return AnalyzeMemberExp(memberExp, hintType);
                 case S.ListExp listExp: return AnalyzeListExp(listExp);
                 default: throw new NotImplementedException();

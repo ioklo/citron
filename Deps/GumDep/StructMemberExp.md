@@ -1,0 +1,2 @@
+[[GetValue]]
+[[StructValue]]

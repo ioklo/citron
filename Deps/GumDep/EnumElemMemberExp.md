@@ -1,0 +1,2 @@
+[[GetValue]]
+[[EnumValue]]

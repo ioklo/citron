@@ -363,12 +363,10 @@ namespace Gum.IR0Translator
                     return null;
             }
 
-            public ItemResult GetGlobalItem(M.NamespacePath namespacePath, string idName, ImmutableArray<TypeValue> typeArgs, TypeValue? hintTypeValue)
+            public ItemResult GetGlobalItem(M.NamespacePath namespacePath, string idName, ImmutableArray<TypeValue> typeArgs, TypeHint hintType)
             {
-                return globalItemValueFactory.GetGlobal(namespacePath, idName, typeArgs, hintTypeValue);
+                return globalItemValueFactory.GetGlobal(namespacePath, idName, typeArgs, hintType);
             }
-
-            
         }
     }
 }

@@ -4,14 +4,14 @@
     "type": "split",
     "children": [
       {
-        "id": "2c5d7587d4294528",
+        "id": "2f74bbc73928e746",
         "type": "leaf",
         "active": true,
         "state": {
           "type": "markdown",
           "state": {
-            "file": "action/open-namespace.md",
-            "mode": "preview"
+            "file": "action/add-using-namespace.md",
+            "mode": "source"
           }
         }
       }
@@ -69,7 +69,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "action/open-namespace.md",
+                "file": "action/add-using-namespace.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -86,15 +86,15 @@
     "collapsed": true
   },
   "lastOpenFiles": [
-    "action/open-namespace.md",
-    "action/open-new-local-variable-scope.md",
-    "action/reference-box-member-varable.md",
-    "action/reference-dict-element.md",
-    "action/reference-global-variable.md",
-    "action/reference-enum-element-member-variable.md",
-    "action/reference-instance-class-member-variable.md",
-    "action/reference-instance-struct-member-variable.md",
-    "action/reference-list-element.md",
-    "action/reference-local-variable.md"
+    "action/add-using-namespace.md",
+    "action/call-instance-struct-member-function.md",
+    "action/call-instance-class-member-function.md",
+    "action/call-global-function.md",
+    "action/branch-by-nullable-value.md",
+    "action/branch-by-class-value.md",
+    "action/branch-by-bool-value.md",
+    "action/assign-value.md",
+    "action/alias-other-type.md",
+    "action/loop-using-for.md"
   ]
 }

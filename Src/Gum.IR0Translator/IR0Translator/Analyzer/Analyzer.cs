@@ -72,7 +72,7 @@ namespace Gum.IR0Translator
                 // var 처리
                 if (declType is VarTypeValue)
                 {
-                    var initExpResult = AnalyzeExp(elem.InitExp, null);
+                    var initExpResult = AnalyzeExp(elem.InitExp, NontTypeHint.Instance);
                     var rtype = initExpResult.TypeValue.GetRType();
                     return new VarDeclElementCoreResult(new R.VarDeclElement(elem.VarName, rtype, initExpResult.Exp), initExpResult.TypeValue);
                 }
@@ -165,7 +165,7 @@ namespace Gum.IR0Translator
         {
             if (elem is S.ExpStringExpElement expElem)
             {
-                var expResult = AnalyzeExp(expElem.Exp, null);
+                var expResult = AnalyzeExp(expElem.Exp, NontTypeHint.Instance);
 
                 // 캐스팅이 필요하다면 
                 if (context.IsIntType(expResult.TypeValue))
@@ -249,9 +249,11 @@ namespace Gum.IR0Translator
 
             Debug.Assert(captureInfo != null);
 
+            var paramTypes = paramInfos.Select(paramInfo => paramInfo.TypeValue).ToImmutableArray();
+
             var lambdaTypeValue = context.NewLambdaTypeValue(
                 retTypeValue ?? VoidTypeValue.Instance,
-                paramInfos.Select(paramInfo => paramInfo.TypeValue)
+                paramTypes
             );
 
             return new LambdaResult(bodyResult.Stmt, captureInfo, lambdaTypeValue);
@@ -271,7 +273,6 @@ namespace Gum.IR0Translator
                     return binOpExp.Kind == S.BinaryOpKind.Assign;
 
                 case S.CallExp _:
-                case S.MemberCallExp _:
                     return true;
 
                 default:
@@ -279,12 +280,12 @@ namespace Gum.IR0Translator
             }
         }
 
-        ExpResult AnalyzeTopLevelExp(S.Exp exp, TypeValue? hintTypeValue, AnalyzeErrorCode code)
+        ExpResult AnalyzeTopLevelExp(S.Exp exp, TypeHint hintType, AnalyzeErrorCode code)
         {
             if (!IsTopLevelExp(exp))
                 context.AddFatalError(code, exp);
 
-            return AnalyzeExp(exp, hintTypeValue);
+            return AnalyzeExp(exp, hintType);
         }
 
         public void AnalyzeFuncDecl(S.FuncDecl funcDecl)
@@ -354,7 +355,7 @@ namespace Gum.IR0Translator
 
             foreach (var exp in exps)
             {
-                var expResult = AnalyzeExp(exp, null);
+                var expResult = AnalyzeExp(exp, NontTypeHint.Instance);
                 results.Add(expResult);
             }
 

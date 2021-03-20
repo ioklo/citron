@@ -66,7 +66,7 @@ namespace Gum.Syntax
         }
     }
 
-    // MemberCallExp는 따로 
+    // MemberCallExp는 따로  
     public class CallExp : Exp
     {
         public Exp Callable { get; }

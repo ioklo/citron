@@ -3,14 +3,29 @@
 ```csharp
 void Func(nullable<int> i)
 {
+    // 1. 기본형
+    if (int v = i as int) // i값이 v에 복사되지 않는다
+    {
+        print(v);
+    }
+
+    // 2. 축약형
     if (i is null) // i == null은 지원 안할 예정이다
     {
 
     }
 
-    if (i is int v) // i값이 v에 복사되지 않는다. if(i is var v) 해도 된다
+    // 3. not null 축약형
+    if (i is not null)
     {
-        print(v);
+
     }
+
+    // 4. 그냥 타입을 써주던가
+    if (i is int)
+    {
+
+    }
+    
 }
 ```

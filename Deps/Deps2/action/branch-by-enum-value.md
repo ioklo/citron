@@ -9,8 +9,13 @@ enum E
 
 void Func(E e)
 {
-    if (e is Second s) // 복사가 일어나지 않는다
+    // 1. 기본형
+    if (var s = e as E.Second) // 복사가 일어나지 않는다
         print(s.num);
+
+    // 축약형
+    if (e is E.Second)
+        print (e.num);
 }
 ```
 

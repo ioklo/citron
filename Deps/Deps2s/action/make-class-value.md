@@ -1,0 +1,2 @@
+# make-class-value
+

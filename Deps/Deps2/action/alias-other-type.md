@@ -7,8 +7,8 @@
 // 1. 전역 공간에서 IntList를 찾으면 list<int>이다
 type IntList = list<int>;
 
-// 2. inline성질의 tuple을 고정시킬 수 있다
-type MyTuple = (string Name, int Age);
+// 2. inline성질의 tuple에 이름을 줄 수 있다
+type MyTuple = tuple<string Name, int Age>;
 
 class MyList<T>
 {

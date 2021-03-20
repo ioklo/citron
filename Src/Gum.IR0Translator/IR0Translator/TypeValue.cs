@@ -17,7 +17,7 @@ namespace Gum.IR0Translator
     abstract partial class TypeValue : ItemValue
     {
         public virtual TypeValue? GetBaseType() { return null; }
-        public virtual ItemResult GetMember(M.Name memberName, ImmutableArray<TypeValue> typeArgs, TypeValue? hintType) { return NotFoundItemResult.Instance; }
+        public virtual ItemResult GetMember(M.Name memberName, ImmutableArray<TypeValue> typeArgs, TypeHint hintType) { return NotFoundItemResult.Instance; }
         public virtual TypeValue? GetMemberType(M.Name memberName, ImmutableArray<TypeValue> typeArgs) { return null; }        
         internal abstract TypeValue Apply(TypeEnv typeEnv);
         public abstract IR0.Type GetRType();
@@ -88,6 +88,24 @@ namespace Gum.IR0Translator
         }
 
         public override R.Type GetRType() => throw new NotImplementedException();
+
+        public override int GetHashCode()
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    class EnumTypeValue : NormalTypeValue
+    {
+        public override R.Type GetRType()
+        {
+            throw new NotImplementedException();
+        }
+
+        internal override TypeValue Apply(TypeEnv typeEnv)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     class StructTypeValue : NormalTypeValue
@@ -130,7 +148,7 @@ namespace Gum.IR0Translator
                 typeArgs.SequenceEqual(other.typeArgs);
         }
 
-        ItemResult GetMemberType(M.Name memberName, ImmutableArray<TypeValue> typeArgs, TypeValue? hintType)
+        ItemResult GetMemberType(M.Name memberName, ImmutableArray<TypeValue> typeArgs, TypeHint hintType)
         {
             var results = new List<ValueItemResult>();
 
@@ -153,7 +171,7 @@ namespace Gum.IR0Translator
             return results[0];
         }
 
-        ItemResult GetMemberFunc(M.Name memberName, ImmutableArray<TypeValue> typeArgs, TypeValue? hintType)
+        ItemResult GetMemberFunc(M.Name memberName, ImmutableArray<TypeValue> typeArgs, TypeHint hintType)
         {
             var results = new List<ValueItemResult>();
 
@@ -177,7 +195,7 @@ namespace Gum.IR0Translator
             return results[0];
         }
         
-        ItemResult GetMemberVar(M.Name memberName, ImmutableArray<TypeValue> typeArgs, TypeValue? hintType)
+        ItemResult GetMemberVar(M.Name memberName, ImmutableArray<TypeValue> typeArgs, TypeHint hintType)
         {
             var results = new List<ValueItemResult>();
             foreach (var memberVar in structInfo.MemberVars)
@@ -209,23 +227,23 @@ namespace Gum.IR0Translator
             return typeValue.Apply(typeEnv);
         }
 
-        public override ItemResult GetMember(M.Name memberName, ImmutableArray<TypeValue> typeArgs, TypeValue? hintTypeValue)
+        public override ItemResult GetMember(M.Name memberName, ImmutableArray<TypeValue> typeArgs, TypeHint hintType)
         {
             // TODO: caching
             var results = new List<ValueItemResult>();
 
             // error, notfound, found
-            var typeResult = GetMemberType(memberName, typeArgs, hintTypeValue);
+            var typeResult = GetMemberType(memberName, typeArgs, hintType);
             if (typeResult is ErrorItemResult) return typeResult;
             if (typeResult is ValueItemResult typeMemberResult) results.Add(typeMemberResult);
 
             // error, notfound, found
-            var funcResult = GetMemberFunc(memberName, typeArgs, hintTypeValue);
+            var funcResult = GetMemberFunc(memberName, typeArgs, hintType);
             if (funcResult is ErrorItemResult) return funcResult;
             if (funcResult is ValueItemResult funcMemberResult) results.Add(funcMemberResult);
 
             // error, notfound, found
-            var varResult = GetMemberVar(memberName, typeArgs, hintTypeValue);
+            var varResult = GetMemberVar(memberName, typeArgs, hintType);
             if (varResult is ErrorItemResult) return varResult;
             if (varResult is ValueItemResult varMemberResult) results.Add(varMemberResult);            
 
@@ -341,6 +359,11 @@ namespace Gum.IR0Translator
         public override R.Type GetRType()
         {
             return R.Type.Void;
+        }
+
+        public override int GetHashCode()
+        {
+            throw new NotImplementedException();
         }
     }
 

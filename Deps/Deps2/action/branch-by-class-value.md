@@ -5,20 +5,17 @@ class Derived : Base { public int x; }
 
 void Func(Base b)
 {
-    if (b is Derived d)
+    // 1. 기본형
+    if (var d = b as Derived)
     {
         // d는 scope내에서 Derived 타입이다.
-        assert(d.x == 4); 
+        assert(d.x == 4);
     }
-}
 
-// if (b is Derived) 를 안쓰는 이유
-type T = (Base b, int x);
-void Func2(T t)
-{
-    if (t.b is Derived d) // t.b는 변수가 아닌데 어떻게 할 것인가
+    // 2. 테스트 대상이 지역변수일 경우의 축약형
+    if (b is Derived) // 스코프 내에서 b는 Derived 타입이다
     {
-
+        b = new Base(); // derived 타입이니 불가, 이걸 하고 싶으면 var d = b as derived를 해야 한다        
     }
 }
 ```

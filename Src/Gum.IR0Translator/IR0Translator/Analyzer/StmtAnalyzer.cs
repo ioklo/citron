@@ -28,14 +28,14 @@ namespace Gum.IR0Translator
         // CommandStmt에 있는 expStringElement를 분석한다
         StmtResult AnalyzeCommandStmt(S.CommandStmt cmdStmt)
         {
-            var stringExps = new List<R.StringExp>();
+            var builder = ImmutableArray.CreateBuilder<R.StringExp>();
             foreach (var cmd in cmdStmt.Commands)
             {
                 var expResult = AnalyzeStringExp(cmd);
-                stringExps.Add(expResult.Exp);
+                builder.Add(expResult.Exp);
             }
 
-            return new StmtResult(new R.CommandStmt(stringExps));
+            return new StmtResult(new R.CommandStmt(builder.ToImmutable()));
         }
 
         // PrivateGlobalVarDecl이 나오거나, LocalVarDecl이 나오거나
@@ -183,7 +183,7 @@ namespace Gum.IR0Translator
                 return AnalyzeIfTestStmt(ifStmt);
 
             // 순회
-            var condResult = AnalyzeExp(ifStmt.Cond, null);
+            var condResult = AnalyzeExp(ifStmt.Cond, NontTypeHint.Instance);
             var bodyResult = AnalyzeStmt(ifStmt.Body);
             StmtResult? elseBodyResult = (ifStmt.ElseBody != null) ? AnalyzeStmt(ifStmt.ElseBody) : null;
 
@@ -209,7 +209,7 @@ namespace Gum.IR0Translator
                     return new ForStmtInitializerResult(new R.VarDeclForStmtInitializer(varDeclResult.VarDecl));
 
                 case S.ExpForStmtInitializer expInit:
-                    var expResult = AnalyzeTopLevelExp(expInit.Exp, null, A1102_ForStmt_ExpInitializerShouldBeAssignOrCall);
+                    var expResult = AnalyzeTopLevelExp(expInit.Exp, NontTypeHint.Instance, A1102_ForStmt_ExpInitializerShouldBeAssignOrCall);
                     var expInitType = expResult.TypeValue.GetRType();
                     return new ForStmtInitializerResult(new R.ExpForStmtInitializer(new R.ExpInfo(expResult.Exp, expInitType)));
 
@@ -233,7 +233,7 @@ namespace Gum.IR0Translator
                 if (forStmt.CondExp != null)
                 {
                     // 밑에서 쓰이므로 분석실패시 종료
-                    var condResult = AnalyzeExp(forStmt.CondExp, null);
+                    var condResult = AnalyzeExp(forStmt.CondExp, NontTypeHint.Instance);
 
                     // 에러가 나면 에러를 추가하고 계속 진행
                     if (!context.IsAssignable(context.GetBoolType(), condResult.TypeValue))
@@ -245,7 +245,7 @@ namespace Gum.IR0Translator
                 R.ExpInfo? continueInfo = null;
                 if (forStmt.ContinueExp != null)
                 {
-                    var continueResult = AnalyzeTopLevelExp(forStmt.ContinueExp, null, A1103_ForStmt_ContinueExpShouldBeAssignOrCall);
+                    var continueResult = AnalyzeTopLevelExp(forStmt.ContinueExp, NontTypeHint.Instance, A1103_ForStmt_ContinueExpShouldBeAssignOrCall);
                     var contExpType = continueResult.TypeValue.GetRType();
                     continueInfo = new R.ExpInfo(continueResult.Exp, contExpType);
                 }
@@ -332,7 +332,7 @@ namespace Gum.IR0Translator
         StmtResult AnalyzeBlockStmt(S.BlockStmt blockStmt)
         {
             bool bFatal = false;
-            var stmts = new List<R.Stmt>();
+            var builder = ImmutableArray.CreateBuilder<R.Stmt>();
 
             context.ExecInLocalScope(() =>
             {
@@ -341,7 +341,7 @@ namespace Gum.IR0Translator
                     try
                     {
                         var stmtResult = AnalyzeStmt(stmt);
-                        stmts.Add(stmtResult.Stmt);
+                        builder.Add(stmtResult.Stmt);
                     }
                     catch (FatalAnalyzeException)
                     {
@@ -353,7 +353,7 @@ namespace Gum.IR0Translator
             if (bFatal)
                 throw new FatalAnalyzeException();
 
-            return new StmtResult(new R.BlockStmt(stmts));
+            return new StmtResult(new R.BlockStmt(builder.ToImmutable()));
         }
 
         StmtResult AnalyzeBlankStmt()
@@ -363,7 +363,7 @@ namespace Gum.IR0Translator
 
         StmtResult AnalyzeExpStmt(S.ExpStmt expStmt)
         {
-            var expResult = AnalyzeTopLevelExp(expStmt.Exp, null, A1301_ExpStmt_ExpressionShouldBeAssignOrCall);
+            var expResult = AnalyzeTopLevelExp(expStmt.Exp, NontTypeHint.Instance, A1301_ExpStmt_ExpressionShouldBeAssignOrCall);
 
             var expType = expResult.TypeValue.GetRType();
             return new StmtResult(new R.ExpStmt(new R.ExpInfo(expResult.Exp, expType)));
@@ -394,72 +394,79 @@ namespace Gum.IR0Translator
 
         StmtResult AnalyzeForeachStmt(S.ForeachStmt foreachStmt)
         {
-            // iterator
-            var iteratorResult = AnalyzeExp(foreachStmt.Iterator, null);
-            var elemType = context.GetTypeValueByTypeExp(foreachStmt.Type);
+            throw new NotImplementedException();
 
-            // TODO: 여기 함수로 빼기
-            // 1. seq<T> 인터페이스
-            // 2. seq<T> 인터페이스를 가지고 있는 struct
-            
-            // SeqTypeValue(NormalTypeValue) // seq<T>인터페이스를 가지고 있는 struct
-            // BoxTypeValue(SeqTypeValue(NormalTypeValue)) // 
-            // RefTypeValue(SeqTypeValue(NormalTypeValue)) // 
-            // InterfaceTypeValue(SeqTypeValue(NormalTypeValue)) // 네가지
+            //// iterator
+            //var iteratorResult = AnalyzeExp(foreachStmt.Iterator, null);
+            //var elemType = context.GetTypeValueByTypeExp(foreachStmt.Type);
+
+            //// 1. seq<T> constraint
+            //// 2. seq<T> 인터페이스를 가지고 있는 struct
+
+            //// list<T> => IEnumerable<T>
+            //// interface IEnumerable<T>
+            //// {            
+            ////     seq<int> GetEnumerator(); // 공변 반환형
+            //// }
 
 
-            
+            //// SeqTypeValue(NormalTypeValue) // seq<T>인터페이스를 가지고 있는 struct
+            //// BoxTypeValue(SeqTypeValue(NormalTypeValue)) // 
+            //// RefTypeValue(SeqTypeValue(NormalTypeValue)) // 
+            //// InterfaceTypeValue(SeqTypeValue(NormalTypeValue)) // 네가지
 
-            TypeValue? iteratorElemType = null;
-            if (iteratorResult.TypeValue is NormalTypeValue normalIteratorType)
-            {
-                var typeId = normalIteratorType.GetTypeId( );
 
-                if (ModuleInfoEqualityComparer.EqualsItemId(typeId, ItemIds.List))
-                {
-                    iteratorElemType = normalIteratorType.Entry.TypeArgs[0];
-                }
-                else if (ModuleInfoEqualityComparer.EqualsItemId(typeId, ItemIds.Enumerable))
-                {
-                    iteratorElemType = normalIteratorType.Entry.TypeArgs[0];
-                }
-                else
-                {
-                    context.AddFatalError(A1801_ForeachStmt_IteratorShouldBeListOrEnumerable, foreachStmt.Iterator);
-                }
-            }
-            else
-            {
-                context.AddFatalError(A1801_ForeachStmt_IteratorShouldBeListOrEnumerable, foreachStmt.Iterator);
-            }
 
-            if (elemType is VarTypeValue) // var 라면, iteratorElemType을 쓴다
-            {
-                elemType = iteratorElemType;
-            }
-            else // 아니라면 둘이 호환되는지 확인한다
-            {
-                // TODO: Cast
-                if (!context.IsAssignable(elemType, iteratorElemType))
-                    context.AddFatalError(A1802_ForeachStmt_MismatchBetweenElemTypeAndIteratorElemType, foreachStmt);
-            }
+            //TypeValue? iteratorElemType = null;
+            //if (iteratorResult.TypeValue is NormalTypeValue normalIteratorType)
+            //{
+            //    var typeId = normalIteratorType.GetTypeId( );
 
-            var stmt = context.ExecInLocalScope(() =>
-            {
-                context.AddLocalVarInfo(foreachStmt.VarName, elemType);
+            //    if (ModuleInfoEqualityComparer.EqualsItemId(typeId, ItemIds.List))
+            //    {
+            //        iteratorElemType = normalIteratorType.Entry.TypeArgs[0];
+            //    }
+            //    else if (ModuleInfoEqualityComparer.EqualsItemId(typeId, ItemIds.Enumerable))
+            //    {
+            //        iteratorElemType = normalIteratorType.Entry.TypeArgs[0];
+            //    }
+            //    else
+            //    {
+            //        context.AddFatalError(A1801_ForeachStmt_IteratorShouldBeListOrEnumerable, foreachStmt.Iterator);
+            //    }
+            //}
+            //else
+            //{
+            //    context.AddFatalError(A1801_ForeachStmt_IteratorShouldBeListOrEnumerable, foreachStmt.Iterator);
+            //}
 
-                return context.ExecInLoop(() =>
-                {
-                    var bodyResult = AnalyzeStmt(foreachStmt.Body);
+            //if (elemType is VarTypeValue) // var 라면, iteratorElemType을 쓴다
+            //{
+            //    elemType = iteratorElemType;
+            //}
+            //else // 아니라면 둘이 호환되는지 확인한다
+            //{
+            //    // TODO: Cast
+            //    if (!context.IsAssignable(elemType, iteratorElemType))
+            //        context.AddFatalError(A1802_ForeachStmt_MismatchBetweenElemTypeAndIteratorElemType, foreachStmt);
+            //}
 
-                    var elemRType = elemType.GetRType();
-                    var iteratorRType = iteratorResult.TypeValue.GetRType();
+            //var stmt = context.ExecInLocalScope(() =>
+            //{
+            //    context.AddLocalVarInfo(foreachStmt.VarName, elemType);
 
-                    return new R.ForeachStmt(elemRType, foreachStmt.VarName, new R.ExpInfo(iteratorResult.Exp, iteratorRType), bodyResult.Stmt);
-                });
-            });
+            //    return context.ExecInLoop(() =>
+            //    {
+            //        var bodyResult = AnalyzeStmt(foreachStmt.Body);
 
-            return new StmtResult(stmt);
+            //        var elemRType = elemType.GetRType();
+            //        var iteratorRType = iteratorResult.TypeValue.GetRType();
+
+            //        return new R.ForeachStmt(elemRType, foreachStmt.VarName, new R.ExpInfo(iteratorResult.Exp, iteratorRType), bodyResult.Stmt);
+            //    });
+            //});
+
+            //return new StmtResult(stmt);
         }
 
         StmtResult AnalyzeYieldStmt(S.YieldStmt yieldStmt)

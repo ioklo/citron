@@ -116,37 +116,37 @@ namespace Gum
 
         internal async ValueTask<ParseResult<ForStmt>> ParseForStmtAsync(ParserContext context)
         {
-            // TODO: Invalid와 Fatal을 구분해야 할 것 같다.. 어찌할지는 깊게 생각을 해보자
             if (!Accept<ForToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                 return Invalid();
 
             if (!Accept<LParenToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
-                return Invalid();
-            
+                return Fatal();
+
             // TODO: 이 Initializer의 끝은 ';' 이다
             Parse(await ParseForStmtInitializerAsync(context), ref context, out var initializer);
-            
+
             if (!Accept<SemiColonToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
-                return Invalid();
+                return Fatal();
 
             // TODO: 이 CondExp의 끝은 ';' 이다            
             Parse(await parser.ParseExpAsync(context), ref context, out var cond);
 
             if (!Accept<SemiColonToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
-                return Invalid();
-            
+                return Fatal();
+
             // TODO: 이 CondExp의 끝은 ')' 이다            
             Parse(await parser.ParseExpAsync(context), ref context, out var cont);
             
             if (!Accept<RParenToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
-                return Invalid();
+                return Fatal();
 
-            if (!Parse(await ParseStmtAsync(context), ref context, out var bodyStmt))            
-                return Invalid();
+            if (!Parse(await ParseStmtAsync(context), ref context, out var bodyStmt))
+                return Fatal();
 
             return new ParseResult<ForStmt>(new ForStmt(initializer, cond, cont, bodyStmt!), context);
 
             static ParseResult<ForStmt> Invalid() => ParseResult<ForStmt>.Invalid;
+            static ParseResult<ForStmt> Fatal() => throw new ParseFatalException();
         }
 
         internal async ValueTask<ParseResult<ContinueStmt>> ParseContinueStmtAsync(ParserContext context)

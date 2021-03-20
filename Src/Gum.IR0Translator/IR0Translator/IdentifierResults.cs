@@ -4,6 +4,7 @@ using S = Gum.Syntax;
 using M = Gum.CompileTime;
 using R = Gum.IR0;
 using System.Collections.Immutable;
+using System.Diagnostics;
 
 namespace Gum.IR0Translator
 {
@@ -119,7 +120,7 @@ namespace Gum.IR0Translator
     //    public string Name { get; }
     //    public EnumFieldInfo(string name) { Name = name; }
     //}
-    
+
     //// x => this.x
     //class ThisMemberInfo : IdentifierInfo
     //{   
@@ -131,11 +132,30 @@ namespace Gum.IR0Translator
     //}
 
     //// F
-    class FuncIdentifierResult : ValidIdentifierResult
+    class InstanceFuncIdentifierResult : ValidIdentifierResult
+    {
+        public R.Exp Instance { get; }
+        public TypeValue InstanceType { get; }
+        public FuncValue FuncValue { get; }
+        public LambdaCapture LambdaCapture { get; }
+        public InstanceFuncIdentifierResult(R.Exp instance, TypeValue instanceType, FuncValue funcValue, LambdaCapture lambdaCapture)
+        {
+            Debug.Assert(!funcValue.IsStatic);
+
+            Instance = instance;
+            InstanceType = instanceType;
+            FuncValue = funcValue;
+            LambdaCapture = lambdaCapture;
+        }
+    }
+
+
+    class StaticFuncIdentifierResult : ValidIdentifierResult
     {
         public FuncValue FuncValue { get; }
-        public FuncIdentifierResult(FuncValue funcValue)
+        public StaticFuncIdentifierResult(FuncValue funcValue)
         {
+            Debug.Assert(funcValue.IsStatic);
             FuncValue = funcValue;
         }
     }

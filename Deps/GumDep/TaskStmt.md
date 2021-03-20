@@ -1,0 +1,3 @@
+[[NewLambda]]
+[[LocalTasks]]
+[[RunParallel]]

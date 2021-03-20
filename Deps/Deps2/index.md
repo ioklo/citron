@@ -123,6 +123,11 @@
   - 대입
     * assign [[assign-value]]
 
+  - 예외
+    * throw [[throw-exception]]  
+    * try ... catch [[catch-exception]]
+    * pass-thru exception [[passthru-exception]]
+
   - flow control
     - test
       * if (분기문(값에 따라서 실행할 명령어를 다르게 하기)) [[branch-by-bool-value]]
@@ -154,7 +159,9 @@
     * lambda 값 만들기 (lambda 식) [[make-lambda-value]]
     * lambda 식 앞에 box를 붙여서 func<> 만들기 [[make-func-interface-value]]
       - func<> 인터페이스로 여러 종류의 lambda 값을 한 변수에 대입하기
+    * lambda 식 앞에 box를 붙여서 func_throw<> 만들기 [[make-func_throw-interface-value]]
     * lambda 값 호출 [[call-lambda-value]](func<>.Invoke constraint 함수 호출)
+    * func<>를 func_throw<> 로 캐스팅 [[cast-func-interface-value]]
 
   - 리터럴
     * bool: true, false [[make-bool]]

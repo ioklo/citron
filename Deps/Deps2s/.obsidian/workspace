@@ -1,0 +1,121 @@
+{
+  "main": {
+    "id": "dc87493fd22caf44",
+    "type": "split",
+    "children": [
+      {
+        "id": "08ec9e72387fa220",
+        "type": "split",
+        "children": [
+          {
+            "id": "2c5d7587d4294528",
+            "type": "leaf",
+            "active": true,
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "index.md",
+                "mode": "source"
+              }
+            },
+            "group": "fba3b9154a8ac83c"
+          },
+          {
+            "id": "11c00a7f85b29396",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "index.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": false
+              }
+            },
+            "group": "fba3b9154a8ac83c"
+          }
+        ],
+        "direction": "horizontal"
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "bbd85de1cdfdc52f",
+    "type": "split",
+    "children": [
+      {
+        "id": "eb8041cf2e8beeeb",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "95a2cfb3b81bb1cb",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {}
+            }
+          },
+          {
+            "id": "3e6574ea8607f8a8",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 170
+  },
+  "right": {
+    "id": "2effa7cdb4b2e9f3",
+    "type": "split",
+    "children": [
+      {
+        "id": "b33c8d7a38f70011",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "861fc80dd09f6c24",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "index.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "lastOpenFiles": [
+    "index.md",
+    "구조체 값.md",
+    "실행 환경.md",
+    "인덱스.md",
+    "Untitled.md",
+    "구조체.md",
+    "클래스 값.md"
+  ]
+}
