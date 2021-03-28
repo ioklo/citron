@@ -2,10 +2,9 @@
 using System.Threading.Tasks;
 using Xunit;
 using System.IO;
-using Gum.Runtime;
 
 using S = Gum.Syntax;
-
+using System;
 
 namespace Gum.IR0Translator.Test
 {
@@ -46,8 +45,10 @@ namespace Gum.IR0Translator.Test
 
             Assert.True(scriptResult.HasValue);
 
-            var runtimeModule = new RuntimeModule("/", "/");
-            var errors = new List<(object obj, string Message)>();
+            throw new NotImplementedException();
+
+            // var runtimeModule = new RuntimeModule("/", "/");
+            // var errors = new List<(object obj, string Message)>();
 
             // var app = new QsDefaultApplication(new QsTestCmdProvider(), runtimeModule);            
 

@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Text;
 using Gum.Infra;
+using Pretune;
 
 namespace Gum.IR0
 {
+    [AutoConstructor, ImplementIEquatable]
     public partial class Struct
     {
         public AccessModifier AccessModifier { get; }
@@ -13,19 +15,5 @@ namespace Gum.IR0
         public ImmutableArray<string> TypeParams { get; }
         public ImmutableArray<Type> BaseTypes { get; }
         // public ImmutableArray<Element> Elems { get; }
-
-        public Struct(
-            AccessModifier accessModifier,
-            string name,
-            ImmutableArray<string> typeParams,
-            ImmutableArray<Type> baseTypes
-            // IEnumerable<Element> elems
-            )
-        {
-            AccessModifier = accessModifier;
-            Name = name;
-            TypeParams = typeParams;
-            BaseTypes = baseTypes;
-        }
     }
 }

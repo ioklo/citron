@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Collections.Immutable;
+using Pretune;
 
 namespace Gum.IR0
 {
-    public class CaptureInfo
+    [AutoConstructor, ImplementIEquatable]
+    public partial class CaptureInfo
     {
         public class Element
         {
@@ -21,11 +23,5 @@ namespace Gum.IR0
 
         public bool bShouldCaptureThis { get; }
         public ImmutableArray<Element> Captures { get; }
-
-        public CaptureInfo(bool bCaptureThis, ImmutableArray<Element> captures)
-        {
-            this.bShouldCaptureThis = bCaptureThis;
-            this.Captures = captures;
-        }
     }
 }

@@ -4,10 +4,10 @@
     {
     }
 
-    class NontTypeHint : TypeHint 
+    class NoneTypeHint : TypeHint 
     {
-        public static readonly NontTypeHint Instance = new NontTypeHint();
-        private NontTypeHint() { }
+        public static readonly NoneTypeHint Instance = new NoneTypeHint();
+        private NoneTypeHint() { }
     }
 
     class TypeValueTypeHint : TypeHint

@@ -1,8 +1,10 @@
-﻿namespace Gum.IR0
+﻿using Pretune;
+
+namespace Gum.IR0
 {
-    public struct FuncDeclId
+    [AutoConstructor, ImplementIEquatable]
+    public partial struct FuncDeclId
     {
         public int Value { get; }
-        public FuncDeclId(int value) { Value = value; }
     }
 }

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -32,9 +31,9 @@ namespace Gum.IR0Translator
         }        
 
         // x
-        ExpResult AnalyzeIdExp(S.IdentifierExp idExp, TypeHint hintType)
+        ExpResult AnalyzeIdExp(S.IdentifierExp idExp, ResolveHint resolveHint)
         {
-            var result = ResolveIdentifierIdExp(idExp, hintType);
+            var result = ResolveIdentifierIdExp(idExp, resolveHint);
 
             switch (result)
             {
@@ -120,7 +119,7 @@ namespace Gum.IR0Translator
         // int만 지원한다
         ExpResult AnalyzeIntUnaryAssignExp(S.Exp operand, R.InternalUnaryAssignOperator op)
         {
-            var operandResult = AnalyzeExp(operand, NontTypeHint.Instance);
+            var operandResult = AnalyzeExp(operand, ResolveHint.None);
 
             // int type 검사
             if (!context.IsAssignable(context.GetIntType(), operandResult.TypeValue))
@@ -131,10 +130,10 @@ namespace Gum.IR0Translator
 
             return new ExpResult(new R.CallInternalUnaryAssignOperator(op, operandResult.Exp), context.GetIntType());
         }
-
+        
         ExpResult AnalyzeUnaryOpExp(S.UnaryOpExp unaryOpExp)
         {
-            var operandResult = AnalyzeExp(unaryOpExp.Operand, NontTypeHint.Instance);            
+            var operandResult = AnalyzeExp(unaryOpExp.Operand, ResolveHint.None);            
 
             switch (unaryOpExp.Kind)
             {
@@ -184,8 +183,8 @@ namespace Gum.IR0Translator
         
         ExpResult AnalyzeBinaryOpExp(S.BinaryOpExp binaryOpExp)
         {
-            var operandResult0 = AnalyzeExp(binaryOpExp.Operand0, NontTypeHint.Instance);
-            var operandResult1 = AnalyzeExp(binaryOpExp.Operand1, NontTypeHint.Instance);
+            var operandResult0 = AnalyzeExp(binaryOpExp.Operand0, ResolveHint.None);
+            var operandResult1 = AnalyzeExp(binaryOpExp.Operand1, ResolveHint.None);
 
             // 1. Assign 먼저 처리
             if (binaryOpExp.Kind == S.BinaryOpKind.Assign)
@@ -326,7 +325,7 @@ namespace Gum.IR0Translator
                 lambdaType.Return);
         }
         
-        ExpResult AnalyzeCallExp(S.CallExp exp, TypeHint hintType) 
+        ExpResult AnalyzeCallExp(S.CallExp exp, ResolveHint hint) 
         {
             // 여기서 분석해야 할 것은 
             // 1. 해당 Exp가 함수인지, 변수인지, 함수라면 FuncId를 넣어준다
@@ -336,11 +335,11 @@ namespace Gum.IR0Translator
             var argTypes = ImmutableArray.CreateRange(argResults, result => result.TypeValue);
 
             // E e = First(2, 3); => E e = E.First(2, 3);
-            // EnumHint, 
+            // EnumHint
             // ArgumentTypes
 
             // argTypes로 힌트 타입을 만들어야 한다
-            var callableResult = ResolveIdentifier(exp.Callable, argTypes);
+            var callableResult = ResolveIdentifier(exp.Callable, new ResolveHint(hint.TypeHint, new DefaultFuncParamHint(argTypes)));
 
             switch(callableResult)
             {
@@ -441,10 +440,10 @@ namespace Gum.IR0Translator
         }
 
         // exp.x
-        ExpResult AnalyzeMemberExpExpParent(S.MemberExp memberExp, R.Exp parentExp, TypeValue parentType, TypeHint hintType)
+        ExpResult AnalyzeMemberExpExpParent(S.MemberExp memberExp, R.Exp parentExp, TypeValue parentType, ResolveHint hint)
         {   
             var typeArgs = GetTypeValues(memberExp.MemberTypeArgs, context);
-            var memberResult = parentType.GetMember(memberExp.MemberName, typeArgs, hintType);
+            var memberResult = parentType.GetMember(memberExp.MemberName, typeArgs, hint);
 
             switch(memberResult)
             {
@@ -485,10 +484,10 @@ namespace Gum.IR0Translator
         }
 
         // T.x
-        ExpResult AnalyzeMemberExpTypeParent(S.MemberExp nodeForErrorReport, TypeValue parentType, string memberName, ImmutableArray<S.TypeExp> stypeArgs, TypeHint hintType)
+        ExpResult AnalyzeMemberExpTypeParent(S.MemberExp nodeForErrorReport, TypeValue parentType, string memberName, ImmutableArray<S.TypeExp> stypeArgs, ResolveHint hint)
         {
             var typeArgs = GetTypeValues(stypeArgs, context);
-            var member = parentType.GetMember(memberName, typeArgs, hintType);
+            var member = parentType.GetMember(memberName, typeArgs, hint);
 
             switch (member)
             {
@@ -571,9 +570,9 @@ namespace Gum.IR0Translator
         }
 
         // parent."x"<>
-        ExpResult AnalyzeMemberExp(S.MemberExp memberExp, TypeHint hintType)
+        ExpResult AnalyzeMemberExp(S.MemberExp memberExp, ResolveHint hint)
         {            
-            var parentResult = ResolveIdentifier(memberExp.Parent, NontTypeHint.Instance);
+            var parentResult = ResolveIdentifier(memberExp.Parent, ResolveHint.None);
 
             switch(parentResult)
             {
@@ -587,10 +586,10 @@ namespace Gum.IR0Translator
 
                 case ExpIdentifierResult expResult:
                     context.AddLambdaCapture(expResult.LambdaCapture);
-                    return AnalyzeMemberExpExpParent(memberExp, expResult.Exp, expResult.TypeValue, hintType);
+                    return AnalyzeMemberExpExpParent(memberExp, expResult.Exp, expResult.TypeValue, hint);
 
                 case TypeIdentifierResult typeResult:
-                    return AnalyzeMemberExpTypeParent(memberExp, typeResult.TypeValue, memberExp.MemberName, memberExp.MemberTypeArgs, hintType);
+                    return AnalyzeMemberExpTypeParent(memberExp, typeResult.TypeValue, memberExp.MemberName, memberExp.MemberTypeArgs, hint);
 
                 case StaticFuncIdentifierResult:
                     // 함수는 멤버변수를 가질 수 없습니다
@@ -634,7 +633,7 @@ namespace Gum.IR0Translator
 
             foreach (var elem in listExp.Elems)
             {
-                var elemResult = AnalyzeExp(elem, NontTypeHint.Instance);                    
+                var elemResult = AnalyzeExp(elem, ResolveHint.None);                    
 
                 builder.Add(elemResult.Exp);
 
@@ -661,11 +660,10 @@ namespace Gum.IR0Translator
                 context.GetListType(curElemTypeValue));
         }
 
-        ExpResult AnalyzeExp(S.Exp exp, TypeHint hintType)
+        ExpResult AnalyzeExpExceptIdAndMember(S.Exp exp, ResolveHint hint)
         {
-            switch(exp)
+            switch (exp)
             {
-                case S.IdentifierExp idExp: return AnalyzeIdExp(idExp, hintType);
                 case S.BoolLiteralExp boolExp: return AnalyzeBoolLiteralExp(boolExp);
                 case S.IntLiteralExp intExp: return AnalyzeIntLiteralExp(intExp);
                 case S.StringExp stringExp:
@@ -675,12 +673,34 @@ namespace Gum.IR0Translator
                     }
                 case S.UnaryOpExp unaryOpExp: return AnalyzeUnaryOpExp(unaryOpExp);
                 case S.BinaryOpExp binaryOpExp: return AnalyzeBinaryOpExp(binaryOpExp);
-                case S.CallExp callExp: return AnalyzeCallExp(callExp, hintType);        
+                case S.CallExp callExp: return AnalyzeCallExp(callExp, hint);
                 case S.LambdaExp lambdaExp: return AnalyzeLambdaExp(lambdaExp);
                 case S.IndexerExp indexerExp: return AnalyzeIndexerExp(indexerExp);
-                case S.MemberExp memberExp: return AnalyzeMemberExp(memberExp, hintType);
                 case S.ListExp listExp: return AnalyzeListExp(listExp);
-                default: throw new NotImplementedException();
+                default: throw new UnreachableCodeException();
+            }
+        }
+
+        ExpResult AnalyzeExp(S.Exp exp, ResolveHint hint)
+        {
+            switch(exp)
+            {
+                case S.IdentifierExp idExp: return AnalyzeIdExp(idExp, hint);
+                case S.BoolLiteralExp boolExp: return AnalyzeBoolLiteralExp(boolExp);
+                case S.IntLiteralExp intExp: return AnalyzeIntLiteralExp(intExp);
+                case S.StringExp stringExp:
+                    {
+                        var strExpResult = AnalyzeStringExp(stringExp);
+                        return new ExpResult(strExpResult.Exp, strExpResult.TypeValue);
+                    }
+                case S.UnaryOpExp unaryOpExp: return AnalyzeUnaryOpExp(unaryOpExp);
+                case S.BinaryOpExp binaryOpExp: return AnalyzeBinaryOpExp(binaryOpExp);
+                case S.CallExp callExp: return AnalyzeCallExp(callExp, hint);        
+                case S.LambdaExp lambdaExp: return AnalyzeLambdaExp(lambdaExp);
+                case S.IndexerExp indexerExp: return AnalyzeIndexerExp(indexerExp);
+                case S.MemberExp memberExp: return AnalyzeMemberExp(memberExp, hint);
+                case S.ListExp listExp: return AnalyzeListExp(listExp);
+                default: throw new UnreachableCodeException();
             }
         }
     }

@@ -1,11 +1,13 @@
-﻿using System;
+﻿using Pretune;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Text;
 
 namespace Gum.IR0
 {
-    public abstract class FuncDecl
+    [ImplementIEquatable]
+    public abstract partial class FuncDecl
     {
         public FuncDeclId Id { get; }
         public bool IsThisCall { get; }
@@ -25,11 +27,10 @@ namespace Gum.IR0
             TypeParams = typeParams;
             ParamNames = paramNames;
             Body = body;
-        }       
-        
+        }        
     }
-
-    public class NormalFuncDecl : FuncDecl
+    
+    public class NormalFuncDecl : FuncDecl, IEquatable<NormalFuncDecl>
     {
         public NormalFuncDecl(
             FuncDeclId id,
@@ -39,6 +40,17 @@ namespace Gum.IR0
             Stmt body)
             : base(id, bThisCall, typeParams, paramNames, body)
         {
+        }
+
+        public override bool Equals(object? obj) => Equals(obj as NormalFuncDecl);
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+
+        public bool Equals(NormalFuncDecl? other)
+        {
+            return base.Equals(other);
         }
     }
 
@@ -50,6 +62,17 @@ namespace Gum.IR0
             : base(id, bThisCall, typeParams, paramNames, body)
         {
             ElemType = elemType;
+        }
+
+        public override bool Equals(object? obj) => Equals(obj as SequenceFuncDecl);
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+
+        public bool Equals(SequenceFuncDecl? other)
+        {
+            return base.Equals(other);
         }
     }
 }

@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 using Xunit;
 using M = Gum.CompileTime;
 
+using static Gum.Infra.Misc;
+
 namespace Gum.IR0Translator.Test
 {
     public class TypeValueTests
@@ -25,8 +27,7 @@ namespace Gum.IR0Translator.Test
         [Fact]
         public void ConstructTypeValue_GlobalStructType_ConstructsProperly()
         {
-            var intType = TypeValues.Int;
-            var xInfo = new M.StructInfo("X", Arr("T"), null, default, default, default, default);            
+            var xInfo = new M.StructInfo("X", Arr("T"), null, default, default, default, default);
             var moduleInfo = new M.ModuleInfo(moduleName, default, Arr<M.TypeInfo>(xInfo), default);
 
             var typeInfoRepo = new TypeInfoRepository(moduleInfo, new ModuleInfoRepository(default));
@@ -122,7 +123,7 @@ namespace Gum.IR0Translator.Test
                 new M.MemberType(
                     new M.GlobalType(moduleName, M.NamespacePath.Root, "X", Arr(MTypes.Int)), "Y", Arr(MTypes.Bool)));
 
-            var itemResult = xyTypeValue.GetMember("v", default, null);
+            var itemResult = xyTypeValue.GetMember("v", default, ResolveHint.None);
             var expected = factory.MakeTypeValue(new M.GlobalType(moduleName, M.NamespacePath.Root, "X", Arr(MTypes.Bool)));
             Assert.Equal(expected, ((ValueItemResult)itemResult).ItemValue);
         }
@@ -141,14 +142,14 @@ namespace Gum.IR0Translator.Test
             var xytype = factory.MakeTypeValue(xymtype);
 
             // 지금은 query밖에 없다, ID를 통한 직접 참조를 할 일 이 생기게 되면 변경한다
-            var itemResult = (ValueItemResult)xytype.GetMember("F", Arr(TypeValues.Bool), null);
+            var itemResult = (ValueItemResult)xytype.GetMember("F", Arr(factory.Bool), ResolveHint.None);
             var funcValue = (FuncValue)itemResult.ItemValue;            
 
             Assert.False(funcValue.IsStatic);
             Assert.False(funcValue.IsSequence);            
 
-            Assert.Equal(Arr(TypeValues.Bool), funcValue.GetParamTypes());
-            Assert.Equal(TypeValues.Int, funcValue.GetRetType());
+            Assert.Equal(Arr(factory.Bool), funcValue.GetParamTypes());
+            Assert.Equal(factory.Int, funcValue.GetRetType());
         }
     }
 }

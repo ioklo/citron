@@ -13,10 +13,10 @@ namespace Gum.IR0Translator
 {
     partial class Analyzer
     {
-        IdentifierResult ResolveIdentifierIdExp(S.IdentifierExp idExp, TypeHint hintType)
+        IdentifierResult ResolveIdentifierIdExp(S.IdentifierExp idExp, ResolveHint resolveHint)
         {
             var typeArgs = GetTypeValues(idExp.TypeArgs, context);
-            var resolver = new IdExpIdentifierResolver(idExp.Value, typeArgs, hintType, context);
+            var resolver = new IdExpIdentifierResolver(idExp.Value, typeArgs, resolveHint, context);
             return resolver.Resolve();
         }        
 
@@ -51,10 +51,11 @@ namespace Gum.IR0Translator
             R.Exp parentExp,
             TypeValue parentType,
             LambdaCapture parentLambdaCapture,
-            string memberName, ImmutableArray<TypeValue> typeArgs, TypeHint hintType)
+            string memberName, ImmutableArray<TypeValue> typeArgs, 
+            ResolveHint hint)
         {
             // 해당 이름의 타입, 변수, 함수
-            var memberResult = parentType.GetMember(memberName, typeArgs, hintType);
+            var memberResult = parentType.GetMember(memberName, typeArgs, hint);
 
             switch(memberResult)
             {
@@ -92,9 +93,9 @@ namespace Gum.IR0Translator
         }
 
         // T.x 꼴
-        IdentifierResult ResolveIdentifierMemberExpTypeParent(TypeValue parentType, string memberName, ImmutableArray<TypeValue> typeArgs, TypeHint hintType)
+        IdentifierResult ResolveIdentifierMemberExpTypeParent(TypeValue parentType, string memberName, ImmutableArray<TypeValue> typeArgs, ResolveHint hint)
         {
-            var member = parentType.GetMember(memberName, typeArgs, hintType);
+            var member = parentType.GetMember(memberName, typeArgs, hint);
 
             switch (member)
             {
@@ -133,12 +134,12 @@ namespace Gum.IR0Translator
             }
         }
 
-        IdentifierResult ResolveIdentifierMemberExp(S.MemberExp memberExp, TypeHint hintType)
+        IdentifierResult ResolveIdentifierMemberExp(S.MemberExp memberExp, ResolveHint hint)
         {
             var typeArgs = GetTypeValues(memberExp.MemberTypeArgs, context);
 
             // 힌트가 없다. EnumElemIdentifierResult가 나올 수 없다
-            var parentResult = ResolveIdentifier(memberExp.Parent, NontTypeHint.Instance);
+            var parentResult = ResolveIdentifier(memberExp.Parent, ResolveHint.None);
 
             switch (parentResult)
             {
@@ -146,10 +147,10 @@ namespace Gum.IR0Translator
                     return parentResult;
 
                 case ExpIdentifierResult expResult:                    
-                    return ResolveIdentifierMemberExpExpParent(expResult.Exp, expResult.TypeValue, expResult.LambdaCapture, memberExp.MemberName, typeArgs, hintType);
+                    return ResolveIdentifierMemberExpExpParent(expResult.Exp, expResult.TypeValue, expResult.LambdaCapture, memberExp.MemberName, typeArgs, hint);
 
                 case TypeIdentifierResult typeResult:
-                    return ResolveIdentifierMemberExpTypeParent(typeResult.TypeValue, memberExp.MemberName, typeArgs, hintType);
+                    return ResolveIdentifierMemberExpTypeParent(typeResult.TypeValue, memberExp.MemberName, typeArgs, hint);
 
                 case InstanceFuncIdentifierResult _:
                     // 함수는 멤버변수를 가질 수 없습니다
@@ -167,19 +168,19 @@ namespace Gum.IR0Translator
             throw new UnreachableCodeException();
         }
 
-        IdentifierResult ResolveIdentifier(S.Exp exp, TypeHint hintType)
+        IdentifierResult ResolveIdentifier(S.Exp exp, ResolveHint hint)
         {
             if (exp is S.IdentifierExp idExp)
             {
-                return ResolveIdentifierIdExp(idExp, hintType);
+                return ResolveIdentifierIdExp(idExp, hint);
             }
             else if (exp is S.MemberExp memberExp)
             {
-                return ResolveIdentifierMemberExp(memberExp, hintType);
+                return ResolveIdentifierMemberExp(memberExp, hint);
             }
             else
             {
-                var expResult = AnalyzeExp(exp, hintType);
+                var expResult = AnalyzeExpExceptIdAndMember(exp, hint);
                 return new ExpIdentifierResult(expResult.Exp, expResult.TypeValue, NoneLambdaCapture.Instance);
             }
         }
@@ -188,14 +189,14 @@ namespace Gum.IR0Translator
         {
             string idName;
             ImmutableArray<TypeValue> typeArgs;
-            TypeHint hintType;
+            ResolveHint hint;
             Context context;
 
-            public IdExpIdentifierResolver(string idName, ImmutableArray<TypeValue> typeArgs, TypeHint hintType, Context context)
+            public IdExpIdentifierResolver(string idName, ImmutableArray<TypeValue> typeArgs, ResolveHint hint, Context context)
             {
                 this.idName = idName;
                 this.typeArgs = typeArgs;
-                this.hintType = hintType;
+                this.hint = hint;
                 this.context = context;
             }
 
@@ -242,7 +243,7 @@ namespace Gum.IR0Translator
             {
                 // TODO: outer namespace까지 다 돌아야 한다
                 var curNamespacePath = M.NamespacePath.Root; 
-                var globalResult = context.GetGlobalItem(curNamespacePath, idName, typeArgs, hintType);
+                var globalResult = context.GetGlobalItem(curNamespacePath, idName, typeArgs, hint);
 
                 switch (globalResult)
                 {
@@ -292,7 +293,7 @@ namespace Gum.IR0Translator
             {
                 // 힌트가 E고, First가 써져 있으면 E.First를 검색한다
                 // enum 힌트 사용, typeArgs가 있으면 지나간다
-                if (hintType is TypeValueTypeHint typeValueHintType && typeValueHintType.TypeValue is EnumTypeValue enumTypeValue)
+                if (hint.TypeHint is TypeValueTypeHint typeValueHintType && typeValueHintType.TypeValue is EnumTypeValue enumTypeValue)
                 {
                     // First<T> 같은건 없기 때문에 없을때만 검색한다
                     if (typeArgs.Length == 0)

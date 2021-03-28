@@ -7,6 +7,9 @@ using Xunit;
 using S = Gum.Syntax;
 using M = Gum.CompileTime;
 
+using static Gum.IR0Translator.Test.SyntaxFactory;
+using static Gum.Infra.Misc;
+
 namespace Gum.IR0Translator.Test
 {
     public class TypeExpEvaluatorTests
@@ -32,13 +35,9 @@ namespace Gum.IR0Translator.Test
         [Fact]
         public void EvaluateType_TopLevelStmt_WorksProperly()
         {
-            S.IdTypeExp intTypeExp = new S.IdTypeExp("int");
+            S.TypeExp intTypeExp;
 
-            var script = new S.Script(
-                new S.StmtScriptElement(new S.VarDeclStmt(new S.VarDecl(
-                    intTypeExp, new S.VarDeclElement("x", null)
-                )))
-            );
+            var script = SScript(SVarDeclStmt(intTypeExp = IntTypeExp, "x"));
 
             var result = Evaluate(script);
 
@@ -52,20 +51,19 @@ namespace Gum.IR0Translator.Test
         [Fact]
         public void EvaluateType_CompositionOfTypeExp_OnlyWholeTypeExpAddedToDictionary()
         {
-            var innerTypeExp = new S.IdTypeExp("X", new S.IdTypeExp("int"));
-            var typeExp = new S.MemberTypeExp(innerTypeExp, "Y", Array.Empty<S.TypeExp>());
+            var innerTypeExp = SIdTypeExp("X", IntTypeExp);
+            var typeExp = new S.MemberTypeExp(innerTypeExp, "Y", Arr<S.TypeExp>());
 
-            var script = new S.Script(
+            var script = SScript(
                 new S.TypeDeclScriptElement(new S.StructDecl(
-                    S.AccessModifier.Public, "X", new[] { "T" }, Array.Empty<S.TypeExp>(), new S.StructDeclElement[] {
+                    S.AccessModifier.Public, "X", Arr("T"), Arr<S.TypeExp>(), Arr<S.StructDeclElement>(
                         new S.TypeStructDeclElement(new S.StructDecl(
-                            S.AccessModifier.Public, "Y", Array.Empty<string>(), Array.Empty<S.TypeExp>(), Array.Empty<S.StructDeclElement>()
+                            S.AccessModifier.Public, "Y", Arr<string>(), Arr<S.TypeExp>(), Arr<S.StructDeclElement>()
                         ))
-                    }
+                    )
                 )),
                 new S.StmtScriptElement(new S.VarDeclStmt(new S.VarDecl(
-                    typeExp, new S.VarDeclElement("x", null)
-                )))
+                    typeExp, Arr(new S.VarDeclElement("x", null)))))
             );
 
             var result = Evaluate(script);

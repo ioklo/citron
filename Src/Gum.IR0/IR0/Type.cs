@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Pretune;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -6,7 +7,8 @@ using System.Text;
 
 namespace Gum.IR0
 {
-    public struct Type
+    [ImplementIEquatable]
+    public partial struct Type
     {
         // Predefined Type
         public static Type Void = new Type(TypeDeclId.Void);

@@ -1,4 +1,5 @@
-﻿using System.Collections.Immutable;
+﻿using Pretune;
+using System.Collections.Immutable;
 
 namespace Gum.IR0
 {
@@ -25,15 +26,15 @@ namespace Gum.IR0
     }
 
     // 타입 인자 리스트
-    public class TypeContext
+    [ImplementIEquatable]
+    public partial class TypeContext
     {
-        internal struct Entry
+        [AutoConstructor, ImplementIEquatable]
+        internal partial struct Entry
         {
             public int Depth { get; }
             public int Index { get; }
             public Type Type { get; }
-
-            public Entry(int depth, int index, Type type) { Depth = depth; Index = index; Type = type; }
         }
 
         public static readonly TypeContext Empty;

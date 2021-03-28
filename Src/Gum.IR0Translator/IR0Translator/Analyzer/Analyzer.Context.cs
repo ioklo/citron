@@ -101,13 +101,6 @@ namespace Gum.IR0Translator
                 return itemValueFactory.List(elemType);
             }
 
-            public R.ExternalGlobalVarId GetExternalGlobalVarId(ItemId varId)
-            {
-                throw new NotImplementedException();
-            }
-
-            
-
             public bool IsAssignable(TypeValue toTypeValue, TypeValue fromTypeValue)
             {   
                 // B <- D
@@ -363,9 +356,9 @@ namespace Gum.IR0Translator
                     return null;
             }
 
-            public ItemResult GetGlobalItem(M.NamespacePath namespacePath, string idName, ImmutableArray<TypeValue> typeArgs, TypeHint hintType)
+            public ItemResult GetGlobalItem(M.NamespacePath namespacePath, string idName, ImmutableArray<TypeValue> typeArgs, ResolveHint hint)
             {
-                return globalItemValueFactory.GetGlobal(namespacePath, idName, typeArgs, hintType);
+                return globalItemValueFactory.GetGlobal(namespacePath, idName, typeArgs, hint);
             }
         }
     }

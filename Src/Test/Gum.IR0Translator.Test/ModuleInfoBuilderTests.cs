@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using Xunit;
 
 using static Gum.Infra.Misc;
+using static Gum.IR0Translator.Test.SyntaxFactory;
 
 using S = Gum.Syntax;
 using M = Gum.CompileTime;
@@ -13,10 +14,8 @@ namespace Gum.IR0Translator.Test
     public class ModuleInfoBuilderTests
     {
         // UnitOfWorkName_ScenarioName_ExpectedBehavior
-        public M.Type IntType { get => new M.GlobalType("System.Runtime", new M.NamespacePath("System"), "Int32", default); }
-
-        public S.TypeExp IntTypeExp { get => new S.IdTypeExp("int", default); }
-        public S.TypeExp VoidTypeExp { get => new S.IdTypeExp("void", default); }
+        public M.Type IntMType { get => new M.GlobalType("System.Runtime", new M.NamespacePath("System"), "Int32", default); }
+        
         M.ModuleInfo Build(M.ModuleName moduleName, S.Script script)
         {
             var typeSkelRepo = TypeSkeletonCollector.Collect(script);
@@ -47,17 +46,17 @@ namespace Gum.IR0Translator.Test
         [Fact]
         public void Build_FuncDecl_ModuleInfoHasFuncInfo()
         {
-            var script = new S.Script(new S.GlobalFuncScriptElement(new S.GlobalFuncDecl(
+            var script = SScript(new S.GlobalFuncDeclScriptElement(new S.GlobalFuncDecl(
                 bSequence: false,
                 VoidTypeExp,
                 "Func",
-                new[] { "T", "U" },
-                new S.FuncParamInfo(new[] {
+                Arr("T", "U"),
+                new S.FuncParamInfo(Arr(
                     new S.TypeAndName(IntTypeExp, "x"),
-                    new S.TypeAndName(new S.IdTypeExp("U"), "y"),
-                    new S.TypeAndName(new S.IdTypeExp("T"), "z"),
-                }, 1),
-                new S.BlockStmt()
+                    new S.TypeAndName(new S.IdTypeExp("U", default), "y"),
+                    new S.TypeAndName(new S.IdTypeExp("T", default), "z")
+                ), 1),
+                new S.BlockStmt(Arr<S.Stmt>())
             )));
 
             var result = Build("TestModule", script);
@@ -65,13 +64,13 @@ namespace Gum.IR0Translator.Test
             Assert.NotNull(result);
             Debug.Assert(result != null);
 
-            var paramHash = Misc.MakeParamHash(Arr<M.Type>(IntType, new M.TypeVarType(0, 1, "U"), new M.TypeVarType(0, 0, "T")));
+            var paramHash = Misc.MakeParamHash(Arr<M.Type>(IntMType, new M.TypeVarType(0, 1, "U"), new M.TypeVarType(0, 0, "T")));
 
             var funcInfo = GlobalItemQueryService.GetGlobalItem(result, M.NamespacePath.Root, new ItemPathEntry("Func", 2, paramHash));
             Assert.NotNull(funcInfo);
             Debug.Assert(funcInfo != null);
 
-            var paramTypes = Arr<M.Type>(IntType, new M.TypeVarType(0, 1, "U"), new M.TypeVarType(0, 0, "T"));
+            var paramTypes = Arr<M.Type>(IntMType, new M.TypeVarType(0, 1, "U"), new M.TypeVarType(0, 0, "T"));
 
             var expected = new M.FuncInfo(
                 "Func",
@@ -90,28 +89,28 @@ namespace Gum.IR0Translator.Test
         [Fact]
         public void Build_StructDecl_ModuleInfoHasStructInfo()
         {
-            var script = new S.Script(
+            var script = SScript(
                 new S.TypeDeclScriptElement(new S.StructDecl(
                     S.AccessModifier.Public,
                     "S",
                     Arr("T"),
-                    Arr<S.TypeExp>(new S.IdTypeExp("B", IntTypeExp)),
+                    Arr<S.TypeExp>(new S.IdTypeExp("B", Arr(IntTypeExp))),
                     Arr<S.StructDeclElement>(
                         new S.FuncStructDeclElement(new S.StructFuncDecl(
                             S.AccessModifier.Private,
                             bStatic: true,
                             bSequence: false,
-                            new S.IdTypeExp("T"),
+                            new S.IdTypeExp("T", default),
                             "Func",
-                            new[] {"T", "U"},
-                            new S.FuncParamInfo(new[] { new S.TypeAndName(new S.IdTypeExp("S", IntTypeExp), "s"), new S.TypeAndName(new S.IdTypeExp("U"), "u") }, null),
-                            new S.BlockStmt()
+                            Arr("T", "U"),
+                            new S.FuncParamInfo(Arr(new S.TypeAndName(SIdTypeExp("S", IntTypeExp), "s"), new S.TypeAndName(SIdTypeExp("U"), "u")), null),
+                            new S.BlockStmt(Arr<S.Stmt>())
                         )),
 
                         new S.VarStructDeclElement(
                             S.AccessModifier.Protected,
                             IntTypeExp,
-                            new[] {"x", "y"}                        
+                            Arr("x", "y")
                         )
                     )
                 )),
@@ -137,7 +136,7 @@ namespace Gum.IR0Translator.Test
             var expected = new M.StructInfo(
                 "S",
                 Arr("T"), 
-                baseType: new M.GlobalType(moduleName, M.NamespacePath.Root, "B", Arr(IntType)), 
+                baseType: new M.GlobalType(moduleName, M.NamespacePath.Root, "B", Arr(IntMType)), 
                 interfaces: default,
                 memberTypes: default,
                 memberFuncs: Arr<M.FuncInfo>(
@@ -148,15 +147,15 @@ namespace Gum.IR0Translator.Test
                         Arr("T", "U"),
                         new M.TypeVarType(1, 0, "T"),
                         Arr<M.Type>(
-                            new M.GlobalType(moduleName, M.NamespacePath.Root, "S", ImmutableArray.Create<M.Type>(IntType)),
+                            new M.GlobalType(moduleName, M.NamespacePath.Root, "S", ImmutableArray.Create<M.Type>(IntMType)),
                             new M.TypeVarType(1, 1, "U")
                         )
                     )
                 ),
 
                 memberVars: ImmutableArray.Create<M.MemberVarInfo>(
-                    new M.MemberVarInfo(false, IntType, "x"),
-                    new M.MemberVarInfo(false, IntType, "y")
+                    new M.MemberVarInfo(false, IntMType, "x"),
+                    new M.MemberVarInfo(false, IntMType, "y")
                 )
             );
 

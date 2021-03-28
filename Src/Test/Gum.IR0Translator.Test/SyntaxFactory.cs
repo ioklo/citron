@@ -52,5 +52,7 @@ namespace Gum.IR0Translator.Test
         public static TypeExp BoolTypeExp { get => new IdTypeExp("bool", default); }
         public static TypeExp VoidTypeExp { get => new IdTypeExp("void", default); }
         public static TypeExp StringTypeExp { get => new IdTypeExp("string", default); }
+
+        public static IdTypeExp SIdTypeExp(string name, params TypeExp[] typeArgs) => new IdTypeExp(name, Arr(typeArgs));
     }
 }

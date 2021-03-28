@@ -31,15 +31,15 @@ namespace Gum.IR0Translator
             M.NamespacePath namespacePath;
             M.Name name;
             ImmutableArray<TypeValue> typeArgs;
-            TypeHint hintType;
+            ResolveHint hint;
 
-            public QueryContext(GlobalItemValueFactory outer, M.NamespacePath namespacePath, M.Name name, ImmutableArray<TypeValue> typeArgs, TypeHint hintType)
+            public QueryContext(GlobalItemValueFactory outer, M.NamespacePath namespacePath, M.Name name, ImmutableArray<TypeValue> typeArgs, ResolveHint hint)
             {
                 this.outer = outer;
                 this.namespacePath = namespacePath;
                 this.name = name;
                 this.typeArgs = typeArgs;
-                this.hintType = hintType;                
+                this.hint = hint;                
             }       
             
             ItemResult GetGlobalTypeCore(M.ModuleName moduleName, ImmutableArray<M.TypeInfo> types)
@@ -184,9 +184,9 @@ namespace Gum.IR0Translator
             }
         }
         
-        public ItemResult GetGlobal(M.NamespacePath namespacePath, M.Name name, ImmutableArray<TypeValue> typeArgs, TypeHint hintType)
+        public ItemResult GetGlobal(M.NamespacePath namespacePath, M.Name name, ImmutableArray<TypeValue> typeArgs, ResolveHint hint)
         {
-            var context = new QueryContext(this, namespacePath, name, typeArgs, hintType);
+            var context = new QueryContext(this, namespacePath, name, typeArgs, hint);
             return context.GetGlobal();
         }
     }

@@ -1,4 +1,5 @@
 ﻿using Gum.CompileTime;
+using Pretune;
 
 namespace Gum.IR0
 {
@@ -7,15 +8,15 @@ namespace Gum.IR0
 
     }
 
-    public class ExpForStmtInitializer : ForStmtInitializer
+    [AutoConstructor, ImplementIEquatable]
+    public partial class ExpForStmtInitializer : ForStmtInitializer
     {
         public ExpInfo ExpInfo { get; }
-        public ExpForStmtInitializer(ExpInfo expInfo) { ExpInfo = expInfo; }
     }
 
-    public class VarDeclForStmtInitializer : ForStmtInitializer
+    [AutoConstructor, ImplementIEquatable]
+    public partial class VarDeclForStmtInitializer : ForStmtInitializer
     {
         public LocalVarDecl VarDecl { get; }
-        public VarDeclForStmtInitializer(LocalVarDecl varDecl) { VarDecl = varDecl; }
     }
 }

@@ -1,8 +1,10 @@
-﻿using System.Diagnostics;
+﻿using Pretune;
+using System.Diagnostics;
 
 namespace Gum.IR0
 {
-    public struct TypeDeclId
+    [ImplementIEquatable]
+    public partial struct TypeDeclId
     {
         public int Value { get; }
 

@@ -1,5 +1,6 @@
 ﻿using Gum.CompileTime;
 using Gum.Infra;
+using Pretune;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -13,42 +14,38 @@ namespace Gum.IR0
     {
         internal Exp() { }
     }
-    
-    public class GlobalVarExp : Exp
+
+    [AutoConstructor, ImplementIEquatable]
+    public partial class GlobalVarExp : Exp
     {
         public string Name { get; }
-        public GlobalVarExp(string name) { Name = name; }
     }
 
-    public class LocalVarExp : Exp
+    [AutoConstructor, ImplementIEquatable]
+    public partial class LocalVarExp : Exp
     {
         public string Name { get; } // LocalVarId;
-        public LocalVarExp(string name) { Name = name; }
-    }    
-    
+    }
+
     // "dskfjslkf $abc "
-    public class StringExp : Exp
+    [AutoConstructor, ImplementIEquatable]
+    public partial class StringExp : Exp
     {
         public ImmutableArray<StringExpElement> Elements { get; }
-        
-        public StringExp(ImmutableArray<StringExpElement> elements)
-        {
-            Elements = elements;
-        }
     }
 
     // 1
-    public class IntLiteralExp : Exp
+    [AutoConstructor, ImplementIEquatable]
+    public partial class IntLiteralExp : Exp
     {
         public int Value { get; }
-        public IntLiteralExp(int value) { Value = value; }
     }
 
     // false
-    public class BoolLiteralExp : Exp
+    [AutoConstructor, ImplementIEquatable]
+    public partial class BoolLiteralExp : Exp
     {
         public bool Value { get; }
-        public BoolLiteralExp(bool value) { Value = value; }
     }
 
     public enum InternalUnaryOperator
@@ -87,241 +84,148 @@ namespace Gum.IR0
         Equal_Int_Int_Bool,
         Equal_Bool_Bool_Bool,
         Equal_String_String_Bool
-    }   
+    }
 
-    public class CallInternalUnaryOperatorExp : Exp
+    [AutoConstructor, ImplementIEquatable]
+    public partial class CallInternalUnaryOperatorExp : Exp
     {
         public InternalUnaryOperator Operator { get; }
         public ExpInfo Operand { get; }
-
-        public CallInternalUnaryOperatorExp(InternalUnaryOperator op, ExpInfo operand)
-        {
-            Operator = op;
-            Operand = operand;
-        }
     }
 
-    public class CallInternalUnaryAssignOperator : Exp
+    [AutoConstructor, ImplementIEquatable]
+    public partial class CallInternalUnaryAssignOperator : Exp
     {
         public InternalUnaryAssignOperator Operator { get; }
-        public Exp Operand { get; }
-        public CallInternalUnaryAssignOperator(InternalUnaryAssignOperator op, Exp operand)
-        {
-            Operator = op;
-            Operand = operand;
-        }
+        public Exp Operand { get; }        
     }
 
-    public class CallInternalBinaryOperatorExp : Exp
+    [AutoConstructor, ImplementIEquatable]
+    public partial class CallInternalBinaryOperatorExp : Exp
     {
         public InternalBinaryOperator Operator { get; }
         public ExpInfo Operand0 { get; }
         public ExpInfo Operand1 { get; }
-
-        public CallInternalBinaryOperatorExp(InternalBinaryOperator op, ExpInfo operand0, ExpInfo operand1)
-        {
-            Operator = op;
-            Operand0 = operand0;
-            Operand1 = operand1;
-        }
     }
 
     // a = b
-    public class AssignExp : Exp
+    [AutoConstructor, ImplementIEquatable]
+    public partial class AssignExp : Exp
     {
         public Exp Dest { get; }
-        public Exp Src { get; }        
-
-        public AssignExp(Exp dest, Exp src)
-        {
-            Dest = dest;
-            Src = src;
-        }
+        public Exp Src { get; }
     }
 
     // F(2, 3)
-    public class CallFuncExp : Exp
+    [AutoConstructor, ImplementIEquatable]
+    public partial class CallFuncExp : Exp
     {
         public Func Func { get; }
         public ExpInfo? Instance { get; }
         public ImmutableArray<ExpInfo> Args { get; }
-
-        public CallFuncExp(Func func, ExpInfo? instance, ImmutableArray<ExpInfo> args)
-        {
-            Func = func;
-            Instance = instance;
-            Args = args;
-        }
     }
 
-    public class CallSeqFuncExp : Exp
+    [AutoConstructor, ImplementIEquatable]
+    public partial class CallSeqFuncExp : Exp
     {
         public Func Func { get; }
         public ExpInfo? Instance { get; }
         public ImmutableArray<ExpInfo> Args { get; }
-
-        public CallSeqFuncExp(Func func, ExpInfo? instance, ImmutableArray<ExpInfo> args)
-        {
-            Func = func;
-            Instance = instance;
-            Args = args;
-        }
     }
 
     // f(2, 3)
-    public class CallValueExp : Exp
+    [AutoConstructor, ImplementIEquatable]
+    public partial class CallValueExp : Exp
     {
         public ExpInfo Callable { get; }        
         public ImmutableArray<ExpInfo> Args { get; }
-
-        public CallValueExp(ExpInfo callable, ImmutableArray<ExpInfo> args)
-        {
-            Callable = callable;
-            Args = args;
-        }
     }
-    
+
     // () => { return 1; }
-    public class LambdaExp : Exp
+    [AutoConstructor, ImplementIEquatable]
+    public partial class LambdaExp : Exp
     {
         public CaptureInfo CaptureInfo { get; }
         public ImmutableArray<string> ParamNames { get; }
         public Stmt Body { get; }
-
-        public LambdaExp(CaptureInfo captureInfo, ImmutableArray<string> paramNames, Stmt body)
-        {
-            CaptureInfo = captureInfo;
-            ParamNames = paramNames;
-            Body = body;
-        }
     }
-    
+
     // l[b], l is list
-    public class ListIndexerExp : Exp
+    [AutoConstructor, ImplementIEquatable]
+    public partial class ListIndexerExp : Exp
     {
         public ExpInfo ListInfo { get; }
         public ExpInfo IndexInfo { get; }
-
-        public ListIndexerExp(ExpInfo listInfo, ExpInfo indexInfo)
-        {
-            ListInfo = listInfo;
-            IndexInfo = indexInfo;
-        }
     }
 
-    public class StaticMemberExp : Exp
+    [AutoConstructor, ImplementIEquatable]
+    public partial class StaticMemberExp : Exp
     {
         public Type Type { get; }
         public string MemberName { get; }
-
-        public StaticMemberExp(Type type, string memberName)
-        {
-            Type = type;
-            MemberName = memberName;
-        }
     }
 
-    public class StructMemberExp : Exp
+    [AutoConstructor, ImplementIEquatable]
+    public partial class StructMemberExp : Exp
     {
         public Exp Instance { get; }
         public string MemberName { get; }
-
-        public StructMemberExp(Exp instance, string memberName)
-        {
-            Instance = instance;
-            MemberName = memberName;
-        }
     }
 
-    public class ClassMemberExp : Exp
+    [AutoConstructor, ImplementIEquatable]
+    public partial class ClassMemberExp : Exp
     {
         public Exp Instance { get; }
         public string MemberName { get; }
-        public ClassMemberExp(Exp instance, string memberName)
-        {
-            Instance = instance;
-            MemberName = memberName;
-        }
     }
 
-    public class EnumMemberExp : Exp
+    [AutoConstructor, ImplementIEquatable]
+    public partial class EnumMemberExp : Exp
     {
         public Exp Instance { get; }
         public string MemberName { get; }
-        public EnumMemberExp(Exp instance, string memberName)
-        {
-            Instance = instance;
-            MemberName = memberName;
-        }
-
     }
 
     // [1, 2, 3]
-    public class ListExp : Exp
+    [AutoConstructor, ImplementIEquatable]
+    public partial class ListExp : Exp
     {
         public Type ElemType { get; }
         public ImmutableArray<Exp> Elems { get; }
-
-        public ListExp(Type elemType, ImmutableArray<Exp> elems)
-        {
-            ElemType = elemType;
-            Elems = elems;
-        }
     }
 
     // enum construction, E.First or E.Second(2, 3)
-    public class NewEnumExp : Exp
+    [AutoConstructor, ImplementIEquatable]
+    public partial class NewEnumExp : Exp
     {
-        public struct Elem
+        [AutoConstructor, ImplementIEquatable]
+        public partial struct Elem
         {
             public string Name { get; }
             public ExpInfo ExpInfo { get; }
-
-            public Elem(string name, ExpInfo expInfo)
-            {
-                Name = name;
-                ExpInfo = expInfo;
-            }
         }
 
         public string Name { get; }
-
         public ImmutableArray<Elem> Members { get; }
-
-        public NewEnumExp(string name, ImmutableArray<Elem> members)
-        {
-            Name = name;
-            Members = members;
-        }
     }
 
     // new S(2, 3, 4);
-    public class NewStructExp : Exp
+    [AutoConstructor, ImplementIEquatable]
+    public partial class NewStructExp : Exp
     {
         public Type Type { get; }
 
         // TODO: params, out, 등 처리를 하려면 Exp가 아니라 다른거여야 한다
         public ImmutableArray<ExpInfo> Args { get; }
-
-        public NewStructExp(Type type, ImmutableArray<ExpInfo> args)
-        {
-            Type = type;
-            Args = args;
-        }
     }
 
     // new C(2, 3, 4);
-    public class NewClassExp : Exp
+    [AutoConstructor, ImplementIEquatable]
+    public partial class NewClassExp : Exp
     {
         public Type Type { get; }
 
         // TODO: params, out, 등 처리를 하려면 Exp가 아니라 다른거여야 한다
         public ImmutableArray<ExpInfo> Args { get; }
-        
-        public NewClassExp(Type type, ImmutableArray<ExpInfo> args)
-        {
-            Type = type;
-            Args = args;
-        }
     }
 }

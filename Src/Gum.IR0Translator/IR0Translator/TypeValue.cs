@@ -17,7 +17,7 @@ namespace Gum.IR0Translator
     abstract partial class TypeValue : ItemValue
     {
         public virtual TypeValue? GetBaseType() { return null; }
-        public virtual ItemResult GetMember(M.Name memberName, ImmutableArray<TypeValue> typeArgs, TypeHint hintType) { return NotFoundItemResult.Instance; }
+        public virtual ItemResult GetMember(M.Name memberName, ImmutableArray<TypeValue> typeArgs, ResolveHint hint) { return NotFoundItemResult.Instance; }
         public virtual TypeValue? GetMemberType(M.Name memberName, ImmutableArray<TypeValue> typeArgs) { return null; }        
         internal abstract TypeValue Apply(TypeEnv typeEnv);
         public abstract IR0.Type GetRType();
@@ -37,6 +37,11 @@ namespace Gum.IR0Translator
 
         // var는 translation패스에서 추론되기 때문에 IR0에 없다
         public override R.Type GetRType() { throw new InvalidOperationException();  }
+
+        public override int GetHashCode()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     // T: depth는 지역적이므로, 주어진 컨텍스트 안에서만 의미가 있다
@@ -73,6 +78,11 @@ namespace Gum.IR0Translator
             return this;
         }
         public override R.Type GetRType() => ritemFactory.MakeTypeVar(Depth, Index);
+
+        public override int GetHashCode()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     class ClassTypeValue : NormalTypeValue
@@ -148,7 +158,7 @@ namespace Gum.IR0Translator
                 typeArgs.SequenceEqual(other.typeArgs);
         }
 
-        ItemResult GetMemberType(M.Name memberName, ImmutableArray<TypeValue> typeArgs, TypeHint hintType)
+        ItemResult GetMember_Type(M.Name memberName, ImmutableArray<TypeValue> typeArgs)
         {
             var results = new List<ValueItemResult>();
 
@@ -171,13 +181,13 @@ namespace Gum.IR0Translator
             return results[0];
         }
 
-        ItemResult GetMemberFunc(M.Name memberName, ImmutableArray<TypeValue> typeArgs, TypeHint hintType)
+        ItemResult GetMember_Func(M.Name memberName, ImmutableArray<TypeValue> typeArgs, ResolveHint resolveHint)
         {
             var results = new List<ValueItemResult>();
 
             foreach (var memberFunc in structInfo.MemberFuncs)
             {
-                // TODO: 1. 파라미터 체크 
+                // TODO: resolveHint로 파라미터 체크 
                 if (memberFunc.Name.Equals(memberName) && 
                     memberFunc.TypeParams.Length == typeArgs.Length) // TODO: TypeParam inference, 같지 않아도 된다
                 {
@@ -195,7 +205,7 @@ namespace Gum.IR0Translator
             return results[0];
         }
         
-        ItemResult GetMemberVar(M.Name memberName, ImmutableArray<TypeValue> typeArgs, TypeHint hintType)
+        ItemResult GetMember_Var(M.Name memberName, ImmutableArray<TypeValue> typeArgs)
         {
             var results = new List<ValueItemResult>();
             foreach (var memberVar in structInfo.MemberVars)
@@ -227,23 +237,23 @@ namespace Gum.IR0Translator
             return typeValue.Apply(typeEnv);
         }
 
-        public override ItemResult GetMember(M.Name memberName, ImmutableArray<TypeValue> typeArgs, TypeHint hintType)
+        public override ItemResult GetMember(M.Name memberName, ImmutableArray<TypeValue> typeArgs, ResolveHint hint)
         {
             // TODO: caching
             var results = new List<ValueItemResult>();
 
             // error, notfound, found
-            var typeResult = GetMemberType(memberName, typeArgs, hintType);
+            var typeResult = GetMember_Type(memberName, typeArgs);
             if (typeResult is ErrorItemResult) return typeResult;
             if (typeResult is ValueItemResult typeMemberResult) results.Add(typeMemberResult);
 
             // error, notfound, found
-            var funcResult = GetMemberFunc(memberName, typeArgs, hintType);
+            var funcResult = GetMember_Func(memberName, typeArgs, hint);
             if (funcResult is ErrorItemResult) return funcResult;
             if (funcResult is ValueItemResult funcMemberResult) results.Add(funcMemberResult);
 
             // error, notfound, found
-            var varResult = GetMemberVar(memberName, typeArgs, hintType);
+            var varResult = GetMember_Var(memberName, typeArgs);
             if (varResult is ErrorItemResult) return varResult;
             if (varResult is ValueItemResult varMemberResult) results.Add(varMemberResult);            
 
@@ -334,6 +344,11 @@ namespace Gum.IR0Translator
                 return ritemFactory.MakeMemberType(outerRType, structInfo.Name, rtypeArgs);
             }
         }
+
+        public override int GetHashCode()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     // (struct, class, enum) (external/internal) (global/member) type
@@ -413,6 +428,11 @@ namespace Gum.IR0Translator
             var paramRTypes = ImmutableArray.CreateRange(Params, parameter => parameter.GetRType());
 
             return ritemFactory.MakeLambdaType(LambdaId, returnRType, paramRTypes);
+        }
+
+        public override int GetHashCode()
+        {
+            throw new NotImplementedException();
         }
     }
 

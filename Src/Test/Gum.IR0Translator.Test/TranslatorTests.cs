@@ -56,7 +56,7 @@ namespace Gum.IR0Translator.Test
 
             var expected = new R.Script(default, default, Arr<R.Stmt>(expectedStmt));
 
-            Assert.Equal(expected, script, IR0EqualityComparer.Instance);
+            Assert.Equal(expected, script);
         }
         
         [Fact]
@@ -69,7 +69,7 @@ namespace Gum.IR0Translator.Test
                 RGlobalVarDeclStmt(R.Type.Int, "x", RInt(1))
             );
 
-            Assert.Equal(expected, script, IR0EqualityComparer.Instance);
+            Assert.Equal(expected, script);
         }
 
         [Fact]
@@ -88,7 +88,7 @@ namespace Gum.IR0Translator.Test
                 )
             );
 
-            Assert.Equal(expected, script, IR0EqualityComparer.Instance);
+            Assert.Equal(expected, script);
         }
 
         [Fact]
@@ -112,7 +112,7 @@ namespace Gum.IR0Translator.Test
 
             var expected = RScript(null, Arr(funcDecl));
 
-            Assert.Equal(expected, script, IR0EqualityComparer.Instance);
+            Assert.Equal(expected, script);
         }
 
         [Fact]
@@ -128,7 +128,7 @@ namespace Gum.IR0Translator.Test
                 RGlobalVarDeclStmt(R.Type.Int, "x", RInt(3))            
             );
 
-            Assert.Equal(expected, script, IR0EqualityComparer.Instance);
+            Assert.Equal(expected, script);
         }
 
         [Fact]
@@ -206,7 +206,7 @@ namespace Gum.IR0Translator.Test
 
             );
 
-            Assert.Equal(expected, script, IR0EqualityComparer.Instance);
+            Assert.Equal(expected, script);
         }
 
         [Fact]
@@ -273,7 +273,7 @@ namespace Gum.IR0Translator.Test
                 )
             );
 
-            Assert.Equal(expected, script, IR0EqualityComparer.Instance);
+            Assert.Equal(expected, script);
         }
 
         // 
@@ -314,7 +314,7 @@ namespace Gum.IR0Translator.Test
                 new R.ExpStmt(new R.ExpInfo(new R.AssignExp(new R.GlobalVarExp("x"), RString("Hello")), R.Type.String))
             );
 
-            Assert.Equal(expected, script, IR0EqualityComparer.Instance);
+            Assert.Equal(expected, script);
         }
 
 
@@ -389,7 +389,7 @@ namespace Gum.IR0Translator.Test
                 new R.ForeachStmt(R.Type.Int, "x", new R.ExpInfo(new R.ListExp(R.Type.Int, default), R.Type.List(R.Type.Int)), R.ContinueStmt.Instance)
             );
 
-            Assert.Equal(expected, script, IR0EqualityComparer.Instance);
+            Assert.Equal(expected, script);
         }
 
         [Fact]
@@ -418,7 +418,7 @@ namespace Gum.IR0Translator.Test
                 new R.ForeachStmt(R.Type.Int, "x", new R.ExpInfo(new R.ListExp(R.Type.Int, default), R.Type.List(R.Type.Int)), R.BreakStmt.Instance)
             );
 
-            Assert.Equal(expected, script, IR0EqualityComparer.Instance);
+            Assert.Equal(expected, script);
         }
 
         [Fact]
@@ -440,7 +440,7 @@ namespace Gum.IR0Translator.Test
             var script = Translate(syntaxScript);
             var expected = RScript(new R.ReturnStmt(RInt(2)));
 
-            Assert.Equal(expected, script, IR0EqualityComparer.Instance);
+            Assert.Equal(expected, script);
         }
 
         [Fact]
@@ -459,7 +459,7 @@ namespace Gum.IR0Translator.Test
 
             var expected = RScript(null, new[] { seqFunc });
 
-            Assert.Equal(expected, script, IR0EqualityComparer.Instance);
+            Assert.Equal(expected, script);
         }
 
         [Fact]
@@ -540,7 +540,7 @@ namespace Gum.IR0Translator.Test
                 )
             );
 
-            Assert.Equal(expected, script, IR0EqualityComparer.Instance);
+            Assert.Equal(expected, script);
         }
 
         [Fact]
@@ -582,7 +582,7 @@ namespace Gum.IR0Translator.Test
                 new R.ExpStmt(new R.ExpInfo(new R.AssignExp(new R.GlobalVarExp("x"), RInt(3)), R.Type.Int))
             );
 
-            Assert.Equal(expected, script, IR0EqualityComparer.Instance);
+            Assert.Equal(expected, script);
         }
 
         [Fact]
@@ -620,7 +620,7 @@ namespace Gum.IR0Translator.Test
                 )
             );
 
-            Assert.Equal(expected, script, IR0EqualityComparer.Instance);
+            Assert.Equal(expected, script);
         }
 
         [Fact]
@@ -667,7 +667,7 @@ namespace Gum.IR0Translator.Test
                 )
             );
 
-            Assert.Equal(expected, script, IR0EqualityComparer.Instance);
+            Assert.Equal(expected, script);
         }
 
         [Fact]
@@ -683,7 +683,7 @@ namespace Gum.IR0Translator.Test
 
             var expected = RScript(new R.AwaitStmt(R.BlankStmt.Instance));
 
-            Assert.Equal(expected, script, IR0EqualityComparer.Instance);
+            Assert.Equal(expected, script);
         }
 
         [Fact]
@@ -726,7 +726,7 @@ namespace Gum.IR0Translator.Test
                 )
             );
 
-            Assert.Equal(expected, script, IR0EqualityComparer.Instance);
+            Assert.Equal(expected, script);
         }
 
         [Fact]
@@ -773,7 +773,7 @@ namespace Gum.IR0Translator.Test
                 )
             );
 
-            Assert.Equal(expected, script, IR0EqualityComparer.Instance);
+            Assert.Equal(expected, script);
         }
 
         [Fact]
@@ -788,7 +788,7 @@ namespace Gum.IR0Translator.Test
                 R.Type.List(R.Type.Int)), R.BlankStmt.Instance
             ));
 
-            Assert.Equal(expected, script, IR0EqualityComparer.Instance);
+            Assert.Equal(expected, script);
         }
 
         [Fact]
@@ -840,7 +840,7 @@ namespace Gum.IR0Translator.Test
 
             var expected = RScript(null, new R.FuncDecl[] { seqFunc });
 
-            Assert.Equal(expected, script, IR0EqualityComparer.Instance);
+            Assert.Equal(expected, script);
         }
 
         [Fact]
@@ -908,7 +908,7 @@ namespace Gum.IR0Translator.Test
                 RGlobalVarDeclStmt(R.Type.Int, "y", new R.GlobalVarExp("x"))
             );
 
-            Assert.Equal(expected, script, IR0EqualityComparer.Instance);
+            Assert.Equal(expected, script);
         }
 
         [Fact]
@@ -931,7 +931,7 @@ namespace Gum.IR0Translator.Test
                 RLocalVarDeclStmt(R.Type.Int, "y", new R.LocalVarExp("x"))
             ));
 
-            Assert.Equal(expected, script, IR0EqualityComparer.Instance);
+            Assert.Equal(expected, script);
         }
 
         [Fact]
@@ -983,7 +983,7 @@ namespace Gum.IR0Translator.Test
                 RGlobalVarDeclStmt(R.Type.Bool, "b2", new R.BoolLiteralExp(true))                    
             );
 
-            Assert.Equal(expected, script, IR0EqualityComparer.Instance);
+            Assert.Equal(expected, script);
         }
 
         [Fact]
@@ -997,7 +997,7 @@ namespace Gum.IR0Translator.Test
                 RGlobalVarDeclStmt(R.Type.Int, "i", new R.IntLiteralExp(34))
             );
 
-            Assert.Equal(expected, script, IR0EqualityComparer.Instance);
+            Assert.Equal(expected, script);
         }
 
         [Fact]
@@ -1011,7 +1011,7 @@ namespace Gum.IR0Translator.Test
                 RGlobalVarDeclStmt(R.Type.String, "s", RString("Hello"))
             );
 
-            Assert.Equal(expected, script, IR0EqualityComparer.Instance);
+            Assert.Equal(expected, script);
         }
 
         [Fact]
@@ -1035,7 +1035,7 @@ namespace Gum.IR0Translator.Test
                 )))
             );
 
-            Assert.Equal(expected, script, IR0EqualityComparer.Instance);
+            Assert.Equal(expected, script);
         }
 
         [Fact]
@@ -1078,7 +1078,7 @@ namespace Gum.IR0Translator.Test
                 RGlobalVarDeclStmt(R.Type.Int, "x6", new R.CallInternalUnaryAssignOperator(R.InternalUnaryAssignOperator.PostfixDec_Int_Int, new R.GlobalVarExp("x2")))
             );
 
-            Assert.Equal(expected, script, IR0EqualityComparer.Instance);
+            Assert.Equal(expected, script);
         }
 
         [Fact]
@@ -1144,7 +1144,7 @@ namespace Gum.IR0Translator.Test
                 new R.ExpStmt(new R.ExpInfo(new R.AssignExp(new R.GlobalVarExp("x"), RInt(3)), R.Type.Int))
             );
 
-            Assert.Equal(expected, script, IR0EqualityComparer.Instance);
+            Assert.Equal(expected, script);
         }
 
         [Fact]
@@ -1235,7 +1235,7 @@ namespace Gum.IR0Translator.Test
                 ))
             );
 
-            Assert.Equal(expected, script, IR0EqualityComparer.Instance);
+            Assert.Equal(expected, script);
         }
 
         static IEnumerable<object[]> Data_BinaryOpExp_TranslatesIntoCallInternalBinaryOperatorExp_NotEqual()
@@ -1273,7 +1273,7 @@ namespace Gum.IR0Translator.Test
                 )
             );
 
-            Assert.Equal(expected, script, IR0EqualityComparer.Instance);
+            Assert.Equal(expected, script);
         }
 
         [Fact]
@@ -1307,7 +1307,7 @@ namespace Gum.IR0Translator.Test
                 )
             );
 
-            Assert.Equal(expected, script, IR0EqualityComparer.Instance);
+            Assert.Equal(expected, script);
         }
 
         // TODO: TypeArgument지원하면 General버전이랑 통합하기
@@ -1338,7 +1338,7 @@ namespace Gum.IR0Translator.Test
                 new R.ExpStmt(new R.ExpInfo(new R.CallFuncExp(new R.Func(new R.FuncDeclId(0), R.TypeContext.Empty), null, Arr(new R.ExpInfo(RInt(3), R.Type.Int))), R.Type.Int))
             );
 
-            Assert.Equal(expected, script, IR0EqualityComparer.Instance);
+            Assert.Equal(expected, script);
         }
 
         [Fact]

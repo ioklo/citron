@@ -72,13 +72,13 @@ namespace Gum.IR0Translator
                 // var 처리
                 if (declType is VarTypeValue)
                 {
-                    var initExpResult = AnalyzeExp(elem.InitExp, NontTypeHint.Instance);
+                    var initExpResult = AnalyzeExp(elem.InitExp, ResolveHint.None);
                     var rtype = initExpResult.TypeValue.GetRType();
                     return new VarDeclElementCoreResult(new R.VarDeclElement(elem.VarName, rtype, initExpResult.Exp), initExpResult.TypeValue);
                 }
                 else
                 {
-                    var initExpResult = AnalyzeExp(elem.InitExp, declType);
+                    var initExpResult = AnalyzeExp(elem.InitExp, ResolveHint.Make(declType));
 
                     if (!context.IsAssignable(declType, initExpResult.TypeValue))
                         context.AddFatalError(A0102_VarDecl_MismatchBetweenDeclTypeAndInitExpType, elem);
@@ -165,7 +165,7 @@ namespace Gum.IR0Translator
         {
             if (elem is S.ExpStringExpElement expElem)
             {
-                var expResult = AnalyzeExp(expElem.Exp, NontTypeHint.Instance);
+                var expResult = AnalyzeExp(expElem.Exp, ResolveHint.None);
 
                 // 캐스팅이 필요하다면 
                 if (context.IsIntType(expResult.TypeValue))
@@ -280,12 +280,12 @@ namespace Gum.IR0Translator
             }
         }
 
-        ExpResult AnalyzeTopLevelExp(S.Exp exp, TypeHint hintType, AnalyzeErrorCode code)
+        ExpResult AnalyzeTopLevelExp(S.Exp exp, ResolveHint hint, AnalyzeErrorCode code)
         {
             if (!IsTopLevelExp(exp))
                 context.AddFatalError(code, exp);
 
-            return AnalyzeExp(exp, hintType);
+            return AnalyzeExp(exp, hint);
         }
 
         public void AnalyzeFuncDecl(S.FuncDecl funcDecl)
@@ -355,7 +355,7 @@ namespace Gum.IR0Translator
 
             foreach (var exp in exps)
             {
-                var expResult = AnalyzeExp(exp, NontTypeHint.Instance);
+                var expResult = AnalyzeExp(exp, ResolveHint.None);
                 results.Add(expResult);
             }
 

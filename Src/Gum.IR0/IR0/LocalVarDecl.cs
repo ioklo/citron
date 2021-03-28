@@ -1,16 +1,13 @@
 ﻿using Gum.CompileTime;
+using Pretune;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 
 namespace Gum.IR0
 {
-    public class LocalVarDecl
+    [AutoConstructor, ImplementIEquatable]
+    public partial class LocalVarDecl
     {
-        public ImmutableArray<VarDeclElement> Elems { get; }        
-
-        public LocalVarDecl(ImmutableArray<VarDeclElement> elems)
-        {
-            Elems = elems;
-        }
+        public ImmutableArray<VarDeclElement> Elems { get; }
     }    
 }
