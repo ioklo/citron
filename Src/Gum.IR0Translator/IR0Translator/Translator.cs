@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Text;
 using Gum.Infra;
 using Gum.CompileTime;
-using System.Collections.Immutable;
+using Gum.Collections;
 
 using R = Gum.IR0;
+using System.Diagnostics;
 
 namespace Gum.IR0Translator
 {
@@ -14,7 +15,9 @@ namespace Gum.IR0Translator
     {
         public static R.Script? Translate(ModuleName moduleName, ImmutableArray<ModuleInfo> referenceInfos, Syntax.Script sscript, IErrorCollector errorCollector)
         {
-            var externalModuleInfoRepo = new ModuleInfoRepository(referenceInfos);
+            Debug.Assert(!referenceInfos.Contains(RuntimeModuleInfo.Instance));
+
+            var externalModuleInfoRepo = new ModuleInfoRepository(referenceInfos.Add(RuntimeModuleInfo.Instance));
 
             var typeSkelRepo = TypeSkeletonCollector.Collect(sscript);
             var typeExpTypeValueService = TypeExpEvaluator.Evaluate(moduleName, sscript, externalModuleInfoRepo, typeSkelRepo, errorCollector);

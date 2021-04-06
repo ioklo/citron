@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
+using Gum.Collections;
 using System.Linq;
 using System.Text;
 
@@ -37,9 +37,9 @@ namespace Gum.CompileTime
                    Name.Equals(other.Name) &&
                    IsSequenceFunc == other.IsSequenceFunc &&
                    IsInstanceFunc == other.IsInstanceFunc &&
-                   TypeParams.SequenceEqual(other.TypeParams) &&
+                   TypeParams.Equals(other.TypeParams) &&
                    EqualityComparer<Type>.Default.Equals(RetType, other.RetType) &&
-                   ParamTypes.SequenceEqual(other.ParamTypes);
+                   ParamTypes.Equals(other.ParamTypes);
         }
 
         public override int GetHashCode()

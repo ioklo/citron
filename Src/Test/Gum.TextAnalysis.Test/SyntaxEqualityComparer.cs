@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
+using Gum.Collections;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Gum.Infra;
@@ -400,10 +400,10 @@ namespace Gum.TextAnalysis.Test
 
         static bool SequenceEqual<TElem>(ImmutableArray<TElem> x, ImmutableArray<TElem> y, IEqualityComparer<TElem> comparer)
         {
-            if (x.IsDefaultOrEmpty && y.IsDefaultOrEmpty) return true;
-            if (x.IsDefaultOrEmpty || y.IsDefaultOrEmpty) return false;
+            if (x.IsEmpty && y.IsEmpty) return true;
+            if (x.IsEmpty || y.IsEmpty) return false;
 
-            return ImmutableArrayExtensions.SequenceEqual(x, y, comparer);
+            return Collections.ImmutableArrayExtensions.SequenceEqual(x, y, comparer);
         }
     }
 }

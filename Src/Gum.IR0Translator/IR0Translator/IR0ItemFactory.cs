@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Immutable;
+using Gum.Collections;
 
 using M = Gum.CompileTime;
 using R = Gum.IR0;

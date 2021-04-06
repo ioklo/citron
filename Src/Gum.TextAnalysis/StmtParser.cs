@@ -6,7 +6,7 @@ using Gum.LexicalAnalysis;
 using Gum.Syntax;
 using static Gum.ParserMisc;
 using System.Collections.Generic;
-using System.Collections.Immutable;
+using Gum.Collections;
 
 namespace Gum
 {

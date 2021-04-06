@@ -2,7 +2,7 @@
 using Pretune;
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
+using Gum.Collections;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -37,7 +37,7 @@ namespace Gum.CompileTime
                    ModuleName.Equals(other.ModuleName) &&
                    NamespacePath.Equals(other.NamespacePath) &&
                    Name.Equals(other.Name) &&
-                   TypeArgs.SequenceEqual(other.TypeArgs);
+                   TypeArgs.Equals(other.TypeArgs);
         }
 
         public override int GetHashCode()

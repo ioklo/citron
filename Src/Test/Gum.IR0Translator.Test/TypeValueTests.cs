@@ -1,7 +1,7 @@
 ﻿using Gum.IR0Translator;
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
+using Gum.Collections;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -30,7 +30,7 @@ namespace Gum.IR0Translator.Test
             var xInfo = new M.StructInfo("X", Arr("T"), null, default, default, default, default);
             var moduleInfo = new M.ModuleInfo(moduleName, default, Arr<M.TypeInfo>(xInfo), default);
 
-            var typeInfoRepo = new TypeInfoRepository(moduleInfo, new ModuleInfoRepository(default));
+            var typeInfoRepo = new TypeInfoRepository(moduleInfo, new ModuleInfoRepository(Arr(RuntimeModuleInfo.Instance)));
             var ritemFactory = new IR0ItemFactory();
             var factory = new ItemValueFactory(typeInfoRepo, ritemFactory);
 
@@ -43,17 +43,18 @@ namespace Gum.IR0Translator.Test
         [Fact]
         public void ConstructTypeValue_MemberStructType_ConstructsProperly()
         {
-            var internalModuleInfo = new M.ModuleInfo(moduleName, default, default, default);
-            var externalModuleRepo = new ModuleInfoRepository(default);
+            // struct X<T> { struct Y<U> { } }            
+            var yInfo = new M.StructInfo("Y", Arr<string>("U"), null, default, default, default, default);
+            var xInfo = new M.StructInfo("X", Arr<string>("T"), null, default, Arr<M.TypeInfo>(yInfo), default, default);            
+
+            var internalModuleInfo = new M.ModuleInfo(moduleName, default, Arr<M.TypeInfo>(xInfo), default);
+            var externalModuleRepo = new ModuleInfoRepository(Arr(RuntimeModuleInfo.Instance));
 
             var typeInfoRepo = new TypeInfoRepository(internalModuleInfo, externalModuleRepo);
             var ritemFactory = new IR0ItemFactory();
             var typeValueFactory = new ItemValueFactory(typeInfoRepo, ritemFactory);
             
-            // struct X<T> { struct Y<U> { } }
-            var xInfo = new M.StructInfo("X", Arr<string>("T"), null, default, default, default, default);
-            var yInfo = new M.StructInfo("Y", Arr<string>("U"), null, default, default, default, default);
-
+            
             // X<int>            
             var xmtype = new M.GlobalType(moduleName, M.NamespacePath.Root, "X", Arr(MTypes.Int));
 
@@ -90,19 +91,19 @@ namespace Gum.IR0Translator.Test
             ), default, default);
 
             var testModule = new M.ModuleInfo(moduleName, default, Arr<M.TypeInfo>(xInfo, gInfo), default);
-            var externalModuleRepo = new ModuleInfoRepository(default);
+            var externalModuleRepo = new ModuleInfoRepository(Arr(RuntimeModuleInfo.Instance));
             var typeInfoRepo = new TypeInfoRepository(testModule, externalModuleRepo);
             var ritemFactory = new IR0ItemFactory();
             return new ItemValueFactory(typeInfoRepo, ritemFactory);
         }
 
-        // GetBaseTypeValue(X<int, bool>.Y<string>) => G<int>
+        // GetBaseTypeValue(X<int>.Y<string>) => G<int>
         [Fact]
         public void GettingBaseTypeValue_FromNestedStruct_ApplyingTypeVarCorrectly()
         {
             var factory = MakeFactory();
 
-            var xmtype = new M.GlobalType(moduleName, M.NamespacePath.Root, "X", Arr(MTypes.Int, MTypes.Bool));
+            var xmtype = new M.GlobalType(moduleName, M.NamespacePath.Root, "X", Arr(MTypes.Int));
             var xymtype = new M.MemberType(xmtype, "Y", Arr(MTypes.String));
 
             var xyTypeValue = factory.MakeTypeValue(xymtype);
@@ -125,7 +126,9 @@ namespace Gum.IR0Translator.Test
 
             var itemResult = xyTypeValue.GetMember("v", default, ResolveHint.None);
             var expected = factory.MakeTypeValue(new M.GlobalType(moduleName, M.NamespacePath.Root, "X", Arr(MTypes.Bool)));
-            Assert.Equal(expected, ((ValueItemResult)itemResult).ItemValue);
+            Assert.Equal(expected,                 
+                ((MemberVarValue)((ValueItemResult)itemResult).ItemValue).GetTypeValue()
+            );
         }
 
         // FuncValue를 얻어와서         

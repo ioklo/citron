@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Collections.Immutable;
+using Gum.Collections;
+using Pretune;
 
 namespace Gum.CompileTime
 {
     // 이름 없음.
-    public class NamespaceInfo
+    [AutoConstructor]
+    public partial class NamespaceInfo
     {
         public NamespaceName Name { get; }
 

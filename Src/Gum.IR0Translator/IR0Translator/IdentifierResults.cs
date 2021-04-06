@@ -3,7 +3,7 @@
 using S = Gum.Syntax;
 using M = Gum.CompileTime;
 using R = Gum.IR0;
-using System.Collections.Immutable;
+using Gum.Collections;
 using System.Diagnostics;
 
 namespace Gum.IR0Translator

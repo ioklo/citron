@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Pretune" Version="0.7.2" />    
+    <PackageReference Include="Pretune" Version="0.8.1" />    
   </ItemGroup>
 
   <ItemGroup>

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
+using Gum.Collections;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -15,33 +15,19 @@ namespace Gum.IR0Translator.Test
 {
     static class IR0Factory
     {
-        public static Script RScript(IEnumerable<TypeDecl>? optTypeDecls, IEnumerable<FuncDecl>? optFuncDecls, params Stmt[] optTopLevelStmts)
+        public static Script RScript(ImmutableArray<TypeDecl> typeDecls, ImmutableArray<FuncDecl> funcDecls, params Stmt[] optTopLevelStmts)
         {
-            ImmutableArray<TypeDecl> typeDecls = default;
-            if (optTypeDecls != null)
-                typeDecls = optTypeDecls.ToImmutableArray();
-
-            ImmutableArray<FuncDecl> funcDecls = default;
-            if (optFuncDecls != null)
-            {
-                // TODO: Validator
-                int i = 0;
-                foreach (var funcDecl in optFuncDecls)
-                {
-                    Debug.Assert(i == funcDecl.Id.Value);
-                    i++;
-                }
-
-                funcDecls = optFuncDecls.ToImmutableArray();
-            }
-
+            // TODO: Validator
+            for(int i = 0; i < funcDecls.Length; i++)
+                Debug.Assert(i == funcDecls[i].Id.Value);
+            
             ImmutableArray<Stmt> topLevelStmts = optTopLevelStmts.ToImmutableArray();
 
             return new Script(typeDecls, funcDecls, topLevelStmts);
         }
 
         public static Script RScript(params Stmt[] stmts)
-            => RScript(null, null, stmts);
+            => RScript(default, default, stmts);
 
         public static CommandStmt RCommand(params StringExp[] cmds)
             => new CommandStmt(Arr(cmds));

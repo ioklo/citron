@@ -1,7 +1,7 @@
 ﻿using Gum.Syntax;
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
+using Gum.Collections;
 using System.Diagnostics;
 using System.Linq;
 using System.Xml.XPath;
@@ -19,7 +19,7 @@ namespace Gum.Syntax
 
         public CommandStmt(ImmutableArray<StringExp> commands)
         {
-            Debug.Assert(0 < commands.Count());
+            Debug.Assert(0 < commands.Length);
             Commands = commands;
         }
     }

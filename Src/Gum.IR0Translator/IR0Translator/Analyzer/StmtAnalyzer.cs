@@ -13,6 +13,7 @@ using R = Gum.IR0;
 using Pretune;
 using System.Linq;
 using Gum.Infra;
+using Gum.Collections;
 
 namespace Gum.IR0Translator
 {

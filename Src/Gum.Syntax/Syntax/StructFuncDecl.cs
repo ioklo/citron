@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using System.Collections.Immutable;
+using Gum.Collections;
 
 namespace Gum.Syntax
 {

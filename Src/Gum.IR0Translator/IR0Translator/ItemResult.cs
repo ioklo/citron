@@ -1,5 +1,5 @@
 ﻿using Gum.Infra;
-using System.Collections.Immutable;
+using Gum.Collections;
 using M = Gum.CompileTime;
 
 namespace Gum.IR0Translator

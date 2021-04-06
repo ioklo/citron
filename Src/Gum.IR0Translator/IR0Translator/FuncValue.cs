@@ -8,6 +8,7 @@ using S = Gum.Syntax;
 using M = Gum.CompileTime;
 using R = Gum.IR0;
 using Gum.Infra;
+using Gum.Collections;
 
 namespace Gum.IR0Translator
 {
@@ -75,8 +76,8 @@ namespace Gum.IR0Translator
             foreach (var paramType in funcInfo.ParamTypes)
             {   
                 var paramTypeValue = typeValueFactory.MakeTypeValue(paramType);
-                paramTypeValue.Apply(typeEnv);
-                builder.Add(paramTypeValue);
+                var appliedParamTypeValue = paramTypeValue.Apply(typeEnv);
+                builder.Add(appliedParamTypeValue);
             }
 
             return builder.MoveToImmutable();

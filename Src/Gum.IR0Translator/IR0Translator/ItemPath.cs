@@ -2,7 +2,7 @@
 using Pretune;
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
+using Gum.Collections;
 using System.Linq;
 
 namespace Gum.IR0Translator
@@ -31,13 +31,13 @@ namespace Gum.IR0Translator
         public ItemPath(NamespacePath namespacePath, ImmutableArray<ItemPathEntry> outerEntries, ItemPathEntry entry)
         {
             NamespacePath = namespacePath;
-            OuterEntries = outerEntries.ToImmutableArray();
+            OuterEntries = outerEntries;
             Entry = entry;
         }        
 
         public ItemPath Append(Name name, int typeParamCount = 0, string paramHash = "")
         {
-            return new ItemPath(NamespacePath, OuterEntries.Append(Entry).ToImmutableArray(), new ItemPathEntry(name, typeParamCount, paramHash));
+            return new ItemPath(NamespacePath, OuterEntries.Add(Entry), new ItemPathEntry(name, typeParamCount, paramHash));
         }
 
         public override bool Equals(object? obj)
@@ -48,7 +48,7 @@ namespace Gum.IR0Translator
         public bool Equals(ItemPath other)
         {
             return EqualityComparer<NamespacePath>.Default.Equals(NamespacePath, other.NamespacePath) &&
-                   OuterEntries.SequenceEqual(other.OuterEntries) &&
+                   OuterEntries.Equals(other.OuterEntries) &&
                    EqualityComparer<ItemPathEntry>.Default.Equals(Entry, other.Entry);
         }
 

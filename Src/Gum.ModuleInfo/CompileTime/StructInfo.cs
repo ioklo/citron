@@ -1,7 +1,7 @@
 ﻿using Pretune;
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
+using Gum.Collections;
 using System.Linq;
 using System.Text;
 using Gum.Infra;
@@ -29,12 +29,12 @@ namespace Gum.CompileTime
         {
             return other != null &&
                    Name.Equals(other.Name) &&
-                   TypeParams.SequenceEqual(other.TypeParams) &&
+                   TypeParams.Equals(other.TypeParams) &&
                    EqualityComparer<Type>.Default.Equals(BaseType, other.BaseType) && 
-                   Interfaces.SequenceEqual(other.Interfaces) &&
-                   MemberTypes.SequenceEqual(other.MemberTypes) &&
-                   MemberFuncs.SequenceEqual(other.MemberFuncs) &&
-                   MemberVars.SequenceEqual(other.MemberVars);
+                   Interfaces.Equals(other.Interfaces) &&
+                   MemberTypes.Equals(other.MemberTypes) &&
+                   MemberFuncs.Equals(other.MemberFuncs) &&
+                   MemberVars.Equals(other.MemberVars);
         }
 
         public override int GetHashCode()

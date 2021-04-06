@@ -2,7 +2,7 @@
 using Gum.Infra;
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
+using Gum.Collections;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -10,6 +10,7 @@ using System.Text;
 
 using M = Gum.CompileTime;
 using R = Gum.IR0;
+using Pretune;
 
 namespace Gum.IR0Translator
 {
@@ -28,46 +29,21 @@ namespace Gum.IR0Translator
     {
         public static readonly VarTypeValue Instance = new VarTypeValue();
         private VarTypeValue() { }
-        public override bool Equals(object? obj)
-        {
-            return obj == Instance;
-        }
 
         internal override TypeValue Apply(TypeEnv typeEnv) { return this; }
 
         // var는 translation패스에서 추론되기 때문에 IR0에 없다
         public override R.Type GetRType() { throw new InvalidOperationException();  }
-
-        public override int GetHashCode()
-        {
-            throw new NotImplementedException();
-        }
     }
 
     // T: depth는 지역적이므로, 주어진 컨텍스트 안에서만 의미가 있다
-    class TypeVarTypeValue : TypeValue
+    [AutoConstructor, ImplementIEquatable]
+    partial class TypeVarTypeValue : TypeValue
     {
         IR0ItemFactory ritemFactory;
 
         public int Depth { get; }
         public int Index { get; }
-
-        public TypeVarTypeValue(IR0ItemFactory ritemFactory, int depth, int index)
-        {
-            this.ritemFactory = ritemFactory;
-            Depth = depth;
-            Index = index;
-        }
-
-        public override bool Equals(object? obj)
-        {
-            return obj is TypeVarTypeValue typeVar && Equals(typeVar);
-        }
-
-        public bool Equals(TypeVarTypeValue other)
-        {
-            return Depth == other.Depth && Index == other.Index;
-        }
 
         internal override TypeValue Apply(TypeEnv typeEnv)
         {
@@ -78,34 +54,21 @@ namespace Gum.IR0Translator
             return this;
         }
         public override R.Type GetRType() => ritemFactory.MakeTypeVar(Depth, Index);
-
-        public override int GetHashCode()
-        {
-            throw new NotImplementedException();
-        }
     }
 
-    class ClassTypeValue : NormalTypeValue
+    [ImplementIEquatable]
+    partial class ClassTypeValue : NormalTypeValue
     {
-        public override bool Equals(object? obj)
-        {
-            throw new NotImplementedException();
-        }
-
         internal override TypeValue Apply(TypeEnv typeEnv)
         {
             throw new NotImplementedException();
         }
 
         public override R.Type GetRType() => throw new NotImplementedException();
-
-        public override int GetHashCode()
-        {
-            throw new NotImplementedException();
-        }
     }
 
-    class EnumTypeValue : NormalTypeValue
+    [ImplementIEquatable]
+    partial class EnumTypeValue : NormalTypeValue
     {
         public override R.Type GetRType()
         {
@@ -118,7 +81,8 @@ namespace Gum.IR0Translator
         }
     }
 
-    class StructTypeValue : NormalTypeValue
+    [ImplementIEquatable]
+    partial class StructTypeValue : NormalTypeValue
     {
         ItemValueFactory typeValueFactory;
         IR0ItemFactory ritemFactory;
@@ -142,20 +106,6 @@ namespace Gum.IR0Translator
             this.outer = outer;
             this.structInfo = structInfo;
             this.typeArgs = typeArgs;
-        }
-
-        public override bool Equals(object? obj)
-        {
-            return obj is StructTypeValue structValue && Equals(structValue);
-        }
-
-        public bool Equals(StructTypeValue other)
-        {
-            return moduleName.Equals(other.moduleName) &&
-                namespacePath.Equals(other.namespacePath) &&
-                EqualityComparer<TypeValue>.Default.Equals(outer, other.outer) && // outer null처리를 위해 EqualityComparer
-                structInfo.Equals(other.structInfo) &&
-                typeArgs.SequenceEqual(other.typeArgs);
         }
 
         ItemResult GetMember_Type(M.Name memberName, ImmutableArray<TypeValue> typeArgs)
@@ -344,11 +294,6 @@ namespace Gum.IR0Translator
                 return ritemFactory.MakeMemberType(outerRType, structInfo.Name, rtypeArgs);
             }
         }
-
-        public override int GetHashCode()
-        {
-            throw new NotImplementedException();
-        }
     }
 
     // (struct, class, enum) (external/internal) (global/member) type
@@ -432,7 +377,7 @@ namespace Gum.IR0Translator
 
         public override int GetHashCode()
         {
-            throw new NotImplementedException();
+            return HashCode.Combine(LambdaId);
         }
     }
 

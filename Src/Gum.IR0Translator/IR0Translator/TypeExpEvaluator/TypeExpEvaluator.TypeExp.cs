@@ -7,7 +7,7 @@ using static Gum.IR0Translator.AnalyzeErrorCode;
 using S = Gum.Syntax;
 using M = Gum.CompileTime;
 using System.Linq;
-using System.Collections.Immutable;
+using Gum.Collections;
 
 namespace Gum.IR0Translator
 {

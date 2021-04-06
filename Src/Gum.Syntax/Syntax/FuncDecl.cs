@@ -2,7 +2,7 @@
 using Gum.Syntax;
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
+using Gum.Collections;
 using System.Linq;
 
 namespace Gum.Syntax

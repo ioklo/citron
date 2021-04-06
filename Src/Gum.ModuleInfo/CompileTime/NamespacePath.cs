@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
+using Gum.Collections;
 using System.Diagnostics;
 using System.Linq;
 
@@ -26,12 +26,7 @@ namespace Gum.CompileTime
             builder.AddRange(tlEntries);
             Entries = builder.MoveToImmutable();
         }
-
-        public NamespacePath(IEnumerable<NamespaceName> entries)
-        {
-            Entries = entries.ToImmutableArray();
-        }
-
+        
         public override bool Equals(object? obj)
         {
             return obj is NamespacePath path && Equals(path);
@@ -39,7 +34,7 @@ namespace Gum.CompileTime
 
         public bool Equals(NamespacePath other)
         {
-            return Entries.SequenceEqual(other.Entries) &&
+            return Entries.Equals(other.Entries) &&
                    IsRoot == other.IsRoot;
         }
 
