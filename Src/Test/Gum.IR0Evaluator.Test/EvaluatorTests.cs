@@ -227,7 +227,7 @@ namespace Gum.IR0.Runtime
                             )
                         ), 
 
-                        new AnonymousSeqType("TestModule", funcId, TypeContext.Empty)
+                        new AnonymousSeqType(moduleName, funcId, TypeContext.Empty)
                     ),
 
                     PrintIntCmdStmt(new LocalVarLoc("e"))
