@@ -50,8 +50,8 @@ namespace Gum.IR0
     [AutoConstructor, ImplementIEquatable]
     public partial class IfTestClassStmt : Stmt
     {
-        public ExpInfo Target { get; }
-        public Type TestType { get; }
+        public Loc Target { get; }
+        public Type TestType { get; } 
         public Stmt Body { get; }
         public Stmt? ElseBody { get; }
     }
@@ -59,7 +59,7 @@ namespace Gum.IR0
     [AutoConstructor, ImplementIEquatable]
     public partial class IfTestEnumStmt : Stmt
     {
-        public ExpInfo Target { get; }
+        public Loc Target { get; }
         public string ElemName { get; }
         public Stmt Body { get; }
         public Stmt? ElseBody { get; }
@@ -71,7 +71,7 @@ namespace Gum.IR0
         // InitExp Or VarDecl
         public ForStmtInitializer? Initializer { get; }
         public Exp? CondExp { get; }
-        public ExpInfo? ContinueInfo { get; }
+        public TempLoc? ContinueExp { get; } // 이름은 TempLoc인데 실제로는 미리 할당, EvalForStmt에서 직접 처리한다
 
         public Stmt Body { get; }
     }
@@ -91,7 +91,7 @@ namespace Gum.IR0
     [AutoConstructor, ImplementIEquatable]
     public partial class ReturnStmt : Stmt
     {
-        public Exp? Value { get; }        
+        public Exp? Value { get; }
     }
 
     [AutoConstructor, ImplementIEquatable]
@@ -109,14 +109,13 @@ namespace Gum.IR0
     [AutoConstructor, ImplementIEquatable]
     public partial class ExpStmt : Stmt
     {
-        public ExpInfo ExpInfo { get; }
+        public TempLoc Exp { get; } // 임시 저장소를 생성한 수, Exp를 실행하는 구조
     }
 
     [AutoConstructor, ImplementIEquatable]
     public partial class TaskStmt : Stmt
-    {     
-        public Stmt Body { get; }
-        public CaptureInfo CaptureInfo { get; }
+    {
+        public AnonymousLambdaType LambdaType { get; }
     }
 
     [AutoConstructor, ImplementIEquatable]
@@ -128,8 +127,7 @@ namespace Gum.IR0
     [AutoConstructor, ImplementIEquatable]
     public partial class AsyncStmt : Stmt
     {
-        public Stmt Body { get; }
-        public CaptureInfo CaptureInfo { get; }
+        public AnonymousLambdaType LambdaType { get; }
     }
 
     [AutoConstructor, ImplementIEquatable]
@@ -138,7 +136,7 @@ namespace Gum.IR0
         public Type ElemType { get; set; }
         public string ElemName { get; }
 
-        public ExpInfo IteratorInfo { get; }        
+        public Loc Iterator { get; }        
         public Stmt Body { get; }
     }
 

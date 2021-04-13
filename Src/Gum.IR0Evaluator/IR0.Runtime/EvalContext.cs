@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Gum;
+using Gum.Collections;
 using Gum.IR0;
 
 namespace Gum.IR0.Runtime
@@ -12,11 +13,13 @@ namespace Gum.IR0.Runtime
         class SharedData
         {
             public ImmutableArray<FuncDecl> FuncDecls { get; }
+            public ImmutableArray<LambdaDecl> LambdaDecls { get; }
             public Dictionary<string, Value> PrivateGlobalVars { get; }
 
-            public SharedData(ImmutableArray<FuncDecl> funcDecls)
+            public SharedData(ImmutableArray<FuncDecl> funcDecls, ImmutableArray<LambdaDecl> lambdaDecls)
             {
                 FuncDecls = funcDecls;
+                LambdaDecls = lambdaDecls;
                 PrivateGlobalVars = new Dictionary<string, Value>();
             }
         }
@@ -29,9 +32,9 @@ namespace Gum.IR0.Runtime
         private Value? thisValue;
         private Value retValue;
 
-        public EvalContext(ImmutableArray<FuncDecl> funcDecls)
+        public EvalContext(ImmutableArray<FuncDecl> funcDecls, ImmutableArray<LambdaDecl> lambdaDecls)
         {
-            sharedData = new SharedData(funcDecls);
+            sharedData = new SharedData(funcDecls, lambdaDecls);
             
             localVars = ImmutableDictionary<string, Value>.Empty;
             flowControl = EvalFlowControl.None;
@@ -139,6 +142,7 @@ namespace Gum.IR0.Runtime
             return retValue!;
         }
 
+        // struct 이면 refValue, boxed struct 이면 boxValue, class 이면 ClassValue
         public Value? GetThisValue()
         {
             return thisValue;
@@ -177,6 +181,11 @@ namespace Gum.IR0.Runtime
             where TFuncDecl : FuncDecl
         {
             return (TFuncDecl)sharedData.FuncDecls[funcDeclId.Value];
+        }
+
+        public LambdaDecl GetLambdaDecl(LambdaDeclId lambdaDeclId)
+        {
+            return sharedData.LambdaDecls[lambdaDeclId.Value];
         }
     }    
 }

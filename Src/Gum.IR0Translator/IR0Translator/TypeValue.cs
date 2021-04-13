@@ -40,7 +40,7 @@ namespace Gum.IR0Translator
     [AutoConstructor, ImplementIEquatable]
     partial class TypeVarTypeValue : TypeValue
     {
-        IR0ItemFactory ritemFactory;
+        R.ItemFactory ritemFactory;
 
         public int Depth { get; }
         public int Index { get; }
@@ -85,7 +85,7 @@ namespace Gum.IR0Translator
     partial class StructTypeValue : NormalTypeValue
     {
         ItemValueFactory typeValueFactory;
-        IR0ItemFactory ritemFactory;
+        R.ItemFactory ritemFactory;
 
         // global일 경우
         M.ModuleName? moduleName;
@@ -97,7 +97,7 @@ namespace Gum.IR0Translator
         M.StructInfo structInfo;
         ImmutableArray<TypeValue> typeArgs;
 
-        internal StructTypeValue(ItemValueFactory factory, IR0ItemFactory ritemFactory, M.ModuleName? moduleName, M.NamespacePath? namespacePath, TypeValue? outer, M.StructInfo structInfo, ImmutableArray<TypeValue> typeArgs)
+        internal StructTypeValue(ItemValueFactory factory, R.ItemFactory ritemFactory, M.ModuleName? moduleName, M.NamespacePath? namespacePath, TypeValue? outer, M.StructInfo structInfo, ImmutableArray<TypeValue> typeArgs)
         {
             this.typeValueFactory = factory;
             this.ritemFactory = ritemFactory;
@@ -330,12 +330,12 @@ namespace Gum.IR0Translator
     // ArgTypeValues => RetValueTypes
     class LambdaTypeValue : TypeValue, IEquatable<LambdaTypeValue>
     {
-        IR0ItemFactory ritemFactory;
+        R.ItemFactory ritemFactory;
         public int LambdaId { get; }
         public TypeValue Return { get; }
         public ImmutableArray<TypeValue> Params { get; }
 
-        public LambdaTypeValue(IR0ItemFactory ritemFactory, int lambdaId, TypeValue ret, ImmutableArray<TypeValue> parameters)
+        public LambdaTypeValue(R.ItemFactory ritemFactory, int lambdaId, TypeValue ret, ImmutableArray<TypeValue> parameters)
         {
             this.ritemFactory = ritemFactory;
             LambdaId = lambdaId;
@@ -384,11 +384,11 @@ namespace Gum.IR0Translator
     // S.First, S.Second(int i, short s)
     class EnumElemTypeValue : TypeValue
     {
-        IR0ItemFactory ritemFactory;
+        R.ItemFactory ritemFactory;
         public NormalTypeValue EnumTypeValue { get; }
         public string Name { get; }
 
-        public EnumElemTypeValue(IR0ItemFactory ritemFactory, NormalTypeValue enumTypeValue, string name)
+        public EnumElemTypeValue(R.ItemFactory ritemFactory, NormalTypeValue enumTypeValue, string name)
         {
             this.ritemFactory = ritemFactory;
             EnumTypeValue = enumTypeValue;

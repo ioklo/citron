@@ -10,6 +10,7 @@ using static Gum.Infra.CollectionExtensions;
 using Gum;
 using Gum.IR0;
 using Gum.Infra;
+using Gum.Collections;
 
 namespace Gum.IR0.Runtime
 {
@@ -20,78 +21,6 @@ namespace Gum.IR0.Runtime
         public ExpEvaluator(Evaluator evaluator)
         {
             this.evaluator = evaluator;
-        }
-        
-        
-        async ValueTask<Value> GetValueAsync(Exp exp, EvalContext context)
-        {
-            switch(exp)
-            {
-                case GlobalVarExp pgvExp:
-                    return context.GetGlobalValue(pgvExp.Name);
-
-                case LocalVarExp localVarExp:
-                    return context.GetLocalValue(localVarExp.Name);
-
-                case StaticMemberExp staticMemberExp:
-                    var staticValue = (StaticValue)context.GetStaticValue(staticMemberExp.Type);
-                    return staticValue.GetMemberValue(staticMemberExp.MemberName);
-                
-                case StructMemberExp structMemberExp:
-                    var structValue = (StructValue)await GetValueAsync(structMemberExp.Instance, context);
-                    return structValue.GetMemberValue(structMemberExp.MemberName);
-
-                case ClassMemberExp classMemberExp:
-                    var classValue = (ClassValue)await GetValueAsync(classMemberExp.Instance, context);
-                    return classValue.GetMemberValue(classMemberExp.MemberName);
-
-                case EnumMemberExp enumMemberExp:
-                    var enumValue = (EnumValue)await GetValueAsync(enumMemberExp.Instance, context);
-                    return enumValue.GetMemberValue(enumMemberExp.MemberName);
-
-                default: 
-                    throw new UnreachableCodeException();
-            }
-        }        
-
-        void EvalGlobalVarExp(GlobalVarExp exp, Value result, EvalContext context)
-        {
-            var globalValue = context.GetGlobalValue(exp.Name);
-            result.SetValue(globalValue);
-        }
-
-        void EvalLocalVarExp(LocalVarExp exp, Value result, EvalContext context)
-        {
-            var localValue = context.GetLocalValue(exp.Name);
-            result.SetValue(localValue);
-        }        
-
-        void EvalStaticMemberExp(StaticMemberExp exp, Value result, EvalContext context)
-        {
-            var staticValue = (StaticValue)context.GetStaticValue(exp.Type);
-            var memberValue = staticValue.GetMemberValue(exp.MemberName);
-            result.SetValue(memberValue);
-        }
-
-        async ValueTask EvalStructMemberExpAsync(StructMemberExp exp, Value result, EvalContext context)
-        {
-            var structValue = (StructValue)await GetValueAsync(exp.Instance, context);
-            var memberValue = structValue.GetMemberValue(exp.MemberName);
-            result.SetValue(memberValue);
-        }
-
-        async ValueTask EvalClassMemberExpAsync(ClassMemberExp exp, Value result, EvalContext context)
-        {
-            var classValue = (ClassValue)await GetValueAsync(exp.Instance, context);
-            var memberValue = classValue.GetMemberValue(exp.MemberName);
-            result.SetValue(memberValue);
-        }
-
-        async ValueTask EvalEnumMemberExpAsync(EnumMemberExp exp, Value result, EvalContext context)
-        {
-            var enumValue = (EnumValue)await GetValueAsync(exp.Instance, context);
-            var memberValue = enumValue.GetMemberValue(exp.MemberName);
-            result.SetValue(memberValue);
         }
 
         void EvalBoolLiteralExp(BoolLiteralExp boolLiteralExp, Value result, EvalContext context)
@@ -104,6 +33,13 @@ namespace Gum.IR0.Runtime
             ((IntValue)result).SetInt(intLiteralExp.Value);
         }
 
+        async ValueTask EvalLoadExpAsync(LoadExp loadExp, Value result, EvalContext context)
+        {
+            var value = await evaluator.EvalLocAsync(loadExp.Loc, context);
+            result.SetValue(value);
+        }
+
+        // expEvaluator에서 직접 호출하기 때문에 internal
         internal async ValueTask EvalStringExpAsync(StringExp stringExp, Value result, EvalContext context)
         {
             // stringExp는 element들의 concatenation
@@ -134,7 +70,7 @@ namespace Gum.IR0.Runtime
 
         async ValueTask EvalAssignExpAsync(AssignExp exp, Value result, EvalContext context)
         {
-            var destValue = await GetValueAsync(exp.Dest, context);
+            var destValue = await evaluator.EvalLocAsync(exp.Dest, context);
 
             await EvalAsync(exp.Src, destValue, context);
 
@@ -151,8 +87,7 @@ namespace Gum.IR0.Runtime
             Value? thisValue = null;
             if (exp.Instance != null)
             {
-                var instValue = evaluator.AllocValue(exp.Instance.Value.Type, context);
-                await EvalAsync(exp.Instance.Value.Exp, instValue, context);
+                var instValue = await evaluator.EvalLocAsync(exp.Instance, context);
 
                 // this call인 경우만 세팅한다
                 if (funcDecl.IsThisCall)
@@ -160,7 +95,7 @@ namespace Gum.IR0.Runtime
             }
 
             // 인자를 계산 해서 처음 로컬 variable에 집어 넣는다
-            var args = await evaluator.EvalArgumentsAsync(funcDecl.ParamNames, exp.Args, context);
+            var args = await evaluator.EvalArgumentsAsync(ImmutableDictionary<string, Value>.Empty, funcDecl.ParamInfos, exp.Args, context);
 
             await context.ExecInNewFuncFrameAsync(args, EvalFlowControl.None, ImmutableArray<Task>.Empty, thisValue, result, async () =>
             {
@@ -178,15 +113,14 @@ namespace Gum.IR0.Runtime
             Value? thisValue = null;
             if (exp.Instance != null)
             {
-                var instValue = evaluator.AllocValue(exp.Instance.Value.Type, context);
-                await EvalAsync(exp.Instance.Value.Exp, instValue, context);
+                var instValue = await evaluator.EvalLocAsync(exp.Instance, context);
 
                 // this call인 경우만 세팅한다
                 if (funcDecl.IsThisCall)
                     thisValue = instValue;
             }
 
-            var localVars = await evaluator.EvalArgumentsAsync(funcDecl.ParamNames, exp.Args, context);
+            var localVars = await evaluator.EvalArgumentsAsync(ImmutableDictionary<string, Value>.Empty, funcDecl.ParamInfos, exp.Args, context);
             
             // yield에 사용할 공간
             var yieldValue = evaluator.AllocValue(funcDecl.ElemType, context);
@@ -216,37 +150,13 @@ namespace Gum.IR0.Runtime
 
         async ValueTask EvalCallValueExpAsync(CallValueExp exp, Value result, EvalContext context)
         {
-            var callableValue = (LambdaValue)evaluator.AllocValue(exp.Callable.Type, context);
-
-            await EvalAsync(exp.Callable.Exp, callableValue, context);
-            var lambda = callableValue.GetLambda();
-
-            await evaluator.EvalLambdaAsync(lambda, exp.Args, result, context);
+            var callableValue = (LambdaValue)await evaluator.EvalLocAsync(exp.Callable, context);
+            await evaluator.EvalLambdaAsync(callableValue, exp.Args, result, context);
         }        
         
         void EvalLambdaExp(LambdaExp exp, Value result, EvalContext context)
         {
-            var captures = evaluator.MakeCaptures(exp.CaptureInfo.Captures, context);
-
-            ((LambdaValue)result).SetLambda(new Lambda(
-                exp.CaptureInfo.bShouldCaptureThis ? context.GetThisValue() : null,
-                captures,
-                exp.ParamNames,
-                exp.Body));
-        }
-
-        // l[x]
-        async ValueTask EvalListIndexerExpAsync(ListIndexerExp exp, Value result, EvalContext context)
-        {
-            var listValue = (ListValue)evaluator.AllocValue(exp.ListInfo.Type, context);
-            var indexValue = (IntValue)evaluator.AllocValue(exp.IndexInfo.Type, context);
-            
-            await EvalAsync(exp.ListInfo.Exp, listValue, context);
-            await EvalAsync(exp.IndexInfo.Exp, indexValue, context);
-
-            var list = listValue.GetList();
-
-            result.SetValue(list[indexValue.GetInt()]);
+            evaluator.Capture((LambdaValue)result, exp.bCaptureThis, exp.CaptureLocalVars, context);
         }
 
         //async ValueTask EvalMemberCallExpAsync(MemberCallExp exp, Value result, EvalContext context)
@@ -351,19 +261,21 @@ namespace Gum.IR0.Runtime
             ((ListValue)result).SetList(list); 
         }
 
-        async ValueTask EvalNewEnumExpAsync(NewEnumExp exp, Value result, EvalContext context)
+        ValueTask EvalNewEnumExpAsync(NewEnumExp exp, Value result, EvalContext context)
         {
-            var builder = ImmutableArray.CreateBuilder<NamedValue>(exp.Members.Length);
+            throw new NotImplementedException();
 
-            foreach (var member in exp.Members)
-            {
-                var argValue = evaluator.AllocValue(member.ExpInfo.Type, context);
-                builder.Add((exp.Name, argValue));
+            //var builder = ImmutableArray.CreateBuilder<NamedValue>(exp.Members.Length);
 
-                await EvalAsync(member.ExpInfo.Exp, argValue, context);
-            }
+            //foreach (var member in exp.Members)
+            //{   
+            //    var argValue = evaluator.AllocValue(member.ExpInfo.Type, context);
+            //    builder.Add((exp.Name, argValue));
 
-            ((EnumValue)result).SetEnum(exp.Name, builder.MoveToImmutable());
+            //    await EvalAsync(member.ExpInfo.Exp, argValue, context);
+            //}
+
+            //((EnumValue)result).SetEnum(exp.Name, builder.MoveToImmutable());
         }
 
         ValueTask EvalNewStructExpAsync(NewStructExp exp, Value result, EvalContext context)
@@ -380,8 +292,7 @@ namespace Gum.IR0.Runtime
         {
             switch(exp)
             {
-                case GlobalVarExp pgvExp: EvalGlobalVarExp(pgvExp, result, context); break;
-                case LocalVarExp localVarExp: EvalLocalVarExp(localVarExp, result, context); break;                
+                case LoadExp loadExp: await EvalLoadExpAsync(loadExp, result, context); break;
                 case StringExp stringExp: await EvalStringExpAsync(stringExp, result, context); break;
                 case IntLiteralExp intExp: EvalIntLiteralExp(intExp, result, context); break;
                 case BoolLiteralExp boolExp: EvalBoolLiteralExp(boolExp, result, context); break;
@@ -393,11 +304,6 @@ namespace Gum.IR0.Runtime
                 case CallSeqFuncExp callSeqFuncExp: await EvalCallSeqFuncExpAsync(callSeqFuncExp, result, context); break;
                 case CallValueExp callValueExp: await EvalCallValueExpAsync(callValueExp, result, context); break;
                 case LambdaExp lambdaExp: EvalLambdaExp(lambdaExp, result, context); break;
-                case ListIndexerExp indexerExp: await EvalListIndexerExpAsync(indexerExp, result, context); break;
-                case StaticMemberExp staticMemberExp: EvalStaticMemberExp(staticMemberExp, result, context); break;
-                case StructMemberExp structMemberExp: await EvalStructMemberExpAsync(structMemberExp, result, context); break;
-                case ClassMemberExp classMemberExp: await EvalClassMemberExpAsync(classMemberExp, result, context); break;
-                case EnumMemberExp enumMemberExp: await EvalEnumMemberExpAsync(enumMemberExp, result, context); break;
                 case ListExp listExp: await EvalListExpAsync(listExp, result, context); break;
                 case NewEnumExp enumExp: await EvalNewEnumExpAsync(enumExp, result, context); break;
                 case NewStructExp newStructExp: await EvalNewStructExpAsync(newStructExp, result, context); break;

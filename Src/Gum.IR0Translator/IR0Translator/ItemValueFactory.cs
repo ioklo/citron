@@ -15,7 +15,7 @@ namespace Gum.IR0Translator
     class ItemValueFactory
     {   
         TypeInfoRepository typeInfoRepo;
-        IR0ItemFactory ritemFactory;
+        R.ItemFactory ritemFactory;
 
         public TypeValue Bool { get; }
         public TypeValue Int { get; }        
@@ -25,7 +25,7 @@ namespace Gum.IR0Translator
             throw new NotImplementedException();
         }
 
-        public ItemValueFactory(TypeInfoRepository typeInfoRepo, IR0ItemFactory ritemFactory)
+        public ItemValueFactory(TypeInfoRepository typeInfoRepo, R.ItemFactory ritemFactory)
         {
             M.TypeInfo MakeEmptyStructInfo(M.Name name) => new M.StructInfo(name, default, null, default, default, default, default);
 

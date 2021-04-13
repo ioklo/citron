@@ -1,20 +1,16 @@
 ﻿using Pretune;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Gum.IR0
 {
-    // int a
     [AutoConstructor, ImplementIEquatable]
-    public partial struct TypeAndName
+    public partial struct ParamInfo
     {
         public Type Type { get; }
         public string Name { get; }
-
-        public void Deconstruct(out Type outType, out string outName)
-        {
-            outType = Type;
-            outName = Name;
-        }
     }
 }

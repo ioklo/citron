@@ -65,6 +65,8 @@ namespace Gum.Collections
         public bool IsEmpty => array.IsDefaultOrEmpty;
         public int Length => array.IsDefault ? 0 : array.Length;
 
+        public IEnumerable<T> AsEnumerable() { return array; }
+
         public Enumerator GetEnumerator()
         {
             if (array.IsDefault) return default;

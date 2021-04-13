@@ -5,13 +5,12 @@ namespace Gum.IR0
 {
     public abstract class ForStmtInitializer 
     { 
-
     }
 
     [AutoConstructor, ImplementIEquatable]
     public partial class ExpForStmtInitializer : ForStmtInitializer
     {
-        public ExpInfo ExpInfo { get; }
+        public TempLoc Exp { get; }
     }
 
     [AutoConstructor, ImplementIEquatable]

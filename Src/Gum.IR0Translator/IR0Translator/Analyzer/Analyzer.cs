@@ -303,8 +303,6 @@ namespace Gum.IR0Translator
                 }
 
                 var bodyResult = AnalyzeStmt(funcDecl.Body);
-                var funcPath = context.GetCurFuncPath();
-                Debug.Assert(funcPath != null);
                 
                 if (funcDecl.IsSequence)
                 {
@@ -314,13 +312,13 @@ namespace Gum.IR0Translator
 
                     var retRType = retTypeValue.GetRType();
                     var parameters = funcDecl.ParamInfo.Parameters.Select(param => param.Name).ToImmutableArray();
-                    context.AddSequenceFuncDecl(funcPath.Value, retRType, false, funcDecl.TypeParams, parameters, bodyResult.Stmt);
+                    context.AddSequenceFuncDecl(retRType, false, funcDecl.TypeParams, parameters, bodyResult.Stmt);
                 }
                 else
                 {
                     // TODO: Body가 실제로 리턴을 제대로 하는지 확인해야 한다
                     var parameters = funcDecl.ParamInfo.Parameters.Select(param => param.Name).ToImmutableArray();
-                    context.AddNormalFuncDecl(funcPath.Value, bThisCall: false, funcDecl.TypeParams, parameters, bodyResult.Stmt);
+                    context.AddNormalFuncDecl(bThisCall: false, funcDecl.TypeParams, parameters, bodyResult.Stmt);
                 }
             });
         }

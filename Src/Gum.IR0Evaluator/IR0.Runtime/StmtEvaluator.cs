@@ -75,9 +75,7 @@ namespace Gum.IR0.Runtime
 
         internal async IAsyncEnumerable<Value> EvalIfTestEnumStmtAsync(IfTestEnumStmt stmt, EvalContext context)
         {
-            var targetValue = evaluator.AllocValue<EnumValue>(stmt.Target.Type, context);
-            await evaluator.EvalExpAsync(stmt.Target.Exp, targetValue, context);
-
+            var targetValue = (EnumValue)await evaluator.EvalLocAsync(stmt.Target, context);
             var bTestPassed = (targetValue.GetElemName() == stmt.ElemName);
                 
             if (bTestPassed)
@@ -94,11 +92,9 @@ namespace Gum.IR0.Runtime
         }
 
         internal async IAsyncEnumerable<Value> EvalIfTestClassStmtAsync(IfTestClassStmt stmt, EvalContext context)
-        {  
+        {
             // 분석기가 미리 계산해 놓은 TypeValue를 가져온다                
-            var targetValue = evaluator.AllocValue<ClassValue>(stmt.Target.Type, context);
-            await evaluator.EvalExpAsync(stmt.Target.Exp, targetValue, context);
-
+            var targetValue = (ClassValue)await evaluator.EvalLocAsync(stmt.Target, context);                        
             var targetType = targetValue.GetType();
 
             var bTestPassed = evaluator.IsType(targetType, stmt.TestType, context);
@@ -120,7 +116,8 @@ namespace Gum.IR0.Runtime
         {
             async IAsyncEnumerable<Value> InnerAsync()
             {
-                var contValue = forStmt.ContinueInfo != null ? evaluator.AllocValue(forStmt.ContinueInfo.Value.Type, context) : null;
+                // continue를 실행시키기 위한 공간은 미리 할당받는다
+                var contValue = forStmt.ContinueExp != null ? evaluator.AllocValue(forStmt.ContinueExp.Type, context) : null;
 
                 if (forStmt.Initializer != null)
                 {
@@ -131,8 +128,7 @@ namespace Gum.IR0.Runtime
                             break;
 
                         case ExpForStmtInitializer expInitializer:
-                            var value = evaluator.AllocValue(expInitializer.ExpInfo.Type, context);
-                            await evaluator.EvalExpAsync(expInitializer.ExpInfo.Exp, value, context);
+                            await evaluator.EvalLocAsync(expInitializer.Exp, context);
                             break;
 
                         default:
@@ -174,9 +170,9 @@ namespace Gum.IR0.Runtime
                         Debug.Assert(context.GetFlowControl() == EvalFlowControl.None);
                     }
 
-                    if (forStmt.ContinueInfo != null)
+                    if (forStmt.ContinueExp != null)
                     {
-                        await evaluator.EvalExpAsync(forStmt.ContinueInfo.Value.Exp, contValue!, context);
+                        await evaluator.EvalExpAsync(forStmt.ContinueExp.Exp, contValue!, context);
                     }
                 }
             }
@@ -228,29 +224,27 @@ namespace Gum.IR0.Runtime
         }
 
         internal async ValueTask EvalExpStmtAsync(ExpStmt expStmt, EvalContext context)
-        {
-            var temp = evaluator.AllocValue(expStmt.ExpInfo.Type, context);
-
-            await evaluator.EvalExpAsync(expStmt.ExpInfo.Exp, temp, context);
+        {            
+            await evaluator.EvalLocAsync(expStmt.Exp, context);
         }
 
         internal void EvalTaskStmt(TaskStmt taskStmt, EvalContext context)
         {
-            // 1. lambda로 캡쳐
-            var captures = evaluator.MakeCaptures(taskStmt.CaptureInfo.Captures, context);
-            
-            var lambda = new Lambda(
-                taskStmt.CaptureInfo.bShouldCaptureThis ? context.GetThisValue() : null,
-                captures,
-                default,
-                taskStmt.Body);
+            var lambdaValue = evaluator.AllocValue<LambdaValue>(taskStmt.LambdaType, context);
+            var lambdaDecl = context.GetLambdaDecl(lambdaValue.LambdaDeclId);            
 
-            var newContext = new EvalContext(context, ImmutableDictionary<string, Value>.Empty, EvalFlowControl.None, ImmutableArray<Task>.Empty, null, VoidValue.Instance);
+            evaluator.Capture(
+                lambdaValue, 
+                lambdaDecl.CapturedThisType != null, 
+                ImmutableArray.CreateRange(lambdaDecl.CaptureInfo, captureInfo => captureInfo.Name),
+                context);
+            
+            var newContext = new EvalContext(context, default, EvalFlowControl.None, default, null, VoidValue.Instance);
 
             // 2. 그 lambda를 바로 실행하기
             var task = Task.Run(async () =>
             {
-                await evaluator.EvalLambdaAsync(lambda, default, VoidValue.Instance, newContext);
+                await evaluator.EvalLambdaAsync(lambdaValue, default, VoidValue.Instance, newContext);
             });
 
             context.AddTask(task);
@@ -263,7 +257,7 @@ namespace Gum.IR0.Runtime
                 await foreach (var value in EvalStmtAsync(stmt.Body, context))
                     yield return value;
 
-                await Task.WhenAll(context.GetTasks());
+                await Task.WhenAll(context.GetTasks().AsEnumerable());
             }
 
             return context.ExecInNewTasks(EvalAsync);
@@ -271,19 +265,20 @@ namespace Gum.IR0.Runtime
 
         internal void EvalAsyncStmt(AsyncStmt asyncStmt, EvalContext context)
         {
-            var captures = evaluator.MakeCaptures(asyncStmt.CaptureInfo.Captures, context);
+            var lambdaValue = evaluator.AllocValue<LambdaValue>(asyncStmt.LambdaType, context);
+            var lambdaDecl = context.GetLambdaDecl(lambdaValue.LambdaDeclId);
 
-            var lambda = new Lambda(
-                asyncStmt.CaptureInfo.bShouldCaptureThis ? context.GetThisValue() : null,
-                captures,
-                default,
-                asyncStmt.Body);
-
-            var newContext = new EvalContext(context, ImmutableDictionary<string, Value>.Empty, EvalFlowControl.None, ImmutableArray<Task>.Empty, null, VoidValue.Instance);
+            evaluator.Capture(
+                lambdaValue,
+                lambdaDecl.CapturedThisType != null,
+                ImmutableArray.CreateRange(lambdaDecl.CaptureInfo, captureInfo => captureInfo.Name),
+                context);
+            
+            var newContext = new EvalContext(context, default, EvalFlowControl.None, default, null, VoidValue.Instance);
 
             Func<Task> asyncFunc = async () =>
             {
-                await evaluator.EvalLambdaAsync(lambda, default, VoidValue.Instance, newContext);
+                await evaluator.EvalLambdaAsync(lambdaValue, default, VoidValue.Instance, newContext);
             };
 
             var task = asyncFunc();
@@ -302,14 +297,14 @@ namespace Gum.IR0.Runtime
 
             async IAsyncEnumerable<Value> InnerScopeAsync()
             {
-                var objValue = evaluator.AllocValue(stmt.IteratorInfo.Type, context);
-                await evaluator.EvalExpAsync(stmt.IteratorInfo.Exp, objValue, context);
+                var iterator = await evaluator.EvalLocAsync(stmt.Iterator, context);
 
-                // TODO: objValue는 ListValue일 수 있고, EnumerableValue일 수 있다. Custom은 나중에 만드는 것으로.
+                // TODO: iterator는 seq<T> constraint를 따를 수 있고, Enumerable<T> constraint를 따를 수 있다
+                // TODO: 현재는 그냥 list<T>이면 enumerable<T>를 에뮬레이션 한다
                 IAsyncEnumerable<Value> enumerable;
-                if (objValue is ListValue listValue)
+                if (iterator is ListValue listValue)
                     enumerable = MakeAsyncEnumerable(listValue.GetList());
-                else if (objValue is AsyncEnumerableValue enumerableValue)
+                else if (iterator is AsyncEnumerableValue enumerableValue)
                     enumerable = enumerableValue.GetAsyncEnumerable();
                 else
                     throw new InvalidOperationException();

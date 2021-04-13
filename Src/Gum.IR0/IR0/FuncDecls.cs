@@ -12,20 +12,20 @@ namespace Gum.IR0
         public FuncDeclId Id { get; }
         public bool IsThisCall { get; }
         public ImmutableArray<string> TypeParams { get; }
-        public ImmutableArray<string> ParamNames { get; }
+        public ImmutableArray<ParamInfo> ParamInfos { get; }
         public Stmt Body { get; }
 
         internal FuncDecl(FuncDeclId id,
                 bool bThisCall,
                 ImmutableArray<string> typeParams,
-                ImmutableArray<string> paramNames,
+                ImmutableArray<ParamInfo> paramInfos,
                 Stmt body)
         {
             Id = id;
             IsThisCall = bThisCall;
 
             TypeParams = typeParams;
-            ParamNames = paramNames;
+            ParamInfos = paramInfos;
             Body = body;
         }        
     }
@@ -36,9 +36,9 @@ namespace Gum.IR0
             FuncDeclId id,
             bool bThisCall,
             ImmutableArray<string> typeParams,
-            ImmutableArray<string> paramNames,
+            ImmutableArray<ParamInfo> paramInfos,
             Stmt body)
-            : base(id, bThisCall, typeParams, paramNames, body)
+            : base(id, bThisCall, typeParams, paramInfos, body)
         {
         }
 
@@ -53,13 +53,19 @@ namespace Gum.IR0
             return base.Equals(other);
         }
     }
-
+    
     public class SequenceFuncDecl : FuncDecl
     {
         public Type ElemType { get; }
 
-        public SequenceFuncDecl(FuncDeclId id, Type elemType, bool bThisCall, ImmutableArray<string> typeParams, ImmutableArray<string> paramNames, Stmt body)
-            : base(id, bThisCall, typeParams, paramNames, body)
+        public SequenceFuncDecl(
+            FuncDeclId id, 
+            Type elemType, 
+            bool bThisCall, 
+            ImmutableArray<string> typeParams,
+            ImmutableArray<ParamInfo> paramInfos,
+            Stmt body)
+            : base(id, bThisCall, typeParams, paramInfos, body)
         {
             ElemType = elemType;
         }

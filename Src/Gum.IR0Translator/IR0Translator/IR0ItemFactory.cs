@@ -6,7 +6,7 @@ using R = Gum.IR0;
 
 namespace Gum.IR0Translator
 {
-    class IR0ItemFactory
+    public class ItemFactory
     {
         public R.Type MakeTypeVar(int depth, int index)
         {
@@ -18,12 +18,12 @@ namespace Gum.IR0Translator
             throw new NotImplementedException();
         }
 
-        public R.Type MakeMemberType(R.Type outerRType, M.Name name, ImmutableArray<R.Type> rtypeArgs)
+        public R.Type MakeMemberType(M.Type outerRType, M.Name name, ImmutableArray<R.Type> rtypeArgs)
         {
             throw new NotImplementedException();
         }
 
-        public R.Type MakeLambdaType(int lambdaId, R.Type returnRType, ImmutableArray<R.Type> paramRTypes)
+        public R.Type MakeLambdaType(int lambdaId, Type returnRType, ImmutableArray<R.Type> paramRTypes)
         {
             throw new NotImplementedException();
         }
@@ -38,7 +38,7 @@ namespace Gum.IR0Translator
             throw new NotImplementedException();
         }
 
-        public R.Func MakeMemberFunc(R.Type outer, M.FuncInfo funcInfo, ImmutableArray<R.Type> rtypeArgs)
+        public R.Func MakeMemberFunc(Type outer, M.FuncInfo funcInfo, ImmutableArray<R.Type> rtypeArgs)
         {
             throw new NotImplementedException();
         }

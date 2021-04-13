@@ -23,7 +23,7 @@ namespace Gum.IR0Translator
     class FuncValue : ItemValue
     {
         ItemValueFactory typeValueFactory;
-        IR0ItemFactory ritemFactory;
+        R.ItemFactory ritemFactory;
 
         // X<int>.Y<short>
         M.ModuleName? moduleName;       // external global일 경우에만 존재
@@ -38,7 +38,7 @@ namespace Gum.IR0Translator
         public bool IsStatic { get => !funcInfo.IsInstanceFunc; }
         public bool IsSequence { get => funcInfo.IsSequenceFunc; }
         
-        internal FuncValue(ItemValueFactory typeValueFactory, IR0ItemFactory ritemFactory, M.ModuleName? moduleName, M.NamespacePath? namespacePath, TypeValue? outer, M.FuncInfo funcInfo, ImmutableArray<TypeValue> typeArgs)
+        internal FuncValue(ItemValueFactory typeValueFactory, R.ItemFactory ritemFactory, M.ModuleName? moduleName, M.NamespacePath? namespacePath, TypeValue? outer, M.FuncInfo funcInfo, ImmutableArray<TypeValue> typeArgs)
         {
             // 둘중에 하나만 참
             Debug.Assert((moduleName != null && namespacePath != null) ^ (outer != null));

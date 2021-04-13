@@ -25,7 +25,6 @@ namespace Gum.IR0Translator
         // 현재 분석되고 있는 함수 정보
         class FuncContext
         {
-            ItemPath? funcPath;      // null 이면 최상위
             TypeValue? retTypeValue; // 리턴 타입이 미리 정해져 있다면 이걸 쓴다
             bool bSequence;          // 시퀀스 여부
 
@@ -35,9 +34,8 @@ namespace Gum.IR0Translator
             bool bCaptureThis;
             Dictionary<string, TypeValue> localCaptures;
 
-            public FuncContext(ItemPath? funcPath, TypeValue? retTypeValue, bool bSequence)
+            public FuncContext(TypeValue? retTypeValue, bool bSequence)
             {
-                this.funcPath = funcPath;
                 this.retTypeValue = retTypeValue;
                 this.bSequence = bSequence;
 
@@ -52,11 +50,6 @@ namespace Gum.IR0Translator
             {
                 localVarsByName.Add(name, new LocalVarInfo(name, typeValue));
             }            
-
-            public ItemPath? GetFuncPath()
-            {
-                return funcPath;
-            }
 
             public LocalVarInfo? GetLocalVarOutsideLambda(string varName)
             {
