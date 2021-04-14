@@ -142,10 +142,8 @@ namespace Gum.IR0
     [AutoConstructor, ImplementIEquatable]
     public partial class AnonymousSeqType : Type
     {
-        // public SeqDeclId SeqDeclId { get; }
-        ModuleName moduleName;
-        FuncDeclId funcDeclId;
-        TypeContext typeContext;
+        public SeqDeclId SeqDeclId { get; }
+        public TypeContext TypeContext { get; }
     }
 
     // var l = () => { ... }; 에서 l 타입
