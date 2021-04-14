@@ -54,7 +54,7 @@ namespace Gum.IR0
         }
     }
     
-    public class SequenceFuncDecl : FuncDecl
+    public class SequenceFuncDecl
     {
         public Type ElemType { get; }
 
