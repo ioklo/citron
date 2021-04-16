@@ -142,7 +142,7 @@ namespace Gum.IR0
     [AutoConstructor, ImplementIEquatable]
     public partial class AnonymousSeqType : Type
     {
-        public SeqDeclId SeqDeclId { get; }
+        public DeclId SeqDeclId { get; }
         public TypeContext TypeContext { get; }
     }
 
@@ -150,6 +150,6 @@ namespace Gum.IR0
     [AutoConstructor, ImplementIEquatable]
     public partial class AnonymousLambdaType : Type
     {
-        public LambdaDeclId LambdaDeclId { get; }
+        public DeclId DeclId { get; }
     }
 }

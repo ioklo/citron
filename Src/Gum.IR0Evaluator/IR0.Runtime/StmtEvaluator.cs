@@ -231,7 +231,7 @@ namespace Gum.IR0.Runtime
         internal void EvalTaskStmt(TaskStmt taskStmt, EvalContext context)
         {
             var lambdaValue = evaluator.AllocValue<LambdaValue>(taskStmt.LambdaType, context);
-            var lambdaDecl = context.GetLambdaDecl(lambdaValue.LambdaDeclId);            
+            var lambdaDecl = context.GetDecl<LambdaDecl>(lambdaValue.LambdaDeclId);            
 
             evaluator.Capture(
                 lambdaValue, 
@@ -266,7 +266,7 @@ namespace Gum.IR0.Runtime
         internal void EvalAsyncStmt(AsyncStmt asyncStmt, EvalContext context)
         {
             var lambdaValue = evaluator.AllocValue<LambdaValue>(asyncStmt.LambdaType, context);
-            var lambdaDecl = context.GetLambdaDecl(lambdaValue.LambdaDeclId);
+            var lambdaDecl = context.GetDecl<LambdaDecl>(lambdaValue.LambdaDeclId);
 
             evaluator.Capture(
                 lambdaValue,

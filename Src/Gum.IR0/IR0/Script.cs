@@ -11,9 +11,7 @@ namespace Gum.IR0
     [AutoConstructor, ImplementIEquatable]
     public partial class Script
     {
-        public ImmutableArray<TypeDecl> TypeDecls { get; }     // class struct enum interface
-        public ImmutableArray<FuncDecl> FuncDecls { get; }     // normal / sequence
-        public ImmutableArray<LambdaDecl> LambdaDecls { get; } // 이 모듈 안에서 
+        public ImmutableArray<IDecl> Decls { get; }
         public ImmutableArray<Stmt> TopLevelStmts { get; }
     }
 }

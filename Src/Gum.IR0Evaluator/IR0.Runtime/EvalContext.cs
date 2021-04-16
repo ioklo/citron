@@ -12,14 +12,12 @@ namespace Gum.IR0.Runtime
     {
         class SharedData
         {
-            public ImmutableArray<FuncDecl> FuncDecls { get; }
-            public ImmutableArray<LambdaDecl> LambdaDecls { get; }
+            public ImmutableArray<IDecl> Decls { get; }            
             public Dictionary<string, Value> PrivateGlobalVars { get; }
 
-            public SharedData(ImmutableArray<FuncDecl> funcDecls, ImmutableArray<LambdaDecl> lambdaDecls)
+            public SharedData(ImmutableArray<IDecl> decls)
             {
-                FuncDecls = funcDecls;
-                LambdaDecls = lambdaDecls;
+                Decls = decls;
                 PrivateGlobalVars = new Dictionary<string, Value>();
             }
         }
@@ -32,9 +30,9 @@ namespace Gum.IR0.Runtime
         private Value? thisValue;
         private Value retValue;
 
-        public EvalContext(ImmutableArray<FuncDecl> funcDecls, ImmutableArray<LambdaDecl> lambdaDecls)
+        public EvalContext(ImmutableArray<IDecl> decls)
         {
-            sharedData = new SharedData(funcDecls, lambdaDecls);
+            sharedData = new SharedData(decls);
             
             localVars = ImmutableDictionary<string, Value>.Empty;
             flowControl = EvalFlowControl.None;
@@ -177,15 +175,10 @@ namespace Gum.IR0.Runtime
             }
         }
 
-        public TFuncDecl GetFuncDecl<TFuncDecl>(FuncDeclId funcDeclId)
-            where TFuncDecl : FuncDecl
+        public TDecl GetDecl<TDecl>(DeclId declId)
+            where TDecl : IDecl
         {
-            return (TFuncDecl)sharedData.FuncDecls[funcDeclId.Value];
-        }
-
-        public LambdaDecl GetLambdaDecl(LambdaDeclId lambdaDeclId)
-        {
-            return sharedData.LambdaDecls[lambdaDeclId.Value];
+            return (TDecl)sharedData.Decls[declId.Value];
         }
     }    
 }

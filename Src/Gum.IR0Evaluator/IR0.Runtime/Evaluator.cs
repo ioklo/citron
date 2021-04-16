@@ -98,7 +98,7 @@ namespace Gum.IR0.Runtime
                     return new StringValue();
 
                 case AnonymousLambdaType lambdaType:
-                    var lambdaDecl = context.GetLambdaDecl(lambdaType.LambdaDeclId);
+                    var lambdaDecl = context.GetDecl<LambdaDecl>(lambdaType.DeclId);
 
                     Value? capturedThis = null;
                     if (lambdaDecl.CapturedThisType != null)
@@ -111,7 +111,7 @@ namespace Gum.IR0.Runtime
                         capturesBuilder.Add(elemName, elemValue);
                     }
 
-                    return new LambdaValue(lambdaType.LambdaDeclId, capturedThis, capturesBuilder.ToImmutable());
+                    return new LambdaValue(lambdaType.DeclId, capturedThis, capturesBuilder.ToImmutable());
 
                 default:
                     throw new NotImplementedException();
@@ -180,7 +180,7 @@ namespace Gum.IR0.Runtime
 
         internal async ValueTask EvalLambdaAsync(LambdaValue lambdaValue, ImmutableArray<Exp> args, Value result, EvalContext context)
         {
-            var lambdaDecl = context.GetLambdaDecl(lambdaValue.LambdaDeclId);
+            var lambdaDecl = context.GetDecl<LambdaDecl>(lambdaValue.LambdaDeclId);
 
             var thisValue = lambdaValue.CapturedThis;
             var localVars = await EvalArgumentsAsync(lambdaValue.Captures, lambdaDecl.ParamInfos, args, context);
@@ -247,7 +247,7 @@ namespace Gum.IR0.Runtime
 
         public ValueTask<int> EvalScriptAsync(Script script)
         {
-            var context = new EvalContext(script.FuncDecls, script.LambdaDecls);
+            var context = new EvalContext(script.Decls);
             return EvalScriptAsync(script, context);
         }
 

@@ -12,7 +12,7 @@ namespace Gum.IR0
     [AutoConstructor, ImplementIEquatable]
     public partial struct Func
     {
-        public FuncDeclId DeclId { get; }
+        public DeclId DeclId { get; }
         public TypeContext TypeContext { get; }
     }
 }

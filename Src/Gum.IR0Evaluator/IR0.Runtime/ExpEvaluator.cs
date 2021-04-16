@@ -79,7 +79,7 @@ namespace Gum.IR0.Runtime
         
         async ValueTask EvalCallFuncExpAsync(CallFuncExp exp, Value result, EvalContext context)
         {   
-            var funcDecl = context.GetFuncDecl<NormalFuncDecl>(exp.Func.DeclId);
+            var funcDecl = context.GetDecl<NormalFuncDecl>(exp.Func.DeclId);
 
             // 함수는 this call이지만 instance가 없는 경우는 없다.
             Debug.Assert(!(funcDecl.IsThisCall && exp.Instance == null));
@@ -105,7 +105,7 @@ namespace Gum.IR0.Runtime
 
         async ValueTask EvalCallSeqFuncExpAsync(CallSeqFuncExp exp, Value result, EvalContext context)
         {
-            var funcDecl = context.GetFuncDecl<SequenceFuncDecl>(exp.Func.DeclId);
+            var funcDecl = context.GetDecl<SequenceFuncDecl>(exp.DeclId);
 
             // 함수는 this call이지만 instance가 없는 경우는 없다.
             Debug.Assert(!(funcDecl.IsThisCall && exp.Instance == null));
@@ -123,7 +123,7 @@ namespace Gum.IR0.Runtime
             var localVars = await evaluator.EvalArgumentsAsync(ImmutableDictionary<string, Value>.Empty, funcDecl.ParamInfos, exp.Args, context);
             
             // yield에 사용할 공간
-            var yieldValue = evaluator.AllocValue(funcDecl.ElemType, context);
+            var yieldValue = evaluator.AllocValue(funcDecl.YieldType, context);
 
             // context 복제
             var newContext = new EvalContext(

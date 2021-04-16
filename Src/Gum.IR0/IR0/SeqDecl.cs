@@ -8,8 +8,8 @@ using System.Threading.Tasks;
 namespace Gum.IR0
 {
     [AutoConstructor, ImplementIEquatable]
-    public partial class SeqDecl
+    public partial class SeqDecl : IDecl
     {
-        public SeqDeclId SeqDeclId { get; }
+        public DeclId DeclId { get; }
     }
 }
