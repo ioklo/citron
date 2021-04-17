@@ -55,7 +55,7 @@ namespace Gum.IR0.Runtime
             return evaluator.EvalLocalVarDeclAsync(stmt.VarDecl, context);
         }
 
-        internal async IAsyncEnumerable<Value> EvalIfStmtAsync(IfStmt stmt, EvalContext context)
+        internal async IAsyncEnumerator<Value> EvalIfStmtAsync(IfStmt stmt, EvalContext context)
         {
             var condValue = evaluator.AllocValue<BoolValue>(Type.Bool, context);
             await evaluator.EvalExpAsync(stmt.Cond, condValue, context);
@@ -285,31 +285,30 @@ namespace Gum.IR0.Runtime
             context.AddTask(task);
         }
 
-        internal async IAsyncEnumerable<Value> EvalForeachStmtAsync(ForeachStmt stmt, EvalContext context)
+        internal async IAsyncEnumerator<Value> EvalForeachStmtAsync(ForeachStmt stmt, EvalContext context)
         {
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-            async IAsyncEnumerable<Value> MakeAsyncEnumerable(IEnumerable<Value> enumerable)
+            async IAsyncEnumerator<Value> MakeAsyncEnumerator(IEnumerable<Value> enumerable)
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
             {
                 foreach (var elem in enumerable)
                     yield return elem;
             }
 
-            async IAsyncEnumerable<Value> InnerScopeAsync()
+            async IAsyncEnumerator<Value> InnerScopeAsync()
             {
                 var iterator = await evaluator.EvalLocAsync(stmt.Iterator, context);
 
                 // TODO: iterator는 seq<T> constraint를 따를 수 있고, Enumerable<T> constraint를 따를 수 있다
                 // TODO: 현재는 그냥 list<T>이면 enumerable<T>를 에뮬레이션 한다
-                IAsyncEnumerable<Value> enumerable;
+                IAsyncEnumerator<Value> enumerator;
                 if (iterator is ListValue listValue)
-                    enumerable = MakeAsyncEnumerable(listValue.GetList());
-                else if (iterator is AsyncEnumerableValue enumerableValue)
-                    enumerable = enumerableValue.GetAsyncEnumerable();
+                    enumerator = MakeAsyncEnumerator(listValue.GetList());
+                else if (iterator is SeqValue seqValue)
+                    enumerator = seqValue.Enumerator;
                 else
                     throw new InvalidOperationException();
-
-                var enumerator = enumerable.GetAsyncEnumerator();
+                
                 var elemValue = evaluator.AllocValue(stmt.ElemType, context);
 
                 context.AddLocalVar(stmt.ElemName, elemValue);

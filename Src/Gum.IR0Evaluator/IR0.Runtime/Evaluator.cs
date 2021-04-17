@@ -112,6 +112,9 @@ namespace Gum.IR0.Runtime
                     }
 
                     return new LambdaValue(lambdaType.DeclId, capturedThis, capturesBuilder.ToImmutable());
+                
+                case AnonymousSeqType _:
+                    return new SeqValue();
 
                 default:
                     throw new NotImplementedException();

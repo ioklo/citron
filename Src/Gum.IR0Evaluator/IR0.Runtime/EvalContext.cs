@@ -42,14 +42,14 @@ namespace Gum.IR0.Runtime
         }
 
         public EvalContext(
-            EvalContext other,
+            EvalContext evalContext,
             ImmutableDictionary<string, Value> localVars,
             EvalFlowControl flowControl,
             ImmutableArray<Task> tasks,
             Value? thisValue,
             Value retValue)
         {
-            this.sharedData = other.sharedData;
+            this.sharedData = evalContext.sharedData;
 
             this.localVars = localVars;
             this.flowControl = flowControl;

@@ -71,47 +71,6 @@ namespace Gum.IR0.Runtime
         }
     }
 
-    class AsyncEnumeratorValue : Value
-    {
-        IAsyncEnumerator<Value> enumerator;
-        public AsyncEnumeratorValue(IAsyncEnumerator<Value> enumerator)
-        {
-            this.enumerator = enumerator;
-        }
-
-        public IAsyncEnumerator<Value> GetEnumerator()
-        {
-            return enumerator;
-        }
-
-        public void SetEnumerator(IAsyncEnumerator<Value> asyncEnum)
-        {
-            this.enumerator = asyncEnum;
-        }
-
-        public override void SetValue(Value fromValue)
-        {
-            enumerator = ((AsyncEnumeratorValue)fromValue).enumerator;
-        }
-    }
-
-    class AsyncEnumerableValue : Value
-    {
-        IAsyncEnumerable<Value>? enumerable;        
-
-        public override void SetValue(Value value)
-        {
-            enumerable = ((AsyncEnumerableValue)value).enumerable;
-        }
-
-        public void SetEnumerable(IAsyncEnumerable<Value> enumerable) { this.enumerable = enumerable; }
-
-        public IAsyncEnumerable<Value> GetAsyncEnumerable()
-        {
-            return enumerable!;
-        }
-    }
-
     class VoidValue : Value
     {
         public static readonly Value Instance = new VoidValue();

@@ -187,7 +187,7 @@ namespace Gum.IR0.Runtime
 
         // SeqCall
         // seq int F(int x, int y) { yield x * 2; yield y + 3; } // struct anonymous_sequence_#1
-        // foreach(var e in F(1, 2)) // e의 타입은 ref<int>, int로 하면 ref<int> -> int 컨버전때문에 복사가 일어난다.
+        // foreach(var e in F(1, 2)) // e의 타입은 int,
         //    CommandStmt
         [Fact]
         public async Task CallSeqFuncExp_GenerateSequencesInForeach()
@@ -210,7 +210,7 @@ namespace Gum.IR0.Runtime
             var stmts = Arr<Stmt>
             (
                 new ForeachStmt(
-                    Type.Int, 
+                    Type.Int,
                     "e",
                     new TempLoc(
                         new CallSeqFuncExp(

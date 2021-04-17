@@ -102,28 +102,22 @@ namespace Gum.IR0.Runtime
                 await foreach (var _ in evaluator.EvalStmtAsync(funcDecl.Body, context)) { }
             });
         }
-
+        
         async ValueTask EvalCallSeqFuncExpAsync(CallSeqFuncExp exp, Value result, EvalContext context)
         {
-            var funcDecl = context.GetDecl<SequenceFuncDecl>(exp.DeclId);
+            var seqFuncDecl = context.GetDecl<SequenceFuncDecl>(exp.DeclId);
 
             // 함수는 this call이지만 instance가 없는 경우는 없다.
-            Debug.Assert(!(funcDecl.IsThisCall && exp.Instance == null));
+            Debug.Assert(!(seqFuncDecl.IsThisCall && exp.Instance == null));
 
             Value? thisValue = null;
             if (exp.Instance != null)
             {
-                var instValue = await evaluator.EvalLocAsync(exp.Instance, context);
-
-                // this call인 경우만 세팅한다
-                if (funcDecl.IsThisCall)
-                    thisValue = instValue;
+                Debug.Assert(seqFuncDecl.IsThisCall);
+                thisValue = await evaluator.EvalLocAsync(exp.Instance, context);
             }
 
-            var localVars = await evaluator.EvalArgumentsAsync(ImmutableDictionary<string, Value>.Empty, funcDecl.ParamInfos, exp.Args, context);
-            
-            // yield에 사용할 공간
-            var yieldValue = evaluator.AllocValue(funcDecl.YieldType, context);
+            var localVars = await evaluator.EvalArgumentsAsync(ImmutableDictionary<string, Value>.Empty, seqFuncDecl.ParamInfos, exp.Args, context);
 
             // context 복제
             var newContext = new EvalContext(
@@ -132,20 +126,19 @@ namespace Gum.IR0.Runtime
                 EvalFlowControl.None,
                 ImmutableArray<Task>.Empty,
                 thisValue,
-                yieldValue);
+                VoidValue.Instance);
 
             // asyncEnum을 만들기 위해서 내부 함수를 씁니다
-            async IAsyncEnumerable<Value> WrapAsyncEnum()
+            async IAsyncEnumerator<Value> WrapAsyncEnum()
             {
-                await foreach (var value in evaluator.EvalStmtAsync(funcDecl.Body, newContext))
+                await foreach (var value in evaluator.EvalStmtAsync(seqFuncDecl.Body, newContext))
                 {
                     yield return value;
                 }
             }
 
-            var asyncEnum = WrapAsyncEnum();
-
-            ((AsyncEnumerableValue)result).SetEnumerable(asyncEnum);
+            var enumerator = WrapAsyncEnum();
+            ((SeqValue)result).Enumerator = enumerator;
         }
 
         async ValueTask EvalCallValueExpAsync(CallValueExp exp, Value result, EvalContext context)
