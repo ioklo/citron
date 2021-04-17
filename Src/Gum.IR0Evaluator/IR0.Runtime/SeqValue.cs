@@ -24,7 +24,8 @@ namespace Gum.IR0.Runtime
 
         public override void SetValue(Value value)
         {
-            throw new System.NotImplementedException();
+            // seq가 복사되면 어떻게 되나 +_+ 안되지
+            // 
         }
 
         // 
