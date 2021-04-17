@@ -55,8 +55,8 @@ namespace Gum.IR0
     [AutoConstructor, ImplementIEquatable]
     public partial class ClassType : Type
     {
-        OuterType outer;
-        Name name;
+        public OuterType Outer { get; }
+        public Name Name { get; }
         TypeContext typeContext;
     }
     

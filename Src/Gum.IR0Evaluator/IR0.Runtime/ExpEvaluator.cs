@@ -129,16 +129,16 @@ namespace Gum.IR0.Runtime
                 VoidValue.Instance);
 
             // asyncEnum을 만들기 위해서 내부 함수를 씁니다
-            async IAsyncEnumerator<Value> WrapAsyncEnum()
+            async IAsyncEnumerator<Infra.Void> WrapAsyncEnum()
             {
-                await foreach (var value in evaluator.EvalStmtAsync(seqFuncDecl.Body, newContext))
+                await foreach (var _ in evaluator.EvalStmtAsync(seqFuncDecl.Body, newContext))
                 {
-                    yield return value;
+                    yield return Infra.Void.Instance;
                 }
             }
 
             var enumerator = WrapAsyncEnum();
-            ((SeqValue)result).Enumerator = enumerator;
+            ((SeqValue)result).SetEnumerator(enumerator, newContext);
         }
 
         async ValueTask EvalCallValueExpAsync(CallValueExp exp, Value result, EvalContext context)

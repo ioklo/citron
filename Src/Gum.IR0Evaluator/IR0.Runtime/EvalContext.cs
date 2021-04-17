@@ -6,6 +6,8 @@ using Gum;
 using Gum.Collections;
 using Gum.IR0;
 
+using Void = Gum.Infra.Void;
+
 namespace Gum.IR0.Runtime
 {   
     public class EvalContext
@@ -29,6 +31,7 @@ namespace Gum.IR0.Runtime
         private ImmutableArray<Task> tasks;
         private Value? thisValue;
         private Value retValue;
+        private Value? yieldValue;
 
         public EvalContext(ImmutableArray<IDecl> decls)
         {
@@ -146,27 +149,27 @@ namespace Gum.IR0.Runtime
             return thisValue;
         }
 
-        public async IAsyncEnumerable<Value> ExecInNewTasks(Func<IAsyncEnumerable<Value>> enumerable)
+        public async IAsyncEnumerable<Void> ExecInNewTasks(Func<IAsyncEnumerable<Void>> enumerable)
         {
             var prevTasks = tasks;
             tasks = ImmutableArray<Task>.Empty;
 
-            await foreach (var v in enumerable())
-                yield return v;
+            await foreach (var _ in enumerable())
+                yield return Void.Instance;
             
             tasks = prevTasks;
         }
 
-        public async IAsyncEnumerable<Value> ExecInNewScopeAsync(Func<IAsyncEnumerable<Value>> action)
+        public async IAsyncEnumerable<Void> ExecInNewScopeAsync(Func<IAsyncEnumerable<Void>> action)
         {
             var prevLocalVars = localVars;
 
             try
             {
                 var enumerable = action.Invoke();
-                await foreach(var yieldValue in enumerable)
+                await foreach(var _ in enumerable)
                 {
-                    yield return yieldValue;
+                    yield return Void.Instance;
                 }
             }
             finally 
@@ -179,6 +182,16 @@ namespace Gum.IR0.Runtime
             where TDecl : IDecl
         {
             return (TDecl)sharedData.Decls[declId.Value];
+        }
+
+        public void SetYieldValue(Value value)
+        {
+            yieldValue = value;
+        }
+
+        public Value GetYieldValue()
+        {
+            return yieldValue!;
         }
     }    
 }

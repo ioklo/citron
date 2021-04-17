@@ -97,6 +97,12 @@ namespace Gum.IR0.Runtime
                 case ClassType when type == Type.String:
                     return new StringValue();
 
+                case ClassType classType:
+                    if (classType.Outer.Equals(new RootOuterType("System.Runtime", new NamespacePath("System"))) && classType.Name.Equals("List"))
+                        return new ListValue();
+
+                    throw new NotImplementedException();
+
                 case AnonymousLambdaType lambdaType:
                     var lambdaDecl = context.GetDecl<LambdaDecl>(lambdaType.DeclId);
 
@@ -217,7 +223,7 @@ namespace Gum.IR0.Runtime
             return locEvaluator.EvalLocAsync(loc, context);
         }
 
-        public IAsyncEnumerable<Value> EvalStmtAsync(Stmt stmt, EvalContext context)
+        public IAsyncEnumerable<Gum.Infra.Void> EvalStmtAsync(Stmt stmt, EvalContext context)
         {
             return stmtEvaluator.EvalStmtAsync(stmt, context);
         }

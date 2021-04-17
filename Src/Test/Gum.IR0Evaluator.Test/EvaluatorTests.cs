@@ -986,8 +986,6 @@ namespace Gum.IR0.Runtime
                 // 선언하자 마자 대입하기
                 RLocalVarDeclStmt(new AnonymousSeqType(seqFuncId, TypeContext.Empty), "x", new CallSeqFuncExp(seqFuncId, TypeContext.Empty, null, default)),
 
-                // TODO: 지금은 value로 얻은 Enumerable을 조작할 수 있는 방법이 없다. foreach에서만 내부적으로 조작할 수 있는데, 그렇게만 하도록 할 것인지 결정을 해야 한다
-
                 // 로컬 변수에 새 값 대입하기
                 new ExpStmt(new TempLoc(
                     new AssignExp(LocalVar("x"), new CallSeqFuncExp(seqFuncId, TypeContext.Empty, null, default)), 
