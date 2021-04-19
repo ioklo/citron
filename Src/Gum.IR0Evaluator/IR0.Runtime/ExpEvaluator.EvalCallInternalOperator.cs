@@ -44,8 +44,14 @@ namespace Gum.IR0.Runtime
             result.SetString(operand.GetInt().ToString());
         }
 
-        void Operator_Multiply_Int_Int_Int(IntValue operand0, IntValue operand1, IntValue result)
+        async ValueTask Operator_Multiply_Int_Int_Int(Exp operandExp0, Exp operandExp1, IntValue result, EvalContext context)
         {
+            var operandValue0 = evaluator.AllocValue<IntValue>(Type.Int, context);
+            var operandValue1 = evaluator.AllocValue<IntValue>(Type.Int, context);
+
+            await evaluator.EvalExpAsync(operandExp0, operandValue0, context);
+            await evaluator.EvalExpAsync(operandExp1, operandValue1, context);
+
             result.SetInt(operand0.GetInt() * operand1.GetInt());
         }
 
@@ -129,16 +135,33 @@ namespace Gum.IR0.Runtime
             result.SetBool(operand0.GetString().CompareTo(operand1.GetString()) == 0);
         }
 
+        void Operator_Int_Int(Exp operand0, Exp operand1, Value result, EvalContext context)
+        {
+            var operandValue0 = evaluator.AllocValue<IntValue>(Type.Int, context);
+            var operandValue1 = evaluator.AllocValue<IntValue>(Type.Int, context);
+
+
+        }
+
         async ValueTask EvalCallInternalBinaryOperatorExpAsync(CallInternalBinaryOperatorExp exp, Value result, EvalContext context)
         {
             // operand들을 복사하지 않고 직접 다룬다
-            var operand0 = await evaluator.EvalLocAsync(exp.Operand0, context);
-            var operand1 = await evaluator.EvalLocAsync(exp.Operand1, context);
+            // var operand0 = await evaluator.EvalLocAsync(exp.Operand0, context);
+            // var operand1 = await evaluator.EvalLocAsync(exp.Operand1, context);
 
             switch (exp.Operator)
             {
-                case InternalBinaryOperator.Multiply_Int_Int_Int: Operator_Multiply_Int_Int_Int((IntValue)operand0, (IntValue)operand1, (IntValue)result); break;
-                case InternalBinaryOperator.Divide_Int_Int_Int: Operator_Divide_Int_Int_Int((IntValue)operand0, (IntValue)operand1, (IntValue)result); break;
+                case InternalBinaryOperator.Multiply_Int_Int_Int: Operator_Multiply_Int_Int_Int(exp.Operand0, exp.Operand1, result);                        
+
+                case InternalBinaryOperator.Divide_Int_Int_Int:
+                    {
+                        var operand0 = evaluator.AllocValue<IntValue>(Type.Int, context);
+                        var operand1 = evaluator.AllocValue<IntValue>(Type.Int, context);
+                        await evaluator.EvalExpAsync(exp.Operand0, operand0, context);
+                        await evaluator.EvalExpAsync(exp.Operand1, operand1, context);
+                        Operator_Divide_Int_Int_Int(operand0, operand1, (IntValue)result); break;
+                    }
+
                 case InternalBinaryOperator.Modulo_Int_Int_Int: Operator_Modulo_Int_Int_Int((IntValue)operand0, (IntValue)operand1, (IntValue)result); break;
                 case InternalBinaryOperator.Add_Int_Int_Int: Operator_Add_Int_Int_Int((IntValue)operand0, (IntValue)operand1, (IntValue)result); break;
                 case InternalBinaryOperator.Add_String_String_String: Operator_Add_String_String_String((StringValue)operand0, (StringValue)operand1, (StringValue)result); break;
