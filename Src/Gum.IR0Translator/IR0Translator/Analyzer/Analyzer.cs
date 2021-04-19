@@ -206,8 +206,8 @@ namespace Gum.IR0Translator
         [AutoConstructor]
         partial struct LambdaResult
         {
-            public DeclId LambdaDeclId { get; }
-            public R.CaptureInfo CaptureInfo { get; }
+            public bool bCaptureThis { get; }
+            public ImmutableArray<string> CaptureLocalVars { get; }
             public LambdaTypeValue TypeValue { get; }
         }
 
@@ -224,41 +224,39 @@ namespace Gum.IR0Translator
                     context.AddFatalError(A9901_NotSupported_LambdaParameterInference, nodeForErrorReport);
 
                 var paramTypeValue = context.GetTypeValueByTypeExp(param.Type);
-
                 paramInfos.Add((param.Name, paramTypeValue));
             }
 
-            var bodyResult = new StmtResult(); // suppress CS0165
-
-            R.CaptureInfo? captureInfo = null;
-
-            context.ExecInLambdaScope(retTypeValue, () => {
+            var (bCaptureThis, bodyResult, capturedLocalVars, newRetTypeValue) = context.ExecInLambdaScope(retTypeValue, () => {
 
                 // 람다 파라미터를 지역 변수로 추가한다
                 foreach(var paramInfo in paramInfos)
                     context.AddLocalVarInfo(paramInfo.Name, paramInfo.TypeValue);
 
                 // 본문 분석
-                bodyResult = AnalyzeStmt(body);
-                
-                // 성공했으면, 리턴 타입 갱신
-                retTypeValue = context.GetRetTypeValue();
+                var bodyResult = AnalyzeStmt(body);
 
-                captureInfo = context.MakeCaptureInfo();
+                // 성공했으면, 리턴 타입 갱신
+                var bCaptureThis = context.NeedCaptureThis();
+                var retTypeValue = context.GetRetTypeValue();
+                var capturedLocalVars = context.GetCapturedLocalVars();
+
+                return (bCaptureThis, bodyResult, capturedLocalVars, retTypeValue);
             });
 
-            Debug.Assert(captureInfo != null);
-
             var paramTypes = paramInfos.Select(paramInfo => paramInfo.TypeValue).ToImmutableArray();
+            var rparamInfos = paramInfos.Select(paramInfo => new R.ParamInfo(paramInfo.TypeValue.GetRType(), paramInfo.Name)).ToImmutableArray();
+
+            var lambdaDeclId = context.AddLambdaDecl(null, capturedLocalVars, rparamInfos, bodyResult.Stmt);
 
             var lambdaTypeValue = context.NewLambdaTypeValue(
+                lambdaDeclId,
                 retTypeValue ?? VoidTypeValue.Instance,
                 paramTypes
             );
 
-            var lambdaDeclId = context.AddLambdaDecl(null, captureInfo, paramInfos, bodyResult.Stmt);
-
-            return new LambdaResult(bodyResult.Stmt, captureInfo, lambdaTypeValue);
+            var captureLocalVarNames = ImmutableArray.CreateRange(capturedLocalVars, c => c.Name);
+            return new LambdaResult(bCaptureThis, captureLocalVarNames, lambdaTypeValue);
         }
 
         bool IsTopLevelExp(S.Exp exp)
@@ -314,7 +312,16 @@ namespace Gum.IR0Translator
 
                     var retRType = retTypeValue.GetRType();
                     var parameters = funcDecl.ParamInfo.Parameters.Select(param => param.Name).ToImmutableArray();
-                    context.AddSequenceFuncDecl(retRType, false, funcDecl.TypeParams, parameters, bodyResult.Stmt);
+
+                    var rparamInfos = ImmutableArray.CreateRange(funcDecl.ParamInfo.Parameters, param =>
+                    {
+                        var typeValue = context.GetTypeValueByTypeExp(param.Type);
+                        var rtype = typeValue.GetRType();
+
+                        return new R.ParamInfo(rtype, param.Name);
+                    });
+
+                    context.AddSequenceFuncDecl(retRType, false, funcDecl.TypeParams, rparamInfos, bodyResult.Stmt);
                 }
                 else
                 {

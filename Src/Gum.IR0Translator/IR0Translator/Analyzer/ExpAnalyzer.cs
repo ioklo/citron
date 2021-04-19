@@ -188,6 +188,7 @@ namespace Gum.IR0Translator
 
         ExpResult AnalyzeAssignBinaryOpExp(S.BinaryOpExp exp)
         {
+            // syntax 에서는 exp로 보이지만, R로 변환할 경우 Location 명령이어야 한다
             var destResult = AnalyzeLoc(exp.Operand0);
             var srcResult = AnalyzeExp(exp.Operand1, ResolveHint.None);
 
@@ -380,10 +381,9 @@ namespace Gum.IR0Translator
         ExpResult AnalyzeLambdaExp(S.LambdaExp exp)
         {
             var lambdaResult = AnalyzeLambda(exp, exp.Body, exp.Params);
-            var paramNames = ImmutableArray.CreateRange(exp.Params, param => param.Name);
 
             return new ExpResult(
-                new R.LambdaExp(false, lambdaResult.CaptureInfo, paramNames, lambdaResult.Body),
+                new R.LambdaExp(lambdaResult.bCaptureThis, lambdaResult.CaptureLocalVars),
                 lambdaResult.TypeValue);
         }
 

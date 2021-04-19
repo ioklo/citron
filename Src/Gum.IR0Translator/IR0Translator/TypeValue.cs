@@ -40,7 +40,7 @@ namespace Gum.IR0Translator
     [AutoConstructor, ImplementIEquatable]
     partial class TypeVarTypeValue : TypeValue
     {
-        R.ItemFactory ritemFactory;
+        RItemFactory ritemFactory;
 
         public int Depth { get; }
         public int Index { get; }
@@ -85,7 +85,7 @@ namespace Gum.IR0Translator
     partial class StructTypeValue : NormalTypeValue
     {
         ItemValueFactory typeValueFactory;
-        R.ItemFactory ritemFactory;
+        RItemFactory ritemFactory;
 
         // global일 경우
         M.ModuleName? moduleName;
@@ -97,7 +97,7 @@ namespace Gum.IR0Translator
         M.StructInfo structInfo;
         ImmutableArray<TypeValue> typeArgs;
 
-        internal StructTypeValue(ItemValueFactory factory, R.ItemFactory ritemFactory, M.ModuleName? moduleName, M.NamespacePath? namespacePath, TypeValue? outer, M.StructInfo structInfo, ImmutableArray<TypeValue> typeArgs)
+        internal StructTypeValue(ItemValueFactory factory, RItemFactory ritemFactory, M.ModuleName? moduleName, M.NamespacePath? namespacePath, TypeValue? outer, M.StructInfo structInfo, ImmutableArray<TypeValue> typeArgs)
         {
             this.typeValueFactory = factory;
             this.ritemFactory = ritemFactory;
@@ -330,17 +330,17 @@ namespace Gum.IR0Translator
     // ArgTypeValues => RetValueTypes
     class LambdaTypeValue : TypeValue, IEquatable<LambdaTypeValue>
     {
-        R.ItemFactory ritemFactory;
+        RItemFactory ritemFactory;
         public R.DeclId LambdaDeclId { get; }
         public TypeValue Return { get; }
         public ImmutableArray<TypeValue> Params { get; }
 
-        public LambdaTypeValue(R.ItemFactory ritemFactory, R.DeclId lambdaDeclId, TypeValue ret, ImmutableArray<TypeValue> parameters)
+        public LambdaTypeValue(RItemFactory ritemFactory, R.DeclId lambdaDeclId, TypeValue ret, ImmutableArray<TypeValue> parameters)
         {
             this.ritemFactory = ritemFactory;
-            LambdaDeclId = lambdaDeclId;
-            Return = ret;
-            Params = parameters;
+            this.LambdaDeclId = lambdaDeclId;
+            this.Return = ret;
+            this.Params = parameters;
         }
 
         public override bool Equals(object? obj)
@@ -372,7 +372,7 @@ namespace Gum.IR0Translator
             var returnRType = Return.GetRType();
             var paramRTypes = ImmutableArray.CreateRange(Params, parameter => parameter.GetRType());
 
-            return ritemFactory.MakeLambdaType(LambdaId, returnRType, paramRTypes);
+            return ritemFactory.MakeLambdaType(LambdaDeclId, returnRType, paramRTypes);
         }
 
         public override int GetHashCode()
@@ -384,11 +384,11 @@ namespace Gum.IR0Translator
     // S.First, S.Second(int i, short s)
     class EnumElemTypeValue : TypeValue
     {
-        R.ItemFactory ritemFactory;
+        RItemFactory ritemFactory;
         public NormalTypeValue EnumTypeValue { get; }
         public string Name { get; }
 
-        public EnumElemTypeValue(R.ItemFactory ritemFactory, NormalTypeValue enumTypeValue, string name)
+        public EnumElemTypeValue(RItemFactory ritemFactory, NormalTypeValue enumTypeValue, string name)
         {
             this.ritemFactory = ritemFactory;
             EnumTypeValue = enumTypeValue;

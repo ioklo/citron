@@ -6,7 +6,7 @@ using R = Gum.IR0;
 
 namespace Gum.IR0Translator
 {
-    public class ItemFactory
+    public class RItemFactory
     {
         public R.Type MakeTypeVar(int depth, int index)
         {
@@ -23,9 +23,9 @@ namespace Gum.IR0Translator
             throw new NotImplementedException();
         }
 
-        public R.Type MakeLambdaType(int lambdaId, Type returnRType, ImmutableArray<R.Type> paramRTypes)
+        public R.Type MakeLambdaType(R.DeclId lambdaDeclId, Type returnRType, ImmutableArray<R.Type> paramRTypes)
         {
-            throw new NotImplementedException();
+            return new R.AnonymousLambdaType(lambdaDeclId);
         }
 
         public R.Type MakeEnumElemType()

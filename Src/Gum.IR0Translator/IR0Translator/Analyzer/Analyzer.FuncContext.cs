@@ -94,7 +94,7 @@ namespace Gum.IR0Translator
                 return bSequence;
             }
 
-            public void ExecInLambdaScope(TypeValue? lambdaRetTypeValue, Action action)
+            public TResult ExecInLambdaScope<TResult>(TypeValue? lambdaRetTypeValue, Func<TResult> action)
             {
                 localVarsOutsideLambda.Push();
                 var prevLocalVarsByName = localVarsByName;
@@ -104,12 +104,12 @@ namespace Gum.IR0Translator
                 // Merge
                 foreach (var (name, info) in localVarsByName)
                     localVarsOutsideLambda.Add(name, info);
-                
+
                 localVarsByName = new ScopedDictionary<string, LocalVarInfo>();
 
                 try
                 {
-                    action.Invoke();                    
+                    return action.Invoke();
                 }
                 finally
                 {
@@ -164,15 +164,18 @@ namespace Gum.IR0Translator
                 return false;
             }
 
-            public R.CaptureInfo MakeCaptureInfo()
+            public ImmutableArray<R.TypeAndName> GetCapturedLocalVars()
             {
-                var elems = localCaptures.Select(localCapture => {
+                return localCaptures.Select(localCapture => {
                     var name = localCapture.Key;
                     var type = localCapture.Value.GetRType();
-                    return new R.CaptureInfo.Element(type, name);
+                    return new R.TypeAndName(type, name);
                 }).ToImmutableArray();
+            }
 
-                return new R.CaptureInfo(bCaptureThis, elems);
+            public bool NeedCaptureThis()
+            {
+                return bCaptureThis;
             }
         }
     }

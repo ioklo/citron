@@ -22,9 +22,7 @@ namespace Gum.IR0Translator
             GlobalItemValueFactory globalItemValueFactory;
 
             TypeExpInfoService typeExpTypeValueService;            
-            IErrorCollector errorCollector;
-
-            int lambdaCount;
+            IErrorCollector errorCollector;            
 
             // 현재 분석되고 있는 함수
             FuncContext curFunc;
@@ -45,9 +43,7 @@ namespace Gum.IR0Translator
                 this.globalItemValueFactory = globalItemValueFactory;
                 this.typeExpTypeValueService = typeExpTypeValueService;
                 this.errorCollector = errorCollector;
-
-                lambdaCount = 0;
-
+                
                 curFunc = new FuncContext(itemValueFactory.Int, false);
                 bInLoop = false;
                 internalGlobalVarRepo = new InternalGlobalVariableRepository();
@@ -185,10 +181,10 @@ namespace Gum.IR0Translator
                     bInLoop = bPrevInLoop;
                 }
             }            
-
-            public void ExecInLambdaScope(TypeValue? lambdaRetTypeValue, Action action)
+            
+            public TResult ExecInLambdaScope<TResult>(TypeValue? lambdaRetTypeValue, Func<TResult> action)
             {
-                curFunc.ExecInLambdaScope(lambdaRetTypeValue, action);
+                return curFunc.ExecInLambdaScope(lambdaRetTypeValue, action);
             }
 
             public void ExecInFuncScope(S.FuncDecl funcDecl, Action action)
@@ -267,6 +263,12 @@ namespace Gum.IR0Translator
                 decls.Add(new R.NormalFuncDecl(id, bThisCall, typeParams, paramNames, body));
             }
 
+            public void AddSequenceFuncDecl(R.Type yieldType, bool bThisCall, ImmutableArray<string> typeParams, ImmutableArray<R.ParamInfo> paramInfos, R.Stmt body)
+            {
+                var id = new R.DeclId(decls.Count);
+                decls.Add(new R.SequenceFuncDecl(id, bThisCall, yieldType, typeParams, paramInfos, body));
+            }
+
             public R.DeclId AddLambdaDecl(R.Type? capturedThisType, ImmutableArray<R.TypeAndName> captureInfo, ImmutableArray<R.ParamInfo> paramInfos, R.Stmt body)
             {
                 var id = new R.DeclId(decls.Count);
@@ -286,15 +288,14 @@ namespace Gum.IR0Translator
                 return topLevelStmts.ToImmutableArray();
             }
 
-            public void AddSequenceFuncDecl(R.Type retTypeId, bool bThisCall, ImmutableArray<string> typeParams, ImmutableArray<string> paramNames, R.Stmt body)
+            public bool NeedCaptureThis()
             {
-                var id = new R.FuncDeclId(funcDecls.Count);
-                funcDecls.Add(new R.SequenceFuncDecl(id, retTypeId, bThisCall, typeParams, paramNames,body));
+                return curFunc.NeedCaptureThis();
             }
 
-            public R.CaptureInfo MakeCaptureInfo()
+            public ImmutableArray<R.TypeAndName> GetCapturedLocalVars()
             {
-                return curFunc.MakeCaptureInfo();
+                return curFunc.GetCapturedLocalVars();
             }
 
             // curFunc
@@ -323,10 +324,9 @@ namespace Gum.IR0Translator
                 return internalGlobalVarRepo.HasVariable(name);
             }
 
-            public LambdaTypeValue NewLambdaTypeValue(TypeValue retType, ImmutableArray<TypeValue> paramTypes)
+            public LambdaTypeValue NewLambdaTypeValue(R.DeclId lambdaDeclId, TypeValue retType, ImmutableArray<TypeValue> paramTypes)
             {
-                int lambdaId = lambdaCount++;
-                return itemValueFactory.MakeLambdaType(lambdaId, retType, paramTypes);
+                return itemValueFactory.MakeLambdaType(lambdaDeclId, retType, paramTypes);
             }
 
             public ItemResult GetGlobalItem(M.NamespacePath namespacePath, string idName, ImmutableArray<TypeValue> typeArgs, ResolveHint hint)
