@@ -109,7 +109,7 @@ namespace Gum.IR0
     [AutoConstructor, ImplementIEquatable]
     public partial class ExpStmt : Stmt
     {
-        public TempLoc Exp { get; } // 임시 저장소를 생성한 수, Exp를 실행하는 구조
+        public Exp Exp { get; }
     }
 
     [AutoConstructor, ImplementIEquatable]

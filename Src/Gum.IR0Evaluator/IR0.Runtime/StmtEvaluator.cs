@@ -226,8 +226,9 @@ namespace Gum.IR0.Runtime
         }
 
         internal async ValueTask EvalExpStmtAsync(ExpStmt expStmt, EvalContext context)
-        {            
-            await evaluator.EvalLocAsync(expStmt.Exp, context);
+        {
+            await evaluator.EvalExpWithoutResultAsync(expStmt.Exp, context);
+            
         }
 
         internal void EvalTaskStmt(TaskStmt taskStmt, EvalContext context)

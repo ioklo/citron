@@ -1,4 +1,5 @@
-﻿using Pretune;
+﻿using Gum.Infra;
+using Pretune;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
@@ -24,8 +25,8 @@ namespace Gum.IR0.Runtime
 
         public override void SetValue(Value value)
         {
-            // seq가 복사되면 어떻게 되나 +_+ 안되지
-            // 
+            // seq는 복사가 되지 않도록 Translator에서 체크해서 막아야 한다
+            throw new UnreachableCodeException();
         }
 
         // 
