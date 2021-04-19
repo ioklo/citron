@@ -331,14 +331,14 @@ namespace Gum.IR0Translator
     class LambdaTypeValue : TypeValue, IEquatable<LambdaTypeValue>
     {
         R.ItemFactory ritemFactory;
-        public int LambdaId { get; }
+        public R.DeclId LambdaDeclId { get; }
         public TypeValue Return { get; }
         public ImmutableArray<TypeValue> Params { get; }
 
-        public LambdaTypeValue(R.ItemFactory ritemFactory, int lambdaId, TypeValue ret, ImmutableArray<TypeValue> parameters)
+        public LambdaTypeValue(R.ItemFactory ritemFactory, R.DeclId lambdaDeclId, TypeValue ret, ImmutableArray<TypeValue> parameters)
         {
             this.ritemFactory = ritemFactory;
-            LambdaId = lambdaId;
+            LambdaDeclId = lambdaDeclId;
             Return = ret;
             Params = parameters;
         }
@@ -353,7 +353,7 @@ namespace Gum.IR0Translator
             if (other == null) return false;
 
             // 아이디만 비교한다. 같은 위치에서 다른 TypeContext에서 생성되는 람다는 id도 바뀌어야 한다
-            return LambdaId == other.LambdaId;
+            return LambdaDeclId.Equals(other.LambdaDeclId);
         }
 
         // lambdatypevalue를 replace할 일이 있는가

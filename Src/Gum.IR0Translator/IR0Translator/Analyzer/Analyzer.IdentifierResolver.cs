@@ -20,13 +20,13 @@ namespace Gum.IR0Translator
             return resolver.Resolve();
         }        
 
-        R.Exp BuildMemberExp(R.Exp parent, TypeValue parentType, string memberName)
+        R.Loc BuildMemberLoc(R.Loc parent, TypeValue parentType, string memberName)
         {
             switch(parentType)
             {
-                case ClassTypeValue _: return new R.ClassMemberExp(parent, memberName);
-                case StructTypeValue _: return new R.StructMemberExp(parent, memberName);
-                case EnumElemTypeValue _: return new R.EnumMemberExp(parent, memberName);
+                case ClassTypeValue _: return new R.ClassMemberLoc(parent, memberName);
+                case StructTypeValue _: return new R.StructMemberLoc(parent, memberName);
+                case EnumElemTypeValue _: return new R.EnumMemberLoc(parent, memberName);
             }
 
             throw new UnreachableCodeException();
@@ -48,7 +48,7 @@ namespace Gum.IR0Translator
         
         // e.x 꼴
         IdentifierResult ResolveIdentifierMemberExpExpParent(
-            R.Exp parentExp,
+            R.Loc parentLoc,
             TypeValue parentType,
             LambdaCapture parentLambdaCapture,
             string memberName, ImmutableArray<TypeValue> typeArgs, 
@@ -75,14 +75,14 @@ namespace Gum.IR0Translator
                             if (funcValue.IsStatic)
                                 return CantGetStaticMemberThroughInstanceIdentifierResult.Instance;
 
-                            return new InstanceFuncIdentifierResult(parentExp, parentType, funcValue, parentLambdaCapture);
+                            return new InstanceFuncIdentifierResult(parentLoc, parentType, funcValue, parentLambdaCapture);
 
                         case MemberVarValue memberVarValue:
                             if (memberVarValue.IsStatic)
                                 return CantGetStaticMemberThroughInstanceIdentifierResult.Instance;
 
-                            var exp = BuildMemberExp(parentExp, parentType, memberName);
-                            return new ExpIdentifierResult(exp, memberVarValue.GetTypeValue(), parentLambdaCapture);
+                            var loc = BuildMemberLoc(parentLoc, parentType, memberName);
+                            return new LocIdentifierResult(loc, memberVarValue.GetTypeValue(), parentLambdaCapture);
 
                         default:
                             throw new UnreachableCodeException();
@@ -122,8 +122,8 @@ namespace Gum.IR0Translator
                                 return CantGetInstanceMemberThroughTypeIdentifierResult.Instance;
 
                             var rparentType = parentType.GetRType();
-                            var exp = new R.StaticMemberExp(rparentType, memberName);
-                            return new ExpIdentifierResult(exp, memberVarValue.GetTypeValue(), NoneLambdaCapture.Instance);
+                            var loc = new R.StaticMemberLoc(rparentType, memberName);
+                            return new LocIdentifierResult(loc, memberVarValue.GetTypeValue(), NoneLambdaCapture.Instance);
 
                         default:
                             throw new UnreachableCodeException();
@@ -148,6 +148,9 @@ namespace Gum.IR0Translator
 
                 case ExpIdentifierResult expResult:                    
                     return ResolveIdentifierMemberExpExpParent(expResult.Exp, expResult.TypeValue, expResult.LambdaCapture, memberExp.MemberName, typeArgs, hint);
+
+                case LocIdentifierResult locResult:
+                    return ResolveIdentifierMemberExpExpParent(locResult.Loc, locResult.TypeValue, locResult.LambdaCapture, memberExp.MemberName, typeArgs, hint);
 
                 case TypeIdentifierResult typeResult:
                     return ResolveIdentifierMemberExpTypeParent(typeResult.TypeValue, memberExp.MemberName, typeArgs, hint);
@@ -209,7 +212,7 @@ namespace Gum.IR0Translator
                 if (varInfo == null) return NotFoundIdentifierResult.Instance;
 
                 var localCapture = new LocalLambdaCapture(varInfo.Value.Name, varInfo.Value.TypeValue);
-                return new ExpIdentifierResult(new R.LocalVarExp(varInfo.Value.Name), varInfo.Value.TypeValue, localCapture);
+                return new LocIdentifierResult(new R.LocalVarLoc(varInfo.Value.Name), varInfo.Value.TypeValue, localCapture);
             }
 
             IdentifierResult GetLocalVarInfo()
@@ -220,7 +223,7 @@ namespace Gum.IR0Translator
                 var varInfo = context.GetLocalVar(idName);
                 if (varInfo == null) return NotFoundIdentifierResult.Instance;
 
-                return new ExpIdentifierResult(new R.LocalVarExp(varInfo.Value.Name), varInfo.Value.TypeValue, NoneLambdaCapture.Instance);
+                return new LocIdentifierResult(new R.LocalVarLoc(varInfo.Value.Name), varInfo.Value.TypeValue, NoneLambdaCapture.Instance);
             }
 
             IdentifierResult GetThisMemberInfo()
@@ -236,7 +239,7 @@ namespace Gum.IR0Translator
                 var varInfo = context.GetInternalGlobalVarInfo(idName);
                 if (varInfo == null) return NotFoundIdentifierResult.Instance;
 
-                return new ExpIdentifierResult(new R.GlobalVarExp(varInfo.Name.ToString()), varInfo.TypeValue, NoneLambdaCapture.Instance);
+                return new LocIdentifierResult(new R.GlobalVarLoc(varInfo.Name.ToString()), varInfo.TypeValue, NoneLambdaCapture.Instance);
             }
             
             IdentifierResult GetGlobalInfo()

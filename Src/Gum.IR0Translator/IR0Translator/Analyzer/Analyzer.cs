@@ -173,7 +173,7 @@ namespace Gum.IR0Translator
                     return new R.ExpStringExpElement(
                         new R.CallInternalUnaryOperatorExp(
                             R.InternalUnaryOperator.ToString_Int_String,
-                            new R.ExpInfo(expResult.Exp, R.Type.Int)
+                            expResult.Exp
                         )
                     );
                 }
@@ -182,7 +182,7 @@ namespace Gum.IR0Translator
                     return new R.ExpStringExpElement(
                             new R.CallInternalUnaryOperatorExp(
                             R.InternalUnaryOperator.ToString_Bool_String,
-                            new R.ExpInfo(expResult.Exp, R.Type.Bool)
+                            expResult.Exp
                         )
                     );
                 }
@@ -206,7 +206,7 @@ namespace Gum.IR0Translator
         [AutoConstructor]
         partial struct LambdaResult
         {
-            public R.Stmt Body { get; }
+            public DeclId LambdaDeclId { get; }
             public R.CaptureInfo CaptureInfo { get; }
             public LambdaTypeValue TypeValue { get; }
         }
@@ -255,6 +255,8 @@ namespace Gum.IR0Translator
                 retTypeValue ?? VoidTypeValue.Instance,
                 paramTypes
             );
+
+            var lambdaDeclId = context.AddLambdaDecl(null, captureInfo, paramInfos, bodyResult.Stmt);
 
             return new LambdaResult(bodyResult.Stmt, captureInfo, lambdaTypeValue);
         }

@@ -254,7 +254,7 @@ namespace Gum.IR0Translator
             public LocalVarInfo? GetLocalVar(string idName)
             {
                 return curFunc.GetLocalVarInfo(idName);
-            }
+            }            
 
             public InternalGlobalVarInfo? GetInternalGlobalVarInfo(string idName)
             {
@@ -265,6 +265,13 @@ namespace Gum.IR0Translator
             {
                 var id = new R.DeclId(decls.Count);
                 decls.Add(new R.NormalFuncDecl(id, bThisCall, typeParams, paramNames, body));
+            }
+
+            public R.DeclId AddLambdaDecl(R.Type? capturedThisType, ImmutableArray<R.TypeAndName> captureInfo, ImmutableArray<R.ParamInfo> paramInfos, R.Stmt body)
+            {
+                var id = new R.DeclId(decls.Count);
+                decls.Add(new R.LambdaDecl(id, capturedThisType, captureInfo, paramInfos, body));
+                return id;
             }
 
             public void AddTopLevelStmt(R.Stmt stmt)

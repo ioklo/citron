@@ -50,6 +50,10 @@ namespace Gum.IR0Translator
                     context.AddLambdaCapture(expResult.LambdaCapture);
                     return new ExpResult(expResult.Exp, expResult.TypeValue);
 
+                case LocIdentifierResult locResult:
+                    context.AddLambdaCapture(locResult.LambdaCapture);
+                    return new ExpResult(new R.LoadExp(locResult.Loc), locResult.TypeValue);
+
                 case InstanceFuncIdentifierResult:
                     throw new NotImplementedException();
 
@@ -120,16 +124,16 @@ namespace Gum.IR0Translator
         // int만 지원한다
         ExpResult AnalyzeIntUnaryAssignExp(S.Exp operand, R.InternalUnaryAssignOperator op)
         {
-            var operandResult = AnalyzeExp(operand, ResolveHint.None);
+            var operandResult = AnalyzeLoc(operand);
 
             // int type 검사
             if (!context.IsAssignable(context.GetIntType(), operandResult.TypeValue))
                 context.AddFatalError(A0601_UnaryAssignOp_IntTypeIsAllowedOnly, operand);
 
-            if (!context.IsAssignableExp(operandResult.Exp))
+            if (!context.IsAssignableExp(operandResult.Loc))
                 context.AddFatalError(A0602_UnaryAssignOp_AssignableExpressionIsAllowedOnly, operand);
 
-            return new ExpResult(new R.CallInternalUnaryAssignOperator(op, operandResult.Exp), context.GetIntType());
+            return new ExpResult(new R.CallInternalUnaryAssignOperator(op, operandResult.Loc), context.GetIntType());
         }
         
         ExpResult AnalyzeUnaryOpExp(S.UnaryOpExp unaryOpExp)
@@ -161,7 +165,7 @@ namespace Gum.IR0Translator
                         return new ExpResult(
                             new R.CallInternalUnaryOperatorExp(
                                 R.InternalUnaryOperator.UnaryMinus_Int_Int,
-                                new R.ExpInfo(operandResult.Exp, operandRType)),
+                                operandResult.Exp),
                             context.GetIntType());
                     }
 
@@ -187,7 +191,7 @@ namespace Gum.IR0Translator
             var destResult = AnalyzeLoc(exp.Operand0);
             var srcResult = AnalyzeExp(exp.Operand1, ResolveHint.None);
 
-            if (!context.IsAssignable(operandResult0.TypeValue, operandResult1.TypeValue))
+            if (!context.IsAssignableoperandResult0.TypeValue, operandResult1.TypeValue))
                 context.AddFatalError(A0801_BinaryOp_LeftOperandTypeIsNotCompatibleWithRightOperandType, binaryOpExp);
 
             if (!context.IsAssignableExp(operandResult0.Exp))
@@ -276,19 +280,13 @@ namespace Gum.IR0Translator
         //}
 
         // CallExp분석에서 Callable이 Identifier인 경우 처리
-        ExpResult AnalyzeCallExpFuncCallable(S.ISyntaxNode nodeForErrorReport, R.ExpInfo? instance, FuncValue funcValue, ImmutableArray<ExpResult> argResults)
+        ExpResult AnalyzeCallExpFuncCallable(S.ISyntaxNode nodeForErrorReport, R.Loc? instance, FuncValue funcValue, ImmutableArray<ExpResult> argResults)
         {
             // 인자 타입 체크 
             var argTypes = ImmutableArray.CreateRange(argResults, info => info.TypeValue);            
             CheckParamTypes(nodeForErrorReport, funcValue.GetParamTypes(), argTypes);
 
-            var args = ImmutableArray.CreateRange(argResults, argResult =>
-            {
-                // rType으로 
-                var rtype = argResult.TypeValue.GetRType();
-                return new R.ExpInfo(argResult.Exp, rtype);
-            });
-
+            var args = ImmutableArray.CreateRange(argResults, argResult => argResult.Exp);
             var rfunc = funcValue.GetRFunc();
             var retType = funcValue.GetRetType();
             
@@ -312,7 +310,7 @@ namespace Gum.IR0Translator
         }
 
         // CallExp 분석에서 Callable이 Exp인 경우 처리
-        ExpResult AnalyzeCallExpExpCallable(R.Exp callable, TypeValue callableType, ImmutableArray<ExpResult> argResults, S.CallExp nodeForErrorReport)
+        ExpResult AnalyzeCallExpLocCallable(R.Loc callable, TypeValue callableType, ImmutableArray<ExpResult> argResults, S.CallExp nodeForErrorReport)
         {
             var lambdaType = callableType as LambdaTypeValue;
             if (lambdaType == null)
@@ -320,17 +318,11 @@ namespace Gum.IR0Translator
 
             var argTypes = ImmutableArray.CreateRange(argResults, info => info.TypeValue);
             CheckParamTypes(nodeForErrorReport, lambdaType.Params, argTypes);
+            
+            var args = argResults.Select(info => info.Exp).ToImmutableArray();
 
-            var callableRType = lambdaType.GetRType();
-            var args = argResults.Select(info =>
-            {
-                var argRType = info.TypeValue.GetRType();
-                return new R.ExpInfo(info.Exp, argRType);
-            }).ToImmutableArray();
-
-            // TODO: 사실 Type보다 Allocation정보가 들어가야 한다
             return new ExpResult(
-                new R.CallValueExp(new R.ExpInfo(callable, callableRType), args),
+                new R.CallValueExp(callable, args),
                 lambdaType.Return);
         }
         
@@ -361,11 +353,14 @@ namespace Gum.IR0Translator
                     break;
 
                 case ExpIdentifierResult expResult:
-                    return AnalyzeCallExpExpCallable(expResult.Exp, expResult.TypeValue, argResults, exp);
+                    return AnalyzeCallExpLocCallable(new R.TempLoc(expResult.Exp, expResult.TypeValue.GetRType()), expResult.TypeValue, argResults, exp);
+
+                case LocIdentifierResult locResult:
+                    return AnalyzeCallExpLocCallable(locResult.Loc, locResult.TypeValue, argResults, exp);
 
                 case InstanceFuncIdentifierResult instFuncResult:
                     var instanceType = instFuncResult.InstanceType.GetRType();
-                    return AnalyzeCallExpFuncCallable(exp, new R.ExpInfo(instFuncResult.Instance, instanceType), instFuncResult.FuncValue, argResults);
+                    return AnalyzeCallExpFuncCallable(exp, instFuncResult.Instance, instFuncResult.FuncValue, argResults);
 
                 case StaticFuncIdentifierResult staticFuncResult:
                     return AnalyzeCallExpFuncCallable(exp, null, staticFuncResult.FuncValue, argResults);
@@ -388,7 +383,7 @@ namespace Gum.IR0Translator
             var paramNames = ImmutableArray.CreateRange(exp.Params, param => param.Name);
 
             return new ExpResult(
-                new R.LambdaExp(lambdaResult.CaptureInfo, paramNames, lambdaResult.Body),
+                new R.LambdaExp(false, lambdaResult.CaptureInfo, paramNames, lambdaResult.Body),
                 lambdaResult.TypeValue);
         }
 
@@ -437,19 +432,19 @@ namespace Gum.IR0Translator
             //}
         }
         
-        R.Exp MakeMemberExp(TypeValue typeValue, R.Exp instance, string name)
+        R.Loc MakeMemberLoc(TypeValue typeValue, R.Loc instance, string name)
         {
             switch(typeValue)
             {
                 case StructTypeValue structType:
-                    return new R.StructMemberExp(instance, name);
+                    return new R.StructMemberLoc(instance, name);
             }
 
             throw new NotImplementedException();
         }
 
         // exp.x
-        ExpResult AnalyzeMemberExpExpParent(S.MemberExp memberExp, R.Exp parentExp, TypeValue parentType, ResolveHint hint)
+        ExpResult AnalyzeMemberExpLocParent(S.MemberExp memberExp, R.Loc parentLoc, TypeValue parentType, ResolveHint hint)
         {   
             var typeArgs = GetTypeValues(memberExp.MemberTypeArgs, context);
             var memberResult = parentType.GetMember(memberExp.MemberName, typeArgs, hint);
@@ -483,8 +478,8 @@ namespace Gum.IR0Translator
                             if (memberVar.IsStatic)
                                 context.AddFatalError(A2003_ResolveIdentifier_CantGetStaticMemberThroughInstance, memberExp);
 
-                            var exp = MakeMemberExp(parentType, parentExp, memberExp.MemberName);
-                            return new ExpResult(exp, memberVar.GetTypeValue());
+                            var loc = MakeMemberLoc(parentType, parentLoc, memberExp.MemberName);
+                            return new ExpResult(loc, memberVar.GetTypeValue());
                     }
                     break;
             }
@@ -595,7 +590,11 @@ namespace Gum.IR0Translator
 
                 case ExpIdentifierResult expResult:
                     context.AddLambdaCapture(expResult.LambdaCapture);
-                    return AnalyzeMemberExpExpParent(memberExp, expResult.Exp, expResult.TypeValue, hint);
+                    return AnalyzeMemberExpLocParent(memberExp, new R.TempLoc(expResult.Exp, expResult.TypeValue.GetRType()), expResult.TypeValue, hint);
+
+                case LocIdentifierResult locResult:
+                    context.AddLambdaCapture(locResult.LambdaCapture);
+                    return AnalyzeMemberExpLocParent(memberExp, locResult.Loc, locResult.TypeValue, hint);
 
                 case TypeIdentifierResult typeResult:
                     return AnalyzeMemberExpTypeParent(memberExp, typeResult.TypeValue, memberExp.MemberName, memberExp.MemberTypeArgs, hint);

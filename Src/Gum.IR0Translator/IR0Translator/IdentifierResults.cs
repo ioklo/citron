@@ -5,6 +5,7 @@ using M = Gum.CompileTime;
 using R = Gum.IR0;
 using Gum.Collections;
 using System.Diagnostics;
+using Pretune;
 
 namespace Gum.IR0Translator
 {
@@ -65,18 +66,20 @@ namespace Gum.IR0Translator
     record ThisLambdaCapture : LambdaCapture { public static readonly ThisLambdaCapture Instance = new ThisLambdaCapture(); private ThisLambdaCapture() { } }
     record LocalLambdaCapture(string Name, TypeValue Type) : LambdaCapture;
 
+    [AutoConstructor]
+    class LocIdentifierResult : ValidIdentifierResult
+    {
+        public R.Loc Loc { get; }
+        public TypeValue TypeValue { get; }
+        public LambdaCapture LambdaCapture { get; }
+    }
+
+    [AutoConstructor]
     class ExpIdentifierResult : ValidIdentifierResult
     {
         public R.Exp Exp { get; }
         public TypeValue TypeValue { get; }
         public LambdaCapture LambdaCapture { get; }
-
-        public ExpIdentifierResult(R.Exp exp, TypeValue typeValue, LambdaCapture lambdaCapture)
-        {
-            Exp = exp;
-            TypeValue = typeValue;
-            LambdaCapture = lambdaCapture;
-        }
     }
 
     //// 내부 글로벌 변수, x
@@ -134,11 +137,11 @@ namespace Gum.IR0Translator
     //// F
     class InstanceFuncIdentifierResult : ValidIdentifierResult
     {
-        public R.Exp Instance { get; }
+        public R.Loc Instance { get; }
         public TypeValue InstanceType { get; }
         public FuncValue FuncValue { get; }
         public LambdaCapture LambdaCapture { get; }
-        public InstanceFuncIdentifierResult(R.Exp instance, TypeValue instanceType, FuncValue funcValue, LambdaCapture lambdaCapture)
+        public InstanceFuncIdentifierResult(R.Loc instance, TypeValue instanceType, FuncValue funcValue, LambdaCapture lambdaCapture)
         {
             Debug.Assert(!funcValue.IsStatic);
 

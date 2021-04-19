@@ -34,7 +34,7 @@ namespace Gum.IR0Translator
 
                 case ExpIdentifierResult expResult:
                     context.AddLambdaCapture(expResult.LambdaCapture);
-                    return new ExpResult(expResult.Exp, expResult.TypeValue);
+                    return new LocResult(expResult.Exp, expResult.TypeValue);
 
                 case InstanceFuncIdentifierResult:
                     throw new NotImplementedException();
@@ -62,12 +62,13 @@ namespace Gum.IR0Translator
             throw new UnreachableCodeException();
 
         }
-
+        
         LocResult AnalyzeLoc(S.Exp exp)
         {
             switch(exp)
             {
                 case S.IdentifierExp idExp: return AnalyzeIdentifierLoc(idExp);
+
             }
 
         }
