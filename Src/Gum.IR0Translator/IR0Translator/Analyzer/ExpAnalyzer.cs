@@ -180,7 +180,21 @@ namespace Gum.IR0Translator
                 default:
                     throw new UnreachableCodeException();
             }
-        }                
+        }
+
+        ExpResult AnalyzeAssignBinaryOpExp(S.BinaryOpExp exp)
+        {
+            var destResult = AnalyzeLoc(exp.Operand0);
+            var srcResult = AnalyzeExp(exp.Operand1, ResolveHint.None);
+
+            if (!context.IsAssignable(operandResult0.TypeValue, operandResult1.TypeValue))
+                context.AddFatalError(A0801_BinaryOp_LeftOperandTypeIsNotCompatibleWithRightOperandType, binaryOpExp);
+
+            if (!context.IsAssignableExp(operandResult0.Exp))
+                context.AddFatalError(A0803_BinaryOp_LeftOperandIsNotAssignable, binaryOpExp.Operand0);
+
+            return new ExpResult(new R.AssignExp(destResult.Loc, srcResult.Exp), destResult.TypeValue);
+        }
         
         ExpResult AnalyzeBinaryOpExp(S.BinaryOpExp binaryOpExp)
         {
@@ -190,13 +204,7 @@ namespace Gum.IR0Translator
             // 1. Assign 먼저 처리
             if (binaryOpExp.Kind == S.BinaryOpKind.Assign)
             {
-                if (!context.IsAssignable(operandResult0.TypeValue, operandResult1.TypeValue))
-                    context.AddFatalError(A0801_BinaryOp_LeftOperandTypeIsNotCompatibleWithRightOperandType, binaryOpExp);
-                    
-                if (!context.IsAssignableExp(operandResult0.Exp))
-                    context.AddFatalError(A0803_BinaryOp_LeftOperandIsNotAssignable, binaryOpExp.Operand0);
-
-                return new ExpResult(new R.AssignExp(operandResult0.Exp, operandResult1.Exp), operandResult0.TypeValue);
+                return AnalyzeAssignBinaryOpExp(binaryOpExp);
             }            
 
             // 2. NotEqual 처리
