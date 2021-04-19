@@ -46,6 +46,18 @@ namespace Gum.IR0.Runtime
         }
     }
 
+    // 특수 Value
+    class EmptyValue : Value
+    {
+        public static readonly Value Instance = new EmptyValue();
+        EmptyValue() { }
+
+        public override void SetValue(Value value)
+        {
+            // SetValue를 먹는다
+        }
+    }
+
     class StringValue : Value
     {
         string? value;

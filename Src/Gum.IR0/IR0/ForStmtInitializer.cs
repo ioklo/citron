@@ -10,7 +10,7 @@ namespace Gum.IR0
     [AutoConstructor, ImplementIEquatable]
     public partial class ExpForStmtInitializer : ForStmtInitializer
     {
-        public TempLoc Exp { get; }
+        public Exp Exp { get; }
     }
 
     [AutoConstructor, ImplementIEquatable]

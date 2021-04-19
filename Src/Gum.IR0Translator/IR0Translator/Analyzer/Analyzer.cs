@@ -40,7 +40,7 @@ namespace Gum.IR0Translator
             IR0Translator.Misc.VisitScript(script, pass2);
 
             // 5. 각 func body를 분석한다 (4에서 얻게되는 글로벌 변수 정보가 필요하다)
-            return new R.Script(analyzer.context.GetTypeDecls(), analyzer.context.GetFuncDecls(), analyzer.context.GetTopLevelStmts());
+            return new R.Script(analyzer.context.GetDecls(), analyzer.context.GetTopLevelStmts());
         }
 
         Analyzer(InternalBinaryOperatorQueryService internalBinOpQueryService, Context context)
@@ -317,7 +317,12 @@ namespace Gum.IR0Translator
                 else
                 {
                     // TODO: Body가 실제로 리턴을 제대로 하는지 확인해야 한다
-                    var parameters = funcDecl.ParamInfo.Parameters.Select(param => param.Name).ToImmutableArray();
+                    var parameters = funcDecl.ParamInfo.Parameters.Select(param =>
+                    {
+                        var paramTypeValue = context.GetTypeValueByTypeExp(param.Type);
+                        return new R.ParamInfo(paramTypeValue.GetRType(), param.Name);
+                    }).ToImmutableArray();
+
                     context.AddNormalFuncDecl(bThisCall: false, funcDecl.TypeParams, parameters, bodyResult.Stmt);
                 }
             });

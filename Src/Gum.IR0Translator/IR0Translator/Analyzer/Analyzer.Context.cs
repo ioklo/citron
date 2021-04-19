@@ -30,8 +30,7 @@ namespace Gum.IR0Translator
             FuncContext curFunc;
             bool bInLoop;
             
-            List<R.TypeDecl> typeDecls;
-            List<R.FuncDecl> funcDecls;
+            List<R.IDecl> decls;
             List<R.Stmt> topLevelStmts;
 
             InternalGlobalVariableRepository internalGlobalVarRepo;
@@ -53,8 +52,7 @@ namespace Gum.IR0Translator
                 bInLoop = false;
                 internalGlobalVarRepo = new InternalGlobalVariableRepository();
                 
-                typeDecls = new List<R.TypeDecl>();
-                funcDecls = new List<R.FuncDecl>();
+                decls = new List<R.IDecl>();
                 topLevelStmts = new List<R.Stmt>();
             }
 
@@ -195,7 +193,7 @@ namespace Gum.IR0Translator
 
             public void ExecInFuncScope(S.FuncDecl funcDecl, Action action)
             {
-                var retTypeValue = GetTypeValueByTypeExp(funcDecl.RetType);                
+                var retTypeValue = GetTypeValueByTypeExp(funcDecl.RetType);
 
                 var prevFunc = curFunc;
                 curFunc = new FuncContext(retTypeValue, funcDecl.IsSequence);
@@ -263,10 +261,10 @@ namespace Gum.IR0Translator
                 return internalGlobalVarRepo.GetVariable(idName);
             }
 
-            public void AddNormalFuncDecl(bool bThisCall, ImmutableArray<string> typeParams, ImmutableArray<string> paramNames, R.Stmt body)
+            public void AddNormalFuncDecl(bool bThisCall, ImmutableArray<string> typeParams, ImmutableArray<R.ParamInfo> paramNames, R.Stmt body)
             {
-                var id = new R.FuncDeclId(funcDecls.Count);
-                funcDecls.Add(new R.NormalFuncDecl(id, bThisCall, typeParams, paramNames, body));
+                var id = new R.DeclId(decls.Count);
+                decls.Add(new R.NormalFuncDecl(id, bThisCall, typeParams, paramNames, body));
             }
 
             public void AddTopLevelStmt(R.Stmt stmt)
@@ -274,17 +272,8 @@ namespace Gum.IR0Translator
                 topLevelStmts.Add(stmt);
             }
 
+            public ImmutableArray<R.IDecl> GetDecls() => decls.ToImmutableArray();
             
-            public ImmutableArray<R.TypeDecl> GetTypeDecls()
-            {
-                return typeDecls.ToImmutableArray();
-            }
-
-            public ImmutableArray<R.FuncDecl> GetFuncDecls()
-            {
-                return funcDecls.ToImmutableArray();
-            }
-
             public ImmutableArray<R.Stmt> GetTopLevelStmts()
             {
                 return topLevelStmts.ToImmutableArray();

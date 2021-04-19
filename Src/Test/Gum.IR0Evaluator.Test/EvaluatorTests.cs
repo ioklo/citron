@@ -177,7 +177,7 @@ namespace Gum.IR0.Runtime
             (
                 RGlobalVarDeclStmt(Type.String, "x", RString("Hello")),
 
-                new ExpStmt(new TempLoc(new CallFuncExp(new Func(func0Id, TypeContext.Empty), null, default), VoidType.Instance))
+                new ExpStmt(new CallFuncExp(new Func(func0Id, TypeContext.Empty), null, default))
             );
 
             var output = await EvalAsync(Arr<IDecl>(func0), topLevelStmts);
@@ -328,7 +328,7 @@ namespace Gum.IR0.Runtime
                 new ForStmt(
                     new VarDeclForStmtInitializer(RLocalVarDecl(Type.Int, "x", new IntLiteralExp(0))),
                     new CallInternalBinaryOperatorExp(InternalBinaryOperator.Equal_Int_Int_Bool, LocalVar("x"), new TempLoc(new IntLiteralExp(0), Type.Int)),
-                    new TempLoc(new AssignExp(LocalVar("x"), new IntLiteralExp(1)), Type.Int),
+                    new AssignExp(LocalVar("x"), new IntLiteralExp(1)),
                     PrintIntCmdStmt(new LocalVarLoc("x"))),
 
                 PrintIntCmdStmt(new LocalVarLoc("x"))
@@ -348,9 +348,9 @@ namespace Gum.IR0.Runtime
                 PrintIntCmdStmt(new LocalVarLoc("x")),
 
                 new ForStmt(
-                    new ExpForStmtInitializer(new TempLoc(new AssignExp(LocalVar("x"), new IntLiteralExp(12)), Type.Int)),
+                    new ExpForStmtInitializer(new AssignExp(LocalVar("x"), new IntLiteralExp(12))),
                     new CallInternalBinaryOperatorExp(InternalBinaryOperator.Equal_Int_Int_Bool, LocalVar("x"), new TempLoc(new IntLiteralExp(12), Type.Int)),
-                    new TempLoc(new AssignExp(LocalVar("x"), new IntLiteralExp(1)), Type.Int),
+                    new AssignExp(LocalVar("x"), new IntLiteralExp(1)),
                     PrintIntCmdStmt(new LocalVarLoc("x"))),
 
                 PrintIntCmdStmt(new LocalVarLoc("x"))
@@ -388,7 +388,7 @@ namespace Gum.IR0.Runtime
                 new ForStmt(
                     null,
                     new LoadExp(LocalVar("x")),
-                    new TempLoc(new AssignExp(LocalVar("x"), new BoolLiteralExp(false)), Type.Bool),
+                    new AssignExp(LocalVar("x"), new BoolLiteralExp(false)),
                     PrintStringCmdStmt("Once")),
 
                 PrintStringCmdStmt("Completed")
@@ -409,7 +409,7 @@ namespace Gum.IR0.Runtime
                 new ForStmt(
                     null,
                     new LoadExp(LocalVar("x")),
-                    new TempLoc(new AssignExp(LocalVar("x"), new BoolLiteralExp(false)), Type.Bool),
+                    new AssignExp(LocalVar("x"), new BoolLiteralExp(false)),
                     RBlock(
                         PrintStringCmdStmt("Once"),
                         ContinueStmt.Instance,
@@ -434,7 +434,7 @@ namespace Gum.IR0.Runtime
                 new ForStmt(
                     null,
                     new LoadExp(LocalVar("x")),
-                    new TempLoc(new AssignExp(LocalVar("x"), new BoolLiteralExp(false)), Type.Bool),
+                    new AssignExp(LocalVar("x"), new BoolLiteralExp(false)),
                     RBlock(
                         PrintStringCmdStmt("Once"),
                         BreakStmt.Instance,
@@ -460,7 +460,7 @@ namespace Gum.IR0.Runtime
                 new ForStmt(
                     null,
                     new LoadExp(LocalVar("x")),
-                    new TempLoc(new AssignExp(LocalVar("x"), new BoolLiteralExp(false)), Type.Bool),
+                    new AssignExp(LocalVar("x"), new BoolLiteralExp(false)),
                     RBlock(
                         PrintStringCmdStmt("Once"),
                         new ReturnStmt(new IntLiteralExp(2)),
@@ -484,7 +484,7 @@ namespace Gum.IR0.Runtime
                 new ForStmt(
                     new VarDeclForStmtInitializer(RLocalVarDecl(Type.Int, "i", new IntLiteralExp(0))),
                     new CallInternalBinaryOperatorExp(InternalBinaryOperator.LessThan_Int_Int_Bool, LocalVar("i"), IntLoc(2)),
-                    new TempLoc(new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PostfixInc_Int_Int, LocalVar("i")), Type.Int),
+                    new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PostfixInc_Int_Int, LocalVar("i")),
 
                     RBlock(
 
@@ -493,7 +493,7 @@ namespace Gum.IR0.Runtime
                         new ForStmt(
                             new VarDeclForStmtInitializer(RLocalVarDecl(Type.Int, "j", new IntLiteralExp(0))),
                             new CallInternalBinaryOperatorExp(InternalBinaryOperator.LessThan_Int_Int_Bool, LocalVar("j"), IntLoc(2)),
-                            new TempLoc(new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PostfixInc_Int_Int, LocalVar("j")), Type.Int),
+                            new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PostfixInc_Int_Int, LocalVar("j")),
                             RBlock(
                                 PrintIntCmdStmt(new LocalVarLoc("j")),
                                 ContinueStmt.Instance,
@@ -516,7 +516,7 @@ namespace Gum.IR0.Runtime
                 new ForStmt(
                     new VarDeclForStmtInitializer(RLocalVarDecl(Type.Int, "i", new IntLiteralExp(0))),
                     new CallInternalBinaryOperatorExp(InternalBinaryOperator.LessThan_Int_Int_Bool, LocalVar("i"), IntLoc(2)),
-                    new TempLoc(new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PostfixInc_Int_Int, LocalVar("i")), Type.Int),
+                    new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PostfixInc_Int_Int, LocalVar("i")),
 
                     RBlock(
 
@@ -525,7 +525,7 @@ namespace Gum.IR0.Runtime
                         new ForStmt(
                             new VarDeclForStmtInitializer(RLocalVarDecl(Type.Int, "j", new IntLiteralExp(0))),
                             new CallInternalBinaryOperatorExp(InternalBinaryOperator.LessThan_Int_Int_Bool, LocalVar("j"), IntLoc(2)),
-                            new TempLoc(new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PostfixInc_Int_Int, LocalVar("j")), Type.Int),
+                            new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PostfixInc_Int_Int, LocalVar("j")),
                             RBlock(
                                 PrintIntCmdStmt(new LocalVarLoc("j")),
                                 BreakStmt.Instance,
@@ -553,7 +553,7 @@ namespace Gum.IR0.Runtime
             );
 
             var stmts = Arr<Stmt> (
-                new ExpStmt(new TempLoc(new CallFuncExp(new Func(funcId, TypeContext.Empty), null, default), VoidType.Instance)),
+                new ExpStmt(new CallFuncExp(new Func(funcId, TypeContext.Empty), null, default)),
                 PrintStringCmdStmt("Completed")
             );
 
@@ -611,7 +611,7 @@ namespace Gum.IR0.Runtime
         {
             var stmts = Arr<Stmt> (
                 RLocalVarDeclStmt(Type.Int, "x", null),
-                new ExpStmt(new TempLoc(new AssignExp(LocalVar("x"), new IntLiteralExp(3)), Type.Int)),
+                new ExpStmt(new AssignExp(LocalVar("x"), new IntLiteralExp(3))),
                 PrintIntCmdStmt(new LocalVarLoc("x"))
             );
 
@@ -628,7 +628,7 @@ namespace Gum.IR0.Runtime
                 return new ForStmt(
                     new VarDeclForStmtInitializer(RLocalVarDecl(Type.Int, "i", new IntLiteralExp(0))),
                     new CallInternalBinaryOperatorExp(InternalBinaryOperator.LessThan_Int_Int_Bool, LocalVar("i"), IntLoc(count)),
-                    new TempLoc(new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PostfixInc_Int_Int, LocalVar("i")), Type.Int),
+                    new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PostfixInc_Int_Int, LocalVar("i")),
                     PrintIntCmdStmt(new LocalVarLoc("i"))
                 );
             }
@@ -682,7 +682,7 @@ namespace Gum.IR0.Runtime
                 return new ForStmt(
                     new VarDeclForStmtInitializer(RLocalVarDecl(Type.Int, "i", new IntLiteralExp(0))),
                     new CallInternalBinaryOperatorExp(InternalBinaryOperator.LessThan_Int_Int_Bool, LocalVar("i"), LocalVar("count")),
-                    new TempLoc(new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PostfixInc_Int_Int, LocalVar("i")), Type.Int),
+                    new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PostfixInc_Int_Int, LocalVar("i")),
                     PrintIntCmdStmt(new LocalVarLoc("i"))
                 );
             }
@@ -701,7 +701,7 @@ namespace Gum.IR0.Runtime
                 new AwaitStmt(
                     RBlock(
                         new TaskStmt(anonymousLambdaType0),
-                        new ExpStmt(new TempLoc(new AssignExp(LocalVar("count"), new IntLiteralExp(4)), Type.Int)),
+                        new ExpStmt(new AssignExp(LocalVar("count"), new IntLiteralExp(4))),
                         new TaskStmt(anonymousLambdaType1)
                     )
                 )
@@ -740,7 +740,7 @@ namespace Gum.IR0.Runtime
                 return new ForStmt(
                     new VarDeclForStmtInitializer(RLocalVarDecl(Type.Int, "i", new IntLiteralExp(0))),
                     new CallInternalBinaryOperatorExp(InternalBinaryOperator.LessThan_Int_Int_Bool, LocalVar("i"), IntLoc(count)),
-                    new TempLoc(new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PostfixInc_Int_Int, LocalVar("i")), Type.Int),
+                    new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PostfixInc_Int_Int, LocalVar("i")),
                     RBlock(
                         PrintIntCmdStmt(new LocalVarLoc("i")),
                         Sleep(1)
@@ -891,7 +891,7 @@ namespace Gum.IR0.Runtime
                 RLocalVarDeclStmt(Type.Int, "y", new IntLiteralExp(4)),
 
                 // y = x = 10;
-                new ExpStmt(new TempLoc(new AssignExp(LocalVar("y"), new AssignExp(LocalVar("x"), new IntLiteralExp(10))), Type.Int)),
+                new ExpStmt(new AssignExp(LocalVar("y"), new AssignExp(LocalVar("x"), new IntLiteralExp(10)))),
                 PrintIntCmdStmt(new LocalVarLoc("x")),
                 PrintIntCmdStmt(new LocalVarLoc("y"))
             );
@@ -944,7 +944,7 @@ namespace Gum.IR0.Runtime
 
             var stmts = Arr<Stmt>
             (
-                new ExpStmt(new TempLoc(
+                new ExpStmt(
                     new CallFuncExp(
                         new Func(testFuncId, TypeContext.Empty), 
                         null, 
@@ -953,8 +953,7 @@ namespace Gum.IR0.Runtime
                             MakePrintCall(2),
                             MakePrintCall(3) 
                         )
-                    ),
-                    Type.Int)
+                    )
                 )
             );
 
@@ -987,9 +986,7 @@ namespace Gum.IR0.Runtime
                 RLocalVarDeclStmt(new AnonymousSeqType(seqFuncId, TypeContext.Empty), "x", new CallSeqFuncExp(seqFuncId, TypeContext.Empty, null, default)),
 
                 // 로컬 변수에 새 값 대입하기
-                new ExpStmt(new TempLoc(
-                    new AssignExp(LocalVar("x"), new CallSeqFuncExp(seqFuncId, TypeContext.Empty, null, default)), 
-                    new AnonymousSeqType(seqFuncId, TypeContext.Empty)))
+                new ExpStmt(new AssignExp(LocalVar("x"), new CallSeqFuncExp(seqFuncId, TypeContext.Empty, null, default)))
             );
 
             await EvalAsync(Arr<IDecl>(seqFunc), stmts);
@@ -1031,7 +1028,7 @@ namespace Gum.IR0.Runtime
             
             var stmts = Arr<Stmt>
             (
-                new ExpStmt(new TempLoc(
+                new ExpStmt(
                     new CallValueExp(
                         new TempLoc(new CallFuncExp(new Func(makeLambdaId, TypeContext.Empty), null, default), new AnonymousLambdaType(lambdaDeclId)),
                         Arr(
@@ -1039,9 +1036,8 @@ namespace Gum.IR0.Runtime
                             MakePrintCall(2),
                             MakePrintCall(3) 
                         )
-                    ),
-                    VoidType.Instance
-                ))
+                    )
+                )
             );
 
             var output = await EvalAsync(Arr<IDecl>(printFunc, makeLambda, lambdaDecl), stmts);
@@ -1066,8 +1062,8 @@ namespace Gum.IR0.Runtime
                 RLocalVarDeclStmt(Type.Int, "x", new IntLiteralExp(3)),
                 RLocalVarDeclStmt(new AnonymousLambdaType(lambdaId), "func", new LambdaExp(false, Arr("x"))),
 
-                new ExpStmt(new TempLoc(new AssignExp(LocalVar("x"), new IntLiteralExp(34)), Type.Int)),
-                new ExpStmt(new TempLoc(new CallValueExp(LocalVar("func"), default), VoidType.Instance))
+                new ExpStmt(new AssignExp(LocalVar("x"), new IntLiteralExp(34))),
+                new ExpStmt(new CallValueExp(LocalVar("func"), default))
             );
 
             var output = await EvalAsync(Arr<IDecl>(lambdaDecl), stmts);
@@ -1104,13 +1100,12 @@ namespace Gum.IR0.Runtime
                 new CallFuncExp(new Func(printFuncId, TypeContext.Empty), null, Arr<Exp>(new IntLiteralExp(v)));
 
             var stmts = Arr<Stmt> (
-                new ExpStmt(new TempLoc(
+                RGlobalVarDeclStmt(Type.List(Type.Int), "l", 
                     new ListExp(Type.Int, Arr(
                         MakePrintCall(34),
                         MakePrintCall(56)
-                    )),
-                    Type.List(Type.Int)
-                ))
+                    ))
+                )
             );
 
             var output = await EvalAsync(Arr<IDecl>(printFunc), stmts);

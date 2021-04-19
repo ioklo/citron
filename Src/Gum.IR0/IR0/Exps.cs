@@ -85,7 +85,7 @@ namespace Gum.IR0
     public partial class CallInternalUnaryOperatorExp : Exp
     {
         public InternalUnaryOperator Operator { get; }
-        public Loc Operand { get; }
+        public Exp Operand { get; }
     }
 
     [AutoConstructor, ImplementIEquatable]
@@ -99,8 +99,8 @@ namespace Gum.IR0
     public partial class CallInternalBinaryOperatorExp : Exp
     {
         public InternalBinaryOperator Operator { get; }
-        public Loc Operand0 { get; }
-        public Loc Operand1 { get; }
+        public Exp Operand0 { get; }
+        public Exp Operand1 { get; }
     }
 
     // a = b

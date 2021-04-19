@@ -71,7 +71,7 @@ namespace Gum.IR0
         // InitExp Or VarDecl
         public ForStmtInitializer? Initializer { get; }
         public Exp? CondExp { get; }
-        public TempLoc? ContinueExp { get; } // 이름은 TempLoc인데 실제로는 미리 할당, EvalForStmt에서 직접 처리한다
+        public Exp? ContinueExp { get; }
 
         public Stmt Body { get; }
     }

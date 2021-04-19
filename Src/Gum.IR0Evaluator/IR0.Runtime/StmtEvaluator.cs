@@ -16,8 +16,8 @@ namespace Gum.IR0.Runtime
 {
     class StmtEvaluator
     {
-        private Evaluator evaluator;
-        private ICommandProvider commandProvider;
+        Evaluator evaluator;
+        ICommandProvider commandProvider;
 
         public StmtEvaluator(Evaluator evaluator, ICommandProvider commandProvider)
         {
@@ -119,8 +119,6 @@ namespace Gum.IR0.Runtime
             async IAsyncEnumerable<Void> InnerAsync()
             {
                 // continue를 실행시키기 위한 공간은 미리 할당받는다
-                var contValue = forStmt.ContinueExp != null ? evaluator.AllocValue(forStmt.ContinueExp.Type, context) : null;
-
                 if (forStmt.Initializer != null)
                 {
                     switch (forStmt.Initializer)
@@ -130,7 +128,7 @@ namespace Gum.IR0.Runtime
                             break;
 
                         case ExpForStmtInitializer expInitializer:
-                            await evaluator.EvalLocAsync(expInitializer.Exp, context);
+                            await evaluator.EvalExpAsync(expInitializer.Exp, EmptyValue.Instance, context);
                             break;
 
                         default:
@@ -174,7 +172,7 @@ namespace Gum.IR0.Runtime
 
                     if (forStmt.ContinueExp != null)
                     {
-                        await evaluator.EvalExpAsync(forStmt.ContinueExp.Exp, contValue!, context);
+                        await evaluator.EvalExpAsync(forStmt.ContinueExp, EmptyValue.Instance, context);
                     }
                 }
             }
@@ -226,9 +224,8 @@ namespace Gum.IR0.Runtime
         }
 
         internal async ValueTask EvalExpStmtAsync(ExpStmt expStmt, EvalContext context)
-        {
-            await evaluator.EvalExpWithoutResultAsync(expStmt.Exp, context);
-            
+        {            
+            await evaluator.EvalExpAsync(expStmt.Exp, EmptyValue.Instance, context);
         }
 
         internal void EvalTaskStmt(TaskStmt taskStmt, EvalContext context)

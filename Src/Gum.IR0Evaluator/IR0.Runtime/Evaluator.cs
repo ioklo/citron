@@ -217,12 +217,7 @@ namespace Gum.IR0.Runtime
         {
             return expEvaluator.EvalAsync(exp, result, context);
         }
-
-        public ValueTask EvalExpWithoutResultAsync(Exp exp, EvalContext context)
-        {
-            return expEvaluator.EvalWithoutResultAsync(exp, context);
-        }
-
+        
         public ValueTask<Value> EvalLocAsync(Loc loc, EvalContext context)
         {
             return locEvaluator.EvalLocAsync(loc, context);
