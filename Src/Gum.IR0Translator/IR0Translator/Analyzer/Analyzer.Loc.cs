@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using S = Gum.Syntax;
 using R = Gum.IR0;
+using static Gum.IR0Translator.AnalyzeErrorCode;
 
 namespace Gum.IR0Translator
 {
@@ -17,24 +18,26 @@ namespace Gum.IR0Translator
             public R.Loc Loc { get; }
             public TypeValue TypeValue { get; }
         }
-
-        LocResult AnalyzeIdentifierLoc(S.IdentifierExp idExp)
+        
+        LocResult AnalyzeLoc(S.Exp exp)
         {
-            var result = ResolveIdentifierIdExp(idExp, resolveHint);
+            var result = ResolveIdentifier(exp, ResolveHint.None);
 
             switch (result)
             {
                 case NotFoundIdentifierResult:
-                    context.AddFatalError(A2007_ResolveIdentifier_NotFound, idExp);
+                    context.AddFatalError(A2007_ResolveIdentifier_NotFound, exp);
                     break;
 
                 case ErrorIdentifierResult errorResult:
-                    HandleErrorIdentifierResult(idExp, errorResult);
+                    HandleErrorIdentifierResult(exp, errorResult);
                     break;
 
-                case ExpIdentifierResult expResult:
-                    context.AddLambdaCapture(expResult.LambdaCapture);
-                    return new LocResult(expResult.Exp, expResult.TypeValue);
+                case LocIdentifierResult locResult:
+                    if (locResult.Loc is R.TempLoc)
+                        context.AddFatalError();
+
+                    return new LocResult(locResult.Loc, locResult.TypeValue);
 
                 case InstanceFuncIdentifierResult:
                     throw new NotImplementedException();
@@ -61,15 +64,11 @@ namespace Gum.IR0Translator
 
             throw new UnreachableCodeException();
 
-        }
-        
-        LocResult AnalyzeLoc(S.Exp exp)
-        {
-            switch(exp)
-            {
-                case S.IdentifierExp idExp: return AnalyzeIdentifierLoc(idExp);
+            //switch(exp)
+            //{
+            //    case S.IdentifierExp idExp: return AnalyzeIdentifierLoc(idExp);
 
-            }
+            //}
 
         }
     }

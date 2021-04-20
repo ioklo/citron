@@ -47,7 +47,7 @@ namespace Gum.IR0Translator
         }
         
         // e.x 꼴
-        IdentifierResult ResolveIdentifierMemberExpExpParent(
+        IdentifierResult ResolveIdentifierMemberExpLocParent(
             R.Loc parentLoc,
             TypeValue parentType,
             LambdaCapture parentLambdaCapture,
@@ -144,13 +144,10 @@ namespace Gum.IR0Translator
             switch (parentResult)
             {
                 case ErrorIdentifierResult _:
-                    return parentResult;
-
-                case ExpIdentifierResult expResult:                    
-                    return ResolveIdentifierMemberExpExpParent(expResult.Exp, expResult.TypeValue, expResult.LambdaCapture, memberExp.MemberName, typeArgs, hint);
+                    return parentResult;                
 
                 case LocIdentifierResult locResult:
-                    return ResolveIdentifierMemberExpExpParent(locResult.Loc, locResult.TypeValue, locResult.LambdaCapture, memberExp.MemberName, typeArgs, hint);
+                    return ResolveIdentifierMemberExpLocParent(locResult.Loc, locResult.TypeValue, locResult.LambdaCapture, memberExp.MemberName, typeArgs, hint);
 
                 case TypeIdentifierResult typeResult:
                     return ResolveIdentifierMemberExpTypeParent(typeResult.TypeValue, memberExp.MemberName, typeArgs, hint);
@@ -184,7 +181,7 @@ namespace Gum.IR0Translator
             else
             {
                 var expResult = AnalyzeExpExceptIdAndMember(exp, hint);
-                return new ExpIdentifierResult(expResult.Exp, expResult.TypeValue, NoneLambdaCapture.Instance);
+                return new LocIdentifierResult(new R.TempLoc(expResult.Exp, expResult.TypeValue.GetRType()), expResult.TypeValue, NoneLambdaCapture.Instance);
             }
         }
 

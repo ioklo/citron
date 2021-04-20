@@ -46,10 +46,6 @@ namespace Gum.IR0Translator
                     HandleErrorIdentifierResult(idExp, errorResult);
                     break;
 
-                case ExpIdentifierResult expResult:
-                    context.AddLambdaCapture(expResult.LambdaCapture);
-                    return new ExpResult(expResult.Exp, expResult.TypeValue);
-
                 case LocIdentifierResult locResult:
                     context.AddLambdaCapture(locResult.LambdaCapture);
                     return new ExpResult(new R.LoadExp(locResult.Loc), locResult.TypeValue);
@@ -353,9 +349,6 @@ namespace Gum.IR0Translator
                     HandleErrorIdentifierResult(exp, errorResult);
                     break;
 
-                case ExpIdentifierResult expResult:
-                    return AnalyzeCallExpLocCallable(new R.TempLoc(expResult.Exp, expResult.TypeValue.GetRType()), expResult.TypeValue, argResults, exp);
-
                 case LocIdentifierResult locResult:
                     return AnalyzeCallExpLocCallable(locResult.Loc, locResult.TypeValue, argResults, exp);
 
@@ -587,10 +580,6 @@ namespace Gum.IR0Translator
                 case ErrorIdentifierResult errorResult:
                     HandleErrorIdentifierResult(memberExp, errorResult);
                     break;
-
-                case ExpIdentifierResult expResult:
-                    context.AddLambdaCapture(expResult.LambdaCapture);
-                    return AnalyzeMemberExpLocParent(memberExp, new R.TempLoc(expResult.Exp, expResult.TypeValue.GetRType()), expResult.TypeValue, hint);
 
                 case LocIdentifierResult locResult:
                     context.AddLambdaCapture(locResult.LambdaCapture);

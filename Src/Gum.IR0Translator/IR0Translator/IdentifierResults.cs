@@ -74,14 +74,6 @@ namespace Gum.IR0Translator
         public LambdaCapture LambdaCapture { get; }
     }
 
-    [AutoConstructor]
-    class ExpIdentifierResult : ValidIdentifierResult
-    {
-        public R.Exp Exp { get; }
-        public TypeValue TypeValue { get; }
-        public LambdaCapture LambdaCapture { get; }
-    }
-
     //// 내부 글로벌 변수, x
     //class InternalGlobalVarInfo : IdentifierInfo
     //{

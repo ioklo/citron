@@ -136,7 +136,7 @@ namespace Gum.IR0Translator
 
             var idResult = ResolveIdentifier(ifStmt.Cond, ResolveHint.None);
 
-            if (idResult is ExpIdentifierResult expResult && expResult.Exp is R.LocalVarExp)
+            if (idResult is LocIdentifierResult locResult && locResult.Loc is R.LocalVarLoc)
             {
                 var testTypeValue = context.GetTypeValueByTypeExp(ifStmt.TestType!);
                 throw new NotImplementedException();
