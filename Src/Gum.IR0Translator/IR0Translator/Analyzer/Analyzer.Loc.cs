@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using S = Gum.Syntax;
 using R = Gum.IR0;
 using static Gum.IR0Translator.AnalyzeErrorCode;
+using Gum.Infra;
 
 namespace Gum.IR0Translator
 {
@@ -32,44 +33,31 @@ namespace Gum.IR0Translator
                 case ErrorIdentifierResult errorResult:
                     HandleErrorIdentifierResult(exp, errorResult);
                     break;
+                
+                case ExpIdentifierResult expResult:
+                    context.AddFatalError();
+                    break;
 
                 case LocIdentifierResult locResult:
-                    if (locResult.Loc is R.TempLoc)
-                        context.AddFatalError();
-
                     return new LocResult(locResult.Loc, locResult.TypeValue);
 
                 case InstanceFuncIdentifierResult:
-                    throw new NotImplementedException();
-
-                case StaticFuncIdentifierResult:
-                    throw new NotImplementedException();
-
-                case TypeIdentifierResult:
-                    context.AddFatalError(A2008_ResolveIdentifier_CantUseTypeAsExpression, idExp);
+                    context.AddFatalError();
                     break;
 
-                case EnumElemIdentifierResult enumElemResult:
-                    if (enumElemResult.IsStandalone)      // 인자 없이 있는 것
-                    {
-                        throw new NotImplementedException();
-                        // return new ExpResult(new NewEnumExp(enumElemResult.Name, Array.Empty<NewEnumExp.Elem>()), enumElem.EnumTypeValue);
-                    }
-                    else
-                    {
-                        // TODO: Func일때 감싸기
-                        throw new NotImplementedException();
-                    }
+                case StaticFuncIdentifierResult:
+                    context.AddFatalError();
+                    break;
+
+                case TypeIdentifierResult:
+                    context.AddFatalError(A2008_ResolveIdentifier_CantUseTypeAsExpression, exp);
+                    break;
+                
+                case EnumElemIdentifierResult _:
+                    throw new UnreachableCodeException(); // 힌트 없이 EnumElem이 나올 수 없다
             }
 
             throw new UnreachableCodeException();
-
-            //switch(exp)
-            //{
-            //    case S.IdentifierExp idExp: return AnalyzeIdentifierLoc(idExp);
-
-            //}
-
         }
     }
 }

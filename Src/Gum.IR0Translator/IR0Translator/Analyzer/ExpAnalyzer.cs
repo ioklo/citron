@@ -46,6 +46,10 @@ namespace Gum.IR0Translator
                     HandleErrorIdentifierResult(idExp, errorResult);
                     break;
 
+                case ExpIdentifierResult expResult:
+                    context.AddLambdaCapture(expResult.LambdaCapture);
+                    return new ExpResult(expResult.Exp, expResult.TypeValue);
+
                 case LocIdentifierResult locResult:
                     context.AddLambdaCapture(locResult.LambdaCapture);
                     return new ExpResult(new R.LoadExp(locResult.Loc), locResult.TypeValue);
@@ -188,8 +192,8 @@ namespace Gum.IR0Translator
             var destResult = AnalyzeLoc(exp.Operand0);
             var srcResult = AnalyzeExp(exp.Operand1, ResolveHint.None);
 
-            if (!context.IsAssignableoperandResult0.TypeValue, operandResult1.TypeValue))
-                context.AddFatalError(A0801_BinaryOp_LeftOperandTypeIsNotCompatibleWithRightOperandType, binaryOpExp);
+            if (!context.IsAssignable(destResult.TypeValue, srcResult.TypeValue))
+                context.AddFatalError(A0801_BinaryOp_LeftOperandTypeIsNotCompatibleWithRightOperandType, exp);
 
             if (!context.IsAssignableExp(operandResult0.Exp))
                 context.AddFatalError(A0803_BinaryOp_LeftOperandIsNotAssignable, binaryOpExp.Operand0);
@@ -348,6 +352,9 @@ namespace Gum.IR0Translator
                 case ErrorIdentifierResult errorResult:
                     HandleErrorIdentifierResult(exp, errorResult);
                     break;
+
+                case ExpIdentifierResult expResult:
+                    return AnalyzeCallExpLocCallable(new R.TempLoc(expResult.Exp, expResult.TypeValue.GetRType()), expResult.TypeValue, argResults, exp);
 
                 case LocIdentifierResult locResult:
                     return AnalyzeCallExpLocCallable(locResult.Loc, locResult.TypeValue, argResults, exp);
@@ -522,7 +529,7 @@ namespace Gum.IR0Translator
                             }
 
                             var rparentType = parentType.GetRType();
-                            var exp = new R.StaticMemberExp(rparentType, memberName);
+                            var loc = new R.StaticMemberLoc(rparentType, memberName);
                             return new ExpResult(exp, memberVarValue.GetTypeValue());
 
                         default:
@@ -580,6 +587,10 @@ namespace Gum.IR0Translator
                 case ErrorIdentifierResult errorResult:
                     HandleErrorIdentifierResult(memberExp, errorResult);
                     break;
+
+                case ExpIdentifierResult expResult:
+                    context.AddLambdaCapture(expResult.LambdaCapture);
+                    return AnalyzeMemberExpLocParent(memberExp, new R.TempLoc(expResult.Exp, expResult.TypeValue.GetRType()), expResult.TypeValue, hint);
 
                 case LocIdentifierResult locResult:
                     context.AddLambdaCapture(locResult.LambdaCapture);

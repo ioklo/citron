@@ -144,7 +144,10 @@ namespace Gum.IR0Translator
             switch (parentResult)
             {
                 case ErrorIdentifierResult _:
-                    return parentResult;                
+                    return parentResult;
+
+                case ExpIdentifierResult expResult:
+                    return ResolveIdentifierMemberExpExpParent(expResult.Exp, expResult.TypeValue, expResult.LambdaCapture, memberExp.MemberName, typeArgs, hint);
 
                 case LocIdentifierResult locResult:
                     return ResolveIdentifierMemberExpLocParent(locResult.Loc, locResult.TypeValue, locResult.LambdaCapture, memberExp.MemberName, typeArgs, hint);
@@ -181,7 +184,7 @@ namespace Gum.IR0Translator
             else
             {
                 var expResult = AnalyzeExpExceptIdAndMember(exp, hint);
-                return new LocIdentifierResult(new R.TempLoc(expResult.Exp, expResult.TypeValue.GetRType()), expResult.TypeValue, NoneLambdaCapture.Instance);
+                return new ExpIdentifierResult(expResult.Exp, expResult.TypeValue, NoneLambdaCapture.Instance);
             }
         }
 
