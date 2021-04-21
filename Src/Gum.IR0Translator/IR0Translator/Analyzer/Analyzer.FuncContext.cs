@@ -13,7 +13,8 @@ namespace Gum.IR0Translator
     partial class Analyzer
     {
         struct LocalVarInfo
-        {   public string Name { get; }
+        {   
+            public string Name { get; }
             public TypeValue TypeValue { get; }
             public LocalVarInfo(string name, TypeValue typeValue)
             {

@@ -24,11 +24,20 @@ namespace Gum.IR0Translator
     // 어떤 Exp에서 타입 정보 등을 알아냅니다
     partial class Analyzer
     {   
-        [AutoConstructor]
-        partial struct ExpResult
+        struct ExpResult
         {
-            public R.Exp Exp { get; }
+            R.Exp? exp;
+            R.Loc? loc;
+
+            public R.Exp Exp => exp!;
+            public R.Loc Loc => loc!;
             public TypeValue TypeValue { get; }
+
+            public bool IsExp => exp != null;
+            public bool IsLoc => loc != null;
+
+            public ExpResult(R.Exp exp, TypeValue typeValue) { this.exp = exp; this.loc = null; this.TypeValue = typeValue; }
+            public ExpResult(R.Loc loc, TypeValue typeValue) { this.exp = null; this.loc = loc; this.TypeValue = typeValue; }
         }        
 
         // x
@@ -479,7 +488,7 @@ namespace Gum.IR0Translator
                                 context.AddFatalError(A2003_ResolveIdentifier_CantGetStaticMemberThroughInstance, memberExp);
 
                             var loc = MakeMemberLoc(parentType, parentLoc, memberExp.MemberName);
-                            return new ExpResult(loc, memberVar.GetTypeValue());
+                            return new ExpResult(new R.LoadExp(loc), memberVar.GetTypeValue());
                     }
                     break;
             }
@@ -572,10 +581,11 @@ namespace Gum.IR0Translator
 
             throw new UnreachableCodeException();
         }
-
+        
+        // exp를 돌려주는 버전
         // parent."x"<>
         ExpResult AnalyzeMemberExp(S.MemberExp memberExp, ResolveHint hint)
-        {            
+        {
             var parentResult = ResolveIdentifier(memberExp.Parent, ResolveHint.None);
 
             switch(parentResult)
@@ -588,7 +598,11 @@ namespace Gum.IR0Translator
                     HandleErrorIdentifierResult(memberExp, errorResult);
                     break;
 
-                case ExpIdentifierResult expResult:
+                // Identifier가 아니라면
+                case NotIdentifierResult notIdentifierResult:
+
+                    // AnalyzeExp(exp) -> 결과는 R.Loc 또는 R.Exp로 나온다 최대한 컴팩트 하게, 필요할때 붙인다                                        
+                    var parentResult = AnalyzeLocExceptIdAndMember(memberExp.Parent, ResolveHint.None);
                     context.AddLambdaCapture(expResult.LambdaCapture);
                     return AnalyzeMemberExpLocParent(memberExp, new R.TempLoc(expResult.Exp, expResult.TypeValue.GetRType()), expResult.TypeValue, hint);
 
@@ -691,7 +705,7 @@ namespace Gum.IR0Translator
 
         ExpResult AnalyzeExp(S.Exp exp, ResolveHint hint)
         {
-            switch(exp)
+            switch (exp)
             {
                 case S.IdentifierExp idExp: return AnalyzeIdExp(idExp, hint);
                 case S.BoolLiteralExp boolExp: return AnalyzeBoolLiteralExp(boolExp);

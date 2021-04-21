@@ -66,20 +66,25 @@ namespace Gum.IR0Translator
     record ThisLambdaCapture : LambdaCapture { public static readonly ThisLambdaCapture Instance = new ThisLambdaCapture(); private ThisLambdaCapture() { } }
     record LocalLambdaCapture(string Name, TypeValue Type) : LambdaCapture;
 
-    [AutoConstructor]
-    class LocIdentifierResult : ValidIdentifierResult
+    class NotIdentifierResult : ValidIdentifierResult
     {
-        public R.Loc Loc { get; }
-        public TypeValue TypeValue { get; }
-        public LambdaCapture LambdaCapture { get; }
+        public static readonly NotIdentifierResult Instance = new NotIdentifierResult();
+        private NotIdentifierResult() { }
     }
 
     [AutoConstructor]
-    class ExpIdentifierResult : ValidIdentifierResult
+    class LocalVarIdentifierResult : ValidIdentifierResult
     {
-        public R.Exp Exp { get; }
+        public bool bNeedCapture { get; }
+        public string VarName { get; }
         public TypeValue TypeValue { get; }
-        public LambdaCapture LambdaCapture { get; }
+    }
+
+    [AutoConstructor]
+    class GlobalVarIdentifierResult : ValidIdentifierResult
+    {
+        public string VarName { get; }
+        public TypeValue TypeValue { get; }
     }
 
     //// 내부 글로벌 변수, x
