@@ -318,7 +318,7 @@ namespace Gum.IR0Translator
 
         public override R.Type GetRType()
         {
-            return R.Type.Void;
+            return R.VoidType.Instance;
         }
 
         public override int GetHashCode()
@@ -377,7 +377,7 @@ namespace Gum.IR0Translator
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(LambdaId);
+            return HashCode.Combine(LambdaDeclId);
         }
     }
 

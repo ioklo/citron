@@ -83,9 +83,6 @@ namespace Gum.IR0Translator
                 if (varInfo == null) return NotFoundIdentifierResult.Instance;
 
                 return new LocalVarIdentifierResult(true, varInfo.Value.Name, varInfo.Value.TypeValue);
-
-                // var localCapture = new LocalLambdaCapture(varInfo.Value.Name, varInfo.Value.TypeValue);
-                // return new LocIdentifierResult(new R.LocalVarLoc(varInfo.Value.Name), varInfo.Value.TypeValue, localCapture);
             }
 
             IdentifierResult GetLocalVarInfo()

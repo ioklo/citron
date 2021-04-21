@@ -23,7 +23,7 @@ namespace Gum.IR0Translator
     class FuncValue : ItemValue
     {
         ItemValueFactory typeValueFactory;
-        R.ItemFactory ritemFactory;
+        RItemFactory ritemFactory;
 
         // X<int>.Y<short>
         M.ModuleName? moduleName;       // external global일 경우에만 존재
@@ -38,7 +38,7 @@ namespace Gum.IR0Translator
         public bool IsStatic { get => !funcInfo.IsInstanceFunc; }
         public bool IsSequence { get => funcInfo.IsSequenceFunc; }
         
-        internal FuncValue(ItemValueFactory typeValueFactory, R.ItemFactory ritemFactory, M.ModuleName? moduleName, M.NamespacePath? namespacePath, TypeValue? outer, M.FuncInfo funcInfo, ImmutableArray<TypeValue> typeArgs)
+        internal FuncValue(ItemValueFactory typeValueFactory, RItemFactory ritemFactory, M.ModuleName? moduleName, M.NamespacePath? namespacePath, TypeValue? outer, M.FuncInfo funcInfo, ImmutableArray<TypeValue> typeArgs)
         {
             // 둘중에 하나만 참
             Debug.Assert((moduleName != null && namespacePath != null) ^ (outer != null));
@@ -99,6 +99,16 @@ namespace Gum.IR0Translator
                 return false;
 
             throw new UnreachableCodeException();
+        }
+
+        public R.DeclId GetRDeclId()
+        {
+            return ritemFactory.MakeDeclId(moduleName.Value, namespacePath.Value, funcInfo);
+        }
+
+        public R.TypeContext GetRTypeContext()
+        {
+            return ritemFactory.MakeTypeContext();
         }
 
         // IR0 Func를 만들어 줍니다

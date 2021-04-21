@@ -51,7 +51,7 @@ namespace Gum.IR0Translator.Test
             var externalModuleRepo = new ModuleInfoRepository(Arr(RuntimeModuleInfo.Instance));
 
             var typeInfoRepo = new TypeInfoRepository(internalModuleInfo, externalModuleRepo);
-            var ritemFactory = new IR0ItemFactory();
+            var ritemFactory = new RItemFactory();
             var typeValueFactory = new ItemValueFactory(typeInfoRepo, ritemFactory);
             
             
@@ -93,7 +93,7 @@ namespace Gum.IR0Translator.Test
             var testModule = new M.ModuleInfo(moduleName, default, Arr<M.TypeInfo>(xInfo, gInfo), default);
             var externalModuleRepo = new ModuleInfoRepository(Arr(RuntimeModuleInfo.Instance));
             var typeInfoRepo = new TypeInfoRepository(testModule, externalModuleRepo);
-            var ritemFactory = new IR0ItemFactory();
+            var ritemFactory = new RItemFactory();
             return new ItemValueFactory(typeInfoRepo, ritemFactory);
         }
 

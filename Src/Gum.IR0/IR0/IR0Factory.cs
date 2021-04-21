@@ -12,7 +12,7 @@ namespace Gum.IR0
 {
     public static class IR0Factory
     {
-        public static Script RScript(ImmutableArray<IDecl> decls, ImmutableArray<LambdaDecl> lambdaDecls, params Stmt[] optTopLevelStmts)
+        public static Script RScript(ImmutableArray<IDecl> decls, params Stmt[] optTopLevelStmts)
         {
             for(int i = 0; i < decls.Length; i++)
                 Debug.Assert(i == decls[i].DeclId.Value);
@@ -23,7 +23,7 @@ namespace Gum.IR0
         }
 
         public static Script RScript(params Stmt[] stmts)
-            => RScript(default, default, stmts);
+            => RScript(default, stmts);
 
         public static CommandStmt RCommand(params StringExp[] cmds)
             => new CommandStmt(Arr(cmds));

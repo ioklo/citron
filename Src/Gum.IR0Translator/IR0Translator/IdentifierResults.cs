@@ -73,7 +73,7 @@ namespace Gum.IR0Translator
     }
 
     [AutoConstructor]
-    class LocalVarIdentifierResult : ValidIdentifierResult
+    partial class LocalVarIdentifierResult : ValidIdentifierResult
     {
         public bool bNeedCapture { get; }
         public string VarName { get; }
@@ -81,7 +81,7 @@ namespace Gum.IR0Translator
     }
 
     [AutoConstructor]
-    class GlobalVarIdentifierResult : ValidIdentifierResult
+    partial class GlobalVarIdentifierResult : ValidIdentifierResult
     {
         public string VarName { get; }
         public TypeValue TypeValue { get; }

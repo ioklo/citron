@@ -111,32 +111,6 @@ namespace Gum.IR0Translator
                 return false;
             }
 
-            public bool IsAssignableExp(R.Exp exp)
-            {
-                switch (exp)
-                {
-                    case R.LocalVarExp localVarExp:
-
-                        // 람다 바깥에 있다면 대입 불가능하다
-                        if (curFunc.IsLocalVarOutsideLambda(localVarExp.Name))
-                            return false;
-
-                        return true;
-                    
-                    case R.GlobalVarExp _:
-                    case R.ListIndexerExp _:
-                    case R.StaticMemberExp _:
-                    case R.StructMemberExp _:
-                    case R.ClassMemberExp _:
-                    case R.EnumMemberExp _:
-                        return true;
-
-                    default:
-                        return false;
-                }
-
-            }            
-
             public void AddInternalGlobalVarInfo(M.Name name, TypeValue typeValue)
             {
                 internalGlobalVarRepo.AddInternalGlobalVariable(name, typeValue);

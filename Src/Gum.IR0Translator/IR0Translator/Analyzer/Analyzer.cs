@@ -74,7 +74,7 @@ namespace Gum.IR0Translator
                 {
                     var initExpResult = AnalyzeExp(elem.InitExp, ResolveHint.None);
                     var rtype = initExpResult.TypeValue.GetRType();
-                    return new VarDeclElementCoreResult(new R.VarDeclElement(elem.VarName, rtype, initExpResult.Exp), initExpResult.TypeValue);
+                    return new VarDeclElementCoreResult(new R.VarDeclElement(elem.VarName, rtype, initExpResult.WrapExp()), initExpResult.TypeValue);
                 }
                 else
                 {
@@ -84,7 +84,7 @@ namespace Gum.IR0Translator
                         context.AddFatalError(A0102_VarDecl_MismatchBetweenDeclTypeAndInitExpType, elem);
 
                     var rtype = declType.GetRType();
-                    return new VarDeclElementCoreResult(new R.VarDeclElement(elem.VarName, rtype, initExpResult.Exp), declType);
+                    return new VarDeclElementCoreResult(new R.VarDeclElement(elem.VarName, rtype, initExpResult.WrapExp()), declType);
                 }
             }
         }
@@ -173,7 +173,7 @@ namespace Gum.IR0Translator
                     return new R.ExpStringExpElement(
                         new R.CallInternalUnaryOperatorExp(
                             R.InternalUnaryOperator.ToString_Int_String,
-                            expResult.Exp
+                            expResult.WrapExp()
                         )
                     );
                 }
@@ -182,13 +182,13 @@ namespace Gum.IR0Translator
                     return new R.ExpStringExpElement(
                             new R.CallInternalUnaryOperatorExp(
                             R.InternalUnaryOperator.ToString_Bool_String,
-                            expResult.Exp
+                            expResult.WrapExp()
                         )
                     );
                 }
                 else if (context.IsStringType(expResult.TypeValue))
                 {
-                    return new R.ExpStringExpElement(expResult.Exp);
+                    return new R.ExpStringExpElement(expResult.WrapExp());
                 }
                 else
                 {

@@ -29,12 +29,36 @@ namespace Gum.IR0Translator
             R.Exp? exp;
             R.Loc? loc;
 
-            public R.Exp Exp => exp!;
-            public R.Loc Loc => loc!;
+            public R.Exp ExpRaw => exp!;
+            public R.Loc LocRaw => loc!;
             public TypeValue TypeValue { get; }
 
             public bool IsExp => exp != null;
             public bool IsLoc => loc != null;
+
+            public R.Exp WrapExp()
+            {
+                if (exp != null)
+                    return exp;
+
+                else if (loc != null)
+                    return new R.LoadExp(loc);
+
+                else
+                    throw new UnreachableCodeException();
+            }
+
+            public R.Loc WrapLoc()
+            {
+                if (loc != null)
+                    return loc;
+
+                else if (exp != null)
+                    return new R.TempLoc(exp, TypeValue.GetRType());
+
+                else
+                    throw new UnreachableCodeException();
+            }
 
             public ExpResult(R.Exp exp, TypeValue typeValue) { this.exp = exp; this.loc = null; this.TypeValue = typeValue; }
             public ExpResult(R.Loc loc, TypeValue typeValue) { this.exp = null; this.loc = loc; this.TypeValue = typeValue; }
@@ -55,14 +79,14 @@ namespace Gum.IR0Translator
                     HandleErrorIdentifierResult(idExp, errorResult);
                     break;
 
-                case ExpIdentifierResult expResult:
-                    context.AddLambdaCapture(expResult.LambdaCapture);
-                    return new ExpResult(expResult.Exp, expResult.TypeValue);
+                case NotIdentifierResult:
+                    throw new UnreachableCodeException();
 
-                case LocIdentifierResult locResult:
-                    context.AddLambdaCapture(locResult.LambdaCapture);
-                    return new ExpResult(new R.LoadExp(locResult.Loc), locResult.TypeValue);
-
+                case LocalVarIdentifierResult localVarResult:
+                    if (localVarResult.bNeedCapture)
+                        context.AddLambdaCapture(new LocalLambdaCapture(localVarResult.VarName, localVarResult.TypeValue));
+                    return new ExpResult(new R.LocalVarLoc(localVarResult.VarName), localVarResult.TypeValue);
+                
                 case InstanceFuncIdentifierResult:
                     throw new NotImplementedException();
 
@@ -133,21 +157,21 @@ namespace Gum.IR0Translator
         // int만 지원한다
         ExpResult AnalyzeIntUnaryAssignExp(S.Exp operand, R.InternalUnaryAssignOperator op)
         {
-            var operandResult = AnalyzeLoc(operand);
+            var operandResult = AnalyzeExp(operand, ResolveHint.None);            
 
             // int type 검사
             if (!context.IsAssignable(context.GetIntType(), operandResult.TypeValue))
                 context.AddFatalError(A0601_UnaryAssignOp_IntTypeIsAllowedOnly, operand);
 
-            if (!context.IsAssignableExp(operandResult.Loc))
+            if (!operandResult.IsLoc)
                 context.AddFatalError(A0602_UnaryAssignOp_AssignableExpressionIsAllowedOnly, operand);
 
-            return new ExpResult(new R.CallInternalUnaryAssignOperator(op, operandResult.Loc), context.GetIntType());
+            return new ExpResult(new R.CallInternalUnaryAssignOperator(op, operandResult.LocRaw), context.GetIntType());
         }
         
         ExpResult AnalyzeUnaryOpExp(S.UnaryOpExp unaryOpExp)
         {
-            var operandResult = AnalyzeExp(unaryOpExp.Operand, ResolveHint.None);            
+            var operandResult = AnalyzeExp(unaryOpExp.Operand, ResolveHint.None);
 
             switch (unaryOpExp.Kind)
             {
@@ -155,26 +179,25 @@ namespace Gum.IR0Translator
                     {
                         if (!context.IsAssignable(context.GetBoolType(), operandResult.TypeValue))
                             context.AddFatalError(A0701_UnaryOp_LogicalNotOperatorIsAppliedToBoolTypeOperandOnly, unaryOpExp.Operand);
-
-                        var operandRType = operandResult.TypeValue.GetRType();
-
+                        
                         return new ExpResult(
                             new R.CallInternalUnaryOperatorExp(
                                 R.InternalUnaryOperator.LogicalNot_Bool_Bool,
-                                new R.ExpInfo(operandResult.Exp, operandRType)),
-                            context.GetBoolType());
+                                operandResult.WrapExp()
+                            ),
+                            context.GetBoolType()
+                        );
                     }
 
                 case S.UnaryOpKind.Minus:
                     {
                         if (!context.IsAssignable(context.GetIntType(), operandResult.TypeValue))
                             context.AddFatalError(A0702_UnaryOp_UnaryMinusOperatorIsAppliedToIntTypeOperandOnly, unaryOpExp.Operand);
-
-                        var operandRType = operandResult.TypeValue.GetRType();
+                        
                         return new ExpResult(
                             new R.CallInternalUnaryOperatorExp(
                                 R.InternalUnaryOperator.UnaryMinus_Int_Int,
-                                operandResult.Exp),
+                                operandResult.WrapExp()),
                             context.GetIntType());
                     }
 
@@ -198,16 +221,16 @@ namespace Gum.IR0Translator
         ExpResult AnalyzeAssignBinaryOpExp(S.BinaryOpExp exp)
         {
             // syntax 에서는 exp로 보이지만, R로 변환할 경우 Location 명령이어야 한다
-            var destResult = AnalyzeLoc(exp.Operand0);
+            var destResult = AnalyzeExp(exp.Operand0, ResolveHint.None);
             var srcResult = AnalyzeExp(exp.Operand1, ResolveHint.None);
 
             if (!context.IsAssignable(destResult.TypeValue, srcResult.TypeValue))
                 context.AddFatalError(A0801_BinaryOp_LeftOperandTypeIsNotCompatibleWithRightOperandType, exp);
 
-            if (!context.IsAssignableExp(operandResult0.Exp))
-                context.AddFatalError(A0803_BinaryOp_LeftOperandIsNotAssignable, binaryOpExp.Operand0);
+            if (!destResult.IsLoc)            
+                context.AddFatalError(A0803_BinaryOp_LeftOperandIsNotAssignable, exp.Operand0);
 
-            return new ExpResult(new R.AssignExp(destResult.Loc, srcResult.Exp), destResult.TypeValue);
+            return new ExpResult(new R.AssignExp(destResult.LocRaw, srcResult.WrapExp()), destResult.TypeValue);
         }
         
         ExpResult AnalyzeBinaryOpExp(S.BinaryOpExp binaryOpExp)
@@ -230,15 +253,15 @@ namespace Gum.IR0Translator
                     // NOTICE: 우선순위별로 정렬되어 있기 때문에 먼저 매칭되는 것을 선택한다
                     if (context.IsAssignable(info.OperandType0, operandResult0.TypeValue) &&
                         context.IsAssignable(info.OperandType1, operandResult1.TypeValue))
-                    {
-                        var operandRType0 = operandResult0.TypeValue.GetRType();
-                        var operandRType1 = operandResult1.TypeValue.GetRType();
-
-                        var equalExp = new R.CallInternalBinaryOperatorExp(info.IR0Operator, new R.ExpInfo(operandResult0.Exp, operandRType0), new R.ExpInfo(operandResult1.Exp, operandRType1));
-                        var notEqualOperand = new R.ExpInfo(equalExp, R.Type.Bool);
+                    {   
+                        var equalExp = new R.CallInternalBinaryOperatorExp(
+                            info.IR0Operator,
+                            operandResult0.WrapExp(), 
+                            operandResult1.WrapExp()
+                        );
 
                         return new ExpResult(
-                            new R.CallInternalUnaryOperatorExp(R.InternalUnaryOperator.LogicalNot_Bool_Bool, notEqualOperand),
+                            new R.CallInternalUnaryOperatorExp(R.InternalUnaryOperator.LogicalNot_Bool_Bool, equalExp),
                             info.ResultType);                            
                     }
                 }
@@ -252,14 +275,11 @@ namespace Gum.IR0Translator
                 if (context.IsAssignable(info.OperandType0, operandResult0.TypeValue) && 
                     context.IsAssignable(info.OperandType1, operandResult1.TypeValue))
                 {
-                    var operandRType0 = operandResult0.TypeValue.GetRType();
-                    var operandRType1 = operandResult1.TypeValue.GetRType();
-
                     return new ExpResult(
                         new R.CallInternalBinaryOperatorExp(
                             info.IR0Operator, 
-                            new R.ExpInfo(operandResult0.Exp, operandRType0), 
-                            new R.ExpInfo(operandResult1.Exp, operandRType1)),
+                            operandResult0.WrapExp(), 
+                            operandResult1.WrapExp()),
                         info.ResultType);
                 }
             }
@@ -296,7 +316,7 @@ namespace Gum.IR0Translator
             var argTypes = ImmutableArray.CreateRange(argResults, info => info.TypeValue);            
             CheckParamTypes(nodeForErrorReport, funcValue.GetParamTypes(), argTypes);
 
-            var args = ImmutableArray.CreateRange(argResults, argResult => argResult.Exp);
+            var args = ImmutableArray.CreateRange(argResults, argResult => argResult.WrapExp());
             var rfunc = funcValue.GetRFunc();
             var retType = funcValue.GetRetType();
             
@@ -314,25 +334,25 @@ namespace Gum.IR0Translator
                 //if (!funcValue.IsInternal)
                 //  throw new NotImplementedException(); // return new ExpResult(new R.ExCallSeqFuncExp(rfunc, null, args), retType);
 
-                return new ExpResult(new R.CallSeqFuncExp(rfunc, instance, args), retType);
+                return new ExpResult(new R.CallSeqFuncExp(funcValue.GetRDeclId(), funcValue.GetRTypeContext(), instance, args), retType);
                 
             }
         }
 
         // CallExp 분석에서 Callable이 Exp인 경우 처리
-        ExpResult AnalyzeCallExpLocCallable(R.Loc callable, TypeValue callableType, ImmutableArray<ExpResult> argResults, S.CallExp nodeForErrorReport)
+        ExpResult AnalyzeCallExpExpCallable(ExpResult callableResult, ImmutableArray<ExpResult> argResults, S.CallExp nodeForErrorReport)
         {
-            var lambdaType = callableType as LambdaTypeValue;
+            var lambdaType = callableResult.TypeValue as LambdaTypeValue;
             if (lambdaType == null)
                 context.AddFatalError(A0902_CallExp_CallableExpressionIsNotCallable, nodeForErrorReport.Callable);
 
             var argTypes = ImmutableArray.CreateRange(argResults, info => info.TypeValue);
             CheckParamTypes(nodeForErrorReport, lambdaType.Params, argTypes);
             
-            var args = argResults.Select(info => info.Exp).ToImmutableArray();
+            var args = argResults.Select(info => info.WrapExp()).ToImmutableArray();
 
             return new ExpResult(
-                new R.CallValueExp(callable, args),
+                new R.CallValueExp(callableResult.WrapLoc(), args),
                 lambdaType.Return);
         }
         
@@ -349,8 +369,10 @@ namespace Gum.IR0Translator
             // EnumHint
             // ArgumentTypes
 
+            var callableHint = new ResolveHint(hint.TypeHint, new DefaultFuncParamHint(argTypes));
+
             // argTypes로 힌트 타입을 만들어야 한다
-            var callableResult = ResolveIdentifier(exp.Callable, new ResolveHint(hint.TypeHint, new DefaultFuncParamHint(argTypes)));
+            var callableResult = ResolveIdentifier(exp.Callable, callableHint);
 
             switch(callableResult)
             {
@@ -362,11 +384,9 @@ namespace Gum.IR0Translator
                     HandleErrorIdentifierResult(exp, errorResult);
                     break;
 
-                case ExpIdentifierResult expResult:
-                    return AnalyzeCallExpLocCallable(new R.TempLoc(expResult.Exp, expResult.TypeValue.GetRType()), expResult.TypeValue, argResults, exp);
-
-                case LocIdentifierResult locResult:
-                    return AnalyzeCallExpLocCallable(locResult.Loc, locResult.TypeValue, argResults, exp);
+                case NotIdentifierResult:
+                    var expCallableResult = AnalyzeExpExceptIdAndMember(exp.Callable, callableHint);
+                    return AnalyzeCallExpExpCallable(expCallableResult, argResults, exp);
 
                 case InstanceFuncIdentifierResult instFuncResult:
                     var instanceType = instFuncResult.InstanceType.GetRType();
@@ -453,10 +473,10 @@ namespace Gum.IR0Translator
         }
 
         // exp.x
-        ExpResult AnalyzeMemberExpLocParent(S.MemberExp memberExp, R.Loc parentLoc, TypeValue parentType, ResolveHint hint)
+        ExpResult AnalyzeMemberExpExpParent(S.MemberExp memberExp, R.Loc parentLoc, TypeValue parentTypeValue, ResolveHint hint)
         {   
             var typeArgs = GetTypeValues(memberExp.MemberTypeArgs, context);
-            var memberResult = parentType.GetMember(memberExp.MemberName, typeArgs, hint);
+            var memberResult = parentTypeValue.GetMember(memberExp.MemberName, typeArgs, hint);
 
             switch(memberResult)
             {
@@ -487,7 +507,7 @@ namespace Gum.IR0Translator
                             if (memberVar.IsStatic)
                                 context.AddFatalError(A2003_ResolveIdentifier_CantGetStaticMemberThroughInstance, memberExp);
 
-                            var loc = MakeMemberLoc(parentType, parentLoc, memberExp.MemberName);
+                            var loc = MakeMemberLoc(parentTypeValue, parentLoc, memberExp.MemberName);
                             return new ExpResult(new R.LoadExp(loc), memberVar.GetTypeValue());
                     }
                     break;
@@ -539,7 +559,7 @@ namespace Gum.IR0Translator
 
                             var rparentType = parentType.GetRType();
                             var loc = new R.StaticMemberLoc(rparentType, memberName);
-                            return new ExpResult(exp, memberVarValue.GetTypeValue());
+                            return new ExpResult(loc, memberVarValue.GetTypeValue());
 
                         default:
                             throw new UnreachableCodeException();
@@ -599,16 +619,9 @@ namespace Gum.IR0Translator
                     break;
 
                 // Identifier가 아니라면
-                case NotIdentifierResult notIdentifierResult:
-
-                    // AnalyzeExp(exp) -> 결과는 R.Loc 또는 R.Exp로 나온다 최대한 컴팩트 하게, 필요할때 붙인다                                        
-                    var parentResult = AnalyzeLocExceptIdAndMember(memberExp.Parent, ResolveHint.None);
-                    context.AddLambdaCapture(expResult.LambdaCapture);
-                    return AnalyzeMemberExpLocParent(memberExp, new R.TempLoc(expResult.Exp, expResult.TypeValue.GetRType()), expResult.TypeValue, hint);
-
-                case LocIdentifierResult locResult:
-                    context.AddLambdaCapture(locResult.LambdaCapture);
-                    return AnalyzeMemberExpLocParent(memberExp, locResult.Loc, locResult.TypeValue, hint);
+                case NotIdentifierResult:
+                    var expParentResult = AnalyzeExpExceptIdAndMember(memberExp.Parent, ResolveHint.None);
+                    return AnalyzeMemberExpExpParent(memberExp, expParentResult.WrapLoc(), expParentResult.TypeValue, hint);
 
                 case TypeIdentifierResult typeResult:
                     return AnalyzeMemberExpTypeParent(memberExp, typeResult.TypeValue, memberExp.MemberName, memberExp.MemberTypeArgs, hint);
@@ -657,7 +670,7 @@ namespace Gum.IR0Translator
             {
                 var elemResult = AnalyzeExp(elem, ResolveHint.None);                    
 
-                builder.Add(elemResult.Exp);
+                builder.Add(elemResult.WrapExp());
 
                 if (curElemTypeValue == null)
                 {

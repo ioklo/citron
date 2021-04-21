@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using M = Gum.CompileTime;
+using R = Gum.IR0;
 
 namespace Gum.IR0Translator
 {
@@ -15,7 +16,7 @@ namespace Gum.IR0Translator
     class ItemValueFactory
     {   
         TypeInfoRepository typeInfoRepo;
-        R.ItemFactory ritemFactory;
+        RItemFactory ritemFactory;
 
         public TypeValue Bool { get; }
         public TypeValue Int { get; }        
@@ -25,7 +26,7 @@ namespace Gum.IR0Translator
             throw new NotImplementedException();
         }
 
-        public ItemValueFactory(TypeInfoRepository typeInfoRepo, R.ItemFactory ritemFactory)
+        public ItemValueFactory(TypeInfoRepository typeInfoRepo, RItemFactory ritemFactory)
         {
             M.TypeInfo MakeEmptyStructInfo(M.Name name) => new M.StructInfo(name, default, null, default, default, default, default);
 
@@ -130,9 +131,9 @@ namespace Gum.IR0Translator
             return new FuncValue(this, ritemFactory, moduleName, namespacePath, null, funcInfo, typeArgs);
         }
 
-        public LambdaTypeValue MakeLambdaType(R.LambdaDeclId lambdaDeclId, TypeValue retType, ImmutableArray<TypeValue> paramTypes)
+        public LambdaTypeValue MakeLambdaType(R.DeclId lambdaDeclId, TypeValue retType, ImmutableArray<TypeValue> paramTypes)
         {
-            return new LambdaTypeValue(ritemFactory, lambdaId, retType, paramTypes);
+            return new LambdaTypeValue(ritemFactory, lambdaDeclId, retType, paramTypes);
         }
 
         public VarTypeValue MakeVarTypeValue()
