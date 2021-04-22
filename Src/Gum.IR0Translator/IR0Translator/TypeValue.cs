@@ -283,7 +283,7 @@ namespace Gum.IR0Translator
                 Debug.Assert(moduleName != null && namespacePath != null);
 
                 var rtypeArgs = GetRTypes(typeArgs);
-                return ritemFactory.MakeGlobalType(moduleName.Value, namespacePath.Value, structInfo.Name, rtypeArgs);
+                return ritemFactory.MakeStructType(moduleName.Value, namespacePath.Value, structInfo.Name, rtypeArgs);
             }
             else
             {
@@ -291,7 +291,7 @@ namespace Gum.IR0Translator
 
                 var outerRType = outer.GetRType();
                 var rtypeArgs = GetRTypes(typeArgs);
-                return ritemFactory.MakeMemberType(outerRType, structInfo.Name, rtypeArgs);
+                return ritemFactory.MakeStructType(outerRType, structInfo.Name, rtypeArgs);
             }
         }
     }
