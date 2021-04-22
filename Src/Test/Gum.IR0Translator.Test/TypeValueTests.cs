@@ -31,7 +31,7 @@ namespace Gum.IR0Translator.Test
             var moduleInfo = new M.ModuleInfo(moduleName, default, Arr<M.TypeInfo>(xInfo), default);
 
             var typeInfoRepo = new TypeInfoRepository(moduleInfo, new ModuleInfoRepository(Arr(RuntimeModuleInfo.Instance)));
-            var ritemFactory = new IR0ItemFactory();
+            var ritemFactory = new RItemFactory();
             var factory = new ItemValueFactory(typeInfoRepo, ritemFactory);
 
             var xmType = new M.GlobalType(moduleName, M.NamespacePath.Root, "X", Arr(MTypes.Int));
