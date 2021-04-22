@@ -65,13 +65,7 @@ namespace Gum.IR0Translator
     record NoneLambdaCapture : LambdaCapture { public static readonly NoneLambdaCapture Instance = new NoneLambdaCapture(); private NoneLambdaCapture() { } }
     record ThisLambdaCapture : LambdaCapture { public static readonly ThisLambdaCapture Instance = new ThisLambdaCapture(); private ThisLambdaCapture() { } }
     record LocalLambdaCapture(string Name, TypeValue Type) : LambdaCapture;
-
-    class NotIdentifierResult : ValidIdentifierResult
-    {
-        public static readonly NotIdentifierResult Instance = new NotIdentifierResult();
-        private NotIdentifierResult() { }
-    }
-
+    
     [AutoConstructor]
     partial class LocalVarIdentifierResult : ValidIdentifierResult
     {

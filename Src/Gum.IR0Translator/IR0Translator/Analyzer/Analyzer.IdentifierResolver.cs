@@ -13,7 +13,7 @@ namespace Gum.IR0Translator
 {
     partial class Analyzer
     {
-        IdentifierResult ResolveIdentifierIdExp(S.IdentifierExp idExp, ResolveHint resolveHint)
+        IdentifierResult ResolveIdentifier(S.IdentifierExp idExp, ResolveHint resolveHint)
         {
             var typeArgs = GetTypeValues(idExp.TypeArgs, context);
             var resolver = new IdExpIdentifierResolver(idExp.Value, typeArgs, resolveHint, context);
@@ -46,19 +46,6 @@ namespace Gum.IR0Translator
             throw new UnreachableCodeException();
         }        
         
-        // T.x 꼴        
-        IdentifierResult ResolveIdentifier(S.Exp exp, ResolveHint hint)
-        {
-            if (exp is S.IdentifierExp idExp)
-            {
-                return ResolveIdentifierIdExp(idExp, hint);
-            }
-            else
-            {
-                return NotIdentifierResult.Instance;
-            }
-        }
-
         struct IdExpIdentifierResolver
         {
             string idName;

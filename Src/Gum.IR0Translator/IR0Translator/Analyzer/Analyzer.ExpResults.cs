@@ -19,6 +19,7 @@ namespace Gum.IR0Translator
         [AutoConstructor, ImplementIEquatable]
         partial class TypeExpResult : ExpResult
         {            
+            public TypeValue TypeValue { get; }
         }
 
         // 함수 덩어리

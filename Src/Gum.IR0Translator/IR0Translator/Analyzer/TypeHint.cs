@@ -1,4 +1,6 @@
-﻿namespace Gum.IR0Translator
+﻿using Pretune;
+
+namespace Gum.IR0Translator
 {
     abstract class TypeHint
     {
@@ -14,5 +16,11 @@
     {
         public TypeValue TypeValue { get; }
         public TypeValueTypeHint(TypeValue typeValue) { TypeValue = typeValue; }
+    }
+
+    [AutoConstructor]
+    partial class EnumConstructorTypeHint : TypeHint
+    {
+        public EnumTypeValue EnumTypeValue { get; }
     }
 }

@@ -72,19 +72,19 @@ namespace Gum.IR0Translator
                 // var 처리
                 if (declType is VarTypeValue)
                 {
-                    var initExpResult = AnalyzeExp(elem.InitExp, ResolveHint.None);
+                    var initExpResult = AnalyzeExp_Exp(elem.InitExp, ResolveHint.None);
                     var rtype = initExpResult.TypeValue.GetRType();
-                    return new VarDeclElementCoreResult(new R.VarDeclElement(elem.VarName, rtype, initExpResult.WrapExp()), initExpResult.TypeValue);
+                    return new VarDeclElementCoreResult(new R.VarDeclElement(elem.VarName, rtype, initExpResult.Exp), initExpResult.TypeValue);
                 }
                 else
                 {
-                    var initExpResult = AnalyzeExp(elem.InitExp, ResolveHint.Make(declType));
+                    var initExpResult = AnalyzeExp_Exp(elem.InitExp, ResolveHint.Make(declType));
 
                     if (!context.IsAssignable(declType, initExpResult.TypeValue))
                         context.AddFatalError(A0102_VarDecl_MismatchBetweenDeclTypeAndInitExpType, elem);
 
                     var rtype = declType.GetRType();
-                    return new VarDeclElementCoreResult(new R.VarDeclElement(elem.VarName, rtype, initExpResult.WrapExp()), declType);
+                    return new VarDeclElementCoreResult(new R.VarDeclElement(elem.VarName, rtype, initExpResult.Exp), declType);
                 }
             }
         }
@@ -165,7 +165,7 @@ namespace Gum.IR0Translator
         {
             if (elem is S.ExpStringExpElement expElem)
             {
-                var expResult = AnalyzeExp(expElem.Exp, ResolveHint.None);
+                var expResult = AnalyzeExp_Exp(expElem.Exp, ResolveHint.None);
 
                 // 캐스팅이 필요하다면 
                 if (context.IsIntType(expResult.TypeValue))
@@ -173,7 +173,7 @@ namespace Gum.IR0Translator
                     return new R.ExpStringExpElement(
                         new R.CallInternalUnaryOperatorExp(
                             R.InternalUnaryOperator.ToString_Int_String,
-                            expResult.WrapExp()
+                            expResult.Exp
                         )
                     );
                 }
@@ -182,13 +182,13 @@ namespace Gum.IR0Translator
                     return new R.ExpStringExpElement(
                             new R.CallInternalUnaryOperatorExp(
                             R.InternalUnaryOperator.ToString_Bool_String,
-                            expResult.WrapExp()
+                            expResult.Exp
                         )
                     );
                 }
                 else if (context.IsStringType(expResult.TypeValue))
                 {
-                    return new R.ExpStringExpElement(expResult.WrapExp());
+                    return new R.ExpStringExpElement(expResult.Exp);
                 }
                 else
                 {
@@ -280,12 +280,12 @@ namespace Gum.IR0Translator
             }
         }
 
-        ExpResult AnalyzeTopLevelExp(S.Exp exp, ResolveHint hint, AnalyzeErrorCode code)
+        ExpExpResult AnalyzeTopLevelExp_Exp(S.Exp exp, ResolveHint hint, AnalyzeErrorCode code)
         {
             if (!IsTopLevelExp(exp))
                 context.AddFatalError(code, exp);
 
-            return AnalyzeExp(exp, hint);
+            return AnalyzeExp_Exp(exp, hint);
         }
 
         public void AnalyzeFuncDecl(S.FuncDecl funcDecl)

@@ -1,7 +1,5 @@
 ﻿using System;
 using Gum.Collections;
-using Gum.CompileTime;
-using Gum.IR0;
 using M = Gum.CompileTime;
 using R = Gum.IR0;
 
@@ -11,12 +9,14 @@ namespace Gum.IR0Translator
     {
         public R.Type MakeTypeVar(int depth, int index)
         {
-            throw new NotImplementedException();
+            return new R.TypeVar(depth, index);
         }
 
-        public R.Type MakeGlobalType(M.ModuleName moduleName, M.NamespacePath namespacePath, M.Name name, ImmutableArray<R.Type> rtypeArgs)
+        public R.Type MakeStructType(M.ModuleName moduleName, M.NamespacePath namespacePath, M.Name name, ImmutableArray<R.Type> rtypeArgs)
         {
-            throw new NotImplementedException();
+
+
+            return new R.StructType(new R.RootOuterType(moduleName, namespacePath), name, typeContext);
         }
 
         public R.Type MakeMemberType(R.Type rtype, M.Name name, ImmutableArray<R.Type> rtypeArgs)
@@ -44,12 +44,12 @@ namespace Gum.IR0Translator
             throw new NotImplementedException();
         }
 
-        public DeclId MakeDeclId(M.ModuleName value1, M.NamespacePath value2, FuncInfo funcInfo)
+        public R.DeclId MakeDeclId(M.ModuleName value1, M.NamespacePath value2, M.FuncInfo funcInfo)
         {
             throw new NotImplementedException();
         }
 
-        public TypeContext MakeTypeContext()
+        public R.TypeContext MakeTypeContext()
         {
             throw new NotImplementedException();
         }

@@ -172,7 +172,7 @@ namespace Gum.IR0Translator
                 return AnalyzeIfTestStmt(ifStmt);
 
             // 순회
-            var condResult = AnalyzeExp(ifStmt.Cond, ResolveHint.None);
+            var condResult = AnalyzeExp_Exp(ifStmt.Cond, ResolveHint.None);
             var bodyResult = AnalyzeStmt(ifStmt.Body);
             StmtResult? elseBodyResult = (ifStmt.ElseBody != null) ? AnalyzeStmt(ifStmt.ElseBody) : null;
 
@@ -180,7 +180,7 @@ namespace Gum.IR0Translator
             if (!context.IsAssignable(context.GetBoolType(), condResult.TypeValue))
                 context.AddFatalError(A1004_IfStmt_ConditionShouldBeBool, ifStmt.Cond);
 
-            return new StmtResult(new R.IfStmt(condResult.WrapExp(), bodyResult.Stmt, elseBodyResult?.Stmt));
+            return new StmtResult(new R.IfStmt(condResult.Exp, bodyResult.Stmt, elseBodyResult?.Stmt));
         }
 
         [AutoConstructor]
@@ -198,8 +198,8 @@ namespace Gum.IR0Translator
                     return new ForStmtInitializerResult(new R.VarDeclForStmtInitializer(varDeclResult.VarDecl));
 
                 case S.ExpForStmtInitializer expInit:
-                    var expResult = AnalyzeTopLevelExp(expInit.Exp, ResolveHint.None, A1102_ForStmt_ExpInitializerShouldBeAssignOrCall);
-                    return new ForStmtInitializerResult(new R.ExpForStmtInitializer(expResult.WrapExp()));
+                    var expResult = AnalyzeTopLevelExp_Exp(expInit.Exp, ResolveHint.None, A1102_ForStmt_ExpInitializerShouldBeAssignOrCall);
+                    return new ForStmtInitializerResult(new R.ExpForStmtInitializer(expResult.Exp));
 
                 default:
                     throw new NotImplementedException();
@@ -221,21 +221,21 @@ namespace Gum.IR0Translator
                 if (forStmt.CondExp != null)
                 {
                     // 밑에서 쓰이므로 분석실패시 종료
-                    var condResult = AnalyzeExp(forStmt.CondExp, ResolveHint.None);
+                    var condResult = AnalyzeExp_Exp(forStmt.CondExp, ResolveHint.None);
 
                     // 에러가 나면 에러를 추가하고 계속 진행
                     if (!context.IsAssignable(context.GetBoolType(), condResult.TypeValue))
                         context.AddError(A1101_ForStmt_ConditionShouldBeBool, forStmt.CondExp);
 
-                    cond = condResult.WrapExp();
+                    cond = condResult.Exp;
                 }
 
                 R.Exp? continueInfo = null;
                 if (forStmt.ContinueExp != null)
                 {
-                    var continueResult = AnalyzeTopLevelExp(forStmt.ContinueExp, ResolveHint.None, A1103_ForStmt_ContinueExpShouldBeAssignOrCall);
+                    var continueResult = AnalyzeTopLevelExp_Exp(forStmt.ContinueExp, ResolveHint.None, A1103_ForStmt_ContinueExpShouldBeAssignOrCall);
                     var contExpType = continueResult.TypeValue.GetRType();
-                    continueInfo = continueResult.WrapExp();
+                    continueInfo = continueResult.Exp;
                 }
 
                 return context.ExecInLoop(() =>
@@ -302,23 +302,23 @@ namespace Gum.IR0Translator
                 if (retTypeValue == null)
                 {
                     // 힌트타입 없이 분석
-                    var valueResult = AnalyzeExp(returnStmt.Value, ResolveHint.None);
+                    var valueResult = AnalyzeExp_Exp(returnStmt.Value, ResolveHint.None);
 
                     // 리턴값이 안 적혀 있었으므로 적는다
                     context.SetRetTypeValue(valueResult.TypeValue);
 
-                    return new StmtResult(new R.ReturnStmt(valueResult.WrapExp()));
+                    return new StmtResult(new R.ReturnStmt(valueResult.Exp));
                 }
                 else
                 {
                     // 리턴타입을 힌트로 사용한다
-                    var valueResult = AnalyzeExp(returnStmt.Value, ResolveHint.Make(retTypeValue));
+                    var valueResult = AnalyzeExp_Exp(returnStmt.Value, ResolveHint.Make(retTypeValue));
 
                     // 현재 함수 시그니처랑 맞춰서 같은지 확인한다
                     if (!context.IsAssignable(retTypeValue, valueResult.TypeValue))
                         context.AddFatalError(A1201_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType, returnStmt.Value);
 
-                    return new StmtResult(new R.ReturnStmt(valueResult.WrapExp()));
+                    return new StmtResult(new R.ReturnStmt(valueResult.Exp));
                 }
             }
         }
@@ -357,10 +357,8 @@ namespace Gum.IR0Translator
 
         StmtResult AnalyzeExpStmt(S.ExpStmt expStmt)
         {
-            var expResult = AnalyzeTopLevelExp(expStmt.Exp, ResolveHint.None, A1301_ExpStmt_ExpressionShouldBeAssignOrCall);
-
-            var expType = expResult.TypeValue.GetRType();
-            return new StmtResult(new R.ExpStmt(expResult.WrapExp()));
+            var expResult = AnalyzeTopLevelExp_Exp(expStmt.Exp, ResolveHint.None, A1301_ExpStmt_ExpressionShouldBeAssignOrCall);
+            return new StmtResult(new R.ExpStmt(expResult.Exp));
         }
 
         StmtResult AnalyzeTaskStmt(S.TaskStmt taskStmt)
@@ -473,12 +471,12 @@ namespace Gum.IR0Translator
             Debug.Assert(retTypeValue != null);
 
             // NOTICE: 리턴 타입을 힌트로 넣었다
-            var valueResult = AnalyzeExp(yieldStmt.Value, ResolveHint.Make(retTypeValue));
+            var valueResult = AnalyzeExp_Exp(yieldStmt.Value, ResolveHint.Make(retTypeValue));
 
             if (!context.IsAssignable(retTypeValue, valueResult.TypeValue))
                 context.AddFatalError(A1402_YieldStmt_MismatchBetweenYieldValueAndSeqFuncYieldType, yieldStmt.Value);
 
-            return new StmtResult(new R.YieldStmt(valueResult.WrapExp()));
+            return new StmtResult(new R.YieldStmt(valueResult.Exp));
         }
 
         StmtResult AnalyzeCommonStmt(S.Stmt stmt)

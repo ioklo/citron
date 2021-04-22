@@ -103,7 +103,7 @@ namespace Gum.IR0Translator
 
         public R.DeclId GetRDeclId()
         {
-            return ritemFactory.MakeDeclId(moduleName.Value, namespacePath.Value, funcInfo);
+            throw new NotImplementedException();
         }
 
         public R.TypeContext GetRTypeContext()
