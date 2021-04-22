@@ -32,7 +32,9 @@ namespace Gum.IR0Translator
             foreach (var cmd in cmdStmt.Commands)
             {
                 var expResult = AnalyzeStringExp(cmd);
-                builder.Add(expResult.Exp);
+                Debug.Assert(expResult.Exp is R.StringExp);
+
+                builder.Add((R.StringExp)expResult.Exp);
             }
 
             return new StmtResult(new R.CommandStmt(builder.ToImmutable()));

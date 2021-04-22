@@ -86,59 +86,7 @@ namespace Gum.IR0Translator
         public string VarName { get; }
         public TypeValue TypeValue { get; }
     }
-
-    //// 내부 글로벌 변수, x
-    //class InternalGlobalVarInfo : IdentifierInfo
-    //{
-    //    public M.Name Name { get; }
-    //    public TypeValue TypeValue { get; }
-
-    //    public InternalGlobalVarInfo(M.Name name, TypeValue typeValue) { Name = name; TypeValue = typeValue; }
-    //}
-
-    //// () => { x }에서 x
-    //class LocalVarOutsideLambdaInfo : IdentifierInfo
-    //{
-    //    public Name Name { get => localVarInfo.Name; }
-    //    public TypeValue TypeValue { get => localVarInfo.TypeValue; }
-
-    //    LocalVarInfo localVarInfo;
-
-    //    public LocalVarOutsideLambdaInfo(LocalVarInfo localVarInfo)
-    //    {
-    //        this.localVarInfo = localVarInfo;
-    //    }
-    //}
-
-    //class LocalVarInfo : IdentifierInfo
-    //{
-    //    public string Name { get; }
-    //    public TypeValue TypeValue { get; }
-
-    //    public LocalVarInfo(string name, TypeValue typeValue)
-    //    {
-    //        Name = name;
-    //        TypeValue = typeValue;
-    //    }
-    //}
-
-    //// x => e.x ?? 
-    //class EnumFieldInfo : IdentifierInfo
-    //{
-    //    public string Name { get; }
-    //    public EnumFieldInfo(string name) { Name = name; }
-    //}
-
-    //// x => this.x
-    //class ThisMemberInfo : IdentifierInfo
-    //{   
-    //    public M.Name MemberName { get; }
-    //    public ThisMemberInfo(M.Name memberName)
-    //    {
-    //        MemberName = memberName;
-    //    }
-    //}
-
+    
     //// F
     class InstanceFuncIdentifierResult : ValidIdentifierResult
     {

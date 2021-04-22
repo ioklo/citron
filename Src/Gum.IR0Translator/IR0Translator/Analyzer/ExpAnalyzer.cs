@@ -24,7 +24,6 @@ namespace Gum.IR0Translator
     // 어떤 Exp에서 타입 정보 등을 알아냅니다
     partial class Analyzer
     {   
-
         // x
         ExpResult AnalyzeIdExp(S.IdentifierExp idExp, ResolveHint resolveHint)
         {
@@ -77,14 +76,14 @@ namespace Gum.IR0Translator
             throw new UnreachableCodeException();
         }
 
-        ExpResult AnalyzeBoolLiteralExp(S.BoolLiteralExp boolExp)
+        ExpExpResult AnalyzeBoolLiteralExp(S.BoolLiteralExp boolExp)
         {
-            return new ExpResult(new R.BoolLiteralExp(boolExp.Value), context.GetBoolType());
+            return new ExpExpResult(new R.BoolLiteralExp(boolExp.Value), context.GetBoolType());
         }
 
-        ExpResult AnalyzeIntLiteralExp(S.IntLiteralExp intExp)
+        ExpExpResult AnalyzeIntLiteralExp(S.IntLiteralExp intExp)
         {
-            return new ExpResult(new R.IntLiteralExp(intExp.Value), context.GetIntType());
+            return new ExpExpResult(new R.IntLiteralExp(intExp.Value), context.GetIntType());
         }
 
         [AutoConstructor]
@@ -94,7 +93,7 @@ namespace Gum.IR0Translator
             public TypeValue TypeValue { get; }
         }
         
-        StringExpResult AnalyzeStringExp(S.StringExp stringExp)
+        ExpExpResult AnalyzeStringExp(S.StringExp stringExp)
         {
             var bFatal = false;
 
@@ -115,27 +114,33 @@ namespace Gum.IR0Translator
             if (bFatal)
                 throw new FatalAnalyzeException();
 
-            return new StringExpResult(new R.StringExp(builder.ToImmutable()), context.GetStringType());
+            return new ExpExpResult(new R.StringExp(builder.ToImmutable()), context.GetStringType());
         }
+
 
         // int만 지원한다
-        ExpResult AnalyzeIntUnaryAssignExp(S.Exp operand, R.InternalUnaryAssignOperator op)
+        ExpExpResult AnalyzeIntUnaryAssignExp(S.Exp operand, R.InternalUnaryAssignOperator op)
         {
-            var operandResult = AnalyzeExp(operand, ResolveHint.None);            
+            var operandResult = AnalyzeExp(operand, ResolveHint.None);
 
-            // int type 검사
-            if (!context.IsAssignable(context.GetIntType(), operandResult.TypeValue))
-                context.AddFatalError(A0601_UnaryAssignOp_IntTypeIsAllowedOnly, operand);
+            if (operandResult is LocExpResult locResult)
+            {
+                // int type 검사
+                if (!context.IsAssignable(context.GetIntType(), locResult.TypeValue))
+                    context.AddFatalError(A0601_UnaryAssignOp_IntTypeIsAllowedOnly, operand);
 
-            if (!operandResult.IsLoc)
+                return new ExpExpResult(new R.CallInternalUnaryAssignOperator(op, locResult.Loc), context.GetIntType());
+            }
+            else
+            {
                 context.AddFatalError(A0602_UnaryAssignOp_AssignableExpressionIsAllowedOnly, operand);
-
-            return new ExpResult(new R.CallInternalUnaryAssignOperator(op, operandResult.LocRaw), context.GetIntType());
+                throw new UnreachableCodeException();
+            }
         }
-        
-        ExpResult AnalyzeUnaryOpExp(S.UnaryOpExp unaryOpExp)
+
+        ExpExpResult AnalyzeUnaryOpExp(S.UnaryOpExp unaryOpExp)
         {
-            var operandResult = AnalyzeExp(unaryOpExp.Operand, ResolveHint.None);
+            var operandResult = AnalyzeExp_Exp(unaryOpExp.Operand, ResolveHint.None);
 
             switch (unaryOpExp.Kind)
             {
@@ -144,10 +149,10 @@ namespace Gum.IR0Translator
                         if (!context.IsAssignable(context.GetBoolType(), operandResult.TypeValue))
                             context.AddFatalError(A0701_UnaryOp_LogicalNotOperatorIsAppliedToBoolTypeOperandOnly, unaryOpExp.Operand);
                         
-                        return new ExpResult(
+                        return new ExpExpResult(
                             new R.CallInternalUnaryOperatorExp(
                                 R.InternalUnaryOperator.LogicalNot_Bool_Bool,
-                                operandResult.WrapExp()
+                                operandResult.Exp
                             ),
                             context.GetBoolType()
                         );
@@ -158,10 +163,10 @@ namespace Gum.IR0Translator
                         if (!context.IsAssignable(context.GetIntType(), operandResult.TypeValue))
                             context.AddFatalError(A0702_UnaryOp_UnaryMinusOperatorIsAppliedToIntTypeOperandOnly, unaryOpExp.Operand);
                         
-                        return new ExpResult(
+                        return new ExpExpResult(
                             new R.CallInternalUnaryOperatorExp(
                                 R.InternalUnaryOperator.UnaryMinus_Int_Int,
-                                operandResult.WrapExp()),
+                                operandResult.Exp),
                             context.GetIntType());
                     }
 
@@ -182,25 +187,31 @@ namespace Gum.IR0Translator
             }
         }
 
-        ExpResult AnalyzeAssignBinaryOpExp(S.BinaryOpExp exp)
+        ExpExpResult AnalyzeAssignBinaryOpExp(S.BinaryOpExp exp)
         {
             // syntax 에서는 exp로 보이지만, R로 변환할 경우 Location 명령이어야 한다
-            var destResult = AnalyzeExp(exp.Operand0, ResolveHint.None);
-            var srcResult = AnalyzeExp(exp.Operand1, ResolveHint.None);
+            var destResult = AnalyzeExp(exp.Operand0, ResolveHint.None);            
 
-            if (!context.IsAssignable(destResult.TypeValue, srcResult.TypeValue))
-                context.AddFatalError(A0801_BinaryOp_LeftOperandTypeIsNotCompatibleWithRightOperandType, exp);
+            if (destResult is LocExpResult destLocResult)
+            {
+                var srcResult = AnalyzeExp_Exp(exp.Operand1, ResolveHint.None);
 
-            if (!destResult.IsLoc)            
+                if (!context.IsAssignable(destLocResult.TypeValue, srcResult.TypeValue))
+                    context.AddFatalError(A0801_BinaryOp_LeftOperandTypeIsNotCompatibleWithRightOperandType, exp);
+
+                return new ExpExpResult(new R.AssignExp(destLocResult.Loc, srcResult.Exp), destLocResult.TypeValue);
+            }
+            else
+            {
                 context.AddFatalError(A0803_BinaryOp_LeftOperandIsNotAssignable, exp.Operand0);
-
-            return new ExpResult(new R.AssignExp(destResult.LocRaw, srcResult.WrapExp()), destResult.TypeValue);
+                throw new UnreachableCodeException();
+            }
         }
         
-        ExpResult AnalyzeBinaryOpExp(S.BinaryOpExp binaryOpExp)
+        ExpExpResult AnalyzeBinaryOpExp(S.BinaryOpExp binaryOpExp)
         {
-            var operandResult0 = AnalyzeExp(binaryOpExp.Operand0, ResolveHint.None);
-            var operandResult1 = AnalyzeExp(binaryOpExp.Operand1, ResolveHint.None);
+            var operandResult0 = AnalyzeExp_Exp(binaryOpExp.Operand0, ResolveHint.None);
+            var operandResult1 = AnalyzeExp_Exp(binaryOpExp.Operand1, ResolveHint.None);
 
             // 1. Assign 먼저 처리
             if (binaryOpExp.Kind == S.BinaryOpKind.Assign)
@@ -220,13 +231,13 @@ namespace Gum.IR0Translator
                     {   
                         var equalExp = new R.CallInternalBinaryOperatorExp(
                             info.IR0Operator,
-                            operandResult0.WrapExp(), 
-                            operandResult1.WrapExp()
+                            operandResult0.Exp, 
+                            operandResult1.Exp
                         );
 
-                        return new ExpResult(
+                        return new ExpExpResult(
                             new R.CallInternalUnaryOperatorExp(R.InternalUnaryOperator.LogicalNot_Bool_Bool, equalExp),
-                            info.ResultType);                            
+                            info.ResultType);
                     }
                 }
             }
@@ -239,11 +250,11 @@ namespace Gum.IR0Translator
                 if (context.IsAssignable(info.OperandType0, operandResult0.TypeValue) && 
                     context.IsAssignable(info.OperandType1, operandResult1.TypeValue))
                 {
-                    return new ExpResult(
+                    return new ExpExpResult(
                         new R.CallInternalBinaryOperatorExp(
                             info.IR0Operator, 
-                            operandResult0.WrapExp(), 
-                            operandResult1.WrapExp()),
+                            operandResult0.Exp, 
+                            operandResult1.Exp),
                         info.ResultType);
                 }
             }
@@ -681,28 +692,6 @@ namespace Gum.IR0Translator
                 context.GetListType(curElemTypeValue));
         }
 
-        ExpResult AnalyzeExpExceptId(S.Exp exp, ResolveHint hint)
-        {
-            switch (exp)
-            {
-                case S.MemberExp memberExp: return AnalyzeMemberExp(memberExp, hint);
-                case S.BoolLiteralExp boolExp: return AnalyzeBoolLiteralExp(boolExp);
-                case S.IntLiteralExp intExp: return AnalyzeIntLiteralExp(intExp);
-                case S.StringExp stringExp:
-                    {
-                        var strExpResult = AnalyzeStringExp(stringExp);
-                        return new ExpResult(strExpResult.Exp, strExpResult.TypeValue);
-                    }
-                case S.UnaryOpExp unaryOpExp: return AnalyzeUnaryOpExp(unaryOpExp);
-                case S.BinaryOpExp binaryOpExp: return AnalyzeBinaryOpExp(binaryOpExp);
-                case S.CallExp callExp: return AnalyzeCallExp(callExp, hint);
-                case S.LambdaExp lambdaExp: return AnalyzeLambdaExp(lambdaExp);
-                case S.IndexerExp indexerExp: return AnalyzeIndexerExp(indexerExp);
-                case S.ListExp listExp: return AnalyzeListExp(listExp);
-                default: throw new UnreachableCodeException();
-            }
-        }
-
         ExpResult AnalyzeExp(S.Exp exp, ResolveHint hint)
         {
             switch (exp)
@@ -710,11 +699,7 @@ namespace Gum.IR0Translator
                 case S.IdentifierExp idExp: return AnalyzeIdExp(idExp, hint);
                 case S.BoolLiteralExp boolExp: return AnalyzeBoolLiteralExp(boolExp);
                 case S.IntLiteralExp intExp: return AnalyzeIntLiteralExp(intExp);
-                case S.StringExp stringExp:
-                    {
-                        var strExpResult = AnalyzeStringExp(stringExp);
-                        return new ExpResult(strExpResult.Exp, strExpResult.TypeValue);
-                    }
+                case S.StringExp stringExp: return AnalyzeStringExp(stringExp);
                 case S.UnaryOpExp unaryOpExp: return AnalyzeUnaryOpExp(unaryOpExp);
                 case S.BinaryOpExp binaryOpExp: return AnalyzeBinaryOpExp(binaryOpExp);
                 case S.CallExp callExp: return AnalyzeCallExp(callExp, hint);        
@@ -724,6 +709,37 @@ namespace Gum.IR0Translator
                 case S.ListExp listExp: return AnalyzeListExp(listExp);
                 default: throw new UnreachableCodeException();
             }
+        }
+
+        // 리턴값을 가능한한 Loc으로 맞춰준다
+        LocExpResult AnalyzeExp_Loc(S.Exp exp, ResolveHint hint)
+        {
+            var result = AnalyzeExp(exp, hint);
+            switch (result)
+            {
+                case ExpExpResult expResult:
+                    return new LocExpResult(new R.TempLoc(expResult.Exp, expResult.TypeValue.GetRType()), expResult.TypeValue);
+
+                case LocExpResult locResult:
+                    return locResult;
+            }
+
+            throw new UnreachableCodeException();
+        }
+
+        ExpExpResult AnalyzeExp_Exp(S.Exp exp, ResolveHint hint)
+        {
+            var result = AnalyzeExp(exp, hint);
+            switch(result)
+            {
+                case ExpExpResult expResult:
+                    return expResult;
+
+                case LocExpResult locResult:
+                    return new ExpExpResult(new R.LoadExp(locResult.Loc), locResult.TypeValue);
+            }
+
+            throw new UnreachableCodeException();
         }
     }
 }
