@@ -24,45 +24,6 @@ namespace Gum.IR0Translator
     // 어떤 Exp에서 타입 정보 등을 알아냅니다
     partial class Analyzer
     {   
-        struct ExpResult
-        {
-            R.Exp? exp;
-            R.Loc? loc;
-
-            public R.Exp ExpRaw => exp!;
-            public R.Loc LocRaw => loc!;
-            public TypeValue TypeValue { get; }
-
-            public bool IsExp => exp != null;
-            public bool IsLoc => loc != null;
-
-            public R.Exp WrapExp()
-            {
-                if (exp != null)
-                    return exp;
-
-                else if (loc != null)
-                    return new R.LoadExp(loc);
-
-                else
-                    throw new UnreachableCodeException();
-            }
-
-            public R.Loc WrapLoc()
-            {
-                if (loc != null)
-                    return loc;
-
-                else if (exp != null)
-                    return new R.TempLoc(exp, TypeValue.GetRType());
-
-                else
-                    throw new UnreachableCodeException();
-            }
-
-            public ExpResult(R.Exp exp, TypeValue typeValue) { this.exp = exp; this.loc = null; this.TypeValue = typeValue; }
-            public ExpResult(R.Loc loc, TypeValue typeValue) { this.exp = null; this.loc = loc; this.TypeValue = typeValue; }
-        }        
 
         // x
         ExpResult AnalyzeIdExp(S.IdentifierExp idExp, ResolveHint resolveHint)
@@ -86,6 +47,9 @@ namespace Gum.IR0Translator
                     if (localVarResult.bNeedCapture)
                         context.AddLambdaCapture(new LocalLambdaCapture(localVarResult.VarName, localVarResult.TypeValue));
                     return new ExpResult(new R.LocalVarLoc(localVarResult.VarName), localVarResult.TypeValue);
+
+                case GlobalVarIdentifierResult globalVarResult:
+                    return new ExpResult(new R.GlobalVarLoc(globalVarResult.VarName), globalVarResult.TypeValue);
                 
                 case InstanceFuncIdentifierResult:
                     throw new NotImplementedException();
@@ -340,9 +304,9 @@ namespace Gum.IR0Translator
         }
 
         // CallExp 분석에서 Callable이 Exp인 경우 처리
-        ExpResult AnalyzeCallExpExpCallable(ExpResult callableResult, ImmutableArray<ExpResult> argResults, S.CallExp nodeForErrorReport)
+        ExpResult AnalyzeCallExpExpCallable(R.Loc callableLoc, TypeValue callableTypeValue, ImmutableArray<ExpResult> argResults, S.CallExp nodeForErrorReport)
         {
-            var lambdaType = callableResult.TypeValue as LambdaTypeValue;
+            var lambdaType = callableTypeValue as LambdaTypeValue;
             if (lambdaType == null)
                 context.AddFatalError(A0902_CallExp_CallableExpressionIsNotCallable, nodeForErrorReport.Callable);
 
@@ -352,7 +316,7 @@ namespace Gum.IR0Translator
             var args = argResults.Select(info => info.WrapExp()).ToImmutableArray();
 
             return new ExpResult(
-                new R.CallValueExp(callableResult.WrapLoc(), args),
+                new R.CallValueExp(callableLoc, args),
                 lambdaType.Return);
         }
         
@@ -376,7 +340,7 @@ namespace Gum.IR0Translator
 
             switch(callableResult)
             {
-                case NotFoundIdentifierResult _:
+                case NotFoundIdentifierResult:
                     context.AddFatalError(A2007_ResolveIdentifier_NotFound, exp);
                     break;
 
@@ -385,8 +349,19 @@ namespace Gum.IR0Translator
                     break;
 
                 case NotIdentifierResult:
-                    var expCallableResult = AnalyzeExpExceptIdAndMember(exp.Callable, callableHint);
-                    return AnalyzeCallExpExpCallable(expCallableResult, argResults, exp);
+                    var expCallableResult = AnalyzeExpExceptId(exp.Callable, callableHint);
+                    return AnalyzeCallExpExpCallable(expCallableResult.WrapLoc(), expCallableResult.TypeValue, argResults, exp);
+
+                case LocalVarIdentifierResult localResult:
+                    if (localResult.bNeedCapture)
+                        context.AddLambdaCapture(new LocalLambdaCapture(localResult.VarName, localResult.TypeValue));
+
+                    var localCallableLoc = new R.LocalVarLoc(localResult.VarName);
+                    return AnalyzeCallExpExpCallable(localCallableLoc, localResult.TypeValue, argResults, exp);
+
+                case GlobalVarIdentifierResult globalResult:
+                    var globalCallableLoc = new R.GlobalVarLoc(globalResult.VarName);
+                    return AnalyzeCallExpExpCallable(globalCallableLoc, globalResult.TypeValue, argResults, exp);
 
                 case InstanceFuncIdentifierResult instFuncResult:
                     var instanceType = instFuncResult.InstanceType.GetRType();
@@ -620,8 +595,19 @@ namespace Gum.IR0Translator
 
                 // Identifier가 아니라면
                 case NotIdentifierResult:
-                    var expParentResult = AnalyzeExpExceptIdAndMember(memberExp.Parent, ResolveHint.None);
+                    var expParentResult = AnalyzeExpExceptId(memberExp.Parent, ResolveHint.None);
                     return AnalyzeMemberExpExpParent(memberExp, expParentResult.WrapLoc(), expParentResult.TypeValue, hint);
+
+                case LocalVarIdentifierResult localResult:
+                    if (localResult.bNeedCapture)
+                        context.AddLambdaCapture(new LocalLambdaCapture(localResult.VarName, localResult.TypeValue));
+
+                    var localVarLoc = new R.LocalVarLoc(localResult.VarName);
+                    return AnalyzeMemberExpExpParent(memberExp, localVarLoc, localResult.TypeValue, hint);
+
+                case GlobalVarIdentifierResult globalResult:
+                    var globalVarLoc = new R.LocalVarLoc(globalResult.VarName);
+                    return AnalyzeMemberExpExpParent(memberExp, globalVarLoc, globalResult.TypeValue, hint);
 
                 case TypeIdentifierResult typeResult:
                     return AnalyzeMemberExpTypeParent(memberExp, typeResult.TypeValue, memberExp.MemberName, memberExp.MemberTypeArgs, hint);
@@ -695,10 +681,11 @@ namespace Gum.IR0Translator
                 context.GetListType(curElemTypeValue));
         }
 
-        ExpResult AnalyzeExpExceptIdAndMember(S.Exp exp, ResolveHint hint)
+        ExpResult AnalyzeExpExceptId(S.Exp exp, ResolveHint hint)
         {
             switch (exp)
             {
+                case S.MemberExp memberExp: return AnalyzeMemberExp(memberExp, hint);
                 case S.BoolLiteralExp boolExp: return AnalyzeBoolLiteralExp(boolExp);
                 case S.IntLiteralExp intExp: return AnalyzeIntLiteralExp(intExp);
                 case S.StringExp stringExp:
