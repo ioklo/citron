@@ -33,7 +33,6 @@ namespace Gum.IR0Translator
             {
                 var expResult = AnalyzeStringExp(cmd);
                 Debug.Assert(expResult.Exp is R.StringExp);
-
                 builder.Add((R.StringExp)expResult.Exp);
             }
 

@@ -315,7 +315,7 @@ namespace Gum.IR0Translator
         }
 
         // CallExp 분석에서 Callable이 Exp인 경우 처리
-        ExpResult AnalyzeCallExpExpCallable(R.Loc callableLoc, TypeValue callableTypeValue, ImmutableArray<ExpResult> argResults, S.CallExp nodeForErrorReport)
+        ExpExpResult AnalyzeCallExpExpCallable(R.Loc callableLoc, TypeValue callableTypeValue, ImmutableArray<ExpExpResult> argResults, S.CallExp nodeForErrorReport)
         {
             var lambdaType = callableTypeValue as LambdaTypeValue;
             if (lambdaType == null)
@@ -324,9 +324,9 @@ namespace Gum.IR0Translator
             var argTypes = ImmutableArray.CreateRange(argResults, info => info.TypeValue);
             CheckParamTypes(nodeForErrorReport, lambdaType.Params, argTypes);
             
-            var args = argResults.Select(info => info.WrapExp()).ToImmutableArray();
+            var args = argResults.Select(info => info.Exp).ToImmutableArray();
 
-            return new ExpResult(
+            return new ExpExpResult(
                 new R.CallValueExp(callableLoc, args),
                 lambdaType.Return);
         }
@@ -337,55 +337,49 @@ namespace Gum.IR0Translator
             // 1. 해당 Exp가 함수인지, 변수인지, 함수라면 FuncId를 넣어준다
             // 2. Callable 인자에 맞게 잘 들어갔는지 -> 완료
             // 3. 잘 들어갔다면 리턴타입 -> 완료
-            var argResults = AnalyzeExps(exp.Args);
-            var argTypes = ImmutableArray.CreateRange(argResults, result => result.TypeValue);
+
 
             // E e = First(2, 3); => E e = E.First(2, 3);
-            // EnumHint
-            // ArgumentTypes
+            // EnumHint는 어떤 모습이어야 하나 지금 힌트가 
+            var callableHint = new ResolveHint(hint.TypeHint);
+            var callableResult = AnalyzeExp(exp.Callable, hint);
 
-            var callableHint = new ResolveHint(hint.TypeHint, new DefaultFuncParamHint(argTypes));
-
-            // argTypes로 힌트 타입을 만들어야 한다
-            var callableResult = ResolveIdentifier(exp.Callable, callableHint);
-
-            switch(callableResult)
+            // TODO: 함수 이름을 먼저 찾고, 타입 힌트에 따라서 Exp를 맞춰봐야 한다
+            // 함수 이름을 먼저 찾는가
+            // Argument 타입을 먼저 알아내야 하는가
+            // F(First); F(E.First); 가 되게 하려면 이름으로 먼저 찾고, 인자타입을 맞춰봐야 한다
+            var argResultsBuilder = ImmutableArray.CreateBuilder<ExpExpResult>();
+            foreach (var arg in exp.Args)
             {
-                case NotFoundIdentifierResult:
-                    context.AddFatalError(A2007_ResolveIdentifier_NotFound, exp);
-                    break;
+                var expResult = AnalyzeExp_Exp(arg, ResolveHint.None);
+                argResultsBuilder.Add(expResult);
+            }
 
-                case ErrorIdentifierResult errorResult:
-                    HandleErrorIdentifierResult(exp, errorResult);
-                    break;
-
-                case NotIdentifierResult:
-                    var expCallableResult = AnalyzeExpExceptId(exp.Callable, callableHint);
-                    return AnalyzeCallExpExpCallable(expCallableResult.WrapLoc(), expCallableResult.TypeValue, argResults, exp);
-
-                case LocalVarIdentifierResult localResult:
-                    if (localResult.bNeedCapture)
-                        context.AddLambdaCapture(new LocalLambdaCapture(localResult.VarName, localResult.TypeValue));
-
-                    var localCallableLoc = new R.LocalVarLoc(localResult.VarName);
-                    return AnalyzeCallExpExpCallable(localCallableLoc, localResult.TypeValue, argResults, exp);
-
-                case GlobalVarIdentifierResult globalResult:
-                    var globalCallableLoc = new R.GlobalVarLoc(globalResult.VarName);
-                    return AnalyzeCallExpExpCallable(globalCallableLoc, globalResult.TypeValue, argResults, exp);
-
-                case InstanceFuncIdentifierResult instFuncResult:
-                    var instanceType = instFuncResult.InstanceType.GetRType();
-                    return AnalyzeCallExpFuncCallable(exp, instFuncResult.Instance, instFuncResult.FuncValue, argResults);
-
-                case StaticFuncIdentifierResult staticFuncResult:
-                    return AnalyzeCallExpFuncCallable(exp, null, staticFuncResult.FuncValue, argResults);
-
-                case TypeIdentifierResult typeResult:
+            var argResults = argResultsBuilder.ToImmutable();
+            switch (callableResult)
+            {
+                case NamespaceExpResult namespaceResult:
                     context.AddFatalError(A0902_CallExp_CallableExpressionIsNotCallable, exp.Callable);
                     break;
 
-                case EnumElemIdentifierResult enumElemResult:
+                // callable이 타입으로 계산되면, 에러
+                case TypeExpResult typeResult:
+                    context.AddFatalError(A0902_CallExp_CallableExpressionIsNotCallable, exp.Callable);
+                    break;
+
+                // F(2, 3, 4); 가 this.F인지, This.F인지 F 찾는 시점에서는 모르기 때문에, 같이 들고 와야 한다
+                case FuncsExpResult funcsResult:
+                    return AnalyzeCallExpFuncCallable();
+
+                case ExpExpResult expResult:
+                    var tempLoc = new R.TempLoc(expResult.Exp, expResult.TypeValue.GetRType());
+                    return AnalyzeCallExpExpCallable(tempLoc, expResult.TypeValue, argResults, exp);
+
+                case LocExpResult locResult:
+                    return AnalyzeCallExpExpCallable(locResult.Loc, locResult.TypeValue, argResults, exp);
+
+                // enum constructor, E.First
+                case EnumElemExpResult enumElemResult:
                     throw new NotImplementedException();
                     // return AnalyzeCallExpEnumElemCallable(enumElemResult.Info, );
             }

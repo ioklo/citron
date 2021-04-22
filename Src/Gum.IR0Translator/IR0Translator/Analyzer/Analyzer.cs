@@ -359,19 +359,5 @@ namespace Gum.IR0Translator
             if (bFatal)
                 throw new FatalAnalyzeException();
         }
-
-        // TODO: Hint를 받을 수 있게 해야 한다
-        ImmutableArray<ExpResult> AnalyzeExps(ImmutableArray<S.Exp> exps)
-        {
-            var results = new List<ExpResult>();
-
-            foreach (var exp in exps)
-            {
-                var expResult = AnalyzeExp(exp, ResolveHint.None);
-                results.Add(expResult);
-            }
-
-            return results.ToImmutableArray();
-        }
     }
 }
