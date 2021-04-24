@@ -6,12 +6,12 @@ namespace Gum.IR0
     [ImplementIEquatable]
     public partial struct NamespacePath
     {
-        public static NamespacePath Root { get; } = new NamespacePath(ImmutableArray<NamespaceName>.Empty);
+        public static readonly NamespacePath Root = new NamespacePath(ImmutableArray<NamespaceName>.Empty);
 
         public ImmutableArray<NamespaceName> Entries { get; }
         public bool IsRoot { get => Entries.IsEmpty; }
 
-        internal NamespacePath(ImmutableArray<NamespaceName> entries)
+        public NamespacePath(ImmutableArray<NamespaceName> entries)
         {
             Entries = entries;
         }

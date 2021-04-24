@@ -10,7 +10,9 @@ namespace Gum.IR0Translator
         public R.Type MakeTypeVar(int depth, int index)
         {
             return new R.TypeVar(depth, index);
-        }        
+        }
+
+        public R.Type MakeStructType(M.ModuleName moduleName, M.NamespacePath namespacePath, M.Name name, ImmutableArray<R.Type> rtypeArgs)
 
         public R.Type MakeStructType(R.OuterType outerType, M.Name name, ImmutableArray<R.Type> rtypeArgs)
         {
