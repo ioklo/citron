@@ -77,9 +77,18 @@ namespace Gum.IR0.Runtime
             result.SetValue(destValue);
         }
         
+        // runtime typeContext |- EvalCallFuncExp(CallFuncExp(X<int>.Y<T>.Func<int>, 
         async ValueTask EvalCallFuncExpAsync(CallFuncExp exp, Value result, EvalContext context)
-        {   
-            var funcDecl = context.GetDecl<NormalFuncDecl>(exp.Func.DeclId);
+        {
+            // 1. 누가 FuncDecl들을 저장하고 있는가
+            // 2. 필요한 값: DeclId (Body가 있는 곳), TypeContext를 만들기 위한 
+            // 1) X<int, short>.Y<string>.F<bool>, 
+            // 2) (declId, [[[int, short], string], bool])
+            // 누가 정보를 더 많이 가지고 있는가; 1) 필요한가? 모른다
+            // 
+            var funcDecl = context.GetDecl<NormalFuncDecl>(exp.Func);
+
+            // typeContext를 계산합니다
 
             // 함수는 this call이지만 instance가 없는 경우는 없다.
             Debug.Assert(!(funcDecl.IsThisCall && exp.Instance == null));
