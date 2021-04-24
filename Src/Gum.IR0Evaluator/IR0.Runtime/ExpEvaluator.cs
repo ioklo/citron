@@ -75,7 +75,7 @@ namespace Gum.IR0.Runtime
             await EvalAsync(exp.Src, destValue, context);
 
             result.SetValue(destValue);
-        }        
+        }
         
         async ValueTask EvalCallFuncExpAsync(CallFuncExp exp, Value result, EvalContext context)
         {   

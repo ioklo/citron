@@ -6,13 +6,16 @@ using Gum.Collections;
 using System.Linq;
 
 namespace Gum.IR0
-{
-    // TypeDeclId와 TypeArgs를 묶어서 Type이라고 했으므로
-    // 보조를 맞추기 위해 FuncDeclId와 TypeArgs를 묶어서 Func라 한다
+{   
+    public abstract record FuncOuter;
+    public record RootFuncOuter(ModuleName ModuleName, NamespacePath NamespacePath) : FuncOuter;
+    public record TypeFuncOuter(Type Type) : FuncOuter;
+
     [AutoConstructor, ImplementIEquatable]
     public partial struct Func
     {
-        public DeclId DeclId { get; }
+        public FuncOuter Outer { get; }
+        public Name Name { get; }
         public ImmutableArray<Type> TypeArgs { get; }
     }
 }

@@ -115,8 +115,7 @@ namespace Gum.IR0
     [AutoConstructor, ImplementIEquatable]
     public partial class CallFuncExp : Exp
     {
-        public DeclId FuncDeclId { get; }
-        public ImmutableArray<Type> TypeArgs { get; }
+        public Func Func { get; }
         public Loc? Instance { get; }
         public ImmutableArray<Exp> Args { get; }
     }
@@ -128,7 +127,6 @@ namespace Gum.IR0
         public ImmutableArray<Type> TypeArgs { get; }
         public Loc? Instance { get; }
         public ImmutableArray<Exp> Args { get; }
-
         // public bool NeedHeapAlloc { get; } Heap으로 할당시킬지 여부
     }
 
