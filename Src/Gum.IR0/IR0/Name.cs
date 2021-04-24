@@ -37,7 +37,7 @@ namespace Gum.IR0
             return new Name(SpecialName.Normal, text);
         }
 
-        internal Name(SpecialName kind, string? text)
+        public Name(SpecialName kind, string? text)
         {
             Kind = kind;
             Text = text;

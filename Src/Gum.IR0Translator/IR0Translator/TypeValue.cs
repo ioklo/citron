@@ -271,11 +271,6 @@ namespace Gum.IR0Translator
             throw new UnreachableCodeException();
         }
 
-        ImmutableArray<R.Type> GetRTypes(ImmutableArray<TypeValue> typeValues)
-        {
-            return ImmutableArray.CreateRange(typeValues, typeValue => typeValue.GetRType());
-        }
-
         public override R.Type GetRType()
         {
             if (IsGlobal())
@@ -283,7 +278,7 @@ namespace Gum.IR0Translator
                 Debug.Assert(moduleName != null && namespacePath != null);
 
                 var rtypeArgs = GetRTypes(typeArgs);
-                return ritemFactory.MakeStructType(moduleName.Value, namespacePath.Value, structInfo.Name, rtypeArgs);
+                return ritemFactory.MakeStructType(moduleName.Value, namespacePath.Value, structInfo.Name, typeArgs);
             }
             else
             {

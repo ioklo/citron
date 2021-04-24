@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Gum.Collections;
 using System.Linq;
 using System.Text;
+using static Gum.Infra.Misc;
 
 namespace Gum.IR0
 {
@@ -29,22 +30,20 @@ namespace Gum.IR0
     {
         // predefined named type
         // [System.Runtime]System.Boolean
-        public static Type Bool = new StructType(new RootOuterType("System.Runtime", new NamespacePath("System")), "Boolean", TypeContext.Empty);
-        public static Type Int = new StructType(new RootOuterType("System.Runtime", new NamespacePath("System")), "Int32", TypeContext.Empty);
-        public static Type String = new ClassType(new RootOuterType("System.Runtime", new NamespacePath("System")), "String", TypeContext.Empty);
+        public static Type Bool = new StructType(new RootOuterType("System.Runtime", new NamespacePath("System")), "Boolean", default);
+        public static Type Int = new StructType(new RootOuterType("System.Runtime", new NamespacePath("System")), "Int32", default);
+        public static Type String = new ClassType(new RootOuterType("System.Runtime", new NamespacePath("System")), "String", default);
         
         // seq<> interface는 있다
         public static Type Seq(Type itemType)
-        {
-            var typeContext = new TypeContextBuilder().Add(0, 0, itemType).Build();
-            return new InterfaceType(new RootOuterType("System.Runtime", new NamespacePath("System")), "ISeq", typeContext);
+        {   
+            return new InterfaceType(new RootOuterType("System.Runtime", new NamespacePath("System")), "ISeq", Arr(itemType));
         }
 
         // list<> class System.List<>
         public static Type List(Type itemType)
         {
-            var typeContext = new TypeContextBuilder().Add(0, 0, itemType).Build();
-            return new ClassType(new RootOuterType("System.Runtime", new NamespacePath("System")), "List", typeContext);
+            return new ClassType(new RootOuterType("System.Runtime", new NamespacePath("System")), "List", Arr(itemType));
         }
 
         internal Type() { }
@@ -57,7 +56,7 @@ namespace Gum.IR0
     {
         public OuterType Outer { get; }
         public Name Name { get; }
-        TypeContext typeContext;
+        ImmutableArray<Type> typeArgs;
     }
     
     // int, 
@@ -66,7 +65,7 @@ namespace Gum.IR0
     {
         OuterType outer;
         Name name;
-        TypeContext typeContext;
+        ImmutableArray<Type> typeArgs;
     }
 
     [AutoConstructor, ImplementIEquatable]
@@ -74,7 +73,7 @@ namespace Gum.IR0
     {
         OuterType outer;
         Name name;
-        TypeContext typeContext;
+        ImmutableArray<Type> typeArgs;
     }
 
     [AutoConstructor, ImplementIEquatable]
@@ -82,7 +81,7 @@ namespace Gum.IR0
     {
         OuterType outer;
         Name name;
-        TypeContext typeContext;
+        ImmutableArray<Type> typeArgs;
     }
     
     // from type alias, type parameter
@@ -143,7 +142,7 @@ namespace Gum.IR0
     public partial class AnonymousSeqType : Type
     {
         public DeclId SeqDeclId { get; }
-        public TypeContext TypeContext { get; }
+        public ImmutableArray<Type> TypeArgs { get; }
     }
 
     // var l = () => { ... }; 에서 l 타입

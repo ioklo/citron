@@ -5,14 +5,44 @@ using R = Gum.IR0;
 
 namespace Gum.IR0Translator
 {
-    public class RItemFactory
+    class RItemFactory
     {
         public R.Type MakeTypeVar(int depth, int index)
         {
             return new R.TypeVar(depth, index);
         }
 
-        public R.Type MakeStructType(M.ModuleName moduleName, M.NamespacePath namespacePath, M.Name name, ImmutableArray<R.Type> rtypeArgs)
+        R.ModuleName MakeModuleName(M.ModuleName moduleName)
+        {
+            return new R.ModuleName(moduleName.Text);
+        }        
+
+        R.NamespacePath MakeNamespacePath(M.NamespacePath nsPath)
+        {
+            var rentries = ImmutableArray.CreateRange(nsPath.Entries, entry => new R.NamespaceName(entry.Value));
+            return new R.NamespacePath(rentries);
+        }
+
+        R.Name MakeName(M.Name name)
+        {
+            return new R.Name((R.SpecialName)name.Kind, name.Text);
+        }
+
+        ImmutableArray<R.Type> MakeRTypes(ImmutableArray<TypeValue> typeValues)
+        {
+            return ImmutableArray.CreateRange(typeValues, typeValue => typeValue.GetRType());
+        }
+
+        public R.StructType MakeStructType(M.ModuleName moduleName, M.NamespacePath namespacePath, M.Name name, ImmutableArray<TypeValue> typeArgs)
+        {
+            var rmoduleName = MakeModuleName(moduleName);
+            var rnsPath = MakeNamespacePath(namespacePath);
+            var rname = MakeName(name);
+            var rtypeArgs = MakeRTypes(typeArgs);
+
+            var outerType = new R.RootOuterType(rmoduleName, rnsPath);
+            return new R.StructType(outerType, rname, rtypeArgs);
+        }
 
         public R.Type MakeStructType(R.OuterType outerType, M.Name name, ImmutableArray<R.Type> rtypeArgs)
         {
