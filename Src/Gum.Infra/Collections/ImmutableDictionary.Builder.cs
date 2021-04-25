@@ -27,6 +27,6 @@ namespace Gum.Collections
             {
                 return new ImmutableDictionary<TKey, TValue>(builder.ToImmutable());
             }
-        }
+        }        
     }
 }

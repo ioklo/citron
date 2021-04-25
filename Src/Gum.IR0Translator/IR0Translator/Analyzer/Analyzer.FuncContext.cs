@@ -13,7 +13,8 @@ namespace Gum.IR0Translator
     partial class Analyzer
     {
         struct LocalVarInfo
-        {   public string Name { get; }
+        {   
+            public string Name { get; }
             public TypeValue TypeValue { get; }
             public LocalVarInfo(string name, TypeValue typeValue)
             {
@@ -25,7 +26,6 @@ namespace Gum.IR0Translator
         // 현재 분석되고 있는 함수 정보
         class FuncContext
         {
-            ItemPath? funcPath;      // null 이면 최상위
             TypeValue? retTypeValue; // 리턴 타입이 미리 정해져 있다면 이걸 쓴다
             bool bSequence;          // 시퀀스 여부
 
@@ -35,9 +35,8 @@ namespace Gum.IR0Translator
             bool bCaptureThis;
             Dictionary<string, TypeValue> localCaptures;
 
-            public FuncContext(ItemPath? funcPath, TypeValue? retTypeValue, bool bSequence)
+            public FuncContext(TypeValue? retTypeValue, bool bSequence)
             {
-                this.funcPath = funcPath;
                 this.retTypeValue = retTypeValue;
                 this.bSequence = bSequence;
 
@@ -52,11 +51,6 @@ namespace Gum.IR0Translator
             {
                 localVarsByName.Add(name, new LocalVarInfo(name, typeValue));
             }            
-
-            public ItemPath? GetFuncPath()
-            {
-                return funcPath;
-            }
 
             public LocalVarInfo? GetLocalVarOutsideLambda(string varName)
             {
@@ -101,7 +95,7 @@ namespace Gum.IR0Translator
                 return bSequence;
             }
 
-            public void ExecInLambdaScope(TypeValue? lambdaRetTypeValue, Action action)
+            public TResult ExecInLambdaScope<TResult>(TypeValue? lambdaRetTypeValue, Func<TResult> action)
             {
                 localVarsOutsideLambda.Push();
                 var prevLocalVarsByName = localVarsByName;
@@ -111,12 +105,12 @@ namespace Gum.IR0Translator
                 // Merge
                 foreach (var (name, info) in localVarsByName)
                     localVarsOutsideLambda.Add(name, info);
-                
+
                 localVarsByName = new ScopedDictionary<string, LocalVarInfo>();
 
                 try
                 {
-                    action.Invoke();                    
+                    return action.Invoke();
                 }
                 finally
                 {
@@ -171,15 +165,18 @@ namespace Gum.IR0Translator
                 return false;
             }
 
-            public R.CaptureInfo MakeCaptureInfo()
+            public ImmutableArray<R.TypeAndName> GetCapturedLocalVars()
             {
-                var elems = localCaptures.Select(localCapture => {
+                return localCaptures.Select(localCapture => {
                     var name = localCapture.Key;
                     var type = localCapture.Value.GetRType();
-                    return new R.CaptureInfo.Element(type, name);
+                    return new R.TypeAndName(type, name);
                 }).ToImmutableArray();
+            }
 
-                return new R.CaptureInfo(bCaptureThis, elems);
+            public bool NeedCaptureThis()
+            {
+                return bCaptureThis;
             }
         }
     }

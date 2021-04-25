@@ -15,18 +15,13 @@ namespace Gum.IR0
         internal Exp() { }
     }
 
-    [AutoConstructor, ImplementIEquatable]
-    public partial class GlobalVarExp : Exp
+    // Location의 Value를 resultValue에 복사한다
+    [AutoConstructor, ImplementIEquatable] 
+    public partial class LoadExp : Exp
     {
-        public string Name { get; }
+        public Loc Loc { get; }
     }
-
-    [AutoConstructor, ImplementIEquatable]
-    public partial class LocalVarExp : Exp
-    {
-        public string Name { get; } // LocalVarId;
-    }
-
+    
     // "dskfjslkf $abc "
     [AutoConstructor, ImplementIEquatable]
     public partial class StringExp : Exp
@@ -90,29 +85,29 @@ namespace Gum.IR0
     public partial class CallInternalUnaryOperatorExp : Exp
     {
         public InternalUnaryOperator Operator { get; }
-        public ExpInfo Operand { get; }
+        public Exp Operand { get; }
     }
 
     [AutoConstructor, ImplementIEquatable]
     public partial class CallInternalUnaryAssignOperator : Exp
     {
         public InternalUnaryAssignOperator Operator { get; }
-        public Exp Operand { get; }        
+        public Loc Operand { get; }        
     }
 
     [AutoConstructor, ImplementIEquatable]
     public partial class CallInternalBinaryOperatorExp : Exp
     {
         public InternalBinaryOperator Operator { get; }
-        public ExpInfo Operand0 { get; }
-        public ExpInfo Operand1 { get; }
+        public Exp Operand0 { get; }
+        public Exp Operand1 { get; }
     }
 
     // a = b
     [AutoConstructor, ImplementIEquatable]
     public partial class AssignExp : Exp
     {
-        public Exp Dest { get; }
+        public Loc Dest { get; }
         public Exp Src { get; }
     }
 
@@ -121,71 +116,37 @@ namespace Gum.IR0
     public partial class CallFuncExp : Exp
     {
         public Func Func { get; }
-        public ExpInfo? Instance { get; }
-        public ImmutableArray<ExpInfo> Args { get; }
+        public Loc? Instance { get; }
+        public ImmutableArray<Exp> Args { get; }
     }
 
     [AutoConstructor, ImplementIEquatable]
     public partial class CallSeqFuncExp : Exp
     {
-        public Func Func { get; }
-        public ExpInfo? Instance { get; }
-        public ImmutableArray<ExpInfo> Args { get; }
+        public DeclId DeclId { get; }
+        public ImmutableArray<Type> TypeArgs { get; }
+        public Loc? Instance { get; }
+        public ImmutableArray<Exp> Args { get; }
+        // public bool NeedHeapAlloc { get; } Heap으로 할당시킬지 여부
     }
 
     // f(2, 3)
     [AutoConstructor, ImplementIEquatable]
     public partial class CallValueExp : Exp
     {
-        public ExpInfo Callable { get; }        
-        public ImmutableArray<ExpInfo> Args { get; }
+        public Loc Callable { get; } // (() => {}) ()때문에 Loc이어야 한다
+        public ImmutableArray<Exp> Args { get; }
     }
 
     // () => { return 1; }
     [AutoConstructor, ImplementIEquatable]
     public partial class LambdaExp : Exp
     {
-        public CaptureInfo CaptureInfo { get; }
-        public ImmutableArray<string> ParamNames { get; }
-        public Stmt Body { get; }
+        // this캡쳐할거냐
+        public bool bCaptureThis { get; }
+        public ImmutableArray<string> CaptureLocalVars { get; }
     }
-
-    // l[b], l is list
-    [AutoConstructor, ImplementIEquatable]
-    public partial class ListIndexerExp : Exp
-    {
-        public ExpInfo ListInfo { get; }
-        public ExpInfo IndexInfo { get; }
-    }
-
-    [AutoConstructor, ImplementIEquatable]
-    public partial class StaticMemberExp : Exp
-    {
-        public Type Type { get; }
-        public string MemberName { get; }
-    }
-
-    [AutoConstructor, ImplementIEquatable]
-    public partial class StructMemberExp : Exp
-    {
-        public Exp Instance { get; }
-        public string MemberName { get; }
-    }
-
-    [AutoConstructor, ImplementIEquatable]
-    public partial class ClassMemberExp : Exp
-    {
-        public Exp Instance { get; }
-        public string MemberName { get; }
-    }
-
-    [AutoConstructor, ImplementIEquatable]
-    public partial class EnumMemberExp : Exp
-    {
-        public Exp Instance { get; }
-        public string MemberName { get; }
-    }
-
+    
     // [1, 2, 3]
     [AutoConstructor, ImplementIEquatable]
     public partial class ListExp : Exp
@@ -202,7 +163,7 @@ namespace Gum.IR0
         public partial struct Elem
         {
             public string Name { get; }
-            public ExpInfo ExpInfo { get; }
+            public Exp Exp { get; }
         }
 
         public string Name { get; }
@@ -216,7 +177,7 @@ namespace Gum.IR0
         public Type Type { get; }
 
         // TODO: params, out, 등 처리를 하려면 Exp가 아니라 다른거여야 한다
-        public ImmutableArray<ExpInfo> Args { get; }
+        public ImmutableArray<Exp> Args { get; }
     }
 
     // new C(2, 3, 4);
@@ -226,6 +187,6 @@ namespace Gum.IR0
         public Type Type { get; }
 
         // TODO: params, out, 등 처리를 하려면 Exp가 아니라 다른거여야 한다
-        public ImmutableArray<ExpInfo> Args { get; }
+        public ImmutableArray<Exp> Args { get; }
     }
 }

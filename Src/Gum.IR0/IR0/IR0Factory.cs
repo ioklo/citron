@@ -6,28 +6,24 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Gum.IR0;
 using static Gum.Infra.Misc;
 
-using Type = Gum.IR0.Type;
-
-namespace Gum.IR0Translator.Test
+namespace Gum.IR0
 {
-    static class IR0Factory
+    public static class IR0Factory
     {
-        public static Script RScript(ImmutableArray<TypeDecl> typeDecls, ImmutableArray<FuncDecl> funcDecls, params Stmt[] optTopLevelStmts)
+        public static Script RScript(ImmutableArray<IDecl> decls, params Stmt[] optTopLevelStmts)
         {
-            // TODO: Validator
-            for(int i = 0; i < funcDecls.Length; i++)
-                Debug.Assert(i == funcDecls[i].Id.Value);
+            for(int i = 0; i < decls.Length; i++)
+                Debug.Assert(i == decls[i].DeclId.Value);
             
             ImmutableArray<Stmt> topLevelStmts = optTopLevelStmts.ToImmutableArray();
 
-            return new Script(typeDecls, funcDecls, topLevelStmts);
+            return new Script(decls, topLevelStmts);
         }
 
         public static Script RScript(params Stmt[] stmts)
-            => RScript(default, default, stmts);
+            => RScript(default, stmts);
 
         public static CommandStmt RCommand(params StringExp[] cmds)
             => new CommandStmt(Arr(cmds));

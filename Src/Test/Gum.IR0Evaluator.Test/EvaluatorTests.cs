@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 using Xunit;
 
 using static Gum.Infra.Misc;
+using static Gum.IR0.IR0Factory;
+using Gum.Infra;
 
 namespace Gum.IR0.Runtime
 {
@@ -45,91 +47,96 @@ namespace Gum.IR0.Runtime
             }
         }
 
+        ModuleName moduleName = new ModuleName("TestModule");
+
         CommandStmt Sleep(int i)
         {
-            return new CommandStmt(new StringExp(
+            return RCommand(RString(
                 new TextStringExpElement("#Sleep"),
                 new ExpStringExpElement(                    
                     new CallInternalUnaryOperatorExp(
                         InternalUnaryOperator.ToString_Int_String,
-                        new ExpInfo(new IntLiteralExp(i), Type.Int))                    
+                        new IntLiteralExp(i)
+                    )
                 )
             ));
         }
 
         CommandStmt PrintBoolCmdStmt(Exp exp)
         {
-            return new CommandStmt(new StringExp(new ExpStringExpElement(
+            return RCommand(RString(new ExpStringExpElement(
                 new CallInternalUnaryOperatorExp(
                     InternalUnaryOperator.ToString_Bool_String,
-                    new ExpInfo(exp, Type.Bool))
+                    exp
+                )
             )));
         }
 
-        LocalVarDeclStmt SimpleLocalVarDecl(string name, Type typeId, Exp? initExp)
+        CommandStmt PrintIntCmdStmt(Loc loc)
         {
-            return new LocalVarDeclStmt(new LocalVarDecl(new[] { new VarDeclElement(name, typeId, initExp) }));
+            return RCommand(RString(new ExpStringExpElement(
+                new CallInternalUnaryOperatorExp(
+                    InternalUnaryOperator.ToString_Int_String,
+                    new LoadExp(loc))
+            )));
         }
+
 
         CommandStmt PrintIntCmdStmt(Exp varExp)
         {
-            return new CommandStmt(new StringExp(new ExpStringExpElement(
+            return RCommand(RString(new ExpStringExpElement(
                 new CallInternalUnaryOperatorExp(
                     InternalUnaryOperator.ToString_Int_String,
-                    new ExpInfo(varExp, Type.Int))
+                    varExp)
             )));
         }
-        
+
+        CommandStmt PrintStringCmdStmt(Loc loc)
+        {
+            return RCommand(RString(new ExpStringExpElement(new LoadExp(loc))));
+        }
+
+
         CommandStmt PrintStringCmdStmt(Exp varExp)
         {
-            return new CommandStmt(new StringExp(new ExpStringExpElement(varExp)));
+            return RCommand(RString(new ExpStringExpElement(varExp)));
         }
 
         CommandStmt PrintStringCmdStmt(string text)
         {
-            return new CommandStmt(new StringExp(new TextStringExpElement(text)));
+            return RCommand(RString(text));
         }
 
-        StringExp SimpleString(string text)
+        Loc LocalVar(string varName)
         {
-            return new StringExp(new TextStringExpElement(text));
+            return new LocalVarLoc(varName);
         }
 
-        ExpInfo LocalVar(string varName, Type typeId)
-            => new ExpInfo(new LocalVarExp(varName), typeId);
-
-        ExpInfo IntLocalVar(string varName)
+        Loc IntLoc(int i)
         {
-            return new ExpInfo(new LocalVarExp(varName), Type.Int);
+            return new TempLoc(new IntLiteralExp(i), Type.Int);
         }
 
-        ExpInfo IntValue(int i)
+        public async Task<string> EvalAsync(ImmutableArray<IDecl> decls, ImmutableArray<Stmt> topLevelStmts)
         {
-            return new ExpInfo(new IntLiteralExp(i), Type.Int);
-        }
-        
-        public async Task<string> EvalAsync(FuncDecl[]? funcDecls, Stmt[] topLevelStmts)
-        {
-            var (output, _) = await EvalAsyncWithRetValue(funcDecls, topLevelStmts);
+            var (output, _) = await EvalAsyncWithRetValue(decls, topLevelStmts);
             return output;
         }
         
-        public async Task<(string Output, int RetValue)> EvalAsyncWithRetValue(FuncDecl[]? optFuncDecls, Stmt[] topLevelStmts)
+        public async Task<(string Output, int RetValue)> EvalAsyncWithRetValue(
+            ImmutableArray<IDecl> decls,
+            ImmutableArray<Stmt> topLevelStmts)
         {
-            var funcDecls = optFuncDecls == null ? ImmutableArray<FuncDecl>.Empty : ImmutableArray.Create(optFuncDecls);            
-
-            // FuncDeclId validation
-            int i = 0;
-            foreach (var funcDecl in funcDecls)
+            // validation
+            for(int i = 0; i < decls.Length; i++)
             {
-                Assert.Equal(i, funcDecl.Id.Value);
-                i++;
+                Assert.Equal(i, decls[i].DeclId.Value);
             }
-
+            
             var commandProvider = new TestCommandProvider();
             var evaluator = new Evaluator(commandProvider);
 
-            var script = new Script(Arr<TypeDecl>(), funcDecls, ImmutableArray.Create(topLevelStmts));
+            var script = new Script(decls, topLevelStmts);
 
             var retValue = await evaluator.EvalScriptAsync(script);
 
@@ -139,8 +146,8 @@ namespace Gum.IR0.Runtime
         [Fact]
         public async Task CommandStmt_WorksProperly()
         {
-            var topLevelStmts = new Stmt[] { new CommandStmt(SimpleString("Hello World")), };
-            var output = await EvalAsync(null, topLevelStmts);
+            var topLevelStmts = Arr<Stmt>(RCommand(RString("Hello World")));
+            var output = await EvalAsync(default, topLevelStmts);
 
             Assert.Equal("Hello World", output);
         }
@@ -150,71 +157,81 @@ namespace Gum.IR0.Runtime
         [Fact]
         public async Task PrivateGlobalVariableStmt_DeclProperly()
         {   
-            var topLevelStmts = new Stmt[]
-            {
-                new PrivateGlobalVarDeclStmt(new []
-                {
-                    new VarDeclElement("x", Type.Int, new IntLiteralExp(3)),
-                }),
+            var topLevelStmts = Arr<Stmt>
+            (
+                RGlobalVarDeclStmt(Type.Int, "x", new IntLiteralExp(3)),
+                PrintIntCmdStmt(new GlobalVarLoc("x"))
+            );
 
-                PrintIntCmdStmt(new GlobalVarExp("x")),
-            };
-
-            var output = await EvalAsync(null, topLevelStmts);
+            var output = await EvalAsync(default, topLevelStmts);
             Assert.Equal("3", output);
         }
         
         [Fact]
         public async Task PrivateGlobalVariableExp_GetGlobalValueInFunc()
         {
-            var func0Id = new FuncDeclId(0);
-            var func0 = new NormalFuncDecl(func0Id, false, Arr<string>(), Arr<string>(), new BlockStmt(
-                PrintStringCmdStmt(new GlobalVarExp("x"))));
+            var func0Id = new DeclId(0);
+            var func0 = new NormalFuncDecl(func0Id, false, default, default, RBlock(
+                PrintStringCmdStmt(new GlobalVarLoc("x"))));
 
-            var topLevelStmts = new Stmt[]
-            {
-                new PrivateGlobalVarDeclStmt(new [] { new VarDeclElement("x", Type.String, SimpleString("Hello")) }),
+            var topLevelStmts = Arr<Stmt>
+            (
+                RGlobalVarDeclStmt(Type.String, "x", RString("Hello")),
 
-                new ExpStmt(new ExpInfo(new CallFuncExp(new Func(func0Id, TypeContext.Empty), null, Arr<ExpInfo>()), Type.Void))
-            };
+                new ExpStmt(new CallFuncExp(new Func(func0Id, TypeContext.Empty), null, default))
+            );
 
-            var output = await EvalAsync(new [] { func0 }, topLevelStmts);
+            var output = await EvalAsync(Arr<IDecl>(func0), topLevelStmts);
 
             Assert.Equal("Hello", output);
         }
 
         // SeqCall
-        // seq int F(int x, int y) { yield x * 2; yield y + 3;
-        // foreach(var e in F(1, 2))
+        // seq int F(int x, int y) { yield x * 2; yield y + 3; } // struct anonymous_sequence_#1
+        // foreach(var e in F(1, 2)) // e의 타입은 int,
         //    CommandStmt
         [Fact]
         public async Task CallSeqFuncExp_GenerateSequencesInForeach()
         {
-            var funcId = new FuncDeclId(0);
+            // Sequence
+            var seqDeclId = new DeclId(0);            
 
-            var seqFunc = new SequenceFuncDecl(funcId, Type.Int, false, Arr<string>(), Arr("x", "y"), new BlockStmt(
+            var seqFunc = new SequenceFuncDecl(seqDeclId, false, Type.Int, default, Arr(new ParamInfo(Type.Int, "x"), new ParamInfo(Type.Int, "y")), RBlock(
 
                 new YieldStmt(
                     new CallInternalBinaryOperatorExp(InternalBinaryOperator.Multiply_Int_Int_Int,
-                        new ExpInfo(new LocalVarExp("x"), Type.Int),
-                        new ExpInfo(new IntLiteralExp(2), Type.Int))),
+                        new LoadExp(LocalVar("x")),
+                        new IntLiteralExp(2))),
 
                 new YieldStmt(
                     new CallInternalBinaryOperatorExp(InternalBinaryOperator.Add_Int_Int_Int,
-                        new ExpInfo(new LocalVarExp("y"), Type.Int),
-                        new ExpInfo(new IntLiteralExp(3), Type.Int)))));
+                        new LoadExp(LocalVar("y")),
+                        new IntLiteralExp(3)))));
 
-            var stmts = new Stmt[]
-            {
-                new ForeachStmt(Type.Int, "e",
-                    new ExpInfo(new CallSeqFuncExp(new Func(funcId, TypeContext.Empty), null, new []{
-                        new ExpInfo(new IntLiteralExp(1), Type.Int),
-                        new ExpInfo(new IntLiteralExp(2), Type.Int) }), Type.Enumerable(Type.Int)),
+            var stmts = Arr<Stmt>
+            (
+                new ForeachStmt(
+                    Type.Int,
+                    "e",
+                    new TempLoc(
+                        new CallSeqFuncExp(
+                            seqDeclId, 
+                            TypeContext.Empty,
+                            null,
+                            Arr<Exp>(
+                                new IntLiteralExp(1),
+                                new IntLiteralExp(2)
+                            )
+                        ), 
 
-                    PrintIntCmdStmt(new LocalVarExp("e")))
-            };
+                        new AnonymousSeqType(seqDeclId, TypeContext.Empty)
+                    ),
 
-            var output = await EvalAsync(new[] { seqFunc }, stmts);
+                    PrintIntCmdStmt(new LocalVarLoc("e"))
+                )
+            );
+
+            var output = await EvalAsync(Arr<IDecl>(seqFunc), stmts);
 
             Assert.Equal("25", output);
         }
@@ -222,53 +239,47 @@ namespace Gum.IR0.Runtime
         [Fact]
         public async Task LocalVarDeclStmt_OverlapsParentScope()
         {
-            var stmts = new Stmt[]
-            {   
-                SimpleLocalVarDecl("x", Type.Int, new IntLiteralExp(23)),
+            var stmts = Arr<Stmt>
+            (
+                RLocalVarDeclStmt(Type.Int, "x", new IntLiteralExp(23)),
 
-                new BlockStmt(
-
-                    SimpleLocalVarDecl("x", Type.String, SimpleString("Hello")),
-
-                    PrintStringCmdStmt(new LocalVarExp("x"))
+                RBlock(
+                    RLocalVarDeclStmt(Type.String, "x", RString("Hello")),
+                    PrintStringCmdStmt(LocalVar("x"))
                 ),
 
-                PrintIntCmdStmt(new LocalVarExp("x"))
-            };
+                PrintIntCmdStmt(new LocalVarLoc("x"))
+            );
 
-            var output = await EvalAsync(null, stmts);
+            var output = await EvalAsync(default, stmts);
             Assert.Equal("Hello23", output);
         }
 
         [Fact]
         public async Task LocalVarDeclStmt_OverlapsGlobalVar()
         {
-            var stmts = new Stmt[]
-            {
-                new PrivateGlobalVarDeclStmt(new [] {
-                    new VarDeclElement("x", Type.Int, new IntLiteralExp(23)) }),
+            var stmts = Arr<Stmt>
+            (
+                RGlobalVarDeclStmt(Type.Int, "x", new IntLiteralExp(23)),
 
-                new BlockStmt(
-
-                    SimpleLocalVarDecl("x", Type.String, SimpleString("Hello")),
-
-                    PrintStringCmdStmt(new LocalVarExp("x"))
+                RBlock(
+                    RLocalVarDeclStmt(Type.String, "x", RString("Hello")),
+                    PrintStringCmdStmt(LocalVar("x"))
                 ),
 
-                PrintIntCmdStmt(new GlobalVarExp("x"))
-            };
+                PrintIntCmdStmt(new GlobalVarLoc("x"))
+            );
 
-            var output = await EvalAsync(null, stmts);
+            var output = await EvalAsync(default, stmts);
             Assert.Equal("Hello23", output);
-
         }
 
         // If
         [Fact]
         public async Task IfStmt_SelectThenBranchWhenConditionTrue()
         {
-            var stmts = new Stmt[] { new IfStmt(new BoolLiteralExp(true), PrintStringCmdStmt("True"), null) };
-            var output = await EvalAsync(null, stmts);
+            var stmts = Arr<Stmt>(new IfStmt(new BoolLiteralExp(true), PrintStringCmdStmt("True"), null));
+            var output = await EvalAsync(default, stmts);
 
             Assert.Equal("True", output);
         }
@@ -276,8 +287,8 @@ namespace Gum.IR0.Runtime
         [Fact]
         public async Task IfStmt_SelectElseBranchWhenConditionFalse()
         {
-            var stmts = new Stmt[] { new IfStmt(new BoolLiteralExp(false), BlankStmt.Instance, PrintStringCmdStmt("False")) };
-            var output = await EvalAsync(null, stmts);
+            var stmts = Arr<Stmt>(new IfStmt(new BoolLiteralExp(false), BlankStmt.Instance, PrintStringCmdStmt("False")));
+            var output = await EvalAsync(default, stmts);
 
             Assert.Equal("False", output);
         }
@@ -311,49 +322,49 @@ namespace Gum.IR0.Runtime
         [Fact]
         public async Task VarDeclForStmtInitializer_DeclaresLocalVariable()
         {
-            var stmts = new Stmt[] {
-                
-                SimpleLocalVarDecl("x", Type.Int, new IntLiteralExp(34)),
+            var stmts = Arr<Stmt> (
+
+                RLocalVarDeclStmt(Type.Int, "x", new IntLiteralExp(34)),
 
                 new ForStmt(
-                    new VarDeclForStmtInitializer(new LocalVarDecl(new[] { new VarDeclElement("x", Type.Int, new IntLiteralExp(0)) })),
-                    new CallInternalBinaryOperatorExp(InternalBinaryOperator.Equal_Int_Int_Bool, new ExpInfo(new LocalVarExp("x"), Type.Int), new ExpInfo(new IntLiteralExp(0), Type.Int)),
-                    new ExpInfo(new AssignExp(new LocalVarExp("x"), new IntLiteralExp(1)), Type.Int),
-                    PrintIntCmdStmt(new LocalVarExp("x"))),
+                    new VarDeclForStmtInitializer(RLocalVarDecl(Type.Int, "x", new IntLiteralExp(0))),
+                    new CallInternalBinaryOperatorExp(InternalBinaryOperator.Equal_Int_Int_Bool, new LoadExp(LocalVar("x")), new IntLiteralExp(0)),
+                    new AssignExp(LocalVar("x"), new IntLiteralExp(1)),
+                    PrintIntCmdStmt(new LocalVarLoc("x"))),
 
-                PrintIntCmdStmt(new LocalVarExp("x"))
-            };
+                PrintIntCmdStmt(new LocalVarLoc("x"))
+            );
 
-            var output = await EvalAsync(null, stmts);
+            var output = await EvalAsync(default, stmts);
             Assert.Equal("034", output);
         }
 
         [Fact]
         public async Task ExpForStmtInitializer_EvaluateAtStart()
         {
-            var stmts = new Stmt[] {
-                
-                SimpleLocalVarDecl("x", Type.Int, new IntLiteralExp(34)),
+            var stmts = Arr<Stmt> (
 
-                PrintIntCmdStmt(new LocalVarExp("x")),
+                RLocalVarDeclStmt(Type.Int, "x", new IntLiteralExp(34)),
+
+                PrintIntCmdStmt(new LocalVarLoc("x")),
 
                 new ForStmt(
-                    new ExpForStmtInitializer(new ExpInfo(new AssignExp(new LocalVarExp("x"), new IntLiteralExp(12)), Type.Int)),
-                    new CallInternalBinaryOperatorExp(InternalBinaryOperator.Equal_Int_Int_Bool, new ExpInfo(new LocalVarExp("x"), Type.Int), new ExpInfo(new IntLiteralExp(12), Type.Int)),
-                    new ExpInfo(new AssignExp(new LocalVarExp("x"), new IntLiteralExp(1)), Type.Int),
-                    PrintIntCmdStmt(new LocalVarExp("x"))),
+                    new ExpForStmtInitializer(new AssignExp(LocalVar("x"), new IntLiteralExp(12))),
+                    new CallInternalBinaryOperatorExp(InternalBinaryOperator.Equal_Int_Int_Bool, new LoadExp(LocalVar("x")), new IntLiteralExp(12)),
+                    new AssignExp(LocalVar("x"), new IntLiteralExp(1)),
+                    PrintIntCmdStmt(new LocalVarLoc("x"))),
 
-                PrintIntCmdStmt(new LocalVarExp("x"))
-            };
+                PrintIntCmdStmt(new LocalVarLoc("x"))
+            );
 
-            var output = await EvalAsync(null, stmts);
+            var output = await EvalAsync(default, stmts);
             Assert.Equal("34121", output);
         }
 
         [Fact]
         public async Task ForStmt_EvalConditionAtStart()
         {
-            var stmts = new Stmt[] {
+            var stmts = Arr<Stmt> (
                 
                 new ForStmt(
                     null,
@@ -362,45 +373,45 @@ namespace Gum.IR0.Runtime
                     PrintStringCmdStmt("Wrong")),
 
                 PrintStringCmdStmt("Completed")
-            };
+            );
 
-            var output = await EvalAsync(null, stmts);
+            var output = await EvalAsync(default, stmts);
             Assert.Equal("Completed", output);
         }
 
         [Fact]
         public async Task ForStmt_EvalContinueExpAtEndOfBody()
         {
-            var stmts = new Stmt[] {
-                
-                SimpleLocalVarDecl("x", Type.Bool, new BoolLiteralExp(true)),
+            var stmts = Arr<Stmt> (
+
+                RLocalVarDeclStmt(Type.Bool, "x", new BoolLiteralExp(true)),
 
                 new ForStmt(
                     null,
-                    new LocalVarExp("x"),
-                    new ExpInfo(new AssignExp(new LocalVarExp("x"), new BoolLiteralExp(false)), Type.Bool),
+                    new LoadExp(LocalVar("x")),
+                    new AssignExp(LocalVar("x"), new BoolLiteralExp(false)),
                     PrintStringCmdStmt("Once")),
 
                 PrintStringCmdStmt("Completed")
-            };
+            );
 
-            var output = await EvalAsync(null, stmts);
+            var output = await EvalAsync(default, stmts);
             Assert.Equal("OnceCompleted", output);
         }
 
         [Fact]
         public async Task ForStmt_EvalContinueExpAndEvalCondExpAfterEvalContinueStmt()
         {
-            var stmts = new Stmt[] {
+            var stmts = Arr<Stmt> (
 
-                
-                SimpleLocalVarDecl("x", Type.Bool, new BoolLiteralExp(true)),
+
+                RLocalVarDeclStmt(Type.Bool, "x", new BoolLiteralExp(true)),
 
                 new ForStmt(
                     null,
-                    new LocalVarExp("x"),
-                    new ExpInfo(new AssignExp(new LocalVarExp("x"), new BoolLiteralExp(false)), Type.Bool),
-                    new BlockStmt(
+                    new LoadExp(LocalVar("x")),
+                    new AssignExp(LocalVar("x"), new BoolLiteralExp(false)),
+                    RBlock(
                         PrintStringCmdStmt("Once"),
                         ContinueStmt.Instance,
                         PrintStringCmdStmt("Wrong")
@@ -408,50 +419,50 @@ namespace Gum.IR0.Runtime
                 ),
 
                 PrintStringCmdStmt("Completed")
-            };
+            );
 
-            var output = await EvalAsync(null, stmts);
+            var output = await EvalAsync(default, stmts);
             Assert.Equal("OnceCompleted", output);
         }
 
         [Fact]
         public async Task ForStmt_ExitBodyImmediatelyAfterEvalBreakStmt()
         {
-            var stmts = new Stmt[] {
-                                
-                SimpleLocalVarDecl("x", Type.Bool, new BoolLiteralExp(true)),
+            var stmts = Arr<Stmt> (
+
+                RLocalVarDeclStmt(Type.Bool, "x", new BoolLiteralExp(true)),
 
                 new ForStmt(
                     null,
-                    new LocalVarExp("x"),
-                    new ExpInfo(new AssignExp(new LocalVarExp("x"), new BoolLiteralExp(false)), Type.Bool),
-                    new BlockStmt(
+                    new LoadExp(LocalVar("x")),
+                    new AssignExp(LocalVar("x"), new BoolLiteralExp(false)),
+                    RBlock(
                         PrintStringCmdStmt("Once"),
                         BreakStmt.Instance,
                         PrintStringCmdStmt("Wrong")
                     )
                 ),
 
-                PrintBoolCmdStmt(new LocalVarExp("x")),
+                PrintBoolCmdStmt(new LoadExp(LocalVar("x"))),
                 PrintStringCmdStmt("Completed")
-            };
+            );
 
-            var output = await EvalAsync(null, stmts);
+            var output = await EvalAsync(default, stmts);
             Assert.Equal("OnceTrueCompleted", output);
         }
 
         [Fact]
         public async Task ForStmt_ExitBodyImmediatelyAfterEvalReturnStmt()
         {
-            var stmts = new Stmt[] {
-                
-                SimpleLocalVarDecl("x", Type.Bool, new BoolLiteralExp(true)),
+            var stmts = Arr<Stmt> (
+
+                RLocalVarDeclStmt(Type.Bool, "x", new BoolLiteralExp(true)),
 
                 new ForStmt(
                     null,
-                    new LocalVarExp("x"),
-                    new ExpInfo(new AssignExp(new LocalVarExp("x"), new BoolLiteralExp(false)), Type.Bool),
-                    new BlockStmt(
+                    new LoadExp(LocalVar("x")),
+                    new AssignExp(LocalVar("x"), new BoolLiteralExp(false)),
+                    RBlock(
                         PrintStringCmdStmt("Once"),
                         new ReturnStmt(new IntLiteralExp(2)),
                         PrintStringCmdStmt("Wrong")
@@ -459,9 +470,9 @@ namespace Gum.IR0.Runtime
                 ),
                 
                 PrintStringCmdStmt("Wrong")
-            };
+            );
 
-            var (output, result) = await EvalAsyncWithRetValue(null, stmts);
+            var (output, result) = await EvalAsyncWithRetValue(default,  stmts);
             Assert.Equal("Once", output);
             Assert.Equal(2, result);
         }
@@ -469,93 +480,93 @@ namespace Gum.IR0.Runtime
         [Fact]
         public async Task ContinueStmt_ContinuesInnerMostLoopStmt()
         {
-            var stmts = new Stmt[] {
+            var stmts = Arr<Stmt> (
 
                 new ForStmt(
-                    new VarDeclForStmtInitializer(new LocalVarDecl(new [] {new VarDeclElement("i", Type.Int, new IntLiteralExp(0)) })),
-                    new CallInternalBinaryOperatorExp(InternalBinaryOperator.LessThan_Int_Int_Bool, IntLocalVar("i"), IntValue(2)),
-                    new ExpInfo(new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PostfixInc_Int_Int, new LocalVarExp("i")), Type.Int),
+                    new VarDeclForStmtInitializer(RLocalVarDecl(Type.Int, "i", new IntLiteralExp(0))),
+                    new CallInternalBinaryOperatorExp(InternalBinaryOperator.LessThan_Int_Int_Bool, new LoadExp(LocalVar("i")), RInt(2)),
+                    new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PostfixInc_Int_Int, LocalVar("i")),
 
-                    new BlockStmt(
+                    RBlock(
 
-                        PrintIntCmdStmt(new LocalVarExp("i")),
+                        PrintIntCmdStmt(new LocalVarLoc("i")),
 
                         new ForStmt(
-                            new VarDeclForStmtInitializer(new LocalVarDecl(new [] {new VarDeclElement("j", Type.Int, new IntLiteralExp(0)) })),
-                            new CallInternalBinaryOperatorExp(InternalBinaryOperator.LessThan_Int_Int_Bool, IntLocalVar("j"), IntValue(2)),
-                            new ExpInfo(new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PostfixInc_Int_Int, new LocalVarExp("j")), Type.Int),
-                            new BlockStmt(
-                                PrintIntCmdStmt(new LocalVarExp("j")),
+                            new VarDeclForStmtInitializer(RLocalVarDecl(Type.Int, "j", new IntLiteralExp(0))),
+                            new CallInternalBinaryOperatorExp(InternalBinaryOperator.LessThan_Int_Int_Bool, new LoadExp(LocalVar("j")), RInt(2)),
+                            new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PostfixInc_Int_Int, LocalVar("j")),
+                            RBlock(
+                                PrintIntCmdStmt(new LocalVarLoc("j")),
                                 ContinueStmt.Instance,
-                                PrintIntCmdStmt(new LocalVarExp("Wrong"))
+                                PrintIntCmdStmt(new LocalVarLoc("Wrong"))
                             )
                         )
                     )
-                ),
-            };
+                )
+            );
 
-            var output = await EvalAsync(null, stmts);
+            var output = await EvalAsync(default, stmts);
             Assert.Equal("001101", output);
         }
 
         [Fact]
         public async Task BreakStmt_ExitsInnerMostLoopStmt()
         {
-            var stmts = new Stmt[] {
+            var stmts = Arr<Stmt> (
 
                 new ForStmt(
-                    new VarDeclForStmtInitializer(new LocalVarDecl(new [] {new VarDeclElement("i", Type.Int, new IntLiteralExp(0)) })),
-                    new CallInternalBinaryOperatorExp(InternalBinaryOperator.LessThan_Int_Int_Bool, IntLocalVar("i"), IntValue(2)),
-                    new ExpInfo(new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PostfixInc_Int_Int, new LocalVarExp("i")), Type.Int),
+                    new VarDeclForStmtInitializer(RLocalVarDecl(Type.Int, "i", new IntLiteralExp(0))),
+                    new CallInternalBinaryOperatorExp(InternalBinaryOperator.LessThan_Int_Int_Bool, new LoadExp(LocalVar("i")), RInt(2)),
+                    new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PostfixInc_Int_Int, LocalVar("i")),
 
-                    new BlockStmt(
+                    RBlock(
 
-                        PrintIntCmdStmt(new LocalVarExp("i")),
+                        PrintIntCmdStmt(new LocalVarLoc("i")),
 
                         new ForStmt(
-                            new VarDeclForStmtInitializer(new LocalVarDecl(new [] {new VarDeclElement("j", Type.Int, new IntLiteralExp(0)) })),
-                            new CallInternalBinaryOperatorExp(InternalBinaryOperator.LessThan_Int_Int_Bool, IntLocalVar("j"), IntValue(2)),
-                            new ExpInfo(new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PostfixInc_Int_Int, new LocalVarExp("j")), Type.Int),
-                            new BlockStmt(
-                                PrintIntCmdStmt(new LocalVarExp("j")),
+                            new VarDeclForStmtInitializer(RLocalVarDecl(Type.Int, "j", new IntLiteralExp(0))),
+                            new CallInternalBinaryOperatorExp(InternalBinaryOperator.LessThan_Int_Int_Bool, new LoadExp(LocalVar("j")), RInt(2)),
+                            new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PostfixInc_Int_Int, LocalVar("j")),
+                            RBlock(
+                                PrintIntCmdStmt(new LocalVarLoc("j")),
                                 BreakStmt.Instance,
-                                PrintIntCmdStmt(new LocalVarExp("Wrong"))
+                                PrintIntCmdStmt(new LocalVarLoc("Wrong"))
                             )
                         )
                     )
-                ),
-            };
+                )
+            );
 
-            var output = await EvalAsync(null, stmts);
+            var output = await EvalAsync(default, stmts);
             Assert.Equal("0010", output);
         }
 
         [Fact]
         public async Task ReturnStmt_ExitsFuncImmediately()
         {
-            var funcId = new FuncDeclId(0);
+            var funcId = new DeclId(0);
 
-            var func = new NormalFuncDecl(funcId, false, Arr<string>(), Arr<string>(),
-                new BlockStmt(
+            var func = new NormalFuncDecl(funcId, false, default, default,
+                RBlock(
                     new ReturnStmt(null),
                     PrintStringCmdStmt("Wrong")
                 )
             );
 
-            var stmts = new Stmt[] { 
-                new ExpStmt(new ExpInfo(new CallFuncExp(new Func(funcId, TypeContext.Empty), null, Arr<ExpInfo>()), Type.Void)),
+            var stmts = Arr<Stmt> (
+                new ExpStmt(new CallFuncExp(new Func(funcId, TypeContext.Empty), null, default)),
                 PrintStringCmdStmt("Completed")
-            };
+            );
 
-            var output = await EvalAsync(new[] { func }, stmts);
+            var output = await EvalAsync(Arr<IDecl>(func), stmts);
             Assert.Equal("Completed", output);
         }
 
         [Fact]
         public async Task ReturnStmt_ReturnProperlyInTopLevel()
         {
-            var topLevelStmts = new Stmt[] { new ReturnStmt(new IntLiteralExp(34)) };
-            var (_, retValue) = await EvalAsyncWithRetValue(null, topLevelStmts);
+            var topLevelStmts = Arr<Stmt>(new ReturnStmt(new IntLiteralExp(34)));
+            var (_, retValue) = await EvalAsyncWithRetValue(default,  topLevelStmts);
 
             Assert.Equal(34, retValue);
         }
@@ -563,20 +574,20 @@ namespace Gum.IR0.Runtime
         [Fact]
         public async Task ReturnStmt_SetReturnValueToCaller()
         {
-            var funcId = new FuncDeclId(0);
+            var funcId = new DeclId(0);
 
-            var func = new NormalFuncDecl(funcId, false, Arr<string>(), Arr<string>(),
-                new BlockStmt(
+            var func = new NormalFuncDecl(funcId, false, default, default,
+                RBlock(
                     new ReturnStmt(new IntLiteralExp(77)),
                     PrintStringCmdStmt("Wrong")
                 )
             );
 
-            var stmts = new Stmt[] {
-                PrintIntCmdStmt(new CallFuncExp(new Func(funcId, TypeContext.Empty), null, Arr<ExpInfo>())),
-            };
+            var stmts = Arr<Stmt> (
+                PrintIntCmdStmt(new CallFuncExp(new Func(funcId, TypeContext.Empty), null, default))
+            );
 
-            var output = await EvalAsync(new[] { func }, stmts);
+            var output = await EvalAsync(Arr<IDecl>(func), stmts);
             Assert.Equal("77", output);
         }
 
@@ -584,29 +595,28 @@ namespace Gum.IR0.Runtime
         [Fact]
         public async Task BlockStmt_EvalInnerStatementsSequencially()
         {
-            var stmts = new Stmt[] {
+            var stmts = Arr<Stmt> (
                 PrintIntCmdStmt(new IntLiteralExp(1)),
                 PrintIntCmdStmt(new IntLiteralExp(23)),
-                PrintIntCmdStmt(new IntLiteralExp(4)),
-            };
+                PrintIntCmdStmt(new IntLiteralExp(4))
+            );
 
-            var output = await EvalAsync(null, stmts);
+            var output = await EvalAsync(default, stmts);
 
             Assert.Equal("1234", output);
         }
 
         // BlankStmt do nothing.. nothing을 테스트하기는 힘들다
-
         [Fact]
         public async Task ExpStmt_EvalInnerExp()
         {
-            var stmts = new Stmt[] {
-                SimpleLocalVarDecl("x", Type.Int, null),
-                new ExpStmt(new ExpInfo(new AssignExp(new LocalVarExp("x"), new IntLiteralExp(3)), Type.Int)),
-                PrintIntCmdStmt(new LocalVarExp("x"))
-            };
+            var stmts = Arr<Stmt> (
+                RLocalVarDeclStmt(Type.Int, "x", null),
+                new ExpStmt(new AssignExp(LocalVar("x"), new IntLiteralExp(3))),
+                PrintIntCmdStmt(new LocalVarLoc("x"))
+            );
 
-            var output = await EvalAsync(null, stmts);
+            var output = await EvalAsync(default, stmts);
             Assert.Equal("3", output);
         }
 
@@ -617,23 +627,31 @@ namespace Gum.IR0.Runtime
             Stmt PrintNumbersStmt(int count)
             {
                 return new ForStmt(
-                    new VarDeclForStmtInitializer(new LocalVarDecl(new[] { new VarDeclElement("i", Type.Int, new IntLiteralExp(0)) })),
-                    new CallInternalBinaryOperatorExp(InternalBinaryOperator.LessThan_Int_Int_Bool, IntLocalVar("i"), IntValue(count)),
-                    new ExpInfo(new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PostfixInc_Int_Int, new LocalVarExp("i")), Type.Int),
-                    PrintIntCmdStmt(new LocalVarExp("i"))
+                    new VarDeclForStmtInitializer(RLocalVarDecl(Type.Int, "i", new IntLiteralExp(0))),
+                    new CallInternalBinaryOperatorExp(InternalBinaryOperator.LessThan_Int_Int_Bool, new LoadExp(LocalVar("i")), RInt(count)),
+                    new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PostfixInc_Int_Int, LocalVar("i")),
+                    PrintIntCmdStmt(new LocalVarLoc("i"))
                 );
             }
 
-            var stmts = new Stmt[] {
+            var lambdaDeclId0 = new DeclId(0);
+            var lambdaDecl0 = new LambdaDecl(lambdaDeclId0, null, default, default, PrintNumbersStmt(5));
+            var lambdaType0 = new AnonymousLambdaType(lambdaDeclId0);
+
+            var lambdaDeclId1 = new DeclId(1);
+            var lambdaDecl1 = new LambdaDecl(lambdaDeclId1, null, default, default, PrintNumbersStmt(5));
+            var lambdaType1 = new AnonymousLambdaType(lambdaDeclId1);
+
+            var stmts = Arr<Stmt> (
                 new AwaitStmt(
-                    new BlockStmt(
-                        new TaskStmt(PrintNumbersStmt(5), new CaptureInfo(false, Arr<CaptureInfo.Element>())),
-                        new TaskStmt(PrintNumbersStmt(5), new CaptureInfo(false, Arr<CaptureInfo.Element>()))
+                    RBlock(
+                        new TaskStmt(lambdaType0),
+                        new TaskStmt(lambdaType1)
                     )
                 )
-            };
+            );
 
-            var output = await EvalAsync(null, stmts);
+            var output = await EvalAsync(Arr<IDecl>(lambdaDecl0, lambdaDecl1), stmts);
 
             // 01234 01234 두개가 그냥 섞여 있을 것이다.
 
@@ -663,26 +681,34 @@ namespace Gum.IR0.Runtime
             Stmt PrintNumbersStmt()
             {
                 return new ForStmt(
-                    new VarDeclForStmtInitializer(new LocalVarDecl(new[] { new VarDeclElement("i", Type.Int, new IntLiteralExp(0)) })),
-                    new CallInternalBinaryOperatorExp(InternalBinaryOperator.LessThan_Int_Int_Bool, IntLocalVar("i"), IntLocalVar("count")),
-                    new ExpInfo(new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PostfixInc_Int_Int, new LocalVarExp("i")), Type.Int),
-                    PrintIntCmdStmt(new LocalVarExp("i"))
+                    new VarDeclForStmtInitializer(RLocalVarDecl(Type.Int, "i", new IntLiteralExp(0))),
+                    new CallInternalBinaryOperatorExp(InternalBinaryOperator.LessThan_Int_Int_Bool, new LoadExp(LocalVar("i")), new LoadExp(LocalVar("count"))),
+                    new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PostfixInc_Int_Int, LocalVar("i")),
+                    PrintIntCmdStmt(new LocalVarLoc("i"))
                 );
             }
 
-            var stmts = new Stmt[] {                
-                SimpleLocalVarDecl("count", Type.Int, new IntLiteralExp(5)),
+            var lambdaDeclId0 = new DeclId(0);
+            var lambdaDecl0 = new LambdaDecl(lambdaDeclId0, null, Arr<TypeAndName>(new TypeAndName(Type.Int, "count")), default, PrintNumbersStmt());
+            var anonymousLambdaType0 = new AnonymousLambdaType(lambdaDeclId0);
+
+            var lambdaDeclId1 = new DeclId(1);
+            var lambdaDecl1 = new LambdaDecl(lambdaDeclId1, null, Arr<TypeAndName>(new TypeAndName(Type.Int, "count")), default, PrintNumbersStmt());
+            var anonymousLambdaType1 = new AnonymousLambdaType(lambdaDeclId1);
+
+            var stmts = Arr<Stmt> (
+                RLocalVarDeclStmt(Type.Int, "count", new IntLiteralExp(5)),
 
                 new AwaitStmt(
-                    new BlockStmt(
-                        new TaskStmt(PrintNumbersStmt(), new CaptureInfo(false, new [] { new CaptureInfo.Element(Type.Int, "count") })),
-                        new ExpStmt(new ExpInfo(new AssignExp(new LocalVarExp("count"), new IntLiteralExp(4)), Type.Int)),
-                        new TaskStmt(PrintNumbersStmt(), new CaptureInfo(false, new [] { new CaptureInfo.Element(Type.Int, "count") }))
+                    RBlock(
+                        new TaskStmt(anonymousLambdaType0),
+                        new ExpStmt(new AssignExp(LocalVar("count"), new IntLiteralExp(4))),
+                        new TaskStmt(anonymousLambdaType1)
                     )
                 )
-            };
+            );
 
-            var output = await EvalAsync(null, stmts);
+            var output = await EvalAsync(Arr<IDecl>(lambdaDecl0, lambdaDecl1), stmts);
 
             // 01234 01234 두개가 그냥 섞여 있을 것이다.
 
@@ -713,26 +739,34 @@ namespace Gum.IR0.Runtime
             Stmt PrintNumbersStmt(int count)
             {
                 return new ForStmt(
-                    new VarDeclForStmtInitializer(new LocalVarDecl(new[] { new VarDeclElement("i", Type.Int, new IntLiteralExp(0)) })),
-                    new CallInternalBinaryOperatorExp(InternalBinaryOperator.LessThan_Int_Int_Bool, IntLocalVar("i"), IntValue(count)),
-                    new ExpInfo(new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PostfixInc_Int_Int, new LocalVarExp("i")), Type.Int),
-                    new BlockStmt(
-                        PrintIntCmdStmt(new LocalVarExp("i")),
+                    new VarDeclForStmtInitializer(RLocalVarDecl(Type.Int, "i", new IntLiteralExp(0))),
+                    new CallInternalBinaryOperatorExp(InternalBinaryOperator.LessThan_Int_Int_Bool, new LoadExp(LocalVar("i")), RInt(count)),
+                    new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PostfixInc_Int_Int, LocalVar("i")),
+                    RBlock(
+                        PrintIntCmdStmt(new LocalVarLoc("i")),
                         Sleep(1)
                     )
                 );
             }
 
-            var stmts = new Stmt[] {
+            var lambdaDeclId0 = new DeclId(0);
+            var lambdaDecl0 = new LambdaDecl(lambdaDeclId0, null, default, default, PrintNumbersStmt(5));
+            var anonymousLambdaType0 = new AnonymousLambdaType(lambdaDeclId0);
+
+            var lambdaDeclId1 = new DeclId(1);
+            var lambdaDecl1 = new LambdaDecl(lambdaDeclId1, null, default, default, PrintNumbersStmt(5));
+            var anonymousLambdaType1 = new AnonymousLambdaType(lambdaDeclId1);
+
+            var stmts = Arr<Stmt> (
                 new AwaitStmt(
-                    new BlockStmt(
-                        new AsyncStmt(PrintNumbersStmt(5), new CaptureInfo(false, Arr<CaptureInfo.Element>())),
-                        new AsyncStmt(PrintNumbersStmt(5), new CaptureInfo(false, Arr<CaptureInfo.Element>()))
+                    RBlock(
+                        new AsyncStmt(anonymousLambdaType0),
+                        new AsyncStmt(anonymousLambdaType1)
                     )
                 )
-            };
+            );
 
-            var output = await EvalAsync(null, stmts);
+            var output = await EvalAsync(Arr<IDecl>(lambdaDecl0, lambdaDecl1), stmts);
 
             Assert.Equal("0011223344", output);
         }
@@ -740,31 +774,33 @@ namespace Gum.IR0.Runtime
         [Fact]
         public async Task YieldStmt_GenerateElementForInnerMostForeachStmt()
         {
-            var seqFunc0Id = new FuncDeclId(0);
-            var seqFunc1Id = new FuncDeclId(1);
+            var seqFunc0Id = new DeclId(0);
+            var seqFunc1Id = new DeclId(1);
 
-            var seqFunc0 = new SequenceFuncDecl(seqFunc0Id, Type.Int, false, Arr<string>(), Arr<string>(),
-                new ForeachStmt(Type.Int, "elem", new ExpInfo(new CallSeqFuncExp(new Func(seqFunc1Id, TypeContext.Empty), null, Arr<ExpInfo>()), Type.Enumerable(Type.Int)),
-                    new BlockStmt(
-                        PrintIntCmdStmt(new LocalVarExp("elem")),
-                        new YieldStmt(new LocalVarExp("elem"))
+            var seqFunc0 = new SequenceFuncDecl(seqFunc0Id, false, Type.Int, default, default,
+                new ForeachStmt(
+                    Type.Int, "elem", 
+                    new TempLoc(new CallSeqFuncExp(seqFunc1Id, TypeContext.Empty, null, default), new AnonymousSeqType(seqFunc1Id, TypeContext.Empty)),
+                    RBlock(
+                        PrintIntCmdStmt(new LocalVarLoc("elem")),
+                        new YieldStmt(new LoadExp(LocalVar("elem")))
                     )
                 )
             );
 
-            var seqFunc1 = new SequenceFuncDecl(seqFunc1Id, Type.Int, false, Arr<string>(), Arr<string>(),
-                new BlockStmt(
+            var seqFunc1 = new SequenceFuncDecl(seqFunc1Id, false, Type.Int, default, default,
+                RBlock(
                     new YieldStmt(new IntLiteralExp(34)),
                     new YieldStmt(new IntLiteralExp(56))
                 )
             );
 
-            var stmts = new[] {                
-                new ForeachStmt(Type.Int, "x", new ExpInfo(new CallSeqFuncExp(new Func(seqFunc0Id, TypeContext.Empty), null, Arr<ExpInfo>()), Type.Enumerable(Type.Int)),
-                    PrintIntCmdStmt(new LocalVarExp("x")))
-            };
+            var stmts = Arr<Stmt>(
+                new ForeachStmt(Type.Int, "x", new TempLoc(new CallSeqFuncExp(seqFunc0Id, TypeContext.Empty, null, default), new AnonymousSeqType(seqFunc0Id, TypeContext.Empty)),
+                    PrintIntCmdStmt(new LocalVarLoc("x")))
+            );
 
-            var output = await EvalAsync(new[] { seqFunc0, seqFunc1 }, stmts);
+            var output = await EvalAsync(Arr<IDecl>(seqFunc0, seqFunc1), stmts);
 
             Assert.Equal("34345656", output);
         }
@@ -796,74 +832,72 @@ namespace Gum.IR0.Runtime
         [Fact]
         public async Task BoolLiteralExp_MakesBoolValue()
         {
-            var stmts = new[]
-            {
+            var stmts = Arr<Stmt> (            
                 PrintBoolCmdStmt(new BoolLiteralExp(false)),
-                PrintBoolCmdStmt(new BoolLiteralExp(true)),
-            };
+                PrintBoolCmdStmt(new BoolLiteralExp(true))
+            );
 
-            var output = await EvalAsync(null, stmts);
+            var output = await EvalAsync(default, stmts);
             Assert.Equal("FalseTrue", output);
         }
 
         [Fact]
         public async Task IntLiteralExp_MakesIntValue()
         {
-            var stmts = new[]
-            {
-                PrintIntCmdStmt(new IntLiteralExp(-2)),                
-            };
+            var stmts = Arr<Stmt>(
+                PrintIntCmdStmt(new IntLiteralExp(-2))
+            );
 
-            var output = await EvalAsync(null, stmts);
+            var output = await EvalAsync(default, stmts);
             Assert.Equal("-2", output);
         }
 
         [Fact]
         public async Task StringExp_ConcatStringsUsingTextStringExpElements()
         {
-            var stmts = new[]
-            {
-                PrintStringCmdStmt(new StringExp(
+            var stmts = Arr<Stmt>(
+                PrintStringCmdStmt(RString(
                     new TextStringExpElement("Hello "),
-                    new TextStringExpElement("World"))),
-            };
+                    new TextStringExpElement("World")
+                ))
+            );
 
-            var output = await EvalAsync(null, stmts);
+            var output = await EvalAsync(default, stmts);
             Assert.Equal("Hello World", output);
         }
 
         [Fact]
         public async Task StringExp_ConcatStringsUsingStringExpElements()
         {
-            var stmts = new Stmt[]
-            {
-                SimpleLocalVarDecl("x", Type.String, SimpleString("New ")),
+            var stmts = Arr<Stmt>
+            (
+                RLocalVarDeclStmt(Type.String, "x", RString("New ")),
 
-                PrintStringCmdStmt(new StringExp(
+                PrintStringCmdStmt(RString(
                     new TextStringExpElement("Hello "),
-                    new ExpStringExpElement(new LocalVarExp("x")),
+                    new ExpStringExpElement(new LoadExp(LocalVar("x"))),
                     new TextStringExpElement("World")))
-            };
+            );
 
-            var output = await EvalAsync(null, stmts);
+            var output = await EvalAsync(default, stmts);
             Assert.Equal("Hello New World", output);
         }
 
         [Fact]
         public async Task AssignExp_ReturnsValue()
         {
-            var stmts = new Stmt[]
-            {
-                SimpleLocalVarDecl("x", Type.Int, new IntLiteralExp(3)),
-                SimpleLocalVarDecl("y", Type.Int, new IntLiteralExp(4)),
+            var stmts = Arr<Stmt>
+            (
+                RLocalVarDeclStmt(Type.Int, "x", new IntLiteralExp(3)),
+                RLocalVarDeclStmt(Type.Int, "y", new IntLiteralExp(4)),
 
                 // y = x = 10;
-                new ExpStmt(new ExpInfo(new AssignExp(new LocalVarExp("y"), new AssignExp(new LocalVarExp("x"), new IntLiteralExp(10))), Type.Int)),
-                PrintIntCmdStmt(new LocalVarExp("x")),
-                PrintIntCmdStmt(new LocalVarExp("y"))
-            };
+                new ExpStmt(new AssignExp(LocalVar("y"), new AssignExp(LocalVar("x"), new IntLiteralExp(10)))),
+                PrintIntCmdStmt(new LocalVarLoc("x")),
+                PrintIntCmdStmt(new LocalVarLoc("y"))
+            );
 
-            var output = await EvalAsync(null, stmts);
+            var output = await EvalAsync(default, stmts);
 
             Assert.Equal("1010", output);
         }
@@ -889,74 +923,74 @@ namespace Gum.IR0.Runtime
         [Fact]
         public async Task CallFuncExp_EvaluatesArgumentsInOrder()
         {
-            var printFuncId = new FuncDeclId(0);
-            var testFuncId = new FuncDeclId(1);
+            var printFuncId = new DeclId(0);
+            var testFuncId = new DeclId(1);
 
-            var printFunc = new NormalFuncDecl(printFuncId, false, Arr<string>(), Arr("x"),
+            var printFunc = new NormalFuncDecl(printFuncId, false, default, Arr(new ParamInfo(Type.Int, "x")),
 
-                new BlockStmt(
-                    PrintIntCmdStmt(new LocalVarExp("x")),
-                    new ReturnStmt(new LocalVarExp("x"))
+                RBlock(
+                    PrintIntCmdStmt(new LocalVarLoc("x")),
+                    new ReturnStmt(new LoadExp(LocalVar("x")))
                 )
             );
 
-            var testFunc = new NormalFuncDecl(testFuncId, false, Arr<string>(), Arr("i", "j", "k" ),
+            var testFunc = new NormalFuncDecl(testFuncId, false, default, Arr(new ParamInfo(Type.Int, "i"), new ParamInfo(Type.Int, "j"), new ParamInfo(Type.Int, "k")),
 
                 PrintStringCmdStmt("TestFunc")
 
             );
 
-            ExpInfo MakePrintCall(int v) =>
-                new ExpInfo(new CallFuncExp(new Func(printFuncId, TypeContext.Empty), null, new[] { new ExpInfo(new IntLiteralExp(v), Type.Int) }), Type.Int);
+            Exp MakePrintCall(int v) =>
+                new CallFuncExp(new Func(printFuncId, TypeContext.Empty), null, Arr<Exp>(new IntLiteralExp(v)));
 
-
-            var stmts = new Stmt[]
-            {
-                new ExpStmt(new ExpInfo(
-                    new CallFuncExp(new Func(testFuncId, TypeContext.Empty), null, new [] {
-                        MakePrintCall(1),
-                        MakePrintCall(2),
-                        MakePrintCall(3) }
-                    ),
-                    Type.Void)
+            var stmts = Arr<Stmt>
+            (
+                new ExpStmt(
+                    new CallFuncExp(
+                        new Func(testFuncId, TypeContext.Empty), 
+                        null, 
+                        Arr(
+                            MakePrintCall(1),
+                            MakePrintCall(2),
+                            MakePrintCall(3) 
+                        )
+                    )
                 )
-            };
+            );
 
-            var output = await EvalAsync(new[] { printFunc, testFunc }, stmts);
+            var output = await EvalAsync(Arr<IDecl>(printFunc, testFunc), stmts);
             Assert.Equal("123TestFunc", output);
         }
 
         [Fact]
         public async Task CallFuncExp_ReturnsValueProperly()
         {
-            var funcId = new FuncDeclId(0);
-            var func = new NormalFuncDecl(funcId, false, Arr<string>(), Arr<string>(), new ReturnStmt(SimpleString("Hello World")));
+            var funcId = new DeclId(0);
+            var func = new NormalFuncDecl(funcId, false, default, default, new ReturnStmt(RString("Hello World")));
 
-            var stmts = new Stmt[] { PrintStringCmdStmt(new CallFuncExp(new Func(funcId, TypeContext.Empty), null, Arr<ExpInfo>())) };
+            var stmts = Arr<Stmt>(PrintStringCmdStmt(new CallFuncExp(new Func(funcId, TypeContext.Empty), null, default)));
 
-            var output = await EvalAsync(new[] { func }, stmts);
+            var output = await EvalAsync(Arr<IDecl>(func), stmts);
             Assert.Equal("Hello World", output);
         }
 
         // CallSeqFunc
         [Fact]
-        public async Task CallSeqFuncExp_ReturnsEnumerableType()
+        public async Task CallSeqFuncExp_ReturnsAnonymousSeqTypeValue()
         {
-            var seqFuncId = new FuncDeclId(0);
-            var seqFunc = new SequenceFuncDecl(seqFuncId, Type.String, false, Arr<string>(), Arr<string>(), BlankStmt.Instance); // return nothing
+            var seqFuncId = new DeclId(0);
+            var seqFunc = new SequenceFuncDecl(seqFuncId, false, Type.String, default, default, BlankStmt.Instance); // return nothing
 
-            var stmts = new Stmt[]
-            {
+            var stmts = Arr<Stmt>
+            (
                 // 선언하자 마자 대입하기
-                SimpleLocalVarDecl("x", Type.Enumerable(Type.String), new CallSeqFuncExp(new Func(seqFuncId, TypeContext.Empty), null, Arr<ExpInfo>())),
-
-                // TODO: 지금은 value로 얻은 Enumerable을 조작할 수 있는 방법이 없다. foreach에서만 내부적으로 조작할 수 있는데, 그렇게만 하도록 할 것인지 결정을 해야 한다
+                RLocalVarDeclStmt(new AnonymousSeqType(seqFuncId, TypeContext.Empty), "x", new CallSeqFuncExp(seqFuncId, TypeContext.Empty, null, default)),
 
                 // 로컬 변수에 새 값 대입하기
-                new ExpStmt(new ExpInfo(new AssignExp(new LocalVarExp("x"), new CallSeqFuncExp(new Func(seqFuncId, TypeContext.Empty), null, Arr<ExpInfo>())), Type.Enumerable(Type.String))),
-            };
+                new ExpStmt(new AssignExp(LocalVar("x"), new CallSeqFuncExp(seqFuncId, TypeContext.Empty, null, default)))
+            );
 
-            await EvalAsync(new[] { seqFunc }, stmts);
+            await EvalAsync(Arr<IDecl>(seqFunc), stmts);
 
             // 에러가 안났으면 성공..
         }
@@ -964,49 +998,50 @@ namespace Gum.IR0.Runtime
         [Fact]
         public async Task CallValueExp_EvaluateCallableAndArgumentsInOrder()
         {
-            var printFuncId = new FuncDeclId(0);
-            var makeLambdaId = new FuncDeclId(1);
+            var printFuncId = new DeclId(0);
+            var makeLambdaId = new DeclId(1);
 
-            var printFunc = new NormalFuncDecl(printFuncId, false, Arr<string>(), Arr("x"),
-
-                new BlockStmt(
-                    PrintIntCmdStmt(new LocalVarExp("x")),
-                    new ReturnStmt(new LocalVarExp("x"))
+            var printFunc = new NormalFuncDecl(printFuncId, false, default, Arr(new ParamInfo(Type.Int, "x")),
+                RBlock(
+                    PrintIntCmdStmt(new LocalVarLoc("x")),
+                    new ReturnStmt(new LoadExp(LocalVar("x")))
                 )
             );
 
-            var makeLambda = new NormalFuncDecl(makeLambdaId, false, Arr<string>(), Arr<string>(),
-                new BlockStmt(                    
+            var lambdaDeclId = new DeclId(2);
+            var lambdaDecl = new LambdaDecl(
+                lambdaDeclId,
+                null,
+                default,
+                Arr(new ParamInfo(Type.Int, "i"), new ParamInfo(Type.Int, "j"), new ParamInfo(Type.Int, "k")),
+                PrintStringCmdStmt("TestFunc")
+            );            
+
+            var makeLambda = new NormalFuncDecl(makeLambdaId, false, default, default,
+                RBlock(                    
                     PrintStringCmdStmt("MakeLambda"),
-                    
-                    new ReturnStmt(new LambdaExp(
-                        new CaptureInfo(false, Arr<CaptureInfo.Element>()),
-                        new[] { "i", "j", "k" },
-                        PrintStringCmdStmt("TestFunc")
-                    ))
+                    new ReturnStmt(new LambdaExp(false, default))
                 )
             );
+
+            Exp MakePrintCall(int v) =>
+                new CallFuncExp(new Func(printFuncId, TypeContext.Empty), null, Arr<Exp>(new IntLiteralExp(v)));
             
-            ExpInfo MakePrintCall(int v) =>
-                new ExpInfo(new CallFuncExp(new Func(printFuncId, TypeContext.Empty), null, new[] { new ExpInfo(new IntLiteralExp(v), Type.Int) }), Type.Int);
-
-
-            var stmts = new Stmt[]
-            {
-                new ExpStmt(new ExpInfo(
+            var stmts = Arr<Stmt>
+            (
+                new ExpStmt(
                     new CallValueExp(
-                        new ExpInfo(new CallFuncExp(new Func(makeLambdaId, TypeContext.Empty), null, Arr<ExpInfo>()), Type.Lambda), 
-                        new [] {
+                        new TempLoc(new CallFuncExp(new Func(makeLambdaId, TypeContext.Empty), null, default), new AnonymousLambdaType(lambdaDeclId)),
+                        Arr(
                             MakePrintCall(1),
                             MakePrintCall(2),
                             MakePrintCall(3) 
-                        }
-                    ),
-                    Type.Void
-                ))
-            };
+                        )
+                    )
+                )
+            );
 
-            var output = await EvalAsync(new[] { printFunc, makeLambda }, stmts);
+            var output = await EvalAsync(Arr<IDecl>(printFunc, makeLambda, lambdaDecl), stmts);
             Assert.Equal("MakeLambda123TestFunc", output);
         }
 
@@ -1021,23 +1056,18 @@ namespace Gum.IR0.Runtime
         [Fact]
         public async Task LambdaExp_CapturesLocalVariablesWithCopying()
         {
-            var stmts = new Stmt[] {
-                SimpleLocalVarDecl("x", Type.Int, new IntLiteralExp(3)),
-                SimpleLocalVarDecl("func", Type.Lambda, new LambdaExp(
-                    new CaptureInfo(false, new []{
-                        new CaptureInfo.Element(Type.Int, "x"),
-                    }),
+            var lambdaId = new DeclId(0);
+            var lambdaDecl = new LambdaDecl(lambdaId, null, Arr<TypeAndName>(new TypeAndName(Type.Int, "x")), default, PrintIntCmdStmt(new LocalVarLoc("x")));
 
-                    Arr<string>(),
+            var stmts = Arr<Stmt> (
+                RLocalVarDeclStmt(Type.Int, "x", new IntLiteralExp(3)),
+                RLocalVarDeclStmt(new AnonymousLambdaType(lambdaId), "func", new LambdaExp(false, Arr("x"))),
 
-                    PrintIntCmdStmt(new LocalVarExp("x"))
-                )),
+                new ExpStmt(new AssignExp(LocalVar("x"), new IntLiteralExp(34))),
+                new ExpStmt(new CallValueExp(LocalVar("func"), default))
+            );
 
-                new ExpStmt(new ExpInfo(new AssignExp(new LocalVarExp("x"), new IntLiteralExp(34)), Type.Int)),
-                new ExpStmt(new ExpInfo(new CallValueExp(new ExpInfo(new LocalVarExp("func"), Type.Lambda), Arr<ExpInfo>()), Type.Void))
-            };
-
-            var output = await EvalAsync(null, stmts);
+            var output = await EvalAsync(Arr<IDecl>(lambdaDecl), stmts);
             Assert.Equal("3", output);
         }
 
@@ -1045,12 +1075,12 @@ namespace Gum.IR0.Runtime
         [Fact]
         public async Task ListIndexerExp_GetElement()
         {
-            var stmts = new Stmt[] {
-                SimpleLocalVarDecl("list", Type.List(Type.Int), new ListExp(Type.Int, new [] { new IntLiteralExp(34), new IntLiteralExp(56) })),
-                PrintIntCmdStmt(new ListIndexerExp(LocalVar("list", Type.List(Type.Int)), new ExpInfo(new IntLiteralExp(1), Type.Int)))
-            };
+            var stmts = Arr<Stmt> (
+                RLocalVarDeclStmt(Type.List(Type.Int), "list", new ListExp(Type.Int, Arr<Exp>(new IntLiteralExp(34), new IntLiteralExp(56)))),
+                PrintIntCmdStmt(new ListIndexerLoc(new LocalVarLoc("list"), new TempLoc(new IntLiteralExp(1), Type.Int)))
+            );
 
-            var output = await EvalAsync(null, stmts);
+            var output = await EvalAsync(default, stmts);
             Assert.Equal("56", output);
         }
 
@@ -1058,29 +1088,28 @@ namespace Gum.IR0.Runtime
         [Fact]
         public async Task ListExp_EvaluatesElementExpInOrder()
         {
-            var printFuncId = new FuncDeclId(0);
-            var printFunc = new NormalFuncDecl(printFuncId, false, Arr<string>(), Arr("x"),
+            var printFuncId = new DeclId(0);
+            var printFunc = new NormalFuncDecl(printFuncId, false, default, Arr(new ParamInfo(Type.Int, "x")),
 
-                new BlockStmt(
-                    PrintIntCmdStmt(new LocalVarExp("x")),
-                    new ReturnStmt(new LocalVarExp("x"))
+                RBlock(
+                    PrintIntCmdStmt(new LocalVarLoc("x")),
+                    new ReturnStmt(new LoadExp(new LocalVarLoc("x")))
                 )
             );
 
             Exp MakePrintCall(int v) =>
-                new CallFuncExp(new Func(printFuncId, TypeContext.Empty), null, new[] { new ExpInfo(new IntLiteralExp(v), Type.Int) });
+                new CallFuncExp(new Func(printFuncId, TypeContext.Empty), null, Arr<Exp>(new IntLiteralExp(v)));
 
-            var stmts = new Stmt[] {
-                new ExpStmt(new ExpInfo(
-                    new ListExp(Type.Int, new [] { 
+            var stmts = Arr<Stmt> (
+                RGlobalVarDeclStmt(Type.List(Type.Int), "l", 
+                    new ListExp(Type.Int, Arr(
                         MakePrintCall(34),
                         MakePrintCall(56)
-                    }),
-                    Type.List(Type.Int)
-                ))
-            };
+                    ))
+                )
+            );
 
-            var output = await EvalAsync(new [] { printFunc }, stmts);
+            var output = await EvalAsync(Arr<IDecl>(printFunc), stmts);
             Assert.Equal("3456", output);
         }
 

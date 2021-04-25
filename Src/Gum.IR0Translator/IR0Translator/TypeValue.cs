@@ -40,7 +40,7 @@ namespace Gum.IR0Translator
     [AutoConstructor, ImplementIEquatable]
     partial class TypeVarTypeValue : TypeValue
     {
-        IR0ItemFactory ritemFactory;
+        RItemFactory ritemFactory;
 
         public int Depth { get; }
         public int Index { get; }
@@ -85,7 +85,7 @@ namespace Gum.IR0Translator
     partial class StructTypeValue : NormalTypeValue
     {
         ItemValueFactory typeValueFactory;
-        IR0ItemFactory ritemFactory;
+        RItemFactory ritemFactory;
 
         // global일 경우
         M.ModuleName? moduleName;
@@ -97,7 +97,7 @@ namespace Gum.IR0Translator
         M.StructInfo structInfo;
         ImmutableArray<TypeValue> typeArgs;
 
-        internal StructTypeValue(ItemValueFactory factory, IR0ItemFactory ritemFactory, M.ModuleName? moduleName, M.NamespacePath? namespacePath, TypeValue? outer, M.StructInfo structInfo, ImmutableArray<TypeValue> typeArgs)
+        internal StructTypeValue(ItemValueFactory factory, RItemFactory ritemFactory, M.ModuleName? moduleName, M.NamespacePath? namespacePath, TypeValue? outer, M.StructInfo structInfo, ImmutableArray<TypeValue> typeArgs)
         {
             this.typeValueFactory = factory;
             this.ritemFactory = ritemFactory;
@@ -271,11 +271,6 @@ namespace Gum.IR0Translator
             throw new UnreachableCodeException();
         }
 
-        ImmutableArray<R.Type> GetRTypes(ImmutableArray<TypeValue> typeValues)
-        {
-            return ImmutableArray.CreateRange(typeValues, typeValue => typeValue.GetRType());
-        }
-
         public override R.Type GetRType()
         {
             if (IsGlobal())
@@ -283,7 +278,7 @@ namespace Gum.IR0Translator
                 Debug.Assert(moduleName != null && namespacePath != null);
 
                 var rtypeArgs = GetRTypes(typeArgs);
-                return ritemFactory.MakeGlobalType(moduleName.Value, namespacePath.Value, structInfo.Name, rtypeArgs);
+                return ritemFactory.MakeStructType(moduleName.Value, namespacePath.Value, structInfo.Name, typeArgs);
             }
             else
             {
@@ -291,7 +286,7 @@ namespace Gum.IR0Translator
 
                 var outerRType = outer.GetRType();
                 var rtypeArgs = GetRTypes(typeArgs);
-                return ritemFactory.MakeMemberType(outerRType, structInfo.Name, rtypeArgs);
+                return ritemFactory.MakeStructType(outerRType, structInfo.Name, rtypeArgs);
             }
         }
     }
@@ -318,7 +313,7 @@ namespace Gum.IR0Translator
 
         public override R.Type GetRType()
         {
-            return R.Type.Void;
+            return R.VoidType.Instance;
         }
 
         public override int GetHashCode()
@@ -330,17 +325,17 @@ namespace Gum.IR0Translator
     // ArgTypeValues => RetValueTypes
     class LambdaTypeValue : TypeValue, IEquatable<LambdaTypeValue>
     {
-        IR0ItemFactory ritemFactory;
-        public int LambdaId { get; }
+        RItemFactory ritemFactory;
+        public R.DeclId LambdaDeclId { get; }
         public TypeValue Return { get; }
         public ImmutableArray<TypeValue> Params { get; }
 
-        public LambdaTypeValue(IR0ItemFactory ritemFactory, int lambdaId, TypeValue ret, ImmutableArray<TypeValue> parameters)
+        public LambdaTypeValue(RItemFactory ritemFactory, R.DeclId lambdaDeclId, TypeValue ret, ImmutableArray<TypeValue> parameters)
         {
             this.ritemFactory = ritemFactory;
-            LambdaId = lambdaId;
-            Return = ret;
-            Params = parameters;
+            this.LambdaDeclId = lambdaDeclId;
+            this.Return = ret;
+            this.Params = parameters;
         }
 
         public override bool Equals(object? obj)
@@ -353,7 +348,7 @@ namespace Gum.IR0Translator
             if (other == null) return false;
 
             // 아이디만 비교한다. 같은 위치에서 다른 TypeContext에서 생성되는 람다는 id도 바뀌어야 한다
-            return LambdaId == other.LambdaId;
+            return LambdaDeclId.Equals(other.LambdaDeclId);
         }
 
         // lambdatypevalue를 replace할 일이 있는가
@@ -372,23 +367,23 @@ namespace Gum.IR0Translator
             var returnRType = Return.GetRType();
             var paramRTypes = ImmutableArray.CreateRange(Params, parameter => parameter.GetRType());
 
-            return ritemFactory.MakeLambdaType(LambdaId, returnRType, paramRTypes);
+            return ritemFactory.MakeLambdaType(LambdaDeclId, returnRType, paramRTypes);
         }
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(LambdaId);
+            return HashCode.Combine(LambdaDeclId);
         }
     }
 
     // S.First, S.Second(int i, short s)
     class EnumElemTypeValue : TypeValue
     {
-        IR0ItemFactory ritemFactory;
+        RItemFactory ritemFactory;
         public NormalTypeValue EnumTypeValue { get; }
         public string Name { get; }
 
-        public EnumElemTypeValue(IR0ItemFactory ritemFactory, NormalTypeValue enumTypeValue, string name)
+        public EnumElemTypeValue(RItemFactory ritemFactory, NormalTypeValue enumTypeValue, string name)
         {
             this.ritemFactory = ritemFactory;
             EnumTypeValue = enumTypeValue;

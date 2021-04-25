@@ -9,6 +9,7 @@ using Gum.IR0;
 using Gum;
 using System.Diagnostics.CodeAnalysis;
 using static Gum.Infra.CollectionExtensions;
+using Gum.Collections;
 
 namespace Gum.IR0.Runtime
 {
@@ -16,13 +17,15 @@ namespace Gum.IR0.Runtime
     // TODO: Small Step으로 가야하지 않을까 싶다 (yield로 실행 point 잡는거 해보면 재미있을 것 같다)
     public class Evaluator
     {
-        private ExpEvaluator expEvaluator;
-        private StmtEvaluator stmtEvaluator;        
+        ExpEvaluator expEvaluator;
+        StmtEvaluator stmtEvaluator;
+        LocEvaluator locEvaluator;
 
         public Evaluator(ICommandProvider commandProvider)
         {
             this.expEvaluator = new ExpEvaluator(this);
             this.stmtEvaluator = new StmtEvaluator(this, commandProvider);
+            this.locEvaluator = new LocEvaluator(this);
         }        
         
         internal ValueTask EvalStringExpAsync(StringExp command, Value result, EvalContext context)
@@ -59,7 +62,7 @@ namespace Gum.IR0.Runtime
                 if (EqualityComparer<Type?>.Default.Equals(curType, yType))
                     return true;
 
-                if (!GetBaseType(curType.Value, context, out var baseTypeValue))
+                if (!GetBaseType(curType, context, out var baseTypeValue))
                     throw new InvalidOperationException();
 
                 if (baseTypeValue == null)
@@ -80,74 +83,120 @@ namespace Gum.IR0.Runtime
         // type은 ir0 syntax의 일부분이다
         public Value AllocValue(Type type, EvalContext context)
         {
-            switch(type.DeclId.Value)
+            switch(type)
             {
-                case (int)TypeDeclId.PredefinedValue.Void:
+                case VoidType: 
                     return VoidValue.Instance;
 
-                case (int)TypeDeclId.PredefinedValue.Bool:
+                case StructType when type == Type.Bool:
                     return new BoolValue();
 
-                case (int)TypeDeclId.PredefinedValue.Int:
+                case StructType when type == Type.Int:
                     return new IntValue();
 
-                case (int)TypeDeclId.PredefinedValue.String:
+                case ClassType when type == Type.String:
                     return new StringValue();
 
-                // TODO: typeArgs
-                case (int)TypeDeclId.PredefinedValue.Enumerable:
-                    return new AsyncEnumerableValue();
+                case ClassType classType:
+                    if (classType.Outer.Equals(new RootOuterType("System.Runtime", new NamespacePath("System"))) && classType.Name.Equals("List"))
+                        return new ListValue();
 
-                case (int)TypeDeclId.PredefinedValue.Lambda:
-                    return new LambdaValue();
+                    throw new NotImplementedException();
 
-                // TODO: typeArgs
-                case (int)TypeDeclId.PredefinedValue.List:
-                    return new ListValue();
-            }
+                case AnonymousLambdaType lambdaType:
+                    var lambdaDecl = context.GetDecl<LambdaDecl>(lambdaType.DeclId);
 
-            throw new NotImplementedException();
+                    Value? capturedThis = null;
+                    if (lambdaDecl.CapturedThisType != null)
+                        capturedThis = AllocValue(lambdaDecl.CapturedThisType, context);
+
+                    var capturesBuilder = ImmutableDictionary.CreateBuilder<string, Value>();
+                    foreach (var (elemType, elemName) in lambdaDecl.CaptureInfo)
+                    {
+                        var elemValue = AllocValue(elemType, context);
+                        capturesBuilder.Add(elemName, elemValue);
+                    }
+
+                    return new LambdaValue(lambdaType.DeclId, capturedThis, capturesBuilder.ToImmutable());
+                
+                case AnonymousSeqType _:
+                    return new SeqValue();
+
+                default:
+                    throw new NotImplementedException();
+
+            }           
+
+            
+            //switch(type.DeclId.Value)
+            //{
+            //    case (int)TypeDeclId.PredefinedValue.Void:
+            //        return VoidValue.Instance;
+
+            //    case (int)TypeDeclId.PredefinedValue.Bool:
+            //        return new BoolValue();
+
+            //    case (int)TypeDeclId.PredefinedValue.Int:
+            //        return new IntValue();
+
+            //    case (int)TypeDeclId.PredefinedValue.String:
+            //        return new StringValue();
+
+            //    // TODO: typeArgs
+            //    case (int)TypeDeclId.PredefinedValue.Enumerable:
+            //        return new AsyncEnumerableValue();
+
+            //    case (int)TypeDeclId.PredefinedValue.Lambda:
+            //        return new LambdaValue();
+
+            //    // TODO: typeArgs
+            //    case (int)TypeDeclId.PredefinedValue.List:
+            //        return new ListValue();
+            //}
         }        
 
-        public ImmutableDictionary<string, Value> MakeCaptures(ImmutableArray<CaptureInfo.Element> captureElems, EvalContext context)
+        internal void Capture(LambdaValue lambdaValue, bool captureThis, ImmutableArray<string> captureLocalVars, EvalContext context)
         {
-            var capturesBuilder = ImmutableDictionary.CreateBuilder<string, Value>();
-            foreach (var captureElem in captureElems)
-            {
-                var origValue = context.GetLocalValue(captureElem.LocalVarName);
-                var value = AllocValue(captureElem.Type, context);
-                value.SetValue(origValue);
-                capturesBuilder.Add(captureElem.LocalVarName, value);
-            }
+            if (captureThis)
+                lambdaValue.CapturedThis!.SetValue(context.GetThisValue()!);
 
-            return capturesBuilder.ToImmutable();
+            foreach (var captureLocalVar in captureLocalVars)
+            {
+                var origValue = context.GetLocalValue(captureLocalVar);
+                lambdaValue.Captures[captureLocalVar].SetValue(origValue);
+            }
         }
 
-        public async ValueTask<ImmutableDictionary<string, Value>> EvalArgumentsAsync(ImmutableArray<string> paramNames, ImmutableArray<ExpInfo> expInfos, EvalContext context)
+        public async ValueTask<ImmutableDictionary<string, Value>> EvalArgumentsAsync(
+            ImmutableDictionary<string, Value> origDict,
+            ImmutableArray<ParamInfo> paramInfos, 
+            ImmutableArray<Exp> exps, 
+            EvalContext context)
         {
-            var argsBuilder = ImmutableDictionary.CreateBuilder<string, Value>();
+            var argsBuilder = origDict.ToBuilder();
 
-            foreach (var (paramName, expInfo) in Zip(paramNames, expInfos))
+            Debug.Assert(paramInfos.Length == exps.Length);
+            for(int i = 0; i < paramInfos.Length; i++)
             {
-                var argValue = AllocValue(expInfo.Type, context);
-                argsBuilder.Add(paramName, argValue);
+                var argValue = AllocValue(paramInfos[i].Type, context);
+                argsBuilder.Add(paramInfos[i].Name, argValue);
 
-                await expEvaluator.EvalAsync(expInfo.Exp, argValue, context);
+                await expEvaluator.EvalAsync(exps[i], argValue, context);
             }
 
             return argsBuilder.ToImmutable();
         }
 
-        public async ValueTask EvalLambdaAsync(Lambda lambda, ImmutableArray<ExpInfo> args, Value result, EvalContext context)
+        internal async ValueTask EvalLambdaAsync(LambdaValue lambdaValue, ImmutableArray<Exp> args, Value result, EvalContext context)
         {
-            var argVars = await EvalArgumentsAsync(lambda.ParamNames, args, context);
+            var lambdaDecl = context.GetDecl<LambdaDecl>(lambdaValue.LambdaDeclId);
 
-            var thisValue = lambda.CapturedThis;
-            var localVars = lambda.Captures.AddRange(argVars);
+            var thisValue = lambdaValue.CapturedThis;
+            var localVars = await EvalArgumentsAsync(lambdaValue.Captures, lambdaDecl.ParamInfos, args, context);
 
             await context.ExecInNewFuncFrameAsync(localVars, EvalFlowControl.None, ImmutableArray<Task>.Empty, thisValue, result, async () =>
             {
-                await foreach (var _ in EvalStmtAsync(lambda.Body, context)) { }
+                await foreach (var _ in EvalStmtAsync(lambdaDecl.Body, context)) { }
             });
         }
 
@@ -168,8 +217,13 @@ namespace Gum.IR0.Runtime
         {
             return expEvaluator.EvalAsync(exp, result, context);
         }
+        
+        public ValueTask<Value> EvalLocAsync(Loc loc, EvalContext context)
+        {
+            return locEvaluator.EvalLocAsync(loc, context);
+        }
 
-        public IAsyncEnumerable<Value> EvalStmtAsync(Stmt stmt, EvalContext context)
+        public IAsyncEnumerable<Gum.Infra.Void> EvalStmtAsync(Stmt stmt, EvalContext context)
         {
             return stmtEvaluator.EvalStmtAsync(stmt, context);
         }
@@ -202,7 +256,7 @@ namespace Gum.IR0.Runtime
 
         public ValueTask<int> EvalScriptAsync(Script script)
         {
-            var context = new EvalContext(script.FuncDecls);
+            var context = new EvalContext(script.Decls);
             return EvalScriptAsync(script, context);
         }
 

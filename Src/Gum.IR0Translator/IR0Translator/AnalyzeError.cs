@@ -98,6 +98,7 @@ namespace Gum.IR0Translator
         A2006_ResolveIdentifier_FuncCantHaveMember,
         A2007_ResolveIdentifier_NotFound,
         A2008_ResolveIdentifier_CantUseTypeAsExpression, // Type으로 Resolve는 되지만, 값으로 변경하려고 시도하다가 에러 var x = X.Y;
+        A2009_ResolveIdentifier_EnumElemCantHaveMember,
 
 // A2001_Identifier_MultipleCandidatesForIdentifier,
 

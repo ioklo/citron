@@ -6,14 +6,13 @@ namespace Gum.IR0Translator
     [AutoConstructor]
     partial struct ResolveHint
     {
-        public static readonly ResolveHint None = new ResolveHint(NoneTypeHint.Instance, NoneFuncParamHint.Instance);
+        public static readonly ResolveHint None = new ResolveHint(NoneTypeHint.Instance);
 
-        public TypeHint TypeHint { get; }
-        public FuncParamHint FuncParamHint { get; }
+        public TypeHint TypeHint { get; }        
 
         public static ResolveHint Make(TypeValue typeValue)
         {
-            return new ResolveHint(new TypeValueTypeHint(typeValue), NoneFuncParamHint.Instance);
+            return new ResolveHint(new TypeValueTypeHint(typeValue));
         }
     }
 }

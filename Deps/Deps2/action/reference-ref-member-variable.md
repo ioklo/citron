@@ -3,6 +3,6 @@
 ```csharp
 void F(ref<int> i)
 {
-    i.Value = 4; // 변수 참조
+    deref i = 4; // 직접 대입
 }
 ```

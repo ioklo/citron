@@ -5,6 +5,7 @@ using M = Gum.CompileTime;
 using R = Gum.IR0;
 using Gum.Collections;
 using System.Diagnostics;
+using Pretune;
 
 namespace Gum.IR0Translator
 {
@@ -64,81 +65,30 @@ namespace Gum.IR0Translator
     record NoneLambdaCapture : LambdaCapture { public static readonly NoneLambdaCapture Instance = new NoneLambdaCapture(); private NoneLambdaCapture() { } }
     record ThisLambdaCapture : LambdaCapture { public static readonly ThisLambdaCapture Instance = new ThisLambdaCapture(); private ThisLambdaCapture() { } }
     record LocalLambdaCapture(string Name, TypeValue Type) : LambdaCapture;
-
-    class ExpIdentifierResult : ValidIdentifierResult
+    
+    [AutoConstructor]
+    partial class LocalVarIdentifierResult : ValidIdentifierResult
     {
-        public R.Exp Exp { get; }
+        public bool bNeedCapture { get; }
+        public string VarName { get; }
         public TypeValue TypeValue { get; }
-        public LambdaCapture LambdaCapture { get; }
-
-        public ExpIdentifierResult(R.Exp exp, TypeValue typeValue, LambdaCapture lambdaCapture)
-        {
-            Exp = exp;
-            TypeValue = typeValue;
-            LambdaCapture = lambdaCapture;
-        }
     }
 
-    //// 내부 글로벌 변수, x
-    //class InternalGlobalVarInfo : IdentifierInfo
-    //{
-    //    public M.Name Name { get; }
-    //    public TypeValue TypeValue { get; }
-
-    //    public InternalGlobalVarInfo(M.Name name, TypeValue typeValue) { Name = name; TypeValue = typeValue; }
-    //}
-
-    //// () => { x }에서 x
-    //class LocalVarOutsideLambdaInfo : IdentifierInfo
-    //{
-    //    public Name Name { get => localVarInfo.Name; }
-    //    public TypeValue TypeValue { get => localVarInfo.TypeValue; }
-
-    //    LocalVarInfo localVarInfo;
-
-    //    public LocalVarOutsideLambdaInfo(LocalVarInfo localVarInfo)
-    //    {
-    //        this.localVarInfo = localVarInfo;
-    //    }
-    //}
-
-    //class LocalVarInfo : IdentifierInfo
-    //{
-    //    public string Name { get; }
-    //    public TypeValue TypeValue { get; }
-
-    //    public LocalVarInfo(string name, TypeValue typeValue)
-    //    {
-    //        Name = name;
-    //        TypeValue = typeValue;
-    //    }
-    //}
-
-    //// x => e.x ?? 
-    //class EnumFieldInfo : IdentifierInfo
-    //{
-    //    public string Name { get; }
-    //    public EnumFieldInfo(string name) { Name = name; }
-    //}
-
-    //// x => this.x
-    //class ThisMemberInfo : IdentifierInfo
-    //{   
-    //    public M.Name MemberName { get; }
-    //    public ThisMemberInfo(M.Name memberName)
-    //    {
-    //        MemberName = memberName;
-    //    }
-    //}
-
+    [AutoConstructor]
+    partial class GlobalVarIdentifierResult : ValidIdentifierResult
+    {
+        public string VarName { get; }
+        public TypeValue TypeValue { get; }
+    }
+    
     //// F
     class InstanceFuncIdentifierResult : ValidIdentifierResult
     {
-        public R.Exp Instance { get; }
+        public R.Loc Instance { get; }
         public TypeValue InstanceType { get; }
         public FuncValue FuncValue { get; }
         public LambdaCapture LambdaCapture { get; }
-        public InstanceFuncIdentifierResult(R.Exp instance, TypeValue instanceType, FuncValue funcValue, LambdaCapture lambdaCapture)
+        public InstanceFuncIdentifierResult(R.Loc instance, TypeValue instanceType, FuncValue funcValue, LambdaCapture lambdaCapture)
         {
             Debug.Assert(!funcValue.IsStatic);
 

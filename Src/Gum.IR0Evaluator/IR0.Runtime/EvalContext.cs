@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Gum;
+using Gum.Collections;
 using Gum.IR0;
+
+using Void = Gum.Infra.Void;
 
 namespace Gum.IR0.Runtime
 {   
@@ -11,12 +14,12 @@ namespace Gum.IR0.Runtime
     {
         class SharedData
         {
-            public ImmutableArray<FuncDecl> FuncDecls { get; }
+            public ImmutableArray<IDecl> Decls { get; }            
             public Dictionary<string, Value> PrivateGlobalVars { get; }
 
-            public SharedData(ImmutableArray<FuncDecl> funcDecls)
+            public SharedData(ImmutableArray<IDecl> decls)
             {
-                FuncDecls = funcDecls;
+                Decls = decls;
                 PrivateGlobalVars = new Dictionary<string, Value>();
             }
         }
@@ -28,10 +31,11 @@ namespace Gum.IR0.Runtime
         private ImmutableArray<Task> tasks;
         private Value? thisValue;
         private Value retValue;
+        private Value? yieldValue;
 
-        public EvalContext(ImmutableArray<FuncDecl> funcDecls)
+        public EvalContext(ImmutableArray<IDecl> decls)
         {
-            sharedData = new SharedData(funcDecls);
+            sharedData = new SharedData(decls);
             
             localVars = ImmutableDictionary<string, Value>.Empty;
             flowControl = EvalFlowControl.None;
@@ -41,14 +45,14 @@ namespace Gum.IR0.Runtime
         }
 
         public EvalContext(
-            EvalContext other,
+            EvalContext evalContext,
             ImmutableDictionary<string, Value> localVars,
             EvalFlowControl flowControl,
             ImmutableArray<Task> tasks,
             Value? thisValue,
             Value retValue)
         {
-            this.sharedData = other.sharedData;
+            this.sharedData = evalContext.sharedData;
 
             this.localVars = localVars;
             this.flowControl = flowControl;
@@ -139,32 +143,33 @@ namespace Gum.IR0.Runtime
             return retValue!;
         }
 
+        // struct 이면 refValue, boxed struct 이면 boxValue, class 이면 ClassValue
         public Value? GetThisValue()
         {
             return thisValue;
         }
 
-        public async IAsyncEnumerable<Value> ExecInNewTasks(Func<IAsyncEnumerable<Value>> enumerable)
+        public async IAsyncEnumerable<Void> ExecInNewTasks(Func<IAsyncEnumerable<Void>> enumerable)
         {
             var prevTasks = tasks;
             tasks = ImmutableArray<Task>.Empty;
 
-            await foreach (var v in enumerable())
-                yield return v;
+            await foreach (var _ in enumerable())
+                yield return Void.Instance;
             
             tasks = prevTasks;
         }
 
-        public async IAsyncEnumerable<Value> ExecInNewScopeAsync(Func<IAsyncEnumerable<Value>> action)
+        public async IAsyncEnumerable<Void> ExecInNewScopeAsync(Func<IAsyncEnumerable<Void>> action)
         {
             var prevLocalVars = localVars;
 
             try
             {
                 var enumerable = action.Invoke();
-                await foreach(var yieldValue in enumerable)
+                await foreach(var _ in enumerable)
                 {
-                    yield return yieldValue;
+                    yield return Void.Instance;
                 }
             }
             finally 
@@ -173,10 +178,25 @@ namespace Gum.IR0.Runtime
             }
         }
 
-        public TFuncDecl GetFuncDecl<TFuncDecl>(FuncDeclId funcDeclId)
-            where TFuncDecl : FuncDecl
+        public TDecl GetDecl<TDecl>(DeclId declId)
+            where TDecl : IDecl
         {
-            return (TFuncDecl)sharedData.FuncDecls[funcDeclId.Value];
+            return (TDecl)sharedData.Decls[declId.Value];
+        }
+
+        public Func GetFunc(Func func)
+        {
+
+        }
+
+        public void SetYieldValue(Value value)
+        {
+            yieldValue = value;
+        }
+
+        public Value GetYieldValue()
+        {
+            return yieldValue!;
         }
     }    
 }

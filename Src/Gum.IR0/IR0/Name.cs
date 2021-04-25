@@ -1,8 +1,6 @@
 ﻿using Pretune;
-using System;
-using System.Diagnostics;
 
-namespace Gum.CompileTime
+namespace Gum.IR0
 {
     public enum SpecialName
     {
@@ -26,7 +24,7 @@ namespace Gum.CompileTime
     [ImplementIEquatable]
     public partial struct Name
     {
-        public SpecialName Kind { get;  }
+        public SpecialName Kind { get; }
         public string? Text { get; }
 
         public static Name MakeAnonymousLambda(string text)
@@ -44,10 +42,10 @@ namespace Gum.CompileTime
             Kind = kind;
             Text = text;
         }
-        
+
         public override string ToString()
         {
-            switch(Kind)
+            switch (Kind)
             {
                 case SpecialName.Normal: return Text!;
                 case SpecialName.AnonymousLambda: return $"$Labmda{Text!}";

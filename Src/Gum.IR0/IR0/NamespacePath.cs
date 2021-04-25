@@ -1,21 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using Gum.Collections;
-using System.Diagnostics;
-using System.Linq;
+﻿using Gum.Collections;
+using Pretune;
 
-namespace Gum.CompileTime
+namespace Gum.IR0
 {
     [ImplementIEquatable]
     public partial struct NamespacePath
     {
+        public static readonly NamespacePath Root = new NamespacePath(ImmutableArray<NamespaceName>.Empty);
+
         public ImmutableArray<NamespaceName> Entries { get; }
-
-        public static NamespacePath Root { get; } = new NamespacePath(ImmutableArray<NamespaceName>.Empty);
-
         public bool IsRoot { get => Entries.IsEmpty; }
 
-        private NamespacePath(ImmutableArray<NamespaceName> entries)
+        public NamespacePath(ImmutableArray<NamespaceName> entries)
         {
             Entries = entries;
         }
@@ -26,7 +22,6 @@ namespace Gum.CompileTime
             builder.Add(hdEntry);
             builder.AddRange(tlEntries);
             Entries = builder.MoveToImmutable();
-        }       
-        
+        }
     }
 }

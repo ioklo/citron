@@ -15,9 +15,9 @@ namespace Gum.IR0
     }
 
     [AutoConstructor, ImplementIEquatable]
-    public partial class EnumDecl : TypeDecl
+    public partial class EnumDecl : IDecl
     {
-        public override TypeDeclId Id { get; }
+        public DeclId DeclId { get; }
         public string Name { get; }
         public ImmutableArray<string> TypeParams { get; }
         public ImmutableArray<EnumElement> Elems { get; }

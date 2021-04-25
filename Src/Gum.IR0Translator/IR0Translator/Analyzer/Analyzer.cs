@@ -40,7 +40,7 @@ namespace Gum.IR0Translator
             IR0Translator.Misc.VisitScript(script, pass2);
 
             // 5. 각 func body를 분석한다 (4에서 얻게되는 글로벌 변수 정보가 필요하다)
-            return new R.Script(analyzer.context.GetTypeDecls(), analyzer.context.GetFuncDecls(), analyzer.context.GetTopLevelStmts());
+            return new R.Script(analyzer.context.GetDecls(), analyzer.context.GetTopLevelStmts());
         }
 
         Analyzer(InternalBinaryOperatorQueryService internalBinOpQueryService, Context context)
@@ -72,13 +72,13 @@ namespace Gum.IR0Translator
                 // var 처리
                 if (declType is VarTypeValue)
                 {
-                    var initExpResult = AnalyzeExp(elem.InitExp, ResolveHint.None);
+                    var initExpResult = AnalyzeExp_Exp(elem.InitExp, ResolveHint.None);
                     var rtype = initExpResult.TypeValue.GetRType();
                     return new VarDeclElementCoreResult(new R.VarDeclElement(elem.VarName, rtype, initExpResult.Exp), initExpResult.TypeValue);
                 }
                 else
                 {
-                    var initExpResult = AnalyzeExp(elem.InitExp, ResolveHint.Make(declType));
+                    var initExpResult = AnalyzeExp_Exp(elem.InitExp, ResolveHint.Make(declType));
 
                     if (!context.IsAssignable(declType, initExpResult.TypeValue))
                         context.AddFatalError(A0102_VarDecl_MismatchBetweenDeclTypeAndInitExpType, elem);
@@ -165,7 +165,7 @@ namespace Gum.IR0Translator
         {
             if (elem is S.ExpStringExpElement expElem)
             {
-                var expResult = AnalyzeExp(expElem.Exp, ResolveHint.None);
+                var expResult = AnalyzeExp_Exp(expElem.Exp, ResolveHint.None);
 
                 // 캐스팅이 필요하다면 
                 if (context.IsIntType(expResult.TypeValue))
@@ -173,7 +173,7 @@ namespace Gum.IR0Translator
                     return new R.ExpStringExpElement(
                         new R.CallInternalUnaryOperatorExp(
                             R.InternalUnaryOperator.ToString_Int_String,
-                            new R.ExpInfo(expResult.Exp, R.Type.Int)
+                            expResult.Exp
                         )
                     );
                 }
@@ -182,7 +182,7 @@ namespace Gum.IR0Translator
                     return new R.ExpStringExpElement(
                             new R.CallInternalUnaryOperatorExp(
                             R.InternalUnaryOperator.ToString_Bool_String,
-                            new R.ExpInfo(expResult.Exp, R.Type.Bool)
+                            expResult.Exp
                         )
                     );
                 }
@@ -206,8 +206,8 @@ namespace Gum.IR0Translator
         [AutoConstructor]
         partial struct LambdaResult
         {
-            public R.Stmt Body { get; }
-            public R.CaptureInfo CaptureInfo { get; }
+            public bool bCaptureThis { get; }
+            public ImmutableArray<string> CaptureLocalVars { get; }
             public LambdaTypeValue TypeValue { get; }
         }
 
@@ -224,39 +224,39 @@ namespace Gum.IR0Translator
                     context.AddFatalError(A9901_NotSupported_LambdaParameterInference, nodeForErrorReport);
 
                 var paramTypeValue = context.GetTypeValueByTypeExp(param.Type);
-
                 paramInfos.Add((param.Name, paramTypeValue));
             }
 
-            var bodyResult = new StmtResult(); // suppress CS0165
-
-            R.CaptureInfo? captureInfo = null;
-
-            context.ExecInLambdaScope(retTypeValue, () => {
+            var (bCaptureThis, bodyResult, capturedLocalVars, newRetTypeValue) = context.ExecInLambdaScope(retTypeValue, () => {
 
                 // 람다 파라미터를 지역 변수로 추가한다
                 foreach(var paramInfo in paramInfos)
                     context.AddLocalVarInfo(paramInfo.Name, paramInfo.TypeValue);
 
                 // 본문 분석
-                bodyResult = AnalyzeStmt(body);
-                
-                // 성공했으면, 리턴 타입 갱신
-                retTypeValue = context.GetRetTypeValue();
+                var bodyResult = AnalyzeStmt(body);
 
-                captureInfo = context.MakeCaptureInfo();
+                // 성공했으면, 리턴 타입 갱신
+                var bCaptureThis = context.NeedCaptureThis();
+                var retTypeValue = context.GetRetTypeValue();
+                var capturedLocalVars = context.GetCapturedLocalVars();
+
+                return (bCaptureThis, bodyResult, capturedLocalVars, retTypeValue);
             });
 
-            Debug.Assert(captureInfo != null);
-
             var paramTypes = paramInfos.Select(paramInfo => paramInfo.TypeValue).ToImmutableArray();
+            var rparamInfos = paramInfos.Select(paramInfo => new R.ParamInfo(paramInfo.TypeValue.GetRType(), paramInfo.Name)).ToImmutableArray();
+
+            var lambdaDeclId = context.AddLambdaDecl(null, capturedLocalVars, rparamInfos, bodyResult.Stmt);
 
             var lambdaTypeValue = context.NewLambdaTypeValue(
+                lambdaDeclId,
                 retTypeValue ?? VoidTypeValue.Instance,
                 paramTypes
             );
 
-            return new LambdaResult(bodyResult.Stmt, captureInfo, lambdaTypeValue);
+            var captureLocalVarNames = ImmutableArray.CreateRange(capturedLocalVars, c => c.Name);
+            return new LambdaResult(bCaptureThis, captureLocalVarNames, lambdaTypeValue);
         }
 
         bool IsTopLevelExp(S.Exp exp)
@@ -280,12 +280,12 @@ namespace Gum.IR0Translator
             }
         }
 
-        ExpResult AnalyzeTopLevelExp(S.Exp exp, ResolveHint hint, AnalyzeErrorCode code)
+        ExpExpResult AnalyzeTopLevelExp_Exp(S.Exp exp, ResolveHint hint, AnalyzeErrorCode code)
         {
             if (!IsTopLevelExp(exp))
                 context.AddFatalError(code, exp);
 
-            return AnalyzeExp(exp, hint);
+            return AnalyzeExp_Exp(exp, hint);
         }
 
         public void AnalyzeFuncDecl(S.FuncDecl funcDecl)
@@ -303,8 +303,6 @@ namespace Gum.IR0Translator
                 }
 
                 var bodyResult = AnalyzeStmt(funcDecl.Body);
-                var funcPath = context.GetCurFuncPath();
-                Debug.Assert(funcPath != null);
                 
                 if (funcDecl.IsSequence)
                 {
@@ -314,13 +312,27 @@ namespace Gum.IR0Translator
 
                     var retRType = retTypeValue.GetRType();
                     var parameters = funcDecl.ParamInfo.Parameters.Select(param => param.Name).ToImmutableArray();
-                    context.AddSequenceFuncDecl(funcPath.Value, retRType, false, funcDecl.TypeParams, parameters, bodyResult.Stmt);
+
+                    var rparamInfos = ImmutableArray.CreateRange(funcDecl.ParamInfo.Parameters, param =>
+                    {
+                        var typeValue = context.GetTypeValueByTypeExp(param.Type);
+                        var rtype = typeValue.GetRType();
+
+                        return new R.ParamInfo(rtype, param.Name);
+                    });
+
+                    context.AddSequenceFuncDecl(retRType, false, funcDecl.TypeParams, rparamInfos, bodyResult.Stmt);
                 }
                 else
                 {
                     // TODO: Body가 실제로 리턴을 제대로 하는지 확인해야 한다
-                    var parameters = funcDecl.ParamInfo.Parameters.Select(param => param.Name).ToImmutableArray();
-                    context.AddNormalFuncDecl(funcPath.Value, bThisCall: false, funcDecl.TypeParams, parameters, bodyResult.Stmt);
+                    var parameters = funcDecl.ParamInfo.Parameters.Select(param =>
+                    {
+                        var paramTypeValue = context.GetTypeValueByTypeExp(param.Type);
+                        return new R.ParamInfo(paramTypeValue.GetRType(), param.Name);
+                    }).ToImmutableArray();
+
+                    context.AddNormalFuncDecl(bThisCall: false, funcDecl.TypeParams, parameters, bodyResult.Stmt);
                 }
             });
         }
@@ -346,20 +358,6 @@ namespace Gum.IR0Translator
 
             if (bFatal)
                 throw new FatalAnalyzeException();
-        }
-
-        // TODO: Hint를 받을 수 있게 해야 한다
-        ImmutableArray<ExpResult> AnalyzeExps(ImmutableArray<S.Exp> exps)
-        {
-            var results = new List<ExpResult>();
-
-            foreach (var exp in exps)
-            {
-                var expResult = AnalyzeExp(exp, ResolveHint.None);
-                results.Add(expResult);
-            }
-
-            return results.ToImmutableArray();
         }
     }
 }

@@ -1,9 +1,9 @@
-﻿using Gum.IR0;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Gum.Collections;
 using System.Text;
 using System.Threading.Tasks;
+using Pretune;
 
 namespace Gum.IR0.Runtime
 {
@@ -46,6 +46,18 @@ namespace Gum.IR0.Runtime
         }
     }
 
+    // 특수 Value
+    class EmptyValue : Value
+    {
+        public static readonly Value Instance = new EmptyValue();
+        EmptyValue() { }
+
+        public override void SetValue(Value value)
+        {
+            // SetValue를 먹는다
+        }
+    }
+
     class StringValue : Value
     {
         string? value;
@@ -71,47 +83,6 @@ namespace Gum.IR0.Runtime
         }
     }
 
-    class AsyncEnumeratorValue : Value
-    {
-        IAsyncEnumerator<Value> enumerator;
-        public AsyncEnumeratorValue(IAsyncEnumerator<Value> enumerator)
-        {
-            this.enumerator = enumerator;
-        }
-
-        public IAsyncEnumerator<Value> GetEnumerator()
-        {
-            return enumerator;
-        }
-
-        public void SetEnumerator(IAsyncEnumerator<Value> asyncEnum)
-        {
-            this.enumerator = asyncEnum;
-        }
-
-        public override void SetValue(Value fromValue)
-        {
-            enumerator = ((AsyncEnumeratorValue)fromValue).enumerator;
-        }
-    }
-
-    class AsyncEnumerableValue : Value
-    {
-        IAsyncEnumerable<Value>? enumerable;        
-
-        public override void SetValue(Value value)
-        {
-            enumerable = ((AsyncEnumerableValue)value).enumerable;
-        }
-
-        public void SetEnumerable(IAsyncEnumerable<Value> enumerable) { this.enumerable = enumerable; }
-
-        public IAsyncEnumerable<Value> GetAsyncEnumerable()
-        {
-            return enumerable!;
-        }
-    }
-
     class VoidValue : Value
     {
         public static readonly Value Instance = new VoidValue();
@@ -120,6 +91,21 @@ namespace Gum.IR0.Runtime
         public override void SetValue(Value value)
         {
             throw new NotImplementedException();
+        }
+    }
+
+    // ref<T>
+    class RefValue : Value
+    {
+        public Value? Value { get; private set; }        
+        public RefValue(Value value)
+        {
+            Value = value;
+        }
+
+        public override void SetValue(Value srcValue)
+        {
+            Value = ((RefValue)srcValue).Value;
         }
     }
 
@@ -207,45 +193,32 @@ namespace Gum.IR0.Runtime
             return list!;
         }
     }
+    
+    // 람다 호출시에 필요한 값들만 들고 있으면 된다
+    class LambdaValue : Value
+    {   
+        public DeclId LambdaDeclId { get; }
+        public Value? CapturedThis { get; }                 // 캡쳐한 곳에 있던 this를 쓸지, struct면 RefValue, boxed struct면 BoxValue, class 면 ClassValue
+        public ImmutableDictionary<string, Value> Captures { get; }
 
-    public class Lambda
-    {
-        public Value? CapturedThis { get; }                 // 캡쳐한 곳에 있던 this를 쓸지
-        public ImmutableDictionary<string, Value> Captures { get; } 
-        public ImmutableArray<string> ParamNames { get; }
-        public Stmt Body { get; }
-
-        public Lambda(Value? capturedThis, ImmutableDictionary<string, Value> captures, ImmutableArray<string> paramNames, Stmt body)
+        // AnonymousLambdaType으로 부터 Allocation을 해야 한다
+        public LambdaValue(DeclId lambdaDeclId, Value? capturedThis, ImmutableDictionary<string, Value> captures)
         {
+            LambdaDeclId = lambdaDeclId;
             CapturedThis = capturedThis;
             Captures = captures;
-            ParamNames = paramNames;
-            Body = body;
-        }
-    }
-
-    class LambdaValue : Value
-    {
-        Lambda? lambda;
+        }        
         
-        public LambdaValue()
+        // Copy의 성격이 더 가깝다
+        public override void SetValue(Value srcValue)
         {
-            lambda = null;
-        }
+            LambdaValue srcLambdaValue = (LambdaValue)srcValue;
 
-        public Lambda GetLambda()
-        {
-            return lambda!;
-        }
-        
-        public void SetLambda(Lambda lambda)
-        {
-            this.lambda = lambda;
-        }
+            if (CapturedThis != null)
+                CapturedThis.SetValue(srcLambdaValue.CapturedThis!);
 
-        public override void SetValue(Value value)
-        {
-            lambda = ((LambdaValue)value).lambda;
+            foreach (var (name, value) in Captures)
+                value.SetValue(srcLambdaValue.Captures[name]);
         }
     }
 

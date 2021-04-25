@@ -13,20 +13,20 @@ namespace Gum.IR0Translator
 {
     partial class Analyzer
     {
-        IdentifierResult ResolveIdentifierIdExp(S.IdentifierExp idExp, ResolveHint resolveHint)
+        IdentifierResult ResolveIdentifier(S.IdentifierExp idExp, ResolveHint resolveHint)
         {
             var typeArgs = GetTypeValues(idExp.TypeArgs, context);
             var resolver = new IdExpIdentifierResolver(idExp.Value, typeArgs, resolveHint, context);
             return resolver.Resolve();
         }        
 
-        R.Exp BuildMemberExp(R.Exp parent, TypeValue parentType, string memberName)
+        R.Loc BuildMemberLoc(R.Loc parent, TypeValue parentType, string memberName)
         {
             switch(parentType)
             {
-                case ClassTypeValue _: return new R.ClassMemberExp(parent, memberName);
-                case StructTypeValue _: return new R.StructMemberExp(parent, memberName);
-                case EnumElemTypeValue _: return new R.EnumMemberExp(parent, memberName);
+                case ClassTypeValue _: return new R.ClassMemberLoc(parent, memberName);
+                case StructTypeValue _: return new R.StructMemberLoc(parent, memberName);
+                case EnumElemTypeValue _: return new R.EnumMemberLoc(parent, memberName);
             }
 
             throw new UnreachableCodeException();
@@ -44,147 +44,8 @@ namespace Gum.IR0Translator
             }
 
             throw new UnreachableCodeException();
-        }
+        }        
         
-        // e.x 꼴
-        IdentifierResult ResolveIdentifierMemberExpExpParent(
-            R.Exp parentExp,
-            TypeValue parentType,
-            LambdaCapture parentLambdaCapture,
-            string memberName, ImmutableArray<TypeValue> typeArgs, 
-            ResolveHint hint)
-        {
-            // 해당 이름의 타입, 변수, 함수
-            var memberResult = parentType.GetMember(memberName, typeArgs, hint);
-
-            switch(memberResult)
-            {
-                case ErrorItemResult errorResult:
-                    return ToErrorIdentifierResult(errorResult);
-
-                case NotFoundItemResult:
-                    return NotFoundIdentifierResult.Instance;
-
-                case ValueItemResult itemResult:
-                    switch(itemResult.ItemValue)
-                    {
-                        case TypeValue:
-                            return CantGetTypeMemberThroughInstanceIdentifierResult.Instance;
-
-                        case FuncValue funcValue:
-                            if (funcValue.IsStatic)
-                                return CantGetStaticMemberThroughInstanceIdentifierResult.Instance;
-
-                            return new InstanceFuncIdentifierResult(parentExp, parentType, funcValue, parentLambdaCapture);
-
-                        case MemberVarValue memberVarValue:
-                            if (memberVarValue.IsStatic)
-                                return CantGetStaticMemberThroughInstanceIdentifierResult.Instance;
-
-                            var exp = BuildMemberExp(parentExp, parentType, memberName);
-                            return new ExpIdentifierResult(exp, memberVarValue.GetTypeValue(), parentLambdaCapture);
-
-                        default:
-                            throw new UnreachableCodeException();
-                    }
-            }
-
-            throw new UnreachableCodeException();
-        }
-
-        // T.x 꼴
-        IdentifierResult ResolveIdentifierMemberExpTypeParent(TypeValue parentType, string memberName, ImmutableArray<TypeValue> typeArgs, ResolveHint hint)
-        {
-            var member = parentType.GetMember(memberName, typeArgs, hint);
-
-            switch (member)
-            {
-                case NotFoundItemResult:
-                    return NotFoundIdentifierResult.Instance;
-
-                case ErrorItemResult errorResult:
-                    return ToErrorIdentifierResult(errorResult);
-
-                case ValueItemResult itemResult:
-                    switch(itemResult.ItemValue)
-                    {
-                        case TypeValue typeValue: return new TypeIdentifierResult(typeValue);
-                        case FuncValue funcValue:
-
-                            if (!funcValue.IsStatic)
-                                return CantGetInstanceMemberThroughTypeIdentifierResult.Instance;
-
-                            return new StaticFuncIdentifierResult(funcValue);
-
-                        case MemberVarValue memberVarValue:
-
-                            if (!memberVarValue.IsStatic)
-                                return CantGetInstanceMemberThroughTypeIdentifierResult.Instance;
-
-                            var rparentType = parentType.GetRType();
-                            var exp = new R.StaticMemberExp(rparentType, memberName);
-                            return new ExpIdentifierResult(exp, memberVarValue.GetTypeValue(), NoneLambdaCapture.Instance);
-
-                        default:
-                            throw new UnreachableCodeException();
-                    }
-
-                default:
-                    throw new UnreachableCodeException();
-            }
-        }
-
-        IdentifierResult ResolveIdentifierMemberExp(S.MemberExp memberExp, ResolveHint hint)
-        {
-            var typeArgs = GetTypeValues(memberExp.MemberTypeArgs, context);
-
-            // 힌트가 없다. EnumElemIdentifierResult가 나올 수 없다
-            var parentResult = ResolveIdentifier(memberExp.Parent, ResolveHint.None);
-
-            switch (parentResult)
-            {
-                case ErrorIdentifierResult _:
-                    return parentResult;
-
-                case ExpIdentifierResult expResult:                    
-                    return ResolveIdentifierMemberExpExpParent(expResult.Exp, expResult.TypeValue, expResult.LambdaCapture, memberExp.MemberName, typeArgs, hint);
-
-                case TypeIdentifierResult typeResult:
-                    return ResolveIdentifierMemberExpTypeParent(typeResult.TypeValue, memberExp.MemberName, typeArgs, hint);
-
-                case InstanceFuncIdentifierResult _:
-                    // 함수는 멤버변수를 가질 수 없습니다
-                    return FuncCantHaveMemberErrorIdentifierResult.Instance;
-
-                case StaticFuncIdentifierResult _:
-                    // 함수는 멤버변수를 가질 수 없습니다
-                    return FuncCantHaveMemberErrorIdentifierResult.Instance;
-
-                case EnumElemIdentifierResult enumElemResult:
-                    // 힌트 없이 EnumElem이 나올 수가 없다
-                    throw new UnreachableCodeException();
-            }
-
-            throw new UnreachableCodeException();
-        }
-
-        IdentifierResult ResolveIdentifier(S.Exp exp, ResolveHint hint)
-        {
-            if (exp is S.IdentifierExp idExp)
-            {
-                return ResolveIdentifierIdExp(idExp, hint);
-            }
-            else if (exp is S.MemberExp memberExp)
-            {
-                return ResolveIdentifierMemberExp(memberExp, hint);
-            }
-            else
-            {
-                var expResult = AnalyzeExpExceptIdAndMember(exp, hint);
-                return new ExpIdentifierResult(expResult.Exp, expResult.TypeValue, NoneLambdaCapture.Instance);
-            }
-        }
-
         struct IdExpIdentifierResolver
         {
             string idName;
@@ -208,8 +69,7 @@ namespace Gum.IR0Translator
                 var varInfo = context.GetLocalVarOutsideLambda(idName);
                 if (varInfo == null) return NotFoundIdentifierResult.Instance;
 
-                var localCapture = new LocalLambdaCapture(varInfo.Value.Name, varInfo.Value.TypeValue);
-                return new ExpIdentifierResult(new R.LocalVarExp(varInfo.Value.Name), varInfo.Value.TypeValue, localCapture);
+                return new LocalVarIdentifierResult(true, varInfo.Value.Name, varInfo.Value.TypeValue);
             }
 
             IdentifierResult GetLocalVarInfo()
@@ -220,7 +80,7 @@ namespace Gum.IR0Translator
                 var varInfo = context.GetLocalVar(idName);
                 if (varInfo == null) return NotFoundIdentifierResult.Instance;
 
-                return new ExpIdentifierResult(new R.LocalVarExp(varInfo.Value.Name), varInfo.Value.TypeValue, NoneLambdaCapture.Instance);
+                return new LocalVarIdentifierResult(false, varInfo.Value.Name, varInfo.Value.TypeValue);
             }
 
             IdentifierResult GetThisMemberInfo()
@@ -236,7 +96,7 @@ namespace Gum.IR0Translator
                 var varInfo = context.GetInternalGlobalVarInfo(idName);
                 if (varInfo == null) return NotFoundIdentifierResult.Instance;
 
-                return new ExpIdentifierResult(new R.GlobalVarExp(varInfo.Name.ToString()), varInfo.TypeValue, NoneLambdaCapture.Instance);
+                return new GlobalVarIdentifierResult(varInfo.Name.ToString(), varInfo.TypeValue);
             }
             
             IdentifierResult GetGlobalInfo()

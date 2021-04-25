@@ -8,7 +8,7 @@ namespace Gum.CompileTime
     [ImplementIEquatable]
     public partial struct ModuleName
     {
-        string Text { get; }
+        public string Text { get; }
 
         private ModuleName(string text)
         {
