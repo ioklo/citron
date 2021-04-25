@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Gum.IR0.Runtime
+namespace Gum.IR0Evaluator
 {
     // TODO: Core로 옮기던가, Test로 옮기던가
     //public class DefaultApplication

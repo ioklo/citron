@@ -5,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Gum;
 
-namespace Gum.IR0.Runtime
+namespace Gum.IR0Evaluator
 {
     // TODO: 이 단계에서 Module이 필요 없을 것 같다. 일단 주석처리
     //internal class ScriptModule : IModule

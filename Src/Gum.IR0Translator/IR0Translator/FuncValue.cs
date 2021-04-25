@@ -101,16 +101,6 @@ namespace Gum.IR0Translator
             throw new UnreachableCodeException();
         }
 
-        public R.DeclId GetRDeclId()
-        {
-            throw new NotImplementedException();
-        }
-
-        public R.TypeContext GetRTypeContext()
-        {
-            return ritemFactory.MakeTypeContext();
-        }
-
         // IR0 Func를 만들어 줍니다
         public R.Func GetRFunc()
         {

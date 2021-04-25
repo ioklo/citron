@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Gum.IR0.Runtime
+namespace Gum.IR0Evaluator
 {
     public struct NamedValue
     {

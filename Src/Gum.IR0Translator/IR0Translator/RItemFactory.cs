@@ -78,10 +78,5 @@ namespace Gum.IR0Translator
         {
             throw new NotImplementedException();
         }
-
-        public R.TypeContext MakeTypeContext()
-        {
-            throw new NotImplementedException();
-        }
     }
 }

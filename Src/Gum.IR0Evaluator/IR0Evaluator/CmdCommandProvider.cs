@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Gum.IR0.Runtime
+namespace Gum.IR0Evaluator
 {
     public class CmdCommandProvider : ICommandProvider
     {

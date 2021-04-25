@@ -4,20 +4,20 @@ using System.Linq;
 using System.Threading.Tasks;
 using Gum;
 using Gum.Collections;
-using Gum.IR0;
 
+using R = Gum.IR0;
 using Void = Gum.Infra.Void;
 
-namespace Gum.IR0.Runtime
+namespace Gum.IR0Evaluator
 {   
     public class EvalContext
     {
         class SharedData
         {
-            public ImmutableArray<IDecl> Decls { get; }            
+            public ImmutableArray<R.IDecl> Decls { get; }            
             public Dictionary<string, Value> PrivateGlobalVars { get; }
 
-            public SharedData(ImmutableArray<IDecl> decls)
+            public SharedData(ImmutableArray<R.IDecl> decls)
             {
                 Decls = decls;
                 PrivateGlobalVars = new Dictionary<string, Value>();
@@ -33,7 +33,7 @@ namespace Gum.IR0.Runtime
         private Value retValue;
         private Value? yieldValue;
 
-        public EvalContext(ImmutableArray<IDecl> decls)
+        public EvalContext(ImmutableArray<R.IDecl> decls)
         {
             sharedData = new SharedData(decls);
             
@@ -98,7 +98,7 @@ namespace Gum.IR0.Runtime
             }
         }
 
-        public Value GetStaticValue(Type type)
+        public Value GetStaticValue(R.Type type)
         {
             throw new NotImplementedException();
         }
@@ -178,10 +178,15 @@ namespace Gum.IR0.Runtime
             }
         }
 
-        public TDecl GetDecl<TDecl>(DeclId declId)
-            where TDecl : IDecl
+        public TDecl GetDecl<TDecl>(R.DeclId declId)
+            where TDecl : R.IDecl
         {
             return (TDecl)sharedData.Decls[declId.Value];
+        }
+
+        public Func GetFunc(R.Func func)
+        {
+            throw new NotImplementedException();
         }
 
         public void SetYieldValue(Value value)

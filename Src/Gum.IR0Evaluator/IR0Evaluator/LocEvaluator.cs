@@ -5,7 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Gum.IR0.Runtime
+using R = Gum.IR0;
+
+namespace Gum.IR0Evaluator
 {
     class LocEvaluator
     {
@@ -15,14 +17,14 @@ namespace Gum.IR0.Runtime
             this.evaluator = evaluator;
         }
 
-        async ValueTask<Value> EvalTempLocAsync(TempLoc loc, EvalContext context)
+        async ValueTask<Value> EvalTempLocAsync(R.TempLoc loc, EvalContext context)
         {
             var result = evaluator.AllocValue(loc.Type, context);
             await evaluator.EvalExpAsync(loc.Exp, result, context);
             return result;
         }
 
-        async ValueTask<Value> EvalListIndexerLocAsync(ListIndexerLoc loc, EvalContext context)
+        async ValueTask<Value> EvalListIndexerLocAsync(R.ListIndexerLoc loc, EvalContext context)
         {
             var listValue = (ListValue)await EvalLocAsync(loc.List, context);
             var indexValue = (IntValue)await evaluator.EvalLocAsync(loc.Index, context);
@@ -31,35 +33,35 @@ namespace Gum.IR0.Runtime
             return list[indexValue.GetInt()];
         }
 
-        public async ValueTask<Value> EvalLocAsync(Loc loc, EvalContext context)
+        public async ValueTask<Value> EvalLocAsync(R.Loc loc, EvalContext context)
         {
             switch (loc)
             {
-                case TempLoc tempLoc:
+                case R.TempLoc tempLoc:
                     return await EvalTempLocAsync(tempLoc, context);
 
-                case GlobalVarLoc globalVarLoc:
+                case R.GlobalVarLoc globalVarLoc:
                     return context.GetGlobalValue(globalVarLoc.Name);
 
-                case LocalVarLoc localVarLoc:
+                case R.LocalVarLoc localVarLoc:
                     return context.GetLocalValue(localVarLoc.Name);
 
-                case ListIndexerLoc listIndexerLoc:
+                case R.ListIndexerLoc listIndexerLoc:
                     return await EvalListIndexerLocAsync(listIndexerLoc, context);
 
-                case StaticMemberLoc staticMemberLoc:
+                case R.StaticMemberLoc staticMemberLoc:
                     var staticValue = (StaticValue)context.GetStaticValue(staticMemberLoc.Type);
                     return staticValue.GetMemberValue(staticMemberLoc.MemberName);
 
-                case StructMemberLoc structMemberLoc:
+                case R.StructMemberLoc structMemberLoc:
                     var structValue = (StructValue)await EvalLocAsync(structMemberLoc.Instance, context);
                     return structValue.GetMemberValue(structMemberLoc.MemberName);
 
-                case ClassMemberLoc classMemberLoc:
+                case R.ClassMemberLoc classMemberLoc:
                     var classValue = (ClassValue)await EvalLocAsync(classMemberLoc.Instance, context);
                     return classValue.GetMemberValue(classMemberLoc.MemberName);
 
-                case EnumMemberLoc enumMemberLoc:
+                case R.EnumMemberLoc enumMemberLoc:
                     var enumValue = (EnumValue)await EvalLocAsync(enumMemberLoc.Instance, context);
                     return enumValue.GetMemberValue(enumMemberLoc.MemberName);
 

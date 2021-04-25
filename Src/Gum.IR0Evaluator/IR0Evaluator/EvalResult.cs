@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Gum.IR0.Runtime
+namespace Gum.IR0Evaluator
 {
     public struct EvalResult<TValue>
     {

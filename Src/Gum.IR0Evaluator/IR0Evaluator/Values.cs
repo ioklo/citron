@@ -5,7 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Pretune;
 
-namespace Gum.IR0.Runtime
+using R = Gum.IR0;
+
+namespace Gum.IR0Evaluator
 {
     public abstract class Value
     {
@@ -134,7 +136,7 @@ namespace Gum.IR0.Runtime
             throw new NotImplementedException();
         }
 
-        public new Type GetType()
+        public new R.Type GetType()
         {
             throw new NotImplementedException();
         }
@@ -197,12 +199,12 @@ namespace Gum.IR0.Runtime
     // 람다 호출시에 필요한 값들만 들고 있으면 된다
     class LambdaValue : Value
     {   
-        public DeclId LambdaDeclId { get; }
+        public R.DeclId LambdaDeclId { get; }
         public Value? CapturedThis { get; }                 // 캡쳐한 곳에 있던 this를 쓸지, struct면 RefValue, boxed struct면 BoxValue, class 면 ClassValue
         public ImmutableDictionary<string, Value> Captures { get; }
 
         // AnonymousLambdaType으로 부터 Allocation을 해야 한다
-        public LambdaValue(DeclId lambdaDeclId, Value? capturedThis, ImmutableDictionary<string, Value> captures)
+        public LambdaValue(R.DeclId lambdaDeclId, Value? capturedThis, ImmutableDictionary<string, Value> captures)
         {
             LambdaDeclId = lambdaDeclId;
             CapturedThis = capturedThis;

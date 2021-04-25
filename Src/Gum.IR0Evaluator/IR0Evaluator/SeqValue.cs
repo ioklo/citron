@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 
-namespace Gum.IR0.Runtime
+namespace Gum.IR0Evaluator
 {
     [AutoConstructor, ImplementIEquatable]
     partial class SeqValue : Value
