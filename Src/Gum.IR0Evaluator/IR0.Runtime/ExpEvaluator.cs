@@ -84,8 +84,7 @@ namespace Gum.IR0.Runtime
             // 2. 필요한 값: DeclId (Body가 있는 곳), TypeContext를 만들기 위한 
             // 1) X<int, short>.Y<string>.F<bool>, 
             // 2) (declId, [[[int, short], string], bool])
-            // 누가 정보를 더 많이 가지고 있는가; 1) 필요한가? 모른다
-            // 
+            // 누가 정보를 더 많이 가지고 있는가; 1) 필요한가? 
             var funcDecl = context.GetDecl<NormalFuncDecl>(exp.Func);
 
             // typeContext를 계산합니다
