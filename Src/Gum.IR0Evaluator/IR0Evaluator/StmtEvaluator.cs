@@ -15,441 +15,449 @@ using R = Gum.IR0;
 
 namespace Gum.IR0Evaluator
 {
-    class StmtEvaluator
+    public partial class Evaluator
     {
-        Evaluator evaluator;
-        ICommandProvider commandProvider;
-
-        public StmtEvaluator(Evaluator evaluator, ICommandProvider commandProvider)
+        class StmtEvaluator
         {
-            this.evaluator = evaluator;
-            this.commandProvider = commandProvider;
-        }
+            Evaluator evaluator;
+            ICommandProvider commandProvider;
 
-        // TODO: CommandProvider가 Parser도 제공해야 할 것 같다
-        internal async ValueTask EvalCommandStmtAsync(R.CommandStmt stmt, EvalContext context)
-        {
-            var tempStr = evaluator.AllocValue<StringValue>(R.Type.String, context);
-
-            foreach (var command in stmt.Commands)
+            public StmtEvaluator(Evaluator evaluator, ICommandProvider commandProvider)
             {
-                await evaluator.EvalStringExpAsync(command, tempStr, context);
-                var cmdText = tempStr.GetString();
-
-                await commandProvider.ExecuteAsync(cmdText);
+                this.evaluator = evaluator;
+                this.commandProvider = commandProvider;
             }
-        }
 
-        internal async ValueTask EvalPrivateGlobalVarDeclStmtAsync(R.PrivateGlobalVarDeclStmt stmt, EvalContext context)
-        {
-            foreach (var elem in stmt.Elems)
+            // TODO: CommandProvider가 Parser도 제공해야 할 것 같다
+            internal async ValueTask EvalCommandStmtAsync(R.CommandStmt stmt)
             {
-                var value = evaluator.AllocValue(elem.Type, context);
-                context.AddPrivateGlobalVar(elem.Name, value);
+                var tempStr = evaluator.AllocValue<StringValue>(R.Type.String);
 
-                // InitExp가 있으면 
-                if (elem.InitExp != null)
-                    await evaluator.EvalExpAsync(elem.InitExp, value, context);
-            }
-        }
-
-        internal ValueTask EvalLocalVarDeclStmtAsync(R.LocalVarDeclStmt stmt, EvalContext context)
-        {
-            return evaluator.EvalLocalVarDeclAsync(stmt.VarDecl, context);
-        }
-
-        internal async IAsyncEnumerable<Void> EvalIfStmtAsync(R.IfStmt stmt, EvalContext context)
-        {
-            var condValue = evaluator.AllocValue<BoolValue>(R.Type.Bool, context);
-            await evaluator.EvalExpAsync(stmt.Cond, condValue, context);
-
-            if (condValue.GetBool())
-            {
-                await foreach (var value in EvalStmtAsync(stmt.Body, context))
-                    yield return Void.Instance;
-            }
-            else
-            {
-                if (stmt.ElseBody != null)
-                    await foreach (var value in EvalStmtAsync(stmt.ElseBody, context))
-                        yield return Void.Instance;
-            }
-        }
-
-        internal async IAsyncEnumerable<Void> EvalIfTestEnumStmtAsync(R.IfTestEnumStmt stmt, EvalContext context)
-        {
-            var targetValue = (EnumValue)await evaluator.EvalLocAsync(stmt.Target, context);
-            var bTestPassed = (targetValue.GetElemName() == stmt.ElemName);
-                
-            if (bTestPassed)
-            {
-                await foreach (var value in EvalStmtAsync(stmt.Body, context))
-                    yield return Void.Instance;
-            }
-            else
-            {
-                if (stmt.ElseBody != null)
-                    await foreach (var value in EvalStmtAsync(stmt.ElseBody, context))
-                        yield return Void.Instance;
-            }
-        }
-
-        internal async IAsyncEnumerable<Void> EvalIfTestClassStmtAsync(R.IfTestClassStmt stmt, EvalContext context)
-        {
-            // 분석기가 미리 계산해 놓은 TypeValue를 가져온다                
-            var targetValue = (ClassValue)await evaluator.EvalLocAsync(stmt.Target, context);                        
-            var targetType = targetValue.GetType();
-
-            var bTestPassed = evaluator.IsType(targetType, stmt.TestType, context);
-
-            if (bTestPassed)
-            {
-                await foreach (var value in EvalStmtAsync(stmt.Body, context))
-                    yield return Void.Instance;
-            }
-            else
-            {
-                if (stmt.ElseBody != null)
-                    await foreach (var value in EvalStmtAsync(stmt.ElseBody, context))
-                        yield return Void.Instance;
-            }
-        }
-
-        internal IAsyncEnumerable<Void> EvalForStmtAsync(R.ForStmt forStmt, EvalContext context)
-        {
-            async IAsyncEnumerable<Void> InnerAsync()
-            {
-                // continue를 실행시키기 위한 공간은 미리 할당받는다
-                if (forStmt.Initializer != null)
+                foreach (var command in stmt.Commands)
                 {
-                    switch (forStmt.Initializer)
-                    {
-                        case R.VarDeclForStmtInitializer varDeclInitializer:
-                            await evaluator.EvalLocalVarDeclAsync(varDeclInitializer.VarDecl, context);
-                            break;
+                    await evaluator.EvalStringExpAsync(command, tempStr);
+                    var cmdText = tempStr.GetString();
 
-                        case R.ExpForStmtInitializer expInitializer:
-                            await evaluator.EvalExpAsync(expInitializer.Exp, EmptyValue.Instance, context);
-                            break;
-
-                        default:
-                            throw new NotImplementedException();
-                    }
-                }
-
-                while (true)
-                {
-                    if (forStmt.CondExp != null)
-                    {
-                        var condValue = evaluator.AllocValue<BoolValue>(Type.Bool, context);
-                        await evaluator.EvalExpAsync(forStmt.CondExp, condValue, context);
-
-                        if (!condValue.GetBool())
-                            break;
-                    }
-
-                    await foreach (var value in EvalStmtAsync(forStmt.Body, context))
-                        yield return Void.Instance;
-
-                    var flowControl = context.GetFlowControl();
-
-                    if (flowControl == EvalFlowControl.Break)
-                    {
-                        context.SetFlowControl(EvalFlowControl.None);
-                        break;
-                    }
-                    else if (flowControl == EvalFlowControl.Continue)
-                    {
-                        context.SetFlowControl(EvalFlowControl.None);
-                    }
-                    else if (flowControl == EvalFlowControl.Return)
-                    {
-                        break;
-                    }
-                    else
-                    {
-                        Debug.Assert(context.GetFlowControl() == EvalFlowControl.None);
-                    }
-
-                    if (forStmt.ContinueExp != null)
-                    {
-                        await evaluator.EvalExpAsync(forStmt.ContinueExp, EmptyValue.Instance, context);
-                    }
+                    await commandProvider.ExecuteAsync(cmdText);
                 }
             }
 
-            return context.ExecInNewScopeAsync(InnerAsync);
-        }
-
-        internal void EvalContinueStmt(R.ContinueStmt continueStmt, EvalContext context)
-        {
-            context.SetFlowControl(EvalFlowControl.Continue);
-        }
-
-        internal void EvalBreakStmt(R.BreakStmt breakStmt, EvalContext context)
-        {
-            context.SetFlowControl(EvalFlowControl.Break);
-        }
-
-        internal async ValueTask EvalReturnStmtAsync(R.ReturnStmt returnStmt, EvalContext context)
-        {
-            if (returnStmt.Value != null)
+            internal async ValueTask EvalPrivateGlobalVarDeclStmtAsync(R.PrivateGlobalVarDeclStmt stmt)
             {
-                var retValue = context.GetRetValue();
-                await evaluator.EvalExpAsync(returnStmt.Value, retValue, context);
-            }
-
-            context.SetFlowControl(EvalFlowControl.Return);
-        }
-
-        internal IAsyncEnumerable<Void> EvalBlockStmtAsync(R.BlockStmt blockStmt, EvalContext context)
-        {
-            async IAsyncEnumerable<Void> InnerAsync()
-            {
-                foreach (var stmt in blockStmt.Stmts)
+                foreach (var elem in stmt.Elems)
                 {
-                    await foreach (var value in EvalStmtAsync(stmt, context))
-                    {
-                        yield return Void.Instance;
+                    var value = evaluator.AllocValue(elem.Type);
+                    evaluator.context.AddPrivateGlobalVar(elem.Name, value);
 
-                        // 확실하지 않아서 걸어둔다
-                        Debug.Assert(context.GetFlowControl() == EvalFlowControl.None);
-                    }
-
-                    if (context.GetFlowControl() != EvalFlowControl.None)
-                        break;
+                    // InitExp가 있으면 
+                    if (elem.InitExp != null)
+                        await evaluator.EvalExpAsync(elem.InitExp, value);
                 }
             }
 
-            return context.ExecInNewScopeAsync(InnerAsync);
-        }
-
-        internal async ValueTask EvalExpStmtAsync(R.ExpStmt expStmt, EvalContext context)
-        {            
-            await evaluator.EvalExpAsync(expStmt.Exp, EmptyValue.Instance, context);
-        }
-
-        internal void EvalTaskStmt(R.TaskStmt taskStmt, EvalContext context)
-        {
-            var lambdaValue = evaluator.AllocValue<LambdaValue>(taskStmt.LambdaType, context);
-            var lambdaDecl = context.GetDecl<R.LambdaDecl>(lambdaValue.LambdaDeclId);            
-
-            evaluator.Capture(
-                lambdaValue, 
-                lambdaDecl.CapturedThisType != null, 
-                ImmutableArray.CreateRange(lambdaDecl.CaptureInfo, captureInfo => captureInfo.Name),
-                context);
-            
-            var newContext = new EvalContext(context, default, EvalFlowControl.None, default, null, VoidValue.Instance);
-
-            // 2. 그 lambda를 바로 실행하기
-            var task = Task.Run(async () =>
+            internal ValueTask EvalLocalVarDeclStmtAsync(R.LocalVarDeclStmt stmt)
             {
-                await evaluator.EvalLambdaAsync(lambdaValue, default, VoidValue.Instance, newContext);
-            });
-
-            context.AddTask(task);
-        }
-
-        IAsyncEnumerable<Void> EvalAwaitStmtAsync(R.AwaitStmt stmt, EvalContext context)
-        {
-            async IAsyncEnumerable<Void> EvalAsync()
-            {
-                await foreach (var value in EvalStmtAsync(stmt.Body, context))
-                    yield return Void.Instance;
-
-                await Task.WhenAll(context.GetTasks().AsEnumerable());
+                return evaluator.EvalLocalVarDeclAsync(stmt.VarDecl);
             }
 
-            return context.ExecInNewTasks(EvalAsync);
-        }
-
-        internal void EvalAsyncStmt(R.AsyncStmt asyncStmt, EvalContext context)
-        {
-            var lambdaValue = evaluator.AllocValue<LambdaValue>(asyncStmt.LambdaType, context);
-            var lambdaDecl = context.GetDecl<R.LambdaDecl>(lambdaValue.LambdaDeclId);
-
-            evaluator.Capture(
-                lambdaValue,
-                lambdaDecl.CapturedThisType != null,
-                ImmutableArray.CreateRange(lambdaDecl.CaptureInfo, captureInfo => captureInfo.Name),
-                context);
-            
-            var newContext = new EvalContext(context, default, EvalFlowControl.None, default, null, VoidValue.Instance);
-
-            Func<Task> asyncFunc = async () =>
+            internal async IAsyncEnumerable<Void> EvalIfStmtAsync(R.IfStmt stmt)
             {
-                await evaluator.EvalLambdaAsync(lambdaValue, default, VoidValue.Instance, newContext);
-            };
+                var condValue = evaluator.AllocValue<BoolValue>(R.Type.Bool);
+                await evaluator.EvalExpAsync(stmt.Cond, condValue);
 
-            var task = asyncFunc();
-            context.AddTask(task);
-        }
-
-        internal async IAsyncEnumerable<Void> EvalForeachStmtAsync(R.ForeachStmt stmt, EvalContext context)
-        {
-            SeqValue MakeSeqValue(ListValue listValue)
-            {
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-                async IAsyncEnumerator<Void> MakeAsyncEnumerator(IEnumerable<Value> enumerable, EvalContext context)
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
+                if (condValue.GetBool())
                 {
-                    foreach (var value in enumerable)
-                    {
-                        context.GetYieldValue().SetValue(value);
+                    await foreach (var value in EvalStmtAsync(stmt.Body))
                         yield return Void.Instance;
-                    }
                 }
-
-                var newContext = new EvalContext(context, default, EvalFlowControl.None, default, null, VoidValue.Instance);
-
-                return new SeqValue(MakeAsyncEnumerator(listValue.GetList(), newContext), newContext);
-            }   
-
-            async IAsyncEnumerable<Void> InnerScopeAsync()
-            {
-                var iterator = await evaluator.EvalLocAsync(stmt.Iterator, context);
-
-                // TODO: iterator는 seq<T> constraint를 따를 수 있고, Enumerable<T> constraint를 따를 수 있다
-                // TODO: 현재는 그냥 list<T>이면 enumerable<T>를 에뮬레이션 한다
-                SeqValue seqValue;
-
-                if (iterator is SeqValue)
-                    seqValue = (SeqValue)iterator;
-                else if (iterator is ListValue listValue)
-                    seqValue = MakeSeqValue(listValue);
                 else
-                    throw new InvalidOperationException();
-                
-                var elemValue = evaluator.AllocValue(stmt.ElemType, context);
+                {
+                    if (stmt.ElseBody != null)
+                        await foreach (var value in EvalStmtAsync(stmt.ElseBody))
+                            yield return Void.Instance;
+                }
+            }
 
-                context.AddLocalVar(stmt.ElemName, elemValue);
-                while (await seqValue.NextAsync(elemValue))
-                { 
-                    await foreach (var value in EvalStmtAsync(stmt.Body, context))
-                    {
+            internal async IAsyncEnumerable<Void> EvalIfTestEnumStmtAsync(R.IfTestEnumStmt stmt)
+            {
+                var targetValue = (EnumValue)await evaluator.EvalLocAsync(stmt.Target);
+                var bTestPassed = (targetValue.GetElemName() == stmt.ElemName);
+
+                if (bTestPassed)
+                {
+                    await foreach (var value in EvalStmtAsync(stmt.Body))
                         yield return Void.Instance;
+                }
+                else
+                {
+                    if (stmt.ElseBody != null)
+                        await foreach (var value in EvalStmtAsync(stmt.ElseBody))
+                            yield return Void.Instance;
+                }
+            }
+
+            internal async IAsyncEnumerable<Void> EvalIfTestClassStmtAsync(R.IfTestClassStmt stmt)
+            {
+                // 분석기가 미리 계산해 놓은 TypeValue를 가져온다                
+                var targetValue = (ClassValue)await evaluator.EvalLocAsync(stmt.Target);
+                var targetType = targetValue.GetType();
+
+                var bTestPassed = evaluator.IsType(targetType, stmt.TestType);
+
+                if (bTestPassed)
+                {
+                    await foreach (var value in EvalStmtAsync(stmt.Body))
+                        yield return Void.Instance;
+                }
+                else
+                {
+                    if (stmt.ElseBody != null)
+                        await foreach (var value in EvalStmtAsync(stmt.ElseBody))
+                            yield return Void.Instance;
+                }
+            }
+
+            internal IAsyncEnumerable<Void> EvalForStmtAsync(R.ForStmt forStmt)
+            {
+                async IAsyncEnumerable<Void> InnerAsync()
+                {
+                    // continue를 실행시키기 위한 공간은 미리 할당받는다
+                    if (forStmt.Initializer != null)
+                    {
+                        switch (forStmt.Initializer)
+                        {
+                            case R.VarDeclForStmtInitializer varDeclInitializer:
+                                await evaluator.EvalLocalVarDeclAsync(varDeclInitializer.VarDecl);
+                                break;
+
+                            case R.ExpForStmtInitializer expInitializer:
+                                await evaluator.EvalExpAsync(expInitializer.Exp, EmptyValue.Instance);
+                                break;
+
+                            default:
+                                throw new NotImplementedException();
+                        }
                     }
 
-                    var flowControl = context.GetFlowControl();
+                    while (true)
+                    {
+                        if (forStmt.CondExp != null)
+                        {
+                            var condValue = evaluator.AllocValue<BoolValue>(R.Type.Bool);
+                            await evaluator.EvalExpAsync(forStmt.CondExp, condValue);
 
-                    if (flowControl == EvalFlowControl.Break)
-                    {
-                        context.SetFlowControl(EvalFlowControl.None);
-                        break;
-                    }
-                    else if (flowControl == EvalFlowControl.Continue)
-                    {
-                        context.SetFlowControl(EvalFlowControl.None);
-                    }
-                    else if (flowControl == EvalFlowControl.Return)
-                    {
-                        break;
-                    }
-                    else
-                    {
-                        Debug.Assert(flowControl == EvalFlowControl.None);
+                            if (!condValue.GetBool())
+                                break;
+                        }
+
+                        await foreach (var value in EvalStmtAsync(forStmt.Body))
+                            yield return Void.Instance;
+
+                        var flowControl = evaluator.context.GetFlowControl();
+
+                        if (flowControl == EvalFlowControl.Break)
+                        {
+                            evaluator.context.SetFlowControl(EvalFlowControl.None);
+                            break;
+                        }
+                        else if (flowControl == EvalFlowControl.Continue)
+                        {
+                            evaluator.context.SetFlowControl(EvalFlowControl.None);
+                        }
+                        else if (flowControl == EvalFlowControl.Return)
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            Debug.Assert(evaluator.context.GetFlowControl() == EvalFlowControl.None);
+                        }
+
+                        if (forStmt.ContinueExp != null)
+                        {
+                            await evaluator.EvalExpAsync(forStmt.ContinueExp, EmptyValue.Instance);
+                        }
                     }
                 }
-            }            
 
-            await foreach (var yieldValue in context.ExecInNewScopeAsync(InnerScopeAsync)) 
-            {
-                yield return yieldValue;
+                return evaluator.context.ExecInNewScopeAsync(InnerAsync);
             }
-        }
 
-        async IAsyncEnumerable<Void> EvalYieldStmtAsync(R.YieldStmt yieldStmt, EvalContext context)
-        {
-            await evaluator.EvalExpAsync(yieldStmt.Value, context.GetYieldValue(), context);
-            yield return Void.Instance;
-        }
-        
-        internal async IAsyncEnumerable<Void> EvalStmtAsync(R.Stmt stmt, EvalContext context)
-        {
-            switch (stmt)
+            internal void EvalContinueStmt(R.ContinueStmt continueStmt)
             {
-                case R.CommandStmt cmdStmt: 
-                    await EvalCommandStmtAsync(cmdStmt, context); 
-                    break;
+                evaluator.context.SetFlowControl(EvalFlowControl.Continue);
+            }
 
-                case R.PrivateGlobalVarDeclStmt pgvdStmt:
-                    await EvalPrivateGlobalVarDeclStmtAsync(pgvdStmt, context);
-                    break;
+            internal void EvalBreakStmt(R.BreakStmt breakStmt)
+            {
+                evaluator.context.SetFlowControl(EvalFlowControl.Break);
+            }
 
-                case R.LocalVarDeclStmt localVarDeclStmt:
-                    await EvalLocalVarDeclStmtAsync(localVarDeclStmt, context);
-                    break;
+            internal async ValueTask EvalReturnStmtAsync(R.ReturnStmt returnStmt)
+            {
+                if (returnStmt.Value != null)
+                {
+                    var retValue = evaluator.context.GetRetValue();
+                    await evaluator.EvalExpAsync(returnStmt.Value, retValue);
+                }
 
-                case R.IfStmt ifStmt:
-                    await foreach (var _ in EvalIfStmtAsync(ifStmt, context))
+                evaluator.context.SetFlowControl(EvalFlowControl.Return);
+            }
+
+            internal IAsyncEnumerable<Void> EvalBlockStmtAsync(R.BlockStmt blockStmt)
+            {
+                async IAsyncEnumerable<Void> InnerAsync()
+                {
+                    foreach (var stmt in blockStmt.Stmts)
+                    {
+                        await foreach (var value in EvalStmtAsync(stmt))
+                        {
+                            yield return Void.Instance;
+
+                            // 확실하지 않아서 걸어둔다
+                            Debug.Assert(evaluator.context.GetFlowControl() == EvalFlowControl.None);
+                        }
+
+                        if (evaluator.context.GetFlowControl() != EvalFlowControl.None)
+                            break;
+                    }
+                }
+
+                return evaluator.context.ExecInNewScopeAsync(InnerAsync);
+            }
+
+            internal async ValueTask EvalExpStmtAsync(R.ExpStmt expStmt)
+            {
+                await evaluator.EvalExpAsync(expStmt.Exp, EmptyValue.Instance);
+            }
+
+            internal void EvalTaskStmt(R.TaskStmt taskStmt)
+            {
+                var lambdaValue = evaluator.AllocValue<LambdaValue>(taskStmt.LambdaType);
+                var lambdaDecl = evaluator.context.GetDecl<R.LambdaDecl>(lambdaValue.LambdaDeclId);
+
+                evaluator.Capture(
+                    lambdaValue,
+                    lambdaDecl.CapturedThisType != null,
+                    ImmutableArray.CreateRange(lambdaDecl.CaptureInfo, captureInfo => captureInfo.Name)
+                );
+
+                var newEvaluator = evaluator.CloneWithNewContext(null, default);
+
+                // 2. 그 lambda를 바로 실행하기
+                var task = Task.Run(async () =>
+                {
+                    await newEvaluator.EvalLambdaAsync(lambdaValue, default, VoidValue.Instance);
+                });
+
+                evaluator.context.AddTask(task);
+            }
+
+            IAsyncEnumerable<Void> EvalAwaitStmtAsync(R.AwaitStmt stmt)
+            {
+                async IAsyncEnumerable<Void> EvalAsync()
+                {
+                    await foreach (var value in EvalStmtAsync(stmt.Body))
                         yield return Void.Instance;
-                    break;
 
-                case R.IfTestClassStmt ifTestClassStmt:
-                    await foreach (var _ in EvalIfTestClassStmtAsync(ifTestClassStmt, context))
-                        yield return Void.Instance;
-                    break;
+                    await Task.WhenAll(evaluator.context.GetTasks().AsEnumerable());
+                }
 
-                case R.IfTestEnumStmt ifTestEnumStmt:
-                    await foreach (var _ in EvalIfTestEnumStmtAsync(ifTestEnumStmt, context))
-                        yield return Void.Instance;
-                    break;
+                return evaluator.context.ExecInNewTasks(EvalAsync);
+            }
 
-                case R.ForStmt forStmt:
-                    await foreach (var _ in EvalForStmtAsync(forStmt, context))
-                        yield return Void.Instance;
-                    break;
+            internal void EvalAsyncStmt(R.AsyncStmt asyncStmt)
+            {
+                var lambdaValue = evaluator.AllocValue<LambdaValue>(asyncStmt.LambdaType);
+                var lambdaDecl = evaluator.context.GetDecl<R.LambdaDecl>(lambdaValue.LambdaDeclId);
 
-                case R.ContinueStmt continueStmt: 
-                    EvalContinueStmt(continueStmt, context); 
-                    break;
+                evaluator.Capture(
+                    lambdaValue,
+                    lambdaDecl.CapturedThisType != null,
+                    ImmutableArray.CreateRange(lambdaDecl.CaptureInfo, captureInfo => captureInfo.Name)
+                );
 
-                case R.BreakStmt breakStmt: 
-                    EvalBreakStmt(breakStmt, context); 
-                    break;
+                var newEvaluator = evaluator.CloneWithNewContext(null, default);
 
-                case R.ReturnStmt returnStmt: 
-                    await EvalReturnStmtAsync(returnStmt, context); 
-                    break;
+                Func<Task> asyncFunc = async () =>
+                {
+                    await newEvaluator.EvalLambdaAsync(lambdaValue, default, VoidValue.Instance);
+                };
 
-                case R.BlockStmt blockStmt:
-                    await foreach (var _ in EvalBlockStmtAsync(blockStmt, context))
-                        yield return Void.Instance;
-                    break;
+                var task = asyncFunc();
+                evaluator.context.AddTask(task);
+            }
 
-                case R.BlankStmt blankStmt: break;
+            public StmtEvaluator? Clone(Evaluator evaluator)
+            {
+                return new StmtEvaluator(evaluator, commandProvider);
+            }
 
-                case R.ExpStmt expStmt: 
-                    await EvalExpStmtAsync(expStmt, context); 
-                    break;
+            internal async IAsyncEnumerable<Void> EvalForeachStmtAsync(R.ForeachStmt stmt)
+            {
+                SeqValue MakeSeqValue(ListValue listValue)
+                {
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+                    static async IAsyncEnumerator<Void> MakeAsyncEnumerator(Evaluator evaluator, IEnumerable<Value> enumerable)
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
+                    {
+                        foreach (var value in enumerable)
+                        {
+                            evaluator.context.GetYieldValue().SetValue(value);
+                            yield return Void.Instance;
+                        }
+                    }
+                    
+                    var newEvaluator = evaluator.CloneWithNewContext(null, default);
 
-                case R.TaskStmt taskStmt: 
-                    EvalTaskStmt(taskStmt, context); 
-                    break;
+                    return new SeqValue(MakeAsyncEnumerator(newEvaluator, listValue.GetList()), newEvaluator.context);
+                }
 
-                case R.AwaitStmt awaitStmt:
-                    await foreach (var _ in EvalAwaitStmtAsync(awaitStmt, context))
-                        yield return Void.Instance;
-                    break;
+                async IAsyncEnumerable<Void> InnerScopeAsync()
+                {
+                    var iterator = await evaluator.EvalLocAsync(stmt.Iterator);
 
-                case R.AsyncStmt asyncStmt: 
-                    EvalAsyncStmt(asyncStmt, context); 
-                    break;
+                    // TODO: iterator는 seq<T> constraint를 따를 수 있고, Enumerable<T> constraint를 따를 수 있다
+                    // TODO: 현재는 그냥 list<T>이면 enumerable<T>를 에뮬레이션 한다
+                    SeqValue seqValue;
 
-                case R.ForeachStmt foreachStmt:
-                    await foreach (var _ in EvalForeachStmtAsync(foreachStmt, context))
-                        yield return Void.Instance;
-                    break;
+                    if (iterator is SeqValue)
+                        seqValue = (SeqValue)iterator;
+                    else if (iterator is ListValue listValue)
+                        seqValue = MakeSeqValue(listValue);
+                    else
+                        throw new InvalidOperationException();
 
-                case R.YieldStmt yieldStmt:
-                    await foreach(var _ in EvalYieldStmtAsync(yieldStmt, context))
-                        yield return Void.Instance;
-                    break;
+                    var elemValue = evaluator.AllocValue(stmt.ElemType);
 
-                default: 
-                    throw new NotImplementedException();
-            };
+                    evaluator.context.AddLocalVar(stmt.ElemName, elemValue);
+                    while (await seqValue.NextAsync(elemValue))
+                    {
+                        await foreach (var value in EvalStmtAsync(stmt.Body))
+                        {
+                            yield return Void.Instance;
+                        }
+
+                        var flowControl = evaluator.context.GetFlowControl();
+
+                        if (flowControl == EvalFlowControl.Break)
+                        {
+                            evaluator.context.SetFlowControl(EvalFlowControl.None);
+                            break;
+                        }
+                        else if (flowControl == EvalFlowControl.Continue)
+                        {
+                            evaluator.context.SetFlowControl(EvalFlowControl.None);
+                        }
+                        else if (flowControl == EvalFlowControl.Return)
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            Debug.Assert(flowControl == EvalFlowControl.None);
+                        }
+                    }
+                }
+
+                await foreach (var yieldValue in evaluator.context.ExecInNewScopeAsync(InnerScopeAsync))
+                {
+                    yield return yieldValue;
+                }
+            }
+
+            async IAsyncEnumerable<Void> EvalYieldStmtAsync(R.YieldStmt yieldStmt)
+            {
+                await evaluator.EvalExpAsync(yieldStmt.Value, evaluator.context.GetYieldValue());
+                yield return Void.Instance;
+            }
+
+            internal async IAsyncEnumerable<Void> EvalStmtAsync(R.Stmt stmt)
+            {
+                switch (stmt)
+                {
+                    case R.CommandStmt cmdStmt:
+                        await EvalCommandStmtAsync(cmdStmt);
+                        break;
+
+                    case R.PrivateGlobalVarDeclStmt pgvdStmt:
+                        await EvalPrivateGlobalVarDeclStmtAsync(pgvdStmt);
+                        break;
+
+                    case R.LocalVarDeclStmt localVarDeclStmt:
+                        await EvalLocalVarDeclStmtAsync(localVarDeclStmt);
+                        break;
+
+                    case R.IfStmt ifStmt:
+                        await foreach (var _ in EvalIfStmtAsync(ifStmt))
+                            yield return Void.Instance;
+                        break;
+
+                    case R.IfTestClassStmt ifTestClassStmt:
+                        await foreach (var _ in EvalIfTestClassStmtAsync(ifTestClassStmt))
+                            yield return Void.Instance;
+                        break;
+
+                    case R.IfTestEnumStmt ifTestEnumStmt:
+                        await foreach (var _ in EvalIfTestEnumStmtAsync(ifTestEnumStmt))
+                            yield return Void.Instance;
+                        break;
+
+                    case R.ForStmt forStmt:
+                        await foreach (var _ in EvalForStmtAsync(forStmt))
+                            yield return Void.Instance;
+                        break;
+
+                    case R.ContinueStmt continueStmt:
+                        EvalContinueStmt(continueStmt);
+                        break;
+
+                    case R.BreakStmt breakStmt:
+                        EvalBreakStmt(breakStmt);
+                        break;
+
+                    case R.ReturnStmt returnStmt:
+                        await EvalReturnStmtAsync(returnStmt);
+                        break;
+
+                    case R.BlockStmt blockStmt:
+                        await foreach (var _ in EvalBlockStmtAsync(blockStmt))
+                            yield return Void.Instance;
+                        break;
+
+                    case R.BlankStmt blankStmt: break;
+
+                    case R.ExpStmt expStmt:
+                        await EvalExpStmtAsync(expStmt);
+                        break;
+
+                    case R.TaskStmt taskStmt:
+                        EvalTaskStmt(taskStmt);
+                        break;
+
+                    case R.AwaitStmt awaitStmt:
+                        await foreach (var _ in EvalAwaitStmtAsync(awaitStmt))
+                            yield return Void.Instance;
+                        break;
+
+                    case R.AsyncStmt asyncStmt:
+                        EvalAsyncStmt(asyncStmt);
+                        break;
+
+                    case R.ForeachStmt foreachStmt:
+                        await foreach (var _ in EvalForeachStmtAsync(foreachStmt))
+                            yield return Void.Instance;
+                        break;
+
+                    case R.YieldStmt yieldStmt:
+                        await foreach (var _ in EvalYieldStmtAsync(yieldStmt))
+                            yield return Void.Instance;
+                        break;
+
+                    default:
+                        throw new NotImplementedException();
+                };
+            }
         }
     }
 }

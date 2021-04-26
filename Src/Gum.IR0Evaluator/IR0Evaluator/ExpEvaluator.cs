@@ -313,16 +313,5 @@ namespace Gum.IR0Evaluator
                 }
             }
         }
-
-        Evaluator CloneWithNewContext(ImmutableArray<> localVars)
-        {
-            var newContext = new EvalContext(
-                    context,
-                    localVars,
-                    EvalFlowControl.None,
-                    ImmutableArray<Task>.Empty,
-                    thisValue,
-                    VoidValue.Instance);
-        }
     }
 }

@@ -11,8 +11,9 @@ using Xunit;
 using static Gum.Infra.Misc;
 using static Gum.IR0.IR0Factory;
 using Gum.Infra;
+using Type = Gum.IR0.Type;
 
-namespace Gum.IR0.Runtime
+namespace Gum.IR0Evaluator.Test
 {
     public class EvaluatorTests
     {
@@ -134,11 +135,11 @@ namespace Gum.IR0.Runtime
             }
             
             var commandProvider = new TestCommandProvider();
-            var evaluator = new Evaluator(commandProvider);
-
             var script = new Script(decls, topLevelStmts);
 
-            var retValue = await evaluator.EvalScriptAsync(script);
+            var evaluator = new Evaluator(commandProvider, script);            
+
+            var retValue = await evaluator.EvalScriptAsync();
 
             return (commandProvider.GetOutput(), retValue);
         }        

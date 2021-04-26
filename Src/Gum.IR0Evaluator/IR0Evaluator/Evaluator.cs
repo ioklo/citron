@@ -16,20 +16,24 @@ namespace Gum.IR0Evaluator
 {
     // 레퍼런스용 Big Step Evaluator, 
     // TODO: Small Step으로 가야하지 않을까 싶다 (yield로 실행 point 잡는거 해보면 재미있을 것 같다)
-    public class Evaluator
+    public partial class Evaluator
     {
         EvalContext context;
+        ImmutableArray<R.Stmt> topLevelStmts;
 
         ExpEvaluator expEvaluator;
         StmtEvaluator stmtEvaluator;
         LocEvaluator locEvaluator;
 
-        public Evaluator(ICommandProvider commandProvider)
+        public Evaluator(ICommandProvider commandProvider, R.Script script)
         {
+            this.context = new EvalContext(script.Decls);
+            this.topLevelStmts = script.TopLevelStmts;
+
             this.expEvaluator = new ExpEvaluator(this);
             this.stmtEvaluator = new StmtEvaluator(this, commandProvider);
             this.locEvaluator = new LocEvaluator(this);
-        }        
+        }
         
         internal ValueTask EvalStringExpAsync(R.StringExp command, Value result)
         {
@@ -65,7 +69,7 @@ namespace Gum.IR0Evaluator
                 if (EqualityComparer<R.Type?>.Default.Equals(curType, yType))
                     return true;
 
-                if (!GetBaseType(curType, context, out var baseTypeValue))
+                if (!GetBaseType(curType, out var baseTypeValue))
                     throw new InvalidOperationException();
 
                 if (baseTypeValue == null)
@@ -198,7 +202,7 @@ namespace Gum.IR0Evaluator
 
             await context.ExecInNewFuncFrameAsync(localVars, EvalFlowControl.None, ImmutableArray<Task>.Empty, thisValue, result, async () =>
             {
-                await foreach (var _ in EvalStmtAsync(lambdaDecl.Body, context)) { }
+                await foreach (var _ in EvalStmtAsync(lambdaDecl.Body)) { }
             });
         }
 
@@ -230,7 +234,7 @@ namespace Gum.IR0Evaluator
             return stmtEvaluator.EvalStmtAsync(stmt);
         }
         
-        async ValueTask<int> EvalScriptAsync(R.Script script)
+        public async ValueTask<int> EvalScriptAsync()
         {
             var retValue = AllocValue<IntValue>(R.Type.Int);
 
@@ -242,9 +246,9 @@ namespace Gum.IR0Evaluator
                 retValue, 
                 async () =>
                 {
-                    foreach (var topLevelStmt in script.TopLevelStmts)
+                    foreach (var topLevelStmt in topLevelStmts)
                     {
-                        await foreach (var value in stmtEvaluator.EvalStmtAsync(topLevelStmt, context))
+                        await foreach (var value in stmtEvaluator.EvalStmtAsync(topLevelStmt))
                         {
                         }
 
@@ -254,13 +258,7 @@ namespace Gum.IR0Evaluator
                 });
 
             return retValue.GetInt();
-        }
-
-        public ValueTask<int> EvalScriptAsync(R.Script script)
-        {
-            var context = new EvalContext(script.Decls);
-            return EvalScriptAsync(script);
-        }
+        }        
 
         // TODO: DefaultApplication이랑 같이 어디론가 옮긴다
         //public async ValueTask<int?> EvaluateScriptAsync(
@@ -296,24 +294,24 @@ namespace Gum.IR0Evaluator
         //    return await EvaluateScriptAsync(analyzeResult.Script);
         //}
 
-        Evaluator(ICommandProvider commandProvider, EvalContext context, Value? thisValue, ImmutableDictionary<string, Value> localVars)
+        Evaluator(EvalContext context, StmtEvaluator stmtEvaluator, Value? thisValue, ImmutableDictionary<string, Value> localVars)
         {
             this.expEvaluator = new ExpEvaluator(this);
-            this.stmtEvaluator = new StmtEvaluator(this, commandProvider);
+            this.stmtEvaluator = stmtEvaluator.Clone(this);
             this.locEvaluator = new LocEvaluator(this);
 
             this.context = new EvalContext(
-                    context,
-                    localVars,
-                    EvalFlowControl.None,
-                    ImmutableArray<Task>.Empty,
-                    thisValue,
-                    VoidValue.Instance);
+                context,
+                localVars,
+                EvalFlowControl.None,
+                ImmutableArray<Task>.Empty,
+                thisValue,
+                VoidValue.Instance);
         }
 
         Evaluator CloneWithNewContext(Value? thisValue, ImmutableDictionary<string, Value> localVars)
         {
-            return new Evaluator(context, thisValue, localVars);
+            return new Evaluator(context, stmtEvaluator, thisValue, localVars);
         }
     }
 }

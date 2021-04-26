@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Gum.IR0.Runtime
+namespace Gum.IR0Evaluator.Test
 {
     class TestCmdProvider : ICommandProvider
     {

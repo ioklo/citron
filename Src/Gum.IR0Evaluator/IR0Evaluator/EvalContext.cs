@@ -10,7 +10,7 @@ using Void = Gum.Infra.Void;
 
 namespace Gum.IR0Evaluator
 {   
-    public class EvalContext
+    class EvalContext
     {
         class SharedData
         {

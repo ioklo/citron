@@ -9,64 +9,67 @@ using R = Gum.IR0;
 
 namespace Gum.IR0Evaluator
 {
-    class LocEvaluator
+    public partial class Evaluator
     {
-        Evaluator evaluator;
-        public LocEvaluator(Evaluator evaluator)
+        class LocEvaluator
         {
-            this.evaluator = evaluator;
-        }
-
-        async ValueTask<Value> EvalTempLocAsync(R.TempLoc loc, EvalContext context)
-        {
-            var result = evaluator.AllocValue(loc.Type, context);
-            await evaluator.EvalExpAsync(loc.Exp, result, context);
-            return result;
-        }
-
-        async ValueTask<Value> EvalListIndexerLocAsync(R.ListIndexerLoc loc, EvalContext context)
-        {
-            var listValue = (ListValue)await EvalLocAsync(loc.List, context);
-            var indexValue = (IntValue)await evaluator.EvalLocAsync(loc.Index, context);
-            
-            var list = listValue.GetList();
-            return list[indexValue.GetInt()];
-        }
-
-        public async ValueTask<Value> EvalLocAsync(R.Loc loc, EvalContext context)
-        {
-            switch (loc)
+            Evaluator evaluator;
+            public LocEvaluator(Evaluator evaluator)
             {
-                case R.TempLoc tempLoc:
-                    return await EvalTempLocAsync(tempLoc, context);
+                this.evaluator = evaluator;
+            }
 
-                case R.GlobalVarLoc globalVarLoc:
-                    return context.GetGlobalValue(globalVarLoc.Name);
+            async ValueTask<Value> EvalTempLocAsync(R.TempLoc loc)
+            {
+                var result = evaluator.AllocValue(loc.Type);
+                await evaluator.EvalExpAsync(loc.Exp, result);
+                return result;
+            }
 
-                case R.LocalVarLoc localVarLoc:
-                    return context.GetLocalValue(localVarLoc.Name);
+            async ValueTask<Value> EvalListIndexerLocAsync(R.ListIndexerLoc loc)
+            {
+                var listValue = (ListValue)await EvalLocAsync(loc.List);
+                var indexValue = (IntValue)await EvalLocAsync(loc.Index);
 
-                case R.ListIndexerLoc listIndexerLoc:
-                    return await EvalListIndexerLocAsync(listIndexerLoc, context);
+                var list = listValue.GetList();
+                return list[indexValue.GetInt()];
+            }
 
-                case R.StaticMemberLoc staticMemberLoc:
-                    var staticValue = (StaticValue)context.GetStaticValue(staticMemberLoc.Type);
-                    return staticValue.GetMemberValue(staticMemberLoc.MemberName);
+            public async ValueTask<Value> EvalLocAsync(R.Loc loc)
+            {
+                switch (loc)
+                {
+                    case R.TempLoc tempLoc:
+                        return await EvalTempLocAsync(tempLoc);
 
-                case R.StructMemberLoc structMemberLoc:
-                    var structValue = (StructValue)await EvalLocAsync(structMemberLoc.Instance, context);
-                    return structValue.GetMemberValue(structMemberLoc.MemberName);
+                    case R.GlobalVarLoc globalVarLoc:
+                        return evaluator.context.GetGlobalValue(globalVarLoc.Name);
 
-                case R.ClassMemberLoc classMemberLoc:
-                    var classValue = (ClassValue)await EvalLocAsync(classMemberLoc.Instance, context);
-                    return classValue.GetMemberValue(classMemberLoc.MemberName);
+                    case R.LocalVarLoc localVarLoc:
+                        return evaluator.context.GetLocalValue(localVarLoc.Name);
 
-                case R.EnumMemberLoc enumMemberLoc:
-                    var enumValue = (EnumValue)await EvalLocAsync(enumMemberLoc.Instance, context);
-                    return enumValue.GetMemberValue(enumMemberLoc.MemberName);
+                    case R.ListIndexerLoc listIndexerLoc:
+                        return await EvalListIndexerLocAsync(listIndexerLoc);
 
-                default:
-                    throw new UnreachableCodeException();
+                    case R.StaticMemberLoc staticMemberLoc:
+                        var staticValue = (StaticValue)evaluator.context.GetStaticValue(staticMemberLoc.Type);
+                        return staticValue.GetMemberValue(staticMemberLoc.MemberName);
+
+                    case R.StructMemberLoc structMemberLoc:
+                        var structValue = (StructValue)await EvalLocAsync(structMemberLoc.Instance);
+                        return structValue.GetMemberValue(structMemberLoc.MemberName);
+
+                    case R.ClassMemberLoc classMemberLoc:
+                        var classValue = (ClassValue)await EvalLocAsync(classMemberLoc.Instance);
+                        return classValue.GetMemberValue(classMemberLoc.MemberName);
+
+                    case R.EnumMemberLoc enumMemberLoc:
+                        var enumValue = (EnumValue)await EvalLocAsync(enumMemberLoc.Instance);
+                        return enumValue.GetMemberValue(enumMemberLoc.MemberName);
+
+                    default:
+                        throw new UnreachableCodeException();
+                }
             }
         }
     }
