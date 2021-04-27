@@ -80,6 +80,25 @@ namespace Gum.IR0Evaluator
                 result.SetValue(destValue);
             }
 
+            async ValueTask<ImmutableDictionary<string, Value>> EvalArgumentsAsync(
+                ImmutableDictionary<string, Value> origDict,
+                ImmutableArray<R.ParamInfo> paramInfos,
+                ImmutableArray<R.Exp> exps)
+            {
+                var argsBuilder = origDict.ToBuilder();
+
+                Debug.Assert(paramInfos.Length == exps.Length);
+                for (int i = 0; i < paramInfos.Length; i++)
+                {
+                    var argValue = evaluator.AllocValue(paramInfos[i].Type);
+                    argsBuilder.Add(paramInfos[i].Name, argValue);
+
+                    await EvalAsync(exps[i], argValue);
+                }
+
+                return argsBuilder.ToImmutable();
+            }
+
             // runtime typeContext |- EvalCallFuncExp(CallFuncExp(X<int>.Y<T>.Func<int>, 
             async ValueTask EvalCallFuncExpAsync(R.CallFuncExp exp, Value result)
             {
@@ -100,7 +119,7 @@ namespace Gum.IR0Evaluator
                     thisValue = null;
 
                 // 인자를 계산 해서 처음 로컬 variable에 집어 넣는다
-                var args = await evaluator.EvalArgumentsAsync(ImmutableDictionary<string, Value>.Empty, funcInvoker.ParamInfos, exp.Args);
+                var args = await EvalArgumentsAsync(ImmutableDictionary<string, Value>.Empty, funcInvoker.ParamInfos, exp.Args);
 
                 await funcInvoker.Invoke(thisValue, result, args);
             }
@@ -119,7 +138,7 @@ namespace Gum.IR0Evaluator
                     thisValue = await evaluator.EvalLocAsync(exp.Instance);
                 }
 
-                var localVars = await evaluator.EvalArgumentsAsync(ImmutableDictionary<string, Value>.Empty, seqFuncDecl.ParamInfos, exp.Args);
+                var localVars = await EvalArgumentsAsync(ImmutableDictionary<string, Value>.Empty, seqFuncDecl.ParamInfos, exp.Args);
 
                 // evaluator 복제
                 var newEvaluator = evaluator.CloneWithNewContext(thisValue, localVars);
@@ -140,12 +159,24 @@ namespace Gum.IR0Evaluator
             async ValueTask EvalCallValueExpAsync(R.CallValueExp exp, Value result)
             {
                 var callableValue = (LambdaValue)await evaluator.EvalLocAsync(exp.Callable);
-                await evaluator.EvalLambdaAsync(callableValue, exp.Args, result);
+
+                var lambdaDecl = evaluator.context.GetDecl<R.LambdaDecl>(callableValue.LambdaDeclId);
+
+                var thisValue = callableValue.CapturedThis;
+                var localVars = await EvalArgumentsAsync(callableValue.Captures, lambdaDecl.ParamInfos, exp.Args);
+
+                await evaluator.context.ExecInNewFuncFrameAsync(localVars, EvalFlowControl.None, ImmutableArray<Task>.Empty, thisValue, result, async () =>
+                {
+                    await foreach (var _ in evaluator.EvalStmtAsync(lambdaDecl.CapturedStatement.Body)) { }
+                });
             }
 
             void EvalLambdaExp(R.LambdaExp exp, Value result)
             {
-                evaluator.Capture((LambdaValue)result, exp.bCaptureThis, exp.CaptureLocalVars);
+                var lambdaDecl = evaluator.context.GetDecl<R.LambdaDecl>(exp.LambdaDeclId);
+
+                var lambdaResult = (LambdaValue)result;
+                evaluator.CaptureLocals(lambdaResult.CapturedThis, lambdaResult.Captures, lambdaDecl.CapturedStatement);
             }
 
             //async ValueTask EvalMemberCallExpAsync(MemberCallExp exp, Value result)

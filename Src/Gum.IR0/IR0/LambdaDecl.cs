@@ -7,11 +7,7 @@ namespace Gum.IR0
     public partial class LambdaDecl : IDecl
     {
         public DeclId DeclId { get; }
-
-        public Type? CapturedThisType { get; }
-        public ImmutableArray<TypeAndName> CaptureInfo { get; }
-        
+        public CapturedStatement CapturedStatement { get; }
         public ImmutableArray<ParamInfo> ParamInfos { get; }
-        public Stmt Body { get; }
     }
 }

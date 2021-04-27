@@ -139,12 +139,12 @@ namespace Gum.IR0
     }
 
     // () => { return 1; }
+    // 문법에서 LambdaExp는 지역적으로 보이지만, 생성된 람다는 프로그램 실행시 전역적으로 호출될 수 있기 때문에
+    // LamdaExp안에 캡쳐할 정보와 Body 등을 바로 넣지 않고 LambdaDecl에 따로 보관한다
     [AutoConstructor, ImplementIEquatable]
     public partial class LambdaExp : Exp
     {
-        // this캡쳐할거냐
-        public bool bCaptureThis { get; }
-        public ImmutableArray<string> CaptureLocalVars { get; }
+        public DeclId LambdaDeclId { get; }
     }
     
     // [1, 2, 3]

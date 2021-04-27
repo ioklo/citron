@@ -246,7 +246,7 @@ namespace Gum.IR0Translator
             public R.DeclId AddLambdaDecl(R.Type? capturedThisType, ImmutableArray<R.TypeAndName> captureInfo, ImmutableArray<R.ParamInfo> paramInfos, R.Stmt body)
             {
                 var id = new R.DeclId(decls.Count);
-                decls.Add(new R.LambdaDecl(id, capturedThisType, captureInfo, paramInfos, body));
+                decls.Add(new R.LambdaDecl(id, new R.CapturedStatement(capturedThisType, captureInfo, body), paramInfos));
                 return id;
             }
 

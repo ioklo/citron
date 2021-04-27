@@ -33,15 +33,15 @@ namespace Gum.IR0Evaluator
         private Value retValue;
         private Value? yieldValue;
 
-        public EvalContext(ImmutableArray<R.IDecl> decls)
+        public EvalContext(ImmutableArray<R.IDecl> decls, Value retValue)
         {
-            sharedData = new SharedData(decls);
-            
-            localVars = ImmutableDictionary<string, Value>.Empty;
-            flowControl = EvalFlowControl.None;
-            tasks = ImmutableArray<Task>.Empty;
-            thisValue = null;
-            retValue = VoidValue.Instance;
+            this.sharedData = new SharedData(decls);            
+
+            this.localVars = ImmutableDictionary<string, Value>.Empty;
+            this.flowControl = EvalFlowControl.None;
+            this.tasks = ImmutableArray<Task>.Empty;
+            this.thisValue = null;
+            this.retValue = retValue;
         }
 
         public EvalContext(

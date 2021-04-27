@@ -139,7 +139,7 @@ namespace Gum.IR0Evaluator.Test
 
             var evaluator = new Evaluator(commandProvider, script);            
 
-            var retValue = await evaluator.EvalScriptAsync();
+            var retValue = await evaluator.EvalAsync();
 
             return (commandProvider.GetOutput(), retValue);
         }        

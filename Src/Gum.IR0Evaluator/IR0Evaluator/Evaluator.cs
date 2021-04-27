@@ -27,20 +27,42 @@ namespace Gum.IR0Evaluator
 
         public Evaluator(ICommandProvider commandProvider, R.Script script)
         {
-            this.context = new EvalContext(script.Decls);
+            var topLevelRetValue = AllocValue(R.Type.Int);
+
+            this.context = new EvalContext(script.Decls, topLevelRetValue);
             this.topLevelStmts = script.TopLevelStmts;
 
             this.expEvaluator = new ExpEvaluator(this);
             this.stmtEvaluator = new StmtEvaluator(this, commandProvider);
             this.locEvaluator = new LocEvaluator(this);
         }
-        
-        internal ValueTask EvalStringExpAsync(R.StringExp command, Value result)
+
+        Evaluator(EvalContext context, StmtEvaluator stmtEvaluator, Value? thisValue, ImmutableDictionary<string, Value> localVars)
+        {
+            this.expEvaluator = new ExpEvaluator(this);
+            this.stmtEvaluator = stmtEvaluator.Clone(this);
+            this.locEvaluator = new LocEvaluator(this);
+
+            this.context = new EvalContext(
+                context,
+                localVars,
+                EvalFlowControl.None,
+                ImmutableArray<Task>.Empty,
+                thisValue,
+                VoidValue.Instance);
+        }
+
+        Evaluator CloneWithNewContext(Value? thisValue, ImmutableDictionary<string, Value> localVars)
+        {
+            return new Evaluator(context, stmtEvaluator, thisValue, localVars);
+        }
+
+        ValueTask EvalStringExpAsync(R.StringExp command, Value result)
         {
             return expEvaluator.EvalStringExpAsync(command, result);
         }
 
-        public bool GetBaseType(R.Type type, [NotNullWhen(true)] out R.Type? outBaseType)
+        bool GetBaseType(R.Type type, [NotNullWhen(true)] out R.Type? outBaseType)
         {
             throw new NotImplementedException();
             //var typeInst = context.GetTypeInst(type);
@@ -60,7 +82,7 @@ namespace Gum.IR0Evaluator
         }
         
         // xType이 y타입인가 묻는 것
-        public bool IsType(R.Type xType, R.Type yType)
+        bool IsType(R.Type xType, R.Type yType)
         {
             R.Type? curType = xType;
 
@@ -81,14 +103,14 @@ namespace Gum.IR0Evaluator
             return false;
         }
 
-        public TValue AllocValue<TValue>(R.Type type)
+        TValue AllocValue<TValue>(R.Type type)
             where TValue : Value
         {
             return (TValue)AllocValue(type);
         }
 
         // type은 ir0 syntax의 일부분이다
-        public Value AllocValue(R.Type type)
+        Value AllocValue(R.Type type)
         {
             switch(type)
             {
@@ -114,11 +136,11 @@ namespace Gum.IR0Evaluator
                     var lambdaDecl = context.GetDecl<R.LambdaDecl>(lambdaType.DeclId);
 
                     Value? capturedThis = null;
-                    if (lambdaDecl.CapturedThisType != null)
-                        capturedThis = AllocValue(lambdaDecl.CapturedThisType);
+                    if (lambdaDecl.CapturedStatement.ThisType != null)
+                        capturedThis = AllocValue(lambdaDecl.CapturedStatement.ThisType);
 
                     var capturesBuilder = ImmutableDictionary.CreateBuilder<string, Value>();
-                    foreach (var (elemType, elemName) in lambdaDecl.CaptureInfo)
+                    foreach (var (elemType, elemName) in lambdaDecl.CapturedStatement.OuterLocalVars)
                     {
                         var elemValue = AllocValue(elemType);
                         capturesBuilder.Add(elemName, elemValue);
@@ -162,52 +184,23 @@ namespace Gum.IR0Evaluator
             //}
         }        
 
-        // 캡쳐는 람다 Value안에 값을 세팅한다
-        void Capture(LambdaValue lambdaValue, bool captureThis, ImmutableArray<string> captureLocalVars)
+        // 캡쳐는 람다 Value안에 값을 세팅한다        
+        void CaptureLocals(Value? capturedThis, ImmutableDictionary<string, Value> localVars, R.CapturedStatement capturedStatement)
         {
-            if (captureThis)
-                lambdaValue.CapturedThis!.SetValue(context.GetThisValue()!);
-
-            foreach (var captureLocalVar in captureLocalVars)
+            if (capturedStatement.ThisType != null)
             {
-                var origValue = context.GetLocalValue(captureLocalVar);
-                lambdaValue.Captures[captureLocalVar].SetValue(origValue);
+                Debug.Assert(capturedThis != null);
+                capturedThis.SetValue(context.GetThisValue()!);
+            }
+
+            foreach (var typeAndName in capturedStatement.OuterLocalVars)
+            {
+                var origValue = context.GetLocalValue(typeAndName.Name);
+                localVars[typeAndName.Name].SetValue(origValue);
             }
         }
 
-        public async ValueTask<ImmutableDictionary<string, Value>> EvalArgumentsAsync(
-            ImmutableDictionary<string, Value> origDict,
-            ImmutableArray<R.ParamInfo> paramInfos, 
-            ImmutableArray<R.Exp> exps)
-        {
-            var argsBuilder = origDict.ToBuilder();
-
-            Debug.Assert(paramInfos.Length == exps.Length);
-            for(int i = 0; i < paramInfos.Length; i++)
-            {
-                var argValue = AllocValue(paramInfos[i].Type);
-                argsBuilder.Add(paramInfos[i].Name, argValue);
-
-                await expEvaluator.EvalAsync(exps[i], argValue);
-            }
-
-            return argsBuilder.ToImmutable();
-        }
-
-        internal async ValueTask EvalLambdaAsync(LambdaValue lambdaValue, ImmutableArray<R.Exp> args, Value result)
-        {
-            var lambdaDecl = context.GetDecl<R.LambdaDecl>(lambdaValue.LambdaDeclId);
-
-            var thisValue = lambdaValue.CapturedThis;
-            var localVars = await EvalArgumentsAsync(lambdaValue.Captures, lambdaDecl.ParamInfos, args);
-
-            await context.ExecInNewFuncFrameAsync(localVars, EvalFlowControl.None, ImmutableArray<Task>.Empty, thisValue, result, async () =>
-            {
-                await foreach (var _ in EvalStmtAsync(lambdaDecl.Body)) { }
-            });
-        }
-
-        public async ValueTask EvalLocalVarDeclAsync(R.LocalVarDecl localVarDecl)
+        async ValueTask EvalLocalVarDeclAsync(R.LocalVarDecl localVarDecl)
         {
             foreach (var elem in localVarDecl.Elems)
             {
@@ -220,99 +213,37 @@ namespace Gum.IR0Evaluator
             }
         }
 
-        public ValueTask EvalExpAsync(R.Exp exp, Value result)
+        ValueTask EvalExpAsync(R.Exp exp, Value result)
         {
             return expEvaluator.EvalAsync(exp, result);
         }
         
-        public ValueTask<Value> EvalLocAsync(R.Loc loc)
+        ValueTask<Value> EvalLocAsync(R.Loc loc)
         {
             return locEvaluator.EvalLocAsync(loc);
         }
 
-        public IAsyncEnumerable<Gum.Infra.Void> EvalStmtAsync(R.Stmt stmt)
+        // internal for IR0FuncInvoker.Invoke
+        internal IAsyncEnumerable<Gum.Infra.Void> EvalStmtAsync(R.Stmt stmt)
         {
             return stmtEvaluator.EvalStmtAsync(stmt);
         }
         
-        public async ValueTask<int> EvalScriptAsync()
+        public async ValueTask<int> EvalAsync()
         {
-            var retValue = AllocValue<IntValue>(R.Type.Int);
-
-            await context.ExecInNewFuncFrameAsync(
-                ImmutableDictionary<string, Value>.Empty, 
-                EvalFlowControl.None, 
-                ImmutableArray<Task>.Empty, 
-                null, 
-                retValue, 
-                async () =>
+            foreach (var topLevelStmt in topLevelStmts)
+            {
+                await foreach (var value in stmtEvaluator.EvalStmtAsync(topLevelStmt))
                 {
-                    foreach (var topLevelStmt in topLevelStmts)
-                    {
-                        await foreach (var value in stmtEvaluator.EvalStmtAsync(topLevelStmt))
-                        {
-                        }
+                }
 
-                        if (context.GetFlowControl() == EvalFlowControl.Return)
-                            break;
-                    }
-                });
+                if (context.GetFlowControl() == EvalFlowControl.Return)
+                    break;
+            }
 
-            return retValue.GetInt();
+            return ((IntValue)context.GetRetValue()).GetInt();
         }        
 
-        // TODO: DefaultApplication이랑 같이 어디론가 옮긴다
-        //public async ValueTask<int?> EvaluateScriptAsync(
-        //    string moduleName,
-        //    Syntax.Script script,             
-        //    IRuntimeModule runtimeModule,
-        //    IEnumerable<IModuleInfo> moduleInfos,
-        //    IErrorCollector errorCollector)
-        //{
-        //    // 4. stmt를 분석하고, 전역 변수 타입 목록을 만든다 (3의 함수정보가 필요하다)
-        //    var optionalAnalyzeResult = analyzer.AnalyzeScript(moduleName, script, moduleInfos, errorCollector);
-        //    if (optionalAnalyzeResult == null)
-        //        return null;
-
-        //    var analyzeResult = optionalAnalyzeResult.Value;
-
-        //    var scriptModule = new ScriptModule(
-        //        analyzeResult.ModuleInfo,
-        //        scriptModule => new R.TypeValueApplier(new ModuleInfoService(moduleInfos.Append(scriptModule))),
-        //        analyzeResult.Templates);
-
-        //    var domainService = new DomainService();
-
-        //    domainService.LoadModule(runtimeModule);
-        //    domainService.LoadModule(scriptModule);
-
-        //    var context = new EvalContext(
-        //        runtimeModule, 
-        //        domainService, 
-        //        analyzeResult.TypeValueService,                 
-        //        analyzeResult.Script.PrivateGlobalVarCount);
-
-        //    return await EvaluateScriptAsync(analyzeResult.Script);
-        //}
-
-        Evaluator(EvalContext context, StmtEvaluator stmtEvaluator, Value? thisValue, ImmutableDictionary<string, Value> localVars)
-        {
-            this.expEvaluator = new ExpEvaluator(this);
-            this.stmtEvaluator = stmtEvaluator.Clone(this);
-            this.locEvaluator = new LocEvaluator(this);
-
-            this.context = new EvalContext(
-                context,
-                localVars,
-                EvalFlowControl.None,
-                ImmutableArray<Task>.Empty,
-                thisValue,
-                VoidValue.Instance);
-        }
-
-        Evaluator CloneWithNewContext(Value? thisValue, ImmutableDictionary<string, Value> localVars)
-        {
-            return new Evaluator(context, stmtEvaluator, thisValue, localVars);
-        }
+        
     }
 }

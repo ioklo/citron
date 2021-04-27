@@ -22,6 +22,8 @@ namespace Gum.IR0Evaluator
         EvalContext context;
         R.Stmt body;
 
+        public override ImmutableArray<R.ParamInfo> ParamInfos { get; }
+
         public override async ValueTask Invoke(Value? thisValue, Value result, ImmutableDictionary<string, Value> args)
         {
             await context.ExecInNewFuncFrameAsync(args, EvalFlowControl.None, ImmutableArray<Task>.Empty, thisValue, result, async () => {

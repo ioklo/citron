@@ -115,7 +115,7 @@ namespace Gum.IR0
     [AutoConstructor, ImplementIEquatable]
     public partial class TaskStmt : Stmt
     {
-        public AnonymousLambdaType LambdaType { get; }
+        public CapturedStatement CapturedStatement { get; }
     }
 
     [AutoConstructor, ImplementIEquatable]
@@ -127,7 +127,7 @@ namespace Gum.IR0
     [AutoConstructor, ImplementIEquatable]
     public partial class AsyncStmt : Stmt
     {
-        public AnonymousLambdaType LambdaType { get; }
+        public CapturedStatement CapturedStatement { get; }
     }
 
     [AutoConstructor, ImplementIEquatable]

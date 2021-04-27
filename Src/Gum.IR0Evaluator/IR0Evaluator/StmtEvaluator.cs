@@ -231,23 +231,45 @@ namespace Gum.IR0Evaluator
                 await evaluator.EvalExpAsync(expStmt.Exp, EmptyValue.Instance);
             }
 
-            internal void EvalTaskStmt(R.TaskStmt taskStmt)
+            (Value? ThisValue, ImmutableDictionary<string, Value> LocalVars) AllocLocals(R.CapturedStatement capturedStatement)
             {
-                var lambdaValue = evaluator.AllocValue<LambdaValue>(taskStmt.LambdaType);
-                var lambdaDecl = evaluator.context.GetDecl<R.LambdaDecl>(lambdaValue.LambdaDeclId);
+                Value? thisValue = null;
 
-                evaluator.Capture(
-                    lambdaValue,
-                    lambdaDecl.CapturedThisType != null,
-                    ImmutableArray.CreateRange(lambdaDecl.CaptureInfo, captureInfo => captureInfo.Name)
-                );
+                if (capturedStatement.ThisType != null)
+                    thisValue = evaluator.AllocValue(capturedStatement.ThisType);
 
-                var newEvaluator = evaluator.CloneWithNewContext(null, default);
+                var localVarsBuilder = ImmutableDictionary.CreateBuilder<string, Value>();
+                foreach (var (type, name) in capturedStatement.OuterLocalVars)
+                {
+                    var value = evaluator.AllocValue(type);
+                    localVarsBuilder.Add(name, value);
+                }
 
-                // 2. 그 lambda를 바로 실행하기
+                return (thisValue, localVarsBuilder.ToImmutable());
+            }
+
+            void EvalTaskStmt(R.TaskStmt taskStmt)
+            {
+                // 굳이
+                // var lambdaValue = evaluator.AllocValue<LambdaValue>(taskStmt.LambdaType);
+                // var lambdaDecl = evaluator.context.GetDecl<R.LambdaDecl>(lambdaValue.LambdaDeclId);
+
+                // capture 해서 value에 집어넣기
+                //evaluator.Capture(
+                //    lambdaValue,
+                //    lambdaDecl.CapturedThisType != null,
+                //    ImmutableArray.CreateRange(lambdaDecl.CaptureInfo, captureInfo => captureInfo.Name)
+                //);
+
+                var (capturedThis, capturedLocals) = AllocLocals(taskStmt.CapturedStatement);
+                evaluator.CaptureLocals(capturedThis, capturedLocals, taskStmt.CapturedStatement);
+
+                // 새 evaluator를 만들고
+                var newEvaluator = evaluator.CloneWithNewContext(capturedThis, capturedLocals);
+                
                 var task = Task.Run(async () =>
                 {
-                    await newEvaluator.EvalLambdaAsync(lambdaValue, default, VoidValue.Instance);
+                    await foreach (var _ in newEvaluator.EvalStmtAsync(taskStmt.CapturedStatement.Body)) { }
                 });
 
                 evaluator.context.AddTask(task);
@@ -266,29 +288,23 @@ namespace Gum.IR0Evaluator
                 return evaluator.context.ExecInNewTasks(EvalAsync);
             }
 
-            internal void EvalAsyncStmt(R.AsyncStmt asyncStmt)
-            {
-                var lambdaValue = evaluator.AllocValue<LambdaValue>(asyncStmt.LambdaType);
-                var lambdaDecl = evaluator.context.GetDecl<R.LambdaDecl>(lambdaValue.LambdaDeclId);
+            void EvalAsyncStmt(R.AsyncStmt asyncStmt)
+            {   
+                var (capturedThis, capturedLocalVars) = AllocLocals(asyncStmt.CapturedStatement);
+                evaluator.CaptureLocals(capturedThis, capturedLocalVars, asyncStmt.CapturedStatement);
 
-                evaluator.Capture(
-                    lambdaValue,
-                    lambdaDecl.CapturedThisType != null,
-                    ImmutableArray.CreateRange(lambdaDecl.CaptureInfo, captureInfo => captureInfo.Name)
-                );
-
-                var newEvaluator = evaluator.CloneWithNewContext(null, default);
-
-                Func<Task> asyncFunc = async () =>
+                var newEvaluator = evaluator.CloneWithNewContext(capturedThis, capturedLocalVars);
+                async Task WrappedAsyncFunc()
                 {
-                    await newEvaluator.EvalLambdaAsync(lambdaValue, default, VoidValue.Instance);
+                    await foreach (var _ in newEvaluator.EvalStmtAsync(asyncStmt.CapturedStatement.Body)) { }
                 };
 
-                var task = asyncFunc();
+                // 현재 컨텍스트에서 실행
+                var task = WrappedAsyncFunc();
                 evaluator.context.AddTask(task);
             }
 
-            public StmtEvaluator? Clone(Evaluator evaluator)
+            public StmtEvaluator Clone(Evaluator evaluator)
             {
                 return new StmtEvaluator(evaluator, commandProvider);
             }
