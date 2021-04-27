@@ -162,7 +162,8 @@ namespace Gum.IR0Evaluator
             //}
         }        
 
-        internal void Capture(LambdaValue lambdaValue, bool captureThis, ImmutableArray<string> captureLocalVars)
+        // 캡쳐는 람다 Value안에 값을 세팅한다
+        void Capture(LambdaValue lambdaValue, bool captureThis, ImmutableArray<string> captureLocalVars)
         {
             if (captureThis)
                 lambdaValue.CapturedThis!.SetValue(context.GetThisValue()!);
