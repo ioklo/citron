@@ -9,7 +9,6 @@ namespace Gum.IR0
     [AutoConstructor, ImplementIEquatable]
     public partial class SequenceFuncDecl : IDecl
     {
-        public DeclId DeclId { get; }
         public Name Name { get; }
         public bool IsThisCall { get; }
         public Type YieldType { get; }

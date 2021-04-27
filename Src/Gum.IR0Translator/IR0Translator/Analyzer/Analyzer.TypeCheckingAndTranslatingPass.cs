@@ -17,7 +17,7 @@ namespace Gum.IR0Translator
             }
 
             public void VisitGlobalFuncDecl(S.FuncDecl funcDecl)
-            {
+            {   
                 analyzer.AnalyzeFuncDecl(funcDecl);
             }
 

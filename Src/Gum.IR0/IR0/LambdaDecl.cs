@@ -6,7 +6,7 @@ namespace Gum.IR0
     [AutoConstructor, ImplementIEquatable]
     public partial class LambdaDecl : IDecl
     {
-        public DeclId DeclId { get; }
+        public LambdaId Id { get; } // local id
         public CapturedStatement CapturedStatement { get; }
         public ImmutableArray<ParamInfo> ParamInfos { get; }
     }

@@ -288,8 +288,80 @@ namespace Gum.IR0Translator
             return AnalyzeExp_Exp(exp, hint);
         }
 
+        public void AnalyzeNormalFuncDecl(S.FuncDecl funcDecl)
+        {
+            var (bodyResult, parameters) = context.ExecInFuncScope(funcDecl, () =>
+            {
+                if (0 < funcDecl.TypeParams.Length || funcDecl.ParamInfo.VariadicParamIndex != null)
+                    throw new NotImplementedException();
+
+                // 파라미터 순서대로 추가
+                foreach (var param in funcDecl.ParamInfo.Parameters)
+                {
+                    var paramTypeValue = context.GetTypeValueByTypeExp(param.Type);
+                    context.AddLocalVarInfo(param.Name, paramTypeValue);
+                }
+
+                var bodyResult = AnalyzeStmt(funcDecl.Body);               
+                
+                // TODO: Body가 실제로 리턴을 제대로 하는지 확인해야 한다
+                var parameters = funcDecl.ParamInfo.Parameters.Select(param =>
+                {
+                    var paramTypeValue = context.GetTypeValueByTypeExp(param.Type);
+                    return new R.ParamInfo(paramTypeValue.GetRType(), param.Name);
+                }).ToImmutableArray();
+
+                return (bodyResult, parameters);
+            });
+
+            context.AddNormalFuncDecl(funcDecl.Name, bThisCall: false, funcDecl.TypeParams, parameters, bodyResult.Stmt);
+        }
+
+        public void AnalyzeSequenceFuncDecl(S.FuncDecl funcDecl)
+        {
+            var (bodyResult, retRType, rparamInfos) = context.ExecInFuncScope(funcDecl, () =>
+            {
+                if (0 < funcDecl.TypeParams.Length || funcDecl.ParamInfo.VariadicParamIndex != null)
+                    throw new NotImplementedException();
+
+                // 파라미터 순서대로 추가
+                foreach (var param in funcDecl.ParamInfo.Parameters)
+                {
+                    var paramTypeValue = context.GetTypeValueByTypeExp(param.Type);
+                    context.AddLocalVarInfo(param.Name, paramTypeValue);
+                }
+
+                var bodyResult = AnalyzeStmt(funcDecl.Body);
+
+                
+                // TODO: Body가 실제로 리턴을 제대로 하는지 확인해야 한다
+                var retTypeValue = context.GetRetTypeValue();
+                Debug.Assert(retTypeValue != null, "문법상 Sequence 함수의 retValue가 없을수 없습니다");
+
+                var retRType = retTypeValue.GetRType();
+                var parameters = funcDecl.ParamInfo.Parameters.Select(param => param.Name).ToImmutableArray();
+
+                var rparamInfos = ImmutableArray.CreateRange(funcDecl.ParamInfo.Parameters, param =>
+                {
+                    var typeValue = context.GetTypeValueByTypeExp(param.Type);
+                    var rtype = typeValue.GetRType();
+
+                    return new R.ParamInfo(rtype, param.Name);
+                });
+
+                return (bodyResult, retRType, rparamInfos);
+            });
+
+            context.AddSequenceFuncDecl(retRType, false, funcDecl.TypeParams, rparamInfos, bodyResult.Stmt);
+        }
+
         public void AnalyzeFuncDecl(S.FuncDecl funcDecl)
         {
+            if (!funcDecl.IsSequence)
+                AnalyzeNormalFuncDecl(funcDecl);
+            else
+                AnalyzeSequenceFuncDecl(funcDecl);
+
             context.ExecInFuncScope(funcDecl, () =>
             {
                 if (0 < funcDecl.TypeParams.Length || funcDecl.ParamInfo.VariadicParamIndex != null)
@@ -335,6 +407,8 @@ namespace Gum.IR0Translator
                     context.AddNormalFuncDecl(funcDecl.Name, bThisCall: false, funcDecl.TypeParams, parameters, bodyResult.Stmt);
                 }
             });
+
+
         }
         
         void CheckParamTypes(S.ISyntaxNode nodeForErrorReport, ImmutableArray<TypeValue> parameters, ImmutableArray<TypeValue> args)

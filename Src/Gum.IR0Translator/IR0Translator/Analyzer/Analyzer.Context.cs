@@ -26,10 +26,9 @@ namespace Gum.IR0Translator
 
             // 현재 분석되고 있는 함수
             FuncContext curFunc;
-            bool bInLoop;
-            
-            List<R.IDecl> decls;
+            bool bInLoop;            
             List<R.Stmt> topLevelStmts;
+            RDeclBuilder declBuilder;
 
             InternalGlobalVariableRepository internalGlobalVarRepo;
 
@@ -47,8 +46,8 @@ namespace Gum.IR0Translator
                 curFunc = new FuncContext(itemValueFactory.Int, false);
                 bInLoop = false;
                 internalGlobalVarRepo = new InternalGlobalVariableRepository();
-                
-                decls = new List<R.IDecl>();
+
+                declBuilder = new GlobalRDeclBuilder();
                 topLevelStmts = new List<R.Stmt>();
             }
 
@@ -178,6 +177,23 @@ namespace Gum.IR0Translator
                 }
             }
 
+            public TResult ExecInFuncScope<TResult>(S.FuncDecl funcDecl, Func<TResult> action)
+            {
+                var retTypeValue = GetTypeValueByTypeExp(funcDecl.RetType);
+
+                var prevFunc = curFunc;
+                curFunc = new FuncContext(retTypeValue, funcDecl.IsSequence);
+
+                try
+                {
+                    return action.Invoke();
+                }
+                finally
+                {
+                    curFunc = prevFunc;
+                }
+            }
+
             public bool IsBoolType(TypeValue typeValue)
             {
                 return itemValueFactory.Bool.Equals(typeValue);
@@ -231,22 +247,22 @@ namespace Gum.IR0Translator
                 return internalGlobalVarRepo.GetVariable(idName);
             }
 
-            public void AddNormalFuncDecl(Name name, bool bThisCall, ImmutableArray<string> typeParams, ImmutableArray<R.ParamInfo> paramNames, R.Stmt body)
+            public void AddNormalFuncDecl(R.Name name, bool bThisCall, ImmutableArray<string> typeParams, ImmutableArray<R.ParamInfo> paramNames, R.Stmt body)
             {
-                var id = new R.DeclId(decls.Count);
-                decls.Add(new R.NormalFuncDecl(id, name, bThisCall, typeParams, paramNames, body));
+                // decls에 할 것이 아니라. curOuter에 해야 한다
+                declBuilder.Add(new R.NormalFuncDecl(name, bThisCall, typeParams, paramNames, body));
             }
 
             public void AddSequenceFuncDecl(R.Type yieldType, bool bThisCall, ImmutableArray<string> typeParams, ImmutableArray<R.ParamInfo> paramInfos, R.Stmt body)
             {
                 var id = new R.DeclId(decls.Count);
-                decls.Add(new R.SequenceFuncDecl(id, bThisCall, yieldType, typeParams, paramInfos, body));
+                declBuilder.Add(new R.SequenceFuncDecl(id, bThisCall, yieldType, typeParams, paramInfos, body));
             }
 
             public R.DeclId AddLambdaDecl(R.Type? capturedThisType, ImmutableArray<R.TypeAndName> captureInfo, ImmutableArray<R.ParamInfo> paramInfos, R.Stmt body)
             {
                 var id = new R.DeclId(decls.Count);
-                decls.Add(new R.LambdaDecl(id, new R.CapturedStatement(capturedThisType, captureInfo, body), paramInfos));
+                declBuilder.Add(new R.LambdaDecl(id, new R.CapturedStatement(capturedThisType, captureInfo, body), paramInfos));
                 return id;
             }
 

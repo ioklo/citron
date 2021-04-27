@@ -123,7 +123,7 @@ namespace Gum.IR0
     [AutoConstructor, ImplementIEquatable]
     public partial class CallSeqFuncExp : Exp
     {
-        public DeclId DeclId { get; }
+        public SeqFunc SeqFunc { get; }
         public ImmutableArray<Type> TypeArgs { get; }
         public Loc? Instance { get; }
         public ImmutableArray<Exp> Args { get; }

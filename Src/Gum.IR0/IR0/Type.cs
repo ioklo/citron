@@ -141,7 +141,7 @@ namespace Gum.IR0
     [AutoConstructor, ImplementIEquatable]
     public partial class AnonymousSeqType : Type
     {
-        public DeclId SeqDeclId { get; }
+        public Func SeqFunc { get; } // 돌려 쓰기
         public ImmutableArray<Type> TypeArgs { get; }
     }
 
@@ -149,6 +149,6 @@ namespace Gum.IR0
     [AutoConstructor, ImplementIEquatable]
     public partial class AnonymousLambdaType : Type
     {
-        public DeclId DeclId { get; }
+        public Path DeclId { get; }
     }
 }

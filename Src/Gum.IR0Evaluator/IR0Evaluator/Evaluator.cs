@@ -233,7 +233,7 @@ namespace Gum.IR0Evaluator
         {
             foreach (var topLevelStmt in topLevelStmts)
             {
-                await foreach (var value in stmtEvaluator.EvalStmtAsync(topLevelStmt))
+                await foreach (var _ in stmtEvaluator.EvalStmtAsync(topLevelStmt))
                 {
                 }
 

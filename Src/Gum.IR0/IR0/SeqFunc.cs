@@ -1,6 +1,6 @@
 ﻿namespace Gum.IR0
 {
-    public interface IDecl
+    public class SeqFunc
     {
     }
 }
