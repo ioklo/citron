@@ -39,9 +39,8 @@ namespace Gum.IR0Translator
             var rnsPath = MakeNamespacePath(namespacePath);
             var rname = MakeName(name);
             var rtypeArgs = MakeRTypes(typeArgs);
-
-            var outerType = new R.RootOuterType(rmoduleName, rnsPath);
-            return new R.StructType(outerType, rname, rtypeArgs);
+            
+            return new R.StructType(R.Path.Make(rmoduleName, rnsPath, rname, rtypeArgs, R.ParamHash.None));
         }
 
         public R.Type MakeStructType(R.OuterType outerType, M.Name name, ImmutableArray<R.Type> rtypeArgs)

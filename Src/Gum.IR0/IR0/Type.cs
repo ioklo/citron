@@ -8,42 +8,25 @@ using static Gum.Infra.Misc;
 
 namespace Gum.IR0
 {
-    public abstract class OuterType
-    {        
-    }
-
-    [AutoConstructor, ImplementIEquatable]
-    public partial class RootOuterType : OuterType 
-    {
-        ModuleName moduleName;
-        NamespacePath namespacePath;
-    }
-
-    public class OuterType<TType> : OuterType { }    
-    public class ClassOuterType : OuterType<ClassType> { }
-    public class StructOuterType : OuterType<StructType> { }
-    public class EnumOuterType : OuterType<EnumType> { }
-    public class InterfaceOuterType : OuterType<InterfaceType> { }
-
     // IR0에서 타입을 나타낼 때 쓰는 자료구조    
     public abstract class Type
     {
         // predefined named type
         // [System.Runtime]System.Boolean
-        public static Type Bool = new StructType(new RootOuterType("System.Runtime", new NamespacePath("System")), "Boolean", default);
-        public static Type Int = new StructType(new RootOuterType("System.Runtime", new NamespacePath("System")), "Int32", default);
-        public static Type String = new ClassType(new RootOuterType("System.Runtime", new NamespacePath("System")), "String", default);
+        public static Type Bool = new StructType(Path.Make("System.Runtime", new NamespacePath("System"), "Boolean", default, ParamHash.None));
+        public static Type Int = new StructType(Path.Make("System.Runtime", new NamespacePath("System"), "Int32", default, ParamHash.None));
+        public static Type String = new ClassType(Path.Make("System.Runtime", new NamespacePath("System"), "String", default, ParamHash.None));
         
         // seq<> interface는 있다
         public static Type Seq(Type itemType)
         {   
-            return new InterfaceType(new RootOuterType("System.Runtime", new NamespacePath("System")), "ISeq", Arr(itemType));
+            return new InterfaceType(Path.Make("System.Runtime", new NamespacePath("System"), "ISeq", Arr(itemType), ParamHash.None));
         }
 
         // list<> class System.List<>
         public static Type List(Type itemType)
         {
-            return new ClassType(new RootOuterType("System.Runtime", new NamespacePath("System")), "List", Arr(itemType));
+            return new ClassType(Path.Make("System.Runtime", new NamespacePath("System"), "List", Arr(itemType), ParamHash.None));
         }
 
         internal Type() { }
@@ -54,34 +37,26 @@ namespace Gum.IR0
     [AutoConstructor, ImplementIEquatable]
     public partial class ClassType : Type
     {
-        public OuterType Outer { get; }
-        public Name Name { get; }
-        ImmutableArray<Type> typeArgs;
+        Path path;
     }
     
     // int, 
     [AutoConstructor, ImplementIEquatable]
     public partial class StructType : Type
     {
-        OuterType outer;
-        Name name;
-        ImmutableArray<Type> typeArgs;
+        Path path;
     }
 
     [AutoConstructor, ImplementIEquatable]
     public partial class EnumType : Type
     {
-        OuterType outer;
-        Name name;
-        ImmutableArray<Type> typeArgs;
+        Path path;
     }
 
     [AutoConstructor, ImplementIEquatable]
     public partial class InterfaceType : Type
     {
-        OuterType outer;
-        Name name;
-        ImmutableArray<Type> typeArgs;
+        Path path;
     }
     
     // from type alias, type parameter
@@ -141,14 +116,13 @@ namespace Gum.IR0
     [AutoConstructor, ImplementIEquatable]
     public partial class AnonymousSeqType : Type
     {
-        public Func SeqFunc { get; } // 돌려 쓰기
-        public ImmutableArray<Type> TypeArgs { get; }
+        public Path Path { get; } // 돌려 쓰기        
     }
 
     // var l = () => { ... }; 에서 l 타입
     [AutoConstructor, ImplementIEquatable]
     public partial class AnonymousLambdaType : Type
     {
-        public Path DeclId { get; }
+        public Path Path { get; }
     }
 }

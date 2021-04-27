@@ -13,10 +13,7 @@ namespace Gum.IR0
     public static class IR0Factory
     {
         public static Script RScript(ImmutableArray<IDecl> decls, params Stmt[] optTopLevelStmts)
-        {
-            for(int i = 0; i < decls.Length; i++)
-                Debug.Assert(i == decls[i].DeclId.Value);
-            
+        {   
             ImmutableArray<Stmt> topLevelStmts = optTopLevelStmts.ToImmutableArray();
 
             return new Script(decls, topLevelStmts);

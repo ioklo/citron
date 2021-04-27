@@ -12,19 +12,24 @@ namespace Gum.IR0Evaluator
 {   
     class EvalContext
     {
-        class SharedData
+        class SharedContext
         {
-            public ImmutableArray<R.IDecl> Decls { get; }            
+            public ImmutableArray<R.IDecl> Decls { get; }
             public Dictionary<string, Value> PrivateGlobalVars { get; }
 
-            public SharedData(ImmutableArray<R.IDecl> decls)
+            public SharedContext(ImmutableArray<R.IDecl> decls)
             {
                 Decls = decls;
                 PrivateGlobalVars = new Dictionary<string, Value>();
             }
+
+            // 여기서 만들어 내면 됩니다
+            public FuncInvoker GetFuncInvoker(R.Path path)
+            {
+            }
         }
 
-        private SharedData sharedData;
+        private SharedContext sharedContext;
 
         private ImmutableDictionary<string, Value> localVars;
         private EvalFlowControl flowControl;
@@ -35,7 +40,7 @@ namespace Gum.IR0Evaluator
 
         public EvalContext(ImmutableArray<R.IDecl> decls, Value retValue)
         {
-            this.sharedData = new SharedData(decls);            
+            this.sharedContext = new SharedContext(decls);            
 
             this.localVars = ImmutableDictionary<string, Value>.Empty;
             this.flowControl = EvalFlowControl.None;
@@ -52,7 +57,7 @@ namespace Gum.IR0Evaluator
             Value? thisValue,
             Value retValue)
         {
-            this.sharedData = evalContext.sharedData;
+            this.sharedContext = evalContext.sharedContext;
 
             this.localVars = localVars;
             this.flowControl = flowControl;
@@ -105,12 +110,12 @@ namespace Gum.IR0Evaluator
 
         public Value GetGlobalValue(string name)
         {
-            return sharedData.PrivateGlobalVars[name];
+            return sharedContext.PrivateGlobalVars[name];
         }
 
         public void AddPrivateGlobalVar(string name, Value value)
         {
-            sharedData.PrivateGlobalVars.Add(name, value);
+            sharedContext.PrivateGlobalVars.Add(name, value);
         }
 
         public Value GetLocalValue(string name)
@@ -178,15 +183,9 @@ namespace Gum.IR0Evaluator
             }
         }
 
-        public TDecl GetDecl<TDecl>(R.DeclId declId)
-            where TDecl : R.IDecl
+        public FuncInvoker GetFuncInvoker(R.Path path)
         {
-            return (TDecl)sharedData.Decls[declId.Value];
-        }
-
-        public FuncInvoker GetFuncInvoker(R.Func func)
-        {
-            throw new NotImplementedException();
+            return sharedContext.GetFuncInvoker(path);
         }
 
         public void SetYieldValue(Value value)

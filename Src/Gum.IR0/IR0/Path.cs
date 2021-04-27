@@ -4,16 +4,20 @@ using Pretune;
 namespace Gum.IR0
 {
     public abstract record PathOuter;
-    public record RootPathOuter(ModuleName ModuleName, NamespacePath NamespacePath) : FuncOuter;
-    public record TypePathOuter : PathOuter;
-    public record FuncPathOuter : PathOuter;
+    public record RootPathOuter(ModuleName ModuleName, NamespacePath NamespacePath) : PathOuter;
+    public record NestedPathOuter(Path outer) : PathOuter;
 
     [AutoConstructor]
-    public struct Path
+    public partial struct Path
     {
+        public static Path Make(ModuleName moduleName, NamespacePath namespacePath, Name name, ImmutableArray<Type> typeArgs, ParamHash paramHash)
+        {
+            return new Path(new RootPathOuter(moduleName, namespacePath), name, typeArgs, paramHash);
+        }
+
         public PathOuter Outer { get; }
         public Name Name { get; }
         public ImmutableArray<Type> TypeArgs { get; }
-        public string ParamHash { get; }
+        public ParamHash ParamHash { get; }
     }
 }
