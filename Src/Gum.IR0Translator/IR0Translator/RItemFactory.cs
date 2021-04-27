@@ -1,5 +1,6 @@
 ﻿using System;
 using Gum.Collections;
+using Gum.Infra;
 using M = Gum.CompileTime;
 using R = Gum.IR0;
 
@@ -25,7 +26,17 @@ namespace Gum.IR0Translator
 
         R.Name MakeName(M.Name name)
         {
-            return new R.Name((R.SpecialName)name.Kind, name.Text);
+            switch (name.Kind)
+            {
+                case M.SpecialName.Normal: return new R.Name.Normal(name.Text!);
+                case M.SpecialName.IndexerGet: return new R.Name.IndexerGet();
+                case M.SpecialName.IndexerSet: return new R.Name.IndexerSet();
+                case M.SpecialName.AnonymousLambda: return new R.Name.AnonymousLambda(int.Parse(R.Name.Text!));
+                case M.SpecialName.OpInc: return new R.Name.OpInc();
+                case M.SpecialName.OpDec: return new R.Name.OpDec();
+            }
+
+            throw new UnreachableCodeException();
         }
 
         ImmutableArray<R.Type> MakeRTypes(ImmutableArray<TypeValue> typeValues)

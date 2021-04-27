@@ -131,9 +131,9 @@ namespace Gum.IR0Translator
             return new FuncValue(this, ritemFactory, moduleName, namespacePath, null, funcInfo, typeArgs);
         }
 
-        public LambdaTypeValue MakeLambdaType(R.DeclId lambdaDeclId, TypeValue retType, ImmutableArray<TypeValue> paramTypes)
+        public LambdaTypeValue MakeLambdaType(R.LambdaId lambdaId, TypeValue retType, ImmutableArray<TypeValue> paramTypes)
         {
-            return new LambdaTypeValue(ritemFactory, lambdaDeclId, retType, paramTypes);
+            return new LambdaTypeValue(ritemFactory, lambdaId, retType, paramTypes);
         }
 
         public VarTypeValue MakeVarTypeValue()

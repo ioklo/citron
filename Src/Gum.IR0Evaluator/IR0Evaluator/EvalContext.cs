@@ -26,6 +26,7 @@ namespace Gum.IR0Evaluator
             // 여기서 만들어 내면 됩니다
             public FuncInvoker GetFuncInvoker(R.Path path)
             {
+                throw new NotImplementedException();
             }
         }
 

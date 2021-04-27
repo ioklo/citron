@@ -8,7 +8,7 @@ using static Gum.Infra.Misc;
 
 namespace Gum.IR0
 {
-    // IR0에서 타입을 나타낼 때 쓰는 자료구조    
+    // IR0에서 타입을 나타낼 때 쓰는 자료구조
     public abstract class Type
     {
         // predefined named type
@@ -54,14 +54,14 @@ namespace Gum.IR0
     }
 
     [AutoConstructor, ImplementIEquatable]
-    public partial class InterfaceType : Type
+    public partial class InterfaceType : Type 
     {
         Path path;
     }
     
     // from type alias, type parameter
     [AutoConstructor, ImplementIEquatable]
-    public partial class TypeVar : Type
+    public partial class TypeVar : Type  // Reserved.TypeVar(0, 1)
     {
         int depth;
         int index;
@@ -69,38 +69,38 @@ namespace Gum.IR0
 
     // Tuple<int i, string s>
     [AutoConstructor, ImplementIEquatable]
-    public partial class TupleType : Type
+    public partial class TupleType : Type // Reserved.NamedTuple
     {
     }
 
     // box<int>
     [AutoConstructor, ImplementIEquatable]
-    public partial class BoxType : Type
+    public partial class BoxType : Type  // Reserved.Box
     {
 
     }
 
     // ref<string>
     [AutoConstructor, ImplementIEquatable]
-    public partial class RefType : Type
+    public partial class RefType : Type // Reserved.Ref
     {
     }
 
     // TRef<T> => ref<int> (if T is int), string (if T is string)
-    [AutoConstructor, ImplementIEquatable]
+    [AutoConstructor, ImplementIEquatable] // Reserved.TRef()
     public partial class GenericRefType : Type
     {
     }
 
     // Func<params array<int>> interface like type
-    [AutoConstructor, ImplementIEquatable]
+    [AutoConstructor, ImplementIEquatable] // Reserved.Func<...>
     public partial class FuncType : Type
     {
     }
 
     // void
     [ImplementIEquatable]
-    public partial class VoidType : Type
+    public partial class VoidType : Type // Reserved.Void
     {
         public static readonly VoidType Instance = new VoidType();
         VoidType() { }
@@ -108,19 +108,19 @@ namespace Gum.IR0
 
     // nullable<>
     [AutoConstructor, ImplementIEquatable]
-    public partial class NullableType : Type
+    public partial class NullableType : Type // Reserved.Nullable
     {
     }
 
     // seq T
-    [AutoConstructor, ImplementIEquatable]
+    [AutoConstructor, ImplementIEquatable]  // MyType.MyType.SeqFunc
     public partial class AnonymousSeqType : Type
     {
         public Path Path { get; } // 돌려 쓰기        
     }
 
     // var l = () => { ... }; 에서 l 타입
-    [AutoConstructor, ImplementIEquatable]
+    [AutoConstructor, ImplementIEquatable]  // MyType.MyFunc.Lambda<1>
     public partial class AnonymousLambdaType : Type
     {
         public Path Path { get; }

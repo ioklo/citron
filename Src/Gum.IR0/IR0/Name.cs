@@ -1,58 +1,24 @@
-﻿using Pretune;
-
-namespace Gum.IR0
-{
-    public enum SpecialName
+﻿namespace Gum.IR0
+{   
+    public abstract record Name
     {
-        Normal,
-        IndexerGet,
-        IndexerSet,
-        AnonymousLambda, // use Name member
+        public static implicit operator Name(string x) => new Normal(x);
 
-        OpInc,
-        OpDec,
-    }
+        public record Normal(string Value) : Name;
+        public record IndexerGet : Name;
+        public record IndexerSet : Name;        
+        public record OpInc : Name;
+        public record OpDec : Name;
 
-    public static class SpecialNames
-    {
-        public static Name IndexerGet { get; } = new Name(SpecialName.IndexerGet, null);
-        public static Name IndexerSet { get; } = new Name(SpecialName.IndexerGet, null);
-        public static Name OpInc { get; } = new Name(SpecialName.OpInc, null);
-        public static Name OpDec { get; } = new Name(SpecialName.OpDec, null);
-    }
-
-    [ImplementIEquatable]
-    public partial struct Name
-    {
-        public SpecialName Kind { get; }
-        public string? Text { get; }
-
-        public static Name MakeAnonymousLambda(string text)
+        // Reserved Type name        
+        public record TypeVar(int Depth, int Index) : Name;
+        public record Void : Name
         {
-            return new Name(SpecialName.AnonymousLambda, text);
+            public static readonly Name Instance = new Void();
+            Void() { }
         }
 
-        public static Name MakeText(string text)
-        {
-            return new Name(SpecialName.Normal, text);
-        }
-
-        public Name(SpecialName kind, string? text)
-        {
-            Kind = kind;
-            Text = text;
-        }
-
-        public override string ToString()
-        {
-            switch (Kind)
-            {
-                case SpecialName.Normal: return Text!;
-                case SpecialName.AnonymousLambda: return $"$Labmda{Text!}";
-                default: return $"${Kind}";
-            }
-        }
-
-        public static implicit operator Name(string s) => new Name(SpecialName.Normal, s);
+        // for lambda
+        public record AnonymousLambda(LambdaId lambdaId) : Name;
     }
 }

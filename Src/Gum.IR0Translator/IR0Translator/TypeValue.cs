@@ -326,14 +326,14 @@ namespace Gum.IR0Translator
     class LambdaTypeValue : TypeValue, IEquatable<LambdaTypeValue>
     {
         RItemFactory ritemFactory;
-        public R.DeclId LambdaDeclId { get; }
+        public R.LambdaId LambdaId { get; }
         public TypeValue Return { get; }
         public ImmutableArray<TypeValue> Params { get; }
 
-        public LambdaTypeValue(RItemFactory ritemFactory, R.DeclId lambdaDeclId, TypeValue ret, ImmutableArray<TypeValue> parameters)
+        public LambdaTypeValue(RItemFactory ritemFactory, R.LambdaId lambdaId, TypeValue ret, ImmutableArray<TypeValue> parameters)
         {
             this.ritemFactory = ritemFactory;
-            this.LambdaDeclId = lambdaDeclId;
+            this.LambdaId = lambdaId;
             this.Return = ret;
             this.Params = parameters;
         }

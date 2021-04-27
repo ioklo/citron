@@ -110,18 +110,39 @@ namespace Gum.IR0Evaluator
         }
 
         // type은 ir0 syntax의 일부분이다
-        Value AllocValue(R.Type type)
+        Value AllocValue(R.Path typePath)
         {
-            switch(type)
+            if (typePath.Equals(R.Path.Bool))
             {
+                return new BoolValue();
+            }
+            else if (typePath.Equals(R.Path.Int))
+            {
+                return new IntValue();
+            }
+            else if (typePath.Equals(R.Path.String))
+            {
+                return new StringValue();
+            }
+            else if (typePath.Equals(R.Path.Void))
+            {
+                return VoidValue.Instance;
+            }
+
+
+            switch(typePath.Outer)
+            {
+                case R.ReservedPathOuter:
+                    switch(typePath.Name)
+                    {
+                        case R.Name.TypeVar:
+                            throw new InvalidOperationException();
+
+                    }
+                    break;
+
                 case R.VoidType: 
-                    return VoidValue.Instance;
-
-                case R.StructType when type == R.Type.Bool:
-                    return new BoolValue();
-
-                case R.StructType when type == R.Type.Int:
-                    return new IntValue();
+                    return VoidValue.Instance;               
 
                 case R.ClassType when type == R.Type.String:
                     return new StringValue();
