@@ -167,19 +167,27 @@ namespace Gum.IR0Evaluator.Test
             var output = await EvalAsync(default, topLevelStmts);
             Assert.Equal("3", output);
         }
+
+        // without typeArgs
+        Func MakeTestRootFunc(Name name)
+        {
+            var outer = new RootFuncOuter(moduleName, NamespacePath.Root);
+            return new Func(outer, name, default);
+        }
         
         [Fact]
         public async Task PrivateGlobalVariableExp_GetGlobalValueInFunc()
         {
             var func0Id = new DeclId(0);
-            var func0 = new NormalFuncDecl(func0Id, false, default, default, RBlock(
+            var func0 = new NormalFuncDecl(func0Id, "TestFunc", false, default, default, RBlock(
                 PrintStringCmdStmt(new GlobalVarLoc("x"))));
+            
+            var func = MakeTestRootFunc("TestFunc");
 
             var topLevelStmts = Arr<Stmt>
             (
                 RGlobalVarDeclStmt(Type.String, "x", RString("Hello")),
-
-                new ExpStmt(new CallFuncExp(new Func(func0Id, TypeContext.Empty), null, default))
+                new ExpStmt(new CallFuncExp(func, null, default))
             );
 
             var output = await EvalAsync(Arr<IDecl>(func0), topLevelStmts);

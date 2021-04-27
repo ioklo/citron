@@ -10,6 +10,7 @@ namespace Gum.IR0
     public partial class SequenceFuncDecl : IDecl
     {
         public DeclId DeclId { get; }
+        public Name Name { get; }
         public bool IsThisCall { get; }
         public Type YieldType { get; }
         public ImmutableArray<string> TypeParams { get; }

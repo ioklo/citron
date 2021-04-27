@@ -7,6 +7,7 @@ namespace Gum.IR0
     public partial class NormalFuncDecl : IDecl
     {
         public DeclId DeclId { get; }
+        public Name Name { get; }
         public bool IsThisCall { get; }
         public ImmutableArray<string> TypeParams { get; }
         public ImmutableArray<ParamInfo> ParamInfos { get; }

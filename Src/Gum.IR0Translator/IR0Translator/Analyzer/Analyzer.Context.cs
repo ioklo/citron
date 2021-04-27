@@ -231,10 +231,10 @@ namespace Gum.IR0Translator
                 return internalGlobalVarRepo.GetVariable(idName);
             }
 
-            public void AddNormalFuncDecl(bool bThisCall, ImmutableArray<string> typeParams, ImmutableArray<R.ParamInfo> paramNames, R.Stmt body)
+            public void AddNormalFuncDecl(Name name, bool bThisCall, ImmutableArray<string> typeParams, ImmutableArray<R.ParamInfo> paramNames, R.Stmt body)
             {
                 var id = new R.DeclId(decls.Count);
-                decls.Add(new R.NormalFuncDecl(id, bThisCall, typeParams, paramNames, body));
+                decls.Add(new R.NormalFuncDecl(id, name, bThisCall, typeParams, paramNames, body));
             }
 
             public void AddSequenceFuncDecl(R.Type yieldType, bool bThisCall, ImmutableArray<string> typeParams, ImmutableArray<R.ParamInfo> paramInfos, R.Stmt body)

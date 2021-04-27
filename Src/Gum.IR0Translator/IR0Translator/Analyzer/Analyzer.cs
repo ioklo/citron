@@ -332,7 +332,7 @@ namespace Gum.IR0Translator
                         return new R.ParamInfo(paramTypeValue.GetRType(), param.Name);
                     }).ToImmutableArray();
 
-                    context.AddNormalFuncDecl(bThisCall: false, funcDecl.TypeParams, parameters, bodyResult.Stmt);
+                    context.AddNormalFuncDecl(funcDecl.Name, bThisCall: false, funcDecl.TypeParams, parameters, bodyResult.Stmt);
                 }
             });
         }
