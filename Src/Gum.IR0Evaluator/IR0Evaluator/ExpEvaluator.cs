@@ -88,9 +88,7 @@ namespace Gum.IR0Evaluator
                 // 1) X<int, short>.Y<string>.F<bool>, 
                 // 2) (declId, [[[int, short], string], bool])
                 // 누가 정보를 더 많이 가지고 있는가; 1) 필요한가? 
-                var funcDecl = evaluator.context.GetDecl<R.NormalFuncDecl>(exp.Func);
-
-                evaluator.context.GetFunc(exp.Func);
+                var funcInvoker = evaluator.context.GetFuncInvoker(exp.Func);                
 
                 // typeContext를 계산합니다
 
@@ -110,10 +108,7 @@ namespace Gum.IR0Evaluator
                 // 인자를 계산 해서 처음 로컬 variable에 집어 넣는다
                 var args = await evaluator.EvalArgumentsAsync(ImmutableDictionary<string, Value>.Empty, funcDecl.ParamInfos, exp.Args);
 
-                await evaluator.context.ExecInNewFuncFrameAsync(args, EvalFlowControl.None, ImmutableArray<Task>.Empty, thisValue, result, async () =>
-                {
-                    await foreach (var _ in evaluator.EvalStmtAsync(funcDecl.Body)) { }
-                });
+                funcInvoker.Invoke();
             }
 
             async ValueTask EvalCallSeqFuncExpAsync(R.CallSeqFuncExp exp, Value result)

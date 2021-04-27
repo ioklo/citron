@@ -184,7 +184,7 @@ namespace Gum.IR0Evaluator
             return (TDecl)sharedData.Decls[declId.Value];
         }
 
-        public Func GetFunc(R.Func func)
+        public FuncInvoker GetFuncInvoker(R.Func func)
         {
             throw new NotImplementedException();
         }
