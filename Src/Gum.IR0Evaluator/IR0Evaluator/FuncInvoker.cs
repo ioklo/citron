@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Gum.Collections;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,9 +14,15 @@ namespace Gum.IR0Evaluator
 
     class IR0FuncInvoker : FuncInvoker
     {
-        public override void Invoke()
-        {
+        Evaluator evaluator;
+        EvalContext context;
 
+        public override async ValueTask Invoke(Value? thisValue, Value result, ImmutableDictionary<string, Value> args)
+        {
+            await context.ExecInNewFuncFrameAsync(args, EvalFlowControl.None, ImmutableArray<Task>.Empty, thisValue, result, async () =>
+            {
+                await foreach (var _ in evaluator.EvalStmtAsync(funcDecl.Body)) { }
+            });
         }
 
     }
