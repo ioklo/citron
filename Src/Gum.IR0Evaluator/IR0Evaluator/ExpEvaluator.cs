@@ -122,7 +122,7 @@ namespace Gum.IR0Evaluator
                 var localVars = await evaluator.EvalArgumentsAsync(ImmutableDictionary<string, Value>.Empty, seqFuncDecl.ParamInfos, exp.Args);
 
                 // evaluator 복제
-                var newEvaluator = evaluator.CloneWithNewContext(localVars);
+                var newEvaluator = evaluator.CloneWithNewContext(thisValue, localVars);
                 
                 // asyncEnum을 만들기 위해서 내부 함수를 씁니다
                 async IAsyncEnumerator<Infra.Void> WrapAsyncEnum()
@@ -134,7 +134,7 @@ namespace Gum.IR0Evaluator
                 }
 
                 var enumerator = WrapAsyncEnum();
-                ((SeqValue)result).SetEnumerator(enumerator, newContext);
+                ((SeqValue)result).SetEnumerator(enumerator, newEvaluator.context);
             }
 
             async ValueTask EvalCallValueExpAsync(R.CallValueExp exp, Value result)
