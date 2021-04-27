@@ -90,25 +90,19 @@ namespace Gum.IR0Evaluator
                 // 누가 정보를 더 많이 가지고 있는가; 1) 필요한가? 
                 var funcInvoker = evaluator.context.GetFuncInvoker(exp.Func);                
 
-                // typeContext를 계산합니다
+                // TODO: typeContext를 계산합니다
 
                 // 함수는 this call이지만 instance가 없는 경우는 없다.
-                Debug.Assert(!(funcDecl.IsThisCall && exp.Instance == null));
-
-                Value? thisValue = null;
+                Value? thisValue;
                 if (exp.Instance != null)
-                {
-                    var instValue = await evaluator.EvalLocAsync(exp.Instance);
-
-                    // this call인 경우만 세팅한다
-                    if (funcDecl.IsThisCall)
-                        thisValue = instValue;
-                }
+                    thisValue = await evaluator.EvalLocAsync(exp.Instance);
+                else
+                    thisValue = null;
 
                 // 인자를 계산 해서 처음 로컬 variable에 집어 넣는다
-                var args = await evaluator.EvalArgumentsAsync(ImmutableDictionary<string, Value>.Empty, funcDecl.ParamInfos, exp.Args);
+                var args = await evaluator.EvalArgumentsAsync(ImmutableDictionary<string, Value>.Empty, funcInvoker.ParamInfos, exp.Args);
 
-                funcInvoker.Invoke();
+                await funcInvoker.Invoke(thisValue, result, args);
             }
 
             async ValueTask EvalCallSeqFuncExpAsync(R.CallSeqFuncExp exp, Value result)
