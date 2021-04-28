@@ -42,11 +42,7 @@ namespace Gum.IR0
 
         // list<> class System.List<>
         public static readonly PathOuter ListOuter = new RootPathOuter("System.Runtime", new NamespacePath("System"));
-
         public static Path List(Type itemType)
             => new Path(ListOuter, "List", Arr(itemType), ParamHash.None);
-
-        
-
     }
 }

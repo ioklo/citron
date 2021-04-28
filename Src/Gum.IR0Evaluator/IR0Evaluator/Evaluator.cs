@@ -128,47 +128,41 @@ namespace Gum.IR0Evaluator
             {
                 return VoidValue.Instance;
             }
-
-
-            switch(typePath.Outer)
+            else if (typePath.Outer.Equals(R.Path.ListOuter) && typePath.Name.Equals("List"))
             {
-                case R.ReservedPathOuter:
-                    switch(typePath.Name)
-                    {
-                        case R.Name.TypeVar:
-                            throw new InvalidOperationException();
+                 return new ListValue();            
+            }                        
 
-                    }
-                    break;
+            else if (typePath.Name is R.Name.AnonymousLambda anonymousLambda)
+            {
+                // outer를 가져와서 
+                var lambdaAllocator = context.GetLambdaAllocator(typePath);
+                return lambdaAllocator.Alloc();
 
-                case R.VoidType: 
-                    return VoidValue.Instance;               
+                // 여기서 부터 다시.
+                throw new NotImplementedException();
 
-                case R.ClassType when type == R.Type.String:
-                    return new StringValue();
+                // 
+                var lambdaDecl = context.GetDecl<R.LambdaDecl>(lambdaType.DeclId);
 
-                case R.ClassType classType:
-                    if (classType.Outer.Equals(new R.RootOuterType("System.Runtime", new R.NamespacePath("System"))) && classType.Name.Equals("List"))
-                        return new ListValue();
+                Value? capturedThis = null;
+                if (lambdaDecl.CapturedStatement.ThisType != null)
+                    capturedThis = AllocValue(lambdaDecl.CapturedStatement.ThisType);
 
-                    throw new NotImplementedException();
+                var capturesBuilder = ImmutableDictionary.CreateBuilder<string, Value>();
+                foreach (var (elemType, elemName) in lambdaDecl.CapturedStatement.OuterLocalVars)
+                {
+                    var elemValue = AllocValue(elemType);
+                    capturesBuilder.Add(elemName, elemValue);
+                }
 
+                return new LambdaValue(lambdaType.DeclId, capturedThis, capturesBuilder.ToImmutable());
+            }
+
+            switch (typePath.Outer)
+            {
                 case R.AnonymousLambdaType lambdaType:
-                    var lambdaDecl = context.GetDecl<R.LambdaDecl>(lambdaType.DeclId);
-
-                    Value? capturedThis = null;
-                    if (lambdaDecl.CapturedStatement.ThisType != null)
-                        capturedThis = AllocValue(lambdaDecl.CapturedStatement.ThisType);
-
-                    var capturesBuilder = ImmutableDictionary.CreateBuilder<string, Value>();
-                    foreach (var (elemType, elemName) in lambdaDecl.CapturedStatement.OuterLocalVars)
-                    {
-                        var elemValue = AllocValue(elemType);
-                        capturesBuilder.Add(elemName, elemValue);
-                    }
-
-                    return new LambdaValue(lambdaType.DeclId, capturedThis, capturesBuilder.ToImmutable());
-                
+                    
                 case R.AnonymousSeqType _:
                     return new SeqValue();
 

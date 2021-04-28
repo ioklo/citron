@@ -110,6 +110,7 @@ namespace Gum.IR0
     [AutoConstructor, ImplementIEquatable]
     public partial class NullableType : Type // Reserved.Nullable
     {
+
     }
 
     // seq T
