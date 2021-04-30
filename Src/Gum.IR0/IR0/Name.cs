@@ -10,15 +10,7 @@
         public record OpInc : Name;
         public record OpDec : Name;
 
-        // Reserved Type name        
-        public record TypeVar(int Depth, int Index) : Name;
-        public record Void : Name
-        {
-            public static readonly Name Instance = new Void();
-            Void() { }
-        }
-
         // for lambda
-        public record AnonymousLambda(LambdaId lambdaId) : Name;
+        public record AnonymousLambda(LambdaId lambdaId) : Name;        
     }
 }

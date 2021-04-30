@@ -8,10 +8,10 @@ namespace Gum.IR0
     [AutoConstructor, ImplementIEquatable]
     public partial struct TypeAndName
     {
-        public Type Type { get; }
+        public Path Type { get; }
         public string Name { get; }
 
-        public void Deconstruct(out Type outType, out string outName)
+        public void Deconstruct(out Path outType, out string outName)
         {
             outType = Type;
             outName = Name;

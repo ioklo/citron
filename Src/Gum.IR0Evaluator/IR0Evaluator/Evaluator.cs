@@ -27,7 +27,7 @@ namespace Gum.IR0Evaluator
 
         public Evaluator(ICommandProvider commandProvider, R.Script script)
         {
-            var topLevelRetValue = AllocValue(R.Type.Int);
+            var topLevelRetValue = AllocValue(R.Path.Int);
 
             this.context = new EvalContext(script.Decls, topLevelRetValue);
             this.topLevelStmts = script.TopLevelStmts;
@@ -62,7 +62,7 @@ namespace Gum.IR0Evaluator
             return expEvaluator.EvalStringExpAsync(command, result);
         }
 
-        bool GetBaseType(R.Type type, [NotNullWhen(true)] out R.Type? outBaseType)
+        bool GetBaseType(R.Path type, [NotNullWhen(true)] out R.Path? outBaseType)
         {
             throw new NotImplementedException();
             //var typeInst = context.GetTypeInst(type);
@@ -82,13 +82,13 @@ namespace Gum.IR0Evaluator
         }
         
         // xType이 y타입인가 묻는 것
-        bool IsType(R.Type xType, R.Type yType)
+        bool IsType(R.Path xType, R.Path yType)
         {
-            R.Type? curType = xType;
+            R.Path? curType = xType;
 
             while (curType != null)
             {
-                if (EqualityComparer<R.Type?>.Default.Equals(curType, yType))
+                if (EqualityComparer<R.Path?>.Default.Equals(curType, yType))
                     return true;
 
                 if (!GetBaseType(curType, out var baseTypeValue))
@@ -124,16 +124,16 @@ namespace Gum.IR0Evaluator
             {
                 return new StringValue();
             }
-            else if (typePath.Equals(R.Path.Void))
+            else if (typePath.Equals(R.Path.Void.Instance))
             {
                 return VoidValue.Instance;
             }
-            else if (typePath.Outer.Equals(R.Path.ListOuter) && typePath.Name.Equals("List"))
+            else if (R.PathExtensions.IsList(typePath))
             {
-                 return new ListValue();            
-            }                        
+                return new ListValue();
+            }
 
-            else if (typePath.Name is R.Name.AnonymousLambda)
+            else if (R.PathExtensions.IsLambda(typePath))
             {
                 // outer를 가져와서 
                 var lambdaAllocator = context.GetLambdaAllocator(typePath);
@@ -142,62 +142,28 @@ namespace Gum.IR0Evaluator
                 // 여기서 부터 다시.
                 throw new NotImplementedException();
 
-                // 
-                var lambdaDecl = context.GetDecl<R.LambdaDecl>(lambdaType.DeclId);
+                // NOTICE: 아래를 주석처리 했다 LambdaAllocator.Alloc에 넣는다
+                //var lambdaDecl = context.GetDecl<R.LambdaDecl>(lambdaType.DeclId);
 
-                Value? capturedThis = null;
-                if (lambdaDecl.CapturedStatement.ThisType != null)
-                    capturedThis = AllocValue(lambdaDecl.CapturedStatement.ThisType);
+                //Value? capturedThis = null;
+                //if (lambdaDecl.CapturedStatement.ThisType != null)
+                //    capturedThis = AllocValue(lambdaDecl.CapturedStatement.ThisType);
 
-                var capturesBuilder = ImmutableDictionary.CreateBuilder<string, Value>();
-                foreach (var (elemType, elemName) in lambdaDecl.CapturedStatement.OuterLocalVars)
-                {
-                    var elemValue = AllocValue(elemType);
-                    capturesBuilder.Add(elemName, elemValue);
-                }
+                //var capturesBuilder = ImmutableDictionary.CreateBuilder<string, Value>();
+                //foreach (var (elemType, elemName) in lambdaDecl.CapturedStatement.OuterLocalVars)
+                //{
+                //    var elemValue = AllocValue(elemType);
+                //    capturesBuilder.Add(elemName, elemValue);
+                //}
 
-                return new LambdaValue(lambdaType.DeclId, capturedThis, capturesBuilder.ToImmutable());
+                //return new LambdaValue(lambdaType.DeclId, capturedThis, capturesBuilder.ToImmutable());
             }
 
-            switch (typePath.Outer)
-            {
-                case R.AnonymousLambdaType lambdaType:
-                    
-                case R.AnonymousSeqType _:
-                    return new SeqValue();
+            throw new NotImplementedException();
 
-                default:
-                    throw new NotImplementedException();
+        }
 
-            }           
-
-            
-            //switch(type.DeclId.Value)
-            //{
-            //    case (int)R.TypeDeclId.PredefinedValue.Void:
-            //        return VoidValue.Instance;
-
-            //    case (int)R.TypeDeclId.PredefinedValue.Bool:
-            //        return new BoolValue();
-
-            //    case (int)R.TypeDeclId.PredefinedValue.Int:
-            //        return new IntValue();
-
-            //    case (int)R.TypeDeclId.PredefinedValue.String:
-            //        return new StringValue();
-
-            //    // TODO: typeArgs
-            //    case (int)R.TypeDeclId.PredefinedValue.Enumerable:
-            //        return new AsyncEnumerableValue();
-
-            //    case (int)R.TypeDeclId.PredefinedValue.Lambda:
-            //        return new LambdaValue();
-
-            //    // TODO: typeArgs
-            //    case (int)R.TypeDeclId.PredefinedValue.List:
-            //        return new ListValue();
-            //}
-        }        
+                 
 
         // 캡쳐는 람다 Value안에 값을 세팅한다        
         void CaptureLocals(Value? capturedThis, ImmutableDictionary<string, Value> localVars, R.CapturedStatement capturedStatement)

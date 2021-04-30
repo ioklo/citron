@@ -21,7 +21,7 @@ namespace Gum.IR0Translator
         public virtual ItemResult GetMember(M.Name memberName, ImmutableArray<TypeValue> typeArgs, ResolveHint hint) { return NotFoundItemResult.Instance; }
         public virtual TypeValue? GetMemberType(M.Name memberName, ImmutableArray<TypeValue> typeArgs) { return null; }        
         internal abstract TypeValue Apply(TypeEnv typeEnv);
-        public abstract IR0.Type GetRType();
+        public abstract R.Path GetRType();
     }
 
     // "var"
@@ -33,7 +33,7 @@ namespace Gum.IR0Translator
         internal override TypeValue Apply(TypeEnv typeEnv) { return this; }
 
         // var는 translation패스에서 추론되기 때문에 IR0에 없다
-        public override R.Type GetRType() { throw new InvalidOperationException();  }
+        public override R.Path GetRType() { throw new InvalidOperationException();  }
     }
 
     // T: depth는 지역적이므로, 주어진 컨텍스트 안에서만 의미가 있다
@@ -53,7 +53,7 @@ namespace Gum.IR0Translator
 
             return this;
         }
-        public override R.Type GetRType() => ritemFactory.MakeTypeVar(Depth, Index);
+        public override R.Path GetRType() => ritemFactory.MakeTypeVar(Depth, Index);
     }
 
     [ImplementIEquatable]
@@ -64,13 +64,13 @@ namespace Gum.IR0Translator
             throw new NotImplementedException();
         }
 
-        public override R.Type GetRType() => throw new NotImplementedException();
+        public override R.Path GetRType() => throw new NotImplementedException();
     }
 
     [ImplementIEquatable]
     partial class EnumTypeValue : NormalTypeValue
     {
-        public override R.Type GetRType()
+        public override R.Path GetRType()
         {
             throw new NotImplementedException();
         }
@@ -271,22 +271,18 @@ namespace Gum.IR0Translator
             throw new UnreachableCodeException();
         }
 
-        public override R.Type GetRType()
+        public override R.Path GetRType()
         {
             if (IsGlobal())
             {
                 Debug.Assert(moduleName != null && namespacePath != null);
 
-                var rtypeArgs = GetRTypes(typeArgs);
                 return ritemFactory.MakeStructType(moduleName.Value, namespacePath.Value, structInfo.Name, typeArgs);
             }
             else
             {
                 Debug.Assert(outer != null);
-
-                var outerRType = outer.GetRType();
-                var rtypeArgs = GetRTypes(typeArgs);
-                return ritemFactory.MakeStructType(outerRType, structInfo.Name, rtypeArgs);
+                return ritemFactory.MakeStructType(outer, structInfo.Name, typeArgs);
             }
         }
     }
@@ -311,9 +307,9 @@ namespace Gum.IR0Translator
             return this;
         }
 
-        public override R.Type GetRType()
+        public override R.Path GetRType()
         {
-            return R.VoidType.Instance;
+            return R.Path.Void.Instance;
         }
 
         public override int GetHashCode()
@@ -326,6 +322,7 @@ namespace Gum.IR0Translator
     class LambdaTypeValue : TypeValue, IEquatable<LambdaTypeValue>
     {
         RItemFactory ritemFactory;
+        public ItemValue? Outer { get; } // FuncValue일 수도 있고, TypeValue일수도 있고, Root(Module, Namespace, )일수도
         public R.LambdaId LambdaId { get; }
         public TypeValue Return { get; }
         public ImmutableArray<TypeValue> Params { get; }
@@ -362,7 +359,7 @@ namespace Gum.IR0Translator
             throw new InvalidOperationException();
         }
 
-        public override R.Type GetRType()
+        public override R.Path GetRType()
         {
             var returnRType = Return.GetRType();
             var paramRTypes = ImmutableArray.CreateRange(Params, parameter => parameter.GetRType());
@@ -395,7 +392,7 @@ namespace Gum.IR0Translator
             throw new NotImplementedException();
         }
 
-        public override R.Type GetRType()
+        public override R.Path GetRType()
         {
             return ritemFactory.MakeEnumElemType();
         }

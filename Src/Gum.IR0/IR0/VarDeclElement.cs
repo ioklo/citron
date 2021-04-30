@@ -11,7 +11,7 @@ namespace Gum.IR0
     public partial class VarDeclElement
     {
         public string Name { get; }
-        public Type Type { get; }
+        public Path Type { get; }
         public Exp? InitExp { get; }
     }
 }

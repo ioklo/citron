@@ -51,7 +51,7 @@ namespace Gum.IR0
     public partial class IfTestClassStmt : Stmt
     {
         public Loc Target { get; }
-        public Type TestType { get; } 
+        public Path TestType { get; } 
         public Stmt Body { get; }
         public Stmt? ElseBody { get; }
     }
@@ -133,7 +133,7 @@ namespace Gum.IR0
     [AutoConstructor, ImplementIEquatable]
     public partial class ForeachStmt : Stmt
     {
-        public Type ElemType { get; set; }
+        public Path ElemType { get; set; }
         public string ElemName { get; }
 
         public Loc Iterator { get; }        

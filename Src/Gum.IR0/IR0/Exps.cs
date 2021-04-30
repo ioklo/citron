@@ -115,7 +115,7 @@ namespace Gum.IR0
     [AutoConstructor, ImplementIEquatable]
     public partial class CallFuncExp : Exp
     {
-        public Func Func { get; }
+        public Path Func { get; }
         public Loc? Instance { get; }
         public ImmutableArray<Exp> Args { get; }
     }
@@ -123,7 +123,7 @@ namespace Gum.IR0
     [AutoConstructor, ImplementIEquatable]
     public partial class CallSeqFuncExp : Exp
     {
-        public SeqFunc SeqFunc { get; }
+        public Path SeqFunc { get; }
         public ImmutableArray<Type> TypeArgs { get; }
         public Loc? Instance { get; }
         public ImmutableArray<Exp> Args { get; }
@@ -144,14 +144,14 @@ namespace Gum.IR0
     [AutoConstructor, ImplementIEquatable]
     public partial class LambdaExp : Exp
     {
-        public Path Path { get; }
+        public Path Lambda { get; }
     }
     
     // [1, 2, 3]
     [AutoConstructor, ImplementIEquatable]
     public partial class ListExp : Exp
     {
-        public Type ElemType { get; }
+        public Path ElemType { get; }
         public ImmutableArray<Exp> Elems { get; }
     }
 
@@ -174,7 +174,7 @@ namespace Gum.IR0
     [AutoConstructor, ImplementIEquatable]
     public partial class NewStructExp : Exp
     {
-        public Type Type { get; }
+        public Path Type { get; }
 
         // TODO: params, out, 등 처리를 하려면 Exp가 아니라 다른거여야 한다
         public ImmutableArray<Exp> Args { get; }
@@ -184,7 +184,7 @@ namespace Gum.IR0
     [AutoConstructor, ImplementIEquatable]
     public partial class NewClassExp : Exp
     {
-        public Type Type { get; }
+        public Path Type { get; }
 
         // TODO: params, out, 등 처리를 하려면 Exp가 아니라 다른거여야 한다
         public ImmutableArray<Exp> Args { get; }

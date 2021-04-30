@@ -4,7 +4,7 @@ using Gum.Collections;
 namespace Gum.IR0
 {
     [AutoConstructor, ImplementIEquatable]
-    public partial class NormalFuncDecl : IDecl
+    public partial class NormalFuncDecl : Decl
     {
         public Name Name { get; }
         public bool IsThisCall { get; }

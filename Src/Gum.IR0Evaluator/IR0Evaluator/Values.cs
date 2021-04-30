@@ -136,7 +136,7 @@ namespace Gum.IR0Evaluator
             throw new NotImplementedException();
         }
 
-        public new R.Type GetType()
+        public new R.Path GetType()
         {
             throw new NotImplementedException();
         }
@@ -199,14 +199,14 @@ namespace Gum.IR0Evaluator
     // 람다 호출시에 필요한 값들만 들고 있으면 된다
     class LambdaValue : Value
     {   
-        public R.Path LambdaPath { get; }
+        public R.Path Lambda { get; }
         public Value? CapturedThis { get; }                 // 캡쳐한 곳에 있던 this를 쓸지, struct면 RefValue, boxed struct면 BoxValue, class 면 ClassValue
         public ImmutableDictionary<string, Value> Captures { get; }
 
         // AnonymousLambdaType으로 부터 Allocation을 해야 한다
-        public LambdaValue(R.Path lambdaPath, Value? capturedThis, ImmutableDictionary<string, Value> captures)
+        public LambdaValue(R.Path lambda, Value? capturedThis, ImmutableDictionary<string, Value> captures)
         {
-            LambdaPath = lambdaPath;
+            Lambda = lambda;
             CapturedThis = capturedThis;
             Captures = captures;
         }        

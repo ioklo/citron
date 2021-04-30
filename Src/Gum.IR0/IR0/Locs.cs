@@ -22,7 +22,7 @@ namespace Gum.IR0
     [AutoConstructor, ImplementIEquatable]
     public partial class StaticMemberLoc : Loc
     {
-        public Type Type { get; }
+        public Path Type { get; }
         public string MemberName { get; }
     }
 
@@ -64,6 +64,6 @@ namespace Gum.IR0
     public partial class TempLoc : Loc 
     {
         public Exp Exp { get; }
-        public Type Type { get; }
+        public Path Type { get; }
     }
 }

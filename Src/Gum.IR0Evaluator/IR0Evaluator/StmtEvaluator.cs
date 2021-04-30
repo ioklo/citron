@@ -31,7 +31,7 @@ namespace Gum.IR0Evaluator
             // TODO: CommandProvider가 Parser도 제공해야 할 것 같다
             internal async ValueTask EvalCommandStmtAsync(R.CommandStmt stmt)
             {
-                var tempStr = evaluator.AllocValue<StringValue>(R.Type.String);
+                var tempStr = evaluator.AllocValue<StringValue>(R.Path.String);
 
                 foreach (var command in stmt.Commands)
                 {
@@ -62,7 +62,7 @@ namespace Gum.IR0Evaluator
 
             internal async IAsyncEnumerable<Void> EvalIfStmtAsync(R.IfStmt stmt)
             {
-                var condValue = evaluator.AllocValue<BoolValue>(R.Type.Bool);
+                var condValue = evaluator.AllocValue<BoolValue>(R.Path.Bool);
                 await evaluator.EvalExpAsync(stmt.Cond, condValue);
 
                 if (condValue.GetBool())
@@ -143,7 +143,7 @@ namespace Gum.IR0Evaluator
                     {
                         if (forStmt.CondExp != null)
                         {
-                            var condValue = evaluator.AllocValue<BoolValue>(R.Type.Bool);
+                            var condValue = evaluator.AllocValue<BoolValue>(R.Path.Bool);
                             await evaluator.EvalExpAsync(forStmt.CondExp, condValue);
 
                             if (!condValue.GetBool())

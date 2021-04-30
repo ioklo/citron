@@ -11,7 +11,7 @@ namespace Gum.IR0
     [AutoConstructor, ImplementIEquatable]
     public partial class Script
     {
-        public ImmutableArray<IDecl> Decls { get; }
+        public ImmutableArray<Decl> Decls { get; }
         public ImmutableArray<Stmt> TopLevelStmts { get; }
     }
 }

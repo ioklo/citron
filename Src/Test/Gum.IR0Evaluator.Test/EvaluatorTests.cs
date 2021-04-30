@@ -118,14 +118,14 @@ namespace Gum.IR0Evaluator.Test
             return new TempLoc(new IntLiteralExp(i), Type.Int);
         }
 
-        public async Task<string> EvalAsync(ImmutableArray<IDecl> decls, ImmutableArray<Stmt> topLevelStmts)
+        public async Task<string> EvalAsync(ImmutableArray<Decl> decls, ImmutableArray<Stmt> topLevelStmts)
         {
             var (output, _) = await EvalAsyncWithRetValue(decls, topLevelStmts);
             return output;
         }
         
         public async Task<(string Output, int RetValue)> EvalAsyncWithRetValue(
-            ImmutableArray<IDecl> decls,
+            ImmutableArray<Decl> decls,
             ImmutableArray<Stmt> topLevelStmts)
         {
             // validation
@@ -190,7 +190,7 @@ namespace Gum.IR0Evaluator.Test
                 new ExpStmt(new CallFuncExp(func, null, default))
             );
 
-            var output = await EvalAsync(Arr<IDecl>(func0), topLevelStmts);
+            var output = await EvalAsync(Arr<Decl>(func0), topLevelStmts);
 
             Assert.Equal("Hello", output);
         }
@@ -240,7 +240,7 @@ namespace Gum.IR0Evaluator.Test
                 )
             );
 
-            var output = await EvalAsync(Arr<IDecl>(seqFunc), stmts);
+            var output = await EvalAsync(Arr<Decl>(seqFunc), stmts);
 
             Assert.Equal("25", output);
         }
@@ -567,7 +567,7 @@ namespace Gum.IR0Evaluator.Test
                 PrintStringCmdStmt("Completed")
             );
 
-            var output = await EvalAsync(Arr<IDecl>(func), stmts);
+            var output = await EvalAsync(Arr<Decl>(func), stmts);
             Assert.Equal("Completed", output);
         }
 
@@ -596,7 +596,7 @@ namespace Gum.IR0Evaluator.Test
                 PrintIntCmdStmt(new CallFuncExp(new Func(funcId, TypeContext.Empty), null, default))
             );
 
-            var output = await EvalAsync(Arr<IDecl>(func), stmts);
+            var output = await EvalAsync(Arr<Decl>(func), stmts);
             Assert.Equal("77", output);
         }
 
@@ -660,7 +660,7 @@ namespace Gum.IR0Evaluator.Test
                 )
             );
 
-            var output = await EvalAsync(Arr<IDecl>(lambdaDecl0, lambdaDecl1), stmts);
+            var output = await EvalAsync(Arr<Decl>(lambdaDecl0, lambdaDecl1), stmts);
 
             // 01234 01234 두개가 그냥 섞여 있을 것이다.
 
@@ -717,7 +717,7 @@ namespace Gum.IR0Evaluator.Test
                 )
             );
 
-            var output = await EvalAsync(Arr<IDecl>(lambdaDecl0, lambdaDecl1), stmts);
+            var output = await EvalAsync(Arr<Decl>(lambdaDecl0, lambdaDecl1), stmts);
 
             // 01234 01234 두개가 그냥 섞여 있을 것이다.
 
@@ -775,7 +775,7 @@ namespace Gum.IR0Evaluator.Test
                 )
             );
 
-            var output = await EvalAsync(Arr<IDecl>(lambdaDecl0, lambdaDecl1), stmts);
+            var output = await EvalAsync(Arr<Decl>(lambdaDecl0, lambdaDecl1), stmts);
 
             Assert.Equal("0011223344", output);
         }
@@ -809,7 +809,7 @@ namespace Gum.IR0Evaluator.Test
                     PrintIntCmdStmt(new LocalVarLoc("x")))
             );
 
-            var output = await EvalAsync(Arr<IDecl>(seqFunc0, seqFunc1), stmts);
+            var output = await EvalAsync(Arr<Decl>(seqFunc0, seqFunc1), stmts);
 
             Assert.Equal("34345656", output);
         }
@@ -967,7 +967,7 @@ namespace Gum.IR0Evaluator.Test
                 )
             );
 
-            var output = await EvalAsync(Arr<IDecl>(printFunc, testFunc), stmts);
+            var output = await EvalAsync(Arr<Decl>(printFunc, testFunc), stmts);
             Assert.Equal("123TestFunc", output);
         }
 
@@ -979,7 +979,7 @@ namespace Gum.IR0Evaluator.Test
 
             var stmts = Arr<Stmt>(PrintStringCmdStmt(new CallFuncExp(new Func(funcId, TypeContext.Empty), null, default)));
 
-            var output = await EvalAsync(Arr<IDecl>(func), stmts);
+            var output = await EvalAsync(Arr<Decl>(func), stmts);
             Assert.Equal("Hello World", output);
         }
 
@@ -999,7 +999,7 @@ namespace Gum.IR0Evaluator.Test
                 new ExpStmt(new AssignExp(LocalVar("x"), new CallSeqFuncExp(seqFuncId, TypeContext.Empty, null, default)))
             );
 
-            await EvalAsync(Arr<IDecl>(seqFunc), stmts);
+            await EvalAsync(Arr<Decl>(seqFunc), stmts);
 
             // 에러가 안났으면 성공..
         }
@@ -1050,7 +1050,7 @@ namespace Gum.IR0Evaluator.Test
                 )
             );
 
-            var output = await EvalAsync(Arr<IDecl>(printFunc, makeLambda, lambdaDecl), stmts);
+            var output = await EvalAsync(Arr<Decl>(printFunc, makeLambda, lambdaDecl), stmts);
             Assert.Equal("MakeLambda123TestFunc", output);
         }
 
@@ -1076,7 +1076,7 @@ namespace Gum.IR0Evaluator.Test
                 new ExpStmt(new CallValueExp(LocalVar("func"), default))
             );
 
-            var output = await EvalAsync(Arr<IDecl>(lambdaDecl), stmts);
+            var output = await EvalAsync(Arr<Decl>(lambdaDecl), stmts);
             Assert.Equal("3", output);
         }
 
@@ -1118,7 +1118,7 @@ namespace Gum.IR0Evaluator.Test
                 )
             );
 
-            var output = await EvalAsync(Arr<IDecl>(printFunc), stmts);
+            var output = await EvalAsync(Arr<Decl>(printFunc), stmts);
             Assert.Equal("3456", output);
         }
 

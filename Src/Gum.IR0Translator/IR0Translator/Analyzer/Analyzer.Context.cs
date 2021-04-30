@@ -253,13 +253,13 @@ namespace Gum.IR0Translator
                 declBuilder.Add(new R.NormalFuncDecl(name, bThisCall, typeParams, paramNames, body));
             }
 
-            public void AddSequenceFuncDecl(R.Type yieldType, bool bThisCall, ImmutableArray<string> typeParams, ImmutableArray<R.ParamInfo> paramInfos, R.Stmt body)
+            public void AddSequenceFuncDecl(R.Path yieldType, bool bThisCall, ImmutableArray<string> typeParams, ImmutableArray<R.ParamInfo> paramInfos, R.Stmt body)
             {
                 var id = new R.DeclId(decls.Count);
                 declBuilder.Add(new R.SequenceFuncDecl(id, bThisCall, yieldType, typeParams, paramInfos, body));
             }
 
-            public R.DeclId AddLambdaDecl(R.Type? capturedThisType, ImmutableArray<R.TypeAndName> captureInfo, ImmutableArray<R.ParamInfo> paramInfos, R.Stmt body)
+            public R.DeclId AddLambdaDecl(R.Path? capturedThisType, ImmutableArray<R.TypeAndName> captureInfo, ImmutableArray<R.ParamInfo> paramInfos, R.Stmt body)
             {
                 var id = new R.DeclId(decls.Count);
                 declBuilder.Add(new R.LambdaDecl(id, new R.CapturedStatement(capturedThisType, captureInfo, body), paramInfos));
@@ -271,7 +271,7 @@ namespace Gum.IR0Translator
                 topLevelStmts.Add(stmt);
             }
 
-            public ImmutableArray<R.IDecl> GetDecls() => decls.ToImmutableArray();
+            public ImmutableArray<R.Decl> GetDecls() => decls.ToImmutableArray();
             
             public ImmutableArray<R.Stmt> GetTopLevelStmts()
             {

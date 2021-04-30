@@ -57,7 +57,7 @@ namespace Gum.IR0Evaluator
 
                         case R.ExpStringExpElement expElem:
                             {
-                                var strValue = evaluator.AllocValue<StringValue>(R.Type.String);
+                                var strValue = evaluator.AllocValue<StringValue>(R.Path.String);
                                 await EvalAsync(expElem.Exp, strValue);
                                 sb.Append(strValue.GetString());
                                 break;
@@ -107,7 +107,7 @@ namespace Gum.IR0Evaluator
                 // 1) X<int, short>.Y<string>.F<bool>, 
                 // 2) (declId, [[[int, short], string], bool])
                 // 누가 정보를 더 많이 가지고 있는가; 1) 필요한가? 
-                var funcInvoker = evaluator.context.GetFuncInvoker(exp.Func);                
+                var funcInvoker = evaluator.context.GetFuncInvoker(exp.Func);
 
                 // TODO: typeContext를 계산합니다
 
@@ -126,7 +126,7 @@ namespace Gum.IR0Evaluator
 
             async ValueTask EvalCallSeqFuncExpAsync(R.CallSeqFuncExp exp, Value result)
             {
-                var seqFuncDecl = evaluator.context.GetDecl<R.SequenceFuncDecl>(exp.DeclId);
+                var seqFuncDecl = evaluator.context.GetSequenceFuncDecl(exp.SeqFunc);
 
                 // 함수는 this call이지만 instance가 없는 경우는 없다.
                 Debug.Assert(!(seqFuncDecl.IsThisCall && exp.Instance == null));
@@ -173,7 +173,7 @@ namespace Gum.IR0Evaluator
 
             void EvalLambdaExp(R.LambdaExp exp, Value result)
             {
-                var lambdaDecl = evaluator.context.GetDecl<R.LambdaDecl>(exp.LambdaDeclId);
+                var lambdaDecl = evaluator.context.GetDecl<R.LambdaDecl>(exp.Lambda);
 
                 var lambdaResult = (LambdaValue)result;
                 evaluator.CaptureLocals(lambdaResult.CapturedThis, lambdaResult.Captures, lambdaDecl.CapturedStatement);

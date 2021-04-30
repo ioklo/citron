@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using Gum.Collections;
 using Gum.Infra;
 using M = Gum.CompileTime;
@@ -8,7 +9,7 @@ namespace Gum.IR0Translator
 {
     class RItemFactory
     {
-        public R.Type MakeTypeVar(int depth, int index)
+        public R.Path MakeTypeVar(int depth, int index)
         {
             return new R.TypeVar(depth, index);
         }
@@ -39,47 +40,53 @@ namespace Gum.IR0Translator
             throw new UnreachableCodeException();
         }
 
-        ImmutableArray<R.Type> MakeRTypes(ImmutableArray<TypeValue> typeValues)
+        ImmutableArray<R.Path> MakeRTypes(ImmutableArray<TypeValue> typeValues)
         {
             return ImmutableArray.CreateRange(typeValues, typeValue => typeValue.GetRType());
         }
 
-        public R.StructType MakeStructType(M.ModuleName moduleName, M.NamespacePath namespacePath, M.Name name, ImmutableArray<TypeValue> typeArgs)
+        public R.Path MakeStructType(M.ModuleName moduleName, M.NamespacePath namespacePath, M.Name name, ImmutableArray<TypeValue> typeArgs)
         {
             var rmoduleName = MakeModuleName(moduleName);
             var rnsPath = MakeNamespacePath(namespacePath);
             var rname = MakeName(name);
             var rtypeArgs = MakeRTypes(typeArgs);
             
-            return new R.StructType(R.Path.Make(rmoduleName, rnsPath, rname, rtypeArgs, R.ParamHash.None));
+            return new R.Path.Root(rmoduleName, rnsPath, rname, rtypeArgs, R.ParamHash.None);
         }
 
-        public R.Type MakeStructType(R.OuterType outerType, M.Name name, ImmutableArray<R.Type> rtypeArgs)
+        public R.Path MakeStructType(TypeValue outerType, M.Name name, ImmutableArray<TypeValue> typeArgs)
         {
-            return new R.StructType(outerType, name, typeContext);
+            var routerType = outerType.GetRType() as R.Path.Normal;
+            Debug.Assert(routerType != null);
+
+            var rname = MakeName(name);
+            var rtypeArgs = MakeRTypes(typeArgs);
+
+            return new R.Path.Nested(routerType, rname, rtypeArgs, R.ParamHash.None);
         }
 
-        public R.Type MakeMemberType(R.Type rtype, M.Name name, ImmutableArray<R.Type> rtypeArgs)
+        public R.Path MakeMemberType(R.Path rtype, M.Name name, ImmutableArray<R.Path> rtypeArgs)
         {
             throw new NotImplementedException();
         }
 
-        public R.Type MakeLambdaType(R.DeclId lambdaDeclId, R.Type returnRType, ImmutableArray<R.Type> paramRTypes)
+        public R.Path MakeLambdaType(R.DeclId lambdaDeclId, R.Path returnRType, ImmutableArray<R.Path> paramRTypes)
         {
             return new R.AnonymousLambdaType(lambdaDeclId);
         }
 
-        public R.Type MakeEnumElemType()
+        public R.Path MakeEnumElemType()
         {
             throw new NotImplementedException();
         }
 
-        public R.Func MakeGlobalFunc(M.ModuleName moduleName, M.NamespacePath namespacePath, M.FuncInfo funcInfo, ImmutableArray<R.Type> rtypeArgs)
+        public R.Func MakeGlobalFunc(M.ModuleName moduleName, M.NamespacePath namespacePath, M.FuncInfo funcInfo, ImmutableArray<R.Path> rtypeArgs)
         {
             throw new NotImplementedException();
         }
 
-        public R.Func MakeMemberFunc(R.Type outer, M.FuncInfo funcInfo, ImmutableArray<R.Type> rtypeArgs)
+        public R.Func MakeMemberFunc(R.Path outer, M.FuncInfo funcInfo, ImmutableArray<R.Path> rtypeArgs)
         {
             throw new NotImplementedException();
         }
