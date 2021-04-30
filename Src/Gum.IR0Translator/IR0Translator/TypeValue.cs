@@ -52,7 +52,7 @@ namespace Gum.IR0Translator
 
             return this;
         }
-        public override R.Path GetRType() => return new R.Path.TypeVar(depth, index);
+        public override R.Path GetRType() => new R.Path.TypeVar(Depth, Index);
     }
 
     [ImplementIEquatable]
@@ -86,12 +86,12 @@ namespace Gum.IR0Translator
         ItemValueFactory typeValueFactory;
         RItemFactory ritemFactory;
 
-        ItemValue outer;
+        ItemValueOuter outer;
 
         M.StructInfo structInfo;
         ImmutableArray<TypeValue> typeArgs;
 
-        internal StructTypeValue(ItemValueFactory factory, RItemFactory ritemFactory, ItemValue outer, M.StructInfo structInfo, ImmutableArray<TypeValue> typeArgs)
+        internal StructTypeValue(ItemValueFactory factory, RItemFactory ritemFactory, ItemValueOuter outer, M.StructInfo structInfo, ImmutableArray<TypeValue> typeArgs)
         {
             this.typeValueFactory = factory;
             this.ritemFactory = ritemFactory;

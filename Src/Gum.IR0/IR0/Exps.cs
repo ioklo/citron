@@ -115,7 +115,7 @@ namespace Gum.IR0
     [AutoConstructor, ImplementIEquatable]
     public partial class CallFuncExp : Exp
     {
-        public Path Func { get; }
+        public Path.Normal Func { get; }
         public Loc? Instance { get; }
         public ImmutableArray<Exp> Args { get; }
     }
@@ -123,7 +123,7 @@ namespace Gum.IR0
     [AutoConstructor, ImplementIEquatable]
     public partial class CallSeqFuncExp : Exp
     {
-        public Path SeqFunc { get; }
+        public Path.Normal SeqFunc { get; }
         public ImmutableArray<Type> TypeArgs { get; }
         public Loc? Instance { get; }
         public ImmutableArray<Exp> Args { get; }
@@ -134,6 +134,7 @@ namespace Gum.IR0
     [AutoConstructor, ImplementIEquatable]
     public partial class CallValueExp : Exp
     {
+        public Path.Normal Lambda { get; }
         public Loc Callable { get; } // (() => {}) ()때문에 Loc이어야 한다
         public ImmutableArray<Exp> Args { get; }
     }
@@ -144,7 +145,7 @@ namespace Gum.IR0
     [AutoConstructor, ImplementIEquatable]
     public partial class LambdaExp : Exp
     {
-        public Path Lambda { get; }
+        public Path.Normal Lambda { get; }
     }
     
     // [1, 2, 3]

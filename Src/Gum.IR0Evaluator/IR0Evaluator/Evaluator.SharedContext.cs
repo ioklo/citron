@@ -94,6 +94,12 @@ namespace Gum.IR0Evaluator
                 var outer = GetOuterContainer(seqFunc);
                 return outer.GetSequenceFuncDecl(seqFunc.Name, seqFunc.ParamHash);
             }
+
+            public R.LambdaDecl GetLambdaDecl(R.Path.Normal lambda)
+            {
+                var outer = GetOuterContainer(lambda);
+                return outer.GetLambdaDecl(lambda.Name);
+            }
         }
     }    
 }

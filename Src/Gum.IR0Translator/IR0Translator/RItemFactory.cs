@@ -38,24 +38,8 @@ namespace Gum.IR0Translator
         public static ImmutableArray<R.Path> MakeRTypes(ImmutableArray<TypeValue> typeValues)
         {
             return ImmutableArray.CreateRange(typeValues, typeValue => typeValue.GetRType());
-        }
-
-        public R.Path MakeStructType(M.ModuleName moduleName, M.NamespacePath namespacePath, M.Name name, ImmutableArray<TypeValue> typeArgs)
-        {
-            
-        }
-
-        public R.Path MakeStructType(TypeValue outerType, M.Name name, ImmutableArray<TypeValue> typeArgs)
-        {
-            var routerType = outerType.GetRType() as R.Path.Normal;
-            Debug.Assert(routerType != null);
-
-            var rname = MakeName(name);
-            var rtypeArgs = MakeRTypes(typeArgs);
-
-            return new R.Path.Nested(routerType, rname, rtypeArgs, R.ParamHash.None);
-        }
-
+        }        
+        
         public R.Path MakeMemberType(R.Path rtype, M.Name name, ImmutableArray<R.Path> rtypeArgs)
         {
             throw new NotImplementedException();

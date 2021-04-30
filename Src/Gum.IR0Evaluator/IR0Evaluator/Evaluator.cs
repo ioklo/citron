@@ -133,30 +133,29 @@ namespace Gum.IR0Evaluator
                 return new ListValue();
             }
 
-            else if (R.PathExtensions.IsLambda(typePath))
+            // MyType<bool>.Func<int, short>.Lambda<0>
+            else if (typePath is R.Path.Normal normalPath && R.PathExtensions.IsLambda(normalPath))
             {
-                // outer를 가져와서 
-                var lambdaAllocator = context.GetLambdaAllocator(typePath);
-                return lambdaAllocator.Alloc();
+                var lambdaDecl = context.GetLambdaDecl(normalPath);
+                var typeContext = context.GetTypeContext(normalPath);
+                
+                Value? capturedThis = null;
+                if (lambdaDecl.CapturedStatement.ThisType != null)
+                {
+                    var appliedThisType = typeContext.Apply(lambdaDecl.CapturedStatement.ThisType);
+                    capturedThis = AllocValue(appliedThisType);
+                }
 
-                // 여기서 부터 다시.
-                throw new NotImplementedException();
+                var capturesBuilder = ImmutableDictionary.CreateBuilder<string, Value>();
+                foreach (var (elemType, elemName) in lambdaDecl.CapturedStatement.OuterLocalVars)
+                {
+                    var appliedElemType = typeContext.Apply(elemType);
 
-                // NOTICE: 아래를 주석처리 했다 LambdaAllocator.Alloc에 넣는다
-                //var lambdaDecl = context.GetDecl<R.LambdaDecl>(lambdaType.DeclId);
+                    var elemValue = AllocValue(appliedElemType);
+                    capturesBuilder.Add(elemName, elemValue);
+                }
 
-                //Value? capturedThis = null;
-                //if (lambdaDecl.CapturedStatement.ThisType != null)
-                //    capturedThis = AllocValue(lambdaDecl.CapturedStatement.ThisType);
-
-                //var capturesBuilder = ImmutableDictionary.CreateBuilder<string, Value>();
-                //foreach (var (elemType, elemName) in lambdaDecl.CapturedStatement.OuterLocalVars)
-                //{
-                //    var elemValue = AllocValue(elemType);
-                //    capturesBuilder.Add(elemName, elemValue);
-                //}
-
-                //return new LambdaValue(lambdaType.DeclId, capturedThis, capturesBuilder.ToImmutable());
+                return new LambdaValue(capturedThis, capturesBuilder.ToImmutable());
             }
 
             throw new NotImplementedException();
@@ -185,7 +184,7 @@ namespace Gum.IR0Evaluator
         {
             foreach (var elem in localVarDecl.Elems)
             {
-                var value = AllocValue(elemType);
+                var value = AllocValue(elem.Type);
                 context.AddLocalVar(elem.Name, value);
 
                 // InitExp가 있으면 

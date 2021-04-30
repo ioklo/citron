@@ -326,7 +326,7 @@ namespace Gum.IR0Evaluator
                     
                     var newEvaluator = evaluator.CloneWithNewContext(null, default);
 
-                    return new SeqValue(MakeAsyncEnumerator(newEvaluator, listValue.GetList()), newEvaluator.context);
+                    return new SeqValue(MakeAsyncEnumerator(newEvaluator, listValue.GetList()), newEvaluator);
                 }
 
                 async IAsyncEnumerable<Void> InnerScopeAsync()

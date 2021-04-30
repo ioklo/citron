@@ -26,7 +26,7 @@ namespace Gum.IR0Translator
         RItemFactory ritemFactory;
 
         // X<int>.Y<short>
-        ItemValue outer;               // (internal/external) member일 경우에만 존재
+        ItemValue outer;
 
         // F_int_int
         M.FuncInfo funcInfo;

@@ -153,14 +153,13 @@ namespace Gum.IR0Evaluator
                 }
 
                 var enumerator = WrapAsyncEnum();
-                ((SeqValue)result).SetEnumerator(enumerator, newEvaluator.context);
+                ((SeqValue)result).SetEnumerator(enumerator, newEvaluator);
             }
 
             async ValueTask EvalCallValueExpAsync(R.CallValueExp exp, Value result)
             {
                 var callableValue = (LambdaValue)await evaluator.EvalLocAsync(exp.Callable);
-
-                var lambdaDecl = evaluator.context.GetDecl<R.LambdaDecl>(callableValue.LambdaDeclId);
+                var lambdaDecl = evaluator.context.GetLambdaDecl(exp.Lambda);
 
                 var thisValue = callableValue.CapturedThis;
                 var localVars = await EvalArgumentsAsync(callableValue.Captures, lambdaDecl.ParamInfos, exp.Args);
@@ -173,7 +172,7 @@ namespace Gum.IR0Evaluator
 
             void EvalLambdaExp(R.LambdaExp exp, Value result)
             {
-                var lambdaDecl = evaluator.context.GetDecl<R.LambdaDecl>(exp.Lambda);
+                var lambdaDecl = evaluator.context.GetLambdaDecl(exp.Lambda);
 
                 var lambdaResult = (LambdaValue)result;
                 evaluator.CaptureLocals(lambdaResult.CapturedThis, lambdaResult.Captures, lambdaDecl.CapturedStatement);

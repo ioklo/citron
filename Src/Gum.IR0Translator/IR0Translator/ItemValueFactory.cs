@@ -42,10 +42,10 @@ namespace Gum.IR0Translator
 
         public TypeValue MakeTypeValue(M.ModuleName moduleName, M.NamespacePath namespacePath, M.TypeInfo typeInfo, ImmutableArray<TypeValue> typeArgs)
         {
-            return MakeTypeValue(new RootValue(moduleName, namespacePath), typeInfo, typeArgs);
+            return MakeTypeValue(new RootItemValueOuter(moduleName, namespacePath), typeInfo, typeArgs);
         }
 
-        public NormalTypeValue MakeTypeValue(ItemValue outer, M.TypeInfo typeInfo, ImmutableArray<TypeValue> typeArgs)
+        public NormalTypeValue MakeTypeValue(ItemValueOuter outer, M.TypeInfo typeInfo, ImmutableArray<TypeValue> typeArgs)
         {
             switch (typeInfo)
             {
@@ -87,7 +87,7 @@ namespace Gum.IR0Translator
                         Debug.Assert(typeInfo != null);
 
                         var typeArgs = MakeTypeValues(externalType.TypeArgs);
-                        return MakeTypeValue(new RootValue(externalType.ModuleName, externalType.NamespacePath), typeInfo, typeArgs);
+                        return MakeTypeValue(new RootItemValueOuter(externalType.ModuleName, externalType.NamespacePath), typeInfo, typeArgs);
                     }
 
                 case M.MemberType memberType:

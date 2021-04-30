@@ -10,7 +10,8 @@
         public record OpInc : Name;
         public record OpDec : Name;
 
-        // for lambda
-        public record AnonymousLambda(LambdaId lambdaId) : Name;        
+        // anonymous type names
+        public record AnonymousLambda(LambdaId lambdaId) : Name;
+        public record AnonymousSeq() : Name;
     }
 }

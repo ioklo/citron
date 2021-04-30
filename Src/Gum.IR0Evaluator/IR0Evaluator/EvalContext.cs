@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Gum;
 using Gum.Collections;
+using Gum.IR0;
 using R = Gum.IR0;
 using Void = Gum.Infra.Void;
 
@@ -132,11 +133,6 @@ namespace Gum.IR0Evaluator
                 return retValue!;
             }
 
-            public LambdaAllocator GetLambdaAllocator(R.Path lambdaPath)
-            {
-                throw new NotImplementedException();
-            }
-
             // struct 이면 refValue, boxed struct 이면 boxValue, class 이면 ClassValue
             public Value? GetThisValue()
             {
@@ -154,7 +150,12 @@ namespace Gum.IR0Evaluator
                 tasks = prevTasks;
             }
 
-            public SequenceFuncDecl GetSequenceFuncDecl(R.Path.Normal seqFunc)
+            public TypeContext GetTypeContext(Path.Normal normalPath)
+            {
+                throw new NotImplementedException();
+            }
+
+            public R.SequenceFuncDecl GetSequenceFuncDecl(R.Path.Normal seqFunc)
             {
                 return sharedContext.GetSequenceFuncDecl(seqFunc);
             }
@@ -177,7 +178,7 @@ namespace Gum.IR0Evaluator
                 }
             }
 
-            public FuncInvoker GetFuncInvoker(R.Path path)
+            public FuncInvoker GetFuncInvoker(R.Path.Normal path)
             {
                 return sharedContext.GetFuncInvoker(path);
             }
@@ -190,6 +191,11 @@ namespace Gum.IR0Evaluator
             public Value GetYieldValue()
             {
                 return yieldValue!;
+            }
+
+            public R.LambdaDecl GetLambdaDecl(R.Path.Normal path)
+            {
+                return sharedContext.GetLambdaDecl(path);
             }
         }
     }

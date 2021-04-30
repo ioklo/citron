@@ -68,15 +68,9 @@ namespace Gum.IR0
             return false;
         }
 
-        public static bool IsLambda(this Path path)
+        public static bool IsLambda(this Path.Normal path)
         {
-            if (path is Path.Root rootPath && rootPath.Name is Name.AnonymousLambda)
-                return true;
-
-            if (path is Path.Nested nestedPath && nestedPath.Name is Name.AnonymousLambda)
-                return true;
-
-            return false;
+            return path.Name is Name.AnonymousLambda;
         }
     }
 }

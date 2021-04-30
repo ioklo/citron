@@ -11,7 +11,6 @@ using Xunit;
 using static Gum.Infra.Misc;
 using static Gum.IR0.IR0Factory;
 using Gum.Infra;
-using Type = Gum.IR0.Type;
 
 namespace Gum.IR0Evaluator.Test
 {
@@ -115,7 +114,7 @@ namespace Gum.IR0Evaluator.Test
 
         Loc IntLoc(int i)
         {
-            return new TempLoc(new IntLiteralExp(i), Type.Int);
+            return new TempLoc(new IntLiteralExp(i), Path.Int);
         }
 
         public async Task<string> EvalAsync(ImmutableArray<Decl> decls, ImmutableArray<Stmt> topLevelStmts)
@@ -127,13 +126,7 @@ namespace Gum.IR0Evaluator.Test
         public async Task<(string Output, int RetValue)> EvalAsyncWithRetValue(
             ImmutableArray<Decl> decls,
             ImmutableArray<Stmt> topLevelStmts)
-        {
-            // validation
-            for(int i = 0; i < decls.Length; i++)
-            {
-                Assert.Equal(i, decls[i].DeclId.Value);
-            }
-            
+        {   
             var commandProvider = new TestCommandProvider();
             var script = new Script(decls, topLevelStmts);
 
@@ -160,7 +153,7 @@ namespace Gum.IR0Evaluator.Test
         {   
             var topLevelStmts = Arr<Stmt>
             (
-                RGlobalVarDeclStmt(Type.Int, "x", new IntLiteralExp(3)),
+                RGlobalVarDeclStmt(Path.Int, "x", new IntLiteralExp(3)),
                 PrintIntCmdStmt(new GlobalVarLoc("x"))
             );
 
@@ -169,24 +162,22 @@ namespace Gum.IR0Evaluator.Test
         }
 
         // without typeArgs
-        Func MakeTestRootFunc(Name name)
-        {
-            var outer = new RootFuncOuter(moduleName, NamespacePath.Root);
-            return new Func(outer, name, default);
+        Path.Normal MakeTestRootFunc(Name name)
+        {            
+            return new Path.Root(moduleName, NamespacePath.Root, name, ParamHash.None, default);
         }
         
         [Fact]
         public async Task PrivateGlobalVariableExp_GetGlobalValueInFunc()
         {
-            var func0Id = new DeclId(0);
-            var func0 = new NormalFuncDecl(func0Id, "TestFunc", false, default, default, RBlock(
+            var func0 = new NormalFuncDecl(default, "TestFunc", false, default, default, RBlock(
                 PrintStringCmdStmt(new GlobalVarLoc("x"))));
             
             var func = MakeTestRootFunc("TestFunc");
 
             var topLevelStmts = Arr<Stmt>
             (
-                RGlobalVarDeclStmt(Type.String, "x", RString("Hello")),
+                RGlobalVarDeclStmt(Path.String, "x", RString("Hello")),
                 new ExpStmt(new CallFuncExp(func, null, default))
             );
 
@@ -203,9 +194,7 @@ namespace Gum.IR0Evaluator.Test
         public async Task CallSeqFuncExp_GenerateSequencesInForeach()
         {
             // Sequence
-            var seqDeclId = new DeclId(0);            
-
-            var seqFunc = new SequenceFuncDecl(seqDeclId, false, Type.Int, default, Arr(new ParamInfo(Type.Int, "x"), new ParamInfo(Type.Int, "y")), RBlock(
+            var seqFunc = new SequenceFuncDecl(default, "F", false, Path.Int, default, Arr(new ParamInfo(Path.Int, "x"), new ParamInfo(Path.Int, "y")), RBlock(
 
                 new YieldStmt(
                     new CallInternalBinaryOperatorExp(InternalBinaryOperator.Multiply_Int_Int_Int,
@@ -220,12 +209,12 @@ namespace Gum.IR0Evaluator.Test
             var stmts = Arr<Stmt>
             (
                 new ForeachStmt(
-                    Type.Int,
+                    Path.Int,
                     "e",
                     new TempLoc(
                         new CallSeqFuncExp(
-                            seqDeclId, 
-                            TypeContext.Empty,
+                            MakeTestRootFunc("F"),
+                            default,
                             null,
                             Arr<Exp>(
                                 new IntLiteralExp(1),
@@ -250,10 +239,10 @@ namespace Gum.IR0Evaluator.Test
         {
             var stmts = Arr<Stmt>
             (
-                RLocalVarDeclStmt(Type.Int, "x", new IntLiteralExp(23)),
+                RLocalVarDeclStmt(Path.Int, "x", new IntLiteralExp(23)),
 
                 RBlock(
-                    RLocalVarDeclStmt(Type.String, "x", RString("Hello")),
+                    RLocalVarDeclStmt(Path.String, "x", RString("Hello")),
                     PrintStringCmdStmt(LocalVar("x"))
                 ),
 
@@ -269,10 +258,10 @@ namespace Gum.IR0Evaluator.Test
         {
             var stmts = Arr<Stmt>
             (
-                RGlobalVarDeclStmt(Type.Int, "x", new IntLiteralExp(23)),
+                RGlobalVarDeclStmt(Path.Int, "x", new IntLiteralExp(23)),
 
                 RBlock(
-                    RLocalVarDeclStmt(Type.String, "x", RString("Hello")),
+                    RLocalVarDeclStmt(Path.String, "x", RString("Hello")),
                     PrintStringCmdStmt(LocalVar("x"))
                 ),
 
@@ -333,10 +322,10 @@ namespace Gum.IR0Evaluator.Test
         {
             var stmts = Arr<Stmt> (
 
-                RLocalVarDeclStmt(Type.Int, "x", new IntLiteralExp(34)),
+                RLocalVarDeclStmt(Path.Int, "x", new IntLiteralExp(34)),
 
                 new ForStmt(
-                    new VarDeclForStmtInitializer(RLocalVarDecl(Type.Int, "x", new IntLiteralExp(0))),
+                    new VarDeclForStmtInitializer(RLocalVarDecl(Path.Int, "x", new IntLiteralExp(0))),
                     new CallInternalBinaryOperatorExp(InternalBinaryOperator.Equal_Int_Int_Bool, new LoadExp(LocalVar("x")), new IntLiteralExp(0)),
                     new AssignExp(LocalVar("x"), new IntLiteralExp(1)),
                     PrintIntCmdStmt(new LocalVarLoc("x"))),
@@ -353,7 +342,7 @@ namespace Gum.IR0Evaluator.Test
         {
             var stmts = Arr<Stmt> (
 
-                RLocalVarDeclStmt(Type.Int, "x", new IntLiteralExp(34)),
+                RLocalVarDeclStmt(Path.Int, "x", new IntLiteralExp(34)),
 
                 PrintIntCmdStmt(new LocalVarLoc("x")),
 
@@ -393,7 +382,7 @@ namespace Gum.IR0Evaluator.Test
         {
             var stmts = Arr<Stmt> (
 
-                RLocalVarDeclStmt(Type.Bool, "x", new BoolLiteralExp(true)),
+                RLocalVarDeclStmt(Path.Bool, "x", new BoolLiteralExp(true)),
 
                 new ForStmt(
                     null,
@@ -414,7 +403,7 @@ namespace Gum.IR0Evaluator.Test
             var stmts = Arr<Stmt> (
 
 
-                RLocalVarDeclStmt(Type.Bool, "x", new BoolLiteralExp(true)),
+                RLocalVarDeclStmt(Path.Bool, "x", new BoolLiteralExp(true)),
 
                 new ForStmt(
                     null,
@@ -439,7 +428,7 @@ namespace Gum.IR0Evaluator.Test
         {
             var stmts = Arr<Stmt> (
 
-                RLocalVarDeclStmt(Type.Bool, "x", new BoolLiteralExp(true)),
+                RLocalVarDeclStmt(Path.Bool, "x", new BoolLiteralExp(true)),
 
                 new ForStmt(
                     null,
@@ -465,7 +454,7 @@ namespace Gum.IR0Evaluator.Test
         {
             var stmts = Arr<Stmt> (
 
-                RLocalVarDeclStmt(Type.Bool, "x", new BoolLiteralExp(true)),
+                RLocalVarDeclStmt(Path.Bool, "x", new BoolLiteralExp(true)),
 
                 new ForStmt(
                     null,
@@ -492,7 +481,7 @@ namespace Gum.IR0Evaluator.Test
             var stmts = Arr<Stmt> (
 
                 new ForStmt(
-                    new VarDeclForStmtInitializer(RLocalVarDecl(Type.Int, "i", new IntLiteralExp(0))),
+                    new VarDeclForStmtInitializer(RLocalVarDecl(Path.Int, "i", new IntLiteralExp(0))),
                     new CallInternalBinaryOperatorExp(InternalBinaryOperator.LessThan_Int_Int_Bool, new LoadExp(LocalVar("i")), RInt(2)),
                     new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PostfixInc_Int_Int, LocalVar("i")),
 
@@ -501,7 +490,7 @@ namespace Gum.IR0Evaluator.Test
                         PrintIntCmdStmt(new LocalVarLoc("i")),
 
                         new ForStmt(
-                            new VarDeclForStmtInitializer(RLocalVarDecl(Type.Int, "j", new IntLiteralExp(0))),
+                            new VarDeclForStmtInitializer(RLocalVarDecl(Path.Int, "j", new IntLiteralExp(0))),
                             new CallInternalBinaryOperatorExp(InternalBinaryOperator.LessThan_Int_Int_Bool, new LoadExp(LocalVar("j")), RInt(2)),
                             new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PostfixInc_Int_Int, LocalVar("j")),
                             RBlock(
@@ -524,7 +513,7 @@ namespace Gum.IR0Evaluator.Test
             var stmts = Arr<Stmt> (
 
                 new ForStmt(
-                    new VarDeclForStmtInitializer(RLocalVarDecl(Type.Int, "i", new IntLiteralExp(0))),
+                    new VarDeclForStmtInitializer(RLocalVarDecl(Path.Int, "i", new IntLiteralExp(0))),
                     new CallInternalBinaryOperatorExp(InternalBinaryOperator.LessThan_Int_Int_Bool, new LoadExp(LocalVar("i")), RInt(2)),
                     new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PostfixInc_Int_Int, LocalVar("i")),
 
@@ -533,7 +522,7 @@ namespace Gum.IR0Evaluator.Test
                         PrintIntCmdStmt(new LocalVarLoc("i")),
 
                         new ForStmt(
-                            new VarDeclForStmtInitializer(RLocalVarDecl(Type.Int, "j", new IntLiteralExp(0))),
+                            new VarDeclForStmtInitializer(RLocalVarDecl(Path.Int, "j", new IntLiteralExp(0))),
                             new CallInternalBinaryOperatorExp(InternalBinaryOperator.LessThan_Int_Int_Bool, new LoadExp(LocalVar("j")), RInt(2)),
                             new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PostfixInc_Int_Int, LocalVar("j")),
                             RBlock(
@@ -620,7 +609,7 @@ namespace Gum.IR0Evaluator.Test
         public async Task ExpStmt_EvalInnerExp()
         {
             var stmts = Arr<Stmt> (
-                RLocalVarDeclStmt(Type.Int, "x", null),
+                RLocalVarDeclStmt(Path.Int, "x", null),
                 new ExpStmt(new AssignExp(LocalVar("x"), new IntLiteralExp(3))),
                 PrintIntCmdStmt(new LocalVarLoc("x"))
             );
@@ -636,7 +625,7 @@ namespace Gum.IR0Evaluator.Test
             Stmt PrintNumbersStmt(int count)
             {
                 return new ForStmt(
-                    new VarDeclForStmtInitializer(RLocalVarDecl(Type.Int, "i", new IntLiteralExp(0))),
+                    new VarDeclForStmtInitializer(RLocalVarDecl(Path.Int, "i", new IntLiteralExp(0))),
                     new CallInternalBinaryOperatorExp(InternalBinaryOperator.LessThan_Int_Int_Bool, new LoadExp(LocalVar("i")), RInt(count)),
                     new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PostfixInc_Int_Int, LocalVar("i")),
                     PrintIntCmdStmt(new LocalVarLoc("i"))
@@ -690,7 +679,7 @@ namespace Gum.IR0Evaluator.Test
             Stmt PrintNumbersStmt()
             {
                 return new ForStmt(
-                    new VarDeclForStmtInitializer(RLocalVarDecl(Type.Int, "i", new IntLiteralExp(0))),
+                    new VarDeclForStmtInitializer(RLocalVarDecl(Path.Int, "i", new IntLiteralExp(0))),
                     new CallInternalBinaryOperatorExp(InternalBinaryOperator.LessThan_Int_Int_Bool, new LoadExp(LocalVar("i")), new LoadExp(LocalVar("count"))),
                     new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PostfixInc_Int_Int, LocalVar("i")),
                     PrintIntCmdStmt(new LocalVarLoc("i"))
@@ -698,15 +687,15 @@ namespace Gum.IR0Evaluator.Test
             }
 
             var lambdaDeclId0 = new DeclId(0);
-            var lambdaDecl0 = new LambdaDecl(lambdaDeclId0, null, Arr<TypeAndName>(new TypeAndName(Type.Int, "count")), default, PrintNumbersStmt());
+            var lambdaDecl0 = new LambdaDecl(lambdaDeclId0, null, Arr<TypeAndName>(new TypeAndName(Path.Int, "count")), default, PrintNumbersStmt());
             var anonymousLambdaType0 = new AnonymousLambdaType(lambdaDeclId0);
 
             var lambdaDeclId1 = new DeclId(1);
-            var lambdaDecl1 = new LambdaDecl(lambdaDeclId1, null, Arr<TypeAndName>(new TypeAndName(Type.Int, "count")), default, PrintNumbersStmt());
+            var lambdaDecl1 = new LambdaDecl(lambdaDeclId1, null, Arr<TypeAndName>(new TypeAndName(Path.Int, "count")), default, PrintNumbersStmt());
             var anonymousLambdaType1 = new AnonymousLambdaType(lambdaDeclId1);
 
             var stmts = Arr<Stmt> (
-                RLocalVarDeclStmt(Type.Int, "count", new IntLiteralExp(5)),
+                RLocalVarDeclStmt(Path.Int, "count", new IntLiteralExp(5)),
 
                 new AwaitStmt(
                     RBlock(
@@ -748,7 +737,7 @@ namespace Gum.IR0Evaluator.Test
             Stmt PrintNumbersStmt(int count)
             {
                 return new ForStmt(
-                    new VarDeclForStmtInitializer(RLocalVarDecl(Type.Int, "i", new IntLiteralExp(0))),
+                    new VarDeclForStmtInitializer(RLocalVarDecl(Path.Int, "i", new IntLiteralExp(0))),
                     new CallInternalBinaryOperatorExp(InternalBinaryOperator.LessThan_Int_Int_Bool, new LoadExp(LocalVar("i")), RInt(count)),
                     new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PostfixInc_Int_Int, LocalVar("i")),
                     RBlock(
@@ -786,9 +775,9 @@ namespace Gum.IR0Evaluator.Test
             var seqFunc0Id = new DeclId(0);
             var seqFunc1Id = new DeclId(1);
 
-            var seqFunc0 = new SequenceFuncDecl(seqFunc0Id, false, Type.Int, default, default,
+            var seqFunc0 = new SequenceFuncDecl(seqFunc0Id, false, Path.Int, default, default,
                 new ForeachStmt(
-                    Type.Int, "elem", 
+                    Path.Int, "elem", 
                     new TempLoc(new CallSeqFuncExp(seqFunc1Id, TypeContext.Empty, null, default), new AnonymousSeqType(seqFunc1Id, TypeContext.Empty)),
                     RBlock(
                         PrintIntCmdStmt(new LocalVarLoc("elem")),
@@ -797,7 +786,7 @@ namespace Gum.IR0Evaluator.Test
                 )
             );
 
-            var seqFunc1 = new SequenceFuncDecl(seqFunc1Id, false, Type.Int, default, default,
+            var seqFunc1 = new SequenceFuncDecl(seqFunc1Id, false, Path.Int, default, default,
                 RBlock(
                     new YieldStmt(new IntLiteralExp(34)),
                     new YieldStmt(new IntLiteralExp(56))
@@ -805,7 +794,7 @@ namespace Gum.IR0Evaluator.Test
             );
 
             var stmts = Arr<Stmt>(
-                new ForeachStmt(Type.Int, "x", new TempLoc(new CallSeqFuncExp(seqFunc0Id, TypeContext.Empty, null, default), new AnonymousSeqType(seqFunc0Id, TypeContext.Empty)),
+                new ForeachStmt(Path.Int, "x", new TempLoc(new CallSeqFuncExp(seqFunc0Id, TypeContext.Empty, null, default), new AnonymousSeqType(seqFunc0Id, TypeContext.Empty)),
                     PrintIntCmdStmt(new LocalVarLoc("x")))
             );
 
@@ -880,7 +869,7 @@ namespace Gum.IR0Evaluator.Test
         {
             var stmts = Arr<Stmt>
             (
-                RLocalVarDeclStmt(Type.String, "x", RString("New ")),
+                RLocalVarDeclStmt(Path.String, "x", RString("New ")),
 
                 PrintStringCmdStmt(RString(
                     new TextStringExpElement("Hello "),
@@ -897,8 +886,8 @@ namespace Gum.IR0Evaluator.Test
         {
             var stmts = Arr<Stmt>
             (
-                RLocalVarDeclStmt(Type.Int, "x", new IntLiteralExp(3)),
-                RLocalVarDeclStmt(Type.Int, "y", new IntLiteralExp(4)),
+                RLocalVarDeclStmt(Path.Int, "x", new IntLiteralExp(3)),
+                RLocalVarDeclStmt(Path.Int, "y", new IntLiteralExp(4)),
 
                 // y = x = 10;
                 new ExpStmt(new AssignExp(LocalVar("y"), new AssignExp(LocalVar("x"), new IntLiteralExp(10)))),
@@ -935,7 +924,7 @@ namespace Gum.IR0Evaluator.Test
             var printFuncId = new DeclId(0);
             var testFuncId = new DeclId(1);
 
-            var printFunc = new NormalFuncDecl(printFuncId, false, default, Arr(new ParamInfo(Type.Int, "x")),
+            var printFunc = new NormalFuncDecl(printFuncId, false, default, Arr(new ParamInfo(Path.Int, "x")),
 
                 RBlock(
                     PrintIntCmdStmt(new LocalVarLoc("x")),
@@ -943,7 +932,7 @@ namespace Gum.IR0Evaluator.Test
                 )
             );
 
-            var testFunc = new NormalFuncDecl(testFuncId, false, default, Arr(new ParamInfo(Type.Int, "i"), new ParamInfo(Type.Int, "j"), new ParamInfo(Type.Int, "k")),
+            var testFunc = new NormalFuncDecl(testFuncId, false, default, Arr(new ParamInfo(Path.Int, "i"), new ParamInfo(Path.Int, "j"), new ParamInfo(Path.Int, "k")),
 
                 PrintStringCmdStmt("TestFunc")
 
@@ -988,7 +977,7 @@ namespace Gum.IR0Evaluator.Test
         public async Task CallSeqFuncExp_ReturnsAnonymousSeqTypeValue()
         {
             var seqFuncId = new DeclId(0);
-            var seqFunc = new SequenceFuncDecl(seqFuncId, false, Type.String, default, default, BlankStmt.Instance); // return nothing
+            var seqFunc = new SequenceFuncDecl(seqFuncId, false, Path.String, default, default, BlankStmt.Instance); // return nothing
 
             var stmts = Arr<Stmt>
             (
@@ -1010,7 +999,7 @@ namespace Gum.IR0Evaluator.Test
             var printFuncId = new DeclId(0);
             var makeLambdaId = new DeclId(1);
 
-            var printFunc = new NormalFuncDecl(printFuncId, false, default, Arr(new ParamInfo(Type.Int, "x")),
+            var printFunc = new NormalFuncDecl(printFuncId, false, default, Arr(new ParamInfo(Path.Int, "x")),
                 RBlock(
                     PrintIntCmdStmt(new LocalVarLoc("x")),
                     new ReturnStmt(new LoadExp(LocalVar("x")))
@@ -1022,7 +1011,7 @@ namespace Gum.IR0Evaluator.Test
                 lambdaDeclId,
                 null,
                 default,
-                Arr(new ParamInfo(Type.Int, "i"), new ParamInfo(Type.Int, "j"), new ParamInfo(Type.Int, "k")),
+                Arr(new ParamInfo(Path.Int, "i"), new ParamInfo(Path.Int, "j"), new ParamInfo(Path.Int, "k")),
                 PrintStringCmdStmt("TestFunc")
             );            
 
@@ -1066,10 +1055,10 @@ namespace Gum.IR0Evaluator.Test
         public async Task LambdaExp_CapturesLocalVariablesWithCopying()
         {
             var lambdaId = new DeclId(0);
-            var lambdaDecl = new LambdaDecl(lambdaId, null, Arr<TypeAndName>(new TypeAndName(Type.Int, "x")), default, PrintIntCmdStmt(new LocalVarLoc("x")));
+            var lambdaDecl = new LambdaDecl(lambdaId, null, Arr<TypeAndName>(new TypeAndName(Path.Int, "x")), default, PrintIntCmdStmt(new LocalVarLoc("x")));
 
             var stmts = Arr<Stmt> (
-                RLocalVarDeclStmt(Type.Int, "x", new IntLiteralExp(3)),
+                RLocalVarDeclStmt(Path.Int, "x", new IntLiteralExp(3)),
                 RLocalVarDeclStmt(new AnonymousLambdaType(lambdaId), "func", new LambdaExp(false, Arr("x"))),
 
                 new ExpStmt(new AssignExp(LocalVar("x"), new IntLiteralExp(34))),
@@ -1085,8 +1074,8 @@ namespace Gum.IR0Evaluator.Test
         public async Task ListIndexerExp_GetElement()
         {
             var stmts = Arr<Stmt> (
-                RLocalVarDeclStmt(Type.List(Type.Int), "list", new ListExp(Type.Int, Arr<Exp>(new IntLiteralExp(34), new IntLiteralExp(56)))),
-                PrintIntCmdStmt(new ListIndexerLoc(new LocalVarLoc("list"), new TempLoc(new IntLiteralExp(1), Type.Int)))
+                RLocalVarDeclStmt(Path.List(Path.Int), "list", new ListExp(Path.Int, Arr<Exp>(new IntLiteralExp(34), new IntLiteralExp(56)))),
+                PrintIntCmdStmt(new ListIndexerLoc(new LocalVarLoc("list"), new TempLoc(new IntLiteralExp(1), Path.Int)))
             );
 
             var output = await EvalAsync(default, stmts);
@@ -1098,7 +1087,7 @@ namespace Gum.IR0Evaluator.Test
         public async Task ListExp_EvaluatesElementExpInOrder()
         {
             var printFuncId = new DeclId(0);
-            var printFunc = new NormalFuncDecl(printFuncId, false, default, Arr(new ParamInfo(Type.Int, "x")),
+            var printFunc = new NormalFuncDecl(printFuncId, false, default, Arr(new ParamInfo(Path.Int, "x")),
 
                 RBlock(
                     PrintIntCmdStmt(new LocalVarLoc("x")),
@@ -1110,8 +1099,8 @@ namespace Gum.IR0Evaluator.Test
                 new CallFuncExp(new Func(printFuncId, TypeContext.Empty), null, Arr<Exp>(new IntLiteralExp(v)));
 
             var stmts = Arr<Stmt> (
-                RGlobalVarDeclStmt(Type.List(Type.Int), "l", 
-                    new ListExp(Type.Int, Arr(
+                RGlobalVarDeclStmt(Path.List(Path.Int), "l", 
+                    new ListExp(Path.Int, Arr(
                         MakePrintCall(34),
                         MakePrintCall(56)
                     ))

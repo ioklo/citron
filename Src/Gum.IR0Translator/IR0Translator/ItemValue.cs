@@ -29,6 +29,7 @@ namespace Gum.IR0Translator
     }
     
     // 최상위
+    [AutoConstructor]
     class RootItemValueOuter : ItemValueOuter
     {
         M.ModuleName moduleName;
@@ -43,6 +44,7 @@ namespace Gum.IR0Translator
         }
     }
 
+    [AutoConstructor]
     class NestedItemValueOuter : ItemValueOuter
     {
         ItemValue outer;
@@ -53,18 +55,6 @@ namespace Gum.IR0Translator
             Debug.Assert(router != null);
 
             return new R.Path.Nested(router, name, paramHash, typeArgs);
-        }
-    }
-
-    // 최상위 
-    [AutoConstructor]
-    class RootValue : ItemValue
-    {
-        
-
-        public override R.Path GetRType()
-        {
-            return 
         }
     }
 }
