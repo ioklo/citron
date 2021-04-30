@@ -220,7 +220,9 @@ namespace Gum.IR0Evaluator.Test
                                 new IntLiteralExp(1),
                                 new IntLiteralExp(2)
                             )
-                        ), 
+                        ),
+                        
+                        new Path.Root(moduleName, NamespacePath.Root, Anony
 
                         new AnonymousSeqType(seqDeclId, TypeContext.Empty)
                     ),
