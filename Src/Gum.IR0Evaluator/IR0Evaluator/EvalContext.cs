@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Gum;
 using Gum.Collections;
-
+using Gum.IR0;
 using R = Gum.IR0;
 using Void = Gum.Infra.Void;
 
@@ -147,6 +147,11 @@ namespace Gum.IR0Evaluator
         public Value GetRetValue()
         {
             return retValue!;
+        }
+
+        public LambdaAllocator GetLambdaAllocator(R.Path lambdaPath)
+        {
+            throw new NotImplementedException();
         }
 
         // struct 이면 refValue, boxed struct 이면 boxValue, class 이면 ClassValue

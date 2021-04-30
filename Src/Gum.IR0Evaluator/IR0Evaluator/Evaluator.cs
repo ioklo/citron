@@ -103,7 +103,7 @@ namespace Gum.IR0Evaluator
             return false;
         }
 
-        TValue AllocValue<TValue>(R.Type type)
+        TValue AllocValue<TValue>(R.Path type)
             where TValue : Value
         {
             return (TValue)AllocValue(type);
@@ -133,7 +133,7 @@ namespace Gum.IR0Evaluator
                  return new ListValue();            
             }                        
 
-            else if (typePath.Name is R.Name.AnonymousLambda anonymousLambda)
+            else if (typePath.Name is R.Name.AnonymousLambda)
             {
                 // outer를 가져와서 
                 var lambdaAllocator = context.GetLambdaAllocator(typePath);

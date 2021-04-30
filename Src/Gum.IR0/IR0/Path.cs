@@ -4,12 +4,20 @@ using Pretune;
 
 namespace Gum.IR0
 {
-    public abstract record PathOuter;
-    public record ReservedPathOuter : PathOuter
+    // Path
+    public abstract record Path;
+    
+    // Reserved 
+    public record TuplePath : Path;
+    public record TypeVar(int Depth, int Index) : Path;
+    public record Void : Path
     {
-        public static readonly PathOuter Instance = new ReservedPathOuter();
-        ReservedPathOuter() { }
+        public static readonly Name Instance = new Void();
+        Void() { }
     }
+
+
+
     public record RootPathOuter(ModuleName ModuleName, NamespacePath NamespacePath) : PathOuter;
     public record NestedPathOuter(Path outer) : PathOuter;
 
@@ -32,6 +40,8 @@ namespace Gum.IR0
         }
 
         public static readonly Path Void = new Path(ReservedPathOuter.Instance, Name.Void.Instance, default, ParamHash.None);
+
+
         public static readonly Path Bool = Make("System.Runtime", new NamespacePath("System"), "Boolean", default, ParamHash.None);
         public static readonly Path Int = Make("System.Runtime", new NamespacePath("System"), "Int32", default, ParamHash.None);
         public static readonly Path String = Make("System.Runtime", new NamespacePath("System"), "String", default, ParamHash.None);
