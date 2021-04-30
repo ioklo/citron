@@ -26,9 +26,7 @@ namespace Gum.IR0Translator
         RItemFactory ritemFactory;
 
         // X<int>.Y<short>
-        M.ModuleName? moduleName;       // external global일 경우에만 존재
-        M.NamespacePath? namespacePath; // (internal/external) global일 경우에만 존재
-        TypeValue? outer;               // (internal/external) member일 경우에만 존재
+        ItemValue outer;               // (internal/external) member일 경우에만 존재
 
         // F_int_int
         M.FuncInfo funcInfo;

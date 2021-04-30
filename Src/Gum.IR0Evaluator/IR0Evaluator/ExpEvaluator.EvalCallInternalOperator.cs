@@ -1,4 +1,5 @@
-﻿using Gum.Infra;
+﻿using Gum.Collections;
+using Gum.Infra;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -313,6 +314,17 @@ namespace Gum.IR0Evaluator
                         break;
                 }
             }
+        }
+
+        internal ValueTask ExecInNewFuncFrameAsync(
+                ImmutableDictionary<string, Value> newLocalVars,
+                EvalFlowControl newFlowControl,
+                ImmutableArray<Task> newTasks,
+                Value? newThisValue,
+                Value newRetValue,
+                Func<ValueTask> ActionAsync)
+        {
+            return context.ExecInNewFuncFrameAsync(newLocalVars, newFlowControl, newTasks, newThisValue, newRetValue, ActionAsync);
         }
     }
 }

@@ -19,14 +19,13 @@ namespace Gum.IR0Evaluator
     partial class IR0FuncInvoker : FuncInvoker
     {
         Evaluator evaluator;
-        EvalContext context;
         R.Stmt body;
 
         public override ImmutableArray<R.ParamInfo> ParamInfos { get; }
 
         public override async ValueTask Invoke(Value? thisValue, Value result, ImmutableDictionary<string, Value> args)
         {
-            await context.ExecInNewFuncFrameAsync(args, EvalFlowControl.None, ImmutableArray<Task>.Empty, thisValue, result, async () => {
+            await evaluator.ExecInNewFuncFrameAsync(args, EvalFlowControl.None, ImmutableArray<Task>.Empty, thisValue, result, async () => {
 
                 await foreach (var _ in evaluator.EvalStmtAsync(body)) { }
 

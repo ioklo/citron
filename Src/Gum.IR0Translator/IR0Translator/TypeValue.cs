@@ -20,8 +20,7 @@ namespace Gum.IR0Translator
         public virtual TypeValue? GetBaseType() { return null; }
         public virtual ItemResult GetMember(M.Name memberName, ImmutableArray<TypeValue> typeArgs, ResolveHint hint) { return NotFoundItemResult.Instance; }
         public virtual TypeValue? GetMemberType(M.Name memberName, ImmutableArray<TypeValue> typeArgs) { return null; }        
-        internal abstract TypeValue Apply(TypeEnv typeEnv);
-        public abstract R.Path GetRType();
+        internal abstract TypeValue Apply(TypeEnv typeEnv);        
     }
 
     // "var"
@@ -53,7 +52,7 @@ namespace Gum.IR0Translator
 
             return this;
         }
-        public override R.Path GetRType() => ritemFactory.MakeTypeVar(Depth, Index);
+        public override R.Path GetRType() => return new R.Path.TypeVar(depth, index);
     }
 
     [ImplementIEquatable]
@@ -87,7 +86,7 @@ namespace Gum.IR0Translator
         ItemValueFactory typeValueFactory;
         RItemFactory ritemFactory;
 
-        ItemValue outer;        
+        ItemValue outer;
 
         M.StructInfo structInfo;
         ImmutableArray<TypeValue> typeArgs;
@@ -255,17 +254,34 @@ namespace Gum.IR0Translator
         }
 
         public override R.Path GetRType()
-        {
+        {   
+            var rtypeArgs = RItemFactory.MakeRTypes(typeArgs);
+
+            return outer.GetRType(structInfo.Name, rtypeArgs);
+
             if (IsGlobal())
             {
-                Debug.Assert(moduleName != null && namespacePath != null);
+                Debug.Assert(moduleName != null && namespacePath != null);                
 
-                return ritemFactory.MakeStructType(moduleName.Value, namespacePath.Value, structInfo.Name, typeArgs);
+                
+
+                var rmoduleName = RItemFactory.MakeModuleName(moduleName);
+                var rnsPath = RItemFactory.MakeNamespacePath(namespacePath);
+                var rname = RItemFactory.MakeName(name);
+                
+
+                return new R.Path.Root(rmoduleName, rnsPath, rname, rtypeArgs, R.ParamHash.None);
             }
             else
             {
                 Debug.Assert(outer != null);
-                return ritemFactory.MakeStructType(outer, structInfo.Name, typeArgs);
+                var routerType = outer.GetRType() as R.Path.Normal;
+                Debug.Assert(routerType != null);
+
+                var rname = MakeName(name);
+                var rtypeArgs = MakeRTypes(typeArgs);
+
+                return new R.Path.Nested(routerType, rname, rtypeArgs, R.ParamHash.None);
             }
         }
     }
@@ -347,7 +363,7 @@ namespace Gum.IR0Translator
             var returnRType = Return.GetRType();
             var paramRTypes = ImmutableArray.CreateRange(Params, parameter => parameter.GetRType());
 
-            return ritemFactory.MakeLambdaType(LambdaDeclId, returnRType, paramRTypes);
+            return ritemFactory.MakeLambdaType(Outer, LambdaId, returnRType, paramRTypes);
         }
 
         public override int GetHashCode()

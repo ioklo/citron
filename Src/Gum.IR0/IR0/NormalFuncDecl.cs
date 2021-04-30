@@ -6,10 +6,12 @@ namespace Gum.IR0
     [AutoConstructor, ImplementIEquatable]
     public partial class NormalFuncDecl : Decl
     {
+        public ImmutableArray<LambdaDecl> LambdaDecls { get; }
+
         public Name Name { get; }
         public bool IsThisCall { get; }
         public ImmutableArray<string> TypeParams { get; }
         public ImmutableArray<ParamInfo> ParamInfos { get; }
-        public Stmt Body { get; }        
+        public Stmt Body { get; }
     }
 }

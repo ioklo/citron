@@ -16,9 +16,17 @@ namespace Gum.IR0Evaluator
         [AutoConstructor]
         partial class DeclEvaluator
         {
+            Evaluator evaluator;
             ImmutableArray<R.Decl> decls;
+            ItemContainer curContainer;
 
-            public SharedContext Eval()
+            public DeclEvaluator(Evaluator evaluator, ImmutableArray<R.Decl> decls)
+            {
+                this.evaluator = evaluator;
+                this.decls = decls;
+            }
+
+            public void Eval()
             {
                 foreach (var decl in decls)
                 {
@@ -51,17 +59,45 @@ namespace Gum.IR0Evaluator
 
             void EvalLambdaDecl(R.LambdaDecl lambdaDecl)
             {
-                throw new NotImplementedException();
+                curContainer.AddLambdaDecl(lambdaDecl);
             }
 
             void EvalNormalFuncDecl(R.NormalFuncDecl normalFuncDecl)
             {
-                throw new NotImplementedException();
+                var itemContainer = new ItemContainer();
+
+                var typeParamCount = normalFuncDecl.TypeParams.Length;
+                var paramTypes = ImmutableArray.CreateRange(normalFuncDecl.ParamInfos, paramInfo => paramInfo.Type);
+                var paramHash = new R.ParamHash(typeParamCount, paramTypes);
+
+                curContainer.AddItemContainer(normalFuncDecl.Name, paramHash, itemContainer);
+
+                var savedContainer = curContainer;
+                curContainer = itemContainer;
+
+                foreach (var lambdaDecl in normalFuncDecl.LambdaDecls)
+                    EvalLambdaDecl(lambdaDecl);
+
+                curContainer = savedContainer;                
             }
 
-            void EvalSequenceFuncDecl(R.SequenceFuncDecl sequenceFuncDecl)
+            void EvalSequenceFuncDecl(R.SequenceFuncDecl seqFuncDecl)
             {
-                throw new NotImplementedException();
+                var itemContainer = new ItemContainer();
+
+                var typeParamCount = seqFuncDecl.TypeParams.Length;
+                var paramTypes = ImmutableArray.CreateRange(seqFuncDecl.ParamInfos, paramInfo => paramInfo.Type);
+                var paramHash = new R.ParamHash(typeParamCount, paramTypes);
+
+                curContainer.AddItemContainer(seqFuncDecl.Name, paramHash, itemContainer);
+
+                var savedContainer = curContainer;
+                curContainer = itemContainer;
+
+                foreach (var lambdaDecl in seqFuncDecl.LambdaDecls)
+                    EvalLambdaDecl(lambdaDecl);
+
+                curContainer = savedContainer;
             }
 
             void EvalEnumDecl(R.EnumDecl enumDecl)

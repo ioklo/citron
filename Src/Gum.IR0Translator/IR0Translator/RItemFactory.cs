@@ -7,25 +7,20 @@ using R = Gum.IR0;
 
 namespace Gum.IR0Translator
 {
-    class RItemFactory
+    static class RItemFactory
     {
-        public R.Path MakeTypeVar(int depth, int index)
-        {
-            return new R.TypeVar(depth, index);
-        }
-
-        R.ModuleName MakeModuleName(M.ModuleName moduleName)
+        public static R.ModuleName MakeModuleName(M.ModuleName moduleName)
         {
             return new R.ModuleName(moduleName.Text);
         }        
 
-        R.NamespacePath MakeNamespacePath(M.NamespacePath nsPath)
+        public static R.NamespacePath MakeNamespacePath(M.NamespacePath nsPath)
         {
             var rentries = ImmutableArray.CreateRange(nsPath.Entries, entry => new R.NamespaceName(entry.Value));
             return new R.NamespacePath(rentries);
         }
 
-        R.Name MakeName(M.Name name)
+        public static R.Name MakeName(M.Name name)
         {
             switch (name.Kind)
             {
@@ -40,19 +35,14 @@ namespace Gum.IR0Translator
             throw new UnreachableCodeException();
         }
 
-        ImmutableArray<R.Path> MakeRTypes(ImmutableArray<TypeValue> typeValues)
+        public static ImmutableArray<R.Path> MakeRTypes(ImmutableArray<TypeValue> typeValues)
         {
             return ImmutableArray.CreateRange(typeValues, typeValue => typeValue.GetRType());
         }
 
         public R.Path MakeStructType(M.ModuleName moduleName, M.NamespacePath namespacePath, M.Name name, ImmutableArray<TypeValue> typeArgs)
         {
-            var rmoduleName = MakeModuleName(moduleName);
-            var rnsPath = MakeNamespacePath(namespacePath);
-            var rname = MakeName(name);
-            var rtypeArgs = MakeRTypes(typeArgs);
             
-            return new R.Path.Root(rmoduleName, rnsPath, rname, rtypeArgs, R.ParamHash.None);
         }
 
         public R.Path MakeStructType(TypeValue outerType, M.Name name, ImmutableArray<TypeValue> typeArgs)
@@ -71,9 +61,11 @@ namespace Gum.IR0Translator
             throw new NotImplementedException();
         }
 
-        public R.Path MakeLambdaType( R.DeclId lambdaDeclId, R.Path returnRType, ImmutableArray<R.Path> paramRTypes)
+        public R.Path MakeLambdaType(ItemValue outer, R.LambdaId lambdaId)
         {
-            return new R.Path.(lambdaDeclId);
+            var router = outer.GetRType();           
+
+            return new R.Path.Box(lambdaDeclId);
         }
 
         public R.Path MakeEnumElemType()

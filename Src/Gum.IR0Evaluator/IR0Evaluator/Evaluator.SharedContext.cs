@@ -12,7 +12,16 @@ namespace Gum.IR0Evaluator
         {
             Dictionary<(R.Name, R.ParamHash), ItemContainer> containers;
             Dictionary<(R.Name, R.ParamHash), R.SequenceFuncDecl> seqFuncDecls;
+            Dictionary<(R.Name, R.ParamHash), R.LambdaDecl> lambdaDecls;
             Dictionary<(R.Name, R.ParamHash), FuncInvoker> funcInvokers;
+
+            public ItemContainer()
+            {
+                containers = new Dictionary<(R.Name, R.ParamHash), ItemContainer>();
+                seqFuncDecls = new Dictionary<(R.Name, R.ParamHash), R.SequenceFuncDecl>();
+                lambdaDecls = new Dictionary<(R.Name, R.ParamHash), R.LambdaDecl>();
+                funcInvokers = new Dictionary<(R.Name, R.ParamHash), FuncInvoker>();
+            }
 
             public ItemContainer GetContainer(R.Name name, R.ParamHash paramHash)
             {
@@ -28,19 +37,32 @@ namespace Gum.IR0Evaluator
             {
                 return funcInvokers[(name, paramHash)];
             }
+
+            public R.LambdaDecl GetLambdaDecl(R.Name name)
+            {
+                return lambdaDecls[(name, R.ParamHash.None)];
+            }
+
+            public void AddLambdaDecl(R.LambdaDecl lambdaDecl)
+            {
+                lambdaDecls.Add((new R.Name.AnonymousLambda(lambdaDecl.Id), R.ParamHash.None), lambdaDecl);
+            }
+
+            public void AddItemContainer(R.Name name, R.ParamHash paramHash, ItemContainer itemContainer)
+            {
+                containers.Add((name, paramHash), itemContainer);
+            }
         }
 
         class SharedContext
         {
-            public ImmutableArray<R.Decl> Decls { get; }
-
             Dictionary<(R.ModuleName, R.NamespacePath, R.Name, R.ParamHash), ItemContainer> rootContainers;
 
             public Dictionary<string, Value> PrivateGlobalVars { get; }
 
-            public SharedContext(ImmutableArray<R.Decl> decls)
+            public SharedContext()
             {
-                Decls = decls;
+                rootContainers = new Dictionary<(R.ModuleName, R.NamespacePath, R.Name, R.ParamHash), ItemContainer>();
                 PrivateGlobalVars = new Dictionary<string, Value>();
             }
 

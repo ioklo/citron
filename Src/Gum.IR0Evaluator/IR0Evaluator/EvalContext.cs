@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Gum;
 using Gum.Collections;
-using Gum.IR0;
 using R = Gum.IR0;
 using Void = Gum.Infra.Void;
 
@@ -25,7 +24,7 @@ namespace Gum.IR0Evaluator
 
             public EvalContext(ImmutableArray<R.Decl> decls, Value retValue)
             {
-                this.sharedContext = new SharedContext(decls);
+                this.sharedContext = new SharedContext();
 
                 this.localVars = ImmutableDictionary<string, Value>.Empty;
                 this.flowControl = EvalFlowControl.None;
@@ -155,7 +154,7 @@ namespace Gum.IR0Evaluator
                 tasks = prevTasks;
             }
 
-            public SequenceFuncDecl GetSequenceFuncDecl(Path seqFunc)
+            public SequenceFuncDecl GetSequenceFuncDecl(R.Path.Normal seqFunc)
             {
                 return sharedContext.GetSequenceFuncDecl(seqFunc);
             }
