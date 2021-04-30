@@ -10,17 +10,17 @@ namespace Gum.IR0Evaluator
     partial class SeqValue : Value
     {
         IAsyncEnumerator<Infra.Void>? enumerator;
-        EvalContext? evalContext;
+        Evaluator? evaluator;
 
         public SeqValue()
         {
             enumerator = null;
         }
 
-        public void SetEnumerator(IAsyncEnumerator<Infra.Void> enumerator, EvalContext evalContext)
+        public void SetEnumerator(IAsyncEnumerator<Infra.Void> enumerator, Evaluator evaluator)
         {
             this.enumerator = enumerator;
-            this.evalContext = evalContext;
+            this.evaluator = evaluator;
         }
 
         public override void SetValue(Value value)
@@ -32,9 +32,9 @@ namespace Gum.IR0Evaluator
         // 
         public ValueTask<bool> NextAsync(Value yieldValue)
         {
-            Debug.Assert(enumerator != null && evalContext != null);
+            Debug.Assert(enumerator != null && evaluator != null);
 
-            evalContext.SetYieldValue(yieldValue);
+            evaluator.SetYieldValue(yieldValue);
             return enumerator.MoveNextAsync();
         }   
     }

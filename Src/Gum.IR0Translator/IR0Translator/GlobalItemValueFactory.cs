@@ -51,7 +51,7 @@ namespace Gum.IR0Translator
                     // typeHint는 고려하지 않는다
                     if (type.Name.Equals(name) && type.TypeParams.Length == typeArgs.Length)
                     {
-                        var typeValue = outer.typeValueFactory.MakeGlobalType(moduleName, namespacePath, type, typeArgs);
+                        var typeValue = outer.typeValueFactory.MakeTypeValue(moduleName, namespacePath, type, typeArgs);
                         candidates.Add(new ValueItemResult(typeValue));
                     }
                 }

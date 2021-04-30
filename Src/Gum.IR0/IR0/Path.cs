@@ -8,7 +8,7 @@ namespace Gum.IR0
     public abstract partial record Path
     {
         public abstract record Reserved : Path;
-        public abstract record Normal : Path;
+        public abstract record Normal(Name Name, ParamHash ParamHash, ImmutableArray<Path> TypeArgs) : Path;
 
         // Reserved 
         public record Tuple : Reserved;
@@ -29,28 +29,31 @@ namespace Gum.IR0
         public record Func : Reserved;
         public record Nullable(Path Type) : Reserved;
 
-        public record Root(ModuleName ModuleName, NamespacePath NamespacePath, Name Name, ParamHash ParamHash, ImmutableArray<Path> TypeArgs) : Normal;
-        public record Nested(Normal outer, Name Name, ParamHash ParamHash, ImmutableArray<Path> TypeArgs) : Normal;
+        public record Root(ModuleName ModuleName, NamespacePath NamespacePath, Name Name, ParamHash ParamHash, ImmutableArray<Path> TypeArgs) 
+            : Normal(Name, ParamHash, TypeArgs);
+
+        public record Nested(Normal Outer, Name Name, ParamHash ParamHash, ImmutableArray<Path> TypeArgs)
+            : Normal(Name, ParamHash, TypeArgs);
     }
 
     public abstract partial record Path
     {
-        public static readonly Path Bool = Make("System.Runtime", new NamespacePath("System"), "Boolean", default, ParamHash.None);
-        public static readonly Path Int = Make("System.Runtime", new NamespacePath("System"), "Int32", default, ParamHash.None);
-        public static readonly Path String = Make("System.Runtime", new NamespacePath("System"), "String", default, ParamHash.None);
+        public static readonly Path Bool = Make("System.Runtime", new NamespacePath("System"), "Boolean", ParamHash.None, default);
+        public static readonly Path Int = Make("System.Runtime", new NamespacePath("System"), "Int32", ParamHash.None, default);
+        public static readonly Path String = Make("System.Runtime", new NamespacePath("System"), "String", ParamHash.None, default);
 
-        public static Path Make(ModuleName moduleName, NamespacePath namespacePath, Name name, ImmutableArray<Path> typeArgs, ParamHash paramHash)
+        public static Path Make(ModuleName moduleName, NamespacePath namespacePath, Name name, ParamHash paramHash, ImmutableArray<Path> typeArgs)
         {
-            return new Root(moduleName, namespacePath, name, typeArgs, paramHash);
+            return new Root(moduleName, namespacePath, name, paramHash, typeArgs);
         }
        
         // seq<> interface는 있다
         public static Path Seq(Path itemType)
-            => Make("System.Runtime", new NamespacePath("System"), "ISeq", Arr(itemType), ParamHash.None);
+            => Make("System.Runtime", new NamespacePath("System"), "ISeq", new ParamHash(1, default), Arr(itemType));
 
         // list<> class System.List<>
         public static Path List(Path itemPath)
-            => new Root("System.Runtime", new NamespacePath("System"), "List", Arr(itemPath), ParamHash.None);
+            => new Root("System.Runtime", new NamespacePath("System"), "List", new ParamHash(1, default), Arr(itemPath));
     }    
 
     public static class PathExtensions

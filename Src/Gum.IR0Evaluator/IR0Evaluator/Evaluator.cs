@@ -185,7 +185,7 @@ namespace Gum.IR0Evaluator
         {
             foreach (var elem in localVarDecl.Elems)
             {
-                var value = AllocValue(elem.Type);
+                var value = AllocValue(elemType);
                 context.AddLocalVar(elem.Name, value);
 
                 // InitExp가 있으면 
@@ -223,8 +223,11 @@ namespace Gum.IR0Evaluator
             }
 
             return ((IntValue)context.GetRetValue()).GetInt();
-        }        
+        }
 
-        
+        internal void SetYieldValue(Value yieldValue)
+        {
+            context.SetYieldValue(yieldValue);
+        }
     }
 }

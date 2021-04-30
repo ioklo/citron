@@ -1,4 +1,7 @@
-﻿namespace Gum.IR0Translator
+﻿using Pretune;
+using M = Gum.CompileTime;
+
+namespace Gum.IR0Translator
 {
     // TypeValue, FuncValue, MemberVarValue
     abstract class ItemValue
@@ -12,5 +15,13 @@
             FillTypeEnv(builder);
             return builder.Build();
         }
+    }
+
+    // 최상위 
+    [AutoConstructor]
+    class RootValue : ItemValue
+    {
+        M.ModuleName moduleName;
+        M.NamespacePath namespacePath;
     }
 }

@@ -33,33 +33,28 @@ namespace Gum.IR0Translator
             this.typeInfoRepo = typeInfoRepo;
             this.ritemFactory = ritemFactory;
 
-            Bool = MakeGlobalType("System.Runtime", new M.NamespacePath("System"), MakeEmptyStructInfo("Boolean"), default);
-            Int = MakeGlobalType("System.Runtime", new M.NamespacePath("System"), MakeEmptyStructInfo("Int32"), default);
+            Bool = MakeTypeValue("System.Runtime", new M.NamespacePath("System"), MakeEmptyStructInfo("Boolean"), default);
+            Int = MakeTypeValue("System.Runtime", new M.NamespacePath("System"), MakeEmptyStructInfo("Int32"), default);
 
             // TODO: 일단 Struct로 만든다
-            String = MakeGlobalType("System.Runtime", new M.NamespacePath("System"), MakeEmptyStructInfo("String"), default);
+            String = MakeTypeValue("System.Runtime", new M.NamespacePath("System"), MakeEmptyStructInfo("String"), default);
         }
 
-        public TypeValue MakeGlobalType(M.ModuleName moduleName, M.NamespacePath namespacePath, M.TypeInfo typeInfo, ImmutableArray<TypeValue> typeArgs)
+        public TypeValue MakeTypeValue(M.ModuleName moduleName, M.NamespacePath namespacePath, M.TypeInfo typeInfo, ImmutableArray<TypeValue> typeArgs)
         {
-            switch (typeInfo)
-            {
-                case M.StructInfo structInfo: return new StructTypeValue(this, ritemFactory, moduleName, namespacePath, null, structInfo, typeArgs);
-            }
-
-            throw new UnreachableCodeException();
+            return MakeTypeValue(new RootValue(moduleName, namespacePath), typeInfo, typeArgs);
         }
 
-        public NormalTypeValue MakeMemberType(TypeValue outer, M.TypeInfo typeInfo, ImmutableArray<TypeValue> typeArgs)
+        public NormalTypeValue MakeTypeValue(ItemValue outer, M.TypeInfo typeInfo, ImmutableArray<TypeValue> typeArgs)
         {
             switch (typeInfo)
             {
                 case M.StructInfo structInfo:
-                    return new StructTypeValue(this, ritemFactory, null, null, outer, structInfo, typeArgs);
+                    return new StructTypeValue(this, ritemFactory, outer, structInfo, typeArgs);
             }
 
             throw new UnreachableCodeException();
-        }
+        }        
 
         public MemberVarValue MakeMemberVarValue(NormalTypeValue outer, M.MemberVarInfo info)
         {
@@ -92,7 +87,7 @@ namespace Gum.IR0Translator
                         Debug.Assert(typeInfo != null);
 
                         var typeArgs = MakeTypeValues(externalType.TypeArgs);
-                        return MakeGlobalType(externalType.ModuleName, externalType.NamespacePath, typeInfo, typeArgs);
+                        return MakeTypeValue(new RootValue(externalType.ModuleName, externalType.NamespacePath), typeInfo, typeArgs);
                     }
 
                 case M.MemberType memberType:

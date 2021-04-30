@@ -71,9 +71,9 @@ namespace Gum.IR0Translator
             throw new NotImplementedException();
         }
 
-        public R.Path MakeLambdaType(R.DeclId lambdaDeclId, R.Path returnRType, ImmutableArray<R.Path> paramRTypes)
+        public R.Path MakeLambdaType( R.DeclId lambdaDeclId, R.Path returnRType, ImmutableArray<R.Path> paramRTypes)
         {
-            return new R.AnonymousLambdaType(lambdaDeclId);
+            return new R.Path.(lambdaDeclId);
         }
 
         public R.Path MakeEnumElemType()

@@ -87,22 +87,15 @@ namespace Gum.IR0Translator
         ItemValueFactory typeValueFactory;
         RItemFactory ritemFactory;
 
-        // global일 경우
-        M.ModuleName? moduleName;
-        M.NamespacePath? namespacePath;
-
-        // member일 경우
-        TypeValue? outer;        
+        ItemValue outer;        
 
         M.StructInfo structInfo;
         ImmutableArray<TypeValue> typeArgs;
 
-        internal StructTypeValue(ItemValueFactory factory, RItemFactory ritemFactory, M.ModuleName? moduleName, M.NamespacePath? namespacePath, TypeValue? outer, M.StructInfo structInfo, ImmutableArray<TypeValue> typeArgs)
+        internal StructTypeValue(ItemValueFactory factory, RItemFactory ritemFactory, ItemValue outer, M.StructInfo structInfo, ImmutableArray<TypeValue> typeArgs)
         {
             this.typeValueFactory = factory;
             this.ritemFactory = ritemFactory;
-            this.moduleName = moduleName;
-            this.namespacePath = namespacePath;
             this.outer = outer;
             this.structInfo = structInfo;
             this.typeArgs = typeArgs;
@@ -117,7 +110,7 @@ namespace Gum.IR0Translator
                 // 이름이 같고, 타입 파라미터 개수가 같다면
                 if (memberType.Name.Equals(memberName) && memberType.TypeParams.Length == typeArgs.Length)
                 {
-                    var typeValue = typeValueFactory.MakeMemberType(this, memberType, typeArgs);
+                    var typeValue = typeValueFactory.MakeTypeValue(this, memberType, typeArgs);
                     results.Add(new ValueItemResult(typeValue));
                 }
             }
@@ -222,7 +215,7 @@ namespace Gum.IR0Translator
             foreach (var memberType in structInfo.MemberTypes)
             {
                 if (memberType.Name.Equals(memberName) && memberType.TypeParams.Length == typeArgs.Length)
-                    return typeValueFactory.MakeMemberType(this, memberType, typeArgs);
+                    return typeValueFactory.MakeTypeValue(this, memberType, typeArgs);
             }
 
             return null;
@@ -246,19 +239,9 @@ namespace Gum.IR0Translator
         {
             // [X<00T>.Y<10U>.Z<20V>].Apply([00 => int, 10 => short, 20 => string])            
 
-            if (outer != null)
-            {
-                var appliedOuter = outer.Apply(typeEnv);
-                var appliedTypeArgs = ImmutableArray.CreateRange(typeArgs, typeArg => typeArg.Apply(typeEnv));
-                return typeValueFactory.MakeMemberType(appliedOuter, structInfo, appliedTypeArgs);
-            }
-            else
-            {
-                Debug.Assert(moduleName != null && namespacePath != null);
-
-                var appliedTypeArgs = ImmutableArray.CreateRange(typeArgs, typeArg => typeArg.Apply(typeEnv));
-                return typeValueFactory.MakeGlobalType(moduleName.Value, namespacePath.Value, structInfo, appliedTypeArgs);
-            }
+            var appliedOuter = outer.Apply(typeEnv);
+            var appliedTypeArgs = ImmutableArray.CreateRange(typeArgs, typeArg => typeArg.Apply(typeEnv));
+            return typeValueFactory.MakeTypeValue(appliedOuter, structInfo, appliedTypeArgs);
         }
 
         bool IsGlobal()
@@ -322,7 +305,7 @@ namespace Gum.IR0Translator
     class LambdaTypeValue : TypeValue, IEquatable<LambdaTypeValue>
     {
         RItemFactory ritemFactory;
-        public ItemValue? Outer { get; } // FuncValue일 수도 있고, TypeValue일수도 있고, Root(Module, Namespace, )일수도
+        public ItemValue Outer { get; } // FuncValue일 수도 있고, TypeValue일수도 있고, Root(Module, Namespace, )일수도
         public R.LambdaId LambdaId { get; }
         public TypeValue Return { get; }
         public ImmutableArray<TypeValue> Params { get; }
