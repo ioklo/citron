@@ -907,7 +907,7 @@ namespace Gum.IR0Evaluator.Test
         public async Task CallFuncExp_EvaluatesArgumentsInOrder()
         {
             var printFunc = RootPath("Print", Arr(Path.Int), default);
-            var testFunc = RootPath("TestFunc", Arr(Path.Int, Path.Int), default);
+            var testFunc = RootPath("TestFunc", Arr(Path.Int, Path.Int, Path.Int), default);
 
             // Print(int x)
             var printFuncDecl = new NormalFuncDecl(default, "Print", false, default, Arr(new ParamInfo(Path.Int, "x")),
@@ -985,7 +985,7 @@ namespace Gum.IR0Evaluator.Test
         public async Task CallValueExp_EvaluateCallableAndArgumentsInOrder()
         {
             var printFunc = RootPath("Print", Arr(Path.Int), default);
-            var makeLambda = RootPath("MakeLambda", Arr(Path.Int, Path.Int, Path.Int), default);
+            var makeLambda = RootPath("MakeLambda", default, default);
             var lambda = new Path.Nested(makeLambda, new Name.Lambda(new LambdaId(0)), ParamHash.None, default);
 
             // Print(int x) { 
@@ -996,7 +996,7 @@ namespace Gum.IR0Evaluator.Test
                 )
             );
 
-            // MakeLambda() { return () => ;}
+            // MakeLambda() { return (int i, int j, int k) => @"TestFunc";}
             var lambdaDecl = new LambdaDecl(
                 new LambdaId(0),
                 new CapturedStatement(null, default, PrintStringCmdStmt("TestFunc")),

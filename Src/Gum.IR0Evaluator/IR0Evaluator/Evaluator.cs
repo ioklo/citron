@@ -160,9 +160,12 @@ namespace Gum.IR0Evaluator
 
                 return new LambdaValue(capturedThis, capturesBuilder.ToImmutable());
             }            
+            else if (typePath is R.Path.AnonymousSeqType)
+            {
+                return new SeqValue();
+            }
 
             throw new NotImplementedException();
-
         }
 
                  

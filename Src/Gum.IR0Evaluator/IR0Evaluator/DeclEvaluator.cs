@@ -76,12 +76,15 @@ namespace Gum.IR0Evaluator
             void EvalNormalFuncDecl(R.NormalFuncDecl normalFuncDecl)
             {
                 var itemContainer = new ItemContainer();
-
+                
+                // 하위 아이템을 저장할 container와 invoker를 추가한다 (같은 키로)
                 var typeParamCount = normalFuncDecl.TypeParams.Length;
                 var paramTypes = ImmutableArray.CreateRange(normalFuncDecl.ParamInfos, paramInfo => paramInfo.Type);
                 var paramHash = new R.ParamHash(typeParamCount, paramTypes);
-
                 curContainer.AddItemContainer(normalFuncDecl.Name, paramHash, itemContainer);
+
+                var funcInvoker = new IR0FuncInvoker(evaluator, normalFuncDecl.Body, normalFuncDecl.ParamInfos);
+                curContainer.AddFuncInvoker(normalFuncDecl.Name, paramHash, funcInvoker);
 
                 var savedContainer = curContainer;
                 curContainer = itemContainer;
@@ -101,6 +104,8 @@ namespace Gum.IR0Evaluator
                 var paramHash = new R.ParamHash(typeParamCount, paramTypes);
 
                 curContainer.AddItemContainer(seqFuncDecl.Name, paramHash, itemContainer);
+
+                curContainer.AddSequenceFuncDecl(seqFuncDecl);
 
                 var savedContainer = curContainer;
                 curContainer = itemContainer;

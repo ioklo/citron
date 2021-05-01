@@ -52,6 +52,17 @@ namespace Gum.IR0Evaluator
             {
                 containers.Add((name, paramHash), itemContainer);
             }
+
+            public void AddFuncInvoker(R.Name name, R.ParamHash paramHash, IR0FuncInvoker funcInvoker)
+            {
+                funcInvokers[(name, paramHash)] = funcInvoker;
+            }
+
+            public void AddSequenceFuncDecl(R.SequenceFuncDecl seqFuncDecl)
+            {   
+                var paramHash = new R.ParamHash(seqFuncDecl.TypeParams.Length, ImmutableArray.CreateRange(seqFuncDecl.ParamInfos, paramInfo => paramInfo.Type));
+                seqFuncDecls.Add((seqFuncDecl.Name, paramHash), seqFuncDecl);
+            }
         }
 
         class SharedContext
