@@ -23,6 +23,7 @@ namespace Gum.IR0Translator
 
         public static R.Script Analyze(
             S.Script script,
+            R.ModuleName moduleName,
             ItemValueFactory itemValueFactory,
             GlobalItemValueFactory globalItemValueFactory,
             TypeExpInfoService typeExpTypeValueService,
@@ -40,7 +41,7 @@ namespace Gum.IR0Translator
             IR0Translator.Misc.VisitScript(script, pass2);
 
             // 5. 각 func body를 분석한다 (4에서 얻게되는 글로벌 변수 정보가 필요하다)
-            return new R.Script(analyzer.context.GetDecls(), analyzer.context.GetTopLevelStmts());
+            return new R.Script(moduleName, analyzer.context.GetDecls(), analyzer.context.GetTopLevelStmts());
         }
 
         Analyzer(InternalBinaryOperatorQueryService internalBinOpQueryService, Context context)
@@ -290,7 +291,7 @@ namespace Gum.IR0Translator
 
         public void AnalyzeNormalFuncDecl(S.FuncDecl funcDecl)
         {
-            var builder = new NormalFuncRDeclBuilder(funcDecl.Name);
+            var builder = new RNormalFuncDeclBuilder(funcDecl.Name);
 
             context.ExecInNewDeclBuilder(builder, () =>
             {

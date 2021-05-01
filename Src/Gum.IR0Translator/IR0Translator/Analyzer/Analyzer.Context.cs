@@ -258,7 +258,7 @@ namespace Gum.IR0Translator
                 declBuilder.Add(new R.SequenceFuncDecl(lambdaDecls, name, bThisCall, yieldType, typeParams, paramInfos, body));
             }
 
-            public R.DeclId AddLambdaDecl(R.Path? capturedThisType, ImmutableArray<R.TypeAndName> captureInfo, ImmutableArray<R.ParamInfo> paramInfos, R.Stmt body)
+            public LambdaDecl MakeLambdaDecl(R.Path? capturedThisType, ImmutableArray<R.TypeAndName> captureInfo, ImmutableArray<R.ParamInfo> paramInfos, R.Stmt body)
             {
                 var id = new R.DeclId(decls.Count);
                 declBuilder.Add(new R.LambdaDecl(id, new R.CapturedStatement(capturedThisType, captureInfo, body), paramInfos));
