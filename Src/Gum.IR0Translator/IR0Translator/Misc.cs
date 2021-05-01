@@ -144,7 +144,7 @@ namespace Gum.IR0Translator
                     case S.TypeDeclScriptElement typeDeclElem:
                         visitor.VisitTypeDecl(typeDeclElem.TypeDecl);
                         break;
-                }                
+                }
             }
         }
 

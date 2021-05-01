@@ -26,7 +26,7 @@ namespace Gum.IR0Translator
 
             public void VisitTypeDecl(S.TypeDecl typeDecl)
             {
-                // do nothing
+                // do nothing                
             }
         }
         
