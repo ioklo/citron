@@ -128,7 +128,7 @@ namespace Gum.IR0Evaluator.Test
             ImmutableArray<Stmt> topLevelStmts)
         {   
             var commandProvider = new TestCommandProvider();
-            var script = new Script(decls, topLevelStmts);
+            var script = new Script(moduleName, decls, topLevelStmts);
 
             var evaluator = new Evaluator(commandProvider, script);            
 
@@ -162,14 +162,14 @@ namespace Gum.IR0Evaluator.Test
         }
 
         // without typeArgs
-        Path.Normal RootPath(Name name)
+        Path.Nested RootPath(Name name)
         {            
-            return new Path.Root(moduleName, NamespacePath.Root, name, ParamHash.None, default);
+            return new Path.Nested(new Path.Root(moduleName), name, ParamHash.None, default);
         }
 
-        Path.Normal RootPath(Name name, ImmutableArray<Path> paramTypes, ImmutableArray<Path> typeArgs)
+        Path.Nested RootPath(Name name, ImmutableArray<Path> paramTypes, ImmutableArray<Path> typeArgs)
         {
-            return new Path.Root(moduleName, NamespacePath.Root, name, new ParamHash(typeArgs.Length, paramTypes), typeArgs);
+            return new Path.Nested(new Path.Root(moduleName), name, new ParamHash(typeArgs.Length, paramTypes), typeArgs);
         }
 
         [Fact]
@@ -986,9 +986,7 @@ namespace Gum.IR0Evaluator.Test
         {
             var printFunc = RootPath("Print", Arr(Path.Int), default);
             var makeLambda = RootPath("MakeLambda", Arr(Path.Int, Path.Int, Path.Int), default);
-            var lambdaId = new LambdaId(0);
-            var lambda = new Path.Nested(makeLambda, new Name.Lambda(lambdaId), ParamHash.None, default);
-            var lambdaType = new Path.AnonymousLambdaType(lambda);
+            var lambda = new Path.Nested(makeLambda, new Name.Lambda(new LambdaId(0)), ParamHash.None, default);
 
             // Print(int x) { 
             var printFuncDecl = new NormalFuncDecl(default, "Print", false, default, Arr(new ParamInfo(Path.Int, "x")),
@@ -1000,7 +998,7 @@ namespace Gum.IR0Evaluator.Test
 
             // MakeLambda() { return () => ;}
             var lambdaDecl = new LambdaDecl(
-                lambdaId,
+                new LambdaId(0),
                 new CapturedStatement(null, default, PrintStringCmdStmt("TestFunc")),
                 Arr(new ParamInfo(Path.Int, "i"), new ParamInfo(Path.Int, "j"), new ParamInfo(Path.Int, "k"))
             );
@@ -1020,7 +1018,7 @@ namespace Gum.IR0Evaluator.Test
                 new ExpStmt(
                     new CallValueExp(
                         lambda,
-                        new TempLoc(new CallFuncExp(new Func(makeLambdaId, TypeContext.Empty), null, default), new AnonymousLambdaType(lambdaDeclId)),
+                        new TempLoc(new CallFuncExp(makeLambda, null, default), new Path.AnonymousLambdaType(lambda)),
                         Arr(
                             MakePrintCall(1),
                             MakePrintCall(2),
@@ -1030,7 +1028,7 @@ namespace Gum.IR0Evaluator.Test
                 )
             );
 
-            var output = await EvalAsync(Arr<Decl>(printFunc, makeLambda, lambdaDecl), stmts);
+            var output = await EvalAsync(Arr<Decl>(printFuncDecl, makeLambdaDecl), stmts);
             Assert.Equal("MakeLambda123TestFunc", output);
         }
 
@@ -1044,16 +1042,21 @@ namespace Gum.IR0Evaluator.Test
         // Lambda Purity
         [Fact]
         public async Task LambdaExp_CapturesLocalVariablesWithCopying()
-        {
-            var lambdaId = new DeclId(0);
-            var lambdaDecl = new LambdaDecl(lambdaId, null, Arr<TypeAndName>(new TypeAndName(Path.Int, "x")), default, PrintIntCmdStmt(new LocalVarLoc("x")));
+        {   
+            // [x] () => @"$x";
+            var lambdaDecl = new LambdaDecl(new LambdaId(0), new CapturedStatement(null, Arr(new TypeAndName(Path.Int, "x")), PrintIntCmdStmt(new LocalVarLoc("x"))), default);
+            var lambda = RootPath(new Name.Lambda(new LambdaId(0)));
 
+            // int x = 3;
+            // var func = () => x;
+            // x = 34;
+            // func();
             var stmts = Arr<Stmt> (
                 RLocalVarDeclStmt(Path.Int, "x", new IntLiteralExp(3)),
-                RLocalVarDeclStmt(new AnonymousLambdaType(lambdaId), "func", new LambdaExp(false, Arr("x"))),
+                RLocalVarDeclStmt(new Path.AnonymousLambdaType(lambda), "func", new LambdaExp(lambda)),
 
                 new ExpStmt(new AssignExp(LocalVar("x"), new IntLiteralExp(34))),
-                new ExpStmt(new CallValueExp(LocalVar("func"), default))
+                new ExpStmt(new CallValueExp(lambda, LocalVar("func"), default))
             );
 
             var output = await EvalAsync(Arr<Decl>(lambdaDecl), stmts);
@@ -1077,8 +1080,10 @@ namespace Gum.IR0Evaluator.Test
         [Fact]
         public async Task ListExp_EvaluatesElementExpInOrder()
         {
-            var printFuncId = new DeclId(0);
-            var printFunc = new NormalFuncDecl(printFuncId, false, default, Arr(new ParamInfo(Path.Int, "x")),
+            var printFunc = RootPath("Print", Arr(Path.Int), default);
+
+            // print(int x)
+            var printFuncDecl = new NormalFuncDecl(default, "Print", false, default, Arr(new ParamInfo(Path.Int, "x")),
 
                 RBlock(
                     PrintIntCmdStmt(new LocalVarLoc("x")),
@@ -1087,7 +1092,7 @@ namespace Gum.IR0Evaluator.Test
             );
 
             Exp MakePrintCall(int v) =>
-                new CallFuncExp(new Func(printFuncId, TypeContext.Empty), null, Arr<Exp>(new IntLiteralExp(v)));
+                new CallFuncExp(printFunc, null, Arr<Exp>(new IntLiteralExp(v)));
 
             var stmts = Arr<Stmt> (
                 RGlobalVarDeclStmt(Path.List(Path.Int), "l", 
@@ -1098,7 +1103,7 @@ namespace Gum.IR0Evaluator.Test
                 )
             );
 
-            var output = await EvalAsync(Arr<Decl>(printFunc), stmts);
+            var output = await EvalAsync(Arr<Decl>(printFuncDecl), stmts);
             Assert.Equal("3456", output);
         }
 

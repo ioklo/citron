@@ -24,24 +24,27 @@ namespace Gum.IR0Evaluator
         ExpEvaluator expEvaluator;
         StmtEvaluator stmtEvaluator;
         LocEvaluator locEvaluator;
+        DeclEvaluator declEvaluator;
 
         public Evaluator(ICommandProvider commandProvider, R.Script script)
         {
             var topLevelRetValue = AllocValue(R.Path.Int);
 
-            this.context = new EvalContext(script.Decls, topLevelRetValue);
+            this.context = new EvalContext(topLevelRetValue);
             this.topLevelStmts = script.TopLevelStmts;
 
             this.expEvaluator = new ExpEvaluator(this);
             this.stmtEvaluator = new StmtEvaluator(this, commandProvider);
             this.locEvaluator = new LocEvaluator(this);
+            this.declEvaluator = new DeclEvaluator(script.Name, this, script.Decls);
         }
 
-        Evaluator(EvalContext context, StmtEvaluator stmtEvaluator, Value? thisValue, ImmutableDictionary<string, Value> localVars)
+        Evaluator(EvalContext context, StmtEvaluator stmtEvaluator, DeclEvaluator declEvaluator, Value? thisValue, ImmutableDictionary<string, Value> localVars)
         {
             this.expEvaluator = new ExpEvaluator(this);
             this.stmtEvaluator = stmtEvaluator.Clone(this);
             this.locEvaluator = new LocEvaluator(this);
+            this.declEvaluator = declEvaluator;
 
             this.context = new EvalContext(
                 context,
@@ -54,7 +57,7 @@ namespace Gum.IR0Evaluator
 
         Evaluator CloneWithNewContext(Value? thisValue, ImmutableDictionary<string, Value> localVars)
         {
-            return new Evaluator(context, stmtEvaluator, thisValue, localVars);
+            return new Evaluator(context, stmtEvaluator, declEvaluator, thisValue, localVars);
         }
 
         ValueTask EvalStringExpAsync(R.StringExp command, Value result)
@@ -128,7 +131,7 @@ namespace Gum.IR0Evaluator
             {
                 return VoidValue.Instance;
             }
-            else if (R.PathExtensions.IsList(typePath))
+            else if (R.PathExtensions.IsTypeInstOfList(typePath))
             {
                 return new ListValue();
             }
@@ -211,6 +214,8 @@ namespace Gum.IR0Evaluator
         
         public async ValueTask<int> EvalAsync()
         {
+            declEvaluator.Eval();
+
             foreach (var topLevelStmt in topLevelStmts)
             {
                 await foreach (var _ in stmtEvaluator.EvalStmtAsync(topLevelStmt))

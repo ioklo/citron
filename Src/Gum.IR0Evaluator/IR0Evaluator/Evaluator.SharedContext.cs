@@ -45,7 +45,7 @@ namespace Gum.IR0Evaluator
 
             public void AddLambdaDecl(R.LambdaDecl lambdaDecl)
             {
-                lambdaDecls.Add((new R.Name.AnonymousLambda(lambdaDecl.Id), R.ParamHash.None), lambdaDecl);
+                lambdaDecls.Add((new R.Name.Lambda(lambdaDecl.Id), R.ParamHash.None), lambdaDecl);
             }
 
             public void AddItemContainer(R.Name name, R.ParamHash paramHash, ItemContainer itemContainer)
@@ -56,32 +56,32 @@ namespace Gum.IR0Evaluator
 
         class SharedContext
         {
-            Dictionary<(R.ModuleName, R.NamespacePath, R.Name, R.ParamHash), ItemContainer> rootContainers;
+            Dictionary<R.ModuleName, ItemContainer> rootContainers;
 
             public Dictionary<string, Value> PrivateGlobalVars { get; }
 
             public SharedContext()
             {
-                rootContainers = new Dictionary<(R.ModuleName, R.NamespacePath, R.Name, R.ParamHash), ItemContainer>();
+                rootContainers = new Dictionary<R.ModuleName, ItemContainer>();
                 PrivateGlobalVars = new Dictionary<string, Value>();
             }
 
             // 여기서 만들어 내면 됩니다
-            public FuncInvoker GetFuncInvoker(R.Path.Normal normalPath)
+            public FuncInvoker GetFuncInvoker(R.Path.Nested normalPath)
             {
-                var outer = GetOuterContainer(normalPath);
+                var outer = GetContainer(normalPath.Outer);
                 return outer.GetFuncInvoker(normalPath.Name, normalPath.ParamHash);
             }
 
-            ItemContainer GetOuterContainer(R.Path path)
+            ItemContainer GetContainer(R.Path path)
             {
                 if (path is R.Path.Root rootPath)
                 {
-                    return rootContainers[(rootPath.ModuleName, rootPath.NamespacePath, rootPath.Name, rootPath.ParamHash)];
+                    return rootContainers[rootPath.ModuleName];
                 }
                 else if (path is R.Path.Nested nestedPath)
                 {
-                    var outer = GetOuterContainer(nestedPath.Outer);
+                    var outer = GetContainer(nestedPath.Outer);
                     return outer.GetContainer(nestedPath.Name, nestedPath.ParamHash);
                 }
 
@@ -89,16 +89,22 @@ namespace Gum.IR0Evaluator
             }
 
             // X<>.Y<,>.F 가 나온다. TypeArgs정보는 따로 
-            public R.SequenceFuncDecl GetSequenceFuncDecl(R.Path.Normal seqFunc)
+            public R.SequenceFuncDecl GetSequenceFuncDecl(R.Path.Nested seqFunc)
             {
-                var outer = GetOuterContainer(seqFunc);
+                var outer = GetContainer(seqFunc.Outer);
                 return outer.GetSequenceFuncDecl(seqFunc.Name, seqFunc.ParamHash);
             }
 
-            public R.LambdaDecl GetLambdaDecl(R.Path.Normal lambda)
+            public R.LambdaDecl GetLambdaDecl(R.Path.Nested lambda)
             {
-                var outer = GetOuterContainer(lambda);
+                var outer = GetContainer(lambda.Outer);
                 return outer.GetLambdaDecl(lambda.Name);
+            }
+
+            // 
+            public void AddRootItemContainer(R.ModuleName moduleName, ItemContainer container)
+            {
+                rootContainers.Add(moduleName, container);
             }
         }
     }    

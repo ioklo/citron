@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Gum;
 using Gum.Collections;
-using Gum.IR0;
 using R = Gum.IR0;
 using Void = Gum.Infra.Void;
 
@@ -23,7 +22,7 @@ namespace Gum.IR0Evaluator
             private Value retValue;
             private Value? yieldValue;
 
-            public EvalContext(ImmutableArray<R.Decl> decls, Value retValue)
+            public EvalContext(Value retValue)
             {
                 this.sharedContext = new SharedContext();
 
@@ -150,12 +149,12 @@ namespace Gum.IR0Evaluator
                 tasks = prevTasks;
             }
 
-            public TypeContext GetTypeContext(Path.Normal normalPath)
+            public TypeContext GetTypeContext(R.Path.Normal normalPath)
             {
                 throw new NotImplementedException();
             }
 
-            public R.SequenceFuncDecl GetSequenceFuncDecl(R.Path.Normal seqFunc)
+            public R.SequenceFuncDecl GetSequenceFuncDecl(R.Path.Nested seqFunc)
             {
                 return sharedContext.GetSequenceFuncDecl(seqFunc);
             }
@@ -178,7 +177,7 @@ namespace Gum.IR0Evaluator
                 }
             }
 
-            public FuncInvoker GetFuncInvoker(R.Path.Normal path)
+            public FuncInvoker GetFuncInvoker(R.Path.Nested path)
             {
                 return sharedContext.GetFuncInvoker(path);
             }
@@ -193,9 +192,14 @@ namespace Gum.IR0Evaluator
                 return yieldValue!;
             }
 
-            public R.LambdaDecl GetLambdaDecl(R.Path.Normal path)
+            public R.LambdaDecl GetLambdaDecl(R.Path.Nested path)
             {
                 return sharedContext.GetLambdaDecl(path);
+            }
+
+            public void AddRootItemContainer(R.ModuleName moduleName, ItemContainer container)
+            {
+                sharedContext.AddRootItemContainer(moduleName, container);
             }
         }
     }

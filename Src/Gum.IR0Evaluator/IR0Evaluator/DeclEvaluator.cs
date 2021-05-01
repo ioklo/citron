@@ -16,22 +16,33 @@ namespace Gum.IR0Evaluator
         [AutoConstructor]
         partial class DeclEvaluator
         {
+            R.ModuleName moduleName;
+
             Evaluator evaluator;
             ImmutableArray<R.Decl> decls;
             ItemContainer curContainer;
 
-            public DeclEvaluator(Evaluator evaluator, ImmutableArray<R.Decl> decls)
+            public DeclEvaluator(R.ModuleName moduleName, Evaluator evaluator, ImmutableArray<R.Decl> decls)
             {
+                this.moduleName = moduleName;
+
                 this.evaluator = evaluator;
                 this.decls = decls;
+
+                this.curContainer = new ItemContainer();
             }
 
             public void Eval()
             {
+                // 이 모듈의 이름을 알아야 한다
+
                 foreach (var decl in decls)
                 {
                     Eval(decl);
                 }
+
+                // (R.ModuleName moduleName, ItemContainer container)
+                evaluator.context.AddRootItemContainer(moduleName, curContainer);
             }
 
             void Eval(R.Decl decl)

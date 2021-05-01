@@ -5,10 +5,11 @@ using Pretune;
 namespace Gum.IR0
 {
     // Path
+    // Module, Namespace, Type, Func, Lambda, Sequence, Reserved(타입) 을 유일하게 가리킬 수 있는 구조
     public abstract partial record Path
     {
         public abstract record Reserved : Path;
-        public abstract record Normal(Name Name, ParamHash ParamHash, ImmutableArray<Path> TypeArgs) : Path;
+        public abstract record Normal : Path;
 
         // Reserved 
         public record TupleType : Reserved;
@@ -29,43 +30,46 @@ namespace Gum.IR0
         public record FuncType : Reserved;
         public record NullableType(Path Type) : Reserved;
         public record AnonymousSeqType(Path SeqFunc) : Reserved;
-        public record AnonymousLambdaType(Path.Normal Lambda) : Reserved;
+        public record AnonymousLambdaType(Path.Nested Lambda) : Reserved;
 
-        public record Root(ModuleName ModuleName, NamespacePath NamespacePath, Name Name, ParamHash ParamHash, ImmutableArray<Path> TypeArgs) 
-            : Normal(Name, ParamHash, TypeArgs);
-
-        public record Nested(Normal Outer, Name Name, ParamHash ParamHash, ImmutableArray<Path> TypeArgs)
-            : Normal(Name, ParamHash, TypeArgs);
+        public record Root(ModuleName ModuleName) : Normal;
+        public record Nested(Normal Outer, Name Name, ParamHash ParamHash, ImmutableArray<Path> TypeArgs) : Normal;
     }
 
     public abstract partial record Path
     {
-        public static readonly Path Bool = Make("System.Runtime", new NamespacePath("System"), "Boolean", ParamHash.None, default);
-        public static readonly Path Int = Make("System.Runtime", new NamespacePath("System"), "Int32", ParamHash.None, default);
-        public static readonly Path String = Make("System.Runtime", new NamespacePath("System"), "String", ParamHash.None, default);
+        // Namespace
+        public static readonly Normal System = Make("System.Runtime", "System", ParamHash.None, default);
 
-        public static Path Make(ModuleName moduleName, NamespacePath namespacePath, Name name, ParamHash paramHash, ImmutableArray<Path> typeArgs)
+        // Runtime Type
+        public static readonly Path Bool = new Nested(System, "Boolean", ParamHash.None, default);
+        public static readonly Path Int = new Nested(System, "Int32", ParamHash.None, default);
+        public static readonly Path String = new Nested(System, "String", ParamHash.None, default);
+
+        public static Normal Make(ModuleName moduleName, Name name, ParamHash paramHash, ImmutableArray<Path> typeArgs)
         {
-            return new Root(moduleName, namespacePath, name, paramHash, typeArgs);
-        }
-       
+            return new Nested(new Root(moduleName), name, paramHash, typeArgs);
+        }        
+
         // seq<> interface는 있다
         public static Path Seq(Path itemType)
-            => Make("System.Runtime", new NamespacePath("System"), "ISeq", new ParamHash(1, default), Arr(itemType));
+            => new Nested(System, "ISeq", new ParamHash(1, default), Arr(itemType));
 
         // list<> class System.List<>
         public static Path List(Path itemPath)
-            => new Root("System.Runtime", new NamespacePath("System"), "List", new ParamHash(1, default), Arr(itemPath));
+            => new Nested(System, "List", new ParamHash(1, default), Arr(itemPath));
     }    
 
     public static class PathExtensions
     {
-        public static bool IsList(this Path path)
+        public static bool IsTypeInstOfList(this Path path)
         {
-            if (path is Path.Root rootPath)
-                return rootPath.ModuleName.Equals(new ModuleName("System.Runtime")) &&
-                    rootPath.NamespacePath.Equals(new NamespacePath("System")) &&
-                    rootPath.Name.Equals(new Name.Normal("List"));
+            if (path is Path.Nested nestedPath)
+            {
+                return nestedPath.Outer.Equals(Path.System) &&
+                    nestedPath.Name.Equals(new Name.Normal("List")) &&
+                    nestedPath.ParamHash.Equals(new ParamHash(1, default));
+            }
 
             return false;
         }        

@@ -15,12 +15,23 @@ using static Gum.Infra.Misc;
 using static Gum.IR0Translator.Test.TestMisc;
 using static Gum.IR0Translator.Test.SyntaxFactory;
 using static Gum.IR0.IR0Factory;
+using Gum.Collections;
 
 namespace Gum.IR0Translator.Test
 {
     public class TranslatorTests
     {
         M.ModuleName ModuleName = "TestModule";
+
+        R.Script RScript(ImmutableArray<R.Decl> decls, params R.Stmt[] optTopLevelStmts)
+        {
+            return Gum.IR0.IR0Factory.RScript(ModuleName.Text, decls, optTopLevelStmts);
+        }
+
+        R.Script RScript(params R.Stmt[] optTopLevelStmts)
+        {
+            return Gum.IR0.IR0Factory.RScript(ModuleName.Text, optTopLevelStmts);
+        }
 
         R.Script? Translate(S.Script syntaxScript, bool raiseAssertFailed = true)
         {
