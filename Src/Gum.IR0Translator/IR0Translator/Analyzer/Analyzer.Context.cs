@@ -247,16 +247,15 @@ namespace Gum.IR0Translator
                 return internalGlobalVarRepo.GetVariable(idName);
             }
 
-            public void AddNormalFuncDecl(R.Name name, bool bThisCall, ImmutableArray<string> typeParams, ImmutableArray<R.ParamInfo> paramNames, R.Stmt body)
+            public void AddNormalFuncDecl(ImmutableArray<R.LambdaDecl> lambdaDecls, R.Name name, bool bThisCall, ImmutableArray<string> typeParams, ImmutableArray<R.ParamInfo> paramNames, R.Stmt body)
             {
                 // decls에 할 것이 아니라. curOuter에 해야 한다
-                declBuilder.Add(new R.NormalFuncDecl(name, bThisCall, typeParams, paramNames, body));
+                declBuilder.Add(new R.NormalFuncDecl(lambdaDecls, name, bThisCall, typeParams, paramNames, body));
             }
 
-            public void AddSequenceFuncDecl(R.Path yieldType, bool bThisCall, ImmutableArray<string> typeParams, ImmutableArray<R.ParamInfo> paramInfos, R.Stmt body)
+            public void AddSequenceFuncDecl(ImmutableArray<R.LambdaDecl> lambdaDecls, R.Name name, R.Path yieldType, bool bThisCall, ImmutableArray<string> typeParams, ImmutableArray<R.ParamInfo> paramInfos, R.Stmt body)
             {
-                var id = new R.DeclId(decls.Count);
-                declBuilder.Add(new R.SequenceFuncDecl(id, bThisCall, yieldType, typeParams, paramInfos, body));
+                declBuilder.Add(new R.SequenceFuncDecl(lambdaDecls, name, bThisCall, yieldType, typeParams, paramInfos, body));
             }
 
             public R.DeclId AddLambdaDecl(R.Path? capturedThisType, ImmutableArray<R.TypeAndName> captureInfo, ImmutableArray<R.ParamInfo> paramInfos, R.Stmt body)

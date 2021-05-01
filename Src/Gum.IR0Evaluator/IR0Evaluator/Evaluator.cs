@@ -140,7 +140,7 @@ namespace Gum.IR0Evaluator
             else if (typePath is R.Path.AnonymousLambdaType lambdaType)
             {
                 var lambdaDecl = context.GetLambdaDecl(lambdaType.Lambda);
-                var typeContext = context.GetTypeContext(lambdaType.Lambda);
+                var typeContext = TypeContext.Make(lambdaType.Lambda);
                 
                 Value? capturedThis = null;
                 if (lambdaDecl.CapturedStatement.ThisType != null)

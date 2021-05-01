@@ -147,12 +147,7 @@ namespace Gum.IR0Evaluator
                     yield return Void.Instance;
 
                 tasks = prevTasks;
-            }
-
-            public TypeContext GetTypeContext(R.Path.Normal normalPath)
-            {
-                throw new NotImplementedException();
-            }
+            }            
 
             public R.SequenceFuncDecl GetSequenceFuncDecl(R.Path.Nested seqFunc)
             {

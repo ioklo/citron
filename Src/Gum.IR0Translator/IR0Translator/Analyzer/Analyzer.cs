@@ -290,6 +290,16 @@ namespace Gum.IR0Translator
 
         public void AnalyzeNormalFuncDecl(S.FuncDecl funcDecl)
         {
+            var builder = new NormalFuncRDeclBuilder(funcDecl.Name);
+
+            context.ExecInNewDeclBuilder(builder, () =>
+            {
+
+            });
+
+            var normalFuncDecl = builder.Build();
+            context.AddDecl(normalFuncDecl);
+
             var (bodyResult, parameters) = context.ExecInFuncScope(funcDecl, () =>
             {
                 if (0 < funcDecl.TypeParams.Length || funcDecl.ParamInfo.VariadicParamIndex != null)
