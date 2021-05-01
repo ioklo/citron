@@ -52,7 +52,7 @@ namespace Gum.IR0Translator
 
             return this;
         }
-        public override R.Path GetRType() => new R.Path.TypeVar(Depth, Index);
+        public override R.Path GetRType() => new R.Path.TypeVarType(Depth, Index);
     }
 
     [ImplementIEquatable]
@@ -308,7 +308,7 @@ namespace Gum.IR0Translator
 
         public override R.Path GetRType()
         {
-            return R.Path.Void.Instance;
+            return R.Path.VoidType.Instance;
         }
 
         public override int GetHashCode()

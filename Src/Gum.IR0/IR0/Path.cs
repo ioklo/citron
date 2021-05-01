@@ -11,23 +11,25 @@ namespace Gum.IR0
         public abstract record Normal(Name Name, ParamHash ParamHash, ImmutableArray<Path> TypeArgs) : Path;
 
         // Reserved 
-        public record Tuple : Reserved;
-        public record TypeVar(int Depth, int Index) : Reserved;
-        public record Void : Reserved
+        public record TupleType : Reserved;
+        public record TypeVarType(int Depth, int Index) : Reserved;
+        public record VoidType : Reserved
         {
-            public static readonly Path Instance = new Void();
-            Void() { }
+            public static readonly Path Instance = new VoidType();
+            VoidType() { }
         }
 
         // Box<int>
-        public record Box(Path Type) : Reserved;
-        public record Ref(Path Type) : Reserved;
+        public record BoxType(Path Type) : Reserved;
+        public record RefType(Path Type) : Reserved;
         // TRef<T> => ref<int> (if T is int), string (if T is string)
-        public record GenericRef(Path Type) : Reserved;
+        public record GenericRefType(Path Type) : Reserved;
 
         // Func<params array<int>> interface like type
-        public record Func : Reserved;
-        public record Nullable(Path Type) : Reserved;
+        public record FuncType : Reserved;
+        public record NullableType(Path Type) : Reserved;
+        public record AnonymousSeqType(Path SeqFunc) : Reserved;
+        public record AnonymousLambdaType(Path.Normal Lambda) : Reserved;
 
         public record Root(ModuleName ModuleName, NamespacePath NamespacePath, Name Name, ParamHash ParamHash, ImmutableArray<Path> TypeArgs) 
             : Normal(Name, ParamHash, TypeArgs);
@@ -66,11 +68,6 @@ namespace Gum.IR0
                     rootPath.Name.Equals(new Name.Normal("List"));
 
             return false;
-        }
-
-        public static bool IsLambda(this Path.Normal path)
-        {
-            return path.Name is Name.AnonymousLambda;
-        }
+        }        
     }
 }

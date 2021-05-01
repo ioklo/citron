@@ -124,7 +124,7 @@ namespace Gum.IR0Evaluator
             {
                 return new StringValue();
             }
-            else if (typePath.Equals(R.Path.Void.Instance))
+            else if (typePath.Equals(R.Path.VoidType.Instance))
             {
                 return VoidValue.Instance;
             }
@@ -133,11 +133,11 @@ namespace Gum.IR0Evaluator
                 return new ListValue();
             }
 
-            // MyType<bool>.Func<int, short>.Lambda<0>
-            else if (typePath is R.Path.Normal normalPath && R.PathExtensions.IsLambda(normalPath))
+            // `AnonymousLambdaType(MyType<bool>.Func<int, short>.Lambda(0))
+            else if (typePath is R.Path.AnonymousLambdaType lambdaType)
             {
-                var lambdaDecl = context.GetLambdaDecl(normalPath);
-                var typeContext = context.GetTypeContext(normalPath);
+                var lambdaDecl = context.GetLambdaDecl(lambdaType.Lambda);
+                var typeContext = context.GetTypeContext(lambdaType.Lambda);
                 
                 Value? capturedThis = null;
                 if (lambdaDecl.CapturedStatement.ThisType != null)
@@ -156,7 +156,7 @@ namespace Gum.IR0Evaluator
                 }
 
                 return new LambdaValue(capturedThis, capturesBuilder.ToImmutable());
-            }
+            }            
 
             throw new NotImplementedException();
 

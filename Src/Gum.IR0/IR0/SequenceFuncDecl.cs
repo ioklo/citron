@@ -13,7 +13,7 @@ namespace Gum.IR0
 
         public Name Name { get; }
         public bool IsThisCall { get; }
-        public Type YieldType { get; }
+        public Path YieldType { get; }
         public ImmutableArray<string> TypeParams { get; }
         public ImmutableArray<ParamInfo> ParamInfos { get; }
         public Stmt Body { get; }

@@ -11,7 +11,6 @@
         public record OpDec : Name;
 
         // anonymous type names
-        public record AnonymousLambda(LambdaId lambdaId) : Name;
-        public record AnonymousSeq(SequenceId seqId) : Name;
+        public record Lambda(LambdaId lambdaId) : Name;
     }
 }

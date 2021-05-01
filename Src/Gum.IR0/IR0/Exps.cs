@@ -124,7 +124,6 @@ namespace Gum.IR0
     public partial class CallSeqFuncExp : Exp
     {
         public Path.Normal SeqFunc { get; }
-        public ImmutableArray<Type> TypeArgs { get; }
         public Loc? Instance { get; }
         public ImmutableArray<Exp> Args { get; }
         // public bool NeedHeapAlloc { get; } Heap으로 할당시킬지 여부

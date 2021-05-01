@@ -162,18 +162,23 @@ namespace Gum.IR0Evaluator.Test
         }
 
         // without typeArgs
-        Path.Normal MakeTestRootFunc(Name name)
+        Path.Normal RootPath(Name name)
         {            
             return new Path.Root(moduleName, NamespacePath.Root, name, ParamHash.None, default);
         }
-        
+
+        Path.Normal RootPath(Name name, ImmutableArray<Path> paramTypes, ImmutableArray<Path> typeArgs)
+        {
+            return new Path.Root(moduleName, NamespacePath.Root, name, new ParamHash(typeArgs.Length, paramTypes), typeArgs);
+        }
+
         [Fact]
         public async Task PrivateGlobalVariableExp_GetGlobalValueInFunc()
         {
             var func0 = new NormalFuncDecl(default, "TestFunc", false, default, default, RBlock(
                 PrintStringCmdStmt(new GlobalVarLoc("x"))));
             
-            var func = MakeTestRootFunc("TestFunc");
+            var func = RootPath("TestFunc");
 
             var topLevelStmts = Arr<Stmt>
             (
@@ -206,6 +211,9 @@ namespace Gum.IR0Evaluator.Test
                         new LoadExp(LocalVar("y")),
                         new IntLiteralExp(3)))));
 
+            var funcF = RootPath("F", Arr(Path.Int, Path.Int), default);
+            var seqTypeF = new Path.AnonymousSeqType(funcF);
+
             var stmts = Arr<Stmt>
             (
                 new ForeachStmt(
@@ -213,8 +221,7 @@ namespace Gum.IR0Evaluator.Test
                     "e",
                     new TempLoc(
                         new CallSeqFuncExp(
-                            MakeTestRootFunc("F"),
-                            default,
+                            funcF,
                             null,
                             Arr<Exp>(
                                 new IntLiteralExp(1),
@@ -222,9 +229,7 @@ namespace Gum.IR0Evaluator.Test
                             )
                         ),
                         
-                        new Path.Root(moduleName, NamespacePath.Root, Anony
-
-                        new AnonymousSeqType(seqDeclId, TypeContext.Empty)
+                        seqTypeF
                     ),
 
                     PrintIntCmdStmt(new LocalVarLoc("e"))
@@ -544,21 +549,21 @@ namespace Gum.IR0Evaluator.Test
         [Fact]
         public async Task ReturnStmt_ExitsFuncImmediately()
         {
-            var funcId = new DeclId(0);
-
-            var func = new NormalFuncDecl(funcId, false, default, default,
+            var funcDecl = new NormalFuncDecl(default, "F", false, default, default,
                 RBlock(
                     new ReturnStmt(null),
                     PrintStringCmdStmt("Wrong")
                 )
             );
 
+            var func = RootPath("F");
+
             var stmts = Arr<Stmt> (
-                new ExpStmt(new CallFuncExp(new Func(funcId, TypeContext.Empty), null, default)),
+                new ExpStmt(new CallFuncExp(func, null, default)),
                 PrintStringCmdStmt("Completed")
             );
 
-            var output = await EvalAsync(Arr<Decl>(func), stmts);
+            var output = await EvalAsync(Arr<Decl>(funcDecl), stmts);
             Assert.Equal("Completed", output);
         }
 
@@ -573,21 +578,21 @@ namespace Gum.IR0Evaluator.Test
 
         [Fact]
         public async Task ReturnStmt_SetReturnValueToCaller()
-        {
-            var funcId = new DeclId(0);
-
-            var func = new NormalFuncDecl(funcId, false, default, default,
+        {   
+            var funcDecl = new NormalFuncDecl(default, "F", false, default, default,
                 RBlock(
                     new ReturnStmt(new IntLiteralExp(77)),
                     PrintStringCmdStmt("Wrong")
                 )
             );
 
+            var func = RootPath("F");
+
             var stmts = Arr<Stmt> (
-                PrintIntCmdStmt(new CallFuncExp(new Func(funcId, TypeContext.Empty), null, default))
+                PrintIntCmdStmt(new CallFuncExp(func, null, default))
             );
 
-            var output = await EvalAsync(Arr<Decl>(func), stmts);
+            var output = await EvalAsync(Arr<Decl>(funcDecl), stmts);
             Assert.Equal("77", output);
         }
 
@@ -634,24 +639,16 @@ namespace Gum.IR0Evaluator.Test
                 );
             }
 
-            var lambdaDeclId0 = new DeclId(0);
-            var lambdaDecl0 = new LambdaDecl(lambdaDeclId0, null, default, default, PrintNumbersStmt(5));
-            var lambdaType0 = new AnonymousLambdaType(lambdaDeclId0);
-
-            var lambdaDeclId1 = new DeclId(1);
-            var lambdaDecl1 = new LambdaDecl(lambdaDeclId1, null, default, default, PrintNumbersStmt(5));
-            var lambdaType1 = new AnonymousLambdaType(lambdaDeclId1);
-
             var stmts = Arr<Stmt> (
                 new AwaitStmt(
                     RBlock(
-                        new TaskStmt(lambdaType0),
-                        new TaskStmt(lambdaType1)
+                        new TaskStmt(new CapturedStatement(null, default, PrintNumbersStmt(5))),
+                        new TaskStmt(new CapturedStatement(null, default, PrintNumbersStmt(5)))
                     )
                 )
             );
 
-            var output = await EvalAsync(Arr<Decl>(lambdaDecl0, lambdaDecl1), stmts);
+            var output = await EvalAsync(default, stmts);
 
             // 01234 01234 두개가 그냥 섞여 있을 것이다.
 
@@ -688,27 +685,19 @@ namespace Gum.IR0Evaluator.Test
                 );
             }
 
-            var lambdaDeclId0 = new DeclId(0);
-            var lambdaDecl0 = new LambdaDecl(lambdaDeclId0, null, Arr<TypeAndName>(new TypeAndName(Path.Int, "count")), default, PrintNumbersStmt());
-            var anonymousLambdaType0 = new AnonymousLambdaType(lambdaDeclId0);
-
-            var lambdaDeclId1 = new DeclId(1);
-            var lambdaDecl1 = new LambdaDecl(lambdaDeclId1, null, Arr<TypeAndName>(new TypeAndName(Path.Int, "count")), default, PrintNumbersStmt());
-            var anonymousLambdaType1 = new AnonymousLambdaType(lambdaDeclId1);
-
             var stmts = Arr<Stmt> (
                 RLocalVarDeclStmt(Path.Int, "count", new IntLiteralExp(5)),
 
                 new AwaitStmt(
                     RBlock(
-                        new TaskStmt(anonymousLambdaType0),
+                        new TaskStmt(new CapturedStatement(null, Arr(new TypeAndName(Path.Int, "count")), PrintNumbersStmt())),
                         new ExpStmt(new AssignExp(LocalVar("count"), new IntLiteralExp(4))),
-                        new TaskStmt(anonymousLambdaType1)
+                        new TaskStmt(new CapturedStatement(null, Arr(new TypeAndName(Path.Int, "count")), PrintNumbersStmt()))
                     )
                 )
             );
 
-            var output = await EvalAsync(Arr<Decl>(lambdaDecl0, lambdaDecl1), stmts);
+            var output = await EvalAsync(default, stmts);
 
             // 01234 01234 두개가 그냥 섞여 있을 것이다.
 
@@ -749,38 +738,32 @@ namespace Gum.IR0Evaluator.Test
                 );
             }
 
-            var lambdaDeclId0 = new DeclId(0);
-            var lambdaDecl0 = new LambdaDecl(lambdaDeclId0, null, default, default, PrintNumbersStmt(5));
-            var anonymousLambdaType0 = new AnonymousLambdaType(lambdaDeclId0);
-
-            var lambdaDeclId1 = new DeclId(1);
-            var lambdaDecl1 = new LambdaDecl(lambdaDeclId1, null, default, default, PrintNumbersStmt(5));
-            var anonymousLambdaType1 = new AnonymousLambdaType(lambdaDeclId1);
-
             var stmts = Arr<Stmt> (
                 new AwaitStmt(
                     RBlock(
-                        new AsyncStmt(anonymousLambdaType0),
-                        new AsyncStmt(anonymousLambdaType1)
+                        new AsyncStmt(new CapturedStatement(null, default, PrintNumbersStmt(5))),
+                        new AsyncStmt(new CapturedStatement(null, default, PrintNumbersStmt(5)))
                     )
                 )
             );
 
-            var output = await EvalAsync(Arr<Decl>(lambdaDecl0, lambdaDecl1), stmts);
+            var output = await EvalAsync(default, stmts);
 
             Assert.Equal("0011223344", output);
         }
 
+        // seq int F0() { ... }
+        // seq int F1() { ... }
         [Fact]
         public async Task YieldStmt_GenerateElementForInnerMostForeachStmt()
         {
-            var seqFunc0Id = new DeclId(0);
-            var seqFunc1Id = new DeclId(1);
+            var seqFunc0 = RootPath("F0");
+            var seqFunc1 = RootPath("F1");
 
-            var seqFunc0 = new SequenceFuncDecl(seqFunc0Id, false, Path.Int, default, default,
+            var seqFuncDecl0 = new SequenceFuncDecl(default, "F0", false, Path.Int, default, default,
                 new ForeachStmt(
                     Path.Int, "elem", 
-                    new TempLoc(new CallSeqFuncExp(seqFunc1Id, TypeContext.Empty, null, default), new AnonymousSeqType(seqFunc1Id, TypeContext.Empty)),
+                    new TempLoc(new CallSeqFuncExp(seqFunc1, null, default), new Path.AnonymousSeqType(seqFunc1)),
                     RBlock(
                         PrintIntCmdStmt(new LocalVarLoc("elem")),
                         new YieldStmt(new LoadExp(LocalVar("elem")))
@@ -788,7 +771,7 @@ namespace Gum.IR0Evaluator.Test
                 )
             );
 
-            var seqFunc1 = new SequenceFuncDecl(seqFunc1Id, false, Path.Int, default, default,
+            var seqFuncDecl1 = new SequenceFuncDecl(default, "F1", false, Path.Int, default, default,
                 RBlock(
                     new YieldStmt(new IntLiteralExp(34)),
                     new YieldStmt(new IntLiteralExp(56))
@@ -796,11 +779,11 @@ namespace Gum.IR0Evaluator.Test
             );
 
             var stmts = Arr<Stmt>(
-                new ForeachStmt(Path.Int, "x", new TempLoc(new CallSeqFuncExp(seqFunc0Id, TypeContext.Empty, null, default), new AnonymousSeqType(seqFunc0Id, TypeContext.Empty)),
+                new ForeachStmt(Path.Int, "x", new TempLoc(new CallSeqFuncExp(seqFunc0, null, default), new Path.AnonymousSeqType(seqFunc0)),
                     PrintIntCmdStmt(new LocalVarLoc("x")))
             );
 
-            var output = await EvalAsync(Arr<Decl>(seqFunc0, seqFunc1), stmts);
+            var output = await EvalAsync(Arr<Decl>(seqFuncDecl0, seqFuncDecl1), stmts);
 
             Assert.Equal("34345656", output);
         }
@@ -923,10 +906,11 @@ namespace Gum.IR0Evaluator.Test
         [Fact]
         public async Task CallFuncExp_EvaluatesArgumentsInOrder()
         {
-            var printFuncId = new DeclId(0);
-            var testFuncId = new DeclId(1);
+            var printFunc = RootPath("Print", Arr(Path.Int), default);
+            var testFunc = RootPath("TestFunc", Arr(Path.Int, Path.Int), default);
 
-            var printFunc = new NormalFuncDecl(printFuncId, false, default, Arr(new ParamInfo(Path.Int, "x")),
+            // Print(int x)
+            var printFuncDecl = new NormalFuncDecl(default, "Print", false, default, Arr(new ParamInfo(Path.Int, "x")),
 
                 RBlock(
                     PrintIntCmdStmt(new LocalVarLoc("x")),
@@ -934,20 +918,21 @@ namespace Gum.IR0Evaluator.Test
                 )
             );
 
-            var testFunc = new NormalFuncDecl(testFuncId, false, default, Arr(new ParamInfo(Path.Int, "i"), new ParamInfo(Path.Int, "j"), new ParamInfo(Path.Int, "k")),
+            // TestFunc(int i, int j, int k)
+            var testFuncDecl = new NormalFuncDecl(default, "TestFunc", false, default, Arr(new ParamInfo(Path.Int, "i"), new ParamInfo(Path.Int, "j"), new ParamInfo(Path.Int, "k")),
 
                 PrintStringCmdStmt("TestFunc")
 
             );
 
             Exp MakePrintCall(int v) =>
-                new CallFuncExp(new Func(printFuncId, TypeContext.Empty), null, Arr<Exp>(new IntLiteralExp(v)));
+                new CallFuncExp(printFunc, null, Arr<Exp>(new IntLiteralExp(v)));
 
             var stmts = Arr<Stmt>
             (
                 new ExpStmt(
                     new CallFuncExp(
-                        new Func(testFuncId, TypeContext.Empty), 
+                        testFunc, 
                         null, 
                         Arr(
                             MakePrintCall(1),
@@ -958,19 +943,20 @@ namespace Gum.IR0Evaluator.Test
                 )
             );
 
-            var output = await EvalAsync(Arr<Decl>(printFunc, testFunc), stmts);
+            var output = await EvalAsync(Arr<Decl>(printFuncDecl, testFuncDecl), stmts);
             Assert.Equal("123TestFunc", output);
         }
 
         [Fact]
         public async Task CallFuncExp_ReturnsValueProperly()
         {
-            var funcId = new DeclId(0);
-            var func = new NormalFuncDecl(funcId, false, default, default, new ReturnStmt(RString("Hello World")));
+            var func = RootPath("F");
+            // F() { return "hello world"; }
+            var funcDecl = new NormalFuncDecl(default, "F", false, default, default, new ReturnStmt(RString("Hello World")));
 
-            var stmts = Arr<Stmt>(PrintStringCmdStmt(new CallFuncExp(new Func(funcId, TypeContext.Empty), null, default)));
+            var stmts = Arr<Stmt>(PrintStringCmdStmt(new CallFuncExp(func, null, default)));
 
-            var output = await EvalAsync(Arr<Decl>(func), stmts);
+            var output = await EvalAsync(Arr<Decl>(funcDecl), stmts);
             Assert.Equal("Hello World", output);
         }
 
@@ -978,19 +964,19 @@ namespace Gum.IR0Evaluator.Test
         [Fact]
         public async Task CallSeqFuncExp_ReturnsAnonymousSeqTypeValue()
         {
-            var seqFuncId = new DeclId(0);
-            var seqFunc = new SequenceFuncDecl(seqFuncId, false, Path.String, default, default, BlankStmt.Instance); // return nothing
+            var seqFunc = RootPath("F");
+            var seqFuncDecl = new SequenceFuncDecl(default, "F", false, Path.String, default, default, BlankStmt.Instance); // return nothing
 
             var stmts = Arr<Stmt>
             (
                 // 선언하자 마자 대입하기
-                RLocalVarDeclStmt(new AnonymousSeqType(seqFuncId, TypeContext.Empty), "x", new CallSeqFuncExp(seqFuncId, TypeContext.Empty, null, default)),
+                RLocalVarDeclStmt(new Path.AnonymousSeqType(seqFunc), "x", new CallSeqFuncExp(seqFunc, null, default)),
 
                 // 로컬 변수에 새 값 대입하기
-                new ExpStmt(new AssignExp(LocalVar("x"), new CallSeqFuncExp(seqFuncId, TypeContext.Empty, null, default)))
+                new ExpStmt(new AssignExp(LocalVar("x"), new CallSeqFuncExp(seqFunc, null, default)))
             );
 
-            await EvalAsync(Arr<Decl>(seqFunc), stmts);
+            await EvalAsync(Arr<Decl>(seqFuncDecl), stmts);
 
             // 에러가 안났으면 성공..
         }
@@ -998,39 +984,42 @@ namespace Gum.IR0Evaluator.Test
         [Fact]
         public async Task CallValueExp_EvaluateCallableAndArgumentsInOrder()
         {
-            var printFuncId = new DeclId(0);
-            var makeLambdaId = new DeclId(1);
+            var printFunc = RootPath("Print", Arr(Path.Int), default);
+            var makeLambda = RootPath("MakeLambda", Arr(Path.Int, Path.Int, Path.Int), default);
+            var lambdaId = new LambdaId(0);
+            var lambda = new Path.Nested(makeLambda, new Name.Lambda(lambdaId), ParamHash.None, default);
+            var lambdaType = new Path.AnonymousLambdaType(lambda);
 
-            var printFunc = new NormalFuncDecl(printFuncId, false, default, Arr(new ParamInfo(Path.Int, "x")),
+            // Print(int x) { 
+            var printFuncDecl = new NormalFuncDecl(default, "Print", false, default, Arr(new ParamInfo(Path.Int, "x")),
                 RBlock(
                     PrintIntCmdStmt(new LocalVarLoc("x")),
                     new ReturnStmt(new LoadExp(LocalVar("x")))
                 )
             );
 
-            var lambdaDeclId = new DeclId(2);
+            // MakeLambda() { return () => ;}
             var lambdaDecl = new LambdaDecl(
-                lambdaDeclId,
-                null,
-                default,
-                Arr(new ParamInfo(Path.Int, "i"), new ParamInfo(Path.Int, "j"), new ParamInfo(Path.Int, "k")),
-                PrintStringCmdStmt("TestFunc")
-            );            
-
-            var makeLambda = new NormalFuncDecl(makeLambdaId, false, default, default,
+                lambdaId,
+                new CapturedStatement(null, default, PrintStringCmdStmt("TestFunc")),
+                Arr(new ParamInfo(Path.Int, "i"), new ParamInfo(Path.Int, "j"), new ParamInfo(Path.Int, "k"))
+            );
+            
+            var makeLambdaDecl = new NormalFuncDecl(Arr(lambdaDecl), "MakeLambda", false, default, default,
                 RBlock(                    
                     PrintStringCmdStmt("MakeLambda"),
-                    new ReturnStmt(new LambdaExp(false, default))
+                    new ReturnStmt(new LambdaExp(lambda))
                 )
             );
 
             Exp MakePrintCall(int v) =>
-                new CallFuncExp(new Func(printFuncId, TypeContext.Empty), null, Arr<Exp>(new IntLiteralExp(v)));
+                new CallFuncExp(printFunc, null, Arr<Exp>(new IntLiteralExp(v)));
             
             var stmts = Arr<Stmt>
             (
                 new ExpStmt(
                     new CallValueExp(
+                        lambda,
                         new TempLoc(new CallFuncExp(new Func(makeLambdaId, TypeContext.Empty), null, default), new AnonymousLambdaType(lambdaDeclId)),
                         Arr(
                             MakePrintCall(1),
