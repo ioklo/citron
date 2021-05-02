@@ -16,6 +16,7 @@ using R = Gum.IR0;
 
 namespace Gum.IR0Translator
 {
+    // Root Analyzer
     partial class Analyzer
     {
         InternalBinaryOperatorQueryService internalBinOpQueryService;
@@ -34,7 +35,7 @@ namespace Gum.IR0Translator
             var analyzer = new Analyzer(internalBinOpQueryService, context);
 
             // pass1, pass2
-            var pass1 = new CollectingGlobalVarPass(analyzer);
+            var pass1 = new CollectingGlobalVarPass(analyzer); // 말이 틀렸다. TopLevelStmt를 여기서 분석하고 있다..
             IR0Translator.Misc.VisitScript(script, pass1);
 
             var pass2 = new TypeCheckingAndTranslatingPass(analyzer);
