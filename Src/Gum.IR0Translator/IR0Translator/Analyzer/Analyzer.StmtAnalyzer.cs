@@ -24,18 +24,22 @@ namespace Gum.IR0Translator
         {
             public R.Stmt Stmt { get; }
         }
-
-        [AutoConstructor]
-        partial struct StmtAnalyzer
+        
+        partial class StmtAnalyzer
         {
+            ExpAnalyzer expAnalyzer;
+
+            StmtAnalyzer()
+            {
+                expAnalyzer = new ExpAnalyzer();
+            }
+
             // CommandStmt에 있는 expStringElement를 분석한다
             StmtResult AnalyzeCommandStmt(S.CommandStmt cmdStmt)
             {
                 var builder = ImmutableArray.CreateBuilder<R.StringExp>();
                 foreach (var cmd in cmdStmt.Commands)
                 {
-                    ExpAnalyzer expAnalyzer = new ExpAnalyzer(cmd);
-
                     var expResult = expAnalyzer.AnalyzeStringExp(cmd);
                     Debug.Assert(expResult.Exp is R.StringExp);
                     builder.Add((R.StringExp)expResult.Exp);

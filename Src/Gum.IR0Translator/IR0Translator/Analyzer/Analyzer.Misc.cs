@@ -12,7 +12,7 @@ namespace Gum.IR0Translator
 {
     partial class Analyzer
     {   
-        static ImmutableArray<TypeValue> GetTypeValues(ImmutableArray<S.TypeExp> typeExps, Context context)
+        ImmutableArray<TypeValue> GetTypeValues(ImmutableArray<S.TypeExp> typeExps)
         {
             return typeExps.Select(typeExp => context.GetTypeValueByTypeExp(typeExp)).ToImmutableArray();
         }        

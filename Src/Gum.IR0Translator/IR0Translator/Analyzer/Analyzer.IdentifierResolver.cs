@@ -13,13 +13,6 @@ namespace Gum.IR0Translator
 {
     partial class Analyzer
     {
-        IdentifierResult ResolveIdentifier(S.IdentifierExp idExp, ResolveHint resolveHint)
-        {
-            var typeArgs = GetTypeValues(idExp.TypeArgs, context);
-            var resolver = new IdExpIdentifierResolver(idExp.Value, typeArgs, resolveHint, context);
-            return resolver.Resolve();
-        }        
-
         R.Loc BuildMemberLoc(R.Loc parent, TypeValue parentType, string memberName)
         {
             switch(parentType)
@@ -44,7 +37,7 @@ namespace Gum.IR0Translator
             }
 
             throw new UnreachableCodeException();
-        }        
+        }
         
         struct IdExpIdentifierResolver
         {
