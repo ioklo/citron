@@ -24,8 +24,14 @@ namespace Gum.IR0Translator
     // 어떤 Exp에서 타입 정보 등을 알아냅니다
     partial class Analyzer
     {
-        class ExpAnalyzer
+        struct ExpAnalyzer
         {
+            LocalContext localContext;
+            public ExpAnalyzer(LocalContext localContext)
+            {
+                this.localContext = localContext;
+            }
+
             // x
             ExpResult AnalyzeIdExp(S.IdentifierExp idExp, ResolveHint resolveHint)
             {
@@ -94,7 +100,7 @@ namespace Gum.IR0Translator
                 public TypeValue TypeValue { get; }
             }
 
-            ExpExpResult AnalyzeStringExp(S.StringExp stringExp)
+            public ExpExpResult AnalyzeStringExp(S.StringExp stringExp)
             {
                 var bFatal = false;
 

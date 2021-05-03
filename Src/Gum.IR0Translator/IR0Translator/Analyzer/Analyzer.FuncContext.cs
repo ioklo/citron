@@ -25,28 +25,10 @@ namespace Gum.IR0Translator
         }
 
         // 현재 분석중인 스코프 정보
-        abstract class ScopeContext
+
+        abstract class CallableContext
         {
-            // 로컬 관련
-            public abstract void AddLocalVarInfo(string name, TypeValue typeValue);
-            public abstract LocalVarInfo? GetLocalVarInfo(string varName);
-            public abstract bool DoesLocalVarNameExistInScope(string name); // 이 스코프 안에 존재하는가
-            public abstract bool IsLocalVarOutsideLambda(string name);
-
-            // 함수/람다 관련 
-            //public abstract TypeValue? GetRetTypeValue();
-            //public abstract void SetRetTypeValue(TypeValue retTypeValue);
-            //public abstract void AddLambdaCapture(LambdaCapture lambdaCapture);
-            //public abstract bool IsSeqFunc();            
-
-            public abstract TResult ExecInLambdaScope<TResult>(TypeValue? lambdaRetTypeValue, Func<TResult> action);
-            public abstract void ExecInLocalScope(Action action);
-            public abstract TResult ExecInLocalScope<TResult>(Func<TResult> func);
-            
-        }
-
-        abstract class FuncScopeContext
-        {
+            // TODO: 이름 수정, Lambda가 아니라 Callable
             public abstract LocalVarInfo? GetLocalVarOutsideLambda(string varName);
             public abstract TypeValue? GetRetTypeValue();
             public abstract void SetRetTypeValue(TypeValue retTypeValue);
@@ -54,9 +36,41 @@ namespace Gum.IR0Translator
             public abstract bool IsSeqFunc();            
         }
 
-        class LambdaScopeContext : FuncScopeContext
+        class FuncContext : CallableContext
         {
-            ScopeContext parentContext;
+            TypeValue? retTypeValue; // 리턴 타입이 미리 정해져 있다면 이걸 쓴다
+            bool bSequence;          // 시퀀스 여부
+
+            public override LocalVarInfo? GetLocalVarOutsideLambda(string varName)
+            {
+                // TODO: 지금은 InnerFunc를 구현하지 않으므로, Outside가 없다. 나중에 지원
+                return null;
+            }
+
+            public override TypeValue? GetRetTypeValue()
+            {
+                return retTypeValue;
+            }
+
+            public override void SetRetTypeValue(TypeValue retTypeValue)
+            {
+                this.retTypeValue = retTypeValue;
+            }
+
+            public override void AddLambdaCapture(LambdaCapture lambdaCapture)
+            {
+                throw new UnreachableCodeException();
+            }
+
+            public override bool IsSeqFunc() 
+            { 
+                return bSequence; 
+            }
+        }
+
+        class LambdaContext : CallableContext
+        {
+            LocalContext parentContext;
             TypeValue? retTypeValue;
             bool bCaptureThis;
             Dictionary<string, TypeValue> localCaptures;
@@ -99,102 +113,6 @@ namespace Gum.IR0Translator
                 return false; // 아직 sequence lambda 기능이 없으므로 
             }
 
-            public override bool IsLocalVarOutsideLambda(string name)
-            {
-                var localVarInfo = parentContext.GetLocalVarInfo(name);
-                return localVarInfo != null;
-
-                if (localVarsByName.ContainsKey(name))
-                    return false;
-
-                if (localVarsOutsideLambda.ContainsKey(name))
-                    return true;
-
-                // 아무데서도 못찾았으면 false
-                return false;
-            }
-
-        }
-
-        // 로컬 변수를 
-        class LocalContext : ScopeContext
-        {
-            FuncScopeContext funcScopeContext; // 이 로컬에서 가장 가까운 함수 컨텍스트
-            ScopeContext parentContext;
-
-            ImmutableDictionary<string, LocalVarInfo> localVarInfos;
-
-            public override void AddLocalVarInfo(string name, TypeValue typeValue)
-            {
-                localVarInfos.SetItem(name, new LocalVarInfo(name, typeValue));
-            }
-
-            public override LocalVarInfo? GetLocalVarInfo(string varName)
-            {
-                return localVarInfos.GetValueOrDefault(varName);
-            }
-            
-            public LocalVarInfo? GetLocalVarOutsideLambda(string varName)
-            {
-                return funcScopeContext.GetLocalVarOutsideLambda(varName);
-            }
-
-            public TypeValue? GetRetTypeValue()
-            {
-                return funcScopeContext.GetRetTypeValue();
-            }
-
-            public void SetRetTypeValue(TypeValue retTypeValue)
-            {
-                funcScopeContext.SetRetTypeValue(retTypeValue);
-            }
-
-            public override void AddLambdaCapture(LambdaCapture lambdaCapture)
-            {
-                parentContext.AddLambdaCapture(lambdaCapture);
-            }
-        }
-
-        // 람다 안쪽        
-        class LambdaContext : ScopeContext
-        {
-            ScopeContext parentContext;
-            TypeValue? retTypeValue;            
-
-            public override LocalVarInfo? GetLocalVarOutsideLambda(string varName)
-            {
-                return parentContext.GetLocalVarInfo(varName);
-            }
-
-            public override TypeValue? GetRetTypeValue()
-            {
-                return retTypeValue;
-            }
-
-            public override void SetRetTypeValue(TypeValue retTypeValue)
-            {
-                this.retTypeValue = retTypeValue;
-            }           
-            
-            public override TResult ExecInLambdaScope<TResult>(TypeValue? lambdaRetTypeValue, Func<TResult> action);
-            public override bool DoesLocalVarNameExistInScope(string name)
-            {
-                return localVarInfos.ContainsKey(name);
-            }
-
-            public override void ExecInLocalScope(Action action);
-            public override TResult ExecInLocalScope<TResult>(Func<TResult> func);
-
-            public override bool IsLocalVarOutsideLambda(string name)
-            {
-                // 현재 로컬에 존재하면 false
-                if (localVarsByName.ContainsKey(name))
-                    return false;
-
-                var localVarInfo = parentContext.GetLocalVarInfo(name);
-                return localVarInfo != null;
-            }
-
             public ImmutableArray<R.TypeAndName> GetCapturedLocalVars()
             {
                 return localCaptures.Select(localCapture =>
@@ -210,8 +128,90 @@ namespace Gum.IR0Translator
                 return bCaptureThis;
             }
         }
-        
-        class FuncContext : ScopeContext
+
+        // 현재 분석이 진행되는 곳의 컨텍스트
+        class LocalContext
+        {
+            SharedContext sharedContext;
+            CallableContext callableContext; // 이 로컬에서 가장 가까운 함수/람다 컨텍스트
+            LocalContext? parentLocalContext;
+            ImmutableDictionary<string, LocalVarInfo> localVarInfos;
+            bool bLoop;
+
+            public LocalContext(CallableContext callableContext, LocalContext? parentLocalContext, bool bLoop)
+            {
+                this.callableContext = callableContext;
+                this.parentLocalContext = parentLocalContext;
+                this.localVarInfos = ImmutableDictionary<string, LocalVarInfo>.Empty;
+                this.bLoop = bLoop;
+            }
+
+            public LocalContext NewLocalContext(bool bLoop)
+            {
+                return new LocalContext(callableContext, this, bLoop);
+            }
+
+            public void AddLocalVarInfo(string name, TypeValue typeValue)
+            {
+                localVarInfos.SetItem(name, new LocalVarInfo(name, typeValue));
+            }
+
+            public LocalVarInfo? GetLocalVarInfo(string varName)
+            {
+                if (localVarInfos.TryGetValue(varName, out var info))
+                    return info;
+
+                if (parentLocalContext != null)
+                    return parentLocalContext.GetLocalVarInfo(varName);
+
+                return null;
+            }
+            
+            public LocalVarInfo? GetLocalVarOutsideLambda(string varName)
+            {
+                return callableContext.GetLocalVarOutsideLambda(varName);
+            }
+
+            public TypeValue? GetRetTypeValue()
+            {
+                return callableContext.GetRetTypeValue();
+            }
+
+            public void SetRetTypeValue(TypeValue retTypeValue)
+            {
+                callableContext.SetRetTypeValue(retTypeValue);
+            }
+
+            public void AddLambdaCapture(LambdaCapture lambdaCapture)
+            {
+                callableContext.AddLambdaCapture(lambdaCapture);
+            }
+
+            public bool IsLocalVarOutsideLambda(string name)
+            {
+                // 현재 로컬에 존재하면 false
+                if (localVarInfos.ContainsKey(name))
+                    return false;
+
+                var localVarInfo = callableContext.GetLocalVarOutsideLambda(name);
+                return localVarInfo != null;
+            }
+
+            public bool DoesLocalVarNameExistInScope(string name)
+            {
+                return localVarInfos.ContainsKey(name);
+            }
+
+            public bool IsInLoop()
+            {
+                if (bLoop) return true;
+                if (parentLocalContext != null) return parentLocalContext.IsInLoop();
+                return false;
+            }
+        }
+
+        // 람다 안쪽        
+        class FuncContext2
         {
             TypeValue? retTypeValue; // 리턴 타입이 미리 정해져 있다면 이걸 쓴다
             bool bSequence;          // 시퀀스 여부
@@ -219,7 +219,7 @@ namespace Gum.IR0Translator
             ScopedDictionary<string, LocalVarInfo> localVarsOutsideLambda; // 람다 구문 바깥에 있는 로컬 변수, 캡쳐대상이다
             ScopedDictionary<string, LocalVarInfo> localVarsByName;
 
-            public FuncContext(TypeValue? retTypeValue, bool bSequence)
+            public FuncContext2(TypeValue? retTypeValue, bool bSequence)
             {
                 this.retTypeValue = retTypeValue;
                 this.bSequence = bSequence;
@@ -324,17 +324,6 @@ namespace Gum.IR0Translator
                 }
             }
             
-            public bool IsLocalVarOutsideLambda(string name)
-            {
-                if (localVarsByName.ContainsKey(name))
-                    return false;
-
-                if (localVarsOutsideLambda.ContainsKey(name))
-                    return true;
-
-                // 아무데서도 못찾았으면 false
-                return false;
-            }            
         }
     }
 }

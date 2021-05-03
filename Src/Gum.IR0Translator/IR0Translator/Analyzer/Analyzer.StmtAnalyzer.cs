@@ -25,13 +25,15 @@ namespace Gum.IR0Translator
             public R.Stmt Stmt { get; }
         }
         
-        partial class StmtAnalyzer
+        partial struct StmtAnalyzer
         {
+            LocalContext localContext;
             ExpAnalyzer expAnalyzer;
 
-            StmtAnalyzer()
+            public StmtAnalyzer(LocalContext localContext)
             {
-                expAnalyzer = new ExpAnalyzer();
+                this.localContext = localContext;
+                this.expAnalyzer = new ExpAnalyzer(localContext);
             }
 
             // CommandStmt에 있는 expStringElement를 분석한다
@@ -217,49 +219,47 @@ namespace Gum.IR0Translator
 
             StmtResult AnalyzeForStmt(S.ForStmt forStmt)
             {
-                var result = context.ExecInLocalScope(() =>
+                var newLocalContext = localContext.NewLocalContext();
+                var newStmtAnalyzer = new StmtAnalyzer(newLocalContext);
+                
+                R.ForStmtInitializer? initializer = null;
+                if (forStmt.Initializer != null)
                 {
-                    R.ForStmtInitializer? initializer = null;
-                    if (forStmt.Initializer != null)
-                    {
-                        var initializerResult = AnalyzeForStmtInitializer(forStmt.Initializer);
-                        initializer = initializerResult.Initializer;
-                    }
+                    var initializerResult = newStmtAnalyzer.AnalyzeForStmtInitializer(forStmt.Initializer);
+                    initializer = initializerResult.Initializer;
+                }
 
-                    R.Exp? cond = null;
-                    if (forStmt.CondExp != null)
-                    {
+                R.Exp? cond = null;
+                if (forStmt.CondExp != null)
+                {
                     // 밑에서 쓰이므로 분석실패시 종료
-                    var condResult = AnalyzeExp_Exp(forStmt.CondExp, ResolveHint.None);
+                    var condResult = newExpAnalyzer.expAnalyzer.AnalyzeExp_Exp(forStmt.CondExp, ResolveHint.None);
 
                     // 에러가 나면 에러를 추가하고 계속 진행
                     if (!context.IsAssignable(context.GetBoolType(), condResult.TypeValue))
                             context.AddError(A1101_ForStmt_ConditionShouldBeBool, forStmt.CondExp);
 
                         cond = condResult.Exp;
-                    }
+                }
 
-                    R.Exp? continueInfo = null;
-                    if (forStmt.ContinueExp != null)
-                    {
-                        var continueResult = AnalyzeTopLevelExp_Exp(forStmt.ContinueExp, ResolveHint.None, A1103_ForStmt_ContinueExpShouldBeAssignOrCall);
-                        var contExpType = continueResult.TypeValue.GetRType();
-                        continueInfo = continueResult.Exp;
-                    }
+                R.Exp? continueInfo = null;
+                if (forStmt.ContinueExp != null)
+                {
+                    var continueResult = newExpAnalyzer.expAnalyzer.AnalyzeTopLevelExp_Exp(forStmt.ContinueExp, ResolveHint.None, A1103_ForStmt_ContinueExpShouldBeAssignOrCall);
+                    var contExpType = continueResult.TypeValue.GetRType();
+                    continueInfo = continueResult.Exp;
+                }
 
-                    return context.ExecInLoop(() =>
-                    {
-                        var bodyResult = AnalyzeStmt(forStmt.Body);
-                        return new R.ForStmt(initializer, cond, continueInfo, bodyResult.Stmt);
-                    });
-                });
+                var newLoopContext = localContext.NewLocalContext(true);
+                var newLoopStmtAnalyzer = new StmtAnalyzer(newLoopContext);
+                var bodyResult = newLoopStmtAnalyzer.AnalyzeStmt(forStmt.Body);
 
-                return new StmtResult(result);
+                return new StmtResult(new R.ForStmt(initializer, cond, continueInfo, bodyResult.Stmt));
             }
 
             StmtResult AnalyzeContinueStmt(S.ContinueStmt continueStmt)
             {
-                if (!context.IsInLoop())
+                if (!localContext.IsInLoop())
                     context.AddFatalError(A1501_ContinueStmt_ShouldUsedInLoop, continueStmt);
 
                 return new StmtResult(R.ContinueStmt.Instance);
@@ -267,7 +267,7 @@ namespace Gum.IR0Translator
 
             StmtResult AnalyzeBreakStmt(S.BreakStmt breakStmt)
             {
-                if (!context.IsInLoop())
+                if (!localContext.IsInLoop())
                 {
                     context.AddFatalError(A1601_BreakStmt_ShouldUsedInLoop, breakStmt);
                 }
@@ -289,12 +289,12 @@ namespace Gum.IR0Translator
                 // 리턴 값이 없을 경우
                 if (returnStmt.Value == null)
                 {
-                    var retTypeValue = context.GetRetTypeValue();
+                    var retTypeValue = localContext.GetRetTypeValue();
                     var voidTypeValue = VoidTypeValue.Instance;
 
                     if (retTypeValue == null)
                     {
-                        context.SetRetTypeValue(voidTypeValue);
+                        localContext.SetRetTypeValue(voidTypeValue);
                     }
                     else if (retTypeValue != VoidTypeValue.Instance)
                     {
@@ -337,21 +337,21 @@ namespace Gum.IR0Translator
                 bool bFatal = false;
                 var builder = ImmutableArray.CreateBuilder<R.Stmt>();
 
-                context.ExecInLocalScope(() =>
+                var newLocalContext = localContext.NewLocalContext();
+                var newStmtAnalyzer = new StmtAnalyzer(newLocalContext);
+
+                foreach (var stmt in blockStmt.Stmts)
                 {
-                    foreach (var stmt in blockStmt.Stmts)
+                    try
                     {
-                        try
-                        {
-                            var stmtResult = AnalyzeStmt(stmt);
-                            builder.Add(stmtResult.Stmt);
-                        }
-                        catch (FatalAnalyzeException)
-                        {
-                            bFatal = true;
-                        }
+                        var stmtResult = newStmtAnalyzer.AnalyzeStmt(stmt);
+                        builder.Add(stmtResult.Stmt);
                     }
-                });
+                    catch (FatalAnalyzeException)
+                    {
+                        bFatal = true;
+                    }
+                }
 
                 if (bFatal)
                     throw new FatalAnalyzeException();
@@ -378,13 +378,11 @@ namespace Gum.IR0Translator
 
             StmtResult AnalyzeAwaitStmt(S.AwaitStmt awaitStmt)
             {
-                var body = context.ExecInLocalScope(() =>
-                {
-                    var bodyResult = AnalyzeStmt(awaitStmt.Body);
-                    return bodyResult.Stmt;
-                });
+                var newLocalContext = localContext.NewLocalContext();
+                var newStmtAnalyzer = new StmtAnalyzer(newLocalContext);
 
-                return new StmtResult(new R.AwaitStmt(body));
+                var bodyResult = newStmtAnalyzer.AnalyzeStmt(awaitStmt.Body);
+                return new StmtResult(new R.AwaitStmt(bodyResult.Stmt));
             }
 
             StmtResult AnalyzeAsyncStmt(S.AsyncStmt asyncStmt)

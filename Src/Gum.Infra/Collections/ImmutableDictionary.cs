@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -86,6 +87,17 @@ namespace Gum.Collections
             if (dict == null) return false;
 
             return dict.ContainsKey(key);
+        }       
+
+        public bool TryGetValue(TKey key, [MaybeNullWhen(false)] out TValue value)
+        {
+            if (dict == null)
+            {
+                value = default;
+                return false;
+            }
+
+            return dict.TryGetValue(key, out value);
         }
     }    
 }
