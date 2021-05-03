@@ -27,6 +27,11 @@ namespace Gum.Collections
             {
                 return new ImmutableDictionary<TKey, TValue>(builder.ToImmutable());
             }
-        }        
+        }
+
+        public void ContainsKey()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

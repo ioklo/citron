@@ -80,5 +80,12 @@ namespace Gum.Collections
 
             return new Builder(dict.ToBuilder());
         }
+
+        public bool ContainsKey(TKey key)
+        {
+            if (dict == null) return false;
+
+            return dict.ContainsKey(key);
+        }
     }    
 }
