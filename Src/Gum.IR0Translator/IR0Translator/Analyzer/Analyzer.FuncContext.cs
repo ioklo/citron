@@ -132,6 +132,7 @@ namespace Gum.IR0Translator
         // 현재 분석이 진행되는 곳의 컨텍스트
         class LocalContext
         {
+
             SharedContext sharedContext;
             CallableContext callableContext; // 이 로컬에서 가장 가까운 함수/람다 컨텍스트
             LocalContext? parentLocalContext;

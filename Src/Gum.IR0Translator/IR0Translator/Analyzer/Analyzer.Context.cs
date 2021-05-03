@@ -25,7 +25,7 @@ namespace Gum.IR0Translator
             IErrorCollector errorCollector;
 
             // 현재 분석되고 있는 함수
-            FuncContext curFunc;
+            CallableContext curFunc;
             bool bInLoop;
             List<R.Stmt> topLevelStmts;
             RDeclBuilder declBuilder;
@@ -43,7 +43,7 @@ namespace Gum.IR0Translator
                 this.typeExpTypeValueService = typeExpTypeValueService;
                 this.errorCollector = errorCollector;
                 
-                curFunc = new FuncContext(itemValueFactory.Int, false);
+                curFunc = new CallableContext(itemValueFactory.Int, false);
                 bInLoop = false;
                 internalGlobalVarRepo = new InternalGlobalVariableRepository();
 
@@ -113,46 +113,6 @@ namespace Gum.IR0Translator
             public void AddInternalGlobalVarInfo(M.Name name, TypeValue typeValue)
             {
                 internalGlobalVarRepo.AddInternalGlobalVariable(name, typeValue);
-            }
-
-            public void ExecInLocalScope(Action action)
-            {
-                curFunc.ExecInLocalScope(action);
-            }
-
-            public TResult ExecInLocalScope<TResult>(Func<TResult> func)
-            {
-                return curFunc.ExecInLocalScope(func);                
-            }
-
-            public TResult ExecInLoop<TResult>(Func<TResult> func)
-            {
-                var bPrevInLoop = bInLoop;
-                bInLoop = true;
-
-                try
-                {
-                    return func.Invoke();
-                }
-                finally
-                {
-                    bInLoop = bPrevInLoop;
-                }
-            }
-
-            public void ExecInLoop(Action action)
-            {
-                var bPrevInLoop = bInLoop;
-                bInLoop = true;
-
-                try
-                {
-                    action.Invoke();
-                }
-                finally
-                {
-                    bInLoop = bPrevInLoop;
-                }
             }            
             
             public TResult ExecInLambdaScope<TResult>(TypeValue? lambdaRetTypeValue, Func<TResult> action)
@@ -165,7 +125,7 @@ namespace Gum.IR0Translator
                 var retTypeValue = GetTypeValueByTypeExp(funcDecl.RetType);
 
                 var prevFunc = curFunc;
-                curFunc = new FuncContext(retTypeValue, funcDecl.IsSequence);
+                curFunc = new CallableContext(retTypeValue, funcDecl.IsSequence);
 
                 try
                 {
@@ -182,7 +142,7 @@ namespace Gum.IR0Translator
                 var retTypeValue = GetTypeValueByTypeExp(funcDecl.RetType);
 
                 var prevFunc = curFunc;
-                curFunc = new FuncContext(retTypeValue, funcDecl.IsSequence);
+                curFunc = new CallableContext(retTypeValue, funcDecl.IsSequence);
 
                 try
                 {

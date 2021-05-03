@@ -27,6 +27,7 @@ namespace Gum.IR0Translator
         struct ExpAnalyzer
         {
             LocalContext localContext;
+
             public ExpAnalyzer(LocalContext localContext)
             {
                 this.localContext = localContext;

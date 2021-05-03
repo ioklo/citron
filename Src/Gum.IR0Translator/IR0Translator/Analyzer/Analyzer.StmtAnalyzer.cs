@@ -219,7 +219,7 @@ namespace Gum.IR0Translator
 
             StmtResult AnalyzeForStmt(S.ForStmt forStmt)
             {
-                var newLocalContext = localContext.NewLocalContext();
+                var newLocalContext = localContext.NewLocalContext(false);
                 var newStmtAnalyzer = new StmtAnalyzer(newLocalContext);
                 
                 R.ForStmtInitializer? initializer = null;
@@ -314,7 +314,7 @@ namespace Gum.IR0Translator
                         var valueResult = AnalyzeExp_Exp(returnStmt.Value, ResolveHint.None);
 
                         // 리턴값이 안 적혀 있었으므로 적는다
-                        context.SetRetTypeValue(valueResult.TypeValue);
+                        localContext.SetRetTypeValue(valueResult.TypeValue);
 
                         return new StmtResult(new R.ReturnStmt(valueResult.Exp));
                     }
@@ -337,7 +337,7 @@ namespace Gum.IR0Translator
                 bool bFatal = false;
                 var builder = ImmutableArray.CreateBuilder<R.Stmt>();
 
-                var newLocalContext = localContext.NewLocalContext();
+                var newLocalContext = localContext.NewLocalContext(false);
                 var newStmtAnalyzer = new StmtAnalyzer(newLocalContext);
 
                 foreach (var stmt in blockStmt.Stmts)
