@@ -85,7 +85,7 @@ namespace Gum.IR0Translator
             IdentifierResult GetInternalGlobalVarInfo()
             {
                 if (typeArgs.Length != 0) return NotFoundIdentifierResult.Instance;
-
+                
                 var varInfo = context.GetInternalGlobalVarInfo(idName);
                 if (varInfo == null) return NotFoundIdentifierResult.Instance;
 

@@ -22,11 +22,11 @@ namespace Gum.IR0Translator
             GlobalItemValueFactory globalItemValueFactory;
 
             TypeExpInfoService typeExpTypeValueService;            
-            IErrorCollector errorCollector;            
+            IErrorCollector errorCollector;
 
             // 현재 분석되고 있는 함수
             FuncContext curFunc;
-            bool bInLoop;            
+            bool bInLoop;
             List<R.Stmt> topLevelStmts;
             RDeclBuilder declBuilder;
 
@@ -207,11 +207,6 @@ namespace Gum.IR0Translator
             public bool IsStringType(TypeValue typeValue)
             {
                 return itemValueFactory.String.Equals(typeValue);
-            }
-
-            public bool GetTypeValueByName(string varName, [NotNullWhen(true)] out TypeValue? localVarTypeValue)
-            {
-                throw new NotImplementedException();
             }
             
             public bool IsInLoop()

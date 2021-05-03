@@ -5,6 +5,8 @@ namespace Gum.IR0Translator
 {
     partial class Analyzer
     {
+        // GlobalVar 
+
         class CollectingGlobalVarPass : ISyntaxScriptVisitor
         {
             Analyzer analyzer;

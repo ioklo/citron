@@ -24,7 +24,7 @@ namespace Gum.IR0Translator
     // 어떤 Exp에서 타입 정보 등을 알아냅니다
     partial class Analyzer
     {
-        struct ExpAnalyzer
+        class ExpAnalyzer
         {
             // x
             ExpResult AnalyzeIdExp(S.IdentifierExp idExp, ResolveHint resolveHint)
