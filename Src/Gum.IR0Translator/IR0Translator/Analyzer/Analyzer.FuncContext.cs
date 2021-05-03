@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 using R = Gum.IR0;
+using Pretune;
 
 namespace Gum.IR0Translator
 {
@@ -23,8 +24,66 @@ namespace Gum.IR0Translator
             }
         }
 
-        // 현재 분석되고 있는 함수 정보
-        class FuncContext
+        // 현재 분석중인 스코프 정보
+        abstract class ScopeContext
+        {
+            public abstract void AddLocalVarInfo(string name, TypeValue typeValue);
+            public abstract LocalVarInfo? GetLocalVarOutsideLambda(string varName);
+            public abstract LocalVarInfo? GetLocalVarInfo(string varName);
+            public abstract TypeValue? GetRetTypeValue();
+            public abstract void SetRetTypeValue(TypeValue retTypeValue);
+            public abstract void AddLambdaCapture(LambdaCapture lambdaCapture);
+            public abstract bool IsSeqFunc();
+            public abstract TResult ExecInLambdaScope<TResult>(TypeValue? lambdaRetTypeValue, Func<TResult> action);
+            public abstract bool DoesLocalVarNameExistInScope(string name);
+            public abstract void ExecInLocalScope(Action action);
+            public abstract TResult ExecInLocalScope<TResult>(Func<TResult> func);
+            public abstract bool IsLocalVarOutsideLambda(string name);
+            public abstract ImmutableArray<R.TypeAndName> GetCapturedLocalVars();
+            public abstract bool NeedCaptureThis();
+        }
+
+        // 람다 안쪽
+        [AutoConstructor]
+        class LambdaContext
+        {
+            ScopeContext parentContext;
+            ImmutableDictionary<string, LocalVarInfo> localVarInfos;
+
+            public void AddLocalVarInfo(string name, TypeValue typeValue)
+            {
+                localVarInfos.SetItem(name, new LocalVarInfo(name, typeValue));
+            }
+
+            public LocalVarInfo? GetLocalVarOutsideLambda(string varName)
+            {
+                return parentContext.GetLocalVarInfo(varName);
+            }
+
+            public LocalVarInfo? GetLocalVarInfo(string varName)
+            {
+                return localVarInfos.GetValueOrDefault(varName);
+            }
+
+            public TypeValue? GetRetTypeValue();
+            public void SetRetTypeValue(TypeValue retTypeValue);
+            public void AddLambdaCapture(LambdaCapture lambdaCapture);
+            public bool IsSeqFunc();
+            public TResult ExecInLambdaScope<TResult>(TypeValue? lambdaRetTypeValue, Func<TResult> action);
+            public bool DoesLocalVarNameExistInScope(string name);
+            public void ExecInLocalScope(Action action);
+            public TResult ExecInLocalScope<TResult>(Func<TResult> func);
+            public bool IsLocalVarOutsideLambda(string name);
+            public ImmutableArray<R.TypeAndName> GetCapturedLocalVars();
+            public bool NeedCaptureThis();
+        }
+
+
+
+
+        
+        
+        class FuncContext : ScopeContext
         {
             TypeValue? retTypeValue; // 리턴 타입이 미리 정해져 있다면 이걸 쓴다
             bool bSequence;          // 시퀀스 여부
