@@ -32,6 +32,8 @@ namespace Gum.IR0Translator
 
             var rootContext = new RootContext(itemValueFactory);
 
+            var rootAnalyzer = new RootAnalyzer(rootContext);
+
             // pass1, pass2
             var pass1 = new CollectingGlobalVarPass(analyzer); // 말이 틀렸다. TopLevelStmt를 여기서 분석하고 있다..
             IR0Translator.Misc.VisitScript(script, pass1);
