@@ -1,5 +1,6 @@
 ﻿
 using S = Gum.Syntax;
+using R = Gum.IR0;
 
 namespace Gum.IR0Translator
 {
@@ -7,41 +8,42 @@ namespace Gum.IR0Translator
     {
         // GlobalVar 
 
-        class CollectingGlobalVarPass : ISyntaxScriptVisitor
+        struct RootAnalyzer
         {
-            Analyzer analyzer;
+            RootContext rootContext;
+            VarDeclAnalyzer varDeclAnalyzer;
+            StmtAndExpAnalyzer analyzer;
 
-            public CollectingGlobalVarPass(Analyzer analyzer)
+            public RootAnalyzer(GlobalContext globalContext, RootContext rootContext, LocalContext localContext)
             {
-                this.analyzer = analyzer;
+                this.rootContext = ;
+                this.varDeclAnalyzer = new VarDeclAnalyzer();
+                this.analyzer = new StmtAndExpAnalyzer(globalContext, rootContext, localContext);
             }
 
-            public void VisitTopLevelStmt(S.Stmt stmt)
+            public void Analyze(S.Script script)
             {
-                analyzer.AnalyzeTopLevelStmt(stmt);
+                foreach (var elem in script.Elements)
+                {
+                    if (elem is S.StmtScriptElement stmtElem)
+                        AnalyzeTopLevelStmt(stmtElem.Stmt);
+                }
             }
 
-            public void VisitGlobalFuncDecl(S.FuncDecl funcDecl)
+            void AnalyzeTopLevelStmt(S.Stmt stmt)
             {
-                // do nothing
+                if (stmt is S.VarDeclStmt varDeclStmt)
+                {
+                    var result = varDeclAnalyzer.AnalyzeGlobalVarDecl(varDeclStmt.VarDecl);
+                    var stmt = new R.PrivateGlobalVarDeclStmt(result.Elems);
+                    rootContext.AddTopLevelStmt(stmt);
+                }
+                else
+                {
+                    var stmtResult = analyzer.AnalyzeStmt(stmt);
+                    rootContext.AddTopLevelStmt(stmtResult.Stmt);
+                }
             }
-
-            public void VisitTypeDecl(S.TypeDecl typeDecl)
-            {
-                // do nothing                
-            }
-        }
-        
-        void AnalyzeTopLevelStmt(S.Stmt stmt)
-        {
-            StmtResult stmtResult;
-
-            if (stmt is S.VarDeclStmt varDeclStmt)
-                stmtResult = AnalyzeGlobalVarDeclStmt(varDeclStmt);
-            else
-                stmtResult = AnalyzeCommonStmt(stmt);
-            
-            context.AddTopLevelStmt(stmtResult.Stmt);
         }
     }
 }

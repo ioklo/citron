@@ -44,7 +44,7 @@ namespace Gum.IR0Translator
             }
 
             // PrivateGlobalVarDecl이 나오거나, LocalVarDecl이 나오거나
-            StmtResult AnalyzeGlobalVarDeclStmt(S.VarDeclStmt varDeclStmt)
+            public StmtResult AnalyzeGlobalVarDeclStmt(S.VarDeclStmt varDeclStmt)
             {
                 var result = AnalyzeGlobalVarDecl(varDeclStmt.VarDecl);
                 return new StmtResult(new R.PrivateGlobalVarDeclStmt(result.Elems));
@@ -475,12 +475,13 @@ namespace Gum.IR0Translator
                     globalContext.AddFatalError(A1402_YieldStmt_MismatchBetweenYieldValueAndSeqFuncYieldType, yieldStmt.Value);
 
                 return new StmtResult(new R.YieldStmt(valueResult.Exp));
-            }
+            }            
 
-            StmtResult AnalyzeCommonStmt(S.Stmt stmt)
-            {
+            public StmtResult AnalyzeStmt(S.Stmt stmt)
+            {   
                 switch (stmt)
                 {
+                    case S.VarDeclStmt varDeclStmt: return AnalyzeLocalVarDeclStmt(varDeclStmt);
                     case S.CommandStmt cmdStmt: return AnalyzeCommandStmt(cmdStmt);
                     case S.IfStmt ifStmt: return AnalyzeIfStmt(ifStmt);
                     case S.ForStmt forStmt: return AnalyzeForStmt(forStmt);
@@ -497,14 +498,6 @@ namespace Gum.IR0Translator
                     case S.YieldStmt yieldStmt: return AnalyzeYieldStmt(yieldStmt);
                     default: throw new UnreachableCodeException();
                 }
-            }
-
-            public StmtResult AnalyzeStmt(S.Stmt stmt)
-            {
-                if (stmt is S.VarDeclStmt varDeclStmt)
-                    return AnalyzeLocalVarDeclStmt(varDeclStmt);
-                else
-                    return AnalyzeCommonStmt(stmt);
             }
 
             bool IsTopLevelExp(S.Exp exp)
