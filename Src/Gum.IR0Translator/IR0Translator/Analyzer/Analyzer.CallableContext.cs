@@ -10,17 +10,79 @@ namespace Gum.IR0Translator
     partial class Analyzer
     {
         // 현재 분석중인 스코프 정보
-
-        abstract class CallableContext
+        abstract class CallableContext : DeclContext
         {
+            int lambdaCount;
+
             // TODO: 이름 수정, Lambda가 아니라 Callable
             public abstract LocalVarInfo? GetLocalVarOutsideLambda(string varName);
             public abstract TypeValue? GetRetTypeValue();
             public abstract void SetRetTypeValue(TypeValue retTypeValue);
             public abstract void AddLambdaCapture(LambdaCapture lambdaCapture);
-            public abstract bool IsSeqFunc();            
+            public abstract bool IsSeqFunc();
+
+            public CallableContext()
+            {
+                lambdaCount = 0;
+            }
+
+            public void AddLambdaDecl(R.Path? capturedThisType, ImmutableArray<R.TypeAndName> capturedLocalVars, ImmutableArray<R.ParamInfo> paramInfos, R.Stmt body)
+            {
+                var lambdaId = new R.LambdaId(lambdaCount);
+                var capturedStmt = new R.CapturedStatement(capturedThisType, capturedLocalVars, body);
+                var decl = new R.LambdaDecl(lambdaId, capturedStmt, paramInfos);
+
+                AddDecl(decl);
+
+                lambdaCount++;
+            }
         }
 
+        // 최상위 레벨 컨텍스트
+        class RootContext : CallableContext
+        {
+            R.ModuleName moduleName;
+            ItemValueFactory itemValueFactory;
+            List<R.Stmt> topLevelStmts;
+
+            public RootContext(R.ModuleName moduleName, ItemValueFactory itemValueFactory)
+            {
+                this.moduleName = moduleName;
+                this.itemValueFactory = itemValueFactory;
+                this.topLevelStmts = new List<R.Stmt>();
+            }
+
+            public override LocalVarInfo? GetLocalVarOutsideLambda(string varName)
+            {
+                return null;
+            }
+
+            public override TypeValue? GetRetTypeValue()
+            {
+                return itemValueFactory.Int;
+            }
+
+            public override void SetRetTypeValue(TypeValue retTypeValue)
+            {
+                throw new UnreachableCodeException();
+            }
+
+            public override void AddLambdaCapture(LambdaCapture lambdaCapture)
+            {
+                throw new UnreachableCodeException();
+            }
+
+            public override bool IsSeqFunc()
+            {
+                return false;
+            }
+
+            public R.Script MakeScript()
+            {
+                return new R.Script(moduleName, GetDecls(), topLevelStmts.ToImmutableArray());
+            }            
+        }
+        
         class FuncContext : CallableContext
         {
             TypeValue? retTypeValue; // 리턴 타입이 미리 정해져 있다면 이걸 쓴다

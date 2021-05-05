@@ -2,7 +2,7 @@
 {
     partial class Analyzer
     {
-        class RootStmtAnalyzer 
+        class RootAnalyzer 
         { 
 
         }

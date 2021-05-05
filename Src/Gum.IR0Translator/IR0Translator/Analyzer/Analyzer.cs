@@ -28,7 +28,9 @@ namespace Gum.IR0Translator
             IErrorCollector errorCollector)
         {
             var globalContext = new GlobalContext(itemValueFactory, globalItemValueFactory, typeExpTypeValueService, errorCollector);            
-            var analyzer = new Analyzer(internalBinOpQueryService, context);
+            var analyzer = new Analyzer(globalContext);
+
+            var rootContext = new RootContext(itemValueFactory);
 
             // pass1, pass2
             var pass1 = new CollectingGlobalVarPass(analyzer); // 말이 틀렸다. TopLevelStmt를 여기서 분석하고 있다..
@@ -38,30 +40,12 @@ namespace Gum.IR0Translator
             IR0Translator.Misc.VisitScript(script, pass2);
 
             // 5. 각 func body를 분석한다 (4에서 얻게되는 글로벌 변수 정보가 필요하다)
-            return new R.Script(moduleName, analyzer.context.GetDecls(), analyzer.context.GetTopLevelStmts());
-        }
-        
-        [AutoConstructor]
-        partial struct LambdaResult
-        {
-            public bool bCaptureThis { get; }
-            public ImmutableArray<string> CaptureLocalVars { get; }
-            public LambdaTypeValue TypeValue { get; }
+            return rootContext.MakeScript();
         }
         
         public void AnalyzeNormalFuncDecl(S.FuncDecl funcDecl)
         {
-            var builder = new RNormalFuncDeclBuilder(funcDecl.Name);
-
-            context.ExecInNewDeclBuilder(builder, () =>
-            {
-
-            });
-
-            var normalFuncDecl = builder.Build();
-            context.AddDecl(normalFuncDecl);
-
-            var retTypeValue = context.GetTypeValueByTypeExp(funcDecl.RetType);
+            var retTypeValue = globalContext.GetTypeValueByTypeExp(funcDecl.RetType);
             var funcContext = new FuncContext(retTypeValue, false);
             var newContext = new LocalContext(funcContext);
             var newStmtAnalyzer = new StmtAndExpAnalyzer(newContext);

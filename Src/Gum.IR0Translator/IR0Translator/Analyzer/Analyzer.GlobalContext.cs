@@ -25,11 +25,6 @@ namespace Gum.IR0Translator
 
             TypeExpInfoService typeExpTypeValueService;            
             IErrorCollector errorCollector;
-
-            // 현재 분석되고 있는 함수
-            List<R.Stmt> topLevelStmts;
-            RDeclBuilder declBuilder;
-
             InternalGlobalVariableRepository internalGlobalVarRepo;
 
             public GlobalContext(
@@ -42,12 +37,8 @@ namespace Gum.IR0Translator
                 this.internalBinOpQueryService = new InternalBinaryOperatorQueryService(itemValueFactory);
                 this.globalItemValueFactory = globalItemValueFactory;
                 this.typeExpTypeValueService = typeExpTypeValueService;
-                this.errorCollector = errorCollector;
-                
-                internalGlobalVarRepo = new InternalGlobalVariableRepository();
-
-                declBuilder = new GlobalRDeclBuilder();
-                topLevelStmts = new List<R.Stmt>();
+                this.errorCollector = errorCollector;                
+                this.internalGlobalVarRepo = new InternalGlobalVariableRepository();
             }
 
             public void AddError(AnalyzeErrorCode code, S.ISyntaxNode node)
@@ -136,44 +127,14 @@ namespace Gum.IR0Translator
                 return internalGlobalVarRepo.GetVariable(idName);
             }
 
-            public void AddNormalFuncDecl(ImmutableArray<R.LambdaDecl> lambdaDecls, R.Name name, bool bThisCall, ImmutableArray<string> typeParams, ImmutableArray<R.ParamInfo> paramNames, R.Stmt body)
-            {
-                // decls에 할 것이 아니라. curOuter에 해야 한다
-                declBuilder.Add(new R.NormalFuncDecl(lambdaDecls, name, bThisCall, typeParams, paramNames, body));
-            }
-
-            public void AddSequenceFuncDecl(ImmutableArray<R.LambdaDecl> lambdaDecls, R.Name name, R.Path yieldType, bool bThisCall, ImmutableArray<string> typeParams, ImmutableArray<R.ParamInfo> paramInfos, R.Stmt body)
-            {
-                declBuilder.Add(new R.SequenceFuncDecl(lambdaDecls, name, bThisCall, yieldType, typeParams, paramInfos, body));
-            }
-            
-            public LambdaDecl MakeLambdaDecl(R.Path? capturedThisType, ImmutableArray<R.TypeAndName> captureInfo, ImmutableArray<R.ParamInfo> paramInfos, R.Stmt body)
-            {
-                var id = new R.DeclId(decls.Count);
-                declBuilder.Add(new R.LambdaDecl(id, new R.CapturedStatement(capturedThisType, captureInfo, body), paramInfos));
-                return id;
-            }
-
-            public void AddTopLevelStmt(R.Stmt stmt)
-            {
-                topLevelStmts.Add(stmt);
-            }
-
-            public ImmutableArray<R.Decl> GetDecls() => decls.ToImmutableArray();
-            
-            public ImmutableArray<R.Stmt> GetTopLevelStmts()
-            {
-                return topLevelStmts.ToImmutableArray();
-            }
-
             public bool DoesInternalGlobalVarNameExist(string name)
             {
                 return internalGlobalVarRepo.HasVariable(name);
             }
 
-            public LambdaTypeValue NewLambdaTypeValue(R.DeclId lambdaDeclId, TypeValue retType, ImmutableArray<TypeValue> paramTypes)
+            public LambdaTypeValue NewLambdaTypeValue(R.LambdaId lambdaId, TypeValue retType, ImmutableArray<TypeValue> paramTypes)
             {
-                return itemValueFactory.MakeLambdaType(lambdaDeclId, retType, paramTypes);
+                return itemValueFactory.MakeLambdaType(lambdaId, retType, paramTypes);
             }
 
             public ItemResult GetGlobalItem(M.NamespacePath namespacePath, string idName, ImmutableArray<TypeValue> typeArgs, ResolveHint hint)

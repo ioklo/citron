@@ -7,7 +7,7 @@ using R = Gum.IR0;
 
 namespace Gum.IR0Translator
 {
-    static class RItemFactory
+    class RItemFactory
     {
         public static R.ModuleName MakeModuleName(M.ModuleName moduleName)
         {
@@ -45,11 +45,9 @@ namespace Gum.IR0Translator
             throw new NotImplementedException();
         }
 
-        public R.Path MakeLambdaType(ItemValue outer, R.LambdaId lambdaId)
+        public R.Path MakeLambdaType(R.Path.Nested lambda)
         {
-            var router = outer.GetRType();           
-
-            return new R.Path.Box(lambdaDeclId);
+            return new R.Path.AnonymousLambdaType(lambda);
         }
 
         public R.Path MakeEnumElemType()

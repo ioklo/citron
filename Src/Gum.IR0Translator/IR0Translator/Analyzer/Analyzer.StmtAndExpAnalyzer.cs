@@ -8,6 +8,7 @@ using static Gum.IR0Translator.AnalyzeErrorCode;
 
 using S = Gum.Syntax;
 using R = Gum.IR0;
+using Pretune;
 
 namespace Gum.IR0Translator
 {
@@ -87,7 +88,7 @@ namespace Gum.IR0Translator
                 var paramTypes = paramInfos.Select(paramInfo => paramInfo.TypeValue).ToImmutableArray();
                 var rparamInfos = paramInfos.Select(paramInfo => new R.ParamInfo(paramInfo.TypeValue.GetRType(), paramInfo.Name)).ToImmutableArray();
 
-                var lambdaDeclId = callableContext.AddLambdaDecl(null, capturedLocalVars, rparamInfos, bodyResult.Stmt);
+                callableContext.AddLambdaDecl(null, capturedLocalVars, rparamInfos, bodyResult.Stmt);
 
                 var lambdaTypeValue = globalContext.NewLambdaTypeValue(
                     lambdaDeclId,

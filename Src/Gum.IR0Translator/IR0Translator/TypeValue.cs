@@ -321,15 +321,14 @@ namespace Gum.IR0Translator
     class LambdaTypeValue : TypeValue, IEquatable<LambdaTypeValue>
     {
         RItemFactory ritemFactory;
-        public ItemValue Outer { get; } // FuncValue일 수도 있고, TypeValue일수도 있고, Root(Module, Namespace, )일수도
-        public R.LambdaId LambdaId { get; }
+        public R.Path.Nested Lambda { get; } // Type의 path가 아니라 Lambda의 path
         public TypeValue Return { get; }
         public ImmutableArray<TypeValue> Params { get; }
 
-        public LambdaTypeValue(RItemFactory ritemFactory, R.LambdaId lambdaId, TypeValue ret, ImmutableArray<TypeValue> parameters)
+        public LambdaTypeValue(RItemFactory ritemFactory, R.Path.Nested lambda, TypeValue ret, ImmutableArray<TypeValue> parameters)
         {
             this.ritemFactory = ritemFactory;
-            this.LambdaId = lambdaId;
+            this.Lambda = lambda;
             this.Return = ret;
             this.Params = parameters;
         }
@@ -344,7 +343,7 @@ namespace Gum.IR0Translator
             if (other == null) return false;
 
             // 아이디만 비교한다. 같은 위치에서 다른 TypeContext에서 생성되는 람다는 id도 바뀌어야 한다
-            return LambdaDeclId.Equals(other.LambdaDeclId);
+            return Lambda.Equals(other.Lambda);
         }
 
         // lambdatypevalue를 replace할 일이 있는가
@@ -360,15 +359,12 @@ namespace Gum.IR0Translator
 
         public override R.Path GetRType()
         {
-            var returnRType = Return.GetRType();
-            var paramRTypes = ImmutableArray.CreateRange(Params, parameter => parameter.GetRType());
-
-            return ritemFactory.MakeLambdaType(Outer, LambdaId, returnRType, paramRTypes);
+            return ritemFactory.MakeLambdaType(Lambda);
         }
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(LambdaDeclId);
+            return HashCode.Combine(Lambda);
         }
     }
 
