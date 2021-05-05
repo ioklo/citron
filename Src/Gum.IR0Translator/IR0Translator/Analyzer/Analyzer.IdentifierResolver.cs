@@ -44,14 +44,24 @@ namespace Gum.IR0Translator
             string idName;
             ImmutableArray<TypeValue> typeArgs;
             ResolveHint hint;
-            Context context;
 
-            public IdExpIdentifierResolver(string idName, ImmutableArray<TypeValue> typeArgs, ResolveHint hint, Context context)
+            GlobalContext globalContext;
+            CallableContext callableContext;
+            LocalContext localContext;            
+
+            public IdExpIdentifierResolver(
+                string idName, ImmutableArray<TypeValue> typeArgs, ResolveHint hint,
+                GlobalContext globalContext,
+                CallableContext callableContext,
+                LocalContext localContext)
             {
                 this.idName = idName;
                 this.typeArgs = typeArgs;
                 this.hint = hint;
-                this.context = context;
+
+                this.globalContext = globalContext;
+                this.callableContext = callableContext;
+                this.localContext = localContext;
             }
 
             IdentifierResult GetLocalVarOutsideLambdaInfo()
@@ -59,7 +69,7 @@ namespace Gum.IR0Translator
                 // 지역 스코프에는 변수만 있고, 함수, 타입은 없으므로 이름이 겹치는 것이 있는지 검사하지 않아도 된다
                 if (typeArgs.Length != 0) return NotFoundIdentifierResult.Instance;
 
-                var varInfo = context.GetLocalVarOutsideLambda(idName);
+                var varInfo = callableContext.GetLocalVarOutsideLambda(idName);
                 if (varInfo == null) return NotFoundIdentifierResult.Instance;
 
                 return new LocalVarIdentifierResult(true, varInfo.Value.Name, varInfo.Value.TypeValue);
@@ -70,7 +80,7 @@ namespace Gum.IR0Translator
                 // 지역 스코프에는 변수만 있고, 함수, 타입은 없으므로 이름이 겹치는 것이 있는지 검사하지 않아도 된다
                 if (typeArgs.Length != 0) return NotFoundIdentifierResult.Instance;
 
-                var varInfo = context.GetLocalVar(idName);
+                var varInfo = localContext.GetLocalVarInfo(idName);
                 if (varInfo == null) return NotFoundIdentifierResult.Instance;
 
                 return new LocalVarIdentifierResult(false, varInfo.Value.Name, varInfo.Value.TypeValue);
@@ -86,7 +96,7 @@ namespace Gum.IR0Translator
             {
                 if (typeArgs.Length != 0) return NotFoundIdentifierResult.Instance;
                 
-                var varInfo = context.GetInternalGlobalVarInfo(idName);
+                var varInfo = globalContext.GetInternalGlobalVarInfo(idName);
                 if (varInfo == null) return NotFoundIdentifierResult.Instance;
 
                 return new GlobalVarIdentifierResult(varInfo.Name.ToString(), varInfo.TypeValue);
@@ -96,7 +106,7 @@ namespace Gum.IR0Translator
             {
                 // TODO: outer namespace까지 다 돌아야 한다
                 var curNamespacePath = M.NamespacePath.Root; 
-                var globalResult = context.GetGlobalItem(curNamespacePath, idName, typeArgs, hint);
+                var globalResult = globalContext.GetGlobalItem(curNamespacePath, idName, typeArgs, hint);
 
                 switch (globalResult)
                 {

@@ -10,15 +10,17 @@ using System.Text;
 using S = Gum.Syntax;
 using M = Gum.CompileTime;
 using R = Gum.IR0;
+using Gum.Syntax;
 
 namespace Gum.IR0Translator
 {
     partial class Analyzer
     {
-        // Analyzer는 backtracking이 없어서, MutableContext를 쓴다 
+        // Analyzer는 backtracking이 없어서, MutableContext를 쓴다 => TODO: 함수 인자 계산할때 backtracking이 생긴다
         class GlobalContext
-        {
+        {            
             ItemValueFactory itemValueFactory;
+            InternalBinaryOperatorQueryService internalBinOpQueryService;
             GlobalItemValueFactory globalItemValueFactory;
 
             TypeExpInfoService typeExpTypeValueService;            
@@ -37,6 +39,7 @@ namespace Gum.IR0Translator
                 IErrorCollector errorCollector)
             {
                 this.itemValueFactory = itemValueFactory;
+                this.internalBinOpQueryService = new InternalBinaryOperatorQueryService(itemValueFactory);
                 this.globalItemValueFactory = globalItemValueFactory;
                 this.typeExpTypeValueService = typeExpTypeValueService;
                 this.errorCollector = errorCollector;
@@ -99,45 +102,6 @@ namespace Gum.IR0Translator
             public void AddInternalGlobalVarInfo(M.Name name, TypeValue typeValue)
             {
                 internalGlobalVarRepo.AddInternalGlobalVariable(name, typeValue);
-            }            
-            
-            public TResult ExecInLambdaScope<TResult>(TypeValue? lambdaRetTypeValue, Func<TResult> action)
-            {
-                return curFunc.ExecInLambdaScope(lambdaRetTypeValue, action);
-            }
-
-            public void ExecInFuncScope(S.FuncDecl funcDecl, Action action)
-            {
-                var retTypeValue = GetTypeValueByTypeExp(funcDecl.RetType);
-
-                var prevFunc = curFunc;
-                curFunc = new CallableContext(retTypeValue, funcDecl.IsSequence);
-
-                try
-                {
-                    action.Invoke();
-                }
-                finally
-                {
-                    curFunc = prevFunc;
-                }
-            }
-
-            public TResult ExecInFuncScope<TResult>(S.FuncDecl funcDecl, Func<TResult> action)
-            {
-                var retTypeValue = GetTypeValueByTypeExp(funcDecl.RetType);
-
-                var prevFunc = curFunc;
-                curFunc = new CallableContext(retTypeValue, funcDecl.IsSequence);
-
-                try
-                {
-                    return action.Invoke();
-                }
-                finally
-                {
-                    curFunc = prevFunc;
-                }
             }
 
             public bool IsBoolType(TypeValue typeValue)
@@ -154,11 +118,6 @@ namespace Gum.IR0Translator
             {
                 return itemValueFactory.String.Equals(typeValue);
             }
-            
-            public bool IsInLoop()
-            {
-                return bInLoop;
-            }
 
             public TypeValue GetTypeValueByTypeExp(S.TypeExp typeExp)
             {
@@ -171,17 +130,6 @@ namespace Gum.IR0Translator
                 else
                     throw new UnreachableCodeException();
             }
-
-            public LocalVarInfo? GetLocalVarOutsideLambda(string idName)
-            {
-                return curFunc.GetLocalVarOutsideLambda(idName);
-            }
-
-            // 지역 스코프에서 
-            public LocalVarInfo? GetLocalVar(string idName)
-            {
-                return curFunc.GetLocalVarInfo(idName);
-            }            
 
             public InternalGlobalVarInfo? GetInternalGlobalVarInfo(string idName)
             {
@@ -218,37 +166,6 @@ namespace Gum.IR0Translator
                 return topLevelStmts.ToImmutableArray();
             }
 
-            public bool NeedCaptureThis()
-            {
-                return curFunc.NeedCaptureThis();
-            }
-
-            public ImmutableArray<R.TypeAndName> GetCapturedLocalVars()
-            {
-                return curFunc.GetCapturedLocalVars();
-            }
-
-            // curFunc
-            public void AddLocalVarInfo(string name, TypeValue typeValue)
-            {
-                curFunc.AddLocalVarInfo(name, typeValue);
-            }
-
-            public bool IsSeqFunc()
-            {
-                return curFunc.IsSeqFunc();
-            }
-
-            public TypeValue? GetRetTypeValue()
-            {
-                return curFunc.GetRetTypeValue();
-            }
-
-            public void SetRetTypeValue(TypeValue retTypeValue)
-            {
-                curFunc.SetRetTypeValue(retTypeValue);
-            }
-
             public bool DoesInternalGlobalVarNameExist(string name)
             {
                 return internalGlobalVarRepo.HasVariable(name);
@@ -262,6 +179,11 @@ namespace Gum.IR0Translator
             public ItemResult GetGlobalItem(M.NamespacePath namespacePath, string idName, ImmutableArray<TypeValue> typeArgs, ResolveHint hint)
             {
                 return globalItemValueFactory.GetGlobal(namespacePath, idName, typeArgs, hint);
+            }
+
+            public ImmutableArray<InternalBinaryOperatorInfo> GetBinaryOpInfos(BinaryOpKind kind)
+            {
+                return internalBinOpQueryService.GetInfos(kind);
             }
         }
     }
