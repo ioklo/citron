@@ -8,6 +8,7 @@ using System.Linq;
 
 using R = Gum.IR0;
 using Pretune;
+using S = Gum.Syntax;
 
 namespace Gum.IR0Translator
 {
@@ -40,6 +41,12 @@ namespace Gum.IR0Translator
         {
             TypeValue? retTypeValue; // 리턴 타입이 미리 정해져 있다면 이걸 쓴다
             bool bSequence;          // 시퀀스 여부
+
+            public FuncContext(TypeValue? retTypeValue, bool bSequence)
+            {
+                this.retTypeValue = retTypeValue;
+                this.bSequence = bSequence;
+            }
 
             public override LocalVarInfo? GetLocalVarOutsideLambda(string varName)
             {
@@ -74,6 +81,14 @@ namespace Gum.IR0Translator
             TypeValue? retTypeValue;
             bool bCaptureThis;
             Dictionary<string, TypeValue> localCaptures;
+
+            public LambdaContext(LocalContext parentContext, TypeValue? retTypeValue)
+            {
+                this.parentContext = parentContext;
+                this.retTypeValue = retTypeValue;
+                this.bCaptureThis = false;
+                this.localCaptures = new Dictionary<string, TypeValue>();
+            }
 
             public override LocalVarInfo? GetLocalVarOutsideLambda(string varName)
             {
@@ -129,16 +144,79 @@ namespace Gum.IR0Translator
             }
         }
 
+        // facade, StmtAndExpContext
+        class StmtAndExpContext
+        {
+            CallableContext callableContext; // 이 로컬에서 가장 가까운 함수/람다 컨텍스트
+            LocalContext localContext;
+
+            StmtAndExpContext(CallableContext callableContext, LocalContext localContext)
+            {
+                this.callableContext = callableContext;
+                this.localContext = localContext;
+            }
+
+            public StmtAndExpContext NewContext(bool bLoop)
+            {
+                var newLocalContext = localContext.NewLocalContext(bLoop);
+                return new StmtAndExpContext(callableContext, newLocalContext);
+            }
+
+            public void AddLocalVarInfo(string name, TypeValue typeValue)
+            {
+                localContext.AddLocalVarInfo(name, typeValue);
+            }
+
+            public LocalVarInfo? GetLocalVarInfo(string varName)
+            {
+                return localContext.GetLocalVarInfo(varName);
+            }
+
+            public LocalVarInfo? GetLocalVarOutsideLambda(string varName)
+            {
+                return callableContext.GetLocalVarOutsideLambda(varName);
+            }
+
+            public TypeValue? GetRetTypeValue()
+            {
+                return callableContext.GetRetTypeValue();
+            }
+
+            public void SetRetTypeValue(TypeValue retTypeValue)
+            {
+                callableContext.SetRetTypeValue(retTypeValue);
+            }
+
+            public void AddLambdaCapture(LambdaCapture lambdaCapture)
+            {
+                callableContext.AddLambdaCapture(lambdaCapture);
+            }
+
+            public bool IsLocalVarOutsideLambda(string name)
+            {
+                return localContext.IsLocalVarOutsideLambda(name);
+            }
+
+            public bool DoesLocalVarNameExistInScope(string name)
+            {
+                return localContext.DoesLocalVarNameExistInScope(name);
+            }
+
+            public bool IsInLoop()
+            {
+                return localContext.IsInLoop();
+            }
+        }
+
         // 현재 분석이 진행되는 곳의 컨텍스트
         class LocalContext
         {
-            SharedContext sharedContext;
-            CallableContext callableContext; // 이 로컬에서 가장 가까운 함수/람다 컨텍스트
+            CallableContext callableContext;
             LocalContext? parentLocalContext;
             ImmutableDictionary<string, LocalVarInfo> localVarInfos;
             bool bLoop;
 
-            public LocalContext(CallableContext callableContext, LocalContext? parentLocalContext, bool bLoop)
+            LocalContext(CallableContext callableContext, LocalContext? parentLocalContext, bool bLoop)
             {
                 this.callableContext = callableContext;
                 this.parentLocalContext = parentLocalContext;
@@ -165,28 +243,8 @@ namespace Gum.IR0Translator
                     return parentLocalContext.GetLocalVarInfo(varName);
 
                 return null;
-            }
+            }                        
             
-            public LocalVarInfo? GetLocalVarOutsideLambda(string varName)
-            {
-                return callableContext.GetLocalVarOutsideLambda(varName);
-            }
-
-            public TypeValue? GetRetTypeValue()
-            {
-                return callableContext.GetRetTypeValue();
-            }
-
-            public void SetRetTypeValue(TypeValue retTypeValue)
-            {
-                callableContext.SetRetTypeValue(retTypeValue);
-            }
-
-            public void AddLambdaCapture(LambdaCapture lambdaCapture)
-            {
-                callableContext.AddLambdaCapture(lambdaCapture);
-            }
-
             public bool IsLocalVarOutsideLambda(string name)
             {
                 // 현재 로컬에 존재하면 false

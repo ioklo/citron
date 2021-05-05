@@ -213,7 +213,7 @@ namespace Gum.IR0Translator
             public LambdaTypeValue TypeValue { get; }
         }
 
-        LambdaResult AnalyzeLambda(S.ISyntaxNode nodeForErrorReport, S.Stmt body, ImmutableArray<S.LambdaExpParam> parameters)
+        LambdaResult AnalyzeLambda(S.ISyntaxNode nodeForErrorReport, S.Stmt body, ImmutableArray<S.LambdaExpParam> parameters, LocalContext localContext)
         {
             // TODO: 리턴 타입은 타입 힌트를 반영해야 한다
             TypeValue? retTypeValue = null;
@@ -229,35 +229,34 @@ namespace Gum.IR0Translator
                 paramInfos.Add((param.Name, paramTypeValue));
             }
 
-            var (bCaptureThis, bodyResult, capturedLocalVars, newRetTypeValue) = context.ExecInLambdaScope(retTypeValue, () => {
+            var newLambdaContext = new LambdaContext(localContext, retTypeValue);
+            var newContext = new LocalContext(newLambdaContext, null, false);
+            var newStmtAnalyzer = new StmtAndExpAnalyzer(newContext);
 
-                // 람다 파라미터를 지역 변수로 추가한다
-                foreach(var paramInfo in paramInfos)
-                    context.AddLocalVarInfo(paramInfo.Name, paramInfo.TypeValue);
+            // 람다 파라미터를 지역 변수로 추가한다
+            foreach(var paramInfo in paramInfos)
+                newContext.AddLocalVarInfo(paramInfo.Name, paramInfo.TypeValue);
 
-                // 본문 분석
-                var bodyResult = AnalyzeStmt(body);
+            // 본문 분석
+            var bodyResult = newStmtAnalyzer.AnalyzeStmt(body);
 
-                // 성공했으면, 리턴 타입 갱신
-                var bCaptureThis = context.NeedCaptureThis();
-                var retTypeValue = context.GetRetTypeValue();
-                var capturedLocalVars = context.GetCapturedLocalVars();
-
-                return (bCaptureThis, bodyResult, capturedLocalVars, retTypeValue);
-            });
+            // 성공했으면, 리턴 타입 갱신            
+            var capturedLocalVars = newLambdaContext.GetCapturedLocalVars();
 
             var paramTypes = paramInfos.Select(paramInfo => paramInfo.TypeValue).ToImmutableArray();
             var rparamInfos = paramInfos.Select(paramInfo => new R.ParamInfo(paramInfo.TypeValue.GetRType(), paramInfo.Name)).ToImmutableArray();
 
-            var lambdaDeclId = context.AddLambdaDecl(null, capturedLocalVars, rparamInfos, bodyResult.Stmt);
+            var lambdaDeclId = localContext.AddLambdaDecl(null, capturedLocalVars, rparamInfos, bodyResult.Stmt);
 
             var lambdaTypeValue = context.NewLambdaTypeValue(
                 lambdaDeclId,
-                retTypeValue ?? VoidTypeValue.Instance,
+                newContext.GetRetTypeValue() ?? VoidTypeValue.Instance,
                 paramTypes
             );
 
             var captureLocalVarNames = ImmutableArray.CreateRange(capturedLocalVars, c => c.Name);
+            var bCaptureThis = newLambdaContext.NeedCaptureThis();
+
             return new LambdaResult(bCaptureThis, captureLocalVarNames, lambdaTypeValue);
         }
 
@@ -281,15 +280,7 @@ namespace Gum.IR0Translator
                     return false;
             }
         }
-
-        ExpExpResult AnalyzeTopLevelExp_Exp(S.Exp exp, ResolveHint hint, AnalyzeErrorCode code)
-        {
-            if (!IsTopLevelExp(exp))
-                context.AddFatalError(code, exp);
-
-            return AnalyzeExp_Exp(exp, hint);
-        }
-
+        
         public void AnalyzeNormalFuncDecl(S.FuncDecl funcDecl)
         {
             var builder = new RNormalFuncDeclBuilder(funcDecl.Name);
@@ -302,8 +293,11 @@ namespace Gum.IR0Translator
             var normalFuncDecl = builder.Build();
             context.AddDecl(normalFuncDecl);
 
-            var (bodyResult, parameters) = context.ExecInFuncScope(funcDecl, () =>
-            {
+            var retTypeValue = context.GetTypeValueByTypeExp(funcDecl.RetType);
+            var funcContext = new FuncContext(retTypeValue, false);
+            var newContext = new LocalContext(funcContext);
+            var newStmtAnalyzer = new StmtAndExpAnalyzer(newContext);
+            
                 if (0 < funcDecl.TypeParams.Length || funcDecl.ParamInfo.VariadicParamIndex != null)
                     throw new NotImplementedException();
 
@@ -314,7 +308,7 @@ namespace Gum.IR0Translator
                     context.AddLocalVarInfo(param.Name, paramTypeValue);
                 }
 
-                var bodyResult = AnalyzeStmt(funcDecl.Body);               
+                var bodyResult = newStmtAnalyzer.AnalyzeStmt(funcDecl.Body);
                 
                 // TODO: Body가 실제로 리턴을 제대로 하는지 확인해야 한다
                 var parameters = funcDecl.ParamInfo.Parameters.Select(param =>
@@ -323,10 +317,9 @@ namespace Gum.IR0Translator
                     return new R.ParamInfo(paramTypeValue.GetRType(), param.Name);
                 }).ToImmutableArray();
 
-                return (bodyResult, parameters);
-            });
-
-            context.AddNormalFuncDecl(funcDecl.Name, bThisCall: false, funcDecl.TypeParams, parameters, bodyResult.Stmt);
+            // 
+            var lambdaDecls = funcContext.GetLambdaDecls();
+            context.AddNormalFuncDecl(lambdaDecls, funcDecl.Name, bThisCall: false, funcDecl.TypeParams, parameters, bodyResult.Stmt);
         }
 
         public void AnalyzeSequenceFuncDecl(S.FuncDecl funcDecl)

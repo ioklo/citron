@@ -24,16 +24,17 @@ namespace Gum.IR0Translator
         {
             public R.Stmt Stmt { get; }
         }
-        
-        partial struct StmtAnalyzer
-        {
-            LocalContext localContext;
-            ExpAnalyzer expAnalyzer;
 
-            public StmtAnalyzer(LocalContext localContext)
+        // StmtAndExpAnalyzer
+        partial struct StmtAndExpAnalyzer
+        {
+            GlobalContext globalContext;
+            StmtAndExpContext localContext;
+
+            public StmtAndExpAnalyzer(GlobalContext globalContext, StmtAndExpContext localContext)
             {
+                this.globalContext = globalContext;
                 this.localContext = localContext;
-                this.expAnalyzer = new ExpAnalyzer(localContext);
             }
 
             // CommandStmt에 있는 expStringElement를 분석한다
@@ -188,8 +189,8 @@ namespace Gum.IR0Translator
                 StmtResult? elseBodyResult = (ifStmt.ElseBody != null) ? AnalyzeStmt(ifStmt.ElseBody) : null;
 
                 // Analyzer 처리
-                if (!context.IsAssignable(context.GetBoolType(), condResult.TypeValue))
-                    context.AddFatalError(A1004_IfStmt_ConditionShouldBeBool, ifStmt.Cond);
+                if (!globalContext.IsAssignable(globalContext.GetBoolType(), condResult.TypeValue))
+                    globalContext.AddFatalError(A1004_IfStmt_ConditionShouldBeBool, ifStmt.Cond);
 
                 return new StmtResult(new R.IfStmt(condResult.Exp, bodyResult.Stmt, elseBodyResult?.Stmt));
             }
@@ -219,13 +220,13 @@ namespace Gum.IR0Translator
 
             StmtResult AnalyzeForStmt(S.ForStmt forStmt)
             {
-                var newLocalContext = localContext.NewLocalContext(false);
-                var newStmtAnalyzer = new StmtAnalyzer(newLocalContext);
+                var newLocalContext = localContext.NewContext(false);
+                var newAnalyzer = new StmtAndExpAnalyzer(globalContext, newLocalContext);
                 
                 R.ForStmtInitializer? initializer = null;
                 if (forStmt.Initializer != null)
                 {
-                    var initializerResult = newStmtAnalyzer.AnalyzeForStmtInitializer(forStmt.Initializer);
+                    var initializerResult = newAnalyzer.AnalyzeForStmtInitializer(forStmt.Initializer);
                     initializer = initializerResult.Initializer;
                 }
 
@@ -233,25 +234,25 @@ namespace Gum.IR0Translator
                 if (forStmt.CondExp != null)
                 {
                     // 밑에서 쓰이므로 분석실패시 종료
-                    var condResult = newExpAnalyzer.expAnalyzer.AnalyzeExp_Exp(forStmt.CondExp, ResolveHint.None);
+                    var condResult = newAnalyzer.AnalyzeExp_Exp(forStmt.CondExp, ResolveHint.None);
 
                     // 에러가 나면 에러를 추가하고 계속 진행
-                    if (!context.IsAssignable(context.GetBoolType(), condResult.TypeValue))
-                            context.AddError(A1101_ForStmt_ConditionShouldBeBool, forStmt.CondExp);
+                    if (!globalContext.IsAssignable(globalContext.GetBoolType(), condResult.TypeValue))
+                        globalContext.AddError(A1101_ForStmt_ConditionShouldBeBool, forStmt.CondExp);
 
-                        cond = condResult.Exp;
+                    cond = condResult.Exp;
                 }
 
                 R.Exp? continueInfo = null;
                 if (forStmt.ContinueExp != null)
                 {
-                    var continueResult = newExpAnalyzer.expAnalyzer.AnalyzeTopLevelExp_Exp(forStmt.ContinueExp, ResolveHint.None, A1103_ForStmt_ContinueExpShouldBeAssignOrCall);
+                    var continueResult = newAnalyzer.AnalyzeTopLevelExp_Exp(forStmt.ContinueExp, ResolveHint.None, A1103_ForStmt_ContinueExpShouldBeAssignOrCall);
                     var contExpType = continueResult.TypeValue.GetRType();
                     continueInfo = continueResult.Exp;
                 }
 
                 var newLoopContext = localContext.NewLocalContext(true);
-                var newLoopStmtAnalyzer = new StmtAnalyzer(newLoopContext);
+                var newLoopStmtAnalyzer = new StmtAndExpAnalyzer(newLoopContext);
                 var bodyResult = newLoopStmtAnalyzer.AnalyzeStmt(forStmt.Body);
 
                 return new StmtResult(new R.ForStmt(initializer, cond, continueInfo, bodyResult.Stmt));
@@ -260,7 +261,7 @@ namespace Gum.IR0Translator
             StmtResult AnalyzeContinueStmt(S.ContinueStmt continueStmt)
             {
                 if (!localContext.IsInLoop())
-                    context.AddFatalError(A1501_ContinueStmt_ShouldUsedInLoop, continueStmt);
+                    localContext.AddFatalError(A1501_ContinueStmt_ShouldUsedInLoop, continueStmt);
 
                 return new StmtResult(R.ContinueStmt.Instance);
             }
@@ -269,7 +270,7 @@ namespace Gum.IR0Translator
             {
                 if (!localContext.IsInLoop())
                 {
-                    context.AddFatalError(A1601_BreakStmt_ShouldUsedInLoop, breakStmt);
+                    localContext.AddFatalError(A1601_BreakStmt_ShouldUsedInLoop, breakStmt);
                 }
 
                 return new StmtResult(R.BreakStmt.Instance);
@@ -278,10 +279,10 @@ namespace Gum.IR0Translator
             StmtResult AnalyzeReturnStmt(S.ReturnStmt returnStmt)
             {
                 // seq 함수는 여기서 모두 처리 
-                if (context.IsSeqFunc())
+                if (localContext.IsSeqFunc())
                 {
                     if (returnStmt.Value != null)
-                        context.AddFatalError(A1202_ReturnStmt_SeqFuncShouldReturnVoid, returnStmt);
+                        localContext.AddFatalError(A1202_ReturnStmt_SeqFuncShouldReturnVoid, returnStmt);
 
                     return new StmtResult(new R.ReturnStmt(null));
                 }
@@ -298,7 +299,7 @@ namespace Gum.IR0Translator
                     }
                     else if (retTypeValue != VoidTypeValue.Instance)
                     {
-                        context.AddFatalError(A1201_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType, returnStmt);
+                        localContext.AddFatalError(A1201_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType, returnStmt);
                     }
 
                     return new StmtResult(new R.ReturnStmt(null));
@@ -306,7 +307,7 @@ namespace Gum.IR0Translator
                 else
                 {
                     // 이 함수의 적혀져 있던 리턴타입 or 첫번째로 발견되서 유지되고 있는 리턴타입
-                    var retTypeValue = context.GetRetTypeValue();
+                    var retTypeValue = localContext.GetRetTypeValue();
 
                     if (retTypeValue == null)
                     {
@@ -324,8 +325,8 @@ namespace Gum.IR0Translator
                         var valueResult = AnalyzeExp_Exp(returnStmt.Value, ResolveHint.Make(retTypeValue));
 
                         // 현재 함수 시그니처랑 맞춰서 같은지 확인한다
-                        if (!context.IsAssignable(retTypeValue, valueResult.TypeValue))
-                            context.AddFatalError(A1201_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType, returnStmt.Value);
+                        if (!localContext.IsAssignable(retTypeValue, valueResult.TypeValue))
+                            localContext.AddFatalError(A1201_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType, returnStmt.Value);
 
                         return new StmtResult(new R.ReturnStmt(valueResult.Exp));
                     }
@@ -338,7 +339,7 @@ namespace Gum.IR0Translator
                 var builder = ImmutableArray.CreateBuilder<R.Stmt>();
 
                 var newLocalContext = localContext.NewLocalContext(false);
-                var newStmtAnalyzer = new StmtAnalyzer(newLocalContext);
+                var newStmtAnalyzer = new StmtAndExpAnalyzer(newLocalContext);
 
                 foreach (var stmt in blockStmt.Stmts)
                 {
@@ -379,7 +380,7 @@ namespace Gum.IR0Translator
             StmtResult AnalyzeAwaitStmt(S.AwaitStmt awaitStmt)
             {
                 var newLocalContext = localContext.NewLocalContext();
-                var newStmtAnalyzer = new StmtAnalyzer(newLocalContext);
+                var newStmtAnalyzer = new StmtAndExpAnalyzer(newLocalContext);
 
                 var bodyResult = newStmtAnalyzer.AnalyzeStmt(awaitStmt.Body);
                 return new StmtResult(new R.AwaitStmt(bodyResult.Stmt));
@@ -470,18 +471,18 @@ namespace Gum.IR0Translator
 
             StmtResult AnalyzeYieldStmt(S.YieldStmt yieldStmt)
             {
-                if (!context.IsSeqFunc())
-                    context.AddFatalError(A1401_YieldStmt_YieldShouldBeInSeqFunc, yieldStmt);
+                if (!localContext.IsSeqFunc())
+                    localContext.AddFatalError(A1401_YieldStmt_YieldShouldBeInSeqFunc, yieldStmt);
 
                 // yield에서는 retType이 명시되는 경우만 있을 것이다
-                var retTypeValue = context.GetRetTypeValue();
+                var retTypeValue = localContext.GetRetTypeValue();
                 Debug.Assert(retTypeValue != null);
 
                 // NOTICE: 리턴 타입을 힌트로 넣었다
                 var valueResult = AnalyzeExp_Exp(yieldStmt.Value, ResolveHint.Make(retTypeValue));
 
-                if (!context.IsAssignable(retTypeValue, valueResult.TypeValue))
-                    context.AddFatalError(A1402_YieldStmt_MismatchBetweenYieldValueAndSeqFuncYieldType, yieldStmt.Value);
+                if (!localContext.IsAssignable(retTypeValue, valueResult.TypeValue))
+                    localContext.AddFatalError(A1402_YieldStmt_MismatchBetweenYieldValueAndSeqFuncYieldType, yieldStmt.Value);
 
                 return new StmtResult(new R.YieldStmt(valueResult.Exp));
             }
@@ -508,7 +509,7 @@ namespace Gum.IR0Translator
                 }
             }
 
-            StmtResult AnalyzeStmt(S.Stmt stmt)
+            public StmtResult AnalyzeStmt(S.Stmt stmt)
             {
                 if (stmt is S.VarDeclStmt varDeclStmt)
                     return AnalyzeLocalVarDeclStmt(varDeclStmt);

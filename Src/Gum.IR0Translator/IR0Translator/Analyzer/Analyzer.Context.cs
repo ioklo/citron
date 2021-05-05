@@ -16,7 +16,7 @@ namespace Gum.IR0Translator
     partial class Analyzer
     {
         // Analyzer는 backtracking이 없어서, MutableContext를 쓴다 
-        class Context
+        class GlobalContext
         {
             ItemValueFactory itemValueFactory;
             GlobalItemValueFactory globalItemValueFactory;
@@ -25,14 +25,12 @@ namespace Gum.IR0Translator
             IErrorCollector errorCollector;
 
             // 현재 분석되고 있는 함수
-            CallableContext curFunc;
-            bool bInLoop;
             List<R.Stmt> topLevelStmts;
             RDeclBuilder declBuilder;
 
             InternalGlobalVariableRepository internalGlobalVarRepo;
 
-            public Context(
+            public GlobalContext(
                 ItemValueFactory itemValueFactory,
                 GlobalItemValueFactory globalItemValueFactory,
                 TypeExpInfoService typeExpTypeValueService,
@@ -43,22 +41,10 @@ namespace Gum.IR0Translator
                 this.typeExpTypeValueService = typeExpTypeValueService;
                 this.errorCollector = errorCollector;
                 
-                curFunc = new CallableContext(itemValueFactory.Int, false);
-                bInLoop = false;
                 internalGlobalVarRepo = new InternalGlobalVariableRepository();
 
                 declBuilder = new GlobalRDeclBuilder();
                 topLevelStmts = new List<R.Stmt>();
-            }
-
-            public void AddLambdaCapture(LambdaCapture lambdaCapture)
-            {
-                curFunc.AddLambdaCapture(lambdaCapture);
-            }
-
-            public bool DoesLocalVarNameExistInScope(string name)
-            {
-                return curFunc.DoesLocalVarNameExistInScope(name);
             }
 
             public void AddError(AnalyzeErrorCode code, S.ISyntaxNode node)
