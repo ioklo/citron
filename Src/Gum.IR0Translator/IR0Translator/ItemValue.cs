@@ -30,7 +30,7 @@ namespace Gum.IR0Translator
     
     // 최상위
     [AutoConstructor]
-    class RootItemValueOuter : ItemValueOuter
+    partial class RootItemValueOuter : ItemValueOuter
     {
         M.ModuleName moduleName;
         M.NamespacePath namespacePath;
@@ -45,7 +45,7 @@ namespace Gum.IR0Translator
     }
 
     [AutoConstructor]
-    class NestedItemValueOuter : ItemValueOuter
+    partial class NestedItemValueOuter : ItemValueOuter
     {
         ItemValue outer;
 

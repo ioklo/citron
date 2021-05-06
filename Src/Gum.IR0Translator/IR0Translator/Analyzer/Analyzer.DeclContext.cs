@@ -29,12 +29,12 @@ namespace Gum.IR0Translator
                 decls.Add(new R.SequenceFuncDecl(lambdaDecls, name, bThisCall, yieldType, typeParams, paramInfos, body));
             }
 
-            protected void AddDecl(R.Decl decl)
+            public void AddDecl(R.Decl decl)
             {
                 decls.Add(decl);
             }
 
-            protected ImmutableArray<R.Decl> GetDecls()
+            public ImmutableArray<R.Decl> GetDecls()
             {
                 return decls.ToImmutableArray();
             }

@@ -77,6 +77,11 @@ namespace Gum.IR0Translator
                 return false;
             }
 
+            public void AddTopLevelStmt(R.Stmt stmt)
+            {
+                topLevelStmts.Add(stmt);
+            }
+
             public R.Script MakeScript()
             {
                 return new R.Script(moduleName, GetDecls(), topLevelStmts.ToImmutableArray());
@@ -118,7 +123,7 @@ namespace Gum.IR0Translator
             public override bool IsSeqFunc()
             {
                 return bSequence;
-            }
+            }            
         }
 
         class LambdaContext : CallableContext

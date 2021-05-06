@@ -30,9 +30,11 @@ namespace Gum.IR0Translator
             var globalContext = new GlobalContext(itemValueFactory, globalItemValueFactory, typeExpTypeValueService, errorCollector);            
             var analyzer = new Analyzer(globalContext);
 
-            var rootContext = new RootContext(itemValueFactory);
+            var rootContext = new RootContext(moduleName, itemValueFactory);
+            var localContext = new LocalContext(rootContext);
 
             var rootAnalyzer = new RootAnalyzer(rootContext);
+            RootAnalyzer.Analyze(globalContext, rootContext, localContext);
 
             // pass1, pass2
             var pass1 = new CollectingGlobalVarPass(analyzer); // 말이 틀렸다. TopLevelStmt를 여기서 분석하고 있다..
@@ -114,58 +116,6 @@ namespace Gum.IR0Translator
             context.AddSequenceFuncDecl(retRType, false, funcDecl.TypeParams, rparamInfos, bodyResult.Stmt);
         }
 
-        public void AnalyzeFuncDecl(S.FuncDecl funcDecl)
-        {
-            if (!funcDecl.IsSequence)
-                AnalyzeNormalFuncDecl(funcDecl);
-            else
-                AnalyzeSequenceFuncDecl(funcDecl);
-
-            context.ExecInFuncScope(funcDecl, () =>
-            {
-                if (0 < funcDecl.TypeParams.Length || funcDecl.ParamInfo.VariadicParamIndex != null)
-                    throw new NotImplementedException();
-                
-                // 파라미터 순서대로 추가
-                foreach (var param in funcDecl.ParamInfo.Parameters)
-                {
-                    var paramTypeValue = context.GetTypeValueByTypeExp(param.Type);
-                    context.AddLocalVarInfo(param.Name, paramTypeValue);
-                }
-
-                var bodyResult = AnalyzeStmt(funcDecl.Body);
-                
-                if (funcDecl.IsSequence)
-                {
-                    // TODO: Body가 실제로 리턴을 제대로 하는지 확인해야 한다
-                    var retTypeValue = context.GetRetTypeValue();
-                    Debug.Assert(retTypeValue != null, "문법상 Sequence 함수의 retValue가 없을수 없습니다");
-
-                    var retRType = retTypeValue.GetRType();
-                    var parameters = funcDecl.ParamInfo.Parameters.Select(param => param.Name).ToImmutableArray();
-
-                    var rparamInfos = ImmutableArray.CreateRange(funcDecl.ParamInfo.Parameters, param =>
-                    {
-                        var typeValue = context.GetTypeValueByTypeExp(param.Type);
-                        var rtype = typeValue.GetRType();
-
-                        return new R.ParamInfo(rtype, param.Name);
-                    });
-
-                    context.AddSequenceFuncDecl(retRType, false, funcDecl.TypeParams, rparamInfos, bodyResult.Stmt);
-                }
-                else
-                {
-                    // TODO: Body가 실제로 리턴을 제대로 하는지 확인해야 한다
-                    var parameters = funcDecl.ParamInfo.Parameters.Select(param =>
-                    {
-                        var paramTypeValue = context.GetTypeValueByTypeExp(param.Type);
-                        return new R.ParamInfo(paramTypeValue.GetRType(), param.Name);
-                    }).ToImmutableArray();
-
-                    context.AddNormalFuncDecl(funcDecl.Name, bThisCall: false, funcDecl.TypeParams, parameters, bodyResult.Stmt);
-                }
-            });
-        }
+        
     }
 }

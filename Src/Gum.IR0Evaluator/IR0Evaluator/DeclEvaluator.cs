@@ -89,8 +89,8 @@ namespace Gum.IR0Evaluator
                 var savedContainer = curContainer;
                 curContainer = itemContainer;
 
-                foreach (var lambdaDecl in normalFuncDecl.LambdaDecls)
-                    EvalLambdaDecl(lambdaDecl);
+                foreach (var decl in normalFuncDecl.Decls)
+                    EvalDecl(decl);
 
                 curContainer = savedContainer;                
             }
@@ -110,10 +110,34 @@ namespace Gum.IR0Evaluator
                 var savedContainer = curContainer;
                 curContainer = itemContainer;
 
-                foreach (var lambdaDecl in seqFuncDecl.LambdaDecls)
-                    EvalLambdaDecl(lambdaDecl);
+                foreach (var decl in seqFuncDecl.Decls)
+                {
+                    EvalDecl(decl);
+                }
 
                 curContainer = savedContainer;
+            }
+
+            void EvalDecl(R.Decl decl)
+            {
+                switch(decl)
+                {
+                    case R.LambdaDecl lambdaDecl:
+                        EvalLambdaDecl(lambdaDecl);
+                        break;
+
+                    case R.NormalFuncDecl normalFuncDecl:
+                        EvalNormalFuncDecl(normalFuncDecl);
+                        break;
+
+                    case R.SequenceFuncDecl seqFuncDecl:
+                        EvalSequenceFuncDecl(seqFuncDecl);
+                        break;
+
+                    case R.EnumDecl enumDecl:
+                        EvalEnumDecl(enumDecl);
+                        break;
+                }
             }
 
             void EvalEnumDecl(R.EnumDecl enumDecl)

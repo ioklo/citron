@@ -55,17 +55,12 @@ namespace Gum.IR0Translator
             throw new NotImplementedException();
         }
 
-        public R.Func MakeGlobalFunc(M.ModuleName moduleName, M.NamespacePath namespacePath, M.FuncInfo funcInfo, ImmutableArray<R.Path> rtypeArgs)
+        public R.Path MakeGlobalFunc(M.ModuleName moduleName, M.NamespacePath namespacePath, M.FuncInfo funcInfo, ImmutableArray<R.Path> rtypeArgs)
         {
             throw new NotImplementedException();
         }
 
-        public R.Func MakeMemberFunc(R.Path outer, M.FuncInfo funcInfo, ImmutableArray<R.Path> rtypeArgs)
-        {
-            throw new NotImplementedException();
-        }
-
-        public R.DeclId MakeDeclId(M.ModuleName value1, M.NamespacePath value2, M.FuncInfo funcInfo)
+        public R.Path MakeMemberFunc(R.Path outer, M.FuncInfo funcInfo, ImmutableArray<R.Path> rtypeArgs)
         {
             throw new NotImplementedException();
         }
