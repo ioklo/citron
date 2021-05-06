@@ -42,18 +42,11 @@ namespace Gum.IR0Translator
 
                 return new StmtResult(new R.CommandStmt(builder.ToImmutable()));
             }
-
-            // PrivateGlobalVarDecl이 나오거나, LocalVarDecl이 나오거나
-            public StmtResult AnalyzeGlobalVarDeclStmt(S.VarDeclStmt varDeclStmt)
-            {
-                var result = AnalyzeGlobalVarDecl(varDeclStmt.VarDecl);
-                return new StmtResult(new R.PrivateGlobalVarDeclStmt(result.Elems));
-            }
-
+            
             StmtResult AnalyzeLocalVarDeclStmt(S.VarDeclStmt varDeclStmt)
             {
-                var result = AnalyzeLocalVarDecl(varDeclStmt.VarDecl);
-                return new StmtResult(new R.LocalVarDeclStmt(result.VarDecl));
+                var localVarDecl = AnalyzeLocalVarDecl(varDeclStmt.VarDecl);
+                return new StmtResult(new R.LocalVarDeclStmt(localVarDecl));
             }
 
             //bool AnalyzeIfTestEnumStmt(
@@ -198,9 +191,7 @@ namespace Gum.IR0Translator
                 switch (forInit)
                 {
                     case S.VarDeclForStmtInitializer varDeclInit:
-
-                        var varDeclAnalzyer = new VarDeclAnalyzer();
-                        var varDeclResult = varDeclAnalzyer.AnalyzeLocalVarDecl(varDeclInit.VarDecl);
+                        var varDeclResult = AnalyzeLocalVarDecl(varDeclInit.VarDecl);
                         return new ForStmtInitializerResult(new R.VarDeclForStmtInitializer(varDeclResult.VarDecl));
 
                     case S.ExpForStmtInitializer expInit:

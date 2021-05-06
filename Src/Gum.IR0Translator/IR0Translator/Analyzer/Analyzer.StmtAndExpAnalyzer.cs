@@ -108,21 +108,42 @@ namespace Gum.IR0Translator
 
                 if (parameters.Length != args.Length)
                 {
-                    context.AddError(A0401_Parameter_MismatchBetweenParamCountAndArgCount, nodeForErrorReport);
+                    globalContext.AddError(A0401_Parameter_MismatchBetweenParamCountAndArgCount, nodeForErrorReport);
                     bFatal = true;
                 }
 
                 for (int i = 0; i < parameters.Length; i++)
                 {
-                    if (!context.IsAssignable(parameters[i], args[i]))
+                    if (!globalContext.IsAssignable(parameters[i], args[i]))
                     {
-                        context.AddError(A0402_Parameter_MismatchBetweenParamTypeAndArgType, nodeForErrorReport);
+                        globalContext.AddError(A0402_Parameter_MismatchBetweenParamTypeAndArgType, nodeForErrorReport);
                         bFatal = true;
                     }
                 }
 
                 if (bFatal)
                     throw new FatalAnalyzeException();
+            }
+
+            R.LocalVarDecl AnalyzeLocalVarDecl(S.VarDecl varDecl)
+            {
+                var varDeclAnalyzer = new VarDeclAnalyzer(globalContext, callableContext, localContext);
+
+                var declType = globalContext.GetTypeValueByTypeExp(varDecl.Type);
+
+                var relems = new List<R.VarDeclElement>();
+                foreach (var elem in varDecl.Elems)
+                {
+                    if (localContext.DoesLocalVarNameExistInScope(elem.VarName))
+                        globalContext.AddFatalError(A0103_VarDecl_LocalVarNameShouldBeUniqueWithinScope, elem);
+
+                    var result = varDeclAnalyzer.AnalyzeVarDeclElementCore(elem, declType);
+
+                    localContext.AddLocalVarInfo(elem.VarName, result.TypeValue);
+                    relems.Add(result.Elem);
+                }
+
+                return new R.LocalVarDecl(relems.ToImmutableArray());
             }
         }
     }

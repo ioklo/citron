@@ -11,7 +11,8 @@ using Gum.Collections;
 namespace Gum.IR0Translator
 {
     partial class Analyzer
-    {        
+    {
+        // TypeDecl등을 분석하는
         partial struct DeclAnalyzer
         {
             GlobalContext globalContext;

@@ -712,7 +712,7 @@ namespace Gum.IR0Translator
                 throw new UnreachableCodeException();
             }
 
-            ExpExpResult AnalyzeExp_Exp(S.Exp exp, ResolveHint hint)
+            public ExpExpResult AnalyzeExp_Exp(S.Exp exp, ResolveHint hint)
             {
                 var result = AnalyzeExp(exp, hint);
                 switch (result)
