@@ -32,7 +32,7 @@ namespace Gum.IR0Translator
                 public TypeValue TypeValue { get; }
             }
 
-            public VarDeclElementCoreResult AnalyzeVarDeclElementCore(S.VarDeclElement elem, TypeValue declType)
+            public VarDeclElementCoreResult AnalyzeVarDeclElement(S.VarDeclElement elem, TypeValue declType)
             {
                 if (elem.InitExp == null)
                 {

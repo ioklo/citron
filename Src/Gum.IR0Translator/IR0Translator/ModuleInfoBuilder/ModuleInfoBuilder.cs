@@ -13,7 +13,7 @@ using M = Gum.CompileTime;
 namespace Gum.IR0Translator
 {
     // Script에서 ModuleInfo 정보를 뽑는 역할
-    partial class ModuleInfoBuilder : ISyntaxScriptVisitor
+    partial class ModuleInfoBuilder
     {
         TypeExpInfoService typeExpInfoService;
 
@@ -26,7 +26,22 @@ namespace Gum.IR0Translator
         {
             var builder = new ModuleInfoBuilder(typeExpTypeValueService);
 
-            Misc.VisitScript(script, builder);
+            foreach(var elem in script.Elements)
+            {
+                switch(elem)
+                {
+                    case S.TypeDeclScriptElement typeDeclElem:
+                        builder.VisitTypeDecl(typeDeclElem.TypeDecl);
+                        break;
+
+                    case S.GlobalFuncDeclScriptElement globalFuncDeclElem:
+                        builder.VisitFuncDecl(globalFuncDeclElem.FuncDecl);
+                        break;
+
+                    // skip
+                    // case S.StmtScriptElement stmtScriptElem: 
+                }
+            }
 
             var moduleInfo = new M.ModuleInfo(moduleName,
                 ImmutableArray<M.NamespaceInfo>.Empty,
@@ -270,21 +285,6 @@ namespace Gum.IR0Translator
                 var varInfo = new M.MemberVarInfo(bStatic, declType, name);
                 AddMemberVarInfo(varInfo);
             }
-        }
-
-        void ISyntaxScriptVisitor.VisitGlobalFuncDecl(S.FuncDecl funcDecl)
-        {
-            VisitFuncDecl(funcDecl);
-        }
-
-        void ISyntaxScriptVisitor.VisitTopLevelStmt(S.Stmt stmt)
-        {
-            // do nothing
-        }
-
-        void ISyntaxScriptVisitor.VisitTypeDecl(S.TypeDecl typeDecl)
-        {
-            VisitTypeDecl(typeDecl);
-        }
+        }        
     }
 }

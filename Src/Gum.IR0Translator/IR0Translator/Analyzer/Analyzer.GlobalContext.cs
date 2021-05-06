@@ -53,10 +53,16 @@ namespace Gum.IR0Translator
                 throw new FatalAnalyzeException();
             }
 
+            public TypeValue GetVoidType()
+            {
+                return itemValueFactory.Void;
+            }
+
             public TypeValue GetBoolType()
             {
                 return itemValueFactory.Bool;
             }
+
             public TypeValue GetIntType()
             {
                 return itemValueFactory.Int;

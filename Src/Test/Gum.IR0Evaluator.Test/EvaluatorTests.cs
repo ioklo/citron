@@ -1003,7 +1003,7 @@ namespace Gum.IR0Evaluator.Test
                 Arr(new ParamInfo(Path.Int, "i"), new ParamInfo(Path.Int, "j"), new ParamInfo(Path.Int, "k"))
             );
             
-            var makeLambdaDecl = new NormalFuncDecl(Arr(lambdaDecl), "MakeLambda", false, default, default,
+            var makeLambdaDecl = new NormalFuncDecl(Arr<Decl>(lambdaDecl), "MakeLambda", false, default, default,
                 RBlock(                    
                     PrintStringCmdStmt("MakeLambda"),
                     new ReturnStmt(new LambdaExp(lambda))

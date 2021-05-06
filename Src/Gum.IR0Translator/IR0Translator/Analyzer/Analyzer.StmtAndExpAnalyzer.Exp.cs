@@ -94,7 +94,7 @@ namespace Gum.IR0Translator
                 public TypeValue TypeValue { get; }
             }
 
-            public ExpExpResult AnalyzeStringExp(S.StringExp stringExp)
+            ExpExpResult AnalyzeStringExp(S.StringExp stringExp)
             {
                 var bFatal = false;
 
@@ -337,7 +337,7 @@ namespace Gum.IR0Translator
                 var args = argResults.Select(info => info.Exp).ToImmutableArray();
 
                 return new ExpExpResult(
-                    new R.CallValueExp(callableLoc, args),
+                    new R.CallValueExp(lambdaType.Lambda, callableLoc, args),
                     lambdaType.Return);
             }
 
@@ -404,11 +404,51 @@ namespace Gum.IR0Translator
 
             ExpExpResult AnalyzeLambdaExp(S.LambdaExp exp)
             {
-                var lambdaResult = AnalyzeLambda(exp, exp.Body, exp.Params);
+                // TODO: 리턴 타입은 타입 힌트를 반영해야 한다
+                TypeValue? retTypeValue = null;
+
+                // 파라미터는 람다 함수의 지역변수로 취급한다
+                var paramInfos = new List<(string Name, TypeValue TypeValue)>();
+                foreach (var param in exp.Params)
+                {
+                    if (param.Type == null)
+                        globalContext.AddFatalError(A9901_NotSupported_LambdaParameterInference, exp);
+
+                    var paramTypeValue = globalContext.GetTypeValueByTypeExp(param.Type);
+                    paramInfos.Add((param.Name, paramTypeValue));
+                }
+
+                var newLambdaContext = new LambdaContext(localContext, retTypeValue);
+                var newLocalContext = new LocalContext(newLambdaContext);
+                var newAnalyzer = new StmtAndExpAnalyzer(globalContext, newLambdaContext, newLocalContext);
+
+                // 람다 파라미터를 지역 변수로 추가한다
+                foreach (var paramInfo in paramInfos)
+                    newLocalContext.AddLocalVarInfo(paramInfo.Name, paramInfo.TypeValue);
+
+                // 본문 분석
+                var bodyResult = newAnalyzer.AnalyzeStmt(exp.Body);
+
+                // 성공했으면, 리턴 타입 갱신            
+                var capturedLocalVars = newLambdaContext.GetCapturedLocalVars();
+
+                var paramTypes = paramInfos.Select(paramInfo => paramInfo.TypeValue).ToImmutableArray();
+                var rparamInfos = paramInfos.Select(paramInfo => new R.ParamInfo(paramInfo.TypeValue.GetRType(), paramInfo.Name)).ToImmutableArray();
+
+                // TODO: need capture this확인해서 this 넣기
+                // var bCaptureThis = newLambdaContext.NeedCaptureThis();
+                R.Path? capturedThisType = null;
+                var lambdaId = callableContext.AddLambdaDecl(capturedThisType, capturedLocalVars, rparamInfos, bodyResult.Stmt);
+
+                var lambdaTypeValue = globalContext.NewLambdaTypeValue(
+                    lambdaId,
+                    newLambdaContext.GetRetTypeValue() ?? globalContext.GetVoidType(),
+                    paramTypes
+                );
 
                 return new ExpExpResult(
-                    new R.LambdaExp(lambdaResult.bCaptureThis, lambdaResult.CaptureLocalVars),
-                    lambdaResult.TypeValue);
+                    new R.LambdaExp(lambdaTypeValue.Lambda),
+                    lambdaTypeValue);
             }
 
             ExpExpResult AnalyzeIndexerExp(S.IndexerExp exp)
@@ -712,7 +752,7 @@ namespace Gum.IR0Translator
                 throw new UnreachableCodeException();
             }
 
-            public ExpExpResult AnalyzeExp_Exp(S.Exp exp, ResolveHint hint)
+            internal ExpExpResult AnalyzeExp_Exp(S.Exp exp, ResolveHint hint)
             {
                 var result = AnalyzeExp(exp, hint);
                 switch (result)

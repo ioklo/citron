@@ -26,7 +26,7 @@ namespace Gum.IR0Translator
                 lambdaCount = 0;
             }
 
-            public void AddLambdaDecl(R.Path? capturedThisType, ImmutableArray<R.TypeAndName> capturedLocalVars, ImmutableArray<R.ParamInfo> paramInfos, R.Stmt body)
+            public R.LambdaId AddLambdaDecl(R.Path? capturedThisType, ImmutableArray<R.TypeAndName> capturedLocalVars, ImmutableArray<R.ParamInfo> paramInfos, R.Stmt body)
             {
                 var lambdaId = new R.LambdaId(lambdaCount);
                 var capturedStmt = new R.CapturedStatement(capturedThisType, capturedLocalVars, body);
@@ -35,6 +35,7 @@ namespace Gum.IR0Translator
                 AddDecl(decl);
 
                 lambdaCount++;
+                return lambdaId;
             }
         }
 

@@ -100,7 +100,7 @@ namespace Gum.IR0Translator
         }
 
         // IR0 Func를 만들어 줍니다
-        public R.Path GetRFunc()
+        public override R.Path GetRType()
         {
             // 1. GetFuncDeclId();
             // 2. TypeContext;            

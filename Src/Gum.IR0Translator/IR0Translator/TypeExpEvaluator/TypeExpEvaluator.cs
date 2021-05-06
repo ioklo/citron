@@ -14,7 +14,7 @@ using M = Gum.CompileTime;
 
 namespace Gum.IR0Translator
 {
-    partial class TypeExpEvaluator : ISyntaxScriptVisitor
+    partial class TypeExpEvaluator
     {
         class TypeExpEvaluatorFatalException : Exception
         {
@@ -38,7 +38,23 @@ namespace Gum.IR0Translator
         {
             var evaluator = new TypeExpEvaluator(internalModuleName, externalModuleInfoRepo, skelRepo, errorCollector);
 
-            Misc.VisitScript(script, evaluator);
+            foreach(var elem in script.Elements)
+            {
+                switch(elem)
+                {
+                    case S.TypeDeclScriptElement typeDeclElem:
+                        evaluator.VisitTypeDecl(typeDeclElem.TypeDecl);
+                        break;
+
+                    case S.GlobalFuncDeclScriptElement funcDeclElem:
+                        evaluator.VisitFuncDecl(funcDeclElem.FuncDecl);
+                        break;
+
+                    case S.StmtScriptElement stmtDeclElem:
+                        evaluator.VisitStmt(stmtDeclElem.Stmt);
+                        break;
+                }
+            }            
 
             if (errorCollector.HasError)
             {
@@ -59,26 +75,7 @@ namespace Gum.IR0Translator
             nestedTypeDepth = 0;
             infosByTypeExp = new Dictionary<S.TypeExp, TypeExpInfo>();
             typeEnv = ImmutableDictionary<string, M.TypeVarType>.Empty;
-        }
-
-        #region ISyntaxScriptVisitor implementation
-
-        void ISyntaxScriptVisitor.VisitGlobalFuncDecl(S.FuncDecl funcDecl)
-        {
-            VisitFuncDecl(funcDecl);
-        }
-        
-        void ISyntaxScriptVisitor.VisitTypeDecl(S.TypeDecl typeDecl)
-        {
-            VisitTypeDecl(typeDecl);
-        }
-
-        void ISyntaxScriptVisitor.VisitTopLevelStmt(S.Stmt stmt)
-        {
-            VisitStmt(stmt);
-        }
-
-        #endregion
+        }        
 
         [DoesNotReturn]
         void Throw(AnalyzeErrorCode code, S.ISyntaxNode node, string msg)

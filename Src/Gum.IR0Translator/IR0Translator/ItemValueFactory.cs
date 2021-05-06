@@ -18,6 +18,7 @@ namespace Gum.IR0Translator
         TypeInfoRepository typeInfoRepo;
         RItemFactory ritemFactory;
 
+        public TypeValue Void { get; }
         public TypeValue Bool { get; }
         public TypeValue Int { get; }        
         public TypeValue String { get; }
@@ -33,6 +34,7 @@ namespace Gum.IR0Translator
             this.typeInfoRepo = typeInfoRepo;
             this.ritemFactory = ritemFactory;
 
+            Void = VoidTypeValue.Instance;
             Bool = MakeTypeValue("System.Runtime", new M.NamespacePath("System"), MakeEmptyStructInfo("Boolean"), default);
             Int = MakeTypeValue("System.Runtime", new M.NamespacePath("System"), MakeEmptyStructInfo("Int32"), default);
 

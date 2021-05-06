@@ -1,10 +1,12 @@
-﻿using M = Gum.CompileTime;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Gum.Collections;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+
+using M = Gum.CompileTime;
+using R = Gum.IR0;
 
 namespace Gum.IR0Translator
 {
@@ -40,6 +42,11 @@ namespace Gum.IR0Translator
             var typeEnv = MakeTypeEnv();
             var typeValue = factory.MakeTypeValue(info.Type);
             return typeValue.Apply(typeEnv);
+        }
+
+        public override R.Path GetRType()
+        {
+            throw new NotImplementedException();
         }
     }
 }

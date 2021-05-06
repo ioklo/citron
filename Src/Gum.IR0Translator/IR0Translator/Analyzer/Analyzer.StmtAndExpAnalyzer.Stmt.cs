@@ -27,15 +27,14 @@ namespace Gum.IR0Translator
 
         // StmtAndExpAnalyzer
         partial struct StmtAndExpAnalyzer
-        {
-            
+        {   
             // CommandStmt에 있는 expStringElement를 분석한다
             StmtResult AnalyzeCommandStmt(S.CommandStmt cmdStmt)
             {
                 var builder = ImmutableArray.CreateBuilder<R.StringExp>();
                 foreach (var cmd in cmdStmt.Commands)
                 {
-                    var expResult = expAnalyzer.AnalyzeStringExp(cmd);
+                    var expResult = AnalyzeStringExp(cmd);
                     Debug.Assert(expResult.Exp is R.StringExp);
                     builder.Add((R.StringExp)expResult.Exp);
                 }
@@ -191,8 +190,8 @@ namespace Gum.IR0Translator
                 switch (forInit)
                 {
                     case S.VarDeclForStmtInitializer varDeclInit:
-                        var varDeclResult = AnalyzeLocalVarDecl(varDeclInit.VarDecl);
-                        return new ForStmtInitializerResult(new R.VarDeclForStmtInitializer(varDeclResult.VarDecl));
+                        var localVarDecl = AnalyzeLocalVarDecl(varDeclInit.VarDecl);
+                        return new ForStmtInitializerResult(new R.VarDeclForStmtInitializer(localVarDecl));
 
                     case S.ExpForStmtInitializer expInit:
                         var expResult = AnalyzeTopLevelExp_Exp(expInit.Exp, ResolveHint.None, A1102_ForStmt_ExpInitializerShouldBeAssignOrCall);
@@ -274,13 +273,13 @@ namespace Gum.IR0Translator
                 if (returnStmt.Value == null)
                 {
                     var retTypeValue = callableContext.GetRetTypeValue();
-                    var voidTypeValue = VoidTypeValue.Instance;
+                    var voidTypeValue = globalContext.GetVoidType();
 
                     if (retTypeValue == null)
                     {
                         callableContext.SetRetTypeValue(voidTypeValue);
                     }
-                    else if (retTypeValue != VoidTypeValue.Instance)
+                    else if (retTypeValue != voidTypeValue)
                     {
                         globalContext.AddFatalError(A1201_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType, returnStmt);
                     }
@@ -353,10 +352,29 @@ namespace Gum.IR0Translator
                 return new StmtResult(new R.ExpStmt(expResult.Exp));
             }
 
+            R.CapturedStatement AnalyzeCapturedStatement(TypeValue? retTypeValue, S.Stmt body)
+            {
+                // TODO: 리턴 타입은 타입 힌트를 반영해야 한다
+                // 파라미터는 람다 함수의 지역변수로 취급한다                
+                var newLambdaContext = new LambdaContext(localContext, retTypeValue);
+                var newLocalContext = new LocalContext(newLambdaContext);
+                var newAnalyzer = new StmtAndExpAnalyzer(globalContext, newLambdaContext, newLocalContext);
+
+                // 본문 분석
+                var bodyResult = newAnalyzer.AnalyzeStmt(body);                
+                var capturedLocalVars = newLambdaContext.GetCapturedLocalVars();
+
+                // TODO: need capture this확인해서 this 넣기
+                // var bCaptureThis = newLambdaContext.NeedCaptureThis();
+                R.Path? capturedThisType = null;                
+
+                return new R.CapturedStatement(capturedThisType, capturedLocalVars, bodyResult.Stmt);
+            }
+
             StmtResult AnalyzeTaskStmt(S.TaskStmt taskStmt)
             {
-                var lambdaResult = AnalyzeLambda(taskStmt, taskStmt.Body, ImmutableArray<S.LambdaExpParam>.Empty);
-                return new StmtResult(new R.TaskStmt((R.AnonymousLambdaType)lambdaResult.TypeValue.GetRType()));
+                var capturedStatement = AnalyzeCapturedStatement(globalContext.GetVoidType(), taskStmt.Body);
+                return new StmtResult(new R.TaskStmt(capturedStatement));
             }
 
             StmtResult AnalyzeAwaitStmt(S.AwaitStmt awaitStmt)
@@ -369,8 +387,8 @@ namespace Gum.IR0Translator
 
             StmtResult AnalyzeAsyncStmt(S.AsyncStmt asyncStmt)
             {
-                var lambdaResult = AnalyzeLambda(asyncStmt, asyncStmt.Body, ImmutableArray<S.LambdaExpParam>.Empty);
-                return new StmtResult(new R.AsyncStmt((R.AnonymousLambdaType)lambdaResult.TypeValue.GetRType()));
+                var capturedStatement = AnalyzeCapturedStatement(globalContext.GetVoidType(), asyncStmt.Body);
+                return new StmtResult(new R.AsyncStmt(capturedStatement));
             }
 
             StmtResult AnalyzeForeachStmt(S.ForeachStmt foreachStmt)
@@ -452,11 +470,11 @@ namespace Gum.IR0Translator
 
             StmtResult AnalyzeYieldStmt(S.YieldStmt yieldStmt)
             {
-                if (!localContext.IsSeqFunc())
+                if (!callableContext.IsSeqFunc())
                     globalContext.AddFatalError(A1401_YieldStmt_YieldShouldBeInSeqFunc, yieldStmt);
 
                 // yield에서는 retType이 명시되는 경우만 있을 것이다
-                var retTypeValue = localContext.GetRetTypeValue();
+                var retTypeValue = callableContext.GetRetTypeValue();
                 Debug.Assert(retTypeValue != null);
 
                 // NOTICE: 리턴 타입을 힌트로 넣었다

@@ -19,14 +19,14 @@ namespace Gum.IR0Translator
                 decls = new List<R.Decl>();
             }
 
-            public void AddNormalFuncDecl(ImmutableArray<R.LambdaDecl> lambdaDecls, R.Name name, bool bThisCall, ImmutableArray<string> typeParams, ImmutableArray<R.ParamInfo> paramNames, R.Stmt body)
+            public void AddNormalFuncDecl(ImmutableArray<R.Decl> decls, R.Name name, bool bThisCall, ImmutableArray<string> typeParams, ImmutableArray<R.ParamInfo> paramNames, R.Stmt body)
             {
-                decls.Add(new R.NormalFuncDecl(lambdaDecls, name, bThisCall, typeParams, paramNames, body));
+                decls.Add(new R.NormalFuncDecl(decls, name, bThisCall, typeParams, paramNames, body));
             }
 
-            public void AddSequenceFuncDecl(ImmutableArray<R.LambdaDecl> lambdaDecls, R.Name name, R.Path yieldType, bool bThisCall, ImmutableArray<string> typeParams, ImmutableArray<R.ParamInfo> paramInfos, R.Stmt body)
+            public void AddSequenceFuncDecl(ImmutableArray<R.Decl> decls, R.Name name, R.Path yieldType, bool bThisCall, ImmutableArray<string> typeParams, ImmutableArray<R.ParamInfo> paramInfos, R.Stmt body)
             {
-                decls.Add(new R.SequenceFuncDecl(lambdaDecls, name, bThisCall, yieldType, typeParams, paramInfos, body));
+                decls.Add(new R.SequenceFuncDecl(decls, name, bThisCall, yieldType, typeParams, paramInfos, body));
             }
 
             public void AddDecl(R.Decl decl)
