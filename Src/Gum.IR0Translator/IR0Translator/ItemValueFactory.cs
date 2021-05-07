@@ -66,7 +66,7 @@ namespace Gum.IR0Translator
         public MemberVarValue MakeMemberVarValue(NormalTypeValue outer, M.MemberVarInfo info)
         {
             return new MemberVarValue(this, outer, info);
-        }
+        }        
         
         ImmutableArray<TypeValue> MakeTypeValues(ImmutableArray<M.Type> mtypes)
         {
@@ -114,6 +114,11 @@ namespace Gum.IR0Translator
                 default:
                     throw new UnreachableCodeException();
             }
+        }
+
+        public ItemValue MakeFunc(ItemValueOuter outer, M.FuncInfo funcInfo, ImmutableArray<TypeValue> typeArgs)
+        {
+            return new FuncValue(this, outer, funcInfo, typeArgs);
         }
 
         public TypeVarTypeValue MakeTypeVar(int index)

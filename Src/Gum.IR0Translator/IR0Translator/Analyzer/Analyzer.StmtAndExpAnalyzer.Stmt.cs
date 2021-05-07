@@ -352,7 +352,7 @@ namespace Gum.IR0Translator
                 return new StmtResult(new R.ExpStmt(expResult.Exp));
             }
 
-            R.CapturedStatement AnalyzeCapturedStatement(TypeValue? retTypeValue, S.Stmt body)
+            R.CapturedStatementDecl AnalyzeCapturedStatement(TypeValue? retTypeValue, S.Stmt body)
             {
                 var newLambdaId = callableContext.NewLambdaId();
 
@@ -370,12 +370,15 @@ namespace Gum.IR0Translator
                 // var bCaptureThis = newLambdaContext.NeedCaptureThis();
                 R.Path? capturedThisType = null;                
 
-                return new R.CapturedStatement(capturedThisType, capturedLocalVars, bodyResult.Stmt);
+                return new R.CapturedStatementDecl(capturedThisType, capturedLocalVars, bodyResult.Stmt);
             }
 
             StmtResult AnalyzeTaskStmt(S.TaskStmt taskStmt)
             {
                 var capturedStatement = AnalyzeCapturedStatement(globalContext.GetVoidType(), taskStmt.Body);
+
+                callableContext.AddDecl(capturedStatement);
+
                 return new StmtResult(new R.TaskStmt(capturedStatement));
             }
 

@@ -440,7 +440,7 @@ namespace Gum.IR0Translator
                 // var bCaptureThis = newLambdaContext.NeedCaptureThis();
                 R.Path? capturedThisType = null;
 
-                var capturedStmt = new R.CapturedStatement(capturedThisType, capturedLocalVars, bodyResult.Stmt);
+                var capturedStmt = new R.CapturedStatementDecl(capturedThisType, capturedLocalVars, bodyResult.Stmt);
                 var lambdaDecl = new R.LambdaDecl(newLambdaId, capturedStmt, rparamInfos);
                 callableContext.AddDecl(lambdaDecl);
 

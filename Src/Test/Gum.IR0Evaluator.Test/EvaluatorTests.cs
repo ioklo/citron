@@ -642,8 +642,8 @@ namespace Gum.IR0Evaluator.Test
             var stmts = Arr<Stmt> (
                 new AwaitStmt(
                     RBlock(
-                        new TaskStmt(new CapturedStatement(null, default, PrintNumbersStmt(5))),
-                        new TaskStmt(new CapturedStatement(null, default, PrintNumbersStmt(5)))
+                        new TaskStmt(new CapturedStatementDecl(null, default, PrintNumbersStmt(5))),
+                        new TaskStmt(new CapturedStatementDecl(null, default, PrintNumbersStmt(5)))
                     )
                 )
             );
@@ -690,9 +690,9 @@ namespace Gum.IR0Evaluator.Test
 
                 new AwaitStmt(
                     RBlock(
-                        new TaskStmt(new CapturedStatement(null, Arr(new TypeAndName(Path.Int, "count")), PrintNumbersStmt())),
+                        new TaskStmt(new CapturedStatementDecl(null, Arr(new TypeAndName(Path.Int, "count")), PrintNumbersStmt())),
                         new ExpStmt(new AssignExp(LocalVar("count"), new IntLiteralExp(4))),
-                        new TaskStmt(new CapturedStatement(null, Arr(new TypeAndName(Path.Int, "count")), PrintNumbersStmt()))
+                        new TaskStmt(new CapturedStatementDecl(null, Arr(new TypeAndName(Path.Int, "count")), PrintNumbersStmt()))
                     )
                 )
             );
@@ -741,8 +741,8 @@ namespace Gum.IR0Evaluator.Test
             var stmts = Arr<Stmt> (
                 new AwaitStmt(
                     RBlock(
-                        new AsyncStmt(new CapturedStatement(null, default, PrintNumbersStmt(5))),
-                        new AsyncStmt(new CapturedStatement(null, default, PrintNumbersStmt(5)))
+                        new AsyncStmt(new CapturedStatementDecl(null, default, PrintNumbersStmt(5))),
+                        new AsyncStmt(new CapturedStatementDecl(null, default, PrintNumbersStmt(5)))
                     )
                 )
             );
@@ -999,7 +999,7 @@ namespace Gum.IR0Evaluator.Test
             // MakeLambda() { return (int i, int j, int k) => @"TestFunc";}
             var lambdaDecl = new LambdaDecl(
                 new LambdaId(0),
-                new CapturedStatement(null, default, PrintStringCmdStmt("TestFunc")),
+                new CapturedStatementDecl(null, default, PrintStringCmdStmt("TestFunc")),
                 Arr(new ParamInfo(Path.Int, "i"), new ParamInfo(Path.Int, "j"), new ParamInfo(Path.Int, "k"))
             );
             
@@ -1044,7 +1044,7 @@ namespace Gum.IR0Evaluator.Test
         public async Task LambdaExp_CapturesLocalVariablesWithCopying()
         {   
             // [x] () => @"$x";
-            var lambdaDecl = new LambdaDecl(new LambdaId(0), new CapturedStatement(null, Arr(new TypeAndName(Path.Int, "x")), PrintIntCmdStmt(new LocalVarLoc("x"))), default);
+            var lambdaDecl = new LambdaDecl(new LambdaId(0), new CapturedStatementDecl(null, Arr(new TypeAndName(Path.Int, "x")), PrintIntCmdStmt(new LocalVarLoc("x"))), default);
             var lambda = RootPath(new Name.Lambda(new LambdaId(0)));
 
             // int x = 3;

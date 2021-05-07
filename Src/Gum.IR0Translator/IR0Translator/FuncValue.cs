@@ -81,6 +81,13 @@ namespace Gum.IR0Translator
 
             var rtypeArgs = ImmutableArray.CreateRange(typeArgs, typeArg => typeArg.GetRType());
             return outer.MakeRPath(rname, paramHash, rtypeArgs);
-        }   
+        }
+
+        public override ItemValue Apply_ItemValue(TypeEnv typeEnv)
+        {
+            var appliedOuter = outer.Apply(typeEnv);
+            var appliedTypeArgs = ImmutableArray.CreateRange(typeArgs, typeArg => typeArg.Apply_TypeValue(typeEnv));
+            return itemValueFactory.MakeFunc(appliedOuter, funcInfo, appliedTypeArgs);
+        }
     }
 }
