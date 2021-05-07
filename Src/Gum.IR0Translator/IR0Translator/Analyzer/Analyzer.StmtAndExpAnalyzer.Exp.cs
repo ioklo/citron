@@ -420,7 +420,7 @@ namespace Gum.IR0Translator
 
                 var newLambdaId = callableContext.NewLambdaId();
                 var newLambdaContext = new LambdaContext(callableContext, localContext, newLambdaId, retTypeValue);
-                var newLocalContext = new LocalContext(newLambdaContext);
+                var newLocalContext = new LocalContext();
                 var newAnalyzer = new StmtAndExpAnalyzer(globalContext, newLambdaContext, newLocalContext);
 
                 // 람다 파라미터를 지역 변수로 추가한다

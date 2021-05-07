@@ -16,8 +16,8 @@ namespace Gum.IR0Translator
         struct RootAnalyzer
         {
             GlobalContext globalContext;
-            RootContext rootContext;            
-            LocalContext localContext;            
+            RootContext rootContext;
+            LocalContext localContext;
 
             RootAnalyzer(GlobalContext globalContext, RootContext rootContext, LocalContext localContext)
             {
@@ -28,7 +28,7 @@ namespace Gum.IR0Translator
 
             public static R.Script Analyze(GlobalContext globalContext, RootContext rootContext, S.Script script)
             {
-                var localContext = new LocalContext(rootContext);
+                var localContext = new LocalContext();
                 var analyzer = new RootAnalyzer(globalContext, rootContext, localContext);
 
                 var stmtAndExpAnalyzer = new StmtAndExpAnalyzer(globalContext, rootContext, localContext);
@@ -54,7 +54,7 @@ namespace Gum.IR0Translator
                 // 두번째 페이즈, declaration을 훑는다                
                 foreach (var elem in script.Elements)
                 {
-                    switch(elem)
+                    switch (elem)
                     {
                         case S.GlobalFuncDeclScriptElement globalFuncDeclElem:
                             analyzer.AnalyzeGlobalFuncDecl(globalFuncDeclElem.FuncDecl);
@@ -90,29 +90,49 @@ namespace Gum.IR0Translator
                 return new R.PrivateGlobalVarDeclStmt(elems.ToImmutableArray());
             }
 
-            R.ParamHash MakeParamHash(S.FuncDecl funcDecl)
+            (R.ParamHash ParamHash, ImmutableArray<R.ParamInfo> ParamInfos) MakeParamHashAndParamInfos(S.FuncDecl funcDecl)
             {
-                var builder = ImmutableArray.CreateBuilder<R.Path>(funcDecl.ParamInfo.Parameters.Length);
+                var paramTypesBuilder = ImmutableArray.CreateBuilder<R.Path>(funcDecl.ParamInfo.Parameters.Length);
+                var paramInfosBuilder = ImmutableArray.CreateBuilder<R.ParamInfo>(funcDecl.ParamInfo.Parameters.Length);
 
-                foreach(var param in funcDecl.ParamInfo.Parameters)
+                foreach (var param in funcDecl.ParamInfo.Parameters)
                 {
                     var typeValue = globalContext.GetTypeValueByTypeExp(param.Type);
+
                     var type = typeValue.GetRType();
-                    builder.Add(type);
+                    paramTypesBuilder.Add(type);
+
+                    var info = new R.ParamInfo(type, param.Name);
+                    paramInfosBuilder.Add(info);
                 }
 
-                return new R.ParamHash(funcDecl.TypeParams.Length, builder.MoveToImmutable());
+                var paramHash = new R.ParamHash(funcDecl.TypeParams.Length, paramTypesBuilder.MoveToImmutable());
+                var paramInfos = paramInfosBuilder.MoveToImmutable();
+
+                return (paramHash, paramInfos);
             }
 
+            ImmutableArray<R.Path> MakeRTypeArgs(S.GlobalFuncDecl funcDecl)
+            {
+                var typeArgsBuilder = ImmutableArray.CreateBuilder<R.Path>(funcDecl.TypeParams.Length);
+
+                // NOTICE: global이니까 이전 typeArgs가 없다
+                for (int i = 0; i<funcDecl.TypeParams.Length; i++)
+                    typeArgsBuilder.Add(new R.Path.TypeVarType(i));
+                return typeArgsBuilder.MoveToImmutable();
+            }
+
+            // 
             public void AnalyzeGlobalNormalFuncDecl(S.GlobalFuncDecl funcDecl)
             {
                 var retTypeValue = globalContext.GetTypeValueByTypeExp(funcDecl.RetType);
 
                 var rname = new R.Name.Normal(funcDecl.Name);
-                var rparamHash = MakeParamHash(funcDecl);
+                var (rparamHash, rparamInfos) = MakeParamHashAndParamInfos(funcDecl);
+                var rtypeArgs = MakeRTypeArgs(funcDecl);
 
-                var funcContext = new FuncContext(retTypeValue, false, rname, );
-                var localContext = new LocalContext(funcContext);
+                var funcContext = new FuncContext(rootContext, retTypeValue, false, rname, rparamHash, rtypeArgs);
+                var localContext = new LocalContext();
                 var analyzer = new StmtAndExpAnalyzer(globalContext, funcContext, localContext);
 
                 if (0 < funcDecl.TypeParams.Length || funcDecl.ParamInfo.VariadicParamIndex != null)
@@ -125,39 +145,22 @@ namespace Gum.IR0Translator
                     localContext.AddLocalVarInfo(param.Name, paramTypeValue);
                 }
 
-                var bodyResult = analyzer.AnalyzeStmt(funcDecl.Body);
-
-                var thisGlobalContext = this.globalContext;
-
                 // TODO: Body가 실제로 리턴을 제대로 하는지 확인해야 한다
-                var parameters = MakeParamInfos(funcDecl.ParamInfo.Parameters);
-
-                // 
+                var bodyResult = analyzer.AnalyzeStmt(funcDecl.Body);                
+                
                 var lambdaDecls = funcContext.GetDecls();
-                rootContext.AddDecl(new R.NormalFuncDecl(lambdaDecls, rname, false, funcDecl.TypeParams, parameters, bodyResult.Stmt));
-            }
-
-            ImmutableArray<R.ParamInfo> MakeParamInfos(ImmutableArray<S.TypeAndName> parameters)
-            {
-                var builder = ImmutableArray.CreateBuilder<R.ParamInfo>(parameters.Length);
-
-                foreach(var param in parameters)
-                {
-                    var typeValue = globalContext.GetTypeValueByTypeExp(param.Type);
-                    var rtype = typeValue.GetRType();
-                    var info = new R.ParamInfo(rtype, param.Name);
-
-                    builder.Add(info);
-                }
-
-                return builder.MoveToImmutable();
+                rootContext.AddDecl(new R.NormalFuncDecl(lambdaDecls, rname, false, funcDecl.TypeParams, rparamInfos, bodyResult.Stmt));
             }
 
             public void AnalyzeGlobalSequenceFuncDecl(S.GlobalFuncDecl funcDecl)
             {
                 var retTypeValue = globalContext.GetTypeValueByTypeExp(funcDecl.RetType);
-                var funcContext = new FuncContext(retTypeValue, true);
-                var localContext = new LocalContext(funcContext);
+                var rname = new R.Name.Normal(funcDecl.Name);
+                var (rparamHash, rparamInfos) = MakeParamHashAndParamInfos(funcDecl);
+                var rtypeArgs = MakeRTypeArgs(funcDecl);
+
+                var funcContext = new FuncContext(rootContext, retTypeValue, true, rname, rparamHash, rtypeArgs);
+                var localContext = new LocalContext();
                 var analyzer = new StmtAndExpAnalyzer(globalContext, funcContext, localContext);
                 
                 if (0 < funcDecl.TypeParams.Length || funcDecl.ParamInfo.VariadicParamIndex != null)
@@ -170,14 +173,13 @@ namespace Gum.IR0Translator
                     localContext.AddLocalVarInfo(param.Name, paramTypeValue);
                 }
 
-                var bodyResult = analyzer.AnalyzeStmt(funcDecl.Body);
-
                 // TODO: Body가 실제로 리턴을 제대로 하는지 확인해야 한다
+                var bodyResult = analyzer.AnalyzeStmt(funcDecl.Body);
+                
                 Debug.Assert(retTypeValue != null, "문법상 Sequence 함수의 retValue가 없을수 없습니다");
 
                 var retRType = retTypeValue.GetRType();
                 var parameters = funcDecl.ParamInfo.Parameters.Select(param => param.Name).ToImmutableArray();
-                var rparamInfos = MakeParamInfos(funcDecl.ParamInfo.Parameters);
 
                 var decls = funcContext.GetDecls();
                 rootContext.AddDecl(new R.SequenceFuncDecl(decls, funcDecl.Name, false, retRType, funcDecl.TypeParams, rparamInfos, bodyResult.Stmt));

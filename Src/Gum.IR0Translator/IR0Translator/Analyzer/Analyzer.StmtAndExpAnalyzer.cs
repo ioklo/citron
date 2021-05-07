@@ -26,12 +26,19 @@ namespace Gum.IR0Translator
                 this.globalContext = globalContext;
                 this.callableContext = callableContext;
                 this.localContext = localContext;
-            }
+            }            
 
             ImmutableArray<TypeValue> GetTypeValues(ImmutableArray<S.TypeExp> typeExps)
             {
-                var globalContext = this.globalContext;
-                return ImmutableArray.CreateRange(typeExps, typeExp => globalContext.GetTypeValueByTypeExp(typeExp));
+                var builder = ImmutableArray.CreateBuilder<TypeValue>(typeExps.Length);
+
+                foreach (var typeExp in typeExps)
+                {
+                    var typeValue = globalContext.GetTypeValueByTypeExp(typeExp);
+                    builder.Add(typeValue);
+                }
+
+                return builder.MoveToImmutable();
             }
 
             StmtAndExpAnalyzer NewAnalyzer()

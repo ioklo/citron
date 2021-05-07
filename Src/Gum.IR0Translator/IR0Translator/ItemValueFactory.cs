@@ -47,6 +47,11 @@ namespace Gum.IR0Translator
             return MakeTypeValue(new RootItemValueOuter(moduleName, namespacePath), typeInfo, typeArgs);
         }
 
+        public TypeValue MakeTypeValue(TypeValue outer, M.TypeInfo typeInfo, ImmutableArray<TypeValue> typeArgs)
+        {
+            return MakeTypeValue(new NestedItemValueOuter(outer), typeInfo, typeArgs);
+        }
+
         public NormalTypeValue MakeTypeValue(ItemValueOuter outer, M.TypeInfo typeInfo, ImmutableArray<TypeValue> typeArgs)
         {
             switch (typeInfo)
@@ -80,7 +85,7 @@ namespace Gum.IR0Translator
             switch (mtype)
             {
                 case M.TypeVarType typeVar:
-                    return MakeTypeVar(typeVar.Depth, typeVar.Index);
+                    return MakeTypeVar(typeVar.Index);
 
                 case M.GlobalType externalType:
                     {
@@ -111,9 +116,9 @@ namespace Gum.IR0Translator
             }
         }
 
-        public TypeVarTypeValue MakeTypeVar(int depth, int index)
+        public TypeVarTypeValue MakeTypeVar(int index)
         {
-            return new TypeVarTypeValue(ritemFactory, depth, index);
+            return new TypeVarTypeValue(ritemFactory, index);
         }        
         
         public FuncValue MakeMemberFunc(TypeValue outer, M.FuncInfo funcInfo, ImmutableArray<TypeValue> typeArgs)

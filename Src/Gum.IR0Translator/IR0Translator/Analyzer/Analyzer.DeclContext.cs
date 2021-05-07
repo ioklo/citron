@@ -39,7 +39,7 @@ namespace Gum.IR0Translator
                 return decls.ToImmutableArray();
             }
 
-            public abstract R.Path GetPath();
+            public abstract R.Path.Normal GetPath();
 
             public R.Path.Nested GetPath(R.Name childName, R.ParamHash paramHash, ImmutableArray<R.Path> typeArgs)
             {

@@ -84,7 +84,7 @@ namespace Gum.IR0Translator
                 return new R.Script(moduleName, GetDecls(), topLevelStmts.ToImmutableArray());
             }            
 
-            public override R.Path GetPath()
+            public override R.Path.Normal GetPath()
             {
                 return new R.Path.Root(moduleName);
             }
@@ -137,7 +137,7 @@ namespace Gum.IR0Translator
                 return bSequence;
             }
 
-            public override R.Path GetPath()
+            public override R.Path.Normal GetPath()
             {
                 return parentContext.GetPath(name, paramHash, typeArgs);
             }
@@ -215,7 +215,7 @@ namespace Gum.IR0Translator
                 return bCaptureThis;
             }
 
-            public override R.Path GetPath()
+            public override R.Path.Normal GetPath()
             {
                 return parentDeclContext.GetPath(new R.Name.Lambda(lambdaId), R.ParamHash.None, default);
             }

@@ -3,13 +3,14 @@ using R = Gum.IR0;
 using M = Gum.CompileTime;
 using Gum.Collections;
 using System.Diagnostics;
+using System;
 
 namespace Gum.IR0Translator
 {
     // TypeValue, FuncValue, MemberVarValue
     abstract class ItemValue
     {
-        internal virtual int FillTypeEnv(TypeEnvBuilder builder) { return 0; }
+        internal virtual void FillTypeEnv(TypeEnvBuilder builder) { }
 
         protected TypeEnv MakeTypeEnv()
         {
@@ -20,6 +21,7 @@ namespace Gum.IR0Translator
         }
 
         public abstract R.Path GetRType();
+        public abstract ItemValue Apply_ItemValue(TypeEnv typeEnv);
     }    
     
 }

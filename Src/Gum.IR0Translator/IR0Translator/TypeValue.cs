@@ -20,7 +20,12 @@ namespace Gum.IR0Translator
         public virtual TypeValue? GetBaseType() { return null; }
         public virtual ItemResult GetMember(M.Name memberName, ImmutableArray<TypeValue> typeArgs, ResolveHint hint) { return NotFoundItemResult.Instance; }
         public virtual TypeValue? GetMemberType(M.Name memberName, ImmutableArray<TypeValue> typeArgs) { return null; }        
-        internal abstract TypeValue Apply(TypeEnv typeEnv);        
+        internal abstract TypeValue Apply_TypeValue(TypeEnv typeEnv);        
+
+        public override ItemValue Apply_ItemValue(TypeEnv typeEnv)
+        {
+            return Apply_TypeValue(typeEnv);
+        }
     }
 
     // "var"
@@ -29,7 +34,7 @@ namespace Gum.IR0Translator
         public static readonly VarTypeValue Instance = new VarTypeValue();
         private VarTypeValue() { }
 
-        internal override TypeValue Apply(TypeEnv typeEnv) { return this; }
+        internal override TypeValue Apply_TypeValue(TypeEnv typeEnv) { return this; }
 
         // var는 translation패스에서 추론되기 때문에 IR0에 없다
         public override R.Path GetRType() { throw new InvalidOperationException();  }
@@ -41,24 +46,23 @@ namespace Gum.IR0Translator
     {
         RItemFactory ritemFactory;
 
-        public int Depth { get; }
         public int Index { get; }
 
-        internal override TypeValue Apply(TypeEnv typeEnv)
+        internal override TypeValue Apply_TypeValue(TypeEnv typeEnv)
         {
-            var typeValue = typeEnv.GetValue(Depth, Index);
+            var typeValue = typeEnv.GetValue(Index);
             if (typeValue != null)
                 return typeValue;
 
             return this;
         }
-        public override R.Path GetRType() => new R.Path.TypeVarType(Depth, Index);
+        public override R.Path GetRType() => new R.Path.TypeVarType(Index);
     }
 
     [ImplementIEquatable]
     partial class ClassTypeValue : NormalTypeValue
     {
-        internal override TypeValue Apply(TypeEnv typeEnv)
+        internal override TypeValue Apply_TypeValue(TypeEnv typeEnv)
         {
             throw new NotImplementedException();
         }
@@ -74,7 +78,7 @@ namespace Gum.IR0Translator
             throw new NotImplementedException();
         }
 
-        internal override TypeValue Apply(TypeEnv typeEnv)
+        internal override TypeValue Apply_TypeValue(TypeEnv typeEnv)
         {
             throw new NotImplementedException();
         }
@@ -176,7 +180,7 @@ namespace Gum.IR0Translator
 
             var typeEnv = MakeTypeEnv();
             var typeValue = typeValueFactory.MakeTypeValue(structInfo.BaseType);
-            return typeValue.Apply(typeEnv);
+            return typeValue.Apply_TypeValue(typeEnv);
         }
 
         public override ItemResult GetMember(M.Name memberName, ImmutableArray<TypeValue> typeArgs, ResolveHint hint)
@@ -220,68 +224,30 @@ namespace Gum.IR0Translator
             return null;
         }
 
-        internal override int FillTypeEnv(TypeEnvBuilder builder) 
+        internal override void FillTypeEnv(TypeEnvBuilder builder) 
         {
-            int depth;
             if (outer != null)
-                depth = outer.FillTypeEnv(builder) + 1;
-            else
-                depth = 0;
+                outer.FillTypeEnv(builder);            
 
             for (int i = 0; i < structInfo.TypeParams.Length; i++)
-                builder.Add(depth, i, typeArgs[i]);
-
-            return depth;
+                builder.Add(typeArgs[i]);
         }
 
-        internal override TypeValue Apply(TypeEnv typeEnv)
+        internal override TypeValue Apply_TypeValue(TypeEnv typeEnv)
         {
             // [X<00T>.Y<10U>.Z<20V>].Apply([00 => int, 10 => short, 20 => string])            
 
             var appliedOuter = outer.Apply(typeEnv);
-            var appliedTypeArgs = ImmutableArray.CreateRange(typeArgs, typeArg => typeArg.Apply(typeEnv));
+            var appliedTypeArgs = ImmutableArray.CreateRange(typeArgs, typeArg => typeArg.Apply_TypeValue(typeEnv));
             return typeValueFactory.MakeTypeValue(appliedOuter, structInfo, appliedTypeArgs);
         }
-
-        bool IsGlobal()
-        {
-            if (moduleName != null && namespacePath != null)
-                return true;
-            else if (outer != null)
-                return false;
-
-            throw new UnreachableCodeException();
-        }
-
+        
         public override R.Path GetRType()
-        {   
+        {
+            var rname = RItemFactory.MakeName(structInfo.Name);
             var rtypeArgs = RItemFactory.MakeRTypes(typeArgs);
-            return outer.GetRType(structInfo.Name, rtypeArgs);
 
-            if (IsGlobal())
-            {
-                Debug.Assert(moduleName != null && namespacePath != null);                
-
-                
-
-                var rmoduleName = RItemFactory.MakeModuleName(moduleName);
-                var rnsPath = RItemFactory.MakeNamespacePath(namespacePath);
-                var rname = RItemFactory.MakeName(name);
-                
-
-                return new R.Path.Root(rmoduleName, rnsPath, rname, rtypeArgs, R.ParamHash.None);
-            }
-            else
-            {
-                Debug.Assert(outer != null);
-                var routerType = outer.GetRType() as R.Path.Normal;
-                Debug.Assert(routerType != null);
-
-                var rname = MakeName(name);
-                var rtypeArgs = MakeRTypes(typeArgs);
-
-                return new R.Path.Nested(routerType, rname, rtypeArgs, R.ParamHash.None);
-            }
+            return outer.MakeRPath(rname, new R.ParamHash(structInfo.TypeParams.Length, default), rtypeArgs);
         }
     }
 
@@ -300,7 +266,7 @@ namespace Gum.IR0Translator
             return obj == Instance;
         }
 
-        internal override TypeValue Apply(TypeEnv typeEnv)
+        internal override TypeValue Apply_TypeValue(TypeEnv typeEnv)
         {
             return this;
         }
@@ -351,7 +317,7 @@ namespace Gum.IR0Translator
         //     var l = (T t) => t; // { l => LambdaTypeValue({id}, T, [T]) }
         // }
         // 분석중에 Apply할 일은 없고, 실행중에 할 일은 있을 것 같다
-        internal override TypeValue Apply(TypeEnv typeEnv)
+        internal override TypeValue Apply_TypeValue(TypeEnv typeEnv)
         {
             throw new InvalidOperationException();
         }
@@ -381,7 +347,7 @@ namespace Gum.IR0Translator
             Name = name;
         }
 
-        internal override TypeValue Apply(TypeEnv typeEnv)
+        internal override TypeValue Apply_TypeValue(TypeEnv typeEnv)
         {
             throw new NotImplementedException();
         }

@@ -32,16 +32,16 @@ namespace Gum.IR0Translator
             this.info = info;
         }
 
-        internal override int FillTypeEnv(TypeEnvBuilder builder)
+        internal override void FillTypeEnv(TypeEnvBuilder builder)
         {
-            return outer.FillTypeEnv(builder) + 1;
+            outer.FillTypeEnv(builder);
         }
 
         public TypeValue GetTypeValue()
         {
             var typeEnv = MakeTypeEnv();
             var typeValue = factory.MakeTypeValue(info.Type);
-            return typeValue.Apply(typeEnv);
+            return typeValue.Apply_TypeValue(typeEnv);
         }
 
         public override R.Path GetRType()

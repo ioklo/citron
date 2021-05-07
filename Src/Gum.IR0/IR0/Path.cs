@@ -13,7 +13,7 @@ namespace Gum.IR0
 
         // Reserved 
         public record TupleType : Reserved;
-        public record TypeVarType(int Depth, int Index) : Reserved;
+        public record TypeVarType(int Index) : Reserved;
         public record VoidType : Reserved
         {
             public static readonly Path Instance = new VoidType();

@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Text;
 using Gum.Infra;
-using Gum.CompileTime;
 using Gum.Collections;
 
 using R = Gum.IR0;
+using M = Gum.CompileTime;
 using System.Diagnostics;
 
 namespace Gum.IR0Translator
@@ -13,7 +13,7 @@ namespace Gum.IR0Translator
     // 외부 인터페이스
     public class Translator
     {
-        public static R.Script? Translate(ModuleName moduleName, ImmutableArray<ModuleInfo> referenceInfos, Syntax.Script sscript, IErrorCollector errorCollector)
+        public static R.Script? Translate(M.ModuleName moduleName, ImmutableArray<M.ModuleInfo> referenceInfos, Syntax.Script sscript, IErrorCollector errorCollector)
         {
             Debug.Assert(!referenceInfos.Contains(RuntimeModuleInfo.Instance));
 
@@ -29,8 +29,10 @@ namespace Gum.IR0Translator
             var itemValueFactory = new ItemValueFactory(typeInfoRepo, ritemFactory);
             var globalItemValueFactory = new GlobalItemValueFactory(itemValueFactory, internalModuleInfo, externalModuleInfoRepo);
 
+            var rmoduleName = RItemFactory.MakeModuleName(moduleName);
+
             // Make Analyzer
-            var script = Analyzer.Analyze(sscript, itemValueFactory, globalItemValueFactory, typeExpTypeValueService, errorCollector);
+            var script = Analyzer.Analyze(sscript, rmoduleName, itemValueFactory, globalItemValueFactory, typeExpTypeValueService, errorCollector);
 
             return script;
         }

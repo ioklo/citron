@@ -4,6 +4,7 @@ using Pretune;
 
 using M = Gum.CompileTime;
 using R = Gum.IR0;
+using System.Diagnostics;
 
 namespace Gum.IR0Translator
 {
@@ -11,7 +12,9 @@ namespace Gum.IR0Translator
     abstract class ItemValueOuter
     {
         public abstract R.Path MakeRPath(R.Name name, R.ParamHash paramHash, ImmutableArray<R.Path> typeArgs);
-        public abstract int FillTypeEnv(TypeEnvBuilder builder);
+        public abstract void FillTypeEnv(TypeEnvBuilder builder);
+
+        public abstract ItemValueOuter Apply(TypeEnv typeEnv);
     }
 
     // 최상위
@@ -32,9 +35,13 @@ namespace Gum.IR0Translator
             return new R.Path.Nested(path, name, paramHash, typeArgs);
         }
 
-        public override int FillTypeEnv(TypeEnvBuilder builder)
+        public override void FillTypeEnv(TypeEnvBuilder builder)
         {
-            return 0;
+        }
+
+        public override ItemValueOuter Apply(TypeEnv typeEnv)
+        {
+            return this;
         }
     }
 
@@ -51,9 +58,15 @@ namespace Gum.IR0Translator
             return new R.Path.Nested(router, name, paramHash, typeArgs);
         }
 
-        public override int FillTypeEnv(TypeEnvBuilder builder)
+        public override void FillTypeEnv(TypeEnvBuilder builder)
         {
-            return outer.FillTypeEnv(builder);
+            outer.FillTypeEnv(builder);
+        }
+
+        public override ItemValueOuter Apply(TypeEnv typeEnv)
+        {
+            var appliedOuter = outer.Apply_ItemValue(typeEnv);
+            return new NestedItemValueOuter(appliedOuter);
         }
     }
 }

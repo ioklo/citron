@@ -24,8 +24,7 @@ namespace Gum.IR0Translator
         ModuleInfoRepository externalModuleInfoRepo;
         TypeSkeletonRepository skelRepo;
         IErrorCollector errorCollector;
-
-        int nestedTypeDepth;
+        
         Dictionary<S.TypeExp, TypeExpInfo> infosByTypeExp;
         ImmutableDictionary<string, M.TypeVarType> typeEnv;
 
@@ -71,8 +70,7 @@ namespace Gum.IR0Translator
             this.externalModuleInfoRepo = externalModuleInfoRepo;
             this.skelRepo = skelRepo;
             this.errorCollector = errorCollector;
-
-            nestedTypeDepth = 0;
+            
             infosByTypeExp = new Dictionary<S.TypeExp, TypeExpInfo>();
             typeEnv = ImmutableDictionary<string, M.TypeVarType>.Empty;
         }        
@@ -101,11 +99,9 @@ namespace Gum.IR0Translator
             int i = 0;
             foreach (var typeParam in typeParams)
             {
-                typeEnv = typeEnv.SetItem(typeParam, new M.TypeVarType(nestedTypeDepth, i, typeParam));
+                typeEnv = typeEnv.SetItem(typeParam, new M.TypeVarType(i, typeParam));
                 i++;
-            }
-
-            nestedTypeDepth++;
+            }            
 
             try
             {
@@ -113,7 +109,6 @@ namespace Gum.IR0Translator
             }
             finally
             {
-                nestedTypeDepth--;
                 typeEnv = prevTypeEnv;
             }
         }

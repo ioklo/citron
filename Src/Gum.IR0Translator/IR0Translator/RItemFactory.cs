@@ -2,8 +2,8 @@
 using System.Diagnostics;
 using Gum.Collections;
 using Gum.Infra;
-using M = Gum.CompileTime;
 using R = Gum.IR0;
+using M = Gum.CompileTime;
 
 namespace Gum.IR0Translator
 {
@@ -21,7 +21,7 @@ namespace Gum.IR0Translator
                 case M.SpecialName.Normal: return new R.Name.Normal(name.Text!);
                 case M.SpecialName.IndexerGet: return new R.Name.IndexerGet();
                 case M.SpecialName.IndexerSet: return new R.Name.IndexerSet();
-                case M.SpecialName.AnonymousLambda: return new R.Name.Lambda(int.Parse(R.Name.Text!));
+                case M.SpecialName.AnonymousLambda: return new R.Name.Lambda(new R.LambdaId(int.Parse(name.Text!)));
                 case M.SpecialName.OpInc: return new R.Name.OpInc();
                 case M.SpecialName.OpDec: return new R.Name.OpDec();
             }

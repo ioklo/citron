@@ -96,7 +96,7 @@ namespace Gum.IR0Translator
             switch (type)
             {
                 case M.TypeVarType typeVar:
-                    sb.Append($"`({typeVar.Depth}, {typeVar.Index})");
+                    sb.Append($"`{typeVar.Index}");
                     break;
                 
                 case M.GlobalType externalType:

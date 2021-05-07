@@ -63,7 +63,6 @@ namespace Gum.CompileTime
     [AutoConstructor, ImplementIEquatable]
     public partial class TypeVarType : Type
     {
-        public int Depth { get; } 
         public int Index { get; }
         public string Name { get; }
     }

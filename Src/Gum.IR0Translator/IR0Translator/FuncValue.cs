@@ -37,18 +37,13 @@ namespace Gum.IR0Translator
             this.typeArgs = typeArgs;
         }
 
-        internal override int FillTypeEnv(TypeEnvBuilder builder)
+        internal override void FillTypeEnv(TypeEnvBuilder builder)
         {
-            int depth;
             if (outer != null)
-                depth = outer.FillTypeEnv(builder) + 1;
-            else
-                depth = 0;
+                outer.FillTypeEnv(builder);
 
             for(int i = 0; i < typeArgs.Length; i++)
-                builder.Add(depth, i, typeArgs[i]);
-
-            return depth;
+                builder.Add(typeArgs[i]);
         }
         
         // class X<T> { void Func<U>(T t, U u, int x); }
@@ -61,7 +56,7 @@ namespace Gum.IR0Translator
             foreach (var paramType in funcInfo.ParamTypes)
             {   
                 var paramTypeValue = itemValueFactory.MakeTypeValue(paramType);
-                var appliedParamTypeValue = paramTypeValue.Apply(typeEnv);
+                var appliedParamTypeValue = paramTypeValue.Apply_TypeValue(typeEnv);
                 builder.Add(appliedParamTypeValue);
             }
 
@@ -72,7 +67,7 @@ namespace Gum.IR0Translator
         {
             var typeEnv = MakeTypeEnv();
             var retTypeValue = itemValueFactory.MakeTypeValue(funcInfo.RetType);
-            return retTypeValue.Apply(typeEnv);
+            return retTypeValue.Apply_TypeValue(typeEnv);
         }
         
         // IR0 Func를 만들어 줍니다
