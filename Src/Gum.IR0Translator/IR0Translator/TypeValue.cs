@@ -256,7 +256,6 @@ namespace Gum.IR0Translator
         public override R.Path GetRType()
         {   
             var rtypeArgs = RItemFactory.MakeRTypes(typeArgs);
-
             return outer.GetRType(structInfo.Name, rtypeArgs);
 
             if (IsGlobal())

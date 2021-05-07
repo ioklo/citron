@@ -354,10 +354,12 @@ namespace Gum.IR0Translator
 
             R.CapturedStatement AnalyzeCapturedStatement(TypeValue? retTypeValue, S.Stmt body)
             {
+                var newLambdaId = callableContext.NewLambdaId();
+
                 // TODO: 리턴 타입은 타입 힌트를 반영해야 한다
                 // 파라미터는 람다 함수의 지역변수로 취급한다                
-                var newLambdaContext = new LambdaContext(localContext, retTypeValue);
-                var newLocalContext = new LocalContext(newLambdaContext);
+                var newLambdaContext = new LambdaContext(callableContext, localContext, newLambdaId, retTypeValue);
+                var newLocalContext = new LocalContext();
                 var newAnalyzer = new StmtAndExpAnalyzer(globalContext, newLambdaContext, newLocalContext);
 
                 // 본문 분석

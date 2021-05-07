@@ -90,11 +90,28 @@ namespace Gum.IR0Translator
                 return new R.PrivateGlobalVarDeclStmt(elems.ToImmutableArray());
             }
 
+            R.ParamHash MakeParamHash(S.FuncDecl funcDecl)
+            {
+                var builder = ImmutableArray.CreateBuilder<R.Path>(funcDecl.ParamInfo.Parameters.Length);
+
+                foreach(var param in funcDecl.ParamInfo.Parameters)
+                {
+                    var typeValue = globalContext.GetTypeValueByTypeExp(param.Type);
+                    var type = typeValue.GetRType();
+                    builder.Add(type);
+                }
+
+                return new R.ParamHash(funcDecl.TypeParams.Length, builder.MoveToImmutable());
+            }
 
             public void AnalyzeGlobalNormalFuncDecl(S.GlobalFuncDecl funcDecl)
             {
                 var retTypeValue = globalContext.GetTypeValueByTypeExp(funcDecl.RetType);
-                var funcContext = new FuncContext(retTypeValue, false);
+
+                var rname = new R.Name.Normal(funcDecl.Name);
+                var rparamHash = MakeParamHash(funcDecl);
+
+                var funcContext = new FuncContext(retTypeValue, false, rname, );
                 var localContext = new LocalContext(funcContext);
                 var analyzer = new StmtAndExpAnalyzer(globalContext, funcContext, localContext);
 
@@ -117,7 +134,7 @@ namespace Gum.IR0Translator
 
                 // 
                 var lambdaDecls = funcContext.GetDecls();
-                rootContext.AddDecl(new R.NormalFuncDecl(lambdaDecls, funcDecl.Name, false, funcDecl.TypeParams, parameters, bodyResult.Stmt));
+                rootContext.AddDecl(new R.NormalFuncDecl(lambdaDecls, rname, false, funcDecl.TypeParams, parameters, bodyResult.Stmt));
             }
 
             ImmutableArray<R.ParamInfo> MakeParamInfos(ImmutableArray<S.TypeAndName> parameters)

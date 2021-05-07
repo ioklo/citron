@@ -20,41 +20,6 @@ namespace Gum.IR0Translator
         }
 
         public abstract R.Path GetRType();
-    }
+    }    
     
-    // reserved가 아닌 아이템에서나 존재함
-    abstract class ItemValueOuter
-    {
-        public abstract R.Path MakeRPath(R.Name name, R.ParamHash paramHash, ImmutableArray<R.Path> typeArgs);
-    }
-    
-    // 최상위
-    [AutoConstructor]
-    partial class RootItemValueOuter : ItemValueOuter
-    {
-        M.ModuleName moduleName;
-        M.NamespacePath namespacePath;
-
-        public override R.Path MakeRPath(R.Name name, R.ParamHash paramHash, ImmutableArray<R.Path> typeArgs)
-        {
-            var rmoduleName = RItemFactory.MakeModuleName(moduleName);
-            var rnamespacePath = RItemFactory.MakeNamespacePath(namespacePath);
-
-            return new R.Path.Root(rmoduleName, rnamespacePath, name, paramHash, typeArgs);
-        }
-    }
-
-    [AutoConstructor]
-    partial class NestedItemValueOuter : ItemValueOuter
-    {
-        ItemValue outer;
-
-        public override R.Path MakeRPath(R.Name name, R.ParamHash paramHash, ImmutableArray<R.Path> typeArgs)
-        {
-            var router = outer.GetRType() as R.Path.Normal;
-            Debug.Assert(router != null);
-
-            return new R.Path.Nested(router, name, paramHash, typeArgs);
-        }
-    }
 }

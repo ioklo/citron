@@ -38,6 +38,14 @@ namespace Gum.IR0Translator
             {
                 return decls.ToImmutableArray();
             }
+
+            public abstract R.Path GetPath();
+
+            public R.Path.Nested GetPath(R.Name childName, R.ParamHash paramHash, ImmutableArray<R.Path> typeArgs)
+            {
+                var path = GetPath();
+                return new R.Path.Nested(path, childName, paramHash, typeArgs);
+            }
         }
 
         // NamespaceDeclContext

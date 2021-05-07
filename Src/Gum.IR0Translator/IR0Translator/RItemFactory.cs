@@ -12,12 +12,6 @@ namespace Gum.IR0Translator
         public static R.ModuleName MakeModuleName(M.ModuleName moduleName)
         {
             return new R.ModuleName(moduleName.Text);
-        }        
-
-        public static R.NamespacePath MakeNamespacePath(M.NamespacePath nsPath)
-        {
-            var rentries = ImmutableArray.CreateRange(nsPath.Entries, entry => new R.NamespaceName(entry.Value));
-            return new R.NamespacePath(rentries);
         }
 
         public static R.Name MakeName(M.Name name)

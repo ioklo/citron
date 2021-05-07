@@ -138,9 +138,9 @@ namespace Gum.IR0Translator
                 return internalGlobalVarRepo.HasVariable(name);
             }
 
-            public LambdaTypeValue NewLambdaTypeValue(R.LambdaId lambdaId, TypeValue retType, ImmutableArray<TypeValue> paramTypes)
+            public LambdaTypeValue NewLambdaTypeValue(R.Path.Nested lambda, TypeValue retType, ImmutableArray<TypeValue> paramTypes)
             {
-                return itemValueFactory.MakeLambdaType(lambdaId, retType, paramTypes);
+                return itemValueFactory.MakeLambdaType(lambda, retType, paramTypes);
             }
 
             public ItemResult GetGlobalItem(M.NamespacePath namespacePath, string idName, ImmutableArray<TypeValue> typeArgs, ResolveHint hint)

@@ -115,22 +115,23 @@ namespace Gum.IR0Translator
         {
             return new TypeVarTypeValue(ritemFactory, depth, index);
         }        
-
-        // internal
+        
         public FuncValue MakeMemberFunc(TypeValue outer, M.FuncInfo funcInfo, ImmutableArray<TypeValue> typeArgs)
         {
-            return new FuncValue(this, ritemFactory, null, null, outer, funcInfo, typeArgs);
+            var itemValueOuter = new NestedItemValueOuter(outer);
+            return new FuncValue(this, itemValueOuter, funcInfo, typeArgs);
         }
 
         // global
         public FuncValue MakeGlobalFunc(M.ModuleName moduleName, M.NamespacePath namespacePath, M.FuncInfo funcInfo, ImmutableArray<TypeValue> typeArgs)
         {
-            return new FuncValue(this, ritemFactory, moduleName, namespacePath, null, funcInfo, typeArgs);
+            var itemValueOuter = new RootItemValueOuter(moduleName, namespacePath);
+            return new FuncValue(this, itemValueOuter, funcInfo, typeArgs);
         }
 
-        public LambdaTypeValue MakeLambdaType(R.LambdaId lambdaId, TypeValue retType, ImmutableArray<TypeValue> paramTypes)
+        public LambdaTypeValue MakeLambdaType(R.Path.Nested lambda, TypeValue retType, ImmutableArray<TypeValue> paramTypes)
         {
-            return new LambdaTypeValue(ritemFactory, lambdaId, retType, paramTypes);
+            return new LambdaTypeValue(ritemFactory, lambda, retType, paramTypes);
         }
 
         public VarTypeValue MakeVarTypeValue()

@@ -418,7 +418,8 @@ namespace Gum.IR0Translator
                     paramInfos.Add((param.Name, paramTypeValue));
                 }
 
-                var newLambdaContext = new LambdaContext(localContext, retTypeValue);
+                var newLambdaId = callableContext.NewLambdaId();
+                var newLambdaContext = new LambdaContext(callableContext, localContext, newLambdaId, retTypeValue);
                 var newLocalContext = new LocalContext(newLambdaContext);
                 var newAnalyzer = new StmtAndExpAnalyzer(globalContext, newLambdaContext, newLocalContext);
 
@@ -438,10 +439,13 @@ namespace Gum.IR0Translator
                 // TODO: need capture this확인해서 this 넣기
                 // var bCaptureThis = newLambdaContext.NeedCaptureThis();
                 R.Path? capturedThisType = null;
-                var lambdaId = callableContext.AddLambdaDecl(capturedThisType, capturedLocalVars, rparamInfos, bodyResult.Stmt);
+
+                var capturedStmt = new R.CapturedStatement(capturedThisType, capturedLocalVars, bodyResult.Stmt);
+                var lambdaDecl = new R.LambdaDecl(newLambdaId, capturedStmt, rparamInfos);
+                callableContext.AddDecl(lambdaDecl);
 
                 var lambdaTypeValue = globalContext.NewLambdaTypeValue(
-                    lambdaId,
+                    callableContext.GetPath(new R.Name.Lambda(newLambdaId), R.ParamHash.None, default), // lambda는 paramHash를 넣지 않는다
                     newLambdaContext.GetRetTypeValue() ?? globalContext.GetVoidType(),
                     paramTypes
                 );

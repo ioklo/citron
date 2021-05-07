@@ -26,15 +26,11 @@ namespace Gum.IR0Translator
                 lambdaCount = 0;
             }
 
-            public R.LambdaId AddLambdaDecl(R.Path? capturedThisType, ImmutableArray<R.TypeAndName> capturedLocalVars, ImmutableArray<R.ParamInfo> paramInfos, R.Stmt body)
+            public R.LambdaId NewLambdaId()
             {
                 var lambdaId = new R.LambdaId(lambdaCount);
-                var capturedStmt = new R.CapturedStatement(capturedThisType, capturedLocalVars, body);
-                var decl = new R.LambdaDecl(lambdaId, capturedStmt, paramInfos);
-
-                AddDecl(decl);
-
                 lambdaCount++;
+
                 return lambdaId;
             }
         }
@@ -87,17 +83,32 @@ namespace Gum.IR0Translator
             {
                 return new R.Script(moduleName, GetDecls(), topLevelStmts.ToImmutableArray());
             }            
+
+            public override R.Path GetPath()
+            {
+                return new R.Path.Root(moduleName);
+            }
         }
         
         class FuncContext : CallableContext
         {
+            DeclContext parentContext;
             TypeValue? retTypeValue; // 리턴 타입이 미리 정해져 있다면 이걸 쓴다
             bool bSequence;          // 시퀀스 여부
 
-            public FuncContext(TypeValue? retTypeValue, bool bSequence)
+            R.Name name;
+            R.ParamHash paramHash;
+            ImmutableArray<R.Path> typeArgs;
+
+            public FuncContext(DeclContext parentContext, TypeValue? retTypeValue, bool bSequence, R.Name name, R.ParamHash paramHash, ImmutableArray<R.Path> typeArgs)
             {
+                this.parentContext = parentContext;
                 this.retTypeValue = retTypeValue;
                 this.bSequence = bSequence;
+
+                this.name = name;
+                this.paramHash = paramHash;
+                this.typeArgs = typeArgs;
             }
 
             public override LocalVarInfo? GetLocalVarOutsideLambda(string varName)
@@ -124,19 +135,28 @@ namespace Gum.IR0Translator
             public override bool IsSeqFunc()
             {
                 return bSequence;
-            }            
+            }
+
+            public override R.Path GetPath()
+            {
+                return parentContext.GetPath(name, paramHash, typeArgs);
+            }
         }
 
         class LambdaContext : CallableContext
         {
-            LocalContext parentContext;
+            DeclContext parentDeclContext;            
+            LocalContext parentLocalContext;
+            R.LambdaId lambdaId;
             TypeValue? retTypeValue;
             bool bCaptureThis;
             Dictionary<string, TypeValue> localCaptures;
 
-            public LambdaContext(LocalContext parentContext, TypeValue? retTypeValue)
+            public LambdaContext(DeclContext parentDeclContext, LocalContext parentLocalContext, R.LambdaId lambdaId, TypeValue? retTypeValue)
             {
-                this.parentContext = parentContext;
+                this.parentDeclContext = parentDeclContext;
+                this.parentLocalContext = parentLocalContext;
+                this.lambdaId = lambdaId;
                 this.retTypeValue = retTypeValue;
                 this.bCaptureThis = false;
                 this.localCaptures = new Dictionary<string, TypeValue>();
@@ -144,7 +164,7 @@ namespace Gum.IR0Translator
 
             public override LocalVarInfo? GetLocalVarOutsideLambda(string varName)
             {
-                return parentContext.GetLocalVarInfo(varName);
+                return parentLocalContext.GetLocalVarInfo(varName);
             }
 
             public override TypeValue? GetRetTypeValue()
@@ -193,6 +213,11 @@ namespace Gum.IR0Translator
             public bool NeedCaptureThis()
             {
                 return bCaptureThis;
+            }
+
+            public override R.Path GetPath()
+            {
+                return parentDeclContext.GetPath(new R.Name.Lambda(lambdaId), R.ParamHash.None, default);
             }
         }
     }
