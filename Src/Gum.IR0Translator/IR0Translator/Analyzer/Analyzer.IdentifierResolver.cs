@@ -25,15 +25,15 @@ namespace Gum.IR0Translator
             throw new UnreachableCodeException();
         }
 
-        static ErrorIdentifierResult ToErrorIdentifierResult(ErrorItemResult errorResult)
+        static IdentifierResult.Error ToErrorIdentifierResult(ItemResult.Error errorResult)
         {
             switch(errorResult)
             {
-                case MultipleCandidatesErrorItemResult:
-                    return MultipleCandiatesErrorIdentifierResult.Instance;
+                case ItemResult.Error.MultipleCandidates:
+                    return IdentifierResult.Error.MultipleCandiates.Instance;
 
-                case VarWithTypeArgErrorItemResult:
-                    return VarWithTypeArgErrorIdentifierResult.Instance;
+                case ItemResult.Error.VarWithTypeArg:
+                    return IdentifierResult.Error.VarWithTypeArg.Instance;
             }
 
             throw new UnreachableCodeException();
@@ -67,39 +67,39 @@ namespace Gum.IR0Translator
             IdentifierResult GetLocalVarOutsideLambdaInfo()
             {
                 // 지역 스코프에는 변수만 있고, 함수, 타입은 없으므로 이름이 겹치는 것이 있는지 검사하지 않아도 된다
-                if (typeArgs.Length != 0) return NotFoundIdentifierResult.Instance;
+                if (typeArgs.Length != 0) return IdentifierResult.NotFound.Instance;
 
                 var varInfo = callableContext.GetLocalVarOutsideLambda(idName);
-                if (varInfo == null) return NotFoundIdentifierResult.Instance;
+                if (varInfo == null) return IdentifierResult.NotFound.Instance;
 
-                return new LocalVarIdentifierResult(true, varInfo.Value.Name, varInfo.Value.TypeValue);
+                return new IdentifierResult.Valid.LocalVar(true, varInfo.Value.Name, varInfo.Value.TypeValue);
             }
 
             IdentifierResult GetLocalVarInfo()
             {
                 // 지역 스코프에는 변수만 있고, 함수, 타입은 없으므로 이름이 겹치는 것이 있는지 검사하지 않아도 된다
-                if (typeArgs.Length != 0) return NotFoundIdentifierResult.Instance;
+                if (typeArgs.Length != 0) return IdentifierResult.NotFound.Instance;
 
                 var varInfo = localContext.GetLocalVarInfo(idName);
-                if (varInfo == null) return NotFoundIdentifierResult.Instance;
+                if (varInfo == null) return IdentifierResult.NotFound.Instance;
 
-                return new LocalVarIdentifierResult(false, varInfo.Value.Name, varInfo.Value.TypeValue);
+                return new IdentifierResult.Valid.LocalVar(false, varInfo.Value.Name, varInfo.Value.TypeValue);
             }
 
             IdentifierResult GetThisMemberInfo()
             {
                 // TODO: implementation
-                return NotFoundIdentifierResult.Instance;
+                return IdentifierResult.NotFound.Instance;
             }
 
             IdentifierResult GetInternalGlobalVarInfo()
             {
-                if (typeArgs.Length != 0) return NotFoundIdentifierResult.Instance;
+                if (typeArgs.Length != 0) return IdentifierResult.NotFound.Instance;
                 
                 var varInfo = globalContext.GetInternalGlobalVarInfo(idName);
-                if (varInfo == null) return NotFoundIdentifierResult.Instance;
+                if (varInfo == null) return IdentifierResult.NotFound.Instance;
 
-                return new GlobalVarIdentifierResult(varInfo.Name.ToString(), varInfo.TypeValue);
+                return new IdentifierResult.Valid.GlobalVar(varInfo.Name.ToString(), varInfo.TypeValue);
             }
             
             IdentifierResult GetGlobalInfo()
@@ -110,15 +110,10 @@ namespace Gum.IR0Translator
 
                 switch (globalResult)
                 {
-                    case NotFoundItemResult: return NotFoundIdentifierResult.Instance;
-                    case ErrorItemResult errorResult: return ToErrorIdentifierResult(errorResult);
-                    case ValueItemResult itemResult:
-                        switch (itemResult.ItemValue)
-                        {
-                            case TypeValue typeValue: return new TypeIdentifierResult(typeValue);
-                            case FuncValue funcValue: return new StaticFuncIdentifierResult(funcValue);
-                            default: throw new UnreachableCodeException();
-                        }
+                    case ItemResult.NotFound: return IdentifierResult.NotFound.Instance;
+                    case ItemResult.Error errorResult: return ToErrorIdentifierResult(errorResult);
+                    case ItemResult.Type typeResult: return new IdentifierResult.Valid.Type(typeResult.TypeValue);
+                    case ItemResult.Funcs funcsResult: return new IdentifierResult.Valid.Funcs(funcsResult.FuncValues);
                 }
 
                 throw new UnreachableCodeException();
@@ -128,28 +123,28 @@ namespace Gum.IR0Translator
             {
                 // 0. local 변수, local 변수에서는 힌트를 쓸 일이 없다
                 var localVarInfo = GetLocalVarInfo();
-                if (localVarInfo != NotFoundIdentifierResult.Instance) return localVarInfo;
+                if (localVarInfo != IdentifierResult.NotFound.Instance) return localVarInfo;
 
                 // 1. 람다 바깥의 local 변수
                 var localOutsideInfo = GetLocalVarOutsideLambdaInfo();
-                if (localOutsideInfo != NotFoundIdentifierResult.Instance) return localOutsideInfo;
+                if (localOutsideInfo != IdentifierResult.NotFound.Instance) return localOutsideInfo;
 
                 // 2. thisType의 {{instance, static} * {변수, 함수}}, 타입. 아직 지원 안함
                 // 힌트는 오버로딩 함수 선택에 쓰일수도 있고,
                 // 힌트가 thisType안의 enum인 경우 elem을 선택할 수도 있다
                 var thisMemberInfo = GetThisMemberInfo();
-                if (thisMemberInfo != NotFoundIdentifierResult.Instance) return thisMemberInfo;
+                if (thisMemberInfo != IdentifierResult.NotFound.Instance) return thisMemberInfo;
 
                 // 3. internal global 'variable', 변수이므로 힌트를 쓸 일이 없다
                 var internalGlobalVarInfo = GetInternalGlobalVarInfo();
-                if (internalGlobalVarInfo != NotFoundIdentifierResult.Instance) return internalGlobalVarInfo;
+                if (internalGlobalVarInfo != IdentifierResult.NotFound.Instance) return internalGlobalVarInfo;
 
                 // 4. 네임스페이스 -> 바깥 네임스페이스 -> module global, 함수, 타입, 
                 // 오버로딩 함수 선택, hint가 global enum인 경우, elem선택
                 var externalGlobalInfo = GetGlobalInfo();
-                if (externalGlobalInfo != NotFoundIdentifierResult.Instance) return externalGlobalInfo;
+                if (externalGlobalInfo != IdentifierResult.NotFound.Instance) return externalGlobalInfo;
 
-                return NotFoundIdentifierResult.Instance;
+                return IdentifierResult.NotFound.Instance;
             }
 
             IdentifierResult ResolveEnumHint()
@@ -169,7 +164,7 @@ namespace Gum.IR0Translator
                     }
                 }
                 
-                return NotFoundIdentifierResult.Instance;
+                return IdentifierResult.NotFound.Instance;
             }
 
             public IdentifierResult Resolve()
@@ -182,18 +177,18 @@ namespace Gum.IR0Translator
 
                 // 로컬 -> ... -> 글로벌
                 var scopeResult = ResolveScope();
-                if (scopeResult is ValidIdentifierResult) candidates.Add(scopeResult);
-                if (scopeResult != NotFoundIdentifierResult.Instance) return scopeResult;
+                if (scopeResult is IdentifierResult.Valid) candidates.Add(scopeResult);
+                if (scopeResult != IdentifierResult.NotFound.Instance) return scopeResult;
 
                 // enum 힌트
                 var enumResult = ResolveEnumHint();
-                if (enumResult is ValidIdentifierResult) candidates.Add(scopeResult);
-                if (enumResult != NotFoundIdentifierResult.Instance) return enumResult;
+                if (enumResult is IdentifierResult.Valid) candidates.Add(scopeResult);
+                if (enumResult != IdentifierResult.NotFound.Instance) return enumResult;
 
                 var result = candidates.GetSingle();
                 if (result != null) return result;
-                if (candidates.IsEmpty) return NotFoundIdentifierResult.Instance;
-                if (candidates.HasMultiple) return MultipleCandiatesErrorIdentifierResult.Instance;
+                if (candidates.IsEmpty) return IdentifierResult.NotFound.Instance;
+                if (candidates.HasMultiple) return IdentifierResult.Error.MultipleCandiates.Instance;
                 throw new UnreachableCodeException();
             }
         }

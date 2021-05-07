@@ -3,7 +3,7 @@
 namespace Gum.IR0
 {
     [AutoConstructor]
-    public partial struct LambdaId
+    public partial struct AnonymousId
     {
         public int Value { get; }
     }

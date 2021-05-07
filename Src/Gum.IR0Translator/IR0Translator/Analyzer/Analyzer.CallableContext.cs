@@ -12,7 +12,7 @@ namespace Gum.IR0Translator
         // 현재 분석중인 스코프 정보
         abstract class CallableContext : DeclContext
         {
-            int lambdaCount;
+            int anonymousCount;
 
             // TODO: 이름 수정, Lambda가 아니라 Callable
             public abstract LocalVarInfo? GetLocalVarOutsideLambda(string varName);
@@ -23,15 +23,15 @@ namespace Gum.IR0Translator
 
             public CallableContext()
             {
-                lambdaCount = 0;
+                anonymousCount = 0;
             }
 
-            public R.LambdaId NewLambdaId()
+            public R.AnonymousId NewAnonymousId()
             {
-                var lambdaId = new R.LambdaId(lambdaCount);
-                lambdaCount++;
+                var anonymousIdCount = new R.AnonymousId(anonymousCount);
+                anonymousCount++;
 
-                return lambdaId;
+                return anonymousIdCount;
             }
         }
 
@@ -147,16 +147,16 @@ namespace Gum.IR0Translator
         {
             DeclContext parentDeclContext;            
             LocalContext parentLocalContext;
-            R.LambdaId lambdaId;
+            R.AnonymousId anonymousId;
             TypeValue? retTypeValue;
             bool bCaptureThis;
             Dictionary<string, TypeValue> localCaptures;
 
-            public LambdaContext(DeclContext parentDeclContext, LocalContext parentLocalContext, R.LambdaId lambdaId, TypeValue? retTypeValue)
+            public LambdaContext(DeclContext parentDeclContext, LocalContext parentLocalContext, R.AnonymousId anonymousId, TypeValue? retTypeValue)
             {
                 this.parentDeclContext = parentDeclContext;
                 this.parentLocalContext = parentLocalContext;
-                this.lambdaId = lambdaId;
+                this.anonymousId = anonymousId;
                 this.retTypeValue = retTypeValue;
                 this.bCaptureThis = false;
                 this.localCaptures = new Dictionary<string, TypeValue>();
@@ -217,7 +217,7 @@ namespace Gum.IR0Translator
 
             public override R.Path.Normal GetPath()
             {
-                return parentDeclContext.GetPath(new R.Name.Lambda(lambdaId), R.ParamHash.None, default);
+                return parentDeclContext.GetPath(new R.Name.Anonymous(anonymousId), R.ParamHash.None, default);
             }
         }
     }

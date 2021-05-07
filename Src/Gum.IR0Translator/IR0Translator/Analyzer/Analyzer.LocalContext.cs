@@ -56,7 +56,7 @@ namespace Gum.IR0Translator
 
             public void AddLocalVarInfo(string name, TypeValue typeValue)
             {
-                localVarInfos.SetItem(name, new LocalVarInfo(name, typeValue));
+                localVarInfos = localVarInfos.SetItem(name, new LocalVarInfo(name, typeValue));
             }
 
             public LocalVarInfo? GetLocalVarInfo(string varName)

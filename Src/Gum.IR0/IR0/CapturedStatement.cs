@@ -3,7 +3,7 @@ using Pretune;
 
 namespace Gum.IR0
 {
-    [AutoConstructor]
+    [AutoConstructor, ImplementIEquatable]
     public partial struct CapturedStatement
     {
         public Path? ThisType { get; }

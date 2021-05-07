@@ -76,7 +76,7 @@ namespace Gum.IR0Translator
 
                 var elems = new List<R.VarDeclElement>();
                 foreach (var elem in varDecl.Elems)
-                {
+                {                    
                     if (globalContext.DoesInternalGlobalVarNameExist(elem.VarName))
                         globalContext.AddFatalError(A0104_VarDecl_GlobalVariableNameShouldBeUnique, elem);
 
@@ -188,9 +188,9 @@ namespace Gum.IR0Translator
             void AnalyzeGlobalFuncDecl(S.GlobalFuncDecl funcDecl)
             {
                 if (funcDecl.IsSequence)
-                    AnalyzeGlobalNormalFuncDecl(funcDecl);
-                else
                     AnalyzeGlobalSequenceFuncDecl(funcDecl);
+                else
+                    AnalyzeGlobalNormalFuncDecl(funcDecl);
             }
 
             void AnalyzeTypeDecl(S.TypeDecl typeDecl)

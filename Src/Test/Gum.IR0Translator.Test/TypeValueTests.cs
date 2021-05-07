@@ -82,11 +82,11 @@ namespace Gum.IR0Translator.Test
                 new M.StructInfo(
                     "Y",
                     Arr("U"),
-                    new M.GlobalType(moduleName, M.NamespacePath.Root, "G", Arr<M.Type>(new M.TypeVarType(0, 0, "T"))),
+                    new M.GlobalType(moduleName, M.NamespacePath.Root, "G", Arr<M.Type>(new M.TypeVarType(0, "T"))),
                     interfaces: default,
                     memberTypes: default,
-                    Arr(new M.FuncInfo("F", false, true, Arr("V"), new M.TypeVarType(0, 0, "T"), Arr<M.Type>(new M.TypeVarType(2, 0, "V")))),
-                    Arr(new M.MemberVarInfo(false, new M.GlobalType(moduleName, M.NamespacePath.Root, "X", Arr<M.Type>(new M.TypeVarType(1, 0, "U"))), "v"))
+                    Arr(new M.FuncInfo("F", false, true, Arr("V"), new M.TypeVarType(0, "T"), Arr<M.Type>(new M.TypeVarType(2, "V")))),
+                    Arr(new M.MemberVarInfo(false, new M.GlobalType(moduleName, M.NamespacePath.Root, "X", Arr<M.Type>(new M.TypeVarType(1, "U"))), "v"))
                 )
             ), default, default);
 

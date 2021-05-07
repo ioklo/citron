@@ -352,13 +352,13 @@ namespace Gum.IR0Translator
                 return new StmtResult(new R.ExpStmt(expResult.Exp));
             }
 
-            R.CapturedStatementDecl AnalyzeCapturedStatement(TypeValue? retTypeValue, S.Stmt body)
+            R.Name AnalyzeCapturedStatement(TypeValue? retTypeValue, S.Stmt body)
             {
-                var newLambdaId = callableContext.NewLambdaId();
+                var newAnonymousId = callableContext.NewAnonymousId();
 
                 // TODO: 리턴 타입은 타입 힌트를 반영해야 한다
                 // 파라미터는 람다 함수의 지역변수로 취급한다                
-                var newLambdaContext = new LambdaContext(callableContext, localContext, newLambdaId, retTypeValue);
+                var newLambdaContext = new LambdaContext(callableContext, localContext, newAnonymousId, retTypeValue);
                 var newLocalContext = new LocalContext();
                 var newAnalyzer = new StmtAndExpAnalyzer(globalContext, newLambdaContext, newLocalContext);
 
@@ -370,16 +370,17 @@ namespace Gum.IR0Translator
                 // var bCaptureThis = newLambdaContext.NeedCaptureThis();
                 R.Path? capturedThisType = null;                
 
-                return new R.CapturedStatementDecl(capturedThisType, capturedLocalVars, bodyResult.Stmt);
+                var decl = new R.CapturedStatementDecl(new R.Name.Anonymous(newAnonymousId), new R.CapturedStatement(capturedThisType, capturedLocalVars, bodyResult.Stmt));
+                callableContext.AddDecl(decl);
+
+                return new R.Name.Anonymous(newAnonymousId);
             }
 
             StmtResult AnalyzeTaskStmt(S.TaskStmt taskStmt)
             {
-                var capturedStatement = AnalyzeCapturedStatement(globalContext.GetVoidType(), taskStmt.Body);
-
-                callableContext.AddDecl(capturedStatement);
-
-                return new StmtResult(new R.TaskStmt(capturedStatement));
+                var capturedStatementName = AnalyzeCapturedStatement(globalContext.GetVoidType(), taskStmt.Body);
+                var path = callableContext.GetPath(capturedStatementName, R.ParamHash.None, default);
+                return new StmtResult(new R.TaskStmt(path));
             }
 
             StmtResult AnalyzeAwaitStmt(S.AwaitStmt awaitStmt)
@@ -392,8 +393,9 @@ namespace Gum.IR0Translator
 
             StmtResult AnalyzeAsyncStmt(S.AsyncStmt asyncStmt)
             {
-                var capturedStatement = AnalyzeCapturedStatement(globalContext.GetVoidType(), asyncStmt.Body);
-                return new StmtResult(new R.AsyncStmt(capturedStatement));
+                var capturedStatementName = AnalyzeCapturedStatement(globalContext.GetVoidType(), asyncStmt.Body);
+                var path = callableContext.GetPath(capturedStatementName, R.ParamHash.None, default);
+                return new StmtResult(new R.AsyncStmt(path));
             }
 
             StmtResult AnalyzeForeachStmt(S.ForeachStmt foreachStmt)

@@ -18,7 +18,7 @@ namespace Gum.IR0Translator
     }
 
     // 최상위
-    [AutoConstructor]
+    [AutoConstructor, ImplementIEquatable]
     partial class RootItemValueOuter : ItemValueOuter
     {
         M.ModuleName moduleName;
@@ -45,7 +45,7 @@ namespace Gum.IR0Translator
         }
     }
 
-    [AutoConstructor]
+    [AutoConstructor, ImplementIEquatable]
     partial class NestedItemValueOuter : ItemValueOuter
     {
         ItemValue outer;

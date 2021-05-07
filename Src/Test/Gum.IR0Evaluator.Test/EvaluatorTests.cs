@@ -639,16 +639,25 @@ namespace Gum.IR0Evaluator.Test
                 );
             }
 
+            var anonymousName0 = new Name.Anonymous(new AnonymousId(0));
+            var anonymousName1 = new Name.Anonymous(new AnonymousId(1));
+
+            var capturedStmtDecl0 = new CapturedStatementDecl(anonymousName0, new CapturedStatement(null, default, PrintNumbersStmt(5)));
+            var capturedStmtDecl1 = new CapturedStatementDecl(anonymousName1, new CapturedStatement(null, default, PrintNumbersStmt(5)));
+
+            var path0 = RootPath(anonymousName0);
+            var path1 = RootPath(anonymousName1);
+
             var stmts = Arr<Stmt> (
                 new AwaitStmt(
                     RBlock(
-                        new TaskStmt(new CapturedStatementDecl(null, default, PrintNumbersStmt(5))),
-                        new TaskStmt(new CapturedStatementDecl(null, default, PrintNumbersStmt(5)))
+                        new TaskStmt(path0),
+                        new TaskStmt(path1)
                     )
                 )
             );
 
-            var output = await EvalAsync(default, stmts);
+            var output = await EvalAsync(Arr<Decl>(capturedStmtDecl0, capturedStmtDecl1), stmts);
 
             // 01234 01234 두개가 그냥 섞여 있을 것이다.
 
@@ -685,19 +694,27 @@ namespace Gum.IR0Evaluator.Test
                 );
             }
 
+            var name0 = new Name.Anonymous(new AnonymousId(0));
+            var capturedStmtDecl0 = new CapturedStatementDecl(name0, new CapturedStatement(null, Arr(new TypeAndName(Path.Int, "count")), PrintNumbersStmt()));
+            var path0 = new Path.Nested(new Path.Root(moduleName), name0, ParamHash.None, default);            
+
+            var name1 = new Name.Anonymous(new AnonymousId(1));
+            var capturedStmtDecl1 = new CapturedStatementDecl(name1, new CapturedStatement(null, Arr(new TypeAndName(Path.Int, "count")), PrintNumbersStmt()));
+            var path1 = new Path.Nested(new Path.Root(moduleName), name1, ParamHash.None, default);
+
             var stmts = Arr<Stmt> (
                 RLocalVarDeclStmt(Path.Int, "count", new IntLiteralExp(5)),
 
                 new AwaitStmt(
                     RBlock(
-                        new TaskStmt(new CapturedStatementDecl(null, Arr(new TypeAndName(Path.Int, "count")), PrintNumbersStmt())),
+                        new TaskStmt(path0),
                         new ExpStmt(new AssignExp(LocalVar("count"), new IntLiteralExp(4))),
-                        new TaskStmt(new CapturedStatementDecl(null, Arr(new TypeAndName(Path.Int, "count")), PrintNumbersStmt()))
+                        new TaskStmt(path1)
                     )
                 )
             );
 
-            var output = await EvalAsync(default, stmts);
+            var output = await EvalAsync(Arr<Decl>(capturedStmtDecl0, capturedStmtDecl1), stmts);
 
             // 01234 01234 두개가 그냥 섞여 있을 것이다.
 
@@ -738,16 +755,24 @@ namespace Gum.IR0Evaluator.Test
                 );
             }
 
+            var name0 = new Name.Anonymous(new AnonymousId(0));
+            var capturedStmtDecl0 = new CapturedStatementDecl(name0, new CapturedStatement(null, default, PrintNumbersStmt(5)));
+            var path0 = RootPath(name0);
+
+            var name1 = new Name.Anonymous(new AnonymousId(1));
+            var capturedStmtDecl1 = new CapturedStatementDecl(name1, new CapturedStatement(null, default, PrintNumbersStmt(5)));
+            var path1 = RootPath(name1);
+
             var stmts = Arr<Stmt> (
                 new AwaitStmt(
                     RBlock(
-                        new AsyncStmt(new CapturedStatementDecl(null, default, PrintNumbersStmt(5))),
-                        new AsyncStmt(new CapturedStatementDecl(null, default, PrintNumbersStmt(5)))
+                        new AsyncStmt(path0),
+                        new AsyncStmt(path1)
                     )
                 )
             );
 
-            var output = await EvalAsync(default, stmts);
+            var output = await EvalAsync(Arr<Decl>(capturedStmtDecl0, capturedStmtDecl1), stmts);
 
             Assert.Equal("0011223344", output);
         }
@@ -986,7 +1011,7 @@ namespace Gum.IR0Evaluator.Test
         {
             var printFunc = RootPath("Print", Arr(Path.Int), default);
             var makeLambda = RootPath("MakeLambda", default, default);
-            var lambda = new Path.Nested(makeLambda, new Name.Lambda(new LambdaId(0)), ParamHash.None, default);
+            var lambda = new Path.Nested(makeLambda, new Name.Anonymous(new AnonymousId(0)), ParamHash.None, default);
 
             // Print(int x) { 
             var printFuncDecl = new NormalFuncDecl(default, "Print", false, default, Arr(new ParamInfo(Path.Int, "x")),
@@ -998,8 +1023,8 @@ namespace Gum.IR0Evaluator.Test
 
             // MakeLambda() { return (int i, int j, int k) => @"TestFunc";}
             var lambdaDecl = new LambdaDecl(
-                new LambdaId(0),
-                new CapturedStatementDecl(null, default, PrintStringCmdStmt("TestFunc")),
+                new Name.Anonymous(new AnonymousId(0)),
+                new CapturedStatement(null, default, PrintStringCmdStmt("TestFunc")),
                 Arr(new ParamInfo(Path.Int, "i"), new ParamInfo(Path.Int, "j"), new ParamInfo(Path.Int, "k"))
             );
             
@@ -1044,8 +1069,8 @@ namespace Gum.IR0Evaluator.Test
         public async Task LambdaExp_CapturesLocalVariablesWithCopying()
         {   
             // [x] () => @"$x";
-            var lambdaDecl = new LambdaDecl(new LambdaId(0), new CapturedStatementDecl(null, Arr(new TypeAndName(Path.Int, "x")), PrintIntCmdStmt(new LocalVarLoc("x"))), default);
-            var lambda = RootPath(new Name.Lambda(new LambdaId(0)));
+            var lambdaDecl = new LambdaDecl(new Name.Anonymous(new AnonymousId(0)), new CapturedStatement(null, Arr(new TypeAndName(Path.Int, "x")), PrintIntCmdStmt(new LocalVarLoc("x"))), default);
+            var lambda = RootPath(new Name.Anonymous(new AnonymousId(0)));
 
             // int x = 3;
             // var func = () => x;

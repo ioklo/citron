@@ -5,33 +5,33 @@ using M = Gum.CompileTime;
 namespace Gum.IR0Translator
 {
     // Error/NotFound/Value
-    abstract class ItemResult
+    abstract record ItemResult
     {
-    }
+        public record Error : ItemResult
+        {
+            public record VarWithTypeArg : Error
+            {
+                public static readonly VarWithTypeArg Instance = new VarWithTypeArg();
+                VarWithTypeArg() { }
+            }
 
-    abstract class ErrorItemResult : ItemResult { }
+            public record MultipleCandidates : Error
+            {
+                public static readonly MultipleCandidates Instance = new MultipleCandidates();
+                MultipleCandidates() { }
+            }
+        }
 
-    class VarWithTypeArgErrorItemResult : ErrorItemResult
-    {
-        public static readonly VarWithTypeArgErrorItemResult Instance = new VarWithTypeArgErrorItemResult();
-        VarWithTypeArgErrorItemResult() { }
-    }
+        public record NotFound : ItemResult
+        {
+            public static readonly NotFound Instance = new NotFound();
+            NotFound() { }
+        }
 
-    class MultipleCandidatesErrorItemResult : ErrorItemResult
-    {
-        public static readonly MultipleCandidatesErrorItemResult Instance = new MultipleCandidatesErrorItemResult();
-        MultipleCandidatesErrorItemResult() { }
-    }
-
-    class NotFoundItemResult : ItemResult 
-    {
-        public static readonly NotFoundItemResult Instance = new NotFoundItemResult();
-        NotFoundItemResult() { }
-    }
-    
-    class ValueItemResult : ItemResult
-    {
-        public ItemValue ItemValue { get; }
-        public ValueItemResult(ItemValue itemValue) { ItemValue = itemValue; }
+        public abstract record Valid : ItemResult;
+        
+        public record Type(TypeValue TypeValue) : Valid;
+        public record Funcs(ImmutableArray<FuncValue> FuncValues) : Valid;
+        public record MemberVar(MemberVarValue MemberVarValue) : Valid;        
     }
 }

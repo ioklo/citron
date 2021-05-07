@@ -10,129 +10,81 @@ using Pretune;
 namespace Gum.IR0Translator
 {
     // 분석 중에 나타나는 Identifier들의 정보
-    abstract class IdentifierResult
-    {   
-    }
-
-    // Error, Valid, NotFound
-    abstract class ErrorIdentifierResult : IdentifierResult { }
-    abstract class ValidIdentifierResult : IdentifierResult { }
-
-    class NotFoundIdentifierResult : IdentifierResult
+    abstract record IdentifierResult
     {
-        public static readonly NotFoundIdentifierResult Instance = new NotFoundIdentifierResult();
-        private NotFoundIdentifierResult() { }
-    }
+        // Error, Valid, NotFound
+        public abstract record Error : IdentifierResult 
+        {
+            // TODO: 추후 에러 메세지를 자세하게 만들게 하기 위해 singleton이 아니게 될 수 있다
+            public record MultipleCandiates : Error
+            {
+                public static readonly MultipleCandiates Instance = new MultipleCandiates();
+                MultipleCandiates() { }
+            }
 
-    // TODO: 추후 에러 메세지를 자세하게 만들게 하기 위해 singleton이 아니게 될 수 있다
-    class MultipleCandiatesErrorIdentifierResult : ErrorIdentifierResult
-    {
-        public static readonly MultipleCandiatesErrorIdentifierResult Instance = new MultipleCandiatesErrorIdentifierResult();
-        private MultipleCandiatesErrorIdentifierResult() { }
-    }
+            public record VarWithTypeArg : Error
+            {
+                public static readonly VarWithTypeArg Instance = new VarWithTypeArg();
+                VarWithTypeArg() { }
+            }
 
-    class VarWithTypeArgErrorIdentifierResult : ErrorIdentifierResult
-    {
-        public static readonly VarWithTypeArgErrorIdentifierResult Instance = new VarWithTypeArgErrorIdentifierResult();
-        VarWithTypeArgErrorIdentifierResult() { }
-    }
+            public record CantGetStaticMemberThroughInstance : Error
+            {
+                public static readonly CantGetStaticMemberThroughInstance Instance = new CantGetStaticMemberThroughInstance();
+                CantGetStaticMemberThroughInstance() { }
+            }
 
-    class CantGetStaticMemberThroughInstanceIdentifierResult : ErrorIdentifierResult
-    {
-        public static readonly CantGetStaticMemberThroughInstanceIdentifierResult Instance = new CantGetStaticMemberThroughInstanceIdentifierResult();
-        private CantGetStaticMemberThroughInstanceIdentifierResult() { }
-    }
+            public record CantGetTypeMemberThroughInstance : Error
+            {
+                public static readonly CantGetTypeMemberThroughInstance Instance = new CantGetTypeMemberThroughInstance();
+                CantGetTypeMemberThroughInstance() { }
+            }
 
-    class CantGetTypeMemberThroughInstanceIdentifierResult : ErrorIdentifierResult
-    {
-        public static readonly CantGetTypeMemberThroughInstanceIdentifierResult Instance = new CantGetTypeMemberThroughInstanceIdentifierResult();
-        private CantGetTypeMemberThroughInstanceIdentifierResult() { }
-    }
+            public record CantGetInstanceMemberThroughType : Error
+            {
+                public static readonly CantGetInstanceMemberThroughType Instance = new CantGetInstanceMemberThroughType();
+                CantGetInstanceMemberThroughType() { }
+            }
 
-    class CantGetInstanceMemberThroughTypeIdentifierResult : ErrorIdentifierResult
-    {
-        public static readonly CantGetInstanceMemberThroughTypeIdentifierResult Instance = new CantGetInstanceMemberThroughTypeIdentifierResult();
-        private CantGetInstanceMemberThroughTypeIdentifierResult() { }
-    }
+            public record FuncCantHaveMember : Error
+            {
+                public static readonly FuncCantHaveMember Instance = new FuncCantHaveMember();
+                FuncCantHaveMember() { }
+            }
+        }
 
-    class FuncCantHaveMemberErrorIdentifierResult : ErrorIdentifierResult
-    {
-        public static readonly FuncCantHaveMemberErrorIdentifierResult Instance = new FuncCantHaveMemberErrorIdentifierResult();
-        private FuncCantHaveMemberErrorIdentifierResult() { }
-    } 
+        public abstract record Valid : IdentifierResult 
+        {
+            public record LocalVar(bool bNeedCapture, string VarName, TypeValue TypeValue) : Valid;                        
+            public record GlobalVar(string VarName, TypeValue TypeValue) : Valid;            
+            public record Funcs(ImmutableArray<FuncValue> FuncValues) : Valid;
+            
+            // T
+            public record Type(TypeValue TypeValue) : Valid;
 
-    abstract record LambdaCapture;
-    record NoneLambdaCapture : LambdaCapture { public static readonly NoneLambdaCapture Instance = new NoneLambdaCapture(); private NoneLambdaCapture() { } }
-    record ThisLambdaCapture : LambdaCapture { public static readonly ThisLambdaCapture Instance = new ThisLambdaCapture(); private ThisLambdaCapture() { } }
-    record LocalLambdaCapture(string Name, TypeValue Type) : LambdaCapture;
+            // First => E.First
+            public record EnumElem : Valid
+            {
+                public NormalTypeValue EnumTypeValue { get; }
+                public M.Name Name { get => throw new NotImplementedException(); }
+                public ImmutableArray<M.EnumElemFieldInfo> FieldInfos { get; }
+                public bool IsStandalone { get => FieldInfos.IsEmpty; }
+
+                public EnumElem(NormalTypeValue enumTypeValue, ImmutableArray<M.EnumElemFieldInfo> fieldInfos)
+                {
+                    EnumTypeValue = enumTypeValue;
+                    FieldInfos = fieldInfos;
+                }
+            }
+        }
+
+        public record NotFound : IdentifierResult
+        {
+            public static readonly NotFound Instance = new NotFound();
+            NotFound() { }
+        }
+
+    }       
     
-    [AutoConstructor]
-    partial class LocalVarIdentifierResult : ValidIdentifierResult
-    {
-        public bool bNeedCapture { get; }
-        public string VarName { get; }
-        public TypeValue TypeValue { get; }
-    }
-
-    [AutoConstructor]
-    partial class GlobalVarIdentifierResult : ValidIdentifierResult
-    {
-        public string VarName { get; }
-        public TypeValue TypeValue { get; }
-    }
     
-    //// F
-    class InstanceFuncIdentifierResult : ValidIdentifierResult
-    {
-        public R.Loc Instance { get; }
-        public TypeValue InstanceType { get; }
-        public FuncValue FuncValue { get; }
-        public LambdaCapture LambdaCapture { get; }
-        public InstanceFuncIdentifierResult(R.Loc instance, TypeValue instanceType, FuncValue funcValue, LambdaCapture lambdaCapture)
-        {
-            Debug.Assert(!funcValue.IsStatic);
-
-            Instance = instance;
-            InstanceType = instanceType;
-            FuncValue = funcValue;
-            LambdaCapture = lambdaCapture;
-        }
-    }
-
-
-    class StaticFuncIdentifierResult : ValidIdentifierResult
-    {
-        public FuncValue FuncValue { get; }
-        public StaticFuncIdentifierResult(FuncValue funcValue)
-        {
-            Debug.Assert(funcValue.IsStatic);
-            FuncValue = funcValue;
-        }
-    }
-
-    // T
-    class TypeIdentifierResult : ValidIdentifierResult
-    {
-        // 타입을 가리키는 레퍼런스
-        public TypeValue TypeValue { get; }
-        public TypeIdentifierResult(TypeValue typeValue)
-        {
-            TypeValue = typeValue;
-        }
-    }
-
-    // First => E.First
-    class EnumElemIdentifierResult : ValidIdentifierResult
-    {
-        public NormalTypeValue EnumTypeValue { get; }
-        public M.Name Name { get => throw new NotImplementedException();  }
-        public ImmutableArray<M.EnumElemFieldInfo> FieldInfos { get; }
-        public bool IsStandalone { get => FieldInfos.IsEmpty; }
-
-        public EnumElemIdentifierResult(NormalTypeValue enumTypeValue, ImmutableArray<M.EnumElemFieldInfo> fieldInfos)
-        {
-            EnumTypeValue = enumTypeValue;
-            FieldInfos = fieldInfos;
-        }
-    }
 }

@@ -52,14 +52,14 @@ namespace Gum.IR0Translator
                     if (type.Name.Equals(name) && type.TypeParams.Length == typeArgs.Length)
                     {
                         var typeValue = outer.typeValueFactory.MakeTypeValue(moduleName, namespacePath, type, typeArgs);
-                        candidates.Add(new ValueItemResult(typeValue));
+                        candidates.Add(new ItemResult.Type(typeValue));
                     }
                 }
 
                 var result = candidates.GetSingle();
                 if (result != null) return result;
-                if (candidates.IsEmpty) return NotFoundItemResult.Instance;
-                if (candidates.HasMultiple) return MultipleCandidatesErrorItemResult.Instance;
+                if (candidates.IsEmpty) return ItemResult.NotFound.Instance;
+                if (candidates.HasMultiple) return ItemResult.Error.MultipleCandidates.Instance;
 
                 throw new UnreachableCodeException();
             }
@@ -71,7 +71,7 @@ namespace Gum.IR0Translator
 
                 var namespaceInfo = moduleInfo.GetNamespace(namespacePath);
                 if (namespaceInfo == null)
-                    return NotFoundItemResult.Instance;
+                    return ItemResult.NotFound.Instance;
 
                 return GetGlobalTypeCore(moduleInfo.Name, namespaceInfo.Types);
             }
@@ -81,22 +81,22 @@ namespace Gum.IR0Translator
                 var candidates = new Candidates<ItemResult>();
 
                 var internalResult = GetGlobalTypeInModule(outer.internalModuleInfo);
-                if (internalResult is ErrorItemResult) return internalResult;
-                if (internalResult is ValueItemResult) candidates.Add(internalResult);
+                if (internalResult is ItemResult.Error) return internalResult;
+                if (internalResult is ItemResult.Valid) candidates.Add(internalResult);
                 // empty 무시
 
                 foreach (var externalModuleInfo in outer.externalModuleRepos.GetAllModules())
                 {
                     var externalResult = GetGlobalTypeInModule(externalModuleInfo);
-                    if (externalResult is ErrorItemResult) return externalResult;
-                    if (externalResult is ValueItemResult) candidates.Add(externalResult);
+                    if (externalResult is ItemResult.Error) return externalResult;
+                    if (externalResult is ItemResult.Valid) candidates.Add(externalResult);
                     // empty는 무시
                 }
 
                 var result = candidates.GetSingle();
                 if (result != null) return result;
-                if (candidates.IsEmpty) return NotFoundItemResult.Instance;
-                if (candidates.HasMultiple) return MultipleCandidatesErrorItemResult.Instance;
+                if (candidates.IsEmpty) return ItemResult.NotFound.Instance;
+                if (candidates.HasMultiple) return ItemResult.Error.MultipleCandidates.Instance;
 
                 throw new UnreachableCodeException();
             }
@@ -111,14 +111,14 @@ namespace Gum.IR0Translator
                         func.TypeParams.Length == typeArgs.Length) // TODO: TypeParam inference, 같지 않아도 된다
                     {
                         var funcValue = outer.typeValueFactory.MakeGlobalFunc(moduleName, namespacePath, func, typeArgs);
-                        candidates.Add(new ValueItemResult(funcValue));
+                        candidates.Add(new ItemResult.Funcs(funcValue));
                     }
                 }
 
                 var result = candidates.GetSingle();
                 if (result != null) return result;
-                if (candidates.IsEmpty) return NotFoundItemResult.Instance;
-                if (candidates.HasMultiple) return MultipleCandidatesErrorItemResult.Instance;
+                if (candidates.IsEmpty) return ItemResult.NotFound.Instance;
+                if (candidates.HasMultiple) return ItemResult.Error.MultipleCandidates.Instance;
 
                 throw new UnreachableCodeException();
             }
@@ -130,7 +130,7 @@ namespace Gum.IR0Translator
 
                 var namespaceInfo = moduleInfo.GetNamespace(namespacePath);
                 if (namespaceInfo == null)
-                    return NotFoundItemResult.Instance;
+                    return ItemResult.NotFound.Instance;
 
                 return GetGlobalFuncCore(moduleInfo.Name, namespaceInfo.Funcs);
             }
@@ -140,22 +140,22 @@ namespace Gum.IR0Translator
                 var candidates = new Candidates<ItemResult>();
 
                 var internalResult = GetGlobalFuncInModule(outer.internalModuleInfo);
-                if (internalResult is ErrorItemResult) return internalResult;
-                if (internalResult is ValueItemResult) candidates.Add(internalResult);
+                if (internalResult is ItemResult.Error) return internalResult;
+                if (internalResult is ItemResult.Valid) candidates.Add(internalResult);
                 // empty 무시
 
                 foreach (var externalModuleInfo in outer.externalModuleRepos.GetAllModules())
                 {
                     var externalResult = GetGlobalFuncInModule(externalModuleInfo);
-                    if (externalResult is ErrorItemResult) return externalResult;
-                    if (externalResult is ValueItemResult) candidates.Add(externalResult);
+                    if (externalResult is ItemResult.Error) return externalResult;
+                    if (externalResult is ItemResult.Valid) candidates.Add(externalResult);
                     // empty는 무시
                 }
 
                 var result = candidates.GetSingle();
                 if (result != null) return result;
-                if (candidates.IsEmpty) return NotFoundItemResult.Instance;
-                if (candidates.HasMultiple) return MultipleCandidatesErrorItemResult.Instance;
+                if (candidates.IsEmpty) return ItemResult.NotFound.Instance;
+                if (candidates.HasMultiple) return ItemResult.Error.MultipleCandidates.Instance;
 
                 throw new UnreachableCodeException();
             }
@@ -166,19 +166,19 @@ namespace Gum.IR0Translator
 
                 // 타입끼리, 함수끼리 module을 건너서 중복체크를 한 뒤, 타입과 함수 결과를 가지고 중복체크를 한다
                 var typeResult = GetGlobalType();
-                if (typeResult is ErrorItemResult) return typeResult;
-                if (typeResult is ValueItemResult) candidates.Add(typeResult);
+                if (typeResult is ItemResult.Error) return typeResult;
+                if (typeResult is ItemResult.Valid) candidates.Add(typeResult);
                 // empty 무시
 
                 var funcResult = GetGlobalFunc();
-                if (funcResult is ErrorItemResult) return funcResult;
-                if (funcResult is ValueItemResult) candidates.Add(funcResult);
+                if (funcResult is ItemResult.Error) return funcResult;
+                if (funcResult is ItemResult.Valid) candidates.Add(funcResult);
                 // empty 무시
 
                 var result = candidates.GetSingle();
                 if (result != null) return result;
-                if (candidates.IsEmpty) return NotFoundItemResult.Instance;
-                if (candidates.HasMultiple) return MultipleCandidatesErrorItemResult.Instance;
+                if (candidates.IsEmpty) return ItemResult.NotFound.Instance;
+                if (candidates.HasMultiple) return ItemResult.Error.MultipleCandidates.Instance;
 
                 throw new UnreachableCodeException();
             }

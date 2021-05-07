@@ -19,7 +19,7 @@ namespace Gum.IR0Translator
     // Root Analyzer
     partial class Analyzer
     {
-        public static R.Script Analyze(
+        public static R.Script? Analyze(
             S.Script script,
             R.ModuleName moduleName,
             ItemValueFactory itemValueFactory,
@@ -27,12 +27,17 @@ namespace Gum.IR0Translator
             TypeExpInfoService typeExpTypeValueService,
             IErrorCollector errorCollector)
         {
-            var globalContext = new GlobalContext(itemValueFactory, globalItemValueFactory, typeExpTypeValueService, errorCollector);            
-            var rootContext = new RootContext(moduleName, itemValueFactory);            
-            
-            var rscript = RootAnalyzer.Analyze(globalContext, rootContext, script);
-            
-            return rscript;
+            try
+            {
+                var globalContext = new GlobalContext(itemValueFactory, globalItemValueFactory, typeExpTypeValueService, errorCollector);
+                var rootContext = new RootContext(moduleName, itemValueFactory);
+
+                return RootAnalyzer.Analyze(globalContext, rootContext, script);
+            }
+            catch(FatalAnalyzeException)
+            {
+                return null;
+            }
         }        
     }
 }

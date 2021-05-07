@@ -21,31 +21,42 @@ namespace Gum.IR0Translator.Test
 {
     public class TranslatorTests
     {
-        M.ModuleName ModuleName = "TestModule";
+        M.ModuleName moduleName = "TestModule";
+        R.ModuleName rmoduleName = "TestModule";
 
         R.Script RScript(ImmutableArray<R.Decl> decls, params R.Stmt[] optTopLevelStmts)
         {
-            return Gum.IR0.IR0Factory.RScript(ModuleName.Text, decls, optTopLevelStmts);
+            return Gum.IR0.IR0Factory.RScript(rmoduleName, decls, optTopLevelStmts);
         }
 
         R.Script RScript(params R.Stmt[] optTopLevelStmts)
         {
-            return Gum.IR0.IR0Factory.RScript(ModuleName.Text, optTopLevelStmts);
+            return Gum.IR0.IR0Factory.RScript(rmoduleName, optTopLevelStmts);
         }
 
         R.Script? Translate(S.Script syntaxScript, bool raiseAssertFailed = true)
         {
             var testErrorCollector = new TestErrorCollector(raiseAssertFailed);
-            return Translator.Translate(ModuleName, default, syntaxScript, testErrorCollector);
+            return Translator.Translate(moduleName, default, syntaxScript, testErrorCollector);
         }
 
         List<IError> TranslateWithErrors(S.Script syntaxScript, bool raiseAssertionFail = false)
         {
             var testErrorCollector = new TestErrorCollector(raiseAssertionFail);
-            var script = Translator.Translate(ModuleName, default, syntaxScript, testErrorCollector);
+            var script = Translator.Translate(moduleName, default, syntaxScript, testErrorCollector);
 
             return testErrorCollector.Errors;
-        }       
+        }
+
+        R.Path.Nested MakeRootPath(R.Name name)
+        {
+            return new R.Path.Nested(new R.Path.Root(rmoduleName), name, R.ParamHash.None, default);
+        }
+
+        R.Path.Nested MakeRootPath(R.Name name, R.ParamHash paramHash, ImmutableArray<R.Path> typeArgs)
+        {
+            return new R.Path.Nested(new R.Path.Root(rmoduleName), name, paramHash, typeArgs);
+        }
 
         // Trivial Cases
         [Fact]
@@ -623,20 +634,22 @@ namespace Gum.IR0Translator.Test
 
             var script = Translate(syntaxScript);
 
-            var lambdaId = new R.LambdaId(0);
+            var name = new R.Name.Anonymous(new R.AnonymousId(0));
 
-            var lambdaDecl = new R.LambdaDecl(
-                lambdaDeclId,
-                null,
-                default,
-                default,
-                new R.ExpStmt(new R.AssignExp(new R.GlobalVarLoc("x"), RInt(3)))
+            var capturedStmtDecl = new R.CapturedStatementDecl(
+                name,
+                new R.CapturedStatement(
+                    null,
+                    default,
+                    new R.ExpStmt(new R.AssignExp(new R.GlobalVarLoc("x"), RInt(3))))
             );
 
+            var path = MakeRootPath(name);
+
             var expected = RScript(
-                Arr<R.Decl>(lambdaDecl),
+                Arr<R.Decl>(capturedStmtDecl),
                 RGlobalVarDeclStmt(R.Path.Int, "x", null),
-                new R.TaskStmt(new R.AnonymousLambdaType(lambdaDeclId))
+                new R.TaskStmt(path)
             );
 
             Assert.Equal(expected, script);
@@ -665,6 +678,11 @@ namespace Gum.IR0Translator.Test
         [Fact]
         public void TaskStmt_TranslatesWithLocalVariable()
         {
+            // 
+            // {
+            //     int x;
+            //     task { int y = x; }
+            // }
             var syntaxScript = SScript(
                 SBlock(
                     SVarDeclStmt(IntTypeExp, "x"),
@@ -676,21 +694,22 @@ namespace Gum.IR0Translator.Test
 
             var script = Translate(syntaxScript);
 
-            var lambdaDeclId = new R.DeclId(0);
-            var lambdaDecl = new R.LambdaDecl(
-                lambdaDeclId,
-                null,
-                Arr(new R.TypeAndName(R.Path.Int, "x")),
-                default,
-                RLocalVarDeclStmt(R.Path.Int, "y", new R.LoadExp(new R.LocalVarLoc("x")))
-            );
+            var name0 = new R.Name.Anonymous(new R.AnonymousId(0));
+            var capturedStatementDecl = new R.CapturedStatementDecl(
+                name0,
+                new R.CapturedStatement(
+                    null,
+                    Arr(new R.TypeAndName(R.Path.Int, "x")),
+                    RLocalVarDeclStmt(R.Path.Int, "y", new R.LoadExp(new R.LocalVarLoc("x")))
+                )
+            );            
 
             var expected = RScript(
-                Arr<R.Decl>(lambdaDecl),
+                Arr<R.Decl>(capturedStatementDecl),
                 RBlock(
                     RLocalVarDeclStmt(R.Path.Int, "x"),
                     new R.TaskStmt(
-                        new R.AnonymousLambdaType(lambdaDeclId)
+                        MakeRootPath(name0)
                     )
                 )
             );
@@ -735,6 +754,10 @@ namespace Gum.IR0Translator.Test
         [Fact]
         public void AsyncStmt_TranslatesWithGlobalVariable()
         {
+            // 
+            // int x;
+            // async { x = 3; }
+
             var syntaxScript = SScript(
                 SVarDeclStmt(IntTypeExp, "x"),
                 new S.AsyncStmt(
@@ -745,19 +768,22 @@ namespace Gum.IR0Translator.Test
             );
 
             var script = Translate(syntaxScript);
-            var lambdaDeclId = new R.DeclId(0);
-            var lambdaDecl = new R.LambdaDecl(
-                lambdaDeclId,
-                null,
-                default,
-                default,
-                new R.ExpStmt(new R.AssignExp(new R.GlobalVarLoc("x"), RInt(3)))
+
+            var capturedStatementName = new R.Name.Anonymous(new R.AnonymousId(0));
+            
+            var capturedStatementDecl = new R.CapturedStatementDecl(
+                capturedStatementName,
+                new R.CapturedStatement(
+                    null,
+                    default,
+                    new R.ExpStmt(new R.AssignExp(new R.GlobalVarLoc("x"), RInt(3)))
+                )
             );
 
             var expected = RScript(
-                Arr<R.Decl>(lambdaDecl),
+                Arr<R.Decl>(capturedStatementDecl),
                 RGlobalVarDeclStmt(R.Path.Int, "x", null),
-                new R.TaskStmt(new R.AnonymousLambdaType(lambdaDeclId))
+                new R.AsyncStmt(MakeRootPath(capturedStatementName))
             );
 
             Assert.Equal(expected, script);
@@ -786,6 +812,8 @@ namespace Gum.IR0Translator.Test
         [Fact]
         public void AsyncStmt_TranslatesWithLocalVariable()
         {
+            // int x;
+            // async { int x = x; }
             var syntaxScript = SScript(
                 SBlock(
                     SVarDeclStmt(IntTypeExp, "x"),
@@ -796,21 +824,20 @@ namespace Gum.IR0Translator.Test
             );
 
             var script = Translate(syntaxScript);
-            var lambdaDeclId = new R.DeclId(0);
-            var lambdaDecl = new R.LambdaDecl(
-                lambdaDeclId,
-                null,
-                Arr(new R.TypeAndName(R.Path.Int, "x")),
+
+            var capturedStmtName = new R.Name.Anonymous(new R.AnonymousId(0));
+            var capturedStmtDecl = new R.CapturedStatementDecl(capturedStmtName, new R.CapturedStatement(
                 default,
+                Arr(new R.TypeAndName(R.Path.Int, "x")),
                 RLocalVarDeclStmt(R.Path.Int, "x", new R.LoadExp(new R.LocalVarLoc("x")))
-            );
+            ));
 
             var expected = RScript(
-                Arr<R.Decl>(lambdaDecl),
+                Arr<R.Decl>(capturedStmtDecl),
                 RBlock(
                     RLocalVarDeclStmt(R.Path.Int, "x"),
                     new R.AsyncStmt(
-                        new R.AnonymousLambdaType(lambdaDeclId)                        
+                        MakeRootPath(capturedStmtName)
                     )
                 )
             );
@@ -867,6 +894,7 @@ namespace Gum.IR0Translator.Test
         [Fact]
         public void YieldStmt_TranslatesTrivially()
         {
+            // seq int Func() { yield 3; }
             var syntaxScript = SScript(
                 new S.GlobalFuncDeclScriptElement(new S.GlobalFuncDecl(
                     true, IntTypeExp, "Func", default, new S.FuncParamInfo(default, null),
@@ -878,9 +906,7 @@ namespace Gum.IR0Translator.Test
 
             var script = Translate(syntaxScript);
 
-            var declId = new R.DeclId(0);
-
-            var seqFunc = new R.SequenceFuncDecl(declId, false, R.Path.Int, default, default, RBlock(
+            var seqFunc = new R.SequenceFuncDecl(default, "Func", false, R.Path.Int, default, default, RBlock(
                 new R.YieldStmt(RInt(3))
             ));
 
@@ -1330,6 +1356,8 @@ namespace Gum.IR0Translator.Test
         [Fact]
         void CallExp_TranslatesIntoCallFuncExp()
         {
+            // int Func<T>(int x) { return x; }
+            // Func<int>(3);
             var syntaxScript = SScript(
                 new S.GlobalFuncDeclScriptElement(new S.GlobalFuncDecl(
                     false, IntTypeExp, "Func", Arr("T"), 
@@ -1347,9 +1375,11 @@ namespace Gum.IR0Translator.Test
             var expected = RScript(
                 Arr<R.Decl>(
                     new R.NormalFuncDecl(
-                        new R.DeclId(0), false, Arr("T"), Arr(new R.ParamInfo(R.Path.Int, "x")), RBlock(new R.ReturnStmt(new R.LoadExp(new R.LocalVarLoc("x"))))
+                        default, "Func", false, Arr("T"), Arr(new R.ParamInfo(R.Path.Int, "x")), RBlock(new R.ReturnStmt(new R.LoadExp(new R.LocalVarLoc("x"))))
                     )
-                )
+                ),
+
+                new R.ExpStmt(new R.CallFuncExp(MakeRootPath("Func", new R.ParamHash(0, Arr<R.Path>(R.Path.Int)), default), null, Arr<R.Exp>(RInt(3))))
             );
 
             Assert.Equal(expected, script);
@@ -1359,6 +1389,8 @@ namespace Gum.IR0Translator.Test
         [Fact]
         void CallExp_TranslatesIntoCallFuncExpWithoutTypeArgument()
         {
+            // int Func(int x) { return x; }
+            // Func(3);
             var syntaxScript = SScript(
                 new S.GlobalFuncDeclScriptElement(new S.GlobalFuncDecl(
                     false, IntTypeExp, "Func", Arr<string>(),
@@ -1375,10 +1407,10 @@ namespace Gum.IR0Translator.Test
 
             var expected = RScript(
                 Arr<R.Decl>(new R.NormalFuncDecl(
-                    new R.DeclId(0), false, Arr<string>(), Arr(new R.ParamInfo(R.Path.Int, "x")), RBlock(new R.ReturnStmt(new R.LoadExp(new R.LocalVarLoc("x"))))
+                    default, "Func", false, Arr<string>(), Arr(new R.ParamInfo(R.Path.Int, "x")), RBlock(new R.ReturnStmt(new R.LoadExp(new R.LocalVarLoc("x"))))
                 )),
 
-                new R.ExpStmt(new R.CallFuncExp(new R.Func(new R.DeclId(0), R.TypeContext.Empty), null, Arr<R.Exp>(RInt(3))))
+                new R.ExpStmt(new R.CallFuncExp(MakeRootPath("Func", new R.ParamHash(0, Arr<R.Path>(R.Path.Int)), default), null, Arr<R.Exp>(RInt(3))))
             );
 
             Assert.Equal(expected, script);

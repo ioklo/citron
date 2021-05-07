@@ -154,6 +154,11 @@ namespace Gum.IR0Evaluator
                 return sharedContext.GetSequenceFuncDecl(seqFunc);
             }
 
+            public R.CapturedStatementDecl GetCapturedStatementDecl(R.Path.Nested path)
+            {
+                return sharedContext.GetCapturedStatementDecl(path);
+            }
+
             public async IAsyncEnumerable<Void> ExecInNewScopeAsync(Func<IAsyncEnumerable<Void>> action)
             {
                 var prevLocalVars = localVars;

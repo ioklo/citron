@@ -261,15 +261,17 @@ namespace Gum.IR0Evaluator
                 //    ImmutableArray.CreateRange(lambdaDecl.CaptureInfo, captureInfo => captureInfo.Name)
                 //);
 
-                var (capturedThis, capturedLocals) = AllocLocals(taskStmt.CapturedStatement);
-                evaluator.CaptureLocals(capturedThis, capturedLocals, taskStmt.CapturedStatement);
+                var capturedStatementDecl = evaluator.context.GetCapturedStatementDecl(taskStmt.CapturedStatementDecl);
+
+                var (capturedThis, capturedLocals) = AllocLocals(capturedStatementDecl.CapturedStatement);
+                evaluator.CaptureLocals(capturedThis, capturedLocals, capturedStatementDecl.CapturedStatement);
 
                 // 새 evaluator를 만들고
                 var newEvaluator = evaluator.CloneWithNewContext(capturedThis, capturedLocals);
                 
                 var task = Task.Run(async () =>
                 {
-                    await foreach (var _ in newEvaluator.EvalStmtAsync(taskStmt.CapturedStatement.Body)) { }
+                    await foreach (var _ in newEvaluator.EvalStmtAsync(capturedStatementDecl.CapturedStatement.Body)) { }
                 });
 
                 evaluator.context.AddTask(task);
@@ -289,14 +291,16 @@ namespace Gum.IR0Evaluator
             }
 
             void EvalAsyncStmt(R.AsyncStmt asyncStmt)
-            {   
-                var (capturedThis, capturedLocalVars) = AllocLocals(asyncStmt.CapturedStatement);
-                evaluator.CaptureLocals(capturedThis, capturedLocalVars, asyncStmt.CapturedStatement);
+            {
+                var capturedStatementDecl = evaluator.context.GetCapturedStatementDecl(asyncStmt.CapturedStatementDecl);
+
+                var (capturedThis, capturedLocalVars) = AllocLocals(capturedStatementDecl.CapturedStatement);
+                evaluator.CaptureLocals(capturedThis, capturedLocalVars, capturedStatementDecl.CapturedStatement);
 
                 var newEvaluator = evaluator.CloneWithNewContext(capturedThis, capturedLocalVars);
                 async Task WrappedAsyncFunc()
                 {
-                    await foreach (var _ in newEvaluator.EvalStmtAsync(asyncStmt.CapturedStatement.Body)) { }
+                    await foreach (var _ in newEvaluator.EvalStmtAsync(capturedStatementDecl.CapturedStatement.Body)) { }
                 };
 
                 // 현재 컨텍스트에서 실행

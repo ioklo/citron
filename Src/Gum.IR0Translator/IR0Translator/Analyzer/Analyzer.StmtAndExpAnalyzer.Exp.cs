@@ -35,33 +35,30 @@ namespace Gum.IR0Translator
 
                 switch (result)
                 {
-                    case NotFoundIdentifierResult:
+                    case IdentifierResult.NotFound:
                         globalContext.AddFatalError(A2007_ResolveIdentifier_NotFound, idExp);
                         break;
 
-                    case ErrorIdentifierResult errorResult:
+                    case IdentifierResult.Error errorResult:
                         HandleErrorIdentifierResult(idExp, errorResult);
                         break;
 
-                    case LocalVarIdentifierResult localVarResult:
+                    case IdentifierResult.Valid.LocalVar localVarResult:
                         if (localVarResult.bNeedCapture)
                             callableContext.AddLambdaCapture(new LocalLambdaCapture(localVarResult.VarName, localVarResult.TypeValue));
                         return new LocExpResult(new R.LocalVarLoc(localVarResult.VarName), localVarResult.TypeValue);
 
-                    case GlobalVarIdentifierResult globalVarResult:
+                    case IdentifierResult.Valid.GlobalVar globalVarResult:
                         return new LocExpResult(new R.GlobalVarLoc(globalVarResult.VarName), globalVarResult.TypeValue);
 
-                    case InstanceFuncIdentifierResult:
-                        throw new NotImplementedException();
+                    case IdentifierResult.Valid.Funcs funcsResult:
+                        return new FuncsExpResult(funcsResult.FuncValues);
 
-                    case StaticFuncIdentifierResult:
-                        throw new NotImplementedException();
-
-                    case TypeIdentifierResult:
+                    case IdentifierResult.Valid.Type:
                         globalContext.AddFatalError(A2008_ResolveIdentifier_CantUseTypeAsExpression, idExp);
                         break;
 
-                    case EnumElemIdentifierResult enumElemResult:
+                    case IdentifierResult.Valid.EnumElem enumElemResult:
                         if (enumElemResult.IsStandalone)      // 인자 없이 있는 것
                         {
                             throw new NotImplementedException();
@@ -418,7 +415,7 @@ namespace Gum.IR0Translator
                     paramInfos.Add((param.Name, paramTypeValue));
                 }
 
-                var newLambdaId = callableContext.NewLambdaId();
+                var newLambdaId = callableContext.NewAnonymousId();
                 var newLambdaContext = new LambdaContext(callableContext, localContext, newLambdaId, retTypeValue);
                 var newLocalContext = new LocalContext();
                 var newAnalyzer = new StmtAndExpAnalyzer(globalContext, newLambdaContext, newLocalContext);
@@ -440,12 +437,12 @@ namespace Gum.IR0Translator
                 // var bCaptureThis = newLambdaContext.NeedCaptureThis();
                 R.Path? capturedThisType = null;
 
-                var capturedStmt = new R.CapturedStatementDecl(capturedThisType, capturedLocalVars, bodyResult.Stmt);
-                var lambdaDecl = new R.LambdaDecl(newLambdaId, capturedStmt, rparamInfos);
+                var capturedStmt = new R.CapturedStatement(capturedThisType, capturedLocalVars, bodyResult.Stmt);
+                var lambdaDecl = new R.LambdaDecl(new R.Name.Anonymous(newLambdaId), capturedStmt, rparamInfos);
                 callableContext.AddDecl(lambdaDecl);
 
                 var lambdaTypeValue = globalContext.NewLambdaTypeValue(
-                    callableContext.GetPath(new R.Name.Lambda(newLambdaId), R.ParamHash.None, default), // lambda는 paramHash를 넣지 않는다
+                    callableContext.GetPath(new R.Name.Anonymous(newLambdaId), R.ParamHash.None, default), // lambda는 paramHash를 넣지 않는다
                     newLambdaContext.GetRetTypeValue() ?? globalContext.GetVoidType(),
                     paramTypes
                 );
@@ -519,37 +516,32 @@ namespace Gum.IR0Translator
 
                 switch (memberResult)
                 {
-                    case MultipleCandidatesErrorItemResult:
+                    case ItemResult.Error.MultipleCandidates:
                         globalContext.AddFatalError(A2001_ResolveIdentifier_MultipleCandidatesForIdentifier, memberExp);
                         break;
 
-                    case VarWithTypeArgErrorItemResult:
+                    case ItemResult.Error.VarWithTypeArg:
                         globalContext.AddFatalError(A2002_ResolveIdentifier_VarWithTypeArg, memberExp);
                         break;
 
-                    case NotFoundItemResult:
+                    case ItemResult.NotFound:
                         globalContext.AddFatalError(A2007_ResolveIdentifier_NotFound, memberExp);
                         break;
 
-                    case ValueItemResult valueResult:
-                        switch (valueResult.ItemValue)
-                        {
-                            case TypeValue:
-                                globalContext.AddFatalError(A2004_ResolveIdentifier_CantGetTypeMemberThroughInstance, memberExp);
-                                break;
-
-                            case FuncValue:
-                                throw new NotImplementedException();
-
-                            case MemberVarValue memberVar:
-                                // static인지 검사
-                                if (memberVar.IsStatic)
-                                    globalContext.AddFatalError(A2003_ResolveIdentifier_CantGetStaticMemberThroughInstance, memberExp);
-
-                                var loc = MakeMemberLoc(parentTypeValue, parentLoc, memberExp.MemberName);
-                                return new ExpExpResult(new R.LoadExp(loc), memberVar.GetTypeValue());
-                        }
+                    case ItemResult.Type:
+                        globalContext.AddFatalError(A2004_ResolveIdentifier_CantGetTypeMemberThroughInstance, memberExp);
                         break;
+                        
+                    case ItemResult.Funcs:
+                        throw new NotImplementedException();
+
+                    case ItemResult.MemberVar memberVarResult:
+                        // static인지 검사
+                        if (memberVarResult.MemberVarValue.IsStatic)
+                            globalContext.AddFatalError(A2003_ResolveIdentifier_CantGetStaticMemberThroughInstance, memberExp);
+
+                        var loc = MakeMemberLoc(parentTypeValue, parentLoc, memberExp.MemberName);
+                        return new ExpExpResult(new R.LoadExp(loc), memberVarResult.MemberVarValue.GetTypeValue());
                 }
 
                 throw new UnreachableCodeException();
@@ -563,74 +555,66 @@ namespace Gum.IR0Translator
 
                 switch (member)
                 {
-                    case NotFoundItemResult:
+                    case ItemResult.NotFound:
                         globalContext.AddFatalError(A2007_ResolveIdentifier_NotFound, nodeForErrorReport);
                         throw new UnreachableCodeException();
 
-                    case MultipleCandidatesErrorItemResult:
+                    case ItemResult.Error.MultipleCandidates:
                         globalContext.AddFatalError(A2001_ResolveIdentifier_MultipleCandidatesForIdentifier, nodeForErrorReport);
                         throw new UnreachableCodeException();
 
-                    case VarWithTypeArgErrorItemResult:
+                    case ItemResult.Error.VarWithTypeArg:
                         globalContext.AddFatalError(A2002_ResolveIdentifier_VarWithTypeArg, nodeForErrorReport);
                         throw new UnreachableCodeException();
 
-                    case ValueItemResult itemResult:
-                        switch (itemResult.ItemValue)
+                    case ItemResult.Type typeResult:
+                        return new TypeExpResult(typeResult.TypeValue);
+
+                    case ItemResult.Funcs funcsResult:
+                        return new FuncsExpResult(funcsResult.FuncValues);
+
+                    case ItemResult.MemberVar memberVarResult:
+                        var memberVarValue = memberVarResult.MemberVarValue;
+                        if (!memberVarValue.IsStatic)
                         {
-                            case TypeValue typeValue:
-                                return new TypeExpResult(typeValue);
-
-                            case FuncValue funcValue:
-                                return new FuncsExpResult(ImmutableArray.Create(funcValue));
-
-                            // 변수라면
-                            case MemberVarValue memberVarValue:
-
-                                if (!memberVarValue.IsStatic)
-                                {
-                                    globalContext.AddFatalError(A2005_ResolveIdentifier_CantGetInstanceMemberThroughType, nodeForErrorReport);
-                                    throw new UnreachableCodeException();
-                                }
-
-                                var rparentType = parentType.GetRType();
-                                var loc = new R.StaticMemberLoc(rparentType, memberName);
-                                return new LocExpResult(loc, memberVarValue.GetTypeValue());
-
-                            default:
-                                throw new UnreachableCodeException();
+                            globalContext.AddFatalError(A2005_ResolveIdentifier_CantGetInstanceMemberThroughType, nodeForErrorReport);
+                            throw new UnreachableCodeException();
                         }
+
+                        var rparentType = parentType.GetRType();
+                        var loc = new R.StaticMemberLoc(rparentType, memberName);
+                        return new LocExpResult(loc, memberVarValue.GetTypeValue());
 
                     default:
                         throw new UnreachableCodeException();
                 }
             }
 
-            void HandleErrorIdentifierResult(S.ISyntaxNode nodeForErrorReport, ErrorIdentifierResult errorResult)
+            void HandleErrorIdentifierResult(S.ISyntaxNode nodeForErrorReport, IdentifierResult.Error errorResult)
             {
                 switch (errorResult)
                 {
-                    case MultipleCandiatesErrorIdentifierResult:
+                    case IdentifierResult.Error.MultipleCandiates:
                         globalContext.AddFatalError(A2001_ResolveIdentifier_MultipleCandidatesForIdentifier, nodeForErrorReport);
                         break;
 
-                    case VarWithTypeArgErrorIdentifierResult:
+                    case IdentifierResult.Error.VarWithTypeArg:
                         globalContext.AddFatalError(A2002_ResolveIdentifier_VarWithTypeArg, nodeForErrorReport);
                         break;
 
-                    case CantGetStaticMemberThroughInstanceIdentifierResult:
+                    case IdentifierResult.Error.CantGetStaticMemberThroughInstance:
                         globalContext.AddFatalError(A2003_ResolveIdentifier_CantGetStaticMemberThroughInstance, nodeForErrorReport);
                         break;
 
-                    case CantGetTypeMemberThroughInstanceIdentifierResult:
+                    case IdentifierResult.Error.CantGetTypeMemberThroughInstance:
                         globalContext.AddFatalError(A2004_ResolveIdentifier_CantGetTypeMemberThroughInstance, nodeForErrorReport);
                         break;
 
-                    case CantGetInstanceMemberThroughTypeIdentifierResult:
+                    case IdentifierResult.Error.CantGetInstanceMemberThroughType:
                         globalContext.AddFatalError(A2005_ResolveIdentifier_CantGetInstanceMemberThroughType, nodeForErrorReport);
                         break;
 
-                    case FuncCantHaveMemberErrorIdentifierResult:
+                    case IdentifierResult.Error.FuncCantHaveMember:
                         globalContext.AddFatalError(A2006_ResolveIdentifier_FuncCantHaveMember, nodeForErrorReport);
                         break;
                 }

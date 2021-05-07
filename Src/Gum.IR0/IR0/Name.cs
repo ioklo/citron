@@ -11,6 +11,6 @@
         public record OpDec : Name;
 
         // anonymous type names
-        public record Lambda(LambdaId lambdaId) : Name;
+        public record Anonymous(AnonymousId Id) : Name;
     }
 }

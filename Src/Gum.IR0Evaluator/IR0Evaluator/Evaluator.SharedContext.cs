@@ -12,15 +12,17 @@ namespace Gum.IR0Evaluator
         {
             Dictionary<(R.Name, R.ParamHash), ItemContainer> containers;
             Dictionary<(R.Name, R.ParamHash), R.SequenceFuncDecl> seqFuncDecls;
-            Dictionary<(R.Name, R.ParamHash), R.LambdaDecl> lambdaDecls;
+            Dictionary<R.Name, R.LambdaDecl> lambdaDecls;
+            Dictionary<R.Name, R.CapturedStatementDecl> capturedStatementDecls;
             Dictionary<(R.Name, R.ParamHash), FuncInvoker> funcInvokers;
 
             public ItemContainer()
             {
                 containers = new Dictionary<(R.Name, R.ParamHash), ItemContainer>();
                 seqFuncDecls = new Dictionary<(R.Name, R.ParamHash), R.SequenceFuncDecl>();
-                lambdaDecls = new Dictionary<(R.Name, R.ParamHash), R.LambdaDecl>();
+                lambdaDecls = new Dictionary<R.Name, R.LambdaDecl>();
                 funcInvokers = new Dictionary<(R.Name, R.ParamHash), FuncInvoker>();
+                capturedStatementDecls = new Dictionary<R.Name, R.CapturedStatementDecl>();
             }
 
             public ItemContainer GetContainer(R.Name name, R.ParamHash paramHash)
@@ -37,15 +39,20 @@ namespace Gum.IR0Evaluator
             {
                 return funcInvokers[(name, paramHash)];
             }
+            
+            public R.CapturedStatementDecl GetCapturedStatementDecl(R.Name name)
+            {
+                return capturedStatementDecls[name];
+            }
 
             public R.LambdaDecl GetLambdaDecl(R.Name name)
             {
-                return lambdaDecls[(name, R.ParamHash.None)];
+                return lambdaDecls[name];
             }
 
             public void AddLambdaDecl(R.LambdaDecl lambdaDecl)
             {
-                lambdaDecls.Add((new R.Name.Lambda(lambdaDecl.Id), R.ParamHash.None), lambdaDecl);
+                lambdaDecls.Add(lambdaDecl.Name, lambdaDecl);
             }
 
             public void AddItemContainer(R.Name name, R.ParamHash paramHash, ItemContainer itemContainer)
@@ -110,6 +117,12 @@ namespace Gum.IR0Evaluator
             {
                 var outer = GetContainer(lambda.Outer);
                 return outer.GetLambdaDecl(lambda.Name);
+            }
+
+            public R.CapturedStatementDecl GetCapturedStatementDecl(R.Path.Nested path)
+            {
+                var outer = GetContainer(path.Outer);
+                return outer.GetCapturedStatementDecl(path.Name);
             }
 
             // 

@@ -18,7 +18,7 @@ namespace Gum.IR0Translator
     abstract partial class TypeValue : ItemValue
     {
         public virtual TypeValue? GetBaseType() { return null; }
-        public virtual ItemResult GetMember(M.Name memberName, ImmutableArray<TypeValue> typeArgs, ResolveHint hint) { return NotFoundItemResult.Instance; }
+        public virtual ItemResult GetMember(M.Name memberName, ImmutableArray<TypeValue> typeArgs, ResolveHint hint) { return ItemResult.NotFound.Instance; }
         public virtual TypeValue? GetMemberType(M.Name memberName, ImmutableArray<TypeValue> typeArgs) { return null; }        
         public abstract TypeValue Apply_TypeValue(TypeEnv typeEnv);        
 
@@ -106,7 +106,7 @@ namespace Gum.IR0Translator
 
         ItemResult GetMember_Type(M.Name memberName, ImmutableArray<TypeValue> typeArgs)
         {
-            var results = new List<ValueItemResult>();
+            var results = new List<ItemResult.Valid>();
 
             foreach (var memberType in structInfo.MemberTypes)
             {
@@ -114,22 +114,22 @@ namespace Gum.IR0Translator
                 if (memberType.Name.Equals(memberName) && memberType.TypeParams.Length == typeArgs.Length)
                 {
                     var typeValue = itemValueFactory.MakeTypeValue(this, memberType, typeArgs);
-                    results.Add(new ValueItemResult(typeValue));
+                    results.Add(new ItemResult.Type(typeValue));
                 }
             }
 
             if (1 < results.Count)
-                return MultipleCandidatesErrorItemResult.Instance;
+                return ItemResult.Error.MultipleCandidates.Instance;
 
             if (results.Count == 0)
-                return NotFoundItemResult.Instance;
+                return ItemResult.NotFound.Instance;
 
             return results[0];
         }
 
         ItemResult GetMember_Func(M.Name memberName, ImmutableArray<TypeValue> typeArgs, ResolveHint resolveHint)
         {
-            var results = new List<ValueItemResult>();
+            var results = new List<ItemResult.Valid>();
 
             foreach (var memberFunc in structInfo.MemberFuncs)
             {
@@ -138,38 +138,38 @@ namespace Gum.IR0Translator
                     memberFunc.TypeParams.Length == typeArgs.Length) // TODO: TypeParam inference, 같지 않아도 된다
                 {
                     var funcValue = itemValueFactory.MakeMemberFunc(this, memberFunc, typeArgs);
-                    results.Add(new ValueItemResult(funcValue));
+                    results.Add(new ItemResult.Funcs(funcValue));
                 }
             }
 
             if (1 < results.Count)
-                return MultipleCandidatesErrorItemResult.Instance;
+                return ItemResult.Error.MultipleCandidates.Instance;
 
             if (results.Count == 0)
-                return NotFoundItemResult.Instance;
+                return ItemResult.NotFound.Instance;
 
             return results[0];
         }
         
         ItemResult GetMember_Var(M.Name memberName, ImmutableArray<TypeValue> typeArgs)
         {
-            var results = new List<ValueItemResult>();
+            var results = new List<ItemResult.Valid>();
             foreach (var memberVar in structInfo.MemberVars)
                 if (memberVar.Name.Equals(memberName))
                 {
                     var memberVarValue = itemValueFactory.MakeMemberVarValue(this, memberVar);
-                    results.Add(new ValueItemResult(memberVarValue));
+                    results.Add(new ItemResult.MemberVar(memberVarValue));
                 }
 
             if (1 < results.Count)
-                return MultipleCandidatesErrorItemResult.Instance;
+                return ItemResult.Error.MultipleCandidates.Instance;
 
             if (results.Count == 0)
-                return NotFoundItemResult.Instance;
+                return ItemResult.NotFound.Instance;
 
             // 변수를 찾았는데 타입 아규먼트가 있다면 에러
             if (typeArgs.Length != 0) 
-                return VarWithTypeArgErrorItemResult.Instance;
+                return ItemResult.Error.VarWithTypeArg.Instance;
 
             return results[0];
         }
@@ -186,28 +186,28 @@ namespace Gum.IR0Translator
         public override ItemResult GetMember(M.Name memberName, ImmutableArray<TypeValue> typeArgs, ResolveHint hint)
         {
             // TODO: caching
-            var results = new List<ValueItemResult>();
+            var results = new List<ItemResult.Valid>();
 
             // error, notfound, found
             var typeResult = GetMember_Type(memberName, typeArgs);
-            if (typeResult is ErrorItemResult) return typeResult;
-            if (typeResult is ValueItemResult typeMemberResult) results.Add(typeMemberResult);
+            if (typeResult is ItemResult.Error) return typeResult;
+            if (typeResult is ItemResult.Valid typeMemberResult) results.Add(typeMemberResult);
 
             // error, notfound, found
             var funcResult = GetMember_Func(memberName, typeArgs, hint);
-            if (funcResult is ErrorItemResult) return funcResult;
-            if (funcResult is ValueItemResult funcMemberResult) results.Add(funcMemberResult);
+            if (funcResult is ItemResult.Error) return funcResult;
+            if (funcResult is ItemResult.Valid funcMemberResult) results.Add(funcMemberResult);
 
             // error, notfound, found
             var varResult = GetMember_Var(memberName, typeArgs);
-            if (varResult is ErrorItemResult) return varResult;
-            if (varResult is ValueItemResult varMemberResult) results.Add(varMemberResult);            
+            if (varResult is ItemResult.Error) return varResult;
+            if (varResult is ItemResult.Valid varMemberResult) results.Add(varMemberResult);            
 
             if (1 < results.Count)
-                return MultipleCandidatesErrorItemResult.Instance;
+                return ItemResult.Error.MultipleCandidates.Instance;
 
             if (results.Count == 0)
-                return NotFoundItemResult.Instance;
+                return ItemResult.NotFound.Instance;
 
             return results[0];
         }
