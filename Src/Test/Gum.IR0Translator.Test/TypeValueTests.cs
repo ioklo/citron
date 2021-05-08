@@ -124,11 +124,13 @@ namespace Gum.IR0Translator.Test
                 new M.MemberType(
                     new M.GlobalType(moduleName, M.NamespacePath.Root, "X", Arr(MTypes.Int)), "Y", Arr(MTypes.Bool)));
 
-            var itemResult = xyTypeValue.GetMember("v", default, ResolveHint.None);
+            var itemResult = xyTypeValue.GetMember("v", default);
             var expected = factory.MakeTypeValue(new M.GlobalType(moduleName, M.NamespacePath.Root, "X", Arr(MTypes.Bool)));
-            Assert.Equal(expected,                 
-                ((MemberVarValue)((ValueItemResult)itemResult).ItemValue).GetTypeValue()
-            );
+
+            var memberVarResult = (ItemQueryResult.MemberVar)itemResult;
+            var memberVarValue = factory.MakeMemberVarValue(memberVarResult.Outer, memberVarResult.MemberVarInfo);
+
+            Assert.Equal(expected, memberVarValue.GetTypeValue());
         }
 
         // FuncValue를 얻어와서         
@@ -145,8 +147,8 @@ namespace Gum.IR0Translator.Test
             var xytype = factory.MakeTypeValue(xymtype);
 
             // 지금은 query밖에 없다, ID를 통한 직접 참조를 할 일 이 생기게 되면 변경한다
-            var itemResult = (ValueItemResult)xytype.GetMember("F", Arr(factory.Bool), ResolveHint.None);
-            var funcValue = (FuncValue)itemResult.ItemValue;            
+            var funcResult = (ItemQueryResult.Funcs)xytype.GetMember("F", 1);
+            var funcValue = factory.MakeFunc(funcResult.Outer, funcResult.FuncInfos[0], Arr(factory.Bool));
 
             Assert.False(funcValue.IsStatic);
             Assert.False(funcValue.IsSequence);            

@@ -53,30 +53,30 @@ namespace Gum.IR0Translator
             }
         }
 
-        public abstract record Valid : IdentifierResult 
-        {
-            public record LocalVar(bool bNeedCapture, string VarName, TypeValue TypeValue) : Valid;                        
-            public record GlobalVar(string VarName, TypeValue TypeValue) : Valid;            
-            public record Funcs(ImmutableArray<FuncValue> FuncValues) : Valid;
+        public abstract record Valid : IdentifierResult;
+        
+        public record LocalVar(bool bNeedCapture, string VarName, TypeValue TypeValue) : Valid;                        
+        public record GlobalVar(string VarName, TypeValue TypeValue) : Valid;            
+        public record Funcs(ItemValueOuter Outer, ImmutableArray<M.FuncInfo> FuncInfos, ImmutableArray<TypeValue> TypeArgs) : Valid;
             
-            // T
-            public record Type(TypeValue TypeValue) : Valid;
+        // T
+        public record Type(TypeValue TypeValue) : Valid;
 
-            // First => E.First
-            public record EnumElem : Valid
+        // First => E.First
+        public record EnumElem : Valid
+        {
+            public NormalTypeValue EnumTypeValue { get; }
+            public M.Name Name { get => throw new NotImplementedException(); }
+            public ImmutableArray<M.EnumElemFieldInfo> FieldInfos { get; }
+            public bool IsStandalone { get => FieldInfos.IsEmpty; }
+
+            public EnumElem(NormalTypeValue enumTypeValue, ImmutableArray<M.EnumElemFieldInfo> fieldInfos)
             {
-                public NormalTypeValue EnumTypeValue { get; }
-                public M.Name Name { get => throw new NotImplementedException(); }
-                public ImmutableArray<M.EnumElemFieldInfo> FieldInfos { get; }
-                public bool IsStandalone { get => FieldInfos.IsEmpty; }
-
-                public EnumElem(NormalTypeValue enumTypeValue, ImmutableArray<M.EnumElemFieldInfo> fieldInfos)
-                {
-                    EnumTypeValue = enumTypeValue;
-                    FieldInfos = fieldInfos;
-                }
+                EnumTypeValue = enumTypeValue;
+                FieldInfos = fieldInfos;
             }
         }
+        
 
         public record NotFound : IdentifierResult
         {

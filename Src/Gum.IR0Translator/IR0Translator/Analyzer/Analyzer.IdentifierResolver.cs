@@ -25,14 +25,14 @@ namespace Gum.IR0Translator
             throw new UnreachableCodeException();
         }
 
-        static IdentifierResult.Error ToErrorIdentifierResult(ItemResult.Error errorResult)
+        static IdentifierResult.Error ToErrorIdentifierResult(ItemQueryResult.Error errorResult)
         {
             switch(errorResult)
             {
-                case ItemResult.Error.MultipleCandidates:
+                case ItemQueryResult.Error.MultipleCandidates:
                     return IdentifierResult.Error.MultipleCandiates.Instance;
 
-                case ItemResult.Error.VarWithTypeArg:
+                case ItemQueryResult.Error.VarWithTypeArg:
                     return IdentifierResult.Error.VarWithTypeArg.Instance;
             }
 
@@ -72,7 +72,7 @@ namespace Gum.IR0Translator
                 var varInfo = callableContext.GetLocalVarOutsideLambda(idName);
                 if (varInfo == null) return IdentifierResult.NotFound.Instance;
 
-                return new IdentifierResult.Valid.LocalVar(true, varInfo.Value.Name, varInfo.Value.TypeValue);
+                return new IdentifierResult.LocalVar(true, varInfo.Value.Name, varInfo.Value.TypeValue);
             }
 
             IdentifierResult GetLocalVarInfo()
@@ -83,7 +83,7 @@ namespace Gum.IR0Translator
                 var varInfo = localContext.GetLocalVarInfo(idName);
                 if (varInfo == null) return IdentifierResult.NotFound.Instance;
 
-                return new IdentifierResult.Valid.LocalVar(false, varInfo.Value.Name, varInfo.Value.TypeValue);
+                return new IdentifierResult.LocalVar(false, varInfo.Value.Name, varInfo.Value.TypeValue);
             }
 
             IdentifierResult GetThisMemberInfo()
@@ -99,21 +99,29 @@ namespace Gum.IR0Translator
                 var varInfo = globalContext.GetInternalGlobalVarInfo(idName);
                 if (varInfo == null) return IdentifierResult.NotFound.Instance;
 
-                return new IdentifierResult.Valid.GlobalVar(varInfo.Name.ToString(), varInfo.TypeValue);
+                return new IdentifierResult.GlobalVar(varInfo.Name.ToString(), varInfo.TypeValue);
             }
             
             IdentifierResult GetGlobalInfo()
             {
                 // TODO: outer namespace까지 다 돌아야 한다
                 var curNamespacePath = M.NamespacePath.Root; 
-                var globalResult = globalContext.GetGlobalItem(curNamespacePath, idName, typeArgs, hint);
+                var globalResult = globalContext.GetGlobalItem(curNamespacePath, idName, typeArgs.Length);
 
                 switch (globalResult)
                 {
-                    case ItemResult.NotFound: return IdentifierResult.NotFound.Instance;
-                    case ItemResult.Error errorResult: return ToErrorIdentifierResult(errorResult);
-                    case ItemResult.Type typeResult: return new IdentifierResult.Valid.Type(typeResult.TypeValue);
-                    case ItemResult.Funcs funcsResult: return new IdentifierResult.Valid.Funcs(funcsResult.FuncValues);
+                    case ItemQueryResult.NotFound: return IdentifierResult.NotFound.Instance;
+                    case ItemQueryResult.Error errorResult: return ToErrorIdentifierResult(errorResult);
+                    case ItemQueryResult.Type typeResult:
+                        {
+                            var typeValue = globalContext.MakeTypeValue(typeResult.Outer, typeResult.TypeInfo, typeArgs);
+                            return new IdentifierResult.Type(typeValue);
+                        }
+
+                    case ItemQueryResult.Funcs funcsResult:
+                        {
+                            return new IdentifierResult.Funcs(funcsResult.Outer, funcsResult.FuncInfos, typeArgs);
+                        }
                 }
 
                 throw new UnreachableCodeException();

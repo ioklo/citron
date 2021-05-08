@@ -18,7 +18,7 @@ namespace Gum.IR0Translator
     abstract partial class TypeValue : ItemValue
     {
         public virtual TypeValue? GetBaseType() { return null; }
-        public virtual ItemQueryResult GetMember(M.Name memberName, ImmutableArray<TypeValue> typeArgs, ResolveHint hint) { return ItemQueryResult.NotFound.Instance; }
+        public virtual ItemQueryResult GetMember(M.Name memberName, int typeParamCount) { return ItemQueryResult.NotFound.Instance; }
         public virtual TypeValue? GetMemberType(M.Name memberName, ImmutableArray<TypeValue> typeArgs) { return null; }        
         public abstract TypeValue Apply_TypeValue(TypeEnv typeEnv);        
 

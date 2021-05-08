@@ -144,9 +144,9 @@ namespace Gum.IR0Translator
                 return itemValueFactory.MakeLambdaType(lambda, retType, paramTypes);
             }
 
-            public ItemQueryResult GetGlobalItem(M.NamespacePath namespacePath, string idName, ImmutableArray<TypeValue> typeArgs, ResolveHint hint)
+            public ItemQueryResult GetGlobalItem(M.NamespacePath namespacePath, string idName, int typeParamCount)
             {
-                return globalItemValueFactory.GetGlobal(namespacePath, idName, typeArgs, hint);
+                return globalItemValueFactory.GetGlobal(namespacePath, idName, typeParamCount);
             }
 
             public ImmutableArray<InternalBinaryOperatorInfo> GetBinaryOpInfos(BinaryOpKind kind)

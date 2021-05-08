@@ -50,7 +50,7 @@ namespace Gum.IR0Translator
                     {
                         var initExpResult = stmtAndExpAnalyzer.AnalyzeExp_Exp(elem.InitExp, ResolveHint.None);
                         var rtype = initExpResult.TypeValue.GetRType();
-                        return new VarDeclElementCoreResult(new R.VarDeclElement(elem.VarName, rtype, initExpResult.Exp), initExpResult.TypeValue);
+                        return new VarDeclElementCoreResult(new R.VarDeclElement(elem.VarName, rtype, initExpResult.Result), initExpResult.TypeValue);
                     }
                     else
                     {
@@ -60,7 +60,7 @@ namespace Gum.IR0Translator
                             globalContext.AddFatalError(A0102_VarDecl_MismatchBetweenDeclTypeAndInitExpType, elem);
 
                         var rtype = declType.GetRType();
-                        return new VarDeclElementCoreResult(new R.VarDeclElement(elem.VarName, rtype, initExpResult.Exp), declType);
+                        return new VarDeclElementCoreResult(new R.VarDeclElement(elem.VarName, rtype, initExpResult.Result), declType);
                     }
                 }
             }

@@ -116,7 +116,7 @@ namespace Gum.IR0Translator
             }
         }
 
-        public ItemValue MakeFunc(ItemValueOuter outer, M.FuncInfo funcInfo, ImmutableArray<TypeValue> typeArgs)
+        public FuncValue MakeFunc(ItemValueOuter outer, M.FuncInfo funcInfo, ImmutableArray<TypeValue> typeArgs)
         {
             return new FuncValue(this, outer, funcInfo, typeArgs);
         }

@@ -35,8 +35,8 @@ namespace Gum.IR0Translator
                 foreach (var cmd in cmdStmt.Commands)
                 {
                     var expResult = AnalyzeStringExp(cmd);
-                    Debug.Assert(expResult.Exp is R.StringExp);
-                    builder.Add((R.StringExp)expResult.Exp);
+                    Debug.Assert(expResult.Result is R.StringExp);
+                    builder.Add((R.StringExp)expResult.Result);
                 }
 
                 return new StmtResult(new R.CommandStmt(builder.ToImmutable()));
@@ -136,7 +136,7 @@ namespace Gum.IR0Translator
 
 
 
-                //if (idResult is locResult && locResult.Loc is R.LocalVarLoc)
+                //if (idResult is locResult && locResult.Result is R.LocalVarLoc)
                 //{
                 //    var testTypeValue = context.GetTypeValueByTypeExp(ifStmt.TestType!);
                 //    throw new NotImplementedException();
@@ -176,7 +176,7 @@ namespace Gum.IR0Translator
                 if (!globalContext.IsAssignable(globalContext.GetBoolType(), condResult.TypeValue))
                     globalContext.AddFatalError(A1004_IfStmt_ConditionShouldBeBool, ifStmt.Cond);
 
-                return new StmtResult(new R.IfStmt(condResult.Exp, bodyResult.Stmt, elseBodyResult?.Stmt));
+                return new StmtResult(new R.IfStmt(condResult.Result, bodyResult.Stmt, elseBodyResult?.Stmt));
             }
 
             [AutoConstructor]
@@ -195,7 +195,7 @@ namespace Gum.IR0Translator
 
                     case S.ExpForStmtInitializer expInit:
                         var expResult = AnalyzeTopLevelExp_Exp(expInit.Exp, ResolveHint.None, A1102_ForStmt_ExpInitializerShouldBeAssignOrCall);
-                        return new ForStmtInitializerResult(new R.ExpForStmtInitializer(expResult.Exp));
+                        return new ForStmtInitializerResult(new R.ExpForStmtInitializer(expResult.Result));
 
                     default:
                         throw new NotImplementedException();
@@ -223,7 +223,7 @@ namespace Gum.IR0Translator
                     if (!globalContext.IsAssignable(globalContext.GetBoolType(), condResult.TypeValue))
                         globalContext.AddError(A1101_ForStmt_ConditionShouldBeBool, forStmt.CondExp);
 
-                    cond = condResult.Exp;
+                    cond = condResult.Result;
                 }
 
                 R.Exp? continueInfo = null;
@@ -231,7 +231,7 @@ namespace Gum.IR0Translator
                 {
                     var continueResult = newAnalyzer.AnalyzeTopLevelExp_Exp(forStmt.ContinueExp, ResolveHint.None, A1103_ForStmt_ContinueExpShouldBeAssignOrCall);
                     var contExpType = continueResult.TypeValue.GetRType();
-                    continueInfo = continueResult.Exp;
+                    continueInfo = continueResult.Result;
                 }
                 
                 var newLoopStmtAnalyzer = newAnalyzer.NewAnalyzerWithLoop();
@@ -299,7 +299,7 @@ namespace Gum.IR0Translator
                         // 리턴값이 안 적혀 있었으므로 적는다
                         callableContext.SetRetTypeValue(valueResult.TypeValue);
 
-                        return new StmtResult(new R.ReturnStmt(valueResult.Exp));
+                        return new StmtResult(new R.ReturnStmt(valueResult.Result));
                     }
                     else
                     {
@@ -310,7 +310,7 @@ namespace Gum.IR0Translator
                         if (!globalContext.IsAssignable(retTypeValue, valueResult.TypeValue))
                             globalContext.AddFatalError(A1201_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType, returnStmt.Value);
 
-                        return new StmtResult(new R.ReturnStmt(valueResult.Exp));
+                        return new StmtResult(new R.ReturnStmt(valueResult.Result));
                     }
                 }
             }
@@ -349,7 +349,7 @@ namespace Gum.IR0Translator
             StmtResult AnalyzeExpStmt(S.ExpStmt expStmt)
             {
                 var expResult = AnalyzeTopLevelExp_Exp(expStmt.Exp, ResolveHint.None, A1301_ExpStmt_ExpressionShouldBeAssignOrCall);
-                return new StmtResult(new R.ExpStmt(expResult.Exp));
+                return new StmtResult(new R.ExpStmt(expResult.Result));
             }
 
             R.Name AnalyzeCapturedStatement(TypeValue? retTypeValue, S.Stmt body)
@@ -490,7 +490,7 @@ namespace Gum.IR0Translator
                 if (!globalContext.IsAssignable(retTypeValue, valueResult.TypeValue))
                     globalContext.AddFatalError(A1402_YieldStmt_MismatchBetweenYieldValueAndSeqFuncYieldType, yieldStmt.Value);
 
-                return new StmtResult(new R.YieldStmt(valueResult.Exp));
+                return new StmtResult(new R.YieldStmt(valueResult.Result));
             }            
 
             public StmtResult AnalyzeStmt(S.Stmt stmt)
@@ -537,7 +537,7 @@ namespace Gum.IR0Translator
                 }
             }
 
-            ExpExpResult AnalyzeTopLevelExp_Exp(S.Exp exp, ResolveHint hint, AnalyzeErrorCode code)
+            ExpResult.Exp AnalyzeTopLevelExp_Exp(S.Exp exp, ResolveHint hint, AnalyzeErrorCode code)
             {
                 if (!IsTopLevelExp(exp))
                     globalContext.AddFatalError(code, exp);
