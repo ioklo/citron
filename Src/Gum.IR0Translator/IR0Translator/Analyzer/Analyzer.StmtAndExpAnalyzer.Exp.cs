@@ -283,16 +283,19 @@ namespace Gum.IR0Translator
             //}
 
             // CallExp분석에서 Callable이 Identifier인 경우 처리
-            ExpResult AnalyzeCallExpFuncCallable()
+            ExpResult AnalyzeCallExpFuncCallable(ExpResult.Funcs funcsResult)
             {
-                throw new NotImplementedException();
+                // 함수 중 하나를 골라야 한다
 
-                //// 여러 함수 중에서 인자가 맞는것을 선택해야 한다
-                //// Type inference
-                //foreach(var funcValue in funcsCallableResult.FuncValues)
-                //{
-                //    // TODO: Analyze중에 컨텍스트를 변경하면 다 롤백해야 한다..
-                //}
+                // 여러 함수 중에서 인자가 맞는것을 선택해야 한다
+                // Type inference
+                foreach (var funcInfo in funcsResult.FuncInfos)
+                {                    
+                    // TODO: Analyze중에 컨텍스트를 변경하면 다 롤백해야 한다
+
+
+
+                }
 
                 //// 인자 타입 체크
                 //var argTypes = ImmutableArray.CreateRange(argResults, info => info.TypeValue);            
@@ -322,19 +325,27 @@ namespace Gum.IR0Translator
             }
 
             // CallExp 분석에서 Callable이 Exp인 경우 처리
-            ExpResult.Exp AnalyzeCallExpExpCallable(R.Loc callableLoc, TypeValue callableTypeValue, ImmutableArray<ExpResult.Exp> argResults, S.CallExp nodeForErrorReport)
+            ExpResult.Exp AnalyzeCallExpExpCallable(R.Loc callableLoc, TypeValue callableTypeValue, ImmutableArray<S.Exp> sargs, S.CallExp nodeForErrorReport)
             {
                 var lambdaType = callableTypeValue as LambdaTypeValue;
                 if (lambdaType == null)
                     globalContext.AddFatalError(A0902_CallExp_CallableExpressionIsNotCallable, nodeForErrorReport.Callable);
 
+                var argResultsBuilder = ImmutableArray.CreateBuilder<ExpResult.Exp>(args.Length);
+                foreach (var arg in sargs)
+                {
+                    var expResult = AnalyzeExp_Exp(arg, ResolveHint.None);
+                    argResultsBuilder.Add(expResult);
+                }
+                var argResults = argResultsBuilder.MoveToImmutable();
+
                 var argTypes = ImmutableArray.CreateRange(argResults, info => info.TypeValue);
                 CheckParamTypes(nodeForErrorReport, lambdaType.Params, argTypes);
 
-                var args = argResults.Select(info => info.Result).ToImmutableArray();
+                var rargs = argResults.Select(info => info.Result).ToImmutableArray();
 
                 return new ExpResult.Exp(
-                    new R.CallValueExp(lambdaType.Lambda, callableLoc, args),
+                    new R.CallValueExp(lambdaType.Lambda, callableLoc, rargs),
                     lambdaType.Return);
             }
 
@@ -360,14 +371,8 @@ namespace Gum.IR0Translator
                 // 함수 이름을 먼저 찾는가
                 // Argument 타입을 먼저 알아내야 하는가
                 // F(First); F(E.First); 가 되게 하려면 이름으로 먼저 찾고, 인자타입을 맞춰봐야 한다
-                var argResultsBuilder = ImmutableArray.CreateBuilder<ExpResult.Exp>();
-                foreach (var arg in exp.Args)
-                {
-                    var expResult = AnalyzeExp_Exp(arg, ResolveHint.None);
-                    argResultsBuilder.Add(expResult);
-                }
+                
 
-                var argResults = argResultsBuilder.ToImmutable();
                 switch (callableResult)
                 {
                     case ExpResult.Namespace:
@@ -381,14 +386,14 @@ namespace Gum.IR0Translator
 
                     // F(2, 3, 4); 가 this.F인지, This.F인지 F 찾는 시점에서는 모르기 때문에, 같이 들고 와야 한다
                     case ExpResult.Funcs funcsResult:
-                        return AnalyzeCallExpFuncCallable();
+                        return AnalyzeCallExpFuncCallable(funcsResult, exp.Args);
 
                     case ExpResult.Exp expResult:
                         var tempLoc = new R.TempLoc(expResult.Result, expResult.TypeValue.GetRType());
-                        return AnalyzeCallExpExpCallable(tempLoc, expResult.TypeValue, argResults, exp);
+                        return AnalyzeCallExpExpCallable(tempLoc, expResult.TypeValue, exp.Args, exp);
 
                     case ExpResult.Loc locResult:
-                        return AnalyzeCallExpExpCallable(locResult.Result, locResult.TypeValue, argResults, exp);
+                        return AnalyzeCallExpExpCallable(locResult.Result, locResult.TypeValue, exp.Args, exp);
 
                     // enum constructor, E.First
                     case ExpResult.EnumElem enumElemResult:
