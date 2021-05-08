@@ -509,71 +509,80 @@ namespace Gum.IR0Translator
             }
 
             // exp.x
-            ExpExpResult AnalyzeMemberExpExpParent(S.MemberExp memberExp, R.Loc parentLoc, TypeValue parentTypeValue, ResolveHint hint)
+            ExpExpResult AnalyzeMemberExpExpParent(S.MemberExp memberExp, R.Loc parentLoc, TypeValue parentTypeValue)
             {
                 var typeArgs = GetTypeValues(memberExp.MemberTypeArgs);
-                var memberResult = parentTypeValue.GetMember(memberExp.MemberName, typeArgs, hint);
+                var memberResult = parentTypeValue.GetMember(memberExp.MemberName, typeArgs.Length);
 
                 switch (memberResult)
                 {
-                    case ItemResult.Error.MultipleCandidates:
+                    case ItemQueryResult.Error.MultipleCandidates:
                         globalContext.AddFatalError(A2001_ResolveIdentifier_MultipleCandidatesForIdentifier, memberExp);
                         break;
 
-                    case ItemResult.Error.VarWithTypeArg:
+                    case ItemQueryResult.Error.VarWithTypeArg:
                         globalContext.AddFatalError(A2002_ResolveIdentifier_VarWithTypeArg, memberExp);
                         break;
 
-                    case ItemResult.NotFound:
+                    case ItemQueryResult.NotFound:
                         globalContext.AddFatalError(A2007_ResolveIdentifier_NotFound, memberExp);
                         break;
 
-                    case ItemResult.Type:
+                    case ItemQueryResult.Type:
                         globalContext.AddFatalError(A2004_ResolveIdentifier_CantGetTypeMemberThroughInstance, memberExp);
                         break;
                         
-                    case ItemResult.Funcs:
+                    case ItemQueryResult.Funcs:
                         throw new NotImplementedException();
 
-                    case ItemResult.MemberVar memberVarResult:
+                    case ItemQueryResult.MemberVar memberVarResult:
                         // static인지 검사
-                        if (memberVarResult.MemberVarValue.IsStatic)
+                        if (memberVarResult.MemberVarInfo.IsStatic)
                             globalContext.AddFatalError(A2003_ResolveIdentifier_CantGetStaticMemberThroughInstance, memberExp);
 
+                        var memberVarValue = globalContext.MakeMemberVarValue(memberVarResult.Outer, memberVarResult.MemberVarInfo);
+
                         var loc = MakeMemberLoc(parentTypeValue, parentLoc, memberExp.MemberName);
-                        return new ExpExpResult(new R.LoadExp(loc), memberVarResult.MemberVarValue.GetTypeValue());
+                        return new ExpExpResult(new R.LoadExp(loc), memberVarValue.GetTypeValue());
                 }
 
                 throw new UnreachableCodeException();
             }
 
             // T.x
-            ExpResult AnalyzeMemberExpTypeParent(S.MemberExp nodeForErrorReport, TypeValue parentType, string memberName, ImmutableArray<S.TypeExp> stypeArgs, ResolveHint hint)
-            {
-                var typeArgs = GetTypeValues(stypeArgs);
-                var member = parentType.GetMember(memberName, typeArgs, hint);
+            ExpResult AnalyzeMemberExpTypeParent(S.MemberExp nodeForErrorReport, TypeValue parentType, string memberName, ImmutableArray<S.TypeExp> stypeArgs)
+            {   
+                var member = parentType.GetMember(memberName, stypeArgs.Length);
 
                 switch (member)
                 {
-                    case ItemResult.NotFound:
+                    case ItemQueryResult.NotFound:
                         globalContext.AddFatalError(A2007_ResolveIdentifier_NotFound, nodeForErrorReport);
                         throw new UnreachableCodeException();
 
-                    case ItemResult.Error.MultipleCandidates:
+                    case ItemQueryResult.Error.MultipleCandidates:
                         globalContext.AddFatalError(A2001_ResolveIdentifier_MultipleCandidatesForIdentifier, nodeForErrorReport);
                         throw new UnreachableCodeException();
 
-                    case ItemResult.Error.VarWithTypeArg:
+                    case ItemQueryResult.Error.VarWithTypeArg:
                         globalContext.AddFatalError(A2002_ResolveIdentifier_VarWithTypeArg, nodeForErrorReport);
                         throw new UnreachableCodeException();
 
-                    case ItemResult.Type typeResult:
-                        return new TypeExpResult(typeResult.TypeValue);
+                    case ItemQueryResult.Type typeResult:
+                        {
+                            var typeArgs = GetTypeValues(stypeArgs);
+                            var typeValue = globalContext.MakeTypeValue(typeResult.Outer, typeResult.TypeInfo, typeArgs);
+                            return new TypeExpResult(typeValue);
+                        }
 
-                    case ItemResult.Funcs funcsResult:
-                        return new FuncsExpResult(funcsResult.FuncValues);
+                    case ItemQueryResult.Funcs funcsResult:
+                        {
+                            // 함수는 이 단계에서 타입인자가 확정되지 않으므로 더 올려 보낸다
+                            var typeArgs = GetTypeValues(stypeArgs);
+                            return new FuncsExpResult(funcsResult.Outer, funcsResult.FuncInfos, typeArgs);
+                        }
 
-                    case ItemResult.MemberVar memberVarResult:
+                    case ItemQueryResult.MemberVar memberVarResult:
                         var memberVarValue = memberVarResult.MemberVarValue;
                         if (!memberVarValue.IsStatic)
                         {
@@ -624,7 +633,7 @@ namespace Gum.IR0Translator
 
             // exp를 돌려주는 버전
             // parent."x"<>
-            ExpResult AnalyzeMemberExp(S.MemberExp memberExp, ResolveHint hint)
+            ExpResult AnalyzeMemberExp(S.MemberExp memberExp)
             {
                 var parentResult = AnalyzeExp(memberExp.Parent, ResolveHint.None);
 
@@ -634,7 +643,7 @@ namespace Gum.IR0Translator
                         throw new NotImplementedException();
 
                     case TypeExpResult typeResult:
-                        return AnalyzeMemberExpTypeParent(memberExp, typeResult.TypeValue, memberExp.MemberName, memberExp.MemberTypeArgs, hint);
+                        return AnalyzeMemberExpTypeParent(memberExp, typeResult.TypeValue, memberExp.MemberName, memberExp.MemberTypeArgs);
 
                     case EnumElemExpResult:
                         globalContext.AddFatalError(A2009_ResolveIdentifier_EnumElemCantHaveMember, memberExp);
@@ -645,10 +654,10 @@ namespace Gum.IR0Translator
                         break;
 
                     case ExpExpResult expResult:
-                        return AnalyzeMemberExpExpParent(memberExp, new R.TempLoc(expResult.Exp, expResult.TypeValue.GetRType()), expResult.TypeValue, hint);
+                        return AnalyzeMemberExpExpParent(memberExp, new R.TempLoc(expResult.Exp, expResult.TypeValue.GetRType()), expResult.TypeValue);
 
                     case LocExpResult locResult:
-                        return AnalyzeMemberExpExpParent(memberExp, locResult.Loc, locResult.TypeValue, hint);
+                        return AnalyzeMemberExpExpParent(memberExp, locResult.Loc, locResult.TypeValue);
                 }
 
                 throw new UnreachableCodeException();
@@ -718,7 +727,7 @@ namespace Gum.IR0Translator
                     case S.CallExp callExp: return AnalyzeCallExp(callExp, hint);
                     case S.LambdaExp lambdaExp: return AnalyzeLambdaExp(lambdaExp);
                     case S.IndexerExp indexerExp: return AnalyzeIndexerExp(indexerExp);
-                    case S.MemberExp memberExp: return AnalyzeMemberExp(memberExp, hint);
+                    case S.MemberExp memberExp: return AnalyzeMemberExp(memberExp);
                     case S.ListExp listExp: return AnalyzeListExp(listExp);
                     default: throw new UnreachableCodeException();
                 }

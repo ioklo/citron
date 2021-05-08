@@ -18,7 +18,7 @@ namespace Gum.IR0Translator
     abstract partial class TypeValue : ItemValue
     {
         public virtual TypeValue? GetBaseType() { return null; }
-        public virtual ItemResult GetMember(M.Name memberName, ImmutableArray<TypeValue> typeArgs, ResolveHint hint) { return ItemResult.NotFound.Instance; }
+        public virtual ItemQueryResult GetMember(M.Name memberName, ImmutableArray<TypeValue> typeArgs, ResolveHint hint) { return ItemQueryResult.NotFound.Instance; }
         public virtual TypeValue? GetMemberType(M.Name memberName, ImmutableArray<TypeValue> typeArgs) { return null; }        
         public abstract TypeValue Apply_TypeValue(TypeEnv typeEnv);        
 
@@ -104,74 +104,80 @@ namespace Gum.IR0Translator
             this.typeArgs = typeArgs;
         }
 
-        ItemResult GetMember_Type(M.Name memberName, ImmutableArray<TypeValue> typeArgs)
+        ItemQueryResult GetMember_Type(M.Name memberName, int typeParamCount)
         {
-            var results = new List<ItemResult.Valid>();
+            var candidates = new Candidates<ItemQueryResult.Valid>();
 
             foreach (var memberType in structInfo.MemberTypes)
             {
                 // 이름이 같고, 타입 파라미터 개수가 같다면
-                if (memberType.Name.Equals(memberName) && memberType.TypeParams.Length == typeArgs.Length)
+                if (memberType.Name.Equals(memberName) && memberType.TypeParams.Length == typeParamCount)
                 {
-                    var typeValue = itemValueFactory.MakeTypeValue(this, memberType, typeArgs);
-                    results.Add(new ItemResult.Type(typeValue));
+                    candidates.Add(new ItemQueryResult.Type(new NestedItemValueOuter(this), memberType));
                 }
             }
 
-            if (1 < results.Count)
-                return ItemResult.Error.MultipleCandidates.Instance;
+            var result = candidates.GetSingle();
+            if (result != null)
+                return result;
 
-            if (results.Count == 0)
-                return ItemResult.NotFound.Instance;
+            if (candidates.HasMultiple)
+                return ItemQueryResult.Error.MultipleCandidates.Instance;
 
-            return results[0];
+            if (candidates.IsEmpty)
+                return ItemQueryResult.NotFound.Instance;
+
+            throw new UnreachableCodeException();
         }
-
-        ItemResult GetMember_Func(M.Name memberName, ImmutableArray<TypeValue> typeArgs, ResolveHint resolveHint)
+        
+        ItemQueryResult GetMember_Func(M.Name memberName, int typeParamCount)
         {
-            var results = new List<ItemResult.Valid>();
+            var funcsBuilder = ImmutableArray.CreateBuilder<M.FuncInfo>();
 
             foreach (var memberFunc in structInfo.MemberFuncs)
             {
-                // TODO: resolveHint로 파라미터 체크 
-                if (memberFunc.Name.Equals(memberName) && 
-                    memberFunc.TypeParams.Length == typeArgs.Length) // TODO: TypeParam inference, 같지 않아도 된다
+                if (memberFunc.Name.Equals(memberName) &&
+                    typeParamCount <= memberFunc.TypeParams.Length)
                 {
-                    var funcValue = itemValueFactory.MakeMemberFunc(this, memberFunc, typeArgs);
-                    results.Add(new ItemResult.Funcs(funcValue));
+                    funcsBuilder.Add(memberFunc);
                 }
             }
 
-            if (1 < results.Count)
-                return ItemResult.Error.MultipleCandidates.Instance;
+            // 여러개 있을 수 있기때문에 MultipleCandidates를 리턴하지 않는다
 
-            if (results.Count == 0)
-                return ItemResult.NotFound.Instance;
+            if (funcsBuilder.Count == 0)
+                return ItemQueryResult.NotFound.Instance;
 
-            return results[0];
+            return new ItemQueryResult.Funcs(new NestedItemValueOuter(this), funcsBuilder.ToImmutable());
         }
         
-        ItemResult GetMember_Var(M.Name memberName, ImmutableArray<TypeValue> typeArgs)
+        ItemQueryResult GetMember_Var(M.Name memberName, int typeParamCount)
         {
-            var results = new List<ItemResult.Valid>();
+            var candidates = new Candidates<ItemQueryResult.MemberVar>();
+
             foreach (var memberVar in structInfo.MemberVars)
                 if (memberVar.Name.Equals(memberName))
-                {
-                    var memberVarValue = itemValueFactory.MakeMemberVarValue(this, memberVar);
-                    results.Add(new ItemResult.MemberVar(memberVarValue));
+                {   
+                    candidates.Add(new ItemQueryResult.MemberVar(this, memberVar));
                 }
 
-            if (1 < results.Count)
-                return ItemResult.Error.MultipleCandidates.Instance;
+            var result = candidates.GetSingle();
+            if (result != null)
+            {
+                // 변수를 찾았는데 타입 아규먼트가 있다면 에러
+                if (typeParamCount != 0)
+                    return ItemQueryResult.Error.VarWithTypeArg.Instance;
 
-            if (results.Count == 0)
-                return ItemResult.NotFound.Instance;
+                return result;
+            }
 
-            // 변수를 찾았는데 타입 아규먼트가 있다면 에러
-            if (typeArgs.Length != 0) 
-                return ItemResult.Error.VarWithTypeArg.Instance;
+            if (candidates.HasMultiple)
+                return ItemQueryResult.Error.MultipleCandidates.Instance;
 
-            return results[0];
+            if (candidates.IsEmpty)
+                return ItemQueryResult.NotFound.Instance;
+
+            throw new UnreachableCodeException();
         }
 
         public override TypeValue? GetBaseType()
@@ -183,31 +189,31 @@ namespace Gum.IR0Translator
             return typeValue.Apply_TypeValue(typeEnv);
         }
 
-        public override ItemResult GetMember(M.Name memberName, ImmutableArray<TypeValue> typeArgs, ResolveHint hint)
+        public override ItemQueryResult GetMember(M.Name memberName, int typeParamCount)
         {
             // TODO: caching
-            var results = new List<ItemResult.Valid>();
+            var results = new List<ItemQueryResult.Valid>();
 
             // error, notfound, found
-            var typeResult = GetMember_Type(memberName, typeArgs);
-            if (typeResult is ItemResult.Error) return typeResult;
-            if (typeResult is ItemResult.Valid typeMemberResult) results.Add(typeMemberResult);
+            var typeResult = GetMember_Type(memberName, typeParamCount);
+            if (typeResult is ItemQueryResult.Error) return typeResult;
+            if (typeResult is ItemQueryResult.Valid typeMemberResult) results.Add(typeMemberResult);
 
             // error, notfound, found
-            var funcResult = GetMember_Func(memberName, typeArgs, hint);
-            if (funcResult is ItemResult.Error) return funcResult;
-            if (funcResult is ItemResult.Valid funcMemberResult) results.Add(funcMemberResult);
+            var funcResult = GetMember_Func(memberName, typeParamCount);
+            if (funcResult is ItemQueryResult.Error) return funcResult;
+            if (funcResult is ItemQueryResult.Valid funcMemberResult) results.Add(funcMemberResult);
 
             // error, notfound, found
-            var varResult = GetMember_Var(memberName, typeArgs);
-            if (varResult is ItemResult.Error) return varResult;
-            if (varResult is ItemResult.Valid varMemberResult) results.Add(varMemberResult);            
+            var varResult = GetMember_Var(memberName, typeParamCount);
+            if (varResult is ItemQueryResult.Error) return varResult;
+            if (varResult is ItemQueryResult.Valid varMemberResult) results.Add(varMemberResult);            
 
             if (1 < results.Count)
-                return ItemResult.Error.MultipleCandidates.Instance;
+                return ItemQueryResult.Error.MultipleCandidates.Instance;
 
             if (results.Count == 0)
-                return ItemResult.NotFound.Instance;
+                return ItemQueryResult.NotFound.Instance;
 
             return results[0];
         }

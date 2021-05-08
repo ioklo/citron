@@ -5,9 +5,9 @@ using M = Gum.CompileTime;
 namespace Gum.IR0Translator
 {
     // Error/NotFound/Value
-    abstract record ItemResult
+    abstract record ItemQueryResult
     {
-        public record Error : ItemResult
+        public record Error : ItemQueryResult
         {
             public record VarWithTypeArg : Error
             {
@@ -22,16 +22,17 @@ namespace Gum.IR0Translator
             }
         }
 
-        public record NotFound : ItemResult
+        public record NotFound : ItemQueryResult
         {
             public static readonly NotFound Instance = new NotFound();
             NotFound() { }
         }
 
-        public abstract record Valid : ItemResult;
+        public abstract record Valid : ItemQueryResult;
         
-        public record Type(TypeValue TypeValue) : Valid;
-        public record Funcs(ImmutableArray<FuncValue> FuncValues) : Valid;
-        public record MemberVar(MemberVarValue MemberVarValue) : Valid;        
+        // ItemValue류 대신에, 
+        public record Type(ItemValueOuter Outer, M.TypeInfo TypeInfo) : Valid;
+        public record Funcs(ItemValueOuter Outer, ImmutableArray<M.FuncInfo> FuncInfos) : Valid;
+        public record MemberVar(NormalTypeValue Outer, M.MemberVarInfo MemberVarInfo) : Valid;        
     }
 }

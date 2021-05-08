@@ -11,6 +11,7 @@ using S = Gum.Syntax;
 using M = Gum.CompileTime;
 using R = Gum.IR0;
 using Gum.Syntax;
+using Gum.CompileTime;
 
 namespace Gum.IR0Translator
 {
@@ -143,7 +144,7 @@ namespace Gum.IR0Translator
                 return itemValueFactory.MakeLambdaType(lambda, retType, paramTypes);
             }
 
-            public ItemResult GetGlobalItem(M.NamespacePath namespacePath, string idName, ImmutableArray<TypeValue> typeArgs, ResolveHint hint)
+            public ItemQueryResult GetGlobalItem(M.NamespacePath namespacePath, string idName, ImmutableArray<TypeValue> typeArgs, ResolveHint hint)
             {
                 return globalItemValueFactory.GetGlobal(namespacePath, idName, typeArgs, hint);
             }
@@ -151,6 +152,16 @@ namespace Gum.IR0Translator
             public ImmutableArray<InternalBinaryOperatorInfo> GetBinaryOpInfos(BinaryOpKind kind)
             {
                 return internalBinOpQueryService.GetInfos(kind);
+            }
+
+            public MemberVarValue MakeMemberVarValue(NormalTypeValue outer, MemberVarInfo info)
+            {
+                return itemValueFactory.MakeMemberVarValue(outer, info);
+            }
+
+            public TypeValue MakeTypeValue(ItemValueOuter outer, TypeInfo typeInfo, ImmutableArray<TypeValue> typeArgs)
+            {
+                return itemValueFactory.MakeTypeValue(outer, typeInfo, typeArgs);
             }
         }
     }
