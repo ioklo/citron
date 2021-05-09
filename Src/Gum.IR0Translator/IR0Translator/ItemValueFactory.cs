@@ -42,6 +42,11 @@ namespace Gum.IR0Translator
             String = MakeTypeValue("System.Runtime", new M.NamespacePath("System"), MakeEmptyStructInfo("String"), default);
         }
 
+        public ItemValueFactory Clone(TypeInfoRepository typeInfoRepo, RItemFactory ritemFactory)
+        {
+            return new ItemValueFactory(typeInfoRepo, ritemFactory);
+        }
+
         public TypeValue MakeTypeValue(M.ModuleName moduleName, M.NamespacePath namespacePath, M.TypeInfo typeInfo, ImmutableArray<TypeValue> typeArgs)
         {
             return MakeTypeValue(new RootItemValueOuter(moduleName, namespacePath), typeInfo, typeArgs);
@@ -78,8 +83,8 @@ namespace Gum.IR0Translator
             }
 
             return builder.ToImmutable();
-        }
-        
+        }        
+
         public TypeValue MakeTypeValue(M.Type mtype)
         {
             switch (mtype)

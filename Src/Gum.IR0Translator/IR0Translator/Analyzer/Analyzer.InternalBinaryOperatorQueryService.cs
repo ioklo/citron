@@ -6,7 +6,7 @@ using static Gum.Infra.Misc;
 
 using S = Gum.Syntax;
 using R = Gum.IR0;
-
+using System;
 
 namespace Gum.IR0Translator
 {
@@ -70,6 +70,11 @@ namespace Gum.IR0Translator
                         new InternalBinaryOperatorInfo(boolType, boolType, boolType, R.InternalBinaryOperator.Equal_Bool_Bool_Bool),
                         new InternalBinaryOperatorInfo(stringType, stringType, boolType, R.InternalBinaryOperator.Equal_String_String_Bool) ) },
                 };
+            }
+            
+            public InternalBinaryOperatorQueryService Clone(ItemValueFactory itemValueFactory)
+            {
+                return this;
             }
 
             public ImmutableArray<InternalBinaryOperatorInfo> GetInfos(S.BinaryOpKind kind)

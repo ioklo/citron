@@ -26,6 +26,13 @@ namespace Gum.IR0Translator
             internalGlobalVarInfos = new Dictionary<M.Name, InternalGlobalVarInfo>();
         }
 
+        public InternalGlobalVariableRepository Clone()
+        {
+            var clonedDict = new Dictionary<M.Name, InternalGlobalVarInfo>(internalGlobalVarInfos);
+            return new InternalGlobalVariableRepository(clonedDict);
+
+        }
+
         public InternalGlobalVarInfo? GetVariable(M.Name name)
         {
             return internalGlobalVarInfos.GetValueOrDefault(name);            

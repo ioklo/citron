@@ -42,20 +42,35 @@ namespace Gum.IR0Translator
 
             GlobalContext(
                 ItemValueFactory itemValueFactory,
-            InternalBinaryOperatorQueryService internalBinOpQueryService,
-            GlobalItemValueFactory globalItemValueFactory,
-            TypeExpInfoService typeExpTypeValueService,
-            IErrorCollector errorCollector,
-            InternalGlobalVariableRepository internalGlobalVarRepo)
+                InternalBinaryOperatorQueryService internalBinOpQueryService,
+                GlobalItemValueFactory globalItemValueFactory,
+                TypeExpInfoService typeExpTypeValueService,
+                IErrorCollector errorCollector,
+                InternalGlobalVariableRepository internalGlobalVarRepo)
             {
-
+                this.itemValueFactory = itemValueFactory;
+                this.internalBinOpQueryService = internalBinOpQueryService;
+                this.globalItemValueFactory = globalItemValueFactory;
+                this.typeExpTypeValueService = typeExpTypeValueService;
+                this.errorCollector = errorCollector;
+                this.internalGlobalVarRepo = internalGlobalVarRepo;
             }
 
-            public GlobalContext Clone()
+            public GlobalContext Clone(
+                ItemValueFactory itemValueFactory,
+                GlobalItemValueFactory globalItemValueFactory,
+                TypeExpInfoService typeExpTypeValueService,
+                IErrorCollector errorCollector)
             {
                 // pure하지 않은 것들을 clone시켜야 하는데, 나중에 pure -> impure로 바뀌었을 때, 알게 될 방법이 있는가
                 // 모두 Clone한다
-                new GlobalContext(itemValueFactory.Clone(), globalItemValueFactory.Clone(), typeExpTypeValueService.Clone(), errorCollector.Clone())
+                return new GlobalContext(
+                    itemValueFactory,
+                    internalBinOpQueryService.Clone(itemValueFactory),
+                    globalItemValueFactory,
+                    typeExpTypeValueService,
+                    errorCollector,
+                    internalGlobalVarRepo.Clone());
             }
 
             public void AddError(AnalyzeErrorCode code, S.ISyntaxNode node)
