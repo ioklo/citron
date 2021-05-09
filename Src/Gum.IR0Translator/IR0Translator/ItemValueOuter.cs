@@ -13,8 +13,8 @@ namespace Gum.IR0Translator
     {
         public abstract R.Path MakeRPath(R.Name name, R.ParamHash paramHash, ImmutableArray<R.Path> typeArgs);
         public abstract void FillTypeEnv(TypeEnvBuilder builder);
-
         public abstract ItemValueOuter Apply(TypeEnv typeEnv);
+        public abstract TypeEnv GetTypeEnv();
     }
 
     // 최상위
@@ -43,6 +43,11 @@ namespace Gum.IR0Translator
         {
             return this;
         }
+
+        public override TypeEnv GetTypeEnv()
+        {
+            return new TypeEnv(default);
+        }
     }
 
     [AutoConstructor, ImplementIEquatable]
@@ -67,6 +72,11 @@ namespace Gum.IR0Translator
         {
             var appliedOuter = outer.Apply_ItemValue(typeEnv);
             return new NestedItemValueOuter(appliedOuter);
+        }
+
+        public override TypeEnv GetTypeEnv()
+        {
+            return outer.MakeTypeEnv();
         }
     }
 }

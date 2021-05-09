@@ -282,19 +282,66 @@ namespace Gum.IR0Translator
             //    return new ExpResult(new NewEnumExp(enumElem.Name.ToString(), members), enumElem.EnumTypeValue);
             //}
 
+            [AutoConstructor]
+            partial struct MatchArgsResult
+            {
+                public bool bMatch { get; }
+                public bool bExactMatch { get; } // TypeInference를 사용하지 않은 경우                
+                public ImmutableArray<R.Exp> Args { get; }
+            }
+
+            // typeEnv는 funcInfo미 포함 타입정보
+            // typeArgs가 충분하지 않을 수 있다. 나머지는 inference로 채운다
+            MatchArgsResult MatchArguments(TypeEnv outerTypeEnv, ImmutableArray<TypeValue> typeArgs, M.FuncInfo funcInfo, ImmutableArray<S.Exp> sargs)
+            {
+                // 인자 개수가 맞는지?
+                // TODO: params 고려,
+                if (funcInfo.ParamTypes.Length != sargs.Length)
+                    return new MatchArgsResult(false, false, default);
+
+                // 인자 타입이 맞는지
+                for (int i = 0; i < funcInfo.ParamTypes.Length; i++)
+                {
+                    var typeValue = globalContext.GetTypeValueByMType(funcInfo.ParamTypes[i], typeEnv);
+                    typeValue = typeValue.Apply_TypeValue(typeEnv);
+
+                    var resolveHint = ResolveHint.Make(typeValue);
+                    var expResult = AnalyzeExp_Exp(sargs[i], resolveHint);
+
+                    if (!globalContext.IsAssignable(typeValue, expResult.TypeValue))
+                        return new MatchArgsResult(false, false, default);
+                    
+                    // 매칭이 되었다면
+                }
+                
+            }
+            
             // CallExp분석에서 Callable이 Identifier인 경우 처리
-            ExpResult AnalyzeCallExpFuncCallable(ExpResult.Funcs funcsResult)
+            ExpResult AnalyzeCallExpFuncCallable(ExpResult.Funcs funcsResult, ImmutableArray<S.Exp> sargs)
             {
                 // 함수 중 하나를 골라야 한다
+                // 1. 인자 개수가 맞는지 (params도 고려)
+                // 2. 인자 타입이 맞는지 (타입 인퍼런스도 고려)
+                // 3. 맞는개 여러개라면 1) (타입 인퍼런스 < 고정 인자) 우선, 2) 각각 (타입인퍼런스된 함수, 고정 인자 함수) 도 여러개라면 에러                
+
+                // TypeEnv작성                
+                var outerTypeEnv = funcsResult.Outer.GetTypeEnv();
 
                 // 여러 함수 중에서 인자가 맞는것을 선택해야 한다
+                var exactCandidates = new Candidates<(MatchArgsResult Result, M.FuncInfo FuncInfo)>();
+                var restCandidates = new Candidates<(MatchArgsResult Result, M.FuncInfo FuncInfo)>();
+
                 // Type inference
                 foreach (var funcInfo in funcsResult.FuncInfos)
-                {                    
+                {
                     // TODO: Analyze중에 컨텍스트를 변경하면 다 롤백해야 한다
+                    var clonedAnalyzer = CloneAnalyzer();
 
+                    var matchResult = clonedAnalyzer.MatchArguments(outerTypeEnv, funcsResult.TypeArgs, funcInfo, sargs);
 
-
+                    if (!matchResult.bMatch) continue;
+                    else if (matchResult.bExactMatch) exactCandidates.Add((matchResult, funcInfo));
+                    else restCandidates.Add((matchResult, funcInfo));
                 }
 
                 //// 인자 타입 체크
@@ -371,7 +418,6 @@ namespace Gum.IR0Translator
                 // 함수 이름을 먼저 찾는가
                 // Argument 타입을 먼저 알아내야 하는가
                 // F(First); F(E.First); 가 되게 하려면 이름으로 먼저 찾고, 인자타입을 맞춰봐야 한다
-                
 
                 switch (callableResult)
                 {
@@ -382,9 +428,8 @@ namespace Gum.IR0Translator
                     // callable이 타입으로 계산되면, 에러
                     case ExpResult.Type:
                         globalContext.AddFatalError(A0902_CallExp_CallableExpressionIsNotCallable, exp.Callable);
-                        break;
+                        break;                        
 
-                    // F(2, 3, 4); 가 this.F인지, This.F인지 F 찾는 시점에서는 모르기 때문에, 같이 들고 와야 한다
                     case ExpResult.Funcs funcsResult:
                         return AnalyzeCallExpFuncCallable(funcsResult, exp.Args);
 

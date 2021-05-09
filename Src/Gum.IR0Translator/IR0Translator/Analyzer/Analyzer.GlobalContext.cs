@@ -10,8 +10,6 @@ using System.Text;
 using S = Gum.Syntax;
 using M = Gum.CompileTime;
 using R = Gum.IR0;
-using Gum.Syntax;
-using Gum.CompileTime;
 
 namespace Gum.IR0Translator
 {
@@ -117,6 +115,12 @@ namespace Gum.IR0Translator
                 return itemValueFactory.String.Equals(typeValue);
             }
 
+            public TypeValue GetTypeValueByMType(M.Type type, TypeEnv typeEnv)
+            {
+                return itemValueFactory.MakeTypeValue(type, typeEnv);
+
+            }
+
             public TypeValue GetTypeValueByTypeExp(S.TypeExp typeExp)
             {
                 var typeExpInfo = typeExpTypeValueService.GetTypeExpInfo(typeExp);
@@ -149,17 +153,17 @@ namespace Gum.IR0Translator
                 return globalItemValueFactory.GetGlobal(namespacePath, idName, typeParamCount);
             }
 
-            public ImmutableArray<InternalBinaryOperatorInfo> GetBinaryOpInfos(BinaryOpKind kind)
+            public ImmutableArray<InternalBinaryOperatorInfo> GetBinaryOpInfos(S.BinaryOpKind kind)
             {
                 return internalBinOpQueryService.GetInfos(kind);
             }
 
-            public MemberVarValue MakeMemberVarValue(NormalTypeValue outer, MemberVarInfo info)
+            public MemberVarValue MakeMemberVarValue(NormalTypeValue outer, M.MemberVarInfo info)
             {
                 return itemValueFactory.MakeMemberVarValue(outer, info);
             }
 
-            public TypeValue MakeTypeValue(ItemValueOuter outer, TypeInfo typeInfo, ImmutableArray<TypeValue> typeArgs)
+            public TypeValue MakeTypeValue(ItemValueOuter outer, M.TypeInfo typeInfo, ImmutableArray<TypeValue> typeArgs)
             {
                 return itemValueFactory.MakeTypeValue(outer, typeInfo, typeArgs);
             }

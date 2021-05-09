@@ -12,9 +12,8 @@ namespace Gum.IR0Translator
     {
         internal virtual void FillTypeEnv(TypeEnvBuilder builder) { }
 
-        protected TypeEnv MakeTypeEnv()
+        public TypeEnv MakeTypeEnv()
         {
-            // TypeContext 빌더랑 똑같이 생긴
             var builder = new TypeEnvBuilder();
             FillTypeEnv(builder);
             return builder.Build();

@@ -18,6 +18,7 @@ namespace Gum.IR0Translator
         public TypeValueTypeHint(TypeValue typeValue) { TypeValue = typeValue; }
     }
 
+    // Callable분석에서 쓰인다. E.F()에서 E.F만을 가리켜야 할 때
     [AutoConstructor]
     partial class EnumConstructorTypeHint : TypeHint
     {
