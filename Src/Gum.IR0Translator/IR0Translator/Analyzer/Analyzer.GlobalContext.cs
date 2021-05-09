@@ -16,7 +16,7 @@ namespace Gum.IR0Translator
     partial class Analyzer
     {
         // Analyzer는 backtracking이 없어서, MutableContext를 쓴다 => TODO: 함수 인자 계산할때 backtracking이 생긴다
-        class GlobalContext
+        class GlobalContext : ICloneable<GlobalContext>, IUpdateable<GlobalContext>
         {            
             ItemValueFactory itemValueFactory;
             InternalBinaryOperatorQueryService internalBinOpQueryService;
@@ -41,36 +41,20 @@ namespace Gum.IR0Translator
             }
 
             GlobalContext(
-                ItemValueFactory itemValueFactory,
-                InternalBinaryOperatorQueryService internalBinOpQueryService,
-                GlobalItemValueFactory globalItemValueFactory,
-                TypeExpInfoService typeExpTypeValueService,
-                IErrorCollector errorCollector,
-                InternalGlobalVariableRepository internalGlobalVarRepo)
+                GlobalContext other,
+                CloneContext cloneContext)
             {
-                this.itemValueFactory = itemValueFactory;
-                this.internalBinOpQueryService = internalBinOpQueryService;
-                this.globalItemValueFactory = globalItemValueFactory;
-                this.typeExpTypeValueService = typeExpTypeValueService;
-                this.errorCollector = errorCollector;
-                this.internalGlobalVarRepo = internalGlobalVarRepo;
+                this.itemValueFactory = Infra.Misc.PureIdentity(other.itemValueFactory);
+                this.internalBinOpQueryService = Infra.Misc.PureIdentity(other.internalBinOpQueryService);
+                this.globalItemValueFactory = Infra.Misc.PureIdentity(other.globalItemValueFactory);
+                this.typeExpTypeValueService = Infra.Misc.PureIdentity(other.typeExpTypeValueService);
+                this.errorCollector = cloneContext.GetClone(other.errorCollector);
+                this.internalGlobalVarRepo = cloneContext.GetClone(other.internalGlobalVarRepo);
             }
 
-            public GlobalContext Clone(
-                ItemValueFactory itemValueFactory,
-                GlobalItemValueFactory globalItemValueFactory,
-                TypeExpInfoService typeExpTypeValueService,
-                IErrorCollector errorCollector)
+            public GlobalContext Clone(CloneContext cloneContext)
             {
-                // pure하지 않은 것들을 clone시켜야 하는데, 나중에 pure -> impure로 바뀌었을 때, 알게 될 방법이 있는가
-                // 모두 Clone한다
-                return new GlobalContext(
-                    itemValueFactory,
-                    internalBinOpQueryService.Clone(itemValueFactory),
-                    globalItemValueFactory,
-                    typeExpTypeValueService,
-                    errorCollector,
-                    internalGlobalVarRepo.Clone());
+                return new GlobalContext(this, cloneContext);
             }
 
             public void AddError(AnalyzeErrorCode code, S.ISyntaxNode node)

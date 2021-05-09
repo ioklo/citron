@@ -21,6 +21,10 @@ namespace Gum.IR0Translator
             this.moduleInfos = moduleInfos;
         }
 
+        public void EnsurePure()
+        {   
+        }
+
         public ImmutableArray<ModuleInfo> GetAllModules()
         {
             return moduleInfos;

@@ -1,23 +1,20 @@
-﻿using System;
+﻿using Gum.Infra;
+using System;
 using System.Collections.Generic;
 
-namespace Gum.IR0Translator
+namespace Gum.Infra
 {
-    interface ICloneable<T> where T : class
-    {
-        T Clone(CloneContext context);
-    }
-
-    struct CloneContext
+    public struct CloneContext
     {
         Dictionary<object, object> clonedInstances;
+
         public CloneContext(Dictionary<object, object> clonedObjects)
         {
             this.clonedInstances = clonedObjects;
         }
 
         public T GetClone<T>(T instance)
-            where T : class, ICloneable<T>
+            where T : class, IMutable<T>
         {
             if (!clonedInstances.TryGetValue(instance, out var clonedInstance))
             {

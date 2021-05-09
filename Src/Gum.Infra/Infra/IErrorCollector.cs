@@ -9,7 +9,7 @@ namespace Gum.Infra
         string Message { get; }
     }
 
-    public interface IErrorCollector
+    public interface IErrorCollector : ICloneable<IErrorCollector>
     {
         void Add(IError code);
         bool HasError { get; }

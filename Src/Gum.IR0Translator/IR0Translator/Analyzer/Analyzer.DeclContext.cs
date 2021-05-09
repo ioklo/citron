@@ -1,4 +1,5 @@
 ﻿using Gum.Collections;
+using Gum.Infra;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +11,7 @@ namespace Gum.IR0Translator
 {
     partial class Analyzer
     {
-        abstract class DeclContext : ICloneable<DeclContext>
+        abstract class DeclContext : IMutable<DeclContext>
         {
             List<R.Decl> decls;
 
@@ -25,8 +26,20 @@ namespace Gum.IR0Translator
             }
 
             public abstract DeclContext Clone_DeclContext(CloneContext context);
-            public DeclContext ICloneable<DeclContext>.Clone(CloneContext context)
+            DeclContext IMutable<DeclContext>.Clone(CloneContext context)
                 => Clone_DeclContext(context);
+
+            void IMutable<DeclContext>.Update(DeclContext src, UpdateContext updateContext)
+                => Update_DeclContext(src, updateContext);
+
+            // 하위 클래스에서 구현
+            protected abstract void Update_DeclContext(DeclContext src, UpdateContext context);
+
+            public void Update(DeclContext src, UpdateContext context)
+            {
+                decls.Clear();
+                decls.AddRange(src.decls);
+            }
 
             public void AddNormalFuncDecl(ImmutableArray<R.Decl> decls, R.Name name, bool bThisCall, ImmutableArray<string> typeParams, ImmutableArray<R.ParamInfo> paramNames, R.Stmt body)
             {
@@ -54,7 +67,7 @@ namespace Gum.IR0Translator
             {
                 var path = GetPath();
                 return new R.Path.Nested(path, childName, paramHash, typeArgs);
-            }            
+            }
         }
 
         // NamespaceDeclContext

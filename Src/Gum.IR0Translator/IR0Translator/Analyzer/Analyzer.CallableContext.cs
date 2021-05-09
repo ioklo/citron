@@ -10,7 +10,7 @@ namespace Gum.IR0Translator
     partial class Analyzer
     {
         // 현재 분석중인 스코프 정보
-        abstract class CallableContext : DeclContext, ICloneable<CallableContext>
+        abstract class CallableContext : DeclContext, IMutable<CallableContext>
         {
             int anonymousCount;
 
@@ -36,8 +36,16 @@ namespace Gum.IR0Translator
             public sealed override DeclContext Clone_DeclContext(CloneContext context)
                 => Clone_CallableContext(context);            
 
-            CallableContext ICloneable<CallableContext>.Clone(CloneContext context)
+            CallableContext IMutable<CallableContext>.Clone(CloneContext context)
                 => Clone_CallableContext(context);
+
+            // 
+            protected abstract void Update_CallableContext(CallableContext src, UpdateContext updateContext);
+
+            void IMutable<CallableContext>.Update(CallableContext src, UpdateContext updateContext)
+            {
+                Update_CallableContext(src, updateContext);
+            }
 
             public R.AnonymousId NewAnonymousId()
             {
@@ -68,7 +76,7 @@ namespace Gum.IR0Translator
                 : base(other, cloneContext)
             {
                 this.moduleName = other.moduleName;
-                this.itemValueFactory = cloneContext.GetClone(other.itemValueFactory);
+                this.itemValueFactory = Infra.Misc.PureIdentity(other.itemValueFactory);
                 this.topLevelStmts = new List<R.Stmt>(other.topLevelStmts);
             }
             

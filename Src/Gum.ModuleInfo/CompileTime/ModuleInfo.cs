@@ -18,6 +18,10 @@ namespace Gum.CompileTime
         public ImmutableArray<TypeInfo> Types { get; }
         public ImmutableArray<FuncInfo> Funcs { get; }
 
+        public void EnsurePure()
+        {
+        }
+
         public NamespaceInfo? GetNamespace(NamespacePath path)
         {
             Debug.Assert(!path.IsRoot);

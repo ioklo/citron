@@ -12,19 +12,23 @@ using M = Gum.CompileTime;
 namespace Gum.IR0Translator
 {
     // 이름만으로 뭔가를 찾고 싶을땐
-    class GlobalItemValueFactory
+    class GlobalItemValueFactory : IPure
     {
-        ItemValueFactory typeValueFactory;
         M.ModuleInfo internalModuleInfo;
         ModuleInfoRepository externalModuleRepos;
 
-        public GlobalItemValueFactory(ItemValueFactory typeValueFactory, M.ModuleInfo internalModuleInfo, ModuleInfoRepository externalModuleRepos)
-        {
-            this.typeValueFactory = typeValueFactory;
+        public GlobalItemValueFactory(M.ModuleInfo internalModuleInfo, ModuleInfoRepository externalModuleRepos)
+        {            
             this.internalModuleInfo = internalModuleInfo;
             this.externalModuleRepos = externalModuleRepos;
         }
-        
+
+        public void EnsurePure()
+        {
+            Infra.Misc.EnsurePure(internalModuleInfo);
+            Infra.Misc.EnsurePure(externalModuleRepos);
+        }
+
         struct QueryContext
         {
             GlobalItemValueFactory outer;

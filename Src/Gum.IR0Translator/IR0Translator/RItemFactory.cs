@@ -9,6 +9,10 @@ namespace Gum.IR0Translator
 {
     class RItemFactory : IPure
     {
+        public void EnsurePure()
+        {
+        }
+
         public static R.ModuleName MakeModuleName(M.ModuleName moduleName)
         {
             return new R.ModuleName(moduleName.Text);
@@ -58,5 +62,7 @@ namespace Gum.IR0Translator
         {
             throw new NotImplementedException();
         }
+
+        
     }
 }

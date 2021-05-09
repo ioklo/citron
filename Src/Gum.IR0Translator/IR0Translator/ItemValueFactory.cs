@@ -13,7 +13,7 @@ using R = Gum.IR0;
 namespace Gum.IR0Translator
 {
     // Low-level ItemValue factory
-    class ItemValueFactory : ICloneable<ItemValueFactory>
+    class ItemValueFactory : IPure
     {   
         TypeInfoRepository typeInfoRepo;
         RItemFactory ritemFactory;
@@ -25,6 +25,12 @@ namespace Gum.IR0Translator
         public TypeValue List(TypeValue typeArg)
         {
             throw new NotImplementedException();
+        }
+
+        public void EnsurePure()
+        {
+            Infra.Misc.EnsurePure(typeInfoRepo);
+            Infra.Misc.EnsurePure(ritemFactory);
         }
 
         public ItemValueFactory(TypeInfoRepository typeInfoRepo, RItemFactory ritemFactory)
@@ -40,14 +46,6 @@ namespace Gum.IR0Translator
 
             // TODO: 일단 Struct로 만든다
             String = MakeTypeValue("System.Runtime", new M.NamespacePath("System"), MakeEmptyStructInfo("String"), default);
-        }
-
-        public ItemValueFactory Clone(CloneContext context)
-        {
-            var clonedTypeInfoRepo = context.GetClone(typeInfoRepo);
-            var clonedRItemFactory = context.GetClone(ritemFactory);
-
-            return new ItemValueFactory(clonedTypeInfoRepo, clonedRItemFactory);
         }
 
         public TypeValue MakeTypeValue(M.ModuleName moduleName, M.NamespacePath namespacePath, M.TypeInfo typeInfo, ImmutableArray<TypeValue> typeArgs)

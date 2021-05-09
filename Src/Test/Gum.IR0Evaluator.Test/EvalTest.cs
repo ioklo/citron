@@ -35,11 +35,21 @@ namespace Gum.IR0Evaluator.Test
     {
         List<IError> errors = new List<IError>();
 
+        TestErrorCollector(TestErrorCollector other, CloneContext cloneContext)
+        {
+            this.errors = new List<IError>(other.errors);
+        }
+
         public bool HasError => errors.Count != 0;
 
         public void Add(IError error)
         {
             errors.Add(error);
+        }
+
+        public IErrorCollector Clone(CloneContext context)
+        {
+            return new TestErrorCollector(this, context);
         }
 
         public string GetMessages()

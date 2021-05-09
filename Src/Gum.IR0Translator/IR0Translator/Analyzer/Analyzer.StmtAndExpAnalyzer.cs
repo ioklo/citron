@@ -9,6 +9,7 @@ using static Gum.IR0Translator.AnalyzeErrorCode;
 using S = Gum.Syntax;
 using R = Gum.IR0;
 using Pretune;
+using Gum.Infra;
 
 namespace Gum.IR0Translator
 {
@@ -26,8 +27,8 @@ namespace Gum.IR0Translator
                 this.globalContext = globalContext;
                 this.callableContext = callableContext;
                 this.localContext = localContext;
-            }            
-
+            }
+            
             ImmutableArray<TypeValue> GetTypeValues(ImmutableArray<S.TypeExp> typeExps)
             {
                 var builder = ImmutableArray.CreateBuilder<TypeValue>(typeExps.Length);
@@ -55,9 +56,11 @@ namespace Gum.IR0Translator
 
             StmtAndExpAnalyzer CloneAnalyzer()
             {
-                var clonedGlobalContext = globalContext.Clone();
-                var clonedCallableContext = callableContext.Clone();
-                var clonedLocalContext = localContext.Clone();
+                var cloneContext = new CloneContext(new Dictionary<object, object>());
+                var clonedGlobalContext = cloneContext.GetClone(globalContext);
+                var clonedCallableContext = cloneContext.GetClone(callableContext);
+                var clonedLocalContext = cloneContext.GetClone(localContext);
+
                 return new StmtAndExpAnalyzer(clonedGlobalContext, clonedCallableContext, clonedLocalContext);
             }
 

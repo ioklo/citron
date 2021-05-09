@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Gum.Infra;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,7 +17,7 @@ namespace Gum.IR0Translator
         public InternalGlobalVarInfo(M.Name name, TypeValue typeValue) { Name = name; TypeValue = typeValue; }
     }
 
-    class InternalGlobalVariableRepository
+    class InternalGlobalVariableRepository : ICloneable<InternalGlobalVariableRepository>
     {
         // global variable        
         Dictionary<M.Name, InternalGlobalVarInfo> internalGlobalVarInfos;
@@ -26,16 +27,15 @@ namespace Gum.IR0Translator
             internalGlobalVarInfos = new Dictionary<M.Name, InternalGlobalVarInfo>();
         }
 
-        InternalGlobalVariableRepository(Dictionary<M.Name, InternalGlobalVarInfo> internalGlobalVarInfos)
+        InternalGlobalVariableRepository(InternalGlobalVariableRepository other, CloneContext cloneContext)
         {
-            this.internalGlobalVarInfos = internalGlobalVarInfos;
+            this.internalGlobalVarInfos = new Dictionary<M.Name, InternalGlobalVarInfo>(other.internalGlobalVarInfos);
         }
 
-        public InternalGlobalVariableRepository Clone()
+        public InternalGlobalVariableRepository Clone(CloneContext context)
         {
-            var clonedDict = new Dictionary<M.Name, InternalGlobalVarInfo>(internalGlobalVarInfos);
-            return new InternalGlobalVariableRepository(clonedDict);
-        }
+            return new InternalGlobalVariableRepository(this, context);
+        }        
 
         public InternalGlobalVarInfo? GetVariable(M.Name name)
         {
@@ -52,5 +52,7 @@ namespace Gum.IR0Translator
         {
             return internalGlobalVarInfos.ContainsKey(name);
         }
+
+        
     }
 }
