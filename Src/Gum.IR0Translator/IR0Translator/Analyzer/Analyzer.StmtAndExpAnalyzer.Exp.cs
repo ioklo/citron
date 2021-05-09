@@ -290,6 +290,7 @@ namespace Gum.IR0Translator
                 public bool bMatch { get; }
                 public bool bExactMatch { get; } // TypeInference를 사용하지 않은 경우                
                 public ImmutableArray<R.Exp> Args { get; }
+                public ImmutableArray<TypeValue> TypeArgs { get; }
             }
 
             // typeEnv는 funcInfo미 포함 타입정보
@@ -322,8 +323,7 @@ namespace Gum.IR0Translator
             partial struct MatchedFunc
             {
                 public MatchArgsResult Result { get; }
-                public M.FuncInfo FuncInfo { get; }
-                public ImmutableArray<TypeValue> TypeArgs { get; } // 확정된 타입 아큐먼트
+                public M.FuncInfo FuncInfo { get; }                
                 public GlobalContext GlobalContext { get; }
                 public CallableContext CallableContext { get; }
                 public LocalContext LocalContext { get; }
@@ -394,7 +394,7 @@ namespace Gum.IR0Translator
                 }
 
                 // funcValue만들기
-                var funcValue = globalContext.MakeFuncValue(funcsResult.Outer, matchedFunc.FuncInfo, matchedFunc.TypeArgs);
+                var funcValue = globalContext.MakeFuncValue(funcsResult.Outer, matchedFunc.FuncInfo, matchedFunc.Result.TypeArgs);
                 
                 // context 업데이트
                 UpdateAnalyzer(matchedFunc.GlobalContext, matchedFunc.CallableContext, matchedFunc.LocalContext);
@@ -410,36 +410,6 @@ namespace Gum.IR0Translator
                     // 만약
                     return new ExpResult.Exp(new R.CallFuncExp(funcValue.GetRPath_Nested(), funcsResult.Instance, matchedFunc.Result.Args), funcValue.GetRetType());
                 }
-
-
-                
-
-
-                //// 인자 타입 체크
-                //var argTypes = ImmutableArray.CreateRange(argResults, info => info.TypeValue);            
-                //CheckParamTypes(nodeForErrorReport, funcValue.GetParamTypes(), argTypes);
-
-                //var args = ImmutableArray.CreateRange(argResults, argResult => argResult.WrapExp());
-                //var rfunc = funcValue.GetRFunc();
-                //var retType = funcValue.GetRetType();
-
-                //if (!funcValue.IsSequence)
-                //{
-                //    // TODO:
-                //    //if (!funcValue.IsInternal)
-                //    //    throw new NotImplementedException(); // return new ExpResult(new R.ExCallFuncExp(rfunc, null, args), retType);
-
-                //    return new ExpResult(new R.CallFuncExp(rfunc, instance, args), retType);
-                //}
-                //else
-                //{
-                //    // TODO:
-                //    //if (!funcValue.IsInternal)
-                //    //  throw new NotImplementedException(); // return new ExpResult(new R.ExCallSeqFuncExp(rfunc, null, args), retType);
-
-                //    return new ExpResult(new R.CallSeqFuncExp(funcValue.GetRDeclId(), funcValue.GetRTypeContext(), instance, args), retType);
-
-                //}
             }
 
             // CallExp 분석에서 Callable이 Exp인 경우 처리

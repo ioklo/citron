@@ -107,6 +107,8 @@ namespace Gum.IR0Translator
 
                 foreach (var func in funcs)
                 {
+                    Debug.Assert(!func.IsInstanceFunc);
+
                     if (func.Name.Equals(name) &&
                         typeParamCount <= func.TypeParams.Length)
                     {   
