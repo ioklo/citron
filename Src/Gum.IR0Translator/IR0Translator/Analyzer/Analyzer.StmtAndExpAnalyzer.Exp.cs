@@ -52,6 +52,8 @@ namespace Gum.IR0Translator
                         return new ExpResult.Loc(new R.GlobalVarLoc(globalVarResult.VarName), globalVarResult.TypeValue);
 
                     case IdentifierResult.Funcs funcsResult:
+                        // TODO: thisLoc
+                        // 1. funcinfos전체를 static / instance로 통일
                         return new ExpResult.Funcs(funcsResult.Outer, funcsResult.FuncInfos, funcsResult.TypeArgs);
 
                     case IdentifierResult.Type:

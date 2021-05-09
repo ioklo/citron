@@ -8,9 +8,11 @@ namespace Gum.Infra
     {
         Dictionary<object, object> clonedInstances;
 
-        public CloneContext(Dictionary<object, object> clonedObjects)
+        public static CloneContext Make()
         {
-            this.clonedInstances = clonedObjects;
+            var result = new CloneContext();
+            result.clonedInstances = new Dictionary<object, object>();
+            return result;
         }
 
         public T GetClone<T>(T instance)
@@ -23,6 +25,11 @@ namespace Gum.Infra
             }
 
             return (T)clonedInstance;
+        }
+
+        public static object Make(Dictionary<object, object> dictionaries)
+        {
+            throw new NotImplementedException();
         }
     }
 }

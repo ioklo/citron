@@ -16,7 +16,7 @@ namespace Gum.IR0Translator
     partial class Analyzer
     {
         // Analyzer는 backtracking이 없어서, MutableContext를 쓴다 => TODO: 함수 인자 계산할때 backtracking이 생긴다
-        class GlobalContext : ICloneable<GlobalContext>, IUpdateable<GlobalContext>
+        class GlobalContext : IMutable<GlobalContext>
         {            
             ItemValueFactory itemValueFactory;
             InternalBinaryOperatorQueryService internalBinOpQueryService;
@@ -55,6 +55,12 @@ namespace Gum.IR0Translator
             public GlobalContext Clone(CloneContext cloneContext)
             {
                 return new GlobalContext(this, cloneContext);
+            }
+
+            public void Update(GlobalContext src, UpdateContext updateContext)
+            {
+                updateContext.Update(this.errorCollector, src.errorCollector);
+                updateContext.Update(this.internalGlobalVarRepo, src.internalGlobalVarRepo);
             }
 
             public void AddError(AnalyzeErrorCode code, S.ISyntaxNode node)

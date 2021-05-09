@@ -17,7 +17,7 @@ namespace Gum.IR0Translator
         public InternalGlobalVarInfo(M.Name name, TypeValue typeValue) { Name = name; TypeValue = typeValue; }
     }
 
-    class InternalGlobalVariableRepository : ICloneable<InternalGlobalVariableRepository>
+    class InternalGlobalVariableRepository : IMutable<InternalGlobalVariableRepository>
     {
         // global variable        
         Dictionary<M.Name, InternalGlobalVarInfo> internalGlobalVarInfos;
@@ -36,6 +36,13 @@ namespace Gum.IR0Translator
         {
             return new InternalGlobalVariableRepository(this, context);
         }        
+
+        public void Update(InternalGlobalVariableRepository src, UpdateContext updateContext)
+        {
+            this.internalGlobalVarInfos.Clear();
+            foreach (var (key, value) in src.internalGlobalVarInfos)
+                this.internalGlobalVarInfos.Add(key, value);
+        }
 
         public InternalGlobalVarInfo? GetVariable(M.Name name)
         {

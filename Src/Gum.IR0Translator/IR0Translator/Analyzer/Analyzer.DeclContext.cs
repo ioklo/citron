@@ -30,16 +30,18 @@ namespace Gum.IR0Translator
                 => Clone_DeclContext(context);
 
             void IMutable<DeclContext>.Update(DeclContext src, UpdateContext updateContext)
-                => Update_DeclContext(src, updateContext);
-
-            // 하위 클래스에서 구현
-            protected abstract void Update_DeclContext(DeclContext src, UpdateContext context);
-
-            public void Update(DeclContext src, UpdateContext context)
+                => Update(src, updateContext);
+            
+            // 
+            protected void Update(DeclContext src, UpdateContext context)
             {
                 decls.Clear();
                 decls.AddRange(src.decls);
+
+                UpdateChild_DeclContext(src, context);
             }
+            
+            protected abstract void UpdateChild_DeclContext(DeclContext src, UpdateContext context);
 
             public void AddNormalFuncDecl(ImmutableArray<R.Decl> decls, R.Name name, bool bThisCall, ImmutableArray<string> typeParams, ImmutableArray<R.ParamInfo> paramNames, R.Stmt body)
             {

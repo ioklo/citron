@@ -27,7 +27,7 @@ namespace Gum.IR0Translator
             var typeInfoRepo = new TypeInfoRepository(internalModuleInfo, externalModuleInfoRepo);
             var ritemFactory = new RItemFactory();
             var itemValueFactory = new ItemValueFactory(typeInfoRepo, ritemFactory);
-            var globalItemValueFactory = new GlobalItemValueFactory(itemValueFactory, internalModuleInfo, externalModuleInfoRepo);
+            var globalItemValueFactory = new GlobalItemValueFactory(internalModuleInfo, externalModuleInfoRepo);
 
             var rmoduleName = RItemFactory.MakeModuleName(moduleName);
 

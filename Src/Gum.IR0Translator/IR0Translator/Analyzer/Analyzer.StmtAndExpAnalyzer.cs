@@ -56,7 +56,7 @@ namespace Gum.IR0Translator
 
             StmtAndExpAnalyzer CloneAnalyzer()
             {
-                var cloneContext = new CloneContext(new Dictionary<object, object>());
+                var cloneContext = CloneContext.Make();
                 var clonedGlobalContext = cloneContext.GetClone(globalContext);
                 var clonedCallableContext = cloneContext.GetClone(callableContext);
                 var clonedLocalContext = cloneContext.GetClone(localContext);
@@ -64,11 +64,13 @@ namespace Gum.IR0Translator
                 return new StmtAndExpAnalyzer(clonedGlobalContext, clonedCallableContext, clonedLocalContext);
             }
 
-            void UpdateAnalyzer(GlobalContext otherGlobalContext, CallableContext otherCallableContext, LocalContext otherLocalContext)
+            void UpdateAnalyzer(GlobalContext srcGlobalContext, CallableContext srcCallableContext, LocalContext srcLocalContext)
             {
-                globalContext.Update(otherGlobalContext);
-                callableContext.Update(otherCallableContext);
-                localContext.Update(otherLocalContext);
+                var updateContext = UpdateContext.Make();
+
+                updateContext.Update(globalContext, srcGlobalContext);
+                updateContext.Update(callableContext, srcCallableContext);
+                updateContext.Update(localContext, srcLocalContext);
             }
 
             void CheckParamTypes(S.ISyntaxNode nodeForErrorReport, ImmutableArray<TypeValue> parameters, ImmutableArray<TypeValue> args)

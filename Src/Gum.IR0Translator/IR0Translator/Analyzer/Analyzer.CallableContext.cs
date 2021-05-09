@@ -39,13 +39,21 @@ namespace Gum.IR0Translator
             CallableContext IMutable<CallableContext>.Clone(CloneContext context)
                 => Clone_CallableContext(context);
 
-            // 
-            protected abstract void Update_CallableContext(CallableContext src, UpdateContext updateContext);
-
             void IMutable<CallableContext>.Update(CallableContext src, UpdateContext updateContext)
+                => Update(src, updateContext); // 가장 최상위 Update 호출
+
+            protected sealed override void UpdateChild_DeclContext(DeclContext src_declContext, UpdateContext updateContext)
             {
-                Update_CallableContext(src, updateContext);
+                var src = (CallableContext)src_declContext;
+
+                // this
+                this.anonymousCount = src.anonymousCount;
+
+                // child
+                UpdateChild_CallableContext(src, updateContext);
             }
+
+            protected abstract void UpdateChild_CallableContext(CallableContext src, UpdateContext updateContext);
 
             public R.AnonymousId NewAnonymousId()
             {
@@ -85,6 +93,16 @@ namespace Gum.IR0Translator
             public override CallableContext Clone_CallableContext(CloneContext cloneContext)
             {
                 return new RootContext(this, cloneContext);
+            }
+
+            protected sealed override void UpdateChild_CallableContext(CallableContext src_callableContext, UpdateContext updateContext)
+            {
+                var src = (RootContext)src_callableContext;
+
+                Infra.Misc.EnsurePure(src.itemValueFactory);
+
+                this.topLevelStmts.Clear();
+                this.topLevelStmts.AddRange(src.topLevelStmts);
             }
 
             public override LocalVarInfo? GetLocalVarOutsideLambda(string varName)
@@ -162,7 +180,13 @@ namespace Gum.IR0Translator
             public override CallableContext Clone_CallableContext(CloneContext cloneContext)
             {
                 return new FuncContext(this, cloneContext);
-            }            
+            }
+
+            protected override void UpdateChild_CallableContext(CallableContext src_funcContext, UpdateContext updateContext)
+            {
+                var src = (FuncContext)src_funcContext;
+                updateContext.Update(this.parentContext, src.parentContext);
+            }
 
             public override LocalVarInfo? GetLocalVarOutsideLambda(string varName)
             {
@@ -225,6 +249,22 @@ namespace Gum.IR0Translator
                 this.localCaptures = new Dictionary<string, TypeValue>(other.localCaptures);
             }
 
+            public override CallableContext Clone_CallableContext(CloneContext context)
+            {
+                return new LambdaContext(this, context);
+            }
+
+            protected override void UpdateChild_CallableContext(CallableContext src_callableContext, UpdateContext updateContext)
+            {
+                var src = (LambdaContext)src_callableContext;
+                updateContext.Update(this.parentDeclContext, src.parentDeclContext);
+                updateContext.Update(this.parentLocalContext, src.parentLocalContext);
+
+                this.localCaptures.Clear();
+                foreach (var keyValue in src.localCaptures)
+                    this.localCaptures.Add(keyValue.Key, keyValue.Value);
+            }
+
             public override LocalVarInfo? GetLocalVarOutsideLambda(string varName)
             {
                 return parentLocalContext.GetLocalVarInfo(varName);
@@ -281,12 +321,7 @@ namespace Gum.IR0Translator
             public override R.Path.Normal GetPath()
             {
                 return parentDeclContext.GetPath(new R.Name.Anonymous(anonymousId), R.ParamHash.None, default);
-            }
-
-            public override CallableContext Clone_CallableContext(CloneContext context)
-            {
-                return new LambdaContext(this, context);
-            }
+            }            
         }
     }
 }
