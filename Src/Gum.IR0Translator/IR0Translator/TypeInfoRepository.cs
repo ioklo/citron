@@ -4,11 +4,12 @@ using Gum.Collections;
 using System.Linq;
 
 using M = Gum.CompileTime;
+using System.Diagnostics;
 
 namespace Gum.IR0Translator
 {
-    // reference module에서 타입 정보를 얻어오는 역할    
-    class TypeInfoRepository
+    // reference module에서 타입 정보를 얻어오는 역할
+    class TypeInfoRepository : ICloneable<TypeInfoRepository>
     {
         M.ModuleInfo internalModuleInfo;
         ModuleInfoRepository externalModuleInfoRepo;
@@ -17,6 +18,14 @@ namespace Gum.IR0Translator
         {
             this.internalModuleInfo = internalModuleInfo;
             this.externalModuleInfoRepo = moduleInfoRepo;
+        }        
+        
+        public TypeInfoRepository Clone(CloneContext context)
+        {
+            Debug.Assert(Infra.Misc.EnsurePure(internalModuleInfo));
+            Debug.Assert(Infra.Misc.EnsurePure(externalModuleInfoRepo));
+
+            return this;
         }
 
         public M.TypeInfo? GetType(M.ModuleName moduleName, M.NamespacePath namespacePath, M.Name name, int typeParamCount)

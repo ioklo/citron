@@ -13,7 +13,7 @@ using R = Gum.IR0;
 namespace Gum.IR0Translator
 {
     // Low-level ItemValue factory
-    class ItemValueFactory
+    class ItemValueFactory : ICloneable<ItemValueFactory>
     {   
         TypeInfoRepository typeInfoRepo;
         RItemFactory ritemFactory;
@@ -42,9 +42,12 @@ namespace Gum.IR0Translator
             String = MakeTypeValue("System.Runtime", new M.NamespacePath("System"), MakeEmptyStructInfo("String"), default);
         }
 
-        public ItemValueFactory Clone(TypeInfoRepository typeInfoRepo, RItemFactory ritemFactory)
+        public ItemValueFactory Clone(CloneContext context)
         {
-            return new ItemValueFactory(typeInfoRepo, ritemFactory);
+            var clonedTypeInfoRepo = context.GetClone(typeInfoRepo);
+            var clonedRItemFactory = context.GetClone(ritemFactory);
+
+            return new ItemValueFactory(clonedTypeInfoRepo, clonedRItemFactory);
         }
 
         public TypeValue MakeTypeValue(M.ModuleName moduleName, M.NamespacePath namespacePath, M.TypeInfo typeInfo, ImmutableArray<TypeValue> typeArgs)

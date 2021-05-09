@@ -7,7 +7,7 @@ using M = Gum.CompileTime;
 
 namespace Gum.IR0Translator
 {
-    class RItemFactory
+    class RItemFactory : IPure
     {
         public static R.ModuleName MakeModuleName(M.ModuleName moduleName)
         {

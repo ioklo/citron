@@ -26,7 +26,7 @@ namespace Gum.IR0Translator
         }        
 
         // 현재 분석이 진행되는 곳의 컨텍스트
-        class LocalContext
+        class LocalContext : ICloneable<LocalContext>
         {
             LocalContext? parentLocalContext;
             ImmutableDictionary<string, LocalVarInfo> localVarInfos;
@@ -42,6 +42,17 @@ namespace Gum.IR0Translator
             public LocalContext()
                 : this(null, false)
             {
+            }
+
+            public LocalContext(LocalContext other, CloneContext cloneContext)
+            {
+                if (other.parentLocalContext != null)
+                    this.parentLocalContext = cloneContext.GetClone(other.parentLocalContext);
+                else
+                    this.parentLocalContext = null;
+
+                this.localVarInfos = other.localVarInfos;
+                this.bLoop = other.bLoop;
             }
 
             public LocalContext NewLocalContext()
@@ -78,6 +89,11 @@ namespace Gum.IR0Translator
             public bool IsInLoop()
             {
                 return bLoop;
+            }
+
+            public LocalContext Clone(CloneContext context)
+            {
+                return new LocalContext(this, context);
             }
         }
     }

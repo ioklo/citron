@@ -10,7 +10,7 @@ namespace Gum.IR0Translator
     partial class Analyzer
     {
         // 현재 분석중인 스코프 정보
-        abstract class CallableContext : DeclContext
+        abstract class CallableContext : DeclContext, ICloneable<CallableContext>
         {
             int anonymousCount;
 
@@ -26,6 +26,19 @@ namespace Gum.IR0Translator
                 anonymousCount = 0;
             }
 
+            protected CallableContext(CallableContext other, CloneContext cloneContext)
+            {
+                this.anonymousCount = other.anonymousCount;
+            }
+
+            public abstract CallableContext Clone_CallableContext(CloneContext context);
+
+            public sealed override DeclContext Clone_DeclContext(CloneContext context)
+                => Clone_CallableContext(context);            
+
+            CallableContext ICloneable<CallableContext>.Clone(CloneContext context)
+                => Clone_CallableContext(context);
+
             public R.AnonymousId NewAnonymousId()
             {
                 var anonymousIdCount = new R.AnonymousId(anonymousCount);
@@ -33,6 +46,8 @@ namespace Gum.IR0Translator
 
                 return anonymousIdCount;
             }
+
+            
         }
 
         // 최상위 레벨 컨텍스트
@@ -47,6 +62,21 @@ namespace Gum.IR0Translator
                 this.moduleName = moduleName;
                 this.itemValueFactory = itemValueFactory;
                 this.topLevelStmts = new List<R.Stmt>();
+            }
+            
+            public RootContext(RootContext other, CloneContext cloneContext)
+                : base(other, cloneContext)
+            {
+                this.moduleName = other.moduleName;
+                this.itemValueFactory = cloneContext.GetClone(other.itemValueFactory);
+                this.topLevelStmts = new List<R.Stmt>(other.topLevelStmts);
+            }
+            
+            // moduleName, itemValueFactory
+            // Clone호출하는 쪽에서 ItemValueFactory를 어떻게 찾는가!
+            public override CallableContext Clone_CallableContext(CloneContext cloneContext)
+            {
+                return new RootContext(this, cloneContext);
             }
 
             public override LocalVarInfo? GetLocalVarOutsideLambda(string varName)
@@ -111,6 +141,21 @@ namespace Gum.IR0Translator
                 this.typeArgs = typeArgs;
             }
 
+            public FuncContext(FuncContext other, CloneContext cloneContext)
+            {
+                this.parentContext = cloneContext.GetClone(other.parentContext);
+                this.retTypeValue = other.retTypeValue;
+                this.bSequence = other.bSequence;
+                this.name = other.name;
+                this.paramHash = other.paramHash;
+                this.typeArgs = other.typeArgs;
+            }
+
+            public override CallableContext Clone_CallableContext(CloneContext cloneContext)
+            {
+                return new FuncContext(this, cloneContext);
+            }            
+
             public override LocalVarInfo? GetLocalVarOutsideLambda(string varName)
             {
                 // TODO: 지금은 InnerFunc를 구현하지 않으므로, Outside가 없다. 나중에 지원
@@ -160,6 +205,16 @@ namespace Gum.IR0Translator
                 this.retTypeValue = retTypeValue;
                 this.bCaptureThis = false;
                 this.localCaptures = new Dictionary<string, TypeValue>();
+            }
+
+            public LambdaContext(LambdaContext other, CloneContext cloneContext)
+            {
+                this.parentDeclContext = cloneContext.GetClone(other.parentDeclContext);
+                this.parentLocalContext = cloneContext.GetClone(other.parentLocalContext);
+                this.anonymousId = other.anonymousId;
+                this.retTypeValue = other.retTypeValue;
+                this.bCaptureThis = other.bCaptureThis;
+                this.localCaptures = new Dictionary<string, TypeValue>(other.localCaptures);
             }
 
             public override LocalVarInfo? GetLocalVarOutsideLambda(string varName)
@@ -218,6 +273,11 @@ namespace Gum.IR0Translator
             public override R.Path.Normal GetPath()
             {
                 return parentDeclContext.GetPath(new R.Name.Anonymous(anonymousId), R.ParamHash.None, default);
+            }
+
+            public override CallableContext Clone_CallableContext(CloneContext context)
+            {
+                return new LambdaContext(this, context);
             }
         }
     }

@@ -10,7 +10,7 @@ namespace Gum.IR0Translator
 {
     partial class Analyzer
     {
-        abstract class DeclContext
+        abstract class DeclContext : ICloneable<DeclContext>
         {
             List<R.Decl> decls;
 
@@ -18,6 +18,15 @@ namespace Gum.IR0Translator
             {
                 decls = new List<R.Decl>();
             }
+
+            public DeclContext(DeclContext other, CloneContext cloneContext)
+            {
+                this.decls = new List<R.Decl>(other.decls);
+            }
+
+            public abstract DeclContext Clone_DeclContext(CloneContext context);
+            public DeclContext ICloneable<DeclContext>.Clone(CloneContext context)
+                => Clone_DeclContext(context);
 
             public void AddNormalFuncDecl(ImmutableArray<R.Decl> decls, R.Name name, bool bThisCall, ImmutableArray<string> typeParams, ImmutableArray<R.ParamInfo> paramNames, R.Stmt body)
             {
@@ -45,7 +54,7 @@ namespace Gum.IR0Translator
             {
                 var path = GetPath();
                 return new R.Path.Nested(path, childName, paramHash, typeArgs);
-            }
+            }            
         }
 
         // NamespaceDeclContext
