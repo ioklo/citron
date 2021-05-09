@@ -14,7 +14,7 @@ namespace Gum.IR0Translator
         {
             public record Namespace : ExpResult;
             public record Type(TypeValue TypeValue) : ExpResult;
-            public record Funcs(ItemValueOuter Outer, ImmutableArray<M.FuncInfo> FuncInfos, ImmutableArray<TypeValue> TypeArgs) : ExpResult;            
+            public record Funcs(ItemValueOuter Outer, ImmutableArray<M.FuncInfo> FuncInfos, ImmutableArray<TypeValue> TypeArgs, R.Loc? Instance) : ExpResult;
             public record EnumElem : ExpResult;            
             public record Exp(R.Exp Result, TypeValue TypeValue) : ExpResult;
             public record Loc(R.Loc Result, TypeValue TypeValue) : ExpResult;

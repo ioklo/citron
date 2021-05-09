@@ -37,7 +37,7 @@ namespace Gum.IR0Translator
         public override TypeValue Apply_TypeValue(TypeEnv typeEnv) { return this; }
 
         // var는 translation패스에서 추론되기 때문에 IR0에 없다
-        public override R.Path GetRType() { throw new InvalidOperationException();  }
+        public override R.Path GetRPath() { throw new InvalidOperationException();  }
     }
 
     // T: depth는 지역적이므로, 주어진 컨텍스트 안에서만 의미가 있다
@@ -56,7 +56,7 @@ namespace Gum.IR0Translator
 
             return this;
         }
-        public override R.Path GetRType() => new R.Path.TypeVarType(Index);
+        public override R.Path GetRPath() => new R.Path.TypeVarType(Index);
     }
 
     [ImplementIEquatable]
@@ -67,13 +67,13 @@ namespace Gum.IR0Translator
             throw new NotImplementedException();
         }
 
-        public override R.Path GetRType() => throw new NotImplementedException();
+        public override R.Path.Nested GetRPath_Nested() => throw new NotImplementedException();
     }
 
     [ImplementIEquatable]
     partial class EnumTypeValue : NormalTypeValue
     {
-        public override R.Path GetRType()
+        public override R.Path.Nested GetRPath_Nested()
         {
             throw new NotImplementedException();
         }
@@ -248,12 +248,12 @@ namespace Gum.IR0Translator
             return itemValueFactory.MakeTypeValue(appliedOuter, structInfo, appliedTypeArgs);
         }
         
-        public override R.Path GetRType()
+        public override R.Path.Nested GetRPath_Nested()
         {
             var rname = RItemFactory.MakeName(structInfo.Name);
             var rtypeArgs = RItemFactory.MakeRTypes(typeArgs);
 
-            return outer.MakeRPath(rname, new R.ParamHash(structInfo.TypeParams.Length, default), rtypeArgs);
+            return outer.GetRPath(rname, new R.ParamHash(structInfo.TypeParams.Length, default), rtypeArgs);
         }
     }
 
@@ -265,6 +265,13 @@ namespace Gum.IR0Translator
         {
             return Apply_NormalTypeValue(env);
         }
+
+        public sealed override R.Path GetRPath()
+        {
+            return GetRPath_Nested();
+        }
+
+        public abstract R.Path.Nested GetRPath_Nested();        
     }
 
     // "void"
@@ -282,7 +289,7 @@ namespace Gum.IR0Translator
             return this;
         }
 
-        public override R.Path GetRType()
+        public override R.Path GetRPath()
         {
             return R.Path.VoidType.Instance;
         }
@@ -333,7 +340,7 @@ namespace Gum.IR0Translator
             throw new InvalidOperationException();
         }
 
-        public override R.Path GetRType()
+        public override R.Path GetRPath()
         {
             return ritemFactory.MakeLambdaType(Lambda);
         }
@@ -341,6 +348,25 @@ namespace Gum.IR0Translator
         public override int GetHashCode()
         {
             return HashCode.Combine(Lambda);
+        }
+    }
+
+    // 
+    [AutoConstructor]
+    partial class SeqTypeValue : TypeValue
+    {
+        RItemFactory ritemFactory;
+        R.Path.Nested seqFunc;
+        TypeValue yieldType;
+
+        public override TypeValue Apply_TypeValue(TypeEnv typeEnv)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override R.Path GetRPath()
+        {
+            return new R.Path.AnonymousSeqType(seqFunc);
         }
     }
 
@@ -363,7 +389,7 @@ namespace Gum.IR0Translator
             throw new NotImplementedException();
         }
 
-        public override R.Path GetRType()
+        public override R.Path GetRPath()
         {
             return ritemFactory.MakeEnumElemType();
         }

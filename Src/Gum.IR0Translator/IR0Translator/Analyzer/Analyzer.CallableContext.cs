@@ -205,7 +205,7 @@ namespace Gum.IR0Translator
                 return localCaptures.Select(localCapture =>
                 {
                     var name = localCapture.Key;
-                    var type = localCapture.Value.GetRType();
+                    var type = localCapture.Value.GetRPath();
                     return new R.TypeAndName(type, name);
                 }).ToImmutableArray();
             }

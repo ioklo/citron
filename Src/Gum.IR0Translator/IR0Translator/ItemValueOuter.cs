@@ -11,7 +11,7 @@ namespace Gum.IR0Translator
     // reserved가 아닌 아이템에서나 존재함
     abstract class ItemValueOuter
     {
-        public abstract R.Path MakeRPath(R.Name name, R.ParamHash paramHash, ImmutableArray<R.Path> typeArgs);
+        public abstract R.Path.Nested GetRPath(R.Name name, R.ParamHash paramHash, ImmutableArray<R.Path> typeArgs);
         public abstract void FillTypeEnv(TypeEnvBuilder builder);
         public abstract ItemValueOuter Apply(TypeEnv typeEnv);
         public abstract TypeEnv GetTypeEnv();
@@ -24,7 +24,7 @@ namespace Gum.IR0Translator
         M.ModuleName moduleName;
         M.NamespacePath namespacePath;
 
-        public override R.Path MakeRPath(R.Name name, R.ParamHash paramHash, ImmutableArray<R.Path> typeArgs)
+        public override R.Path.Nested GetRPath(R.Name name, R.ParamHash paramHash, ImmutableArray<R.Path> typeArgs)
         {
             var rmoduleName = RItemFactory.MakeModuleName(moduleName);
 
@@ -55,9 +55,9 @@ namespace Gum.IR0Translator
     {
         ItemValue outer;
 
-        public override R.Path MakeRPath(R.Name name, R.ParamHash paramHash, ImmutableArray<R.Path> typeArgs)
+        public override R.Path.Nested GetRPath(R.Name name, R.ParamHash paramHash, ImmutableArray<R.Path> typeArgs)
         {
-            var router = outer.GetRType() as R.Path.Normal;
+            var router = outer.GetRPath() as R.Path.Normal;
             Debug.Assert(router != null);
 
             return new R.Path.Nested(router, name, paramHash, typeArgs);

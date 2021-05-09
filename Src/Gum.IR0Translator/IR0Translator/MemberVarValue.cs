@@ -39,8 +39,11 @@ namespace Gum.IR0Translator
             return typeValue.Apply_TypeValue(typeEnv);
         }
 
-        public override R.Path GetRType()
+        public override R.Path GetRPath()
         {
+            var rname = RItemFactory.MakeName(Name);
+
+            return new R.Path.Nested(outer.GetRPath_Nested(), rname, R.ParamHash.None, default);
             throw new NotImplementedException();
         }
 

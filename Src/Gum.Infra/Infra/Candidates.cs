@@ -6,8 +6,9 @@ using System.Threading.Tasks;
 
 namespace Gum.Infra
 {
-    public struct Candidates<T> where T : notnull
-    {
+    // 주의: T가 struct일 경우 T?가 Nullable<T>를 의미하지 않기 때문에, Candidate<MyStruct?>처럼 ?를 사용해 줘야 제대로 동작한다
+    public struct Candidates<T>
+    {   
         T? one;           // 한개까지는 여기에 저장한다
         List<T>? rests;   // 여러개일 경우 one을 포함해서 여기에 저장한다
 

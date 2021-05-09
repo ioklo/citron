@@ -139,6 +139,11 @@ namespace Gum.IR0Translator
             return new FuncValue(this, itemValueOuter, funcInfo, typeArgs);
         }
 
+        public SeqTypeValue MakeSeqType(R.Path.Nested seq, TypeValue yieldType)
+        {
+            return new SeqTypeValue(ritemFactory, seq, yieldType);
+        }
+
         public LambdaTypeValue MakeLambdaType(R.Path.Nested lambda, TypeValue retType, ImmutableArray<TypeValue> paramTypes)
         {
             return new LambdaTypeValue(ritemFactory, lambda, retType, paramTypes);

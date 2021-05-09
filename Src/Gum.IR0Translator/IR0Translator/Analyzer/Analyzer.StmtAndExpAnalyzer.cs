@@ -51,7 +51,22 @@ namespace Gum.IR0Translator
             {
                 var newLocalContext = localContext.NewLocalContextWithLoop();
                 return new StmtAndExpAnalyzer(globalContext, callableContext, newLocalContext);
-            }           
+            }
+
+            StmtAndExpAnalyzer CloneAnalyzer()
+            {
+                var clonedGlobalContext = globalContext.Clone();
+                var clonedCallableContext = callableContext.Clone();
+                var clonedLocalContext = localContext.Clone();
+                return new StmtAndExpAnalyzer(clonedGlobalContext, clonedCallableContext, clonedLocalContext);
+            }
+
+            void UpdateAnalyzer(GlobalContext otherGlobalContext, CallableContext otherCallableContext, LocalContext otherLocalContext)
+            {
+                globalContext.Update(otherGlobalContext);
+                callableContext.Update(otherCallableContext);
+                localContext.Update(otherLocalContext);
+            }
 
             void CheckParamTypes(S.ISyntaxNode nodeForErrorReport, ImmutableArray<TypeValue> parameters, ImmutableArray<TypeValue> args)
             {

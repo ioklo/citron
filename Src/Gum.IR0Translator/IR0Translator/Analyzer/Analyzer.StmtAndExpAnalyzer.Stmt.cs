@@ -230,7 +230,7 @@ namespace Gum.IR0Translator
                 if (forStmt.ContinueExp != null)
                 {
                     var continueResult = newAnalyzer.AnalyzeTopLevelExp_Exp(forStmt.ContinueExp, ResolveHint.None, A1103_ForStmt_ContinueExpShouldBeAssignOrCall);
-                    var contExpType = continueResult.TypeValue.GetRType();
+                    var contExpType = continueResult.TypeValue.GetRPath();
                     continueInfo = continueResult.Result;
                 }
                 

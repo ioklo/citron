@@ -40,6 +40,24 @@ namespace Gum.IR0Translator
                 this.internalGlobalVarRepo = new InternalGlobalVariableRepository();
             }
 
+            GlobalContext(
+                ItemValueFactory itemValueFactory,
+            InternalBinaryOperatorQueryService internalBinOpQueryService,
+            GlobalItemValueFactory globalItemValueFactory,
+            TypeExpInfoService typeExpTypeValueService,
+            IErrorCollector errorCollector,
+            InternalGlobalVariableRepository internalGlobalVarRepo)
+            {
+
+            }
+
+            public GlobalContext Clone()
+            {
+                // pure하지 않은 것들을 clone시켜야 하는데, 나중에 pure -> impure로 바뀌었을 때, 알게 될 방법이 있는가
+                // 모두 Clone한다
+                new GlobalContext(itemValueFactory.Clone(), globalItemValueFactory.Clone(), typeExpTypeValueService.Clone(), errorCollector.Clone())
+            }
+
             public void AddError(AnalyzeErrorCode code, S.ISyntaxNode node)
             {
                 errorCollector.Add(new AnalyzeError(code, node, ""));
@@ -50,7 +68,7 @@ namespace Gum.IR0Translator
             {
                 errorCollector.Add(new AnalyzeError(code, node, ""));
                 throw new FatalAnalyzeException();
-            }
+            }            
 
             public TypeValue GetVoidType()
             {
@@ -115,10 +133,9 @@ namespace Gum.IR0Translator
                 return itemValueFactory.String.Equals(typeValue);
             }
 
-            public TypeValue GetTypeValueByMType(M.Type type, TypeEnv typeEnv)
+            public TypeValue GetTypeValueByMType(M.Type type)
             {
-                return itemValueFactory.MakeTypeValue(type, typeEnv);
-
+                return itemValueFactory.MakeTypeValue(type);
             }
 
             public TypeValue GetTypeValueByTypeExp(S.TypeExp typeExp)
@@ -143,9 +160,14 @@ namespace Gum.IR0Translator
                 return internalGlobalVarRepo.HasVariable(name);
             }
 
-            public LambdaTypeValue NewLambdaTypeValue(R.Path.Nested lambda, TypeValue retType, ImmutableArray<TypeValue> paramTypes)
+            public LambdaTypeValue GetLambdaTypeValue(R.Path.Nested lambda, TypeValue retType, ImmutableArray<TypeValue> paramTypes)
             {
                 return itemValueFactory.MakeLambdaType(lambda, retType, paramTypes);
+            }
+
+            public SeqTypeValue GetSeqTypeValue(R.Path.Nested seq, TypeValue yieldType)
+            {
+                return itemValueFactory.MakeSeqType(seq, yieldType);
             }
 
             public ItemQueryResult GetGlobalItem(M.NamespacePath namespacePath, string idName, int typeParamCount)
@@ -158,15 +180,21 @@ namespace Gum.IR0Translator
                 return internalBinOpQueryService.GetInfos(kind);
             }
 
-            public MemberVarValue MakeMemberVarValue(NormalTypeValue outer, M.MemberVarInfo info)
-            {
-                return itemValueFactory.MakeMemberVarValue(outer, info);
-            }
-
             public TypeValue MakeTypeValue(ItemValueOuter outer, M.TypeInfo typeInfo, ImmutableArray<TypeValue> typeArgs)
             {
                 return itemValueFactory.MakeTypeValue(outer, typeInfo, typeArgs);
             }
+
+            public FuncValue MakeFuncValue(ItemValueOuter outer, M.FuncInfo funcInfo, ImmutableArray<TypeValue> typeArgs)
+            {
+                return itemValueFactory.MakeFunc(outer, funcInfo, typeArgs);
+            }
+
+            public MemberVarValue MakeMemberVarValue(NormalTypeValue outer, M.MemberVarInfo info)
+            {
+                return itemValueFactory.MakeMemberVarValue(outer, info);
+            }
+            
         }
     }
 }

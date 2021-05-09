@@ -302,8 +302,8 @@ namespace Gum.IR0Translator
                 // 인자 타입이 맞는지
                 for (int i = 0; i < funcInfo.ParamTypes.Length; i++)
                 {
-                    var typeValue = globalContext.GetTypeValueByMType(funcInfo.ParamTypes[i], typeEnv);
-                    typeValue = typeValue.Apply_TypeValue(typeEnv);
+                    var typeValue = globalContext.GetTypeValueByMType(funcInfo.ParamTypes[i]);
+                    typeValue = typeValue.Apply_TypeValue(outerTypeEnv); // TODO: 일단 임시
 
                     var resolveHint = ResolveHint.Make(typeValue);
                     var expResult = AnalyzeExp_Exp(sargs[i], resolveHint);
@@ -314,6 +314,17 @@ namespace Gum.IR0Translator
                     // 매칭이 되었다면
                 }
                 
+            }
+
+            [AutoConstructor]
+            partial struct MatchedFunc
+            {
+                public MatchArgsResult Result { get; }
+                public M.FuncInfo FuncInfo { get; }
+                public ImmutableArray<TypeValue> TypeArgs { get; } // 확정된 타입 아큐먼트
+                public GlobalContext GlobalContext { get; }
+                public CallableContext CallableContext { get; }
+                public LocalContext LocalContext { get; }
             }
             
             // CallExp분석에서 Callable이 Identifier인 경우 처리
@@ -328,21 +339,79 @@ namespace Gum.IR0Translator
                 var outerTypeEnv = funcsResult.Outer.GetTypeEnv();
 
                 // 여러 함수 중에서 인자가 맞는것을 선택해야 한다
-                var exactCandidates = new Candidates<(MatchArgsResult Result, M.FuncInfo FuncInfo)>();
-                var restCandidates = new Candidates<(MatchArgsResult Result, M.FuncInfo FuncInfo)>();
+                var exactCandidates = new Candidates<MatchedFunc?>();
+                var restCandidates = new Candidates<MatchedFunc?>();
 
                 // Type inference
                 foreach (var funcInfo in funcsResult.FuncInfos)
-                {
-                    // TODO: Analyze중에 컨텍스트를 변경하면 다 롤백해야 한다
+                {   
                     var clonedAnalyzer = CloneAnalyzer();
-
                     var matchResult = clonedAnalyzer.MatchArguments(outerTypeEnv, funcsResult.TypeArgs, funcInfo, sargs);
 
                     if (!matchResult.bMatch) continue;
-                    else if (matchResult.bExactMatch) exactCandidates.Add((matchResult, funcInfo));
-                    else restCandidates.Add((matchResult, funcInfo));
+
+                    var matchedCandidate = new MatchedFunc(matchResult, funcInfo, clonedAnalyzer.globalContext, clonedAnalyzer.callableContext, clonedAnalyzer.localContext);
+                    
+                    if (matchResult.bExactMatch)
+                        exactCandidates.Add(matchedCandidate); // context만 저장하게 수정
+                    else 
+                        restCandidates.Add(matchedCandidate);
                 }
+
+                // 매칭 된 것으로
+                MatchedFunc matchedFunc;
+                var exactMatch = exactCandidates.GetSingle();
+                if (exactMatch != null)
+                {
+                    matchedFunc = exactMatch.Value;
+                }
+                else if (exactCandidates.HasMultiple)
+                {
+                    globalContext.AddFatalError();
+                    throw new UnreachableCodeException();
+                }
+                else // empty
+                {
+                    Debug.Assert(exactCandidates.IsEmpty);
+
+                    var restMatch = restCandidates.GetSingle();
+                    if (restMatch != null)
+                    {
+                        matchedFunc = restMatch.Value;
+                    }
+                    else if (restCandidates.HasMultiple)
+                    {
+                        globalContext.AddFatalError();
+                        throw new UnreachableCodeException();
+                    }
+                    else // empty
+                    {
+                        globalContext.AddFatalError(); // No matched                 
+                        throw new UnreachableCodeException();
+                    }
+                }
+
+                // funcValue만들기
+                var funcValue = globalContext.MakeFuncValue(funcsResult.Outer, matchedFunc.FuncInfo, matchedFunc.TypeArgs);
+                
+                // context 업데이트
+                UpdateAnalyzer(matchedFunc.GlobalContext, matchedFunc.CallableContext, matchedFunc.LocalContext);
+
+                if (funcValue.IsSequence)
+                {
+                    // TODO: funcValue.RetType을 쓰면 의미가 와닿지 않는데, 쉽게 실수 할 수 있을 것 같다
+                    var seqTypeValue = globalContext.GetSeqTypeValue(funcValue.GetRPath_Nested(), funcValue.GetRetType());
+                    return new ExpResult.Exp(new R.CallSeqFuncExp(funcValue.GetRPath_Nested(), funcsResult.Instance, matchedFunc.Result.Args), seqTypeValue);
+                }
+                else
+                {
+                    // 만약
+                    return new ExpResult.Exp(new R.CallFuncExp(funcValue.GetRPath_Nested(), funcsResult.Instance, matchedFunc.Result.Args), funcValue.GetRetType());
+                }
+
+
+                
+
 
                 //// 인자 타입 체크
                 //var argTypes = ImmutableArray.CreateRange(argResults, info => info.TypeValue);            
@@ -434,7 +503,7 @@ namespace Gum.IR0Translator
                         return AnalyzeCallExpFuncCallable(funcsResult, exp.Args);
 
                     case ExpResult.Exp expResult:
-                        var tempLoc = new R.TempLoc(expResult.Result, expResult.TypeValue.GetRType());
+                        var tempLoc = new R.TempLoc(expResult.Result, expResult.TypeValue.GetRPath());
                         return AnalyzeCallExpExpCallable(tempLoc, expResult.TypeValue, exp.Args, exp);
 
                     case ExpResult.Loc locResult:
@@ -481,7 +550,7 @@ namespace Gum.IR0Translator
                 var capturedLocalVars = newLambdaContext.GetCapturedLocalVars();
 
                 var paramTypes = paramInfos.Select(paramInfo => paramInfo.TypeValue).ToImmutableArray();
-                var rparamInfos = paramInfos.Select(paramInfo => new R.ParamInfo(paramInfo.TypeValue.GetRType(), paramInfo.Name)).ToImmutableArray();
+                var rparamInfos = paramInfos.Select(paramInfo => new R.ParamInfo(paramInfo.TypeValue.GetRPath(), paramInfo.Name)).ToImmutableArray();
 
                 // TODO: need capture this확인해서 this 넣기
                 // var bCaptureThis = newLambdaContext.NeedCaptureThis();
@@ -491,7 +560,7 @@ namespace Gum.IR0Translator
                 var lambdaDecl = new R.LambdaDecl(new R.Name.Anonymous(newLambdaId), capturedStmt, rparamInfos);
                 callableContext.AddDecl(lambdaDecl);
 
-                var lambdaTypeValue = globalContext.NewLambdaTypeValue(
+                var lambdaTypeValue = globalContext.GetLambdaTypeValue(
                     callableContext.GetPath(new R.Name.Anonymous(newLambdaId), R.ParamHash.None, default), // lambda는 paramHash를 넣지 않는다
                     newLambdaContext.GetRetTypeValue() ?? globalContext.GetVoidType(),
                     paramTypes
@@ -641,7 +710,7 @@ namespace Gum.IR0Translator
                             throw new UnreachableCodeException();
                         }
 
-                        var rparentType = parentType.GetRType();
+                        var rparentType = parentType.GetRPath();
                         var loc = new R.StaticMemberLoc(rparentType, memberName);
                         return new ExpResult.Loc(loc, memberVarValue.GetTypeValue());
 
@@ -705,7 +774,7 @@ namespace Gum.IR0Translator
                         break;
 
                     case ExpResult.Exp expResult:
-                        return AnalyzeMemberExpExpParent(memberExp, new R.TempLoc(expResult.Result, expResult.TypeValue.GetRType()), expResult.TypeValue);
+                        return AnalyzeMemberExpExpParent(memberExp, new R.TempLoc(expResult.Result, expResult.TypeValue.GetRPath()), expResult.TypeValue);
 
                     case ExpResult.Loc locResult:
                         return AnalyzeMemberExpExpParent(memberExp, locResult.Result, locResult.TypeValue);
@@ -758,7 +827,7 @@ namespace Gum.IR0Translator
                 if (curElemTypeValue == null)
                     globalContext.AddFatalError(A1701_ListExp_CantInferElementTypeWithEmptyElement, listExp);
 
-                var rtype = curElemTypeValue.GetRType();
+                var rtype = curElemTypeValue.GetRPath();
 
                 return new ExpResult.Exp(
                     new R.ListExp(rtype, builder.ToImmutable()),
@@ -791,7 +860,7 @@ namespace Gum.IR0Translator
                 switch (result)
                 {
                     case ExpResult.Exp expResult:
-                        return new ExpResult.Loc(new R.TempLoc(expResult.Result, expResult.TypeValue.GetRType()), expResult.TypeValue);
+                        return new ExpResult.Loc(new R.TempLoc(expResult.Result, expResult.TypeValue.GetRPath()), expResult.TypeValue);
 
                     case ExpResult.Loc locResult:
                         return locResult;

@@ -71,16 +71,9 @@ namespace Gum.IR0Translator
         }
         
         // IR0 Func를 만들어 줍니다
-        public override R.Path GetRType()
+        public sealed override R.Path GetRPath()
         {
-            var rname = RItemFactory.MakeName(funcInfo.Name);
-            var paramTypes = GetParamTypes();
-            var rparamTypes = ImmutableArray.CreateRange(paramTypes, paramType => paramType.GetRType());
-
-            var paramHash = new R.ParamHash(typeArgs.Length, rparamTypes);
-
-            var rtypeArgs = ImmutableArray.CreateRange(typeArgs, typeArg => typeArg.GetRType());
-            return outer.MakeRPath(rname, paramHash, rtypeArgs);
+            return GetRPath_Nested();
         }
 
         public override ItemValue Apply_ItemValue(TypeEnv typeEnv)
@@ -88,6 +81,18 @@ namespace Gum.IR0Translator
             var appliedOuter = outer.Apply(typeEnv);
             var appliedTypeArgs = ImmutableArray.CreateRange(typeArgs, typeArg => typeArg.Apply_TypeValue(typeEnv));
             return itemValueFactory.MakeFunc(appliedOuter, funcInfo, appliedTypeArgs);
+        }
+
+        public R.Path.Nested GetRPath_Nested()
+        {
+            var rname = RItemFactory.MakeName(funcInfo.Name);
+            var paramTypes = GetParamTypes();
+            var rparamTypes = ImmutableArray.CreateRange(paramTypes, paramType => paramType.GetRPath());
+
+            var paramHash = new R.ParamHash(typeArgs.Length, rparamTypes);
+
+            var rtypeArgs = ImmutableArray.CreateRange(typeArgs, typeArg => typeArg.GetRPath());
+            return outer.GetRPath(rname, paramHash, rtypeArgs);
         }
     }
 }

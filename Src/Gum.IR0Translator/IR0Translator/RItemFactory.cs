@@ -31,7 +31,7 @@ namespace Gum.IR0Translator
 
         public static ImmutableArray<R.Path> MakeRTypes(ImmutableArray<TypeValue> typeValues)
         {
-            return ImmutableArray.CreateRange(typeValues, typeValue => typeValue.GetRType());
+            return ImmutableArray.CreateRange(typeValues, typeValue => typeValue.GetRPath());
         }        
         
         public R.Path MakeMemberType(R.Path rtype, M.Name name, ImmutableArray<R.Path> rtypeArgs)

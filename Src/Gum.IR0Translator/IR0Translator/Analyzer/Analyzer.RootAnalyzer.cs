@@ -99,7 +99,7 @@ namespace Gum.IR0Translator
                 {
                     var typeValue = globalContext.GetTypeValueByTypeExp(param.Type);
 
-                    var type = typeValue.GetRType();
+                    var type = typeValue.GetRPath();
                     paramTypesBuilder.Add(type);
 
                     var info = new R.ParamInfo(type, param.Name);
@@ -178,7 +178,7 @@ namespace Gum.IR0Translator
                 
                 Debug.Assert(retTypeValue != null, "문법상 Sequence 함수의 retValue가 없을수 없습니다");
 
-                var retRType = retTypeValue.GetRType();
+                var retRType = retTypeValue.GetRPath();
                 var parameters = funcDecl.ParamInfo.Parameters.Select(param => param.Name).ToImmutableArray();
 
                 var decls = funcContext.GetDecls();
