@@ -52,10 +52,10 @@ namespace Gum.IR0Translator
         {
             var typeEnv = MakeTypeEnv();
 
-            var builder = ImmutableArray.CreateBuilder<TypeValue>(funcInfo.ParamTypes.Length);
-            foreach (var paramType in funcInfo.ParamTypes)
+            var builder = ImmutableArray.CreateBuilder<TypeValue>(funcInfo.ParamInfo.Parameters.Length);
+            foreach (var paramInfo in funcInfo.ParamInfo.Parameters)
             {   
-                var paramTypeValue = itemValueFactory.MakeTypeValue(paramType);
+                var paramTypeValue = itemValueFactory.MakeTypeValue(paramInfo.Type);
                 var appliedParamTypeValue = paramTypeValue.Apply_TypeValue(typeEnv);
                 builder.Add(appliedParamTypeValue);
             }

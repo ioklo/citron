@@ -305,41 +305,75 @@ namespace Gum.IR0Translator
             abstract record Argument
             {
                 // 기본 아규먼트 
-                record Normal(S.Exp Exp) : Argument;
+                public record Normal(S.Exp Exp) : Argument;
 
                 // Params가 확장된 아규먼트
-                record Expanded(int Index) : Argument;
+                public record Expanded(int ParamsIndex, int Index, TypeValue TypeValue) : Argument;
 
-                record RefArgument : Argument;
+                public record Ref(S.Exp Exp) : Argument;
             }
 
-            ImmutableArray<Argument> ExpandArguments(ImmutableArray<S.Argument> sargs)
+            [AutoConstructor]
+            partial struct ParamsInfo
             {
-                var args = ImmutableArray.CreateBuilder<Argument>();
+                public R.Exp Exp { get; }
+            }
 
+            [AutoConstructor]
+            partial struct ArgumentInfo
+            {
+                public ImmutableArray<ParamsInfo> ParamsInfos { get; }
+                public ImmutableArray<Argument> Arguments { get; }
+            }
+
+            ArgumentInfo ExpandArguments(ImmutableArray<S.Argument> sargs)
+            {
+                var paramsInfos = ImmutableArray.CreateBuilder<ParamsInfo>();
+                var args = ImmutableArray.CreateBuilder<Argument>();
                 foreach(var sarg in sargs)
                 {
                     if (sarg.ArgumentModifier == S.ArgumentModifier.None)
                         args.Add(new Argument.Normal(sarg.Exp));
-                    if (sarg.ArgumentModifier == S.ArgumentModifier.Params)
+                    else if (sarg.ArgumentModifier == S.ArgumentModifier.Params)
                     {
                         // expanded argument는 먼저 타입을 알아내야 한다
                         var expResult = AnalyzeExp_Exp(sarg.Exp, ResolveHint.None);
-                        expResult.TypeValue
+                        
+                        if (expResult.TypeValue is TupleTypeValue tupleTypeValue)
+                        {
+                            int index = 0;
+                            foreach(var elemTypeValue in tupleTypeValue.ElemTypeValues)
+                            {
+                                args.Add(new Argument.Expanded(paramsInfos.Count, index, elemTypeValue));
+                                index++;
+                            }
 
+                            paramsInfos.Add(new ParamsInfo(expResult.Result));
+                        }
+                        else
+                        {
+                            // 에러
+                            globalContext.AddFatalError();
+                            throw new UnreachableCodeException();
+                        }
+                    }
+                    else if (sarg.ArgumentModifier == S.ArgumentModifier.Ref)
+                    {
+                        args.Add(new Argument.Ref(sargs.Exp));
                     }
                 }
+
+                return new ArgumentInfo(paramsInfos.ToImmutable(), args.ToImmutable());
             }
 
             // typeEnv는 funcInfo미 포함 타입정보
             // typeArgs가 충분하지 않을 수 있다. 나머지는 inference로 채운다
             MatchArgsResult MatchArguments(TypeEnv outerTypeEnv, ImmutableArray<TypeValue> typeArgs, M.FuncInfo funcInfo, ImmutableArray<S.Argument> sargs)
             {
-                // 1. argument expansion
-                var args = ExpandArguments(sargs);
+                // 1. 아규먼트에서 params를 확장시킨다 (params에는 타입힌트를 적용하지 않고 먼저 평가한다)
+                var argInfo = ExpandArguments(sargs);
 
-
-
+                // 2. funcInfo에서 params 앞부분과 뒷부분으로 나누기
 
                 // 인자 개수가 맞는지?
                 // TODO: params 고려,
@@ -347,9 +381,9 @@ namespace Gum.IR0Translator
                 //    return MatchArgsResult.Invalid;                
 
                 // 인자 타입이 맞는지
-                for (int i = 0; i < funcInfo.ParamTypes.Length; i++)
+                for (int i = 0; i < funcInfo.ParamInfo.Parameters.Length; i++)
                 {
-                    var typeValue = globalContext.GetTypeValueByMType(funcInfo.ParamTypes[i]);
+                    var typeValue = globalContext.GetTypeValueByMType(funcInfo.ParamInfo.Parameters[i].Type);
                     typeValue = typeValue.Apply_TypeValue(outerTypeEnv); // TODO: 일단 임시
 
                     var resolveHint = ResolveHint.Make(typeValue);

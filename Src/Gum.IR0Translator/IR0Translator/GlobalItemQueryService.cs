@@ -42,7 +42,7 @@ namespace Gum.IR0Translator
 
                 foreach (var func in funcs)
                     if (func.TypeParams.Length == entry.TypeParamCount &&
-                        func.ParamTypes.Length == 0 &&
+                        func.ParamInfo.Parameters.Length == 0 &&
                         func.Name.Equals(entry.Name))
                         return func;
             }
@@ -53,7 +53,7 @@ namespace Gum.IR0Translator
                         func.Name.Equals(entry.Name))
                     {
                         // TODO: 매번 계산한다
-                        var paramHash = Misc.MakeParamHash(func.ParamTypes);
+                        var paramHash = Misc.MakeParamHash(func.ParamInfo);
                         if (paramHash == entry.ParamHash)
                             return func;
                     }
