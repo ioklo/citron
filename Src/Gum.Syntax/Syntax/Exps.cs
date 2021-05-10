@@ -5,6 +5,7 @@ using Gum.Collections;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using Pretune;
 
 namespace Gum.Syntax
 {
@@ -66,19 +67,11 @@ namespace Gum.Syntax
         }
     }
 
-    // MemberCallExp는 따로  
-    public class CallExp : Exp
+    [AutoConstructor]
+    public partial class CallExp : Exp
     {
         public Exp Callable { get; }
-
-        // TODO: params, out, 등 처리를 하려면 Exp가 아니라 다른거여야 한다
-        public ImmutableArray<Exp> Args { get; }
-
-        public CallExp(Exp callable, ImmutableArray<Exp> args)
-        {
-            Callable = callable;
-            Args = args;
-        }        
+        public ImmutableArray<Argument> Args { get; }
     }
 
     public struct LambdaExpParam

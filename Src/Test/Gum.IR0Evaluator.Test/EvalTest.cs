@@ -52,6 +52,13 @@ namespace Gum.IR0Evaluator.Test
             return new TestErrorCollector(this, context);
         }
 
+        public void Update(IErrorCollector src_errorCollector, UpdateContext updateContext)
+        {
+            var src = (TestErrorCollector)src_errorCollector;
+            errors.Clear();
+            errors.AddRange(src.errors);
+        }
+
         public string GetMessages()
         {
             return string.Join("\r\n", errors.Select(error => error.Message));

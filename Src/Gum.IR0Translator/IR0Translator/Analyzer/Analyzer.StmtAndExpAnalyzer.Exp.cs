@@ -301,14 +301,50 @@ namespace Gum.IR0Translator
                 public ImmutableArray<TypeValue> TypeArgs { get; }
             }
 
+            // params를 확장한 Argument
+            abstract record Argument
+            {
+                // 기본 아규먼트 
+                record Normal(S.Exp Exp) : Argument;
+
+                // Params가 확장된 아규먼트
+                record Expanded(int Index) : Argument;
+
+                record RefArgument : Argument;
+            }
+
+            ImmutableArray<Argument> ExpandArguments(ImmutableArray<S.Argument> sargs)
+            {
+                var args = ImmutableArray.CreateBuilder<Argument>();
+
+                foreach(var sarg in sargs)
+                {
+                    if (sarg.ArgumentModifier == S.ArgumentModifier.None)
+                        args.Add(new Argument.Normal(sarg.Exp));
+                    if (sarg.ArgumentModifier == S.ArgumentModifier.Params)
+                    {
+                        // expanded argument는 먼저 타입을 알아내야 한다
+                        var expResult = AnalyzeExp_Exp(sarg.Exp, ResolveHint.None);
+                        expResult.TypeValue
+
+                    }
+                }
+            }
+
             // typeEnv는 funcInfo미 포함 타입정보
             // typeArgs가 충분하지 않을 수 있다. 나머지는 inference로 채운다
-            MatchArgsResult MatchArguments(TypeEnv outerTypeEnv, ImmutableArray<TypeValue> typeArgs, M.FuncInfo funcInfo, ImmutableArray<S.Exp> sargs)
+            MatchArgsResult MatchArguments(TypeEnv outerTypeEnv, ImmutableArray<TypeValue> typeArgs, M.FuncInfo funcInfo, ImmutableArray<S.Argument> sargs)
             {
+                // 1. argument expansion
+                var args = ExpandArguments(sargs);
+
+
+
+
                 // 인자 개수가 맞는지?
                 // TODO: params 고려,
-                if (funcInfo.ParamTypes.Length != sargs.Length)
-                    return MatchArgsResult.Invalid;
+                // if (funcInfo.ParamTypes.Length != sargs.Length)
+                //    return MatchArgsResult.Invalid;                
 
                 // 인자 타입이 맞는지
                 for (int i = 0; i < funcInfo.ParamTypes.Length; i++)
@@ -324,7 +360,8 @@ namespace Gum.IR0Translator
                     
                     // 매칭이 되었다면
                 }
-                
+
+
             }
 
             [AutoConstructor]

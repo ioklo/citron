@@ -25,7 +25,7 @@ namespace Gum.IR0Translator
         {
             // Check purity
             Infra.Misc.EnsurePure(internalModuleInfo);
-            Infra.Misc.EnsurePure(moduleInfoRepo);
+            Infra.Misc.EnsurePure(externalModuleInfoRepo);
         }
 
         public M.TypeInfo? GetType(M.ModuleName moduleName, M.NamespacePath namespacePath, M.Name name, int typeParamCount)

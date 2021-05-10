@@ -403,4 +403,9 @@ namespace Gum.IR0Translator
             return ritemFactory.MakeEnumElemType();
         }
     }
+
+    [AutoConstructor]
+    partial class TupleTypeValue : TypeValue
+    {
+    }
 }
