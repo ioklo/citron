@@ -1,5 +1,4 @@
-﻿
-using Gum.Infra;
+﻿using Gum.Infra;
 using System;
 using System.Collections.Generic;
 using Gum.Collections;
@@ -134,21 +133,31 @@ namespace Gum.IR0Translator
         {
             var funcsBuilder = ImmutableArray.CreateBuilder<M.FuncInfo>();
 
+            bool bHaveInstance = false;
+            bool bHaveStatic = false;
             foreach (var memberFunc in structInfo.MemberFuncs)
             {
                 if (memberFunc.Name.Equals(memberName) &&
                     typeParamCount <= memberFunc.TypeParams.Length)
                 {
+                    bHaveInstance |= memberFunc.IsInstanceFunc;
+                    bHaveStatic |= !memberFunc.IsInstanceFunc;                    
+
                     funcsBuilder.Add(memberFunc);
                 }
             }
 
             // 여러개 있을 수 있기때문에 MultipleCandidates를 리턴하지 않는다
-
             if (funcsBuilder.Count == 0)
                 return ItemQueryResult.NotFound.Instance;
 
-            return new ItemQueryResult.Funcs(new NestedItemValueOuter(this), funcsBuilder.ToImmutable());
+            // 둘다 가지고 있으면 안된다
+            if (bHaveInstance && bHaveStatic)
+                return ItemQueryResult.Error.MultipleCandidates.Instance;
+
+            Debug.Assert(!bHaveInstance && !bHaveStatic);
+
+            return new ItemQueryResult.Funcs(new NestedItemValueOuter(this), funcsBuilder.ToImmutable(), bHaveInstance);
         }
         
         ItemQueryResult GetMember_Var(M.Name memberName, int typeParamCount)

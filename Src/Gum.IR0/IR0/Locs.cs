@@ -66,4 +66,10 @@ namespace Gum.IR0
         public Exp Exp { get; }
         public Path Type { get; }
     }
+    
+    public partial class ThisLoc : Loc
+    {
+        public static readonly ThisLoc Instance = new ThisLoc();
+        ThisLoc() { }
+    }
 }

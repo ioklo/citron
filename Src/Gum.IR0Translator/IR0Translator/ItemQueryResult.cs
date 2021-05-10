@@ -32,7 +32,7 @@ namespace Gum.IR0Translator
         
         // ItemValue류 대신에, 
         public record Type(ItemValueOuter Outer, M.TypeInfo TypeInfo) : Valid;
-        public record Funcs(ItemValueOuter Outer, ImmutableArray<M.FuncInfo> FuncInfos) : Valid;
-        public record MemberVar(NormalTypeValue Outer, M.MemberVarInfo MemberVarInfo) : Valid;        
+        public record Funcs(ItemValueOuter Outer, ImmutableArray<M.FuncInfo> FuncInfos, bool IsInstanceFunc) : Valid;
+        public record MemberVar(NormalTypeValue Outer, M.MemberVarInfo MemberVarInfo) : Valid;
     }
 }

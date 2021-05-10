@@ -120,7 +120,7 @@ namespace Gum.IR0Translator
 
                     case ItemQueryResult.Funcs funcsResult:
                         {
-                            return new IdentifierResult.Funcs(funcsResult.Outer, funcsResult.FuncInfos, typeArgs);
+                            return new IdentifierResult.Funcs(funcsResult.Outer, funcsResult.FuncInfos, typeArgs, funcsResult.IsInstanceFunc);
                         }
                 }
 

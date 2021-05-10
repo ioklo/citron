@@ -52,9 +52,15 @@ namespace Gum.IR0Translator
                         return new ExpResult.Loc(new R.GlobalVarLoc(globalVarResult.VarName), globalVarResult.TypeValue);
 
                     case IdentifierResult.Funcs funcsResult:
-                        // TODO: thisLoc
-                        // 1. funcinfos전체를 static / instance로 통일
-                        return new ExpResult.Funcs(funcsResult.Outer, funcsResult.FuncInfos, funcsResult.TypeArgs);
+                        if (funcsResult.IsInstanceFunc)
+                        {
+                            // this가 가능한지 체크는 IdentifierResolver에서 했다. TODO: 그래도 Assert걸어놓자
+                            return new ExpResult.Funcs(funcsResult.Outer, funcsResult.FuncInfos, funcsResult.TypeArgs, R.ThisLoc.Instance);
+                        }
+                        else
+                        {
+                            return new ExpResult.Funcs(funcsResult.Outer, funcsResult.FuncInfos, funcsResult.TypeArgs, null);
+                        }
 
                     case IdentifierResult.Type:
                         globalContext.AddFatalError(A2008_ResolveIdentifier_CantUseTypeAsExpression, idExp);
@@ -287,6 +293,8 @@ namespace Gum.IR0Translator
             [AutoConstructor]
             partial struct MatchArgsResult
             {
+                public static readonly MatchArgsResult Invalid = new MatchArgsResult();
+
                 public bool bMatch { get; }
                 public bool bExactMatch { get; } // TypeInference를 사용하지 않은 경우                
                 public ImmutableArray<R.Exp> Args { get; }
@@ -300,7 +308,7 @@ namespace Gum.IR0Translator
                 // 인자 개수가 맞는지?
                 // TODO: params 고려,
                 if (funcInfo.ParamTypes.Length != sargs.Length)
-                    return new MatchArgsResult(false, false, default);
+                    return MatchArgsResult.Invalid;
 
                 // 인자 타입이 맞는지
                 for (int i = 0; i < funcInfo.ParamTypes.Length; i++)
@@ -312,7 +320,7 @@ namespace Gum.IR0Translator
                     var expResult = AnalyzeExp_Exp(sargs[i], resolveHint);
 
                     if (!globalContext.IsAssignable(typeValue, expResult.TypeValue))
-                        return new MatchArgsResult(false, false, default);
+                        return MatchArgsResult.Invalid;
                     
                     // 매칭이 되었다면
                 }
@@ -419,7 +427,7 @@ namespace Gum.IR0Translator
                 if (lambdaType == null)
                     globalContext.AddFatalError(A0902_CallExp_CallableExpressionIsNotCallable, nodeForErrorReport.Callable);
 
-                var argResultsBuilder = ImmutableArray.CreateBuilder<ExpResult.Exp>(args.Length);
+                var argResultsBuilder = ImmutableArray.CreateBuilder<ExpResult.Exp>(sargs.Length);
                 foreach (var arg in sargs)
                 {
                     var expResult = AnalyzeExp_Exp(arg, ResolveHint.None);

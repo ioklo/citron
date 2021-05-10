@@ -117,7 +117,7 @@ namespace Gum.IR0Translator
                 }
 
                 if (funcInfos.Count != 0)
-                    return new ItemQueryResult.Funcs(new RootItemValueOuter(moduleName, namespacePath), funcInfos.ToImmutable());
+                    return new ItemQueryResult.Funcs(new RootItemValueOuter(moduleName, namespacePath), funcInfos.ToImmutable(), false);
                 
                 return ItemQueryResult.NotFound.Instance;
             }
