@@ -304,11 +304,25 @@ namespace Gum.IR0Translator
             // params를 확장한 Argument
             abstract record Argument
             {
+                public abstract ExpResult Analyze(ref StmtAndExpAnalyzer analyzer, ResolveHint hint);
+
                 // 기본 아규먼트 
-                public record Normal(S.Exp Exp) : Argument;
+                public record Normal(S.Exp Exp) : Argument
+                {
+                    public override ExpResult.Exp Analyze(ref StmtAndExpAnalyzer analyzer, ResolveHint hint)
+                    {
+                        return analyzer.AnalyzeExp_Exp(Exp, hint);
+                    }
+                }
 
                 // Params가 확장된 아규먼트
-                public record Expanded(int ParamsIndex, int Index, TypeValue TypeValue) : Argument;
+                public record Expanded(int ParamsIndex, int Index, TypeValue TypeValue) : Argument
+                {
+                    public override ExpResult.Exp Analyze(ref StmtAndExpAnalyzer analyzer, ResolveHint hint)
+                    {
+                        return ;
+                    }
+                }
 
                 public record Ref(S.Exp Exp) : Argument;
             }
@@ -366,6 +380,32 @@ namespace Gum.IR0Translator
                 return new ArgumentInfo(paramsInfos.ToImmutable(), args.ToImmutable());
             }
 
+            void MatchArgument(TypeEnv incompletedTypeEnv, (M.Type Type, M.Name Name) parameter, Argument arg)
+            {
+                var typeValue = globalContext.GetTypeValueByMType(parameter.Type);
+                typeValue = typeValue.Apply_TypeValue(incompletedTypeEnv); // 아직 함수 부분의 TypeEnv가 확정되지 않았으므로, outer까지만 적용하고 나머지는 funcInfo의 TypeVar로 채워넣는다
+
+                // arg
+                var resolveHint = ResolveHint.Make(typeValue);
+                var expResult = arg.Analyze(ref this, resolveHint); // Argument 종류에 따라서 달라진다
+
+                if (!globalContext.IsAssignable(typeValue, expResult.TypeValue))
+                    return MatchArgsResult.Invalid;
+
+
+            }
+
+            void MatchPartialArguments(
+                ImmutableArray<(M.Type Type, M.Name Name)> parameters, int paramsBegin, int paramsEnd, 
+                ImmutableArray<Argument> args, int argsBegin, int argsEnd)
+            {
+                Debug.Assert(paramsEnd - paramsBegin == argsEnd - argsBegin);
+                int l = paramsEnd - paramsBegin;
+
+                for (int i = 0; i < l; i++)
+                    MatchArgument(parameters[paramsBegin + i], args[argsBegin + i]);
+            }
+
             // typeEnv는 funcInfo미 포함 타입정보
             // typeArgs가 충분하지 않을 수 있다. 나머지는 inference로 채운다
             MatchArgsResult MatchArguments(TypeEnv outerTypeEnv, ImmutableArray<TypeValue> typeArgs, M.FuncInfo funcInfo, ImmutableArray<S.Argument> sargs)
@@ -373,7 +413,47 @@ namespace Gum.IR0Translator
                 // 1. 아규먼트에서 params를 확장시킨다 (params에는 타입힌트를 적용하지 않고 먼저 평가한다)
                 var argInfo = ExpandArguments(sargs);
 
-                // 2. funcInfo에서 params 앞부분과 뒷부분으로 나누기
+                // 2. funcInfo에서 params 앞부분과 뒷부분으로 나누어서 인자 체크를 한다
+                if (funcInfo.ParamInfo.VariadicParamIndex != -1)
+                {
+                    //                v
+                    // param(4) : 0 1 2 3
+                    // args(6)  : 0 1 2 3 4 5                    
+                    // wargs(2) : 0 1
+
+                    // front(Params,Args) : [0, v) 
+                    // backParams         : [v + 1 ~ parameters.Length)
+                    // backArgs           : [args.Length - (parameters.Length - v - 1), args.Length)
+                    // front.end <= backArgs.begin 이어야만 한다
+
+                    int v = funcInfo.ParamInfo.VariadicParamIndex;
+                    int argsEnd = argInfo.Arguments.Length;
+                    int paramsEnd = funcInfo.ParamInfo.Parameters.Length;
+
+                    int backArgsBegin = argsEnd - (paramsEnd - v - 1);
+
+                    if (backArgsBegin < v)
+                        return MatchArgsResult.Invalid;
+
+                    // 앞부분
+                    MatchPartialArguments(funcInfo.ParamInfo.Parameters, 0, v, argInfo, 0, v);
+
+                    // 중간 params 부분
+                    MatchParamsArguments(funcInfo.ParamInfo.Parameters[v], argInfo, v, backArgsBegin);
+
+                    // 뒷부분
+                    MatchPartialArguments(funcInfo.ParamInfo.Parameters, v + 1, paramsEnd, argInfo, backArgsBegin, argsEnd);
+                }
+                else
+                {
+                    // 길이가 다르기 때문에
+                    if (funcInfo.ParamInfo.Parameters.Length != argInfo.Arguments.Length)
+                        return MatchArgsResult.Invalid;
+
+                    // 그냥 전부
+                    MatchPartialArguments(funcInfo.ParamInfo.Parameters, argInfo, 0, argInfo.Arguments.Length);
+                }
+
 
                 // 인자 개수가 맞는지?
                 // TODO: params 고려,
@@ -383,14 +463,6 @@ namespace Gum.IR0Translator
                 // 인자 타입이 맞는지
                 for (int i = 0; i < funcInfo.ParamInfo.Parameters.Length; i++)
                 {
-                    var typeValue = globalContext.GetTypeValueByMType(funcInfo.ParamInfo.Parameters[i].Type);
-                    typeValue = typeValue.Apply_TypeValue(outerTypeEnv); // TODO: 일단 임시
-
-                    var resolveHint = ResolveHint.Make(typeValue);
-                    var expResult = AnalyzeExp_Exp(sargs[i], resolveHint);
-
-                    if (!globalContext.IsAssignable(typeValue, expResult.TypeValue))
-                        return MatchArgsResult.Invalid;
                     
                     // 매칭이 되었다면
                 }
