@@ -400,26 +400,25 @@ namespace Gum.IR0Translator
                 return args.ToImmutable();
             }
 
-            bool MatchArgument(TypeEnv incompletedTypeEnv, (M.Type Type, M.Name Name) parameter, Argument arg)
+            bool MatchArgument(TypeEnv outerTypeEnv, TypeValue paramType, Argument arg)
             {
-                var paramTypeValue = globalContext.GetTypeValueByMType(parameter.Type);
-                paramTypeValue = paramTypeValue.Apply_TypeValue(incompletedTypeEnv); // 아직 함수 부분의 TypeEnv가 확정되지 않았으므로, outer까지만 적용하고 나머지는 funcInfo의 TypeVar로 채워넣는다
+                paramType = paramType.Apply_TypeValue(outerTypeEnv); // 아직 함수 부분의 TypeEnv가 확정되지 않았으므로, outer까지만 적용하고 나머지는 funcInfo의 TypeVar로 채워넣는다
 
                 // arg
-                var resolveHint = ResolveHint.Make(paramTypeValue);
+                var resolveHint = ResolveHint.Make(paramType);
                 arg.DoAnalyze(ref this, resolveHint); // Argument 종류에 따라서 달라진다
 
-                var argTypeValue = arg.GetTypeValue();
+                var argType = arg.GetTypeValue();
 
-                if (!globalContext.IsAssignable(paramTypeValue, argTypeValue))
+                if (!globalContext.IsAssignable(paramType, argType))
                     return false;
 
                 return true;
             }
 
             bool MatchPartialArguments(
-                TypeEnv incompletedTypeEnv,
-                ImmutableArray<(M.Type Type, M.Name Name)> parameters, int paramsBegin, int paramsEnd, 
+                TypeEnv outerTypeEnv,
+                ImmutableArray<TypeValue> paramTypes, int paramsBegin, int paramsEnd, 
                 ImmutableArray<Argument> args, int argsBegin, int argsEnd)
             {
                 Debug.Assert(paramsEnd - paramsBegin == argsEnd - argsBegin);
@@ -427,12 +426,42 @@ namespace Gum.IR0Translator
 
                 for (int i = 0; i < l; i++)
                 {
-                    if (!MatchArgument(incompletedTypeEnv, parameters[paramsBegin + i], args[argsBegin + i]))
+                    if (!MatchArgument(outerTypeEnv, paramTypes[paramsBegin + i], args[argsBegin + i]))
                         return false;
                 }
 
                 return true;
             }
+            
+            bool MatchParamsArguments(TypeEnv outerTypeEnv, M.Type mparamType, ImmutableArray<Argument> args, int argsBegin, int argsEnd)
+            {
+                var paramType = globalContext.GetTypeValueByMType(mparamType);
+
+                if (paramType is TupleTypeValue tupleParamType)
+                {
+                    int count = tupleParamType.GetElemTypeCount();
+
+                    if (count != argsEnd - argsBegin)
+                        return false;
+
+                    for(int i = 0; i < count; i++)
+                    {
+                        var elemType = tupleParamType.GetElemTypeValue(i);
+                        var resolveHint = ResolveHint.Make(elemType);
+
+                        MatchArgument(outerTypeEnv, elemType, args[argsBegin + i]);
+                    }
+                }
+                else
+                {
+                    foreach (var arg in args)
+                    {
+                        arg.DoAnalyze(ref this, );
+                        MatchArgument(outerTypeEnv);
+                    }
+                }
+            }
+                
 
             // typeEnv는 funcInfo미 포함 타입정보
             // typeArgs가 충분하지 않을 수 있다. 나머지는 inference로 채운다
@@ -464,15 +493,15 @@ namespace Gum.IR0Translator
                         return MatchArgsResult.Invalid;
 
                     // 앞부분
-                    if (!MatchPartialArguments(funcInfo.ParamInfo.Parameters, 0, v, expandedArgs, 0, v))
+                    if (!MatchPartialArguments(outerTypeEnv, funcInfo.ParamInfo.Parameters, 0, v, expandedArgs, 0, v))
                         return MatchArgsResult.Invalid;
 
                     // 중간 params 부분
-                    if (!MatchParamsArguments(funcInfo.ParamInfo.Parameters[v], expandedArgs, v, backArgsBegin))
+                    if (!MatchParamsArguments(outerTypeEnv, funcInfo.ParamInfo.Parameters[v], expandedArgs, v, backArgsBegin))
                         return MatchArgsResult.Invalid;
 
                     // 뒷부분
-                    if (!MatchPartialArguments(funcInfo.ParamInfo.Parameters, v + 1, paramsEnd, expandedArgs, backArgsBegin, argsEnd))
+                    if (!MatchPartialArguments(outerTypeEnv, funcInfo.ParamInfo.Parameters, v + 1, paramsEnd, expandedArgs, backArgsBegin, argsEnd))
                         return MatchArgsResult.Invalid;
                 }
                 else
@@ -485,7 +514,6 @@ namespace Gum.IR0Translator
                     if (!MatchPartialArguments(funcInfo.ParamInfo.Parameters, expandedArgs, 0, expandedArgs.Length))
                         return MatchArgsResult.Invalid;
                 }
-
 
                 // 인자 개수가 맞는지?
                 // TODO: params 고려,
