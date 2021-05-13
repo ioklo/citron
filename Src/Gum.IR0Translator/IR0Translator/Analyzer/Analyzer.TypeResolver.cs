@@ -1,12 +1,25 @@
-﻿using System;
+﻿using Gum.Collections;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Gum.IR0Translator.Analyzer
+namespace Gum.IR0Translator
 {
-    class Analyzer
+    partial class Analyzer
     {
+        struct TypeResolver
+        {
+            public void AddConstraint(TypeValue x, TypeValue y)
+            {
+                throw new NotImplementedException();
+            }
+
+            public ImmutableArray<TypeValue> ResolveTypeArgs()
+            {
+                throw new NotImplementedException();
+            }
+        }
     }
 }

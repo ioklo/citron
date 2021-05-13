@@ -165,7 +165,7 @@ namespace Gum.IR0Translator
                 }
 
                 // Layer 2
-                bool MatchArgument(TypeValue paramType, Argument arg)
+                void MatchArgument(TypeValue paramType, Argument arg)
                 {
                     var appliedParamType = paramType.Apply_TypeValue(outerTypeEnv); // 아직 함수 부분의 TypeEnv가 확정되지 않았으므로, outer까지만 적용하고 나머지는 funcInfo의 TypeVar로 채워넣는다
 
@@ -182,60 +182,54 @@ namespace Gum.IR0Translator
                 }
 
                 // Layer 2
-                bool MatchArgument_Unknown(Argument arg)
+                void MatchArgument_UnknownParamType(Argument arg)
                 {
-                    arg.DoAnalyze(ref this, ResolveHint.None);
+                    arg.DoAnalyze(ref analyzer, ResolveHint.None);
                 }
                 
                 // Layer 1
                 bool MatchPartialArguments(
                     ImmutableArray<TypeValue> paramTypes,
                     int paramsBegin, int paramsEnd,
-                    ImmutableArray<Argument> args, int argsBegin, int argsEnd)
+                    ImmutableArray<Argument> args, int argsBegin, int argsEnd,
+                    ref TypeResolver resolver)
                 {
                     Debug.Assert(paramsEnd - paramsBegin == argsEnd - argsBegin);
                     int l = paramsEnd - paramsBegin;
 
                     for (int i = 0; i < l; i++)
                     {
-                        if (!MatchArgument(paramTypes[paramsBegin + i], args[argsBegin + i]))
+                        var paramType = paramTypes[paramsBegin + i];
+                        var arg = args[argsBegin + 1];
+
+                        if (!MatchArgument(paramType, arg))
                             return false;
 
                         // MatchArgument마다 Constraint추가
+                        resolver.AddConstraint(paramType, arg.GetTypeValue());
                     }
 
                     return true;
                 }
 
                 // Layer 1
-                bool MatchParamsArguments(TypeValue paramType, ImmutableArray<Argument> args, int argsBegin, int argsEnd)
+                bool MatchParamsArguments(TypeValue paramType, ImmutableArray<Argument> args, int argsBegin, int argsEnd, ref TypeResolver resolver)
                 {
                     if (paramType is TupleTypeValue tupleParamType)
                     {
-                        int count = tupleParamType.ElemTypes.Length;
+                        if (tupleParamType.ElemTypes.Length != argsEnd - argsBegin)
+                            throw new FuncMatcherFatalException();
 
-                        if (count != argsEnd - argsBegin)
-                            return false;
-
-                        for (int i = 0; i < count; i++)
-                        {
-                            var arg = args[argsBegin + i];
-                            var elemType = tupleParamType.ElemTypes[i];                            
-
-                            MatchArgument(elemType, arg);
-
-                            // Constraint 추가
-                            resolver.AddConstraint(paramType, arg.GetTypeValue());
-                        }
+                        MatchPartialArguments(tupleParamType.ElemTypes, 0, tupleParamType.ElemTypes.Length, args, argsBegin, argsEnd, ref resolver);
                     }
-                    else // params T <=> 
+                    else // params T <=> (1, 2, "hi")
                     {
                         var elemTypesBuilder = ImmutableArray.CreateBuilder<TypeValue>(argsEnd - argsBegin);
 
                         for (int i = argsBegin; i < argsEnd; i++)
                         {
                             var arg = args[i];
-                            MatchArgument_Unknown(arg);
+                            MatchArgument_UnknownParamType(arg);
 
                             var argType = arg.GetTypeValue();
                             elemTypesBuilder.Add(argType);
@@ -248,9 +242,10 @@ namespace Gum.IR0Translator
                     }
                 }
 
-                ImmutableArray<TypeValue> ResolveTypeArgs()
+                // Layer 1
+                ImmutableArray<TypeValue> ResolveTypeArgs(ref TypeResolver resolver)
                 {
-                    // resolver
+                    resolver.Resolve();
                 }
 
                 // typeEnv는 funcInfo미 포함 타입정보
