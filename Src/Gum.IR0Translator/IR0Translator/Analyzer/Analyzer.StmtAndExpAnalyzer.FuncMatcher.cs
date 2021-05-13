@@ -165,7 +165,7 @@ namespace Gum.IR0Translator
                 }
 
                 // Layer 2
-                void MatchArgument(TypeValue paramType, Argument arg)
+                void MatchArgument(TypeValue paramType, Argument arg) // throws FuncMatcherFatalException
                 {
                     var appliedParamType = paramType.Apply_TypeValue(outerTypeEnv); // 아직 함수 부분의 TypeEnv가 확정되지 않았으므로, outer까지만 적용하고 나머지는 funcInfo의 TypeVar로 채워넣는다
 
@@ -213,7 +213,7 @@ namespace Gum.IR0Translator
                 }
 
                 // Layer 1
-                bool MatchParamsArguments(TypeValue paramType, ImmutableArray<Argument> args, int argsBegin, int argsEnd, ref TypeResolver resolver)
+                void MatchParamsArguments(TypeValue paramType, ImmutableArray<Argument> args, int argsBegin, int argsEnd, ref TypeResolver resolver) // throws FuncMatcherFatalException
                 {
                     if (paramType is TupleTypeValue tupleParamType)
                     {

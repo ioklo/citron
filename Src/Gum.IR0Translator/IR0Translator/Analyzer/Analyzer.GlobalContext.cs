@@ -72,7 +72,7 @@ namespace Gum.IR0Translator
             public void AddFatalError(AnalyzeErrorCode code, S.ISyntaxNode node)
             {
                 errorCollector.Add(new AnalyzeError(code, node, ""));
-                throw new FatalAnalyzeException();
+                throw new AnalyzerFatalException();
             }            
 
             public TypeValue GetVoidType()

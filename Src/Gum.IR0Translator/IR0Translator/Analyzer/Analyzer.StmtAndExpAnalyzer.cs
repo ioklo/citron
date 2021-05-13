@@ -93,7 +93,7 @@ namespace Gum.IR0Translator
                 }
 
                 if (bFatal)
-                    throw new FatalAnalyzeException();
+                    throw new AnalyzerFatalException();
             }
 
             R.LocalVarDecl AnalyzeLocalVarDecl(S.VarDecl varDecl)

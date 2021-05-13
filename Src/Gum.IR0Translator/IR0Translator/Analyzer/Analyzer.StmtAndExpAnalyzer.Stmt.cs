@@ -329,14 +329,14 @@ namespace Gum.IR0Translator
                         var stmtResult = newStmtAnalyzer.AnalyzeStmt(stmt);
                         builder.Add(stmtResult.Stmt);
                     }
-                    catch (FatalAnalyzeException)
+                    catch (AnalyzerFatalException)
                     {
                         bFatal = true;
                     }
                 }
 
                 if (bFatal)
-                    throw new FatalAnalyzeException();
+                    throw new AnalyzerFatalException();
 
                 return new StmtResult(new R.BlockStmt(builder.ToImmutable()));
             }

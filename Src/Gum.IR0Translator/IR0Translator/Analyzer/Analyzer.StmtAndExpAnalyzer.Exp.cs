@@ -111,14 +111,14 @@ namespace Gum.IR0Translator
                         var expElem = AnalyzeStringExpElement(elem);
                         builder.Add(expElem);
                     }
-                    catch (FatalAnalyzeException)
+                    catch (AnalyzerFatalException)
                     {
                         bFatal = true;
                     }
                 }
 
                 if (bFatal)
-                    throw new FatalAnalyzeException();
+                    throw new AnalyzerFatalException();
 
                 return new ExpResult.Exp(new R.StringExp(builder.ToImmutable()), globalContext.GetStringType());
             }

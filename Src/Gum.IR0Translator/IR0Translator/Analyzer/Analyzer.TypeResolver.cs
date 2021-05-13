@@ -16,7 +16,7 @@ namespace Gum.IR0Translator
                 throw new NotImplementedException();
             }
 
-            public ImmutableArray<TypeValue> ResolveTypeArgs()
+            public void Resolve()
             {
                 throw new NotImplementedException();
             }

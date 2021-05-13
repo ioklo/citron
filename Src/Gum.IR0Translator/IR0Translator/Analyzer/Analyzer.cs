@@ -34,7 +34,7 @@ namespace Gum.IR0Translator
 
                 return RootAnalyzer.Analyze(globalContext, rootContext, script);
             }
-            catch(FatalAnalyzeException)
+            catch(AnalyzerFatalException)
             {
                 return null;
             }
