@@ -407,11 +407,6 @@ namespace Gum.IR0Translator
     [AutoConstructor]
     partial class TupleTypeValue : TypeValue
     {
-        public int GetElemTypeCount() { throw new NotImplementedException(); }
-
-        public TypeValue GetElemTypeValue(int index)
-        {
-            throw new NotImplementedException();
-        }
+        public ImmutableArray<TypeValue> ElemTypes { get; }
     }
 }

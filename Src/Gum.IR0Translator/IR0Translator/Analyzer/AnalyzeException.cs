@@ -4,7 +4,7 @@ using System.Runtime.Serialization;
 
 namespace Gum.IR0Translator
 {
-    class FatalAnalyzeException : Exception
+    class AnalyzerFatalException : Exception
     {        
     }
 }
