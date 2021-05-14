@@ -199,7 +199,7 @@ namespace Gum.IR0Evaluator.Test
         public async Task CallSeqFuncExp_GenerateSequencesInForeach()
         {
             // Sequence
-            var seqFunc = new SequenceFuncDecl(default, "F", false, Path.Int, default, Arr(new ParamInfo(Path.Int, "x"), new ParamInfo(Path.Int, "y")), RBlock(
+            var seqFunc = new SequenceFuncDecl(default, "F", false, Path.Int, default, new ParamInfo(null, Arr(new TypeAndName(Path.Int, "x"), new TypeAndName(Path.Int, "y"))), RBlock(
 
                 new YieldStmt(
                     new CallInternalBinaryOperatorExp(InternalBinaryOperator.Multiply_Int_Int_Int,

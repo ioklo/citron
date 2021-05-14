@@ -109,7 +109,7 @@ namespace Gum.TextAnalysis.Test
                     BinaryOpKind.Modulo,
                     new CallExp(
                         new UnaryOpExp(UnaryOpKind.PostfixInc, SimpleSId("c")), 
-                        Arr<Exp>(SimpleSId("e"), SimpleSId("f"))
+                        Arr<Argument>(new Argument.Normal(SimpleSId("e")), new Argument.Normal(SimpleSId("f")))
                     ),
                     SimpleSId("d")
                 )

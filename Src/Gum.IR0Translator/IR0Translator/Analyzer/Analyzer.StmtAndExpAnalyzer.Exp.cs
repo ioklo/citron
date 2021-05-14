@@ -360,7 +360,6 @@ namespace Gum.IR0Translator
                     }
                     else // empty
                     {
-                        globalContext.AddFatalError(); // No matched
                         globalContext.AddFatalError(A2102_FuncMatcher_NotFound, nodeForErrorReport);
                         throw new UnreachableCodeException();
                     }
@@ -386,17 +385,35 @@ namespace Gum.IR0Translator
             }
 
             // CallExp 분석에서 Callable이 Exp인 경우 처리
-            ExpResult.Exp AnalyzeCallExpExpCallable(R.Loc callableLoc, TypeValue callableTypeValue, ImmutableArray<S.Exp> sargs, S.CallExp nodeForErrorReport)
+            ExpResult.Exp AnalyzeCallExpExpCallable(R.Loc callableLoc, TypeValue callableTypeValue, ImmutableArray<S.Argument> sargs, S.CallExp nodeForErrorReport)
             {
                 var lambdaType = callableTypeValue as LambdaTypeValue;
                 if (lambdaType == null)
                     globalContext.AddFatalError(A0902_CallExp_CallableExpressionIsNotCallable, nodeForErrorReport.Callable);
 
+                // 일단 lambda파라미터는 params를 지원하지 않는 것으로
+                // args는 params를 지원 할 수 있음
+
+                var funcMatcher = new FuncMatcher(this, TypeEnv.None, null, lambdaType.Params, default, sargs);
+
+
+
                 var argResultsBuilder = ImmutableArray.CreateBuilder<ExpResult.Exp>(sargs.Length);
-                foreach (var arg in sargs)
+                foreach (var sarg in sargs)
                 {
-                    var expResult = AnalyzeExp_Exp(arg, ResolveHint.None);
-                    argResultsBuilder.Add(expResult);
+                    switch(sarg)
+                    {
+                        case S.Argument.Normal sNormalArg:
+                            var expResult = AnalyzeExp_Exp(sNormalArg.Exp, ResolveHint.None);
+                            argResultsBuilder.Add(expResult);
+                            break;
+
+                        case S.Argument.Params sParamsArg:                            
+
+
+
+                    }
+                    
                 }
                 var argResults = argResultsBuilder.MoveToImmutable();
 
@@ -416,7 +433,6 @@ namespace Gum.IR0Translator
                 // 1. 해당 Exp가 함수인지, 변수인지, 함수라면 FuncId를 넣어준다
                 // 2. Callable 인자에 맞게 잘 들어갔는지 -> 완료
                 // 3. 잘 들어갔다면 리턴타입 -> 완료
-
 
                 // E e = First(2, 3); => E e = E.First(2, 3);
                 // EnumHint는 어떤 모습이어야 하나

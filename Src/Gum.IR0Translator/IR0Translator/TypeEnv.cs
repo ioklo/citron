@@ -8,7 +8,8 @@ using M = Gum.CompileTime;
 namespace Gum.IR0Translator
 {       
     class TypeEnv
-    {   
+    {
+        public static readonly TypeEnv None = new TypeEnv(default);
         ImmutableArray<TypeValue> data;
         
         public TypeEnv(ImmutableArray<TypeValue> data)
