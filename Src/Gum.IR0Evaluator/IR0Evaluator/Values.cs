@@ -195,6 +195,24 @@ namespace Gum.IR0Evaluator
             return list!;
         }
     }
+
+    // 
+    class TupleValue : Value
+    {
+        public ImmutableArray<Value> ElemValues { get; }
+
+        public TupleValue(ImmutableArray<Value> elemValues)
+        {
+            ElemValues = elemValues;
+        }
+
+        public override void SetValue(Value value)
+        {
+            var tupleValue = ((TupleValue)value);
+            for (int i = 0; i < ElemValues.Length; i++)
+                ElemValues[i].SetValue(tupleValue.ElemValues[i]);
+        }
+    }
     
     // 람다 호출시에 필요한 값들만 들고 있으면 된다
     class LambdaValue : Value

@@ -1366,7 +1366,7 @@ namespace Gum.IR0Translator.Test
                 )),
 
                 new S.StmtScriptElement(
-                    new S.ExpStmt(new S.CallExp(SId("Func", IntTypeExp), Arr<S.Exp>(SInt(3))))
+                    new S.ExpStmt(new S.CallExp(SId("Func", IntTypeExp), Arr<S.Argument>(SInt(3))))
                 )
             );
 

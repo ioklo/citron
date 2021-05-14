@@ -83,17 +83,66 @@ namespace Gum.IR0Evaluator
             async ValueTask<ImmutableDictionary<string, Value>> EvalArgumentsAsync(
                 ImmutableDictionary<string, Value> origDict,
                 ImmutableArray<R.ParamInfo> paramInfos,
-                ImmutableArray<R.Exp> exps)
+                ImmutableArray<R.Argument> args)
             {
                 var argsBuilder = origDict.ToBuilder();
 
-                Debug.Assert(paramInfos.Length == exps.Length);
-                for (int i = 0; i < paramInfos.Length; i++)
+                // argument들을 할당할 공간을 만든다
+                var argValues = new List<Value>();
+
+                // 파라미터를 보고 만든다. params 파라미터라면 
+                foreach (var paramInfo in paramInfos)
                 {
-                    var argValue = evaluator.AllocValue(paramInfos[i].Type);
+                    if (paramInfo.IsParams)
+                    {
+                        // TODO: 꼭 tuple이 아닐수도 있다
+                        var tupleType = (R.Path.TupleType)paramInfo.Type;
+                        foreach (var elem in tupleType.Elems)
+                        {
+                            var argValue = evaluator.AllocValue(elem.Type);
+                            argValues.Add(argValue);
+                        }
+                    }
+                    else
+                    {
+                        var argValue = evaluator.AllocValue(paramInfo.Type);
+                        argValues.Add(argValue);
+                    }
+                }
+
+                // argument들을 순서대로 할당한다
+                int argValueIndex = 0;
+                foreach(var arg in args)
+                {
+                    switch(arg)
+                    {
+                        case R.Argument.Normal normalArg:
+                            await EvalAsync(normalArg.Exp, argValues[argValueIndex]);
+                            argValueIndex++;
+                            break;
+
+                        // params가 들어있다면
+                        case R.Argument.Params paramsArg:
+                            // GumVM단계에서는 시퀀셜하게 메모리를 던져줄 것이지만, C# 버전에서는 그렇게 못하므로
+                            // ArgValues들을 가리키는 TupleValue를 임의로 생성하고 값을 저장하도록 한다
+                            var tupleElems = ImmutableArray.Create(argValues, argValueIndex, paramsArg.ElemCount);
+
+                            var tupleValue = new TupleValue(tupleElems);
+                            await EvalAsync(paramsArg.Exp, tupleValue);
+                            break;
+
+                        case R.Argument.Ref refArg:
+                            throw new NotImplementedException();
+
+                    }
+
+                }
+                
+                for (int i = 0; i < paramInfos.Length; i++)
+                {   
                     argsBuilder.Add(paramInfos[i].Name, argValue);
 
-                    await EvalAsync(exps[i], argValue);
+                    await EvalAsync(args[i], argValue);
                 }
 
                 return argsBuilder.ToImmutable();

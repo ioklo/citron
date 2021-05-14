@@ -116,15 +116,15 @@ namespace Gum.IR0Translator
                     var args = ImmutableArray.CreateBuilder<Argument>();
                     foreach (var sarg in sargs)
                     {
-                        if (sarg.ArgumentModifier == S.ArgumentModifier.None)
-                            args.Add(new Argument.Normal(sarg.Exp));
-                        else if (sarg.ArgumentModifier == S.ArgumentModifier.Params)
+                        if (sarg is S.Argument.Normal sNormalArg)
+                            args.Add(new Argument.Normal(sNormalArg.Exp));
+                        else if (sarg is S.Argument.Params sParamsArg)
                         {
                             // expanded argument는 먼저 타입을 알아내야 한다
                             ExpResult.Exp expResult;
                             try
                             {
-                                expResult = analyzer.AnalyzeExp_Exp(sarg.Exp, ResolveHint.None);
+                                expResult = analyzer.AnalyzeExp_Exp(sParamsArg.Exp, ResolveHint.None);
                             }
                             catch (AnalyzerFatalException)
                             {
@@ -155,9 +155,9 @@ namespace Gum.IR0Translator
                                 throw new FuncMatcherFatalException();
                             }
                         }
-                        else if (sarg.ArgumentModifier == S.ArgumentModifier.Ref)
+                        else if (sarg is S.Argument.Ref sRefArg)
                         {
-                            args.Add(new Argument.Ref(sargs.Exp));
+                            args.Add(new Argument.Ref(sRefArg.Exp));
                         }
                     }
 
@@ -243,12 +243,37 @@ namespace Gum.IR0Translator
                 // Layer 1
                 void SetupResolver(ref TypeResolver resolver)
                 {   
+                    // decl: Func<T, U>(List<U> u)
+                    // call: Func<int>([1, 2, 3])
+                    // 일 경우,
+                    
+                    // constraint .. (List<U>, typeof([1, 2, 3]))
+
+                    // resolve(List<U>, List<int>)
+                    // resolve(U, int) |=> (U => int)
+                    // fixpoint iteration? 할 필요 있나
+
+                    // 결과만들기 Func<int, query(U)>
+
+                    // Func2<U>(U u) 
+                    // Func<T>()
+                    // {
+                    //     T t;
+                    //     Func2(t); 
+                    // }
+                    // Func<T, U>(T t, U u)
+
+                    // Func2관점에서 수행 (왼쪽과 오른쪽이 도메인이 다르다)
+                    // constraint(U, T)
+                    // => constraint(typeVar(0), typeVar(0)); 헷갈림
                 }
 
                 // Layer 1
                 ImmutableArray<TypeValue> ResolveTypeArgs(ref TypeResolver resolver)
                 {
                     resolver.Resolve();
+
+                    resolver.GetType();
                 }
 
                 ImmutableArray<TypeValue> MakeParamTypes(ImmutableArray<(M.Type Type, M.Name Name)> parameters)
@@ -261,6 +286,12 @@ namespace Gum.IR0Translator
                     }
                     return builder.MoveToImmutable();
                 }
+
+                ImmutableArray<R.Exp> MakeRArgs()
+                {
+
+                }
+
 
                 // typeEnv는 funcInfo미 포함 타입정보
                 // typeArgs가 충분하지 않을 수 있다. 나머지는 inference로 채운다
@@ -313,7 +344,7 @@ namespace Gum.IR0Translator
                             var bExactMatch = funcInfo.ParamInfo.Parameters.Length == typeArgs.Length;
                             var rargs = MakeRArgs();
 
-                            return new MatchArgsResult(true, bExactMatch, , resolvedTypeArgs);
+                            return new MatchArgsResult(true, bExactMatch, rargs, resolvedTypeArgs);
                         }
                         else
                         {

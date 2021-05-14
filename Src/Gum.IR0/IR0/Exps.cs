@@ -117,7 +117,7 @@ namespace Gum.IR0
     {
         public Path.Nested Func { get; }
         public Loc? Instance { get; }
-        public ImmutableArray<Exp> Args { get; }
+        public ImmutableArray<Argument> Args { get; }
     }
 
     [AutoConstructor, ImplementIEquatable]
@@ -125,7 +125,7 @@ namespace Gum.IR0
     {
         public Path.Nested SeqFunc { get; }
         public Loc? Instance { get; }
-        public ImmutableArray<Exp> Args { get; }
+        public ImmutableArray<Argument> Args { get; }
         // public bool NeedHeapAlloc { get; } Heap으로 할당시킬지 여부
     }
 
@@ -135,7 +135,7 @@ namespace Gum.IR0
     {
         public Path.Nested Lambda { get; }
         public Loc Callable { get; } // (() => {}) ()때문에 Loc이어야 한다
-        public ImmutableArray<Exp> Args { get; }
+        public ImmutableArray<Argument> Args { get; }
     }
 
     // () => { return 1; }
@@ -177,7 +177,7 @@ namespace Gum.IR0
         public Path Type { get; }
 
         // TODO: params, out, 등 처리를 하려면 Exp가 아니라 다른거여야 한다
-        public ImmutableArray<Exp> Args { get; }
+        public ImmutableArray<Argument> Args { get; }
     }
 
     // new C(2, 3, 4);
@@ -187,6 +187,6 @@ namespace Gum.IR0
         public Path Type { get; }
 
         // TODO: params, out, 등 처리를 하려면 Exp가 아니라 다른거여야 한다
-        public ImmutableArray<Exp> Args { get; }
+        public ImmutableArray<Argument> Args { get; }
     }
 }

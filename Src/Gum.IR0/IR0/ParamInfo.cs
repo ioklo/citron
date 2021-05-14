@@ -10,6 +10,7 @@ namespace Gum.IR0
     [AutoConstructor, ImplementIEquatable]
     public partial struct ParamInfo
     {
+        public bool IsParams { get; }
         public Path Type { get; }
         public string Name { get; }
     }

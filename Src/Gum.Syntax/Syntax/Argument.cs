@@ -2,18 +2,11 @@
 
 namespace Gum.Syntax
 {
-    public enum ArgumentModifier
-    {
-        None,
-        Params,  // F(params t, params x)
-        Ref      // F(ref i)
-    }
-
     // modifier params, ref
-    [AutoConstructor]
-    public partial class Argument : ISyntaxNode
+    public abstract record Argument : ISyntaxNode
     {
-        public ArgumentModifier ArgumentModifier { get; }
-        public Exp Exp { get; }
+        public record Normal(Exp Exp) : Argument;
+        public record Params(Exp Exp) : Argument;
+        public record Ref(Exp Exp) : Argument;
     }
 }

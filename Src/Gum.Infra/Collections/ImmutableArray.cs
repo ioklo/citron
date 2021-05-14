@@ -35,8 +35,13 @@ namespace Gum.Collections
         {
             return new ImmutableArray<T>(System.Collections.Immutable.ImmutableArray.Create(item1, item2));
         }
+        
+        public static ImmutableArray<T> Create<T>(ImmutableArray<T> items, int start, int length)
+        {
+            return new ImmutableArray<T>(System.Collections.Immutable.ImmutableArray.Create(items.array, start, length));
+        }
 
-        public static ImmutableArray<T> Create<T>(params T[] items)
+        public static ImmutableArray<T> Create<T>(params T[]? items)
         {
             return new ImmutableArray<T>(System.Collections.Immutable.ImmutableArray.Create(items));
         }
