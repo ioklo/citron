@@ -25,7 +25,7 @@ namespace Gum.IR0Translator
 
                 public bool bMatch { get; }
                 public bool bExactMatch { get; } // TypeInference를 사용하지 않은 경우                
-                public ImmutableArray<R.Exp> Args { get; }
+                public ImmutableArray<R.Argument> Args { get; }
                 public ImmutableArray<TypeValue> TypeArgs { get; }
             }
 

@@ -90,10 +90,10 @@ namespace Gum.IR0Translator
                 return new R.PrivateGlobalVarDeclStmt(elems.ToImmutableArray());
             }
 
-            (R.ParamHash ParamHash, ImmutableArray<R.ParamInfo> ParamInfos) MakeParamHashAndParamInfos(S.FuncDecl funcDecl)
+            (R.ParamHash ParamHash, R.ParamInfo ParamInfos) MakeParamHashAndParamInfos(S.FuncDecl funcDecl)
             {
                 var paramTypesBuilder = ImmutableArray.CreateBuilder<R.Path>(funcDecl.ParamInfo.Parameters.Length);
-                var paramInfosBuilder = ImmutableArray.CreateBuilder<R.ParamInfo>(funcDecl.ParamInfo.Parameters.Length);
+                var parametersBuilder = ImmutableArray.CreateBuilder<R.TypeAndName>(funcDecl.ParamInfo.Parameters.Length);
 
                 foreach (var param in funcDecl.ParamInfo.Parameters)
                 {
@@ -102,14 +102,14 @@ namespace Gum.IR0Translator
                     var type = typeValue.GetRPath();
                     paramTypesBuilder.Add(type);
 
-                    var info = new R.ParamInfo(type, param.Name);
-                    paramInfosBuilder.Add(info);
+                    var info = new R.TypeAndName(type, param.Name);
+                    parametersBuilder.Add(info);
                 }
 
                 var paramHash = new R.ParamHash(funcDecl.TypeParams.Length, paramTypesBuilder.MoveToImmutable());
-                var paramInfos = paramInfosBuilder.MoveToImmutable();
+                var paramInfo = new R.ParamInfo(funcDecl.ParamInfo.VariadicParamIndex, parametersBuilder.MoveToImmutable());
 
-                return (paramHash, paramInfos);
+                return (paramHash, paramInfo);
             }
 
             ImmutableArray<R.Path> MakeRTypeArgs(S.GlobalFuncDecl funcDecl)

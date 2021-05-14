@@ -8,6 +8,6 @@ namespace Gum.IR0
     {
         public Name.Anonymous Name { get; }
         public CapturedStatement CapturedStatement { get; }
-        public ImmutableArray<ParamInfo> ParamInfos { get; }
+        public ParamInfo ParamInfo { get; }
     }
 }

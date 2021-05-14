@@ -11,7 +11,7 @@ namespace Gum.IR0
         public Name Name { get; }
         public bool IsThisCall { get; }
         public ImmutableArray<string> TypeParams { get; }
-        public ImmutableArray<ParamInfo> ParamInfos { get; }
+        public ParamInfo ParamInfo { get; }
         public Stmt Body { get; }
     }
 }

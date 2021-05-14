@@ -301,7 +301,7 @@ namespace Gum.IR0Translator
             }
             
             // CallExp분석에서 Callable이 Identifier인 경우 처리
-            ExpResult AnalyzeCallExpFuncCallable(ExpResult.Funcs funcsResult, ImmutableArray<S.Argument> sargs)
+            ExpResult AnalyzeCallExpFuncCallable(ExpResult.Funcs funcsResult, ImmutableArray<S.Argument> sargs, S.ISyntaxNode nodeForErrorReport)
             {
                 // 함수 중 하나를 골라야 한다
                 // 1. 인자 개수가 맞는지 (params도 고려)
@@ -319,7 +319,7 @@ namespace Gum.IR0Translator
                 foreach (var funcInfo in funcsResult.FuncInfos)
                 {   
                     var clonedAnalyzer = CloneAnalyzer();
-                    var funcMatcher = new FuncMatcher(clonedAnalyzer, outerTypeEnv, funcsResult.TypeArgs, funcInfo, sargs);
+                    var funcMatcher = new FuncMatcher(clonedAnalyzer, outerTypeEnv, funcInfo, funcsResult.TypeArgs, sargs);
                     var matchResult = funcMatcher.Match();
 
                     if (!matchResult.bMatch) continue;
@@ -341,7 +341,7 @@ namespace Gum.IR0Translator
                 }
                 else if (exactCandidates.HasMultiple)
                 {
-                    globalContext.AddFatalError();
+                    globalContext.AddFatalError(A2101_FuncMatcher_MultipleCandidates, nodeForErrorReport);
                     throw new UnreachableCodeException();
                 }
                 else // empty
@@ -355,12 +355,13 @@ namespace Gum.IR0Translator
                     }
                     else if (restCandidates.HasMultiple)
                     {
-                        globalContext.AddFatalError();
+                        globalContext.AddFatalError(A2101_FuncMatcher_MultipleCandidates, nodeForErrorReport);
                         throw new UnreachableCodeException();
                     }
                     else // empty
                     {
-                        globalContext.AddFatalError(); // No matched                 
+                        globalContext.AddFatalError(); // No matched
+                        globalContext.AddFatalError(A2102_FuncMatcher_NotFound, nodeForErrorReport);
                         throw new UnreachableCodeException();
                     }
                 }

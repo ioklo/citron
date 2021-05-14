@@ -82,7 +82,7 @@ namespace Gum.IR0Evaluator
 
             async ValueTask<ImmutableDictionary<string, Value>> EvalArgumentsAsync(
                 ImmutableDictionary<string, Value> origDict,
-                ImmutableArray<R.ParamInfo> paramInfos,
+                R.ParamInfo paramInfo,
                 ImmutableArray<R.Argument> args)
             {
                 var argsBuilder = origDict.ToBuilder();
@@ -91,12 +91,13 @@ namespace Gum.IR0Evaluator
                 var argValuesBuilder = ImmutableArray.CreateBuilder<Value>();
 
                 // 파라미터를 보고 만든다. params 파라미터라면 
-                foreach (var paramInfo in paramInfos)
+                int paramIndex = 0;
+                foreach (var param in paramInfo.Parameters)
                 {
-                    if (paramInfo.IsParams)
-                    {
+                    if (paramIndex == paramInfo.VariadicParamIndex)
+                    { 
                         // TODO: 꼭 tuple이 아닐수도 있다
-                        var tupleType = (R.Path.TupleType)paramInfo.Type;
+                        var tupleType = (R.Path.TupleType)param.Type;
                         foreach (var elem in tupleType.Elems)
                         {
                             var argValue = evaluator.AllocValue(elem.Type);
@@ -105,9 +106,11 @@ namespace Gum.IR0Evaluator
                     }
                     else
                     {
-                        var argValue = evaluator.AllocValue(paramInfo.Type);
+                        var argValue = evaluator.AllocValue(param.Type);
                         argValuesBuilder.Add(argValue);
                     }
+
+                    paramIndex++;
                 }
 
                 var argValues = argValuesBuilder.ToImmutable();
@@ -143,23 +146,27 @@ namespace Gum.IR0Evaluator
 
                 // param 단위로 다시 묶어야지
                 argValueIndex = 0;
-                foreach(var paramInfo in paramInfos)
+                paramIndex = 0;
+                foreach(var param in paramInfo.Parameters)
                 {   
-                    if (paramInfo.IsParams)
+                    if (paramIndex == paramInfo.VariadicParamIndex)
                     {
                         // TODO: 꼭 tuple이 아닐수도 있다
-                        var tupleType = (R.Path.TupleType)paramInfo.Type;
+                        var tupleType = (R.Path.TupleType)param.Type;
                         var tupleElems = ImmutableArray.Create(argValues, argValueIndex, tupleType.Elems.Length);
 
                         var tupleValue = new TupleValue(tupleElems);
-                        argsBuilder.Add(paramInfo.Name, tupleValue);
+                        argsBuilder.Add(param.Name, tupleValue);
 
                         argValueIndex += tupleType.Elems.Length;
+                        paramIndex++;
                     }
                     else
                     {
-                        argsBuilder.Add(paramInfo.Name, argValues[argValueIndex]);
+                        argsBuilder.Add(param.Name, argValues[argValueIndex]);
+
                         argValueIndex++;
+                        paramIndex++;
                     }
                 }
 
@@ -186,7 +193,7 @@ namespace Gum.IR0Evaluator
                     thisValue = null;
 
                 // 인자를 계산 해서 처음 로컬 variable에 집어 넣는다
-                var args = await EvalArgumentsAsync(ImmutableDictionary<string, Value>.Empty, funcInvoker.ParamInfos, exp.Args);
+                var args = await EvalArgumentsAsync(ImmutableDictionary<string, Value>.Empty, funcInvoker.ParamInfo, exp.Args);
 
                 await funcInvoker.Invoke(thisValue, result, args);
             }
@@ -205,7 +212,7 @@ namespace Gum.IR0Evaluator
                     thisValue = await evaluator.EvalLocAsync(exp.Instance);
                 }
 
-                var localVars = await EvalArgumentsAsync(ImmutableDictionary<string, Value>.Empty, seqFuncDecl.ParamInfos, exp.Args);
+                var localVars = await EvalArgumentsAsync(ImmutableDictionary<string, Value>.Empty, seqFuncDecl.ParamInfo, exp.Args);
 
                 // evaluator 복제
                 var newEvaluator = evaluator.CloneWithNewContext(thisValue, localVars);
@@ -229,7 +236,7 @@ namespace Gum.IR0Evaluator
                 var lambdaDecl = evaluator.context.GetLambdaDecl(exp.Lambda);
 
                 var thisValue = callableValue.CapturedThis;
-                var localVars = await EvalArgumentsAsync(callableValue.Captures, lambdaDecl.ParamInfos, exp.Args);
+                var localVars = await EvalArgumentsAsync(callableValue.Captures, lambdaDecl.ParamInfo, exp.Args);
 
                 await evaluator.context.ExecInNewFuncFrameAsync(localVars, EvalFlowControl.None, ImmutableArray<Task>.Empty, thisValue, result, async () =>
                 {

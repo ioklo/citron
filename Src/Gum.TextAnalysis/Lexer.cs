@@ -110,6 +110,7 @@ namespace Gum
             { "enum", EnumToken.Instance },
             { "struct", StructToken.Instance },
             { "is", IsToken.Instance },
+            { "ref", RefToken.Instance },
             { "public", PublicToken.Instance },
             { "protected", ProtectedToken.Instance },
             { "private", PrivateToken.Instance },

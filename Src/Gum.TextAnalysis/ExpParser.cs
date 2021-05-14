@@ -114,25 +114,51 @@ namespace Gum
             (MinusMinusToken.Instance, UnaryOpKind.PostfixDec),
         };
 
-        async ValueTask<ParseResult<ImmutableArray<Exp>>> ParseCallArgs(ParserContext context)
+        async ValueTask<ParseResult<Argument>> ParseArgumentAsync(ParserContext context)
+        {
+            // params, ref
+            if (Accept<ParamsToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
+            {
+                if (!Parse(await ParseExpAsync(context), ref context, out var exp))
+                    return ParseResult<Argument>.Invalid;
+
+                return new ParseResult<Argument>(new Argument.Params(exp), context);
+            }
+            else if (Accept<RefToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
+            {
+                if (!Parse(await ParseExpAsync(context), ref context, out var exp))
+                    return ParseResult<Argument>.Invalid;
+
+                return new ParseResult<Argument>(new Argument.Ref(exp), context);
+            }
+            else
+            {
+                if (!Parse(await ParseExpAsync(context), ref context, out var exp))
+                    return ParseResult<Argument>.Invalid;
+
+                return new ParseResult<Argument>(new Argument.Normal(exp), context);
+            }
+        }
+
+        async ValueTask<ParseResult<ImmutableArray<Argument>>> ParseCallArgs(ParserContext context)
         {
             if (!Accept<LParenToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
-                return ParseResult<ImmutableArray<Exp>>.Invalid;
+                return ParseResult<ImmutableArray<Argument>>.Invalid;
             
-            var builder = ImmutableArray.CreateBuilder<Exp>();
+            var builder = ImmutableArray.CreateBuilder<Argument>();
             while (!Accept<RParenToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
             {
                 if (0 < builder.Count)
                     if (!Accept<CommaToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
-                        return ParseResult<ImmutableArray<Exp>>.Invalid;
+                        return ParseResult<ImmutableArray<Argument>>.Invalid;
 
-                if (!Parse(await ParseExpAsync(context), ref context, out var arg))
-                    return ParseResult<ImmutableArray<Exp>>.Invalid;
+                if (!Parse(await ParseArgumentAsync(context), ref context, out var arg))
+                    return ParseResult<ImmutableArray<Argument>>.Invalid;
 
                 builder.Add(arg);
             }
 
-            return new ParseResult<ImmutableArray<Exp>>(builder.ToImmutable(), context);
+            return new ParseResult<ImmutableArray<Argument>>(builder.ToImmutable(), context);
         }
 
         // TODO: 현재 Primary중 Postfix Unary만 구현했다.

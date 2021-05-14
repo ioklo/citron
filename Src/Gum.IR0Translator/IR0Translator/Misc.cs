@@ -127,17 +127,17 @@ namespace Gum.IR0Translator
             }
         }
 
-        public static string MakeParamHash(ImmutableArray<(M.Type Type, M.Name Name)> parameters)
+        public static string MakeParamHash(ImmutableArray<M.Type> paramTypes)
         {
             var sb = new StringBuilder();
 
             bool bFirst = true;
-            foreach (var parameter in parameters)
+            foreach (var paramType in paramTypes)
             {
                 if (bFirst) bFirst = false;
                 else sb.Append(" * ");
 
-                FillTypeString(parameter.Type, sb);
+                FillTypeString(paramType, sb);
             }
 
             return sb.ToString();

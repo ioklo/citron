@@ -1,4 +1,5 @@
-﻿using Pretune;
+﻿using Gum.Collections;
+using Pretune;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,8 +11,7 @@ namespace Gum.IR0
     [AutoConstructor, ImplementIEquatable]
     public partial struct ParamInfo
     {
-        public bool IsParams { get; }
-        public Path Type { get; }
-        public string Name { get; }
+        public int? VariadicParamIndex { get; }
+        public ImmutableArray<TypeAndName> Parameters { get; }
     }
 }

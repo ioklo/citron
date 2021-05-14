@@ -143,9 +143,9 @@ namespace Gum.Syntax
         public TypeExp Type { get; }
 
         // TODO: params, out, 등 처리를 하려면 Exp가 아니라 다른거여야 한다
-        public ImmutableArray<Exp> Args { get; }
+        public ImmutableArray<Argument> Args { get; }
         
-        public NewExp(TypeExp type, ImmutableArray<Exp> args)
+        public NewExp(TypeExp type, ImmutableArray<Argument> args)
         {
             Type = type;
             Args = args;

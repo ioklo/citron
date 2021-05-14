@@ -11,7 +11,7 @@ namespace Gum.IR0Evaluator
 {
     abstract class FuncInvoker
     {
-        public abstract ImmutableArray<R.ParamInfo> ParamInfos { get; }
+        public abstract R.ParamInfo ParamInfo { get; }
         public abstract ValueTask Invoke(Value? thisValue, Value result, ImmutableDictionary<string, Value> args);
     }
 
@@ -21,7 +21,7 @@ namespace Gum.IR0Evaluator
         Evaluator evaluator;
         R.Stmt body;
 
-        public override ImmutableArray<R.ParamInfo> ParamInfos { get; }
+        public override R.ParamInfo ParamInfo { get; }
 
         public override async ValueTask Invoke(Value? thisValue, Value result, ImmutableDictionary<string, Value> args)
         {

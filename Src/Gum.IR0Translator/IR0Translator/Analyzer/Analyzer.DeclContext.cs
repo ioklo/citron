@@ -43,14 +43,14 @@ namespace Gum.IR0Translator
             
             protected abstract void UpdateChild_DeclContext(DeclContext src, UpdateContext context);
 
-            public void AddNormalFuncDecl(ImmutableArray<R.Decl> decls, R.Name name, bool bThisCall, ImmutableArray<string> typeParams, ImmutableArray<R.ParamInfo> paramNames, R.Stmt body)
+            public void AddNormalFuncDecl(ImmutableArray<R.Decl> decls, R.Name name, bool bThisCall, ImmutableArray<string> typeParams, R.ParamInfo paramInfo, R.Stmt body)
             {
-                decls.Add(new R.NormalFuncDecl(decls, name, bThisCall, typeParams, paramNames, body));
+                decls.Add(new R.NormalFuncDecl(decls, name, bThisCall, typeParams, paramInfo, body));
             }
 
-            public void AddSequenceFuncDecl(ImmutableArray<R.Decl> decls, R.Name name, R.Path yieldType, bool bThisCall, ImmutableArray<string> typeParams, ImmutableArray<R.ParamInfo> paramInfos, R.Stmt body)
+            public void AddSequenceFuncDecl(ImmutableArray<R.Decl> decls, R.Name name, R.Path yieldType, bool bThisCall, ImmutableArray<string> typeParams, R.ParamInfo paramInfo, R.Stmt body)
             {
-                decls.Add(new R.SequenceFuncDecl(decls, name, bThisCall, yieldType, typeParams, paramInfos, body));
+                decls.Add(new R.SequenceFuncDecl(decls, name, bThisCall, yieldType, typeParams, paramInfo, body));
             }
 
             public void AddDecl(R.Decl decl)

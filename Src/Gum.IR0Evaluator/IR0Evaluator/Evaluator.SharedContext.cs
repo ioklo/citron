@@ -67,7 +67,7 @@ namespace Gum.IR0Evaluator
 
             public void AddSequenceFuncDecl(R.SequenceFuncDecl seqFuncDecl)
             {   
-                var paramHash = new R.ParamHash(seqFuncDecl.TypeParams.Length, ImmutableArray.CreateRange(seqFuncDecl.ParamInfos, paramInfo => paramInfo.Type));
+                var paramHash = new R.ParamHash(seqFuncDecl.TypeParams.Length, ImmutableArray.CreateRange(seqFuncDecl.ParamInfo.Parameters, param => param.Type));
                 seqFuncDecls.Add((seqFuncDecl.Name, paramHash), seqFuncDecl);
             }
         }
