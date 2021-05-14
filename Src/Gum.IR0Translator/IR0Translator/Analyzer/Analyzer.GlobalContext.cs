@@ -199,7 +199,11 @@ namespace Gum.IR0Translator
             {
                 return itemValueFactory.MakeMemberVarValue(outer, info);
             }
-            
+
+            public TupleTypeValue GetTupleType(ImmutableArray<(TypeValue Type, string Name)> elems)
+            {
+                return itemValueFactory.MakeTupleType(elems);
+            }
         }
     }
 }

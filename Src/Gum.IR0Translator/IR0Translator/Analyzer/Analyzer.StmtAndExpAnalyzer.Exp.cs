@@ -395,36 +395,20 @@ namespace Gum.IR0Translator
                 // args는 params를 지원 할 수 있음
 
                 var funcMatcher = new FuncMatcher(this, TypeEnv.None, null, lambdaType.Params, default, sargs);
+                var matchFuncResults = funcMatcher.Match();
 
-
-
-                var argResultsBuilder = ImmutableArray.CreateBuilder<ExpResult.Exp>(sargs.Length);
-                foreach (var sarg in sargs)
+                if (matchFuncResults.bMatch)
                 {
-                    switch(sarg)
-                    {
-                        case S.Argument.Normal sNormalArg:
-                            var expResult = AnalyzeExp_Exp(sNormalArg.Exp, ResolveHint.None);
-                            argResultsBuilder.Add(expResult);
-                            break;
-
-                        case S.Argument.Params sParamsArg:                            
-
-
-
-                    }
-                    
+                    return new ExpResult.Exp(
+                        new R.CallValueExp(lambdaType.Lambda, callableLoc, matchFuncResults.Args),
+                        lambdaType.Return
+                    );
                 }
-                var argResults = argResultsBuilder.MoveToImmutable();
-
-                var argTypes = ImmutableArray.CreateRange(argResults, info => info.TypeValue);
-                CheckParamTypes(nodeForErrorReport, lambdaType.Params, argTypes);
-
-                var rargs = argResults.Select(info => info.Result).ToImmutableArray();
-
-                return new ExpResult.Exp(
-                    new R.CallValueExp(lambdaType.Lambda, callableLoc, rargs),
-                    lambdaType.Return);
+                else
+                {
+                    globalContext.AddError(A0401_Parameter_MismatchBetweenParamCountAndArgCount, nodeForErrorReport);
+                    throw new UnreachableCodeException();
+                }
             }
 
             ExpResult AnalyzeCallExp(S.CallExp exp, ResolveHint hint)

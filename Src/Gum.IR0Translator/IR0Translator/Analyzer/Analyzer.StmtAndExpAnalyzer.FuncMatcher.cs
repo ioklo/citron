@@ -233,18 +233,19 @@ namespace Gum.IR0Translator
                     }
                     else // params T <=> (1, 2, "hi")
                     {
-                        var elemTypesBuilder = ImmutableArray.CreateBuilder<TypeValue>(argsEnd - argsBegin);
+                        var argsLength = argsEnd - argsBegin;
+                        var elemBuilder = ImmutableArray.CreateBuilder<(TypeValue Type, string Name)>(argsLength);
 
-                        for (int i = argsBegin; i < argsEnd; i++)
+                        for (int i = 0; i < argsLength; i++)
                         {
                             var arg = args[i];
                             MatchArgument_UnknownParamType(arg);
 
                             var argType = arg.GetTypeValue();
-                            elemTypesBuilder.Add(argType);
+                            elemBuilder.Add(argType);
                         }
 
-                        var argTupleType = analyzer.globalContext.GetTupleType(elemTypesBuilder.MoveToImmutable());
+                        var argTupleType = analyzer.globalContext.GetTupleType(elemBuilder.MoveToImmutable());
 
                         // Constraint 추가
                         resolver.AddConstraint(paramType, argTupleType);
