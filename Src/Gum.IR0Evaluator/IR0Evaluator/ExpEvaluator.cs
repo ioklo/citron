@@ -88,7 +88,7 @@ namespace Gum.IR0Evaluator
                 var argsBuilder = origDict.ToBuilder();
 
                 // argument들을 할당할 공간을 만든다
-                var argValues = new List<Value>();
+                var argValuesBuilder = ImmutableArray.CreateBuilder<Value>();
 
                 // 파라미터를 보고 만든다. params 파라미터라면 
                 foreach (var paramInfo in paramInfos)
@@ -100,15 +100,17 @@ namespace Gum.IR0Evaluator
                         foreach (var elem in tupleType.Elems)
                         {
                             var argValue = evaluator.AllocValue(elem.Type);
-                            argValues.Add(argValue);
+                            argValuesBuilder.Add(argValue);
                         }
                     }
                     else
                     {
                         var argValue = evaluator.AllocValue(paramInfo.Type);
-                        argValues.Add(argValue);
+                        argValuesBuilder.Add(argValue);
                     }
                 }
+
+                var argValues = argValuesBuilder.ToImmutable();
 
                 // argument들을 순서대로 할당한다
                 int argValueIndex = 0;
@@ -129,20 +131,36 @@ namespace Gum.IR0Evaluator
 
                             var tupleValue = new TupleValue(tupleElems);
                             await EvalAsync(paramsArg.Exp, tupleValue);
+                            argValueIndex += paramsArg.ElemCount;
                             break;
 
                         case R.Argument.Ref refArg:
                             throw new NotImplementedException();
+                            // argValueIndex++;
 
                     }
-
                 }
-                
-                for (int i = 0; i < paramInfos.Length; i++)
-                {   
-                    argsBuilder.Add(paramInfos[i].Name, argValue);
 
-                    await EvalAsync(args[i], argValue);
+                // param 단위로 다시 묶어야지
+                argValueIndex = 0;
+                foreach(var paramInfo in paramInfos)
+                {   
+                    if (paramInfo.IsParams)
+                    {
+                        // TODO: 꼭 tuple이 아닐수도 있다
+                        var tupleType = (R.Path.TupleType)paramInfo.Type;
+                        var tupleElems = ImmutableArray.Create(argValues, argValueIndex, tupleType.Elems.Length);
+
+                        var tupleValue = new TupleValue(tupleElems);
+                        argsBuilder.Add(paramInfo.Name, tupleValue);
+
+                        argValueIndex += tupleType.Elems.Length;
+                    }
+                    else
+                    {
+                        argsBuilder.Add(paramInfo.Name, argValues[argValueIndex]);
+                        argValueIndex++;
+                    }
                 }
 
                 return argsBuilder.ToImmutable();

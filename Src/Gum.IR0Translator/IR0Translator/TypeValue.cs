@@ -407,6 +407,18 @@ namespace Gum.IR0Translator
     [AutoConstructor]
     partial class TupleTypeValue : TypeValue
     {
-        public ImmutableArray<TypeValue> ElemTypes { get; }
+        RItemFactory ritemFactory;
+        public ImmutableArray<(TypeValue Type, string Name)> Elems { get; }
+
+        public override TypeValue Apply_TypeValue(TypeEnv typeEnv)
+        {   
+            throw new NotImplementedException();
+        }
+
+        public override R.Path GetRPath()
+        {
+            var tupleElems = ImmutableArray.CreateRange(Elems, elem => new R.TypeAndName(elem.Type.GetRPath(), elem.Name));
+            return ritemFactory.MakeTupleType(tupleElems);
+        }
     }
 }
