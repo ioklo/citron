@@ -292,7 +292,7 @@ namespace Gum.IR0Translator
                             int backArgsBegin = argsEnd - (paramsEnd - v - 1);
 
                             if (backArgsBegin < v)
-                                return MatchArgsResult.Invalid;
+                                throw new FuncMatcherFatalException();
 
                             var parameters = MakeParamTypes(funcInfo.ParamInfo.Parameters);
                             var resolver = new TypeResolver();
@@ -311,6 +311,7 @@ namespace Gum.IR0Translator
                             // typeargs 만들기
                             var resolvedTypeArgs = ResolveTypeArgs(ref resolver);
                             var bExactMatch = funcInfo.ParamInfo.Parameters.Length == typeArgs.Length;
+                            var rargs = MakeRArgs();
 
                             return new MatchArgsResult(true, bExactMatch, , resolvedTypeArgs);
                         }
@@ -318,7 +319,7 @@ namespace Gum.IR0Translator
                         {
                             // 길이가 다르면 에러
                             if (funcInfo.ParamInfo.Parameters.Length != expandedArgs.Length)
-                                return MatchArgsResult.Invalid;
+                                throw new FuncMatcherFatalException();
 
                             var resolver = new TypeResolver();
                             SetupResolver(ref resolver);
@@ -326,7 +327,7 @@ namespace Gum.IR0Translator
                             var parameters = MakeParamTypes(funcInfo.ParamInfo.Parameters);
 
                             // 전부
-                            MatchPartialArguments(parameters, expandedArgs, 0, expandedArgs.Length, ref resolver);
+                            MatchPartialArguments(parameters, 0, funcInfo.ParamInfo.Parameters.Length, expandedArgs, 0, expandedArgs.Length, ref resolver);
 
                             var resolvedTypeArgs = ResolveTypeArgs(ref resolver);
                             // 뭐가 exact인가: typeParam에 해당하는 typeArgs를 다 적어서 Resolve가 안 필요한 경우 (0개도 포함)
