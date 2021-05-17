@@ -223,9 +223,9 @@ namespace Gum.IR0Evaluator.Test
                         new CallSeqFuncExp(
                             funcF,
                             null,
-                            Arr<Exp>(
-                                new IntLiteralExp(1),
-                                new IntLiteralExp(2)
+                            Arr<Argument>(
+                                new Argument.Normal(new IntLiteralExp(1)),
+                                new Argument.Normal(new IntLiteralExp(2))
                             )
                         ),
                         

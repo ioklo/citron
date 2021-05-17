@@ -299,7 +299,18 @@ namespace Gum.IR0Translator
                 public CallableContext CallableContext { get; }
                 public LocalContext LocalContext { get; }
             }
-            
+
+            ImmutableArray<TypeValue> MakeParamTypes(ImmutableArray<(M.Type Type, M.Name Name)> parameters)
+            {
+                var builder = ImmutableArray.CreateBuilder<TypeValue>(parameters.Length);
+                foreach (var param in parameters)
+                {
+                    var type = globalContext.GetTypeValueByMType(param.Type);
+                    builder.Add(type);
+                }
+                return builder.MoveToImmutable();
+            }
+
             // CallExp분석에서 Callable이 Identifier인 경우 처리
             ExpResult AnalyzeCallExpFuncCallable(ExpResult.Funcs funcsResult, ImmutableArray<S.Argument> sargs, S.ISyntaxNode nodeForErrorReport)
             {
@@ -319,7 +330,9 @@ namespace Gum.IR0Translator
                 foreach (var funcInfo in funcsResult.FuncInfos)
                 {   
                     var clonedAnalyzer = CloneAnalyzer();
-                    var funcMatcher = new FuncMatcher(clonedAnalyzer, outerTypeEnv, funcInfo, funcsResult.TypeArgs, sargs);
+
+                    var paramTypes = MakeParamTypes(funcInfo.ParamInfo.Parameters);
+                    var funcMatcher = new FuncMatcher(clonedAnalyzer, outerTypeEnv, funcInfo.ParamInfo.VariadicParamIndex, paramTypes, funcsResult.TypeArgs, sargs);
                     var matchResult = funcMatcher.Match();
 
                     if (!matchResult.bMatch) continue;
@@ -445,7 +458,7 @@ namespace Gum.IR0Translator
                         break;                        
 
                     case ExpResult.Funcs funcsResult:
-                        return AnalyzeCallExpFuncCallable(funcsResult, exp.Args);
+                        return AnalyzeCallExpFuncCallable(funcsResult, exp.Args, exp);
 
                     case ExpResult.Exp expResult:
                         var tempLoc = new R.TempLoc(expResult.Result, expResult.TypeValue.GetRPath());
@@ -468,25 +481,26 @@ namespace Gum.IR0Translator
                 // TODO: 리턴 타입은 타입 힌트를 반영해야 한다
                 TypeValue? retTypeValue = null;
 
+                var newLambdaId = callableContext.NewAnonymousId();
+                var newLambdaContext = new LambdaContext(callableContext, localContext, newLambdaId, retTypeValue);
+                var newLocalContext = new LocalContext();
+                var newAnalyzer = new StmtAndExpAnalyzer(globalContext, newLambdaContext, newLocalContext);
+
                 // 파라미터는 람다 함수의 지역변수로 취급한다
-                var paramInfos = new List<(string Name, TypeValue TypeValue)>();
+                var paramTypesBuilder = ImmutableArray.CreateBuilder<TypeValue>(exp.Params.Length);
+                var rparamsBuilder = ImmutableArray.CreateBuilder<R.TypeAndName>(exp.Params.Length);
                 foreach (var param in exp.Params)
                 {
                     if (param.Type == null)
                         globalContext.AddFatalError(A9901_NotSupported_LambdaParameterInference, exp);
 
                     var paramTypeValue = globalContext.GetTypeValueByTypeExp(param.Type);
-                    paramInfos.Add((param.Name, paramTypeValue));
-                }
+                    paramTypesBuilder.Add(paramTypeValue);
+                    rparamsBuilder.Add(new R.TypeAndName(paramTypeValue.GetRPath(), param.Name));
 
-                var newLambdaId = callableContext.NewAnonymousId();
-                var newLambdaContext = new LambdaContext(callableContext, localContext, newLambdaId, retTypeValue);
-                var newLocalContext = new LocalContext();
-                var newAnalyzer = new StmtAndExpAnalyzer(globalContext, newLambdaContext, newLocalContext);
-
-                // 람다 파라미터를 지역 변수로 추가한다
-                foreach (var paramInfo in paramInfos)
-                    newLocalContext.AddLocalVarInfo(paramInfo.Name, paramInfo.TypeValue);
+                    // 람다 파라미터를 지역 변수로 추가한다
+                    newLocalContext.AddLocalVarInfo(param.Name, paramTypeValue);
+                }   
 
                 // 본문 분석
                 var bodyResult = newAnalyzer.AnalyzeStmt(exp.Body);
@@ -494,8 +508,8 @@ namespace Gum.IR0Translator
                 // 성공했으면, 리턴 타입 갱신            
                 var capturedLocalVars = newLambdaContext.GetCapturedLocalVars();
 
-                var paramTypes = paramInfos.Select(paramInfo => paramInfo.TypeValue).ToImmutableArray();
-                var rparamInfos = paramInfos.Select(paramInfo => new R.ParamInfo(paramInfo.TypeValue.GetRPath(), paramInfo.Name)).ToImmutableArray();
+                var paramTypes = paramTypesBuilder.MoveToImmutable();
+                var rparamInfos = new R.ParamInfo(null, rparamsBuilder.MoveToImmutable()); // 이 이후로 rparamsBuilder스면 안됨
 
                 // TODO: need capture this확인해서 this 넣기
                 // var bCaptureThis = newLambdaContext.NeedCaptureThis();

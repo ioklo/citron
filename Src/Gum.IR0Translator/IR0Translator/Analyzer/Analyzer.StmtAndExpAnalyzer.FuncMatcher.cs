@@ -284,26 +284,12 @@ namespace Gum.IR0Translator
                 ImmutableArray<TypeValue> ResolveTypeArgs(ref TypeResolver resolver)
                 {
                     resolver.Resolve();
-
-                    resolver.GetType();
                 }
-
-                ImmutableArray<TypeValue> MakeParamTypes(ImmutableArray<(M.Type Type, M.Name Name)> parameters)
-                {
-                    var builder = ImmutableArray.CreateBuilder<TypeValue>(parameters.Length);
-                    foreach(var param in parameters)
-                    {
-                        var type = analyzer.globalContext.GetTypeValueByMType(param.Type);
-                        builder.Add(type);
-                    }
-                    return builder.MoveToImmutable();
-                }
-
-                ImmutableArray<R.Exp> MakeRArgs()
+                
+                ImmutableArray<R.Argument> MakeRArgs()
                 {
                     throw new NotImplementedException();
                 }
-
 
                 // typeEnv는 funcInfo미 포함 타입정보
                 // typeArgs가 충분하지 않을 수 있다. 나머지는 inference로 채운다
