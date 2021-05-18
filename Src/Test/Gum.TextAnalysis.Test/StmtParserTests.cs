@@ -42,7 +42,7 @@ namespace Gum.TextAnalysis.Test
                 ))
             ));
 
-            Assert.Equal(expected, cmdStmt.Elem, SyntaxEqualityComparer.Instance);
+            Assert.Equal(expected, cmdStmt.Elem);
         }
 
         [Fact]
@@ -67,7 +67,7 @@ xxx
                 SimpleSStringExp("xxx")
             ));
 
-            Assert.Equal(expected, cmdStmt.Elem, SyntaxEqualityComparer.Instance);
+            Assert.Equal(expected, cmdStmt.Elem);
         }
 
         [Fact]
@@ -82,7 +82,7 @@ xxx
                 new VarDeclElement("a", SimpleSStringExp("hello"))
             );
 
-            Assert.Equal<Stmt>(expected, varDeclStmt.Elem, SyntaxEqualityComparer.Instance);
+            Assert.Equal<Stmt>(expected, varDeclStmt.Elem);
         }
         
         [Fact]
@@ -101,7 +101,7 @@ xxx
                     SimpleSBlockStmt(),
                     SimpleSBlockStmt()));
 
-            Assert.Equal(expected, ifStmt.Elem, SyntaxEqualityComparer.Instance);
+            Assert.Equal(expected, ifStmt.Elem);
         }
 
         [Fact]
@@ -120,7 +120,7 @@ xxx
                     SimpleSBlockStmt(),
                     SimpleSBlockStmt()));
 
-            Assert.Equal(expected, ifStmt.Elem, SyntaxEqualityComparer.Instance);
+            Assert.Equal(expected, ifStmt.Elem);
         }
 
         [Fact]
@@ -138,7 +138,7 @@ for (f(); g; h + g) ;
                 new BinaryOpExp(BinaryOpKind.Add, SimpleSId("h"), SimpleSId("g")),
                 BlankStmt.Instance);
 
-            Assert.Equal(expected, result.Elem, SyntaxEqualityComparer.Instance);
+            Assert.Equal(expected, result.Elem);
         }
 
         [Fact]
@@ -147,7 +147,7 @@ for (f(); g; h + g) ;
             (var parser, var context) = await PrepareAsync(@"continue;");
             var continueResult = await parser.ParseContinueStmtAsync(context);
 
-            Assert.Equal(ContinueStmt.Instance, continueResult.Elem, SyntaxEqualityComparer.Instance);
+            Assert.Equal(ContinueStmt.Instance, continueResult.Elem);
         }
 
         [Fact]
@@ -156,7 +156,7 @@ for (f(); g; h + g) ;
             (var parser, var context) = await PrepareAsync(@"break;");
             var breakResult = await parser.ParseBreakStmtAsync(context);
 
-            Assert.Equal(BreakStmt.Instance, breakResult.Elem, SyntaxEqualityComparer.Instance);
+            Assert.Equal(BreakStmt.Instance, breakResult.Elem);
         }
 
         [Fact]
@@ -170,7 +170,7 @@ for (f(); g; h + g) ;
                 SimpleSBlockStmt(BlankStmt.Instance),
                 BlankStmt.Instance);
 
-            Assert.Equal(expected, blockResult.Elem, SyntaxEqualityComparer.Instance);
+            Assert.Equal(expected, blockResult.Elem);
         }
 
         [Fact]
@@ -179,7 +179,7 @@ for (f(); g; h + g) ;
             (var parser, var context) = await PrepareAsync("  ;  ");
             var blankResult = await parser.ParseBlankStmtAsync(context);
 
-            Assert.Equal(BlankStmt.Instance, blankResult.Elem, SyntaxEqualityComparer.Instance);
+            Assert.Equal(BlankStmt.Instance, blankResult.Elem);
         }
 
         [Fact]
@@ -195,7 +195,7 @@ for (f(); g; h + g) ;
                     new CallExp(SimpleSId("c"), Arr<Argument>(new Argument.Normal(new IntLiteralExp(1)))))));
                 
 
-            Assert.Equal(expected, expResult.Elem, SyntaxEqualityComparer.Instance);
+            Assert.Equal(expected, expResult.Elem);
         }
 
         [Fact]
@@ -206,7 +206,7 @@ for (f(); g; h + g) ;
 
             var expected = new ForeachStmt(SimpleSIdTypeExp("var"), "x", SimpleSId("l"), SimpleSBlockStmt());
 
-            Assert.Equal(expected, stmtResult.Elem, SyntaxEqualityComparer.Instance);
+            Assert.Equal(expected, stmtResult.Elem);
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Gum.Collections;
+using Gum.Infra;
 using Pretune;
 using System;
 using System.Collections.Generic;
@@ -38,34 +39,11 @@ namespace Gum.IR0Evaluator
 
                 foreach (var decl in decls)
                 {
-                    Eval(decl);
+                    EvalDecl(decl);
                 }
 
                 // (R.ModuleName moduleName, ItemContainer container)
                 evaluator.context.AddRootItemContainer(moduleName, curContainer);
-            }
-
-            void Eval(R.Decl decl)
-            {
-                switch (decl)
-                {
-                    case R.LambdaDecl lambdaDecl:
-                        EvalLambdaDecl(lambdaDecl);
-                        break;
-
-                    case R.NormalFuncDecl normalFuncDecl:
-                        EvalNormalFuncDecl(normalFuncDecl);
-                        break;
-
-                    case R.SequenceFuncDecl seqFuncDecl:
-                        EvalSequenceFuncDecl(seqFuncDecl);
-                        break;
-
-                    case R.EnumDecl enumDecl:
-                        EvalEnumDecl(enumDecl);
-                        break;
-
-                }
             }
 
             void EvalLambdaDecl(R.LambdaDecl lambdaDecl)
@@ -137,12 +115,24 @@ namespace Gum.IR0Evaluator
                     case R.EnumDecl enumDecl:
                         EvalEnumDecl(enumDecl);
                         break;
+
+                    case R.CapturedStatementDecl capturedStmtDecl:
+                        EvalCapturedStmtDecl(capturedStmtDecl);
+                        break;
+
+                    default:
+                        throw new UnreachableCodeException();
                 }
             }
 
             void EvalEnumDecl(R.EnumDecl enumDecl)
             {
                 throw new NotImplementedException();
+            }
+
+            void EvalCapturedStmtDecl(R.CapturedStatementDecl capturedStmtDecl)
+            {
+                curContainer.AddCapturedStmtDecl(capturedStmtDecl);
             }
         }
     }

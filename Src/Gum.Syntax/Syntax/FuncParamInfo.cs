@@ -4,18 +4,14 @@ using Gum.Collections;
 using System.Text;
 using System.Linq;
 using Gum.Infra;
+using Pretune;
 
 namespace Gum.Syntax
 {
-    public struct FuncParamInfo
+    [AutoConstructor, ImplementIEquatable]
+    public partial struct FuncParamInfo
     {
         public ImmutableArray<TypeAndName> Parameters { get; }
         public int? VariadicParamIndex { get; }
-
-        public FuncParamInfo(ImmutableArray<TypeAndName> parameters, int? variadicParamIndex)
-        {
-            Parameters = parameters;
-            VariadicParamIndex = variadicParamIndex;
-        }
     }
 }

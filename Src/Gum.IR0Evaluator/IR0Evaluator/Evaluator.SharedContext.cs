@@ -70,6 +70,11 @@ namespace Gum.IR0Evaluator
                 var paramHash = new R.ParamHash(seqFuncDecl.TypeParams.Length, ImmutableArray.CreateRange(seqFuncDecl.ParamInfo.Parameters, param => param.Type));
                 seqFuncDecls.Add((seqFuncDecl.Name, paramHash), seqFuncDecl);
             }
+
+            public void AddCapturedStmtDecl(R.CapturedStatementDecl capturedStmtDecl)
+            {
+                capturedStatementDecls.Add(capturedStmtDecl.Name, capturedStmtDecl);
+            }
         }
 
         class SharedContext

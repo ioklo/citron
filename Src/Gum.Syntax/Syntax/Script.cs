@@ -8,9 +8,5 @@ using Pretune;
 namespace Gum.Syntax
 {   
     // 가장 외곽
-    [AutoConstructor, ImplementIEquatable]
-    public partial class Script : ISyntaxNode
-    {
-        public ImmutableArray<ScriptElement> Elements { get; }
-    }
+    public record Script(ImmutableArray<ScriptElement> Elements) : ISyntaxNode;
 }

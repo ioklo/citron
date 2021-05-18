@@ -33,7 +33,7 @@ namespace Gum.TextAnalysis.Test
 
             var expResult = await expParser.ParseExpAsync(context);
 
-            Assert.Equal(SimpleSId("x"), expResult.Elem, SyntaxEqualityComparer.Instance);
+            Assert.Equal(SimpleSId("x"), expResult.Elem);
         }
 
         [Fact]
@@ -44,7 +44,7 @@ namespace Gum.TextAnalysis.Test
 
             var expResult = await expParser.ParseExpAsync(context);
 
-            Assert.Equal(new IdentifierExp("x", Arr<TypeExp>(new IdTypeExp("T", default))), expResult.Elem, SyntaxEqualityComparer.Instance);
+            Assert.Equal(new IdentifierExp("x", Arr<TypeExp>(new IdTypeExp("T", default))), expResult.Elem);
         }
 
         [Fact]
@@ -64,7 +64,7 @@ namespace Gum.TextAnalysis.Test
                 new TextStringExpElement(" ddd")
             ));
 
-            Assert.Equal(expected, expResult.Elem, SyntaxEqualityComparer.Instance);
+            Assert.Equal(expected, expResult.Elem);
         }
 
         [Theory]
@@ -78,7 +78,7 @@ namespace Gum.TextAnalysis.Test
 
             var expected = new BoolLiteralExp(bExpectedResult);
 
-            Assert.Equal(expected, expResult.Elem, SyntaxEqualityComparer.Instance);
+            Assert.Equal(expected, expResult.Elem);
         }
 
         [Fact]
@@ -92,7 +92,7 @@ namespace Gum.TextAnalysis.Test
 
             var expected = new IntLiteralExp(1234);
 
-            Assert.Equal(expected, expResult.Elem, SyntaxEqualityComparer.Instance);
+            Assert.Equal(expected, expResult.Elem);
         }
 
         [Fact]
@@ -115,7 +115,7 @@ namespace Gum.TextAnalysis.Test
                 )
             );
 
-            Assert.Equal(expected, expResult.Elem, SyntaxEqualityComparer.Instance);
+            Assert.Equal(expected, expResult.Elem);
         }        
 
         [Fact]
@@ -142,7 +142,7 @@ namespace Gum.TextAnalysis.Test
                 )
             );
 
-            Assert.Equal(expected, expResult.Elem, SyntaxEqualityComparer.Instance);
+            Assert.Equal(expected, expResult.Elem);
         }
 
         [Fact]
@@ -170,7 +170,7 @@ namespace Gum.TextAnalysis.Test
                     default
                 );
 
-            Assert.Equal(expected, expResult.Elem, SyntaxEqualityComparer.Instance);
+            Assert.Equal(expected, expResult.Elem);
         }
 
         [Fact]
@@ -187,7 +187,7 @@ namespace Gum.TextAnalysis.Test
                 new IntLiteralExp(3)
             ));
                 
-            Assert.Equal(expected, expResult.Elem, SyntaxEqualityComparer.Instance);
+            Assert.Equal(expected, expResult.Elem);
         }
 
         [Fact]
@@ -206,7 +206,7 @@ namespace Gum.TextAnalysis.Test
                     new Argument.Normal(SimpleSStringExp("string"))
                 ));
 
-            Assert.Equal(expected, expResult.Elem, SyntaxEqualityComparer.Instance);
+            Assert.Equal(expected, expResult.Elem);
         }
 
         [Fact]
@@ -242,7 +242,7 @@ namespace Gum.TextAnalysis.Test
                             new IntLiteralExp(3)),
                         new BoolLiteralExp(false))));
 
-            Assert.Equal(expected, expResult.Elem, SyntaxEqualityComparer.Instance);
+            Assert.Equal(expected, expResult.Elem);
         }
     }
 }

@@ -46,8 +46,9 @@ namespace Gum.IR0Translator.Test
         [Fact]
         public void Build_FuncDecl_ModuleInfoHasFuncInfo()
         {
+            // void Func<T, U>(int x, params U y, T z)
             var script = SScript(new S.GlobalFuncDeclScriptElement(new S.GlobalFuncDecl(
-                bSequence: false,
+                isSequence: false,
                 VoidTypeExp,
                 "Func",
                 Arr("T", "U"),
@@ -74,7 +75,7 @@ namespace Gum.IR0Translator.Test
 
             var expected = new M.FuncInfo(
                 "Func",
-                false, false, Arr("T", "U"), M.VoidType.Instance, new M.ParamInfo(null, parameters)
+                false, false, Arr("T", "U"), M.VoidType.Instance, new M.ParamInfo(1, parameters)
             );
 
             Assert.Equal(expected, funcInfo);
@@ -98,8 +99,8 @@ namespace Gum.IR0Translator.Test
                     Arr<S.StructDeclElement>(
                         new S.FuncStructDeclElement(new S.StructFuncDecl(
                             S.AccessModifier.Private,
-                            bStatic: true,
-                            bSequence: false,
+                            isStatic: true,
+                            isSequence: false,
                             new S.IdTypeExp("T", default),
                             "Func",
                             Arr("T", "U"),

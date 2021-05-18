@@ -3,7 +3,7 @@ using Pretune;
 
 namespace Gum.CompileTime
 {
-    [AutoConstructor]
+    [AutoConstructor, ImplementIEquatable]
     public partial struct ParamInfo
     {
         public int? VariadicParamIndex { get; }

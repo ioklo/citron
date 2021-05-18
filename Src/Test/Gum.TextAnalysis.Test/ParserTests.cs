@@ -37,7 +37,7 @@ namespace Gum.TextAnalysis.Test
                 )))
             );
 
-            Assert.Equal(expected, script.Elem, SyntaxEqualityComparer.Instance);
+            Assert.Equal(expected, script.Elem);
         }
 
         [Fact]
@@ -62,7 +62,7 @@ namespace Gum.TextAnalysis.Test
                 ),
                 SimpleSBlockStmt(new VarDeclStmt(new VarDecl(SimpleSIdTypeExp("int"), Arr(new VarDeclElement("a", new IntLiteralExp(0)))))));
 
-            Assert.Equal(expected, funcDecl.Elem, SyntaxEqualityComparer.Instance);
+            Assert.Equal(expected, funcDecl.Elem);
         }
 
         [Fact]
@@ -88,7 +88,7 @@ enum X
                 )
             );
 
-            Assert.Equal(expected, enumDecl.Elem, SyntaxEqualityComparer.Instance);
+            Assert.Equal(expected, enumDecl.Elem);
         }
 
         [Fact]
@@ -128,8 +128,8 @@ public struct S<T> : B, I
 
                     new FuncStructDeclElement(new StructFuncDecl(
                         AccessModifier.Public,
-                        bStatic: true,
-                        bSequence: false,
+                        isStatic: true,
+                        isSequence: false,
                         SimpleSIdTypeExp("void"),
                         "Func",
                         Arr("X"),
@@ -139,8 +139,8 @@ public struct S<T> : B, I
 
                     new FuncStructDeclElement(new StructFuncDecl(
                         AccessModifier.Private,
-                        bStatic: false,
-                        bSequence: true,
+                        isStatic: false,
+                        isSequence: true,
                         SimpleSIdTypeExp("int"),
                         "F2",
                         Arr("T"),
@@ -150,7 +150,7 @@ public struct S<T> : B, I
                 )
             );
 
-            Assert.Equal(expected, structDecl.Elem, SyntaxEqualityComparer.Instance);
+            Assert.Equal(expected, structDecl.Elem);
 
         }
 
@@ -198,7 +198,7 @@ for (int i = 0; i < 5; i++)
                     new ExpStringExpElement(SimpleSId("sum")),
                     new TextStringExpElement(" Completed!")))))));
                     
-            Assert.Equal(expected, script.Elem, SyntaxEqualityComparer.Instance);
+            Assert.Equal(expected, script.Elem);
         }
     }
 }

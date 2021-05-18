@@ -12,7 +12,7 @@ namespace Gum.Syntax
     
     // 명령어
     // TODO: commands의 Length가 1인 contract를 추가하자
-    public record CommandStmt(ImmutableArray<StringExp> commands) : Stmt;
+    public record CommandStmt(ImmutableArray<StringExp> Commands) : Stmt;
 
     // int a = 0, b, c;
     public record VarDeclStmt(VarDecl VarDecl) : Stmt;    
@@ -37,7 +37,7 @@ namespace Gum.Syntax
         public ReturnStmt(Exp? value) { Value = value; }
     }
 
-    public record  BlockStmt(ImmutableArray<Stmt> Stmts) : Stmt;
+    public record BlockStmt(ImmutableArray<Stmt> Stmts) : Stmt;
     
     public record BlankStmt : Stmt
     {
@@ -45,52 +45,10 @@ namespace Gum.Syntax
         BlankStmt() { }
     }
 
-    public class ExpStmt : Stmt
-    {
-        public Exp Exp { get; }
-        public ExpStmt(Exp exp)
-        {
-            Exp = exp;
-        }
-    }
-
-    public class TaskStmt : Stmt
-    {
-        public Stmt Body { get; }
-        public TaskStmt(Stmt body) { Body = body; }
-    }
-
-    public class AwaitStmt : Stmt
-    {
-        public Stmt Body { get; }
-        public AwaitStmt(Stmt body) { Body = body; }
-    }
-
-    public class AsyncStmt : Stmt
-    {
-        public Stmt Body { get; }
-        public AsyncStmt(Stmt body) { Body = body; }
-    }
-
-    public class ForeachStmt : Stmt
-    {
-        public TypeExp Type { get; }
-        public string VarName { get; }
-        public Exp Iterator { get; }
-        public Stmt Body { get; }
-
-        public ForeachStmt(TypeExp type, string varName, Exp iterator, Stmt body)
-        {
-            Type = type;
-            VarName = varName;
-            Iterator = iterator;
-            Body = body;
-        }       
-    }
-
-    public class YieldStmt : Stmt
-    {
-        public Exp Value { get; }
-        public YieldStmt(Exp value) { Value = value; }
-    }
+    public record ExpStmt(Exp Exp) : Stmt;    
+    public record TaskStmt(Stmt Body) : Stmt;
+    public record AwaitStmt(Stmt Body) : Stmt;    
+    public record AsyncStmt(Stmt Body) : Stmt;
+    public record ForeachStmt(TypeExp Type, string VarName, Exp Iterator, Stmt Body) : Stmt;
+    public record YieldStmt(Exp Value) : Stmt;    
 }
