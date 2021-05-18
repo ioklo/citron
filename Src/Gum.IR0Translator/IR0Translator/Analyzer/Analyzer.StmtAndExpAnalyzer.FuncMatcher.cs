@@ -195,7 +195,7 @@ namespace Gum.IR0Translator
                     for (int i = 0; i < paramsCount; i++)
                     {
                         var paramType = paramTypes[paramsBegin + i];
-                        var arg = args[argsBegin + 1];
+                        var arg = args[argsBegin + i];
 
                         MatchArgument(paramType, arg);
 
@@ -223,7 +223,7 @@ namespace Gum.IR0Translator
                         for (int i = 0; i < paramsCount; i++)
                         {
                             var tupleElemType = tupleParamType.Elems[i].Type;
-                            var arg = args[argsBegin + 1];
+                            var arg = args[argsBegin + i];
 
                             MatchArgument(tupleElemType, arg);
 
