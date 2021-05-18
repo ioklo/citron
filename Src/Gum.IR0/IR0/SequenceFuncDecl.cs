@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Gum.Collections;
 using System.Text;
 using Pretune;
+using Gum.Infra;
 
 namespace Gum.IR0
 {
@@ -17,5 +18,12 @@ namespace Gum.IR0
         public ImmutableArray<string> TypeParams { get; }
         public ParamInfo ParamInfo { get; }
         public Stmt Body { get; }
+
+        public override void EnsurePure()
+        {
+            Misc.EnsurePure(Decls);
+            Misc.EnsurePure(Decls);
+
+        }
     }
 }

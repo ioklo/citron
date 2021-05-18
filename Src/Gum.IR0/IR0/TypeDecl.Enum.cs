@@ -9,10 +9,15 @@ using Gum.Infra;
 namespace Gum.IR0
 {
     [AutoConstructor, ImplementIEquatable]
-    public partial class EnumElement
+    public partial class EnumElement : IPure
     {
         public string Name { get; }
         public ImmutableArray<TypeAndName> Params { get; }
+
+        public void EnsurePure()
+        {
+            Misc.EnsurePure(Params);
+        }
     }
 
     [AutoConstructor, ImplementIEquatable]

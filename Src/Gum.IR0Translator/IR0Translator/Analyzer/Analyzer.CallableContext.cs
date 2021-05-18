@@ -84,7 +84,8 @@ namespace Gum.IR0Translator
                 : base(other, cloneContext)
             {
                 this.moduleName = other.moduleName;
-                this.itemValueFactory = Infra.Misc.PureIdentity(other.itemValueFactory);
+                Infra.Misc.EnsurePure(other.itemValueFactory);
+                this.itemValueFactory = other.itemValueFactory;
                 this.topLevelStmts = new List<R.Stmt>(other.topLevelStmts);
             }
             
@@ -100,6 +101,7 @@ namespace Gum.IR0Translator
                 var src = (RootContext)src_callableContext;
 
                 Infra.Misc.EnsurePure(src.itemValueFactory);
+                this.itemValueFactory = src.itemValueFactory;
 
                 this.topLevelStmts.Clear();
                 this.topLevelStmts.AddRange(src.topLevelStmts);

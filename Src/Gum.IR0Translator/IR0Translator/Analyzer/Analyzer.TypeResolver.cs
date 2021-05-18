@@ -9,17 +9,20 @@ namespace Gum.IR0Translator
 {
     partial class Analyzer
     {
-        struct TypeResolver
+        abstract class TypeResolver
         {
-            public void AddConstraint(TypeValue x, TypeValue y)
-            {
-                throw new NotImplementedException();
-            }
+            public abstract void AddConstraint(TypeValue x, TypeValue y);
+            public abstract ImmutableArray<TypeValue> Resolve();
+        }
 
-            public void Resolve()
-            {
-                throw new NotImplementedException();
-            }
+        // do nothing
+        class NullTypeResolver : TypeResolver
+        {
+            ImmutableArray<TypeValue> typeArgs;
+            public NullTypeResolver(ImmutableArray<TypeValue> typeArgs) { this.typeArgs = typeArgs; }
+
+            public override void AddConstraint(TypeValue x, TypeValue y) { }
+            public override ImmutableArray<TypeValue> Resolve() => typeArgs;
         }
     }
 }

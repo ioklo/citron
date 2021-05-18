@@ -187,7 +187,7 @@ namespace Gum.IR0Translator
                 void MatchPartialArguments(
                     int paramsBegin, int paramsEnd,
                     ImmutableArray<Argument> args, int argsBegin, int argsEnd,
-                    ref TypeResolver resolver) // throws FuncMatcherFatalException
+                    TypeResolver resolver) // throws FuncMatcherFatalException
                 {
                     Debug.Assert(paramsEnd - paramsBegin == argsEnd - argsBegin);
                     int paramsCount = paramsEnd - paramsBegin;
@@ -208,7 +208,7 @@ namespace Gum.IR0Translator
                 void MatchParamsArguments(
                     int paramIndex,
                     ImmutableArray<Argument> args, int argsBegin, int argsEnd, 
-                    ref TypeResolver resolver) // throws FuncMatcherFatalException
+                    TypeResolver resolver) // throws FuncMatcherFatalException
                 {
                     var paramType = paramTypes[paramIndex];
 
@@ -253,7 +253,7 @@ namespace Gum.IR0Translator
                 }
 
                 // Layer 1
-                void SetupResolver(ref TypeResolver resolver)
+                void SetupResolver(TypeResolver resolver)
                 {   
                     // decl: Func<T, U>(List<U> u)
                     // call: Func<int>([1, 2, 3])
@@ -281,12 +281,12 @@ namespace Gum.IR0Translator
                 }
 
                 // Layer 1
-                ImmutableArray<TypeValue> ResolveTypeArgs(ref TypeResolver resolver)
+                ImmutableArray<TypeValue> ResolveTypeArgs(TypeResolver resolver)
                 {
-                    // resolver.Resolve();
-                    throw new NotImplementedException();
+                    return resolver.Resolve();                    
                 }
                 
+                // Layer 1
                 ImmutableArray<R.Argument> MakeRArgs()
                 {
                     throw new NotImplementedException();
@@ -323,22 +323,23 @@ namespace Gum.IR0Translator
 
                             if (backArgsBegin < v)
                                 throw new FuncMatcherFatalException();
-                            
-                            var resolver = new TypeResolver();
 
-                            SetupResolver(ref resolver);
+                            // TODO: TypeResolver 완성
+                            var resolver = new NullTypeResolver(typeArgs);
+
+                            SetupResolver(resolver);
 
                             // 앞부분
-                            MatchPartialArguments(0, v, expandedArgs, 0, v, ref resolver);
+                            MatchPartialArguments(0, v, expandedArgs, 0, v, resolver);
 
                             // 중간 params 부분
-                            MatchParamsArguments(v, expandedArgs, v, backArgsBegin, ref resolver);
+                            MatchParamsArguments(v, expandedArgs, v, backArgsBegin, resolver);
 
                             // 뒷부분
-                            MatchPartialArguments(v + 1, paramsEnd, expandedArgs, backArgsBegin, argsEnd, ref resolver);
+                            MatchPartialArguments(v + 1, paramsEnd, expandedArgs, backArgsBegin, argsEnd, resolver);
 
                             // typeargs 만들기
-                            var resolvedTypeArgs = ResolveTypeArgs(ref resolver);
+                            var resolvedTypeArgs = ResolveTypeArgs(resolver);
                             var bExactMatch = paramTypes.Length == typeArgs.Length;
                             var rargs = MakeRArgs();
 
@@ -350,13 +351,13 @@ namespace Gum.IR0Translator
                             if (paramTypes.Length != expandedArgs.Length)
                                 throw new FuncMatcherFatalException();
 
-                            var resolver = new TypeResolver();
-                            SetupResolver(ref resolver);                            
+                            var resolver = new NullTypeResolver(typeArgs);
+                            SetupResolver(resolver);                            
 
                             // 전부
-                            MatchPartialArguments(0, paramTypes.Length, expandedArgs, 0, expandedArgs.Length, ref resolver);
+                            MatchPartialArguments(0, paramTypes.Length, expandedArgs, 0, expandedArgs.Length, resolver);
 
-                            var resolvedTypeArgs = ResolveTypeArgs(ref resolver);
+                            var resolvedTypeArgs = ResolveTypeArgs(resolver);
                             // 뭐가 exact인가: typeParam에 해당하는 typeArgs를 다 적어서 Resolve가 안 필요한 경우 (0개도 포함)
                             var bExactMatch = paramTypes.Length == typeArgs.Length;
                             var rargs = MakeRArgs();

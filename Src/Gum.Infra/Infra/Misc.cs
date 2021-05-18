@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -22,10 +23,17 @@ namespace Gum.Infra
             // compile-time check, do nothing.
         }
 
-        public static T PureIdentity<T>(T t)
+        [Conditional("DEBUG")]
+        public static void EnsurePure<T>(ImmutableArray<T> t)
             where T : IPure
         {
-            return t;
-        }   
+            // compile-time check, do nothing.
+        }
+
+        [Conditional("DEBUG")]
+        public static void EnsurePure(ImmutableArray<string> t)
+        {
+            // compile-time check, do nothing.
+        }
     }
 }

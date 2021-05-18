@@ -13,7 +13,7 @@ namespace Gum.IR0
 
         public void EnsurePure()
         {
-            Misc.EnsurePure(ThisType);
+            Misc.EnsurePure(ThisType!);
             Misc.EnsurePure(OuterLocalVars);
             Misc.EnsurePure(Body);
         }

@@ -44,10 +44,18 @@ namespace Gum.IR0Translator
                 GlobalContext other,
                 CloneContext cloneContext)
             {
-                this.itemValueFactory = Infra.Misc.PureIdentity(other.itemValueFactory);
-                this.internalBinOpQueryService = Infra.Misc.PureIdentity(other.internalBinOpQueryService);
-                this.globalItemValueFactory = Infra.Misc.PureIdentity(other.globalItemValueFactory);
-                this.typeExpTypeValueService = Infra.Misc.PureIdentity(other.typeExpTypeValueService);
+                Infra.Misc.EnsurePure(other.itemValueFactory);
+                this.itemValueFactory = other.itemValueFactory;
+
+                Infra.Misc.EnsurePure(other.internalBinOpQueryService);
+                this.internalBinOpQueryService = other.internalBinOpQueryService;
+
+                Infra.Misc.EnsurePure(other.globalItemValueFactory);
+                this.globalItemValueFactory = other.globalItemValueFactory;
+
+                Infra.Misc.EnsurePure(other.typeExpTypeValueService);
+                this.typeExpTypeValueService = other.typeExpTypeValueService;
+
                 this.errorCollector = cloneContext.GetClone(other.errorCollector);
                 this.internalGlobalVarRepo = cloneContext.GetClone(other.internalGlobalVarRepo);
             }
@@ -59,6 +67,18 @@ namespace Gum.IR0Translator
 
             public void Update(GlobalContext src, UpdateContext updateContext)
             {
+                Infra.Misc.EnsurePure(src.itemValueFactory);
+                this.itemValueFactory = src.itemValueFactory;
+
+                Infra.Misc.EnsurePure(src.internalBinOpQueryService);
+                this.internalBinOpQueryService = src.internalBinOpQueryService;
+
+                Infra.Misc.EnsurePure(src.globalItemValueFactory);
+                this.globalItemValueFactory = src.globalItemValueFactory;
+
+                Infra.Misc.EnsurePure(src.typeExpTypeValueService);
+                this.typeExpTypeValueService = src.typeExpTypeValueService;
+
                 updateContext.Update(this.errorCollector, src.errorCollector);
                 updateContext.Update(this.internalGlobalVarRepo, src.internalGlobalVarRepo);
             }

@@ -13,16 +13,17 @@ namespace Gum.IR0Translator
     {
         abstract class DeclContext : IMutable<DeclContext>
         {
-            List<R.Decl> decls;
+            ImmutableArray<R.Decl> decls;
 
             public DeclContext()
             {
-                decls = new List<R.Decl>();
+                decls = ImmutableArray<R.Decl>.Empty;
             }
 
             public DeclContext(DeclContext other, CloneContext cloneContext)
             {
-                this.decls = new List<R.Decl>(other.decls);
+                Infra.Misc.EnsurePure(other.decls);
+                this.decls = other.decls;
             }
 
             public abstract DeclContext Clone_DeclContext(CloneContext context);
@@ -35,9 +36,8 @@ namespace Gum.IR0Translator
             // 
             protected void Update(DeclContext src, UpdateContext context)
             {
-                decls.Clear();
-                decls.AddRange(src.decls);
-
+                Infra.Misc.EnsurePure(src.decls);
+                decls = src.decls;
                 UpdateChild_DeclContext(src, context);
             }
             
@@ -55,12 +55,12 @@ namespace Gum.IR0Translator
 
             public void AddDecl(R.Decl decl)
             {
-                decls.Add(decl);
+                decls = decls.Add(decl);
             }
 
             public ImmutableArray<R.Decl> GetDecls()
             {
-                return decls.ToImmutableArray();
+                return decls;
             }
 
             public abstract R.Path.Normal GetPath();

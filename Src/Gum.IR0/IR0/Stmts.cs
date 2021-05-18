@@ -6,11 +6,13 @@ using Gum.Collections;
 using System.Diagnostics;
 using System.Linq;
 using System.Xml.XPath;
+using Gum.Infra;
 
 namespace Gum.IR0
 {   
-    public abstract class Stmt
+    public abstract class Stmt : IPure
     {
+        public void EnsurePure() { }
     }
 
     // 명령어
