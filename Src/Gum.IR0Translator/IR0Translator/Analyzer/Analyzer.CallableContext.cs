@@ -18,7 +18,7 @@ namespace Gum.IR0Translator
             public abstract LocalVarInfo? GetLocalVarOutsideLambda(string varName);
             public abstract TypeValue? GetRetTypeValue();
             public abstract void SetRetTypeValue(TypeValue retTypeValue);
-            public abstract void AddLambdaCapture(LambdaCapture lambdaCapture);
+            public abstract void AddLambdaCapture(string capturedVarName, TypeValue capturedVarType);
             public abstract bool IsSeqFunc();
 
             public CallableContext()
@@ -120,7 +120,7 @@ namespace Gum.IR0Translator
                 throw new UnreachableCodeException();
             }
 
-            public override void AddLambdaCapture(LambdaCapture lambdaCapture)
+            public override void AddLambdaCapture(string capturedVarName, TypeValue capturedVarType)
             {
                 throw new UnreachableCodeException();
             }
@@ -204,7 +204,7 @@ namespace Gum.IR0Translator
                 this.retTypeValue = retTypeValue;
             }
 
-            public override void AddLambdaCapture(LambdaCapture lambdaCapture)
+            public override void AddLambdaCapture(string capturedVarName, TypeValue capturedVarType)
             {
                 throw new UnreachableCodeException();
             }
@@ -280,22 +280,12 @@ namespace Gum.IR0Translator
                 this.retTypeValue = retTypeValue;
             }
 
-            public override void AddLambdaCapture(LambdaCapture lambdaCapture)
+            public override void AddLambdaCapture(string capturedVarName, TypeValue capturedVarType)
             {
-                switch (lambdaCapture)
-                {
-                    case NoneLambdaCapture: break;
-                    case ThisLambdaCapture: bCaptureThis = true; break;
-                    case LocalLambdaCapture localCapture:
-                        if (localCaptures.TryGetValue(localCapture.Name, out var prevType))
-                            Debug.Assert(prevType.Equals(localCapture.Type));
-                        else
-                            localCaptures.Add(localCapture.Name, localCapture.Type);
-                        break;
-
-                    default:
-                        throw new UnreachableCodeException();
-                }
+                if (localCaptures.TryGetValue(capturedVarName, out var prevType))
+                    Debug.Assert(prevType.Equals(capturedVarType));
+                else
+                    localCaptures.Add(capturedVarName, capturedVarType);
             }
 
             public override bool IsSeqFunc()

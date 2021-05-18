@@ -72,7 +72,7 @@ namespace Gum.IR0Translator
                 var varInfo = callableContext.GetLocalVarOutsideLambda(idName);
                 if (varInfo == null) return IdentifierResult.NotFound.Instance;
 
-                return new IdentifierResult.LocalVar(true, varInfo.Value.Name, varInfo.Value.TypeValue);
+                return new IdentifierResult.LocalVarOutsideLambda(varInfo.Value.Name, varInfo.Value.TypeValue);
             }
 
             IdentifierResult GetLocalVarInfo()
@@ -83,7 +83,7 @@ namespace Gum.IR0Translator
                 var varInfo = localContext.GetLocalVarInfo(idName);
                 if (varInfo == null) return IdentifierResult.NotFound.Instance;
 
-                return new IdentifierResult.LocalVar(false, varInfo.Value.Name, varInfo.Value.TypeValue);
+                return new IdentifierResult.LocalVar(varInfo.Value.Name, varInfo.Value.TypeValue);
             }
 
             IdentifierResult GetThisMemberInfo()

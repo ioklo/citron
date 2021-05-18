@@ -55,7 +55,8 @@ namespace Gum.IR0Translator
 
         public abstract record Valid : IdentifierResult;
         
-        public record LocalVar(bool bNeedCapture, string VarName, TypeValue TypeValue) : Valid;                        
+        public record LocalVar(string VarName, TypeValue TypeValue) : Valid;
+        public record LocalVarOutsideLambda(string VarName, TypeValue TypeValue) : Valid;
         public record GlobalVar(string VarName, TypeValue TypeValue) : Valid;            
         public record Funcs(ItemValueOuter Outer, ImmutableArray<M.FuncInfo> FuncInfos, ImmutableArray<TypeValue> TypeArgs, bool IsInstanceFunc) : Valid;
             

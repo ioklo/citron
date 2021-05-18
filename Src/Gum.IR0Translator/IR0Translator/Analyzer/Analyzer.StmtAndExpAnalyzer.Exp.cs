@@ -43,9 +43,14 @@ namespace Gum.IR0Translator
                         HandleErrorIdentifierResult(idExp, errorResult);
                         break;
 
+                    case IdentifierResult.LocalVarOutsideLambda localVarOutsideLambdaResult:
+                        
+                        // TODO: 여러번 캡쳐해도 한번만
+                        callableContext.AddLambdaCapture(localVarOutsideLambdaResult.VarName, localVarOutsideLambdaResult.TypeValue);
+                        return new ExpResult.Loc(new R.CapturedVarLoc(localVarOutsideLambdaResult.VarName), localVarOutsideLambdaResult.TypeValue);
+
                     case IdentifierResult.LocalVar localVarResult:
-                        if (localVarResult.bNeedCapture)
-                            callableContext.AddLambdaCapture(new LocalLambdaCapture(localVarResult.VarName, localVarResult.TypeValue));
+                        
                         return new ExpResult.Loc(new R.LocalVarLoc(localVarResult.VarName), localVarResult.TypeValue);
 
                     case IdentifierResult.GlobalVar globalVarResult:
@@ -200,6 +205,22 @@ namespace Gum.IR0Translator
 
                 if (destResult is ExpResult.Loc destLocResult)
                 {
+                    switch (destLocResult.Result)
+                    {
+                        // int x = 0; var l = () { x = 3; }
+                        case R.CapturedVarLoc:
+                            globalContext.AddFatalError(A0803_BinaryOp_LeftOperandIsNotAssignable, exp.Operand0);
+                            throw new UnreachableCodeException();
+                        
+                        case R.ThisLoc:          // this = x;
+                        case R.CapturedThisLoc:  // var l = () { this = x; }
+                            globalContext.AddFatalError(A0803_BinaryOp_LeftOperandIsNotAssignable, exp.Operand0);
+                            throw new UnreachableCodeException();
+
+                        case R.TempLoc:
+                            throw new UnreachableCodeException();
+                    }
+
                     var srcResult = AnalyzeExp_Exp(exp.Operand1, ResolveHint.None);
 
                     if (!globalContext.IsAssignable(destLocResult.TypeValue, srcResult.TypeValue))
