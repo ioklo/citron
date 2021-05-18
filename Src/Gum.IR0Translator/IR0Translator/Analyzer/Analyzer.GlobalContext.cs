@@ -36,7 +36,7 @@ namespace Gum.IR0Translator
                 this.internalBinOpQueryService = new InternalBinaryOperatorQueryService(itemValueFactory);
                 this.globalItemValueFactory = globalItemValueFactory;
                 this.typeExpTypeValueService = typeExpTypeValueService;
-                this.errorCollector = errorCollector;                
+                this.errorCollector = errorCollector;
                 this.internalGlobalVarRepo = new InternalGlobalVariableRepository();
             }
 

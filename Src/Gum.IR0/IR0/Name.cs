@@ -1,7 +1,11 @@
-﻿namespace Gum.IR0
+﻿using Gum.Infra;
+
+namespace Gum.IR0
 {   
-    public abstract record Name
+    public abstract record Name : IPure
     {
+        public void EnsurePure() { }
+
         public static implicit operator Name(string x) => new Normal(x);
 
         public record Normal(string Value) : Name;

@@ -38,10 +38,15 @@ namespace Gum.Collections
 
         public TValue this[TKey key] => dict![key];
 
+        public ImmutableDictionary<TKey, TValue> Add(TKey key, TValue value)
+        {
+            if (dict == null) return ImmutableDictionary<TKey, TValue>.Empty.Add(key, value);
+            return new ImmutableDictionary<TKey, TValue>(dict.Add(key, value));
+        }
+
         public ImmutableDictionary<TKey, TValue> SetItem(TKey key, TValue value)
         {
             if (dict == null) return ImmutableDictionary<TKey, TValue>.Empty.SetItem(key, value);
-
             return new ImmutableDictionary<TKey, TValue>(dict.SetItem(key, value));
         }
 

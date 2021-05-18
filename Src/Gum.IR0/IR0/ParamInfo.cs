@@ -1,4 +1,5 @@
 ﻿using Gum.Collections;
+using Gum.Infra;
 using Pretune;
 using System;
 using System.Collections.Generic;
@@ -9,9 +10,14 @@ using System.Threading.Tasks;
 namespace Gum.IR0
 {
     [AutoConstructor, ImplementIEquatable]
-    public partial struct ParamInfo
+    public partial struct ParamInfo : IPure
     {
         public int? VariadicParamIndex { get; }
         public ImmutableArray<TypeAndName> Parameters { get; }
+
+        public void EnsurePure()
+        {
+            Misc.EnsurePure(Parameters);
+        }
     }
 }

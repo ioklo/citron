@@ -1,6 +1,6 @@
-﻿using Gum.Infra;
+﻿using Gum.Collections;
+using Gum.Infra;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,17 +19,17 @@ namespace Gum.IR0Translator
 
     class InternalGlobalVariableRepository : IMutable<InternalGlobalVariableRepository>
     {
-        // global variable        
-        Dictionary<M.Name, InternalGlobalVarInfo> internalGlobalVarInfos;
+        // global variable
+        ImmutableDictionary<M.Name, InternalGlobalVarInfo> internalGlobalVarInfos;
 
         public InternalGlobalVariableRepository()
         {
-            internalGlobalVarInfos = new Dictionary<M.Name, InternalGlobalVarInfo>();
+            internalGlobalVarInfos = ImmutableDictionary<M.Name, InternalGlobalVarInfo>.Empty;
         }
 
         InternalGlobalVariableRepository(InternalGlobalVariableRepository other, CloneContext cloneContext)
         {
-            this.internalGlobalVarInfos = new Dictionary<M.Name, InternalGlobalVarInfo>(other.internalGlobalVarInfos);
+            this.internalGlobalVarInfos = other.internalGlobalVarInfos;
         }
 
         public InternalGlobalVariableRepository Clone(CloneContext context)
@@ -39,9 +39,7 @@ namespace Gum.IR0Translator
 
         public void Update(InternalGlobalVariableRepository src, UpdateContext updateContext)
         {
-            this.internalGlobalVarInfos.Clear();
-            foreach (var (key, value) in src.internalGlobalVarInfos)
-                this.internalGlobalVarInfos.Add(key, value);
+            this.internalGlobalVarInfos = src.internalGlobalVarInfos;            
         }
 
         public InternalGlobalVarInfo? GetVariable(M.Name name)
@@ -52,14 +50,12 @@ namespace Gum.IR0Translator
         public void AddInternalGlobalVariable(M.Name name, TypeValue typeValue)
         {
             var globalVarInfo = new InternalGlobalVarInfo(name, typeValue);
-            internalGlobalVarInfos.Add(name, globalVarInfo);
+            internalGlobalVarInfos = internalGlobalVarInfos.Add(name, globalVarInfo);
         }
 
         public bool HasVariable(M.Name name)
         {
             return internalGlobalVarInfos.ContainsKey(name);
         }
-
-        
     }
 }

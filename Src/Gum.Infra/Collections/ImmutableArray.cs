@@ -1,5 +1,7 @@
-﻿using System;
+﻿using Gum.Infra;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -57,15 +59,23 @@ namespace Gum.Collections
         }
     }
 
-    public partial struct ImmutableArray<T> : IEquatable<ImmutableArray<T>>
+    public partial struct ImmutableArray<T> : IEquatable<ImmutableArray<T>>, IPure
     {
         public static readonly ImmutableArray<T> Empty;
         internal System.Collections.Immutable.ImmutableArray<T> array;
 
-        public ImmutableArray(System.Collections.Immutable.ImmutableArray<T> array)
+        static ImmutableArray()
         {
-            this.array = array;
+            // Pure로 지정한것만 넣을수 있게 한다
+            Debug.Assert(typeof(T).IsAssignableTo(typeof(IPure)));
         }
+
+        public ImmutableArray(System.Collections.Immutable.ImmutableArray<T> array)
+        {   
+            this.array = array;            
+        }
+        
+        public void EnsurePure() { }
 
         public bool IsEmpty => array.IsDefaultOrEmpty;
         public int Length => array.IsDefault ? 0 : array.Length;

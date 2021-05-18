@@ -9,25 +9,25 @@ namespace Gum.IR0Translator.Test
     class TestErrorCollector : IErrorCollector
     {
         // IError는 Immtuable
-        public ImmutableArray<IError> Errors { get; private set; }
-        public bool HasError => Errors.Length != 0;
+        public List<IError> Errors { get; }
+        public bool HasError => Errors.Count != 0;
 
         bool raiseAssertionFail;
 
         public TestErrorCollector(bool raiseAssertionFail)
         {
-            Errors = ImmutableArray<IError>.Empty;
+            Errors = new List<IError>();
             this.raiseAssertionFail = raiseAssertionFail;
         }
 
         public TestErrorCollector(TestErrorCollector other, CloneContext context)
         {
-            this.Errors = other.Errors;
+            this.Errors = new List<IError>(other.Errors); // errors를 일일히 복사하지 않는다
         }
 
         public void Add(IError error)
         {
-            Errors = Errors.Add(error);
+            Errors.Add(error);
             Assert.True(!raiseAssertionFail || false);
         }
 
