@@ -223,9 +223,9 @@ namespace Gum.IR0Evaluator.Test
                         new CallSeqFuncExp(
                             funcF,
                             null,
-                            Arr<Argument>(
-                                new Argument.Normal(new IntLiteralExp(1)),
-                                new Argument.Normal(new IntLiteralExp(2))
+                            RArgs(
+                                new IntLiteralExp(1),
+                                new IntLiteralExp(2)
                             )
                         ),
                         
@@ -935,7 +935,7 @@ namespace Gum.IR0Evaluator.Test
             var testFunc = RootPath("TestFunc", Arr(Path.Int, Path.Int, Path.Int), default);
 
             // Print(int x)
-            var printFuncDecl = new NormalFuncDecl(default, "Print", false, default, Arr(new ParamInfo(Path.Int, "x")),
+            var printFuncDecl = new NormalFuncDecl(default, "Print", false, default, RParamInfo((Path.Int, "x")),
 
                 RBlock(
                     PrintIntCmdStmt(new LocalVarLoc("x")),
@@ -944,14 +944,14 @@ namespace Gum.IR0Evaluator.Test
             );
 
             // TestFunc(int i, int j, int k)
-            var testFuncDecl = new NormalFuncDecl(default, "TestFunc", false, default, Arr(new ParamInfo(Path.Int, "i"), new ParamInfo(Path.Int, "j"), new ParamInfo(Path.Int, "k")),
+            var testFuncDecl = new NormalFuncDecl(default, "TestFunc", false, default, RParamInfo((Path.Int, "i"), (Path.Int, "j"), (Path.Int, "k")),
 
                 PrintStringCmdStmt("TestFunc")
 
             );
 
             Exp MakePrintCall(int v) =>
-                new CallFuncExp(printFunc, null, Arr<Exp>(new IntLiteralExp(v)));
+                new CallFuncExp(printFunc, null, RArgs(new IntLiteralExp(v)));
 
             var stmts = Arr<Stmt>
             (
@@ -959,7 +959,7 @@ namespace Gum.IR0Evaluator.Test
                     new CallFuncExp(
                         testFunc, 
                         null, 
-                        Arr(
+                        RArgs(
                             MakePrintCall(1),
                             MakePrintCall(2),
                             MakePrintCall(3) 
@@ -1014,7 +1014,7 @@ namespace Gum.IR0Evaluator.Test
             var lambda = new Path.Nested(makeLambda, new Name.Anonymous(new AnonymousId(0)), ParamHash.None, default);
 
             // Print(int x) { 
-            var printFuncDecl = new NormalFuncDecl(default, "Print", false, default, Arr(new ParamInfo(Path.Int, "x")),
+            var printFuncDecl = new NormalFuncDecl(default, "Print", false, default, RParamInfo((Path.Int, "x")),
                 RBlock(
                     PrintIntCmdStmt(new LocalVarLoc("x")),
                     new ReturnStmt(new LoadExp(LocalVar("x")))
@@ -1025,7 +1025,7 @@ namespace Gum.IR0Evaluator.Test
             var lambdaDecl = new LambdaDecl(
                 new Name.Anonymous(new AnonymousId(0)),
                 new CapturedStatement(null, default, PrintStringCmdStmt("TestFunc")),
-                Arr(new ParamInfo(Path.Int, "i"), new ParamInfo(Path.Int, "j"), new ParamInfo(Path.Int, "k"))
+                RParamInfo((Path.Int, "i"), (Path.Int, "j"), (Path.Int, "k"))
             );
             
             var makeLambdaDecl = new NormalFuncDecl(Arr<Decl>(lambdaDecl), "MakeLambda", false, default, default,
@@ -1036,7 +1036,7 @@ namespace Gum.IR0Evaluator.Test
             );
 
             Exp MakePrintCall(int v) =>
-                new CallFuncExp(printFunc, null, Arr<Exp>(new IntLiteralExp(v)));
+                new CallFuncExp(printFunc, null, RArgs(new IntLiteralExp(v)));
             
             var stmts = Arr<Stmt>
             (
@@ -1044,7 +1044,7 @@ namespace Gum.IR0Evaluator.Test
                     new CallValueExp(
                         lambda,
                         new TempLoc(new CallFuncExp(makeLambda, null, default), new Path.AnonymousLambdaType(lambda)),
-                        Arr(
+                        RArgs(
                             MakePrintCall(1),
                             MakePrintCall(2),
                             MakePrintCall(3) 
@@ -1108,7 +1108,7 @@ namespace Gum.IR0Evaluator.Test
             var printFunc = RootPath("Print", Arr(Path.Int), default);
 
             // print(int x)
-            var printFuncDecl = new NormalFuncDecl(default, "Print", false, default, Arr(new ParamInfo(Path.Int, "x")),
+            var printFuncDecl = new NormalFuncDecl(default, "Print", false, default, RParamInfo((Path.Int, "x")),
 
                 RBlock(
                     PrintIntCmdStmt(new LocalVarLoc("x")),
@@ -1117,7 +1117,7 @@ namespace Gum.IR0Evaluator.Test
             );
 
             Exp MakePrintCall(int v) =>
-                new CallFuncExp(printFunc, null, Arr<Exp>(new IntLiteralExp(v)));
+                new CallFuncExp(printFunc, null, RArgs(new IntLiteralExp(v)));
 
             var stmts = Arr<Stmt> (
                 RGlobalVarDeclStmt(Path.List(Path.Int), "l", 

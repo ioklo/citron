@@ -192,7 +192,7 @@ for (f(); g; h + g) ;
                 SimpleSId("a"),
                 new BinaryOpExp(BinaryOpKind.Multiply,
                     SimpleSId("b"),
-                    new CallExp(SimpleSId("c"), Arr<Exp>(new IntLiteralExp(1))))));
+                    new CallExp(SimpleSId("c"), Arr<Argument>(new Argument.Normal(new IntLiteralExp(1)))))));
                 
 
             Assert.Equal(expected, expResult.Elem, SyntaxEqualityComparer.Instance);

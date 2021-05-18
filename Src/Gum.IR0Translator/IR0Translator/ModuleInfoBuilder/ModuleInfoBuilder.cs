@@ -255,13 +255,16 @@ namespace Gum.IR0Translator
                 bThisCall,
                 funcDecl.TypeParams,
                 retType,
-                funcDecl.ParamInfo.Parameters.Select(typeAndName =>
-                {
-                    var mtype = GetMType(typeAndName.Type);
-                    if (mtype == null) throw new FatalException();
+                new M.ParamInfo(
+                    funcDecl.ParamInfo.VariadicParamIndex,
+                    funcDecl.ParamInfo.Parameters.Select(typeAndName =>
+                    {
+                        var mtype = GetMType(typeAndName.Type);
+                        if (mtype == null) throw new FatalException();
 
-                    return mtype;
-                }).ToImmutableArray()
+                        return (mtype, (M.Name)typeAndName.Name);
+                    }).ToImmutableArray()
+                )
             );
 
             if (typeBuilder == null)

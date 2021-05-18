@@ -325,7 +325,7 @@ namespace Gum.TextAnalysis.Test
 
                 case (CallExp callExpX, CallExp callExpY):
                     return EqualsExp(callExpX.Callable, callExpY.Callable) &&
-                        SequenceEqual(callExpX.Args, callExpY.Args, Instance);
+                        SequenceEqual(callExpX.Args, callExpY.Args); // Argument는 내부에서 구현한다 (여기 모두 내부구현으로 바뀌어야 한다)
 
                 case (LambdaExp lambdaExpX, LambdaExp lambdaExpY):
                     return SequenceEqual(lambdaExpX.Params, lambdaExpY.Params, Instance) &&
@@ -346,7 +346,7 @@ namespace Gum.TextAnalysis.Test
 
                 case (NewExp newExpX, NewExp newExpY):
                     return EqualsTypeExp(newExpX.Type, newExpY.Type) &&
-                        SequenceEqual(newExpX.Args, newExpY.Args, Instance);
+                        SequenceEqual(newExpX.Args, newExpY.Args);
 
                 default:
                     throw new UnreachableCodeException();

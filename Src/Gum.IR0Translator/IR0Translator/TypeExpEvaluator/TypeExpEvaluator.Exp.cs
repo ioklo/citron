@@ -42,7 +42,7 @@ namespace Gum.IR0Translator
             VisitExp(callExp.Callable);
 
             foreach (var arg in callExp.Args)
-                VisitExp(arg);
+                VisitArgument(arg);
         }
 
         void VisitLambdaExp(S.LambdaExp lambdaExp)
@@ -99,6 +99,24 @@ namespace Gum.IR0Translator
             catch (TypeExpEvaluatorFatalException)
             {
 
+            }
+        }
+
+        void VisitArgument(S.Argument arg)
+        {
+            switch(arg)
+            {
+                case S.Argument.Normal normalArg:
+                    VisitExp(normalArg.Exp);
+                    break;
+
+                case S.Argument.Params paramsArg:
+                    VisitExp(paramsArg.Exp);
+                    break;
+
+                case S.Argument.Ref refArg:
+                    VisitExp(refArg.Exp);
+                    break;
             }
         }
     }

@@ -1366,7 +1366,7 @@ namespace Gum.IR0Translator.Test
                 )),
 
                 new S.StmtScriptElement(
-                    new S.ExpStmt(new S.CallExp(SId("Func", IntTypeExp), Arr<S.Argument>(SInt(3))))
+                    new S.ExpStmt(new S.CallExp(SId("Func", IntTypeExp), Arr<S.Argument>(new S.Argument.Normal(SInt(3)))))
                 )
             );
 
@@ -1375,11 +1375,11 @@ namespace Gum.IR0Translator.Test
             var expected = RScript(
                 Arr<R.Decl>(
                     new R.NormalFuncDecl(
-                        default, "Func", false, Arr("T"), Arr(new R.ParamInfo(R.Path.Int, "x")), RBlock(new R.ReturnStmt(new R.LoadExp(new R.LocalVarLoc("x"))))
+                        default, "Func", false, Arr("T"), RParamInfo((R.Path.Int, "x")), RBlock(new R.ReturnStmt(new R.LoadExp(new R.LocalVarLoc("x"))))
                     )
                 ),
 
-                new R.ExpStmt(new R.CallFuncExp(MakeRootPath("Func", new R.ParamHash(0, Arr<R.Path>(R.Path.Int)), default), null, Arr<R.Exp>(RInt(3))))
+                new R.ExpStmt(new R.CallFuncExp(MakeRootPath("Func", new R.ParamHash(0, Arr<R.Path>(R.Path.Int)), default), null, RArgs(RInt(3))))
             );
 
             Assert.Equal(expected, script);
@@ -1399,7 +1399,7 @@ namespace Gum.IR0Translator.Test
                 )),
 
                 new S.StmtScriptElement(
-                    new S.ExpStmt(new S.CallExp(SId("Func"), Arr<S.Exp>(SInt(3))))
+                    new S.ExpStmt(new S.CallExp(SId("Func"), Arr<S.Argument>(new S.Argument.Normal(SInt(3)))))
                 )
             );
 
@@ -1407,10 +1407,10 @@ namespace Gum.IR0Translator.Test
 
             var expected = RScript(
                 Arr<R.Decl>(new R.NormalFuncDecl(
-                    default, "Func", false, Arr<string>(), Arr(new R.ParamInfo(R.Path.Int, "x")), RBlock(new R.ReturnStmt(new R.LoadExp(new R.LocalVarLoc("x"))))
+                    default, "Func", false, Arr<string>(), RParamInfo((R.Path.Int, "x")), RBlock(new R.ReturnStmt(new R.LoadExp(new R.LocalVarLoc("x"))))
                 )),
 
-                new R.ExpStmt(new R.CallFuncExp(MakeRootPath("Func", new R.ParamHash(0, Arr<R.Path>(R.Path.Int)), default), null, Arr<R.Exp>(RInt(3))))
+                new R.ExpStmt(new R.CallFuncExp(MakeRootPath("Func", new R.ParamHash(0, Arr<R.Path>(R.Path.Int)), default), null, RArgs(RInt(3))))
             );
 
             Assert.Equal(expected, script);

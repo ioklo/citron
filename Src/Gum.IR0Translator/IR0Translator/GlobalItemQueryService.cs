@@ -53,7 +53,7 @@ namespace Gum.IR0Translator
                         func.Name.Equals(entry.Name))
                     {
                         // TODO: 매번 계산한다
-                        var paramHash = Misc.MakeParamHash(func.ParamInfo.Parameters);
+                        var paramHash = Misc.MakeParamHash(ImmutableArray.CreateRange(func.ParamInfo.Parameters, param => param.Type));
                         if (paramHash == entry.ParamHash)
                             return func;
                     }

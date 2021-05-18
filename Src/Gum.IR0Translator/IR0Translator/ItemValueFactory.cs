@@ -160,7 +160,7 @@ namespace Gum.IR0Translator
             return VarTypeValue.Instance;
         }
 
-        public TupleTypeValue MakeTupleType(ImmutableArray<(TypeValue Type, string Name)> elems)
+        public TupleTypeValue MakeTupleType(ImmutableArray<(TypeValue Type, string? Name)> elems)
         {
             return new TupleTypeValue(ritemFactory, elems);
         }

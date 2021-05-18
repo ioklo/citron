@@ -234,7 +234,7 @@ namespace Gum.IR0Translator
                     else // params T <=> (1, 2, "hi")
                     {
                         var argsLength = argsEnd - argsBegin;
-                        var elemBuilder = ImmutableArray.CreateBuilder<(TypeValue Type, string Name)>(argsLength);
+                        var elemBuilder = ImmutableArray.CreateBuilder<(TypeValue Type, string? Name)>(argsLength);
 
                         for (int i = 0; i < argsLength; i++)
                         {
@@ -242,7 +242,7 @@ namespace Gum.IR0Translator
                             MatchArgument_UnknownParamType(arg);
 
                             var argType = arg.GetTypeValue();
-                            elemBuilder.Add(argType);
+                            elemBuilder.Add((argType, null)); // unnamed tuple element
                         }
 
                         var argTupleType = analyzer.globalContext.GetTupleType(elemBuilder.MoveToImmutable());
@@ -283,7 +283,8 @@ namespace Gum.IR0Translator
                 // Layer 1
                 ImmutableArray<TypeValue> ResolveTypeArgs(ref TypeResolver resolver)
                 {
-                    resolver.Resolve();
+                    // resolver.Resolve();
+                    throw new NotImplementedException();
                 }
                 
                 ImmutableArray<R.Argument> MakeRArgs()
@@ -357,7 +358,7 @@ namespace Gum.IR0Translator
 
                             var resolvedTypeArgs = ResolveTypeArgs(ref resolver);
                             // 뭐가 exact인가: typeParam에 해당하는 typeArgs를 다 적어서 Resolve가 안 필요한 경우 (0개도 포함)
-                            var bExactMatch = paramInfo.Parameters.Length == typeArgs.Length;
+                            var bExactMatch = paramTypes.Length == typeArgs.Length;
                             var rargs = MakeRArgs();
 
                             return new MatchArgsResult(bMatch: true, bExactMatch, rargs, resolvedTypeArgs);

@@ -17,10 +17,27 @@ namespace Gum.IR0Translator.Test
             this.raiseAssertionFail = raiseAssertionFail;
         }
 
+        public TestErrorCollector(TestErrorCollector other, CloneContext context)
+        {
+            this.Errors = new List<IError>(other.Errors);
+        }
+
         public void Add(IError error)
         {
             Errors.Add(error);
             Assert.True(!raiseAssertionFail || false);
+        }
+
+        public IErrorCollector Clone(CloneContext context)
+        {
+            return new TestErrorCollector(this, context);
+        }
+
+        public void Update(IErrorCollector src_errorCollector, UpdateContext context)
+        {
+            var src = (TestErrorCollector)src_errorCollector;
+            Errors.Clear();
+            Errors.AddRange(src.Errors);
         }
     }
 }

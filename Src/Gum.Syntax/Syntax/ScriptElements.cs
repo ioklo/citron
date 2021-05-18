@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Pretune;
+using System;
 using System.Collections.Generic;
 
 namespace Gum.Syntax
@@ -8,27 +9,21 @@ namespace Gum.Syntax
         internal ScriptElement() { }
     }
 
-    public class GlobalFuncDeclScriptElement : ScriptElement
+    [AutoConstructor, ImplementIEquatable]
+    public partial class GlobalFuncDeclScriptElement : ScriptElement
     {
         public GlobalFuncDecl FuncDecl { get; }
-        public GlobalFuncDeclScriptElement(GlobalFuncDecl funcDecl)
-        {
-            FuncDecl = funcDecl;
-        }
     }
 
-    public class StmtScriptElement : ScriptElement
+    [AutoConstructor, ImplementIEquatable]
+    public partial class StmtScriptElement : ScriptElement
     {
         public Stmt Stmt { get; }
-        public StmtScriptElement(Stmt stmt)
-        {
-            Stmt = stmt;
-        }
     }
 
-    public class TypeDeclScriptElement : ScriptElement
+    [AutoConstructor, ImplementIEquatable]
+    public partial class TypeDeclScriptElement : ScriptElement
     {
         public TypeDecl TypeDecl { get; }
-        public TypeDeclScriptElement(TypeDecl typeDecl) { TypeDecl = typeDecl; }
     }
 }

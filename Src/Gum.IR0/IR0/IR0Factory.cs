@@ -45,5 +45,15 @@ namespace Gum.IR0
 
         public static IntLiteralExp RInt(int v) => new IntLiteralExp(v);
         public static BoolLiteralExp RBool(bool v) => new BoolLiteralExp(v);
+
+        public static ParamInfo RParamInfo(params (Path Path, string Name)[] elems)
+        {
+            return new ParamInfo(null, elems.Select(e => new TypeAndName(e.Path, e.Name)).ToImmutableArray());
+        }
+
+        public static ImmutableArray<Argument> RArgs(params Exp[] exps)
+        {
+            return exps.Select(e => (Argument)new Argument.Normal(e)).ToImmutableArray();
+        }
     }
 }

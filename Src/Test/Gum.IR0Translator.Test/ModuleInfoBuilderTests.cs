@@ -70,11 +70,11 @@ namespace Gum.IR0Translator.Test
             Assert.NotNull(funcInfo);
             Debug.Assert(funcInfo != null);
 
-            var paramTypes = Arr<M.Type>(IntMType, new M.TypeVarType(1, "U"), new M.TypeVarType(0, "T"));
+            var parameters = Arr<(M.Type Type, M.Name name)>((IntMType, "x"), (new M.TypeVarType(1, "U"), "y"), (new M.TypeVarType(0, "T"), "z"));
 
             var expected = new M.FuncInfo(
                 "Func",
-                false, false, Arr("T", "U"), M.VoidType.Instance, paramTypes
+                false, false, Arr("T", "U"), M.VoidType.Instance, new M.ParamInfo(null, parameters)
             );
 
             Assert.Equal(expected, funcInfo);
@@ -142,13 +142,16 @@ namespace Gum.IR0Translator.Test
                 memberFuncs: Arr<M.FuncInfo>(
                     new M.FuncInfo(
                         "Func",
-                        bSeqCall: false, 
-                        bThisCall: true,
+                        isSequenceFunc: false,
+                        isInstanceFunc: true,
                         Arr("T", "U"),
                         new M.TypeVarType(1, "T"),
-                        Arr<M.Type>(
-                            new M.GlobalType(moduleName, M.NamespacePath.Root, "S", ImmutableArray.Create<M.Type>(IntMType)),
-                            new M.TypeVarType(2, "U")
+                        new M.ParamInfo(
+                            null,
+                            Arr<(M.Type, M.Name)>(
+                                (new M.GlobalType(moduleName, M.NamespacePath.Root, "S", ImmutableArray.Create<M.Type>(IntMType)), "s"),
+                                (new M.TypeVarType(2, "U"), "u")
+                            )
                         )
                     )
                 ),

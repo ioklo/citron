@@ -653,11 +653,19 @@ namespace Gum.IR0Translator
                             return new ExpResult.Type(typeValue);
                         }
 
+                    // T.F가 나왔다. static이어야 한다
                     case ItemQueryResult.Funcs funcsResult:
                         {
                             // 함수는 이 단계에서 타입인자가 확정되지 않으므로 재료들을 상위로 올려 보낸다
                             var typeArgs = GetTypeValues(stypeArgs);
-                            return new ExpResult.Funcs(funcsResult.Outer, funcsResult.FuncInfos, typeArgs);
+
+                            if (funcsResult.IsInstanceFunc)
+                            {
+                                globalContext.AddFatalError(A2005_ResolveIdentifier_CantGetInstanceMemberThroughType, nodeForErrorReport);
+                                throw new UnreachableCodeException();
+                            }
+
+                            return new ExpResult.Funcs(funcsResult.Outer, funcsResult.FuncInfos, typeArgs, null);
                         }
 
                     case ItemQueryResult.MemberVar memberVarResult:

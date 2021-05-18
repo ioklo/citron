@@ -164,7 +164,7 @@ namespace Gum.TextAnalysis.Test
                                 new IdTypeExp("list", Arr<TypeExp>(new IdTypeExp("int", default)))
                             )
                         ),
-                        Arr<Exp>(new IntLiteralExp(1), SimpleSStringExp("str"))
+                        Arr<Argument>(new Argument.Normal(new IntLiteralExp(1)), new Argument.Normal(SimpleSStringExp("str")))
                     ),
                     "d",
                     default
@@ -200,10 +200,10 @@ namespace Gum.TextAnalysis.Test
 
             var expected = new NewExp(
                 new IdTypeExp("MyType", Arr<TypeExp>(new IdTypeExp("X", default))),
-                Arr<Exp>(
-                    new IntLiteralExp(2),
-                    new BoolLiteralExp(false),
-                    SimpleSStringExp("string")
+                Arr<Argument>(
+                    new Argument.Normal(new IntLiteralExp(2)),
+                    new Argument.Normal(new BoolLiteralExp(false)),
+                    new Argument.Normal(SimpleSStringExp("string"))
                 ));
 
             Assert.Equal(expected, expResult.Elem, SyntaxEqualityComparer.Instance);
