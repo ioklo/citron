@@ -29,68 +29,65 @@ namespace Gum.IR0Translator
                 public ImmutableArray<TypeValue> TypeArgs { get; }
             }
 
-            partial struct FuncMatcher
+            // params를 확장한 Argument
+            abstract record FuncMatcherArgument
             {
-                // params를 확장한 Argument
-                abstract record Argument
+                // preanalyze할수도 있고, 여기서 시작할수도 있다
+                public abstract void DoAnalyze(ref StmtAndExpAnalyzer analyzer, ResolveHint hint);
+                public abstract TypeValue GetTypeValue();
+
+                // 기본 아규먼트 
+                public record Normal(S.Exp Exp) : FuncMatcherArgument
                 {
-                    // preanalyze할수도 있고, 여기서 시작할수도 있다
-                    public abstract void DoAnalyze(ref StmtAndExpAnalyzer analyzer, ResolveHint hint);
-                    public abstract TypeValue GetTypeValue();
+                    public ExpResult.Exp? expResult;
 
-                    // 기본 아규먼트 
-                    public record Normal(S.Exp Exp) : Argument
+                    public override void DoAnalyze(ref StmtAndExpAnalyzer analyzer, ResolveHint hint)
                     {
-                        public ExpResult.Exp? expResult;
-
-                        public override void DoAnalyze(ref StmtAndExpAnalyzer analyzer, ResolveHint hint)
-                        {
-                            expResult = analyzer.AnalyzeExp_Exp(Exp, hint);
-                        }
-
-                        public override TypeValue GetTypeValue()
-                        {
-                            Debug.Assert(expResult != null);
-                            return expResult.TypeValue;
-                        }
+                        expResult = analyzer.AnalyzeExp_Exp(Exp, hint);
                     }
 
-                    // Params가 확장된 아규먼트
-                    public record ParamsHead(ExpResult.Exp Exp, TypeValue TypeValue) : Argument
+                    public override TypeValue GetTypeValue()
                     {
-                        public override void DoAnalyze(ref StmtAndExpAnalyzer analyzer, ResolveHint hint)
-                        {
-                        }
+                        Debug.Assert(expResult != null);
+                        return expResult.TypeValue;
+                    }
+                }
 
-                        public override TypeValue GetTypeValue()
-                        {
-                            return TypeValue;
-                        }
+                // Params가 확장된 아규먼트
+                public record ParamsHead(ExpResult.Exp Exp, TypeValue TypeValue) : FuncMatcherArgument
+                {
+                    public override void DoAnalyze(ref StmtAndExpAnalyzer analyzer, ResolveHint hint)
+                    {
                     }
 
-                    public record ParamsRest(TypeValue TypeValue) : Argument
+                    public override TypeValue GetTypeValue()
                     {
-                        public override void DoAnalyze(ref StmtAndExpAnalyzer analyzer, ResolveHint hint)
-                        {
-                        }
+                        return TypeValue;
+                    }
+                }
 
-                        public override TypeValue GetTypeValue()
-                        {
-                            return TypeValue;
-                        }
+                public record ParamsRest(TypeValue TypeValue) : FuncMatcherArgument
+                {
+                    public override void DoAnalyze(ref StmtAndExpAnalyzer analyzer, ResolveHint hint)
+                    {
                     }
 
-                    public record Ref(S.Exp Exp) : Argument
+                    public override TypeValue GetTypeValue()
                     {
-                        public override void DoAnalyze(ref StmtAndExpAnalyzer analyzer, ResolveHint hint)
-                        {
-                            throw new NotImplementedException();
-                        }
+                        return TypeValue;
+                    }
+                }
 
-                        public override TypeValue GetTypeValue()
-                        {
-                            throw new NotImplementedException();
-                        }
+                public record Ref(S.Exp Exp) : FuncMatcherArgument
+                {
+                    public override void DoAnalyze(ref StmtAndExpAnalyzer analyzer, ResolveHint hint)
+                    {
+                        throw new NotImplementedException();
+                    }
+
+                    public override TypeValue GetTypeValue()
+                    {
+                        throw new NotImplementedException();
                     }
                 }
             }
@@ -98,7 +95,96 @@ namespace Gum.IR0Translator
             class FuncMatcherFatalException : Exception
             {
             }
-            
+
+            struct FuncMatcherLayer1
+            {
+                ImmutableArray<TypeValue> paramTypes;
+                ImmutableArray<FuncMatcherArgument> args;
+                TypeResolver typeResolver;
+
+                public FuncMatcherLayer1(ImmutableArray<TypeValue> paramTypes, ImmutableArray<Argument> args, TypeResolver typeResolver)
+                {
+                    this.paramTypes = paramTypes;
+                    this.args = args;
+                    this.typeResolver = typeResolver;
+                }
+
+                // Layer 1
+                void MatchPartialArguments(int paramsBegin, int paramsEnd, int argsBegin, int argsEnd) // throws FuncMatcherFatalException
+                {
+                    Debug.Assert(paramsEnd - paramsBegin == argsEnd - argsBegin);
+                    int paramsCount = paramsEnd - paramsBegin;
+
+                    for (int i = 0; i < paramsCount; i++)
+                    {
+                        var paramType = paramTypes[paramsBegin + i];
+                        var arg = args[argsBegin + i];
+
+                        MatchArgument(paramType, arg);
+
+                        // MatchArgument마다 Constraint추가
+                        typeResolver.AddConstraint(paramType, arg.GetTypeValue());
+                    }
+                }
+
+                // Layer 1
+                void MatchParamsArguments(int paramIndex, int argsBegin, int argsEnd) // throws FuncMatcherFatalException
+                {
+                    var paramType = paramTypes[paramIndex];
+
+                    if (paramType is TupleTypeValue tupleParamType)
+                    {
+                        if (tupleParamType.Elems.Length != argsEnd - argsBegin)
+                            throw new FuncMatcherFatalException();
+
+                        int paramsCount = tupleParamType.Elems.Length;
+                        Debug.Assert(paramsCount == argsEnd - argsBegin);
+
+                        for (int i = 0; i < paramsCount; i++)
+                        {
+                            var tupleElemType = tupleParamType.Elems[i].Type;
+                            var arg = args[argsBegin + i];
+
+                            MatchArgument(tupleElemType, arg);
+
+                            // MatchArgument마다 Constraint추가
+                            typeResolver.AddConstraint(tupleElemType, arg.GetTypeValue());
+                        }
+                    }
+                    else // params T <=> (1, 2, "hi")
+                    {
+                        var argsLength = argsEnd - argsBegin;
+                        var elemBuilder = ImmutableArray.CreateBuilder<(TypeValue Type, string? Name)>(argsLength);
+
+                        for (int i = 0; i < argsLength; i++)
+                        {
+                            var arg = args[i];
+                            MatchArgument_UnknownParamType(arg);
+
+                            var argType = arg.GetTypeValue();
+                            elemBuilder.Add((argType, null)); // unnamed tuple element
+                        }
+
+                        var argTupleType = analyzer.globalContext.GetTupleType(elemBuilder.MoveToImmutable());
+
+                        // Constraint 추가
+                        typeResolver.AddConstraint(paramType, argTupleType);
+                    }
+                }
+
+                // Layer 1
+                ImmutableArray<TypeValue> ResolveTypeArgs(TypeResolver resolver)
+                {
+                    return resolver.Resolve();
+                }
+
+                // Layer 1
+                ImmutableArray<R.Argument> MakeRArgs()
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
             [AutoConstructor]
             partial struct FuncMatcher
             {   
@@ -109,6 +195,7 @@ namespace Gum.IR0Translator
                 ImmutableArray<TypeValue> typeArgs; // partial, decl: F<T, U>(U u), call: F<int>(u), typeArgs: [int]
                 ImmutableArray<S.Argument> sargs;
                 
+                // Layer 0
                 ImmutableArray<Argument> ExpandArguments() // throws FuncMatcherFatalException
                 {
                     var args = ImmutableArray.CreateBuilder<Argument>();
@@ -183,115 +270,6 @@ namespace Gum.IR0Translator
                     arg.DoAnalyze(ref analyzer, ResolveHint.None);
                 }
                 
-                // Layer 1
-                void MatchPartialArguments(
-                    int paramsBegin, int paramsEnd,
-                    ImmutableArray<Argument> args, int argsBegin, int argsEnd,
-                    TypeResolver resolver) // throws FuncMatcherFatalException
-                {
-                    Debug.Assert(paramsEnd - paramsBegin == argsEnd - argsBegin);
-                    int paramsCount = paramsEnd - paramsBegin;
-
-                    for (int i = 0; i < paramsCount; i++)
-                    {
-                        var paramType = paramTypes[paramsBegin + i];
-                        var arg = args[argsBegin + i];
-
-                        MatchArgument(paramType, arg);
-
-                        // MatchArgument마다 Constraint추가
-                        resolver.AddConstraint(paramType, arg.GetTypeValue());
-                    }
-                }
-
-                // Layer 1
-                void MatchParamsArguments(
-                    int paramIndex,
-                    ImmutableArray<Argument> args, int argsBegin, int argsEnd, 
-                    TypeResolver resolver) // throws FuncMatcherFatalException
-                {
-                    var paramType = paramTypes[paramIndex];
-
-                    if (paramType is TupleTypeValue tupleParamType)
-                    {
-                        if (tupleParamType.Elems.Length != argsEnd - argsBegin)
-                            throw new FuncMatcherFatalException();
-
-                        int paramsCount = tupleParamType.Elems.Length;
-                        Debug.Assert(paramsCount == argsEnd - argsBegin);
-
-                        for (int i = 0; i < paramsCount; i++)
-                        {
-                            var tupleElemType = tupleParamType.Elems[i].Type;
-                            var arg = args[argsBegin + i];
-
-                            MatchArgument(tupleElemType, arg);
-
-                            // MatchArgument마다 Constraint추가
-                            resolver.AddConstraint(tupleElemType, arg.GetTypeValue());
-                        }
-                    }
-                    else // params T <=> (1, 2, "hi")
-                    {
-                        var argsLength = argsEnd - argsBegin;
-                        var elemBuilder = ImmutableArray.CreateBuilder<(TypeValue Type, string? Name)>(argsLength);
-
-                        for (int i = 0; i < argsLength; i++)
-                        {
-                            var arg = args[i];
-                            MatchArgument_UnknownParamType(arg);
-
-                            var argType = arg.GetTypeValue();
-                            elemBuilder.Add((argType, null)); // unnamed tuple element
-                        }
-
-                        var argTupleType = analyzer.globalContext.GetTupleType(elemBuilder.MoveToImmutable());
-
-                        // Constraint 추가
-                        resolver.AddConstraint(paramType, argTupleType);
-                    }
-                }
-
-                // Layer 1
-                void SetupResolver(TypeResolver resolver)
-                {   
-                    // decl: Func<T, U>(List<U> u)
-                    // call: Func<int>([1, 2, 3])
-                    // 일 경우,
-                    
-                    // constraint .. (List<U>, typeof([1, 2, 3]))
-
-                    // resolve(List<U>, List<int>)
-                    // resolve(U, int) |=> (U => int)
-                    // fixpoint iteration? 할 필요 있나
-
-                    // 결과만들기 Func<int, query(U)>
-
-                    // Func2<U>(U u) 
-                    // Func<T>()
-                    // {
-                    //     T t;
-                    //     Func2(t); 
-                    // }
-                    // Func<T, U>(T t, U u)
-
-                    // Func2관점에서 수행 (왼쪽과 오른쪽이 도메인이 다르다)
-                    // constraint(U, T)
-                    // => constraint(typeVar(0), typeVar(0)); 헷갈림
-                }
-
-                // Layer 1
-                ImmutableArray<TypeValue> ResolveTypeArgs(TypeResolver resolver)
-                {
-                    return resolver.Resolve();                    
-                }
-                
-                // Layer 1
-                ImmutableArray<R.Argument> MakeRArgs()
-                {
-                    throw new NotImplementedException();
-                }
-
                 // typeEnv는 funcInfo미 포함 타입정보
                 // typeArgs가 충분하지 않을 수 있다. 나머지는 inference로 채운다
                 // Layer 0
@@ -301,6 +279,8 @@ namespace Gum.IR0Translator
                     {
                         // 1. 아규먼트에서 params를 확장시킨다 (params에는 타입힌트를 적용하지 않고 먼저 평가한다)
                         var expandedArgs = ExpandArguments();
+
+                        new FuncMatcherLayer1(paramTypes, expandedArgs, typeResolver);
 
                         // 2. funcInfo에서 params 앞부분과 뒷부분으로 나누어서 인자 체크를 한다
                         if (variadicParamIndex != null)
