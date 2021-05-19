@@ -72,9 +72,16 @@ namespace Gum.IR0Translator
                 // Params가 확장된 아규먼트
                 public class ParamsHead : FuncMatcherArgument
                 {
-                    ExpResult.Exp Exp;
-                    int ParamCount;
-                    TypeValue TypeValue;
+                    R.Exp exp;
+                    int paramCount;
+                    TypeValue typeValue;
+
+                    public ParamsHead(R.Exp exp, int paramCount, TypeValue typeValue)
+                    {
+                        this.exp = exp;
+                        this.paramCount = paramCount;
+                        this.typeValue = typeValue;
+                    }
 
                     public override void DoAnalyze(ResolveHint hint)
                     {
@@ -82,24 +89,31 @@ namespace Gum.IR0Translator
 
                     public override TypeValue GetTypeValue()
                     {
-                        return TypeValue;
+                        return typeValue;
                     }
 
                     public override R.Argument? GetRArgument()
                     {
-                        return new R.Argument.Params(Exp.Result, ParamCount);
+                        return new R.Argument.Params(exp, paramCount);
                     }
                 }
 
-                public record ParamsRest(TypeValue TypeValue) : FuncMatcherArgument
+                public class ParamsRest : FuncMatcherArgument
                 {
+                    TypeValue typeValue;
+
+                    public ParamsRest(TypeValue typeValue)
+                    {
+                        this.typeValue = typeValue;
+                    }
+
                     public override void DoAnalyze(ResolveHint hint)
                     {
                     }
 
                     public override TypeValue GetTypeValue()
                     {
-                        return TypeValue;
+                        return typeValue;
                     }
 
                     public override R.Argument? GetRArgument()
@@ -108,8 +122,12 @@ namespace Gum.IR0Translator
                     }
                 }
 
-                public record Ref(S.Exp Exp) : FuncMatcherArgument
+                public class Ref : FuncMatcherArgument
                 {
+                    S.Exp exp;
+
+                    public Ref(S.Exp exp) { this.exp = exp; }
+
                     public override void DoAnalyze(ResolveHint hint)
                     {
                         throw new NotImplementedException();
@@ -130,39 +148,24 @@ namespace Gum.IR0Translator
             class FuncMatcherFatalException : Exception
             {
             }
-
-            struct FuncMatcherLayer1
-            {
-                StmtAndExpAnalyzer analyzer;
-                ImmutableArray<TypeValue> paramTypes;
-                ImmutableArray<FuncMatcherArgument> args;
-                TypeResolver typeResolver;
-
-                public FuncMatcherLayer1(StmtAndExpAnalyzer analyzer, ImmutableArray<TypeValue> paramTypes, ImmutableArray<FuncMatcherArgument> args, TypeResolver typeResolver)
-                {
-                    this.paramTypes = paramTypes;
-                    this.args = args;
-                    this.typeResolver = typeResolver;
-                }
-
-                
-            }
-
+            
             // Layer 0
-            ImmutableArray<FuncMatcherArgument> ExpandArguments(ref StmtAndExpAnalyzer analyzer, ImmutableArray<S.Argument> sargs) // throws FuncMatcherFatalException
+            ImmutableArray<FuncMatcherArgument> ExpandArguments(ImmutableArray<S.Argument> sargs) // throws FuncMatcherFatalException
             {
                 var args = ImmutableArray.CreateBuilder<FuncMatcherArgument>();
                 foreach (var sarg in sargs)
                 {
                     if (sarg is S.Argument.Normal sNormalArg)
-                        args.Add(new FuncMatcherArgument.Normal(sNormalArg.Exp));
+                    {
+                        args.Add(new FuncMatcherArgument.Normal(this, sNormalArg.Exp));
+                    }
                     else if (sarg is S.Argument.Params sParamsArg)
                     {
                         // expanded argument는 먼저 타입을 알아내야 한다
                         ExpResult.Exp expResult;
                         try
                         {
-                            expResult = analyzer.AnalyzeExp_Exp(sParamsArg.Exp, ResolveHint.None);
+                            expResult = AnalyzeExp_Exp(sParamsArg.Exp, ResolveHint.None);
                         }
                         catch (AnalyzerFatalException)
                         {
@@ -177,7 +180,7 @@ namespace Gum.IR0Translator
                             {
                                 if (head == null)
                                 {
-                                    head = new FuncMatcherArgument.ParamsHead(expResult, tupleTypeValue.Elems.Length, tupleElem.Type);
+                                    head = new FuncMatcherArgument.ParamsHead(expResult.Result, tupleTypeValue.Elems.Length, tupleElem.Type);
                                     args.Add(head);
                                 }
                                 else
@@ -204,25 +207,35 @@ namespace Gum.IR0Translator
 
             // Layer 0
             MatchArgsResult MatchFunc(
-                ref StmtAndExpAnalyzer analyzer, 
-                TypeEnv outerTypeEnv, 
-                M.ParamInfo paramInfo, 
-                ImmutableArray<TypeValue> typeArgs, 
+                TypeEnv outerTypeEnv,
+                M.ParamInfo paramInfo,
+                ImmutableArray<TypeValue> typeArgs,
                 ImmutableArray<S.Argument> sargs) // nothrow
             {
+                var paramTypes = MakeParamTypes(paramInfo.Parameters);
+                var variadicParamIndex = paramInfo.VariadicParamIndex;
+
+                return MatchFunc(outerTypeEnv, paramTypes, variadicParamIndex, typeArgs, sargs);
+            }
+
+            // Layer 0
+            MatchArgsResult MatchFunc(
+                TypeEnv outerTypeEnv,
+                ImmutableArray<TypeValue> paramTypes,
+                int? variadicParamIndex,
+                ImmutableArray<TypeValue> typeArgs,
+                ImmutableArray<S.Argument> sargs) // nothrow
+            { 
                 try
                 {
-                    var paramTypes = MakeParamTypes(paramInfo.Parameters);
-                    var variadicParamIndex = paramInfo.VariadicParamIndex;
-
                     // 1. 아규먼트에서 params를 확장시킨다 (params에는 타입힌트를 적용하지 않고 먼저 평가한다)
-                    var expandedArgs = ExpandArguments(ref analyzer, sargs);
+                    var expandedArgs = ExpandArguments(sargs);
                     var typeResolver = new NullTypeResolver(typeArgs);
-                    var matchFuncCore = new MatchFuncCore(paramTypes, typeArgs, expandedArgs, typeResolver);
+                    var matchFuncCore = new MatchFuncCore(paramTypes, typeArgs, expandedArgs, typeResolver, globalContext, outerTypeEnv);
 
                     // 2. funcInfo에서 params 앞부분과 뒷부분으로 나누어서 인자 체크를 한다
                     if (variadicParamIndex != null)
-                        return matchFuncCore.MatchFuncWithParams(variadicParamIndex);
+                        return matchFuncCore.MatchFuncWithParams(variadicParamIndex.Value);
                     else
                         return matchFuncCore.MatchFuncWithoutParams();
                 }
@@ -239,6 +252,9 @@ namespace Gum.IR0Translator
                 ImmutableArray<TypeValue> typeArgs;
                 ImmutableArray<FuncMatcherArgument> expandedArgs;
                 TypeResolver typeResolver;
+
+                GlobalContext globalContext;
+                TypeEnv outerTypeEnv;
 
                 public MatchArgsResult MatchFuncWithoutParams()
                 {
@@ -258,7 +274,7 @@ namespace Gum.IR0Translator
                     return new MatchArgsResult(bMatch: true, bExactMatch, rargs, resolvedTypeArgs);
                 }
 
-                public MatchArgsResult MatchFuncWithParams(int? variadicParamIndex)
+                public MatchArgsResult MatchFuncWithParams(int variadicParamIndex)
                 {
                     //                v
                     // param(4) : 0 1 2 3
@@ -270,7 +286,7 @@ namespace Gum.IR0Translator
                     // backArgs           : [args.Length - (parameters.Length - v - 1), args.Length)
                     // front.end <= backArgs.begin 이어야만 한다
 
-                    int v = variadicParamIndex.Value;
+                    int v = variadicParamIndex;
                     int argsEnd = expandedArgs.Length;
                     int paramsEnd = paramTypes.Length;
 
@@ -278,9 +294,6 @@ namespace Gum.IR0Translator
 
                     if (backArgsBegin < v)
                         throw new FuncMatcherFatalException();
-
-                    // TODO: TypeResolver 완성
-                    var resolver = new NullTypeResolver(typeArgs);
 
                     // 앞부분
                     MatchPartialArguments(0, v, 0, v);
@@ -308,7 +321,7 @@ namespace Gum.IR0Translator
                     for (int i = 0; i < paramsCount; i++)
                     {
                         var paramType = paramTypes[paramsBegin + i];
-                        var arg = args[argsBegin + i];
+                        var arg = expandedArgs[argsBegin + i];
 
                         MatchArgument(paramType, arg);
 
@@ -332,7 +345,7 @@ namespace Gum.IR0Translator
                         for (int i = 0; i < paramsCount; i++)
                         {
                             var tupleElemType = tupleParamType.Elems[i].Type;
-                            var arg = args[argsBegin + i];
+                            var arg = expandedArgs[argsBegin + i];
 
                             MatchArgument(tupleElemType, arg);
 
@@ -347,20 +360,19 @@ namespace Gum.IR0Translator
 
                         for (int i = 0; i < argsLength; i++)
                         {
-                            var arg = args[i];
+                            var arg = expandedArgs[i];
                             MatchArgument_UnknownParamType(arg);
 
                             var argType = arg.GetTypeValue();
                             elemBuilder.Add((argType, null)); // unnamed tuple element
                         }
 
-                        var argTupleType = analyzer.globalContext.GetTupleType(elemBuilder.MoveToImmutable());
+                        var argTupleType = globalContext.GetTupleType(elemBuilder.MoveToImmutable());
 
                         // Constraint 추가
                         typeResolver.AddConstraint(paramType, argTupleType);
                     }
                 }
-
 
                 // Layer 1
                 ImmutableArray<R.Argument> MakeRArgs()
@@ -389,18 +401,18 @@ namespace Gum.IR0Translator
 
                     // arg
                     var resolveHint = ResolveHint.Make(appliedParamType);
-                    arg.DoAnalyze(ref analyzer, resolveHint); // Argument 종류에 따라서 달라진다
+                    arg.DoAnalyze(resolveHint); // Argument 종류에 따라서 달라진다
 
                     var argType = arg.GetTypeValue();
 
-                    if (!analyzer.globalContext.IsAssignable(appliedParamType, argType))
+                    if (!globalContext.IsAssignable(appliedParamType, argType))
                         throw new FuncMatcherFatalException();
                 }
 
                 // Layer 2
                 void MatchArgument_UnknownParamType(FuncMatcherArgument arg)
                 {
-                    arg.DoAnalyze(ref analyzer, ResolveHint.None);
+                    arg.DoAnalyze(ResolveHint.None);
                 }
                 #endregion
             }

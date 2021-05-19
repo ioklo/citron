@@ -352,7 +352,7 @@ namespace Gum.IR0Translator
                 {   
                     var clonedAnalyzer = CloneAnalyzer();
 
-                    var matchResult = MatchFunc(clonedAnalyzer, outerTypeEnv, funcInfo.ParamInfo, funcsResult.TypeArgs, sargs);
+                    var matchResult = clonedAnalyzer.MatchFunc(outerTypeEnv, funcInfo.ParamInfo, funcsResult.TypeArgs, sargs);
                     if (!matchResult.bMatch) continue;
 
                     var matchedCandidate = new MatchedFunc(matchResult, funcInfo, clonedAnalyzer.globalContext, clonedAnalyzer.callableContext, clonedAnalyzer.localContext);
@@ -425,8 +425,7 @@ namespace Gum.IR0Translator
                 // 일단 lambda파라미터는 params를 지원하지 않는 것으로
                 // args는 params를 지원 할 수 있음
 
-                var funcMatcher = new FuncMatcher(this, TypeEnv.None, null, lambdaType.Params, default, sargs);
-                var matchFuncResults = funcMatcher.Match();
+                var matchFuncResults = MatchFunc(TypeEnv.None, lambdaType.Params, null, default, sargs);
 
                 if (matchFuncResults.bMatch)
                 {

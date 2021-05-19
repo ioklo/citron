@@ -135,9 +135,6 @@ namespace Gum.IR0Translator
                 var localContext = new LocalContext();
                 var analyzer = new StmtAndExpAnalyzer(globalContext, funcContext, localContext);
 
-                if (0 < funcDecl.TypeParams.Length || funcDecl.ParamInfo.VariadicParamIndex != null)
-                    throw new NotImplementedException();
-
                 // 파라미터 순서대로 추가
                 foreach (var param in funcDecl.ParamInfo.Parameters)
                 {

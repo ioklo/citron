@@ -71,7 +71,7 @@ namespace Gum.IR0Translator
             this.skelRepo = skelRepo;
             this.errorCollector = errorCollector;
             
-            infosByTypeExp = new Dictionary<S.TypeExp, TypeExpInfo>();
+            infosByTypeExp = new Dictionary<S.TypeExp, TypeExpInfo>(ReferenceEqualityComparer.Instance);
             typeEnv = ImmutableDictionary<string, M.TypeVarType>.Empty;
         }        
 

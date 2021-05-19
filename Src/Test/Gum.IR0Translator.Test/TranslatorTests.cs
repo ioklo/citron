@@ -19,6 +19,8 @@ using Gum.Collections;
 
 namespace Gum.IR0Translator.Test
 {
+    class TestNeedToBeWrittenException : Exception { }
+
     public class TranslatorTests
     {
         M.ModuleName moduleName = "TestModule";
@@ -986,7 +988,7 @@ namespace Gum.IR0Translator.Test
         [Fact]
         public void IdExp_TranslatesLocalVarOutsideLambdaIntoLocalVarExp()
         {
-            throw new NotImplementedException();
+            throw new TestNeedToBeWrittenException();
         }
 
         [Fact]
@@ -1379,7 +1381,7 @@ namespace Gum.IR0Translator.Test
                     )
                 ),
 
-                new R.ExpStmt(new R.CallFuncExp(MakeRootPath("Func", new R.ParamHash(0, Arr<R.Path>(R.Path.Int)), default), null, RArgs(RInt(3))))
+                new R.ExpStmt(new R.CallFuncExp(MakeRootPath("Func", new R.ParamHash(1, Arr<R.Path>(R.Path.Int)), Arr(R.Path.Int)), null, RArgs(RInt(3))))
             );
 
             Assert.Equal(expected, script);
@@ -1419,35 +1421,35 @@ namespace Gum.IR0Translator.Test
         [Fact]
         void CallExp_TranslatesIntoCallValueExp()
         {
-            throw new NotImplementedException();
+            throw new TestNeedToBeWrittenException();
         }
 
         // A0901
         [Fact]
         void CallExp_ChecksMultipleCandidates()
         {
-            throw new NotImplementedException();
+            throw new TestNeedToBeWrittenException();
         }
 
         // A0902
         [Fact]
         void CallExp_ChecksCallableExpressionIsNotCallable()
         {
-            throw new NotImplementedException();
+            throw new TestNeedToBeWrittenException();
         }
 
         // A0903
         [Fact]
         void CallExp_ChecksEnumConstructorArgumentCount()
         {
-            throw new NotImplementedException();
+            throw new TestNeedToBeWrittenException();
         }
 
         // A0904
         [Fact]
         void CallExp_ChecksEnumConstructorArgumentType()
         {
-            throw new NotImplementedException();
+            throw new TestNeedToBeWrittenException();
         }        
 
         [Fact]
@@ -1460,13 +1462,13 @@ namespace Gum.IR0Translator.Test
             // 
             // }
 
-            throw new NotImplementedException();
+            throw new TestNeedToBeWrittenException();
         }
 
         [Fact]
         void LambdaExp_ChecksAssignToLocalVaraiableOutsideLambda()
         {
-            throw new NotImplementedException();
+            throw new TestNeedToBeWrittenException();
         }
 
         [Fact]
@@ -1475,19 +1477,19 @@ namespace Gum.IR0Translator.Test
             // var s = [1, 2, 3, 4];
             // var i = s[3];
 
-            throw new NotImplementedException();
+            throw new TestNeedToBeWrittenException();
         }
         
         [Fact]
         void IndexerExp_ChecksInstanceIsList() // TODO: Indexable로 확장
         {
-            throw new NotImplementedException();
+            throw new TestNeedToBeWrittenException();
         }
 
         [Fact]
         void IndexerExp_ChecksIndexIsInt() // TODO: Indexable인자 타입에 따라 달라짐
         {
-            throw new NotImplementedException();
+            throw new TestNeedToBeWrittenException();
         }
 
         // MemberCallExp
@@ -1501,44 +1503,44 @@ namespace Gum.IR0Translator.Test
         void MemberCallExp_TranslatesIntoCallFuncExp() // 1, 2
         {
             
-            throw new NotImplementedException();
+            throw new TestNeedToBeWrittenException();
         }
 
         [Fact]
         void MemberCallExp_TranslatesIntoNewEnumExp() // 3
         {   
-            throw new NotImplementedException();
+            throw new TestNeedToBeWrittenException();
         }
 
         [Fact]
         void MemberCallExp_TranslatesIntoCallValueExp() // 4, 5
         {
             
-            throw new NotImplementedException();
+            throw new TestNeedToBeWrittenException();
         }
 
         [Fact]
         void MemberCallExp_ChecksCallableExpressionIsNotCallable() // 4, 5
         {
-            throw new NotImplementedException();
+            throw new TestNeedToBeWrittenException();
         }
 
         [Fact]
         void MemberCallExp_EnumConstructorArgumentCount() // 3
         {
-            throw new NotImplementedException();
+            throw new TestNeedToBeWrittenException();
         }
 
         [Fact]
         void MemberCallExp_EnumConstructorArgumentType() // 3
         {
-            throw new NotImplementedException();
+            throw new TestNeedToBeWrittenException();
         }
 
         [Fact]
         void MemberCallExp_ChecksMultipleCandidates() // 1, 2, 4, 5
         {
-            throw new NotImplementedException();
+            throw new TestNeedToBeWrittenException();
         }
 
         // MemberExp
@@ -1549,37 +1551,37 @@ namespace Gum.IR0Translator.Test
         [Fact]
         void MemberExp_TranslatesIntoNewEnumExp() // 1.
         {
-            throw new NotImplementedException();
+            throw new TestNeedToBeWrittenException();
         }
 
         [Fact]
         void MemberExp_TranslatesIntoEnumMemberExp() // 2
         {
-            throw new NotImplementedException();
+            throw new TestNeedToBeWrittenException();
         }
 
         [Fact]
         void MemberExp_TranslatesIntoStaticMemberExp() // 3
         {
-            throw new NotImplementedException();
+            throw new TestNeedToBeWrittenException();
         }
 
         [Fact]
         void MemberExp_TranslatesIntoStructMemberExp() // 4
         {
-            throw new NotImplementedException();
+            throw new TestNeedToBeWrittenException();
         }
 
         [Fact]
         void MemberExp_TranslatesIntoClassMemberExp() // 4
         {
-            throw new NotImplementedException();
+            throw new TestNeedToBeWrittenException();
         }
 
         [Fact]
         void MemberExp_ChecksMemberNotFound() // TODO: enum, class, struct, interface 각각의 경우에 해야 하지 않는가
         {
-            throw new NotImplementedException();
+            throw new TestNeedToBeWrittenException();
         }
 
         //case S.MemberExp memberExp: return AnalyzeMemberExp(memberExp, context, out outExp, out outTypeValue);
@@ -1587,25 +1589,25 @@ namespace Gum.IR0Translator.Test
         [Fact]
         void ListExp_TranslatesTrivially() // TODO: 타입이 적힌 빈 리스트도 포함, <int>[]
         {
-            throw new NotImplementedException();
+            throw new TestNeedToBeWrittenException();
         }
 
         [Fact]
         void ListExp_UsesHintTypeToInferElementType() // List<int> s = []; 
         {
-            throw new NotImplementedException();
+            throw new TestNeedToBeWrittenException();
         }
 
         [Fact]
         void ListExp_ChecksCantInferEmptyElementType() // var x = []; // ???
         {
-            throw new NotImplementedException();
+            throw new TestNeedToBeWrittenException();
         }
 
         [Fact]
         void ListExp_ChecksCantInferElementType() // var = ["string", 1, false];
         {
-            throw new NotImplementedException();
+            throw new TestNeedToBeWrittenException();
         }
     }
 }
