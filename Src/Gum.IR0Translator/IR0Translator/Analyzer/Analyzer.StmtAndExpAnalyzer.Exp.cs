@@ -352,10 +352,7 @@ namespace Gum.IR0Translator
                 {   
                     var clonedAnalyzer = CloneAnalyzer();
 
-                    var paramTypes = MakeParamTypes(funcInfo.ParamInfo.Parameters);
-                    var funcMatcher = new FuncMatcher(clonedAnalyzer, outerTypeEnv, funcInfo.ParamInfo.VariadicParamIndex, paramTypes, funcsResult.TypeArgs, sargs);
-                    var matchResult = funcMatcher.Match();
-
+                    var matchResult = MatchFunc(clonedAnalyzer, outerTypeEnv, funcInfo.ParamInfo, funcsResult.TypeArgs, sargs);
                     if (!matchResult.bMatch) continue;
 
                     var matchedCandidate = new MatchedFunc(matchResult, funcInfo, clonedAnalyzer.globalContext, clonedAnalyzer.callableContext, clonedAnalyzer.localContext);
