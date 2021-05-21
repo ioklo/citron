@@ -1,34 +1,15 @@
-﻿using System;
+﻿using Pretune;
+using System;
 using System.Collections.Generic;
 
 namespace Gum.Syntax
 {
-    public abstract class ScriptElement
+    public abstract record ScriptElement
     {
         internal ScriptElement() { }
     }
-
-    public class GlobalFuncDeclScriptElement : ScriptElement
-    {
-        public GlobalFuncDecl FuncDecl { get; }
-        public GlobalFuncDeclScriptElement(GlobalFuncDecl funcDecl)
-        {
-            FuncDecl = funcDecl;
-        }
-    }
-
-    public class StmtScriptElement : ScriptElement
-    {
-        public Stmt Stmt { get; }
-        public StmtScriptElement(Stmt stmt)
-        {
-            Stmt = stmt;
-        }
-    }
-
-    public class TypeDeclScriptElement : ScriptElement
-    {
-        public TypeDecl TypeDecl { get; }
-        public TypeDeclScriptElement(TypeDecl typeDecl) { TypeDecl = typeDecl; }
-    }
+    
+    public record GlobalFuncDeclScriptElement(GlobalFuncDecl FuncDecl) : ScriptElement;    
+    public record StmtScriptElement(Stmt Stmt) : ScriptElement;
+    public record TypeDeclScriptElement(TypeDecl TypeDecl) : ScriptElement;
 }

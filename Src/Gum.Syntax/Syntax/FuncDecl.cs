@@ -15,24 +15,11 @@ namespace Gum.Syntax
     // a<T>(int b, params T x, int d);
     public abstract class FuncDecl : ISyntaxNode
     {
-        public bool IsSequence { get; } // seq 함수인가        
-        public TypeExp RetType { get; }
-        public string Name { get; }
-        public ImmutableArray<string> TypeParams { get; }
-        public FuncParamInfo ParamInfo { get; }
-        public BlockStmt Body { get; }
-
-        public FuncDecl(
-            bool bSequence,
-            TypeExp retType, string name, ImmutableArray<string> typeParams, 
-            FuncParamInfo paramInfo, BlockStmt body)
-        {
-            IsSequence = bSequence;
-            RetType = retType;
-            Name = name;
-            TypeParams = typeParams;
-            ParamInfo = paramInfo;
-            Body = body;
-        }
+        public abstract bool IsSequence { get; } // seq 함수인가        
+        public abstract TypeExp RetType { get; }
+        public abstract string Name { get; }
+        public abstract ImmutableArray<string> TypeParams { get; }
+        public abstract FuncParamInfo ParamInfo { get; }
+        public abstract BlockStmt Body { get; }
     }
 }

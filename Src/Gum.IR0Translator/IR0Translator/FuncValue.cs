@@ -12,23 +12,13 @@ using Gum.Collections;
 
 namespace Gum.IR0Translator
 {
-    // 종류
-    // InternalGlobalFuncValue - 내가 모듈이다, FuncDecl
-    // InternalMemberFuncValue - InternalTypeValue outer, FuncDecl 참조
-    // ExternalGlobalFuncValue - 모듈을 찾아야 하기 때문에, ModuleName, NamespacePath
-    // ExternalMemberFuncValue - ExternalTypeValue outer;
-    // => (internal/external) (root/member)
-
     // X<int>.Y<short>.F_T_int_int<S>
     class FuncValue : ItemValue
     {
-        ItemValueFactory typeValueFactory;
-        RItemFactory ritemFactory;
+        ItemValueFactory itemValueFactory;
 
         // X<int>.Y<short>
-        M.ModuleName? moduleName;       // external global일 경우에만 존재
-        M.NamespacePath? namespacePath; // (internal/external) global일 경우에만 존재
-        TypeValue? outer;               // (internal/external) member일 경우에만 존재
+        ItemValueOuter outer;
 
         // F_int_int
         M.FuncInfo funcInfo;
@@ -38,32 +28,22 @@ namespace Gum.IR0Translator
         public bool IsStatic { get => !funcInfo.IsInstanceFunc; }
         public bool IsSequence { get => funcInfo.IsSequenceFunc; }
         
-        internal FuncValue(ItemValueFactory typeValueFactory, RItemFactory ritemFactory, M.ModuleName? moduleName, M.NamespacePath? namespacePath, TypeValue? outer, M.FuncInfo funcInfo, ImmutableArray<TypeValue> typeArgs)
+        internal FuncValue(ItemValueFactory itemValueFactory, ItemValueOuter outer, M.FuncInfo funcInfo, ImmutableArray<TypeValue> typeArgs)
         {
-            // 둘중에 하나만 참
-            Debug.Assert((moduleName != null && namespacePath != null) ^ (outer != null));
-            this.typeValueFactory = typeValueFactory;
-            this.ritemFactory = ritemFactory;
-
-            this.moduleName = moduleName;
-            this.namespacePath = namespacePath;
-            this.outer = outer;            
+            this.itemValueFactory = itemValueFactory;            
+            this.outer = outer;
+            
             this.funcInfo = funcInfo;
             this.typeArgs = typeArgs;
         }
 
-        internal override int FillTypeEnv(TypeEnvBuilder builder)
+        internal override void FillTypeEnv(TypeEnvBuilder builder)
         {
-            int depth;
             if (outer != null)
-                depth = outer.FillTypeEnv(builder) + 1;
-            else
-                depth = 0;
+                outer.FillTypeEnv(builder);
 
             for(int i = 0; i < typeArgs.Length; i++)
-                builder.Add(depth, i, typeArgs[i]);
-
-            return depth;
+                builder.Add(typeArgs[i]);
         }
         
         // class X<T> { void Func<U>(T t, U u, int x); }
@@ -72,11 +52,11 @@ namespace Gum.IR0Translator
         {
             var typeEnv = MakeTypeEnv();
 
-            var builder = ImmutableArray.CreateBuilder<TypeValue>(funcInfo.ParamTypes.Length);
-            foreach (var paramType in funcInfo.ParamTypes)
+            var builder = ImmutableArray.CreateBuilder<TypeValue>(funcInfo.ParamInfo.Parameters.Length);
+            foreach (var paramInfo in funcInfo.ParamInfo.Parameters)
             {   
-                var paramTypeValue = typeValueFactory.MakeTypeValue(paramType);
-                var appliedParamTypeValue = paramTypeValue.Apply(typeEnv);
+                var paramTypeValue = itemValueFactory.MakeTypeValue(paramInfo.Type);
+                var appliedParamTypeValue = paramTypeValue.Apply_TypeValue(typeEnv);
                 builder.Add(appliedParamTypeValue);
             }
 
@@ -86,50 +66,33 @@ namespace Gum.IR0Translator
         public TypeValue GetRetType()
         {
             var typeEnv = MakeTypeEnv();
-            var retTypeValue = typeValueFactory.MakeTypeValue(funcInfo.RetType);
-            return retTypeValue.Apply(typeEnv);
+            var retTypeValue = itemValueFactory.MakeTypeValue(funcInfo.RetType);
+            return retTypeValue.Apply_TypeValue(typeEnv);
         }
-
-        bool IsGlobal()
-        {
-            if (moduleName != null && namespacePath != null)
-                return true;
-
-            else if (outer != null)
-                return false;
-
-            throw new UnreachableCodeException();
-        }
-
-        public R.DeclId GetRDeclId()
-        {
-            throw new NotImplementedException();
-        }
-
-        public R.TypeContext GetRTypeContext()
-        {
-            return ritemFactory.MakeTypeContext();
-        }
-
+        
         // IR0 Func를 만들어 줍니다
-        public R.Func GetRFunc()
+        public sealed override R.Path GetRPath()
         {
-            // 1. GetFuncDeclId();
-            // 2. TypeContext;            
-            // TypeValue -> TypeContext
-            if (IsGlobal())
-            {
-                Debug.Assert(moduleName != null && namespacePath != null);
-                var rtypeArgs = ImmutableArray.CreateRange(typeArgs, typeArg => typeArg.GetRType());
-                return ritemFactory.MakeGlobalFunc(moduleName.Value, namespacePath.Value, funcInfo, rtypeArgs);
-            }
-            else
-            {
-                Debug.Assert(outer != null);
-                var outerRType = outer.GetRType();
-                var rtypeArgs = ImmutableArray.CreateRange(typeArgs, typeArg => typeArg.GetRType());
-                return ritemFactory.MakeMemberFunc(outerRType, funcInfo, rtypeArgs);
-            }
-        }   
+            return GetRPath_Nested();
+        }
+
+        public override ItemValue Apply_ItemValue(TypeEnv typeEnv)
+        {
+            var appliedOuter = outer.Apply(typeEnv);
+            var appliedTypeArgs = ImmutableArray.CreateRange(typeArgs, typeArg => typeArg.Apply_TypeValue(typeEnv));
+            return itemValueFactory.MakeFunc(appliedOuter, funcInfo, appliedTypeArgs);
+        }
+
+        public R.Path.Nested GetRPath_Nested()
+        {
+            var rname = RItemFactory.MakeName(funcInfo.Name);
+            var paramTypes = GetParamTypes();
+            var rparamTypes = ImmutableArray.CreateRange(paramTypes, paramType => paramType.GetRPath());
+
+            var paramHash = new R.ParamHash(typeArgs.Length, rparamTypes);
+
+            var rtypeArgs = ImmutableArray.CreateRange(typeArgs, typeArg => typeArg.GetRPath());
+            return outer.GetRPath(rname, paramHash, rtypeArgs);
+        }
     }
 }

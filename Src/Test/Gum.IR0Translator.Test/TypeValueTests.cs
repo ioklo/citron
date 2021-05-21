@@ -82,11 +82,14 @@ namespace Gum.IR0Translator.Test
                 new M.StructInfo(
                     "Y",
                     Arr("U"),
-                    new M.GlobalType(moduleName, M.NamespacePath.Root, "G", Arr<M.Type>(new M.TypeVarType(0, 0, "T"))),
+                    new M.GlobalType(moduleName, M.NamespacePath.Root, "G", Arr<M.Type>(new M.TypeVarType(0, "T"))),
                     interfaces: default,
                     memberTypes: default,
-                    Arr(new M.FuncInfo("F", false, true, Arr("V"), new M.TypeVarType(0, 0, "T"), Arr<M.Type>(new M.TypeVarType(2, 0, "V")))),
-                    Arr(new M.MemberVarInfo(false, new M.GlobalType(moduleName, M.NamespacePath.Root, "X", Arr<M.Type>(new M.TypeVarType(1, 0, "U"))), "v"))
+                    Arr(new M.FuncInfo("F", false, true, Arr("V"), new M.TypeVarType(0, "T"), new M.ParamInfo(
+                        null,
+                        Arr<(M.Type, M.Name)>((new M.TypeVarType(2, "V"), "v"))
+                    ))),
+                    Arr(new M.MemberVarInfo(false, new M.GlobalType(moduleName, M.NamespacePath.Root, "X", Arr<M.Type>(new M.TypeVarType(1, "U"))), "v"))
                 )
             ), default, default);
 
@@ -124,11 +127,13 @@ namespace Gum.IR0Translator.Test
                 new M.MemberType(
                     new M.GlobalType(moduleName, M.NamespacePath.Root, "X", Arr(MTypes.Int)), "Y", Arr(MTypes.Bool)));
 
-            var itemResult = xyTypeValue.GetMember("v", default, ResolveHint.None);
+            var itemResult = xyTypeValue.GetMember("v", default);
             var expected = factory.MakeTypeValue(new M.GlobalType(moduleName, M.NamespacePath.Root, "X", Arr(MTypes.Bool)));
-            Assert.Equal(expected,                 
-                ((MemberVarValue)((ValueItemResult)itemResult).ItemValue).GetTypeValue()
-            );
+
+            var memberVarResult = (ItemQueryResult.MemberVar)itemResult;
+            var memberVarValue = factory.MakeMemberVarValue(memberVarResult.Outer, memberVarResult.MemberVarInfo);
+
+            Assert.Equal(expected, memberVarValue.GetTypeValue());
         }
 
         // FuncValue를 얻어와서         
@@ -145,8 +150,8 @@ namespace Gum.IR0Translator.Test
             var xytype = factory.MakeTypeValue(xymtype);
 
             // 지금은 query밖에 없다, ID를 통한 직접 참조를 할 일 이 생기게 되면 변경한다
-            var itemResult = (ValueItemResult)xytype.GetMember("F", Arr(factory.Bool), ResolveHint.None);
-            var funcValue = (FuncValue)itemResult.ItemValue;            
+            var funcResult = (ItemQueryResult.Funcs)xytype.GetMember("F", 1);
+            var funcValue = factory.MakeFunc(funcResult.Outer, funcResult.FuncInfos[0], Arr(factory.Bool));
 
             Assert.False(funcValue.IsStatic);
             Assert.False(funcValue.IsSequence);            

@@ -6,11 +6,13 @@ using Gum.Collections;
 using System.Diagnostics;
 using System.Linq;
 using System.Xml.XPath;
+using Gum.Infra;
 
 namespace Gum.IR0
 {   
-    public abstract class Stmt
+    public abstract class Stmt : IPure
     {
+        public void EnsurePure() { }
     }
 
     // 명령어
@@ -51,7 +53,7 @@ namespace Gum.IR0
     public partial class IfTestClassStmt : Stmt
     {
         public Loc Target { get; }
-        public Type TestType { get; } 
+        public Path TestType { get; } 
         public Stmt Body { get; }
         public Stmt? ElseBody { get; }
     }
@@ -115,7 +117,7 @@ namespace Gum.IR0
     [AutoConstructor, ImplementIEquatable]
     public partial class TaskStmt : Stmt
     {
-        public AnonymousLambdaType LambdaType { get; }
+        public Path.Nested CapturedStatementDecl { get; }
     }
 
     [AutoConstructor, ImplementIEquatable]
@@ -127,13 +129,13 @@ namespace Gum.IR0
     [AutoConstructor, ImplementIEquatable]
     public partial class AsyncStmt : Stmt
     {
-        public AnonymousLambdaType LambdaType { get; }
+        public Path.Nested CapturedStatementDecl { get; }
     }
 
     [AutoConstructor, ImplementIEquatable]
     public partial class ForeachStmt : Stmt
     {
-        public Type ElemType { get; set; }
+        public Path ElemType { get; set; }
         public string ElemName { get; }
 
         public Loc Iterator { get; }        

@@ -56,6 +56,7 @@ namespace Gum.LexicalAnalysis
     public class EnumToken : Token { public static readonly EnumToken Instance = new EnumToken(); private EnumToken() { } }
     public class StructToken : Token { public static readonly StructToken Instance = new StructToken(); private StructToken() { } }
     public class IsToken : Token { public static readonly IsToken Instance = new IsToken(); private IsToken() { } }
+    public class RefToken : Token { public static readonly RefToken Instance = new RefToken(); private RefToken() { } }
 
     public class PublicToken : Token { public static readonly PublicToken Instance = new PublicToken(); private PublicToken() { } }
     public class ProtectedToken : Token { public static readonly ProtectedToken Instance = new ProtectedToken(); private ProtectedToken() { } }

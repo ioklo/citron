@@ -1,5 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Gum.Collections;
+using Gum.Infra;
+using System;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,14 +17,29 @@ namespace Gum.IR0Translator
         public InternalGlobalVarInfo(M.Name name, TypeValue typeValue) { Name = name; TypeValue = typeValue; }
     }
 
-    class InternalGlobalVariableRepository
+    class InternalGlobalVariableRepository : IMutable<InternalGlobalVariableRepository>
     {
-        // global variable        
-        Dictionary<M.Name, InternalGlobalVarInfo> internalGlobalVarInfos;
+        // global variable
+        ImmutableDictionary<M.Name, InternalGlobalVarInfo> internalGlobalVarInfos;
 
         public InternalGlobalVariableRepository()
         {
-            internalGlobalVarInfos = new Dictionary<M.Name, InternalGlobalVarInfo>();
+            internalGlobalVarInfos = ImmutableDictionary<M.Name, InternalGlobalVarInfo>.Empty;
+        }
+
+        InternalGlobalVariableRepository(InternalGlobalVariableRepository other, CloneContext cloneContext)
+        {
+            this.internalGlobalVarInfos = other.internalGlobalVarInfos;
+        }
+
+        public InternalGlobalVariableRepository Clone(CloneContext context)
+        {
+            return new InternalGlobalVariableRepository(this, context);
+        }        
+
+        public void Update(InternalGlobalVariableRepository src, UpdateContext updateContext)
+        {
+            this.internalGlobalVarInfos = src.internalGlobalVarInfos;            
         }
 
         public InternalGlobalVarInfo? GetVariable(M.Name name)
@@ -34,7 +50,7 @@ namespace Gum.IR0Translator
         public void AddInternalGlobalVariable(M.Name name, TypeValue typeValue)
         {
             var globalVarInfo = new InternalGlobalVarInfo(name, typeValue);
-            internalGlobalVarInfos.Add(name, globalVarInfo);
+            internalGlobalVarInfos = internalGlobalVarInfos.Add(name, globalVarInfo);
         }
 
         public bool HasVariable(M.Name name)

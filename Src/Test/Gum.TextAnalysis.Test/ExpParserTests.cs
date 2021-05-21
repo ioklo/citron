@@ -33,7 +33,7 @@ namespace Gum.TextAnalysis.Test
 
             var expResult = await expParser.ParseExpAsync(context);
 
-            Assert.Equal(SimpleSId("x"), expResult.Elem, SyntaxEqualityComparer.Instance);
+            Assert.Equal(SimpleSId("x"), expResult.Elem);
         }
 
         [Fact]
@@ -44,7 +44,7 @@ namespace Gum.TextAnalysis.Test
 
             var expResult = await expParser.ParseExpAsync(context);
 
-            Assert.Equal(new IdentifierExp("x", Arr<TypeExp>(new IdTypeExp("T", default))), expResult.Elem, SyntaxEqualityComparer.Instance);
+            Assert.Equal(new IdentifierExp("x", Arr<TypeExp>(new IdTypeExp("T", default))), expResult.Elem);
         }
 
         [Fact]
@@ -64,7 +64,7 @@ namespace Gum.TextAnalysis.Test
                 new TextStringExpElement(" ddd")
             ));
 
-            Assert.Equal(expected, expResult.Elem, SyntaxEqualityComparer.Instance);
+            Assert.Equal(expected, expResult.Elem);
         }
 
         [Theory]
@@ -78,7 +78,7 @@ namespace Gum.TextAnalysis.Test
 
             var expected = new BoolLiteralExp(bExpectedResult);
 
-            Assert.Equal(expected, expResult.Elem, SyntaxEqualityComparer.Instance);
+            Assert.Equal(expected, expResult.Elem);
         }
 
         [Fact]
@@ -92,7 +92,7 @@ namespace Gum.TextAnalysis.Test
 
             var expected = new IntLiteralExp(1234);
 
-            Assert.Equal(expected, expResult.Elem, SyntaxEqualityComparer.Instance);
+            Assert.Equal(expected, expResult.Elem);
         }
 
         [Fact]
@@ -109,13 +109,13 @@ namespace Gum.TextAnalysis.Test
                     BinaryOpKind.Modulo,
                     new CallExp(
                         new UnaryOpExp(UnaryOpKind.PostfixInc, SimpleSId("c")), 
-                        Arr<Exp>(SimpleSId("e"), SimpleSId("f"))
+                        Arr<Argument>(new Argument.Normal(SimpleSId("e")), new Argument.Normal(SimpleSId("f")))
                     ),
                     SimpleSId("d")
                 )
             );
 
-            Assert.Equal(expected, expResult.Elem, SyntaxEqualityComparer.Instance);
+            Assert.Equal(expected, expResult.Elem);
         }        
 
         [Fact]
@@ -142,7 +142,7 @@ namespace Gum.TextAnalysis.Test
                 )
             );
 
-            Assert.Equal(expected, expResult.Elem, SyntaxEqualityComparer.Instance);
+            Assert.Equal(expected, expResult.Elem);
         }
 
         [Fact]
@@ -164,13 +164,13 @@ namespace Gum.TextAnalysis.Test
                                 new IdTypeExp("list", Arr<TypeExp>(new IdTypeExp("int", default)))
                             )
                         ),
-                        Arr<Exp>(new IntLiteralExp(1), SimpleSStringExp("str"))
+                        Arr<Argument>(new Argument.Normal(new IntLiteralExp(1)), new Argument.Normal(SimpleSStringExp("str")))
                     ),
                     "d",
                     default
                 );
 
-            Assert.Equal(expected, expResult.Elem, SyntaxEqualityComparer.Instance);
+            Assert.Equal(expected, expResult.Elem);
         }
 
         [Fact]
@@ -187,7 +187,7 @@ namespace Gum.TextAnalysis.Test
                 new IntLiteralExp(3)
             ));
                 
-            Assert.Equal(expected, expResult.Elem, SyntaxEqualityComparer.Instance);
+            Assert.Equal(expected, expResult.Elem);
         }
 
         [Fact]
@@ -200,13 +200,13 @@ namespace Gum.TextAnalysis.Test
 
             var expected = new NewExp(
                 new IdTypeExp("MyType", Arr<TypeExp>(new IdTypeExp("X", default))),
-                Arr<Exp>(
-                    new IntLiteralExp(2),
-                    new BoolLiteralExp(false),
-                    SimpleSStringExp("string")
+                Arr<Argument>(
+                    new Argument.Normal(new IntLiteralExp(2)),
+                    new Argument.Normal(new BoolLiteralExp(false)),
+                    new Argument.Normal(SimpleSStringExp("string"))
                 ));
 
-            Assert.Equal(expected, expResult.Elem, SyntaxEqualityComparer.Instance);
+            Assert.Equal(expected, expResult.Elem);
         }
 
         [Fact]
@@ -242,7 +242,7 @@ namespace Gum.TextAnalysis.Test
                             new IntLiteralExp(3)),
                         new BoolLiteralExp(false))));
 
-            Assert.Equal(expected, expResult.Elem, SyntaxEqualityComparer.Instance);
+            Assert.Equal(expected, expResult.Elem);
         }
     }
 }

@@ -1,5 +1,7 @@
-﻿using System;
+﻿using Gum.Infra;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -35,8 +37,13 @@ namespace Gum.Collections
         {
             return new ImmutableArray<T>(System.Collections.Immutable.ImmutableArray.Create(item1, item2));
         }
+        
+        public static ImmutableArray<T> Create<T>(ImmutableArray<T> items, int start, int length)
+        {
+            return new ImmutableArray<T>(System.Collections.Immutable.ImmutableArray.Create(items.array, start, length));
+        }
 
-        public static ImmutableArray<T> Create<T>(params T[] items)
+        public static ImmutableArray<T> Create<T>(params T[]? items)
         {
             return new ImmutableArray<T>(System.Collections.Immutable.ImmutableArray.Create(items));
         }
@@ -58,10 +65,10 @@ namespace Gum.Collections
         internal System.Collections.Immutable.ImmutableArray<T> array;
 
         public ImmutableArray(System.Collections.Immutable.ImmutableArray<T> array)
-        {
-            this.array = array;
+        {   
+            this.array = array;            
         }
-
+        
         public bool IsEmpty => array.IsDefaultOrEmpty;
         public int Length => array.IsDefault ? 0 : array.Length;
 

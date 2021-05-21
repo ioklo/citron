@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Gum.IR0.Runtime
+namespace Gum.IR0Evaluator.Test
 {
     class TestCmdProvider : ICommandProvider
     {
@@ -35,11 +35,28 @@ namespace Gum.IR0.Runtime
     {
         List<IError> errors = new List<IError>();
 
+        TestErrorCollector(TestErrorCollector other, CloneContext cloneContext)
+        {
+            this.errors = new List<IError>(other.errors);
+        }
+
         public bool HasError => errors.Count != 0;
 
         public void Add(IError error)
         {
             errors.Add(error);
+        }
+
+        public IErrorCollector Clone(CloneContext context)
+        {
+            return new TestErrorCollector(this, context);
+        }
+
+        public void Update(IErrorCollector src_errorCollector, UpdateContext updateContext)
+        {
+            var src = (TestErrorCollector)src_errorCollector;
+            errors.Clear();
+            errors.AddRange(src.errors);
         }
 
         public string GetMessages()

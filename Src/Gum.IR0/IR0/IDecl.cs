@@ -1,7 +1,9 @@
-﻿namespace Gum.IR0
+﻿using Gum.Infra;
+
+namespace Gum.IR0
 {
-    public interface IDecl
+    public abstract class Decl : IPure
     {
-        DeclId DeclId { get; }
+        public abstract void EnsurePure();
     }
 }

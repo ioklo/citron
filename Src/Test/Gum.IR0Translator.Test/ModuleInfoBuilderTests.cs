@@ -32,10 +32,10 @@ namespace Gum.IR0Translator.Test
         public void ParamHash_TypeVarDifferentNameSameLocation_SameParamHash()
         {
             // F<T>(T t)
-            var paramTypes1 = Arr<M.Type>(new M.TypeVarType(0, 0, "T"));
+            var paramTypes1 = Arr<M.Type>(new M.TypeVarType(0, "T"));
 
             // F<U>(U u)
-            var paramTypes2 = Arr<M.Type>(new M.TypeVarType(0, 0, "U"));
+            var paramTypes2 = Arr<M.Type>(new M.TypeVarType(0, "U"));
 
             var paramHash1 = Misc.MakeParamHash(paramTypes1);
             var paramHash2 = Misc.MakeParamHash(paramTypes2);
@@ -46,8 +46,9 @@ namespace Gum.IR0Translator.Test
         [Fact]
         public void Build_FuncDecl_ModuleInfoHasFuncInfo()
         {
+            // void Func<T, U>(int x, params U y, T z)
             var script = SScript(new S.GlobalFuncDeclScriptElement(new S.GlobalFuncDecl(
-                bSequence: false,
+                isSequence: false,
                 VoidTypeExp,
                 "Func",
                 Arr("T", "U"),
@@ -64,17 +65,17 @@ namespace Gum.IR0Translator.Test
             Assert.NotNull(result);
             Debug.Assert(result != null);
 
-            var paramHash = Misc.MakeParamHash(Arr<M.Type>(IntMType, new M.TypeVarType(0, 1, "U"), new M.TypeVarType(0, 0, "T")));
+            var paramHash = Misc.MakeParamHash(Arr<M.Type>(IntMType, new M.TypeVarType(1, "U"), new M.TypeVarType(0, "T")));
 
             var funcInfo = GlobalItemQueryService.GetGlobalItem(result, M.NamespacePath.Root, new ItemPathEntry("Func", 2, paramHash));
             Assert.NotNull(funcInfo);
             Debug.Assert(funcInfo != null);
 
-            var paramTypes = Arr<M.Type>(IntMType, new M.TypeVarType(0, 1, "U"), new M.TypeVarType(0, 0, "T"));
+            var parameters = Arr<(M.Type Type, M.Name name)>((IntMType, "x"), (new M.TypeVarType(1, "U"), "y"), (new M.TypeVarType(0, "T"), "z"));
 
             var expected = new M.FuncInfo(
                 "Func",
-                false, false, Arr("T", "U"), M.VoidType.Instance, paramTypes
+                false, false, Arr("T", "U"), M.VoidType.Instance, new M.ParamInfo(1, parameters)
             );
 
             Assert.Equal(expected, funcInfo);
@@ -98,8 +99,8 @@ namespace Gum.IR0Translator.Test
                     Arr<S.StructDeclElement>(
                         new S.FuncStructDeclElement(new S.StructFuncDecl(
                             S.AccessModifier.Private,
-                            bStatic: true,
-                            bSequence: false,
+                            isStatic: true,
+                            isSequence: false,
                             new S.IdTypeExp("T", default),
                             "Func",
                             Arr("T", "U"),
@@ -142,13 +143,16 @@ namespace Gum.IR0Translator.Test
                 memberFuncs: Arr<M.FuncInfo>(
                     new M.FuncInfo(
                         "Func",
-                        bSeqCall: false, 
-                        bThisCall: true,
+                        isSequenceFunc: false,
+                        isInstanceFunc: true,
                         Arr("T", "U"),
-                        new M.TypeVarType(1, 0, "T"),
-                        Arr<M.Type>(
-                            new M.GlobalType(moduleName, M.NamespacePath.Root, "S", ImmutableArray.Create<M.Type>(IntMType)),
-                            new M.TypeVarType(1, 1, "U")
+                        new M.TypeVarType(1, "T"),
+                        new M.ParamInfo(
+                            null,
+                            Arr<(M.Type, M.Name)>(
+                                (new M.GlobalType(moduleName, M.NamespacePath.Root, "S", ImmutableArray.Create<M.Type>(IntMType)), "s"),
+                                (new M.TypeVarType(2, "U"), "u")
+                            )
                         )
                     )
                 ),

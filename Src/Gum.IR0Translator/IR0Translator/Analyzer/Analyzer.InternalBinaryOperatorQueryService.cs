@@ -6,7 +6,8 @@ using static Gum.Infra.Misc;
 
 using S = Gum.Syntax;
 using R = Gum.IR0;
-
+using System;
+using Gum.Infra;
 
 namespace Gum.IR0Translator
 {
@@ -32,7 +33,7 @@ namespace Gum.IR0Translator
             }
         }
 
-        struct InternalBinaryOperatorQueryService
+        struct InternalBinaryOperatorQueryService : IPure
         {
             Dictionary<S.BinaryOpKind, ImmutableArray<InternalBinaryOperatorInfo>> infos;
 
@@ -70,6 +71,11 @@ namespace Gum.IR0Translator
                         new InternalBinaryOperatorInfo(boolType, boolType, boolType, R.InternalBinaryOperator.Equal_Bool_Bool_Bool),
                         new InternalBinaryOperatorInfo(stringType, stringType, boolType, R.InternalBinaryOperator.Equal_String_String_Bool) ) },
                 };
+            }
+
+            public void EnsurePure()
+            {
+                // 더이상 infos를 바꾸는 경우가 없으므로 pure
             }
 
             public ImmutableArray<InternalBinaryOperatorInfo> GetInfos(S.BinaryOpKind kind)

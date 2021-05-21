@@ -13,17 +13,24 @@ using R = Gum.IR0;
 namespace Gum.IR0Translator
 {
     // Low-level ItemValue factory
-    class ItemValueFactory
+    class ItemValueFactory : IPure
     {   
         TypeInfoRepository typeInfoRepo;
         RItemFactory ritemFactory;
 
+        public TypeValue Void { get; }
         public TypeValue Bool { get; }
         public TypeValue Int { get; }        
         public TypeValue String { get; }
         public TypeValue List(TypeValue typeArg)
         {
             throw new NotImplementedException();
+        }
+
+        public void EnsurePure()
+        {
+            Infra.Misc.EnsurePure(typeInfoRepo);
+            Infra.Misc.EnsurePure(ritemFactory);
         }
 
         public ItemValueFactory(TypeInfoRepository typeInfoRepo, RItemFactory ritemFactory)
@@ -33,38 +40,39 @@ namespace Gum.IR0Translator
             this.typeInfoRepo = typeInfoRepo;
             this.ritemFactory = ritemFactory;
 
-            Bool = MakeGlobalType("System.Runtime", new M.NamespacePath("System"), MakeEmptyStructInfo("Boolean"), default);
-            Int = MakeGlobalType("System.Runtime", new M.NamespacePath("System"), MakeEmptyStructInfo("Int32"), default);
+            Void = VoidTypeValue.Instance;
+            Bool = MakeTypeValue("System.Runtime", new M.NamespacePath("System"), MakeEmptyStructInfo("Boolean"), default);
+            Int = MakeTypeValue("System.Runtime", new M.NamespacePath("System"), MakeEmptyStructInfo("Int32"), default);
 
             // TODO: 일단 Struct로 만든다
-            String = MakeGlobalType("System.Runtime", new M.NamespacePath("System"), MakeEmptyStructInfo("String"), default);
+            String = MakeTypeValue("System.Runtime", new M.NamespacePath("System"), MakeEmptyStructInfo("String"), default);
         }
 
-        public TypeValue MakeGlobalType(M.ModuleName moduleName, M.NamespacePath namespacePath, M.TypeInfo typeInfo, ImmutableArray<TypeValue> typeArgs)
+        public TypeValue MakeTypeValue(M.ModuleName moduleName, M.NamespacePath namespacePath, M.TypeInfo typeInfo, ImmutableArray<TypeValue> typeArgs)
         {
-            switch (typeInfo)
-            {
-                case M.StructInfo structInfo: return new StructTypeValue(this, ritemFactory, moduleName, namespacePath, null, structInfo, typeArgs);
-            }
-
-            throw new UnreachableCodeException();
+            return MakeTypeValue(new RootItemValueOuter(moduleName, namespacePath), typeInfo, typeArgs);
         }
 
-        public NormalTypeValue MakeMemberType(TypeValue outer, M.TypeInfo typeInfo, ImmutableArray<TypeValue> typeArgs)
+        public TypeValue MakeTypeValue(TypeValue outer, M.TypeInfo typeInfo, ImmutableArray<TypeValue> typeArgs)
+        {
+            return MakeTypeValue(new NestedItemValueOuter(outer), typeInfo, typeArgs);
+        }
+
+        public NormalTypeValue MakeTypeValue(ItemValueOuter outer, M.TypeInfo typeInfo, ImmutableArray<TypeValue> typeArgs)
         {
             switch (typeInfo)
             {
                 case M.StructInfo structInfo:
-                    return new StructTypeValue(this, ritemFactory, null, null, outer, structInfo, typeArgs);
+                    return new StructTypeValue(this, ritemFactory, outer, structInfo, typeArgs);
             }
 
             throw new UnreachableCodeException();
-        }
+        }        
 
         public MemberVarValue MakeMemberVarValue(NormalTypeValue outer, M.MemberVarInfo info)
         {
             return new MemberVarValue(this, outer, info);
-        }
+        }        
         
         ImmutableArray<TypeValue> MakeTypeValues(ImmutableArray<M.Type> mtypes)
         {
@@ -76,14 +84,14 @@ namespace Gum.IR0Translator
             }
 
             return builder.ToImmutable();
-        }
-        
+        }        
+
         public TypeValue MakeTypeValue(M.Type mtype)
         {
             switch (mtype)
             {
                 case M.TypeVarType typeVar:
-                    return MakeTypeVar(typeVar.Depth, typeVar.Index);
+                    return MakeTypeVar(typeVar.Index);
 
                 case M.GlobalType externalType:
                     {
@@ -92,7 +100,7 @@ namespace Gum.IR0Translator
                         Debug.Assert(typeInfo != null);
 
                         var typeArgs = MakeTypeValues(externalType.TypeArgs);
-                        return MakeGlobalType(externalType.ModuleName, externalType.NamespacePath, typeInfo, typeArgs);
+                        return MakeTypeValue(new RootItemValueOuter(externalType.ModuleName, externalType.NamespacePath), typeInfo, typeArgs);
                     }
 
                 case M.MemberType memberType:
@@ -114,31 +122,47 @@ namespace Gum.IR0Translator
             }
         }
 
-        public TypeVarTypeValue MakeTypeVar(int depth, int index)
+        public FuncValue MakeFunc(ItemValueOuter outer, M.FuncInfo funcInfo, ImmutableArray<TypeValue> typeArgs)
         {
-            return new TypeVarTypeValue(ritemFactory, depth, index);
-        }        
+            return new FuncValue(this, outer, funcInfo, typeArgs);
+        }
 
-        // internal
+        public TypeVarTypeValue MakeTypeVar(int index)
+        {
+            return new TypeVarTypeValue(ritemFactory, index);
+        }        
+        
         public FuncValue MakeMemberFunc(TypeValue outer, M.FuncInfo funcInfo, ImmutableArray<TypeValue> typeArgs)
         {
-            return new FuncValue(this, ritemFactory, null, null, outer, funcInfo, typeArgs);
+            var itemValueOuter = new NestedItemValueOuter(outer);
+            return new FuncValue(this, itemValueOuter, funcInfo, typeArgs);
         }
 
         // global
         public FuncValue MakeGlobalFunc(M.ModuleName moduleName, M.NamespacePath namespacePath, M.FuncInfo funcInfo, ImmutableArray<TypeValue> typeArgs)
         {
-            return new FuncValue(this, ritemFactory, moduleName, namespacePath, null, funcInfo, typeArgs);
+            var itemValueOuter = new RootItemValueOuter(moduleName, namespacePath);
+            return new FuncValue(this, itemValueOuter, funcInfo, typeArgs);
         }
 
-        public LambdaTypeValue MakeLambdaType(R.DeclId lambdaDeclId, TypeValue retType, ImmutableArray<TypeValue> paramTypes)
+        public SeqTypeValue MakeSeqType(R.Path.Nested seq, TypeValue yieldType)
         {
-            return new LambdaTypeValue(ritemFactory, lambdaDeclId, retType, paramTypes);
+            return new SeqTypeValue(ritemFactory, seq, yieldType);
+        }
+
+        public LambdaTypeValue MakeLambdaType(R.Path.Nested lambda, TypeValue retType, ImmutableArray<TypeValue> paramTypes)
+        {
+            return new LambdaTypeValue(ritemFactory, lambda, retType, paramTypes);
         }
 
         public VarTypeValue MakeVarTypeValue()
         {
             return VarTypeValue.Instance;
+        }
+
+        public TupleTypeValue MakeTupleType(ImmutableArray<(TypeValue Type, string? Name)> elems)
+        {
+            return new TupleTypeValue(ritemFactory, elems);
         }
     }
 }

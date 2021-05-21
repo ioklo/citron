@@ -1,25 +1,19 @@
 ﻿using System.Collections.Generic;
 using Gum.Collections;
+using Pretune;
 
 namespace Gum.Syntax
 {
-    public class StructFuncDecl : FuncDecl
+    [AutoConstructor, ImplementIEquatable]
+    public partial class StructFuncDecl : FuncDecl
     {
         public AccessModifier AccessModifier { get; }
         public bool IsStatic { get; }
-        public StructFuncDecl(
-            AccessModifier accessModifier,
-            bool bStatic,
-            bool bSequence,
-            TypeExp retType,
-            string name,
-            ImmutableArray<string> typeParams,
-            FuncParamInfo paramInfo,
-            BlockStmt body)
-            : base(bSequence, retType, name, typeParams, paramInfo, body)
-        {
-            AccessModifier = accessModifier;
-            IsStatic = bStatic;
-        }
+        public override bool IsSequence { get; } // seq 함수인가        
+        public override TypeExp RetType { get; }
+        public override string Name { get; }
+        public override ImmutableArray<string> TypeParams { get; }
+        public override FuncParamInfo ParamInfo { get; }
+        public override BlockStmt Body { get; }       
     }
 }

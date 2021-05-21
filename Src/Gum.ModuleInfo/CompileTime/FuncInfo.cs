@@ -3,48 +3,18 @@ using System.Collections.Generic;
 using Gum.Collections;
 using System.Linq;
 using System.Text;
+using Pretune;
 
 namespace Gum.CompileTime
 {
-    public class FuncInfo : ItemInfo, IEquatable<FuncInfo?>
+    [AutoConstructor, ImplementIEquatable]
+    public partial class FuncInfo : ItemInfo
     {
         public override Name Name { get; }
         public bool IsSequenceFunc { get; }
         public bool IsInstanceFunc { get; }
         public ImmutableArray<string> TypeParams { get; }
         public Type RetType { get; }
-        public ImmutableArray<Type> ParamTypes { get; }
-
-        public FuncInfo(Name name, bool bSeqCall, bool bThisCall, ImmutableArray<string> typeParams, Type retType, ImmutableArray<Type> paramTypes)
-        {
-            Name = name;
-            IsSequenceFunc = bSeqCall;
-            IsInstanceFunc = bThisCall;
-            TypeParams = typeParams;
-            RetType = retType;
-            ParamTypes = paramTypes;
-        }
-
-        public override bool Equals(object? obj)
-        {
-            return Equals(obj as FuncInfo);
-        }
-
-        public bool Equals(FuncInfo? other)
-        {
-            return other != null &&
-                   Name.Equals(other.Name) &&
-                   Name.Equals(other.Name) &&
-                   IsSequenceFunc == other.IsSequenceFunc &&
-                   IsInstanceFunc == other.IsInstanceFunc &&
-                   TypeParams.Equals(other.TypeParams) &&
-                   EqualityComparer<Type>.Default.Equals(RetType, other.RetType) &&
-                   ParamTypes.Equals(other.ParamTypes);
-        }
-
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(Name, Name, IsSequenceFunc, IsInstanceFunc, TypeParams, RetType, ParamTypes);
-        }
+        public ParamInfo ParamInfo { get; }
     }
 }

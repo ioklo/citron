@@ -7,63 +7,30 @@ using System.Threading.Tasks;
 
 namespace Gum.IR0
 {   
-    public abstract class Loc
+    public abstract record Loc;
+
+    // l[b], l is list    
+    public record ListIndexerLoc(Loc List, Loc Index) : Loc;    
+    public record StaticMemberLoc(Path Type, string MemberName) : Loc;    
+    public record StructMemberLoc(Loc Instance, string MemberName) : Loc;
+    public record ClassMemberLoc(Loc Instance, string MemberName) : Loc;    
+    public record EnumMemberLoc(Loc Instance, string MemberName) : Loc;        
+    public record GlobalVarLoc(string Name) : Loc;    
+    public record LocalVarLoc(string Name) : Loc;    
+    public record CapturedVarLoc(string Name) : Loc;
+    public record CapturedThisLoc : Loc
     {
+        public static readonly CapturedThisLoc Instance = new CapturedThisLoc();
+        CapturedThisLoc() { }
     }
 
-    // l[b], l is list
-    [AutoConstructor, ImplementIEquatable]
-    public partial class ListIndexerLoc : Loc
+    // 임시 value를 만들어서 Exp를 실행해서 대입해주는 역할, ExpInfo 대신 쓴다    
+    public record TempLoc(Exp Exp, Path Type) : Loc;    
+    public record ThisLoc : Loc
     {
-        public Loc List { get; }
-        public Loc Index { get; }
+        public static readonly ThisLoc Instance = new ThisLoc();
+        ThisLoc() { }
     }
+    
 
-    [AutoConstructor, ImplementIEquatable]
-    public partial class StaticMemberLoc : Loc
-    {
-        public Type Type { get; }
-        public string MemberName { get; }
-    }
-
-    [AutoConstructor, ImplementIEquatable]
-    public partial class StructMemberLoc : Loc
-    {
-        public Loc Instance { get; }
-        public string MemberName { get; }
-    }
-
-    [AutoConstructor, ImplementIEquatable]
-    public partial class ClassMemberLoc : Loc
-    {
-        public Loc Instance { get; }
-        public string MemberName { get; }
-    }
-
-    [AutoConstructor, ImplementIEquatable]
-    public partial class EnumMemberLoc : Loc
-    {
-        public Loc Instance { get; }
-        public string MemberName { get; }
-    }
-
-    [AutoConstructor, ImplementIEquatable]
-    public partial class GlobalVarLoc : Loc
-    {
-        public string Name { get; }
-    }
-
-    [AutoConstructor, ImplementIEquatable]
-    public partial class LocalVarLoc : Loc
-    {
-        public string Name { get; } // LocalVarId;
-    }
-
-    // 임시 value를 만들어서 Exp를 실행해서 대입해주는 역할, ExpInfo 대신 쓴다
-    [AutoConstructor, ImplementIEquatable]
-    public partial class TempLoc : Loc 
-    {
-        public Exp Exp { get; }
-        public Type Type { get; }
-    }
 }

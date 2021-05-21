@@ -1,87 +1,71 @@
 ﻿using System;
+using System.Diagnostics;
 using Gum.Collections;
-using M = Gum.CompileTime;
+using Gum.Infra;
 using R = Gum.IR0;
+using M = Gum.CompileTime;
 
 namespace Gum.IR0Translator
 {
-    class RItemFactory
+    class RItemFactory : IPure
     {
-        public R.Type MakeTypeVar(int depth, int index)
+        public void EnsurePure()
         {
-            return new R.TypeVar(depth, index);
         }
 
-        R.ModuleName MakeModuleName(M.ModuleName moduleName)
+        public static R.ModuleName MakeModuleName(M.ModuleName moduleName)
         {
             return new R.ModuleName(moduleName.Text);
+        }
+
+        public static R.Name MakeName(M.Name name)
+        {
+            switch (name.Kind)
+            {
+                case M.SpecialName.Normal: return new R.Name.Normal(name.Text!);
+                case M.SpecialName.IndexerGet: return new R.Name.IndexerGet();
+                case M.SpecialName.IndexerSet: return new R.Name.IndexerSet();
+                case M.SpecialName.AnonymousLambda: return new R.Name.Anonymous(new R.AnonymousId(int.Parse(name.Text!)));
+                case M.SpecialName.OpInc: return new R.Name.OpInc();
+                case M.SpecialName.OpDec: return new R.Name.OpDec();
+            }
+
+            throw new UnreachableCodeException();
+        }
+
+        public static ImmutableArray<R.Path> MakeRTypes(ImmutableArray<TypeValue> typeValues)
+        {
+            return ImmutableArray.CreateRange(typeValues, typeValue => typeValue.GetRPath());
         }        
-
-        R.NamespacePath MakeNamespacePath(M.NamespacePath nsPath)
-        {
-            var rentries = ImmutableArray.CreateRange(nsPath.Entries, entry => new R.NamespaceName(entry.Value));
-            return new R.NamespacePath(rentries);
-        }
-
-        R.Name MakeName(M.Name name)
-        {
-            return new R.Name((R.SpecialName)name.Kind, name.Text);
-        }
-
-        ImmutableArray<R.Type> MakeRTypes(ImmutableArray<TypeValue> typeValues)
-        {
-            return ImmutableArray.CreateRange(typeValues, typeValue => typeValue.GetRType());
-        }
-
-        public R.StructType MakeStructType(M.ModuleName moduleName, M.NamespacePath namespacePath, M.Name name, ImmutableArray<TypeValue> typeArgs)
-        {
-            var rmoduleName = MakeModuleName(moduleName);
-            var rnsPath = MakeNamespacePath(namespacePath);
-            var rname = MakeName(name);
-            var rtypeArgs = MakeRTypes(typeArgs);
-
-            var outerType = new R.RootOuterType(rmoduleName, rnsPath);
-            return new R.StructType(outerType, rname, rtypeArgs);
-        }
-
-        public R.Type MakeStructType(R.OuterType outerType, M.Name name, ImmutableArray<R.Type> rtypeArgs)
-        {
-            return new R.StructType(outerType, name, typeContext);
-        }
-
-        public R.Type MakeMemberType(R.Type rtype, M.Name name, ImmutableArray<R.Type> rtypeArgs)
+        
+        public R.Path MakeMemberType(R.Path rtype, M.Name name, ImmutableArray<R.Path> rtypeArgs)
         {
             throw new NotImplementedException();
         }
 
-        public R.Type MakeLambdaType(R.DeclId lambdaDeclId, R.Type returnRType, ImmutableArray<R.Type> paramRTypes)
+        public R.Path MakeLambdaType(R.Path.Nested lambda)
         {
-            return new R.AnonymousLambdaType(lambdaDeclId);
+            return new R.Path.AnonymousLambdaType(lambda);
         }
 
-        public R.Type MakeEnumElemType()
+        public R.Path MakeEnumElemType()
         {
             throw new NotImplementedException();
         }
 
-        public R.Func MakeGlobalFunc(M.ModuleName moduleName, M.NamespacePath namespacePath, M.FuncInfo funcInfo, ImmutableArray<R.Type> rtypeArgs)
+        public R.Path MakeGlobalFunc(M.ModuleName moduleName, M.NamespacePath namespacePath, M.FuncInfo funcInfo, ImmutableArray<R.Path> rtypeArgs)
         {
             throw new NotImplementedException();
         }
 
-        public R.Func MakeMemberFunc(R.Type outer, M.FuncInfo funcInfo, ImmutableArray<R.Type> rtypeArgs)
+        public R.Path MakeMemberFunc(R.Path outer, M.FuncInfo funcInfo, ImmutableArray<R.Path> rtypeArgs)
         {
             throw new NotImplementedException();
         }
 
-        public R.DeclId MakeDeclId(M.ModuleName value1, M.NamespacePath value2, M.FuncInfo funcInfo)
+        public R.Path MakeTupleType(ImmutableArray<R.TypeAndName> elems)
         {
-            throw new NotImplementedException();
-        }
-
-        public R.TypeContext MakeTypeContext()
-        {
-            throw new NotImplementedException();
+            return new R.Path.TupleType(elems);
         }
     }
 }

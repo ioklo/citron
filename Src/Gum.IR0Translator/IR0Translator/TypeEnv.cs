@@ -9,39 +9,17 @@ namespace Gum.IR0Translator
 {       
     class TypeEnv
     {
-        internal struct DepthIndex : IEquatable<DepthIndex>
-        {
-            public int Depth { get; }
-            public int Index { get; }
-            public DepthIndex(int depth, int index) { Depth = depth; Index = index; }
-
-            public override bool Equals(object? obj)
-            {
-                return obj is DepthIndex index && Equals(index);
-            }
-
-            public bool Equals(DepthIndex other)
-            {
-                return Depth == other.Depth &&
-                       Index == other.Index;
-            }
-
-            public override int GetHashCode()
-            {
-                return HashCode.Combine(Depth, Index);
-            }
-        }
-
-        ImmutableDictionary<DepthIndex, TypeValue> dict;
+        public static readonly TypeEnv None = new TypeEnv(default);
+        ImmutableArray<TypeValue> data;
         
-        public TypeEnv(ImmutableDictionary<DepthIndex, TypeValue> dict)
+        public TypeEnv(ImmutableArray<TypeValue> data)
         {
-            this.dict = dict;
+            this.data = data;
         }
 
-        public TypeValue GetValue(int depth, int index)
+        public TypeValue GetValue(int index)
         {
-            return dict[new DepthIndex(depth, index)];
+            return data[index];
         }
     }
 }

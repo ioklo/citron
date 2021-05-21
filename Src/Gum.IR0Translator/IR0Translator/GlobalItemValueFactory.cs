@@ -12,181 +12,180 @@ using M = Gum.CompileTime;
 namespace Gum.IR0Translator
 {
     // 이름만으로 뭔가를 찾고 싶을땐
-    class GlobalItemValueFactory
+    class GlobalItemValueFactory : IPure
     {
-        ItemValueFactory typeValueFactory;
         M.ModuleInfo internalModuleInfo;
         ModuleInfoRepository externalModuleRepos;
 
-        public GlobalItemValueFactory(ItemValueFactory typeValueFactory, M.ModuleInfo internalModuleInfo, ModuleInfoRepository externalModuleRepos)
-        {
-            this.typeValueFactory = typeValueFactory;
+        public GlobalItemValueFactory(M.ModuleInfo internalModuleInfo, ModuleInfoRepository externalModuleRepos)
+        {            
             this.internalModuleInfo = internalModuleInfo;
             this.externalModuleRepos = externalModuleRepos;
         }
-        
+
+        public void EnsurePure()
+        {
+            Infra.Misc.EnsurePure(internalModuleInfo);
+            Infra.Misc.EnsurePure(externalModuleRepos);
+        }
+
         struct QueryContext
         {
             GlobalItemValueFactory outer;
             M.NamespacePath namespacePath;
             M.Name name;
-            ImmutableArray<TypeValue> typeArgs;
-            ResolveHint hint;
+            int typeParamCount;
 
-            public QueryContext(GlobalItemValueFactory outer, M.NamespacePath namespacePath, M.Name name, ImmutableArray<TypeValue> typeArgs, ResolveHint hint)
+            public QueryContext(GlobalItemValueFactory outer, M.NamespacePath namespacePath, M.Name name, int typeParamCount)
             {
                 this.outer = outer;
                 this.namespacePath = namespacePath;
                 this.name = name;
-                this.typeArgs = typeArgs;
-                this.hint = hint;                
+                this.typeParamCount = typeParamCount;
             }       
             
-            ItemResult GetGlobalTypeCore(M.ModuleName moduleName, ImmutableArray<M.TypeInfo> types)
+            ItemQueryResult GetGlobalTypeCore(M.ModuleName moduleName, ImmutableArray<M.TypeInfo> types)
             {
-                var candidates = new Candidates<ItemResult>();
+                var candidates = new Candidates<ItemQueryResult>();
 
                 foreach(var type in types)
                 {
-                    // typeHint는 고려하지 않는다
-                    if (type.Name.Equals(name) && type.TypeParams.Length == typeArgs.Length)
+                    if (type.Name.Equals(name) && type.TypeParams.Length == typeParamCount)
                     {
-                        var typeValue = outer.typeValueFactory.MakeGlobalType(moduleName, namespacePath, type, typeArgs);
-                        candidates.Add(new ValueItemResult(typeValue));
+                        candidates.Add(new ItemQueryResult.Type(new RootItemValueOuter(moduleName, namespacePath), type));
                     }
                 }
 
                 var result = candidates.GetSingle();
                 if (result != null) return result;
-                if (candidates.IsEmpty) return NotFoundItemResult.Instance;
-                if (candidates.HasMultiple) return MultipleCandidatesErrorItemResult.Instance;
+                if (candidates.IsEmpty) return ItemQueryResult.NotFound.Instance;
+                if (candidates.HasMultiple) return ItemQueryResult.Error.MultipleCandidates.Instance;
 
                 throw new UnreachableCodeException();
             }
 
-            ItemResult GetGlobalTypeInModule(M.ModuleInfo moduleInfo)
+            ItemQueryResult GetGlobalTypeInModule(M.ModuleInfo moduleInfo)
             {
                 if (namespacePath.IsRoot)
                     return GetGlobalTypeCore(moduleInfo.Name, moduleInfo.Types);
 
                 var namespaceInfo = moduleInfo.GetNamespace(namespacePath);
                 if (namespaceInfo == null)
-                    return NotFoundItemResult.Instance;
+                    return ItemQueryResult.NotFound.Instance;
 
                 return GetGlobalTypeCore(moduleInfo.Name, namespaceInfo.Types);
             }
 
-            ItemResult GetGlobalType()
+            ItemQueryResult GetGlobalType()
             {
-                var candidates = new Candidates<ItemResult>();
+                var candidates = new Candidates<ItemQueryResult>();
 
                 var internalResult = GetGlobalTypeInModule(outer.internalModuleInfo);
-                if (internalResult is ErrorItemResult) return internalResult;
-                if (internalResult is ValueItemResult) candidates.Add(internalResult);
+                if (internalResult is ItemQueryResult.Error) return internalResult;
+                if (internalResult is ItemQueryResult.Valid) candidates.Add(internalResult);
                 // empty 무시
 
                 foreach (var externalModuleInfo in outer.externalModuleRepos.GetAllModules())
                 {
                     var externalResult = GetGlobalTypeInModule(externalModuleInfo);
-                    if (externalResult is ErrorItemResult) return externalResult;
-                    if (externalResult is ValueItemResult) candidates.Add(externalResult);
+                    if (externalResult is ItemQueryResult.Error) return externalResult;
+                    if (externalResult is ItemQueryResult.Valid) candidates.Add(externalResult);
                     // empty는 무시
                 }
 
                 var result = candidates.GetSingle();
                 if (result != null) return result;
-                if (candidates.IsEmpty) return NotFoundItemResult.Instance;
-                if (candidates.HasMultiple) return MultipleCandidatesErrorItemResult.Instance;
+                if (candidates.IsEmpty) return ItemQueryResult.NotFound.Instance;
+                if (candidates.HasMultiple) return ItemQueryResult.Error.MultipleCandidates.Instance;
 
                 throw new UnreachableCodeException();
             }
 
-            ItemResult GetGlobalFuncCore(M.ModuleName moduleName, ImmutableArray<M.FuncInfo> funcs)
+            ItemQueryResult GetGlobalFuncCore(M.ModuleName moduleName, ImmutableArray<M.FuncInfo> funcs)
             {
-                var candidates = new Candidates<ItemResult>();
+                var funcInfos = ImmutableArray.CreateBuilder<M.FuncInfo>();
 
                 foreach (var func in funcs)
                 {
+                    Debug.Assert(!func.IsInstanceFunc);
+
                     if (func.Name.Equals(name) &&
-                        func.TypeParams.Length == typeArgs.Length) // TODO: TypeParam inference, 같지 않아도 된다
-                    {
-                        var funcValue = outer.typeValueFactory.MakeGlobalFunc(moduleName, namespacePath, func, typeArgs);
-                        candidates.Add(new ValueItemResult(funcValue));
+                        typeParamCount <= func.TypeParams.Length)
+                    {   
+                        funcInfos.Add(func);
                     }
                 }
 
-                var result = candidates.GetSingle();
-                if (result != null) return result;
-                if (candidates.IsEmpty) return NotFoundItemResult.Instance;
-                if (candidates.HasMultiple) return MultipleCandidatesErrorItemResult.Instance;
-
-                throw new UnreachableCodeException();
+                if (funcInfos.Count != 0)
+                    return new ItemQueryResult.Funcs(new RootItemValueOuter(moduleName, namespacePath), funcInfos.ToImmutable(), false);
+                
+                return ItemQueryResult.NotFound.Instance;
             }
 
-            ItemResult GetGlobalFuncInModule(M.ModuleInfo moduleInfo)
+            ItemQueryResult GetGlobalFuncInModule(M.ModuleInfo moduleInfo)
             {
                 if (namespacePath.IsRoot)
                     return GetGlobalFuncCore(moduleInfo.Name, moduleInfo.Funcs);
 
                 var namespaceInfo = moduleInfo.GetNamespace(namespacePath);
                 if (namespaceInfo == null)
-                    return NotFoundItemResult.Instance;
+                    return ItemQueryResult.NotFound.Instance;
 
                 return GetGlobalFuncCore(moduleInfo.Name, namespaceInfo.Funcs);
             }
 
-            ItemResult GetGlobalFunc()
+            ItemQueryResult GetGlobalFunc()
             {
-                var candidates = new Candidates<ItemResult>();
+                var candidates = new Candidates<ItemQueryResult>();
 
                 var internalResult = GetGlobalFuncInModule(outer.internalModuleInfo);
-                if (internalResult is ErrorItemResult) return internalResult;
-                if (internalResult is ValueItemResult) candidates.Add(internalResult);
+                if (internalResult is ItemQueryResult.Error) return internalResult;
+                if (internalResult is ItemQueryResult.Valid) candidates.Add(internalResult);
                 // empty 무시
 
                 foreach (var externalModuleInfo in outer.externalModuleRepos.GetAllModules())
                 {
                     var externalResult = GetGlobalFuncInModule(externalModuleInfo);
-                    if (externalResult is ErrorItemResult) return externalResult;
-                    if (externalResult is ValueItemResult) candidates.Add(externalResult);
+                    if (externalResult is ItemQueryResult.Error) return externalResult;
+                    if (externalResult is ItemQueryResult.Valid) candidates.Add(externalResult);
                     // empty는 무시
                 }
 
                 var result = candidates.GetSingle();
                 if (result != null) return result;
-                if (candidates.IsEmpty) return NotFoundItemResult.Instance;
-                if (candidates.HasMultiple) return MultipleCandidatesErrorItemResult.Instance;
+                if (candidates.IsEmpty) return ItemQueryResult.NotFound.Instance;
+                if (candidates.HasMultiple) return ItemQueryResult.Error.MultipleCandidates.Instance;
 
                 throw new UnreachableCodeException();
             }
 
-            public ItemResult GetGlobal()
+            public ItemQueryResult GetGlobal()
             {
-                var candidates = new Candidates<ItemResult>();
+                var candidates = new Candidates<ItemQueryResult>();
 
                 // 타입끼리, 함수끼리 module을 건너서 중복체크를 한 뒤, 타입과 함수 결과를 가지고 중복체크를 한다
                 var typeResult = GetGlobalType();
-                if (typeResult is ErrorItemResult) return typeResult;
-                if (typeResult is ValueItemResult) candidates.Add(typeResult);
+                if (typeResult is ItemQueryResult.Error) return typeResult;
+                if (typeResult is ItemQueryResult.Valid) candidates.Add(typeResult);
                 // empty 무시
 
                 var funcResult = GetGlobalFunc();
-                if (funcResult is ErrorItemResult) return funcResult;
-                if (funcResult is ValueItemResult) candidates.Add(funcResult);
+                if (funcResult is ItemQueryResult.Error) return funcResult;
+                if (funcResult is ItemQueryResult.Valid) candidates.Add(funcResult);
                 // empty 무시
 
                 var result = candidates.GetSingle();
                 if (result != null) return result;
-                if (candidates.IsEmpty) return NotFoundItemResult.Instance;
-                if (candidates.HasMultiple) return MultipleCandidatesErrorItemResult.Instance;
+                if (candidates.IsEmpty) return ItemQueryResult.NotFound.Instance;
+                if (candidates.HasMultiple) return ItemQueryResult.Error.MultipleCandidates.Instance;
 
                 throw new UnreachableCodeException();
             }
         }
         
-        public ItemResult GetGlobal(M.NamespacePath namespacePath, M.Name name, ImmutableArray<TypeValue> typeArgs, ResolveHint hint)
+        public ItemQueryResult GetGlobal(M.NamespacePath namespacePath, M.Name name, int typeParamCount)
         {
-            var context = new QueryContext(this, namespacePath, name, typeArgs, hint);
+            var context = new QueryContext(this, namespacePath, name, typeParamCount);
             return context.GetGlobal();
         }
     }

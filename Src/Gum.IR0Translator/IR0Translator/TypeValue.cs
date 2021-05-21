@@ -1,5 +1,4 @@
-﻿
-using Gum.Infra;
+﻿using Gum.Infra;
 using System;
 using System.Collections.Generic;
 using Gum.Collections;
@@ -18,10 +17,14 @@ namespace Gum.IR0Translator
     abstract partial class TypeValue : ItemValue
     {
         public virtual TypeValue? GetBaseType() { return null; }
-        public virtual ItemResult GetMember(M.Name memberName, ImmutableArray<TypeValue> typeArgs, ResolveHint hint) { return NotFoundItemResult.Instance; }
+        public virtual ItemQueryResult GetMember(M.Name memberName, int typeParamCount) { return ItemQueryResult.NotFound.Instance; }
         public virtual TypeValue? GetMemberType(M.Name memberName, ImmutableArray<TypeValue> typeArgs) { return null; }        
-        internal abstract TypeValue Apply(TypeEnv typeEnv);
-        public abstract IR0.Type GetRType();
+        public abstract TypeValue Apply_TypeValue(TypeEnv typeEnv);        
+
+        public sealed override ItemValue Apply_ItemValue(TypeEnv typeEnv)
+        {
+            return Apply_TypeValue(typeEnv);
+        }
     }
 
     // "var"
@@ -30,10 +33,10 @@ namespace Gum.IR0Translator
         public static readonly VarTypeValue Instance = new VarTypeValue();
         private VarTypeValue() { }
 
-        internal override TypeValue Apply(TypeEnv typeEnv) { return this; }
+        public override TypeValue Apply_TypeValue(TypeEnv typeEnv) { return this; }
 
         // var는 translation패스에서 추론되기 때문에 IR0에 없다
-        public override R.Type GetRType() { throw new InvalidOperationException();  }
+        public override R.Path GetRPath() { throw new InvalidOperationException();  }
     }
 
     // T: depth는 지역적이므로, 주어진 컨텍스트 안에서만 의미가 있다
@@ -42,40 +45,39 @@ namespace Gum.IR0Translator
     {
         RItemFactory ritemFactory;
 
-        public int Depth { get; }
         public int Index { get; }
 
-        internal override TypeValue Apply(TypeEnv typeEnv)
+        public override TypeValue Apply_TypeValue(TypeEnv typeEnv)
         {
-            var typeValue = typeEnv.GetValue(Depth, Index);
+            var typeValue = typeEnv.GetValue(Index);
             if (typeValue != null)
                 return typeValue;
 
             return this;
         }
-        public override R.Type GetRType() => ritemFactory.MakeTypeVar(Depth, Index);
+        public override R.Path GetRPath() => new R.Path.TypeVarType(Index);
     }
 
     [ImplementIEquatable]
     partial class ClassTypeValue : NormalTypeValue
     {
-        internal override TypeValue Apply(TypeEnv typeEnv)
+        public override NormalTypeValue Apply_NormalTypeValue(TypeEnv typeEnv)
         {
             throw new NotImplementedException();
         }
 
-        public override R.Type GetRType() => throw new NotImplementedException();
+        public override R.Path.Nested GetRPath_Nested() => throw new NotImplementedException();
     }
 
     [ImplementIEquatable]
     partial class EnumTypeValue : NormalTypeValue
     {
-        public override R.Type GetRType()
+        public override R.Path.Nested GetRPath_Nested()
         {
             throw new NotImplementedException();
         }
 
-        internal override TypeValue Apply(TypeEnv typeEnv)
+        public override NormalTypeValue Apply_NormalTypeValue(TypeEnv typeEnv)
         {
             throw new NotImplementedException();
         }
@@ -84,98 +86,107 @@ namespace Gum.IR0Translator
     [ImplementIEquatable]
     partial class StructTypeValue : NormalTypeValue
     {
-        ItemValueFactory typeValueFactory;
+        ItemValueFactory itemValueFactory;
         RItemFactory ritemFactory;
 
-        // global일 경우
-        M.ModuleName? moduleName;
-        M.NamespacePath? namespacePath;
-
-        // member일 경우
-        TypeValue? outer;        
+        ItemValueOuter outer;
 
         M.StructInfo structInfo;
         ImmutableArray<TypeValue> typeArgs;
 
-        internal StructTypeValue(ItemValueFactory factory, RItemFactory ritemFactory, M.ModuleName? moduleName, M.NamespacePath? namespacePath, TypeValue? outer, M.StructInfo structInfo, ImmutableArray<TypeValue> typeArgs)
+        internal StructTypeValue(ItemValueFactory factory, RItemFactory ritemFactory, ItemValueOuter outer, M.StructInfo structInfo, ImmutableArray<TypeValue> typeArgs)
         {
-            this.typeValueFactory = factory;
+            this.itemValueFactory = factory;
             this.ritemFactory = ritemFactory;
-            this.moduleName = moduleName;
-            this.namespacePath = namespacePath;
             this.outer = outer;
             this.structInfo = structInfo;
             this.typeArgs = typeArgs;
         }
 
-        ItemResult GetMember_Type(M.Name memberName, ImmutableArray<TypeValue> typeArgs)
+        ItemQueryResult GetMember_Type(M.Name memberName, int typeParamCount)
         {
-            var results = new List<ValueItemResult>();
+            var candidates = new Candidates<ItemQueryResult.Valid>();
 
             foreach (var memberType in structInfo.MemberTypes)
             {
                 // 이름이 같고, 타입 파라미터 개수가 같다면
-                if (memberType.Name.Equals(memberName) && memberType.TypeParams.Length == typeArgs.Length)
+                if (memberType.Name.Equals(memberName) && memberType.TypeParams.Length == typeParamCount)
                 {
-                    var typeValue = typeValueFactory.MakeMemberType(this, memberType, typeArgs);
-                    results.Add(new ValueItemResult(typeValue));
+                    candidates.Add(new ItemQueryResult.Type(new NestedItemValueOuter(this), memberType));
                 }
             }
 
-            if (1 < results.Count)
-                return MultipleCandidatesErrorItemResult.Instance;
+            var result = candidates.GetSingle();
+            if (result != null)
+                return result;
 
-            if (results.Count == 0)
-                return NotFoundItemResult.Instance;
+            if (candidates.HasMultiple)
+                return ItemQueryResult.Error.MultipleCandidates.Instance;
 
-            return results[0];
-        }
+            if (candidates.IsEmpty)
+                return ItemQueryResult.NotFound.Instance;
 
-        ItemResult GetMember_Func(M.Name memberName, ImmutableArray<TypeValue> typeArgs, ResolveHint resolveHint)
-        {
-            var results = new List<ValueItemResult>();
-
-            foreach (var memberFunc in structInfo.MemberFuncs)
-            {
-                // TODO: resolveHint로 파라미터 체크 
-                if (memberFunc.Name.Equals(memberName) && 
-                    memberFunc.TypeParams.Length == typeArgs.Length) // TODO: TypeParam inference, 같지 않아도 된다
-                {
-                    var funcValue = typeValueFactory.MakeMemberFunc(this, memberFunc, typeArgs);
-                    results.Add(new ValueItemResult(funcValue));
-                }
-            }
-
-            if (1 < results.Count)
-                return MultipleCandidatesErrorItemResult.Instance;
-
-            if (results.Count == 0)
-                return NotFoundItemResult.Instance;
-
-            return results[0];
+            throw new UnreachableCodeException();
         }
         
-        ItemResult GetMember_Var(M.Name memberName, ImmutableArray<TypeValue> typeArgs)
+        ItemQueryResult GetMember_Func(M.Name memberName, int typeParamCount)
         {
-            var results = new List<ValueItemResult>();
+            var funcsBuilder = ImmutableArray.CreateBuilder<M.FuncInfo>();
+
+            bool bHaveInstance = false;
+            bool bHaveStatic = false;
+            foreach (var memberFunc in structInfo.MemberFuncs)
+            {
+                if (memberFunc.Name.Equals(memberName) &&
+                    typeParamCount <= memberFunc.TypeParams.Length)
+                {
+                    bHaveInstance |= memberFunc.IsInstanceFunc;
+                    bHaveStatic |= !memberFunc.IsInstanceFunc;                    
+
+                    funcsBuilder.Add(memberFunc);
+                }
+            }
+
+            // 여러개 있을 수 있기때문에 MultipleCandidates를 리턴하지 않는다
+            if (funcsBuilder.Count == 0)
+                return ItemQueryResult.NotFound.Instance;
+
+            // 둘다 가지고 있으면 안된다
+            if (bHaveInstance && bHaveStatic)
+                return ItemQueryResult.Error.MultipleCandidates.Instance;
+
+            Debug.Assert(!bHaveInstance && !bHaveStatic);
+
+            return new ItemQueryResult.Funcs(new NestedItemValueOuter(this), funcsBuilder.ToImmutable(), bHaveInstance);
+        }
+        
+        ItemQueryResult GetMember_Var(M.Name memberName, int typeParamCount)
+        {
+            var candidates = new Candidates<ItemQueryResult.MemberVar>();
+
             foreach (var memberVar in structInfo.MemberVars)
                 if (memberVar.Name.Equals(memberName))
-                {
-                    var memberVarValue = typeValueFactory.MakeMemberVarValue(this, memberVar);
-                    results.Add(new ValueItemResult(memberVarValue));
+                {   
+                    candidates.Add(new ItemQueryResult.MemberVar(this, memberVar));
                 }
 
-            if (1 < results.Count)
-                return MultipleCandidatesErrorItemResult.Instance;
+            var result = candidates.GetSingle();
+            if (result != null)
+            {
+                // 변수를 찾았는데 타입 아규먼트가 있다면 에러
+                if (typeParamCount != 0)
+                    return ItemQueryResult.Error.VarWithTypeArg.Instance;
 
-            if (results.Count == 0)
-                return NotFoundItemResult.Instance;
+                return result;
+            }
 
-            // 변수를 찾았는데 타입 아규먼트가 있다면 에러
-            if (typeArgs.Length != 0) 
-                return VarWithTypeArgErrorItemResult.Instance;
+            if (candidates.HasMultiple)
+                return ItemQueryResult.Error.MultipleCandidates.Instance;
 
-            return results[0];
+            if (candidates.IsEmpty)
+                return ItemQueryResult.NotFound.Instance;
+
+            throw new UnreachableCodeException();
         }
 
         public override TypeValue? GetBaseType()
@@ -183,35 +194,35 @@ namespace Gum.IR0Translator
             if (structInfo.BaseType == null) return null;
 
             var typeEnv = MakeTypeEnv();
-            var typeValue = typeValueFactory.MakeTypeValue(structInfo.BaseType);
-            return typeValue.Apply(typeEnv);
+            var typeValue = itemValueFactory.MakeTypeValue(structInfo.BaseType);
+            return typeValue.Apply_TypeValue(typeEnv);
         }
 
-        public override ItemResult GetMember(M.Name memberName, ImmutableArray<TypeValue> typeArgs, ResolveHint hint)
+        public override ItemQueryResult GetMember(M.Name memberName, int typeParamCount)
         {
             // TODO: caching
-            var results = new List<ValueItemResult>();
+            var results = new List<ItemQueryResult.Valid>();
 
             // error, notfound, found
-            var typeResult = GetMember_Type(memberName, typeArgs);
-            if (typeResult is ErrorItemResult) return typeResult;
-            if (typeResult is ValueItemResult typeMemberResult) results.Add(typeMemberResult);
+            var typeResult = GetMember_Type(memberName, typeParamCount);
+            if (typeResult is ItemQueryResult.Error) return typeResult;
+            if (typeResult is ItemQueryResult.Valid typeMemberResult) results.Add(typeMemberResult);
 
             // error, notfound, found
-            var funcResult = GetMember_Func(memberName, typeArgs, hint);
-            if (funcResult is ErrorItemResult) return funcResult;
-            if (funcResult is ValueItemResult funcMemberResult) results.Add(funcMemberResult);
+            var funcResult = GetMember_Func(memberName, typeParamCount);
+            if (funcResult is ItemQueryResult.Error) return funcResult;
+            if (funcResult is ItemQueryResult.Valid funcMemberResult) results.Add(funcMemberResult);
 
             // error, notfound, found
-            var varResult = GetMember_Var(memberName, typeArgs);
-            if (varResult is ErrorItemResult) return varResult;
-            if (varResult is ValueItemResult varMemberResult) results.Add(varMemberResult);            
+            var varResult = GetMember_Var(memberName, typeParamCount);
+            if (varResult is ItemQueryResult.Error) return varResult;
+            if (varResult is ItemQueryResult.Valid varMemberResult) results.Add(varMemberResult);            
 
             if (1 < results.Count)
-                return MultipleCandidatesErrorItemResult.Instance;
+                return ItemQueryResult.Error.MultipleCandidates.Instance;
 
             if (results.Count == 0)
-                return NotFoundItemResult.Instance;
+                return ItemQueryResult.NotFound.Instance;
 
             return results[0];
         }
@@ -222,78 +233,54 @@ namespace Gum.IR0Translator
             foreach (var memberType in structInfo.MemberTypes)
             {
                 if (memberType.Name.Equals(memberName) && memberType.TypeParams.Length == typeArgs.Length)
-                    return typeValueFactory.MakeMemberType(this, memberType, typeArgs);
+                    return itemValueFactory.MakeTypeValue(this, memberType, typeArgs);
             }
 
             return null;
         }
 
-        internal override int FillTypeEnv(TypeEnvBuilder builder) 
+        internal override void FillTypeEnv(TypeEnvBuilder builder) 
         {
-            int depth;
             if (outer != null)
-                depth = outer.FillTypeEnv(builder) + 1;
-            else
-                depth = 0;
+                outer.FillTypeEnv(builder);            
 
             for (int i = 0; i < structInfo.TypeParams.Length; i++)
-                builder.Add(depth, i, typeArgs[i]);
-
-            return depth;
+                builder.Add(typeArgs[i]);
         }
 
-        internal override TypeValue Apply(TypeEnv typeEnv)
+        public override NormalTypeValue Apply_NormalTypeValue(TypeEnv typeEnv)
         {
             // [X<00T>.Y<10U>.Z<20V>].Apply([00 => int, 10 => short, 20 => string])            
 
-            if (outer != null)
-            {
-                var appliedOuter = outer.Apply(typeEnv);
-                var appliedTypeArgs = ImmutableArray.CreateRange(typeArgs, typeArg => typeArg.Apply(typeEnv));
-                return typeValueFactory.MakeMemberType(appliedOuter, structInfo, appliedTypeArgs);
-            }
-            else
-            {
-                Debug.Assert(moduleName != null && namespacePath != null);
-
-                var appliedTypeArgs = ImmutableArray.CreateRange(typeArgs, typeArg => typeArg.Apply(typeEnv));
-                return typeValueFactory.MakeGlobalType(moduleName.Value, namespacePath.Value, structInfo, appliedTypeArgs);
-            }
+            var appliedOuter = outer.Apply(typeEnv);
+            var appliedTypeArgs = ImmutableArray.CreateRange(typeArgs, typeArg => typeArg.Apply_TypeValue(typeEnv));
+            return itemValueFactory.MakeTypeValue(appliedOuter, structInfo, appliedTypeArgs);
         }
-
-        bool IsGlobal()
+        
+        public override R.Path.Nested GetRPath_Nested()
         {
-            if (moduleName != null && namespacePath != null)
-                return true;
-            else if (outer != null)
-                return false;
+            var rname = RItemFactory.MakeName(structInfo.Name);
+            var rtypeArgs = RItemFactory.MakeRTypes(typeArgs);
 
-            throw new UnreachableCodeException();
-        }
-
-        public override R.Type GetRType()
-        {
-            if (IsGlobal())
-            {
-                Debug.Assert(moduleName != null && namespacePath != null);
-
-                var rtypeArgs = GetRTypes(typeArgs);
-                return ritemFactory.MakeStructType(moduleName.Value, namespacePath.Value, structInfo.Name, typeArgs);
-            }
-            else
-            {
-                Debug.Assert(outer != null);
-
-                var outerRType = outer.GetRType();
-                var rtypeArgs = GetRTypes(typeArgs);
-                return ritemFactory.MakeStructType(outerRType, structInfo.Name, rtypeArgs);
-            }
+            return outer.GetRPath(rname, new R.ParamHash(structInfo.TypeParams.Length, default), rtypeArgs);
         }
     }
 
     // (struct, class, enum) (external/internal) (global/member) type
     abstract partial class NormalTypeValue : TypeValue
-    {   
+    {
+        public abstract NormalTypeValue Apply_NormalTypeValue(TypeEnv env);
+        public sealed override TypeValue Apply_TypeValue(TypeEnv env)
+        {
+            return Apply_NormalTypeValue(env);
+        }
+
+        public sealed override R.Path GetRPath()
+        {
+            return GetRPath_Nested();
+        }
+
+        public abstract R.Path.Nested GetRPath_Nested();        
     }
 
     // "void"
@@ -306,14 +293,14 @@ namespace Gum.IR0Translator
             return obj == Instance;
         }
 
-        internal override TypeValue Apply(TypeEnv typeEnv)
+        public override TypeValue Apply_TypeValue(TypeEnv typeEnv)
         {
             return this;
         }
 
-        public override R.Type GetRType()
+        public override R.Path GetRPath()
         {
-            return R.VoidType.Instance;
+            return R.Path.VoidType.Instance;
         }
 
         public override int GetHashCode()
@@ -326,14 +313,14 @@ namespace Gum.IR0Translator
     class LambdaTypeValue : TypeValue, IEquatable<LambdaTypeValue>
     {
         RItemFactory ritemFactory;
-        public R.DeclId LambdaDeclId { get; }
+        public R.Path.Nested Lambda { get; } // Type의 path가 아니라 Lambda의 path
         public TypeValue Return { get; }
         public ImmutableArray<TypeValue> Params { get; }
 
-        public LambdaTypeValue(RItemFactory ritemFactory, R.DeclId lambdaDeclId, TypeValue ret, ImmutableArray<TypeValue> parameters)
+        public LambdaTypeValue(RItemFactory ritemFactory, R.Path.Nested lambda, TypeValue ret, ImmutableArray<TypeValue> parameters)
         {
             this.ritemFactory = ritemFactory;
-            this.LambdaDeclId = lambdaDeclId;
+            this.Lambda = lambda;
             this.Return = ret;
             this.Params = parameters;
         }
@@ -348,7 +335,7 @@ namespace Gum.IR0Translator
             if (other == null) return false;
 
             // 아이디만 비교한다. 같은 위치에서 다른 TypeContext에서 생성되는 람다는 id도 바뀌어야 한다
-            return LambdaDeclId.Equals(other.LambdaDeclId);
+            return Lambda.Equals(other.Lambda);
         }
 
         // lambdatypevalue를 replace할 일이 있는가
@@ -357,22 +344,38 @@ namespace Gum.IR0Translator
         //     var l = (T t) => t; // { l => LambdaTypeValue({id}, T, [T]) }
         // }
         // 분석중에 Apply할 일은 없고, 실행중에 할 일은 있을 것 같다
-        internal override TypeValue Apply(TypeEnv typeEnv)
+        public override TypeValue Apply_TypeValue(TypeEnv typeEnv)
         {
             throw new InvalidOperationException();
         }
 
-        public override R.Type GetRType()
+        public override R.Path GetRPath()
         {
-            var returnRType = Return.GetRType();
-            var paramRTypes = ImmutableArray.CreateRange(Params, parameter => parameter.GetRType());
-
-            return ritemFactory.MakeLambdaType(LambdaDeclId, returnRType, paramRTypes);
+            return ritemFactory.MakeLambdaType(Lambda);
         }
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(LambdaDeclId);
+            return HashCode.Combine(Lambda);
+        }
+    }
+
+    // 
+    [AutoConstructor]
+    partial class SeqTypeValue : TypeValue
+    {
+        RItemFactory ritemFactory;
+        R.Path.Nested seqFunc;
+        public TypeValue YieldType { get; }
+
+        public override TypeValue Apply_TypeValue(TypeEnv typeEnv)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override R.Path GetRPath()
+        {
+            return new R.Path.AnonymousSeqType(seqFunc);
         }
     }
 
@@ -390,14 +393,42 @@ namespace Gum.IR0Translator
             Name = name;
         }
 
-        internal override TypeValue Apply(TypeEnv typeEnv)
+        public override TypeValue Apply_TypeValue(TypeEnv typeEnv)
         {
             throw new NotImplementedException();
         }
 
-        public override R.Type GetRType()
+        public override R.Path GetRPath()
         {
             return ritemFactory.MakeEnumElemType();
+        }
+    }
+
+    [AutoConstructor]
+    partial class TupleTypeValue : TypeValue
+    {
+        RItemFactory ritemFactory;
+        public ImmutableArray<(TypeValue Type, string? Name)> Elems { get; }
+
+        public override TypeValue Apply_TypeValue(TypeEnv typeEnv)
+        {   
+            throw new NotImplementedException();
+        }
+
+        public override R.Path GetRPath()
+        {
+            var builder = ImmutableArray.CreateBuilder<R.TypeAndName>(Elems.Length);
+            foreach(var elem in Elems)
+            {
+                var rpath = elem.Type.GetRPath();
+                if (elem.Name == null)
+                    throw new NotImplementedException(); // unnamed tuple
+                var name = elem.Name;
+
+                builder.Add(new R.TypeAndName(rpath, name));
+            }
+
+            return ritemFactory.MakeTupleType(builder.MoveToImmutable());
         }
     }
 }

@@ -1,17 +1,21 @@
 ﻿using Gum.Collections;
+using Gum.Infra;
 using Pretune;
 
 namespace Gum.IR0
 {
     [AutoConstructor, ImplementIEquatable]
-    public partial class LambdaDecl : IDecl
+    public partial class LambdaDecl : Decl
     {
-        public DeclId DeclId { get; }
+        public Name.Anonymous Name { get; }
+        public CapturedStatement CapturedStatement { get; }
+        public ParamInfo ParamInfo { get; }
 
-        public Type? CapturedThisType { get; }
-        public ImmutableArray<TypeAndName> CaptureInfo { get; }
-        
-        public ImmutableArray<ParamInfo> ParamInfos { get; }
-        public Stmt Body { get; }
+        public override void EnsurePure()
+        {
+            Misc.EnsurePure(Name);
+            Misc.EnsurePure(CapturedStatement);
+            Misc.EnsurePure(ParamInfo);
+        }
     }
 }

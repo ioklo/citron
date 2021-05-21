@@ -3,16 +3,10 @@ using System;
 using System.Collections.Generic;
 using Gum.Collections;
 using System.Linq;
+using Pretune;
 
 namespace Gum.Syntax
 {   
     // 가장 외곽
-    public partial class Script : ISyntaxNode
-    {
-        public ImmutableArray<ScriptElement> Elements { get; }
-        public Script(ImmutableArray<ScriptElement> elements)
-        {
-            Elements = elements;
-        }        
-    }
+    public record Script(ImmutableArray<ScriptElement> Elements) : ISyntaxNode;
 }

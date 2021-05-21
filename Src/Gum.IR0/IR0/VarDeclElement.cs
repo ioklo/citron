@@ -7,11 +7,5 @@ using System.Threading.Tasks;
 
 namespace Gum.IR0
 {
-    [AutoConstructor, ImplementIEquatable]
-    public partial class VarDeclElement
-    {
-        public string Name { get; }
-        public Type Type { get; }
-        public Exp? InitExp { get; }
-    }
+    public record VarDeclElement(string Name, Path Type, Exp? InitExp);
 }

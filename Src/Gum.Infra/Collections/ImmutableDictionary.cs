@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -37,10 +38,15 @@ namespace Gum.Collections
 
         public TValue this[TKey key] => dict![key];
 
+        public ImmutableDictionary<TKey, TValue> Add(TKey key, TValue value)
+        {
+            if (dict == null) return ImmutableDictionary<TKey, TValue>.Empty.Add(key, value);
+            return new ImmutableDictionary<TKey, TValue>(dict.Add(key, value));
+        }
+
         public ImmutableDictionary<TKey, TValue> SetItem(TKey key, TValue value)
         {
             if (dict == null) return ImmutableDictionary<TKey, TValue>.Empty.SetItem(key, value);
-
             return new ImmutableDictionary<TKey, TValue>(dict.SetItem(key, value));
         }
 
@@ -79,6 +85,24 @@ namespace Gum.Collections
                 return new Builder(System.Collections.Immutable.ImmutableDictionary.CreateBuilder<TKey, TValue>());
 
             return new Builder(dict.ToBuilder());
+        }
+
+        public bool ContainsKey(TKey key)
+        {
+            if (dict == null) return false;
+
+            return dict.ContainsKey(key);
+        }       
+
+        public bool TryGetValue(TKey key, [MaybeNullWhen(false)] out TValue value)
+        {
+            if (dict == null)
+            {
+                value = default;
+                return false;
+            }
+
+            return dict.TryGetValue(key, out value);
         }
     }    
 }

@@ -5,11 +5,11 @@ namespace Gum.IR0Translator
 {
     internal class TypeEnvBuilder
     {
-        ImmutableDictionary<TypeEnv.DepthIndex, TypeValue>.Builder builder;
+        ImmutableArray<TypeValue>.Builder builder;
 
         public TypeEnvBuilder()
         {
-            builder = ImmutableDictionary.CreateBuilder<TypeEnv.DepthIndex, TypeValue>();
+            builder = ImmutableArray.CreateBuilder<TypeValue>();
         }
 
         public TypeEnv Build()
@@ -17,9 +17,9 @@ namespace Gum.IR0Translator
             return new TypeEnv(builder.ToImmutable());
         }
 
-        public void Add(int depth, int index, TypeValue typeValue)
+        public void Add(TypeValue typeValue)
         {
-            builder.Add(new TypeEnv.DepthIndex(depth, index), typeValue);
+            builder.Add(typeValue);
         }
     }
 }

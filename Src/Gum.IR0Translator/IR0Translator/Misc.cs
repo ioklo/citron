@@ -96,7 +96,7 @@ namespace Gum.IR0Translator
             switch (type)
             {
                 case M.TypeVarType typeVar:
-                    sb.Append($"`({typeVar.Depth}, {typeVar.Index})");
+                    sb.Append($"`{typeVar.Index}");
                     break;
                 
                 case M.GlobalType externalType:
@@ -127,38 +127,17 @@ namespace Gum.IR0Translator
             }
         }
 
-        public static void VisitScript(S.Script script, ISyntaxScriptVisitor visitor)
-        {
-            foreach(var elem in script.Elements)
-            {
-                switch(elem)
-                {
-                    case S.GlobalFuncDeclScriptElement globalFuncDeclElem:
-                        visitor.VisitGlobalFuncDecl(globalFuncDeclElem.FuncDecl);
-                        break;
-
-                    case S.StmtScriptElement stmtElem:
-                        visitor.VisitTopLevelStmt(stmtElem.Stmt);
-                        break;
-
-                    case S.TypeDeclScriptElement typeDeclElem:
-                        visitor.VisitTypeDecl(typeDeclElem.TypeDecl);
-                        break;
-                }                
-            }
-        }
-
-        public static string MakeParamHash(ImmutableArray<M.Type> types)
+        public static string MakeParamHash(ImmutableArray<M.Type> paramTypes)
         {
             var sb = new StringBuilder();
 
             bool bFirst = true;
-            foreach (var type in types)
+            foreach (var paramType in paramTypes)
             {
                 if (bFirst) bFirst = false;
                 else sb.Append(" * ");
 
-                FillTypeString(type, sb);
+                FillTypeString(paramType, sb);
             }
 
             return sb.ToString();

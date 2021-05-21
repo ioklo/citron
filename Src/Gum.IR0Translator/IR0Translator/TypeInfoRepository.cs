@@ -4,11 +4,13 @@ using Gum.Collections;
 using System.Linq;
 
 using M = Gum.CompileTime;
+using System.Diagnostics;
+using Gum.Infra;
 
 namespace Gum.IR0Translator
 {
-    // reference module에서 타입 정보를 얻어오는 역할    
-    class TypeInfoRepository
+    // reference module에서 타입 정보를 얻어오는 역할
+    class TypeInfoRepository : IPure
     {
         M.ModuleInfo internalModuleInfo;
         ModuleInfoRepository externalModuleInfoRepo;
@@ -17,6 +19,13 @@ namespace Gum.IR0Translator
         {
             this.internalModuleInfo = internalModuleInfo;
             this.externalModuleInfoRepo = moduleInfoRepo;
+        }
+
+        public void EnsurePure()
+        {
+            // Check purity
+            Infra.Misc.EnsurePure(internalModuleInfo);
+            Infra.Misc.EnsurePure(externalModuleInfoRepo);
         }
 
         public M.TypeInfo? GetType(M.ModuleName moduleName, M.NamespacePath namespacePath, M.Name name, int typeParamCount)

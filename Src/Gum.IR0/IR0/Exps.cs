@@ -115,18 +115,17 @@ namespace Gum.IR0
     [AutoConstructor, ImplementIEquatable]
     public partial class CallFuncExp : Exp
     {
-        public Func Func { get; }
+        public Path.Nested Func { get; }
         public Loc? Instance { get; }
-        public ImmutableArray<Exp> Args { get; }
+        public ImmutableArray<Argument> Args { get; }
     }
 
     [AutoConstructor, ImplementIEquatable]
     public partial class CallSeqFuncExp : Exp
     {
-        public DeclId DeclId { get; }
-        public ImmutableArray<Type> TypeArgs { get; }
+        public Path.Nested SeqFunc { get; }
         public Loc? Instance { get; }
-        public ImmutableArray<Exp> Args { get; }
+        public ImmutableArray<Argument> Args { get; }
         // public bool NeedHeapAlloc { get; } Heap으로 할당시킬지 여부
     }
 
@@ -134,24 +133,25 @@ namespace Gum.IR0
     [AutoConstructor, ImplementIEquatable]
     public partial class CallValueExp : Exp
     {
+        public Path.Nested Lambda { get; }
         public Loc Callable { get; } // (() => {}) ()때문에 Loc이어야 한다
-        public ImmutableArray<Exp> Args { get; }
+        public ImmutableArray<Argument> Args { get; }
     }
 
     // () => { return 1; }
+    // 문법에서 LambdaExp는 지역적으로 보이지만, 생성된 람다는 프로그램 실행시 전역적으로 호출될 수 있기 때문에
+    // LamdaExp안에 캡쳐할 정보와 Body 등을 바로 넣지 않고 Path로 접근한다
     [AutoConstructor, ImplementIEquatable]
     public partial class LambdaExp : Exp
     {
-        // this캡쳐할거냐
-        public bool bCaptureThis { get; }
-        public ImmutableArray<string> CaptureLocalVars { get; }
+        public Path.Nested Lambda { get; }
     }
     
     // [1, 2, 3]
     [AutoConstructor, ImplementIEquatable]
     public partial class ListExp : Exp
     {
-        public Type ElemType { get; }
+        public Path ElemType { get; }
         public ImmutableArray<Exp> Elems { get; }
     }
 
@@ -174,19 +174,19 @@ namespace Gum.IR0
     [AutoConstructor, ImplementIEquatable]
     public partial class NewStructExp : Exp
     {
-        public Type Type { get; }
+        public Path Type { get; }
 
         // TODO: params, out, 등 처리를 하려면 Exp가 아니라 다른거여야 한다
-        public ImmutableArray<Exp> Args { get; }
+        public ImmutableArray<Argument> Args { get; }
     }
 
     // new C(2, 3, 4);
     [AutoConstructor, ImplementIEquatable]
     public partial class NewClassExp : Exp
     {
-        public Type Type { get; }
+        public Path Type { get; }
 
         // TODO: params, out, 등 처리를 하려면 Exp가 아니라 다른거여야 한다
-        public ImmutableArray<Exp> Args { get; }
+        public ImmutableArray<Argument> Args { get; }
     }
 }
