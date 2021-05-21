@@ -85,13 +85,13 @@ namespace Gum.IR0Translator
 
             public void AddError(AnalyzeErrorCode code, S.ISyntaxNode node)
             {
-                errorCollector.Add(new AnalyzeError(code, node, ""));
+                errorCollector.Add(new AnalyzeError(code, node, code.ToString()));
             }
 
             [DoesNotReturn]
             public void AddFatalError(AnalyzeErrorCode code, S.ISyntaxNode node)
             {
-                errorCollector.Add(new AnalyzeError(code, node, ""));
+                errorCollector.Add(new AnalyzeError(code, node, code.ToString()));
                 throw new AnalyzerFatalException();
             }            
 

@@ -1,5 +1,6 @@
 using Gum;
 using Gum.Infra;
+using Gum.IR0Evaluator;
 using Gum.IR0Translator;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -39,11 +40,13 @@ namespace ScratchPad
             await host.RunAsync();
         }
 
-        class TestErrorCollector : IErrorCollector
+        class DemoErrorCollector : IErrorCollector
         {
             List<IError> errors = new List<IError>();
 
-            TestErrorCollector(TestErrorCollector other, CloneContext cloneContext)
+            public DemoErrorCollector() { }
+
+            DemoErrorCollector(DemoErrorCollector other, CloneContext cloneContext)
             {
                 this.errors = new List<IError>(other.errors);
             }
@@ -57,12 +60,12 @@ namespace ScratchPad
 
             public IErrorCollector Clone(CloneContext context)
             {
-                return new TestErrorCollector(this, context);
+                return new DemoErrorCollector(this, context);
             }
 
             public void Update(IErrorCollector src_errorCollector, UpdateContext updateContext)
             {
-                var src = (TestErrorCollector)src_errorCollector;
+                var src = (DemoErrorCollector)src_errorCollector;
                 errors.Clear();
                 errors.AddRange(src.errors);
             }
@@ -72,6 +75,36 @@ namespace ScratchPad
                 return string.Join("\r\n", errors.Select(error => error.Message));
             }
         }
+
+        class DemoCommandProvider : ICommandProvider
+        {
+            public async Task ExecuteAsync(string text)
+            {
+                try
+                {
+                    text = text.Trim();
+
+                    if (text.StartsWith("echo "))
+                    {
+                        await WriteAsync(text.Substring(5).Replace("\\n", "\n"));
+                    }
+                    else if (text.StartsWith("sleep "))
+                    {
+                        var d = double.Parse(text.Substring(6));
+                        await Task.Delay((int)(1000 * d));
+                    }
+                    else
+                    {
+                        await WriteAsync($"알 수 없는 명령어 입니다: {text}\n");
+                    }
+                }
+                catch (Exception e)
+                {
+                    await WriteAsync(e.ToString() + "\n");
+                }
+            }
+        }
+
 
         [JSInvokable]
         public static async Task<bool> RunAsync(string input)
@@ -87,21 +120,24 @@ namespace ScratchPad
             var scriptResult = await parser.ParseScriptAsync(parserContext);
             if (!scriptResult.HasValue)
             {
-                await WriteAsync("에러 (파싱 실패)");
+                await WriteAsync("에러 (파싱 실패)\n");
                 return false;
             }
 
-            var testErrorCollector = new TestErrorCollector();
+            var testErrorCollector = new DemoErrorCollector();
             var rscript = Translator.Translate("TestModule", default, scriptResult.Elem, testErrorCollector);
             if (rscript == null)
             {
-                await WriteAsync("에러 (컴파일 실패)");
+                await WriteAsync("에러 (컴파일 실패)\n");
+                await WriteAsync(testErrorCollector.GetMessages());
                 return false;
             }
 
-            
+            var commandProvider = new DemoCommandProvider();
+            var evaluator = new Evaluator(commandProvider, rscript);
+            var retValue = await evaluator.EvalAsync();
+            await WriteAsync($"\n\n리턴 값: {retValue}");
 
-            
             return true;
         }
     }

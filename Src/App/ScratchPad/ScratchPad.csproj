@@ -11,4 +11,10 @@
     <PackageReference Include="System.Net.Http.Json" Version="5.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\Gum.IR0Evaluator\Gum.IR0Evaluator.csproj" />
+    <ProjectReference Include="..\..\Gum.IR0Translator\Gum.IR0Translator.csproj" />
+    <ProjectReference Include="..\..\Gum.TextAnalysis\Gum.TextAnalysis.csproj" />
+  </ItemGroup>
+
 </Project>
