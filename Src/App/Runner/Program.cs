@@ -54,18 +54,19 @@ namespace Runner
             {
                 text = text.Trim();
 
-                if (text.StartsWith("echo "))
+                /*if (text.StartsWith("echo "))
                 {
                     Console.WriteLine(text.Substring(5).Replace("\\n", "\n"));
                 }
-                else if (text.StartsWith("sleep "))
+                else */if (text.StartsWith("sleep "))
                 {
                     var d = double.Parse(text.Substring(6));
                     await Task.Delay((int)(1000 * d));
                 }
                 else
                 {
-                    Console.WriteLine($"알 수 없는 명령어 입니다: {text}\n");
+                    // Console.WriteLine($"알 수 없는 명령어 입니다: {text}\n");
+                    Console.Write(text);
                 }
             }
             catch (Exception e)
