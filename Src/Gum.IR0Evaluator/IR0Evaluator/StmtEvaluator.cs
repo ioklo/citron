@@ -315,43 +315,13 @@ namespace Gum.IR0Evaluator
 
             internal async IAsyncEnumerable<Void> EvalForeachStmtAsync(R.ForeachStmt stmt)
             {
-                SeqValue MakeSeqValue(ListValue listValue)
-                {
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-                    static async IAsyncEnumerator<Void> MakeAsyncEnumerator(Evaluator evaluator, IEnumerable<Value> enumerable)
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
-                    {
-                        foreach (var value in enumerable)
-                        {
-                            evaluator.context.GetYieldValue().SetValue(value);
-                            yield return Void.Instance;
-                        }
-                    }
-                    
-                    var newEvaluator = evaluator.CloneWithNewContext(null, default);
-
-                    return new SeqValue(MakeAsyncEnumerator(newEvaluator, listValue.GetList()), newEvaluator);
-                }
-
                 async IAsyncEnumerable<Void> InnerScopeAsync()
                 {
-                    var iterator = await evaluator.EvalLocAsync(stmt.Iterator);
-
-                    // TODO: iterator는 seq<T> constraint를 따를 수 있고, Enumerable<T> constraint를 따를 수 있다
-                    // TODO: 현재는 그냥 list<T>이면 enumerable<T>를 에뮬레이션 한다
-                    SeqValue seqValue;
-
-                    if (iterator is SeqValue)
-                        seqValue = (SeqValue)iterator;
-                    else if (iterator is ListValue listValue)
-                        seqValue = MakeSeqValue(listValue);
-                    else
-                        throw new InvalidOperationException();
-
+                    var iteratorLoc = (SeqValue)await evaluator.EvalLocAsync(stmt.Iterator);
                     var elemValue = evaluator.AllocValue(stmt.ElemType);
 
                     evaluator.context.AddLocalVar(stmt.ElemName, elemValue);
-                    while (await seqValue.NextAsync(elemValue))
+                    while (await iteratorLoc.NextAsync(elemValue))
                     {
                         await foreach (var value in EvalStmtAsync(stmt.Body))
                         {

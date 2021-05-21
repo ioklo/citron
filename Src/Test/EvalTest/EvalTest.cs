@@ -1,7 +1,12 @@
-﻿using Gum.Infra;
+﻿using Gum;
+using Gum.Infra;
+using Gum.IR0Evaluator;
+using Gum.IR0Translator;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -10,8 +15,16 @@ using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Gum.IR0Evaluator.Test
+namespace EvalTest
 {
+    static class MyAssert
+    {
+        public static void Assert([DoesNotReturnIf(false)] bool cond)
+        {
+            Xunit.Assert.True(cond);
+        }
+    }
+
     class TestCmdProvider : ICommandProvider
     {
         public bool Error = false;
@@ -34,6 +47,8 @@ namespace Gum.IR0Evaluator.Test
     class TestErrorCollector : IErrorCollector
     {
         List<IError> errors = new List<IError>();
+
+        public TestErrorCollector() { }
 
         TestErrorCollector(TestErrorCollector other, CloneContext cloneContext)
         {
@@ -67,45 +82,60 @@ namespace Gum.IR0Evaluator.Test
 
     public class EvalTest
     {
-        // [Theory]
-        // [ClassData(typeof(EvalTestDataFactory))]
-        public Task TestEvaluateScript(EvalTestData data)
+        [Theory]
+        [ClassData(typeof(EvalTestDataFactory))]
+        public async Task TestEvaluateScript(EvalTestData data)
         {
-            throw new NotImplementedException();
+            var cmdProvider = new TestCmdProvider();
 
-            // TODO: 소스코드를 읽어서 잘 실행되는 지 확인하는 테스트는 다른데서 해야할 것 같다
+            string text;
+            using (var reader = new StreamReader(data.Path))
+                text = reader.ReadToEnd();
+
+            string expected;
+            if (data.OverriddenResult != null)
+            {
+                expected = data.OverriddenResult;
+            }
+            else
+            {
+                Assert.StartsWith("// ", text);
+
+                int firstLineEnd = text.IndexOfAny(new char[] { '\r', '\n' });
+                Assert.True(firstLineEnd != -1);
+
+                expected = text.Substring(3, firstLineEnd - 3);
+            }
+
+            var lexer = new Lexer();
+            var parser = new Parser(lexer);
+
+            var buffer = new Gum.Buffer(new StringReader(text));
+            var bufferPos = await buffer.MakePosition().NextAsync();
+            var lexerContext = LexerContext.Make(bufferPos);
+            var parserContext = ParserContext.Make(lexerContext);
+
+            var scriptResult = await parser.ParseScriptAsync(parserContext);
+            Assert.True(scriptResult.HasValue, "parsing failed");
+
+            var errorCollector = new TestErrorCollector();
+
+            try
+            {
+                var rscript = Translator.Translate("TestModule", default, scriptResult.Elem, errorCollector);
+                MyAssert.Assert(rscript != null);
+
+                var commandProvider = new TestCmdProvider();
+                var evaluator = new Evaluator(commandProvider, rscript);
+                var retValue = await evaluator.EvalAsync(); // retValue는 지금 쓰지 않는다
+            }
+            catch
+            {
+                Assert.True(errorCollector.HasError, "실행은 중간에 멈췄는데 에러로그가 남지 않았습니다");
+            }
             
-            //var cmdProvider = new TestCmdProvider();
-            //var app = new DefaultApplication(cmdProvider);
-
-            //string text;
-            //using(var reader = new StreamReader(data.Path))
-            //{
-            //    text = reader.ReadToEnd();
-            //}
-
-            //string expected;
-            //if (data.OverriddenResult != null)
-            //{
-            //    expected = data.OverriddenResult;
-            //}
-            //else
-            //{
-            //    Assert.StartsWith("// ", text);
-
-            //    int firstLineEnd = text.IndexOfAny(new char[] { '\r', '\n' });
-            //    Assert.True(firstLineEnd != -1);
-
-            //    expected = text.Substring(3, firstLineEnd - 3);
-            //}
-
-            //var runtimeModule = new RuntimeModule(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), Directory.GetCurrentDirectory());
-            //var errorCollector = new TestErrorCollector();
-            //var runResult = await app.RunAsync(Path.GetFileNameWithoutExtension(data.Path), text, runtimeModule, Enumerable.Empty<IModule>(), errorCollector);
-
-            //Assert.True((runResult == null) == (errorCollector.HasError), "실행은 중간에 멈췄는데 에러로그가 남지 않았습니다");
-            //Assert.False(errorCollector.HasError, errorCollector.GetMessages());
-            //Assert.Equal(expected, cmdProvider.Output);
+            Assert.False(errorCollector.HasError, errorCollector.GetMessages());
+            Assert.Equal(expected, cmdProvider.Output);
         }
     }
     
