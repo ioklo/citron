@@ -428,7 +428,7 @@ namespace Gum.IR0Translator.Test
         }
 
         [Fact]
-        public void BreakStmt_TranslatesTrivially()
+        public void BreakStmt_WithinNestedForAndForeachLoopTranslatesTrivially()
         {
             var syntaxScript = SScript(
                 new S.ForStmt(null, null, null, S.BreakStmt.Instance),
@@ -440,6 +440,22 @@ namespace Gum.IR0Translator.Test
             var expected = RScript(
                 new R.ForStmt(null, null, null, R.BreakStmt.Instance),
                 new R.ForeachStmt(R.Path.Int, "x", new R.TempLoc(new R.ListExp(R.Path.Int, default), R.Path.List(R.Path.Int)), R.BreakStmt.Instance)
+            );
+
+            Assert.Equal(expected, script);
+        }
+
+        [Fact]
+        public void BreakStmt_WithinForLoopTranslatesTrivially()
+        {
+            var syntaxScript = SScript(
+                new S.ForStmt(null, null, null, S.BreakStmt.Instance)
+            );
+
+            var script = Translate(syntaxScript);
+
+            var expected = RScript(
+                new R.ForStmt(null, null, null, R.BreakStmt.Instance)
             );
 
             Assert.Equal(expected, script);

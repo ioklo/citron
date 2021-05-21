@@ -400,79 +400,53 @@ namespace Gum.IR0Translator
 
             StmtResult AnalyzeForeachStmt(S.ForeachStmt foreachStmt)
             {
-                throw new NotImplementedException();
+                // SYNTAX: foreach(var elemVarName in iterator) body
+                // IR0: foreach(type elemVarName in iteratorLoc)
+                var iteratorResult = AnalyzeExp_Loc(foreachStmt.Iterator, ResolveHint.None);
+                
+                // 먼저, iteratorResult가 anonymous_seq타입인지 확인한다
+                if (iteratorResult.TypeValue is SeqTypeValue seqIteratorType)
+                {
+                    var elemType = globalContext.GetTypeValueByTypeExp(foreachStmt.Type);
+                    R.Path relemType;
+                    if (elemType is VarTypeValue) // var type처리
+                    {
+                        relemType = seqIteratorType.YieldType.GetRPath();
+                    }
+                    else
+                    {
+                        // 완전히 같아야
+                        if (elemType.Equals(seqIteratorType.YieldType))
+                        {
+                            relemType = elemType.GetRPath();
+                        }
+                        else
+                        {
+                            // 다르다면 seq_cast 시도
+                            // foreach(type elemName in seq_cast(type, iteratorLoc))
+                            throw new NotImplementedException();
+                        }
+                    }
 
-                //// iterator
-                //var iteratorResult = AnalyzeExp(foreachStmt.Iterator, null);
-                //var elemType = context.GetTypeValueByTypeExp(foreachStmt.Type);
+                    // 루프 컨텍스트를 하나 열고
+                    var loopAnalyzer = NewAnalyzerWithLoop();
 
-                //// 1. seq<T> constraint
-                //// 2. seq<T> 인터페이스를 가지고 있는 struct
+                    // 루프 컨텍스트에 로컬을 하나 추가하고
+                    loopAnalyzer.localContext.AddLocalVarInfo(foreachStmt.VarName, elemType);
 
-                //// list<T> => IEnumerable<T>
-                //// interface IEnumerable<T>
-                //// {            
-                ////     seq<int> GetEnumerator(); // 공변 반환형
-                //// }
+                    // 본문 분석
+                    var bodyResult = loopAnalyzer.AnalyzeStmt(foreachStmt.Body);
 
-
-                //// SeqTypeValue(NormalTypeValue) // seq<T>인터페이스를 가지고 있는 struct
-                //// BoxTypeValue(SeqTypeValue(NormalTypeValue)) // 
-                //// RefTypeValue(SeqTypeValue(NormalTypeValue)) // 
-                //// InterfaceTypeValue(SeqTypeValue(NormalTypeValue)) // 네가지
-
-
-
-                //TypeValue? iteratorElemType = null;
-                //if (iteratorResult.TypeValue is NormalTypeValue normalIteratorType)
-                //{
-                //    var typeId = normalIteratorType.GetTypeId( );
-
-                //    if (ModuleInfoEqualityComparer.EqualsItemId(typeId, ItemIds.List))
-                //    {
-                //        iteratorElemType = normalIteratorType.Entry.TypeArgs[0];
-                //    }
-                //    else if (ModuleInfoEqualityComparer.EqualsItemId(typeId, ItemIds.Enumerable))
-                //    {
-                //        iteratorElemType = normalIteratorType.Entry.TypeArgs[0];
-                //    }
-                //    else
-                //    {
-                //        context.AddFatalError(A1801_ForeachStmt_IteratorShouldBeListOrEnumerable, foreachStmt.Iterator);
-                //    }
-                //}
-                //else
-                //{
-                //    context.AddFatalError(A1801_ForeachStmt_IteratorShouldBeListOrEnumerable, foreachStmt.Iterator);
-                //}
-
-                //if (elemType is VarTypeValue) // var 라면, iteratorElemType을 쓴다
-                //{
-                //    elemType = iteratorElemType;
-                //}
-                //else // 아니라면 둘이 호환되는지 확인한다
-                //{
-                //    // TODO: Cast
-                //    if (!context.IsAssignable(elemType, iteratorElemType))
-                //        context.AddFatalError(A1802_ForeachStmt_MismatchBetweenElemTypeAndIteratorElemType, foreachStmt);
-                //}
-
-                //var stmt = context.ExecInLocalScope(() =>
-                //{
-                //    context.AddLocalVarInfo(foreachStmt.VarName, elemType);
-
-                //    return context.ExecInLoop(() =>
-                //    {
-                //        var bodyResult = AnalyzeStmt(foreachStmt.Body);
-
-                //        var elemRType = elemType.GetRType();
-                //        var iteratorRType = iteratorResult.TypeValue.GetRType();
-
-                //        return new R.ForeachStmt(elemRType, foreachStmt.VarName, new R.ExpInfo(iteratorResult.Exp, iteratorRType), bodyResult.Stmt);
-                //    });
-                //});
-
-                //return new StmtResult(stmt);
+                    var rforeachStmt = new R.ForeachStmt(relemType, foreachStmt.VarName, iteratorResult.Result, bodyResult.Stmt);
+                    return new StmtResult(rforeachStmt);
+                }
+                else
+                {
+                    // 축약형 처리
+                    // anonymous_seq를 리턴하는 식으로 변경해준다
+                    // foreach(var i in [1, 2, 3, 4]) => foreach(var i in [1, 2, 3, 4].GetEnumerator())
+                    throw new NotImplementedException();
+                }
             }
 
             StmtResult AnalyzeYieldStmt(S.YieldStmt yieldStmt)

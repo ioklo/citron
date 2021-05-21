@@ -366,7 +366,7 @@ namespace Gum.IR0Translator
     {
         RItemFactory ritemFactory;
         R.Path.Nested seqFunc;
-        TypeValue yieldType;
+        public TypeValue YieldType { get; }
 
         public override TypeValue Apply_TypeValue(TypeEnv typeEnv)
         {
