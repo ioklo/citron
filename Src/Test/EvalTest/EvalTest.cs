@@ -86,8 +86,6 @@ namespace EvalTest
         [ClassData(typeof(EvalTestDataFactory))]
         public async Task TestEvaluateScript(EvalTestData data)
         {
-            var cmdProvider = new TestCmdProvider();
-
             string text;
             using (var reader = new StreamReader(data.Path))
                 text = reader.ReadToEnd();
@@ -119,13 +117,13 @@ namespace EvalTest
             Assert.True(scriptResult.HasValue, "parsing failed");
 
             var errorCollector = new TestErrorCollector();
+            var commandProvider = new TestCmdProvider();
 
             try
             {
                 var rscript = Translator.Translate("TestModule", default, scriptResult.Elem, errorCollector);
                 MyAssert.Assert(rscript != null);
 
-                var commandProvider = new TestCmdProvider();
                 var evaluator = new Evaluator(commandProvider, rscript);
                 var retValue = await evaluator.EvalAsync(); // retValue는 지금 쓰지 않는다
             }
@@ -133,9 +131,9 @@ namespace EvalTest
             {
                 Assert.True(errorCollector.HasError, "실행은 중간에 멈췄는데 에러로그가 남지 않았습니다");
             }
-            
+
             Assert.False(errorCollector.HasError, errorCollector.GetMessages());
-            Assert.Equal(expected, cmdProvider.Output);
+            Assert.Equal(expected, commandProvider.Output);
         }
     }
     
@@ -187,6 +185,9 @@ namespace EvalTest
 
             foreach (var path in Directory.EnumerateFiles(curDir, "*.qs", SearchOption.AllDirectories))
             {
+                if (Path.GetFileNameWithoutExtension(path).Contains("_TODO_"))
+                    continue;
+
                 var relPath = Path.GetRelativePath(curDir, path);
 
                 var result = overriddenResults.GetValueOrDefault(relPath);
