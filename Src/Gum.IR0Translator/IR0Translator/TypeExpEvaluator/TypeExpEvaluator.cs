@@ -115,9 +115,9 @@ namespace Gum.IR0Translator
 
         IEnumerable<TypeExpResult> GetTypeExpInfos(M.NamespacePath namespacePath, M.Name name, ImmutableArray<M.Type> typeArgs)
         {
-            var itemPath = new ItemPath(namespacePath, name, typeArgs.Length);
+            var itemPathEntry = new ItemPathEntry(name, typeArgs.Length);
 
-            var typeSkel = skelRepo.GetTypeSkeleton(itemPath);
+            var typeSkel = skelRepo.GetRootTypeSkeleton(namespacePath, itemPathEntry);
             if (typeSkel != null)
             {
                 var mtype = new M.GlobalType(internalModuleName, namespacePath, name, typeArgs);
@@ -128,7 +128,7 @@ namespace Gum.IR0Translator
             // 3-2. Reference에서 검색, GlobalTypeSkeletons에 이름이 겹치지 않아야 한다.. ModuleInfo들 끼리도 이름이 겹칠 수 있다
             foreach (var moduleInfo in externalModuleInfoRepo.GetAllModules())
             {
-                var typeInfo = GlobalItemQueryService.GetGlobalItem(moduleInfo, namespacePath, itemPath.Entry) as M.TypeInfo;
+                var typeInfo = GlobalItemQueryService.GetGlobalItem(moduleInfo, namespacePath, itemPathEntry) as M.TypeInfo;
                 if (typeInfo != null)
                 {
                     var mtype = new M.GlobalType(moduleInfo.Name, namespacePath, name, typeArgs);
