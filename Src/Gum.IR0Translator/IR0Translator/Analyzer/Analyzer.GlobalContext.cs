@@ -22,20 +22,20 @@ namespace Gum.IR0Translator
             InternalBinaryOperatorQueryService internalBinOpQueryService;
             GlobalItemValueFactory globalItemValueFactory;
 
-            TypeExpInfoService typeExpTypeValueService;            
+            TypeExpInfoService typeExpInfoService;            
             IErrorCollector errorCollector;
             InternalGlobalVariableRepository internalGlobalVarRepo;
 
             public GlobalContext(
                 ItemValueFactory itemValueFactory,
                 GlobalItemValueFactory globalItemValueFactory,
-                TypeExpInfoService typeExpTypeValueService,
+                TypeExpInfoService typeExpInfoService,
                 IErrorCollector errorCollector)
             {
                 this.itemValueFactory = itemValueFactory;
                 this.internalBinOpQueryService = new InternalBinaryOperatorQueryService(itemValueFactory);
                 this.globalItemValueFactory = globalItemValueFactory;
-                this.typeExpTypeValueService = typeExpTypeValueService;
+                this.typeExpInfoService = typeExpInfoService;
                 this.errorCollector = errorCollector;
                 this.internalGlobalVarRepo = new InternalGlobalVariableRepository();
             }
@@ -53,8 +53,8 @@ namespace Gum.IR0Translator
                 Infra.Misc.EnsurePure(other.globalItemValueFactory);
                 this.globalItemValueFactory = other.globalItemValueFactory;
 
-                Infra.Misc.EnsurePure(other.typeExpTypeValueService);
-                this.typeExpTypeValueService = other.typeExpTypeValueService;
+                Infra.Misc.EnsurePure(other.typeExpInfoService);
+                this.typeExpInfoService = other.typeExpInfoService;
 
                 this.errorCollector = cloneContext.GetClone(other.errorCollector);
                 this.internalGlobalVarRepo = cloneContext.GetClone(other.internalGlobalVarRepo);
@@ -76,8 +76,8 @@ namespace Gum.IR0Translator
                 Infra.Misc.EnsurePure(src.globalItemValueFactory);
                 this.globalItemValueFactory = src.globalItemValueFactory;
 
-                Infra.Misc.EnsurePure(src.typeExpTypeValueService);
-                this.typeExpTypeValueService = src.typeExpTypeValueService;
+                Infra.Misc.EnsurePure(src.typeExpInfoService);
+                this.typeExpInfoService = src.typeExpInfoService;
 
                 updateContext.Update(this.errorCollector, src.errorCollector);
                 updateContext.Update(this.internalGlobalVarRepo, src.internalGlobalVarRepo);
@@ -160,19 +160,13 @@ namespace Gum.IR0Translator
 
             public TypeValue GetTypeValueByMType(M.Type type)
             {
-                return itemValueFactory.MakeTypeValue(type);
+                return itemValueFactory.MakeTypeValueByMType(type);
             }
 
             public TypeValue GetTypeValueByTypeExp(S.TypeExp typeExp)
             {
-                var typeExpInfo = typeExpTypeValueService.GetTypeExpInfo(typeExp);
-
-                if (typeExpInfo is MTypeTypeExpInfo mtypeInfo)
-                    return itemValueFactory.MakeTypeValue(mtypeInfo.Type);
-                else if (typeExpInfo is VarTypeExpInfo)
-                    return itemValueFactory.MakeVarTypeValue();
-                else
-                    throw new UnreachableCodeException();
+                var typeExpInfo = typeExpInfoService.GetTypeExpInfo(typeExp);
+                return itemValueFactory.MakeTypeValue(typeExpInfo);
             }
 
             public InternalGlobalVarInfo? GetInternalGlobalVarInfo(string idName)

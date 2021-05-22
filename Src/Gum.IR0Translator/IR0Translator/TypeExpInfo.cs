@@ -7,26 +7,14 @@ using M = Gum.CompileTime;
 
 namespace Gum.IR0Translator
 {
-    // X<int>.Y<T>
-    abstract class TypeExpInfo
-    {        
-    }
-    
-    [ImplementIEquatable]
-    partial class MTypeTypeExpInfo : TypeExpInfo
-    {
-        public M.Type Type { get; }
-        public MTypeTypeExpInfo(M.Type type)
-        {
-            Type = type;
-        }
-    }
-    
-    partial class VarTypeExpInfo : TypeExpInfo
+    // X<int>.Y<T>, closed
+    abstract record TypeExpInfo;
+
+    record MTypeTypeExpInfo(M.Type Type) : TypeExpInfo;
+    record EnumElemTypeExpInfo(M.Type EnumType, string ElemName) : TypeExpInfo;
+    record VarTypeExpInfo : TypeExpInfo
     {
         public static readonly VarTypeExpInfo Instance = new VarTypeExpInfo();
-        private VarTypeExpInfo() { }
+        VarTypeExpInfo() { }
     }
-   
-
 }

@@ -194,7 +194,7 @@ namespace Gum.IR0Translator
             if (structInfo.BaseType == null) return null;
 
             var typeEnv = MakeTypeEnv();
-            var typeValue = itemValueFactory.MakeTypeValue(structInfo.BaseType);
+            var typeValue = itemValueFactory.MakeTypeValueByMType(structInfo.BaseType);
             return typeValue.Apply_TypeValue(typeEnv);
         }
 

@@ -35,7 +35,7 @@ namespace Gum.IR0Translator
         public TypeValue GetTypeValue()
         {
             var typeEnv = MakeTypeEnv();
-            var typeValue = factory.MakeTypeValue(info.Type);
+            var typeValue = factory.MakeTypeValueByMType(info.Type);
             return typeValue.Apply_TypeValue(typeEnv);
         }
 

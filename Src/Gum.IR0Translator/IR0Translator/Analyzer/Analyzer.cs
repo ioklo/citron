@@ -24,12 +24,12 @@ namespace Gum.IR0Translator
             R.ModuleName moduleName,
             ItemValueFactory itemValueFactory,
             GlobalItemValueFactory globalItemValueFactory,
-            TypeExpInfoService typeExpTypeValueService,
+            TypeExpInfoService typeExpInfoService,
             IErrorCollector errorCollector)
         {
             try
             {
-                var globalContext = new GlobalContext(itemValueFactory, globalItemValueFactory, typeExpTypeValueService, errorCollector);
+                var globalContext = new GlobalContext(itemValueFactory, globalItemValueFactory, typeExpInfoService, errorCollector);
                 var rootContext = new RootContext(moduleName, itemValueFactory);
 
                 return RootAnalyzer.Analyze(globalContext, rootContext, script);

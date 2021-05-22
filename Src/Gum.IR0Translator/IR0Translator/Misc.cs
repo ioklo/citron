@@ -124,6 +124,9 @@ namespace Gum.IR0Translator
                 case M.VoidType _:
                     sb.Append("void");
                     break;
+
+                default:
+                    throw new UnreachableCodeException();
             }
         }
 
