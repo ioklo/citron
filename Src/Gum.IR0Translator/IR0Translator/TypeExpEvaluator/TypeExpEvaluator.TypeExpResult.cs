@@ -15,7 +15,6 @@ namespace Gum.IR0Translator
         abstract class TypeExpResult
         {
             public abstract TypeExpInfo TypeExpInfo { get; }
-
             public abstract TypeExpResult? GetMemberInfo(string memberName, ImmutableArray<M.Type> typeArgs);
         }
 

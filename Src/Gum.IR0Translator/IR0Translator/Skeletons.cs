@@ -34,6 +34,10 @@ namespace Gum.IR0Translator
         }
     }
 
+    class RootSkeleton : TypeSkeleton
+    {
+    }
+
     class EnumSkeleton : TypeSkeleton
     {
         public S.EnumDecl EnumDecl { get; }
@@ -42,6 +46,10 @@ namespace Gum.IR0Translator
         {
             EnumDecl = enumDecl;
         }
+    }
+
+    class EnumElemSkeleton : TypeSkeleton
+    {
     }
 
     class StructSkeleton : TypeSkeleton

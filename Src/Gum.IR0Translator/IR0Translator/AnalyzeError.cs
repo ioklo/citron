@@ -28,6 +28,7 @@ namespace Gum.IR0Translator
         A0102_VarDecl_MismatchBetweenDeclTypeAndInitExpType,
         A0103_VarDecl_LocalVarNameShouldBeUniqueWithinScope,
         A0104_VarDecl_GlobalVariableNameShouldBeUnique,
+        A0105_VarDecl_CantUseEnumElementAsDeclType,
 
         A0201_Capturer_ReferencingLocalVariableIsNotAllowed,
 

@@ -14,24 +14,24 @@ using S = Gum.Syntax;
 
 namespace Gum.IR0Translator
 {
-    internal class TypeSkeletonCollector
+    struct TypeSkeletonCollector
     {
         // runtime
         ImmutableDictionary<ItemPath, TypeSkeleton>.Builder typeSkeletonsByItemPathBuilder;
-        TypeSkeleton? curSkeleton;
+        ImmutableArray<TypeSkeleton>.Builder skeletonsBuilder;
 
         public static TypeSkeletonRepository Collect(S.Script script)
         {
-            var typeSkeletonCollector = new TypeSkeletonCollector();
+            var typeSkeletonCollector = new TypeSkeletonCollector(ImmutableDictionary.CreateBuilder<ItemPath, TypeSkeleton>());
             typeSkeletonCollector.VisitScript(script);
 
             return new TypeSkeletonRepository(typeSkeletonCollector.typeSkeletonsByItemPathBuilder.ToImmutable());
         }
 
-        TypeSkeletonCollector()
+        TypeSkeletonCollector(ImmutableDictionary<ItemPath, TypeSkeleton>.Builder builder)
         {
-            typeSkeletonsByItemPathBuilder = ImmutableDictionary.CreateBuilder<ItemPath, TypeSkeleton>();
-            curSkeleton = null;
+            this.typeSkeletonsByItemPathBuilder = builder;
+            this.skeletonsBuilder = ImmutableArray.CreateBuilder<TypeSkeleton>();
         }
 
         void ExecInNewEnumScope(S.EnumDecl enumDecl, Action action)
@@ -72,10 +72,48 @@ namespace Gum.IR0Translator
             return typeSkeleton;
         }
 
+        ItemPath GetTypePath(string name, int typeParamCount)
+        {
+            if (curSkeleton != null)
+                return curSkeleton.Path.Append(name, typeParamCount);
+            else
+                return new ItemPath(NamespacePath.Root, new ItemPathEntry(name, typeParamCount)); // TODO: NamespaceRoot가 아니라 namespace 선언 상황에 따라 달라진다
+        }
+
+        void AddSkeleton(TypeSkeleton skeleton)
+        {
+            typeSkeletonsByItemPathBuilder.Add(skeleton.Path, skeleton);
+            skeletonsBuilder.Add(skeleton);
+        }
+
         void VisitEnumDecl(S.EnumDecl enumDecl)
         {
+            var builder = ImmutableArray.CreateBuilder<TypeSkeleton>();
+
+            var newCollector = new TypeSkeletonCollector(typeSkeletonsByItemPathBuilder);
+            foreach (var enumElem in enumDecl.Elems)
+            {
+                var elemPath = typePath.Append(enumElem.Name);
+
+                var enumElemSkel = new EnumElemSkeleton(elemPath);
+                newCollector.AddSkeleton(enumElemSkel);
+            }
+
+            var typePath = GetTypePath(enumDecl.Name, enumDecl.TypeParamCount);
+            var enumSkeleton = new EnumSkeleton(typePath, enumDecl);
+            AddSkeleton(enumSkeleton);
+
+            // 
+            // 
+
+
+
+            
+            new TypeSkeletonCollector(builder, AddType(enumDecl, )
+
             ExecInNewEnumScope(enumDecl, () =>
             {
+                curSkeleton.AddMember()
                 // var enumElemNames = enumDecl.Elems.Select(elem => elem.Name);
             });
         }
