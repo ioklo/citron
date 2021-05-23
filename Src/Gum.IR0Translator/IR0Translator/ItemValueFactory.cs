@@ -93,9 +93,6 @@ namespace Gum.IR0Translator
                 case MTypeTypeExpInfo mtypeInfo:
                     return MakeTypeValueByMType(mtypeInfo.Type);
 
-                case EnumElemTypeExpInfo enumElemInfo:
-                    return MakeEnumElemTypeValue(enumElemInfo);
-
                 case VarTypeExpInfo:
                     return MakeVarTypeValue();
 
@@ -181,12 +178,6 @@ namespace Gum.IR0Translator
         public TupleTypeValue MakeTupleType(ImmutableArray<(TypeValue Type, string? Name)> elems)
         {
             return new TupleTypeValue(ritemFactory, elems);
-        }
-
-        public EnumElemTypeValue MakeEnumElemTypeValue(EnumElemTypeExpInfo enumElemInfo)
-        {
-            var enumTypeValue = (EnumTypeValue)MakeTypeValueByMType(enumElemInfo.EnumType);
-            return new EnumElemTypeValue(ritemFactory, enumTypeValue, enumElemInfo.ElemName);
         }
     }
 }

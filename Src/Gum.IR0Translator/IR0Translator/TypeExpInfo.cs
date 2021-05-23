@@ -11,7 +11,6 @@ namespace Gum.IR0Translator
     abstract record TypeExpInfo;
 
     record MTypeTypeExpInfo(M.Type Type) : TypeExpInfo;
-    record EnumElemTypeExpInfo(M.Type EnumType, string ElemName) : TypeExpInfo;
     record VarTypeExpInfo : TypeExpInfo
     {
         public static readonly VarTypeExpInfo Instance = new VarTypeExpInfo();

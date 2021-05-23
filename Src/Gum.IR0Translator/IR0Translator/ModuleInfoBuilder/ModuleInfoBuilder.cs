@@ -13,18 +13,20 @@ using M = Gum.CompileTime;
 namespace Gum.IR0Translator
 {
     // Script에서 ModuleInfo 정보를 뽑는 역할
-    partial class ModuleInfoBuilder
+    partial struct ModuleInfoBuilder
     {
         TypeExpInfoService typeExpInfoService;
 
-        TypeBuilder? outerTypeBuilder;
-        TypeBuilder? typeBuilder;
-        List<M.TypeInfo> globalTypeInfos; 
-        List<M.FuncInfo> globalFuncInfos; 
-        
+        // Global일 경우 null
+        bool bInsideTypeScope;
+        ItemPath? itemPath;
+        List<M.TypeInfo> types;
+        List<M.FuncInfo> funcs;
+        List<M.MemberVarInfo> memberVars;        
+
         public static M.ModuleInfo Build(M.ModuleName moduleName, S.Script script, TypeExpInfoService typeExpTypeValueService)
         {
-            var builder = new ModuleInfoBuilder(typeExpTypeValueService);
+            var builder = new ModuleInfoBuilder(typeExpTypeValueService, false, null);
 
             foreach(var elem in script.Elements)
             {
@@ -45,46 +47,46 @@ namespace Gum.IR0Translator
 
             var moduleInfo = new M.ModuleInfo(moduleName,
                 ImmutableArray<M.NamespaceInfo>.Empty,
-                builder.globalTypeInfos.ToImmutableArray(),
-                builder.globalFuncInfos.ToImmutableArray());
+                builder.types.ToImmutableArray(),
+                builder.funcs.ToImmutableArray());
 
             return moduleInfo;
         }
 
-        ModuleInfoBuilder(TypeExpInfoService typeExpInfoService)
+        ModuleInfoBuilder(TypeExpInfoService typeExpInfoService, bool bInsideTypeScope, ItemPath? itemPath)
         {
             this.typeExpInfoService = typeExpInfoService;
-
-            outerTypeBuilder = null;
-            typeBuilder = null;
-            globalTypeInfos = new List<M.TypeInfo>();
-            globalFuncInfos = new List<M.FuncInfo>();
+            this.bInsideTypeScope = bInsideTypeScope;
+            this.itemPath = itemPath;
+            
+            types = new List<M.TypeInfo>();
+            funcs = new List<M.FuncInfo>();
+            memberVars = new List<M.MemberVarInfo>();
         }
-        
-        ItemPath MakePath(M.Name name, int typeParamCount = 0, S.FuncParamInfo? paramInfo = null)
+
+        string MakeParamHash(S.FuncParamInfo? paramInfo)
         {
-            string MakeParamHash()
+            if (paramInfo == null) return string.Empty;
+
+            var builder = ImmutableArray.CreateBuilder<M.Type>();
+            foreach (var param in paramInfo.Value.Parameters)
             {
-                if (paramInfo == null) return string.Empty;
-                
-                var builder = ImmutableArray.CreateBuilder<M.Type>();
-                foreach (var param in paramInfo.Value.Parameters)
-                {
-                    var mtype = GetMType(param.Type);
-                    if (mtype == null) throw new FatalException();
+                var mtype = GetMType(param.Type);
+                if (mtype == null) throw new FatalException();
 
-                    builder.Add(mtype);
-                }
-
-                return Misc.MakeParamHash(builder.ToImmutable());
+                builder.Add(mtype);
             }
 
-            var paramHash = MakeParamHash();
+            return Misc.MakeParamHash(builder.ToImmutable());
+        }
 
-            if (typeBuilder != null)
+        ItemPath MakePath(M.Name name, int typeParamCount = 0, S.FuncParamInfo? paramInfo = null)
+        {
+            var paramHash = MakeParamHash(paramInfo);
+
+            if (itemPath != null)
             {
-                var typePath = typeBuilder.GetTypePath();
-                return typePath.Append(name, typeParamCount, paramHash);
+                return itemPath.Value.Append(name, typeParamCount, paramHash);
             }
             else
             {
@@ -100,53 +102,12 @@ namespace Gum.IR0Translator
                 return mtypeTypeExpInfo.Type;
 
             return null;
-        }
+        }                
         
-        void AddTypeInfoToOuter(M.TypeInfo typeInfo)
-        {
-            if (outerTypeBuilder == null)
-                globalTypeInfos.Add(typeInfo);
-            else
-                outerTypeBuilder.AddTypeInfo(typeInfo);
-        }
-
-        void AddMemberVarInfo(M.MemberVarInfo memberVarInfo)
-        {
-            Debug.Assert(typeBuilder != null);
-            typeBuilder.AddMemberVarInfo(memberVarInfo);
-        }
-
-        void ExecInNewTypeScope(M.Name name, int typeParamCount, Action action)
-        {
-            TypeBuilder newBuilder;
-            if (typeBuilder != null)
-            {
-                newBuilder = new TypeBuilder(typeBuilder.GetTypePath().Append(name, typeParamCount));
-            }
-            else
-            {
-                // TODO: namespace
-                newBuilder = new TypeBuilder(new ItemPath(M.NamespacePath.Root, name, typeParamCount));
-            }
-
-            var prevOuterTypeBuilder = outerTypeBuilder;
-            outerTypeBuilder = typeBuilder;
-            typeBuilder = newBuilder;
-            try
-            {
-                action.Invoke();
-            }
-            finally
-            {
-                typeBuilder = outerTypeBuilder;
-                outerTypeBuilder = prevOuterTypeBuilder;
-            }
-        }
-
         // 현재 위치가 Type안에 있는지
         bool IsInsideTypeScope()
         {
-            return typeBuilder != null;
+            return bInsideTypeScope;
         }
 
         // enum E { First(int x, int y), Second } 에서 
@@ -181,6 +142,21 @@ namespace Gum.IR0Translator
 
         void VisitEnumDecl(S.EnumDecl enumDecl)
         {
+            //ExecInNewTypeScope(enumDecl.Name, enumDecl.TypeParamCount, () =>
+            //{
+            //    var enumInfo = typeBuilder.MakeTypeInfo((types, funcs, vars) => new M.EnumInfo
+
+            //    {
+            //    new ItemId(ModuleName.Internal, path),
+            //    enumDecl.TypeParams,
+            //    elemInfos.ToImmutableArray());
+            //    }
+
+
+            //    AddTypeInfoToOuter(enumInfo);
+
+            //});
+
             //var path = MakePath(enumDecl.Name, enumDecl.TypeParamCount);
             //var elemInfos = new List<EnumElemInfo>();
             //foreach (var elem in enumDecl.Elems)
@@ -189,55 +165,78 @@ namespace Gum.IR0Translator
             //    elemInfos.Add(elemInfo);
             //}
 
-            //var enumInfo = new EnumInfo(
-            //    new ItemId(ModuleName.Internal, path),
-            //    enumDecl.TypeParams,
-            //    elemInfos.ToImmutableArray());
+            var enumInfo = new M.EnumInfo();
+            types.Add(enumInfo);
+        }
 
-            //AddTypeInfo(enumInfo);
+        ModuleInfoBuilder NewModuleInfoBuilder(M.Name name, int typeParamCount, bool bInsideTypeScope)
+        {
+            ItemPath newItemPath;
+
+            if (itemPath != null)
+                newItemPath = itemPath.Value.Append(name, typeParamCount);
+            else
+                newItemPath = new ItemPath(M.NamespacePath.Root, name, typeParamCount);
+
+            return new ModuleInfoBuilder(typeExpInfoService, bInsideTypeScope, newItemPath);
         }
 
         void VisitStructDecl(S.StructDecl structDecl)
         {
-            ExecInNewTypeScope(structDecl.Name, structDecl.TypeParams.Length, () => {
+            var newBuilder = NewModuleInfoBuilder(structDecl.Name, structDecl.TypeParamCount, true);
+            
+            if (structDecl.BaseTypes.Length != 0)
+                throw new NotImplementedException();
 
-                if (structDecl.BaseTypes.Length != 0)
-                    throw new NotImplementedException();
+            // base & interfaces
+            //var mbaseTypesBuilder = ImmutableArray.CreateBuilder<M.Type>(structDecl.BaseTypes.Length);
+            //foreach (var baseType in structDecl.BaseTypes)
+            //{
+            //    var mbaseType = GetMType(baseType);
+            //    if (mbaseType == null) throw new FatalException();
+            //    mbaseTypesBuilder.Add(mbaseType);
+            //}
+            //var mbaseTypes = mbaseTypesBuilder.MoveToImmutable();
 
-                // base & interfaces
-                //var mbaseTypesBuilder = ImmutableArray.CreateBuilder<M.Type>(structDecl.BaseTypes.Length);
-                //foreach (var baseType in structDecl.BaseTypes)
-                //{
-                //    var mbaseType = GetMType(baseType);
-                //    if (mbaseType == null) throw new FatalException();
-                //    mbaseTypesBuilder.Add(mbaseType);
-                //}
-                //var mbaseTypes = mbaseTypesBuilder.MoveToImmutable();
-
-                foreach (var elem in structDecl.Elems)
+            foreach (var elem in structDecl.Elems)
+            {
+                switch (elem)
                 {
-                    switch (elem)
-                    {
-                        case S.FuncStructDeclElement funcDeclElem:
-                            VisitFuncDecl(funcDeclElem.FuncDecl);
-                            break;
+                    case S.FuncStructDeclElement funcDeclElem:
+                        newBuilder.VisitFuncDecl(funcDeclElem.FuncDecl);
+                        break;
 
-                        case S.TypeStructDeclElement typeDeclElem:
-                            VisitTypeDecl(typeDeclElem.TypeDecl);
-                            break;
+                    case S.TypeStructDeclElement typeDeclElem:
+                        newBuilder.VisitTypeDecl(typeDeclElem.TypeDecl);
+                        break;
 
-                        case S.VarStructDeclElement varDeclElem:
-                            VisitStructVarDeclElement(varDeclElem);
-                            break;
-                    }
+                    case S.VarStructDeclElement varDeclElem:
+                        newBuilder.VisitStructVarDeclElement(varDeclElem);
+                        break;
                 }
+            }
+            
+            var structInfo = new M.StructInfo(
+                structDecl.Name, structDecl.TypeParams, null, default, 
+                newBuilder.types.ToImmutableArray(), 
+                newBuilder.funcs.ToImmutableArray(), 
+                newBuilder.memberVars.ToImmutableArray());
 
-                Debug.Assert(typeBuilder != null);
-                var structInfo = typeBuilder.MakeTypeInfo((types, funcs, vars) =>
-                    new M.StructInfo(structDecl.Name, structDecl.TypeParams, null, default, types, funcs, vars));
+            types.Add(structInfo);
+        }
 
-                AddTypeInfoToOuter(structInfo);
-            });            
+        M.ParamInfo MakeParamInfo(S.FuncParamInfo paramInfo)
+        {
+            var builder = ImmutableArray.CreateBuilder<(M.Type Type, M.Name Name)>(paramInfo.Parameters.Length);
+            foreach(var typeAndName in paramInfo.Parameters)
+            {
+                var mtype = GetMType(typeAndName.Type);
+                if (mtype == null) throw new FatalException();
+
+                builder.Add((mtype, typeAndName.Name));
+            }
+
+            return new M.ParamInfo(paramInfo.VariadicParamIndex, builder.MoveToImmutable());
         }
 
         void VisitFuncDecl(S.FuncDecl funcDecl)
@@ -247,7 +246,9 @@ namespace Gum.IR0Translator
             bool bThisCall = IsInsideTypeScope(); // TODO: static 키워드가 추가되면 고려하도록 한다
 
             var retType = GetMType(funcDecl.RetType);
-            if (retType == null) throw new FatalException();            
+            if (retType == null) throw new FatalException();
+
+            var paramInfo = MakeParamInfo(funcDecl.ParamInfo);
 
             var funcInfo = new M.FuncInfo(
                 funcDecl.Name,
@@ -255,28 +256,14 @@ namespace Gum.IR0Translator
                 bThisCall,
                 funcDecl.TypeParams,
                 retType,
-                new M.ParamInfo(
-                    funcDecl.ParamInfo.VariadicParamIndex,
-                    funcDecl.ParamInfo.Parameters.Select(typeAndName =>
-                    {
-                        var mtype = GetMType(typeAndName.Type);
-                        if (mtype == null) throw new FatalException();
-
-                        return (mtype, (M.Name)typeAndName.Name);
-                    }).ToImmutableArray()
-                )
+                paramInfo
             );
 
-            if (typeBuilder == null)
-                globalFuncInfos.Add(funcInfo);
-            else
-                typeBuilder.AddFuncInfo(funcInfo);
+            funcs.Add(funcInfo);
         }
 
         void VisitStructVarDeclElement(S.VarStructDeclElement varDeclElem)
         {
-            Debug.Assert(typeBuilder != null);
-
             var declType = GetMType(varDeclElem.VarType);
             if (declType == null)
                 throw new FatalException();
@@ -286,7 +273,7 @@ namespace Gum.IR0Translator
                 bool bStatic = !IsInsideTypeScope(); // TODO: static 키워드가 추가되면 고려한다
 
                 var varInfo = new M.MemberVarInfo(bStatic, declType, name);
-                AddMemberVarInfo(varInfo);
+                memberVars.Add(varInfo);
             }
         }        
     }

@@ -5,7 +5,7 @@ using Gum.Collections;
 
 namespace Gum.IR0Translator
 {
-    partial class ModuleInfoBuilder
+    partial struct ModuleInfoBuilder
     {
         // struct, class 류를 빌드하는데 사용
         class TypeBuilder

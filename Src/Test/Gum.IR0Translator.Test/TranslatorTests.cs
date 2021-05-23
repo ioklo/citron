@@ -82,25 +82,6 @@ namespace Gum.IR0Translator.Test
 
             Assert.Equal(expected, script);
         }
-
-        [Fact]
-        public void VarDeclStmt_ChecksDeclTypeIsNotEnumElem()
-        {
-            S.TypeExp varDeclType;
-
-            // enum E { First }
-            // E.First x;
-            var syntaxScript = SScript(
-                new S.TypeDeclScriptElement(new S.EnumDecl("E", default, Arr(
-                    new S.EnumDeclElement("First", default)
-                ))),
-                new S.StmtScriptElement(SVarDeclStmt(
-                    varDeclType = new S.MemberTypeExp(new S.IdTypeExp("E", default), "First", default), "x")));
-
-            var errors = TranslateWithErrors(syntaxScript);
-
-            VerifyError(errors, A0105_VarDecl_CantUseEnumElementAsDeclType, varDeclType);
-        }
         
         [Fact]
         public void VarDeclStmt_TranslatesIntoPrivateGlobalVarDecl()
