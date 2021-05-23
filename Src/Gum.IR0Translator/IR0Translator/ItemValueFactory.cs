@@ -64,6 +64,15 @@ namespace Gum.IR0Translator
             {
                 case M.StructInfo structInfo:
                     return new StructTypeValue(this, ritemFactory, outer, structInfo, typeArgs);
+
+                case M.EnumInfo enumInfo:
+                    Debug.Assert(typeArgs.IsEmpty);
+                    return new EnumTypeValue(this, outer, enumInfo, default);
+
+                case M.EnumElemInfo enumElemInfo:
+                    Debug.Assert(outer is NestedItemValueOuter);
+                    Debug.Assert(((NestedItemValueOuter)outer).ItemValue is EnumTypeValue);
+                    return new EnumElemTypeValue(ritemFactory, this, (EnumTypeValue)((NestedItemValueOuter)outer).ItemValue, enumElemInfo);
             }
 
             throw new UnreachableCodeException();
@@ -84,7 +93,17 @@ namespace Gum.IR0Translator
             }
 
             return builder.ToImmutable();
-        }        
+        }
+
+        public EnumTypeValue MakeEnumTypeValue(ItemValueOuter outer, M.EnumInfo enumInfo, ImmutableArray<TypeValue> typeArgs)
+        {
+            return new EnumTypeValue(this, outer, enumInfo, typeArgs);
+        }
+
+        public EnumElemTypeValue MakeEnumElemTypeValue(EnumTypeValue outer, M.EnumElemInfo elemInfo)
+        {
+            return new EnumElemTypeValue(ritemFactory, this, outer, elemInfo);
+        }
 
         public TypeValue MakeTypeValue(TypeExpInfo typeExpInfo)
         {

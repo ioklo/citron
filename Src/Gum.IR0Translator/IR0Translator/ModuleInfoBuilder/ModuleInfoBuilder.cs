@@ -64,37 +64,6 @@ namespace Gum.IR0Translator
             memberVars = new List<M.MemberVarInfo>();
         }
 
-        string MakeParamHash(S.FuncParamInfo? paramInfo)
-        {
-            if (paramInfo == null) return string.Empty;
-
-            var builder = ImmutableArray.CreateBuilder<M.Type>();
-            foreach (var param in paramInfo.Value.Parameters)
-            {
-                var mtype = GetMType(param.Type);
-                if (mtype == null) throw new FatalException();
-
-                builder.Add(mtype);
-            }
-
-            return Misc.MakeParamHash(builder.ToImmutable());
-        }
-
-        ItemPath MakePath(M.Name name, int typeParamCount = 0, S.FuncParamInfo? paramInfo = null)
-        {
-            var paramHash = MakeParamHash(paramInfo);
-
-            if (itemPath != null)
-            {
-                return itemPath.Value.Append(name, typeParamCount, paramHash);
-            }
-            else
-            {
-                // TODO: namespace 고려
-                return new ItemPath(M.NamespacePath.Root, name, typeParamCount, paramHash);
-            }
-        }
-
         M.Type? GetMType(S.TypeExp typeExp)
         {
             var typeExpInfo = typeExpInfoService.GetTypeExpInfo(typeExp);
@@ -142,30 +111,26 @@ namespace Gum.IR0Translator
 
         void VisitEnumDecl(S.EnumDecl enumDecl)
         {
-            //ExecInNewTypeScope(enumDecl.Name, enumDecl.TypeParamCount, () =>
-            //{
-            //    var enumInfo = typeBuilder.MakeTypeInfo((types, funcs, vars) => new M.EnumInfo
+            var elemsBuilder = ImmutableArray.CreateBuilder<M.EnumElemInfo>(enumDecl.Elems.Length);
+            foreach(var elem in enumDecl.Elems)
+            {
+                var fieldsBuilder = ImmutableArray.CreateBuilder<M.EnumElemFieldInfo>(elem.Params.Length);
+                foreach(var param in elem.Params)
+                {
+                    var type = GetMType(param.Type);
+                    Debug.Assert(type != null);
 
-            //    {
-            //    new ItemId(ModuleName.Internal, path),
-            //    enumDecl.TypeParams,
-            //    elemInfos.ToImmutableArray());
-            //    }
+                    var field = new M.EnumElemFieldInfo(type, param.Name);
+                    fieldsBuilder.Add(field);
+                }
 
+                var fields = fieldsBuilder.MoveToImmutable();
+                var enumElemInfo = new M.EnumElemInfo(elem.Name, fields);
+                elemsBuilder.Add(enumElemInfo);
+            }
 
-            //    AddTypeInfoToOuter(enumInfo);
-
-            //});
-
-            //var path = MakePath(enumDecl.Name, enumDecl.TypeParamCount);
-            //var elemInfos = new List<EnumElemInfo>();
-            //foreach (var elem in enumDecl.Elems)
-            //{
-            //    var elemInfo = VisitEnumDeclElement(elem);
-            //    elemInfos.Add(elemInfo);
-            //}
-
-            var enumInfo = new M.EnumInfo();
+            var elems = elemsBuilder.MoveToImmutable();
+            var enumInfo = new M.EnumInfo(enumDecl.Name, enumDecl.TypeParams, elems);
             types.Add(enumInfo);
         }
 
@@ -241,8 +206,6 @@ namespace Gum.IR0Translator
 
         void VisitFuncDecl(S.FuncDecl funcDecl)
         {   
-            var path = MakePath(funcDecl.Name, funcDecl.TypeParams.Length, funcDecl.ParamInfo);
-
             bool bThisCall = IsInsideTypeScope(); // TODO: static 키워드가 추가되면 고려하도록 한다
 
             var retType = GetMType(funcDecl.RetType);

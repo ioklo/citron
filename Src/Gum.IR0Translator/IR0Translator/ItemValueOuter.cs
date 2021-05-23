@@ -53,11 +53,11 @@ namespace Gum.IR0Translator
     [AutoConstructor, ImplementIEquatable]
     partial class NestedItemValueOuter : ItemValueOuter
     {
-        ItemValue outer;
+        public ItemValue ItemValue { get; }
 
         public override R.Path.Nested GetRPath(R.Name name, R.ParamHash paramHash, ImmutableArray<R.Path> typeArgs)
         {
-            var router = outer.GetRPath() as R.Path.Normal;
+            var router = ItemValue.GetRPath() as R.Path.Normal;
             Debug.Assert(router != null);
 
             return new R.Path.Nested(router, name, paramHash, typeArgs);
@@ -65,18 +65,18 @@ namespace Gum.IR0Translator
 
         public override void FillTypeEnv(TypeEnvBuilder builder)
         {
-            outer.FillTypeEnv(builder);
+            ItemValue.FillTypeEnv(builder);
         }
 
         public override ItemValueOuter Apply(TypeEnv typeEnv)
         {
-            var appliedOuter = outer.Apply_ItemValue(typeEnv);
+            var appliedOuter = ItemValue.Apply_ItemValue(typeEnv);
             return new NestedItemValueOuter(appliedOuter);
         }
 
         public override TypeEnv GetTypeEnv()
         {
-            return outer.MakeTypeEnv();
+            return ItemValue.MakeTypeEnv();
         }
     }
 }

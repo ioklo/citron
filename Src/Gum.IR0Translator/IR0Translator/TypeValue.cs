@@ -69,17 +69,57 @@ namespace Gum.IR0Translator
         public override R.Path.Nested GetRPath_Nested() => throw new NotImplementedException();
     }
 
-    [ImplementIEquatable]
+    [AutoConstructor, ImplementIEquatable]
     partial class EnumTypeValue : NormalTypeValue
     {
+        ItemValueFactory itemValueFactory;
+        ItemValueOuter outer;
+        M.EnumInfo enumInfo;
+        ImmutableArray<TypeValue> typeArgs;        
+
         public override R.Path.Nested GetRPath_Nested()
         {
-            throw new NotImplementedException();
+            var rname = RItemFactory.MakeName(enumInfo.Name);
+            var rtypeArgs = RItemFactory.MakeRTypes(typeArgs);
+
+            return outer.GetRPath(rname, new R.ParamHash(enumInfo.TypeParams.Length, default), rtypeArgs);
         }
+
+        public EnumTypeValue Apply_EnumTypeValue(TypeEnv typeEnv)
+        {
+            var appliedOuter = outer.Apply(typeEnv);
+            var appliedTypeArgs = ImmutableArray.CreateRange(typeArgs, typeArg => typeArg.Apply_TypeValue(typeEnv));
+            return itemValueFactory.MakeEnumTypeValue(appliedOuter, enumInfo, appliedTypeArgs);
+        }
+
+        public sealed override NormalTypeValue Apply_NormalTypeValue(TypeEnv typeEnv)
+        {
+            return Apply_EnumTypeValue(typeEnv);
+        }
+    }
+
+    // S.First, S.Second(int i, short s)
+    [AutoConstructor]
+    partial class EnumElemTypeValue : NormalTypeValue
+    {
+        RItemFactory ritemFactory;
+        ItemValueFactory itemValueFactory;
+        EnumTypeValue outer;
+        M.EnumElemInfo elemInfo;        
 
         public override NormalTypeValue Apply_NormalTypeValue(TypeEnv typeEnv)
         {
-            throw new NotImplementedException();
+            var appliedOuter = outer.Apply_EnumTypeValue(typeEnv);
+            return itemValueFactory.MakeEnumElemTypeValue(appliedOuter, elemInfo);
+        }
+
+        public override R.Path.Nested GetRPath_Nested()
+        {
+            var router = outer.GetRPath_Nested();
+            var rname = RItemFactory.MakeName(elemInfo.Name);
+            Debug.Assert(router != null);
+
+            return new R.Path.Nested(router, rname, R.ParamHash.None, default);
         }
     }
 
@@ -378,31 +418,7 @@ namespace Gum.IR0Translator
             return new R.Path.AnonymousSeqType(seqFunc);
         }
     }
-
-    // S.First, S.Second(int i, short s)
-    class EnumElemTypeValue : TypeValue
-    {
-        RItemFactory ritemFactory;
-        public NormalTypeValue EnumTypeValue { get; }
-        public string Name { get; }
-
-        public EnumElemTypeValue(RItemFactory ritemFactory, NormalTypeValue enumTypeValue, string name)
-        {
-            this.ritemFactory = ritemFactory;
-            EnumTypeValue = enumTypeValue;
-            Name = name;
-        }
-
-        public override TypeValue Apply_TypeValue(TypeEnv typeEnv)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override R.Path GetRPath()
-        {
-            return ritemFactory.MakeEnumElemType();
-        }
-    }
+    
 
     [AutoConstructor]
     partial class TupleTypeValue : TypeValue
