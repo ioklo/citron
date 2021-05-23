@@ -11,8 +11,7 @@ namespace Gum.CompileTime
     public abstract class TypeInfo : ItemInfo
     {
         public abstract ImmutableArray<string> TypeParams { get; }
-        public abstract ImmutableArray<TypeInfo> MemberTypes { get; }
-        
+        public abstract TypeInfo? GetMemberType(string name, int typeParamCount);
 
         //ImmutableArray<string> typeParams;
         //TypeValue? baseTypeValue;

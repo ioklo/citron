@@ -72,9 +72,9 @@ namespace Gum.IR0Translator
 
             protected override TypeExpResult? GetMemberInfo(string memberName, int typeParamCount, MTypeTypeExpInfo mmemberTypeExpInfo)
             {
-                foreach (var memberType in typeInfo.MemberTypes)
-                    if (memberType.TypeParams.Length == typeParamCount && memberType.Name.Equals(memberName))
-                        return new ExternalTypeExpResult(mmemberTypeExpInfo, memberType);
+                var memberType = typeInfo.GetMemberType(memberName, typeParamCount);
+                if (memberType != null)
+                    return new ExternalTypeExpResult(mmemberTypeExpInfo, memberType);
 
                 return null;
             }

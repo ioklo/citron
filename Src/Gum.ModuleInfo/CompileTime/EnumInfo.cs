@@ -4,68 +4,42 @@ using Gum.Collections;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
+using Pretune;
 
 namespace Gum.CompileTime
 {
-    public struct EnumElemFieldInfo
+    [AutoConstructor]
+    public partial struct EnumElemFieldInfo
     {
         public Type Type { get; }
         public string Name { get; }
-
-        public EnumElemFieldInfo(Type type, string name)
-        {
-            Type = type;
-            Name = name;
-        }
     }
 
-    //public struct EnumElemInfo
-    //{
-    //    public string Name { get; }
-    //    public ImmutableArray<EnumElemFieldInfo> FieldInfos { get; }
+    [AutoConstructor, ImplementIEquatable]
+    public partial class EnumElemInfo : TypeInfo
+    {
+        public override Name Name { get; }
+        public override ImmutableArray<string> TypeParams => default;
+        public ImmutableArray<EnumElemFieldInfo> FieldInfos { get; }
+        public override TypeInfo? GetMemberType(string name, int typeParamCount) => null;
+    }
 
-    //    public EnumElemInfo(string name, IEnumerable<EnumElemFieldInfo> fieldInfos)
-    //    {
-    //        Name = name;
-    //        FieldInfos = fieldInfos.ToImmutableArray();
-    //    }
-    //}
+    [AutoConstructor, ImplementIEquatable]
+    public partial class EnumInfo : TypeInfo
+    {
+        public override Name Name { get; }
+        public override ImmutableArray<string> TypeParams { get; }
+        ImmutableArray<EnumElemInfo> elemInfos;
+        
+        public override TypeInfo? GetMemberType(string name, int typeParamCount)
+        {
+            if (typeParamCount != 0) return null;
 
-    //public class EnumInfo : TypeInfo
-    //{
-    //    ImmutableArray<string> typeParams;
-    //    ImmutableDictionary<string, EnumElemInfo> elemInfosByName;
-    //    EnumElemInfo defaultElemInfo;
+            foreach (var elemInfo in elemInfos)
+                if (elemInfo.Name.Equals(name))
+                    return elemInfo;
 
-    //    public EnumInfo(
-    //        ItemId id,
-    //        ImmutableArray<string> typeParams,
-    //        ImmutableArray<EnumElemInfo> elemInfos)
-    //        : base(id, typeParams, null, Array.Empty<ItemInfo>())
-    //    {   
-    //        this.typeParams = typeParams;
-    //        this.elemInfosByName = elemInfos.ToImmutableDictionary(elemInfo => elemInfo.Name);
-
-    //        this.defaultElemInfo = elemInfos.First();
-    //    }
-
-    //    public bool GetElemInfo(string idName, [NotNullWhen(true)] out EnumElemInfo? outElemInfo)
-    //    {
-    //        if (elemInfosByName.TryGetValue(idName, out var elemInfo))
-    //        {
-    //            outElemInfo = elemInfo;
-    //            return true;
-    //        }
-    //        else
-    //        {
-    //            outElemInfo = null;
-    //            return false;
-    //        }
-    //    }
-
-    //    public EnumElemInfo GetDefaultElemInfo()
-    //    {
-    //        return defaultElemInfo;
-    //    }
-    //}
+            return null;
+        }
+    }
 }
