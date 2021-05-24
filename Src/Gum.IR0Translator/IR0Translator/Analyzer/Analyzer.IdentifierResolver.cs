@@ -8,6 +8,7 @@ using M = Gum.CompileTime;
 using R = Gum.IR0;
 using Gum.Infra;
 using System.Diagnostics;
+using Pretune;
 
 namespace Gum.IR0Translator
 {
@@ -39,7 +40,8 @@ namespace Gum.IR0Translator
             throw new UnreachableCodeException();
         }
         
-        struct IdExpIdentifierResolver
+        [AutoConstructor]
+        partial struct IdExpIdentifierResolver
         {
             string idName;
             ImmutableArray<TypeValue> typeArgs;
@@ -47,21 +49,16 @@ namespace Gum.IR0Translator
 
             GlobalContext globalContext;
             CallableContext callableContext;
-            LocalContext localContext;            
+            LocalContext localContext;
 
-            public IdExpIdentifierResolver(
+            public static IdentifierResult Resolve(
                 string idName, ImmutableArray<TypeValue> typeArgs, ResolveHint hint,
                 GlobalContext globalContext,
                 CallableContext callableContext,
                 LocalContext localContext)
             {
-                this.idName = idName;
-                this.typeArgs = typeArgs;
-                this.hint = hint;
-
-                this.globalContext = globalContext;
-                this.callableContext = callableContext;
-                this.localContext = localContext;
+                var resolver = new IdExpIdentifierResolver(idName, typeArgs, hint, globalContext, callableContext, localContext);
+                return resolver.Resolve();
             }
 
             IdentifierResult GetLocalVarOutsideLambdaInfo()

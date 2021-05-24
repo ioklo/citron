@@ -29,7 +29,7 @@ namespace Gum.CompileTime
     {
         public override Name Name { get; }
         public override ImmutableArray<string> TypeParams { get; }
-        ImmutableArray<EnumElemInfo> elemInfos;
+        public ImmutableArray<EnumElemInfo> elemInfos { get; }
         
         public override TypeInfo? GetMemberType(string name, int typeParamCount)
         {

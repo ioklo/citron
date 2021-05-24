@@ -96,6 +96,26 @@ namespace Gum.IR0Translator
         {
             return Apply_EnumTypeValue(typeEnv);
         }
+
+        // Enum의 BaseType은 지원 안함
+        public override TypeValue? GetBaseType() { return null; }
+
+        //
+        public override ItemQueryResult GetMember(M.Name memberName, int typeParamCount) 
+        {
+            foreach (var elemInfo in enumInfo.ElemInfos)
+            {
+                if (elemInfo.Name.Equals(memberName))
+                {
+                    var enumTypeValue = new NestedItemValueOuter(this);
+                    return new ItemQueryResult.Type(enumTypeValue, elemInfo);
+                }
+            }
+
+            return ItemQueryResult.NotFound.Instance;         
+        }
+
+        public override TypeValue? GetMemberType(M.Name memberName, ImmutableArray<TypeValue> typeArgs) { return null; }
     }
 
     // S.First, S.Second(int i, short s)

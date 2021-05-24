@@ -30,8 +30,7 @@ namespace Gum.IR0Translator
             ExpResult AnalyzeIdExp(S.IdentifierExp idExp, ResolveHint resolveHint)
             {
                 var typeArgs = GetTypeValues(idExp.TypeArgs);
-                var resolver = new IdExpIdentifierResolver(idExp.Value, typeArgs, resolveHint, globalContext, callableContext, localContext);
-                var result = resolver.Resolve();
+                var result = IdExpIdentifierResolver.Resolve(idExp.Value, typeArgs, resolveHint, globalContext, callableContext, localContext);
 
                 switch (result)
                 {
@@ -738,33 +737,79 @@ namespace Gum.IR0Translator
             // exp를 돌려주는 버전
             // parent."x"<>
             ExpResult AnalyzeMemberExp(S.MemberExp memberExp)
-            {
-                var parentResult = AnalyzeExp(memberExp.Parent, ResolveHint.None);
-
-                switch (parentResult)
+            {   
+                if (memberExp.Parent is S.IdentifierExp idParent)
                 {
-                    case ExpResult.Namespace:
-                        throw new NotImplementedException();
+                    var typeArgs = GetTypeValues(idParent.TypeArgs);
+                    var result = IdExpIdentifierResolver.Resolve(idParent.Value, typeArgs, ResolveHint.None, globalContext, callableContext, localContext);
 
-                    case ExpResult.Type typeResult:
-                        return AnalyzeMemberExpTypeParent(memberExp, typeResult.TypeValue, memberExp.MemberName, memberExp.MemberTypeArgs);
+                    switch (result)
+                    {
+                        case IdentifierResult.NotFound:
+                            globalContext.AddFatalError(A2007_ResolveIdentifier_NotFound, idParent);
+                            throw new UnreachableCodeException();
 
-                    case ExpResult.EnumElem:
-                        globalContext.AddFatalError(A2009_ResolveIdentifier_EnumElemCantHaveMember, memberExp);
-                        break;
+                        case IdentifierResult.Error errorResult:
+                            HandleErrorIdentifierResult(idParent, errorResult);
+                            throw new UnreachableCodeException();
 
-                    case ExpResult.Funcs:
-                        globalContext.AddFatalError(A2006_ResolveIdentifier_FuncCantHaveMember, memberExp);
-                        break;
+                        case IdentifierResult.LocalVarOutsideLambda localVarOutsideLambdaResult:
+                            // TODO: 여러번 캡쳐해도 한번만
+                            callableContext.AddLambdaCapture(localVarOutsideLambdaResult.VarName, localVarOutsideLambdaResult.TypeValue);
+                            return new ExpResult.Loc(new R.CapturedVarLoc(localVarOutsideLambdaResult.VarName), localVarOutsideLambdaResult.TypeValue);
 
-                    case ExpResult.Exp expResult:
-                        return AnalyzeMemberExpExpParent(memberExp, new R.TempLoc(expResult.Result, expResult.TypeValue.GetRPath()), expResult.TypeValue);
+                        case IdentifierResult.LocalVar localVarResult:
+                            return new ExpResult.Loc(new R.LocalVarLoc(localVarResult.VarName), localVarResult.TypeValue);
 
-                    case ExpResult.Loc locResult:
-                        return AnalyzeMemberExpExpParent(memberExp, locResult.Result, locResult.TypeValue);
+                        case IdentifierResult.GlobalVar globalVarResult:
+                            return new ExpResult.Loc(new R.GlobalVarLoc(globalVarResult.VarName), globalVarResult.TypeValue);
+
+                        // F.x 는
+                        case IdentifierResult.Funcs:
+                            globalContext.AddFatalError(A2006_ResolveIdentifier_FuncCantHaveMember, memberExp);
+                            throw new UnreachableCodeException();                            
+                        
+                        case IdentifierResult.Type typeResult:
+                            return AnalyzeMemberExpTypeParent(memberExp, typeResult.TypeValue, memberExp.MemberName, memberExp.MemberTypeArgs);
+                        
+                        case IdentifierResult.EnumElem:
+                            // ResolveHint.None 이었기 때문에 나올 수 없다
+                            throw new UnreachableCodeException();
+
+                        default:
+                            throw new UnreachableCodeException();
+                    }
+                }
+                else
+                {
+                    var parentResult = AnalyzeExp(memberExp.Parent, ResolveHint.None);
+
+                    switch (parentResult)
+                    {
+                        case ExpResult.Namespace:
+                            throw new NotImplementedException();
+
+                        case ExpResult.Type typeResult:
+                            return AnalyzeMemberExpTypeParent(memberExp, typeResult.TypeValue, memberExp.MemberName, memberExp.MemberTypeArgs);
+
+                        case ExpResult.EnumElem:
+                            globalContext.AddFatalError(A2009_ResolveIdentifier_EnumElemCantHaveMember, memberExp);
+                            break;
+
+                        case ExpResult.Funcs:
+                            globalContext.AddFatalError(A2006_ResolveIdentifier_FuncCantHaveMember, memberExp);
+                            break;
+
+                        case ExpResult.Exp expResult:
+                            return AnalyzeMemberExpExpParent(memberExp, new R.TempLoc(expResult.Result, expResult.TypeValue.GetRPath()), expResult.TypeValue);
+
+                        case ExpResult.Loc locResult:
+                            return AnalyzeMemberExpExpParent(memberExp, locResult.Result, locResult.TypeValue);
+                    }
+
+                    throw new UnreachableCodeException();
                 }
 
-                throw new UnreachableCodeException();
 
                 //var memberExpAnalyzer = new MemberExpAnalyzer(analyzer, memberExp);
                 //var result = memberExpAnalyzer.Analyze();
