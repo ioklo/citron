@@ -141,8 +141,13 @@ namespace Gum.IR0Translator
     {
         RItemFactory ritemFactory;
         ItemValueFactory itemValueFactory;
-        EnumTypeValue outer;
+        public EnumTypeValue Outer { get; }
         M.EnumElemInfo elemInfo;        
+        
+        public bool IsStandalone()
+        {
+            return elemInfo.FieldInfos.Length == 0;
+        }
 
         public override NormalTypeValue Apply_NormalTypeValue(TypeEnv typeEnv)
         {

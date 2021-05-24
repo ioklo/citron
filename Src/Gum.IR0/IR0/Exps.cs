@@ -159,15 +159,8 @@ namespace Gum.IR0
     [AutoConstructor, ImplementIEquatable]
     public partial class NewEnumExp : Exp
     {
-        [AutoConstructor, ImplementIEquatable]
-        public partial struct Elem
-        {
-            public string Name { get; }
-            public Exp Exp { get; }
-        }
-
-        public string Name { get; }
-        public ImmutableArray<Elem> Members { get; }
+        public Path.Nested Elem { get; }
+        public ImmutableArray<Argument> Args { get; }
     }
 
     // new S(2, 3, 4);

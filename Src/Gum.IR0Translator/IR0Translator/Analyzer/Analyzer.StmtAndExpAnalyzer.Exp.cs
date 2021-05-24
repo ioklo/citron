@@ -222,6 +222,8 @@ namespace Gum.IR0Translator
 
                     var srcResult = AnalyzeExp_Exp(exp.Operand1, ResolveHint.None);
 
+                    var wrappedSrcResult = CastExp(srcResult, destLocResult.TypeValue);
+
                     if (!globalContext.IsAssignable(destLocResult.TypeValue, srcResult.TypeValue))
                         globalContext.AddFatalError(A0801_BinaryOp_LeftOperandTypeIsNotCompatibleWithRightOperandType, exp);
 
@@ -232,6 +234,33 @@ namespace Gum.IR0Translator
                     globalContext.AddFatalError(A0803_BinaryOp_LeftOperandIsNotAssignable, exp.Operand0);
                     throw new UnreachableCodeException();
                 }
+            }
+
+            // 값의 겉보기 타입을 변경한다
+            ExpResult.Exp CastExp_Exp(ExpResult.Exp expResult, TypeValue typeValue, ISyntaxNode nodeForErrorReport)
+            {
+                // 같으면 그대로 리턴
+                if (expResult.TypeValue.Equals(typeValue))
+                    return expResult;
+
+                // 1. enumElem -> enum
+                if (expResult.TypeValue is EnumElemTypeValue enumElemTypeValue)
+                {
+                    // 그대로 리턴
+                    // TODO: IR0에 명령어를 추가해야할까, InternalUnaryOperator에 추가?
+                    if (enumElemTypeValue.Outer.Equals(typeValue))
+                        return expResult;
+
+                    globalContext.AddFatalError(A2201_Cast_Failed, nodeForErrorReport);
+                    throw new UnreachableCodeException();
+                }
+
+                // 2. class -> base class, do nothing
+                if (expResult.TypeValue is ClassTypeValue classTypeValue)
+
+
+                if (!globalContext.IsAssignable(destLocResult.TypeValue, srcResult.TypeValue))
+                    globalContext.AddFatalError(A0801_BinaryOp_LeftOperandTypeIsNotCompatibleWithRightOperandType, exp);
             }
 
             ExpResult.Exp AnalyzeBinaryOpExp(S.BinaryOpExp binaryOpExp)
@@ -908,9 +937,21 @@ namespace Gum.IR0Translator
 
                     case ExpResult.Loc locResult:
                         return new ExpResult.Exp(new R.LoadExp(locResult.Result), locResult.TypeValue);
-                }
 
-                throw new UnreachableCodeException();
+                    case ExpResult.Type typeResult:
+                        if (typeResult.TypeValue is EnumElemTypeValue enumElemTypeValue) // E.F
+                        {
+                            if (enumElemTypeValue.IsStandalone())
+                                return new ExpResult.Exp(new R.NewEnumExp(enumElemTypeValue.GetRPath_Nested(), default), enumElemTypeValue);
+                            else // 함수로 
+                                throw new NotImplementedException();
+                        }
+                        globalContext.AddFatalError(A2008_ResolveIdentifier_CantUseTypeAsExpression, exp);
+                        throw new UnreachableCodeException();
+
+                    default:
+                        throw new UnreachableCodeException();
+                }
             }
 
             R.StringExpElement AnalyzeStringExpElement(S.StringExpElement elem)
