@@ -29,13 +29,13 @@ namespace Gum.CompileTime
     {
         public override Name Name { get; }
         public override ImmutableArray<string> TypeParams { get; }
-        public ImmutableArray<EnumElemInfo> elemInfos { get; }
+        public ImmutableArray<EnumElemInfo> ElemInfos { get; }
         
         public override TypeInfo? GetMemberType(string name, int typeParamCount)
         {
             if (typeParamCount != 0) return null;
 
-            foreach (var elemInfo in elemInfos)
+            foreach (var elemInfo in ElemInfos)
                 if (elemInfo.Name.Equals(name))
                     return elemInfo;
 

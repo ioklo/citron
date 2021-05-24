@@ -103,6 +103,10 @@ namespace Gum.IR0Translator
         //
         public override ItemQueryResult GetMember(M.Name memberName, int typeParamCount) 
         {
+            // shortcut
+            if (typeParamCount != 0)
+                return ItemQueryResult.NotFound.Instance;
+
             foreach (var elemInfo in enumInfo.ElemInfos)
             {
                 if (elemInfo.Name.Equals(memberName))
@@ -112,10 +116,23 @@ namespace Gum.IR0Translator
                 }
             }
 
-            return ItemQueryResult.NotFound.Instance;         
+            return ItemQueryResult.NotFound.Instance;
         }
 
-        public override TypeValue? GetMemberType(M.Name memberName, ImmutableArray<TypeValue> typeArgs) { return null; }
+        public override TypeValue? GetMemberType(M.Name memberName, ImmutableArray<TypeValue> typeArgs) 
+        {
+            // shortcut
+            if (typeArgs.Length != 0)
+                return null;
+
+            foreach (var elemInfo in enumInfo.ElemInfos)
+            {
+                if (elemInfo.Name.Equals(memberName))
+                    return itemValueFactory.MakeEnumElemTypeValue(this, elemInfo);
+            }
+
+            return null; 
+        }
     }
 
     // S.First, S.Second(int i, short s)
