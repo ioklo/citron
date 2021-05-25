@@ -127,7 +127,12 @@ namespace Gum.IR0Evaluator
 
             void EvalEnumDecl(R.EnumDecl enumDecl)
             {
-                throw new NotImplementedException();
+                var enumContainer = new ItemContainer();
+
+                foreach (var enumElem in enumDecl.Elems)
+                    enumContainer.AddEnumElem(enumElem);
+
+                curContainer.AddItemContainer(enumDecl.Name, new R.ParamHash(enumDecl.TypeParams.Length, default), enumContainer);
             }
 
             void EvalCapturedStmtDecl(R.CapturedStatementDecl capturedStmtDecl)

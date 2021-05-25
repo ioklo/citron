@@ -246,7 +246,7 @@ namespace Gum.IR0Translator.Test
 
             var errors = TranslateWithErrors(syntaxScript);
 
-            VerifyError(errors, A1004_IfStmt_ConditionShouldBeBool, cond);
+            VerifyError(errors, A1001_IfStmt_ConditionShouldBeBool, cond);
         }
 
         [Fact]

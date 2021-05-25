@@ -192,7 +192,14 @@ namespace Gum.IR0Translator
 
             void AnalyzeTypeDecl(S.TypeDecl typeDecl)
             {
-                throw new NotImplementedException();
+                switch(typeDecl)
+                {
+                    case S.EnumDecl:
+                        break;
+
+                    default:
+                        throw new NotImplementedException();
+                }
             }
         }
     }

@@ -15,6 +15,7 @@ namespace Gum.IR0Evaluator
             Dictionary<R.Name, R.LambdaDecl> lambdaDecls;
             Dictionary<R.Name, R.CapturedStatementDecl> capturedStatementDecls;
             Dictionary<(R.Name, R.ParamHash), FuncInvoker> funcInvokers;
+            Dictionary<R.Name, R.EnumElement> enumElems;
 
             public ItemContainer()
             {
@@ -23,6 +24,7 @@ namespace Gum.IR0Evaluator
                 lambdaDecls = new Dictionary<R.Name, R.LambdaDecl>();
                 funcInvokers = new Dictionary<(R.Name, R.ParamHash), FuncInvoker>();
                 capturedStatementDecls = new Dictionary<R.Name, R.CapturedStatementDecl>();
+                enumElems = new Dictionary<R.Name, R.EnumElement>();
             }
 
             public ItemContainer GetContainer(R.Name name, R.ParamHash paramHash)
@@ -75,11 +77,27 @@ namespace Gum.IR0Evaluator
             {
                 capturedStatementDecls.Add(capturedStmtDecl.Name, capturedStmtDecl);
             }
+
+            public void AddEnumElem(R.EnumElement enumElem)
+            {
+                enumElems.Add(enumElem.Name, enumElem);
+            }
+
+            public R.EnumElement GetEnumElem(R.Name name)
+            {
+                return enumElems[name];
+            }
         }
 
         class SharedContext
         {
             Dictionary<R.ModuleName, ItemContainer> rootContainers;
+
+            public R.EnumElement GetEnumElem(R.Path.Nested enumElem)
+            {
+                var outer = GetContainer(enumElem.Outer);
+                return outer.GetEnumElem(enumElem.Name);
+            }
 
             public Dictionary<string, Value> PrivateGlobalVars { get; }
 

@@ -165,10 +165,13 @@ namespace Gum.IR0Evaluator
                 return new SeqValue();
             }
 
-            throw new NotImplementedException();
-        }
+            // path만 보고 enum인지 알 방법은?
 
-                 
+
+            throw new NotImplementedException();
+
+
+        }        
 
         // 캡쳐는 람다 Value안에 값을 세팅한다        
         void CaptureLocals(Value? capturedThis, ImmutableDictionary<string, Value> localVars, R.CapturedStatement capturedStatement)

@@ -78,10 +78,12 @@ namespace Gum.IR0Evaluator
                 }
             }
 
-            internal async IAsyncEnumerable<Void> EvalIfTestEnumStmtAsync(R.IfTestEnumStmt stmt)
+            internal async IAsyncEnumerable<Void> EvalIfTestEnumElemStmtAsync(R.IfTestEnumElemStmt stmt)
             {
                 var targetValue = (EnumValue)await evaluator.EvalLocAsync(stmt.Target);
-                var bTestPassed = (targetValue.GetElemName() == stmt.ElemName);
+                var enumElem = evaluator.context.GetEnumElem(stmt.EnumElem);
+
+                var bTestPassed = targetValue.IsElem(enumElem);
 
                 if (bTestPassed)
                 {
@@ -388,8 +390,8 @@ namespace Gum.IR0Evaluator
                             yield return Void.Instance;
                         break;
 
-                    case R.IfTestEnumStmt ifTestEnumStmt:
-                        await foreach (var _ in EvalIfTestEnumStmtAsync(ifTestEnumStmt))
+                    case R.IfTestEnumElemStmt ifTestEnumStmt:
+                        await foreach (var _ in EvalIfTestEnumElemStmtAsync(ifTestEnumStmt))
                             yield return Void.Instance;
                         break;
 

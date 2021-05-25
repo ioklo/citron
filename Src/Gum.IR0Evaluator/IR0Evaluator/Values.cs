@@ -142,21 +142,15 @@ namespace Gum.IR0Evaluator
         }
     }
 
-    class EnumValue : Value
+    [AutoConstructor]
+    partial class EnumValue : Value
     {
-        string elemName;
+        R.EnumElement enumElem;
         ImmutableArray<NamedValue> members;
-
-        public EnumValue()
-        {
-            elemName = string.Empty;
-            members = ImmutableArray<NamedValue>.Empty;
-        }
-
+        
         public Value GetMemberValue(string name)
         {
             throw new NotImplementedException();
-
         }
 
         public override void SetValue(Value value)
@@ -164,15 +158,9 @@ namespace Gum.IR0Evaluator
             throw new NotImplementedException();
         }
 
-        public void SetEnum(string elemName, ImmutableArray<NamedValue> members)
+        public bool IsElem(R.EnumElement otherEnumElem)
         {
-            this.elemName = elemName;
-            this.members = members;
-        }
-
-        public string GetElemName()
-        {
-            return elemName;
+            return enumElem == otherEnumElem; // reference 비교 가능하도록, 불가능 하면 R.EnumElement를 쓰지 말고 동적으로 생성되는 타입을 하나 만든다
         }
     }
 
