@@ -223,6 +223,7 @@ namespace Gum.IR0Translator
 
                     var srcResult = AnalyzeExp_Exp(exp.Operand1, ResolveHint.None);
                     var wrappedSrcResult = CastExp_Exp(srcResult, destLocResult.TypeValue, exp);
+                    
 
                     return new ExpResult.Exp(new R.AssignExp(destLocResult.Result, wrappedSrcResult.Result), destLocResult.TypeValue);
                 }
@@ -250,8 +251,8 @@ namespace Gum.IR0Translator
                     var equalInfos = globalContext.GetBinaryOpInfos(S.BinaryOpKind.Equal);
                     foreach (var info in equalInfos)
                     {
-                        var castResult0 = TryCastExp_Exp(operandResult0, info.OperandType0);
-                        var castResult1 = TryCastExp_Exp(operandResult1, info.OperandType1);
+                        var castResult0 = globalContext.TryCastExp_Exp(operandResult0, info.OperandType0);
+                        var castResult1 = globalContext.TryCastExp_Exp(operandResult1, info.OperandType1);
 
                         // NOTICE: 우선순위별로 정렬되어 있기 때문에 먼저 매칭되는 것을 선택한다
                         if (castResult0 != null && castResult1 != null)
@@ -273,8 +274,8 @@ namespace Gum.IR0Translator
                 var matchedInfos = globalContext.GetBinaryOpInfos(binaryOpExp.Kind);
                 foreach (var info in matchedInfos)
                 {
-                    var castResult0 = TryCastExp_Exp(operandResult0, info.OperandType0);
-                    var castResult1 = TryCastExp_Exp(operandResult1, info.OperandType1);
+                    var castResult0 = globalContext.TryCastExp_Exp(operandResult0, info.OperandType0);
+                    var castResult1 = globalContext.TryCastExp_Exp(operandResult1, info.OperandType1);
 
                     // NOTICE: 우선순위별로 정렬되어 있기 때문에 먼저 매칭되는 것을 선택한다
                     if (castResult0 != null && castResult1 != null)
@@ -967,6 +968,16 @@ namespace Gum.IR0Translator
                     return new R.TextStringExpElement(textElem.Text);
                 }
 
+                throw new UnreachableCodeException();
+            }
+
+            // 값의 겉보기 타입을 변경한다
+            internal ExpResult.Exp CastExp_Exp(ExpResult.Exp expResult, TypeValue expectType, S.ISyntaxNode nodeForErrorReport) // throws AnalyzeFatalException
+            {
+                var result = globalContext.TryCastExp_Exp(expResult, expectType);
+                if (result != null) return result;
+
+                globalContext.AddFatalError(A2201_Cast_Failed, nodeForErrorReport);
                 throw new UnreachableCodeException();
             }
         }

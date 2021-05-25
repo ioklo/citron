@@ -171,10 +171,8 @@ namespace Gum.IR0Translator
                 var condResult = AnalyzeExp_Exp(ifStmt.Cond, ResolveHint.None);
                 var bodyResult = AnalyzeStmt(ifStmt.Body);
                 StmtResult? elseBodyResult = (ifStmt.ElseBody != null) ? AnalyzeStmt(ifStmt.ElseBody) : null;
-
-                // Analyzer 처리
-                if (!globalContext.IsAssignable(globalContext.GetBoolType(), condResult.TypeValue))
-                    globalContext.AddFatalError(A1004_IfStmt_ConditionShouldBeBool, ifStmt.Cond);
+                
+                condResult = CastExp_Exp(condResult, globalContext.GetBoolType(), ifStmt.Cond);
 
                 return new StmtResult(new R.IfStmt(condResult.Result, bodyResult.Stmt, elseBodyResult?.Stmt));
             }
@@ -218,12 +216,16 @@ namespace Gum.IR0Translator
                 {
                     // 밑에서 쓰이므로 분석실패시 종료
                     var condResult = newAnalyzer.AnalyzeExp_Exp(forStmt.CondExp, ResolveHint.None);
-
-                    // 에러가 나면 에러를 추가하고 계속 진행
-                    if (!globalContext.IsAssignable(globalContext.GetBoolType(), condResult.TypeValue))
-                        globalContext.AddError(A1101_ForStmt_ConditionShouldBeBool, forStmt.CondExp);
-
-                    cond = condResult.Result;
+                    
+                    try
+                    {
+                        condResult = CastExp_Exp(condResult, globalContext.GetBoolType(), forStmt.CondExp);
+                        cond = condResult.Result;
+                    }
+                    catch(AnalyzerFatalException)
+                    {
+                        // 에러가 나도 계속 진행
+                    }
                 }
 
                 R.Exp? continueInfo = null;
@@ -307,8 +309,7 @@ namespace Gum.IR0Translator
                         var valueResult = AnalyzeExp_Exp(returnStmt.Value, ResolveHint.Make(retTypeValue));
 
                         // 현재 함수 시그니처랑 맞춰서 같은지 확인한다
-                        if (!globalContext.IsAssignable(retTypeValue, valueResult.TypeValue))
-                            globalContext.AddFatalError(A1201_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType, returnStmt.Value);
+                        valueResult = CastExp_Exp(valueResult, retTypeValue, returnStmt.Value);
 
                         return new StmtResult(new R.ReturnStmt(valueResult.Result));
                     }
@@ -460,9 +461,7 @@ namespace Gum.IR0Translator
 
                 // NOTICE: 리턴 타입을 힌트로 넣었다
                 var valueResult = AnalyzeExp_Exp(yieldStmt.Value, ResolveHint.Make(retTypeValue));
-
-                if (!globalContext.IsAssignable(retTypeValue, valueResult.TypeValue))
-                    globalContext.AddFatalError(A1402_YieldStmt_MismatchBetweenYieldValueAndSeqFuncYieldType, yieldStmt.Value);
+                valueResult = CastExp_Exp(valueResult, retTypeValue, yieldStmt.Value);
 
                 return new StmtResult(new R.YieldStmt(valueResult.Result));
             }            

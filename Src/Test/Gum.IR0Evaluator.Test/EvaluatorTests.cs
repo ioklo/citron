@@ -846,7 +846,7 @@ namespace Gum.IR0Evaluator.Test
             );
 
             var output = await EvalAsync(default, stmts);
-            Assert.Equal("FalseTrue", output);
+            Assert.Equal("falsetrue", output);
         }
 
         [Fact]

@@ -109,7 +109,7 @@ namespace Gum.IR0Translator.Test
             var xmtype = new M.GlobalType(moduleName, M.NamespacePath.Root, "X", Arr(MTypes.Int));
             var xymtype = new M.MemberType(xmtype, "Y", Arr(MTypes.String));
 
-            var xyTypeValue = factory.MakeTypeValueByMType(xymtype);
+            var xyTypeValue = (StructTypeValue)factory.MakeTypeValueByMType(xymtype);
             var xyBaseTypeValue = xyTypeValue.GetBaseType();
 
             var expected = factory.MakeTypeValueByMType(new M.GlobalType(moduleName, M.NamespacePath.Root, "G", Arr(MTypes.Int)));

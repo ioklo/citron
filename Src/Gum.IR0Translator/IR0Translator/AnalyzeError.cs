@@ -77,7 +77,7 @@ namespace Gum.IR0Translator
         A1301_ExpStmt_ExpressionShouldBeAssignOrCall,        
 
         A1401_YieldStmt_YieldShouldBeInSeqFunc,
-        A1402_YieldStmt_MismatchBetweenYieldValueAndSeqFuncYieldType,
+        // A1402_YieldStmt_MismatchBetweenYieldValueAndSeqFuncYieldType, => CastFailed
 
         A1501_ContinueStmt_ShouldUsedInLoop,
 

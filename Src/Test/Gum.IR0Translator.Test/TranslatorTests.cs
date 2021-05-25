@@ -514,7 +514,7 @@ namespace Gum.IR0Translator.Test
             var syntaxScript = SScript(new S.GlobalFuncDeclScriptElement(funcDecl));
             var errors = TranslateWithErrors(syntaxScript);
 
-            VerifyError(errors, A1201_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType, retValue);
+            VerifyError(errors, A2201_Cast_Failed, retValue);
         }
 
         [Fact]
@@ -554,7 +554,7 @@ namespace Gum.IR0Translator.Test
             var syntaxScript = SScript(new S.ReturnStmt(exp = SString("Hello")));
 
             var errors = TranslateWithErrors(syntaxScript);
-            VerifyError(errors, A1201_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType, exp);
+            VerifyError(errors, A2201_Cast_Failed, exp);
         }
 
         [Fact]
@@ -968,7 +968,7 @@ namespace Gum.IR0Translator.Test
 
             var errors = TranslateWithErrors(syntaxScript);
 
-            VerifyError(errors, A1402_YieldStmt_MismatchBetweenYieldValueAndSeqFuncYieldType, yieldValue);
+            VerifyError(errors, A2201_Cast_Failed, yieldValue);
         }
 
         [Fact]

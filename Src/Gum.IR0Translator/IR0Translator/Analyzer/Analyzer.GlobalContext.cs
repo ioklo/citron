@@ -201,16 +201,6 @@ namespace Gum.IR0Translator
                 return itemValueFactory.MakeTupleType(elems);
             }
 
-            // 값의 겉보기 타입을 변경한다
-            public ExpResult.Exp CastExp_Exp(ExpResult.Exp expResult, TypeValue expectType, S.ISyntaxNode nodeForErrorReport)
-            {
-                var result = TryCastExp_Exp(expResult, expectType);
-                if (result != null) return result;
-
-                AddFatalError(A2201_Cast_Failed, nodeForErrorReport);
-                throw new UnreachableCodeException();
-            }
-
             public ExpResult.Exp? TryCastExp_Exp(ExpResult.Exp expResult, TypeValue expectType) // nothrow
             {
                 // 같으면 그대로 리턴
