@@ -127,13 +127,13 @@ namespace Gum.IR0Translator
             //    }
             //}
 
-            StmtResult AnalyzeIfTestStmt(S.IfStmt ifStmt)
+            // 
+            StmtResult AnalyzeIfTestStmt(S.IfTestStmt ifStmt)
             {
                 throw new NotImplementedException();
 
                 // TODO: if (Type v = exp as Type) 구문 추가
                 // var condResult = AnalyzeExp(ifStmt.Cond, ResolveHint.None);
-
 
 
                 //if (idResult is locResult && locResult.Result is R.LocalVarLoc)
@@ -164,9 +164,6 @@ namespace Gum.IR0Translator
 
             StmtResult AnalyzeIfStmt(S.IfStmt ifStmt)
             {
-                if (ifStmt.TestType != null)
-                    return AnalyzeIfTestStmt(ifStmt);
-
                 // 순회
                 var condResult = AnalyzeExp_Exp(ifStmt.Cond, ResolveHint.None);
                 var bodyResult = AnalyzeStmt(ifStmt.Body);
@@ -473,6 +470,7 @@ namespace Gum.IR0Translator
                     case S.VarDeclStmt varDeclStmt: return AnalyzeLocalVarDeclStmt(varDeclStmt);
                     case S.CommandStmt cmdStmt: return AnalyzeCommandStmt(cmdStmt);
                     case S.IfStmt ifStmt: return AnalyzeIfStmt(ifStmt);
+                    case S.IfTestStmt ifTestStmt: return AnalyzeIfTestStmt(ifTestStmt);
                     case S.ForStmt forStmt: return AnalyzeForStmt(forStmt);
                     case S.ContinueStmt continueStmt: return AnalyzeContinueStmt(continueStmt);
                     case S.BreakStmt breakStmt: return AnalyzeBreakStmt(breakStmt);

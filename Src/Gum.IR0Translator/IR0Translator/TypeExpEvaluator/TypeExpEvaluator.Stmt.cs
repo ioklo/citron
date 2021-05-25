@@ -22,14 +22,19 @@ namespace Gum.IR0Translator
         void VisitIfStmt(S.IfStmt ifStmt)
         {
             VisitExp(ifStmt.Cond);
-
-            if (ifStmt.TestType != null)
-                VisitTypeExpOuterMost(ifStmt.TestType);
-
             VisitStmt(ifStmt.Body);
 
             if (ifStmt.ElseBody != null)
                 VisitStmt(ifStmt.ElseBody);
+        }
+
+        void VisitIfTestStmt(S.IfTestStmt ifTestStmt)
+        {
+            VisitExp(ifTestStmt.Exp);
+            VisitTypeExpOuterMost(ifTestStmt.TestType);
+            VisitStmt(ifTestStmt.Body);
+            if (ifTestStmt.ElseBody != null)
+                VisitStmt(ifTestStmt.ElseBody);
         }
 
         void VisitForStmtInitializer(S.ForStmtInitializer initializer)
