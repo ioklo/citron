@@ -119,25 +119,7 @@ namespace Gum.IR0Translator
             {
                 return itemValueFactory.List(elemType);
             }
-
-            public bool IsAssignable(TypeValue toTypeValue, TypeValue fromTypeValue)
-            {   
-                // B <- D
-                // 지금은 fromType의 base들을 찾아가면서 toTypeValue와 맞는 것이 있는지 본다
-                // TODO: toTypeValue가 interface라면, fromTypeValue의 interface들을 본다
-
-                TypeValue? curType = fromTypeValue;
-                while (curType != null)
-                {
-                    if (toTypeValue.Equals(curType))
-                        return true;
-
-                    curType = curType.GetBaseType();
-                }
-
-                return false;
-            }
-
+            
             public void AddInternalGlobalVarInfo(M.Name name, TypeValue typeValue)
             {
                 internalGlobalVarRepo.AddInternalGlobalVariable(name, typeValue);
@@ -217,6 +199,59 @@ namespace Gum.IR0Translator
             public TupleTypeValue GetTupleType(ImmutableArray<(TypeValue Type, string? Name)> elems)
             {
                 return itemValueFactory.MakeTupleType(elems);
+            }
+
+            // 값의 겉보기 타입을 변경한다
+            public ExpResult.Exp CastExp_Exp(ExpResult.Exp expResult, TypeValue expectType, S.ISyntaxNode nodeForErrorReport)
+            {
+                var result = TryCastExp_Exp(expResult, expectType);
+                if (result != null) return result;
+
+                AddFatalError(A2201_Cast_Failed, nodeForErrorReport);
+                throw new UnreachableCodeException();
+            }
+
+            public ExpResult.Exp? TryCastExp_Exp(ExpResult.Exp expResult, TypeValue expectType) // nothrow
+            {
+                // 같으면 그대로 리턴
+                if (expResult.TypeValue.Equals(expectType))
+                    return expResult;
+
+                // 1. enumElem -> enum
+                if (expResult.TypeValue is EnumElemTypeValue enumElemTypeValue)
+                {
+                    if (expectType is EnumTypeValue expectEnumType)
+                    {
+                        if (enumElemTypeValue.Outer.Equals(expectType))
+                        {
+                            var castExp = new R.CastEnumElemToEnumExp(expResult.Result, expectEnumType.GetRPath_Nested());
+                            return new ExpResult.Exp(castExp, expectType);
+                        }
+                    }
+
+                    return null;
+                }
+
+                // 2. exp is class type
+                else if (expResult.TypeValue is ClassTypeValue classTypeValue)
+                {
+                    if (expectType is ClassTypeValue expectClassType)
+                    {
+                        // allows upcast
+                        if (expectClassType.IsBaseOf(classTypeValue))
+                        {
+                            var castExp = new R.CastClassExp(expResult.Result, expectClassType.GetRPath());
+                            return new ExpResult.Exp(castExp, expectClassType);
+                        }
+
+                        return null;
+                    }
+
+                    // TODO: interface
+                    // if (expectType is InterfaceTypeValue )
+                }
+
+                return null;
             }
         }
     }

@@ -34,7 +34,7 @@ namespace Gum.IR0Translator
             abstract class FuncMatcherArgument
             {
                 // preanalyze할수도 있고, 여기서 시작할수도 있다
-                public abstract void DoAnalyze(ResolveHint hint);
+                public abstract void DoAnalyze(TypeValue expectType, ResolveHint hint); // throws FuncMatchFatalException
                 public abstract TypeValue GetTypeValue();
                 public abstract R.Argument? GetRArgument();
 
@@ -51,9 +51,13 @@ namespace Gum.IR0Translator
                         this.exp = exp; 
                     }
 
-                    public override void DoAnalyze(ResolveHint hint)
+                    public override void DoAnalyze(TypeValue expectType, ResolveHint hint) // throws FuncMatcherFatalException
                     {
-                        expResult = analyzer.AnalyzeExp_Exp(exp, hint);
+                        var argResult = analyzer.AnalyzeExp_Exp(exp, hint);
+                        expResult = analyzer.globalContext.TryCastExp_Exp(argResult, expectType);
+
+                        if (expResult == null)
+                            throw new FuncMatcherFatalException();
                     }                    
 
                     public override TypeValue GetTypeValue()
@@ -401,7 +405,7 @@ namespace Gum.IR0Translator
 
                     // arg
                     var resolveHint = ResolveHint.Make(appliedParamType);
-                    arg.DoAnalyze(resolveHint); // Argument 종류에 따라서 달라진다
+                    arg.DoAnalyze(appliedParamType, resolveHint); // Argument 종류에 따라서 달라진다
 
                     var argType = arg.GetTypeValue();
 

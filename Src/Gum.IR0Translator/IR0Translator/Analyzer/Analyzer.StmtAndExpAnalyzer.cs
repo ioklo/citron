@@ -72,30 +72,7 @@ namespace Gum.IR0Translator
                 updateContext.Update(callableContext, srcCallableContext);
                 updateContext.Update(localContext, srcLocalContext);
             }
-
-            void CheckParamTypes(S.ISyntaxNode nodeForErrorReport, ImmutableArray<TypeValue> parameters, ImmutableArray<TypeValue> args)
-            {
-                bool bFatal = false;
-
-                if (parameters.Length != args.Length)
-                {
-                    globalContext.AddError(A0401_Parameter_MismatchBetweenParamCountAndArgCount, nodeForErrorReport);
-                    bFatal = true;
-                }
-
-                for (int i = 0; i < parameters.Length; i++)
-                {
-                    if (!globalContext.IsAssignable(parameters[i], args[i]))
-                    {
-                        globalContext.AddError(A0402_Parameter_MismatchBetweenParamTypeAndArgType, nodeForErrorReport);
-                        bFatal = true;
-                    }
-                }
-
-                if (bFatal)
-                    throw new AnalyzerFatalException();
-            }
-
+            
             R.LocalVarDecl AnalyzeLocalVarDecl(S.VarDecl varDecl)
             {
                 var varDeclAnalyzer = new VarDeclElemAnalyzer(globalContext, callableContext, localContext);

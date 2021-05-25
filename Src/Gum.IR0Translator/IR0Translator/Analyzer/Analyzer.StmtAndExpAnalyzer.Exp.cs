@@ -135,8 +135,8 @@ namespace Gum.IR0Translator
 
                 if (operandResult is ExpResult.Loc locResult)
                 {
-                    // int type 검사
-                    if (!globalContext.IsAssignable(globalContext.GetIntType(), locResult.TypeValue))
+                    // int type 검사, exact match
+                    if (!locResult.TypeValue.Equals(globalContext.GetIntType()))
                         globalContext.AddFatalError(A0601_UnaryAssignOp_IntTypeIsAllowedOnly, operand);
 
                     return new ExpResult.Exp(new R.CallInternalUnaryAssignOperator(op, locResult.Result), globalContext.GetIntType());
@@ -156,7 +156,8 @@ namespace Gum.IR0Translator
                 {
                     case S.UnaryOpKind.LogicalNot:
                         {
-                            if (!globalContext.IsAssignable(globalContext.GetBoolType(), operandResult.TypeValue))
+                            // exact match
+                            if (!operandResult.TypeValue.Equals(globalContext.GetBoolType()))
                                 globalContext.AddFatalError(A0701_UnaryOp_LogicalNotOperatorIsAppliedToBoolTypeOperandOnly, unaryOpExp.Operand);
 
                             return new ExpResult.Exp(
@@ -170,7 +171,7 @@ namespace Gum.IR0Translator
 
                     case S.UnaryOpKind.Minus:
                         {
-                            if (!globalContext.IsAssignable(globalContext.GetIntType(), operandResult.TypeValue))
+                            if (!operandResult.TypeValue.Equals(globalContext.GetIntType()))
                                 globalContext.AddFatalError(A0702_UnaryOp_UnaryMinusOperatorIsAppliedToIntTypeOperandOnly, unaryOpExp.Operand);
 
                             return new ExpResult.Exp(
@@ -221,47 +222,16 @@ namespace Gum.IR0Translator
                     }
 
                     var srcResult = AnalyzeExp_Exp(exp.Operand1, ResolveHint.None);
+                    var wrappedSrcResult = CastExp_Exp(srcResult, destLocResult.TypeValue, exp);
 
-                    var wrappedSrcResult = CastExp(srcResult, destLocResult.TypeValue);
-
-                    if (!globalContext.IsAssignable(destLocResult.TypeValue, srcResult.TypeValue))
-                        globalContext.AddFatalError(A0801_BinaryOp_LeftOperandTypeIsNotCompatibleWithRightOperandType, exp);
-
-                    return new ExpResult.Exp(new R.AssignExp(destLocResult.Result, srcResult.Result), destLocResult.TypeValue);
+                    return new ExpResult.Exp(new R.AssignExp(destLocResult.Result, wrappedSrcResult.Result), destLocResult.TypeValue);
                 }
                 else
                 {
                     globalContext.AddFatalError(A0803_BinaryOp_LeftOperandIsNotAssignable, exp.Operand0);
                     throw new UnreachableCodeException();
                 }
-            }
-
-            // 값의 겉보기 타입을 변경한다
-            ExpResult.Exp CastExp_Exp(ExpResult.Exp expResult, TypeValue typeValue, ISyntaxNode nodeForErrorReport)
-            {
-                // 같으면 그대로 리턴
-                if (expResult.TypeValue.Equals(typeValue))
-                    return expResult;
-
-                // 1. enumElem -> enum
-                if (expResult.TypeValue is EnumElemTypeValue enumElemTypeValue)
-                {
-                    // 그대로 리턴
-                    // TODO: IR0에 명령어를 추가해야할까, InternalUnaryOperator에 추가?
-                    if (enumElemTypeValue.Outer.Equals(typeValue))
-                        return expResult;
-
-                    globalContext.AddFatalError(A2201_Cast_Failed, nodeForErrorReport);
-                    throw new UnreachableCodeException();
-                }
-
-                // 2. class -> base class, do nothing
-                if (expResult.TypeValue is ClassTypeValue classTypeValue)
-
-
-                if (!globalContext.IsAssignable(destLocResult.TypeValue, srcResult.TypeValue))
-                    globalContext.AddFatalError(A0801_BinaryOp_LeftOperandTypeIsNotCompatibleWithRightOperandType, exp);
-            }
+            }            
 
             ExpResult.Exp AnalyzeBinaryOpExp(S.BinaryOpExp binaryOpExp)
             {
@@ -280,14 +250,16 @@ namespace Gum.IR0Translator
                     var equalInfos = globalContext.GetBinaryOpInfos(S.BinaryOpKind.Equal);
                     foreach (var info in equalInfos)
                     {
+                        var castResult0 = TryCastExp_Exp(operandResult0, info.OperandType0);
+                        var castResult1 = TryCastExp_Exp(operandResult1, info.OperandType1);
+
                         // NOTICE: 우선순위별로 정렬되어 있기 때문에 먼저 매칭되는 것을 선택한다
-                        if (globalContext.IsAssignable(info.OperandType0, operandResult0.TypeValue) &&
-                            globalContext.IsAssignable(info.OperandType1, operandResult1.TypeValue))
+                        if (castResult0 != null && castResult1 != null)
                         {
                             var equalExp = new R.CallInternalBinaryOperatorExp(
                                 info.IR0Operator,
-                                operandResult0.Result,
-                                operandResult1.Result
+                                castResult0.Result,
+                                castResult1.Result
                             );
 
                             return new ExpResult.Exp(
@@ -301,15 +273,17 @@ namespace Gum.IR0Translator
                 var matchedInfos = globalContext.GetBinaryOpInfos(binaryOpExp.Kind);
                 foreach (var info in matchedInfos)
                 {
+                    var castResult0 = TryCastExp_Exp(operandResult0, info.OperandType0);
+                    var castResult1 = TryCastExp_Exp(operandResult1, info.OperandType1);
+
                     // NOTICE: 우선순위별로 정렬되어 있기 때문에 먼저 매칭되는 것을 선택한다
-                    if (globalContext.IsAssignable(info.OperandType0, operandResult0.TypeValue) &&
-                        globalContext.IsAssignable(info.OperandType1, operandResult1.TypeValue))
+                    if (castResult0 != null && castResult1 != null)
                     {
                         return new ExpResult.Exp(
                             new R.CallInternalBinaryOperatorExp(
                                 info.IR0Operator,
-                                operandResult0.Result,
-                                operandResult1.Result),
+                                castResult0.Result,
+                                castResult1.Result),
                             info.ResultType);
                     }
                 }

@@ -25,7 +25,7 @@ namespace Gum.IR0Translator
 
         // Analyzer
         A0101_VarDecl_CantInferVarType,
-        A0102_VarDecl_MismatchBetweenDeclTypeAndInitExpType,
+        //A0102_VarDecl_MismatchBetweenDeclTypeAndInitExpType, => CastFailed
         A0103_VarDecl_LocalVarNameShouldBeUniqueWithinScope,
         A0104_VarDecl_GlobalVariableNameShouldBeUnique,
         A0105_VarDecl_CantUseEnumElementAsDeclType,
@@ -41,7 +41,7 @@ namespace Gum.IR0Translator
         // A0307_MemberExp_MemberIsNotExpression,
 
         A0401_Parameter_MismatchBetweenParamCountAndArgCount,
-        A0402_Parameter_MismatchBetweenParamTypeAndArgType,
+        // A0402_Parameter_MismatchBetweenParamTypeAndArgType, => FuncMatcher..로 변경
 
         // A0501_IdExp_VariableNotFound,
         // A0502_IdExp_CantUseTypeAsExpression,
@@ -53,7 +53,7 @@ namespace Gum.IR0Translator
         A0701_UnaryOp_LogicalNotOperatorIsAppliedToBoolTypeOperandOnly,
         A0702_UnaryOp_UnaryMinusOperatorIsAppliedToIntTypeOperandOnly,
 
-        A0801_BinaryOp_LeftOperandTypeIsNotCompatibleWithRightOperandType,
+        // A0801_BinaryOp_LeftOperandTypeIsNotCompatibleWithRightOperandType, => CastFailed로 변경
         A0802_BinaryOp_OperatorNotFound,
         A0803_BinaryOp_LeftOperandIsNotAssignable,
 
@@ -101,8 +101,11 @@ namespace Gum.IR0Translator
         A2008_ResolveIdentifier_CantUseTypeAsExpression, // Type으로 Resolve는 되지만, 값으로 변경하려고 시도하다가 에러 var x = X.Y;
         A2009_ResolveIdentifier_EnumElemCantHaveMember,
 
+
         A2101_FuncMatcher_MultipleCandidates,
         A2102_FuncMatcher_NotFound,
+
+        A2201_Cast_Failed,
 
         // A2001_Identifier_MultipleCandidatesForIdentifier,
 

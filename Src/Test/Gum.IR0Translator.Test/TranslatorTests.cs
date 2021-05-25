@@ -1247,7 +1247,7 @@ namespace Gum.IR0Translator.Test
             );
 
             var errors = TranslateWithErrors(syntaxScript);
-            VerifyError(errors, A0801_BinaryOp_LeftOperandTypeIsNotCompatibleWithRightOperandType, binOpExp);
+            VerifyError(errors, A2201_Cast_Failed, binOpExp);
         }
 
         [Fact]

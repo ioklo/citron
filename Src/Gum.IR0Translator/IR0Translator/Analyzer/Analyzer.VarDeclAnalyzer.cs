@@ -55,12 +55,10 @@ namespace Gum.IR0Translator
                     else
                     {
                         var initExpResult = stmtAndExpAnalyzer.AnalyzeExp_Exp(elem.InitExp, ResolveHint.Make(declType));
-
-                        if (!globalContext.IsAssignable(declType, initExpResult.TypeValue))
-                            globalContext.AddFatalError(A0102_VarDecl_MismatchBetweenDeclTypeAndInitExpType, elem);
+                        var castExpResult = globalContext.CastExp_Exp(initExpResult, declType, elem.InitExp);
 
                         var rtype = declType.GetRPath();
-                        return new VarDeclElementCoreResult(new R.VarDeclElement(elem.VarName, rtype, initExpResult.Result), declType);
+                        return new VarDeclElementCoreResult(new R.VarDeclElement(elem.VarName, rtype, castExpResult.Result), declType);
                     }
                 }
             }

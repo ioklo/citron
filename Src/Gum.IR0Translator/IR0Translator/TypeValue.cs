@@ -15,8 +15,7 @@ namespace Gum.IR0Translator
 {
     // 모두 immutable
     abstract partial class TypeValue : ItemValue
-    {
-        public virtual TypeValue? GetBaseType() { return null; }
+    {   
         public virtual ItemQueryResult GetMember(M.Name memberName, int typeParamCount) { return ItemQueryResult.NotFound.Instance; }
         public virtual TypeValue? GetMemberType(M.Name memberName, ImmutableArray<TypeValue> typeArgs) { return null; }        
         public abstract TypeValue Apply_TypeValue(TypeEnv typeEnv);        
@@ -61,6 +60,22 @@ namespace Gum.IR0Translator
     [ImplementIEquatable]
     partial class ClassTypeValue : NormalTypeValue
     {
+        public ClassTypeValue? GetBaseType() { throw new NotImplementedException(); }
+
+        // except itself
+        public bool IsBaseOf(ClassTypeValue derivedType)
+        {
+            ClassTypeValue? curBaseType = derivedType.GetBaseType();
+
+            while(curBaseType != null)
+            {
+                if (Equals(curBaseType)) return true;
+                curBaseType = curBaseType.GetBaseType();
+            }
+
+            return false;
+        }
+
         public override NormalTypeValue Apply_NormalTypeValue(TypeEnv typeEnv)
         {
             throw new NotImplementedException();
@@ -96,9 +111,6 @@ namespace Gum.IR0Translator
         {
             return Apply_EnumTypeValue(typeEnv);
         }
-
-        // Enum의 BaseType은 지원 안함
-        public override TypeValue? GetBaseType() { return null; }
 
         //
         public override ItemQueryResult GetMember(M.Name memberName, int typeParamCount) 
@@ -151,13 +163,13 @@ namespace Gum.IR0Translator
 
         public override NormalTypeValue Apply_NormalTypeValue(TypeEnv typeEnv)
         {
-            var appliedOuter = outer.Apply_EnumTypeValue(typeEnv);
+            var appliedOuter = Outer.Apply_EnumTypeValue(typeEnv);
             return itemValueFactory.MakeEnumElemTypeValue(appliedOuter, elemInfo);
         }
 
         public override R.Path.Nested GetRPath_Nested()
         {
-            var router = outer.GetRPath_Nested();
+            var router = Outer.GetRPath_Nested();
             var rname = RItemFactory.MakeName(elemInfo.Name);
             Debug.Assert(router != null);
 
@@ -271,7 +283,7 @@ namespace Gum.IR0Translator
             throw new UnreachableCodeException();
         }
 
-        public override TypeValue? GetBaseType()
+        public TypeValue? GetBaseType()
         {
             if (structInfo.BaseType == null) return null;
 

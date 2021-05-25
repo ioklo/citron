@@ -182,4 +182,20 @@ namespace Gum.IR0
         // TODO: params, out, 등 처리를 하려면 Exp가 아니라 다른거여야 한다
         public ImmutableArray<Argument> Args { get; }
     }
+
+    // 컨테이너를 enumElem -> enum으로
+    [AutoConstructor, ImplementIEquatable]
+    public partial class CastEnumElemToEnumExp : Exp
+    {
+        public Exp Src { get; }
+        public Path.Nested Enum { get; }
+    }
+    
+    // ClassStaticCast
+    [AutoConstructor, ImplementIEquatable]
+    public partial class CastClassExp : Exp
+    {
+        public Exp Src { get; }
+        public Path Class { get; }
+    }
 }
