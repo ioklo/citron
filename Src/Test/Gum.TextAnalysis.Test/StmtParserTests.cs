@@ -93,11 +93,9 @@ xxx
             var ifStmt = await parser.ParseIfStmtAsync(context);
 
             var expected = new IfStmt(SimpleSId("b"),
-                null,
                 SimpleSBlockStmt(),
                 new IfStmt(
                     SimpleSId("c"),
-                    null,
                     SimpleSBlockStmt(),
                     SimpleSBlockStmt()));
 
@@ -105,18 +103,37 @@ xxx
         }
 
         [Fact]
-        async Task TestParseIfStmtWithTestTypeAsync()
+        async Task TestParseIfTestStmtWithoutVarNameAsync()
         {
             (var parser, var context) = await PrepareAsync("if (b is T) {} else if (c) {} else {}");
 
             var ifStmt = await parser.ParseIfStmtAsync(context);
 
-            var expected = new IfStmt(SimpleSId("b"),
-                SimpleSIdTypeExp("T"),
+            var expected = new IfTestStmt(SimpleSId("b"),
+                SimpleSIdTypeExp("T"), 
+                null,
                 SimpleSBlockStmt(),
                 new IfStmt(
                     SimpleSId("c"),
-                    null,
+                    SimpleSBlockStmt(),
+                    SimpleSBlockStmt()));
+
+            Assert.Equal(expected, ifStmt.Elem);
+        }
+
+        [Fact]
+        async Task TestParseIfTestStmtWithVarNameAsync()
+        {
+            (var parser, var context) = await PrepareAsync("if (b is T t) {} else if (c) {} else {}");
+
+            var ifStmt = await parser.ParseIfStmtAsync(context);
+
+            var expected = new IfTestStmt(SimpleSId("b"),
+                SimpleSIdTypeExp("T"),
+                "t",
+                SimpleSBlockStmt(),
+                new IfStmt(
+                    SimpleSId("c"),
                     SimpleSBlockStmt(),
                     SimpleSBlockStmt()));
 

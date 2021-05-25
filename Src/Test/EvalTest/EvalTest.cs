@@ -127,7 +127,7 @@ namespace EvalTest
                 var evaluator = new Evaluator(commandProvider, rscript);
                 var retValue = await evaluator.EvalAsync(); // retValue는 지금 쓰지 않는다
             }
-            catch(Exception e)
+            catch
             {
                 Assert.True(errorCollector.HasError, "실행은 중간에 멈췄는데 에러로그가 남지 않았습니다");
             }

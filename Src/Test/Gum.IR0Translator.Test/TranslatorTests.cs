@@ -218,7 +218,7 @@ namespace Gum.IR0Translator.Test
         {
             var syntaxScript = SScript(new S.StmtScriptElement(
 
-                new S.IfStmt(new S.BoolLiteralExp(false), null, S.BlankStmt.Instance, S.BlankStmt.Instance)
+                new S.IfStmt(new S.BoolLiteralExp(false), S.BlankStmt.Instance, S.BlankStmt.Instance)
                 
             ));
 
@@ -240,7 +240,7 @@ namespace Gum.IR0Translator.Test
 
             var syntaxScript = SScript(new S.StmtScriptElement(
 
-                new S.IfStmt(cond = SInt(3), null, S.BlankStmt.Instance, S.BlankStmt.Instance)
+                new S.IfStmt(cond = SInt(3), S.BlankStmt.Instance, S.BlankStmt.Instance)
 
             ));
 

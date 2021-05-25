@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Gum.Infra.Misc;
 
 using M = Gum.CompileTime;
 using R = Gum.IR0;
@@ -18,13 +19,15 @@ namespace Gum.IR0Translator
         TypeInfoRepository typeInfoRepo;
         RItemFactory ritemFactory;
 
+        M.StructInfo listInfo;
+
         public TypeValue Void { get; }
         public TypeValue Bool { get; }
         public TypeValue Int { get; }        
         public TypeValue String { get; }
         public TypeValue List(TypeValue typeArg)
         {
-            throw new NotImplementedException();
+            return MakeTypeValue("System.Runtime", new M.NamespacePath("System"), listInfo, Arr(typeArg));
         }
 
         public void EnsurePure()
@@ -35,10 +38,12 @@ namespace Gum.IR0Translator
 
         public ItemValueFactory(TypeInfoRepository typeInfoRepo, RItemFactory ritemFactory)
         {
-            M.TypeInfo MakeEmptyStructInfo(M.Name name) => new M.StructInfo(name, default, null, default, default, default, default);
+            M.StructInfo MakeEmptyStructInfo(M.Name name) => new M.StructInfo(name, default, null, default, default, default, default);
 
             this.typeInfoRepo = typeInfoRepo;
             this.ritemFactory = ritemFactory;
+
+            listInfo = MakeEmptyStructInfo("List");
 
             Void = VoidTypeValue.Instance;
             Bool = MakeTypeValue("System.Runtime", new M.NamespacePath("System"), MakeEmptyStructInfo("Boolean"), default);

@@ -120,6 +120,7 @@ namespace Gum.IR0Translator
                 case S.CommandStmt cmdStmt: VisitCommandStmt(cmdStmt); break;
                 case S.VarDeclStmt varDeclStmt: VisitVarDeclStmt(varDeclStmt); break;
                 case S.IfStmt ifStmt: VisitIfStmt(ifStmt); break;
+                case S.IfTestStmt ifTestStmt: VisitIfTestStmt(ifTestStmt); break;
                 case S.ForStmt forStmt: VisitForStmt(forStmt); break;
                 case S.ContinueStmt continueStmt: VisitContinueStmt(continueStmt); break;
                 case S.BreakStmt breakStmt: VisitBreakStmt(breakStmt); break;

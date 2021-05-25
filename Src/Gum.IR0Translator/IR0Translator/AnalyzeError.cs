@@ -62,10 +62,12 @@ namespace Gum.IR0Translator
         A0903_CallExp_MismatchEnumConstructorArgCount,
         A0904_CallExp_MismatchBetweenEnumParamTypeAndEnumArgType,
 
-        A1001_IfStmt_TestTargetShouldBeLocalVariable,
-        A1002_IfStmt_TestTargetIdentifierNotFound,
-        A1003_IfStmt_TestTypeShouldBeEnumOrClass,
-        A1004_IfStmt_ConditionShouldBeBool,
+        // A1001_IfStmt_TestTargetShouldBeLocalVariable,
+        // A1002_IfStmt_TestTargetIdentifierNotFound,
+        // A1003_IfStmt_TestTypeShouldBeEnumOrClass,
+        A1001_IfStmt_ConditionShouldBeBool,
+
+        A2301_IfTestStmt_CantDowncast,
 
         A1101_ForStmt_ConditionShouldBeBool,
         A1102_ForStmt_ExpInitializerShouldBeAssignOrCall,

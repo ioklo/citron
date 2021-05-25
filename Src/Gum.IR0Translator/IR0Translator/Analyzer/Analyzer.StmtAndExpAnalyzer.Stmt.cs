@@ -128,11 +128,59 @@ namespace Gum.IR0Translator
             //}
 
             // 
-            StmtResult AnalyzeIfTestStmt(S.IfTestStmt ifStmt)
+            StmtResult AnalyzeIfTestStmt(S.IfTestStmt ifTestStmt)
             {
-                throw new NotImplementedException();
+                // if (e is Type varName) body 
+                // IfTestStmt -> IfTestClassStmt, IfTestEnumElemStmt
 
-                // TODO: if (Type v = exp as Type) 구문 추가
+                var targetResult = AnalyzeExp_Loc(ifTestStmt.Exp, ResolveHint.None);
+                var testType = globalContext.GetTypeValueByTypeExp(ifTestStmt.TestType);                
+
+                if (testType is EnumElemTypeValue enumElemType)
+                {
+                    // exact match
+                    if (!enumElemType.Outer.Equals(targetResult.TypeValue))
+                        globalContext.AddFatalError(A2301_IfTestStmt_CantDowncast, ifTestStmt.Exp);
+
+                    // analyze body
+                    StmtResult bodyResult;
+                    if (ifTestStmt.VarName != null)
+                    {
+                        var newAnalyzer = NewAnalyzer();
+                        newAnalyzer.localContext.AddLocalVarInfo(ifTestStmt.VarName, enumElemType);
+
+                        bodyResult = newAnalyzer.AnalyzeStmt(ifTestStmt.Body);
+                    }
+                    else
+                    {
+                        bodyResult = AnalyzeStmt(ifTestStmt.Body);
+                    }
+
+                    // analyze elseBody
+                    StmtResult? elseBodyResult;
+                    if (ifTestStmt.ElseBody != null)
+                    {
+                        elseBodyResult = AnalyzeStmt(ifTestStmt.ElseBody);
+                    }
+                    else
+                    {
+                        elseBodyResult = null;
+                    }
+
+                    var rstmt = new R.IfTestEnumElemStmt(targetResult.Result, enumElemType.GetRPath_Nested(), ifTestStmt.VarName, bodyResult.Stmt, elseBodyResult?.Stmt);
+                    return new StmtResult(rstmt);
+                }
+                else
+                {
+                    throw new NotImplementedException();
+                }
+
+
+
+
+
+
+                // TODO: if (exp is Type v) 구문 추가
                 // var condResult = AnalyzeExp(ifStmt.Cond, ResolveHint.None);
 
 
