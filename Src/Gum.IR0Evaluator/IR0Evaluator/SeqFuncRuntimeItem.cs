@@ -18,31 +18,34 @@ namespace Gum.IR0Evaluator
         public abstract void Invoke(Evaluator evaluator, Value? thisValue, ImmutableDictionary<string, Value> args, Value result);
     }
 
-    [AutoConstructor]
-    partial class IR0SeqFuncRuntimeItem : SeqFuncRuntimeItem
+    public partial class Evaluator
     {
-        public override R.Name Name => seqFuncDecl.Name;
-        public override R.ParamHash ParamHash => Misc.MakeParamHash(seqFuncDecl.TypeParams.Length, seqFuncDecl.ParamInfo);
-        public override bool IsThisCall => seqFuncDecl.IsThisCall;
-        public override R.ParamInfo ParamInfo => seqFuncDecl.ParamInfo;
-        R.SequenceFuncDecl seqFuncDecl;
-
-        public override void Invoke(Evaluator evaluator, Value? thisValue, ImmutableDictionary<string, Value> args, Value result)
+        [AutoConstructor]
+        partial class IR0SeqFuncRuntimeItem : SeqFuncRuntimeItem
         {
-            // evaluator 복제
-            var newEvaluator = evaluator.CloneWithNewContext(thisValue, args);
+            public override R.Name Name => seqFuncDecl.Name;
+            public override R.ParamHash ParamHash => Misc.MakeParamHash(seqFuncDecl.TypeParams.Length, seqFuncDecl.ParamInfo);
+            public override bool IsThisCall => seqFuncDecl.IsThisCall;
+            public override R.ParamInfo ParamInfo => seqFuncDecl.ParamInfo;
+            R.SequenceFuncDecl seqFuncDecl;
 
-            // asyncEnum을 만들기 위해서 내부 함수를 씁니다
-            async IAsyncEnumerator<Infra.Void> WrapAsyncEnum()
+            public override void Invoke(Evaluator evaluator, Value? thisValue, ImmutableDictionary<string, Value> args, Value result)
             {
-                await foreach (var _ in newEvaluator.EvalStmtAsync(seqFuncDecl.Body))
-                {
-                    yield return Infra.Void.Instance;
-                }
-            }
+                // evaluator 복제
+                var newEvaluator = evaluator.CloneWithNewContext(thisValue, args);
 
-            var enumerator = WrapAsyncEnum();
-            ((SeqValue)result).SetEnumerator(enumerator, newEvaluator);
+                // asyncEnum을 만들기 위해서 내부 함수를 씁니다
+                async IAsyncEnumerator<Infra.Void> WrapAsyncEnum()
+                {
+                    await foreach (var _ in newEvaluator.EvalStmtAsync(seqFuncDecl.Body))
+                    {
+                        yield return Infra.Void.Instance;
+                    }
+                }
+
+                var enumerator = WrapAsyncEnum();
+                ((SeqValue)result).SetEnumerator(enumerator, newEvaluator);
+            }
         }
     }
 }

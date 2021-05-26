@@ -145,8 +145,8 @@ namespace Gum.IR0Translator
                 // TODO: Body가 실제로 리턴을 제대로 하는지 확인해야 한다
                 var bodyResult = analyzer.AnalyzeStmt(funcDecl.Body);                
                 
-                var lambdaDecls = funcContext.GetDecls();
-                rootContext.AddDecl(new R.NormalFuncDecl(lambdaDecls, rname, false, funcDecl.TypeParams, rparamInfos, bodyResult.Stmt));
+                var decls = funcContext.GetDecls();
+                rootContext.AddDecl(new R.NormalFuncDecl(decls, rname, false, funcDecl.TypeParams, rparamInfos, bodyResult.Stmt));
             }
 
             public void AnalyzeGlobalSequenceFuncDecl(S.GlobalFuncDecl funcDecl)

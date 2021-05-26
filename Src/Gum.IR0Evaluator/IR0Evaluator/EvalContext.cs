@@ -160,11 +160,6 @@ namespace Gum.IR0Evaluator
                 return sharedContext.GetRuntimeItem<TRuntimeItem>(path);
             }
             
-            public R.CapturedStatementDecl GetCapturedStatementDecl(R.Path.Nested path)
-            {
-                return sharedContext.GetCapturedStatementDecl(path);
-            }
-
             public async IAsyncEnumerable<Void> ExecInNewScopeAsync(Func<IAsyncEnumerable<Void>> action)
             {
                 var prevLocalVars = localVars;
@@ -183,11 +178,6 @@ namespace Gum.IR0Evaluator
                 }
             }
 
-            public FuncRuntimeItem GetFuncInvoker(R.Path.Nested path)
-            {
-                return sharedContext.GetFuncInvoker(path);
-            }
-
             public void SetYieldValue(Value value)
             {
                 yieldValue = value;
@@ -196,11 +186,6 @@ namespace Gum.IR0Evaluator
             public Value GetYieldValue()
             {
                 return yieldValue!;
-            }
-
-            public R.LambdaDecl GetLambdaDecl(R.Path.Nested path)
-            {
-                return sharedContext.GetLambdaDecl(path);
             }
 
             public void AddRootItemContainer(R.ModuleName moduleName, ItemContainer container)

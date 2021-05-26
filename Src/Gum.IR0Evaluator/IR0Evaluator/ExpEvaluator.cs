@@ -181,7 +181,7 @@ namespace Gum.IR0Evaluator
                 // 1) X<int, short>.Y<string>.F<bool>, 
                 // 2) (declId, [[[int, short], string], bool])
                 // 누가 정보를 더 많이 가지고 있는가; 1) 필요한가? 
-                var funcInvoker = evaluator.context.GetFuncInvoker(exp.Func);
+                var funcInvoker = evaluator.context.GetRuntimeItem<FuncRuntimeItem>(exp.Func);
 
                 // TODO: typeContext를 계산합니다
 
@@ -195,7 +195,7 @@ namespace Gum.IR0Evaluator
                 // 인자를 계산 해서 처음 로컬 variable에 집어 넣는다
                 var args = await EvalArgumentsAsync(ImmutableDictionary<string, Value>.Empty, funcInvoker.ParamInfo, exp.Args);
 
-                await funcInvoker.Invoke(evaluator, thisValue, result, args);
+                await funcInvoker.InvokeAsync(evaluator, thisValue, args, result);
             }
 
             async ValueTask EvalCallSeqFuncExpAsync(R.CallSeqFuncExp exp, Value result)
@@ -219,23 +219,18 @@ namespace Gum.IR0Evaluator
             async ValueTask EvalCallValueExpAsync(R.CallValueExp exp, Value result)
             {
                 var callableValue = (LambdaValue)await evaluator.EvalLocAsync(exp.Callable);
-                var lambdaDecl = evaluator.context.GetLambdaDecl(exp.Lambda);
+                var lambdaRuntimeItem = evaluator.context.GetRuntimeItem<LambdaRuntimeItem>(exp.Lambda);
 
                 var thisValue = callableValue.CapturedThis;
-                var localVars = await EvalArgumentsAsync(callableValue.Captures, lambdaDecl.ParamInfo, exp.Args);
+                var localVars = await EvalArgumentsAsync(callableValue.Captures, lambdaRuntimeItem.ParamInfo, exp.Args);
 
-                await evaluator.context.ExecInNewFuncFrameAsync(localVars, EvalFlowControl.None, ImmutableArray<Task>.Empty, thisValue, result, async () =>
-                {
-                    await foreach (var _ in evaluator.EvalStmtAsync(lambdaDecl.CapturedStatement.Body)) { }
-                });
+                await lambdaRuntimeItem.InvokeAsync(evaluator, thisValue, localVars, result);
             }
 
             void EvalLambdaExp(R.LambdaExp exp, Value result)
             {
-                var lambdaDecl = evaluator.context.GetLambdaDecl(exp.Lambda);
-
-                var lambdaResult = (LambdaValue)result;
-                evaluator.CaptureLocals(lambdaResult.CapturedThis, lambdaResult.Captures, lambdaDecl.CapturedStatement);
+                var lambdaRuntimeItem = evaluator.context.GetRuntimeItem<LambdaRuntimeItem>(exp.Lambda);
+                lambdaRuntimeItem.Capture(evaluator, (LambdaValue)result);                
             }
 
             //async ValueTask EvalMemberCallExpAsync(MemberCallExp exp, Value result)

@@ -453,7 +453,7 @@ namespace Gum.IR0Evaluator.Test
             );
 
             var output = await EvalAsync(default, stmts);
-            Assert.Equal("OnceTrueCompleted", output);
+            Assert.Equal("OncetrueCompleted", output);
         }
 
         [Fact]

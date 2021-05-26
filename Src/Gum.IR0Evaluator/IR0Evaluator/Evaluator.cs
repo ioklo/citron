@@ -54,9 +54,8 @@ namespace Gum.IR0Evaluator
                 thisValue,
                 VoidValue.Instance);
         }
-
-        // internal for IR0SeqFuncRuntimeItem
-        internal Evaluator CloneWithNewContext(Value? thisValue, ImmutableDictionary<string, Value> localVars)
+        
+        Evaluator CloneWithNewContext(Value? thisValue, ImmutableDictionary<string, Value> localVars)
         {
             return new Evaluator(context, stmtEvaluator, declEvaluator, thisValue, localVars);
         }
@@ -140,26 +139,10 @@ namespace Gum.IR0Evaluator
             // `AnonymousLambdaType(MyType<bool>.Func<int, short>.Lambda(0))
             else if (typePath is R.Path.AnonymousLambdaType lambdaType)
             {
-                var lambdaDecl = context.GetLambdaDecl(lambdaType.Lambda);
+                var lambdaRuntimeItem = context.GetRuntimeItem<LambdaRuntimeItem>(lambdaType.Lambda);
+
                 var typeContext = TypeContext.Make(lambdaType.Lambda);
-                
-                Value? capturedThis = null;
-                if (lambdaDecl.CapturedStatement.ThisType != null)
-                {
-                    var appliedThisType = typeContext.Apply(lambdaDecl.CapturedStatement.ThisType);
-                    capturedThis = AllocValue(appliedThisType);
-                }
-
-                var capturesBuilder = ImmutableDictionary.CreateBuilder<string, Value>();
-                foreach (var (elemType, elemName) in lambdaDecl.CapturedStatement.OuterLocalVars)
-                {
-                    var appliedElemType = typeContext.Apply(elemType);
-
-                    var elemValue = AllocValue(appliedElemType);
-                    capturesBuilder.Add(elemName, elemValue);
-                }
-
-                return new LambdaValue(capturedThis, capturesBuilder.ToImmutable());
+                return lambdaRuntimeItem.Alloc(this, typeContext);
             }            
             else if (typePath is R.Path.AnonymousSeqType)
             {
@@ -207,14 +190,12 @@ namespace Gum.IR0Evaluator
             return expEvaluator.EvalAsync(exp, result);
         }
         
-        // internal for 
-        internal ValueTask<Value> EvalLocAsync(R.Loc loc)
+        ValueTask<Value> EvalLocAsync(R.Loc loc)
         {
             return locEvaluator.EvalLocAsync(loc);
         }
-
-        // internal for IR0FuncInvoker.Invoke
-        internal IAsyncEnumerable<Gum.Infra.Void> EvalStmtAsync(R.Stmt stmt)
+        
+        IAsyncEnumerable<Gum.Infra.Void> EvalStmtAsync(R.Stmt stmt)
         {
             return stmtEvaluator.EvalStmtAsync(stmt);
         }

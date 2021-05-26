@@ -316,7 +316,7 @@ namespace Gum.IR0Evaluator
             }
         }
 
-        internal ValueTask ExecInNewFuncFrameAsync(
+        ValueTask ExecInNewFuncFrameAsync(
                 ImmutableDictionary<string, Value> newLocalVars,
                 EvalFlowControl newFlowControl,
                 ImmutableArray<Task> newTasks,

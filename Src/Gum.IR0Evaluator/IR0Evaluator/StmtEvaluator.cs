@@ -29,7 +29,7 @@ namespace Gum.IR0Evaluator
             }
 
             // TODO: CommandProvider가 Parser도 제공해야 할 것 같다
-            internal async ValueTask EvalCommandStmtAsync(R.CommandStmt stmt)
+            async ValueTask EvalCommandStmtAsync(R.CommandStmt stmt)
             {
                 var tempStr = evaluator.AllocValue<StringValue>(R.Path.String);
 
@@ -42,7 +42,7 @@ namespace Gum.IR0Evaluator
                 }
             }
 
-            internal async ValueTask EvalPrivateGlobalVarDeclStmtAsync(R.PrivateGlobalVarDeclStmt stmt)
+            async ValueTask EvalPrivateGlobalVarDeclStmtAsync(R.PrivateGlobalVarDeclStmt stmt)
             {
                 foreach (var elem in stmt.Elems)
                 {
@@ -55,12 +55,12 @@ namespace Gum.IR0Evaluator
                 }
             }
 
-            internal ValueTask EvalLocalVarDeclStmtAsync(R.LocalVarDeclStmt stmt)
+            ValueTask EvalLocalVarDeclStmtAsync(R.LocalVarDeclStmt stmt)
             {
                 return evaluator.EvalLocalVarDeclAsync(stmt.VarDecl);
             }
 
-            internal async IAsyncEnumerable<Void> EvalIfStmtAsync(R.IfStmt stmt)
+            async IAsyncEnumerable<Void> EvalIfStmtAsync(R.IfStmt stmt)
             {
                 var condValue = evaluator.AllocValue<BoolValue>(R.Path.Bool);
                 await evaluator.EvalExpAsync(stmt.Cond, condValue);
@@ -78,7 +78,7 @@ namespace Gum.IR0Evaluator
                 }
             }
 
-            internal async IAsyncEnumerable<Void> EvalIfTestEnumElemStmtAsync(R.IfTestEnumElemStmt stmt)
+            async IAsyncEnumerable<Void> EvalIfTestEnumElemStmtAsync(R.IfTestEnumElemStmt stmt)
             {
                 var targetValue = (EnumValue)await evaluator.EvalLocAsync(stmt.Target);
                 var enumElem = evaluator.context.GetEnumElem(stmt.EnumElem);
@@ -87,18 +87,18 @@ namespace Gum.IR0Evaluator
 
                 if (bTestPassed)
                 {
-                    await foreach (var value in EvalStmtAsync(stmt.Body))
+                    await foreach (var _ in EvalStmtAsync(stmt.Body))
                         yield return Void.Instance;
                 }
                 else
                 {
                     if (stmt.ElseBody != null)
-                        await foreach (var value in EvalStmtAsync(stmt.ElseBody))
+                        await foreach (var _ in EvalStmtAsync(stmt.ElseBody))
                             yield return Void.Instance;
                 }
             }
 
-            internal async IAsyncEnumerable<Void> EvalIfTestClassStmtAsync(R.IfTestClassStmt stmt)
+            async IAsyncEnumerable<Void> EvalIfTestClassStmtAsync(R.IfTestClassStmt stmt)
             {
                 // 분석기가 미리 계산해 놓은 TypeValue를 가져온다                
                 var targetValue = (ClassValue)await evaluator.EvalLocAsync(stmt.Target);
@@ -119,7 +119,7 @@ namespace Gum.IR0Evaluator
                 }
             }
 
-            internal IAsyncEnumerable<Void> EvalForStmtAsync(R.ForStmt forStmt)
+            IAsyncEnumerable<Void> EvalForStmtAsync(R.ForStmt forStmt)
             {
                 async IAsyncEnumerable<Void> InnerAsync()
                 {
@@ -185,17 +185,17 @@ namespace Gum.IR0Evaluator
                 return evaluator.context.ExecInNewScopeAsync(InnerAsync);
             }
 
-            internal void EvalContinueStmt(R.ContinueStmt continueStmt)
+            void EvalContinueStmt(R.ContinueStmt continueStmt)
             {
                 evaluator.context.SetFlowControl(EvalFlowControl.Continue);
             }
 
-            internal void EvalBreakStmt(R.BreakStmt breakStmt)
+            void EvalBreakStmt(R.BreakStmt breakStmt)
             {
                 evaluator.context.SetFlowControl(EvalFlowControl.Break);
             }
 
-            internal async ValueTask EvalReturnStmtAsync(R.ReturnStmt returnStmt)
+            async ValueTask EvalReturnStmtAsync(R.ReturnStmt returnStmt)
             {
                 if (returnStmt.Value != null)
                 {
@@ -206,7 +206,7 @@ namespace Gum.IR0Evaluator
                 evaluator.context.SetFlowControl(EvalFlowControl.Return);
             }
 
-            internal IAsyncEnumerable<Void> EvalBlockStmtAsync(R.BlockStmt blockStmt)
+            IAsyncEnumerable<Void> EvalBlockStmtAsync(R.BlockStmt blockStmt)
             {
                 async IAsyncEnumerable<Void> InnerAsync()
                 {
@@ -228,55 +228,15 @@ namespace Gum.IR0Evaluator
                 return evaluator.context.ExecInNewScopeAsync(InnerAsync);
             }
 
-            internal async ValueTask EvalExpStmtAsync(R.ExpStmt expStmt)
+            async ValueTask EvalExpStmtAsync(R.ExpStmt expStmt)
             {
                 await evaluator.EvalExpAsync(expStmt.Exp, EmptyValue.Instance);
-            }
-
-            (Value? ThisValue, ImmutableDictionary<string, Value> LocalVars) AllocLocals(R.CapturedStatement capturedStatement)
-            {
-                Value? thisValue = null;
-
-                if (capturedStatement.ThisType != null)
-                    thisValue = evaluator.AllocValue(capturedStatement.ThisType);
-
-                var localVarsBuilder = ImmutableDictionary.CreateBuilder<string, Value>();
-                foreach (var (type, name) in capturedStatement.OuterLocalVars)
-                {
-                    var value = evaluator.AllocValue(type);
-                    localVarsBuilder.Add(name, value);
-                }
-
-                return (thisValue, localVarsBuilder.ToImmutable());
-            }
+            }            
 
             void EvalTaskStmt(R.TaskStmt taskStmt)
             {
-                // 굳이
-                // var lambdaValue = evaluator.AllocValue<LambdaValue>(taskStmt.LambdaType);
-                // var lambdaDecl = evaluator.context.GetDecl<R.LambdaDecl>(lambdaValue.LambdaDeclId);
-
-                // capture 해서 value에 집어넣기
-                //evaluator.Capture(
-                //    lambdaValue,
-                //    lambdaDecl.CapturedThisType != null,
-                //    ImmutableArray.CreateRange(lambdaDecl.CaptureInfo, captureInfo => captureInfo.Name)
-                //);
-
-                var capturedStatementDecl = evaluator.context.GetCapturedStatementDecl(taskStmt.CapturedStatementDecl);
-
-                var (capturedThis, capturedLocals) = AllocLocals(capturedStatementDecl.CapturedStatement);
-                evaluator.CaptureLocals(capturedThis, capturedLocals, capturedStatementDecl.CapturedStatement);
-
-                // 새 evaluator를 만들고
-                var newEvaluator = evaluator.CloneWithNewContext(capturedThis, capturedLocals);
-                
-                var task = Task.Run(async () =>
-                {
-                    await foreach (var _ in newEvaluator.EvalStmtAsync(capturedStatementDecl.CapturedStatement.Body)) { }
-                });
-
-                evaluator.context.AddTask(task);
+                var runtimeItem = evaluator.context.GetRuntimeItem<CapturedStmtRuntimeItem>(taskStmt.CapturedStatementDecl);
+                runtimeItem.InvokeParallel(evaluator);
             }
 
             IAsyncEnumerable<Void> EvalAwaitStmtAsync(R.AwaitStmt stmt)
@@ -294,20 +254,8 @@ namespace Gum.IR0Evaluator
 
             void EvalAsyncStmt(R.AsyncStmt asyncStmt)
             {
-                var capturedStatementDecl = evaluator.context.GetCapturedStatementDecl(asyncStmt.CapturedStatementDecl);
-
-                var (capturedThis, capturedLocalVars) = AllocLocals(capturedStatementDecl.CapturedStatement);
-                evaluator.CaptureLocals(capturedThis, capturedLocalVars, capturedStatementDecl.CapturedStatement);
-
-                var newEvaluator = evaluator.CloneWithNewContext(capturedThis, capturedLocalVars);
-                async Task WrappedAsyncFunc()
-                {
-                    await foreach (var _ in newEvaluator.EvalStmtAsync(capturedStatementDecl.CapturedStatement.Body)) { }
-                };
-
-                // 현재 컨텍스트에서 실행
-                var task = WrappedAsyncFunc();
-                evaluator.context.AddTask(task);
+                var runtimeItem = evaluator.context.GetRuntimeItem<CapturedStmtRuntimeItem>(asyncStmt.CapturedStatementDecl);
+                runtimeItem.InvokeAsynchronous(evaluator);
             }
 
             public StmtEvaluator Clone(Evaluator evaluator)
@@ -315,7 +263,7 @@ namespace Gum.IR0Evaluator
                 return new StmtEvaluator(evaluator, commandProvider);
             }
 
-            internal async IAsyncEnumerable<Void> EvalForeachStmtAsync(R.ForeachStmt stmt)
+            async IAsyncEnumerable<Void> EvalForeachStmtAsync(R.ForeachStmt stmt)
             {
                 async IAsyncEnumerable<Void> InnerScopeAsync()
                 {
@@ -364,7 +312,7 @@ namespace Gum.IR0Evaluator
                 yield return Void.Instance;
             }
 
-            internal async IAsyncEnumerable<Void> EvalStmtAsync(R.Stmt stmt)
+            public async IAsyncEnumerable<Void> EvalStmtAsync(R.Stmt stmt)
             {
                 switch (stmt)
                 {

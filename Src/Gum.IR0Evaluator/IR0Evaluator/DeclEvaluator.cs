@@ -48,7 +48,8 @@ namespace Gum.IR0Evaluator
 
             void EvalLambdaDecl(R.LambdaDecl lambdaDecl)
             {
-                curContainer.AddLambdaDecl(lambdaDecl);
+                var item = new IR0LambdaRuntimeItem(lambdaDecl);
+                curContainer.AddRuntimeItem(item);
             }
 
             void EvalNormalFuncDecl(R.NormalFuncDecl normalFuncDecl)
@@ -60,8 +61,8 @@ namespace Gum.IR0Evaluator
                 var paramHash = Misc.MakeParamHash(typeParamCount, normalFuncDecl.ParamInfo);
                 curContainer.AddItemContainer(normalFuncDecl.Name, paramHash, itemContainer);
 
-                var funcInvoker = new IR0FuncRuntimeItem(normalFuncDecl.Body, normalFuncDecl.ParamInfo);
-                curContainer.AddFuncInvoker(normalFuncDecl.Name, paramHash, funcInvoker);
+                var funcRuntimeItem = new IR0FuncRuntimeItem(normalFuncDecl);
+                curContainer.AddRuntimeItem(funcRuntimeItem);
 
                 var savedContainer = curContainer;
                 curContainer = itemContainer;
@@ -136,7 +137,8 @@ namespace Gum.IR0Evaluator
 
             void EvalCapturedStmtDecl(R.CapturedStatementDecl capturedStmtDecl)
             {
-                curContainer.AddCapturedStmtDecl(capturedStmtDecl);
+                var runtimeItem = new IR0CapturedStmtRuntimeItem(capturedStmtDecl);
+                curContainer.AddRuntimeItem(runtimeItem);
             }
         }
     }
