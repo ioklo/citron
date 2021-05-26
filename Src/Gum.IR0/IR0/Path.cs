@@ -75,6 +75,6 @@ namespace Gum.IR0
             }
 
             return false;
-        }        
+        }
     }
 }

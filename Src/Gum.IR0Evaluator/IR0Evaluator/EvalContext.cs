@@ -154,11 +154,12 @@ namespace Gum.IR0Evaluator
                 tasks = prevTasks;
             }            
 
-            public R.SequenceFuncDecl GetSequenceFuncDecl(R.Path.Nested seqFunc)
+            public TRuntimeItem GetRuntimeItem<TRuntimeItem>(R.Path.Nested path)
+                where TRuntimeItem : RuntimeItem
             {
-                return sharedContext.GetSequenceFuncDecl(seqFunc);
+                return sharedContext.GetRuntimeItem<TRuntimeItem>(path);
             }
-
+            
             public R.CapturedStatementDecl GetCapturedStatementDecl(R.Path.Nested path)
             {
                 return sharedContext.GetCapturedStatementDecl(path);
@@ -182,7 +183,7 @@ namespace Gum.IR0Evaluator
                 }
             }
 
-            public FuncInvoker GetFuncInvoker(R.Path.Nested path)
+            public FuncRuntimeItem GetFuncInvoker(R.Path.Nested path)
             {
                 return sharedContext.GetFuncInvoker(path);
             }

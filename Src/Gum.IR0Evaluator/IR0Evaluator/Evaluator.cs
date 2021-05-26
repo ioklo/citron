@@ -55,7 +55,8 @@ namespace Gum.IR0Evaluator
                 VoidValue.Instance);
         }
 
-        Evaluator CloneWithNewContext(Value? thisValue, ImmutableDictionary<string, Value> localVars)
+        // internal for IR0SeqFuncRuntimeItem
+        internal Evaluator CloneWithNewContext(Value? thisValue, ImmutableDictionary<string, Value> localVars)
         {
             return new Evaluator(context, stmtEvaluator, declEvaluator, thisValue, localVars);
         }
@@ -110,7 +111,7 @@ namespace Gum.IR0Evaluator
             where TValue : Value
         {
             return (TValue)AllocValue(type);
-        }
+        }        
 
         // type은 ir0 syntax의 일부분이다
         Value AllocValue(R.Path typePath)
@@ -164,9 +165,8 @@ namespace Gum.IR0Evaluator
             {
                 return new SeqValue();
             }
-
-            // path만 보고 enum인지 알 방법은?
-
+            
+            // normal path의 경우
 
             throw new NotImplementedException();
 
@@ -207,7 +207,8 @@ namespace Gum.IR0Evaluator
             return expEvaluator.EvalAsync(exp, result);
         }
         
-        ValueTask<Value> EvalLocAsync(R.Loc loc)
+        // internal for 
+        internal ValueTask<Value> EvalLocAsync(R.Loc loc)
         {
             return locEvaluator.EvalLocAsync(loc);
         }

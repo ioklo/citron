@@ -11,18 +11,19 @@ namespace Gum.IR0Evaluator
         class ItemContainer
         {
             Dictionary<(R.Name, R.ParamHash), ItemContainer> containers;
-            Dictionary<(R.Name, R.ParamHash), R.SequenceFuncDecl> seqFuncDecls;
+            Dictionary<(R.Name, R.ParamHash), RuntimeItem> runtimeItems;
+            
             Dictionary<R.Name, R.LambdaDecl> lambdaDecls;
             Dictionary<R.Name, R.CapturedStatementDecl> capturedStatementDecls;
-            Dictionary<(R.Name, R.ParamHash), FuncInvoker> funcInvokers;
             Dictionary<R.Name, R.EnumElement> enumElems;
 
             public ItemContainer()
             {
                 containers = new Dictionary<(R.Name, R.ParamHash), ItemContainer>();
-                seqFuncDecls = new Dictionary<(R.Name, R.ParamHash), R.SequenceFuncDecl>();
+
+                runtimeItems = new Dictionary<(R.Name, R.ParamHash), RuntimeItem>();
+
                 lambdaDecls = new Dictionary<R.Name, R.LambdaDecl>();
-                funcInvokers = new Dictionary<(R.Name, R.ParamHash), FuncInvoker>();
                 capturedStatementDecls = new Dictionary<R.Name, R.CapturedStatementDecl>();
                 enumElems = new Dictionary<R.Name, R.EnumElement>();
             }
@@ -32,14 +33,10 @@ namespace Gum.IR0Evaluator
                 return containers[(name, paramHash)];
             }
 
-            public R.SequenceFuncDecl GetSequenceFuncDecl(R.Name name, R.ParamHash paramHash)
+            public TRuntimeItem GetRuntimeItem<TRuntimeItem>(R.Name name, R.ParamHash paramHash)
+                where TRuntimeItem : RuntimeItem
             {
-                return seqFuncDecls[(name, paramHash)];
-            }
-
-            public FuncInvoker GetFuncInvoker(R.Name name, R.ParamHash paramHash)
-            {
-                return funcInvokers[(name, paramHash)];
+                return (TRuntimeItem)runtimeItems[(name, paramHash)];
             }
             
             public R.CapturedStatementDecl GetCapturedStatementDecl(R.Name name)
@@ -61,18 +58,12 @@ namespace Gum.IR0Evaluator
             {
                 containers.Add((name, paramHash), itemContainer);
             }
-
-            public void AddFuncInvoker(R.Name name, R.ParamHash paramHash, IR0FuncInvoker funcInvoker)
+            
+            public void AddRuntimeItem(RuntimeItem runtimeItem)
             {
-                funcInvokers[(name, paramHash)] = funcInvoker;
+                runtimeItems.Add((runtimeItem.Name, runtimeItem.ParamHash), runtimeItem);
             }
-
-            public void AddSequenceFuncDecl(R.SequenceFuncDecl seqFuncDecl)
-            {   
-                var paramHash = new R.ParamHash(seqFuncDecl.TypeParams.Length, ImmutableArray.CreateRange(seqFuncDecl.ParamInfo.Parameters, param => param.Type));
-                seqFuncDecls.Add((seqFuncDecl.Name, paramHash), seqFuncDecl);
-            }
-
+            
             public void AddCapturedStmtDecl(R.CapturedStatementDecl capturedStmtDecl)
             {
                 capturedStatementDecls.Add(capturedStmtDecl.Name, capturedStmtDecl);
@@ -108,7 +99,7 @@ namespace Gum.IR0Evaluator
             }
 
             // 여기서 만들어 내면 됩니다
-            public FuncInvoker GetFuncInvoker(R.Path.Nested normalPath)
+            public FuncRuntimeItem GetFuncInvoker(R.Path.Nested normalPath)
             {
                 var outer = GetContainer(normalPath.Outer);
                 return outer.GetFuncInvoker(normalPath.Name, normalPath.ParamHash);
@@ -129,11 +120,11 @@ namespace Gum.IR0Evaluator
                 throw new UnreachableCodeException();
             }
 
-            // X<>.Y<,>.F 가 나온다. TypeArgs정보는 따로 
-            public R.SequenceFuncDecl GetSequenceFuncDecl(R.Path.Nested seqFunc)
+            public TRuntimeItem GetRuntimeItem<TRuntimeItem>(R.Path.Nested path)
+                where TRuntimeItem : RuntimeItem
             {
-                var outer = GetContainer(seqFunc.Outer);
-                return outer.GetSequenceFuncDecl(seqFunc.Name, seqFunc.ParamHash);
+                var outer = GetContainer(path.Outer);
+                return outer.GetRuntimeItem<TRuntimeItem>(path.Name, path.ParamHash);
             }
 
             public R.LambdaDecl GetLambdaDecl(R.Path.Nested lambda)

@@ -195,39 +195,25 @@ namespace Gum.IR0Evaluator
                 // 인자를 계산 해서 처음 로컬 variable에 집어 넣는다
                 var args = await EvalArgumentsAsync(ImmutableDictionary<string, Value>.Empty, funcInvoker.ParamInfo, exp.Args);
 
-                await funcInvoker.Invoke(thisValue, result, args);
+                await funcInvoker.Invoke(evaluator, thisValue, result, args);
             }
 
             async ValueTask EvalCallSeqFuncExpAsync(R.CallSeqFuncExp exp, Value result)
             {
-                var seqFuncDecl = evaluator.context.GetSequenceFuncDecl(exp.SeqFunc);
+                var seqFuncItem = evaluator.context.GetRuntimeItem<SeqFuncRuntimeItem>(exp.SeqFunc);
 
                 // 함수는 this call이지만 instance가 없는 경우는 없다.
-                Debug.Assert(!(seqFuncDecl.IsThisCall && exp.Instance == null));
+                Debug.Assert(!(seqFuncItem.IsThisCall && exp.Instance == null));
 
                 Value? thisValue = null;
                 if (exp.Instance != null)
                 {
-                    Debug.Assert(seqFuncDecl.IsThisCall);
+                    Debug.Assert(seqFuncItem.IsThisCall);
                     thisValue = await evaluator.EvalLocAsync(exp.Instance);
                 }
 
-                var localVars = await EvalArgumentsAsync(ImmutableDictionary<string, Value>.Empty, seqFuncDecl.ParamInfo, exp.Args);
-
-                // evaluator 복제
-                var newEvaluator = evaluator.CloneWithNewContext(thisValue, localVars);
-                
-                // asyncEnum을 만들기 위해서 내부 함수를 씁니다
-                async IAsyncEnumerator<Infra.Void> WrapAsyncEnum()
-                {
-                    await foreach (var _ in newEvaluator.EvalStmtAsync(seqFuncDecl.Body))
-                    {
-                        yield return Infra.Void.Instance;
-                    }
-                }
-
-                var enumerator = WrapAsyncEnum();
-                ((SeqValue)result).SetEnumerator(enumerator, newEvaluator);
+                var args = await EvalArgumentsAsync(ImmutableDictionary<string, Value>.Empty, seqFuncItem.ParamInfo, exp.Args);
+                seqFuncItem.Invoke(evaluator, thisValue, args, result);
             }
 
             async ValueTask EvalCallValueExpAsync(R.CallValueExp exp, Value result)
