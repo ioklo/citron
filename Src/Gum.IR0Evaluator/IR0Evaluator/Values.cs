@@ -156,7 +156,8 @@ namespace Gum.IR0Evaluator
 
         public override void SetValue(Value value)
         {
-            throw new NotImplementedException();
+            var enumValue = (EnumValue)value;
+
         }
 
         public bool IsElem(EnumElemRuntimeItem enumElemItem)
@@ -169,13 +170,13 @@ namespace Gum.IR0Evaluator
     [AutoConstructor]
     partial class EnumElemValue : Value
     {
-        ImmutableArray<NamedValue> members;
+        public ImmutableArray<Value> Fields { get; }
 
         public override void SetValue(Value value)
         {
             var enumElemValue = (EnumElemValue)value;
-            for(int i = 0; i < members.Length; i++)
-                members[i].Value.SetValue(enumElemValue.members[i].Value);
+            for(int i = 0; i < fields.Length; i++)
+                fields[i].SetValue(enumElemValue.fields[i]);
         }
     }
 

@@ -335,12 +335,48 @@ namespace Gum.IR0Evaluator
                 ((ListValue)result).SetList(list);
             }
 
-            ValueTask EvalNewEnumExpAsync(R.NewEnumExp exp, Value result)
+            // Value에 넣어야 한다, 묶는 방법도 설명해야 한다
+            // values: params까지 포함한 분절단위
+            async ValueTask EvalArgumentsAsync(ImmutableArray<Value> values, ImmutableArray<R.Argument> args)
             {
-                throw new NotImplementedException();
+                // argument들을 순서대로 할당한다
+                int argValueIndex = 0;
+                foreach (var arg in args)
+                {
+                    switch (arg)
+                    {
+                        case R.Argument.Normal normalArg:
+                            await EvalAsync(normalArg.Exp, values[argValueIndex]);
+                            argValueIndex++;
+                            break;
 
+                        // params가 들어있다면
+                        case R.Argument.Params paramsArg:
+                            // GumVM단계에서는 시퀀셜하게 메모리를 던져줄 것이지만, C# 버전에서는 그렇게 못하므로
+                            // ArgValues들을 가리키는 TupleValue를 임의로 생성하고 값을 저장하도록 한다
+                            var tupleElems = ImmutableArray.Create(values, argValueIndex, paramsArg.ElemCount);
+
+                            var tupleValue = new TupleValue(tupleElems);
+                            await EvalAsync(paramsArg.Exp, tupleValue);
+                            argValueIndex += paramsArg.ElemCount;
+                            break;
+
+                        case R.Argument.Ref refArg:
+                            throw new NotImplementedException();
+                            // argValueIndex++;
+
+                    }
+                }
+            }
+
+            async ValueTask EvalNewEnumExpAsync(R.NewEnumExp exp, Value result_value)
+            {
+                var result = (EnumElemValue)result_value;
+
+                // 메모리 시퀀스                
+                await EvalArgumentsAsync(result.Fields, exp.Args);
+                
                 //var builder = ImmutableArray.CreateBuilder<NamedValue>(exp.Members.Length);
-
                 //foreach (var member in exp.Members)
                 //{   
                 //    var argValue = evaluator.AllocValue(member.ExpInfo.Type);
@@ -348,7 +384,6 @@ namespace Gum.IR0Evaluator
 
                 //    await EvalAsync(member.ExpInfo.Exp, argValue);
                 //}
-
                 //((EnumValue)result).SetEnum(exp.Name, builder.MoveToImmutable());
             }
 
