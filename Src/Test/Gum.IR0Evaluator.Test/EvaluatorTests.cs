@@ -212,7 +212,7 @@ namespace Gum.IR0Evaluator.Test
                         new IntLiteralExp(3)))));
 
             var funcF = RootPath("F", Arr(Path.Int, Path.Int), default);
-            var seqTypeF = new Path.AnonymousSeqType(funcF);
+            var seqTypeF = funcF;
 
             var stmts = Arr<Stmt>
             (
@@ -788,7 +788,7 @@ namespace Gum.IR0Evaluator.Test
             var seqFuncDecl0 = new SequenceFuncDecl(default, "F0", false, Path.Int, default, default,
                 new ForeachStmt(
                     Path.Int, "elem", 
-                    new TempLoc(new CallSeqFuncExp(seqFunc1, null, default), new Path.AnonymousSeqType(seqFunc1)),
+                    new TempLoc(new CallSeqFuncExp(seqFunc1, null, default), seqFunc1),
                     RBlock(
                         PrintIntCmdStmt(new LocalVarLoc("elem")),
                         new YieldStmt(new LoadExp(LocalVar("elem")))
@@ -804,7 +804,7 @@ namespace Gum.IR0Evaluator.Test
             );
 
             var stmts = Arr<Stmt>(
-                new ForeachStmt(Path.Int, "x", new TempLoc(new CallSeqFuncExp(seqFunc0, null, default), new Path.AnonymousSeqType(seqFunc0)),
+                new ForeachStmt(Path.Int, "x", new TempLoc(new CallSeqFuncExp(seqFunc0, null, default), seqFunc0),
                     PrintIntCmdStmt(new LocalVarLoc("x")))
             );
 
@@ -995,7 +995,7 @@ namespace Gum.IR0Evaluator.Test
             var stmts = Arr<Stmt>
             (
                 // 선언하자 마자 대입하기
-                RLocalVarDeclStmt(new Path.AnonymousSeqType(seqFunc), "x", new CallSeqFuncExp(seqFunc, null, default)),
+                RLocalVarDeclStmt(seqFunc, "x", new CallSeqFuncExp(seqFunc, null, default)),
 
                 // 로컬 변수에 새 값 대입하기
                 new ExpStmt(new AssignExp(LocalVar("x"), new CallSeqFuncExp(seqFunc, null, default)))
@@ -1043,7 +1043,7 @@ namespace Gum.IR0Evaluator.Test
                 new ExpStmt(
                     new CallValueExp(
                         lambda,
-                        new TempLoc(new CallFuncExp(makeLambda, null, default), new Path.AnonymousLambdaType(lambda)),
+                        new TempLoc(new CallFuncExp(makeLambda, null, default), lambda),
                         RArgs(
                             MakePrintCall(1),
                             MakePrintCall(2),
@@ -1078,7 +1078,7 @@ namespace Gum.IR0Evaluator.Test
             // func();
             var stmts = Arr<Stmt> (
                 RLocalVarDeclStmt(Path.Int, "x", new IntLiteralExp(3)),
-                RLocalVarDeclStmt(new Path.AnonymousLambdaType(lambda), "func", new LambdaExp(lambda)),
+                RLocalVarDeclStmt(lambda, "func", new LambdaExp(lambda)),
 
                 new ExpStmt(new AssignExp(LocalVar("x"), new IntLiteralExp(34))),
                 new ExpStmt(new CallValueExp(lambda, LocalVar("func"), default))

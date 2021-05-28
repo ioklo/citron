@@ -8,16 +8,12 @@ namespace Gum.IR0Evaluator
         class ItemContainer
         {
             Dictionary<(R.Name, R.ParamHash), ItemContainer> containers;
-            Dictionary<(R.Name, R.ParamHash), RuntimeItem> runtimeItems;            
-            
-            Dictionary<R.Name, R.EnumElement> enumElems;
+            Dictionary<(R.Name, R.ParamHash), RuntimeItem> runtimeItems;
 
             public ItemContainer()
             {
                 containers = new Dictionary<(R.Name, R.ParamHash), ItemContainer>();
                 runtimeItems = new Dictionary<(R.Name, R.ParamHash), RuntimeItem>();               
-                
-                enumElems = new Dictionary<R.Name, R.EnumElement>();
             }
 
             public ItemContainer GetContainer(R.Name name, R.ParamHash paramHash)
@@ -39,16 +35,6 @@ namespace Gum.IR0Evaluator
             public void AddRuntimeItem(RuntimeItem runtimeItem)
             {
                 runtimeItems.Add((runtimeItem.Name, runtimeItem.ParamHash), runtimeItem);
-            }
-            
-            public void AddEnumElem(R.EnumElement enumElem)
-            {
-                enumElems.Add(enumElem.Name, enumElem);
-            }
-
-            public R.EnumElement GetEnumElem(R.Name name)
-            {
-                return enumElems[name];
             }
         }
     }    

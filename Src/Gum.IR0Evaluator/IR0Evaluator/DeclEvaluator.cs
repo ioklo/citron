@@ -130,9 +130,13 @@ namespace Gum.IR0Evaluator
                 var enumContainer = new ItemContainer();
 
                 foreach (var enumElem in enumDecl.Elems)
-                    enumContainer.AddEnumElem(enumElem);
+                {
+                    var enumElemItem = new IR0EnumElemRuntimeItem(enumElem);
+                    enumContainer.AddRuntimeItem(enumElemItem);
+                }
 
                 curContainer.AddItemContainer(enumDecl.Name, new R.ParamHash(enumDecl.TypeParams.Length, default), enumContainer);
+                curContainer.AddRuntimeItem(new IR0EnumRuntimeItem(enumDecl));
             }
 
             void EvalCapturedStmtDecl(R.CapturedStatementDecl capturedStmtDecl)

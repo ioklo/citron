@@ -142,11 +142,12 @@ namespace Gum.IR0Evaluator
         }
     }
 
+    // E
     [AutoConstructor]
     partial class EnumValue : Value
     {
-        R.EnumElement enumElem;
-        ImmutableArray<NamedValue> members;
+        EnumElemRuntimeItem? enumElemItem;
+        EnumElemValue? elemValue;
         
         public Value GetMemberValue(string name)
         {
@@ -158,9 +159,23 @@ namespace Gum.IR0Evaluator
             throw new NotImplementedException();
         }
 
-        public bool IsElem(R.EnumElement otherEnumElem)
+        public bool IsElem(EnumElemRuntimeItem enumElemItem)
         {
-            return enumElem == otherEnumElem; // reference 비교 가능하도록, 불가능 하면 R.EnumElement를 쓰지 말고 동적으로 생성되는 타입을 하나 만든다
+            return enumElemItem.Equals(enumElemItem); // reference 비교 가능하도록, 불가능 하면 R.EnumElement를 쓰지 말고 동적으로 생성되는 타입을 하나 만든다
+        }
+    }
+
+    // E.First
+    [AutoConstructor]
+    partial class EnumElemValue : Value
+    {
+        ImmutableArray<NamedValue> members;
+
+        public override void SetValue(Value value)
+        {
+            var enumElemValue = (EnumElemValue)value;
+            for(int i = 0; i < members.Length; i++)
+                members[i].Value.SetValue(enumElemValue.members[i].Value);
         }
     }
 

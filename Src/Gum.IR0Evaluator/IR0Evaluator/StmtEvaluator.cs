@@ -81,9 +81,9 @@ namespace Gum.IR0Evaluator
             async IAsyncEnumerable<Void> EvalIfTestEnumElemStmtAsync(R.IfTestEnumElemStmt stmt)
             {
                 var targetValue = (EnumValue)await evaluator.EvalLocAsync(stmt.Target);
-                var enumElem = evaluator.context.GetEnumElem(stmt.EnumElem);
+                var enumElemRuntimeItem = evaluator.context.GetRuntimeItem<EnumElemRuntimeItem>(stmt.EnumElem);
 
-                var bTestPassed = targetValue.IsElem(enumElem);
+                var bTestPassed = targetValue.IsElem(enumElemRuntimeItem);
 
                 if (bTestPassed)
                 {

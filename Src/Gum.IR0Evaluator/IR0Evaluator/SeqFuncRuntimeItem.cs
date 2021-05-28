@@ -10,7 +10,7 @@ using R = Gum.IR0;
 
 namespace Gum.IR0Evaluator
 {
-    abstract class SeqFuncRuntimeItem : RuntimeItem 
+    abstract class SeqFuncRuntimeItem : AllocatableRuntimeItem 
     {
         public abstract bool IsThisCall { get; }
         public abstract R.ParamInfo ParamInfo { get; }
@@ -28,6 +28,11 @@ namespace Gum.IR0Evaluator
             public override bool IsThisCall => seqFuncDecl.IsThisCall;
             public override R.ParamInfo ParamInfo => seqFuncDecl.ParamInfo;
             R.SequenceFuncDecl seqFuncDecl;
+
+            public override Value Alloc(Evaluator evaluator, TypeContext typeContext)
+            {
+                return new SeqValue();
+            }
 
             public override void Invoke(Evaluator evaluator, Value? thisValue, ImmutableDictionary<string, Value> args, Value result)
             {

@@ -32,8 +32,6 @@ namespace Gum.IR0
         // Func<params array<int>> interface like type
         public record FuncType : Reserved;
         public record NullableType(Path Type) : Reserved;
-        public record AnonymousSeqType(Path SeqFunc) : Reserved;
-        public record AnonymousLambdaType(Path.Nested Lambda) : Reserved;
 
         public record Root(ModuleName ModuleName) : Normal;
         public record Nested(Normal Outer, Name Name, ParamHash ParamHash, ImmutableArray<Path> TypeArgs) : Normal;

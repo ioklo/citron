@@ -445,7 +445,7 @@ namespace Gum.IR0Translator
 
         public override R.Path GetRPath()
         {
-            return ritemFactory.MakeLambdaType(Lambda);
+            return Lambda;
         }
 
         public override int GetHashCode()
@@ -469,7 +469,7 @@ namespace Gum.IR0Translator
 
         public override R.Path GetRPath()
         {
-            return new R.Path.AnonymousSeqType(seqFunc);
+            return seqFunc;
         }
     }
     

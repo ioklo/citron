@@ -13,4 +13,9 @@ namespace Gum.IR0Evaluator
         public abstract R.Name Name { get; }
         public abstract R.ParamHash ParamHash { get; }
     }
+
+    abstract class AllocatableRuntimeItem : RuntimeItem
+    {
+        public abstract Value Alloc(Evaluator evaluator, TypeContext typeContext);
+    }
 }

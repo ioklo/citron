@@ -12,12 +12,6 @@ namespace Gum.IR0Evaluator
         {
             Dictionary<R.ModuleName, ItemContainer> rootContainers;
 
-            public R.EnumElement GetEnumElem(R.Path.Nested enumElem)
-            {
-                var outer = GetContainer(enumElem.Outer);
-                return outer.GetEnumElem(enumElem.Name);
-            }
-
             public Dictionary<string, Value> PrivateGlobalVars { get; }
 
             public SharedContext()

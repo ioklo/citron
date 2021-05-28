@@ -9,11 +9,10 @@ using R = Gum.IR0;
 
 namespace Gum.IR0Evaluator
 {
-    abstract class LambdaRuntimeItem : RuntimeItem
+    abstract class LambdaRuntimeItem : AllocatableRuntimeItem
     {
         public abstract R.ParamInfo ParamInfo { get; }
-
-        public abstract Value Alloc(Evaluator evaluator, TypeContext typeContext);
+        
         public abstract ValueTask InvokeAsync(Evaluator evaluator, Value? thisValue, ImmutableDictionary<string, Value> localVars, Value result);
         public abstract void Capture(Evaluator evaluator, LambdaValue lambdaValue);
     }

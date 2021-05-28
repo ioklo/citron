@@ -136,24 +136,15 @@ namespace Gum.IR0Evaluator
                 return new ListValue();
             }
 
-            // `AnonymousLambdaType(MyType<bool>.Func<int, short>.Lambda(0))
-            else if (typePath is R.Path.AnonymousLambdaType lambdaType)
+            if (typePath is R.Path.Nested nestedTypePath)
             {
-                var lambdaRuntimeItem = context.GetRuntimeItem<LambdaRuntimeItem>(lambdaType.Lambda);
+                var runtimeItem = context.GetRuntimeItem<AllocatableRuntimeItem>(nestedTypePath);
+                var typeContext = TypeContext.Make(nestedTypePath);
 
-                var typeContext = TypeContext.Make(lambdaType.Lambda);
-                return lambdaRuntimeItem.Alloc(this, typeContext);
-            }            
-            else if (typePath is R.Path.AnonymousSeqType)
-            {
-                return new SeqValue();
+                return runtimeItem.Alloc(this, typeContext);
             }
-            
-            // normal path의 경우
 
             throw new NotImplementedException();
-
-
         }        
 
         // 캡쳐는 람다 Value안에 값을 세팅한다        

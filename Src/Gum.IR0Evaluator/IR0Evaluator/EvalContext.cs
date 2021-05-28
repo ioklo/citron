@@ -92,11 +92,6 @@ namespace Gum.IR0Evaluator
                 throw new NotImplementedException();
             }
 
-            public R.EnumElement GetEnumElem(R.Path.Nested enumElem)
-            {
-                return sharedContext.GetEnumElem(enumElem);
-            }
-
             public Value GetGlobalValue(string name)
             {
                 return sharedContext.PrivateGlobalVars[name];
