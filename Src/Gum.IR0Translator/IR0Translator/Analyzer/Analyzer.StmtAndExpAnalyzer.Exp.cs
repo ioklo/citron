@@ -212,7 +212,8 @@ namespace Gum.IR0Translator
                             throw new UnreachableCodeException();
                     }
 
-                    var srcResult = AnalyzeExp_Exp(exp.Operand1, ResolveHint.None);
+                    var operandHint1 = ResolveHint.Make(destLocResult.TypeValue);
+                    var srcResult = AnalyzeExp_Exp(exp.Operand1, operandHint1);
                     var wrappedSrcResult = CastExp_Exp(srcResult, destLocResult.TypeValue, exp);
                     
 
@@ -227,14 +228,14 @@ namespace Gum.IR0Translator
 
             ExpResult.Exp AnalyzeBinaryOpExp(S.BinaryOpExp binaryOpExp)
             {
-                var operandResult0 = AnalyzeExp_Exp(binaryOpExp.Operand0, ResolveHint.None);
-                var operandResult1 = AnalyzeExp_Exp(binaryOpExp.Operand1, ResolveHint.None);
-
                 // 1. Assign 먼저 처리
                 if (binaryOpExp.Kind == S.BinaryOpKind.Assign)
                 {
                     return AnalyzeAssignBinaryOpExp(binaryOpExp);
                 }
+
+                var operandResult0 = AnalyzeExp_Exp(binaryOpExp.Operand0, ResolveHint.None);
+                var operandResult1 = AnalyzeExp_Exp(binaryOpExp.Operand1, ResolveHint.None);
 
                 // 2. NotEqual 처리
                 if (binaryOpExp.Kind == S.BinaryOpKind.NotEqual)
@@ -917,7 +918,7 @@ namespace Gum.IR0Translator
 
                     case ExpResult.EnumElem enumElemResult:
                         if (enumElemResult.EnumElemTypeValue.IsStandalone())
-                            return new ExpResult.Exp(new R.NewEnumExp(enumElemResult.EnumElemTypeValue.GetRPath_Nested(), default));
+                            return new ExpResult.Exp(new R.NewEnumExp(enumElemResult.EnumElemTypeValue.GetRPath_Nested(), default), enumElemResult.EnumElemTypeValue);
                         else
                             throw new NotImplementedException(); // 함수로
 
