@@ -592,18 +592,7 @@ namespace Gum.IR0Translator
                 //    return true;
                 //}
             }
-
-            R.Loc MakeMemberLoc(TypeValue typeValue, R.Loc instance, string name)
-            {
-                switch (typeValue)
-                {
-                    case StructTypeValue structType:
-                        return new R.StructMemberLoc(instance, name);
-                }
-
-                throw new NotImplementedException();
-            }
-
+            
             // exp.x
             ExpResult.Exp AnalyzeMemberExpLocParent(S.MemberExp memberExp, R.Loc parentLoc, TypeValue parentTypeValue)
             {
@@ -643,8 +632,8 @@ namespace Gum.IR0Translator
 
                         var memberVarValue = globalContext.MakeMemberVarValue(memberVarResult.Outer, memberVarResult.MemberVarInfo);
 
-                        var loc = MakeMemberLoc(parentTypeValue, parentLoc, memberExp.MemberName);
-                        return new ExpResult.Exp(new R.LoadExp(loc), memberVarValue.GetTypeValue());
+                        var memberLoc = parentTypeValue.MakeMemberLoc(parentLoc, memberVarValue.GetRPath_Nested());
+                        return new ExpResult.Exp(new R.LoadExp(memberLoc), memberVarValue.GetTypeValue());
                 }
 
                 throw new UnreachableCodeException();

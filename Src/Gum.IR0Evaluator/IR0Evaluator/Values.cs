@@ -150,13 +150,8 @@ namespace Gum.IR0Evaluator
         Evaluator evaluator;
         TypeContext typeContext;
         EnumElemRuntimeItem? enumElemItem;
-        EnumElemValue? elemValue;
+        EnumElemValue? elemValue;        
         
-        public Value GetMemberValue(string name)
-        {
-            throw new NotImplementedException();
-        }
-
         // E e1, e2;
         // e1 = e2;
         public override void SetValue(Value value_value)

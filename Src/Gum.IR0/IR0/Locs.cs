@@ -12,9 +12,9 @@ namespace Gum.IR0
     // l[b], l is list    
     public record ListIndexerLoc(Loc List, Loc Index) : Loc;    
     public record StaticMemberLoc(Path Type, string MemberName) : Loc;    
-    public record StructMemberLoc(Loc Instance, string MemberName) : Loc;
+    public record StructMemberLoc(Loc Instance, Path.Nested structMember) : Loc;
     public record ClassMemberLoc(Loc Instance, string MemberName) : Loc;    
-    public record EnumMemberLoc(Loc Instance, string MemberName) : Loc;        
+    public record EnumElemMemberLoc(Loc Instance, Path.Nested EnumElemField) : Loc;        
     public record GlobalVarLoc(string Name) : Loc;    
     public record LocalVarLoc(string Name) : Loc;    
     public record CapturedVarLoc(string Name) : Loc;

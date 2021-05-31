@@ -57,15 +57,18 @@ namespace Gum.IR0Evaluator
 
                     case R.StructMemberLoc structMemberLoc:
                         var structValue = (StructValue)await EvalLocAsync(structMemberLoc.Instance);
-                        return structValue.GetMemberValue(structMemberLoc.MemberName);
+                        throw new NotImplementedException();
+                        // return structValue.GetMemberValue(structMemberLoc.MemberName);
 
                     case R.ClassMemberLoc classMemberLoc:
                         var classValue = (ClassValue)await EvalLocAsync(classMemberLoc.Instance);
                         return classValue.GetMemberValue(classMemberLoc.MemberName);
 
-                    case R.EnumMemberLoc enumMemberLoc:
-                        var enumValue = (EnumValue)await EvalLocAsync(enumMemberLoc.Instance);
-                        return enumValue.GetMemberValue(enumMemberLoc.MemberName);
+                    case R.EnumElemMemberLoc enumMemberLoc:
+                        var enumElemValue = (EnumElemValue)await EvalLocAsync(enumMemberLoc.Instance);
+                        var enumElemFieldRuntimeItem = evaluator.context.GetRuntimeItem<EnumElemFieldRuntimeItem>(enumMemberLoc.EnumElemField);
+
+                        return enumElemFieldRuntimeItem.GetMemberValue(enumElemValue);
 
                     default:
                         throw new UnreachableCodeException();

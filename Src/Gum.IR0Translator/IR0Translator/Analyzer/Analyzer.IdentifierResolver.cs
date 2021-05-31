@@ -13,19 +13,7 @@ using Pretune;
 namespace Gum.IR0Translator
 {
     partial class Analyzer
-    {
-        R.Loc BuildMemberLoc(R.Loc parent, TypeValue parentType, string memberName)
-        {
-            switch(parentType)
-            {
-                case ClassTypeValue _: return new R.ClassMemberLoc(parent, memberName);
-                case StructTypeValue _: return new R.StructMemberLoc(parent, memberName);
-                case EnumElemTypeValue _: return new R.EnumMemberLoc(parent, memberName);
-            }
-
-            throw new UnreachableCodeException();
-        }
-
+    {   
         static IdentifierResult.Error ToErrorIdentifierResult(ItemQueryResult.Error errorResult)
         {
             switch(errorResult)

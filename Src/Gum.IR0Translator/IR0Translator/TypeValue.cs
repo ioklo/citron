@@ -24,6 +24,8 @@ namespace Gum.IR0Translator
         {
             return Apply_TypeValue(typeEnv);
         }
+
+        public abstract R.Loc MakeMemberLoc(R.Loc instance, R.Path.Nested member);
     }
 
     // "var"
@@ -36,6 +38,9 @@ namespace Gum.IR0Translator
 
         // var는 translation패스에서 추론되기 때문에 IR0에 없다
         public override R.Path GetRPath() { throw new InvalidOperationException();  }
+
+        public override R.Loc MakeMemberLoc(R.Loc instance, R.Path.Nested member)
+            => throw new InvalidOperationException();
     }
 
     // T: depth는 지역적이므로, 주어진 컨텍스트 안에서만 의미가 있다
@@ -54,7 +59,11 @@ namespace Gum.IR0Translator
 
             return this;
         }
+
         public override R.Path GetRPath() => new R.Path.TypeVarType(Index);
+
+        public override R.Loc MakeMemberLoc(R.Loc instance, R.Path.Nested member)
+            => throw new NotImplementedException();        
     }
 
     [ImplementIEquatable]
@@ -82,6 +91,9 @@ namespace Gum.IR0Translator
         }
 
         public override R.Path.Nested GetRPath_Nested() => throw new NotImplementedException();
+
+        public override R.Loc MakeMemberLoc(R.Loc instance, R.Path.Nested member)
+            => throw new NotImplementedException();
     }
 
     [AutoConstructor, ImplementIEquatable]
@@ -155,6 +167,9 @@ namespace Gum.IR0Translator
 
             return null; 
         }
+
+        public override R.Loc MakeMemberLoc(R.Loc instance, R.Path.Nested member)
+            => throw new InvalidOperationException();
     }
 
     // S.First, S.Second(int i, short s)
@@ -202,8 +217,22 @@ namespace Gum.IR0Translator
 
         public override ItemQueryResult GetMember(M.Name memberName, int typeParamCount)
         {
+            foreach (var field in elemInfo.FieldInfos)
+            {
+                if (field.Name.Equals(memberName))
+                {
+                    if (typeParamCount != 0)
+                        return ItemQueryResult.Error.VarWithTypeArg.Instance;
 
+                    return new ItemQueryResult.MemberVar(this, field);
+                }
+            }
+
+            return ItemQueryResult.NotFound.Instance;
         }
+
+        public override R.Loc MakeMemberLoc(R.Loc instance, R.Path.Nested member)
+            => new R.EnumElemMemberLoc(instance, member);
     }
 
     [ImplementIEquatable]
@@ -387,6 +416,11 @@ namespace Gum.IR0Translator
 
             return outer.GetRPath(rname, new R.ParamHash(structInfo.TypeParams.Length, default), rtypeArgs);
         }
+
+        public override R.Loc MakeMemberLoc(R.Loc instance, R.Path.Nested member)
+        {
+            return new R.StructMemberLoc(instance, member);
+        }
     }
 
     // (struct, class, enum) (external/internal) (global/member) type
@@ -430,6 +464,9 @@ namespace Gum.IR0Translator
         {
             throw new NotImplementedException();
         }
+
+        public override R.Loc MakeMemberLoc(R.Loc instance, R.Path.Nested member)
+            => throw new InvalidOperationException();        
     }
 
     // ArgTypeValues => RetValueTypes
@@ -481,6 +518,9 @@ namespace Gum.IR0Translator
         {
             return HashCode.Combine(Lambda);
         }
+
+        public override R.Loc MakeMemberLoc(R.Loc instance, R.Path.Nested member)
+            => throw new InvalidOperationException();
     }
 
     // 
@@ -500,8 +540,10 @@ namespace Gum.IR0Translator
         {
             return seqFunc;
         }
+
+        public override R.Loc MakeMemberLoc(R.Loc instance, R.Path.Nested member)
+            => throw new InvalidOperationException();
     }
-    
 
     [AutoConstructor]
     partial class TupleTypeValue : TypeValue
@@ -529,5 +571,8 @@ namespace Gum.IR0Translator
 
             return ritemFactory.MakeTupleType(builder.MoveToImmutable());
         }
+
+        public override R.Loc MakeMemberLoc(R.Loc instance, R.Path.Nested member)
+            => throw new NotImplementedException();
     }
 }

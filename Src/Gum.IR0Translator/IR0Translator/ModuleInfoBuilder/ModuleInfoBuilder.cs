@@ -114,13 +114,13 @@ namespace Gum.IR0Translator
             var elemsBuilder = ImmutableArray.CreateBuilder<M.EnumElemInfo>(enumDecl.Elems.Length);
             foreach(var elem in enumDecl.Elems)
             {
-                var fieldsBuilder = ImmutableArray.CreateBuilder<M.EnumElemFieldInfo>(elem.Params.Length);
+                var fieldsBuilder = ImmutableArray.CreateBuilder<M.MemberVarInfo>(elem.Params.Length);
                 foreach(var param in elem.Params)
                 {
                     var type = GetMType(param.Type);
                     Debug.Assert(type != null);
 
-                    var field = new M.EnumElemFieldInfo(type, param.Name);
+                    var field = new M.MemberVarInfo(false, type, param.Name);
                     fieldsBuilder.Add(field);
                 }
 

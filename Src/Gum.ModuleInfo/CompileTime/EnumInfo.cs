@@ -7,20 +7,13 @@ using System.Text;
 using Pretune;
 
 namespace Gum.CompileTime
-{
-    [AutoConstructor]
-    public partial struct EnumElemFieldInfo
-    {
-        public Type Type { get; }
-        public string Name { get; }
-    }
-
+{   
     [AutoConstructor, ImplementIEquatable]
     public partial class EnumElemInfo : TypeInfo
     {
         public override Name Name { get; }
         public override ImmutableArray<string> TypeParams => default;
-        public ImmutableArray<EnumElemFieldInfo> FieldInfos { get; }
+        public ImmutableArray<MemberVarInfo> FieldInfos { get; }
         public override TypeInfo? GetMemberType(string name, int typeParamCount) => null;
     }
 
