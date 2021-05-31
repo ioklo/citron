@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Pretune;
 
 using R = Gum.IR0;
+using System.Diagnostics;
 
 namespace Gum.IR0Evaluator
 {
@@ -146,6 +147,8 @@ namespace Gum.IR0Evaluator
     [AutoConstructor]
     partial class EnumValue : Value
     {
+        Evaluator evaluator;
+        TypeContext typeContext;
         EnumElemRuntimeItem? enumElemItem;
         EnumElemValue? elemValue;
         
@@ -154,15 +157,37 @@ namespace Gum.IR0Evaluator
             throw new NotImplementedException();
         }
 
-        public override void SetValue(Value value)
+        // E e1, e2;
+        // e1 = e2;
+        public override void SetValue(Value value_value)
         {
-            var enumValue = (EnumValue)value;
+            var value = (EnumValue)value_value;
 
+            Debug.Assert(value.enumElemItem != null);
+            SetEnumElemItem(value.enumElemItem);
+
+            Debug.Assert(elemValue != null && value.elemValue != null);
+            elemValue.SetValue(value.elemValue);
         }
 
-        public bool IsElem(EnumElemRuntimeItem enumElemItem)
+        public bool IsElem(EnumElemRuntimeItem EnumElemItem)
         {
-            return enumElemItem.Equals(enumElemItem); // reference 비교 가능하도록, 불가능 하면 R.EnumElement를 쓰지 말고 동적으로 생성되는 타입을 하나 만든다
+            return EnumElemItem.Equals(EnumElemItem); // reference 비교 가능하도록, 불가능 하면 R.EnumElement를 쓰지 말고 동적으로 생성되는 타입을 하나 만든다
+        }
+
+        public void SetEnumElemItem(EnumElemRuntimeItem enumElemItem)
+        {
+            if (EqualityComparer<EnumElemRuntimeItem>.Default.Equals(this.enumElemItem, enumElemItem))
+                return;
+
+            this.enumElemItem = enumElemItem;
+            Debug.Assert(enumElemItem != null);
+            elemValue = (EnumElemValue)enumElemItem.Alloc(evaluator, typeContext);
+        }
+
+        public EnumElemValue GetElemValue()
+        {
+            return elemValue!;
         }
     }
 

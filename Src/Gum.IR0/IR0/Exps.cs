@@ -188,7 +188,7 @@ namespace Gum.IR0
     public partial class CastEnumElemToEnumExp : Exp
     {
         public Exp Src { get; }
-        public Path.Nested Enum { get; }
+        public Path.Nested EnumElem { get; } // EnumElem을 태그로 붙여야 한다
     }
     
     // ClassStaticCast

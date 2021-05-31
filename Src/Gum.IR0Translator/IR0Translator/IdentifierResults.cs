@@ -64,20 +64,7 @@ namespace Gum.IR0Translator
         public record Type(TypeValue TypeValue) : Valid;
 
         // First => E.First
-        public record EnumElem : Valid
-        {
-            public NormalTypeValue EnumTypeValue { get; }
-            public M.Name Name { get => throw new NotImplementedException(); }
-            public ImmutableArray<M.EnumElemFieldInfo> FieldInfos { get; }
-            public bool IsStandalone { get => FieldInfos.IsEmpty; }
-
-            public EnumElem(NormalTypeValue enumTypeValue, ImmutableArray<M.EnumElemFieldInfo> fieldInfos)
-            {
-                EnumTypeValue = enumTypeValue;
-                FieldInfos = fieldInfos;
-            }
-        }
-        
+        public record EnumElem(EnumElemTypeValue EnumElemTypeValue) : Valid;
 
         public record NotFound : IdentifierResult
         {

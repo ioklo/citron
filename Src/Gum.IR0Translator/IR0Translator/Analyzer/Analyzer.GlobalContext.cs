@@ -214,7 +214,7 @@ namespace Gum.IR0Translator
                     {
                         if (enumElemTypeValue.Outer.Equals(expectType))
                         {
-                            var castExp = new R.CastEnumElemToEnumExp(expResult.Result, expectEnumType.GetRPath_Nested());
+                            var castExp = new R.CastEnumElemToEnumExp(expResult.Result, enumElemTypeValue.GetRPath_Nested());
                             return new ExpResult.Exp(castExp, expectType);
                         }
                     }

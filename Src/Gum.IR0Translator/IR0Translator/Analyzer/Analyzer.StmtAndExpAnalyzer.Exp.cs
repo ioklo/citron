@@ -71,16 +71,7 @@ namespace Gum.IR0Translator
                         break;
 
                     case IdentifierResult.EnumElem enumElemResult:
-                        if (enumElemResult.IsStandalone)      // 인자 없이 있는 것
-                        {
-                            throw new NotImplementedException();
-                            // return new ExpResult(new NewEnumExp(enumElemResult.Name, Array.Empty<NewEnumExp.Elem>()), enumElem.EnumTypeValue);
-                        }
-                        else
-                        {
-                            // TODO: Func일때 감싸기
-                            throw new NotImplementedException();
-                        }
+                        return new ExpResult.EnumElem(enumElemResult.EnumElemTypeValue);
                 }
 
                 throw new UnreachableCodeException();
@@ -923,6 +914,12 @@ namespace Gum.IR0Translator
                         }
                         globalContext.AddFatalError(A2008_ResolveIdentifier_CantUseTypeAsExpression, exp);
                         throw new UnreachableCodeException();
+
+                    case ExpResult.EnumElem enumElemResult:
+                        if (enumElemResult.EnumElemTypeValue.IsStandalone())
+                            return new ExpResult.Exp(new R.NewEnumExp(enumElemResult.EnumElemTypeValue.GetRPath_Nested(), default));
+                        else
+                            throw new NotImplementedException(); // 함수로
 
                     default:
                         throw new UnreachableCodeException();

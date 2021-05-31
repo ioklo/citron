@@ -397,6 +397,21 @@ namespace Gum.IR0Evaluator
                 throw new NotImplementedException();
             }
 
+            // E e = (E)E.First;
+            async ValueTask EvalCastEnumElemToEnumExp(R.CastEnumElemToEnumExp castEnumElemToEnumExp, Value result_value)
+            {
+                var result = (EnumValue)result_value;
+                var enumElemItem = evaluator.context.GetRuntimeItem<EnumElemRuntimeItem>(castEnumElemToEnumExp.EnumElem);
+
+                result.SetEnumElemItem(enumElemItem);
+                await EvalAsync(castEnumElemToEnumExp.Src, result.GetElemValue());
+            }
+
+            ValueTask EvalCastClassExp(R.CastClassExp castClassExp, Value result)
+            {
+                throw new NotImplementedException();
+            }
+
             internal async ValueTask EvalAsync(R.Exp exp, Value result)
             {
                 switch (exp)
@@ -417,10 +432,14 @@ namespace Gum.IR0Evaluator
                     case R.NewEnumExp enumExp: await EvalNewEnumExpAsync(enumExp, result); break;
                     case R.NewStructExp newStructExp: await EvalNewStructExpAsync(newStructExp, result); break;
                     case R.NewClassExp newClassExp: await EvalNewClassExpAsync(newClassExp, result); break;
+                    case R.CastEnumElemToEnumExp castEnumElemToEnumExp: await EvalCastEnumElemToEnumExp(castEnumElemToEnumExp, result); break;
+                    case R.CastClassExp castClassExp: await EvalCastClassExp(castClassExp, result); break;
 
                     default: throw new NotImplementedException();
                 }
             }
+
+            
         }
     }
 }

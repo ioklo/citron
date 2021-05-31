@@ -17,7 +17,7 @@ namespace Gum.IR0Evaluator
 
         public override Value Alloc(Evaluator evaluator, TypeContext typeContext)
         {
-            return new EnumValue(null, null);
+            return new EnumValue(evaluator, typeContext, null, null);
         }
     }
 }

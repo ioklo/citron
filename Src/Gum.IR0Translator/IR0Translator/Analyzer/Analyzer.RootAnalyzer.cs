@@ -190,11 +190,33 @@ namespace Gum.IR0Translator
                     AnalyzeGlobalNormalFuncDecl(funcDecl);
             }
 
+            void AnalyzeEnumDecl(S.EnumDecl enumDecl)
+            {
+                var relemsBuilder = ImmutableArray.CreateBuilder<R.EnumElement>(enumDecl.Elems.Length);
+                foreach(var elem in enumDecl.Elems)
+                {
+                    var rfieldsBuilder = ImmutableArray.CreateBuilder<R.TypeAndName>(elem.Params.Length);
+
+                    foreach(var param in elem.Params)
+                    {
+                        var paramType = globalContext.GetTypeValueByTypeExp(param.Type);
+                        var rfield = new R.TypeAndName(paramType.GetRPath(), param.Name);
+                        rfieldsBuilder.Add(rfield);
+                    }
+
+                    var relem = new R.EnumElement(elem.Name, rfieldsBuilder.MoveToImmutable());
+                    relemsBuilder.Add(relem);
+                }
+
+                rootContext.AddDecl(new R.EnumDecl(enumDecl.Name, enumDecl.TypeParams, relemsBuilder.MoveToImmutable()));
+            }
+
             void AnalyzeTypeDecl(S.TypeDecl typeDecl)
             {
                 switch(typeDecl)
                 {
-                    case S.EnumDecl:
+                    case S.EnumDecl enumDecl:
+                        AnalyzeEnumDecl(enumDecl);
                         break;
 
                     default:

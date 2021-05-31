@@ -131,6 +131,17 @@ namespace Gum.IR0Translator
             return ItemQueryResult.NotFound.Instance;
         }
 
+        public EnumElemTypeValue? GetElement(string name)
+        {
+            foreach (var elemInfo in enumInfo.ElemInfos)
+            {
+                if (elemInfo.Name.Equals(name))
+                    return itemValueFactory.MakeEnumElemTypeValue(this, elemInfo);
+            }
+
+            return null;
+        }
+
         public override TypeValue? GetMemberType(M.Name memberName, ImmutableArray<TypeValue> typeArgs) 
         {
             // shortcut

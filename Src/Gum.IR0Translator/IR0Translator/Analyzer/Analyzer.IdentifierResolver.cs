@@ -161,11 +161,9 @@ namespace Gum.IR0Translator
                     // First<T> 같은건 없기 때문에 없을때만 검색한다
                     if (typeArgs.Length == 0)
                     {
-                        throw new NotImplementedException();
-                        //if (enumHintType.GetEnumElem(idName, out var elemInfo))
-                        //{
-                        //    return new EnumElemIdentifierResult(hintNTV, elemInfo.Value);
-                        //}
+                        var elemTypeValue = enumTypeValue.GetElement(idName);
+                        if (elemTypeValue != null)
+                            return new IdentifierResult.EnumElem(elemTypeValue);
                     }
                 }
                 
