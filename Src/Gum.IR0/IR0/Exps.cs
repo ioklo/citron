@@ -157,7 +157,7 @@ namespace Gum.IR0
 
     // enum construction, E.First or E.Second(2, 3)
     [AutoConstructor, ImplementIEquatable]
-    public partial class NewEnumExp : Exp
+    public partial class NewEnumElemExp : Exp
     {
         public Path.Nested Elem { get; }
         public ImmutableArray<Argument> Args { get; }

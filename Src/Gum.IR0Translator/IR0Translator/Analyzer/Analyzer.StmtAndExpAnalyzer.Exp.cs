@@ -286,26 +286,33 @@ namespace Gum.IR0Translator
                 return default; // suppress CS0161
             }
 
-            //ExpResult AnalyzeCallExpEnumElemCallable(M.EnumElemInfo enumElem, ImmutableArray<ExpResult> argResults, S.CallExp nodeForErrorReport)
-            //{
-            //    // 인자 개수가 맞는지 확인
-            //    if (enumElem.FieldInfos.Length != argResults.Length)
-            //        context.AddFatalError(A0903_CallExp_MismatchEnumConstructorArgCount, nodeForErrorReport, "enum인자 개수가 맞지 않습니다");
+            ExpResult AnalyzeCallExpEnumElemCallable(EnumElemTypeValue elemTypeValue, ImmutableArray<S.Argument> sargs, S.ISyntaxNode nodeForErrorReport)
+            {
+                if (elemTypeValue.IsStandalone())
+                    globalContext.AddFatalError(A0902_CallExp_CallableExpressionIsNotCallable, nodeForErrorReport);
 
-            //    var members = new List<NewEnumExp.Elem>();
-            //    foreach (var (fieldInfo, argResult) in Zip(enumElem.FieldInfos, argResults))
-            //    {
-            //        var appliedTypeValue = context.Apply(enumElem.EnumTypeValue, fieldInfo.TypeValue);
-            //        if (!context.IsAssignable(appliedTypeValue, argResult.TypeValue))
-            //            context.AddFatalError(A0904_CallExp_MismatchBetweenEnumParamTypeAndEnumArgType, nodeForErrorReport, "enum의 {0}번째 인자 형식이 맞지 않습니다");
+                var fieldParamTypes = elemTypeValue.GetConstructorParamTypes();
 
-            //        var typeId = context.GetType(argResult.TypeValue);
-            //        members.Add(new NewEnumExp.Elem(fieldInfo.Name, new ExpInfo(argResult.Exp, typeId)));
-            //    }
+                // 일단 lambda파라미터는 params를 지원하지 않는 것으로
+                // args는 params를 지원 할 수 있음
+                // TODO: MatchFunc에 OuterTypeEnv를 넣는 것이 나은지, fieldParamTypes에 미리 적용해서 넣는 것이 나은지
+                // paramTypes으로 typeValues를 건네 줄것이면 적용해서 넣는게 나을 것 같은데, TypeResolver 동작때문에 어떻게 될지 몰라서 일단 여기서는 적용하고 TypeEnv.None을 넘겨준다
+                var matchFuncResults = MatchFunc(TypeEnv.None, fieldParamTypes, null, default, sargs);
 
-            //    return new ExpResult(new NewEnumExp(enumElem.Name.ToString(), members), enumElem.EnumTypeValue);
-            //}
-            
+                if (matchFuncResults.bMatch)
+                {
+                    return new ExpResult.Exp(
+                        new R.NewEnumElemExp(elemTypeValue.GetRPath_Nested(), matchFuncResults.Args),
+                        elemTypeValue
+                    );
+                }
+                else
+                {
+                    globalContext.AddError(A0401_Parameter_MismatchBetweenParamCountAndArgCount, nodeForErrorReport);
+                    throw new UnreachableCodeException();
+                }
+            }
+
             [AutoConstructor]
             partial struct MatchedFunc
             {
@@ -480,9 +487,8 @@ namespace Gum.IR0Translator
                         return AnalyzeCallExpExpCallable(locResult.Result, locResult.TypeValue, exp.Args, exp);
 
                     // enum constructor, E.First
-                    case ExpResult.EnumElem enumElemResult:
-                        throw new NotImplementedException();
-                        // return AnalyzeCallExpEnumElemCallable(enumElemResult.Info, );
+                    case ExpResult.EnumElem enumElemResult:                        
+                        return AnalyzeCallExpEnumElemCallable(enumElemResult.EnumElemTypeValue, exp.Args, exp);
                 }
 
                 throw new UnreachableCodeException();
@@ -599,7 +605,7 @@ namespace Gum.IR0Translator
             }
 
             // exp.x
-            ExpResult.Exp AnalyzeMemberExpExpParent(S.MemberExp memberExp, R.Loc parentLoc, TypeValue parentTypeValue)
+            ExpResult.Exp AnalyzeMemberExpLocParent(S.MemberExp memberExp, R.Loc parentLoc, TypeValue parentTypeValue)
             {
                 var typeArgs = GetTypeValues(memberExp.MemberTypeArgs);
                 var memberResult = parentTypeValue.GetMember(memberExp.MemberName, typeArgs.Length);
@@ -619,6 +625,11 @@ namespace Gum.IR0Translator
                         break;
 
                     case ItemQueryResult.Type:
+                        globalContext.AddFatalError(A2004_ResolveIdentifier_CantGetTypeMemberThroughInstance, memberExp);
+                        break;
+
+                    // x.First
+                    case ItemQueryResult.EnumElem:
                         globalContext.AddFatalError(A2004_ResolveIdentifier_CantGetTypeMemberThroughInstance, memberExp);
                         break;
                         
@@ -693,6 +704,11 @@ namespace Gum.IR0Translator
                         var loc = new R.StaticMemberLoc(rparentType, memberName);
                         return new ExpResult.Loc(loc, memberVarValue.GetTypeValue());
 
+                    // E.First
+                    case ItemQueryResult.EnumElem enumElemResult:
+                        var elemTypeValue = globalContext.MakeEnumElemTypeValue(enumElemResult.Outer, enumElemResult.EnumElemInfo);
+                        return new ExpResult.EnumElem(elemTypeValue);
+
                     default:
                         throw new UnreachableCodeException();
                 }
@@ -752,13 +768,13 @@ namespace Gum.IR0Translator
                         case IdentifierResult.LocalVarOutsideLambda localVarOutsideLambdaResult:
                             // TODO: 여러번 캡쳐해도 한번만
                             callableContext.AddLambdaCapture(localVarOutsideLambdaResult.VarName, localVarOutsideLambdaResult.TypeValue);
-                            return new ExpResult.Loc(new R.CapturedVarLoc(localVarOutsideLambdaResult.VarName), localVarOutsideLambdaResult.TypeValue);
+                            return AnalyzeMemberExpLocParent(memberExp, new R.CapturedVarLoc(localVarOutsideLambdaResult.VarName), localVarOutsideLambdaResult.TypeValue);
 
-                        case IdentifierResult.LocalVar localVarResult:
-                            return new ExpResult.Loc(new R.LocalVarLoc(localVarResult.VarName), localVarResult.TypeValue);
+                        case IdentifierResult.LocalVar localVarResult:                            
+                            return AnalyzeMemberExpLocParent(memberExp, new R.LocalVarLoc(localVarResult.VarName), localVarResult.TypeValue);
 
                         case IdentifierResult.GlobalVar globalVarResult:
-                            return new ExpResult.Loc(new R.GlobalVarLoc(globalVarResult.VarName), globalVarResult.TypeValue);
+                            return AnalyzeMemberExpLocParent(memberExp, new R.GlobalVarLoc(globalVarResult.VarName), globalVarResult.TypeValue);
 
                         // F.x 는
                         case IdentifierResult.Funcs:
@@ -797,10 +813,10 @@ namespace Gum.IR0Translator
                             break;
 
                         case ExpResult.Exp expResult:
-                            return AnalyzeMemberExpExpParent(memberExp, new R.TempLoc(expResult.Result, expResult.TypeValue.GetRPath()), expResult.TypeValue);
+                            return AnalyzeMemberExpLocParent(memberExp, new R.TempLoc(expResult.Result, expResult.TypeValue.GetRPath()), expResult.TypeValue);
 
                         case ExpResult.Loc locResult:
-                            return AnalyzeMemberExpExpParent(memberExp, locResult.Result, locResult.TypeValue);
+                            return AnalyzeMemberExpLocParent(memberExp, locResult.Result, locResult.TypeValue);
                     }
 
                     throw new UnreachableCodeException();
@@ -909,7 +925,7 @@ namespace Gum.IR0Translator
                         if (typeResult.TypeValue is EnumElemTypeValue enumElemTypeValue) // E.F
                         {
                             if (enumElemTypeValue.IsStandalone())
-                                return new ExpResult.Exp(new R.NewEnumExp(enumElemTypeValue.GetRPath_Nested(), default), enumElemTypeValue);
+                                return new ExpResult.Exp(new R.NewEnumElemExp(enumElemTypeValue.GetRPath_Nested(), default), enumElemTypeValue);
                             else // 함수로 
                                 throw new NotImplementedException();
                         }
@@ -918,7 +934,7 @@ namespace Gum.IR0Translator
 
                     case ExpResult.EnumElem enumElemResult:
                         if (enumElemResult.EnumElemTypeValue.IsStandalone())
-                            return new ExpResult.Exp(new R.NewEnumExp(enumElemResult.EnumElemTypeValue.GetRPath_Nested(), default), enumElemResult.EnumElemTypeValue);
+                            return new ExpResult.Exp(new R.NewEnumElemExp(enumElemResult.EnumElemTypeValue.GetRPath_Nested(), default), enumElemResult.EnumElemTypeValue);
                         else
                             throw new NotImplementedException(); // 함수로
 

@@ -123,8 +123,7 @@ namespace Gum.IR0Translator
             {
                 if (elemInfo.Name.Equals(memberName))
                 {
-                    var enumTypeValue = new NestedItemValueOuter(this);
-                    return new ItemQueryResult.Type(enumTypeValue, elemInfo);
+                    return new ItemQueryResult.EnumElem(this, elemInfo);
                 }
             }
 
@@ -185,6 +184,25 @@ namespace Gum.IR0Translator
             Debug.Assert(router != null);
 
             return new R.Path.Nested(router, rname, R.ParamHash.None, default);
+        }
+
+        public ImmutableArray<TypeValue> GetConstructorParamTypes()
+        {
+            var builder = ImmutableArray.CreateBuilder<TypeValue>(elemInfo.FieldInfos.Length);
+            foreach(var field in elemInfo.FieldInfos)
+            {
+                var fieldType = itemValueFactory.MakeTypeValueByMType(field.Type);
+                var appliedFieldType = fieldType.Apply_TypeValue(Outer.MakeTypeEnv());
+
+                builder.Add(appliedFieldType);
+            }
+
+            return builder.MoveToImmutable();
+        }
+
+        public override ItemQueryResult GetMember(M.Name memberName, int typeParamCount)
+        {
+
         }
     }
 

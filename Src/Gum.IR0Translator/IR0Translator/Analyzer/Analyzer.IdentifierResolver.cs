@@ -119,6 +119,12 @@ namespace Gum.IR0Translator
                         {
                             return new IdentifierResult.Funcs(funcsResult.Outer, funcsResult.FuncInfos, typeArgs, funcsResult.IsInstanceFunc);
                         }
+
+                    case ItemQueryResult.EnumElem enumElemResult:
+                        {
+                            var elemTypeValue = globalContext.MakeEnumElemTypeValue(enumElemResult.Outer, enumElemResult.EnumElemInfo);
+                            return new IdentifierResult.EnumElem(elemTypeValue);
+                        }
                 }
 
                 throw new UnreachableCodeException();

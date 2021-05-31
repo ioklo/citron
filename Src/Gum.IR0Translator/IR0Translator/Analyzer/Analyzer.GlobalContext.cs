@@ -10,6 +10,7 @@ using System.Text;
 using S = Gum.Syntax;
 using M = Gum.CompileTime;
 using R = Gum.IR0;
+using Gum.CompileTime;
 
 namespace Gum.IR0Translator
 {
@@ -133,6 +134,11 @@ namespace Gum.IR0Translator
             public bool IsIntType(TypeValue typeValue)
             {
                 return itemValueFactory.Int.Equals(typeValue);
+            }
+
+            public EnumElemTypeValue MakeEnumElemTypeValue(EnumTypeValue outer, EnumElemInfo elemInfo)
+            {
+                return itemValueFactory.MakeEnumElemTypeValue(outer, elemInfo);
             }
 
             public bool IsStringType(TypeValue typeValue)

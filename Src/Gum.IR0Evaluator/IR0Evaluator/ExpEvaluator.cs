@@ -369,7 +369,7 @@ namespace Gum.IR0Evaluator
                 }
             }
 
-            async ValueTask EvalNewEnumExpAsync(R.NewEnumExp exp, Value result_value)
+            async ValueTask EvalNewEnumExpAsync(R.NewEnumElemExp exp, Value result_value)
             {
                 var result = (EnumElemValue)result_value;
 
@@ -429,7 +429,7 @@ namespace Gum.IR0Evaluator
                     case R.CallValueExp callValueExp: await EvalCallValueExpAsync(callValueExp, result); break;
                     case R.LambdaExp lambdaExp: EvalLambdaExp(lambdaExp, result); break;
                     case R.ListExp listExp: await EvalListExpAsync(listExp, result); break;
-                    case R.NewEnumExp enumExp: await EvalNewEnumExpAsync(enumExp, result); break;
+                    case R.NewEnumElemExp enumExp: await EvalNewEnumExpAsync(enumExp, result); break;
                     case R.NewStructExp newStructExp: await EvalNewStructExpAsync(newStructExp, result); break;
                     case R.NewClassExp newClassExp: await EvalNewClassExpAsync(newClassExp, result); break;
                     case R.CastEnumElemToEnumExp castEnumElemToEnumExp: await EvalCastEnumElemToEnumExp(castEnumElemToEnumExp, result); break;
