@@ -2,6 +2,7 @@
 using static Gum.Infra.Misc;
 using Pretune;
 using Gum.Infra;
+using System.Diagnostics;
 
 namespace Gum.IR0
 {
@@ -33,7 +34,10 @@ namespace Gum.IR0
         public record FuncType : Reserved;
         public record NullableType(Path Type) : Reserved;
 
+        [DebuggerDisplay("[{ModuleName}]")]
         public record Root(ModuleName ModuleName) : Normal;
+
+        [DebuggerDisplay("{Outer}.{Name}`{ParamHash}<{TypeArgs}>")]
         public record Nested(Normal Outer, Name Name, ParamHash ParamHash, ImmutableArray<Path> TypeArgs) : Normal;
     }
 

@@ -1,4 +1,5 @@
 ﻿using Gum.Infra;
+using System.Diagnostics;
 
 namespace Gum.IR0
 {   
@@ -8,6 +9,7 @@ namespace Gum.IR0
 
         public static implicit operator Name(string x) => new Normal(x);
 
+        [DebuggerDisplay("{Value}")]
         public record Normal(string Value) : Name;
         public record IndexerGet : Name;
         public record IndexerSet : Name;        
@@ -15,6 +17,7 @@ namespace Gum.IR0
         public record OpDec : Name;
 
         // anonymous type names
+        [DebuggerDisplay("#Anonymous_{Id}")]
         public record Anonymous(AnonymousId Id) : Name;
     }
 }

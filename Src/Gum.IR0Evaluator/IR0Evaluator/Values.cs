@@ -175,8 +175,8 @@ namespace Gum.IR0Evaluator
         public override void SetValue(Value value)
         {
             var enumElemValue = (EnumElemValue)value;
-            for(int i = 0; i < fields.Length; i++)
-                fields[i].SetValue(enumElemValue.fields[i]);
+            for(int i = 0; i < Fields.Length; i++)
+                Fields[i].SetValue(enumElemValue.Fields[i]);
         }
     }
 
