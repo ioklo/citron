@@ -44,6 +44,9 @@ namespace Gum.IR0Evaluator
         public R.Path Apply(R.Path path)
         {
             // TODO: path를 다 돌아서 TypeVar를 치환한다
+            if (path is R.Path.TypeVarType typeVarPath)
+                return env[typeVarPath.Index];
+
             return path;
         }
     }

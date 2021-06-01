@@ -242,6 +242,11 @@ namespace Gum.IR0Translator
 
         public override R.Loc MakeMemberLoc(R.Loc instance, R.Path.Nested member)
             => new R.EnumElemMemberLoc(instance, member);
+
+        internal override void FillTypeEnv(TypeEnvBuilder builder)
+        {
+            Outer.FillTypeEnv(builder);
+        }
     }
 
     [ImplementIEquatable]
