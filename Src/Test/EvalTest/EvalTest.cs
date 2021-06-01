@@ -121,7 +121,7 @@ namespace EvalTest
 
             try
             {
-                var rscript = Translator.Translate("TestModule", default, scriptResult.Elem, errorCollector);
+                var rscript = Translator.Translate("TestModule", default, scriptResult.Elem,  errorCollector);
                 MyAssert.Assert(rscript != null);
 
                 var evaluator = new Evaluator(commandProvider, rscript);

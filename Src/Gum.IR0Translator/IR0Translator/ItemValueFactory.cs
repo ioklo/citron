@@ -71,8 +71,7 @@ namespace Gum.IR0Translator
                     return new StructTypeValue(this, ritemFactory, outer, structInfo, typeArgs);
 
                 case M.EnumInfo enumInfo:
-                    Debug.Assert(typeArgs.IsEmpty);
-                    return new EnumTypeValue(this, outer, enumInfo, default);
+                    return new EnumTypeValue(this, outer, enumInfo, typeArgs);
 
                 case M.EnumElemInfo enumElemInfo:
                     Debug.Assert(outer is NestedItemValueOuter);

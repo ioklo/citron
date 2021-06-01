@@ -152,11 +152,22 @@ namespace Gum.IR0Translator
                 // enum 힌트 사용, typeArgs가 있으면 지나간다
                 if (hint.TypeHint is TypeValueTypeHint typeValueHintType && typeValueHintType.TypeValue is EnumTypeValue enumTypeValue)
                 {
-                    // First<T> 같은건 없기 때문에 없을때만 검색한다
-                    if (typeArgs.Length == 0)
+                    // First<T> 같은건 없기 때문에 없을때만 검색한다                    
+                    var elemTypeValue = enumTypeValue.GetElement(idName);
+                    if (elemTypeValue != null)
                     {
-                        var elemTypeValue = enumTypeValue.GetElement(idName);
-                        if (elemTypeValue != null)
+                        // 힌트니까 조건에 맞지않아도 에러를 내지 않고 종료한다
+                        if (typeArgs.Length == 0)
+                            return new IdentifierResult.EnumElem(elemTypeValue);
+                    }
+                }
+                else if (hint.TypeHint is EnumConstructorTypeHint enumConstructorHint)
+                {
+                    var elemTypeValue = enumConstructorHint.EnumTypeValue.GetElement(idName);
+
+                    if (elemTypeValue != null)
+                    {
+                        if (!elemTypeValue.IsStandalone() && typeArgs.Length == 0)
                             return new IdentifierResult.EnumElem(elemTypeValue);
                     }
                 }

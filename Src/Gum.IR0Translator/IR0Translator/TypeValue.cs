@@ -170,6 +170,15 @@ namespace Gum.IR0Translator
 
         public override R.Loc MakeMemberLoc(R.Loc instance, R.Path.Nested member)
             => throw new InvalidOperationException();
+
+        internal override void FillTypeEnv(TypeEnvBuilder builder)
+        {
+            if (outer != null)
+                outer.FillTypeEnv(builder);
+
+            for (int i = 0; i < enumInfo.TypeParams.Length; i++)
+                builder.Add(typeArgs[i]);
+        }
     }
 
     // S.First, S.Second(int i, short s)

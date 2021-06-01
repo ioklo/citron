@@ -87,8 +87,24 @@ namespace Gum.IR0Evaluator
 
                 if (bTestPassed)
                 {
-                    await foreach (var _ in EvalStmtAsync(stmt.Body))
-                        yield return Void.Instance;
+                    if (stmt.VarName != null)
+                    {
+                        async IAsyncEnumerable<Void> InnerFunc()
+                        {   
+                            evaluator.context.AddLocalVar(stmt.VarName, targetValue.GetElemValue()); // 레퍼런스로 등록
+
+                            await foreach (var _ in EvalStmtAsync(stmt.Body))
+                                yield return Void.Instance;
+                        }
+
+                        await foreach (var _ in evaluator.context.ExecInNewScopeAsync(InnerFunc))
+                            yield return Void.Instance;
+                    }
+                    else
+                    {
+                        await foreach (var _ in EvalStmtAsync(stmt.Body))
+                            yield return Void.Instance;
+                    }
                 }
                 else
                 {

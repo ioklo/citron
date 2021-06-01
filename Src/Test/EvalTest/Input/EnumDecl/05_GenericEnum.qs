@@ -10,5 +10,5 @@ Option<int> i = None;
 
 Option<string> s = Some("Hi");
 
-if( s is Option<string>.Some )
-    @${s.value}
+if (s is Option<string>.Some some)
+    @${some.value}
