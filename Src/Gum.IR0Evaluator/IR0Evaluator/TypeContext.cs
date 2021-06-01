@@ -41,13 +41,90 @@ namespace Gum.IR0Evaluator
             return new TypeContext(builder.ToImmutable());            
         }
 
+        public R.Path.Normal ApplyNormal(R.Path.Normal normalPath)
+        {
+            switch (normalPath)
+            {
+                case R.Path.Root: return normalPath;
+
+                case R.Path.Nested nestedPath:
+                    {
+                        var appliedOuter = ApplyNormal(nestedPath.Outer);
+                        var builder = ImmutableArray.CreateBuilder<R.Path>(nestedPath.TypeArgs.Length);
+                        foreach (var typeArg in nestedPath.TypeArgs)
+                        {
+                            var appliedTypeArg = Apply(typeArg);
+                            builder.Add(appliedTypeArg);
+                        }
+
+                        // ParamHash는 건드리지 않는다
+                        return new R.Path.Nested(appliedOuter, nestedPath.Name, nestedPath.ParamHash, builder.MoveToImmutable());
+                    }
+
+                default:
+                    throw new UnreachableCodeException();
+            }
+        }
+
         public R.Path Apply(R.Path path)
         {
-            // TODO: path를 다 돌아서 TypeVar를 치환한다
-            if (path is R.Path.TypeVarType typeVarPath)
-                return env[typeVarPath.Index];
+            switch(path)
+            {
+                // Reserved
+                case R.Path.TupleType tuplePath:
+                    {
+                        var builder = ImmutableArray.CreateBuilder<R.TypeAndName>(tuplePath.Elems.Length);
+                        foreach (var elem in tuplePath.Elems)
+                        {
+                            var appliedType = Apply(elem.Type);
+                            var appliedElem = new R.TypeAndName(appliedType, elem.Name);
+                            builder.Add(appliedElem);
+                        }
+                        return new R.Path.TupleType(builder.MoveToImmutable());
+                    }
 
-            return path;
+                case R.Path.TypeVarType typeVarPath:
+                    return env[typeVarPath.Index];
+
+                case R.Path.VoidType:
+                    return path;
+
+                case R.Path.BoxType boxPath:
+                    {
+                        var appliedType = Apply(boxPath.Type);
+                        return new R.Path.BoxType(appliedType);
+                    }
+
+                case R.Path.RefType refPath:
+                    {
+                        var appliedType = Apply(refPath);
+                        return new R.Path.RefType(appliedType);
+                    }
+
+                case R.Path.GenericRefType genericRefPath:
+                    {
+                        // TODO: TRef는 이럴때 녹아야 하지 않는가
+                        var appliedType = Apply(genericRefPath);
+                        return new R.Path.GenericRefType(appliedType);
+                    }
+
+                case R.Path.FuncType funcPath:
+                        throw new NotImplementedException();                        
+
+                case R.Path.NullableType nullablePath:
+                    {
+                        var appliedType = Apply(nullablePath.Type);
+                        return new R.Path.NullableType(appliedType);
+                    }
+
+                // Normal
+                case R.Path.Normal normalPath:
+                    return ApplyNormal(normalPath);
+
+                default:
+                    throw new UnreachableCodeException();
+            }
+            
         }
     }
 }
