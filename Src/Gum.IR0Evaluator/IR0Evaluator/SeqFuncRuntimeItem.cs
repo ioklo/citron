@@ -37,7 +37,7 @@ namespace Gum.IR0Evaluator
             public override void Invoke(Evaluator evaluator, Value? thisValue, ImmutableDictionary<string, Value> args, Value result)
             {
                 // evaluator 복제
-                var newEvaluator = evaluator.CloneWithNewContext(thisValue, args);
+                var newEvaluator = evaluator.CloneWithNewContext(thisValue, default, args);
 
                 // asyncEnum을 만들기 위해서 내부 함수를 씁니다
                 async IAsyncEnumerator<Infra.Void> WrapAsyncEnum()

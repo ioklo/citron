@@ -27,11 +27,9 @@ namespace Gum.IR0Evaluator
 
             public override async ValueTask InvokeAsync(Evaluator evaluator, Value? thisValue, ImmutableDictionary<string, Value> args, Value result)
             {
-                await evaluator.ExecInNewFuncFrameAsync(args, EvalFlowControl.None, ImmutableArray<Task>.Empty, thisValue, result, async () =>
+                await evaluator.context.ExecInNewFuncFrameAsync(default, args, EvalFlowControl.None, ImmutableArray<Task>.Empty, thisValue, result, async () =>
                 {
-
                     await foreach (var _ in evaluator.EvalStmtAsync(funcDecl.Body)) { }
-
                 });
             }
         }

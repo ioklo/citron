@@ -47,7 +47,7 @@ namespace Gum.IR0Evaluator
                 evaluator.CaptureLocals(capturedThis, capturedLocals, decl.CapturedStatement);
 
                 // 새 evaluator를 만들고
-                var newEvaluator = evaluator.CloneWithNewContext(capturedThis, capturedLocals);
+                var newEvaluator = evaluator.CloneWithNewContext(capturedThis, capturedLocals, default);
 
                 var task = Task.Run(async () =>
                 {
@@ -62,7 +62,7 @@ namespace Gum.IR0Evaluator
                 var (capturedThis, capturedLocalVars) = Allocate(evaluator);
                 evaluator.CaptureLocals(capturedThis, capturedLocalVars, decl.CapturedStatement);
 
-                var newEvaluator = evaluator.CloneWithNewContext(capturedThis, capturedLocalVars);
+                var newEvaluator = evaluator.CloneWithNewContext(capturedThis, capturedLocalVars, default);
 
                 async Task WrappedAsyncFunc()
                 {

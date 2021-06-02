@@ -81,11 +81,10 @@ namespace Gum.IR0Evaluator
             }
 
             async ValueTask<ImmutableDictionary<string, Value>> EvalArgumentsAsync(
-                ImmutableDictionary<string, Value> origDict,
                 R.ParamInfo paramInfo,
                 ImmutableArray<R.Argument> args)
             {
-                var argsBuilder = origDict.ToBuilder();
+                var argsBuilder = ImmutableDictionary.CreateBuilder<string, Value>();
 
                 // argument들을 할당할 공간을 만든다
                 var argValuesBuilder = ImmutableArray.CreateBuilder<Value>();
@@ -193,7 +192,7 @@ namespace Gum.IR0Evaluator
                     thisValue = null;
 
                 // 인자를 계산 해서 처음 로컬 variable에 집어 넣는다
-                var args = await EvalArgumentsAsync(ImmutableDictionary<string, Value>.Empty, funcInvoker.ParamInfo, exp.Args);
+                var args = await EvalArgumentsAsync(funcInvoker.ParamInfo, exp.Args);
 
                 await funcInvoker.InvokeAsync(evaluator, thisValue, args, result);
             }
@@ -212,7 +211,7 @@ namespace Gum.IR0Evaluator
                     thisValue = await evaluator.EvalLocAsync(exp.Instance);
                 }
 
-                var args = await EvalArgumentsAsync(ImmutableDictionary<string, Value>.Empty, seqFuncItem.ParamInfo, exp.Args);
+                var args = await EvalArgumentsAsync(seqFuncItem.ParamInfo, exp.Args);
                 seqFuncItem.Invoke(evaluator, thisValue, args, result);
             }
 
@@ -220,11 +219,9 @@ namespace Gum.IR0Evaluator
             {
                 var callableValue = (LambdaValue)await evaluator.EvalLocAsync(exp.Callable);
                 var lambdaRuntimeItem = evaluator.context.GetRuntimeItem<LambdaRuntimeItem>(exp.Lambda);
+                var localVars = await EvalArgumentsAsync(lambdaRuntimeItem.ParamInfo, exp.Args);
 
-                var thisValue = callableValue.CapturedThis;
-                var localVars = await EvalArgumentsAsync(callableValue.Captures, lambdaRuntimeItem.ParamInfo, exp.Args);
-
-                await lambdaRuntimeItem.InvokeAsync(evaluator, thisValue, localVars, result);
+                await lambdaRuntimeItem.InvokeAsync(evaluator, callableValue.CapturedThis, callableValue.Captures, localVars, result);
             }
 
             void EvalLambdaExp(R.LambdaExp exp, Value result)

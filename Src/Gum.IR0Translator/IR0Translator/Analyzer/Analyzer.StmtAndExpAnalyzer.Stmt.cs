@@ -454,17 +454,17 @@ namespace Gum.IR0Translator
                 if (iteratorResult.TypeValue is SeqTypeValue seqIteratorType)
                 {
                     var elemType = globalContext.GetTypeValueByTypeExp(foreachStmt.Type);
-                    R.Path relemType;
+                    
                     if (elemType is VarTypeValue) // var type처리
                     {
-                        relemType = seqIteratorType.YieldType.GetRPath();
+                        elemType = seqIteratorType.YieldType;
                     }
                     else
                     {
-                        // 완전히 같아야
+                        // 완전히 같은지 체크
                         if (elemType.Equals(seqIteratorType.YieldType))
                         {
-                            relemType = elemType.GetRPath();
+                            // relemType = elemType.GetRPath();
                         }
                         else
                         {
@@ -483,7 +483,7 @@ namespace Gum.IR0Translator
                     // 본문 분석
                     var bodyResult = loopAnalyzer.AnalyzeStmt(foreachStmt.Body);
 
-                    var rforeachStmt = new R.ForeachStmt(relemType, foreachStmt.VarName, iteratorResult.Result, bodyResult.Stmt);
+                    var rforeachStmt = new R.ForeachStmt(elemType.GetRPath(), foreachStmt.VarName, iteratorResult.Result, bodyResult.Stmt);
                     return new StmtResult(rforeachStmt);
                 }
                 else

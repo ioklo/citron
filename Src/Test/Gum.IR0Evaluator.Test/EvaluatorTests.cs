@@ -1069,7 +1069,7 @@ namespace Gum.IR0Evaluator.Test
         public async Task LambdaExp_CapturesLocalVariablesWithCopying()
         {   
             // [x] () => @"$x";
-            var lambdaDecl = new LambdaDecl(new Name.Anonymous(new AnonymousId(0)), new CapturedStatement(null, Arr(new TypeAndName(Path.Int, "x")), PrintIntCmdStmt(new LocalVarLoc("x"))), default);
+            var lambdaDecl = new LambdaDecl(new Name.Anonymous(new AnonymousId(0)), new CapturedStatement(null, Arr(new TypeAndName(Path.Int, "x")), PrintIntCmdStmt(new CapturedVarLoc("x"))), default);
             var lambda = RootPath(new Name.Anonymous(new AnonymousId(0)));
 
             // int x = 3;

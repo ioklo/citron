@@ -315,16 +315,5 @@ namespace Gum.IR0Evaluator
                 }
             }
         }
-
-        ValueTask ExecInNewFuncFrameAsync(
-                ImmutableDictionary<string, Value> newLocalVars,
-                EvalFlowControl newFlowControl,
-                ImmutableArray<Task> newTasks,
-                Value? newThisValue,
-                Value newRetValue,
-                Func<ValueTask> ActionAsync)
-        {
-            return context.ExecInNewFuncFrameAsync(newLocalVars, newFlowControl, newTasks, newThisValue, newRetValue, ActionAsync);
-        }
     }
 }
