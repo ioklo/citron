@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
+using static Gum.Infra.Misc;
 
 using M = Gum.CompileTime;
 using R = Gum.IR0;
@@ -588,5 +589,33 @@ namespace Gum.IR0Translator
 
         public override R.Loc MakeMemberLoc(R.Loc instance, R.Path.Nested member)
             => throw new NotImplementedException();
+    }
+
+    // 런타임 라이브러리로 구현할 리스트 타입
+    [AutoConstructor]
+    partial class RuntimeListTypeValue : TypeValue
+    {
+        public ItemValueFactory itemValueFactory;
+        public TypeValue ElemType { get; }
+
+        public override TypeValue Apply_TypeValue(TypeEnv typeEnv)
+        {
+            var appliedElemType = ElemType.Apply_TypeValue(typeEnv);
+            return itemValueFactory.MakeListType(appliedElemType);
+        }
+
+        public override R.Path GetRPath()
+        {
+            var runtime = new R.Path.Root("System.Runtime");
+            var runtimeSystem = new R.Path.Nested(runtime, "System", R.ParamHash.None, default);
+            var runtimeSystemList = new R.Path.Nested(runtimeSystem, "List", new R.ParamHash(1, default), Arr(ElemType.GetRPath()));
+
+            return runtimeSystemList;
+        }
+        
+        public override R.Loc MakeMemberLoc(R.Loc instance, R.Path.Nested member)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

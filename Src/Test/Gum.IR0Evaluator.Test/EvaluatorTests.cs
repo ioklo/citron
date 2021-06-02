@@ -684,16 +684,18 @@ namespace Gum.IR0Evaluator.Test
         [Fact]
         public async Task TaskStmt_CapturesLocalVariable()
         {
+            // for(int i = 0; i < count; i++) i++;
             Stmt PrintNumbersStmt()
             {
                 return new ForStmt(
                     new VarDeclForStmtInitializer(RLocalVarDecl(Path.Int, "i", new IntLiteralExp(0))),
-                    new CallInternalBinaryOperatorExp(InternalBinaryOperator.LessThan_Int_Int_Bool, new LoadExp(LocalVar("i")), new LoadExp(LocalVar("count"))),
+                    new CallInternalBinaryOperatorExp(InternalBinaryOperator.LessThan_Int_Int_Bool, new LoadExp(LocalVar("i")), new LoadExp(new CapturedVarLoc("count"))),
                     new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PostfixInc_Int_Int, LocalVar("i")),
                     PrintIntCmdStmt(new LocalVarLoc("i"))
                 );
             }
 
+            // [count] { for(int i = 0; i < count; i++) i++; }
             var name0 = new Name.Anonymous(new AnonymousId(0));
             var capturedStmtDecl0 = new CapturedStatementDecl(name0, new CapturedStatement(null, Arr(new TypeAndName(Path.Int, "count")), PrintNumbersStmt()));
             var path0 = new Path.Nested(new Path.Root(moduleName), name0, ParamHash.None, default);            
@@ -1094,7 +1096,7 @@ namespace Gum.IR0Evaluator.Test
         {
             var stmts = Arr<Stmt> (
                 RLocalVarDeclStmt(Path.List(Path.Int), "list", new ListExp(Path.Int, Arr<Exp>(new IntLiteralExp(34), new IntLiteralExp(56)))),
-                PrintIntCmdStmt(new ListIndexerLoc(new LocalVarLoc("list"), new TempLoc(new IntLiteralExp(1), Path.Int)))
+                PrintIntCmdStmt(new ListIndexerLoc(new LocalVarLoc("list"), new IntLiteralExp(1)))
             );
 
             var output = await EvalAsync(default, stmts);

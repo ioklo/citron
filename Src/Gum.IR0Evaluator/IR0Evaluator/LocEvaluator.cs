@@ -29,7 +29,9 @@ namespace Gum.IR0Evaluator
             async ValueTask<Value> EvalListIndexerLocAsync(R.ListIndexerLoc loc)
             {
                 var listValue = (ListValue)await EvalLocAsync(loc.List);
-                var indexValue = (IntValue)await EvalLocAsync(loc.Index);
+
+                var indexValue = evaluator.AllocValue<IntValue>(R.Path.Int);
+                await evaluator.EvalExpAsync(loc.Index, indexValue);
 
                 var list = listValue.GetList();
                 return list[indexValue.GetInt()];

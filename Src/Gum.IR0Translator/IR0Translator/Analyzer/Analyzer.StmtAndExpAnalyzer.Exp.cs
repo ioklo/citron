@@ -546,19 +546,26 @@ namespace Gum.IR0Translator
                     new R.LambdaExp(lambdaTypeValue.Lambda),
                     lambdaTypeValue);
             }
-
-            ExpResult.Exp AnalyzeIndexerExp(S.IndexerExp exp)
+            
+            ExpResult AnalyzeIndexerExp(S.IndexerExp exp)
             {
-                throw new NotImplementedException();
+                var objResult = AnalyzeExp_Loc(exp.Object, ResolveHint.None);
+                var indexResult = AnalyzeExp_Exp(exp.Index, ResolveHint.None);
+                var castIndexResult = CastExp_Exp(indexResult, globalContext.GetIntType(), exp.Index);
 
-                //outExp = null;
-                //outTypeValue = null;
+                // TODO: custom indexer를 만들수 있으면 좋은가
+                // var memberResult = objResult.TypeValue.GetMember(new M.Name(M.SpecialName.IndexerGet, null), 0);
 
-                //if (!AnalyzeExp(exp.Object, null, out var obj, out var objType))
-                //    return false;
+                // 리스트 타입의 경우,
+                if (objResult.TypeValue is RuntimeListTypeValue listTypeValue)
+                {
+                    return new ExpResult.Loc(new R.ListIndexerLoc(objResult.Result, castIndexResult.Result), listTypeValue.ElemType);
+                }
+                else
+                {
+                    throw new NotImplementedException();
+                }
 
-                //if (!AnalyzeExp(exp.Index, null, out var index, out var indexType))
-                //    return false;
 
                 //// objTypeValue에 indexTypeValue를 인자로 갖고 있는 indexer가 있는지
                 //if (!context.TypeValueService.GetMemberFuncValue(objType, SpecialNames.IndexerGet, ImmutableArray<TypeValue>.Empty, out var funcValue))
