@@ -547,15 +547,23 @@ namespace Gum.IR0Translator
                     lambdaTypeValue);
             }
             
-            ExpResult.Exp AnalyzeIndexerExp(S.IndexerExp exp)
+            ExpResult AnalyzeIndexerExp(S.IndexerExp exp)
             {
                 var objResult = AnalyzeExp_Loc(exp.Object, ResolveHint.None);
                 var indexResult = AnalyzeExp_Exp(exp.Index, ResolveHint.None);
                 var castIndexResult = CastExp_Exp(indexResult, globalContext.GetIntType(), exp.Index);
 
-                if (objResult.TypeValue is ListTypeValue listTypeValue)
+                // TODO: custom indexer를 만들수 있으면 좋은가
+                // var memberResult = objResult.TypeValue.GetMember(new M.Name(M.SpecialName.IndexerGet, null), 0);
+
+                // 리스트 타입의 경우,
+                if (objResult.TypeValue is RuntimeListTypeValue listTypeValue)
                 {
-                    return new ExpResult.Exp(new R.ListIndexerLoc(objResult.Result, castIndexResult.Result), listTypeValue.ElemType);
+                    return new ExpResult.Loc(new R.ListIndexerLoc(objResult.Result, castIndexResult.Result), listTypeValue.ElemType);
+                }
+                else
+                {
+                    throw new NotImplementedException();
                 }
 
 

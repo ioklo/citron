@@ -1096,7 +1096,7 @@ namespace Gum.IR0Evaluator.Test
         {
             var stmts = Arr<Stmt> (
                 RLocalVarDeclStmt(Path.List(Path.Int), "list", new ListExp(Path.Int, Arr<Exp>(new IntLiteralExp(34), new IntLiteralExp(56)))),
-                PrintIntCmdStmt(new ListIndexerLoc(new LocalVarLoc("list"), new TempLoc(new IntLiteralExp(1), Path.Int)))
+                PrintIntCmdStmt(new ListIndexerLoc(new LocalVarLoc("list"), new IntLiteralExp(1)))
             );
 
             var output = await EvalAsync(default, stmts);

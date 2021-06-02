@@ -19,16 +19,10 @@ namespace Gum.IR0Translator
         TypeInfoRepository typeInfoRepo;
         RItemFactory ritemFactory;
 
-        M.StructInfo listInfo;
-
         public TypeValue Void { get; }
         public TypeValue Bool { get; }
         public TypeValue Int { get; }        
         public TypeValue String { get; }
-        public TypeValue List(TypeValue typeArg)
-        {
-            return MakeTypeValue("System.Runtime", new M.NamespacePath("System"), listInfo, Arr(typeArg));
-        }
 
         public void EnsurePure()
         {
@@ -42,8 +36,6 @@ namespace Gum.IR0Translator
 
             this.typeInfoRepo = typeInfoRepo;
             this.ritemFactory = ritemFactory;
-
-            listInfo = MakeEmptyStructInfo("List");
 
             Void = VoidTypeValue.Instance;
             Bool = MakeTypeValue("System.Runtime", new M.NamespacePath("System"), MakeEmptyStructInfo("Boolean"), default);
@@ -201,6 +193,11 @@ namespace Gum.IR0Translator
         public TupleTypeValue MakeTupleType(ImmutableArray<(TypeValue Type, string? Name)> elems)
         {
             return new TupleTypeValue(ritemFactory, elems);
+        }
+
+        public RuntimeListTypeValue MakeListType(TypeValue elemType)
+        {
+            return new RuntimeListTypeValue(this, elemType);
         }
     }
 }

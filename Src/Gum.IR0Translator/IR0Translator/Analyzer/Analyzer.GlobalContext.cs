@@ -118,7 +118,7 @@ namespace Gum.IR0Translator
 
             public TypeValue GetListType(TypeValue elemType)
             {
-                return itemValueFactory.List(elemType);
+                return itemValueFactory.MakeListType(elemType);
             }
             
             public void AddInternalGlobalVarInfo(M.Name name, TypeValue typeValue)
