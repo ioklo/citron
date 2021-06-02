@@ -124,7 +124,6 @@ namespace Gum.IR0Evaluator
                 default:
                     throw new UnreachableCodeException();
             }
-            
         }
     }
 }
