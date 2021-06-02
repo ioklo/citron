@@ -546,19 +546,18 @@ namespace Gum.IR0Translator
                     new R.LambdaExp(lambdaTypeValue.Lambda),
                     lambdaTypeValue);
             }
-
+            
             ExpResult.Exp AnalyzeIndexerExp(S.IndexerExp exp)
             {
-                throw new NotImplementedException();
+                var objResult = AnalyzeExp_Loc(exp.Object, ResolveHint.None);
+                var indexResult = AnalyzeExp_Exp(exp.Index, ResolveHint.None);
+                var castIndexResult = CastExp_Exp(indexResult, globalContext.GetIntType(), exp.Index);
 
-                //outExp = null;
-                //outTypeValue = null;
+                if (objResult.TypeValue is ListTypeValue listTypeValue)
+                {
+                    return new ExpResult.Exp(new R.ListIndexerLoc(objResult.Result, castIndexResult.Result), listTypeValue.ElemType);
+                }
 
-                //if (!AnalyzeExp(exp.Object, null, out var obj, out var objType))
-                //    return false;
-
-                //if (!AnalyzeExp(exp.Index, null, out var index, out var indexType))
-                //    return false;
 
                 //// objTypeValue에 indexTypeValue를 인자로 갖고 있는 indexer가 있는지
                 //if (!context.TypeValueService.GetMemberFuncValue(objType, SpecialNames.IndexerGet, ImmutableArray<TypeValue>.Empty, out var funcValue))
