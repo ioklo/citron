@@ -55,7 +55,7 @@ namespace Gum.IR0Translator
             var builder = ImmutableArray.CreateBuilder<TypeValue>(funcInfo.ParamInfo.Parameters.Length);
             foreach (var paramInfo in funcInfo.ParamInfo.Parameters)
             {   
-                var paramTypeValue = itemValueFactory.MakeTypeValue(paramInfo.Type);
+                var paramTypeValue = itemValueFactory.MakeTypeValueByMType(paramInfo.Type);
                 var appliedParamTypeValue = paramTypeValue.Apply_TypeValue(typeEnv);
                 builder.Add(appliedParamTypeValue);
             }
@@ -66,7 +66,7 @@ namespace Gum.IR0Translator
         public TypeValue GetRetType()
         {
             var typeEnv = MakeTypeEnv();
-            var retTypeValue = itemValueFactory.MakeTypeValue(funcInfo.RetType);
+            var retTypeValue = itemValueFactory.MakeTypeValueByMType(funcInfo.RetType);
             return retTypeValue.Apply_TypeValue(typeEnv);
         }
         

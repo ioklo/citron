@@ -35,16 +35,20 @@ namespace Gum.IR0Translator
         public TypeValue GetTypeValue()
         {
             var typeEnv = MakeTypeEnv();
-            var typeValue = factory.MakeTypeValue(info.Type);
+            var typeValue = factory.MakeTypeValueByMType(info.Type);
             return typeValue.Apply_TypeValue(typeEnv);
         }
 
-        public override R.Path GetRPath()
+        public R.Path.Nested GetRPath_Nested()
         {
             var rname = RItemFactory.MakeName(Name);
 
             return new R.Path.Nested(outer.GetRPath_Nested(), rname, R.ParamHash.None, default);
-            throw new NotImplementedException();
+        }
+
+        public sealed override R.Path GetRPath()
+        {
+            return GetRPath_Nested();
         }
 
         public override ItemValue Apply_ItemValue(TypeEnv typeEnv)

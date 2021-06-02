@@ -35,7 +35,7 @@ namespace Gum.IR0Translator.Test
             var factory = new ItemValueFactory(typeInfoRepo, ritemFactory);
 
             var xmType = new M.GlobalType(moduleName, M.NamespacePath.Root, "X", Arr(MTypes.Int));
-            var xType = factory.MakeTypeValue(xmType);
+            var xType = factory.MakeTypeValueByMType(xmType);
 
             Assert.NotNull(xType);
         }
@@ -61,7 +61,7 @@ namespace Gum.IR0Translator.Test
             // X<int>.Y<bool>
             var ymtype = new M.MemberType(xmtype, "Y", Arr(MTypes.Bool));
 
-            var ytype = typeValueFactory.MakeTypeValue(ymtype);
+            var ytype = typeValueFactory.MakeTypeValueByMType(ymtype);
 
             Assert.NotNull(ytype);
         }
@@ -109,10 +109,10 @@ namespace Gum.IR0Translator.Test
             var xmtype = new M.GlobalType(moduleName, M.NamespacePath.Root, "X", Arr(MTypes.Int));
             var xymtype = new M.MemberType(xmtype, "Y", Arr(MTypes.String));
 
-            var xyTypeValue = factory.MakeTypeValue(xymtype);
+            var xyTypeValue = (StructTypeValue)factory.MakeTypeValueByMType(xymtype);
             var xyBaseTypeValue = xyTypeValue.GetBaseType();
 
-            var expected = factory.MakeTypeValue(new M.GlobalType(moduleName, M.NamespacePath.Root, "G", Arr(MTypes.Int)));
+            var expected = factory.MakeTypeValueByMType(new M.GlobalType(moduleName, M.NamespacePath.Root, "G", Arr(MTypes.Int)));
 
             Assert.Equal(expected, xyBaseTypeValue);
         }
@@ -123,12 +123,12 @@ namespace Gum.IR0Translator.Test
         {
             var factory = MakeFactory();
 
-            var xyTypeValue = factory.MakeTypeValue(
+            var xyTypeValue = factory.MakeTypeValueByMType(
                 new M.MemberType(
                     new M.GlobalType(moduleName, M.NamespacePath.Root, "X", Arr(MTypes.Int)), "Y", Arr(MTypes.Bool)));
 
             var itemResult = xyTypeValue.GetMember("v", default);
-            var expected = factory.MakeTypeValue(new M.GlobalType(moduleName, M.NamespacePath.Root, "X", Arr(MTypes.Bool)));
+            var expected = factory.MakeTypeValueByMType(new M.GlobalType(moduleName, M.NamespacePath.Root, "X", Arr(MTypes.Bool)));
 
             var memberVarResult = (ItemQueryResult.MemberVar)itemResult;
             var memberVarValue = factory.MakeMemberVarValue(memberVarResult.Outer, memberVarResult.MemberVarInfo);
@@ -147,7 +147,7 @@ namespace Gum.IR0Translator.Test
             // X<int>.Y<string>
             var xmtype = new M.GlobalType(moduleName, M.NamespacePath.Root, "X", Arr(MTypes.Int));
             var xymtype = new M.MemberType(xmtype, "Y", Arr(MTypes.String));
-            var xytype = factory.MakeTypeValue(xymtype);
+            var xytype = factory.MakeTypeValueByMType(xymtype);
 
             // 지금은 query밖에 없다, ID를 통한 직접 참조를 할 일 이 생기게 되면 변경한다
             var funcResult = (ItemQueryResult.Funcs)xytype.GetMember("F", 1);

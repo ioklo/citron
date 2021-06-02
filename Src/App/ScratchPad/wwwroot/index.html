@@ -1,0 +1,128 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>ScratchPad</title>
+    <base href="/" />
+    <link href="css/bootstrap/bootstrap.min.css" rel="stylesheet" />
+    <link href="css/app.css" rel="stylesheet" />
+    <link href="ScratchPad.styles.css" rel="stylesheet" />
+</head>
+
+<body>
+    <main role="main" class="pb-3">
+        <div id="main" class="d-flex flex-column container h-100">
+
+            <div class="flex-grow-0 flex-shrink-0 p-2">
+                <h1>Scratch Pad</h1>
+                <button type="button" class="btn btn-primary" onclick="onRunButtonClick();">Run</button>
+                <button type="button" class="btn btn-secondary">Examples</button>
+            </div>
+
+            <div id="editor" class="flex-grow-1 flex-shrink-1 border rounded-top overflow-hidden">
+            </div>
+
+            <div class="py-2">
+                <pre id="result" class="flex-grow-0 flex-shrink-0 border bg-white" style="height: 200px;">result</pre>
+            </div>
+
+            <div id="app" class="d-none">Loading...</div>
+
+            <div id="blazor-error-ui">
+                An unhandled error has occurred.
+                <a href="" class="reload">Reload</a>
+                <a class="dismiss">🗙</a>
+            </div>
+
+        </div>
+    </main>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" 
+            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" 
+            crossorigin="anonymous"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.23.0/min/vs/loader.js"
+            integrity="sha512-8isPrHhyj1iula40NwL6Gve/f4QgxhqRnTLoV1e9i6W83eqliyr9egoUwJ29l9Myn/XR3tspKX7dOcVH3nsnSw=="
+            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <script>
+        $('html').height('100%');
+        $('body').height('100%');
+        $('main').height('100%');
+
+        function onResize() {
+            window.editor.layout();
+        }
+
+        window.writeConsole = function (text) {
+            var t = $('#result').text();
+            $('#result').text(t + text);
+        }
+
+        async function onRunButtonClick() {
+
+            $('#result').text('');
+
+            var code = window.editor.getValue();
+            await DotNet.invokeMethodAsync('ScratchPad', 'RunAsync', code);
+        }
+
+        require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.23.0/min/vs' } });
+
+        require(['vs/editor/editor.main'], function () {
+            window.editor = monaco.editor.create(document.getElementById('editor'), {
+                value: [
+                    'int count = 0, sum = 0;',
+                    '',
+                    'await // local scope 안의 awaitable(async/task)을 모아서 기다립니다',
+                    '{',
+                    '    async // 비동기 영역1',
+                    '    {',
+                    '        for(int i = 0; i < 4; i++)',
+                    '        {',
+                    '            count++;',
+                    '            @{',
+                    '                echo 1> $count \\n',
+                    '                sleep 1',
+                    '            }',
+                    '        }',
+                    '    }',
+                    '',
+                    '    async // 비동기 영역2',
+                    '    {',
+                    '        @sleep 0.5',
+                    '',
+                    '        for(int i = 0; i < 4; i++)',
+                    '        {',
+                    '            count++;',
+                    '            @{',
+                    '                echo 2> $count \\n',
+                    '                sleep 1',
+                    '            }',
+                    '        }',
+                    '    }',
+                    '',
+                    '    task // 동시 실행 영역..',
+                    '    {',
+                    '        for(int i = 0 ; i< 10; i++)',
+                    '            sum = sum + i;',
+                    '    }',
+                    '}',
+                    '',
+                    '@echo 완료! $sum'
+                ].join('\n'),
+                language: 'csharp',
+                minimap: {
+                    enabled: false
+                }
+
+            });
+        });
+    </script>
+
+    <script src="_framework/blazor.webassembly.js"></script>
+</body>
+
+</html>

@@ -21,12 +21,12 @@ namespace Gum
             this.lexer = lexer;
         }
         
-        internal async ValueTask<ParseResult<IfStmt>> ParseIfStmtAsync(ParserContext context)
+        internal async ValueTask<ParseResult<Stmt>> ParseIfStmtAsync(ParserContext context)
         {
             // if (exp) stmt => If(exp, stmt, null)
             // if (exp) stmt0 else stmt1 => If(exp, stmt0, stmt1)
             // if (exp0) if (exp1) stmt1 else stmt2 => If(exp0, If(exp1, stmt1, stmt2))
-            // if (exp is typeExp) 
+            // if (exp is typeExp) => IfTestStmt
 
             if (!Accept<IfToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                 return Invalid();
@@ -35,31 +35,52 @@ namespace Gum
                 return Invalid();
 
             if (!Parse(await parser.ParseExpAsync(context), ref context, out var cond))            
-                return Invalid();
-
-            // 
-            TypeExp? condTestType = null;
+                return Invalid();           
+            
             if (Accept<IsToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
-                if (!Parse(await parser.ParseTypeExpAsync(context), ref context, out condTestType))
-                    return Invalid();
-
-            if (!Accept<RParenToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
-                return Invalid();
-
-            // right assoc, conflict는 별다른 처리를 하지 않고 지나가면 될 것 같다
-            if (!Parse(await ParseStmtAsync(context), ref context, out var body))
-                return Invalid();
-
-            Stmt? elseBody = null;
-            if (Accept<ElseToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
             {
-                if (!Parse(await ParseStmtAsync(context), ref context, out elseBody))
+                if (!Parse(await parser.ParseTypeExpAsync(context), ref context, out var testType))
                     return Invalid();
+
+                // optional                 
+                Accept<IdentifierToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context, out var varName);
+
+                if (!Accept<RParenToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
+                    return Invalid();
+
+                // right assoc, conflict는 별다른 처리를 하지 않고 지나가면 될 것 같다
+                if (!Parse(await ParseStmtAsync(context), ref context, out var body))
+                    return Invalid();
+
+                Stmt? elseBody = null;
+                if (Accept<ElseToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
+                {
+                    if (!Parse(await ParseStmtAsync(context), ref context, out elseBody))
+                        return Invalid();
+                }
+
+                return new ParseResult<Stmt>(new IfTestStmt(cond, testType, varName?.Value, body, elseBody), context);
+            }
+            else
+            {
+                if (!Accept<RParenToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
+                    return Invalid();
+
+                // right assoc, conflict는 별다른 처리를 하지 않고 지나가면 될 것 같다
+                if (!Parse(await ParseStmtAsync(context), ref context, out var body))
+                    return Invalid();
+
+                Stmt? elseBody = null;
+                if (Accept<ElseToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
+                {
+                    if (!Parse(await ParseStmtAsync(context), ref context, out elseBody))
+                        return Invalid();
+                }
+
+                return new ParseResult<Stmt>(new IfStmt(cond!, body, elseBody), context);
             }
 
-            return new ParseResult<IfStmt>(new IfStmt(cond!, condTestType, body!, elseBody), context);
-
-            static ParseResult<IfStmt> Invalid() => ParseResult<IfStmt>.Invalid;
+            static ParseResult<Stmt> Invalid() => ParseResult<Stmt>.Invalid;
         }
 
         internal async ValueTask<ParseResult<VarDecl>> ParseVarDeclAsync(ParserContext context)

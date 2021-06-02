@@ -15,8 +15,7 @@ namespace Gum.IR0Translator
 {
     // 모두 immutable
     abstract partial class TypeValue : ItemValue
-    {
-        public virtual TypeValue? GetBaseType() { return null; }
+    {   
         public virtual ItemQueryResult GetMember(M.Name memberName, int typeParamCount) { return ItemQueryResult.NotFound.Instance; }
         public virtual TypeValue? GetMemberType(M.Name memberName, ImmutableArray<TypeValue> typeArgs) { return null; }        
         public abstract TypeValue Apply_TypeValue(TypeEnv typeEnv);        
@@ -25,6 +24,8 @@ namespace Gum.IR0Translator
         {
             return Apply_TypeValue(typeEnv);
         }
+
+        public abstract R.Loc MakeMemberLoc(R.Loc instance, R.Path.Nested member);
     }
 
     // "var"
@@ -37,6 +38,9 @@ namespace Gum.IR0Translator
 
         // var는 translation패스에서 추론되기 때문에 IR0에 없다
         public override R.Path GetRPath() { throw new InvalidOperationException();  }
+
+        public override R.Loc MakeMemberLoc(R.Loc instance, R.Path.Nested member)
+            => throw new InvalidOperationException();
     }
 
     // T: depth는 지역적이므로, 주어진 컨텍스트 안에서만 의미가 있다
@@ -55,31 +59,193 @@ namespace Gum.IR0Translator
 
             return this;
         }
+
         public override R.Path GetRPath() => new R.Path.TypeVarType(Index);
+
+        public override R.Loc MakeMemberLoc(R.Loc instance, R.Path.Nested member)
+            => throw new NotImplementedException();        
     }
 
     [ImplementIEquatable]
     partial class ClassTypeValue : NormalTypeValue
     {
+        public ClassTypeValue? GetBaseType() { throw new NotImplementedException(); }
+
+        // except itself
+        public bool IsBaseOf(ClassTypeValue derivedType)
+        {
+            ClassTypeValue? curBaseType = derivedType.GetBaseType();
+
+            while(curBaseType != null)
+            {
+                if (Equals(curBaseType)) return true;
+                curBaseType = curBaseType.GetBaseType();
+            }
+
+            return false;
+        }
+
         public override NormalTypeValue Apply_NormalTypeValue(TypeEnv typeEnv)
         {
             throw new NotImplementedException();
         }
 
         public override R.Path.Nested GetRPath_Nested() => throw new NotImplementedException();
+
+        public override R.Loc MakeMemberLoc(R.Loc instance, R.Path.Nested member)
+            => throw new NotImplementedException();
     }
 
-    [ImplementIEquatable]
+    [AutoConstructor, ImplementIEquatable]
     partial class EnumTypeValue : NormalTypeValue
     {
+        ItemValueFactory itemValueFactory;
+        ItemValueOuter outer;
+        M.EnumInfo enumInfo;
+        ImmutableArray<TypeValue> typeArgs;        
+
         public override R.Path.Nested GetRPath_Nested()
         {
-            throw new NotImplementedException();
+            var rname = RItemFactory.MakeName(enumInfo.Name);
+            var rtypeArgs = RItemFactory.MakeRTypes(typeArgs);
+
+            return outer.GetRPath(rname, new R.ParamHash(enumInfo.TypeParams.Length, default), rtypeArgs);
+        }
+
+        public EnumTypeValue Apply_EnumTypeValue(TypeEnv typeEnv)
+        {
+            var appliedOuter = outer.Apply(typeEnv);
+            var appliedTypeArgs = ImmutableArray.CreateRange(typeArgs, typeArg => typeArg.Apply_TypeValue(typeEnv));
+            return itemValueFactory.MakeEnumTypeValue(appliedOuter, enumInfo, appliedTypeArgs);
+        }
+
+        public sealed override NormalTypeValue Apply_NormalTypeValue(TypeEnv typeEnv)
+        {
+            return Apply_EnumTypeValue(typeEnv);
+        }
+
+        //
+        public override ItemQueryResult GetMember(M.Name memberName, int typeParamCount) 
+        {
+            // shortcut
+            if (typeParamCount != 0)
+                return ItemQueryResult.NotFound.Instance;
+
+            foreach (var elemInfo in enumInfo.ElemInfos)
+            {
+                if (elemInfo.Name.Equals(memberName))
+                {
+                    return new ItemQueryResult.EnumElem(this, elemInfo);
+                }
+            }
+
+            return ItemQueryResult.NotFound.Instance;
+        }
+
+        public EnumElemTypeValue? GetElement(string name)
+        {
+            foreach (var elemInfo in enumInfo.ElemInfos)
+            {
+                if (elemInfo.Name.Equals(name))
+                    return itemValueFactory.MakeEnumElemTypeValue(this, elemInfo);
+            }
+
+            return null;
+        }
+
+        public override TypeValue? GetMemberType(M.Name memberName, ImmutableArray<TypeValue> typeArgs) 
+        {
+            // shortcut
+            if (typeArgs.Length != 0)
+                return null;
+
+            foreach (var elemInfo in enumInfo.ElemInfos)
+            {
+                if (elemInfo.Name.Equals(memberName))
+                    return itemValueFactory.MakeEnumElemTypeValue(this, elemInfo);
+            }
+
+            return null; 
+        }
+
+        public override R.Loc MakeMemberLoc(R.Loc instance, R.Path.Nested member)
+            => throw new InvalidOperationException();
+
+        internal override void FillTypeEnv(TypeEnvBuilder builder)
+        {
+            if (outer != null)
+                outer.FillTypeEnv(builder);
+
+            for (int i = 0; i < enumInfo.TypeParams.Length; i++)
+                builder.Add(typeArgs[i]);
+        }
+    }
+
+    // S.First, S.Second(int i, short s)
+    [AutoConstructor]
+    partial class EnumElemTypeValue : NormalTypeValue
+    {
+        RItemFactory ritemFactory;
+        ItemValueFactory itemValueFactory;
+        public EnumTypeValue Outer { get; }
+        M.EnumElemInfo elemInfo;        
+        
+        public bool IsStandalone()
+        {
+            return elemInfo.FieldInfos.Length == 0;
         }
 
         public override NormalTypeValue Apply_NormalTypeValue(TypeEnv typeEnv)
         {
-            throw new NotImplementedException();
+            var appliedOuter = Outer.Apply_EnumTypeValue(typeEnv);
+            return itemValueFactory.MakeEnumElemTypeValue(appliedOuter, elemInfo);
+        }
+
+        public override R.Path.Nested GetRPath_Nested()
+        {
+            var router = Outer.GetRPath_Nested();
+            var rname = RItemFactory.MakeName(elemInfo.Name);
+            Debug.Assert(router != null);
+
+            return new R.Path.Nested(router, rname, R.ParamHash.None, default);
+        }
+
+        public ImmutableArray<TypeValue> GetConstructorParamTypes()
+        {
+            var builder = ImmutableArray.CreateBuilder<TypeValue>(elemInfo.FieldInfos.Length);
+            foreach(var field in elemInfo.FieldInfos)
+            {
+                var fieldType = itemValueFactory.MakeTypeValueByMType(field.Type);
+                var appliedFieldType = fieldType.Apply_TypeValue(Outer.MakeTypeEnv());
+
+                builder.Add(appliedFieldType);
+            }
+
+            return builder.MoveToImmutable();
+        }
+
+        public override ItemQueryResult GetMember(M.Name memberName, int typeParamCount)
+        {
+            foreach (var field in elemInfo.FieldInfos)
+            {
+                if (field.Name.Equals(memberName))
+                {
+                    if (typeParamCount != 0)
+                        return ItemQueryResult.Error.VarWithTypeArg.Instance;
+
+                    return new ItemQueryResult.MemberVar(this, field);
+                }
+            }
+
+            return ItemQueryResult.NotFound.Instance;
+        }
+
+        public override R.Loc MakeMemberLoc(R.Loc instance, R.Path.Nested member)
+            => new R.EnumElemMemberLoc(instance, member);
+
+        internal override void FillTypeEnv(TypeEnvBuilder builder)
+        {
+            Outer.FillTypeEnv(builder);
         }
     }
 
@@ -189,12 +355,12 @@ namespace Gum.IR0Translator
             throw new UnreachableCodeException();
         }
 
-        public override TypeValue? GetBaseType()
+        public TypeValue? GetBaseType()
         {
             if (structInfo.BaseType == null) return null;
 
             var typeEnv = MakeTypeEnv();
-            var typeValue = itemValueFactory.MakeTypeValue(structInfo.BaseType);
+            var typeValue = itemValueFactory.MakeTypeValueByMType(structInfo.BaseType);
             return typeValue.Apply_TypeValue(typeEnv);
         }
 
@@ -264,6 +430,11 @@ namespace Gum.IR0Translator
 
             return outer.GetRPath(rname, new R.ParamHash(structInfo.TypeParams.Length, default), rtypeArgs);
         }
+
+        public override R.Loc MakeMemberLoc(R.Loc instance, R.Path.Nested member)
+        {
+            return new R.StructMemberLoc(instance, member);
+        }
     }
 
     // (struct, class, enum) (external/internal) (global/member) type
@@ -307,6 +478,9 @@ namespace Gum.IR0Translator
         {
             throw new NotImplementedException();
         }
+
+        public override R.Loc MakeMemberLoc(R.Loc instance, R.Path.Nested member)
+            => throw new InvalidOperationException();        
     }
 
     // ArgTypeValues => RetValueTypes
@@ -351,13 +525,16 @@ namespace Gum.IR0Translator
 
         public override R.Path GetRPath()
         {
-            return ritemFactory.MakeLambdaType(Lambda);
+            return Lambda;
         }
 
         public override int GetHashCode()
         {
             return HashCode.Combine(Lambda);
         }
+
+        public override R.Loc MakeMemberLoc(R.Loc instance, R.Path.Nested member)
+            => throw new InvalidOperationException();
     }
 
     // 
@@ -375,33 +552,11 @@ namespace Gum.IR0Translator
 
         public override R.Path GetRPath()
         {
-            return new R.Path.AnonymousSeqType(seqFunc);
-        }
-    }
-
-    // S.First, S.Second(int i, short s)
-    class EnumElemTypeValue : TypeValue
-    {
-        RItemFactory ritemFactory;
-        public NormalTypeValue EnumTypeValue { get; }
-        public string Name { get; }
-
-        public EnumElemTypeValue(RItemFactory ritemFactory, NormalTypeValue enumTypeValue, string name)
-        {
-            this.ritemFactory = ritemFactory;
-            EnumTypeValue = enumTypeValue;
-            Name = name;
+            return seqFunc;
         }
 
-        public override TypeValue Apply_TypeValue(TypeEnv typeEnv)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override R.Path GetRPath()
-        {
-            return ritemFactory.MakeEnumElemType();
-        }
+        public override R.Loc MakeMemberLoc(R.Loc instance, R.Path.Nested member)
+            => throw new InvalidOperationException();
     }
 
     [AutoConstructor]
@@ -430,5 +585,8 @@ namespace Gum.IR0Translator
 
             return ritemFactory.MakeTupleType(builder.MoveToImmutable());
         }
+
+        public override R.Loc MakeMemberLoc(R.Loc instance, R.Path.Nested member)
+            => throw new NotImplementedException();
     }
 }

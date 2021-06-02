@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Pretune;
 
 using R = Gum.IR0;
+using System.Diagnostics;
 
 namespace Gum.IR0Evaluator
 {
@@ -142,37 +143,60 @@ namespace Gum.IR0Evaluator
         }
     }
 
-    class EnumValue : Value
+    // E
+    [AutoConstructor]
+    partial class EnumValue : Value
     {
-        string elemName;
-        ImmutableArray<NamedValue> members;
-
-        public EnumValue()
+        Evaluator evaluator;
+        TypeContext typeContext;
+        EnumElemRuntimeItem? enumElemItem;
+        EnumElemValue? elemValue;        
+        
+        // E e1, e2;
+        // e1 = e2;
+        public override void SetValue(Value value_value)
         {
-            elemName = string.Empty;
-            members = ImmutableArray<NamedValue>.Empty;
+            var value = (EnumValue)value_value;
+
+            Debug.Assert(value.enumElemItem != null);
+            SetEnumElemItem(value.enumElemItem);
+
+            Debug.Assert(elemValue != null && value.elemValue != null);
+            elemValue.SetValue(value.elemValue);
         }
 
-        public Value GetMemberValue(string name)
+        public bool IsElem(EnumElemRuntimeItem EnumElemItem)
         {
-            throw new NotImplementedException();
-
+            return EnumElemItem.Equals(EnumElemItem); // reference 비교 가능하도록, 불가능 하면 R.EnumElement를 쓰지 말고 동적으로 생성되는 타입을 하나 만든다
         }
+
+        public void SetEnumElemItem(EnumElemRuntimeItem enumElemItem)
+        {
+            if (EqualityComparer<EnumElemRuntimeItem>.Default.Equals(this.enumElemItem, enumElemItem))
+                return;
+
+            this.enumElemItem = enumElemItem;
+            Debug.Assert(enumElemItem != null);
+            elemValue = (EnumElemValue)enumElemItem.Alloc(evaluator, typeContext);
+        }
+
+        public EnumElemValue GetElemValue()
+        {
+            return elemValue!;
+        }
+    }
+
+    // E.First
+    [AutoConstructor]
+    partial class EnumElemValue : Value
+    {
+        public ImmutableArray<Value> Fields { get; }
 
         public override void SetValue(Value value)
         {
-            throw new NotImplementedException();
-        }
-
-        public void SetEnum(string elemName, ImmutableArray<NamedValue> members)
-        {
-            this.elemName = elemName;
-            this.members = members;
-        }
-
-        public string GetElemName()
-        {
-            return elemName;
+            var enumElemValue = (EnumElemValue)value;
+            for(int i = 0; i < Fields.Length; i++)
+                Fields[i].SetValue(enumElemValue.Fields[i]);
         }
     }
 

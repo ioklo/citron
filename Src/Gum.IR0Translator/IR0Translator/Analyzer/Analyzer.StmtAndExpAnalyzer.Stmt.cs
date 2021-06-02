@@ -127,13 +127,61 @@ namespace Gum.IR0Translator
             //    }
             //}
 
-            StmtResult AnalyzeIfTestStmt(S.IfStmt ifStmt)
+            // 
+            StmtResult AnalyzeIfTestStmt(S.IfTestStmt ifTestStmt)
             {
-                throw new NotImplementedException();
+                // if (e is Type varName) body 
+                // IfTestStmt -> IfTestClassStmt, IfTestEnumElemStmt
 
-                // TODO: if (Type v = exp as Type) 구문 추가
+                var targetResult = AnalyzeExp_Loc(ifTestStmt.Exp, ResolveHint.None);
+                var testType = globalContext.GetTypeValueByTypeExp(ifTestStmt.TestType);                
+
+                if (testType is EnumElemTypeValue enumElemType)
+                {
+                    // exact match
+                    if (!enumElemType.Outer.Equals(targetResult.TypeValue))
+                        globalContext.AddFatalError(A2301_IfTestStmt_CantDowncast, ifTestStmt.Exp);
+
+                    // analyze body
+                    StmtResult bodyResult;
+                    if (ifTestStmt.VarName != null)
+                    {
+                        var newAnalyzer = NewAnalyzer();
+                        newAnalyzer.localContext.AddLocalVarInfo(ifTestStmt.VarName, enumElemType);
+
+                        bodyResult = newAnalyzer.AnalyzeStmt(ifTestStmt.Body);
+                    }
+                    else
+                    {
+                        bodyResult = AnalyzeStmt(ifTestStmt.Body);
+                    }
+
+                    // analyze elseBody
+                    StmtResult? elseBodyResult;
+                    if (ifTestStmt.ElseBody != null)
+                    {
+                        elseBodyResult = AnalyzeStmt(ifTestStmt.ElseBody);
+                    }
+                    else
+                    {
+                        elseBodyResult = null;
+                    }
+
+                    var rstmt = new R.IfTestEnumElemStmt(targetResult.Result, enumElemType.GetRPath_Nested(), ifTestStmt.VarName, bodyResult.Stmt, elseBodyResult?.Stmt);
+                    return new StmtResult(rstmt);
+                }
+                else
+                {
+                    throw new NotImplementedException();
+                }
+
+
+
+
+
+
+                // TODO: if (exp is Type v) 구문 추가
                 // var condResult = AnalyzeExp(ifStmt.Cond, ResolveHint.None);
-
 
 
                 //if (idResult is locResult && locResult.Result is R.LocalVarLoc)
@@ -164,17 +212,12 @@ namespace Gum.IR0Translator
 
             StmtResult AnalyzeIfStmt(S.IfStmt ifStmt)
             {
-                if (ifStmt.TestType != null)
-                    return AnalyzeIfTestStmt(ifStmt);
-
                 // 순회
                 var condResult = AnalyzeExp_Exp(ifStmt.Cond, ResolveHint.None);
                 var bodyResult = AnalyzeStmt(ifStmt.Body);
                 StmtResult? elseBodyResult = (ifStmt.ElseBody != null) ? AnalyzeStmt(ifStmt.ElseBody) : null;
-
-                // Analyzer 처리
-                if (!globalContext.IsAssignable(globalContext.GetBoolType(), condResult.TypeValue))
-                    globalContext.AddFatalError(A1004_IfStmt_ConditionShouldBeBool, ifStmt.Cond);
+                
+                condResult = CastExp_Exp(condResult, globalContext.GetBoolType(), ifStmt.Cond);
 
                 return new StmtResult(new R.IfStmt(condResult.Result, bodyResult.Stmt, elseBodyResult?.Stmt));
             }
@@ -218,12 +261,16 @@ namespace Gum.IR0Translator
                 {
                     // 밑에서 쓰이므로 분석실패시 종료
                     var condResult = newAnalyzer.AnalyzeExp_Exp(forStmt.CondExp, ResolveHint.None);
-
-                    // 에러가 나면 에러를 추가하고 계속 진행
-                    if (!globalContext.IsAssignable(globalContext.GetBoolType(), condResult.TypeValue))
-                        globalContext.AddError(A1101_ForStmt_ConditionShouldBeBool, forStmt.CondExp);
-
-                    cond = condResult.Result;
+                    
+                    try
+                    {
+                        condResult = CastExp_Exp(condResult, globalContext.GetBoolType(), forStmt.CondExp);
+                        cond = condResult.Result;
+                    }
+                    catch(AnalyzerFatalException)
+                    {
+                        // 에러가 나도 계속 진행
+                    }
                 }
 
                 R.Exp? continueInfo = null;
@@ -307,8 +354,7 @@ namespace Gum.IR0Translator
                         var valueResult = AnalyzeExp_Exp(returnStmt.Value, ResolveHint.Make(retTypeValue));
 
                         // 현재 함수 시그니처랑 맞춰서 같은지 확인한다
-                        if (!globalContext.IsAssignable(retTypeValue, valueResult.TypeValue))
-                            globalContext.AddFatalError(A1201_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType, returnStmt.Value);
+                        valueResult = CastExp_Exp(valueResult, retTypeValue, returnStmt.Value);
 
                         return new StmtResult(new R.ReturnStmt(valueResult.Result));
                     }
@@ -460,9 +506,7 @@ namespace Gum.IR0Translator
 
                 // NOTICE: 리턴 타입을 힌트로 넣었다
                 var valueResult = AnalyzeExp_Exp(yieldStmt.Value, ResolveHint.Make(retTypeValue));
-
-                if (!globalContext.IsAssignable(retTypeValue, valueResult.TypeValue))
-                    globalContext.AddFatalError(A1402_YieldStmt_MismatchBetweenYieldValueAndSeqFuncYieldType, yieldStmt.Value);
+                valueResult = CastExp_Exp(valueResult, retTypeValue, yieldStmt.Value);
 
                 return new StmtResult(new R.YieldStmt(valueResult.Result));
             }            
@@ -474,6 +518,7 @@ namespace Gum.IR0Translator
                     case S.VarDeclStmt varDeclStmt: return AnalyzeLocalVarDeclStmt(varDeclStmt);
                     case S.CommandStmt cmdStmt: return AnalyzeCommandStmt(cmdStmt);
                     case S.IfStmt ifStmt: return AnalyzeIfStmt(ifStmt);
+                    case S.IfTestStmt ifTestStmt: return AnalyzeIfTestStmt(ifTestStmt);
                     case S.ForStmt forStmt: return AnalyzeForStmt(forStmt);
                     case S.ContinueStmt continueStmt: return AnalyzeContinueStmt(continueStmt);
                     case S.BreakStmt breakStmt: return AnalyzeBreakStmt(breakStmt);

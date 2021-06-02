@@ -145,8 +145,8 @@ namespace Gum.IR0Translator
                 // TODO: Body가 실제로 리턴을 제대로 하는지 확인해야 한다
                 var bodyResult = analyzer.AnalyzeStmt(funcDecl.Body);                
                 
-                var lambdaDecls = funcContext.GetDecls();
-                rootContext.AddDecl(new R.NormalFuncDecl(lambdaDecls, rname, false, funcDecl.TypeParams, rparamInfos, bodyResult.Stmt));
+                var decls = funcContext.GetDecls();
+                rootContext.AddDecl(new R.NormalFuncDecl(decls, rname, false, funcDecl.TypeParams, rparamInfos, bodyResult.Stmt));
             }
 
             public void AnalyzeGlobalSequenceFuncDecl(S.GlobalFuncDecl funcDecl)
@@ -190,9 +190,38 @@ namespace Gum.IR0Translator
                     AnalyzeGlobalNormalFuncDecl(funcDecl);
             }
 
+            void AnalyzeEnumDecl(S.EnumDecl enumDecl)
+            {
+                var relemsBuilder = ImmutableArray.CreateBuilder<R.EnumElement>(enumDecl.Elems.Length);
+                foreach(var elem in enumDecl.Elems)
+                {
+                    var rfieldsBuilder = ImmutableArray.CreateBuilder<R.TypeAndName>(elem.Params.Length);
+
+                    foreach(var param in elem.Params)
+                    {
+                        var paramType = globalContext.GetTypeValueByTypeExp(param.Type);
+                        var rfield = new R.TypeAndName(paramType.GetRPath(), param.Name);
+                        rfieldsBuilder.Add(rfield);
+                    }
+
+                    var relem = new R.EnumElement(elem.Name, rfieldsBuilder.MoveToImmutable());
+                    relemsBuilder.Add(relem);
+                }
+
+                rootContext.AddDecl(new R.EnumDecl(enumDecl.Name, enumDecl.TypeParams, relemsBuilder.MoveToImmutable()));
+            }
+
             void AnalyzeTypeDecl(S.TypeDecl typeDecl)
             {
-                throw new NotImplementedException();
+                switch(typeDecl)
+                {
+                    case S.EnumDecl enumDecl:
+                        AnalyzeEnumDecl(enumDecl);
+                        break;
+
+                    default:
+                        throw new NotImplementedException();
+                }
             }
         }
     }

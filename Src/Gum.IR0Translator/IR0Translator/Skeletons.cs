@@ -6,51 +6,29 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using S = Gum.Syntax;
+using Pretune;
 
 namespace Gum.IR0Translator
 {
-    abstract class TypeSkeleton
+    // TODO: Type뿐 아니라 Namespace 등도 여기서
+    class TypeSkeleton
     {
-        public ItemPath Path { get; }
-        List<TypeSkeleton> members;
-        Dictionary<ItemPathEntry, TypeSkeleton> membersByEntry;
+        public ItemPathEntry PathEntry { get; }
+        ImmutableDictionary<ItemPathEntry, TypeSkeleton> membersByEntry;
 
-        public TypeSkeleton(ItemPath path)
+        public TypeSkeleton(ItemPathEntry pathEntry, ImmutableArray<TypeSkeleton> members)
         {
-            Path = path;
-            members = new List<TypeSkeleton>();
-            membersByEntry = new Dictionary<ItemPathEntry, TypeSkeleton>();
-        }        
+            PathEntry = pathEntry;
 
-        public void AddMember(TypeSkeleton member)
-        {
-            members.Add(member);
-            membersByEntry.Add(member.Path.Entry, member);
+            var builder = ImmutableDictionary.CreateBuilder<ItemPathEntry, TypeSkeleton>();
+            foreach (var member in members)
+                builder.Add(member.PathEntry, member);
+            membersByEntry = builder.ToImmutable();
         }
-
+        
         public TypeSkeleton? GetMember(string memberName, int typeParamCount)
         {
             return membersByEntry.GetValueOrDefault(new ItemPathEntry(memberName, typeParamCount));
         }
     }
-
-    class EnumSkeleton : TypeSkeleton
-    {
-        public S.EnumDecl EnumDecl { get; }
-        public EnumSkeleton(ItemPath path, S.EnumDecl enumDecl)
-            : base(path)
-        {
-            EnumDecl = enumDecl;
-        }
-    }
-
-    class StructSkeleton : TypeSkeleton
-    {
-        public S.StructDecl StructDecl { get; }
-        public StructSkeleton(ItemPath path, S.StructDecl structDecl)
-            : base(path)
-        {
-            StructDecl = structDecl;
-        }
-    }    
 }

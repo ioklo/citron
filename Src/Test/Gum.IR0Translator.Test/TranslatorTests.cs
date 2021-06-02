@@ -218,7 +218,7 @@ namespace Gum.IR0Translator.Test
         {
             var syntaxScript = SScript(new S.StmtScriptElement(
 
-                new S.IfStmt(new S.BoolLiteralExp(false), null, S.BlankStmt.Instance, S.BlankStmt.Instance)
+                new S.IfStmt(new S.BoolLiteralExp(false), S.BlankStmt.Instance, S.BlankStmt.Instance)
                 
             ));
 
@@ -240,13 +240,13 @@ namespace Gum.IR0Translator.Test
 
             var syntaxScript = SScript(new S.StmtScriptElement(
 
-                new S.IfStmt(cond = SInt(3), null, S.BlankStmt.Instance, S.BlankStmt.Instance)
+                new S.IfStmt(cond = SInt(3), S.BlankStmt.Instance, S.BlankStmt.Instance)
 
             ));
 
             var errors = TranslateWithErrors(syntaxScript);
 
-            VerifyError(errors, A1004_IfStmt_ConditionShouldBeBool, cond);
+            VerifyError(errors, A1001_IfStmt_ConditionShouldBeBool, cond);
         }
 
         [Fact]
@@ -514,7 +514,7 @@ namespace Gum.IR0Translator.Test
             var syntaxScript = SScript(new S.GlobalFuncDeclScriptElement(funcDecl));
             var errors = TranslateWithErrors(syntaxScript);
 
-            VerifyError(errors, A1201_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType, retValue);
+            VerifyError(errors, A2201_Cast_Failed, retValue);
         }
 
         [Fact]
@@ -554,7 +554,7 @@ namespace Gum.IR0Translator.Test
             var syntaxScript = SScript(new S.ReturnStmt(exp = SString("Hello")));
 
             var errors = TranslateWithErrors(syntaxScript);
-            VerifyError(errors, A1201_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType, exp);
+            VerifyError(errors, A2201_Cast_Failed, exp);
         }
 
         [Fact]
@@ -968,7 +968,7 @@ namespace Gum.IR0Translator.Test
 
             var errors = TranslateWithErrors(syntaxScript);
 
-            VerifyError(errors, A1402_YieldStmt_MismatchBetweenYieldValueAndSeqFuncYieldType, yieldValue);
+            VerifyError(errors, A2201_Cast_Failed, yieldValue);
         }
 
         [Fact]
@@ -1247,7 +1247,7 @@ namespace Gum.IR0Translator.Test
             );
 
             var errors = TranslateWithErrors(syntaxScript);
-            VerifyError(errors, A0801_BinaryOp_LeftOperandTypeIsNotCompatibleWithRightOperandType, binOpExp);
+            VerifyError(errors, A2201_Cast_Failed, binOpExp);
         }
 
         [Fact]

@@ -7,7 +7,7 @@ enum E
     Three
 }
 
-var e = E.One;
+E e = E.One;
 e = E.Two;
 
 if (e is E.Two)

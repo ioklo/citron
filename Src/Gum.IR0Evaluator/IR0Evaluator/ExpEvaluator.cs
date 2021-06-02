@@ -181,7 +181,7 @@ namespace Gum.IR0Evaluator
                 // 1) X<int, short>.Y<string>.F<bool>, 
                 // 2) (declId, [[[int, short], string], bool])
                 // 누가 정보를 더 많이 가지고 있는가; 1) 필요한가? 
-                var funcInvoker = evaluator.context.GetFuncInvoker(exp.Func);
+                var funcInvoker = evaluator.context.GetRuntimeItem<FuncRuntimeItem>(exp.Func);
 
                 // TODO: typeContext를 계산합니다
 
@@ -195,61 +195,42 @@ namespace Gum.IR0Evaluator
                 // 인자를 계산 해서 처음 로컬 variable에 집어 넣는다
                 var args = await EvalArgumentsAsync(ImmutableDictionary<string, Value>.Empty, funcInvoker.ParamInfo, exp.Args);
 
-                await funcInvoker.Invoke(thisValue, result, args);
+                await funcInvoker.InvokeAsync(evaluator, thisValue, args, result);
             }
 
             async ValueTask EvalCallSeqFuncExpAsync(R.CallSeqFuncExp exp, Value result)
             {
-                var seqFuncDecl = evaluator.context.GetSequenceFuncDecl(exp.SeqFunc);
+                var seqFuncItem = evaluator.context.GetRuntimeItem<SeqFuncRuntimeItem>(exp.SeqFunc);
 
                 // 함수는 this call이지만 instance가 없는 경우는 없다.
-                Debug.Assert(!(seqFuncDecl.IsThisCall && exp.Instance == null));
+                Debug.Assert(!(seqFuncItem.IsThisCall && exp.Instance == null));
 
                 Value? thisValue = null;
                 if (exp.Instance != null)
                 {
-                    Debug.Assert(seqFuncDecl.IsThisCall);
+                    Debug.Assert(seqFuncItem.IsThisCall);
                     thisValue = await evaluator.EvalLocAsync(exp.Instance);
                 }
 
-                var localVars = await EvalArgumentsAsync(ImmutableDictionary<string, Value>.Empty, seqFuncDecl.ParamInfo, exp.Args);
-
-                // evaluator 복제
-                var newEvaluator = evaluator.CloneWithNewContext(thisValue, localVars);
-                
-                // asyncEnum을 만들기 위해서 내부 함수를 씁니다
-                async IAsyncEnumerator<Infra.Void> WrapAsyncEnum()
-                {
-                    await foreach (var _ in newEvaluator.EvalStmtAsync(seqFuncDecl.Body))
-                    {
-                        yield return Infra.Void.Instance;
-                    }
-                }
-
-                var enumerator = WrapAsyncEnum();
-                ((SeqValue)result).SetEnumerator(enumerator, newEvaluator);
+                var args = await EvalArgumentsAsync(ImmutableDictionary<string, Value>.Empty, seqFuncItem.ParamInfo, exp.Args);
+                seqFuncItem.Invoke(evaluator, thisValue, args, result);
             }
 
             async ValueTask EvalCallValueExpAsync(R.CallValueExp exp, Value result)
             {
                 var callableValue = (LambdaValue)await evaluator.EvalLocAsync(exp.Callable);
-                var lambdaDecl = evaluator.context.GetLambdaDecl(exp.Lambda);
+                var lambdaRuntimeItem = evaluator.context.GetRuntimeItem<LambdaRuntimeItem>(exp.Lambda);
 
                 var thisValue = callableValue.CapturedThis;
-                var localVars = await EvalArgumentsAsync(callableValue.Captures, lambdaDecl.ParamInfo, exp.Args);
+                var localVars = await EvalArgumentsAsync(callableValue.Captures, lambdaRuntimeItem.ParamInfo, exp.Args);
 
-                await evaluator.context.ExecInNewFuncFrameAsync(localVars, EvalFlowControl.None, ImmutableArray<Task>.Empty, thisValue, result, async () =>
-                {
-                    await foreach (var _ in evaluator.EvalStmtAsync(lambdaDecl.CapturedStatement.Body)) { }
-                });
+                await lambdaRuntimeItem.InvokeAsync(evaluator, thisValue, localVars, result);
             }
 
             void EvalLambdaExp(R.LambdaExp exp, Value result)
             {
-                var lambdaDecl = evaluator.context.GetLambdaDecl(exp.Lambda);
-
-                var lambdaResult = (LambdaValue)result;
-                evaluator.CaptureLocals(lambdaResult.CapturedThis, lambdaResult.Captures, lambdaDecl.CapturedStatement);
+                var lambdaRuntimeItem = evaluator.context.GetRuntimeItem<LambdaRuntimeItem>(exp.Lambda);
+                lambdaRuntimeItem.Capture(evaluator, (LambdaValue)result);                
             }
 
             //async ValueTask EvalMemberCallExpAsync(MemberCallExp exp, Value result)
@@ -354,12 +335,48 @@ namespace Gum.IR0Evaluator
                 ((ListValue)result).SetList(list);
             }
 
-            ValueTask EvalNewEnumExpAsync(R.NewEnumExp exp, Value result)
+            // Value에 넣어야 한다, 묶는 방법도 설명해야 한다
+            // values: params까지 포함한 분절단위
+            async ValueTask EvalArgumentsAsync(ImmutableArray<Value> values, ImmutableArray<R.Argument> args)
             {
-                throw new NotImplementedException();
+                // argument들을 순서대로 할당한다
+                int argValueIndex = 0;
+                foreach (var arg in args)
+                {
+                    switch (arg)
+                    {
+                        case R.Argument.Normal normalArg:
+                            await EvalAsync(normalArg.Exp, values[argValueIndex]);
+                            argValueIndex++;
+                            break;
 
+                        // params가 들어있다면
+                        case R.Argument.Params paramsArg:
+                            // GumVM단계에서는 시퀀셜하게 메모리를 던져줄 것이지만, C# 버전에서는 그렇게 못하므로
+                            // ArgValues들을 가리키는 TupleValue를 임의로 생성하고 값을 저장하도록 한다
+                            var tupleElems = ImmutableArray.Create(values, argValueIndex, paramsArg.ElemCount);
+
+                            var tupleValue = new TupleValue(tupleElems);
+                            await EvalAsync(paramsArg.Exp, tupleValue);
+                            argValueIndex += paramsArg.ElemCount;
+                            break;
+
+                        case R.Argument.Ref refArg:
+                            throw new NotImplementedException();
+                            // argValueIndex++;
+
+                    }
+                }
+            }
+
+            async ValueTask EvalNewEnumExpAsync(R.NewEnumElemExp exp, Value result_value)
+            {
+                var result = (EnumElemValue)result_value;
+
+                // 메모리 시퀀스                
+                await EvalArgumentsAsync(result.Fields, exp.Args);
+                
                 //var builder = ImmutableArray.CreateBuilder<NamedValue>(exp.Members.Length);
-
                 //foreach (var member in exp.Members)
                 //{   
                 //    var argValue = evaluator.AllocValue(member.ExpInfo.Type);
@@ -367,7 +384,6 @@ namespace Gum.IR0Evaluator
 
                 //    await EvalAsync(member.ExpInfo.Exp, argValue);
                 //}
-
                 //((EnumValue)result).SetEnum(exp.Name, builder.MoveToImmutable());
             }
 
@@ -377,6 +393,21 @@ namespace Gum.IR0Evaluator
             }
 
             ValueTask EvalNewClassExpAsync(R.NewClassExp exp, Value result)
+            {
+                throw new NotImplementedException();
+            }
+
+            // E e = (E)E.First;
+            async ValueTask EvalCastEnumElemToEnumExp(R.CastEnumElemToEnumExp castEnumElemToEnumExp, Value result_value)
+            {
+                var result = (EnumValue)result_value;
+                var enumElemItem = evaluator.context.GetRuntimeItem<EnumElemRuntimeItem>(castEnumElemToEnumExp.EnumElem);
+
+                result.SetEnumElemItem(enumElemItem);
+                await EvalAsync(castEnumElemToEnumExp.Src, result.GetElemValue());
+            }
+
+            ValueTask EvalCastClassExp(R.CastClassExp castClassExp, Value result)
             {
                 throw new NotImplementedException();
             }
@@ -398,13 +429,17 @@ namespace Gum.IR0Evaluator
                     case R.CallValueExp callValueExp: await EvalCallValueExpAsync(callValueExp, result); break;
                     case R.LambdaExp lambdaExp: EvalLambdaExp(lambdaExp, result); break;
                     case R.ListExp listExp: await EvalListExpAsync(listExp, result); break;
-                    case R.NewEnumExp enumExp: await EvalNewEnumExpAsync(enumExp, result); break;
+                    case R.NewEnumElemExp enumExp: await EvalNewEnumExpAsync(enumExp, result); break;
                     case R.NewStructExp newStructExp: await EvalNewStructExpAsync(newStructExp, result); break;
                     case R.NewClassExp newClassExp: await EvalNewClassExpAsync(newClassExp, result); break;
+                    case R.CastEnumElemToEnumExp castEnumElemToEnumExp: await EvalCastEnumElemToEnumExp(castEnumElemToEnumExp, result); break;
+                    case R.CastClassExp castClassExp: await EvalCastClassExp(castClassExp, result); break;
 
                     default: throw new NotImplementedException();
                 }
             }
+
+            
         }
     }
 }

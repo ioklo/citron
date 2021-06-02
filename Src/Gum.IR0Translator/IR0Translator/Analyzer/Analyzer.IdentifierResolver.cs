@@ -8,23 +8,12 @@ using M = Gum.CompileTime;
 using R = Gum.IR0;
 using Gum.Infra;
 using System.Diagnostics;
+using Pretune;
 
 namespace Gum.IR0Translator
 {
     partial class Analyzer
-    {
-        R.Loc BuildMemberLoc(R.Loc parent, TypeValue parentType, string memberName)
-        {
-            switch(parentType)
-            {
-                case ClassTypeValue _: return new R.ClassMemberLoc(parent, memberName);
-                case StructTypeValue _: return new R.StructMemberLoc(parent, memberName);
-                case EnumElemTypeValue _: return new R.EnumMemberLoc(parent, memberName);
-            }
-
-            throw new UnreachableCodeException();
-        }
-
+    {   
         static IdentifierResult.Error ToErrorIdentifierResult(ItemQueryResult.Error errorResult)
         {
             switch(errorResult)
@@ -39,7 +28,8 @@ namespace Gum.IR0Translator
             throw new UnreachableCodeException();
         }
         
-        struct IdExpIdentifierResolver
+        [AutoConstructor]
+        partial struct IdExpIdentifierResolver
         {
             string idName;
             ImmutableArray<TypeValue> typeArgs;
@@ -47,21 +37,16 @@ namespace Gum.IR0Translator
 
             GlobalContext globalContext;
             CallableContext callableContext;
-            LocalContext localContext;            
+            LocalContext localContext;
 
-            public IdExpIdentifierResolver(
+            public static IdentifierResult Resolve(
                 string idName, ImmutableArray<TypeValue> typeArgs, ResolveHint hint,
                 GlobalContext globalContext,
                 CallableContext callableContext,
                 LocalContext localContext)
             {
-                this.idName = idName;
-                this.typeArgs = typeArgs;
-                this.hint = hint;
-
-                this.globalContext = globalContext;
-                this.callableContext = callableContext;
-                this.localContext = localContext;
+                var resolver = new IdExpIdentifierResolver(idName, typeArgs, hint, globalContext, callableContext, localContext);
+                return resolver.Resolve();
             }
 
             IdentifierResult GetLocalVarOutsideLambdaInfo()
@@ -122,6 +107,12 @@ namespace Gum.IR0Translator
                         {
                             return new IdentifierResult.Funcs(funcsResult.Outer, funcsResult.FuncInfos, typeArgs, funcsResult.IsInstanceFunc);
                         }
+
+                    case ItemQueryResult.EnumElem enumElemResult:
+                        {
+                            var elemTypeValue = globalContext.MakeEnumElemTypeValue(enumElemResult.Outer, enumElemResult.EnumElemInfo);
+                            return new IdentifierResult.EnumElem(elemTypeValue);
+                        }
                 }
 
                 throw new UnreachableCodeException();
@@ -161,14 +152,23 @@ namespace Gum.IR0Translator
                 // enum 힌트 사용, typeArgs가 있으면 지나간다
                 if (hint.TypeHint is TypeValueTypeHint typeValueHintType && typeValueHintType.TypeValue is EnumTypeValue enumTypeValue)
                 {
-                    // First<T> 같은건 없기 때문에 없을때만 검색한다
-                    if (typeArgs.Length == 0)
+                    // First<T> 같은건 없기 때문에 없을때만 검색한다                    
+                    var elemTypeValue = enumTypeValue.GetElement(idName);
+                    if (elemTypeValue != null)
                     {
-                        throw new NotImplementedException();
-                        //if (enumHintType.GetEnumElem(idName, out var elemInfo))
-                        //{
-                        //    return new EnumElemIdentifierResult(hintNTV, elemInfo.Value);
-                        //}
+                        // 힌트니까 조건에 맞지않아도 에러를 내지 않고 종료한다
+                        if (typeArgs.Length == 0)
+                            return new IdentifierResult.EnumElem(elemTypeValue);
+                    }
+                }
+                else if (hint.TypeHint is EnumConstructorTypeHint enumConstructorHint)
+                {
+                    var elemTypeValue = enumConstructorHint.EnumTypeValue.GetElement(idName);
+
+                    if (elemTypeValue != null)
+                    {
+                        if (!elemTypeValue.IsStandalone() && typeArgs.Length == 0)
+                            return new IdentifierResult.EnumElem(elemTypeValue);
                     }
                 }
                 

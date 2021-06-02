@@ -10,6 +10,7 @@ using System.Text;
 using S = Gum.Syntax;
 using M = Gum.CompileTime;
 using R = Gum.IR0;
+using Gum.CompileTime;
 
 namespace Gum.IR0Translator
 {
@@ -22,20 +23,20 @@ namespace Gum.IR0Translator
             InternalBinaryOperatorQueryService internalBinOpQueryService;
             GlobalItemValueFactory globalItemValueFactory;
 
-            TypeExpInfoService typeExpTypeValueService;            
+            TypeExpInfoService typeExpInfoService;            
             IErrorCollector errorCollector;
             InternalGlobalVariableRepository internalGlobalVarRepo;
 
             public GlobalContext(
                 ItemValueFactory itemValueFactory,
                 GlobalItemValueFactory globalItemValueFactory,
-                TypeExpInfoService typeExpTypeValueService,
+                TypeExpInfoService typeExpInfoService,
                 IErrorCollector errorCollector)
             {
                 this.itemValueFactory = itemValueFactory;
                 this.internalBinOpQueryService = new InternalBinaryOperatorQueryService(itemValueFactory);
                 this.globalItemValueFactory = globalItemValueFactory;
-                this.typeExpTypeValueService = typeExpTypeValueService;
+                this.typeExpInfoService = typeExpInfoService;
                 this.errorCollector = errorCollector;
                 this.internalGlobalVarRepo = new InternalGlobalVariableRepository();
             }
@@ -53,8 +54,8 @@ namespace Gum.IR0Translator
                 Infra.Misc.EnsurePure(other.globalItemValueFactory);
                 this.globalItemValueFactory = other.globalItemValueFactory;
 
-                Infra.Misc.EnsurePure(other.typeExpTypeValueService);
-                this.typeExpTypeValueService = other.typeExpTypeValueService;
+                Infra.Misc.EnsurePure(other.typeExpInfoService);
+                this.typeExpInfoService = other.typeExpInfoService;
 
                 this.errorCollector = cloneContext.GetClone(other.errorCollector);
                 this.internalGlobalVarRepo = cloneContext.GetClone(other.internalGlobalVarRepo);
@@ -76,8 +77,8 @@ namespace Gum.IR0Translator
                 Infra.Misc.EnsurePure(src.globalItemValueFactory);
                 this.globalItemValueFactory = src.globalItemValueFactory;
 
-                Infra.Misc.EnsurePure(src.typeExpTypeValueService);
-                this.typeExpTypeValueService = src.typeExpTypeValueService;
+                Infra.Misc.EnsurePure(src.typeExpInfoService);
+                this.typeExpInfoService = src.typeExpInfoService;
 
                 updateContext.Update(this.errorCollector, src.errorCollector);
                 updateContext.Update(this.internalGlobalVarRepo, src.internalGlobalVarRepo);
@@ -85,13 +86,13 @@ namespace Gum.IR0Translator
 
             public void AddError(AnalyzeErrorCode code, S.ISyntaxNode node)
             {
-                errorCollector.Add(new AnalyzeError(code, node, ""));
+                errorCollector.Add(new AnalyzeError(code, node, code.ToString()));
             }
 
             [DoesNotReturn]
             public void AddFatalError(AnalyzeErrorCode code, S.ISyntaxNode node)
             {
-                errorCollector.Add(new AnalyzeError(code, node, ""));
+                errorCollector.Add(new AnalyzeError(code, node, code.ToString()));
                 throw new AnalyzerFatalException();
             }            
 
@@ -119,25 +120,7 @@ namespace Gum.IR0Translator
             {
                 return itemValueFactory.List(elemType);
             }
-
-            public bool IsAssignable(TypeValue toTypeValue, TypeValue fromTypeValue)
-            {   
-                // B <- D
-                // 지금은 fromType의 base들을 찾아가면서 toTypeValue와 맞는 것이 있는지 본다
-                // TODO: toTypeValue가 interface라면, fromTypeValue의 interface들을 본다
-
-                TypeValue? curType = fromTypeValue;
-                while (curType != null)
-                {
-                    if (toTypeValue.Equals(curType))
-                        return true;
-
-                    curType = curType.GetBaseType();
-                }
-
-                return false;
-            }
-
+            
             public void AddInternalGlobalVarInfo(M.Name name, TypeValue typeValue)
             {
                 internalGlobalVarRepo.AddInternalGlobalVariable(name, typeValue);
@@ -153,6 +136,11 @@ namespace Gum.IR0Translator
                 return itemValueFactory.Int.Equals(typeValue);
             }
 
+            public EnumElemTypeValue MakeEnumElemTypeValue(EnumTypeValue outer, EnumElemInfo elemInfo)
+            {
+                return itemValueFactory.MakeEnumElemTypeValue(outer, elemInfo);
+            }
+
             public bool IsStringType(TypeValue typeValue)
             {
                 return itemValueFactory.String.Equals(typeValue);
@@ -160,19 +148,13 @@ namespace Gum.IR0Translator
 
             public TypeValue GetTypeValueByMType(M.Type type)
             {
-                return itemValueFactory.MakeTypeValue(type);
+                return itemValueFactory.MakeTypeValueByMType(type);
             }
 
             public TypeValue GetTypeValueByTypeExp(S.TypeExp typeExp)
             {
-                var typeExpInfo = typeExpTypeValueService.GetTypeExpInfo(typeExp);
-
-                if (typeExpInfo is MTypeTypeExpInfo mtypeInfo)
-                    return itemValueFactory.MakeTypeValue(mtypeInfo.Type);
-                else if (typeExpInfo is VarTypeExpInfo)
-                    return itemValueFactory.MakeVarTypeValue();
-                else
-                    throw new UnreachableCodeException();
+                var typeExpInfo = typeExpInfoService.GetTypeExpInfo(typeExp);
+                return itemValueFactory.MakeTypeValue(typeExpInfo);
             }
 
             public InternalGlobalVarInfo? GetInternalGlobalVarInfo(string idName)
@@ -223,6 +205,49 @@ namespace Gum.IR0Translator
             public TupleTypeValue GetTupleType(ImmutableArray<(TypeValue Type, string? Name)> elems)
             {
                 return itemValueFactory.MakeTupleType(elems);
+            }
+
+            public ExpResult.Exp? TryCastExp_Exp(ExpResult.Exp expResult, TypeValue expectType) // nothrow
+            {
+                // 같으면 그대로 리턴
+                if (expResult.TypeValue.Equals(expectType))
+                    return expResult;
+
+                // 1. enumElem -> enum
+                if (expResult.TypeValue is EnumElemTypeValue enumElemTypeValue)
+                {
+                    if (expectType is EnumTypeValue expectEnumType)
+                    {
+                        if (enumElemTypeValue.Outer.Equals(expectType))
+                        {
+                            var castExp = new R.CastEnumElemToEnumExp(expResult.Result, enumElemTypeValue.GetRPath_Nested());
+                            return new ExpResult.Exp(castExp, expectType);
+                        }
+                    }
+
+                    return null;
+                }
+
+                // 2. exp is class type
+                else if (expResult.TypeValue is ClassTypeValue classTypeValue)
+                {
+                    if (expectType is ClassTypeValue expectClassType)
+                    {
+                        // allows upcast
+                        if (expectClassType.IsBaseOf(classTypeValue))
+                        {
+                            var castExp = new R.CastClassExp(expResult.Result, expectClassType.GetRPath());
+                            return new ExpResult.Exp(castExp, expectClassType);
+                        }
+
+                        return null;
+                    }
+
+                    // TODO: interface
+                    // if (expectType is InterfaceTypeValue )
+                }
+
+                return null;
             }
         }
     }

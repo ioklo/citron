@@ -54,15 +54,17 @@ namespace Gum.IR0
     {
         public Loc Target { get; }
         public Path TestType { get; } 
+        public Name VarName { get; }
         public Stmt Body { get; }
         public Stmt? ElseBody { get; }
     }
 
     [AutoConstructor, ImplementIEquatable]
-    public partial class IfTestEnumStmt : Stmt
+    public partial class IfTestEnumElemStmt : Stmt
     {
-        public Loc Target { get; }
-        public string ElemName { get; }
+        public Loc Target { get; }      // e
+        public Path.Nested EnumElem { get; } // is E.F
+        public string? VarName { get; }  // f
         public Stmt Body { get; }
         public Stmt? ElseBody { get; }
     }

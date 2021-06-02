@@ -14,86 +14,65 @@ using S = Gum.Syntax;
 
 namespace Gum.IR0Translator
 {
-    internal class TypeSkeletonCollector
+    struct TypeSkeletonCollector
     {
         // runtime
-        ImmutableDictionary<ItemPath, TypeSkeleton>.Builder typeSkeletonsByItemPathBuilder;
-        TypeSkeleton? curSkeleton;
+        ImmutableArray<TypeSkeleton>.Builder skeletonsBuilder;
 
         public static TypeSkeletonRepository Collect(S.Script script)
         {
-            var typeSkeletonCollector = new TypeSkeletonCollector();
+            var typeSkeletonCollector = NewTypeSkeletonCollector();
             typeSkeletonCollector.VisitScript(script);
 
-            return new TypeSkeletonRepository(typeSkeletonCollector.typeSkeletonsByItemPathBuilder.ToImmutable());
+            return new TypeSkeletonRepository(typeSkeletonCollector.skeletonsBuilder.ToImmutable());
         }
 
-        TypeSkeletonCollector()
+        TypeSkeletonCollector(ImmutableArray<TypeSkeleton>.Builder builder)
         {
-            typeSkeletonsByItemPathBuilder = ImmutableDictionary.CreateBuilder<ItemPath, TypeSkeleton>();
-            curSkeleton = null;
-        }
-
-        void ExecInNewEnumScope(S.EnumDecl enumDecl, Action action)
-            => ExecInNewTypeScope(enumDecl, path => new EnumSkeleton(path, enumDecl), action);
-
-        void ExecInNewStructScope(S.StructDecl structDecl, Action action)
-            => ExecInNewTypeScope(structDecl, path => new StructSkeleton(path, structDecl), action);
-
-        void ExecInNewTypeScope<TSkeleton>(S.TypeDecl typeDecl, Func<ItemPath, TSkeleton> constructor, Action action)
-            where TSkeleton : TypeSkeleton
-        {
-            var prevSkeleton = curSkeleton;
-            curSkeleton = AddType(typeDecl, constructor);
-
-            try
-            {
-                action.Invoke();
-            }
-            finally
-            {
-                curSkeleton = prevSkeleton;
-            }
+            this.skeletonsBuilder = builder;
         }
         
-        TSkeleton AddType<TSkeleton>(S.TypeDecl decl, Func<ItemPath, TSkeleton> constructor)
-            where TSkeleton : TypeSkeleton
+        static TypeSkeletonCollector NewTypeSkeletonCollector()
         {
-            ItemPath typePath = (curSkeleton != null)
-                ? curSkeleton.Path.Append(decl.Name, decl.TypeParamCount)
-                : new ItemPath(NamespacePath.Root, new ItemPathEntry(decl.Name, decl.TypeParamCount)); // TODO: NamespaceRoot가 아니라 namespace 선언 상황에 따라 달라진다
-
-            var typeSkeleton = constructor.Invoke(typePath);
-            typeSkeletonsByItemPathBuilder.Add(typePath, typeSkeleton);
-
-            if (curSkeleton != null)
-                curSkeleton.AddMember(typeSkeleton);
-
-            return typeSkeleton;
+            return new TypeSkeletonCollector(ImmutableArray.CreateBuilder<TypeSkeleton>());
         }
+
+        void AddSkeleton(TypeSkeleton skeleton)
+        {   
+            skeletonsBuilder.Add(skeleton);
+        }        
 
         void VisitEnumDecl(S.EnumDecl enumDecl)
         {
-            ExecInNewEnumScope(enumDecl, () =>
+            var newCollector = NewTypeSkeletonCollector();
+            foreach (var enumElem in enumDecl.Elems)
             {
-                // var enumElemNames = enumDecl.Elems.Select(elem => elem.Name);
-            });
+                var pathEntry = new ItemPathEntry(enumElem.Name);
+                var enumElemSkel = new TypeSkeleton(pathEntry, default); // 
+                newCollector.AddSkeleton(enumElemSkel);
+            }
+
+            var enumPathEntry = new ItemPathEntry(enumDecl.Name, enumDecl.TypeParamCount);
+            var enumSkeleton = new TypeSkeleton(enumPathEntry, newCollector.skeletonsBuilder.ToImmutable());
+            AddSkeleton(enumSkeleton);
         }
 
         void VisitStructDecl(S.StructDecl structDecl)
         {
-            ExecInNewStructScope(structDecl, () =>
+            var newCollector = NewTypeSkeletonCollector();
+            foreach(var elem in structDecl.Elems)
             {
-                foreach (var elem in structDecl.Elems)
+                switch(elem)
                 {
-                    switch (elem)
-                    {
-                        case S.TypeStructDeclElement typeElem:
-                            VisitTypeDecl(typeElem.TypeDecl);
-                            break;
-                    }
+                    case S.TypeStructDeclElement typeElem:
+                        newCollector.VisitTypeDecl(typeElem.TypeDecl);
+                        break;
                 }
-            });
+            }
+
+            var pathEntry = new ItemPathEntry(structDecl.Name, structDecl.TypeParamCount);
+            var skeleton = new TypeSkeleton(pathEntry, newCollector.skeletonsBuilder.ToImmutable());
+            AddSkeleton(skeleton);
         }
 
         void VisitTypeDecl(S.TypeDecl typeDecl)

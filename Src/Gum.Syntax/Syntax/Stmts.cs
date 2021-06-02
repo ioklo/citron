@@ -16,7 +16,10 @@ namespace Gum.Syntax
 
     // int a = 0, b, c;
     public record VarDeclStmt(VarDecl VarDecl) : Stmt;    
-    public record IfStmt(Exp Cond, TypeExp? TestType, Stmt Body, Stmt? ElseBody) : Stmt;
+
+    // if ($cond) $body else $ElseBody
+    public record IfStmt(Exp Cond, Stmt Body, Stmt? ElseBody) : Stmt;
+    public record IfTestStmt(Exp Exp, TypeExp TestType, string? VarName, Stmt Body, Stmt? ElseBody) : Stmt;
 
     public record ForStmt(ForStmtInitializer? Initializer, Exp? CondExp, Exp? ContinueExp, Stmt Body) : Stmt;    
     public record ContinueStmt : Stmt

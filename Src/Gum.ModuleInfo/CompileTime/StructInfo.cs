@@ -8,47 +8,25 @@ using Gum.Infra;
 
 namespace Gum.CompileTime
 {
-    [AutoConstructor]
-    public partial class StructInfo : TypeInfo, IEquatable<StructInfo?>
+    [AutoConstructor, ImplementIEquatable]
+    public partial class StructInfo : TypeInfo
     {
         public override Name Name { get; }
 
         public override ImmutableArray<string> TypeParams { get; }
         public Type? BaseType { get; }
         public ImmutableArray<Type> Interfaces { get; }
-        public override ImmutableArray<TypeInfo> MemberTypes { get; }
+        public ImmutableArray<TypeInfo> MemberTypes { get; }
         public ImmutableArray<FuncInfo> MemberFuncs { get; }
         public ImmutableArray<MemberVarInfo> MemberVars { get; }
-
-        public override bool Equals(object? obj)
+        
+        public override TypeInfo? GetMemberType(string name, int typeParamCount)
         {
-            return Equals(obj as StructInfo);
-        }
+            foreach (var memberType in MemberTypes)
+                if (memberType.TypeParams.Length == typeParamCount && memberType.Name.Equals(name))
+                    return memberType;
 
-        public bool Equals(StructInfo? other)
-        {
-            return other != null &&
-                   Name.Equals(other.Name) &&
-                   TypeParams.Equals(other.TypeParams) &&
-                   EqualityComparer<Type>.Default.Equals(BaseType, other.BaseType) && 
-                   Interfaces.Equals(other.Interfaces) &&
-                   MemberTypes.Equals(other.MemberTypes) &&
-                   MemberFuncs.Equals(other.MemberFuncs) &&
-                   MemberVars.Equals(other.MemberVars);
-        }
-
-        public override int GetHashCode()
-        {
-            HashCode hash = new HashCode();
-            hash.Add(Name);
-
-            hash.AddSequence(TypeParams);
-            hash.Add(BaseType);
-            hash.AddSequence(Interfaces);
-            hash.AddSequence(MemberTypes);
-            hash.AddSequence(MemberFuncs);
-            hash.AddSequence(MemberVars);
-            return hash.ToHashCode();
+            return null;
         }
     }
 }

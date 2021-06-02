@@ -187,7 +187,6 @@ for (int i = 0; i < 5; i++)
                                 new BinaryOpExp(BinaryOpKind.Equal,
                                     new BinaryOpExp(BinaryOpKind.Modulo, SimpleSId("i"), new IntLiteralExp(2)),
                                     new IntLiteralExp(0)),
-                                null,
                                 new ExpStmt(
                                     new BinaryOpExp(BinaryOpKind.Assign,
                                         SimpleSId("sum"),

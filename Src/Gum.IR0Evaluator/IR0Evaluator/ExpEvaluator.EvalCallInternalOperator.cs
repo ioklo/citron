@@ -49,7 +49,7 @@ namespace Gum.IR0Evaluator
                 var operandValue = evaluator.AllocValue<BoolValue>(R.Path.Bool);
                 await evaluator.EvalExpAsync(operandExp, operandValue);
 
-                result.SetString(operandValue.GetBool().ToString());
+                result.SetString(operandValue.GetBool() ? "true" : "false");
             }
 
             async ValueTask Operator_ToString_Int_String(R.Exp operandExp, StringValue result)
@@ -316,7 +316,7 @@ namespace Gum.IR0Evaluator
             }
         }
 
-        internal ValueTask ExecInNewFuncFrameAsync(
+        ValueTask ExecInNewFuncFrameAsync(
                 ImmutableDictionary<string, Value> newLocalVars,
                 EvalFlowControl newFlowControl,
                 ImmutableArray<Task> newTasks,

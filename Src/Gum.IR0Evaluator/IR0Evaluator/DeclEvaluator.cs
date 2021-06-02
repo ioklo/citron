@@ -48,7 +48,8 @@ namespace Gum.IR0Evaluator
 
             void EvalLambdaDecl(R.LambdaDecl lambdaDecl)
             {
-                curContainer.AddLambdaDecl(lambdaDecl);
+                var item = new IR0LambdaRuntimeItem(lambdaDecl);
+                curContainer.AddRuntimeItem(item);
             }
 
             void EvalNormalFuncDecl(R.NormalFuncDecl normalFuncDecl)
@@ -57,12 +58,11 @@ namespace Gum.IR0Evaluator
                 
                 // 하위 아이템을 저장할 container와 invoker를 추가한다 (같은 키로)
                 var typeParamCount = normalFuncDecl.TypeParams.Length;
-                var paramTypes = ImmutableArray.CreateRange(normalFuncDecl.ParamInfo.Parameters, paramInfo => paramInfo.Type);
-                var paramHash = new R.ParamHash(typeParamCount, paramTypes);
+                var paramHash = Misc.MakeParamHash(typeParamCount, normalFuncDecl.ParamInfo);
                 curContainer.AddItemContainer(normalFuncDecl.Name, paramHash, itemContainer);
 
-                var funcInvoker = new IR0FuncInvoker(evaluator, normalFuncDecl.Body, normalFuncDecl.ParamInfo);
-                curContainer.AddFuncInvoker(normalFuncDecl.Name, paramHash, funcInvoker);
+                var funcRuntimeItem = new IR0FuncRuntimeItem(normalFuncDecl);
+                curContainer.AddRuntimeItem(funcRuntimeItem);
 
                 var savedContainer = curContainer;
                 curContainer = itemContainer;
@@ -78,12 +78,12 @@ namespace Gum.IR0Evaluator
                 var itemContainer = new ItemContainer();
 
                 var typeParamCount = seqFuncDecl.TypeParams.Length;
-                var paramTypes = ImmutableArray.CreateRange(seqFuncDecl.ParamInfo.Parameters, paramInfo => paramInfo.Type);
-                var paramHash = new R.ParamHash(typeParamCount, paramTypes);
+                var paramHash = Misc.MakeParamHash(typeParamCount, seqFuncDecl.ParamInfo);
 
                 curContainer.AddItemContainer(seqFuncDecl.Name, paramHash, itemContainer);
 
-                curContainer.AddSequenceFuncDecl(seqFuncDecl);
+                var runtimeItem = new IR0SeqFuncRuntimeItem(seqFuncDecl);
+                curContainer.AddRuntimeItem(runtimeItem);
 
                 var savedContainer = curContainer;
                 curContainer = itemContainer;
@@ -127,12 +127,34 @@ namespace Gum.IR0Evaluator
 
             void EvalEnumDecl(R.EnumDecl enumDecl)
             {
-                throw new NotImplementedException();
+                var enumContainer = new ItemContainer();
+
+                foreach (var enumElem in enumDecl.Elems)
+                {
+                    var enumElemItem = new IR0EnumElemRuntimeItem(enumElem);
+                    var enumElemContainer = new ItemContainer();
+
+                    int fieldIndex = 0;
+                    foreach(var enumElemField in enumElem.Params)
+                    {
+                        var enumElemFieldItem = new IR0EnumElemFieldRuntimeItem(enumElemField.Name, fieldIndex);
+                        enumElemContainer.AddRuntimeItem(enumElemFieldItem);
+
+                        fieldIndex++;
+                    }
+
+                    enumContainer.AddItemContainer(enumElem.Name, R.ParamHash.None, enumElemContainer);
+                    enumContainer.AddRuntimeItem(enumElemItem);
+                }
+
+                curContainer.AddItemContainer(enumDecl.Name, new R.ParamHash(enumDecl.TypeParams.Length, default), enumContainer);
+                curContainer.AddRuntimeItem(new IR0EnumRuntimeItem(enumDecl));
             }
 
             void EvalCapturedStmtDecl(R.CapturedStatementDecl capturedStmtDecl)
             {
-                curContainer.AddCapturedStmtDecl(capturedStmtDecl);
+                var runtimeItem = new IR0CapturedStmtRuntimeItem(capturedStmtDecl);
+                curContainer.AddRuntimeItem(runtimeItem);
             }
         }
     }

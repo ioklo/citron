@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Gum.Infra.Misc;
 
 using M = Gum.CompileTime;
 using R = Gum.IR0;
@@ -18,13 +19,15 @@ namespace Gum.IR0Translator
         TypeInfoRepository typeInfoRepo;
         RItemFactory ritemFactory;
 
+        M.StructInfo listInfo;
+
         public TypeValue Void { get; }
         public TypeValue Bool { get; }
         public TypeValue Int { get; }        
         public TypeValue String { get; }
         public TypeValue List(TypeValue typeArg)
         {
-            throw new NotImplementedException();
+            return MakeTypeValue("System.Runtime", new M.NamespacePath("System"), listInfo, Arr(typeArg));
         }
 
         public void EnsurePure()
@@ -35,10 +38,12 @@ namespace Gum.IR0Translator
 
         public ItemValueFactory(TypeInfoRepository typeInfoRepo, RItemFactory ritemFactory)
         {
-            M.TypeInfo MakeEmptyStructInfo(M.Name name) => new M.StructInfo(name, default, null, default, default, default, default);
+            M.StructInfo MakeEmptyStructInfo(M.Name name) => new M.StructInfo(name, default, null, default, default, default, default);
 
             this.typeInfoRepo = typeInfoRepo;
             this.ritemFactory = ritemFactory;
+
+            listInfo = MakeEmptyStructInfo("List");
 
             Void = VoidTypeValue.Instance;
             Bool = MakeTypeValue("System.Runtime", new M.NamespacePath("System"), MakeEmptyStructInfo("Boolean"), default);
@@ -64,6 +69,14 @@ namespace Gum.IR0Translator
             {
                 case M.StructInfo structInfo:
                     return new StructTypeValue(this, ritemFactory, outer, structInfo, typeArgs);
+
+                case M.EnumInfo enumInfo:
+                    return new EnumTypeValue(this, outer, enumInfo, typeArgs);
+
+                case M.EnumElemInfo enumElemInfo:
+                    Debug.Assert(outer is NestedItemValueOuter);
+                    Debug.Assert(((NestedItemValueOuter)outer).ItemValue is EnumTypeValue);
+                    return new EnumElemTypeValue(ritemFactory, this, (EnumTypeValue)((NestedItemValueOuter)outer).ItemValue, enumElemInfo);
             }
 
             throw new UnreachableCodeException();
@@ -79,33 +92,58 @@ namespace Gum.IR0Translator
             var builder = ImmutableArray.CreateBuilder<TypeValue>();
             foreach (var mtype in mtypes)
             {
-                var type = MakeTypeValue(mtype);
+                var type = MakeTypeValueByMType(mtype);
                 builder.Add(type);
             }
 
             return builder.ToImmutable();
-        }        
+        }
 
-        public TypeValue MakeTypeValue(M.Type mtype)
+        public EnumTypeValue MakeEnumTypeValue(ItemValueOuter outer, M.EnumInfo enumInfo, ImmutableArray<TypeValue> typeArgs)
+        {
+            return new EnumTypeValue(this, outer, enumInfo, typeArgs);
+        }
+
+        public EnumElemTypeValue MakeEnumElemTypeValue(EnumTypeValue outer, M.EnumElemInfo elemInfo)
+        {
+            return new EnumElemTypeValue(ritemFactory, this, outer, elemInfo);
+        }
+
+        public TypeValue MakeTypeValue(TypeExpInfo typeExpInfo)
+        {
+            switch (typeExpInfo)
+            {
+                case MTypeTypeExpInfo mtypeInfo:
+                    return MakeTypeValueByMType(mtypeInfo.Type);
+
+                case VarTypeExpInfo:
+                    return MakeVarTypeValue();
+
+                default:
+                    throw new UnreachableCodeException();
+            }
+        }
+
+        public TypeValue MakeTypeValueByMType(M.Type mtype)
         {
             switch (mtype)
             {
                 case M.TypeVarType typeVar:
-                    return MakeTypeVar(typeVar.Index);
+                    return MakeTypeVar(typeVar.Index);                
 
-                case M.GlobalType externalType:
+                case M.GlobalType globalType:
                     {
                         // typeInfo를 가져와야 한다
-                        var typeInfo = typeInfoRepo.GetType(externalType.ModuleName, externalType.NamespacePath, externalType.Name, externalType.TypeArgs.Length);
+                        var typeInfo = typeInfoRepo.GetType(globalType.ModuleName, globalType.NamespacePath, globalType.Name, globalType.TypeArgs.Length);
                         Debug.Assert(typeInfo != null);
 
-                        var typeArgs = MakeTypeValues(externalType.TypeArgs);
-                        return MakeTypeValue(new RootItemValueOuter(externalType.ModuleName, externalType.NamespacePath), typeInfo, typeArgs);
+                        var typeArgs = MakeTypeValues(globalType.TypeArgs);
+                        return MakeTypeValue(new RootItemValueOuter(globalType.ModuleName, globalType.NamespacePath), typeInfo, typeArgs);
                     }
 
                 case M.MemberType memberType:
                     {
-                        var outerType = MakeTypeValue(memberType.Outer);
+                        var outerType = MakeTypeValueByMType(memberType.Outer);
                         var typeArgs = MakeTypeValues(memberType.TypeArgs);
 
                         var memberTypeValue = outerType.GetMemberType(memberType.Name, typeArgs);
@@ -114,7 +152,7 @@ namespace Gum.IR0Translator
                         return memberTypeValue;
                     }
 
-                case M.VoidType _:
+                case M.VoidType:
                     return VoidTypeValue.Instance;
 
                 default:

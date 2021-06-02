@@ -34,7 +34,7 @@ namespace Gum.IR0Translator
             abstract class FuncMatcherArgument
             {
                 // preanalyze할수도 있고, 여기서 시작할수도 있다
-                public abstract void DoAnalyze(ResolveHint hint);
+                public abstract void DoAnalyze(TypeValue? expectType); // throws FuncMatchFatalException
                 public abstract TypeValue GetTypeValue();
                 public abstract R.Argument? GetRArgument();
 
@@ -51,9 +51,21 @@ namespace Gum.IR0Translator
                         this.exp = exp; 
                     }
 
-                    public override void DoAnalyze(ResolveHint hint)
+                    public override void DoAnalyze(TypeValue? expectType) // throws FuncMatcherFatalException
                     {
-                        expResult = analyzer.AnalyzeExp_Exp(exp, hint);
+                        if (expectType != null)
+                        {
+                            var hint = ResolveHint.Make(expectType);
+                            var argResult = analyzer.AnalyzeExp_Exp(exp, hint);
+                            expResult = analyzer.globalContext.TryCastExp_Exp(argResult, expectType);
+
+                            if (expResult == null)
+                                throw new FuncMatcherFatalException();
+                        }
+                        else // none, EnumConstructor
+                        {
+                            expResult = analyzer.AnalyzeExp_Exp(exp, ResolveHint.None);
+                        }
                     }                    
 
                     public override TypeValue GetTypeValue()
@@ -83,8 +95,14 @@ namespace Gum.IR0Translator
                         this.typeValue = typeValue;
                     }
 
-                    public override void DoAnalyze(ResolveHint hint)
+                    public override void DoAnalyze(TypeValue? expectType) // throws FuncMatcherFatalException
                     {
+                        if (expectType != null)
+                        {
+                            // exact match
+                            if (!expectType.Equals(typeValue))
+                                throw new FuncMatcherFatalException();
+                        }
                     }
 
                     public override TypeValue GetTypeValue()
@@ -107,8 +125,14 @@ namespace Gum.IR0Translator
                         this.typeValue = typeValue;
                     }
 
-                    public override void DoAnalyze(ResolveHint hint)
+                    public override void DoAnalyze(TypeValue? expectType)
                     {
+                        if (expectType != null)
+                        {
+                            // exact match
+                            if (!expectType.Equals(typeValue))
+                                throw new FuncMatcherFatalException();
+                        }
                     }
 
                     public override TypeValue GetTypeValue()
@@ -128,7 +152,7 @@ namespace Gum.IR0Translator
 
                     public Ref(S.Exp exp) { this.exp = exp; }
 
-                    public override void DoAnalyze(ResolveHint hint)
+                    public override void DoAnalyze(TypeValue? expectType)
                     {
                         throw new NotImplementedException();
                     }
@@ -398,21 +422,13 @@ namespace Gum.IR0Translator
                 void MatchArgument(TypeValue paramType, FuncMatcherArgument arg) // throws FuncMatcherFatalException
                 {
                     var appliedParamType = paramType.Apply_TypeValue(outerTypeEnv); // 아직 함수 부분의 TypeEnv가 확정되지 않았으므로, outer까지만 적용하고 나머지는 funcInfo의 TypeVar로 채워넣는다
-
-                    // arg
-                    var resolveHint = ResolveHint.Make(appliedParamType);
-                    arg.DoAnalyze(resolveHint); // Argument 종류에 따라서 달라진다
-
-                    var argType = arg.GetTypeValue();
-
-                    if (!globalContext.IsAssignable(appliedParamType, argType))
-                        throw new FuncMatcherFatalException();
+                    arg.DoAnalyze(appliedParamType); // Argument 종류에 따라서 달라진다
                 }
 
                 // Layer 2
                 void MatchArgument_UnknownParamType(FuncMatcherArgument arg)
                 {
-                    arg.DoAnalyze(ResolveHint.None);
+                    arg.DoAnalyze(null);
                 }
                 #endregion
             }

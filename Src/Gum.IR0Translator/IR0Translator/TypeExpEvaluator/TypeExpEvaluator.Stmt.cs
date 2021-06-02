@@ -22,14 +22,19 @@ namespace Gum.IR0Translator
         void VisitIfStmt(S.IfStmt ifStmt)
         {
             VisitExp(ifStmt.Cond);
-
-            if (ifStmt.TestType != null)
-                VisitTypeExpOuterMost(ifStmt.TestType);
-
             VisitStmt(ifStmt.Body);
 
             if (ifStmt.ElseBody != null)
                 VisitStmt(ifStmt.ElseBody);
+        }
+
+        void VisitIfTestStmt(S.IfTestStmt ifTestStmt)
+        {
+            VisitExp(ifTestStmt.Exp);
+            VisitTypeExpOuterMost(ifTestStmt.TestType);
+            VisitStmt(ifTestStmt.Body);
+            if (ifTestStmt.ElseBody != null)
+                VisitStmt(ifTestStmt.ElseBody);
         }
 
         void VisitForStmtInitializer(S.ForStmtInitializer initializer)
@@ -115,6 +120,7 @@ namespace Gum.IR0Translator
                 case S.CommandStmt cmdStmt: VisitCommandStmt(cmdStmt); break;
                 case S.VarDeclStmt varDeclStmt: VisitVarDeclStmt(varDeclStmt); break;
                 case S.IfStmt ifStmt: VisitIfStmt(ifStmt); break;
+                case S.IfTestStmt ifTestStmt: VisitIfTestStmt(ifTestStmt); break;
                 case S.ForStmt forStmt: VisitForStmt(forStmt); break;
                 case S.ContinueStmt continueStmt: VisitContinueStmt(continueStmt); break;
                 case S.BreakStmt breakStmt: VisitBreakStmt(breakStmt); break;

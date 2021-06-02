@@ -43,11 +43,6 @@ namespace Gum.IR0Translator
             throw new NotImplementedException();
         }
 
-        public R.Path MakeLambdaType(R.Path.Nested lambda)
-        {
-            return new R.Path.AnonymousLambdaType(lambda);
-        }
-
         public R.Path MakeEnumElemType()
         {
             throw new NotImplementedException();
