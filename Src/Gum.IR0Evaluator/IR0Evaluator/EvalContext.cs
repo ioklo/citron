@@ -15,7 +15,8 @@ namespace Gum.IR0Evaluator
         {
             private SharedContext sharedContext;
 
-            private ImmutableDictionary<string, Value> localVars;
+            private ImmutableDictionary<string, Value> capturedVars;
+            private ImmutableDictionary<string, Value> localVars;            
             private EvalFlowControl flowControl;
             private ImmutableArray<Task> tasks;
             private Value? thisValue;
@@ -25,7 +26,7 @@ namespace Gum.IR0Evaluator
             public EvalContext(Value retValue)
             {
                 this.sharedContext = new SharedContext();
-
+                this.capturedVars = ImmutableDictionary<string, Value>.Empty;
                 this.localVars = ImmutableDictionary<string, Value>.Empty;
                 this.flowControl = EvalFlowControl.None;
                 this.tasks = ImmutableArray<Task>.Empty;
@@ -35,6 +36,7 @@ namespace Gum.IR0Evaluator
 
             public EvalContext(
                 EvalContext evalContext,
+                ImmutableDictionary<string, Value> capturedVars,
                 ImmutableDictionary<string, Value> localVars,
                 EvalFlowControl flowControl,
                 ImmutableArray<Task> tasks,
@@ -43,6 +45,7 @@ namespace Gum.IR0Evaluator
             {
                 this.sharedContext = evalContext.sharedContext;
 
+                this.capturedVars = capturedVars;
                 this.localVars = localVars;
                 this.flowControl = flowControl;
                 this.tasks = tasks;
@@ -67,6 +70,7 @@ namespace Gum.IR0Evaluator
             }
 
             public async ValueTask ExecInNewFuncFrameAsync(
+                ImmutableDictionary<string, Value> newCapturedVars,
                 ImmutableDictionary<string, Value> newLocalVars,
                 EvalFlowControl newFlowControl,
                 ImmutableArray<Task> newTasks,
@@ -74,8 +78,8 @@ namespace Gum.IR0Evaluator
                 Value newRetValue,
                 Func<ValueTask> ActionAsync)
             {
-                var prevValue = (localVars, flowControl, tasks, thisValue, retValue);
-                (localVars, flowControl, tasks, thisValue, retValue) = (newLocalVars, newFlowControl, newTasks, newThisValue, newRetValue);
+                var prevValue = (capturedVars, localVars, flowControl, tasks, thisValue, retValue);
+                (capturedVars, localVars, flowControl, tasks, thisValue, retValue) = (newCapturedVars, newLocalVars, newFlowControl, newTasks, newThisValue, newRetValue);
 
                 try
                 {
@@ -83,7 +87,7 @@ namespace Gum.IR0Evaluator
                 }
                 finally
                 {
-                    (localVars, flowControl, tasks, thisValue, retValue) = prevValue;
+                    (capturedVars, localVars, flowControl, tasks, thisValue, retValue) = prevValue;
                 }
             }
 
@@ -105,6 +109,11 @@ namespace Gum.IR0Evaluator
             public Value GetLocalValue(string name)
             {
                 return localVars[name];
+            }
+
+            public Value GetCapturedValue(string name)
+            {
+                return capturedVars[name];
             }
 
             public void AddLocalVar(string name, Value value)

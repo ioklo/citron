@@ -204,7 +204,6 @@ namespace Gum.IR0Translator
                             throw new UnreachableCodeException();
                         
                         case R.ThisLoc:          // this = x;
-                        case R.CapturedThisLoc:  // var l = () { this = x; }
                             globalContext.AddFatalError(A0803_BinaryOp_LeftOperandIsNotAssignable, exp.Operand0);
                             throw new UnreachableCodeException();
 

@@ -39,7 +39,13 @@ namespace Gum.IR0Evaluator
             this.declEvaluator = new DeclEvaluator(script.Name, this, script.Decls);
         }
 
-        Evaluator(EvalContext context, StmtEvaluator stmtEvaluator, DeclEvaluator declEvaluator, Value? thisValue, ImmutableDictionary<string, Value> localVars)
+        Evaluator(
+            EvalContext context, 
+            StmtEvaluator stmtEvaluator, 
+            DeclEvaluator declEvaluator, 
+            Value? thisValue,
+            ImmutableDictionary<string, Value> capturedVars,
+            ImmutableDictionary<string, Value> localVars)
         {
             this.expEvaluator = new ExpEvaluator(this);
             this.stmtEvaluator = stmtEvaluator.Clone(this);
@@ -48,6 +54,7 @@ namespace Gum.IR0Evaluator
 
             this.context = new EvalContext(
                 context,
+                capturedVars,
                 localVars,
                 EvalFlowControl.None,
                 ImmutableArray<Task>.Empty,
@@ -55,9 +62,9 @@ namespace Gum.IR0Evaluator
                 VoidValue.Instance);
         }
         
-        Evaluator CloneWithNewContext(Value? thisValue, ImmutableDictionary<string, Value> localVars)
+        Evaluator CloneWithNewContext(Value? thisValue, ImmutableDictionary<string, Value> capturedVars, ImmutableDictionary<string, Value> localVars)
         {
-            return new Evaluator(context, stmtEvaluator, declEvaluator, thisValue, localVars);
+            return new Evaluator(context, stmtEvaluator, declEvaluator, thisValue, capturedVars, localVars);
         }
 
         ValueTask EvalStringExpAsync(R.StringExp command, Value result)

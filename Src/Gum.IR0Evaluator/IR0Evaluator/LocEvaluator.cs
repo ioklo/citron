@@ -48,6 +48,9 @@ namespace Gum.IR0Evaluator
                     case R.LocalVarLoc localVarLoc:
                         return evaluator.context.GetLocalValue(localVarLoc.Name);
 
+                    case R.CapturedVarLoc capturedVarLoc:
+                        return evaluator.context.GetCapturedValue(capturedVarLoc.Name);
+
                     case R.ListIndexerLoc listIndexerLoc:
                         return await EvalListIndexerLocAsync(listIndexerLoc);
 

@@ -18,11 +18,6 @@ namespace Gum.IR0
     public record GlobalVarLoc(string Name) : Loc;    
     public record LocalVarLoc(string Name) : Loc;    
     public record CapturedVarLoc(string Name) : Loc;
-    public record CapturedThisLoc : Loc
-    {
-        public static readonly CapturedThisLoc Instance = new CapturedThisLoc();
-        CapturedThisLoc() { }
-    }
 
     // 임시 value를 만들어서 Exp를 실행해서 대입해주는 역할, ExpInfo 대신 쓴다    
     public record TempLoc(Exp Exp, Path Type) : Loc;    

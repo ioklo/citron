@@ -13,7 +13,7 @@ namespace Gum.IR0Evaluator
     {
         public abstract R.ParamInfo ParamInfo { get; }
         
-        public abstract ValueTask InvokeAsync(Evaluator evaluator, Value? thisValue, ImmutableDictionary<string, Value> localVars, Value result);
+        public abstract ValueTask InvokeAsync(Evaluator evaluator, Value? capturedThis, ImmutableDictionary<string, Value> capturedVars, ImmutableDictionary<string, Value> localVars, Value result);
         public abstract void Capture(Evaluator evaluator, LambdaValue lambdaValue);
     }
 
@@ -48,9 +48,14 @@ namespace Gum.IR0Evaluator
                 return new LambdaValue(capturedThis, capturesBuilder.ToImmutable());
             }
 
-            public override async ValueTask InvokeAsync(Evaluator evaluator, Value? thisValue, ImmutableDictionary<string, Value> localVars, Value result)
+            public override async ValueTask InvokeAsync(
+                Evaluator evaluator, 
+                Value? capturedThis,
+                ImmutableDictionary<string, Value> capturedVars,
+                ImmutableDictionary<string, Value> localVars, 
+                Value result)
             {
-                await evaluator.context.ExecInNewFuncFrameAsync(localVars, EvalFlowControl.None, ImmutableArray<Task>.Empty, thisValue, result, async () =>
+                await evaluator.context.ExecInNewFuncFrameAsync(capturedVars, localVars, EvalFlowControl.None, ImmutableArray<Task>.Empty, capturedThis, result, async () =>
                 {
                     await foreach (var _ in evaluator.EvalStmtAsync(lambdaDecl.CapturedStatement.Body)) { }
                 });
