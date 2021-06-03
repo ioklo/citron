@@ -11,6 +11,7 @@ using Xunit;
 using static Gum.Infra.Misc;
 using static Gum.IR0.IR0Factory;
 using Gum.Infra;
+using System.Reflection;
 
 namespace Gum.IR0Evaluator.Test
 {
@@ -24,6 +25,8 @@ namespace Gum.IR0Evaluator.Test
             {
                 sb = new StringBuilder();
             }
+
+            public void Append(string s) { sb.Append(s); }
 
             public async Task ExecuteAsync(string cmdText)
             {
@@ -119,24 +122,34 @@ namespace Gum.IR0Evaluator.Test
 
         public async Task<string> EvalAsync(ImmutableArray<Decl> decls, ImmutableArray<Stmt> topLevelStmts)
         {
-            var (output, _) = await EvalAsyncWithRetValue(decls, topLevelStmts);
+            var (output, _) = await EvalAsyncWithRetValue(default, decls, topLevelStmts);
             return output;
         }
         
-        public async Task<(string Output, int RetValue)> EvalAsyncWithRetValue(
+        public Task<(string Output, int RetValue)> EvalAsyncWithRetValue(
             ImmutableArray<IModuleDriver> moduleDrivers,
             ImmutableArray<Decl> decls,
             ImmutableArray<Stmt> topLevelStmts)
         {   
             var commandProvider = new TestCommandProvider();
+
+            return EvalAsyncWithRetValue(commandProvider, moduleDrivers, decls, topLevelStmts);            
+        }
+
+        async Task<(string Output, int RetValue)> EvalAsyncWithRetValue(
+            TestCommandProvider commandProvider,
+            ImmutableArray<IModuleDriver> moduleDrivers,
+            ImmutableArray<Decl> decls,
+            ImmutableArray<Stmt> topLevelStmts)
+        {
             var script = new Script(moduleName, decls, topLevelStmts);
 
-            var evaluator = new Evaluator(moduleDrivers, commandProvider, script);            
+            var evaluator = new Evaluator(moduleDrivers, commandProvider, script);
 
             var retValue = await evaluator.EvalAsync();
 
             return (commandProvider.GetOutput(), retValue);
-        }        
+        }
 
         [Fact]
         public async Task CommandStmt_WorksProperly()
@@ -478,7 +491,7 @@ namespace Gum.IR0Evaluator.Test
                 PrintStringCmdStmt("Wrong")
             );
 
-            var (output, result) = await EvalAsyncWithRetValue(default,  stmts);
+            var (output, result) = await EvalAsyncWithRetValue(default, default, stmts);
             Assert.Equal("Once", output);
             Assert.Equal(2, result);
         }
@@ -572,7 +585,7 @@ namespace Gum.IR0Evaluator.Test
         public async Task ReturnStmt_ReturnProperlyInTopLevel()
         {
             var topLevelStmts = Arr<Stmt>(new ReturnStmt(new IntLiteralExp(34)));
-            var (_, retValue) = await EvalAsyncWithRetValue(default,  topLevelStmts);
+            var (_, retValue) = await EvalAsyncWithRetValue(default, default, topLevelStmts);
 
             Assert.Equal(34, retValue);
         }
@@ -987,24 +1000,234 @@ namespace Gum.IR0Evaluator.Test
             var output = await EvalAsync(Arr<Decl>(funcDecl), stmts);
             Assert.Equal("Hello World", output);
         }
-        
+
         class TestDriver : IModuleDriver
-        {   
+        {
+            ModuleName moduleName;
+            TestCommandProvider cmdProvider;
+
+            public TestDriver(ModuleName moduleName, TestCommandProvider cmdProvider) 
+            {
+                this.moduleName = moduleName;
+                this.cmdProvider = cmdProvider;
+            }
+
+            class TestFuncRuntimeItem : FuncRuntimeItem
+            {
+                TestCommandProvider cmdProvider;
+
+                public TestFuncRuntimeItem(TestCommandProvider provider) { cmdProvider = provider; }
+
+                public override Name Name => "F";
+                public override ParamInfo ParamInfo => new ParamInfo(null, default);
+                public override ParamHash ParamHash => new ParamHash(0, default);
+
+                public override ValueTask InvokeAsync(Evaluator evaluator, Value? thisValue, ImmutableDictionary<string, Value> args, Value result)
+                {
+                    cmdProvider.Append("Hello World");
+                    return ValueTask.CompletedTask;
+                }
+            }
+
+            class RootTestContainer : IItemContainer
+            {
+                TestCommandProvider cmdProvider;
+
+                public RootTestContainer(TestCommandProvider cmdProvider) { this.cmdProvider = cmdProvider; }
+
+                public IItemContainer GetContainer(Name name, ParamHash paramHash)
+                {
+                    throw new NotImplementedException();
+                }
+
+                public TRuntimeItem GetRuntimeItem<TRuntimeItem>(Name name, ParamHash paramHash) 
+                    where TRuntimeItem : RuntimeItem
+                {
+                    if (name == "F")
+                    {
+                        RuntimeItem ri = new TestFuncRuntimeItem(cmdProvider);
+                        return (TRuntimeItem)ri;
+                    }
+
+                    throw new UnreachableCodeException();
+                }
+            }
+
+            public ImmutableArray<(ModuleName, IItemContainer)> GetRootContainers()
+            {
+                return Arr<(ModuleName, IItemContainer)>((moduleName, new RootTestContainer(cmdProvider)));
+            }
         }
 
         // 
         [Fact]
         public async Task CallFuncExp_CallVanillaExternal()
         {
-            var testDriver = new TestDriver();
             var testExternalModuleName = "TestExternalModule";
+            var commandProvider = new TestCommandProvider();
+            var testDriver = new TestDriver(testExternalModuleName, commandProvider);
 
             var func = new Path.Nested(new Path.Root(testExternalModuleName), "F", ParamHash.None, default);
             var stmts = Arr<Stmt>(PrintStringCmdStmt(new CallFuncExp(func, null, default)));
 
-            var (output, _) = await EvalAsyncWithRetValue(Arr<IModuleDriver>(testDriver), default, stmts);
+            var (output, _) = await EvalAsyncWithRetValue(commandProvider, Arr<IModuleDriver>(testDriver), default, stmts);
             Assert.Equal("Hello World", output);
+
+            // System.Console.WriteLine()
         }
+
+        // [System.Console]* 모든 것, Single
+        class TestDotnetDriver : IModuleDriver
+        {
+            ModuleName moduleName; // System.Console
+                                   // System.Console, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+
+            public TestDotnetDriver(ModuleName moduleName)
+            {
+                this.moduleName = moduleName;
+            }
+
+            class TestFuncRuntimeItem : FuncRuntimeItem
+            {
+                public override Name Name => "F";
+                public override ParamInfo ParamInfo => new ParamInfo(null, default);
+                public override ParamHash ParamHash => new ParamHash(0, default);
+
+                public override ValueTask InvokeAsync(Evaluator evaluator, Value? thisValue, ImmutableDictionary<string, Value> args, Value result)
+                {
+                    return ValueTask.CompletedTask;
+                }
+            }
+
+            class RootTestContainer : IItemContainer
+            {
+                public RootTestContainer(TestCommandProvider cmdProvider) { this.cmdProvider = cmdProvider; }
+
+                public IItemContainer GetContainer(Name name, ParamHash paramHash)
+                {
+                    throw new NotImplementedException();
+                }
+
+                public TRuntimeItem GetRuntimeItem<TRuntimeItem>(Name name, ParamHash paramHash)
+                    where TRuntimeItem : RuntimeItem
+                {
+                    if (name == "F")
+                    {
+                        RuntimeItem ri = new TestFuncRuntimeItem(cmdProvider);
+                        return (TRuntimeItem)ri;
+                    }
+
+                    throw new UnreachableCodeException();
+                }
+            }
+
+            record TypeItemContainer(Type type) : IItemContainer
+            {
+                public IItemContainer GetContainer(Name name, ParamHash paramHash)
+                {
+                    throw new NotImplementedException();
+                }
+
+                bool Match(ParamHash paramHash, MethodInfo methodInfo)
+                {
+                    // paramHash랑 매칭
+                    if (paramHash.TypeParamCount != methodInfo.GetGenericArguments().Length)
+                        return false;
+
+                    var methodParams = methodInfo.GetParameters();
+                    if (paramHash.FuncParamTypes.Length != methodParams.Length)
+                        return false;
+
+                    // matching
+                    for (int i = 0; i < methodParams.Length; i++)
+                    {
+                        if (paramHash.FuncParamTypes[i] != Path.String)
+
+
+                        }
+                }
+
+                public TRuntimeItem GetRuntimeItem<TRuntimeItem>(Name name_name, ParamHash paramHash) where TRuntimeItem : RuntimeItem
+                {
+                    var name = (Name.Normal)name_name;
+
+                    // WriteLine
+                    var memberInfos = type.GetMember(name.Value);
+
+                    foreach (var memberInfo in memberInfos)
+                    {
+                        var methodInfo = memberInfo as MethodInfo;
+                        if (methodInfo == null)
+                            continue;
+                    }  
+                }
+            }
+
+            record NamespaceItemContainer(Assembly assembly, string namespaceName) : IItemContainer
+            {
+                public IItemContainer GetContainer(Name name_name, ParamHash paramHash)
+                {
+                    // namespaceName.name
+                    Name.Normal name = (Name.Normal)name_name;
+
+                    var fullName = $"{namespaceName}.{name.Value}";
+                    var type = assembly.GetType(fullName); // TODO: paramHash고려
+                    if (type != null)
+                        return new TypeItemContainer(type);
+
+                    return new NamespaceItemContainer(assembly, fullName);
+                }
+
+                public TRuntimeItem GetRuntimeItem<TRuntimeItem>(Name name, ParamHash paramHash) where TRuntimeItem : RuntimeItem
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            record AssemblyItemContainer(Assembly assembly) : IItemContainer
+            {
+                // namespace 구분이 없어서, type이 있는지 보고 없으면 네임스페이스로
+                public IItemContainer GetContainer(Name name_name, ParamHash paramHash)
+                {
+                    Name.Normal name = (Name.Normal)name_name;
+                    var type = assembly.GetType(name.Value); // TODO: paramHash고려
+                    if (type != null)
+                        return new TypeItemContainer(type);
+
+                    return new NamespaceItemContainer(assembly, name.Value);
+                }
+
+                public TRuntimeItem GetRuntimeItem<TRuntimeItem>(Name name, ParamHash paramHash) where TRuntimeItem : RuntimeItem
+                {
+                }
+            }
+
+            public ImmutableArray<(ModuleName, IItemContainer)> GetRootContainers()
+            {
+                var assembly = Assembly.Load(new AssemblyName(moduleName.Value));
+
+                return Arr<(ModuleName, IItemContainer)>((moduleName, new AssemblyItemContainer(assembly)));
+            }
+        }
+
+        [Fact]
+        public async Task CallFuncExp_CallDotnetExternal()
+        {
+            var testExternalModuleName = "TestExternalModule";
+            var commandProvider = new TestCommandProvider();
+            var testDriver = new TestDriver(testExternalModuleName, commandProvider);
+
+            var func = new Path.Nested(new Path.Root(testExternalModuleName), "F", ParamHash.None, default);
+            var stmts = Arr<Stmt>(PrintStringCmdStmt(new CallFuncExp(func, null, default)));
+
+            var (output, _) = await EvalAsyncWithRetValue(commandProvider, Arr<IModuleDriver>(testDriver), default, stmts);
+            Assert.Equal("Hello World", output);
+
+            // System.Console.WriteLine()
+        }
+
+
+
 
         // CallSeqFunc
         [Fact]

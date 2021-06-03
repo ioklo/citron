@@ -192,7 +192,7 @@ namespace Gum.IR0Evaluator
                 return yieldValue!;
             }
 
-            public void AddRootItemContainer(R.ModuleName moduleName, ItemContainer container)
+            public void AddRootItemContainer(R.ModuleName moduleName, IItemContainer container)
             {
                 sharedContext.AddRootItemContainer(moduleName, container);
             }

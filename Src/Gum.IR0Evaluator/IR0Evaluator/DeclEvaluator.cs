@@ -36,7 +36,6 @@ namespace Gum.IR0Evaluator
             public void Eval()
             {
                 // 이 모듈의 이름을 알아야 한다
-
                 foreach (var decl in decls)
                 {
                     EvalDecl(decl);

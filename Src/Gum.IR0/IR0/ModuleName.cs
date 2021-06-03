@@ -10,7 +10,7 @@ namespace Gum.IR0
     [AutoConstructor, ImplementIEquatable]
     public partial struct ModuleName
     {
-        string value;
+        public string Value { get; }
         public static implicit operator ModuleName(string s) => new ModuleName(s);
     }
 }

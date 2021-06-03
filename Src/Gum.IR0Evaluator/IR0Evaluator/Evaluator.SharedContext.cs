@@ -10,17 +10,17 @@ namespace Gum.IR0Evaluator
     {
         class SharedContext
         {
-            Dictionary<R.ModuleName, ItemContainer> rootContainers;
+            Dictionary<R.ModuleName, IItemContainer> rootContainers;
 
             public Dictionary<string, Value> PrivateGlobalVars { get; }
 
             public SharedContext()
             {
-                rootContainers = new Dictionary<R.ModuleName, ItemContainer>();
+                rootContainers = new Dictionary<R.ModuleName, IItemContainer>();
                 PrivateGlobalVars = new Dictionary<string, Value>();
             }            
 
-            ItemContainer GetContainer(R.Path path)
+            IItemContainer GetContainer(R.Path path)
             {
                 if (path is R.Path.Root rootPath)
                 {
@@ -43,7 +43,7 @@ namespace Gum.IR0Evaluator
             }
 
             // 
-            public void AddRootItemContainer(R.ModuleName moduleName, ItemContainer container)
+            public void AddRootItemContainer(R.ModuleName moduleName, IItemContainer container)
             {
                 rootContainers.Add(moduleName, container);
             }

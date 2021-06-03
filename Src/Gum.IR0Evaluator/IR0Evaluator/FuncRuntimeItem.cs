@@ -9,7 +9,7 @@ using R = Gum.IR0;
 
 namespace Gum.IR0Evaluator
 {
-    abstract class FuncRuntimeItem : RuntimeItem
+    public abstract class FuncRuntimeItem : RuntimeItem
     {
         public abstract R.ParamInfo ParamInfo { get; }
         public abstract ValueTask InvokeAsync(Evaluator evaluator, Value? thisValue, ImmutableDictionary<string, Value> args, Value result);

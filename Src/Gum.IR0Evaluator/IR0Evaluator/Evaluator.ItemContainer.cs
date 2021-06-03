@@ -5,7 +5,7 @@ namespace Gum.IR0Evaluator
 {
     public partial class Evaluator
     {
-        class ItemContainer
+        class ItemContainer : IItemContainer
         {
             Dictionary<(R.Name, R.ParamHash), ItemContainer> containers;
             Dictionary<(R.Name, R.ParamHash), RuntimeItem> runtimeItems;
@@ -16,7 +16,7 @@ namespace Gum.IR0Evaluator
                 runtimeItems = new Dictionary<(R.Name, R.ParamHash), RuntimeItem>();               
             }
 
-            public ItemContainer GetContainer(R.Name name, R.ParamHash paramHash)
+            public IItemContainer GetContainer(R.Name name, R.ParamHash paramHash)
             {
                 return containers[(name, paramHash)];
             }

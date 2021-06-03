@@ -5,7 +5,7 @@ using R = Gum.IR0;
 
 namespace Gum.IR0Evaluator
 {
-    class TypeContext
+    public class TypeContext
     {
         // index -> type
         ImmutableArray<R.Path> env;
