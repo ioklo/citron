@@ -124,13 +124,14 @@ namespace Gum.IR0Evaluator.Test
         }
         
         public async Task<(string Output, int RetValue)> EvalAsyncWithRetValue(
+            ImmutableArray<IModuleDriver> moduleDrivers,
             ImmutableArray<Decl> decls,
             ImmutableArray<Stmt> topLevelStmts)
         {   
             var commandProvider = new TestCommandProvider();
             var script = new Script(moduleName, decls, topLevelStmts);
 
-            var evaluator = new Evaluator(commandProvider, script);            
+            var evaluator = new Evaluator(moduleDrivers, commandProvider, script);            
 
             var retValue = await evaluator.EvalAsync();
 
@@ -986,6 +987,24 @@ namespace Gum.IR0Evaluator.Test
             var output = await EvalAsync(Arr<Decl>(funcDecl), stmts);
             Assert.Equal("Hello World", output);
         }
+        
+        class TestDriver : IModuleDriver
+        {   
+        }
+
+        // 
+        [Fact]
+        public async Task CallFuncExp_CallVanillaExternal()
+        {
+            var testDriver = new TestDriver();
+            var testExternalModuleName = "TestExternalModule";
+
+            var func = new Path.Nested(new Path.Root(testExternalModuleName), "F", ParamHash.None, default);
+            var stmts = Arr<Stmt>(PrintStringCmdStmt(new CallFuncExp(func, null, default)));
+
+            var (output, _) = await EvalAsyncWithRetValue(Arr<IModuleDriver>(testDriver), default, stmts);
+            Assert.Equal("Hello World", output);
+        }
 
         // CallSeqFunc
         [Fact]
@@ -1154,6 +1173,6 @@ namespace Gum.IR0Evaluator.Test
         public Task NewClassExp_MakesClassValue()
         {
             throw new PrerequisiteRequiredException(Prerequisite.Class);
-        }
+        }        
     }
 }
