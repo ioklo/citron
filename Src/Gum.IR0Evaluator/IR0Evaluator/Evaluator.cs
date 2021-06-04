@@ -144,6 +144,10 @@ namespace Gum.IR0Evaluator
             {
                 return new ListValue();
             }
+            else if (R.PathExtensions.IsTypeInstOfListIter(typePath))
+            {
+                return new SeqValue();
+            }
 
             if (typePath is R.Path.Nested nestedTypePath)
             {

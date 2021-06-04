@@ -11,31 +11,40 @@
     <link href="ScratchPad.styles.css" rel="stylesheet" />
 </head>
 
-<body>
+<body>    
     <main role="main" class="pb-3">
-        <div id="main" class="d-flex flex-column container h-100">
 
-            <div class="flex-grow-0 flex-shrink-0 p-2">
-                <h1>Scratch Pad</h1>
-                <button type="button" class="btn btn-primary" onclick="onRunButtonClick();">Run</button>
-                <button type="button" class="btn btn-secondary">Examples</button>
+        <div class="container">
+            <aside class="container_sidebar">
+            </aside>
+
+            <div class="container_main">
+
+                <div id="main" class="d-flex flex-column container h-100">
+
+                    <div class="flex-grow-0 flex-shrink-0 p-2">
+                        <h1>Scratch Pad</h1>
+                        <button type="button" class="btn btn-primary" onclick="onRunButtonClick();">Run</button>
+                        <button type="button" class="btn btn-secondary">Examples</button>
+                    </div>
+
+                    <div id="editor" class="flex-grow-1 flex-shrink-1 border rounded-top overflow-hidden">
+                    </div>
+
+                    <div class="py-2">
+                        <pre id="result" class="flex-grow-0 flex-shrink-0 border bg-white" style="height: 200px;">result</pre>
+                    </div>
+
+                    <div id="app" class="d-none">Loading...</div>
+
+                    <div id="blazor-error-ui">
+                        An unhandled error has occurred.
+                        <a href="" class="reload">Reload</a>
+                        <a class="dismiss">🗙</a>
+                    </div>
+
+                </div>
             </div>
-
-            <div id="editor" class="flex-grow-1 flex-shrink-1 border rounded-top overflow-hidden">
-            </div>
-
-            <div class="py-2">
-                <pre id="result" class="flex-grow-0 flex-shrink-0 border bg-white" style="height: 200px;">result</pre>
-            </div>
-
-            <div id="app" class="d-none">Loading...</div>
-
-            <div id="blazor-error-ui">
-                An unhandled error has occurred.
-                <a href="" class="reload">Reload</a>
-                <a class="dismiss">🗙</a>
-            </div>
-
         </div>
     </main>
 
@@ -49,8 +58,7 @@
 
     <script>
         $('html').height('100%');
-        $('body').height('100%');
-        $('main').height('100%');
+        $('body').height('100%');        
 
         function onResize() {
             window.editor.layout();

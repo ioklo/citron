@@ -332,6 +332,32 @@ namespace Gum.IR0Evaluator
                 ((ListValue)result).SetList(list);
             }
 
+            async ValueTask EvalListIterExpAsync(R.ListIteratorExp exp, Value result_value)
+            {
+                var listValue = (ListValue)await evaluator.EvalLocAsync(exp.ListLoc);
+                var result = (SeqValue)result_value;
+                
+                // evaluator 복제
+                var newEvaluator = evaluator.CloneWithNewContext(listValue, default, default);
+
+                // asyncEnum을 만들기 위해서 내부 함수를 씁니다
+                async IAsyncEnumerator<Infra.Void> WrapAsyncEnum()
+                {
+                    var list = listValue.GetList();                    
+
+                    foreach (var elem in list)
+                    {
+                        var yieldValue = newEvaluator.context.GetYieldValue();
+                        yieldValue.SetValue(elem); // 복사
+
+                        yield return Infra.Void.Instance;
+                    }
+                }
+
+                var enumerator = WrapAsyncEnum();
+                result.SetEnumerator(enumerator, newEvaluator);
+            }
+
             // Value에 넣어야 한다, 묶는 방법도 설명해야 한다
             // values: params까지 포함한 분절단위
             async ValueTask EvalArgumentsAsync(ImmutableArray<Value> values, ImmutableArray<R.Argument> args)
@@ -426,6 +452,7 @@ namespace Gum.IR0Evaluator
                     case R.CallValueExp callValueExp: await EvalCallValueExpAsync(callValueExp, result); break;
                     case R.LambdaExp lambdaExp: EvalLambdaExp(lambdaExp, result); break;
                     case R.ListExp listExp: await EvalListExpAsync(listExp, result); break;
+                    case R.ListIteratorExp listIterExp: await EvalListIterExpAsync(listIterExp, result); break;
                     case R.NewEnumElemExp enumExp: await EvalNewEnumExpAsync(enumExp, result); break;
                     case R.NewStructExp newStructExp: await EvalNewStructExpAsync(newStructExp, result); break;
                     case R.NewClassExp newClassExp: await EvalNewClassExpAsync(newClassExp, result); break;
