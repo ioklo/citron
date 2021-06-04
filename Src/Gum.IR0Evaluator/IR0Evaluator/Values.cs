@@ -61,7 +61,7 @@ namespace Gum.IR0Evaluator
         }
     }
 
-    class StringValue : Value
+    public class StringValue : Value
     {
         string? value;
 

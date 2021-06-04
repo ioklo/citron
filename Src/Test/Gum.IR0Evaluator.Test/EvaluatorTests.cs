@@ -12,6 +12,7 @@ using static Gum.Infra.Misc;
 using static Gum.IR0.IR0Factory;
 using Gum.Infra;
 using System.Reflection;
+using System.Diagnostics;
 
 namespace Gum.IR0Evaluator.Test
 {
@@ -1022,7 +1023,7 @@ namespace Gum.IR0Evaluator.Test
                 public override ParamInfo ParamInfo => new ParamInfo(null, default);
                 public override ParamHash ParamHash => new ParamHash(0, default);
 
-                public override ValueTask InvokeAsync(Evaluator evaluator, Value? thisValue, ImmutableDictionary<string, Value> args, Value result)
+                public override ValueTask InvokeAsync(Evaluator evaluator, Value? thisValue, ImmutableArray<Value> args, Value result)
                 {
                     cmdProvider.Append("Hello World");
                     return ValueTask.CompletedTask;
@@ -1089,38 +1090,47 @@ namespace Gum.IR0Evaluator.Test
 
             class TestFuncRuntimeItem : FuncRuntimeItem
             {
-                public override Name Name => "F";
-                public override ParamInfo ParamInfo => new ParamInfo(null, default);
-                public override ParamHash ParamHash => new ParamHash(0, default);
+                MethodInfo methodInfo;
+                public override Name Name => methodInfo.Name;
+                public override ParamInfo ParamInfo { get; }
+                public override ParamHash ParamHash { get; }
 
-                public override ValueTask InvokeAsync(Evaluator evaluator, Value? thisValue, ImmutableDictionary<string, Value> args, Value result)
+                public TestFuncRuntimeItem(MethodInfo methodInfo) 
+                { 
+                    this.methodInfo = methodInfo;
+
+                    int index = 0;
+                    var paramInfos = methodInfo.GetParameters();
+                    var builder = ImmutableArray.CreateBuilder<TypeAndName>(paramInfos.Length);
+                    var pathsBuilder = ImmutableArray.CreateBuilder<Path>(paramInfos.Length);
+                    foreach(var paramInfo in paramInfos)
+                    {
+                        builder.Add(new TypeAndName(Path.String, paramInfo.Name ?? $"@{index}"));
+                        pathsBuilder.Add(Path.String);
+                        index++;
+                    }
+
+                    ParamInfo = new ParamInfo(null, builder.MoveToImmutable());
+                    ParamHash = new ParamHash(methodInfo.GetGenericArguments().Length, pathsBuilder.MoveToImmutable());
+                }
+
+                public override ValueTask InvokeAsync(Evaluator evaluator, Value? thisValue, ImmutableArray<Value> args, Value result)
                 {
+                    if (thisValue != null)
+                        throw new NotImplementedException();
+
+                    object[] dotnetArgs = new object[args.Length];
+                    for (int i = 0; i < args.Length; i++)
+                        dotnetArgs[i] = ((StringValue)args[i]).GetString();
+
+                    methodInfo.Invoke(null, dotnetArgs);
+
+                    // TODO: Task를 리턴하는 것이었으면.. await 시켜야
+
                     return ValueTask.CompletedTask;
                 }
             }
-
-            class RootTestContainer : IItemContainer
-            {
-                public RootTestContainer(TestCommandProvider cmdProvider) { this.cmdProvider = cmdProvider; }
-
-                public IItemContainer GetContainer(Name name, ParamHash paramHash)
-                {
-                    throw new NotImplementedException();
-                }
-
-                public TRuntimeItem GetRuntimeItem<TRuntimeItem>(Name name, ParamHash paramHash)
-                    where TRuntimeItem : RuntimeItem
-                {
-                    if (name == "F")
-                    {
-                        RuntimeItem ri = new TestFuncRuntimeItem(cmdProvider);
-                        return (TRuntimeItem)ri;
-                    }
-
-                    throw new UnreachableCodeException();
-                }
-            }
-
+           
             record TypeItemContainer(Type type) : IItemContainer
             {
                 public IItemContainer GetContainer(Name name, ParamHash paramHash)
@@ -1141,10 +1151,14 @@ namespace Gum.IR0Evaluator.Test
                     // matching
                     for (int i = 0; i < methodParams.Length; i++)
                     {
-                        if (paramHash.FuncParamTypes[i] != Path.String)
+                        if (paramHash.FuncParamTypes[i] == Path.String && methodParams[i].ParameterType == typeof(string))
+                            continue;
 
+                        // 나머지는 false
+                        return false;
+                    }
 
-                        }
+                    return true;
                 }
 
                 public TRuntimeItem GetRuntimeItem<TRuntimeItem>(Name name_name, ParamHash paramHash) where TRuntimeItem : RuntimeItem
@@ -1159,7 +1173,15 @@ namespace Gum.IR0Evaluator.Test
                         var methodInfo = memberInfo as MethodInfo;
                         if (methodInfo == null)
                             continue;
-                    }  
+
+                        if (Match(paramHash, methodInfo))
+                        {
+                            RuntimeItem ri = new TestFuncRuntimeItem(methodInfo);
+                            return (TRuntimeItem)ri;
+                        }
+                    }
+
+                    throw new InvalidOperationException();
                 }
             }
 
@@ -1199,6 +1221,7 @@ namespace Gum.IR0Evaluator.Test
 
                 public TRuntimeItem GetRuntimeItem<TRuntimeItem>(Name name, ParamHash paramHash) where TRuntimeItem : RuntimeItem
                 {
+                    throw new NotImplementedException();
                 }
             }
 
@@ -1213,21 +1236,26 @@ namespace Gum.IR0Evaluator.Test
         [Fact]
         public async Task CallFuncExp_CallDotnetExternal()
         {
-            var testExternalModuleName = "TestExternalModule";
-            var commandProvider = new TestCommandProvider();
-            var testDriver = new TestDriver(testExternalModuleName, commandProvider);
+            var testExternalModuleName = "System.Console";
+            var testDriver = new TestDotnetDriver(testExternalModuleName);            
 
-            var func = new Path.Nested(new Path.Root(testExternalModuleName), "F", ParamHash.None, default);
-            var stmts = Arr<Stmt>(PrintStringCmdStmt(new CallFuncExp(func, null, default)));
+            var system = new Path.Nested(new Path.Root(testExternalModuleName), "System", ParamHash.None, default);
+            var system_Console = new Path.Nested(system, "Console", ParamHash.None, default);
+            var system_Console_Write = new Path.Nested(system_Console, "Write", new ParamHash(0, Arr(Path.String)), default);
+                
+            var stmts = Arr<Stmt>(new ExpStmt(new CallFuncExp(system_Console_Write, null, RArgs(RString("Hello World")))));
 
-            var (output, _) = await EvalAsyncWithRetValue(commandProvider, Arr<IModuleDriver>(testDriver), default, stmts);
-            Assert.Equal("Hello World", output);
+            using (var writer = new System.IO.StringWriter())
+            {
+                System.Console.SetOut(writer);
+
+                var (output, _) = await EvalAsyncWithRetValue(Arr<IModuleDriver>(testDriver), default, stmts);
+                
+                Assert.Equal("Hello World", writer.GetStringBuilder().ToString());
+            }
 
             // System.Console.WriteLine()
         }
-
-
-
 
         // CallSeqFunc
         [Fact]
