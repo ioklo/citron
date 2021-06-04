@@ -9,10 +9,10 @@ using R = Gum.IR0;
 
 namespace Gum.IR0Evaluator
 {
-    abstract class FuncRuntimeItem : RuntimeItem
+    public abstract class FuncRuntimeItem : RuntimeItem
     {
         public abstract R.ParamInfo ParamInfo { get; }
-        public abstract ValueTask InvokeAsync(Evaluator evaluator, Value? thisValue, ImmutableDictionary<string, Value> args, Value result);
+        public abstract ValueTask InvokeAsync(Evaluator evaluator, Value? thisValue, ImmutableArray<Value> args, Value result);
     }
 
     public partial class Evaluator
@@ -25,9 +25,14 @@ namespace Gum.IR0Evaluator
             public override R.ParamInfo ParamInfo => funcDecl.ParamInfo;
             R.NormalFuncDecl funcDecl;
 
-            public override async ValueTask InvokeAsync(Evaluator evaluator, Value? thisValue, ImmutableDictionary<string, Value> args, Value result)
+            public override async ValueTask InvokeAsync(Evaluator evaluator, Value? thisValue, ImmutableArray<Value> args, Value result)
             {
-                await evaluator.context.ExecInNewFuncFrameAsync(default, args, EvalFlowControl.None, ImmutableArray<Task>.Empty, thisValue, result, async () =>
+                var builder = ImmutableDictionary.CreateBuilder<string, Value>();
+
+                for (int i = 0; i < args.Length; i++)
+                    builder.Add(funcDecl.ParamInfo.Parameters[i].Name, args[i]);
+
+                await evaluator.context.ExecInNewFuncFrameAsync(default, builder.ToImmutable(), EvalFlowControl.None, ImmutableArray<Task>.Empty, thisValue, result, async () =>
                 {
                     await foreach (var _ in evaluator.EvalStmtAsync(funcDecl.Body)) { }
                 });

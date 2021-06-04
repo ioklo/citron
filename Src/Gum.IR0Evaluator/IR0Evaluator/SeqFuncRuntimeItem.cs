@@ -15,7 +15,7 @@ namespace Gum.IR0Evaluator
         public abstract bool IsThisCall { get; }
         public abstract R.ParamInfo ParamInfo { get; }
 
-        public abstract void Invoke(Evaluator evaluator, Value? thisValue, ImmutableDictionary<string, Value> args, Value result);
+        public abstract void Invoke(Evaluator evaluator, Value? thisValue, ImmutableArray<Value> args, Value result);
     }
 
     public partial class Evaluator
@@ -34,10 +34,15 @@ namespace Gum.IR0Evaluator
                 return new SeqValue();
             }
 
-            public override void Invoke(Evaluator evaluator, Value? thisValue, ImmutableDictionary<string, Value> args, Value result)
+            public override void Invoke(Evaluator evaluator, Value? thisValue, ImmutableArray<Value> args, Value result)
             {
+                var builder = ImmutableDictionary.CreateBuilder<string, Value>();
+
+                for (int i = 0; i < args.Length; i++)
+                    builder.Add(seqFuncDecl.ParamInfo.Parameters[i].Name, args[i]);
+
                 // evaluator 복제
-                var newEvaluator = evaluator.CloneWithNewContext(thisValue, default, args);
+                var newEvaluator = evaluator.CloneWithNewContext(thisValue, default, builder.ToImmutable());
 
                 // asyncEnum을 만들기 위해서 내부 함수를 씁니다
                 async IAsyncEnumerator<Infra.Void> WrapAsyncEnum()

@@ -19,6 +19,7 @@ namespace Gum.IR0Evaluator
     public partial class Evaluator
     {
         EvalContext context;
+        ImmutableArray<IModuleDriver> moduleDrivers;
         ImmutableArray<R.Stmt> topLevelStmts;
 
         ExpEvaluator expEvaluator;
@@ -26,10 +27,11 @@ namespace Gum.IR0Evaluator
         LocEvaluator locEvaluator;
         DeclEvaluator declEvaluator;
 
-        public Evaluator(ICommandProvider commandProvider, R.Script script)
+        public Evaluator(ImmutableArray<IModuleDriver> moduleDrivers, ICommandProvider commandProvider, R.Script script)
         {
             var topLevelRetValue = AllocValue(R.Path.Int);
 
+            this.moduleDrivers = moduleDrivers;
             this.context = new EvalContext(topLevelRetValue);
             this.topLevelStmts = script.TopLevelStmts;
 
@@ -200,6 +202,13 @@ namespace Gum.IR0Evaluator
         
         public async ValueTask<int> EvalAsync()
         {
+            foreach (var moduleDriver in moduleDrivers)
+            {
+                var containerInfos = moduleDriver.GetRootContainers();
+                foreach (var containerInfo in containerInfos)
+                    context.AddRootItemContainer(containerInfo.ModuleName, containerInfo.Container);
+            }
+
             declEvaluator.Eval();
 
             foreach (var topLevelStmt in topLevelStmts)

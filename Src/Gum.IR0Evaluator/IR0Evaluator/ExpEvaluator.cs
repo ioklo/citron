@@ -80,11 +80,11 @@ namespace Gum.IR0Evaluator
                 result.SetValue(destValue);
             }
 
-            async ValueTask<ImmutableDictionary<string, Value>> EvalArgumentsAsync(
+            async ValueTask<ImmutableArray<Value>> EvalArgumentsAsync(
                 R.ParamInfo paramInfo,
                 ImmutableArray<R.Argument> args)
             {
-                var argsBuilder = ImmutableDictionary.CreateBuilder<string, Value>();
+                var argsBuilder = ImmutableArray.CreateBuilder<Value>();
 
                 // argument들을 할당할 공간을 만든다
                 var argValuesBuilder = ImmutableArray.CreateBuilder<Value>();
@@ -155,14 +155,14 @@ namespace Gum.IR0Evaluator
                         var tupleElems = ImmutableArray.Create(argValues, argValueIndex, tupleType.Elems.Length);
 
                         var tupleValue = new TupleValue(tupleElems);
-                        argsBuilder.Add(param.Name, tupleValue);
+                        argsBuilder.Add(tupleValue);
 
                         argValueIndex += tupleType.Elems.Length;
                         paramIndex++;
                     }
                     else
                     {
-                        argsBuilder.Add(param.Name, argValues[argValueIndex]);
+                        argsBuilder.Add(argValues[argValueIndex]);
 
                         argValueIndex++;
                         paramIndex++;
