@@ -14,19 +14,6 @@ a, .btn-link {
     border-color: #1861ac;
 }
 
-.container {
-    display: flex;
-}
-
-.container_sidebar {
-    width: 30%;
-}
-
-.container_main {
-    flex: 1;
-    overflow: auto;
-}
-
 .content {
     padding-top: 1.1rem;
 }

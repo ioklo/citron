@@ -11,14 +11,66 @@
     <link href="ScratchPad.styles.css" rel="stylesheet" />
 </head>
 
-<body>    
-    <main role="main" class="pb-3">
+<body>        
+    <div class="container-fluid h-100">
+        <div class="row h-100">
+            <nav class="col-md-3 col-lg-2 d-md-block sidebar h-100 overflow-auto">
+                <ul class="nav flex-column"> <!-- ?? -->
+                    <li class="nav-item"><a class="nav-link active" href="#">Active</a></li>
+                    <li><a class="nav-link" href="#">Not Active</a></li>
+                    <li>world</li>
+                    <li>world</li>
+                    <li>world</li>
+                    <li>world</li>
+                    <li>world</li>
+                    <li>world</li>
+                    <li>world</li>
+                    <li>world</li>
+                    <li>world</li>
+                    <li>world</li>
+                    <li>world</li>
+                    <li>world</li>
+                    <li>world</li>
+                    <li>world</li>
+                    <li>world</li>
+                    <li>world</li>
+                    <li>world</li>
+                    <li>world</li>
+                    <li>world</li>
+                    <li>world</li>
+                    <li>world</li>
+                    <li>world</li>
+                    <li>world</li>
+                    <li>world</li>
+                    <li>world</li>
+                    <li>world</li>
+                    <li>world</li>
+                    <li>world</li>
+                    <li>world</li>
+                    <li>world</li>
+                    <li>world</li>
+                    <li>world</li>
+                    <li>world</li>
+                    <li>world</li>
+                    <li>world</li>
+                    <li>world</li>
+                    <li>world</li>
+                    <li>world</li>
+                    <li>world</li>
+                    <li>world</li>
+                    <li>world</li>
+                    <li>world</li>
+                    <li>world</li>
+                    <li>world</li>
+                    <li>world</li>
+                    <li>world</li>
+                    <li>world</li>
+                    <li>world</li>
+                    <li>world</li>
+                </ul>
+            </nav>
 
-        <div class="container">
-            <aside class="container_sidebar">
-            </aside>
-
-            <div class="container_main">
+            <div class="col-md-9 ml-sm-auto col-lg-10 px-md-4">
 
                 <div id="main" class="d-flex flex-column container h-100">
 
@@ -35,6 +87,7 @@
                         <pre id="result" class="flex-grow-0 flex-shrink-0 border bg-white" style="height: 200px;">result</pre>
                     </div>
 
+                    <!-- 앱은 가려서 안보이게 한다 -->
                     <div id="app" class="d-none">Loading...</div>
 
                     <div id="blazor-error-ui">
@@ -46,7 +99,7 @@
                 </div>
             </div>
         </div>
-    </main>
+    </div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js" 
             integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" 
@@ -58,7 +111,8 @@
 
     <script>
         $('html').height('100%');
-        $('body').height('100%');        
+        $('body').height('100%');
+        $('main').height('100%');
 
         function onResize() {
             window.editor.layout();
