@@ -1,4 +1,5 @@
 ﻿@page "/"
+@inject IJSRuntime JSRuntime
 
 <div style="display: flex; flex-direction: row;">
     <div class="sidebar nav vh-100 overflow-auto" style="flex: 1 0 0; ">
@@ -17,8 +18,12 @@
     </div>
 </div>
 
+@code { 
+    protected override Task OnAfterRenderAsync(bool firstRender)
+    {
+        return base.OnAfterRenderAsync(firstRender);
+    }
 
-@code {
     private StandaloneEditorConstructionOptions EditorConstructionOptions(MonacoEditor editor)
     {
         return new StandaloneEditorConstructionOptions
