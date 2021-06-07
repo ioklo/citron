@@ -1,4 +1,13 @@
-﻿<div class="top-row pl-4 navbar navbar-dark">
+﻿@inject IJSRuntime JsRuntime;
+
+<ul class="nav flex-column">
+    <li class="nav-item px-3">
+        <NavLink class="nav-link" href="edge/sss" @onclick="Alert">sdafasdlfkj</NavLink>
+    </li>
+</ul>
+
+
+<div class="top-row pl-4 navbar navbar-dark">
     <a class="navbar-brand" href="">ScratchPad</a>
     <button class="navbar-toggler" @onclick="ToggleNavMenu">
         <span class="navbar-toggler-icon"></span>
@@ -29,6 +38,11 @@
     private bool collapseNavMenu = true;
 
     private string NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private async Task Alert()
+    {
+        await JsRuntime.InvokeVoidAsync("alert", "Warning!"); // Alert
+    }
 
     private void ToggleNavMenu()
     {
