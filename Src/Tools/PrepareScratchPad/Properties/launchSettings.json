@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "PrepareScratchPad": {
+      "commandName": "Project",
+      "commandLineArgs": "Z:\\Proj\\Gum"
+    }
+  }
+}
