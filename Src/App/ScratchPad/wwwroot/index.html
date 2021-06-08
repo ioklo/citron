@@ -12,7 +12,11 @@
 
 <body onresize="onResize();">
 
-    <div class="container" style="display: flex; flex-direction: row;">
+    <div style="display: flex; flex-direction: row;">
+
+        <div class="sidebar nav vh-100 overflow-auto" style="flex: 1 0 0; ">
+            <ul id="lst"></ul>
+        </div>
 
         <div class="vh-100" style="flex: 2 0 0; background-color:red; overflow-x: hidden;">
             <div style="display:flex; flex-direction:column; height: 100%;">
@@ -22,10 +26,6 @@
                 <div id="editor" style="flex: 1 1 auto; background-color:aqua; overflow-y: hidden"></div>
                 <pre id="result" style="flex: 0 0 200px; background-color:yellow;">result</pre>
             </div>
-        </div>
-
-        <div class="sidebar nav vh-100 overflow-auto" style="flex: 1 0 0; ">
-            <ul id="lst"></ul>
         </div>
 
     </div>
