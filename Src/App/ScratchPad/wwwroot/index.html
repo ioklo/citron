@@ -11,8 +11,23 @@
     <link href="ScratchPad.styles.css" rel="stylesheet" />
 </head>
 
-<body>
-    <div id="app">Loading...</div>
+<body onresize="onResize();">
+
+    <div style="display: flex; flex-direction: row;">
+        <div class="sidebar nav vh-100 overflow-auto" style="flex: 1 0 0; ">
+            <a href=""> EnumDecl/02_EnumSimpleContextual.qs </a>
+        </div>
+
+        <div class="vh-100" style="flex: 2 0 0; background-color:red; ">
+            <div style="display:flex; flex-direction:column; height: 100%;">
+                <div id="editor" style="flex: 0 0 calc(100% - 200px); background-color:aqua; overflow-y: hidden"></div>
+                <div id="result" style="flex: 0 0 200px; background-color:yellow;">result</div>                
+            </div>
+        </div>
+    </div>
+
+    <!-- blazor는 가려 놓는다 .net 호출 용도로만 쓸 것이다 -->
+    <div id="app" class="d-none">Loading...</div>
 
     <div id="blazor-error-ui">
         An unhandled error has occurred.
@@ -24,10 +39,37 @@
             integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
             crossorigin="anonymous"></script>
 
-    <script src="_content/BlazorMonaco/lib/monaco-editor/min/vs/loader.js"></script>
-    <script>require.config({ paths: { 'vs': '_content/BlazorMonaco/lib/monaco-editor/min/vs' } });</script>
-    <script src="_content/BlazorMonaco/lib/monaco-editor/min/vs/editor/editor.main.js"></script>
-    <script src="_content/BlazorMonaco/jsInterop.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.24.0/min/vs/loader.min.js" 
+            integrity="sha512-SExj71Cw3B9C9EE8BC/ad3AKia5zQXDj/2SM4THgkeKh5GIFZhKM/R3uclUG8YZwJrjcVhydAlIHmfNvsBCKZA==" 
+            crossorigin="anonymous" 
+            referrerpolicy="no-referrer"></script>
+    
+    <script>
+        function onResize() {
+            window.editor.layout();
+        }
+
+        require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.24.0/min/vs' } });
+
+        require(['vs/editor/editor.main'], function () {
+            window.editor = monaco.editor.create(document.getElementById('editor'), {
+                value: [
+                    'int sum = 0;',
+                    'for(int i = 0; i < 5; i++)',
+                    '{',
+                    '    sum = sum + i; // i를 누적합니다',
+                    '    @echo (i: $i, sum: $sum)\\n',
+                    '}'
+                ].join('\n'),
+                language: 'csharp',
+                minimap: {
+                    enabled: false
+                }
+
+            });
+        });
+    </script>
+
 
     <script src="_framework/blazor.webassembly.js"></script>
 </body>
