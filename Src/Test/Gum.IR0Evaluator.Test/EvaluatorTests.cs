@@ -1338,14 +1338,14 @@ namespace Gum.IR0Evaluator.Test
 
         // Lambda Purity
         [Fact]
-        public async Task LambdaExp_CapturesLocalVariablesWithCopying()
+        public async Task LambdaExp_CapturesLocalVariablesWithCopying() // TODO: wrong need to be fixed
         {   
             // [x] () => @"$x";
             var lambdaDecl = new LambdaDecl(new Name.Anonymous(new AnonymousId(0)), new CapturedStatement(null, Arr(new TypeAndName(Path.Int, "x")), PrintIntCmdStmt(new CapturedVarLoc("x"))), default);
             var lambda = RootPath(new Name.Anonymous(new AnonymousId(0)));
 
             // int x = 3;
-            // var func = () => x;
+            // var func = () => x; // [ref<int> x = ref x] () => x;
             // x = 34;
             // func();
             var stmts = Arr<Stmt> (
