@@ -1,6 +1,6 @@
-﻿// 3
+﻿// 4
 
-// Assign이 없으면 Copy-Capture를 한다
+// 기본적으로 ref capture를 한다
 {
     int x = 3;
 
