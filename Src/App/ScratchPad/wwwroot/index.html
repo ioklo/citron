@@ -5,113 +5,97 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>ScratchPad</title>
-    <base href="/" />
-    <link href="css/bootstrap/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" 
+          integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
     <link href="css/app.css" rel="stylesheet" />
-    <link href="ScratchPad.styles.css" rel="stylesheet" />
 </head>
 
-<body>
-    <main role="main" class="pb-3">
-        <div id="main" class="d-flex flex-column container h-100">
+<body onresize="onResize();">
 
-            <div class="flex-grow-0 flex-shrink-0 p-2">
-                <h1>Scratch Pad</h1>
-                <button type="button" class="btn btn-primary" onclick="onRunButtonClick();">Run</button>
-                <button type="button" class="btn btn-secondary">Examples</button>
-            </div>
+    <div style="display: flex; flex-direction: row;">
 
-            <div id="editor" class="flex-grow-1 flex-shrink-1 border rounded-top overflow-hidden">
-            </div>
-
-            <div class="py-2">
-                <pre id="result" class="flex-grow-0 flex-shrink-0 border bg-white" style="height: 200px;">result</pre>
-            </div>
-
-            <div id="app" class="d-none">Loading...</div>
-
-            <div id="blazor-error-ui">
-                An unhandled error has occurred.
-                <a href="" class="reload">Reload</a>
-                <a class="dismiss">🗙</a>
-            </div>
-
+        <div class="sidebar nav vh-100 overflow-auto" style="flex: 1 0 0; ">
+            <ul id="lst"></ul>
         </div>
-    </main>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js" 
-            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" 
+        <div class="vh-100 bg-light" style="flex: 2 0 0; overflow-x: hidden;">
+            <div style="display:flex; flex-direction:column; height: 100%;">
+                <div class="flex-grow-0 flex-shrink-0 p-2" style="flex: 0 0 auto; overflow-y: hidden">
+                    <button type="button" class="btn btn-primary" onclick="onRunButtonClick();">Run</button>
+                </div>
+                <div id="editor" class="border m-2" style="flex: 1 1 auto; overflow-y: hidden; border-color: gray"></div>
+                <pre id="result" class="border mt-0 mb-2 ml-2 mr-2 p-1" style="flex: 0 0 200px; border-color: gray">result</pre>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- blazor는 가려 놓는다 .net 호출 용도로만 쓸 것이다 -->
+    <div id="app" class="d-none">Loading...</div>
+
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">🗙</a>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
             crossorigin="anonymous"></script>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.23.0/min/vs/loader.js"
-            integrity="sha512-8isPrHhyj1iula40NwL6Gve/f4QgxhqRnTLoV1e9i6W83eqliyr9egoUwJ29l9Myn/XR3tspKX7dOcVH3nsnSw=="
-            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.24.0/min/vs/loader.min.js" 
+            integrity="sha512-SExj71Cw3B9C9EE8BC/ad3AKia5zQXDj/2SM4THgkeKh5GIFZhKM/R3uclUG8YZwJrjcVhydAlIHmfNvsBCKZA==" 
+            crossorigin="anonymous" 
+            referrerpolicy="no-referrer"></script>
+    
     <script>
-        $('html').height('100%');
-        $('body').height('100%');
-        $('main').height('100%');
+        $.ajax({
+            url: "demo_files/files.json",
+            dataType: "json"
+        }).done(function (data) {
 
-        function onResize() {
-            window.editor.layout();
-        }
+            data.forEach(function (item) {                
+                $("#lst").append("<li><a href=\"#\" onclick=\"change_content('" + item + "')\">" + item + "</a></li>")
+            });            
+        });
 
         window.writeConsole = function (text) {
             var t = $('#result').text();
             $('#result').text(t + text);
         }
 
-        async function onRunButtonClick() {
+        function change_content(url) {
 
+            $.ajax({
+                url: "demo_files/" + url,
+                dataType: "text",
+            }).done(function (data) {
+                window.editor.getModel().setValue(data);
+            });
+        }        
+
+        async function onRunButtonClick() {
             $('#result').text('');
 
             var code = window.editor.getValue();
             await DotNet.invokeMethodAsync('ScratchPad', 'RunAsync', code);
         }
 
-        require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.23.0/min/vs' } });
+        function onResize() {
+            window.editor.layout();
+        }
+
+        require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.24.0/min/vs' } });
 
         require(['vs/editor/editor.main'], function () {
             window.editor = monaco.editor.create(document.getElementById('editor'), {
                 value: [
-                    'int count = 0, sum = 0;',
-                    '',
-                    'await // local scope 안의 awaitable(async/task)을 모아서 기다립니다',
+                    'int sum = 0;',
+                    'for(int i = 0; i < 5; i++)',
                     '{',
-                    '    async // 비동기 영역1',
-                    '    {',
-                    '        for(int i = 0; i < 4; i++)',
-                    '        {',
-                    '            count++;',
-                    '            @{',
-                    '                echo 1> $count \\n',
-                    '                sleep 1',
-                    '            }',
-                    '        }',
-                    '    }',
-                    '',
-                    '    async // 비동기 영역2',
-                    '    {',
-                    '        @sleep 0.5',
-                    '',
-                    '        for(int i = 0; i < 4; i++)',
-                    '        {',
-                    '            count++;',
-                    '            @{',
-                    '                echo 2> $count \\n',
-                    '                sleep 1',
-                    '            }',
-                    '        }',
-                    '    }',
-                    '',
-                    '    task // 동시 실행 영역..',
-                    '    {',
-                    '        for(int i = 0 ; i< 10; i++)',
-                    '            sum = sum + i;',
-                    '    }',
-                    '}',
-                    '',
-                    '@echo 완료! $sum'
+                    '    sum = sum + i; // i를 누적합니다',
+                    '    @echo (i: $i, sum: $sum)\\n',
+                    '}'
                 ].join('\n'),
                 language: 'csharp',
                 minimap: {
@@ -121,6 +105,7 @@
             });
         });
     </script>
+
 
     <script src="_framework/blazor.webassembly.js"></script>
 </body>

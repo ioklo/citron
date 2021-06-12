@@ -5,6 +5,6 @@ void Func()
     @hi
 }
 
-(() => void) f = Func;
+func<void> f = Func;
 
 f();

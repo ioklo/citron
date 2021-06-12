@@ -1,0 +1,3 @@
+﻿// Hello
+
+TestModule.StaticFunc("Hello");

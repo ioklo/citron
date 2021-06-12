@@ -491,7 +491,48 @@ namespace Gum.IR0Translator
                     // 축약형 처리
                     // anonymous_seq를 리턴하는 식으로 변경해준다
                     // foreach(var i in [1, 2, 3, 4]) => foreach(var i in [1, 2, 3, 4].GetEnumerator())
-                    throw new NotImplementedException();
+                    if (iteratorResult.TypeValue is RuntimeListTypeValue runtimeListTypeValue)
+                    {
+                        var elemType = globalContext.GetTypeValueByTypeExp(foreachStmt.Type);
+
+                        if (elemType is VarTypeValue) // var type처리
+                        {
+                            elemType = runtimeListTypeValue.ElemType;
+                        }
+                        else
+                        {
+                            // 완전히 같은지 체크
+                            if (elemType.Equals(runtimeListTypeValue.ElemType))
+                            {
+                                // relemType = elemType.GetRPath();
+                            }
+                            else
+                            {
+                                // 다르다면 seq_cast 시도
+                                // foreach(type elemName in seq_cast(type, iteratorLoc))
+                                throw new NotImplementedException();
+                            }
+                        }
+
+                        var listIterator = new R.TempLoc(new R.ListIteratorExp(iteratorResult.Result), runtimeListTypeValue.GetIterRPath());
+
+                        // 루프 컨텍스트를 하나 열고
+                        var loopAnalyzer = NewAnalyzerWithLoop();
+
+                        // 루프 컨텍스트에 로컬을 하나 추가하고
+                        loopAnalyzer.localContext.AddLocalVarInfo(foreachStmt.VarName, elemType);
+
+                        // 본문 분석
+                        var bodyResult = loopAnalyzer.AnalyzeStmt(foreachStmt.Body);
+
+                        var rforeachStmt = new R.ForeachStmt(elemType.GetRPath(), foreachStmt.VarName, listIterator, bodyResult.Stmt);
+                        return new StmtResult(rforeachStmt);
+
+                    }
+                    else
+                    {
+                        throw new NotImplementedException();
+                    }
                 }
             }
 

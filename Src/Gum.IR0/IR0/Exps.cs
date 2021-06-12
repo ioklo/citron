@@ -155,6 +155,12 @@ namespace Gum.IR0
         public ImmutableArray<Exp> Elems { get; }
     }
 
+    [AutoConstructor, ImplementIEquatable]
+    public partial class ListIteratorExp : Exp
+    {
+        public Loc ListLoc { get; }
+    }
+
     // enum construction, E.First or E.Second(2, 3)
     [AutoConstructor, ImplementIEquatable]
     public partial class NewEnumElemExp : Exp

@@ -95,7 +95,7 @@ namespace ScratchPad
                     }
                     else
                     {
-                        await WriteAsync($"알 수 없는 명령어 입니다: {text}\n");
+                        await WriteAsync(text + "\n");
                     }
                 }
                 catch (Exception e)
@@ -136,7 +136,7 @@ namespace ScratchPad
             var commandProvider = new DemoCommandProvider();
             var evaluator = new Evaluator(default, commandProvider, rscript);
             var retValue = await evaluator.EvalAsync();
-            await WriteAsync($"\n\n리턴 값: {retValue}");
+            await WriteAsync($"\n리턴 값: {retValue}");
 
             return true;
         }

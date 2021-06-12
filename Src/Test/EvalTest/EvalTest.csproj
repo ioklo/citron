@@ -148,6 +148,9 @@
     <None Update="Input\FuncDecl\11_GeneratorBasic.qs">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="Input\Module\01_CallStaticFunc.qs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Input\Stmt\AsyncStmt\01_SimpleAsync.qs">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

@@ -617,5 +617,15 @@ namespace Gum.IR0Translator
         {
             throw new NotImplementedException();
         }
+
+        public R.Path GetIterRPath()
+        {
+            var runtime = new R.Path.Root("System.Runtime");
+            var runtimeSystem = new R.Path.Nested(runtime, "System", R.ParamHash.None, default);
+            var runtimeSystemList = new R.Path.Nested(runtimeSystem, "List", new R.ParamHash(1, default), Arr(ElemType.GetRPath()));
+            var runtimeSystemListIter = new R.Path.Nested(runtimeSystemList, new R.Name.Anonymous(new R.AnonymousId(0)), R.ParamHash.None, default);
+
+            return runtimeSystemListIter;
+        }
     }
 }

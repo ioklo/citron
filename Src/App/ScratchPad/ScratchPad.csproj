@@ -1,8 +1,9 @@
-<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <Nullable>disable</Nullable>
+    <UserSecretsId>301d3cd3-eb3d-4c40-ad55-c9579fdf59a4</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>

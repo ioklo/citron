@@ -3,6 +3,7 @@ using static Gum.Infra.Misc;
 using Pretune;
 using Gum.Infra;
 using System.Diagnostics;
+using System;
 
 namespace Gum.IR0
 {
@@ -74,6 +75,18 @@ namespace Gum.IR0
                 return nestedPath.Outer.Equals(Path.System) &&
                     nestedPath.Name.Equals(new Name.Normal("List")) &&
                     nestedPath.ParamHash.Equals(new ParamHash(1, default));
+            }
+
+            return false;
+        }
+
+        public static bool IsTypeInstOfListIter(this Path path)
+        {
+            if (path is Path.Nested nestedPath)
+            {
+                return IsTypeInstOfList(nestedPath.Outer) &&
+                    nestedPath.Name.Equals(new Name.Anonymous(new AnonymousId(0))) &&
+                    nestedPath.ParamHash.Equals(new ParamHash(0, default));
             }
 
             return false;
