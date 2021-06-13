@@ -82,7 +82,6 @@ namespace Gum
             if (refExpResult.HasValue)
                 return refExpResult;
 
-
             var parenExpResult = await ParseParenExpAsync(context);
             if (parenExpResult.HasValue)
                 return parenExpResult;            
@@ -112,12 +111,7 @@ namespace Gum
 
         #endregion
         
-        #region Primary, Postfix Inc/Dec
-        static (Token Token, UnaryOpKind OpKind)[] primaryInfos = new (Token Token, UnaryOpKind OpKind)[]
-        {            
-            (PlusPlusToken.Instance, UnaryOpKind.PostfixInc),
-            (MinusMinusToken.Instance, UnaryOpKind.PostfixDec),
-        };
+        #region Primary, Postfix Inc/Dec       
 
         async ValueTask<ParseResult<Argument>> ParseArgumentAsync(ParserContext context)
         {
@@ -165,7 +159,13 @@ namespace Gum
 
             return new ParseResult<ImmutableArray<Argument>>(builder.ToImmutable(), context);
         }
-        
+
+        static (Token Token, UnaryOpKind OpKind)[] primaryInfos = new (Token Token, UnaryOpKind OpKind)[]
+        {
+            (PlusPlusToken.Instance, UnaryOpKind.PostfixInc),
+            (MinusMinusToken.Instance, UnaryOpKind.PostfixDec),
+        };
+
         // postfix
         internal async ValueTask<ExpParseResult> ParsePrimaryExpAsync(ParserContext context)
         {
@@ -347,10 +347,6 @@ namespace Gum
         {
             ValueTask<ExpParseResult> ParseBaseExpAsync(ParserContext context) => ParseEqualityExpAsync(context);
 
-            // a => b를 파싱했을 때 a가 리턴되는 경우를 피하려면 순서상 람다가 먼저
-            if (Parse(await ParseLambdaExpAsync(context), ref context, out var lambdaExp))
-                return new ExpParseResult(lambdaExp, context);
-
             if (!Parse(await ParseBaseExpAsync(context), ref context, out var exp0))
                 return ExpParseResult.Invalid;            
 
@@ -368,6 +364,7 @@ namespace Gum
         #region LambdaExpression, Right Assoc
         async ValueTask<ExpParseResult> ParseLambdaExpAsync(ParserContext context)
         {
+            var initialContext = context;
             var paramsBuilder = ImmutableArray.CreateBuilder<LambdaExpParam>();
 
             // (), (a, b)
@@ -383,11 +380,11 @@ namespace Gum
                 {
                     if (0 < paramsBuilder.Count)
                         if (!Accept<CommaToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
-                            return Invalid();
+                            return await Invalid();
 
                     // id id or id
                     if (!Accept<IdentifierToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context, out var firstIdToken))
-                        return Invalid();
+                        return await Invalid();
 
                     if (!Accept<IdentifierToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context, out var secondIdToken))                    
                         paramsBuilder.Add(new LambdaExpParam(null, firstIdToken.Value));
@@ -398,7 +395,9 @@ namespace Gum
 
             // =>
             if (!Accept<EqualGreaterThanToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
-                return Invalid();
+            {
+                return await Invalid();
+            }
 
             // exp => return exp;
             // { ... }
@@ -406,27 +405,27 @@ namespace Gum
             if (Peek<LBraceToken>(await lexer.LexNormalModeAsync(context.LexerContext, true)))
             {
                 if (!Parse(await parser.ParseStmtAsync(context), ref context, out var stmtBody))
-                    return Invalid();
+                    return await Invalid();
 
                 body = stmtBody;
             }
             else
             {
                 if (!Parse(await parser.ParseExpAsync(context), ref context, out var expBody))
-                    return Invalid();
+                    return await Invalid();
 
                 body = new ReturnStmt(expBody);
             }
 
             return new ExpParseResult(new LambdaExp(paramsBuilder.ToImmutable(), body), context);
 
-            static ExpParseResult Invalid() => ExpParseResult.Invalid;
+            ValueTask<ExpParseResult> Invalid() => ParseAssignExpAsync(initialContext); // 초기 상태로 되돌린 다음 Assign 해보기
         }
         #endregion
 
         public ValueTask<ExpParseResult> ParseExpAsync(ParserContext context)
-        {   
-            return ParseAssignExpAsync(context);
+        {
+            return ParseLambdaExpAsync(context);
         }
 
         async ValueTask<ExpParseResult> ParseNewExpAsync(ParserContext context)
