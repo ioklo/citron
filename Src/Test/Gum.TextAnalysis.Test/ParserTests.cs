@@ -151,7 +151,6 @@ public struct S<T> : B, I
             );
 
             Assert.Equal(expected, structDecl.Elem);
-
         }
 
         [Fact]

@@ -78,6 +78,11 @@ namespace Gum
             if (newExpResult.HasValue)
                 return newExpResult;
 
+            var refExpResult = await ParseRefExpAsync(context);
+            if (refExpResult.HasValue)
+                return refExpResult;
+
+
             var parenExpResult = await ParseParenExpAsync(context);
             if (parenExpResult.HasValue)
                 return parenExpResult;            
@@ -160,8 +165,8 @@ namespace Gum
 
             return new ParseResult<ImmutableArray<Argument>>(builder.ToImmutable(), context);
         }
-
-        // TODO: 현재 Primary중 Postfix Unary만 구현했다.
+        
+        // postfix
         internal async ValueTask<ExpParseResult> ParsePrimaryExpAsync(ParserContext context)
         {
             ValueTask<ExpParseResult> ParseBaseExpAsync(ParserContext context) => ParseSingleExpAsync(context);
@@ -438,7 +443,19 @@ namespace Gum
 
             return new ExpParseResult(new NewExp(type, callArgs), context);
         }
-        
+
+        async ValueTask<ExpParseResult> ParseRefExpAsync(ParserContext context)
+        {
+            // <REF> Exp
+            if (!Accept<RefToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
+                return ExpParseResult.Invalid;
+
+            if (!Parse(await ParseExpAsync(context), ref context, out var exp))
+                return ExpParseResult.Invalid;
+
+            return new ExpParseResult(new RefExp(exp), context);
+        }
+
         async ValueTask<ExpParseResult> ParseParenExpAsync(ParserContext context)
         {
             if (!Accept<LParenToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
