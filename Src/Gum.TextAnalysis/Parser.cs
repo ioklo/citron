@@ -128,7 +128,7 @@ namespace Gum
             {
                 var lexResult = await lexer.LexNormalModeAsync(context.LexerContext, true);
 
-                // . id (..., ...)
+                // . id <..., ...>
                 if (Accept<DotToken>(lexResult, ref context))
                 {
                     if (!Accept<IdentifierToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context, out var memberName))
@@ -145,9 +145,18 @@ namespace Gum
             return new ParseResult<TypeExp>(exp, context);
         }
 
-        public ValueTask<ParseResult<TypeExp>> ParseTypeExpAsync(ParserContext context)
+        public async ValueTask<ParseResult<TypeExp>> ParseTypeExpAsync(ParserContext context)
         {
-            return ParsePrimaryTypeExpAsync(context);
+            // ref 
+            if (Accept<RefToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
+            {
+                if (!Parse(await ParsePrimaryTypeExpAsync(context), ref context, out var typeExp))
+                    return ParseResult<TypeExp>.Invalid;
+
+                return new ParseResult<TypeExp>(new RefTypeExp(typeExp), context);
+            }
+
+            return await ParsePrimaryTypeExpAsync(context);
         }
 
         // int a, 

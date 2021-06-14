@@ -448,8 +448,6 @@ namespace Gum
 
         async ValueTask<ExpParseResult> ParseRefExpAsync(ParserContext context)
         {
-            int i = 0;
-
             // <REF> PrimaryExp
             if (!Accept<RefToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                 return ExpParseResult.Invalid;

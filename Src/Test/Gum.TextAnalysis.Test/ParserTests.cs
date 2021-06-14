@@ -153,6 +153,31 @@ public struct S<T> : B, I
             Assert.Equal(expected, structDecl.Elem);
         }
 
+        [Fact] 
+        public async Task TestParseRefTypeExp()
+        {
+            var lexer = new Lexer();
+            var parser = new Parser(lexer);
+            var context = await MakeContextAsync(@"ref int");
+            var typeExp = (await parser.ParseTypeExpAsync(context)).Elem;
+
+            TypeExp expected = new RefTypeExp(new IdTypeExp("int", default));
+
+            Assert.Equal(expected, typeExp);
+        }
+
+        [Fact]
+        public async Task TestParseRefRefTypeExp()
+        {
+            var lexer = new Lexer();
+            var parser = new Parser(lexer);
+            var context = await MakeContextAsync(@"ref ref int");
+
+            // TODO: 그냥 파싱을 멈출게 아니라 문제를 알려줘야 할 것 같다
+            var typeExpResult = await parser.ParseTypeExpAsync(context);
+            Assert.False(typeExpResult.HasValue);
+        }
+
         [Fact]
         public async Task TestParseComplexScriptAsync()
         {
