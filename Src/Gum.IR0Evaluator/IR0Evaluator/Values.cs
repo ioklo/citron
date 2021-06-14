@@ -97,7 +97,7 @@ namespace Gum.IR0Evaluator
         }
     }
 
-    // ref<T>
+    // ref T
     class RefValue : Value
     {
         public Value? Value { get; private set; }        

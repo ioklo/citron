@@ -3,7 +3,7 @@ struct S
 {
     int x;
 
-    ref<int> GetX()
+    ref int GetX()
     {
         return ref x;
     }

@@ -10,7 +10,7 @@ struct S
     E e;
     int y;
 
-    ref<int> GetX()
+    ref int GetX()
     {
         if (e is E.Second s)
             return ref s.x;  // error, enum element는 레퍼런스의 대상이 될 수 없다.
