@@ -6,7 +6,7 @@ namespace Gum.IR0Evaluator
 {
     abstract class EnumElemRuntimeItem : AllocatableRuntimeItem
     {
-        public abstract ImmutableArray<R.TypeAndName> Params { get; }
+        public abstract ImmutableArray<R.Param> Params { get; }
     }
 
     partial class Evaluator
@@ -16,7 +16,7 @@ namespace Gum.IR0Evaluator
         {
             public override R.Name Name => enumElem.Name;
             public override R.ParamHash ParamHash => R.ParamHash.None;
-            public override ImmutableArray<R.TypeAndName> Params => enumElem.Params;
+            public override ImmutableArray<R.Param> Params => enumElem.Params;
 
             R.EnumElement enumElem;
 

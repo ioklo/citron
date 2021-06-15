@@ -150,32 +150,40 @@ namespace Gum
             return await ParsePrimaryTypeExpAsync(context);
         }
 
-        // int a, 
-        async ValueTask<ParseResult<(TypeAndName FuncDeclParam, bool bVariadic)>> ParseFuncDeclParamAsync(ParserContext context)
+        // int t
+        // ref int t
+        // params T t
+        async ValueTask<ParseResult<FuncParam>> ParseFuncDeclParamAsync(ParserContext context)
         {
-            var bVariadic = Accept<ParamsToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context);
+            FuncParamKind kind;
+
+            if (Accept<ParamsToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
+                kind = FuncParamKind.Params;
+            else if (Accept<RefToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
+                kind = FuncParamKind.Ref;
+            else
+                kind = FuncParamKind.Normal;
 
             var typeExpResult = await ParseTypeExpAsync(context);
             if (!typeExpResult.HasValue)
-                return ParseResult<(TypeAndName, bool)>.Invalid;
+                return ParseResult<FuncParam>.Invalid;
 
             context = typeExpResult.Context;
 
             if (!Accept<IdentifierToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context, out var name))
-                return ParseResult<(TypeAndName, bool)>.Invalid;
+                return ParseResult<FuncParam>.Invalid;
 
-            return new ParseResult<(TypeAndName, bool)>((new TypeAndName(typeExpResult.Elem, name.Value), bVariadic), context);
+            return new ParseResult<FuncParam>(new FuncParam(kind, typeExpResult.Elem, name.Value), context);
         }
 
-        async ValueTask<ParseResult<FuncParamInfo>> ParseFuncDeclParamsAsync(ParserContext context)
+        async ValueTask<ParseResult<ImmutableArray<FuncParam>>> ParseFuncDeclParamsAsync(ParserContext context)
         {
-            ParseResult<FuncParamInfo> Invalid() => ParseResult<FuncParamInfo>.Invalid;
+            ParseResult<ImmutableArray<FuncParam>> Invalid() => ParseResult<ImmutableArray<FuncParam>>.Invalid;
 
             if (!Accept<LParenToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                 return Invalid();
 
-            var paramsBuilder = ImmutableArray.CreateBuilder<TypeAndName>();
-            int? variadicParamIndex = null;
+            var paramsBuilder = ImmutableArray.CreateBuilder<FuncParam>();
             while (!Accept<RParenToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
             {
                 if (paramsBuilder.Count != 0)
@@ -186,14 +194,11 @@ namespace Gum
                 if (!funcDeclParam.HasValue)
                     return Invalid();
 
-                if (funcDeclParam.Elem.bVariadic)
-                    variadicParamIndex = paramsBuilder.Count;
-
-                paramsBuilder.Add(funcDeclParam.Elem.FuncDeclParam);
+                paramsBuilder.Add(funcDeclParam.Elem);
                 context = funcDeclParam.Context;
             }
 
-            return new ParseResult<FuncParamInfo>(new FuncParamInfo(paramsBuilder.ToImmutable(), variadicParamIndex), context);
+            return new ParseResult<ImmutableArray<FuncParam>>(paramsBuilder.ToImmutable(), context);
         }
 
         internal async ValueTask<ParseResult<GlobalFuncDecl>> ParseGlobalFuncDeclAsync(ParserContext context)
@@ -207,6 +212,8 @@ namespace Gum
 
             // seq
             bool bSequence = Accept<SeqToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context);
+
+            bool bRefReturn = Accept<RefToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context);
 
             if (!Parse(await ParseTypeExpAsync(context), ref context, out var retType))
                 return Invalid();
@@ -222,7 +229,8 @@ namespace Gum
 
             return new ParseResult<GlobalFuncDecl>(
                 new GlobalFuncDecl(
-                    bSequence, 
+                    bSequence,
+                    bRefReturn,
                     retType, 
                     funcName.Value,
                     default,
@@ -291,7 +299,7 @@ namespace Gum
                 if (!Accept<IdentifierToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context, out var elemName))
                     return ParseResult<EnumDecl>.Invalid;
 
-                var paramsBuilder = ImmutableArray.CreateBuilder<TypeAndName>();
+                var paramsBuilder = ImmutableArray.CreateBuilder<FuncParam>();
                 if (Accept<LParenToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                 {
                     while (!Accept<RParenToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
@@ -302,7 +310,7 @@ namespace Gum
                         if (!Accept<IdentifierToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context, out var paramName))
                             return ParseResult<EnumDecl>.Invalid;
 
-                        paramsBuilder.Add(new TypeAndName(typeExp!, paramName.Value));
+                        paramsBuilder.Add(new FuncParam(FuncParamKind.Normal, typeExp!, paramName.Value));
                     }
                 }
 
@@ -382,10 +390,11 @@ namespace Gum
 
             bool bStatic = Accept<StaticToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context);
             bool bSequence = Accept<SeqToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context);
+            bool bRefReturn = Accept<RefToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context);
 
             // ex) void
             if (!Parse(await ParseTypeExpAsync(context), ref context, out var retType))
-                return Invalid();
+                return Invalid();            
 
             // ex) F
             if (!Accept<IdentifierToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context, out var funcName))
@@ -404,7 +413,7 @@ namespace Gum
                 return Invalid();
 
             var funcDeclElem = new FuncStructDeclElement(new StructFuncDecl(
-                accessModifier, bStatic, bSequence, retType, funcName.Value, typeParams, paramInfo, body
+                accessModifier, bStatic, bSequence, bRefReturn, retType, funcName.Value, typeParams, paramInfo, body
             ));
 
             return new ParseResult<FuncStructDeclElement>(funcDeclElem, context);

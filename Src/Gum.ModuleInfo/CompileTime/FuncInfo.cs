@@ -15,6 +15,6 @@ namespace Gum.CompileTime
         public bool IsInstanceFunc { get; }
         public ImmutableArray<string> TypeParams { get; }
         public Type RetType { get; }
-        public ParamInfo ParamInfo { get; }
+        public ImmutableArray<Param> Params { get; }
     }
 }

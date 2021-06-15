@@ -198,18 +198,27 @@ namespace Gum.IR0Translator
             types.Add(structInfo);
         }
 
-        M.ParamInfo MakeParamInfo(S.FuncParamInfo paramInfo)
+        ImmutableArray<M.Param> MakeParams(ImmutableArray<S.FuncParam> sparams)
         {
-            var builder = ImmutableArray.CreateBuilder<(M.Type Type, M.Name Name)>(paramInfo.Parameters.Length);
-            foreach(var typeAndName in paramInfo.Parameters)
+            int? variadicParamIndex = null;
+
+            var builder = ImmutableArray.CreateBuilder<M.Param>(sparams.Length);
+            foreach(var sparam in sparams)
             {
-                var mtype = GetMType(typeAndName.Type);
+                var mtype = GetMType(sparam.Type);
                 if (mtype == null) throw new FatalException();
 
-                builder.Add((mtype, typeAndName.Name));
+                M.ParamKind paramKind = sparam.Kind switch
+                {
+                    S.FuncParamKind.Normal => M.ParamKind.Normal,
+                    S.FuncParamKind.Params => M.ParamKind.Params,
+                    S.FuncParamKind.Ref => M.ParamKind.Ref
+                };
+
+                builder.Add(new M.Param(paramKind, mtype, sparam.Name));
             }
 
-            return new M.ParamInfo(paramInfo.VariadicParamIndex, builder.MoveToImmutable());
+            return builder.MoveToImmutable();
         }
 
         void VisitFuncDecl(S.FuncDecl funcDecl)
@@ -219,7 +228,7 @@ namespace Gum.IR0Translator
             var retType = GetMType(funcDecl.RetType);
             if (retType == null) throw new FatalException();
 
-            var paramInfo = MakeParamInfo(funcDecl.ParamInfo);
+            var paramInfo = MakeParams(funcDecl.ParamInfo);
 
             var funcInfo = new M.FuncInfo(
                 funcDecl.Name,

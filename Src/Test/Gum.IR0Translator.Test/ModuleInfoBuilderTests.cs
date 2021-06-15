@@ -52,7 +52,7 @@ namespace Gum.IR0Translator.Test
                 retType: new S.RefTypeExp(new S.IdTypeExp("T", default)),
                 name: "Func",
                 typeParams: Arr("T"),
-                paramInfo: new S.FuncParamInfo(Arr(new S.TypeAndName(new S.RefTypeExp(new S.IdTypeExp("T", default)), "t")), null),
+                paramInfo: new S.FuncParamInfo(Arr(new S.FuncParam(new S.RefTypeExp(new S.IdTypeExp("T", default)), "t")), null),
                 body: new S.BlockStmt(Arr<S.Stmt>(new S.ReturnStmt(new S.RefExp(new S.IdentifierExp("t", default)))))
             )));
 
@@ -88,9 +88,9 @@ namespace Gum.IR0Translator.Test
                 "Func",
                 Arr("T", "U"),
                 new S.FuncParamInfo(Arr(
-                    new S.TypeAndName(IntTypeExp, "x"),
-                    new S.TypeAndName(new S.IdTypeExp("U", default), "y"),
-                    new S.TypeAndName(new S.IdTypeExp("T", default), "z")
+                    new S.FuncParam(IntTypeExp, "x"),
+                    new S.FuncParam(new S.IdTypeExp("U", default), "y"),
+                    new S.FuncParam(new S.IdTypeExp("T", default), "z")
                 ), 1),
                 new S.BlockStmt(Arr<S.Stmt>())
             )));
@@ -139,7 +139,7 @@ namespace Gum.IR0Translator.Test
                             new S.IdTypeExp("T", default),
                             "Func",
                             Arr("T", "U"),
-                            new S.FuncParamInfo(Arr(new S.TypeAndName(SIdTypeExp("S", IntTypeExp), "s"), new S.TypeAndName(SIdTypeExp("U"), "u")), null),
+                            new S.FuncParamInfo(Arr(new S.FuncParam(SIdTypeExp("S", IntTypeExp), "s"), new S.FuncParam(SIdTypeExp("U"), "u")), null),
                             new S.BlockStmt(Arr<S.Stmt>())
                         )),
 

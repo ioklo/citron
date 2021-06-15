@@ -322,15 +322,24 @@ namespace Gum.IR0Translator
                 public LocalContext LocalContext { get; }
             }
 
-            ImmutableArray<TypeValue> MakeParamTypes(ImmutableArray<(M.Type Type, M.Name Name)> parameters)
+            (ImmutableArray<TypeValue> Params, int? variadicParamsIndex) MakeParamTypes(ImmutableArray<M.Param> parameters)
             {
+                int? variadicParamsIndex = null;
+
                 var builder = ImmutableArray.CreateBuilder<TypeValue>(parameters.Length);
                 foreach (var param in parameters)
                 {
+                    if (param.Kind == M.ParamKind.Params)
+                    {
+                        Debug.Assert(variadicParamsIndex == null);
+                        variadicParamsIndex = builder.Count;
+                    }
+
                     var type = globalContext.GetTypeValueByMType(param.Type);
                     builder.Add(type);
                 }
-                return builder.MoveToImmutable();
+
+                return (builder.MoveToImmutable(), variadicParamsIndex);
             }
 
             // CallExp분석에서 Callable이 Identifier인 경우 처리
@@ -505,7 +514,7 @@ namespace Gum.IR0Translator
 
                 // 파라미터는 람다 함수의 지역변수로 취급한다
                 var paramTypesBuilder = ImmutableArray.CreateBuilder<TypeValue>(exp.Params.Length);
-                var rparamsBuilder = ImmutableArray.CreateBuilder<R.TypeAndName>(exp.Params.Length);
+                var rparamsBuilder = ImmutableArray.CreateBuilder<R.Param>(exp.Params.Length);
                 foreach (var param in exp.Params)
                 {
                     if (param.Type == null)
@@ -513,7 +522,7 @@ namespace Gum.IR0Translator
 
                     var paramTypeValue = globalContext.GetTypeValueByTypeExp(param.Type);
                     paramTypesBuilder.Add(paramTypeValue);
-                    rparamsBuilder.Add(new R.TypeAndName(paramTypeValue.GetRPath(), param.Name));
+                    rparamsBuilder.Add(new R.Param(paramTypeValue.GetRPath(), param.Name));
 
                     // 람다 파라미터를 지역 변수로 추가한다
                     newLocalContext.AddLocalVarInfo(param.Name, paramTypeValue);
@@ -526,7 +535,7 @@ namespace Gum.IR0Translator
                 var capturedLocalVars = newLambdaContext.GetCapturedLocalVars();
 
                 var paramTypes = paramTypesBuilder.MoveToImmutable();
-                var rparamInfos = new R.ParamInfo(null, rparamsBuilder.MoveToImmutable()); // 이 이후로 rparamsBuilder스면 안됨
+                var rparamInfos = rparamsBuilder.MoveToImmutable(); // 이 이후로 rparamsBuilder스면 안됨
 
                 // TODO: need capture this확인해서 this 넣기
                 // var bCaptureThis = newLambdaContext.NeedCaptureThis();

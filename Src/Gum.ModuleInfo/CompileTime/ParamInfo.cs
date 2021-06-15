@@ -3,10 +3,18 @@ using Pretune;
 
 namespace Gum.CompileTime
 {
-    [AutoConstructor, ImplementIEquatable]
-    public partial struct ParamInfo
+    public enum ParamKind
     {
-        public int? VariadicParamIndex { get; }
-        public ImmutableArray<(Type Type, Name Name)> Parameters { get; }
+        Normal,
+        Params,
+        Ref,
+    }
+
+    [AutoConstructor, ImplementIEquatable]
+    public partial struct Param
+    {
+        public ParamKind Kind { get; }
+        public Type Type { get; }
+        public Name Name { get; }
     }
 }

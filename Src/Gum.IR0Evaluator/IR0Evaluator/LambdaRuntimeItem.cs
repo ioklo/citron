@@ -11,7 +11,7 @@ namespace Gum.IR0Evaluator
 {
     abstract class LambdaRuntimeItem : AllocatableRuntimeItem
     {
-        public abstract R.ParamInfo ParamInfo { get; }
+        public abstract ImmutableArray<R.Param> Parameters { get; }
         
         public abstract ValueTask InvokeAsync(Evaluator evaluator, Value? capturedThis, ImmutableDictionary<string, Value> capturedVars, ImmutableArray<Value> args, Value result);
         public abstract void Capture(Evaluator evaluator, LambdaValue lambdaValue);
@@ -24,7 +24,7 @@ namespace Gum.IR0Evaluator
         {
             public override R.Name Name => lambdaDecl.Name;
             public override R.ParamHash ParamHash => R.ParamHash.None;
-            public override R.ParamInfo ParamInfo => lambdaDecl.ParamInfo;
+            public override ImmutableArray<R.Param> Parameters => lambdaDecl.Parameters;
             R.LambdaDecl lambdaDecl;
 
             public override Value Alloc(Evaluator evaluator, TypeContext typeContext)
@@ -58,7 +58,7 @@ namespace Gum.IR0Evaluator
                 var builder = ImmutableDictionary.CreateBuilder<string, Value>();
 
                 for (int i = 0; i < args.Length; i++)
-                    builder.Add(lambdaDecl.ParamInfo.Parameters[i].Name, args[i]);
+                    builder.Add(lambdaDecl.Parameters.Parameters[i].Name, args[i]);
 
                 await evaluator.context.ExecInNewFuncFrameAsync(capturedVars, builder.ToImmutable(), EvalFlowControl.None, ImmutableArray<Task>.Empty, capturedThis, result, async () =>
                 {

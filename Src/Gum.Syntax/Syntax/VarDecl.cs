@@ -5,5 +5,5 @@ namespace Gum.Syntax
 {
     public record VarDeclElement(string VarName, Exp? InitExp) : ISyntaxNode;
 
-    public record VarDecl(bool bRef, TypeExp Type, ImmutableArray<VarDeclElement> Elems) : ISyntaxNode;
+    public record VarDecl(bool IsRef, TypeExp Type, ImmutableArray<VarDeclElement> Elems) : ISyntaxNode;
 }

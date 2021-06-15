@@ -3,10 +3,16 @@ using static Gum.Infra.Misc;
 using Pretune;
 using Gum.Infra;
 using System.Diagnostics;
-using System;
 
 namespace Gum.IR0
 {
+    [AutoConstructor]
+    public partial struct TupleTypeElem
+    {
+        public Path Type { get; }
+        public Name Name { get; }
+    }
+
     // Path
     // Module, Namespace, Type, Func, Lambda, Sequence, Reserved(타입) 을 유일하게 가리킬 수 있는 구조
     public abstract partial record Path : IPure
@@ -17,7 +23,7 @@ namespace Gum.IR0
         public abstract record Normal : Path;
 
         // Reserved 
-        public record TupleType(ImmutableArray<TypeAndName> Elems) : Reserved;
+        public partial record TupleType(ImmutableArray<TupleTypeElem> Elems) : Reserved;        
         public record TypeVarType(int Index) : Reserved;
         public record VoidType : Reserved
         {

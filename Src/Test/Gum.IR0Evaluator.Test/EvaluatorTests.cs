@@ -214,7 +214,7 @@ namespace Gum.IR0Evaluator.Test
         public async Task CallSeqFuncExp_GenerateSequencesInForeach()
         {
             // Sequence
-            var seqFunc = new SequenceFuncDecl(default, "F", false, Path.Int, default, new ParamInfo(null, Arr(new TypeAndName(Path.Int, "x"), new TypeAndName(Path.Int, "y"))), RBlock(
+            var seqFunc = new SequenceFuncDecl(default, "F", false, Path.Int, default, new ParamInfo(null, Arr(new Param(Path.Int, "x"), new Param(Path.Int, "y"))), RBlock(
 
                 new YieldStmt(
                     new CallInternalBinaryOperatorExp(InternalBinaryOperator.Multiply_Int_Int_Int,
@@ -712,11 +712,11 @@ namespace Gum.IR0Evaluator.Test
 
             // [count] { for(int i = 0; i < count; i++) i++; }
             var name0 = new Name.Anonymous(new AnonymousId(0));
-            var capturedStmtDecl0 = new CapturedStatementDecl(name0, new CapturedStatement(null, Arr(new TypeAndName(Path.Int, "count")), PrintNumbersStmt()));
+            var capturedStmtDecl0 = new CapturedStatementDecl(name0, new CapturedStatement(null, Arr(new Param(Path.Int, "count")), PrintNumbersStmt()));
             var path0 = new Path.Nested(new Path.Root(moduleName), name0, ParamHash.None, default);            
 
             var name1 = new Name.Anonymous(new AnonymousId(1));
-            var capturedStmtDecl1 = new CapturedStatementDecl(name1, new CapturedStatement(null, Arr(new TypeAndName(Path.Int, "count")), PrintNumbersStmt()));
+            var capturedStmtDecl1 = new CapturedStatementDecl(name1, new CapturedStatement(null, Arr(new Param(Path.Int, "count")), PrintNumbersStmt()));
             var path1 = new Path.Nested(new Path.Root(moduleName), name1, ParamHash.None, default);
 
             var stmts = Arr<Stmt> (
@@ -1020,7 +1020,7 @@ namespace Gum.IR0Evaluator.Test
                 public TestFuncRuntimeItem(TestCommandProvider provider) { cmdProvider = provider; }
 
                 public override Name Name => "F";
-                public override ParamInfo ParamInfo => new ParamInfo(null, default);
+                public override ParamInfo Parameters => new Parameters(null, default);
                 public override ParamHash ParamHash => new ParamHash(0, default);
 
                 public override ValueTask InvokeAsync(Evaluator evaluator, Value? thisValue, ImmutableArray<Value> args, Value result)
@@ -1092,7 +1092,7 @@ namespace Gum.IR0Evaluator.Test
             {
                 MethodInfo methodInfo;
                 public override Name Name => methodInfo.Name;
-                public override ParamInfo ParamInfo { get; }
+                public override ParamInfo Parameters { get; }
                 public override ParamHash ParamHash { get; }
 
                 public TestFuncRuntimeItem(MethodInfo methodInfo) 
@@ -1101,16 +1101,16 @@ namespace Gum.IR0Evaluator.Test
 
                     int index = 0;
                     var paramInfos = methodInfo.GetParameters();
-                    var builder = ImmutableArray.CreateBuilder<TypeAndName>(paramInfos.Length);
+                    var builder = ImmutableArray.CreateBuilder<Param>(paramInfos.Length);
                     var pathsBuilder = ImmutableArray.CreateBuilder<Path>(paramInfos.Length);
                     foreach(var paramInfo in paramInfos)
                     {
-                        builder.Add(new TypeAndName(Path.String, paramInfo.Name ?? $"@{index}"));
+                        builder.Add(new Param(Path.String, paramInfo.Name ?? $"@{index}"));
                         pathsBuilder.Add(Path.String);
                         index++;
                     }
 
-                    ParamInfo = new ParamInfo(null, builder.MoveToImmutable());
+                    Parameters = new Parameters(null, builder.MoveToImmutable());
                     ParamHash = new ParamHash(methodInfo.GetGenericArguments().Length, pathsBuilder.MoveToImmutable());
                 }
 
@@ -1341,7 +1341,7 @@ namespace Gum.IR0Evaluator.Test
         public async Task LambdaExp_CapturesLocalVariablesWithCopying() // TODO: wrong need to be fixed
         {   
             // [x] () => @"$x";
-            var lambdaDecl = new LambdaDecl(new Name.Anonymous(new AnonymousId(0)), new CapturedStatement(null, Arr(new TypeAndName(Path.Int, "x")), PrintIntCmdStmt(new CapturedVarLoc("x"))), default);
+            var lambdaDecl = new LambdaDecl(new Name.Anonymous(new AnonymousId(0)), new CapturedStatement(null, Arr(new Param(Path.Int, "x")), PrintIntCmdStmt(new CapturedVarLoc("x"))), default);
             var lambda = RootPath(new Name.Anonymous(new AnonymousId(0)));
 
             // int x = 3;

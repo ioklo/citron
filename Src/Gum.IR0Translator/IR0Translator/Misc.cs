@@ -125,11 +125,6 @@ namespace Gum.IR0Translator
                     sb.Append("void");
                     break;
 
-                case M.RefType refType:
-                    sb.Append("ref ");
-                    FillTypeString(refType.Type, sb);
-                    break;
-
                 default:
                     throw new UnreachableCodeException();
             }

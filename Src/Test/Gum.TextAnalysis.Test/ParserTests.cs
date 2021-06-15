@@ -54,9 +54,9 @@ namespace Gum.TextAnalysis.Test
                 "Func", default,
                 new FuncParamInfo(
                     Arr(
-                        new TypeAndName(SimpleSIdTypeExp("int"), "x"),
-                        new TypeAndName(SimpleSIdTypeExp("string"), "y"),
-                        new TypeAndName(SimpleSIdTypeExp("int"), "z")
+                        new FuncParam(SimpleSIdTypeExp("int"), "x"),
+                        new FuncParam(SimpleSIdTypeExp("string"), "y"),
+                        new FuncParam(SimpleSIdTypeExp("int"), "z")
                     ),
                     1
                 ),
@@ -83,7 +83,7 @@ enum X
                 default,
                 Arr(
                     new EnumDeclElement("First", default),
-                    new EnumDeclElement("Second", Arr(new TypeAndName(SimpleSIdTypeExp("int"), "i"))),
+                    new EnumDeclElement("Second", Arr(new FuncParam(SimpleSIdTypeExp("int"), "i"))),
                     new EnumDeclElement("Third", default)
                 )
             );
@@ -133,7 +133,7 @@ public struct S<T> : B, I
                         SimpleSIdTypeExp("void"),
                         "Func",
                         Arr("X"),
-                        new FuncParamInfo(Arr(new TypeAndName(SimpleSIdTypeExp("string"), "s")), null),
+                        new FuncParamInfo(Arr(new FuncParam(SimpleSIdTypeExp("string"), "s")), null),
                         SimpleSBlockStmt()
                     )),
 

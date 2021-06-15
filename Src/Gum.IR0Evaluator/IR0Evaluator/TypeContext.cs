@@ -73,11 +73,11 @@ namespace Gum.IR0Evaluator
                 // Reserved
                 case R.Path.TupleType tuplePath:
                     {
-                        var builder = ImmutableArray.CreateBuilder<R.TypeAndName>(tuplePath.Elems.Length);
+                        var builder = ImmutableArray.CreateBuilder<R.TupleTypeElem>(tuplePath.Elems.Length);
                         foreach (var elem in tuplePath.Elems)
                         {
                             var appliedType = Apply(elem.Type);
-                            var appliedElem = new R.TypeAndName(appliedType, elem.Name);
+                            var appliedElem = new R.TupleTypeElem(appliedType, elem.Name);
                             builder.Add(appliedElem);
                         }
                         return new R.Path.TupleType(builder.MoveToImmutable());

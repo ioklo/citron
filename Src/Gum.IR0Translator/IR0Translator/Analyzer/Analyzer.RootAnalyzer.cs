@@ -90,26 +90,26 @@ namespace Gum.IR0Translator
                 return new R.PrivateGlobalVarDeclStmt(elems.ToImmutableArray());
             }
 
-            (R.ParamHash ParamHash, R.ParamInfo ParamInfos) MakeParamHashAndParamInfos(S.FuncDecl funcDecl)
+            (R.ParamHash ParamHash, ImmutableArray<R.Param> Params) MakeParamHashAndParamInfos(S.FuncDecl funcDecl)
             {
-                var paramTypesBuilder = ImmutableArray.CreateBuilder<R.Path>(funcDecl.ParamInfo.Parameters.Length);
-                var parametersBuilder = ImmutableArray.CreateBuilder<R.TypeAndName>(funcDecl.ParamInfo.Parameters.Length);
+                var paramTypesBuilder = ImmutableArray.CreateBuilder<R.Path>(funcDecl.Params.Length);
+                var parametersBuilder = ImmutableArray.CreateBuilder<R.Param>(funcDecl.Params.Length);
 
-                foreach (var param in funcDecl.ParamInfo.Parameters)
+                foreach (var param in funcDecl.Params)
                 {
                     var typeValue = globalContext.GetTypeValueByTypeExp(param.Type);
 
                     var type = typeValue.GetRPath();
                     paramTypesBuilder.Add(type);
 
-                    var info = new R.TypeAndName(type, param.Name);
+                    var info = new R.Param(type, param.Name);
                     parametersBuilder.Add(info);
                 }
 
                 var paramHash = new R.ParamHash(funcDecl.TypeParams.Length, paramTypesBuilder.MoveToImmutable());
-                var paramInfo = new R.ParamInfo(funcDecl.ParamInfo.VariadicParamIndex, parametersBuilder.MoveToImmutable());
+                var parameters = parametersBuilder.MoveToImmutable();
 
-                return (paramHash, paramInfo);
+                return (paramHash, parameters);
             }
 
             ImmutableArray<R.Path> MakeRTypeArgs(S.GlobalFuncDecl funcDecl)
@@ -136,7 +136,7 @@ namespace Gum.IR0Translator
                 var analyzer = new StmtAndExpAnalyzer(globalContext, funcContext, localContext);
 
                 // 파라미터 순서대로 추가
-                foreach (var param in funcDecl.ParamInfo.Parameters)
+                foreach (var param in funcDecl.Parameters)
                 {
                     var paramTypeValue = globalContext.GetTypeValueByTypeExp(param.Type);
                     localContext.AddLocalVarInfo(param.Name, paramTypeValue);
@@ -195,12 +195,12 @@ namespace Gum.IR0Translator
                 var relemsBuilder = ImmutableArray.CreateBuilder<R.EnumElement>(enumDecl.Elems.Length);
                 foreach(var elem in enumDecl.Elems)
                 {
-                    var rfieldsBuilder = ImmutableArray.CreateBuilder<R.TypeAndName>(elem.Params.Length);
+                    var rfieldsBuilder = ImmutableArray.CreateBuilder<R.Param>(elem.Params.Length);
 
                     foreach(var param in elem.Params)
                     {
                         var paramType = globalContext.GetTypeValueByTypeExp(param.Type);
-                        var rfield = new R.TypeAndName(paramType.GetRPath(), param.Name);
+                        var rfield = new R.Param(paramType.GetRPath(), param.Name);
                         rfieldsBuilder.Add(rfield);
                     }
 

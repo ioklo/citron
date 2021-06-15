@@ -12,7 +12,7 @@ namespace Gum.IR0
     public partial class EnumElement : IPure
     {
         public string Name { get; }
-        public ImmutableArray<TypeAndName> Params { get; }
+        public ImmutableArray<Param> Params { get; }
 
         public void EnsurePure()
         {

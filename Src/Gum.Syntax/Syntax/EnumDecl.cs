@@ -12,7 +12,7 @@ namespace Gum.Syntax
     public partial class EnumDeclElement : ISyntaxNode
     {
         public string Name { get; }
-        public ImmutableArray<TypeAndName> Params { get; }
+        public ImmutableArray<FuncParam> Params { get; }
     }
 
     [AutoConstructor, ImplementIEquatable]

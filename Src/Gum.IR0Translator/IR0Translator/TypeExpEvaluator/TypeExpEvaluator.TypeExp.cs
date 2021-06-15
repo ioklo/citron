@@ -105,27 +105,12 @@ namespace Gum.IR0Translator
             return memberResult;
         }
 
-        // ref List<T>
-        TypeExpResult VisitRefTypeExp(S.RefTypeExp exp)
-        {
-            var innerTypeExpInfo = VisitTypeExp(exp.TypeExp);
-            
-            switch(innerTypeExpInfo.TypeExpInfo)
-            {
-                case MTypeTypeExpInfo innerMTypeInfo:
-                    return new NoMemberTypeExpResult(new MTypeTypeExpInfo(new M.RefType(innerMTypeInfo.Type)));
-            }
-
-            throw new NotImplementedException();
-        }
-
         TypeExpResult VisitTypeExp(S.TypeExp exp)
         {
             switch (exp)
             {
                 case S.IdTypeExp idExp: return VisitIdTypeExp(idExp);
                 case S.MemberTypeExp memberExp: return VisitMemberTypeExp(memberExp);
-                case S.RefTypeExp refExp: return VisitRefTypeExp(refExp);
                 default:
                     throw new UnreachableCodeException();
             }

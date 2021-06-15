@@ -717,7 +717,7 @@ namespace Gum.IR0Translator.Test
                 name0,
                 new R.CapturedStatement(
                     null,
-                    Arr(new R.TypeAndName(R.Path.Int, "x")),
+                    Arr(new R.Param(R.Path.Int, "x")),
                     RLocalVarDeclStmt(R.Path.Int, "y", new R.LoadExp(new R.CapturedVarLoc("x")))
                 )
             );            
@@ -846,7 +846,7 @@ namespace Gum.IR0Translator.Test
             var capturedStmtName = new R.Name.Anonymous(new R.AnonymousId(0));
             var capturedStmtDecl = new R.CapturedStatementDecl(capturedStmtName, new R.CapturedStatement(
                 default,
-                Arr(new R.TypeAndName(R.Path.Int, "x")),
+                Arr(new R.Param(R.Path.Int, "x")),
                 RLocalVarDeclStmt(R.Path.Int, "x", new R.LoadExp(new R.CapturedVarLoc("x")))
             ));
 
@@ -1379,7 +1379,7 @@ namespace Gum.IR0Translator.Test
             var syntaxScript = SScript(
                 new S.GlobalFuncDeclScriptElement(new S.GlobalFuncDecl(
                     false, IntTypeExp, "Func", Arr("T"), 
-                    new S.FuncParamInfo(Arr(new S.TypeAndName(IntTypeExp, "x")), null),
+                    new S.FuncParamInfo(Arr(new S.FuncParam(IntTypeExp, "x")), null),
                     SBlock(new S.ReturnStmt(SId("x")))
                 )),
 
@@ -1412,7 +1412,7 @@ namespace Gum.IR0Translator.Test
             var syntaxScript = SScript(
                 new S.GlobalFuncDeclScriptElement(new S.GlobalFuncDecl(
                     false, IntTypeExp, "Func", Arr<string>(),
-                    new S.FuncParamInfo(Arr(new S.TypeAndName(IntTypeExp, "x")), null),
+                    new S.FuncParamInfo(Arr(new S.FuncParam(IntTypeExp, "x")), null),
                     SBlock(new S.ReturnStmt(SId("x")))
                 )),
 

@@ -12,14 +12,14 @@ namespace Gum.IR0
         public Name Name { get; }
         public bool IsThisCall { get; }
         public ImmutableArray<string> TypeParams { get; }
-        public ParamInfo ParamInfo { get; }
+        public ImmutableArray<Param> Parameters { get; }
         public Stmt Body { get; }
 
         public override void EnsurePure()
         {
             Misc.EnsurePure(Name);            
             Misc.EnsurePure(TypeParams);
-            Misc.EnsurePure(ParamInfo);
+            Misc.EnsurePure(Parameters);
             Misc.EnsurePure(Body);
         }
     }
