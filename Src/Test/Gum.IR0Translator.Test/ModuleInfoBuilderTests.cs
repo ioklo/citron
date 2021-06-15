@@ -44,6 +44,41 @@ namespace Gum.IR0Translator.Test
         }
 
         [Fact]
+        public void Build_FuncDecl_RefTypes()
+        {
+            // ref T Func<T>(ref T t) { return ref t; }
+            var script = SScript(new S.GlobalFuncDeclScriptElement(new S.GlobalFuncDecl(
+                isSequence: false,
+                retType: new S.RefTypeExp(new S.IdTypeExp("T", default)),
+                name: "Func",
+                typeParams: Arr("T"),
+                paramInfo: new S.FuncParamInfo(Arr(new S.TypeAndName(new S.RefTypeExp(new S.IdTypeExp("T", default)), "t")), null),
+                body: new S.BlockStmt(Arr<S.Stmt>(new S.ReturnStmt(new S.RefExp(new S.IdentifierExp("t", default)))))
+            )));
+
+            var result = Build("TestModule", script);
+            Assert.NotNull(result);
+            Debug.Assert(result != null);
+
+            var paramHash = Misc.MakeParamHash(Arr<M.Type>(new M.RefType(new M.TypeVarType(0, "T"))));
+
+            var funcInfo = GlobalItemQueryService.GetGlobalItem(result, M.NamespacePath.Root, new ItemPathEntry("Func", 1, paramHash));
+            Assert.NotNull(funcInfo);
+            Debug.Assert(funcInfo != null);
+
+            var expected = new M.FuncInfo(
+                name: "Func",
+                isSequenceFunc: false,
+                isInstanceFunc: false, 
+                typeParams: Arr("T"),
+                retType: new M.RefType(new M.TypeVarType(0, "T")),
+                paramInfo: new M.ParamInfo(null, Arr<(M.Type, M.Name)>((new M.RefType(new M.TypeVarType(0, "T")), "t")))
+            );
+
+            Assert.Equal(expected, funcInfo);
+        }
+
+        [Fact]
         public void Build_FuncDecl_ModuleInfoHasFuncInfo()
         {
             // void Func<T, U>(int x, params U y, T z)

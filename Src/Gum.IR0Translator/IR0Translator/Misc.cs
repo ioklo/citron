@@ -97,7 +97,7 @@ namespace Gum.IR0Translator
             {
                 case M.TypeVarType typeVar:
                     sb.Append($"`{typeVar.Index}");
-                    break;
+                    break;                
                 
                 case M.GlobalType externalType:
                     // [ModuleName]Namespace1.Namespace2.X<int>
@@ -123,6 +123,11 @@ namespace Gum.IR0Translator
 
                 case M.VoidType _:
                     sb.Append("void");
+                    break;
+
+                case M.RefType refType:
+                    sb.Append("ref ");
+                    FillTypeString(refType.Type, sb);
                     break;
 
                 default:

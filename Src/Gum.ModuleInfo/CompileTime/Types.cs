@@ -10,66 +10,20 @@ using System.Threading.Tasks;
 namespace Gum.CompileTime
 {
     // AppliedType
-    public abstract class Type
-    {
-    }
-
-    public abstract class NormalType : Type
-    {
-    }
+    public abstract record Type;
+    public abstract record NormalType : Type;
     
-    [AutoConstructor]
-    public partial class GlobalType : NormalType, IEquatable<GlobalType?>
-    {
-        public ModuleName ModuleName { get; }
-        public NamespacePath NamespacePath { get; }
-        public Name Name { get; }
-        public ImmutableArray<Type> TypeArgs { get; }
-
-        public override bool Equals(object? obj)
-        {
-            return Equals(obj as GlobalType);
-        }
-
-        public bool Equals(GlobalType? other)
-        {
-            return other != null &&
-                   ModuleName.Equals(other.ModuleName) &&
-                   NamespacePath.Equals(other.NamespacePath) &&
-                   Name.Equals(other.Name) &&
-                   TypeArgs.Equals(other.TypeArgs);
-        }
-
-        public override int GetHashCode()
-        {
-            var hashCode = new HashCode();
-            hashCode.Add(ModuleName);
-            hashCode.Add(NamespacePath);
-            hashCode.Add(Name);
-            hashCode.AddSequence(TypeArgs);
-            return hashCode.ToHashCode();
-        }
-    }
-
-    [AutoConstructor, ImplementIEquatable]
-    public partial class MemberType : NormalType
-    {
-        public NormalType Outer { get; }
-        public Name Name { get; }
-        public ImmutableArray<Type> TypeArgs { get; }
-    }
+    public record GlobalType(ModuleName ModuleName, NamespacePath NamespacePath, Name Name, ImmutableArray<Type> TypeArgs) : NormalType;
+    public record MemberType(NormalType Outer, Name Name, ImmutableArray<Type> TypeArgs) : NormalType;
 
     // 로컬, 사용한 곳의 환경에 따라 가리키는 것이 달라진다
-    [AutoConstructor, ImplementIEquatable]
-    public partial class TypeVarType : Type
-    {
-        public int Index { get; }
-        public string Name { get; }
-    }
+    public record TypeVarType(int Index, string Name) : Type;   
 
-    public class VoidType : Type
+    public record VoidType : Type
     {
         public static readonly VoidType Instance = new VoidType();
-        private VoidType() { }
+        VoidType() { }
     }
+
+    public record RefType(Type Type) : Type;
 }

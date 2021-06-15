@@ -104,22 +104,31 @@ namespace Gum.IR0Translator
 
             return memberResult;
         }
-        
-        // X<List<int>, short>  => TypeExp가 아니라 X<...>에 대해서만 존재하면 된다 List<int>, short는 필요없다
 
+        // ref List<T>
+        TypeExpResult VisitRefTypeExp(S.RefTypeExp exp)
+        {
+            var innerTypeExpInfo = VisitTypeExp(exp.TypeExp);
+            
+            switch(innerTypeExpInfo.TypeExpInfo)
+            {
+                case MTypeTypeExpInfo innerMTypeInfo:
+                    return new NoMemberTypeExpResult(new MTypeTypeExpInfo(new M.RefType(innerMTypeInfo.Type)));
+            }
+
+            throw new NotImplementedException();
+        }
 
         TypeExpResult VisitTypeExp(S.TypeExp exp)
         {
-            if (exp is S.IdTypeExp idExp)
+            switch (exp)
             {
-                return VisitIdTypeExp(idExp);                
+                case S.IdTypeExp idExp: return VisitIdTypeExp(idExp);
+                case S.MemberTypeExp memberExp: return VisitMemberTypeExp(memberExp);
+                case S.RefTypeExp refExp: return VisitRefTypeExp(refExp);
+                default:
+                    throw new UnreachableCodeException();
             }
-            else if (exp is S.MemberTypeExp memberExp)
-            {
-                return VisitMemberTypeExp(memberExp);                
-            }
-
-            throw new UnreachableCodeException();
         }
 
         // VisitTypeExp와 다른 점은 실행 후 (TypeExp => TypeExpInfo) 정보를 추가

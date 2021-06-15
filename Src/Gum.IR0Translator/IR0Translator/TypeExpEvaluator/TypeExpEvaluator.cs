@@ -85,7 +85,7 @@ namespace Gum.IR0Translator
         void AddInfo(S.TypeExp exp, TypeExpInfo info)
         {
             infosByTypeExp.Add(exp, info);
-        }        
+        }
 
         M.TypeVarType? GetTypeVar(string name)
         {

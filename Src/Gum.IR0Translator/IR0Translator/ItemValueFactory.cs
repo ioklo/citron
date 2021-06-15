@@ -147,6 +147,9 @@ namespace Gum.IR0Translator
                 case M.VoidType:
                     return VoidTypeValue.Instance;
 
+                case M.RefType:
+                    throw new NotImplementedException();
+
                 default:
                     throw new UnreachableCodeException();
             }

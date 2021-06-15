@@ -64,13 +64,21 @@ namespace Gum.IR0Translator
             memberVars = new List<M.MemberVarInfo>();
         }
 
+        M.Type? GetMType(TypeExpInfo typeExpInfo)
+        {
+            switch (typeExpInfo)
+            {
+                case MTypeTypeExpInfo mtypeTypeExpInfo:
+                    return mtypeTypeExpInfo.Type;
+            }
+
+            return null;
+        }
+
         M.Type? GetMType(S.TypeExp typeExp)
         {
             var typeExpInfo = typeExpInfoService.GetTypeExpInfo(typeExp);
-            if( typeExpInfo is MTypeTypeExpInfo mtypeTypeExpInfo)
-                return mtypeTypeExpInfo.Type;
-
-            return null;
+            return GetMType(typeExpInfo);
         }                
         
         // 현재 위치가 Type안에 있는지
