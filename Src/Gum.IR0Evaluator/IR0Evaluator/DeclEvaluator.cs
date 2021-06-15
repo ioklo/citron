@@ -135,7 +135,7 @@ namespace Gum.IR0Evaluator
                     var enumElemContainer = new ItemContainer();
 
                     int fieldIndex = 0;
-                    foreach(var enumElemField in enumElem.Params)
+                    foreach(var enumElemField in enumElem.Fields)
                     {
                         var enumElemFieldItem = new IR0EnumElemFieldRuntimeItem(enumElemField.Name, fieldIndex);
                         enumElemContainer.AddRuntimeItem(enumElemFieldItem);

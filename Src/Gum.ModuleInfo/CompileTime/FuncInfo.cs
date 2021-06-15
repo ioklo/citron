@@ -12,9 +12,10 @@ namespace Gum.CompileTime
     {
         public override Name Name { get; }
         public bool IsSequenceFunc { get; }
+        public bool IsRefReturn { get; }
         public bool IsInstanceFunc { get; }
         public ImmutableArray<string> TypeParams { get; }
         public Type RetType { get; }
-        public ImmutableArray<Param> Params { get; }
+        public ImmutableArray<Param> Parameters { get; }
     }
 }

@@ -20,7 +20,7 @@ namespace Gum.Syntax
         public abstract TypeExp RetType { get; }
         public abstract string Name { get; }
         public abstract ImmutableArray<string> TypeParams { get; }
-        public abstract ImmutableArray<FuncParam> Params { get; }
+        public abstract ImmutableArray<FuncParam> Parameters { get; }
         public abstract BlockStmt Body { get; }
     }
 }

@@ -7,16 +7,28 @@ using System.Text;
 using Gum.Infra;
 
 namespace Gum.IR0
-{
+{ 
+    [AutoConstructor, ImplementIEquatable]
+    public partial struct EnumElementField : IPure
+    {
+        public Path Type { get; }
+        public string Name { get; }
+
+        public void EnsurePure()
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     [AutoConstructor, ImplementIEquatable]
     public partial class EnumElement : IPure
     {
         public string Name { get; }
-        public ImmutableArray<Param> Params { get; }
+        public ImmutableArray<EnumElementField> Fields { get; }
 
         public void EnsurePure()
         {
-            Misc.EnsurePure(Params);
+            Misc.EnsurePure(Fields);
         }
     }
 

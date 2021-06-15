@@ -50,15 +50,13 @@ namespace Gum.TextAnalysis.Test
 
             var expected = new GlobalFuncDecl(
                 false,
+                false,
                 SimpleSIdTypeExp("void"),
                 "Func", default,
-                new FuncParamInfo(
-                    Arr(
-                        new FuncParam(SimpleSIdTypeExp("int"), "x"),
-                        new FuncParam(SimpleSIdTypeExp("string"), "y"),
-                        new FuncParam(SimpleSIdTypeExp("int"), "z")
-                    ),
-                    1
+                Arr(
+                    new FuncParam(FuncParamKind.Normal, SimpleSIdTypeExp("int"), "x"),
+                    new FuncParam(FuncParamKind.Params, SimpleSIdTypeExp("string"), "y"),
+                    new FuncParam(FuncParamKind.Normal, SimpleSIdTypeExp("int"), "z")
                 ),
                 SimpleSBlockStmt(new VarDeclStmt(new VarDecl(false, SimpleSIdTypeExp("int"), Arr(new VarDeclElement("a", new IntLiteralExp(0)))))));
 
@@ -83,7 +81,7 @@ enum X
                 default,
                 Arr(
                     new EnumDeclElement("First", default),
-                    new EnumDeclElement("Second", Arr(new FuncParam(SimpleSIdTypeExp("int"), "i"))),
+                    new EnumDeclElement("Second", Arr(new EnumElementField(SimpleSIdTypeExp("int"), "i"))),
                     new EnumDeclElement("Third", default)
                 )
             );
@@ -130,10 +128,11 @@ public struct S<T> : B, I
                         AccessModifier.Public,
                         isStatic: true,
                         isSequence: false,
+                        isRefReturn: false,
                         SimpleSIdTypeExp("void"),
                         "Func",
                         Arr("X"),
-                        new FuncParamInfo(Arr(new FuncParam(SimpleSIdTypeExp("string"), "s")), null),
+                        Arr(new FuncParam(FuncParamKind.Normal, SimpleSIdTypeExp("string"), "s")),
                         SimpleSBlockStmt()
                     )),
 
@@ -141,10 +140,11 @@ public struct S<T> : B, I
                         AccessModifier.Private,
                         isStatic: false,
                         isSequence: true,
+                        isRefReturn: false,
                         SimpleSIdTypeExp("int"),
                         "F2",
                         Arr("T"),
-                        new FuncParamInfo(default, null),
+                        default,
                         SimpleSBlockStmt(new YieldStmt(new IntLiteralExp(4)))
                     ))
                 )

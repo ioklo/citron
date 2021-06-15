@@ -140,7 +140,7 @@ namespace Gum.IR0Translator
        
         void VisitEnumDeclElement(S.EnumDeclElement enumDeclElem)
         {
-            foreach (var param in enumDeclElem.Params)
+            foreach (var param in enumDeclElem.Fields)
                 VisitTypeExpOuterMost(param.Type);
         }
 
@@ -207,7 +207,7 @@ namespace Gum.IR0Translator
             {
                 VisitTypeExpOuterMost(funcDecl.RetType);
 
-                foreach (var param in funcDecl.ParamInfo.Parameters)
+                foreach (var param in funcDecl.Parameters)
                     VisitTypeExpOuterMost(param.Type);
 
                 VisitStmt(funcDecl.Body);

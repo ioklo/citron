@@ -299,7 +299,7 @@ namespace Gum
                 if (!Accept<IdentifierToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context, out var elemName))
                     return ParseResult<EnumDecl>.Invalid;
 
-                var paramsBuilder = ImmutableArray.CreateBuilder<FuncParam>();
+                var paramsBuilder = ImmutableArray.CreateBuilder<EnumElementField>();
                 if (Accept<LParenToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                 {
                     while (!Accept<RParenToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
@@ -310,7 +310,7 @@ namespace Gum
                         if (!Accept<IdentifierToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context, out var paramName))
                             return ParseResult<EnumDecl>.Invalid;
 
-                        paramsBuilder.Add(new FuncParam(FuncParamKind.Normal, typeExp!, paramName.Value));
+                        paramsBuilder.Add(new EnumElementField(typeExp!, paramName.Value));
                     }
                 }
 

@@ -12,7 +12,7 @@ namespace Gum.Syntax
         public override TypeExp RetType { get; }
         public override string Name { get; }
         public override ImmutableArray<string> TypeParams { get; }
-        public override ImmutableArray<FuncParam> Params { get; }
+        public override ImmutableArray<FuncParam> Parameters { get; }
         public override BlockStmt Body { get; }
     }
 }

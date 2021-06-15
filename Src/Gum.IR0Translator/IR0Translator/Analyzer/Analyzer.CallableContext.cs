@@ -295,13 +295,13 @@ namespace Gum.IR0Translator
                 return false; // 아직 sequence lambda 기능이 없으므로 
             }
 
-            public ImmutableArray<R.Param> GetCapturedLocalVars()
+            public ImmutableArray<R.OuterLocalVarInfo> GetCapturedLocalVars()
             {
                 return localCaptures.Select(localCapture =>
                 {
                     var name = localCapture.Key;
                     var type = localCapture.Value.GetRPath();
-                    return new R.Param(type, name);
+                    return new R.OuterLocalVarInfo(type, name);
                 }).ToImmutableArray();
             }
 

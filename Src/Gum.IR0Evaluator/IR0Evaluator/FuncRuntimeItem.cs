@@ -30,7 +30,7 @@ namespace Gum.IR0Evaluator
                 var builder = ImmutableDictionary.CreateBuilder<string, Value>();
 
                 for (int i = 0; i < args.Length; i++)
-                    builder.Add(funcDecl.Parameters.Parameters[i].Name, args[i]);
+                    builder.Add(funcDecl.Parameters[i].Name, args[i]);
 
                 await evaluator.context.ExecInNewFuncFrameAsync(default, builder.ToImmutable(), EvalFlowControl.None, ImmutableArray<Task>.Empty, thisValue, result, async () =>
                 {

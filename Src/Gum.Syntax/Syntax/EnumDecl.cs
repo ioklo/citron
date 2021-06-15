@@ -9,10 +9,17 @@ using Pretune;
 namespace Gum.Syntax
 {
     [AutoConstructor, ImplementIEquatable]
+    public partial struct EnumElementField
+    {
+        public TypeExp Type { get; }
+        public string Name { get; }
+    }
+
+    [AutoConstructor, ImplementIEquatable]
     public partial class EnumDeclElement : ISyntaxNode
     {
         public string Name { get; }
-        public ImmutableArray<FuncParam> Params { get; }
+        public ImmutableArray<EnumElementField> Fields { get; }
     }
 
     [AutoConstructor, ImplementIEquatable]

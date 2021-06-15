@@ -39,7 +39,7 @@ namespace Gum.IR0Evaluator
                 var builder = ImmutableDictionary.CreateBuilder<string, Value>();
 
                 for (int i = 0; i < args.Length; i++)
-                    builder.Add(seqFuncDecl.Parameters.Parameters[i].Name, args[i]);
+                    builder.Add(seqFuncDecl.Parameters[i].Name, args[i]);
 
                 // evaluator 복제
                 var newEvaluator = evaluator.CloneWithNewContext(thisValue, default, builder.ToImmutable());

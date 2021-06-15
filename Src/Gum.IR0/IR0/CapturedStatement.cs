@@ -8,9 +8,9 @@ namespace Gum.IR0
     public partial struct OuterLocalVarInfo : IPure
     {
         public Path Type { get; }
-        public Name Name { get; }
+        public string Name { get; }
 
-        public void Deconstruct(out Path outType, out Name outName)
+        public void Deconstruct(out Path outType, out string outName)
         {
             outType = Type;
             outName = Name;

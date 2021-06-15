@@ -130,17 +130,24 @@ namespace Gum.IR0Translator
             }
         }
 
-        public static string MakeParamHash(ImmutableArray<M.Type> paramTypes)
+        public static string MakeParamHash(ImmutableArray<(M.ParamKind Kind, M.Type Type)> paramKindsAndTypes)
         {
             var sb = new StringBuilder();
 
             bool bFirst = true;
-            foreach (var paramType in paramTypes)
+            foreach (var (kind, type) in paramKindsAndTypes)
             {
                 if (bFirst) bFirst = false;
                 else sb.Append(" * ");
 
-                FillTypeString(paramType, sb);
+                switch (kind)
+                {
+                    case M.ParamKind.Normal: break;
+                    case M.ParamKind.Params: sb.Append("params "); break;
+                    case M.ParamKind.Ref: sb.Append("ref "); break;
+                }
+
+                FillTypeString(type, sb);
             }
 
             return sb.ToString();

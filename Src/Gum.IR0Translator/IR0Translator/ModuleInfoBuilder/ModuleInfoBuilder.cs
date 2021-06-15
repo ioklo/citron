@@ -122,14 +122,14 @@ namespace Gum.IR0Translator
             var elemsBuilder = ImmutableArray.CreateBuilder<M.EnumElemInfo>(enumDecl.Elems.Length);
             foreach(var elem in enumDecl.Elems)
             {
-                var fieldsBuilder = ImmutableArray.CreateBuilder<M.MemberVarInfo>(elem.Params.Length);
-                foreach(var param in elem.Params)
+                var fieldsBuilder = ImmutableArray.CreateBuilder<M.MemberVarInfo>(elem.Fields.Length);
+                foreach(var field in elem.Fields)
                 {
-                    var type = GetMType(param.Type);
+                    var type = GetMType(field.Type);
                     Debug.Assert(type != null);
 
-                    var field = new M.MemberVarInfo(false, type, param.Name);
-                    fieldsBuilder.Add(field);
+                    var mfield = new M.MemberVarInfo(false, type, field.Name);
+                    fieldsBuilder.Add(mfield);
                 }
 
                 var fields = fieldsBuilder.MoveToImmutable();
@@ -200,8 +200,6 @@ namespace Gum.IR0Translator
 
         ImmutableArray<M.Param> MakeParams(ImmutableArray<S.FuncParam> sparams)
         {
-            int? variadicParamIndex = null;
-
             var builder = ImmutableArray.CreateBuilder<M.Param>(sparams.Length);
             foreach(var sparam in sparams)
             {
@@ -228,11 +226,12 @@ namespace Gum.IR0Translator
             var retType = GetMType(funcDecl.RetType);
             if (retType == null) throw new FatalException();
 
-            var paramInfo = MakeParams(funcDecl.ParamInfo);
+            var paramInfo = MakeParams(funcDecl.Parameters);
 
             var funcInfo = new M.FuncInfo(
                 funcDecl.Name,
                 funcDecl.IsSequence,
+                funcDecl.IsRefReturn,
                 bThisCall,
                 funcDecl.TypeParams,
                 retType,

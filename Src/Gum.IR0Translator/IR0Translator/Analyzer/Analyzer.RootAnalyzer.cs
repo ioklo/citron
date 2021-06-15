@@ -92,18 +92,25 @@ namespace Gum.IR0Translator
 
             (R.ParamHash ParamHash, ImmutableArray<R.Param> Params) MakeParamHashAndParamInfos(S.FuncDecl funcDecl)
             {
-                var paramTypesBuilder = ImmutableArray.CreateBuilder<R.Path>(funcDecl.Params.Length);
-                var parametersBuilder = ImmutableArray.CreateBuilder<R.Param>(funcDecl.Params.Length);
+                var paramTypesBuilder = ImmutableArray.CreateBuilder<R.Path>(funcDecl.Parameters.Length);
+                var parametersBuilder = ImmutableArray.CreateBuilder<R.Param>(funcDecl.Parameters.Length);
 
-                foreach (var param in funcDecl.Params)
+                foreach (var param in funcDecl.Parameters)
                 {
                     var typeValue = globalContext.GetTypeValueByTypeExp(param.Type);
 
                     var type = typeValue.GetRPath();
                     paramTypesBuilder.Add(type);
 
-                    var info = new R.Param(type, param.Name);
-                    parametersBuilder.Add(info);
+                    var kind = param.Kind switch
+                    {
+                        S.FuncParamKind.Normal => R.ParamKind.Normal,
+                        S.FuncParamKind.Params => R.ParamKind.Params,
+                        S.FuncParamKind.Ref => R.ParamKind.Ref,
+                    };
+
+                    var parameter = new R.Param(kind, type, param.Name);
+                    parametersBuilder.Add(parameter);
                 }
 
                 var paramHash = new R.ParamHash(funcDecl.TypeParams.Length, paramTypesBuilder.MoveToImmutable());
@@ -160,11 +167,11 @@ namespace Gum.IR0Translator
                 var localContext = new LocalContext();
                 var analyzer = new StmtAndExpAnalyzer(globalContext, funcContext, localContext);
                 
-                if (0 < funcDecl.TypeParams.Length || funcDecl.ParamInfo.VariadicParamIndex != null)
+                if (0 < funcDecl.TypeParams.Length)
                     throw new NotImplementedException();
 
                 // 파라미터 순서대로 추가
-                foreach (var param in funcDecl.ParamInfo.Parameters)
+                foreach (var param in funcDecl.Parameters)
                 {
                     var paramTypeValue = globalContext.GetTypeValueByTypeExp(param.Type);
                     localContext.AddLocalVarInfo(param.Name, paramTypeValue);
@@ -176,7 +183,7 @@ namespace Gum.IR0Translator
                 Debug.Assert(retTypeValue != null, "문법상 Sequence 함수의 retValue가 없을수 없습니다");
 
                 var retRType = retTypeValue.GetRPath();
-                var parameters = funcDecl.ParamInfo.Parameters.Select(param => param.Name).ToImmutableArray();
+                var parameters = funcDecl.Parameters.Select(param => param.Name).ToImmutableArray();
 
                 var decls = funcContext.GetDecls();
                 rootContext.AddDecl(new R.SequenceFuncDecl(decls, funcDecl.Name, false, retRType, funcDecl.TypeParams, rparamInfos, bodyResult.Stmt));
@@ -195,12 +202,12 @@ namespace Gum.IR0Translator
                 var relemsBuilder = ImmutableArray.CreateBuilder<R.EnumElement>(enumDecl.Elems.Length);
                 foreach(var elem in enumDecl.Elems)
                 {
-                    var rfieldsBuilder = ImmutableArray.CreateBuilder<R.Param>(elem.Params.Length);
+                    var rfieldsBuilder = ImmutableArray.CreateBuilder<R.EnumElementField>(elem.Fields.Length);
 
-                    foreach(var param in elem.Params)
+                    foreach(var param in elem.Fields)
                     {
                         var paramType = globalContext.GetTypeValueByTypeExp(param.Type);
-                        var rfield = new R.Param(paramType.GetRPath(), param.Name);
+                        var rfield = new R.EnumElementField(paramType.GetRPath(), param.Name);
                         rfieldsBuilder.Add(rfield);
                     }
 

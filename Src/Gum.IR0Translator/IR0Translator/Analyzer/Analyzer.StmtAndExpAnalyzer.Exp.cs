@@ -362,7 +362,7 @@ namespace Gum.IR0Translator
                 {   
                     var clonedAnalyzer = CloneAnalyzer();
 
-                    var matchResult = clonedAnalyzer.MatchFunc(outerTypeEnv, funcInfo.ParamInfo, funcsResult.TypeArgs, sargs);
+                    var matchResult = clonedAnalyzer.MatchFunc(outerTypeEnv, funcInfo.Parameters, funcsResult.TypeArgs, sargs);
                     if (!matchResult.bMatch) continue;
 
                     var matchedCandidate = new MatchedFunc(matchResult, funcInfo, clonedAnalyzer.globalContext, clonedAnalyzer.callableContext, clonedAnalyzer.localContext);
@@ -522,7 +522,7 @@ namespace Gum.IR0Translator
 
                     var paramTypeValue = globalContext.GetTypeValueByTypeExp(param.Type);
                     paramTypesBuilder.Add(paramTypeValue);
-                    rparamsBuilder.Add(new R.Param(paramTypeValue.GetRPath(), param.Name));
+                    rparamsBuilder.Add(new R.Param(R.ParamKind.Normal, paramTypeValue.GetRPath(), param.Name)); // TODO: Lambda 파라미터에 params적용할지 여부, 안될것도 없다
 
                     // 람다 파라미터를 지역 변수로 추가한다
                     newLocalContext.AddLocalVarInfo(param.Name, paramTypeValue);

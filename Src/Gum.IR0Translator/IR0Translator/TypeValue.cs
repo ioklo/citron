@@ -573,7 +573,7 @@ namespace Gum.IR0Translator
 
         public override R.Path GetRPath()
         {
-            var builder = ImmutableArray.CreateBuilder<R.Param>(Elems.Length);
+            var builder = ImmutableArray.CreateBuilder<R.TupleTypeElem>(Elems.Length);
             foreach(var elem in Elems)
             {
                 var rpath = elem.Type.GetRPath();
@@ -581,7 +581,7 @@ namespace Gum.IR0Translator
                     throw new NotImplementedException(); // unnamed tuple
                 var name = elem.Name;
 
-                builder.Add(new R.Param(rpath, name));
+                builder.Add(new R.TupleTypeElem(rpath, name));
             }
 
             return ritemFactory.MakeTupleType(builder.MoveToImmutable());
