@@ -64,13 +64,21 @@ namespace Gum.IR0Translator
             memberVars = new List<M.MemberVarInfo>();
         }
 
+        M.Type? GetMType(TypeExpInfo typeExpInfo)
+        {
+            switch (typeExpInfo)
+            {
+                case MTypeTypeExpInfo mtypeTypeExpInfo:
+                    return mtypeTypeExpInfo.Type;
+            }
+
+            return null;
+        }
+
         M.Type? GetMType(S.TypeExp typeExp)
         {
             var typeExpInfo = typeExpInfoService.GetTypeExpInfo(typeExp);
-            if( typeExpInfo is MTypeTypeExpInfo mtypeTypeExpInfo)
-                return mtypeTypeExpInfo.Type;
-
-            return null;
+            return GetMType(typeExpInfo);
         }                
         
         // 현재 위치가 Type안에 있는지
@@ -114,14 +122,14 @@ namespace Gum.IR0Translator
             var elemsBuilder = ImmutableArray.CreateBuilder<M.EnumElemInfo>(enumDecl.Elems.Length);
             foreach(var elem in enumDecl.Elems)
             {
-                var fieldsBuilder = ImmutableArray.CreateBuilder<M.MemberVarInfo>(elem.Params.Length);
-                foreach(var param in elem.Params)
+                var fieldsBuilder = ImmutableArray.CreateBuilder<M.MemberVarInfo>(elem.Fields.Length);
+                foreach(var field in elem.Fields)
                 {
-                    var type = GetMType(param.Type);
+                    var type = GetMType(field.Type);
                     Debug.Assert(type != null);
 
-                    var field = new M.MemberVarInfo(false, type, param.Name);
-                    fieldsBuilder.Add(field);
+                    var mfield = new M.MemberVarInfo(false, type, field.Name);
+                    fieldsBuilder.Add(mfield);
                 }
 
                 var fields = fieldsBuilder.MoveToImmutable();
@@ -190,18 +198,25 @@ namespace Gum.IR0Translator
             types.Add(structInfo);
         }
 
-        M.ParamInfo MakeParamInfo(S.FuncParamInfo paramInfo)
+        ImmutableArray<M.Param> MakeParams(ImmutableArray<S.FuncParam> sparams)
         {
-            var builder = ImmutableArray.CreateBuilder<(M.Type Type, M.Name Name)>(paramInfo.Parameters.Length);
-            foreach(var typeAndName in paramInfo.Parameters)
+            var builder = ImmutableArray.CreateBuilder<M.Param>(sparams.Length);
+            foreach(var sparam in sparams)
             {
-                var mtype = GetMType(typeAndName.Type);
+                var mtype = GetMType(sparam.Type);
                 if (mtype == null) throw new FatalException();
 
-                builder.Add((mtype, typeAndName.Name));
+                M.ParamKind paramKind = sparam.Kind switch
+                {
+                    S.FuncParamKind.Normal => M.ParamKind.Normal,
+                    S.FuncParamKind.Params => M.ParamKind.Params,
+                    S.FuncParamKind.Ref => M.ParamKind.Ref
+                };
+
+                builder.Add(new M.Param(paramKind, mtype, sparam.Name));
             }
 
-            return new M.ParamInfo(paramInfo.VariadicParamIndex, builder.MoveToImmutable());
+            return builder.MoveToImmutable();
         }
 
         void VisitFuncDecl(S.FuncDecl funcDecl)
@@ -211,11 +226,12 @@ namespace Gum.IR0Translator
             var retType = GetMType(funcDecl.RetType);
             if (retType == null) throw new FatalException();
 
-            var paramInfo = MakeParamInfo(funcDecl.ParamInfo);
+            var paramInfo = MakeParams(funcDecl.Parameters);
 
             var funcInfo = new M.FuncInfo(
                 funcDecl.Name,
                 funcDecl.IsSequence,
+                funcDecl.IsRefReturn,
                 bThisCall,
                 funcDecl.TypeParams,
                 retType,

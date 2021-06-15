@@ -1,7 +1,7 @@
 ﻿// $Error()
 struct S
 {
-    seq int F(ref<int> i)
+    seq int F(ref int i)
     {
         yield i;        
     }

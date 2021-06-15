@@ -58,7 +58,7 @@ namespace Gum.IR0Evaluator
                 
                 // 하위 아이템을 저장할 container와 invoker를 추가한다 (같은 키로)
                 var typeParamCount = normalFuncDecl.TypeParams.Length;
-                var paramHash = Misc.MakeParamHash(typeParamCount, normalFuncDecl.ParamInfo);
+                var paramHash = Misc.MakeParamHash(typeParamCount, normalFuncDecl.Parameters);
                 curContainer.AddItemContainer(normalFuncDecl.Name, paramHash, itemContainer);
 
                 var funcRuntimeItem = new IR0FuncRuntimeItem(normalFuncDecl);
@@ -78,7 +78,7 @@ namespace Gum.IR0Evaluator
                 var itemContainer = new ItemContainer();
 
                 var typeParamCount = seqFuncDecl.TypeParams.Length;
-                var paramHash = Misc.MakeParamHash(typeParamCount, seqFuncDecl.ParamInfo);
+                var paramHash = Misc.MakeParamHash(typeParamCount, seqFuncDecl.Parameters);
 
                 curContainer.AddItemContainer(seqFuncDecl.Name, paramHash, itemContainer);
 
@@ -135,7 +135,7 @@ namespace Gum.IR0Evaluator
                     var enumElemContainer = new ItemContainer();
 
                     int fieldIndex = 0;
-                    foreach(var enumElemField in enumElem.Params)
+                    foreach(var enumElemField in enumElem.Fields)
                     {
                         var enumElemFieldItem = new IR0EnumElemFieldRuntimeItem(enumElemField.Name, fieldIndex);
                         enumElemContainer.AddRuntimeItem(enumElemFieldItem);

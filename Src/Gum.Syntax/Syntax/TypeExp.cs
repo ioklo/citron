@@ -7,22 +7,7 @@ using Pretune;
 
 namespace Gum.Syntax
 {    
-    public abstract class TypeExp : ISyntaxNode
-    {
-    }
-
-    [AutoConstructor, ImplementIEquatable]
-    public partial class IdTypeExp : TypeExp
-    {
-        public string Name { get; }
-        public ImmutableArray<TypeExp> TypeArgs { get; }
-    }
-
-    [AutoConstructor, ImplementIEquatable]
-    public partial class MemberTypeExp : TypeExp
-    {
-        public TypeExp Parent { get; }
-        public string MemberName { get; }
-        public ImmutableArray<TypeExp> TypeArgs { get; }
-    }
+    public abstract record TypeExp : ISyntaxNode;
+    public record IdTypeExp(string Name, ImmutableArray<TypeExp> TypeArgs) : TypeExp;
+    public record MemberTypeExp(TypeExp Parent, string MemberName, ImmutableArray<TypeExp> TypeArgs) : TypeExp;
 }

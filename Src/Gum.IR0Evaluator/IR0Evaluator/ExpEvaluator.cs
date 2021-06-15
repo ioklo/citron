@@ -81,7 +81,7 @@ namespace Gum.IR0Evaluator
             }
 
             async ValueTask<ImmutableArray<Value>> EvalArgumentsAsync(
-                R.ParamInfo paramInfo,
+                ImmutableArray<R.Param> parameters,
                 ImmutableArray<R.Argument> args)
             {
                 var argsBuilder = ImmutableArray.CreateBuilder<Value>();
@@ -90,11 +90,10 @@ namespace Gum.IR0Evaluator
                 var argValuesBuilder = ImmutableArray.CreateBuilder<Value>();
 
                 // 파라미터를 보고 만든다. params 파라미터라면 
-                int paramIndex = 0;
-                foreach (var param in paramInfo.Parameters)
+                foreach (var param in parameters)
                 {
-                    if (paramIndex == paramInfo.VariadicParamIndex)
-                    { 
+                    if (param.Kind == R.ParamKind.Params)
+                    {
                         // TODO: 꼭 tuple이 아닐수도 있다
                         var tupleType = (R.Path.TupleType)param.Type;
                         foreach (var elem in tupleType.Elems)
@@ -103,13 +102,19 @@ namespace Gum.IR0Evaluator
                             argValuesBuilder.Add(argValue);
                         }
                     }
-                    else
+                    else if (param.Kind == R.ParamKind.Ref)
+                    {
+                        throw new NotImplementedException();
+                    }
+                    else if (param.Kind == R.ParamKind.Normal)
                     {
                         var argValue = evaluator.AllocValue(param.Type);
                         argValuesBuilder.Add(argValue);
                     }
-
-                    paramIndex++;
+                    else
+                    {
+                        throw new UnreachableCodeException();
+                    }
                 }
 
                 var argValues = argValuesBuilder.ToImmutable();
@@ -145,10 +150,9 @@ namespace Gum.IR0Evaluator
 
                 // param 단위로 다시 묶어야지
                 argValueIndex = 0;
-                paramIndex = 0;
-                foreach(var param in paramInfo.Parameters)
+                foreach(var param in parameters)
                 {   
-                    if (paramIndex == paramInfo.VariadicParamIndex)
+                    if (param.Kind == R.ParamKind.Params)
                     {
                         // TODO: 꼭 tuple이 아닐수도 있다
                         var tupleType = (R.Path.TupleType)param.Type;
@@ -158,14 +162,12 @@ namespace Gum.IR0Evaluator
                         argsBuilder.Add(tupleValue);
 
                         argValueIndex += tupleType.Elems.Length;
-                        paramIndex++;
                     }
                     else
                     {
                         argsBuilder.Add(argValues[argValueIndex]);
 
                         argValueIndex++;
-                        paramIndex++;
                     }
                 }
 
@@ -192,7 +194,7 @@ namespace Gum.IR0Evaluator
                     thisValue = null;
 
                 // 인자를 계산 해서 처음 로컬 variable에 집어 넣는다
-                var args = await EvalArgumentsAsync(funcInvoker.ParamInfo, exp.Args);
+                var args = await EvalArgumentsAsync(funcInvoker.Parameters, exp.Args);
 
                 await funcInvoker.InvokeAsync(evaluator, thisValue, args, result);
             }
@@ -211,7 +213,7 @@ namespace Gum.IR0Evaluator
                     thisValue = await evaluator.EvalLocAsync(exp.Instance);
                 }
 
-                var args = await EvalArgumentsAsync(seqFuncItem.ParamInfo, exp.Args);
+                var args = await EvalArgumentsAsync(seqFuncItem.Parameters, exp.Args);
                 seqFuncItem.Invoke(evaluator, thisValue, args, result);
             }
 
@@ -219,7 +221,7 @@ namespace Gum.IR0Evaluator
             {
                 var callableValue = (LambdaValue)await evaluator.EvalLocAsync(exp.Callable);
                 var lambdaRuntimeItem = evaluator.context.GetRuntimeItem<LambdaRuntimeItem>(exp.Lambda);
-                var localVars = await EvalArgumentsAsync(lambdaRuntimeItem.ParamInfo, exp.Args);
+                var localVars = await EvalArgumentsAsync(lambdaRuntimeItem.Parameters, exp.Args);
 
                 await lambdaRuntimeItem.InvokeAsync(evaluator, callableValue.CapturedThis, callableValue.Captures, localVars, result);
             }

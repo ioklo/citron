@@ -13,7 +13,7 @@ namespace Gum.IR0Evaluator
     abstract class SeqFuncRuntimeItem : AllocatableRuntimeItem 
     {
         public abstract bool IsThisCall { get; }
-        public abstract R.ParamInfo ParamInfo { get; }
+        public abstract ImmutableArray<R.Param> Parameters { get; }
 
         public abstract void Invoke(Evaluator evaluator, Value? thisValue, ImmutableArray<Value> args, Value result);
     }
@@ -24,9 +24,9 @@ namespace Gum.IR0Evaluator
         partial class IR0SeqFuncRuntimeItem : SeqFuncRuntimeItem
         {
             public override R.Name Name => seqFuncDecl.Name;
-            public override R.ParamHash ParamHash => Misc.MakeParamHash(seqFuncDecl.TypeParams.Length, seqFuncDecl.ParamInfo);
+            public override R.ParamHash ParamHash => Misc.MakeParamHash(seqFuncDecl.TypeParams.Length, seqFuncDecl.Parameters);
             public override bool IsThisCall => seqFuncDecl.IsThisCall;
-            public override R.ParamInfo ParamInfo => seqFuncDecl.ParamInfo;
+            public override ImmutableArray<R.Param> Parameters => seqFuncDecl.Parameters;
             R.SequenceFuncDecl seqFuncDecl;
 
             public override Value Alloc(Evaluator evaluator, TypeContext typeContext)
@@ -39,7 +39,7 @@ namespace Gum.IR0Evaluator
                 var builder = ImmutableDictionary.CreateBuilder<string, Value>();
 
                 for (int i = 0; i < args.Length; i++)
-                    builder.Add(seqFuncDecl.ParamInfo.Parameters[i].Name, args[i]);
+                    builder.Add(seqFuncDecl.Parameters[i].Name, args[i]);
 
                 // evaluator 복제
                 var newEvaluator = evaluator.CloneWithNewContext(thisValue, default, builder.ToImmutable());

@@ -16,10 +16,11 @@ namespace Gum.Syntax
     public abstract class FuncDecl : ISyntaxNode
     {
         public abstract bool IsSequence { get; } // seq 함수인가        
+        public abstract bool IsRefReturn { get; } // reference를 리턴하는가
         public abstract TypeExp RetType { get; }
         public abstract string Name { get; }
         public abstract ImmutableArray<string> TypeParams { get; }
-        public abstract FuncParamInfo ParamInfo { get; }
+        public abstract ImmutableArray<FuncParam> Parameters { get; }
         public abstract BlockStmt Body { get; }
     }
 }

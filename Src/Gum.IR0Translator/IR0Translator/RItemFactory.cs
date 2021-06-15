@@ -58,7 +58,7 @@ namespace Gum.IR0Translator
             throw new NotImplementedException();
         }
 
-        public R.Path MakeTupleType(ImmutableArray<R.TypeAndName> elems)
+        public R.Path MakeTupleType(ImmutableArray<R.TupleTypeElem> elems)
         {
             return new R.Path.TupleType(elems);
         }

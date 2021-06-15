@@ -71,7 +71,7 @@ xxx
         }
 
         [Fact]
-        async Task TestParseVarDeclStmtAsync()
+        public async Task TestParseVarDeclStmtAsync()
         {
             (var parser, var context) = await PrepareAsync("string a = \"hello\";");
             
@@ -84,9 +84,22 @@ xxx
 
             Assert.Equal<Stmt>(expected, varDeclStmt.Elem);
         }
-        
+
         [Fact]
-        async Task TestParseIfStmtAsync()
+        public async Task TestParseRefVarDeclStmtAsync()
+        {
+            // ref int p;
+            (var parser, var context) = await PrepareAsync("ref int p;");
+
+            var varDeclStmt = await parser.ParseVarDeclStmtAsync(context);
+
+            var expected = new VarDeclStmt(new VarDecl(true, SimpleSIdTypeExp("int"), Arr(new VarDeclElement("p", null))));
+
+            Assert.Equal(expected, varDeclStmt.Elem);
+        }
+
+        [Fact]
+        public async Task TestParseIfStmtAsync()
         {
             (var parser, var context) = await PrepareAsync("if (b) {} else if (c) {} else {}");
             

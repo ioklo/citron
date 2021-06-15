@@ -1,6 +1,6 @@
 ﻿// 4
 
-ref<int> F(ref<int> i)
+ref int F(ref int i)
 {
     return ref i; // 
 }

@@ -2,7 +2,7 @@
 
 struct S
 {
-    static ref<int> F(ref<int> x)
+    static ref int F(ref int x)
     {
         return x; // x자체는 ref 이므로, 바로 리턴 가능
     }

@@ -75,6 +75,11 @@ namespace Gum.IR0Translator
             foreach (var elem in listExp.Elems)
                 VisitExp(elem);
         }
+        
+        void VisitRefExp(S.RefExp refExp)
+        {
+            VisitExp(refExp.Exp);
+        }
 
         void VisitExp(S.Exp exp)
         {
@@ -93,6 +98,7 @@ namespace Gum.IR0Translator
                     case S.IndexerExp indexerExp: VisitIndexerExp(indexerExp); break;
                     case S.MemberExp memberExp: VisitMemberExp(memberExp); break;
                     case S.ListExp listExp: VisitListExp(listExp); break;
+                    case S.RefExp refExp: VisitRefExp(refExp); break;
                     default: throw new UnreachableCodeException();
                 }
             }

@@ -11,7 +11,7 @@ namespace Gum.IR0Evaluator
 {
     public abstract class FuncRuntimeItem : RuntimeItem
     {
-        public abstract R.ParamInfo ParamInfo { get; }
+        public abstract ImmutableArray<R.Param> Parameters { get; }
         public abstract ValueTask InvokeAsync(Evaluator evaluator, Value? thisValue, ImmutableArray<Value> args, Value result);
     }
 
@@ -21,8 +21,8 @@ namespace Gum.IR0Evaluator
         partial class IR0FuncRuntimeItem : FuncRuntimeItem
         {
             public override R.Name Name => funcDecl.Name;
-            public override R.ParamHash ParamHash => Misc.MakeParamHash(funcDecl.TypeParams.Length, funcDecl.ParamInfo);
-            public override R.ParamInfo ParamInfo => funcDecl.ParamInfo;
+            public override R.ParamHash ParamHash => Misc.MakeParamHash(funcDecl.TypeParams.Length, funcDecl.Parameters);
+            public override ImmutableArray<R.Param> Parameters => funcDecl.Parameters;
             R.NormalFuncDecl funcDecl;
 
             public override async ValueTask InvokeAsync(Evaluator evaluator, Value? thisValue, ImmutableArray<Value> args, Value result)
@@ -30,7 +30,7 @@ namespace Gum.IR0Evaluator
                 var builder = ImmutableDictionary.CreateBuilder<string, Value>();
 
                 for (int i = 0; i < args.Length; i++)
-                    builder.Add(funcDecl.ParamInfo.Parameters[i].Name, args[i]);
+                    builder.Add(funcDecl.Parameters[i].Name, args[i]);
 
                 await evaluator.context.ExecInNewFuncFrameAsync(default, builder.ToImmutable(), EvalFlowControl.None, ImmutableArray<Task>.Empty, thisValue, result, async () =>
                 {

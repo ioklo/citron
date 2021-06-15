@@ -10,9 +10,9 @@ namespace Gum.IR0Evaluator
 {
     static class Misc
     {
-        public static R.ParamHash MakeParamHash(int typeParamCount, R.ParamInfo paramInfo)
+        public static R.ParamHash MakeParamHash(int typeParamCount, ImmutableArray<R.Param> parameters)
         {
-            var paramTypes = ImmutableArray.CreateRange(paramInfo.Parameters, param => param.Type);
+            var paramTypes = ImmutableArray.CreateRange(parameters, param => param.Type);
             return new R.ParamHash(typeParamCount, paramTypes);
         }
     }

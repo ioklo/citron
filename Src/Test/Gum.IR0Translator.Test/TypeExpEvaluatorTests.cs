@@ -63,7 +63,7 @@ namespace Gum.IR0Translator.Test
                     )
                 )),
                 new S.StmtScriptElement(new S.VarDeclStmt(new S.VarDecl(
-                    typeExp, Arr(new S.VarDeclElement("x", null)))))
+                    false, typeExp, Arr(new S.VarDeclElement("x", null)))))
             );
 
             var result = Evaluate(script);

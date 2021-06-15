@@ -37,6 +37,7 @@ namespace Gum.IR0Translator
             }
         }
 
+        // TODO: 이름 변경 필요, NoMemberTypeExpResult도 MType을 반영할 때가 있으므로, NormalType.. 정도로 바꿔야 할 것 같다
         abstract class MTypeTypeExpResult : TypeExpResult
         {
             public override TypeExpInfo TypeExpInfo { get => typeExpInfo; }

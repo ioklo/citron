@@ -210,15 +210,27 @@ namespace Gum.TextAnalysis.Test
         }
 
         [Fact]
+        public async Task TestParseRefExpAsync()
+        {
+            var input = "ref i++";
+            (var expParser, var context) = await PrepareAsync(input);
+
+            var expResult = await expParser.ParseExpAsync(context);
+            var expected = new RefExp(new UnaryOpExp(UnaryOpKind.PostfixInc, new IdentifierExp("i", default)));
+
+            Assert.Equal(expected, expResult.Elem);
+        }        
+
+        [Fact]
         public async Task TestParseComplexExpAsync()
         {
-            var input = "a = b = !!(c % d)++ * e + f - g / h % i == 3 != false";
+            var input = "ref a = b = !!(c % d)++ * e + f - g / h % i == 3 != false";
             (var expParser, var context) = await PrepareAsync(input);
             
             var expResult = await expParser.ParseExpAsync(context);
 
             var expected = new BinaryOpExp(BinaryOpKind.Assign,
-                SimpleSId("a"),
+                new RefExp(SimpleSId("a")),
                 new BinaryOpExp(BinaryOpKind.Assign,
                     SimpleSId("b"),
                     new BinaryOpExp(BinaryOpKind.NotEqual,

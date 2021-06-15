@@ -5,10 +5,18 @@ using System.Collections.Generic;
 
 namespace Gum.IR0
 {
+    public enum ParamKind
+    {
+        Normal,
+        Params,
+        Ref,
+    }
+
     // int a
     [AutoConstructor, ImplementIEquatable]
-    public partial struct TypeAndName : IPure
+    public partial struct Param : IPure
     {
+        public ParamKind Kind { get; }
         public Path Type { get; }
         public string Name { get; }
 
@@ -17,8 +25,9 @@ namespace Gum.IR0
             Misc.EnsurePure(Type);
         }
 
-        public void Deconstruct(out Path outType, out string outName)
+        public void Deconstruct(out ParamKind outKind, out Path outType, out string outName)
         {
+            outKind = Kind;
             outType = Type;
             outName = Name;
         }

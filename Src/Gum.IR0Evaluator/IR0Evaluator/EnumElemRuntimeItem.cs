@@ -6,7 +6,7 @@ namespace Gum.IR0Evaluator
 {
     abstract class EnumElemRuntimeItem : AllocatableRuntimeItem
     {
-        public abstract ImmutableArray<R.TypeAndName> Params { get; }
+        public abstract ImmutableArray<R.EnumElementField> Fields { get; }
     }
 
     partial class Evaluator
@@ -16,14 +16,14 @@ namespace Gum.IR0Evaluator
         {
             public override R.Name Name => enumElem.Name;
             public override R.ParamHash ParamHash => R.ParamHash.None;
-            public override ImmutableArray<R.TypeAndName> Params => enumElem.Params;
+            public override ImmutableArray<R.EnumElementField> Fields => enumElem.Fields;
 
             R.EnumElement enumElem;
 
             public override Value Alloc(Evaluator evaluator, TypeContext typeContext)
             {
-                var builder = ImmutableArray.CreateBuilder<Value>(enumElem.Params.Length);
-                foreach (var field in enumElem.Params)
+                var builder = ImmutableArray.CreateBuilder<Value>(enumElem.Fields.Length);
+                foreach (var field in enumElem.Fields)
                 {
                     var appliedType = typeContext.Apply(field.Type);
                     var fieldValue = evaluator.AllocValue(appliedType);

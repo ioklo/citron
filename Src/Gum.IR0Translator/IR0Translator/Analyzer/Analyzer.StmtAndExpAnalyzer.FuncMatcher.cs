@@ -232,12 +232,11 @@ namespace Gum.IR0Translator
             // Layer 0
             MatchArgsResult MatchFunc(
                 TypeEnv outerTypeEnv,
-                M.ParamInfo paramInfo,
+                ImmutableArray<M.Param> parameters,
                 ImmutableArray<TypeValue> typeArgs,
                 ImmutableArray<S.Argument> sargs) // nothrow
             {
-                var paramTypes = MakeParamTypes(paramInfo.Parameters);
-                var variadicParamIndex = paramInfo.VariadicParamIndex;
+                var (paramTypes, variadicParamIndex) = MakeParamTypes(parameters);
 
                 return MatchFunc(outerTypeEnv, paramTypes, variadicParamIndex, typeArgs, sargs);
             }

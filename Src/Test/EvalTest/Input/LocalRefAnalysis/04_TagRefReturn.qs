@@ -2,7 +2,7 @@
 {
     int x;
 
-    ref<int> F()
+    ref int F()
     {
         return ref x;
     }
