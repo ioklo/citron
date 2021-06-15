@@ -85,6 +85,9 @@ namespace Gum
 
         internal async ValueTask<ParseResult<VarDecl>> ParseVarDeclAsync(ParserContext context)
         {
+            // optional ref
+            bool bRef = Accept<RefToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context);
+
             if (!Parse(await parser.ParseTypeExpAsync(context), ref context, out var varType))
                 return Invalid();
 
@@ -106,7 +109,7 @@ namespace Gum
 
             } while (Accept<CommaToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context)); // ,가 나오면 계속한다
 
-            return new ParseResult<VarDecl>(new VarDecl(varType!, elemsBuilder.ToImmutable()), context);
+            return new ParseResult<VarDecl>(new VarDecl(bRef, varType!, elemsBuilder.ToImmutable()), context);
 
             static ParseResult<VarDecl> Invalid() => ParseResult<VarDecl>.Invalid;
         }

@@ -591,35 +591,6 @@ namespace Gum.IR0Translator
             => throw new NotImplementedException();
     }
 
-    // Ref TypeValue
-    [AutoConstructor]
-    partial class RefTypeValue : TypeValue
-    {
-        TypeValue innerTypeValue;
-
-        public RefTypeValue Apply_RefTypeValue(TypeEnv typeEnv)
-        {
-            var appliedInnerTypeValue = innerTypeValue.Apply_TypeValue(typeEnv);
-
-            return new RefTypeValue(appliedInnerTypeValue);
-        }
-
-        public override TypeValue Apply_TypeValue(TypeEnv typeEnv)
-        {
-            return Apply_RefTypeValue(typeEnv);
-        }
-
-        public override R.Path GetRPath()
-        {
-            return new R.Path.RefType(innerTypeValue.GetRPath());
-        }
-
-        public override R.Loc MakeMemberLoc(R.Loc instance, R.Path.Nested member)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
     // 런타임 라이브러리로 구현할 리스트 타입
     [AutoConstructor]
     partial class RuntimeListTypeValue : TypeValue

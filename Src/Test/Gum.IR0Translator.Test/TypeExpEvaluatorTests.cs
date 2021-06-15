@@ -46,25 +46,6 @@ namespace Gum.IR0Translator.Test
 
             Assert.Equal(expected, typeExpInfo);
         }
-        
-        [Fact]
-        public void EvaluateType_RefTypeExp_ReturnsNoMemberTypeExpInfo()
-        {
-            // int x;
-            // ref int p;
-            S.TypeExp refTypeExp;
-
-            var script = SScript(
-                SVarDeclStmt(new S.IdTypeExp("int", default), "x"),
-                SVarDeclStmt(refTypeExp = new S.RefTypeExp(new S.IdTypeExp("int", default)), "p", new S.IdentifierExp("x", default)));
-
-            var result = Evaluate(script);
-
-            var typeExpInfo = result.GetTypeExpInfo(refTypeExp);
-            var expected = new MTypeTypeExpInfo(new M.RefType(new M.GlobalType("System.Runtime", new M.NamespacePath("System"), "Int32", ImmutableArray<M.Type>.Empty)));
-
-            Assert.Equal(expected, typeExpInfo);
-        }
 
         // X<int>.Y<short> 라면 
         [Fact]
@@ -82,7 +63,7 @@ namespace Gum.IR0Translator.Test
                     )
                 )),
                 new S.StmtScriptElement(new S.VarDeclStmt(new S.VarDecl(
-                    typeExp, Arr(new S.VarDeclElement("x", null)))))
+                    false, typeExp, Arr(new S.VarDeclElement("x", null)))))
             );
 
             var result = Evaluate(script);

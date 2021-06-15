@@ -147,15 +147,6 @@ namespace Gum
 
         public async ValueTask<ParseResult<TypeExp>> ParseTypeExpAsync(ParserContext context)
         {
-            // ref 
-            if (Accept<RefToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
-            {
-                if (!Parse(await ParsePrimaryTypeExpAsync(context), ref context, out var typeExp))
-                    return ParseResult<TypeExp>.Invalid;
-
-                return new ParseResult<TypeExp>(new RefTypeExp(typeExp), context);
-            }
-
             return await ParsePrimaryTypeExpAsync(context);
         }
 

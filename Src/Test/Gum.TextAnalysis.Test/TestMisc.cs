@@ -31,7 +31,10 @@ namespace Gum.TextAnalysis.Test
             => new VarDeclStmt(SimpleSVarDecl(typeExp, elems));
 
         public static VarDecl SimpleSVarDecl(TypeExp typeExp, params VarDeclElement[] elems)
-            => new VarDecl(typeExp, elems.ToImmutableArray());
+            => new VarDecl(false, typeExp, elems.ToImmutableArray());
+
+        public static VarDecl SimpleSRefVarDecl(TypeExp typeExp, params VarDeclElement[] elems)
+            => new VarDecl(true, typeExp, elems.ToImmutableArray());
 
     }
 }

@@ -24,6 +24,4 @@ namespace Gum.CompileTime
         public static readonly VoidType Instance = new VoidType();
         VoidType() { }
     }
-
-    public record RefType(Type Type) : Type;
 }
