@@ -6,5 +6,5 @@ namespace Gum.Infra
     public interface IPure
     {
         void EnsurePure();
-    }
+    }    
 }

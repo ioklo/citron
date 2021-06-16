@@ -7,6 +7,7 @@ using static Gum.IR0Translator.AnalyzeErrorCode;
 using Gum.Collections;
 using System;
 using System.Diagnostics;
+using Gum.Infra;
 
 namespace Gum.IR0Translator
 {
@@ -69,7 +70,7 @@ namespace Gum.IR0Translator
                 return rootContext.MakeScript();
             }
 
-            public R.PrivateGlobalVarDeclStmt AnalyzeGlobalVarDecl(S.VarDecl varDecl)
+            public R.GlobalVarDeclStmt AnalyzeGlobalVarDecl(S.VarDecl varDecl)
             {
                 var varDeclAnalyzer = new VarDeclElemAnalyzer(globalContext, rootContext, localContext);
                 var declType = globalContext.GetTypeValueByTypeExp(varDecl.Type);
@@ -87,7 +88,7 @@ namespace Gum.IR0Translator
                     elems.Add(result.Elem);
                 }
 
-                return new R.PrivateGlobalVarDeclStmt(elems.ToImmutableArray());
+                return new R.GlobalVarDeclStmt(elems.ToImmutableArray());
             }
 
             (R.ParamHash ParamHash, ImmutableArray<R.Param> Params) MakeParamHashAndParamInfos(S.FuncDecl funcDecl)
@@ -107,6 +108,7 @@ namespace Gum.IR0Translator
                         S.FuncParamKind.Normal => R.ParamKind.Normal,
                         S.FuncParamKind.Params => R.ParamKind.Params,
                         S.FuncParamKind.Ref => R.ParamKind.Ref,
+                        _ => throw new UnreachableCodeException()
                     };
 
                     var parameter = new R.Param(kind, type, param.Name);

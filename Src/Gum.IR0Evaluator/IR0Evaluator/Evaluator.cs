@@ -180,12 +180,23 @@ namespace Gum.IR0Evaluator
         {
             foreach (var elem in localVarDecl.Elems)
             {
-                var value = AllocValue(elem.Type);
-                context.AddLocalVar(elem.Name, value);
+                var value = AllocValue(elem.Type);                
 
                 // InitExp가 있으면 
                 if (elem.InitExp != null)
                     await expEvaluator.EvalAsync(elem.InitExp, value);
+
+                // 순서 주의, TODO: 테스트로 만들기
+                context.AddLocalVar(elem.Name, value);
+            }
+        }
+
+        async ValueTask EvalLocalRefVarDeclAsync(R.LocalRefVarDecl localVarDecl)
+        {
+            foreach (var elem in localVarDecl.Elems)
+            {
+                var value = await locEvaluator.EvalLocAsync(elem.Loc);
+                context.AddLocalVar(elem.Name, value);
             }
         }
 

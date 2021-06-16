@@ -41,7 +41,7 @@ namespace Gum.IR0Translator
                         globalContext.AddFatalError(A0101_VarDecl_CantInferVarType, elem);
 
                     var rtype = declType.GetRPath();
-                    return new VarDeclElementCoreResult(new R.VarDeclElement(elem.VarName, rtype, null), declType);
+                    return new VarDeclElementCoreResult(new R.VarDeclElement(rtype, elem.VarName, null), declType);
                 }
                 else
                 {
@@ -50,7 +50,7 @@ namespace Gum.IR0Translator
                     {
                         var initExpResult = stmtAndExpAnalyzer.AnalyzeExp_Exp(elem.InitExp, ResolveHint.None);
                         var rtype = initExpResult.TypeValue.GetRPath();
-                        return new VarDeclElementCoreResult(new R.VarDeclElement(elem.VarName, rtype, initExpResult.Result), initExpResult.TypeValue);
+                        return new VarDeclElementCoreResult(new R.VarDeclElement(rtype, elem.VarName, initExpResult.Result), initExpResult.TypeValue);
                     }
                     else
                     {
@@ -58,7 +58,7 @@ namespace Gum.IR0Translator
                         var castExpResult = stmtAndExpAnalyzer.CastExp_Exp(initExpResult, declType, elem.InitExp);
 
                         var rtype = declType.GetRPath();
-                        return new VarDeclElementCoreResult(new R.VarDeclElement(elem.VarName, rtype, castExpResult.Result), declType);
+                        return new VarDeclElementCoreResult(new R.VarDeclElement(rtype, elem.VarName, castExpResult.Result), declType);
                     }
                 }
             }

@@ -84,7 +84,7 @@ namespace Gum.IR0Translator.Test
         }
         
         [Fact]
-        public void VarDeclStmt_TranslatesIntoPrivateGlobalVarDecl()
+        public void VarDeclStmt_TranslatesIntoGlobalVarDecl()
         {
             var syntaxScript = SScript(new S.StmtScriptElement(SVarDeclStmt(IntTypeExp, "x", SInt(1))));
             var script = Translate(syntaxScript);
@@ -108,7 +108,7 @@ namespace Gum.IR0Translator.Test
 
             var expected = RScript(
                 RBlock(
-                    new R.LocalVarDeclStmt(new R.LocalVarDecl(Arr(new R.VarDeclElement("x", R.Path.Int, RInt(1)))))
+                    new R.LocalVarDeclStmt(new R.LocalVarDecl(Arr(new R.VarDeclElement(R.Path.Int, "x", RInt(1)))))
                 )
             );
 
@@ -130,7 +130,7 @@ namespace Gum.IR0Translator.Test
 
             var funcDecl = new R.NormalFuncDecl(default, "Func", false, default, default, RBlock(
 
-                new R.LocalVarDeclStmt(new R.LocalVarDecl(Arr(new R.VarDeclElement("x", R.Path.Int, RInt(1)))))
+                new R.LocalVarDeclStmt(new R.LocalVarDecl(Arr(new R.VarDeclElement(R.Path.Int, "x", RInt(1)))))
 
             ));
 
@@ -576,7 +576,7 @@ namespace Gum.IR0Translator.Test
 
             var expected = RScript(
                 RBlock(
-                    RLocalVarDeclStmt(R.Path.String, "x", RString("Hello")) // not PrivateGlobalVarDecl
+                    RLocalVarDeclStmt(R.Path.String, "x", RString("Hello")) // not GlobalVarDecl
                 )
             );
 

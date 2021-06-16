@@ -233,8 +233,18 @@ namespace Gum.IR0Translator
                 switch (forInit)
                 {
                     case S.VarDeclForStmtInitializer varDeclInit:
-                        var localVarDecl = AnalyzeLocalVarDecl(varDeclInit.VarDecl);
-                        return new ForStmtInitializerResult(new R.VarDeclForStmtInitializer(localVarDecl));
+                        {
+                            if (varDeclInit.VarDecl.IsRef)
+                            {
+                                var localRefVarDecl = AnalyzeLocalRefVarDecl(varDeclInit.VarDecl);
+                                return new ForStmtInitializerResult(new R.RefVarDeclForStmtInitializer(localRefVarDecl));
+                            }
+                            else
+                            {
+                                var localVarDecl = AnalyzeLocalVarDecl(varDeclInit.VarDecl);
+                                return new ForStmtInitializerResult(new R.VarDeclForStmtInitializer(localVarDecl));
+                            }
+                        }
 
                     case S.ExpForStmtInitializer expInit:
                         var expResult = AnalyzeTopLevelExp_Exp(expInit.Exp, ResolveHint.None, A1102_ForStmt_ExpInitializerShouldBeAssignOrCall);

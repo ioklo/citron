@@ -1,4 +1,4 @@
-﻿using Pretune;
+﻿using Gum.Collections;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,5 +7,5 @@ using System.Threading.Tasks;
 
 namespace Gum.IR0
 {
-    public record VarDeclElement(Path Type, string Name, Exp? InitExp);
+    public record LocalRefVarDecl(ImmutableArray<RefVarDeclElement> Elems);
 }

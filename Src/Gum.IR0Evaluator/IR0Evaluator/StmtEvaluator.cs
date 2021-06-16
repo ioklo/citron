@@ -42,22 +42,39 @@ namespace Gum.IR0Evaluator
                 }
             }
 
-            async ValueTask EvalPrivateGlobalVarDeclStmtAsync(R.PrivateGlobalVarDeclStmt stmt)
+            async ValueTask EvalGlobalVarDeclStmtAsync(R.GlobalVarDeclStmt stmt)
             {
                 foreach (var elem in stmt.Elems)
                 {
-                    var value = evaluator.AllocValue(elem.Type);
-                    evaluator.context.AddPrivateGlobalVar(elem.Name, value);
+                    var value = evaluator.AllocValue(elem.Type);                    
 
                     // InitExp가 있으면 
                     if (elem.InitExp != null)
                         await evaluator.EvalExpAsync(elem.InitExp, value);
+
+                    // 순서 주의, InitExp먼저 실행
+                    // TODO: 테스트로 만들기
+                    evaluator.context.AddGlobalVar(elem.Name, value);
+                }
+            }
+
+            async ValueTask EvalGlobalRefVarDeclStmtAsync(R.GlobalRefVarDeclStmt stmt)
+            {
+                foreach (var elem in stmt.Elems)
+                {
+                    var value = await evaluator.EvalLocAsync(elem.Loc);
+                    evaluator.context.AddGlobalVar(elem.Name, value);
                 }
             }
 
             ValueTask EvalLocalVarDeclStmtAsync(R.LocalVarDeclStmt stmt)
             {
                 return evaluator.EvalLocalVarDeclAsync(stmt.VarDecl);
+            }
+
+            ValueTask EvalLocalRefVarDeclStmtAsync(R.LocalRefVarDeclStmt stmt)
+            {
+                return evaluator.EvalLocalRefVarDeclAsync(stmt.RefVarDecl);
             }
 
             async IAsyncEnumerable<Void> EvalIfStmtAsync(R.IfStmt stmt)
@@ -143,9 +160,13 @@ namespace Gum.IR0Evaluator
                     if (forStmt.Initializer != null)
                     {
                         switch (forStmt.Initializer)
-                        {
+                        {   
                             case R.VarDeclForStmtInitializer varDeclInitializer:
                                 await evaluator.EvalLocalVarDeclAsync(varDeclInitializer.VarDecl);
+                                break;
+
+                            case R.RefVarDeclForStmtInitializer refVarDeclInitializer:
+                                await evaluator.EvalLocalRefVarDeclAsync(refVarDeclInitializer.RefVarDecl);
                                 break;
 
                             case R.ExpForStmtInitializer expInitializer:
@@ -336,12 +357,20 @@ namespace Gum.IR0Evaluator
                         await EvalCommandStmtAsync(cmdStmt);
                         break;
 
-                    case R.PrivateGlobalVarDeclStmt pgvdStmt:
-                        await EvalPrivateGlobalVarDeclStmtAsync(pgvdStmt);
+                    case R.GlobalVarDeclStmt gVarDecl:
+                        await EvalGlobalVarDeclStmtAsync(gVarDecl);
+                        break;
+
+                    case R.GlobalRefVarDeclStmt gRefVarDecl:
+                        await EvalGlobalRefVarDeclStmtAsync(gRefVarDecl);
                         break;
 
                     case R.LocalVarDeclStmt localVarDeclStmt:
                         await EvalLocalVarDeclStmtAsync(localVarDeclStmt);
+                        break;
+
+                    case R.LocalRefVarDeclStmt lRefVarDecl:
+                        await EvalLocalRefVarDeclStmtAsync(lRefVarDecl);
                         break;
 
                     case R.IfStmt ifStmt:
@@ -411,7 +440,7 @@ namespace Gum.IR0Evaluator
                         break;
 
                     default:
-                        throw new NotImplementedException();
+                        throw new UnreachableCodeException();
                 };
             }
         }

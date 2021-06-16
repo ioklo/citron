@@ -162,9 +162,9 @@ namespace Gum.IR0Evaluator.Test
         }
 
         // Stmt
-        // PrivateGlobalVarDeclStmt
+        // GlobalVarDeclStmt
         [Fact]
-        public async Task PrivateGlobalVariableStmt_DeclProperly()
+        public async Task GlobalVariableStmt_DeclProperly()
         {   
             var topLevelStmts = Arr<Stmt>
             (
@@ -188,7 +188,7 @@ namespace Gum.IR0Evaluator.Test
         }
 
         [Fact]
-        public async Task PrivateGlobalVariableExp_GetGlobalValueInFunc()
+        public async Task GlobalVariableExp_GetGlobalValueInFunc()
         {
             var func0 = new NormalFuncDecl(default, "TestFunc", false, default, default, RBlock(
                 PrintStringCmdStmt(new GlobalVarLoc("x"))));
@@ -292,6 +292,24 @@ namespace Gum.IR0Evaluator.Test
 
             var output = await EvalAsync(default, stmts);
             Assert.Equal("Hello23", output);
+        }
+
+        [Fact]
+        public async Task GlobalRefVarDeclStmt_WorksProperly()
+        {
+            // int i = 3;
+            // ref int x = ref i;
+            // x = 4;
+            // @$i
+            var stmts = Arr<Stmt>(
+                RGlobalVarDeclStmt(Path.Int, "i", RInt(3)),
+                RGlobalRefVarDeclStmt("x", new GlobalVarLoc("i")), // type이 빠진다
+                new ExpStmt(new AssignExp(new GlobalVarLoc("x"), RInt(4))),
+                PrintIntCmdStmt(new GlobalVarLoc("i")) 
+            );
+
+            var output = await EvalAsync(default, stmts);
+            Assert.Equal("4", output);
         }
 
         // If
@@ -1425,5 +1443,7 @@ namespace Gum.IR0Evaluator.Test
         {
             throw new PrerequisiteRequiredException(Prerequisite.Class);
         }        
+
+        
     }
 }
