@@ -9,6 +9,7 @@ using static Gum.IR0Translator.AnalyzeErrorCode;
 
 using S = Gum.Syntax;
 using R = Gum.IR0;
+using Gum.Infra;
 
 namespace Gum.IR0Translator
 {
@@ -54,20 +55,31 @@ namespace Gum.IR0Translator
                     {
                         // ref var는 에러
                         if (bRef)
-                            globalContext.AddFatalError(A0106_VarDecl_DontAllowVarWithRef, elem);
+                            globalContext.AddFatalError(A0107_VarDecl_DontAllowVarWithRef, elem);
 
+                        // var x = ref exp
                         if (elem.Initializer.Value.IsRef)
                         {
                             // ref 라면 
-                            var initExpResult = stmtAndExpAnalyzer.AnalyzeExp(elem.Initializer, ResolveHint.None);
+                            var initExpResult = stmtAndExpAnalyzer.AnalyzeExp(elem.Initializer.Value.Exp, ResolveHint.None);
 
+                            // location만 허용
+                            switch(initExpResult)
+                            {
+                                case ExpResult.Loc locResult:
+                                    var relem = new R.VarDeclElement.Ref(elem.VarName, locResult.Result);
+                                    return new VarDeclElementCoreResult(relem, locResult.TypeValue);
 
+                                default:
+                                    globalContext.AddFatalError(A0108_VarDecl_RefNeedLocation, elem);
+                                    throw new UnreachableCodeException();
+                            }
                         }
                         else
                         {
-                            var initExpResult = stmtAndExpAnalyzer.AnalyzeExp_Exp(elem.Initializer, ResolveHint.None);
+                            var initExpResult = stmtAndExpAnalyzer.AnalyzeExp_Exp(elem.Initializer.Value.Exp, ResolveHint.None);
                             var rtype = initExpResult.TypeValue.GetRPath();
-                            return new VarDeclElementCoreResult(new R.VarDeclElement(rtype, elem.VarName, initExpResult.Result), initExpResult.TypeValue);
+                            return new VarDeclElementCoreResult(new R.VarDeclElement.Normal(rtype, elem.VarName, initExpResult.Result), initExpResult.TypeValue);
                         }
                     }
                     else
