@@ -164,11 +164,7 @@ namespace Gum.IR0Evaluator
                             case R.VarDeclForStmtInitializer varDeclInitializer:
                                 await evaluator.EvalLocalVarDeclAsync(varDeclInitializer.VarDecl);
                                 break;
-
-                            case R.RefVarDeclForStmtInitializer refVarDeclInitializer:
-                                await evaluator.EvalLocalRefVarDeclAsync(refVarDeclInitializer.RefVarDecl);
-                                break;
-
+                            
                             case R.ExpForStmtInitializer expInitializer:
                                 await evaluator.EvalExpAsync(expInitializer.Exp, EmptyValue.Instance);
                                 break;

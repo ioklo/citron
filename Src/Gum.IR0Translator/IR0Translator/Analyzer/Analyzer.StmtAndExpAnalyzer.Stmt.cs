@@ -234,6 +234,18 @@ namespace Gum.IR0Translator
                 {
                     case S.VarDeclForStmtInitializer varDeclInit:
                         {
+                            // VarDecl의 속성을 여기서 들춰서 분기하면 안될거 같다. AnalyzeLocalVarDecl에서 처리하도록
+
+                            var localVarDecl = AnalyzeLocalVarDecl(varDeclInit.VarDecl);
+
+
+                            
+
+
+
+                            return new ForStmtInitializerResult(new R.RefVarDeclForStmtInitializer(localRefVarDecl));
+
+
                             if (varDeclInit.VarDecl.IsRef)
                             {
                                 var localRefVarDecl = AnalyzeLocalRefVarDecl(varDeclInit.VarDecl);

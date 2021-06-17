@@ -7,5 +7,9 @@ using System.Threading.Tasks;
 
 namespace Gum.IR0
 {
-    public record VarDeclElement(Path Type, string Name, Exp? InitExp);
+    public abstract record VarDeclElement
+    {
+        public record Normal(Path Type, string Name, Exp? InitExp) : VarDeclElement;
+        public record Ref(string Name, Loc Loc) : VarDeclElement;
+    }
 }

@@ -97,15 +97,20 @@ namespace Gum
                 if (!Accept<IdentifierToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context, out var varIdResult))
                     return Invalid();
 
-                Exp? initExp = null;
+                VarDeclElemInitializer? initializer = null;
                 if (Accept<EqualToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                 {
+                    // ref가 나올 수 있다
+                    bool bRefExp = Accept<RefToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context);                    
+
                     // TODO: ;나 ,가 나올때까지라는걸 명시해주면 좋겠다
-                    if (!Parse(await parser.ParseExpAsync(context), ref context, out initExp))
+                    if (!Parse(await parser.ParseExpAsync(context), ref context, out var initExp))
                         return Invalid();
+
+                    initializer = new VarDeclElemInitializer(bRefExp, initExp);
                 }
 
-                elemsBuilder.Add(new VarDeclElement(varIdResult!.Value, initExp));
+                elemsBuilder.Add(new VarDeclElement(varIdResult!.Value, initializer));
 
             } while (Accept<CommaToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context)); // ,가 나오면 계속한다
 

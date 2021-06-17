@@ -32,16 +32,20 @@ namespace Gum.IR0Translator
                 public TypeValue TypeValue { get; }
             }
 
-            public VarDeclElementCoreResult AnalyzeVarDeclElement(S.VarDeclElement elem, TypeValue declType)
+            public VarDeclElementCoreResult AnalyzeVarDeclElement(S.VarDeclElement elem, bool bRef, TypeValue declType)
             {
-                if (elem.InitExp == null)
+                if (elem.Initializer == null)
                 {
+                    // ref로 시작했으면 initializer가 꼭 있어야 합니다
+                    if (bRef)
+                        globalContext.AddFatalError(A0106_VarDecl_RefDeclNeedInitializer, elem);
+
                     // var x; 체크
                     if (declType is VarTypeValue)
                         globalContext.AddFatalError(A0101_VarDecl_CantInferVarType, elem);
 
                     var rtype = declType.GetRPath();
-                    return new VarDeclElementCoreResult(new R.VarDeclElement(rtype, elem.VarName, null), declType);
+                    return new VarDeclElementCoreResult(new R.VarDeclElement.Normal(rtype, elem.VarName, null), declType);
                 }
                 else
                 {

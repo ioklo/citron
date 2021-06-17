@@ -35,16 +35,16 @@ namespace Gum.IR0
             => new StringExp(Arr<StringExpElement>(new TextStringExpElement(v)));
 
         public static GlobalVarDeclStmt RGlobalVarDeclStmt(Path type, string name, Exp? initExp = null)
-            => new GlobalVarDeclStmt(Arr(new VarDeclElement(type, name, initExp)));
+            => new GlobalVarDeclStmt(Arr<VarDeclElement>(new VarDeclElement.Normal(type, name, initExp)));
 
-        public static GlobalRefVarDeclStmt RGlobalRefVarDeclStmt(string name, Loc loc)
-            => new GlobalRefVarDeclStmt(Arr(new RefVarDeclElement(name, loc)));
+        public static GlobalVarDeclStmt RGlobalRefVarDeclStmt(string name, Loc loc)
+            => new GlobalVarDeclStmt(Arr<VarDeclElement>(new VarDeclElement.Ref(name, loc)));
 
         public static LocalVarDeclStmt RLocalVarDeclStmt(Path typeId, string name, Exp? initExp = null)
             => new LocalVarDeclStmt(RLocalVarDecl(typeId, name, initExp));
 
         public static LocalVarDecl RLocalVarDecl(Path typeId, string name, Exp? initExp = null)
-            => new LocalVarDecl(Arr(new VarDeclElement(typeId, name, initExp)));
+            => new LocalVarDecl(Arr<VarDeclElement>(new VarDeclElement.Normal(typeId, name, initExp)));
 
         public static IntLiteralExp RInt(int v) => new IntLiteralExp(v);
         public static BoolLiteralExp RBool(bool v) => new BoolLiteralExp(v);

@@ -19,16 +19,12 @@ namespace Gum.IR0
 
     // 글로벌 변수 선언
     public record GlobalVarDeclStmt(ImmutableArray<VarDeclElement> Elems) : Stmt;
-    public record GlobalRefVarDeclStmt(ImmutableArray<RefVarDeclElement> Elems) : Stmt;
+    public record LocalVarDeclStmt(LocalVarDecl VarDecl) : Stmt;
 
-    public record LocalVarDeclStmt(LocalVarDecl VarDecl) : Stmt;    
-    public record LocalRefVarDeclStmt(LocalRefVarDecl RefVarDecl) : Stmt;
-
-    public record IfStmt(Exp Cond, Stmt Body, Stmt? ElseBody) : Stmt;    
+    public record IfStmt(Exp Cond, Stmt Body, Stmt? ElseBody) : Stmt;
     public record IfTestClassStmt(Loc Target, Path TestType, Name VarName, Stmt Body, Stmt? ElseBody) : Stmt;
     public record IfTestEnumElemStmt(Loc Target, Path.Nested EnumElem, string? VarName, Stmt Body, Stmt? ElseBody) : Stmt;    
     public record ForStmt(ForStmtInitializer? Initializer, Exp? CondExp, Exp? ContinueExp, Stmt Body) : Stmt;
-
 
     // singleton
     public record ContinueStmt : Stmt

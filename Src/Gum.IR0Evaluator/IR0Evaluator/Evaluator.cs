@@ -174,31 +174,41 @@ namespace Gum.IR0Evaluator
                 var origValue = context.GetLocalValue(typeAndName.Name);
                 localVars[typeAndName.Name].SetValue(origValue);
             }
-        }
+        }        
 
         async ValueTask EvalLocalVarDeclAsync(R.LocalVarDecl localVarDecl)
         {
             foreach (var elem in localVarDecl.Elems)
             {
-                var value = AllocValue(elem.Type);                
+                switch(elem)
+                {
+                    case R.VarDeclElement.Normal normalElem:
+                        {
+                            var value = AllocValue(normalElem.Type);
 
-                // InitExp가 있으면 
-                if (elem.InitExp != null)
-                    await expEvaluator.EvalAsync(elem.InitExp, value);
+                            // InitExp가 있으면 
+                            if (normalElem.InitExp != null)
+                                await expEvaluator.EvalAsync(normalElem.InitExp, value);
 
-                // 순서 주의, TODO: 테스트로 만들기
-                context.AddLocalVar(elem.Name, value);
+                            // 순서 주의, TODO: 테스트로 만들기
+                            context.AddLocalVar(normalElem.Name, value);
+                            break;
+                        }
+
+                    case R.VarDeclElement.Ref refElem:
+                        {
+                            var value = await locEvaluator.EvalLocAsync(refElem.Loc);
+
+                            // 순서 주의, TODO: 테스트로 만들기
+                            context.AddLocalVar(refElem.Name, value);
+                            break;
+                        }
+
+                    default: 
+                        throw new UnreachableCodeException();
+                }
             }
-        }
-
-        async ValueTask EvalLocalRefVarDeclAsync(R.LocalRefVarDecl localVarDecl)
-        {
-            foreach (var elem in localVarDecl.Elems)
-            {
-                var value = await locEvaluator.EvalLocAsync(elem.Loc);
-                context.AddLocalVar(elem.Name, value);
-            }
-        }
+        }        
 
         ValueTask EvalExpAsync(R.Exp exp, Value result)
         {

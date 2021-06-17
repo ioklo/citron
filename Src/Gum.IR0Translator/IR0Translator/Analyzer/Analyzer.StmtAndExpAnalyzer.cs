@@ -72,11 +72,11 @@ namespace Gum.IR0Translator
                 updateContext.Update(callableContext, srcCallableContext);
                 updateContext.Update(localContext, srcLocalContext);
             }
-            
+
+            // var x = 3, y = ref i; 라면 
             R.LocalVarDecl AnalyzeLocalVarDecl(S.VarDecl varDecl)
             {
                 var varDeclAnalyzer = new VarDeclElemAnalyzer(globalContext, callableContext, localContext);
-
                 var declType = globalContext.GetTypeValueByTypeExp(varDecl.Type);
 
                 var relems = new List<R.VarDeclElement>();
@@ -85,13 +85,17 @@ namespace Gum.IR0Translator
                     if (localContext.DoesLocalVarNameExistInScope(elem.VarName))
                         globalContext.AddFatalError(A0103_VarDecl_LocalVarNameShouldBeUniqueWithinScope, elem);
 
-                    var result = varDeclAnalyzer.AnalyzeVarDeclElement(elem, declType);
+                    var result = varDeclAnalyzer.AnalyzeVarDeclElement(elem, varDecl.IsRef, declType);
 
                     localContext.AddLocalVarInfo(elem.VarName, result.TypeValue);
                     relems.Add(result.Elem);
                 }
 
                 return new R.LocalVarDecl(relems.ToImmutableArray());
+            }
+            
+            LocalVarDeclResult.Ref AnalyzeLocalRefVarDecl(S.VarDecl varDecl)
+            {
             }
         }
     }
