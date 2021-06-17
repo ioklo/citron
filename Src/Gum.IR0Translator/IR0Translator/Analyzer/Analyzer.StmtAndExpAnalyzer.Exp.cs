@@ -878,14 +878,9 @@ namespace Gum.IR0Translator
                     new R.ListExp(rtype, builder.ToImmutable()),
                     globalContext.GetListType(curElemTypeValue));
             }
+            
 
-
-            ExpResult.Exp AnalyzeRefExp(S.RefExp refExp)
-            {
-                throw new NotImplementedException();
-            }
-
-            ExpResult AnalyzeExp(S.Exp exp, ResolveHint hint)
+            public ExpResult AnalyzeExp(S.Exp exp, ResolveHint hint)
             {
                 switch (exp)
                 {
@@ -900,7 +895,6 @@ namespace Gum.IR0Translator
                     case S.IndexerExp indexerExp: return AnalyzeIndexerExp(indexerExp);
                     case S.MemberExp memberExp: return AnalyzeMemberExp(memberExp);
                     case S.ListExp listExp: return AnalyzeListExp(listExp);
-                    case S.RefExp refExp: return AnalyzeRefExp(refExp);
                     default: throw new UnreachableCodeException();
                 }
             }

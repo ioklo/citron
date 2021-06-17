@@ -52,7 +52,12 @@ namespace Gum.IR0Translator
                     // var 처리
                     if (declType is VarTypeValue)
                     {
-                        var initExpResult = stmtAndExpAnalyzer.AnalyzeExp_Exp(elem.InitExp, ResolveHint.None);
+                        // ref var 
+                        if (bRef)
+                            globalContext.AddFatalError(A0106_VarDecl_DontAllowVarWithRef, elem);
+
+
+                    var initExpResult = stmtAndExpAnalyzer.AnalyzeExp_Exp(elem.Initializer, ResolveHint.None);
                         var rtype = initExpResult.TypeValue.GetRPath();
                         return new VarDeclElementCoreResult(new R.VarDeclElement(rtype, elem.VarName, initExpResult.Result), initExpResult.TypeValue);
                     }

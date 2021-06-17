@@ -34,6 +34,4 @@ namespace Gum.Syntax
 
     // new Type(2, 3, 4);
     public record NewExp(TypeExp type, ImmutableArray<Argument> args) : Exp;
-
-    public record RefExp(Exp Exp) : Exp;
 }
