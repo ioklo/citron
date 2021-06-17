@@ -210,7 +210,8 @@ namespace Gum.IR0Translator
                 {
                     S.FuncParamKind.Normal => M.ParamKind.Normal,
                     S.FuncParamKind.Params => M.ParamKind.Params,
-                    S.FuncParamKind.Ref => M.ParamKind.Ref
+                    S.FuncParamKind.Ref => M.ParamKind.Ref,
+                    _ => throw new UnreachableCodeException()
                 };
 
                 builder.Add(new M.Param(paramKind, mtype, sparam.Name));

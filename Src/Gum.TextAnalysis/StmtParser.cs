@@ -204,9 +204,24 @@ namespace Gum
         {
             if (!Accept<ReturnToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                 return ParseResult<ReturnStmt>.Invalid;
-            
-            Parse(await parser.ParseExpAsync(context), ref context, out var returnValue);
 
+            ReturnValueInfo? returnValue = null;            
+            if (Accept<RefToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
+            {
+                if (!Parse(await parser.ParseExpAsync(context), ref context, out var refReturnExp))
+                    return ParseResult<ReturnStmt>.Invalid;
+
+                returnValue = new ReturnValueInfo(true, refReturnExp);
+            }
+            else if (Parse(await parser.ParseExpAsync(context), ref context, out var returnExp))
+            {
+                returnValue = new ReturnValueInfo(false, returnExp);
+            }
+            else
+            {
+                returnValue = null;
+            }
+            
             if (!Accept<SemiColonToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                 return ParseResult<ReturnStmt>.Invalid;
 

@@ -131,12 +131,15 @@ namespace Gum.TextAnalysis.Test
                 new LambdaExp(
                     Arr(new LambdaExpParam(null, "b")),
                     new ReturnStmt(
-                        new LambdaExp(
-                            Arr(
-                                new LambdaExpParam(null, "c"),
-                                new LambdaExpParam(new IdTypeExp("int", default), "d")
-                            ),
-                            new ReturnStmt(SimpleSId("e"))
+                        new ReturnValueInfo(
+                            false,
+                            new LambdaExp(
+                                Arr(
+                                    new LambdaExpParam(null, "c"),
+                                    new LambdaExpParam(new IdTypeExp("int", default), "d")
+                                ),
+                                new ReturnStmt(new ReturnValueInfo(false, SimpleSId("e")))
+                            )
                         )
                     )
                 )
@@ -208,29 +211,17 @@ namespace Gum.TextAnalysis.Test
 
             Assert.Equal(expected, expResult.Elem);
         }
-
-        [Fact]
-        public async Task TestParseRefExpAsync()
-        {
-            var input = "ref i++";
-            (var expParser, var context) = await PrepareAsync(input);
-
-            var expResult = await expParser.ParseExpAsync(context);
-            var expected = new RefExp(new UnaryOpExp(UnaryOpKind.PostfixInc, new IdentifierExp("i", default)));
-
-            Assert.Equal(expected, expResult.Elem);
-        }        
-
+        
         [Fact]
         public async Task TestParseComplexExpAsync()
         {
-            var input = "ref a = b = !!(c % d)++ * e + f - g / h % i == 3 != false";
+            var input = "a = b = !!(c % d)++ * e + f - g / h % i == 3 != false";
             (var expParser, var context) = await PrepareAsync(input);
             
             var expResult = await expParser.ParseExpAsync(context);
 
             var expected = new BinaryOpExp(BinaryOpKind.Assign,
-                new RefExp(SimpleSId("a")),
+                SimpleSId("a"),
                 new BinaryOpExp(BinaryOpKind.Assign,
                     SimpleSId("b"),
                     new BinaryOpExp(BinaryOpKind.NotEqual,

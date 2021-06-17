@@ -58,7 +58,7 @@ namespace Gum.TextAnalysis.Test
                     new FuncParam(FuncParamKind.Params, SimpleSIdTypeExp("string"), "y"),
                     new FuncParam(FuncParamKind.Normal, SimpleSIdTypeExp("int"), "z")
                 ),
-                SimpleSBlockStmt(new VarDeclStmt(new VarDecl(false, SimpleSIdTypeExp("int"), Arr(new VarDeclElement("a", new IntLiteralExp(0)))))));
+                SimpleSBlockStmt(new VarDeclStmt(new VarDecl(false, SimpleSIdTypeExp("int"), Arr(new VarDeclElement("a", new VarDeclElemInitializer(false, new IntLiteralExp(0))))))));
 
             Assert.Equal(expected, funcDecl.Elem);
         }
@@ -176,9 +176,9 @@ for (int i = 0; i < 5; i++)
             var script = await parser.ParseScriptAsync(context);
 
             var expected = SimpleSScript(
-                new StmtScriptElement(SimpleSVarDeclStmt(SimpleSIdTypeExp("int"), new VarDeclElement("sum", new IntLiteralExp(0)))),
+                new StmtScriptElement(SimpleSVarDeclStmt(SimpleSIdTypeExp("int"), new VarDeclElement("sum", new VarDeclElemInitializer(false, new IntLiteralExp(0))))),
                 new StmtScriptElement(new ForStmt(
-                    new VarDeclForStmtInitializer(SimpleSVarDecl(SimpleSIdTypeExp("int"), new VarDeclElement("i", new IntLiteralExp(0)))),
+                    new VarDeclForStmtInitializer(SimpleSVarDecl(SimpleSIdTypeExp("int"), new VarDeclElement("i", new VarDeclElemInitializer(false, new IntLiteralExp(0))))),
                     new BinaryOpExp(BinaryOpKind.LessThan, SimpleSId("i"), new IntLiteralExp(5)),
                     new UnaryOpExp(UnaryOpKind.PostfixInc, SimpleSId("i")),
                     SimpleSBlockStmt(

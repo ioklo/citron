@@ -79,7 +79,7 @@ xxx
 
             var expected = SimpleSVarDeclStmt(
                 SimpleSIdTypeExp("string"),
-                new VarDeclElement("a", SimpleSStringExp("hello"))
+                new VarDeclElement("a", new VarDeclElemInitializer(false, SimpleSStringExp("hello")))
             );
 
             Assert.Equal<Stmt>(expected, varDeclStmt.Elem);

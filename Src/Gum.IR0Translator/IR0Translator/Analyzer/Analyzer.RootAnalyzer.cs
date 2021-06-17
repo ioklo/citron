@@ -81,7 +81,7 @@ namespace Gum.IR0Translator
                     if (globalContext.DoesInternalGlobalVarNameExist(elem.VarName))
                         globalContext.AddFatalError(A0104_VarDecl_GlobalVariableNameShouldBeUnique, elem);
 
-                    var result = varDeclAnalyzer.AnalyzeVarDeclElement(elem, declType);
+                    var result = varDeclAnalyzer.AnalyzeVarDeclElement(elem, varDecl.IsRef, declType);
 
                     globalContext.AddInternalGlobalVarInfo(elem.VarName, result.TypeValue);
 

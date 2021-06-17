@@ -233,30 +233,9 @@ namespace Gum.IR0Translator
                 switch (forInit)
                 {
                     case S.VarDeclForStmtInitializer varDeclInit:
-                        {
-                            // VarDecl의 속성을 여기서 들춰서 분기하면 안될거 같다. AnalyzeLocalVarDecl에서 처리하도록
-
-                            var localVarDecl = AnalyzeLocalVarDecl(varDeclInit.VarDecl);
-
-
-                            
-
-
-
-                            return new ForStmtInitializerResult(new R.RefVarDeclForStmtInitializer(localRefVarDecl));
-
-
-                            if (varDeclInit.VarDecl.IsRef)
-                            {
-                                var localRefVarDecl = AnalyzeLocalRefVarDecl(varDeclInit.VarDecl);
-                                return new ForStmtInitializerResult(new R.RefVarDeclForStmtInitializer(localRefVarDecl));
-                            }
-                            else
-                            {
-                                var localVarDecl = AnalyzeLocalVarDecl(varDeclInit.VarDecl);
-                                return new ForStmtInitializerResult(new R.VarDeclForStmtInitializer(localVarDecl));
-                            }
-                        }
+                        // VarDecl의 속성을 여기서 들춰서 분기하면 안될거 같다. AnalyzeLocalVarDecl에서 처리하도록
+                        var localVarDecl = AnalyzeLocalVarDecl(varDeclInit.VarDecl);
+                        return new ForStmtInitializerResult(new R.VarDeclForStmtInitializer(localVarDecl));
 
                     case S.ExpForStmtInitializer expInit:
                         var expResult = AnalyzeTopLevelExp_Exp(expInit.Exp, ResolveHint.None, A1102_ForStmt_ExpInitializerShouldBeAssignOrCall);
@@ -332,14 +311,14 @@ namespace Gum.IR0Translator
                 // seq 함수는 여기서 모두 처리 
                 if (callableContext.IsSeqFunc())
                 {
-                    if (returnStmt.Value != null)
+                    if (returnStmt.Info != null)
                         globalContext.AddFatalError(A1202_ReturnStmt_SeqFuncShouldReturnVoid, returnStmt);
 
                     return new StmtResult(new R.ReturnStmt(null));
                 }
 
                 // 리턴 값이 없을 경우
-                if (returnStmt.Value == null)
+                if (returnStmt.Info == null)
                 {
                     var retTypeValue = callableContext.GetRetTypeValue();
                     var voidTypeValue = globalContext.GetVoidType();
@@ -363,7 +342,7 @@ namespace Gum.IR0Translator
                     if (retTypeValue == null)
                     {
                         // 힌트타입 없이 분석
-                        var valueResult = AnalyzeExp_Exp(returnStmt.Value, ResolveHint.None);
+                        var valueResult = AnalyzeExp_Exp(returnStmt.Info.Value.Value, ResolveHint.None);
 
                         // 리턴값이 안 적혀 있었으므로 적는다
                         callableContext.SetRetTypeValue(valueResult.TypeValue);
@@ -373,10 +352,10 @@ namespace Gum.IR0Translator
                     else
                     {
                         // 리턴타입을 힌트로 사용한다
-                        var valueResult = AnalyzeExp_Exp(returnStmt.Value, ResolveHint.Make(retTypeValue));
+                        var valueResult = AnalyzeExp_Exp(returnStmt.Info.Value.Value, ResolveHint.Make(retTypeValue));
 
                         // 현재 함수 시그니처랑 맞춰서 같은지 확인한다
-                        valueResult = CastExp_Exp(valueResult, retTypeValue, returnStmt.Value);
+                        valueResult = CastExp_Exp(valueResult, retTypeValue, returnStmt.Info.Value.Value);
 
                         return new StmtResult(new R.ReturnStmt(valueResult.Result));
                     }

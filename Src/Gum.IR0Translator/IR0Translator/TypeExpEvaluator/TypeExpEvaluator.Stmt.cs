@@ -71,8 +71,8 @@ namespace Gum.IR0Translator
 
         void VisitReturnStmt(S.ReturnStmt returnStmt)
         {
-            if (returnStmt.Value != null)
-                VisitExp(returnStmt.Value);
+            if (returnStmt.Info != null)
+                VisitExp(returnStmt.Info.Value.Value);
         }
 
         void VisitBlockStmt(S.BlockStmt blockStmt)
