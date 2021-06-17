@@ -93,10 +93,6 @@ namespace Gum.IR0Translator
 
                 return new R.LocalVarDecl(relems.ToImmutableArray());
             }
-            
-            LocalVarDeclResult.Ref AnalyzeLocalRefVarDecl(S.VarDecl varDecl)
-            {
-            }
         }
     }
 }
