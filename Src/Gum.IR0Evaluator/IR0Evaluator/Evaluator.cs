@@ -202,10 +202,12 @@ namespace Gum.IR0Evaluator
 
                     case R.VarDeclElement.Ref refElem:
                         {
-                            var value = await locEvaluator.EvalLocAsync(refElem.Loc);
+                            var refValue = AllocRefValue();
+                            var target = await locEvaluator.EvalLocAsync(refElem.Loc);
+                            refValue.SetValue(target);
 
                             // 순서 주의, TODO: 테스트로 만들기
-                            context.AddLocalVar(refElem.Name, value);
+                            context.AddLocalVar(refElem.Name, refValue);
                             break;
                         }
 

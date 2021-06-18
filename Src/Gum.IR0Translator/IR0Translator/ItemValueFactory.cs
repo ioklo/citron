@@ -199,5 +199,10 @@ namespace Gum.IR0Translator
         {
             return new RuntimeListTypeValue(this, elemType);
         }
+
+        public TypeValue MakeRefTypeValue(TypeValue appliedTypeValue)
+        {
+            return new RefTypeValue(this, appliedTypeValue);
+        }
     }
 }

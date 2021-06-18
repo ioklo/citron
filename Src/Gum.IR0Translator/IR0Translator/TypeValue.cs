@@ -18,7 +18,7 @@ namespace Gum.IR0Translator
     abstract partial class TypeValue : ItemValue
     {   
         public virtual ItemQueryResult GetMember(M.Name memberName, int typeParamCount) { return ItemQueryResult.NotFound.Instance; }
-        public virtual TypeValue? GetMemberType(M.Name memberName, ImmutableArray<TypeValue> typeArgs) { return null; }        
+        public virtual TypeValue? GetMemberType(M.Name memberName, ImmutableArray<TypeValue> typeArgs) { return null; }
         public abstract TypeValue Apply_TypeValue(TypeEnv typeEnv);        
 
         public sealed override ItemValue Apply_ItemValue(TypeEnv typeEnv)
@@ -589,6 +589,41 @@ namespace Gum.IR0Translator
 
         public override R.Loc MakeMemberLoc(R.Loc instance, R.Path.Nested member)
             => throw new NotImplementedException();
+    }
+
+    // ref int
+    [AutoConstructor]
+    partial class RefTypeValue : TypeValue
+    {
+        ItemValueFactory itemValueFactory;
+        TypeValue typeValue;
+
+        public override ItemQueryResult GetMember(M.Name memberName, int typeParamCount) 
+        {
+            return typeValue.GetMember(memberName, typeParamCount);
+        }
+
+        public override TypeValue? GetMemberType(M.Name memberName, ImmutableArray<TypeValue> typeArgs)
+        {
+            // (ref C).T 는 존재하지 않는다
+            throw new UnreachableCodeException();
+        }
+
+        public override TypeValue Apply_TypeValue(TypeEnv typeEnv)
+        {
+            var appliedTypeValue = typeValue.Apply_TypeValue(typeEnv);
+            return itemValueFactory.MakeRefTypeValue(appliedTypeValue);
+        }
+
+        public override R.Path GetRPath()
+        {
+            throw new UnreachableCodeException();
+        }
+
+        public override R.Loc MakeMemberLoc(R.Loc instance, R.Path.Nested member)
+        {
+            return typeValue.MakeMemberLoc(instance, member);
+        }
     }
 
     // 런타임 라이브러리로 구현할 리스트 타입
