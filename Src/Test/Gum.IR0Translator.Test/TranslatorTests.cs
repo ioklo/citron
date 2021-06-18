@@ -1398,7 +1398,10 @@ namespace Gum.IR0Translator.Test
                 ),
 
                 RGlobalVarDeclStmt(R.Path.Int, "j", RInt(3)),
-                new R.ExpStmt(new R.CallFuncExp(MakeRootPath("F"), null, Arr<R.Argument>(new R.Argument.Ref(new R.GlobalVarLoc("j")))))
+                new R.ExpStmt(new R.CallFuncExp(
+                    MakeRootPath("F", new R.ParamHash(0, Arr(new R.ParamHashEntry(R.ParamKind.Ref, R.Path.Int))), default), 
+                    null, Arr<R.Argument>(new R.Argument.Ref(new R.GlobalVarLoc("j")))
+                ))
             );
 
             Assert.Equal(expected, script);
@@ -1436,7 +1439,7 @@ namespace Gum.IR0Translator.Test
                     )
                 ),
 
-                new R.ExpStmt(new R.CallFuncExp(MakeRootPath("Func", new R.ParamHash(1, Arr<R.Path>(R.Path.Int)), Arr(R.Path.Int)), null, RArgs(RInt(3))))
+                new R.ExpStmt(new R.CallFuncExp(MakeRootPath("Func", new R.ParamHash(1, Arr(new R.ParamHashEntry(R.ParamKind.Normal, R.Path.Int))), Arr(R.Path.Int)), null, RArgs(RInt(3))))
             );
 
             Assert.Equal(expected, script);
@@ -1467,7 +1470,8 @@ namespace Gum.IR0Translator.Test
                     default, "Func", false, Arr<string>(), RParamInfo((R.Path.Int, "x")), RBlock(new R.ReturnStmt(new R.LoadExp(new R.LocalVarLoc("x"))))
                 )),
 
-                new R.ExpStmt(new R.CallFuncExp(MakeRootPath("Func", new R.ParamHash(0, Arr<R.Path>(R.Path.Int)), default), null, RArgs(RInt(3))))
+                new R.ExpStmt(new R.CallFuncExp(
+                    MakeRootPath("Func", new R.ParamHash(0, Arr(new R.ParamHashEntry(R.ParamKind.Normal, R.Path.Int))), default), null, RArgs(RInt(3))))
             );
 
             Assert.Equal(expected, script);

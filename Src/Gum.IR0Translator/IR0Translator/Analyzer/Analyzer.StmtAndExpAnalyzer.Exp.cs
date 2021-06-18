@@ -336,7 +336,15 @@ namespace Gum.IR0Translator
                     }
 
                     var type = globalContext.GetTypeValueByMType(param.Type);
-                    builder.Add(new ParamInfo(param.Kind, type));
+                    var paramKind = param.Kind switch
+                    {
+                        M.ParamKind.Normal => R.ParamKind.Normal,
+                        M.ParamKind.Ref => R.ParamKind.Ref,
+                        M.ParamKind.Params => R.ParamKind.Params,
+                        _ => throw new UnreachableCodeException()
+                    };
+
+                    builder.Add(new ParamInfo(paramKind, type));
                 }
 
                 return (builder.MoveToImmutable(), variadicParamsIndex);
@@ -521,7 +529,7 @@ namespace Gum.IR0Translator
                         globalContext.AddFatalError(A9901_NotSupported_LambdaParameterInference, exp);
 
                     var paramTypeValue = globalContext.GetTypeValueByTypeExp(param.Type);
-                    paramInfosBuilder.Add(new ParamInfo(M.ParamKind.Normal, paramTypeValue)); // TODO: Lambda파라미터에 ref, params를 적용할지
+                    paramInfosBuilder.Add(new ParamInfo(R.ParamKind.Normal, paramTypeValue)); // TODO: Lambda파라미터에 ref, params를 적용할지
                     rparamsBuilder.Add(new R.Param(R.ParamKind.Normal, paramTypeValue.GetRPath(), param.Name)); // TODO: Lambda 파라미터에 params적용할지 여부, 안될것도 없다
 
                     // 람다 파라미터를 지역 변수로 추가한다

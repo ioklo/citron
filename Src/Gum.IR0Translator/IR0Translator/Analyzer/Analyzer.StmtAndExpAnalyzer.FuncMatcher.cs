@@ -56,7 +56,7 @@ namespace Gum.IR0Translator
                         if (paramInfo != null)
                         {
                             // ref 파라미터를 원했는데, ref가 안달려 나온 경우, box타입이면 가능하다
-                            if (paramInfo.Value.ParamKind == M.ParamKind.Ref)
+                            if (paramInfo.Value.ParamKind == R.ParamKind.Ref)
                             {
                                 // void F(ref int i) {...}
                                 // F(box 3); // 가능
@@ -174,7 +174,7 @@ namespace Gum.IR0Translator
                         {
                             // 1. void F(int i) { ... } 파라미터에 ref가 안 붙은 경우, 매칭을 하지 않는다
                             // F(ref j);
-                            if (paramInfo.Value.ParamKind != M.ParamKind.Ref)
+                            if (paramInfo.Value.ParamKind != R.ParamKind.Ref)
                                 throw new FuncMatcherFatalException();
 
                             // 2. void F(ref int i)
@@ -393,7 +393,7 @@ namespace Gum.IR0Translator
                 void MatchParamsArguments(int paramIndex, int argsBegin, int argsEnd) // throws FuncMatcherFatalException
                 {
                     var paramInfo = paramInfos[paramIndex];
-                    Debug.Assert(paramInfo.ParamKind == M.ParamKind.Params);
+                    Debug.Assert(paramInfo.ParamKind == R.ParamKind.Params);
 
                     if (paramInfo.Type is TupleTypeValue tupleParamType)
                     {
@@ -408,7 +408,7 @@ namespace Gum.IR0Translator
                             var tupleElemType = tupleParamType.Elems[i].Type;
                             var arg = expandedArgs[argsBegin + i];
 
-                            MatchArgument(new ParamInfo(M.ParamKind.Normal, tupleElemType), arg);
+                            MatchArgument(new ParamInfo(R.ParamKind.Normal, tupleElemType), arg);
 
                             // MatchArgument마다 Constraint추가
                             typeResolver.AddConstraint(tupleElemType, arg.GetTypeValue());

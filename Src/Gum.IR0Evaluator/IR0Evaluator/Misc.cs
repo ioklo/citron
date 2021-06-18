@@ -12,7 +12,7 @@ namespace Gum.IR0Evaluator
     {
         public static R.ParamHash MakeParamHash(int typeParamCount, ImmutableArray<R.Param> parameters)
         {
-            var paramTypes = ImmutableArray.CreateRange(parameters, param => param.Type);
+            var paramTypes = ImmutableArray.CreateRange(parameters, param => new R.ParamHashEntry(param.Kind, param.Type));
             return new R.ParamHash(typeParamCount, paramTypes);
         }
     }

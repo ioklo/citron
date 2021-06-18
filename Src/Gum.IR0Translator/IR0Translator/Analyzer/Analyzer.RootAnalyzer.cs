@@ -93,15 +93,14 @@ namespace Gum.IR0Translator
 
             (R.ParamHash ParamHash, ImmutableArray<R.Param> Params) MakeParamHashAndParamInfos(S.FuncDecl funcDecl)
             {
-                var paramTypesBuilder = ImmutableArray.CreateBuilder<R.Path>(funcDecl.Parameters.Length);
+                var paramWithoutNames = ImmutableArray.CreateBuilder<R.ParamHashEntry>(funcDecl.Parameters.Length);
                 var parametersBuilder = ImmutableArray.CreateBuilder<R.Param>(funcDecl.Parameters.Length);
 
                 foreach (var param in funcDecl.Parameters)
                 {
                     var typeValue = globalContext.GetTypeValueByTypeExp(param.Type);
 
-                    var type = typeValue.GetRPath();
-                    paramTypesBuilder.Add(type);
+                    var type = typeValue.GetRPath();                    
 
                     var kind = param.Kind switch
                     {
@@ -111,11 +110,12 @@ namespace Gum.IR0Translator
                         _ => throw new UnreachableCodeException()
                     };
 
+                    paramWithoutNames.Add(new R.ParamHashEntry(kind, type));
                     var parameter = new R.Param(kind, type, param.Name);
                     parametersBuilder.Add(parameter);
                 }
 
-                var paramHash = new R.ParamHash(funcDecl.TypeParams.Length, paramTypesBuilder.MoveToImmutable());
+                var paramHash = new R.ParamHash(funcDecl.TypeParams.Length, paramWithoutNames.MoveToImmutable());
                 var parameters = parametersBuilder.MoveToImmutable();
 
                 return (paramHash, parameters);

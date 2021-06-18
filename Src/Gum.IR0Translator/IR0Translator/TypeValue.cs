@@ -219,7 +219,7 @@ namespace Gum.IR0Translator
                 var fieldType = itemValueFactory.MakeTypeValueByMType(field.Type);
                 var appliedFieldType = fieldType.Apply_TypeValue(Outer.MakeTypeEnv());
 
-                builder.Add(new ParamInfo(M.ParamKind.Normal, appliedFieldType)); // TODO: EnumElemFields에 ref를 지원할지
+                builder.Add(new ParamInfo(R.ParamKind.Normal, appliedFieldType)); // TODO: EnumElemFields에 ref를 지원할지
             }
 
             return builder.MoveToImmutable();

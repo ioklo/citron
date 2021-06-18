@@ -100,7 +100,13 @@ namespace Gum.IR0Evaluator
     // ref T
     class RefValue : Value
     {
-        public Value? Value { get; private set; }        
+        public Value? Value { get; private set; }
+
+        public RefValue()
+        {
+            Value = null;
+        }
+
         public RefValue(Value value)
         {
             Value = value;

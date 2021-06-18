@@ -36,12 +36,10 @@ namespace Gum.IR0Translator.Test
             return new VarDeclStmt(SVarDecl(typeExp, name, initExp));
         }
 
-        public static VarDeclStmt SRefVarDeclStmt(TypeExp typeExp, string name, Exp? initExp = null)
+        public static VarDeclStmt SRefVarDeclStmt(TypeExp typeExp, string name, Exp initExp)
         {
             return new VarDeclStmt(SRefVarDecl(typeExp, name, initExp));
         }
-
-
 
         public static Script SScript(params Stmt[] stmts)
         {

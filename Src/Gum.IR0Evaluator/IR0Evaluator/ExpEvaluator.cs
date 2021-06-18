@@ -103,8 +103,9 @@ namespace Gum.IR0Evaluator
                         }
                     }
                     else if (param.Kind == R.ParamKind.Ref)
-                    {
-                        throw new NotImplementedException();
+                    {   
+                        var argValue = evaluator.AllocRefValue();
+                        argValuesBuilder.Add(argValue);
                     }
                     else if (param.Kind == R.ParamKind.Normal)
                     {
@@ -135,16 +136,17 @@ namespace Gum.IR0Evaluator
                             // GumVM단계에서는 시퀀셜하게 메모리를 던져줄 것이지만, C# 버전에서는 그렇게 못하므로
                             // ArgValues들을 가리키는 TupleValue를 임의로 생성하고 값을 저장하도록 한다
                             var tupleElems = ImmutableArray.Create(argValues, argValueIndex, paramsArg.ElemCount);
-
                             var tupleValue = new TupleValue(tupleElems);
                             await EvalAsync(paramsArg.Exp, tupleValue);
                             argValueIndex += paramsArg.ElemCount;
                             break;
 
                         case R.Argument.Ref refArg:
-                            throw new NotImplementedException();
-                            // argValueIndex++;
-
+                            var value = await evaluator.EvalLocAsync(refArg.Loc);
+                            var refValue = (RefValue)argValues[argValueIndex];
+                            refValue.SetValue(value);
+                            argValueIndex++;
+                            break;
                     }
                 }
 

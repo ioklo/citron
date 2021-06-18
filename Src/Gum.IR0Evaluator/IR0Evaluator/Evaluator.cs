@@ -121,6 +121,11 @@ namespace Gum.IR0Evaluator
             return (TValue)AllocValue(type);
         }        
 
+        RefValue AllocRefValue()
+        {
+            return new RefValue();
+        }
+
         // type은 ir0 syntax의 일부분이다
         Value AllocValue(R.Path typePath)
         {

@@ -182,9 +182,19 @@ namespace Gum.IR0Evaluator.Test
             return new Path.Nested(new Path.Root(moduleName), name, ParamHash.None, default);
         }
 
+        Path.Nested RootPath(Name name, ImmutableArray<ParamHashEntry> paramWithoutNames, ImmutableArray<Path> typeArgs)
+        {
+            return new Path.Nested(new Path.Root(moduleName), name, new ParamHash(typeArgs.Length, paramWithoutNames), typeArgs);
+        }
+
         Path.Nested RootPath(Name name, ImmutableArray<Path> paramTypes, ImmutableArray<Path> typeArgs)
         {
-            return new Path.Nested(new Path.Root(moduleName), name, new ParamHash(typeArgs.Length, paramTypes), typeArgs);
+            return new Path.Nested(
+                new Path.Root(moduleName), name, 
+                new ParamHash(
+                    typeArgs.Length, paramTypes.Select(paramType => new ParamHashEntry(ParamKind.Normal, paramType)).ToImmutableArray()
+                ), 
+                typeArgs);
         }
 
         [Fact]
@@ -1120,11 +1130,19 @@ namespace Gum.IR0Evaluator.Test
                     int index = 0;
                     var paramInfos = methodInfo.GetParameters();
                     var builder = ImmutableArray.CreateBuilder<Param>(paramInfos.Length);
-                    var pathsBuilder = ImmutableArray.CreateBuilder<Path>(paramInfos.Length);
+                    var pathsBuilder = ImmutableArray.CreateBuilder<ParamHashEntry>(paramInfos.Length);
                     foreach(var paramInfo in paramInfos)
                     {
                         builder.Add(new Param(ParamKind.Normal, Path.String, paramInfo.Name ?? $"@{index}"));
-                        pathsBuilder.Add(Path.String);
+
+                        ParamKind paramKind;
+                        if (paramInfo.ParameterType.IsByRef)
+                            paramKind = ParamKind.Ref;
+                        else
+                            paramKind = ParamKind.Normal;
+
+                        pathsBuilder.Add(new ParamHashEntry(paramKind, Path.String));
+
                         index++;
                     }
 
@@ -1163,13 +1181,15 @@ namespace Gum.IR0Evaluator.Test
                         return false;
 
                     var methodParams = methodInfo.GetParameters();
-                    if (paramHash.FuncParamTypes.Length != methodParams.Length)
+                    if (paramHash.Entries.Length != methodParams.Length)
                         return false;
 
                     // matching
                     for (int i = 0; i < methodParams.Length; i++)
                     {
-                        if (paramHash.FuncParamTypes[i] == Path.String && methodParams[i].ParameterType == typeof(string))
+                        if (paramHash.Entries[i].Kind == ParamKind.Normal &&
+                            paramHash.Entries[i].Type == Path.String && 
+                            methodParams[i].ParameterType == typeof(string))
                             continue;
 
                         // 나머지는 false
@@ -1259,7 +1279,7 @@ namespace Gum.IR0Evaluator.Test
 
             var system = new Path.Nested(new Path.Root(testExternalModuleName), "System", ParamHash.None, default);
             var system_Console = new Path.Nested(system, "Console", ParamHash.None, default);
-            var system_Console_Write = new Path.Nested(system_Console, "Write", new ParamHash(0, Arr(Path.String)), default);
+            var system_Console_Write = new Path.Nested(system_Console, "Write", new ParamHash(0, Arr(new ParamHashEntry(ParamKind.Normal, Path.String))), default);
                 
             var stmts = Arr<Stmt>(new ExpStmt(new CallFuncExp(system_Console_Write, null, RArgs(RString("Hello World")))));
 
@@ -1300,7 +1320,7 @@ namespace Gum.IR0Evaluator.Test
         public async Task CallValueExp_EvaluateCallableAndArgumentsInOrder()
         {
             var printFunc = RootPath("Print", Arr(Path.Int), default);
-            var makeLambda = RootPath("MakeLambda", default, default);
+            var makeLambda = RootPath("MakeLambda", Arr<Path>(), default);
             var lambda = new Path.Nested(makeLambda, new Name.Anonymous(new AnonymousId(0)), ParamHash.None, default);
 
             // Print(int x) { 
