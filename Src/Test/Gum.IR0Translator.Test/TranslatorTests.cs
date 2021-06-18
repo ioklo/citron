@@ -113,8 +113,8 @@ namespace Gum.IR0Translator.Test
             );
 
             Assert.Equal(expected, script);
-        }
-
+        }        
+        
         [Fact]
         public void VarDeclStmt_TranslatesIntoLocalVarDeclInFuncScope()
         {
@@ -1232,6 +1232,34 @@ namespace Gum.IR0Translator.Test
             var expected = RScript(
                 RGlobalVarDeclStmt(R.Path.Int, "x"),
                 new R.ExpStmt(new R.AssignExp(new R.GlobalVarLoc("x"), RInt(3)))
+            );
+
+            Assert.Equal(expected, script);
+        }
+
+        [Fact]
+        void BinaryOpExp_AssigningToRefVar_TranslatesDerefBothSides()
+        {
+            // int x = 3;
+            // var i = ref x;
+            // i = 7 + i;
+
+            var syntaxScript = SScript(
+                SVarDeclStmt(IntTypeExp, "x", SInt(3)),
+                new S.VarDeclStmt(new S.VarDecl(false, VarTypeExp, Arr(new S.VarDeclElement("i", new S.VarDeclElemInitializer(true, SId("x")))))),
+                new S.ExpStmt(new S.BinaryOpExp(S.BinaryOpKind.Assign, SId("i"), SInt(7)))
+            );
+
+            var script = Translate(syntaxScript);
+            var expected = RScript(
+                RGlobalVarDeclStmt(R.Path.Int, "x", RInt(3)),
+                RGlobalRefVarDeclStmt("i", new R.GlobalVarLoc("x")),
+                new R.ExpStmt(
+                    new R.AssignExp(
+                        new R.DerefLoc(new R.GlobalVarLoc("i")),
+                        new R.CallInternalBinaryOperatorExp(R.InternalBinaryOperator.Add_Int_Int_Int, RInt(7), new R.LoadExp(new R.DerefLoc(new R.GlobalVarLoc("i"))))
+                    )
+                )
             );
 
             Assert.Equal(expected, script);

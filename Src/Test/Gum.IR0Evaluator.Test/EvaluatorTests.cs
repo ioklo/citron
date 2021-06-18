@@ -309,17 +309,25 @@ namespace Gum.IR0Evaluator.Test
         {
             // int i = 3;
             // ref int x = ref i;
-            // x = 4;
+            // x = 4 + x;
             // @$i
             var stmts = Arr<Stmt>(
                 RGlobalVarDeclStmt(Path.Int, "i", RInt(3)),
                 RGlobalRefVarDeclStmt("x", new GlobalVarLoc("i")), // type이 빠진다
-                new ExpStmt(new AssignExp(new GlobalVarLoc("x"), RInt(4))),
+                new ExpStmt(new AssignExp(
+                    new DerefLoc(new GlobalVarLoc("x")), 
+                    new CallInternalBinaryOperatorExp(
+                        InternalBinaryOperator.Add_Int_Int_Int, 
+                        RInt(4),
+                        new LoadExp(new DerefLoc(new GlobalVarLoc("x")))
+                    )
+                )),
+
                 PrintIntCmdStmt(new GlobalVarLoc("i")) 
             );
 
             var output = await EvalAsync(default, stmts);
-            Assert.Equal("4", output);
+            Assert.Equal("7", output);
         }
 
         // If

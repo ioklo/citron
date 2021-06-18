@@ -598,6 +598,8 @@ namespace Gum.IR0Translator
         ItemValueFactory itemValueFactory;
         TypeValue typeValue;
 
+        public TypeValue GetInnerType() => typeValue;
+
         public override ItemQueryResult GetMember(M.Name memberName, int typeParamCount) 
         {
             return typeValue.GetMember(memberName, typeParamCount);

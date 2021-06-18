@@ -114,10 +114,16 @@ namespace Gum.IR0Evaluator
 
         public override void SetValue(Value srcValue)
         {
+            // shallow copy
             this.value = ((RefValue)srcValue).value;
         }
 
-        public Value GetValue()
+        public void SetTarget(Value value)
+        {
+            this.value = value;
+        }
+
+        public Value GetTarget()
         {
             return value!;
         }

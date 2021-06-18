@@ -64,8 +64,11 @@ namespace Gum.IR0Evaluator
 
                         case R.VarDeclElement.Ref refElem:
                             {
-                                var value = await evaluator.EvalLocAsync(refElem.Loc);
-                                evaluator.context.AddGlobalVar(refElem.Name, value);
+                                var refValue = evaluator.AllocRefValue();
+                                var target = await evaluator.EvalLocAsync(refElem.Loc);
+                                refValue.SetTarget(target);
+
+                                evaluator.context.AddGlobalVar(refElem.Name, refValue);
                                 break;
                             }
 

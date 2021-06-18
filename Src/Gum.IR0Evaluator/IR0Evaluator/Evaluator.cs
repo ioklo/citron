@@ -204,7 +204,7 @@ namespace Gum.IR0Evaluator
                         {
                             var refValue = AllocRefValue();
                             var target = await locEvaluator.EvalLocAsync(refElem.Loc);
-                            refValue.SetValue(target);
+                            refValue.SetTarget(target);
 
                             // 순서 주의, TODO: 테스트로 만들기
                             context.AddLocalVar(refElem.Name, refValue);

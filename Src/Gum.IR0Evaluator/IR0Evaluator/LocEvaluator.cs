@@ -80,7 +80,7 @@ namespace Gum.IR0Evaluator
 
                     case R.DerefLoc derefLoc:
                         var refValue = (RefValue)await EvalLocAsync(derefLoc.Loc);
-                        return refValue.GetValue();
+                        return refValue.GetTarget();
 
                     default:
                         throw new UnreachableCodeException();

@@ -196,13 +196,14 @@ namespace Gum.IR0Translator
 
                 if (destResult is ExpResult.Loc destLocResult)
                 {
+                    // 안되는거 체크
                     switch (destLocResult.Result)
                     {
-                        // int x = 0; var l = () { x = 3; }
+                        // int x = 0; var l = () { x = 3; }, TODO: 이거 가능하도록
                         case R.CapturedVarLoc:
                             globalContext.AddFatalError(A0803_BinaryOp_LeftOperandIsNotAssignable, exp.Operand0);
                             throw new UnreachableCodeException();
-                        
+
                         case R.ThisLoc:          // this = x;
                             globalContext.AddFatalError(A0803_BinaryOp_LeftOperandIsNotAssignable, exp.Operand0);
                             throw new UnreachableCodeException();
@@ -211,12 +212,26 @@ namespace Gum.IR0Translator
                             throw new UnreachableCodeException();
                     }
 
-                    var operandHint1 = ResolveHint.Make(destLocResult.TypeValue);
-                    var srcResult = AnalyzeExp_Exp(exp.Operand1, operandHint1);
-                    var wrappedSrcResult = CastExp_Exp(srcResult, destLocResult.TypeValue, exp);
-                    
+                    // deref 시도
+                    R.Loc destLoc;
+                    TypeValue destType;
+                    if (destLocResult.TypeValue is RefTypeValue destRefType)
+                    {
+                        destLoc = new R.DerefLoc(destLocResult.Result);
+                        destType = destRefType.GetInnerType();
+                    }
+                    else
+                    {
+                        destLoc = destLocResult.Result;
+                        destType = destLocResult.TypeValue;
+                    }
 
-                    return new ExpResult.Exp(new R.AssignExp(destLocResult.Result, wrappedSrcResult.Result), destLocResult.TypeValue);
+                    var operandHint1 = ResolveHint.Make(destType);
+                    var srcResult = AnalyzeExp_Exp(exp.Operand1, operandHint1);
+                    var wrappedSrcResult = CastExp_Exp(srcResult, destType, exp);
+
+                    return new ExpResult.Exp(new R.AssignExp(destLoc, wrappedSrcResult.Result), destType);
+                    
                 }
                 else
                 {
@@ -999,7 +1014,7 @@ namespace Gum.IR0Translator
             }
 
             // 값의 겉보기 타입을 변경한다
-            internal ExpResult.Exp CastExp_Exp(ExpResult.Exp expResult, TypeValue expectType, S.ISyntaxNode nodeForErrorReport) // throws AnalyzeFatalException
+            internal ExpResult.Exp CastExp_Exp(ExpResult expResult, TypeValue expectType, S.ISyntaxNode nodeForErrorReport) // throws AnalyzeFatalException
             {
                 var result = globalContext.TryCastExp_Exp(expResult, expectType);
                 if (result != null) return result;
