@@ -1366,10 +1366,34 @@ namespace Gum.IR0Translator.Test
         }
 
         [Fact]
+        void CallExp_RefArgument()
+        {
+            //void F(ref int i)
+            //{
+            //    i = 3;
+            //}
+
+            //int j = 3;
+            //F(ref j);
+
+            //@$j
+            var syntaxScript = SScript(
+                new S.GlobalFuncDeclScriptElement(new S.GlobalFuncDecl(
+                    false, false, VoidTypeExp, "F", default,
+                    Arr(new S.FuncParam(S.FuncParamKind.Ref, IntTypeExp, "i")),
+                    SBlock(new S.ExpStmt(new S.BinaryOpExp(S.BinaryOpKind.Assign, SId("i"), SInt(3))))
+                )),
+
+                new S.StmtScriptElement(SVarDeclStmt(IntTypeExp, "j", SInt(3))),
+                new S.StmtScriptElement(new S.ExpStmt(new S.CallExp(SId("F"), Arr<S.Argument>(new S.Argument.Ref(SId("j"))))))
+            );
+        }
+
+        [Fact]
         void CallExp_TranslatesIntoNewEnumExp()
         {
             throw new PrerequisiteRequiredException(Prerequisite.Enum);
-        }
+        }        
 
         [Fact]
         void CallExp_TranslatesIntoCallFuncExp()
@@ -1445,7 +1469,7 @@ namespace Gum.IR0Translator.Test
         void CallExp_ChecksMultipleCandidates()
         {
             throw new TestNeedToBeWrittenException();
-        }
+        }        
 
         // A0902
         [Fact]

@@ -295,7 +295,7 @@ namespace Gum.IR0Evaluator.Test
         }
 
         [Fact]
-        public async Task GlobalRefVarDeclStmt_WorksProperly()
+        public async Task GlobalRefVarDeclStmt_RefDeclAndRefExp_WorksProperly()
         {
             // int i = 3;
             // ref int x = ref i;
