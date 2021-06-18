@@ -167,9 +167,9 @@ namespace Gum.IR0Translator
                 return internalGlobalVarRepo.HasVariable(name);
             }
 
-            public LambdaTypeValue GetLambdaTypeValue(R.Path.Nested lambda, TypeValue retType, ImmutableArray<TypeValue> paramTypes)
+            public LambdaTypeValue GetLambdaTypeValue(R.Path.Nested lambda, TypeValue retType, ImmutableArray<ParamInfo> paramInfos)
             {
-                return itemValueFactory.MakeLambdaType(lambda, retType, paramTypes);
+                return itemValueFactory.MakeLambdaType(lambda, retType, paramInfos);
             }
 
             public SeqTypeValue GetSeqTypeValue(R.Path.Nested seq, TypeValue yieldType)

@@ -34,7 +34,7 @@ namespace Gum.IR0Translator
             abstract class FuncMatcherArgument
             {
                 // preanalyze할수도 있고, 여기서 시작할수도 있다
-                public abstract void DoAnalyze(TypeValue? expectType); // throws FuncMatchFatalException
+                public abstract void DoAnalyze(ParamInfo? expectType); // throws FuncMatchFatalException
                 public abstract TypeValue GetTypeValue();
                 public abstract R.Argument? GetRArgument();
 
@@ -51,16 +51,26 @@ namespace Gum.IR0Translator
                         this.exp = exp; 
                     }
 
-                    public override void DoAnalyze(TypeValue? expectType) // throws FuncMatcherFatalException
+                    public override void DoAnalyze(ParamInfo? paramInfo) // throws FuncMatcherFatalException
                     {
-                        if (expectType != null)
+                        if (paramInfo != null)
                         {
-                            var hint = ResolveHint.Make(expectType);
-                            var argResult = analyzer.AnalyzeExp_Exp(exp, hint);
-                            expResult = analyzer.globalContext.TryCastExp_Exp(argResult, expectType);
+                            // ref 파라미터를 원했는데, ref가 안달려 나온 경우, box타입이면 가능하다
+                            if (paramInfo.Value.ParamKind == M.ParamKind.Ref)
+                            {
+                                // void F(ref int i) {...}
+                                // F(box 3); // 가능
+                                throw new NotImplementedException();
+                            }
+                            else
+                            {
+                                var hint = ResolveHint.Make(paramInfo.Value.Type);
+                                var argResult = analyzer.AnalyzeExp_Exp(exp, hint);
+                                expResult = analyzer.globalContext.TryCastExp_Exp(argResult, paramInfo.Value.Type);
 
-                            if (expResult == null)
-                                throw new FuncMatcherFatalException();
+                                if (expResult == null)
+                                    throw new FuncMatcherFatalException();
+                            }
                         }
                         else // none, EnumConstructor
                         {
@@ -95,12 +105,12 @@ namespace Gum.IR0Translator
                         this.typeValue = typeValue;
                     }
 
-                    public override void DoAnalyze(TypeValue? expectType) // throws FuncMatcherFatalException
+                    public override void DoAnalyze(ParamInfo? paramInfo) // throws FuncMatcherFatalException
                     {
-                        if (expectType != null)
+                        if (paramInfo != null)
                         {
                             // exact match
-                            if (!expectType.Equals(typeValue))
+                            if (!paramInfo.Value.Type.Equals(typeValue))
                                 throw new FuncMatcherFatalException();
                         }
                     }
@@ -125,12 +135,12 @@ namespace Gum.IR0Translator
                         this.typeValue = typeValue;
                     }
 
-                    public override void DoAnalyze(TypeValue? expectType)
+                    public override void DoAnalyze(ParamInfo? paramInfo)
                     {
-                        if (expectType != null)
+                        if (paramInfo != null)
                         {
                             // exact match
-                            if (!expectType.Equals(typeValue))
+                            if (!paramInfo.Value.Type.Equals(typeValue))
                                 throw new FuncMatcherFatalException();
                         }
                     }
@@ -148,23 +158,50 @@ namespace Gum.IR0Translator
 
                 public class Ref : FuncMatcherArgument
                 {
+                    StmtAndExpAnalyzer analyzer;
                     S.Exp exp;
+                    ExpResult.Loc? locResult;
 
-                    public Ref(S.Exp exp) { this.exp = exp; }
-
-                    public override void DoAnalyze(TypeValue? expectType)
+                    public Ref(StmtAndExpAnalyzer analyzer, S.Exp exp) 
                     {
-                        throw new NotImplementedException();
+                        this.analyzer = analyzer;
+                        this.exp = exp; 
+                    }
+
+                    public override void DoAnalyze(ParamInfo? paramInfo) // throws FuncMatcherFatalException
+                    {
+                        if (paramInfo != null)
+                        {
+                            // 1. void F(int i) { ... } 파라미터에 ref가 안 붙은 경우, 매칭을 하지 않는다
+                            // F(ref j);
+                            if (paramInfo.Value.ParamKind != M.ParamKind.Ref)
+                                throw new FuncMatcherFatalException();
+
+                            // 2. void F(ref int i)
+                            var argResult = analyzer.AnalyzeExp(exp, ResolveHint.None);
+
+                            switch(argResult)
+                            {
+                                case ExpResult.Loc locResult:
+                                    this.locResult = locResult;
+                                    break;
+
+                                default:
+                                    throw new FuncMatcherFatalException();
+                            }
+                        }                        
                     }
 
                     public override TypeValue GetTypeValue()
                     {
-                        throw new NotImplementedException();
+                        Debug.Assert(locResult != null);
+                        return locResult.TypeValue;
                     }
 
                     public override R.Argument? GetRArgument()
                     {
-                        throw new NotImplementedException();
+                        Debug.Assert(locResult != null);
+                        return new R.Argument.Ref(locResult.Result);
                     }
                 }
             }
@@ -222,7 +259,7 @@ namespace Gum.IR0Translator
                     }
                     else if (sarg is S.Argument.Ref sRefArg)
                     {
-                        args.Add(new FuncMatcherArgument.Ref(sRefArg.Exp));
+                        args.Add(new FuncMatcherArgument.Ref(this, sRefArg.Exp));
                     }
                 }
 
@@ -244,7 +281,7 @@ namespace Gum.IR0Translator
             // Layer 0
             MatchArgsResult MatchFunc(
                 TypeEnv outerTypeEnv,
-                ImmutableArray<TypeValue> paramTypes,
+                ImmutableArray<ParamInfo> paramTypes,
                 int? variadicParamIndex,
                 ImmutableArray<TypeValue> typeArgs,
                 ImmutableArray<S.Argument> sargs) // nothrow
@@ -271,7 +308,7 @@ namespace Gum.IR0Translator
             [AutoConstructor]
             partial struct MatchFuncCore
             {
-                ImmutableArray<TypeValue> paramTypes;
+                ImmutableArray<ParamInfo> paramInfos;
                 ImmutableArray<TypeValue> typeArgs;
                 ImmutableArray<FuncMatcherArgument> expandedArgs;
                 TypeResolver typeResolver;
@@ -282,16 +319,16 @@ namespace Gum.IR0Translator
                 public MatchArgsResult MatchFuncWithoutParams()
                 {
                     // 길이가 다르면 에러
-                    if (paramTypes.Length != expandedArgs.Length)
+                    if (paramInfos.Length != expandedArgs.Length)
                         throw new FuncMatcherFatalException();
 
                     // 전부
-                    MatchPartialArguments(0, paramTypes.Length, 0, expandedArgs.Length);
+                    MatchPartialArguments(0, paramInfos.Length, 0, expandedArgs.Length);
 
                     var resolvedTypeArgs = typeResolver.Resolve();
                     
                     // 뭐가 exact인가: typeParam에 해당하는 typeArgs를 다 적어서 Resolve가 안 필요한 경우 (0개도 포함)
-                    var bExactMatch = paramTypes.Length == typeArgs.Length;
+                    var bExactMatch = paramInfos.Length == typeArgs.Length;
                     var rargs = MakeRArgs();
 
                     return new MatchArgsResult(bMatch: true, bExactMatch, rargs, resolvedTypeArgs);
@@ -311,7 +348,7 @@ namespace Gum.IR0Translator
 
                     int v = variadicParamIndex;
                     int argsEnd = expandedArgs.Length;
-                    int paramsEnd = paramTypes.Length;
+                    int paramsEnd = paramInfos.Length;
 
                     int backArgsBegin = argsEnd - (paramsEnd - v - 1);
 
@@ -329,7 +366,7 @@ namespace Gum.IR0Translator
 
                     // typeargs 만들기
                     var resolvedTypeArgs = typeResolver.Resolve();
-                    var bExactMatch = paramTypes.Length == typeArgs.Length;
+                    var bExactMatch = paramInfos.Length == typeArgs.Length;
                     var rargs = MakeRArgs();
 
                     return new MatchArgsResult(true, bExactMatch, rargs, resolvedTypeArgs);
@@ -343,21 +380,22 @@ namespace Gum.IR0Translator
 
                     for (int i = 0; i < paramsCount; i++)
                     {
-                        var paramType = paramTypes[paramsBegin + i];
+                        var paramType = paramInfos[paramsBegin + i];
                         var arg = expandedArgs[argsBegin + i];
 
                         MatchArgument(paramType, arg);
 
                         // MatchArgument마다 Constraint추가
-                        typeResolver.AddConstraint(paramType, arg.GetTypeValue());
+                        typeResolver.AddConstraint(paramType.Type, arg.GetTypeValue());
                     }
                 }
 
                 void MatchParamsArguments(int paramIndex, int argsBegin, int argsEnd) // throws FuncMatcherFatalException
                 {
-                    var paramType = paramTypes[paramIndex];
+                    var paramInfo = paramInfos[paramIndex];
+                    Debug.Assert(paramInfo.ParamKind == M.ParamKind.Params);
 
-                    if (paramType is TupleTypeValue tupleParamType)
+                    if (paramInfo.Type is TupleTypeValue tupleParamType)
                     {
                         if (tupleParamType.Elems.Length != argsEnd - argsBegin)
                             throw new FuncMatcherFatalException();
@@ -370,7 +408,7 @@ namespace Gum.IR0Translator
                             var tupleElemType = tupleParamType.Elems[i].Type;
                             var arg = expandedArgs[argsBegin + i];
 
-                            MatchArgument(tupleElemType, arg);
+                            MatchArgument(new ParamInfo(M.ParamKind.Normal, tupleElemType), arg);
 
                             // MatchArgument마다 Constraint추가
                             typeResolver.AddConstraint(tupleElemType, arg.GetTypeValue());
@@ -393,7 +431,7 @@ namespace Gum.IR0Translator
                         var argTupleType = globalContext.GetTupleType(elemBuilder.MoveToImmutable());
 
                         // Constraint 추가
-                        typeResolver.AddConstraint(paramType, argTupleType);
+                        typeResolver.AddConstraint(paramInfo.Type, argTupleType);
                     }
                 }
 
@@ -418,9 +456,9 @@ namespace Gum.IR0Translator
                 #region Layer 2
 
                 // Layer 2
-                void MatchArgument(TypeValue paramType, FuncMatcherArgument arg) // throws FuncMatcherFatalException
+                void MatchArgument(ParamInfo paramType, FuncMatcherArgument arg) // throws FuncMatcherFatalException
                 {
-                    var appliedParamType = paramType.Apply_TypeValue(outerTypeEnv); // 아직 함수 부분의 TypeEnv가 확정되지 않았으므로, outer까지만 적용하고 나머지는 funcInfo의 TypeVar로 채워넣는다
+                    var appliedParamType = paramType.Apply(outerTypeEnv); // 아직 함수 부분의 TypeEnv가 확정되지 않았으므로, outer까지만 적용하고 나머지는 funcInfo의 TypeVar로 채워넣는다
                     arg.DoAnalyze(appliedParamType); // Argument 종류에 따라서 달라진다
                 }
 

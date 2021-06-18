@@ -1366,7 +1366,7 @@ namespace Gum.IR0Translator.Test
         }
 
         [Fact]
-        void CallExp_RefArgument()
+        void CallExp_RefArgumentTrivial_WorksProperly()
         {
             //void F(ref int i)
             //{
@@ -1387,6 +1387,21 @@ namespace Gum.IR0Translator.Test
                 new S.StmtScriptElement(SVarDeclStmt(IntTypeExp, "j", SInt(3))),
                 new S.StmtScriptElement(new S.ExpStmt(new S.CallExp(SId("F"), Arr<S.Argument>(new S.Argument.Ref(SId("j"))))))
             );
+
+            var script = Translate(syntaxScript);
+            var expected = RScript(
+                Arr<R.Decl>(
+                    new R.NormalFuncDecl(
+                        default, "F", false, default, Arr(new R.Param(R.ParamKind.Ref, R.Path.Int, "i")),
+                        RBlock(new R.ExpStmt(new R.AssignExp(new R.LocalVarLoc("i"), RInt(3))))
+                    )
+                ),
+
+                RGlobalVarDeclStmt(R.Path.Int, "j", RInt(3)),
+                new R.ExpStmt(new R.CallFuncExp(MakeRootPath("F"), null, Arr<R.Argument>(new R.Argument.Ref(new R.GlobalVarLoc("j")))))
+            );
+
+            Assert.Equal(expected, script);
         }
 
         [Fact]
