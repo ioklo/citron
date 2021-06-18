@@ -213,7 +213,7 @@ namespace Gum.IR0Translator
             StmtResult AnalyzeIfStmt(S.IfStmt ifStmt)
             {
                 // 순회
-                var condResult = AnalyzeExp_Exp(ifStmt.Cond, ResolveHint.None);
+                var condResult = AnalyzeExp(ifStmt.Cond, ResolveHint.None);
                 var bodyResult = AnalyzeStmt(ifStmt.Body);
                 StmtResult? elseBodyResult = (ifStmt.ElseBody != null) ? AnalyzeStmt(ifStmt.ElseBody) : null;
                 
