@@ -538,7 +538,7 @@ namespace Gum.IR0Translator
             => throw new InvalidOperationException();
     }
 
-    // 
+    // seq ref int F(ref int a, ref int b) { yield ref a; }
     [AutoConstructor]
     partial class SeqTypeValue : TypeValue
     {

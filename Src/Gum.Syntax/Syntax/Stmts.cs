@@ -56,6 +56,6 @@ namespace Gum.Syntax
     public record TaskStmt(Stmt Body) : Stmt;
     public record AwaitStmt(Stmt Body) : Stmt;    
     public record AsyncStmt(Stmt Body) : Stmt;
-    public record ForeachStmt(TypeExp Type, string VarName, Exp Iterator, Stmt Body) : Stmt;
+    public record ForeachStmt(bool IsRef, TypeExp Type, string VarName, Exp Iterator, Stmt Body) : Stmt;
     public record YieldStmt(Exp Value) : Stmt;    
 }

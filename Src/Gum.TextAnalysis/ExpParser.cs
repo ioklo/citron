@@ -366,12 +366,13 @@ namespace Gum
         {
             var paramsBuilder = ImmutableArray.CreateBuilder<LambdaExpParam>();
 
-            // (), (a, b)
+            // (), (a, b)            
             // (int a)
-            // a            
+            // (ref int a, int b) => ...
+            // a
             if (Accept<IdentifierToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context, out var idToken))
             {
-                paramsBuilder.Add(new LambdaExpParam(null, idToken.Value));
+                paramsBuilder.Add(new LambdaExpParam(FuncParamKind.Normal, null, idToken.Value));
             }
             else if (Accept<LParenToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
             {
@@ -381,14 +382,20 @@ namespace Gum
                         if (!Accept<CommaToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                             return Invalid();
 
+                    FuncParamKind paramKind;
+                    if (Accept<RefToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
+                        paramKind = FuncParamKind.Ref;
+                    else
+                        paramKind = FuncParamKind.Normal;
+
                     // id id or id
                     if (!Accept<IdentifierToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context, out var firstIdToken))
                         return Invalid();
 
                     if (!Accept<IdentifierToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context, out var secondIdToken))                    
-                        paramsBuilder.Add(new LambdaExpParam(null, firstIdToken.Value));
+                        paramsBuilder.Add(new LambdaExpParam(paramKind, null, firstIdToken.Value));
                     else
-                        paramsBuilder.Add(new LambdaExpParam(new IdTypeExp(firstIdToken.Value, default), secondIdToken.Value));
+                        paramsBuilder.Add(new LambdaExpParam(paramKind, new IdTypeExp(firstIdToken.Value, default), secondIdToken.Value));
                 }
             }
 

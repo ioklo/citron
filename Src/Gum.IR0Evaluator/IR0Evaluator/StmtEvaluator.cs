@@ -113,8 +113,11 @@ namespace Gum.IR0Evaluator
                     if (stmt.VarName != null)
                     {
                         async IAsyncEnumerable<Void> InnerFunc()
-                        {   
-                            evaluator.context.AddLocalVar(stmt.VarName, targetValue.GetElemValue()); // 레퍼런스로 등록
+                        {
+                            var refValue = evaluator.AllocRefValue();
+                            refValue.SetTarget(targetValue.GetElemValue());
+
+                            evaluator.context.AddLocalVar(stmt.VarName, refValue); // 레퍼런스로 등록
 
                             await foreach (var _ in EvalStmtAsync(stmt.Body))
                                 yield return Void.Instance;

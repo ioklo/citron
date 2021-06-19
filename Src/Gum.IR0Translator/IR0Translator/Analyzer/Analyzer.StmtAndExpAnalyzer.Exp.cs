@@ -551,8 +551,8 @@ namespace Gum.IR0Translator
                     };
 
                     var paramTypeValue = globalContext.GetTypeValueByTypeExp(param.Type);
-                    paramInfosBuilder.Add(new ParamInfo(rparamKind, paramTypeValue)); // TODO: Lambda파라미터에 ref, params를 적용할지
-                    rparamsBuilder.Add(new R.Param(rparamKind, paramTypeValue.GetRPath(), param.Name)); // TODO: Lambda 파라미터에 params적용할지 여부, 안될것도 없다
+                    paramInfosBuilder.Add(new ParamInfo(rparamKind, paramTypeValue));
+                    rparamsBuilder.Add(new R.Param(rparamKind, paramTypeValue.GetRPath(), param.Name));
 
                     // 람다 파라미터를 지역 변수로 추가한다
                     newLocalContext.AddLocalVarInfo(param.ParamKind == S.FuncParamKind.Ref, paramTypeValue, param.Name);
@@ -1021,7 +1021,7 @@ namespace Gum.IR0Translator
             }
 
             // 값의 겉보기 타입을 변경한다
-            internal ExpResult.Exp CastExp_Exp(ExpResult expResult, TypeValue expectType, S.ISyntaxNode nodeForErrorReport) // throws AnalyzeFatalException
+            internal ExpResult.Exp CastExp_Exp(ExpResult.Exp expResult, TypeValue expectType, S.ISyntaxNode nodeForErrorReport) // throws AnalyzeFatalException
             {
                 var result = globalContext.TryCastExp_Exp(expResult, expectType);
                 if (result != null) return result;

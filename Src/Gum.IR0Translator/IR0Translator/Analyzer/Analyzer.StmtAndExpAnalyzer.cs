@@ -87,7 +87,7 @@ namespace Gum.IR0Translator
 
                     var result = varDeclAnalyzer.AnalyzeVarDeclElement(elem, varDecl.IsRef, declType);
 
-                    // varDecl.IsRef는 syntax에서 체크한 것이므로, syntax에서 ref가 아니더라도 ref일 수 있으므로 result.Elem으로 검사를 해야한다
+                    // varDecl.IsRef는 syntax에서 체크한 것이므로, syntax에서 ref가 아니더라도 ref일 수 있으므로 result.Elem으로 검사를 해야한다.
                     localContext.AddLocalVarInfo(result.Elem is R.VarDeclElement.Ref, result.TypeValue, elem.VarName);
                     relems.Add(result.Elem);
                 }

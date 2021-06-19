@@ -147,7 +147,7 @@ namespace Gum.IR0Translator
                     if (ifTestStmt.VarName != null)
                     {
                         var newAnalyzer = NewAnalyzer();
-                        newAnalyzer.localContext.AddLocalVarInfo(ifTestStmt.VarName, enumElemType);
+                        newAnalyzer.localContext.AddLocalVarInfo(true, enumElemType, ifTestStmt.VarName);
 
                         bodyResult = newAnalyzer.AnalyzeStmt(ifTestStmt.Body);
                     }
@@ -213,7 +213,7 @@ namespace Gum.IR0Translator
             StmtResult AnalyzeIfStmt(S.IfStmt ifStmt)
             {
                 // 순회
-                var condResult = AnalyzeExp(ifStmt.Cond, ResolveHint.None);
+                var condResult = AnalyzeExp_Exp(ifStmt.Cond, ResolveHint.None);
                 var bodyResult = AnalyzeStmt(ifStmt.Body);
                 StmtResult? elseBodyResult = (ifStmt.ElseBody != null) ? AnalyzeStmt(ifStmt.ElseBody) : null;
                 
@@ -478,8 +478,12 @@ namespace Gum.IR0Translator
                     // 루프 컨텍스트를 하나 열고
                     var loopAnalyzer = NewAnalyzerWithLoop();
 
+                    // TODO: ref foreach
+                    if (foreachStmt.IsRef)
+                        throw new NotImplementedException();
+
                     // 루프 컨텍스트에 로컬을 하나 추가하고
-                    loopAnalyzer.localContext.AddLocalVarInfo(foreachStmt.VarName, elemType);
+                    loopAnalyzer.localContext.AddLocalVarInfo(false, elemType, foreachStmt.VarName);
 
                     // 본문 분석
                     var bodyResult = loopAnalyzer.AnalyzeStmt(foreachStmt.Body);
