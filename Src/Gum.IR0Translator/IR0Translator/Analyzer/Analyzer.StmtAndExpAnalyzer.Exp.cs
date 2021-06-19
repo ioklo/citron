@@ -48,11 +48,25 @@ namespace Gum.IR0Translator
                         callableContext.AddLambdaCapture(localVarOutsideLambdaResult.VarName, localVarOutsideLambdaResult.TypeValue);
                         return new ExpResult.Loc(new R.CapturedVarLoc(localVarOutsideLambdaResult.VarName), localVarOutsideLambdaResult.TypeValue);
 
-                    case IdentifierResult.LocalVar localVarResult:                        
-                        return new ExpResult.Loc(new R.LocalVarLoc(localVarResult.VarName), localVarResult.TypeValue);
+                    case IdentifierResult.LocalVar localVarResult:
+                        {
+                            R.Loc loc = new R.LocalVarLoc(localVarResult.VarName);
+
+                            if (localVarResult.IsRef)
+                                loc = new R.DerefLoc(loc);
+
+                            return new ExpResult.Loc(loc, localVarResult.TypeValue);
+                        }
 
                     case IdentifierResult.GlobalVar globalVarResult:
-                        return new ExpResult.Loc(new R.GlobalVarLoc(globalVarResult.VarName), globalVarResult.TypeValue);
+                        {
+                            R.Loc loc = new R.GlobalVarLoc(globalVarResult.VarName);
+
+                            if (globalVarResult.IsRef)
+                                loc = new R.DerefLoc(loc);
+
+                            return new ExpResult.Loc(loc, globalVarResult.TypeValue);
+                        }
 
                     case IdentifierResult.Funcs funcsResult:
                         if (funcsResult.IsInstanceFunc)
@@ -210,21 +224,10 @@ namespace Gum.IR0Translator
                         case R.TempLoc:
                             throw new UnreachableCodeException();
                     }
-
-                    // deref 시도
-                    R.Loc destLoc;
-                    TypeValue destType;
-                    if (destLocResult.TypeValue is RefTypeValue destRefType)
-                    {
-                        destLoc = new R.DerefLoc(destLocResult.Result);
-                        destType = destRefType.GetInnerType();
-                    }
-                    else
-                    {
-                        destLoc = destLocResult.Result;
-                        destType = destLocResult.TypeValue;
-                    }
-
+                    
+                    R.Loc destLoc = destLocResult.Result;
+                    TypeValue destType = destLocResult.TypeValue;
+                    
                     var operandHint1 = ResolveHint.Make(destType);
                     var srcResult = AnalyzeExp_Exp(exp.Operand1, operandHint1);
                     var wrappedSrcResult = CastExp_Exp(srcResult, destType, exp);

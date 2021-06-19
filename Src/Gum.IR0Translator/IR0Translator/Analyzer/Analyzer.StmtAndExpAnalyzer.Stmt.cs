@@ -524,8 +524,12 @@ namespace Gum.IR0Translator
                         // 루프 컨텍스트를 하나 열고
                         var loopAnalyzer = NewAnalyzerWithLoop();
 
+                        // TODO: ref foreach
+                        if (foreachStmt.IsRef)
+                            throw new NotImplementedException();
+
                         // 루프 컨텍스트에 로컬을 하나 추가하고
-                        loopAnalyzer.localContext.AddLocalVarInfo(foreachStmt.VarName, elemType);
+                        loopAnalyzer.localContext.AddLocalVarInfo(false, elemType, foreachStmt.VarName);
 
                         // 본문 분석
                         var bodyResult = loopAnalyzer.AnalyzeStmt(foreachStmt.Body);

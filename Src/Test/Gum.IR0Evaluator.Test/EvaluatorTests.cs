@@ -964,6 +964,41 @@ namespace Gum.IR0Evaluator.Test
         }
 
         [Fact]
+        public async Task CallFuncExp_CallByRef_WorksProperly()
+        {
+            //void F(ref int i)
+            //{
+            //    i = 7;
+            //}
+
+            //int j = 3;
+            //F(ref j);
+            //@$j
+
+            // CallExp_RefArgumentTrivial_WorksProperly 에서 가져온
+            var script = RScript(
+                moduleName,
+                Arr<Decl>(
+                    new NormalFuncDecl(
+                        default, "F", false, default, Arr(new Param(ParamKind.Ref, Path.Int, "i")),
+                        RBlock(new ExpStmt(new AssignExp(new DerefLoc(new LocalVarLoc("i")), RInt(7))))
+                    )
+                ),
+
+                RGlobalVarDeclStmt(Path.Int, "j", RInt(3)),
+                new ExpStmt(new CallFuncExp(
+                    RootPath("F", Arr(new ParamHashEntry(ParamKind.Ref, Path.Int)), default),
+                    null, Arr<Argument>(new Argument.Ref(new GlobalVarLoc("j")))
+                )),
+
+                PrintIntCmdStmt(new GlobalVarLoc("j"))
+            );
+
+            var output = await EvalAsync(script.Decls, script.TopLevelStmts);
+            Assert.Equal("7", output);
+        }
+
+        [Fact]
         public Task CallFuncExp_EvaluatesInstanceExpAtStart()
         {
             throw new NotImplementedException();

@@ -403,7 +403,7 @@ namespace Gum.IR0Translator.Test
         {
             var syntaxScript = SScript(
                 new S.ForStmt(null, null, null, S.ContinueStmt.Instance),
-                new S.ForeachStmt(IntTypeExp, "x", new S.ListExp(IntTypeExp, default), S.ContinueStmt.Instance)
+                new S.ForeachStmt(false, IntTypeExp, "x", new S.ListExp(IntTypeExp, default), S.ContinueStmt.Instance)
             );
 
             var script = Translate(syntaxScript);
@@ -432,7 +432,7 @@ namespace Gum.IR0Translator.Test
         {
             var syntaxScript = SScript(
                 new S.ForStmt(null, null, null, S.BreakStmt.Instance),
-                    new S.ForeachStmt(IntTypeExp, "x", new S.ListExp(IntTypeExp, default), S.BreakStmt.Instance)
+                    new S.ForeachStmt(false, IntTypeExp, "x", new S.ListExp(IntTypeExp, default), S.BreakStmt.Instance)
             );
 
             var script = Translate(syntaxScript);
@@ -866,7 +866,7 @@ namespace Gum.IR0Translator.Test
         [Fact]
         public void ForeachStmt_TranslatesTrivially()
         {
-            var scriptSyntax = SScript(new S.ForeachStmt(IntTypeExp, "x", new S.ListExp(IntTypeExp, default), S.BlankStmt.Instance));
+            var scriptSyntax = SScript(new S.ForeachStmt(false, IntTypeExp, "x", new S.ListExp(IntTypeExp, default), S.BlankStmt.Instance));
 
             var script = Translate(scriptSyntax);
 
@@ -884,7 +884,7 @@ namespace Gum.IR0Translator.Test
         public void ForeachStmt_ChecksIteratorIsListOrEnumerable()
         {
             S.Exp iterator;
-            var scriptSyntax = SScript(new S.ForeachStmt(IntTypeExp, "x", iterator = SInt(3), S.BlankStmt.Instance));
+            var scriptSyntax = SScript(new S.ForeachStmt(false, IntTypeExp, "x", iterator = SInt(3), S.BlankStmt.Instance));
 
             var errors = TranslateWithErrors(scriptSyntax);
 
@@ -902,7 +902,7 @@ namespace Gum.IR0Translator.Test
         public void ForeachStmt_ChecksElemTypeIsAssignableFromIteratorElemType()
         {
             S.ForeachStmt foreachStmt;
-            var scriptSyntax = SScript(foreachStmt = new S.ForeachStmt(StringTypeExp, "x", new S.ListExp(IntTypeExp, default), S.BlankStmt.Instance));
+            var scriptSyntax = SScript(foreachStmt = new S.ForeachStmt(false, StringTypeExp, "x", new S.ListExp(IntTypeExp, default), S.BlankStmt.Instance));
 
             var errors = TranslateWithErrors(scriptSyntax);
 
@@ -1247,7 +1247,11 @@ namespace Gum.IR0Translator.Test
             var syntaxScript = SScript(
                 SVarDeclStmt(IntTypeExp, "x", SInt(3)),
                 new S.VarDeclStmt(new S.VarDecl(false, VarTypeExp, Arr(new S.VarDeclElement("i", new S.VarDeclElemInitializer(true, SId("x")))))),
-                new S.ExpStmt(new S.BinaryOpExp(S.BinaryOpKind.Assign, SId("i"), SInt(7)))
+                new S.ExpStmt(new S.BinaryOpExp(
+                    S.BinaryOpKind.Assign, 
+                    SId("i"), 
+                    new S.BinaryOpExp(S.BinaryOpKind.Add, SInt(7), SId("i"))
+                ))
             );
 
             var script = Translate(syntaxScript);
@@ -1421,7 +1425,7 @@ namespace Gum.IR0Translator.Test
                 Arr<R.Decl>(
                     new R.NormalFuncDecl(
                         default, "F", false, default, Arr(new R.Param(R.ParamKind.Ref, R.Path.Int, "i")),
-                        RBlock(new R.ExpStmt(new R.AssignExp(new R.LocalVarLoc("i"), RInt(3))))
+                        RBlock(new R.ExpStmt(new R.AssignExp(new R.DerefLoc(new R.LocalVarLoc("i")), RInt(3))))
                     )
                 ),
 

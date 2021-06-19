@@ -129,14 +129,14 @@ namespace Gum.TextAnalysis.Test
             var expected = new BinaryOpExp(BinaryOpKind.Assign,
                 SimpleSId("a"),
                 new LambdaExp(
-                    Arr(new LambdaExpParam(null, "b")),
+                    Arr(new LambdaExpParam(FuncParamKind.Normal, null, "b")),
                     new ReturnStmt(
                         new ReturnValueInfo(
                             false,
                             new LambdaExp(
                                 Arr(
-                                    new LambdaExpParam(null, "c"),
-                                    new LambdaExpParam(new IdTypeExp("int", default), "d")
+                                    new LambdaExpParam(FuncParamKind.Normal, null, "c"),
+                                    new LambdaExpParam(FuncParamKind.Normal, new IdTypeExp("int", default), "d")
                                 ),
                                 new ReturnStmt(new ReturnValueInfo(false, SimpleSId("e")))
                             )

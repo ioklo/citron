@@ -371,6 +371,8 @@ namespace Gum
             if (!Accept<LParenToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                 return ParseResult<ForeachStmt>.Invalid;
 
+            bool bRef = Accept<RefToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context);
+
             // var 
             if (!Parse(await parser.ParseTypeExpAsync(context), ref context, out var typeExp))
                 return ParseResult<ForeachStmt>.Invalid;
@@ -395,7 +397,7 @@ namespace Gum
             if (!Parse(await parser.ParseStmtAsync(context), ref context, out var body))
                 return ParseResult<ForeachStmt>.Invalid;
 
-            return new ParseResult<ForeachStmt>(new ForeachStmt(typeExp!, varNameToken!.Value, obj!, body!), context);
+            return new ParseResult<ForeachStmt>(new ForeachStmt(bRef, typeExp!, varNameToken!.Value, obj!, body!), context);
         }
 
         // 

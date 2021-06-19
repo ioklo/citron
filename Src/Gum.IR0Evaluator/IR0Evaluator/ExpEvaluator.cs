@@ -144,7 +144,7 @@ namespace Gum.IR0Evaluator
                         case R.Argument.Ref refArg:
                             var value = await evaluator.EvalLocAsync(refArg.Loc);
                             var refValue = (RefValue)argValues[argValueIndex];
-                            refValue.SetValue(value);
+                            refValue.SetTarget(value);
                             argValueIndex++;
                             break;
                     }

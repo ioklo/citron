@@ -234,7 +234,7 @@ for (f(); g; h + g) ;
             var (parser, context) = await PrepareAsync("foreach( var x in l ) { } ");
             var stmtResult = await parser.ParseForeachStmtAsync(context);
 
-            var expected = new ForeachStmt(SimpleSIdTypeExp("var"), "x", SimpleSId("l"), SimpleSBlockStmt());
+            var expected = new ForeachStmt(false, SimpleSIdTypeExp("var"), "x", SimpleSId("l"), SimpleSBlockStmt());
 
             Assert.Equal(expected, stmtResult.Elem);
         }
