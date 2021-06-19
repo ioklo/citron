@@ -21,7 +21,8 @@ namespace Gum.Syntax
     [AutoConstructor, ImplementIEquatable]
     public partial struct LambdaExpParam
     {
-        public TypeExp? Type { get; }
+        public FuncParamKind ParamKind { get; }
+        public TypeExp? Type { get; }           // 타입은 생략 가능
         public string Name { get; }
     }
 

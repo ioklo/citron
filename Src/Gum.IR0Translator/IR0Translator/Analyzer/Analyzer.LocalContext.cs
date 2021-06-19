@@ -15,11 +15,14 @@ namespace Gum.IR0Translator
     partial class Analyzer
     {
         struct LocalVarInfo
-        {   
-            public string Name { get; }
+        {
+            public bool IsRef { get; }
             public TypeValue TypeValue { get; }
-            public LocalVarInfo(string name, TypeValue typeValue)
+            public string Name { get; }
+            
+            public LocalVarInfo(bool bRef, TypeValue typeValue, string name)
             {
+                IsRef = bRef;
                 Name = name;
                 TypeValue = typeValue;
             }
@@ -81,9 +84,9 @@ namespace Gum.IR0Translator
                 return new LocalContext(this, true);
             }
 
-            public void AddLocalVarInfo(string name, TypeValue typeValue)
+            public void AddLocalVarInfo(bool bRef, TypeValue typeValue, string name)
             {
-                localVarInfos = localVarInfos.SetItem(name, new LocalVarInfo(name, typeValue));
+                localVarInfos = localVarInfos.SetItem(name, new LocalVarInfo(bRef, typeValue, name));
             }
 
             public LocalVarInfo? GetLocalVarInfo(string varName)

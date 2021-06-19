@@ -10,7 +10,6 @@ using System.Text;
 using S = Gum.Syntax;
 using M = Gum.CompileTime;
 using R = Gum.IR0;
-using Gum.CompileTime;
 
 namespace Gum.IR0Translator
 {
@@ -121,9 +120,9 @@ namespace Gum.IR0Translator
                 return itemValueFactory.MakeListType(elemType);
             }
             
-            public void AddInternalGlobalVarInfo(M.Name name, TypeValue typeValue)
+            public void AddInternalGlobalVarInfo(bool bRef, TypeValue typeValue, M.Name name)
             {
-                internalGlobalVarRepo.AddInternalGlobalVariable(name, typeValue);
+                internalGlobalVarRepo.AddInternalGlobalVariable(bRef, typeValue, name);
             }
 
             public bool IsBoolType(TypeValue typeValue)
@@ -136,7 +135,7 @@ namespace Gum.IR0Translator
                 return itemValueFactory.Int.Equals(typeValue);
             }
 
-            public EnumElemTypeValue MakeEnumElemTypeValue(EnumTypeValue outer, EnumElemInfo elemInfo)
+            public EnumElemTypeValue MakeEnumElemTypeValue(EnumTypeValue outer, M.EnumElemInfo elemInfo)
             {
                 return itemValueFactory.MakeEnumElemTypeValue(outer, elemInfo);
             }

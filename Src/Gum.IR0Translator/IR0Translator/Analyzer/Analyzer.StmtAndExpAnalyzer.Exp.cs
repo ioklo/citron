@@ -48,8 +48,7 @@ namespace Gum.IR0Translator
                         callableContext.AddLambdaCapture(localVarOutsideLambdaResult.VarName, localVarOutsideLambdaResult.TypeValue);
                         return new ExpResult.Loc(new R.CapturedVarLoc(localVarOutsideLambdaResult.VarName), localVarOutsideLambdaResult.TypeValue);
 
-                    case IdentifierResult.LocalVar localVarResult:
-                        
+                    case IdentifierResult.LocalVar localVarResult:                        
                         return new ExpResult.Loc(new R.LocalVarLoc(localVarResult.VarName), localVarResult.TypeValue);
 
                     case IdentifierResult.GlobalVar globalVarResult:
@@ -543,12 +542,20 @@ namespace Gum.IR0Translator
                     if (param.Type == null)
                         globalContext.AddFatalError(A9901_NotSupported_LambdaParameterInference, exp);
 
+                    var rparamKind = param.ParamKind switch
+                    {
+                        S.FuncParamKind.Normal => R.ParamKind.Normal,
+                        S.FuncParamKind.Params => R.ParamKind.Params,
+                        S.FuncParamKind.Ref => R.ParamKind.Ref,
+                        _ => throw new UnreachableCodeException()
+                    };
+
                     var paramTypeValue = globalContext.GetTypeValueByTypeExp(param.Type);
-                    paramInfosBuilder.Add(new ParamInfo(R.ParamKind.Normal, paramTypeValue)); // TODO: Lambda파라미터에 ref, params를 적용할지
-                    rparamsBuilder.Add(new R.Param(R.ParamKind.Normal, paramTypeValue.GetRPath(), param.Name)); // TODO: Lambda 파라미터에 params적용할지 여부, 안될것도 없다
+                    paramInfosBuilder.Add(new ParamInfo(rparamKind, paramTypeValue)); // TODO: Lambda파라미터에 ref, params를 적용할지
+                    rparamsBuilder.Add(new R.Param(rparamKind, paramTypeValue.GetRPath(), param.Name)); // TODO: Lambda 파라미터에 params적용할지 여부, 안될것도 없다
 
                     // 람다 파라미터를 지역 변수로 추가한다
-                    newLocalContext.AddLocalVarInfo(param.Name, paramTypeValue);
+                    newLocalContext.AddLocalVarInfo(param.ParamKind == S.FuncParamKind.Ref, paramTypeValue, param.Name);
                 }   
 
                 // 본문 분석

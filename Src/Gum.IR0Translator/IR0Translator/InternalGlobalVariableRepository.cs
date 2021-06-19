@@ -11,10 +11,16 @@ namespace Gum.IR0Translator
 {
     class InternalGlobalVarInfo
     {
-        public M.Name Name { get; }
+        public bool IsRef { get; }
         public TypeValue TypeValue { get; }
+        public M.Name Name { get; }        
 
-        public InternalGlobalVarInfo(M.Name name, TypeValue typeValue) { Name = name; TypeValue = typeValue; }
+        public InternalGlobalVarInfo(bool bRef, TypeValue typeValue, M.Name name) 
+        {
+            IsRef = bRef;
+            TypeValue = typeValue;
+            Name = name;
+        }
     }
 
     class InternalGlobalVariableRepository : IMutable<InternalGlobalVariableRepository>
@@ -47,9 +53,9 @@ namespace Gum.IR0Translator
             return internalGlobalVarInfos.GetValueOrDefault(name);            
         }
 
-        public void AddInternalGlobalVariable(M.Name name, TypeValue typeValue)
+        public void AddInternalGlobalVariable(bool bRef, TypeValue typeValue, M.Name name)
         {
-            var globalVarInfo = new InternalGlobalVarInfo(name, typeValue);
+            var globalVarInfo = new InternalGlobalVarInfo(bRef, typeValue, name);
             internalGlobalVarInfos = internalGlobalVarInfos.Add(name, globalVarInfo);
         }
 

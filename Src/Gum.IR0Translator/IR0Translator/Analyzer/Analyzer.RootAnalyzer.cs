@@ -83,7 +83,7 @@ namespace Gum.IR0Translator
 
                     var result = varDeclAnalyzer.AnalyzeVarDeclElement(elem, varDecl.IsRef, declType);
 
-                    globalContext.AddInternalGlobalVarInfo(elem.VarName, result.TypeValue);
+                    globalContext.AddInternalGlobalVarInfo(result.Elem is R.VarDeclElement.Ref, result.TypeValue, elem.VarName);
 
                     elems.Add(result.Elem);
                 }
@@ -148,7 +148,7 @@ namespace Gum.IR0Translator
                 foreach (var param in funcDecl.Parameters)
                 {
                     var paramTypeValue = globalContext.GetTypeValueByTypeExp(param.Type);
-                    localContext.AddLocalVarInfo(param.Name, paramTypeValue);
+                    localContext.AddLocalVarInfo(param.Kind == S.FuncParamKind.Ref, paramTypeValue, param.Name);
                 }
 
                 // TODO: Body가 실제로 리턴을 제대로 하는지 확인해야 한다
@@ -176,7 +176,7 @@ namespace Gum.IR0Translator
                 foreach (var param in funcDecl.Parameters)
                 {
                     var paramTypeValue = globalContext.GetTypeValueByTypeExp(param.Type);
-                    localContext.AddLocalVarInfo(param.Name, paramTypeValue);
+                    localContext.AddLocalVarInfo(param.Kind == S.FuncParamKind.Ref, paramTypeValue, param.Name);
                 }
 
                 // TODO: Body가 실제로 리턴을 제대로 하는지 확인해야 한다
