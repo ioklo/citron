@@ -239,10 +239,25 @@ namespace Gum.IR0Evaluator
 
             async ValueTask EvalReturnStmtAsync(R.ReturnStmt returnStmt)
             {
-                if (returnStmt.Value != null)
+                switch (returnStmt.Info)
                 {
-                    var retValue = evaluator.context.GetRetValue();
-                    await evaluator.EvalExpAsync(returnStmt.Value, retValue);
+                    case R.ReturnInfo.None:
+                        break;
+
+                    case R.ReturnInfo.Ref refInfo:
+                        {
+                            var retValue = (RefValue)evaluator.context.GetRetValue();
+                            var target = await evaluator.EvalLocAsync(refInfo.Loc);
+                            retValue.SetTarget(target);
+                            break;
+                        }
+
+                    case R.ReturnInfo.Expression expInfo:
+                        {
+                            var retValue = evaluator.context.GetRetValue();
+                            await evaluator.EvalExpAsync(expInfo.Exp, retValue);
+                            break;
+                        }
                 }
 
                 evaluator.context.SetFlowControl(EvalFlowControl.Return);

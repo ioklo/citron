@@ -39,8 +39,19 @@ namespace Gum.IR0
         public static readonly BreakStmt Instance = new BreakStmt();
         BreakStmt() { }
     }
+
+    public abstract record ReturnInfo
+    {
+        public record Ref(Loc Loc) : ReturnInfo;
+        public record Expression(Exp Exp) : ReturnInfo;
+        public record None : ReturnInfo
+        {
+            public static readonly None Instance = new None();
+            None() { }
+        }
+    }
     
-    public record ReturnStmt(Exp? Value): Stmt;    
+    public record ReturnStmt(ReturnInfo Info): Stmt;
     public record BlockStmt(ImmutableArray<Stmt> Stmts) : Stmt;
 
     // singleton

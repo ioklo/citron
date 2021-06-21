@@ -78,7 +78,7 @@ namespace Gum.IR0Evaluator
                     case R.ThisLoc thisLoc:
                         throw new NotImplementedException();
 
-                    case R.DerefLoc derefLoc:
+                    case R.DerefLocLoc derefLoc:
                         var refValue = (RefValue)await EvalLocAsync(derefLoc.Loc);
                         return refValue.GetTarget();
 

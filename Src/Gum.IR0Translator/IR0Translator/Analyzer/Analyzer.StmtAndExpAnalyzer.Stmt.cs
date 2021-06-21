@@ -314,7 +314,7 @@ namespace Gum.IR0Translator
                     if (returnStmt.Info != null)
                         globalContext.AddFatalError(A1202_ReturnStmt_SeqFuncShouldReturnVoid, returnStmt);
 
-                    return new StmtResult(new R.ReturnStmt(null));
+                    return new StmtResult(new R.ReturnStmt(R.ReturnInfo.None.Instance));
                 }
 
                 // 리턴 값이 없을 경우
@@ -332,7 +332,11 @@ namespace Gum.IR0Translator
                         globalContext.AddFatalError(A1201_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType, returnStmt);
                     }
 
-                    return new StmtResult(new R.ReturnStmt(null));
+                    return new StmtResult(new R.ReturnStmt(R.ReturnInfo.None.Instance));
+                }
+                else if (returnStmt.Info.Value.IsRef)
+                {
+
                 }
                 else
                 {
@@ -347,7 +351,7 @@ namespace Gum.IR0Translator
                         // 리턴값이 안 적혀 있었으므로 적는다
                         callableContext.SetRetTypeValue(valueResult.TypeValue);
 
-                        return new StmtResult(new R.ReturnStmt(valueResult.Result));
+                        return new StmtResult(new R.ReturnStmt(new R.ReturnInfo.Expression(valueResult.Result)));
                     }
                     else
                     {
@@ -357,7 +361,7 @@ namespace Gum.IR0Translator
                         // 현재 함수 시그니처랑 맞춰서 같은지 확인한다
                         valueResult = CastExp_Exp(valueResult, retTypeValue, returnStmt.Info.Value.Value);
 
-                        return new StmtResult(new R.ReturnStmt(valueResult.Result));
+                        return new StmtResult(new R.ReturnStmt(new R.ReturnInfo.Expression(valueResult.Result)));
                     }
                 }
             }

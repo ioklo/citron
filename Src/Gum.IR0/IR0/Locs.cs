@@ -29,7 +29,7 @@ namespace Gum.IR0
         ThisLoc() { }
     }
 
-    public record DerefLoc(Loc Loc) : Loc;
-    
-
+    // 두가지 버전
+    public record DerefLocLoc(Loc Loc) : Loc;
+    public record DerefExpLoc(Exp Exp) : Loc;
 }

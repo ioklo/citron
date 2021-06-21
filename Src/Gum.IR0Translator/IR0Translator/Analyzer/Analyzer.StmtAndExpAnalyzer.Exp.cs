@@ -53,7 +53,7 @@ namespace Gum.IR0Translator
                             R.Loc loc = new R.LocalVarLoc(localVarResult.VarName);
 
                             if (localVarResult.IsRef)
-                                loc = new R.DerefLoc(loc);
+                                loc = new R.DerefLocLoc(loc);
 
                             return new ExpResult.Loc(loc, localVarResult.TypeValue);
                         }
@@ -63,7 +63,7 @@ namespace Gum.IR0Translator
                             R.Loc loc = new R.GlobalVarLoc(globalVarResult.VarName);
 
                             if (globalVarResult.IsRef)
-                                loc = new R.DerefLoc(loc);
+                                loc = new R.DerefLocLoc(loc);
 
                             return new ExpResult.Loc(loc, globalVarResult.TypeValue);
                         }

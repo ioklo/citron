@@ -1260,8 +1260,8 @@ namespace Gum.IR0Translator.Test
                 RGlobalRefVarDeclStmt("i", new R.GlobalVarLoc("x")),
                 new R.ExpStmt(
                     new R.AssignExp(
-                        new R.DerefLoc(new R.GlobalVarLoc("i")),
-                        new R.CallInternalBinaryOperatorExp(R.InternalBinaryOperator.Add_Int_Int_Int, RInt(7), new R.LoadExp(new R.DerefLoc(new R.GlobalVarLoc("i"))))
+                        new R.DerefLocLoc(new R.GlobalVarLoc("i")),
+                        new R.CallInternalBinaryOperatorExp(R.InternalBinaryOperator.Add_Int_Int_Int, RInt(7), new R.LoadExp(new R.DerefLocLoc(new R.GlobalVarLoc("i"))))
                     )
                 )
             );
@@ -1425,7 +1425,7 @@ namespace Gum.IR0Translator.Test
                 Arr<R.Decl>(
                     new R.NormalFuncDecl(
                         default, "F", false, default, Arr(new R.Param(R.ParamKind.Ref, R.Path.Int, "i")),
-                        RBlock(new R.ExpStmt(new R.AssignExp(new R.DerefLoc(new R.LocalVarLoc("i")), RInt(3))))
+                        RBlock(new R.ExpStmt(new R.AssignExp(new R.DerefLocLoc(new R.LocalVarLoc("i")), RInt(3))))
                     )
                 ),
 

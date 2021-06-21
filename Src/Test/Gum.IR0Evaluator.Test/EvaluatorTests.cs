@@ -315,11 +315,11 @@ namespace Gum.IR0Evaluator.Test
                 RGlobalVarDeclStmt(Path.Int, "i", RInt(3)),
                 RGlobalRefVarDeclStmt("x", new GlobalVarLoc("i")), // type이 빠진다
                 new ExpStmt(new AssignExp(
-                    new DerefLoc(new GlobalVarLoc("x")), 
+                    new DerefLocLoc(new GlobalVarLoc("x")), 
                     new CallInternalBinaryOperatorExp(
                         InternalBinaryOperator.Add_Int_Int_Int, 
                         RInt(4),
-                        new LoadExp(new DerefLoc(new GlobalVarLoc("x")))
+                        new LoadExp(new DerefLocLoc(new GlobalVarLoc("x")))
                     )
                 )),
 
@@ -981,7 +981,7 @@ namespace Gum.IR0Evaluator.Test
                 Arr<Decl>(
                     new NormalFuncDecl(
                         default, "F", false, default, Arr(new Param(ParamKind.Ref, Path.Int, "i")),
-                        RBlock(new ExpStmt(new AssignExp(new DerefLoc(new LocalVarLoc("i")), RInt(7))))
+                        RBlock(new ExpStmt(new AssignExp(new DerefLocLoc(new LocalVarLoc("i")), RInt(7))))
                     )
                 ),
 
@@ -996,6 +996,37 @@ namespace Gum.IR0Evaluator.Test
 
             var output = await EvalAsync(script.Decls, script.TopLevelStmts);
             Assert.Equal("7", output);
+        }
+
+        [Fact]
+        public async Task CallFuncExp_ReturnGlobalRef_WorksProperly()
+        {
+            // int x = 3;
+            // ref int G() { return ref x; }
+            // var i = ref G();
+            // i = 4;
+            // @$x
+
+            var script = RScript(
+                moduleName,
+                Arr<Decl>(                    
+                    new NormalFuncDecl(
+                        default, "G", false, default, Arr(new Param(ParamKind.Ref, Path.Int, "i")),                        
+                        RBlock(new ReturnStmt(new ReturnInfo.Ref(new GlobalVarLoc("x"))))
+                    )
+                ),
+
+                RGlobalVarDeclStmt(Path.Int, "x", RInt(3)),
+                RGlobalRefVarDeclStmt("i", new DerefExpLoc(
+                    new CallFuncExp(
+                        RootPath("G", Arr(new ParamHashEntry(ParamKind.Ref, Path.Int)), default),
+                        null,
+                        default
+                    )
+                ))),
+                new AssignExp(new DerefLocLoc(new GlobalVarLoc("i")), RInt(4)),
+                PrintIntCmdStmt(new LoadExp(new GlobalVarLoc("x")))
+            );;
         }
 
         [Fact]
@@ -1419,14 +1450,14 @@ namespace Gum.IR0Evaluator.Test
 
         // Lambda Purity
         [Fact]
-        public async Task LambdaExp_CapturesLocalVariablesWithCopying() // TODO: wrong need to be fixed
+        public async Task LambdaExp_CapturesLocalVariablesWithCopying() // TODO: wrong, need to be fix
         {   
             // [x] () => @"$x";
             var lambdaDecl = new LambdaDecl(new Name.Anonymous(new AnonymousId(0)), new CapturedStatement(null, Arr(new OuterLocalVarInfo(Path.Int, "x")), PrintIntCmdStmt(new CapturedVarLoc("x"))), default);
             var lambda = RootPath(new Name.Anonymous(new AnonymousId(0)));
 
             // int x = 3;
-            // var func = () => x; // [ref<int> x = ref x] () => x;
+            // var func = () => x; // [ref int x = ref x] () => x;
             // x = 34;
             // func();
             var stmts = Arr<Stmt> (
