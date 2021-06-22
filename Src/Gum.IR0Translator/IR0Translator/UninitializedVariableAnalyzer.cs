@@ -171,26 +171,133 @@ namespace Gum.IR0Translator
         {
             switch(exp)
             {
-                case R.LoadExp loadExp: AnalyzeLoadExpAsync(loadExp, result); break;
-                case R.StringExp stringExp: AnalyzeStringExpAsync(stringExp, result); break;
-                case R.IntLiteralExp intExp: AnalyzeIntLiteralExp(intExp, result); break;
-                case R.BoolLiteralExp boolExp: AnalyzeBoolLiteralExp(boolExp, result); break;
-                case R.CallInternalUnaryOperatorExp ciuoExp: AnalyzeCallInternalUnaryOperatorExpAsync(ciuoExp, result); break;
-                case R.CallInternalUnaryAssignOperator ciuaoExp: AnalyzeCallInternalUnaryAssignOperatorExpAsync(ciuaoExp, result); break;
-                case R.CallInternalBinaryOperatorExp ciboExp: AnalyzeCallInternalBinaryOperatorExpAsync(ciboExp, result); break;
-                case R.AssignExp assignExp: AnalyzeAssignExpAsync(assignExp, result); break;
-                case R.CallFuncExp callFuncExp: AnalyzeCallFuncExpAsync(callFuncExp, result); break;
-                case R.CallSeqFuncExp callSeqFuncExp: AnalyzeCallSeqFuncExpAsync(callSeqFuncExp, result); break;
-                case R.CallValueExp callValueExp: AnalyzeCallValueExpAsync(callValueExp, result); break;
-                case R.LambdaExp lambdaExp: AnalyzeLambdaExp(lambdaExp, result); break;
-                case R.ListExp listExp: AnalyzeListExpAsync(listExp, result); break;
-                case R.ListIteratorExp listIterExp: AnalyzeListIterExpAsync(listIterExp, result); break;
-                case R.NewEnumElemExp enumExp: AnalyzeNewEnumExpAsync(enumExp, result); break;
-                case R.NewStructExp newStructExp: AnalyzeNewStructExpAsync(newStructExp, result); break;
-                case R.NewClassExp newClassExp: AnalyzeNewClassExpAsync(newClassExp, result); break;
-                case R.CastEnumElemToEnumExp castEnumElemToEnumExp: AnalyzeCastEnumElemToEnumExp(castEnumElemToEnumExp, result); break;
-                case R.CastClassExp castClassExp: AnalyzeCastClassExp(castClassExp, result); break;
+                case R.LoadExp loadExp: AnalyzeLoadExp(loadExp); break;
+                case R.StringExp stringExp: AnalyzeStringExp(stringExp); break;
+                case R.IntLiteralExp intExp: AnalyzeIntLiteralExp(intExp); break;
+                case R.BoolLiteralExp boolExp: AnalyzeBoolLiteralExp(boolExp); break;
+                case R.CallInternalUnaryOperatorExp ciuoExp: AnalyzeCallInternalUnaryOperatorExp(ciuoExp); break;
+                case R.CallInternalUnaryAssignOperator ciuaoExp: AnalyzeCallInternalUnaryAssignOperatorExp(ciuaoExp); break;
+                case R.CallInternalBinaryOperatorExp ciboExp: AnalyzeCallInternalBinaryOperatorExp(ciboExp); break;
+                case R.AssignExp assignExp: AnalyzeAssignExp(assignExp); break;
+                case R.CallFuncExp callFuncExp: AnalyzeCallFuncExp(callFuncExp); break;
+                case R.CallSeqFuncExp callSeqFuncExp: AnalyzeCallSeqFuncExp(callSeqFuncExp); break;
+                case R.CallValueExp callValueExp: AnalyzeCallValueExp(callValueExp); break;
+                case R.LambdaExp lambdaExp: AnalyzeLambdaExp(lambdaExp); break;
+                case R.ListExp listExp: AnalyzeListExp(listExp); break;
+                case R.ListIteratorExp listIterExp: AnalyzeListIterExp(listIterExp); break;
+                case R.NewEnumElemExp enumExp: AnalyzeNewEnumExp(enumExp); break;
+                case R.NewStructExp newStructExp: AnalyzeNewStructExp(newStructExp); break;
+                case R.NewClassExp newClassExp: AnalyzeNewClassExp(newClassExp); break;
+                case R.CastEnumElemToEnumExp castEnumElemToEnumExp: AnalyzeCastEnumElemToEnumExp(castEnumElemToEnumExp); break;
+                case R.CastClassExp castClassExp: AnalyzeCastClassExp(castClassExp); break;
             }
+        }
+
+        private void AnalyzeLoadExp(R.LoadExp loadExp)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void AnalyzeStringExp(R.StringExp stringExp)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void AnalyzeIntLiteralExp(R.IntLiteralExp intExp)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void AnalyzeBoolLiteralExp(R.BoolLiteralExp boolExp)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void AnalyzeCallInternalUnaryOperatorExp(R.CallInternalUnaryOperatorExp ciuoExp)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void AnalyzeCallInternalUnaryAssignOperatorExp(R.CallInternalUnaryAssignOperator ciuaoExp)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void AnalyzeCallInternalBinaryOperatorExp(R.CallInternalBinaryOperatorExp ciboExp)
+        {
+            throw new NotImplementedException();
+        }
+
+        void AnalyzeAssignExp(R.AssignExp assignExp)
+        {   
+            switch(assignExp.Dest)
+            {
+                case R.LocalVarLoc localDest:
+                    initialized.SetItem(localDest.Name, true);
+                    break;
+
+                case R.TempLoc tempDest:
+                    AnalyzeExp(tempDest.Exp);
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
+        private void AnalyzeCallFuncExp(R.CallFuncExp callFuncExp)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void AnalyzeCallSeqFuncExp(R.CallSeqFuncExp callSeqFuncExp)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void AnalyzeCallValueExp(R.CallValueExp callValueExp)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void AnalyzeLambdaExp(R.LambdaExp lambdaExp)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void AnalyzeListExp(R.ListExp listExp)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void AnalyzeListIterExp(R.ListIteratorExp listIterExp)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void AnalyzeNewEnumExp(R.NewEnumElemExp enumExp)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void AnalyzeNewStructExp(R.NewStructExp newStructExp)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void AnalyzeNewClassExp(R.NewClassExp newClassExp)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void AnalyzeCastEnumElemToEnumExp(R.CastEnumElemToEnumExp castEnumElemToEnumExp)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void AnalyzeCastClassExp(R.CastClassExp castClassExp)
+        {
+            throw new NotImplementedException();
         }
     }
 }
