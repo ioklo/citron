@@ -520,7 +520,7 @@ namespace Gum.IR0Evaluator.Test
                     new AssignExp(LocalVar("x"), new BoolLiteralExp(false)),
                     RBlock(
                         PrintStringCmdStmt("Once"),
-                        new ReturnStmt(new IntLiteralExp(2)),
+                        new ReturnStmt(new ReturnInfo.Expression(new IntLiteralExp(2))),
                         PrintStringCmdStmt("Wrong")
                     )
                 ),
@@ -602,7 +602,7 @@ namespace Gum.IR0Evaluator.Test
         {
             var funcDecl = new NormalFuncDecl(default, "F", false, default, default,
                 RBlock(
-                    new ReturnStmt(null),
+                    new ReturnStmt(ReturnInfo.None.Instance),
                     PrintStringCmdStmt("Wrong")
                 )
             );
@@ -621,7 +621,7 @@ namespace Gum.IR0Evaluator.Test
         [Fact]
         public async Task ReturnStmt_ReturnProperlyInTopLevel()
         {
-            var topLevelStmts = Arr<Stmt>(new ReturnStmt(new IntLiteralExp(34)));
+            var topLevelStmts = Arr<Stmt>(new ReturnStmt(new ReturnInfo.Expression(new IntLiteralExp(34))));
             var (_, retValue) = await EvalAsyncWithRetValue(default, default, topLevelStmts);
 
             Assert.Equal(34, retValue);
@@ -632,7 +632,7 @@ namespace Gum.IR0Evaluator.Test
         {   
             var funcDecl = new NormalFuncDecl(default, "F", false, default, default,
                 RBlock(
-                    new ReturnStmt(new IntLiteralExp(77)),
+                    new ReturnStmt(new ReturnInfo.Expression(new IntLiteralExp(77))),
                     PrintStringCmdStmt("Wrong")
                 )
             );
@@ -1023,10 +1023,13 @@ namespace Gum.IR0Evaluator.Test
                         null,
                         default
                     )
-                ))),
-                new AssignExp(new DerefLocLoc(new GlobalVarLoc("i")), RInt(4)),
+                )),
+                new ExpStmt(new AssignExp(new DerefLocLoc(new GlobalVarLoc("i")), RInt(4))),
                 PrintIntCmdStmt(new LoadExp(new GlobalVarLoc("x")))
-            );;
+            );
+
+            var output = await EvalAsync(script.Decls, script.TopLevelStmts);
+            Assert.Equal("4", output);
         }
 
         [Fact]
@@ -1058,7 +1061,7 @@ namespace Gum.IR0Evaluator.Test
 
                 RBlock(
                     PrintIntCmdStmt(new LocalVarLoc("x")),
-                    new ReturnStmt(new LoadExp(LocalVar("x")))
+                    new ReturnStmt(new ReturnInfo.Expression(new LoadExp(LocalVar("x"))))
                 )
             );
 
@@ -1096,7 +1099,7 @@ namespace Gum.IR0Evaluator.Test
         {
             var func = RootPath("F");
             // F() { return "hello world"; }
-            var funcDecl = new NormalFuncDecl(default, "F", false, default, default, new ReturnStmt(RString("Hello World")));
+            var funcDecl = new NormalFuncDecl(default, "F", false, default, default, new ReturnStmt(new ReturnInfo.Expression(RString("Hello World"))));
 
             var stmts = Arr<Stmt>(PrintStringCmdStmt(new CallFuncExp(func, null, default)));
 
@@ -1401,7 +1404,7 @@ namespace Gum.IR0Evaluator.Test
             var printFuncDecl = new NormalFuncDecl(default, "Print", false, default, RParamInfo((Path.Int, "x")),
                 RBlock(
                     PrintIntCmdStmt(new LocalVarLoc("x")),
-                    new ReturnStmt(new LoadExp(LocalVar("x")))
+                    new ReturnStmt(new ReturnInfo.Expression(new LoadExp(LocalVar("x"))))
                 )
             );
 
@@ -1415,7 +1418,7 @@ namespace Gum.IR0Evaluator.Test
             var makeLambdaDecl = new NormalFuncDecl(Arr<Decl>(lambdaDecl), "MakeLambda", false, default, default,
                 RBlock(                    
                     PrintStringCmdStmt("MakeLambda"),
-                    new ReturnStmt(new LambdaExp(lambda))
+                    new ReturnStmt(new ReturnInfo.Expression(new LambdaExp(lambda)))
                 )
             );
 
@@ -1496,7 +1499,7 @@ namespace Gum.IR0Evaluator.Test
 
                 RBlock(
                     PrintIntCmdStmt(new LocalVarLoc("x")),
-                    new ReturnStmt(new LoadExp(new LocalVarLoc("x")))
+                    new ReturnStmt(new ReturnInfo.Expression(new LoadExp(new LocalVarLoc("x"))))
                 )
             );
 

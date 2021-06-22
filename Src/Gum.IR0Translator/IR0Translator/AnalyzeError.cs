@@ -81,6 +81,7 @@ namespace Gum.IR0Translator
 
         A1201_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType,
         A1202_ReturnStmt_SeqFuncShouldReturnVoid,
+        A1203_ReturnStmt_RefTargetIsNotLocation,
 
         A1301_ExpStmt_ExpressionShouldBeAssignOrCall,        
 

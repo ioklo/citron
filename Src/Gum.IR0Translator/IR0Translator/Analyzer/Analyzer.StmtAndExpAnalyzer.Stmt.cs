@@ -334,9 +334,56 @@ namespace Gum.IR0Translator
 
                     return new StmtResult(new R.ReturnStmt(R.ReturnInfo.None.Instance));
                 }
-                else if (returnStmt.Info.Value.IsRef)
+                else if (returnStmt.Info.Value.IsRef) // return ref i; 또는  () => ref i;
                 {
+                    // 이 함수의 적혀져 있던 리턴타입 or 첫번째로 발견되서 유지되고 있는 리턴타입
+                    var retTypeValue = callableContext.GetRetTypeValue();
 
+                    if (retTypeValue == null)
+                    {
+                        // 힌트타입 없이 분석
+                        var valueResult = AnalyzeExp(returnStmt.Info.Value.Value, ResolveHint.None);
+
+                        switch(valueResult)
+                        {
+                            // TODO: box
+
+
+                            case ExpResult.Loc locResult:
+                                {
+                                    // 리턴값이 안 적혀 있었으므로 적는다
+                                    callableContext.SetRetTypeValue(locResult.TypeValue);
+                                    return new StmtResult(new R.ReturnStmt(new R.ReturnInfo.Ref(locResult.Result)));
+                                }
+
+                            default:
+                                globalContext.AddFatalError(A1203_ReturnStmt_RefTargetIsNotLocation, returnStmt.Info.Value.Value);
+                                throw new UnreachableCodeException();
+                        }
+                    }
+                    else
+                    {
+                        // ref return은 힌트를 쓰지 않는다
+                        var valueResult = AnalyzeExp(returnStmt.Info.Value.Value, ResolveHint.None);
+
+                        switch(valueResult)
+                        {
+                            // TODO: box
+                            case ExpResult.Loc locResult:
+                                {
+                                    // 현재 함수 시그니처랑 맞춰서 같은지 확인한다
+                                    // ExactMatch여야 한다
+                                    if (!locResult.TypeValue.Equals(retTypeValue))
+                                        globalContext.AddFatalError(A1201_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType, returnStmt);
+
+                                    return new StmtResult(new R.ReturnStmt(new R.ReturnInfo.Ref(locResult.Result)));
+                                }
+
+                            default:
+                                globalContext.AddFatalError(A1203_ReturnStmt_RefTargetIsNotLocation, returnStmt.Info.Value.Value);
+                                throw new UnreachableCodeException();
+                        }
+                    }
                 }
                 else
                 {

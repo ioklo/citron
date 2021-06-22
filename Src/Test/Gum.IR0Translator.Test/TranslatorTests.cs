@@ -478,7 +478,7 @@ namespace Gum.IR0Translator.Test
             var syntaxScript = SScript(new S.ReturnStmt(new S.ReturnValueInfo(false, SInt(2))));
 
             var script = Translate(syntaxScript);
-            var expected = RScript(new R.ReturnStmt(RInt(2)));
+            var expected = RScript(new R.ReturnStmt(new R.ReturnInfo.Expression(RInt(2))));
 
             Assert.Equal(expected, script);
         }
@@ -495,7 +495,7 @@ namespace Gum.IR0Translator.Test
 
             var script = Translate(syntaxScript);
 
-            var seqFunc = new R.SequenceFuncDecl(default, "Func", false, R.Path.Int, default, default, RBlock(new R.ReturnStmt(null)));
+            var seqFunc = new R.SequenceFuncDecl(default, "Func", false, R.Path.Int, default, default, RBlock(new R.ReturnStmt(R.ReturnInfo.None.Instance)));
 
             var expected = RScript(Arr<R.Decl>(seqFunc));
 
@@ -1467,7 +1467,7 @@ namespace Gum.IR0Translator.Test
             var expected = RScript(
                 Arr<R.Decl>(
                     new R.NormalFuncDecl(
-                        default, "Func", false, Arr("T"), RParamInfo((R.Path.Int, "x")), RBlock(new R.ReturnStmt(new R.LoadExp(new R.LocalVarLoc("x"))))
+                        default, "Func", false, Arr("T"), RParamInfo((R.Path.Int, "x")), RBlock(new R.ReturnStmt(new R.ReturnInfo.Expression(new R.LoadExp(new R.LocalVarLoc("x")))))
                     )
                 ),
 
@@ -1499,7 +1499,7 @@ namespace Gum.IR0Translator.Test
 
             var expected = RScript(
                 Arr<R.Decl>(new R.NormalFuncDecl(
-                    default, "Func", false, Arr<string>(), RParamInfo((R.Path.Int, "x")), RBlock(new R.ReturnStmt(new R.LoadExp(new R.LocalVarLoc("x"))))
+                    default, "Func", false, Arr<string>(), RParamInfo((R.Path.Int, "x")), RBlock(new R.ReturnStmt(new R.ReturnInfo.Expression(new R.LoadExp(new R.LocalVarLoc("x")))))
                 )),
 
                 new R.ExpStmt(new R.CallFuncExp(
