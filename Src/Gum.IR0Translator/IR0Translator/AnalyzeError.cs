@@ -118,7 +118,10 @@ namespace Gum.IR0Translator
 
         // A2001_Identifier_MultipleCandidatesForIdentifier,
 
-        A9901_NotSupported_LambdaParameterInference
+        A9901_NotSupported_LambdaParameterInference,
+
+        // IR0Analyzer
+        R0101_UninitializedVaraibleAnalyzer_UseUninitializedValue
 
     }
 
