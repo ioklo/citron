@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Gum.IR0
 {   
-    public abstract record Loc;
+    public abstract record Loc : INode;
 
     // 임시 value를 만들어서 Exp를 실행해서 대입해주는 역할, ExpInfo 대신 쓴다    
     public record TempLoc(Exp Exp, Path Type) : Loc;

@@ -10,7 +10,7 @@ using Gum.Infra;
 
 namespace Gum.IR0
 {   
-    public abstract record Stmt : IPure
+    public abstract record Stmt : IPure, INode
     {
         public void EnsurePure() { }
     }

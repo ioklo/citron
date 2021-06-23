@@ -1,23 +1,65 @@
 ﻿using Gum.Collections;
+using Gum.Infra;
 using System;
 using R = Gum.IR0;
+using S = Gum.Syntax;
 
 namespace Gum.IR0Translator
 {
-    struct UninitializedVariableAnalyzer
-    {        
-        ImmutableDictionary<string, bool> initialized;
-
-        public static void Analyze(R.Script script)
+    partial struct UninitializedVariableAnalyzer
+    {
+        // Mutable
+        class Context
         {
-            var analyzer = new UninitializedVariableAnalyzer(ImmutableDictionary<string, bool>.Empty);
+            Context? origParent;    // 원본 parent
+            Context? modifiedParent;
+            ImmutableDictionary<string, bool> localVars;
+
+            public Context(Context? origParent)
+            {
+                this.origParent = origParent;
+                this.modifiedParent = origParent;
+            }
+
+            public void AddLocalVar(string name, bool initialized)
+            {
+                localVars = localVars.Add(name, initialized);
+            }
+
+            public bool IsInitialized(string name)
+            {
+                if (localVars.TryGetValue(name, out var initialized))
+                    return initialized;
+
+                if (modifiedParent != null)
+                    return modifiedParent.IsInitialized(name);
+
+                // 모든 localvariable이 등록되게 되어있으므로 여기에 오면 안된다
+                throw new UnreachableCodeException();
+            }
+        }
+    }
+
+    partial struct UninitializedVariableAnalyzer
+    {
+        IErrorCollector errorCollector;
+        Context context;
+
+        public static void Analyze(R.Script script, IErrorCollector errorCollector)
+        {
+            var analyzer = new UninitializedVariableAnalyzer(errorCollector, new Context(null));
             analyzer.AnalyzeStmts(script.TopLevelStmts);
-            // analyzer.AnalyzeDecls            
         }
 
-        UninitializedVariableAnalyzer(ImmutableDictionary<string, bool> initialized)
+        UninitializedVariableAnalyzer(IErrorCollector errorCollector, Context context)
         {
-            this.initialized = initialized;
+            this.errorCollector = errorCollector;
+            this.context = context;
+        }
+
+        UninitializedVariableAnalyzer NewAnalyzer()
+        {
+            return new UninitializedVariableAnalyzer(errorCollector, new Context(context));
         }
 
         void AnalyzeStmts(ImmutableArray<R.Stmt> topLevelStmts)
@@ -53,7 +95,8 @@ namespace Gum.IR0Translator
 
         void AnalyzeCommandStmt(R.CommandStmt commandStmt)
         {
-            throw new NotImplementedException();
+            foreach(var c in commandStmt.Commands)
+                AnalyzeStringExp(c);
         }
 
         void AnalyzeGlobalVarDeclStmt(R.GlobalVarDeclStmt globalVarDeclStmt)
@@ -79,22 +122,28 @@ namespace Gum.IR0Translator
                 case R.VarDeclElement.Normal normalElem:
 
                     if (normalElem.InitExp == null)
-                        initialized.SetItem(normalElem.Name, false);
+                        context.AddLocalVar(normalElem.Name, false);
                     else
-                        initialized.SetItem(normalElem.Name, true);
+                        context.AddLocalVar(normalElem.Name, true);
 
                     break;
 
                 case R.VarDeclElement.Ref refElem:
                     // TODO: ref var decl uninitialized
-                    initialized.SetItem(refElem.Name, true);
+                    context.AddLocalVar(refElem.Name, true);
                     break;
             }
         }
 
         void AnalyzeIfStmt(R.IfStmt ifStmt)
         {
-            throw new NotImplementedException();
+            var newAnalyzerBody = NewAnalyzer();
+            var newAnalyzerElse = NewAnalyzer();
+
+            newAnalyzerBody.AnalyzeStmt(ifStmt.Body);
+            newAnalyzerElse.AnalyzeStmt(ifStmt.ElseBody);
+
+            // merge
         }
 
         void AnalyzeIfTestClassStmt(R.IfTestClassStmt ifTestClassStmt)
@@ -129,7 +178,12 @@ namespace Gum.IR0Translator
 
         void AnalyzeBlockStmt(R.BlockStmt blockStmt)
         {
-            throw new NotImplementedException();
+            var newAnalyzer = NewAnalyzer();
+
+            foreach(var stmt in blockStmt.Stmts)
+                newAnalyzer.AnalyzeStmt(stmt);
+
+            // 새 localVars로 덮어 씌운다
         }
 
         void AnalyzeBlankStmt(R.BlankStmt blankStmt)
@@ -193,111 +247,204 @@ namespace Gum.IR0Translator
             }
         }
 
-        private void AnalyzeLoadExp(R.LoadExp loadExp)
+        void AnalyzeLoadExp(R.LoadExp loadExp)
+        {
+            var localVarName = AnalyzeLoc(loadExp.Loc);
+            if (localVarName != null)
+                CheckInitialized(localVarName, loadExp.Loc);
+        }
+
+        void AnalyzeStringExp(R.StringExp stringExp)
+        {
+            foreach (var elem in stringExp.Elements)
+                AnalyzeStringExpElem(elem);
+        }
+
+        void AnalyzeStringExpElem(R.StringExpElement elem)
+        {
+            switch(elem)
+            {
+                case R.ExpStringExpElement expElem:
+                    AnalyzeExp(expElem.Exp);
+                    break;
+
+                case R.TextStringExpElement:                    
+                    break;
+            }
+        }
+
+        void AnalyzeIntLiteralExp(R.IntLiteralExp intExp)
         {
             throw new NotImplementedException();
         }
 
-        private void AnalyzeStringExp(R.StringExp stringExp)
+        void AnalyzeBoolLiteralExp(R.BoolLiteralExp boolExp)
         {
             throw new NotImplementedException();
         }
 
-        private void AnalyzeIntLiteralExp(R.IntLiteralExp intExp)
+        void AnalyzeCallInternalUnaryOperatorExp(R.CallInternalUnaryOperatorExp ciuoExp)
+        {
+            AnalyzeExp(ciuoExp.Operand);
+        }
+
+        void AnalyzeCallInternalUnaryAssignOperatorExp(R.CallInternalUnaryAssignOperator ciuaoExp)
         {
             throw new NotImplementedException();
         }
 
-        private void AnalyzeBoolLiteralExp(R.BoolLiteralExp boolExp)
-        {
-            throw new NotImplementedException();
-        }
-
-        private void AnalyzeCallInternalUnaryOperatorExp(R.CallInternalUnaryOperatorExp ciuoExp)
-        {
-            throw new NotImplementedException();
-        }
-
-        private void AnalyzeCallInternalUnaryAssignOperatorExp(R.CallInternalUnaryAssignOperator ciuaoExp)
-        {
-            throw new NotImplementedException();
-        }
-
-        private void AnalyzeCallInternalBinaryOperatorExp(R.CallInternalBinaryOperatorExp ciboExp)
+        void AnalyzeCallInternalBinaryOperatorExp(R.CallInternalBinaryOperatorExp ciboExp)
         {
             throw new NotImplementedException();
         }
 
         void AnalyzeAssignExp(R.AssignExp assignExp)
-        {   
-            switch(assignExp.Dest)
-            {
-                case R.LocalVarLoc localDest:
-                    initialized.SetItem(localDest.Name, true);
-                    break;
+        {
+            AnalyzeExp(assignExp.Src);
 
-                case R.TempLoc tempDest:
-                    AnalyzeExp(tempDest.Exp);
-                    break;
+            var localVarName = AnalyzeLoc(assignExp.Dest);
+            if (localVarName != null)
+                CheckInitialized(localVarName, assignExp.Dest);
+        }
+
+        void AnalyzeCallFuncExp(R.CallFuncExp callFuncExp)
+        {
+            throw new NotImplementedException();
+        }
+
+        void AnalyzeCallSeqFuncExp(R.CallSeqFuncExp callSeqFuncExp)
+        {
+            throw new NotImplementedException();
+        }
+
+        void AnalyzeCallValueExp(R.CallValueExp callValueExp)
+        {
+            throw new NotImplementedException();
+        }
+
+        void AnalyzeLambdaExp(R.LambdaExp lambdaExp)
+        {
+            throw new NotImplementedException();
+        }
+
+        void AnalyzeListExp(R.ListExp listExp)
+        {
+            throw new NotImplementedException();
+        }
+
+        void AnalyzeListIterExp(R.ListIteratorExp listIterExp)
+        {
+            throw new NotImplementedException();
+        }
+
+        void AnalyzeNewEnumExp(R.NewEnumElemExp enumExp)
+        {
+            throw new NotImplementedException();
+        }
+
+        void AnalyzeNewStructExp(R.NewStructExp newStructExp)
+        {
+            throw new NotImplementedException();
+        }
+
+        void AnalyzeNewClassExp(R.NewClassExp newClassExp)
+        {
+            throw new NotImplementedException();
+        }
+
+        void AnalyzeCastEnumElemToEnumExp(R.CastEnumElemToEnumExp castEnumElemToEnumExp)
+        {
+            throw new NotImplementedException();
+        }
+
+        void AnalyzeCastClassExp(R.CastClassExp castClassExp)
+        {
+            throw new NotImplementedException();
+        }
+
+        // 일단 이름 붙이지 말고, LocalVar이름 리턴하는 것으로
+        string? AnalyzeLoc(R.Loc loc)
+        {
+            switch (loc)
+            {
+                case R.TempLoc tempLoc: 
+                    AnalyzeExp(tempLoc.Exp); 
+                    return null;
+
+                case R.GlobalVarLoc globalVarLoc: return null;
+                case R.LocalVarLoc localVarLoc:                    
+                    return localVarLoc.Name;                    
+
+                case R.CapturedVarLoc capturedVarLoc:
+                    return null;
+
+                case R.ListIndexerLoc listIndexerLoc:
+                    {
+                        var list = AnalyzeLoc(listIndexerLoc.List);
+                        if (list != null)
+                            CheckInitialized(list, null);
+
+                        AnalyzeExp(listIndexerLoc.Index);
+                        return null;
+                    }
+
+                case R.StaticMemberLoc staticMemberLoc:
+                    return null;
+
+                case R.StructMemberLoc structMemberLoc:
+                    {
+                        var instance = AnalyzeLoc(structMemberLoc.Instance);
+                        if (instance != null)
+                            CheckInitialized(instance, structMemberLoc.Instance);
+
+                        return null;
+                    }
+
+                case R.ClassMemberLoc classMemberLoc:
+                    {
+                        var instance = AnalyzeLoc(classMemberLoc.Instance);
+                        if (instance != null)
+                            CheckInitialized(instance, classMemberLoc.Instance);
+
+                        return null;
+                    }
+
+                case R.EnumElemMemberLoc enumMemberLoc:
+                    {
+                        var instance = AnalyzeLoc(enumMemberLoc.Instance);
+                        if (instance != null)
+                            CheckInitialized(instance, enumMemberLoc.Instance);
+
+                        return null;
+                    }
+
+                case R.ThisLoc thisLoc:
+                    return null;
+
+                case R.DerefLocLoc derefLoc:
+                    {
+                        var innerLoc = AnalyzeLoc(derefLoc.Loc);
+                        if (innerLoc != null)
+                            CheckInitialized(innerLoc, derefLoc.Loc);
+
+                        return null;
+                    }
+
+                case R.DerefExpLoc derefExpLoc:
+                    {
+                        AnalyzeExp(derefExpLoc.Exp);
+                        return null;
+                    }
 
                 default:
-                    break;
+                    throw new UnreachableCodeException();
             }
         }
 
-        private void AnalyzeCallFuncExp(R.CallFuncExp callFuncExp)
+        void CheckInitialized(string localVarName, R.INode nodeForErrorReport)
         {
-            throw new NotImplementedException();
-        }
-
-        private void AnalyzeCallSeqFuncExp(R.CallSeqFuncExp callSeqFuncExp)
-        {
-            throw new NotImplementedException();
-        }
-
-        private void AnalyzeCallValueExp(R.CallValueExp callValueExp)
-        {
-            throw new NotImplementedException();
-        }
-
-        private void AnalyzeLambdaExp(R.LambdaExp lambdaExp)
-        {
-            throw new NotImplementedException();
-        }
-
-        private void AnalyzeListExp(R.ListExp listExp)
-        {
-            throw new NotImplementedException();
-        }
-
-        private void AnalyzeListIterExp(R.ListIteratorExp listIterExp)
-        {
-            throw new NotImplementedException();
-        }
-
-        private void AnalyzeNewEnumExp(R.NewEnumElemExp enumExp)
-        {
-            throw new NotImplementedException();
-        }
-
-        private void AnalyzeNewStructExp(R.NewStructExp newStructExp)
-        {
-            throw new NotImplementedException();
-        }
-
-        private void AnalyzeNewClassExp(R.NewClassExp newClassExp)
-        {
-            throw new NotImplementedException();
-        }
-
-        private void AnalyzeCastEnumElemToEnumExp(R.CastEnumElemToEnumExp castEnumElemToEnumExp)
-        {
-            throw new NotImplementedException();
-        }
-
-        private void AnalyzeCastClassExp(R.CastClassExp castClassExp)
-        {
-            throw new NotImplementedException();
+            if (!localVars[localVarName])
+                errorCollector.Add(new AnalyzeError(AnalyzeErrorCode.R0101_UninitializedVaraibleAnalyzer_UseUninitializedValue, null, ""));
         }
     }
 }

@@ -1702,7 +1702,7 @@ namespace Gum.IR0Translator.Test
         }
 
         [Fact]
-        public void UninitializedVariableAnalysis_LocalVarDecl_WorksProperly()
+        public void UninitializedVariableAnalysis_UseUninitializedLocalVarDecl_ReturnError()
         {
             // {
             //     int a; // local var without initialize
@@ -1717,7 +1717,24 @@ namespace Gum.IR0Translator.Test
 
             var errors = TranslateWithErrors(syntaxScript);
 
-            VerifyError(errors, R0101_UninitializedVaraibleAnalyzer_UseUninitializedValue, e);
+            VerifyError(errors, R0101_UninitializedVaraibleAnalyzer_UseUninitializedValue, null);
+        }
+
+        [Fact]
+        public void UninitializedVariableAnalysis_UseInitializedLocalVar_NoErrors()
+        {
+            // {
+            //     int a = 1; // local var 
+            //     @$a    // use, no error
+            // }           
+
+            S.Exp e;
+            var syntaxScript = SScript(new S.StmtScriptElement(SBlock(
+                SVarDeclStmt(IntTypeExp, "a", SInt(1)),
+                SCommand(SString(new S.ExpStringExpElement(e = SId("a"))))
+            )));
+
+            var rscript = Translate(syntaxScript);
         }
     }
 }
