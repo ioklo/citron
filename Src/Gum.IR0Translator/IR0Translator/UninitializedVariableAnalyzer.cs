@@ -1,7 +1,6 @@
 ﻿using Gum.Collections;
 using Gum.Infra;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using R = Gum.IR0;
 using S = Gum.Syntax;
@@ -10,108 +9,6 @@ namespace Gum.IR0Translator
 {
     partial struct UninitializedVariableAnalyzer
     {
-        // Mutable
-        class Context
-        {
-            Context? origParent;    // 원본 parent
-            Context? parent;
-            Dictionary<string, bool> localVars;
-
-            Context(Context? origParent, Context? parent, Dictionary<string, bool> localVars)
-            {
-                this.origParent = origParent;
-                this.parent = parent;
-                this.localVars = localVars;
-            }
-
-            public Context(Context? origParent)
-            {
-                this.origParent = origParent;
-                this.parent = origParent;
-                this.localVars = new Dictionary<string, bool>();
-            }            
-
-            public void AddLocalVar(string name, bool initialized)
-            {
-                localVars.Add(name, initialized);
-            }
-
-            public bool IsInitialized(string name)
-            {
-                if (localVars.TryGetValue(name, out var initialized))
-                    return initialized;
-
-                if (parent != null)
-                    return parent.IsInitialized(name);
-
-                // 모든 localvariable이 등록되게 되어있으므로 여기에 오면 안된다
-                throw new UnreachableCodeException();
-            }
-
-            public void SetInitialized(string name)
-            {
-                if (localVars.ContainsKey(name))
-                {
-                    localVars[name] = true;
-                    return;
-                }
-
-                if (parent != null)
-                {
-                    // 아직 복사 전이라면 
-                    EnsureCloneParent();
-                    parent.SetInitialized(name);
-                }
-            }
-
-            void EnsureCloneParent()
-            {
-                if (origParent == null) return;
-                if (origParent != parent) return;
-
-                parent = new Context(origParent.origParent, origParent.parent, new Dictionary<string, bool>(origParent.localVars));
-            }
-
-            public void Merge(Context childX, Context childY)
-            {
-                Debug.Assert(childX.parent != null && childY.parent != null);
-
-                // fast-forward, no modified
-                if (this == childX.parent && this == childY.parent)
-                {
-                    return;
-                }
-                else if (this != childX.parent && this == childY.parent)
-                {
-                    parent = childX.parent.parent;
-                    localVars = childX.parent.localVars;
-                    return;
-                }
-                else if (this == childX && this != childY)
-                {
-                    parent = childY.parent.parent;
-                    localVars = childY.parent.localVars;
-                    return;
-                }
-                else
-                {
-                    foreach (var key in localVars.Keys)
-                        localVars[key] = childX.parent.localVars[key] && childY.parent.localVars[key];
-                }
-
-                if (parent != null)
-                {
-                    parent.Merge(childX.parent, childY.parent);
-                }
-            }
-
-            public void Replace(Context child)
-            {
-                Debug.Assert(child.parent != null);
-                parent = child.parent.parent;
-                localVars = child.parent.localVars;
-            }
-        }
     }
 
     partial struct UninitializedVariableAnalyzer
