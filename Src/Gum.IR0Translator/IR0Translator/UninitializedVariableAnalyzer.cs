@@ -113,8 +113,8 @@ namespace Gum.IR0Translator
                 var newAnalyzerElse = NewAnalyzer();
                 newAnalyzerElse.AnalyzeStmt(ifStmt.ElseBody);
 
-                Debug.Assert(newAnalyzerBody.context != null && newAnalyzerElse.context != null);
-                context.Merge(newAnalyzerBody.context, newAnalyzerElse.context);
+                // 두개의 child가 있으면
+                context.Merge(newAnalyzerBody.context.GetParentContext(), newAnalyzerElse.context.GetParentContext());
             }
             else
             {
