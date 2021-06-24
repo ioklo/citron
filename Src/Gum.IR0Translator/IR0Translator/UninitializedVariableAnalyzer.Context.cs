@@ -8,72 +8,171 @@ namespace Gum.IR0Translator
     {
         struct CopyOnWriteContext
         {
-            Context? origParent;    // 원본 parent
-            Context? parent;
+            Context context;
+            bool bNeedCopyToWrite;
 
-            public CopyOnWriteContext(Context? parent)
+            public CopyOnWriteContext(Context context)
             {
-                this.origParent = parent;
-                this.parent = null;
-            }
-        }
-
-        // Mutable, copy on demand
-        class Context
-        {
-            CopyOnWriteContext parent;
-            Dictionary<string, bool>? localVars; // 필요없으면 할당하지 않는다.
-
-            Context(parent, Dictionary<string, bool>? localVars)
-            {
-                this.parent = parent;
-                this.localVars = localVars;
-            }
-
-            public Context(Context? parent)
-            {
-                this.parent = new CopyOnWriteContext(parent);
-                this.localVars = null;
-            }            
-
-            public void AddLocalVar(string name, bool initialized)
-            {
-                if (localVars == null)
-                    localVars = new Dictionary<string, bool>();
-
-                localVars.Add(name, initialized);
+                this.context = context;
+                this.bNeedCopyToWrite = true;
             }
 
             public bool IsInitialized(string name)
             {
-                if (localVars != null)
-                    if (localVars.TryGetValue(name, out var initialized))
-                        return initialized;
-
-                if (parent != null)
-                    return parent.IsInitialized(name);
-
-                // 모든 localvariable이 등록되게 되어있으므로 여기에 오면 안된다
-                throw new UnreachableCodeException();
+                return context.IsInitialized(name);
             }
 
-            public void SetInitialized(string name)
+            public CopyOnWriteContext Share()
             {
-                if (localVars != null && localVars.ContainsKey(name))
+                var result = new CopyOnWriteContext(context);
+                this.bNeedCopyToWrite = true;
+                return result;
+            }
+
+            public void SetInitialized(string varName)
+            {   
+                if (context.NeedToWriteOnSetInitialized(varName))
+                    EnsureWrite();
+
+                context.SetInitialized(varName);
+            }
+
+            void EnsureWrite()
+            {
+                if (!bNeedCopyToWrite) return;
+
+                context = context.Copy();
+                bNeedCopyToWrite = false;
+            }
+        }
+
+        struct CopyOnWriteDictionary
+        {
+            Dictionary<string, bool>? localVars; // 필요없으면 할당하지 않는다.
+            bool bModified;            
+
+            public void AddLocalVar(string name, bool initialized)
+            {
+                EnsureModify();
+                Debug.Assert(localVars != null);
+
+                localVars.Add(name, initialized);
+            }
+
+            public CopyOnWriteDictionary Share()
+            {
+                var result = new CopyOnWriteDictionary();
+                result.localVars = localVars;
+                result.bModified = false;
+
+                this.bModified = false; // 지금 부터 나도 바뀌면 복사를 떠야 한다
+                return result;
+            }
+
+            public bool? IsInitialized(string name)
+            {
+                if (localVars == null) return null;
+
+                if (localVars.TryGetValue(name, out var initialized))
+                    return initialized;
+
+                return null;
+            }
+
+            void EnsureModify()
+            {
+                if (bModified) return;
+
+                if (localVars != null)
+                    localVars = new Dictionary<string, bool>(localVars);
+                else
+                    localVars = new Dictionary<string, bool>();
+
+                bModified = true;
+            }
+
+            public bool Contains(string name)
+            {
+                if (localVars == null) return false;
+                return localVars.ContainsKey(name);
+            }
+
+            public void SetInitialized(string varName)
+            {
+                Debug.Assert(localVars != null);
+
+                if (localVars[varName] == false)
                 {
-                    localVars[name] = true;
-                    return;
+                    EnsureModify();
+                    localVars[varName] = true;
                 }
+
+            }
+        }
+
+        // Mutable, copy on demand
+        abstract class Context 
+        {
+            public abstract bool IsInitialized(string name);
+            public abstract void SetInitialized(string name);
+            public abstract bool NeedToWriteOnSetInitialized(string varName);
+
+            public abstract Context Copy();
+        }
+
+        class RootContext : Context 
+        {
+            CopyOnWriteDictionary dictionary;
+
+            public override bool IsInitialized(string name) 
+            { 
+                var result = dictionary.IsInitialized(name);
+                if (result != null)
+                    return result.Value;
+
+                return false;
+            }
+        }
+        
+        class ChildContext : Context
+        {
+            CopyOnWriteContext parent;
+            CopyOnWriteDictionary dictionary;
+            
+            public ChildContext(CopyOnWriteContext parent)
+            {
+                this.parent = parent;
+                this.dictionary = new CopyOnWriteDictionary();
+            }            
+
+            public void AddLocalVar(string name, bool initialized)
+            {
+                dictionary.AddLocalVar(name, initialized);                
+            }
+
+            public override bool IsInitialized(string name)
+            {
+                var result = dictionary.IsInitialized(name);
+                if (result != null)
+                    return result.Value;
                 
-                if (parent != null)
+                return parent.IsInitialized(name);
+            }
+
+            public override bool NeedToWriteOnSetInitialized(string varName)
+            {
+                return dictionary.Contains(varName);
+            }
+
+            public override void SetInitialized(string name)
+            {
+                if (dictionary.Contains(name))
                 {
-                    // 아직 복사 전이라면 
-                    EnsureCloneParent();
-                    parent.SetInitialized(name);
+                    dictionary.SetInitialized(name);
                     return;
                 }
 
-                throw new UnreachableCodeException();
+                parent.SetInitialized(name);
             }
 
             void EnsureCloneParent()
