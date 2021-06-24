@@ -6,6 +6,7 @@ namespace Gum.IR0Translator
 {
     partial struct UninitializedVariableAnalyzer
     {
+        // never-thread-safe
         struct CopyOnWriteContext
         {
             Context context;
@@ -21,8 +22,8 @@ namespace Gum.IR0Translator
             {
                 return context.IsInitialized(name);
             }
-
-            public CopyOnWriteContext Share()
+            
+            internal CopyOnWriteContext Share()
             {
                 var result = new CopyOnWriteContext(context);
                 this.bNeedCopyToWrite = true;
@@ -37,6 +38,12 @@ namespace Gum.IR0Translator
                 context.SetInitialized(varName);
             }
 
+            public Context MakeChild()
+            {
+                var shareThis = Share();
+                return new ChildContext(shareThis);
+            }
+
             void EnsureWrite()
             {
                 if (!bNeedCopyToWrite) return;
@@ -44,16 +51,34 @@ namespace Gum.IR0Translator
                 context = context.Copy();
                 bNeedCopyToWrite = false;
             }
+
+            public void AddLocalVar(string name, bool bInitialized)
+            {
+                EnsureWrite();
+                context.AddLocalVar(name, bInitialized);
+            }
+
+            // return ref
+            public CopyOnWriteContext GetParentContext()
+            {
+                return context.GetParentContext();
+            }
+
+            public void Merge(CopyOnWriteContext other)
+            {
+                EnsureWrite();
+
+            }
         }
 
         struct CopyOnWriteDictionary
         {
             Dictionary<string, bool>? localVars; // 필요없으면 할당하지 않는다.
-            bool bModified;            
+            bool bNeedCopyToWrite;
 
             public void AddLocalVar(string name, bool initialized)
             {
-                EnsureModify();
+                EnsureWrite();
                 Debug.Assert(localVars != null);
 
                 localVars.Add(name, initialized);
@@ -63,9 +88,9 @@ namespace Gum.IR0Translator
             {
                 var result = new CopyOnWriteDictionary();
                 result.localVars = localVars;
-                result.bModified = false;
+                result.bNeedCopyToWrite = true;
 
-                this.bModified = false; // 지금 부터 나도 바뀌면 복사를 떠야 한다
+                this.bNeedCopyToWrite = true; // 지금 부터 나도 바뀌면 복사를 떠야 한다
                 return result;
             }
 
@@ -79,23 +104,23 @@ namespace Gum.IR0Translator
                 return null;
             }
 
-            void EnsureModify()
+            void EnsureWrite()
             {
-                if (bModified) return;
+                if (!bNeedCopyToWrite) return;
 
                 if (localVars != null)
                     localVars = new Dictionary<string, bool>(localVars);
                 else
                     localVars = new Dictionary<string, bool>();
 
-                bModified = true;
+                bNeedCopyToWrite = false;
             }
 
             public bool Contains(string name)
             {
                 if (localVars == null) return false;
                 return localVars.ContainsKey(name);
-            }
+            }            
 
             public void SetInitialized(string varName)
             {
@@ -103,26 +128,49 @@ namespace Gum.IR0Translator
 
                 if (localVars[varName] == false)
                 {
-                    EnsureModify();
+                    EnsureWrite();
                     localVars[varName] = true;
                 }
-
             }
         }
 
         // Mutable, copy on demand
         abstract class Context 
         {
+            public abstract void AddLocalVar(string varName, bool bInitialized);
             public abstract bool IsInitialized(string name);
             public abstract void SetInitialized(string name);
             public abstract bool NeedToWriteOnSetInitialized(string varName);
+            public abstract Context GetParentContext();
 
             public abstract Context Copy();
         }
 
-        class RootContext : Context 
+        class RootContext : Context
         {
             CopyOnWriteDictionary dictionary;
+
+            public RootContext() { }
+
+            RootContext(CopyOnWriteDictionary dictionary)
+            {
+                this.dictionary = dictionary;
+            }
+
+            public override void AddLocalVar(string varName, bool bInitialized)
+            {
+                dictionary.AddLocalVar(varName, bInitialized);
+            }
+
+            public override Context Copy()
+            {
+                return new RootContext(dictionary);
+            }
+
+            public override Context GetParentContext()
+            {
+                throw new UnreachableCodeException();
+            }
 
             public override bool IsInitialized(string name) 
             { 
@@ -132,6 +180,17 @@ namespace Gum.IR0Translator
 
                 return false;
             }
+
+            public override bool NeedToWriteOnSetInitialized(string varName)
+            {
+                return dictionary.Contains(varName);
+            }
+
+            public override void SetInitialized(string varName)
+            {
+                Debug.Assert(dictionary.Contains(varName));
+                dictionary.SetInitialized(varName);
+            }
         }
         
         class ChildContext : Context
@@ -139,15 +198,22 @@ namespace Gum.IR0Translator
             CopyOnWriteContext parent;
             CopyOnWriteDictionary dictionary;
             
+            // 빈 Dictionary로 시작한다
             public ChildContext(CopyOnWriteContext parent)
             {
                 this.parent = parent;
                 this.dictionary = new CopyOnWriteDictionary();
-            }            
+            }
 
-            public void AddLocalVar(string name, bool initialized)
+            public ChildContext(CopyOnWriteContext parent, CopyOnWriteDictionary dictionary)
             {
-                dictionary.AddLocalVar(name, initialized);                
+                this.parent = parent;
+                this.dictionary = dictionary;
+            }
+
+            public override void AddLocalVar(string name, bool initialized)
+            {
+                dictionary.AddLocalVar(name, initialized);
             }
 
             public override bool IsInitialized(string name)
@@ -175,49 +241,45 @@ namespace Gum.IR0Translator
                 parent.SetInitialized(name);
             }
 
-            void EnsureCloneParent()
+            public override Context Copy()
             {
-                if (origParent == null) return;
-                if (origParent != parent) return;
-
-                parent = new Context(origParent.origParent, origParent.parent, origParent.localVars != null ? new Dictionary<string, bool>(origParent.localVars) : null);
+                return new ChildContext(parent.Share(), dictionary.Share());
             }
 
-            public void Merge(Context childX, Context childY)
+            // 두개 
+            public void Merge(Context x, Context y)
             {
-                Debug.Assert(childX.parent != null && childY.parent != null);
-
                 // fast-forward, no modified
-                if (this == childX.parent && this == childY.parent)
+                if (this == x && this == y)
                 {
                     return;
                 }
-                else if (this != childX.parent && this == childY.parent)
+                else if (this != x && this == y)
                 {
-                    parent = childX.parent.parent;
-                    localVars = childX.parent.localVars;
+                    parent = x.parent;
+                    localVars = x.localVars;
                     return;
                 }
                 else if (this == childX && this != childY)
                 {
-                    parent = childY.parent.parent;
-                    localVars = childY.parent.localVars;
+                    parent = y.parent;
+                    localVars = y.localVars;
                     return;
                 }
                 else
                 {
                     if (localVars != null)
                     {
-                        Debug.Assert(childX.parent.localVars != null && childY.parent.localVars != null);
+                        Debug.Assert(x.localVars != null && y.localVars != null);
 
                         foreach (var key in localVars.Keys)
-                            localVars[key] = childX.parent.localVars[key] && childY.parent.localVars[key];
+                            localVars[key] = x.localVars[key] && y.localVars[key];
                     }
                 }
 
                 if (parent != null)
                 {
-                    parent.Merge(childX.parent, childY.parent);
+                    parent.Merge(x, y);
                 }
             }
 
@@ -226,6 +288,11 @@ namespace Gum.IR0Translator
                 Debug.Assert(child.parent != null);
                 parent = child.parent.parent;
                 localVars = child.parent.localVars;
+            }
+
+            public override Context GetParentContext()
+            {
+                return parent.GetContext();
             }
         }
     }

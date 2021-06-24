@@ -9,20 +9,16 @@ namespace Gum.IR0Translator
 {
     partial struct UninitializedVariableAnalyzer
     {
-    }
-
-    partial struct UninitializedVariableAnalyzer
-    {
         IErrorCollector errorCollector;
-        Context context;
+        CopyOnWriteContext context;
 
         public static void Analyze(R.Script script, IErrorCollector errorCollector)
         {
-            var analyzer = new UninitializedVariableAnalyzer(errorCollector, new Context(null));
+            var analyzer = new UninitializedVariableAnalyzer(errorCollector, new CopyOnWriteContext(new RootContext()));
             analyzer.AnalyzeStmts(script.TopLevelStmts);
         }
 
-        UninitializedVariableAnalyzer(IErrorCollector errorCollector, Context context)
+        UninitializedVariableAnalyzer(IErrorCollector errorCollector, CopyOnWriteContext context)
         {
             this.errorCollector = errorCollector;
             this.context = context;
@@ -30,7 +26,8 @@ namespace Gum.IR0Translator
 
         UninitializedVariableAnalyzer NewAnalyzer()
         {
-            return new UninitializedVariableAnalyzer(errorCollector, new Context(context));
+            var childContext = new CopyOnWriteContext(context.MakeChild());
+            return new UninitializedVariableAnalyzer(errorCollector, childContext);
         }
 
         void AnalyzeStmts(ImmutableArray<R.Stmt> topLevelStmts)
