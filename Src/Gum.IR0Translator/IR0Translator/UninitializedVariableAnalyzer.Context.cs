@@ -5,29 +5,56 @@ using System.Diagnostics;
 namespace Gum.IR0Translator
 {
     partial struct UninitializedVariableAnalyzer
-    {
-        // never-thread-safe
-        struct CopyOnWriteContext
+    {   
+        class Context
         {
-            Context context;
-            bool bNeedCopyToWrite;
+            Context? parent;       // 최상위라면 null
 
-            public CopyOnWriteContext(Context context)
-            {
-                this.context = context;
-                this.bNeedCopyToWrite = true;
-            }
+            InnerContext context;
+            bool bNeedCopyToWrite; // 이 컨텍스트를 수정할 때, 복사해야하는지 여부
 
             public bool IsInitialized(string name)
             {
                 return context.IsInitialized(name);
             }
-            
-            internal CopyOnWriteContext Share()
+
+            // Write operation
+            public void SetInitialized(string name) // recursively
             {
-                var result = new CopyOnWriteContext(context);
-                this.bNeedCopyToWrite = true;
-                return result;
+                // 자기 자신에게만 있는지 확인
+                if (context.Contains(name))
+                {
+                    EnsureWrite();
+                    context.SetInitialized(name);
+                    return;
+                }
+
+                if (parent != null)
+                    parent.SetInitialized(name);
+            }
+
+            public void AddLocalVar(string name, bool bInitialized)
+            {
+                EnsureWrite();
+                context.AddLocalVar(name, bInitialized);
+            }
+        }
+
+        // 컨텍스트의 공유 상태, 독점 상태는 외부에서 관리한다
+        class InnerContext
+        {
+            Dictionary<string, bool> localVars; // 필요없을때 할당하지 않는 부분은 추후에, 지금은 컨텍스트를 만들면 무조건 생성한다            
+            
+            // 실제 오퍼레이션 
+            public bool IsInitialized(string name)
+            {
+                if (localVars.TryGetValue(name, out var bInitialized))
+                    return bInitialized;
+
+                if (parent != null)
+                    return parent.IsInitialized();
+
+                throw new UnreachableCodeException();
             }
 
             public void SetInitialized(string varName)
@@ -36,46 +63,18 @@ namespace Gum.IR0Translator
                     EnsureWrite();
 
                 context.SetInitialized(varName);
-            }
-
-            public Context MakeChild()
-            {
-                var shareThis = Share();
-                return new ChildContext(shareThis);
-            }
-
-            void EnsureWrite()
-            {
-                if (!bNeedCopyToWrite) return;
-
-                context = context.Copy();
-                bNeedCopyToWrite = false;
-            }
-
+            }            
+            
             public void AddLocalVar(string name, bool bInitialized)
             {
                 EnsureWrite();
                 context.AddLocalVar(name, bInitialized);
             }
-
-            // return ref
-            public CopyOnWriteContext GetParentContext()
-            {
-                return context.GetParentContext();
-            }
-
-            // 
-            public void Merge(CopyOnWriteContext other)
-            {
-                EnsureWrite();
-                
-                // 
-            }
         }
 
         struct CopyOnWriteDictionary
         {
-            Dictionary<string, bool>? localVars; // 필요없으면 할당하지 않는다.
+            ; // 필요없으면 할당하지 않는다.
             bool bNeedCopyToWrite;
 
             public void AddLocalVar(string name, bool initialized)
@@ -136,166 +135,5 @@ namespace Gum.IR0Translator
             }
         }
 
-        // Mutable, copy on demand
-        abstract class Context 
-        {
-            public abstract void AddLocalVar(string varName, bool bInitialized);
-            public abstract bool IsInitialized(string name);
-            public abstract void SetInitialized(string name);
-            public abstract bool NeedToWriteOnSetInitialized(string varName);
-            public abstract Context GetParentContext();
-
-            public abstract Context Copy();
-        }
-
-        class RootContext : Context
-        {
-            CopyOnWriteDictionary dictionary;
-
-            public RootContext() { }
-
-            RootContext(CopyOnWriteDictionary dictionary)
-            {
-                this.dictionary = dictionary;
-            }
-
-            public override void AddLocalVar(string varName, bool bInitialized)
-            {
-                dictionary.AddLocalVar(varName, bInitialized);
-            }
-
-            public override Context Copy()
-            {
-                return new RootContext(dictionary);
-            }
-
-            public override Context GetParentContext()
-            {
-                throw new UnreachableCodeException();
-            }
-
-            public override bool IsInitialized(string name) 
-            { 
-                var result = dictionary.IsInitialized(name);
-                if (result != null)
-                    return result.Value;
-
-                return false;
-            }
-
-            public override bool NeedToWriteOnSetInitialized(string varName)
-            {
-                return dictionary.Contains(varName);
-            }
-
-            public override void SetInitialized(string varName)
-            {
-                Debug.Assert(dictionary.Contains(varName));
-                dictionary.SetInitialized(varName);
-            }
-        }
-        
-        class ChildContext : Context
-        {
-            CopyOnWriteContext parent;
-            CopyOnWriteDictionary dictionary;
-            
-            // 빈 Dictionary로 시작한다
-            public ChildContext(CopyOnWriteContext parent)
-            {
-                this.parent = parent;
-                this.dictionary = new CopyOnWriteDictionary();
-            }
-
-            public ChildContext(CopyOnWriteContext parent, CopyOnWriteDictionary dictionary)
-            {
-                this.parent = parent;
-                this.dictionary = dictionary;
-            }
-
-            public override void AddLocalVar(string name, bool initialized)
-            {
-                dictionary.AddLocalVar(name, initialized);
-            }
-
-            public override bool IsInitialized(string name)
-            {
-                var result = dictionary.IsInitialized(name);
-                if (result != null)
-                    return result.Value;
-                
-                return parent.IsInitialized(name);
-            }
-
-            public override bool NeedToWriteOnSetInitialized(string varName)
-            {
-                return dictionary.Contains(varName);
-            }
-
-            public override void SetInitialized(string name)
-            {
-                if (dictionary.Contains(name))
-                {
-                    dictionary.SetInitialized(name);
-                    return;
-                }
-
-                parent.SetInitialized(name);
-            }
-
-            public override Context Copy()
-            {
-                return new ChildContext(parent.Share(), dictionary.Share());
-            }
-
-            // 두개 
-            public void Merge(Context x, Context y)
-            {
-                // fast-forward, no modified
-                if (this == x && this == y)
-                {
-                    return;
-                }
-                else if (this != x && this == y)
-                {
-                    parent = x.parent;
-                    localVars = x.localVars;
-                    return;
-                }
-                else if (this == childX && this != childY)
-                {
-                    parent = y.parent;
-                    localVars = y.localVars;
-                    return;
-                }
-                else
-                {
-                    if (localVars != null)
-                    {
-                        Debug.Assert(x.localVars != null && y.localVars != null);
-
-                        foreach (var key in localVars.Keys)
-                            localVars[key] = x.localVars[key] && y.localVars[key];
-                    }
-                }
-
-                if (parent != null)
-                {
-                    parent.Merge(x, y);
-                }
-            }
-
-            public void Replace(Context child)
-            {
-                Debug.Assert(child.parent != null);
-                parent = child.parent.parent;
-                localVars = child.parent.localVars;
-            }
-
-            public override Context GetParentContext()
-            {
-                return parent.GetContext();
-            }
-        }
     }
 }
