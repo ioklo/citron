@@ -8,7 +8,7 @@ namespace Gum.IR0Translator
 {
     partial struct UninitializedVariableAnalyzer
     {   
-        partial struct Context
+        partial class Context
         {
             Context? parent;       // 최상위라면 null
             InnerContext innerContext;
@@ -106,7 +106,7 @@ namespace Gum.IR0Translator
             }
         }
 
-        partial struct Context
+        partial class Context
         {
             // 컨텍스트의 공유 상태, 독점 상태는 외부에서 관리한다
             class InnerContext
