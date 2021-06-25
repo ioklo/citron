@@ -10,15 +10,15 @@ namespace Gum.IR0Translator
     partial struct UninitializedVariableAnalyzer
     {
         IErrorCollector errorCollector;
-        CopyOnWriteContext context;
+        Context context;
 
         public static void Analyze(R.Script script, IErrorCollector errorCollector)
         {
-            var analyzer = new UninitializedVariableAnalyzer(errorCollector, new CopyOnWriteContext(new RootContext()));
+            var analyzer = new UninitializedVariableAnalyzer(errorCollector, new Context(null));
             analyzer.AnalyzeStmts(script.TopLevelStmts);
         }
 
-        UninitializedVariableAnalyzer(IErrorCollector errorCollector, CopyOnWriteContext context)
+        UninitializedVariableAnalyzer(IErrorCollector errorCollector, Context context)
         {
             this.errorCollector = errorCollector;
             this.context = context;
@@ -26,7 +26,13 @@ namespace Gum.IR0Translator
 
         UninitializedVariableAnalyzer NewAnalyzer()
         {
-            var childContext = new CopyOnWriteContext(context.MakeChild());
+            var newContext = context.Clone();
+            return new UninitializedVariableAnalyzer(errorCollector, newContext);
+        }
+
+        UninitializedVariableAnalyzer NewChildAnalyzer()
+        {            
+            var childContext = new Context(context);
             return new UninitializedVariableAnalyzer(errorCollector, childContext);
         }
 
@@ -105,12 +111,12 @@ namespace Gum.IR0Translator
 
         void AnalyzeIfStmt(R.IfStmt ifStmt)
         {
-            var newAnalyzerBody = NewAnalyzer();
+            var newAnalyzerBody = NewChildAnalyzer();
             newAnalyzerBody.AnalyzeStmt(ifStmt.Body);
 
             if (ifStmt.ElseBody != null)
             {
-                var newAnalyzerElse = NewAnalyzer();
+                var newAnalyzerElse = NewChildAnalyzer();
                 newAnalyzerElse.AnalyzeStmt(ifStmt.ElseBody);
 
                 // 두개의 child가 있으면
@@ -154,7 +160,7 @@ namespace Gum.IR0Translator
 
         void AnalyzeBlockStmt(R.BlockStmt blockStmt)
         {
-            var newAnalyzer = NewAnalyzer();
+            var newAnalyzer = NewChildAnalyzer();
 
             foreach(var stmt in blockStmt.Stmts)
                 newAnalyzer.AnalyzeStmt(stmt);

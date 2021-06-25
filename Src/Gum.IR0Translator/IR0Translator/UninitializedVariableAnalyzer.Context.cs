@@ -6,16 +6,43 @@ namespace Gum.IR0Translator
 {
     partial struct UninitializedVariableAnalyzer
     {   
-        class Context
+        partial class Context
         {
             Context? parent;       // 최상위라면 null
-
             InnerContext context;
             bool bNeedCopyToWrite; // 이 컨텍스트를 수정할 때, 복사해야하는지 여부
 
-            public bool IsInitialized(string name)
+            public Context(Context? parent)
             {
-                return context.IsInitialized(name);
+                this.parent = parent;
+                this.context = new InnerContext();
+                this.bNeedCopyToWrite = false;
+            }
+
+            Context(Context? parent, InnerContext innerContext, bool bNeedCopyToWrite)
+            {
+                this.parent = parent;
+                this.context = innerContext;
+                this.bNeedCopyToWrite = bNeedCopyToWrite;
+            }
+
+            void EnsureWrite()
+            {
+                if (!bNeedCopyToWrite) return;
+
+                context = new InnerContext(context); // 복사
+                bNeedCopyToWrite = false;
+            }
+
+            public bool? IsInitialized(string name)
+            {
+                if (context.Contains(name))
+                    return context.IsInitialized(name);
+
+                if (parent != null)
+                    return parent.IsInitialized(name);
+
+                return null;
             }
 
             // Write operation
@@ -38,102 +65,55 @@ namespace Gum.IR0Translator
                 EnsureWrite();
                 context.AddLocalVar(name, bInitialized);
             }
-        }
 
-        // 컨텍스트의 공유 상태, 독점 상태는 외부에서 관리한다
-        class InnerContext
-        {
-            Dictionary<string, bool> localVars; // 필요없을때 할당하지 않는 부분은 추후에, 지금은 컨텍스트를 만들면 무조건 생성한다            
-            
-            // 실제 오퍼레이션 
-            public bool IsInitialized(string name)
+            // 새로운 클론을 만들면
+            public Context Clone()
             {
-                if (localVars.TryGetValue(name, out var bInitialized))
-                    return bInitialized;
+                var newContext = new Context(parent, context, true);
+                this.bNeedCopyToWrite = true; // 둘이 context를 공유하기 때문에, this도 변경하려면 복사 필요
 
-                if (parent != null)
-                    return parent.IsInitialized();
-
-                throw new UnreachableCodeException();
-            }
-
-            public void SetInitialized(string varName)
-            {   
-                if (context.NeedToWriteOnSetInitialized(varName))
-                    EnsureWrite();
-
-                context.SetInitialized(varName);
-            }            
-            
-            public void AddLocalVar(string name, bool bInitialized)
-            {
-                EnsureWrite();
-                context.AddLocalVar(name, bInitialized);
+                return newContext;
             }
         }
 
-        struct CopyOnWriteDictionary
+        partial class Context
         {
-            ; // 필요없으면 할당하지 않는다.
-            bool bNeedCopyToWrite;
-
-            public void AddLocalVar(string name, bool initialized)
+            // 컨텍스트의 공유 상태, 독점 상태는 외부에서 관리한다
+            class InnerContext
             {
-                EnsureWrite();
-                Debug.Assert(localVars != null);
+                Dictionary<string, bool> localVars; // 필요없을때 할당하지 않는 부분은 추후에, 지금은 컨텍스트를 만들면 무조건 생성한다            
 
-                localVars.Add(name, initialized);
-            }
-
-            public CopyOnWriteDictionary Share()
-            {
-                var result = new CopyOnWriteDictionary();
-                result.localVars = localVars;
-                result.bNeedCopyToWrite = true;
-
-                this.bNeedCopyToWrite = true; // 지금 부터 나도 바뀌면 복사를 떠야 한다
-                return result;
-            }
-
-            public bool? IsInitialized(string name)
-            {
-                if (localVars == null) return null;
-
-                if (localVars.TryGetValue(name, out var initialized))
-                    return initialized;
-
-                return null;
-            }
-
-            void EnsureWrite()
-            {
-                if (!bNeedCopyToWrite) return;
-
-                if (localVars != null)
-                    localVars = new Dictionary<string, bool>(localVars);
-                else
-                    localVars = new Dictionary<string, bool>();
-
-                bNeedCopyToWrite = false;
-            }
-
-            public bool Contains(string name)
-            {
-                if (localVars == null) return false;
-                return localVars.ContainsKey(name);
-            }            
-
-            public void SetInitialized(string varName)
-            {
-                Debug.Assert(localVars != null);
-
-                if (localVars[varName] == false)
+                public InnerContext(InnerContext other)
                 {
-                    EnsureWrite();
+                    localVars = new Dictionary<string, bool>(other.localVars);
+                }
+
+                public InnerContext()
+                {
+                    localVars = new Dictionary<string, bool>();
+                }
+
+                // 실제 오퍼레이션 
+                public bool IsInitialized(string name)
+                {
+                    return localVars[name];
+                }
+
+                public bool Contains(string varName)
+                {
+                    return localVars.ContainsKey(varName);
+                }
+
+                public void SetInitialized(string varName)
+                {
                     localVars[varName] = true;
+                }
+
+                public void AddLocalVar(string varName, bool bInitialized)
+                {
+                    localVars[varName] = bInitialized;
                 }
             }
         }
-
     }
 }
