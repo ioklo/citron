@@ -24,13 +24,7 @@ namespace Gum.IR0Translator
             this.context = context;
         }
 
-        UninitializedVariableAnalyzer NewAnalyzer()
-        {
-            var newContext = context.Clone();
-            return new UninitializedVariableAnalyzer(errorCollector, newContext);
-        }
-
-        UninitializedVariableAnalyzer NewChildAnalyzer()
+        UninitializedVariableAnalyzer NewChildAnalyzer(Context context)
         {            
             var childContext = new Context(context);
             return new UninitializedVariableAnalyzer(errorCollector, childContext);
@@ -57,7 +51,7 @@ namespace Gum.IR0Translator
                 case R.BreakStmt breakStmt: AnalyzeBreakStmt(breakStmt); break;
                 case R.ReturnStmt returnStmt: AnalyzeReturnStmt(returnStmt); break;
                 case R.BlockStmt blockStmt: AnalyzeBlockStmt(blockStmt); break;
-                case R.BlankStmt blankStmt: AnalyzeBlankStmt(blankStmt); break;
+                case R.BlankStmt: break;
                 case R.ExpStmt expStmt: AnalyzeExpStmt(expStmt); break;
                 case R.TaskStmt taskStmt: AnalyzeTaskStmt(taskStmt); break;
                 case R.AwaitStmt awaitStmt: AnalyzeAwaitStmt(awaitStmt); break;
@@ -111,20 +105,23 @@ namespace Gum.IR0Translator
 
         void AnalyzeIfStmt(R.IfStmt ifStmt)
         {
-            var newAnalyzerBody = NewChildAnalyzer();
-            newAnalyzerBody.AnalyzeStmt(ifStmt.Body);
-
-            if (ifStmt.ElseBody != null)
+            if (ifStmt.ElseBody == null)
             {
-                var newAnalyzerElse = NewChildAnalyzer();
-                newAnalyzerElse.AnalyzeStmt(ifStmt.ElseBody);
-
-                // 두개의 child가 있으면
-                context.Merge(newAnalyzerBody.context.GetParentContext(), newAnalyzerElse.context.GetParentContext());
+                var newAnalyzerBody = NewChildAnalyzer(context);
+                newAnalyzerBody.AnalyzeStmt(ifStmt.Body);
             }
             else
             {
-                context.Replace(newAnalyzerBody.context);
+                var clonedContext = context.Clone();  // 복제된 context를 하나 더 생성한다, 여기서 이뤄지는 변경은 context 및 context의 부모에 영향을 미치지 않는다
+
+                var newAnalyzerBody = NewChildAnalyzer(context); // context를 parent로 참조하는 자식 Analyzer를 만든다. 여기에서 상위 스코프 변수를 건드리면 context가 직접 바뀐다.
+                var newAnalyzerElse = NewChildAnalyzer(clonedContext); // clonedContext를 parent로 참조하는 자식 Analyzer를 만든다. 여기에서 상위 스코프 변수를 건드리면 clonedContext가 직접 바뀐다.
+
+                newAnalyzerBody.AnalyzeStmt(ifStmt.Body);
+                newAnalyzerElse.AnalyzeStmt(ifStmt.ElseBody);
+
+                // context와 clonedContext가 다르게 변경될 수 있기 때문에, 둘을 합친다
+                context.Merge(clonedContext);
             }
         }
 
@@ -160,17 +157,12 @@ namespace Gum.IR0Translator
 
         void AnalyzeBlockStmt(R.BlockStmt blockStmt)
         {
-            var newAnalyzer = NewChildAnalyzer();
+            var newAnalyzer = NewChildAnalyzer(context);
 
             foreach(var stmt in blockStmt.Stmts)
                 newAnalyzer.AnalyzeStmt(stmt);
 
             // 새 localVars로 덮어 씌운다
-        }
-
-        void AnalyzeBlankStmt(R.BlankStmt blankStmt)
-        {
-            throw new NotImplementedException();
         }
 
         void AnalyzeExpStmt(R.ExpStmt expStmt)
@@ -257,12 +249,12 @@ namespace Gum.IR0Translator
 
         void AnalyzeIntLiteralExp(R.IntLiteralExp intExp)
         {
-            throw new NotImplementedException();
+            // do nothing
         }
 
         void AnalyzeBoolLiteralExp(R.BoolLiteralExp boolExp)
         {
-            throw new NotImplementedException();
+            // do nothing
         }
 
         void AnalyzeCallInternalUnaryOperatorExp(R.CallInternalUnaryOperatorExp ciuoExp)
@@ -286,7 +278,7 @@ namespace Gum.IR0Translator
 
             var localVarName = AnalyzeLoc(assignExp.Dest);
             if (localVarName != null)
-                CheckInitialized(localVarName, assignExp.Dest);
+                context.SetInitialized(localVarName);
         }
 
         void AnalyzeCallFuncExp(R.CallFuncExp callFuncExp)
@@ -426,7 +418,10 @@ namespace Gum.IR0Translator
 
         void CheckInitialized(string localVarName, R.INode nodeForErrorReport)
         {
-            if (context.IsInitialized(localVarName))
+            var initialized = context.IsInitialized(localVarName);
+            Debug.Assert(initialized != null);
+
+            if (!initialized.Value)
                 errorCollector.Add(new AnalyzeError(AnalyzeErrorCode.R0101_UninitializedVaraibleAnalyzer_UseUninitializedValue, null, ""));
         }
     }

@@ -1736,5 +1736,42 @@ namespace Gum.IR0Translator.Test
 
             var rscript = Translate(syntaxScript);
         }
+
+        [Fact]
+        public void UninitializedVariableAnalysis_UseConditionalInitializedLocalVarDecl_ReturnError()
+        {
+            // {
+            //     int a;
+            //     {
+            //         int b;
+            //         if (true) { a = 0; b = 0; }
+            //         else { b = 0; }
+            //         @$b // use b, ok
+            //     }
+            //     @{$a} // use a, error
+            // }            
+
+            S.Exp e;
+            var syntaxScript = SScript(new S.StmtScriptElement(SBlock(
+                SVarDeclStmt(IntTypeExp, "a", null),
+                SBlock(
+                    SVarDeclStmt(IntTypeExp, "b", null),
+                    new S.IfStmt(
+                        SBool(true),                         
+                        SBlock(
+                            new S.ExpStmt(new S.BinaryOpExp(S.BinaryOpKind.Assign, SId("a"), SInt(0))),
+                            new S.ExpStmt(new S.BinaryOpExp(S.BinaryOpKind.Assign, SId("b"), SInt(0)))
+                        ),
+                        new S.ExpStmt(new S.BinaryOpExp(S.BinaryOpKind.Assign, SId("b"), SInt(0)))
+                    ),
+                    SCommand(SString(new S.ExpStringExpElement(SId("b"))))
+                ),
+                SCommand(SString(new S.ExpStringExpElement(e = SId("a"))))
+            )));
+
+            var errors = TranslateWithErrors(syntaxScript);
+
+            VerifyError(errors, R0101_UninitializedVaraibleAnalyzer_UseUninitializedValue, null);            
+        }
     }
 }

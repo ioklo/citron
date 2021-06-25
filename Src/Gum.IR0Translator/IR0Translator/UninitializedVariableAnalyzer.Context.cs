@@ -1,28 +1,30 @@
 ﻿using Gum.Infra;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace Gum.IR0Translator
 {
     partial struct UninitializedVariableAnalyzer
     {   
-        partial class Context
+        partial struct Context
         {
             Context? parent;       // 최상위라면 null
-            InnerContext context;
+            InnerContext innerContext;
             bool bNeedCopyToWrite; // 이 컨텍스트를 수정할 때, 복사해야하는지 여부
 
             public Context(Context? parent)
             {
                 this.parent = parent;
-                this.context = new InnerContext();
+                this.innerContext = new InnerContext();
                 this.bNeedCopyToWrite = false;
             }
 
             Context(Context? parent, InnerContext innerContext, bool bNeedCopyToWrite)
             {
                 this.parent = parent;
-                this.context = innerContext;
+                this.innerContext = innerContext;
                 this.bNeedCopyToWrite = bNeedCopyToWrite;
             }
 
@@ -30,14 +32,14 @@ namespace Gum.IR0Translator
             {
                 if (!bNeedCopyToWrite) return;
 
-                context = new InnerContext(context); // 복사
+                innerContext = new InnerContext(innerContext); // 복사
                 bNeedCopyToWrite = false;
             }
 
             public bool? IsInitialized(string name)
             {
-                if (context.Contains(name))
-                    return context.IsInitialized(name);
+                if (innerContext.Contains(name))
+                    return innerContext.IsInitialized(name);
 
                 if (parent != null)
                     return parent.IsInitialized(name);
@@ -49,10 +51,10 @@ namespace Gum.IR0Translator
             public void SetInitialized(string name) // recursively
             {
                 // 자기 자신에게만 있는지 확인
-                if (context.Contains(name))
+                if (innerContext.Contains(name))
                 {
                     EnsureWrite();
-                    context.SetInitialized(name);
+                    innerContext.SetInitialized(name, true);
                     return;
                 }
 
@@ -63,20 +65,48 @@ namespace Gum.IR0Translator
             public void AddLocalVar(string name, bool bInitialized)
             {
                 EnsureWrite();
-                context.AddLocalVar(name, bInitialized);
+                innerContext.AddLocalVar(name, bInitialized);
             }
 
             // 새로운 클론을 만들면
             public Context Clone()
             {
-                var newContext = new Context(parent, context, true);
-                this.bNeedCopyToWrite = true; // 둘이 context를 공유하기 때문에, this도 변경하려면 복사 필요
+                var clonedParent = parent == null ? null : parent.Clone();
+
+                var newContext = new Context(clonedParent, innerContext, true);
+                this.bNeedCopyToWrite = true; // 둘이 innerContext를 공유하기 때문에, this도 변경하려면 복사 필요
 
                 return newContext;
             }
+
+            public void Merge(Context other)
+            {
+                // fast-forward, copy가 일어났을 경우만
+                if (innerContext != other.innerContext)
+                {
+                    foreach (var key in innerContext.GetKeys())
+                    {
+                        bool x = innerContext.IsInitialized(key);
+                        bool y = other.innerContext.IsInitialized(key);
+                        bool merged = x && y;
+
+                        if (x != merged)
+                        {
+                            EnsureWrite();
+                            innerContext.SetInitialized(key, merged);
+                        }
+                    }
+                }
+
+                if (parent != null)
+                {
+                    Debug.Assert(other.parent != null);
+                    parent.Merge(other.parent);
+                }
+            }
         }
 
-        partial class Context
+        partial struct Context
         {
             // 컨텍스트의 공유 상태, 독점 상태는 외부에서 관리한다
             class InnerContext
@@ -104,14 +134,20 @@ namespace Gum.IR0Translator
                     return localVars.ContainsKey(varName);
                 }
 
-                public void SetInitialized(string varName)
+                public void SetInitialized(string varName, bool bInitialized)
                 {
-                    localVars[varName] = true;
+                    localVars[varName] = bInitialized;
                 }
 
                 public void AddLocalVar(string varName, bool bInitialized)
                 {
                     localVars[varName] = bInitialized;
+                }
+
+                // foreach 수행중에 localVars가 바뀌어도 상관없도록 list를 만들어서 리턴한다
+                public IEnumerable<string> GetKeys()
+                {
+                    return localVars.Keys.ToList();
                 }
             }
         }
