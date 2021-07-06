@@ -238,5 +238,16 @@ for (f(); g; h + g) ;
 
             Assert.Equal(expected, stmtResult.Elem);
         }
+
+        [Fact]
+        public async Task TestParseDirectiveStmtAsync()
+        {
+            var (parser, context) = await PrepareAsync("`notnull(a);");
+            var stmtResult = await parser.ParseStmtAsync(context);
+
+            var expected = new DirectiveStmt("notnull", Arr<Exp>(SimpleSId("a")));
+
+            Assert.Equal(expected, stmtResult.Elem);
+        }
     }
 }

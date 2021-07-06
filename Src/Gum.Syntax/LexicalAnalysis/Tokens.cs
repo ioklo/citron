@@ -56,7 +56,7 @@ namespace Gum.LexicalAnalysis
     public class EnumToken : Token { public static readonly EnumToken Instance = new EnumToken(); private EnumToken() { } }
     public class StructToken : Token { public static readonly StructToken Instance = new StructToken(); private StructToken() { } }
     public class IsToken : Token { public static readonly IsToken Instance = new IsToken(); private IsToken() { } }
-    public class RefToken : Token { public static readonly RefToken Instance = new RefToken(); private RefToken() { } }
+    public class RefToken : Token { public static readonly RefToken Instance = new RefToken(); private RefToken() { } }    
 
     public class PublicToken : Token { public static readonly PublicToken Instance = new PublicToken(); private PublicToken() { } }
     public class ProtectedToken : Token { public static readonly ProtectedToken Instance = new ProtectedToken(); private ProtectedToken() { } }
@@ -65,8 +65,7 @@ namespace Gum.LexicalAnalysis
     public class NewToken : Token { public static readonly NewToken Instance = new NewToken(); private NewToken() { } }
 
     public class ColonToken : Token { public static readonly ColonToken Instance = new ColonToken(); private ColonToken() { } }
-
-
+    public class BacktickToken : Token { public static readonly BacktickToken Instance = new BacktickToken(); private BacktickToken() { } }
 
     public class WhitespaceToken : Token { public static readonly WhitespaceToken Instance = new WhitespaceToken(); private WhitespaceToken() { } } // \s
     public class NewLineToken : Token { public static readonly NewLineToken Instance = new NewLineToken(); private NewLineToken() { } }     // \r \n \r\n

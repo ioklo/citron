@@ -150,7 +150,8 @@ namespace Gum
             ("%", () => PercentToken.Instance),
             ("!", () => ExclToken.Instance),
             (".", () => DotToken.Instance),
-            (":", () => ColonToken.Instance)
+            (":", () => ColonToken.Instance),
+            ("`", () => BacktickToken.Instance)
         };
 
         public async ValueTask<LexResult> LexNormalModeAsync(LexerContext context, bool bSkipNewLine)

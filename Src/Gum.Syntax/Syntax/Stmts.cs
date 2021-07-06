@@ -58,4 +58,7 @@ namespace Gum.Syntax
     public record AsyncStmt(Stmt Body) : Stmt;
     public record ForeachStmt(bool IsRef, TypeExp Type, string VarName, Exp Iterator, Stmt Body) : Stmt;
     public record YieldStmt(Exp Value) : Stmt;    
+
+    // Stmt에 사용되는 Directive랑 Decl-Level에서 사용되는 Directive가 다르므로 구분해도 될 것 같다
+    public record DirectiveStmt(string name, ImmutableArray<Exp> args) : Stmt;
 }

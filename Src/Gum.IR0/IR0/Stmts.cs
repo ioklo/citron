@@ -67,4 +67,10 @@ namespace Gum.IR0
     public record AsyncStmt(Path.Nested CapturedStatementDecl) : Stmt;    
     public record ForeachStmt(Path ElemType, string ElemName, Loc Iterator, Stmt Body) : Stmt;    
     public record YieldStmt(Exp Value) : Stmt;
+
+    public abstract record DirectiveStmt() : Stmt
+    {
+        // init은 지원하지 않기로,
+        // public record Init(ImmutableArray<Loc> Locs) : DirectiveStmt;
+    }
 }

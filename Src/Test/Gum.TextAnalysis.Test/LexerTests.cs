@@ -51,7 +51,7 @@ namespace Gum.TextAnalysis.Test
                 "if else for continue break exec task params return async await foreach in yield seq enum struct is ref public protected private static " + 
                 "new " +
                 "++ -- <= >= => == != " +
-                "@ < > ; , = { } ( ) [ ] + - * / % ! . :");
+                "@ < > ; , = { } ( ) [ ] + - * / % ! . : `");
 
             var tokens = await ProcessNormalAsync(lexer, context);
             var expectedTokens = new Token[]
@@ -113,6 +113,7 @@ namespace Gum.TextAnalysis.Test
                 DotToken.Instance,
 
                 ColonToken.Instance,
+                BacktickToken.Instance,
             };
 
             Assert.Equal(expectedTokens, tokens, TokenEqualityComparer.Instance);

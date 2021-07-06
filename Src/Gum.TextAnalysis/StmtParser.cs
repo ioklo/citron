@@ -398,7 +398,7 @@ namespace Gum
                 return ParseResult<ForeachStmt>.Invalid;
 
             return new ParseResult<ForeachStmt>(new ForeachStmt(bRef, typeExp!, varNameToken!.Value, obj!, body!), context);
-        }
+        }        
 
         // 
         internal async ValueTask<ParseResult<CommandStmt>> ParseCommandStmtAsync(ParserContext context)
@@ -448,52 +448,86 @@ namespace Gum
             }
         }
 
+        async ValueTask<ParseResult<DirectiveStmt>> ParseDirectiveStmtAsync(ParserContext context)
+        {
+            // ` <id> ( exp... );
+            if (!Accept<BacktickToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
+                return ParseResult<DirectiveStmt>.Invalid;
+
+            if (!Accept<IdentifierToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context, out var idToken))
+                return ParseResult<DirectiveStmt>.Invalid;
+
+            if (!Accept<LParenToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
+                return ParseResult<DirectiveStmt>.Invalid;
+
+            var argsBuilder = ImmutableArray.CreateBuilder<Exp>();
+            while(!Accept<RParenToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
+            {
+                if (0 < argsBuilder.Count)
+                    if (!Accept<CommaToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
+                        return ParseResult<DirectiveStmt>.Invalid;
+
+                if (!Parse(await parser.ParseExpAsync(context), ref context, out var arg))
+                    return ParseResult<DirectiveStmt>.Invalid;
+
+                argsBuilder.Add(arg);
+            }
+
+            if (!Accept<SemiColonToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
+                return ParseResult<DirectiveStmt>.Invalid;
+
+            return new ParseResult<DirectiveStmt>(new DirectiveStmt(idToken.Value, argsBuilder.ToImmutable()), context);
+        }
+
         public async ValueTask<ParseResult<Stmt>> ParseStmtAsync(ParserContext context)
         {
+            if (Parse(await ParseDirectiveStmtAsync(context), ref context, out var directiveStmt))
+                return new ParseResult<Stmt>(directiveStmt, context);
+
             if (Parse(await ParseBlankStmtAsync(context), ref context, out var blankStmt))
-                return new ParseResult<Stmt>(blankStmt!, context);
+                return new ParseResult<Stmt>(blankStmt,context);
 
             if (Parse(await ParseBlockStmtAsync(context), ref context, out var blockStmt))
-                return new ParseResult<Stmt>(blockStmt!, context);
+                return new ParseResult<Stmt>(blockStmt,context);
 
             if (Parse(await ParseContinueStmtAsync(context), ref context, out var continueStmt))
-                return new ParseResult<Stmt>(continueStmt!, context);
+                return new ParseResult<Stmt>(continueStmt,context);
 
             if (Parse(await ParseBreakStmtAsync(context), ref context, out var breakStmt))
-                return new ParseResult<Stmt>(breakStmt!, context);
+                return new ParseResult<Stmt>(breakStmt,context);
 
             if (Parse(await ParseReturnStmtAsync(context), ref context, out var returnStmt))
-                return new ParseResult<Stmt>(returnStmt!, context);
+                return new ParseResult<Stmt>(returnStmt,context);
 
             if (Parse(await ParseVarDeclStmtAsync(context), ref context, out var varDeclStmt))
-                return new ParseResult<Stmt>(varDeclStmt!, context);
+                return new ParseResult<Stmt>(varDeclStmt,context);
 
             if (Parse(await ParseIfStmtAsync(context), ref context, out var ifStmt))
-                return new ParseResult<Stmt>(ifStmt!, context);
+                return new ParseResult<Stmt>(ifStmt,context);
 
             if (Parse(await ParseForStmtAsync(context), ref context, out var forStmt))
-                return new ParseResult<Stmt>(forStmt!, context);
+                return new ParseResult<Stmt>(forStmt,context);
 
             if (Parse(await ParseExpStmtAsync(context), ref context, out var expStmt))
-                return new ParseResult<Stmt>(expStmt!, context);
+                return new ParseResult<Stmt>(expStmt,context);
 
             if (Parse(await ParseTaskStmtAsync(context), ref context, out var taskStmt))
-                return new ParseResult<Stmt>(taskStmt!, context);
+                return new ParseResult<Stmt>(taskStmt,context);
 
             if (Parse(await ParseAwaitStmtAsync(context), ref context, out var awaitStmt))
-                return new ParseResult<Stmt>(awaitStmt!, context);
+                return new ParseResult<Stmt>(awaitStmt,context);
 
             if (Parse(await ParseAsyncStmtAsync(context), ref context, out var asyncStmt))
-                return new ParseResult<Stmt>(asyncStmt!, context);
+                return new ParseResult<Stmt>(asyncStmt,context);
 
             if (Parse(await ParseForeachStmtAsync(context), ref context, out var foreachStmt))
-                return new ParseResult<Stmt>(foreachStmt!, context);
+                return new ParseResult<Stmt>(foreachStmt,context);
 
             if (Parse(await ParseYieldStmtAsync(context), ref context, out var yieldStmt))
-                return new ParseResult<Stmt>(yieldStmt!, context);
+                return new ParseResult<Stmt>(yieldStmt,context);
 
             if (Parse(await ParseCommandStmtAsync(context), ref context, out var cmdStmt))
-                return new ParseResult<Stmt>(cmdStmt!, context);
+                return new ParseResult<Stmt>(cmdStmt,context);
 
             throw new NotImplementedException();
         }
