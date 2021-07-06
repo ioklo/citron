@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 using M = Gum.CompileTime;
+using R = Gum.IR0;
 
 using static Gum.Infra.Misc;
 
@@ -155,7 +156,7 @@ namespace Gum.IR0Translator.Test
             Assert.False(funcValue.IsStatic);
             Assert.False(funcValue.IsSequence);            
 
-            Assert.Equal(Arr(factory.Bool), funcValue.GetParamTypes());
+            Assert.Equal(Arr(new ParamInfo(R.ParamKind.Normal, factory.Bool)), funcValue.GetParamInfos());
             Assert.Equal(factory.Int, funcValue.GetRetType());
         }
     }

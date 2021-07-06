@@ -31,6 +31,9 @@ namespace Gum.Collections
 
         System.Collections.Immutable.ImmutableDictionary<TKey, TValue>? dict;
 
+        public int Count => dict == null ? 0 : dict.Count;
+        public IEnumerable<TKey> Keys => dict == null ? Enumerable.Empty<TKey>() : dict.Keys;
+
         public ImmutableDictionary(System.Collections.Immutable.ImmutableDictionary<TKey, TValue> dict)
         {
             this.dict = dict;

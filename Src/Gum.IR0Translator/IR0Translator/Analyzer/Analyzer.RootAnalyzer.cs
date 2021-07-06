@@ -7,6 +7,7 @@ using static Gum.IR0Translator.AnalyzeErrorCode;
 using Gum.Collections;
 using System;
 using System.Diagnostics;
+using Gum.Infra;
 
 namespace Gum.IR0Translator
 {
@@ -69,7 +70,7 @@ namespace Gum.IR0Translator
                 return rootContext.MakeScript();
             }
 
-            public R.PrivateGlobalVarDeclStmt AnalyzeGlobalVarDecl(S.VarDecl varDecl)
+            public R.GlobalVarDeclStmt AnalyzeGlobalVarDecl(S.VarDecl varDecl)
             {
                 var varDeclAnalyzer = new VarDeclElemAnalyzer(globalContext, rootContext, localContext);
                 var declType = globalContext.GetTypeValueByTypeExp(varDecl.Type);
@@ -80,40 +81,41 @@ namespace Gum.IR0Translator
                     if (globalContext.DoesInternalGlobalVarNameExist(elem.VarName))
                         globalContext.AddFatalError(A0104_VarDecl_GlobalVariableNameShouldBeUnique, elem);
 
-                    var result = varDeclAnalyzer.AnalyzeVarDeclElement(elem, declType);
+                    var result = varDeclAnalyzer.AnalyzeVarDeclElement(elem, varDecl.IsRef, declType);
 
-                    globalContext.AddInternalGlobalVarInfo(elem.VarName, result.TypeValue);
+                    globalContext.AddInternalGlobalVarInfo(result.Elem is R.VarDeclElement.Ref, result.TypeValue, elem.VarName);
 
                     elems.Add(result.Elem);
                 }
 
-                return new R.PrivateGlobalVarDeclStmt(elems.ToImmutableArray());
+                return new R.GlobalVarDeclStmt(elems.ToImmutableArray());
             }
 
             (R.ParamHash ParamHash, ImmutableArray<R.Param> Params) MakeParamHashAndParamInfos(S.FuncDecl funcDecl)
             {
-                var paramTypesBuilder = ImmutableArray.CreateBuilder<R.Path>(funcDecl.Parameters.Length);
+                var paramWithoutNames = ImmutableArray.CreateBuilder<R.ParamHashEntry>(funcDecl.Parameters.Length);
                 var parametersBuilder = ImmutableArray.CreateBuilder<R.Param>(funcDecl.Parameters.Length);
 
                 foreach (var param in funcDecl.Parameters)
                 {
                     var typeValue = globalContext.GetTypeValueByTypeExp(param.Type);
 
-                    var type = typeValue.GetRPath();
-                    paramTypesBuilder.Add(type);
+                    var type = typeValue.GetRPath();                    
 
                     var kind = param.Kind switch
                     {
                         S.FuncParamKind.Normal => R.ParamKind.Normal,
                         S.FuncParamKind.Params => R.ParamKind.Params,
                         S.FuncParamKind.Ref => R.ParamKind.Ref,
+                        _ => throw new UnreachableCodeException()
                     };
 
+                    paramWithoutNames.Add(new R.ParamHashEntry(kind, type));
                     var parameter = new R.Param(kind, type, param.Name);
                     parametersBuilder.Add(parameter);
                 }
 
-                var paramHash = new R.ParamHash(funcDecl.TypeParams.Length, paramTypesBuilder.MoveToImmutable());
+                var paramHash = new R.ParamHash(funcDecl.TypeParams.Length, paramWithoutNames.MoveToImmutable());
                 var parameters = parametersBuilder.MoveToImmutable();
 
                 return (paramHash, parameters);
@@ -146,7 +148,7 @@ namespace Gum.IR0Translator
                 foreach (var param in funcDecl.Parameters)
                 {
                     var paramTypeValue = globalContext.GetTypeValueByTypeExp(param.Type);
-                    localContext.AddLocalVarInfo(param.Name, paramTypeValue);
+                    localContext.AddLocalVarInfo(param.Kind == S.FuncParamKind.Ref, paramTypeValue, param.Name);
                 }
 
                 // TODO: Body가 실제로 리턴을 제대로 하는지 확인해야 한다
@@ -174,7 +176,7 @@ namespace Gum.IR0Translator
                 foreach (var param in funcDecl.Parameters)
                 {
                     var paramTypeValue = globalContext.GetTypeValueByTypeExp(param.Type);
-                    localContext.AddLocalVarInfo(param.Name, paramTypeValue);
+                    localContext.AddLocalVarInfo(param.Kind == S.FuncParamKind.Ref, paramTypeValue, param.Name);
                 }
 
                 // TODO: Body가 실제로 리턴을 제대로 하는지 확인해야 한다

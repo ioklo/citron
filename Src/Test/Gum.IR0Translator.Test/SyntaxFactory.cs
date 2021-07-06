@@ -21,14 +21,14 @@ namespace Gum.IR0Translator.Test
         public static CommandStmt SCommand(params StringExp[] exps)
             => new CommandStmt(Arr(exps));
 
-        public static VarDecl SRefVarDecl(TypeExp typeExp, string name, Exp? initExp = null)
+        public static VarDecl SRefVarDecl(TypeExp typeExp, string name, Exp initExp)
         {
-            return new VarDecl(true, typeExp, Arr(new VarDeclElement(name, initExp)));
+            return new VarDecl(true, typeExp, Arr(new VarDeclElement(name, new VarDeclElemInitializer(true, initExp))));
         }
 
         public static VarDecl SVarDecl(TypeExp typeExp, string name, Exp? initExp = null)
         {
-            return new VarDecl(false, typeExp, Arr(new VarDeclElement(name, initExp)));
+            return new VarDecl(false, typeExp, Arr(new VarDeclElement(name, initExp == null ? null : new VarDeclElemInitializer(false, initExp))));
         }
 
         public static VarDeclStmt SVarDeclStmt(TypeExp typeExp, string name, Exp? initExp = null)
@@ -36,12 +36,10 @@ namespace Gum.IR0Translator.Test
             return new VarDeclStmt(SVarDecl(typeExp, name, initExp));
         }
 
-        public static VarDeclStmt SRefVarDeclStmt(TypeExp typeExp, string name, Exp? initExp = null)
+        public static VarDeclStmt SRefVarDeclStmt(TypeExp typeExp, string name, Exp initExp)
         {
             return new VarDeclStmt(SRefVarDecl(typeExp, name, initExp));
         }
-
-
 
         public static Script SScript(params Stmt[] stmts)
         {

@@ -10,143 +10,61 @@ using Gum.Infra;
 
 namespace Gum.IR0
 {   
-    public abstract class Stmt : IPure
+    public abstract record Stmt : IPure, INode
     {
         public void EnsurePure() { }
     }
 
-    // 명령어
-    [ImplementIEquatable]
-    public partial class CommandStmt : Stmt
-    {
-        public ImmutableArray<StringExp> Commands { get; }
-
-        public CommandStmt(ImmutableArray<StringExp> commands)
-        {
-            Debug.Assert(0 < commands.Length);
-            Commands = commands;
-        }        
-    }
+    public record CommandStmt(ImmutableArray<StringExp> Commands) : Stmt;
 
     // 글로벌 변수 선언
-    [AutoConstructor, ImplementIEquatable]
-    public partial class PrivateGlobalVarDeclStmt : Stmt
-    {
-        public ImmutableArray<VarDeclElement> Elems { get; }
-    }
+    public record GlobalVarDeclStmt(ImmutableArray<VarDeclElement> Elems) : Stmt;
+    public record LocalVarDeclStmt(LocalVarDecl VarDecl) : Stmt;
 
-    [AutoConstructor, ImplementIEquatable]
-    public partial class LocalVarDeclStmt : Stmt
-    {
-        public LocalVarDecl VarDecl { get; }
-    }
+    public record IfStmt(Exp Cond, Stmt Body, Stmt? ElseBody) : Stmt;
+    public record IfTestClassStmt(Loc Target, Path TestType, Name VarName, Stmt Body, Stmt? ElseBody) : Stmt;
+    public record IfTestEnumElemStmt(Loc Target, Path.Nested EnumElem, string? VarName, Stmt Body, Stmt? ElseBody) : Stmt;    
+    public record ForStmt(ForStmtInitializer? Initializer, Exp? CondExp, Exp? ContinueExp, Stmt Body) : Stmt;
 
-    [AutoConstructor, ImplementIEquatable]
-    public partial class IfStmt : Stmt
-    {
-        public Exp Cond { get; }
-        public Stmt Body { get; }
-        public Stmt? ElseBody { get; }
-    }
-
-    [AutoConstructor, ImplementIEquatable]
-    public partial class IfTestClassStmt : Stmt
-    {
-        public Loc Target { get; }
-        public Path TestType { get; } 
-        public Name VarName { get; }
-        public Stmt Body { get; }
-        public Stmt? ElseBody { get; }
-    }
-
-    [AutoConstructor, ImplementIEquatable]
-    public partial class IfTestEnumElemStmt : Stmt
-    {
-        public Loc Target { get; }      // e
-        public Path.Nested EnumElem { get; } // is E.F
-        public string? VarName { get; }  // f
-        public Stmt Body { get; }
-        public Stmt? ElseBody { get; }
-    }
-
-    [AutoConstructor, ImplementIEquatable]
-    public partial class ForStmt : Stmt
-    {
-        // InitExp Or VarDecl
-        public ForStmtInitializer? Initializer { get; }
-        public Exp? CondExp { get; }
-        public Exp? ContinueExp { get; }
-
-        public Stmt Body { get; }
-    }
-
-    public partial class ContinueStmt : Stmt
+    // singleton
+    public record ContinueStmt : Stmt
     {
         public static readonly ContinueStmt Instance = new ContinueStmt();
-        private ContinueStmt() { }
+        ContinueStmt() { }
     }
 
-    public partial class BreakStmt : Stmt
+    // singleton
+    public record BreakStmt : Stmt
     {
         public static readonly BreakStmt Instance = new BreakStmt();
-        private BreakStmt() { }
+        BreakStmt() { }
     }
 
-    [AutoConstructor, ImplementIEquatable]
-    public partial class ReturnStmt : Stmt
+    public abstract record ReturnInfo
     {
-        public Exp? Value { get; }
+        public record Ref(Loc Loc) : ReturnInfo;
+        public record Expression(Exp Exp) : ReturnInfo;
+        public record None : ReturnInfo
+        {
+            public static readonly None Instance = new None();
+            None() { }
+        }
     }
+    
+    public record ReturnStmt(ReturnInfo Info): Stmt;
+    public record BlockStmt(ImmutableArray<Stmt> Stmts) : Stmt;
 
-    [AutoConstructor, ImplementIEquatable]
-    public partial class BlockStmt : Stmt
-    {
-        public ImmutableArray<Stmt> Stmts { get; }
-    }
-
-    public partial class BlankStmt : Stmt
+    // singleton
+    public record BlankStmt : Stmt
     {
         public static readonly BlankStmt Instance = new BlankStmt();
-        private BlankStmt() { }
+        BlankStmt() { }
     }
-
-    [AutoConstructor, ImplementIEquatable]
-    public partial class ExpStmt : Stmt
-    {
-        public Exp Exp { get; }
-    }
-
-    [AutoConstructor, ImplementIEquatable]
-    public partial class TaskStmt : Stmt
-    {
-        public Path.Nested CapturedStatementDecl { get; }
-    }
-
-    [AutoConstructor, ImplementIEquatable]
-    public partial class AwaitStmt : Stmt
-    {
-        public Stmt Body { get; }
-    }
-
-    [AutoConstructor, ImplementIEquatable]
-    public partial class AsyncStmt : Stmt
-    {
-        public Path.Nested CapturedStatementDecl { get; }
-    }
-
-    [AutoConstructor, ImplementIEquatable]
-    public partial class ForeachStmt : Stmt
-    {
-        public Path ElemType { get; set; }
-        public string ElemName { get; }
-
-        public Loc Iterator { get; }        
-        public Stmt Body { get; }
-    }
-
-    [AutoConstructor, ImplementIEquatable]
-    public partial class YieldStmt : Stmt
-    {
-        public Exp Value { get; }
-    }
+    
+    public record ExpStmt(Exp Exp) : Stmt;
+    public record TaskStmt(Path.Nested CapturedStatementDecl) : Stmt;    
+    public record AwaitStmt(Stmt Body) : Stmt;
+    public record AsyncStmt(Path.Nested CapturedStatementDecl) : Stmt;    
+    public record ForeachStmt(Path ElemType, string ElemName, Loc Iterator, Stmt Body) : Stmt;    
+    public record YieldStmt(Exp Value) : Stmt;
 }

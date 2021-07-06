@@ -46,18 +46,28 @@ namespace Gum.IR0Translator
                 builder.Add(typeArgs[i]);
         }
         
-        // class X<T> { void Func<U>(T t, U u, int x); }
-        // X<int>.F<bool> => (int, bool, int)
-        public ImmutableArray<TypeValue> GetParamTypes()
+        // class X<T> { void Func<U>(T t, ref U u, int x); }
+        // X<int>.F<bool> => (int, ref bool, int)
+        public ImmutableArray<ParamInfo> GetParamInfos()
         {
             var typeEnv = MakeTypeEnv();
 
-            var builder = ImmutableArray.CreateBuilder<TypeValue>(funcInfo.Parameters.Length);
+            var builder = ImmutableArray.CreateBuilder<ParamInfo>(funcInfo.Parameters.Length);
             foreach (var paramInfo in funcInfo.Parameters)
             {   
                 var paramTypeValue = itemValueFactory.MakeTypeValueByMType(paramInfo.Type);
                 var appliedParamTypeValue = paramTypeValue.Apply_TypeValue(typeEnv);
-                builder.Add(appliedParamTypeValue);
+
+                var paramKind = paramInfo.Kind switch
+                {
+                    M.ParamKind.Normal => R.ParamKind.Normal,
+                    M.ParamKind.Ref => R.ParamKind.Ref,
+                    M.ParamKind.Params => R.ParamKind.Params,
+                    _ => throw new UnreachableCodeException()
+                };
+
+
+                builder.Add(new ParamInfo(paramKind, appliedParamTypeValue));
             }
 
             return builder.MoveToImmutable();
@@ -86,8 +96,8 @@ namespace Gum.IR0Translator
         public R.Path.Nested GetRPath_Nested()
         {
             var rname = RItemFactory.MakeName(funcInfo.Name);
-            var paramTypes = GetParamTypes();
-            var rparamTypes = ImmutableArray.CreateRange(paramTypes, paramType => paramType.GetRPath());
+            var paramInfos = GetParamInfos();
+            var rparamTypes = ImmutableArray.CreateRange(paramInfos, paramInfo => new R.ParamHashEntry(paramInfo.ParamKind, paramInfo.Type.GetRPath()));
 
             var paramHash = new R.ParamHash(typeArgs.Length, rparamTypes);
 

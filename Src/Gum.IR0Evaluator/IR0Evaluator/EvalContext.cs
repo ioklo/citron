@@ -98,12 +98,12 @@ namespace Gum.IR0Evaluator
 
             public Value GetGlobalValue(string name)
             {
-                return sharedContext.PrivateGlobalVars[name];
+                return sharedContext.GlobalVars[name];
             }
 
-            public void AddPrivateGlobalVar(string name, Value value)
+            public void AddGlobalVar(string name, Value value)
             {
-                sharedContext.PrivateGlobalVars.Add(name, value);
+                sharedContext.GlobalVars.Add(name, value);
             }
 
             public Value GetLocalValue(string name)

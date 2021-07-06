@@ -18,7 +18,7 @@ namespace Gum.IR0Translator
     abstract partial class TypeValue : ItemValue
     {   
         public virtual ItemQueryResult GetMember(M.Name memberName, int typeParamCount) { return ItemQueryResult.NotFound.Instance; }
-        public virtual TypeValue? GetMemberType(M.Name memberName, ImmutableArray<TypeValue> typeArgs) { return null; }        
+        public virtual TypeValue? GetMemberType(M.Name memberName, ImmutableArray<TypeValue> typeArgs) { return null; }
         public abstract TypeValue Apply_TypeValue(TypeEnv typeEnv);        
 
         public sealed override ItemValue Apply_ItemValue(TypeEnv typeEnv)
@@ -211,15 +211,15 @@ namespace Gum.IR0Translator
             return new R.Path.Nested(router, rname, R.ParamHash.None, default);
         }
 
-        public ImmutableArray<TypeValue> GetConstructorParamTypes()
+        public ImmutableArray<ParamInfo> GetConstructorParamTypes()
         {
-            var builder = ImmutableArray.CreateBuilder<TypeValue>(elemInfo.FieldInfos.Length);
+            var builder = ImmutableArray.CreateBuilder<ParamInfo>(elemInfo.FieldInfos.Length);
             foreach(var field in elemInfo.FieldInfos)
             {
                 var fieldType = itemValueFactory.MakeTypeValueByMType(field.Type);
                 var appliedFieldType = fieldType.Apply_TypeValue(Outer.MakeTypeEnv());
 
-                builder.Add(appliedFieldType);
+                builder.Add(new ParamInfo(R.ParamKind.Normal, appliedFieldType)); // TODO: EnumElemFields에 ref를 지원할지
             }
 
             return builder.MoveToImmutable();
@@ -490,9 +490,9 @@ namespace Gum.IR0Translator
         RItemFactory ritemFactory;
         public R.Path.Nested Lambda { get; } // Type의 path가 아니라 Lambda의 path
         public TypeValue Return { get; }
-        public ImmutableArray<TypeValue> Params { get; }
+        public ImmutableArray<ParamInfo> Params { get; }
 
-        public LambdaTypeValue(RItemFactory ritemFactory, R.Path.Nested lambda, TypeValue ret, ImmutableArray<TypeValue> parameters)
+        public LambdaTypeValue(RItemFactory ritemFactory, R.Path.Nested lambda, TypeValue ret, ImmutableArray<ParamInfo> parameters)
         {
             this.ritemFactory = ritemFactory;
             this.Lambda = lambda;
@@ -538,7 +538,7 @@ namespace Gum.IR0Translator
             => throw new InvalidOperationException();
     }
 
-    // 
+    // seq ref int F(ref int a, ref int b) { yield ref a; }
     [AutoConstructor]
     partial class SeqTypeValue : TypeValue
     {

@@ -97,15 +97,20 @@ namespace Gum
                 if (!Accept<IdentifierToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context, out var varIdResult))
                     return Invalid();
 
-                Exp? initExp = null;
+                VarDeclElemInitializer? initializer = null;
                 if (Accept<EqualToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                 {
+                    // ref가 나올 수 있다
+                    bool bRefExp = Accept<RefToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context);                    
+
                     // TODO: ;나 ,가 나올때까지라는걸 명시해주면 좋겠다
-                    if (!Parse(await parser.ParseExpAsync(context), ref context, out initExp))
+                    if (!Parse(await parser.ParseExpAsync(context), ref context, out var initExp))
                         return Invalid();
+
+                    initializer = new VarDeclElemInitializer(bRefExp, initExp);
                 }
 
-                elemsBuilder.Add(new VarDeclElement(varIdResult!.Value, initExp));
+                elemsBuilder.Add(new VarDeclElement(varIdResult!.Value, initializer));
 
             } while (Accept<CommaToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context)); // ,가 나오면 계속한다
 
@@ -199,9 +204,24 @@ namespace Gum
         {
             if (!Accept<ReturnToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                 return ParseResult<ReturnStmt>.Invalid;
-            
-            Parse(await parser.ParseExpAsync(context), ref context, out var returnValue);
 
+            ReturnValueInfo? returnValue = null;            
+            if (Accept<RefToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
+            {
+                if (!Parse(await parser.ParseExpAsync(context), ref context, out var refReturnExp))
+                    return ParseResult<ReturnStmt>.Invalid;
+
+                returnValue = new ReturnValueInfo(true, refReturnExp);
+            }
+            else if (Parse(await parser.ParseExpAsync(context), ref context, out var returnExp))
+            {
+                returnValue = new ReturnValueInfo(false, returnExp);
+            }
+            else
+            {
+                returnValue = null;
+            }
+            
             if (!Accept<SemiColonToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                 return ParseResult<ReturnStmt>.Invalid;
 
@@ -351,6 +371,8 @@ namespace Gum
             if (!Accept<LParenToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                 return ParseResult<ForeachStmt>.Invalid;
 
+            bool bRef = Accept<RefToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context);
+
             // var 
             if (!Parse(await parser.ParseTypeExpAsync(context), ref context, out var typeExp))
                 return ParseResult<ForeachStmt>.Invalid;
@@ -375,7 +397,7 @@ namespace Gum
             if (!Parse(await parser.ParseStmtAsync(context), ref context, out var body))
                 return ParseResult<ForeachStmt>.Invalid;
 
-            return new ParseResult<ForeachStmt>(new ForeachStmt(typeExp!, varNameToken!.Value, obj!, body!), context);
+            return new ParseResult<ForeachStmt>(new ForeachStmt(bRef, typeExp!, varNameToken!.Value, obj!, body!), context);
         }
 
         // 

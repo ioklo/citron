@@ -220,8 +220,8 @@ namespace Gum.IR0Translator
 
             foreach (var varDeclElem in varDecl.Elems)
             {
-                if (varDeclElem.InitExp != null)
-                    VisitExp(varDeclElem.InitExp);
+                if (varDeclElem.Initializer != null)                
+                    VisitExp(varDeclElem.Initializer.Value.Exp);
             }
         }
 

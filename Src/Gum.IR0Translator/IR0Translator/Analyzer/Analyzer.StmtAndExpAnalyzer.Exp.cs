@@ -49,11 +49,24 @@ namespace Gum.IR0Translator
                         return new ExpResult.Loc(new R.CapturedVarLoc(localVarOutsideLambdaResult.VarName), localVarOutsideLambdaResult.TypeValue);
 
                     case IdentifierResult.LocalVar localVarResult:
-                        
-                        return new ExpResult.Loc(new R.LocalVarLoc(localVarResult.VarName), localVarResult.TypeValue);
+                        {
+                            R.Loc loc = new R.LocalVarLoc(localVarResult.VarName);
+
+                            if (localVarResult.IsRef)
+                                loc = new R.DerefLocLoc(loc);
+
+                            return new ExpResult.Loc(loc, localVarResult.TypeValue);
+                        }
 
                     case IdentifierResult.GlobalVar globalVarResult:
-                        return new ExpResult.Loc(new R.GlobalVarLoc(globalVarResult.VarName), globalVarResult.TypeValue);
+                        {
+                            R.Loc loc = new R.GlobalVarLoc(globalVarResult.VarName);
+
+                            if (globalVarResult.IsRef)
+                                loc = new R.DerefLocLoc(loc);
+
+                            return new ExpResult.Loc(loc, globalVarResult.TypeValue);
+                        }
 
                     case IdentifierResult.Funcs funcsResult:
                         if (funcsResult.IsInstanceFunc)
@@ -196,13 +209,14 @@ namespace Gum.IR0Translator
 
                 if (destResult is ExpResult.Loc destLocResult)
                 {
+                    // 안되는거 체크
                     switch (destLocResult.Result)
                     {
-                        // int x = 0; var l = () { x = 3; }
+                        // int x = 0; var l = () { x = 3; }, TODO: 이거 가능하도록
                         case R.CapturedVarLoc:
                             globalContext.AddFatalError(A0803_BinaryOp_LeftOperandIsNotAssignable, exp.Operand0);
                             throw new UnreachableCodeException();
-                        
+
                         case R.ThisLoc:          // this = x;
                             globalContext.AddFatalError(A0803_BinaryOp_LeftOperandIsNotAssignable, exp.Operand0);
                             throw new UnreachableCodeException();
@@ -210,13 +224,16 @@ namespace Gum.IR0Translator
                         case R.TempLoc:
                             throw new UnreachableCodeException();
                     }
-
-                    var operandHint1 = ResolveHint.Make(destLocResult.TypeValue);
-                    var srcResult = AnalyzeExp_Exp(exp.Operand1, operandHint1);
-                    var wrappedSrcResult = CastExp_Exp(srcResult, destLocResult.TypeValue, exp);
                     
+                    R.Loc destLoc = destLocResult.Result;
+                    TypeValue destType = destLocResult.TypeValue;
+                    
+                    var operandHint1 = ResolveHint.Make(destType);
+                    var srcResult = AnalyzeExp_Exp(exp.Operand1, operandHint1);
+                    var wrappedSrcResult = CastExp_Exp(srcResult, destType, exp);
 
-                    return new ExpResult.Exp(new R.AssignExp(destLocResult.Result, wrappedSrcResult.Result), destLocResult.TypeValue);
+                    return new ExpResult.Exp(new R.AssignExp(destLoc, wrappedSrcResult.Result), destType);
+                    
                 }
                 else
                 {
@@ -322,11 +339,11 @@ namespace Gum.IR0Translator
                 public LocalContext LocalContext { get; }
             }
 
-            (ImmutableArray<TypeValue> Params, int? variadicParamsIndex) MakeParamTypes(ImmutableArray<M.Param> parameters)
+            (ImmutableArray<ParamInfo> Params, int? variadicParamsIndex) MakeParamTypes(ImmutableArray<M.Param> parameters)
             {
                 int? variadicParamsIndex = null;
 
-                var builder = ImmutableArray.CreateBuilder<TypeValue>(parameters.Length);
+                var builder = ImmutableArray.CreateBuilder<ParamInfo>(parameters.Length);
                 foreach (var param in parameters)
                 {
                     if (param.Kind == M.ParamKind.Params)
@@ -336,7 +353,15 @@ namespace Gum.IR0Translator
                     }
 
                     var type = globalContext.GetTypeValueByMType(param.Type);
-                    builder.Add(type);
+                    var paramKind = param.Kind switch
+                    {
+                        M.ParamKind.Normal => R.ParamKind.Normal,
+                        M.ParamKind.Ref => R.ParamKind.Ref,
+                        M.ParamKind.Params => R.ParamKind.Params,
+                        _ => throw new UnreachableCodeException()
+                    };
+
+                    builder.Add(new ParamInfo(paramKind, type));
                 }
 
                 return (builder.MoveToImmutable(), variadicParamsIndex);
@@ -513,19 +538,27 @@ namespace Gum.IR0Translator
                 var newAnalyzer = new StmtAndExpAnalyzer(globalContext, newLambdaContext, newLocalContext);
 
                 // 파라미터는 람다 함수의 지역변수로 취급한다
-                var paramTypesBuilder = ImmutableArray.CreateBuilder<TypeValue>(exp.Params.Length);
+                var paramInfosBuilder = ImmutableArray.CreateBuilder<ParamInfo>(exp.Params.Length);
                 var rparamsBuilder = ImmutableArray.CreateBuilder<R.Param>(exp.Params.Length);
                 foreach (var param in exp.Params)
                 {
                     if (param.Type == null)
                         globalContext.AddFatalError(A9901_NotSupported_LambdaParameterInference, exp);
 
+                    var rparamKind = param.ParamKind switch
+                    {
+                        S.FuncParamKind.Normal => R.ParamKind.Normal,
+                        S.FuncParamKind.Params => R.ParamKind.Params,
+                        S.FuncParamKind.Ref => R.ParamKind.Ref,
+                        _ => throw new UnreachableCodeException()
+                    };
+
                     var paramTypeValue = globalContext.GetTypeValueByTypeExp(param.Type);
-                    paramTypesBuilder.Add(paramTypeValue);
-                    rparamsBuilder.Add(new R.Param(R.ParamKind.Normal, paramTypeValue.GetRPath(), param.Name)); // TODO: Lambda 파라미터에 params적용할지 여부, 안될것도 없다
+                    paramInfosBuilder.Add(new ParamInfo(rparamKind, paramTypeValue));
+                    rparamsBuilder.Add(new R.Param(rparamKind, paramTypeValue.GetRPath(), param.Name));
 
                     // 람다 파라미터를 지역 변수로 추가한다
-                    newLocalContext.AddLocalVarInfo(param.Name, paramTypeValue);
+                    newLocalContext.AddLocalVarInfo(param.ParamKind == S.FuncParamKind.Ref, paramTypeValue, param.Name);
                 }   
 
                 // 본문 분석
@@ -534,7 +567,7 @@ namespace Gum.IR0Translator
                 // 성공했으면, 리턴 타입 갱신            
                 var capturedLocalVars = newLambdaContext.GetCapturedLocalVars();
 
-                var paramTypes = paramTypesBuilder.MoveToImmutable();
+                var paramTypes = paramInfosBuilder.MoveToImmutable();
                 var rparamInfos = rparamsBuilder.MoveToImmutable(); // 이 이후로 rparamsBuilder스면 안됨
 
                 // TODO: need capture this확인해서 this 넣기
@@ -878,14 +911,9 @@ namespace Gum.IR0Translator
                     new R.ListExp(rtype, builder.ToImmutable()),
                     globalContext.GetListType(curElemTypeValue));
             }
+            
 
-
-            ExpResult.Exp AnalyzeRefExp(S.RefExp refExp)
-            {
-                throw new NotImplementedException();
-            }
-
-            ExpResult AnalyzeExp(S.Exp exp, ResolveHint hint)
+            public ExpResult AnalyzeExp(S.Exp exp, ResolveHint hint)
             {
                 switch (exp)
                 {
@@ -900,7 +928,6 @@ namespace Gum.IR0Translator
                     case S.IndexerExp indexerExp: return AnalyzeIndexerExp(indexerExp);
                     case S.MemberExp memberExp: return AnalyzeMemberExp(memberExp);
                     case S.ListExp listExp: return AnalyzeListExp(listExp);
-                    case S.RefExp refExp: return AnalyzeRefExp(refExp);
                     default: throw new UnreachableCodeException();
                 }
             }

@@ -33,7 +33,6 @@ namespace Gum.IR0
 
         // Box<int>
         public record BoxType(Path Type) : Reserved;
-        public record RefType(Path Type) : Reserved;
         // TRef<T> => ref<int> (if T is int), string (if T is string)
         public record GenericRefType(Path Type) : Reserved;
 

@@ -28,7 +28,7 @@ namespace Gum.TextAnalysis.Test
         }
 
         [Fact]
-        async Task TestParseInlineCommandStmtAsync()
+        public async Task TestParseInlineCommandStmtAsync()
         {
             (var parser, var context) = await PrepareAsync("@echo ${a}bbb  ");
             
@@ -46,7 +46,7 @@ namespace Gum.TextAnalysis.Test
         }
 
         [Fact]
-        async Task TestParseBlockCommandStmtAsync()
+        public async Task TestParseBlockCommandStmtAsync()
         {
             var input = @"
 @{ 
@@ -79,7 +79,7 @@ xxx
 
             var expected = SimpleSVarDeclStmt(
                 SimpleSIdTypeExp("string"),
-                new VarDeclElement("a", SimpleSStringExp("hello"))
+                new VarDeclElement("a", new VarDeclElemInitializer(false, SimpleSStringExp("hello")))
             );
 
             Assert.Equal<Stmt>(expected, varDeclStmt.Elem);
@@ -116,7 +116,7 @@ xxx
         }
 
         [Fact]
-        async Task TestParseIfTestStmtWithoutVarNameAsync()
+        public async Task TestParseIfTestStmtWithoutVarNameAsync()
         {
             (var parser, var context) = await PrepareAsync("if (b is T) {} else if (c) {} else {}");
 
@@ -135,7 +135,7 @@ xxx
         }
 
         [Fact]
-        async Task TestParseIfTestStmtWithVarNameAsync()
+        public async Task TestParseIfTestStmtWithVarNameAsync()
         {
             (var parser, var context) = await PrepareAsync("if (b is T t) {} else if (c) {} else {}");
 
@@ -154,7 +154,7 @@ xxx
         }
 
         [Fact]
-        async Task TestParseForStmtAsync()
+        public async Task TestParseForStmtAsync()
         {
             (var parser, var context) = await PrepareAsync(@"
 for (f(); g; h + g) ;
@@ -172,7 +172,7 @@ for (f(); g; h + g) ;
         }
 
         [Fact]
-        async Task TestParseContinueStmtAsync()
+        public async Task TestParseContinueStmtAsync()
         {
             (var parser, var context) = await PrepareAsync(@"continue;");
             var continueResult = await parser.ParseContinueStmtAsync(context);
@@ -181,7 +181,7 @@ for (f(); g; h + g) ;
         }
 
         [Fact]
-        async Task TestParseBreakStmtAsync()
+        public async Task TestParseBreakStmtAsync()
         {
             (var parser, var context) = await PrepareAsync(@"break;");
             var breakResult = await parser.ParseBreakStmtAsync(context);
@@ -190,7 +190,7 @@ for (f(); g; h + g) ;
         }
 
         [Fact]
-        async Task TestParseBlockStmtAsync()
+        public async Task TestParseBlockStmtAsync()
         {
             (var parser, var context) = await PrepareAsync(@"{ { } { ; } ; }");
             var blockResult = await parser.ParseBlockStmtAsync(context);
@@ -204,7 +204,7 @@ for (f(); g; h + g) ;
         }
 
         [Fact]
-        async Task TestParseBlankStmtAsync()
+        public async Task TestParseBlankStmtAsync()
         {
             (var parser, var context) = await PrepareAsync("  ;  ");
             var blankResult = await parser.ParseBlankStmtAsync(context);
@@ -213,7 +213,7 @@ for (f(); g; h + g) ;
         }
 
         [Fact]
-        async Task TestParseExpStmtAsync()
+        public async Task TestParseExpStmtAsync()
         {
             (var parser, var context) = await PrepareAsync("a = b * c(1);");
             var expResult = await parser.ParseExpStmtAsync(context);
@@ -229,12 +229,12 @@ for (f(); g; h + g) ;
         }
 
         [Fact]
-        async Task TestParseForeachStmtAsync()
+        public async Task TestParseForeachStmtAsync()
         {
             var (parser, context) = await PrepareAsync("foreach( var x in l ) { } ");
             var stmtResult = await parser.ParseForeachStmtAsync(context);
 
-            var expected = new ForeachStmt(SimpleSIdTypeExp("var"), "x", SimpleSId("l"), SimpleSBlockStmt());
+            var expected = new ForeachStmt(false, SimpleSIdTypeExp("var"), "x", SimpleSId("l"), SimpleSBlockStmt());
 
             Assert.Equal(expected, stmtResult.Elem);
         }

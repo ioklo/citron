@@ -121,6 +121,11 @@ namespace Gum.IR0Evaluator
             return (TValue)AllocValue(type);
         }        
 
+        RefValue AllocRefValue()
+        {
+            return new RefValue();
+        }
+
         // type은 ir0 syntax의 일부분이다
         Value AllocValue(R.Path typePath)
         {
@@ -174,20 +179,43 @@ namespace Gum.IR0Evaluator
                 var origValue = context.GetLocalValue(typeAndName.Name);
                 localVars[typeAndName.Name].SetValue(origValue);
             }
-        }
+        }        
 
         async ValueTask EvalLocalVarDeclAsync(R.LocalVarDecl localVarDecl)
         {
             foreach (var elem in localVarDecl.Elems)
             {
-                var value = AllocValue(elem.Type);
-                context.AddLocalVar(elem.Name, value);
+                switch(elem)
+                {
+                    case R.VarDeclElement.Normal normalElem:
+                        {
+                            var value = AllocValue(normalElem.Type);
 
-                // InitExp가 있으면 
-                if (elem.InitExp != null)
-                    await expEvaluator.EvalAsync(elem.InitExp, value);
+                            // InitExp가 있으면 
+                            if (normalElem.InitExp != null)
+                                await expEvaluator.EvalAsync(normalElem.InitExp, value);
+
+                            // 순서 주의, TODO: 테스트로 만들기
+                            context.AddLocalVar(normalElem.Name, value);
+                            break;
+                        }
+
+                    case R.VarDeclElement.Ref refElem:
+                        {
+                            var refValue = AllocRefValue();
+                            var target = await locEvaluator.EvalLocAsync(refElem.Loc);
+                            refValue.SetTarget(target);
+
+                            // 순서 주의, TODO: 테스트로 만들기
+                            context.AddLocalVar(refElem.Name, refValue);
+                            break;
+                        }
+
+                    default: 
+                        throw new UnreachableCodeException();
+                }
             }
-        }
+        }        
 
         ValueTask EvalExpAsync(R.Exp exp, Value result)
         {

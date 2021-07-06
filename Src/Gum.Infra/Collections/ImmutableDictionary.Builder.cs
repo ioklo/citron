@@ -16,7 +16,7 @@ namespace Gum.Collections
             public Builder(System.Collections.Immutable.ImmutableDictionary<TKey, TValue>.Builder builder)
             {
                 this.builder = builder;
-            }
+            }            
 
             public void Add(TKey key, TValue value)
             {

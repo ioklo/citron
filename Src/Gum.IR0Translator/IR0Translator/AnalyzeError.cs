@@ -25,10 +25,16 @@ namespace Gum.IR0Translator
 
         // Analyzer
         A0101_VarDecl_CantInferVarType,
-        //A0102_VarDecl_MismatchBetweenDeclTypeAndInitExpType, => CastFailed
+        A0102_VarDecl_MismatchBetweenRefDeclTypeAndRefInitType,
         A0103_VarDecl_LocalVarNameShouldBeUniqueWithinScope,
         A0104_VarDecl_GlobalVariableNameShouldBeUnique,
-        A0105_VarDecl_CantUseEnumElementAsDeclType,
+        // A0105_VarDecl_CantUseEnumElementAsDeclType,
+        A0106_VarDecl_RefDeclNeedInitializer,
+        A0107_VarDecl_DontAllowVarWithRef,
+        A0108_VarDecl_RefNeedLocation,
+        A0109_VarDecl_ShouldBeRefDeclWithRefInitializer,
+        A0110_VarDecl_RefInitializerUsedOnNonRefVarDecl,
+
 
         A0201_Capturer_ReferencingLocalVariableIsNotAllowed,
 
@@ -75,6 +81,7 @@ namespace Gum.IR0Translator
 
         A1201_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType,
         A1202_ReturnStmt_SeqFuncShouldReturnVoid,
+        A1203_ReturnStmt_RefTargetIsNotLocation,
 
         A1301_ExpStmt_ExpressionShouldBeAssignOrCall,        
 
@@ -111,7 +118,10 @@ namespace Gum.IR0Translator
 
         // A2001_Identifier_MultipleCandidatesForIdentifier,
 
-        A9901_NotSupported_LambdaParameterInference
+        A9901_NotSupported_LambdaParameterInference,
+
+        // IR0Analyzer
+        R0101_UninitializedVaraibleAnalyzer_UseUninitializedValue
 
     }
 

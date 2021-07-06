@@ -54,7 +54,7 @@ namespace Gum.IR0Translator.Test
                 name: "Func",
                 typeParams: Arr("T"),
                 parameters: Arr(new S.FuncParam(S.FuncParamKind.Ref, new S.IdTypeExp("T", default), "t")),
-                body: new S.BlockStmt(Arr<S.Stmt>(new S.ReturnStmt(new S.RefExp(new S.IdentifierExp("t", default)))))
+                body: new S.BlockStmt(Arr<S.Stmt>(new S.ReturnStmt(new S.ReturnValueInfo(true, new S.IdentifierExp("t", default)))))
             )));
 
             var result = Build("TestModule", script);

@@ -10,7 +10,7 @@ using System.Text;
 
 namespace Gum.IR0
 {
-    public abstract class Exp
+    public abstract class Exp : INode
     {
         internal Exp() { }
     }

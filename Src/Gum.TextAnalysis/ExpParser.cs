@@ -78,10 +78,6 @@ namespace Gum
             if (newExpResult.HasValue)
                 return newExpResult;
 
-            var refExpResult = await ParseRefExpAsync(context);
-            if (refExpResult.HasValue)
-                return refExpResult;
-
             var lambdaExpResult = await ParseLambdaExpAsync(context);
             if (lambdaExpResult.HasValue)
                 return lambdaExpResult;
@@ -370,12 +366,13 @@ namespace Gum
         {
             var paramsBuilder = ImmutableArray.CreateBuilder<LambdaExpParam>();
 
-            // (), (a, b)
+            // (), (a, b)            
             // (int a)
-            // a            
+            // (ref int a, int b) => ...
+            // a
             if (Accept<IdentifierToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context, out var idToken))
             {
-                paramsBuilder.Add(new LambdaExpParam(null, idToken.Value));
+                paramsBuilder.Add(new LambdaExpParam(FuncParamKind.Normal, null, idToken.Value));
             }
             else if (Accept<LParenToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
             {
@@ -385,14 +382,20 @@ namespace Gum
                         if (!Accept<CommaToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                             return Invalid();
 
+                    FuncParamKind paramKind;
+                    if (Accept<RefToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
+                        paramKind = FuncParamKind.Ref;
+                    else
+                        paramKind = FuncParamKind.Normal;
+
                     // id id or id
                     if (!Accept<IdentifierToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context, out var firstIdToken))
                         return Invalid();
 
                     if (!Accept<IdentifierToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context, out var secondIdToken))                    
-                        paramsBuilder.Add(new LambdaExpParam(null, firstIdToken.Value));
+                        paramsBuilder.Add(new LambdaExpParam(paramKind, null, firstIdToken.Value));
                     else
-                        paramsBuilder.Add(new LambdaExpParam(new IdTypeExp(firstIdToken.Value, default), secondIdToken.Value));
+                        paramsBuilder.Add(new LambdaExpParam(paramKind, new IdTypeExp(firstIdToken.Value, default), secondIdToken.Value));
                 }
             }
 
@@ -414,10 +417,13 @@ namespace Gum
             }
             else
             {
+                // ref exp
+                bool bRef = Accept<RefToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context);
+
                 if (!Parse(await parser.ParseExpAsync(context), ref context, out var expBody))
                     return Invalid();
 
-                body = new ReturnStmt(expBody);
+                body = new ReturnStmt(new ReturnValueInfo(bRef, expBody));
             }
 
             return new ExpParseResult(new LambdaExp(paramsBuilder.ToImmutable(), body), context);
@@ -445,19 +451,7 @@ namespace Gum
 
             return new ExpParseResult(new NewExp(type, callArgs), context);
         }
-
-        async ValueTask<ExpParseResult> ParseRefExpAsync(ParserContext context)
-        {
-            // <REF> PrimaryExp
-            if (!Accept<RefToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
-                return ExpParseResult.Invalid;
-            
-            if (!Parse(await ParsePrimaryExpAsync(context), ref context, out var exp))
-                return ExpParseResult.Invalid;
-
-            return new ExpParseResult(new RefExp(exp), context);
-        }
-
+        
         async ValueTask<ExpParseResult> ParseParenExpAsync(ParserContext context)
         {
             if (!Accept<LParenToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))

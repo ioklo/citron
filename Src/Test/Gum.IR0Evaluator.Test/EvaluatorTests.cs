@@ -162,9 +162,9 @@ namespace Gum.IR0Evaluator.Test
         }
 
         // Stmt
-        // PrivateGlobalVarDeclStmt
+        // GlobalVarDeclStmt
         [Fact]
-        public async Task PrivateGlobalVariableStmt_DeclProperly()
+        public async Task GlobalVariableStmt_DeclProperly()
         {   
             var topLevelStmts = Arr<Stmt>
             (
@@ -182,13 +182,23 @@ namespace Gum.IR0Evaluator.Test
             return new Path.Nested(new Path.Root(moduleName), name, ParamHash.None, default);
         }
 
+        Path.Nested RootPath(Name name, ImmutableArray<ParamHashEntry> paramWithoutNames, ImmutableArray<Path> typeArgs)
+        {
+            return new Path.Nested(new Path.Root(moduleName), name, new ParamHash(typeArgs.Length, paramWithoutNames), typeArgs);
+        }
+
         Path.Nested RootPath(Name name, ImmutableArray<Path> paramTypes, ImmutableArray<Path> typeArgs)
         {
-            return new Path.Nested(new Path.Root(moduleName), name, new ParamHash(typeArgs.Length, paramTypes), typeArgs);
+            return new Path.Nested(
+                new Path.Root(moduleName), name, 
+                new ParamHash(
+                    typeArgs.Length, paramTypes.Select(paramType => new ParamHashEntry(ParamKind.Normal, paramType)).ToImmutableArray()
+                ), 
+                typeArgs);
         }
 
         [Fact]
-        public async Task PrivateGlobalVariableExp_GetGlobalValueInFunc()
+        public async Task GlobalVariableExp_GetGlobalValueInFunc()
         {
             var func0 = new NormalFuncDecl(default, "TestFunc", false, default, default, RBlock(
                 PrintStringCmdStmt(new GlobalVarLoc("x"))));
@@ -292,6 +302,32 @@ namespace Gum.IR0Evaluator.Test
 
             var output = await EvalAsync(default, stmts);
             Assert.Equal("Hello23", output);
+        }
+
+        [Fact]
+        public async Task GlobalRefVarDeclStmt_RefDeclAndRefExp_WorksProperly()
+        {
+            // int i = 3;
+            // ref int x = ref i;
+            // x = 4 + x;
+            // @$i
+            var stmts = Arr<Stmt>(
+                RGlobalVarDeclStmt(Path.Int, "i", RInt(3)),
+                RGlobalRefVarDeclStmt("x", new GlobalVarLoc("i")), // type이 빠진다
+                new ExpStmt(new AssignExp(
+                    new DerefLocLoc(new GlobalVarLoc("x")), 
+                    new CallInternalBinaryOperatorExp(
+                        InternalBinaryOperator.Add_Int_Int_Int, 
+                        RInt(4),
+                        new LoadExp(new DerefLocLoc(new GlobalVarLoc("x")))
+                    )
+                )),
+
+                PrintIntCmdStmt(new GlobalVarLoc("i")) 
+            );
+
+            var output = await EvalAsync(default, stmts);
+            Assert.Equal("7", output);
         }
 
         // If
@@ -484,7 +520,7 @@ namespace Gum.IR0Evaluator.Test
                     new AssignExp(LocalVar("x"), new BoolLiteralExp(false)),
                     RBlock(
                         PrintStringCmdStmt("Once"),
-                        new ReturnStmt(new IntLiteralExp(2)),
+                        new ReturnStmt(new ReturnInfo.Expression(new IntLiteralExp(2))),
                         PrintStringCmdStmt("Wrong")
                     )
                 ),
@@ -566,7 +602,7 @@ namespace Gum.IR0Evaluator.Test
         {
             var funcDecl = new NormalFuncDecl(default, "F", false, default, default,
                 RBlock(
-                    new ReturnStmt(null),
+                    new ReturnStmt(ReturnInfo.None.Instance),
                     PrintStringCmdStmt("Wrong")
                 )
             );
@@ -585,7 +621,7 @@ namespace Gum.IR0Evaluator.Test
         [Fact]
         public async Task ReturnStmt_ReturnProperlyInTopLevel()
         {
-            var topLevelStmts = Arr<Stmt>(new ReturnStmt(new IntLiteralExp(34)));
+            var topLevelStmts = Arr<Stmt>(new ReturnStmt(new ReturnInfo.Expression(new IntLiteralExp(34))));
             var (_, retValue) = await EvalAsyncWithRetValue(default, default, topLevelStmts);
 
             Assert.Equal(34, retValue);
@@ -596,7 +632,7 @@ namespace Gum.IR0Evaluator.Test
         {   
             var funcDecl = new NormalFuncDecl(default, "F", false, default, default,
                 RBlock(
-                    new ReturnStmt(new IntLiteralExp(77)),
+                    new ReturnStmt(new ReturnInfo.Expression(new IntLiteralExp(77))),
                     PrintStringCmdStmt("Wrong")
                 )
             );
@@ -928,6 +964,75 @@ namespace Gum.IR0Evaluator.Test
         }
 
         [Fact]
+        public async Task CallFuncExp_CallByRef_WorksProperly()
+        {
+            //void F(ref int i)
+            //{
+            //    i = 7;
+            //}
+
+            //int j = 3;
+            //F(ref j);
+            //@$j
+
+            // CallExp_RefArgumentTrivial_WorksProperly 에서 가져온
+            var script = RScript(
+                moduleName,
+                Arr<Decl>(
+                    new NormalFuncDecl(
+                        default, "F", false, default, Arr(new Param(ParamKind.Ref, Path.Int, "i")),
+                        RBlock(new ExpStmt(new AssignExp(new DerefLocLoc(new LocalVarLoc("i")), RInt(7))))
+                    )
+                ),
+
+                RGlobalVarDeclStmt(Path.Int, "j", RInt(3)),
+                new ExpStmt(new CallFuncExp(
+                    RootPath("F", Arr(new ParamHashEntry(ParamKind.Ref, Path.Int)), default),
+                    null, Arr<Argument>(new Argument.Ref(new GlobalVarLoc("j")))
+                )),
+
+                PrintIntCmdStmt(new GlobalVarLoc("j"))
+            );
+
+            var output = await EvalAsync(script.Decls, script.TopLevelStmts);
+            Assert.Equal("7", output);
+        }
+
+        [Fact]
+        public async Task CallFuncExp_ReturnGlobalRef_WorksProperly()
+        {
+            // int x = 3;
+            // ref int G() { return ref x; }
+            // var i = ref G();
+            // i = 4;
+            // @$x
+
+            var script = RScript(
+                moduleName,
+                Arr<Decl>(                    
+                    new NormalFuncDecl(
+                        default, "G", false, default, Arr(new Param(ParamKind.Ref, Path.Int, "i")),                        
+                        RBlock(new ReturnStmt(new ReturnInfo.Ref(new GlobalVarLoc("x"))))
+                    )
+                ),
+
+                RGlobalVarDeclStmt(Path.Int, "x", RInt(3)),
+                RGlobalRefVarDeclStmt("i", new DerefExpLoc(
+                    new CallFuncExp(
+                        RootPath("G", Arr(new ParamHashEntry(ParamKind.Ref, Path.Int)), default),
+                        null,
+                        default
+                    )
+                )),
+                new ExpStmt(new AssignExp(new DerefLocLoc(new GlobalVarLoc("i")), RInt(4))),
+                PrintIntCmdStmt(new LoadExp(new GlobalVarLoc("x")))
+            );
+
+            var output = await EvalAsync(script.Decls, script.TopLevelStmts);
+            Assert.Equal("4", output);
+        }
+
+        [Fact]
         public Task CallFuncExp_EvaluatesInstanceExpAtStart()
         {
             throw new NotImplementedException();
@@ -956,7 +1061,7 @@ namespace Gum.IR0Evaluator.Test
 
                 RBlock(
                     PrintIntCmdStmt(new LocalVarLoc("x")),
-                    new ReturnStmt(new LoadExp(LocalVar("x")))
+                    new ReturnStmt(new ReturnInfo.Expression(new LoadExp(LocalVar("x"))))
                 )
             );
 
@@ -994,7 +1099,7 @@ namespace Gum.IR0Evaluator.Test
         {
             var func = RootPath("F");
             // F() { return "hello world"; }
-            var funcDecl = new NormalFuncDecl(default, "F", false, default, default, new ReturnStmt(RString("Hello World")));
+            var funcDecl = new NormalFuncDecl(default, "F", false, default, default, new ReturnStmt(new ReturnInfo.Expression(RString("Hello World"))));
 
             var stmts = Arr<Stmt>(PrintStringCmdStmt(new CallFuncExp(func, null, default)));
 
@@ -1102,11 +1207,19 @@ namespace Gum.IR0Evaluator.Test
                     int index = 0;
                     var paramInfos = methodInfo.GetParameters();
                     var builder = ImmutableArray.CreateBuilder<Param>(paramInfos.Length);
-                    var pathsBuilder = ImmutableArray.CreateBuilder<Path>(paramInfos.Length);
+                    var pathsBuilder = ImmutableArray.CreateBuilder<ParamHashEntry>(paramInfos.Length);
                     foreach(var paramInfo in paramInfos)
                     {
                         builder.Add(new Param(ParamKind.Normal, Path.String, paramInfo.Name ?? $"@{index}"));
-                        pathsBuilder.Add(Path.String);
+
+                        ParamKind paramKind;
+                        if (paramInfo.ParameterType.IsByRef)
+                            paramKind = ParamKind.Ref;
+                        else
+                            paramKind = ParamKind.Normal;
+
+                        pathsBuilder.Add(new ParamHashEntry(paramKind, Path.String));
+
                         index++;
                     }
 
@@ -1145,13 +1258,15 @@ namespace Gum.IR0Evaluator.Test
                         return false;
 
                     var methodParams = methodInfo.GetParameters();
-                    if (paramHash.FuncParamTypes.Length != methodParams.Length)
+                    if (paramHash.Entries.Length != methodParams.Length)
                         return false;
 
                     // matching
                     for (int i = 0; i < methodParams.Length; i++)
                     {
-                        if (paramHash.FuncParamTypes[i] == Path.String && methodParams[i].ParameterType == typeof(string))
+                        if (paramHash.Entries[i].Kind == ParamKind.Normal &&
+                            paramHash.Entries[i].Type == Path.String && 
+                            methodParams[i].ParameterType == typeof(string))
                             continue;
 
                         // 나머지는 false
@@ -1241,7 +1356,7 @@ namespace Gum.IR0Evaluator.Test
 
             var system = new Path.Nested(new Path.Root(testExternalModuleName), "System", ParamHash.None, default);
             var system_Console = new Path.Nested(system, "Console", ParamHash.None, default);
-            var system_Console_Write = new Path.Nested(system_Console, "Write", new ParamHash(0, Arr(Path.String)), default);
+            var system_Console_Write = new Path.Nested(system_Console, "Write", new ParamHash(0, Arr(new ParamHashEntry(ParamKind.Normal, Path.String))), default);
                 
             var stmts = Arr<Stmt>(new ExpStmt(new CallFuncExp(system_Console_Write, null, RArgs(RString("Hello World")))));
 
@@ -1282,14 +1397,14 @@ namespace Gum.IR0Evaluator.Test
         public async Task CallValueExp_EvaluateCallableAndArgumentsInOrder()
         {
             var printFunc = RootPath("Print", Arr(Path.Int), default);
-            var makeLambda = RootPath("MakeLambda", default, default);
+            var makeLambda = RootPath("MakeLambda", Arr<Path>(), default);
             var lambda = new Path.Nested(makeLambda, new Name.Anonymous(new AnonymousId(0)), ParamHash.None, default);
 
             // Print(int x) { 
             var printFuncDecl = new NormalFuncDecl(default, "Print", false, default, RParamInfo((Path.Int, "x")),
                 RBlock(
                     PrintIntCmdStmt(new LocalVarLoc("x")),
-                    new ReturnStmt(new LoadExp(LocalVar("x")))
+                    new ReturnStmt(new ReturnInfo.Expression(new LoadExp(LocalVar("x"))))
                 )
             );
 
@@ -1303,7 +1418,7 @@ namespace Gum.IR0Evaluator.Test
             var makeLambdaDecl = new NormalFuncDecl(Arr<Decl>(lambdaDecl), "MakeLambda", false, default, default,
                 RBlock(                    
                     PrintStringCmdStmt("MakeLambda"),
-                    new ReturnStmt(new LambdaExp(lambda))
+                    new ReturnStmt(new ReturnInfo.Expression(new LambdaExp(lambda)))
                 )
             );
 
@@ -1338,14 +1453,14 @@ namespace Gum.IR0Evaluator.Test
 
         // Lambda Purity
         [Fact]
-        public async Task LambdaExp_CapturesLocalVariablesWithCopying() // TODO: wrong need to be fixed
+        public async Task LambdaExp_CapturesLocalVariablesWithCopying() // TODO: wrong, need to be fix
         {   
             // [x] () => @"$x";
             var lambdaDecl = new LambdaDecl(new Name.Anonymous(new AnonymousId(0)), new CapturedStatement(null, Arr(new OuterLocalVarInfo(Path.Int, "x")), PrintIntCmdStmt(new CapturedVarLoc("x"))), default);
             var lambda = RootPath(new Name.Anonymous(new AnonymousId(0)));
 
             // int x = 3;
-            // var func = () => x; // [ref<int> x = ref x] () => x;
+            // var func = () => x; // [ref int x = ref x] () => x;
             // x = 34;
             // func();
             var stmts = Arr<Stmt> (
@@ -1384,7 +1499,7 @@ namespace Gum.IR0Evaluator.Test
 
                 RBlock(
                     PrintIntCmdStmt(new LocalVarLoc("x")),
-                    new ReturnStmt(new LoadExp(new LocalVarLoc("x")))
+                    new ReturnStmt(new ReturnInfo.Expression(new LoadExp(new LocalVarLoc("x"))))
                 )
             );
 
@@ -1425,5 +1540,7 @@ namespace Gum.IR0Evaluator.Test
         {
             throw new PrerequisiteRequiredException(Prerequisite.Class);
         }        
+
+        
     }
 }

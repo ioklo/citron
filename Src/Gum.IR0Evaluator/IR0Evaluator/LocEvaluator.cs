@@ -75,6 +75,22 @@ namespace Gum.IR0Evaluator
 
                         return enumElemFieldRuntimeItem.GetMemberValue(enumElemValue);
 
+                    case R.ThisLoc thisLoc:
+                        throw new NotImplementedException();
+
+                    case R.DerefLocLoc derefLoc:
+                        {
+                            var refValue = (RefValue)await EvalLocAsync(derefLoc.Loc);
+                            return refValue.GetTarget();
+                        }
+
+                    case R.DerefExpLoc derefExpLoc:
+                        {
+                            var refValue = evaluator.AllocRefValue();
+                            await evaluator.EvalExpAsync(derefExpLoc.Exp, refValue);
+                            return refValue.GetTarget();
+                        }
+
                     default:
                         throw new UnreachableCodeException();
                 }

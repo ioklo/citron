@@ -100,15 +100,32 @@ namespace Gum.IR0Evaluator
     // ref T
     class RefValue : Value
     {
-        public Value? Value { get; private set; }        
+        Value? value;
+
+        public RefValue()
+        {
+            value = null;
+        }
+
         public RefValue(Value value)
         {
-            Value = value;
+            this.value = value;
         }
 
         public override void SetValue(Value srcValue)
         {
-            Value = ((RefValue)srcValue).Value;
+            // shallow copy
+            this.value = ((RefValue)srcValue).value;
+        }
+
+        public void SetTarget(Value value)
+        {
+            this.value = value;
+        }
+
+        public Value GetTarget()
+        {
+            return value!;
         }
     }
 

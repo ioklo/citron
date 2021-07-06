@@ -12,12 +12,12 @@ namespace Gum.IR0Evaluator
         {
             Dictionary<R.ModuleName, IItemContainer> rootContainers;
 
-            public Dictionary<string, Value> PrivateGlobalVars { get; }
+            public Dictionary<string, Value> GlobalVars { get; }
 
             public SharedContext()
             {
                 rootContainers = new Dictionary<R.ModuleName, IItemContainer>();
-                PrivateGlobalVars = new Dictionary<string, Value>();
+                GlobalVars = new Dictionary<string, Value>();
             }            
 
             IItemContainer GetContainer(R.Path path)

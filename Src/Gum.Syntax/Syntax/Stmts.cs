@@ -5,6 +5,7 @@ using Gum.Collections;
 using System.Diagnostics;
 using System.Linq;
 using System.Xml.XPath;
+using Pretune;
 
 namespace Gum.Syntax
 {
@@ -34,11 +35,14 @@ namespace Gum.Syntax
         BreakStmt() { }
     }
 
-    public record ReturnStmt : Stmt
+    [AutoConstructor, ImplementIEquatable]
+    public partial struct ReturnValueInfo
     {
-        public Exp? Value { get; }
-        public ReturnStmt(Exp? value) { Value = value; }
+        public bool IsRef { get; }
+        public Exp Value { get; }
     }
+
+    public record ReturnStmt(ReturnValueInfo? Info) : Stmt;
 
     public record BlockStmt(ImmutableArray<Stmt> Stmts) : Stmt;
     
@@ -52,6 +56,6 @@ namespace Gum.Syntax
     public record TaskStmt(Stmt Body) : Stmt;
     public record AwaitStmt(Stmt Body) : Stmt;    
     public record AsyncStmt(Stmt Body) : Stmt;
-    public record ForeachStmt(TypeExp Type, string VarName, Exp Iterator, Stmt Body) : Stmt;
+    public record ForeachStmt(bool IsRef, TypeExp Type, string VarName, Exp Iterator, Stmt Body) : Stmt;
     public record YieldStmt(Exp Value) : Stmt;    
 }

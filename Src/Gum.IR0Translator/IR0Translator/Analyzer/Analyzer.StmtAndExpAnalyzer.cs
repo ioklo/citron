@@ -72,11 +72,11 @@ namespace Gum.IR0Translator
                 updateContext.Update(callableContext, srcCallableContext);
                 updateContext.Update(localContext, srcLocalContext);
             }
-            
+
+            // var x = 3, y = ref i; 라면 
             R.LocalVarDecl AnalyzeLocalVarDecl(S.VarDecl varDecl)
             {
                 var varDeclAnalyzer = new VarDeclElemAnalyzer(globalContext, callableContext, localContext);
-
                 var declType = globalContext.GetTypeValueByTypeExp(varDecl.Type);
 
                 var relems = new List<R.VarDeclElement>();
@@ -85,9 +85,10 @@ namespace Gum.IR0Translator
                     if (localContext.DoesLocalVarNameExistInScope(elem.VarName))
                         globalContext.AddFatalError(A0103_VarDecl_LocalVarNameShouldBeUniqueWithinScope, elem);
 
-                    var result = varDeclAnalyzer.AnalyzeVarDeclElement(elem, declType);
+                    var result = varDeclAnalyzer.AnalyzeVarDeclElement(elem, varDecl.IsRef, declType);
 
-                    localContext.AddLocalVarInfo(elem.VarName, result.TypeValue);
+                    // varDecl.IsRef는 syntax에서 체크한 것이므로, syntax에서 ref가 아니더라도 ref일 수 있으므로 result.Elem으로 검사를 해야한다.
+                    localContext.AddLocalVarInfo(result.Elem is R.VarDeclElement.Ref, result.TypeValue, elem.VarName);
                     relems.Add(result.Elem);
                 }
 

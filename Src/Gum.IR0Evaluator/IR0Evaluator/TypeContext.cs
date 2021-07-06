@@ -95,12 +95,6 @@ namespace Gum.IR0Evaluator
                         return new R.Path.BoxType(appliedType);
                     }
 
-                case R.Path.RefType refPath:
-                    {
-                        var appliedType = Apply(refPath);
-                        return new R.Path.RefType(appliedType);
-                    }
-
                 case R.Path.GenericRefType genericRefPath:
                     {
                         // TODO: TRef는 이럴때 녹아야 하지 않는가
