@@ -667,7 +667,7 @@ namespace Gum.IR0Evaluator.Test
         public async Task ExpStmt_EvalInnerExp()
         {
             var stmts = Arr<Stmt> (
-                RLocalVarDeclStmt(Path.Int, "x", null),
+                RLocalVarDeclStmt(Path.Int, "x", RInt(0)),
                 new ExpStmt(new AssignExp(LocalVar("x"), new IntLiteralExp(3))),
                 PrintIntCmdStmt(new LocalVarLoc("x"))
             );

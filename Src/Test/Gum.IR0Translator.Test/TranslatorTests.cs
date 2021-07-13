@@ -214,6 +214,20 @@ namespace Gum.IR0Translator.Test
         }
 
         [Fact]
+        public void VarDeclStmt_ChecksLocalDeclHasInitializer()
+        {
+            S.VarDeclElement elem;
+            var syntaxScript = SScript(SBlock(
+                new S.VarDeclStmt(new S.VarDecl(false, IntTypeExp, Arr(
+                    elem = new S.VarDeclElement("x", null)
+                )))
+            ));
+
+            var errors = TranslateWithErrors(syntaxScript);
+            VerifyError(errors, A0111_VarDecl_LocalVarDeclNeedInitializer, elem);
+        }
+
+        [Fact]
         public void IfStmt_TranslatesTrivially()
         {
             var syntaxScript = SScript(new S.StmtScriptElement(
@@ -268,7 +282,7 @@ namespace Gum.IR0Translator.Test
             var syntaxScript = SScript(
 
                 new S.StmtScriptElement(new S.ForStmt(
-                    new S.VarDeclForStmtInitializer(SVarDecl(IntTypeExp, "x")),
+                    new S.VarDeclForStmtInitializer(SVarDecl(IntTypeExp, "x", SInt(0))),
                     null, null, S.BlankStmt.Instance
                 )),
 
@@ -285,7 +299,7 @@ namespace Gum.IR0Translator.Test
             var expected = RScript(
 
                 new R.ForStmt(
-                    new R.VarDeclForStmtInitializer(RLocalVarDecl(R.Path.Int, "x")),
+                    new R.VarDeclForStmtInitializer(RLocalVarDecl(R.Path.Int, "x", RInt(0))),
                     null, null, R.BlankStmt.Instance
                 ),
 
@@ -309,7 +323,7 @@ namespace Gum.IR0Translator.Test
                 new S.StmtScriptElement(SVarDeclStmt(StringTypeExp, "x")),
 
                 new S.StmtScriptElement(new S.ForStmt(
-                    new S.VarDeclForStmtInitializer(SVarDecl(IntTypeExp, "x")), // x의 범위는 ForStmt내부에서
+                    new S.VarDeclForStmtInitializer(SVarDecl(IntTypeExp, "x", SInt(0))), // x의 범위는 ForStmt내부에서
                     new S.BinaryOpExp(S.BinaryOpKind.Equal, SId("x"), SInt(3)),
                     null, S.BlankStmt.Instance
                 )),
@@ -324,7 +338,7 @@ namespace Gum.IR0Translator.Test
                 RGlobalVarDeclStmt(R.Path.String, "x", null),
 
                 new R.ForStmt(
-                    new R.VarDeclForStmtInitializer(RLocalVarDecl(R.Path.Int, "x")),
+                    new R.VarDeclForStmtInitializer(RLocalVarDecl(R.Path.Int, "x", RInt(0))),
 
                     // cond
                     new R.CallInternalBinaryOperatorExp(
@@ -698,12 +712,12 @@ namespace Gum.IR0Translator.Test
         {
             // 
             // {
-            //     int x;
+            //     int x = 1;
             //     task { int y = x; }
             // }
             var syntaxScript = SScript(
                 SBlock(
-                    SVarDeclStmt(IntTypeExp, "x"),
+                    SVarDeclStmt(IntTypeExp, "x", SInt(1)),
                     new S.TaskStmt(
                         SVarDeclStmt(IntTypeExp, "y", SId("x"))
                     )
@@ -725,7 +739,7 @@ namespace Gum.IR0Translator.Test
             var expected = RScript(
                 Arr<R.Decl>(capturedStatementDecl),
                 RBlock(
-                    RLocalVarDeclStmt(R.Path.Int, "x"),
+                    RLocalVarDeclStmt(R.Path.Int, "x", RInt(1)),
                     new R.TaskStmt(
                         MakeRootPath(name0)
                     )
@@ -814,7 +828,7 @@ namespace Gum.IR0Translator.Test
 
             var syntaxScript = SScript(
                 SBlock(
-                    SVarDeclStmt(IntTypeExp, "x"),
+                    SVarDeclStmt(IntTypeExp, "x", SInt(0)),
                     new S.AsyncStmt(
                         new S.ExpStmt(
                             new S.BinaryOpExp(S.BinaryOpKind.Assign, exp = SId("x"), SInt(3))
@@ -830,11 +844,11 @@ namespace Gum.IR0Translator.Test
         [Fact]
         public void AsyncStmt_TranslatesWithLocalVariable()
         {
-            // int x;
+            // int x = 0;
             // async { int x = x; }
             var syntaxScript = SScript(
                 SBlock(
-                    SVarDeclStmt(IntTypeExp, "x"),
+                    SVarDeclStmt(IntTypeExp, "x", SInt(0)),
                     new S.AsyncStmt(
                         SVarDeclStmt(IntTypeExp, "x", SId("x"))
                     )
@@ -853,7 +867,7 @@ namespace Gum.IR0Translator.Test
             var expected = RScript(
                 Arr<R.Decl>(capturedStmtDecl),
                 RBlock(
-                    RLocalVarDeclStmt(R.Path.Int, "x"),
+                    RLocalVarDeclStmt(R.Path.Int, "x", RInt(0)),
                     new R.AsyncStmt(
                         MakeRootPath(capturedStmtName)
                     )
@@ -1707,7 +1721,7 @@ namespace Gum.IR0Translator.Test
             // {
             //     int a; // local var without initialize
             //     @$a    // use, error
-            // }           
+            // }
 
             S.Exp e;
             var syntaxScript = SScript(new S.StmtScriptElement(SBlock(
@@ -1717,7 +1731,7 @@ namespace Gum.IR0Translator.Test
 
             var errors = TranslateWithErrors(syntaxScript);
 
-            VerifyError(errors, R0101_UninitializedVaraibleAnalyzer_UseUninitializedValue, null);
+            VerifyError(errors, A0111_VarDecl_LocalVarDeclNeedInitializer, e);
         }
 
         [Fact]
@@ -1735,55 +1749,6 @@ namespace Gum.IR0Translator.Test
             )));
 
             var rscript = Translate(syntaxScript);
-        }
-
-        [Fact]
-        public void UninitializedVariableAnalysis_UseConditionalInitializedLocalVarDecl_ReturnError()
-        {
-            // {
-            //     int a;
-            //     {
-            //         int b;
-            //         if (true) { a = 0; b = 0; }
-            //         else { b = 0; }
-            //         @$b // use b, ok
-            //     }
-            //     @{$a} // use a, error
-            // }            
-
-            // {
-            //     int a;
-            //     {
-            //         int b;
-            //         if (true) { a = 0; b = 0; }
-            //         else { b = 0; }
-            //         @$b // use b, ok
-            //     }
-            //     #init(a);
-            //     @{$a} // use a, ok
-            // }
-
-            S.Exp e;
-            var syntaxScript = SScript(new S.StmtScriptElement(SBlock(
-                SVarDeclStmt(IntTypeExp, "a", null),
-                SBlock(
-                    SVarDeclStmt(IntTypeExp, "b", null),
-                    new S.IfStmt(
-                        SBool(true),                         
-                        SBlock(
-                            new S.ExpStmt(new S.BinaryOpExp(S.BinaryOpKind.Assign, SId("a"), SInt(0))),
-                            new S.ExpStmt(new S.BinaryOpExp(S.BinaryOpKind.Assign, SId("b"), SInt(0)))
-                        ),
-                        new S.ExpStmt(new S.BinaryOpExp(S.BinaryOpKind.Assign, SId("b"), SInt(0)))
-                    ),
-                    SCommand(SString(new S.ExpStringExpElement(SId("b"))))
-                ),
-                SCommand(SString(new S.ExpStringExpElement(e = SId("a"))))
-            )));
-
-            var errors = TranslateWithErrors(syntaxScript);
-
-            VerifyError(errors, R0101_UninitializedVaraibleAnalyzer_UseUninitializedValue, null);            
         }
     }
 }

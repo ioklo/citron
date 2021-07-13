@@ -34,7 +34,7 @@ namespace Gum.IR0Translator
         A0108_VarDecl_RefNeedLocation,
         A0109_VarDecl_ShouldBeRefDeclWithRefInitializer,
         A0110_VarDecl_RefInitializerUsedOnNonRefVarDecl,
-
+        A0111_VarDecl_LocalVarDeclNeedInitializer,
 
         A0201_Capturer_ReferencingLocalVariableIsNotAllowed,
 
@@ -119,10 +119,6 @@ namespace Gum.IR0Translator
         // A2001_Identifier_MultipleCandidatesForIdentifier,
 
         A9901_NotSupported_LambdaParameterInference,
-
-        // IR0Analyzer
-        R0101_UninitializedVaraibleAnalyzer_UseUninitializedValue
-
     }
 
     class AnalyzeError : IError

@@ -345,7 +345,9 @@ namespace Gum.IR0Evaluator
                 var newEvaluator = evaluator.CloneWithNewContext(listValue, default, default);
 
                 // asyncEnum을 만들기 위해서 내부 함수를 씁니다
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
                 async IAsyncEnumerator<Infra.Void> WrapAsyncEnum()
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
                 {
                     var list = listValue.GetList();                    
 

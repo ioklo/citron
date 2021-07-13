@@ -52,9 +52,7 @@ namespace Gum.IR0Evaluator
                             {
                                 var value = evaluator.AllocValue(normalElem.Type);
 
-                                // InitExp가 있으면 
-                                if (normalElem.InitExp != null)
-                                    await evaluator.EvalExpAsync(normalElem.InitExp, value);
+                                await evaluator.EvalExpAsync(normalElem.InitExp, value);
 
                                 // 순서 주의, InitExp먼저 실행
                                 // TODO: 테스트로 만들기

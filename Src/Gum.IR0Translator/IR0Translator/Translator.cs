@@ -35,8 +35,6 @@ namespace Gum.IR0Translator
             var script = Analyzer.Analyze(sscript, rmoduleName, itemValueFactory, globalItemValueFactory, typeExpTypeValueService, errorCollector);
             if (script == null) return null;
 
-            UninitializedVariableAnalyzer.Analyze(script, errorCollector);
-
             if (errorCollector.HasError)
                 return null;
 

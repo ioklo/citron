@@ -63,10 +63,14 @@ namespace Gum.IR0Translator
                 }
             }
 
-            public VarDeclElementCoreResult AnalyzeVarDeclElement(S.VarDeclElement elem, bool bRefDeclType, TypeValue declType)
+            public VarDeclElementCoreResult AnalyzeVarDeclElement(bool bLocal, S.VarDeclElement elem, bool bRefDeclType, TypeValue declType)
             {
                 if (elem.Initializer == null)
                 {
+                    // local이라면 initializer가 꼭 있어야 합니다
+                    if (bLocal)
+                        globalContext.AddFatalError(A0111_VarDecl_LocalVarDeclNeedInitializer, elem);
+
                     // ref로 시작했으면 initializer가 꼭 있어야 합니다
                     if (bRefDeclType)
                         globalContext.AddFatalError(A0106_VarDecl_RefDeclNeedInitializer, elem);
@@ -76,7 +80,7 @@ namespace Gum.IR0Translator
                         globalContext.AddFatalError(A0101_VarDecl_CantInferVarType, elem);
 
                     var rtype = declType.GetRPath();
-                    return new VarDeclElementCoreResult(new R.VarDeclElement.Normal(rtype, elem.VarName, null), declType);
+                    return new VarDeclElementCoreResult(new R.VarDeclElement.NormalDefault(rtype, elem.VarName), declType);
                 }
                 else
                 {
