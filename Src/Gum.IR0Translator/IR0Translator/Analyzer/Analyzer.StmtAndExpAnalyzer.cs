@@ -19,10 +19,10 @@ namespace Gum.IR0Translator
         partial struct StmtAndExpAnalyzer 
         {
             GlobalContext globalContext;
-            CallableContext callableContext;
+            ICallableContext callableContext;
             LocalContext localContext;
 
-            public StmtAndExpAnalyzer(GlobalContext globalContext, CallableContext callableContext, LocalContext localContext)
+            public StmtAndExpAnalyzer(GlobalContext globalContext, ICallableContext callableContext, LocalContext localContext)
             {
                 this.globalContext = globalContext;
                 this.callableContext = callableContext;
@@ -64,7 +64,7 @@ namespace Gum.IR0Translator
                 return new StmtAndExpAnalyzer(clonedGlobalContext, clonedCallableContext, clonedLocalContext);
             }
 
-            void UpdateAnalyzer(GlobalContext srcGlobalContext, CallableContext srcCallableContext, LocalContext srcLocalContext)
+            void UpdateAnalyzer(GlobalContext srcGlobalContext, ICallableContext srcCallableContext, LocalContext srcLocalContext)
             {
                 var updateContext = UpdateContext.Make();
 

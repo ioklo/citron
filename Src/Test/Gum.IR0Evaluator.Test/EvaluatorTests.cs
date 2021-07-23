@@ -13,6 +13,7 @@ using static Gum.IR0.IR0Factory;
 using Gum.Infra;
 using System.Reflection;
 using System.Diagnostics;
+using Gum.Test.Misc;
 
 namespace Gum.IR0Evaluator.Test
 {
@@ -145,9 +146,7 @@ namespace Gum.IR0Evaluator.Test
         {
             var script = new Script(moduleName, decls, topLevelStmts);
 
-            var evaluator = new Evaluator(moduleDrivers, commandProvider, script);
-
-            var retValue = await evaluator.EvalAsync();
+            var retValue = await Evaluator.EvalAsync(moduleDrivers, commandProvider, script);
 
             return (commandProvider.GetOutput(), retValue);
         }
@@ -1035,19 +1034,19 @@ namespace Gum.IR0Evaluator.Test
         [Fact]
         public Task CallFuncExp_EvaluatesInstanceExpAtStart()
         {
-            throw new NotImplementedException();
+            throw new TestNeedToBeWrittenException();
         }
 
         [Fact]
         public Task CallFuncExp_PassesInstanceValueAsThisValue()
         {
-            throw new NotImplementedException();
+            throw new TestNeedToBeWrittenException();
         }
 
         [Fact]
         public Task CallFuncExp_PassesTypeAgumentsProperly()
         {
-            throw new NotImplementedException();
+            throw new TestNeedToBeWrittenException();
         }
 
         [Fact]
@@ -1128,7 +1127,7 @@ namespace Gum.IR0Evaluator.Test
                 public override ImmutableArray<Param> Parameters => default;
                 public override ParamHash ParamHash => new ParamHash(0, default);
 
-                public override ValueTask InvokeAsync(Evaluator evaluator, Value? thisValue, ImmutableArray<Value> args, Value result)
+                public override ValueTask InvokeAsync(Value? thisValue, ImmutableArray<Value> args, Value result)
                 {
                     cmdProvider.Append("Hello World");
                     return ValueTask.CompletedTask;
@@ -1227,7 +1226,7 @@ namespace Gum.IR0Evaluator.Test
                     ParamHash = new ParamHash(methodInfo.GetGenericArguments().Length, pathsBuilder.MoveToImmutable());
                 }
 
-                public override ValueTask InvokeAsync(Evaluator evaluator, Value? thisValue, ImmutableArray<Value> args, Value result)
+                public override ValueTask InvokeAsync(Value? thisValue, ImmutableArray<Value> args, Value result)
                 {
                     if (thisValue != null)
                         throw new NotImplementedException();

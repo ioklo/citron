@@ -36,13 +36,13 @@ namespace Gum.IR0Translator
             ResolveHint hint;
 
             GlobalContext globalContext;
-            CallableContext callableContext;
+            ICallableContext callableContext;
             LocalContext localContext;
 
             public static IdentifierResult Resolve(
                 string idName, ImmutableArray<TypeValue> typeArgs, ResolveHint hint,
                 GlobalContext globalContext,
-                CallableContext callableContext,
+                ICallableContext callableContext,
                 LocalContext localContext)
             {
                 var resolver = new IdExpIdentifierResolver(idName, typeArgs, hint, globalContext, callableContext, localContext);
@@ -103,6 +103,9 @@ namespace Gum.IR0Translator
                             return new IdentifierResult.Type(typeValue);
                         }
 
+                    case ItemQueryResult.Constructors constructorsResult:
+                        throw new NotImplementedException();
+
                     case ItemQueryResult.Funcs funcsResult:
                         {
                             return new IdentifierResult.Funcs(funcsResult.Outer, funcsResult.FuncInfos, typeArgs, funcsResult.IsInstanceFunc);
@@ -128,17 +131,21 @@ namespace Gum.IR0Translator
                 var localOutsideInfo = GetLocalVarOutsideLambdaInfo();
                 if (localOutsideInfo != IdentifierResult.NotFound.Instance) return localOutsideInfo;
 
-                // 2. thisType의 {{instance, static} * {변수, 함수}}, 타입. 아직 지원 안함
+                // 2. 'this'
+                if (idName == "this" && typeArgs.Length == 0)
+                    return IdentifierResult.ThisVar.Instance;
+
+                // 3. thisType의 {{instance, static} * {변수, 함수}}, 타입. 아직 지원 안함
                 // 힌트는 오버로딩 함수 선택에 쓰일수도 있고,
                 // 힌트가 thisType안의 enum인 경우 elem을 선택할 수도 있다
                 var thisMemberInfo = GetThisMemberInfo();
                 if (thisMemberInfo != IdentifierResult.NotFound.Instance) return thisMemberInfo;
 
-                // 3. internal global 'variable', 변수이므로 힌트를 쓸 일이 없다
+                // 4. internal global 'variable', 변수이므로 힌트를 쓸 일이 없다
                 var internalGlobalVarInfo = GetInternalGlobalVarInfo();
                 if (internalGlobalVarInfo != IdentifierResult.NotFound.Instance) return internalGlobalVarInfo;
 
-                // 4. 네임스페이스 -> 바깥 네임스페이스 -> module global, 함수, 타입, 
+                // 5. 네임스페이스 -> 바깥 네임스페이스 -> module global, 함수, 타입, 
                 // 오버로딩 함수 선택, hint가 global enum인 경우, elem선택
                 var externalGlobalInfo = GetGlobalInfo();
                 if (externalGlobalInfo != IdentifierResult.NotFound.Instance) return externalGlobalInfo;

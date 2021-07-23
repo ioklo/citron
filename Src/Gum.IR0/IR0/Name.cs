@@ -19,5 +19,11 @@ namespace Gum.IR0
         // anonymous type names
         [DebuggerDisplay("#Anonymous_{Id}")]
         public record Anonymous(AnonymousId Id) : Name;
+
+        public record Constructor : Name
+        {
+            public static readonly Constructor Instance = new Constructor();
+            Constructor() { }
+        }
     }
 }

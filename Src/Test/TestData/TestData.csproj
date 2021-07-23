@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <RootNamespace>Gum.TestData</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Gum.IR0\Gum.IR0.csproj" />
+    <ProjectReference Include="..\..\Gum.Syntax\Gum.Syntax.csproj" />
+  </ItemGroup>
+
+</Project>

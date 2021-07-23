@@ -28,7 +28,7 @@ namespace Gum.IR0Translator.Test
         [Fact]
         public void ConstructTypeValue_GlobalStructType_ConstructsProperly()
         {
-            var xInfo = new M.StructInfo("X", Arr("T"), null, default, default, default, default);
+            var xInfo = new M.StructInfo("X", Arr("T"), null, default, default, default, default, default);
             var moduleInfo = new M.ModuleInfo(moduleName, default, Arr<M.TypeInfo>(xInfo), default);
 
             var typeInfoRepo = new TypeInfoRepository(moduleInfo, new ModuleInfoRepository(Arr(RuntimeModuleInfo.Instance)));
@@ -45,8 +45,8 @@ namespace Gum.IR0Translator.Test
         public void ConstructTypeValue_MemberStructType_ConstructsProperly()
         {
             // struct X<T> { struct Y<U> { } }            
-            var yInfo = new M.StructInfo("Y", Arr<string>("U"), null, default, default, default, default);
-            var xInfo = new M.StructInfo("X", Arr<string>("T"), null, default, Arr<M.TypeInfo>(yInfo), default, default);            
+            var yInfo = new M.StructInfo("Y", Arr<string>("U"), null, default, default, default, default, default);
+            var xInfo = new M.StructInfo("X", Arr<string>("T"), null, default, Arr<M.TypeInfo>(yInfo), default, default, default);
 
             var internalModuleInfo = new M.ModuleInfo(moduleName, default, Arr<M.TypeInfo>(xInfo), default);
             var externalModuleRepo = new ModuleInfoRepository(Arr(RuntimeModuleInfo.Instance));
@@ -77,7 +77,7 @@ namespace Gum.IR0Translator.Test
         // 
         ItemValueFactory MakeFactory()
         {   
-            var gInfo = new M.StructInfo("G", Arr("T"), null, default, default, default, default);
+            var gInfo = new M.StructInfo("G", Arr("T"), null, default, default, default, default, default);
 
             var xInfo = new M.StructInfo("X", Arr("T"), null, default, Arr<M.TypeInfo>(
                 new M.StructInfo(
@@ -89,9 +89,10 @@ namespace Gum.IR0Translator.Test
                     Arr(new M.FuncInfo("F", false, false, true, Arr("V"), new M.TypeVarType(0, "T"),                         
                         Arr(new M.Param(M.ParamKind.Normal, new M.TypeVarType(2, "V"), "v"))
                     )),
-                    Arr(new M.MemberVarInfo(false, new M.GlobalType(moduleName, M.NamespacePath.Root, "X", Arr<M.Type>(new M.TypeVarType(1, "U"))), "v"))
+                    Arr(new M.MemberVarInfo(false, new M.GlobalType(moduleName, M.NamespacePath.Root, "X", Arr<M.Type>(new M.TypeVarType(1, "U"))), "v")),
+                    default
                 )
-            ), default, default);
+            ), default, default, default);
 
             var testModule = new M.ModuleInfo(moduleName, default, Arr<M.TypeInfo>(xInfo, gInfo), default);
             var externalModuleRepo = new ModuleInfoRepository(Arr(RuntimeModuleInfo.Instance));

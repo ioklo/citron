@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using Gum.Collections;
+﻿using Gum.Collections;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Gum.Syntax;
 
 using static Gum.Infra.Misc;
 
-namespace Gum.IR0Translator.Test
+namespace Gum.Syntax
 {
-    static class SyntaxFactory
+    public static class SyntaxFactory
     {
         public static StringExp SString(params StringExpElement[] elems)
             => new StringExp(Arr(elems));

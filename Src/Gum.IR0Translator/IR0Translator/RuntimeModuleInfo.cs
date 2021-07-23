@@ -14,9 +14,9 @@ namespace Gum.IR0Translator
 
         static ModuleInfo Create()
         {
-            var intType = new StructInfo("Int32", default, null, default, default, default, default);
-            var boolType = new StructInfo("Boolean", default, null, default, default, default, default);
-            var stringType = new StructInfo("String", default, null, default, default, default, default);
+            var intType = new StructInfo("Int32", default, null, default, default, default, default, default);
+            var boolType = new StructInfo("Boolean", default, null, default, default, default, default, default);
+            var stringType = new StructInfo("String", default, null, default, default, default, default, default);
             var types = Arr<TypeInfo>(intType, boolType, stringType);
             
             var systemNS = new NamespaceInfo("System", default, types, default);

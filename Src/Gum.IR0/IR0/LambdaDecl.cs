@@ -4,13 +4,12 @@ using Pretune;
 
 namespace Gum.IR0
 {
-    [AutoConstructor, ImplementIEquatable]
-    public partial class LambdaDecl : Decl
-    {
-        public Name.Anonymous Name { get; }
-        public CapturedStatement CapturedStatement { get; }
-        public ImmutableArray<Param> Parameters { get; }
-
+    public record LambdaDecl(
+        Name.Anonymous Name,
+        CapturedStatement CapturedStatement,
+        ImmutableArray<Param> Parameters
+    ) : Decl
+    {   
         public override void EnsurePure()
         {
             Misc.EnsurePure(Name);

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Xunit;
 
 using static Gum.Infra.Misc;
-using static Gum.TextAnalysis.Test.TestMisc;
+using static Gum.Syntax.SyntaxFactory;
 
 namespace Gum.TextAnalysis.Test
 {
@@ -33,7 +33,7 @@ namespace Gum.TextAnalysis.Test
 
             var expResult = await expParser.ParseExpAsync(context);
 
-            Assert.Equal(SimpleSId("x"), expResult.Elem);
+            Assert.Equal(SId("x"), expResult.Elem);
         }
 
         [Fact]
@@ -59,7 +59,7 @@ namespace Gum.TextAnalysis.Test
                 new TextStringExpElement("aaa bbb "),
                 new ExpStringExpElement(new StringExp(Arr<StringExpElement>(
                     new TextStringExpElement("xxx "),
-                    new ExpStringExpElement(SimpleSId("ddd"))
+                    new ExpStringExpElement(SId("ddd"))
                 ))),
                 new TextStringExpElement(" ddd")
             ));
@@ -108,10 +108,10 @@ namespace Gum.TextAnalysis.Test
                 new BinaryOpExp(
                     BinaryOpKind.Modulo,
                     new CallExp(
-                        new UnaryOpExp(UnaryOpKind.PostfixInc, SimpleSId("c")), 
-                        Arr<Argument>(new Argument.Normal(SimpleSId("e")), new Argument.Normal(SimpleSId("f")))
+                        new UnaryOpExp(UnaryOpKind.PostfixInc, SId("c")), 
+                        Arr<Argument>(new Argument.Normal(SId("e")), new Argument.Normal(SId("f")))
                     ),
-                    SimpleSId("d")
+                    SId("d")
                 )
             );
 
@@ -127,7 +127,7 @@ namespace Gum.TextAnalysis.Test
             var expResult = await expParser.ParseExpAsync(context);
 
             var expected = new BinaryOpExp(BinaryOpKind.Assign,
-                SimpleSId("a"),
+                SId("a"),
                 new LambdaExp(
                     Arr(new LambdaExpParam(FuncParamKind.Normal, null, "b")),
                     new ReturnStmt(
@@ -138,7 +138,7 @@ namespace Gum.TextAnalysis.Test
                                     new LambdaExpParam(FuncParamKind.Normal, null, "c"),
                                     new LambdaExpParam(FuncParamKind.Normal, new IdTypeExp("int", default), "d")
                                 ),
-                                new ReturnStmt(new ReturnValueInfo(false, SimpleSId("e")))
+                                new ReturnStmt(new ReturnValueInfo(false, SId("e")))
                             )
                         )
                     )
@@ -160,14 +160,14 @@ namespace Gum.TextAnalysis.Test
                 new MemberExp(
                     new CallExp(
                         new MemberExp(
-                            new MemberExp(SimpleSId("a"), "b", default),
+                            new MemberExp(SId("a"), "b", default),
                             "c",
                             Arr<TypeExp>(
                                 new IdTypeExp("int", default), 
                                 new IdTypeExp("list", Arr<TypeExp>(new IdTypeExp("int", default)))
                             )
                         ),
-                        Arr<Argument>(new Argument.Normal(new IntLiteralExp(1)), new Argument.Normal(SimpleSStringExp("str")))
+                        Arr<Argument>(new Argument.Normal(new IntLiteralExp(1)), new Argument.Normal(SString("str")))
                     ),
                     "d",
                     default
@@ -206,7 +206,7 @@ namespace Gum.TextAnalysis.Test
                 Arr<Argument>(
                     new Argument.Normal(new IntLiteralExp(2)),
                     new Argument.Normal(new BoolLiteralExp(false)),
-                    new Argument.Normal(SimpleSStringExp("string"))
+                    new Argument.Normal(SString("string"))
                 ));
 
             Assert.Equal(expected, expResult.Elem);
@@ -221,9 +221,9 @@ namespace Gum.TextAnalysis.Test
             var expResult = await expParser.ParseExpAsync(context);
 
             var expected = new BinaryOpExp(BinaryOpKind.Assign,
-                SimpleSId("a"),
+                SId("a"),
                 new BinaryOpExp(BinaryOpKind.Assign,
-                    SimpleSId("b"),
+                    SId("b"),
                     new BinaryOpExp(BinaryOpKind.NotEqual,
                         new BinaryOpExp(BinaryOpKind.Equal,
                             new BinaryOpExp(BinaryOpKind.Subtract,
@@ -233,15 +233,15 @@ namespace Gum.TextAnalysis.Test
                                             new UnaryOpExp(UnaryOpKind.LogicalNot,
                                                 new UnaryOpExp(UnaryOpKind.PostfixInc,
                                                     new BinaryOpExp(BinaryOpKind.Modulo,
-                                                        SimpleSId("c"),
-                                                        SimpleSId("d"))))),
-                                        SimpleSId("e")),
-                                    SimpleSId("f")),
+                                                        SId("c"),
+                                                        SId("d"))))),
+                                        SId("e")),
+                                    SId("f")),
                                 new BinaryOpExp(BinaryOpKind.Modulo,
                                     new BinaryOpExp(BinaryOpKind.Divide,
-                                        SimpleSId("g"),
-                                        SimpleSId("h")),
-                                    SimpleSId("i"))),
+                                        SId("g"),
+                                        SId("h")),
+                                    SId("i"))),
                             new IntLiteralExp(3)),
                         new BoolLiteralExp(false))));
 

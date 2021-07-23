@@ -19,26 +19,17 @@ namespace Gum.IR0
             throw new NotImplementedException();
         }
     }
-
-    [AutoConstructor, ImplementIEquatable]
-    public partial class EnumElement : IPure
+    
+    public record EnumElement(string Name, ImmutableArray<EnumElementField> Fields) : IPure
     {
-        public string Name { get; }
-        public ImmutableArray<EnumElementField> Fields { get; }
-
         public void EnsurePure()
         {
             Misc.EnsurePure(Fields);
         }
     }
-
-    [AutoConstructor, ImplementIEquatable]
-    public partial class EnumDecl : Decl
-    {   
-        public string Name { get; }
-        public ImmutableArray<string> TypeParams { get; }
-        public ImmutableArray<EnumElement> Elems { get; }
-
+    
+    public record EnumDecl(string Name, ImmutableArray<string> TypeParams, ImmutableArray<EnumElement> Elems) : Decl
+    {
         public override void EnsurePure()
         {
             Misc.EnsurePure(TypeParams);

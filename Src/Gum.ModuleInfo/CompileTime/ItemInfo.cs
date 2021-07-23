@@ -5,6 +5,7 @@
     //       - MemberType
     //           - Member Type
     //           - Member Func
+    //           - Member Constructor
     //           - Member Var
     //       - MemberFunc
     //       - MemberVar

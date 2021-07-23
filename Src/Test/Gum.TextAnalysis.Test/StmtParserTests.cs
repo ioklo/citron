@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Xunit;
 
 using static Gum.Infra.Misc;
-using static Gum.TextAnalysis.Test.TestMisc;
+using static Gum.Syntax.SyntaxFactory;
 
 namespace Gum.TextAnalysis.Test
 {
@@ -37,7 +37,7 @@ namespace Gum.TextAnalysis.Test
             var expected = new CommandStmt(Arr(
                 new StringExp(Arr<StringExpElement>(
                     new TextStringExpElement("echo "),
-                    new ExpStringExpElement(SimpleSId("a")),
+                    new ExpStringExpElement(SId("a")),
                     new TextStringExpElement("bbb  ")
                 ))
             ));
@@ -61,10 +61,10 @@ xxx
             var expected = new CommandStmt(Arr(
                 new StringExp(Arr<StringExpElement>(
                     new TextStringExpElement("    echo "),
-                    new ExpStringExpElement(SimpleSId("a")),
+                    new ExpStringExpElement(SId("a")),
                     new TextStringExpElement(" bbb   ")
                 )),
-                SimpleSStringExp("xxx")
+                SString("xxx")
             ));
 
             Assert.Equal(expected, cmdStmt.Elem);
@@ -77,10 +77,7 @@ xxx
             
             var varDeclStmt = await parser.ParseVarDeclStmtAsync(context);
 
-            var expected = SimpleSVarDeclStmt(
-                SimpleSIdTypeExp("string"),
-                new VarDeclElement("a", new VarDeclElemInitializer(false, SimpleSStringExp("hello")))
-            );
+            var expected = SVarDeclStmt(SIdTypeExp("string"), "a", SString("hello"));
 
             Assert.Equal<Stmt>(expected, varDeclStmt.Elem);
         }
@@ -93,7 +90,7 @@ xxx
 
             var varDeclStmt = await parser.ParseVarDeclStmtAsync(context);
 
-            var expected = new VarDeclStmt(new VarDecl(true, SimpleSIdTypeExp("int"), Arr(new VarDeclElement("p", null))));
+            var expected = new VarDeclStmt(new VarDecl(true, SIdTypeExp("int"), Arr(new VarDeclElement("p", null))));
 
             Assert.Equal(expected, varDeclStmt.Elem);
         }
@@ -105,12 +102,12 @@ xxx
             
             var ifStmt = await parser.ParseIfStmtAsync(context);
 
-            var expected = new IfStmt(SimpleSId("b"),
-                SimpleSBlockStmt(),
+            var expected = new IfStmt(SId("b"),
+                SBlock(),
                 new IfStmt(
-                    SimpleSId("c"),
-                    SimpleSBlockStmt(),
-                    SimpleSBlockStmt()));
+                    SId("c"),
+                    SBlock(),
+                    SBlock()));
 
             Assert.Equal(expected, ifStmt.Elem);
         }
@@ -122,14 +119,14 @@ xxx
 
             var ifStmt = await parser.ParseIfStmtAsync(context);
 
-            var expected = new IfTestStmt(SimpleSId("b"),
-                SimpleSIdTypeExp("T"), 
+            var expected = new IfTestStmt(SId("b"),
+                SIdTypeExp("T"), 
                 null,
-                SimpleSBlockStmt(),
+                SBlock(),
                 new IfStmt(
-                    SimpleSId("c"),
-                    SimpleSBlockStmt(),
-                    SimpleSBlockStmt()));
+                    SId("c"),
+                    SBlock(),
+                    SBlock()));
 
             Assert.Equal(expected, ifStmt.Elem);
         }
@@ -141,14 +138,14 @@ xxx
 
             var ifStmt = await parser.ParseIfStmtAsync(context);
 
-            var expected = new IfTestStmt(SimpleSId("b"),
-                SimpleSIdTypeExp("T"),
+            var expected = new IfTestStmt(SId("b"),
+                SIdTypeExp("T"),
                 "t",
-                SimpleSBlockStmt(),
+                SBlock(),
                 new IfStmt(
-                    SimpleSId("c"),
-                    SimpleSBlockStmt(),
-                    SimpleSBlockStmt()));
+                    SId("c"),
+                    SBlock(),
+                    SBlock()));
 
             Assert.Equal(expected, ifStmt.Elem);
         }
@@ -163,9 +160,9 @@ for (f(); g; h + g) ;
             var result = await parser.ParseForStmtAsync(context);
 
             var expected = new ForStmt(
-                new ExpForStmtInitializer(new CallExp(SimpleSId("f"), default)),
-                SimpleSId("g"),
-                new BinaryOpExp(BinaryOpKind.Add, SimpleSId("h"), SimpleSId("g")),
+                new ExpForStmtInitializer(new CallExp(SId("f"), default)),
+                SId("g"),
+                new BinaryOpExp(BinaryOpKind.Add, SId("h"), SId("g")),
                 BlankStmt.Instance);
 
             Assert.Equal(expected, result.Elem);
@@ -195,9 +192,9 @@ for (f(); g; h + g) ;
             (var parser, var context) = await PrepareAsync(@"{ { } { ; } ; }");
             var blockResult = await parser.ParseBlockStmtAsync(context);
 
-            var expected = SimpleSBlockStmt(
-                SimpleSBlockStmt(),
-                SimpleSBlockStmt(BlankStmt.Instance),
+            var expected = SBlock(
+                SBlock(),
+                SBlock(BlankStmt.Instance),
                 BlankStmt.Instance);
 
             Assert.Equal(expected, blockResult.Elem);
@@ -219,10 +216,10 @@ for (f(); g; h + g) ;
             var expResult = await parser.ParseExpStmtAsync(context);
 
             var expected = new ExpStmt(new BinaryOpExp(BinaryOpKind.Assign,
-                SimpleSId("a"),
+                SId("a"),
                 new BinaryOpExp(BinaryOpKind.Multiply,
-                    SimpleSId("b"),
-                    new CallExp(SimpleSId("c"), Arr<Argument>(new Argument.Normal(new IntLiteralExp(1)))))));
+                    SId("b"),
+                    new CallExp(SId("c"), Arr<Argument>(new Argument.Normal(new IntLiteralExp(1)))))));
                 
 
             Assert.Equal(expected, expResult.Elem);
@@ -234,7 +231,7 @@ for (f(); g; h + g) ;
             var (parser, context) = await PrepareAsync("foreach( var x in l ) { } ");
             var stmtResult = await parser.ParseForeachStmtAsync(context);
 
-            var expected = new ForeachStmt(false, SimpleSIdTypeExp("var"), "x", SimpleSId("l"), SimpleSBlockStmt());
+            var expected = new ForeachStmt(false, SIdTypeExp("var"), "x", SId("l"), SBlock());
 
             Assert.Equal(expected, stmtResult.Elem);
         }
@@ -245,7 +242,7 @@ for (f(); g; h + g) ;
             var (parser, context) = await PrepareAsync("`notnull(a);");
             var stmtResult = await parser.ParseStmtAsync(context);
 
-            var expected = new DirectiveStmt("notnull", Arr<Exp>(SimpleSId("a")));
+            var expected = new DirectiveStmt("notnull", Arr<Exp>(SId("a")));
 
             Assert.Equal(expected, stmtResult.Elem);
         }

@@ -13,6 +13,12 @@ namespace Gum.Syntax
     }    
 
     public record TypeStructDeclElement(TypeDecl TypeDecl) : StructDeclElement;
-    public record VarStructDeclElement(AccessModifier AccessModifier, TypeExp VarType, ImmutableArray<string> VarNames) : StructDeclElement;
     public record FuncStructDeclElement(StructFuncDecl FuncDecl) : StructDeclElement;
+    public record VarStructDeclElement(AccessModifier? AccessModifier, TypeExp VarType, ImmutableArray<string> VarNames) : StructDeclElement;
+
+    public record ConstructorStructDeclElement(
+        AccessModifier? AccessModifier,
+        string Name,
+        ImmutableArray<FuncParam> Parameters,
+        BlockStmt Body) : StructDeclElement;
 }

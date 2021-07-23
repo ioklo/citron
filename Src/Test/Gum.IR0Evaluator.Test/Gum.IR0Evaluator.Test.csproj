@@ -24,6 +24,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Gum.Infra\Gum.Infra.csproj" />
     <ProjectReference Include="..\..\Gum.IR0Evaluator\Gum.IR0Evaluator.csproj" />
+    <ProjectReference Include="..\Gum.Test.Misc\Gum.Test.Misc.csproj" />
   </ItemGroup>
 
 </Project>

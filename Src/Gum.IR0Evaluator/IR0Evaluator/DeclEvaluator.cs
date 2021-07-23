@@ -14,41 +14,32 @@ namespace Gum.IR0Evaluator
     public partial class Evaluator
     {
         // R.Decl을 읽어 들여서 객체로 만든다
-        [AutoConstructor]
-        partial class DeclEvaluator
+        partial struct DeclEvaluator
         {
-            R.ModuleName moduleName;
-
-            Evaluator evaluator;
-            ImmutableArray<R.Decl> decls;
+            GlobalContext globalContext;
             ItemContainer curContainer;
 
-            public DeclEvaluator(R.ModuleName moduleName, Evaluator evaluator, ImmutableArray<R.Decl> decls)
+            public static ItemContainer EvalRoot(GlobalContext globalContext, ImmutableArray<R.Decl> decls)
             {
-                this.moduleName = moduleName;
+                ItemContainer itemContainer = new ItemContainer();
 
-                this.evaluator = evaluator;
-                this.decls = decls;
-
-                this.curContainer = new ItemContainer();
-            }
-
-            public void Eval()
-            {
-                // 이 모듈의 이름을 알아야 한다
+                var declEvaluator = new DeclEvaluator(globalContext, itemContainer);
 
                 foreach (var decl in decls)
-                {
-                    EvalDecl(decl);
-                }
+                    declEvaluator.EvalDecl(decl);
 
-                // (R.ModuleName moduleName, ItemContainer container)
-                evaluator.context.AddRootItemContainer(moduleName, curContainer);
+                return itemContainer;
+            }
+
+            DeclEvaluator(GlobalContext globalContext, ItemContainer itemContainer)
+            {
+                this.globalContext = globalContext;
+                this.curContainer = itemContainer;
             }
 
             void EvalLambdaDecl(R.LambdaDecl lambdaDecl)
             {
-                var item = new IR0LambdaRuntimeItem(lambdaDecl);
+                var item = new IR0LambdaRuntimeItem(globalContext, lambdaDecl);
                 curContainer.AddRuntimeItem(item);
             }
 
@@ -61,16 +52,12 @@ namespace Gum.IR0Evaluator
                 var paramHash = Misc.MakeParamHash(typeParamCount, normalFuncDecl.Parameters);
                 curContainer.AddItemContainer(normalFuncDecl.Name, paramHash, itemContainer);
 
-                var funcRuntimeItem = new IR0FuncRuntimeItem(normalFuncDecl);
+                var funcRuntimeItem = new IR0FuncRuntimeItem(globalContext, normalFuncDecl);
                 curContainer.AddRuntimeItem(funcRuntimeItem);
 
-                var savedContainer = curContainer;
-                curContainer = itemContainer;
-
+                var newDeclEvaluator = new DeclEvaluator(globalContext, itemContainer);
                 foreach (var decl in normalFuncDecl.Decls)
-                    EvalDecl(decl);
-
-                curContainer = savedContainer;                
+                    newDeclEvaluator.EvalDecl(decl);
             }
 
             void EvalSequenceFuncDecl(R.SequenceFuncDecl seqFuncDecl)
@@ -82,24 +69,22 @@ namespace Gum.IR0Evaluator
 
                 curContainer.AddItemContainer(seqFuncDecl.Name, paramHash, itemContainer);
 
-                var runtimeItem = new IR0SeqFuncRuntimeItem(seqFuncDecl);
+                var runtimeItem = new IR0SeqFuncRuntimeItem(globalContext, seqFuncDecl);
                 curContainer.AddRuntimeItem(runtimeItem);
 
-                var savedContainer = curContainer;
-                curContainer = itemContainer;
-
+                var newDeclEvaluator = new DeclEvaluator(globalContext, itemContainer);
                 foreach (var decl in seqFuncDecl.Decls)
-                {
-                    EvalDecl(decl);
-                }
-
-                curContainer = savedContainer;
+                    newDeclEvaluator.EvalDecl(decl);
             }
 
             void EvalDecl(R.Decl decl)
             {
                 switch(decl)
                 {
+                    case R.StructDecl structDecl:
+                        EvalStructDecl(structDecl);
+                        break;
+
                     case R.LambdaDecl lambdaDecl:
                         EvalLambdaDecl(lambdaDecl);
                         break;
@@ -124,6 +109,60 @@ namespace Gum.IR0Evaluator
                         throw new UnreachableCodeException();
                 }
             }
+            
+            void EvalStructDeclMemberVarDecl(ItemContainer structContainer, R.StructDecl.MemberDecl.Var varDecl)
+            {
+                foreach (var name in varDecl.Names)
+                {
+                    var memberVarItem = new IR0StructMemberVarRuntimeItem(name);
+                    structContainer.AddRuntimeItem(memberVarItem);
+                }
+            }
+
+            void EvalStructDeclConstructorDecl(ItemContainer structContainer, R.StructDecl.MemberDecl.Constructor constructorDecl)
+            {
+                // NOTICE: Constructor는 typeParamCount가 0 이다
+                var paramHash = Misc.MakeParamHash(typeParamCount: 0, constructorDecl.Parameters);
+                var runtimeItem = new IR0ConstructorRuntimeItem(globalContext, constructorDecl, paramHash, constructorDecl.Parameters);
+
+                var itemContainer = new ItemContainer();
+                curContainer.AddItemContainer(R.Name.Constructor.Instance, paramHash, itemContainer);
+
+                structContainer.AddRuntimeItem(runtimeItem);
+
+                var newDeclEvaluator = new DeclEvaluator(globalContext, itemContainer);
+                foreach (var decl in constructorDecl.Decls)
+                    newDeclEvaluator.EvalDecl(decl);
+            }
+
+            void EvalStructDeclMemberDecl(ItemContainer structContainer, R.StructDecl.MemberDecl memberDecl)
+            {
+                switch(memberDecl)
+                {
+                    case R.StructDecl.MemberDecl.Var varDecl:
+                        EvalStructDeclMemberVarDecl(structContainer, varDecl);
+                        break;
+
+                    case R.StructDecl.MemberDecl.Constructor constructorDecl:
+                        EvalStructDeclConstructorDecl(structContainer, constructorDecl);
+                        break;
+
+                    default:
+                        throw new UnreachableCodeException();
+                }
+            }
+
+            void EvalStructDecl(R.StructDecl structDecl)
+            {
+                var structContainer = new ItemContainer();
+                foreach (var memberDecl in structDecl.MemberDecls)
+                {
+                    EvalStructDeclMemberDecl(structContainer, memberDecl);
+                }
+
+                curContainer.AddItemContainer(structDecl.Name, new R.ParamHash(structDecl.TypeParams.Length, default), structContainer);
+                curContainer.AddRuntimeItem(new IR0StructRuntimeItem(globalContext, structDecl));
+            }
 
             void EvalEnumDecl(R.EnumDecl enumDecl)
             {
@@ -131,7 +170,7 @@ namespace Gum.IR0Evaluator
 
                 foreach (var enumElem in enumDecl.Elems)
                 {
-                    var enumElemItem = new IR0EnumElemRuntimeItem(enumElem);
+                    var enumElemItem = new IR0EnumElemRuntimeItem(globalContext, enumElem);
                     var enumElemContainer = new ItemContainer();
 
                     int fieldIndex = 0;

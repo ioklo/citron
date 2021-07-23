@@ -20,9 +20,10 @@ namespace Gum.IR0Translator
         // Global일 경우 null
         bool bInsideTypeScope;
         ItemPath? itemPath;
+        List<M.ConstructorInfo> constructors;
         List<M.TypeInfo> types;
         List<M.FuncInfo> funcs;
-        List<M.MemberVarInfo> memberVars;        
+        List<M.MemberVarInfo> memberVars;
 
         public static M.ModuleInfo Build(M.ModuleName moduleName, S.Script script, TypeExpInfoService typeExpTypeValueService)
         {
@@ -61,6 +62,7 @@ namespace Gum.IR0Translator
             
             types = new List<M.TypeInfo>();
             funcs = new List<M.FuncInfo>();
+            constructors = new List<M.ConstructorInfo>();
             memberVars = new List<M.MemberVarInfo>();
         }
 
@@ -186,6 +188,13 @@ namespace Gum.IR0Translator
                     case S.VarStructDeclElement varDeclElem:
                         newBuilder.VisitStructVarDeclElement(varDeclElem);
                         break;
+
+                    case S.ConstructorStructDeclElement constructorDeclElem:
+                        newBuilder.VisitStructConstructorDeclElement(constructorDeclElem);
+                        break;
+
+                    default:
+                        throw new UnreachableCodeException();
                 }
             }
             
@@ -193,7 +202,8 @@ namespace Gum.IR0Translator
                 structDecl.Name, structDecl.TypeParams, null, default, 
                 newBuilder.types.ToImmutableArray(), 
                 newBuilder.funcs.ToImmutableArray(), 
-                newBuilder.memberVars.ToImmutableArray());
+                newBuilder.memberVars.ToImmutableArray(),
+                newBuilder.constructors.ToImmutableArray());
 
             types.Add(structInfo);
         }
@@ -255,6 +265,15 @@ namespace Gum.IR0Translator
                 var varInfo = new M.MemberVarInfo(bStatic, declType, name);
                 memberVars.Add(varInfo);
             }
-        }        
+        }
+
+        void VisitStructConstructorDeclElement(S.ConstructorStructDeclElement constructorDeclElem)
+        {
+            var paramInfo = MakeParams(constructorDeclElem.Parameters);
+
+            constructors.Add(new M.ConstructorInfo(paramInfo));
+
+            // memberVars.Add(new M.ConstructorInfo)
+        }
     }
 }

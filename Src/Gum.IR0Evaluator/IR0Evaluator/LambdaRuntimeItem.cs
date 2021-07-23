@@ -13,8 +13,8 @@ namespace Gum.IR0Evaluator
     {
         public abstract ImmutableArray<R.Param> Parameters { get; }
         
-        public abstract ValueTask InvokeAsync(Evaluator evaluator, Value? capturedThis, ImmutableDictionary<string, Value> capturedVars, ImmutableArray<Value> args, Value result);
-        public abstract void Capture(Evaluator evaluator, LambdaValue lambdaValue);
+        public abstract ValueTask InvokeAsync(Value? capturedThis, ImmutableDictionary<string, Value> capturedVars, ImmutableArray<Value> args, Value result);
+        public abstract void Capture(EvalContext context, LocalContext localContext, LambdaValue lambdaValue);
     }
 
     public partial class Evaluator
@@ -22,18 +22,20 @@ namespace Gum.IR0Evaluator
         [AutoConstructor]
         partial class IR0LambdaRuntimeItem : LambdaRuntimeItem
         {
+            GlobalContext globalContext;
+
             public override R.Name Name => lambdaDecl.Name;
             public override R.ParamHash ParamHash => R.ParamHash.None;
             public override ImmutableArray<R.Param> Parameters => lambdaDecl.Parameters;
             R.LambdaDecl lambdaDecl;
 
-            public override Value Alloc(Evaluator evaluator, TypeContext typeContext)
+            public override Value Alloc(TypeContext typeContext)
             {
                 Value? capturedThis = null;
                 if (lambdaDecl.CapturedStatement.ThisType != null)
                 {
                     var appliedThisType = typeContext.Apply(lambdaDecl.CapturedStatement.ThisType);
-                    capturedThis = evaluator.AllocValue(appliedThisType);
+                    capturedThis = globalContext.AllocValue(appliedThisType);
                 }
 
                 var capturesBuilder = ImmutableDictionary.CreateBuilder<string, Value>();
@@ -41,15 +43,14 @@ namespace Gum.IR0Evaluator
                 {
                     var appliedElemType = typeContext.Apply(elemType);
 
-                    var elemValue = evaluator.AllocValue(appliedElemType);
+                    var elemValue = globalContext.AllocValue(appliedElemType);
                     capturesBuilder.Add(elemName, elemValue);
                 }
 
                 return new LambdaValue(capturedThis, capturesBuilder.ToImmutable());
             }
 
-            public override async ValueTask InvokeAsync(
-                Evaluator evaluator, 
+            public override ValueTask InvokeAsync(
                 Value? capturedThis,
                 ImmutableDictionary<string, Value> capturedVars,
                 ImmutableArray<Value> args, 
@@ -60,15 +61,16 @@ namespace Gum.IR0Evaluator
                 for (int i = 0; i < args.Length; i++)
                     builder.Add(lambdaDecl.Parameters[i].Name, args[i]);
 
-                await evaluator.context.ExecInNewFuncFrameAsync(capturedVars, builder.ToImmutable(), EvalFlowControl.None, ImmutableArray<Task>.Empty, capturedThis, result, async () =>
-                {
-                    await foreach (var _ in evaluator.EvalStmtAsync(lambdaDecl.CapturedStatement.Body)) { }
-                });
+                var context = new EvalContext(capturedVars, EvalFlowControl.None, capturedThis, result);
+                var localContext = new LocalContext(builder.ToImmutable());
+                var localTaskContext = new LocalTaskContext();
+
+                return StmtEvaluator.EvalAsync(globalContext, context, localContext, localTaskContext, lambdaDecl.CapturedStatement.Body);
             }
 
-            public override void Capture(Evaluator evaluator, LambdaValue lambdaValue)
+            public override void Capture(EvalContext context, LocalContext localContext, LambdaValue lambdaValue)
             {
-                evaluator.CaptureLocals(lambdaValue.CapturedThis, lambdaValue.Captures, lambdaDecl.CapturedStatement);
+                Evaluator.CaptureLocals(context, localContext, lambdaValue.CapturedThis, lambdaValue.Captures, lambdaDecl.CapturedStatement);
             }
         }
     }

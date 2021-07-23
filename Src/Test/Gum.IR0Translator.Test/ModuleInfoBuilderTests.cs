@@ -4,10 +4,11 @@ using Gum.Collections;
 using Xunit;
 
 using static Gum.Infra.Misc;
-using static Gum.IR0Translator.Test.SyntaxFactory;
+using static Gum.Syntax.SyntaxFactory;
 
 using S = Gum.Syntax;
 using M = Gum.CompileTime;
+using Gum.Test.Misc;
 
 namespace Gum.IR0Translator.Test
 {    
@@ -210,7 +211,9 @@ namespace Gum.IR0Translator.Test
                 memberVars: ImmutableArray.Create(
                     new M.MemberVarInfo(false, IntMType, "x"),
                     new M.MemberVarInfo(false, IntMType, "y")
-                )
+                ),
+
+                constructors: default // TODO: 자동 constructor가 존재한다
             );
 
             Assert.Equal(expected, structInfo);

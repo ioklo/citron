@@ -267,7 +267,7 @@ namespace Gum.IR0Translator
             }
 
             // Layer 0
-            MatchArgsResult MatchFunc(
+            MatchArgsResult MatchCallable(
                 TypeEnv outerTypeEnv,
                 ImmutableArray<M.Param> parameters,
                 ImmutableArray<TypeValue> typeArgs,
@@ -275,11 +275,11 @@ namespace Gum.IR0Translator
             {
                 var (paramTypes, variadicParamIndex) = MakeParamTypes(parameters);
 
-                return MatchFunc(outerTypeEnv, paramTypes, variadicParamIndex, typeArgs, sargs);
+                return MatchCallable(outerTypeEnv, paramTypes, variadicParamIndex, typeArgs, sargs);
             }
 
             // Layer 0
-            MatchArgsResult MatchFunc(
+            MatchArgsResult MatchCallable(
                 TypeEnv outerTypeEnv,
                 ImmutableArray<ParamInfo> paramTypes,
                 int? variadicParamIndex,

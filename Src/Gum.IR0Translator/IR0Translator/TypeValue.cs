@@ -367,6 +367,9 @@ namespace Gum.IR0Translator
 
         public override ItemQueryResult GetMember(M.Name memberName, int typeParamCount)
         {
+            if (memberName.Equals(M.SpecialNames.Constructor))
+                return new ItemQueryResult.Constructors(new NestedItemValueOuter(this), structInfo.Constructors);
+
             // TODO: caching
             var results = new List<ItemQueryResult.Valid>();
 

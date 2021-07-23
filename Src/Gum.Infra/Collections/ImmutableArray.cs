@@ -118,6 +118,29 @@ namespace Gum.Collections
             if (array.IsDefault) return false;
             return array.Contains(item);
         }
+
+        public override string ToString()
+        {
+            // [ ... , ]
+
+            if (array.IsDefault) return "[]";
+
+            var sb = new StringBuilder();
+            sb.Append('[');
+
+            bool bFirst = true;
+            foreach (var item in array)
+            {
+                if (bFirst) bFirst = false;
+                else sb.Append(", ");
+
+                sb.Append(item);                
+            }
+
+            sb.Append(']');
+
+            return sb.ToString();
+        }
     }
 }
 

@@ -242,7 +242,7 @@ namespace Gum.IR0
     [AutoConstructor, ImplementIEquatable]
     public partial class NewStructExp : Exp
     {
-        public Path Type { get; }
+        public Path.Nested Constructor { get; }
 
         // TODO: params, out, 등 처리를 하려면 Exp가 아니라 다른거여야 한다
         public ImmutableArray<Argument> Args { get; }

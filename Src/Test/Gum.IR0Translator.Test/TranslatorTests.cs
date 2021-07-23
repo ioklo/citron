@@ -13,14 +13,13 @@ using R = Gum.IR0;
 using static Gum.IR0Translator.AnalyzeErrorCode;
 using static Gum.Infra.Misc;
 using static Gum.IR0Translator.Test.TestMisc;
-using static Gum.IR0Translator.Test.SyntaxFactory;
+using static Gum.Syntax.SyntaxFactory;
 using static Gum.IR0.IR0Factory;
 using Gum.Collections;
+using Gum.Test.Misc;
 
 namespace Gum.IR0Translator.Test
 {
-    class TestNeedToBeWrittenException : Exception { }
-
     public class TranslatorTests
     {
         M.ModuleName moduleName = "TestModule";

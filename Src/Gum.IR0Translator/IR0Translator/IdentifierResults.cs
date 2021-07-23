@@ -54,7 +54,13 @@ namespace Gum.IR0Translator
         }
 
         public abstract record Valid : IdentifierResult;
-        
+
+        public record ThisVar : Valid
+        {
+            public static readonly ThisVar Instance = new ThisVar();
+            ThisVar() { }
+        }
+
         public record LocalVar(bool IsRef, TypeValue TypeValue, string VarName) : Valid;
         public record LocalVarOutsideLambda(bool IsRef, TypeValue TypeValue, string VarName) : Valid;
         public record GlobalVar(bool IsRef, TypeValue TypeValue, string VarName) : Valid;            

@@ -7,8 +7,9 @@ using Xunit;
 using S = Gum.Syntax;
 using M = Gum.CompileTime;
 
-using static Gum.IR0Translator.Test.SyntaxFactory;
+using static Gum.Syntax.SyntaxFactory;
 using static Gum.Infra.Misc;
+using Gum.Test.Misc;
 
 namespace Gum.IR0Translator.Test
 {

@@ -32,7 +32,7 @@ namespace Gum.IR0Translator
             var rmoduleName = RItemFactory.MakeModuleName(moduleName);
 
             // Make Analyzer
-            var script = Analyzer.Analyze(sscript, rmoduleName, itemValueFactory, globalItemValueFactory, typeExpTypeValueService, errorCollector);
+            var script = Analyzer.Analyze(sscript, rmoduleName, itemValueFactory, globalItemValueFactory, typeExpTypeValueService, internalModuleInfo, errorCollector);
             if (script == null) return null;
 
             if (errorCollector.HasError)

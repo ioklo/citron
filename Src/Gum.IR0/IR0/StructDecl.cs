@@ -5,20 +5,42 @@ using Gum.Infra;
 using Pretune;
 
 namespace Gum.IR0
-{
-    [AutoConstructor, ImplementIEquatable]
-    public partial class StructDecl : Decl
+{    
+    public partial record StructDecl(
+        AccessModifier AccessModifier,
+        string Name,
+        ImmutableArray<string> TypeParams,
+        ImmutableArray<Path> BaseTypes,
+        ImmutableArray<StructDecl.MemberDecl> MemberDecls
+    ) : Decl
     {
-        public AccessModifier AccessModifier { get; }
-        public string Name { get; }
-        public ImmutableArray<string> TypeParams { get; }
-        public ImmutableArray<Path> BaseTypes { get; }
-
+        
         public override void EnsurePure()
         {
             Misc.EnsurePure(TypeParams);
             Misc.EnsurePure(BaseTypes);
         }
-        // public ImmutableArray<Element> Elems { get; }
+    }
+
+    public partial record StructDecl
+    {
+        public abstract record MemberDecl : Decl
+        {
+            public record Var(AccessModifier AccessModifier, Path Type, ImmutableArray<string> Names) : MemberDecl
+            {
+                public override void EnsurePure() { }
+            }
+
+            // public S(int a, int b) { }
+            public record Constructor(
+                AccessModifier AccessModifier,
+                ImmutableArray<Decl> Decls,
+                ImmutableArray<Param> Parameters,
+                Stmt Body
+            ) : MemberDecl
+            {
+                public override void EnsurePure() { }
+            }
+        }
     }
 }

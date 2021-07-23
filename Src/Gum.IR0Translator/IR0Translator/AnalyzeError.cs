@@ -7,7 +7,7 @@ using S = Gum.Syntax;
 
 namespace Gum.IR0Translator
 {
-    enum AnalyzeErrorCode
+    public enum AnalyzeErrorCode
     {
         // TypeSkeletonCollector
         S0101_Failed,
@@ -67,6 +67,7 @@ namespace Gum.IR0Translator
         A0902_CallExp_CallableExpressionIsNotCallable,
         A0903_CallExp_MismatchEnumConstructorArgCount,
         A0904_CallExp_MismatchBetweenEnumParamTypeAndEnumArgType,
+        A0905_CallExp_NoConstructorFound,
 
         // A1001_IfStmt_TestTargetShouldBeLocalVariable,
         // A1002_IfStmt_TestTargetIdentifierNotFound,
@@ -109,19 +110,26 @@ namespace Gum.IR0Translator
         A2007_ResolveIdentifier_NotFound,
         A2008_ResolveIdentifier_CantUseTypeAsExpression, // Type으로 Resolve는 되지만, 값으로 변경하려고 시도하다가 에러 var x = X.Y;
         A2009_ResolveIdentifier_EnumElemCantHaveMember,
-
+        A2010_ResolveIdentifier_ThisIsNotInTheContext,   // 
 
         A2101_FuncMatcher_MultipleCandidates,
         A2102_FuncMatcher_NotFound,
 
         A2201_Cast_Failed,
 
+        A2301_RootDecl_CannotSetPrivateAccessExplicitlyBecauseItsDefault,
+
+        A2401_StructDecl_CannotSetMemberPublicAccessExplicitlyBecauseItsDefault,
+        A2402_StructDecl_CannotSetMemberProtectedAccessBecauseItsNotAllowed,
+        A2402_StructDecl_CannotDeclConstructorDifferentWithTypeName,
+
+
         // A2001_Identifier_MultipleCandidatesForIdentifier,
 
         A9901_NotSupported_LambdaParameterInference,
     }
 
-    class AnalyzeError : IError
+    public class AnalyzeError : IError
     {
         public AnalyzeErrorCode Code { get; }
         public S.ISyntaxNode Node { get; }

@@ -98,7 +98,7 @@ namespace Gum.IR0Evaluator
     }
 
     // ref T
-    class RefValue : Value
+    public class RefValue : Value
     {
         Value? value;
 
@@ -131,14 +131,24 @@ namespace Gum.IR0Evaluator
 
     class StructValue : Value
     {
-        public override void SetValue(Value value)
+        ImmutableDictionary<string, Value> values;
+
+        public StructValue(ImmutableDictionary<string, Value> values)
         {
-            throw new NotImplementedException();
+            this.values = values;
+        }
+
+        public override void SetValue(Value from_value)
+        {
+            StructValue from = (StructValue)from_value;
+
+            foreach (var (name, value) in values)
+                value.SetValue(from.values[name]);            
         }
 
         public Value GetMemberValue(string name)
         {
-            throw new NotImplementedException();
+            return values[name];
         }
     }
 
@@ -164,7 +174,6 @@ namespace Gum.IR0Evaluator
     [AutoConstructor]
     partial class EnumValue : Value
     {
-        Evaluator evaluator;
         TypeContext typeContext;
         EnumElemRuntimeItem? enumElemItem;
         EnumElemValue? elemValue;        
@@ -194,7 +203,7 @@ namespace Gum.IR0Evaluator
 
             this.enumElemItem = enumElemItem;
             Debug.Assert(enumElemItem != null);
-            elemValue = (EnumElemValue)enumElemItem.Alloc(evaluator, typeContext);
+            elemValue = (EnumElemValue)enumElemItem.Alloc(typeContext);
         }
 
         public EnumElemValue GetElemValue()

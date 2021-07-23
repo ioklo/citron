@@ -10,6 +10,7 @@ namespace Gum.CompileTime
         IndexerGet,
         IndexerSet,
         AnonymousLambda, // use Name member
+        Constructor,
 
         OpInc,
         OpDec,
@@ -21,6 +22,7 @@ namespace Gum.CompileTime
         public static Name IndexerSet { get; } = new Name(SpecialName.IndexerGet, null);
         public static Name OpInc { get; } = new Name(SpecialName.OpInc, null);
         public static Name OpDec { get; } = new Name(SpecialName.OpDec, null);
+        public static Name Constructor { get; } = new Name(SpecialName.Constructor, null);
     }
 
     [ImplementIEquatable]

@@ -20,7 +20,7 @@ namespace Gum.IR0Translator
             GlobalContext globalContext;
             StmtAndExpAnalyzer stmtAndExpAnalyzer;
 
-            public VarDeclElemAnalyzer(GlobalContext globalContext, CallableContext callableContext, LocalContext localContext)
+            public VarDeclElemAnalyzer(GlobalContext globalContext, ICallableContext callableContext, LocalContext localContext)
             {
                 this.globalContext = globalContext;
                 this.stmtAndExpAnalyzer = new StmtAndExpAnalyzer(globalContext, callableContext, localContext);

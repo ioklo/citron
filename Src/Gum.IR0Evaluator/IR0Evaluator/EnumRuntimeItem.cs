@@ -7,17 +7,20 @@ namespace Gum.IR0Evaluator
     {
     }
 
-    [AutoConstructor]
-    partial class IR0EnumRuntimeItem : EnumRuntimeItem
+    partial class Evaluator
     {
-        public override R.Name Name => enumDecl.Name;
-        public override R.ParamHash ParamHash => new R.ParamHash(enumDecl.TypeParams.Length, default);
-
-        R.EnumDecl enumDecl;
-
-        public override Value Alloc(Evaluator evaluator, TypeContext typeContext)
+        [AutoConstructor]
+        partial class IR0EnumRuntimeItem : EnumRuntimeItem
         {
-            return new EnumValue(evaluator, typeContext, null, null);
+            R.EnumDecl enumDecl;
+
+            public override R.Name Name => enumDecl.Name;
+            public override R.ParamHash ParamHash => new R.ParamHash(enumDecl.TypeParams.Length, default);            
+
+            public override Value Alloc(TypeContext typeContext)
+            {
+                return new EnumValue(typeContext, null, null);
+            }
         }
     }
 }

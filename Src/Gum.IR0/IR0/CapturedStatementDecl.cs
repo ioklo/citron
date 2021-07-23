@@ -3,12 +3,8 @@ using Pretune;
 
 namespace Gum.IR0
 {
-    [AutoConstructor, ImplementIEquatable]
-    public partial class CapturedStatementDecl : Decl
+    public record CapturedStatementDecl(Name.Anonymous Name, CapturedStatement CapturedStatement) : Decl
     {
-        public Name.Anonymous Name { get; }
-        public CapturedStatement CapturedStatement { get; }
-
         public override void EnsurePure()
         {
             Misc.EnsurePure(Name);

@@ -10,7 +10,7 @@ namespace Gum.Syntax
     [AutoConstructor, ImplementIEquatable]
     public partial class StructDecl : TypeDecl
     {   
-        public AccessModifier AccessModifier { get; }
+        public AccessModifier? AccessModifier { get; }
         public override string Name { get; }
         public ImmutableArray<string> TypeParams { get; }
         public ImmutableArray<TypeExp> BaseTypes { get; }

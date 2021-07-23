@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Xunit;
 
 using static Gum.Infra.Misc;
-using static Gum.TextAnalysis.Test.TestMisc;
+using static Gum.Syntax.SyntaxFactory;
 
 namespace Gum.TextAnalysis.Test
 {
@@ -31,7 +31,7 @@ namespace Gum.TextAnalysis.Test
             var context = await MakeContextAsync("@ls -al");
             var script = await parser.ParseScriptAsync(context);
 
-            var expected = SimpleSScript(
+            var expected = SScript(
                 new StmtScriptElement(new CommandStmt(Arr(
                     new StringExp(Arr<StringExpElement>(new TextStringExpElement("ls -al")))
                 )))
@@ -51,14 +51,14 @@ namespace Gum.TextAnalysis.Test
             var expected = new GlobalFuncDecl(
                 false,
                 false,
-                SimpleSIdTypeExp("void"),
+                SIdTypeExp("void"),
                 "Func", default,
                 Arr(
-                    new FuncParam(FuncParamKind.Normal, SimpleSIdTypeExp("int"), "x"),
-                    new FuncParam(FuncParamKind.Params, SimpleSIdTypeExp("string"), "y"),
-                    new FuncParam(FuncParamKind.Normal, SimpleSIdTypeExp("int"), "z")
+                    new FuncParam(FuncParamKind.Normal, SIdTypeExp("int"), "x"),
+                    new FuncParam(FuncParamKind.Params, SIdTypeExp("string"), "y"),
+                    new FuncParam(FuncParamKind.Normal, SIdTypeExp("int"), "z")
                 ),
-                SimpleSBlockStmt(new VarDeclStmt(new VarDecl(false, SimpleSIdTypeExp("int"), Arr(new VarDeclElement("a", new VarDeclElemInitializer(false, new IntLiteralExp(0))))))));
+                SBlock(new VarDeclStmt(new VarDecl(false, SIdTypeExp("int"), Arr(new VarDeclElement("a", new VarDeclElemInitializer(false, new IntLiteralExp(0))))))));
 
             Assert.Equal(expected, funcDecl.Elem);
         }
@@ -81,7 +81,7 @@ enum X
                 default,
                 Arr(
                     new EnumDeclElement("First", default),
-                    new EnumDeclElement("Second", Arr(new EnumElementField(SimpleSIdTypeExp("int"), "i"))),
+                    new EnumDeclElement("Second", Arr(new EnumElementField(SIdTypeExp("int"), "i"))),
                     new EnumDeclElement("Third", default)
                 )
             );
@@ -112,16 +112,16 @@ public struct S<T> : B, I
             var expected = new StructDecl(AccessModifier.Public, "S",
                 Arr( "T" ),
 
-                Arr<TypeExp>( SimpleSIdTypeExp("B"), SimpleSIdTypeExp("I") ),
+                Arr<TypeExp>( SIdTypeExp("B"), SIdTypeExp("I") ),
 
                 Arr<StructDeclElement>(
-                    new VarStructDeclElement(AccessModifier.Public, SimpleSIdTypeExp("int"), Arr("x1", "x2")),
-                    new VarStructDeclElement(AccessModifier.Protected, SimpleSIdTypeExp("string"), Arr("y")),
-                    new VarStructDeclElement(AccessModifier.Private, SimpleSIdTypeExp("int"), Arr("z")),
+                    new VarStructDeclElement(AccessModifier.Public, SIdTypeExp("int"), Arr("x1", "x2")),
+                    new VarStructDeclElement(AccessModifier.Protected, SIdTypeExp("string"), Arr("y")),
+                    new VarStructDeclElement(AccessModifier.Private, SIdTypeExp("int"), Arr("z")),
 
                     new TypeStructDeclElement(new StructDecl(
-                        AccessModifier.Public, "Nested", Arr( "U" ), Arr<TypeExp>( SimpleSIdTypeExp("B"), SimpleSIdTypeExp("I")),
-                        Arr<StructDeclElement>(new VarStructDeclElement(AccessModifier.Public, SimpleSIdTypeExp("int"), Arr("x")))
+                        AccessModifier.Public, "Nested", Arr( "U" ), Arr<TypeExp>( SIdTypeExp("B"), SIdTypeExp("I")),
+                        Arr<StructDeclElement>(new VarStructDeclElement(AccessModifier.Public, SIdTypeExp("int"), Arr("x")))
                     )),
 
                     new FuncStructDeclElement(new StructFuncDecl(
@@ -129,11 +129,11 @@ public struct S<T> : B, I
                         isStatic: true,
                         isSequence: false,
                         isRefReturn: false,
-                        SimpleSIdTypeExp("void"),
+                        SIdTypeExp("void"),
                         "Func",
                         Arr("X"),
-                        Arr(new FuncParam(FuncParamKind.Normal, SimpleSIdTypeExp("string"), "s")),
-                        SimpleSBlockStmt()
+                        Arr(new FuncParam(FuncParamKind.Normal, SIdTypeExp("string"), "s")),
+                        SBlock()
                     )),
 
                     new FuncStructDeclElement(new StructFuncDecl(
@@ -141,11 +141,11 @@ public struct S<T> : B, I
                         isStatic: false,
                         isSequence: true,
                         isRefReturn: false,
-                        SimpleSIdTypeExp("int"),
+                        SIdTypeExp("int"),
                         "F2",
                         Arr("T"),
                         default,
-                        SimpleSBlockStmt(new YieldStmt(new IntLiteralExp(4)))
+                        SBlock(new YieldStmt(new IntLiteralExp(4)))
                     ))
                 )
             );
@@ -175,25 +175,25 @@ for (int i = 0; i < 5; i++)
 ");
             var script = await parser.ParseScriptAsync(context);
 
-            var expected = SimpleSScript(
-                new StmtScriptElement(SimpleSVarDeclStmt(SimpleSIdTypeExp("int"), new VarDeclElement("sum", new VarDeclElemInitializer(false, new IntLiteralExp(0))))),
+            var expected = SScript(
+                new StmtScriptElement(SVarDeclStmt(SIdTypeExp("int"), "sum", new IntLiteralExp(0))),
                 new StmtScriptElement(new ForStmt(
-                    new VarDeclForStmtInitializer(SimpleSVarDecl(SimpleSIdTypeExp("int"), new VarDeclElement("i", new VarDeclElemInitializer(false, new IntLiteralExp(0))))),
-                    new BinaryOpExp(BinaryOpKind.LessThan, SimpleSId("i"), new IntLiteralExp(5)),
-                    new UnaryOpExp(UnaryOpKind.PostfixInc, SimpleSId("i")),
-                    SimpleSBlockStmt(
+                    new VarDeclForStmtInitializer(SVarDecl(SIdTypeExp("int"), "i", new IntLiteralExp(0))),
+                    new BinaryOpExp(BinaryOpKind.LessThan, SId("i"), new IntLiteralExp(5)),
+                    new UnaryOpExp(UnaryOpKind.PostfixInc, SId("i")),
+                    SBlock(
                         new IfStmt(
                                 new BinaryOpExp(BinaryOpKind.Equal,
-                                    new BinaryOpExp(BinaryOpKind.Modulo, SimpleSId("i"), new IntLiteralExp(2)),
+                                    new BinaryOpExp(BinaryOpKind.Modulo, SId("i"), new IntLiteralExp(2)),
                                     new IntLiteralExp(0)),
                                 new ExpStmt(
                                     new BinaryOpExp(BinaryOpKind.Assign,
-                                        SimpleSId("sum"),
-                                        new BinaryOpExp(BinaryOpKind.Add, SimpleSId("sum"), SimpleSId("i")))),
-                                new CommandStmt(Arr(SimpleSStringExp("        echo hi "))))))),
+                                        SId("sum"),
+                                        new BinaryOpExp(BinaryOpKind.Add, SId("sum"), SId("i")))),
+                                new CommandStmt(Arr(SString("        echo hi "))))))),
                 new StmtScriptElement(new CommandStmt(Arr(new StringExp(Arr<StringExpElement>(
                     new TextStringExpElement("echo "),
-                    new ExpStringExpElement(SimpleSId("sum")),
+                    new ExpStringExpElement(SId("sum")),
                     new TextStringExpElement(" Completed!")))))));
                     
             Assert.Equal(expected, script.Elem);

@@ -11,8 +11,8 @@ namespace Gum.IR0Evaluator
 {
     abstract class CapturedStmtRuntimeItem : RuntimeItem
     {
-        public abstract void InvokeParallel(Evaluator evaluator);
-        public abstract void InvokeAsynchronous(Evaluator evaluator);
+        public abstract void InvokeParallel(GlobalContext globalContext, EvalContext context, LocalContext localContext, LocalTaskContext localTaskContext);
+        public abstract void InvokeAsynchronous(GlobalContext globalContext, EvalContext context, LocalContext localContext, LocalTaskContext localTaskContext);
     }
 
     public partial class Evaluator
@@ -24,54 +24,56 @@ namespace Gum.IR0Evaluator
             public override R.ParamHash ParamHash => R.ParamHash.None;
             R.CapturedStatementDecl decl;
 
-            (Value? ThisValue, ImmutableDictionary<string, Value> LocalVars) Allocate(Evaluator evaluator)
+            (Value? ThisValue, ImmutableDictionary<string, Value> LocalVars) Allocate(GlobalContext globalContext)
             {
                 Value? thisValue = null;
 
                 if (decl.CapturedStatement.ThisType != null)
-                    thisValue = evaluator.AllocValue(decl.CapturedStatement.ThisType);
+                    thisValue = globalContext.AllocValue(decl.CapturedStatement.ThisType);
 
                 var localVarsBuilder = ImmutableDictionary.CreateBuilder<string, Value>();
                 foreach (var (type, name) in decl.CapturedStatement.OuterLocalVars)
                 {
-                    var value = evaluator.AllocValue(type);
+                    var value = globalContext.AllocValue(type);
                     localVarsBuilder.Add(name, value);
                 }
 
                 return (thisValue, localVarsBuilder.ToImmutable());
             }
 
-            public override void InvokeParallel(Evaluator evaluator)
+            public override void InvokeParallel(GlobalContext globalContext, EvalContext context, LocalContext localContext, LocalTaskContext localTaskContext)
             {
-                var (capturedThis, capturedLocals) = Allocate(evaluator);
-                evaluator.CaptureLocals(capturedThis, capturedLocals, decl.CapturedStatement);
-
-                // 새 evaluator를 만들고
-                var newEvaluator = evaluator.CloneWithNewContext(capturedThis, capturedLocals, default);
-
+                var (capturedThis, capturedLocals) = Allocate(globalContext);
+                CaptureLocals(context, localContext, capturedThis, capturedLocals, decl.CapturedStatement);
+                
                 var task = Task.Run(async () =>
                 {
-                    await foreach (var _ in newEvaluator.EvalStmtAsync(decl.CapturedStatement.Body)) { }
+                    var newContext = new EvalContext(capturedLocals, EvalFlowControl.None, capturedThis, VoidValue.Instance);
+                    var newLocalContext = new LocalContext(ImmutableDictionary<string, Value>.Empty);
+                    var newLocalTaskContext = new LocalTaskContext();
+                    await StmtEvaluator.EvalAsync(globalContext, newContext, newLocalContext, newLocalTaskContext, decl.CapturedStatement.Body);
                 });
 
-                evaluator.context.AddTask(task);
+                localTaskContext.AddTask(task);
             }
 
-            public override void InvokeAsynchronous(Evaluator evaluator)
+            public override void InvokeAsynchronous(GlobalContext globalContext, EvalContext context, LocalContext localContext, LocalTaskContext localTaskContext)
             {
-                var (capturedThis, capturedLocalVars) = Allocate(evaluator);
-                evaluator.CaptureLocals(capturedThis, capturedLocalVars, decl.CapturedStatement);
-
-                var newEvaluator = evaluator.CloneWithNewContext(capturedThis, capturedLocalVars, default);
+                var (capturedThis, capturedLocals) = Allocate(globalContext);
+                CaptureLocals(context, localContext, capturedThis, capturedLocals, decl.CapturedStatement);
 
                 async Task WrappedAsyncFunc()
                 {
-                    await foreach (var _ in newEvaluator.EvalStmtAsync(decl.CapturedStatement.Body)) { }
+                    var newContext = new EvalContext(capturedLocals, EvalFlowControl.None, capturedThis, VoidValue.Instance);
+                    var newLocalContext = new LocalContext(ImmutableDictionary<string, Value>.Empty);
+                    var newLocalTaskContext = new LocalTaskContext();
+
+                    await StmtEvaluator.EvalAsync(globalContext, newContext, newLocalContext, newLocalTaskContext, decl.CapturedStatement.Body);
                 };
 
                 // 현재 컨텍스트에서 실행
                 var task = WrappedAsyncFunc();
-                evaluator.context.AddTask(task);
+                localTaskContext.AddTask(task);
             }
         }
     }

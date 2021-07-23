@@ -14,19 +14,21 @@ namespace Gum.IR0Evaluator
         [AutoConstructor]
         partial class IR0EnumElemRuntimeItem : EnumElemRuntimeItem
         {
+            GlobalContext globalContext;
+
             public override R.Name Name => enumElem.Name;
             public override R.ParamHash ParamHash => R.ParamHash.None;
             public override ImmutableArray<R.EnumElementField> Fields => enumElem.Fields;
 
             R.EnumElement enumElem;
 
-            public override Value Alloc(Evaluator evaluator, TypeContext typeContext)
+            public override Value Alloc(TypeContext typeContext)
             {
                 var builder = ImmutableArray.CreateBuilder<Value>(enumElem.Fields.Length);
                 foreach (var field in enumElem.Fields)
                 {
                     var appliedType = typeContext.Apply(field.Type);
-                    var fieldValue = evaluator.AllocValue(appliedType);
+                    var fieldValue = globalContext.AllocValue(appliedType);
                     builder.Add(fieldValue);
                 }
 

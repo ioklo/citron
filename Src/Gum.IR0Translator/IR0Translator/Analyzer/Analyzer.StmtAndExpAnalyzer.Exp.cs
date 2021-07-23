@@ -42,6 +42,18 @@ namespace Gum.IR0Translator
                         HandleErrorIdentifierResult(idExp, errorResult);
                         break;
 
+                    case IdentifierResult.ThisVar:
+                        var thisTypeValue = callableContext.GetThisTypeValue();
+                        if (thisTypeValue == null)
+                        {
+                            globalContext.AddFatalError(A2010_ResolveIdentifier_ThisIsNotInTheContext, idExp);
+                            break;
+                        }
+                        else
+                        {
+                            return new ExpResult.Loc(R.ThisLoc.Instance, thisTypeValue);
+                        }
+
                     case IdentifierResult.LocalVarOutsideLambda localVarOutsideLambdaResult:
                         
                         // TODO: 여러번 캡쳐해도 한번만
@@ -79,9 +91,8 @@ namespace Gum.IR0Translator
                             return new ExpResult.Funcs(funcsResult.Outer, funcsResult.FuncInfos, funcsResult.TypeArgs, null);
                         }
 
-                    case IdentifierResult.Type:
-                        globalContext.AddFatalError(A2008_ResolveIdentifier_CantUseTypeAsExpression, idExp);
-                        break;
+                    case IdentifierResult.Type typeResult:
+                        return new ExpResult.Type(typeResult.TypeValue);
 
                     case IdentifierResult.EnumElem enumElemResult:
                         return new ExpResult.EnumElem(enumElemResult.EnumElemTypeValue);
@@ -313,7 +324,7 @@ namespace Gum.IR0Translator
                 // args는 params를 지원 할 수 있음
                 // TODO: MatchFunc에 OuterTypeEnv를 넣는 것이 나은지, fieldParamTypes에 미리 적용해서 넣는 것이 나은지
                 // paramTypes으로 typeValues를 건네 줄것이면 적용해서 넣는게 나을 것 같은데, TypeResolver 동작때문에 어떻게 될지 몰라서 일단 여기서는 적용하고 TypeEnv.None을 넘겨준다
-                var matchFuncResults = MatchFunc(TypeEnv.None, fieldParamTypes, null, default, sargs);
+                var matchFuncResults = MatchCallable(TypeEnv.None, fieldParamTypes, null, default, sargs);
 
                 if (matchFuncResults.bMatch)
                 {
@@ -330,12 +341,13 @@ namespace Gum.IR0Translator
             }
 
             [AutoConstructor]
-            partial struct MatchedFunc
+            partial struct MatchedFunc<TCallableInfo>
+                where TCallableInfo : M.ICallableInfo
             {
                 public MatchArgsResult Result { get; }
-                public M.FuncInfo FuncInfo { get; }                
+                public TCallableInfo CallableInfo { get; }                
                 public GlobalContext GlobalContext { get; }
-                public CallableContext CallableContext { get; }
+                public ICallableContext CallableContext { get; }
                 public LocalContext LocalContext { get; }
             }
 
@@ -367,39 +379,31 @@ namespace Gum.IR0Translator
                 return (builder.MoveToImmutable(), variadicParamsIndex);
             }
 
-            // CallExp분석에서 Callable이 Identifier인 경우 처리
-            ExpResult AnalyzeCallExpFuncCallable(ExpResult.Funcs funcsResult, ImmutableArray<S.Argument> sargs, S.ISyntaxNode nodeForErrorReport)
+            MatchedFunc<TCallableInfo> Match<TCallableInfo>(TypeEnv outerTypeEnv, ImmutableArray<TCallableInfo> callableInfos, ImmutableArray<S.Argument> sargs, ImmutableArray<TypeValue> typeArgs, S.ISyntaxNode nodeForErrorReport)
+                where TCallableInfo : M.ICallableInfo
             {
-                // 함수 중 하나를 골라야 한다
-                // 1. 인자 개수가 맞는지 (params도 고려)
-                // 2. 인자 타입이 맞는지 (타입 인퍼런스도 고려)
-                // 3. 맞는개 여러개라면 1) (타입 인퍼런스 < 고정 인자) 우선, 2) 각각 (타입인퍼런스된 함수, 고정 인자 함수) 도 여러개라면 에러                
-
-                // TypeEnv작성                
-                var outerTypeEnv = funcsResult.Outer.GetTypeEnv();
-
                 // 여러 함수 중에서 인자가 맞는것을 선택해야 한다
-                var exactCandidates = new Candidates<MatchedFunc?>();
-                var restCandidates = new Candidates<MatchedFunc?>();
+                var exactCandidates = new Candidates<MatchedFunc<TCallableInfo>?>();
+                var restCandidates = new Candidates<MatchedFunc<TCallableInfo>?>();
 
                 // Type inference
-                foreach (var funcInfo in funcsResult.FuncInfos)
-                {   
+                foreach (var callableInfo in callableInfos)
+                {
                     var clonedAnalyzer = CloneAnalyzer();
 
-                    var matchResult = clonedAnalyzer.MatchFunc(outerTypeEnv, funcInfo.Parameters, funcsResult.TypeArgs, sargs);
+                    var matchResult = clonedAnalyzer.MatchCallable(outerTypeEnv, callableInfo.Parameters, typeArgs, sargs);
                     if (!matchResult.bMatch) continue;
 
-                    var matchedCandidate = new MatchedFunc(matchResult, funcInfo, clonedAnalyzer.globalContext, clonedAnalyzer.callableContext, clonedAnalyzer.localContext);
-                    
+                    var matchedCandidate = new MatchedFunc<TCallableInfo>(matchResult, callableInfo, clonedAnalyzer.globalContext, clonedAnalyzer.callableContext, clonedAnalyzer.localContext);
+
                     if (matchResult.bExactMatch)
                         exactCandidates.Add(matchedCandidate); // context만 저장하게 수정
-                    else 
+                    else
                         restCandidates.Add(matchedCandidate);
                 }
 
                 // 매칭 된 것으로
-                MatchedFunc matchedFunc;
+                MatchedFunc<TCallableInfo> matchedFunc;
                 var exactMatch = exactCandidates.GetSingle();
                 if (exactMatch != null)
                 {
@@ -431,11 +435,25 @@ namespace Gum.IR0Translator
                     }
                 }
 
-                // funcValue만들기
-                var funcValue = globalContext.MakeFuncValue(funcsResult.Outer, matchedFunc.FuncInfo, matchedFunc.Result.TypeArgs);
-                
                 // context 업데이트
                 UpdateAnalyzer(matchedFunc.GlobalContext, matchedFunc.CallableContext, matchedFunc.LocalContext);
+                return matchedFunc;
+            }
+
+            // CallExp분석에서 Callable이 Identifier인 경우 처리
+            ExpResult AnalyzeCallExpFuncCallable(ExpResult.Funcs funcsResult, ImmutableArray<S.Argument> sargs, S.ISyntaxNode nodeForErrorReport)
+            {
+                // 함수 중 하나를 골라야 한다
+                // 1. 인자 개수가 맞는지 (params도 고려)
+                // 2. 인자 타입이 맞는지 (타입 인퍼런스도 고려)
+                // 3. 맞는개 여러개라면 1) (타입 인퍼런스 < 고정 인자) 우선, 2) 각각 (타입인퍼런스된 함수, 고정 인자 함수) 도 여러개라면 에러                
+
+                // TypeEnv작성                
+                var outerTypeEnv = funcsResult.Outer.GetTypeEnv();
+                var matchedFunc = Match(outerTypeEnv, funcsResult.FuncInfos, sargs, funcsResult.TypeArgs, nodeForErrorReport);
+
+                // funcValue만들기
+                var funcValue = globalContext.MakeFuncValue(funcsResult.Outer, matchedFunc.CallableInfo, matchedFunc.Result.TypeArgs);
 
                 if (funcValue.IsSequence)
                 {
@@ -460,7 +478,7 @@ namespace Gum.IR0Translator
                 // 일단 lambda파라미터는 params를 지원하지 않는 것으로
                 // args는 params를 지원 할 수 있음
 
-                var matchFuncResults = MatchFunc(TypeEnv.None, lambdaType.Params, null, default, sargs);
+                var matchFuncResults = MatchCallable(TypeEnv.None, lambdaType.Params, null, default, sargs);
 
                 if (matchFuncResults.bMatch)
                 {
@@ -474,6 +492,34 @@ namespace Gum.IR0Translator
                     globalContext.AddError(A0401_Parameter_MismatchBetweenParamCountAndArgCount, nodeForErrorReport);
                     throw new UnreachableCodeException();
                 }
+            }
+
+            ExpResult.Exp AnalyzeCallExpTypeCallable(TypeValue callableTypeValue, ImmutableArray<S.Argument> sargs, S.CallExp nodeForErrorReport)
+            {
+                if (callableTypeValue is StructTypeValue structTypeValue)
+                {
+                    // 생성자 검색,
+                    var result = structTypeValue.GetMember(M.SpecialNames.Constructor, typeParamCount: 0); // NOTICE: constructor는 타입 파라미터가 없다
+                    switch(result)
+                    {
+                        case ItemQueryResult.Constructors constructorResult:
+                            var matchedConstructor = Match(structTypeValue.MakeTypeEnv(), constructorResult.ConstructorInfos, sargs, default, nodeForErrorReport);                            
+
+                            var constructorValue = globalContext.MakeConstructorValue(constructorResult.Outer, matchedConstructor.CallableInfo);
+                            return new ExpResult.Exp(new R.NewStructExp(constructorValue.GetRPath_Nested(), matchedConstructor.Result.Args), structTypeValue);
+
+                        case ItemQueryResult.NotFound:
+                            globalContext.AddFatalError(A0905_CallExp_NoConstructorFound, nodeForErrorReport);
+                            break;
+
+                        case ItemQueryResult.Error errorResult:
+                            HandleItemQueryResultError(errorResult, nodeForErrorReport);
+                            break;
+                    }
+                }
+
+                globalContext.AddFatalError(A0902_CallExp_CallableExpressionIsNotCallable, nodeForErrorReport);
+                throw new UnreachableCodeException();
             }
 
             ExpResult AnalyzeCallExp(S.CallExp exp, ResolveHint hint)
@@ -504,10 +550,9 @@ namespace Gum.IR0Translator
                         globalContext.AddFatalError(A0902_CallExp_CallableExpressionIsNotCallable, exp.Callable);
                         break;
 
-                    // callable이 타입으로 계산되면, 에러
-                    case ExpResult.Type:
-                        globalContext.AddFatalError(A0902_CallExp_CallableExpressionIsNotCallable, exp.Callable);
-                        break;                        
+                    // callable이 타입으로 계산되면, Struct의 경우 생성자 호출을 한다
+                    case ExpResult.Type typeResult:
+                        return AnalyzeCallExpTypeCallable(typeResult.TypeValue, exp.Args, exp);
 
                     case ExpResult.Funcs funcsResult:
                         return AnalyzeCallExpFuncCallable(funcsResult, exp.Args, exp);
@@ -532,8 +577,9 @@ namespace Gum.IR0Translator
                 // TODO: 리턴 타입은 타입 힌트를 반영해야 한다
                 TypeValue? retTypeValue = null;
 
-                var newLambdaId = callableContext.NewAnonymousId();
-                var newLambdaContext = new LambdaContext(callableContext, localContext, newLambdaId, retTypeValue);
+                var lambdaName = callableContext.NewAnonymousName();
+                var lambdaPath = MakePath(lambdaName, R.ParamHash.None, default);
+                var newLambdaContext = new LambdaContext(lambdaPath, callableContext.GetThisTypeValue(), localContext, retTypeValue);
                 var newLocalContext = new LocalContext();
                 var newAnalyzer = new StmtAndExpAnalyzer(globalContext, newLambdaContext, newLocalContext);
 
@@ -575,11 +621,11 @@ namespace Gum.IR0Translator
                 R.Path? capturedThisType = null;
 
                 var capturedStmt = new R.CapturedStatement(capturedThisType, capturedLocalVars, bodyResult.Stmt);
-                var lambdaDecl = new R.LambdaDecl(new R.Name.Anonymous(newLambdaId), capturedStmt, rparamInfos);
+                var lambdaDecl = new R.LambdaDecl(lambdaName, capturedStmt, rparamInfos);
                 callableContext.AddDecl(lambdaDecl);
 
                 var lambdaTypeValue = globalContext.GetLambdaTypeValue(
-                    callableContext.GetPath(new R.Name.Anonymous(newLambdaId), R.ParamHash.None, default), // lambda는 paramHash를 넣지 않는다
+                    lambdaPath,
                     newLambdaContext.GetRetTypeValue() ?? globalContext.GetVoidType(),
                     paramTypes
                 );
@@ -642,19 +688,15 @@ namespace Gum.IR0Translator
             }
             
             // exp.x
-            ExpResult.Exp AnalyzeMemberExpLocParent(S.MemberExp memberExp, R.Loc parentLoc, TypeValue parentTypeValue)
+            ExpResult.Loc AnalyzeMemberExpLocParent(S.MemberExp memberExp, R.Loc parentLoc, TypeValue parentTypeValue)
             {
                 var typeArgs = GetTypeValues(memberExp.MemberTypeArgs);
                 var memberResult = parentTypeValue.GetMember(memberExp.MemberName, typeArgs.Length);
 
                 switch (memberResult)
                 {
-                    case ItemQueryResult.Error.MultipleCandidates:
-                        globalContext.AddFatalError(A2001_ResolveIdentifier_MultipleCandidatesForIdentifier, memberExp);
-                        break;
-
-                    case ItemQueryResult.Error.VarWithTypeArg:
-                        globalContext.AddFatalError(A2002_ResolveIdentifier_VarWithTypeArg, memberExp);
+                    case ItemQueryResult.Error errorResult:
+                        HandleItemQueryResultError(errorResult, memberExp);
                         break;
 
                     case ItemQueryResult.NotFound:
@@ -664,6 +706,9 @@ namespace Gum.IR0Translator
                     case ItemQueryResult.Type:
                         globalContext.AddFatalError(A2004_ResolveIdentifier_CantGetTypeMemberThroughInstance, memberExp);
                         break;
+
+                    case ItemQueryResult.Constructors:
+                        throw new UnreachableCodeException(); // 사용자는 명시적으로 생성자를 지칭할 수 없다
 
                     // x.First
                     case ItemQueryResult.EnumElem:
@@ -681,10 +726,27 @@ namespace Gum.IR0Translator
                         var memberVarValue = globalContext.MakeMemberVarValue(memberVarResult.Outer, memberVarResult.MemberVarInfo);
 
                         var memberLoc = parentTypeValue.MakeMemberLoc(parentLoc, memberVarValue.GetRPath_Nested());
-                        return new ExpResult.Exp(new R.LoadExp(memberLoc), memberVarValue.GetTypeValue());
+                        return new ExpResult.Loc(memberLoc, memberVarValue.GetTypeValue());
                 }
 
                 throw new UnreachableCodeException();
+            }
+
+            void HandleItemQueryResultError(ItemQueryResult.Error error, S.ISyntaxNode nodeForErrorReport)
+            {
+                switch (error)
+                {
+                    case ItemQueryResult.Error.MultipleCandidates:
+                        globalContext.AddFatalError(A2001_ResolveIdentifier_MultipleCandidatesForIdentifier, nodeForErrorReport);
+                        throw new UnreachableCodeException();
+
+                    case ItemQueryResult.Error.VarWithTypeArg:
+                        globalContext.AddFatalError(A2002_ResolveIdentifier_VarWithTypeArg, nodeForErrorReport);
+                        throw new UnreachableCodeException();
+
+                    default:
+                        throw new UnreachableCodeException();
+                }
             }
 
             // T.x
@@ -698,12 +760,8 @@ namespace Gum.IR0Translator
                         globalContext.AddFatalError(A2007_ResolveIdentifier_NotFound, nodeForErrorReport);
                         throw new UnreachableCodeException();
 
-                    case ItemQueryResult.Error.MultipleCandidates:
-                        globalContext.AddFatalError(A2001_ResolveIdentifier_MultipleCandidatesForIdentifier, nodeForErrorReport);
-                        throw new UnreachableCodeException();
-
-                    case ItemQueryResult.Error.VarWithTypeArg:
-                        globalContext.AddFatalError(A2002_ResolveIdentifier_VarWithTypeArg, nodeForErrorReport);
+                    case ItemQueryResult.Error errorResult:
+                        HandleItemQueryResultError(errorResult, nodeForErrorReport);
                         throw new UnreachableCodeException();
 
                     case ItemQueryResult.Type typeResult:
@@ -712,6 +770,9 @@ namespace Gum.IR0Translator
                             var typeValue = globalContext.MakeTypeValue(typeResult.Outer, typeResult.TypeInfo, typeArgs);
                             return new ExpResult.Type(typeValue);
                         }
+
+                    case ItemQueryResult.Constructors:
+                        throw new UnreachableCodeException(); // 사용자는 명시적으로 생성자를 지칭할 수 없다
 
                     // T.F가 나왔다. static이어야 한다
                     case ItemQueryResult.Funcs funcsResult:
@@ -801,6 +862,18 @@ namespace Gum.IR0Translator
                         case IdentifierResult.Error errorResult:
                             HandleErrorIdentifierResult(idParent, errorResult);
                             throw new UnreachableCodeException();
+
+                        case IdentifierResult.ThisVar:
+                            {
+                                var thisTypeValue = callableContext.GetThisTypeValue();
+                                if (thisTypeValue == null)
+                                {
+                                    globalContext.AddFatalError(A2010_ResolveIdentifier_ThisIsNotInTheContext, idParent);
+                                    throw new UnreachableCodeException();
+                                }
+
+                                return AnalyzeMemberExpLocParent(memberExp, R.ThisLoc.Instance, thisTypeValue);
+                            }
 
                         case IdentifierResult.LocalVarOutsideLambda localVarOutsideLambdaResult:
                             // TODO: 여러번 캡쳐해도 한번만

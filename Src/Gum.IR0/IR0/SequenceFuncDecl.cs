@@ -7,18 +7,16 @@ using Gum.Infra;
 
 namespace Gum.IR0
 {
-    [AutoConstructor, ImplementIEquatable]
-    public partial class SequenceFuncDecl : Decl
+    public record SequenceFuncDecl(
+        ImmutableArray<Decl> Decls,
+        Name Name,
+        bool IsThisCall,
+        Path YieldType,
+        ImmutableArray<string> TypeParams,
+        ImmutableArray<Param> Parameters,
+        Stmt Body
+    ) : Decl
     {
-        public ImmutableArray<Decl> Decls { get; }
-
-        public Name Name { get; }
-        public bool IsThisCall { get; }
-        public Path YieldType { get; }
-        public ImmutableArray<string> TypeParams { get; }
-        public ImmutableArray<Param> Parameters { get; }
-        public Stmt Body { get; }
-
         public override void EnsurePure()
         {
             Misc.EnsurePure(Decls);

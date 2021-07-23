@@ -8,7 +8,7 @@ using Pretune;
 namespace Gum.CompileTime
 {
     [AutoConstructor, ImplementIEquatable]
-    public partial class FuncInfo : ItemInfo
+    public partial class FuncInfo : ItemInfo, ICallableInfo
     {
         public override Name Name { get; }
         public bool IsSequenceFunc { get; }

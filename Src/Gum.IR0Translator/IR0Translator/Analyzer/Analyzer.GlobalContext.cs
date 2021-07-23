@@ -17,7 +17,7 @@ namespace Gum.IR0Translator
     {
         // Analyzer는 backtracking이 없어서, MutableContext를 쓴다 => TODO: 함수 인자 계산할때 backtracking이 생긴다
         class GlobalContext : IMutable<GlobalContext>
-        {            
+        {
             ItemValueFactory itemValueFactory;
             InternalBinaryOperatorQueryService internalBinOpQueryService;
             GlobalItemValueFactory globalItemValueFactory;
@@ -38,6 +38,11 @@ namespace Gum.IR0Translator
                 this.typeExpInfoService = typeExpInfoService;
                 this.errorCollector = errorCollector;
                 this.internalGlobalVarRepo = new InternalGlobalVariableRepository();
+            }
+
+            internal void AddFatalError()
+            {
+                throw new NotImplementedException();
             }
 
             GlobalContext(
@@ -196,6 +201,11 @@ namespace Gum.IR0Translator
                 return itemValueFactory.MakeFunc(outer, funcInfo, typeArgs);
             }
 
+            public ConstructorValue MakeConstructorValue(ItemValueOuter outer, M.ConstructorInfo info)
+            {
+                return itemValueFactory.MakeConstructorValue(outer, info);
+            }
+
             public MemberVarValue MakeMemberVarValue(NormalTypeValue outer, M.MemberVarInfo info)
             {
                 return itemValueFactory.MakeMemberVarValue(outer, info);
@@ -247,6 +257,16 @@ namespace Gum.IR0Translator
                 }
 
                 return null;
+            }
+
+            public TypeVarTypeValue MakeTypeVarTypeValue(int index)
+            {
+                return itemValueFactory.MakeTypeVar(index);
+            }
+
+            public StructTypeValue MakeStructTypeValue(ItemValueOuter outer, M.StructInfo structInfo, ImmutableArray<TypeValue> typeArgs)
+            {
+                return itemValueFactory.MakeStructValue(outer, structInfo, typeArgs);
             }
         }
     }

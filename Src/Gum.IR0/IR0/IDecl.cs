@@ -2,7 +2,7 @@
 
 namespace Gum.IR0
 {
-    public abstract class Decl : IPure
+    public abstract record Decl : IPure
     {
         public abstract void EnsurePure();
     }

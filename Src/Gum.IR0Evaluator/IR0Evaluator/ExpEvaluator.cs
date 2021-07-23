@@ -17,13 +17,29 @@ namespace Gum.IR0Evaluator
 {
     public partial class Evaluator
     {
-        partial class ExpEvaluator
+        partial struct ExpEvaluator
         {
-            private Evaluator evaluator;
+            GlobalContext globalContext;
+            EvalContext context;
+            LocalContext localContext;
 
-            public ExpEvaluator(Evaluator evaluator)
+            public static ValueTask EvalAsync(GlobalContext globalContext, EvalContext context, LocalContext localContext, R.Exp exp, Value result)
             {
-                this.evaluator = evaluator;
+                var evaluator = new ExpEvaluator(globalContext, context, localContext);
+                return evaluator.EvalExpAsync(exp, result);
+            }
+
+            public static ValueTask EvalStringExpAsync(GlobalContext globalContext, EvalContext context, LocalContext localContext, R.StringExp stringExp, Value result)
+            {
+                var evaluator = new ExpEvaluator(globalContext, context, localContext);
+                return evaluator.EvalStringExpAsync(stringExp, result);
+            }
+
+            ExpEvaluator(GlobalContext globalContext, EvalContext context, LocalContext localContext)
+            {
+                this.globalContext = globalContext;
+                this.context = context;
+                this.localContext = localContext;
             }
 
             void EvalBoolLiteralExp(R.BoolLiteralExp boolLiteralExp, Value result)
@@ -36,9 +52,11 @@ namespace Gum.IR0Evaluator
                 ((IntValue)result).SetInt(intLiteralExp.Value);
             }
 
+            ValueTask<Value> EvalLocAsync(R.Loc loc) => LocEvaluator.EvalAsync(globalContext, context, localContext, loc);
+
             async ValueTask EvalLoadExpAsync(R.LoadExp loadExp, Value result)
             {
-                var value = await evaluator.EvalLocAsync(loadExp.Loc);
+                var value = await EvalLocAsync(loadExp.Loc);
                 result.SetValue(value);
             }
 
@@ -57,8 +75,8 @@ namespace Gum.IR0Evaluator
 
                         case R.ExpStringExpElement expElem:
                             {
-                                var strValue = evaluator.AllocValue<StringValue>(R.Path.String);
-                                await EvalAsync(expElem.Exp, strValue);
+                                var strValue = globalContext.AllocValue<StringValue>(R.Path.String);
+                                await EvalExpAsync(expElem.Exp, strValue);
                                 sb.Append(strValue.GetString());
                                 break;
                             }
@@ -73,9 +91,9 @@ namespace Gum.IR0Evaluator
 
             async ValueTask EvalAssignExpAsync(R.AssignExp exp, Value result)
             {
-                var destValue = await evaluator.EvalLocAsync(exp.Dest);
+                var destValue = await EvalLocAsync(exp.Dest);
 
-                await EvalAsync(exp.Src, destValue);
+                await EvalExpAsync(exp.Src, destValue);
 
                 result.SetValue(destValue);
             }
@@ -98,18 +116,18 @@ namespace Gum.IR0Evaluator
                         var tupleType = (R.Path.TupleType)param.Type;
                         foreach (var elem in tupleType.Elems)
                         {
-                            var argValue = evaluator.AllocValue(elem.Type);
+                            var argValue = globalContext.AllocValue(elem.Type);
                             argValuesBuilder.Add(argValue);
                         }
                     }
                     else if (param.Kind == R.ParamKind.Ref)
                     {   
-                        var argValue = evaluator.AllocRefValue();
+                        var argValue = globalContext.AllocRefValue();
                         argValuesBuilder.Add(argValue);
                     }
                     else if (param.Kind == R.ParamKind.Normal)
                     {
-                        var argValue = evaluator.AllocValue(param.Type);
+                        var argValue = globalContext.AllocValue(param.Type);
                         argValuesBuilder.Add(argValue);
                     }
                     else
@@ -127,7 +145,7 @@ namespace Gum.IR0Evaluator
                     switch(arg)
                     {
                         case R.Argument.Normal normalArg:
-                            await EvalAsync(normalArg.Exp, argValues[argValueIndex]);
+                            await EvalExpAsync(normalArg.Exp, argValues[argValueIndex]);
                             argValueIndex++;
                             break;
 
@@ -137,12 +155,12 @@ namespace Gum.IR0Evaluator
                             // ArgValues들을 가리키는 TupleValue를 임의로 생성하고 값을 저장하도록 한다
                             var tupleElems = ImmutableArray.Create(argValues, argValueIndex, paramsArg.ElemCount);
                             var tupleValue = new TupleValue(tupleElems);
-                            await EvalAsync(paramsArg.Exp, tupleValue);
+                            await EvalExpAsync(paramsArg.Exp, tupleValue);
                             argValueIndex += paramsArg.ElemCount;
                             break;
 
                         case R.Argument.Ref refArg:
-                            var value = await evaluator.EvalLocAsync(refArg.Loc);
+                            var value = await EvalLocAsync(refArg.Loc);
                             var refValue = (RefValue)argValues[argValueIndex];
                             refValue.SetTarget(value);
                             argValueIndex++;
@@ -184,26 +202,26 @@ namespace Gum.IR0Evaluator
                 // 1) X<int, short>.Y<string>.F<bool>, 
                 // 2) (declId, [[[int, short], string], bool])
                 // 누가 정보를 더 많이 가지고 있는가; 1) 필요한가? 
-                var funcInvoker = evaluator.context.GetRuntimeItem<FuncRuntimeItem>(exp.Func);
+                var funcInvoker = globalContext.GetRuntimeItem<FuncRuntimeItem>(exp.Func);
 
                 // TODO: typeContext를 계산합니다
 
                 // 함수는 this call이지만 instance가 없는 경우는 없다.
                 Value? thisValue;
                 if (exp.Instance != null)
-                    thisValue = await evaluator.EvalLocAsync(exp.Instance);
+                    thisValue = await EvalLocAsync(exp.Instance);
                 else
                     thisValue = null;
 
                 // 인자를 계산 해서 처음 로컬 variable에 집어 넣는다
                 var args = await EvalArgumentsAsync(funcInvoker.Parameters, exp.Args);
 
-                await funcInvoker.InvokeAsync(evaluator, thisValue, args, result);
+                await funcInvoker.InvokeAsync(thisValue, args, result);
             }
 
             async ValueTask EvalCallSeqFuncExpAsync(R.CallSeqFuncExp exp, Value result)
             {
-                var seqFuncItem = evaluator.context.GetRuntimeItem<SeqFuncRuntimeItem>(exp.SeqFunc);
+                var seqFuncItem = globalContext.GetRuntimeItem<SeqFuncRuntimeItem>(exp.SeqFunc);
 
                 // 함수는 this call이지만 instance가 없는 경우는 없다.
                 Debug.Assert(!(seqFuncItem.IsThisCall && exp.Instance == null));
@@ -212,31 +230,31 @@ namespace Gum.IR0Evaluator
                 if (exp.Instance != null)
                 {
                     Debug.Assert(seqFuncItem.IsThisCall);
-                    thisValue = await evaluator.EvalLocAsync(exp.Instance);
+                    thisValue = await EvalLocAsync(exp.Instance);
                 }
 
                 var args = await EvalArgumentsAsync(seqFuncItem.Parameters, exp.Args);
-                seqFuncItem.Invoke(evaluator, thisValue, args, result);
+                seqFuncItem.Invoke(thisValue, args, result);
             }
 
             async ValueTask EvalCallValueExpAsync(R.CallValueExp exp, Value result)
             {
-                var callableValue = (LambdaValue)await evaluator.EvalLocAsync(exp.Callable);
-                var lambdaRuntimeItem = evaluator.context.GetRuntimeItem<LambdaRuntimeItem>(exp.Lambda);
+                var callableValue = (LambdaValue)await EvalLocAsync(exp.Callable);
+                var lambdaRuntimeItem = globalContext.GetRuntimeItem<LambdaRuntimeItem>(exp.Lambda);
                 var localVars = await EvalArgumentsAsync(lambdaRuntimeItem.Parameters, exp.Args);
 
-                await lambdaRuntimeItem.InvokeAsync(evaluator, callableValue.CapturedThis, callableValue.Captures, localVars, result);
+                await lambdaRuntimeItem.InvokeAsync(callableValue.CapturedThis, callableValue.Captures, localVars, result);
             }
 
             void EvalLambdaExp(R.LambdaExp exp, Value result)
             {
-                var lambdaRuntimeItem = evaluator.context.GetRuntimeItem<LambdaRuntimeItem>(exp.Lambda);
-                lambdaRuntimeItem.Capture(evaluator, (LambdaValue)result);                
+                var lambdaRuntimeItem = globalContext.GetRuntimeItem<LambdaRuntimeItem>(exp.Lambda);
+                lambdaRuntimeItem.Capture(context, localContext, (LambdaValue)result);                
             }
 
             //async ValueTask EvalMemberCallExpAsync(MemberCallExp exp, Value result)
             //{
-            //    var info = evaluator.context.GetNodeInfo<MemberCallExpInfo>(exp);
+            //    var info = context.GetNodeInfo<MemberCallExpInfo>(exp);
 
             //    switch (info)
             //    {
@@ -246,7 +264,7 @@ namespace Gum.IR0Evaluator
 
             //                await EvalAsync(exp.Object, thisValue);
             //                var args = await EvaluateArgsAsync(info.ArgTypeValues, exp.Args);
-            //                var funcInst = evaluator.context.DomainService.GetFuncInst(instanceFuncCall.FuncValue);
+            //                var funcInst = context.DomainService.GetFuncInst(instanceFuncCall.FuncValue);
             //                await evaluator.EvaluateFuncInstAsync(thisValue, funcInst, args, result);
             //                return;
             //            }
@@ -260,7 +278,7 @@ namespace Gum.IR0Evaluator
             //                }
 
             //                var args = await EvaluateArgsAsync(info.ArgTypeValues, exp.Args);
-            //                var funcInst = evaluator.context.DomainService.GetFuncInst(staticFuncCall.FuncValue);
+            //                var funcInst = context.DomainService.GetFuncInst(staticFuncCall.FuncValue);
             //                await evaluator.EvaluateFuncInstAsync(null, funcInst, args, result);
             //                return;
             //            }
@@ -286,7 +304,7 @@ namespace Gum.IR0Evaluator
             //                }
 
             //                var args = await EvaluateArgsAsync(info.ArgTypeValues, exp.Args);                        
-            //                var memberValue = evaluator.context.GetStaticValue(staticLambdaCall.VarValue);
+            //                var memberValue = context.GetStaticValue(staticLambdaCall.VarValue);
             //                var funcInst = ((FuncInstValue)memberValue).FuncInst!;
             //                await evaluator.EvaluateFuncInstAsync(null, funcInst, args, result);
             //                return;
@@ -327,10 +345,10 @@ namespace Gum.IR0Evaluator
 
                 foreach (var elemExp in exp.Elems)
                 {
-                    var elemValue = evaluator.AllocValue(exp.ElemType);
+                    var elemValue = globalContext.AllocValue(exp.ElemType);
                     list.Add(elemValue);
 
-                    await EvalAsync(elemExp, elemValue);
+                    await EvalExpAsync(elemExp, elemValue);
                 }
 
                 ((ListValue)result).SetList(list);
@@ -338,11 +356,11 @@ namespace Gum.IR0Evaluator
 
             async ValueTask EvalListIterExpAsync(R.ListIteratorExp exp, Value result_value)
             {
-                var listValue = (ListValue)await evaluator.EvalLocAsync(exp.ListLoc);
+                var listValue = (ListValue)await EvalLocAsync(exp.ListLoc);
                 var result = (SeqValue)result_value;
                 
                 // evaluator 복제
-                var newEvaluator = evaluator.CloneWithNewContext(listValue, default, default);
+                var newContext = new EvalContext(default, EvalFlowControl.None, null, VoidValue.Instance);
 
                 // asyncEnum을 만들기 위해서 내부 함수를 씁니다
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
@@ -353,7 +371,7 @@ namespace Gum.IR0Evaluator
 
                     foreach (var elem in list)
                     {
-                        var yieldValue = newEvaluator.context.GetYieldValue();
+                        var yieldValue = newContext.GetYieldValue();
                         yieldValue.SetValue(elem); // 복사
 
                         yield return Infra.Void.Instance;
@@ -361,7 +379,7 @@ namespace Gum.IR0Evaluator
                 }
 
                 var enumerator = WrapAsyncEnum();
-                result.SetEnumerator(enumerator, newEvaluator);
+                result.SetEnumerator(enumerator, newContext);
             }
 
             // Value에 넣어야 한다, 묶는 방법도 설명해야 한다
@@ -375,7 +393,7 @@ namespace Gum.IR0Evaluator
                     switch (arg)
                     {
                         case R.Argument.Normal normalArg:
-                            await EvalAsync(normalArg.Exp, values[argValueIndex]);
+                            await EvalExpAsync(normalArg.Exp, values[argValueIndex]);
                             argValueIndex++;
                             break;
 
@@ -386,7 +404,7 @@ namespace Gum.IR0Evaluator
                             var tupleElems = ImmutableArray.Create(values, argValueIndex, paramsArg.ElemCount);
 
                             var tupleValue = new TupleValue(tupleElems);
-                            await EvalAsync(paramsArg.Exp, tupleValue);
+                            await EvalExpAsync(paramsArg.Exp, tupleValue);
                             argValueIndex += paramsArg.ElemCount;
                             break;
 
@@ -404,21 +422,16 @@ namespace Gum.IR0Evaluator
 
                 // 메모리 시퀀스                
                 await EvalArgumentsAsync(result.Fields, exp.Args);
-                
-                //var builder = ImmutableArray.CreateBuilder<NamedValue>(exp.Members.Length);
-                //foreach (var member in exp.Members)
-                //{   
-                //    var argValue = evaluator.AllocValue(member.ExpInfo.Type);
-                //    builder.Add((exp.Name, argValue));
-
-                //    await EvalAsync(member.ExpInfo.Exp, argValue);
-                //}
-                //((EnumValue)result).SetEnum(exp.Name, builder.MoveToImmutable());
             }
 
-            ValueTask EvalNewStructExpAsync(R.NewStructExp exp, Value result)
+            // 할당은 result에서 미리 하고, 여기서는 Constructor만 호출해준다
+            async ValueTask EvalNewStructExpAsync(R.NewStructExp exp, Value result)
             {
-                throw new NotImplementedException();
+                var runtimeItem = globalContext.GetRuntimeItem<ConstructorRuntimeItem>(exp.Constructor);
+
+                var args = await EvalArgumentsAsync(runtimeItem.Parameters, exp.Args);
+
+                await runtimeItem.InvokeAsync(result, args);
             }
 
             ValueTask EvalNewClassExpAsync(R.NewClassExp exp, Value result)
@@ -430,10 +443,10 @@ namespace Gum.IR0Evaluator
             async ValueTask EvalCastEnumElemToEnumExp(R.CastEnumElemToEnumExp castEnumElemToEnumExp, Value result_value)
             {
                 var result = (EnumValue)result_value;
-                var enumElemItem = evaluator.context.GetRuntimeItem<EnumElemRuntimeItem>(castEnumElemToEnumExp.EnumElem);
+                var enumElemItem = globalContext.GetRuntimeItem<EnumElemRuntimeItem>(castEnumElemToEnumExp.EnumElem);
 
                 result.SetEnumElemItem(enumElemItem);
-                await EvalAsync(castEnumElemToEnumExp.Src, result.GetElemValue());
+                await EvalExpAsync(castEnumElemToEnumExp.Src, result.GetElemValue());
             }
 
             ValueTask EvalCastClassExp(R.CastClassExp castClassExp, Value result)
@@ -441,7 +454,7 @@ namespace Gum.IR0Evaluator
                 throw new NotImplementedException();
             }
 
-            internal async ValueTask EvalAsync(R.Exp exp, Value result)
+            async ValueTask EvalExpAsync(R.Exp exp, Value result)
             {
                 switch (exp)
                 {

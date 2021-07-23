@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
@@ -25,6 +25,7 @@
     <ProjectReference Include="..\..\Gum.IR0Evaluator\Gum.IR0Evaluator.csproj" />
     <ProjectReference Include="..\..\Gum.IR0Translator\Gum.IR0Translator.csproj" />
     <ProjectReference Include="..\..\Gum.TextAnalysis\Gum.TextAnalysis.csproj" />
+    <ProjectReference Include="..\Gum.Test.Misc\Gum.Test.Misc.csproj" />
   </ItemGroup>
 
   <ItemGroup>

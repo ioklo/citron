@@ -1,4 +1,5 @@
-﻿using Gum.Infra;
+﻿using Gum.Collections;
+using Gum.Infra;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,16 +14,29 @@ namespace Gum.IR0Evaluator
     {
         class LocEvaluator
         {
-            Evaluator evaluator;
-            public LocEvaluator(Evaluator evaluator)
+            GlobalContext globalContext;
+            EvalContext context;
+            LocalContext localContext;
+
+            public static ValueTask<Value> EvalAsync(GlobalContext globalContext, EvalContext context, LocalContext localContext, R.Loc loc)
             {
-                this.evaluator = evaluator;
+                var evaluator = new LocEvaluator(globalContext, context, localContext);
+                return evaluator.EvalLocAsync(loc);
             }
+
+            LocEvaluator(GlobalContext globalContext, EvalContext context, LocalContext localContext)
+            {
+                this.globalContext = globalContext;
+                this.context = context;
+                this.localContext = localContext;
+            }
+
+            ValueTask EvalExpAsync(R.Exp exp, Value result) => ExpEvaluator.EvalAsync(globalContext, context, localContext, exp, result);
 
             async ValueTask<Value> EvalTempLocAsync(R.TempLoc loc)
             {
-                var result = evaluator.AllocValue(loc.Type);
-                await evaluator.EvalExpAsync(loc.Exp, result);
+                var result = globalContext.AllocValue(loc.Type);
+                await EvalExpAsync(loc.Exp, result);
                 return result;
             }
 
@@ -30,8 +44,8 @@ namespace Gum.IR0Evaluator
             {
                 var listValue = (ListValue)await EvalLocAsync(loc.List);
 
-                var indexValue = evaluator.AllocValue<IntValue>(R.Path.Int);
-                await evaluator.EvalExpAsync(loc.Index, indexValue);
+                var indexValue = globalContext.AllocValue<IntValue>(R.Path.Int);
+                await EvalExpAsync(loc.Index, indexValue);
 
                 var list = listValue.GetList();
                 return list[indexValue.GetInt()];
@@ -45,25 +59,28 @@ namespace Gum.IR0Evaluator
                         return await EvalTempLocAsync(tempLoc);
 
                     case R.GlobalVarLoc globalVarLoc:
-                        return evaluator.context.GetGlobalValue(globalVarLoc.Name);
+                        return globalContext.GetGlobalValue(globalVarLoc.Name);
 
                     case R.LocalVarLoc localVarLoc:
-                        return evaluator.context.GetLocalValue(localVarLoc.Name);
+                        return localContext.GetLocalValue(localVarLoc.Name);
 
                     case R.CapturedVarLoc capturedVarLoc:
-                        return evaluator.context.GetCapturedValue(capturedVarLoc.Name);
+                        return context.GetCapturedValue(capturedVarLoc.Name);
 
                     case R.ListIndexerLoc listIndexerLoc:
                         return await EvalListIndexerLocAsync(listIndexerLoc);
 
                     case R.StaticMemberLoc staticMemberLoc:
-                        var staticValue = (StaticValue)evaluator.context.GetStaticValue(staticMemberLoc.Type);
+                        var staticValue = (StaticValue)context.GetStaticValue(staticMemberLoc.Type);
                         return staticValue.GetMemberValue(staticMemberLoc.MemberName);
 
                     case R.StructMemberLoc structMemberLoc:
-                        var structValue = (StructValue)await EvalLocAsync(structMemberLoc.Instance);
-                        throw new NotImplementedException();
-                        // return structValue.GetMemberValue(structMemberLoc.MemberName);
+                        {
+                            var structValue = (StructValue)await EvalLocAsync(structMemberLoc.Instance);
+                            var memberVarItem = globalContext.GetRuntimeItem<StructMemberVarRuntimeItem>(structMemberLoc.structMember);
+
+                            return memberVarItem.GetMemberValue(structValue);
+                        }
 
                     case R.ClassMemberLoc classMemberLoc:
                         var classValue = (ClassValue)await EvalLocAsync(classMemberLoc.Instance);
@@ -71,12 +88,12 @@ namespace Gum.IR0Evaluator
 
                     case R.EnumElemMemberLoc enumMemberLoc:
                         var enumElemValue = (EnumElemValue)await EvalLocAsync(enumMemberLoc.Instance);
-                        var enumElemFieldRuntimeItem = evaluator.context.GetRuntimeItem<EnumElemFieldRuntimeItem>(enumMemberLoc.EnumElemField);
+                        var enumElemFieldRuntimeItem = globalContext.GetRuntimeItem<EnumElemFieldRuntimeItem>(enumMemberLoc.EnumElemField);
 
                         return enumElemFieldRuntimeItem.GetMemberValue(enumElemValue);
 
                     case R.ThisLoc thisLoc:
-                        throw new NotImplementedException();
+                        return context.GetThisValue();
 
                     case R.DerefLocLoc derefLoc:
                         {
@@ -86,8 +103,8 @@ namespace Gum.IR0Evaluator
 
                     case R.DerefExpLoc derefExpLoc:
                         {
-                            var refValue = evaluator.AllocRefValue();
-                            await evaluator.EvalExpAsync(derefExpLoc.Exp, refValue);
+                            var refValue = globalContext.AllocRefValue();
+                            await EvalExpAsync(derefExpLoc.Exp, refValue);
                             return refValue.GetTarget();
                         }
 

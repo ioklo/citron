@@ -35,6 +35,11 @@ namespace Gum.Collections
             {
                 builder.AddRange(items);
             }
+
+            public IEnumerable<T> AsEnumerable()
+            {
+                return builder;
+            }
         }
     }
 }

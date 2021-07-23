@@ -192,11 +192,13 @@ namespace Gum.IR0Translator
                             VisitTypeExpOuterMost(varDeclElem.VarType);
                             break;
 
+                        case S.ConstructorStructDeclElement constructorDeclElem:
+                            VisitStructConstructorDecl(constructorDeclElem);
+                            break;
+
                         default:
                             throw new UnreachableCodeException();
                     }
-
-                    
                 }
             });
         }
@@ -213,6 +215,17 @@ namespace Gum.IR0Translator
                 VisitStmt(funcDecl.Body);
             });
         }        
+
+        void VisitStructConstructorDecl(S.ConstructorStructDeclElement constructorDeclElem)
+        {
+            ExecInScope(default, () =>
+            {
+                foreach (var param in constructorDeclElem.Parameters)
+                    VisitTypeExpOuterMost(param.Type);
+
+                VisitStmt(constructorDeclElem.Body);
+            });
+        }
         
         void VisitVarDecl(S.VarDecl varDecl)
         {

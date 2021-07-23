@@ -19,7 +19,9 @@ namespace Gum.CompileTime
         public ImmutableArray<TypeInfo> MemberTypes { get; }
         public ImmutableArray<FuncInfo> MemberFuncs { get; }
         public ImmutableArray<MemberVarInfo> MemberVars { get; }
-        
+
+        public ImmutableArray<ConstructorInfo> Constructors { get; }
+
         public override TypeInfo? GetMemberType(string name, int typeParamCount)
         {
             foreach (var memberType in MemberTypes)

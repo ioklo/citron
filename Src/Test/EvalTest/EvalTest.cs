@@ -2,6 +2,7 @@
 using Gum.Infra;
 using Gum.IR0Evaluator;
 using Gum.IR0Translator;
+using Gum.Test.Misc;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -43,43 +44,7 @@ namespace EvalTest
             sb.Append(cmdText);
         }
     }
-
-    class TestErrorCollector : IErrorCollector
-    {
-        List<IError> errors = new List<IError>();
-
-        public TestErrorCollector() { }
-
-        TestErrorCollector(TestErrorCollector other, CloneContext cloneContext)
-        {
-            this.errors = new List<IError>(other.errors);
-        }
-
-        public bool HasError => errors.Count != 0;
-
-        public void Add(IError error)
-        {
-            errors.Add(error);
-        }
-
-        public IErrorCollector Clone(CloneContext context)
-        {
-            return new TestErrorCollector(this, context);
-        }
-
-        public void Update(IErrorCollector src_errorCollector, UpdateContext updateContext)
-        {
-            var src = (TestErrorCollector)src_errorCollector;
-            errors.Clear();
-            errors.AddRange(src.errors);
-        }
-
-        public string GetMessages()
-        {
-            return string.Join("\r\n", errors.Select(error => error.Message));
-        }
-    }
-
+    
     public class EvalTest
     {
         [Theory]
@@ -116,7 +81,7 @@ namespace EvalTest
             var scriptResult = await parser.ParseScriptAsync(parserContext);
             Assert.True(scriptResult.HasValue, "parsing failed");
 
-            var errorCollector = new TestErrorCollector();
+            var errorCollector = new TestErrorCollector(false);
             var commandProvider = new TestCmdProvider();
 
             try
@@ -124,8 +89,7 @@ namespace EvalTest
                 var rscript = Translator.Translate("TestModule", default, scriptResult.Elem,  errorCollector);
                 MyAssert.Assert(rscript != null);
 
-                var evaluator = new Evaluator(default, commandProvider, rscript);
-                var retValue = await evaluator.EvalAsync(); // retValue는 지금 쓰지 않는다
+                var retValue = await Evaluator.EvalAsync(default, commandProvider, rscript); // retValue는 지금 쓰지 않는다
             }
             catch(Exception)
             {

@@ -11,12 +11,12 @@ namespace Gum.IR0Evaluator
 {
     public partial class Evaluator
     {
-        partial class ExpEvaluator
+        partial struct ExpEvaluator
         {
             async ValueTask Operator_LogicalNot_Bool_Bool(R.Exp operandExp, BoolValue result)
             {
-                var operandValue = evaluator.AllocValue<BoolValue>(R.Path.Bool);
-                await evaluator.EvalExpAsync(operandExp, operandValue);
+                var operandValue = globalContext.AllocValue<BoolValue>(R.Path.Bool);
+                await EvalExpAsync(operandExp, operandValue);
 
                 result.SetBool(!operandValue.GetBool());
             }
@@ -38,211 +38,211 @@ namespace Gum.IR0Evaluator
 
             async ValueTask Operator_UnaryMinus_Int_Int(R.Exp operandExp, IntValue result)
             {
-                var operandValue = evaluator.AllocValue<IntValue>(R.Path.Int);
-                await evaluator.EvalExpAsync(operandExp, operandValue);
+                var operandValue = globalContext.AllocValue<IntValue>(R.Path.Int);
+                await EvalExpAsync(operandExp, operandValue);
 
                 result.SetInt(-operandValue.GetInt());
             }
 
             async ValueTask Operator_ToString_Bool_String(R.Exp operandExp, StringValue result)
             {
-                var operandValue = evaluator.AllocValue<BoolValue>(R.Path.Bool);
-                await evaluator.EvalExpAsync(operandExp, operandValue);
+                var operandValue = globalContext.AllocValue<BoolValue>(R.Path.Bool);
+                await EvalExpAsync(operandExp, operandValue);
 
                 result.SetString(operandValue.GetBool() ? "true" : "false");
             }
 
             async ValueTask Operator_ToString_Int_String(R.Exp operandExp, StringValue result)
             {
-                var operandValue = evaluator.AllocValue<IntValue>(R.Path.Int);
-                await evaluator.EvalExpAsync(operandExp, operandValue);
+                var operandValue = globalContext.AllocValue<IntValue>(R.Path.Int);
+                await EvalExpAsync(operandExp, operandValue);
 
                 result.SetString(operandValue.GetInt().ToString());
             }
 
             async ValueTask Operator_Multiply_Int_Int_Int(R.Exp operandExp0, R.Exp operandExp1, IntValue result)
             {
-                var operandValue0 = evaluator.AllocValue<IntValue>(R.Path.Int);
-                var operandValue1 = evaluator.AllocValue<IntValue>(R.Path.Int);
+                var operandValue0 = globalContext.AllocValue<IntValue>(R.Path.Int);
+                var operandValue1 = globalContext.AllocValue<IntValue>(R.Path.Int);
 
-                await evaluator.EvalExpAsync(operandExp0, operandValue0);
-                await evaluator.EvalExpAsync(operandExp1, operandValue1);
+                await EvalExpAsync(operandExp0, operandValue0);
+                await EvalExpAsync(operandExp1, operandValue1);
 
                 result.SetInt(operandValue0.GetInt() * operandValue1.GetInt());
             }
 
             async ValueTask Operator_Divide_Int_Int_Int(R.Exp operandExp0, R.Exp operandExp1, IntValue result)
             {
-                var operandValue0 = evaluator.AllocValue<IntValue>(R.Path.Int);
-                var operandValue1 = evaluator.AllocValue<IntValue>(R.Path.Int);
+                var operandValue0 = globalContext.AllocValue<IntValue>(R.Path.Int);
+                var operandValue1 = globalContext.AllocValue<IntValue>(R.Path.Int);
 
-                await evaluator.EvalExpAsync(operandExp0, operandValue0);
-                await evaluator.EvalExpAsync(operandExp1, operandValue1);
+                await EvalExpAsync(operandExp0, operandValue0);
+                await EvalExpAsync(operandExp1, operandValue1);
 
                 result.SetInt(operandValue0.GetInt() / operandValue1.GetInt());
             }
 
             async ValueTask Operator_Modulo_Int_Int_Int(R.Exp operandExp0, R.Exp operandExp1, IntValue result)
             {
-                var operandValue0 = evaluator.AllocValue<IntValue>(R.Path.Int);
-                var operandValue1 = evaluator.AllocValue<IntValue>(R.Path.Int);
+                var operandValue0 = globalContext.AllocValue<IntValue>(R.Path.Int);
+                var operandValue1 = globalContext.AllocValue<IntValue>(R.Path.Int);
 
-                await evaluator.EvalExpAsync(operandExp0, operandValue0);
-                await evaluator.EvalExpAsync(operandExp1, operandValue1);
+                await EvalExpAsync(operandExp0, operandValue0);
+                await EvalExpAsync(operandExp1, operandValue1);
 
                 result.SetInt(operandValue0.GetInt() % operandValue1.GetInt());
             }
 
             async ValueTask Operator_Add_Int_Int_Int(R.Exp operandExp0, R.Exp operandExp1, IntValue result)
             {
-                var operandValue0 = evaluator.AllocValue<IntValue>(R.Path.Int);
-                var operandValue1 = evaluator.AllocValue<IntValue>(R.Path.Int);
+                var operandValue0 = globalContext.AllocValue<IntValue>(R.Path.Int);
+                var operandValue1 = globalContext.AllocValue<IntValue>(R.Path.Int);
 
-                await evaluator.EvalExpAsync(operandExp0, operandValue0);
-                await evaluator.EvalExpAsync(operandExp1, operandValue1);
+                await EvalExpAsync(operandExp0, operandValue0);
+                await EvalExpAsync(operandExp1, operandValue1);
 
                 result.SetInt(operandValue0.GetInt() + operandValue1.GetInt());
             }
 
             async ValueTask Operator_Add_String_String_String(R.Exp operandExp0, R.Exp operandExp1, StringValue result)
             {
-                var operandValue0 = evaluator.AllocValue<StringValue>(R.Path.String);
-                var operandValue1 = evaluator.AllocValue<StringValue>(R.Path.String);
+                var operandValue0 = globalContext.AllocValue<StringValue>(R.Path.String);
+                var operandValue1 = globalContext.AllocValue<StringValue>(R.Path.String);
 
-                await evaluator.EvalExpAsync(operandExp0, operandValue0);
-                await evaluator.EvalExpAsync(operandExp1, operandValue1);
+                await EvalExpAsync(operandExp0, operandValue0);
+                await EvalExpAsync(operandExp1, operandValue1);
 
                 result.SetString(operandValue0.GetString() + operandValue1.GetString());
             }
 
             async ValueTask Operator_Subtract_Int_Int_Int(R.Exp operandExp0, R.Exp operandExp1, IntValue result)
             {
-                var operandValue0 = evaluator.AllocValue<IntValue>(R.Path.Int);
-                var operandValue1 = evaluator.AllocValue<IntValue>(R.Path.Int);
+                var operandValue0 = globalContext.AllocValue<IntValue>(R.Path.Int);
+                var operandValue1 = globalContext.AllocValue<IntValue>(R.Path.Int);
 
-                await evaluator.EvalExpAsync(operandExp0, operandValue0);
-                await evaluator.EvalExpAsync(operandExp1, operandValue1);
+                await EvalExpAsync(operandExp0, operandValue0);
+                await EvalExpAsync(operandExp1, operandValue1);
 
                 result.SetInt(operandValue0.GetInt() - operandValue1.GetInt());
             }
 
             async ValueTask Operator_LessThan_Int_Int_Bool(R.Exp operandExp0, R.Exp operandExp1, BoolValue result)
             {
-                var operandValue0 = evaluator.AllocValue<IntValue>(R.Path.Int);
-                var operandValue1 = evaluator.AllocValue<IntValue>(R.Path.Int);
+                var operandValue0 = globalContext.AllocValue<IntValue>(R.Path.Int);
+                var operandValue1 = globalContext.AllocValue<IntValue>(R.Path.Int);
 
-                await evaluator.EvalExpAsync(operandExp0, operandValue0);
-                await evaluator.EvalExpAsync(operandExp1, operandValue1);
+                await EvalExpAsync(operandExp0, operandValue0);
+                await EvalExpAsync(operandExp1, operandValue1);
 
                 result.SetBool(operandValue0.GetInt() < operandValue1.GetInt());
             }
 
             async ValueTask Operator_LessThan_String_String_Bool(R.Exp operandExp0, R.Exp operandExp1, BoolValue result)
             {
-                var operandValue0 = evaluator.AllocValue<StringValue>(R.Path.String);
-                var operandValue1 = evaluator.AllocValue<StringValue>(R.Path.String);
+                var operandValue0 = globalContext.AllocValue<StringValue>(R.Path.String);
+                var operandValue1 = globalContext.AllocValue<StringValue>(R.Path.String);
 
-                await evaluator.EvalExpAsync(operandExp0, operandValue0);
-                await evaluator.EvalExpAsync(operandExp1, operandValue1);
+                await EvalExpAsync(operandExp0, operandValue0);
+                await EvalExpAsync(operandExp1, operandValue1);
 
                 result.SetBool(operandValue0.GetString().CompareTo(operandValue1.GetString()) < 0);
             }
 
             async ValueTask Operator_GreaterThan_Int_Int_Bool(R.Exp operandExp0, R.Exp operandExp1, BoolValue result)
             {
-                var operandValue0 = evaluator.AllocValue<IntValue>(R.Path.Int);
-                var operandValue1 = evaluator.AllocValue<IntValue>(R.Path.Int);
+                var operandValue0 = globalContext.AllocValue<IntValue>(R.Path.Int);
+                var operandValue1 = globalContext.AllocValue<IntValue>(R.Path.Int);
 
-                await evaluator.EvalExpAsync(operandExp0, operandValue0);
-                await evaluator.EvalExpAsync(operandExp1, operandValue1);
+                await EvalExpAsync(operandExp0, operandValue0);
+                await EvalExpAsync(operandExp1, operandValue1);
 
                 result.SetBool(operandValue0.GetInt() > operandValue1.GetInt());
             }
 
             async ValueTask Operator_GreaterThan_String_String_Bool(R.Exp operandExp0, R.Exp operandExp1, BoolValue result)
             {
-                var operandValue0 = evaluator.AllocValue<StringValue>(R.Path.String);
-                var operandValue1 = evaluator.AllocValue<StringValue>(R.Path.String);
+                var operandValue0 = globalContext.AllocValue<StringValue>(R.Path.String);
+                var operandValue1 = globalContext.AllocValue<StringValue>(R.Path.String);
 
-                await evaluator.EvalExpAsync(operandExp0, operandValue0);
-                await evaluator.EvalExpAsync(operandExp1, operandValue1);
+                await EvalExpAsync(operandExp0, operandValue0);
+                await EvalExpAsync(operandExp1, operandValue1);
 
                 result.SetBool(operandValue0.GetString().CompareTo(operandValue1.GetString()) > 0);
             }
 
             async ValueTask Operator_LessThanOrEqual_Int_Int_Bool(R.Exp operandExp0, R.Exp operandExp1, BoolValue result)
             {
-                var operandValue0 = evaluator.AllocValue<IntValue>(R.Path.Int);
-                var operandValue1 = evaluator.AllocValue<IntValue>(R.Path.Int);
+                var operandValue0 = globalContext.AllocValue<IntValue>(R.Path.Int);
+                var operandValue1 = globalContext.AllocValue<IntValue>(R.Path.Int);
 
-                await evaluator.EvalExpAsync(operandExp0, operandValue0);
-                await evaluator.EvalExpAsync(operandExp1, operandValue1);
+                await EvalExpAsync(operandExp0, operandValue0);
+                await EvalExpAsync(operandExp1, operandValue1);
 
                 result.SetBool(operandValue0.GetInt() <= operandValue1.GetInt());
             }
 
             async ValueTask Operator_LessThanOrEqual_String_String_Bool(R.Exp operandExp0, R.Exp operandExp1, BoolValue result)
             {
-                var operandValue0 = evaluator.AllocValue<StringValue>(R.Path.String);
-                var operandValue1 = evaluator.AllocValue<StringValue>(R.Path.String);
+                var operandValue0 = globalContext.AllocValue<StringValue>(R.Path.String);
+                var operandValue1 = globalContext.AllocValue<StringValue>(R.Path.String);
 
-                await evaluator.EvalExpAsync(operandExp0, operandValue0);
-                await evaluator.EvalExpAsync(operandExp1, operandValue1);
+                await EvalExpAsync(operandExp0, operandValue0);
+                await EvalExpAsync(operandExp1, operandValue1);
 
                 result.SetBool(operandValue0.GetString().CompareTo(operandValue1.GetString()) <= 0);
             }
 
             async ValueTask Operator_GreaterThanOrEqual_Int_Int_Bool(R.Exp operandExp0, R.Exp operandExp1, BoolValue result)
             {
-                var operandValue0 = evaluator.AllocValue<IntValue>(R.Path.Int);
-                var operandValue1 = evaluator.AllocValue<IntValue>(R.Path.Int);
+                var operandValue0 = globalContext.AllocValue<IntValue>(R.Path.Int);
+                var operandValue1 = globalContext.AllocValue<IntValue>(R.Path.Int);
 
-                await evaluator.EvalExpAsync(operandExp0, operandValue0);
-                await evaluator.EvalExpAsync(operandExp1, operandValue1);
+                await EvalExpAsync(operandExp0, operandValue0);
+                await EvalExpAsync(operandExp1, operandValue1);
 
                 result.SetBool(operandValue0.GetInt() >= operandValue1.GetInt());
             }
 
             async ValueTask Operator_GreaterThanOrEqual_String_String_Bool(R.Exp operandExp0, R.Exp operandExp1, BoolValue result)
             {
-                var operandValue0 = evaluator.AllocValue<StringValue>(R.Path.String);
-                var operandValue1 = evaluator.AllocValue<StringValue>(R.Path.String);
+                var operandValue0 = globalContext.AllocValue<StringValue>(R.Path.String);
+                var operandValue1 = globalContext.AllocValue<StringValue>(R.Path.String);
 
-                await evaluator.EvalExpAsync(operandExp0, operandValue0);
-                await evaluator.EvalExpAsync(operandExp1, operandValue1);
+                await EvalExpAsync(operandExp0, operandValue0);
+                await EvalExpAsync(operandExp1, operandValue1);
 
                 result.SetBool(operandValue0.GetString().CompareTo(operandValue1.GetString()) >= 0);
             }
 
             async ValueTask Operator_Equal_Int_Int_Bool(R.Exp operandExp0, R.Exp operandExp1, BoolValue result)
             {
-                var operandValue0 = evaluator.AllocValue<IntValue>(R.Path.Int);
-                var operandValue1 = evaluator.AllocValue<IntValue>(R.Path.Int);
+                var operandValue0 = globalContext.AllocValue<IntValue>(R.Path.Int);
+                var operandValue1 = globalContext.AllocValue<IntValue>(R.Path.Int);
 
-                await evaluator.EvalExpAsync(operandExp0, operandValue0);
-                await evaluator.EvalExpAsync(operandExp1, operandValue1);
+                await EvalExpAsync(operandExp0, operandValue0);
+                await EvalExpAsync(operandExp1, operandValue1);
 
                 result.SetBool(operandValue0.GetInt() == operandValue1.GetInt());
             }
 
             async ValueTask Operator_Equal_Bool_Bool_Bool(R.Exp operandExp0, R.Exp operandExp1, BoolValue result)
             {
-                var operandValue0 = evaluator.AllocValue<BoolValue>(R.Path.Bool);
-                var operandValue1 = evaluator.AllocValue<BoolValue>(R.Path.Bool);
+                var operandValue0 = globalContext.AllocValue<BoolValue>(R.Path.Bool);
+                var operandValue1 = globalContext.AllocValue<BoolValue>(R.Path.Bool);
 
-                await evaluator.EvalExpAsync(operandExp0, operandValue0);
-                await evaluator.EvalExpAsync(operandExp1, operandValue1);
+                await EvalExpAsync(operandExp0, operandValue0);
+                await EvalExpAsync(operandExp1, operandValue1);
 
                 result.SetBool(operandValue0.GetBool() == operandValue1.GetBool());
             }
 
             async ValueTask Operator_Equal_String_String_Bool(R.Exp operandExp0, R.Exp operandExp1, BoolValue result)
             {
-                var operandValue0 = evaluator.AllocValue<StringValue>(R.Path.String);
-                var operandValue1 = evaluator.AllocValue<StringValue>(R.Path.String);
+                var operandValue0 = globalContext.AllocValue<StringValue>(R.Path.String);
+                var operandValue1 = globalContext.AllocValue<StringValue>(R.Path.String);
 
-                await evaluator.EvalExpAsync(operandExp0, operandValue0);
-                await evaluator.EvalExpAsync(operandExp1, operandValue1);
+                await EvalExpAsync(operandExp0, operandValue0);
+                await EvalExpAsync(operandExp1, operandValue1);
 
                 result.SetBool(operandValue0.GetString().CompareTo(operandValue1.GetString()) == 0);
             }
@@ -289,7 +289,7 @@ namespace Gum.IR0Evaluator
             // ++x
             async ValueTask EvalCallInternalUnaryAssignOperatorExpAsync(R.CallInternalUnaryAssignOperator exp, Value result)
             {
-                var operand = await evaluator.EvalLocAsync(exp.Operand);
+                var operand = await EvalLocAsync(exp.Operand);
 
                 switch (exp.Operator)
                 {

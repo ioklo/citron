@@ -134,8 +134,7 @@ namespace ScratchPad
             }
 
             var commandProvider = new DemoCommandProvider();
-            var evaluator = new Evaluator(default, commandProvider, rscript);
-            var retValue = await evaluator.EvalAsync();
+            var retValue = await Evaluator.EvalAsync(default, commandProvider, rscript);
             await WriteAsync($"\n¸®ÅÏ °ª: {retValue}");
 
             return true;

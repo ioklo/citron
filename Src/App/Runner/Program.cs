@@ -111,8 +111,7 @@ namespace Runner
             }
 
             var commandProvider = new DemoCommandProvider();
-            var evaluator = new Evaluator(default, commandProvider, rscript);
-            var retValue = await evaluator.EvalAsync();
+            var retValue = await Evaluator.EvalAsync(default, commandProvider, rscript);
 
             return retValue;
         }

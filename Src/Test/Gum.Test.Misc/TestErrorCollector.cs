@@ -1,12 +1,14 @@
 ﻿using Gum.Collections;
 using Gum.Infra;
 using System.Collections.Generic;
-using Xunit;
+using System.Diagnostics;
+using System.Linq;
 
-namespace Gum.IR0Translator.Test
+namespace Gum.Test.Misc
 {
+
     // 본체는 Mutable
-    class TestErrorCollector : IErrorCollector
+    public class TestErrorCollector : IErrorCollector
     {
         // IError는 Immtuable
         public List<IError> Errors { get; }
@@ -28,7 +30,7 @@ namespace Gum.IR0Translator.Test
         public void Add(IError error)
         {
             Errors.Add(error);
-            Assert.True(!raiseAssertionFail || false);
+            Debug.Assert(!raiseAssertionFail || false);
         }
 
         public IErrorCollector Clone(CloneContext context)
@@ -41,6 +43,11 @@ namespace Gum.IR0Translator.Test
             var src = (TestErrorCollector)src_errorCollector;
             Errors.Clear();
             Errors.AddRange(src.Errors);
+        }
+
+        public string GetMessages()
+        {
+            return string.Join("\r\n", Errors.Select(error => error.Message));
         }
     }
 }

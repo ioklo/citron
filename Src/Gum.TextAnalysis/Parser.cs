@@ -320,24 +320,22 @@ namespace Gum
             return new ParseResult<EnumDecl>(new EnumDecl(enumName.Value, typeParams, elemsBuilder.ToImmutable()), context);
         }
 
-        async ValueTask<ParseResult<AccessModifier>> ParseStructElementAccessModifierAsync(ParserContext context)
+        async ValueTask<ParseResult<AccessModifier?>> ParseAccessModifierAsync(ParserContext context)
         {
             if (Accept<ProtectedToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
             {
-                return new ParseResult<AccessModifier>(AccessModifier.Protected, context);
+                return new ParseResult<AccessModifier?>(AccessModifier.Protected, context);
             }
             else if (Accept<PrivateToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
             {
-                return new ParseResult<AccessModifier>(AccessModifier.Private, context);
+                return new ParseResult<AccessModifier?>(AccessModifier.Private, context);
             }
             else if (Accept<PublicToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
             {
-                // TODO: public은 기본이므로 쓰지 않아야 합니다 에러메시지
-                return ParseResult<AccessModifier>.Invalid;
+                return new ParseResult<AccessModifier?>(AccessModifier.Public, context);
             }
-
-            // 기본 public
-            return new ParseResult<AccessModifier>(AccessModifier.Public, context);
+            
+            return new ParseResult<AccessModifier?>(null, context);
         }
 
         async ValueTask<ParseResult<TypeStructDeclElement>> ParseStructTypeDeclElementAsync(ParserContext context)
@@ -351,7 +349,7 @@ namespace Gum
 
         async ValueTask<ParseResult<VarStructDeclElement>> ParseStructVarDeclElementAsync(ParserContext context)
         {
-            if (!Parse(await ParseStructElementAccessModifierAsync(context), ref context, out var accessModifier))
+            if (!Parse(await ParseAccessModifierAsync(context), ref context, out var accessModifier))
                 return ParseResult<VarStructDeclElement>.Invalid;
 
             // ex) int
@@ -385,7 +383,7 @@ namespace Gum
         {
             ParseResult<FuncStructDeclElement> Invalid() => ParseResult<FuncStructDeclElement>.Invalid;
 
-            if (!Parse(await ParseStructElementAccessModifierAsync(context), ref context, out var accessModifier))
+            if (!Parse(await ParseAccessModifierAsync(context), ref context, out var accessModifier))
                 return Invalid();
 
             bool bStatic = Accept<StaticToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context);
@@ -419,32 +417,53 @@ namespace Gum
             return new ParseResult<FuncStructDeclElement>(funcDeclElem, context);
         }
 
+        async ValueTask<ParseResult<ConstructorStructDeclElement>> ParseStructConstructorDeclElementAsync(ParserContext context)
+        {
+            ParseResult<ConstructorStructDeclElement> Invalid() => ParseResult<ConstructorStructDeclElement>.Invalid;
+
+            if (!Parse(await ParseAccessModifierAsync(context), ref context, out var accessModifier))
+                return Invalid();
+
+            // ex) F
+            if (!Accept<IdentifierToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context, out var name))
+                return Invalid();
+
+            // ex) (int i, int a)
+            if (!Parse(await ParseFuncDeclParamsAsync(context), ref context, out var paramInfo))
+                return Invalid();
+
+            // ex) { ... }
+            if (!Parse(await stmtParser.ParseBlockStmtAsync(context), ref context, out var body))
+                return Invalid();
+
+            var constructorDeclElem = new ConstructorStructDeclElement(accessModifier, name.Value, paramInfo, body);
+
+            return new ParseResult<ConstructorStructDeclElement>(constructorDeclElem, context);
+        }
+
         async ValueTask<ParseResult<StructDeclElement>> ParseStructDeclElementAsync(ParserContext context)
         {
             if (Parse(await ParseStructTypeDeclElementAsync(context), ref context, out var typeDeclElem))
                 return new ParseResult<StructDeclElement>(typeDeclElem, context);
 
-            if (Parse(await ParseStructVarDeclElementAsync(context), ref context, out var varDeclElem))
-                return new ParseResult<StructDeclElement>(varDeclElem, context);
-
             if (Parse(await ParseStructFuncDeclElementAsync(context), ref context, out var funcDeclElem))
                 return new ParseResult<StructDeclElement>(funcDeclElem, context);
 
+            if (Parse(await ParseStructConstructorDeclElementAsync(context), ref context, out var constructorDeclElem))
+                return new ParseResult<StructDeclElement>(constructorDeclElem, context);
+
+            if (Parse(await ParseStructVarDeclElementAsync(context), ref context, out var varDeclElem))
+                return new ParseResult<StructDeclElement>(varDeclElem, context);
+
+            
             return ParseResult<StructDeclElement>.Invalid;
         }
         
         internal async ValueTask<ParseResult<StructDecl>> ParseStructDeclAsync(ParserContext context)
         {
-            // AccessModifier, 기본 public
-            AccessModifier accessModifier = AccessModifier.Public;
-            if (Accept<PrivateToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
-            {
-                accessModifier = AccessModifier.Private;
-            }
-            else if (Accept<PublicToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
-            {
-                accessModifier = AccessModifier.Public;
-            }
+            // AccessModifier, 텍스트에는 없을 수 있다
+            if (!Parse(await ParseAccessModifierAsync(context), ref context, out var accessModifier))
+                return ParseResult<StructDecl>.Invalid;
             
             if (!Accept<StructToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                 return ParseResult<StructDecl>.Invalid;

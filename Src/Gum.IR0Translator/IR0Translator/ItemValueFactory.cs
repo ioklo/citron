@@ -32,7 +32,7 @@ namespace Gum.IR0Translator
 
         public ItemValueFactory(TypeInfoRepository typeInfoRepo, RItemFactory ritemFactory)
         {
-            M.StructInfo MakeEmptyStructInfo(M.Name name) => new M.StructInfo(name, default, null, default, default, default, default);
+            M.StructInfo MakeEmptyStructInfo(M.Name name) => new M.StructInfo(name, default, null, default, default, default, default, default);
 
             this.typeInfoRepo = typeInfoRepo;
             this.ritemFactory = ritemFactory;
@@ -60,7 +60,7 @@ namespace Gum.IR0Translator
             switch (typeInfo)
             {
                 case M.StructInfo structInfo:
-                    return new StructTypeValue(this, ritemFactory, outer, structInfo, typeArgs);
+                    return MakeStructValue(outer, structInfo, typeArgs);
 
                 case M.EnumInfo enumInfo:
                     return new EnumTypeValue(this, outer, enumInfo, typeArgs);
@@ -157,6 +157,11 @@ namespace Gum.IR0Translator
             return new FuncValue(this, outer, funcInfo, typeArgs);
         }
 
+        public ConstructorValue MakeConstructor(ItemValueOuter outer, M.ConstructorInfo constructorInfo)
+        {
+            return new ConstructorValue(this, outer, constructorInfo);
+        }
+
         public TypeVarTypeValue MakeTypeVar(int index)
         {
             return new TypeVarTypeValue(ritemFactory, index);
@@ -198,6 +203,16 @@ namespace Gum.IR0Translator
         public RuntimeListTypeValue MakeListType(TypeValue elemType)
         {
             return new RuntimeListTypeValue(this, elemType);
+        }
+
+        public ConstructorValue MakeConstructorValue(ItemValueOuter outer, M.ConstructorInfo info)
+        {
+            return new ConstructorValue(this, outer, info);
+        }
+
+        public StructTypeValue MakeStructValue(ItemValueOuter outer, M.StructInfo structInfo, ImmutableArray<TypeValue> typeArgs)
+        {
+            return new StructTypeValue(this, ritemFactory, outer, structInfo, typeArgs);
         }
     }
 }

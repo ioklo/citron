@@ -1,13 +1,15 @@
-﻿
-using S = Gum.Syntax;
-using R = Gum.IR0;
+﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+
+using Gum.Infra;
+using Gum.Collections;
 
 using static Gum.IR0Translator.AnalyzeErrorCode;
-using Gum.Collections;
-using System;
-using System.Diagnostics;
-using Gum.Infra;
+
+using S = Gum.Syntax;
+using R = Gum.IR0;
+using M = Gum.CompileTime;
 
 namespace Gum.IR0Translator
 {
@@ -19,19 +21,20 @@ namespace Gum.IR0Translator
             GlobalContext globalContext;
             RootContext rootContext;
             LocalContext localContext;
+            M.ModuleInfo internalModuleInfo;   // 네임스페이스가 추가되면 Analyzer가 따로 생기거나 여기가 polymorphic이 되거나 해야한다
 
-            RootAnalyzer(GlobalContext globalContext, RootContext rootContext, LocalContext localContext)
+            RootAnalyzer(GlobalContext globalContext, RootContext rootContext, LocalContext localContext, M.ModuleInfo internalModuleInfo)
             {
                 this.globalContext = globalContext;
                 this.rootContext = rootContext;
                 this.localContext = localContext;
+                this.internalModuleInfo = internalModuleInfo;
             }
 
-            public static R.Script Analyze(GlobalContext globalContext, RootContext rootContext, S.Script script)
+            public static R.Script Analyze(GlobalContext globalContext, RootContext rootContext, M.ModuleInfo internalModuleInfo, S.Script script)
             {
                 var localContext = new LocalContext();
-                var analyzer = new RootAnalyzer(globalContext, rootContext, localContext);
-
+                var analyzer = new RootAnalyzer(globalContext, rootContext, localContext, internalModuleInfo);
                 var stmtAndExpAnalyzer = new StmtAndExpAnalyzer(globalContext, rootContext, localContext);
 
                 // 첫번째 페이즈, global var를 검사하는 겸 
@@ -58,11 +61,14 @@ namespace Gum.IR0Translator
                     switch (elem)
                     {
                         case S.GlobalFuncDeclScriptElement globalFuncDeclElem:
-                            analyzer.AnalyzeGlobalFuncDecl(globalFuncDeclElem.FuncDecl);
+                            var globalFuncDecl = analyzer.AnalyzeGlobalFuncDecl(globalFuncDeclElem.FuncDecl);
+                            rootContext.AddDecl(globalFuncDecl);
+
                             break;
 
                         case S.TypeDeclScriptElement typeDeclElem:
-                            analyzer.AnalyzeTypeDecl(typeDeclElem.TypeDecl);
+                            var typeDecl = analyzer.AnalyzeTypeDecl(typeDeclElem.TypeDecl);
+                            rootContext.AddDecl(typeDecl);
                             break;
                     }
                 }
@@ -93,46 +99,25 @@ namespace Gum.IR0Translator
 
             (R.ParamHash ParamHash, ImmutableArray<R.Param> Params) MakeParamHashAndParamInfos(S.FuncDecl funcDecl)
             {
-                var paramWithoutNames = ImmutableArray.CreateBuilder<R.ParamHashEntry>(funcDecl.Parameters.Length);
-                var parametersBuilder = ImmutableArray.CreateBuilder<R.Param>(funcDecl.Parameters.Length);
-
-                foreach (var param in funcDecl.Parameters)
-                {
-                    var typeValue = globalContext.GetTypeValueByTypeExp(param.Type);
-
-                    var type = typeValue.GetRPath();                    
-
-                    var kind = param.Kind switch
-                    {
-                        S.FuncParamKind.Normal => R.ParamKind.Normal,
-                        S.FuncParamKind.Params => R.ParamKind.Params,
-                        S.FuncParamKind.Ref => R.ParamKind.Ref,
-                        _ => throw new UnreachableCodeException()
-                    };
-
-                    paramWithoutNames.Add(new R.ParamHashEntry(kind, type));
-                    var parameter = new R.Param(kind, type, param.Name);
-                    parametersBuilder.Add(parameter);
-                }
-
-                var paramHash = new R.ParamHash(funcDecl.TypeParams.Length, paramWithoutNames.MoveToImmutable());
-                var parameters = parametersBuilder.MoveToImmutable();
-
-                return (paramHash, parameters);
+                return Analyzer.MakeParamHashAndParamInfos(globalContext, funcDecl.TypeParams.Length, funcDecl.Parameters);
             }
 
-            ImmutableArray<R.Path> MakeRTypeArgs(S.GlobalFuncDecl funcDecl)
+            static ImmutableArray<R.Path> MakeRTypeArgs(S.GlobalFuncDecl funcDecl)
             {
                 var typeArgsBuilder = ImmutableArray.CreateBuilder<R.Path>(funcDecl.TypeParams.Length);
 
                 // NOTICE: global이니까 이전 typeArgs가 없다
-                for (int i = 0; i<funcDecl.TypeParams.Length; i++)
+                for (int i = 0; i < funcDecl.TypeParams.Length; i++)
                     typeArgsBuilder.Add(new R.Path.TypeVarType(i));
                 return typeArgsBuilder.MoveToImmutable();
             }
 
-            // 
-            public void AnalyzeGlobalNormalFuncDecl(S.GlobalFuncDecl funcDecl)
+            R.Path.Nested MakePath(R.Name name, R.ParamHash paramHash, ImmutableArray<R.Path> typeArgs)
+            {
+                return new R.Path.Nested(rootContext.GetPath(), name, paramHash, typeArgs);
+            }
+            
+            public R.NormalFuncDecl AnalyzeGlobalNormalFuncDecl(S.GlobalFuncDecl funcDecl)
             {
                 var retTypeValue = globalContext.GetTypeValueByTypeExp(funcDecl.RetType);
 
@@ -140,7 +125,7 @@ namespace Gum.IR0Translator
                 var (rparamHash, rparamInfos) = MakeParamHashAndParamInfos(funcDecl);
                 var rtypeArgs = MakeRTypeArgs(funcDecl);
 
-                var funcContext = new FuncContext(rootContext, retTypeValue, false, rname, rparamHash, rtypeArgs);
+                var funcContext = new FuncContext(null, retTypeValue, false, MakePath(rname, rparamHash, rtypeArgs));
                 var localContext = new LocalContext();
                 var analyzer = new StmtAndExpAnalyzer(globalContext, funcContext, localContext);
 
@@ -155,17 +140,17 @@ namespace Gum.IR0Translator
                 var bodyResult = analyzer.AnalyzeStmt(funcDecl.Body);                
                 
                 var decls = funcContext.GetDecls();
-                rootContext.AddDecl(new R.NormalFuncDecl(decls, rname, false, funcDecl.TypeParams, rparamInfos, bodyResult.Stmt));
+                return new R.NormalFuncDecl(decls, rname, false, funcDecl.TypeParams, rparamInfos, bodyResult.Stmt);
             }
 
-            public void AnalyzeGlobalSequenceFuncDecl(S.GlobalFuncDecl funcDecl)
+            public R.SequenceFuncDecl AnalyzeGlobalSequenceFuncDecl(S.GlobalFuncDecl funcDecl)
             {
                 var retTypeValue = globalContext.GetTypeValueByTypeExp(funcDecl.RetType);
                 var rname = new R.Name.Normal(funcDecl.Name);
                 var (rparamHash, rparamInfos) = MakeParamHashAndParamInfos(funcDecl);
                 var rtypeArgs = MakeRTypeArgs(funcDecl);
 
-                var funcContext = new FuncContext(rootContext, retTypeValue, true, rname, rparamHash, rtypeArgs);
+                var funcContext = new FuncContext(null, retTypeValue, true, MakePath(rname, rparamHash, rtypeArgs));
                 var localContext = new LocalContext();
                 var analyzer = new StmtAndExpAnalyzer(globalContext, funcContext, localContext);
                 
@@ -188,18 +173,18 @@ namespace Gum.IR0Translator
                 var parameters = funcDecl.Parameters.Select(param => param.Name).ToImmutableArray();
 
                 var decls = funcContext.GetDecls();
-                rootContext.AddDecl(new R.SequenceFuncDecl(decls, funcDecl.Name, false, retRType, funcDecl.TypeParams, rparamInfos, bodyResult.Stmt));
+                return new R.SequenceFuncDecl(decls, funcDecl.Name, false, retRType, funcDecl.TypeParams, rparamInfos, bodyResult.Stmt);
             }
 
-            void AnalyzeGlobalFuncDecl(S.GlobalFuncDecl funcDecl)
+            R.Decl AnalyzeGlobalFuncDecl(S.GlobalFuncDecl funcDecl)
             {
                 if (funcDecl.IsSequence)
-                    AnalyzeGlobalSequenceFuncDecl(funcDecl);
+                    return AnalyzeGlobalSequenceFuncDecl(funcDecl);
                 else
-                    AnalyzeGlobalNormalFuncDecl(funcDecl);
+                    return AnalyzeGlobalNormalFuncDecl(funcDecl);
             }
 
-            void AnalyzeEnumDecl(S.EnumDecl enumDecl)
+            R.EnumDecl AnalyzeEnumDecl(S.EnumDecl enumDecl)
             {
                 var relemsBuilder = ImmutableArray.CreateBuilder<R.EnumElement>(enumDecl.Elems.Length);
                 foreach(var elem in enumDecl.Elems)
@@ -217,16 +202,38 @@ namespace Gum.IR0Translator
                     relemsBuilder.Add(relem);
                 }
 
-                rootContext.AddDecl(new R.EnumDecl(enumDecl.Name, enumDecl.TypeParams, relemsBuilder.MoveToImmutable()));
+                return new R.EnumDecl(enumDecl.Name, enumDecl.TypeParams, relemsBuilder.MoveToImmutable());
             }
-
-            void AnalyzeTypeDecl(S.TypeDecl typeDecl)
+            
+            R.Decl AnalyzeTypeDecl(S.TypeDecl typeDecl)
             {
                 switch(typeDecl)
                 {
                     case S.EnumDecl enumDecl:
-                        AnalyzeEnumDecl(enumDecl);
-                        break;
+                        return AnalyzeEnumDecl(enumDecl);
+
+                    case S.StructDecl structDecl:
+                        {
+
+                            // TODO: 현재는 최상위 네임스페이스에서만 찾고 있음
+                            var structInfo = GlobalItemQueryService.GetGlobalItem(internalModuleInfo, M.NamespacePath.Root, new ItemPathEntry(structDecl.Name, structDecl.TypeParamCount)) as M.StructInfo;
+                            Debug.Assert(structInfo != null);
+
+                            // 이는 TaskStmt 등에서 path를 만들때 사용한다
+                            // 고로 path는 TypeVar를 포함해서 만드는 것이 맞다
+                            // 여기는 Root이므로 0부터 시작한다
+                            var typeArgsBuilder = ImmutableArray.CreateBuilder<TypeValue>(structDecl.TypeParamCount);
+                            for (int i = 0; i < structDecl.TypeParamCount; i++)                                
+                                typeArgsBuilder.Add(globalContext.MakeTypeVarTypeValue(i));
+
+                            var structTypeValue = globalContext.MakeStructTypeValue(
+                                rootContext.MakeRootItemValueOuter(M.NamespacePath.Root),
+                                structInfo, 
+                                typeArgsBuilder.MoveToImmutable());
+
+                            var structAnalyzer = new StructAnalyzer(globalContext, structDecl, structTypeValue);
+                            return structAnalyzer.AnalyzeStructDecl();
+                        }
 
                     default:
                         throw new NotImplementedException();

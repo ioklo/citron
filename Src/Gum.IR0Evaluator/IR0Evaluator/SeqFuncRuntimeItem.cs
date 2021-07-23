@@ -15,7 +15,7 @@ namespace Gum.IR0Evaluator
         public abstract bool IsThisCall { get; }
         public abstract ImmutableArray<R.Param> Parameters { get; }
 
-        public abstract void Invoke(Evaluator evaluator, Value? thisValue, ImmutableArray<Value> args, Value result);
+        public abstract void Invoke(Value? thisValue, ImmutableArray<Value> args, Value result);
     }
 
     public partial class Evaluator
@@ -23,38 +23,33 @@ namespace Gum.IR0Evaluator
         [AutoConstructor]
         partial class IR0SeqFuncRuntimeItem : SeqFuncRuntimeItem
         {
+            GlobalContext globalContext;
+
             public override R.Name Name => seqFuncDecl.Name;
             public override R.ParamHash ParamHash => Misc.MakeParamHash(seqFuncDecl.TypeParams.Length, seqFuncDecl.Parameters);
             public override bool IsThisCall => seqFuncDecl.IsThisCall;
             public override ImmutableArray<R.Param> Parameters => seqFuncDecl.Parameters;
             R.SequenceFuncDecl seqFuncDecl;
 
-            public override Value Alloc(Evaluator evaluator, TypeContext typeContext)
+            public override Value Alloc(TypeContext typeContext)
             {
                 return new SeqValue();
             }
 
-            public override void Invoke(Evaluator evaluator, Value? thisValue, ImmutableArray<Value> args, Value result)
+            public override void Invoke(Value? thisValue, ImmutableArray<Value> args, Value result)
             {
                 var builder = ImmutableDictionary.CreateBuilder<string, Value>();
 
                 for (int i = 0; i < args.Length; i++)
                     builder.Add(seqFuncDecl.Parameters[i].Name, args[i]);
 
-                // evaluator 복제
-                var newEvaluator = evaluator.CloneWithNewContext(thisValue, default, builder.ToImmutable());
-
-                // asyncEnum을 만들기 위해서 내부 함수를 씁니다
-                async IAsyncEnumerator<Infra.Void> WrapAsyncEnum()
-                {
-                    await foreach (var _ in newEvaluator.EvalStmtAsync(seqFuncDecl.Body))
-                    {
-                        yield return Infra.Void.Instance;
-                    }
-                }
-
-                var enumerator = WrapAsyncEnum();
-                ((SeqValue)result).SetEnumerator(enumerator, newEvaluator);
+                var context = new EvalContext(default, EvalFlowControl.None, thisValue, result);
+                var localContext = new LocalContext(builder.ToImmutable());
+                var localTaskContext = new LocalTaskContext();
+                
+                var enumerator = StmtEvaluator.EvalAsyncEnum(globalContext, context, localContext, localTaskContext, seqFuncDecl.Body);
+                
+                ((SeqValue)result).SetEnumerator(enumerator, context);
             }
         }
     }

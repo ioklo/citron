@@ -7,7 +7,7 @@ namespace Gum.Syntax
     [AutoConstructor, ImplementIEquatable]
     public partial class StructFuncDecl : FuncDecl
     {
-        public AccessModifier AccessModifier { get; }
+        public AccessModifier? AccessModifier { get; }
         public bool IsStatic { get; }
         public override bool IsSequence { get; } // seq 함수인가        
         public override bool IsRefReturn { get; }
