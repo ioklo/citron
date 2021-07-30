@@ -27,6 +27,7 @@ namespace Gum.IR0Translator
         
         Dictionary<S.TypeExp, TypeExpInfo> infosByTypeExp;
         ImmutableDictionary<string, M.TypeVarType> typeEnv;
+        int totalTypeParamCount;
 
         public static TypeExpInfoService Evaluate(
             M.ModuleName internalModuleName,
@@ -73,6 +74,7 @@ namespace Gum.IR0Translator
             
             infosByTypeExp = new Dictionary<S.TypeExp, TypeExpInfo>(ReferenceEqualityComparer.Instance);
             typeEnv = ImmutableDictionary<string, M.TypeVarType>.Empty;
+            totalTypeParamCount = 0;
         }        
 
         [DoesNotReturn]
@@ -95,12 +97,12 @@ namespace Gum.IR0Translator
         void ExecInScope(ImmutableArray<string> typeParams, Action action)
         {
             var prevTypeEnv = typeEnv;
-
-            int i = 0;
+            var prevTotalTypeParamCount = totalTypeParamCount;            
+            
             foreach (var typeParam in typeParams)
             {
-                typeEnv = typeEnv.SetItem(typeParam, new M.TypeVarType(i, typeParam));
-                i++;
+                typeEnv = typeEnv.SetItem(typeParam, new M.TypeVarType(totalTypeParamCount, typeParam));
+                totalTypeParamCount++;
             }            
 
             try
@@ -110,6 +112,7 @@ namespace Gum.IR0Translator
             finally
             {
                 typeEnv = prevTypeEnv;
+                totalTypeParamCount = prevTotalTypeParamCount;
             }
         }
 
@@ -131,7 +134,7 @@ namespace Gum.IR0Translator
                 var typeInfo = GlobalItemQueryService.GetGlobalItem(moduleInfo, namespacePath, itemPathEntry) as M.TypeInfo;
                 if (typeInfo != null)
                 {
-                    var mtype = new M.GlobalType(moduleInfo.Name, namespacePath, name, typeArgs);
+                    var mtype = new M.GlobalType(moduleInfo.GetName(), namespacePath, name, typeArgs);
                     var typeExpInfo = new MTypeTypeExpInfo(mtype);
                     yield return new ExternalTypeExpResult(typeExpInfo, typeInfo);
                 }

@@ -342,7 +342,7 @@ namespace Gum.IR0Translator
 
             [AutoConstructor]
             partial struct MatchedFunc<TCallableInfo>
-                where TCallableInfo : M.ICallableInfo
+                where TCallableInfo : IModuleCallableInfo
             {
                 public MatchArgsResult Result { get; }
                 public TCallableInfo CallableInfo { get; }                
@@ -380,7 +380,7 @@ namespace Gum.IR0Translator
             }
 
             MatchedFunc<TCallableInfo> Match<TCallableInfo>(TypeEnv outerTypeEnv, ImmutableArray<TCallableInfo> callableInfos, ImmutableArray<S.Argument> sargs, ImmutableArray<TypeValue> typeArgs, S.ISyntaxNode nodeForErrorReport)
-                where TCallableInfo : M.ICallableInfo
+                where TCallableInfo : IModuleCallableInfo
             {
                 // 여러 함수 중에서 인자가 맞는것을 선택해야 한다
                 var exactCandidates = new Candidates<MatchedFunc<TCallableInfo>?>();
@@ -391,7 +391,7 @@ namespace Gum.IR0Translator
                 {
                     var clonedAnalyzer = CloneAnalyzer();
 
-                    var matchResult = clonedAnalyzer.MatchCallable(outerTypeEnv, callableInfo.Parameters, typeArgs, sargs);
+                    var matchResult = clonedAnalyzer.MatchCallable(outerTypeEnv, callableInfo.GetParameters(), typeArgs, sargs);
                     if (!matchResult.bMatch) continue;
 
                     var matchedCandidate = new MatchedFunc<TCallableInfo>(matchResult, callableInfo, clonedAnalyzer.globalContext, clonedAnalyzer.callableContext, clonedAnalyzer.localContext);
@@ -720,7 +720,7 @@ namespace Gum.IR0Translator
 
                     case ItemQueryResult.MemberVar memberVarResult:
                         // static인지 검사
-                        if (memberVarResult.MemberVarInfo.IsStatic)
+                        if (memberVarResult.MemberVarInfo.IsStatic())
                             globalContext.AddFatalError(A2003_ResolveIdentifier_CantGetStaticMemberThroughInstance, memberExp);
 
                         var memberVarValue = globalContext.MakeMemberVarValue(memberVarResult.Outer, memberVarResult.MemberVarInfo);

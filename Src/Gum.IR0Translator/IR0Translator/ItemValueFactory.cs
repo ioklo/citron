@@ -32,7 +32,8 @@ namespace Gum.IR0Translator
 
         public ItemValueFactory(TypeInfoRepository typeInfoRepo, RItemFactory ritemFactory)
         {
-            M.StructInfo MakeEmptyStructInfo(M.Name name) => new M.StructInfo(name, default, null, default, default, default, default, default);
+            IModuleStructInfo MakeEmptyStructInfo(M.Name name) =>
+                new ExternalModuleStructInfo(new M.StructInfo(name, default, null, default, default, default, default, default));
 
             this.typeInfoRepo = typeInfoRepo;
             this.ritemFactory = ritemFactory;
@@ -45,27 +46,27 @@ namespace Gum.IR0Translator
             String = MakeTypeValue("System.Runtime", new M.NamespacePath("System"), MakeEmptyStructInfo("String"), default);
         }
 
-        public TypeValue MakeTypeValue(M.ModuleName moduleName, M.NamespacePath namespacePath, M.TypeInfo typeInfo, ImmutableArray<TypeValue> typeArgs)
+        public TypeValue MakeTypeValue(M.ModuleName moduleName, M.NamespacePath namespacePath, IModuleTypeInfo typeInfo, ImmutableArray<TypeValue> typeArgs)
         {
             return MakeTypeValue(new RootItemValueOuter(moduleName, namespacePath), typeInfo, typeArgs);
         }
 
-        public TypeValue MakeTypeValue(TypeValue outer, M.TypeInfo typeInfo, ImmutableArray<TypeValue> typeArgs)
+        public TypeValue MakeTypeValue(TypeValue outer, IModuleTypeInfo typeInfo, ImmutableArray<TypeValue> typeArgs)
         {
             return MakeTypeValue(new NestedItemValueOuter(outer), typeInfo, typeArgs);
         }
 
-        public NormalTypeValue MakeTypeValue(ItemValueOuter outer, M.TypeInfo typeInfo, ImmutableArray<TypeValue> typeArgs)
+        public NormalTypeValue MakeTypeValue(ItemValueOuter outer, IModuleTypeInfo typeInfo, ImmutableArray<TypeValue> typeArgs)
         {
             switch (typeInfo)
             {
-                case M.StructInfo structInfo:
+                case IModuleStructInfo structInfo:
                     return MakeStructValue(outer, structInfo, typeArgs);
 
-                case M.EnumInfo enumInfo:
+                case IModuleEnumInfo enumInfo:
                     return new EnumTypeValue(this, outer, enumInfo, typeArgs);
 
-                case M.EnumElemInfo enumElemInfo:
+                case IModuleEnumElemInfo enumElemInfo:
                     Debug.Assert(outer is NestedItemValueOuter);
                     Debug.Assert(((NestedItemValueOuter)outer).ItemValue is EnumTypeValue);
                     return new EnumElemTypeValue(ritemFactory, this, (EnumTypeValue)((NestedItemValueOuter)outer).ItemValue, enumElemInfo);
@@ -74,7 +75,7 @@ namespace Gum.IR0Translator
             throw new UnreachableCodeException();
         }        
 
-        public MemberVarValue MakeMemberVarValue(NormalTypeValue outer, M.MemberVarInfo info)
+        public MemberVarValue MakeMemberVarValue(NormalTypeValue outer, IModuleMemberVarInfo info)
         {
             return new MemberVarValue(this, outer, info);
         }        
@@ -91,12 +92,12 @@ namespace Gum.IR0Translator
             return builder.ToImmutable();
         }
 
-        public EnumTypeValue MakeEnumTypeValue(ItemValueOuter outer, M.EnumInfo enumInfo, ImmutableArray<TypeValue> typeArgs)
+        public EnumTypeValue MakeEnumTypeValue(ItemValueOuter outer, IModuleEnumInfo enumInfo, ImmutableArray<TypeValue> typeArgs)
         {
             return new EnumTypeValue(this, outer, enumInfo, typeArgs);
         }
 
-        public EnumElemTypeValue MakeEnumElemTypeValue(EnumTypeValue outer, M.EnumElemInfo elemInfo)
+        public EnumElemTypeValue MakeEnumElemTypeValue(EnumTypeValue outer, IModuleEnumElemInfo elemInfo)
         {
             return new EnumElemTypeValue(ritemFactory, this, outer, elemInfo);
         }
@@ -152,12 +153,12 @@ namespace Gum.IR0Translator
             }
         }
 
-        public FuncValue MakeFunc(ItemValueOuter outer, M.FuncInfo funcInfo, ImmutableArray<TypeValue> typeArgs)
+        public FuncValue MakeFunc(ItemValueOuter outer, IModuleFuncInfo funcInfo, ImmutableArray<TypeValue> typeArgs)
         {
             return new FuncValue(this, outer, funcInfo, typeArgs);
         }
 
-        public ConstructorValue MakeConstructor(ItemValueOuter outer, M.ConstructorInfo constructorInfo)
+        public ConstructorValue MakeConstructor(ItemValueOuter outer, IModuleConstructorInfo constructorInfo)
         {
             return new ConstructorValue(this, outer, constructorInfo);
         }
@@ -167,14 +168,14 @@ namespace Gum.IR0Translator
             return new TypeVarTypeValue(ritemFactory, index);
         }        
         
-        public FuncValue MakeMemberFunc(TypeValue outer, M.FuncInfo funcInfo, ImmutableArray<TypeValue> typeArgs)
+        public FuncValue MakeMemberFunc(TypeValue outer, IModuleFuncInfo funcInfo, ImmutableArray<TypeValue> typeArgs)
         {
             var itemValueOuter = new NestedItemValueOuter(outer);
             return new FuncValue(this, itemValueOuter, funcInfo, typeArgs);
         }
 
         // global
-        public FuncValue MakeGlobalFunc(M.ModuleName moduleName, M.NamespacePath namespacePath, M.FuncInfo funcInfo, ImmutableArray<TypeValue> typeArgs)
+        public FuncValue MakeGlobalFunc(M.ModuleName moduleName, M.NamespacePath namespacePath, IModuleFuncInfo funcInfo, ImmutableArray<TypeValue> typeArgs)
         {
             var itemValueOuter = new RootItemValueOuter(moduleName, namespacePath);
             return new FuncValue(this, itemValueOuter, funcInfo, typeArgs);
@@ -205,12 +206,12 @@ namespace Gum.IR0Translator
             return new RuntimeListTypeValue(this, elemType);
         }
 
-        public ConstructorValue MakeConstructorValue(ItemValueOuter outer, M.ConstructorInfo info)
+        public ConstructorValue MakeConstructorValue(ItemValueOuter outer, IModuleConstructorInfo info)
         {
             return new ConstructorValue(this, outer, info);
         }
 
-        public StructTypeValue MakeStructValue(ItemValueOuter outer, M.StructInfo structInfo, ImmutableArray<TypeValue> typeArgs)
+        public StructTypeValue MakeStructValue(ItemValueOuter outer, IModuleStructInfo structInfo, ImmutableArray<TypeValue> typeArgs)
         {
             return new StructTypeValue(this, ritemFactory, outer, structInfo, typeArgs);
         }

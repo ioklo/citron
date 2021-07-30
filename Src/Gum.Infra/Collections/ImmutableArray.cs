@@ -72,6 +72,7 @@ namespace Gum.Collections
         public bool IsEmpty => array.IsDefaultOrEmpty;
         public int Length => array.IsDefault ? 0 : array.Length;
 
+        // no heap allocation
         public IEnumerable<T> AsEnumerable() { if (array.IsDefault) return Enumerable.Empty<T>(); else return array; }
 
         public Enumerator GetEnumerator()

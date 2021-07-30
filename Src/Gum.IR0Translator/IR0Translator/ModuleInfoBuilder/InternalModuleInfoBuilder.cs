@@ -9,25 +9,29 @@ using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using S = Gum.Syntax;
 using M = Gum.CompileTime;
+using System.Text;
 
 namespace Gum.IR0Translator
 {
     // Script에서 ModuleInfo 정보를 뽑는 역할
-    partial struct ModuleInfoBuilder
+    partial struct InternalModuleInfoBuilder
     {
         TypeExpInfoService typeExpInfoService;
 
         // Global일 경우 null
         bool bInsideTypeScope;
-        ItemPath? itemPath;
-        List<M.ConstructorInfo> constructors;
-        List<M.TypeInfo> types;
-        List<M.FuncInfo> funcs;
-        List<M.MemberVarInfo> memberVars;
+        ItemPath? itemPath;        
+        List<IModuleTypeInfo> types;
+        List<IModuleFuncInfo> funcs;
+        List<IModuleConstructorInfo> constructors;
+        List<IModuleMemberVarInfo> memberVars;
+        IModuleConstructorInfo? automaticConstructor;
 
-        public static M.ModuleInfo Build(M.ModuleName moduleName, S.Script script, TypeExpInfoService typeExpTypeValueService)
+        bool bCollectingMemberVarsCompleted; // false
+
+        public static InternalModuleInfo Build(M.ModuleName moduleName, S.Script script, TypeExpInfoService typeExpTypeValueService)
         {
-            var builder = new ModuleInfoBuilder(typeExpTypeValueService, false, null);
+            var builder = new InternalModuleInfoBuilder(typeExpTypeValueService, false, null);
 
             foreach(var elem in script.Elements)
             {
@@ -46,24 +50,22 @@ namespace Gum.IR0Translator
                 }
             }
 
-            var moduleInfo = new M.ModuleInfo(moduleName,
-                ImmutableArray<M.NamespaceInfo>.Empty,
-                builder.types.ToImmutableArray(),
-                builder.funcs.ToImmutableArray());
-
-            return moduleInfo;
+            return new InternalModuleInfo(moduleName, builder.types, builder.funcs);
         }
 
-        ModuleInfoBuilder(TypeExpInfoService typeExpInfoService, bool bInsideTypeScope, ItemPath? itemPath)
+        InternalModuleInfoBuilder(TypeExpInfoService typeExpInfoService, bool bInsideTypeScope, ItemPath? itemPath)
         {
             this.typeExpInfoService = typeExpInfoService;
             this.bInsideTypeScope = bInsideTypeScope;
             this.itemPath = itemPath;
-            
-            types = new List<M.TypeInfo>();
-            funcs = new List<M.FuncInfo>();
-            constructors = new List<M.ConstructorInfo>();
-            memberVars = new List<M.MemberVarInfo>();
+
+            types = new List<IModuleTypeInfo>();
+            funcs = new List<IModuleFuncInfo>();
+            constructors = new List<IModuleConstructorInfo>();
+            memberVars = new List<IModuleMemberVarInfo>();
+
+            this.automaticConstructor = null;
+            this.bCollectingMemberVarsCompleted = false;
         }
 
         M.Type? GetMType(TypeExpInfo typeExpInfo)
@@ -121,30 +123,31 @@ namespace Gum.IR0Translator
 
         void VisitEnumDecl(S.EnumDecl enumDecl)
         {
-            var elemsBuilder = ImmutableArray.CreateBuilder<M.EnumElemInfo>(enumDecl.Elems.Length);
+            var elemsBuilder = ImmutableArray.CreateBuilder<InternalModuleEnumElemInfo>(enumDecl.Elems.Length);
             foreach(var elem in enumDecl.Elems)
             {
-                var fieldsBuilder = ImmutableArray.CreateBuilder<M.MemberVarInfo>(elem.Fields.Length);
+                var fieldsBuilder = ImmutableArray.CreateBuilder<IModuleMemberVarInfo>(elem.Fields.Length);
                 foreach(var field in elem.Fields)
                 {
                     var type = GetMType(field.Type);
                     Debug.Assert(type != null);
 
-                    var mfield = new M.MemberVarInfo(false, type, field.Name);
+                    var mfield = new InternalModuleMemberVarInfo(false, type, field.Name);
                     fieldsBuilder.Add(mfield);
                 }
 
                 var fields = fieldsBuilder.MoveToImmutable();
-                var enumElemInfo = new M.EnumElemInfo(elem.Name, fields);
+                var enumElemInfo = new InternalModuleEnumElemInfo(elem.Name, fields);
                 elemsBuilder.Add(enumElemInfo);
             }
 
             var elems = elemsBuilder.MoveToImmutable();
-            var enumInfo = new M.EnumInfo(enumDecl.Name, enumDecl.TypeParams, elems);
+            var enumInfo = new InternalModuleEnumInfo(enumDecl.Name, enumDecl.TypeParams, elems);
+
             types.Add(enumInfo);
         }
 
-        ModuleInfoBuilder NewModuleInfoBuilder(M.Name name, int typeParamCount, bool bInsideTypeScope)
+        InternalModuleInfoBuilder NewModuleInfoBuilder(M.Name name, int typeParamCount, bool bInsideTypeScope)
         {
             ItemPath newItemPath;
 
@@ -153,7 +156,52 @@ namespace Gum.IR0Translator
             else
                 newItemPath = new ItemPath(M.NamespacePath.Root, name, typeParamCount);
 
-            return new ModuleInfoBuilder(typeExpInfoService, bInsideTypeScope, newItemPath);
+            return new InternalModuleInfoBuilder(typeExpInfoService, bInsideTypeScope, newItemPath);
+        }
+
+        bool IsMatchAutomaticConstructorParameter(M.ParamTypes paramTypes)
+        {
+            if (memberVars.Count != paramTypes.Length) return false;
+
+            for (int i = 0; i < memberVars.Count; i++)
+            {
+                // normal로만 자동으로 생성한다
+                if (paramTypes[i].Kind != M.ParamKind.Normal) return false;
+
+                var memberVarType = memberVars[i].GetDeclType();
+                var paramType = paramTypes[i].Type;
+
+                if (!memberVarType.Equals(paramType)) return false;
+            }
+
+            return true;
+        }
+
+        void TryMakeAutomaticConstructor(M.Name structName)
+        {
+            // 꼭, memberVar수집이 완료된 다음에 해야한다
+            Debug.Assert(bCollectingMemberVarsCompleted);
+
+            // 생성자 중, 파라미터가 같은 것이 있는지 확인
+            foreach (var constructor in constructors)
+            {   
+                if (IsMatchAutomaticConstructorParameter(constructor.GetParamTypes()))
+                    return;
+            }
+         
+            var builder = ImmutableArray.CreateBuilder<M.Param>(memberVars.Count);            
+            foreach(var memberVar in memberVars)
+            {
+                var type = memberVar.GetDeclType();
+                var name = memberVar.GetName();
+
+                var param = new M.Param(M.ParamKind.Normal, type, name);
+                builder.Add(param);
+            }
+
+            // automatic constructor를 만듭니다
+            automaticConstructor = new InternalModuleConstructorInfo(structName, builder.MoveToImmutable());
+            constructors.Add(automaticConstructor);
         }
 
         void VisitStructDecl(S.StructDecl structDecl)
@@ -197,13 +245,17 @@ namespace Gum.IR0Translator
                         throw new UnreachableCodeException();
                 }
             }
+
+            newBuilder.bCollectingMemberVarsCompleted = true;
+            newBuilder.TryMakeAutomaticConstructor(structDecl.Name);
             
-            var structInfo = new M.StructInfo(
-                structDecl.Name, structDecl.TypeParams, null, default, 
-                newBuilder.types.ToImmutableArray(), 
-                newBuilder.funcs.ToImmutableArray(), 
-                newBuilder.memberVars.ToImmutableArray(),
-                newBuilder.constructors.ToImmutableArray());
+            var structInfo = new InternalModuleStructInfo(
+                structDecl.Name, structDecl.TypeParams, null,
+                newBuilder.types, 
+                newBuilder.funcs,
+                newBuilder.constructors.ToImmutableArray(),
+                newBuilder.automaticConstructor,
+                newBuilder.memberVars.ToImmutableArray());
 
             types.Add(structInfo);
         }
@@ -223,7 +275,7 @@ namespace Gum.IR0Translator
                     S.FuncParamKind.Ref => M.ParamKind.Ref,
                     _ => throw new UnreachableCodeException()
                 };
-
+                
                 builder.Add(new M.Param(paramKind, mtype, sparam.Name));
             }
 
@@ -239,15 +291,15 @@ namespace Gum.IR0Translator
 
             var paramInfo = MakeParams(funcDecl.Parameters);
 
-            var funcInfo = new M.FuncInfo(
-                funcDecl.Name,
-                funcDecl.IsSequence,
-                funcDecl.IsRefReturn,
-                bThisCall,
-                funcDecl.TypeParams,
+            var funcInfo = new InternalModuleFuncInfo(
+                bInstanceFunc: bThisCall,
+                bSeqFunc: funcDecl.IsSequence,
+                bRefReturn: funcDecl.IsRefReturn,
                 retType,
+                funcDecl.Name,                
+                funcDecl.TypeParams,
                 paramInfo
-            );
+            );            
 
             funcs.Add(funcInfo);
         }
@@ -262,7 +314,7 @@ namespace Gum.IR0Translator
             {
                 bool bStatic = !IsInsideTypeScope(); // TODO: static 키워드가 추가되면 고려한다
 
-                var varInfo = new M.MemberVarInfo(bStatic, declType, name);
+                var varInfo = new InternalModuleMemberVarInfo(bStatic, declType, name);
                 memberVars.Add(varInfo);
             }
         }
@@ -270,10 +322,7 @@ namespace Gum.IR0Translator
         void VisitStructConstructorDeclElement(S.ConstructorStructDeclElement constructorDeclElem)
         {
             var paramInfo = MakeParams(constructorDeclElem.Parameters);
-
-            constructors.Add(new M.ConstructorInfo(paramInfo));
-
-            // memberVars.Add(new M.ConstructorInfo)
+            constructors.Add(new InternalModuleConstructorInfo(constructorDeclElem.Name, paramInfo));
         }
     }
 }

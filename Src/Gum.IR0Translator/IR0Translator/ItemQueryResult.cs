@@ -1,6 +1,5 @@
 ﻿using Gum.Infra;
 using Gum.Collections;
-using M = Gum.CompileTime;
 
 namespace Gum.IR0Translator
 {
@@ -30,11 +29,11 @@ namespace Gum.IR0Translator
 
         public abstract record Valid : ItemQueryResult;
         
-        // ItemValue류 대신에, 
-        public record Type(ItemValueOuter Outer, M.TypeInfo TypeInfo) : Valid;
-        public record Constructors(ItemValueOuter Outer, ImmutableArray<M.ConstructorInfo> ConstructorInfos) : Valid;
-        public record Funcs(ItemValueOuter Outer, ImmutableArray<M.FuncInfo> FuncInfos, bool IsInstanceFunc) : Valid;
-        public record MemberVar(NormalTypeValue Outer, M.MemberVarInfo MemberVarInfo) : Valid;
-        public record EnumElem(EnumTypeValue Outer, M.EnumElemInfo EnumElemInfo) : Valid;
+        // ItemValue류 대신에 => 아직 정보가 부족해서 그랬다
+        public record Type(ItemValueOuter Outer, IModuleTypeInfo TypeInfo) : Valid;
+        public record Constructors(ItemValueOuter Outer, ImmutableArray<IModuleConstructorInfo> ConstructorInfos) : Valid;
+        public record Funcs(ItemValueOuter Outer, ImmutableArray<IModuleFuncInfo> FuncInfos, bool IsInstanceFunc) : Valid;
+        public record MemberVar(NormalTypeValue Outer, IModuleMemberVarInfo MemberVarInfo) : Valid;
+        public record EnumElem(EnumTypeValue Outer, IModuleEnumElemInfo EnumElemInfo) : Valid;
     }
 }

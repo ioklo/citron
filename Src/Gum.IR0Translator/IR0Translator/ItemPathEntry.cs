@@ -1,22 +1,23 @@
-﻿using Gum.CompileTime;
-using Pretune;
+﻿using Pretune;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using M = Gum.CompileTime;
 
 namespace Gum.IR0Translator
 {
-    public struct ItemPathEntry : IEquatable<ItemPathEntry>
+    [ImplementIEquatable]
+    public partial struct ItemPathEntry
     {
-        public Name Name { get; }
+        public M.Name Name { get; }
         public int TypeParamCount { get; }
-        public string ParamHash { get; }   // 함수에서 파라미터에 따라 달라지는 값
+        public M.ParamTypes ParamTypes { get; }   // 함수에서 파라미터에 따라 달라지는 값
 
-        public ItemPathEntry(Name name, int typeParamCount = 0, string paramHash = "")
+        public ItemPathEntry(M.Name name, int typeParamCount = 0, M.ParamTypes paramTypes = default)
         {
             Name = name;
             TypeParamCount = typeParamCount;
-            ParamHash = paramHash;
+            ParamTypes = paramTypes;
         }        
 
         public override string ToString()
@@ -37,23 +38,6 @@ namespace Gum.IR0Translator
                     sb.Append(',');
                 sb.Append('>');
             }
-        }
-
-        public override bool Equals(object? obj)
-        {
-            return obj is ItemPathEntry entry && Equals(entry);
-        }
-
-        public bool Equals(ItemPathEntry other)
-        {
-            return Name.Equals(other.Name) &&
-                   TypeParamCount == other.TypeParamCount &&
-                   ParamHash == other.ParamHash;
-        }
-
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(Name, TypeParamCount, ParamHash);
         }
     }
 }

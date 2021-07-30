@@ -140,7 +140,7 @@ namespace Gum.IR0Translator
                 return itemValueFactory.Int.Equals(typeValue);
             }
 
-            public EnumElemTypeValue MakeEnumElemTypeValue(EnumTypeValue outer, M.EnumElemInfo elemInfo)
+            public EnumElemTypeValue MakeEnumElemTypeValue(EnumTypeValue outer, IModuleEnumElemInfo elemInfo)
             {
                 return itemValueFactory.MakeEnumElemTypeValue(outer, elemInfo);
             }
@@ -191,22 +191,22 @@ namespace Gum.IR0Translator
                 return internalBinOpQueryService.GetInfos(kind);
             }
 
-            public TypeValue MakeTypeValue(ItemValueOuter outer, M.TypeInfo typeInfo, ImmutableArray<TypeValue> typeArgs)
+            public TypeValue MakeTypeValue(ItemValueOuter outer, IModuleTypeInfo typeInfo, ImmutableArray<TypeValue> typeArgs)
             {
                 return itemValueFactory.MakeTypeValue(outer, typeInfo, typeArgs);
             }
 
-            public FuncValue MakeFuncValue(ItemValueOuter outer, M.FuncInfo funcInfo, ImmutableArray<TypeValue> typeArgs)
+            public FuncValue MakeFuncValue(ItemValueOuter outer, IModuleFuncInfo funcInfo, ImmutableArray<TypeValue> typeArgs)
             {
                 return itemValueFactory.MakeFunc(outer, funcInfo, typeArgs);
             }
 
-            public ConstructorValue MakeConstructorValue(ItemValueOuter outer, M.ConstructorInfo info)
+            public ConstructorValue MakeConstructorValue(ItemValueOuter outer, IModuleConstructorInfo info)
             {
                 return itemValueFactory.MakeConstructorValue(outer, info);
             }
 
-            public MemberVarValue MakeMemberVarValue(NormalTypeValue outer, M.MemberVarInfo info)
+            public MemberVarValue MakeMemberVarValue(NormalTypeValue outer, IModuleMemberVarInfo info)
             {
                 return itemValueFactory.MakeMemberVarValue(outer, info);
             }
@@ -264,7 +264,7 @@ namespace Gum.IR0Translator
                 return itemValueFactory.MakeTypeVar(index);
             }
 
-            public StructTypeValue MakeStructTypeValue(ItemValueOuter outer, M.StructInfo structInfo, ImmutableArray<TypeValue> typeArgs)
+            public StructTypeValue MakeStructTypeValue(ItemValueOuter outer, IModuleStructInfo structInfo, ImmutableArray<TypeValue> typeArgs)
             {
                 return itemValueFactory.MakeStructValue(outer, structInfo, typeArgs);
             }

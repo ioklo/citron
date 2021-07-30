@@ -14,18 +14,23 @@ namespace Gum.IR0Translator
     // 'Translation 단계에서만' 사용하는 레퍼런스 검색 (TypeExpEvaluator, Analyzer에서 사용한다)
     class ModuleInfoRepository : IPure
     {
-        ImmutableArray<ModuleInfo> moduleInfos;
+        ImmutableArray<ExternalModuleInfo> moduleInfos;
 
         public ModuleInfoRepository(ImmutableArray<ModuleInfo> moduleInfos)
         {
-            this.moduleInfos = moduleInfos;
+            var builder = ImmutableArray.CreateBuilder<ExternalModuleInfo>(moduleInfos.Length);
+
+            foreach (var moduleInfo in moduleInfos)
+                builder.Add(new ExternalModuleInfo(moduleInfo));
+
+            this.moduleInfos = builder.MoveToImmutable();
         }
 
         public void EnsurePure()
         {   
         }
 
-        public ImmutableArray<ModuleInfo> GetAllModules()
+        public ImmutableArray<ExternalModuleInfo> GetAllModules()
         {
             return moduleInfos;
         }

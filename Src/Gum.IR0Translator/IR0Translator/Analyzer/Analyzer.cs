@@ -55,7 +55,7 @@ namespace Gum.IR0Translator
             ItemValueFactory itemValueFactory,
             GlobalItemValueFactory globalItemValueFactory,
             TypeExpInfoService typeExpInfoService,
-            M.ModuleInfo internalModuleInfo,
+            InternalModuleInfo internalModuleInfo,
             IErrorCollector errorCollector)
         {
             try

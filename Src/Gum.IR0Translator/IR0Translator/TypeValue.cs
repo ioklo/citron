@@ -102,15 +102,15 @@ namespace Gum.IR0Translator
     {
         ItemValueFactory itemValueFactory;
         ItemValueOuter outer;
-        M.EnumInfo enumInfo;
+        IModuleEnumInfo enumInfo;
         ImmutableArray<TypeValue> typeArgs;        
 
         public override R.Path.Nested GetRPath_Nested()
         {
-            var rname = RItemFactory.MakeName(enumInfo.Name);
+            var rname = RItemFactory.MakeName(enumInfo.GetName());
             var rtypeArgs = RItemFactory.MakeRTypes(typeArgs);
 
-            return outer.GetRPath(rname, new R.ParamHash(enumInfo.TypeParams.Length, default), rtypeArgs);
+            return outer.GetRPath(rname, new R.ParamHash(enumInfo.GetTypeParams().Length, default), rtypeArgs);
         }
 
         public EnumTypeValue Apply_EnumTypeValue(TypeEnv typeEnv)
@@ -132,26 +132,18 @@ namespace Gum.IR0Translator
             if (typeParamCount != 0)
                 return ItemQueryResult.NotFound.Instance;
 
-            foreach (var elemInfo in enumInfo.ElemInfos)
-            {
-                if (elemInfo.Name.Equals(memberName))
-                {
-                    return new ItemQueryResult.EnumElem(this, elemInfo);
-                }
-            }
+            var elemInfo = enumInfo.GetElem(memberName);
+            if (elemInfo == null) return ItemQueryResult.NotFound.Instance;
 
-            return ItemQueryResult.NotFound.Instance;
+            return new ItemQueryResult.EnumElem(this, elemInfo);
         }
 
         public EnumElemTypeValue? GetElement(string name)
         {
-            foreach (var elemInfo in enumInfo.ElemInfos)
-            {
-                if (elemInfo.Name.Equals(name))
-                    return itemValueFactory.MakeEnumElemTypeValue(this, elemInfo);
-            }
+            var elemInfo = enumInfo.GetElem(name);
+            if (elemInfo == null) return null;
 
-            return null;
+            return itemValueFactory.MakeEnumElemTypeValue(this, elemInfo);
         }
 
         public override TypeValue? GetMemberType(M.Name memberName, ImmutableArray<TypeValue> typeArgs) 
@@ -160,13 +152,10 @@ namespace Gum.IR0Translator
             if (typeArgs.Length != 0)
                 return null;
 
-            foreach (var elemInfo in enumInfo.ElemInfos)
-            {
-                if (elemInfo.Name.Equals(memberName))
-                    return itemValueFactory.MakeEnumElemTypeValue(this, elemInfo);
-            }
+            var elemInfo = enumInfo.GetElem(memberName);
+            if (elemInfo == null) return null;
 
-            return null; 
+            return itemValueFactory.MakeEnumElemTypeValue(this, elemInfo);
         }
 
         public override R.Loc MakeMemberLoc(R.Loc instance, R.Path.Nested member)
@@ -177,7 +166,7 @@ namespace Gum.IR0Translator
             if (outer != null)
                 outer.FillTypeEnv(builder);
 
-            for (int i = 0; i < enumInfo.TypeParams.Length; i++)
+            for (int i = 0; i < enumInfo.GetTypeParams().Length; i++)
                 builder.Add(typeArgs[i]);
         }
     }
@@ -189,11 +178,11 @@ namespace Gum.IR0Translator
         RItemFactory ritemFactory;
         ItemValueFactory itemValueFactory;
         public EnumTypeValue Outer { get; }
-        M.EnumElemInfo elemInfo;        
+        IModuleEnumElemInfo elemInfo;        
         
         public bool IsStandalone()
         {
-            return elemInfo.FieldInfos.Length == 0;
+            return elemInfo.IsStandalone();
         }
 
         public override NormalTypeValue Apply_NormalTypeValue(TypeEnv typeEnv)
@@ -205,7 +194,7 @@ namespace Gum.IR0Translator
         public override R.Path.Nested GetRPath_Nested()
         {
             var router = Outer.GetRPath_Nested();
-            var rname = RItemFactory.MakeName(elemInfo.Name);
+            var rname = RItemFactory.MakeName(elemInfo.GetName());
             Debug.Assert(router != null);
 
             return new R.Path.Nested(router, rname, R.ParamHash.None, default);
@@ -213,10 +202,12 @@ namespace Gum.IR0Translator
 
         public ImmutableArray<ParamInfo> GetConstructorParamTypes()
         {
-            var builder = ImmutableArray.CreateBuilder<ParamInfo>(elemInfo.FieldInfos.Length);
-            foreach(var field in elemInfo.FieldInfos)
+            var fieldInfos = elemInfo.GetFieldInfos();
+
+            var builder = ImmutableArray.CreateBuilder<ParamInfo>(fieldInfos.Length);
+            foreach(var field in fieldInfos)
             {
-                var fieldType = itemValueFactory.MakeTypeValueByMType(field.Type);
+                var fieldType = itemValueFactory.MakeTypeValueByMType(field.GetDeclType());
                 var appliedFieldType = fieldType.Apply_TypeValue(Outer.MakeTypeEnv());
 
                 builder.Add(new ParamInfo(R.ParamKind.Normal, appliedFieldType)); // TODO: EnumElemFields에 ref를 지원할지
@@ -227,9 +218,9 @@ namespace Gum.IR0Translator
 
         public override ItemQueryResult GetMember(M.Name memberName, int typeParamCount)
         {
-            foreach (var field in elemInfo.FieldInfos)
+            foreach (var field in elemInfo.GetFieldInfos())
             {
-                if (field.Name.Equals(memberName))
+                if (field.GetName().Equals(memberName))
                 {
                     if (typeParamCount != 0)
                         return ItemQueryResult.Error.VarWithTypeArg.Instance;
@@ -258,10 +249,10 @@ namespace Gum.IR0Translator
 
         ItemValueOuter outer;
 
-        M.StructInfo structInfo;
+        IModuleStructInfo structInfo;
         ImmutableArray<TypeValue> typeArgs;
 
-        internal StructTypeValue(ItemValueFactory factory, RItemFactory ritemFactory, ItemValueOuter outer, M.StructInfo structInfo, ImmutableArray<TypeValue> typeArgs)
+        internal StructTypeValue(ItemValueFactory factory, RItemFactory ritemFactory, ItemValueOuter outer, IModuleStructInfo structInfo, ImmutableArray<TypeValue> typeArgs)
         {
             this.itemValueFactory = factory;
             this.ritemFactory = ritemFactory;
@@ -274,10 +265,10 @@ namespace Gum.IR0Translator
         {
             var candidates = new Candidates<ItemQueryResult.Valid>();
 
-            foreach (var memberType in structInfo.MemberTypes)
+            foreach (var memberType in structInfo.GetMemberTypes())
             {
                 // 이름이 같고, 타입 파라미터 개수가 같다면
-                if (memberType.Name.Equals(memberName) && memberType.TypeParams.Length == typeParamCount)
+                if (memberType.GetName().Equals(memberName) && memberType.GetTypeParams().Length == typeParamCount)
                 {
                     candidates.Add(new ItemQueryResult.Type(new NestedItemValueOuter(this), memberType));
                 }
@@ -298,17 +289,17 @@ namespace Gum.IR0Translator
         
         ItemQueryResult GetMember_Func(M.Name memberName, int typeParamCount)
         {
-            var funcsBuilder = ImmutableArray.CreateBuilder<M.FuncInfo>();
+            var funcsBuilder = ImmutableArray.CreateBuilder<IModuleFuncInfo>();
 
             bool bHaveInstance = false;
             bool bHaveStatic = false;
-            foreach (var memberFunc in structInfo.MemberFuncs)
+            foreach (var memberFunc in structInfo.GetMemberFuncs())
             {
-                if (memberFunc.Name.Equals(memberName) &&
-                    typeParamCount <= memberFunc.TypeParams.Length)
+                if (memberFunc.GetName().Equals(memberName) &&
+                    typeParamCount <= memberFunc.GetTypeParams().Length)
                 {
-                    bHaveInstance |= memberFunc.IsInstanceFunc;
-                    bHaveStatic |= !memberFunc.IsInstanceFunc;                    
+                    bHaveInstance |= memberFunc.IsInstanceFunc();
+                    bHaveStatic |= !memberFunc.IsInstanceFunc();                    
 
                     funcsBuilder.Add(memberFunc);
                 }
@@ -331,8 +322,8 @@ namespace Gum.IR0Translator
         {
             var candidates = new Candidates<ItemQueryResult.MemberVar>();
 
-            foreach (var memberVar in structInfo.MemberVars)
-                if (memberVar.Name.Equals(memberName))
+            foreach (var memberVar in structInfo.GetMemberVars())
+                if (memberVar.GetName().Equals(memberName))
                 {   
                     candidates.Add(new ItemQueryResult.MemberVar(this, memberVar));
                 }
@@ -358,17 +349,18 @@ namespace Gum.IR0Translator
 
         public TypeValue? GetBaseType()
         {
-            if (structInfo.BaseType == null) return null;
+            var baseType = structInfo.GetBaseType();
+            if (baseType == null) return null;
 
             var typeEnv = MakeTypeEnv();
-            var typeValue = itemValueFactory.MakeTypeValueByMType(structInfo.BaseType);
+            var typeValue = itemValueFactory.MakeTypeValueByMType(baseType);
             return typeValue.Apply_TypeValue(typeEnv);
         }
 
         public override ItemQueryResult GetMember(M.Name memberName, int typeParamCount)
         {
             if (memberName.Equals(M.SpecialNames.Constructor))
-                return new ItemQueryResult.Constructors(new NestedItemValueOuter(this), structInfo.Constructors);
+                return new ItemQueryResult.Constructors(new NestedItemValueOuter(this), structInfo.GetConstructors());
 
             // TODO: caching
             var results = new List<ItemQueryResult.Valid>();
@@ -400,9 +392,9 @@ namespace Gum.IR0Translator
         public override TypeValue? GetMemberType(M.Name memberName, ImmutableArray<TypeValue> typeArgs)
         {
             // TODO: caching
-            foreach (var memberType in structInfo.MemberTypes)
+            foreach (var memberType in structInfo.GetMemberTypes())
             {
-                if (memberType.Name.Equals(memberName) && memberType.TypeParams.Length == typeArgs.Length)
+                if (memberType.GetName().Equals(memberName) && memberType.GetTypeParams().Length == typeArgs.Length)
                     return itemValueFactory.MakeTypeValue(this, memberType, typeArgs);
             }
 
@@ -414,7 +406,7 @@ namespace Gum.IR0Translator
             if (outer != null)
                 outer.FillTypeEnv(builder);            
 
-            for (int i = 0; i < structInfo.TypeParams.Length; i++)
+            for (int i = 0; i < structInfo.GetTypeParams().Length; i++)
                 builder.Add(typeArgs[i]);
         }
 
@@ -429,15 +421,20 @@ namespace Gum.IR0Translator
         
         public override R.Path.Nested GetRPath_Nested()
         {
-            var rname = RItemFactory.MakeName(structInfo.Name);
+            var rname = RItemFactory.MakeName(structInfo.GetName());
             var rtypeArgs = RItemFactory.MakeRTypes(typeArgs);
 
-            return outer.GetRPath(rname, new R.ParamHash(structInfo.TypeParams.Length, default), rtypeArgs);
+            return outer.GetRPath(rname, new R.ParamHash(structInfo.GetTypeParams().Length, default), rtypeArgs);
         }
 
         public override R.Loc MakeMemberLoc(R.Loc instance, R.Path.Nested member)
         {
             return new R.StructMemberLoc(instance, member);
+        }
+
+        public IModuleConstructorInfo? GetAutoConstructor()
+        {
+            return structInfo.GetAutoConstructor();
         }
     }
 

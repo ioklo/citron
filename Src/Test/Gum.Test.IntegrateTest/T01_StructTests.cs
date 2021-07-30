@@ -38,10 +38,31 @@ struct S
                 )))
             );
 
+            R.Path.Nested SPath() => new R.Path.Nested(new R.Path.Root("TestModule"), "S", R.ParamHash.None, default);
+
             var rscript = RScript(ModuleName, Arr<R.Decl>(
                 new R.StructDecl(R.AccessModifier.Private, "S", Arr<string>(), Arr<R.Path>(), Arr<R.StructDecl.MemberDecl>(
                     new R.StructDecl.MemberDecl.Var(R.AccessModifier.Public, R.Path.Int, Arr<string>("x")),
-                    new R.StructDecl.MemberDecl.Var(R.AccessModifier.Public, R.Path.Int, Arr<string>("y"))
+                    new R.StructDecl.MemberDecl.Var(R.AccessModifier.Public, R.Path.Int, Arr<string>("y")),
+
+                    new R.StructDecl.MemberDecl.Constructor(
+                        R.AccessModifier.Public,
+                        default,
+                        Arr(
+                            new R.Param(R.ParamKind.Normal, R.Path.Int, "x"),
+                            new R.Param(R.ParamKind.Normal, R.Path.Int, "y")
+                        ),
+                        RBlock(
+                            new R.ExpStmt(new R.AssignExp(
+                                new R.StructMemberLoc(R.ThisLoc.Instance, new R.Path.Nested(SPath(), "x", R.ParamHash.None, default)),
+                                new R.LoadExp(new R.LocalVarLoc("x"))
+                            )),
+                            new R.ExpStmt(new R.AssignExp(
+                                new R.StructMemberLoc(R.ThisLoc.Instance, new R.Path.Nested(SPath(), "y", R.ParamHash.None, default)),
+                                new R.LoadExp(new R.LocalVarLoc("y"))
+                            ))
+                        )
+                    )
                 ))
             ));
 
@@ -70,24 +91,20 @@ struct S
 
             var rscript = RScript(ModuleName,
                 Arr<R.Decl>(
-                    new R.StructDecl(R.AccessModifier.Private, "S", Arr<string>(), Arr<R.Path>(), Arr<R.StructDecl.MemberDecl>(
-                        // new R.StructDecl.MemberDecl.Var(R.AccessModifier.Public, R.Path.Int, Arr<string>("x")),
+                    new R.StructDecl(R.AccessModifier.Private, "S", Arr<string>(), Arr<R.Path>(), Arr<R.StructDecl.MemberDecl>(                       
 
                         new R.StructDecl.MemberDecl.Constructor(
                             R.AccessModifier.Public,
                             default,
                             Arr(new R.Param(R.ParamKind.Normal, R.Path.Int, "x")),
-                            RBlock(
-                                //new R.ExpStmt(
-                                //    new R.AssignExp(
-                                //        new R.StructMemberLoc(
-                                //            R.ThisLoc.Instance,
-                                //            new R.Path.Nested(new R.Path.Nested(new R.Path.Root("TestModule"), "S", R.ParamHash.None, default), "x", R.ParamHash.None, default)
-                                //        ),
-                                //        new R.LoadExp(new R.LocalVarLoc("x"))
-                                //    )
-                                //)
-                            )
+                            RBlock()
+                        ),
+
+                        new R.StructDecl.MemberDecl.Constructor(
+                            R.AccessModifier.Public,
+                            default,
+                            default,
+                            RBlock()
                         )
                     ))
                 )
@@ -141,6 +158,8 @@ var s = S(3);
                 )))))
             );
 
+            R.Path.Nested SPath() => new R.Path.Nested(new R.Path.Root("TestModule"), "S", R.ParamHash.None, default);
+
             var rscript = RScript(ModuleName,
                 Arr<R.Decl>(
                     new R.StructDecl(R.AccessModifier.Private, "S", Arr<string>(), Arr<R.Path>(), Arr<R.StructDecl.MemberDecl>(
@@ -152,6 +171,13 @@ var s = S(3);
                             RBlock(RCommand(RString(new R.ExpStringExpElement(
                                 new R.CallInternalUnaryOperatorExp(R.InternalUnaryOperator.ToString_Int_String, new R.LoadExp(new R.LocalVarLoc("x"))))
                             )))
+                        ),
+
+                        new R.StructDecl.MemberDecl.Constructor(
+                            R.AccessModifier.Public,
+                            default,
+                            default,
+                            RBlock()
                         )
                     ))
                 ),
@@ -261,7 +287,7 @@ var s = S(3);
 struct S { int x; } // without constructor S(int x)
 var s = S(3);       // but can do this
 @${s.x}
-";
+"; 
             var sscript = SScript(
                 new S.TypeDeclScriptElement(new S.StructDecl(null, "S", Arr<string>(), Arr<S.TypeExp>(), Arr<S.StructDeclElement>(
 
@@ -328,6 +354,14 @@ var s = S(3);       // but can do this
 
         }
 
+        // default는 잠깐 미루자
+        // 빈 Struct는 자동생성자가 default constructor 역할을 하기 때문에 그냥 생성 가능하다
+        [Fact]
+        public Task F0X_Constructor_DeclStructValueThatDoesntContainMemberVar_UseAutomaticConstructorAsDefaultConstructor()
+        {
+            throw new TestNeedToBeWrittenException();
+        }
+
         //        // 초기화 구문 없을때, DefaultConstructor를 사용해서
         //        [Fact]
         //        public Task F02_VarDecl_NoInitializerWithDefaultConstructor_WorksProperly()
@@ -374,22 +408,11 @@ var s = S(3);       // but can do this
             throw new TestNeedToBeWrittenException();
         }
 
-        // Default
+        // S s; // S에 Default constructor가 없으면 에러
         [Fact]
         public Task F0X_VarDecl_NoInitializerWithoutDefaultConstructor_ReportError()
         {
             throw new TestNeedToBeWrittenException();
         }
-
-        
-
-        // 빈 Struct는 자동생성자가 default constructor로 만들어진다
-        [Fact]
-        public Task F0X_VarDecl_DeclStructValueThatDoesntContainMemberVar_UseAutomaticConstructorAsDefaultConstructor()
-        {
-            throw new TestNeedToBeWrittenException();
-        }
-
-        
     }
 }

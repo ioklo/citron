@@ -21,9 +21,9 @@ namespace Gum.IR0Translator
             GlobalContext globalContext;
             RootContext rootContext;
             LocalContext localContext;
-            M.ModuleInfo internalModuleInfo;   // 네임스페이스가 추가되면 Analyzer가 따로 생기거나 여기가 polymorphic이 되거나 해야한다
+            InternalModuleInfo internalModuleInfo;   // 네임스페이스가 추가되면 Analyzer가 따로 생기거나 여기가 polymorphic이 되거나 해야한다
 
-            RootAnalyzer(GlobalContext globalContext, RootContext rootContext, LocalContext localContext, M.ModuleInfo internalModuleInfo)
+            RootAnalyzer(GlobalContext globalContext, RootContext rootContext, LocalContext localContext, InternalModuleInfo internalModuleInfo)
             {
                 this.globalContext = globalContext;
                 this.rootContext = rootContext;
@@ -31,7 +31,7 @@ namespace Gum.IR0Translator
                 this.internalModuleInfo = internalModuleInfo;
             }
 
-            public static R.Script Analyze(GlobalContext globalContext, RootContext rootContext, M.ModuleInfo internalModuleInfo, S.Script script)
+            public static R.Script Analyze(GlobalContext globalContext, RootContext rootContext, InternalModuleInfo internalModuleInfo, S.Script script)
             {
                 var localContext = new LocalContext();
                 var analyzer = new RootAnalyzer(globalContext, rootContext, localContext, internalModuleInfo);
@@ -137,7 +137,7 @@ namespace Gum.IR0Translator
                 }
 
                 // TODO: Body가 실제로 리턴을 제대로 하는지 확인해야 한다
-                var bodyResult = analyzer.AnalyzeStmt(funcDecl.Body);                
+                var bodyResult = analyzer.AnalyzeStmt(funcDecl.Body);
                 
                 var decls = funcContext.GetDecls();
                 return new R.NormalFuncDecl(decls, rname, false, funcDecl.TypeParams, rparamInfos, bodyResult.Stmt);
@@ -214,9 +214,8 @@ namespace Gum.IR0Translator
 
                     case S.StructDecl structDecl:
                         {
-
                             // TODO: 현재는 최상위 네임스페이스에서만 찾고 있음
-                            var structInfo = GlobalItemQueryService.GetGlobalItem(internalModuleInfo, M.NamespacePath.Root, new ItemPathEntry(structDecl.Name, structDecl.TypeParamCount)) as M.StructInfo;
+                            var structInfo = GlobalItemQueryService.GetGlobalItem(internalModuleInfo, M.NamespacePath.Root, new ItemPathEntry(structDecl.Name, structDecl.TypeParamCount)) as IModuleStructInfo;
                             Debug.Assert(structInfo != null);
 
                             // 이는 TaskStmt 등에서 path를 만들때 사용한다
@@ -231,8 +230,7 @@ namespace Gum.IR0Translator
                                 structInfo, 
                                 typeArgsBuilder.MoveToImmutable());
 
-                            var structAnalyzer = new StructAnalyzer(globalContext, structDecl, structTypeValue);
-                            return structAnalyzer.AnalyzeStructDecl();
+                            return StructAnalyzer.Analyze(globalContext, structDecl, structTypeValue);
                         }
 
                     default:

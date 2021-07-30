@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Gum.IR0Translator
 {
-    partial struct ModuleInfoBuilder
+    partial struct InternalModuleInfoBuilder
     {
         class FatalException : Exception
         {

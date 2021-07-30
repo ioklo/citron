@@ -14,10 +14,10 @@ namespace Gum.IR0Translator
     // 이름만으로 뭔가를 찾고 싶을땐
     class GlobalItemValueFactory : IPure
     {
-        M.ModuleInfo internalModuleInfo;
+        InternalModuleInfo internalModuleInfo;
         ModuleInfoRepository externalModuleRepos;
 
-        public GlobalItemValueFactory(M.ModuleInfo internalModuleInfo, ModuleInfoRepository externalModuleRepos)
+        public GlobalItemValueFactory(InternalModuleInfo internalModuleInfo, ModuleInfoRepository externalModuleRepos)
         {            
             this.internalModuleInfo = internalModuleInfo;
             this.externalModuleRepos = externalModuleRepos;
@@ -33,10 +33,10 @@ namespace Gum.IR0Translator
         {
             GlobalItemValueFactory outer;
             M.NamespacePath namespacePath;
-            M.Name name;
+            string name;
             int typeParamCount;
 
-            public QueryContext(GlobalItemValueFactory outer, M.NamespacePath namespacePath, M.Name name, int typeParamCount)
+            public QueryContext(GlobalItemValueFactory outer, M.NamespacePath namespacePath, string name, int typeParamCount)
             {
                 this.outer = outer;
                 this.namespacePath = namespacePath;
@@ -44,36 +44,25 @@ namespace Gum.IR0Translator
                 this.typeParamCount = typeParamCount;
             }       
             
-            ItemQueryResult GetGlobalTypeCore(M.ModuleName moduleName, ImmutableArray<M.TypeInfo> types)
+            ItemQueryResult GetGlobalTypeCore(M.ModuleName moduleName, IModuleTypeContainer typeContainer)
             {
-                var candidates = new Candidates<ItemQueryResult>();
+                var type = typeContainer.GetType(name, typeParamCount);
+                if (type != null)
+                    return new ItemQueryResult.Type(new RootItemValueOuter(moduleName, namespacePath), type);
 
-                foreach(var type in types)
-                {
-                    if (type.Name.Equals(name) && type.TypeParams.Length == typeParamCount)
-                    {
-                        candidates.Add(new ItemQueryResult.Type(new RootItemValueOuter(moduleName, namespacePath), type));
-                    }
-                }
-
-                var result = candidates.GetSingle();
-                if (result != null) return result;
-                if (candidates.IsEmpty) return ItemQueryResult.NotFound.Instance;
-                if (candidates.HasMultiple) return ItemQueryResult.Error.MultipleCandidates.Instance;
-
-                throw new UnreachableCodeException();
+                return ItemQueryResult.NotFound.Instance;
             }
 
-            ItemQueryResult GetGlobalTypeInModule(M.ModuleInfo moduleInfo)
+            ItemQueryResult GetGlobalTypeInModule(IModuleInfo moduleInfo)
             {
                 if (namespacePath.IsRoot)
-                    return GetGlobalTypeCore(moduleInfo.Name, moduleInfo.Types);
+                    return GetGlobalTypeCore(moduleInfo.GetName(), moduleInfo);
 
                 var namespaceInfo = moduleInfo.GetNamespace(namespacePath);
                 if (namespaceInfo == null)
                     return ItemQueryResult.NotFound.Instance;
 
-                return GetGlobalTypeCore(moduleInfo.Name, namespaceInfo.Types);
+                return GetGlobalTypeCore(moduleInfo.GetName(), namespaceInfo);
             }
 
             ItemQueryResult GetGlobalType()
@@ -101,37 +90,26 @@ namespace Gum.IR0Translator
                 throw new UnreachableCodeException();
             }
 
-            ItemQueryResult GetGlobalFuncCore(M.ModuleName moduleName, ImmutableArray<M.FuncInfo> funcs)
+            ItemQueryResult GetGlobalFuncCore(M.ModuleName moduleName, IModuleFuncContainer funcContainer)
             {
-                var funcInfos = ImmutableArray.CreateBuilder<M.FuncInfo>();
-
-                foreach (var func in funcs)
-                {
-                    Debug.Assert(!func.IsInstanceFunc);
-
-                    if (func.Name.Equals(name) &&
-                        typeParamCount <= func.TypeParams.Length)
-                    {   
-                        funcInfos.Add(func);
-                    }
-                }
-
-                if (funcInfos.Count != 0)
-                    return new ItemQueryResult.Funcs(new RootItemValueOuter(moduleName, namespacePath), funcInfos.ToImmutable(), false);
+                var funcInfos = funcContainer.GetFuncs(name, typeParamCount);
+                
+                if (funcInfos.Length != 0)
+                    return new ItemQueryResult.Funcs(new RootItemValueOuter(moduleName, namespacePath), funcInfos, false);
                 
                 return ItemQueryResult.NotFound.Instance;
             }
 
-            ItemQueryResult GetGlobalFuncInModule(M.ModuleInfo moduleInfo)
+            ItemQueryResult GetGlobalFuncInModule(IModuleInfo moduleInfo)
             {
                 if (namespacePath.IsRoot)
-                    return GetGlobalFuncCore(moduleInfo.Name, moduleInfo.Funcs);
+                    return GetGlobalFuncCore(moduleInfo.GetName(), moduleInfo);
 
                 var namespaceInfo = moduleInfo.GetNamespace(namespacePath);
                 if (namespaceInfo == null)
                     return ItemQueryResult.NotFound.Instance;
 
-                return GetGlobalFuncCore(moduleInfo.Name, namespaceInfo.Funcs);
+                return GetGlobalFuncCore(moduleInfo.GetName(), namespaceInfo);
             }
 
             ItemQueryResult GetGlobalFunc()
@@ -183,7 +161,7 @@ namespace Gum.IR0Translator
             }
         }
         
-        public ItemQueryResult GetGlobal(M.NamespacePath namespacePath, M.Name name, int typeParamCount)
+        public ItemQueryResult GetGlobal(M.NamespacePath namespacePath, string name, int typeParamCount)
         {
             var context = new QueryContext(this, namespacePath, name, typeParamCount);
             return context.GetGlobal();

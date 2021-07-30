@@ -1,4 +1,5 @@
 ﻿using Gum.Collections;
+using Gum.CompileTime;
 using Gum.Infra;
 using Pretune;
 using System;
@@ -13,13 +14,13 @@ using R = Gum.IR0;
 namespace Gum.IR0Translator
 {
     [AutoConstructor]
-    partial class ConstructorValue : ItemValue
+    partial class ConstructorValue : CallableValue
     {
         ItemValueFactory itemValueFactory;
 
         // X<int>.Y<short>
         ItemValueOuter outer;
-        M.ConstructorInfo info;
+        IModuleConstructorInfo info;
 
         public override ItemValue Apply_ItemValue(TypeEnv typeEnv)
         {
@@ -27,30 +28,15 @@ namespace Gum.IR0Translator
             return itemValueFactory.MakeConstructor(appliedOuter, info);
         }
 
-        ImmutableArray<ParamInfo> GetParamInfos()
+        protected override TypeValue MakeTypeValueByMType(M.Type type)
         {
-            var typeEnv = MakeTypeEnv();
-
-            var builder = ImmutableArray.CreateBuilder<ParamInfo>(info.Parameters.Length);
-            foreach (var paramInfo in info.Parameters)
-            {
-                var paramTypeValue = itemValueFactory.MakeTypeValueByMType(paramInfo.Type);
-                var appliedParamTypeValue = paramTypeValue.Apply_TypeValue(typeEnv);
-
-                var paramKind = paramInfo.Kind switch
-                {
-                    M.ParamKind.Normal => R.ParamKind.Normal,
-                    M.ParamKind.Ref => R.ParamKind.Ref,
-                    M.ParamKind.Params => R.ParamKind.Params,
-                    _ => throw new UnreachableCodeException()
-                };
-
-                builder.Add(new ParamInfo(paramKind, appliedParamTypeValue));
-            }
-
-            return builder.MoveToImmutable();
+            return itemValueFactory.MakeTypeValueByMType(type);
         }
 
+        protected override ImmutableArray<Param> GetParameters()
+        {
+            return info.GetParameters();
+        }
 
         public sealed override R.Path GetRPath()
         {

@@ -21,29 +21,5 @@ namespace Gum.CompileTime
         public void EnsurePure()
         {
         }
-
-        public NamespaceInfo? GetNamespace(NamespacePath path)
-        {
-            Debug.Assert(!path.IsRoot);
-
-            NamespaceInfo? curNamespace = null;
-            foreach (var entry in path.Entries)
-            {
-                if (curNamespace == null)
-                {
-                    curNamespace = Namespaces.FirstOrDefault(info => info.Name.Equals(entry));
-                    if (curNamespace == null)
-                        return null;
-                }
-                else
-                {
-                    curNamespace = curNamespace.Namespaces.FirstOrDefault(info => info.Name.Equals(entry));
-                    if (curNamespace == null)
-                        return null;
-                }
-            }
-
-            return curNamespace;
-        }
     }
 }

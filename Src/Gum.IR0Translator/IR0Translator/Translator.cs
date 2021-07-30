@@ -22,7 +22,7 @@ namespace Gum.IR0Translator
             var typeSkelRepo = TypeSkeletonCollector.Collect(sscript);
             var typeExpTypeValueService = TypeExpEvaluator.Evaluate(moduleName, sscript, externalModuleInfoRepo, typeSkelRepo, errorCollector);
 
-            var internalModuleInfo = ModuleInfoBuilder.Build(moduleName, sscript, typeExpTypeValueService);
+            var internalModuleInfo = InternalModuleInfoBuilder.Build(moduleName, sscript, typeExpTypeValueService);
 
             var typeInfoRepo = new TypeInfoRepository(internalModuleInfo, externalModuleInfoRepo);
             var ritemFactory = new RItemFactory();

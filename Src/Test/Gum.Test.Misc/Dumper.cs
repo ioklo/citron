@@ -13,22 +13,29 @@ namespace Gum.Test.Misc
     public struct Dumper
     {
         TextWriter writer;
+        HashSet<object> visited;
 
         public static void Dump(TextWriter writer, object o)
         {
-            var dumper = new Dumper() { writer = writer };
+            var dumper = new Dumper() { writer = writer, visited = new HashSet<object>() };
             dumper.DumpCore(o, "");
         }
 
         public void DumpCore(object o, string indent)
         {
+            if (o == null)
+            {
+                writer.Write("null");
+                return;
+            }
+
             var type = o.GetType();
             if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(ImmutableArray<>))
                 DumpImmutableArray(o, indent);
             else if (o is Enum e)
                 writer.Write("{0}.{1}", e.GetType().Name, e);
             else if (o is ValueType)
-                writer.Write(o);            
+                writer.Write(o);
             else if (o is string str)
                 writer.Write($"\"{str}\"");
             else
@@ -37,11 +44,11 @@ namespace Gum.Test.Misc
 
         static IEnumerable<MemberInfo> GetMembers(Type type)
         {
-            foreach (var fieldInfo in type.GetFields(BindingFlags.Instance | BindingFlags.Public))
+            foreach (var fieldInfo in type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic))
                 yield return fieldInfo;
 
-            foreach (var propertyInfo in type.GetProperties(BindingFlags.Instance | BindingFlags.Public))
-                yield return propertyInfo;
+            //foreach (var propertyInfo in type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic))
+            //    yield return propertyInfo;
 
             //foreach (var memberInfo in type.GetMembers(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic))
             //    yield return memberInfo.Name;
@@ -60,7 +67,7 @@ namespace Gum.Test.Misc
             bool isDefault = (bool)array.GetType().GetProperty("IsDefault")!.GetValue(array)!;
 
             // System.Collections.Immutable.ImmutableArray<>.Empty.Is
-            if (isDefault)
+            if (isDefault || array.Count == 0)
             {
                 writer.Write("[]");
                 return;
@@ -84,6 +91,14 @@ namespace Gum.Test.Misc
 
         void DumpObject(object o, string indent)
         {
+            if (visited.Contains(o))
+            {
+                writer.Write("$visited");
+                return;
+            }
+
+            visited.Add(o);
+
             var type = o.GetType();
             writer.WriteLine("{");
             writer.Write($"{indent}    $type: \"{type.Name}\"");
@@ -100,8 +115,17 @@ namespace Gum.Test.Misc
                 }
                 else if (memberInfo is PropertyInfo propertyInfo)
                 {
-                    name = propertyInfo.Name;
-                    memberObj = propertyInfo.GetValue(o);
+                    name = propertyInfo.Name;                    
+                    try
+                    {
+                        memberObj = propertyInfo.GetValue(o);
+                    }
+                    catch
+                    {   
+                        continue;
+                    }
+
+                    memberObj = null;
                 }
                 else
                     continue;

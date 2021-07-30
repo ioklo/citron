@@ -90,7 +90,7 @@ namespace Gum.IR0Translator
             IdentifierResult GetGlobalInfo()
             {
                 // TODO: outer namespace까지 다 돌아야 한다
-                var curNamespacePath = M.NamespacePath.Root; 
+                var curNamespacePath = M.NamespacePath.Root;
                 var globalResult = globalContext.GetGlobalItem(curNamespacePath, idName, typeArgs.Length);
 
                 switch (globalResult)

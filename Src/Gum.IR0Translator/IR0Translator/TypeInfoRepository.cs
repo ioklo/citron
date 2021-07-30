@@ -12,10 +12,10 @@ namespace Gum.IR0Translator
     // reference module에서 타입 정보를 얻어오는 역할
     class TypeInfoRepository : IPure
     {
-        M.ModuleInfo internalModuleInfo;
+        IModuleInfo internalModuleInfo;
         ModuleInfoRepository externalModuleInfoRepo;
 
-        public TypeInfoRepository(M.ModuleInfo internalModuleInfo, ModuleInfoRepository moduleInfoRepo)
+        public TypeInfoRepository(IModuleInfo internalModuleInfo, ModuleInfoRepository moduleInfoRepo)
         {
             this.internalModuleInfo = internalModuleInfo;
             this.externalModuleInfoRepo = moduleInfoRepo;
@@ -28,16 +28,16 @@ namespace Gum.IR0Translator
             Infra.Misc.EnsurePure(externalModuleInfoRepo);
         }
 
-        public M.TypeInfo? GetType(M.ModuleName moduleName, M.NamespacePath namespacePath, M.Name name, int typeParamCount)
+        public IModuleTypeInfo? GetType(M.ModuleName moduleName, M.NamespacePath namespacePath, M.Name name, int typeParamCount)
         {
             var itemPathEntry = new ItemPathEntry(name, typeParamCount);
 
-            if (internalModuleInfo.Name.Equals(moduleName))
-                return GlobalItemQueryService.GetGlobalItem(internalModuleInfo, namespacePath, itemPathEntry) as M.TypeInfo;
+            if (internalModuleInfo.GetName().Equals(moduleName))
+                return GlobalItemQueryService.GetGlobalItem(internalModuleInfo, namespacePath, itemPathEntry) as IModuleTypeInfo;
 
             foreach (var module in externalModuleInfoRepo.GetAllModules())
-                if (module.Name.Equals(moduleName))
-                    return GlobalItemQueryService.GetGlobalItem(module, namespacePath, itemPathEntry) as M.TypeInfo;
+                if (module.GetName().Equals(moduleName))
+                    return GlobalItemQueryService.GetGlobalItem(module, namespacePath, itemPathEntry) as IModuleTypeInfo;
 
             return null;
         }

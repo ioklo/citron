@@ -6,10 +6,12 @@ using System.Threading.Tasks;
 
 using S = Gum.Syntax;
 using R = Gum.IR0;
+using M = Gum.CompileTime;
 using Gum.Infra;
 using Gum.Collections;
 using Pretune;
 using static Gum.IR0Translator.AnalyzeErrorCode;
+using System.Diagnostics;
 
 namespace Gum.IR0Translator
 {
@@ -21,9 +23,15 @@ namespace Gum.IR0Translator
             GlobalContext globalContext;            
             S.StructDecl structDecl;
             StructTypeValue structTypeValue;
-            
+
             // Entry
-            public R.StructDecl AnalyzeStructDecl()
+            public static R.StructDecl Analyze(GlobalContext globalContext, S.StructDecl structDecl, StructTypeValue structTypeValue)
+            {
+                var structAnalyzer = new StructAnalyzer(globalContext, structDecl, structTypeValue);
+                return structAnalyzer.AnalyzeStructDecl();
+            }           
+            
+            R.StructDecl AnalyzeStructDecl()
             {
                 R.AccessModifier accessModifier;
                 switch (structDecl.AccessModifier)
@@ -51,14 +59,16 @@ namespace Gum.IR0Translator
                 var baseTypes = MakeBaseRTypes(ref structDecl, globalContext);
 
                 // TODO: typeParams
-                var builder = ImmutableArray.CreateBuilder<R.StructDecl.MemberDecl>(structDecl.Elems.Length);
+                var memberBuilder = ImmutableArray.CreateBuilder<R.StructDecl.MemberDecl>();
                 foreach (var elem in structDecl.Elems)
                 {
-                    var memberDecl = AnalyzeStructDeclElement(elem);
-                    builder.Add(memberDecl);
-                }
+                    AnalyzeStructDeclElement(memberBuilder, elem);                    
+                }               
 
-                var memberDecls = builder.MoveToImmutable();
+                BuildAutomaticConstructor(memberBuilder);
+
+                var memberDecls = memberBuilder.ToImmutable();
+
                 return new R.StructDecl(accessModifier, structDecl.Name, structDecl.TypeParams, baseTypes, memberDecls);
             }
 
@@ -73,27 +83,27 @@ namespace Gum.IR0Translator
                         return R.AccessModifier.Private;
 
                     case S.AccessModifier.Public:
-                        globalContext.AddFatalError(AnalyzeErrorCode.A2401_StructDecl_CannotSetMemberPublicAccessExplicitlyBecauseItsDefault, nodeForErrorReport);
+                        globalContext.AddFatalError(A2401_StructDecl_CannotSetMemberPublicAccessExplicitlyBecauseItsDefault, nodeForErrorReport);
                         break;
 
                     case S.AccessModifier.Protected:
-                        globalContext.AddFatalError(AnalyzeErrorCode.A2402_StructDecl_CannotSetMemberProtectedAccessBecauseItsNotAllowed, nodeForErrorReport);
+                        globalContext.AddFatalError(A2402_StructDecl_CannotSetMemberProtectedAccessBecauseItsNotAllowed, nodeForErrorReport);
                         break;
                 }
 
                 throw new UnreachableCodeException();
             }
 
-            R.StructDecl.MemberDecl.Var AnalyzeVarDeclElement(S.VarStructDeclElement varElem)
+            void AnalyzeVarDeclElement(ImmutableArray<R.StructDecl.MemberDecl>.Builder memberBuilder, S.VarStructDeclElement varElem)
             {
                 var varTypeValue = globalContext.GetTypeValueByTypeExp(varElem.VarType);
                 var rtype = varTypeValue.GetRPath();
 
                 R.AccessModifier accessModifier = AnalyzeAccessModifier(varElem.AccessModifier, varElem);
-                return new R.StructDecl.MemberDecl.Var(accessModifier, rtype, varElem.VarNames);
+                memberBuilder.Add(new R.StructDecl.MemberDecl.Var(accessModifier, rtype, varElem.VarNames));
             }
 
-            R.StructDecl.MemberDecl.Constructor AnalyzeConstructorDeclElement(S.ConstructorStructDeclElement elem)
+            void AnalyzeConstructorDeclElement(ImmutableArray<R.StructDecl.MemberDecl>.Builder memberBuilder, S.ConstructorStructDeclElement elem)
             {
                 R.AccessModifier accessModifier = AnalyzeAccessModifier(elem.AccessModifier, elem);
 
@@ -121,22 +131,60 @@ namespace Gum.IR0Translator
 
                 var decls = constructorContext.GetDecls();
 
-                return new R.StructDecl.MemberDecl.Constructor(accessModifier, decls, rparamInfos, bodyResult.Stmt);
+                memberBuilder.Add(new R.StructDecl.MemberDecl.Constructor(accessModifier, decls, rparamInfos, bodyResult.Stmt));
             }
             
-            R.StructDecl.MemberDecl AnalyzeStructDeclElement(S.StructDeclElement elem)
+            void AnalyzeStructDeclElement(ImmutableArray<R.StructDecl.MemberDecl>.Builder builder, S.StructDeclElement elem)
             {
                 switch (elem)
                 {
                     case S.VarStructDeclElement varElem:
-                        return AnalyzeVarDeclElement(varElem);
+                        AnalyzeVarDeclElement(builder, varElem);
+                        break;
 
                     case S.ConstructorStructDeclElement constructorElem:
-                        return AnalyzeConstructorDeclElement(constructorElem);
+                        AnalyzeConstructorDeclElement(builder, constructorElem);
+                        break;
 
                     default:
                         throw new NotImplementedException();
                 }
+            }
+
+            void BuildAutomaticConstructor(ImmutableArray<R.StructDecl.MemberDecl>.Builder memberBuilder)
+            {
+                var autoConstructor = structTypeValue.GetAutoConstructor();
+                if (autoConstructor == null) return;
+
+                ImmutableArray<R.Decl> decls = default;
+
+                var structPath = structTypeValue.GetRPath_Nested();
+                var parameters = autoConstructor.GetParameters();
+                var paramBuilder = ImmutableArray.CreateBuilder<R.Param>(parameters.Length);
+                var stmtBuilder = ImmutableArray.CreateBuilder<R.Stmt>(parameters.Length);
+                foreach(var param in parameters)
+                {
+                    var paramKind = param.Kind switch
+                    {
+                        M.ParamKind.Normal => R.ParamKind.Normal,
+                        M.ParamKind.Ref => R.ParamKind.Ref,
+                        M.ParamKind.Params => R.ParamKind.Params,
+                        _ => throw new UnreachableCodeException()
+                    };
+
+                    var paramTypeValue = globalContext.GetTypeValueByMType(param.Type);
+                    var rname = RItemFactory.MakeName(param.Name) as R.Name.Normal;
+
+                    Debug.Assert(rname != null);                    
+
+                    paramBuilder.Add(new R.Param(paramKind, paramTypeValue.GetRPath(), rname.Value));
+
+                    var structMemberPath = new R.Path.Nested(structPath, rname, R.ParamHash.None, default);
+                    stmtBuilder.Add(new R.ExpStmt(new R.AssignExp(new R.StructMemberLoc(R.ThisLoc.Instance, structMemberPath), new R.LoadExp(new R.LocalVarLoc(rname.Value)))));
+                }
+                var body = new R.BlockStmt(stmtBuilder.MoveToImmutable());
+
+                memberBuilder.Add(new R.StructDecl.MemberDecl.Constructor(R.AccessModifier.Public, decls, paramBuilder.MoveToImmutable(), body));
             }
         }
     }

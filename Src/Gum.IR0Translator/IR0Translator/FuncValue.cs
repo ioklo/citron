@@ -13,7 +13,7 @@ using Gum.Collections;
 namespace Gum.IR0Translator
 {
     // X<int>.Y<short>.F_T_int_int<S>
-    class FuncValue : ItemValue
+    class FuncValue : CallableValue
     {
         ItemValueFactory itemValueFactory;
 
@@ -21,14 +21,14 @@ namespace Gum.IR0Translator
         ItemValueOuter outer;
 
         // F_int_int
-        M.FuncInfo funcInfo;
+        IModuleFuncInfo funcInfo;
 
         ImmutableArray<TypeValue> typeArgs;
 
-        public bool IsStatic { get => !funcInfo.IsInstanceFunc; }
-        public bool IsSequence { get => funcInfo.IsSequenceFunc; }
+        public bool IsStatic { get => !funcInfo.IsInstanceFunc(); }
+        public bool IsSequence { get => funcInfo.IsSequenceFunc(); }
         
-        internal FuncValue(ItemValueFactory itemValueFactory, ItemValueOuter outer, M.FuncInfo funcInfo, ImmutableArray<TypeValue> typeArgs)
+        internal FuncValue(ItemValueFactory itemValueFactory, ItemValueOuter outer, IModuleFuncInfo funcInfo, ImmutableArray<TypeValue> typeArgs)
         {
             this.itemValueFactory = itemValueFactory;            
             this.outer = outer;
@@ -45,38 +45,22 @@ namespace Gum.IR0Translator
             for(int i = 0; i < typeArgs.Length; i++)
                 builder.Add(typeArgs[i]);
         }
-        
-        // class X<T> { void Func<U>(T t, ref U u, int x); }
-        // X<int>.F<bool> => (int, ref bool, int)
-        public ImmutableArray<ParamInfo> GetParamInfos()
+
+        protected override TypeValue MakeTypeValueByMType(M.Type type)
         {
-            var typeEnv = MakeTypeEnv();
+            return itemValueFactory.MakeTypeValueByMType(type);
+        }
 
-            var builder = ImmutableArray.CreateBuilder<ParamInfo>(funcInfo.Parameters.Length);
-            foreach (var paramInfo in funcInfo.Parameters)
-            {   
-                var paramTypeValue = itemValueFactory.MakeTypeValueByMType(paramInfo.Type);
-                var appliedParamTypeValue = paramTypeValue.Apply_TypeValue(typeEnv);
-
-                var paramKind = paramInfo.Kind switch
-                {
-                    M.ParamKind.Normal => R.ParamKind.Normal,
-                    M.ParamKind.Ref => R.ParamKind.Ref,
-                    M.ParamKind.Params => R.ParamKind.Params,
-                    _ => throw new UnreachableCodeException()
-                };
-
-
-                builder.Add(new ParamInfo(paramKind, appliedParamTypeValue));
-            }
-
-            return builder.MoveToImmutable();
+        protected override ImmutableArray<M.Param> GetParameters()
+        {
+            return funcInfo.GetParameters();
         }
 
         public TypeValue GetRetType()
         {
             var typeEnv = MakeTypeEnv();
-            var retTypeValue = itemValueFactory.MakeTypeValueByMType(funcInfo.RetType);
+            var retType = funcInfo.GetReturnType();            
+            var retTypeValue = itemValueFactory.MakeTypeValueByMType(retType);
             return retTypeValue.Apply_TypeValue(typeEnv);
         }
         
@@ -95,7 +79,7 @@ namespace Gum.IR0Translator
 
         public R.Path.Nested GetRPath_Nested()
         {
-            var rname = RItemFactory.MakeName(funcInfo.Name);
+            var rname = RItemFactory.MakeName(funcInfo.GetName());
             var paramInfos = GetParamInfos();
             var rparamTypes = ImmutableArray.CreateRange(paramInfos, paramInfo => new R.ParamHashEntry(paramInfo.ParamKind, paramInfo.Type.GetRPath()));
 

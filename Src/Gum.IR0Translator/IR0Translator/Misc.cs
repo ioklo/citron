@@ -53,104 +53,90 @@ namespace Gum.IR0Translator
         //    }
         //}
 
-        static void FillTypeString(M.Name name, ImmutableArray<M.Type> typeArgs, StringBuilder sb)
-        {
-            // X
-            sb.Append(name);
+        //static void FillTypeString(M.Name name, ImmutableArray<M.Type> typeArgs, StringBuilder sb)
+        //{
+        //    // X
+        //    sb.Append(name);
 
-            // <int>
-            if (typeArgs.Length != 0)
-            {
-                sb.Append('<');
+        //    // <int>
+        //    if (typeArgs.Length != 0)
+        //    {
+        //        sb.Append('<');
 
-                bool bFirst = true;
-                foreach (var typeArg in typeArgs)
-                {
-                    if (bFirst) bFirst = false;
-                    else sb.Append(',');
+        //        bool bFirst = true;
+        //        foreach (var typeArg in typeArgs)
+        //        {
+        //            if (bFirst) bFirst = false;
+        //            else sb.Append(',');
 
-                    FillTypeString(typeArg, sb);
-                }
+        //            FillTypeString(typeArg, sb);
+        //        }
 
-                sb.Append('>');
-            }
-        }
+        //        sb.Append('>');
+        //    }
+        //}
 
-        static void FillNamespacePath(M.NamespacePath namespacePath, StringBuilder sb)
-        {
-            // Namespace1.Namespace2.
-            if (namespacePath.Entries.Length != 0)
-            {
-                sb.AppendJoin('.', namespacePath.Entries.Select(entry => entry.Value));
-                sb.Append('.');
-            }
-        }
+        //static void FillNamespacePath(M.NamespacePath namespacePath, StringBuilder sb)
+        //{
+        //    // Namespace1.Namespace2.
+        //    if (namespacePath.Entries.Length != 0)
+        //    {
+        //        sb.AppendJoin('.', namespacePath.Entries.Select(entry => entry.Value));
+        //        sb.Append('.');
+        //    }
+        //}
 
-        // [ModuleName].Namespace.Namespace.Type...
-        // TypeString을 만드는데 InternalType이면 어떻게 하나..
-        // void Func([AModule]MyType m);  // ParamHash
-        // void Func([BModule]MyType m);  // ParamHash.. 둘이 다른 타입인데
-        // void Func([Internal]MyType m); // Internal이지만, 이름은 있어야 한다.. (Internal은 Func가 나온 모듈)
-        static void FillTypeString(M.Type type, StringBuilder sb)
-        {
-            switch (type)
-            {
-                case M.TypeVarType typeVar:
-                    sb.Append($"`{typeVar.Index}");
-                    break;                
+        //// [ModuleName].Namespace.Namespace.Type...
+        //// TypeString을 만드는데 InternalType이면 어떻게 하나..
+        //// void Func([AModule]MyType m);  // ParamHash
+        //// void Func([BModule]MyType m);  // ParamHash.. 둘이 다른 타입인데
+        //// void Func([Internal]MyType m); // Internal이지만, 이름은 있어야 한다.. (Internal은 Func가 나온 모듈)
+        //public static void FillTypeString(M.Type type, StringBuilder sb)
+        //{
+        //    switch (type)
+        //    {
+        //        case M.TypeVarType typeVar:
+        //            sb.Append($"`{typeVar.Index}");
+        //            break;                
                 
-                case M.GlobalType externalType:
-                    // [ModuleName]Namespace1.Namespace2.X<int>
+        //        case M.GlobalType externalType:
+        //            // [ModuleName]Namespace1.Namespace2.X<int>
 
-                    // [ModuleName]
-                    sb.Append($"[{externalType.ModuleName}]");
+        //            // [ModuleName]
+        //            sb.Append($"[{externalType.ModuleName}]");
 
-                    // Namespace1.Namespace2.
-                    FillNamespacePath(externalType.NamespacePath, sb);
+        //            // Namespace1.Namespace2.
+        //            FillNamespacePath(externalType.NamespacePath, sb);
 
-                    // X<int>
-                    FillTypeString(externalType.Name, externalType.TypeArgs, sb);                    
-                    break;
+        //            // X<int>
+        //            FillTypeString(externalType.Name, externalType.TypeArgs, sb);                    
+        //            break;
 
-                case M.MemberType memberType: // [ModuleName]N1.N2.X<int, short>.Y<string>
-                    // [ModuleName]N1.N2.X<int, short>.
-                    FillTypeString(memberType.Outer, sb);
-                    sb.Append('.');
+        //        case M.MemberType memberType: // [ModuleName]N1.N2.X<int, short>.Y<string>
+        //            // [ModuleName]N1.N2.X<int, short>.
+        //            FillTypeString(memberType.Outer, sb);
+        //            sb.Append('.');
 
-                    // Y<string>
-                    FillTypeString(memberType.Name, memberType.TypeArgs, sb);
-                    break;
+        //            // Y<string>
+        //            FillTypeString(memberType.Name, memberType.TypeArgs, sb);
+        //            break;
 
-                case M.VoidType _:
-                    sb.Append("void");
-                    break;
+        //        case M.VoidType _:
+        //            sb.Append("void");
+        //            break;
 
-                default:
-                    throw new UnreachableCodeException();
-            }
-        }
+        //        default:
+        //            throw new UnreachableCodeException();
+        //    }
+        //}
 
-        public static string MakeParamHash(ImmutableArray<(M.ParamKind Kind, M.Type Type)> paramKindsAndTypes)
+        public static M.ParamTypes MakeParamTypes(ImmutableArray<M.Param> parameters)
         {
-            var sb = new StringBuilder();
+            var builder = ImmutableArray.CreateBuilder<M.ParamKindAndType>(parameters.Length);
+            foreach (var param in parameters)
+                builder.Add(new M.ParamKindAndType(param.Kind, param.Type));
 
-            bool bFirst = true;
-            foreach (var (kind, type) in paramKindsAndTypes)
-            {
-                if (bFirst) bFirst = false;
-                else sb.Append(" * ");
-
-                switch (kind)
-                {
-                    case M.ParamKind.Normal: break;
-                    case M.ParamKind.Params: sb.Append("params "); break;
-                    case M.ParamKind.Ref: sb.Append("ref "); break;
-                }
-
-                FillTypeString(type, sb);
-            }
-
-            return sb.ToString();
+            return new M.ParamTypes(builder.MoveToImmutable());
         }
     }
 }

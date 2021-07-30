@@ -15,12 +15,12 @@ namespace Gum.IR0Translator
     {   
         ItemValueFactory factory;
         NormalTypeValue outer;
-        M.MemberVarInfo info;
+        IModuleMemberVarInfo info;
 
-        public M.Name Name { get => info.Name; }
-        public bool IsStatic { get => info.IsStatic; }
+        public M.Name Name { get => info.GetName(); }
+        public bool IsStatic { get => info.IsStatic(); }
         
-        public MemberVarValue(ItemValueFactory factory, NormalTypeValue outer, M.MemberVarInfo info)
+        public MemberVarValue(ItemValueFactory factory, NormalTypeValue outer, IModuleMemberVarInfo info)
         {
             this.factory = factory;
             this.outer = outer;
@@ -35,7 +35,9 @@ namespace Gum.IR0Translator
         public TypeValue GetTypeValue()
         {
             var typeEnv = MakeTypeEnv();
-            var typeValue = factory.MakeTypeValueByMType(info.Type);
+            var type = info.GetDeclType();
+
+            var typeValue = factory.MakeTypeValueByMType(type);
             return typeValue.Apply_TypeValue(typeEnv);
         }
 
