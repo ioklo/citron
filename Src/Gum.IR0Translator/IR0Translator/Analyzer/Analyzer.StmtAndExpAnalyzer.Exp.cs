@@ -880,11 +880,23 @@ namespace Gum.IR0Translator
                             callableContext.AddLambdaCapture(localVarOutsideLambdaResult.VarName, localVarOutsideLambdaResult.TypeValue);
                             return AnalyzeMemberExpLocParent(memberExp, new R.CapturedVarLoc(localVarOutsideLambdaResult.VarName), localVarOutsideLambdaResult.TypeValue);
 
-                        case IdentifierResult.LocalVar localVarResult:                            
-                            return AnalyzeMemberExpLocParent(memberExp, new R.LocalVarLoc(localVarResult.VarName), localVarResult.TypeValue);
+                        case IdentifierResult.LocalVar localVarResult:
+                            {
+                                R.Loc loc = new R.LocalVarLoc(localVarResult.VarName);
+                                if (localVarResult.IsRef)
+                                    loc = new R.DerefLocLoc(loc);
+
+                                return AnalyzeMemberExpLocParent(memberExp, loc, localVarResult.TypeValue);
+                            }
 
                         case IdentifierResult.GlobalVar globalVarResult:
-                            return AnalyzeMemberExpLocParent(memberExp, new R.GlobalVarLoc(globalVarResult.VarName), globalVarResult.TypeValue);
+                            {
+                                R.Loc loc = new R.GlobalVarLoc(globalVarResult.VarName);
+                                if (globalVarResult.IsRef)
+                                    loc = new R.DerefLocLoc(loc);
+
+                                return AnalyzeMemberExpLocParent(memberExp, loc, globalVarResult.TypeValue);
+                            }
 
                         // F.x 는
                         case IdentifierResult.Funcs:

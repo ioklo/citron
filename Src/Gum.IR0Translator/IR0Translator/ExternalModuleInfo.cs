@@ -81,7 +81,7 @@ namespace Gum.IR0Translator
                 var typeParamCount = func.GetTypeParams().Length;
 
                 // mfunc의 typeparam이 n개면 n-1 .. 0 에도 다 넣는다
-                for (int i = 0; i < typeParamCount; i++)
+                for (int i = 0; i <= typeParamCount; i++)
                 {
                     var key = (funcName, i);
 

@@ -80,6 +80,27 @@ namespace Gum.Test.IntegrateTest
             Assert.True(result, $"Errors doesn't contain (Code: {code}, Node: {node})");
         }
 
+        public static async Task TestEvalAsync(string code, string result)
+        {
+            var testErrorCollector = new TestErrorCollector(false);
+
+            var lexer = new Lexer();
+            var parser = new Parser(lexer);
+
+            var buffer = new Buffer(new StringReader(code));
+            var bufferPos = await buffer.MakePosition().NextAsync();
+            var lexerContext = LexerContext.Make(bufferPos);
+            var parserContext = ParserContext.Make(lexerContext);
+
+            var sscriptResult = await parser.ParseScriptAsync(parserContext);
+            var rscriptResult = Translator.Translate("TestModule", default, sscriptResult.Elem, testErrorCollector);
+
+            var commandProvider = new TestCmdProvider();
+
+            var _ = await Evaluator.EvalAsync(default, commandProvider, rscriptResult!);
+            Assert.Equal(result, commandProvider.Output);
+        }
+
         public static async Task TestParseTranslateEvalAsync(string code, S.Script sscript, R.Script rscript, string result)
         {
             var testErrorCollector = new TestErrorCollector(false);
@@ -100,11 +121,11 @@ namespace Gum.Test.IntegrateTest
             var _ = await Evaluator.EvalAsync(default, commandProvider, rscript); // retValue는 지금 쓰지 않는다
 
             StringWriter writer0 = new StringWriter();
-            Dumper.Dump(writer0, rscript);
+            Dumper.Dump(writer0, sscript);
             var text0 = writer0.ToString();
 
             StringWriter writer1 = new StringWriter();
-            Dumper.Dump(writer1, rscriptResult!);
+            Dumper.Dump(writer1, sscriptResult.Elem!);
             var text1 = writer1.ToString();
 
             Assert.Equal(sscript, sscriptResult.Elem);
