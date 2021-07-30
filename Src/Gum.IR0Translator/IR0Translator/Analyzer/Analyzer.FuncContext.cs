@@ -8,14 +8,14 @@ namespace Gum.IR0Translator
     {
         class FuncContext : ICallableContext
         {
-            TypeValue? thisTypeValue;
+            NormalTypeValue? thisTypeValue;
             TypeValue? retTypeValue; // 리턴 타입이 미리 정해져 있다면 이걸 쓴다
             bool bSequence;          // 시퀀스 여부
             R.Path.Nested path;
             ImmutableArray<R.Decl> decls;
             AnonymousIdComponent AnonymousIdComponent;
 
-            public FuncContext(TypeValue? thisTypeValue, TypeValue? retTypeValue, bool bSequence, R.Path.Nested path)
+            public FuncContext(NormalTypeValue? thisTypeValue, TypeValue? retTypeValue, bool bSequence, R.Path.Nested path)
             {
                 this.thisTypeValue = thisTypeValue;
                 this.retTypeValue = retTypeValue;
@@ -52,7 +52,7 @@ namespace Gum.IR0Translator
             }
             
             public R.Path.Normal GetPath() => path;
-            public TypeValue? GetThisTypeValue() { return thisTypeValue; }
+            public NormalTypeValue? GetThisTypeValue() { return thisTypeValue; }
             // TODO: 지금은 InnerFunc를 구현하지 않으므로, Outside가 없다. 나중에 지원
             public LocalVarInfo? GetLocalVarOutsideLambda(string varName) => null;
             public TypeValue? GetRetTypeValue() => retTypeValue;

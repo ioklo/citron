@@ -158,7 +158,7 @@ namespace Gum.IR0Translator
             return new FuncValue(this, outer, funcInfo, typeArgs);
         }
 
-        public ConstructorValue MakeConstructor(ItemValueOuter outer, IModuleConstructorInfo constructorInfo)
+        public ConstructorValue MakeConstructor(NormalTypeValue outer, IModuleConstructorInfo constructorInfo)
         {
             return new ConstructorValue(this, outer, constructorInfo);
         }
@@ -206,7 +206,7 @@ namespace Gum.IR0Translator
             return new RuntimeListTypeValue(this, elemType);
         }
 
-        public ConstructorValue MakeConstructorValue(ItemValueOuter outer, IModuleConstructorInfo info)
+        public ConstructorValue MakeConstructorValue(NormalTypeValue outer, IModuleConstructorInfo info)
         {
             return new ConstructorValue(this, outer, info);
         }

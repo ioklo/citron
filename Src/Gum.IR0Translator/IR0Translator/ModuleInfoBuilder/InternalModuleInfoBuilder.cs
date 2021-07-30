@@ -42,7 +42,7 @@ namespace Gum.IR0Translator
                         break;
 
                     case S.GlobalFuncDeclScriptElement globalFuncDeclElem:
-                        builder.VisitFuncDecl(globalFuncDeclElem.FuncDecl);
+                        builder.VisitFuncDecl(M.AccessModifier.Private, globalFuncDeclElem.FuncDecl);
                         break;
 
                     // skip
@@ -132,7 +132,7 @@ namespace Gum.IR0Translator
                     var type = GetMType(field.Type);
                     Debug.Assert(type != null);
 
-                    var mfield = new InternalModuleMemberVarInfo(false, type, field.Name);
+                    var mfield = new InternalModuleMemberVarInfo(M.AccessModifier.Public, false, type, field.Name);
                     fieldsBuilder.Add(mfield);
                 }
 
@@ -200,7 +200,7 @@ namespace Gum.IR0Translator
             }
 
             // automatic constructor를 만듭니다
-            automaticConstructor = new InternalModuleConstructorInfo(structName, builder.MoveToImmutable());
+            automaticConstructor = new InternalModuleConstructorInfo(M.AccessModifier.Public, structName, builder.MoveToImmutable());
             constructors.Add(automaticConstructor);
         }
 
@@ -226,7 +226,7 @@ namespace Gum.IR0Translator
                 switch (elem)
                 {
                     case S.FuncStructDeclElement funcDeclElem:
-                        newBuilder.VisitFuncDecl(funcDeclElem.FuncDecl);
+                        newBuilder.VisitFuncDecl(M.AccessModifier.Public, funcDeclElem.FuncDecl);
                         break;
 
                     case S.TypeStructDeclElement typeDeclElem:
@@ -282,8 +282,9 @@ namespace Gum.IR0Translator
             return builder.MoveToImmutable();
         }
 
-        void VisitFuncDecl(S.FuncDecl funcDecl)
-        {   
+        void VisitFuncDecl(M.AccessModifier defaultAccessModifier, S.FuncDecl funcDecl)
+        {
+            bool bMemberFunc = IsInsideTypeScope();
             bool bThisCall = IsInsideTypeScope(); // TODO: static 키워드가 추가되면 고려하도록 한다
 
             var retType = GetMType(funcDecl.RetType);
@@ -291,7 +292,31 @@ namespace Gum.IR0Translator
 
             var paramInfo = MakeParams(funcDecl.Parameters);
 
+            M.AccessModifier accessModifier;
+            switch(funcDecl.AccessModifier)
+            {
+                case null: accessModifier = defaultAccessModifier; break;
+                case S.AccessModifier.Public:
+                    if (defaultAccessModifier == M.AccessModifier.Public) throw new FatalException();
+                    accessModifier = M.AccessModifier.Public;
+                    break;
+
+                case S.AccessModifier.Protected:
+                    if (defaultAccessModifier == M.AccessModifier.Protected) throw new FatalException();
+                    accessModifier = M.AccessModifier.Protected;
+                    break;
+
+                case S.AccessModifier.Private:
+                    if (defaultAccessModifier == M.AccessModifier.Private) throw new FatalException();
+                    accessModifier = M.AccessModifier.Private;
+                    break;
+
+                default:
+                    throw new UnreachableCodeException();
+            }
+
             var funcInfo = new InternalModuleFuncInfo(
+                accessModifier,
                 bInstanceFunc: bThisCall,
                 bSeqFunc: funcDecl.IsSequence,
                 bRefReturn: funcDecl.IsRefReturn,
@@ -310,19 +335,39 @@ namespace Gum.IR0Translator
             if (declType == null)
                 throw new FatalException();
 
+            var accessModifier = varDeclElem.AccessModifier switch
+            {
+                null => M.AccessModifier.Public,
+                S.AccessModifier.Public => throw new UnreachableCodeException(), // 미리 에러를 잡는다
+                S.AccessModifier.Protected => M.AccessModifier.Protected,
+                S.AccessModifier.Private => M.AccessModifier.Private,
+                _ => throw new UnreachableCodeException()
+            };
+
             foreach(var name in varDeclElem.VarNames)
             {
                 bool bStatic = !IsInsideTypeScope(); // TODO: static 키워드가 추가되면 고려한다
 
-                var varInfo = new InternalModuleMemberVarInfo(bStatic, declType, name);
+                var varInfo = new InternalModuleMemberVarInfo(accessModifier, bStatic, declType, name);
                 memberVars.Add(varInfo);
             }
         }
 
         void VisitStructConstructorDeclElement(S.ConstructorStructDeclElement constructorDeclElem)
         {
+            M.AccessModifier accessModifier;
+            switch(constructorDeclElem.AccessModifier)
+            {
+                case null: accessModifier = M.AccessModifier.Public; break;
+                case S.AccessModifier.Public: throw new FatalException();
+                case S.AccessModifier.Protected: accessModifier = M.AccessModifier.Protected; break;
+                case S.AccessModifier.Private: accessModifier = M.AccessModifier.Private; break;
+                default: throw new UnreachableCodeException();
+            }
+
             var paramInfo = MakeParams(constructorDeclElem.Parameters);
-            constructors.Add(new InternalModuleConstructorInfo(constructorDeclElem.Name, paramInfo));
+
+            constructors.Add(new InternalModuleConstructorInfo(accessModifier, constructorDeclElem.Name, paramInfo));
         }
     }
 }

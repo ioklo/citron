@@ -60,13 +60,19 @@ namespace Gum.IR0Translator
     [AutoConstructor, ImplementIEquatable]
     partial class InternalModuleFuncInfo : IModuleFuncInfo
     {
+        M.AccessModifier accessModifier;
         bool bInstanceFunc;
         bool bSeqFunc;
         bool bRefReturn;
         M.Type retType;        
         M.Name name;
         ImmutableArray<string> typeParams;
-        ImmutableArray<M.Param> parameters;        
+        ImmutableArray<M.Param> parameters;
+
+        M.AccessModifier IModuleCallableInfo.GetAccessModifier()
+        {
+            return accessModifier;
+        }
 
         M.Name IModuleItemInfo.GetName()
         {
@@ -107,9 +113,15 @@ namespace Gum.IR0Translator
     [AutoConstructor, ImplementIEquatable]
     partial class InternalModuleMemberVarInfo : IModuleMemberVarInfo
     {
+        M.AccessModifier accessModifier;
         bool bStatic;
         M.Type declType;
         M.Name name;
+
+        M.AccessModifier IModuleMemberVarInfo.GetAccessModifier()
+        {
+            return accessModifier;
+        }
 
         M.Type IModuleMemberVarInfo.GetDeclType()
         {
@@ -318,8 +330,14 @@ namespace Gum.IR0Translator
     [AutoConstructor, ImplementIEquatable]
     partial class InternalModuleConstructorInfo : IModuleConstructorInfo
     {
+        M.AccessModifier accessModifier;
         M.Name name;        
         ImmutableArray<M.Param> parameters;
+
+        M.AccessModifier IModuleCallableInfo.GetAccessModifier()
+        {
+            return accessModifier;
+        }
 
         M.Name IModuleItemInfo.GetName()
         {

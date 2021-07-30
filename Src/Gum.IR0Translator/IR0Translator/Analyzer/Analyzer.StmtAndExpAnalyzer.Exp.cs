@@ -506,6 +506,10 @@ namespace Gum.IR0Translator
                             var matchedConstructor = Match(structTypeValue.MakeTypeEnv(), constructorResult.ConstructorInfos, sargs, default, nodeForErrorReport);                            
 
                             var constructorValue = globalContext.MakeConstructorValue(constructorResult.Outer, matchedConstructor.CallableInfo);
+
+                            if (!constructorValue.CheckAccess(callableContext.GetThisTypeValue()))
+                                globalContext.AddFatalError(A2011_ResolveIdentifier_TryAccessingPrivateMember, nodeForErrorReport);
+
                             return new ExpResult.Exp(new R.NewStructExp(constructorValue.GetRPath_Nested(), matchedConstructor.Result.Args), structTypeValue);
 
                         case ItemQueryResult.NotFound:
@@ -718,12 +722,17 @@ namespace Gum.IR0Translator
                     case ItemQueryResult.Funcs:
                         throw new NotImplementedException();
 
-                    case ItemQueryResult.MemberVar memberVarResult:
-                        // static인지 검사
-                        if (memberVarResult.MemberVarInfo.IsStatic())
-                            globalContext.AddFatalError(A2003_ResolveIdentifier_CantGetStaticMemberThroughInstance, memberExp);
+                    case ItemQueryResult.MemberVar memberVarResult:                       
 
                         var memberVarValue = globalContext.MakeMemberVarValue(memberVarResult.Outer, memberVarResult.MemberVarInfo);
+
+                        // static인지 검사
+                        if (memberVarValue.IsStatic)                        
+                            globalContext.AddFatalError(A2003_ResolveIdentifier_CantGetStaticMemberThroughInstance, memberExp);
+
+                        // access modifier 검사
+                        if (!memberVarValue.CheckAccess(callableContext.GetThisTypeValue()))
+                            globalContext.AddFatalError(A2011_ResolveIdentifier_TryAccessingPrivateMember, memberExp);
 
                         var memberLoc = parentTypeValue.MakeMemberLoc(parentLoc, memberVarValue.GetRPath_Nested());
                         return new ExpResult.Loc(memberLoc, memberVarValue.GetTypeValue());

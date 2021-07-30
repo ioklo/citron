@@ -15,6 +15,7 @@ namespace Gum.Syntax
     // a<T>(int b, params T x, int d);
     public abstract class FuncDecl : ISyntaxNode
     {
+        public abstract AccessModifier? AccessModifier { get; }
         public abstract bool IsSequence { get; } // seq 함수인가        
         public abstract bool IsRefReturn { get; } // reference를 리턴하는가
         public abstract TypeExp RetType { get; }

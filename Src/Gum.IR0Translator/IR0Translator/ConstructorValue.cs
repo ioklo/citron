@@ -1,5 +1,4 @@
 ﻿using Gum.Collections;
-using Gum.CompileTime;
 using Gum.Infra;
 using Pretune;
 using System;
@@ -19,12 +18,12 @@ namespace Gum.IR0Translator
         ItemValueFactory itemValueFactory;
 
         // X<int>.Y<short>
-        ItemValueOuter outer;
+        NormalTypeValue outer;
         IModuleConstructorInfo info;
 
         public override ItemValue Apply_ItemValue(TypeEnv typeEnv)
         {
-            var appliedOuter = outer.Apply(typeEnv);            
+            var appliedOuter = outer.Apply_NormalTypeValue(typeEnv);            
             return itemValueFactory.MakeConstructor(appliedOuter, info);
         }
 
@@ -33,7 +32,7 @@ namespace Gum.IR0Translator
             return itemValueFactory.MakeTypeValueByMType(type);
         }
 
-        protected override ImmutableArray<Param> GetParameters()
+        protected override ImmutableArray<M.Param> GetParameters()
         {
             return info.GetParameters();
         }
@@ -43,6 +42,42 @@ namespace Gum.IR0Translator
             return GetRPath_Nested();
         }
 
+        public bool CheckAccess(NormalTypeValue? thisType)
+        {
+            var accessModifier = info.GetAccessModifier();
+
+            switch (accessModifier)
+            {
+                case M.AccessModifier.Public: return true;
+                case M.AccessModifier.Protected: throw new NotImplementedException();
+                case M.AccessModifier.Private:
+                    {
+                        // NOTICE: MemberVarValue에도 같은 코드가 있다
+                        if (thisType == null) return false;
+                        
+                        var memberContainerPath = outer.GetRPath_Nested();
+
+                        // path로 비교할 수 있을거 같다
+                        R.Path.Nested? curPath = thisType.GetRPath_Nested();
+                        while (curPath != null)
+                        {
+                            // TypeArgs는 빼고 비교한다
+                            if (memberContainerPath.Outer.Equals(curPath.Outer) &&
+                                memberContainerPath.Name.Equals(curPath.Name) &&
+                                memberContainerPath.ParamHash.Equals(curPath.ParamHash))
+                                return true;
+
+                            curPath = curPath.Outer as R.Path.Nested;
+                        }
+
+                        return false;
+                    }
+
+                default: throw new UnreachableCodeException();
+            }
+
+        }
+
         public R.Path.Nested GetRPath_Nested()
         {
             var paramInfos = GetParamInfos();
@@ -50,8 +85,8 @@ namespace Gum.IR0Translator
             var rparamTypes = ImmutableArray.CreateRange(paramInfos, paramInfo => new R.ParamHashEntry(paramInfo.ParamKind, paramInfo.Type.GetRPath()));
 
             var paramHash = new R.ParamHash(0, rparamTypes);
-            
-            return outer.GetRPath(R.Name.Constructor.Instance, paramHash, default);
+
+            return new R.Path.Nested(outer.GetRPath_Nested(), R.Name.Constructor.Instance, paramHash, default);            
         }
     }
 }

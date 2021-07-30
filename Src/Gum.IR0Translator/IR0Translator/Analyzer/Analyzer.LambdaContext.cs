@@ -12,7 +12,7 @@ namespace Gum.IR0Translator
         class LambdaContext : ICallableContext
         {
             R.Path.Nested path;
-            TypeValue? thisTypeValue; // possible,
+            NormalTypeValue? thisTypeValue; // possible,
             LocalContext parentLocalContext;
             TypeValue? retTypeValue;
             bool bCaptureThis;
@@ -20,7 +20,7 @@ namespace Gum.IR0Translator
             ImmutableArray<R.Decl> decls;
             AnonymousIdComponent AnonymousIdComponent;
 
-            public LambdaContext(R.Path.Nested path, TypeValue? thisTypeValue, LocalContext parentLocalContext, TypeValue? retTypeValue)
+            public LambdaContext(R.Path.Nested path, NormalTypeValue? thisTypeValue, LocalContext parentLocalContext, TypeValue? retTypeValue)
             {
                 this.path = path;
                 this.thisTypeValue = thisTypeValue;
@@ -104,7 +104,7 @@ namespace Gum.IR0Translator
                 return path;
             }
 
-            public TypeValue? GetThisTypeValue() 
+            public NormalTypeValue? GetThisTypeValue() 
             { 
                 return thisTypeValue; 
             }

@@ -31,7 +31,7 @@ namespace Gum.IR0Translator
         
         // ItemValue류 대신에 => 아직 정보가 부족해서 그랬다
         public record Type(ItemValueOuter Outer, IModuleTypeInfo TypeInfo) : Valid;
-        public record Constructors(ItemValueOuter Outer, ImmutableArray<IModuleConstructorInfo> ConstructorInfos) : Valid;
+        public record Constructors(NormalTypeValue Outer, ImmutableArray<IModuleConstructorInfo> ConstructorInfos) : Valid;
         public record Funcs(ItemValueOuter Outer, ImmutableArray<IModuleFuncInfo> FuncInfos, bool IsInstanceFunc) : Valid;
         public record MemberVar(NormalTypeValue Outer, IModuleMemberVarInfo MemberVarInfo) : Valid;
         public record EnumElem(EnumTypeValue Outer, IModuleEnumElemInfo EnumElemInfo) : Valid;

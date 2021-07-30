@@ -10,7 +10,7 @@ namespace Gum.IR0Translator
         interface ICallableContext : IMutable<ICallableContext>
         {
             R.Path.Normal GetPath();
-            TypeValue? GetThisTypeValue();
+            NormalTypeValue? GetThisTypeValue();
 
             LocalVarInfo? GetLocalVarOutsideLambda(string varName);
             TypeValue? GetRetTypeValue();

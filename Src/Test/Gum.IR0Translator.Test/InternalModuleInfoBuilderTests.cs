@@ -48,6 +48,7 @@ namespace Gum.IR0Translator.Test
         {
             // ref T Func<T>(ref T t) { return ref t; }
             var script = SScript(new S.GlobalFuncDeclScriptElement(new S.GlobalFuncDecl(
+                null,
                 isSequence: false,
                 isRefReturn: true,
                 retType: new S.IdTypeExp("T", default),
@@ -68,6 +69,7 @@ namespace Gum.IR0Translator.Test
             Debug.Assert(funcInfo != null);
 
             var expected = new InternalModuleFuncInfo(
+                M.AccessModifier.Private,
                 bInstanceFunc: false,
                 bSeqFunc: false,
                 bRefReturn: true,
@@ -85,6 +87,7 @@ namespace Gum.IR0Translator.Test
         {
             // void Func<T, U>(int x, params U y, T z)
             var script = SScript(new S.GlobalFuncDeclScriptElement(new S.GlobalFuncDecl(
+                null,
                 isSequence: false,
                 isRefReturn: false,
                 VoidTypeExp,
@@ -119,6 +122,7 @@ namespace Gum.IR0Translator.Test
                 new M.Param(M.ParamKind.Normal, new M.TypeVarType(0, "T"), "z"));
 
             var expected = new InternalModuleFuncInfo(
+                M.AccessModifier.Private,
                 bInstanceFunc: false,
                 bSeqFunc: false,
                 bRefReturn: false,
@@ -188,7 +192,7 @@ namespace Gum.IR0Translator.Test
             Assert.NotNull(structInfo);
             Debug.Assert(structInfo != null);
 
-            var autoConstructor = new InternalModuleConstructorInfo("S", Arr(new M.Param(M.ParamKind.Normal, IntMType, "x"), new M.Param(M.ParamKind.Normal, IntMType, "y")));
+            var autoConstructor = new InternalModuleConstructorInfo(M.AccessModifier.Public, "S", Arr(new M.Param(M.ParamKind.Normal, IntMType, "x"), new M.Param(M.ParamKind.Normal, IntMType, "y")));
 
             var expected = new InternalModuleStructInfo(
                 "S",
@@ -197,6 +201,7 @@ namespace Gum.IR0Translator.Test
                 Array.Empty<IModuleTypeInfo>(),
                 Arr<IModuleFuncInfo>(
                     new InternalModuleFuncInfo(
+                        M.AccessModifier.Private,
                         bInstanceFunc: true,
                         bSeqFunc: false,
                         bRefReturn: false,
@@ -213,8 +218,8 @@ namespace Gum.IR0Translator.Test
                 Arr<IModuleConstructorInfo>(autoConstructor),
                 autoConstructor,
                 Arr<IModuleMemberVarInfo>(
-                    new InternalModuleMemberVarInfo(false, IntMType, "x"),
-                    new InternalModuleMemberVarInfo(false, IntMType, "y")
+                    new InternalModuleMemberVarInfo(M.AccessModifier.Protected, false, IntMType, "x"),
+                    new InternalModuleMemberVarInfo(M.AccessModifier.Protected, false, IntMType, "y")
                 )
             );
 

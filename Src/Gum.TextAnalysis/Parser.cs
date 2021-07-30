@@ -229,6 +229,7 @@ namespace Gum
 
             return new ParseResult<GlobalFuncDecl>(
                 new GlobalFuncDecl(
+                    null, // TODO: 일단 null
                     bSequence,
                     bRefReturn,
                     retType, 

@@ -63,6 +63,7 @@ namespace Gum.IR0Translator
 
     interface IModuleCallableInfo : IModuleItemInfo
     {
+        M.AccessModifier GetAccessModifier();
         ImmutableArray<M.Param> GetParameters();
         M.ParamTypes GetParamTypes();
     }
@@ -83,6 +84,7 @@ namespace Gum.IR0Translator
     // M.MemberVarInfo 대체
     interface IModuleMemberVarInfo : IModuleItemInfo
     {
+        M.AccessModifier GetAccessModifier();
         M.Type GetDeclType();
         bool IsStatic();
     }

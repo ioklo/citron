@@ -10,6 +10,7 @@ namespace Gum.CompileTime
     [AutoConstructor, ImplementIEquatable]
     public partial class FuncInfo : ItemInfo, ICallableInfo
     {
+        public AccessModifier AccessModifier { get; }
         public override Name Name { get; }
         public bool IsSequenceFunc { get; }
         public bool IsRefReturn { get; }

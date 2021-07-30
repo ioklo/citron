@@ -360,7 +360,7 @@ namespace Gum.IR0Translator
         public override ItemQueryResult GetMember(M.Name memberName, int typeParamCount)
         {
             if (memberName.Equals(M.SpecialNames.Constructor))
-                return new ItemQueryResult.Constructors(new NestedItemValueOuter(this), structInfo.GetConstructors());
+                return new ItemQueryResult.Constructors(this, structInfo.GetConstructors());
 
             // TODO: caching
             var results = new List<ItemQueryResult.Valid>();
@@ -452,7 +452,7 @@ namespace Gum.IR0Translator
             return GetRPath_Nested();
         }
 
-        public abstract R.Path.Nested GetRPath_Nested();        
+        public abstract R.Path.Nested GetRPath_Nested();
     }
 
     // "void"

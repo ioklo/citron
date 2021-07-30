@@ -201,7 +201,7 @@ namespace Gum.IR0Translator
                 return itemValueFactory.MakeFunc(outer, funcInfo, typeArgs);
             }
 
-            public ConstructorValue MakeConstructorValue(ItemValueOuter outer, IModuleConstructorInfo info)
+            public ConstructorValue MakeConstructorValue(NormalTypeValue outer, IModuleConstructorInfo info)
             {
                 return itemValueFactory.MakeConstructorValue(outer, info);
             }

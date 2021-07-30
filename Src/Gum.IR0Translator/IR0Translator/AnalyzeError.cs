@@ -111,6 +111,7 @@ namespace Gum.IR0Translator
         A2008_ResolveIdentifier_CantUseTypeAsExpression, // Type으로 Resolve는 되지만, 값으로 변경하려고 시도하다가 에러 var x = X.Y;
         A2009_ResolveIdentifier_EnumElemCantHaveMember,
         A2010_ResolveIdentifier_ThisIsNotInTheContext,   // 
+        A2011_ResolveIdentifier_TryAccessingPrivateMember,
 
         A2101_FuncMatcher_MultipleCandidates,
         A2102_FuncMatcher_NotFound,

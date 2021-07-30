@@ -7,6 +7,7 @@ namespace Gum.Syntax
     [AutoConstructor, ImplementIEquatable]
     public partial class GlobalFuncDecl : FuncDecl
     {
+        public override AccessModifier? AccessModifier { get; }
         public override bool IsSequence { get; } // seq 함수인가        
         public override bool IsRefReturn { get; }
         public override TypeExp RetType { get; }

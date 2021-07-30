@@ -101,6 +101,29 @@ namespace Gum.Test.IntegrateTest
             Assert.Equal(result, commandProvider.Output);
         }
 
+        public static async Task TestEvalWithErrorAsync(string code, AnalyzeErrorCode errorCode)
+        {
+            var testErrorCollector = new TestErrorCollector(false);
+
+            var lexer = new Lexer();
+            var parser = new Parser(lexer);
+
+            var buffer = new Buffer(new StringReader(code));
+            var bufferPos = await buffer.MakePosition().NextAsync();
+            var lexerContext = LexerContext.Make(bufferPos);
+            var parserContext = ParserContext.Make(lexerContext);
+
+            var sscriptResult = await parser.ParseScriptAsync(parserContext);
+            var rscriptResult = Translator.Translate("TestModule", default, sscriptResult.Elem, testErrorCollector);
+
+            var commandProvider = new TestCmdProvider();
+
+            var result = testErrorCollector.Errors.OfType<AnalyzeError>()
+                .Any(error => error.Code == errorCode);
+
+            Assert.True(result, $"Errors doesn't contain (Code: {code}");
+        }
+
         public static async Task TestParseTranslateEvalAsync(string code, S.Script sscript, R.Script rscript, string result)
         {
             var testErrorCollector = new TestErrorCollector(false);

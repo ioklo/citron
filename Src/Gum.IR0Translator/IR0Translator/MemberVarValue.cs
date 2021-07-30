@@ -7,6 +7,7 @@ using System.Text;
 
 using M = Gum.CompileTime;
 using R = Gum.IR0;
+using Gum.Infra;
 
 namespace Gum.IR0Translator
 {
@@ -57,6 +58,47 @@ namespace Gum.IR0Translator
         {
             var appliedOuter = outer.Apply_NormalTypeValue(typeEnv);
             return factory.MakeMemberVarValue(appliedOuter, info);
+        }
+
+        public bool CheckAccess(NormalTypeValue? thisType)
+        {
+            var accessModifier = info.GetAccessModifier();
+
+            switch(accessModifier)
+            {
+                case M.AccessModifier.Public: return true;
+                case M.AccessModifier.Protected: throw new NotImplementedException();
+                case M.AccessModifier.Private:
+                    {
+                        // NOTICE: ConstructorValue에도 같은 코드가 있다 
+                        if (thisType == null) return false;
+
+                        // s.x // 내가 S이거나, S의 Descendant Inner타입이면
+                        // access 체크시에는 typeArgs는 상관하지 않는다
+                        // moduleTypeInfo끼리 비교하게 할 수 있는가?
+
+                        // S{ F(S s) { s.x; // thisType: S } }
+                        // thisType의 outer를 찾아서 계속 간다 (baseType말고 outer)
+
+                        var memberContainerPath = outer.GetRPath_Nested();
+
+                        // path로 비교할 수 있을거 같다
+                        R.Path.Nested? curPath = thisType.GetRPath_Nested();                        
+                        while(curPath != null)
+                        {
+                            // TypeArgs는 빼고 비교한다
+                            if (memberContainerPath.Outer.Equals(curPath.Outer) &&
+                                memberContainerPath.Name.Equals(curPath.Name) &&
+                                memberContainerPath.ParamHash.Equals(curPath.ParamHash))
+                                return true;
+
+                            curPath = curPath.Outer as R.Path.Nested;
+                        }
+
+                        return false;
+                    }
+                default: throw new UnreachableCodeException();
+            }            
         }
     }
 }

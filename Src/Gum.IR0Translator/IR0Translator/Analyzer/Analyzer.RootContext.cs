@@ -45,7 +45,7 @@ namespace Gum.IR0Translator
                 return new R.Path.Root(moduleName);
             }
 
-            public TypeValue? GetThisTypeValue()
+            public NormalTypeValue? GetThisTypeValue()
             {
                 return null;
             }

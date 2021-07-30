@@ -89,10 +89,10 @@ namespace Gum.IR0Translator.Test
                     new M.GlobalType(moduleName, M.NamespacePath.Root, "G", Arr<M.Type>(new M.TypeVarType(0, "T"))),
                     interfaces: default,
                     memberTypes: default,
-                    Arr(new M.FuncInfo("F", false, false, true, Arr("V"), new M.TypeVarType(0, "T"),                         
+                    Arr(new M.FuncInfo(M.AccessModifier.Public, "F", false, false, true, Arr("V"), new M.TypeVarType(0, "T"),                         
                         Arr(new M.Param(M.ParamKind.Normal, new M.TypeVarType(2, "V"), "v"))
                     )),
-                    Arr(new M.MemberVarInfo(false, new M.GlobalType(moduleName, M.NamespacePath.Root, "X", Arr<M.Type>(new M.TypeVarType(1, "U"))), "v")),
+                    Arr(new M.MemberVarInfo(M.AccessModifier.Public, false, new M.GlobalType(moduleName, M.NamespacePath.Root, "X", Arr<M.Type>(new M.TypeVarType(1, "U"))), "v")),
                     default
                 )
             ), default, default, default);

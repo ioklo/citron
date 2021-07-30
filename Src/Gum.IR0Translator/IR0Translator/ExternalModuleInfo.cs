@@ -223,6 +223,11 @@ namespace Gum.IR0Translator
     {
         M.FuncInfo funcInfo;
 
+        M.AccessModifier IModuleCallableInfo.GetAccessModifier()
+        {
+            return funcInfo.AccessModifier;
+        }
+
         M.Name IModuleItemInfo.GetName()
         {
             return funcInfo.Name;
@@ -263,6 +268,11 @@ namespace Gum.IR0Translator
     partial class ExternalModuleConstructorInfo : IModuleConstructorInfo
     {
         M.ConstructorInfo constructorInfo;
+
+        M.AccessModifier IModuleCallableInfo.GetAccessModifier()
+        {
+            return constructorInfo.AccessModifier;
+        }
 
         M.Name IModuleItemInfo.GetName()
         {
@@ -348,6 +358,11 @@ namespace Gum.IR0Translator
         bool IModuleMemberVarInfo.IsStatic()
         {
             return info.IsStatic;
+        }
+
+        M.AccessModifier IModuleMemberVarInfo.GetAccessModifier()
+        {
+            return info.AccessModifier;
         }
     }
 

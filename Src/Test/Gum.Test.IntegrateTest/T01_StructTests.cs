@@ -477,6 +477,27 @@ F(ref s);
             return TestEvalAsync(code, "2");
         }
 
+        [Fact]
+        public Task F11_Access_AccessPrivateMemberOutsideStruct_ReportError()
+        {
+            var code = @"
+struct S { private int x; }
+var s = S(3);
+@${s.x}
+";
+            return TestEvalWithErrorAsync(code, A2011_ResolveIdentifier_TryAccessingPrivateMember);
+        }
+
+        [Fact]
+        public Task F12_Access_AccessPrivateConstructorOutsideStruct_ReportError()
+        {
+            var code = @"
+struct S { private S(int x) { } }
+var s = S(3);
+";
+            return TestEvalWithErrorAsync(code, A2011_ResolveIdentifier_TryAccessingPrivateMember);
+        }
+
 
 
 

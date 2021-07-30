@@ -48,7 +48,7 @@ namespace Gum.IR0Translator
                 return path;
             }
 
-            public TypeValue? GetThisTypeValue()
+            public NormalTypeValue? GetThisTypeValue()
             {
                 return structTypeValue;
             }

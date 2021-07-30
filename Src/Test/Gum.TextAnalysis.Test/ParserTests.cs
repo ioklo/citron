@@ -49,6 +49,7 @@ namespace Gum.TextAnalysis.Test
             var funcDecl = await parser.ParseGlobalFuncDeclAsync(context);
 
             var expected = new GlobalFuncDecl(
+                null,
                 false,
                 false,
                 SIdTypeExp("void"),
