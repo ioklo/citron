@@ -70,9 +70,12 @@ namespace Gum.IR0Evaluator
                     case R.ListIndexerLoc listIndexerLoc:
                         return await EvalListIndexerLocAsync(listIndexerLoc);
 
-                    case R.StaticMemberLoc staticMemberLoc:
-                        var staticValue = (StaticValue)context.GetStaticValue(staticMemberLoc.Type);
-                        return staticValue.GetMemberValue(staticMemberLoc.MemberName);
+                    case R.StaticMemberLoc staticMemberLoc:                        
+
+                        var staticValue = (StaticValue)context.GetStaticValue(staticMemberLoc.MemberPath.Outer);
+                        var name = ((R.Name.Normal)staticMemberLoc.MemberPath.Name).Value;
+
+                        return staticValue.GetMemberValue(name);
 
                     case R.StructMemberLoc structMemberLoc:
                         {

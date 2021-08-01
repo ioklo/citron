@@ -61,14 +61,12 @@ namespace Gum.IR0Translator
                     switch (elem)
                     {
                         case S.GlobalFuncDeclScriptElement globalFuncDeclElem:
-                            var globalFuncDecl = analyzer.AnalyzeGlobalFuncDecl(globalFuncDeclElem.FuncDecl);
-                            rootContext.AddDecl(globalFuncDecl);
+                            analyzer.AnalyzeGlobalFuncDecl(globalFuncDeclElem.FuncDecl);
 
                             break;
 
                         case S.TypeDeclScriptElement typeDeclElem:
-                            var typeDecl = analyzer.AnalyzeTypeDecl(typeDeclElem.TypeDecl);
-                            rootContext.AddDecl(typeDecl);
+                            analyzer.AnalyzeTypeDecl(typeDeclElem.TypeDecl);
                             break;
                     }
                 }
@@ -101,31 +99,21 @@ namespace Gum.IR0Translator
             {
                 return Analyzer.MakeParamHashAndParamInfos(globalContext, funcDecl.TypeParams.Length, funcDecl.Parameters);
             }
-
-            static ImmutableArray<R.Path> MakeRTypeArgs(S.GlobalFuncDecl funcDecl)
-            {
-                var typeArgsBuilder = ImmutableArray.CreateBuilder<R.Path>(funcDecl.TypeParams.Length);
-
-                // NOTICE: global이니까 이전 typeArgs가 없다
-                for (int i = 0; i < funcDecl.TypeParams.Length; i++)
-                    typeArgsBuilder.Add(new R.Path.TypeVarType(i));
-                return typeArgsBuilder.MoveToImmutable();
-            }
-
+            
             R.Path.Nested MakePath(R.Name name, R.ParamHash paramHash, ImmutableArray<R.Path> typeArgs)
             {
                 return new R.Path.Nested(rootContext.GetPath(), name, paramHash, typeArgs);
             }
             
-            public R.NormalFuncDecl AnalyzeGlobalNormalFuncDecl(S.GlobalFuncDecl funcDecl)
+            public void AnalyzeGlobalNormalFuncDecl(S.GlobalFuncDecl funcDecl)
             {
                 var retTypeValue = globalContext.GetTypeValueByTypeExp(funcDecl.RetType);
 
                 var rname = new R.Name.Normal(funcDecl.Name);
                 var (rparamHash, rparamInfos) = MakeParamHashAndParamInfos(funcDecl);
-                var rtypeArgs = MakeRTypeArgs(funcDecl);
+                var rtypeArgs = MakeRTypeArgs(0, funcDecl.TypeParams); // NOTICE: Global이므로 상위에 type parameter가 없다
 
-                var funcContext = new FuncContext(null, retTypeValue, false, MakePath(rname, rparamHash, rtypeArgs));
+                var funcContext = new FuncContext(null, retTypeValue, true, false, MakePath(rname, rparamHash, rtypeArgs));
                 var localContext = new LocalContext();
                 var analyzer = new StmtAndExpAnalyzer(globalContext, funcContext, localContext);
 
@@ -140,20 +128,21 @@ namespace Gum.IR0Translator
                 var bodyResult = analyzer.AnalyzeStmt(funcDecl.Body);
                 
                 var decls = funcContext.GetDecls();
-                return new R.NormalFuncDecl(decls, rname, false, funcDecl.TypeParams, rparamInfos, bodyResult.Stmt);
+                var normalFuncDecl = new R.NormalFuncDecl(decls, rname, false, funcDecl.TypeParams, rparamInfos, bodyResult.Stmt);
+                rootContext.AddDecl(normalFuncDecl);
             }
 
-            public R.SequenceFuncDecl AnalyzeGlobalSequenceFuncDecl(S.GlobalFuncDecl funcDecl)
+            public void AnalyzeGlobalSequenceFuncDecl(S.GlobalFuncDecl funcDecl)
             {
                 var retTypeValue = globalContext.GetTypeValueByTypeExp(funcDecl.RetType);
                 var rname = new R.Name.Normal(funcDecl.Name);
                 var (rparamHash, rparamInfos) = MakeParamHashAndParamInfos(funcDecl);
-                var rtypeArgs = MakeRTypeArgs(funcDecl);
+                var rtypeArgs = MakeRTypeArgs(0, funcDecl.TypeParams); // NOTICE: global이므로 상위에 type parameter가 없다
 
-                var funcContext = new FuncContext(null, retTypeValue, true, MakePath(rname, rparamHash, rtypeArgs));
+                var funcContext = new FuncContext(null, retTypeValue, true, true, MakePath(rname, rparamHash, rtypeArgs));
                 var localContext = new LocalContext();
                 var analyzer = new StmtAndExpAnalyzer(globalContext, funcContext, localContext);
-                
+
                 if (0 < funcDecl.TypeParams.Length)
                     throw new NotImplementedException();
 
@@ -166,25 +155,26 @@ namespace Gum.IR0Translator
 
                 // TODO: Body가 실제로 리턴을 제대로 하는지 확인해야 한다
                 var bodyResult = analyzer.AnalyzeStmt(funcDecl.Body);
-                
+
                 Debug.Assert(retTypeValue != null, "문법상 Sequence 함수의 retValue가 없을수 없습니다");
 
                 var retRType = retTypeValue.GetRPath();
                 var parameters = funcDecl.Parameters.Select(param => param.Name).ToImmutableArray();
 
                 var decls = funcContext.GetDecls();
-                return new R.SequenceFuncDecl(decls, funcDecl.Name, false, retRType, funcDecl.TypeParams, rparamInfos, bodyResult.Stmt);
+                var seqFuncDecl = new R.SequenceFuncDecl(decls, funcDecl.Name, false, retRType, funcDecl.TypeParams, rparamInfos, bodyResult.Stmt);
+                rootContext.AddDecl(seqFuncDecl);
             }
 
-            R.Decl AnalyzeGlobalFuncDecl(S.GlobalFuncDecl funcDecl)
+            void AnalyzeGlobalFuncDecl(S.GlobalFuncDecl funcDecl)
             {
                 if (funcDecl.IsSequence)
-                    return AnalyzeGlobalSequenceFuncDecl(funcDecl);
+                    AnalyzeGlobalSequenceFuncDecl(funcDecl);
                 else
-                    return AnalyzeGlobalNormalFuncDecl(funcDecl);
+                    AnalyzeGlobalNormalFuncDecl(funcDecl);
             }
 
-            R.EnumDecl AnalyzeEnumDecl(S.EnumDecl enumDecl)
+            void AnalyzeEnumDecl(S.EnumDecl enumDecl)
             {
                 var relemsBuilder = ImmutableArray.CreateBuilder<R.EnumElement>(enumDecl.Elems.Length);
                 foreach(var elem in enumDecl.Elems)
@@ -202,15 +192,17 @@ namespace Gum.IR0Translator
                     relemsBuilder.Add(relem);
                 }
 
-                return new R.EnumDecl(enumDecl.Name, enumDecl.TypeParams, relemsBuilder.MoveToImmutable());
+                var renumDecl = new R.EnumDecl(enumDecl.Name, enumDecl.TypeParams, relemsBuilder.MoveToImmutable());
+                rootContext.AddDecl(renumDecl);
             }
             
-            R.Decl AnalyzeTypeDecl(S.TypeDecl typeDecl)
+            void AnalyzeTypeDecl(S.TypeDecl typeDecl)
             {
                 switch(typeDecl)
                 {
                     case S.EnumDecl enumDecl:
-                        return AnalyzeEnumDecl(enumDecl);
+                        AnalyzeEnumDecl(enumDecl);
+                        break;
 
                     case S.StructDecl structDecl:
                         {
@@ -230,7 +222,8 @@ namespace Gum.IR0Translator
                                 structInfo, 
                                 typeArgsBuilder.MoveToImmutable());
 
-                            return StructAnalyzer.Analyze(globalContext, structDecl, structTypeValue);
+                            StructAnalyzer.Analyze(globalContext, rootContext, structDecl, structTypeValue);
+                            break;
                         }
 
                     default:

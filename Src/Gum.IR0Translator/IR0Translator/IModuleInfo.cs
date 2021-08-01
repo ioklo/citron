@@ -74,6 +74,7 @@ namespace Gum.IR0Translator
         bool IsInstanceFunc();
         bool IsSequenceFunc();
         M.Type GetReturnType();
+        bool IsInternal();
     }
 
     // M.ConstructorInfo 대체

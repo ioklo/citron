@@ -135,6 +135,21 @@ namespace Gum.IR0Evaluator
                     newDeclEvaluator.EvalDecl(decl);
             }
 
+            void EvalStructDeclMemberFuncDecl(ItemContainer structContainer, R.StructDecl.MemberDecl.Func funcDecl)
+            {
+                var paramHash = Misc.MakeParamHash(funcDecl.TypeParams.Length, funcDecl.Parameters);
+                var runtimeItem = new IR0StructFuncRuntimeItem(globalContext, funcDecl);
+
+                var itemContainer = new ItemContainer();
+                curContainer.AddItemContainer(funcDecl.Name, paramHash, itemContainer);
+
+                structContainer.AddRuntimeItem(runtimeItem);
+
+                var newDeclEvaluator = new DeclEvaluator(globalContext, itemContainer);
+                foreach (var decl in funcDecl.Decls)
+                    newDeclEvaluator.EvalDecl(decl);
+            }
+
             void EvalStructDeclMemberDecl(ItemContainer structContainer, R.StructDecl.MemberDecl memberDecl)
             {
                 switch(memberDecl)
@@ -145,6 +160,10 @@ namespace Gum.IR0Evaluator
 
                     case R.StructDecl.MemberDecl.Constructor constructorDecl:
                         EvalStructDeclConstructorDecl(structContainer, constructorDecl);
+                        break;
+
+                    case R.StructDecl.MemberDecl.Func funcDecl:
+                        EvalStructDeclMemberFuncDecl(structContainer, funcDecl);
                         break;
 
                     default:

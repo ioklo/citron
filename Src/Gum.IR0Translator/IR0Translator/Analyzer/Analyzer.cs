@@ -49,6 +49,15 @@ namespace Gum.IR0Translator
             return (rparamHash, rparameters);
         }
 
+        static ImmutableArray<R.Path> MakeRTypeArgs(int baseTypeParamCount, ImmutableArray<string> typeParams)
+        {
+            var typeArgsBuilder = ImmutableArray.CreateBuilder<R.Path>(typeParams.Length);
+            
+            for (int i = 0; i < typeParams.Length; i++)
+                typeArgsBuilder.Add(new R.Path.TypeVarType(baseTypeParamCount + i));
+            return typeArgsBuilder.MoveToImmutable();
+        }
+
         public static R.Script? Analyze(
             S.Script script,
             R.ModuleName moduleName,

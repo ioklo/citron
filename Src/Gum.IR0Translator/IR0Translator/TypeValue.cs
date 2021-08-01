@@ -40,6 +40,9 @@ namespace Gum.IR0Translator
         // var는 translation패스에서 추론되기 때문에 IR0에 없다
         public override R.Path GetRPath() { throw new InvalidOperationException();  }
 
+        public override int GetTotalTypeParamCount()
+            => throw new InvalidOperationException();
+
         public override R.Loc MakeMemberLoc(R.Loc instance, R.Path.Nested member)
             => throw new InvalidOperationException();
     }
@@ -62,6 +65,11 @@ namespace Gum.IR0Translator
         }
 
         public override R.Path GetRPath() => new R.Path.TypeVarType(Index);
+
+        public override int GetTotalTypeParamCount()
+        {
+            throw new InvalidOperationException();
+        }
 
         public override R.Loc MakeMemberLoc(R.Loc instance, R.Path.Nested member)
             => throw new NotImplementedException();        
@@ -95,6 +103,11 @@ namespace Gum.IR0Translator
 
         public override R.Loc MakeMemberLoc(R.Loc instance, R.Path.Nested member)
             => throw new NotImplementedException();
+
+        public override int GetTotalTypeParamCount()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     [AutoConstructor, ImplementIEquatable]
@@ -110,7 +123,7 @@ namespace Gum.IR0Translator
             var rname = RItemFactory.MakeName(enumInfo.GetName());
             var rtypeArgs = RItemFactory.MakeRTypes(typeArgs);
 
-            return outer.GetRPath(rname, new R.ParamHash(enumInfo.GetTypeParams().Length, default), rtypeArgs);
+            return new R.Path.Nested(outer.GetRPath(), rname, new R.ParamHash(enumInfo.GetTypeParams().Length, default), rtypeArgs);
         }
 
         public EnumTypeValue Apply_EnumTypeValue(TypeEnv typeEnv)
@@ -168,6 +181,11 @@ namespace Gum.IR0Translator
 
             for (int i = 0; i < enumInfo.GetTypeParams().Length; i++)
                 builder.Add(typeArgs[i]);
+        }
+
+        public override int GetTotalTypeParamCount()
+        {
+            return outer.GetTotalTypeParamCount() + enumInfo.GetTypeParams().Length;
         }
     }
 
@@ -238,6 +256,11 @@ namespace Gum.IR0Translator
         internal override void FillTypeEnv(TypeEnvBuilder builder)
         {
             Outer.FillTypeEnv(builder);
+        }
+
+        public override int GetTotalTypeParamCount()
+        {
+            return Outer.GetTotalTypeParamCount(); // Elem자체는 typeParams을 가질 수 없다
         }
     }
 
@@ -312,8 +335,6 @@ namespace Gum.IR0Translator
             // 둘다 가지고 있으면 안된다
             if (bHaveInstance && bHaveStatic)
                 return ItemQueryResult.Error.MultipleCandidates.Instance;
-
-            Debug.Assert(!bHaveInstance && !bHaveStatic);
 
             return new ItemQueryResult.Funcs(new NestedItemValueOuter(this), funcsBuilder.ToImmutable(), bHaveInstance);
         }
@@ -424,7 +445,7 @@ namespace Gum.IR0Translator
             var rname = RItemFactory.MakeName(structInfo.GetName());
             var rtypeArgs = RItemFactory.MakeRTypes(typeArgs);
 
-            return outer.GetRPath(rname, new R.ParamHash(structInfo.GetTypeParams().Length, default), rtypeArgs);
+            return new R.Path.Nested(outer.GetRPath(), rname, new R.ParamHash(structInfo.GetTypeParams().Length, default), rtypeArgs);
         }
 
         public override R.Loc MakeMemberLoc(R.Loc instance, R.Path.Nested member)
@@ -435,6 +456,11 @@ namespace Gum.IR0Translator
         public IModuleConstructorInfo? GetAutoConstructor()
         {
             return structInfo.GetAutoConstructor();
+        }
+
+        public override int GetTotalTypeParamCount()
+        {
+            return outer.GetTotalTypeParamCount() + structInfo.GetTypeParams().Length;
         }
     }
 
@@ -481,7 +507,12 @@ namespace Gum.IR0Translator
         }
 
         public override R.Loc MakeMemberLoc(R.Loc instance, R.Path.Nested member)
-            => throw new InvalidOperationException();        
+            => throw new InvalidOperationException();
+
+        public override int GetTotalTypeParamCount()
+        {
+            return 0;
+        }
     }
 
     // ArgTypeValues => RetValueTypes
@@ -536,6 +567,11 @@ namespace Gum.IR0Translator
 
         public override R.Loc MakeMemberLoc(R.Loc instance, R.Path.Nested member)
             => throw new InvalidOperationException();
+
+        public override int GetTotalTypeParamCount()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     // seq ref int F(ref int a, ref int b) { yield ref a; }
@@ -554,6 +590,11 @@ namespace Gum.IR0Translator
         public override R.Path GetRPath()
         {
             return seqFunc;
+        }
+
+        public override int GetTotalTypeParamCount()
+        {
+            throw new NotImplementedException();
         }
 
         public override R.Loc MakeMemberLoc(R.Loc instance, R.Path.Nested member)
@@ -585,6 +626,11 @@ namespace Gum.IR0Translator
             }
 
             return ritemFactory.MakeTupleType(builder.MoveToImmutable());
+        }
+
+        public override int GetTotalTypeParamCount()
+        {
+            return 0;
         }
 
         public override R.Loc MakeMemberLoc(R.Loc instance, R.Path.Nested member)
@@ -626,6 +672,11 @@ namespace Gum.IR0Translator
             var runtimeSystemListIter = new R.Path.Nested(runtimeSystemList, new R.Name.Anonymous(new R.AnonymousId(0)), R.ParamHash.None, default);
 
             return runtimeSystemListIter;
+        }
+
+        public override int GetTotalTypeParamCount()
+        {
+            return 1;
         }
     }
 }

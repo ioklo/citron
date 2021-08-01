@@ -64,5 +64,50 @@ namespace Gum.IR0
         {
             return exps.Select(e => (Argument)new Argument.Normal(e)).ToImmutableArray();
         }
+
+        public static CommandStmt RPrintBoolCmdStmt(Exp exp)
+        {
+            return RCommand(RString(new ExpStringExpElement(
+                new CallInternalUnaryOperatorExp(
+                    InternalUnaryOperator.ToString_Bool_String,
+                    exp
+                )
+            )));
+        }
+
+        public static CommandStmt RPrintIntCmdStmt(Loc loc)
+        {
+            return RCommand(RString(new ExpStringExpElement(
+                new CallInternalUnaryOperatorExp(
+                    InternalUnaryOperator.ToString_Int_String,
+                    new LoadExp(loc))
+            )));
+        }
+
+
+        public static CommandStmt RPrintIntCmdStmt(Exp varExp)
+        {
+            return RCommand(RString(new ExpStringExpElement(
+                new CallInternalUnaryOperatorExp(
+                    InternalUnaryOperator.ToString_Int_String,
+                    varExp)
+            )));
+        }
+
+        public static CommandStmt RPrintStringCmdStmt(Loc loc)
+        {
+            return RCommand(RString(new ExpStringExpElement(new LoadExp(loc))));
+        }
+
+
+        public static CommandStmt RPrintStringCmdStmt(Exp varExp)
+        {
+            return RCommand(RString(new ExpStringExpElement(varExp)));
+        }
+
+        public static CommandStmt RPrintStringCmdStmt(string text)
+        {
+            return RCommand(RString(text));
+        }
     }
 }

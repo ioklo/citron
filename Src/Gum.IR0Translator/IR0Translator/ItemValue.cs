@@ -21,6 +21,7 @@ namespace Gum.IR0Translator
 
         public abstract R.Path GetRPath();
         public abstract ItemValue Apply_ItemValue(TypeEnv typeEnv);
+        public abstract int GetTotalTypeParamCount();
     }    
     
 }

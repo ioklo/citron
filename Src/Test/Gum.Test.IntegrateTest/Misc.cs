@@ -20,6 +20,20 @@ namespace Gum.Test.IntegrateTest
 {
     static class Misc
     {
+        public static R.Path.Nested Child(this R.Path.Normal outer, R.Name name, R.ParamHash paramHash, ImmutableArray<R.Path> typeArgs)
+            => new R.Path.Nested(outer, name, paramHash, typeArgs);
+
+        public static R.Path.Nested Child(this R.Path.Normal outer, R.Name name)
+            => new R.Path.Nested(outer, name, R.ParamHash.None, default);
+
+        // no typeparams, all normal paramtypes
+        public static R.Path.Nested Child(this R.Path.Normal outer, R.Name name, params R.Path[] types)
+            => new R.Path.Nested(outer, name, new R.ParamHash(0, types.Select(type => new R.ParamHashEntry(R.ParamKind.Normal, type)).ToImmutableArray()), default);
+
+        // no typeparams version
+        public static R.Path.Nested Child(this R.Path.Normal outer, R.Name name, params R.ParamHashEntry[] entries)
+            => new R.Path.Nested(outer, name, new R.ParamHash(0, entries.ToImmutableArray()), default);
+
         class TestCmdProvider : ICommandProvider
         {
             public bool Error = false;

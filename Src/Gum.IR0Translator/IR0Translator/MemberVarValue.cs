@@ -70,7 +70,7 @@ namespace Gum.IR0Translator
                 case M.AccessModifier.Protected: throw new NotImplementedException();
                 case M.AccessModifier.Private:
                     {
-                        // NOTICE: ConstructorValue에도 같은 코드가 있다 
+                        // NOTICE: ConstructorValue, FuncValue에도 같은 코드가 있다 
                         if (thisType == null) return false;
 
                         // s.x // 내가 S이거나, S의 Descendant Inner타입이면
@@ -99,6 +99,11 @@ namespace Gum.IR0Translator
                     }
                 default: throw new UnreachableCodeException();
             }            
+        }
+
+        public override int GetTotalTypeParamCount()
+        {
+            return 0;
         }
     }
 }

@@ -104,6 +104,11 @@ namespace Gum.IR0Translator
             return bInstanceFunc;
         }
 
+        bool IModuleFuncInfo.IsInternal()
+        {
+            return true;
+        }
+
         bool IModuleFuncInfo.IsSequenceFunc()
         {
             return bSeqFunc;

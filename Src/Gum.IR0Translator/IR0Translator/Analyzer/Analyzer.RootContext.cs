@@ -9,7 +9,7 @@ namespace Gum.IR0Translator
     partial class Analyzer
     {
         // 최상위 레벨 컨텍스트
-        class RootContext : ICallableContext
+        class RootContext : ICallableContext, ITypeContainer
         {
             R.ModuleName moduleName;
             ItemValueFactory itemValueFactory;
@@ -94,6 +94,11 @@ namespace Gum.IR0Translator
             public RootItemValueOuter MakeRootItemValueOuter(M.NamespacePath namespacePath)
             {
                 return new RootItemValueOuter(moduleName.Value, namespacePath);
+            }
+
+            void ITypeContainer.AddStruct(R.StructDecl structDecl)
+            {
+                AddDecl(structDecl);
             }
         }
     }

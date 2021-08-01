@@ -73,6 +73,37 @@ namespace Gum.IR0Translator
 
             IdentifierResult GetThisMemberInfo()
             {
+                var thisType = callableContext.GetThisTypeValue();
+                if (thisType == null) return IdentifierResult.NotFound.Instance;
+
+                var itemQueryResult = thisType.GetMember(idName, typeArgs.Length);
+
+                switch(itemQueryResult)
+                {
+                    case ItemQueryResult.Error errorResult:
+                        return ToErrorIdentifierResult(errorResult);
+
+                    case ItemQueryResult.NotFound:
+                        return IdentifierResult.NotFound.Instance;
+
+                    // 여기서부터 case ItemQueryResult.Valid 
+                    case ItemQueryResult.Type typeResult:
+                        var typeValue = globalContext.MakeTypeValue(typeResult.Outer, typeResult.TypeInfo, typeArgs);
+                        return new IdentifierResult.Type(typeValue);
+
+                    case ItemQueryResult.Constructors:
+                        throw new UnreachableCodeException(); // 이름으로 참조 불가능
+
+                    case ItemQueryResult.Funcs funcsResult:
+                        return new IdentifierResult.Funcs(funcsResult.Outer, funcsResult.FuncInfos, typeArgs, funcsResult.IsInstanceFunc);
+
+                    case ItemQueryResult.MemberVar memberVarResult:
+                        return new IdentifierResult.MemberVar(memberVarResult.Outer, memberVarResult.MemberVarInfo);
+
+                    case ItemQueryResult.EnumElem:
+                        throw new NotImplementedException();  // TODO: 무슨 뜻인지 확실히 해야 한다
+                }
+
                 // TODO: implementation
                 return IdentifierResult.NotFound.Instance;
             }
@@ -103,8 +134,11 @@ namespace Gum.IR0Translator
                             return new IdentifierResult.Type(typeValue);
                         }
 
-                    case ItemQueryResult.Constructors constructorsResult:
-                        throw new NotImplementedException();
+                    case ItemQueryResult.Constructors:
+                        throw new UnreachableCodeException(); // global item도 아닐뿐더러, 이름으로 참조가 불가능하다
+
+                    case ItemQueryResult.MemberVar:
+                        throw new UnreachableCodeException();
 
                     case ItemQueryResult.Funcs funcsResult:
                         {
@@ -116,9 +150,10 @@ namespace Gum.IR0Translator
                             var elemTypeValue = globalContext.MakeEnumElemTypeValue(enumElemResult.Outer, enumElemResult.EnumElemInfo);
                             return new IdentifierResult.EnumElem(elemTypeValue);
                         }
-                }
 
-                throw new UnreachableCodeException();
+                    default:
+                        throw new UnreachableCodeException();
+                }
             }
 
             IdentifierResult ResolveScope()

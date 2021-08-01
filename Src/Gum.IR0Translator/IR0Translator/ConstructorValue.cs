@@ -88,5 +88,10 @@ namespace Gum.IR0Translator
 
             return new R.Path.Nested(outer.GetRPath_Nested(), R.Name.Constructor.Instance, paramHash, default);            
         }
+
+        public override int GetTotalTypeParamCount()
+        {
+            return outer.GetTotalTypeParamCount(); // NOTICE: typeParameter를 가질 수 없으므로
+        }
     }
 }

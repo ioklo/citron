@@ -94,6 +94,21 @@ namespace Gum.IR0Translator
                     case IdentifierResult.Type typeResult:
                         return new ExpResult.Type(typeResult.TypeValue);
 
+                    case IdentifierResult.MemberVar memberVarResult:
+                        {
+                            var memberVarValue = globalContext.MakeMemberVarValue(memberVarResult.Outer, memberVarResult.MemberVarInfo);
+
+                            if (memberVarValue.IsStatic)
+                            {
+                                return new ExpResult.Loc(new R.StaticMemberLoc(memberVarValue.GetRPath_Nested()), memberVarValue.GetTypeValue());
+                            }
+                            else
+                            {
+                                var loc = memberVarResult.Outer.MakeMemberLoc(R.ThisLoc.Instance, memberVarValue.GetRPath_Nested());
+                                return new ExpResult.Loc(loc, memberVarValue.GetTypeValue());
+                            }
+                        }
+
                     case IdentifierResult.EnumElem enumElemResult:
                         return new ExpResult.EnumElem(enumElemResult.EnumElemTypeValue);
                 }
@@ -455,6 +470,9 @@ namespace Gum.IR0Translator
                 // funcValue만들기
                 var funcValue = globalContext.MakeFuncValue(funcsResult.Outer, matchedFunc.CallableInfo, matchedFunc.Result.TypeArgs);
 
+                if (!funcValue.CheckAccess(callableContext.GetThisTypeValue()))
+                    globalContext.AddFatalError(A2011_ResolveIdentifier_TryAccessingPrivateMember, nodeForErrorReport);
+
                 if (funcValue.IsSequence)
                 {
                     // TODO: funcValue.RetType을 쓰면 의미가 와닿지 않는데, 쉽게 실수 할 수 있을 것 같다
@@ -692,7 +710,7 @@ namespace Gum.IR0Translator
             }
             
             // exp.x
-            ExpResult.Loc AnalyzeMemberExpLocParent(S.MemberExp memberExp, R.Loc parentLoc, TypeValue parentTypeValue)
+            ExpResult AnalyzeMemberExpLocParent(S.MemberExp memberExp, R.Loc parentLoc, TypeValue parentTypeValue)
             {
                 var typeArgs = GetTypeValues(memberExp.MemberTypeArgs);
                 var memberResult = parentTypeValue.GetMember(memberExp.MemberName, typeArgs.Length);
@@ -718,9 +736,18 @@ namespace Gum.IR0Translator
                     case ItemQueryResult.EnumElem:
                         globalContext.AddFatalError(A2004_ResolveIdentifier_CantGetTypeMemberThroughInstance, memberExp);
                         break;
-                        
-                    case ItemQueryResult.Funcs:
-                        throw new NotImplementedException();
+
+                    case ItemQueryResult.Funcs funcsResult:
+
+                        if (funcsResult.IsInstanceFunc)
+                        {
+                            return new ExpResult.Funcs(funcsResult.Outer, funcsResult.FuncInfos, typeArgs, parentLoc);
+                        }
+                        else
+                        {
+                            return new ExpResult.Funcs(funcsResult.Outer, funcsResult.FuncInfos, typeArgs, null);
+                        }                            
+
 
                     case ItemQueryResult.MemberVar memberVarResult:                       
 
@@ -802,13 +829,12 @@ namespace Gum.IR0Translator
                         var memberVarValue = globalContext.MakeMemberVarValue(memberVarResult.Outer, memberVarResult.MemberVarInfo);
 
                         if (!memberVarValue.IsStatic)
-                        {
                             globalContext.AddFatalError(A2005_ResolveIdentifier_CantGetInstanceMemberThroughType, nodeForErrorReport);
-                            throw new UnreachableCodeException();
-                        }
 
-                        var rparentType = parentType.GetRPath();
-                        var loc = new R.StaticMemberLoc(rparentType, memberName);
+                        if (!memberVarValue.CheckAccess(callableContext.GetThisTypeValue()))
+                            globalContext.AddFatalError(A2011_ResolveIdentifier_TryAccessingPrivateMember, nodeForErrorReport);
+                        
+                        var loc = new R.StaticMemberLoc(memberVarValue.GetRPath_Nested());
                         return new ExpResult.Loc(loc, memberVarValue.GetTypeValue());
 
                     // E.First

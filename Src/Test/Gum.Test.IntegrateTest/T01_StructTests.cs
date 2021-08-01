@@ -497,9 +497,156 @@ var s = S(3);
 ";
             return TestEvalWithErrorAsync(code, A2011_ResolveIdentifier_TryAccessingPrivateMember);
         }
+        
+        [Fact]
+        public Task F13_MemberFunc_Declaration_WorksProperly()
+        {
+            var code = @"
+struct S
+{
+    int x;
+    int F(int y) { return x + y; }
+}
 
+var s = S(3);
+var i = s.F(2);
+@$i
+";
 
+            var sscript = SScript(
+                new S.TypeDeclScriptElement(new S.StructDecl(null, "S", Arr<string>(), Arr<S.TypeExp>(), Arr<S.StructDeclElement>(
 
+                    new S.VarStructDeclElement(null, IntTypeExp, Arr("x")),
+                    new S.FuncStructDeclElement(new S.StructFuncDecl(null, false, false, false, IntTypeExp, "F", default, Arr(new S.FuncParam(S.FuncParamKind.Normal, IntTypeExp, "y")), SBlock(
+                        new S.ReturnStmt(new S.ReturnValueInfo(false, new S.BinaryOpExp(S.BinaryOpKind.Add, SId("x"), SId("y"))))
+                    )))
+                ))),
+
+                new S.StmtScriptElement(new S.VarDeclStmt(new S.VarDecl(false, VarTypeExp, Arr(new S.VarDeclElement(
+                    "s", new S.VarDeclElemInitializer(false, new S.CallExp(SId("S"), Arr<S.Argument>(new S.Argument.Normal(SInt(3)))))
+                ))))),
+
+                new S.StmtScriptElement(new S.VarDeclStmt(new S.VarDecl(false, VarTypeExp, Arr(new S.VarDeclElement(
+                    "i", new S.VarDeclElemInitializer(false, new S.CallExp(new S.MemberExp(SId("s"), "F", default), Arr<S.Argument>(new S.Argument.Normal(SInt(2)))))
+                ))))),
+
+                new S.StmtScriptElement(new S.CommandStmt(Arr(new S.StringExp(Arr<S.StringExpElement>(new S.ExpStringExpElement(
+                    SId("i")
+                ))))))
+            );
+
+            R.Path.Nested SPath() => new R.Path.Root("TestModule").Child("S");
+
+            var rscript = RScript(ModuleName,
+                Arr<R.Decl>(
+                    new R.StructDecl(R.AccessModifier.Private, "S", Arr<string>(), Arr<R.Path>(), Arr<R.StructDecl.MemberDecl>(
+                        new R.StructDecl.MemberDecl.Var(R.AccessModifier.Public, R.Path.Int, Arr<string>("x")),
+
+                        new R.StructDecl.MemberDecl.Func(default, "F", true, default, Arr(new R.Param(R.ParamKind.Normal, R.Path.Int, "y")), RBlock(
+                            new R.ReturnStmt(new R.ReturnInfo.Expression(new R.CallInternalBinaryOperatorExp(
+                                R.InternalBinaryOperator.Add_Int_Int_Int,
+                                new R.LoadExp(new R.StructMemberLoc(R.ThisLoc.Instance, SPath().Child("x"))),
+                                new R.LoadExp(new R.LocalVarLoc("y"))
+                            )))
+                        )),
+
+                        new R.StructDecl.MemberDecl.Constructor(
+                            R.AccessModifier.Public,
+                            default,
+                            Arr(
+                                new R.Param(R.ParamKind.Normal, R.Path.Int, "x")
+                            ),
+                            RBlock(
+                                new R.ExpStmt(new R.AssignExp(
+                                    new R.StructMemberLoc(R.ThisLoc.Instance, new R.Path.Nested(SPath(), "x", R.ParamHash.None, default)),
+                                    new R.LoadExp(new R.LocalVarLoc("x"))
+                                ))
+                            )
+                        )
+                    ))
+                ),
+
+                RGlobalVarDeclStmt(
+                    SPath(),
+                    "s",
+                    new R.NewStructExp(
+                        SPath().Child(R.Name.Constructor.Instance, R.Path.Int),
+                        Arr<R.Argument>(new R.Argument.Normal(RInt(3)))
+                    )
+                ),
+
+                // var i = s.F(2);
+
+                RGlobalVarDeclStmt(
+                    R.Path.Int,
+                    "i",
+                    new R.CallFuncExp(
+                        SPath().Child("F", R.Path.Int),
+                        new R.GlobalVarLoc("s"),
+                        Arr<R.Argument>(new R.Argument.Normal(RInt(2)))
+                    )
+                ),
+
+                RPrintIntCmdStmt(new R.GlobalVarLoc("i"))
+            );
+
+            return TestParseTranslateEvalAsync(code, sscript, rscript, "5");
+        }
+
+        [Fact]
+        public Task F14_MemberFunc_ModifySelf_WorksProperly()
+        {
+            var code = @"
+struct S
+{
+    int x;
+    void SetX(int x) { this.x = x; }
+    void Print() { @{$x} }
+}
+
+var s1 = S(3);
+var s2 = s1;
+s1.SetX(2);
+s2.SetX(17);
+
+s1.Print();
+s2.Print();
+";
+            return TestEvalAsync(code, "217");
+        }
+
+        [Fact]
+        public Task F15_Access_AccessPrivateMemberFunc_ReportError()
+        {
+            var code = @"
+struct S
+{
+    private void F() { }
+}
+
+var s = S();
+s.F();
+";
+            return TestEvalWithErrorAsync(code, A2011_ResolveIdentifier_TryAccessingPrivateMember);
+        }
+
+        [Fact]
+        public Task F16_Access_AccessPrivateMemberFuncInsideMemberFuncOfSameStruct_WorksProperly()
+        {
+            var code = @"
+struct S
+{
+    private void E() { @{hi} }
+    void F() { E(); }
+}
+
+var s = S();
+s.F();
+";
+
+            return TestEvalAsync(code, "hi");
+
+        }
 
         // default는 잠깐 미루자
         // 빈 Struct는 자동생성자가 default constructor 역할을 하기 때문에 그냥 생성 가능하다

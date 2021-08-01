@@ -11,10 +11,11 @@ namespace Gum.IR0Translator
     // reserved가 아닌 아이템에서나 존재함
     abstract class ItemValueOuter
     {
-        public abstract R.Path.Nested GetRPath(R.Name name, R.ParamHash paramHash, ImmutableArray<R.Path> typeArgs);
+        public abstract R.Path.Normal GetRPath();
         public abstract void FillTypeEnv(TypeEnvBuilder builder);
         public abstract ItemValueOuter Apply(TypeEnv typeEnv);
         public abstract TypeEnv GetTypeEnv();
+        public abstract int GetTotalTypeParamCount();
     }
 
     // 최상위
@@ -24,7 +25,7 @@ namespace Gum.IR0Translator
         M.ModuleName moduleName;
         M.NamespacePath namespacePath;
 
-        public override R.Path.Nested GetRPath(R.Name name, R.ParamHash paramHash, ImmutableArray<R.Path> typeArgs)
+        public override R.Path.Normal GetRPath()
         {
             var rmoduleName = RItemFactory.MakeModuleName(moduleName);
 
@@ -32,7 +33,7 @@ namespace Gum.IR0Translator
             foreach (var entry in namespacePath.Entries)
                 path = new R.Path.Nested(path, entry.Value, R.ParamHash.None, default);
 
-            return new R.Path.Nested(path, name, paramHash, typeArgs);
+            return path;
         }
 
         public override void FillTypeEnv(TypeEnvBuilder builder)
@@ -48,6 +49,11 @@ namespace Gum.IR0Translator
         {
             return new TypeEnv(default);
         }
+
+        public override int GetTotalTypeParamCount()
+        {
+            return 0;
+        }
     }
 
     [AutoConstructor, ImplementIEquatable]
@@ -55,12 +61,12 @@ namespace Gum.IR0Translator
     {
         public ItemValue ItemValue { get; }
 
-        public override R.Path.Nested GetRPath(R.Name name, R.ParamHash paramHash, ImmutableArray<R.Path> typeArgs)
+        public override R.Path.Normal GetRPath()
         {
-            var router = ItemValue.GetRPath() as R.Path.Normal;
-            Debug.Assert(router != null);
+            var path = ItemValue.GetRPath() as R.Path.Normal;
+            Debug.Assert(path != null);
 
-            return new R.Path.Nested(router, name, paramHash, typeArgs);
+            return path;
         }
 
         public override void FillTypeEnv(TypeEnvBuilder builder)
@@ -77,6 +83,11 @@ namespace Gum.IR0Translator
         public override TypeEnv GetTypeEnv()
         {
             return ItemValue.MakeTypeEnv();
+        }
+
+        public override int GetTotalTypeParamCount()
+        {
+            return ItemValue.GetTotalTypeParamCount();
         }
     }
 }
