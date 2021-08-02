@@ -21,6 +21,13 @@ namespace Gum.Test.Misc
             dumper.DumpCore(o, "");
         }
 
+        public static string DumpToString(object o)
+        {
+            var stringWriter = new StringWriter();
+            Dump(stringWriter, o);
+            return stringWriter.ToString();
+        }
+
         public void DumpCore(object o, string indent)
         {
             if (o == null)

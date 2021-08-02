@@ -305,6 +305,10 @@ namespace Gum
                 {
                     while (!Accept<RParenToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                     {
+                        if (0 < paramsBuilder.Count)
+                            if (!Accept<CommaToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
+                                return ParseResult<EnumDecl>.Invalid;
+
                         if (!Parse(await ParseTypeExpAsync(context), ref context, out var typeExp))
                             return ParseResult<EnumDecl>.Invalid;
 

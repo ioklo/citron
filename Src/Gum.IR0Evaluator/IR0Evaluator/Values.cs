@@ -191,9 +191,11 @@ namespace Gum.IR0Evaluator
             elemValue.SetValue(value.elemValue);
         }
 
-        public bool IsElem(EnumElemRuntimeItem EnumElemItem)
+        public bool IsElem(EnumElemRuntimeItem enumElemItem)
         {
-            return EnumElemItem.Equals(EnumElemItem); // reference 비교 가능하도록, 불가능 하면 R.EnumElement를 쓰지 말고 동적으로 생성되는 타입을 하나 만든다
+            Debug.Assert(this.enumElemItem != null);
+
+            return this.enumElemItem.Equals(enumElemItem); // reference 비교 가능하도록, 불가능 하면 R.EnumElement를 쓰지 말고 동적으로 생성되는 타입을 하나 만든다
         }
 
         public void SetEnumElemItem(EnumElemRuntimeItem enumElemItem)

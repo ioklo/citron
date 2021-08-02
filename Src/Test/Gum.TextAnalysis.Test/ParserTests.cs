@@ -10,6 +10,7 @@ using Xunit;
 
 using static Gum.Infra.Misc;
 using static Gum.Syntax.SyntaxFactory;
+using Gum.Test.Misc;
 
 namespace Gum.TextAnalysis.Test
 {
@@ -98,7 +99,8 @@ enum X
             var context = await MakeContextAsync(@"
 public struct S<T> : B, I
 {
-    int x1, x2;
+    int x1;
+    public int x2;
     protected string y;
     private int z;
 
@@ -116,17 +118,18 @@ public struct S<T> : B, I
                 Arr<TypeExp>( SIdTypeExp("B"), SIdTypeExp("I") ),
 
                 Arr<StructDeclElement>(
-                    new VarStructDeclElement(AccessModifier.Public, SIdTypeExp("int"), Arr("x1", "x2")),
+                    new VarStructDeclElement(null, SIdTypeExp("int"), Arr("x1")),
+                    new VarStructDeclElement(AccessModifier.Public, SIdTypeExp("int"), Arr("x2")),
                     new VarStructDeclElement(AccessModifier.Protected, SIdTypeExp("string"), Arr("y")),
                     new VarStructDeclElement(AccessModifier.Private, SIdTypeExp("int"), Arr("z")),
 
                     new TypeStructDeclElement(new StructDecl(
                         AccessModifier.Public, "Nested", Arr( "U" ), Arr<TypeExp>( SIdTypeExp("B"), SIdTypeExp("I")),
-                        Arr<StructDeclElement>(new VarStructDeclElement(AccessModifier.Public, SIdTypeExp("int"), Arr("x")))
+                        Arr<StructDeclElement>(new VarStructDeclElement(null, SIdTypeExp("int"), Arr("x")))
                     )),
 
                     new FuncStructDeclElement(new StructFuncDecl(
-                        AccessModifier.Public,
+                        null,
                         isStatic: true,
                         isSequence: false,
                         isRefReturn: false,
@@ -150,7 +153,7 @@ public struct S<T> : B, I
                     ))
                 )
             );
-
+            
             Assert.Equal(expected, structDecl.Elem);
         }
 

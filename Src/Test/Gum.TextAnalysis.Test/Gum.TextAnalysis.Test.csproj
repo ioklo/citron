@@ -25,6 +25,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Gum.TextAnalysis\Gum.TextAnalysis.csproj" />
+    <ProjectReference Include="..\Gum.Test.Misc\Gum.Test.Misc.csproj" />
   </ItemGroup>
 
 </Project>
