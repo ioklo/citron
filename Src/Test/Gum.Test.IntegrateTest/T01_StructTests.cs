@@ -648,6 +648,29 @@ s.F();
 
         }
 
+        [Fact]
+        public Task F17_MemberSeqFunc_DependsOnThis_WorksProperly()
+        {
+            var code = @"
+struct S
+{
+    int x;
+    seq int F()
+    {
+        yield x + 1;
+    }
+}
+
+var s = S(3);
+
+foreach(var i in s.F())
+    @$i
+";          
+
+            return TestEvalAsync(code, "4");
+
+        }
+
         // default는 잠깐 미루자
         // 빈 Struct는 자동생성자가 default constructor 역할을 하기 때문에 그냥 생성 가능하다
         [Fact]

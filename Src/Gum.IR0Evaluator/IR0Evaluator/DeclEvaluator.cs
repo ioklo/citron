@@ -141,12 +141,29 @@ namespace Gum.IR0Evaluator
                 var runtimeItem = new IR0StructFuncRuntimeItem(globalContext, funcDecl);
 
                 var itemContainer = new ItemContainer();
-                curContainer.AddItemContainer(funcDecl.Name, paramHash, itemContainer);
+                structContainer.AddItemContainer(funcDecl.Name, paramHash, itemContainer);
 
                 structContainer.AddRuntimeItem(runtimeItem);
 
                 var newDeclEvaluator = new DeclEvaluator(globalContext, itemContainer);
                 foreach (var decl in funcDecl.Decls)
+                    newDeclEvaluator.EvalDecl(decl);
+            }
+
+            void EvalStructDeclMemberSeqFuncDecl(ItemContainer structContainer, R.StructDecl.MemberDecl.SeqFunc seqFuncDecl)
+            {
+                var itemContainer = new ItemContainer();
+
+                var typeParamCount = seqFuncDecl.TypeParams.Length;
+                var paramHash = Misc.MakeParamHash(typeParamCount, seqFuncDecl.Parameters);
+
+                structContainer.AddItemContainer(seqFuncDecl.Name, paramHash, itemContainer);
+
+                var runtimeItem = new IR0StructSeqFuncRuntimeItem(globalContext, seqFuncDecl);
+                structContainer.AddRuntimeItem(runtimeItem);
+
+                var newDeclEvaluator = new DeclEvaluator(globalContext, itemContainer);
+                foreach (var decl in seqFuncDecl.Decls)
                     newDeclEvaluator.EvalDecl(decl);
             }
 
@@ -164,6 +181,10 @@ namespace Gum.IR0Evaluator
 
                     case R.StructDecl.MemberDecl.Func funcDecl:
                         EvalStructDeclMemberFuncDecl(structContainer, funcDecl);
+                        break;
+
+                    case R.StructDecl.MemberDecl.SeqFunc seqFuncDecl:
+                        EvalStructDeclMemberSeqFuncDecl(structContainer, seqFuncDecl);
                         break;
 
                     default:

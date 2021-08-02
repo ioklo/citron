@@ -146,14 +146,48 @@ namespace Gum.IR0Translator
 
             void AnalyzeSequenceFuncDeclElement(ImmutableArray<R.StructDecl.MemberDecl>.Builder memberBuilder, S.FuncStructDeclElement elem)
             {
-                throw new NotImplementedException();
+                var funcDecl = elem.FuncDecl;
 
-                // var func = new R.StructDecl.MemberDecl.SeqFunc();
-                // memberBuilder.Add(func);
+                // NOTICE: AnalyzeGlobalSequenceFuncDecl와 비슷한 코드
+                var retTypeValue = globalContext.GetTypeValueByTypeExp(funcDecl.RetType);
+                var rname = new R.Name.Normal(funcDecl.Name);
+                var (rparamHash, rparamInfos) = MakeParamHashAndParamInfos(globalContext, funcDecl.TypeParams.Length, funcDecl.Parameters);
+                var rtypeArgs = MakeRTypeArgs(0, funcDecl.TypeParams); // NOTICE: global이므로 상위에 type parameter가 없다
+
+                var structPath = structTypeValue.GetRPath_Nested();
+                var funcPath = new R.Path.Nested(structPath, rname, rparamHash, rtypeArgs);
+
+                var funcContext = new FuncContext(structTypeValue, retTypeValue, elem.FuncDecl.IsStatic, true, funcPath);
+                var localContext = new LocalContext();
+                var analyzer = new StmtAndExpAnalyzer(globalContext, funcContext, localContext);
+
+                if (0 < funcDecl.TypeParams.Length)
+                    throw new NotImplementedException();
+
+                // 파라미터 순서대로 추가
+                foreach (var param in funcDecl.Parameters)
+                {
+                    var paramTypeValue = globalContext.GetTypeValueByTypeExp(param.Type);
+                    localContext.AddLocalVarInfo(param.Kind == S.FuncParamKind.Ref, paramTypeValue, param.Name);
+                }
+
+                // TODO: Body가 실제로 리턴을 제대로 하는지 확인해야 한다
+                var bodyResult = analyzer.AnalyzeStmt(funcDecl.Body);
+
+                Debug.Assert(retTypeValue != null, "문법상 Sequence 함수의 retValue가 없을수 없습니다");
+
+                var retRType = retTypeValue.GetRPath();
+                var parameters = funcDecl.Parameters.Select(param => param.Name).ToImmutableArray();
+
+                var decls = funcContext.GetDecls();
+                var seqFuncDecl = new R.StructDecl.MemberDecl.SeqFunc(decls, funcDecl.Name, !elem.FuncDecl.IsStatic, retRType, funcDecl.TypeParams, rparamInfos, bodyResult.Stmt);
+                memberBuilder.Add(seqFuncDecl);
             }
 
             void AnalyzeNormalFuncDeclElement(ImmutableArray<R.StructDecl.MemberDecl>.Builder memberBuilder, S.FuncStructDeclElement elem)
             {
+                // NOTICE: AnalyzeGlobalNormalFuncDecl와 비슷한 코드
+
                 var funcDecl = elem.FuncDecl;
                 var retTypeValue = globalContext.GetTypeValueByTypeExp(funcDecl.RetType);
 
