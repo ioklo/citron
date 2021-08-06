@@ -553,9 +553,9 @@ namespace Gum.IR0Translator
             switch (constructorDecl.AccessModifier)
             {
                 case null: accessModifier = M.AccessModifier.Public; break;
-                case S.AccessModifier.Public: throw new FatalException();
+                case S.AccessModifier.Public: accessModifier = M.AccessModifier.Public; break;
                 case S.AccessModifier.Protected: accessModifier = M.AccessModifier.Protected; break;
-                case S.AccessModifier.Private: accessModifier = M.AccessModifier.Private; break;
+                case S.AccessModifier.Private: throw new FatalException();
                 default: throw new UnreachableCodeException();
             }
 
