@@ -80,14 +80,20 @@ namespace Gum.IR0Evaluator
                     case R.StructMemberLoc structMemberLoc:
                         {
                             var structValue = (StructValue)await EvalLocAsync(structMemberLoc.Instance);
-                            var memberVarItem = globalContext.GetRuntimeItem<StructMemberVarRuntimeItem>(structMemberLoc.structMember);
+                            var memberVarItem = globalContext.GetRuntimeItem<StructMemberVarRuntimeItem>(structMemberLoc.MemberPath);
 
                             return memberVarItem.GetMemberValue(structValue);
                         }
 
                     case R.ClassMemberLoc classMemberLoc:
-                        var classValue = (ClassValue)await EvalLocAsync(classMemberLoc.Instance);
-                        return classValue.GetMemberValue(classMemberLoc.MemberName);
+                        {
+                            throw new NotImplementedException();
+
+                            //var classValue = (ClassValue)await EvalLocAsync(classMemberLoc.Instance);
+                            //var memberVarItem = globalContext.GetRuntimeItem<ClassMemberVarRuntimeItem>(classMemberLoc.MemberPath);
+
+                            //return classValue.GetMemberValue(classValue);
+                        }
 
                     case R.EnumElemMemberLoc enumMemberLoc:
                         var enumElemValue = (EnumElemValue)await EvalLocAsync(enumMemberLoc.Instance);

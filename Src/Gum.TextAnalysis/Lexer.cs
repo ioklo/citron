@@ -109,6 +109,7 @@ namespace Gum
             { "seq", SeqToken.Instance },
             { "enum", EnumToken.Instance },
             { "struct", StructToken.Instance },
+            { "class", ClassToken.Instance },
             { "is", IsToken.Instance },
             { "ref", RefToken.Instance },
             { "public", PublicToken.Instance },

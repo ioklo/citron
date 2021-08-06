@@ -121,7 +121,7 @@ struct S
                 )))
             );
 
-            return new ParseTranslateWithErrorTestData(code, sscript, A2402_StructDecl_CannotDeclConstructorDifferentWithTypeName, errorNode);
+            return new ParseTranslateWithErrorTestData(code, sscript, A2403_StructDecl_CannotDeclConstructorDifferentWithTypeName, errorNode);
         }
 
         static TestData Make_VarDecl_UsingConstructor_CallConstructor()

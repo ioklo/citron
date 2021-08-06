@@ -14,6 +14,6 @@ namespace Gum.Syntax
         public string Name { get; }
         public ImmutableArray<string> TypeParams { get; }
         public ImmutableArray<TypeExp> BaseTypes { get; }
-        public ImmutableArray<StructMemberDecl> Elems { get; }
+        public ImmutableArray<StructMemberDecl> MemberDecls { get; }
     }
 }

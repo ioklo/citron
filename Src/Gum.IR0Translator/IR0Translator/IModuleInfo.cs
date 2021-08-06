@@ -56,6 +56,16 @@ namespace Gum.IR0Translator
         M.Type? GetBaseType();
     }
 
+    interface IModuleClassInfo : IModuleTypeInfo
+    {
+        IModuleConstructorInfo? GetAutoConstructor();
+        ImmutableArray<IModuleTypeInfo> GetMemberTypes();
+        ImmutableArray<IModuleFuncInfo> GetMemberFuncs();
+        ImmutableArray<IModuleConstructorInfo> GetConstructors();
+        ImmutableArray<IModuleMemberVarInfo> GetMemberVars();
+        M.Type? GetBaseType();
+    }
+
     interface IModuleEnumInfo : IModuleTypeInfo
     {
         IModuleEnumElemInfo? GetElem(M.Name memberName);

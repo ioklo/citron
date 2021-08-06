@@ -563,6 +563,61 @@ namespace Gum
             return new ParseResult<ClassMemberFuncDecl>(funcDeclElem, context);
         }
 
+        async ValueTask<ParseResult<ClassConstructorDecl>> ParseClassConstructorDeclAsync(ParserContext context)
+        {
+            ParseResult<ClassConstructorDecl> Invalid() => ParseResult<ClassConstructorDecl>.Invalid;
+
+            if (!Parse(await ParseAccessModifierAsync(context), ref context, out var accessModifier))
+                return Invalid();
+
+            // ex) F
+            if (!Accept<IdentifierToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context, out var name))
+                return Invalid();
+
+            // ex) (int i, int a)
+            if (!Parse(await ParseFuncDeclParamsAsync(context), ref context, out var paramInfo))
+                return Invalid();
+
+            // ex) { ... }
+            if (!Parse(await stmtParser.ParseBlockStmtAsync(context), ref context, out var body))
+                return Invalid();
+
+            var constructorDecl = new ClassConstructorDecl(accessModifier, name.Value, paramInfo, body);
+
+            return new ParseResult<ClassConstructorDecl>(constructorDecl, context);
+        }
+
+        async ValueTask<ParseResult<ClassMemberVarDecl>> ParseClassMemberVarDeclAsync(ParserContext context)
+        {
+            if (!Parse(await ParseAccessModifierAsync(context), ref context, out var accessModifier))
+                return ParseResult<ClassMemberVarDecl>.Invalid;
+
+            // ex) int
+            if (!Parse(await ParseTypeExpAsync(context), ref context, out var varType))
+                return ParseResult<ClassMemberVarDecl>.Invalid;
+
+            // ex) x, y, z
+            var varNamesBuilder = ImmutableArray.CreateBuilder<string>();
+            if (!Accept<IdentifierToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context, out var varNameToken0))
+                return ParseResult<ClassMemberVarDecl>.Invalid;
+
+            varNamesBuilder.Add(varNameToken0.Value);
+
+            while (Accept<CommaToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
+            {
+                if (!Accept<IdentifierToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context, out var varNameToken))
+                    return ParseResult<ClassMemberVarDecl>.Invalid;
+
+                varNamesBuilder.Add(varNameToken.Value);
+            }
+
+            // ;
+            if (!Accept<SemiColonToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
+                return ParseResult<ClassMemberVarDecl>.Invalid;
+
+            var varDeclElem = new ClassMemberVarDecl(accessModifier, varType, varNamesBuilder.ToImmutable());
+            return new ParseResult<ClassMemberVarDecl>(varDeclElem, context);
+        }
 
         async ValueTask<ParseResult<ClassMemberDecl>> ParseClassMemberDeclAsync(ParserContext context)
         {
@@ -572,11 +627,11 @@ namespace Gum
             if (Parse(await ParseClassMemberFuncDeclAsync(context), ref context, out var funcDeclElem))
                 return new ParseResult<ClassMemberDecl>(funcDeclElem, context);
 
-            //if (Parse(await ParseStructConstructorDeclAsync(context), ref context, out var constructorDeclElem))
-            //    return new ParseResult<StructDeclElement>(constructorDeclElem, context);
+            if (Parse(await ParseClassConstructorDeclAsync(context), ref context, out var constructorDeclElem))
+                return new ParseResult<ClassMemberDecl>(constructorDeclElem, context);
 
-            //if (Parse(await ParseStructVarDeclElementAsync(context), ref context, out var varDeclElem))
-            //    return new ParseResult<StructDeclElement>(varDeclElem, context);
+            if (Parse(await ParseClassMemberVarDeclAsync(context), ref context, out var varDeclElem))
+                return new ParseResult<ClassMemberDecl>(varDeclElem, context);
 
             return ParseResult<ClassMemberDecl>.Invalid;
         }

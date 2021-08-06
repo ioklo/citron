@@ -215,5 +215,10 @@ namespace Gum.IR0Translator
         {
             return new StructTypeValue(this, ritemFactory, outer, structInfo, typeArgs);
         }
+
+        public ClassTypeValue MakeClassValue(ItemValueOuter outer, IModuleClassInfo classInfo, ImmutableArray<TypeValue> typeArgs)
+        {
+            return new ClassTypeValue(this, outer, classInfo, typeArgs);
+        }
     }
 }

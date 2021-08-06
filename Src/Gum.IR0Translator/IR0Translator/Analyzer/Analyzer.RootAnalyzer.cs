@@ -226,6 +226,28 @@ namespace Gum.IR0Translator
                             break;
                         }
 
+                    case S.ClassDecl classDecl:
+                        {
+                            // TODO: 현재는 최상위 네임스페이스에서만 찾고 있음
+                            var classInfo = GlobalItemQueryService.GetGlobalItem(internalModuleInfo, M.NamespacePath.Root, new ItemPathEntry(classDecl.Name, classDecl.TypeParams.Length)) as IModuleClassInfo;
+                            Debug.Assert(classInfo != null);
+
+                            // 이는 TaskStmt 등에서 path를 만들때 사용한다
+                            // 고로 path는 TypeVar를 포함해서 만드는 것이 맞다
+                            // 여기는 Root이므로 0부터 시작한다
+                            var typeArgsBuilder = ImmutableArray.CreateBuilder<TypeValue>(classDecl.TypeParams.Length);
+                            for (int i = 0; i < classDecl.TypeParams.Length; i++)
+                                typeArgsBuilder.Add(globalContext.MakeTypeVarTypeValue(i));
+
+                            var structTypeValue = globalContext.MakeClassTypeValue(
+                                rootContext.MakeRootItemValueOuter(M.NamespacePath.Root),
+                                classInfo,
+                                typeArgsBuilder.MoveToImmutable());
+
+                            ClassAnalyzer.Analyze(globalContext, rootContext, classDecl, structTypeValue);
+                            break;
+                        }
+
                     default:
                         throw new NotImplementedException();
                 }

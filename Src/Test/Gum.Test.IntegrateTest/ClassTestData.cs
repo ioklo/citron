@@ -29,10 +29,35 @@ class C
                 )))
             );
 
+            R.Path.Nested CPath() => new R.Path.Nested(new R.Path.Root(moduleName), "C", R.ParamHash.None, default);
+
             var rscript = RScript(moduleName, Arr<R.Decl>(
-                new R.ClassDecl(R.AccessModifier.Public, "C", default, default, Arr<R.ClassMemberDecl>(
+                new R.ClassDecl(R.AccessModifier.Private, "C", default, default, Arr<R.ClassMemberDecl>(
                     new R.ClassMemberVarDecl(R.AccessModifier.Private, R.Path.Int, Arr("x", "y")),
-                    new R.ClassMemberVarDecl(R.AccessModifier.Public, R.Path.String, Arr("s"))
+                    new R.ClassMemberVarDecl(R.AccessModifier.Public, R.Path.String, Arr("s")),
+                    new R.ClassConstructorDecl(
+                        R.AccessModifier.Public,
+                        default,
+                        Arr(
+                            new R.Param(R.ParamKind.Normal, R.Path.Int, "x"),
+                            new R.Param(R.ParamKind.Normal, R.Path.Int, "y"),
+                            new R.Param(R.ParamKind.Normal, R.Path.String, "s")
+                        ),
+                        RBlock(
+                            new R.ExpStmt(new R.AssignExp(
+                                new R.ClassMemberLoc(R.ThisLoc.Instance, new R.Path.Nested(CPath(), "x", R.ParamHash.None, default)),
+                                new R.LoadExp(new R.LocalVarLoc("x"))
+                            )),
+                            new R.ExpStmt(new R.AssignExp(
+                                new R.ClassMemberLoc(R.ThisLoc.Instance, new R.Path.Nested(CPath(), "y", R.ParamHash.None, default)),
+                                new R.LoadExp(new R.LocalVarLoc("y"))
+                            )),
+                            new R.ExpStmt(new R.AssignExp(
+                                new R.ClassMemberLoc(R.ThisLoc.Instance, new R.Path.Nested(CPath(), "s", R.ParamHash.None, default)),
+                                new R.LoadExp(new R.LocalVarLoc("s"))
+                            ))
+                        )
+                    )
                 ))
             ));
 

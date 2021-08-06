@@ -18,5 +18,7 @@ namespace Gum.Syntax
         BlockStmt Body
     ) : ClassMemberDecl;
 
+    public record ClassConstructorDecl(AccessModifier? AccessModifier, string Name, ImmutableArray<FuncParam> Parameters, BlockStmt Body) : ClassMemberDecl;
+
     public record ClassMemberVarDecl(AccessModifier? AccessModifier, TypeExp VarType, ImmutableArray<string> VarNames) : ClassMemberDecl;
 }

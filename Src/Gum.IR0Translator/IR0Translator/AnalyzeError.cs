@@ -122,7 +122,11 @@ namespace Gum.IR0Translator
 
         A2401_StructDecl_CannotSetMemberPublicAccessExplicitlyBecauseItsDefault,
         A2402_StructDecl_CannotSetMemberProtectedAccessBecauseItsNotAllowed,
-        A2402_StructDecl_CannotDeclConstructorDifferentWithTypeName,
+        A2403_StructDecl_CannotDeclConstructorDifferentWithTypeName,
+
+        A2501_ClassDecl_CannotSetMemberPrivateAccessExplicitlyBecauseItsDefault,        
+        A2502_ClassDecl_CannotDeclConstructorDifferentWithTypeName,
+        // A2503_ClassDecl_CannotSetMemberProtectedAccessBecauseItsNotAllowed,
 
 
         // A2001_Identifier_MultipleCandidatesForIdentifier,

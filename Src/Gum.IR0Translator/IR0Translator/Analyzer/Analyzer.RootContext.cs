@@ -100,6 +100,11 @@ namespace Gum.IR0Translator
             {
                 AddDecl(structDecl);
             }
+
+            void ITypeContainer.AddClass(R.ClassDecl classDecl)
+            {
+                AddDecl(classDecl);
+            }
         }
     }
 }

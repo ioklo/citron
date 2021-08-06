@@ -60,7 +60,7 @@ namespace Gum.IR0Translator
         void VisitStructDecl(S.StructDecl structDecl)
         {
             var newCollector = NewTypeSkeletonCollector();
-            foreach(var elem in structDecl.Elems)
+            foreach(var elem in structDecl.MemberDecls)
             {
                 switch(elem)
                 {
@@ -75,12 +75,31 @@ namespace Gum.IR0Translator
             AddSkeleton(skeleton);
         }
 
+        void VisitClassDecl(S.ClassDecl classDecl)
+        {
+            var newCollector = NewTypeSkeletonCollector();
+            foreach (var memberDecl in classDecl.MemberDecls)
+            {
+                switch (memberDecl)
+                {
+                    case S.ClassMemberTypeDecl typeDecl:
+                        newCollector.VisitTypeDecl(typeDecl.TypeDecl);
+                        break;
+                }
+            }
+
+            var pathEntry = new ItemPathEntry(classDecl.Name, classDecl.TypeParams.Length);
+            var skeleton = new TypeSkeleton(pathEntry, newCollector.skeletonsBuilder.ToImmutable());
+            AddSkeleton(skeleton);
+        }
+
         void VisitTypeDecl(S.TypeDecl typeDecl)
         {
             switch (typeDecl)
             {
                 case S.EnumDecl enumDecl: VisitEnumDecl(enumDecl); break;
                 case S.StructDecl structDecl: VisitStructDecl(structDecl); break;
+                case S.ClassDecl classDecl: VisitClassDecl(classDecl); break;
                 default: throw new UnreachableCodeException();
             }
         }

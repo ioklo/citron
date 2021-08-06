@@ -112,6 +112,10 @@ namespace Gum.IR0Translator
                     VisitStructDecl(structDecl);
                     break;
 
+                case S.ClassDecl classDecl:
+                    VisitClassDecl(classDecl);
+                    break;
+
                 case S.EnumDecl enumDecl:
                     VisitEnumDecl(enumDecl);
                     break;
@@ -221,7 +225,7 @@ namespace Gum.IR0Translator
             //}
             //var mbaseTypes = mbaseTypesBuilder.MoveToImmutable();
 
-            foreach (var elem in structDecl.Elems)
+            foreach (var elem in structDecl.MemberDecls)
             {
                 switch (elem)
                 {
@@ -258,6 +262,62 @@ namespace Gum.IR0Translator
                 newBuilder.memberVars.ToImmutableArray());
 
             types.Add(structInfo);
+        }
+
+        void VisitClassDecl(S.ClassDecl classDecl)
+        {
+            var newBuilder = NewModuleInfoBuilder(classDecl.Name, classDecl.TypeParams.Length, true);
+
+            if (classDecl.BaseTypes.Length != 0)
+                throw new NotImplementedException();
+
+            // base & interfaces
+            //var mbaseTypesBuilder = ImmutableArray.CreateBuilder<M.Type>(structDecl.BaseTypes.Length);
+            //foreach (var baseType in structDecl.BaseTypes)
+            //{
+            //    var mbaseType = GetMType(baseType);
+            //    if (mbaseType == null) throw new FatalException();
+            //    mbaseTypesBuilder.Add(mbaseType);
+            //}
+            //var mbaseTypes = mbaseTypesBuilder.MoveToImmutable();
+
+            foreach (var elem in classDecl.MemberDecls)
+            {
+                switch (elem)
+                {
+                    case S.ClassMemberFuncDecl funcDecl:
+                        newBuilder.VisitClassMemberFuncDecl(M.AccessModifier.Public, funcDecl);
+                        break;
+
+                    case S.ClassMemberTypeDecl typeDecl:
+                        newBuilder.VisitTypeDecl(typeDecl.TypeDecl);
+                        break;
+
+                    case S.ClassMemberVarDecl varDecl:
+                        newBuilder.VisitClassMemberVarDecl(varDecl);
+                        break;
+
+                    case S.ClassConstructorDecl constructorDecl:
+                        newBuilder.VisitClassConstructorDeclElement(constructorDecl);
+                        break;
+
+                    default:
+                        throw new UnreachableCodeException();
+                }
+            }
+
+            newBuilder.bCollectingMemberVarsCompleted = true;
+            newBuilder.TryMakeAutomaticConstructor(classDecl.Name);
+
+            var classInfo = new InternalModuleClassInfo(
+                classDecl.Name, classDecl.TypeParams, null,
+                newBuilder.types,
+                newBuilder.funcs,
+                newBuilder.constructors.ToImmutableArray(),
+                newBuilder.automaticConstructor,
+                newBuilder.memberVars.ToImmutableArray());
+
+            types.Add(classInfo);
         }
 
         ImmutableArray<M.Param> MakeParams(ImmutableArray<S.FuncParam> sparams)
@@ -403,6 +463,94 @@ namespace Gum.IR0Translator
         {
             M.AccessModifier accessModifier;
             switch(constructorDecl.AccessModifier)
+            {
+                case null: accessModifier = M.AccessModifier.Public; break;
+                case S.AccessModifier.Public: throw new FatalException();
+                case S.AccessModifier.Protected: accessModifier = M.AccessModifier.Protected; break;
+                case S.AccessModifier.Private: accessModifier = M.AccessModifier.Private; break;
+                default: throw new UnreachableCodeException();
+            }
+
+            var paramInfo = MakeParams(constructorDecl.Parameters);
+
+            constructors.Add(new InternalModuleConstructorInfo(accessModifier, constructorDecl.Name, paramInfo));
+        }
+
+
+        void VisitClassMemberFuncDecl(M.AccessModifier defaultAccessModifier, S.ClassMemberFuncDecl funcDecl)
+        {
+            bool bThisCall = IsInsideTypeScope(); // TODO: static 키워드가 추가되면 고려하도록 한다
+
+            var retType = GetMType(funcDecl.RetType);
+            if (retType == null) throw new FatalException();
+
+            var paramInfo = MakeParams(funcDecl.Parameters);
+
+            M.AccessModifier accessModifier;
+            switch (funcDecl.AccessModifier)
+            {
+                case null: accessModifier = defaultAccessModifier; break;
+                case S.AccessModifier.Public:
+                    if (defaultAccessModifier == M.AccessModifier.Public) throw new FatalException();
+                    accessModifier = M.AccessModifier.Public;
+                    break;
+
+                case S.AccessModifier.Protected:
+                    if (defaultAccessModifier == M.AccessModifier.Protected) throw new FatalException();
+                    accessModifier = M.AccessModifier.Protected;
+                    break;
+
+                case S.AccessModifier.Private:
+                    if (defaultAccessModifier == M.AccessModifier.Private) throw new FatalException();
+                    accessModifier = M.AccessModifier.Private;
+                    break;
+
+                default:
+                    throw new UnreachableCodeException();
+            }
+
+            var funcInfo = new InternalModuleFuncInfo(
+                accessModifier,
+                bInstanceFunc: bThisCall,
+                bSeqFunc: funcDecl.IsSequence,
+                bRefReturn: funcDecl.IsRefReturn,
+                retType,
+                funcDecl.Name,
+                funcDecl.TypeParams,
+                paramInfo
+            );
+
+            funcs.Add(funcInfo);
+        }
+
+        void VisitClassMemberVarDecl(S.ClassMemberVarDecl varDecl)
+        {
+            var declType = GetMType(varDecl.VarType);
+            if (declType == null)
+                throw new FatalException();
+
+            var accessModifier = varDecl.AccessModifier switch
+            {
+                null => M.AccessModifier.Private,
+                S.AccessModifier.Public => M.AccessModifier.Public,
+                S.AccessModifier.Protected => M.AccessModifier.Protected,
+                S.AccessModifier.Private => throw new UnreachableCodeException(), // 미리 에러를 잡는다
+                _ => throw new UnreachableCodeException()
+            };
+
+            foreach (var name in varDecl.VarNames)
+            {
+                bool bStatic = !IsInsideTypeScope(); // TODO: static 키워드가 추가되면 고려한다
+
+                var varInfo = new InternalModuleMemberVarInfo(accessModifier, bStatic, declType, name);
+                memberVars.Add(varInfo);
+            }
+        }
+
+        void VisitClassConstructorDeclElement(S.ClassConstructorDecl constructorDecl)
+        {
+            M.AccessModifier accessModifier;
+            switch (constructorDecl.AccessModifier)
             {
                 case null: accessModifier = M.AccessModifier.Public; break;
                 case S.AccessModifier.Public: throw new FatalException();

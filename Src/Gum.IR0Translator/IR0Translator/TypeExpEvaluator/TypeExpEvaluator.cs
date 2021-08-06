@@ -166,9 +166,18 @@ namespace Gum.IR0Translator
                     VisitStructDecl(structDecl);
                     break;
 
+                case S.ClassDecl classDecl:
+                    VisitClassDecl(classDecl);
+                    break;
+
                 case S.EnumDecl enumDecl:
                     VisitEnumDecl(enumDecl);
                     break;
+
+                
+
+                default:
+                    throw new UnreachableCodeException();
             }
         }
 
@@ -179,7 +188,7 @@ namespace Gum.IR0Translator
                 foreach (var baseType in structDecl.BaseTypes)
                     VisitTypeExpOuterMost(baseType);
 
-                foreach(var elem in structDecl.Elems)
+                foreach(var elem in structDecl.MemberDecls)
                 {
                     switch(elem)
                     {
@@ -205,6 +214,41 @@ namespace Gum.IR0Translator
                 }
             });
         }
+
+        void VisitClassDecl(S.ClassDecl classDecl)
+        {
+            ExecInScope(classDecl.TypeParams, () =>
+            {
+                foreach (var baseType in classDecl.BaseTypes)
+                    VisitTypeExpOuterMost(baseType);
+
+                foreach (var elem in classDecl.MemberDecls)
+                {
+                    switch (elem)
+                    {
+                        case S.ClassMemberTypeDecl typeDecl:
+                            VisitTypeDecl(typeDecl.TypeDecl);
+                            break;
+
+                        case S.ClassMemberFuncDecl funcDecl:
+                            VisitClassMemberFuncDecl(funcDecl);
+                            break;
+
+                        case S.ClassMemberVarDecl varDecl:
+                            VisitTypeExpOuterMost(varDecl.VarType);
+                            break;
+
+                        case S.ClassConstructorDecl constructorDecl:
+                            VisitClassConstructorDecl(constructorDecl);
+                            break;
+
+                        default:
+                            throw new UnreachableCodeException();
+                    }
+                }
+            });
+        }
+
 
         void VisitGlobalFuncDecl(S.GlobalFuncDecl funcDecl)
         {   
@@ -242,7 +286,31 @@ namespace Gum.IR0Translator
                 VisitStmt(constructorDecl.Body);
             });
         }
-        
+
+        void VisitClassMemberFuncDecl(S.ClassMemberFuncDecl funcDecl)
+        {
+            ExecInScope(funcDecl.TypeParams, () =>
+            {
+                VisitTypeExpOuterMost(funcDecl.RetType);
+
+                foreach (var param in funcDecl.Parameters)
+                    VisitTypeExpOuterMost(param.Type);
+
+                VisitStmt(funcDecl.Body);
+            });
+        }
+
+        void VisitClassConstructorDecl(S.ClassConstructorDecl constructorDecl)
+        {
+            ExecInScope(default, () =>
+            {
+                foreach (var param in constructorDecl.Parameters)
+                    VisitTypeExpOuterMost(param.Type);
+
+                VisitStmt(constructorDecl.Body);
+            });
+        }
+
         void VisitVarDecl(S.VarDecl varDecl)
         {
             VisitTypeExpOuterMost(varDecl.Type);
