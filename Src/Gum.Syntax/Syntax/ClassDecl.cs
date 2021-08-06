@@ -1,19 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using Gum.Collections;
-using System.Text;
-using Gum.Infra;
+﻿using Gum.Collections;
 using Pretune;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Gum.Syntax
 {
     [AutoConstructor, ImplementIEquatable]
-    public partial class StructDecl : TypeDecl
-    {   
+    public partial class ClassDecl : TypeDecl
+    {
         public AccessModifier? AccessModifier { get; }
         public string Name { get; }
         public ImmutableArray<string> TypeParams { get; }
         public ImmutableArray<TypeExp> BaseTypes { get; }
-        public ImmutableArray<StructMemberDecl> Elems { get; }
+        public ImmutableArray<ClassMemberDecl> MemberDecls { get; }
     }
 }

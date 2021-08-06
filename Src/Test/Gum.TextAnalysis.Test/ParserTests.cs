@@ -117,40 +117,40 @@ public struct S<T> : B, I
 
                 Arr<TypeExp>( SIdTypeExp("B"), SIdTypeExp("I") ),
 
-                Arr<StructDeclElement>(
-                    new VarStructDeclElement(null, SIdTypeExp("int"), Arr("x1")),
-                    new VarStructDeclElement(AccessModifier.Public, SIdTypeExp("int"), Arr("x2")),
-                    new VarStructDeclElement(AccessModifier.Protected, SIdTypeExp("string"), Arr("y")),
-                    new VarStructDeclElement(AccessModifier.Private, SIdTypeExp("int"), Arr("z")),
+                Arr<StructMemberDecl>(
+                    new StructMemberVarDecl(null, SIdTypeExp("int"), Arr("x1")),
+                    new StructMemberVarDecl(AccessModifier.Public, SIdTypeExp("int"), Arr("x2")),
+                    new StructMemberVarDecl(AccessModifier.Protected, SIdTypeExp("string"), Arr("y")),
+                    new StructMemberVarDecl(AccessModifier.Private, SIdTypeExp("int"), Arr("z")),
 
-                    new TypeStructDeclElement(new StructDecl(
+                    new StructMemberTypeDecl(new StructDecl(
                         AccessModifier.Public, "Nested", Arr( "U" ), Arr<TypeExp>( SIdTypeExp("B"), SIdTypeExp("I")),
-                        Arr<StructDeclElement>(new VarStructDeclElement(null, SIdTypeExp("int"), Arr("x")))
+                        Arr<StructMemberDecl>(new StructMemberVarDecl(null, SIdTypeExp("int"), Arr("x")))
                     )),
 
-                    new FuncStructDeclElement(new StructFuncDecl(
+                    new StructMemberFuncDecl(
                         null,
-                        isStatic: true,
-                        isSequence: false,
-                        isRefReturn: false,
+                        IsStatic: true,
+                        IsSequence: false,
+                        IsRefReturn: false,
                         SIdTypeExp("void"),
                         "Func",
                         Arr("X"),
                         Arr(new FuncParam(FuncParamKind.Normal, SIdTypeExp("string"), "s")),
                         SBlock()
-                    )),
+                    ),
 
-                    new FuncStructDeclElement(new StructFuncDecl(
+                    new StructMemberFuncDecl(
                         AccessModifier.Private,
-                        isStatic: false,
-                        isSequence: true,
-                        isRefReturn: false,
+                        IsStatic: false,
+                        IsSequence: true,
+                        IsRefReturn: false,
                         SIdTypeExp("int"),
                         "F2",
                         Arr("T"),
                         default,
                         SBlock(new YieldStmt(new IntLiteralExp(4)))
-                    ))
+                    )
                 )
             );
             

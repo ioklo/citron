@@ -44,7 +44,7 @@ namespace Gum.IR0Evaluator
             public override R.Name Name => funcDecl.Name;
             public override R.ParamHash ParamHash => Misc.MakeParamHash(funcDecl.TypeParams.Length, funcDecl.Parameters);
             public override ImmutableArray<R.Param> Parameters => funcDecl.Parameters;
-            R.StructDecl.MemberDecl.Func funcDecl;
+            R.StructMemberFuncDecl funcDecl;
 
             public override ValueTask InvokeAsync(Value? thisValue, ImmutableArray<Value> args, Value result)
             {

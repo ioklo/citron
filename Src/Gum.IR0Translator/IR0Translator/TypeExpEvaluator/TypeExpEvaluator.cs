@@ -47,7 +47,7 @@ namespace Gum.IR0Translator
                         break;
 
                     case S.GlobalFuncDeclScriptElement funcDeclElem:
-                        evaluator.VisitFuncDecl(funcDeclElem.FuncDecl);
+                        evaluator.VisitGlobalFuncDecl(funcDeclElem.FuncDecl);
                         break;
 
                     case S.StmtScriptElement stmtDeclElem:
@@ -183,20 +183,20 @@ namespace Gum.IR0Translator
                 {
                     switch(elem)
                     {
-                        case S.TypeStructDeclElement typeDeclElem:
-                            VisitTypeDecl(typeDeclElem.TypeDecl);
+                        case S.StructMemberTypeDecl typeDecl:
+                            VisitTypeDecl(typeDecl.TypeDecl);
                             break;
 
-                        case S.FuncStructDeclElement funcDeclElem:
-                            VisitFuncDecl(funcDeclElem.FuncDecl);
+                        case S.StructMemberFuncDecl funcDecl:
+                            VisitStructMemberFuncDecl(funcDecl);
                             break;
 
-                        case S.VarStructDeclElement varDeclElem:
-                            VisitTypeExpOuterMost(varDeclElem.VarType);
+                        case S.StructMemberVarDecl varDecl:
+                            VisitTypeExpOuterMost(varDecl.VarType);
                             break;
 
-                        case S.ConstructorStructDeclElement constructorDeclElem:
-                            VisitStructConstructorDecl(constructorDeclElem);
+                        case S.StructConstructorDecl constructorDecl:
+                            VisitStructConstructorDecl(constructorDecl);
                             break;
 
                         default:
@@ -206,7 +206,7 @@ namespace Gum.IR0Translator
             });
         }
 
-        void VisitFuncDecl(S.FuncDecl funcDecl)
+        void VisitGlobalFuncDecl(S.GlobalFuncDecl funcDecl)
         {   
             ExecInScope(funcDecl.TypeParams, () =>
             {
@@ -217,16 +217,29 @@ namespace Gum.IR0Translator
 
                 VisitStmt(funcDecl.Body);
             });
-        }        
+        }
+        
+        void VisitStructMemberFuncDecl(S.StructMemberFuncDecl funcDecl)
+        {
+            ExecInScope(funcDecl.TypeParams, () =>
+            {
+                VisitTypeExpOuterMost(funcDecl.RetType);
 
-        void VisitStructConstructorDecl(S.ConstructorStructDeclElement constructorDeclElem)
+                foreach (var param in funcDecl.Parameters)
+                    VisitTypeExpOuterMost(param.Type);
+
+                VisitStmt(funcDecl.Body);
+            });
+        }
+
+        void VisitStructConstructorDecl(S.StructConstructorDecl constructorDecl)
         {
             ExecInScope(default, () =>
             {
-                foreach (var param in constructorDeclElem.Parameters)
+                foreach (var param in constructorDecl.Parameters)
                     VisitTypeExpOuterMost(param.Type);
 
-                VisitStmt(constructorDeclElem.Body);
+                VisitStmt(constructorDecl.Body);
             });
         }
         

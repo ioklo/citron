@@ -90,11 +90,11 @@ namespace Gum.IR0Translator.Test
                 null,
                 isSequence: false,
                 isRefReturn: false,
-                VoidTypeExp,
+                SVoidTypeExp(),
                 "Func",
                 Arr("T", "U"),
                 Arr(
-                    new S.FuncParam(S.FuncParamKind.Normal, IntTypeExp, "x"),
+                    new S.FuncParam(S.FuncParamKind.Normal, SIntTypeExp(), "x"),
                     new S.FuncParam(S.FuncParamKind.Params, new S.IdTypeExp("U", default), "y"),
                     new S.FuncParam(S.FuncParamKind.Normal, new S.IdTypeExp("T", default), "z")
                 ),
@@ -149,26 +149,26 @@ namespace Gum.IR0Translator.Test
                     S.AccessModifier.Public,
                     "S",
                     Arr("T"),
-                    default, // Arr<S.TypeExp>(new S.IdTypeExp("B", Arr(IntTypeExp))),
-                    Arr<S.StructDeclElement>(
-                        new S.FuncStructDeclElement(new S.StructFuncDecl(
+                    default, // Arr<S.TypeExp>(new S.IdTypeExp("B", Arr(SIntTypeExp()))),
+                    Arr<S.StructMemberDecl>(
+                        new S.StructMemberFuncDecl(
                             S.AccessModifier.Private,
-                            isStatic: true,
-                            isSequence: false,
-                            isRefReturn: false,
+                            IsStatic: true,
+                            IsSequence: false,
+                            IsRefReturn: false,
                             new S.IdTypeExp("T", default),
                             "Func",
                             Arr("T", "U"),
                             Arr(
-                                new S.FuncParam(S.FuncParamKind.Normal, SIdTypeExp("S", IntTypeExp), "s"), 
+                                new S.FuncParam(S.FuncParamKind.Normal, SIdTypeExp("S", SIntTypeExp()), "s"), 
                                 new S.FuncParam(S.FuncParamKind.Normal, SIdTypeExp("U"), "u")
                             ),
                             new S.BlockStmt(Arr<S.Stmt>())
-                        )),
+                        ),
 
-                        new S.VarStructDeclElement(
+                        new S.StructMemberVarDecl(
                             S.AccessModifier.Protected,
-                            IntTypeExp,
+                            SIntTypeExp(),
                             Arr("x", "y")
                         )
                     )

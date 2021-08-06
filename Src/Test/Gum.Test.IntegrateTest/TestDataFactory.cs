@@ -10,38 +10,54 @@ using R = Gum.IR0;
 using Xunit.Abstractions;
 using System.Diagnostics;
 using Gum.IR0Translator;
+using System.Reflection;
 
 namespace Gum.Test.IntegrateTest
 {
     public class TestDataInfo : IXunitSerializable
     {
+        Type? type;
         int index;
+        public TestDataInfo() 
+        { 
+            type = null; 
+            index = -1; 
+        }
 
-        public TestDataInfo() { index = 0; }
-
-        public TestDataInfo(int index)
+        public TestDataInfo(Type type, int index)
         {
+            this.type = type;
             this.index = index;
         }
 
         public void Deserialize(IXunitSerializationInfo info)
         {
+            var typeName = info.GetValue<string>("AssemblyQualifiedTypeName");
+
+            this.type = Type.GetType(typeName);
             this.index = info.GetValue<int>("Index");
         }
 
         public void Serialize(IXunitSerializationInfo info)
         {
+            Debug.Assert(type != null);
+
+            info.AddValue("AssemblyQualifiedTypeName", type.AssemblyQualifiedName);
             info.AddValue("Index", index);
         }
 
         public Task InvokeAsync()
         {
-            return IntegrateTestData.GetInfo(index).MakeTestData().TestAsync();
+            if (type == null || index == -1) return Task.CompletedTask;
+
+            return IntegrateTestData.GetInfo(type, index).MakeTestData().TestAsync();
         }
 
         public override string ToString()
         {
-            return IntegrateTestData.GetInfo(index).Desc;
+            if (type == null || index == -1) return string.Empty;
+
+            return IntegrateTestData.GetInfo(type, index).Desc;
         }
     }
 

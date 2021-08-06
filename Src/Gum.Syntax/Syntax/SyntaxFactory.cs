@@ -52,11 +52,11 @@ namespace Gum.Syntax
         public static IdentifierExp SId(string name) => new IdentifierExp(name, default);
         public static IdentifierExp SId(string name, params TypeExp[] typeArgs) => new IdentifierExp(name, Arr(typeArgs));
 
-        public static TypeExp VarTypeExp { get => new IdTypeExp("var", default); }
-        public static TypeExp IntTypeExp { get => new IdTypeExp("int", default); }
-        public static TypeExp BoolTypeExp { get => new IdTypeExp("bool", default); }
-        public static TypeExp VoidTypeExp { get => new IdTypeExp("void", default); }
-        public static TypeExp StringTypeExp { get => new IdTypeExp("string", default); }
+        public static TypeExp SVarTypeExp() => new IdTypeExp("var", default);
+        public static TypeExp SIntTypeExp() => new IdTypeExp("int", default);
+        public static TypeExp SBoolTypeExp() => new IdTypeExp("bool", default);
+        public static TypeExp SVoidTypeExp() => new IdTypeExp("void", default);
+        public static TypeExp SStringTypeExp() => new IdTypeExp("string", default);
 
         public static IdTypeExp SIdTypeExp(string name, params TypeExp[] typeArgs) => new IdTypeExp(name, Arr(typeArgs));
     }

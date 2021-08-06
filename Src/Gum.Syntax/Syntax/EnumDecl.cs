@@ -25,10 +25,8 @@ namespace Gum.Syntax
     [AutoConstructor, ImplementIEquatable]
     public partial class EnumDecl : TypeDecl
     {
-        public override string Name { get; }
+        public string Name { get; }
         public ImmutableArray<string> TypeParams { get; }
         public ImmutableArray<EnumDeclElement> Elems { get; }
-
-        public override int TypeParamCount { get => TypeParams.Length; }
     }
 }

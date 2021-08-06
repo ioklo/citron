@@ -9,7 +9,7 @@ using static Gum.IR0Translator.AnalyzeErrorCode;
 
 namespace Gum.Test.IntegrateTest
 {
-    class StructTestData : IntegrateTestData<StructTestData>
+    public class StructTestData : IntegrateTestData<StructTestData>
     {
         public static string ModuleName = "TestModule";
 
@@ -19,26 +19,26 @@ namespace Gum.Test.IntegrateTest
             var code = @"
 struct S
 {
-int x;
-int y;
+    int x;
+    int y;
 }
 ";
 
             var sscript = SScript(
-                new S.TypeDeclScriptElement(new S.StructDecl(null, "S", Arr<string>(), Arr<S.TypeExp>(), Arr<S.StructDeclElement>(
-                    new S.VarStructDeclElement(null, IntTypeExp, Arr<string>("x")),
-                    new S.VarStructDeclElement(null, IntTypeExp, Arr<string>("y"))
+                new S.TypeDeclScriptElement(new S.StructDecl(null, "S", Arr<string>(), Arr<S.TypeExp>(), Arr<S.StructMemberDecl>(
+                    new S.StructMemberVarDecl(null, SIntTypeExp(), Arr<string>("x")),
+                    new S.StructMemberVarDecl(null, SIntTypeExp(), Arr<string>("y"))
                 )))
             );
 
             R.Path.Nested SPath() => new R.Path.Nested(new R.Path.Root("TestModule"), "S", R.ParamHash.None, default);
 
             var rscript = RScript(ModuleName, Arr<R.Decl>(
-                new R.StructDecl(R.AccessModifier.Private, "S", Arr<string>(), Arr<R.Path>(), Arr<R.StructDecl.MemberDecl>(
-                    new R.StructDecl.MemberDecl.Var(R.AccessModifier.Public, R.Path.Int, Arr<string>("x")),
-                    new R.StructDecl.MemberDecl.Var(R.AccessModifier.Public, R.Path.Int, Arr<string>("y")),
+                new R.StructDecl(R.AccessModifier.Private, "S", Arr<string>(), Arr<R.Path>(), Arr<R.StructMemberDecl>(
+                    new R.StructMemberVarDecl(R.AccessModifier.Public, R.Path.Int, Arr<string>("x")),
+                    new R.StructMemberVarDecl(R.AccessModifier.Public, R.Path.Int, Arr<string>("y")),
 
-                    new R.StructDecl.MemberDecl.Constructor(
+                    new R.StructConstructorDecl(
                         R.AccessModifier.Public,
                         default,
                         Arr(
@@ -67,15 +67,15 @@ int y;
             var code = @"
 struct S
 {
-S(int x) { }
+    S(int x) { }
 }
 ";
 
             var sscript = SScript(
-                new S.TypeDeclScriptElement(new S.StructDecl(null, "S", Arr<string>(), Arr<S.TypeExp>(), Arr<S.StructDeclElement>(
-                    // new S.VarStructDeclElement(null, IntTypeExp, Arr<string>("x")),
+                new S.TypeDeclScriptElement(new S.StructDecl(null, "S", Arr<string>(), Arr<S.TypeExp>(), Arr<S.StructMemberDecl>(
+                    // new S.StructMemberVarDecl(null, SIntTypeExp(), Arr<string>("x")),
 
-                    new S.ConstructorStructDeclElement(null, "S", Arr<S.FuncParam>(new S.FuncParam(S.FuncParamKind.Normal, IntTypeExp, "x")), SBlock(
+                    new S.StructConstructorDecl(null, "S", Arr<S.FuncParam>(new S.FuncParam(S.FuncParamKind.Normal, SIntTypeExp(), "x")), SBlock(
                     // new S.ExpStmt(new S.BinaryOpExp(S.BinaryOpKind.Assign, new S.MemberExp(SId("this"), "x", default), SId("x")))
                     ))
                 )))
@@ -83,16 +83,16 @@ S(int x) { }
 
             var rscript = RScript(ModuleName,
                 Arr<R.Decl>(
-                    new R.StructDecl(R.AccessModifier.Private, "S", Arr<string>(), Arr<R.Path>(), Arr<R.StructDecl.MemberDecl>(
+                    new R.StructDecl(R.AccessModifier.Private, "S", Arr<string>(), Arr<R.Path>(), Arr<R.StructMemberDecl>(
 
-                        new R.StructDecl.MemberDecl.Constructor(
+                        new R.StructConstructorDecl(
                             R.AccessModifier.Public,
                             default,
                             Arr(new R.Param(R.ParamKind.Normal, R.Path.Int, "x")),
                             RBlock()
                         ),
 
-                        new R.StructDecl.MemberDecl.Constructor(
+                        new R.StructConstructorDecl(
                             R.AccessModifier.Public,
                             default,
                             default,
@@ -110,14 +110,14 @@ S(int x) { }
             var code = @"
 struct S
 {
-F() { }
+    F() { }
 }
 ";
-            S.ConstructorStructDeclElement errorNode;
+            S.StructConstructorDecl errorNode;
             // Parsing단계에서는 걸러내지 못하고, Translation 단계에서 걸러낸다
             var sscript = SScript(
-                new S.TypeDeclScriptElement(new S.StructDecl(null, "S", Arr<string>(), Arr<S.TypeExp>(), Arr<S.StructDeclElement>(
-                    errorNode = new S.ConstructorStructDeclElement(null, "F", Arr<S.FuncParam>(), SBlock())
+                new S.TypeDeclScriptElement(new S.StructDecl(null, "S", Arr<string>(), Arr<S.TypeExp>(), Arr<S.StructMemberDecl>(
+                    errorNode = new S.StructConstructorDecl(null, "F", Arr<S.FuncParam>(), SBlock())
                 )))
             );
 
@@ -129,30 +129,30 @@ F() { }
             var code = @"
 struct S
 {
-S(int x) { @{$x} } // x출력
+    S(int x) { @{$x} } // x출력
 }
 
 var s = S(3);
 ";
 
             var sscript = SScript(
-                new S.TypeDeclScriptElement(new S.StructDecl(null, "S", Arr<string>(), Arr<S.TypeExp>(), Arr<S.StructDeclElement>(
+                new S.TypeDeclScriptElement(new S.StructDecl(null, "S", Arr<string>(), Arr<S.TypeExp>(), Arr<S.StructMemberDecl>(
 
-                    new S.ConstructorStructDeclElement(null, "S", Arr<S.FuncParam>(new S.FuncParam(S.FuncParamKind.Normal, IntTypeExp, "x")), SBlock(
+                    new S.StructConstructorDecl(null, "S", Arr<S.FuncParam>(new S.FuncParam(S.FuncParamKind.Normal, SIntTypeExp(), "x")), SBlock(
                         new S.CommandStmt(Arr(new S.StringExp(Arr<S.StringExpElement>(new S.ExpStringExpElement(SId("x"))))))
                     ))
                 ))),
 
-                new S.StmtScriptElement(new S.VarDeclStmt(new S.VarDecl(false, VarTypeExp, Arr(new S.VarDeclElement(
+                new S.StmtScriptElement(new S.VarDeclStmt(new S.VarDecl(false, SVarTypeExp(), Arr(new S.VarDeclElement(
                     "s", new S.VarDeclElemInitializer(false, new S.CallExp(SId("S"), Arr<S.Argument>(new S.Argument.Normal(SInt(3)))))
                 )))))
             );
 
             var rscript = RScript(ModuleName,
                 Arr<R.Decl>(
-                    new R.StructDecl(R.AccessModifier.Private, "S", Arr<string>(), Arr<R.Path>(), Arr<R.StructDecl.MemberDecl>(
+                    new R.StructDecl(R.AccessModifier.Private, "S", Arr<string>(), Arr<R.Path>(), Arr<R.StructMemberDecl>(
 
-                        new R.StructDecl.MemberDecl.Constructor(
+                        new R.StructConstructorDecl(
                             R.AccessModifier.Public,
                             default,
                             Arr(new R.Param(R.ParamKind.Normal, R.Path.Int, "x")),
@@ -161,7 +161,7 @@ var s = S(3);
                             )))
                         ),
 
-                        new R.StructDecl.MemberDecl.Constructor(
+                        new R.StructConstructorDecl(
                             R.AccessModifier.Public,
                             default,
                             default,
@@ -199,16 +199,16 @@ var s = S(3);
 @${s.x}
 ";
             var sscript = SScript(
-                new S.TypeDeclScriptElement(new S.StructDecl(null, "S", Arr<string>(), Arr<S.TypeExp>(), Arr<S.StructDeclElement>(
+                new S.TypeDeclScriptElement(new S.StructDecl(null, "S", Arr<string>(), Arr<S.TypeExp>(), Arr<S.StructMemberDecl>(
 
-                    new S.VarStructDeclElement(null, IntTypeExp, Arr("x")),
+                    new S.StructMemberVarDecl(null, SIntTypeExp(), Arr("x")),
 
-                    new S.ConstructorStructDeclElement(null, "S", Arr<S.FuncParam>(new S.FuncParam(S.FuncParamKind.Normal, IntTypeExp, "x")), SBlock(
+                    new S.StructConstructorDecl(null, "S", Arr<S.FuncParam>(new S.FuncParam(S.FuncParamKind.Normal, SIntTypeExp(), "x")), SBlock(
                         new S.ExpStmt(new S.BinaryOpExp(S.BinaryOpKind.Assign, new S.MemberExp(SId("this"), "x", default), SId("x")))
                     ))
                 ))),
 
-                new S.StmtScriptElement(new S.VarDeclStmt(new S.VarDecl(false, VarTypeExp, Arr(new S.VarDeclElement(
+                new S.StmtScriptElement(new S.VarDeclStmt(new S.VarDecl(false, SVarTypeExp(), Arr(new S.VarDeclElement(
                     "s", new S.VarDeclElemInitializer(false, new S.CallExp(SId("S"), Arr<S.Argument>(new S.Argument.Normal(SInt(3)))))
                 ))))),
 
@@ -221,11 +221,11 @@ var s = S(3);
 
             var rscript = RScript(ModuleName,
                 Arr<R.Decl>(
-                    new R.StructDecl(R.AccessModifier.Private, "S", Arr<string>(), Arr<R.Path>(), Arr<R.StructDecl.MemberDecl>(
+                    new R.StructDecl(R.AccessModifier.Private, "S", Arr<string>(), Arr<R.Path>(), Arr<R.StructMemberDecl>(
 
-                        new R.StructDecl.MemberDecl.Var(R.AccessModifier.Public, R.Path.Int, Arr("x")),
+                        new R.StructMemberVarDecl(R.AccessModifier.Public, R.Path.Int, Arr("x")),
 
-                        new R.StructDecl.MemberDecl.Constructor(
+                        new R.StructConstructorDecl(
                             R.AccessModifier.Public,
                             default,
                             Arr(new R.Param(R.ParamKind.Normal, R.Path.Int, "x")),
@@ -275,13 +275,13 @@ var s = S(3);       // but can do this
 @${s.x}
 ";
             var sscript = SScript(
-                new S.TypeDeclScriptElement(new S.StructDecl(null, "S", Arr<string>(), Arr<S.TypeExp>(), Arr<S.StructDeclElement>(
+                new S.TypeDeclScriptElement(new S.StructDecl(null, "S", Arr<string>(), Arr<S.TypeExp>(), Arr<S.StructMemberDecl>(
 
-                    new S.VarStructDeclElement(null, IntTypeExp, Arr("x"))
+                    new S.StructMemberVarDecl(null, SIntTypeExp(), Arr("x"))
 
                 ))),
 
-                new S.StmtScriptElement(new S.VarDeclStmt(new S.VarDecl(false, VarTypeExp, Arr(new S.VarDeclElement(
+                new S.StmtScriptElement(new S.VarDeclStmt(new S.VarDecl(false, SVarTypeExp(), Arr(new S.VarDeclElement(
                     "s", new S.VarDeclElemInitializer(false, new S.CallExp(SId("S"), Arr<S.Argument>(new S.Argument.Normal(SInt(3)))))
                 ))))),
 
@@ -294,11 +294,11 @@ var s = S(3);       // but can do this
 
             var rscript = RScript(ModuleName,
                 Arr<R.Decl>(
-                    new R.StructDecl(R.AccessModifier.Private, "S", Arr<string>(), Arr<R.Path>(), Arr<R.StructDecl.MemberDecl>(
+                    new R.StructDecl(R.AccessModifier.Private, "S", Arr<string>(), Arr<R.Path>(), Arr<R.StructMemberDecl>(
 
-                        new R.StructDecl.MemberDecl.Var(R.AccessModifier.Public, R.Path.Int, Arr("x")),
+                        new R.StructMemberVarDecl(R.AccessModifier.Public, R.Path.Int, Arr("x")),
 
-                        new R.StructDecl.MemberDecl.Constructor(
+                        new R.StructConstructorDecl(
                             R.AccessModifier.Public,
                             default,
                             Arr(new R.Param(R.ParamKind.Normal, R.Path.Int, "x")),
@@ -349,13 +349,13 @@ s.x = 3;
 @${s.x}
 ";
             var sscript = SScript(
-                new S.TypeDeclScriptElement(new S.StructDecl(null, "S", Arr<string>(), Arr<S.TypeExp>(), Arr<S.StructDeclElement>(
+                new S.TypeDeclScriptElement(new S.StructDecl(null, "S", Arr<string>(), Arr<S.TypeExp>(), Arr<S.StructMemberDecl>(
 
-                    new S.VarStructDeclElement(null, IntTypeExp, Arr("x"))
+                    new S.StructMemberVarDecl(null, SIntTypeExp(), Arr("x"))
 
                 ))),
 
-                new S.StmtScriptElement(new S.VarDeclStmt(new S.VarDecl(false, VarTypeExp, Arr(new S.VarDeclElement(
+                new S.StmtScriptElement(new S.VarDeclStmt(new S.VarDecl(false, SVarTypeExp(), Arr(new S.VarDeclElement(
                     "s", new S.VarDeclElemInitializer(false, new S.CallExp(SId("S"), Arr<S.Argument>(new S.Argument.Normal(SInt(2)))))
                 ))))),
 
@@ -370,11 +370,11 @@ s.x = 3;
 
             var rscript = RScript(ModuleName,
                 Arr<R.Decl>(
-                    new R.StructDecl(R.AccessModifier.Private, "S", Arr<string>(), Arr<R.Path>(), Arr<R.StructDecl.MemberDecl>(
+                    new R.StructDecl(R.AccessModifier.Private, "S", Arr<string>(), Arr<R.Path>(), Arr<R.StructMemberDecl>(
 
-                        new R.StructDecl.MemberDecl.Var(R.AccessModifier.Public, R.Path.Int, Arr("x")),
+                        new R.StructMemberVarDecl(R.AccessModifier.Public, R.Path.Int, Arr("x")),
 
-                        new R.StructDecl.MemberDecl.Constructor(
+                        new R.StructConstructorDecl(
                             R.AccessModifier.Public,
                             default,
                             Arr(new R.Param(R.ParamKind.Normal, R.Path.Int, "x")),
@@ -483,8 +483,8 @@ var s = S(3);
             var code = @"
 struct S
 {
-int x;
-int F(int y) { return x + y; }
+    int x;
+    int F(int y) { return x + y; }
 }
 
 var s = S(3);
@@ -493,19 +493,19 @@ var i = s.F(2);
 ";
 
             var sscript = SScript(
-                new S.TypeDeclScriptElement(new S.StructDecl(null, "S", Arr<string>(), Arr<S.TypeExp>(), Arr<S.StructDeclElement>(
+                new S.TypeDeclScriptElement(new S.StructDecl(null, "S", Arr<string>(), Arr<S.TypeExp>(), Arr<S.StructMemberDecl>(
 
-                    new S.VarStructDeclElement(null, IntTypeExp, Arr("x")),
-                    new S.FuncStructDeclElement(new S.StructFuncDecl(null, false, false, false, IntTypeExp, "F", default, Arr(new S.FuncParam(S.FuncParamKind.Normal, IntTypeExp, "y")), SBlock(
+                    new S.StructMemberVarDecl(null, SIntTypeExp(), Arr("x")),
+                    new S.StructMemberFuncDecl(null, false, false, false, SIntTypeExp(), "F", default, Arr(new S.FuncParam(S.FuncParamKind.Normal, SIntTypeExp(), "y")), SBlock(
                         new S.ReturnStmt(new S.ReturnValueInfo(false, new S.BinaryOpExp(S.BinaryOpKind.Add, SId("x"), SId("y"))))
-                    )))
+                    ))
                 ))),
 
-                new S.StmtScriptElement(new S.VarDeclStmt(new S.VarDecl(false, VarTypeExp, Arr(new S.VarDeclElement(
+                new S.StmtScriptElement(new S.VarDeclStmt(new S.VarDecl(false, SVarTypeExp(), Arr(new S.VarDeclElement(
                     "s", new S.VarDeclElemInitializer(false, new S.CallExp(SId("S"), Arr<S.Argument>(new S.Argument.Normal(SInt(3)))))
                 ))))),
 
-                new S.StmtScriptElement(new S.VarDeclStmt(new S.VarDecl(false, VarTypeExp, Arr(new S.VarDeclElement(
+                new S.StmtScriptElement(new S.VarDeclStmt(new S.VarDecl(false, SVarTypeExp(), Arr(new S.VarDeclElement(
                     "i", new S.VarDeclElemInitializer(false, new S.CallExp(new S.MemberExp(SId("s"), "F", default), Arr<S.Argument>(new S.Argument.Normal(SInt(2)))))
                 ))))),
 
@@ -518,10 +518,10 @@ var i = s.F(2);
 
             var rscript = RScript(ModuleName,
                 Arr<R.Decl>(
-                    new R.StructDecl(R.AccessModifier.Private, "S", Arr<string>(), Arr<R.Path>(), Arr<R.StructDecl.MemberDecl>(
-                        new R.StructDecl.MemberDecl.Var(R.AccessModifier.Public, R.Path.Int, Arr<string>("x")),
+                    new R.StructDecl(R.AccessModifier.Private, "S", Arr<string>(), Arr<R.Path>(), Arr<R.StructMemberDecl>(
+                        new R.StructMemberVarDecl(R.AccessModifier.Public, R.Path.Int, Arr<string>("x")),
 
-                        new R.StructDecl.MemberDecl.Func(default, "F", true, default, Arr(new R.Param(R.ParamKind.Normal, R.Path.Int, "y")), RBlock(
+                        new R.StructMemberFuncDecl(default, "F", true, default, Arr(new R.Param(R.ParamKind.Normal, R.Path.Int, "y")), RBlock(
                             new R.ReturnStmt(new R.ReturnInfo.Expression(new R.CallInternalBinaryOperatorExp(
                                 R.InternalBinaryOperator.Add_Int_Int_Int,
                                 new R.LoadExp(new R.StructMemberLoc(R.ThisLoc.Instance, SPath().Child("x"))),
@@ -529,7 +529,7 @@ var i = s.F(2);
                             )))
                         )),
 
-                        new R.StructDecl.MemberDecl.Constructor(
+                        new R.StructConstructorDecl(
                             R.AccessModifier.Public,
                             default,
                             Arr(
@@ -577,9 +577,9 @@ var i = s.F(2);
             var code = @"
 struct S
 {
-int x;
-void SetX(int x) { this.x = x; }
-void Print() { @{$x} }
+    int x;
+    void SetX(int x) { this.x = x; }
+    void Print() { @{$x} }
 }
 
 var s1 = S(3);
@@ -612,8 +612,8 @@ s.F();
             var code = @"
 struct S
 {
-private void E() { @{hi} }
-void F() { E(); }
+    private void E() { @{hi} }
+    void F() { E(); }
 }
 
 var s = S();
@@ -629,11 +629,11 @@ s.F();
             var code = @"
 struct S
 {
-int x;
-seq int F()
-{
-    yield x + 1;
-}
+    int x;
+    seq int F()
+    {
+        yield x + 1;
+    }
 }
 
 var s = S(3);
@@ -669,17 +669,17 @@ foreach(var i in s.F())
 
         ////            var sscript = SScript(
         ////                new S.TypeDeclScriptElement(new S.StructDecl(null, "S", Arr<string>(), Arr<S.TypeExp>(), Arr<S.StructDeclElement>(
-        ////                    new S.VarStructDeclElement(null, IntTypeExp, Arr<string>("x")),
-        ////                    new S.ConstructorStructDeclElement(null,
+        ////                    new S.StructMemberVarDecl(null, SIntTypeExp(), Arr<string>("x")),
+        ////                    new S.StructConstructorDecl(null,
 
 
         ////                )))
         ////            );
 
         ////            var rscript = RScript(ModuleName, Arr<R.Decl>(
-        ////                new R.StructDecl(R.AccessModifier.Private, "S", Arr<string>(), Arr<R.Path>(), Arr<R.StructDecl.MemberDecl>(
-        ////                    new R.StructDecl.MemberDecl.Var(R.AccessModifier.Public, R.Path.Int, Arr<string>("x")),
-        ////                    new R.StructDecl.MemberDecl.Var(R.AccessModifier.Public, R.Path.Int, Arr<string>("y"))
+        ////                new R.StructDecl(R.AccessModifier.Private, "S", Arr<string>(), Arr<R.Path>(), Arr<R.StructMemberDecl>(
+        ////                    new R.StructMemberVarDecl(R.AccessModifier.Public, R.Path.Int, Arr<string>("x")),
+        ////                    new R.StructMemberVarDecl(R.AccessModifier.Public, R.Path.Int, Arr<string>("y"))
         ////                ))
         ////            ));
 

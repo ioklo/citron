@@ -32,7 +32,7 @@ namespace Gum.IR0Evaluator
 
                 foreach (var decl in decl.MemberDecls)
                 {
-                    if (decl is R.StructDecl.MemberDecl.Var varDecl)
+                    if (decl is R.StructMemberVarDecl varDecl)
                     {
                         foreach (var name in varDecl.Names)
                         {

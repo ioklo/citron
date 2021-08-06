@@ -52,7 +52,7 @@ namespace Gum.IR0Translator
                 newCollector.AddSkeleton(enumElemSkel);
             }
 
-            var enumPathEntry = new ItemPathEntry(enumDecl.Name, enumDecl.TypeParamCount);
+            var enumPathEntry = new ItemPathEntry(enumDecl.Name, enumDecl.TypeParams.Length);
             var enumSkeleton = new TypeSkeleton(enumPathEntry, newCollector.skeletonsBuilder.ToImmutable());
             AddSkeleton(enumSkeleton);
         }
@@ -64,13 +64,13 @@ namespace Gum.IR0Translator
             {
                 switch(elem)
                 {
-                    case S.TypeStructDeclElement typeElem:
-                        newCollector.VisitTypeDecl(typeElem.TypeDecl);
+                    case S.StructMemberTypeDecl typeDecl:
+                        newCollector.VisitTypeDecl(typeDecl.TypeDecl);
                         break;
                 }
             }
 
-            var pathEntry = new ItemPathEntry(structDecl.Name, structDecl.TypeParamCount);
+            var pathEntry = new ItemPathEntry(structDecl.Name, structDecl.TypeParams.Length);
             var skeleton = new TypeSkeleton(pathEntry, newCollector.skeletonsBuilder.ToImmutable());
             AddSkeleton(skeleton);
         }

@@ -1,23 +1,25 @@
-﻿using System.Collections.Generic;
-using Gum.Collections;
+﻿using Gum.Collections;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
+
 using Gum.Infra;
-using Pretune;
 
 namespace Gum.IR0
 {
-    public partial record StructDecl(
+    public partial record ClassDecl(
         AccessModifier AccessModifier,
         string Name,
         ImmutableArray<string> TypeParams,
         ImmutableArray<Path> BaseTypes,
-        ImmutableArray<StructMemberDecl> MemberDecls
+        ImmutableArray<ClassMemberDecl> MemberDecls
     ) : Decl
-    {   
+    {
         public override void EnsurePure()
         {
-            Misc.EnsurePure(TypeParams);
-            Misc.EnsurePure(BaseTypes);
+            Misc.EnsurePure(MemberDecls);
         }
     }
 }

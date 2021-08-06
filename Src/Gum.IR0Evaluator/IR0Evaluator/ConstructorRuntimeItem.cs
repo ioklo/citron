@@ -18,7 +18,7 @@ namespace Gum.IR0Evaluator
         partial class IR0ConstructorRuntimeItem : ConstructorRuntimeItem
         {
             GlobalContext globalContext;
-            R.StructDecl.MemberDecl.Constructor constructor;
+            R.StructConstructorDecl constructor;
 
             public override R.Name Name => R.Name.Constructor.Instance;
             public override R.ParamHash ParamHash { get; }

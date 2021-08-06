@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -12,66 +13,108 @@ namespace Gum.Test.IntegrateTest
 {
     public class IntegrateTestData
     {
-        static List<(string Desc, Func<TestData> MakeTestData)> infos;
-        public static object lockObj;        
-
-        public static (string Desc, Func<TestData> MakeTestData) GetInfo(int index) => infos[index];
-        protected static void AddInfo(string desc, Func<TestData> makeTestData)
+        static bool bInit = false;
+        
+        // DONT TRUST static constructor
+        public static void Initialize()
         {
-            infos.Add((desc, makeTestData));
+            if (bInit) return;
+            bInit = true;
+
+            ClassTestData.Initialize();
+            StructTestData.Initialize();            
         }
-        public static int GetInfosCount() => infos.Count;
+
+        static Dictionary<Type, List<(string Desc, Func<TestData> MakeTestData)>> infos;
+
+        public static (string Desc, Func<TestData> MakeTestData) GetInfo(Type type, int index)
+        {
+            return infos[type][index];
+        }
+
+        public static void AddInfo(Type type, string desc, Func<TestData> makeTestData)
+        {
+            if (!infos.TryGetValue(type, out var list))
+            {
+                list = new List<(string Desc, Func<TestData> MakeTestData)>();
+                infos.Add(type, list);
+            }
+
+            list.Add((desc, makeTestData));
+        }
+
+        public static int GetInfosCount()
+        {
+            return infos.Values.Sum(value => value.Count);
+        }
+
+        public static IEnumerable<(string typeName, string Desc, Func<TestData> MakeTestData)> GetAllInfos()
+        {
+
+            foreach (var (type, list) in infos)
+            {
+                foreach (var item in list)
+                    yield return (type.Name, item.Desc, item.MakeTestData);
+            }
+        }
 
         static IntegrateTestData()
         {
-            infos = new List<(string Desc, Func<TestData> MakeTestData)>();
-            lockObj = new object();
+            infos = new Dictionary<Type, List<(string Desc, Func<TestData> MakeTestData)>>();
+            Initialize();
         }
     }
 
-    class IntegrateTestData<TTestData> : IntegrateTestData, IEnumerable<object[]>
+    public class IntegrateTestData<TTestData> : IEnumerable<object[]>
     {
-        static int startIndex, endIndex;
-
+        static int count;
+        static bool bInit;
+        
         static IntegrateTestData()
         {
+            bInit = false;
+            IntegrateTestData.Initialize();
+        }
+
+        public static void Initialize()
+        {
+            if (bInit) return;
+            bInit = true;
+
             var regex = new Regex(@"Make_([\w_]+)$");
-
-            lock (lockObj)
+            
+            count = 0;
+            foreach (var methodInfo in typeof(TTestData).GetMethods(BindingFlags.NonPublic | BindingFlags.Static))
             {
-                startIndex = GetInfosCount();
+                var match = regex.Match(methodInfo.Name);
+                if (!match.Success) continue;
 
-                int count = 1;
-                foreach (var methodInfo in typeof(TTestData).GetMethods(BindingFlags.NonPublic | BindingFlags.Static))
-                {
-                    var match = regex.Match(methodInfo.Name);
-                    if (!match.Success) continue;
+                var desc = match.Groups[1].Value;
+                Func<TestData> invoker = () => ((TestData)methodInfo.Invoke(null, null)!);
+                IntegrateTestData.AddInfo(typeof(TTestData), $"F{(count + 1).ToString("D2")}_{desc}", invoker);
 
-                    var desc = match.Groups[1].Value;
-                    Func<TestData> invoker = () => ((TestData)methodInfo.Invoke(null, null)!);
-                    AddInfo($"F{count.ToString("D2")}_{desc}", invoker);
-
-                    count++;
-                }
-
-                endIndex = GetInfosCount();
+                count++;
             }
         }
 
         public IEnumerable<TestDataInfo> GetInfos()
         {
-            for (int i = startIndex; i < endIndex; i++)
-                yield return new TestDataInfo(i);
+            for (int i = 0; i < count; i++)
+                yield return new TestDataInfo(typeof(TTestData), i);
         }
 
         public IEnumerator<object[]> GetEnumerator()
         {
+            Debugger.Break();
+
             foreach (var info in GetInfos())
                 yield return new object[] { info };
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
+            Debugger.Break();
+
             return GetEnumerator();
         }
     }

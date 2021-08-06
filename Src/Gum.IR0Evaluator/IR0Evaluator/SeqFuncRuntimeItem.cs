@@ -62,7 +62,7 @@ namespace Gum.IR0Evaluator
             public override R.ParamHash ParamHash => Misc.MakeParamHash(seqFuncDecl.TypeParams.Length, seqFuncDecl.Parameters);
             public override bool IsThisCall => seqFuncDecl.IsThisCall;
             public override ImmutableArray<R.Param> Parameters => seqFuncDecl.Parameters;
-            R.StructDecl.MemberDecl.SeqFunc seqFuncDecl;
+            R.StructMemberSeqFuncDecl seqFuncDecl;
 
             public override Value Alloc(TypeContext typeContext)
             {

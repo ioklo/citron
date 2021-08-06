@@ -9,6 +9,11 @@ namespace Gum.Test.IntegrateTest
 {
     public class Tests
     {
+        public Tests()
+        {
+            IntegrateTestData.Initialize();
+        }
+
         [Theory]
         [ClassData(typeof(StructTestData))]
         public Task T01_StructTest(TestDataInfo testDataInfo)

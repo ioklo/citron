@@ -1,0 +1,52 @@
+<Playlist Version="2.0">
+  <Rule Name="Includes" Match="Any">
+    <Rule Match="All">
+      <Property Name="Solution" />
+      <Rule Match="Any">
+        <Rule Match="All">
+          <Property Name="Project" Value="Gum.Test.IntegrateTest" />
+          <Rule Match="Any">
+            <Rule Match="All">
+              <Property Name="Namespace" Value="Gum.Test.IntegrateTest" />
+              <Rule Match="Any">
+                <Rule Match="All">
+                  <Property Name="Class" Value="Tests" />
+                  <Rule Match="Any">
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="Gum.Test.IntegrateTest.Tests.T02_ClassTest" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="Gum.Test.IntegrateTest.Tests.T02_ClassTest(testDataInfo: F01_Declaration_DeclareMemberVar_TranslateProperly)" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="Gum.Test.IntegrateTest.Tests.T01_StructTest" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="Gum.Test.IntegrateTest.Tests.T01_StructTest(testDataInfo: F01_Declaration_DeclareMemberVar_TranslateProperly)" />
+                        <Property Name="DisplayName" Value="Gum.Test.IntegrateTest.Tests.T01_StructTest(testDataInfo: F02_Constructor_Declaration_WorksProperly)" />
+                        <Property Name="DisplayName" Value="Gum.Test.IntegrateTest.Tests.T01_StructTest(testDataInfo: F03_Constructor_DeclareNameDifferFromStruct_ReportError)" />
+                        <Property Name="DisplayName" Value="Gum.Test.IntegrateTest.Tests.T01_StructTest(testDataInfo: F04_VarDecl_UsingConstructor_CallConstructor)" />
+                        <Property Name="DisplayName" Value="Gum.Test.IntegrateTest.Tests.T01_StructTest(testDataInfo: F05_Constructor_UsingThis_ReferCurrentInstance)" />
+                        <Property Name="DisplayName" Value="Gum.Test.IntegrateTest.Tests.T01_StructTest(testDataInfo: F06_Constructor_DoesntHaveCorrespondingConstructor_MakeAutomatically)" />
+                        <Property Name="DisplayName" Value="Gum.Test.IntegrateTest.Tests.T01_StructTest(testDataInfo: F07_ReferenceMember_ReadAndWrite_WorksProperly)" />
+                        <Property Name="DisplayName" Value="Gum.Test.IntegrateTest.Tests.T01_StructTest(testDataInfo: F08_ReferenceSelf_Assign_CopyValue)" />
+                        <Property Name="DisplayName" Value="Gum.Test.IntegrateTest.Tests.T01_StructTest(testDataInfo: F09_ReferenceSelf_PassingByValue_CopyValue)" />
+                        <Property Name="DisplayName" Value="Gum.Test.IntegrateTest.Tests.T01_StructTest(testDataInfo: F10_ReferenceSelf_PassingByRef_ReferenceValue)" />
+                        <Property Name="DisplayName" Value="Gum.Test.IntegrateTest.Tests.T01_StructTest(testDataInfo: F11_Access_AccessPrivateMemberOutsideStruct_ReportError)" />
+                        <Property Name="DisplayName" Value="Gum.Test.IntegrateTest.Tests.T01_StructTest(testDataInfo: F12_Access_AccessPrivateConstructorOutsideStruct_ReportError)" />
+                        <Property Name="DisplayName" Value="Gum.Test.IntegrateTest.Tests.T01_StructTest(testDataInfo: F13_MemberFunc_Declaration_WorksProperly)" />
+                        <Property Name="DisplayName" Value="Gum.Test.IntegrateTest.Tests.T01_StructTest(testDataInfo: F14_MemberFunc_ModifySelf_WorksProperly)" />
+                        <Property Name="DisplayName" Value="Gum.Test.IntegrateTest.Tests.T01_StructTest(testDataInfo: F15_Access_AccessPrivateMemberFunc_ReportError)" />
+                        <Property Name="DisplayName" Value="Gum.Test.IntegrateTest.Tests.T01_StructTest(testDataInfo: F16_Access_AccessPrivateMemberFuncInsideMemberFuncOfSameStruct_WorksProperly)" />
+                        <Property Name="DisplayName" Value="Gum.Test.IntegrateTest.Tests.T01_StructTest(testDataInfo: F17_MemberSeqFunc_DependsOnThis_WorksProperly)" />
+                      </Rule>
+                    </Rule>
+                  </Rule>
+                </Rule>
+              </Rule>
+            </Rule>
+          </Rule>
+        </Rule>
+      </Rule>
+    </Rule>
+  </Rule>
+</Playlist>

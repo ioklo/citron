@@ -110,7 +110,7 @@ namespace Gum.IR0Evaluator
                 }
             }
             
-            void EvalStructDeclMemberVarDecl(ItemContainer structContainer, R.StructDecl.MemberDecl.Var varDecl)
+            void EvalStructMemberVarDecl(ItemContainer structContainer, R.StructMemberVarDecl varDecl)
             {
                 foreach (var name in varDecl.Names)
                 {
@@ -119,7 +119,7 @@ namespace Gum.IR0Evaluator
                 }
             }
 
-            void EvalStructDeclConstructorDecl(ItemContainer structContainer, R.StructDecl.MemberDecl.Constructor constructorDecl)
+            void EvalStructConstructorDecl(ItemContainer structContainer, R.StructConstructorDecl constructorDecl)
             {
                 // NOTICE: Constructor는 typeParamCount가 0 이다
                 var paramHash = Misc.MakeParamHash(typeParamCount: 0, constructorDecl.Parameters);
@@ -135,7 +135,7 @@ namespace Gum.IR0Evaluator
                     newDeclEvaluator.EvalDecl(decl);
             }
 
-            void EvalStructDeclMemberFuncDecl(ItemContainer structContainer, R.StructDecl.MemberDecl.Func funcDecl)
+            void EvalStructMemberFuncDecl(ItemContainer structContainer, R.StructMemberFuncDecl funcDecl)
             {
                 var paramHash = Misc.MakeParamHash(funcDecl.TypeParams.Length, funcDecl.Parameters);
                 var runtimeItem = new IR0StructFuncRuntimeItem(globalContext, funcDecl);
@@ -150,7 +150,7 @@ namespace Gum.IR0Evaluator
                     newDeclEvaluator.EvalDecl(decl);
             }
 
-            void EvalStructDeclMemberSeqFuncDecl(ItemContainer structContainer, R.StructDecl.MemberDecl.SeqFunc seqFuncDecl)
+            void EvalStructMemberSeqFuncDecl(ItemContainer structContainer, R.StructMemberSeqFuncDecl seqFuncDecl)
             {
                 var itemContainer = new ItemContainer();
 
@@ -167,24 +167,24 @@ namespace Gum.IR0Evaluator
                     newDeclEvaluator.EvalDecl(decl);
             }
 
-            void EvalStructDeclMemberDecl(ItemContainer structContainer, R.StructDecl.MemberDecl memberDecl)
+            void EvalStructMemberDecl(ItemContainer structContainer, R.StructMemberDecl memberDecl)
             {
                 switch(memberDecl)
                 {
-                    case R.StructDecl.MemberDecl.Var varDecl:
-                        EvalStructDeclMemberVarDecl(structContainer, varDecl);
+                    case R.StructMemberVarDecl varDecl:
+                        EvalStructMemberVarDecl(structContainer, varDecl);
                         break;
 
-                    case R.StructDecl.MemberDecl.Constructor constructorDecl:
-                        EvalStructDeclConstructorDecl(structContainer, constructorDecl);
+                    case R.StructConstructorDecl constructorDecl:
+                        EvalStructConstructorDecl(structContainer, constructorDecl);
                         break;
 
-                    case R.StructDecl.MemberDecl.Func funcDecl:
-                        EvalStructDeclMemberFuncDecl(structContainer, funcDecl);
+                    case R.StructMemberFuncDecl funcDecl:
+                        EvalStructMemberFuncDecl(structContainer, funcDecl);
                         break;
 
-                    case R.StructDecl.MemberDecl.SeqFunc seqFuncDecl:
-                        EvalStructDeclMemberSeqFuncDecl(structContainer, seqFuncDecl);
+                    case R.StructMemberSeqFuncDecl seqFuncDecl:
+                        EvalStructMemberSeqFuncDecl(structContainer, seqFuncDecl);
                         break;
 
                     default:
@@ -197,7 +197,7 @@ namespace Gum.IR0Evaluator
                 var structContainer = new ItemContainer();
                 foreach (var memberDecl in structDecl.MemberDecls)
                 {
-                    EvalStructDeclMemberDecl(structContainer, memberDecl);
+                    EvalStructMemberDecl(structContainer, memberDecl);
                 }
 
                 curContainer.AddItemContainer(structDecl.Name, new R.ParamHash(structDecl.TypeParams.Length, default), structContainer);

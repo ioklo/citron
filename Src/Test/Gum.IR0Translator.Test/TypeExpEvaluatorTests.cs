@@ -38,7 +38,7 @@ namespace Gum.IR0Translator.Test
         {
             S.TypeExp intTypeExp;
 
-            var script = SScript(SVarDeclStmt(intTypeExp = IntTypeExp, "x"));
+            var script = SScript(SVarDeclStmt(intTypeExp = SIntTypeExp(), "x"));
 
             var result = Evaluate(script);
 
@@ -52,14 +52,14 @@ namespace Gum.IR0Translator.Test
         [Fact]
         public void EvaluateType_CompositionOfTypeExp_OnlyWholeTypeExpAddedToDictionary()
         {
-            var innerTypeExp = SIdTypeExp("X", IntTypeExp);
+            var innerTypeExp = SIdTypeExp("X", SIntTypeExp());
             var typeExp = new S.MemberTypeExp(innerTypeExp, "Y", Arr<S.TypeExp>());
 
             var script = SScript(
                 new S.TypeDeclScriptElement(new S.StructDecl(
-                    S.AccessModifier.Public, "X", Arr("T"), Arr<S.TypeExp>(), Arr<S.StructDeclElement>(
-                        new S.TypeStructDeclElement(new S.StructDecl(
-                            S.AccessModifier.Public, "Y", Arr<string>(), Arr<S.TypeExp>(), Arr<S.StructDeclElement>()
+                    S.AccessModifier.Public, "X", Arr("T"), Arr<S.TypeExp>(), Arr<S.StructMemberDecl>(
+                        new S.StructMemberTypeDecl(new S.StructDecl(
+                            S.AccessModifier.Public, "Y", Arr<string>(), Arr<S.TypeExp>(), Arr<S.StructMemberDecl>()
                         ))
                     )
                 )),

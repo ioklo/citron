@@ -42,7 +42,7 @@ namespace Gum.IR0Translator
                         break;
 
                     case S.GlobalFuncDeclScriptElement globalFuncDeclElem:
-                        builder.VisitFuncDecl(M.AccessModifier.Private, globalFuncDeclElem.FuncDecl);
+                        builder.VisitGlobalFuncDecl(M.AccessModifier.Private, globalFuncDeclElem.FuncDecl);
                         break;
 
                     // skip
@@ -206,7 +206,7 @@ namespace Gum.IR0Translator
 
         void VisitStructDecl(S.StructDecl structDecl)
         {
-            var newBuilder = NewModuleInfoBuilder(structDecl.Name, structDecl.TypeParamCount, true);
+            var newBuilder = NewModuleInfoBuilder(structDecl.Name, structDecl.TypeParams.Length, true);
             
             if (structDecl.BaseTypes.Length != 0)
                 throw new NotImplementedException();
@@ -225,20 +225,20 @@ namespace Gum.IR0Translator
             {
                 switch (elem)
                 {
-                    case S.FuncStructDeclElement funcDeclElem:
-                        newBuilder.VisitFuncDecl(M.AccessModifier.Public, funcDeclElem.FuncDecl);
+                    case S.StructMemberFuncDecl funcDecl:
+                        newBuilder.VisitStructMemberFuncDecl(M.AccessModifier.Public, funcDecl);
                         break;
 
-                    case S.TypeStructDeclElement typeDeclElem:
-                        newBuilder.VisitTypeDecl(typeDeclElem.TypeDecl);
+                    case S.StructMemberTypeDecl typeDecl:
+                        newBuilder.VisitTypeDecl(typeDecl.TypeDecl);
                         break;
 
-                    case S.VarStructDeclElement varDeclElem:
-                        newBuilder.VisitStructVarDeclElement(varDeclElem);
+                    case S.StructMemberVarDecl varDecl:
+                        newBuilder.VisitStructMemberVarDecl(varDecl);
                         break;
 
-                    case S.ConstructorStructDeclElement constructorDeclElem:
-                        newBuilder.VisitStructConstructorDeclElement(constructorDeclElem);
+                    case S.StructConstructorDecl constructorDecl:
+                        newBuilder.VisitStructConstructorDeclElement(constructorDecl);
                         break;
 
                     default:
@@ -282,7 +282,53 @@ namespace Gum.IR0Translator
             return builder.MoveToImmutable();
         }
 
-        void VisitFuncDecl(M.AccessModifier defaultAccessModifier, S.FuncDecl funcDecl)
+        void VisitStructMemberFuncDecl(M.AccessModifier defaultAccessModifier, S.StructMemberFuncDecl funcDecl)
+        {            
+            bool bThisCall = IsInsideTypeScope(); // TODO: static 키워드가 추가되면 고려하도록 한다
+
+            var retType = GetMType(funcDecl.RetType);
+            if (retType == null) throw new FatalException();
+
+            var paramInfo = MakeParams(funcDecl.Parameters);
+
+            M.AccessModifier accessModifier;
+            switch (funcDecl.AccessModifier)
+            {
+                case null: accessModifier = defaultAccessModifier; break;
+                case S.AccessModifier.Public:
+                    if (defaultAccessModifier == M.AccessModifier.Public) throw new FatalException();
+                    accessModifier = M.AccessModifier.Public;
+                    break;
+
+                case S.AccessModifier.Protected:
+                    if (defaultAccessModifier == M.AccessModifier.Protected) throw new FatalException();
+                    accessModifier = M.AccessModifier.Protected;
+                    break;
+
+                case S.AccessModifier.Private:
+                    if (defaultAccessModifier == M.AccessModifier.Private) throw new FatalException();
+                    accessModifier = M.AccessModifier.Private;
+                    break;
+
+                default:
+                    throw new UnreachableCodeException();
+            }
+
+            var funcInfo = new InternalModuleFuncInfo(
+                accessModifier,
+                bInstanceFunc: bThisCall,
+                bSeqFunc: funcDecl.IsSequence,
+                bRefReturn: funcDecl.IsRefReturn,
+                retType,
+                funcDecl.Name,
+                funcDecl.TypeParams,
+                paramInfo
+            );
+
+            funcs.Add(funcInfo);
+        }
+
+        void VisitGlobalFuncDecl(M.AccessModifier defaultAccessModifier, S.GlobalFuncDecl funcDecl)
         {
             bool bMemberFunc = IsInsideTypeScope();
             bool bThisCall = IsInsideTypeScope(); // TODO: static 키워드가 추가되면 고려하도록 한다
@@ -329,13 +375,13 @@ namespace Gum.IR0Translator
             funcs.Add(funcInfo);
         }
 
-        void VisitStructVarDeclElement(S.VarStructDeclElement varDeclElem)
+        void VisitStructMemberVarDecl(S.StructMemberVarDecl varDecl)
         {
-            var declType = GetMType(varDeclElem.VarType);
+            var declType = GetMType(varDecl.VarType);
             if (declType == null)
                 throw new FatalException();
 
-            var accessModifier = varDeclElem.AccessModifier switch
+            var accessModifier = varDecl.AccessModifier switch
             {
                 null => M.AccessModifier.Public,
                 S.AccessModifier.Public => throw new UnreachableCodeException(), // 미리 에러를 잡는다
@@ -344,7 +390,7 @@ namespace Gum.IR0Translator
                 _ => throw new UnreachableCodeException()
             };
 
-            foreach(var name in varDeclElem.VarNames)
+            foreach(var name in varDecl.VarNames)
             {
                 bool bStatic = !IsInsideTypeScope(); // TODO: static 키워드가 추가되면 고려한다
 
@@ -353,10 +399,10 @@ namespace Gum.IR0Translator
             }
         }
 
-        void VisitStructConstructorDeclElement(S.ConstructorStructDeclElement constructorDeclElem)
+        void VisitStructConstructorDeclElement(S.StructConstructorDecl constructorDecl)
         {
             M.AccessModifier accessModifier;
-            switch(constructorDeclElem.AccessModifier)
+            switch(constructorDecl.AccessModifier)
             {
                 case null: accessModifier = M.AccessModifier.Public; break;
                 case S.AccessModifier.Public: throw new FatalException();
@@ -365,9 +411,9 @@ namespace Gum.IR0Translator
                 default: throw new UnreachableCodeException();
             }
 
-            var paramInfo = MakeParams(constructorDeclElem.Parameters);
+            var paramInfo = MakeParams(constructorDecl.Parameters);
 
-            constructors.Add(new InternalModuleConstructorInfo(accessModifier, constructorDeclElem.Name, paramInfo));
+            constructors.Add(new InternalModuleConstructorInfo(accessModifier, constructorDecl.Name, paramInfo));
         }
     }
 }

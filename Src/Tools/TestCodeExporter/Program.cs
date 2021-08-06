@@ -8,21 +8,24 @@ namespace TestCodeExporter
     {
         static void Main(string[] args)
         {
-            int count = IntegrateTestData.GetInfosCount();
+            IntegrateTestData.Initialize();
 
-            for(int i = 0; i < count; i++)
+            int count = IntegrateTestData.GetInfosCount();
+            
+            foreach (var info in IntegrateTestData.GetAllInfos())
             {
-                var info = IntegrateTestData.GetInfo(i);
+                // var info = IntegrateTestData.GetInfo(i);
 
                 var testData = info.MakeTestData();
                 var code = testData.GetCode();
                 if (code == null) continue;
 
-                var tempDir = Directory.CreateDirectory("temp");
+                // var tempDir = Directory.CreateDirectory("temp");
+                var tempDir = Directory.CreateDirectory(Path.Combine("temp", info.typeName));
 
-                using (var writer = new StreamWriter(Path.Combine("temp", $"{info.Desc}.qs")))
+                using (var writer = new StreamWriter(Path.Combine("temp", info.typeName, $"{info.Desc}.qs")))
                     writer.Write(code);
-            }
+            }            
         }
     }
 }
