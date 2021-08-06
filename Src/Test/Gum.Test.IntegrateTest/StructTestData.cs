@@ -1,33 +1,26 @@
-using System;
-using Xunit;
-
+Ôªø
 using S = Gum.Syntax;
 using R = Gum.IR0;
 
 using static Gum.Infra.Misc;
 using static Gum.Syntax.SyntaxFactory;
 using static Gum.IR0.IR0Factory;
-using static Gum.Test.IntegrateTest.Misc;
 using static Gum.IR0Translator.AnalyzeErrorCode;
-using System.Threading.Tasks;
-using Gum.Test.Misc;
 
 namespace Gum.Test.IntegrateTest
 {
-    public class T01_StructTests
+    class StructTestData : IntegrateTestData<StructTestData>
     {
         public static string ModuleName = "TestModule";
 
         // UnitOfWorkName_ScenarioName_ExpectedBehavior
-
-        [Fact]
-        public Task F01_Declaration_DeclareMemberVar_TranslateProperly()
+        static TestData Make_Declaration_DeclareMemberVar_TranslateProperly()
         {
             var code = @"
 struct S
 {
-    int x;
-    int y;
+int x;
+int y;
 }
 ";
 
@@ -66,16 +59,15 @@ struct S
                 ))
             ));
 
-            return TestParseTranslateAsync(code, sscript, rscript);
+            return new ParseTranslateTestData(code, sscript, rscript);
         }
 
-        [Fact]
-        public Task F02_Constructor_Declaration_WorksProperly()
+        static TestData Make_Constructor_Declaration_WorksProperly()
         {
             var code = @"
 struct S
 {
-    S(int x) { }
+S(int x) { }
 }
 ";
 
@@ -84,14 +76,14 @@ struct S
                     // new S.VarStructDeclElement(null, IntTypeExp, Arr<string>("x")),
 
                     new S.ConstructorStructDeclElement(null, "S", Arr<S.FuncParam>(new S.FuncParam(S.FuncParamKind.Normal, IntTypeExp, "x")), SBlock(
-                        // new S.ExpStmt(new S.BinaryOpExp(S.BinaryOpKind.Assign, new S.MemberExp(SId("this"), "x", default), SId("x")))
+                    // new S.ExpStmt(new S.BinaryOpExp(S.BinaryOpKind.Assign, new S.MemberExp(SId("this"), "x", default), SId("x")))
                     ))
                 )))
             );
 
             var rscript = RScript(ModuleName,
                 Arr<R.Decl>(
-                    new R.StructDecl(R.AccessModifier.Private, "S", Arr<string>(), Arr<R.Path>(), Arr<R.StructDecl.MemberDecl>(                       
+                    new R.StructDecl(R.AccessModifier.Private, "S", Arr<string>(), Arr<R.Path>(), Arr<R.StructDecl.MemberDecl>(
 
                         new R.StructDecl.MemberDecl.Constructor(
                             R.AccessModifier.Public,
@@ -110,36 +102,34 @@ struct S
                 )
             );
 
-            return TestParseTranslateAsync(code, sscript, rscript);
+            return new ParseTranslateTestData(code, sscript, rscript);
         }
-
-        [Fact]
-        public Task F03_Constructor_DeclareNameDifferFromStruct_ReportError()
+            
+        static TestData Make_Constructor_DeclareNameDifferFromStruct_ReportError()
         {
             var code = @"
 struct S
 {
-    F() { }
+F() { }
 }
 ";
             S.ConstructorStructDeclElement errorNode;
-            // Parsing¥‹∞Ëø°º≠¥¬ ∞…∑Ø≥ª¡ˆ ∏¯«œ∞Ì, Translation ¥‹∞Ëø°º≠ ∞…∑Ø≥Ω¥Ÿ
+            // ParsingÎã®Í≥ÑÏóêÏÑúÎäî Í±∏Îü¨ÎÇ¥ÏßÄ Î™ªÌïòÍ≥†, Translation Îã®Í≥ÑÏóêÏÑú Í±∏Îü¨ÎÇ∏Îã§
             var sscript = SScript(
                 new S.TypeDeclScriptElement(new S.StructDecl(null, "S", Arr<string>(), Arr<S.TypeExp>(), Arr<S.StructDeclElement>(
                     errorNode = new S.ConstructorStructDeclElement(null, "F", Arr<S.FuncParam>(), SBlock())
                 )))
             );
 
-            return TestParseTranslateWithErrorAsync(code, sscript, A2402_StructDecl_CannotDeclConstructorDifferentWithTypeName, errorNode);
+            return new ParseTranslateWithErrorTestData(code, sscript, A2402_StructDecl_CannotDeclConstructorDifferentWithTypeName, errorNode);
         }
-        
-        [Fact]
-        public Task F04_VarDecl_UsingConstructor_CallConstructor()
+
+        static TestData Make_VarDecl_UsingConstructor_CallConstructor()
         {
             var code = @"
 struct S
 {
-    S(int x) { @{$x} } // x√‚∑¬
+S(int x) { @{$x} } // xÏ∂úÎ†•
 }
 
 var s = S(3);
@@ -163,8 +153,8 @@ var s = S(3);
                     new R.StructDecl(R.AccessModifier.Private, "S", Arr<string>(), Arr<R.Path>(), Arr<R.StructDecl.MemberDecl>(
 
                         new R.StructDecl.MemberDecl.Constructor(
-                            R.AccessModifier.Public, 
-                            default, 
+                            R.AccessModifier.Public,
+                            default,
                             Arr(new R.Param(R.ParamKind.Normal, R.Path.Int, "x")),
                             RBlock(RCommand(RString(new R.ExpStringExpElement(
                                 new R.CallInternalUnaryOperatorExp(R.InternalUnaryOperator.ToString_Int_String, new R.LoadExp(new R.LocalVarLoc("x"))))
@@ -189,7 +179,7 @@ var s = S(3);
                             R.Name.Constructor.Instance,
                             new R.ParamHash(0, Arr(new R.ParamHashEntry(R.ParamKind.Normal, R.Path.Int))),
                             default
-                        ), 
+                        ),
                         Arr<R.Argument>(new R.Argument.Normal(RInt(3)))
                     )
                 )
@@ -197,12 +187,11 @@ var s = S(3);
 
             var result = "3";
 
-            return TestParseTranslateEvalAsync(code, sscript, rscript, result);
+            return new ParseTranslateEvalTestData(code, sscript, rscript, result);
         }
-        
-        // using this
-        [Fact]
-        public Task F05_Constructor_UsingThis_ReferCurrentInstance()
+
+        // using this            
+        static TestData Make_Constructor_UsingThis_ReferCurrentInstance()
         {
             var code = @"
 struct S { int x; S(int x) { this.x = x; } }
@@ -271,21 +260,20 @@ var s = S(3);
                     )
                 ))))
 
-                // @${ s.x}
+            // @${ s.x}
             );
 
-            return TestParseTranslateEvalAsync(code, sscript, rscript, "3");
+            return new ParseTranslateEvalTestData(code, sscript, rscript, "3");
         }
 
-        // ª˝º∫¿⁄∏¶ ¿⁄µø¿∏∑Œ ∏∏µÈ±‚
-        [Fact]
-        public Task F06_Constructor_DoesntHaveCorrespondingConstructor_MakeAutomatically()
+        // ÏÉùÏÑ±ÏûêÎ•º ÏûêÎèôÏúºÎ°ú ÎßåÎì§Í∏∞
+        static TestData Make_Constructor_DoesntHaveCorrespondingConstructor_MakeAutomatically()
         {
             var code = @"
 struct S { int x; } // without constructor S(int x)
 var s = S(3);       // but can do this
 @${s.x}
-"; 
+";
             var sscript = SScript(
                 new S.TypeDeclScriptElement(new S.StructDecl(null, "S", Arr<string>(), Arr<S.TypeExp>(), Arr<S.StructDeclElement>(
 
@@ -348,12 +336,11 @@ var s = S(3);       // but can do this
             // @${ s.x}
             );
 
-            return TestParseTranslateEvalAsync(code, sscript, rscript, "3");
+            return new ParseTranslateEvalTestData(code, sscript, rscript, "3");
 
         }
 
-        [Fact]
-        public Task F07_ReferenceMember_ReadAndWrite_WorksProperly()
+        static TestData Make_ReferenceMember_ReadAndWrite_WorksProperly()
         {
             var code = @"
 struct S { int x; }
@@ -428,11 +415,10 @@ s.x = 3;
                 ))))
             );
 
-            return TestParseTranslateEvalAsync(code, sscript, rscript, "3");
+            return new ParseTranslateEvalTestData(code, sscript, rscript, "3");
         }
 
-        [Fact]
-        public Task F08_ReferenceSelf_Assign_CopyValue()
+        static TestData Make_ReferenceSelf_Assign_CopyValue()
         {
             var code = @"
 struct S { int x; }
@@ -442,14 +428,11 @@ s2 = s1;
 s1.x = 3;
 @{${s2.x}} // 2;
 ";
-            
-            return TestEvalAsync(code, "2");
 
-
+            return new EvalTestData(code, "2");
         }
 
-        [Fact]
-        public Task F09_ReferenceSelf_PassingByValue_CopyValue()
+        static TestData Make_ReferenceSelf_PassingByValue_CopyValue()
         {
             var code = @"
 struct S { int x; }
@@ -460,11 +443,10 @@ F(s);
 @${s.x}
 ";
 
-            return TestEvalAsync(code, "3");
+            return new EvalTestData(code, "3");
         }
 
-        [Fact]
-        public Task F10_ReferenceSelf_PassingByRef_ReferenceValue()
+        static TestData Make_ReferenceSelf_PassingByRef_ReferenceValue()
         {
             var code = @"
 struct S { int x; }
@@ -474,38 +456,35 @@ var s = S(3);
 F(ref s);
 @${s.x}
 ";
-            return TestEvalAsync(code, "2");
+            return new EvalTestData(code, "2");
         }
 
-        [Fact]
-        public Task F11_Access_AccessPrivateMemberOutsideStruct_ReportError()
+        static TestData Make_Access_AccessPrivateMemberOutsideStruct_ReportError()
         {
             var code = @"
 struct S { private int x; }
 var s = S(3);
 @${s.x}
 ";
-            return TestEvalWithErrorAsync(code, A2011_ResolveIdentifier_TryAccessingPrivateMember);
+            return new EvalWithErrorTestData(code, A2011_ResolveIdentifier_TryAccessingPrivateMember);
         }
 
-        [Fact]
-        public Task F12_Access_AccessPrivateConstructorOutsideStruct_ReportError()
+        static TestData Make_Access_AccessPrivateConstructorOutsideStruct_ReportError()
         {
             var code = @"
 struct S { private S(int x) { } }
 var s = S(3);
 ";
-            return TestEvalWithErrorAsync(code, A2011_ResolveIdentifier_TryAccessingPrivateMember);
+            return new EvalWithErrorTestData(code, A2011_ResolveIdentifier_TryAccessingPrivateMember);
         }
-        
-        [Fact]
-        public Task F13_MemberFunc_Declaration_WorksProperly()
+
+        static TestData Make_MemberFunc_Declaration_WorksProperly()
         {
             var code = @"
 struct S
 {
-    int x;
-    int F(int y) { return x + y; }
+int x;
+int F(int y) { return x + y; }
 }
 
 var s = S(3);
@@ -590,18 +569,17 @@ var i = s.F(2);
                 RPrintIntCmdStmt(new R.GlobalVarLoc("i"))
             );
 
-            return TestParseTranslateEvalAsync(code, sscript, rscript, "5");
+            return new ParseTranslateEvalTestData(code, sscript, rscript, "5");
         }
 
-        [Fact]
-        public Task F14_MemberFunc_ModifySelf_WorksProperly()
+        static TestData Make_MemberFunc_ModifySelf_WorksProperly()
         {
             var code = @"
 struct S
 {
-    int x;
-    void SetX(int x) { this.x = x; }
-    void Print() { @{$x} }
+int x;
+void SetX(int x) { this.x = x; }
+void Print() { @{$x} }
 }
 
 var s1 = S(3);
@@ -612,124 +590,121 @@ s2.SetX(17);
 s1.Print();
 s2.Print();
 ";
-            return TestEvalAsync(code, "217");
+            return new EvalTestData(code, "217");
         }
 
-        [Fact]
-        public Task F15_Access_AccessPrivateMemberFunc_ReportError()
+        static TestData Make_Access_AccessPrivateMemberFunc_ReportError()
         {
             var code = @"
 struct S
 {
-    private void F() { }
+private void F() { }
 }
 
 var s = S();
 s.F();
 ";
-            return TestEvalWithErrorAsync(code, A2011_ResolveIdentifier_TryAccessingPrivateMember);
+            return new EvalWithErrorTestData(code, A2011_ResolveIdentifier_TryAccessingPrivateMember);
         }
 
-        [Fact]
-        public Task F16_Access_AccessPrivateMemberFuncInsideMemberFuncOfSameStruct_WorksProperly()
+        static TestData Make_Access_AccessPrivateMemberFuncInsideMemberFuncOfSameStruct_WorksProperly()
         {
             var code = @"
 struct S
 {
-    private void E() { @{hi} }
-    void F() { E(); }
+private void E() { @{hi} }
+void F() { E(); }
 }
 
 var s = S();
 s.F();
 ";
 
-            return TestEvalAsync(code, "hi");
+            return new EvalTestData(code, "hi");
 
         }
 
-        [Fact]
-        public Task F17_MemberSeqFunc_DependsOnThis_WorksProperly()
+        static TestData Make_MemberSeqFunc_DependsOnThis_WorksProperly()
         {
             var code = @"
 struct S
 {
-    int x;
-    seq int F()
-    {
-        yield x + 1;
-    }
+int x;
+seq int F()
+{
+    yield x + 1;
+}
 }
 
 var s = S(3);
 
 foreach(var i in s.F())
-    @$i
-";          
+@$i
+";
 
-            return TestEvalAsync(code, "4");
-
+            return new EvalTestData(code, "4");
         }
 
-        // default¥¬ ¿·±Ò πÃ∑Á¿⁄
-        // ∫Û Struct¥¬ ¿⁄µøª˝º∫¿⁄∞° default constructor ø™«“¿ª «œ±‚ ∂ßπÆø° ±◊≥… ª˝º∫ ∞°¥…«œ¥Ÿ
-        [Fact]
-        public Task FXX_Constructor_DeclStructValueThatDoesntContainMemberVar_UseAutomaticConstructorAsDefaultConstructor()
-        {
-            throw new TestNeedToBeWrittenException();
-        }
-
-        //        // √ ±‚»≠ ±∏πÆ æ¯¿ª∂ß, DefaultConstructor∏¶ ªÁøÎ«ÿº≠
-        //        [Fact]
-        //        public Task F02_VarDecl_NoInitializerWithDefaultConstructor_WorksProperly()
-        //        {
-        //            var code = @"
-        //struct S
+        //// defaultÎäî Ïû†Íπê ÎØ∏Î£®Ïûê
+        //// Îπà StructÎäî ÏûêÎèôÏÉùÏÑ±ÏûêÍ∞Ä default constructor Ïó≠Ìï†ÏùÑ ÌïòÍ∏∞ ÎïåÎ¨∏Ïóê Í∑∏ÎÉ• ÏÉùÏÑ± Í∞ÄÎä•ÌïòÎã§
+        //[Fact]
+        //public Task FXX_Constructor_DeclStructValueThatDoesntContainMemberVar_UseAutomaticConstructorAsDefaultConstructor()
         //{
-        //    int x;
-        //    S() { x = 3; }
+        //    throw new TestNeedToBeWrittenException();
         //}
 
-        //S s; // S() »£√‚
-        //";
+        ////        // Ï¥àÍ∏∞Ìôî Íµ¨Î¨∏ ÏóÜÏùÑÎïå, DefaultConstructorÎ•º ÏÇ¨Ïö©Ìï¥ÏÑú
+        ////        [Fact]
+        ////        public Task F02_VarDecl_NoInitializerWithDefaultConstructor_WorksProperly()
+        ////        {
+        ////            var code = @"
+        ////struct S
+        ////{
+        ////    int x;
+        ////    S() { x = 3; }
+        ////}
 
-        //            var sscript = SScript(
-        //                new S.TypeDeclScriptElement(new S.StructDecl(null, "S", Arr<string>(), Arr<S.TypeExp>(), Arr<S.StructDeclElement>(
-        //                    new S.VarStructDeclElement(null, IntTypeExp, Arr<string>("x")),
-        //                    new S.ConstructorStructDeclElement(null,
+        ////S s; // S() Ìò∏Ï∂ú
+        ////";
+
+        ////            var sscript = SScript(
+        ////                new S.TypeDeclScriptElement(new S.StructDecl(null, "S", Arr<string>(), Arr<S.TypeExp>(), Arr<S.StructDeclElement>(
+        ////                    new S.VarStructDeclElement(null, IntTypeExp, Arr<string>("x")),
+        ////                    new S.ConstructorStructDeclElement(null,
 
 
-        //                )))
-        //            );
+        ////                )))
+        ////            );
 
-        //            var rscript = RScript(ModuleName, Arr<R.Decl>(
-        //                new R.StructDecl(R.AccessModifier.Private, "S", Arr<string>(), Arr<R.Path>(), Arr<R.StructDecl.MemberDecl>(
-        //                    new R.StructDecl.MemberDecl.Var(R.AccessModifier.Public, R.Path.Int, Arr<string>("x")),
-        //                    new R.StructDecl.MemberDecl.Var(R.AccessModifier.Public, R.Path.Int, Arr<string>("y"))
-        //                ))
-        //            ));
+        ////            var rscript = RScript(ModuleName, Arr<R.Decl>(
+        ////                new R.StructDecl(R.AccessModifier.Private, "S", Arr<string>(), Arr<R.Path>(), Arr<R.StructDecl.MemberDecl>(
+        ////                    new R.StructDecl.MemberDecl.Var(R.AccessModifier.Public, R.Path.Int, Arr<string>("x")),
+        ////                    new R.StructDecl.MemberDecl.Var(R.AccessModifier.Public, R.Path.Int, Arr<string>("y"))
+        ////                ))
+        ////            ));
 
-        //            return TestParseTranslate(code, sscript, rscript);
+        ////            return TestParseTranslate(code, sscript, rscript);
 
-        //        }
+        ////        }
 
-        [Fact]
-        public Task FXX_DefaultConstructor_DoesntInitializeAllMemberVariables_ReportError()
-        {
-            throw new TestNeedToBeWrittenException();
-        }
+        //[Fact]
+        //public Task FXX_DefaultConstructor_DoesntInitializeAllMemberVariables_ReportError()
+        //{
+        //    throw new TestNeedToBeWrittenException();
+        //}
 
-        [Fact]
-        public Task FXX_DefaultConstructor_BodyHasCallExp_ReportError()
-        {
-            throw new TestNeedToBeWrittenException();
-        }
+        //[Fact]
+        //public Task FXX_DefaultConstructor_BodyHasCallExp_ReportError()
+        //{
+        //    throw new TestNeedToBeWrittenException();
+        //}
 
-        // S s; // Sø° Default constructor∞° æ¯¿∏∏È ø°∑Ø
-        [Fact]
-        public Task FXX_VarDecl_NoInitializerWithoutDefaultConstructor_ReportError()
-        {
-            throw new TestNeedToBeWrittenException();
-        }
+        //// S s; // SÏóê Default constructorÍ∞Ä ÏóÜÏúºÎ©¥ ÏóêÎü¨
+        //[Fact]
+        //public Task FXX_VarDecl_NoInitializerWithoutDefaultConstructor_ReportError()
+        //{
+        //    throw new TestNeedToBeWrittenException();
+        //}
+
     }
 }
