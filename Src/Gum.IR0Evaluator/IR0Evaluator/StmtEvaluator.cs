@@ -235,19 +235,19 @@ namespace Gum.IR0Evaluator
             {
                 // 분석기가 미리 계산해 놓은 TypeValue를 가져온다                
                 var targetValue = (ClassValue)await EvalLocAsync(stmt.Target);
-                var targetType = targetValue.GetType();
+                var targetType = targetValue.GetActualType();
 
                 var bTestPassed = IsType(targetType, stmt.TestType);
 
                 if (bTestPassed)
                 {
-                    await foreach (var value in EvalStmtAsync(stmt.Body))
+                    await foreach (var _ in EvalStmtAsync(stmt.Body))
                         yield return Void.Instance;
                 }
                 else
                 {
                     if (stmt.ElseBody != null)
-                        await foreach (var value in EvalStmtAsync(stmt.ElseBody))
+                        await foreach (var _ in EvalStmtAsync(stmt.ElseBody))
                             yield return Void.Instance;
                 }
             }

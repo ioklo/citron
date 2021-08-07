@@ -56,5 +56,25 @@ namespace Gum.IR0Evaluator
                 return StmtEvaluator.EvalFuncBodyAsync(globalContext, builder.ToImmutable(), thisValue, result, funcDecl.Body);
             }
         }
+
+        [AutoConstructor]
+        partial class IR0ClassFuncRuntimeItem : FuncRuntimeItem
+        {
+            GlobalContext globalContext;
+            public override R.Name Name => funcDecl.Name;
+            public override R.ParamHash ParamHash => Misc.MakeParamHash(funcDecl.TypeParams.Length, funcDecl.Parameters);
+            public override ImmutableArray<R.Param> Parameters => funcDecl.Parameters;
+            R.ClassMemberFuncDecl funcDecl;
+
+            public override ValueTask InvokeAsync(Value? thisValue, ImmutableArray<Value> args, Value result)
+            {
+                var builder = ImmutableDictionary.CreateBuilder<string, Value>();
+
+                for (int i = 0; i < args.Length; i++)
+                    builder.Add(funcDecl.Parameters[i].Name, args[i]);
+
+                return StmtEvaluator.EvalFuncBodyAsync(globalContext, builder.ToImmutable(), thisValue, result, funcDecl.Body);
+            }
+        }
     }
 }

@@ -19,21 +19,7 @@ using System.Reflection;
 namespace Gum.Test.IntegrateTest
 {
     static class Misc
-    {
-        public static R.Path.Nested Child(this R.Path.Normal outer, R.Name name, R.ParamHash paramHash, ImmutableArray<R.Path> typeArgs)
-            => new R.Path.Nested(outer, name, paramHash, typeArgs);
-
-        public static R.Path.Nested Child(this R.Path.Normal outer, R.Name name)
-            => new R.Path.Nested(outer, name, R.ParamHash.None, default);
-
-        // no typeparams, all normal paramtypes
-        public static R.Path.Nested Child(this R.Path.Normal outer, R.Name name, params R.Path[] types)
-            => new R.Path.Nested(outer, name, new R.ParamHash(0, types.Select(type => new R.ParamHashEntry(R.ParamKind.Normal, type)).ToImmutableArray()), default);
-
-        // no typeparams version
-        public static R.Path.Nested Child(this R.Path.Normal outer, R.Name name, params R.ParamHashEntry[] entries)
-            => new R.Path.Nested(outer, name, new R.ParamHash(0, entries.ToImmutableArray()), default);
-
+    {   
         class TestCmdProvider : ICommandProvider
         {
             public bool Error = false;
@@ -68,7 +54,7 @@ namespace Gum.Test.IntegrateTest
             var sscriptResult = await parser.ParseScriptAsync(parserContext);
             var rscriptResult = Translator.Translate("TestModule", default, sscript, testErrorCollector);
 
-            var text0 = Dumper.DumpToString(sscriptResult);
+            var text0 = Dumper.DumpToString(sscriptResult.Elem);
             var text1 = Dumper.DumpToString(rscriptResult!);
 
             Assert.Equal(sscript, sscriptResult.Elem);
@@ -159,15 +145,7 @@ namespace Gum.Test.IntegrateTest
             var commandProvider = new TestCmdProvider();
             
             var _ = await Evaluator.EvalAsync(default, commandProvider, rscript); // retValue는 지금 쓰지 않는다
-
-            StringWriter writer0 = new StringWriter();
-            Dumper.Dump(writer0, sscript);
-            var text0 = writer0.ToString();
-
-            StringWriter writer1 = new StringWriter();
-            Dumper.Dump(writer1, sscriptResult.Elem!);
-            var text1 = writer1.ToString();
-
+            
             Assert.Equal(sscript, sscriptResult.Elem);
             Assert.Equal(rscript, rscriptResult!);
             Assert.Equal(result, commandProvider.Output);

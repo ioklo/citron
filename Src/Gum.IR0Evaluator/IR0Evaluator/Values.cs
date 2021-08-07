@@ -152,21 +152,57 @@ namespace Gum.IR0Evaluator
         }
     }
 
-    class ClassValue : Value
+    [AutoConstructor]
+    partial class ClassInstance
     {
+        ClassRuntimeItem runtimeItem;
+        TypeContext typeContext;
+        ImmutableDictionary<string, Value> values;
+
+        public R.Path.Nested GetActualType()
+        {
+            return runtimeItem.GetActualType(typeContext);
+        }
+
         public Value GetMemberValue(string name)
         {
-            throw new NotImplementedException();
+            return values[name];
+        }
+    }
+    
+    class ClassValue : Value
+    {
+        ClassInstance? instance;
+
+        public ClassValue()
+        {
+            instance = null;
         }
 
-        public override void SetValue(Value value)
+        public ClassValue(ClassInstance instance)
         {
-            throw new NotImplementedException();
+            this.instance = instance;
         }
 
-        public new R.Path GetType()
+        public void SetInstance(ClassInstance instance)
         {
-            throw new NotImplementedException();
+            this.instance = instance;
+        }
+
+        public ClassInstance GetInstance()
+        {
+            return this.instance!;
+        }
+
+        public override void SetValue(Value from_value)
+        {
+            ClassValue from = (ClassValue)from_value;
+            this.instance = from.instance;
+        }
+
+        public R.Path.Nested GetActualType()
+        {
+            return instance!.GetActualType();
         }
     }
 

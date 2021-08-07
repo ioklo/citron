@@ -63,6 +63,9 @@ namespace Gum.IR0Translator
                 case IModuleStructInfo structInfo:
                     return MakeStructValue(outer, structInfo, typeArgs);
 
+                case IModuleClassInfo classInfo:
+                    return MakeClassValue(outer, classInfo, typeArgs);
+
                 case IModuleEnumInfo enumInfo:
                     return new EnumTypeValue(this, outer, enumInfo, typeArgs);
 

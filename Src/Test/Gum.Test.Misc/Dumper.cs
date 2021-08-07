@@ -41,8 +41,10 @@ namespace Gum.Test.Misc
                 DumpImmutableArray(o, indent);
             else if (o is Enum e)
                 writer.Write("{0}.{1}", e.GetType().Name, e);
-            else if (o is ValueType)
-                writer.Write(o);
+            else if (o is int i)
+                writer.Write(i);
+            else if (o is bool b)
+                writer.Write(b);
             else if (o is string str)
                 writer.Write($"\"{str}\"");
             else
@@ -98,13 +100,19 @@ namespace Gum.Test.Misc
 
         void DumpObject(object o, string indent)
         {
-            if (visited.Contains(o))
+            if (o is int)
             {
-                writer.Write("$visited");
-                return;
+                int a = 0;
             }
-
-            visited.Add(o);
+            else
+            {
+                if (visited.Contains(o))
+                {
+                    writer.Write("$visited");
+                    return;
+                }
+                visited.Add(o);
+            }
 
             var type = o.GetType();
             writer.WriteLine("{");

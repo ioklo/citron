@@ -17,21 +17,24 @@ namespace Gum.IR0Evaluator
         [AutoConstructor, ImplementIEquatable]
         partial class IR0ConstructorRuntimeItem : ConstructorRuntimeItem
         {
-            GlobalContext globalContext;
-            R.StructConstructorDecl constructor;
+            GlobalContext globalContext;            
+            R.Name name;
+            R.ParamHash paramHash;
+            ImmutableArray<R.Param> parameters;
+            R.Stmt body;
 
-            public override R.Name Name => R.Name.Constructor.Instance;
-            public override R.ParamHash ParamHash { get; }
-            public override ImmutableArray<R.Param> Parameters { get; }
+            public override R.Name Name => name;
+            public override R.ParamHash ParamHash => paramHash;
+            public override ImmutableArray<R.Param> Parameters => parameters;
 
             public override ValueTask InvokeAsync(Value thisValue, ImmutableArray<Value> args)
             {
                 var builder = ImmutableDictionary.CreateBuilder<string, Value>();
                 for (int i = 0; i < args.Length; i++)
-                    builder.Add(constructor.Parameters[i].Name, args[i]);
+                    builder.Add(parameters[i].Name, args[i]);
                 var argsDict = builder.ToImmutable();
 
-                return StmtEvaluator.EvalFuncBodyAsync(globalContext, argsDict, thisValue, VoidValue.Instance, constructor.Body);
+                return StmtEvaluator.EvalFuncBodyAsync(globalContext, argsDict, thisValue, VoidValue.Instance, body);
             }
         }
     }

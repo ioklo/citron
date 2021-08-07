@@ -67,7 +67,7 @@ namespace Gum.IR0Translator
         A0902_CallExp_CallableExpressionIsNotCallable,
         A0903_CallExp_MismatchEnumConstructorArgCount,
         A0904_CallExp_MismatchBetweenEnumParamTypeAndEnumArgType,
-        A0905_CallExp_NoConstructorFound,
+        A0905_CallExp_NoConstructorFound, // TODO: A2602_NewExp_NoConstructorFound 랑 겹침
 
         // A1001_IfStmt_TestTargetShouldBeLocalVariable,
         // A1002_IfStmt_TestTargetIdentifierNotFound,
@@ -127,6 +127,9 @@ namespace Gum.IR0Translator
         A2501_ClassDecl_CannotSetMemberPrivateAccessExplicitlyBecauseItsDefault,        
         A2502_ClassDecl_CannotDeclConstructorDifferentWithTypeName,
         // A2503_ClassDecl_CannotSetMemberProtectedAccessBecauseItsNotAllowed,
+
+        A2601_NewExp_TypeIsNotClass,
+        A2602_NewExp_NoConstructorFound, // TODO: A0905_CallExp_NoConstructorFound, 랑 겹침
 
 
         // A2001_Identifier_MultipleCandidatesForIdentifier,

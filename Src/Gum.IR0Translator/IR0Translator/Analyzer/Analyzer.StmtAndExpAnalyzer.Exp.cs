@@ -514,6 +514,7 @@ namespace Gum.IR0Translator
 
             ExpResult.Exp AnalyzeCallExpTypeCallable(TypeValue callableTypeValue, ImmutableArray<S.Argument> sargs, S.CallExp nodeForErrorReport)
             {
+                // NOTICE: 생성자 검색 (AnalyzeNewExp 부분과 비슷)
                 if (callableTypeValue is StructTypeValue structTypeValue)
                 {
                     // 생성자 검색,
@@ -1031,7 +1032,44 @@ namespace Gum.IR0Translator
                     new R.ListExp(rtype, builder.ToImmutable()),
                     globalContext.GetListType(curElemTypeValue));
             }
-            
+
+            ExpResult.Exp AnalyzeNewExp(S.NewExp newExp)
+            {
+                var classTypeValue = globalContext.GetTypeValueByTypeExp(newExp.Type) as ClassTypeValue;
+                if (classTypeValue == null)
+                    globalContext.AddFatalError(A2601_NewExp_TypeIsNotClass, newExp.Type);
+
+                // NOTICE: 생성자 검색 (AnalyzeCallExpTypeCallable 부분과 비슷)
+                var result = classTypeValue.GetMember(M.SpecialNames.Constructor, typeParamCount: 0); // NOTICE: constructor는 타입 파라미터가 없다
+                switch (result)
+                {
+                    case ItemQueryResult.Constructors constructorResult:
+                        var matchedConstructor = Match(classTypeValue.MakeTypeEnv(), constructorResult.ConstructorInfos, newExp.Args, default, newExp);
+
+                        var constructorValue = globalContext.MakeConstructorValue(constructorResult.Outer, matchedConstructor.CallableInfo);
+
+                        if (!constructorValue.CheckAccess(callableContext.GetThisTypeValue()))
+                            globalContext.AddFatalError(A2011_ResolveIdentifier_TryAccessingPrivateMember, newExp);
+
+                        return new ExpResult.Exp(
+                            new R.NewClassExp(
+                                classTypeValue.GetRPath_Nested(), 
+                                constructorValue.GetRPath_Nested().ParamHash, 
+                                matchedConstructor.Result.Args
+                            ), 
+                            classTypeValue);
+
+                    case ItemQueryResult.NotFound:
+                        globalContext.AddFatalError(A2602_NewExp_NoConstructorFound, newExp);
+                        break;
+
+                    case ItemQueryResult.Error errorResult:
+                        HandleItemQueryResultError(errorResult, newExp);
+                        break;
+                }
+                
+                throw new UnreachableCodeException();
+            }
 
             public ExpResult AnalyzeExp(S.Exp exp, ResolveHint hint)
             {
@@ -1048,6 +1086,7 @@ namespace Gum.IR0Translator
                     case S.IndexerExp indexerExp: return AnalyzeIndexerExp(indexerExp);
                     case S.MemberExp memberExp: return AnalyzeMemberExp(memberExp);
                     case S.ListExp listExp: return AnalyzeListExp(listExp);
+                    case S.NewExp newExp: return AnalyzeNewExp(newExp);
                     default: throw new UnreachableCodeException();
                 }
             }

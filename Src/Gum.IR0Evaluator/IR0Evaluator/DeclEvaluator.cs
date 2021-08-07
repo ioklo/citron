@@ -85,6 +85,10 @@ namespace Gum.IR0Evaluator
                         EvalStructDecl(structDecl);
                         break;
 
+                    case R.ClassDecl classDecl:
+                        EvalClassDecl(classDecl);
+                        break;
+
                     case R.LambdaDecl lambdaDecl:
                         EvalLambdaDecl(lambdaDecl);
                         break;
@@ -123,7 +127,7 @@ namespace Gum.IR0Evaluator
             {
                 // NOTICE: Constructor는 typeParamCount가 0 이다
                 var paramHash = Misc.MakeParamHash(typeParamCount: 0, constructorDecl.Parameters);
-                var runtimeItem = new IR0ConstructorRuntimeItem(globalContext, constructorDecl, paramHash, constructorDecl.Parameters);
+                var runtimeItem = new IR0ConstructorRuntimeItem(globalContext, R.Name.Constructor.Instance, paramHash, constructorDecl.Parameters, constructorDecl.Body);
 
                 var itemContainer = new ItemContainer();
                 curContainer.AddItemContainer(R.Name.Constructor.Instance, paramHash, itemContainer);
@@ -202,6 +206,100 @@ namespace Gum.IR0Evaluator
 
                 curContainer.AddItemContainer(structDecl.Name, new R.ParamHash(structDecl.TypeParams.Length, default), structContainer);
                 curContainer.AddRuntimeItem(new IR0StructRuntimeItem(globalContext, structDecl));
+            }
+
+            void EvalClassMemberVarDecl(ItemContainer classContainer, R.ClassMemberVarDecl varDecl)
+            {
+                foreach (var name in varDecl.Names)
+                {
+                    var memberVarItem = new IR0ClassMemberVarRuntimeItem(name);
+                    classContainer.AddRuntimeItem(memberVarItem);
+                }
+            }
+
+            void EvalClassConstructorDecl(ItemContainer classContainer, R.ClassConstructorDecl constructorDecl)
+            {
+                // NOTICE: Constructor는 typeParamCount가 0 이다
+                var paramHash = Misc.MakeParamHash(typeParamCount: 0, constructorDecl.Parameters);
+                var runtimeItem = new IR0ConstructorRuntimeItem(globalContext, R.Name.Constructor.Instance, paramHash, constructorDecl.Parameters, constructorDecl.Body);
+
+                var itemContainer = new ItemContainer();
+                curContainer.AddItemContainer(R.Name.Constructor.Instance, paramHash, itemContainer);
+
+                classContainer.AddRuntimeItem(runtimeItem);
+
+                var newDeclEvaluator = new DeclEvaluator(globalContext, itemContainer);
+                foreach (var decl in constructorDecl.Decls)
+                    newDeclEvaluator.EvalDecl(decl);
+            }
+
+            void EvalClassMemberFuncDecl(ItemContainer classContainer, R.ClassMemberFuncDecl funcDecl)
+            {
+                var paramHash = Misc.MakeParamHash(funcDecl.TypeParams.Length, funcDecl.Parameters);
+                var runtimeItem = new IR0ClassFuncRuntimeItem(globalContext, funcDecl);
+
+                var itemContainer = new ItemContainer();
+                classContainer.AddItemContainer(funcDecl.Name, paramHash, itemContainer);
+
+                classContainer.AddRuntimeItem(runtimeItem);
+
+                var newDeclEvaluator = new DeclEvaluator(globalContext, itemContainer);
+                foreach (var decl in funcDecl.Decls)
+                    newDeclEvaluator.EvalDecl(decl);
+            }
+
+            void EvalClassMemberSeqFuncDecl(ItemContainer classContainer, R.ClassMemberSeqFuncDecl seqFuncDecl)
+            {
+                var itemContainer = new ItemContainer();
+
+                var typeParamCount = seqFuncDecl.TypeParams.Length;
+                var paramHash = Misc.MakeParamHash(typeParamCount, seqFuncDecl.Parameters);
+
+                classContainer.AddItemContainer(seqFuncDecl.Name, paramHash, itemContainer);
+
+                var runtimeItem = new IR0ClassSeqFuncRuntimeItem(globalContext, seqFuncDecl);
+                classContainer.AddRuntimeItem(runtimeItem);
+
+                var newDeclEvaluator = new DeclEvaluator(globalContext, itemContainer);
+                foreach (var decl in seqFuncDecl.Decls)
+                    newDeclEvaluator.EvalDecl(decl);
+            }
+
+            void EvalClassMemberDecl(ItemContainer classContainer, R.ClassMemberDecl memberDecl)
+            {
+                switch (memberDecl)
+                {
+                    case R.ClassMemberVarDecl varDecl:
+                        EvalClassMemberVarDecl(classContainer, varDecl);
+                        break;
+
+                    case R.ClassConstructorDecl constructorDecl:
+                        EvalClassConstructorDecl(classContainer, constructorDecl);
+                        break;
+
+                    case R.ClassMemberFuncDecl funcDecl:
+                        EvalClassMemberFuncDecl(classContainer, funcDecl);
+                        break;
+
+                    case R.ClassMemberSeqFuncDecl seqFuncDecl:
+                        EvalClassMemberSeqFuncDecl(classContainer, seqFuncDecl);
+                        break;
+
+                    default:
+                        throw new UnreachableCodeException();
+                }
+            }
+
+            void EvalClassDecl(R.ClassDecl classDecl)
+            {
+                var classContainer = new ItemContainer();
+                foreach(var memberDecl in classDecl.MemberDecls)
+                {
+                    EvalClassMemberDecl(classContainer, memberDecl);                    
+                }
+
+                curContainer.AddItemContainer(classDecl.Name, new R.ParamHash(classDecl.TypeParams.Length, default), classContainer);
+                curContainer.AddRuntimeItem(new IR0ClassRuntimeItem(globalContext, classDecl));
             }
 
             void EvalEnumDecl(R.EnumDecl enumDecl)

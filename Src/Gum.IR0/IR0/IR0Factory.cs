@@ -109,5 +109,22 @@ namespace Gum.IR0
         {
             return RCommand(RString(text));
         }
+
+        public static Path.Root RRoot(ModuleName moduleName)
+            => new Path.Root(moduleName);
+
+        public static Path.Nested Child(this Path.Normal outer, Name name, ParamHash paramHash, ImmutableArray<Path> typeArgs)
+            => new Path.Nested(outer, name, paramHash, typeArgs);
+
+        public static Path.Nested Child(this Path.Normal outer, Name name)
+            => new Path.Nested(outer, name, ParamHash.None, default);
+
+        // no typeparams, all normal paramtypes
+        public static Path.Nested Child(this Path.Normal outer, Name name, params Path[] types)
+            => new Path.Nested(outer, name, new ParamHash(0, types.Select(type => new ParamHashEntry(ParamKind.Normal, type)).ToImmutableArray()), default);
+
+        // no typeparams version
+        public static Path.Nested Child(this Path.Normal outer, Name name, params ParamHashEntry[] entries)
+            => new Path.Nested(outer, name, new ParamHash(0, entries.ToImmutableArray()), default);
     }
 }

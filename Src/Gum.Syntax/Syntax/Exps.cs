@@ -34,5 +34,5 @@ namespace Gum.Syntax
     public record ListExp(TypeExp? ElemType, ImmutableArray<Exp> Elems) : Exp;
 
     // new Type(2, 3, 4);
-    public record NewExp(TypeExp type, ImmutableArray<Argument> args) : Exp;
+    public record NewExp(TypeExp Type, ImmutableArray<Argument> Args) : Exp;
 }

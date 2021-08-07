@@ -41,25 +41,28 @@ namespace Gum.IR0Evaluator
             return new TypeContext(builder.ToImmutable());            
         }
 
-        public R.Path.Normal ApplyNormal(R.Path.Normal normalPath)
+        public R.Path.Nested Apply_Nested(R.Path.Nested nestedPath)
+        {
+            var appliedOuter = Apply_Normal(nestedPath.Outer);
+            var builder = ImmutableArray.CreateBuilder<R.Path>(nestedPath.TypeArgs.Length);
+            foreach (var typeArg in nestedPath.TypeArgs)
+            {
+                var appliedTypeArg = Apply(typeArg);
+                builder.Add(appliedTypeArg);
+            }
+
+            // ParamHash는 건드리지 않는다
+            return new R.Path.Nested(appliedOuter, nestedPath.Name, nestedPath.ParamHash, builder.MoveToImmutable());
+        }
+        public R.Path.Normal Apply_Normal(R.Path.Normal normalPath)
         {
             switch (normalPath)
             {
-                case R.Path.Root: return normalPath;
+                case R.Path.Root: 
+                    return normalPath;
 
                 case R.Path.Nested nestedPath:
-                    {
-                        var appliedOuter = ApplyNormal(nestedPath.Outer);
-                        var builder = ImmutableArray.CreateBuilder<R.Path>(nestedPath.TypeArgs.Length);
-                        foreach (var typeArg in nestedPath.TypeArgs)
-                        {
-                            var appliedTypeArg = Apply(typeArg);
-                            builder.Add(appliedTypeArg);
-                        }
-
-                        // ParamHash는 건드리지 않는다
-                        return new R.Path.Nested(appliedOuter, nestedPath.Name, nestedPath.ParamHash, builder.MoveToImmutable());
-                    }
+                    return Apply_Nested(nestedPath);                    
 
                 default:
                     throw new UnreachableCodeException();
@@ -113,7 +116,7 @@ namespace Gum.IR0Evaluator
 
                 // Normal
                 case R.Path.Normal normalPath:
-                    return ApplyNormal(normalPath);
+                    return Apply_Normal(normalPath);
 
                 default:
                     throw new UnreachableCodeException();

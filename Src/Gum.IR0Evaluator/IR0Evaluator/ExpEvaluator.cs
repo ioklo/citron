@@ -434,9 +434,22 @@ namespace Gum.IR0Evaluator
                 await runtimeItem.InvokeAsync(result, args);
             }
 
-            ValueTask EvalNewClassExpAsync(R.NewClassExp exp, Value result)
+            async ValueTask EvalNewClassExpAsync(R.NewClassExp exp, Value result_value)
             {
-                throw new NotImplementedException();
+                // 1. 인스턴스를 만들고
+                var classItem = globalContext.GetRuntimeItem<ClassRuntimeItem>(exp.Class);
+                var typeContext = TypeContext.Make(exp.Class);
+                var instance = classItem.AllocInstance(typeContext);
+
+                // 2. 클래스 값에 넣은다음
+                ClassValue result = (ClassValue)result_value;
+                result.SetInstance(instance);
+
+                // 3. 생성자 호출
+                var constructorPath = new R.Path.Nested(exp.Class, R.Name.Constructor.Instance, exp.ConstructorParamHash, default);
+                var constructorItem = globalContext.GetRuntimeItem<ConstructorRuntimeItem>(constructorPath);
+                var args = await EvalArgumentsAsync(constructorItem.Parameters, exp.Args);
+                await constructorItem.InvokeAsync(result, args);
             }
 
             // E e = (E)E.First;

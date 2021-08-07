@@ -243,8 +243,6 @@ namespace Gum.IR0
     public partial class NewStructExp : Exp
     {
         public Path.Nested Constructor { get; }
-
-        // TODO: params, out, 등 처리를 하려면 Exp가 아니라 다른거여야 한다
         public ImmutableArray<Argument> Args { get; }
 
         public override void VisitRef<TVisitor>(ref TVisitor visitor) => visitor.VisitNewStructExp(this);
@@ -255,9 +253,8 @@ namespace Gum.IR0
     [AutoConstructor, ImplementIEquatable]
     public partial class NewClassExp : Exp
     {
-        public Path Type { get; }
-
-        // TODO: params, out, 등 처리를 하려면 Exp가 아니라 다른거여야 한다
+        public Path.Nested Class { get; }
+        public ParamHash ConstructorParamHash { get; }
         public ImmutableArray<Argument> Args { get; }
 
         public override void VisitRef<TVisitor>(ref TVisitor visitor) => visitor.VisitNewClassExp(this);

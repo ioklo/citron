@@ -30,8 +30,6 @@ class C
                 )))
             );
 
-            R.Path.Nested CPath() => new R.Path.Nested(new R.Path.Root(ModuleName), "C", R.ParamHash.None, default);
-
             var rscript = RScript(ModuleName, Arr<R.Decl>(
                 new R.ClassDecl(R.AccessModifier.Private, "C", default, default, Arr<R.ClassMemberDecl>(
                     new R.ClassMemberVarDecl(R.AccessModifier.Private, R.Path.Int, Arr("x", "y")),
@@ -46,15 +44,15 @@ class C
                         ),
                         RBlock(
                             new R.ExpStmt(new R.AssignExp(
-                                new R.ClassMemberLoc(R.ThisLoc.Instance, new R.Path.Nested(CPath(), "x", R.ParamHash.None, default)),
+                                new R.ClassMemberLoc(R.ThisLoc.Instance, RRoot(ModuleName).Child("C").Child("x")),
                                 new R.LoadExp(new R.LocalVarLoc("x"))
                             )),
                             new R.ExpStmt(new R.AssignExp(
-                                new R.ClassMemberLoc(R.ThisLoc.Instance, new R.Path.Nested(CPath(), "y", R.ParamHash.None, default)),
+                                new R.ClassMemberLoc(R.ThisLoc.Instance, RRoot(ModuleName).Child("C").Child("y")),
                                 new R.LoadExp(new R.LocalVarLoc("y"))
                             )),
                             new R.ExpStmt(new R.AssignExp(
-                                new R.ClassMemberLoc(R.ThisLoc.Instance, new R.Path.Nested(CPath(), "s", R.ParamHash.None, default)),
+                                new R.ClassMemberLoc(R.ThisLoc.Instance, RRoot(ModuleName).Child("C").Child("s")),
                                 new R.LoadExp(new R.LocalVarLoc("s"))
                             ))
                         )
@@ -123,526 +121,500 @@ class C
             return new ParseTranslateWithErrorTestData(code, sscript, A2502_ClassDecl_CannotDeclConstructorDifferentWithTypeName, errorNode);
         }
 
-//        static TestData Make_VarDecl_UsingConstructor_CallConstructor()
-//        {
-//            var code = @"
-//class C
-//{
-//    C(int x) { @{$x} } // x출력
-//}
-
-//var c = new C(3);
-//";
-
-//            var sscript = SScript(
-//                new S.TypeDeclScriptElement(new S.ClassDecl(null, "C", Arr<string>(), Arr<S.TypeExp>(), Arr<S.ClassMemberDecl>(
-
-//                    new S.ClassConstructorDecl(null, "C", Arr<S.FuncParam>(new S.FuncParam(S.FuncParamKind.Normal, SIntTypeExp(), "x")), SBlock(
-//                        new S.CommandStmt(Arr(new S.StringExp(Arr<S.StringExpElement>(new S.ExpStringExpElement(SId("x"))))))
-//                    ))
-//                ))),
-
-//                new S.StmtScriptElement(new S.VarDeclStmt(new S.VarDecl(false, SVarTypeExp(), Arr(new S.VarDeclElement(
-//                    "C", new S.VarDeclElemInitializer(false, new S.CallExp(SId("C"), Arr<S.Argument>(new S.Argument.Normal(SInt(3)))))
-//                )))))
-//            );
-
-//            var rscript = RScript(ModuleName,
-//                Arr<R.Decl>(
-//                    new R.StructDecl(R.AccessModifier.Private, "C", Arr<string>(), Arr<R.Path>(), Arr<R.StructMemberDecl>(
-
-//                        new R.StructConstructorDecl(
-//                            R.AccessModifier.Public,
-//                            default,
-//                            Arr(new R.Param(R.ParamKind.Normal, R.Path.Int, "x")),
-//                            RBlock(RCommand(RString(new R.ExpStringExpElement(
-//                                new R.CallInternalUnaryOperatorExp(R.InternalUnaryOperator.ToString_Int_String, new R.LoadExp(new R.LocalVarLoc("x"))))
-//                            )))
-//                        ),
-
-//                        new R.StructConstructorDecl(
-//                            R.AccessModifier.Public,
-//                            default,
-//                            default,
-//                            RBlock()
-//                        )
-//                    ))
-//                ),
-
-//                RGlobalVarDeclStmt(
-//                    new R.Path.Nested(new R.Path.Root("TestModule"), "C", R.ParamHash.None, Arr<R.Path>()),
-//                    "C",
-//                    new R.NewStructExp(
-//                        new R.Path.Nested(
-//                            new R.Path.Nested(new R.Path.Root("TestModule"), "C", R.ParamHash.None, Arr<R.Path>()),
-//                            R.Name.Constructor.Instance,
-//                            new R.ParamHash(0, Arr(new R.ParamHashEntry(R.ParamKind.Normal, R.Path.Int))),
-//                            default
-//                        ),
-//                        Arr<R.Argument>(new R.Argument.Normal(RInt(3)))
-//                    )
-//                )
-//            );
-
-//            var result = "3";
-
-//            return new ParseTranslateEvalTestData(code, sscript, rscript, result);
-//        }
-
-        //        // using this            
-        //        static TestData Make_Constructor_UsingThis_ReferCurrentInstance()
-        //        {
-        //            var code = @"
-        //struct S { int x; S(int x) { this.x = x; } }
-        //var s = S(3);
-        //@${s.x}
-        //";
-        //            var sscript = SScript(
-        //                new S.TypeDeclScriptElement(new S.ClassDecl(null, "C", Arr<string>(), Arr<S.TypeExp>(), Arr<S.ClassMemberDecl>(
-
-        //                    new S.ClassMemberVarDecl(null, SIntTypeExp(), Arr("x")),
-
-        //                    new S.ClassConstructorDecl(null, "C", Arr<S.FuncParam>(new S.FuncParam(S.FuncParamKind.Normal, SIntTypeExp(), "x")), SBlock(
-        //                        new S.ExpStmt(new S.BinaryOpExp(S.BinaryOpKind.Assign, new S.MemberExp(SId("this"), "x", default), SId("x")))
-        //                    ))
-        //                ))),
-
-        //                new S.StmtScriptElement(new S.VarDeclStmt(new S.VarDecl(false, SVarTypeExp(), Arr(new S.VarDeclElement(
-        //                    "C", new S.VarDeclElemInitializer(false, new S.CallExp(SId("C"), Arr<S.Argument>(new S.Argument.Normal(SInt(3)))))
-        //                ))))),
-
-        //                new S.StmtScriptElement(new S.CommandStmt(Arr(new S.StringExp(Arr<S.StringExpElement>(new S.ExpStringExpElement(
-        //                    new S.MemberExp(SId("C"), "x", default)
-        //                ))))))
-        //            );
-
-        //            R.Path.Nested SPath() => new R.Path.Nested(new R.Path.Root("TestModule"), "C", R.ParamHash.None, default);
-
-        //            var rscript = RScript(ModuleName,
-        //                Arr<R.Decl>(
-        //                    new R.StructDecl(R.AccessModifier.Private, "C", Arr<string>(), Arr<R.Path>(), Arr<R.StructMemberDecl>(
-
-        //                        new R.StructMemberVarDecl(R.AccessModifier.Public, R.Path.Int, Arr("x")),
-
-        //                        new R.StructConstructorDecl(
-        //                            R.AccessModifier.Public,
-        //                            default,
-        //                            Arr(new R.Param(R.ParamKind.Normal, R.Path.Int, "x")),
-        //                            RBlock(
-        //                                new R.ExpStmt(new R.AssignExp(
-        //                                    new R.StructMemberLoc(R.ThisLoc.Instance, new R.Path.Nested(SPath(), "x", R.ParamHash.None, default)),
-        //                                    new R.LoadExp(new R.LocalVarLoc("x"))
-        //                                )
-        //                            )
-        //                        )
-        //                    )))
-        //                ),
-
-        //                RGlobalVarDeclStmt(
-        //                    SPath(),
-        //                    "C",
-        //                    new R.NewStructExp(
-        //                        new R.Path.Nested(
-        //                            SPath(),
-        //                            R.Name.Constructor.Instance,
-        //                            new R.ParamHash(0, Arr(new R.ParamHashEntry(R.ParamKind.Normal, R.Path.Int))),
-        //                            default
-        //                        ),
-        //                        Arr<R.Argument>(new R.Argument.Normal(RInt(3)))
-        //                    )
-        //                ),
-
-        //                RCommand(new R.StringExp(Arr<R.StringExpElement>(new R.ExpStringExpElement(
-        //                    new R.CallInternalUnaryOperatorExp(
-        //                        R.InternalUnaryOperator.ToString_Int_String,
-        //                        new R.LoadExp(new R.StructMemberLoc(new R.GlobalVarLoc("C"), new R.Path.Nested(SPath(), "x", R.ParamHash.None, default)))
-        //                    )
-        //                ))))
-
-        //            // @${ s.x}
-        //            );
-
-        //            return new ParseTranslateEvalTestData(code, sscript, rscript, "3");
-        //        }
-
-        //        // 생성자를 자동으로 만들기
-        //        static TestData Make_Constructor_DoesntHaveCorrespondingConstructor_MakeAutomatically()
-        //        {
-        //            var code = @"
-        //struct S { int x; } // without constructor S(int x)
-        //var s = S(3);       // but can do this
-        //@${s.x}
-        //";
-        //            var sscript = SScript(
-        //                new S.TypeDeclScriptElement(new S.ClassDecl(null, "C", Arr<string>(), Arr<S.TypeExp>(), Arr<S.ClassMemberDecl>(
-
-        //                    new S.ClassMemberVarDecl(null, SIntTypeExp(), Arr("x"))
-
-        //                ))),
-
-        //                new S.StmtScriptElement(new S.VarDeclStmt(new S.VarDecl(false, SVarTypeExp(), Arr(new S.VarDeclElement(
-        //                    "C", new S.VarDeclElemInitializer(false, new S.CallExp(SId("C"), Arr<S.Argument>(new S.Argument.Normal(SInt(3)))))
-        //                ))))),
-
-        //                new S.StmtScriptElement(new S.CommandStmt(Arr(new S.StringExp(Arr<S.StringExpElement>(new S.ExpStringExpElement(
-        //                    new S.MemberExp(SId("C"), "x", default)
-        //                ))))))
-        //            );
-
-        //            R.Path.Nested SPath() => new R.Path.Nested(new R.Path.Root("TestModule"), "C", R.ParamHash.None, default);
-
-        //            var rscript = RScript(ModuleName,
-        //                Arr<R.Decl>(
-        //                    new R.StructDecl(R.AccessModifier.Private, "C", Arr<string>(), Arr<R.Path>(), Arr<R.StructMemberDecl>(
-
-        //                        new R.StructMemberVarDecl(R.AccessModifier.Public, R.Path.Int, Arr("x")),
-
-        //                        new R.StructConstructorDecl(
-        //                            R.AccessModifier.Public,
-        //                            default,
-        //                            Arr(new R.Param(R.ParamKind.Normal, R.Path.Int, "x")),
-        //                            RBlock(
-        //                                new R.ExpStmt(new R.AssignExp(
-        //                                    new R.StructMemberLoc(R.ThisLoc.Instance, new R.Path.Nested(SPath(), "x", R.ParamHash.None, default)),
-        //                                    new R.LoadExp(new R.LocalVarLoc("x"))
-        //                                )
-        //                            )
-        //                        )
-        //                    )))
-        //                ),
-
-        //                RGlobalVarDeclStmt(
-        //                    SPath(),
-        //                    "C",
-        //                    new R.NewStructExp(
-        //                        new R.Path.Nested(
-        //                            SPath(),
-        //                            R.Name.Constructor.Instance,
-        //                            new R.ParamHash(0, Arr(new R.ParamHashEntry(R.ParamKind.Normal, R.Path.Int))),
-        //                            default
-        //                        ),
-        //                        Arr<R.Argument>(new R.Argument.Normal(RInt(3)))
-        //                    )
-        //                ),
-
-        //                RCommand(new R.StringExp(Arr<R.StringExpElement>(new R.ExpStringExpElement(
-        //                    new R.CallInternalUnaryOperatorExp(
-        //                        R.InternalUnaryOperator.ToString_Int_String,
-        //                        new R.LoadExp(new R.StructMemberLoc(new R.GlobalVarLoc("C"), new R.Path.Nested(SPath(), "x", R.ParamHash.None, default)))
-        //                    )
-        //                ))))
-
-        //            // @${ s.x}
-        //            );
-
-        //            return new ParseTranslateEvalTestData(code, sscript, rscript, "3");
-
-        //        }
-
-        //        static TestData Make_ReferenceMember_ReadAndWrite_WorksProperly()
-        //        {
-        //            var code = @"
-        //struct S { int x; }
-        //var s = S(2);
-        //s.x = 3;
-        //@${s.x}
-        //";
-        //            var sscript = SScript(
-        //                new S.TypeDeclScriptElement(new S.ClassDecl(null, "C", Arr<string>(), Arr<S.TypeExp>(), Arr<S.ClassMemberDecl>(
-
-        //                    new S.ClassMemberVarDecl(null, SIntTypeExp(), Arr("x"))
-
-        //                ))),
-
-        //                new S.StmtScriptElement(new S.VarDeclStmt(new S.VarDecl(false, SVarTypeExp(), Arr(new S.VarDeclElement(
-        //                    "C", new S.VarDeclElemInitializer(false, new S.CallExp(SId("C"), Arr<S.Argument>(new S.Argument.Normal(SInt(2)))))
-        //                ))))),
-
-        //                new S.StmtScriptElement(new S.ExpStmt(new S.BinaryOpExp(S.BinaryOpKind.Assign, new S.MemberExp(SId("C"), "x", default), SInt(3)))),
-
-        //                new S.StmtScriptElement(new S.CommandStmt(Arr(new S.StringExp(Arr<S.StringExpElement>(new S.ExpStringExpElement(
-        //                    new S.MemberExp(SId("C"), "x", default)
-        //                ))))))
-        //            );
-
-        //            R.Path.Nested SPath() => new R.Path.Nested(new R.Path.Root("TestModule"), "C", R.ParamHash.None, default);
-
-        //            var rscript = RScript(ModuleName,
-        //                Arr<R.Decl>(
-        //                    new R.StructDecl(R.AccessModifier.Private, "C", Arr<string>(), Arr<R.Path>(), Arr<R.StructMemberDecl>(
-
-        //                        new R.StructMemberVarDecl(R.AccessModifier.Public, R.Path.Int, Arr("x")),
-
-        //                        new R.StructConstructorDecl(
-        //                            R.AccessModifier.Public,
-        //                            default,
-        //                            Arr(new R.Param(R.ParamKind.Normal, R.Path.Int, "x")),
-        //                            RBlock(
-        //                                new R.ExpStmt(new R.AssignExp(
-        //                                    new R.StructMemberLoc(R.ThisLoc.Instance, new R.Path.Nested(SPath(), "x", R.ParamHash.None, default)),
-        //                                    new R.LoadExp(new R.LocalVarLoc("x"))
-        //                                )
-        //                            )
-        //                        )
-        //                    )))
-        //                ),
-
-        //                // S s = S(2);
-        //                RGlobalVarDeclStmt(
-        //                    SPath(),
-        //                    "C",
-        //                    new R.NewStructExp(
-        //                        new R.Path.Nested(
-        //                            SPath(),
-        //                            R.Name.Constructor.Instance,
-        //                            new R.ParamHash(0, Arr(new R.ParamHashEntry(R.ParamKind.Normal, R.Path.Int))),
-        //                            default
-        //                        ),
-        //                        Arr<R.Argument>(new R.Argument.Normal(RInt(2)))
-        //                    )
-        //                ),
-
-        //                // s.x = 3;
-        //                new R.ExpStmt(new R.AssignExp(new R.StructMemberLoc(new R.GlobalVarLoc("C"), new R.Path.Nested(SPath(), "x", R.ParamHash.None, default)), RInt(3))),
-
-        //                // @${s.x}
-        //                RCommand(new R.StringExp(Arr<R.StringExpElement>(new R.ExpStringExpElement(
-        //                    new R.CallInternalUnaryOperatorExp(
-        //                        R.InternalUnaryOperator.ToString_Int_String,
-        //                        new R.LoadExp(new R.StructMemberLoc(new R.GlobalVarLoc("C"), new R.Path.Nested(SPath(), "x", R.ParamHash.None, default)))
-        //                    )
-        //                ))))
-        //            );
-
-        //            return new ParseTranslateEvalTestData(code, sscript, rscript, "3");
-        //        }
-
-        //        static TestData Make_ReferenceSelf_Assign_CopyValue()
-        //        {
-        //            var code = @"
-        //struct S { int x; }
-        //var s1 = S(2);
-        //var s2 = S(17);
-        //s2 = s1;
-        //s1.x = 3;
-        //@{${s2.x}} // 2;
-        //";
-
-        //            return new EvalTestData(code, "2");
-        //        }
-
-        //        static TestData Make_ReferenceSelf_PassingByValue_CopyValue()
-        //        {
-        //            var code = @"
-        //struct S { int x; }
-        //void F(S s) { s.x = 2; }
-
-        //var s = S(3);
-        //F(s);
-        //@${s.x}
-        //";
-
-        //            return new EvalTestData(code, "3");
-        //        }
-
-        //        static TestData Make_ReferenceSelf_PassingByRef_ReferenceValue()
-        //        {
-        //            var code = @"
-        //struct S { int x; }
-        //void F(ref S s) { s.x = 2; }
-
-        //var s = S(3);
-        //F(ref s);
-        //@${s.x}
-        //";
-        //            return new EvalTestData(code, "2");
-        //        }
-
-        //        static TestData Make_Access_AccessPrivateMemberOutsideStruct_ReportError()
-        //        {
-        //            var code = @"
-        //struct S { private int x; }
-        //var s = S(3);
-        //@${s.x}
-        //";
-        //            return new EvalWithErrorTestData(code, A2011_ResolveIdentifier_TryAccessingPrivateMember);
-        //        }
-
-        //        static TestData Make_Access_AccessPrivateConstructorOutsideStruct_ReportError()
-        //        {
-        //            var code = @"
-        //struct S { private S(int x) { } }
-        //var s = S(3);
-        //";
-        //            return new EvalWithErrorTestData(code, A2011_ResolveIdentifier_TryAccessingPrivateMember);
-        //        }
-
-        //        static TestData Make_MemberFunc_Declaration_WorksProperly()
-        //        {
-        //            var code = @"
-        //struct S
-        //{
-        //    int x;
-        //    int F(int y) { return x + y; }
-        //}
-
-        //var s = S(3);
-        //var i = s.F(2);
-        //@$i
-        //";
-
-        //            var sscript = SScript(
-        //                new S.TypeDeclScriptElement(new S.ClassDecl(null, "C", Arr<string>(), Arr<S.TypeExp>(), Arr<S.ClassMemberDecl>(
-
-        //                    new S.ClassMemberVarDecl(null, SIntTypeExp(), Arr("x")),
-        //                    new S.ClassMemberFuncDecl(null, false, false, false, SIntTypeExp(), "F", default, Arr(new S.FuncParam(S.FuncParamKind.Normal, SIntTypeExp(), "y")), SBlock(
-        //                        new S.ReturnStmt(new S.ReturnValueInfo(false, new S.BinaryOpExp(S.BinaryOpKind.Add, SId("x"), SId("y"))))
-        //                    ))
-        //                ))),
-
-        //                new S.StmtScriptElement(new S.VarDeclStmt(new S.VarDecl(false, SVarTypeExp(), Arr(new S.VarDeclElement(
-        //                    "C", new S.VarDeclElemInitializer(false, new S.CallExp(SId("C"), Arr<S.Argument>(new S.Argument.Normal(SInt(3)))))
-        //                ))))),
-
-        //                new S.StmtScriptElement(new S.VarDeclStmt(new S.VarDecl(false, SVarTypeExp(), Arr(new S.VarDeclElement(
-        //                    "i", new S.VarDeclElemInitializer(false, new S.CallExp(new S.MemberExp(SId("C"), "F", default), Arr<S.Argument>(new S.Argument.Normal(SInt(2)))))
-        //                ))))),
-
-        //                new S.StmtScriptElement(new S.CommandStmt(Arr(new S.StringExp(Arr<S.StringExpElement>(new S.ExpStringExpElement(
-        //                    SId("i")
-        //                ))))))
-        //            );
-
-        //            R.Path.Nested SPath() => new R.Path.Root("TestModule").Child("C");
-
-        //            var rscript = RScript(ModuleName,
-        //                Arr<R.Decl>(
-        //                    new R.StructDecl(R.AccessModifier.Private, "C", Arr<string>(), Arr<R.Path>(), Arr<R.StructMemberDecl>(
-        //                        new R.StructMemberVarDecl(R.AccessModifier.Public, R.Path.Int, Arr<string>("x")),
-
-        //                        new R.StructMemberFuncDecl(default, "F", true, default, Arr(new R.Param(R.ParamKind.Normal, R.Path.Int, "y")), RBlock(
-        //                            new R.ReturnStmt(new R.ReturnInfo.Expression(new R.CallInternalBinaryOperatorExp(
-        //                                R.InternalBinaryOperator.Add_Int_Int_Int,
-        //                                new R.LoadExp(new R.StructMemberLoc(R.ThisLoc.Instance, SPath().Child("x"))),
-        //                                new R.LoadExp(new R.LocalVarLoc("y"))
-        //                            )))
-        //                        )),
-
-        //                        new R.StructConstructorDecl(
-        //                            R.AccessModifier.Public,
-        //                            default,
-        //                            Arr(
-        //                                new R.Param(R.ParamKind.Normal, R.Path.Int, "x")
-        //                            ),
-        //                            RBlock(
-        //                                new R.ExpStmt(new R.AssignExp(
-        //                                    new R.StructMemberLoc(R.ThisLoc.Instance, new R.Path.Nested(SPath(), "x", R.ParamHash.None, default)),
-        //                                    new R.LoadExp(new R.LocalVarLoc("x"))
-        //                                ))
-        //                            )
-        //                        )
-        //                    ))
-        //                ),
-
-        //                RGlobalVarDeclStmt(
-        //                    SPath(),
-        //                    "C",
-        //                    new R.NewStructExp(
-        //                        SPath().Child(R.Name.Constructor.Instance, R.Path.Int),
-        //                        Arr<R.Argument>(new R.Argument.Normal(RInt(3)))
-        //                    )
-        //                ),
-
-        //                // var i = s.F(2);
-
-        //                RGlobalVarDeclStmt(
-        //                    R.Path.Int,
-        //                    "i",
-        //                    new R.CallFuncExp(
-        //                        SPath().Child("F", R.Path.Int),
-        //                        new R.GlobalVarLoc("C"),
-        //                        Arr<R.Argument>(new R.Argument.Normal(RInt(2)))
-        //                    )
-        //                ),
-
-        //                RPrintIntCmdStmt(new R.GlobalVarLoc("i"))
-        //            );
-
-        //            return new ParseTranslateEvalTestData(code, sscript, rscript, "5");
-        //        }
-
-        //        static TestData Make_MemberFunc_ModifySelf_WorksProperly()
-        //        {
-        //            var code = @"
-        //struct S
-        //{
-        //    int x;
-        //    void SetX(int x) { this.x = x; }
-        //    void Print() { @{$x} }
-        //}
-
-        //var s1 = S(3);
-        //var s2 = s1;
-        //s1.SetX(2);
-        //s2.SetX(17);
-
-        //s1.Print();
-        //s2.Print();
-        //";
-        //            return new EvalTestData(code, "217");
-        //        }
-
-        //        static TestData Make_Access_AccessPrivateMemberFunc_ReportError()
-        //        {
-        //            var code = @"
-        //struct S
-        //{
-        //private void F() { }
-        //}
-
-        //var s = S();
-        //s.F();
-        //";
-        //            return new EvalWithErrorTestData(code, A2011_ResolveIdentifier_TryAccessingPrivateMember);
-        //        }
-
-        //        static TestData Make_Access_AccessPrivateMemberFuncInsideMemberFuncOfSameStruct_WorksProperly()
-        //        {
-        //            var code = @"
-        //struct S
-        //{
-        //    private void E() { @{hi} }
-        //    void F() { E(); }
-        //}
-
-        //var s = S();
-        //s.F();
-        //";
-
-        //            return new EvalTestData(code, "hi");
-
-        //        }
-
-        //        static TestData Make_MemberSeqFunc_DependsOnThis_WorksProperly()
-        //        {
-        //            var code = @"
-        //struct S
-        //{
-        //    int x;
-        //    seq int F()
-        //    {
-        //        yield x + 1;
-        //    }
-        //}
-
-        //var s = S(3);
-
-        //foreach(var i in s.F())
-        //@$i
-        //";
-
-        //            return new EvalTestData(code, "4");
-        //        }
+        static TestData Make_VarDecl_UsingConstructor_CallConstructor()
+        {
+            var code = @"
+class C
+{
+    public C(int x) { @{$x} } // x출력
+}
+
+var c = new C(3);
+";
+
+            var sscript = SScript(
+                new S.TypeDeclScriptElement(new S.ClassDecl(null, "C", Arr<string>(), Arr<S.TypeExp>(), Arr<S.ClassMemberDecl>(
+
+                    new S.ClassConstructorDecl(S.AccessModifier.Public, "C", Arr<S.FuncParam>(new S.FuncParam(S.FuncParamKind.Normal, SIntTypeExp(), "x")), SBlock(
+                        new S.CommandStmt(Arr(new S.StringExp(Arr<S.StringExpElement>(new S.ExpStringExpElement(SId("x"))))))
+                    ))
+                ))),
+
+                new S.StmtScriptElement(new S.VarDeclStmt(new S.VarDecl(false, SVarTypeExp(), Arr(new S.VarDeclElement(
+                    "c", new S.VarDeclElemInitializer(false, new S.NewExp(SIdTypeExp("C"), Arr<S.Argument>(new S.Argument.Normal(SInt(3)))))
+                )))))
+            );
+
+            var rscript = RScript(ModuleName,
+                Arr<R.Decl>(
+                    new R.ClassDecl(R.AccessModifier.Private, "C", Arr<string>(), Arr<R.Path>(), Arr<R.ClassMemberDecl>(
+
+                        new R.ClassConstructorDecl(
+                            R.AccessModifier.Public,
+                            default,
+                            Arr(new R.Param(R.ParamKind.Normal, R.Path.Int, "x")),
+                            RBlock(RCommand(RString(new R.ExpStringExpElement(
+                                new R.CallInternalUnaryOperatorExp(R.InternalUnaryOperator.ToString_Int_String, new R.LoadExp(new R.LocalVarLoc("x"))))
+                            )))
+                        ),
+
+                        new R.ClassConstructorDecl(
+                            R.AccessModifier.Public,
+                            default,
+                            default,
+                            RBlock()
+                        )
+                    ))
+                ),
+
+                RGlobalVarDeclStmt(
+                    RRoot("TestModule").Child("C"),
+                    "c",
+                    new R.NewClassExp(
+                        RRoot("TestModule").Child("C"),
+                        new R.ParamHash(0, Arr(new R.ParamHashEntry(R.ParamKind.Normal, R.Path.Int))),                            
+                        Arr<R.Argument>(new R.Argument.Normal(RInt(3)))
+                    )
+                )
+            );
+
+            var result = "3";
+
+            return new ParseTranslateEvalTestData(code, sscript, rscript, result);
+        }
+
+        // using this            
+        static TestData Make_Constructor_UsingThis_ReferCurrentInstance()
+        {
+            var code = @"
+class C { public int x; public C(int x) { this.x = x; } }
+var c = new C(3);
+@${c.x}
+";
+            var sscript = SScript(
+                new S.TypeDeclScriptElement(new S.ClassDecl(null, "C", Arr<string>(), Arr<S.TypeExp>(), Arr<S.ClassMemberDecl>(
+
+                    new S.ClassMemberVarDecl(S.AccessModifier.Public, SIntTypeExp(), Arr("x")),
+
+                    new S.ClassConstructorDecl(S.AccessModifier.Public, "C", Arr<S.FuncParam>(new S.FuncParam(S.FuncParamKind.Normal, SIntTypeExp(), "x")), SBlock(
+                        new S.ExpStmt(new S.BinaryOpExp(S.BinaryOpKind.Assign, new S.MemberExp(SId("this"), "x", default), SId("x")))
+                    ))
+                ))),
+
+                new S.StmtScriptElement(new S.VarDeclStmt(new S.VarDecl(false, SVarTypeExp(), Arr(new S.VarDeclElement(
+                    "c", new S.VarDeclElemInitializer(false, new S.NewExp(SIdTypeExp("C"), Arr<S.Argument>(new S.Argument.Normal(SInt(3)))))
+                ))))),
+
+                new S.StmtScriptElement(new S.CommandStmt(Arr(new S.StringExp(Arr<S.StringExpElement>(new S.ExpStringExpElement(
+                    new S.MemberExp(SId("c"), "x", default)
+                ))))))
+            );
+
+            R.Path.Nested CPath() => RRoot("TestModule").Child("C");
+
+            var rscript = RScript(ModuleName,
+                Arr<R.Decl>(
+                    new R.ClassDecl(R.AccessModifier.Private, "C", Arr<string>(), Arr<R.Path>(), Arr<R.ClassMemberDecl>(
+
+                        new R.ClassMemberVarDecl(R.AccessModifier.Public, R.Path.Int, Arr("x")),
+
+                        new R.ClassConstructorDecl(
+                            R.AccessModifier.Public,
+                            default,
+                            Arr(new R.Param(R.ParamKind.Normal, R.Path.Int, "x")),
+                            RBlock(
+                                new R.ExpStmt(new R.AssignExp(
+                                    new R.ClassMemberLoc(R.ThisLoc.Instance, CPath().Child("x")),
+                                    new R.LoadExp(new R.LocalVarLoc("x"))
+                                )
+                            )
+                        )
+                    )))
+                ),
+
+                RGlobalVarDeclStmt(
+                    CPath(),
+                    "c",
+                    new R.NewClassExp(
+                        CPath(),
+                        new R.ParamHash(0, Arr(new R.ParamHashEntry(R.ParamKind.Normal, R.Path.Int))),
+                        Arr<R.Argument>(new R.Argument.Normal(RInt(3)))
+                    )
+                ),
+
+                RCommand(new R.StringExp(Arr<R.StringExpElement>(new R.ExpStringExpElement(
+                    new R.CallInternalUnaryOperatorExp(
+                        R.InternalUnaryOperator.ToString_Int_String,
+                        new R.LoadExp(new R.ClassMemberLoc(new R.GlobalVarLoc("c"), CPath().Child("x")))
+                    )
+                ))))
+            );
+
+            return new ParseTranslateEvalTestData(code, sscript, rscript, "3");
+        }
+
+        // 생성자를 자동으로 만들기
+        static TestData Make_Constructor_DoesntHaveCorrespondingConstructor_MakeAutomatically()
+        {
+            var code = @"
+class C { public int x; } // without constructor S(int x)
+var c = new C(3);         // but can do this
+@${c.x}
+";
+            var sscript = SScript(
+                new S.TypeDeclScriptElement(new S.ClassDecl(null, "C", Arr<string>(), Arr<S.TypeExp>(), Arr<S.ClassMemberDecl>(
+
+                    new S.ClassMemberVarDecl(S.AccessModifier.Public, SIntTypeExp(), Arr("x"))
+
+                ))),
+
+                new S.StmtScriptElement(new S.VarDeclStmt(new S.VarDecl(false, SVarTypeExp(), Arr(new S.VarDeclElement(
+                    "c", new S.VarDeclElemInitializer(false, new S.NewExp(SIdTypeExp("C"), Arr<S.Argument>(new S.Argument.Normal(SInt(3)))))
+                ))))),
+
+                new S.StmtScriptElement(new S.CommandStmt(Arr(new S.StringExp(Arr<S.StringExpElement>(new S.ExpStringExpElement(
+                    new S.MemberExp(SId("c"), "x", default)
+                ))))))
+            );
+
+            var rscript = RScript(ModuleName,
+                Arr<R.Decl>(
+                    new R.ClassDecl(R.AccessModifier.Private, "C", Arr<string>(), Arr<R.Path>(), Arr<R.ClassMemberDecl>(
+
+                        new R.ClassMemberVarDecl(R.AccessModifier.Public, R.Path.Int, Arr("x")),
+
+                        new R.ClassConstructorDecl(
+                            R.AccessModifier.Public,
+                            default,
+                            Arr(new R.Param(R.ParamKind.Normal, R.Path.Int, "x")),
+                            RBlock(
+                                new R.ExpStmt(new R.AssignExp(
+                                    new R.ClassMemberLoc(R.ThisLoc.Instance, RRoot(ModuleName).Child("C").Child("x")),
+                                    new R.LoadExp(new R.LocalVarLoc("x"))
+                                )
+                            )
+                        )
+                    )))
+                ),
+
+                RGlobalVarDeclStmt(
+                    RRoot(ModuleName).Child("C"),
+                    "c",
+                    new R.NewClassExp(
+                        RRoot(ModuleName).Child("C"),
+                        new R.ParamHash(0, Arr(new R.ParamHashEntry(R.ParamKind.Normal, R.Path.Int))),
+                        Arr<R.Argument>(new R.Argument.Normal(RInt(3)))
+                    )
+                ),
+
+                RCommand(new R.StringExp(Arr<R.StringExpElement>(new R.ExpStringExpElement(
+                    new R.CallInternalUnaryOperatorExp(
+                        R.InternalUnaryOperator.ToString_Int_String,
+                        new R.LoadExp(new R.ClassMemberLoc(new R.GlobalVarLoc("c"), RRoot(ModuleName).Child("C").Child("x")))
+                    )
+                ))))
+            );
+
+            return new ParseTranslateEvalTestData(code, sscript, rscript, "3");
+        }
+
+        static TestData Make_ReferenceMember_ReadAndWrite_WorksProperly()
+        {
+            var code = @"
+class C { public int x; }
+var c = new C(2);
+c.x = 3;
+@${c.x}
+";
+            var sscript = SScript(
+                new S.TypeDeclScriptElement(new S.ClassDecl(null, "C", default, default, Arr<S.ClassMemberDecl>(
+                    new S.ClassMemberVarDecl(S.AccessModifier.Public, SIntTypeExp(), Arr("x"))
+                ))),
+
+                new S.StmtScriptElement(new S.VarDeclStmt(new S.VarDecl(false, SVarTypeExp(), Arr(new S.VarDeclElement(
+                    "c", new S.VarDeclElemInitializer(false, new S.NewExp(SIdTypeExp("C"), Arr<S.Argument>(new S.Argument.Normal(SInt(2)))))
+                ))))),
+
+                new S.StmtScriptElement(new S.ExpStmt(new S.BinaryOpExp(S.BinaryOpKind.Assign, new S.MemberExp(SId("c"), "x", default), SInt(3)))),
+
+                new S.StmtScriptElement(new S.CommandStmt(Arr(new S.StringExp(Arr<S.StringExpElement>(new S.ExpStringExpElement(
+                    new S.MemberExp(SId("c"), "x", default)
+                ))))))
+            );            
+
+            var rscript = RScript(ModuleName,
+                Arr<R.Decl>(
+                    new R.ClassDecl(R.AccessModifier.Private, "C", Arr<string>(), Arr<R.Path>(), Arr<R.ClassMemberDecl>(
+
+                        new R.ClassMemberVarDecl(R.AccessModifier.Public, R.Path.Int, Arr("x")),
+
+                        new R.ClassConstructorDecl(
+                            R.AccessModifier.Public,
+                            default,
+                            Arr(new R.Param(R.ParamKind.Normal, R.Path.Int, "x")),
+                            RBlock(
+                                new R.ExpStmt(new R.AssignExp(
+                                    new R.ClassMemberLoc(R.ThisLoc.Instance, RRoot(ModuleName).Child("C").Child("x")),
+                                    new R.LoadExp(new R.LocalVarLoc("x"))
+                                )
+                            )
+                        )
+                    )))
+                ),
+
+                // C c = new C(2);
+                RGlobalVarDeclStmt(
+                    RRoot(ModuleName).Child("C"),
+                    "c",
+                    new R.NewClassExp(
+                        RRoot(ModuleName).Child("C"),
+                        new R.ParamHash(0, Arr(new R.ParamHashEntry(R.ParamKind.Normal, R.Path.Int))),                        
+                        Arr<R.Argument>(new R.Argument.Normal(RInt(2)))
+                    )
+                ),
+
+                // c.x = 3;
+                new R.ExpStmt(new R.AssignExp(new R.ClassMemberLoc(new R.GlobalVarLoc("c"), RRoot(ModuleName).Child("C").Child("x")), RInt(3))),
+
+                // @${c.x}
+                RCommand(new R.StringExp(Arr<R.StringExpElement>(new R.ExpStringExpElement(
+                    new R.CallInternalUnaryOperatorExp(
+                        R.InternalUnaryOperator.ToString_Int_String,
+                        new R.LoadExp(new R.ClassMemberLoc(new R.GlobalVarLoc("c"), RRoot(ModuleName).Child("C").Child("x")))
+                    )
+                ))))
+            );
+
+            return new ParseTranslateEvalTestData(code, sscript, rscript, "3");
+        }
+
+        static TestData Make_ReferenceSelf_Assign_RefValue()
+        {
+            var code = @"
+class C { public int x; }
+var c1 = new C(2);
+var c2 = new C(17);
+c2 = c1;
+c1.x = 3;
+@{${c2.x}} // 3;
+";
+
+            return new EvalTestData(code, "3");
+        }
+
+        static TestData Make_ReferenceSelf_PassingByValue_CopyValue()
+        {
+            var code = @"
+class C { public int x; }
+void F(C c1) { c1.x = 2; }
+
+var c = new C(3);
+F(c);
+@${c.x}
+";
+
+            return new EvalTestData(code, "2");
+        }
+
+        static TestData Make_ReferenceSelf_PassingByRef_ReferenceValue()
+        {
+            var code = @"
+class C { public int x; }
+void F(ref C c) { c = new C(4); }
+
+var c = new C(3);
+F(ref c);
+@${c.x}
+";
+            return new EvalTestData(code, "4");
+        }
+
+        static TestData Make_Access_AccessPrivateMemberOutsideStruct_ReportError()
+        {
+            var code = @"
+class C { int x; }
+var c = new C(3);
+@${c.x}
+";
+            return new EvalWithErrorTestData(code, A2011_ResolveIdentifier_TryAccessingPrivateMember);
+        }
+
+        static TestData Make_Access_AccessPrivateConstructorOutsideStruct_ReportError()
+        {
+            var code = @"
+class C { C(int x) { } }
+var c = new C(3);
+";
+            return new EvalWithErrorTestData(code, A2011_ResolveIdentifier_TryAccessingPrivateMember);
+        }
+
+        static TestData Make_MemberFunc_Declaration_WorksProperly()
+        {
+            var code = @"
+class C
+{
+    int x;
+    public int F(int y) { return x + y; }
+}
+
+var c = new C(3);
+var i = c.F(2);
+@$i
+";
+
+            var sscript = SScript(
+                new S.TypeDeclScriptElement(new S.ClassDecl(null, "C", Arr<string>(), Arr<S.TypeExp>(), Arr<S.ClassMemberDecl>(
+
+                    new S.ClassMemberVarDecl(null, SIntTypeExp(), Arr("x")),
+                    new S.ClassMemberFuncDecl(S.AccessModifier.Public, false, false, false, SIntTypeExp(), "F", default, Arr(new S.FuncParam(S.FuncParamKind.Normal, SIntTypeExp(), "y")), SBlock(
+                        new S.ReturnStmt(new S.ReturnValueInfo(false, new S.BinaryOpExp(S.BinaryOpKind.Add, SId("x"), SId("y"))))
+                    ))
+                ))),
+
+                new S.StmtScriptElement(new S.VarDeclStmt(new S.VarDecl(false, SVarTypeExp(), Arr(new S.VarDeclElement(
+                    "c", new S.VarDeclElemInitializer(false, new S.NewExp(SIdTypeExp("C"), Arr<S.Argument>(new S.Argument.Normal(SInt(3)))))
+                ))))),
+
+                new S.StmtScriptElement(new S.VarDeclStmt(new S.VarDecl(false, SVarTypeExp(), Arr(new S.VarDeclElement(
+                    "i", new S.VarDeclElemInitializer(false, new S.CallExp(new S.MemberExp(SId("c"), "F", default), Arr<S.Argument>(new S.Argument.Normal(SInt(2)))))
+                ))))),
+
+                new S.StmtScriptElement(new S.CommandStmt(Arr(new S.StringExp(Arr<S.StringExpElement>(new S.ExpStringExpElement(
+                    SId("i")
+                ))))))
+            );
+
+            R.Path.Nested CPath() => RRoot("TestModule").Child("C");
+            R.Path.Nested CxPath() => RRoot("TestModule").Child("C").Child("x");
+
+            var rscript = RScript(ModuleName,
+                Arr<R.Decl>(
+                    new R.ClassDecl(R.AccessModifier.Private, "C", Arr<string>(), Arr<R.Path>(), Arr<R.ClassMemberDecl>(
+                        new R.ClassMemberVarDecl(R.AccessModifier.Private, R.Path.Int, Arr<string>("x")),
+
+                        new R.ClassMemberFuncDecl(default, "F", true, default, Arr(new R.Param(R.ParamKind.Normal, R.Path.Int, "y")), RBlock(
+                            new R.ReturnStmt(new R.ReturnInfo.Expression(new R.CallInternalBinaryOperatorExp(
+                                R.InternalBinaryOperator.Add_Int_Int_Int,
+                                new R.LoadExp(new R.ClassMemberLoc(R.ThisLoc.Instance, CxPath())),
+                                new R.LoadExp(new R.LocalVarLoc("y"))
+                            )))
+                        )),
+
+                        new R.ClassConstructorDecl(
+                            R.AccessModifier.Public,
+                            default,
+                            Arr(
+                                new R.Param(R.ParamKind.Normal, R.Path.Int, "x")
+                            ),
+                            RBlock(
+                                new R.ExpStmt(new R.AssignExp(
+                                    new R.ClassMemberLoc(R.ThisLoc.Instance, CxPath()),
+                                    new R.LoadExp(new R.LocalVarLoc("x"))
+                                ))
+                            )
+                        )
+                    ))
+                ),
+
+                RGlobalVarDeclStmt(
+                    CPath(),
+                    "c",
+                    new R.NewClassExp(
+                        CPath(),
+                        new R.ParamHash(0, Arr(new R.ParamHashEntry(R.ParamKind.Normal, R.Path.Int))),
+                        Arr<R.Argument>(new R.Argument.Normal(RInt(3)))
+                    )
+                ),
+
+                // var i = s.F(2);
+
+                RGlobalVarDeclStmt(
+                    R.Path.Int,
+                    "i",
+                    new R.CallFuncExp(
+                        CPath().Child("F", R.Path.Int),
+                        new R.GlobalVarLoc("c"),
+                        Arr<R.Argument>(new R.Argument.Normal(RInt(2)))
+                    )
+                ),
+
+                RPrintIntCmdStmt(new R.GlobalVarLoc("i"))
+            );
+
+            return new ParseTranslateEvalTestData(code, sscript, rscript, "5");
+        }
+
+        static TestData Make_MemberFunc_ModifySelf_WorksProperly()
+        {
+            var code = @"
+class C
+{
+    int x;
+    public void SetX(int x) { this.x = x; }
+    public void Print() { @{$x} }
+}
+
+var c1 = new C(3);
+var c2 = c1;
+c1.SetX(2);
+c2.SetX(17);
+
+c1.Print();
+c2.Print();
+";
+            return new EvalTestData(code, "1717");
+        }
+
+        static TestData Make_Access_AccessPrivateMemberFunc_ReportError()
+        {
+            var code = @"
+class C
+{
+    void F() { }
+}
+
+var c = new C();
+c.F();
+";
+            return new EvalWithErrorTestData(code, A2011_ResolveIdentifier_TryAccessingPrivateMember);
+        }
+
+        static TestData Make_Access_AccessPrivateMemberFuncInsideMemberFuncOfSameStruct_WorksProperly()
+        {
+            var code = @"
+class C
+{
+    void E() { @{hi} }
+    public void F() { E(); }
+}
+
+var c = new C();
+c.F();
+";
+
+            return new EvalTestData(code, "hi");
+        }
+
+        static TestData Make_MemberSeqFunc_DependsOnThis_WorksProperly()
+        {
+            var code = @"
+class C
+{
+    int x;
+    public seq int F()
+    {
+        yield x + 1;
+    }
+}
+
+var c = new C(3);
+
+foreach(var i in c.F())
+    @$i
+";
+
+            return new EvalTestData(code, "4");
+        }
 
     }
 }

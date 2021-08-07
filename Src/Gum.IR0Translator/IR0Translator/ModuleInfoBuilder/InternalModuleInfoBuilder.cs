@@ -286,7 +286,7 @@ namespace Gum.IR0Translator
                 switch (elem)
                 {
                     case S.ClassMemberFuncDecl funcDecl:
-                        newBuilder.VisitClassMemberFuncDecl(M.AccessModifier.Public, funcDecl);
+                        newBuilder.VisitClassMemberFuncDecl(M.AccessModifier.Private, funcDecl);
                         break;
 
                     case S.ClassMemberTypeDecl typeDecl:
@@ -476,7 +476,6 @@ namespace Gum.IR0Translator
             constructors.Add(new InternalModuleConstructorInfo(accessModifier, constructorDecl.Name, paramInfo));
         }
 
-
         void VisitClassMemberFuncDecl(M.AccessModifier defaultAccessModifier, S.ClassMemberFuncDecl funcDecl)
         {
             bool bThisCall = IsInsideTypeScope(); // TODO: static 키워드가 추가되면 고려하도록 한다
@@ -552,7 +551,8 @@ namespace Gum.IR0Translator
             M.AccessModifier accessModifier;
             switch (constructorDecl.AccessModifier)
             {
-                case null: accessModifier = M.AccessModifier.Public; break;
+                // 기본 private
+                case null: accessModifier = M.AccessModifier.Private; break;
                 case S.AccessModifier.Public: accessModifier = M.AccessModifier.Public; break;
                 case S.AccessModifier.Protected: accessModifier = M.AccessModifier.Protected; break;
                 case S.AccessModifier.Private: throw new FatalException();
