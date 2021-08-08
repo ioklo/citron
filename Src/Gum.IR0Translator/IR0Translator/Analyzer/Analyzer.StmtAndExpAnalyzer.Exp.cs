@@ -339,12 +339,12 @@ namespace Gum.IR0Translator
                 // args는 params를 지원 할 수 있음
                 // TODO: MatchFunc에 OuterTypeEnv를 넣는 것이 나은지, fieldParamTypes에 미리 적용해서 넣는 것이 나은지
                 // paramTypes으로 typeValues를 건네 줄것이면 적용해서 넣는게 나을 것 같은데, TypeResolver 동작때문에 어떻게 될지 몰라서 일단 여기서는 적용하고 TypeEnv.None을 넘겨준다
-                var matchFuncResults = MatchCallable(TypeEnv.None, fieldParamTypes, null, default, sargs);
+                var result = FuncMatcher.Match(globalContext, callableContext, localContext, TypeEnv.None, fieldParamTypes, null, default, sargs);
 
-                if (matchFuncResults.bMatch)
+                if (result != null)
                 {
                     return new ExpResult.Exp(
-                        new R.NewEnumElemExp(elemTypeValue.GetRPath_Nested(), matchFuncResults.Args),
+                        new R.NewEnumElemExp(elemTypeValue.GetRPath_Nested(), result.Value.Args),
                         elemTypeValue
                     );
                 }
@@ -354,106 +354,9 @@ namespace Gum.IR0Translator
                     throw new UnreachableCodeException();
                 }
             }
-
-            [AutoConstructor]
-            partial struct MatchedFunc<TCallableInfo>
-                where TCallableInfo : IModuleCallableInfo
-            {
-                public MatchArgsResult Result { get; }
-                public TCallableInfo CallableInfo { get; }                
-                public GlobalContext GlobalContext { get; }
-                public ICallableContext CallableContext { get; }
-                public LocalContext LocalContext { get; }
-            }
-
-            (ImmutableArray<ParamInfo> Params, int? variadicParamsIndex) MakeParamTypes(ImmutableArray<M.Param> parameters)
-            {
-                int? variadicParamsIndex = null;
-
-                var builder = ImmutableArray.CreateBuilder<ParamInfo>(parameters.Length);
-                foreach (var param in parameters)
-                {
-                    if (param.Kind == M.ParamKind.Params)
-                    {
-                        Debug.Assert(variadicParamsIndex == null);
-                        variadicParamsIndex = builder.Count;
-                    }
-
-                    var type = globalContext.GetTypeValueByMType(param.Type);
-                    var paramKind = param.Kind switch
-                    {
-                        M.ParamKind.Normal => R.ParamKind.Normal,
-                        M.ParamKind.Ref => R.ParamKind.Ref,
-                        M.ParamKind.Params => R.ParamKind.Params,
-                        _ => throw new UnreachableCodeException()
-                    };
-
-                    builder.Add(new ParamInfo(paramKind, type));
-                }
-
-                return (builder.MoveToImmutable(), variadicParamsIndex);
-            }
-
-            MatchedFunc<TCallableInfo> Match<TCallableInfo>(TypeEnv outerTypeEnv, ImmutableArray<TCallableInfo> callableInfos, ImmutableArray<S.Argument> sargs, ImmutableArray<TypeValue> typeArgs, S.ISyntaxNode nodeForErrorReport)
-                where TCallableInfo : IModuleCallableInfo
-            {
-                // 여러 함수 중에서 인자가 맞는것을 선택해야 한다
-                var exactCandidates = new Candidates<MatchedFunc<TCallableInfo>?>();
-                var restCandidates = new Candidates<MatchedFunc<TCallableInfo>?>();
-
-                // Type inference
-                foreach (var callableInfo in callableInfos)
-                {
-                    var clonedAnalyzer = CloneAnalyzer();
-
-                    var matchResult = clonedAnalyzer.MatchCallable(outerTypeEnv, callableInfo.GetParameters(), typeArgs, sargs);
-                    if (!matchResult.bMatch) continue;
-
-                    var matchedCandidate = new MatchedFunc<TCallableInfo>(matchResult, callableInfo, clonedAnalyzer.globalContext, clonedAnalyzer.callableContext, clonedAnalyzer.localContext);
-
-                    if (matchResult.bExactMatch)
-                        exactCandidates.Add(matchedCandidate); // context만 저장하게 수정
-                    else
-                        restCandidates.Add(matchedCandidate);
-                }
-
-                // 매칭 된 것으로
-                MatchedFunc<TCallableInfo> matchedFunc;
-                var exactMatch = exactCandidates.GetSingle();
-                if (exactMatch != null)
-                {
-                    matchedFunc = exactMatch.Value;
-                }
-                else if (exactCandidates.HasMultiple)
-                {
-                    globalContext.AddFatalError(A2101_FuncMatcher_MultipleCandidates, nodeForErrorReport);
-                    throw new UnreachableCodeException();
-                }
-                else // empty
-                {
-                    Debug.Assert(exactCandidates.IsEmpty);
-
-                    var restMatch = restCandidates.GetSingle();
-                    if (restMatch != null)
-                    {
-                        matchedFunc = restMatch.Value;
-                    }
-                    else if (restCandidates.HasMultiple)
-                    {
-                        globalContext.AddFatalError(A2101_FuncMatcher_MultipleCandidates, nodeForErrorReport);
-                        throw new UnreachableCodeException();
-                    }
-                    else // empty
-                    {
-                        globalContext.AddFatalError(A2102_FuncMatcher_NotFound, nodeForErrorReport);
-                        throw new UnreachableCodeException();
-                    }
-                }
-
-                // context 업데이트
-                UpdateAnalyzer(matchedFunc.GlobalContext, matchedFunc.CallableContext, matchedFunc.LocalContext);
-                return matchedFunc;
-            }
+            
+            
+            
 
             // CallExp분석에서 Callable이 Identifier인 경우 처리
             ExpResult AnalyzeCallExpFuncCallable(ExpResult.Funcs funcsResult, ImmutableArray<S.Argument> sargs, S.ISyntaxNode nodeForErrorReport)
@@ -465,10 +368,10 @@ namespace Gum.IR0Translator
 
                 // TypeEnv작성                
                 var outerTypeEnv = funcsResult.Outer.GetTypeEnv();
-                var matchedFunc = Match(outerTypeEnv, funcsResult.FuncInfos, sargs, funcsResult.TypeArgs, nodeForErrorReport);
+                var matchedFunc = FuncMatcher.Match(globalContext, callableContext, localContext, outerTypeEnv, funcsResult.FuncInfos, sargs, funcsResult.TypeArgs, nodeForErrorReport);
 
                 // funcValue만들기
-                var funcValue = globalContext.MakeFuncValue(funcsResult.Outer, matchedFunc.CallableInfo, matchedFunc.Result.TypeArgs);
+                var funcValue = globalContext.MakeFuncValue(funcsResult.Outer, matchedFunc.CallableInfo, matchedFunc.TypeArgs);
 
                 if (!funcValue.CheckAccess(callableContext.GetThisTypeValue()))
                     globalContext.AddFatalError(A2011_ResolveIdentifier_TryAccessingPrivateMember, nodeForErrorReport);
@@ -477,12 +380,12 @@ namespace Gum.IR0Translator
                 {
                     // TODO: funcValue.RetType을 쓰면 의미가 와닿지 않는데, 쉽게 실수 할 수 있을 것 같다
                     var seqTypeValue = globalContext.GetSeqTypeValue(funcValue.GetRPath_Nested(), funcValue.GetRetType());
-                    return new ExpResult.Exp(new R.CallSeqFuncExp(funcValue.GetRPath_Nested(), funcsResult.Instance, matchedFunc.Result.Args), seqTypeValue);
+                    return new ExpResult.Exp(new R.CallSeqFuncExp(funcValue.GetRPath_Nested(), funcsResult.Instance, matchedFunc.Args), seqTypeValue);
                 }
                 else
                 {
                     // 만약
-                    return new ExpResult.Exp(new R.CallFuncExp(funcValue.GetRPath_Nested(), funcsResult.Instance, matchedFunc.Result.Args), funcValue.GetRetType());
+                    return new ExpResult.Exp(new R.CallFuncExp(funcValue.GetRPath_Nested(), funcsResult.Instance, matchedFunc.Args), funcValue.GetRetType());
                 }
             }
 
@@ -496,12 +399,12 @@ namespace Gum.IR0Translator
                 // 일단 lambda파라미터는 params를 지원하지 않는 것으로
                 // args는 params를 지원 할 수 있음
 
-                var matchFuncResults = MatchCallable(TypeEnv.None, lambdaType.Params, null, default, sargs);
+                var result = FuncMatcher.Match(globalContext, callableContext, localContext, TypeEnv.None, lambdaType.Params, null, default, sargs);
 
-                if (matchFuncResults.bMatch)
+                if (result != null)
                 {
                     return new ExpResult.Exp(
-                        new R.CallValueExp(lambdaType.Lambda, callableLoc, matchFuncResults.Args),
+                        new R.CallValueExp(lambdaType.Lambda, callableLoc, result.Value.Args),
                         lambdaType.Return
                     );
                 }
@@ -522,14 +425,14 @@ namespace Gum.IR0Translator
                     switch(result)
                     {
                         case ItemQueryResult.Constructors constructorResult:
-                            var matchedConstructor = Match(structTypeValue.MakeTypeEnv(), constructorResult.ConstructorInfos, sargs, default, nodeForErrorReport);                            
+                            var matchedConstructor = FuncMatcher.Match(globalContext, callableContext, localContext, structTypeValue.MakeTypeEnv(), constructorResult.ConstructorInfos, sargs, default, nodeForErrorReport);                            
 
                             var constructorValue = globalContext.MakeConstructorValue(constructorResult.Outer, matchedConstructor.CallableInfo);
 
                             if (!constructorValue.CheckAccess(callableContext.GetThisTypeValue()))
                                 globalContext.AddFatalError(A2011_ResolveIdentifier_TryAccessingPrivateMember, nodeForErrorReport);
 
-                            return new ExpResult.Exp(new R.NewStructExp(constructorValue.GetRPath_Nested(), matchedConstructor.Result.Args), structTypeValue);
+                            return new ExpResult.Exp(new R.NewStructExp(constructorValue.GetRPath_Nested(), matchedConstructor.Args), structTypeValue);
 
                         case ItemQueryResult.NotFound:
                             globalContext.AddFatalError(A0905_CallExp_NoConstructorFound, nodeForErrorReport);
@@ -1044,7 +947,7 @@ namespace Gum.IR0Translator
                 switch (result)
                 {
                     case ItemQueryResult.Constructors constructorResult:
-                        var matchedConstructor = Match(classTypeValue.MakeTypeEnv(), constructorResult.ConstructorInfos, newExp.Args, default, newExp);
+                        var matchedConstructor = FuncMatcher.Match(globalContext, callableContext, localContext, classTypeValue.MakeTypeEnv(), constructorResult.ConstructorInfos, newExp.Args, default, newExp);
 
                         var constructorValue = globalContext.MakeConstructorValue(constructorResult.Outer, matchedConstructor.CallableInfo);
 
@@ -1055,7 +958,7 @@ namespace Gum.IR0Translator
                             new R.NewClassExp(
                                 classTypeValue.GetRPath_Nested(), 
                                 constructorValue.GetRPath_Nested().ParamHash, 
-                                matchedConstructor.Result.Args
+                                matchedConstructor.Args
                             ), 
                             classTypeValue);
 
@@ -1105,6 +1008,12 @@ namespace Gum.IR0Translator
                 }
 
                 throw new UnreachableCodeException();
+            }
+
+            public static ExpResult.Exp AnalyzeExp_Exp(GlobalContext globalContext, ICallableContext callableContext, LocalContext localContext, S.Exp exp, ResolveHint hint)
+            {
+                var analyzer = new StmtAndExpAnalyzer(globalContext, callableContext, localContext);
+                return analyzer.AnalyzeExp_Exp(exp, hint);
             }
 
             internal ExpResult.Exp AnalyzeExp_Exp(S.Exp exp, ResolveHint hint)

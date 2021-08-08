@@ -36,12 +36,9 @@ class C
                     new R.ClassMemberVarDecl(R.AccessModifier.Public, R.Path.String, Arr("s")),
                     new R.ClassConstructorDecl(
                         R.AccessModifier.Public,
-                        default,
-                        Arr(
-                            new R.Param(R.ParamKind.Normal, R.Path.Int, "x"),
-                            new R.Param(R.ParamKind.Normal, R.Path.Int, "y"),
-                            new R.Param(R.ParamKind.Normal, R.Path.String, "s")
-                        ),
+                        default,                        
+                        RNormalParams((R.Path.Int, "x"), (R.Path.Int, "y"), (R.Path.String, "s")),
+                        null,
                         RBlock(
                             new R.ExpStmt(new R.AssignExp(
                                 new R.ClassMemberLoc(R.ThisLoc.Instance, RRoot(ModuleName).Child("C").Child("x")),
@@ -74,7 +71,7 @@ class C
 
             var sscript = SScript(
                 new S.TypeDeclScriptElement(new S.ClassDecl(null, "C", Arr<string>(), Arr<S.TypeExp>(), Arr<S.ClassMemberDecl>(
-                    new S.ClassConstructorDecl(S.AccessModifier.Public, "C", Arr<S.FuncParam>(new S.FuncParam(S.FuncParamKind.Normal, SIntTypeExp(), "x")), SBlock())
+                    new S.ClassConstructorDecl(S.AccessModifier.Public, "C", SNormalFuncParams((SIntTypeExp(), "x")), null, SBlock())
                 )))
             );
 
@@ -85,7 +82,8 @@ class C
                         new R.ClassConstructorDecl(
                             R.AccessModifier.Public,
                             default,
-                            Arr(new R.Param(R.ParamKind.Normal, R.Path.Int, "x")),
+                            RNormalParams((R.Path.Int, "x")),
+                            null,
                             RBlock()
                         ),
 
@@ -93,6 +91,7 @@ class C
                             R.AccessModifier.Public,
                             default,
                             default,
+                            null,
                             RBlock()
                         )
                     ))
@@ -114,7 +113,7 @@ class C
             // Parsing단계에서는 걸러내지 못하고, Translation 단계에서 걸러낸다
             var sscript = SScript(
                 new S.TypeDeclScriptElement(new S.ClassDecl(null, "C", Arr<string>(), Arr<S.TypeExp>(), Arr<S.ClassMemberDecl>(
-                    errorNode = new S.ClassConstructorDecl(null, "F", Arr<S.FuncParam>(), SBlock())
+                    errorNode = new S.ClassConstructorDecl(null, "F", default, null, SBlock())
                 )))
             );
 
@@ -135,7 +134,7 @@ var c = new C(3);
             var sscript = SScript(
                 new S.TypeDeclScriptElement(new S.ClassDecl(null, "C", Arr<string>(), Arr<S.TypeExp>(), Arr<S.ClassMemberDecl>(
 
-                    new S.ClassConstructorDecl(S.AccessModifier.Public, "C", Arr<S.FuncParam>(new S.FuncParam(S.FuncParamKind.Normal, SIntTypeExp(), "x")), SBlock(
+                    new S.ClassConstructorDecl(S.AccessModifier.Public, "C", Arr<S.FuncParam>(new S.FuncParam(S.FuncParamKind.Normal, SIntTypeExp(), "x")), null, SBlock(
                         new S.CommandStmt(Arr(new S.StringExp(Arr<S.StringExpElement>(new S.ExpStringExpElement(SId("x"))))))
                     ))
                 ))),
@@ -152,16 +151,16 @@ var c = new C(3);
                         new R.ClassConstructorDecl(
                             R.AccessModifier.Public,
                             default,
-                            Arr(new R.Param(R.ParamKind.Normal, R.Path.Int, "x")),
-                            RBlock(RCommand(RString(new R.ExpStringExpElement(
-                                new R.CallInternalUnaryOperatorExp(R.InternalUnaryOperator.ToString_Int_String, new R.LoadExp(new R.LocalVarLoc("x"))))
-                            )))
+                            RNormalParams((R.Path.Int, "x")),
+                            null,                            
+                            RBlock(RPrintIntCmdStmt(new R.LocalVarLoc("x")))
                         ),
 
                         new R.ClassConstructorDecl(
                             R.AccessModifier.Public,
                             default,
                             default,
+                            null,
                             RBlock()
                         )
                     ))
@@ -196,8 +195,8 @@ var c = new C(3);
 
                     new S.ClassMemberVarDecl(S.AccessModifier.Public, SIntTypeExp(), Arr("x")),
 
-                    new S.ClassConstructorDecl(S.AccessModifier.Public, "C", Arr<S.FuncParam>(new S.FuncParam(S.FuncParamKind.Normal, SIntTypeExp(), "x")), SBlock(
-                        new S.ExpStmt(new S.BinaryOpExp(S.BinaryOpKind.Assign, new S.MemberExp(SId("this"), "x", default), SId("x")))
+                    new S.ClassConstructorDecl(S.AccessModifier.Public, "C", SNormalFuncParams((SIntTypeExp(), "x")), null, SBlock(
+                        SAssignStmt(SId("this").Member("x"), SId("x"))
                     ))
                 ))),
 
@@ -206,7 +205,7 @@ var c = new C(3);
                 ))))),
 
                 new S.StmtScriptElement(new S.CommandStmt(Arr(new S.StringExp(Arr<S.StringExpElement>(new S.ExpStringExpElement(
-                    new S.MemberExp(SId("c"), "x", default)
+                    SId("c").Member("x")
                 ))))))
             );
 
@@ -221,15 +220,14 @@ var c = new C(3);
                         new R.ClassConstructorDecl(
                             R.AccessModifier.Public,
                             default,
-                            Arr(new R.Param(R.ParamKind.Normal, R.Path.Int, "x")),
-                            RBlock(
-                                new R.ExpStmt(new R.AssignExp(
-                                    new R.ClassMemberLoc(R.ThisLoc.Instance, CPath().Child("x")),
-                                    new R.LoadExp(new R.LocalVarLoc("x"))
-                                )
-                            )
+                            RNormalParams((R.Path.Int, "x")),
+                            null,
+                            RBlock(RAssignStmt(
+                                R.ThisLoc.Instance.ClassMember(CPath().Child("x")),                                    
+                                RLocalVarExp("x")
+                            ))
                         )
-                    )))
+                    ))
                 ),
 
                 RGlobalVarDeclStmt(
@@ -273,7 +271,7 @@ var c = new C(3);         // but can do this
                 ))))),
 
                 new S.StmtScriptElement(new S.CommandStmt(Arr(new S.StringExp(Arr<S.StringExpElement>(new S.ExpStringExpElement(
-                    new S.MemberExp(SId("c"), "x", default)
+                    SId("c").Member("x")
                 ))))))
             );
 
@@ -286,15 +284,11 @@ var c = new C(3);         // but can do this
                         new R.ClassConstructorDecl(
                             R.AccessModifier.Public,
                             default,
-                            Arr(new R.Param(R.ParamKind.Normal, R.Path.Int, "x")),
-                            RBlock(
-                                new R.ExpStmt(new R.AssignExp(
-                                    new R.ClassMemberLoc(R.ThisLoc.Instance, RRoot(ModuleName).Child("C").Child("x")),
-                                    new R.LoadExp(new R.LocalVarLoc("x"))
-                                )
-                            )
+                            RNormalParams((R.Path.Int, "x")),
+                            null,
+                            RBlock(RAssignStmt(R.ThisLoc.Instance.ClassMember(RRoot(ModuleName).Child("C").Child("x")), RLocalVarExp("x")))                            
                         )
-                    )))
+                    ))
                 ),
 
                 RGlobalVarDeclStmt(
@@ -335,10 +329,10 @@ c.x = 3;
                     "c", new S.VarDeclElemInitializer(false, new S.NewExp(SIdTypeExp("C"), Arr<S.Argument>(new S.Argument.Normal(SInt(2)))))
                 ))))),
 
-                new S.StmtScriptElement(new S.ExpStmt(new S.BinaryOpExp(S.BinaryOpKind.Assign, new S.MemberExp(SId("c"), "x", default), SInt(3)))),
+                new S.StmtScriptElement(SAssignStmt(SId("c").Member("x"), SInt(3))),
 
                 new S.StmtScriptElement(new S.CommandStmt(Arr(new S.StringExp(Arr<S.StringExpElement>(new S.ExpStringExpElement(
-                    new S.MemberExp(SId("c"), "x", default)
+                    SId("c").Member("x")
                 ))))))
             );            
 
@@ -351,15 +345,11 @@ c.x = 3;
                         new R.ClassConstructorDecl(
                             R.AccessModifier.Public,
                             default,
-                            Arr(new R.Param(R.ParamKind.Normal, R.Path.Int, "x")),
-                            RBlock(
-                                new R.ExpStmt(new R.AssignExp(
-                                    new R.ClassMemberLoc(R.ThisLoc.Instance, RRoot(ModuleName).Child("C").Child("x")),
-                                    new R.LoadExp(new R.LocalVarLoc("x"))
-                                )
-                            )
+                            RNormalParams((R.Path.Int, "x")),
+                            null,
+                            RBlock(RAssignStmt(R.ThisLoc.Instance.ClassMember(RRoot(ModuleName).Child("C").Child("x")), RLocalVarExp("x")))
                         )
-                    )))
+                    ))
                 ),
 
                 // C c = new C(2);
@@ -476,7 +466,7 @@ var i = c.F(2);
                 ))))),
 
                 new S.StmtScriptElement(new S.VarDeclStmt(new S.VarDecl(false, SVarTypeExp(), Arr(new S.VarDeclElement(
-                    "i", new S.VarDeclElemInitializer(false, new S.CallExp(new S.MemberExp(SId("c"), "F", default), Arr<S.Argument>(new S.Argument.Normal(SInt(2)))))
+                    "i", new S.VarDeclElemInitializer(false, new S.CallExp(SId("c").Member("F"), Arr<S.Argument>(new S.Argument.Normal(SInt(2)))))
                 ))))),
 
                 new S.StmtScriptElement(new S.CommandStmt(Arr(new S.StringExp(Arr<S.StringExpElement>(new S.ExpStringExpElement(
@@ -503,15 +493,9 @@ var i = c.F(2);
                         new R.ClassConstructorDecl(
                             R.AccessModifier.Public,
                             default,
-                            Arr(
-                                new R.Param(R.ParamKind.Normal, R.Path.Int, "x")
-                            ),
-                            RBlock(
-                                new R.ExpStmt(new R.AssignExp(
-                                    new R.ClassMemberLoc(R.ThisLoc.Instance, CxPath()),
-                                    new R.LoadExp(new R.LocalVarLoc("x"))
-                                ))
-                            )
+                            RNormalParams((R.Path.Int, "x")),
+                            null,
+                            RBlock(RAssignStmt(R.ThisLoc.Instance.ClassMember(CxPath()), RLocalVarExp("x")))
                         )
                     ))
                 ),
@@ -614,6 +598,117 @@ foreach(var i in c.F())
 ";
 
             return new EvalTestData(code, "4");
+        }
+
+        static TestData Make_Inheritance_UseBase_CallBaseConstructor()
+        {
+            var code = @"
+class B 
+{ 
+    public int x; 
+    public B(int x) { this.x = x; }
+}
+
+class C : B
+{
+    public int y;
+    public C(int x, int y) : base(x) { this.y = y; } // base를 부르는 방식, 항상 처음에 불리게 되며, 계산된 값이 base로 흘러가야 할 경우, static method를 쓰세요
+}
+
+C c = new C(2, 3);
+@{${c.x}} // x가 제대로 들어갔는지 확인
+";
+
+            var sscript = SScript(
+
+                // B
+                new S.TypeDeclScriptElement(
+                    new S.ClassDecl(null, "B", default, default, Arr<S.ClassMemberDecl>(
+                        new S.ClassMemberVarDecl(S.AccessModifier.Public, SIntTypeExp(), Arr("x")),
+                        new S.ClassConstructorDecl(S.AccessModifier.Public, "B", Arr(new S.FuncParam(S.FuncParamKind.Normal, SIntTypeExp(), "x")), null, SBlock(
+                            SAssignStmt(SId("this").Member("x"), SId("x"))
+                        ))
+                    ))
+                ),
+
+                // C
+                new S.TypeDeclScriptElement(
+                    new S.ClassDecl(null, "C", default, Arr<S.TypeExp>(SIdTypeExp("B")), Arr<S.ClassMemberDecl>(
+                        new S.ClassMemberVarDecl(S.AccessModifier.Public, SIntTypeExp(), Arr("y")),
+                        new S.ClassConstructorDecl(
+                            S.AccessModifier.Public, "C",
+                            SNormalFuncParams((SIntTypeExp(), "x"), (SIntTypeExp(), "y")),
+                            SNormalArgs(SId("x")),
+                            SBlock(SAssignStmt(SId("this").Member("y"), SId("y")))
+                        )
+                    ))
+                ),
+
+                // var c = new C(2, 3);                
+                new S.StmtScriptElement(
+                    SVarDeclStmt(SVarTypeExp(), "c", new S.NewExp(SIdTypeExp("C"), SNormalArgs(SInt(2), SInt(3))))
+                ),
+
+                // @{${c.x}}
+                new S.StmtScriptElement(SCommand(SId("c").Member("x")))
+            );
+
+            var rscript = RScript(
+                ModuleName, 
+                Arr<R.Decl>(
+
+                    // B
+                    new R.ClassDecl(R.AccessModifier.Private, "B", default, default, Arr<R.ClassMemberDecl>(
+                        new R.ClassMemberVarDecl(R.AccessModifier.Public, R.Path.Int, Arr("x")),
+                        new R.ClassConstructorDecl(R.AccessModifier.Public, default, RNormalParams((R.Path.Int, "x")), null, RBlock(
+                            RAssignStmt(R.ThisLoc.Instance.ClassMember(RRoot(ModuleName).Child("B").Child("x")), RLocalVarExp("x"))
+                        ))
+                    )),
+
+                    // C
+                    new R.ClassDecl(R.AccessModifier.Private, "C", default, default, Arr<R.ClassMemberDecl>(
+                        new R.ClassMemberVarDecl(R.AccessModifier.Public, R.Path.Int, Arr("y")),
+                        new R.ClassConstructorDecl(
+                            R.AccessModifier.Public, default, 
+                            RNormalParams((R.Path.Int, "x"), (R.Path.Int, "y")), 
+                            new R.ClassConstructorBaseCallInfo(
+                                RNormalParamHash(R.Path.Int),
+                                RArgs(RLocalVarExp("x"))
+                            ),
+                            RBlock(RAssignStmt(R.ThisLoc.Instance.ClassMember(RRoot(ModuleName).Child("C").Child("y")), RLocalVarExp("y")))
+                        )
+                    ))
+                ),
+                
+                RGlobalVarDeclStmt(RRoot(ModuleName).Child("C"), "c",  new R.NewClassExp(RRoot(ModuleName).Child("c"), 
+                    RNormalParamHash(R.Path.Int, R.Path.Int), 
+                    RArgs(RInt(2), RInt(3))
+                )),
+
+                // C인가 B인가.. C인거 같은데
+                RPrintIntCmdStmt(new R.GlobalVarLoc("c").ClassMember(RRoot(ModuleName).Child("C").Child("x")))
+            );
+
+            return new ParseTranslateEvalTestData(code, sscript, rscript, "2");
+        }
+
+        // base protected, private 잘 되는지 확인
+
+        static TestData Make_Inheritance_AutoConstructor_RecognizeBaseAutoConstructor()
+        {
+            var code = @"
+class B { public int x; }
+class C : B
+{
+    public int y;
+}
+
+C c = new C(2, 3);
+@${c.y}
+";
+
+
+
         }
 
     }

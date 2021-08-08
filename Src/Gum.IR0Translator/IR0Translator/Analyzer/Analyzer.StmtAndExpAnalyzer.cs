@@ -54,25 +54,6 @@ namespace Gum.IR0Translator
                 return new StmtAndExpAnalyzer(globalContext, callableContext, newLocalContext);
             }
 
-            StmtAndExpAnalyzer CloneAnalyzer()
-            {
-                var cloneContext = CloneContext.Make();
-                var clonedGlobalContext = cloneContext.GetClone(globalContext);
-                var clonedCallableContext = cloneContext.GetClone(callableContext);
-                var clonedLocalContext = cloneContext.GetClone(localContext);
-
-                return new StmtAndExpAnalyzer(clonedGlobalContext, clonedCallableContext, clonedLocalContext);
-            }
-
-            void UpdateAnalyzer(GlobalContext srcGlobalContext, ICallableContext srcCallableContext, LocalContext srcLocalContext)
-            {
-                var updateContext = UpdateContext.Make();
-
-                updateContext.Update(globalContext, srcGlobalContext);
-                updateContext.Update(callableContext, srcCallableContext);
-                updateContext.Update(localContext, srcLocalContext);
-            }
-
             // var x = 3, y = ref i; 라면 
             R.LocalVarDecl AnalyzeLocalVarDecl(S.VarDecl varDecl)
             {

@@ -1,4 +1,5 @@
 ﻿using Gum.Collections;
+using Pretune;
 
 namespace Gum.IR0
 {
@@ -19,11 +20,19 @@ namespace Gum.IR0
         public override void EnsurePure() { }
     }
 
+    [AutoConstructor]
+    public partial struct ClassConstructorBaseCallInfo
+    {
+        public ParamHash ParamHash { get; }
+        public ImmutableArray<Argument> Args { get; }
+    }
+
     // public S(int a, int b) { }
     public record ClassConstructorDecl(
         AccessModifier AccessModifier,
         ImmutableArray<Decl> Decls,
         ImmutableArray<Param> Parameters,
+        ClassConstructorBaseCallInfo? BaseCallInfo,
         Stmt Body
     ) : ClassMemberDecl
     {

@@ -139,7 +139,7 @@ namespace Gum
             }
         }
 
-        async ValueTask<ParseResult<ImmutableArray<Argument>>> ParseCallArgs(ParserContext context)
+        public async ValueTask<ParseResult<ImmutableArray<Argument>>> ParseCallArgsAsync(ParserContext context)
         {
             if (!Accept<LParenToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                 return ParseResult<ImmutableArray<Argument>>.Invalid;
@@ -225,7 +225,7 @@ namespace Gum
                 }
 
                 // (..., ... )                
-                if (Parse(await ParseCallArgs(context), ref context, out var callArgs))
+                if (Parse(await ParseCallArgsAsync(context), ref context, out var callArgs))
                 {                    
                     exp = new CallExp(exp, callArgs);
                     continue;
@@ -446,7 +446,7 @@ namespace Gum
             if (!Parse(await parser.ParseTypeExpAsync(context), ref context, out var type))
                 return ExpParseResult.Invalid;
 
-            if (!Parse(await ParseCallArgs(context), ref context, out var callArgs))
+            if (!Parse(await ParseCallArgsAsync(context), ref context, out var callArgs))
                 return ExpParseResult.Invalid;
 
             return new ExpParseResult(new NewExp(type, callArgs), context);

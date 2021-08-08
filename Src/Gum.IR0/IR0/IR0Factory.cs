@@ -34,6 +34,11 @@ namespace Gum.IR0
         public static StringExp RString(string v)
             => new StringExp(Arr<StringExpElement>(new TextStringExpElement(v)));
 
+        public static Stmt RAssignStmt(Loc dest, Exp src)
+        {
+            return new ExpStmt(new AssignExp(dest, src));
+        }
+
         public static GlobalVarDeclStmt RGlobalVarDeclStmt(Path type, string name, Exp? initExp = null)
         {
             if (initExp == null)
@@ -55,7 +60,7 @@ namespace Gum.IR0
         public static IntLiteralExp RInt(int v) => new IntLiteralExp(v);
         public static BoolLiteralExp RBool(bool v) => new BoolLiteralExp(v);
 
-        public static ImmutableArray<Param> RParamInfo(params (Path Path, string Name)[] elems)
+        public static ImmutableArray<Param> RNormalParams(params (Path Path, string Name)[] elems)
         {
             return elems.Select(e => new Param(ParamKind.Normal, e.Path, e.Name)).ToImmutableArray();
         }
@@ -126,5 +131,22 @@ namespace Gum.IR0
         // no typeparams version
         public static Path.Nested Child(this Path.Normal outer, Name name, params ParamHashEntry[] entries)
             => new Path.Nested(outer, name, new ParamHash(0, entries.ToImmutableArray()), default);
+
+        public static ClassMemberLoc ClassMember(this Loc instance, Path.Nested memberPath)
+        {
+            return new ClassMemberLoc(instance, memberPath);
+        }
+
+        public static Exp RLocalVarExp(string name)
+        {
+            return new LoadExp(new LocalVarLoc(name));
+        }
+
+        public static ParamHash RNormalParamHash(params Path[] paths)
+        {
+            return new ParamHash(0, paths.Select(path => new ParamHashEntry(ParamKind.Normal, path)).ToImmutableArray());
+        }
+
+
     }
 }

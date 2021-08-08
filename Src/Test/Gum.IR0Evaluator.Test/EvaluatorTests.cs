@@ -1011,7 +1011,7 @@ namespace Gum.IR0Evaluator.Test
             var testFunc = RootPath("TestFunc", Arr(Path.Int, Path.Int, Path.Int), default);
 
             // Print(int x)
-            var printFuncDecl = new NormalFuncDecl(default, "Print", false, default, RParamInfo((Path.Int, "x")),
+            var printFuncDecl = new NormalFuncDecl(default, "Print", false, default, RNormalParams((Path.Int, "x")),
 
                 RBlock(
                     RPrintIntCmdStmt(new LocalVarLoc("x")),
@@ -1020,7 +1020,7 @@ namespace Gum.IR0Evaluator.Test
             );
 
             // TestFunc(int i, int j, int k)
-            var testFuncDecl = new NormalFuncDecl(default, "TestFunc", false, default, RParamInfo((Path.Int, "i"), (Path.Int, "j"), (Path.Int, "k")),
+            var testFuncDecl = new NormalFuncDecl(default, "TestFunc", false, default, RNormalParams((Path.Int, "i"), (Path.Int, "j"), (Path.Int, "k")),
 
                 RPrintStringCmdStmt("TestFunc")
 
@@ -1355,7 +1355,7 @@ namespace Gum.IR0Evaluator.Test
             var lambda = new Path.Nested(makeLambda, new Name.Anonymous(new AnonymousId(0)), ParamHash.None, default);
 
             // Print(int x) { 
-            var printFuncDecl = new NormalFuncDecl(default, "Print", false, default, RParamInfo((Path.Int, "x")),
+            var printFuncDecl = new NormalFuncDecl(default, "Print", false, default, RNormalParams((Path.Int, "x")),
                 RBlock(
                     RPrintIntCmdStmt(new LocalVarLoc("x")),
                     new ReturnStmt(new ReturnInfo.Expression(new LoadExp(LocalVar("x"))))
@@ -1366,7 +1366,7 @@ namespace Gum.IR0Evaluator.Test
             var lambdaDecl = new LambdaDecl(
                 new Name.Anonymous(new AnonymousId(0)),
                 new CapturedStatement(null, default, RPrintStringCmdStmt("TestFunc")),
-                RParamInfo((Path.Int, "i"), (Path.Int, "j"), (Path.Int, "k"))
+                RNormalParams((Path.Int, "i"), (Path.Int, "j"), (Path.Int, "k"))
             );
             
             var makeLambdaDecl = new NormalFuncDecl(Arr<Decl>(lambdaDecl), "MakeLambda", false, default, default,
@@ -1449,7 +1449,7 @@ namespace Gum.IR0Evaluator.Test
             var printFunc = RootPath("Print", Arr(Path.Int), default);
 
             // print(int x)
-            var printFuncDecl = new NormalFuncDecl(default, "Print", false, default, RParamInfo((Path.Int, "x")),
+            var printFuncDecl = new NormalFuncDecl(default, "Print", false, default, RNormalParams((Path.Int, "x")),
 
                 RBlock(
                     RPrintIntCmdStmt(new LocalVarLoc("x")),

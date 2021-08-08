@@ -574,6 +574,27 @@ namespace Gum
             if (!Accept<IdentifierToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context, out var name))
                 return Invalid();
 
+            // base()
+            ImmutableArray<Argument>? baseArgs;
+            if (Accept<IdentifierToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context, out var expectedToBeBase))
+            {
+                if (expectedToBeBase.Value == "base")
+                {
+                    if (!Parse(await expParser.ParseCallArgsAsync(context), ref context, out var args))
+                        return Invalid();
+
+                    baseArgs = args;
+                }
+                else // base가 아닌 identifier는 오면 안된다. 다음은 '(' 토큰이다
+                {
+                    return Invalid();
+                }
+            }
+            else
+            {
+                baseArgs = null;
+            }
+
             // ex) (int i, int a)
             if (!Parse(await ParseFuncDeclParamsAsync(context), ref context, out var paramInfo))
                 return Invalid();
@@ -582,7 +603,7 @@ namespace Gum
             if (!Parse(await stmtParser.ParseBlockStmtAsync(context), ref context, out var body))
                 return Invalid();
 
-            var constructorDecl = new ClassConstructorDecl(accessModifier, name.Value, paramInfo, body);
+            var constructorDecl = new ClassConstructorDecl(accessModifier, name.Value, paramInfo, baseArgs, body);
 
             return new ParseResult<ClassConstructorDecl>(constructorDecl, context);
         }

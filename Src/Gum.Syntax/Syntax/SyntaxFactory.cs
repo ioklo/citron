@@ -47,6 +47,11 @@ namespace Gum.Syntax
         public static BlockStmt SBlock(params Stmt[] stmts)
             => new BlockStmt(Arr(stmts));
 
+        public static Stmt SAssignStmt(Exp destExp, Exp srcExp)
+        {
+            return new ExpStmt(new BinaryOpExp(BinaryOpKind.Assign, destExp, srcExp));
+        }
+
         public static IntLiteralExp SInt(int v) => new IntLiteralExp(v);
         public static BoolLiteralExp SBool(bool v) => new BoolLiteralExp(v);
         public static IdentifierExp SId(string name) => new IdentifierExp(name, default);
@@ -59,5 +64,31 @@ namespace Gum.Syntax
         public static TypeExp SStringTypeExp() => new IdTypeExp("string", default);
 
         public static IdTypeExp SIdTypeExp(string name, params TypeExp[] typeArgs) => new IdTypeExp(name, Arr(typeArgs));
+
+        public static Exp Member(this Exp parent, string memberName, ImmutableArray<TypeExp> typeArgs = default)
+        {
+            return new MemberExp(parent, memberName, typeArgs);
+        }
+
+        public static ImmutableArray<FuncParam> SNormalFuncParams(params (TypeExp ParamType, string ParamName)[] ps)
+        {
+            var builder = ImmutableArray.CreateBuilder<FuncParam>(ps.Length);
+            foreach (var p in ps)
+                builder.Add(new FuncParam(FuncParamKind.Normal, p.ParamType, p.ParamName));
+            return builder.MoveToImmutable();
+        }
+
+        public static ImmutableArray<Argument> SNormalArgs(params Exp[] exps)
+        {
+            var builder = ImmutableArray.CreateBuilder<Argument>(exps.Length);
+            foreach (var exp in exps)
+                builder.Add(new Argument.Normal(exp));
+            return builder.MoveToImmutable();
+        }
+
+        public static CommandStmt SCommand(Exp exp)
+        {
+            return new CommandStmt(Arr(new StringExp(Arr<StringExpElement>(new ExpStringExpElement(exp)))));
+        }
     }
 }

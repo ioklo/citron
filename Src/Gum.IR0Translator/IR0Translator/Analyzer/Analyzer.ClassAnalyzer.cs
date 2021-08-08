@@ -129,7 +129,20 @@ namespace Gum.IR0Translator
 
                 var decls = constructorContext.GetDecls();
 
-                memberBuilder.Add(new R.ClassConstructorDecl(accessModifier, decls, rparamInfos, bodyResult.Stmt));
+                R.ClassConstructorBaseCallInfo? baseCallInfo;
+                if (constructorDecl.BaseArgs == null) 
+                {
+                    // BaseType이 있다면 기본을 불러야 한다. 없다면 baseCallInfo는 null
+                    // 기본이 있는가
+                }
+                else
+                {
+                                        
+
+                }
+
+
+                memberBuilder.Add(new R.ClassConstructorDecl(accessModifier, decls, rparamInfos, baseCallInfo, bodyResult.Stmt));
             }
 
             void AnalyzeMemberFuncDecl(ImmutableArray<R.ClassMemberDecl>.Builder memberBuilder, S.ClassMemberFuncDecl funcDecl)
