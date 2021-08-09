@@ -21,7 +21,7 @@ namespace Gum.IR0
     }
 
     [AutoConstructor]
-    public partial struct ClassConstructorBaseCallInfo
+    public partial struct ConstructorBaseCallInfo
     {
         public ParamHash ParamHash { get; }
         public ImmutableArray<Argument> Args { get; }
@@ -32,7 +32,7 @@ namespace Gum.IR0
         AccessModifier AccessModifier,
         ImmutableArray<Decl> Decls,
         ImmutableArray<Param> Parameters,
-        ClassConstructorBaseCallInfo? BaseCallInfo,
+        ConstructorBaseCallInfo? BaseCallInfo,
         Stmt Body
     ) : ClassMemberDecl
     {

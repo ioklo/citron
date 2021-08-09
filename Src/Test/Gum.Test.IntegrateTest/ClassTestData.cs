@@ -615,7 +615,7 @@ class C : B
     public C(int x, int y) : base(x) { this.y = y; } // base를 부르는 방식, 항상 처음에 불리게 되며, 계산된 값이 base로 흘러가야 할 경우, static method를 쓰세요
 }
 
-C c = new C(2, 3);
+var c = new C(2, 3);
 @{${c.x}} // x가 제대로 들어갔는지 확인
 ";
 
@@ -666,12 +666,12 @@ C c = new C(2, 3);
                     )),
 
                     // C
-                    new R.ClassDecl(R.AccessModifier.Private, "C", default, RRoot("ModuleName").Child("B"), default, Arr<R.ClassMemberDecl>(
+                    new R.ClassDecl(R.AccessModifier.Private, "C", default, RRoot(ModuleName).Child("B"), default, Arr<R.ClassMemberDecl>(
                         new R.ClassMemberVarDecl(R.AccessModifier.Public, R.Path.Int, Arr("y")),
                         new R.ClassConstructorDecl(
                             R.AccessModifier.Public, default, 
                             RNormalParams((R.Path.Int, "x"), (R.Path.Int, "y")), 
-                            new R.ClassConstructorBaseCallInfo(
+                            new R.ConstructorBaseCallInfo(
                                 RNormalParamHash(R.Path.Int),
                                 RArgs(RLocalVarExp("x"))
                             ),

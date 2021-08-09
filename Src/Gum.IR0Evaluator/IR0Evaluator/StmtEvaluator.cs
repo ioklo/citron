@@ -45,6 +45,26 @@ namespace Gum.IR0Evaluator
                 await foreach (var _ in stmtEvaluator.EvalStmtAsync(stmt)) ;
             }
 
+            public static async ValueTask EvalConstructorAsync(
+                GlobalContext globalContext, 
+                ImmutableDictionary<string, Value> args, 
+                Value thisValue, 
+                (ConstructorRuntimeItem BaseConstructorItem, ImmutableArray<R.Argument> Args)? baseCallInfo,
+                R.Stmt body)
+            {
+                var context = new EvalContext(default, EvalFlowControl.None, thisValue, VoidValue.Instance);
+                var localContext = new LocalContext(args);
+                var localTaskContext = new LocalTaskContext();
+
+                if (baseCallInfo != null)
+                {
+                    var baseCallArgs = await ExpEvaluator.EvalArgumentsAsync(globalContext, context, localContext, baseCallInfo.Value.BaseConstructorItem.Parameters, baseCallInfo.Value.Args);
+                    await baseCallInfo.Value.BaseConstructorItem.InvokeAsync(thisValue, baseCallArgs);
+                }
+
+                await EvalAsync(globalContext, context, localContext, localTaskContext, body);
+            }
+
             // yield를 먹는다
             // TODO: 유틸리티 함수인데 제거해도 되지 않을까
             public static ValueTask EvalFuncBodyAsync(GlobalContext globalContext, ImmutableDictionary<string, Value> args, Value? thisValue, Value retValue, R.Stmt body)

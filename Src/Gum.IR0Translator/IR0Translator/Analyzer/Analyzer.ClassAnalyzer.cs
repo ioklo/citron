@@ -103,7 +103,7 @@ namespace Gum.IR0Translator
                 memberBuilder.Add(new R.ClassMemberVarDecl(accessModifier, rtype, varDecl.VarNames));
             }
 
-            R.ClassConstructorBaseCallInfo? HandleConstructorDeclBaseArgs(ICallableContext callableContext, LocalContext localContext, ImmutableArray<S.Argument>? baseArgs, S.ISyntaxNode nodeForErrorReport)
+            R.ConstructorBaseCallInfo? HandleConstructorDeclBaseArgs(ICallableContext callableContext, LocalContext localContext, ImmutableArray<S.Argument>? baseArgs, S.ISyntaxNode nodeForErrorReport)
             {
                 if (baseArgs == null)
                 {
@@ -124,7 +124,7 @@ namespace Gum.IR0Translator
                         globalContext.AddFatalError(A2504_ClassDecl_CannotAccessBaseClassConstructor, nodeForErrorReport);
 
                     // no argument
-                    return new R.ClassConstructorBaseCallInfo(R.ParamHash.None, default);
+                    return new R.ConstructorBaseCallInfo(R.ParamHash.None, default);
                 }
                 else
                 {
@@ -149,7 +149,7 @@ namespace Gum.IR0Translator
                                 if (!constructorValue.CheckAccess(classTypeValue))
                                     globalContext.AddFatalError(A2504_ClassDecl_CannotAccessBaseClassConstructor, nodeForErrorReport);
 
-                                return new R.ClassConstructorBaseCallInfo(constructorValue.GetRPath_Nested().ParamHash, matchedConstructor.Args);
+                                return new R.ConstructorBaseCallInfo(constructorValue.GetRPath_Nested().ParamHash, matchedConstructor.Args);
 
                             case ItemQueryResult.NotFound:
                                 globalContext.AddFatalError(A2503_ClassDecl_CannotFindBaseClassConstructor, nodeForErrorReport);
@@ -186,7 +186,7 @@ namespace Gum.IR0Translator
                     localContext.AddLocalVarInfo(param.Kind == S.FuncParamKind.Ref, paramTypeValue, param.Name);
                 }
 
-                R.ClassConstructorBaseCallInfo? baseCallInfo = HandleConstructorDeclBaseArgs(constructorContext, localContext, constructorDecl.BaseArgs, constructorDecl);
+                R.ConstructorBaseCallInfo? baseCallInfo = HandleConstructorDeclBaseArgs(constructorContext, localContext, constructorDecl.BaseArgs, constructorDecl);
 
                 var analyzer = new StmtAndExpAnalyzer(globalContext, constructorContext, localContext);
 

@@ -18,6 +18,7 @@ namespace Gum.IR0Evaluator
             GlobalContext globalContext;
             ItemContainer classContainer;
 
+            R.ClassDecl classDecl;
             R.Path.Nested classPath;
             int totalTypeParamCount;
             List<R.Path> memberVarTypes;
@@ -28,7 +29,7 @@ namespace Gum.IR0Evaluator
                 var classPath = curPath.Child(classDecl.Name, new R.ParamHash(classDecl.TypeParams.Length, default), typeArgs);
 
                 var classContainer = new ItemContainer();
-                var evaluator = new ClassDeclEvaluator(globalContext, classPath, totalTypeParamCount + classDecl.TypeParams.Length, classContainer);
+                var evaluator = new ClassDeclEvaluator(globalContext, classPath, totalTypeParamCount + classDecl.TypeParams.Length, classContainer, classDecl);
 
                 foreach (var memberDecl in classDecl.MemberDecls)
                 {
@@ -39,12 +40,13 @@ namespace Gum.IR0Evaluator
                 parentContainer.AddRuntimeItem(new IR0ClassRuntimeItem(globalContext, classDecl, evaluator.memberVarTypes.ToImmutableArray()));
             }
 
-            ClassDeclEvaluator(GlobalContext globalContext, R.Path.Nested classPath, int totalTypeParamCount, ItemContainer classContainer)
+            ClassDeclEvaluator(GlobalContext globalContext, R.Path.Nested classPath, int totalTypeParamCount, ItemContainer classContainer, R.ClassDecl classDecl)
             {
                 this.globalContext = globalContext;
                 this.classContainer = classContainer;
                 this.classPath = classPath;
                 this.totalTypeParamCount = totalTypeParamCount;
+                this.classDecl = classDecl;
                 this.memberVarTypes = new List<R.Path>();
             }
 
@@ -63,7 +65,21 @@ namespace Gum.IR0Evaluator
             {
                 // NOTICE: Constructor는 typeParamCount가 0 이다
                 var paramHash = Misc.MakeParamHash(typeParamCount: 0, constructorDecl.Parameters);
-                var runtimeItem = new IR0ConstructorRuntimeItem(globalContext, R.Name.Constructor.Instance, paramHash, constructorDecl.Parameters, constructorDecl.Body);
+
+                IR0ConstructorRuntimeItem runtimeItem;
+                if (constructorDecl.BaseCallInfo != null)
+                {
+                    var baseConstructorPath = classDecl.BaseClass!.Child(R.Name.Constructor.Instance, constructorDecl.BaseCallInfo.Value.ParamHash, default);
+
+                    // with base constructor call
+                    runtimeItem = new IR0ConstructorRuntimeItem(
+                        globalContext, R.Name.Constructor.Instance, paramHash, constructorDecl.Parameters,
+                        baseConstructorPath, constructorDecl.BaseCallInfo.Value.Args, constructorDecl.Body);
+                }
+                else
+                {
+                    runtimeItem = new IR0ConstructorRuntimeItem(globalContext, R.Name.Constructor.Instance, paramHash, constructorDecl.Parameters, constructorDecl.Body);
+                }
 
                 var constructorContainer = new ItemContainer();
                 classContainer.AddItemContainer(R.Name.Constructor.Instance, paramHash, constructorContainer);

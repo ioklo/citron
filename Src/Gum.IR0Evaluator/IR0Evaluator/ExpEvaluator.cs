@@ -35,6 +35,12 @@ namespace Gum.IR0Evaluator
                 return evaluator.EvalStringExpAsync(stringExp, result);
             }
 
+            public static ValueTask<ImmutableArray<Value>> EvalArgumentsAsync(GlobalContext globalContext, EvalContext context, LocalContext localContext, ImmutableArray<R.Param> parameters, ImmutableArray<R.Argument> args)
+            {
+                var evaluator = new ExpEvaluator(globalContext, context, localContext);
+                return evaluator.EvalArgumentsAsync(parameters, args);
+            }
+
             ExpEvaluator(GlobalContext globalContext, EvalContext context, LocalContext localContext)
             {
                 this.globalContext = globalContext;
