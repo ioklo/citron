@@ -16,6 +16,7 @@ namespace Gum.IR0Translator
         M.Name name;
         ImmutableArray<string> typeParams;
         M.Type? baseType;
+        ImmutableArray<M.Type> interfaceTypes;
         ImmutableArray<IModuleTypeInfo> types;
         ImmutableArray<IModuleFuncInfo> funcs;
         ImmutableArray<IModuleConstructorInfo> constructors;
@@ -26,7 +27,9 @@ namespace Gum.IR0Translator
         ModuleFuncDict funcDict;
 
         public InternalModuleClassInfo(
-            M.Name name, ImmutableArray<string> typeParams, M.Type? baseType,
+            M.Name name, ImmutableArray<string> typeParams, 
+            M.Type? baseType,
+            ImmutableArray<M.Type> interfaceTypes,
             IEnumerable<IModuleTypeInfo> types,
             IEnumerable<IModuleFuncInfo> funcs,
             ImmutableArray<IModuleConstructorInfo> constructors,

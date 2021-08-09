@@ -20,10 +20,10 @@ namespace Gum.IR0Translator
 
         class NoMemberTypeExpResult : TypeExpResult
         {
-            public static NoMemberTypeExpResult Void { get; } = new NoMemberTypeExpResult(new MTypeTypeExpInfo(M.VoidType.Instance));
+            public static NoMemberTypeExpResult Void { get; } = new NoMemberTypeExpResult(new MTypeTypeExpInfo(M.VoidType.Instance, TypeExpInfoKind.Void));
             public static NoMemberTypeExpResult Var { get; } = new NoMemberTypeExpResult(VarTypeExpInfo.Instance);
             public static NoMemberTypeExpResult TypeVar(M.TypeVarType typeVarType)
-                => new NoMemberTypeExpResult(new MTypeTypeExpInfo(typeVarType));
+                => new NoMemberTypeExpResult(new MTypeTypeExpInfo(typeVarType, TypeExpInfoKind.TypeVar));
             public override TypeExpInfo TypeExpInfo { get; }
 
             public NoMemberTypeExpResult(TypeExpInfo typeExpInfo)
@@ -53,12 +53,10 @@ namespace Gum.IR0Translator
                 Debug.Assert(typeExpInfo.Type is M.NormalType);
 
                 var mmemberType = new M.MemberType((M.NormalType)typeExpInfo.Type, memberName, typeArgs);
-                var mmemberTypeExpInfo = new MTypeTypeExpInfo(mmemberType);
-
-                return GetMemberInfo(memberName, typeArgs.Length, mmemberTypeExpInfo);
+                return GetMemberInfo(memberName, typeArgs.Length, mmemberType);
             }
 
-            protected abstract TypeExpResult? GetMemberInfo(string memberName, int typeParamCount, MTypeTypeExpInfo mmemberTypeExpInfo);
+            protected abstract TypeExpResult? GetMemberInfo(string memberName, int typeParamCount, M.MemberType mmemberType);
         }
 
         class ExternalTypeExpResult : MTypeTypeExpResult
@@ -71,13 +69,15 @@ namespace Gum.IR0Translator
                 this.typeInfo = typeInfo;
             }
 
-            protected override TypeExpResult? GetMemberInfo(string memberName, int typeParamCount, MTypeTypeExpInfo mmemberTypeExpInfo)
+            protected override TypeExpResult? GetMemberInfo(string memberName, int typeParamCount, M.MemberType mmemberType)
             {
                 var memberType = typeInfo.GetMemberType(memberName, typeParamCount);
-                if (memberType != null)
-                    return new ExternalTypeExpResult(mmemberTypeExpInfo, memberType);
+                if (memberType == null)
+                    return null;
 
-                return null;
+                var memberKind = GetTypeExpInfoKind(memberType);
+                var mmemberTypeExpInfo = new MTypeTypeExpInfo(mmemberType, memberKind);
+                return new ExternalTypeExpResult(mmemberTypeExpInfo, memberType);
             }
         }
 
@@ -93,11 +93,14 @@ namespace Gum.IR0Translator
                 this.skeleton = skeleton;
             }
 
-            protected override TypeExpResult? GetMemberInfo(string memberName, int typeParamCount, MTypeTypeExpInfo mmemberTypeExpInfo)
+            protected override TypeExpResult? GetMemberInfo(string memberName, int typeParamCount, M.MemberType mmemberType)
             {
                 var memberSkeleton = skeleton.GetMember(memberName, typeParamCount);
                 if (memberSkeleton == null) return null;
-               
+
+                var memberKind = GetTypeExpInfoKind(skeleton.Kind);
+                var mmemberTypeExpInfo = new MTypeTypeExpInfo(mmemberType, memberKind);
+
                 return new InternalTypeExpResult(memberSkeleton, mmemberTypeExpInfo);
             }
         }

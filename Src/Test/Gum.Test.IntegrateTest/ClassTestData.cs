@@ -31,7 +31,7 @@ class C
             );
 
             var rscript = RScript(ModuleName, Arr<R.Decl>(
-                new R.ClassDecl(R.AccessModifier.Private, "C", default, default, Arr<R.ClassMemberDecl>(
+                new R.ClassDecl(R.AccessModifier.Private, "C", default, null, default, Arr<R.ClassMemberDecl>(
                     new R.ClassMemberVarDecl(R.AccessModifier.Private, R.Path.Int, Arr("x", "y")),
                     new R.ClassMemberVarDecl(R.AccessModifier.Public, R.Path.String, Arr("s")),
                     new R.ClassConstructorDecl(
@@ -77,7 +77,7 @@ class C
 
             var rscript = RScript(ModuleName,
                 Arr<R.Decl>(
-                    new R.ClassDecl(R.AccessModifier.Private, "C", Arr<string>(), Arr<R.Path>(), Arr<R.ClassMemberDecl>(
+                    new R.ClassDecl(R.AccessModifier.Private, "C", default, null, default, Arr<R.ClassMemberDecl>(
 
                         new R.ClassConstructorDecl(
                             R.AccessModifier.Public,
@@ -146,7 +146,7 @@ var c = new C(3);
 
             var rscript = RScript(ModuleName,
                 Arr<R.Decl>(
-                    new R.ClassDecl(R.AccessModifier.Private, "C", Arr<string>(), Arr<R.Path>(), Arr<R.ClassMemberDecl>(
+                    new R.ClassDecl(R.AccessModifier.Private, "C", default, null, default, Arr<R.ClassMemberDecl>(
 
                         new R.ClassConstructorDecl(
                             R.AccessModifier.Public,
@@ -213,7 +213,7 @@ var c = new C(3);
 
             var rscript = RScript(ModuleName,
                 Arr<R.Decl>(
-                    new R.ClassDecl(R.AccessModifier.Private, "C", Arr<string>(), Arr<R.Path>(), Arr<R.ClassMemberDecl>(
+                    new R.ClassDecl(R.AccessModifier.Private, "C", default, null, default, Arr<R.ClassMemberDecl>(
 
                         new R.ClassMemberVarDecl(R.AccessModifier.Public, R.Path.Int, Arr("x")),
 
@@ -277,7 +277,7 @@ var c = new C(3);         // but can do this
 
             var rscript = RScript(ModuleName,
                 Arr<R.Decl>(
-                    new R.ClassDecl(R.AccessModifier.Private, "C", Arr<string>(), Arr<R.Path>(), Arr<R.ClassMemberDecl>(
+                    new R.ClassDecl(R.AccessModifier.Private, "C", default, null, default, Arr<R.ClassMemberDecl>(
 
                         new R.ClassMemberVarDecl(R.AccessModifier.Public, R.Path.Int, Arr("x")),
 
@@ -338,7 +338,7 @@ c.x = 3;
 
             var rscript = RScript(ModuleName,
                 Arr<R.Decl>(
-                    new R.ClassDecl(R.AccessModifier.Private, "C", Arr<string>(), Arr<R.Path>(), Arr<R.ClassMemberDecl>(
+                    new R.ClassDecl(R.AccessModifier.Private, "C", default, null, default, Arr<R.ClassMemberDecl>(
 
                         new R.ClassMemberVarDecl(R.AccessModifier.Public, R.Path.Int, Arr("x")),
 
@@ -479,7 +479,7 @@ var i = c.F(2);
 
             var rscript = RScript(ModuleName,
                 Arr<R.Decl>(
-                    new R.ClassDecl(R.AccessModifier.Private, "C", Arr<string>(), Arr<R.Path>(), Arr<R.ClassMemberDecl>(
+                    new R.ClassDecl(R.AccessModifier.Private, "C", default, null, default, Arr<R.ClassMemberDecl>(
                         new R.ClassMemberVarDecl(R.AccessModifier.Private, R.Path.Int, Arr<string>("x")),
 
                         new R.ClassMemberFuncDecl(default, "F", true, default, Arr(new R.Param(R.ParamKind.Normal, R.Path.Int, "y")), RBlock(
@@ -658,7 +658,7 @@ C c = new C(2, 3);
                 Arr<R.Decl>(
 
                     // B
-                    new R.ClassDecl(R.AccessModifier.Private, "B", default, default, Arr<R.ClassMemberDecl>(
+                    new R.ClassDecl(R.AccessModifier.Private, "B", default, null, default, Arr<R.ClassMemberDecl>(
                         new R.ClassMemberVarDecl(R.AccessModifier.Public, R.Path.Int, Arr("x")),
                         new R.ClassConstructorDecl(R.AccessModifier.Public, default, RNormalParams((R.Path.Int, "x")), null, RBlock(
                             RAssignStmt(R.ThisLoc.Instance.ClassMember(RRoot(ModuleName).Child("B").Child("x")), RLocalVarExp("x"))
@@ -666,7 +666,7 @@ C c = new C(2, 3);
                     )),
 
                     // C
-                    new R.ClassDecl(R.AccessModifier.Private, "C", default, default, Arr<R.ClassMemberDecl>(
+                    new R.ClassDecl(R.AccessModifier.Private, "C", default, RRoot("ModuleName").Child("B"), default, Arr<R.ClassMemberDecl>(
                         new R.ClassMemberVarDecl(R.AccessModifier.Public, R.Path.Int, Arr("y")),
                         new R.ClassConstructorDecl(
                             R.AccessModifier.Public, default, 
@@ -680,13 +680,13 @@ C c = new C(2, 3);
                     ))
                 ),
                 
-                RGlobalVarDeclStmt(RRoot(ModuleName).Child("C"), "c",  new R.NewClassExp(RRoot(ModuleName).Child("c"), 
+                RGlobalVarDeclStmt(RRoot(ModuleName).Child("C"), "c",  new R.NewClassExp(RRoot(ModuleName).Child("C"), 
                     RNormalParamHash(R.Path.Int, R.Path.Int), 
                     RArgs(RInt(2), RInt(3))
                 )),
-
-                // C인가 B인가.. C인거 같은데
-                RPrintIntCmdStmt(new R.GlobalVarLoc("c").ClassMember(RRoot(ModuleName).Child("C").Child("x")))
+                
+                // C.x를 달라고 하면 안되고, B.x를 달라고 해야한다
+                RPrintIntCmdStmt(new R.GlobalVarLoc("c").ClassMember(RRoot(ModuleName).Child("B").Child("x")))
             );
 
             return new ParseTranslateEvalTestData(code, sscript, rscript, "2");
@@ -694,22 +694,22 @@ C c = new C(2, 3);
 
         // base protected, private 잘 되는지 확인
 
-        static TestData Make_Inheritance_AutoConstructor_RecognizeBaseAutoConstructor()
-        {
-            var code = @"
-class B { public int x; }
-class C : B
-{
-    public int y;
-}
+//        static TestData Make_Inheritance_AutoConstructor_RecognizeBaseAutoConstructor()
+//        {
+//            var code = @"
+//class B { public int x; }
+//class C : B
+//{
+//    public int y;
+//}
 
-C c = new C(2, 3);
-@${c.y}
-";
+//C c = new C(2, 3);
+//@${c.y}
+//";
 
 
 
-        }
+//        }
 
     }
 }

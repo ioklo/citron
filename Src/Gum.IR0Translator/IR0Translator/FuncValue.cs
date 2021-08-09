@@ -51,7 +51,7 @@ namespace Gum.IR0Translator
             return itemValueFactory.MakeTypeValueByMType(type);
         }
 
-        protected override ImmutableArray<M.Param> GetParameters()
+        public override ImmutableArray<M.Param> GetParameters()
         {
             return funcInfo.GetParameters();
         }

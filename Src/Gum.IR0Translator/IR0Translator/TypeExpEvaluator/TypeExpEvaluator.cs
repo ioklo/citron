@@ -116,6 +116,32 @@ namespace Gum.IR0Translator
             }
         }
 
+        static TypeExpInfoKind GetTypeExpInfoKind(TypeSkeletonKind kind)
+        {
+            switch(kind)
+            {
+                case TypeSkeletonKind.Class: return TypeExpInfoKind.Class;
+                case TypeSkeletonKind.Struct: return TypeExpInfoKind.Struct;
+                case TypeSkeletonKind.Interface: return TypeExpInfoKind.Interface;
+                case TypeSkeletonKind.Enum: return TypeExpInfoKind.Enum;
+            }
+
+            throw new UnreachableCodeException();
+        }
+
+        static TypeExpInfoKind GetTypeExpInfoKind(M.TypeInfo typeInfo)
+        {
+            switch(typeInfo)
+            {
+                case M.StructInfo: return TypeExpInfoKind.Struct;
+                case M.EnumInfo: return TypeExpInfoKind.Enum;
+                case M.EnumElemInfo: return TypeExpInfoKind.EnumElem;
+                case M.ClassInfo: return TypeExpInfoKind.Class;
+            }
+
+            throw new UnreachableCodeException();
+        }
+
         IEnumerable<TypeExpResult> GetTypeExpInfos(M.NamespacePath namespacePath, M.Name name, ImmutableArray<M.Type> typeArgs)
         {
             var itemPathEntry = new ItemPathEntry(name, typeArgs.Length);
@@ -124,7 +150,9 @@ namespace Gum.IR0Translator
             if (typeSkel != null)
             {
                 var mtype = new M.GlobalType(internalModuleName, namespacePath, name, typeArgs);
-                var typeExpInfo = new MTypeTypeExpInfo(mtype);
+                var kind = GetTypeExpInfoKind(typeSkel.Kind);
+
+                var typeExpInfo = new MTypeTypeExpInfo(mtype, kind);
                 yield return new InternalTypeExpResult(typeSkel, typeExpInfo);
             }
 
@@ -135,7 +163,8 @@ namespace Gum.IR0Translator
                 if (typeInfo != null)
                 {
                     var mtype = new M.GlobalType(moduleInfo.GetName(), namespacePath, name, typeArgs);
-                    var typeExpInfo = new MTypeTypeExpInfo(mtype);
+                    var kind = GetTypeExpInfoKind(typeInfo);
+                    var typeExpInfo = new MTypeTypeExpInfo(mtype, kind);
                     yield return new ExternalTypeExpResult(typeExpInfo, typeInfo);
                 }
             }

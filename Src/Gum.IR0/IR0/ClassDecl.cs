@@ -13,7 +13,8 @@ namespace Gum.IR0
         AccessModifier AccessModifier,
         string Name,
         ImmutableArray<string> TypeParams,
-        ImmutableArray<Path> BaseTypes,
+        Path.Nested? BaseClass,
+        ImmutableArray<Path.Nested> Interfaces,
         ImmutableArray<ClassMemberDecl> MemberDecls
     ) : Decl
     {

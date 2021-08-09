@@ -13,12 +13,12 @@ namespace Gum.IR0Translator
 {
     partial class TypeExpEvaluator
     {
-        TypeExpResult HandleBuiltInType(S.IdTypeExp exp, M.Type mtype)
+        TypeExpResult HandleBuiltInType(S.IdTypeExp exp, M.Type mtype, TypeExpInfoKind kind)
         {
             if (exp.TypeArgs.Length != 0)
                 throw new NotImplementedException();
             
-            var typeExpInfo = new MTypeTypeExpInfo(mtype);
+            var typeExpInfo = new MTypeTypeExpInfo(mtype, kind);
             return new NoMemberTypeExpResult(typeExpInfo); // TODO: 일단 NoMember로 놔두는데, 멤버가 있으니
         }
 
@@ -42,15 +42,15 @@ namespace Gum.IR0Translator
             // built-in
             else if (typeExp.Name == "bool")
             {
-                return HandleBuiltInType(typeExp, MTypes.Bool);
+                return HandleBuiltInType(typeExp, MTypes.Bool, TypeExpInfoKind.Struct);
             }
             else if (typeExp.Name == "int")
             {
-                return HandleBuiltInType(typeExp, MTypes.Int);
+                return HandleBuiltInType(typeExp, MTypes.Int, TypeExpInfoKind.Struct);
             }
             else if (typeExp.Name == "string")
             {
-                return HandleBuiltInType(typeExp, MTypes.String);
+                return HandleBuiltInType(typeExp, MTypes.String, TypeExpInfoKind.Class);
             }
 
             // 1. TypeVar에서 먼저 검색

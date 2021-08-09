@@ -197,9 +197,12 @@ namespace Gum.IR0Translator
             return new R.StructMemberLoc(instance, member);
         }
 
-        public IModuleConstructorInfo? GetAutoConstructor()
+        public ConstructorValue? GetAutoConstructor()
         {
-            return structInfo.GetAutoConstructor();
+            var constructorInfo = structInfo.GetAutoConstructor();
+            if (constructorInfo == null) return null;
+
+            return itemValueFactory.MakeConstructorValue(this, constructorInfo);
         }
 
         public override int GetTotalTypeParamCount()

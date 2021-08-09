@@ -44,17 +44,19 @@ namespace Gum.IR0Translator
                 }
 
                 // MakeBaseTypes
-                static ImmutableArray<R.Path> MakeBaseRTypes(ref S.ClassDecl classDecl, GlobalContext globalContext)
-                {
-                    var builder = ImmutableArray.CreateBuilder<R.Path>(classDecl.BaseTypes.Length);
+                static R.Path.Nested? MakeBaseType(ref S.ClassDecl classDecl, GlobalContext globalContext)
+                {   
+                    // IntenralModuleInfoBuilder에서 처리하기 때문에 여기서는 Base가 두개 이상 나올일이 없다
                     foreach (var baseType in classDecl.BaseTypes)
                     {
                         var typeValue = globalContext.GetTypeValueByTypeExp(baseType);
-                        builder.Add(typeValue.GetRPath());
+                        if (typeValue is ClassTypeValue classTypeValue)
+                            return classTypeValue.GetRPath_Nested();
                     }
-                    return builder.MoveToImmutable();
+
+                    return null;
                 }
-                var baseTypes = MakeBaseRTypes(ref classDecl, globalContext);
+                var baseType = MakeBaseType(ref classDecl, globalContext);
 
                 // TODO: typeParams
                 var memberBuilder = ImmutableArray.CreateBuilder<R.ClassMemberDecl>();
@@ -66,7 +68,7 @@ namespace Gum.IR0Translator
                 BuildAutomaticConstructor(memberBuilder);
 
                 var memberDecls = memberBuilder.ToImmutable();
-                var rclassDecl = new R.ClassDecl(accessModifier, classDecl.Name, classDecl.TypeParams, baseTypes, memberDecls);
+                var rclassDecl = new R.ClassDecl(accessModifier, classDecl.Name, classDecl.TypeParams, baseType, default, memberDecls);
 
                 typeContainer.AddClass(rclassDecl);
             }
@@ -101,6 +103,68 @@ namespace Gum.IR0Translator
                 memberBuilder.Add(new R.ClassMemberVarDecl(accessModifier, rtype, varDecl.VarNames));
             }
 
+            R.ClassConstructorBaseCallInfo? HandleConstructorDeclBaseArgs(ICallableContext callableContext, LocalContext localContext, ImmutableArray<S.Argument>? baseArgs, S.ISyntaxNode nodeForErrorReport)
+            {
+                if (baseArgs == null)
+                {
+                    var baseTypeValue = classTypeValue.GetBaseType();
+                    if (baseTypeValue == null)
+                        return null;
+                    
+                    // BaseType이 있다면 기본을 불러야 한다. 
+                    // 기본이 있는가
+                    var constructor = baseTypeValue.GetDefaultConstructor();
+                    if (constructor == null)
+                    {
+                        globalContext.AddFatalError(A2503_ClassDecl_CannotFindBaseClassConstructor, nodeForErrorReport);
+                        throw new UnreachableCodeException();
+                    }
+
+                    if (!constructor.CheckAccess(classTypeValue))
+                        globalContext.AddFatalError(A2504_ClassDecl_CannotAccessBaseClassConstructor, nodeForErrorReport);
+
+                    // no argument
+                    return new R.ClassConstructorBaseCallInfo(R.ParamHash.None, default);
+                }
+                else
+                {
+                    // 인자가 있는 상황
+                    var baseTypeValue = classTypeValue.GetBaseType();
+
+                    // 인자가 있는데 부모 클래스가 없으면,
+                    if (baseTypeValue == null)
+                    {
+                        globalContext.AddFatalError(A2505_ClassDecl_TryCallBaseConstructorWithoutBaseClass, nodeForErrorReport);
+                    }
+                    else
+                    {
+                        var result = baseTypeValue.GetMember(M.SpecialNames.Constructor, typeParamCount: 0); // NOTICE: constructor는 타입 파라미터가 없다
+                        switch (result)
+                        {
+                            case ItemQueryResult.Constructors constructorResult:
+                                var matchedConstructor = FuncMatcher.Match(globalContext, callableContext, localContext, baseTypeValue.MakeTypeEnv(), constructorResult.ConstructorInfos, baseArgs.Value, default, nodeForErrorReport);
+
+                                var constructorValue = globalContext.MakeConstructorValue(constructorResult.Outer, matchedConstructor.CallableInfo);
+
+                                if (!constructorValue.CheckAccess(classTypeValue))
+                                    globalContext.AddFatalError(A2504_ClassDecl_CannotAccessBaseClassConstructor, nodeForErrorReport);
+
+                                return new R.ClassConstructorBaseCallInfo(constructorValue.GetRPath_Nested().ParamHash, matchedConstructor.Args);
+
+                            case ItemQueryResult.NotFound:
+                                globalContext.AddFatalError(A2503_ClassDecl_CannotFindBaseClassConstructor, nodeForErrorReport);
+                                break;
+
+                            case ItemQueryResult.Error errorResult:
+                                HandleItemQueryResultError(globalContext, errorResult, nodeForErrorReport);
+                                break;
+                        }
+                    }
+                }
+
+                throw new UnreachableCodeException();
+            }
+
             void AnalyzeConstructorDecl(ImmutableArray<R.ClassMemberDecl>.Builder memberBuilder, S.ClassConstructorDecl constructorDecl)
             {
                 R.AccessModifier accessModifier = AnalyzeAccessModifier(constructorDecl.AccessModifier, constructorDecl);
@@ -122,6 +186,8 @@ namespace Gum.IR0Translator
                     localContext.AddLocalVarInfo(param.Kind == S.FuncParamKind.Ref, paramTypeValue, param.Name);
                 }
 
+                R.ClassConstructorBaseCallInfo? baseCallInfo = HandleConstructorDeclBaseArgs(constructorContext, localContext, constructorDecl.BaseArgs, constructorDecl);
+
                 var analyzer = new StmtAndExpAnalyzer(globalContext, constructorContext, localContext);
 
                 // TODO: Body가 실제로 리턴을 제대로 하는지 확인해야 한다
@@ -129,18 +195,7 @@ namespace Gum.IR0Translator
 
                 var decls = constructorContext.GetDecls();
 
-                R.ClassConstructorBaseCallInfo? baseCallInfo;
-                if (constructorDecl.BaseArgs == null) 
-                {
-                    // BaseType이 있다면 기본을 불러야 한다. 없다면 baseCallInfo는 null
-                    // 기본이 있는가
-                }
-                else
-                {
-                                        
-
-                }
-
+                
 
                 memberBuilder.Add(new R.ClassConstructorDecl(accessModifier, decls, rparamInfos, baseCallInfo, bodyResult.Stmt));
             }
@@ -246,6 +301,13 @@ namespace Gum.IR0Translator
 
             void BuildAutomaticConstructor(ImmutableArray<R.ClassMemberDecl>.Builder memberBuilder)
             {
+                var baseTypeValue = classTypeValue.GetBaseType();
+                if (baseTypeValue != null)
+                {
+                    // throw new NotImplementedException();
+                    return;
+                }
+
                 var autoConstructor = classTypeValue.GetAutoConstructor();
                 if (autoConstructor == null) return;
 
@@ -275,9 +337,9 @@ namespace Gum.IR0Translator
                     var structMemberPath = new R.Path.Nested(structPath, rname, R.ParamHash.None, default);
                     stmtBuilder.Add(new R.ExpStmt(new R.AssignExp(new R.ClassMemberLoc(R.ThisLoc.Instance, structMemberPath), new R.LoadExp(new R.LocalVarLoc(rname.Value)))));
                 }
-                var body = new R.BlockStmt(stmtBuilder.MoveToImmutable());
 
-                memberBuilder.Add(new R.ClassConstructorDecl(R.AccessModifier.Public, decls, paramBuilder.MoveToImmutable(), body));
+                var body = new R.BlockStmt(stmtBuilder.MoveToImmutable());
+                memberBuilder.Add(new R.ClassConstructorDecl(R.AccessModifier.Public, decls, paramBuilder.MoveToImmutable(), null, body));
             }
         }
     }

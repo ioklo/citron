@@ -58,6 +58,23 @@ namespace Gum.IR0Translator
             return typeArgsBuilder.MoveToImmutable();
         }
 
+        static void HandleItemQueryResultError(GlobalContext globalContext, ItemQueryResult.Error error, S.ISyntaxNode nodeForErrorReport)
+        {
+            switch (error)
+            {
+                case ItemQueryResult.Error.MultipleCandidates:
+                    globalContext.AddFatalError(A2001_ResolveIdentifier_MultipleCandidatesForIdentifier, nodeForErrorReport);
+                    throw new UnreachableCodeException();
+
+                case ItemQueryResult.Error.VarWithTypeArg:
+                    globalContext.AddFatalError(A2002_ResolveIdentifier_VarWithTypeArg, nodeForErrorReport);
+                    throw new UnreachableCodeException();
+
+                default:
+                    throw new UnreachableCodeException();
+            }
+        }
+
         public static R.Script? Analyze(
             S.Script script,
             R.ModuleName moduleName,

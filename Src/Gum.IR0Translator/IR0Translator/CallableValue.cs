@@ -8,7 +8,7 @@ namespace Gum.IR0Translator
     abstract class CallableValue : ItemValue
     {
         protected abstract TypeValue MakeTypeValueByMType(M.Type type);
-        protected abstract ImmutableArray<M.Param> GetParameters();
+        public abstract ImmutableArray<M.Param> GetParameters();
 
         // class X<T> { void Func<U>(T t, ref U u, int x); }
         // X<int>.F<bool> => (int, ref bool, int)

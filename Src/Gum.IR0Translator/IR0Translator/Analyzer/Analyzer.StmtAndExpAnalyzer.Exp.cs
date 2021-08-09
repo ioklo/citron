@@ -439,7 +439,7 @@ namespace Gum.IR0Translator
                             break;
 
                         case ItemQueryResult.Error errorResult:
-                            HandleItemQueryResultError(errorResult, nodeForErrorReport);
+                            HandleItemQueryResultError(globalContext, errorResult, nodeForErrorReport);
                             break;
                     }
                 }
@@ -622,7 +622,7 @@ namespace Gum.IR0Translator
                 switch (memberResult)
                 {
                     case ItemQueryResult.Error errorResult:
-                        HandleItemQueryResultError(errorResult, memberExp);
+                        HandleItemQueryResultError(globalContext, errorResult, memberExp);
                         break;
 
                     case ItemQueryResult.NotFound:
@@ -671,24 +671,7 @@ namespace Gum.IR0Translator
 
                 throw new UnreachableCodeException();
             }
-
-            void HandleItemQueryResultError(ItemQueryResult.Error error, S.ISyntaxNode nodeForErrorReport)
-            {
-                switch (error)
-                {
-                    case ItemQueryResult.Error.MultipleCandidates:
-                        globalContext.AddFatalError(A2001_ResolveIdentifier_MultipleCandidatesForIdentifier, nodeForErrorReport);
-                        throw new UnreachableCodeException();
-
-                    case ItemQueryResult.Error.VarWithTypeArg:
-                        globalContext.AddFatalError(A2002_ResolveIdentifier_VarWithTypeArg, nodeForErrorReport);
-                        throw new UnreachableCodeException();
-
-                    default:
-                        throw new UnreachableCodeException();
-                }
-            }
-
+            
             // T.x
             ExpResult AnalyzeMemberExpTypeParent(S.MemberExp nodeForErrorReport, TypeValue parentType, string memberName, ImmutableArray<S.TypeExp> stypeArgs)
             {   
@@ -701,7 +684,7 @@ namespace Gum.IR0Translator
                         throw new UnreachableCodeException();
 
                     case ItemQueryResult.Error errorResult:
-                        HandleItemQueryResultError(errorResult, nodeForErrorReport);
+                        HandleItemQueryResultError(globalContext, errorResult, nodeForErrorReport);
                         throw new UnreachableCodeException();
 
                     case ItemQueryResult.Type typeResult:
@@ -967,7 +950,7 @@ namespace Gum.IR0Translator
                         break;
 
                     case ItemQueryResult.Error errorResult:
-                        HandleItemQueryResultError(errorResult, newExp);
+                        HandleItemQueryResultError(globalContext, errorResult, newExp);
                         break;
                 }
                 

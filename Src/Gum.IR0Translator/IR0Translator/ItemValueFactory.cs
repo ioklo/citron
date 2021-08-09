@@ -161,11 +161,6 @@ namespace Gum.IR0Translator
             return new FuncValue(this, outer, funcInfo, typeArgs);
         }
 
-        public ConstructorValue MakeConstructor(NormalTypeValue outer, IModuleConstructorInfo constructorInfo)
-        {
-            return new ConstructorValue(this, outer, constructorInfo);
-        }
-
         public TypeVarTypeValue MakeTypeVar(int index)
         {
             return new TypeVarTypeValue(ritemFactory, index);

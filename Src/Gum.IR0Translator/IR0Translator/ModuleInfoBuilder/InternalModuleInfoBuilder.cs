@@ -268,18 +268,41 @@ namespace Gum.IR0Translator
         {
             var newBuilder = NewModuleInfoBuilder(classDecl.Name, classDecl.TypeParams.Length, true);
 
-            if (classDecl.BaseTypes.Length != 0)
-                throw new NotImplementedException();
-
             // base & interfaces
-            //var mbaseTypesBuilder = ImmutableArray.CreateBuilder<M.Type>(structDecl.BaseTypes.Length);
-            //foreach (var baseType in structDecl.BaseTypes)
-            //{
-            //    var mbaseType = GetMType(baseType);
-            //    if (mbaseType == null) throw new FatalException();
-            //    mbaseTypesBuilder.Add(mbaseType);
-            //}
-            //var mbaseTypes = mbaseTypesBuilder.MoveToImmutable();
+            var baseTypeCandidates = new Candidates<M.Type>();
+            var interfacesBuilder = ImmutableArray.CreateBuilder<M.Type>();
+            foreach (var baseType in classDecl.BaseTypes)
+            {
+                var baseTypeExpInfo = typeExpInfoService.GetTypeExpInfo(baseType);
+                switch (baseTypeExpInfo.GetKind())
+                {
+                    case TypeExpInfoKind.Class:
+                        {
+                            var baseTypeCandidate = baseTypeExpInfo.GetMType();
+                            if (baseTypeCandidate == null) throw new FatalException();                                 
+
+                            baseTypeCandidates.Add(baseTypeCandidate);
+                            break;
+                        }
+
+                    case TypeExpInfoKind.Interface:
+                        {
+                            var minterfaceType = baseTypeExpInfo.GetMType();
+                            if (minterfaceType == null) throw new FatalException();
+
+                            interfacesBuilder.Add(minterfaceType);
+                            break;
+                        }
+
+                    default:
+                        throw new FatalException();
+                }
+            }
+
+            var mbaseType = baseTypeCandidates.GetSingle();
+            if (mbaseType == null && baseTypeCandidates.HasMultiple)
+                throw new FatalException(); // TODO: 에러 처리
+            Debug.Assert(mbaseType != null || baseTypeCandidates.IsEmpty);
 
             foreach (var elem in classDecl.MemberDecls)
             {
@@ -310,7 +333,7 @@ namespace Gum.IR0Translator
             newBuilder.TryMakeAutomaticConstructor(classDecl.Name);
 
             var classInfo = new InternalModuleClassInfo(
-                classDecl.Name, classDecl.TypeParams, null,
+                classDecl.Name, classDecl.TypeParams, mbaseType, interfacesBuilder.ToImmutable(),
                 newBuilder.types,
                 newBuilder.funcs,
                 newBuilder.constructors.ToImmutableArray(),

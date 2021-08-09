@@ -24,7 +24,7 @@ namespace Gum.IR0Translator
         public override ItemValue Apply_ItemValue(TypeEnv typeEnv)
         {
             var appliedOuter = outer.Apply_NormalTypeValue(typeEnv);            
-            return itemValueFactory.MakeConstructor(appliedOuter, info);
+            return itemValueFactory.MakeConstructorValue(appliedOuter, info);
         }
 
         protected override TypeValue MakeTypeValueByMType(M.Type type)
@@ -32,7 +32,7 @@ namespace Gum.IR0Translator
             return itemValueFactory.MakeTypeValueByMType(type);
         }
 
-        protected override ImmutableArray<M.Param> GetParameters()
+        public override ImmutableArray<M.Param> GetParameters()
         {
             return info.GetParameters();
         }

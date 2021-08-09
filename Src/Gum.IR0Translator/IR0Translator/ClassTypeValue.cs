@@ -5,6 +5,7 @@ using Pretune;
 using Gum.Collections;
 using Gum.Infra;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Gum.IR0Translator
 {
@@ -16,8 +17,16 @@ namespace Gum.IR0Translator
         ItemValueOuter outer;
         IModuleClassInfo classInfo;
         ImmutableArray<TypeValue> typeArgs;
+        
+        public ClassTypeValue? GetBaseType() 
+        {
+            var mbaseType = classInfo.GetBaseType();
+            if (mbaseType == null) return null;
 
-        public ClassTypeValue? GetBaseType() { throw new NotImplementedException(); }
+            var typeValue = itemValueFactory.MakeTypeValueByMType(mbaseType) as ClassTypeValue;
+            Debug.Assert(typeValue != null);
+            return typeValue;
+        }
 
         // except itself
         public bool IsBaseOf(ClassTypeValue derivedType)
@@ -67,9 +76,26 @@ namespace Gum.IR0Translator
                 builder.Add(typeArgs[i]);
         }
 
-        public IModuleConstructorInfo? GetAutoConstructor()
+        public ConstructorValue? GetAutoConstructor()
         {
-            return classInfo.GetAutoConstructor();
+            var constructorInfo = classInfo.GetAutoConstructor();
+            if (constructorInfo == null) return null;
+
+            return itemValueFactory.MakeConstructorValue(this, constructorInfo);
+        }
+
+        // Accessor 상관없이 빈 constructor를 말한다
+        public ConstructorValue? GetDefaultConstructor()
+        {
+            foreach (var constructorInfo in classInfo.GetConstructors())
+            {
+                var paramTypes = constructorInfo.GetParamTypes();
+
+                if (paramTypes.Length == 0)
+                    return itemValueFactory.MakeConstructorValue(this, constructorInfo);
+            }
+
+            return null;
         }
 
         ItemQueryResult GetMember_Type(M.Name memberName, int typeParamCount)
@@ -183,9 +209,17 @@ namespace Gum.IR0Translator
                 return ItemQueryResult.Error.MultipleCandidates.Instance;
 
             if (results.Count == 0)
-                return ItemQueryResult.NotFound.Instance;
+            {
+                var baseTypeValue = GetBaseType();
+                if (baseTypeValue == null)
+                    return ItemQueryResult.NotFound.Instance;
 
-            return results[0];
+                return baseTypeValue.GetMember(memberName, typeParamCount);
+            }
+            else
+            {
+                return results[0];
+            }
         }
 
         public override TypeValue? GetMemberType(M.Name memberName, ImmutableArray<TypeValue> typeArgs) 

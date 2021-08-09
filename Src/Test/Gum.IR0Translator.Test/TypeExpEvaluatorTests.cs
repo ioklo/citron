@@ -43,7 +43,7 @@ namespace Gum.IR0Translator.Test
             var result = Evaluate(script);
 
             var typeExpInfo = result.GetTypeExpInfo(intTypeExp);
-            var expected = new MTypeTypeExpInfo(new M.GlobalType("System.Runtime", new M.NamespacePath("System"), "Int32", ImmutableArray<M.Type>.Empty));
+            var expected = new MTypeTypeExpInfo(new M.GlobalType("System.Runtime", new M.NamespacePath("System"), "Int32", ImmutableArray<M.Type>.Empty), TypeExpInfoKind.Struct);
 
             Assert.Equal(expected, typeExpInfo);
         }

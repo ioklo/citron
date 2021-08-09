@@ -152,26 +152,28 @@ namespace Gum.IR0Evaluator
         }
     }
 
+    // vanilla implemenation
     [AutoConstructor]
     partial class ClassInstance
     {
         ClassRuntimeItem runtimeItem;
         TypeContext typeContext;
-        ImmutableDictionary<string, Value> values;
+
+        ImmutableArray<Value> values;
 
         public R.Path.Nested GetActualType()
         {
             return runtimeItem.GetActualType(typeContext);
         }
 
-        public Value GetMemberValue(string name)
+        public Value GetMemberValue(int index)
         {
-            return values[name];
+            return values[index];
         }
     }
     
     class ClassValue : Value
-    {
+    {   
         ClassInstance? instance;
 
         public ClassValue()
