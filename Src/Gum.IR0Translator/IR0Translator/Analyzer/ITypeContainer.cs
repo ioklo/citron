@@ -6,8 +6,7 @@ namespace Gum.IR0Translator
     {
         interface ITypeContainer
         {
-            void AddStruct(R.StructDecl structDecl);
-            void AddClass(R.ClassDecl classDecl);
+            void AddType(R.TypeDecl typeDecl);
         }
     }
 }

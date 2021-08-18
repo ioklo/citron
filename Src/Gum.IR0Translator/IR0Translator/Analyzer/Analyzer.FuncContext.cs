@@ -14,7 +14,7 @@ namespace Gum.IR0Translator
             bool bStatic;            // static call 
             bool bSequence;          // 시퀀스 여부
             R.Path.Nested path;
-            ImmutableArray<R.Decl> decls;
+            ImmutableArray<R.CallableMemberDecl> callableMemberDecls;
             AnonymousIdComponent AnonymousIdComponent;
 
             public FuncContext(NormalTypeValue? thisTypeValue, TypeValue? retTypeValue, bool bStatic, bool bSequence, R.Path.Nested path)
@@ -27,17 +27,17 @@ namespace Gum.IR0Translator
                 this.bStatic = bStatic;
                 this.bSequence = bSequence;
                 this.path = path;
-                this.decls = ImmutableArray<R.Decl>.Empty;
+                this.callableMemberDecls = ImmutableArray<R.CallableMemberDecl>.Empty;
             }
 
-            public void AddDecl(R.Decl decl)
+            public void AddCallableMemberDecl(R.CallableMemberDecl decl)
             {
-                decls = decls.Add(decl);
+                callableMemberDecls = callableMemberDecls.Add(decl);
             }
 
-            public ImmutableArray<R.Decl> GetDecls()
+            public ImmutableArray<R.CallableMemberDecl> GetCallableMemberDecls()
             {
-                return decls;
+                return callableMemberDecls;
             }
 
             public FuncContext(FuncContext other, CloneContext cloneContext)

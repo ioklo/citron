@@ -14,13 +14,11 @@ namespace Gum.IR0
         string Name,
         ImmutableArray<string> TypeParams,
         Path.Nested? BaseClass,
-        ImmutableArray<Path.Nested> Interfaces,
-        ImmutableArray<ClassMemberDecl> MemberDecls
-    ) : Decl
-    {
-        public override void EnsurePure()
-        {
-            Misc.EnsurePure(MemberDecls);
-        }
+        ImmutableArray<Path.Nested> Interfaces,        
+        ImmutableArray<ClassConstructorDecl> ConstructorDecls,
+        ImmutableArray<ClassMemberFuncDecl> MemberFuncDecls,
+        ImmutableArray<ClassMemberVarDecl> MemberVarDecls
+    ) : TypeDecl
+    {   
     }
 }

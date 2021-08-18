@@ -25,15 +25,20 @@ namespace Gum.IR0Translator
             S.StructDecl structDecl;
             StructTypeValue structTypeValue;
 
+            ImmutableArray<R.StructConstructorDecl>.Builder constructorsBuilder;
+            ImmutableArray<R.StructMemberFuncDecl>.Builder memberFuncsBuilder;
+            ImmutableArray<R.StructMemberVarDecl>.Builder memberVarsBuilder;
+
             // Entry
             public static void Analyze(GlobalContext globalContext, ITypeContainer typeContainer, S.StructDecl structDecl, StructTypeValue structTypeValue)
             {
-                var structAnalyzer = new StructAnalyzer(globalContext, typeContainer, structDecl, structTypeValue);
-                structAnalyzer.AnalyzeStructDecl();
-            }           
-            
-            void AnalyzeStructDecl()
-            {
+                var constructorsBuilder = ImmutableArray.CreateBuilder<R.StructConstructorDecl>();
+                var memberFuncsBuilder = ImmutableArray.CreateBuilder<R.StructMemberFuncDecl>();
+                var memberVarsBuilder = ImmutableArray.CreateBuilder<R.StructMemberVarDecl>();
+
+                var analyzer = new StructAnalyzer(globalContext, typeContainer, structDecl, structTypeValue,
+                    constructorsBuilder, memberFuncsBuilder, memberVarsBuilder);
+                
                 R.AccessModifier accessModifier;
                 switch (structDecl.AccessModifier)
                 {
@@ -60,18 +65,17 @@ namespace Gum.IR0Translator
                 var baseTypes = MakeBaseRTypes(ref structDecl, globalContext);
 
                 // TODO: typeParams
-                var memberBuilder = ImmutableArray.CreateBuilder<R.StructMemberDecl>();
                 foreach (var elem in structDecl.MemberDecls)
                 {
-                    AnalyzeStructMemberDecl(memberBuilder, elem);                    
+                    analyzer.AnalyzeStructMemberDecl(elem);
                 }               
 
-                BuildAutomaticConstructor(memberBuilder);
+                analyzer.BuildAutomaticConstructor();
+                
+                var rstructDecl = new R.StructDecl(accessModifier, structDecl.Name, structDecl.TypeParams, baseTypes, 
+                    constructorsBuilder.ToImmutable(), memberFuncsBuilder.ToImmutable(), memberVarsBuilder.ToImmutable());
 
-                var memberDecls = memberBuilder.ToImmutable();
-                var rstructDecl = new R.StructDecl(accessModifier, structDecl.Name, structDecl.TypeParams, baseTypes, memberDecls);
-
-                typeContainer.AddStruct(rstructDecl);
+                typeContainer.AddType(rstructDecl);
             }
 
             R.AccessModifier AnalyzeAccessModifier(S.AccessModifier? accessModifier, S.ISyntaxNode nodeForErrorReport)
@@ -96,16 +100,16 @@ namespace Gum.IR0Translator
                 throw new UnreachableCodeException();
             }
 
-            void AnalyzeMemberVarDecl(ImmutableArray<R.StructMemberDecl>.Builder memberBuilder, S.StructMemberVarDecl varDecl)
+            void AnalyzeMemberVarDecl(S.StructMemberVarDecl varDecl)
             {
                 var varTypeValue = globalContext.GetTypeValueByTypeExp(varDecl.VarType);
                 var rtype = varTypeValue.GetRPath();
 
                 R.AccessModifier accessModifier = AnalyzeAccessModifier(varDecl.AccessModifier, varDecl);
-                memberBuilder.Add(new R.StructMemberVarDecl(accessModifier, rtype, varDecl.VarNames));
+                memberVarsBuilder.Add(new R.StructMemberVarDecl(accessModifier, rtype, varDecl.VarNames));
             }
 
-            void AnalyzeConstructorDecl(ImmutableArray<R.StructMemberDecl>.Builder memberBuilder, S.StructConstructorDecl constructorDecl)
+            void AnalyzeConstructorDecl(S.StructConstructorDecl constructorDecl)
             {
                 R.AccessModifier accessModifier = AnalyzeAccessModifier(constructorDecl.AccessModifier, constructorDecl);
 
@@ -131,20 +135,19 @@ namespace Gum.IR0Translator
                 // TODO: Body가 실제로 리턴을 제대로 하는지 확인해야 한다
                 var bodyResult = analyzer.AnalyzeStmt(constructorDecl.Body);
 
-                var decls = constructorContext.GetDecls();
-
-                memberBuilder.Add(new R.StructConstructorDecl(accessModifier, decls, rparamInfos, bodyResult.Stmt));
+                var decls = constructorContext.GetCallableMemberDecls();
+                constructorsBuilder.Add(new R.StructConstructorDecl(accessModifier, decls, rparamInfos, bodyResult.Stmt));
             }
 
-            void AnalyzeMemberFuncDecl(ImmutableArray<R.StructMemberDecl>.Builder memberBuilder, S.StructMemberFuncDecl funcDecl)
+            void AnalyzeMemberFuncDecl(S.StructMemberFuncDecl funcDecl)
             {
                 if (funcDecl.IsSequence)
-                    AnalyzeSequenceFuncDeclElement(memberBuilder, funcDecl);
+                    AnalyzeSequenceFuncDeclElement(funcDecl);
                 else
-                    AnalyzeNormalFuncDeclElement(memberBuilder, funcDecl);
+                    AnalyzeNormalFuncDeclElement(funcDecl);
             }
 
-            void AnalyzeSequenceFuncDeclElement(ImmutableArray<R.StructMemberDecl>.Builder memberBuilder, S.StructMemberFuncDecl funcDecl)
+            void AnalyzeSequenceFuncDeclElement(S.StructMemberFuncDecl funcDecl)
             {
                 // NOTICE: AnalyzeGlobalSequenceFuncDecl와 비슷한 코드
                 var retTypeValue = globalContext.GetTypeValueByTypeExp(funcDecl.RetType);
@@ -177,12 +180,14 @@ namespace Gum.IR0Translator
                 var retRType = retTypeValue.GetRPath();
                 var parameters = funcDecl.Parameters.Select(param => param.Name).ToImmutableArray();
 
-                var decls = funcContext.GetDecls();
-                var seqFuncDecl = new R.StructMemberSeqFuncDecl(decls, funcDecl.Name, !funcDecl.IsStatic, retRType, funcDecl.TypeParams, rparamInfos, bodyResult.Stmt);
-                memberBuilder.Add(seqFuncDecl);
+                var decls = funcContext.GetCallableMemberDecls();
+                var seqFuncDecl = new R.SequenceFuncDecl(decls, funcDecl.Name, !funcDecl.IsStatic, retRType, funcDecl.TypeParams, rparamInfos, bodyResult.Stmt);
+                var memberFuncDecl = new R.StructMemberFuncDecl(seqFuncDecl);
+
+                memberFuncsBuilder.Add(memberFuncDecl);
             }
 
-            void AnalyzeNormalFuncDeclElement(ImmutableArray<R.StructMemberDecl>.Builder memberBuilder, S.StructMemberFuncDecl funcDecl)
+            void AnalyzeNormalFuncDeclElement(S.StructMemberFuncDecl funcDecl)
             {
                 // NOTICE: AnalyzeGlobalNormalFuncDecl와 비슷한 코드                
                 var retTypeValue = globalContext.GetTypeValueByTypeExp(funcDecl.RetType);
@@ -208,26 +213,27 @@ namespace Gum.IR0Translator
                 // TODO: Body가 실제로 리턴을 제대로 하는지 확인해야 한다
                 var bodyResult = analyzer.AnalyzeStmt(funcDecl.Body);
 
-                var decls = funcContext.GetDecls();
+                var decls = funcContext.GetCallableMemberDecls();
+                var normalFuncDecl = new R.NormalFuncDecl(decls, rname, !funcDecl.IsStatic, funcDecl.TypeParams, rparamInfos, bodyResult.Stmt);
+                var memberFuncDecl = new R.StructMemberFuncDecl(normalFuncDecl);
 
-                var rfunc = new R.StructMemberFuncDecl(decls, rname, !funcDecl.IsStatic, funcDecl.TypeParams, rparamInfos, bodyResult.Stmt);
-                memberBuilder.Add(rfunc);
+                memberFuncsBuilder.Add(memberFuncDecl);
             }
 
-            void AnalyzeStructMemberDecl(ImmutableArray<R.StructMemberDecl>.Builder builder, S.StructMemberDecl elem)
+            void AnalyzeStructMemberDecl(S.StructMemberDecl elem)
             {
                 switch (elem)
                 {
                     case S.StructMemberVarDecl varDecl:
-                        AnalyzeMemberVarDecl(builder, varDecl);
+                        AnalyzeMemberVarDecl(varDecl);
                         break;
 
                     case S.StructConstructorDecl constructorDecl:
-                        AnalyzeConstructorDecl(builder, constructorDecl);
+                        AnalyzeConstructorDecl(constructorDecl);
                         break;
 
                     case S.StructMemberFuncDecl funcDecl:
-                        AnalyzeMemberFuncDecl(builder, funcDecl);
+                        AnalyzeMemberFuncDecl(funcDecl);
                         break;
 
                     default:
@@ -235,12 +241,10 @@ namespace Gum.IR0Translator
                 }
             }
 
-            void BuildAutomaticConstructor(ImmutableArray<R.StructMemberDecl>.Builder memberBuilder)
+            void BuildAutomaticConstructor()
             {
                 var autoConstructor = structTypeValue.GetAutoConstructor();
-                if (autoConstructor == null) return;
-
-                ImmutableArray<R.Decl> decls = default;
+                if (autoConstructor == null) return;                
 
                 var structPath = structTypeValue.GetRPath_Nested();
                 var parameters = autoConstructor.GetParameters();
@@ -268,7 +272,7 @@ namespace Gum.IR0Translator
                 }
                 var body = new R.BlockStmt(stmtBuilder.MoveToImmutable());
 
-                memberBuilder.Add(new R.StructConstructorDecl(R.AccessModifier.Public, decls, paramBuilder.MoveToImmutable(), body));
+                constructorsBuilder.Add(new R.StructConstructorDecl(R.AccessModifier.Public, default, paramBuilder.MoveToImmutable(), body));
             }
         }
     }

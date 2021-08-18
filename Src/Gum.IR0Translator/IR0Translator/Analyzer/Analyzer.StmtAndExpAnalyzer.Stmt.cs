@@ -216,8 +216,11 @@ namespace Gum.IR0Translator
                 var condResult = AnalyzeExp_Exp(ifStmt.Cond, ResolveHint.None);
                 var bodyResult = AnalyzeStmt(ifStmt.Body);
                 StmtResult? elseBodyResult = (ifStmt.ElseBody != null) ? AnalyzeStmt(ifStmt.ElseBody) : null;
-                
-                condResult = CastExp_Exp(condResult, globalContext.GetBoolType(), ifStmt.Cond);
+
+                condResult = globalContext.TryCastExp_Exp(condResult, globalContext.GetBoolType());
+
+                if (condResult == null)
+                    globalContext.AddFatalError(A1001_IfStmt_ConditionShouldBeBool, ifStmt.Cond);
 
                 return new StmtResult(new R.IfStmt(condResult.Result, bodyResult.Stmt, elseBodyResult?.Stmt));
             }
@@ -263,15 +266,12 @@ namespace Gum.IR0Translator
                     // 밑에서 쓰이므로 분석실패시 종료
                     var condResult = newAnalyzer.AnalyzeExp_Exp(forStmt.CondExp, ResolveHint.None);
                     
-                    try
-                    {
-                        condResult = CastExp_Exp(condResult, globalContext.GetBoolType(), forStmt.CondExp);
-                        cond = condResult.Result;
-                    }
-                    catch(AnalyzerFatalException)
-                    {
-                        // 에러가 나도 계속 진행
-                    }
+                    condResult = globalContext.TryCastExp_Exp(condResult, globalContext.GetBoolType());
+
+                    if (condResult == null)
+                        globalContext.AddFatalError(A1101_ForStmt_ConditionShouldBeBool, forStmt.CondExp);
+
+                    cond = condResult.Result;
                 }
 
                 R.Exp? continueInfo = null;
@@ -497,7 +497,7 @@ namespace Gum.IR0Translator
             {
                 var capturedStatement = AnalyzeCapturedStatement(globalContext.GetVoidType(), asyncStmt.Body);
                 var path = MakePath(capturedStatement.Name, R.ParamHash.None, default);
-                callableContext.AddDecl(capturedStatement);
+                callableContext.AddCallableMemberDecl(capturedStatement);
                 return new StmtResult(new R.AsyncStmt(path));
             }
 

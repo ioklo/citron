@@ -27,11 +27,15 @@ namespace Gum.IR0Evaluator
                 var structContainer = new ItemContainer();
 
                 var evaluator = new StructDeclEvaluator(globalContext, structContainer, structPath, totalTypeParamCount + structDecl.TypeParams.Length);
-                
-                foreach (var memberDecl in structDecl.MemberDecls)
-                {
-                    evaluator.EvalMemberDecl(memberDecl);
-                }
+
+                foreach (var constructorDecl in structDecl.ConstructorDecls)
+                    evaluator.EvalConstructorDecl(constructorDecl);
+
+                foreach (var memberFuncDecl in structDecl.MemberFuncDecls)
+                    evaluator.EvalMemberFuncDecl(memberFuncDecl);
+
+                foreach (var memberVarDecl in structDecl.MemberVarDecls)
+                    evaluator.EvalMemberVarDecl(memberVarDecl);
 
                 curContainer.AddItemContainer(structDecl.Name, new R.ParamHash(structDecl.TypeParams.Length, default), structContainer);
                 curContainer.AddRuntimeItem(new IR0StructRuntimeItem(globalContext, structDecl));
@@ -66,67 +70,13 @@ namespace Gum.IR0Evaluator
                 structContainer.AddRuntimeItem(runtimeItem);
 
                 var constructorPath = structPath.Child(R.Name.Constructor.Instance, paramHash, default);
-                DeclEvaluator.EvalDecls(globalContext, itemContainer, constructorPath, totalTypeParamCount, constructorDecl.Decls);
+                DeclEvaluator.EvalCallableMemberDecls(globalContext, itemContainer, constructorPath, totalTypeParamCount, constructorDecl.CallableMemberDecls);
             }
 
-            void EvalMemberFuncDecl(R.StructMemberFuncDecl funcDecl)
-            {
-                var paramHash = Misc.MakeParamHash(funcDecl.TypeParams.Length, funcDecl.Parameters);
-                var runtimeItem = new IR0StructFuncRuntimeItem(globalContext, funcDecl);
-
-                var itemContainer = new ItemContainer();
-                structContainer.AddItemContainer(funcDecl.Name, paramHash, itemContainer);
-
-                structContainer.AddRuntimeItem(runtimeItem);
-
-                var typeArgs = MakeTypeArgsByTypeParams(totalTypeParamCount, funcDecl.TypeParams.Length);
-                var funcPath = structPath.Child(funcDecl.Name, paramHash, typeArgs);
-                DeclEvaluator.EvalDecls(globalContext, itemContainer, funcPath, totalTypeParamCount + funcDecl.TypeParams.Length, funcDecl.Decls);
+            void EvalMemberFuncDecl(R.StructMemberFuncDecl memberFuncDecl)
+            {                
+                DeclEvaluator.EvalFuncDecl(globalContext, structContainer, structPath, totalTypeParamCount, memberFuncDecl.FuncDecl);
             }
-
-            void EvalMemberSeqFuncDecl(R.StructMemberSeqFuncDecl seqFuncDecl)
-            {
-                var itemContainer = new ItemContainer();
-
-                var typeParamCount = seqFuncDecl.TypeParams.Length;
-                var paramHash = Misc.MakeParamHash(typeParamCount, seqFuncDecl.Parameters);
-
-                structContainer.AddItemContainer(seqFuncDecl.Name, paramHash, itemContainer);
-
-                var runtimeItem = new IR0StructSeqFuncRuntimeItem(globalContext, seqFuncDecl);
-                structContainer.AddRuntimeItem(runtimeItem);
-
-                var typeArgs = MakeTypeArgsByTypeParams(totalTypeParamCount, typeParamCount);
-                var seqFuncPath = structPath.Child(seqFuncDecl.Name, paramHash, typeArgs);
-
-                DeclEvaluator.EvalDecls(globalContext, itemContainer, seqFuncPath, totalTypeParamCount + typeParamCount, seqFuncDecl.Decls);
-            }
-
-            void EvalMemberDecl(R.StructMemberDecl memberDecl)
-            {
-                switch (memberDecl)
-                {
-                    case R.StructMemberVarDecl varDecl:
-                        EvalMemberVarDecl(varDecl);
-                        break;
-
-                    case R.StructConstructorDecl constructorDecl:
-                        EvalConstructorDecl(constructorDecl);
-                        break;
-
-                    case R.StructMemberFuncDecl funcDecl:
-                        EvalMemberFuncDecl(funcDecl);
-                        break;
-
-                    case R.StructMemberSeqFuncDecl seqFuncDecl:
-                        EvalMemberSeqFuncDecl(seqFuncDecl);
-                        break;
-
-                    default:
-                        throw new UnreachableCodeException();
-                }
-            }
-
         }
     }
 }

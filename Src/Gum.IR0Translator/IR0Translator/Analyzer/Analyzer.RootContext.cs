@@ -14,7 +14,9 @@ namespace Gum.IR0Translator
             R.ModuleName moduleName;
             ItemValueFactory itemValueFactory;
 
-            ImmutableArray<R.Decl> decls;
+            ImmutableArray<R.GlobalTypeDecl> globalTypeDecls;
+            ImmutableArray<R.GlobalFuncDecl> globalFuncDecls;
+            ImmutableArray<R.CallableMemberDecl> callableMemberDecls;
             ImmutableArray<R.Stmt> topLevelStmts;
 
             AnonymousIdComponent AnonymousIdComponent;
@@ -23,7 +25,9 @@ namespace Gum.IR0Translator
             {
                 this.moduleName = moduleName;
                 this.itemValueFactory = itemValueFactory;
-                this.decls = ImmutableArray<R.Decl>.Empty;
+                this.globalTypeDecls = ImmutableArray<R.GlobalTypeDecl>.Empty;
+                this.globalFuncDecls = ImmutableArray<R.GlobalFuncDecl>.Empty;
+                this.callableMemberDecls = ImmutableArray<R.CallableMemberDecl>.Empty;
                 this.topLevelStmts = ImmutableArray<R.Stmt>.Empty;
             }
             
@@ -32,9 +36,9 @@ namespace Gum.IR0Translator
                 this.moduleName = other.moduleName;
                 Infra.Misc.EnsurePure(other.itemValueFactory);
                 this.itemValueFactory = other.itemValueFactory;
-
-                Infra.Misc.EnsurePure(other.decls);
-                this.decls = other.decls;
+                this.globalTypeDecls = other.globalTypeDecls;
+                this.globalFuncDecls = other.globalFuncDecls;
+                this.callableMemberDecls = other.callableMemberDecls;
 
                 Infra.Misc.EnsurePure(other.topLevelStmts);
                 this.topLevelStmts = other.topLevelStmts;
@@ -79,15 +83,25 @@ namespace Gum.IR0Translator
 
             public R.Script MakeScript()
             {
-                return new R.Script(moduleName, decls, topLevelStmts);
+                return new R.Script(moduleName, globalTypeDecls, globalFuncDecls, callableMemberDecls, topLevelStmts);
             }
 
-            public void AddDecl(R.Decl funcDecl)
+            public void AddGlobalFuncDecl(R.GlobalFuncDecl globalFuncDecl)
             {
-                decls = decls.Add(funcDecl);
+                throw new NotImplementedException();
             }
 
-            public ImmutableArray<R.Decl> GetDecls() => decls;
+            public void AddGlobalTypeDecl(R.GlobalTypeDecl globalTypeDecl)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void AddCallableMemberDecl(R.CallableMemberDecl decl)
+            {
+                callableMemberDecls = callableMemberDecls.Add(decl);
+            }
+
+            public ImmutableArray<R.CallableMemberDecl> GetCallableMemberDecls() => callableMemberDecls;
 
             public R.Name.Anonymous NewAnonymousName() => AnonymousIdComponent.NewAnonymousName();
 
@@ -96,14 +110,9 @@ namespace Gum.IR0Translator
                 return new RootItemValueOuter(moduleName.Value, namespacePath);
             }
 
-            void ITypeContainer.AddStruct(R.StructDecl structDecl)
+            void ITypeContainer.AddType(R.TypeDecl typeDecl)
             {
-                AddDecl(structDecl);
-            }
-
-            void ITypeContainer.AddClass(R.ClassDecl classDecl)
-            {
-                AddDecl(classDecl);
+                globalTypeDecls.Add(new R.GlobalTypeDecl(typeDecl));
             }
         }
     }

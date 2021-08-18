@@ -17,7 +17,7 @@ namespace Gum.IR0Translator
             TypeValue? retTypeValue;
             bool bCaptureThis;
             Dictionary<string, TypeValue> localCaptures;
-            ImmutableArray<R.Decl> decls;
+            ImmutableArray<R.CallableMemberDecl> decls;
             AnonymousIdComponent AnonymousIdComponent;
 
             public LambdaContext(R.Path.Nested path, NormalTypeValue? thisTypeValue, LocalContext parentLocalContext, TypeValue? retTypeValue)
@@ -109,12 +109,12 @@ namespace Gum.IR0Translator
                 return thisTypeValue; 
             }
 
-            public void AddDecl(R.Decl decl)
+            public void AddCallableMemberDecl(R.CallableMemberDecl decl)
             {
                 decls = decls.Add(decl);
             }
 
-            public ImmutableArray<R.Decl> GetDecls()
+            public ImmutableArray<R.CallableMemberDecl> GetCallableMemberDecls()
             {
                 return decls;
             }

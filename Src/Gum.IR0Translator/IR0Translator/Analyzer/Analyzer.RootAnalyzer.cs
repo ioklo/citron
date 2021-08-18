@@ -127,9 +127,10 @@ namespace Gum.IR0Translator
                 // TODO: Body가 실제로 리턴을 제대로 하는지 확인해야 한다
                 var bodyResult = analyzer.AnalyzeStmt(funcDecl.Body);
                 
-                var decls = funcContext.GetDecls();
+                var decls = funcContext.GetCallableMemberDecls();
                 var normalFuncDecl = new R.NormalFuncDecl(decls, rname, false, funcDecl.TypeParams, rparamInfos, bodyResult.Stmt);
-                rootContext.AddDecl(normalFuncDecl);
+                var globalFuncDecl = new R.GlobalFuncDecl(normalFuncDecl);
+                rootContext.AddGlobalFuncDecl(globalFuncDecl);
             }
 
             public void AnalyzeGlobalSequenceFuncDecl(S.GlobalFuncDecl funcDecl)
@@ -161,9 +162,10 @@ namespace Gum.IR0Translator
                 var retRType = retTypeValue.GetRPath();
                 var parameters = funcDecl.Parameters.Select(param => param.Name).ToImmutableArray();
 
-                var decls = funcContext.GetDecls();
+                var decls = funcContext.GetCallableMemberDecls();
                 var seqFuncDecl = new R.SequenceFuncDecl(decls, funcDecl.Name, false, retRType, funcDecl.TypeParams, rparamInfos, bodyResult.Stmt);
-                rootContext.AddDecl(seqFuncDecl);
+                var globalFuncDecl = new R.GlobalFuncDecl(seqFuncDecl);
+                rootContext.AddGlobalFuncDecl(globalFuncDecl);
             }
 
             void AnalyzeGlobalFuncDecl(S.GlobalFuncDecl funcDecl)
@@ -193,7 +195,8 @@ namespace Gum.IR0Translator
                 }
 
                 var renumDecl = new R.EnumDecl(enumDecl.Name, enumDecl.TypeParams, relemsBuilder.MoveToImmutable());
-                rootContext.AddDecl(renumDecl);
+                var globalTypeDecl = new R.GlobalTypeDecl(renumDecl);
+                rootContext.AddGlobalTypeDecl(globalTypeDecl);
             }
             
             void AnalyzeTypeDecl(S.TypeDecl typeDecl)

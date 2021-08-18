@@ -32,12 +32,46 @@ namespace Gum.IR0Evaluator
             R.Path.Normal curPath;
             int totalTypeParamCount;
 
-            public static void EvalDecls(GlobalContext globalContext, ItemContainer container, R.Path.Normal curPath, int totalParamCount, ImmutableArray<R.Decl> decls)
+            public static void EvalDeclsInScript(GlobalContext globalContext, ItemContainer container, R.Path.Normal curPath, int totalParamCount, R.Script script)
+            {
+                var evaluator = new DeclEvaluator(globalContext, container, curPath, totalParamCount);
+
+                foreach (var globalTypeDecl in script.GlobalTypeDecls)
+                    evaluator.EvalTypeDecl(globalTypeDecl.TypeDecl);
+
+                foreach (var globalFuncDecl in script.GlobalFuncDecls)
+                    evaluator.EvalFuncDecl(globalFuncDecl.FuncDecl);
+
+                foreach (var callableMemberDecl in script.CallableMemberDecls)
+                    evaluator.EvalCallableMemberDecl(callableMemberDecl);
+            }
+
+            public static void EvalCallableMemberDecls(GlobalContext globalContext, ItemContainer container, R.Path.Normal curPath, int totalParamCount, ImmutableArray<R.CallableMemberDecl> callableMemberDecls)
             {
                 var declEvaluator = new DeclEvaluator(globalContext, container, curPath, totalParamCount);
 
-                foreach (var decl in decls)
-                    declEvaluator.EvalDecl(decl);
+                foreach (var callableMemberDecl in callableMemberDecls)
+                    declEvaluator.EvalCallableMemberDecl(callableMemberDecl);
+            }
+
+            public static void EvalFuncDecl(GlobalContext globalContext, ItemContainer parentContainer, R.Path.Normal parentPath, int totalParamCount, R.FuncDecl funcDecl)
+            {
+                var evaluator = new DeclEvaluator(globalContext, parentContainer, parentPath, totalParamCount);
+                evaluator.EvalFuncDecl(funcDecl);
+            }
+
+            public void EvalFuncDecl(R.FuncDecl funcDecl)
+            {
+                switch (funcDecl)
+                {
+                    case R.NormalFuncDecl normalFuncDecl:
+                        EvalNormalFuncDecl(normalFuncDecl);
+                        break;
+
+                    case R.SequenceFuncDecl seqFuncDecl:
+                        EvalSequenceFuncDecl(seqFuncDecl);
+                        break;
+                }
             }
 
             DeclEvaluator(GlobalContext globalContext, ItemContainer itemContainer, R.Path.Normal curPath, int totalParamCount)
@@ -68,7 +102,7 @@ namespace Gum.IR0Evaluator
 
                 var typeArgs = MakeTypeArgsByTypeParams(totalTypeParamCount, normalFuncDecl.TypeParams.Length);
                 var funcPath = curPath.Child(normalFuncDecl.Name, paramHash, typeArgs);
-                EvalDecls(globalContext, funcContainer, funcPath, totalTypeParamCount + normalFuncDecl.TypeParams.Length, normalFuncDecl.Decls);
+                EvalCallableMemberDecls(globalContext, funcContainer, funcPath, totalTypeParamCount + normalFuncDecl.TypeParams.Length, normalFuncDecl.CallableMemberDecls);
             }
 
             void EvalSequenceFuncDecl(R.SequenceFuncDecl seqFuncDecl)
@@ -85,35 +119,36 @@ namespace Gum.IR0Evaluator
 
                 var typeArgs = MakeTypeArgsByTypeParams(totalTypeParamCount, seqFuncDecl.TypeParams.Length);
                 var funcPath = curPath.Child(seqFuncDecl.Name, paramHash, typeArgs);
-                EvalDecls(globalContext, itemContainer, funcPath, totalTypeParamCount + seqFuncDecl.TypeParams.Length, seqFuncDecl.Decls);
+                EvalCallableMemberDecls(globalContext, itemContainer, funcPath, totalTypeParamCount + seqFuncDecl.TypeParams.Length, seqFuncDecl.CallableMemberDecls);
             }            
 
-            void EvalDecl(R.Decl decl)
+            void EvalTypeDecl(R.TypeDecl typeDecl)
             {
-                switch(decl)
+                switch (typeDecl)
                 {
                     case R.StructDecl structDecl:
-                        StructDeclEvaluator.Eval(globalContext, curContainer, curPath, totalTypeParamCount, structDecl);                        
+                        StructDeclEvaluator.Eval(globalContext, curContainer, curPath, totalTypeParamCount, structDecl);
                         break;
 
                     case R.ClassDecl classDecl:
-                        ClassDeclEvaluator.Eval(globalContext, curContainer, curPath, totalTypeParamCount, classDecl);                        
-                        break;
-
-                    case R.LambdaDecl lambdaDecl:
-                        EvalLambdaDecl(lambdaDecl);
-                        break;
-
-                    case R.NormalFuncDecl normalFuncDecl:
-                        EvalNormalFuncDecl(normalFuncDecl);
-                        break;
-
-                    case R.SequenceFuncDecl seqFuncDecl:
-                        EvalSequenceFuncDecl(seqFuncDecl);
+                        ClassDeclEvaluator.Eval(globalContext, curContainer, curPath, totalTypeParamCount, classDecl);
                         break;
 
                     case R.EnumDecl enumDecl:
                         EvalEnumDecl(enumDecl);
+                        break;
+
+                    default:
+                        throw new UnreachableCodeException();
+                }
+            }
+
+            void EvalCallableMemberDecl(R.CallableMemberDecl funcMemberDecl)
+            {
+                switch(funcMemberDecl)
+                {   
+                    case R.LambdaDecl lambdaDecl:
+                        EvalLambdaDecl(lambdaDecl);
                         break;
 
                     case R.CapturedStatementDecl capturedStmtDecl:
@@ -123,7 +158,7 @@ namespace Gum.IR0Evaluator
                     default:
                         throw new UnreachableCodeException();
                 }
-            }
+            }            
             
             void EvalEnumDecl(R.EnumDecl enumDecl)
             {

@@ -28,12 +28,8 @@ namespace Gum.IR0
         }
     }
     
-    public record EnumDecl(string Name, ImmutableArray<string> TypeParams, ImmutableArray<EnumElement> Elems) : Decl
+    public record EnumDecl(string Name, ImmutableArray<string> TypeParams, ImmutableArray<EnumElement> Elems) : TypeDecl
     {
-        public override void EnsurePure()
-        {
-            Misc.EnsurePure(TypeParams);
-            Misc.EnsurePure(Elems);
-        }
+        
     }    
 }

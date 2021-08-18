@@ -8,18 +8,14 @@ using Gum.Infra;
 namespace Gum.IR0
 {
     public record SequenceFuncDecl(
-        ImmutableArray<Decl> Decls,
+        ImmutableArray<CallableMemberDecl> CallableMemberDecls,
         Name Name,
         bool IsThisCall,
         Path YieldType,
         ImmutableArray<string> TypeParams,
         ImmutableArray<Param> Parameters,
         Stmt Body
-    ) : Decl
+    ) : FuncDecl
     {
-        public override void EnsurePure()
-        {
-            Misc.EnsurePure(Decls);
-        }
     }
 }

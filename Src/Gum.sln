@@ -58,7 +58,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gum.Test.IntegrateTest", "T
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gum.Test.Misc", "Test\Gum.Test.Misc\Gum.Test.Misc.csproj", "{424FE4E9-0B8A-4868-A884-F3558B5117E7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestCodeExporter", "Tools\TestCodeExporter\TestCodeExporter.csproj", "{8761C047-BE00-40A1-BBCF-48E908AAF5D2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestCodeExporter", "Tools\TestCodeExporter\TestCodeExporter.csproj", "{8761C047-BE00-40A1-BBCF-48E908AAF5D2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -145,7 +145,6 @@ Global
 		{6F50DDA9-A4D2-4837-BDDD-B6F9C6FFFAEF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6F50DDA9-A4D2-4837-BDDD-B6F9C6FFFAEF}.Release|Any CPU.Build.0 = Release|Any CPU
 		{912082F6-3EAB-4C52-91E1-1A98EDA063D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{912082F6-3EAB-4C52-91E1-1A98EDA063D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{912082F6-3EAB-4C52-91E1-1A98EDA063D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{912082F6-3EAB-4C52-91E1-1A98EDA063D5}.Release|Any CPU.Build.0 = Release|Any CPU
 		{424FE4E9-0B8A-4868-A884-F3558B5117E7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU

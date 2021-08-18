@@ -12,7 +12,10 @@ namespace Gum.IR0
     public partial class Script
     {
         public ModuleName Name { get; }
-        public ImmutableArray<Decl> Decls { get; }
+        
+        public ImmutableArray<TypeDecl> GlobalTypeDecls { get; }
+        public ImmutableArray<FuncDecl> GlobalFuncDecls { get; }
+        public ImmutableArray<CallableMemberDecl> CallableMemberDecls { get; }
         public ImmutableArray<Stmt> TopLevelStmts { get; }
     }
 }

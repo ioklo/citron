@@ -36,7 +36,7 @@ class C
                     new R.ClassMemberVarDecl(R.AccessModifier.Public, R.Path.String, Arr("s")),
                     new R.ClassConstructorDecl(
                         R.AccessModifier.Public,
-                        default,                        
+                        default,
                         RNormalParams((R.Path.Int, "x"), (R.Path.Int, "y"), (R.Path.String, "s")),
                         null,
                         RBlock(
@@ -152,7 +152,7 @@ var c = new C(3);
                             R.AccessModifier.Public,
                             default,
                             RNormalParams((R.Path.Int, "x")),
-                            null,                            
+                            null,
                             RBlock(RPrintIntCmdStmt(new R.LocalVarLoc("x")))
                         ),
 
@@ -171,7 +171,7 @@ var c = new C(3);
                     "c",
                     new R.NewClassExp(
                         RRoot("TestModule").Child("C"),
-                        new R.ParamHash(0, Arr(new R.ParamHashEntry(R.ParamKind.Normal, R.Path.Int))),                            
+                        new R.ParamHash(0, Arr(new R.ParamHashEntry(R.ParamKind.Normal, R.Path.Int))),
                         Arr<R.Argument>(new R.Argument.Normal(RInt(3)))
                     )
                 )
@@ -223,7 +223,7 @@ var c = new C(3);
                             RNormalParams((R.Path.Int, "x")),
                             null,
                             RBlock(RAssignStmt(
-                                R.ThisLoc.Instance.ClassMember(CPath().Child("x")),                                    
+                                R.ThisLoc.Instance.ClassMember(CPath().Child("x")),
                                 RLocalVarExp("x")
                             ))
                         )
@@ -286,7 +286,7 @@ var c = new C(3);         // but can do this
                             default,
                             RNormalParams((R.Path.Int, "x")),
                             null,
-                            RBlock(RAssignStmt(R.ThisLoc.Instance.ClassMember(RRoot(ModuleName).Child("C").Child("x")), RLocalVarExp("x")))                            
+                            RBlock(RAssignStmt(R.ThisLoc.Instance.ClassMember(RRoot(ModuleName).Child("C").Child("x")), RLocalVarExp("x")))
                         )
                     ))
                 ),
@@ -334,7 +334,7 @@ c.x = 3;
                 new S.StmtScriptElement(new S.CommandStmt(Arr(new S.StringExp(Arr<S.StringExpElement>(new S.ExpStringExpElement(
                     SId("c").Member("x")
                 ))))))
-            );            
+            );
 
             var rscript = RScript(ModuleName,
                 Arr<R.Decl>(
@@ -358,7 +358,7 @@ c.x = 3;
                     "c",
                     new R.NewClassExp(
                         RRoot(ModuleName).Child("C"),
-                        new R.ParamHash(0, Arr(new R.ParamHashEntry(R.ParamKind.Normal, R.Path.Int))),                        
+                        new R.ParamHash(0, Arr(new R.ParamHashEntry(R.ParamKind.Normal, R.Path.Int))),
                         Arr<R.Argument>(new R.Argument.Normal(RInt(2)))
                     )
                 ),
@@ -654,7 +654,7 @@ var c = new C(2, 3);
             );
 
             var rscript = RScript(
-                ModuleName, 
+                ModuleName,
                 Arr<R.Decl>(
 
                     // B
@@ -669,8 +669,8 @@ var c = new C(2, 3);
                     new R.ClassDecl(R.AccessModifier.Private, "C", default, RRoot(ModuleName).Child("B"), default, Arr<R.ClassMemberDecl>(
                         new R.ClassMemberVarDecl(R.AccessModifier.Public, R.Path.Int, Arr("y")),
                         new R.ClassConstructorDecl(
-                            R.AccessModifier.Public, default, 
-                            RNormalParams((R.Path.Int, "x"), (R.Path.Int, "y")), 
+                            R.AccessModifier.Public, default,
+                            RNormalParams((R.Path.Int, "x"), (R.Path.Int, "y")),
                             new R.ConstructorBaseCallInfo(
                                 RNormalParamHash(R.Path.Int),
                                 RArgs(RLocalVarExp("x"))
@@ -679,12 +679,12 @@ var c = new C(2, 3);
                         )
                     ))
                 ),
-                
-                RGlobalVarDeclStmt(RRoot(ModuleName).Child("C"), "c",  new R.NewClassExp(RRoot(ModuleName).Child("C"), 
-                    RNormalParamHash(R.Path.Int, R.Path.Int), 
+
+                RGlobalVarDeclStmt(RRoot(ModuleName).Child("C"), "c", new R.NewClassExp(RRoot(ModuleName).Child("C"),
+                    RNormalParamHash(R.Path.Int, R.Path.Int),
                     RArgs(RInt(2), RInt(3))
                 )),
-                
+
                 // C.x를 달라고 하면 안되고, B.x를 달라고 해야한다
                 RPrintIntCmdStmt(new R.GlobalVarLoc("c").ClassMember(RRoot(ModuleName).Child("B").Child("x")))
             );
@@ -693,23 +693,53 @@ var c = new C(2, 3);
         }
 
         // base protected, private 잘 되는지 확인
+        static TestData Make_Inheritance_UsePrivateBaseConstructor_ReportError()
+        {
+            var code = @"
+class B { private B() { } }
+class C : B { }
+";
 
-//        static TestData Make_Inheritance_AutoConstructor_RecognizeBaseAutoConstructor()
-//        {
-//            var code = @"
-//class B { public int x; }
-//class C : B
-//{
-//    public int y;
-//}
+            return new EvalWithErrorTestData(code, A2504_ClassDecl_CannotAccessBaseClassConstructor);
 
-//C c = new C(2, 3);
-//@${c.y}
-//";
+        }
 
+        static TestData Make_Inheritance_AutoConstructor_RecognizeBaseConstructor()
+        {
+            var code = @"
+class B 
+{ 
+    public int x; 
+    public B(int s) 
+    { 
+        x = s + 1;
+    }
+}
 
+class C : B
+{
+    public int y;
+}
 
-//        }
+C c = new C(2, 3);
+@${c.x}${c.y}
+";
+            return new EvalTestData(code, "33");
+        }
 
+        static TestData Make_Inheritance_AutoConstructor_RecognizeBaseAutoConstructor()
+        {
+            var code = @"
+class B { public int x; }
+class C : B
+{
+    public int y;
+}
+
+C c = new C(2, 3);
+@${c.x}${c.y}
+";
+            return new EvalTestData(code, "23");
+        }
     }
 }

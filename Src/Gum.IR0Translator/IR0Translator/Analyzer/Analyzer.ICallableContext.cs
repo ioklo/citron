@@ -18,8 +18,8 @@ namespace Gum.IR0Translator
             void AddLambdaCapture(string capturedVarName, TypeValue capturedVarType);
             bool IsSeqFunc();
 
-            void AddDecl(R.Decl decl);
-            ImmutableArray<R.Decl> GetDecls();
+            void AddCallableMemberDecl(R.CallableMemberDecl lambdaDecl);
+            ImmutableArray<R.CallableMemberDecl> GetCallableMemberDecls();
 
             R.Name.Anonymous NewAnonymousName();
         }

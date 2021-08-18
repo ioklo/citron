@@ -100,19 +100,12 @@ namespace Gum.Test.Misc
 
         void DumpObject(object o, string indent)
         {
-            if (o is int)
+            if (visited.Contains(o))
             {
-                int a = 0;
+                writer.Write("$visited");
+                return;
             }
-            else
-            {
-                if (visited.Contains(o))
-                {
-                    writer.Write("$visited");
-                    return;
-                }
-                visited.Add(o);
-            }
+            visited.Add(o);
 
             var type = o.GetType();
             writer.WriteLine("{");

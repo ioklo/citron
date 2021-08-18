@@ -7,6 +7,8 @@ namespace Gum.Infra
     public enum Prerequisite
     {
         Class,
+        Struct,
+
         Enum,
         TypeHint,
         IfTestClassStmt,
@@ -14,7 +16,6 @@ namespace Gum.Infra
         Generics,
         External,
         Static,
-        Struct,
         Interface,
     }
 

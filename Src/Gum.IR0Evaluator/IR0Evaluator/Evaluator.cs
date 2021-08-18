@@ -30,7 +30,7 @@ namespace Gum.IR0Evaluator
             }
 
             var rootItemContainer = new ItemContainer();
-            DeclEvaluator.EvalDecls(globalContext, rootItemContainer, new R.Path.Root(script.Name), 0, script.Decls);
+            DeclEvaluator.EvalDeclsInScript(globalContext, rootItemContainer, new R.Path.Root(script.Name), 0, script);
             globalContext.AddRootItemContainer(script.Name, rootItemContainer);
 
             var topLevelRetValue = new IntValue();

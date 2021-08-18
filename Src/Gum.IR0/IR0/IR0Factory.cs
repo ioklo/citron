@@ -12,15 +12,15 @@ namespace Gum.IR0
 {
     public static class IR0Factory
     {
-        public static Script RScript(ModuleName moduleName, ImmutableArray<Decl> decls, params Stmt[] optTopLevelStmts)
+        public static Script RScript(ModuleName moduleName, ImmutableArray<GlobalTypeDecl> typeDecls, ImmutableArray<GlobalFuncDecl> funcDecls, ImmutableArray<CallableMemberDecl> callableMemberDecls, params Stmt[] optTopLevelStmts)
         {   
             ImmutableArray<Stmt> topLevelStmts = optTopLevelStmts.ToImmutableArray();
 
-            return new Script(moduleName, decls, topLevelStmts);
+            return new Script(moduleName, typeDecls, funcDecls, callableMemberDecls, topLevelStmts);
         }
 
         public static Script RScript(ModuleName moduleName, params Stmt[] stmts)
-            => RScript(moduleName, default, stmts);
+            => RScript(moduleName, default, default, default, stmts);
 
         public static CommandStmt RCommand(params StringExp[] cmds)
             => new CommandStmt(Arr(cmds));

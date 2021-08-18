@@ -22,15 +22,20 @@ namespace Gum.IR0Translator
             S.ClassDecl classDecl;
             ClassTypeValue classTypeValue;
 
+            ImmutableArray<R.ClassConstructorDecl>.Builder constructorsBuilder;
+            ImmutableArray<R.ClassMemberFuncDecl>.Builder memberFuncsBuilder;
+            ImmutableArray<R.ClassMemberVarDecl>.Builder memberVarsBuilder;
+
             // Entry
             public static void Analyze(GlobalContext globalContext, ITypeContainer typeContainer, S.ClassDecl classDecl, ClassTypeValue classTypeValue)
             {
-                var classAnalyzer = new ClassAnalyzer(globalContext, typeContainer, classDecl, classTypeValue);
-                classAnalyzer.AnalyzeClassDecl();
-            }
-
-            void AnalyzeClassDecl()
-            {
+                var constructorsBuilder = ImmutableArray.CreateBuilder<R.ClassConstructorDecl>();
+                var memberFuncsBuilder = ImmutableArray.CreateBuilder<R.ClassMemberFuncDecl>();
+                var memberVarsBuilder = ImmutableArray.CreateBuilder<R.ClassMemberVarDecl>();
+                
+                var classAnalyzer = new ClassAnalyzer(globalContext, typeContainer, classDecl, classTypeValue,
+                    constructorsBuilder, memberFuncsBuilder, memberVarsBuilder);
+                
                 R.AccessModifier accessModifier;
                 switch (classDecl.AccessModifier)
                 {
@@ -59,18 +64,18 @@ namespace Gum.IR0Translator
                 var baseType = MakeBaseType(ref classDecl, globalContext);
 
                 // TODO: typeParams
-                var memberBuilder = ImmutableArray.CreateBuilder<R.ClassMemberDecl>();
+                
                 foreach (var elem in classDecl.MemberDecls)
                 {
-                    AnalyzeMemberDecl(memberBuilder, elem);
+                    classAnalyzer.AnalyzeMemberDecl(elem);
                 }
 
-                BuildAutomaticConstructor(memberBuilder);
+                classAnalyzer.BuildAutomaticConstructor();
+                
+                var rclassDecl = new R.ClassDecl(accessModifier, classDecl.Name, classDecl.TypeParams, baseType, default,
+                    constructorsBuilder.ToImmutable(), memberFuncsBuilder.ToImmutable(), memberVarsBuilder.ToImmutable());
 
-                var memberDecls = memberBuilder.ToImmutable();
-                var rclassDecl = new R.ClassDecl(accessModifier, classDecl.Name, classDecl.TypeParams, baseType, default, memberDecls);
-
-                typeContainer.AddClass(rclassDecl);
+                typeContainer.AddType(rclassDecl);
             }
 
             R.AccessModifier AnalyzeAccessModifier(S.AccessModifier? accessModifier, S.ISyntaxNode nodeForErrorReport)
@@ -94,13 +99,13 @@ namespace Gum.IR0Translator
                 throw new UnreachableCodeException();
             }
 
-            void AnalyzeMemberVarDecl(ImmutableArray<R.ClassMemberDecl>.Builder memberBuilder, S.ClassMemberVarDecl varDecl)
+            void AnalyzeMemberVarDecl(S.ClassMemberVarDecl varDecl)
             {
                 var varTypeValue = globalContext.GetTypeValueByTypeExp(varDecl.VarType);
                 var rtype = varTypeValue.GetRPath();
 
                 R.AccessModifier accessModifier = AnalyzeAccessModifier(varDecl.AccessModifier, varDecl);
-                memberBuilder.Add(new R.ClassMemberVarDecl(accessModifier, rtype, varDecl.VarNames));
+                memberVarsBuilder.Add(new R.ClassMemberVarDecl(accessModifier, rtype, varDecl.VarNames));
             }
 
             R.ConstructorBaseCallInfo? HandleConstructorDeclBaseArgs(ICallableContext callableContext, LocalContext localContext, ImmutableArray<S.Argument>? baseArgs, S.ISyntaxNode nodeForErrorReport)
@@ -165,7 +170,7 @@ namespace Gum.IR0Translator
                 throw new UnreachableCodeException();
             }
 
-            void AnalyzeConstructorDecl(ImmutableArray<R.ClassMemberDecl>.Builder memberBuilder, S.ClassConstructorDecl constructorDecl)
+            void AnalyzeConstructorDecl(S.ClassConstructorDecl constructorDecl)
             {
                 R.AccessModifier accessModifier = AnalyzeAccessModifier(constructorDecl.AccessModifier, constructorDecl);
 
@@ -193,22 +198,20 @@ namespace Gum.IR0Translator
                 // TODO: Body가 실제로 리턴을 제대로 하는지 확인해야 한다
                 var bodyResult = analyzer.AnalyzeStmt(constructorDecl.Body);
 
-                var decls = constructorContext.GetDecls();
+                var decls = constructorContext.GetCallableMemberDecls();
 
-                
-
-                memberBuilder.Add(new R.ClassConstructorDecl(accessModifier, decls, rparamInfos, baseCallInfo, bodyResult.Stmt));
+                constructorsBuilder.Add(new R.ClassConstructorDecl(accessModifier, decls, rparamInfos, baseCallInfo, bodyResult.Stmt));
             }
 
-            void AnalyzeMemberFuncDecl(ImmutableArray<R.ClassMemberDecl>.Builder memberBuilder, S.ClassMemberFuncDecl funcDecl)
+            void AnalyzeMemberFuncDecl(S.ClassMemberFuncDecl funcDecl)
             {
                 if (funcDecl.IsSequence)
-                    AnalyzeSequenceFuncDeclElement(memberBuilder, funcDecl);
+                    AnalyzeSequenceFuncDeclElement(funcDecl);
                 else
-                    AnalyzeNormalFuncDeclElement(memberBuilder, funcDecl);
+                    AnalyzeNormalFuncDeclElement(funcDecl);
             }
 
-            void AnalyzeSequenceFuncDeclElement(ImmutableArray<R.ClassMemberDecl>.Builder memberBuilder, S.ClassMemberFuncDecl funcDecl)
+            void AnalyzeSequenceFuncDeclElement(S.ClassMemberFuncDecl funcDecl)
             {
                 // NOTICE: AnalyzeGlobalSequenceFuncDecl와 비슷한 코드
                 var retTypeValue = globalContext.GetTypeValueByTypeExp(funcDecl.RetType);
@@ -241,12 +244,13 @@ namespace Gum.IR0Translator
                 var retRType = retTypeValue.GetRPath();
                 var parameters = funcDecl.Parameters.Select(param => param.Name).ToImmutableArray();
 
-                var decls = funcContext.GetDecls();
-                var seqFuncDecl = new R.ClassMemberSeqFuncDecl(decls, funcDecl.Name, !funcDecl.IsStatic, retRType, funcDecl.TypeParams, rparamInfos, bodyResult.Stmt);
-                memberBuilder.Add(seqFuncDecl);
+                var decls = funcContext.GetCallableMemberDecls();
+                var seqFuncDecl = new R.SequenceFuncDecl(decls, funcDecl.Name, !funcDecl.IsStatic, retRType, funcDecl.TypeParams, rparamInfos, bodyResult.Stmt);
+                var memberFuncDecl = new R.ClassMemberFuncDecl(seqFuncDecl);
+                memberFuncsBuilder.Add(memberFuncDecl);
             }
 
-            void AnalyzeNormalFuncDeclElement(ImmutableArray<R.ClassMemberDecl>.Builder memberBuilder, S.ClassMemberFuncDecl funcDecl)
+            void AnalyzeNormalFuncDeclElement(S.ClassMemberFuncDecl funcDecl)
             {
                 // NOTICE: AnalyzeGlobalNormalFuncDecl와 비슷한 코드                
                 var retTypeValue = globalContext.GetTypeValueByTypeExp(funcDecl.RetType);
@@ -272,26 +276,27 @@ namespace Gum.IR0Translator
                 // TODO: Body가 실제로 리턴을 제대로 하는지 확인해야 한다
                 var bodyResult = analyzer.AnalyzeStmt(funcDecl.Body);
 
-                var decls = funcContext.GetDecls();
+                var decls = funcContext.GetCallableMemberDecls();
 
-                var rfunc = new R.ClassMemberFuncDecl(decls, rname, !funcDecl.IsStatic, funcDecl.TypeParams, rparamInfos, bodyResult.Stmt);
-                memberBuilder.Add(rfunc);
+                var normalFuncDecl = new R.NormalFuncDecl(decls, rname, !funcDecl.IsStatic, funcDecl.TypeParams, rparamInfos, bodyResult.Stmt);
+                var memberFuncDecl = new R.ClassMemberFuncDecl(normalFuncDecl);
+                memberFuncsBuilder.Add(memberFuncDecl);
             }
 
-            void AnalyzeMemberDecl(ImmutableArray<R.ClassMemberDecl>.Builder builder, S.ClassMemberDecl memberDecl)
+            void AnalyzeMemberDecl(S.ClassMemberDecl memberDecl)
             {
                 switch (memberDecl)
                 {
                     case S.ClassMemberVarDecl varDecl:
-                        AnalyzeMemberVarDecl(builder, varDecl);
+                        AnalyzeMemberVarDecl(varDecl);
                         break;
 
                     case S.ClassConstructorDecl constructorDecl:
-                        AnalyzeConstructorDecl(builder, constructorDecl);
+                        AnalyzeConstructorDecl(constructorDecl);
                         break;
 
                     case S.ClassMemberFuncDecl funcDecl:
-                        AnalyzeMemberFuncDecl(builder, funcDecl);
+                        AnalyzeMemberFuncDecl(funcDecl);
                         break;
 
                     default:
@@ -299,7 +304,7 @@ namespace Gum.IR0Translator
                 }
             }
 
-            void BuildAutomaticConstructor(ImmutableArray<R.ClassMemberDecl>.Builder memberBuilder)
+            void BuildAutomaticConstructor()
             {
                 var baseTypeValue = classTypeValue.GetBaseType();
                 if (baseTypeValue != null)
@@ -310,8 +315,6 @@ namespace Gum.IR0Translator
 
                 var autoConstructor = classTypeValue.GetAutoConstructor();
                 if (autoConstructor == null) return;
-
-                ImmutableArray<R.Decl> decls = default;
 
                 var structPath = classTypeValue.GetRPath_Nested();
                 var parameters = autoConstructor.GetParameters();
@@ -339,7 +342,7 @@ namespace Gum.IR0Translator
                 }
 
                 var body = new R.BlockStmt(stmtBuilder.MoveToImmutable());
-                memberBuilder.Add(new R.ClassConstructorDecl(R.AccessModifier.Public, decls, paramBuilder.MoveToImmutable(), null, body));
+                constructorsBuilder.Add(new R.ClassConstructorDecl(R.AccessModifier.Public, default, paramBuilder.MoveToImmutable(), null, body));
             }
         }
     }

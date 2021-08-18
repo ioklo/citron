@@ -13,7 +13,7 @@ namespace Gum.IR0Translator
         {
             R.Path.Nested path;
             ClassTypeValue classTypeValue;
-            ImmutableArray<R.Decl> decls;
+            ImmutableArray<R.CallableMemberDecl> callableMemberDecls;
             AnonymousIdComponent AnonymousIdComponent;
 
             public ClassConstructorContext(R.Path.Nested path, ClassTypeValue classTypeValue)
@@ -73,8 +73,8 @@ namespace Gum.IR0Translator
                 throw new UnreachableCodeException();
             }
 
-            public void AddDecl(R.Decl decl) { decls = decls.Add(decl); }
-            public ImmutableArray<R.Decl> GetDecls() { return decls; }
+            public void AddCallableMemberDecl(R.CallableMemberDecl decl) { callableMemberDecls = callableMemberDecls.Add(decl); }
+            public ImmutableArray<R.CallableMemberDecl> GetCallableMemberDecls() { return callableMemberDecls; }
             public R.Name.Anonymous NewAnonymousName() { return AnonymousIdComponent.NewAnonymousName(); }
         }
     }

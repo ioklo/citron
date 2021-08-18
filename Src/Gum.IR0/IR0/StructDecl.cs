@@ -11,13 +11,9 @@ namespace Gum.IR0
         string Name,
         ImmutableArray<string> TypeParams,
         ImmutableArray<Path> BaseTypes,
-        ImmutableArray<StructMemberDecl> MemberDecls
-    ) : Decl
-    {   
-        public override void EnsurePure()
-        {
-            Misc.EnsurePure(TypeParams);
-            Misc.EnsurePure(BaseTypes);
-        }
-    }
+        ImmutableArray<StructConstructorDecl> ConstructorDecls,
+        ImmutableArray<StructMemberFuncDecl> MemberFuncDecls,
+        ImmutableArray<StructMemberVarDecl> MemberVarDecls
+    ) : TypeDecl;
+    
 }

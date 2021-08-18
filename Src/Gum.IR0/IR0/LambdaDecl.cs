@@ -8,13 +8,5 @@ namespace Gum.IR0
         Name.Anonymous Name,
         CapturedStatement CapturedStatement,
         ImmutableArray<Param> Parameters
-    ) : Decl
-    {   
-        public override void EnsurePure()
-        {
-            Misc.EnsurePure(Name);
-            Misc.EnsurePure(CapturedStatement);
-            Misc.EnsurePure(Parameters);
-        }
-    }
+    ) : CallableMemberDecl;
 }

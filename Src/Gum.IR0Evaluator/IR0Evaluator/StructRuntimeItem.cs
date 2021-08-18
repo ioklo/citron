@@ -30,16 +30,13 @@ namespace Gum.IR0Evaluator
             {
                 var builder = ImmutableDictionary.CreateBuilder<string, Value>();
 
-                foreach (var decl in decl.MemberDecls)
+                foreach (var varDecl in decl.MemberVarDecls)
                 {
-                    if (decl is R.StructMemberVarDecl varDecl)
+                    foreach (var name in varDecl.Names)
                     {
-                        foreach (var name in varDecl.Names)
-                        {
-                            var memberValue = globalContext.AllocValue(varDecl.Type);
-                            builder.Add(name, memberValue);                            
-                        }
-                    }
+                        var memberValue = globalContext.AllocValue(varDecl.Type);
+                        builder.Add(name, memberValue);
+                    }                    
                 }
 
                 return new StructValue(builder.ToImmutable());
