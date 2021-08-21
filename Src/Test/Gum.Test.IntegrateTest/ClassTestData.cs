@@ -30,11 +30,9 @@ class C
                 )))
             );
 
-            var rscript = RScript(ModuleName, Arr<R.Decl>(
-                new R.ClassDecl(R.AccessModifier.Private, "C", default, null, default, Arr<R.ClassMemberDecl>(
-                    new R.ClassMemberVarDecl(R.AccessModifier.Private, R.Path.Int, Arr("x", "y")),
-                    new R.ClassMemberVarDecl(R.AccessModifier.Public, R.Path.String, Arr("s")),
-                    new R.ClassConstructorDecl(
+            var rscript = RScript(ModuleName, 
+                Arr<R.TypeDecl>(new R.ClassDecl(R.AccessModifier.Private, "C", default, null, default, 
+                    Arr(new R.ClassConstructorDecl(
                         R.AccessModifier.Public,
                         default,
                         RNormalParams((R.Path.Int, "x"), (R.Path.Int, "y"), (R.Path.String, "s")),
@@ -53,9 +51,18 @@ class C
                                 new R.LoadExp(new R.LocalVarLoc("s"))
                             ))
                         )
+                    )),
+
+                    default,
+
+                    Arr(
+                        new R.ClassMemberVarDecl(R.AccessModifier.Private, R.Path.Int, Arr("x", "y")),
+                        new R.ClassMemberVarDecl(R.AccessModifier.Public, R.Path.String, Arr("s"))
                     )
-                ))
-            ));
+                )),
+
+                default, default
+            );
 
             return new ParseTranslateTestData(code, sscript, rscript);
         }
@@ -76,9 +83,8 @@ class C
             );
 
             var rscript = RScript(ModuleName,
-                Arr<R.Decl>(
-                    new R.ClassDecl(R.AccessModifier.Private, "C", default, null, default, Arr<R.ClassMemberDecl>(
-
+                Arr<R.TypeDecl>(new R.ClassDecl(R.AccessModifier.Private, "C", default, null, default, 
+                    Arr(
                         new R.ClassConstructorDecl(
                             R.AccessModifier.Public,
                             default,
@@ -94,8 +100,10 @@ class C
                             null,
                             RBlock()
                         )
-                    ))
-                )
+                    ), default, default
+                )),
+
+                default, default
             );
 
             return new ParseTranslateTestData(code, sscript, rscript);
@@ -145,8 +153,8 @@ var c = new C(3);
             );
 
             var rscript = RScript(ModuleName,
-                Arr<R.Decl>(
-                    new R.ClassDecl(R.AccessModifier.Private, "C", default, null, default, Arr<R.ClassMemberDecl>(
+                Arr<R.TypeDecl>(
+                    new R.ClassDecl(R.AccessModifier.Private, "C", default, null, default, Arr(
 
                         new R.ClassConstructorDecl(
                             R.AccessModifier.Public,
@@ -163,8 +171,10 @@ var c = new C(3);
                             null,
                             RBlock()
                         )
-                    ))
+                    ), default, default)
                 ),
+
+                default, default,
 
                 RGlobalVarDeclStmt(
                     RRoot("TestModule").Child("C"),
@@ -212,23 +222,24 @@ var c = new C(3);
             R.Path.Nested CPath() => RRoot("TestModule").Child("C");
 
             var rscript = RScript(ModuleName,
-                Arr<R.Decl>(
-                    new R.ClassDecl(R.AccessModifier.Private, "C", default, null, default, Arr<R.ClassMemberDecl>(
+                Arr<R.TypeDecl>(new R.ClassDecl(R.AccessModifier.Private, "C", default, null, default, 
+                    Arr(new R.ClassConstructorDecl(
+                        R.AccessModifier.Public,
+                        default,
+                        RNormalParams((R.Path.Int, "x")),
+                        null,
+                        RBlock(RAssignStmt(
+                            R.ThisLoc.Instance.ClassMember(CPath().Child("x")),
+                            RLocalVarExp("x")
+                        ))
+                    )),
 
-                        new R.ClassMemberVarDecl(R.AccessModifier.Public, R.Path.Int, Arr("x")),
+                    default, 
 
-                        new R.ClassConstructorDecl(
-                            R.AccessModifier.Public,
-                            default,
-                            RNormalParams((R.Path.Int, "x")),
-                            null,
-                            RBlock(RAssignStmt(
-                                R.ThisLoc.Instance.ClassMember(CPath().Child("x")),
-                                RLocalVarExp("x")
-                            ))
-                        )
-                    ))
-                ),
+                    Arr(new R.ClassMemberVarDecl(R.AccessModifier.Public, R.Path.Int, Arr("x")))
+                )), 
+                
+                default, default,
 
                 RGlobalVarDeclStmt(
                     CPath(),
@@ -276,20 +287,21 @@ var c = new C(3);         // but can do this
             );
 
             var rscript = RScript(ModuleName,
-                Arr<R.Decl>(
-                    new R.ClassDecl(R.AccessModifier.Private, "C", default, null, default, Arr<R.ClassMemberDecl>(
+                Arr<R.TypeDecl>(new R.ClassDecl(R.AccessModifier.Private, "C", default, null, default, 
+                    Arr(new R.ClassConstructorDecl(
+                        R.AccessModifier.Public,
+                        default,
+                        RNormalParams((R.Path.Int, "x")),
+                        null,
+                        RBlock(RAssignStmt(R.ThisLoc.Instance.ClassMember(RRoot(ModuleName).Child("C").Child("x")), RLocalVarExp("x")))
+                    )),
 
-                        new R.ClassMemberVarDecl(R.AccessModifier.Public, R.Path.Int, Arr("x")),
+                    default,
 
-                        new R.ClassConstructorDecl(
-                            R.AccessModifier.Public,
-                            default,
-                            RNormalParams((R.Path.Int, "x")),
-                            null,
-                            RBlock(RAssignStmt(R.ThisLoc.Instance.ClassMember(RRoot(ModuleName).Child("C").Child("x")), RLocalVarExp("x")))
-                        )
-                    ))
-                ),
+                    Arr(new R.ClassMemberVarDecl(R.AccessModifier.Public, R.Path.Int, Arr("x")))                    
+                )),
+
+                default, default,
 
                 RGlobalVarDeclStmt(
                     RRoot(ModuleName).Child("C"),
@@ -337,20 +349,21 @@ c.x = 3;
             );
 
             var rscript = RScript(ModuleName,
-                Arr<R.Decl>(
-                    new R.ClassDecl(R.AccessModifier.Private, "C", default, null, default, Arr<R.ClassMemberDecl>(
+                Arr<R.TypeDecl>(new R.ClassDecl(R.AccessModifier.Private, "C", default, null, default, 
+                    Arr(new R.ClassConstructorDecl(
+                        R.AccessModifier.Public,
+                        default,
+                        RNormalParams((R.Path.Int, "x")),
+                        null,
+                        RBlock(RAssignStmt(R.ThisLoc.Instance.ClassMember(RRoot(ModuleName).Child("C").Child("x")), RLocalVarExp("x")))
+                    )),
 
-                        new R.ClassMemberVarDecl(R.AccessModifier.Public, R.Path.Int, Arr("x")),
+                    default,
+                    
+                    Arr(new R.ClassMemberVarDecl(R.AccessModifier.Public, R.Path.Int, Arr("x")))
+                )),
 
-                        new R.ClassConstructorDecl(
-                            R.AccessModifier.Public,
-                            default,
-                            RNormalParams((R.Path.Int, "x")),
-                            null,
-                            RBlock(RAssignStmt(R.ThisLoc.Instance.ClassMember(RRoot(ModuleName).Child("C").Child("x")), RLocalVarExp("x")))
-                        )
-                    ))
-                ),
+                default, default,
 
                 // C c = new C(2);
                 RGlobalVarDeclStmt(
@@ -478,27 +491,27 @@ var i = c.F(2);
             R.Path.Nested CxPath() => RRoot("TestModule").Child("C").Child("x");
 
             var rscript = RScript(ModuleName,
-                Arr<R.Decl>(
-                    new R.ClassDecl(R.AccessModifier.Private, "C", default, null, default, Arr<R.ClassMemberDecl>(
-                        new R.ClassMemberVarDecl(R.AccessModifier.Private, R.Path.Int, Arr<string>("x")),
+                Arr<R.TypeDecl>(new R.ClassDecl(R.AccessModifier.Private, "C", default, null, default, 
+                    Arr(new R.ClassConstructorDecl(
+                        R.AccessModifier.Public,
+                        default,
+                        RNormalParams((R.Path.Int, "x")),
+                        null,
+                        RBlock(RAssignStmt(R.ThisLoc.Instance.ClassMember(CxPath()), RLocalVarExp("x")))
+                    )),
 
-                        new R.NormalFuncDecl(default, "F", true, default, Arr(new R.Param(R.ParamKind.Normal, R.Path.Int, "y")), RBlock(
-                            new R.ReturnStmt(new R.ReturnInfo.Expression(new R.CallInternalBinaryOperatorExp(
-                                R.InternalBinaryOperator.Add_Int_Int_Int,
-                                new R.LoadExp(new R.ClassMemberLoc(R.ThisLoc.Instance, CxPath())),
-                                new R.LoadExp(new R.LocalVarLoc("y"))
-                            )))
-                        )),
+                    Arr<R.FuncDecl>(new R.NormalFuncDecl(default, "F", true, default, Arr(new R.Param(R.ParamKind.Normal, R.Path.Int, "y")), RBlock(
+                        new R.ReturnStmt(new R.ReturnInfo.Expression(new R.CallInternalBinaryOperatorExp(
+                            R.InternalBinaryOperator.Add_Int_Int_Int,
+                            new R.LoadExp(new R.ClassMemberLoc(R.ThisLoc.Instance, CxPath())),
+                            new R.LoadExp(new R.LocalVarLoc("y"))
+                        )))
+                    ))),
 
-                        new R.ClassConstructorDecl(
-                            R.AccessModifier.Public,
-                            default,
-                            RNormalParams((R.Path.Int, "x")),
-                            null,
-                            RBlock(RAssignStmt(R.ThisLoc.Instance.ClassMember(CxPath()), RLocalVarExp("x")))
-                        )
-                    ))
-                ),
+                    Arr(new R.ClassMemberVarDecl(R.AccessModifier.Private, R.Path.Int, Arr<string>("x")))
+                )),
+
+                default, default,
 
                 RGlobalVarDeclStmt(
                     CPath(),
@@ -655,20 +668,21 @@ var c = new C(2, 3);
 
             var rscript = RScript(
                 ModuleName,
-                Arr<R.Decl>(
+                Arr<R.TypeDecl>(
 
                     // B
-                    new R.ClassDecl(R.AccessModifier.Private, "B", default, null, default, Arr<R.ClassMemberDecl>(
-                        new R.ClassMemberVarDecl(R.AccessModifier.Public, R.Path.Int, Arr("x")),
-                        new R.ClassConstructorDecl(R.AccessModifier.Public, default, RNormalParams((R.Path.Int, "x")), null, RBlock(
+                    new R.ClassDecl(R.AccessModifier.Private, "B", default, null, default, 
+                        Arr(new R.ClassConstructorDecl(R.AccessModifier.Public, default, RNormalParams((R.Path.Int, "x")), null, RBlock(
                             RAssignStmt(R.ThisLoc.Instance.ClassMember(RRoot(ModuleName).Child("B").Child("x")), RLocalVarExp("x"))
-                        ))
-                    )),
+                        ))),
+
+                        default,
+                        Arr(new R.ClassMemberVarDecl(R.AccessModifier.Public, R.Path.Int, Arr("x")))
+                    ),
 
                     // C
-                    new R.ClassDecl(R.AccessModifier.Private, "C", default, RRoot(ModuleName).Child("B"), default, Arr<R.ClassMemberDecl>(
-                        new R.ClassMemberVarDecl(R.AccessModifier.Public, R.Path.Int, Arr("y")),
-                        new R.ClassConstructorDecl(
+                    new R.ClassDecl(R.AccessModifier.Private, "C", default, RRoot(ModuleName).Child("B"), default, 
+                        Arr(new R.ClassConstructorDecl(
                             R.AccessModifier.Public, default,
                             RNormalParams((R.Path.Int, "x"), (R.Path.Int, "y")),
                             new R.ConstructorBaseCallInfo(
@@ -676,9 +690,15 @@ var c = new C(2, 3);
                                 RArgs(RLocalVarExp("x"))
                             ),
                             RBlock(RAssignStmt(R.ThisLoc.Instance.ClassMember(RRoot(ModuleName).Child("C").Child("y")), RLocalVarExp("y")))
-                        )
-                    ))
+                        )),
+
+                        default,
+
+                        Arr(new R.ClassMemberVarDecl(R.AccessModifier.Public, R.Path.Int, Arr("y")))
+                    )
                 ),
+
+                default, default,
 
                 RGlobalVarDeclStmt(RRoot(ModuleName).Child("C"), "c", new R.NewClassExp(RRoot(ModuleName).Child("C"),
                     RNormalParamHash(R.Path.Int, R.Path.Int),

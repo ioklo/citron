@@ -88,7 +88,7 @@ namespace Gum.IR0Translator
 
             public void AddGlobalFuncDecl(R.FuncDecl globalFuncDecl)
             {
-                throw new NotImplementedException();
+                globalFuncDecls = globalFuncDecls.Add(globalFuncDecl);
             }
 
             public void AddGlobalTypeDecl(R.TypeDecl globalTypeDecl)
@@ -112,7 +112,7 @@ namespace Gum.IR0Translator
 
             void ITypeContainer.AddType(R.TypeDecl typeDecl)
             {
-                globalTypeDecls.Add(typeDecl);
+                globalTypeDecls = globalTypeDecls.Add(typeDecl);
             }
         }
     }
