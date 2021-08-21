@@ -23,7 +23,7 @@ namespace Gum.IR0
         public abstract record Normal : Path;
 
         // Reserved 
-        public partial record TupleType(ImmutableArray<TupleTypeElem> Elems) : Reserved;        
+        public record TupleType(ImmutableArray<TupleTypeElem> Elems) : Reserved;        
         public record TypeVarType(int Index) : Reserved;
         public record VoidType : Reserved
         {

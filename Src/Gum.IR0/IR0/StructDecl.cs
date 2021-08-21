@@ -12,7 +12,7 @@ namespace Gum.IR0
         ImmutableArray<string> TypeParams,
         ImmutableArray<Path> BaseTypes,
         ImmutableArray<StructConstructorDecl> ConstructorDecls,
-        ImmutableArray<StructMemberFuncDecl> MemberFuncDecls,
+        ImmutableArray<FuncDecl> MemberFuncDecls,
         ImmutableArray<StructMemberVarDecl> MemberVarDecls
     ) : TypeDecl;
     

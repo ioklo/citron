@@ -5,9 +5,7 @@ using Pretune;
 namespace Gum.IR0
 {   
     public record ClassMemberVarDecl(AccessModifier AccessModifier, Path Type, ImmutableArray<string> Names);
-
-    // TODO: AccessModifier
-    public record ClassMemberFuncDecl(FuncDecl FuncDecl);
+    
     
     [AutoConstructor]
     public partial struct ConstructorBaseCallInfo

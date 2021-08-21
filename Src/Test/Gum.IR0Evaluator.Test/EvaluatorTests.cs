@@ -90,14 +90,14 @@ namespace Gum.IR0Evaluator.Test
             return output;
         }
 
-        async Task<string> EvalAsync(ImmutableArray<GlobalFuncDecl> globalFuncDecls, ImmutableArray<Stmt> topLevelStmts)
+        async Task<string> EvalAsync(ImmutableArray<FuncDecl> globalFuncDecls, ImmutableArray<Stmt> topLevelStmts)
         {
             var script = new Script(moduleName, default, globalFuncDecls, default, topLevelStmts);
             var (output, _) = await EvalAsyncWithRetValue(default, script);
             return output;
         }
 
-        async Task<string> EvalAsync(GlobalFuncDecl funcDecl, ImmutableArray<Stmt> topLevelStmts)
+        async Task<string> EvalAsync(FuncDecl funcDecl, ImmutableArray<Stmt> topLevelStmts)
         {
             var script = new Script(moduleName, default, Arr(funcDecl), default, topLevelStmts);
             var (output, _) = await EvalAsyncWithRetValue(default, script);
@@ -173,8 +173,8 @@ namespace Gum.IR0Evaluator.Test
         [Fact]
         public async Task GlobalVariableExp_GetGlobalValueInFunc()
         {
-            var func0 = new GlobalFuncDecl(new NormalFuncDecl(default, "TestFunc", false, default, default, RBlock(
-                RPrintStringCmdStmt(new GlobalVarLoc("x")))));
+            var func0 = new NormalFuncDecl(default, "TestFunc", false, default, default, RBlock(
+                RPrintStringCmdStmt(new GlobalVarLoc("x"))));
             
             var func = RootPath("TestFunc");
 
@@ -197,7 +197,7 @@ namespace Gum.IR0Evaluator.Test
         public async Task CallSeqFuncExp_GenerateSequencesInForeach()
         {
             // Sequence
-            var seqFunc = new GlobalFuncDecl(new SequenceFuncDecl(default, "F", false, Path.Int, default, Arr(new Param(ParamKind.Normal, Path.Int, "x"), new Param(ParamKind.Normal, Path.Int, "y")), RBlock(
+            var seqFunc = new SequenceFuncDecl(default, "F", false, Path.Int, default, Arr(new Param(ParamKind.Normal, Path.Int, "x"), new Param(ParamKind.Normal, Path.Int, "y")), RBlock(
 
                 new YieldStmt(
                     new CallInternalBinaryOperatorExp(InternalBinaryOperator.Multiply_Int_Int_Int,
@@ -207,7 +207,7 @@ namespace Gum.IR0Evaluator.Test
                 new YieldStmt(
                     new CallInternalBinaryOperatorExp(InternalBinaryOperator.Add_Int_Int_Int,
                         new LoadExp(LocalVar("y")),
-                        new IntLiteralExp(3))))));
+                        new IntLiteralExp(3)))));
 
             var funcF = RootPath("F", Arr(Path.Int, Path.Int), default);
             var seqTypeF = funcF;
@@ -572,12 +572,12 @@ namespace Gum.IR0Evaluator.Test
         [Fact]
         public async Task ReturnStmt_ExitsFuncImmediately()
         {
-            var funcDecl = new GlobalFuncDecl(new NormalFuncDecl(default, "F", false, default, default,
+            var funcDecl = new NormalFuncDecl(default, "F", false, default, default,
                 RBlock(
                     new ReturnStmt(ReturnInfo.None.Instance),
                     RPrintStringCmdStmt("Wrong")
                 )
-            ));
+            );
 
             var func = RootPath("F");
 
@@ -602,12 +602,12 @@ namespace Gum.IR0Evaluator.Test
         [Fact]
         public async Task ReturnStmt_SetReturnValueToCaller()
         {   
-            var funcDecl = new GlobalFuncDecl(new NormalFuncDecl(default, "F", false, default, default,
+            var funcDecl = new NormalFuncDecl(default, "F", false, default, default,
                 RBlock(
                     new ReturnStmt(new ReturnInfo.Expression(new IntLiteralExp(77))),
                     RPrintStringCmdStmt("Wrong")
                 )
-            ));
+            );
 
             var func = RootPath("F");
 
@@ -833,7 +833,7 @@ namespace Gum.IR0Evaluator.Test
                     RPrintIntCmdStmt(new LocalVarLoc("x")))
             );
 
-            var output = await EvalAsync(Arr(new GlobalFuncDecl(seqFuncDecl0), new GlobalFuncDecl(seqFuncDecl1)), stmts);
+            var output = await EvalAsync(Arr<FuncDecl>(seqFuncDecl0, seqFuncDecl1), stmts);
 
             Assert.Equal("34345656", output);
         }
@@ -951,11 +951,11 @@ namespace Gum.IR0Evaluator.Test
             var script = RScript(
                 moduleName,
                 default,
-                Arr(
-                    new GlobalFuncDecl(new NormalFuncDecl(
+                Arr<FuncDecl>(
+                    new NormalFuncDecl(
                         default, "F", false, default, Arr(new Param(ParamKind.Ref, Path.Int, "i")),
                         RBlock(new ExpStmt(new AssignExp(new DerefLocLoc(new LocalVarLoc("i")), RInt(7))))
-                    ))
+                    )
                 ),
 
                 default,
@@ -985,11 +985,11 @@ namespace Gum.IR0Evaluator.Test
             var script = RScript(
                 moduleName,
                 default, 
-                Arr(                    
-                    new GlobalFuncDecl(new NormalFuncDecl(
+                Arr<FuncDecl>(                    
+                    new NormalFuncDecl(
                         default, "G", false, default, Arr(new Param(ParamKind.Ref, Path.Int, "i")),                        
                         RBlock(new ReturnStmt(new ReturnInfo.Ref(new GlobalVarLoc("x"))))
-                    ))
+                    )
                 ),
                 default,
                 RGlobalVarDeclStmt(Path.Int, "x", RInt(3)),
@@ -1033,20 +1033,19 @@ namespace Gum.IR0Evaluator.Test
             var testFunc = RootPath("TestFunc", Arr(Path.Int, Path.Int, Path.Int), default);
 
             // Print(int x)
-            var printFuncDecl = new GlobalFuncDecl(new NormalFuncDecl(default, "Print", false, default, RNormalParams((Path.Int, "x")),
-
+            var printFuncDecl = new NormalFuncDecl(default, "Print", false, default, RNormalParams((Path.Int, "x")),
                 RBlock(
                     RPrintIntCmdStmt(new LocalVarLoc("x")),
                     new ReturnStmt(new ReturnInfo.Expression(new LoadExp(LocalVar("x"))))
                 )
-            ));
+            );
 
             // TestFunc(int i, int j, int k)
-            var testFuncDecl = new GlobalFuncDecl(new NormalFuncDecl(default, "TestFunc", false, default, RNormalParams((Path.Int, "i"), (Path.Int, "j"), (Path.Int, "k")),
+            var testFuncDecl = new NormalFuncDecl(default, "TestFunc", false, default, RNormalParams((Path.Int, "i"), (Path.Int, "j"), (Path.Int, "k")),
 
                 RPrintStringCmdStmt("TestFunc")
 
-            ));
+            );
 
             Exp MakePrintCall(int v) =>
                 new CallFuncExp(printFunc, null, RArgs(new IntLiteralExp(v)));
@@ -1066,7 +1065,7 @@ namespace Gum.IR0Evaluator.Test
                 )
             );
 
-            var output = await EvalAsync(Arr(printFuncDecl, testFuncDecl), stmts);
+            var output = await EvalAsync(Arr<FuncDecl>(printFuncDecl, testFuncDecl), stmts);
             Assert.Equal("123TestFunc", output);
         }
 
@@ -1075,7 +1074,7 @@ namespace Gum.IR0Evaluator.Test
         {
             var func = RootPath("F");
             // F() { return "hello world"; }
-            var funcDecl = new GlobalFuncDecl(new NormalFuncDecl(default, "F", false, default, default, new ReturnStmt(new ReturnInfo.Expression(RString("Hello World")))));
+            var funcDecl = new NormalFuncDecl(default, "F", false, default, default, new ReturnStmt(new ReturnInfo.Expression(RString("Hello World"))));
 
             var stmts = Arr<Stmt>(RPrintStringCmdStmt(new CallFuncExp(func, null, default)));
 
@@ -1353,7 +1352,7 @@ namespace Gum.IR0Evaluator.Test
         public async Task CallSeqFuncExp_ReturnsAnonymousSeqTypeValue()
         {
             var seqFunc = RootPath("F");
-            var seqFuncDecl = new GlobalFuncDecl(new SequenceFuncDecl(default, "F", false, Path.String, default, default, BlankStmt.Instance)); // return nothing
+            var seqFuncDecl = new SequenceFuncDecl(default, "F", false, Path.String, default, default, BlankStmt.Instance); // return nothing
 
             var stmts = Arr<Stmt>
             (
@@ -1377,12 +1376,12 @@ namespace Gum.IR0Evaluator.Test
             var lambda = new Path.Nested(makeLambda, new Name.Anonymous(new AnonymousId(0)), ParamHash.None, default);
 
             // Print(int x) { 
-            var printFuncDecl = new GlobalFuncDecl(new NormalFuncDecl(default, "Print", false, default, RNormalParams((Path.Int, "x")),
+            var printFuncDecl = new NormalFuncDecl(default, "Print", false, default, RNormalParams((Path.Int, "x")),
                 RBlock(
                     RPrintIntCmdStmt(new LocalVarLoc("x")),
                     new ReturnStmt(new ReturnInfo.Expression(new LoadExp(LocalVar("x"))))
                 )
-            ));
+            );
 
             // MakeLambda() { return (int i, int j, int k) => @"TestFunc";}
             var lambdaDecl = new LambdaDecl(
@@ -1391,12 +1390,12 @@ namespace Gum.IR0Evaluator.Test
                 RNormalParams((Path.Int, "i"), (Path.Int, "j"), (Path.Int, "k"))
             );
             
-            var makeLambdaDecl = new GlobalFuncDecl(new NormalFuncDecl(Arr<CallableMemberDecl>(lambdaDecl), "MakeLambda", false, default, default,
+            var makeLambdaDecl = new NormalFuncDecl(Arr<CallableMemberDecl>(lambdaDecl), "MakeLambda", false, default, default,
                 RBlock(                    
                     RPrintStringCmdStmt("MakeLambda"),
                     new ReturnStmt(new ReturnInfo.Expression(new LambdaExp(lambda)))
                 )
-            ));
+            );
 
             Exp MakePrintCall(int v) =>
                 new CallFuncExp(printFunc, null, RArgs(new IntLiteralExp(v)));
@@ -1416,7 +1415,7 @@ namespace Gum.IR0Evaluator.Test
                 )
             );
 
-            var output = await EvalAsync(Arr(printFuncDecl, makeLambdaDecl), stmts);
+            var output = await EvalAsync(Arr<FuncDecl>(printFuncDecl, makeLambdaDecl), stmts);
             Assert.Equal("MakeLambda123TestFunc", output);
         }
 
@@ -1471,13 +1470,13 @@ namespace Gum.IR0Evaluator.Test
             var printFunc = RootPath("Print", Arr(Path.Int), default);
 
             // print(int x)
-            var printFuncDecl = new GlobalFuncDecl(new NormalFuncDecl(default, "Print", false, default, RNormalParams((Path.Int, "x")),
+            var printFuncDecl = new NormalFuncDecl(default, "Print", false, default, RNormalParams((Path.Int, "x")),
 
                 RBlock(
                     RPrintIntCmdStmt(new LocalVarLoc("x")),
                     new ReturnStmt(new ReturnInfo.Expression(new LoadExp(new LocalVarLoc("x"))))
                 )
-            ));
+            );
 
             Exp MakePrintCall(int v) =>
                 new CallFuncExp(printFunc, null, RArgs(new IntLiteralExp(v)));

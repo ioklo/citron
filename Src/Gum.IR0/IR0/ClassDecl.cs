@@ -16,7 +16,7 @@ namespace Gum.IR0
         Path.Nested? BaseClass,
         ImmutableArray<Path.Nested> Interfaces,        
         ImmutableArray<ClassConstructorDecl> ConstructorDecls,
-        ImmutableArray<ClassMemberFuncDecl> MemberFuncDecls,
+        ImmutableArray<FuncDecl> MemberFuncDecls,
         ImmutableArray<ClassMemberVarDecl> MemberVarDecls
     ) : TypeDecl
     {   

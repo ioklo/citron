@@ -482,7 +482,7 @@ var i = c.F(2);
                     new R.ClassDecl(R.AccessModifier.Private, "C", default, null, default, Arr<R.ClassMemberDecl>(
                         new R.ClassMemberVarDecl(R.AccessModifier.Private, R.Path.Int, Arr<string>("x")),
 
-                        new R.ClassMemberFuncDecl(default, "F", true, default, Arr(new R.Param(R.ParamKind.Normal, R.Path.Int, "y")), RBlock(
+                        new R.NormalFuncDecl(default, "F", true, default, Arr(new R.Param(R.ParamKind.Normal, R.Path.Int, "y")), RBlock(
                             new R.ReturnStmt(new R.ReturnInfo.Expression(new R.CallInternalBinaryOperatorExp(
                                 R.InternalBinaryOperator.Add_Int_Int_Int,
                                 new R.LoadExp(new R.ClassMemberLoc(R.ThisLoc.Instance, CxPath())),

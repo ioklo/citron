@@ -73,9 +73,9 @@ namespace Gum.IR0Evaluator
                 DeclEvaluator.EvalCallableMemberDecls(globalContext, itemContainer, constructorPath, totalTypeParamCount, constructorDecl.CallableMemberDecls);
             }
 
-            void EvalMemberFuncDecl(R.StructMemberFuncDecl memberFuncDecl)
+            void EvalMemberFuncDecl(R.FuncDecl memberFuncDecl)
             {                
-                DeclEvaluator.EvalFuncDecl(globalContext, structContainer, structPath, totalTypeParamCount, memberFuncDecl.FuncDecl);
+                DeclEvaluator.EvalFuncDecl(globalContext, structContainer, structPath, totalTypeParamCount, memberFuncDecl);
             }
         }
     }

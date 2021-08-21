@@ -94,10 +94,9 @@ namespace Gum.IR0Evaluator
                 DeclEvaluator.EvalCallableMemberDecls(globalContext, constructorContainer, constructorPath, totalTypeParamCount, constructorDecl.CallableMemberDecls);
             }           
 
-            void EvalClassMemberFuncDecl(R.ClassMemberFuncDecl memberFuncDecl)
+            void EvalClassMemberFuncDecl(R.FuncDecl memberFuncDecl)
             {
-                var funcDecl = memberFuncDecl.FuncDecl;
-                DeclEvaluator.EvalFuncDecl(globalContext, classContainer, classPath, totalTypeParamCount, funcDecl);
+                DeclEvaluator.EvalFuncDecl(globalContext, classContainer, classPath, totalTypeParamCount, memberFuncDecl);
             }
         }
     }

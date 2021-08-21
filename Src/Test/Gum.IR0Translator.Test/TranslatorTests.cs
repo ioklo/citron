@@ -25,7 +25,7 @@ namespace Gum.IR0Translator.Test
         M.ModuleName moduleName = "TestModule";
         R.ModuleName rmoduleName = "TestModule";
 
-        R.Script RScript(ImmutableArray<R.GlobalTypeDecl> globalTypeDecls, ImmutableArray<R.GlobalFuncDecl> globalFuncDecls, ImmutableArray<R.CallableMemberDecl> callableMemberDecls, params R.Stmt[] optTopLevelStmts)
+        R.Script RScript(ImmutableArray<R.TypeDecl> globalTypeDecls, ImmutableArray<R.FuncDecl> globalFuncDecls, ImmutableArray<R.CallableMemberDecl> callableMemberDecls, params R.Stmt[] optTopLevelStmts)
         {
             return Gum.IR0.IR0Factory.RScript(rmoduleName, globalTypeDecls, globalFuncDecls, callableMemberDecls, optTopLevelStmts);
         }
@@ -129,9 +129,9 @@ namespace Gum.IR0Translator.Test
 
             var expected = RScript(
                 default,
-                Arr(new R.GlobalFuncDecl(new R.NormalFuncDecl(default, "Func", false, default, default, RBlock(
+                Arr<R.FuncDecl>(new R.NormalFuncDecl(default, "Func", false, default, default, RBlock(
                     new R.LocalVarDeclStmt(new R.LocalVarDecl(Arr<R.VarDeclElement>(new R.VarDeclElement.Normal(R.Path.Int, "x", RInt(1)))))
-                )))),
+                ))),
                 default
             );
 
@@ -525,11 +525,9 @@ namespace Gum.IR0Translator.Test
 
             var script = Translate(syntaxScript);
 
-            var seqFunc = new R.GlobalFuncDecl(
-                new R.SequenceFuncDecl(default, "Func", false, R.Path.Int, default, default, RBlock(new R.ReturnStmt(R.ReturnInfo.None.Instance)))
-            );
+            var seqFunc = new R.SequenceFuncDecl(default, "Func", false, R.Path.Int, default, default, RBlock(new R.ReturnStmt(R.ReturnInfo.None.Instance)));            
 
-            var expected = RScript(default, Arr(seqFunc), default);
+            var expected = RScript(default, Arr<R.FuncDecl>(seqFunc), default);
 
             Assert.Equal(expected, script);
         }
@@ -964,11 +962,11 @@ namespace Gum.IR0Translator.Test
 
             var script = Translate(syntaxScript);
 
-            var seqFunc = new R.GlobalFuncDecl(new R.SequenceFuncDecl(default, "Func", false, R.Path.Int, default, default, RBlock(
+            var seqFunc = new R.SequenceFuncDecl(default, "Func", false, R.Path.Int, default, default, RBlock(
                 new R.YieldStmt(RInt(3))
-            )));
+            ));
 
-            var expected = RScript(default, Arr(seqFunc), default);
+            var expected = RScript(default, Arr<R.FuncDecl>(seqFunc), default);
 
             Assert.Equal(expected, script);
         }
@@ -1464,11 +1462,11 @@ namespace Gum.IR0Translator.Test
             var expected = RScript(
                 default,
 
-                Arr(
-                    new R.GlobalFuncDecl(new R.NormalFuncDecl(
+                Arr<R.FuncDecl>(
+                    new R.NormalFuncDecl(
                         default, "F", false, default, Arr(new R.Param(R.ParamKind.Ref, R.Path.Int, "i")),
                         RBlock(new R.ExpStmt(new R.AssignExp(new R.DerefLocLoc(new R.LocalVarLoc("i")), RInt(3))))
-                    ))
+                    )
                 ),
 
                 default,
@@ -1511,10 +1509,10 @@ namespace Gum.IR0Translator.Test
             var expected = RScript(
                 default, 
 
-                Arr(
-                    new R.GlobalFuncDecl(new R.NormalFuncDecl(
+                Arr<R.FuncDecl>(
+                    new R.NormalFuncDecl(
                         default, "Func", false, Arr("T"), RNormalParams((R.Path.Int, "x")), RBlock(new R.ReturnStmt(new R.ReturnInfo.Expression(new R.LoadExp(new R.LocalVarLoc("x")))))
-                    ))
+                    )
                 ),
 
                 default,
@@ -1549,9 +1547,9 @@ namespace Gum.IR0Translator.Test
 
                 default,
 
-                Arr(new R.GlobalFuncDecl(new R.NormalFuncDecl(
+                Arr<R.FuncDecl>(new R.NormalFuncDecl(
                     default, "Func", false, Arr<string>(), RNormalParams((R.Path.Int, "x")), RBlock(new R.ReturnStmt(new R.ReturnInfo.Expression(new R.LoadExp(new R.LocalVarLoc("x")))))
-                ))),
+                )),
 
                 default,
 

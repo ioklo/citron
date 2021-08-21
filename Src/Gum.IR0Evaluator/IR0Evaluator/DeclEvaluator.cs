@@ -37,10 +37,10 @@ namespace Gum.IR0Evaluator
                 var evaluator = new DeclEvaluator(globalContext, container, curPath, totalParamCount);
 
                 foreach (var globalTypeDecl in script.GlobalTypeDecls)
-                    evaluator.EvalTypeDecl(globalTypeDecl.TypeDecl);
+                    evaluator.EvalTypeDecl(globalTypeDecl);
 
                 foreach (var globalFuncDecl in script.GlobalFuncDecls)
-                    evaluator.EvalFuncDecl(globalFuncDecl.FuncDecl);
+                    evaluator.EvalFuncDecl(globalFuncDecl);
 
                 foreach (var callableMemberDecl in script.CallableMemberDecls)
                     evaluator.EvalCallableMemberDecl(callableMemberDecl);

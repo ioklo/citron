@@ -3,7 +3,6 @@
 namespace Gum.IR0
 {
     public record StructMemberVarDecl(AccessModifier AccessModifier, Path Type, ImmutableArray<string> Names);
-    public record StructMemberFuncDecl(FuncDecl FuncDecl);
 
     // public S(int a, int b) { }
     public record StructConstructorDecl(

@@ -12,7 +12,7 @@ namespace Gum.IR0
 {
     public static class IR0Factory
     {
-        public static Script RScript(ModuleName moduleName, ImmutableArray<GlobalTypeDecl> typeDecls, ImmutableArray<GlobalFuncDecl> funcDecls, ImmutableArray<CallableMemberDecl> callableMemberDecls, params Stmt[] optTopLevelStmts)
+        public static Script RScript(ModuleName moduleName, ImmutableArray<TypeDecl> typeDecls, ImmutableArray<FuncDecl> funcDecls, ImmutableArray<CallableMemberDecl> callableMemberDecls, params Stmt[] optTopLevelStmts)
         {   
             ImmutableArray<Stmt> topLevelStmts = optTopLevelStmts.ToImmutableArray();
 

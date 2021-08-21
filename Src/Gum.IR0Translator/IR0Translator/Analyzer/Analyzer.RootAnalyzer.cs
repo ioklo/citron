@@ -128,9 +128,8 @@ namespace Gum.IR0Translator
                 var bodyResult = analyzer.AnalyzeStmt(funcDecl.Body);
                 
                 var decls = funcContext.GetCallableMemberDecls();
-                var normalFuncDecl = new R.NormalFuncDecl(decls, rname, false, funcDecl.TypeParams, rparamInfos, bodyResult.Stmt);
-                var globalFuncDecl = new R.GlobalFuncDecl(normalFuncDecl);
-                rootContext.AddGlobalFuncDecl(globalFuncDecl);
+                var normalFuncDecl = new R.NormalFuncDecl(decls, rname, false, funcDecl.TypeParams, rparamInfos, bodyResult.Stmt);                
+                rootContext.AddGlobalFuncDecl(normalFuncDecl);
             }
 
             public void AnalyzeGlobalSequenceFuncDecl(S.GlobalFuncDecl funcDecl)
@@ -163,9 +162,8 @@ namespace Gum.IR0Translator
                 var parameters = funcDecl.Parameters.Select(param => param.Name).ToImmutableArray();
 
                 var decls = funcContext.GetCallableMemberDecls();
-                var seqFuncDecl = new R.SequenceFuncDecl(decls, funcDecl.Name, false, retRType, funcDecl.TypeParams, rparamInfos, bodyResult.Stmt);
-                var globalFuncDecl = new R.GlobalFuncDecl(seqFuncDecl);
-                rootContext.AddGlobalFuncDecl(globalFuncDecl);
+                var seqFuncDecl = new R.SequenceFuncDecl(decls, funcDecl.Name, false, retRType, funcDecl.TypeParams, rparamInfos, bodyResult.Stmt);                
+                rootContext.AddGlobalFuncDecl(seqFuncDecl);
             }
 
             void AnalyzeGlobalFuncDecl(S.GlobalFuncDecl funcDecl)
@@ -195,8 +193,7 @@ namespace Gum.IR0Translator
                 }
 
                 var renumDecl = new R.EnumDecl(enumDecl.Name, enumDecl.TypeParams, relemsBuilder.MoveToImmutable());
-                var globalTypeDecl = new R.GlobalTypeDecl(renumDecl);
-                rootContext.AddGlobalTypeDecl(globalTypeDecl);
+                rootContext.AddGlobalTypeDecl(renumDecl);
             }
             
             void AnalyzeTypeDecl(S.TypeDecl typeDecl)

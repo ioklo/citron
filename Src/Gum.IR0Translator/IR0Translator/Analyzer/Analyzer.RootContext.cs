@@ -14,8 +14,8 @@ namespace Gum.IR0Translator
             R.ModuleName moduleName;
             ItemValueFactory itemValueFactory;
 
-            ImmutableArray<R.GlobalTypeDecl> globalTypeDecls;
-            ImmutableArray<R.GlobalFuncDecl> globalFuncDecls;
+            ImmutableArray<R.TypeDecl> globalTypeDecls;
+            ImmutableArray<R.FuncDecl> globalFuncDecls;
             ImmutableArray<R.CallableMemberDecl> callableMemberDecls;
             ImmutableArray<R.Stmt> topLevelStmts;
 
@@ -25,8 +25,8 @@ namespace Gum.IR0Translator
             {
                 this.moduleName = moduleName;
                 this.itemValueFactory = itemValueFactory;
-                this.globalTypeDecls = ImmutableArray<R.GlobalTypeDecl>.Empty;
-                this.globalFuncDecls = ImmutableArray<R.GlobalFuncDecl>.Empty;
+                this.globalTypeDecls = ImmutableArray<R.TypeDecl>.Empty;
+                this.globalFuncDecls = ImmutableArray<R.FuncDecl>.Empty;
                 this.callableMemberDecls = ImmutableArray<R.CallableMemberDecl>.Empty;
                 this.topLevelStmts = ImmutableArray<R.Stmt>.Empty;
             }
@@ -86,12 +86,12 @@ namespace Gum.IR0Translator
                 return new R.Script(moduleName, globalTypeDecls, globalFuncDecls, callableMemberDecls, topLevelStmts);
             }
 
-            public void AddGlobalFuncDecl(R.GlobalFuncDecl globalFuncDecl)
+            public void AddGlobalFuncDecl(R.FuncDecl globalFuncDecl)
             {
                 throw new NotImplementedException();
             }
 
-            public void AddGlobalTypeDecl(R.GlobalTypeDecl globalTypeDecl)
+            public void AddGlobalTypeDecl(R.TypeDecl globalTypeDecl)
             {
                 throw new NotImplementedException();
             }
@@ -112,7 +112,7 @@ namespace Gum.IR0Translator
 
             void ITypeContainer.AddType(R.TypeDecl typeDecl)
             {
-                globalTypeDecls.Add(new R.GlobalTypeDecl(typeDecl));
+                globalTypeDecls.Add(typeDecl);
             }
         }
     }

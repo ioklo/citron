@@ -23,14 +23,14 @@ namespace Gum.IR0Translator
             ClassTypeValue classTypeValue;
 
             ImmutableArray<R.ClassConstructorDecl>.Builder constructorsBuilder;
-            ImmutableArray<R.ClassMemberFuncDecl>.Builder memberFuncsBuilder;
+            ImmutableArray<R.FuncDecl>.Builder memberFuncsBuilder;
             ImmutableArray<R.ClassMemberVarDecl>.Builder memberVarsBuilder;
 
             // Entry
             public static void Analyze(GlobalContext globalContext, ITypeContainer typeContainer, S.ClassDecl classDecl, ClassTypeValue classTypeValue)
             {
                 var constructorsBuilder = ImmutableArray.CreateBuilder<R.ClassConstructorDecl>();
-                var memberFuncsBuilder = ImmutableArray.CreateBuilder<R.ClassMemberFuncDecl>();
+                var memberFuncsBuilder = ImmutableArray.CreateBuilder<R.FuncDecl>();
                 var memberVarsBuilder = ImmutableArray.CreateBuilder<R.ClassMemberVarDecl>();
                 
                 var classAnalyzer = new ClassAnalyzer(globalContext, typeContainer, classDecl, classTypeValue,
@@ -246,8 +246,7 @@ namespace Gum.IR0Translator
 
                 var decls = funcContext.GetCallableMemberDecls();
                 var seqFuncDecl = new R.SequenceFuncDecl(decls, funcDecl.Name, !funcDecl.IsStatic, retRType, funcDecl.TypeParams, rparamInfos, bodyResult.Stmt);
-                var memberFuncDecl = new R.ClassMemberFuncDecl(seqFuncDecl);
-                memberFuncsBuilder.Add(memberFuncDecl);
+                memberFuncsBuilder.Add(seqFuncDecl);
             }
 
             void AnalyzeNormalFuncDeclElement(S.ClassMemberFuncDecl funcDecl)
@@ -278,9 +277,8 @@ namespace Gum.IR0Translator
 
                 var decls = funcContext.GetCallableMemberDecls();
 
-                var normalFuncDecl = new R.NormalFuncDecl(decls, rname, !funcDecl.IsStatic, funcDecl.TypeParams, rparamInfos, bodyResult.Stmt);
-                var memberFuncDecl = new R.ClassMemberFuncDecl(normalFuncDecl);
-                memberFuncsBuilder.Add(memberFuncDecl);
+                var normalFuncDecl = new R.NormalFuncDecl(decls, rname, !funcDecl.IsStatic, funcDecl.TypeParams, rparamInfos, bodyResult.Stmt);                
+                memberFuncsBuilder.Add(normalFuncDecl);
             }
 
             void AnalyzeMemberDecl(S.ClassMemberDecl memberDecl)

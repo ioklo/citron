@@ -9,35 +9,10 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
 namespace Gum.IR0
-{
-    public interface IExpVisitor
-    {
-        void VisitLoadExp(LoadExp loadExp);
-        void VisitStringExp(StringExp stringExp);
-        void VisitIntLiteralExp(IntLiteralExp intExp);
-        void VisitBoolLiteralExp(BoolLiteralExp boolExp);
-        void VisitCallInternalUnaryOperatorExp(CallInternalUnaryOperatorExp ciuoExp);
-        void VisitCallInternalUnaryAssignOperatorExp(CallInternalUnaryAssignOperator ciuaoExp);
-        void VisitCallInternalBinaryOperatorExp(CallInternalBinaryOperatorExp ciboExp);
-        void VisitAssignExp(AssignExp assignExp);
-        void VisitCallFuncExp(CallFuncExp callFuncExp);
-        void VisitCallSeqFuncExp(CallSeqFuncExp callSeqFuncExp);
-        void VisitCallValueExp(CallValueExp callValueExp);
-        void VisitLambdaExp(LambdaExp lambdaExp);
-        void VisitListExp(ListExp listExp);
-        void VisitListIteratorExp(ListIteratorExp listIterExp);
-        void VisitNewEnumElemExp(NewEnumElemExp enumExp);
-        void VisitNewStructExp(NewStructExp newStructExp);
-        void VisitNewClassExp(NewClassExp newClassExp);
-        void VisitCastEnumElemToEnumExp(CastEnumElemToEnumExp castEnumElemToEnumExp);
-        void VisitCastClassExp(CastClassExp castClassExp);
-    }
-
+{   
     public abstract class Exp : INode
     {
         internal Exp() { }
-        public abstract void VisitRef<TVisitor>(ref TVisitor visitor) where TVisitor : struct, IExpVisitor;
-        public abstract void Visit<TVisitor>(TVisitor visitor) where TVisitor : class, IExpVisitor;
     }
 
     // Location의 Value를 resultValue에 복사한다
@@ -45,8 +20,6 @@ namespace Gum.IR0
     public partial class LoadExp : Exp
     {
         public Loc Loc { get; }
-        public override void VisitRef<TVisitor>(ref TVisitor visitor) => visitor.VisitLoadExp(this);
-        public override void Visit<TVisitor>(TVisitor visitor) => visitor.VisitLoadExp(this);
     }
     
     // "dskfjslkf $abc "
@@ -54,9 +27,6 @@ namespace Gum.IR0
     public partial class StringExp : Exp
     {
         public ImmutableArray<StringExpElement> Elements { get; }
-
-        public override void VisitRef<TVisitor>(ref TVisitor visitor) => visitor.VisitStringExp(this);
-        public override void Visit<TVisitor>(TVisitor visitor) => visitor.VisitStringExp(this);
     }
 
     // 1
@@ -64,9 +34,6 @@ namespace Gum.IR0
     public partial class IntLiteralExp : Exp
     {
         public int Value { get; }
-
-        public override void VisitRef<TVisitor>(ref TVisitor visitor) => visitor.VisitIntLiteralExp(this);
-        public override void Visit<TVisitor>(TVisitor visitor) => visitor.VisitIntLiteralExp(this);
     }
 
     // false
@@ -74,9 +41,6 @@ namespace Gum.IR0
     public partial class BoolLiteralExp : Exp
     {
         public bool Value { get; }
-
-        public override void VisitRef<TVisitor>(ref TVisitor visitor) => visitor.VisitBoolLiteralExp(this);
-        public override void Visit<TVisitor>(TVisitor visitor) => visitor.VisitBoolLiteralExp(this);
     }
 
     public enum InternalUnaryOperator
@@ -122,9 +86,6 @@ namespace Gum.IR0
     {
         public InternalUnaryOperator Operator { get; }
         public Exp Operand { get; }
-
-        public override void VisitRef<TVisitor>(ref TVisitor visitor) => visitor.VisitCallInternalUnaryOperatorExp(this);
-        public override void Visit<TVisitor>(TVisitor visitor) => visitor.VisitCallInternalUnaryOperatorExp(this);
     }
 
     [AutoConstructor, ImplementIEquatable]
@@ -132,9 +93,6 @@ namespace Gum.IR0
     {
         public InternalUnaryAssignOperator Operator { get; }
         public Loc Operand { get; }
-
-        public override void VisitRef<TVisitor>(ref TVisitor visitor) => visitor.VisitCallInternalUnaryAssignOperatorExp(this);
-        public override void Visit<TVisitor>(TVisitor visitor) => visitor.VisitCallInternalUnaryAssignOperatorExp(this);
     }
 
     [AutoConstructor, ImplementIEquatable]
@@ -143,9 +101,6 @@ namespace Gum.IR0
         public InternalBinaryOperator Operator { get; }
         public Exp Operand0 { get; }
         public Exp Operand1 { get; }
-
-        public override void VisitRef<TVisitor>(ref TVisitor visitor) => visitor.VisitCallInternalBinaryOperatorExp(this);
-        public override void Visit<TVisitor>(TVisitor visitor) => visitor.VisitCallInternalBinaryOperatorExp(this);
     }
 
     // a = b
@@ -154,9 +109,6 @@ namespace Gum.IR0
     {
         public Loc Dest { get; }
         public Exp Src { get; }
-
-        public override void VisitRef<TVisitor>(ref TVisitor visitor) => visitor.VisitAssignExp(this);
-        public override void Visit<TVisitor>(TVisitor visitor) => visitor.VisitAssignExp(this);
     }
 
     // F(2, 3)
@@ -166,9 +118,6 @@ namespace Gum.IR0
         public Path.Nested Func { get; }
         public Loc? Instance { get; }
         public ImmutableArray<Argument> Args { get; }
-
-        public override void VisitRef<TVisitor>(ref TVisitor visitor) => visitor.VisitCallFuncExp(this);
-        public override void Visit<TVisitor>(TVisitor visitor) => visitor.VisitCallFuncExp(this);
     }
 
     [AutoConstructor, ImplementIEquatable]
@@ -178,9 +127,6 @@ namespace Gum.IR0
         public Loc? Instance { get; }
         public ImmutableArray<Argument> Args { get; }
         // public bool NeedHeapAlloc { get; } Heap으로 할당시킬지 여부
-
-        public override void VisitRef<TVisitor>(ref TVisitor visitor) => visitor.VisitCallSeqFuncExp(this);
-        public override void Visit<TVisitor>(TVisitor visitor) => visitor.VisitCallSeqFuncExp(this);
     }
 
     // f(2, 3)
@@ -190,9 +136,6 @@ namespace Gum.IR0
         public Path.Nested Lambda { get; }
         public Loc Callable { get; } // (() => {}) ()때문에 Loc이어야 한다
         public ImmutableArray<Argument> Args { get; }
-
-        public override void VisitRef<TVisitor>(ref TVisitor visitor) => visitor.VisitCallValueExp(this);
-        public override void Visit<TVisitor>(TVisitor visitor) => visitor.VisitCallValueExp(this);
     }
 
     // () => { return 1; }
@@ -202,9 +145,6 @@ namespace Gum.IR0
     public partial class LambdaExp : Exp
     {
         public Path.Nested Lambda { get; }
-
-        public override void VisitRef<TVisitor>(ref TVisitor visitor) => visitor.VisitLambdaExp(this);
-        public override void Visit<TVisitor>(TVisitor visitor) => visitor.VisitLambdaExp(this);
     }
     
     // [1, 2, 3]
@@ -213,18 +153,12 @@ namespace Gum.IR0
     {
         public Path ElemType { get; }
         public ImmutableArray<Exp> Elems { get; }
-
-        public override void VisitRef<TVisitor>(ref TVisitor visitor) => visitor.VisitListExp(this);
-        public override void Visit<TVisitor>(TVisitor visitor) => visitor.VisitListExp(this);
     }
 
     [AutoConstructor, ImplementIEquatable]
     public partial class ListIteratorExp : Exp
     {
         public Loc ListLoc { get; }
-
-        public override void VisitRef<TVisitor>(ref TVisitor visitor) => visitor.VisitListIteratorExp(this);
-        public override void Visit<TVisitor>(TVisitor visitor) => visitor.VisitListIteratorExp(this);
     }
 
     // enum construction, E.First or E.Second(2, 3)
@@ -233,9 +167,6 @@ namespace Gum.IR0
     {
         public Path.Nested Elem { get; }
         public ImmutableArray<Argument> Args { get; }
-
-        public override void VisitRef<TVisitor>(ref TVisitor visitor) => visitor.VisitNewEnumElemExp(this);
-        public override void Visit<TVisitor>(TVisitor visitor) => visitor.VisitNewEnumElemExp(this);
     }
 
     // new S(2, 3, 4);
@@ -244,9 +175,6 @@ namespace Gum.IR0
     {
         public Path.Nested Constructor { get; }
         public ImmutableArray<Argument> Args { get; }
-
-        public override void VisitRef<TVisitor>(ref TVisitor visitor) => visitor.VisitNewStructExp(this);
-        public override void Visit<TVisitor>(TVisitor visitor) => visitor.VisitNewStructExp(this);
     }
 
     // new C(2, 3, 4);
@@ -256,9 +184,6 @@ namespace Gum.IR0
         public Path.Nested Class { get; }
         public ParamHash ConstructorParamHash { get; }
         public ImmutableArray<Argument> Args { get; }
-
-        public override void VisitRef<TVisitor>(ref TVisitor visitor) => visitor.VisitNewClassExp(this);
-        public override void Visit<TVisitor>(TVisitor visitor) => visitor.VisitNewClassExp(this);
     }
 
     // 컨테이너를 enumElem -> enum으로
@@ -267,9 +192,6 @@ namespace Gum.IR0
     {
         public Exp Src { get; }
         public Path.Nested EnumElem { get; } // EnumElem을 태그로 붙여야 한다
-
-        public override void VisitRef<TVisitor>(ref TVisitor visitor) => visitor.VisitCastEnumElemToEnumExp(this);
-        public override void Visit<TVisitor>(TVisitor visitor) => visitor.VisitCastEnumElemToEnumExp(this);
     }
     
     // ClassStaticCast
@@ -278,8 +200,5 @@ namespace Gum.IR0
     {
         public Exp Src { get; }
         public Path Class { get; }
-
-        public override void VisitRef<TVisitor>(ref TVisitor visitor) => visitor.VisitCastClassExp(this);
-        public override void Visit<TVisitor>(TVisitor visitor) => visitor.VisitCastClassExp(this);
     }
 }
