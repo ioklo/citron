@@ -274,31 +274,31 @@ namespace Gum.Test.Misc
 
     public class IR0Writer
     {
-        IndentedStreamWriter isw;
+        IndentedTextWriter itw;
 
-        IR0Writer(IndentedStreamWriter isw)
+        IR0Writer(IndentedTextWriter itw)
         { 
-            this.isw = isw; 
+            this.itw = itw; 
         }
 
-        struct IndentedStreamWriter
+        struct IndentedTextWriter
         {
             class NeedIndent { public bool Value; }
 
-            StreamWriter sw;
+            TextWriter tw;
             string indent;
             NeedIndent needIndent;
 
-            public IndentedStreamWriter(StreamWriter sw)
+            public IndentedTextWriter(TextWriter tw)
             {
-                this.sw = sw;
-                this.indent = "    ";
+                this.tw = tw;
+                this.indent = string.Empty;
                 this.needIndent = new NeedIndent() { Value = false };
             }
 
-            IndentedStreamWriter(StreamWriter sw, string indent, NeedIndent needIndent)
+            IndentedTextWriter(TextWriter tw, string indent, NeedIndent needIndent)
             {
-                this.sw = sw;
+                this.tw = tw;
                 this.indent = indent;
                 this.needIndent = needIndent;
             }
@@ -307,96 +307,107 @@ namespace Gum.Test.Misc
             {
                 if (needIndent.Value)
                 {
-                    sw.Write(indent);
+                    tw.Write(indent);
                     needIndent.Value = false;
                 }
                
-                sw.Write(text);
+                tw.Write(text);
             }
 
             public void Write(int v)
             {
                 if (needIndent.Value)
                 {
-                    sw.Write(indent);
+                    tw.Write(indent);
                     needIndent.Value = false;
                 }
 
-                sw.Write(v);
+                tw.Write(v);
+            }
+
+            public void Write(bool v)
+            {
+                if (needIndent.Value)
+                {
+                    tw.Write(indent);
+                    needIndent.Value = false;
+                }
+
+                tw.Write(v ? "true" : "false");
             }
 
             public void WriteLine(string text)
             {
-                sw.WriteLine(text);
+                tw.WriteLine(text);
                 needIndent.Value = true;
             }
 
             public void WriteLine()
             {
-                sw.WriteLine();
+                tw.WriteLine();
                 needIndent.Value = true;
             }
 
-            public IndentedStreamWriter Push()
+            public IndentedTextWriter Push()
             {
-                return new IndentedStreamWriter(sw, this.indent + "    ", needIndent);
+                return new IndentedTextWriter(tw, this.indent + "    ", needIndent);
             }
         }
 
         struct TypeDeclWriter : IIR0TypeDeclVisitor
         {
-            IndentedStreamWriter isw;
+            IndentedTextWriter itw;
 
-            public static void Write(IndentedStreamWriter isw, R.TypeDecl typeDecl)
+            public static void Write(IndentedTextWriter itw, R.TypeDecl typeDecl)
             {
-                var writer = new TypeDeclWriter(isw);
+                var writer = new TypeDeclWriter(itw);
                 IIR0TypeDeclVisitor.Visit(ref writer, typeDecl);
             }
 
-            TypeDeclWriter(IndentedStreamWriter isw)
+            TypeDeclWriter(IndentedTextWriter itw)
             {
-                this.isw = isw;
+                this.itw = itw;
             }
 
             public void VisitStructDecl(R.StructDecl structDecl)
             {
-                var writer = new IR0Writer(isw);
+                var writer = new IR0Writer(itw);
                 writer.WriteNew("R.StructDecl", structDecl.AccessModifier, structDecl.Name, structDecl.TypeParams, structDecl.BaseTypes,
                     structDecl.ConstructorDecls, structDecl.MemberFuncDecls, structDecl.MemberVarDecls);
             }
 
             public void VisitClassDecl(R.ClassDecl classDecl)
             {
-                var writer = new IR0Writer(isw);
+                var writer = new IR0Writer(itw);
                 writer.WriteNew("R.ClassDecl", classDecl.AccessModifier, classDecl.Name, classDecl.TypeParams, classDecl.BaseClass, classDecl.Interfaces,
                     classDecl.ConstructorDecls, classDecl.MemberFuncDecls, classDecl.MemberVarDecls);
             }
 
             public void VisitEnumDecl(R.EnumDecl enumDecl)
             {
-                var writer = new IR0Writer(isw);
+                var writer = new IR0Writer(itw);
                 writer.WriteNew("R.EnumDecl", enumDecl.Name, enumDecl.TypeParams, enumDecl.Elems);
             }
         }
 
         struct FuncDeclWriter : IIR0FuncDeclVisitor
         {
-            IndentedStreamWriter isw;
+            IndentedTextWriter itw;
 
-            public static void Write(IndentedStreamWriter isw, R.FuncDecl funcDecl)
+            public static void Write(IndentedTextWriter itw, R.FuncDecl funcDecl)
             {
-                var writer = new FuncDeclWriter(isw);
+                var writer = new FuncDeclWriter(itw);
                 IIR0FuncDeclVisitor.Visit(ref writer, funcDecl);
             }
 
-            FuncDeclWriter(IndentedStreamWriter isw)
+            FuncDeclWriter(IndentedTextWriter itw)
             {
-                this.isw = isw;
+                this.itw = itw;
             }
 
             public void VisitNormalFuncDecl(R.NormalFuncDecl normalFuncDecl)
             {
-                var writer = new IR0Writer(isw);
+                var writer = new IR0Writer(itw);
                 writer.WriteNew(
                     "R.NormalFuncDecl",
                     normalFuncDecl.CallableMemberDecls,
@@ -410,7 +421,7 @@ namespace Gum.Test.Misc
 
             public void VisitSequenceFuncDecl(R.SequenceFuncDecl seqFuncDecl)
             {
-                var writer = new IR0Writer(isw);
+                var writer = new IR0Writer(itw);
                 writer.WriteNew(
                     "R.SequenceFuncDecl", 
                     seqFuncDecl.CallableMemberDecls,
@@ -426,28 +437,28 @@ namespace Gum.Test.Misc
 
         struct CallableMemberDeclWriter : IIR0CallableMemberDeclVisitor
         {
-            IndentedStreamWriter isw;
+            IndentedTextWriter itw;
 
-            public static void Write(IndentedStreamWriter isw, R.CallableMemberDecl decl)
+            public static void Write(IndentedTextWriter itw, R.CallableMemberDecl decl)
             {
-                var writer = new CallableMemberDeclWriter(isw);
+                var writer = new CallableMemberDeclWriter(itw);
                 IIR0CallableMemberDeclVisitor.Visit(ref writer, decl);
             }
 
-            CallableMemberDeclWriter(IndentedStreamWriter isw)
+            CallableMemberDeclWriter(IndentedTextWriter itw)
             {
-                this.isw = isw;
+                this.itw = itw;
             }
 
             public void VisitCapturedStatementDecl(R.CapturedStatementDecl decl)
             {
-                var writer = new IR0Writer(isw);
+                var writer = new IR0Writer(itw);
                 writer.WriteNew("R.CapturedStatementDecl", decl.Name, decl.CapturedStatement);
             }
 
             public void VisitLambdaDecl(R.LambdaDecl decl)
             {
-                var writer = new IR0Writer(isw);
+                var writer = new IR0Writer(itw);
                 writer.WriteNew("R.LambdaDecl", decl.Name, decl.CapturedStatement, decl.Parameters);
             }
         }
@@ -747,7 +758,7 @@ namespace Gum.Test.Misc
 
         void WriteModuleName(R.ModuleName moduleName)
         {
-            isw.Write(moduleName.Value);
+            itw.Write(moduleName.Value);
         }
 
         void WriteName(R.Name name)
@@ -769,13 +780,13 @@ namespace Gum.Test.Misc
 
         void WriteAnonymousId(R.AnonymousId anonymousId)
         {
-            isw.Write(anonymousId.Value);
+            itw.Write(anonymousId.Value);
         }
 
         void WriteParamHash(R.ParamHash paramHash)
         {
             if (paramHash.Equals(R.ParamHash.None))
-                isw.Write("R.ParamHash.None");
+                itw.Write("R.ParamHash.None");
             else
                 WriteNew("R.ParamHash", paramHash.Entries);
         }        
@@ -789,9 +800,9 @@ namespace Gum.Test.Misc
         {
             switch (paramKind)
             {
-                case R.ParamKind.Normal: isw.Write("R.ParamKind.Normal"); break;
-                case R.ParamKind.Params: isw.Write("R.ParamKind.Params"); break;
-                case R.ParamKind.Ref: isw.Write("R.ParamKind.Ref"); break;
+                case R.ParamKind.Normal: itw.Write("R.ParamKind.Normal"); break;
+                case R.ParamKind.Params: itw.Write("R.ParamKind.Params"); break;
+                case R.ParamKind.Ref: itw.Write("R.ParamKind.Ref"); break;
                 default: throw new UnreachableCodeException();
             }
         }
@@ -800,9 +811,9 @@ namespace Gum.Test.Misc
         {
             switch(modifier)
             {
-                case R.AccessModifier.Public: isw.Write("R.AccessModifier.Public"); break;
-                case R.AccessModifier.Protected: isw.Write("R.AccessModifier.Protected"); break;
-                case R.AccessModifier.Private: isw.Write("R.AccessModifier.Private"); break;
+                case R.AccessModifier.Public: itw.Write("R.AccessModifier.Public"); break;
+                case R.AccessModifier.Protected: itw.Write("R.AccessModifier.Protected"); break;
+                case R.AccessModifier.Private: itw.Write("R.AccessModifier.Private"); break;
             }
         }
 
@@ -813,17 +824,17 @@ namespace Gum.Test.Misc
                 // R.Path.Reserved
                 case R.Path.TupleType tuple: WriteNew("R.Path.TupleType", tuple.Elems); break;
                 case R.Path.TypeVarType typeVar: WriteNew("R.Path.TypeVarType", typeVar.Index); break;
-                case R.Path.VoidType: isw.Write("R.Path.VoidType.Instance"); break;
+                case R.Path.VoidType: itw.Write("R.Path.VoidType.Instance"); break;
                 case R.Path.BoxType box: WriteNew("R.Path.BoxType", box.Type); break;
                 case R.Path.GenericRefType genericRef: WriteNew("R.Path.GenericRefType", genericRef.Type); break;
                 case R.Path.FuncType: WriteNew("R.Path.FuncType"); break; // TODO:
                 case R.Path.NullableType nullable: WriteNew("R.Path.NullableType", nullable.Type); break;
 
                 // special cases R.Path.Normal
-                case R.Path.Normal when path == R.Path.System: isw.Write("R.Path.System"); break;
-                case R.Path.Normal when path == R.Path.Bool: isw.Write("R.Path.Bool"); break;
-                case R.Path.Normal when path == R.Path.Int: isw.Write("R.Path.Int"); break;
-                case R.Path.Normal when path == R.Path.String: isw.Write("R.Path.String"); break;
+                case R.Path.Normal when path == R.Path.System: itw.Write("R.Path.System"); break;
+                case R.Path.Normal when path == R.Path.Bool: itw.Write("R.Path.Bool"); break;
+                case R.Path.Normal when path == R.Path.Int: itw.Write("R.Path.Int"); break;
+                case R.Path.Normal when path == R.Path.String: itw.Write("R.Path.String"); break;
 
                 // todo: seq, list
                 case R.Path.Root root: WriteNew("R.Path.Root", root.ModuleName); break;
@@ -998,23 +1009,23 @@ namespace Gum.Test.Misc
         {
             switch(op)
             {
-                case R.InternalBinaryOperator.Multiply_Int_Int_Int: isw.Write("R.InternalBinaryOperator.Multiply_Int_Int_Int"); break;
-                case R.InternalBinaryOperator.Divide_Int_Int_Int: isw.Write("R.InternalBinaryOperator.Divide_Int_Int_Int"); break;
-                case R.InternalBinaryOperator.Modulo_Int_Int_Int: isw.Write("R.InternalBinaryOperator.Modulo_Int_Int_Int"); break;
-                case R.InternalBinaryOperator.Add_Int_Int_Int: isw.Write("R.InternalBinaryOperator.Add_Int_Int_Int"); break;
-                case R.InternalBinaryOperator.Add_String_String_String: isw.Write("R.InternalBinaryOperator.Add_String_String_String"); break;
-                case R.InternalBinaryOperator.Subtract_Int_Int_Int: isw.Write("R.InternalBinaryOperator.Subtract_Int_Int_Int"); break;
-                case R.InternalBinaryOperator.LessThan_Int_Int_Bool: isw.Write("R.InternalBinaryOperator.LessThan_Int_Int_Bool"); break;
-                case R.InternalBinaryOperator.LessThan_String_String_Bool: isw.Write("R.InternalBinaryOperator.LessThan_String_String_Bool"); break;
-                case R.InternalBinaryOperator.GreaterThan_Int_Int_Bool: isw.Write("R.InternalBinaryOperator.GreaterThan_Int_Int_Bool"); break;
-                case R.InternalBinaryOperator.GreaterThan_String_String_Bool: isw.Write("R.InternalBinaryOperator.GreaterThan_String_String_Bool"); break;
-                case R.InternalBinaryOperator.LessThanOrEqual_Int_Int_Bool: isw.Write("R.InternalBinaryOperator.LessThanOrEqual_Int_Int_Bool"); break;
-                case R.InternalBinaryOperator.LessThanOrEqual_String_String_Bool: isw.Write("R.InternalBinaryOperator.LessThanOrEqual_String_String_Bool"); break;
-                case R.InternalBinaryOperator.GreaterThanOrEqual_Int_Int_Bool: isw.Write("R.InternalBinaryOperator.GreaterThanOrEqual_Int_Int_Bool"); break;
-                case R.InternalBinaryOperator.GreaterThanOrEqual_String_String_Bool: isw.Write("R.InternalBinaryOperator.GreaterThanOrEqual_String_String_Bool"); break;
-                case R.InternalBinaryOperator.Equal_Int_Int_Bool: isw.Write("R.InternalBinaryOperator.Equal_Int_Int_Bool"); break;
-                case R.InternalBinaryOperator.Equal_Bool_Bool_Bool: isw.Write("R.InternalBinaryOperator.Equal_Bool_Bool_Bool"); break;
-                case R.InternalBinaryOperator.Equal_String_String_Bool: isw.Write("R.InternalBinaryOperator.Equal_String_String_Bool"); break;
+                case R.InternalBinaryOperator.Multiply_Int_Int_Int: itw.Write("R.InternalBinaryOperator.Multiply_Int_Int_Int"); break;
+                case R.InternalBinaryOperator.Divide_Int_Int_Int: itw.Write("R.InternalBinaryOperator.Divide_Int_Int_Int"); break;
+                case R.InternalBinaryOperator.Modulo_Int_Int_Int: itw.Write("R.InternalBinaryOperator.Modulo_Int_Int_Int"); break;
+                case R.InternalBinaryOperator.Add_Int_Int_Int: itw.Write("R.InternalBinaryOperator.Add_Int_Int_Int"); break;
+                case R.InternalBinaryOperator.Add_String_String_String: itw.Write("R.InternalBinaryOperator.Add_String_String_String"); break;
+                case R.InternalBinaryOperator.Subtract_Int_Int_Int: itw.Write("R.InternalBinaryOperator.Subtract_Int_Int_Int"); break;
+                case R.InternalBinaryOperator.LessThan_Int_Int_Bool: itw.Write("R.InternalBinaryOperator.LessThan_Int_Int_Bool"); break;
+                case R.InternalBinaryOperator.LessThan_String_String_Bool: itw.Write("R.InternalBinaryOperator.LessThan_String_String_Bool"); break;
+                case R.InternalBinaryOperator.GreaterThan_Int_Int_Bool: itw.Write("R.InternalBinaryOperator.GreaterThan_Int_Int_Bool"); break;
+                case R.InternalBinaryOperator.GreaterThan_String_String_Bool: itw.Write("R.InternalBinaryOperator.GreaterThan_String_String_Bool"); break;
+                case R.InternalBinaryOperator.LessThanOrEqual_Int_Int_Bool: itw.Write("R.InternalBinaryOperator.LessThanOrEqual_Int_Int_Bool"); break;
+                case R.InternalBinaryOperator.LessThanOrEqual_String_String_Bool: itw.Write("R.InternalBinaryOperator.LessThanOrEqual_String_String_Bool"); break;
+                case R.InternalBinaryOperator.GreaterThanOrEqual_Int_Int_Bool: itw.Write("R.InternalBinaryOperator.GreaterThanOrEqual_Int_Int_Bool"); break;
+                case R.InternalBinaryOperator.GreaterThanOrEqual_String_String_Bool: itw.Write("R.InternalBinaryOperator.GreaterThanOrEqual_String_String_Bool"); break;
+                case R.InternalBinaryOperator.Equal_Int_Int_Bool: itw.Write("R.InternalBinaryOperator.Equal_Int_Int_Bool"); break;
+                case R.InternalBinaryOperator.Equal_Bool_Bool_Bool: itw.Write("R.InternalBinaryOperator.Equal_Bool_Bool_Bool"); break;
+                case R.InternalBinaryOperator.Equal_String_String_Bool: itw.Write("R.InternalBinaryOperator.Equal_String_String_Bool"); break;
                 default: throw new UnreachableCodeException();
             }
         }
@@ -1023,10 +1034,10 @@ namespace Gum.Test.Misc
         {
             switch (op)
             {
-                case R.InternalUnaryAssignOperator.PrefixInc_Int_Int: isw.Write("R.InternalUnaryAssignOperator.PrefixInc_Int_Int"); break;
-                case R.InternalUnaryAssignOperator.PrefixDec_Int_Int: isw.Write("R.InternalUnaryAssignOperator.PrefixDec_Int_Int"); break;
-                case R.InternalUnaryAssignOperator.PostfixInc_Int_Int: isw.Write("R.InternalUnaryAssignOperator.PostfixInc_Int_Int"); break;
-                case R.InternalUnaryAssignOperator.PostfixDec_Int_Int: isw.Write("R.InternalUnaryAssignOperator.PostfixDec_Int_Int"); break;
+                case R.InternalUnaryAssignOperator.PrefixInc_Int_Int: itw.Write("R.InternalUnaryAssignOperator.PrefixInc_Int_Int"); break;
+                case R.InternalUnaryAssignOperator.PrefixDec_Int_Int: itw.Write("R.InternalUnaryAssignOperator.PrefixDec_Int_Int"); break;
+                case R.InternalUnaryAssignOperator.PostfixInc_Int_Int: itw.Write("R.InternalUnaryAssignOperator.PostfixInc_Int_Int"); break;
+                case R.InternalUnaryAssignOperator.PostfixDec_Int_Int: itw.Write("R.InternalUnaryAssignOperator.PostfixDec_Int_Int"); break;
                 default: throw new UnreachableCodeException();
             }
         }
@@ -1035,10 +1046,10 @@ namespace Gum.Test.Misc
         {
             switch(op)
             {
-                case R.InternalUnaryOperator.LogicalNot_Bool_Bool: isw.Write("R.InternalUnaryOperator.LogicalNot_Bool_Bool"); break;
-                case R.InternalUnaryOperator.UnaryMinus_Int_Int: isw.Write("R.InternalUnaryOperator.UnaryMinus_Int_Int"); break;
-                case R.InternalUnaryOperator.ToString_Bool_String: isw.Write("R.InternalUnaryOperator.ToString_Bool_String"); break;
-                case R.InternalUnaryOperator.ToString_Int_String: isw.Write("R.InternalUnaryOperator.ToString_Int_String"); break;
+                case R.InternalUnaryOperator.LogicalNot_Bool_Bool: itw.Write("R.InternalUnaryOperator.LogicalNot_Bool_Bool"); break;
+                case R.InternalUnaryOperator.UnaryMinus_Int_Int: itw.Write("R.InternalUnaryOperator.UnaryMinus_Int_Int"); break;
+                case R.InternalUnaryOperator.ToString_Bool_String: itw.Write("R.InternalUnaryOperator.ToString_Bool_String"); break;
+                case R.InternalUnaryOperator.ToString_Int_String: itw.Write("R.InternalUnaryOperator.ToString_Int_String"); break;
                 default: throw new UnreachableCodeException();
             }
         }
@@ -1065,17 +1076,17 @@ namespace Gum.Test.Misc
 
         void WriteTypeDecl(R.TypeDecl typeDecl)
         {
-            TypeDeclWriter.Write(isw, typeDecl);
+            TypeDeclWriter.Write(itw, typeDecl);
         }
 
         void WriteFuncDecl(R.FuncDecl funcDecl)
         {
-            FuncDeclWriter.Write(isw, funcDecl);
+            FuncDeclWriter.Write(itw, funcDecl);
         }
 
         void WriteCallableMemberDecl(R.CallableMemberDecl callableMemberDecl)
         {
-            CallableMemberDeclWriter.Write(isw, callableMemberDecl);
+            CallableMemberDeclWriter.Write(itw, callableMemberDecl);
         }
 
         void WriteStmt(R.Stmt stmt)
@@ -1095,59 +1106,64 @@ namespace Gum.Test.Misc
 
         void WriteString(string text)
         {
-            isw.Write(text);
+            itw.Write(text);
+        }
+
+        void WriteBool(bool v)
+        {
+            itw.Write(v);
         }
 
         void WriteInt(int v)
         {
-            isw.Write(v);
+            itw.Write(v);
         }
 
         void WriteArray<TItem>(Action<TItem> itemWriter, string? itemType, ImmutableArray<TItem> items)
         {
             if (items.Length == 0)
             {
-                isw.Write("default");
+                itw.Write("default");
                 return;
             }
 
             if (items.Length == 1)
             {
                 if (itemType != null)
-                    isw.Write($"Arr<{itemType}>(");
+                    itw.Write($"Arr<{itemType}>(");
                 else
-                    isw.Write($"Arr(");
+                    itw.Write($"Arr(");
 
                 itemWriter.Invoke(items[0]);
-                isw.Write(")");
+                itw.Write(")");
                 return;
             }
 
             // Arr<>(
             if (itemType != null)
-                isw.Write($"Arr<{itemType}>(");
+                itw.Write($"Arr<{itemType}>(");
             else
-                isw.Write($"Arr(");
+                itw.Write($"Arr(");
 
-            var isw1 = isw.Push();
+            var itw1 = itw.Push();
 
             bool bFirst = true;
             foreach (var item in items)
             {
-                if (!bFirst) isw1.WriteLine(",");
+                if (!bFirst) itw1.WriteLine(",");
                 else bFirst = false;
 
                 itemWriter.Invoke(item);
             }
 
-            isw.Write(")");
+            itw.Write(")");
         }
 
         void WriteObject(object? obj)
         {
             switch(obj)
             {
-                case null: isw.Write("null"); break;
+                case null: itw.Write("null"); break;
 
                 case R.ModuleName mn: WriteModuleName(mn); break;
                 case ImmutableArray<R.ModuleName> mns: WriteArray(WriteModuleName, null, mns); break;
@@ -1256,6 +1272,9 @@ namespace Gum.Test.Misc
                 case string s: WriteString(s); break;
                 case ImmutableArray<string> strs: WriteArray(WriteString, null, strs); break;
 
+                case bool b: WriteBool(b); break;
+                case ImmutableArray<bool> bs: WriteArray(WriteBool, null, bs); break;
+
                 case int i: WriteInt(i); break;
                 case ImmutableArray<int> ints: WriteArray(WriteInt, null, ints); break;
 
@@ -1266,51 +1285,61 @@ namespace Gum.Test.Misc
 
         void WriteNew(string typeName, params object?[] objs)
         {
-            isw.Write($"new {typeName}(");
+            itw.Write($"new {typeName}(");
 
             if (objs.Length == 0)
             {
-                isw.Write(")");
+                itw.Write(")");
                 return;
             }
             else if (objs.Length == 1)
             {
                 WriteObject(objs[0]);
-                isw.Write(")");
+                itw.Write(")");
                 return;
             }
             else
             {
-                var isw1 = isw.Push();
-                var writer1 = new IR0Writer(isw1);
+                var itw1 = itw.Push();
+                var writer1 = new IR0Writer(itw1);
 
                 bool bFirst = true;
                 foreach (var obj in objs)
                 {
-                    if (bFirst) { bFirst = false; isw1.WriteLine(); }
-                    else isw1.WriteLine(",");
+                    if (bFirst) { bFirst = false; itw1.WriteLine(); }
+                    else itw1.WriteLine(",");
 
                     writer1.WriteObject(obj);
                 }
 
-                isw.WriteLine();
-                isw.Write(")");
+                itw.WriteLine();
+                itw.Write(")");
             }
 
             
         }
 
-        public static void WriteScript(StreamWriter sw, R.Script script)
+        public static string ToString(R.Script script)
         {
-            var isw = new IndentedStreamWriter(sw);
-            var writer = new IR0Writer(isw);
+            using (var stringWriter = new StringWriter())
+            {
+                WriteScript(stringWriter, script);
+                return stringWriter.ToString();
+            }
+        }
+
+        public static void WriteScript(TextWriter sw, R.Script script)
+        {
+            var itw = new IndentedTextWriter(sw);
+            var writer = new IR0Writer(itw);
 
             writer.WriteNew(
                 "R.Script", 
                 script.GlobalTypeDecls, 
                 script.GlobalFuncDecls,
                 script.CallableMemberDecls,
-                script.TopLevelStmts);
+                script.TopLevelStmts
+            );
         }
     }
 }

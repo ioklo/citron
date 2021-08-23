@@ -33,31 +33,39 @@ struct S
 
             R.Path.Nested SPath() => new R.Path.Nested(new R.Path.Root("TestModule"), "S", R.ParamHash.None, default);
 
-            var rscript = RScript(ModuleName, Arr<R.Decl>(
-                new R.StructDecl(R.AccessModifier.Private, "S", Arr<string>(), Arr<R.Path>(), Arr<R.StructMemberDecl>(
-                    new R.StructMemberVarDecl(R.AccessModifier.Public, R.Path.Int, Arr<string>("x")),
-                    new R.StructMemberVarDecl(R.AccessModifier.Public, R.Path.Int, Arr<string>("y")),
+            var rscript = RScript(ModuleName, 
+                Arr<R.TypeDecl>(
+                    new R.StructDecl(R.AccessModifier.Private, "S", default, default,
+                        Arr(new R.StructConstructorDecl(
+                            R.AccessModifier.Public,
+                            default,
+                            Arr(
+                                new R.Param(R.ParamKind.Normal, R.Path.Int, "x"),
+                                new R.Param(R.ParamKind.Normal, R.Path.Int, "y")
+                            ),
+                            RBlock(
+                                new R.ExpStmt(new R.AssignExp(
+                                    new R.StructMemberLoc(R.ThisLoc.Instance, new R.Path.Nested(SPath(), "x", R.ParamHash.None, default)),
+                                    new R.LoadExp(new R.LocalVarLoc("x"))
+                                )),
+                                new R.ExpStmt(new R.AssignExp(
+                                    new R.StructMemberLoc(R.ThisLoc.Instance, new R.Path.Nested(SPath(), "y", R.ParamHash.None, default)),
+                                    new R.LoadExp(new R.LocalVarLoc("y"))
+                                ))
+                            )
+                        )),
 
-                    new R.StructConstructorDecl(
-                        R.AccessModifier.Public,
                         default,
+
                         Arr(
-                            new R.Param(R.ParamKind.Normal, R.Path.Int, "x"),
-                            new R.Param(R.ParamKind.Normal, R.Path.Int, "y")
-                        ),
-                        RBlock(
-                            new R.ExpStmt(new R.AssignExp(
-                                new R.StructMemberLoc(R.ThisLoc.Instance, new R.Path.Nested(SPath(), "x", R.ParamHash.None, default)),
-                                new R.LoadExp(new R.LocalVarLoc("x"))
-                            )),
-                            new R.ExpStmt(new R.AssignExp(
-                                new R.StructMemberLoc(R.ThisLoc.Instance, new R.Path.Nested(SPath(), "y", R.ParamHash.None, default)),
-                                new R.LoadExp(new R.LocalVarLoc("y"))
-                            ))
+                            new R.StructMemberVarDecl(R.AccessModifier.Public, R.Path.Int, Arr<string>("x")),
+                            new R.StructMemberVarDecl(R.AccessModifier.Public, R.Path.Int, Arr<string>("y"))
                         )
                     )
-                ))
-            ));
+                ), 
+                default,
+                default
+            );
 
             return new ParseTranslateTestData(code, sscript, rscript);
         }
@@ -82,24 +90,32 @@ struct S
             );
 
             var rscript = RScript(ModuleName,
-                Arr<R.Decl>(
-                    new R.StructDecl(R.AccessModifier.Private, "S", Arr<string>(), Arr<R.Path>(), Arr<R.StructMemberDecl>(
+                Arr<R.TypeDecl>(
+                    new R.StructDecl(R.AccessModifier.Private, "S", Arr<string>(), Arr<R.Path>(), 
+                    
+                        Arr(
+                            new R.StructConstructorDecl(
+                                R.AccessModifier.Public,
+                                default,
+                                Arr(new R.Param(R.ParamKind.Normal, R.Path.Int, "x")),
+                                RBlock()
+                            ),
 
-                        new R.StructConstructorDecl(
-                            R.AccessModifier.Public,
-                            default,
-                            Arr(new R.Param(R.ParamKind.Normal, R.Path.Int, "x")),
-                            RBlock()
+                            new R.StructConstructorDecl(
+                                R.AccessModifier.Public,
+                                default,
+                                default,
+                                RBlock()
+                            )
                         ),
 
-                        new R.StructConstructorDecl(
-                            R.AccessModifier.Public,
-                            default,
-                            default,
-                            RBlock()
-                        )
-                    ))
-                )
+                        default,
+                        default                    
+                    )
+                ),
+
+                default, 
+                default
             );
 
             return new ParseTranslateTestData(code, sscript, rscript);
@@ -149,26 +165,30 @@ var s = S(3);
             );
 
             var rscript = RScript(ModuleName,
-                Arr<R.Decl>(
-                    new R.StructDecl(R.AccessModifier.Private, "S", Arr<string>(), Arr<R.Path>(), Arr<R.StructMemberDecl>(
+                Arr<R.TypeDecl>(
+                    new R.StructDecl(R.AccessModifier.Private, "S", default, default, 
+                        Arr(
+                            new R.StructConstructorDecl(
+                                R.AccessModifier.Public,
+                                default,
+                                Arr(new R.Param(R.ParamKind.Normal, R.Path.Int, "x")),
+                                RBlock(RCommand(RString(new R.ExpStringExpElement(
+                                    new R.CallInternalUnaryOperatorExp(R.InternalUnaryOperator.ToString_Int_String, new R.LoadExp(new R.LocalVarLoc("x"))))
+                                )))
+                            ),
 
-                        new R.StructConstructorDecl(
-                            R.AccessModifier.Public,
-                            default,
-                            Arr(new R.Param(R.ParamKind.Normal, R.Path.Int, "x")),
-                            RBlock(RCommand(RString(new R.ExpStringExpElement(
-                                new R.CallInternalUnaryOperatorExp(R.InternalUnaryOperator.ToString_Int_String, new R.LoadExp(new R.LocalVarLoc("x"))))
-                            )))
-                        ),
-
-                        new R.StructConstructorDecl(
-                            R.AccessModifier.Public,
-                            default,
-                            default,
-                            RBlock()
-                        )
-                    ))
+                            new R.StructConstructorDecl(
+                                R.AccessModifier.Public,
+                                default,
+                                default,
+                                RBlock()
+                            )
+                        ), 
+                        default, default
+                    )
                 ),
+
+                default, default,
 
                 RGlobalVarDeclStmt(
                     new R.Path.Nested(new R.Path.Root("TestModule"), "S", R.ParamHash.None, Arr<R.Path>()),
@@ -220,11 +240,8 @@ var s = S(3);
             R.Path.Nested SPath() => new R.Path.Nested(new R.Path.Root("TestModule"), "S", R.ParamHash.None, default);
 
             var rscript = RScript(ModuleName,
-                Arr<R.Decl>(
-                    new R.StructDecl(R.AccessModifier.Private, "S", Arr<string>(), Arr<R.Path>(), Arr<R.StructMemberDecl>(
-
-                        new R.StructMemberVarDecl(R.AccessModifier.Public, R.Path.Int, Arr("x")),
-
+                Arr<R.TypeDecl>(new R.StructDecl(R.AccessModifier.Private, "S", default, default, 
+                    Arr(
                         new R.StructConstructorDecl(
                             R.AccessModifier.Public,
                             default,
@@ -235,9 +252,15 @@ var s = S(3);
                                     new R.LoadExp(new R.LocalVarLoc("x"))
                                 )
                             )
-                        )
-                    )))
-                ),
+                        ))
+                    ),
+
+                    default,
+
+                    Arr(new R.StructMemberVarDecl(R.AccessModifier.Public, R.Path.Int, Arr("x")))
+                )),
+
+                default, default,
 
                 RGlobalVarDeclStmt(
                     SPath(),
@@ -293,24 +316,26 @@ var s = S(3);       // but can do this
             R.Path.Nested SPath() => new R.Path.Nested(new R.Path.Root("TestModule"), "S", R.ParamHash.None, default);
 
             var rscript = RScript(ModuleName,
-                Arr<R.Decl>(
-                    new R.StructDecl(R.AccessModifier.Private, "S", Arr<string>(), Arr<R.Path>(), Arr<R.StructMemberDecl>(
-
-                        new R.StructMemberVarDecl(R.AccessModifier.Public, R.Path.Int, Arr("x")),
-
-                        new R.StructConstructorDecl(
-                            R.AccessModifier.Public,
-                            default,
-                            Arr(new R.Param(R.ParamKind.Normal, R.Path.Int, "x")),
-                            RBlock(
-                                new R.ExpStmt(new R.AssignExp(
-                                    new R.StructMemberLoc(R.ThisLoc.Instance, new R.Path.Nested(SPath(), "x", R.ParamHash.None, default)),
-                                    new R.LoadExp(new R.LocalVarLoc("x"))
-                                )
-                            )
+                Arr<R.TypeDecl>(new R.StructDecl(
+                    R.AccessModifier.Private, "S", default, default, 
+                    Arr(new R.StructConstructorDecl(
+                        R.AccessModifier.Public,
+                        default,
+                        Arr(new R.Param(R.ParamKind.Normal, R.Path.Int, "x")),
+                        RBlock(
+                            new R.ExpStmt(new R.AssignExp(
+                                new R.StructMemberLoc(R.ThisLoc.Instance, new R.Path.Nested(SPath(), "x", R.ParamHash.None, default)),
+                                new R.LoadExp(new R.LocalVarLoc("x"))
+                            ))
                         )
-                    )))
-                ),
+                    )),
+
+                    default,
+
+                    Arr(new R.StructMemberVarDecl(R.AccessModifier.Public, R.Path.Int, Arr("x")))
+                )),
+
+                default, default,
 
                 RGlobalVarDeclStmt(
                     SPath(),
@@ -369,24 +394,25 @@ s.x = 3;
             R.Path.Nested SPath() => new R.Path.Nested(new R.Path.Root("TestModule"), "S", R.ParamHash.None, default);
 
             var rscript = RScript(ModuleName,
-                Arr<R.Decl>(
-                    new R.StructDecl(R.AccessModifier.Private, "S", Arr<string>(), Arr<R.Path>(), Arr<R.StructMemberDecl>(
-
-                        new R.StructMemberVarDecl(R.AccessModifier.Public, R.Path.Int, Arr("x")),
-
-                        new R.StructConstructorDecl(
-                            R.AccessModifier.Public,
-                            default,
-                            Arr(new R.Param(R.ParamKind.Normal, R.Path.Int, "x")),
-                            RBlock(
-                                new R.ExpStmt(new R.AssignExp(
-                                    new R.StructMemberLoc(R.ThisLoc.Instance, new R.Path.Nested(SPath(), "x", R.ParamHash.None, default)),
-                                    new R.LoadExp(new R.LocalVarLoc("x"))
-                                )
-                            )
+                Arr<R.TypeDecl>(new R.StructDecl(R.AccessModifier.Private, "S", default, default, 
+                    Arr(new R.StructConstructorDecl(
+                        R.AccessModifier.Public,
+                        default,
+                        Arr(new R.Param(R.ParamKind.Normal, R.Path.Int, "x")),
+                        RBlock(
+                            new R.ExpStmt(new R.AssignExp(
+                                new R.StructMemberLoc(R.ThisLoc.Instance, new R.Path.Nested(SPath(), "x", R.ParamHash.None, default)),
+                                new R.LoadExp(new R.LocalVarLoc("x"))
+                            ))
                         )
-                    )))
-                ),
+                    )),
+
+                    default,
+
+                    Arr(new R.StructMemberVarDecl(R.AccessModifier.Public, R.Path.Int, Arr("x")))
+                )),
+
+                default, default,
 
                 // S s = S(2);
                 RGlobalVarDeclStmt(
@@ -517,19 +543,8 @@ var i = s.F(2);
             R.Path.Nested SPath() => new R.Path.Root("TestModule").Child("S");
 
             var rscript = RScript(ModuleName,
-                Arr<R.Decl>(
-                    new R.StructDecl(R.AccessModifier.Private, "S", Arr<string>(), Arr<R.Path>(), Arr<R.StructMemberDecl>(
-                        new R.StructMemberVarDecl(R.AccessModifier.Public, R.Path.Int, Arr<string>("x")),
-
-                        new R.StructMemberFuncDecl(default, "F", true, default, Arr(new R.Param(R.ParamKind.Normal, R.Path.Int, "y")), RBlock(
-                            new R.ReturnStmt(new R.ReturnInfo.Expression(new R.CallInternalBinaryOperatorExp(
-                                R.InternalBinaryOperator.Add_Int_Int_Int,
-                                new R.LoadExp(new R.StructMemberLoc(R.ThisLoc.Instance, SPath().Child("x"))),
-                                new R.LoadExp(new R.LocalVarLoc("y"))
-                            )))
-                        )),
-
-                        new R.StructConstructorDecl(
+                Arr<R.TypeDecl>(new R.StructDecl(R.AccessModifier.Private, "S", default, default, 
+                    Arr(new R.StructConstructorDecl(
                             R.AccessModifier.Public,
                             default,
                             Arr(
@@ -541,9 +556,19 @@ var i = s.F(2);
                                     new R.LoadExp(new R.LocalVarLoc("x"))
                                 ))
                             )
-                        )
-                    ))
-                ),
+                    )),
+
+                    Arr<R.FuncDecl>(new R.NormalFuncDecl(default, "F", true, default, Arr(new R.Param(R.ParamKind.Normal, R.Path.Int, "y")), RBlock(
+                        new R.ReturnStmt(new R.ReturnInfo.Expression(new R.CallInternalBinaryOperatorExp(
+                            R.InternalBinaryOperator.Add_Int_Int_Int,
+                            new R.LoadExp(new R.StructMemberLoc(R.ThisLoc.Instance, SPath().Child("x"))),
+                            new R.LoadExp(new R.LocalVarLoc("y"))
+                        )))
+                    ))),
+
+                    Arr(new R.StructMemberVarDecl(R.AccessModifier.Public, R.Path.Int, Arr<string>("x")))
+                )),
+                default, default,
 
                 RGlobalVarDeclStmt(
                     SPath(),

@@ -54,9 +54,6 @@ namespace Gum.Test.IntegrateTest
             var sscriptResult = await parser.ParseScriptAsync(parserContext);
             var rscriptResult = Translator.Translate("TestModule", default, sscript, testErrorCollector);
 
-            var text0 = Dumper.DumpToString(sscriptResult.Elem);
-            var text1 = Dumper.DumpToString(rscriptResult!);
-
             Assert.Equal(sscript, sscriptResult.Elem);
             Assert.Equal(rscript, rscriptResult!);
 
