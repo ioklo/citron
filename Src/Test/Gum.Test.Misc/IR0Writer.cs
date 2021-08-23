@@ -1189,6 +1189,9 @@ namespace Gum.Test.Misc
                 case R.Path path: WritePath(path); break;
                 case ImmutableArray<R.Path> paths: WriteArray(WritePath, "R.Path", paths); break;
 
+                // TODO: special case
+                case ImmutableArray<R.Path.Nested> pns: WriteArray(WritePath, "R.Path.Nested", pns); break;
+
                 case R.TupleTypeElem tte: WriteTupleTypeElem(tte); break;
                 case ImmutableArray<R.TupleTypeElem> ttes: WriteArray(WriteTupleTypeElem, null, ttes);  break;
 
@@ -1265,6 +1268,9 @@ namespace Gum.Test.Misc
 
                 case R.Exp exp: WriteExp(exp); break;
                 case ImmutableArray<R.Exp> exps: WriteArray(WriteExp, "R.Exp", exps); break;
+                
+                // TODO: special cases
+                case ImmutableArray<R.StringExp> stringExps: WriteArray(WriteExp, null, stringExps); break;
 
                 case R.Loc loc: WriteLoc(loc); break;
                 case ImmutableArray<R.Loc> locs: WriteArray(WriteLoc, "R.Loc", locs); break;

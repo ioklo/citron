@@ -8,9 +8,7 @@ namespace TestCodeExporter
     {
         static void Main(string[] args)
         {
-            IntegrateTestData.Initialize();
-
-            int count = IntegrateTestData.GetInfosCount();
+            IntegrateTestData.Initialize();            
             
             foreach (var info in IntegrateTestData.GetAllInfos())
             {

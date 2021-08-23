@@ -64,6 +64,7 @@ namespace Gum.Test.IntegrateTest
     public abstract record TestData
     {
         public abstract string? GetCode();
+        public abstract R.Script? GetRScript();
         public abstract Task TestAsync();
     }
 
@@ -72,6 +73,11 @@ namespace Gum.Test.IntegrateTest
         public override string? GetCode()
         {
             return Code;
+        }
+
+        public override R.Script? GetRScript()
+        {
+            return RScript;
         }
 
         public override Task TestAsync()
@@ -87,6 +93,11 @@ namespace Gum.Test.IntegrateTest
             return Code;
         }
 
+        public override R.Script? GetRScript()
+        {
+            return null;
+        }
+
         public override Task TestAsync()
         {
             return Misc.TestParseTranslateWithErrorAsync(Code, SScript, ErrorCode, Node);
@@ -98,6 +109,11 @@ namespace Gum.Test.IntegrateTest
         public override string? GetCode()
         {
             return Code;
+        }
+
+        public override R.Script? GetRScript()
+        {
+            return RScript;
         }
 
         public override Task TestAsync()
@@ -113,6 +129,11 @@ namespace Gum.Test.IntegrateTest
             return Code;
         }
 
+        public override R.Script? GetRScript()
+        {
+            return null;
+        }
+
         public override Task TestAsync()
         {
             return Misc.TestEvalAsync(Code, Result);
@@ -124,6 +145,11 @@ namespace Gum.Test.IntegrateTest
         public override string? GetCode()
         {
             return Code;
+        }
+
+        public override R.Script? GetRScript()
+        {
+            return null;
         }
 
         public override Task TestAsync()
