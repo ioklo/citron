@@ -741,5 +741,41 @@ C c = new C(2, 3);
 ";
             return new EvalTestData(code, "23");
         }
+
+        static TestData Make_Inheritance_Upcast_WorksProperly()
+        {
+            var code = @"
+class B { }
+class C : B { }
+B b = new C();
+";
+        }
+
+
+// nullable이 먼저 만들어 져야 한다
+//         static TestData Make_Inheritance_TryDowncastToRelatedClass_CastProperly()
+//         {
+//             var code = @"
+// class B { }
+// class C : B { } 
+
+// var b = new B();
+// var c = b as C; // C? c
+// ";
+            
+
+//         }
+
+//         static TestData Make_Inheritance_TryDowncastToUnrelatedClass_EvalsNull()
+//         {
+//             var code = @"
+// class C { } 
+// class D { }
+
+// var c = new C();
+// var d = c as D; // D? d
+// ";
+
+//         }
     }
 }
