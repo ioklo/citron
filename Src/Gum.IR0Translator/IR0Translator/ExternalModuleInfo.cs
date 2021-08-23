@@ -36,7 +36,7 @@ namespace Gum.IR0Translator
     {
         ImmutableDictionary<(M.Name Name, int TypeParamCount), IModuleTypeInfo> types;
 
-        public ModuleTypeDict(IEnumerable<IModuleTypeInfo> types)
+        public ModuleTypeDict(ImmutableArray<IModuleTypeInfo> types)
         {
             var typesBuilder = ImmutableDictionary.CreateBuilder<(M.Name Name, int TypeParamCount), IModuleTypeInfo>();
             foreach (var type in types)
@@ -70,7 +70,7 @@ namespace Gum.IR0Translator
         ImmutableDictionary<(M.Name Name, int TypeParamCount), ImmutableArray<IModuleFuncInfo>> funcs;
         ImmutableDictionary<(M.Name Name, int TypeParamCount, M.ParamTypes ParamTypes), IModuleFuncInfo> exactFuncs;
 
-        public ModuleFuncDict(IEnumerable<IModuleFuncInfo> funcInfos)
+        public ModuleFuncDict(ImmutableArray<IModuleFuncInfo> funcInfos)
         {
             var funcsDict = new Dictionary<(M.Name Name, int TypeParamCount), List<IModuleFuncInfo>>();
             var exactFuncsBuilder = ImmutableDictionary.CreateBuilder<(M.Name Name, int TypeParamCount, M.ParamTypes paramTypes), IModuleFuncInfo>();
@@ -108,7 +108,7 @@ namespace Gum.IR0Translator
         }
 
         public ModuleFuncDict(ImmutableArray<M.FuncInfo> mfuncs)
-            : this(mfuncs.Select(mfunc => (IModuleFuncInfo)new ExternalModuleFuncInfo(mfunc)))
+            : this(ImmutableArray.CreateRange(mfuncs, mfunc => (IModuleFuncInfo)new ExternalModuleFuncInfo(mfunc)))
         {   
         }
 
@@ -526,7 +526,7 @@ namespace Gum.IR0Translator
             return structInfo.BaseType;
         }
 
-        IModuleConstructorInfo? IModuleStructInfo.GetAutoConstructor()
+        IModuleConstructorInfo? IModuleStructInfo.GetTrivialConstructorNeedGenerate()
         {
             return null; // External에서 얻어온 것은 Auto/아닌 것의 기준이 없다
         }

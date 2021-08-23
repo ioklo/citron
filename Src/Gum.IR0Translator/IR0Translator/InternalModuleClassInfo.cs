@@ -20,7 +20,8 @@ namespace Gum.IR0Translator
         ImmutableArray<IModuleTypeInfo> types;
         ImmutableArray<IModuleFuncInfo> funcs;
         ImmutableArray<IModuleConstructorInfo> constructors;
-        IModuleConstructorInfo? autoConstructor;
+        IModuleConstructorInfo? trivialConstructor;
+        bool bNeedGenerateTrivialConstructor;
         ImmutableArray<IModuleMemberVarInfo> memberVars;
 
         ModuleTypeDict typeDict;
@@ -30,28 +31,37 @@ namespace Gum.IR0Translator
             M.Name name, ImmutableArray<string> typeParams, 
             M.Type? baseType,
             ImmutableArray<M.Type> interfaceTypes,
-            IEnumerable<IModuleTypeInfo> types,
-            IEnumerable<IModuleFuncInfo> funcs,
+            ImmutableArray<IModuleTypeInfo> types,
+            ImmutableArray<IModuleFuncInfo> funcs,
             ImmutableArray<IModuleConstructorInfo> constructors,
-            IModuleConstructorInfo? autoConstructor,
+            IModuleConstructorInfo? trivialConstructor,
+            bool bNeedGenerateTrivialConstructor,
             ImmutableArray<IModuleMemberVarInfo> memberVars)
         {
             this.name = name;
             this.typeParams = typeParams;
             this.baseType = baseType;
-            this.types = types.ToImmutableArray();
-            this.funcs = funcs.ToImmutableArray();
+            this.interfaceTypes = interfaceTypes;
+            this.types = types;
+            this.funcs = funcs;
             this.constructors = constructors;
-            this.autoConstructor = autoConstructor;
+            this.trivialConstructor = trivialConstructor; // internal module 빌더에서 미리 계산한다
+            this.bNeedGenerateTrivialConstructor = bNeedGenerateTrivialConstructor;
             this.memberVars = memberVars;
 
             this.typeDict = new ModuleTypeDict(types);
             this.funcDict = new ModuleFuncDict(funcs);
         }
 
-        IModuleConstructorInfo? IModuleClassInfo.GetAutoConstructor()
+        IModuleConstructorInfo? IModuleClassInfo.GetTrivialConstructorNeedGenerate()
         {
-            return autoConstructor;
+            if (!bNeedGenerateTrivialConstructor) return null;
+            return trivialConstructor;
+        }
+
+        IModuleConstructorInfo? IModuleClassInfo.GetTrivialConstructor()
+        {
+            return trivialConstructor;
         }
 
         M.Type? IModuleClassInfo.GetBaseType()

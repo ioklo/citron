@@ -724,7 +724,7 @@ class C : B { }
 
         }
 
-        static TestData Make_Inheritance_AutoConstructor_RecognizeBaseConstructor()
+        static TestData Make_Inheritance_TrivialConstructor_RecognizeBaseConstructor()
         {
             var code = @"
 class B 
@@ -747,7 +747,7 @@ C c = new C(2, 3);
             return new EvalTestData(code, "33");
         }
 
-        static TestData Make_Inheritance_AutoConstructor_RecognizeBaseAutoConstructor()
+        static TestData Make_Inheritance_TrivialConstructor_RecognizeBaseAutoConstructor()
         {
             var code = @"
 class B { public int x; }
@@ -769,6 +769,48 @@ class B { }
 class C : B { }
 B b = new C();
 ";
+            var sscript = SScript(
+
+                // B
+                new S.TypeDeclScriptElement(new S.ClassDecl(null, "B", default, default, default)),
+
+                // C
+                new S.TypeDeclScriptElement(new S.ClassDecl(null, "C", default, Arr<S.TypeExp>(SIdTypeExp("B")), default)),
+
+                new S.StmtScriptElement(
+                    SVarDeclStmt(SIdTypeExp("B"), "b", new S.NewExp(SIdTypeExp("C"), default))
+                )
+            );
+
+            var rscript = RScript(
+                ModuleName,
+
+                Arr<R.TypeDecl>(
+                    new R.ClassDecl(
+                        R.AccessModifier.Private, "B", default, null, default,
+                        Arr(new R.ClassConstructorDecl(R.AccessModifier.Public, default, default, null, RBlock())),
+                        default, default
+                    ),
+
+                    new R.ClassDecl(
+                        R.AccessModifier.Private, "C", default, RRoot(ModuleName).Child("B"), default,
+                        Arr(new R.ClassConstructorDecl(R.AccessModifier.Public, default, default, new R.ConstructorBaseCallInfo(R.ParamHash.None, default), RBlock())),
+                        default, default
+                    )
+                ),
+
+                default, default,
+
+                RGlobalVarDeclStmt(
+                    RRoot(ModuleName).Child("B"), "b", 
+                    new R.CastClassExp(
+                        new R.NewClassExp(RRoot(ModuleName).Child("C"), R.ParamHash.None, default),
+                        RRoot(ModuleName).Child("B")
+                    )
+                )
+            );
+
+            return new ParseTranslateTestData(code, sscript, rscript);
         }
 
 

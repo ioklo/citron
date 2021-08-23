@@ -197,9 +197,9 @@ namespace Gum.IR0Translator
             return new R.StructMemberLoc(instance, member);
         }
 
-        public ConstructorValue? GetAutoConstructor()
+        public ConstructorValue? GetTrivialConstructorNeedGenerate()
         {
-            var constructorInfo = structInfo.GetAutoConstructor();
+            var constructorInfo = structInfo.GetTrivialConstructorNeedGenerate();
             if (constructorInfo == null) return null;
 
             return itemValueFactory.MakeConstructorValue(this, constructorInfo);

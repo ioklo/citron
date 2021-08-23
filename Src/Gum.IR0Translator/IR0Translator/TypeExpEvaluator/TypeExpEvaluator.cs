@@ -152,7 +152,7 @@ namespace Gum.IR0Translator
                 var mtype = new M.GlobalType(internalModuleName, namespacePath, name, typeArgs);
                 var kind = GetTypeExpInfoKind(typeSkel.Kind);
 
-                var typeExpInfo = new MTypeTypeExpInfo(mtype, kind);
+                var typeExpInfo = new MTypeTypeExpInfo(mtype, kind, true);
                 yield return new InternalTypeExpResult(typeSkel, typeExpInfo);
             }
 
@@ -164,7 +164,7 @@ namespace Gum.IR0Translator
                 {
                     var mtype = new M.GlobalType(moduleInfo.GetName(), namespacePath, name, typeArgs);
                     var kind = GetTypeExpInfoKind(typeInfo);
-                    var typeExpInfo = new MTypeTypeExpInfo(mtype, kind);
+                    var typeExpInfo = new MTypeTypeExpInfo(mtype, kind, false);
                     yield return new ExternalTypeExpResult(typeExpInfo, typeInfo);
                 }
             }

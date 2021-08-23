@@ -10,164 +10,24 @@ using System.Runtime.Serialization;
 using S = Gum.Syntax;
 using M = Gum.CompileTime;
 using System.Text;
+using Pretune;
 
 namespace Gum.IR0Translator
 {
-    // Script에서 ModuleInfo 정보를 뽑는 역할
-    partial struct InternalModuleInfoBuilder
+    interface ITypeBuilder
     {
-        TypeExpInfoService typeExpInfoService;
+        // IModuleTypeInfo를 만들려고 할 때(Automatic Trivial Constructor를 만들때가 아니라), 먼저 만들어야 할 타입들 목록
+        ImmutableArray<ItemPath> GetDependentInternalTypes();
+        IModuleTypeInfo Build(ImmutableArray<IModuleTypeInfo> innerTypes);
+    }
 
-        // Global일 경우 null
-        bool bInsideTypeScope;
-        ItemPath? itemPath;        
-        List<IModuleTypeInfo> types;
-        List<IModuleFuncInfo> funcs;
-        List<IModuleConstructorInfo> constructors;
-        List<IModuleMemberVarInfo> memberVars;
-        IModuleConstructorInfo? automaticConstructor;
-
-        bool bCollectingMemberVarsCompleted; // false
-
-        public static InternalModuleInfo Build(M.ModuleName moduleName, S.Script script, TypeExpInfoService typeExpTypeValueService)
+    class InternalModuleTypeInfoBuilderMisc
+    {
+        static bool IsMatchTrivialConstructorParameters(M.ParamTypes paramTypes, ImmutableArray<IModuleMemberVarInfo> memberVars)
         {
-            var builder = new InternalModuleInfoBuilder(typeExpTypeValueService, false, null);
+            if (memberVars.Length != paramTypes.Length) return false;
 
-            foreach(var elem in script.Elements)
-            {
-                switch(elem)
-                {
-                    case S.TypeDeclScriptElement typeDeclElem:
-                        builder.VisitTypeDecl(typeDeclElem.TypeDecl);
-                        break;
-
-                    case S.GlobalFuncDeclScriptElement globalFuncDeclElem:
-                        builder.VisitGlobalFuncDecl(M.AccessModifier.Private, globalFuncDeclElem.FuncDecl);
-                        break;
-
-                    // skip
-                    // case S.StmtScriptElement stmtScriptElem: 
-                }
-            }
-
-            return new InternalModuleInfo(moduleName, builder.types, builder.funcs);
-        }
-
-        InternalModuleInfoBuilder(TypeExpInfoService typeExpInfoService, bool bInsideTypeScope, ItemPath? itemPath)
-        {
-            this.typeExpInfoService = typeExpInfoService;
-            this.bInsideTypeScope = bInsideTypeScope;
-            this.itemPath = itemPath;
-
-            types = new List<IModuleTypeInfo>();
-            funcs = new List<IModuleFuncInfo>();
-            constructors = new List<IModuleConstructorInfo>();
-            memberVars = new List<IModuleMemberVarInfo>();
-
-            this.automaticConstructor = null;
-            this.bCollectingMemberVarsCompleted = false;
-        }
-
-        M.Type? GetMType(TypeExpInfo typeExpInfo)
-        {
-            switch (typeExpInfo)
-            {
-                case MTypeTypeExpInfo mtypeTypeExpInfo:
-                    return mtypeTypeExpInfo.Type;
-            }
-
-            return null;
-        }
-
-        M.Type? GetMType(S.TypeExp typeExp)
-        {
-            var typeExpInfo = typeExpInfoService.GetTypeExpInfo(typeExp);
-            return GetMType(typeExpInfo);
-        }                
-        
-        // 현재 위치가 Type안에 있는지
-        bool IsInsideTypeScope()
-        {
-            return bInsideTypeScope;
-        }
-
-        // enum E { First(int x, int y), Second } 에서 
-        // First(int x, int y) 부분
-        //M.EnumElemInfo VisitEnumDeclElement(S.EnumDeclElement elem)
-        //{
-        //    var fieldInfos = elem.Params.Select(parameter =>
-        //    {
-        //        var typeValue = GetMType(parameter.Type);
-        //        return new EnumElemFieldInfo(typeValue, parameter.Name);
-        //    });
-
-        //    return new EnumElemInfo(elem.Name, fieldInfos);
-        //}       
-
-        void VisitTypeDecl(S.TypeDecl typeDecl)
-        {
-            switch(typeDecl)
-            {
-                case S.StructDecl structDecl:
-                    VisitStructDecl(structDecl);
-                    break;
-
-                case S.ClassDecl classDecl:
-                    VisitClassDecl(classDecl);
-                    break;
-
-                case S.EnumDecl enumDecl:
-                    VisitEnumDecl(enumDecl);
-                    break;
-
-                default:
-                    throw new UnreachableCodeException();
-            }
-        }
-
-        void VisitEnumDecl(S.EnumDecl enumDecl)
-        {
-            var elemsBuilder = ImmutableArray.CreateBuilder<InternalModuleEnumElemInfo>(enumDecl.Elems.Length);
-            foreach(var elem in enumDecl.Elems)
-            {
-                var fieldsBuilder = ImmutableArray.CreateBuilder<IModuleMemberVarInfo>(elem.Fields.Length);
-                foreach(var field in elem.Fields)
-                {
-                    var type = GetMType(field.Type);
-                    Debug.Assert(type != null);
-
-                    var mfield = new InternalModuleMemberVarInfo(M.AccessModifier.Public, false, type, field.Name);
-                    fieldsBuilder.Add(mfield);
-                }
-
-                var fields = fieldsBuilder.MoveToImmutable();
-                var enumElemInfo = new InternalModuleEnumElemInfo(elem.Name, fields);
-                elemsBuilder.Add(enumElemInfo);
-            }
-
-            var elems = elemsBuilder.MoveToImmutable();
-            var enumInfo = new InternalModuleEnumInfo(enumDecl.Name, enumDecl.TypeParams, elems);
-
-            types.Add(enumInfo);
-        }
-
-        InternalModuleInfoBuilder NewModuleInfoBuilder(M.Name name, int typeParamCount, bool bInsideTypeScope)
-        {
-            ItemPath newItemPath;
-
-            if (itemPath != null)
-                newItemPath = itemPath.Value.Append(name, typeParamCount);
-            else
-                newItemPath = new ItemPath(M.NamespacePath.Root, name, typeParamCount);
-
-            return new InternalModuleInfoBuilder(typeExpInfoService, bInsideTypeScope, newItemPath);
-        }
-
-        bool IsMatchAutomaticConstructorParameter(M.ParamTypes paramTypes)
-        {
-            if (memberVars.Count != paramTypes.Length) return false;
-
-            for (int i = 0; i < memberVars.Count; i++)
+            for (int i = 0; i < memberVars.Length; i++)
             {
                 // normal로만 자동으로 생성한다
                 if (paramTypes[i].Kind != M.ParamKind.Normal) return false;
@@ -181,20 +41,22 @@ namespace Gum.IR0Translator
             return true;
         }
 
-        void TryMakeAutomaticConstructor(M.Name structName)
+        public static IModuleConstructorInfo? GetTrivialConstructor(ImmutableArray<IModuleConstructorInfo> constructors, ImmutableArray<IModuleMemberVarInfo> memberVars)
         {
-            // 꼭, memberVar수집이 완료된 다음에 해야한다
-            Debug.Assert(bCollectingMemberVarsCompleted);
-
             // 생성자 중, 파라미터가 같은 것이 있는지 확인
             foreach (var constructor in constructors)
-            {   
-                if (IsMatchAutomaticConstructorParameter(constructor.GetParamTypes()))
-                    return;
+            {
+                if (IsMatchTrivialConstructorParameters(constructor.GetParamTypes(), memberVars))
+                    return constructor;
             }
-         
-            var builder = ImmutableArray.CreateBuilder<M.Param>(memberVars.Count);            
-            foreach(var memberVar in memberVars)
+
+            return null;
+        }
+
+        public static IModuleConstructorInfo MakeAutomaticTrivialConstructor(M.Name typeName, ImmutableArray<IModuleMemberVarInfo> memberVars)
+        {
+            var builder = ImmutableArray.CreateBuilder<M.Param>(memberVars.Length);
+            foreach (var memberVar in memberVars)
             {
                 var type = memberVar.GetDeclType();
                 var name = memberVar.GetName();
@@ -203,152 +65,261 @@ namespace Gum.IR0Translator
                 builder.Add(param);
             }
 
-            // automatic constructor를 만듭니다
-            automaticConstructor = new InternalModuleConstructorInfo(M.AccessModifier.Public, structName, builder.MoveToImmutable());
-            constructors.Add(automaticConstructor);
+            // automatic trivial constructor를 만듭니다
+            return new InternalModuleConstructorInfo(M.AccessModifier.Public, typeName, builder.MoveToImmutable());
+        }
+    }
+
+    [AutoConstructor]
+    partial class InternalClassModuleInfoBuilder : ITypeBuilder
+    {
+        S.ClassDecl classDecl;
+
+        M.Type? mbaseType;
+        ImmutableArray<M.Type> interfaces;
+        ImmutableArray<ItemPath> dependentInternalTypes;
+        ImmutableArray<IModuleFuncInfo> funcs;
+        ImmutableArray<IModuleConstructorInfo> constructors;
+        ImmutableArray<IModuleMemberVarInfo> memberVars;       
+
+        public ImmutableArray<ItemPath> GetDependentInternalTypes()
+        {
+            // class C { class P : C { } } // C는 P가 있어야 만들 수 있다 nestedType으로 갖고 있어야 하기 때문에
+            return dependentInternalTypes;
         }
 
-        void VisitStructDecl(S.StructDecl structDecl)
+        public IModuleTypeInfo Build(ImmutableArray<IModuleTypeInfo> innerTypes)
         {
-            var newBuilder = NewModuleInfoBuilder(structDecl.Name, structDecl.TypeParams.Length, true);
-            
-            if (structDecl.BaseTypes.Length != 0)
-                throw new NotImplementedException();
+            var trivialConstructor = InternalModuleTypeInfoBuilderMisc.GetTrivialConstructor(constructors, memberVars);
 
-            // base & interfaces
-            //var mbaseTypesBuilder = ImmutableArray.CreateBuilder<M.Type>(structDecl.BaseTypes.Length);
-            //foreach (var baseType in structDecl.BaseTypes)
-            //{
-            //    var mbaseType = GetMType(baseType);
-            //    if (mbaseType == null) throw new FatalException();
-            //    mbaseTypesBuilder.Add(mbaseType);
-            //}
-            //var mbaseTypes = mbaseTypesBuilder.MoveToImmutable();
-
-            foreach (var elem in structDecl.MemberDecls)
+            bool bNeedGenerateTrivialConstructor = false;
+            ImmutableArray<IModuleConstructorInfo> finalConstructors = constructors;
+            if (trivialConstructor == null)
             {
-                switch (elem)
-                {
-                    case S.StructMemberFuncDecl funcDecl:
-                        newBuilder.VisitStructMemberFuncDecl(M.AccessModifier.Public, funcDecl);
-                        break;
-
-                    case S.StructMemberTypeDecl typeDecl:
-                        newBuilder.VisitTypeDecl(typeDecl.TypeDecl);
-                        break;
-
-                    case S.StructMemberVarDecl varDecl:
-                        newBuilder.VisitStructMemberVarDecl(varDecl);
-                        break;
-
-                    case S.StructConstructorDecl constructorDecl:
-                        newBuilder.VisitStructConstructorDeclElement(constructorDecl);
-                        break;
-
-                    default:
-                        throw new UnreachableCodeException();
-                }
+                trivialConstructor = InternalModuleTypeInfoBuilderMisc.MakeAutomaticTrivialConstructor(classDecl.Name, memberVars);
+                finalConstructors = constructors.Add(trivialConstructor);
+                bNeedGenerateTrivialConstructor = true;
             }
-
-            newBuilder.bCollectingMemberVarsCompleted = true;
-            newBuilder.TryMakeAutomaticConstructor(structDecl.Name);
-            
-            var structInfo = new InternalModuleStructInfo(
-                structDecl.Name, structDecl.TypeParams, null,
-                newBuilder.types, 
-                newBuilder.funcs,
-                newBuilder.constructors.ToImmutableArray(),
-                newBuilder.automaticConstructor,
-                newBuilder.memberVars.ToImmutableArray());
-
-            types.Add(structInfo);
-        }
-
-        void VisitClassDecl(S.ClassDecl classDecl)
-        {
-            var newBuilder = NewModuleInfoBuilder(classDecl.Name, classDecl.TypeParams.Length, true);
-
-            // base & interfaces
-            var baseTypeCandidates = new Candidates<M.Type>();
-            var interfacesBuilder = ImmutableArray.CreateBuilder<M.Type>();
-            foreach (var baseType in classDecl.BaseTypes)
-            {
-                var baseTypeExpInfo = typeExpInfoService.GetTypeExpInfo(baseType);
-                switch (baseTypeExpInfo.GetKind())
-                {
-                    case TypeExpInfoKind.Class:
-                        {
-                            var baseTypeCandidate = baseTypeExpInfo.GetMType();
-                            if (baseTypeCandidate == null) throw new FatalException();                                 
-
-                            baseTypeCandidates.Add(baseTypeCandidate);
-                            break;
-                        }
-
-                    case TypeExpInfoKind.Interface:
-                        {
-                            var minterfaceType = baseTypeExpInfo.GetMType();
-                            if (minterfaceType == null) throw new FatalException();
-
-                            interfacesBuilder.Add(minterfaceType);
-                            break;
-                        }
-
-                    default:
-                        throw new FatalException();
-                }
-            }
-
-            var mbaseType = baseTypeCandidates.GetSingle();
-            if (mbaseType == null && baseTypeCandidates.HasMultiple)
-                throw new FatalException(); // TODO: 에러 처리
-            Debug.Assert(mbaseType != null || baseTypeCandidates.IsEmpty);
-
-            foreach (var elem in classDecl.MemberDecls)
-            {
-                switch (elem)
-                {
-                    case S.ClassMemberFuncDecl funcDecl:
-                        newBuilder.VisitClassMemberFuncDecl(M.AccessModifier.Private, funcDecl);
-                        break;
-
-                    case S.ClassMemberTypeDecl typeDecl:
-                        newBuilder.VisitTypeDecl(typeDecl.TypeDecl);
-                        break;
-
-                    case S.ClassMemberVarDecl varDecl:
-                        newBuilder.VisitClassMemberVarDecl(varDecl);
-                        break;
-
-                    case S.ClassConstructorDecl constructorDecl:
-                        newBuilder.VisitClassConstructorDeclElement(constructorDecl);
-                        break;
-
-                    default:
-                        throw new UnreachableCodeException();
-                }
-            }
-
-            newBuilder.bCollectingMemberVarsCompleted = true;
-            newBuilder.TryMakeAutomaticConstructor(classDecl.Name);
 
             var classInfo = new InternalModuleClassInfo(
-                classDecl.Name, classDecl.TypeParams, mbaseType, interfacesBuilder.ToImmutable(),
-                newBuilder.types,
-                newBuilder.funcs,
-                newBuilder.constructors.ToImmutableArray(),
-                newBuilder.automaticConstructor,
-                newBuilder.memberVars.ToImmutableArray());
+                classDecl.Name, classDecl.TypeParams, mbaseType, interfaces,
+                innerTypes,
+                funcs,
+                finalConstructors,
+                trivialConstructor,
+                bNeedGenerateTrivialConstructor,
+                memberVars);
 
-            types.Add(classInfo);
+            return classInfo;
+        }
+    }
+
+    [AutoConstructor]
+    partial class InternalStructModuleInfoBuilder : ITypeBuilder
+    {
+        S.StructDecl structDecl;
+        ImmutableArray<ItemPath> dependentInternalTypes;
+        ImmutableArray<IModuleFuncInfo> funcs;
+        ImmutableArray<IModuleConstructorInfo> constructors;
+        ImmutableArray<IModuleMemberVarInfo> memberVars;
+
+        public ImmutableArray<ItemPath> GetDependentInternalTypes()
+        {
+            // class C { class P : C { } } // C는 P가 있어야 만들 수 있다 nestedType으로 갖고 있어야 하기 때문에
+            return dependentInternalTypes;
         }
 
-        ImmutableArray<M.Param> MakeParams(ImmutableArray<S.FuncParam> sparams)
+        public IModuleTypeInfo Build(ImmutableArray<IModuleTypeInfo> nestedTypeInfos)
+        {
+            var finalConstructors = constructors;
+            var bNeedGenerateTrivialConstructor = false;
+            var trivialConstructor = InternalModuleTypeInfoBuilderMisc.GetTrivialConstructor(constructors, memberVars);
+            if (trivialConstructor == null)
+            {
+                trivialConstructor = InternalModuleTypeInfoBuilderMisc.MakeAutomaticTrivialConstructor(structDecl.Name, memberVars);
+                finalConstructors = constructors.Add(trivialConstructor);
+                bNeedGenerateTrivialConstructor = true;
+            }
+
+            return new InternalModuleStructInfo(
+                structDecl.Name, structDecl.TypeParams, null,
+                nestedTypeInfos,
+                funcs,
+                finalConstructors,
+                trivialConstructor,
+                bNeedGenerateTrivialConstructor,
+                memberVars);
+        }
+    }
+
+    [AutoConstructor]
+    partial class InternalEnumModuleInfoBuilder : ITypeBuilder
+    {
+        S.EnumDecl enumDecl;
+        ImmutableArray<InternalModuleEnumElemInfo> elems;        
+
+        public IModuleTypeInfo Build(ImmutableArray<IModuleTypeInfo> innerTypes)
+        {
+            return new InternalModuleEnumInfo(enumDecl.Name, enumDecl.TypeParams, elems);
+        }
+
+        public ImmutableArray<ItemPath> GetDependentInternalTypes()
+        {
+            return ImmutableArray<ItemPath>.Empty;
+        }
+    }
+
+    class TypeBuilders
+    {
+        Dictionary<ItemPath, ITypeBuilder> builders;
+
+        public TypeBuilders()
+        {
+            builders = new Dictionary<ItemPath, ITypeBuilder>();
+        }
+
+        public void AddBuilder(ItemPath path, ITypeBuilder builder)
+        {
+            builders.Add(path, builder);
+        }
+        
+        void Build(Dictionary<ItemPath, IModuleTypeInfo> builts, HashSet<ItemPath> buildings, Dictionary<ItemPath, List<IModuleTypeInfo>> innerTypesDict, ItemPath path)
+        {
+            if (builts.ContainsKey(path)) return;
+            
+            if (buildings.Contains(path)) 
+                throw new InvalidOperationException();
+            buildings.Add(path);
+            
+            if (!builders.TryGetValue(path, out var builder))
+                throw new InvalidOperationException();
+
+            // 연관 있는 애들을 먼저 빌드
+            foreach (var depType in builder.GetDependentInternalTypes())
+                Build(builts, buildings, innerTypesDict, depType);            
+
+            // innerType정보를 가지고 빌드
+            IModuleTypeInfo type;
+            if (innerTypesDict.TryGetValue(path, out var innerTypes))
+                type = builder.Build(innerTypes.ToImmutableArray());
+            else
+                type = builder.Build(ImmutableArray<IModuleTypeInfo>.Empty);
+
+            buildings.Remove(path);
+            builts.Add(path, type);
+        }
+
+        public Dictionary<ItemPath, IModuleTypeInfo> Build()
+        {
+            var builts = new Dictionary<ItemPath, IModuleTypeInfo>();
+            var buildings = new HashSet<ItemPath>();
+            var innerTypesDict = new Dictionary<ItemPath, List<IModuleTypeInfo>>();
+
+            foreach(var path in builders.Keys)
+            {
+                Build(builts, buildings, innerTypesDict, path);
+            }
+
+            return builts;
+        }
+    }       
+
+    // Script에서 ModuleInfo 정보를 뽑는 역할
+    [AutoConstructor]
+    partial struct InternalModuleInfoBuilder
+    {
+        TypeExpInfoService typeExpInfoService;
+        List<IModuleFuncInfo> funcs;
+        TypeBuilders typeBuilders;
+
+        public static InternalModuleInfo Build(M.ModuleName moduleName, S.Script script, TypeExpInfoService typeExpInfoService)
+        {
+            var nestedTypePaths = new List<ItemPath>();
+            var funcs = new List<IModuleFuncInfo>();
+            var typeBuilders = new TypeBuilders();
+            var builder = new InternalModuleInfoBuilder(typeExpInfoService, funcs, typeBuilders);            
+
+            foreach(var elem in script.Elements)
+            {
+                switch(elem)
+                {
+                    case S.TypeDeclScriptElement typeDeclElem:
+                        IntermediateTypeBuilder.BuildType(typeBuilders, nestedTypePaths, typeExpInfoService, null, typeDeclElem.TypeDecl);
+                        break;
+
+                    case S.GlobalFuncDeclScriptElement globalFuncDeclElem:                        
+                        builder.BuildFuncDecl(globalFuncDeclElem.FuncDecl);
+                        break;
+                    
+                    case S.StmtScriptElement:
+                        // skip
+                        break;
+                }
+            }
+
+            var builts = typeBuilders.Build();
+
+            var typeInfosBuilder = ImmutableArray.CreateBuilder<IModuleTypeInfo>(nestedTypePaths.Count);
+            foreach (var typePath in nestedTypePaths)
+                typeInfosBuilder.Add(builts[typePath]);
+
+            return new InternalModuleInfo(moduleName,typeInfosBuilder.MoveToImmutable(), funcs.ToImmutableArray());
+        }
+
+        void BuildFuncDecl(S.GlobalFuncDecl funcDecl)
+        {
+            var retType = GetMType(typeExpInfoService, funcDecl.RetType);
+            if (retType == null) throw new FatalException();
+
+            var paramInfo = MakeParams(typeExpInfoService, funcDecl.Parameters);
+
+            M.AccessModifier accessModifier;
+            switch (funcDecl.AccessModifier)
+            {
+                case null: accessModifier = M.AccessModifier.Private; break;
+                case S.AccessModifier.Public: accessModifier = M.AccessModifier.Public; break;
+                case S.AccessModifier.Protected: throw new FatalException();
+                case S.AccessModifier.Private: throw new FatalException();
+                default: throw new UnreachableCodeException();
+            }
+
+            var funcInfo = new InternalModuleFuncInfo(
+                accessModifier,
+                bInstanceFunc: false,
+                bSeqFunc: funcDecl.IsSequence,
+                bRefReturn: funcDecl.IsRefReturn,
+                retType,
+                funcDecl.Name,
+                funcDecl.TypeParams,
+                paramInfo
+            );
+
+            funcs.Add(funcInfo);
+        }
+
+        static M.Type? GetMType(TypeExpInfo typeExpInfo)
+        {
+            switch (typeExpInfo)
+            {
+                case MTypeTypeExpInfo mtypeTypeExpInfo:
+                    return mtypeTypeExpInfo.Type;
+            }
+
+            return null;
+        }
+
+        static M.Type? GetMType(TypeExpInfoService typeExpInfoService, S.TypeExp typeExp)
+        {
+            var typeExpInfo = typeExpInfoService.GetTypeExpInfo(typeExp);
+            return GetMType(typeExpInfo);
+        }
+        
+        static ImmutableArray<M.Param> MakeParams(TypeExpInfoService typeExpInfoService, ImmutableArray<S.FuncParam> sparams)
         {
             var builder = ImmutableArray.CreateBuilder<M.Param>(sparams.Length);
             foreach(var sparam in sparams)
             {
-                var mtype = GetMType(sparam.Type);
+                var mtype = GetMType(typeExpInfoService, sparam.Type);
                 if (mtype == null) throw new FatalException();
 
                 M.ParamKind paramKind = sparam.Kind switch
@@ -364,227 +335,381 @@ namespace Gum.IR0Translator
 
             return builder.MoveToImmutable();
         }
-
-        void VisitStructMemberFuncDecl(M.AccessModifier defaultAccessModifier, S.StructMemberFuncDecl funcDecl)
-        {            
-            bool bThisCall = IsInsideTypeScope(); // TODO: static 키워드가 추가되면 고려하도록 한다
-
-            var retType = GetMType(funcDecl.RetType);
-            if (retType == null) throw new FatalException();
-
-            var paramInfo = MakeParams(funcDecl.Parameters);
-
-            M.AccessModifier accessModifier;
-            switch (funcDecl.AccessModifier)
-            {
-                case null: accessModifier = defaultAccessModifier; break;
-                case S.AccessModifier.Public:
-                    if (defaultAccessModifier == M.AccessModifier.Public) throw new FatalException();
-                    accessModifier = M.AccessModifier.Public;
-                    break;
-
-                case S.AccessModifier.Protected:
-                    if (defaultAccessModifier == M.AccessModifier.Protected) throw new FatalException();
-                    accessModifier = M.AccessModifier.Protected;
-                    break;
-
-                case S.AccessModifier.Private:
-                    if (defaultAccessModifier == M.AccessModifier.Private) throw new FatalException();
-                    accessModifier = M.AccessModifier.Private;
-                    break;
-
-                default:
-                    throw new UnreachableCodeException();
-            }
-
-            var funcInfo = new InternalModuleFuncInfo(
-                accessModifier,
-                bInstanceFunc: bThisCall,
-                bSeqFunc: funcDecl.IsSequence,
-                bRefReturn: funcDecl.IsRefReturn,
-                retType,
-                funcDecl.Name,
-                funcDecl.TypeParams,
-                paramInfo
-            );
-
-            funcs.Add(funcInfo);
-        }
-
-        void VisitGlobalFuncDecl(M.AccessModifier defaultAccessModifier, S.GlobalFuncDecl funcDecl)
+        
+        partial struct IntermediateTypeBuilder
         {
-            bool bMemberFunc = IsInsideTypeScope();
-            bool bThisCall = IsInsideTypeScope(); // TODO: static 키워드가 추가되면 고려하도록 한다
-
-            var retType = GetMType(funcDecl.RetType);
-            if (retType == null) throw new FatalException();
-
-            var paramInfo = MakeParams(funcDecl.Parameters);
-
-            M.AccessModifier accessModifier;
-            switch(funcDecl.AccessModifier)
+            public static void BuildType(TypeBuilders typeBuilders, List<ItemPath> nestedTypePaths, TypeExpInfoService typeExpInfoService, ItemPath? parentPath, S.TypeDecl typeDecl)
             {
-                case null: accessModifier = defaultAccessModifier; break;
-                case S.AccessModifier.Public:
-                    if (defaultAccessModifier == M.AccessModifier.Public) throw new FatalException();
-                    accessModifier = M.AccessModifier.Public;
-                    break;
+                switch (typeDecl)
+                {
+                    case S.StructDecl structDecl:
+                        var structPath = parentPath == null
+                            ? new ItemPath(M.NamespacePath.Root, structDecl.Name, structDecl.TypeParams.Length)
+                            : parentPath.Value.Append(structDecl.Name, structDecl.TypeParams.Length);
+                        IntermediateStructBuilder.Build(typeBuilders, typeExpInfoService, structPath, structDecl);
+                        nestedTypePaths.Add(structPath);
+                        break;
 
-                case S.AccessModifier.Protected:
-                    if (defaultAccessModifier == M.AccessModifier.Protected) throw new FatalException();
-                    accessModifier = M.AccessModifier.Protected;
-                    break;
+                    case S.ClassDecl classDecl:
+                        var classPath = parentPath == null
+                            ? new ItemPath(M.NamespacePath.Root, classDecl.Name, classDecl.TypeParams.Length)
+                            : parentPath.Value.Append(classDecl.Name, classDecl.TypeParams.Length);
+                        IntermediateClassBuilder.Build(typeBuilders, typeExpInfoService, classPath, classDecl);
+                        nestedTypePaths.Add(classPath);
+                        break;
 
-                case S.AccessModifier.Private:
-                    if (defaultAccessModifier == M.AccessModifier.Private) throw new FatalException();
-                    accessModifier = M.AccessModifier.Private;
-                    break;
+                    case S.EnumDecl enumDecl:
+                        var enumPath = parentPath == null
+                            ? new ItemPath(M.NamespacePath.Root, enumDecl.Name, enumDecl.TypeParams.Length)
+                            : parentPath.Value.Append(enumDecl.Name, enumDecl.TypeParams.Length);
+                        IntermediateEnumBuilder.Build(typeBuilders, typeExpInfoService, enumPath, enumDecl);
+                        nestedTypePaths.Add(enumPath);
+                        break;
 
-                default:
-                    throw new UnreachableCodeException();
+                    default:
+                        throw new UnreachableCodeException();
+                }
             }
-
-            var funcInfo = new InternalModuleFuncInfo(
-                accessModifier,
-                bInstanceFunc: bThisCall,
-                bSeqFunc: funcDecl.IsSequence,
-                bRefReturn: funcDecl.IsRefReturn,
-                retType,
-                funcDecl.Name,                
-                funcDecl.TypeParams,
-                paramInfo
-            );            
-
-            funcs.Add(funcInfo);
         }
-
-        void VisitStructMemberVarDecl(S.StructMemberVarDecl varDecl)
+        
+        partial struct IntermediateEnumBuilder
         {
-            var declType = GetMType(varDecl.VarType);
-            if (declType == null)
-                throw new FatalException();
-
-            var accessModifier = varDecl.AccessModifier switch
+            public static void Build(TypeBuilders typeBuilders, TypeExpInfoService typeExpInfoService, ItemPath enumPath, S.EnumDecl enumDecl)
             {
-                null => M.AccessModifier.Public,
-                S.AccessModifier.Public => throw new UnreachableCodeException(), // 미리 에러를 잡는다
-                S.AccessModifier.Protected => M.AccessModifier.Protected,
-                S.AccessModifier.Private => M.AccessModifier.Private,
-                _ => throw new UnreachableCodeException()
-            };
+                var elemsBuilder = ImmutableArray.CreateBuilder<InternalModuleEnumElemInfo>(enumDecl.Elems.Length);
+                foreach (var elem in enumDecl.Elems)
+                {
+                    var fieldsBuilder = ImmutableArray.CreateBuilder<IModuleMemberVarInfo>(elem.Fields.Length);
+                    foreach (var field in elem.Fields)
+                    {
+                        var type = GetMType(typeExpInfoService, field.Type);
+                        Debug.Assert(type != null);
 
-            foreach(var name in varDecl.VarNames)
-            {
-                bool bStatic = !IsInsideTypeScope(); // TODO: static 키워드가 추가되면 고려한다
+                        var mfield = new InternalModuleMemberVarInfo(M.AccessModifier.Public, false, type, field.Name);
+                        fieldsBuilder.Add(mfield);
+                    }
 
-                var varInfo = new InternalModuleMemberVarInfo(accessModifier, bStatic, declType, name);
-                memberVars.Add(varInfo);
+                    var fields = fieldsBuilder.MoveToImmutable();
+                    var enumElemInfo = new InternalModuleEnumElemInfo(elem.Name, fields);
+                    elemsBuilder.Add(enumElemInfo);
+                }
+
+                var elems = elemsBuilder.MoveToImmutable();
+                var builder = new InternalEnumModuleInfoBuilder(enumDecl, elems);
+                typeBuilders.AddBuilder(enumPath, builder);
             }
         }
 
-        void VisitStructConstructorDeclElement(S.StructConstructorDecl constructorDecl)
+        [AutoConstructor]
+        partial struct IntermediateClassBuilder
         {
-            M.AccessModifier accessModifier;
-            switch(constructorDecl.AccessModifier)
+            TypeExpInfoService typeExpInfoService;
+            S.ClassDecl classDecl;
+            List<IModuleFuncInfo> funcs;
+            List<IModuleConstructorInfo> constructors;
+            List<IModuleMemberVarInfo> memberVars;
+
+            public static void Build(TypeBuilders typeBuilders, TypeExpInfoService typeExpInfoService, ItemPath classPath, S.ClassDecl classDecl)
             {
-                case null: accessModifier = M.AccessModifier.Public; break;
-                case S.AccessModifier.Public: throw new FatalException();
-                case S.AccessModifier.Protected: accessModifier = M.AccessModifier.Protected; break;
-                case S.AccessModifier.Private: accessModifier = M.AccessModifier.Private; break;
-                default: throw new UnreachableCodeException();
+                var funcs = new List<IModuleFuncInfo>();
+                var constructors = new List<IModuleConstructorInfo>();
+                var memberVars = new List<IModuleMemberVarInfo>();
+                var builder = new IntermediateClassBuilder(typeExpInfoService, classDecl, funcs, constructors, memberVars);
+
+                // base & interfaces
+                var baseTypeCandidates = new Candidates<TypeExpInfo>();
+                var interfacesBuilder = ImmutableArray.CreateBuilder<M.Type>();
+                foreach (var baseType in classDecl.BaseTypes)
+                {
+                    var baseTypeExpInfo = typeExpInfoService.GetTypeExpInfo(baseType);
+                    switch (baseTypeExpInfo.GetKind())
+                    {
+                        case TypeExpInfoKind.Class:
+                            {
+                                var baseTypeCandidate = baseTypeExpInfo.GetMType();
+                                if (baseTypeCandidate == null) throw new FatalException();
+
+                                baseTypeCandidates.Add(baseTypeExpInfo);
+                                break;
+                            }
+
+                        case TypeExpInfoKind.Interface:
+                            {
+                                var minterfaceType = baseTypeExpInfo.GetMType();
+                                if (minterfaceType == null) throw new FatalException();
+
+                                interfacesBuilder.Add(minterfaceType);
+                                break;
+                            }
+
+                        default:
+                            throw new FatalException();
+                    }
+                }
+
+                var baseTypeExpInfoResult = baseTypeCandidates.GetSingle();
+                if (baseTypeExpInfoResult == null && baseTypeCandidates.HasMultiple)
+                    throw new FatalException(); // TODO: 에러 처리
+                Debug.Assert(baseTypeExpInfoResult != null || baseTypeCandidates.IsEmpty);
+
+                var nestedTypePaths = new List<ItemPath>();
+
+                foreach (var elem in classDecl.MemberDecls)
+                {
+                    switch (elem)
+                    {
+                        case S.ClassMemberFuncDecl funcDecl:
+                            builder.VisitClassMemberFuncDecl(funcDecl);
+                            break;
+
+                        case S.ClassMemberTypeDecl typeDecl:
+                            IntermediateTypeBuilder.BuildType(typeBuilders, nestedTypePaths, typeExpInfoService, classPath, typeDecl.TypeDecl);
+                            break;
+
+                        case S.ClassMemberVarDecl varDecl:
+                            builder.VisitClassMemberVarDecl(varDecl);
+                            break;
+
+                        case S.ClassConstructorDecl constructorDecl:
+                            builder.VisitClassConstructorDeclElement(constructorDecl);
+                            break;
+
+                        default:
+                            throw new UnreachableCodeException();
+                    }
+                }                
+
+                // 자식 type들에 dependency가 걸린다
+                var classBuilder = new InternalClassModuleInfoBuilder(
+                    classDecl, baseTypeExpInfoResult?.GetMType(), interfacesBuilder.ToImmutable(), nestedTypePaths.ToImmutableArray(),
+                    funcs.ToImmutableArray(), constructors.ToImmutableArray(), memberVars.ToImmutableArray());
+
+                typeBuilders.AddBuilder(classPath, classBuilder);
             }
 
-            var paramInfo = MakeParams(constructorDecl.Parameters);
+            void VisitClassMemberFuncDecl(S.ClassMemberFuncDecl funcDecl)
+            {
+                bool bThisCall = true; // TODO: static 키워드가 추가되면 고려하도록 한다
 
-            constructors.Add(new InternalModuleConstructorInfo(accessModifier, constructorDecl.Name, paramInfo));
+                var retType = GetMType(typeExpInfoService, funcDecl.RetType);
+                if (retType == null) throw new FatalException();
+
+                var paramInfo = MakeParams(typeExpInfoService, funcDecl.Parameters);
+
+                M.AccessModifier accessModifier;
+                switch (funcDecl.AccessModifier)
+                {
+                    // default는 private이다
+                    case null: accessModifier = M.AccessModifier.Private; break;
+                    case S.AccessModifier.Public: accessModifier = M.AccessModifier.Public; break;
+                    case S.AccessModifier.Protected: accessModifier = M.AccessModifier.Protected; break;
+                    case S.AccessModifier.Private: throw new FatalException();
+                    default: throw new UnreachableCodeException();
+                }
+
+                var funcInfo = new InternalModuleFuncInfo(
+                    accessModifier,
+                    bInstanceFunc: bThisCall,
+                    bSeqFunc: funcDecl.IsSequence,
+                    bRefReturn: funcDecl.IsRefReturn,
+                    retType,
+                    funcDecl.Name,
+                    funcDecl.TypeParams,
+                    paramInfo
+                );
+
+                funcs.Add(funcInfo);
+            }
+
+            void VisitClassMemberVarDecl(S.ClassMemberVarDecl varDecl)
+            {
+                var declType = GetMType(typeExpInfoService, varDecl.VarType);
+                if (declType == null)
+                    throw new FatalException();
+
+                var accessModifier = varDecl.AccessModifier switch
+                {
+                    null => M.AccessModifier.Private,
+                    S.AccessModifier.Public => M.AccessModifier.Public,
+                    S.AccessModifier.Protected => M.AccessModifier.Protected,
+                    S.AccessModifier.Private => throw new UnreachableCodeException(), // 미리 에러를 잡는다
+                    _ => throw new UnreachableCodeException()
+                };
+
+                foreach (var name in varDecl.VarNames)
+                {
+                    bool bStatic = false; // TODO: static 키워드가 추가되면 고려한다
+                    var varInfo = new InternalModuleMemberVarInfo(accessModifier, bStatic, declType, name);
+                    memberVars.Add(varInfo);
+                }
+            }
+
+            void VisitClassConstructorDeclElement(S.ClassConstructorDecl constructorDecl)
+            {
+                M.AccessModifier accessModifier;
+                switch (constructorDecl.AccessModifier)
+                {
+                    // 기본 private
+                    case null: accessModifier = M.AccessModifier.Private; break;
+                    case S.AccessModifier.Public: accessModifier = M.AccessModifier.Public; break;
+                    case S.AccessModifier.Protected: accessModifier = M.AccessModifier.Protected; break;
+                    case S.AccessModifier.Private: throw new FatalException();
+                    default: throw new UnreachableCodeException();
+                }
+
+                var paramInfo = MakeParams(typeExpInfoService, constructorDecl.Parameters);
+
+                constructors.Add(new InternalModuleConstructorInfo(accessModifier, constructorDecl.Name, paramInfo));
+            }
         }
 
-        void VisitClassMemberFuncDecl(M.AccessModifier defaultAccessModifier, S.ClassMemberFuncDecl funcDecl)
+        [AutoConstructor]
+        partial struct IntermediateStructBuilder
         {
-            bool bThisCall = IsInsideTypeScope(); // TODO: static 키워드가 추가되면 고려하도록 한다
+            TypeExpInfoService typeExpInfoService;
+            List<IModuleFuncInfo> funcs;
+            List<IModuleConstructorInfo> constructors;
+            List<IModuleMemberVarInfo> memberVars;
 
-            var retType = GetMType(funcDecl.RetType);
-            if (retType == null) throw new FatalException();
-
-            var paramInfo = MakeParams(funcDecl.Parameters);
-
-            M.AccessModifier accessModifier;
-            switch (funcDecl.AccessModifier)
+            public static void Build(TypeBuilders typeBuilders, TypeExpInfoService typeExpInfoService, ItemPath structPath, S.StructDecl structDecl)
             {
-                case null: accessModifier = defaultAccessModifier; break;
-                case S.AccessModifier.Public:
-                    if (defaultAccessModifier == M.AccessModifier.Public) throw new FatalException();
-                    accessModifier = M.AccessModifier.Public;
-                    break;
+                var funcs = new List<IModuleFuncInfo>();
+                var constructors = new List<IModuleConstructorInfo>();
+                var memberVars = new List<IModuleMemberVarInfo>();
+                var builder = new IntermediateStructBuilder(typeExpInfoService, funcs, constructors, memberVars);
 
-                case S.AccessModifier.Protected:
-                    if (defaultAccessModifier == M.AccessModifier.Protected) throw new FatalException();
-                    accessModifier = M.AccessModifier.Protected;
-                    break;
+                if (structDecl.BaseTypes.Length != 0)
+                    throw new NotImplementedException();
 
-                case S.AccessModifier.Private:
-                    if (defaultAccessModifier == M.AccessModifier.Private) throw new FatalException();
-                    accessModifier = M.AccessModifier.Private;
-                    break;
+                // base & interfaces
+                //var mbaseTypesBuilder = ImmutableArray.CreateBuilder<M.Type>(structDecl.BaseTypes.Length);
+                //foreach (var baseType in structDecl.BaseTypes)
+                //{
+                //    var mbaseType = GetMType(baseType);
+                //    if (mbaseType == null) throw new FatalException();
+                //    mbaseTypesBuilder.Add(mbaseType);
+                //}
+                //var mbaseTypes = mbaseTypesBuilder.MoveToImmutable();
 
-                default:
-                    throw new UnreachableCodeException();
+                var nestedTypePaths = new List<ItemPath>();
+
+                foreach (var elem in structDecl.MemberDecls)
+                {
+                    switch (elem)
+                    {
+                        case S.StructMemberFuncDecl funcDecl:
+                            builder.VisitStructMemberFuncDecl(M.AccessModifier.Public, funcDecl);
+                            break;
+
+                        case S.StructMemberTypeDecl typeDecl:
+                            IntermediateTypeBuilder.BuildType(typeBuilders, nestedTypePaths, typeExpInfoService, structPath, typeDecl.TypeDecl);
+                            break;
+
+                        case S.StructMemberVarDecl varDecl:
+                            builder.VisitStructMemberVarDecl(varDecl);
+                            break;
+
+                        case S.StructConstructorDecl constructorDecl:
+                            builder.VisitStructConstructorDeclElement(constructorDecl);
+                            break;
+
+                        default:
+                            throw new UnreachableCodeException();
+                    }
+                }
+                
+                var structBuilder = new InternalStructModuleInfoBuilder(structDecl, nestedTypePaths.ToImmutableArray(), funcs.ToImmutableArray(), constructors.ToImmutableArray(), memberVars.ToImmutableArray());
+                typeBuilders.AddBuilder(structPath, structBuilder);
             }
 
-            var funcInfo = new InternalModuleFuncInfo(
-                accessModifier,
-                bInstanceFunc: bThisCall,
-                bSeqFunc: funcDecl.IsSequence,
-                bRefReturn: funcDecl.IsRefReturn,
-                retType,
-                funcDecl.Name,
-                funcDecl.TypeParams,
-                paramInfo
-            );
-
-            funcs.Add(funcInfo);
-        }
-
-        void VisitClassMemberVarDecl(S.ClassMemberVarDecl varDecl)
-        {
-            var declType = GetMType(varDecl.VarType);
-            if (declType == null)
-                throw new FatalException();
-
-            var accessModifier = varDecl.AccessModifier switch
+            void VisitStructMemberFuncDecl(M.AccessModifier defaultAccessModifier, S.StructMemberFuncDecl funcDecl)
             {
-                null => M.AccessModifier.Private,
-                S.AccessModifier.Public => M.AccessModifier.Public,
-                S.AccessModifier.Protected => M.AccessModifier.Protected,
-                S.AccessModifier.Private => throw new UnreachableCodeException(), // 미리 에러를 잡는다
-                _ => throw new UnreachableCodeException()
-            };
+                bool bThisCall = true; // TODO: static 키워드가 추가되면 고려하도록 한다
 
-            foreach (var name in varDecl.VarNames)
-            {
-                bool bStatic = !IsInsideTypeScope(); // TODO: static 키워드가 추가되면 고려한다
+                var retType = GetMType(typeExpInfoService, funcDecl.RetType);
+                if (retType == null) throw new FatalException();
 
-                var varInfo = new InternalModuleMemberVarInfo(accessModifier, bStatic, declType, name);
-                memberVars.Add(varInfo);
-            }
-        }
+                var paramInfo = MakeParams(typeExpInfoService, funcDecl.Parameters);
 
-        void VisitClassConstructorDeclElement(S.ClassConstructorDecl constructorDecl)
-        {
-            M.AccessModifier accessModifier;
-            switch (constructorDecl.AccessModifier)
-            {
-                // 기본 private
-                case null: accessModifier = M.AccessModifier.Private; break;
-                case S.AccessModifier.Public: accessModifier = M.AccessModifier.Public; break;
-                case S.AccessModifier.Protected: accessModifier = M.AccessModifier.Protected; break;
-                case S.AccessModifier.Private: throw new FatalException();
-                default: throw new UnreachableCodeException();
+                M.AccessModifier accessModifier;
+                switch (funcDecl.AccessModifier)
+                {
+                    case null: accessModifier = defaultAccessModifier; break;
+                    case S.AccessModifier.Public:
+                        if (defaultAccessModifier == M.AccessModifier.Public) throw new FatalException();
+                        accessModifier = M.AccessModifier.Public;
+                        break;
+
+                    case S.AccessModifier.Protected:
+                        if (defaultAccessModifier == M.AccessModifier.Protected) throw new FatalException();
+                        accessModifier = M.AccessModifier.Protected;
+                        break;
+
+                    case S.AccessModifier.Private:
+                        if (defaultAccessModifier == M.AccessModifier.Private) throw new FatalException();
+                        accessModifier = M.AccessModifier.Private;
+                        break;
+
+                    default:
+                        throw new UnreachableCodeException();
+                }
+
+                var funcInfo = new InternalModuleFuncInfo(
+                    accessModifier,
+                    bInstanceFunc: bThisCall,
+                    bSeqFunc: funcDecl.IsSequence,
+                    bRefReturn: funcDecl.IsRefReturn,
+                    retType,
+                    funcDecl.Name,
+                    funcDecl.TypeParams,
+                    paramInfo
+                );
+
+                funcs.Add(funcInfo);
             }
 
-            var paramInfo = MakeParams(constructorDecl.Parameters);
+            void VisitStructMemberVarDecl(S.StructMemberVarDecl varDecl)
+            {
+                var declType = GetMType(typeExpInfoService, varDecl.VarType);
+                if (declType == null)
+                    throw new FatalException();
 
-            constructors.Add(new InternalModuleConstructorInfo(accessModifier, constructorDecl.Name, paramInfo));
+                var accessModifier = varDecl.AccessModifier switch
+                {
+                    null => M.AccessModifier.Public,
+                    S.AccessModifier.Public => throw new UnreachableCodeException(), // 미리 에러를 잡는다
+                    S.AccessModifier.Protected => M.AccessModifier.Protected,
+                    S.AccessModifier.Private => M.AccessModifier.Private,
+                    _ => throw new UnreachableCodeException()
+                };
+
+                foreach (var name in varDecl.VarNames)
+                {
+                    bool bStatic = false; // TODO: static 키워드가 추가되면 고려한다
+
+                    var varInfo = new InternalModuleMemberVarInfo(accessModifier, bStatic, declType, name);
+                    memberVars.Add(varInfo);
+                }
+            }
+
+            void VisitStructConstructorDeclElement(S.StructConstructorDecl constructorDecl)
+            {
+                M.AccessModifier accessModifier;
+                switch (constructorDecl.AccessModifier)
+                {
+                    case null: accessModifier = M.AccessModifier.Public; break;
+                    case S.AccessModifier.Public: throw new FatalException();
+                    case S.AccessModifier.Protected: accessModifier = M.AccessModifier.Protected; break;
+                    case S.AccessModifier.Private: accessModifier = M.AccessModifier.Private; break;
+                    default: throw new UnreachableCodeException();
+                }
+
+                var paramInfo = MakeParams(typeExpInfoService, constructorDecl.Parameters);
+
+                constructors.Add(new InternalModuleConstructorInfo(accessModifier, constructorDecl.Name, paramInfo));
+            }
         }
     }
+
+    
 }

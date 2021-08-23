@@ -14,7 +14,8 @@ namespace Gum.IR0Translator
         ImmutableArray<IModuleTypeInfo> types;
         ImmutableArray<IModuleFuncInfo> funcs;
         ImmutableArray<IModuleConstructorInfo> constructors;
-        IModuleConstructorInfo? autoConstructor;
+        IModuleConstructorInfo? trivialConstructor;
+        bool bNeedGenerateTrivialConstructor;
         ImmutableArray<IModuleMemberVarInfo> memberVars;
 
         ModuleTypeDict typeDict;
@@ -22,28 +23,33 @@ namespace Gum.IR0Translator
 
         public InternalModuleStructInfo(
             M.Name name, ImmutableArray<string> typeParams, M.Type? baseType,
-            IEnumerable<IModuleTypeInfo> types,
-            IEnumerable<IModuleFuncInfo> funcs,
+            ImmutableArray<IModuleTypeInfo> types,
+            ImmutableArray<IModuleFuncInfo> funcs,
             ImmutableArray<IModuleConstructorInfo> constructors,
-            IModuleConstructorInfo? autoConstructor,
+            IModuleConstructorInfo? trivialConstructor,
+            bool bNeedGenerateTrivialConstructor,
             ImmutableArray<IModuleMemberVarInfo> memberVars)
         {
             this.name = name;
             this.typeParams = typeParams;
             this.baseType = baseType;
-            this.types = types.ToImmutableArray();
-            this.funcs = funcs.ToImmutableArray();
+            this.types = types;
+            this.funcs = funcs;
             this.constructors = constructors;
-            this.autoConstructor = autoConstructor;
+            this.trivialConstructor = trivialConstructor;
+            this.bNeedGenerateTrivialConstructor = bNeedGenerateTrivialConstructor;
             this.memberVars = memberVars;
 
             this.typeDict = new ModuleTypeDict(types);
             this.funcDict = new ModuleFuncDict(funcs);
         }
 
-        IModuleConstructorInfo? IModuleStructInfo.GetAutoConstructor()
+        IModuleConstructorInfo? IModuleStructInfo.GetTrivialConstructorNeedGenerate()
         {
-            return autoConstructor;
+            if (bNeedGenerateTrivialConstructor)
+                return trivialConstructor;
+
+            return null;
         }
 
         M.Type? IModuleStructInfo.GetBaseType()

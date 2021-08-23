@@ -20,10 +20,10 @@ namespace Gum.IR0Translator
 
         class NoMemberTypeExpResult : TypeExpResult
         {
-            public static NoMemberTypeExpResult Void { get; } = new NoMemberTypeExpResult(new MTypeTypeExpInfo(M.VoidType.Instance, TypeExpInfoKind.Void));
+            public static NoMemberTypeExpResult Void { get; } = new NoMemberTypeExpResult(new MTypeTypeExpInfo(M.VoidType.Instance, TypeExpInfoKind.Void, false));
             public static NoMemberTypeExpResult Var { get; } = new NoMemberTypeExpResult(VarTypeExpInfo.Instance);
             public static NoMemberTypeExpResult TypeVar(M.TypeVarType typeVarType)
-                => new NoMemberTypeExpResult(new MTypeTypeExpInfo(typeVarType, TypeExpInfoKind.TypeVar));
+                => new NoMemberTypeExpResult(new MTypeTypeExpInfo(typeVarType, TypeExpInfoKind.TypeVar, false));
             public override TypeExpInfo TypeExpInfo { get; }
 
             public NoMemberTypeExpResult(TypeExpInfo typeExpInfo)
@@ -76,7 +76,7 @@ namespace Gum.IR0Translator
                     return null;
 
                 var memberKind = GetTypeExpInfoKind(memberType);
-                var mmemberTypeExpInfo = new MTypeTypeExpInfo(mmemberType, memberKind);
+                var mmemberTypeExpInfo = new MTypeTypeExpInfo(mmemberType, memberKind, false);
                 return new ExternalTypeExpResult(mmemberTypeExpInfo, memberType);
             }
         }
@@ -99,7 +99,7 @@ namespace Gum.IR0Translator
                 if (memberSkeleton == null) return null;
 
                 var memberKind = GetTypeExpInfoKind(skeleton.Kind);
-                var mmemberTypeExpInfo = new MTypeTypeExpInfo(mmemberType, memberKind);
+                var mmemberTypeExpInfo = new MTypeTypeExpInfo(mmemberType, memberKind, true);
 
                 return new InternalTypeExpResult(memberSkeleton, mmemberTypeExpInfo);
             }

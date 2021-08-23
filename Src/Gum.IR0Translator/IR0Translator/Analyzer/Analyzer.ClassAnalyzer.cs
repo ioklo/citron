@@ -70,7 +70,7 @@ namespace Gum.IR0Translator
                     classAnalyzer.AnalyzeMemberDecl(elem);
                 }
 
-                classAnalyzer.BuildAutomaticConstructor();
+                classAnalyzer.BuildAutoTrivialConstructor();
                 
                 var rclassDecl = new R.ClassDecl(accessModifier, classDecl.Name, classDecl.TypeParams, baseType, default,
                     constructorsBuilder.ToImmutable(), memberFuncsBuilder.ToImmutable(), memberVarsBuilder.ToImmutable());
@@ -302,20 +302,27 @@ namespace Gum.IR0Translator
                 }
             }
 
-            void BuildAutomaticConstructor()
+            void BuildAutoTrivialConstructor()
             {
                 var baseTypeValue = classTypeValue.GetBaseType();
                 if (baseTypeValue != null)
                 {
+                    // base에서 generating auto constructor를 찾으면 안되고, 그냥 auto constructor와 시그니처가 같은 것을 찾아야 한다
+                    // trivial constructor라고 부르자. auto-generated trivial constructor, 그냥 trivial constructor                    
+                    // class B { int i; bool b; }  // B(int i, bool b)를 찾는다
+                    // class C : B { string s; }   // C(int i, bool b, string s)를 찾는다
+
+                    // baseTypeValue.GetTrivialConstrutor();
+
                     // throw new NotImplementedException();
                     return;
                 }
 
-                var autoConstructor = classTypeValue.GetAutoConstructor();
-                if (autoConstructor == null) return;
+                var trivialConstructor = classTypeValue.GetTrivialConstructorNeedGenerate();
+                if (trivialConstructor == null) return;
 
                 var structPath = classTypeValue.GetRPath_Nested();
-                var parameters = autoConstructor.GetParameters();
+                var parameters = trivialConstructor.GetParameters();
                 var paramBuilder = ImmutableArray.CreateBuilder<R.Param>(parameters.Length);
                 var stmtBuilder = ImmutableArray.CreateBuilder<R.Stmt>(parameters.Length);
                 foreach (var param in parameters)

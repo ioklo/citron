@@ -192,13 +192,13 @@ namespace Gum.IR0Translator.Test
             Assert.NotNull(structInfo);
             Debug.Assert(structInfo != null);
 
-            var autoConstructor = new InternalModuleConstructorInfo(M.AccessModifier.Public, "S", Arr(new M.Param(M.ParamKind.Normal, IntMType, "x"), new M.Param(M.ParamKind.Normal, IntMType, "y")));
+            var trivialConstructor = new InternalModuleConstructorInfo(M.AccessModifier.Public, "S", Arr(new M.Param(M.ParamKind.Normal, IntMType, "x"), new M.Param(M.ParamKind.Normal, IntMType, "y")));
 
             var expected = new InternalModuleStructInfo(
                 "S",
                 Arr("T"), 
                 baseType: null, //baseType: new M.GlobalType(moduleName, M.NamespacePath.Root, "B", Arr(IntMType)),
-                Array.Empty<IModuleTypeInfo>(),
+                default,
                 Arr<IModuleFuncInfo>(
                     new InternalModuleFuncInfo(
                         M.AccessModifier.Private,
@@ -213,26 +213,18 @@ namespace Gum.IR0Translator.Test
                             new M.Param(M.ParamKind.Normal, new M.TypeVarType(2, "U"), "u")
                         )
                     )
-                ).AsEnumerable(),
+                ),
 
-                Arr<IModuleConstructorInfo>(autoConstructor),
-                autoConstructor,
+                Arr<IModuleConstructorInfo>(trivialConstructor),
+                trivialConstructor,
+                true,
                 Arr<IModuleMemberVarInfo>(
                     new InternalModuleMemberVarInfo(M.AccessModifier.Protected, false, IntMType, "x"),
                     new InternalModuleMemberVarInfo(M.AccessModifier.Protected, false, IntMType, "y")
                 )
             );
 
-            var writer0 = new StringWriter();
-            Dumper.Dump(writer0, expected);
-            var text0 = writer0.ToString();
-
-            var writer1 = new StringWriter();
-            Dumper.Dump(writer1, structInfo);
-            var text1 = writer1.ToString();
-
             expected.Equals(structInfo);
-
             Assert.Equal(expected, structInfo);
         }
     }

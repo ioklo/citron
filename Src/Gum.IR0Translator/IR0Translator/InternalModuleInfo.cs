@@ -13,7 +13,7 @@ namespace Gum.IR0Translator
         ModuleTypeDict typeDict;
         ModuleFuncDict funcDict;
 
-        public InternalModuleInfo(M.ModuleName moduleName, IEnumerable<IModuleTypeInfo> types, IEnumerable<IModuleFuncInfo> funcs)
+        public InternalModuleInfo(M.ModuleName moduleName, ImmutableArray<IModuleTypeInfo> types, ImmutableArray<IModuleFuncInfo> funcs)
         {
             this.moduleName = moduleName;
             this.typeDict = new ModuleTypeDict(types);

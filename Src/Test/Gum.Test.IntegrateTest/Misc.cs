@@ -55,6 +55,11 @@ namespace Gum.Test.IntegrateTest
             var rscriptResult = Translator.Translate("TestModule", default, sscript, testErrorCollector);
 
             Assert.Equal(sscript, sscriptResult.Elem);
+
+            var text0 = IR0Writer.ToString(rscript);
+            var text1 = IR0Writer.ToString(rscriptResult!);
+
+
             Assert.Equal(rscript, rscriptResult!);
 
         }

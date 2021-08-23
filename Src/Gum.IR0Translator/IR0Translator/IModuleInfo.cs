@@ -48,7 +48,7 @@ namespace Gum.IR0Translator
 
     interface IModuleStructInfo : IModuleTypeInfo
     {
-        IModuleConstructorInfo? GetAutoConstructor();
+        IModuleConstructorInfo? GetTrivialConstructorNeedGenerate();
         ImmutableArray<IModuleTypeInfo> GetMemberTypes();
         ImmutableArray<IModuleFuncInfo> GetMemberFuncs();
         ImmutableArray<IModuleConstructorInfo> GetConstructors();
@@ -58,7 +58,9 @@ namespace Gum.IR0Translator
 
     interface IModuleClassInfo : IModuleTypeInfo
     {
-        IModuleConstructorInfo? GetAutoConstructor();
+        IModuleConstructorInfo? GetTrivialConstructorNeedGenerate();
+        IModuleConstructorInfo? GetTrivialConstructor();
+
         ImmutableArray<IModuleTypeInfo> GetMemberTypes();
         ImmutableArray<IModuleFuncInfo> GetMemberFuncs();
         ImmutableArray<IModuleConstructorInfo> GetConstructors();

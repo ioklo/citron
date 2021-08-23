@@ -76,15 +76,24 @@ namespace Gum.IR0Translator
                 builder.Add(typeArgs[i]);
         }
 
-        public ConstructorValue? GetAutoConstructor()
+        public ConstructorValue? GetTrivialConstructorNeedGenerate()
         {
-            var constructorInfo = classInfo.GetAutoConstructor();
+            var constructorInfo = classInfo.GetTrivialConstructorNeedGenerate();
             if (constructorInfo == null) return null;
 
             return itemValueFactory.MakeConstructorValue(this, constructorInfo);
         }
+        
+        // 인자와 멤버변수가 1:1로 매칭되는 constructor를 의미한다. (base 클래스 포함). generate해야 할 수도 있고, 이미 만들었을 수도 있다
+        public ConstructorValue? GetTrivialConstructor()
+        {           
+            var constructorInfo = classInfo.GetTrivialConstructor();
+            if (constructorInfo == null) return null;
+            
+            return itemValueFactory.MakeConstructorValue(this, constructorInfo);
+        }
 
-        // Accessor 상관없이 빈 constructor를 말한다
+        // 빈 constructor를 말한다 (Access 체크는 하지 않는다)
         public ConstructorValue? GetDefaultConstructor()
         {
             foreach (var constructorInfo in classInfo.GetConstructors())

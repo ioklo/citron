@@ -18,7 +18,7 @@ namespace Gum.IR0Translator
             if (exp.TypeArgs.Length != 0)
                 throw new NotImplementedException();
             
-            var typeExpInfo = new MTypeTypeExpInfo(mtype, kind);
+            var typeExpInfo = new MTypeTypeExpInfo(mtype, kind, false);
             return new NoMemberTypeExpResult(typeExpInfo); // TODO: 일단 NoMember로 놔두는데, 멤버가 있으니
         }
 
