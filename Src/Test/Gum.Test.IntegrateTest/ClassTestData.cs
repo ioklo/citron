@@ -712,19 +712,29 @@ var c = new C(2, 3);
             return new ParseTranslateEvalTestData(code, sscript, rscript, "2");
         }
 
+        static TestData Make_TrivialConstructor_BaseClassHasNonTrivialDefaultConstructor_DoesntMakeTrivialConstructor()
+        {
+            var code = @"
+class B { public B() { @{hi} } }
+class C : B { }
+
+var c = new C();
+";
+            return new EvalWithErrorTestData(code, A2602_NewExp_NoConstructorFound);
+        }
+
         // base protected, private 잘 되는지 확인
         static TestData Make_Inheritance_UsePrivateBaseConstructor_ReportError()
         {
             var code = @"
-class B { private B() { } }
-class C : B { }
+class B { B() { } }
+class C : B { C() : base() { } }
 ";
 
             return new EvalWithErrorTestData(code, A2504_ClassDecl_CannotAccessBaseClassConstructor);
-
         }
 
-        static TestData Make_Inheritance_TrivialConstructor_RecognizeBaseConstructor()
+        static TestData Make_TrivialConstructor_BaseDoenstHaveTrivialConstructor_DoesntMakeTrivialConstructor()
         {
             var code = @"
 class B 
@@ -744,7 +754,7 @@ class C : B
 C c = new C(2, 3);
 @${c.x}${c.y}
 ";
-            return new EvalTestData(code, "33");
+            return new EvalWithErrorTestData(code, A2602_NewExp_NoConstructorFound);
         }
 
         static TestData Make_Inheritance_TrivialConstructor_RecognizeBaseAutoConstructor()

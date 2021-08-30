@@ -375,7 +375,7 @@ namespace Gum.IR0Translator
     partial class ExternalModuleEnumElemInfo : IModuleEnumElemInfo
     {
         M.EnumElemInfo elemInfo;
-
+        
         ImmutableArray<IModuleMemberVarInfo> IModuleEnumElemInfo.GetFieldInfos()
         {
             var builder = ImmutableArray.CreateBuilder<IModuleMemberVarInfo>(elemInfo.FieldInfos.Length);
@@ -442,12 +442,17 @@ namespace Gum.IR0Translator
     partial class ExternalModuleStructInfo : IModuleStructInfo
     {
         M.StructInfo structInfo;
+        StructTypeValue? baseStruct;
         ModuleTypeDict typeDict;
+        ModuleInfoBuildState state;
 
         public ExternalModuleStructInfo(M.StructInfo structInfo)
         {
             this.structInfo = structInfo;
             this.typeDict = new ModuleTypeDict(structInfo.MemberTypes);
+
+            this.baseStruct = null;
+            this.state = ModuleInfoBuildState.BeforeSetBaseAndBuildTrivialConstructor;
         }
 
         IModuleFuncInfo? IModuleFuncContainer.GetFunc(M.Name name, int typeParamCount, M.ParamTypes paramTypes)
@@ -521,14 +526,41 @@ namespace Gum.IR0Translator
             return builder.MoveToImmutable();
         }
 
-        M.Type? IModuleStructInfo.GetBaseType()
+        StructTypeValue? IModuleStructInfo.GetBaseStruct()
         {
-            return structInfo.BaseType;
+            Debug.Assert(state == ModuleInfoBuildState.Completed);
+            return baseStruct;
         }
 
-        IModuleConstructorInfo? IModuleStructInfo.GetTrivialConstructorNeedGenerate()
+        IModuleConstructorInfo? IModuleStructInfo.GetTrivialConstructor()
         {
-            return null; // External에서 얻어온 것은 Auto/아닌 것의 기준이 없다
+            foreach (var constructor in structInfo.Constructors)
+                if (constructor.IsTrivial)
+                    return new ExternalModuleConstructorInfo(constructor);
+
+            return null;
+        }
+
+        ModuleInfoBuildState IModuleStructInfo.GetBuildState()
+        {
+            return ModuleInfoBuildState.Completed;
+        }
+
+        void IModuleStructInfo.SetBaseAndBuildTrivialConstructor(IQueryModuleTypeInfo query, ItemValueFactory itemValueFactory)
+        {
+            if (state == ModuleInfoBuildState.Completed) return;
+
+            if (structInfo.BaseType == null)
+            {
+                baseStruct = null;
+            }
+            else
+            {
+                baseStruct = (StructTypeValue)itemValueFactory.MakeTypeValueByMType(structInfo.BaseType);
+            }
+
+            state = ModuleInfoBuildState.Completed;
+            return;
         }
     }
 }

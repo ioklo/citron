@@ -9,23 +9,31 @@ using System.Diagnostics;
 
 namespace Gum.IR0Translator
 {
+    // closed type
     [AutoConstructor, ImplementIEquatable]
     partial class ClassTypeValue : NormalTypeValue
     {
         ItemValueFactory itemValueFactory;
 
         ItemValueOuter outer;
-        IModuleClassInfo classInfo;
-        ImmutableArray<TypeValue> typeArgs;
+        IModuleClassInfo classInfo;            // C
+        ImmutableArray<TypeValue> typeArgs;    // <T0, T1>
+
+        // class X<T> { class Y<U> : Z<T>.B<T> }
+        // X<int>.Y<bool> c; // c의 classTypeValue { [int, bool], X<>.Y<> }
+        // baseof(c) //  classTypeValue { [int, int], Z<>.B<> } <- 여기에
         
         public ClassTypeValue? GetBaseType() 
         {
-            var mbaseType = classInfo.GetBaseType();
-            if (mbaseType == null) return null;
+            // 지금 속한 클래스의 타입 환경에 종속된 ClassTypeValue를 돌려준다
+            // X<T>.C<U> : B<U, T> => ClassTypeValue(B, [TV(1), TV(0)])
+            var baseClassTypeValue = classInfo.GetBaseClass();
+            if (baseClassTypeValue == null) return null;
 
-            var typeValue = itemValueFactory.MakeTypeValueByMType(mbaseType) as ClassTypeValue;
-            Debug.Assert(typeValue != null);
-            return typeValue;
+            // ClassTypeValue가 X<int>.C<TV(4)>라면 TV(0)을 int로, TV(1)을 TV(4)로 치환한다
+            // TV(4)는 x<int>.C<TV(4)>를 선언한 환경이다
+            var typeEnv = MakeTypeEnv(); // 현재 클래스의 TypeEnv
+            return baseClassTypeValue.Apply_ClassTypeValue(typeEnv);
         }
 
         // except itself
@@ -42,11 +50,16 @@ namespace Gum.IR0Translator
             return false;
         }
 
-        public override NormalTypeValue Apply_NormalTypeValue(TypeEnv typeEnv)
+        public ClassTypeValue Apply_ClassTypeValue(TypeEnv typeEnv)
         {
             var appliedOuter = outer.Apply(typeEnv);
             var appliedTypeArgs = ImmutableArray.CreateRange(typeArgs, typeArg => typeArg.Apply_TypeValue(typeEnv));
-            return itemValueFactory.MakeTypeValue(appliedOuter, classInfo, appliedTypeArgs);
+            return itemValueFactory.MakeClassValue(appliedOuter, classInfo, appliedTypeArgs);
+        }
+
+        public sealed override NormalTypeValue Apply_NormalTypeValue(TypeEnv typeEnv)
+        {
+            return Apply_ClassTypeValue(typeEnv);
         }
 
         public override R.Path.Nested GetRPath_Nested()
@@ -76,20 +89,12 @@ namespace Gum.IR0Translator
                 builder.Add(typeArgs[i]);
         }
 
-        public ConstructorValue? GetTrivialConstructorNeedGenerate()
-        {
-            var constructorInfo = classInfo.GetTrivialConstructorNeedGenerate();
-            if (constructorInfo == null) return null;
-
-            return itemValueFactory.MakeConstructorValue(this, constructorInfo);
-        }
-        
-        // 인자와 멤버변수가 1:1로 매칭되는 constructor를 의미한다. (base 클래스 포함). generate해야 할 수도 있고, 이미 만들었을 수도 있다
+        // 인자와 멤버변수가 1:1로 매칭되는 constructor를 의미한다. (base 클래스 포함). generate해야 한다. 미리 선언한 constructor는 trivial이 아니다
         public ConstructorValue? GetTrivialConstructor()
-        {           
+        {
             var constructorInfo = classInfo.GetTrivialConstructor();
             if (constructorInfo == null) return null;
-            
+
             return itemValueFactory.MakeConstructorValue(this, constructorInfo);
         }
 

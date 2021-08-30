@@ -20,19 +20,10 @@ namespace Gum.IR0Translator
             var externalModuleInfoRepo = new ModuleInfoRepository(referenceInfos.Add(RuntimeModuleInfo.Instance));
 
             var typeSkelRepo = TypeSkeletonCollector.Collect(sscript);
-            var typeExpTypeValueService = TypeExpEvaluator.Evaluate(moduleName, sscript, externalModuleInfoRepo, typeSkelRepo, errorCollector);
-
-            var internalModuleInfo = InternalModuleInfoBuilder.Build(moduleName, sscript, typeExpTypeValueService);
-
-            var typeInfoRepo = new TypeInfoRepository(internalModuleInfo, externalModuleInfoRepo);
-            var ritemFactory = new RItemFactory();
-            var itemValueFactory = new ItemValueFactory(typeInfoRepo, ritemFactory);
-            var globalItemValueFactory = new GlobalItemValueFactory(internalModuleInfo, externalModuleInfoRepo);
-
-            var rmoduleName = RItemFactory.MakeModuleName(moduleName);
+            var typeExpInfoService = TypeExpEvaluator.Evaluate(moduleName, sscript, externalModuleInfoRepo, typeSkelRepo, errorCollector);
 
             // Make Analyzer
-            var script = Analyzer.Analyze(sscript, rmoduleName, itemValueFactory, globalItemValueFactory, typeExpTypeValueService, internalModuleInfo, errorCollector);
+            var script = Analyzer.Analyze(sscript, moduleName, typeExpInfoService, externalModuleInfoRepo, errorCollector);
             if (script == null) return null;
 
             if (errorCollector.HasError)

@@ -24,7 +24,7 @@ namespace Gum.IR0Translator
     {
         public abstract TypeExpInfoKind GetKind();
         public abstract M.Type? GetMType();
-        public abstract bool IsInternal(); // internal은 현재 컴파일 되고 있는 코드에 정의가 존재하는지 여부이다. 예를 들어 int는 internal이 아니다
+        public abstract bool IsInternal();   // internal은 현재 컴파일 되고 있는 코드에 정의가 존재하는지 여부이다. 예를 들어 int는 internal이 아니다
     }
 
     record MTypeTypeExpInfo : TypeExpInfo
@@ -53,7 +53,7 @@ namespace Gum.IR0Translator
         public override bool IsInternal()
         {
             return bInternal;
-        }
+        }        
     }
 
     record VarTypeExpInfo : TypeExpInfo

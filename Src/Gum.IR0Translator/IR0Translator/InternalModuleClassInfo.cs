@@ -2,6 +2,7 @@
 using Pretune;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,58 +16,108 @@ namespace Gum.IR0Translator
     {
         M.Name name;
         ImmutableArray<string> typeParams;
-        M.Type? baseType;
+        M.Type? mbaseClass;        
         ImmutableArray<M.Type> interfaceTypes;
         ImmutableArray<IModuleTypeInfo> types;
         ImmutableArray<IModuleFuncInfo> funcs;
-        ImmutableArray<IModuleConstructorInfo> constructors;
-        IModuleConstructorInfo? trivialConstructor;
-        bool bNeedGenerateTrivialConstructor;
+        ImmutableArray<IModuleConstructorInfo> constructors;        
         ImmutableArray<IModuleMemberVarInfo> memberVars;
+        
+        ClassTypeValue? baseClass; // Class선언 시점 typeEnv를 적용한 baseClass
+        IModuleConstructorInfo? trivialConstructor;
+
+        ModuleInfoBuildState state;
 
         ModuleTypeDict typeDict;
         ModuleFuncDict funcDict;
 
         public InternalModuleClassInfo(
-            M.Name name, ImmutableArray<string> typeParams, 
-            M.Type? baseType,
+            M.Name name, ImmutableArray<string> typeParams,
+            M.Type? mbaseClass,
             ImmutableArray<M.Type> interfaceTypes,
             ImmutableArray<IModuleTypeInfo> types,
             ImmutableArray<IModuleFuncInfo> funcs,
             ImmutableArray<IModuleConstructorInfo> constructors,
-            IModuleConstructorInfo? trivialConstructor,
-            bool bNeedGenerateTrivialConstructor,
             ImmutableArray<IModuleMemberVarInfo> memberVars)
         {
             this.name = name;
             this.typeParams = typeParams;
-            this.baseType = baseType;
+            this.mbaseClass = mbaseClass;            
             this.interfaceTypes = interfaceTypes;
             this.types = types;
             this.funcs = funcs;
-            this.constructors = constructors;
-            this.trivialConstructor = trivialConstructor; // internal module 빌더에서 미리 계산한다
-            this.bNeedGenerateTrivialConstructor = bNeedGenerateTrivialConstructor;
+            this.constructors = constructors;            
             this.memberVars = memberVars;
+
+            this.baseClass = null;
+            this.trivialConstructor = null;
+            this.state = ModuleInfoBuildState.BeforeSetBaseAndBuildTrivialConstructor;
 
             this.typeDict = new ModuleTypeDict(types);
             this.funcDict = new ModuleFuncDict(funcs);
         }
 
-        IModuleConstructorInfo? IModuleClassInfo.GetTrivialConstructorNeedGenerate()
+        ModuleInfoBuildState IModuleClassInfo.GetBuildState()
         {
-            if (!bNeedGenerateTrivialConstructor) return null;
-            return trivialConstructor;
+            return state;
+        }
+        
+        // trivial constructor를 하려면
+        void IModuleClassInfo.SetBaseAndBuildTrivialConstructor(IQueryModuleTypeInfo query, ItemValueFactory itemValueFactory) // throws InvalidOperationException
+        {
+            if (state == ModuleInfoBuildState.Completed) return;
+            if (state == ModuleInfoBuildState.DuringSetBaseAndBuildTrivialConstructor)
+                throw new InvalidOperationException();
+
+            Debug.Assert(state == ModuleInfoBuildState.BeforeSetBaseAndBuildTrivialConstructor);
+            state = ModuleInfoBuildState.DuringSetBaseAndBuildTrivialConstructor;
+
+            IModuleClassInfo? baseClassInfo = null;
+            // base 클래스가 있다면
+            if (mbaseClass != null)
+            {
+                // M.Type -> ItemPath
+                // X<bool>.Dict<int, S> -> X<>.List<,>
+                // ClassValue(X<>.List<,>, [bool, int, S]) 을 만들어야 한다
+                var baseClassPath = mbaseClass.ToItemPath();
+
+                baseClassInfo = query.GetClass(baseClassPath);
+                baseClassInfo.SetBaseAndBuildTrivialConstructor(query, itemValueFactory);
+
+                baseClass = (ClassTypeValue)itemValueFactory.MakeTypeValueByMType(mbaseClass);
+            }
+
+            var baseTrivialConstructor = baseClassInfo?.GetTrivialConstructor();
+
+            // baseClass가 있고, TrivialConstructor가 없는 경우 => 안 만들고 진행
+            // baseClass가 있고, TrivialConstructor가 있는 경우 => 진행
+            // baseClass가 없는 경우 => 없이 만들고 진행 
+            if (baseTrivialConstructor != null || baseClassInfo == null)
+            {
+                // 같은 인자의 생성자가 없으면 Trivial을 만든다
+                if (InternalModuleTypeInfoBuilderMisc.GetConstructorHasSameParamWithTrivial(baseTrivialConstructor, constructors, memberVars) == null)
+                {
+                    trivialConstructor = InternalModuleTypeInfoBuilderMisc.MakeTrivialConstructor(name, baseTrivialConstructor, memberVars);
+                    constructors = constructors.Add(trivialConstructor);
+                }
+            }
+
+            state = ModuleInfoBuildState.Completed;
+            return;
         }
 
         IModuleConstructorInfo? IModuleClassInfo.GetTrivialConstructor()
         {
+            Debug.Assert(state == ModuleInfoBuildState.Completed);
             return trivialConstructor;
-        }
+        }        
 
-        M.Type? IModuleClassInfo.GetBaseType()
+        // Info자체에는 environment가 없으므로, typeEnv가 있어야
+        ClassTypeValue? IModuleClassInfo.GetBaseClass()
         {
-            return baseType;
+            Debug.Assert(state == ModuleInfoBuildState.Completed);
+
+            return baseClass;
         }
 
         ImmutableArray<IModuleConstructorInfo> IModuleClassInfo.GetConstructors()
@@ -112,6 +163,7 @@ namespace Gum.IR0Translator
         ImmutableArray<string> IModuleItemInfo.GetTypeParams()
         {
             return typeParams;
-        }
+        }       
+        
     }
 }

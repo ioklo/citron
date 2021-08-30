@@ -10,7 +10,6 @@ using System.Text;
 using S = Gum.Syntax;
 using M = Gum.CompileTime;
 using R = Gum.IR0;
-using Gum.Syntax;
 
 namespace Gum.IR0Translator
 {

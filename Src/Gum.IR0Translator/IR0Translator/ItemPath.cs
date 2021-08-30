@@ -1,60 +1,50 @@
-﻿using Gum.CompileTime;
-using Pretune;
+﻿using Pretune;
 using System;
 using System.Collections.Generic;
 using Gum.Collections;
 using System.Linq;
 
+using M = Gum.CompileTime;
+using Gum.Infra;
+
 namespace Gum.IR0Translator
 {
-    // ModuleName없는 나머지 부분
-    public struct ItemPath : IEquatable<ItemPath>
+    // ItemPath를 다시 만들어 봅시다. 거의 IR0와 비슷하게 나올겁니다
+    abstract record ItemPath
     {
-        public NamespacePath NamespacePath { get; }    // root namespace
-        public ImmutableArray<ItemPathEntry> OuterEntries { get; } // 
-        public ItemPathEntry Entry { get; }                       // 최종 엔트리
+        
+    }
 
-        public ItemPath(NamespacePath namespacePath, Name name, int typeParamCount = 0, ParamTypes paramTypes = default)
+    record RootItemPath(M.ModuleName ModuleName) : ItemPath; // 최상위
+    record NestedItemPath(ItemPath Outer, M.Name Name, int TypeParamCount, M.ParamTypes ParamTypes): ItemPath;
+
+    static class ItemPathExtensions
+    {
+        public static ItemPath Child(this ItemPath outer, M.Name name, int typeParamCount = 0, M.ParamTypes paramTypes = default)
         {
-            NamespacePath = namespacePath;
-            OuterEntries = ImmutableArray<ItemPathEntry>.Empty;
-            Entry = new ItemPathEntry(name, typeParamCount, paramTypes);
+            return new NestedItemPath(outer, name, typeParamCount, paramTypes);
         }
 
-        public ItemPath(NamespacePath namespacePath, ItemPathEntry entry)
-        {
-            NamespacePath = namespacePath;
-            OuterEntries = ImmutableArray<ItemPathEntry>.Empty;
-            Entry = entry;
-        }
+        public static ItemPath ToItemPath(this M.Type type)
+        {   
+            switch (type)
+            {
+                case M.GlobalType globalType:
+                    ItemPath curPath = new RootItemPath(globalType.ModuleName);
 
-        public ItemPath(NamespacePath namespacePath, ImmutableArray<ItemPathEntry> outerEntries, ItemPathEntry entry)
-        {
-            NamespacePath = namespacePath;
-            OuterEntries = outerEntries;
-            Entry = entry;
-        }        
+                    foreach (var ns in globalType.NamespacePath.Entries)
+                        curPath = curPath.Child(ns.Value);
 
-        public ItemPath Append(Name name, int typeParamCount = 0, ParamTypes paramTypes = default)
-        {
-            return new ItemPath(NamespacePath, OuterEntries.Add(Entry), new ItemPathEntry(name, typeParamCount, paramTypes));
-        }
+                    return curPath.Child(globalType.Name, globalType.TypeArgs.Length);
 
-        public override bool Equals(object? obj)
-        {
-            return obj is ItemPath path && Equals(path);
-        }
+                case M.MemberType memberType:
+                    return ToItemPath(memberType.Outer).Child(memberType.Name, memberType.TypeArgs.Length);
 
-        public bool Equals(ItemPath other)
-        {
-            return EqualityComparer<NamespacePath>.Default.Equals(NamespacePath, other.NamespacePath) &&
-                   OuterEntries.Equals(other.OuterEntries) &&
-                   EqualityComparer<ItemPathEntry>.Default.Equals(Entry, other.Entry);
-        }
-
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(NamespacePath, OuterEntries, Entry);
+                case M.TypeVarType:
+                case M.VoidType:
+                default:
+                    throw new UnreachableCodeException();
+            }
         }
     }
 }

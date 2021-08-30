@@ -128,11 +128,12 @@ namespace Gum.IR0Translator
         A2502_ClassDecl_CannotDeclConstructorDifferentWithTypeName,        
         A2503_ClassDecl_CannotFindBaseClassConstructor,
         A2504_ClassDecl_CannotAccessBaseClassConstructor,
-        A2505_ClassDecl_TryCallBaseConstructorWithoutBaseClass,       
-
+        A2505_ClassDecl_TryCallBaseConstructorWithoutBaseClass,
 
         A2601_NewExp_TypeIsNotClass,
         A2602_NewExp_NoConstructorFound, // TODO: A0905_CallExp_NoConstructorFound, 랑 겹침
+
+
 
 
         // A2001_Identifier_MultipleCandidatesForIdentifier,

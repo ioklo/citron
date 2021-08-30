@@ -70,7 +70,7 @@ namespace Gum.IR0Translator
                     classAnalyzer.AnalyzeMemberDecl(elem);
                 }
 
-                classAnalyzer.BuildAutoTrivialConstructor();
+                classAnalyzer.BuildTrivialConstructor();
                 
                 var rclassDecl = new R.ClassDecl(accessModifier, classDecl.Name, classDecl.TypeParams, baseType, default,
                     constructorsBuilder.ToImmutable(), memberFuncsBuilder.ToImmutable(), memberVarsBuilder.ToImmutable());
@@ -302,30 +302,9 @@ namespace Gum.IR0Translator
                 }
             }
 
-            void BuildAutoTrivialConstructor()
+            void BuildTrivialConstructor()
             {
-                var baseTypeValue = classTypeValue.GetBaseType();
-                if (baseTypeValue != null)
-                {
-                    // base에서 generating auto constructor를 찾으면 안되고, 그냥 auto constructor와 시그니처가 같은 것을 찾아야 한다
-                    // trivial constructor라고 부르자. auto-generated trivial constructor, 그냥 trivial constructor                    
-                    // class B { int i; bool b; }  // B(int i, bool b)를 찾는다
-                    // class C : B { string s; }   // C(int i, bool b, string s)를 찾는다
-
-                    // baseTypeValue.GetTrivialConstrutor();
-
-                    // throw new NotImplementedException();
-                    return;
-                }
-
-                var trivialConstructor = classTypeValue.GetTrivialConstructorNeedGenerate();
-                if (trivialConstructor == null) return;
-
-                var structPath = classTypeValue.GetRPath_Nested();
-                var parameters = trivialConstructor.GetParameters();
-                var paramBuilder = ImmutableArray.CreateBuilder<R.Param>(parameters.Length);
-                var stmtBuilder = ImmutableArray.CreateBuilder<R.Stmt>(parameters.Length);
-                foreach (var param in parameters)
+                static R.Param MakeParam(GlobalContext globalContext, M.Param param)
                 {
                     var paramKind = param.Kind switch
                     {
@@ -340,14 +319,81 @@ namespace Gum.IR0Translator
 
                     Debug.Assert(rname != null);
 
-                    paramBuilder.Add(new R.Param(paramKind, paramTypeValue.GetRPath(), rname.Value));
+                    return new R.Param(paramKind, paramTypeValue.GetRPath(), rname.Value);
+                }
 
-                    var structMemberPath = new R.Path.Nested(structPath, rname, R.ParamHash.None, default);
-                    stmtBuilder.Add(new R.ExpStmt(new R.AssignExp(new R.ClassMemberLoc(R.ThisLoc.Instance, structMemberPath), new R.LoadExp(new R.LocalVarLoc(rname.Value)))));
+                var trivialConstructor = classTypeValue.GetTrivialConstructor();
+                if (trivialConstructor == null) return;
+
+                var parameters = trivialConstructor.GetParameters();
+                ImmutableArray<R.Param>.Builder paramBuilder;
+                R.ConstructorBaseCallInfo? baseCallInfo;
+
+                var baseTypeValue = classTypeValue.GetBaseType();
+                if (baseTypeValue != null)
+                {
+                    // base에서 trivial constructor를 찾는다
+                    // class B { int i; bool b; }  // B(int i, bool b)를 찾는다
+                    // class C : B { string s; }   // C(int i, bool b, string s)를 찾는다
+
+                    // auto-generated가 아니면, 인자를 (int x, int y)에서 (int y, int x)로 바꿨을 수도 있으므로 자동생성하면 안될 것 같다
+                    var baseTrivialConstructor = baseTypeValue.GetTrivialConstructor();
+
+                    // InternalModuleBuilder가 baseTrivialConstructor가 있을때만 trivial constructor 시그니처를 만들었을 것이다.
+                    Debug.Assert(baseTrivialConstructor != null);
+
+                    var baseParameters = baseTrivialConstructor.GetParameters();
+                    var baseParamHashEntriesBuilder = ImmutableArray.CreateBuilder<R.ParamHashEntry>(baseParameters.Length);
+                    var baseConstructorArgs = ImmutableArray.CreateBuilder<R.Argument>(baseParameters.Length);
+                    paramBuilder = ImmutableArray.CreateBuilder<R.Param>(baseParameters.Length + parameters.Length);
+
+                    foreach (var param in baseParameters)
+                    {
+                        var rparam = MakeParam(globalContext, param);
+                        paramBuilder.Add(rparam);
+
+                        baseParamHashEntriesBuilder.Add(new R.ParamHashEntry(rparam.Kind, rparam.Type));
+
+                        R.Argument arg = rparam.Kind switch
+                        {
+                            R.ParamKind.Normal => new R.Argument.Normal(new R.LoadExp(new R.LocalVarLoc(rparam.Name))),
+                            R.ParamKind.Params => throw new UnreachableCodeException(),
+                            R.ParamKind.Ref => new R.Argument.Ref(new R.LocalVarLoc(rparam.Name)),
+                            _ => throw new UnreachableCodeException()
+                        };
+
+                        baseConstructorArgs.Add(arg);
+                    }
+
+                    baseCallInfo = new R.ConstructorBaseCallInfo(
+                        new R.ParamHash(0, baseParamHashEntriesBuilder.MoveToImmutable()),
+                        baseConstructorArgs.MoveToImmutable()
+                    );
+                }
+                else
+                {
+                    paramBuilder = ImmutableArray.CreateBuilder<R.Param>(parameters.Length);
+                    baseCallInfo = null;
+                }
+
+                var classPath = classTypeValue.GetRPath_Nested();
+                var stmtBuilder = ImmutableArray.CreateBuilder<R.Stmt>(parameters.Length);
+                foreach (var param in parameters)
+                {
+                    var rparam = MakeParam(globalContext, param);
+                    paramBuilder.Add(rparam);
+
+                    var memberPath = new R.Path.Nested(classPath, rparam.Name, R.ParamHash.None, default);
+                    stmtBuilder.Add(new R.ExpStmt(new R.AssignExp(new R.ClassMemberLoc(R.ThisLoc.Instance, memberPath), new R.LoadExp(new R.LocalVarLoc(rparam.Name)))));
                 }
 
                 var body = new R.BlockStmt(stmtBuilder.MoveToImmutable());
-                constructorsBuilder.Add(new R.ClassConstructorDecl(R.AccessModifier.Public, default, paramBuilder.MoveToImmutable(), null, body));
+
+                constructorsBuilder.Add(new R.ClassConstructorDecl(
+                    R.AccessModifier.Public, default, paramBuilder.MoveToImmutable(),
+                    baseCallInfo,
+                    body
+                ));
             }
         }
     }

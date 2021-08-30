@@ -76,20 +76,24 @@ namespace Gum.IR0Translator
         }
 
         public static R.Script? Analyze(
-            S.Script script,
-            R.ModuleName moduleName,
-            ItemValueFactory itemValueFactory,
-            GlobalItemValueFactory globalItemValueFactory,
+            S.Script sscript,
+            M.ModuleName moduleName,
             TypeExpInfoService typeExpInfoService,
-            InternalModuleInfo internalModuleInfo,
+            ModuleInfoRepository externalModuleInfoRepo,
             IErrorCollector errorCollector)
         {
             try
             {
-                var globalContext = new GlobalContext(itemValueFactory, globalItemValueFactory, typeExpInfoService, errorCollector);
-                var rootContext = new RootContext(moduleName, itemValueFactory);
+                var (internalModuleInfo, itemValueFactory, globalItemValueFactory) = InternalModuleInfoBuilder.Build(
+                    moduleName, sscript, typeExpInfoService, externalModuleInfoRepo
+                );
 
-                return RootAnalyzer.Analyze(globalContext, rootContext, internalModuleInfo, script);
+                var rmoduleName = RItemFactory.MakeModuleName(moduleName);
+
+                var globalContext = new GlobalContext(itemValueFactory, globalItemValueFactory, typeExpInfoService, errorCollector);
+                var rootContext = new RootContext(rmoduleName, itemValueFactory);
+
+                return RootAnalyzer.Analyze(globalContext, rootContext, internalModuleInfo, sscript);
             }
             catch(AnalyzerFatalException)
             {

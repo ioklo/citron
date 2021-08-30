@@ -41,31 +41,43 @@ namespace Gum.IR0Translator
         ImmutableArray<string> GetTypeParams();
     }
 
+    enum ModuleInfoBuildState
+    {
+        BeforeSetBaseAndBuildTrivialConstructor,
+        DuringSetBaseAndBuildTrivialConstructor,
+        Completed // 완료
+    }
+
     // M.TypeInfo 대체
     interface IModuleTypeInfo : IModuleItemInfo, IModuleTypeContainer, IModuleFuncContainer
-    {
+    {   
     }
 
     interface IModuleStructInfo : IModuleTypeInfo
     {
-        IModuleConstructorInfo? GetTrivialConstructorNeedGenerate();
+        ModuleInfoBuildState GetBuildState();
+        void SetBaseAndBuildTrivialConstructor(IQueryModuleTypeInfo query, ItemValueFactory itemValueFactory);
+
+        IModuleConstructorInfo? GetTrivialConstructor();
         ImmutableArray<IModuleTypeInfo> GetMemberTypes();
         ImmutableArray<IModuleFuncInfo> GetMemberFuncs();
         ImmutableArray<IModuleConstructorInfo> GetConstructors();
         ImmutableArray<IModuleMemberVarInfo> GetMemberVars();
-        M.Type? GetBaseType();
+        StructTypeValue? GetBaseStruct();
     }
 
     interface IModuleClassInfo : IModuleTypeInfo
     {
-        IModuleConstructorInfo? GetTrivialConstructorNeedGenerate();
+        ModuleInfoBuildState GetBuildState();
+        void SetBaseAndBuildTrivialConstructor(IQueryModuleTypeInfo query, ItemValueFactory itemValueFactory);
+
         IModuleConstructorInfo? GetTrivialConstructor();
 
         ImmutableArray<IModuleTypeInfo> GetMemberTypes();
         ImmutableArray<IModuleFuncInfo> GetMemberFuncs();
         ImmutableArray<IModuleConstructorInfo> GetConstructors();
         ImmutableArray<IModuleMemberVarInfo> GetMemberVars();
-        M.Type? GetBaseType();
+        ClassTypeValue? GetBaseClass();
     }
 
     interface IModuleEnumInfo : IModuleTypeInfo

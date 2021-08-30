@@ -70,7 +70,7 @@ namespace Gum.IR0Translator
                     analyzer.AnalyzeStructMemberDecl(elem);
                 }               
 
-                analyzer.BuildAutoTrivialConstructor();
+                analyzer.BuildTrivialConstructor();
                 
                 var rstructDecl = new R.StructDecl(accessModifier, structDecl.Name, structDecl.TypeParams, baseTypes, 
                     constructorsBuilder.ToImmutable(), memberFuncsBuilder.ToImmutable(), memberVarsBuilder.ToImmutable());
@@ -239,9 +239,9 @@ namespace Gum.IR0Translator
                 }
             }
 
-            void BuildAutoTrivialConstructor()
+            void BuildTrivialConstructor()
             {
-                var trivialConstructor = structTypeValue.GetTrivialConstructorNeedGenerate();
+                var trivialConstructor = structTypeValue.GetTrivialConstructor();
                 if (trivialConstructor == null) return;                
 
                 var structPath = structTypeValue.GetRPath_Nested();

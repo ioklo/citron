@@ -112,14 +112,13 @@ namespace Gum.IR0Translator
             throw new UnreachableCodeException();
         }
 
-        public TypeValue? GetBaseType()
+        public StructTypeValue? GetBaseType()
         {
-            var baseType = structInfo.GetBaseType();
+            var baseType = structInfo.GetBaseStruct();
             if (baseType == null) return null;
 
             var typeEnv = MakeTypeEnv();
-            var typeValue = itemValueFactory.MakeTypeValueByMType(baseType);
-            return typeValue.Apply_TypeValue(typeEnv);
+            return baseType.Apply_StructTypeValue(typeEnv);
         }
 
         public override ItemQueryResult GetMember(M.Name memberName, int typeParamCount)
@@ -175,13 +174,18 @@ namespace Gum.IR0Translator
                 builder.Add(typeArgs[i]);
         }
 
-        public override NormalTypeValue Apply_NormalTypeValue(TypeEnv typeEnv)
+        public StructTypeValue Apply_StructTypeValue(TypeEnv typeEnv)
         {
-            // [X<00T>.Y<10U>.Z<20V>].Apply([00 => int, 10 => short, 20 => string])            
+            // [X<00T>.Y<10U>.Z<20V>].Apply([00 => int, 10 => short, 20 => string])
 
             var appliedOuter = outer.Apply(typeEnv);
             var appliedTypeArgs = ImmutableArray.CreateRange(typeArgs, typeArg => typeArg.Apply_TypeValue(typeEnv));
-            return itemValueFactory.MakeTypeValue(appliedOuter, structInfo, appliedTypeArgs);
+            return itemValueFactory.MakeStructValue(appliedOuter, structInfo, appliedTypeArgs);
+        }
+
+        public sealed override NormalTypeValue Apply_NormalTypeValue(TypeEnv typeEnv)
+        {
+            return Apply_StructTypeValue(typeEnv);
         }
         
         public override R.Path.Nested GetRPath_Nested()
@@ -197,9 +201,9 @@ namespace Gum.IR0Translator
             return new R.StructMemberLoc(instance, member);
         }
 
-        public ConstructorValue? GetTrivialConstructorNeedGenerate()
+        public ConstructorValue? GetTrivialConstructor()
         {
-            var constructorInfo = structInfo.GetTrivialConstructorNeedGenerate();
+            var constructorInfo = structInfo.GetTrivialConstructor();
             if (constructorInfo == null) return null;
 
             return itemValueFactory.MakeConstructorValue(this, constructorInfo);

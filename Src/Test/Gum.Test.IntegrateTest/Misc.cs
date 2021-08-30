@@ -15,6 +15,7 @@ using System.Text.Json;
 using Gum.IR0Evaluator;
 using Gum.Collections;
 using System.Reflection;
+using System.Diagnostics;
 
 namespace Gum.Test.IntegrateTest
 {
@@ -101,8 +102,9 @@ namespace Gum.Test.IntegrateTest
             var rscriptResult = Translator.Translate("TestModule", default, sscriptResult.Elem, testErrorCollector);
 
             var commandProvider = new TestCmdProvider();
+            Debug.Assert(rscriptResult != null);
 
-            var _ = await Evaluator.EvalAsync(default, commandProvider, rscriptResult!);
+            var _ = await Evaluator.EvalAsync(default, commandProvider, rscriptResult);
             Assert.Equal(result, commandProvider.Output);
         }
 
