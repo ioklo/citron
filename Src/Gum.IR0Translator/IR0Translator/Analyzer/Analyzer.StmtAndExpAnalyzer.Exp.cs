@@ -62,7 +62,7 @@ namespace Gum.IR0Translator
 
                     case IdentifierResult.LocalVar localVarResult:
                         {
-                            R.Loc loc = new R.LocalVarLoc(localVarResult.VarName);
+                            R.Loc loc = new R.LocalVarLoc(new R.Name.Normal(localVarResult.VarName));
 
                             if (localVarResult.IsRef)
                                 loc = new R.DerefLocLoc(loc);
@@ -354,9 +354,6 @@ namespace Gum.IR0Translator
                     throw new UnreachableCodeException();
                 }
             }
-            
-            
-            
 
             // CallExp분석에서 Callable이 Identifier인 경우 처리
             ExpResult AnalyzeCallExpFuncCallable(ExpResult.Funcs funcsResult, ImmutableArray<S.Argument> sargs, S.ISyntaxNode nodeForErrorReport)
@@ -368,25 +365,38 @@ namespace Gum.IR0Translator
 
                 // TypeEnv작성                
                 var outerTypeEnv = funcsResult.Outer.GetTypeEnv();
-                var matchedFunc = FuncMatcher.Match(globalContext, callableContext, localContext, outerTypeEnv, funcsResult.FuncInfos, sargs, funcsResult.TypeArgs, nodeForErrorReport);
+                var funcMatchResult = FuncMatcher.Match(globalContext, callableContext, localContext, outerTypeEnv, funcsResult.FuncInfos, sargs, funcsResult.TypeArgs);
 
-                // funcValue만들기
-                var funcValue = globalContext.MakeFuncValue(funcsResult.Outer, matchedFunc.CallableInfo, matchedFunc.TypeArgs);
-
-                if (!funcValue.CheckAccess(callableContext.GetThisTypeValue()))
-                    globalContext.AddFatalError(A2011_ResolveIdentifier_TryAccessingPrivateMember, nodeForErrorReport);
-
-                if (funcValue.IsSequence)
+                if (funcMatchResult is FuncMatchResult<IModuleFuncInfo>.MultipleCandidates)
                 {
-                    // TODO: funcValue.RetType을 쓰면 의미가 와닿지 않는데, 쉽게 실수 할 수 있을 것 같다
-                    var seqTypeValue = globalContext.GetSeqTypeValue(funcValue.GetRPath_Nested(), funcValue.GetRetType());
-                    return new ExpResult.Exp(new R.CallSeqFuncExp(funcValue.GetRPath_Nested(), funcsResult.Instance, matchedFunc.Args), seqTypeValue);
+                    globalContext.AddFatalError(A0901_CallExp_MultipleCandidates, nodeForErrorReport);
                 }
-                else
+                else if (funcMatchResult is FuncMatchResult<IModuleFuncInfo>.NotFound)
                 {
-                    // 만약
-                    return new ExpResult.Exp(new R.CallFuncExp(funcValue.GetRPath_Nested(), funcsResult.Instance, matchedFunc.Args), funcValue.GetRetType());
+                    globalContext.AddFatalError(A0906_CallExp_NotFound, nodeForErrorReport);
                 }
+                else if (funcMatchResult is FuncMatchResult<IModuleFuncInfo>.Success matchedFunc)
+                {
+                    // funcValue만들기
+                    var funcValue = globalContext.MakeFuncValue(funcsResult.Outer, matchedFunc.CallableInfo, matchedFunc.TypeArgs);
+
+                    if (!funcValue.CheckAccess(callableContext.GetThisTypeValue()))
+                        globalContext.AddFatalError(A2011_ResolveIdentifier_TryAccessingPrivateMember, nodeForErrorReport);
+
+                    if (funcValue.IsSequence)
+                    {
+                        // TODO: funcValue.RetType을 쓰면 의미가 와닿지 않는데, 쉽게 실수 할 수 있을 것 같다
+                        var seqTypeValue = globalContext.GetSeqTypeValue(funcValue.GetRPath_Nested(), funcValue.GetRetType());
+                        return new ExpResult.Exp(new R.CallSeqFuncExp(funcValue.GetRPath_Nested(), funcsResult.Instance, matchedFunc.Args), seqTypeValue);
+                    }
+                    else
+                    {
+                        // 만약
+                        return new ExpResult.Exp(new R.CallFuncExp(funcValue.GetRPath_Nested(), funcsResult.Instance, matchedFunc.Args), funcValue.GetRetType());
+                    }
+                }
+
+                throw new UnreachableCodeException();
             }
 
             // CallExp 분석에서 Callable이 Exp인 경우 처리
@@ -421,21 +431,37 @@ namespace Gum.IR0Translator
                 if (callableTypeValue is StructTypeValue structTypeValue)
                 {
                     // 생성자 검색,
-                    var result = structTypeValue.GetMember(M.SpecialNames.Constructor, typeParamCount: 0); // NOTICE: constructor는 타입 파라미터가 없다
+                    var result = structTypeValue.GetMember(M.Name.Constructor, typeParamCount: 0); // NOTICE: constructor는 타입 파라미터가 없다
                     switch(result)
                     {
                         case ItemQueryResult.Constructors constructorResult:
-                            var matchedConstructor = FuncMatcher.Match(globalContext, callableContext, localContext, structTypeValue.MakeTypeEnv(), constructorResult.ConstructorInfos, sargs, default, nodeForErrorReport);                            
 
-                            var constructorValue = globalContext.MakeConstructorValue(constructorResult.Outer, matchedConstructor.CallableInfo);
+                            var funcMatchResult = FuncMatcher.Match(globalContext, callableContext, localContext, structTypeValue.MakeTypeEnv(), constructorResult.ConstructorInfos, sargs, default);                            
 
-                            if (!constructorValue.CheckAccess(callableContext.GetThisTypeValue()))
-                                globalContext.AddFatalError(A2011_ResolveIdentifier_TryAccessingPrivateMember, nodeForErrorReport);
+                            switch(funcMatchResult)
+                            {
+                                case FuncMatchResult<IModuleConstructorInfo>.MultipleCandidates:
+                                    globalContext.AddFatalError(A0907_CallExp_MultipleMatchedStructConstructors, nodeForErrorReport);
+                                    break;
 
-                            return new ExpResult.Exp(new R.NewStructExp(constructorValue.GetRPath_Nested(), matchedConstructor.Args), structTypeValue);
+                                case FuncMatchResult<IModuleConstructorInfo>.NotFound:
+                                    globalContext.AddFatalError(A0905_CallExp_NoMatchedStructConstructorFound, nodeForErrorReport);
+                                    break;
+
+                                case FuncMatchResult<IModuleConstructorInfo>.Success matchedConstructor:
+                                    var constructorValue = globalContext.MakeConstructorValue(constructorResult.Outer, matchedConstructor.CallableInfo);
+
+                                    if (!constructorValue.CheckAccess(callableContext.GetThisTypeValue()))
+                                        globalContext.AddFatalError(A2011_ResolveIdentifier_TryAccessingPrivateMember, nodeForErrorReport);
+
+                                    return new ExpResult.Exp(new R.NewStructExp(constructorValue.GetRPath_Nested(), matchedConstructor.Args), structTypeValue);
+                            }
+
+                            throw new UnreachableCodeException();
+                            
 
                         case ItemQueryResult.NotFound:
-                            globalContext.AddFatalError(A0905_CallExp_NoConstructorFound, nodeForErrorReport);
+                            globalContext.AddFatalError(A0905_CallExp_NoMatchedStructConstructorFound, nodeForErrorReport);
                             break;
 
                         case ItemQueryResult.Error errorResult:
@@ -527,7 +553,7 @@ namespace Gum.IR0Translator
 
                     var paramTypeValue = globalContext.GetTypeValueByTypeExp(param.Type);
                     paramInfosBuilder.Add(new ParamInfo(rparamKind, paramTypeValue));
-                    rparamsBuilder.Add(new R.Param(rparamKind, paramTypeValue.GetRPath(), param.Name));
+                    rparamsBuilder.Add(new R.Param(rparamKind, paramTypeValue.GetRPath(), new R.Name.Normal(param.Name)));
 
                     // 람다 파라미터를 지역 변수로 추가한다
                     newLocalContext.AddLocalVarInfo(param.ParamKind == S.FuncParamKind.Ref, paramTypeValue, param.Name);
@@ -617,7 +643,7 @@ namespace Gum.IR0Translator
             ExpResult AnalyzeMemberExpLocParent(S.MemberExp memberExp, R.Loc parentLoc, TypeValue parentTypeValue)
             {
                 var typeArgs = GetTypeValues(memberExp.MemberTypeArgs);
-                var memberResult = parentTypeValue.GetMember(memberExp.MemberName, typeArgs.Length);
+                var memberResult = parentTypeValue.GetMember(new M.Name.Normal(memberExp.MemberName), typeArgs.Length);
 
                 switch (memberResult)
                 {
@@ -675,7 +701,7 @@ namespace Gum.IR0Translator
             // T.x
             ExpResult AnalyzeMemberExpTypeParent(S.MemberExp nodeForErrorReport, TypeValue parentType, string memberName, ImmutableArray<S.TypeExp> stypeArgs)
             {   
-                var member = parentType.GetMember(memberName, stypeArgs.Length);
+                var member = parentType.GetMember(new M.Name.Normal(memberName), stypeArgs.Length);
 
                 switch (member)
                 {
@@ -804,7 +830,7 @@ namespace Gum.IR0Translator
 
                         case IdentifierResult.LocalVar localVarResult:
                             {
-                                R.Loc loc = new R.LocalVarLoc(localVarResult.VarName);
+                                R.Loc loc = new R.LocalVarLoc(new R.Name.Normal(localVarResult.VarName));
                                 if (localVarResult.IsRef)
                                     loc = new R.DerefLocLoc(loc);
 
@@ -926,27 +952,41 @@ namespace Gum.IR0Translator
                     globalContext.AddFatalError(A2601_NewExp_TypeIsNotClass, newExp.Type);
 
                 // NOTICE: 생성자 검색 (AnalyzeCallExpTypeCallable 부분과 비슷)
-                var result = classTypeValue.GetMember(M.SpecialNames.Constructor, typeParamCount: 0); // NOTICE: constructor는 타입 파라미터가 없다
+                var result = classTypeValue.GetMember(M.Name.Constructor, typeParamCount: 0); // NOTICE: constructor는 타입 파라미터가 없다
                 switch (result)
                 {
                     case ItemQueryResult.Constructors constructorResult:
-                        var matchedConstructor = FuncMatcher.Match(globalContext, callableContext, localContext, classTypeValue.MakeTypeEnv(), constructorResult.ConstructorInfos, newExp.Args, default, newExp);
+                        var funcMatchResult = FuncMatcher.Match(globalContext, callableContext, localContext, classTypeValue.MakeTypeEnv(), constructorResult.ConstructorInfos, newExp.Args, default);
 
-                        var constructorValue = globalContext.MakeConstructorValue(constructorResult.Outer, matchedConstructor.CallableInfo);
+                        switch(funcMatchResult)
+                        {
+                            case FuncMatchResult<IModuleConstructorInfo>.MultipleCandidates:
+                                globalContext.AddFatalError(A2603_NewExp_MultipleMatchedClassConstructors, newExp);
+                                break;
 
-                        if (!constructorValue.CheckAccess(callableContext.GetThisTypeValue()))
-                            globalContext.AddFatalError(A2011_ResolveIdentifier_TryAccessingPrivateMember, newExp);
+                            case FuncMatchResult<IModuleConstructorInfo>.NotFound:
+                                globalContext.AddFatalError(A2602_NewExp_NoMatchedClassConstructor, newExp);
+                                break;
 
-                        return new ExpResult.Exp(
-                            new R.NewClassExp(
-                                classTypeValue.GetRPath_Nested(), 
-                                constructorValue.GetRPath_Nested().ParamHash, 
-                                matchedConstructor.Args
-                            ), 
-                            classTypeValue);
+                            case FuncMatchResult<IModuleConstructorInfo>.Success matchedConstructor:
+                                var constructorValue = globalContext.MakeConstructorValue(constructorResult.Outer, matchedConstructor.CallableInfo);
+
+                                if (!constructorValue.CheckAccess(callableContext.GetThisTypeValue()))
+                                    globalContext.AddFatalError(A2011_ResolveIdentifier_TryAccessingPrivateMember, newExp);
+
+                                return new ExpResult.Exp(
+                                    new R.NewClassExp(
+                                        classTypeValue.GetRPath_Nested(),
+                                        constructorValue.GetRPath_Nested().ParamHash,
+                                        matchedConstructor.Args
+                                    ),
+                                    classTypeValue);
+                        }
+
+                        break;
 
                     case ItemQueryResult.NotFound:
-                        globalContext.AddFatalError(A2602_NewExp_NoConstructorFound, newExp);
+                        globalContext.AddFatalError(A2602_NewExp_NoMatchedClassConstructor, newExp);
                         break;
 
                     case ItemQueryResult.Error errorResult:

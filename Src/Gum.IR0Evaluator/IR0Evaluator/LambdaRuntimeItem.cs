@@ -56,7 +56,7 @@ namespace Gum.IR0Evaluator
                 ImmutableArray<Value> args, 
                 Value result)
             {
-                var builder = ImmutableDictionary.CreateBuilder<string, Value>();
+                var builder = ImmutableDictionary.CreateBuilder<R.Name, Value>();
 
                 for (int i = 0; i < args.Length; i++)
                     builder.Add(lambdaDecl.Parameters[i].Name, args[i]);

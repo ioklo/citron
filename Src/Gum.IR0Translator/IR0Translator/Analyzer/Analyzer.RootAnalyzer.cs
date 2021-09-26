@@ -162,7 +162,7 @@ namespace Gum.IR0Translator
                 var parameters = funcDecl.Parameters.Select(param => param.Name).ToImmutableArray();
 
                 var decls = funcContext.GetCallableMemberDecls();
-                var seqFuncDecl = new R.SequenceFuncDecl(decls, funcDecl.Name, false, retRType, funcDecl.TypeParams, rparamInfos, bodyResult.Stmt);                
+                var seqFuncDecl = new R.SequenceFuncDecl(decls, new R.Name.Normal(funcDecl.Name), false, retRType, funcDecl.TypeParams, rparamInfos, bodyResult.Stmt);                
                 rootContext.AddGlobalFuncDecl(seqFuncDecl);
             }
 
@@ -207,7 +207,7 @@ namespace Gum.IR0Translator
                     case S.StructDecl structDecl:
                         {
                             // TODO: 현재는 최상위 네임스페이스에서만 찾고 있음
-                            var structInfo = GlobalItemQueryService.GetGlobalItem(internalModuleInfo, M.NamespacePath.Root, new ItemPathEntry(structDecl.Name, structDecl.TypeParams.Length)) as IModuleStructInfo;
+                            var structInfo = GlobalItemQueryService.GetGlobalItem(internalModuleInfo, M.NamespacePath.Root, new ItemPathEntry(new M.Name.Normal(structDecl.Name), structDecl.TypeParams.Length)) as IModuleStructInfo;
                             Debug.Assert(structInfo != null);
 
                             // 이는 TaskStmt 등에서 path를 만들때 사용한다
@@ -229,7 +229,7 @@ namespace Gum.IR0Translator
                     case S.ClassDecl classDecl:
                         {
                             // TODO: 현재는 최상위 네임스페이스에서만 찾고 있음
-                            var classInfo = GlobalItemQueryService.GetGlobalItem(internalModuleInfo, M.NamespacePath.Root, new ItemPathEntry(classDecl.Name, classDecl.TypeParams.Length)) as IModuleClassInfo;
+                            var classInfo = GlobalItemQueryService.GetGlobalItem(internalModuleInfo, M.NamespacePath.Root, new ItemPathEntry(new M.Name.Normal(classDecl.Name), classDecl.TypeParams.Length)) as IModuleClassInfo;
                             Debug.Assert(classInfo != null);
 
                             // 이는 TaskStmt 등에서 path를 만들때 사용한다

@@ -123,7 +123,7 @@ namespace Gum.IR0Translator
 
         public override ItemQueryResult GetMember(M.Name memberName, int typeParamCount)
         {
-            if (memberName.Equals(M.SpecialNames.Constructor))
+            if (memberName.Equals(M.Name.Constructor))
                 return new ItemQueryResult.Constructors(this, structInfo.GetConstructors());
 
             // TODO: caching

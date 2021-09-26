@@ -30,10 +30,9 @@ namespace Gum.IR0Translator
 
             public R.Name.Anonymous NewAnonymousName()
             {
-                var anonymousId = new R.AnonymousId(anonymousCount);
                 anonymousCount++;
 
-                return new R.Name.Anonymous(anonymousId);
+                return new R.Name.Anonymous(anonymousCount);
             }
         }
     }

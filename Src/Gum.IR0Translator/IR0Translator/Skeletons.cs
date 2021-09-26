@@ -37,7 +37,7 @@ namespace Gum.IR0Translator
             membersByEntry = builder.ToImmutable();
         }
         
-        public TypeSkeleton? GetMember(string memberName, int typeParamCount)
+        public TypeSkeleton? GetMember(Name memberName, int typeParamCount)
         {
             return membersByEntry.GetValueOrDefault(new ItemPathEntry(memberName, typeParamCount));
         }

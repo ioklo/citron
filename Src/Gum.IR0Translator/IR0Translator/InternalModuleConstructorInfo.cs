@@ -8,19 +8,13 @@ namespace Gum.IR0Translator
     partial class InternalModuleConstructorInfo : IModuleConstructorInfo
     {
         M.AccessModifier accessModifier;
-        M.Name name;        
         ImmutableArray<M.Param> parameters;
 
         M.AccessModifier IModuleCallableInfo.GetAccessModifier()
         {
             return accessModifier;
         }
-
-        M.Name IModuleItemInfo.GetName()
-        {
-            return name;
-        }
-
+        
         ImmutableArray<M.Param> IModuleCallableInfo.GetParameters()
         {
             return parameters;
@@ -29,6 +23,11 @@ namespace Gum.IR0Translator
         M.ParamTypes IModuleCallableInfo.GetParamTypes()
         {
             return Misc.MakeParamTypes(parameters);
+        }
+
+        M.Name IModuleItemInfo.GetName()
+        {
+            return M.Name.Constructor;
         }
 
         ImmutableArray<string> IModuleItemInfo.GetTypeParams()

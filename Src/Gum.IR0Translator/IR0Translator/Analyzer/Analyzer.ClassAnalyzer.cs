@@ -143,18 +143,31 @@ namespace Gum.IR0Translator
                     }
                     else
                     {
-                        var result = baseTypeValue.GetMember(M.SpecialNames.Constructor, typeParamCount: 0); // NOTICE: constructor는 타입 파라미터가 없다
+                        var result = baseTypeValue.GetMember(M.Name.Constructor, typeParamCount: 0); // NOTICE: constructor는 타입 파라미터가 없다
                         switch (result)
                         {
                             case ItemQueryResult.Constructors constructorResult:
-                                var matchedConstructor = FuncMatcher.Match(globalContext, callableContext, localContext, baseTypeValue.MakeTypeEnv(), constructorResult.ConstructorInfos, baseArgs.Value, default, nodeForErrorReport);
+                                var matchResult = FuncMatcher.Match(globalContext, callableContext, localContext, baseTypeValue.MakeTypeEnv(), constructorResult.ConstructorInfos, baseArgs.Value, default);
+                                if (matchResult is FuncMatchResult<IModuleConstructorInfo>.MultipleCandidates)
+                                {
+                                    globalContext.AddFatalError(A2506_ClassDecl_CannotDecideWhichBaseConstructorUse, nodeForErrorReport);
+                                    break;
+                                }
+                                else if (matchResult is FuncMatchResult<IModuleConstructorInfo>.NotFound)
+                                {
+                                    globalContext.AddFatalError(A2503_ClassDecl_CannotFindBaseClassConstructor, nodeForErrorReport);
+                                    break;
+                                }
+                                else if (matchResult is FuncMatchResult<IModuleConstructorInfo>.Success matchedConstructor)
+                                {
+                                    var constructorValue = globalContext.MakeConstructorValue(constructorResult.Outer, matchedConstructor.CallableInfo);
 
-                                var constructorValue = globalContext.MakeConstructorValue(constructorResult.Outer, matchedConstructor.CallableInfo);
+                                    if (!constructorValue.CheckAccess(classTypeValue))
+                                        globalContext.AddFatalError(A2504_ClassDecl_CannotAccessBaseClassConstructor, nodeForErrorReport);
 
-                                if (!constructorValue.CheckAccess(classTypeValue))
-                                    globalContext.AddFatalError(A2504_ClassDecl_CannotAccessBaseClassConstructor, nodeForErrorReport);
-
-                                return new R.ConstructorBaseCallInfo(constructorValue.GetRPath_Nested().ParamHash, matchedConstructor.Args);
+                                    return new R.ConstructorBaseCallInfo(constructorValue.GetRPath_Nested().ParamHash, matchedConstructor.Args);
+                                }
+                                break;
 
                             case ItemQueryResult.NotFound:
                                 globalContext.AddFatalError(A2503_ClassDecl_CannotFindBaseClassConstructor, nodeForErrorReport);
@@ -245,7 +258,7 @@ namespace Gum.IR0Translator
                 var parameters = funcDecl.Parameters.Select(param => param.Name).ToImmutableArray();
 
                 var decls = funcContext.GetCallableMemberDecls();
-                var seqFuncDecl = new R.SequenceFuncDecl(decls, funcDecl.Name, !funcDecl.IsStatic, retRType, funcDecl.TypeParams, rparamInfos, bodyResult.Stmt);
+                var seqFuncDecl = new R.SequenceFuncDecl(decls, new R.Name.Normal(funcDecl.Name), !funcDecl.IsStatic, retRType, funcDecl.TypeParams, rparamInfos, bodyResult.Stmt);
                 memberFuncsBuilder.Add(seqFuncDecl);
             }
 
@@ -315,20 +328,24 @@ namespace Gum.IR0Translator
                     };
 
                     var paramTypeValue = globalContext.GetTypeValueByMType(param.Type);
-                    var rname = RItemFactory.MakeName(param.Name) as R.Name.Normal;
+                    var rname = RItemFactory.MakeName(param.Name);
 
-                    Debug.Assert(rname != null);
-
-                    return new R.Param(paramKind, paramTypeValue.GetRPath(), rname.Value);
+                    return new R.Param(paramKind, paramTypeValue.GetRPath(), rname);
                 }
 
+                // if InternalModuleInfoBuilder decided not to generate TrivialConstructor, pass.
                 var trivialConstructor = classTypeValue.GetTrivialConstructor();
                 if (trivialConstructor == null) return;
 
-                var parameters = trivialConstructor.GetParameters();
-                ImmutableArray<R.Param>.Builder paramBuilder;
-                R.ConstructorBaseCallInfo? baseCallInfo;
+                // to prevent conflict between parameter names, using special name $base- prefix
+                // B(int x) / C(int $base_x, int x) : base($base_x) { }
 
+                // 이미 base + current 합쳐진 매개변수
+                var parameters = trivialConstructor.GetParameters();
+                ImmutableArray<R.Param>.Builder paramBuilder = ImmutableArray.CreateBuilder<R.Param>(parameters.Length);
+                R.ConstructorBaseCallInfo? baseCallInfo;
+                int baseParamCount = 0;
+                
                 var baseTypeValue = classTypeValue.GetBaseType();
                 if (baseTypeValue != null)
                 {
@@ -345,7 +362,6 @@ namespace Gum.IR0Translator
                     var baseParameters = baseTrivialConstructor.GetParameters();
                     var baseParamHashEntriesBuilder = ImmutableArray.CreateBuilder<R.ParamHashEntry>(baseParameters.Length);
                     var baseConstructorArgs = ImmutableArray.CreateBuilder<R.Argument>(baseParameters.Length);
-                    paramBuilder = ImmutableArray.CreateBuilder<R.Param>(baseParameters.Length + parameters.Length);
 
                     foreach (var param in baseParameters)
                     {
@@ -369,17 +385,21 @@ namespace Gum.IR0Translator
                         new R.ParamHash(0, baseParamHashEntriesBuilder.MoveToImmutable()),
                         baseConstructorArgs.MoveToImmutable()
                     );
+
+                    baseParamCount = baseParameters.Length;
                 }
                 else
                 {
-                    paramBuilder = ImmutableArray.CreateBuilder<R.Param>(parameters.Length);
                     baseCallInfo = null;
+                    baseParamCount = 0;
                 }
-
+                
                 var classPath = classTypeValue.GetRPath_Nested();
-                var stmtBuilder = ImmutableArray.CreateBuilder<R.Stmt>(parameters.Length);
-                foreach (var param in parameters)
+                var stmtBuilder = ImmutableArray.CreateBuilder<R.Stmt>(parameters.Length - baseParamCount);
+                for(int i = baseParamCount; i < parameters.Length; i++)
                 {
+                    var param = parameters[i];
+
                     var rparam = MakeParam(globalContext, param);
                     paramBuilder.Add(rparam);
 

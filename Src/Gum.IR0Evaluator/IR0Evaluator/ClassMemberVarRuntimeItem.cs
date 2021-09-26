@@ -22,7 +22,7 @@ namespace Gum.IR0Evaluator
             Lazy<IR0ClassRuntimeItem> classItem;
             Lazy<int> globalIndex;
 
-            public override R.Name Name => name;
+            public override R.Name Name => new R.Name.Normal(name);
             public override R.ParamHash ParamHash => R.ParamHash.None;
 
             public IR0ClassMemberVarRuntimeItem(GlobalContext globalContext, R.Path.Nested classPath, string name, int localIndex)

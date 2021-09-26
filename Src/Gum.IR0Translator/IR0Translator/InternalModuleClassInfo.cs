@@ -97,13 +97,12 @@ namespace Gum.IR0Translator
                 // 같은 인자의 생성자가 없으면 Trivial을 만든다
                 if (InternalModuleTypeInfoBuilderMisc.GetConstructorHasSameParamWithTrivial(baseTrivialConstructor, constructors, memberVars) == null)
                 {
-                    trivialConstructor = InternalModuleTypeInfoBuilderMisc.MakeTrivialConstructor(name, baseTrivialConstructor, memberVars);
+                    trivialConstructor = InternalModuleTypeInfoBuilderMisc.MakeTrivialConstructor(baseTrivialConstructor, memberVars);
                     constructors = constructors.Add(trivialConstructor);
                 }
             }
 
             state = ModuleInfoBuildState.Completed;
-            return;
         }
 
         IModuleConstructorInfo? IModuleClassInfo.GetTrivialConstructor()

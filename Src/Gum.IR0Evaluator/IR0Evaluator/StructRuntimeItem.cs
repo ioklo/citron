@@ -22,7 +22,7 @@ namespace Gum.IR0Evaluator
             GlobalContext globalContext;
             R.StructDecl decl;
 
-            public override R.Name Name => decl.Name;
+            public override R.Name Name => new R.Name.Normal(decl.Name);
 
             public override R.ParamHash ParamHash => new R.ParamHash(decl.TypeParams.Length, default);
 

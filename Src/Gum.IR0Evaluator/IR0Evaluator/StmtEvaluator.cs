@@ -47,7 +47,7 @@ namespace Gum.IR0Evaluator
 
             public static async ValueTask EvalConstructorAsync(
                 GlobalContext globalContext, 
-                ImmutableDictionary<string, Value> args, 
+                ImmutableDictionary<R.Name, Value> args, 
                 Value thisValue, 
                 (ConstructorRuntimeItem BaseConstructorItem, ImmutableArray<R.Argument> Args)? baseCallInfo,
                 R.Stmt body)
@@ -67,7 +67,7 @@ namespace Gum.IR0Evaluator
 
             // yield를 먹는다
             // TODO: 유틸리티 함수인데 제거해도 되지 않을까
-            public static ValueTask EvalFuncBodyAsync(GlobalContext globalContext, ImmutableDictionary<string, Value> args, Value? thisValue, Value retValue, R.Stmt body)
+            public static ValueTask EvalFuncBodyAsync(GlobalContext globalContext, ImmutableDictionary<R.Name, Value> args, Value? thisValue, Value retValue, R.Stmt body)
             {
                 var context = new EvalContext(default, EvalFlowControl.None, thisValue, retValue);
                 var localContext = new LocalContext(args);
@@ -159,7 +159,7 @@ namespace Gum.IR0Evaluator
                                 await EvalExpAsync(normalElem.InitExp, value);
 
                                 // 순서 주의, TODO: 테스트로 만들기
-                                localContext.AddLocalVar(normalElem.Name, value);
+                                localContext.AddLocalVar(new R.Name.Normal(normalElem.Name), value);
                                 break;
                             }
 
@@ -170,7 +170,7 @@ namespace Gum.IR0Evaluator
                                 refValue.SetTarget(target);
 
                                 // 순서 주의, TODO: 테스트로 만들기
-                                localContext.AddLocalVar(refElem.Name, refValue);
+                                localContext.AddLocalVar(new R.Name.Normal(refElem.Name), refValue);
                                 break;
                             }
 
@@ -209,7 +209,7 @@ namespace Gum.IR0Evaluator
                 var refValue = globalContext.AllocRefValue();
                 refValue.SetTarget(targetValue.GetElemValue());
 
-                localContext.AddLocalVar(varName, refValue); // 레퍼런스로 등록
+                localContext.AddLocalVar(new R.Name.Normal(varName), refValue); // 레퍼런스로 등록
 
                 await foreach (var _ in EvalStmtAsync(stmt))
                     yield return Void.Instance;
@@ -431,7 +431,7 @@ namespace Gum.IR0Evaluator
                 var iteratorLoc = (SeqValue)await EvalLocAsync(stmt.Iterator);
                 var elemValue = globalContext.AllocValue(stmt.ElemType);
 
-                localContext.AddLocalVar(stmt.ElemName, elemValue);
+                localContext.AddLocalVar(new R.Name.Normal(stmt.ElemName), elemValue);
                 while (await iteratorLoc.NextAsync(elemValue))
                 {
                     await foreach (var _ in EvalStmtAsync(stmt.Body))

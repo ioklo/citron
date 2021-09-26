@@ -66,7 +66,6 @@ namespace Gum.IR0Translator
         }
 
         public static IModuleConstructorInfo MakeTrivialConstructor(
-            M.Name typeName, 
             IModuleConstructorInfo? baseConstructorInfo,
             ImmutableArray<IModuleMemberVarInfo> memberVars)
         {
@@ -75,9 +74,21 @@ namespace Gum.IR0Translator
                 (baseConstructorParameters?.Length ?? 0) + memberVars.Length
             );
 
+            // to prevent conflict between parameter names, using special name $'base'_<name>_index
+            // class A { A(int x) {} }
+            // class B : A { B(int $base_x0, int x) : base($base_x0) { } }
+            // class C : B { C(int $base_x0, int $base_x1, int x) : base($base_x0, $base_x1) { } }
             if (baseConstructorParameters != null)
+            {
+                int i = 0;
                 foreach (var baseParam in baseConstructorParameters)
-                    builder.Add(baseParam); // TODO: 이름이 겹치면 어떻게 되나요
+                {
+                    // base로 가는 파라미터들은 다 이름이 base다.
+                    var newBaseParam = new M.Param(baseParam.Kind, baseParam.Type, new M.Name.ConstructorParam(i));
+                    builder.Add(newBaseParam);
+                    i++;
+                }
+            }
 
             foreach (var memberVar in memberVars)
             {
@@ -89,7 +100,7 @@ namespace Gum.IR0Translator
             }
 
             // trivial constructor를 만듭니다
-            return new InternalModuleConstructorInfo(M.AccessModifier.Public, typeName, builder.MoveToImmutable());
+            return new InternalModuleConstructorInfo(M.AccessModifier.Public, builder.MoveToImmutable());
         }
     }    
     
@@ -222,7 +233,7 @@ namespace Gum.IR0Translator
                 bSeqFunc: funcDecl.IsSequence,
                 bRefReturn: funcDecl.IsRefReturn,
                 retType,
-                funcDecl.Name,
+                new M.Name.Normal(funcDecl.Name),
                 funcDecl.TypeParams,
                 paramInfo
             );
@@ -263,7 +274,7 @@ namespace Gum.IR0Translator
                     _ => throw new UnreachableCodeException()
                 };
                 
-                builder.Add(new M.Param(paramKind, mtype, sparam.Name));
+                builder.Add(new M.Param(paramKind, mtype, new M.Name.Normal(sparam.Name)));
             }
 
             return builder.MoveToImmutable();
@@ -309,17 +320,17 @@ namespace Gum.IR0Translator
                         var type = GetMType(typeExpInfoService, field.Type);
                         Debug.Assert(type != null);
 
-                        var mfield = new InternalModuleMemberVarInfo(M.AccessModifier.Public, false, type, field.Name);
+                        var mfield = new InternalModuleMemberVarInfo(M.AccessModifier.Public, false, type, new M.Name.Normal(field.Name));
                         fieldsBuilder.Add(mfield);
                     }
 
                     var fields = fieldsBuilder.MoveToImmutable();
-                    var enumElemInfo = new InternalModuleEnumElemInfo(elem.Name, fields);
+                    var enumElemInfo = new InternalModuleEnumElemInfo(new M.Name.Normal(elem.Name), fields);
                     elemsBuilder.Add(enumElemInfo);
                 }
 
                 var elems = elemsBuilder.MoveToImmutable();
-                var enumInfo = new InternalModuleEnumInfo(enumDecl.Name, enumDecl.TypeParams, elems);
+                var enumInfo = new InternalModuleEnumInfo(new M.Name.Normal(enumDecl.Name), enumDecl.TypeParams, elems);
                 types.Add(enumInfo);
             }
         }
@@ -338,7 +349,7 @@ namespace Gum.IR0Translator
                 TypeExpInfoService typeExpInfoService, 
                 ItemPath parentPath, S.ClassDecl classDecl)
             {
-                var classPath = parentPath.Child(classDecl.Name, classDecl.TypeParams.Length);
+                var classPath = parentPath.Child(new M.Name.Normal(classDecl.Name), classDecl.TypeParams.Length);
                 var nestedTypes = new List<IModuleTypeInfo>();
                 var nestedFuncs = new List<IModuleFuncInfo>();
                 var constructors = new List<IModuleConstructorInfo>();
@@ -408,7 +419,7 @@ namespace Gum.IR0Translator
 
                 // 자식 type들에 dependency가 걸린다
                 var classInfo = new InternalModuleClassInfo(
-                    classDecl.Name, classDecl.TypeParams, baseTypeExpInfoResult, interfacesBuilder.ToImmutable(), 
+                    new M.Name.Normal(classDecl.Name), classDecl.TypeParams, baseTypeExpInfoResult, interfacesBuilder.ToImmutable(), 
                     nestedTypes.ToImmutableArray(),
                     nestedFuncs.ToImmutableArray(), 
                     constructors.ToImmutableArray(), 
@@ -444,7 +455,7 @@ namespace Gum.IR0Translator
                     bSeqFunc: funcDecl.IsSequence,
                     bRefReturn: funcDecl.IsRefReturn,
                     retType,
-                    funcDecl.Name,
+                    new M.Name.Normal(funcDecl.Name),
                     funcDecl.TypeParams,
                     paramInfo
                 );
@@ -470,7 +481,7 @@ namespace Gum.IR0Translator
                 foreach (var name in varDecl.VarNames)
                 {
                     bool bStatic = false; // TODO: static 키워드가 추가되면 고려한다
-                    var varInfo = new InternalModuleMemberVarInfo(accessModifier, bStatic, declType, name);
+                    var varInfo = new InternalModuleMemberVarInfo(accessModifier, bStatic, declType, new M.Name.Normal(name));
                     memberVars.Add(varInfo);
                 }
             }
@@ -490,7 +501,7 @@ namespace Gum.IR0Translator
 
                 var paramInfo = MakeParams(typeExpInfoService, constructorDecl.Parameters);
 
-                constructors.Add(new InternalModuleConstructorInfo(accessModifier, constructorDecl.Name, paramInfo));
+                constructors.Add(new InternalModuleConstructorInfo(accessModifier, paramInfo));
             }
         }
 
@@ -508,7 +519,7 @@ namespace Gum.IR0Translator
                 TypeExpInfoService typeExpInfoService,
                 ItemPath parentPath, S.StructDecl structDecl)
             {
-                var structPath = parentPath.Child(structDecl.Name, structDecl.TypeParams.Length);
+                var structPath = parentPath.Child(new M.Name.Normal(structDecl.Name), structDecl.TypeParams.Length);
                 var nestedTypes = new List<IModuleTypeInfo>();
                 var nestedFuncs = new List<IModuleFuncInfo>();
                 var constructors = new List<IModuleConstructorInfo>();
@@ -554,7 +565,7 @@ namespace Gum.IR0Translator
                 }
 
                 var structInfo = new InternalModuleStructInfo(
-                    structDecl.Name, structDecl.TypeParams, null, // TODO: baseStruct 지원
+                    new M.Name.Normal(structDecl.Name), structDecl.TypeParams, null, // TODO: baseStruct 지원
                     nestedTypes.ToImmutableArray(), nestedFuncs.ToImmutableArray(), constructors.ToImmutableArray(), memberVars.ToImmutableArray());
 
                 typeBuilder.AddStruct(structPath, structInfo);
@@ -599,7 +610,7 @@ namespace Gum.IR0Translator
                     bSeqFunc: funcDecl.IsSequence,
                     bRefReturn: funcDecl.IsRefReturn,
                     retType,
-                    funcDecl.Name,
+                    new M.Name.Normal(funcDecl.Name),
                     funcDecl.TypeParams,
                     paramInfo
                 );
@@ -626,7 +637,7 @@ namespace Gum.IR0Translator
                 {
                     bool bStatic = false; // TODO: static 키워드가 추가되면 고려한다
 
-                    var varInfo = new InternalModuleMemberVarInfo(accessModifier, bStatic, declType, name);
+                    var varInfo = new InternalModuleMemberVarInfo(accessModifier, bStatic, declType, new M.Name.Normal(name));
                     memberVars.Add(varInfo);
                 }
             }
@@ -644,8 +655,9 @@ namespace Gum.IR0Translator
                 }
 
                 var paramInfo = MakeParams(typeExpInfoService, constructorDecl.Parameters);
-
-                constructors.Add(new InternalModuleConstructorInfo(accessModifier, constructorDecl.Name, paramInfo));
+                
+                // 이름관련 처리를 여기서 할까
+                constructors.Add(new InternalModuleConstructorInfo(accessModifier, paramInfo));
             }
         }
     }

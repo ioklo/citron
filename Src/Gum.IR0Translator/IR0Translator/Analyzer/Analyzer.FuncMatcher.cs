@@ -19,14 +19,24 @@ namespace Gum.IR0Translator
     // 어떤 Exp에서 타입 정보 등을 알아냅니다
     partial class Analyzer
     {
-        // entry1의 result
-        [AutoConstructor]
-        partial struct FuncMatchResult<TCallableInfo>
+        // entry1의 result        
+        abstract record FuncMatchResult<TCallableInfo>
             where TCallableInfo : IModuleCallableInfo
         {
-            public TCallableInfo CallableInfo { get; }
-            public ImmutableArray<TypeValue> TypeArgs { get; }
-            public ImmutableArray<R.Argument> Args { get; }
+            public record MultipleCandidates : FuncMatchResult<TCallableInfo>
+            {
+                public static readonly MultipleCandidates Instance = new MultipleCandidates();
+                private MultipleCandidates() { }
+            }
+
+            public record NotFound : FuncMatchResult<TCallableInfo>
+            {
+                public static readonly NotFound Instance = new NotFound();
+                private NotFound() { }
+            }
+            
+            public record Success(TCallableInfo CallableInfo, ImmutableArray<TypeValue> TypeArgs, ImmutableArray<R.Argument> Args)
+                : FuncMatchResult<TCallableInfo>;
         }
 
         // entry2의 result
@@ -79,8 +89,7 @@ namespace Gum.IR0Translator
                 ICallableContext callableContext,
                 LocalContext localContext,
                 TypeEnv outerTypeEnv, ImmutableArray<TCallableInfo> callableInfos,
-                ImmutableArray<S.Argument> sargs, ImmutableArray<TypeValue> typeArgs,
-                S.ISyntaxNode nodeForErrorReport)
+                ImmutableArray<S.Argument> sargs, ImmutableArray<TypeValue> typeArgs)
                 where TCallableInfo : IModuleCallableInfo
             {
                 // 여러 함수 중에서 인자가 맞는것을 선택해야 한다
@@ -117,8 +126,7 @@ namespace Gum.IR0Translator
                 }
                 else if (exactCandidates.HasMultiple)
                 {
-                    globalContext.AddFatalError(A2101_FuncMatcher_MultipleCandidates, nodeForErrorReport);
-                    throw new UnreachableCodeException();
+                    return FuncMatchResult<TCallableInfo>.MultipleCandidates.Instance;
                 }
                 else // empty
                 {
@@ -131,13 +139,11 @@ namespace Gum.IR0Translator
                     }
                     else if (restCandidates.HasMultiple)
                     {
-                        globalContext.AddFatalError(A2101_FuncMatcher_MultipleCandidates, nodeForErrorReport);
-                        throw new UnreachableCodeException();
+                        return FuncMatchResult<TCallableInfo>.MultipleCandidates.Instance;
                     }
                     else // empty
                     {
-                        globalContext.AddFatalError(A2102_FuncMatcher_NotFound, nodeForErrorReport);
-                        throw new UnreachableCodeException();
+                        return FuncMatchResult<TCallableInfo>.NotFound.Instance;
                     }
                 }
 
@@ -147,7 +153,7 @@ namespace Gum.IR0Translator
                 updateContext.Update(callableContext, matchedFunc.CallableContext);
                 updateContext.Update(localContext, matchedFunc.LocalContext);
 
-                return new FuncMatchResult<TCallableInfo>(matchedFunc.CallableInfo, matchedFunc.Result.TypeArgs, matchedFunc.Result.Args);
+                return new FuncMatchResult<TCallableInfo>.Success(matchedFunc.CallableInfo, matchedFunc.Result.TypeArgs, matchedFunc.Result.Args);
             }
 
             // entry 2

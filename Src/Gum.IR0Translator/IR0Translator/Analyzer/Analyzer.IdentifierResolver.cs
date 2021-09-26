@@ -76,7 +76,7 @@ namespace Gum.IR0Translator
                 var thisType = callableContext.GetThisTypeValue();
                 if (thisType == null) return IdentifierResult.NotFound.Instance;
 
-                var itemQueryResult = thisType.GetMember(idName, typeArgs.Length);
+                var itemQueryResult = thisType.GetMember(new M.Name.Normal(idName), typeArgs.Length);
 
                 switch(itemQueryResult)
                 {
@@ -122,7 +122,7 @@ namespace Gum.IR0Translator
             {
                 // TODO: outer namespace까지 다 돌아야 한다
                 var curNamespacePath = M.NamespacePath.Root;
-                var globalResult = globalContext.GetGlobalItem(curNamespacePath, idName, typeArgs.Length);
+                var globalResult = globalContext.GetGlobalItem(curNamespacePath, new M.Name.Normal(idName), typeArgs.Length);
 
                 switch (globalResult)
                 {

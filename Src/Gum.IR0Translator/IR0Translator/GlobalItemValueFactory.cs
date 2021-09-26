@@ -33,10 +33,10 @@ namespace Gum.IR0Translator
         {
             GlobalItemValueFactory outer;
             M.NamespacePath namespacePath;
-            string name;
+            M.Name name;
             int typeParamCount;
 
-            public QueryContext(GlobalItemValueFactory outer, M.NamespacePath namespacePath, string name, int typeParamCount)
+            public QueryContext(GlobalItemValueFactory outer, M.NamespacePath namespacePath, M.Name name, int typeParamCount)
             {
                 this.outer = outer;
                 this.namespacePath = namespacePath;
@@ -161,7 +161,7 @@ namespace Gum.IR0Translator
             }
         }
         
-        public ItemQueryResult GetGlobal(M.NamespacePath namespacePath, string name, int typeParamCount)
+        public ItemQueryResult GetGlobal(M.NamespacePath namespacePath, M.Name name, int typeParamCount)
         {
             var context = new QueryContext(this, namespacePath, name, typeParamCount);
             return context.GetGlobal();

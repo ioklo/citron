@@ -26,7 +26,7 @@ namespace Gum.IR0Evaluator
             public static void Eval(GlobalContext globalContext, ItemContainer parentContainer, R.Path.Normal curPath, int totalTypeParamCount, R.ClassDecl classDecl)
             {
                 var typeArgs = MakeTypeArgsByTypeParams(totalTypeParamCount, classDecl.TypeParams.Length);
-                var classPath = curPath.Child(classDecl.Name, new R.ParamHash(classDecl.TypeParams.Length, default), typeArgs);
+                var classPath = curPath.Child(new R.Name.Normal(classDecl.Name), new R.ParamHash(classDecl.TypeParams.Length, default), typeArgs);
 
                 var classContainer = new ItemContainer();
                 var evaluator = new ClassDeclEvaluator(globalContext, classPath, totalTypeParamCount + classDecl.TypeParams.Length, classContainer, classDecl);
@@ -40,7 +40,7 @@ namespace Gum.IR0Evaluator
                 foreach (var memberVarDecl in classDecl.MemberVarDecls)
                     evaluator.EvalClassMemberVarDecl(memberVarDecl);
 
-                parentContainer.AddItemContainer(classDecl.Name, new R.ParamHash(classDecl.TypeParams.Length, default), classContainer);
+                parentContainer.AddItemContainer(new R.Name.Normal(classDecl.Name), new R.ParamHash(classDecl.TypeParams.Length, default), classContainer);
                 parentContainer.AddRuntimeItem(new IR0ClassRuntimeItem(globalContext, classDecl, evaluator.memberVarTypes.ToImmutableArray()));
             }
 

@@ -172,17 +172,17 @@ namespace Gum.IR0Evaluator
                     int fieldIndex = 0;
                     foreach(var enumElemField in enumElem.Fields)
                     {
-                        var enumElemFieldItem = new IR0EnumElemFieldRuntimeItem(enumElemField.Name, fieldIndex);
+                        var enumElemFieldItem = new IR0EnumElemFieldRuntimeItem(new R.Name.Normal(enumElemField.Name), fieldIndex);
                         enumElemContainer.AddRuntimeItem(enumElemFieldItem);
 
                         fieldIndex++;
                     }
 
-                    enumContainer.AddItemContainer(enumElem.Name, R.ParamHash.None, enumElemContainer);
+                    enumContainer.AddItemContainer(new R.Name.Normal(enumElem.Name), R.ParamHash.None, enumElemContainer);
                     enumContainer.AddRuntimeItem(enumElemItem);
                 }
 
-                curContainer.AddItemContainer(enumDecl.Name, new R.ParamHash(enumDecl.TypeParams.Length, default), enumContainer);
+                curContainer.AddItemContainer(new R.Name.Normal(enumDecl.Name), new R.ParamHash(enumDecl.TypeParams.Length, default), enumContainer);
                 curContainer.AddRuntimeItem(new IR0EnumRuntimeItem(enumDecl));
             }
 

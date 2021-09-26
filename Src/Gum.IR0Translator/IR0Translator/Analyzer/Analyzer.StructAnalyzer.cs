@@ -181,7 +181,7 @@ namespace Gum.IR0Translator
                 var parameters = funcDecl.Parameters.Select(param => param.Name).ToImmutableArray();
 
                 var decls = funcContext.GetCallableMemberDecls();
-                var seqFuncDecl = new R.SequenceFuncDecl(decls, funcDecl.Name, !funcDecl.IsStatic, retRType, funcDecl.TypeParams, rparamInfos, bodyResult.Stmt);
+                var seqFuncDecl = new R.SequenceFuncDecl(decls, new R.Name.Normal(funcDecl.Name), !funcDecl.IsStatic, retRType, funcDecl.TypeParams, rparamInfos, bodyResult.Stmt);
 
                 memberFuncsBuilder.Add(seqFuncDecl);
             }
@@ -259,14 +259,14 @@ namespace Gum.IR0Translator
                     };
 
                     var paramTypeValue = globalContext.GetTypeValueByMType(param.Type);
-                    var rname = RItemFactory.MakeName(param.Name) as R.Name.Normal;
+                    var rname = RItemFactory.MakeName(param.Name);
 
                     Debug.Assert(rname != null);                    
 
-                    paramBuilder.Add(new R.Param(paramKind, paramTypeValue.GetRPath(), rname.Value));
+                    paramBuilder.Add(new R.Param(paramKind, paramTypeValue.GetRPath(), rname));
 
                     var structMemberPath = new R.Path.Nested(structPath, rname, R.ParamHash.None, default);
-                    stmtBuilder.Add(new R.ExpStmt(new R.AssignExp(new R.StructMemberLoc(R.ThisLoc.Instance, structMemberPath), new R.LoadExp(new R.LocalVarLoc(rname.Value)))));
+                    stmtBuilder.Add(new R.ExpStmt(new R.AssignExp(new R.StructMemberLoc(R.ThisLoc.Instance, structMemberPath), new R.LoadExp(new R.LocalVarLoc(rname)))));
                 }
                 var body = new R.BlockStmt(stmtBuilder.MoveToImmutable());
 

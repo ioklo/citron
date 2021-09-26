@@ -62,7 +62,7 @@ namespace Gum.IR0
 
         public static ImmutableArray<Param> RNormalParams(params (Path Path, string Name)[] elems)
         {
-            return elems.Select(e => new Param(ParamKind.Normal, e.Path, e.Name)).ToImmutableArray();
+            return elems.Select(e => new Param(ParamKind.Normal, e.Path, new Name.Normal(e.Name))).ToImmutableArray();
         }
 
         public static ImmutableArray<Argument> RArgs(params Exp[] exps)
@@ -115,31 +115,53 @@ namespace Gum.IR0
             return RCommand(RString(text));
         }
 
-        public static Path.Root RRoot(ModuleName moduleName)
-            => new Path.Root(moduleName);
+        public static Path.Root RRoot(string moduleName)
+            => new Path.Root(new ModuleName(moduleName));        
+
 
         public static Path.Nested Child(this Path.Normal outer, Name name, ParamHash paramHash, ImmutableArray<Path> typeArgs)
             => new Path.Nested(outer, name, paramHash, typeArgs);
 
+        public static Path.Nested Child(this Path.Normal outer, string name, ParamHash paramHash, ImmutableArray<Path> typeArgs)
+            => new Path.Nested(outer, new Name.Normal(name), paramHash, typeArgs);
+
+
         public static Path.Nested Child(this Path.Normal outer, Name name)
             => new Path.Nested(outer, name, ParamHash.None, default);
+
+        public static Path.Nested Child(this Path.Normal outer, string name)
+            => new Path.Nested(outer, new Name.Normal(name), ParamHash.None, default);
+
 
         // no typeparams, all normal paramtypes
         public static Path.Nested Child(this Path.Normal outer, Name name, params Path[] types)
             => new Path.Nested(outer, name, new ParamHash(0, types.Select(type => new ParamHashEntry(ParamKind.Normal, type)).ToImmutableArray()), default);
 
+        public static Path.Nested Child(this Path.Normal outer, string name, params Path[] types)
+            => new Path.Nested(outer, new Name.Normal(name), new ParamHash(0, types.Select(type => new ParamHashEntry(ParamKind.Normal, type)).ToImmutableArray()), default);
+
+
         // no typeparams version
         public static Path.Nested Child(this Path.Normal outer, Name name, params ParamHashEntry[] entries)
             => new Path.Nested(outer, name, new ParamHash(0, entries.ToImmutableArray()), default);
+
+        public static Path.Nested Child(this Path.Normal outer, string name, params ParamHashEntry[] entries)
+            => new Path.Nested(outer, new Name.Normal(name), new ParamHash(0, entries.ToImmutableArray()), default);
+
 
         public static ClassMemberLoc ClassMember(this Loc instance, Path.Nested memberPath)
         {
             return new ClassMemberLoc(instance, memberPath);
         }
 
+        public static Loc RLocalVarLoc(string name)
+        {
+            return new LocalVarLoc(new Name.Normal(name));
+        }
+
         public static Exp RLocalVarExp(string name)
         {
-            return new LoadExp(new LocalVarLoc(name));
+            return new LoadExp(new LocalVarLoc(new Name.Normal(name)));
         }
 
         public static ParamHash RNormalParamHash(params Path[] paths)

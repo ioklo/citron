@@ -49,7 +49,7 @@ namespace Gum.IR0Evaluator
                 var task = Task.Run(async () =>
                 {
                     var newContext = new EvalContext(capturedLocals, EvalFlowControl.None, capturedThis, VoidValue.Instance);
-                    var newLocalContext = new LocalContext(ImmutableDictionary<string, Value>.Empty);
+                    var newLocalContext = new LocalContext(ImmutableDictionary<R.Name, Value>.Empty);
                     var newLocalTaskContext = new LocalTaskContext();
                     await StmtEvaluator.EvalAsync(globalContext, newContext, newLocalContext, newLocalTaskContext, decl.CapturedStatement.Body);
                 });
@@ -65,7 +65,7 @@ namespace Gum.IR0Evaluator
                 async Task WrappedAsyncFunc()
                 {
                     var newContext = new EvalContext(capturedLocals, EvalFlowControl.None, capturedThis, VoidValue.Instance);
-                    var newLocalContext = new LocalContext(ImmutableDictionary<string, Value>.Empty);
+                    var newLocalContext = new LocalContext(ImmutableDictionary<R.Name, Value>.Empty);
                     var newLocalTaskContext = new LocalTaskContext();
 
                     await StmtEvaluator.EvalAsync(globalContext, newContext, newLocalContext, newLocalTaskContext, decl.CapturedStatement.Body);

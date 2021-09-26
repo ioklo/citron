@@ -13,7 +13,7 @@ namespace Gum.IR0
     public record TempLoc(Exp Exp, Path Type) : Loc;
 
     public record GlobalVarLoc(string Name) : Loc;
-    public record LocalVarLoc(string Name) : Loc;
+    public record LocalVarLoc(Name Name) : Loc;
     public record CapturedVarLoc(string Name) : Loc;
 
     // l[b], l is list    

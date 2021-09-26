@@ -17,7 +17,7 @@ namespace Gum.IR0Translator.Test
     public class InternalModuleInfoBuilderTests
     {
         // UnitOfWorkName_ScenarioName_ExpectedBehavior
-        public M.Type IntMType { get => new M.GlobalType("System.Runtime", new M.NamespacePath("System"), "Int32", default); }
+        public M.Type IntMType { get => new M.GlobalType("System.Runtime", new M.NamespacePath("System"), new M.Name.Normal("Int32"), default); }
         
         InternalModuleInfo Build(M.ModuleName moduleName, S.Script script)
         {
@@ -65,7 +65,7 @@ namespace Gum.IR0Translator.Test
 
             var paramTypes = new M.ParamTypes(Arr(new M.ParamKindAndType(M.ParamKind.Ref, new M.TypeVarType(0, "T"))));
 
-            var funcInfo = GlobalItemQueryService.GetGlobalItem(result, M.NamespacePath.Root, new ItemPathEntry("Func", 1, paramTypes));
+            var funcInfo = GlobalItemQueryService.GetGlobalItem(result, M.NamespacePath.Root, new ItemPathEntry(new M.Name.Normal("Func"), 1, paramTypes));
             Assert.NotNull(funcInfo);
             Debug.Assert(funcInfo != null);
 
@@ -75,9 +75,9 @@ namespace Gum.IR0Translator.Test
                 bSeqFunc: false,
                 bRefReturn: true,
                 retType: new M.TypeVarType(0, "T"),
-                name: "Func",                                
+                name: new M.Name.Normal("Func"),                                
                 typeParams: Arr("T"),
-                parameters: Arr(new M.Param(M.ParamKind.Ref, new M.TypeVarType(0, "T"), "t"))
+                parameters: Arr(new M.Param(M.ParamKind.Ref, new M.TypeVarType(0, "T"), new M.Name.Normal("t")))
             );
 
             Assert.Equal(expected, funcInfo);
@@ -113,14 +113,14 @@ namespace Gum.IR0Translator.Test
                 new M.ParamKindAndType(M.ParamKind.Normal, new M.TypeVarType(0, "T"))
             ));
 
-            var funcInfo = GlobalItemQueryService.GetGlobalItem(result, M.NamespacePath.Root, new ItemPathEntry("Func", 2, paramTypes));
+            var funcInfo = GlobalItemQueryService.GetGlobalItem(result, M.NamespacePath.Root, new ItemPathEntry(new M.Name.Normal("Func"), 2, paramTypes));
             Assert.NotNull(funcInfo);
             Debug.Assert(funcInfo != null);
 
             var parameters = Arr(
-                new M.Param(M.ParamKind.Normal, IntMType, "x"), 
-                new M.Param(M.ParamKind.Params, new M.TypeVarType(1, "U"), "y"), 
-                new M.Param(M.ParamKind.Normal, new M.TypeVarType(0, "T"), "z"));
+                new M.Param(M.ParamKind.Normal, IntMType, new M.Name.Normal("x")), 
+                new M.Param(M.ParamKind.Params, new M.TypeVarType(1, "U"), new M.Name.Normal("y")), 
+                new M.Param(M.ParamKind.Normal, new M.TypeVarType(0, "T"), new M.Name.Normal("z")));
 
             var expected = new InternalModuleFuncInfo(
                 M.AccessModifier.Private,
@@ -128,7 +128,7 @@ namespace Gum.IR0Translator.Test
                 bSeqFunc: false,
                 bRefReturn: false,
                 M.VoidType.Instance,
-                "Func",
+                new M.Name.Normal("Func"),
                 Arr("T", "U"),
                 parameters
             );
@@ -189,14 +189,14 @@ namespace Gum.IR0Translator.Test
             Assert.NotNull(result);
             Debug.Assert(result != null);
 
-            var structInfo = GlobalItemQueryService.GetGlobalItem(result, M.NamespacePath.Root, new ItemPathEntry("S", 1)) as IModuleStructInfo;
+            var structInfo = GlobalItemQueryService.GetGlobalItem(result, M.NamespacePath.Root, new ItemPathEntry(new M.Name.Normal("S"), 1)) as IModuleStructInfo;
             Assert.NotNull(structInfo);
             Debug.Assert(structInfo != null);
 
-            var trivialConstructor = new InternalModuleConstructorInfo(M.AccessModifier.Public, "S", Arr(new M.Param(M.ParamKind.Normal, IntMType, "x"), new M.Param(M.ParamKind.Normal, IntMType, "y")));
+            var trivialConstructor = new InternalModuleConstructorInfo(M.AccessModifier.Public, Arr(new M.Param(M.ParamKind.Normal, IntMType, new M.Name.Normal("x")), new M.Param(M.ParamKind.Normal, IntMType, new M.Name.Normal("y"))));
 
             var expected = new InternalModuleStructInfo(
-                "S",
+                new M.Name.Normal("S"),
                 Arr("T"), 
                 mbaseStruct: null, //baseType: new M.GlobalType(moduleName, M.NamespacePath.Root, "B", Arr(IntMType)),
                 default,
@@ -207,11 +207,11 @@ namespace Gum.IR0Translator.Test
                         bSeqFunc: false,
                         bRefReturn: false,
                         new M.TypeVarType(1, "T"),
-                        "Func",                        
+                        new M.Name.Normal("Func"),                        
                         Arr("T", "U"),
                         Arr(
-                            new M.Param(M.ParamKind.Normal, new M.GlobalType(moduleName, M.NamespacePath.Root, "S", ImmutableArray.Create<M.Type>(IntMType)), "s"),
-                            new M.Param(M.ParamKind.Normal, new M.TypeVarType(2, "U"), "u")
+                            new M.Param(M.ParamKind.Normal, new M.GlobalType(moduleName, M.NamespacePath.Root, new M.Name.Normal("S"), ImmutableArray.Create<M.Type>(IntMType)), new M.Name.Normal("s")),
+                            new M.Param(M.ParamKind.Normal, new M.TypeVarType(2, "U"), new M.Name.Normal("u"))
                         )
                     )
                 ),
@@ -219,8 +219,8 @@ namespace Gum.IR0Translator.Test
                 Arr<IModuleConstructorInfo>(trivialConstructor),
                 
                 Arr<IModuleMemberVarInfo>(
-                    new InternalModuleMemberVarInfo(M.AccessModifier.Protected, false, IntMType, "x"),
-                    new InternalModuleMemberVarInfo(M.AccessModifier.Protected, false, IntMType, "y")
+                    new InternalModuleMemberVarInfo(M.AccessModifier.Protected, false, IntMType, new M.Name.Normal("x")),
+                    new InternalModuleMemberVarInfo(M.AccessModifier.Protected, false, IntMType, new M.Name.Normal("y"))
                 )
             );
 

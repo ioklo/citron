@@ -18,7 +18,7 @@ namespace Gum.IR0Evaluator
         [AutoConstructor]
         partial class IR0StructMemberVarRuntimeItem : StructMemberVarRuntimeItem
         {
-            public override R.Name Name => name;
+            public override R.Name Name => new R.Name.Normal(name);
             public override R.ParamHash ParamHash => R.ParamHash.None;
 
             string name;

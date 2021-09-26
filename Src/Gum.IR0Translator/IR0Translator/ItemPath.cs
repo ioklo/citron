@@ -33,7 +33,7 @@ namespace Gum.IR0Translator
                     ItemPath curPath = new RootItemPath(globalType.ModuleName);
 
                     foreach (var ns in globalType.NamespacePath.Entries)
-                        curPath = curPath.Child(ns.Value);
+                        curPath = curPath.Child(new M.Name.Normal(ns.Value));
 
                     return curPath.Child(globalType.Name, globalType.TypeArgs.Length);
 

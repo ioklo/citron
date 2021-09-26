@@ -773,14 +773,9 @@ namespace Gum.Test.Misc
                 case R.Name.OpDec: WriteNew("R.Name.OpDec"); break;
 
                 // anonymous type names        
-                case R.Name.Anonymous a: WriteNew("R.Name.Anonymous", a.Id); break;
+                case R.Name.Anonymous a: WriteNew("R.Name.Anonymous", a.Index); break;
                 case R.Name.Constructor: WriteNew("R.Name.Constructor"); break;
             }
-        }
-
-        void WriteAnonymousId(R.AnonymousId anonymousId)
-        {
-            itw.Write(anonymousId.Value);
         }
 
         void WriteParamHash(R.ParamHash paramHash)
@@ -1170,9 +1165,6 @@ namespace Gum.Test.Misc
 
                 case R.Name name: WriteName(name); break;
                 case ImmutableArray<R.Name> names: WriteArray(WriteName, "R.Name", names); break;
-
-                case R.AnonymousId anonymousId: WriteAnonymousId(anonymousId); break;
-                case ImmutableArray<R.AnonymousId> anonymousIds: WriteArray(WriteAnonymousId, null, anonymousIds); break;
 
                 case R.ParamHash paramHash: WriteParamHash(paramHash); break;
                 case ImmutableArray<R.ParamHash> paramHashes: WriteArray(WriteParamHash, null, paramHashes); break;

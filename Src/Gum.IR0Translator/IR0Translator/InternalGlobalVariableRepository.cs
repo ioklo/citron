@@ -9,28 +9,16 @@ using M = Gum.CompileTime;
 
 namespace Gum.IR0Translator
 {
-    class InternalGlobalVarInfo
-    {
-        public bool IsRef { get; }
-        public TypeValue TypeValue { get; }
-        public M.Name Name { get; }        
-
-        public InternalGlobalVarInfo(bool bRef, TypeValue typeValue, M.Name name) 
-        {
-            IsRef = bRef;
-            TypeValue = typeValue;
-            Name = name;
-        }
-    }
-
+    record InternalGlobalVarInfo(bool IsRef, TypeValue TypeValue, string Name);
+    
     class InternalGlobalVariableRepository : IMutable<InternalGlobalVariableRepository>
     {
         // global variable
-        ImmutableDictionary<M.Name, InternalGlobalVarInfo> internalGlobalVarInfos;
+        ImmutableDictionary<string, InternalGlobalVarInfo> internalGlobalVarInfos;
 
         public InternalGlobalVariableRepository()
         {
-            internalGlobalVarInfos = ImmutableDictionary<M.Name, InternalGlobalVarInfo>.Empty;
+            internalGlobalVarInfos = ImmutableDictionary<string, InternalGlobalVarInfo>.Empty;
         }
 
         InternalGlobalVariableRepository(InternalGlobalVariableRepository other, CloneContext cloneContext)
@@ -48,18 +36,18 @@ namespace Gum.IR0Translator
             this.internalGlobalVarInfos = src.internalGlobalVarInfos;            
         }
 
-        public InternalGlobalVarInfo? GetVariable(M.Name name)
+        public InternalGlobalVarInfo? GetVariable(string name)
         {
-            return internalGlobalVarInfos.GetValueOrDefault(name);            
+            return internalGlobalVarInfos.GetValueOrDefault(name);
         }
 
-        public void AddInternalGlobalVariable(bool bRef, TypeValue typeValue, M.Name name)
+        public void AddInternalGlobalVariable(bool bRef, TypeValue typeValue, string name)
         {
             var globalVarInfo = new InternalGlobalVarInfo(bRef, typeValue, name);
             internalGlobalVarInfos = internalGlobalVarInfos.Add(name, globalVarInfo);
         }
 
-        public bool HasVariable(M.Name name)
+        public bool HasVariable(string name)
         {
             return internalGlobalVarInfos.ContainsKey(name);
         }

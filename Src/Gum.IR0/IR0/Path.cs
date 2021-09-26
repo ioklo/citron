@@ -50,12 +50,12 @@ namespace Gum.IR0
     public abstract partial record Path
     {
         // Namespace
-        public static readonly Normal System = Make("System.Runtime", "System", ParamHash.None, default);
+        public static readonly Normal System = Make("System.Runtime", new Name.Normal("System"), ParamHash.None, default);
 
         // Runtime Type
-        public static readonly Path Bool = new Nested(System, "Boolean", ParamHash.None, default);
-        public static readonly Path Int = new Nested(System, "Int32", ParamHash.None, default);
-        public static readonly Path String = new Nested(System, "String", ParamHash.None, default);
+        public static readonly Path Bool = new Nested(System, new Name.Normal("Boolean"), ParamHash.None, default);
+        public static readonly Path Int = new Nested(System, new Name.Normal("Int32"), ParamHash.None, default);
+        public static readonly Path String = new Nested(System, new Name.Normal("String"), ParamHash.None, default);
 
         public static Normal Make(ModuleName moduleName, Name name, ParamHash paramHash, ImmutableArray<Path> typeArgs)
         {
@@ -64,11 +64,11 @@ namespace Gum.IR0
 
         // seq<> interface는 있다
         public static Path Seq(Path itemType)
-            => new Nested(System, "ISeq", new ParamHash(1, default), Arr(itemType));
+            => new Nested(System, new Name.Normal("ISeq"), new ParamHash(1, default), Arr(itemType));
 
         // list<> class System.List<>
         public static Path List(Path itemPath)
-            => new Nested(System, "List", new ParamHash(1, default), Arr(itemPath));
+            => new Nested(System, new Name.Normal("List"), new ParamHash(1, default), Arr(itemPath));
     }    
 
     public static class PathExtensions
@@ -90,7 +90,7 @@ namespace Gum.IR0
             if (path is Path.Nested nestedPath)
             {
                 return IsTypeInstOfList(nestedPath.Outer) &&
-                    nestedPath.Name.Equals(new Name.Anonymous(new AnonymousId(0))) &&
+                    nestedPath.Name.Equals(new Name.Anonymous(0)) &&
                     nestedPath.ParamHash.Equals(new ParamHash(0, default));
             }
 

@@ -125,7 +125,7 @@ namespace Gum.IR0Translator
                 return itemValueFactory.MakeListType(elemType);
             }
             
-            public void AddInternalGlobalVarInfo(bool bRef, TypeValue typeValue, M.Name name)
+            public void AddInternalGlobalVarInfo(bool bRef, TypeValue typeValue, string name)
             {
                 internalGlobalVarRepo.AddInternalGlobalVariable(bRef, typeValue, name);
             }
@@ -181,9 +181,9 @@ namespace Gum.IR0Translator
                 return itemValueFactory.MakeSeqType(seq, yieldType);
             }
 
-            public ItemQueryResult GetGlobalItem(M.NamespacePath namespacePath, string idName, int typeParamCount)
+            public ItemQueryResult GetGlobalItem(M.NamespacePath namespacePath, M.Name name, int typeParamCount)
             {
-                return globalItemValueFactory.GetGlobal(namespacePath, idName, typeParamCount);
+                return globalItemValueFactory.GetGlobal(namespacePath, name, typeParamCount);
             }
 
             public ImmutableArray<InternalBinaryOperatorInfo> GetBinaryOpInfos(S.BinaryOpKind kind)

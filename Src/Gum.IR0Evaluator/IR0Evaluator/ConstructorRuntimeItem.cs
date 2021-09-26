@@ -64,7 +64,7 @@ namespace Gum.IR0Evaluator
 
             public override ValueTask InvokeAsync(Value thisValue, ImmutableArray<Value> args)
             {
-                var builder = ImmutableDictionary.CreateBuilder<string, Value>();
+                var builder = ImmutableDictionary.CreateBuilder<R.Name, Value>();
                 for (int i = 0; i < args.Length; i++)
                     builder.Add(parameters[i].Name, args[i]);
                 var argsDict = builder.ToImmutable();

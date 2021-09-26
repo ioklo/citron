@@ -32,8 +32,8 @@ namespace Gum.IR0Translator
 
         public ItemValueFactory(TypeInfoRepository typeInfoRepo, RItemFactory ritemFactory)
         {
-            IModuleStructInfo MakeEmptyStructInfo(M.Name name) =>
-                new ExternalModuleStructInfo(new M.StructInfo(name, default, null, default, default, default, default, default));
+            IModuleStructInfo MakeEmptyStructInfo(string name) =>
+                new ExternalModuleStructInfo(new M.StructInfo(new M.Name.Normal(name), default, null, default, default, default, default, default));
 
             this.typeInfoRepo = typeInfoRepo;
             this.ritemFactory = ritemFactory;

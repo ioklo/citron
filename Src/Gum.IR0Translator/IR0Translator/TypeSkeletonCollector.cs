@@ -47,12 +47,12 @@ namespace Gum.IR0Translator
             var newCollector = NewTypeSkeletonCollector();
             foreach (var enumElem in enumDecl.Elems)
             {
-                var pathEntry = new ItemPathEntry(enumElem.Name);
+                var pathEntry = new ItemPathEntry(new Name.Normal(enumElem.Name));
                 var enumElemSkel = new TypeSkeleton(pathEntry, default, TypeSkeletonKind.EnumElem); // 
                 newCollector.AddSkeleton(enumElemSkel);
             }
 
-            var enumPathEntry = new ItemPathEntry(enumDecl.Name, enumDecl.TypeParams.Length);
+            var enumPathEntry = new ItemPathEntry(new Name.Normal(enumDecl.Name), enumDecl.TypeParams.Length);
             var enumSkeleton = new TypeSkeleton(enumPathEntry, newCollector.skeletonsBuilder.ToImmutable(), TypeSkeletonKind.Enum);
             AddSkeleton(enumSkeleton);
         }
@@ -70,7 +70,7 @@ namespace Gum.IR0Translator
                 }
             }
 
-            var pathEntry = new ItemPathEntry(structDecl.Name, structDecl.TypeParams.Length);
+            var pathEntry = new ItemPathEntry(new Name.Normal(structDecl.Name), structDecl.TypeParams.Length);
             var skeleton = new TypeSkeleton(pathEntry, newCollector.skeletonsBuilder.ToImmutable(), TypeSkeletonKind.Struct);
             AddSkeleton(skeleton);
         }
@@ -88,7 +88,7 @@ namespace Gum.IR0Translator
                 }
             }
 
-            var pathEntry = new ItemPathEntry(classDecl.Name, classDecl.TypeParams.Length);
+            var pathEntry = new ItemPathEntry(new Name.Normal(classDecl.Name), classDecl.TypeParams.Length);
             var skeleton = new TypeSkeleton(pathEntry, newCollector.skeletonsBuilder.ToImmutable(), TypeSkeletonKind.Class);
             AddSkeleton(skeleton);
         }

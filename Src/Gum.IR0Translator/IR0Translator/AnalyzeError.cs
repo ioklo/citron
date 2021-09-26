@@ -63,11 +63,13 @@ namespace Gum.IR0Translator
         A0802_BinaryOp_OperatorNotFound,
         A0803_BinaryOp_LeftOperandIsNotAssignable,
 
-        A0901_CallExp_ThereAreMultipleGlobalFunctionsHavingSameSignature,
+        A0901_CallExp_MultipleCandidates,
         A0902_CallExp_CallableExpressionIsNotCallable,
         A0903_CallExp_MismatchEnumConstructorArgCount,
         A0904_CallExp_MismatchBetweenEnumParamTypeAndEnumArgType,
-        A0905_CallExp_NoConstructorFound, // TODO: A2602_NewExp_NoConstructorFound 랑 겹침
+        A0905_CallExp_NoMatchedStructConstructorFound, // TODO: A2602_NewExp_NoConstructorFound 랑 겹침
+        A0906_CallExp_NotFound,
+        A0907_CallExp_MultipleMatchedStructConstructors,
 
         // A1001_IfStmt_TestTargetShouldBeLocalVariable,
         // A1002_IfStmt_TestTargetIdentifierNotFound,
@@ -113,8 +115,9 @@ namespace Gum.IR0Translator
         A2010_ResolveIdentifier_ThisIsNotInTheContext,   // 
         A2011_ResolveIdentifier_TryAccessingPrivateMember,
 
-        A2101_FuncMatcher_MultipleCandidates,
-        A2102_FuncMatcher_NotFound,
+        // funcMatcher 자체에서 에러를 내지 않고, 각각 노드 처리기에서 에러를 생성하도록 한다
+        //A2101_FuncMatcher_MultipleCandidates, 
+        //A2102_FuncMatcher_NotFound,
 
         A2201_Cast_Failed,
 
@@ -129,9 +132,12 @@ namespace Gum.IR0Translator
         A2503_ClassDecl_CannotFindBaseClassConstructor,
         A2504_ClassDecl_CannotAccessBaseClassConstructor,
         A2505_ClassDecl_TryCallBaseConstructorWithoutBaseClass,
+        A2506_ClassDecl_CannotDecideWhichBaseConstructorUse,
 
         A2601_NewExp_TypeIsNotClass,
-        A2602_NewExp_NoConstructorFound, // TODO: A0905_CallExp_NoConstructorFound, 랑 겹침
+        A2602_NewExp_NoMatchedClassConstructor, // TODO: A0905_CallExp_NoConstructorFound, 랑 겹침
+        A2603_NewExp_MultipleMatchedClassConstructors, // TODO: A0905_CallExp_NoConstructorFound, 랑 겹침
+
 
 
 

@@ -14,7 +14,7 @@ namespace Gum.IR0Evaluator
         {
             R.EnumDecl enumDecl;
 
-            public override R.Name Name => enumDecl.Name;
+            public override R.Name Name => new R.Name.Normal(enumDecl.Name);
             public override R.ParamHash ParamHash => new R.ParamHash(enumDecl.TypeParams.Length, default);            
 
             public override Value Alloc(TypeContext typeContext)

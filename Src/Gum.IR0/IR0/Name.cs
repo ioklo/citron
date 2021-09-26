@@ -7,8 +7,6 @@ namespace Gum.IR0
     {
         public void EnsurePure() { }
 
-        public static implicit operator Name(string x) => new Normal(x);
-
         [DebuggerDisplay("{Value}")]
         public record Normal(string Value) : Name;
         public record IndexerGet : Name;
@@ -16,9 +14,11 @@ namespace Gum.IR0
         public record OpInc : Name;
         public record OpDec : Name;
 
+        public record ConstructorParam(int Index) : Name;
+
         // anonymous type names
-        [DebuggerDisplay("#Anonymous_{Id}")]
-        public record Anonymous(AnonymousId Id) : Name;
+        [DebuggerDisplay("#Anonymous_{Index}")]
+        public record Anonymous(int Index) : Name;
 
         public record Constructor : Name
         {

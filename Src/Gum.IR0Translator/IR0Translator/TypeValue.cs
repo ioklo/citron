@@ -116,7 +116,7 @@ namespace Gum.IR0Translator
 
         public EnumElemTypeValue? GetElement(string name)
         {
-            var elemInfo = enumInfo.GetElem(name);
+            var elemInfo = enumInfo.GetElem(new M.Name.Normal(name));
             if (elemInfo == null) return null;
 
             return itemValueFactory.MakeEnumElemTypeValue(this, elemInfo);
@@ -385,7 +385,7 @@ namespace Gum.IR0Translator
                     throw new NotImplementedException(); // unnamed tuple
                 var name = elem.Name;
 
-                builder.Add(new R.TupleTypeElem(rpath, name));
+                builder.Add(new R.TupleTypeElem(rpath, new R.Name.Normal(name)));
             }
 
             return ritemFactory.MakeTupleType(builder.MoveToImmutable());
@@ -416,8 +416,8 @@ namespace Gum.IR0Translator
         public override R.Path GetRPath()
         {
             var runtime = new R.Path.Root("System.Runtime");
-            var runtimeSystem = new R.Path.Nested(runtime, "System", R.ParamHash.None, default);
-            var runtimeSystemList = new R.Path.Nested(runtimeSystem, "List", new R.ParamHash(1, default), Arr(ElemType.GetRPath()));
+            var runtimeSystem = new R.Path.Nested(runtime, new R.Name.Normal("System"), R.ParamHash.None, default);
+            var runtimeSystemList = new R.Path.Nested(runtimeSystem, new R.Name.Normal("List"), new R.ParamHash(1, default), Arr(ElemType.GetRPath()));
 
             return runtimeSystemList;
         }
@@ -430,9 +430,9 @@ namespace Gum.IR0Translator
         public R.Path GetIterRPath()
         {
             var runtime = new R.Path.Root("System.Runtime");
-            var runtimeSystem = new R.Path.Nested(runtime, "System", R.ParamHash.None, default);
-            var runtimeSystemList = new R.Path.Nested(runtimeSystem, "List", new R.ParamHash(1, default), Arr(ElemType.GetRPath()));
-            var runtimeSystemListIter = new R.Path.Nested(runtimeSystemList, new R.Name.Anonymous(new R.AnonymousId(0)), R.ParamHash.None, default);
+            var runtimeSystem = new R.Path.Nested(runtime, new R.Name.Normal("System"), R.ParamHash.None, default);
+            var runtimeSystemList = new R.Path.Nested(runtimeSystem, new R.Name.Normal("List"), new R.ParamHash(1, default), Arr(ElemType.GetRPath()));
+            var runtimeSystemListIter = new R.Path.Nested(runtimeSystemList, new R.Name.Anonymous(0), R.ParamHash.None, default);
 
             return runtimeSystemListIter;
         }

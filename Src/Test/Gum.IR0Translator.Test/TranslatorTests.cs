@@ -49,9 +49,20 @@ namespace Gum.IR0Translator.Test
             return testErrorCollector.Errors;
         }
 
+        R.Path.Nested MakeRootPath(string name)
+        {
+            return new R.Path.Nested(new R.Path.Root(rmoduleName), new R.Name.Normal(name), R.ParamHash.None, default);
+        }
+
         R.Path.Nested MakeRootPath(R.Name name)
         {
             return new R.Path.Nested(new R.Path.Root(rmoduleName), name, R.ParamHash.None, default);
+        }
+
+
+        R.Path.Nested MakeRootPath(string name, R.ParamHash paramHash, ImmutableArray<R.Path> typeArgs)
+        {
+            return new R.Path.Nested(new R.Path.Root(rmoduleName), new R.Name.Normal(name), paramHash, typeArgs);
         }
 
         R.Path.Nested MakeRootPath(R.Name name, R.ParamHash paramHash, ImmutableArray<R.Path> typeArgs)
@@ -129,7 +140,7 @@ namespace Gum.IR0Translator.Test
 
             var expected = RScript(
                 default,
-                Arr<R.FuncDecl>(new R.NormalFuncDecl(default, "Func", false, default, default, RBlock(
+                Arr<R.FuncDecl>(new R.NormalFuncDecl(default, new R.Name.Normal("Func"), false, default, default, RBlock(
                     new R.LocalVarDeclStmt(new R.LocalVarDecl(Arr<R.VarDeclElement>(new R.VarDeclElement.Normal(R.Path.Int, "x", RInt(1)))))
                 ))),
                 default
@@ -342,7 +353,7 @@ namespace Gum.IR0Translator.Test
                     // cond
                     new R.CallInternalBinaryOperatorExp(
                         R.InternalBinaryOperator.Equal_Int_Int_Bool,
-                        new R.LoadExp(new R.LocalVarLoc("x")),
+                        new R.LoadExp(new R.LocalVarLoc(new R.Name.Normal("x"))),
                         RInt(3)
                     ),
                     null, R.BlankStmt.Instance
@@ -426,7 +437,7 @@ namespace Gum.IR0Translator.Test
                 new R.ForeachStmt(R.Path.Int, "x", 
                     new R.TempLoc(
                         new R.ListIteratorExp(new R.TempLoc(new R.ListExp(R.Path.Int, default), R.Path.List(R.Path.Int))),
-                        RRoot("System.Runtime").Child("System").Child("List", new R.ParamHash(1, default), Arr(R.Path.Int)).Child(new R.Name.Anonymous(new R.AnonymousId(0)))
+                        RRoot("System.Runtime").Child("System").Child("List", new R.ParamHash(1, default), Arr(R.Path.Int)).Child(new R.Name.Anonymous(0))
                     ),
                     R.ContinueStmt.Instance
                 )
@@ -464,7 +475,7 @@ namespace Gum.IR0Translator.Test
                     new R.ForeachStmt(R.Path.Int, "x", 
                         new R.TempLoc(
                             new R.ListIteratorExp(new R.TempLoc(new R.ListExp(R.Path.Int, default), R.Path.List(R.Path.Int))),
-                            RRoot("System.Runtime").Child("System").Child("List", new R.ParamHash(1, default), Arr(R.Path.Int)).Child(new R.Name.Anonymous(new R.AnonymousId(0)))
+                            RRoot("System.Runtime").Child("System").Child("List", new R.ParamHash(1, default), Arr(R.Path.Int)).Child(new R.Name.Anonymous(0))
                         ),
                         R.BreakStmt.Instance
                     )
@@ -525,7 +536,7 @@ namespace Gum.IR0Translator.Test
 
             var script = Translate(syntaxScript);
 
-            var seqFunc = new R.SequenceFuncDecl(default, "Func", false, R.Path.Int, default, default, RBlock(new R.ReturnStmt(R.ReturnInfo.None.Instance)));            
+            var seqFunc = new R.SequenceFuncDecl(default, new R.Name.Normal("Func"), false, R.Path.Int, default, default, RBlock(new R.ReturnStmt(R.ReturnInfo.None.Instance)));            
 
             var expected = RScript(default, Arr<R.FuncDecl>(seqFunc), default);
 
@@ -682,7 +693,7 @@ namespace Gum.IR0Translator.Test
 
             var script = Translate(syntaxScript);
 
-            var name = new R.Name.Anonymous(new R.AnonymousId(0));
+            var name = new R.Name.Anonymous(0);
 
             var capturedStmtDecl = new R.CapturedStatementDecl(
                 name,
@@ -744,7 +755,7 @@ namespace Gum.IR0Translator.Test
 
             var script = Translate(syntaxScript);
 
-            var name0 = new R.Name.Anonymous(new R.AnonymousId(0));
+            var name0 = new R.Name.Anonymous(0);
             var capturedStatementDecl = new R.CapturedStatementDecl(
                 name0,
                 new R.CapturedStatement(
@@ -820,7 +831,7 @@ namespace Gum.IR0Translator.Test
 
             var script = Translate(syntaxScript);
 
-            var capturedStatementName = new R.Name.Anonymous(new R.AnonymousId(0));
+            var capturedStatementName = new R.Name.Anonymous(0);
 
             var capturedStatementDecl = new R.CapturedStatementDecl(
                 capturedStatementName,
@@ -877,7 +888,7 @@ namespace Gum.IR0Translator.Test
 
             var script = Translate(syntaxScript);
 
-            var capturedStmtName = new R.Name.Anonymous(new R.AnonymousId(0));
+            var capturedStmtName = new R.Name.Anonymous(0);
             var capturedStmtDecl = new R.CapturedStatementDecl(capturedStmtName, new R.CapturedStatement(
                 default,
                 Arr(new R.OuterLocalVarInfo(R.Path.Int, "x")),
@@ -910,7 +921,7 @@ namespace Gum.IR0Translator.Test
                 "x",
                 new R.TempLoc(
                     new R.ListIteratorExp(new R.TempLoc(new R.ListExp(R.Path.Int, default), R.Path.List(R.Path.Int))),
-                    RRoot("System.Runtime").Child("System").Child("List", new R.ParamHash(1, default), Arr(R.Path.Int)).Child(new R.Name.Anonymous(new R.AnonymousId(0)))
+                    RRoot("System.Runtime").Child("System").Child("List", new R.ParamHash(1, default), Arr(R.Path.Int)).Child(new R.Name.Anonymous(0))
                 ),
                 R.BlankStmt.Instance
             ));
@@ -962,7 +973,7 @@ namespace Gum.IR0Translator.Test
 
             var script = Translate(syntaxScript);
 
-            var seqFunc = new R.SequenceFuncDecl(default, "Func", false, R.Path.Int, default, default, RBlock(
+            var seqFunc = new R.SequenceFuncDecl(default, new R.Name.Normal("Func"), false, R.Path.Int, default, default, RBlock(
                 new R.YieldStmt(RInt(3))
             ));
 
@@ -1056,7 +1067,7 @@ namespace Gum.IR0Translator.Test
             var script = Translate(syntaxScript);
             var expected = RScript(RBlock(
                 RLocalVarDeclStmt(R.Path.Int, "x", RInt(3)),
-                RLocalVarDeclStmt(R.Path.Int, "y", new R.LoadExp(new R.LocalVarLoc("x")))
+                RLocalVarDeclStmt(R.Path.Int, "y", new R.LoadExp(new R.LocalVarLoc(new R.Name.Normal("x"))))
             ));
 
             Assert.Equal(expected, script);
@@ -1464,8 +1475,8 @@ namespace Gum.IR0Translator.Test
 
                 Arr<R.FuncDecl>(
                     new R.NormalFuncDecl(
-                        default, "F", false, default, Arr(new R.Param(R.ParamKind.Ref, R.Path.Int, "i")),
-                        RBlock(new R.ExpStmt(new R.AssignExp(new R.DerefLocLoc(new R.LocalVarLoc("i")), RInt(3))))
+                        default, new R.Name.Normal("F"), false, default, Arr(new R.Param(R.ParamKind.Ref, R.Path.Int, new R.Name.Normal("i"))),
+                        RBlock(new R.ExpStmt(new R.AssignExp(new R.DerefLocLoc(new R.LocalVarLoc(new R.Name.Normal("i"))), RInt(3))))
                     )
                 ),
 
@@ -1473,7 +1484,7 @@ namespace Gum.IR0Translator.Test
 
                 RGlobalVarDeclStmt(R.Path.Int, "j", RInt(3)),
                 new R.ExpStmt(new R.CallFuncExp(
-                    MakeRootPath("F", new R.ParamHash(0, Arr(new R.ParamHashEntry(R.ParamKind.Ref, R.Path.Int))), default),
+                    MakeRootPath(new R.Name.Normal("F"), new R.ParamHash(0, Arr(new R.ParamHashEntry(R.ParamKind.Ref, R.Path.Int))), default),
                     null, Arr<R.Argument>(new R.Argument.Ref(new R.GlobalVarLoc("j")))
                 ))
             );
@@ -1511,7 +1522,7 @@ namespace Gum.IR0Translator.Test
 
                 Arr<R.FuncDecl>(
                     new R.NormalFuncDecl(
-                        default, "Func", false, Arr("T"), RNormalParams((R.Path.Int, "x")), RBlock(new R.ReturnStmt(new R.ReturnInfo.Expression(new R.LoadExp(new R.LocalVarLoc("x")))))
+                        default, new R.Name.Normal("Func"), false, Arr("T"), RNormalParams((R.Path.Int, "x")), RBlock(new R.ReturnStmt(new R.ReturnInfo.Expression(new R.LoadExp(RLocalVarLoc("x")))))
                     )
                 ),
 
@@ -1548,7 +1559,7 @@ namespace Gum.IR0Translator.Test
                 default,
 
                 Arr<R.FuncDecl>(new R.NormalFuncDecl(
-                    default, "Func", false, Arr<string>(), RNormalParams((R.Path.Int, "x")), RBlock(new R.ReturnStmt(new R.ReturnInfo.Expression(new R.LoadExp(new R.LocalVarLoc("x")))))
+                    default, new R.Name.Normal("Func"), false, Arr<string>(), RNormalParams((R.Path.Int, "x")), RBlock(new R.ReturnStmt(new R.ReturnInfo.Expression(new R.LoadExp(RLocalVarLoc("x")))))
                 )),
 
                 default,

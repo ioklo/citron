@@ -40,15 +40,15 @@ class C
                         RBlock(
                             new R.ExpStmt(new R.AssignExp(
                                 new R.ClassMemberLoc(R.ThisLoc.Instance, RRoot(ModuleName).Child("C").Child("x")),
-                                new R.LoadExp(new R.LocalVarLoc("x"))
+                                new R.LoadExp(RLocalVarLoc("x"))
                             )),
                             new R.ExpStmt(new R.AssignExp(
                                 new R.ClassMemberLoc(R.ThisLoc.Instance, RRoot(ModuleName).Child("C").Child("y")),
-                                new R.LoadExp(new R.LocalVarLoc("y"))
+                                new R.LoadExp(RLocalVarLoc("y"))
                             )),
                             new R.ExpStmt(new R.AssignExp(
                                 new R.ClassMemberLoc(R.ThisLoc.Instance, RRoot(ModuleName).Child("C").Child("s")),
-                                new R.LoadExp(new R.LocalVarLoc("s"))
+                                new R.LoadExp(RLocalVarLoc("s"))
                             ))
                         )
                     )),
@@ -161,7 +161,7 @@ var c = new C(3);
                             default,
                             RNormalParams((R.Path.Int, "x")),
                             null,
-                            RBlock(RPrintIntCmdStmt(new R.LocalVarLoc("x")))
+                            RBlock(RPrintIntCmdStmt(RLocalVarLoc("x")))
                         ),
 
                         new R.ClassConstructorDecl(
@@ -500,11 +500,11 @@ var i = c.F(2);
                         RBlock(RAssignStmt(R.ThisLoc.Instance.ClassMember(CxPath()), RLocalVarExp("x")))
                     )),
 
-                    Arr<R.FuncDecl>(new R.NormalFuncDecl(default, "F", true, default, Arr(new R.Param(R.ParamKind.Normal, R.Path.Int, "y")), RBlock(
+                    Arr<R.FuncDecl>(new R.NormalFuncDecl(default, new R.Name.Normal("F"), true, default, Arr(new R.Param(R.ParamKind.Normal, R.Path.Int, new R.Name.Normal("y"))), RBlock(
                         new R.ReturnStmt(new R.ReturnInfo.Expression(new R.CallInternalBinaryOperatorExp(
                             R.InternalBinaryOperator.Add_Int_Int_Int,
                             new R.LoadExp(new R.ClassMemberLoc(R.ThisLoc.Instance, CxPath())),
-                            new R.LoadExp(new R.LocalVarLoc("y"))
+                            new R.LoadExp(RLocalVarLoc("y"))
                         )))
                     ))),
 
@@ -720,7 +720,7 @@ class C : B { }
 
 var c = new C();
 ";
-            return new EvalWithErrorTestData(code, A2602_NewExp_NoConstructorFound);
+            return new EvalWithErrorTestData(code, A2602_NewExp_NoMatchedClassConstructor);
         }
 
         // base protected, private 잘 되는지 확인
@@ -754,7 +754,7 @@ class C : B
 C c = new C(2, 3);
 @${c.x}${c.y}
 ";
-            return new EvalWithErrorTestData(code, A2602_NewExp_NoConstructorFound);
+            return new EvalWithErrorTestData(code, A2602_NewExp_NoMatchedClassConstructor);
         }
 
         static TestData Make_Inheritance_TrivialConstructor_RecognizeBaseAutoConstructor()
@@ -823,31 +823,51 @@ B b = new C();
             return new ParseTranslateTestData(code, sscript, rscript);
         }
 
+        //        static TestData Make_Inheritance_AssertValidDowncast_WorksProperly()
+        //        {
+        //            var code = @"
+        //class B { }
+        //class C : B { }
 
-// nullable이 먼저 만들어 져야 한다
-//         static TestData Make_Inheritance_TryDowncastToRelatedClass_CastProperly()
-//         {
-//             var code = @"
-// class B { }
-// class C : B { } 
+        //void Func(B b)
+        //{
+        //    var c = b as C; // c is C?
+        //    `notnull(c);    
+        //}
 
-// var b = new B();
-// var c = b as C; // C? c
-// ";
-            
+        //";
 
-//         }
+        //        }
 
-//         static TestData Make_Inheritance_TryDowncastToUnrelatedClass_EvalsNull()
-//         {
-//             var code = @"
-// class C { } 
-// class D { }
+        // nullable이 먼저 만들어 져야 한다
+        static TestData Make_Inheritance_TryDowncastToRelatedClass_CastProperly()
+        {
+            var code = @"
+class B { }
+class C : B { int x; } 
 
-// var c = new C();
-// var d = c as D; // D? d
-// ";
+var b = new C(3);
+var c = b as C; // C? c
 
-//         }
-    }
+if (c is not null)
+{
+    @${c.x}
+}
+";
+
+            return new EvalTestData(code, "3");
+        }
+
+            //         static TestData Make_Inheritance_TryDowncastToUnrelatedClass_EvalsNull()
+            //         {
+            //             var code = @"
+            // class C { } 
+            // class D { }
+
+            // var c = new C();
+            // var d = c as D; // D? d
+            // ";
+
+            //         }
+        }
 }

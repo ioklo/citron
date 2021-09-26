@@ -52,7 +52,7 @@ namespace Gum.IR0Translator
             {
                 Debug.Assert(typeExpInfo.Type is M.NormalType);
 
-                var mmemberType = new M.MemberType((M.NormalType)typeExpInfo.Type, memberName, typeArgs);
+                var mmemberType = new M.MemberType((M.NormalType)typeExpInfo.Type, new M.Name.Normal(memberName), typeArgs);
                 return GetMemberInfo(memberName, typeArgs.Length, mmemberType);
             }
 
@@ -95,7 +95,7 @@ namespace Gum.IR0Translator
 
             protected override TypeExpResult? GetMemberInfo(string memberName, int typeParamCount, M.MemberType mmemberType)
             {
-                var memberSkeleton = skeleton.GetMember(memberName, typeParamCount);
+                var memberSkeleton = skeleton.GetMember(new M.Name.Normal(memberName), typeParamCount);
                 if (memberSkeleton == null) return null;
 
                 var memberKind = GetTypeExpInfoKind(skeleton.Kind);

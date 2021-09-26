@@ -31,7 +31,7 @@ namespace Gum.IR0Translator
 
             R.Path.Normal path = new R.Path.Root(rmoduleName);
             foreach (var entry in namespacePath.Entries)
-                path = new R.Path.Nested(path, entry.Value, R.ParamHash.None, default);
+                path = new R.Path.Nested(path, new R.Name.Normal(entry.Value), R.ParamHash.None, default);
 
             return path;
         }

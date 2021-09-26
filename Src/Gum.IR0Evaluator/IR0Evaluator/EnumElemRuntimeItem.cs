@@ -16,7 +16,7 @@ namespace Gum.IR0Evaluator
         {
             GlobalContext globalContext;
 
-            public override R.Name Name => enumElem.Name;
+            public override R.Name Name => new R.Name.Normal(enumElem.Name);
             public override R.ParamHash ParamHash => R.ParamHash.None;
             public override ImmutableArray<R.EnumElementField> Fields => enumElem.Fields;
 

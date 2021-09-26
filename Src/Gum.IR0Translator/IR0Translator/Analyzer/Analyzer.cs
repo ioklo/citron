@@ -39,7 +39,7 @@ namespace Gum.IR0Translator
                 };
 
                 paramWithoutNames.Add(new R.ParamHashEntry(kind, type));
-                var parameter = new R.Param(kind, type, param.Name);
+                var parameter = new R.Param(kind, type, new R.Name.Normal(param.Name));
                 parametersBuilder.Add(parameter);
             }
 

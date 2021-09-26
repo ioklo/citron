@@ -23,7 +23,7 @@ namespace Gum.IR0Evaluator
             public static void Eval(GlobalContext globalContext, ItemContainer curContainer, R.Path.Normal curPath, int totalTypeParamCount, R.StructDecl structDecl)
             {   
                 var typeArgs = MakeTypeArgsByTypeParams(totalTypeParamCount, structDecl.TypeParams.Length);
-                var structPath = curPath.Child(structDecl.Name, new R.ParamHash(structDecl.TypeParams.Length, default), typeArgs);
+                var structPath = curPath.Child(new R.Name.Normal(structDecl.Name), new R.ParamHash(structDecl.TypeParams.Length, default), typeArgs);
                 var structContainer = new ItemContainer();
 
                 var evaluator = new StructDeclEvaluator(globalContext, structContainer, structPath, totalTypeParamCount + structDecl.TypeParams.Length);
@@ -37,7 +37,7 @@ namespace Gum.IR0Evaluator
                 foreach (var memberVarDecl in structDecl.MemberVarDecls)
                     evaluator.EvalMemberVarDecl(memberVarDecl);
 
-                curContainer.AddItemContainer(structDecl.Name, new R.ParamHash(structDecl.TypeParams.Length, default), structContainer);
+                curContainer.AddItemContainer(new R.Name.Normal(structDecl.Name), new R.ParamHash(structDecl.TypeParams.Length, default), structContainer);
                 curContainer.AddRuntimeItem(new IR0StructRuntimeItem(globalContext, structDecl));
             }
 

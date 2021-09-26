@@ -35,7 +35,7 @@ namespace Gum.IR0Evaluator
 
             var topLevelRetValue = new IntValue();
             var context = new EvalContext(topLevelRetValue);
-            var localContext = new LocalContext(ImmutableDictionary<string, Value>.Empty);
+            var localContext = new LocalContext(ImmutableDictionary<R.Name, Value>.Empty);
             var localTaskContext = new LocalTaskContext();
 
             await StmtEvaluator.EvalTopLevelStmtsAsync(globalContext, context, localContext, localTaskContext, script.TopLevelStmts);
@@ -95,7 +95,7 @@ namespace Gum.IR0Evaluator
 
             foreach (var typeAndName in capturedStatement.OuterLocalVars)
             {
-                var origValue = localContext.GetLocalValue(typeAndName.Name);
+                var origValue = localContext.GetLocalValue(new R.Name.Normal(typeAndName.Name));
                 localVars[typeAndName.Name].SetValue(origValue);
             }
         }        

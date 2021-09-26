@@ -18,18 +18,11 @@ namespace Gum.IR0
     {
         public ParamKind Kind { get; }
         public Path Type { get; }
-        public string Name { get; }
+        public Name Name { get; }
 
         public void EnsurePure()
         {
             Misc.EnsurePure(Type);
-        }
-
-        public void Deconstruct(out ParamKind outKind, out Path outType, out string outName)
-        {
-            outKind = Kind;
-            outType = Type;
-            outName = Name;
         }
     }
 }
