@@ -100,9 +100,22 @@ namespace Gum.IR0Translator
 
             var memberResult = parentResult.GetMemberInfo(exp.MemberName, typeArgs);
             if (memberResult == null)
-                Throw(T0202_MemberTypeExp_MemberTypeNotFound, exp, $"{parentResult.TypeExpInfo}에서 {exp.MemberName}을 찾을 수 없습니다");
+                Throw(T0202_MemberTypeExp_MemberTypeNotFound, exp, $"{parentResult}에서 {exp.MemberName}을 찾을 수 없습니다");
 
             return memberResult;
+        }
+
+        // int?
+        TypeExpResult VisitNullableTypeExp(S.NullableTypeExp exp)
+        {            
+            // int
+            var innerTypeResult = VisitTypeExp(exp.InnerTypeExp);
+
+            var mtype = innerTypeResult.GetMType();
+            if (mtype == null)
+                throw new TypeExpEvaluatorFatalException();
+
+            return NoMemberTypeExpResult.Nullable(new M.NullableType(mtype));            
         }
 
         TypeExpResult VisitTypeExp(S.TypeExp exp)
@@ -111,8 +124,9 @@ namespace Gum.IR0Translator
             {
                 case S.IdTypeExp idExp: return VisitIdTypeExp(idExp);
                 case S.MemberTypeExp memberExp: return VisitMemberTypeExp(memberExp);
-                default:
-                    throw new UnreachableCodeException();
+                case S.NullableTypeExp nullableExp: return VisitNullableTypeExp(nullableExp);
+
+                default: throw new UnreachableCodeException();
             }
         }
 
@@ -122,7 +136,7 @@ namespace Gum.IR0Translator
             try
             {
                 var result = VisitTypeExp(exp);
-                AddInfo(exp, result.TypeExpInfo);
+                AddInfo(exp, result.GetTypeExpInfo());
             }
             catch(TypeExpEvaluatorFatalException)
             {

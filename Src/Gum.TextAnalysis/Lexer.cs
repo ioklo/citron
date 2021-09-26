@@ -151,6 +151,8 @@ namespace Gum
             ("%", () => PercentToken.Instance),
             ("!", () => ExclToken.Instance),
             (".", () => DotToken.Instance),
+            ("?", () => QuestionToken.Instance),
+
             (":", () => ColonToken.Instance),
             ("`", () => BacktickToken.Instance)
         };

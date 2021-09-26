@@ -17,6 +17,7 @@ namespace Gum.IR0Translator
         Var,
         Void,
         TypeVar,
+        Nullable,
     }
 
     // X<int>.Y<T>, closed

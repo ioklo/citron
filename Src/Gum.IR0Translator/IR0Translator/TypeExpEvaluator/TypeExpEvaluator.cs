@@ -371,10 +371,12 @@ namespace Gum.IR0Translator
             {
                 var typeArgResult = VisitTypeExp(typeArgExp);
 
-                if (typeArgResult.TypeExpInfo is MTypeTypeExpInfo mtypeArg)
-                    builder.Add(mtypeArg.Type);
-                else
+                var mtypeArg = typeArgResult.GetMType();
+
+                if (mtypeArg == null)
                     throw new TypeExpEvaluatorFatalException();
+
+                builder.Add(mtypeArg);
             }
 
             return builder.MoveToImmutable();

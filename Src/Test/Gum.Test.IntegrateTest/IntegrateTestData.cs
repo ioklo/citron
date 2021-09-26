@@ -22,7 +22,8 @@ namespace Gum.Test.IntegrateTest
             bInit = true;
 
             ClassTestData.Initialize();
-            StructTestData.Initialize();            
+            StructTestData.Initialize();
+            NullableTestData.Initialize();
         }
 
         static Dictionary<Type, List<(string Desc, Func<TestData> MakeTestData)>> infos;

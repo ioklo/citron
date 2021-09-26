@@ -139,6 +139,13 @@ namespace Gum
                     continue;
                 }
 
+                // ?
+                else if (Accept<QuestionToken>(lexResult, ref context))
+                {
+                    exp = new NullableTypeExp(exp);
+                    continue;
+                }
+
                 break;
             }
 

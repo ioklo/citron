@@ -36,4 +36,7 @@ namespace Gum.CompileTime
         public static readonly VoidType Instance = new VoidType();
         VoidType() { }
     }
+
+    // int?
+    public record NullableType(Type InnerType) : Type;
 }

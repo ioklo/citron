@@ -151,6 +151,10 @@ namespace Gum.IR0Translator
                 case M.VoidType:
                     return VoidTypeValue.Instance;
 
+                case M.NullableType nullableType:
+                    var innerTypeValue = MakeTypeValueByMType(nullableType.InnerType);
+                    return MakeNullableTypeValue(innerTypeValue);
+
                 default:
                     throw new UnreachableCodeException();
             }
@@ -217,6 +221,11 @@ namespace Gum.IR0Translator
         public ClassTypeValue MakeClassValue(ItemValueOuter outer, IModuleClassInfo classInfo, ImmutableArray<TypeValue> typeArgs)
         {
             return new ClassTypeValue(this, outer, classInfo, typeArgs);
+        }
+
+        public NullableTypeValue MakeNullableTypeValue(TypeValue innerTypeValue)
+        {
+            return new NullableTypeValue(this, innerTypeValue);
         }
     }
 }

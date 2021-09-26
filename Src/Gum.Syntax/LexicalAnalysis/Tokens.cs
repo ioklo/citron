@@ -38,6 +38,7 @@ namespace Gum.LexicalAnalysis
     public class PercentToken : Token { public static readonly PercentToken Instance = new PercentToken(); private PercentToken() { } } // %    
     public class ExclToken : Token { public static readonly ExclToken Instance = new ExclToken(); private ExclToken() { } } // !    
     public class DotToken : Token { public static readonly DotToken Instance = new DotToken(); private DotToken() { } } // .
+    public class QuestionToken : Token { public static readonly QuestionToken Instance = new QuestionToken(); private QuestionToken() { } } // .
     
     public class IfToken : Token { public static readonly IfToken Instance = new IfToken(); private IfToken() { } }
     public class ElseToken : Token { public static readonly ElseToken Instance = new ElseToken(); private ElseToken() { } }
