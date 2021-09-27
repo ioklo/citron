@@ -116,6 +116,12 @@ namespace Gum.IR0Translator
                 throw new UnreachableCodeException();
             }
 
+            ExpResult.Exp AnalyzeNullLiteralExp(S.NullLiteralExp nullExp, ResolveHint hint)
+            {
+                throw new NotImplementedException();
+                // return new ExpResult.Exp(R.NullLiteralExp.Instance, globalContext.GetBoolType());
+            }
+
             ExpResult.Exp AnalyzeBoolLiteralExp(S.BoolLiteralExp boolExp)
             {
                 return new ExpResult.Exp(new R.BoolLiteralExp(boolExp.Value), globalContext.GetBoolType());
@@ -169,7 +175,7 @@ namespace Gum.IR0Translator
                     if (!locResult.TypeValue.Equals(globalContext.GetIntType()))
                         globalContext.AddFatalError(A0601_UnaryAssignOp_IntTypeIsAllowedOnly, operand);
 
-                    return new ExpResult.Exp(new R.CallInternalUnaryAssignOperator(op, locResult.Result), globalContext.GetIntType());
+                    return new ExpResult.Exp(new R.CallInternalUnaryAssignOperatorExp(op, locResult.Result), globalContext.GetIntType());
                 }
                 else
                 {
@@ -1002,6 +1008,7 @@ namespace Gum.IR0Translator
                 switch (exp)
                 {
                     case S.IdentifierExp idExp: return AnalyzeIdExp(idExp, hint);
+                    case S.NullLiteralExp nullExp: return AnalyzeNullLiteralExp(nullExp, hint);
                     case S.BoolLiteralExp boolExp: return AnalyzeBoolLiteralExp(boolExp);
                     case S.IntLiteralExp intExp: return AnalyzeIntLiteralExp(intExp);
                     case S.StringExp stringExp: return AnalyzeStringExp(stringExp);

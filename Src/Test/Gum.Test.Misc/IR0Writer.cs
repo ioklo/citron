@@ -163,7 +163,7 @@ namespace Gum.Test.Misc
         void VisitIntLiteralExp(R.IntLiteralExp intExp);
         void VisitBoolLiteralExp(R.BoolLiteralExp boolExp);
         void VisitCallInternalUnaryOperatorExp(R.CallInternalUnaryOperatorExp ciuoExp);
-        void VisitCallInternalUnaryAssignOperatorExp(R.CallInternalUnaryAssignOperator ciuaoExp);
+        void VisitCallInternalUnaryAssignOperatorExp(R.CallInternalUnaryAssignOperatorExp ciuaoExp);
         void VisitCallInternalBinaryOperatorExp(R.CallInternalBinaryOperatorExp ciboExp);
         void VisitAssignExp(R.AssignExp assignExp);
         void VisitCallFuncExp(R.CallFuncExp callFuncExp);
@@ -188,7 +188,7 @@ namespace Gum.Test.Misc
                 case R.IntLiteralExp intExp: visitor.VisitIntLiteralExp(intExp); break;
                 case R.BoolLiteralExp boolExp: visitor.VisitBoolLiteralExp(boolExp); break;
                 case R.CallInternalUnaryOperatorExp ciuoExp: visitor.VisitCallInternalUnaryOperatorExp(ciuoExp); break;
-                case R.CallInternalUnaryAssignOperator ciuaoExp: visitor.VisitCallInternalUnaryAssignOperatorExp(ciuaoExp); break;
+                case R.CallInternalUnaryAssignOperatorExp ciuaoExp: visitor.VisitCallInternalUnaryAssignOperatorExp(ciuaoExp); break;
                 case R.CallInternalBinaryOperatorExp ciboExp: visitor.VisitCallInternalBinaryOperatorExp(ciboExp); break;
                 case R.AssignExp assignExp: visitor.VisitAssignExp(assignExp); break;
                 case R.CallFuncExp callFuncExp: visitor.VisitCallFuncExp(callFuncExp); break;
@@ -216,7 +216,7 @@ namespace Gum.Test.Misc
                 case R.IntLiteralExp intExp: visitor.VisitIntLiteralExp(intExp); break;
                 case R.BoolLiteralExp boolExp: visitor.VisitBoolLiteralExp(boolExp); break;
                 case R.CallInternalUnaryOperatorExp ciuoExp: visitor.VisitCallInternalUnaryOperatorExp(ciuoExp); break;
-                case R.CallInternalUnaryAssignOperator ciuaoExp: visitor.VisitCallInternalUnaryAssignOperatorExp(ciuaoExp); break;
+                case R.CallInternalUnaryAssignOperatorExp ciuaoExp: visitor.VisitCallInternalUnaryAssignOperatorExp(ciuaoExp); break;
                 case R.CallInternalBinaryOperatorExp ciboExp: visitor.VisitCallInternalBinaryOperatorExp(ciboExp); break;
                 case R.AssignExp assignExp: visitor.VisitAssignExp(assignExp); break;
                 case R.CallFuncExp callFuncExp: visitor.VisitCallFuncExp(callFuncExp); break;
@@ -602,7 +602,7 @@ namespace Gum.Test.Misc
                 writer.WriteNew("R.CallInternalBinaryOperatorExp", ciboExp.Operator, ciboExp.Operand0, ciboExp.Operand1);
             }
 
-            public void VisitCallInternalUnaryAssignOperatorExp(R.CallInternalUnaryAssignOperator ciuaoExp)
+            public void VisitCallInternalUnaryAssignOperatorExp(R.CallInternalUnaryAssignOperatorExp ciuaoExp)
             {
                 writer.WriteNew("R.CallInternalUnaryAssignOperatorExp", ciuaoExp.Operator, ciuaoExp.Operand);
             }

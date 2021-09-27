@@ -14,6 +14,13 @@ namespace Gum.Syntax
     public record StringExp(ImmutableArray<StringExpElement> Elements) : Exp;    
     public record IntLiteralExp(int Value) : Exp;
     public record BoolLiteralExp(bool Value) : Exp;
+    // null
+    public record NullLiteralExp : Exp
+    {
+        public static readonly NullLiteralExp Instance = new NullLiteralExp();
+        NullLiteralExp() { }
+    }
+
     public record BinaryOpExp(BinaryOpKind Kind, Exp Operand0, Exp Operand1) : Exp;
     public record UnaryOpExp(UnaryOpKind Kind, Exp Operand) : Exp;
     public record CallExp(Exp Callable, ImmutableArray<Argument> Args) : Exp;

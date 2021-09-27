@@ -84,7 +84,11 @@ namespace Gum
 
             var parenExpResult = await ParseParenExpAsync(context);
             if (parenExpResult.HasValue)
-                return parenExpResult;            
+                return parenExpResult;
+
+            var nullExpResult = await ParseNullLiteralExpAsync(context);
+            if (nullExpResult.HasValue)
+                return new ExpParseResult(nullExpResult.Elem, nullExpResult.Context);
 
             var boolExpResult = await ParseBoolLiteralExpAsync(context);
             if (boolExpResult.HasValue)
@@ -92,7 +96,7 @@ namespace Gum
 
             var intExpResult = await ParseIntLiteralExpAsync(context);
             if (intExpResult.HasValue)
-                return new ExpParseResult(intExpResult.Elem, intExpResult.Context);
+                return new ExpParseResult(intExpResult.Elem, intExpResult.Context);            
 
             var stringExpResult = await ParseStringExpAsync(context);
             if (stringExpResult.HasValue)
@@ -464,6 +468,14 @@ namespace Gum
                 return ExpParseResult.Invalid;
 
             return new ExpParseResult(exp, context);
+        }
+
+        async ValueTask<ExpParseResult> ParseNullLiteralExpAsync(ParserContext context)
+        {
+            if (Accept<NullToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
+                return new ExpParseResult(NullLiteralExp.Instance, context);
+
+            return ExpParseResult.Invalid;
         }
 
         async ValueTask<ExpParseResult> ParseBoolLiteralExpAsync(ParserContext context)

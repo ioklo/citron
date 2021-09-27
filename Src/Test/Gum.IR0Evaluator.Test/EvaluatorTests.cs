@@ -513,7 +513,7 @@ namespace Gum.IR0Evaluator.Test
                 new ForStmt(
                     new VarDeclForStmtInitializer(RLocalVarDecl(Path.Int, "i", new IntLiteralExp(0))),
                     new CallInternalBinaryOperatorExp(InternalBinaryOperator.LessThan_Int_Int_Bool, new LoadExp(RLocalVarLoc("i")), RInt(2)),
-                    new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PostfixInc_Int_Int, RLocalVarLoc("i")),
+                    new CallInternalUnaryAssignOperatorExp(InternalUnaryAssignOperator.PostfixInc_Int_Int, RLocalVarLoc("i")),
 
                     RBlock(
 
@@ -522,7 +522,7 @@ namespace Gum.IR0Evaluator.Test
                         new ForStmt(
                             new VarDeclForStmtInitializer(RLocalVarDecl(Path.Int, "j", new IntLiteralExp(0))),
                             new CallInternalBinaryOperatorExp(InternalBinaryOperator.LessThan_Int_Int_Bool, new LoadExp(RLocalVarLoc("j")), RInt(2)),
-                            new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PostfixInc_Int_Int, RLocalVarLoc("j")),
+                            new CallInternalUnaryAssignOperatorExp(InternalUnaryAssignOperator.PostfixInc_Int_Int, RLocalVarLoc("j")),
                             RBlock(
                                 RPrintIntCmdStmt(RLocalVarExp("j")),
                                 ContinueStmt.Instance,
@@ -545,7 +545,7 @@ namespace Gum.IR0Evaluator.Test
                 new ForStmt(
                     new VarDeclForStmtInitializer(RLocalVarDecl(Path.Int, "i", new IntLiteralExp(0))),
                     new CallInternalBinaryOperatorExp(InternalBinaryOperator.LessThan_Int_Int_Bool, new LoadExp(RLocalVarLoc("i")), RInt(2)),
-                    new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PostfixInc_Int_Int, RLocalVarLoc("i")),
+                    new CallInternalUnaryAssignOperatorExp(InternalUnaryAssignOperator.PostfixInc_Int_Int, RLocalVarLoc("i")),
 
                     RBlock(
 
@@ -554,7 +554,7 @@ namespace Gum.IR0Evaluator.Test
                         new ForStmt(
                             new VarDeclForStmtInitializer(RLocalVarDecl(Path.Int, "j", new IntLiteralExp(0))),
                             new CallInternalBinaryOperatorExp(InternalBinaryOperator.LessThan_Int_Int_Bool, new LoadExp(RLocalVarLoc("j")), RInt(2)),
-                            new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PostfixInc_Int_Int, RLocalVarLoc("j")),
+                            new CallInternalUnaryAssignOperatorExp(InternalUnaryAssignOperator.PostfixInc_Int_Int, RLocalVarLoc("j")),
                             RBlock(
                                 RPrintIntCmdStmt(RLocalVarExp("j")),
                                 BreakStmt.Instance,
@@ -657,7 +657,7 @@ namespace Gum.IR0Evaluator.Test
                 return new ForStmt(
                     new VarDeclForStmtInitializer(RLocalVarDecl(Path.Int, "i", new IntLiteralExp(0))),
                     new CallInternalBinaryOperatorExp(InternalBinaryOperator.LessThan_Int_Int_Bool, new LoadExp(RLocalVarLoc("i")), RInt(count)),
-                    new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PostfixInc_Int_Int, RLocalVarLoc("i")),
+                    new CallInternalUnaryAssignOperatorExp(InternalUnaryAssignOperator.PostfixInc_Int_Int, RLocalVarLoc("i")),
                     RPrintIntCmdStmt(RLocalVarExp("i"))
                 );
             }
@@ -713,7 +713,7 @@ namespace Gum.IR0Evaluator.Test
                 return new ForStmt(
                     new VarDeclForStmtInitializer(RLocalVarDecl(Path.Int, "i", new IntLiteralExp(0))),
                     new CallInternalBinaryOperatorExp(InternalBinaryOperator.LessThan_Int_Int_Bool, new LoadExp(RLocalVarLoc("i")), new LoadExp(new CapturedVarLoc("count"))),
-                    new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PostfixInc_Int_Int, RLocalVarLoc("i")),
+                    new CallInternalUnaryAssignOperatorExp(InternalUnaryAssignOperator.PostfixInc_Int_Int, RLocalVarLoc("i")),
                     RPrintIntCmdStmt(RLocalVarExp("i"))
                 );
             }
@@ -772,7 +772,7 @@ namespace Gum.IR0Evaluator.Test
                 return new ForStmt(
                     new VarDeclForStmtInitializer(RLocalVarDecl(Path.Int, "i", new IntLiteralExp(0))),
                     new CallInternalBinaryOperatorExp(InternalBinaryOperator.LessThan_Int_Int_Bool, new LoadExp(RLocalVarLoc("i")), RInt(count)),
-                    new CallInternalUnaryAssignOperator(InternalUnaryAssignOperator.PostfixInc_Int_Int, RLocalVarLoc("i")),
+                    new CallInternalUnaryAssignOperatorExp(InternalUnaryAssignOperator.PostfixInc_Int_Int, RLocalVarLoc("i")),
                     RBlock(
                         RPrintIntCmdStmt(RLocalVarExp("i")),
                         Sleep(1)

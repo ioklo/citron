@@ -112,6 +112,7 @@ namespace Gum
             { "class", ClassToken.Instance },
             { "is", IsToken.Instance },
             { "ref", RefToken.Instance },
+            { "null", NullToken.Instance },
             { "public", PublicToken.Instance },
             { "protected", ProtectedToken.Instance },
             { "private", PrivateToken.Instance },

@@ -30,7 +30,31 @@ int? x;
                 )))
             );
 
-            var rscript = RScript(moduleName, new R.GlobalVarDeclStmt(Arr<R.VarDeclElement>(new R.VarDeclElement.NormalDefault(new R.Path.NullableType(R.Path.Int), "x"))));
+            var rscript = RScript(moduleName, RGlobalVarDeclStmt(new R.Path.NullableType(R.Path.Int), "x"));
+
+            return new ParseTranslateTestData(code, sscript, rscript);
+        }
+
+        // introduce null
+        static TestData Make_Assignment_Null_WorksProperly()
+        {
+            var code = @"
+int? x;
+x = null;";
+
+            var sscript = SScript(
+                new S.StmtScriptElement(new S.VarDeclStmt(new S.VarDecl(
+                    false, new S.NullableTypeExp(new S.IdTypeExp("int", default)),
+                    Arr(new S.VarDeclElement("x", null))
+                ))),
+
+                new S.StmtScriptElement(new S.ExpStmt(new S.BinaryOpExp(S.BinaryOpKind.Assign, SId("x"), S.NullLiteralExp.Instance)))
+            );
+
+            var rscript = RScript(moduleName, 
+                RGlobalVarDeclStmt(new R.Path.NullableType(R.Path.Int), "x"),
+                RAssignStmt(new R.GlobalVarLoc("x"), new R.NewNullableExp(new R.Path.NullableType(R.Path.Int), null))
+            );
 
             return new ParseTranslateTestData(code, sscript, rscript);
         }

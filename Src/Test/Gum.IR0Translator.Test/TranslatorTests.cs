@@ -1211,10 +1211,10 @@ namespace Gum.IR0Translator.Test
             var expected = RScript(
                 RGlobalVarDeclStmt(R.Path.Bool, "x1", new R.CallInternalUnaryOperatorExp(R.InternalUnaryOperator.LogicalNot_Bool_Bool, RBool(false))),
                 RGlobalVarDeclStmt(R.Path.Int, "x2", new R.CallInternalUnaryOperatorExp(R.InternalUnaryOperator.UnaryMinus_Int_Int, RInt(3))),
-                RGlobalVarDeclStmt(R.Path.Int, "x3", new R.CallInternalUnaryAssignOperator(R.InternalUnaryAssignOperator.PrefixInc_Int_Int, new R.GlobalVarLoc("x2"))),
-                RGlobalVarDeclStmt(R.Path.Int, "x4", new R.CallInternalUnaryAssignOperator(R.InternalUnaryAssignOperator.PrefixDec_Int_Int, new R.GlobalVarLoc("x2"))),
-                RGlobalVarDeclStmt(R.Path.Int, "x5", new R.CallInternalUnaryAssignOperator(R.InternalUnaryAssignOperator.PostfixInc_Int_Int, new R.GlobalVarLoc("x2"))),
-                RGlobalVarDeclStmt(R.Path.Int, "x6", new R.CallInternalUnaryAssignOperator(R.InternalUnaryAssignOperator.PostfixDec_Int_Int, new R.GlobalVarLoc("x2")))
+                RGlobalVarDeclStmt(R.Path.Int, "x3", new R.CallInternalUnaryAssignOperatorExp(R.InternalUnaryAssignOperator.PrefixInc_Int_Int, new R.GlobalVarLoc("x2"))),
+                RGlobalVarDeclStmt(R.Path.Int, "x4", new R.CallInternalUnaryAssignOperatorExp(R.InternalUnaryAssignOperator.PrefixDec_Int_Int, new R.GlobalVarLoc("x2"))),
+                RGlobalVarDeclStmt(R.Path.Int, "x5", new R.CallInternalUnaryAssignOperatorExp(R.InternalUnaryAssignOperator.PostfixInc_Int_Int, new R.GlobalVarLoc("x2"))),
+                RGlobalVarDeclStmt(R.Path.Int, "x6", new R.CallInternalUnaryAssignOperatorExp(R.InternalUnaryAssignOperator.PostfixDec_Int_Int, new R.GlobalVarLoc("x2")))
             );
 
             Assert.Equal(expected, script);

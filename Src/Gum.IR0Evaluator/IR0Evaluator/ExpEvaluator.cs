@@ -482,7 +482,7 @@ namespace Gum.IR0Evaluator
                     case R.IntLiteralExp intExp: EvalIntLiteralExp(intExp, result); break;
                     case R.BoolLiteralExp boolExp: EvalBoolLiteralExp(boolExp, result); break;
                     case R.CallInternalUnaryOperatorExp ciuoExp: await EvalCallInternalUnaryOperatorExpAsync(ciuoExp, result); break;
-                    case R.CallInternalUnaryAssignOperator ciuaoExp: await EvalCallInternalUnaryAssignOperatorExpAsync(ciuaoExp, result); break;
+                    case R.CallInternalUnaryAssignOperatorExp ciuaoExp: await EvalCallInternalUnaryAssignOperatorExpAsync(ciuaoExp, result); break;
                     case R.CallInternalBinaryOperatorExp ciboExp: await EvalCallInternalBinaryOperatorExpAsync(ciboExp, result); break;
                     case R.AssignExp assignExp: await EvalAssignExpAsync(assignExp, result); break;
                     case R.CallFuncExp callFuncExp: await EvalCallFuncExpAsync(callFuncExp, result); break;

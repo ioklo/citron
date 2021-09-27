@@ -13,6 +13,10 @@ namespace Gum.IR0Translator
             VisitTypeArgExpsOuterMost(idExp.TypeArgs);
         }
 
+        void VisitNullLiteralExp(S.NullLiteralExp nullExp)
+        {
+        }
+
         void VisitBoolLiteralExp(S.BoolLiteralExp boolExp)
         {
         }
@@ -91,6 +95,7 @@ namespace Gum.IR0Translator
                 switch (exp)
                 {
                     case S.IdentifierExp idExp: VisitIdExp(idExp); break;
+                    case S.NullLiteralExp nullExp: VisitNullLiteralExp(nullExp); break;
                     case S.BoolLiteralExp boolExp: VisitBoolLiteralExp(boolExp); break;
                     case S.IntLiteralExp intExp: VisitIntLiteralExp(intExp); break;
                     case S.StringExp stringExp: VisitStringExp(stringExp); break;

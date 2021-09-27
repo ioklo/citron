@@ -10,39 +10,26 @@ using System.Text;
 
 namespace Gum.IR0
 {   
-    public abstract class Exp : INode
+    public abstract record Exp : INode
     {
         internal Exp() { }
     }
 
     // Location의 Value를 resultValue에 복사한다
-    [AutoConstructor, ImplementIEquatable] 
-    public partial class LoadExp : Exp
-    {
-        public Loc Loc { get; }
-    }
+    public record LoadExp(Loc Loc) : Exp;
     
     // "dskfjslkf $abc "
-    [AutoConstructor, ImplementIEquatable]
-    public partial class StringExp : Exp
-    {
-        public ImmutableArray<StringExpElement> Elements { get; }
-    }
+    public record StringExp(ImmutableArray<StringExpElement> Elements) : Exp;
 
-    // 1
-    [AutoConstructor, ImplementIEquatable]
-    public partial class IntLiteralExp : Exp
-    {
-        public int Value { get; }
-    }
+    // 1    
+    public record IntLiteralExp(int Value) : Exp;
 
     // false
-    [AutoConstructor, ImplementIEquatable]
-    public partial class BoolLiteralExp : Exp
-    {
-        public bool Value { get; }
-    }
-
+    public record BoolLiteralExp(bool Value) : Exp;
+    
+    // 한개로 합쳐서 만듭니다
+    public record NewNullableExp(Path Type, Exp? ValueExp) : Exp;
+    
     public enum InternalUnaryOperator
     {
         LogicalNot_Bool_Bool,
@@ -81,124 +68,46 @@ namespace Gum.IR0
         Equal_String_String_Bool
     }
 
-    [AutoConstructor, ImplementIEquatable]
-    public partial class CallInternalUnaryOperatorExp : Exp
-    {
-        public InternalUnaryOperator Operator { get; }
-        public Exp Operand { get; }
-    }
-
-    [AutoConstructor, ImplementIEquatable]
-    public partial class CallInternalUnaryAssignOperator : Exp
-    {
-        public InternalUnaryAssignOperator Operator { get; }
-        public Loc Operand { get; }
-    }
-
-    [AutoConstructor, ImplementIEquatable]
-    public partial class CallInternalBinaryOperatorExp : Exp
-    {
-        public InternalBinaryOperator Operator { get; }
-        public Exp Operand0 { get; }
-        public Exp Operand1 { get; }
-    }
-
+    public record CallInternalUnaryOperatorExp(InternalUnaryOperator Operator, Exp Operand) : Exp;
+    public record CallInternalUnaryAssignOperatorExp(InternalUnaryAssignOperator Operator, Loc Operand) : Exp;
+    public record CallInternalBinaryOperatorExp(InternalBinaryOperator Operator, Exp Operand0, Exp Operand1) : Exp;
+    
     // a = b
-    [AutoConstructor, ImplementIEquatable]
-    public partial class AssignExp : Exp
-    {
-        public Loc Dest { get; }
-        public Exp Src { get; }
-    }
+    public record AssignExp(Loc Dest, Exp Src) : Exp;    
 
-    // F(2, 3)
-    [AutoConstructor, ImplementIEquatable]
-    public partial class CallFuncExp : Exp
-    {
-        public Path.Nested Func { get; }
-        public Loc? Instance { get; }
-        public ImmutableArray<Argument> Args { get; }
-    }
-
-    [AutoConstructor, ImplementIEquatable]
-    public partial class CallSeqFuncExp : Exp
-    {
-        public Path.Nested SeqFunc { get; }
-        public Loc? Instance { get; }
-        public ImmutableArray<Argument> Args { get; }
+    // F(2, 3)    
+    public record CallFuncExp(Path.Nested Func, Loc? Instance, ImmutableArray<Argument> Args): Exp;
+    
+    public record CallSeqFuncExp(Path.Nested SeqFunc , Loc? Instance, ImmutableArray<Argument> Args): Exp
+    {   
         // public bool NeedHeapAlloc { get; } Heap으로 할당시킬지 여부
     }
 
-    // f(2, 3)
-    [AutoConstructor, ImplementIEquatable]
-    public partial class CallValueExp : Exp
-    {
-        public Path.Nested Lambda { get; }
-        public Loc Callable { get; } // (() => {}) ()때문에 Loc이어야 한다
-        public ImmutableArray<Argument> Args { get; }
-    }
+    // f(2, 3)    
+    // Callable은 (() => {}) ()때문에 Loc이어야 한다
+    public record CallValueExp(Path.Nested Lambda, Loc Callable, ImmutableArray<Argument> Args) : Exp;
 
     // () => { return 1; }
     // 문법에서 LambdaExp는 지역적으로 보이지만, 생성된 람다는 프로그램 실행시 전역적으로 호출될 수 있기 때문에
-    // LamdaExp안에 캡쳐할 정보와 Body 등을 바로 넣지 않고 Path로 접근한다
-    [AutoConstructor, ImplementIEquatable]
-    public partial class LambdaExp : Exp
-    {
-        public Path.Nested Lambda { get; }
-    }
+    // LamdaExp안에 캡쳐할 정보와 Body 등을 바로 넣지 않고 Path로 접근한다    
+    public record LambdaExp(Path.Nested Lambda) : Exp;
     
-    // [1, 2, 3]
-    [AutoConstructor, ImplementIEquatable]
-    public partial class ListExp : Exp
-    {
-        public Path ElemType { get; }
-        public ImmutableArray<Exp> Elems { get; }
-    }
+    // [1, 2, 3]    
+    public record ListExp(Path ElemType, ImmutableArray<Exp> Elems) : Exp;    
+    public record ListIteratorExp(Loc ListLoc) : Exp;
 
-    [AutoConstructor, ImplementIEquatable]
-    public partial class ListIteratorExp : Exp
-    {
-        public Loc ListLoc { get; }
-    }
-
-    // enum construction, E.First or E.Second(2, 3)
-    [AutoConstructor, ImplementIEquatable]
-    public partial class NewEnumElemExp : Exp
-    {
-        public Path.Nested Elem { get; }
-        public ImmutableArray<Argument> Args { get; }
-    }
+    // enum construction, E.First or E.Second(2, 3)    
+    public record NewEnumElemExp(Path.Nested Elem, ImmutableArray<Argument> Args) : Exp;
 
     // new S(2, 3, 4);
-    [AutoConstructor, ImplementIEquatable]
-    public partial class NewStructExp : Exp
-    {
-        public Path.Nested Constructor { get; }
-        public ImmutableArray<Argument> Args { get; }
-    }
+    public record NewStructExp(Path.Nested Constructor, ImmutableArray<Argument> Args) : Exp;
 
-    // new C(2, 3, 4);
-    [AutoConstructor, ImplementIEquatable]
-    public partial class NewClassExp : Exp
-    {
-        public Path.Nested Class { get; }
-        public ParamHash ConstructorParamHash { get; }
-        public ImmutableArray<Argument> Args { get; }
-    }
+    // new C(2, 3, 4);    
+    public record NewClassExp(Path.Nested Class, ParamHash ConstructorParamHash, ImmutableArray<Argument> Args) : Exp;
 
     // 컨테이너를 enumElem -> enum으로
-    [AutoConstructor, ImplementIEquatable]
-    public partial class CastEnumElemToEnumExp : Exp
-    {
-        public Exp Src { get; }
-        public Path.Nested EnumElem { get; } // EnumElem을 태그로 붙여야 한다
-    }
+    public record CastEnumElemToEnumExp(Exp Src, Path.Nested EnumElem) : Exp;
     
-    // ClassStaticCast
-    [AutoConstructor, ImplementIEquatable]
-    public partial class CastClassExp : Exp
-    {
-        public Exp Src { get; }
-        public Path Class { get; }
-    }
+    // ClassStaticCast    
+    public record CastClassExp(Exp Src, Path Class) : Exp;
 }
