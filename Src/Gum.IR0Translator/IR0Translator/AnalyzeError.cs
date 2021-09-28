@@ -138,9 +138,7 @@ namespace Gum.IR0Translator
         A2602_NewExp_NoMatchedClassConstructor, // TODO: A0905_CallExp_NoConstructorFound, 랑 겹침
         A2603_NewExp_MultipleMatchedClassConstructors, // TODO: A0905_CallExp_NoConstructorFound, 랑 겹침
 
-
-
-
+        A2701_NullLiteralExp_CantInferNullableType, // null은 힌트와 쓰인다
 
         // A2001_Identifier_MultipleCandidatesForIdentifier,
 

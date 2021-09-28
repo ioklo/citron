@@ -53,7 +53,7 @@ x = null;";
 
             var rscript = RScript(moduleName, 
                 RGlobalVarDeclStmt(new R.Path.NullableType(R.Path.Int), "x"),
-                RAssignStmt(new R.GlobalVarLoc("x"), new R.NewNullableExp(new R.Path.NullableType(R.Path.Int), null))
+                RAssignStmt(new R.GlobalVarLoc("x"), new R.NewNullableExp(R.Path.Int, null))
             );
 
             return new ParseTranslateTestData(code, sscript, rscript);

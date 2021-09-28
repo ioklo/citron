@@ -118,6 +118,16 @@ namespace Gum.IR0Translator
 
             ExpResult.Exp AnalyzeNullLiteralExp(S.NullLiteralExp nullExp, ResolveHint hint)
             {
+                if (hint.TypeHint is TypeValueTypeHint typeValueHint)
+                {
+                    if (typeValueHint.TypeValue is NullableTypeValue nullableTypeValue)
+                    {
+                        return new ExpResult.Exp(new R.NewNullableExp(nullableTypeValue.GetInnerTypeRPath(), null), nullableTypeValue);
+                    }
+                }
+
+                globalContext.AddFatalError(A2701_NullLiteralExp_CantInferNullableType, nullExp);
+
                 throw new NotImplementedException();
                 // return new ExpResult.Exp(R.NullLiteralExp.Instance, globalContext.GetBoolType());
             }

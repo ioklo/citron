@@ -175,6 +175,7 @@ namespace Gum.Test.Misc
         void VisitNewEnumElemExp(R.NewEnumElemExp enumExp);
         void VisitNewStructExp(R.NewStructExp newStructExp);
         void VisitNewClassExp(R.NewClassExp newClassExp);
+        void VisitNewNullableExp(R.NewNullableExp newNullableExp);
         void VisitCastEnumElemToEnumExp(R.CastEnumElemToEnumExp castEnumElemToEnumExp);
         void VisitCastClassExp(R.CastClassExp castClassExp);
 
@@ -200,6 +201,7 @@ namespace Gum.Test.Misc
                 case R.NewEnumElemExp enumExp: visitor.VisitNewEnumElemExp(enumExp); break;
                 case R.NewStructExp newStructExp: visitor.VisitNewStructExp(newStructExp); break;
                 case R.NewClassExp newClassExp: visitor.VisitNewClassExp(newClassExp); break;
+                case R.NewNullableExp newNullableExp: visitor.VisitNewNullableExp(newNullableExp); break;
                 case R.CastEnumElemToEnumExp castEnumElemToEnumExp: visitor.VisitCastEnumElemToEnumExp(castEnumElemToEnumExp); break;
                 case R.CastClassExp castClassExp: visitor.VisitCastClassExp(castClassExp); break;
                 default: throw new UnreachableCodeException();
@@ -675,6 +677,11 @@ namespace Gum.Test.Misc
             public void VisitStringExp(R.StringExp stringExp)
             {
                 writer.WriteNew("R.StringExp", stringExp.Elements);
+            }
+
+            public void VisitNewNullableExp(R.NewNullableExp newNullableExp)
+            {
+                writer.WriteNew("R.NewNullableExp", newNullableExp.InnerType, newNullableExp.ValueExp);
             }
         }
 

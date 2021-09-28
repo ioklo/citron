@@ -84,6 +84,11 @@ namespace Gum.IR0Translator
             this.innerTypeValue = innerTypeValue;
         }
 
+        public R.Path GetInnerTypeRPath()
+        {
+            return innerTypeValue.GetRPath();
+        }
+
         // T? => int?
         public override TypeValue Apply_TypeValue(TypeEnv typeEnv)
         {
