@@ -122,14 +122,12 @@ namespace Gum.IR0Translator
                 {
                     if (typeValueHint.TypeValue is NullableTypeValue nullableTypeValue)
                     {
-                        return new ExpResult.Exp(new R.NewNullableExp(nullableTypeValue.GetInnerTypeRPath(), null), nullableTypeValue);
+                        return new ExpResult.Exp(new R.NewNullableExp(nullableTypeValue.GetInnerTypeValue().GetRPath(), null), nullableTypeValue);
                     }
                 }
 
                 globalContext.AddFatalError(A2701_NullLiteralExp_CantInferNullableType, nullExp);
-
-                throw new NotImplementedException();
-                // return new ExpResult.Exp(R.NullLiteralExp.Instance, globalContext.GetBoolType());
+                throw new UnreachableCodeException();
             }
 
             ExpResult.Exp AnalyzeBoolLiteralExp(S.BoolLiteralExp boolExp)

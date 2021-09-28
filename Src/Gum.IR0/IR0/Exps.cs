@@ -28,6 +28,7 @@ namespace Gum.IR0
     public record BoolLiteralExp(bool Value) : Exp;
     
     // 한개로 합쳐서 만듭니다
+    // TODO: 'New' 단어는 힙할당에만 쓰도록 하자
     public record NewNullableExp(Path InnerType, Exp? ValueExp) : Exp;
     
     public enum InternalUnaryOperator

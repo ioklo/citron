@@ -84,9 +84,9 @@ namespace Gum.IR0Translator
             this.innerTypeValue = innerTypeValue;
         }
 
-        public R.Path GetInnerTypeRPath()
+        public TypeValue GetInnerTypeValue()
         {
-            return innerTypeValue.GetRPath();
+            return innerTypeValue;
         }
 
         // T? => int?

@@ -222,6 +222,9 @@ namespace Gum.IR0Translator
                 if (expResult.TypeValue.Equals(expectType))
                     return expResult;
 
+                // TODO: TypeValue에 TryCast를 각각 넣기
+                // expectType.TryCast(expResult); // expResult를 넣는것도 이상하다.. 그건 그때가서
+
                 // 1. enumElem -> enum
                 if (expResult.TypeValue is EnumElemTypeValue enumElemTypeValue)
                 {
@@ -238,7 +241,7 @@ namespace Gum.IR0Translator
                 }
 
                 // 2. exp is class type
-                else if (expResult.TypeValue is ClassTypeValue classTypeValue)
+                if (expResult.TypeValue is ClassTypeValue classTypeValue)
                 {
                     if (expectType is ClassTypeValue expectClassType)
                     {
@@ -254,6 +257,22 @@ namespace Gum.IR0Translator
 
                     // TODO: interface
                     // if (expectType is InterfaceTypeValue )
+                }
+
+                // 3. T -> T? 는 허용
+                if (expectType is NullableTypeValue expectNullableType)
+                {
+                    // C -> B -> B? 허용
+                    var expectInnerType = expectNullableType.GetInnerTypeValue();
+
+                    // C -> B 시도
+                    var castToInnerTypeResult = TryCastExp_Exp(expResult, expectInnerType);
+                    if (castToInnerTypeResult != null)
+                    {
+                        // B -> B?
+                        var castExp = new R.NewNullableExp(expectInnerType.GetRPath(), castToInnerTypeResult.Result);
+                        return new ExpResult.Exp(castExp, expectType);
+                    }
                 }
 
                 return null;
