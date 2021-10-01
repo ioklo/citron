@@ -1,5 +1,6 @@
 ﻿using Gum.Collections;
 using Gum.Infra;
+using Gum.IR0Visitor;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,270 +11,7 @@ using System.Threading.Tasks;
 using R = Gum.IR0;
 
 namespace Gum.Test.Misc
-{
-    // algebraic datatype만 visitor가 개별로 생긴다
-    public interface IIR0TypeDeclVisitor
-    {
-        void VisitStructDecl(R.StructDecl structDecl);
-        void VisitClassDecl(R.ClassDecl classDecl);
-        void VisitEnumDecl(R.EnumDecl enumDecl);
-
-        public static void Visit<TVisitor>(ref TVisitor visitor, R.TypeDecl typeDecl)
-            where TVisitor : struct, IIR0TypeDeclVisitor
-        {
-            switch (typeDecl)
-            {
-                case R.StructDecl structDecl: visitor.VisitStructDecl(structDecl); break;
-                case R.ClassDecl classDecl: visitor.VisitClassDecl(classDecl); break;
-                case R.EnumDecl enumDecl: visitor.VisitEnumDecl(enumDecl); break;
-                default: throw new UnreachableCodeException();
-            }
-        }
-
-        public static void Visit<TVisitor>(TVisitor visitor, R.TypeDecl typeDecl)
-            where TVisitor : class, IIR0TypeDeclVisitor
-        {
-            switch(typeDecl)
-            {
-                case R.StructDecl structDecl: visitor.VisitStructDecl(structDecl); break;
-                case R.ClassDecl classDecl: visitor.VisitClassDecl(classDecl); break;
-                case R.EnumDecl enumDecl: visitor.VisitEnumDecl(enumDecl); break;
-                default: throw new UnreachableCodeException();
-            }
-        }
-    }
-
-    public interface IIR0FuncDeclVisitor
-    {
-        void VisitNormalFuncDecl(R.NormalFuncDecl normalFuncDecl);
-        void VisitSequenceFuncDecl(R.SequenceFuncDecl seqFuncDecl);
-
-        public static void Visit<TVisitor>(ref TVisitor visitor, R.FuncDecl funcDecl)
-            where TVisitor : struct, IIR0FuncDeclVisitor
-        {
-            switch(funcDecl)
-            {
-                case R.NormalFuncDecl normalFuncDecl: visitor.VisitNormalFuncDecl(normalFuncDecl); break;
-                case R.SequenceFuncDecl seqFuncDecl: visitor.VisitSequenceFuncDecl(seqFuncDecl); break;
-                default: throw new UnreachableCodeException();
-            }
-        }
-    }
-
-    public interface IIR0CallableMemberDeclVisitor
-    {
-        void VisitLambdaDecl(R.LambdaDecl lambdaDecl);
-        void VisitCapturedStatementDecl(R.CapturedStatementDecl capturedStatementDecl);
-
-        public static void Visit<TVisitor>(ref TVisitor visitor, R.CallableMemberDecl decl)
-            where TVisitor : struct, IIR0CallableMemberDeclVisitor
-        {
-            switch (decl)
-            {
-                case R.LambdaDecl lambdaDecl: visitor.VisitLambdaDecl(lambdaDecl); break;
-                case R.CapturedStatementDecl capturedStatementDecl: visitor.VisitCapturedStatementDecl(capturedStatementDecl); break;
-                default: throw new UnreachableCodeException();
-            }
-        }
-    }
-
-    public interface IIR0StmtVisitor
-    {
-        void VisitCommandStmt(R.CommandStmt commandStmt);
-        void VisitGlobalVarDeclStmt(R.GlobalVarDeclStmt globalVarDeclStmt);
-        void VisitLocalVarDeclStmt(R.LocalVarDeclStmt localVarDeclStmt);
-        void VisitIfStmt(R.IfStmt ifStmt);
-        void VisitIfTestClassStmt(R.IfTestClassStmt ifTestClassStmt);
-        void VisitIfTestEnumElemStmt(R.IfTestEnumElemStmt ifTestEnumElemStmt);
-        void VisitForStmt(R.ForStmt forStmt);
-        void VisitContinueStmt(R.ContinueStmt continueStmt);
-        void VisitBreakStmt(R.BreakStmt breakStmt);
-        void VisitReturnStmt(R.ReturnStmt returnStmt);
-        void VisitBlockStmt(R.BlockStmt blockStmt);
-        void VisitBlankStmt(R.BlankStmt blankStmt);
-        void VisitExpStmt(R.ExpStmt expStmt);
-        void VisitTaskStmt(R.TaskStmt taskStmt);
-        void VisitAwaitStmt(R.AwaitStmt awaitStmt);
-        void VisitAsyncStmt(R.AsyncStmt asyncStmt);
-        void VisitForeachStmt(R.ForeachStmt foreachStmt);
-        void VisitYieldStmt(R.YieldStmt yieldStmt);
-        void VisitDirectiveStmt(R.DirectiveStmt yieldStmt);
-
-        public static void Visit<TVisitor>(ref TVisitor visitor, R.Stmt stmt)
-            where TVisitor : struct, IIR0StmtVisitor
-        {
-            switch (stmt)
-            {
-                case R.CommandStmt commandStmt: visitor.VisitCommandStmt(commandStmt); break;
-                case R.GlobalVarDeclStmt globalVarDeclStmt: visitor.VisitGlobalVarDeclStmt(globalVarDeclStmt); break;
-                case R.LocalVarDeclStmt localVarDeclStmt: visitor.VisitLocalVarDeclStmt(localVarDeclStmt); break;
-                case R.IfStmt ifStmt: visitor.VisitIfStmt(ifStmt); break;
-                case R.IfTestClassStmt ifTestClassStmt: visitor.VisitIfTestClassStmt(ifTestClassStmt); break;
-                case R.IfTestEnumElemStmt ifTestEnumElemStmt: visitor.VisitIfTestEnumElemStmt(ifTestEnumElemStmt); break;
-                case R.ForStmt forStmt: visitor.VisitForStmt(forStmt); break;
-                case R.ContinueStmt continueStmt: visitor.VisitContinueStmt(continueStmt); break;
-                case R.BreakStmt breakStmt: visitor.VisitBreakStmt(breakStmt); break;
-                case R.ReturnStmt returnStmt: visitor.VisitReturnStmt(returnStmt); break;
-                case R.BlockStmt blockStmt: visitor.VisitBlockStmt(blockStmt); break;
-                case R.BlankStmt blankStmt: visitor.VisitBlankStmt(blankStmt); break;
-                case R.ExpStmt expStmt: visitor.VisitExpStmt(expStmt); break;
-                case R.TaskStmt taskStmt: visitor.VisitTaskStmt(taskStmt); break;
-                case R.AwaitStmt awaitStmt: visitor.VisitAwaitStmt(awaitStmt); break;
-                case R.AsyncStmt asyncStmt: visitor.VisitAsyncStmt(asyncStmt); break;
-                case R.ForeachStmt foreachStmt: visitor.VisitForeachStmt(foreachStmt); break;
-                case R.YieldStmt yieldStmt: visitor.VisitYieldStmt(yieldStmt); break;
-                case R.DirectiveStmt yieldStmt: visitor.VisitDirectiveStmt(yieldStmt); break;
-                default: throw new UnreachableCodeException();
-            }
-        }
-
-        public static void Visit<TVisitor>(TVisitor visitor, R.Stmt stmt)
-            where TVisitor : class, IIR0StmtVisitor
-        {
-            switch (stmt)
-            {
-                case R.CommandStmt commandStmt: visitor.VisitCommandStmt(commandStmt); break;
-                case R.GlobalVarDeclStmt globalVarDeclStmt: visitor.VisitGlobalVarDeclStmt(globalVarDeclStmt); break;
-                case R.LocalVarDeclStmt localVarDeclStmt: visitor.VisitLocalVarDeclStmt(localVarDeclStmt); break;
-                case R.IfStmt ifStmt: visitor.VisitIfStmt(ifStmt); break;
-                case R.IfTestClassStmt ifTestClassStmt: visitor.VisitIfTestClassStmt(ifTestClassStmt); break;
-                case R.IfTestEnumElemStmt ifTestEnumElemStmt: visitor.VisitIfTestEnumElemStmt(ifTestEnumElemStmt); break;
-                case R.ForStmt forStmt: visitor.VisitForStmt(forStmt); break;
-                case R.ContinueStmt continueStmt: visitor.VisitContinueStmt(continueStmt); break;
-                case R.BreakStmt breakStmt: visitor.VisitBreakStmt(breakStmt); break;
-                case R.ReturnStmt returnStmt: visitor.VisitReturnStmt(returnStmt); break;
-                case R.BlockStmt blockStmt: visitor.VisitBlockStmt(blockStmt); break;
-                case R.BlankStmt blankStmt: visitor.VisitBlankStmt(blankStmt); break;
-                case R.ExpStmt expStmt: visitor.VisitExpStmt(expStmt); break;
-                case R.TaskStmt taskStmt: visitor.VisitTaskStmt(taskStmt); break;
-                case R.AwaitStmt awaitStmt: visitor.VisitAwaitStmt(awaitStmt); break;
-                case R.AsyncStmt asyncStmt: visitor.VisitAsyncStmt(asyncStmt); break;
-                case R.ForeachStmt foreachStmt: visitor.VisitForeachStmt(foreachStmt); break;
-                case R.YieldStmt yieldStmt: visitor.VisitYieldStmt(yieldStmt); break;
-                case R.DirectiveStmt yieldStmt: visitor.VisitDirectiveStmt(yieldStmt); break;
-                default: throw new UnreachableCodeException();
-            }
-        }
-    }
-
-    public interface IIR0ExpVisitor
-    {
-        void VisitLoadExp(R.LoadExp loadExp);
-        void VisitStringExp(R.StringExp stringExp);
-        void VisitIntLiteralExp(R.IntLiteralExp intExp);
-        void VisitBoolLiteralExp(R.BoolLiteralExp boolExp);
-        void VisitCallInternalUnaryOperatorExp(R.CallInternalUnaryOperatorExp ciuoExp);
-        void VisitCallInternalUnaryAssignOperatorExp(R.CallInternalUnaryAssignOperatorExp ciuaoExp);
-        void VisitCallInternalBinaryOperatorExp(R.CallInternalBinaryOperatorExp ciboExp);
-        void VisitAssignExp(R.AssignExp assignExp);
-        void VisitCallFuncExp(R.CallFuncExp callFuncExp);
-        void VisitCallSeqFuncExp(R.CallSeqFuncExp callSeqFuncExp);
-        void VisitCallValueExp(R.CallValueExp callValueExp);
-        void VisitLambdaExp(R.LambdaExp lambdaExp);
-        void VisitListExp(R.ListExp listExp);
-        void VisitListIteratorExp(R.ListIteratorExp listIterExp);
-        void VisitNewEnumElemExp(R.NewEnumElemExp enumExp);
-        void VisitNewStructExp(R.NewStructExp newStructExp);
-        void VisitNewClassExp(R.NewClassExp newClassExp);
-        void VisitNewNullableExp(R.NewNullableExp newNullableExp);
-        void VisitCastEnumElemToEnumExp(R.CastEnumElemToEnumExp castEnumElemToEnumExp);
-        void VisitCastClassExp(R.CastClassExp castClassExp);
-
-        public static void Visit<TVisitor>(ref TVisitor visitor, R.Exp exp)
-            where TVisitor : IIR0ExpVisitor
-        {
-            switch(exp)
-            {
-                case R.LoadExp loadExp: visitor.VisitLoadExp(loadExp); break;
-                case R.StringExp stringExp: visitor.VisitStringExp(stringExp); break;
-                case R.IntLiteralExp intExp: visitor.VisitIntLiteralExp(intExp); break;
-                case R.BoolLiteralExp boolExp: visitor.VisitBoolLiteralExp(boolExp); break;
-                case R.CallInternalUnaryOperatorExp ciuoExp: visitor.VisitCallInternalUnaryOperatorExp(ciuoExp); break;
-                case R.CallInternalUnaryAssignOperatorExp ciuaoExp: visitor.VisitCallInternalUnaryAssignOperatorExp(ciuaoExp); break;
-                case R.CallInternalBinaryOperatorExp ciboExp: visitor.VisitCallInternalBinaryOperatorExp(ciboExp); break;
-                case R.AssignExp assignExp: visitor.VisitAssignExp(assignExp); break;
-                case R.CallFuncExp callFuncExp: visitor.VisitCallFuncExp(callFuncExp); break;
-                case R.CallSeqFuncExp callSeqFuncExp: visitor.VisitCallSeqFuncExp(callSeqFuncExp); break;
-                case R.CallValueExp callValueExp: visitor.VisitCallValueExp(callValueExp); break;
-                case R.LambdaExp lambdaExp: visitor.VisitLambdaExp(lambdaExp); break;
-                case R.ListExp listExp: visitor.VisitListExp(listExp); break;
-                case R.ListIteratorExp listIterExp: visitor.VisitListIteratorExp(listIterExp); break;
-                case R.NewEnumElemExp enumExp: visitor.VisitNewEnumElemExp(enumExp); break;
-                case R.NewStructExp newStructExp: visitor.VisitNewStructExp(newStructExp); break;
-                case R.NewClassExp newClassExp: visitor.VisitNewClassExp(newClassExp); break;
-                case R.NewNullableExp newNullableExp: visitor.VisitNewNullableExp(newNullableExp); break;
-                case R.CastEnumElemToEnumExp castEnumElemToEnumExp: visitor.VisitCastEnumElemToEnumExp(castEnumElemToEnumExp); break;
-                case R.CastClassExp castClassExp: visitor.VisitCastClassExp(castClassExp); break;
-                default: throw new UnreachableCodeException();
-            }
-        }
-
-        public static void Visit<TVisitor>(TVisitor visitor, R.Exp exp)
-            where TVisitor : IIR0ExpVisitor
-        {
-            switch (exp)
-            {
-                case R.LoadExp loadExp: visitor.VisitLoadExp(loadExp); break;
-                case R.StringExp stringExp: visitor.VisitStringExp(stringExp); break;
-                case R.IntLiteralExp intExp: visitor.VisitIntLiteralExp(intExp); break;
-                case R.BoolLiteralExp boolExp: visitor.VisitBoolLiteralExp(boolExp); break;
-                case R.CallInternalUnaryOperatorExp ciuoExp: visitor.VisitCallInternalUnaryOperatorExp(ciuoExp); break;
-                case R.CallInternalUnaryAssignOperatorExp ciuaoExp: visitor.VisitCallInternalUnaryAssignOperatorExp(ciuaoExp); break;
-                case R.CallInternalBinaryOperatorExp ciboExp: visitor.VisitCallInternalBinaryOperatorExp(ciboExp); break;
-                case R.AssignExp assignExp: visitor.VisitAssignExp(assignExp); break;
-                case R.CallFuncExp callFuncExp: visitor.VisitCallFuncExp(callFuncExp); break;
-                case R.CallSeqFuncExp callSeqFuncExp: visitor.VisitCallSeqFuncExp(callSeqFuncExp); break;
-                case R.CallValueExp callValueExp: visitor.VisitCallValueExp(callValueExp); break;
-                case R.LambdaExp lambdaExp: visitor.VisitLambdaExp(lambdaExp); break;
-                case R.ListExp listExp: visitor.VisitListExp(listExp); break;
-                case R.ListIteratorExp listIterExp: visitor.VisitListIteratorExp(listIterExp); break;
-                case R.NewEnumElemExp enumExp: visitor.VisitNewEnumElemExp(enumExp); break;
-                case R.NewStructExp newStructExp: visitor.VisitNewStructExp(newStructExp); break;
-                case R.NewClassExp newClassExp: visitor.VisitNewClassExp(newClassExp); break;
-                case R.CastEnumElemToEnumExp castEnumElemToEnumExp: visitor.VisitCastEnumElemToEnumExp(castEnumElemToEnumExp); break;
-                case R.CastClassExp castClassExp: visitor.VisitCastClassExp(castClassExp); break;
-                default: throw new UnreachableCodeException();
-            }
-        }
-    }
-
-    public interface IIR0LocVisitor
-    {
-        void VisitTempLoc(R.TempLoc loc);
-        void VisitGlobalVarLoc(R.GlobalVarLoc loc);
-        void VisitLocalVarLoc(R.LocalVarLoc loc);
-        void VisitCapturedVarLoc(R.CapturedVarLoc loc);
-        void VisitListIndexerLoc(R.ListIndexerLoc loc);
-        void VisitStaticMemberLoc(R.StaticMemberLoc loc);
-        void VisitStructMemberLoc(R.StructMemberLoc loc);
-        void VisitClassMemberLoc(R.ClassMemberLoc loc);
-        void VisitEnumElemMemberLoc(R.EnumElemMemberLoc loc);
-        void VisitThisLoc(R.ThisLoc loc);
-        void VisitDerefLocLoc(R.DerefLocLoc loc);
-        void VisitDerefExpLoc(R.DerefExpLoc loc);
-
-        public static void Visit<TVisitor>(ref TVisitor visitor, R.Loc loc)
-            where TVisitor : struct, IIR0LocVisitor
-        {
-            switch (loc)
-            {
-                case R.TempLoc tempLoc: visitor.VisitTempLoc(tempLoc); break;
-                case R.GlobalVarLoc globalVarLoc: visitor.VisitGlobalVarLoc(globalVarLoc); break;
-                case R.LocalVarLoc localVarLoc: visitor.VisitLocalVarLoc(localVarLoc); break;
-                case R.CapturedVarLoc capturedVarLoc: visitor.VisitCapturedVarLoc(capturedVarLoc); break;
-                case R.ListIndexerLoc listIndexerLoc: visitor.VisitListIndexerLoc(listIndexerLoc); break;
-                case R.StaticMemberLoc staticMemberLoc: visitor.VisitStaticMemberLoc(staticMemberLoc); break;
-                case R.StructMemberLoc structMemberLoc: visitor.VisitStructMemberLoc(structMemberLoc); break;
-                case R.ClassMemberLoc classMemberLoc: visitor.VisitClassMemberLoc(classMemberLoc); break;
-                case R.EnumElemMemberLoc enumElemeMemberLoc: visitor.VisitEnumElemMemberLoc(enumElemeMemberLoc); break;
-                case R.ThisLoc thisLoc: visitor.VisitThisLoc(thisLoc); break;
-                case R.DerefLocLoc derefLocLoc: visitor.VisitDerefLocLoc(derefLocLoc); break;
-                case R.DerefExpLoc derefExpLoc: visitor.VisitDerefExpLoc(derefExpLoc); break;
-                default: throw new UnreachableCodeException();
-            }
-        }
-    }
-
+{   
     public class IR0Writer
     {
         IndentedTextWriter itw;
@@ -363,7 +101,7 @@ namespace Gum.Test.Misc
             public static void Write(IndentedTextWriter itw, R.TypeDecl typeDecl)
             {
                 var writer = new TypeDeclWriter(itw);
-                IIR0TypeDeclVisitor.Visit(ref writer, typeDecl);
+                writer.Visit(typeDecl);
             }
 
             TypeDeclWriter(IndentedTextWriter itw)
@@ -399,7 +137,7 @@ namespace Gum.Test.Misc
             public static void Write(IndentedTextWriter itw, R.FuncDecl funcDecl)
             {
                 var writer = new FuncDeclWriter(itw);
-                IIR0FuncDeclVisitor.Visit(ref writer, funcDecl);
+                writer.Visit(funcDecl);
             }
 
             FuncDeclWriter(IndentedTextWriter itw)
@@ -444,7 +182,7 @@ namespace Gum.Test.Misc
             public static void Write(IndentedTextWriter itw, R.CallableMemberDecl decl)
             {
                 var writer = new CallableMemberDeclWriter(itw);
-                IIR0CallableMemberDeclVisitor.Visit(ref writer, decl);
+                writer.Visit(decl);
             }
 
             CallableMemberDeclWriter(IndentedTextWriter itw)
@@ -472,7 +210,7 @@ namespace Gum.Test.Misc
             public static void Write(IR0Writer writer, R.Stmt stmt)
             {
                 var stmtWriter = new StmtWriter(writer);
-                IIR0StmtVisitor.Visit(ref stmtWriter, stmt);
+                stmtWriter.Visit(stmt);
             }
 
             StmtWriter(IR0Writer writer) { this.writer = writer; }
@@ -579,7 +317,7 @@ namespace Gum.Test.Misc
             public static void Write(IR0Writer writer, R.Exp exp)
             {
                 var expWriter = new ExpWriter(writer);
-                IIR0ExpVisitor.Visit(ref expWriter, exp);
+                expWriter.Visit(exp);
             }
 
             ExpWriter(IR0Writer writer) { this.writer = writer; }
@@ -692,7 +430,7 @@ namespace Gum.Test.Misc
             public static void Write(IR0Writer writer, R.Loc loc)
             {
                 var locWriter = new LocWriter(writer);
-                IIR0LocVisitor.Visit(ref locWriter, loc);
+                locWriter.Visit(loc);
             }
 
             public void VisitTempLoc(R.TempLoc loc)
