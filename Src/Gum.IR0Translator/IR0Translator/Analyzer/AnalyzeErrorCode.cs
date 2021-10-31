@@ -1,28 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
-using Gum.Infra;
-
-using S = Gum.Syntax;
+using System.Threading.Tasks;
 
 namespace Gum.IR0Translator
 {
+    // 에러 코드는 여기서 모두 관리한다
     public enum AnalyzeErrorCode
     {
-        // TypeSkeletonCollector
-        S0101_Failed,
-
-        // TypeExpEvaluator
-        T0101_IdTypeExp_TypeDoesntHaveTypeParams, 
-        T0102_IdTypeExp_VarTypeCantApplyTypeArgs,
-        T0103_IdTypeExp_MultipleTypesOfSameName,
-        T0104_IdTypeExp_TypeNotFound,
-        T0105_IdTypeExp_TypeVarCantApplyTypeArgs,
-
-        T0201_MemberTypeExp_TypeIsNotNormalType,
-        T0202_MemberTypeExp_MemberTypeNotFound,
-        T0203_MemberTypeExp_ExpShouldNotBeType,
-
         // Analyzer
         A0101_VarDecl_CantInferVarType,
         A0102_VarDecl_MismatchBetweenRefDeclTypeAndRefInitType,
@@ -86,7 +72,7 @@ namespace Gum.IR0Translator
         A1202_ReturnStmt_SeqFuncShouldReturnVoid,
         A1203_ReturnStmt_RefTargetIsNotLocation,
 
-        A1301_ExpStmt_ExpressionShouldBeAssignOrCall,        
+        A1301_ExpStmt_ExpressionShouldBeAssignOrCall,
 
         A1401_YieldStmt_YieldShouldBeInSeqFunc,
         // A1402_YieldStmt_MismatchBetweenYieldValueAndSeqFuncYieldType, => CastFailed
@@ -127,8 +113,8 @@ namespace Gum.IR0Translator
         A2402_StructDecl_CannotSetMemberProtectedAccessBecauseItsNotAllowed,
         A2403_StructDecl_CannotDeclConstructorDifferentWithTypeName,
 
-        A2501_ClassDecl_CannotSetMemberPrivateAccessExplicitlyBecauseItsDefault,        
-        A2502_ClassDecl_CannotDeclConstructorDifferentWithTypeName,        
+        A2501_ClassDecl_CannotSetMemberPrivateAccessExplicitlyBecauseItsDefault,
+        A2502_ClassDecl_CannotDeclConstructorDifferentWithTypeName,
         A2503_ClassDecl_CannotFindBaseClassConstructor,
         A2504_ClassDecl_CannotAccessBaseClassConstructor,
         A2505_ClassDecl_TryCallBaseConstructorWithoutBaseClass,
@@ -142,18 +128,9 @@ namespace Gum.IR0Translator
 
         // A2001_Identifier_MultipleCandidatesForIdentifier,
 
+        A2801_StaticNotNullDirective_ShouldHaveOneArgument,
+        A2802_StaticNotNullDirective_ArgumentMustBeLocation,
+
         A9901_NotSupported_LambdaParameterInference,
-    }
-
-    public class AnalyzeError : IError
-    {
-        public AnalyzeErrorCode Code { get; }
-        public S.ISyntaxNode Node { get; }
-        public string Message { get; }
-
-        public AnalyzeError(AnalyzeErrorCode code, S.ISyntaxNode node, string msg)
-        {
-            (Code, Node, Message) = (code, node, msg);
-        }
     }
 }

@@ -10,15 +10,15 @@ using System.Linq;
 using static Gum.Infra.Misc;
 
 using S = Gum.Syntax;
-using R = Gum.IR0;
+using Gum.Log;
 
 namespace Gum.IR0Translator.Test
 {
     static class TestMisc
     {   
-        public static void VerifyError(IEnumerable<IError> errors, AnalyzeErrorCode code, S.ISyntaxNode node)
+        public static void VerifyError(IEnumerable<ILog> logs, AnalyzeErrorCode code, S.ISyntaxNode node)
         {
-            var result = errors.OfType<AnalyzeError>()
+            var result = logs.OfType<AnalyzeErrorLog>()
                 .Any(error => error.Code == code && error.Node == node);
 
             Assert.True(result, $"Errors doesn't contain (Code: {code}, Node: {node})");

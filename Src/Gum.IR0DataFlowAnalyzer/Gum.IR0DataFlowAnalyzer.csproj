@@ -6,6 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Gum.Infra\Gum.Infra.csproj" />
+    <ProjectReference Include="..\Gum.IR0Visitor\Gum.IR0Visitor.csproj" />
     <ProjectReference Include="..\Gum.IR0\Gum.IR0.csproj" />
   </ItemGroup>
 

@@ -60,5 +60,5 @@ namespace Gum.Syntax
     public record YieldStmt(Exp Value) : Stmt;    
 
     // Stmt에 사용되는 Directive랑 Decl-Level에서 사용되는 Directive가 다르므로 구분해도 될 것 같다
-    public record DirectiveStmt(string name, ImmutableArray<Exp> args) : Stmt;
+    public record DirectiveStmt(string Name, ImmutableArray<Exp> Args) : Stmt;
 }

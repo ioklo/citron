@@ -10,6 +10,7 @@ using System.Text;
 using S = Gum.Syntax;
 using M = Gum.CompileTime;
 using R = Gum.IR0;
+using Gum.Log;
 
 namespace Gum.IR0Translator
 {
@@ -23,28 +24,23 @@ namespace Gum.IR0Translator
             GlobalItemValueFactory globalItemValueFactory;
 
             TypeExpInfoService typeExpInfoService;            
-            IErrorCollector errorCollector;
+            ILogger logger;
             InternalGlobalVariableRepository internalGlobalVarRepo;
 
             public GlobalContext(
                 ItemValueFactory itemValueFactory,
                 GlobalItemValueFactory globalItemValueFactory,
                 TypeExpInfoService typeExpInfoService,
-                IErrorCollector errorCollector)
+                ILogger logger)
             {
                 this.itemValueFactory = itemValueFactory;
                 this.internalBinOpQueryService = new InternalBinaryOperatorQueryService(itemValueFactory);
                 this.globalItemValueFactory = globalItemValueFactory;
                 this.typeExpInfoService = typeExpInfoService;
-                this.errorCollector = errorCollector;
+                this.logger = logger;
                 this.internalGlobalVarRepo = new InternalGlobalVariableRepository();
             }
-
-            internal void AddFatalError()
-            {
-                throw new NotImplementedException();
-            }
-
+            
             GlobalContext(
                 GlobalContext other,
                 CloneContext cloneContext)
@@ -61,7 +57,7 @@ namespace Gum.IR0Translator
                 Infra.Misc.EnsurePure(other.typeExpInfoService);
                 this.typeExpInfoService = other.typeExpInfoService;
 
-                this.errorCollector = cloneContext.GetClone(other.errorCollector);
+                this.logger = cloneContext.GetClone(other.logger);
                 this.internalGlobalVarRepo = cloneContext.GetClone(other.internalGlobalVarRepo);
             }
 
@@ -84,19 +80,19 @@ namespace Gum.IR0Translator
                 Infra.Misc.EnsurePure(src.typeExpInfoService);
                 this.typeExpInfoService = src.typeExpInfoService;
 
-                updateContext.Update(this.errorCollector, src.errorCollector);
+                updateContext.Update(this.logger, src.logger);
                 updateContext.Update(this.internalGlobalVarRepo, src.internalGlobalVarRepo);
             }
 
             public void AddError(AnalyzeErrorCode code, S.ISyntaxNode node)
             {
-                errorCollector.Add(new AnalyzeError(code, node, code.ToString()));
+                logger.Add(new AnalyzeErrorLog(code, node, code.ToString()));
             }
 
             [DoesNotReturn]
             public void AddFatalError(AnalyzeErrorCode code, S.ISyntaxNode node)
             {
-                errorCollector.Add(new AnalyzeError(code, node, code.ToString()));
+                logger.Add(new AnalyzeErrorLog(code, node, code.ToString()));
                 throw new AnalyzerFatalException();
             }            
 

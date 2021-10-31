@@ -131,6 +131,35 @@ namespace Gum.IR0Visitor
             }
         }
 
+        public static void Visit<TVisitor, TArg0>(this ref TVisitor visitor, R.Exp exp, TArg0 arg0)
+            where TVisitor : struct, IIR0ExpVisitor<TArg0>
+        {
+            switch (exp)
+            {
+                case R.LoadExp loadExp: visitor.VisitLoadExp(loadExp, arg0); break;
+                case R.StringExp stringExp: visitor.VisitStringExp(stringExp, arg0); break;
+                case R.IntLiteralExp intExp: visitor.VisitIntLiteralExp(intExp, arg0); break;
+                case R.BoolLiteralExp boolExp: visitor.VisitBoolLiteralExp(boolExp, arg0); break;
+                case R.CallInternalUnaryOperatorExp ciuoExp: visitor.VisitCallInternalUnaryOperatorExp(ciuoExp, arg0); break;
+                case R.CallInternalUnaryAssignOperatorExp ciuaoExp: visitor.VisitCallInternalUnaryAssignOperatorExp(ciuaoExp, arg0); break;
+                case R.CallInternalBinaryOperatorExp ciboExp: visitor.VisitCallInternalBinaryOperatorExp(ciboExp, arg0); break;
+                case R.AssignExp assignExp: visitor.VisitAssignExp(assignExp, arg0); break;
+                case R.CallFuncExp callFuncExp: visitor.VisitCallFuncExp(callFuncExp, arg0); break;
+                case R.CallSeqFuncExp callSeqFuncExp: visitor.VisitCallSeqFuncExp(callSeqFuncExp, arg0); break;
+                case R.CallValueExp callValueExp: visitor.VisitCallValueExp(callValueExp, arg0); break;
+                case R.LambdaExp lambdaExp: visitor.VisitLambdaExp(lambdaExp, arg0); break;
+                case R.ListExp listExp: visitor.VisitListExp(listExp, arg0); break;
+                case R.ListIteratorExp listIterExp: visitor.VisitListIteratorExp(listIterExp, arg0); break;
+                case R.NewEnumElemExp enumExp: visitor.VisitNewEnumElemExp(enumExp, arg0); break;
+                case R.NewStructExp newStructExp: visitor.VisitNewStructExp(newStructExp, arg0); break;
+                case R.NewClassExp newClassExp: visitor.VisitNewClassExp(newClassExp, arg0); break;
+                case R.NewNullableExp newNullableExp: visitor.VisitNewNullableExp(newNullableExp, arg0); break;
+                case R.CastEnumElemToEnumExp castEnumElemToEnumExp: visitor.VisitCastEnumElemToEnumExp(castEnumElemToEnumExp, arg0); break;
+                case R.CastClassExp castClassExp: visitor.VisitCastClassExp(castClassExp, arg0); break;
+                default: throw new UnreachableCodeException();
+            }
+        }
+
         public static void Visit<TVisitor>(this TVisitor visitor, R.Exp exp)
             where TVisitor : class, IIR0ExpVisitor
         {
@@ -189,6 +218,41 @@ namespace Gum.IR0Visitor
                 case R.ThisLoc thisLoc: visitor.VisitThisLoc(thisLoc); break;
                 case R.DerefLocLoc derefLocLoc: visitor.VisitDerefLocLoc(derefLocLoc); break;
                 case R.DerefExpLoc derefExpLoc: visitor.VisitDerefExpLoc(derefExpLoc); break;
+                default: throw new UnreachableCodeException();
+            }
+        }
+
+        public static TRet Visit<TVisitor, TRet>(this ref TVisitor visitor, R.Loc loc)
+            where TVisitor : struct, IIR0LocVisitorWithRet<TRet>
+        {
+            switch (loc)
+            {
+                case R.TempLoc tempLoc: return visitor.VisitTempLoc(tempLoc);
+                case R.GlobalVarLoc globalVarLoc: return visitor.VisitGlobalVarLoc(globalVarLoc);
+                case R.LocalVarLoc localVarLoc: return visitor.VisitLocalVarLoc(localVarLoc);
+                case R.CapturedVarLoc capturedVarLoc: return visitor.VisitCapturedVarLoc(capturedVarLoc);
+                case R.ListIndexerLoc listIndexerLoc: return visitor.VisitListIndexerLoc(listIndexerLoc);
+                case R.StaticMemberLoc staticMemberLoc: return visitor.VisitStaticMemberLoc(staticMemberLoc);
+                case R.StructMemberLoc structMemberLoc: return visitor.VisitStructMemberLoc(structMemberLoc);
+                case R.ClassMemberLoc classMemberLoc: return visitor.VisitClassMemberLoc(classMemberLoc);
+                case R.EnumElemMemberLoc enumElemeMemberLoc: return visitor.VisitEnumElemMemberLoc(enumElemeMemberLoc);
+                case R.ThisLoc thisLoc: return visitor.VisitThisLoc(thisLoc);
+                case R.DerefLocLoc derefLocLoc: return visitor.VisitDerefLocLoc(derefLocLoc);
+                case R.DerefExpLoc derefExpLoc: return visitor.VisitDerefExpLoc(derefExpLoc);
+                default: throw new UnreachableCodeException();
+            }
+        }
+
+        public static void Visit<TVisitor>(this ref TVisitor visitor, R.DirectiveStmt directiveStmt)
+            where TVisitor : struct, IIR0DirectiveStmtVisitor
+        {
+            switch(directiveStmt)
+            {
+                case R.DirectiveStmt.NotNull notNullDir: visitor.VisitNotNull(notNullDir); break;
+                case R.DirectiveStmt.Null nullDir: visitor.VisitNull(nullDir); break;
+                case R.DirectiveStmt.StaticNotNull staticNotNullDir: visitor.VisitStaticNotNull(staticNotNullDir); break;
+                case R.DirectiveStmt.StaticNull staticNullDir: visitor.VisitStaticNull(staticNullDir); break;
+                case R.DirectiveStmt.StaticUnknownNull staticUnknownNullDir: visitor.VisitStaticUnknownNull(staticUnknownNullDir); break;
                 default: throw new UnreachableCodeException();
             }
         }

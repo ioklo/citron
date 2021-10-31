@@ -18,12 +18,12 @@ namespace Gum.IR0Translator.Test
         TypeExpInfoService Evaluate(S.Script script)
         {
             M.ModuleName moduleName = "TestModule";
-            var errorCollector = new TestErrorCollector(true);
+            var testLogger = new TestLogger(true);
 
             var skelRepo = TypeSkeletonCollector.Collect(script);            
 
             var moduleInfoRepo = new ModuleInfoRepository(ImmutableArray<M.ModuleInfo>.Empty);
-            var result = TypeExpEvaluator.Evaluate(moduleName, script, moduleInfoRepo, skelRepo, errorCollector);
+            var result = TypeExpEvaluator.Evaluate(moduleName, script, moduleInfoRepo, skelRepo, testLogger);
 
             Assert.NotNull(result);
             Debug.Assert(result != null);

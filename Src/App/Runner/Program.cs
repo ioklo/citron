@@ -2,6 +2,7 @@
 using Gum.Infra;
 using Gum.IR0Evaluator;
 using Gum.IR0Translator;
+using Gum.Log;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,39 +11,39 @@ using System.Threading.Tasks;
 
 namespace Runner
 {
-    class DemoErrorCollector : IErrorCollector
+    class DemoLogger : ILogger
     {
-        List<IError> errors = new List<IError>();
+        List<ILog> logs = new List<ILog>();
 
-        public DemoErrorCollector() { }
+        public DemoLogger() { }
 
-        DemoErrorCollector(DemoErrorCollector other, CloneContext cloneContext)
+        DemoLogger(DemoLogger other, CloneContext cloneContext)
         {
-            this.errors = new List<IError>(other.errors);
+            this.logs = new List<ILog>(other.logs);
         }
 
-        public bool HasError => errors.Count != 0;
+        public bool HasError => logs.Count != 0;
 
-        public void Add(IError error)
+        public void Add(ILog error)
         {
-            errors.Add(error);
+            logs.Add(error);
         }
 
-        public IErrorCollector Clone(CloneContext context)
+        public ILogger Clone(CloneContext context)
         {
-            return new DemoErrorCollector(this, context);
+            return new DemoLogger(this, context);
         }
 
-        public void Update(IErrorCollector src_errorCollector, UpdateContext updateContext)
+        public void Update(ILogger src_logger, UpdateContext updateContext)
         {
-            var src = (DemoErrorCollector)src_errorCollector;
-            errors.Clear();
-            errors.AddRange(src.errors);
+            var src = (DemoLogger)src_logger;
+            logs.Clear();
+            logs.AddRange(src.logs);
         }
 
         public string GetMessages()
         {
-            return string.Join("\r\n", errors.Select(error => error.Message));
+            return string.Join("\r\n", logs.Select(error => error.Message));
         }
     }
 
@@ -101,12 +102,12 @@ namespace Runner
                 return 1;
             }
 
-            var testErrorCollector = new DemoErrorCollector();
-            var rscript = Translator.Translate("TestModule", default, scriptResult.Elem, testErrorCollector);
+            var testLogger = new DemoLogger();
+            var rscript = Translator.Translate("TestModule", default, scriptResult.Elem, testLogger);
             if (rscript == null)
             {
                 Console.WriteLine("에러 (컴파일 실패)\n");
-                Console.WriteLine(testErrorCollector.GetMessages());
+                Console.WriteLine(testLogger.GetMessages());
                 return 1;
             }
 

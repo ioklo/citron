@@ -113,6 +113,12 @@ namespace Gum.IR0Translator
             VisitExp(yieldStmt.Value);
         }
 
+        void VisitDirectiveStmt(S.DirectiveStmt directiveStmt)
+        {
+            foreach (var arg in directiveStmt.Args)
+                VisitExp(arg);
+        }
+
         void VisitStmt(S.Stmt stmt)
         {
             switch (stmt)
@@ -133,6 +139,7 @@ namespace Gum.IR0Translator
                 case S.AsyncStmt asyncStmt: VisitAsyncStmt(asyncStmt); break;
                 case S.ForeachStmt foreachStmt: VisitForeachStmt(foreachStmt); break;
                 case S.YieldStmt yieldStmt: VisitYieldStmt(yieldStmt); break;
+                case S.DirectiveStmt directiveStmt: VisitDirectiveStmt(directiveStmt); break;
                 default: throw new UnreachableCodeException();
             };
         }

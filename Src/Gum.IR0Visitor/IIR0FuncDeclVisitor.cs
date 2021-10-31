@@ -1,5 +1,4 @@
-﻿using Gum.Infra;
-using R = Gum.IR0;
+﻿using R = Gum.IR0;
 
 namespace Gum.IR0Visitor
 {

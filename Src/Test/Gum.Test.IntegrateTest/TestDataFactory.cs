@@ -11,6 +11,7 @@ using Xunit.Abstractions;
 using System.Diagnostics;
 using Gum.IR0Translator;
 using System.Reflection;
+using Gum.Log;
 
 namespace Gum.Test.IntegrateTest
 {
@@ -86,11 +87,29 @@ namespace Gum.Test.IntegrateTest
         }
     }
 
-    public record ParseTranslateWithErrorTestData(string Code, S.Script SScript, AnalyzeErrorCode ErrorCode, S.ISyntaxNode Node) : TestData
+    public record ParseTranslateWithErrorTestData : TestData
     {
+        string code;
+        S.Script sscript;
+        ILog log;
+
+        public ParseTranslateWithErrorTestData(string code, S.Script sscript, AnalyzeErrorCode errorCode, S.ISyntaxNode node)
+        {
+            this.code = code;
+            this.sscript = sscript;
+            this.log = new AnalyzeErrorLog(errorCode, node, "");
+        }
+
+        public ParseTranslateWithErrorTestData(string code, S.Script sscript, ILog log)
+        {
+            this.code = code;
+            this.sscript = sscript;
+            this.log = log;
+        }
+
         public override string? GetCode()
         {
-            return Code;
+            return code;
         }
 
         public override R.Script? GetRScript()
@@ -100,7 +119,7 @@ namespace Gum.Test.IntegrateTest
 
         public override Task TestAsync()
         {
-            return Misc.TestParseTranslateWithErrorAsync(Code, SScript, ErrorCode, Node);
+            return Misc.TestParseTranslateWithErrorAsync(code, sscript, log);
         }
     }
 

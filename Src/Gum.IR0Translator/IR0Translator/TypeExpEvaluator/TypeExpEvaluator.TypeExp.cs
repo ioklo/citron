@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Gum.Infra;
 
-using static Gum.IR0Translator.AnalyzeErrorCode;
+using static Gum.IR0Translator.TypeExpErrorCode;
 using S = Gum.Syntax;
 using M = Gum.CompileTime;
 using System.Linq;

@@ -81,22 +81,22 @@ namespace EvalTest
             var scriptResult = await parser.ParseScriptAsync(parserContext);
             Assert.True(scriptResult.HasValue, "parsing failed");
 
-            var errorCollector = new TestErrorCollector(false);
+            var logger = new TestLogger(false);
             var commandProvider = new TestCmdProvider();
 
             try
             {
-                var rscript = Translator.Translate("TestModule", default, scriptResult.Elem,  errorCollector);
+                var rscript = Translator.Translate("TestModule", default, scriptResult.Elem, logger);
                 MyAssert.Assert(rscript != null);
 
                 var retValue = await Evaluator.EvalAsync(default, commandProvider, rscript); // retValue는 지금 쓰지 않는다
             }
             catch(Exception)
             {
-                Assert.True(errorCollector.HasError, "실행은 중간에 멈췄는데 에러로그가 남지 않았습니다");
+                Assert.True(logger.HasError, "실행은 중간에 멈췄는데 에러로그가 남지 않았습니다");
             }
 
-            Assert.False(errorCollector.HasError, errorCollector.GetMessages());
+            Assert.False(logger.HasError, logger.GetMessages());
             Assert.Equal(expected, commandProvider.Output);
         }
     }

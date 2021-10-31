@@ -75,5 +75,11 @@ namespace Gum.IR0
     {
         // init은 지원하지 않기로,
         // public record Init(ImmutableArray<Loc> Locs) : DirectiveStmt;        
+        public record Null(Loc Loc) : DirectiveStmt;
+        public record NotNull(Loc Loc) : DirectiveStmt;
+
+        public record StaticNull(Loc Loc) : DirectiveStmt;   // 컴파일러 스태틱 체크
+        public record StaticNotNull(Loc Loc) : DirectiveStmt;
+        public record StaticUnknownNull(Loc Loc) : DirectiveStmt;
     }    
 }

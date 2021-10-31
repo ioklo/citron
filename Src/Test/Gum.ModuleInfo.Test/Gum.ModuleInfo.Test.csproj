@@ -20,6 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Gum.Infra\Gum.Infra.csproj" />
     <ProjectReference Include="..\..\Gum.ModuleInfo\Gum.ModuleInfo.csproj" />
   </ItemGroup>
 

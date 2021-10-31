@@ -13,6 +13,7 @@ using static Gum.IR0Translator.AnalyzeErrorCode;
 
 using S = Gum.Syntax;
 using R = Gum.IR0;
+using Gum.Log;
 
 namespace Gum.IR0Translator
 {
@@ -80,7 +81,7 @@ namespace Gum.IR0Translator
             M.ModuleName moduleName,
             TypeExpInfoService typeExpInfoService,
             ModuleInfoRepository externalModuleInfoRepo,
-            IErrorCollector errorCollector)
+            ILogger logger)
         {
             try
             {
@@ -90,7 +91,7 @@ namespace Gum.IR0Translator
 
                 var rmoduleName = RItemFactory.MakeModuleName(moduleName);
 
-                var globalContext = new GlobalContext(itemValueFactory, globalItemValueFactory, typeExpInfoService, errorCollector);
+                var globalContext = new GlobalContext(itemValueFactory, globalItemValueFactory, typeExpInfoService, logger);
                 var rootContext = new RootContext(rmoduleName, itemValueFactory);
 
                 return RootAnalyzer.Analyze(globalContext, rootContext, internalModuleInfo, sscript);

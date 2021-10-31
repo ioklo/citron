@@ -250,9 +250,9 @@ namespace Gum.Test.Misc
                 writer.WriteString("R.ContinueStmt.Instance");
             }
 
-            public void VisitDirectiveStmt(R.DirectiveStmt yieldStmt)
+            public void VisitDirectiveStmt(R.DirectiveStmt directiveStmt)
             {
-                throw new NotImplementedException();
+                DirectiveStmtWriter.Write(writer, directiveStmt);
             }
 
             public void VisitExpStmt(R.ExpStmt expStmt)
@@ -311,7 +311,46 @@ namespace Gum.Test.Misc
             }
         }
 
-        struct ExpWriter: IIR0ExpVisitor
+        struct DirectiveStmtWriter : IIR0DirectiveStmtVisitor
+        {
+            IR0Writer writer;
+
+            public static void Write(IR0Writer writer, R.DirectiveStmt stmt)
+            {
+                var dirStmtWriter = new DirectiveStmtWriter(writer);
+                dirStmtWriter.Visit(stmt);
+            }
+
+            DirectiveStmtWriter(IR0Writer writer) { this.writer = writer; }
+
+            void IIR0DirectiveStmtVisitor.VisitNull(R.DirectiveStmt.Null nullDirective)
+            {
+                writer.WriteNew("R.DirectiveStmt.Null", nullDirective.Loc);
+            }
+
+            void IIR0DirectiveStmtVisitor.VisitNotNull(R.DirectiveStmt.NotNull notNullDirective)
+            {
+                writer.WriteNew("R.DirectiveStmt.NotNull", notNullDirective.Loc);
+
+            }
+
+            void IIR0DirectiveStmtVisitor.VisitStaticNull(R.DirectiveStmt.StaticNull staticNullDirective)
+            {
+                writer.WriteNew("R.DirectiveStmt.StaticNull", staticNullDirective.Loc);
+            }
+
+            void IIR0DirectiveStmtVisitor.VisitStaticNotNull(R.DirectiveStmt.StaticNotNull staticNotNullDirective)
+            {
+                writer.WriteNew("R.DirectiveStmt.StaticNotNull", staticNotNullDirective.Loc);
+            }
+
+            void IIR0DirectiveStmtVisitor.VisitStaticUnknownNull(R.DirectiveStmt.StaticUnknownNull staticUnknownNullDirective)
+            {
+                writer.WriteNew("R.DirectiveStmt.StaticUnknownNull", staticUnknownNullDirective.Loc);
+            }
+        }
+
+        struct ExpWriter : IIR0ExpVisitor
         {
             IR0Writer writer;
             public static void Write(IR0Writer writer, R.Exp exp)

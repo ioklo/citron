@@ -617,6 +617,30 @@ namespace Gum.IR0Translator
                 return new StmtResult(new R.YieldStmt(valueResult.Result));
             }            
 
+            StmtResult AnalyzeDirectiveStmt(S.DirectiveStmt directiveStmt)
+            {
+                switch (directiveStmt.Name)
+                {
+                    case "static_notnull":
+                        if (directiveStmt.Args.Length != 1)
+                            globalContext.AddFatalError(A2801_StaticNotNullDirective_ShouldHaveOneArgument, directiveStmt);
+
+                        var argResult = AnalyzeExp(directiveStmt.Args[0], ResolveHint.None);                        
+                        switch(argResult)
+                        {
+                            case ExpResult.Loc locResult:
+                                return new StmtResult(new R.DirectiveStmt.StaticNotNull(locResult.Result));
+
+                            default:
+                                globalContext.AddFatalError(A2802_StaticNotNullDirective_ArgumentMustBeLocation, directiveStmt);
+                                throw new UnreachableCodeException();
+                        }
+
+                    default:
+                        throw new NotImplementedException();
+                }
+            }
+
             public StmtResult AnalyzeStmt(S.Stmt stmt)
             {   
                 switch (stmt)
@@ -637,6 +661,7 @@ namespace Gum.IR0Translator
                     case S.AsyncStmt asyncStmt: return AnalyzeAsyncStmt(asyncStmt);
                     case S.ForeachStmt foreachStmt: return AnalyzeForeachStmt(foreachStmt);
                     case S.YieldStmt yieldStmt: return AnalyzeYieldStmt(yieldStmt);
+                    case S.DirectiveStmt directiveStmt: return AnalyzeDirectiveStmt(directiveStmt);
                     default: throw new UnreachableCodeException();
                 }
             }

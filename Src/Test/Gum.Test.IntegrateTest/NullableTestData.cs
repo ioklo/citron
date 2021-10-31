@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Gum.IR0Analyzer.NullRefAnalysis;
 
 using S = Gum.Syntax;
 using R = Gum.IR0;
@@ -10,7 +11,6 @@ using R = Gum.IR0;
 using static Gum.Infra.Misc;
 using static Gum.Syntax.SyntaxFactory;
 using static Gum.IR0.IR0Factory;
-using static Gum.IR0Translator.AnalyzeErrorCode;
 
 namespace Gum.Test.IntegrateTest
 {
@@ -83,6 +83,51 @@ x = 1;
             return new ParseTranslateTestData(code, sscript, rscript);
         }
 
+        static TestData Make_StaticCheck_AssignNotNullAndCheckNotNull_TranslateProperly()
+        {
+            var code = @"
+int? i = 2;
 
+`static_notnull(i);
+";
+
+            var sscript = SScript(
+                new S.StmtScriptElement(new S.VarDeclStmt(new S.VarDecl(
+                    false, new S.NullableTypeExp(new S.IdTypeExp("int", default)),
+                    Arr(new S.VarDeclElement("i", new S.VarDeclElemInitializer(false, SInt(2))))
+                ))),
+
+                new S.StmtScriptElement(new S.DirectiveStmt("static_notnull", Arr<S.Exp>(SId("i"))))
+            );
+
+            var rscript = RScript(moduleName,
+                RGlobalVarDeclStmt(new R.Path.NullableType(R.Path.Int), "i", new R.NewNullableExp(R.Path.Int, RInt(2))),
+                new R.DirectiveStmt.StaticNotNull(new R.GlobalVarLoc("i"))
+            );
+
+            return new ParseTranslateTestData(code, sscript, rscript);
+        }
+
+        static TestData Make_StaticCheck_AssignNullAndCheckNotNull_ReportError()
+        {
+            var code = @"
+int? i = null;
+
+`static_notnull(i);
+";
+
+            S.DirectiveStmt errorNode;
+            var sscript = SScript(
+                new S.StmtScriptElement(new S.VarDeclStmt(new S.VarDecl(
+                    false, new S.NullableTypeExp(new S.IdTypeExp("int", default)),
+                    Arr(new S.VarDeclElement("i", new S.VarDeclElemInitializer(false, S.NullLiteralExp.Instance)))
+                ))),
+
+                new S.StmtScriptElement(errorNode = new S.DirectiveStmt("static_notnull", Arr<S.Exp>(SId("i"))))
+            );
+
+            // TODO: errorNode 체크
+            return new ParseTranslateWithErrorTestData(code, sscript, new R0101_StaticNotNullDirective_LocationIsNull());
+        }
     }
 }

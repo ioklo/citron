@@ -60,11 +60,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gum.Test.Misc", "Test\Gum.T
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestCodeExporter", "Tools\TestCodeExporter\TestCodeExporter.csproj", "{8761C047-BE00-40A1-BBCF-48E908AAF5D2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gum.IR0NullRefAnalyzer", "Gum.IR0NullRefAnalyzer\Gum.IR0NullRefAnalyzer.csproj", "{D2530292-6338-4462-BB0B-71D552E91E29}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gum.IR0NullRefAnalyzer", "Gum.IR0NullRefAnalyzer\Gum.IR0NullRefAnalyzer.csproj", "{D2530292-6338-4462-BB0B-71D552E91E29}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gum.IR0DataFlowAnalyzer", "Gum.IR0DataFlowAnalyzer\Gum.IR0DataFlowAnalyzer.csproj", "{FD081D11-E42B-4F82-90D5-1122CBEB9A41}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gum.IR0DataFlowAnalyzer", "Gum.IR0DataFlowAnalyzer\Gum.IR0DataFlowAnalyzer.csproj", "{FD081D11-E42B-4F82-90D5-1122CBEB9A41}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gum.IR0Visitor", "Gum.IR0Visitor\Gum.IR0Visitor.csproj", "{CD0C427E-3DF0-4108-B787-AF6DFD4FA37C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gum.IR0Visitor", "Gum.IR0Visitor\Gum.IR0Visitor.csproj", "{CD0C427E-3DF0-4108-B787-AF6DFD4FA37C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gum.Log", "Gum.Log\Gum.Log.csproj", "{DF579C44-A163-46F8-BBC0-B540BB5B4B8B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -174,6 +176,10 @@ Global
 		{CD0C427E-3DF0-4108-B787-AF6DFD4FA37C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CD0C427E-3DF0-4108-B787-AF6DFD4FA37C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CD0C427E-3DF0-4108-B787-AF6DFD4FA37C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DF579C44-A163-46F8-BBC0-B540BB5B4B8B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DF579C44-A163-46F8-BBC0-B540BB5B4B8B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DF579C44-A163-46F8-BBC0-B540BB5B4B8B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DF579C44-A163-46F8-BBC0-B540BB5B4B8B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

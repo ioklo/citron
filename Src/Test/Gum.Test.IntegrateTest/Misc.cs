@@ -16,6 +16,7 @@ using Gum.IR0Evaluator;
 using Gum.Collections;
 using System.Reflection;
 using System.Diagnostics;
+using Gum.Log;
 
 namespace Gum.Test.IntegrateTest
 {
@@ -42,7 +43,7 @@ namespace Gum.Test.IntegrateTest
 
         public static async Task TestParseTranslateAsync(string code, S.Script sscript, R.Script rscript)
         {
-            var testErrorCollector = new TestErrorCollector(false);
+            var testLogger = new TestLogger(false);
 
             var lexer = new Lexer();
             var parser = new Parser(lexer);
@@ -53,7 +54,7 @@ namespace Gum.Test.IntegrateTest
             var parserContext = ParserContext.Make(lexerContext);
 
             var sscriptResult = await parser.ParseScriptAsync(parserContext);
-            var rscriptResult = Translator.Translate("TestModule", default, sscript, testErrorCollector);
+            var rscriptResult = Translator.Translate("TestModule", default, sscript, testLogger);
 
             Assert.Equal(sscript, sscriptResult.Elem);
 
@@ -65,9 +66,9 @@ namespace Gum.Test.IntegrateTest
 
         }
 
-        public static async Task TestParseTranslateWithErrorAsync(string code, S.Script sscript, AnalyzeErrorCode errorCode, S.ISyntaxNode node)
+        public static async Task TestParseTranslateWithErrorAsync(string code, S.Script sscript, ILog expectedLog)
         {
-            var testErrorCollector = new TestErrorCollector(false);
+            var testLogger = new TestLogger(false);
 
             var lexer = new Lexer();
             var parser = new Parser(lexer);
@@ -78,17 +79,17 @@ namespace Gum.Test.IntegrateTest
             var parserContext = ParserContext.Make(lexerContext);
 
             var sscriptResult = await parser.ParseScriptAsync(parserContext);
-            var rscriptResult = Translator.Translate("TestModule", default, sscript, testErrorCollector);
+            var rscriptResult = Translator.Translate("TestModule", default, sscript, testLogger);
 
-            var result = testErrorCollector.Errors.OfType<AnalyzeError>()
-                .Any(error => error.Code == errorCode && error.Node == node);
+            var result = testLogger.Logs
+                .Any(log => log.Equals(expectedLog));
 
-            Assert.True(result, $"Errors doesn't contain (Code: {code}, Node: {node})");
+            Assert.True(result, $"Logs doesn't contain {expectedLog}");
         }
 
         public static async Task TestEvalAsync(string code, string result)
         {
-            var testErrorCollector = new TestErrorCollector(false);
+            var testLogger = new TestLogger(false);
 
             var lexer = new Lexer();
             var parser = new Parser(lexer);
@@ -99,7 +100,7 @@ namespace Gum.Test.IntegrateTest
             var parserContext = ParserContext.Make(lexerContext);
 
             var sscriptResult = await parser.ParseScriptAsync(parserContext);
-            var rscriptResult = Translator.Translate("TestModule", default, sscriptResult.Elem, testErrorCollector);
+            var rscriptResult = Translator.Translate("TestModule", default, sscriptResult.Elem, testLogger);
 
             var commandProvider = new TestCmdProvider();
             Debug.Assert(rscriptResult != null);
@@ -110,7 +111,7 @@ namespace Gum.Test.IntegrateTest
 
         public static async Task TestEvalWithErrorAsync(string code, AnalyzeErrorCode errorCode)
         {
-            var testErrorCollector = new TestErrorCollector(false);
+            var testLogger = new TestLogger(false);
 
             var lexer = new Lexer();
             var parser = new Parser(lexer);
@@ -121,11 +122,11 @@ namespace Gum.Test.IntegrateTest
             var parserContext = ParserContext.Make(lexerContext);
 
             var sscriptResult = await parser.ParseScriptAsync(parserContext);
-            var rscriptResult = Translator.Translate("TestModule", default, sscriptResult.Elem, testErrorCollector);
+            var rscriptResult = Translator.Translate("TestModule", default, sscriptResult.Elem, testLogger);
 
             var commandProvider = new TestCmdProvider();
 
-            var result = testErrorCollector.Errors.OfType<AnalyzeError>()
+            var result = testLogger.Logs.OfType<AnalyzeErrorLog>()
                 .Any(error => error.Code == errorCode);
 
             Assert.True(result, $"Errors doesn't contain (Code: {code}");
@@ -133,7 +134,7 @@ namespace Gum.Test.IntegrateTest
 
         public static async Task TestParseTranslateEvalAsync(string code, S.Script sscript, R.Script rscript, string result)
         {
-            var testErrorCollector = new TestErrorCollector(false);
+            var testLogger = new TestLogger(false);
 
             var lexer = new Lexer();
             var parser = new Parser(lexer);
@@ -144,7 +145,7 @@ namespace Gum.Test.IntegrateTest
             var parserContext = ParserContext.Make(lexerContext);
 
             var sscriptResult = await parser.ParseScriptAsync(parserContext);
-            var rscriptResult = Translator.Translate("TestModule", default, sscript, testErrorCollector);
+            var rscriptResult = Translator.Translate("TestModule", default, sscript, testLogger);
 
             var commandProvider = new TestCmdProvider();
             

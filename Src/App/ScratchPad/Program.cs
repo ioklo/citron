@@ -2,6 +2,7 @@ using Gum;
 using Gum.Infra;
 using Gum.IR0Evaluator;
 using Gum.IR0Translator;
+using Gum.Log;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,6 +15,8 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+
+using ILogger = Gum.Log.ILogger;
 
 namespace ScratchPad
 {
@@ -40,39 +43,39 @@ namespace ScratchPad
             await host.RunAsync();
         }
 
-        class DemoErrorCollector : IErrorCollector
+        class DemoLogger : ILogger
         {
-            List<IError> errors = new List<IError>();
+            List<ILog> logs = new List<ILog>();
 
-            public DemoErrorCollector() { }
+            public DemoLogger() { }
 
-            DemoErrorCollector(DemoErrorCollector other, CloneContext cloneContext)
+            DemoLogger(DemoLogger other, CloneContext cloneContext)
             {
-                this.errors = new List<IError>(other.errors);
+                this.logs = new List<ILog>(other.logs);
             }
 
-            public bool HasError => errors.Count != 0;
+            public bool HasError => logs.Count != 0;
 
-            public void Add(IError error)
+            public void Add(ILog error)
             {
-                errors.Add(error);
+                logs.Add(error);
             }
 
-            public IErrorCollector Clone(CloneContext context)
+            public ILogger Clone(CloneContext context)
             {
-                return new DemoErrorCollector(this, context);
+                return new DemoLogger(this, context);
             }
 
-            public void Update(IErrorCollector src_errorCollector, UpdateContext updateContext)
+            public void Update(ILogger src_logger, UpdateContext updateContext)
             {
-                var src = (DemoErrorCollector)src_errorCollector;
-                errors.Clear();
-                errors.AddRange(src.errors);
+                var src = (DemoLogger)src_logger;
+                logs.Clear();
+                logs.AddRange(src.logs);
             }
 
             public string GetMessages()
             {
-                return string.Join("\r\n", errors.Select(error => error.Message));
+                return string.Join("\r\n", logs.Select(error => error.Message));
             }
         }
 
@@ -124,12 +127,12 @@ namespace ScratchPad
                 return false;
             }
 
-            var testErrorCollector = new DemoErrorCollector();
-            var rscript = Translator.Translate("TestModule", default, scriptResult.Elem, testErrorCollector);
+            var testLogger = new DemoLogger();
+            var rscript = Translator.Translate("TestModule", default, scriptResult.Elem, testLogger);
             if (rscript == null)
             {
                 await WriteAsync("에러 (컴파일 실패)\n");
-                await WriteAsync(testErrorCollector.GetMessages());
+                await WriteAsync(testLogger.GetMessages());
                 return false;
             }
 

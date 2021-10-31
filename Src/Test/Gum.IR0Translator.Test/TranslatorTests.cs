@@ -17,6 +17,7 @@ using static Gum.Syntax.SyntaxFactory;
 using static Gum.IR0.IR0Factory;
 using Gum.Collections;
 using Gum.Test.Misc;
+using Gum.Log;
 
 namespace Gum.IR0Translator.Test
 {
@@ -37,16 +38,16 @@ namespace Gum.IR0Translator.Test
 
         R.Script? Translate(S.Script syntaxScript, bool raiseAssertFailed = true)
         {
-            var testErrorCollector = new TestErrorCollector(raiseAssertFailed);
-            return Translator.Translate(moduleName, default, syntaxScript, testErrorCollector);
+            var testLogger = new TestLogger(raiseAssertFailed);
+            return Translator.Translate(moduleName, default, syntaxScript, testLogger);
         }
 
-        List<IError> TranslateWithErrors(S.Script syntaxScript, bool raiseAssertionFail = false)
+        List<ILog> TranslateWithErrors(S.Script syntaxScript, bool raiseAssertionFail = false)
         {
-            var testErrorCollector = new TestErrorCollector(raiseAssertionFail);
-            var _ = Translator.Translate(moduleName, default, syntaxScript, testErrorCollector);
+            var testLogger = new TestLogger(raiseAssertionFail);
+            var _ = Translator.Translate(moduleName, default, syntaxScript, testLogger);
 
-            return testErrorCollector.Errors;
+            return testLogger.Logs;
         }
 
         R.Path.Nested MakeRootPath(string name)

@@ -11,6 +11,7 @@ using static Gum.IR0Translator.AnalyzeErrorCode;
 
 using S = Gum.Syntax;
 using M = Gum.CompileTime;
+using Gum.Log;
 
 namespace Gum.IR0Translator
 {
@@ -23,7 +24,7 @@ namespace Gum.IR0Translator
         M.ModuleName internalModuleName;
         ModuleInfoRepository externalModuleInfoRepo;
         TypeSkeletonRepository skelRepo;
-        IErrorCollector errorCollector;
+        ILogger logger;
         
         Dictionary<S.TypeExp, TypeExpInfo> infosByTypeExp;
         ImmutableDictionary<string, M.TypeVarType> typeEnv;
@@ -34,9 +35,9 @@ namespace Gum.IR0Translator
             S.Script script,
             ModuleInfoRepository externalModuleInfoRepo,
             TypeSkeletonRepository skelRepo,
-            IErrorCollector errorCollector)
+            ILogger logger)
         {
-            var evaluator = new TypeExpEvaluator(internalModuleName, externalModuleInfoRepo, skelRepo, errorCollector);
+            var evaluator = new TypeExpEvaluator(internalModuleName, externalModuleInfoRepo, skelRepo, logger);
 
             foreach(var elem in script.Elements)
             {
@@ -56,7 +57,7 @@ namespace Gum.IR0Translator
                 }
             }            
 
-            if (errorCollector.HasError)
+            if (logger.HasError)
             {
                 // TODO: 검토
                 throw new InvalidOperationException();
@@ -65,12 +66,12 @@ namespace Gum.IR0Translator
             return new TypeExpInfoService(evaluator.infosByTypeExp.ToImmutableDictionary());
         }
 
-        TypeExpEvaluator(M.ModuleName internalModuleName, ModuleInfoRepository externalModuleInfoRepo, TypeSkeletonRepository skelRepo, IErrorCollector errorCollector)
+        TypeExpEvaluator(M.ModuleName internalModuleName, ModuleInfoRepository externalModuleInfoRepo, TypeSkeletonRepository skelRepo, ILogger logger)
         {
             this.internalModuleName = internalModuleName;
             this.externalModuleInfoRepo = externalModuleInfoRepo;
             this.skelRepo = skelRepo;
-            this.errorCollector = errorCollector;
+            this.logger = logger;
             
             infosByTypeExp = new Dictionary<S.TypeExp, TypeExpInfo>(ReferenceEqualityComparer.Instance);
             typeEnv = ImmutableDictionary<string, M.TypeVarType>.Empty;
@@ -78,9 +79,9 @@ namespace Gum.IR0Translator
         }        
 
         [DoesNotReturn]
-        void Throw(AnalyzeErrorCode code, S.ISyntaxNode node, string msg)
+        void Throw(TypeExpErrorCode code, S.ISyntaxNode node, string msg)
         {
-            errorCollector.Add(new AnalyzeError(code, node, msg));
+            logger.Add(new TypeExpErrorLog(code, node, msg));
             throw new TypeExpEvaluatorFatalException();
         }
 

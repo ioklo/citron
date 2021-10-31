@@ -29,8 +29,12 @@ namespace PrepareScratchPad
 
                 var outputFilePath = Path.Combine(outputDirPath, inputFileRelPath);
 
+                // Ensure directory exist
+                var combinedOutputDirPath = Path.GetDirectoryName(outputFilePath);
+                if (combinedOutputDirPath != null)
+                    Directory.CreateDirectory(combinedOutputDirPath);
+
                 // Copy
-                Directory.CreateDirectory(Path.GetDirectoryName(outputFilePath));
                 File.Copy(filePath, outputFilePath);
                 inputFileRelPaths.Add(inputFileRelPath.Replace('\\', '/'));
             }
