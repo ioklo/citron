@@ -1,4 +1,5 @@
-﻿using Gum.Infra;
+﻿using Gum.Collections;
+using Gum.Infra;
 using Gum.IR0Visitor;
 
 using R = Gum.IR0;
@@ -7,24 +8,37 @@ namespace Gum.IR0Analyzer.NullRefAnalysis
 {
     struct ExpAnalyzer : IIR0ExpVisitor<AbstractValue>
     {
+        GlobalContext globalContext;
         LocalContext context;
 
-        public static void Analyze(R.Exp exp, AbstractValue result, LocalContext context)
+        public static void Analyze(ImmutableArray<R.StringExp> exps, GlobalContext globalContext, LocalContext context)
         {
-            var expAnalyzer = new ExpAnalyzer(context);
+            var expAnalyzer = new ExpAnalyzer(globalContext, context);
+
+            foreach (var exp in exps)
+            {
+                AbstractValue stringValue = new NullableAbstractValue(false);
+                expAnalyzer.Visit(exp, stringValue);
+            }
+        }
+
+        public static void Analyze(R.Exp exp, AbstractValue result, GlobalContext globalContext, LocalContext context)
+        {
+            var expAnalyzer = new ExpAnalyzer(globalContext, context);
 
             // call extension
             expAnalyzer.Visit(exp, result);
         }
 
-        ExpAnalyzer(LocalContext context)
+        public ExpAnalyzer(GlobalContext globalContext, LocalContext context)
         {
+            this.globalContext = globalContext;
             this.context = context;
         }
 
         public void VisitAssignExp(R.AssignExp assignExp, AbstractValue result)
         {
-            var destValue = LocAnalyzer.Analyze(assignExp.Dest, context);            
+            var destValue = LocAnalyzer.Analyze(assignExp.Dest, globalContext, context);            
             this.Visit(assignExp.Src, destValue);
 
             result.Set(destValue);
@@ -148,7 +162,7 @@ namespace Gum.IR0Analyzer.NullRefAnalysis
 
         public void VisitLoadExp(R.LoadExp loadExp, AbstractValue value)
         {
-            var srcValue = LocAnalyzer.Analyze(loadExp.Loc, context);
+            var srcValue = LocAnalyzer.Analyze(loadExp.Loc, globalContext, context);
             value.Set(srcValue);
         }
 

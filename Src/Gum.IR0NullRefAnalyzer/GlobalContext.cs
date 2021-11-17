@@ -1,5 +1,6 @@
 ﻿using Gum.Collections;
 using Gum.Infra;
+using Gum.IR0;
 using Gum.Log;
 using System;
 using System.Collections.Generic;
@@ -36,6 +37,11 @@ namespace Gum.IR0Analyzer.NullRefAnalysis
         public void AddGlobalVariable(string name, AbstractValue value)
         {
             globalVariables = globalVariables.Add(name, value);
+        }
+
+        public bool IsNullableType(Path.Nested memberPath)
+        {
+            throw new NotImplementedException();
         }
 
         // TODO: IR0 노드에 대해서 소스코드와 연결을 해 주어야 한다

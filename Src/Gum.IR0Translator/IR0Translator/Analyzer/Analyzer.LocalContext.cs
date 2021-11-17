@@ -26,7 +26,12 @@ namespace Gum.IR0Translator
                 Name = name;
                 TypeValue = typeValue;
             }
-        }        
+
+            public LocalVarInfo UpdateTypeValue(TypeValue newTypeValue)
+            {
+                return new LocalVarInfo(IsRef, newTypeValue, Name);
+            }
+        }
 
         // 현재 분석이 진행되는 곳의 컨텍스트
         class LocalContext : IMutable<LocalContext>
@@ -87,6 +92,12 @@ namespace Gum.IR0Translator
             public void AddLocalVarInfo(bool bRef, TypeValue typeValue, string name)
             {
                 localVarInfos = localVarInfos.SetItem(name, new LocalVarInfo(bRef, typeValue, name));
+            }
+
+            public void SetLocalVarType(string name, TypeValue typeValue)
+            {
+                var value = localVarInfos[name];
+                localVarInfos = localVarInfos.SetItem(name, value.UpdateTypeValue(typeValue));
             }
 
             public LocalVarInfo? GetLocalVarInfo(string varName)

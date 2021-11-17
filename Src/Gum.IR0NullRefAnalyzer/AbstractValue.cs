@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Gum.IR0;
+using System;
 using System.Diagnostics;
 
 namespace Gum.IR0Analyzer.NullRefAnalysis
@@ -16,8 +17,10 @@ namespace Gum.IR0Analyzer.NullRefAnalysis
         public abstract void SetUnknown();
 
         public abstract bool IsNotNull();
+        public abstract AbstractValue GetMemberValue(Path.Nested memberPath);
     }
 
+    // ExpStmt에서 사용하는 Value, Assign등이 쓸일 없으므로 무효화된다
     class EmptyAbstractValue : AbstractValue
     {
         public readonly static EmptyAbstractValue Instance = new EmptyAbstractValue();
@@ -25,19 +28,37 @@ namespace Gum.IR0Analyzer.NullRefAnalysis
 
         public override void Set(AbstractValue other)
         {
-            // ignore
+            // ignore, 여기 들어올 일이 있는가
+            throw new InvalidOperationException();
         }
 
-        public override void SetNotNull() { }
-        public override void SetNull() { }
-        public override void SetUnknown() { }
+        public override void SetNotNull() 
+        {
+            throw new InvalidOperationException();
+        }
+
+        public override void SetNull() 
+        {
+            throw new InvalidOperationException();
+        }
+
+        public override void SetUnknown() 
+        {
+            throw new InvalidOperationException();
+        }
 
         public override bool IsNotNull()
         {
-            throw new NotImplementedException();
+            throw new InvalidOperationException();
         }
-    }    
-    
+
+        public override AbstractValue GetMemberValue(Path.Nested memberPath)
+        {
+            throw new InvalidOperationException();
+        }
+    }
+
+    // 일반 값    
     class NullableAbstractValue : AbstractValue
     {
         enum Kind { Unknown, Null, NotNull };
@@ -84,7 +105,10 @@ namespace Gum.IR0Analyzer.NullRefAnalysis
         {
             throw new NotImplementedException();
         }
+
+        public override AbstractValue GetMemberValue(Path.Nested memberPath)
+        {
+            throw new NotImplementedException();
+        }
     }
-
-
 }

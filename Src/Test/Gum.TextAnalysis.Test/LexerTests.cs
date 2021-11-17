@@ -48,7 +48,7 @@ namespace Gum.TextAnalysis.Test
         {
             var lexer = new Lexer();
             var context = await MakeContextAsync(
-                "if else for continue break exec task params return async await foreach in yield seq enum struct class is ref null, public protected private static " + 
+                "if else for continue break exec task params return async await foreach in yield seq enum struct class is ref null public protected private static " + 
                 "new " +
                 "++ -- <= >= => == != " +
                 "@ < > ; , = { } ( ) [ ] + - * / % ! . ? : `");

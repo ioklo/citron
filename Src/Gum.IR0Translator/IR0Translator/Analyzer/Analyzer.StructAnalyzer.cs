@@ -21,7 +21,6 @@ namespace Gum.IR0Translator
         partial struct StructAnalyzer
         {
             GlobalContext globalContext;
-            ITypeContainer typeContainer;
             S.StructDecl structDecl;
             StructTypeValue structTypeValue;
 
@@ -36,7 +35,7 @@ namespace Gum.IR0Translator
                 var memberFuncsBuilder = ImmutableArray.CreateBuilder<R.FuncDecl>();
                 var memberVarsBuilder = ImmutableArray.CreateBuilder<R.StructMemberVarDecl>();
 
-                var analyzer = new StructAnalyzer(globalContext, typeContainer, structDecl, structTypeValue,
+                var analyzer = new StructAnalyzer(globalContext, structDecl, structTypeValue,
                     constructorsBuilder, memberFuncsBuilder, memberVarsBuilder);
                 
                 R.AccessModifier accessModifier;

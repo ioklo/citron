@@ -32,4 +32,7 @@ namespace Gum.IR0
     // 두가지 버전
     public record DerefLocLoc(Loc Loc) : Loc;
     public record DerefExpLoc(Exp Exp) : Loc;
+
+    // nullable value에서 value를 가져온다
+    public record NullableValueLoc(Loc Loc) : Loc;
 }

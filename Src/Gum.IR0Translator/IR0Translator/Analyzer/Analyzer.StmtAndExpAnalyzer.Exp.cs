@@ -242,6 +242,11 @@ namespace Gum.IR0Translator
                 }
             }
 
+            void UpdateNullableState()
+            {
+
+            }
+
             ExpResult.Exp AnalyzeAssignBinaryOpExp(S.BinaryOpExp exp)
             {
                 // syntax 에서는 exp로 보이지만, R로 변환할 경우 Location 명령이어야 한다
@@ -250,7 +255,8 @@ namespace Gum.IR0Translator
                 if (destResult is ExpResult.Loc destLocResult)
                 {
                     // 안되는거 체크
-                    switch (destLocResult.Result)
+                    R.Loc destLoc = destLocResult.Result;
+                    switch (destLoc)
                     {
                         // int x = 0; var l = () { x = 3; }, TODO: 이거 가능하도록
                         case R.CapturedVarLoc:
@@ -263,9 +269,8 @@ namespace Gum.IR0Translator
 
                         case R.TempLoc:
                             throw new UnreachableCodeException();
-                    }
+                    }                    
                     
-                    R.Loc destLoc = destLocResult.Result;
                     TypeValue destType = destLocResult.TypeValue;
                     
                     var operandHint1 = ResolveHint.Make(destType);
@@ -273,7 +278,6 @@ namespace Gum.IR0Translator
                     var wrappedSrcResult = CastExp_Exp(srcResult, destType, exp);
 
                     return new ExpResult.Exp(new R.AssignExp(destLoc, wrappedSrcResult.Result), destType);
-                    
                 }
                 else
                 {

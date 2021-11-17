@@ -7,17 +7,24 @@ namespace Gum.IR0Analyzer.NullRefAnalysis
 {
     struct LocAnalyzer : IIR0LocVisitorWithRet<AbstractValue>
     {
+        GlobalContext globalContext;
         LocalContext context;
 
-        public static AbstractValue Analyze(R.Loc loc, LocalContext context)
+        public static AbstractValue Analyze(R.Loc loc, GlobalContext globalContext, LocalContext context)
         {
-            var analyzer = new LocAnalyzer(context);
-            return analyzer.Visit<LocAnalyzer, AbstractValue>(loc);
+            var analyzer = new LocAnalyzer(globalContext, context);
+            return analyzer.Visit(loc);
         }
 
-        public LocAnalyzer(LocalContext context)
+        public LocAnalyzer(GlobalContext globalContext, LocalContext context)
         {
+            this.globalContext = globalContext;
             this.context = context;
+        }
+
+        AbstractValue Visit(R.Loc loc)
+        {
+            return this.Visit<LocAnalyzer, AbstractValue>(loc);
         }
 
         public AbstractValue VisitCapturedVarLoc(R.CapturedVarLoc loc)
@@ -84,9 +91,14 @@ namespace Gum.IR0Analyzer.NullRefAnalysis
             throw new NotImplementedException();
         }
 
+        // Value를 리턴한다는건 일회용이 아닐수 있다는 뜻이므로, 없으면 할당해서 줘야 한다
         public AbstractValue VisitStructMemberLoc(R.StructMemberLoc loc)
         {
-            throw new NotImplementedException();
+            // TODO: member의 타입을 봐야 한다
+            // nullable이 아니면 그냥 값
+            // s.x는
+            var structLoc = this.Visit(loc.Instance);
+            return structLoc.GetMemberValue(loc.MemberPath);
         }
 
         public AbstractValue VisitTempLoc(R.TempLoc loc)

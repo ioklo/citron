@@ -11,21 +11,23 @@ namespace Gum.IR0Analyzer.NullRefAnalysis
         GlobalContext globalContext;
         LocalContext localContext;
 
-        StmtAnalyzer(GlobalContext globalContext, LocalContext? parentContext)
+        StmtAnalyzer(GlobalContext globalContext, LocalContext localContext)
         {
             this.globalContext = globalContext;
-            this.localContext = new LocalContext(parentContext);
+            this.localContext = localContext;
         }
 
         public static void Analyze(R.Stmt stmt, GlobalContext globalContext, LocalContext? parentContext = null)
         {
-            var analyzer = new StmtAnalyzer(globalContext, parentContext);
+            var localContext = new LocalContext(parentContext);
+            var analyzer = new StmtAnalyzer(globalContext, localContext);
             analyzer.Visit(stmt);
         }
 
         public static void Analyze(ImmutableArray<R.Stmt> stmts, GlobalContext globalContext, LocalContext? parentContext = null)
         {
-            var analyzer = new StmtAnalyzer(globalContext, parentContext);
+            var localContext = new LocalContext(parentContext);
+            var analyzer = new StmtAnalyzer(globalContext, localContext);
 
             foreach (var stmt in stmts)
                 analyzer.Visit(stmt);
@@ -56,9 +58,14 @@ namespace Gum.IR0Analyzer.NullRefAnalysis
             // do nothing
         }
 
+        // string? x = Func();
+        // if (x is not null)
+        //     @echo $x
+
+        // 이전 단계까지는 x의 null체크를 하지 않기 때문에 그냥 NullableValueLoc(LocalVarLoc("x")) 가 된다
         void IIR0StmtVisitor.VisitCommandStmt(R.CommandStmt commandStmt)
         {
-            throw new NotImplementedException();
+            ExpAnalyzer.Analyze(commandStmt.Commands, globalContext, localContext);
         }
 
         void IIR0StmtVisitor.VisitContinueStmt(R.ContinueStmt continueStmt)
@@ -77,7 +84,7 @@ namespace Gum.IR0Analyzer.NullRefAnalysis
 
                 case R.DirectiveStmt.StaticNotNull staticNotNullDir:
                     {
-                        var value = LocAnalyzer.Analyze(staticNotNullDir.Loc, localContext);
+                        var value = LocAnalyzer.Analyze(staticNotNullDir.Loc, globalContext, localContext);
                         if (!value.IsNotNull())
                             globalContext.AddFatalError(new R0101_StaticNotNullDirective_LocationIsNull());
 
@@ -94,7 +101,7 @@ namespace Gum.IR0Analyzer.NullRefAnalysis
 
         void IIR0StmtVisitor.VisitExpStmt(R.ExpStmt expStmt)
         {
-            ExpAnalyzer.Analyze(expStmt.Exp, EmptyAbstractValue.Instance, localContext);
+            ExpAnalyzer.Analyze(expStmt.Exp, EmptyAbstractValue.Instance, globalContext, localContext);
         }
 
         void IIR0StmtVisitor.VisitForeachStmt(R.ForeachStmt foreachStmt)
@@ -125,7 +132,7 @@ namespace Gum.IR0Analyzer.NullRefAnalysis
                             bool bNullAllowed = IsNullableType(normalElem.Type);
                             var value = new NullableAbstractValue(bNullAllowed);
 
-                            ExpAnalyzer.Analyze(normalElem.InitExp, value, localContext);
+                            ExpAnalyzer.Analyze(normalElem.InitExp, value, globalContext, localContext);
                             globalContext.AddGlobalVariable(normalElem.Name, value);
 
                             break;
