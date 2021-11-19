@@ -14,6 +14,7 @@ using static Gum.IR0Translator.AnalyzeErrorCode;
 using S = Gum.Syntax;
 using R = Gum.IR0;
 using Gum.Log;
+using Gum.Analysis;
 
 namespace Gum.IR0Translator
 {
@@ -79,12 +80,13 @@ namespace Gum.IR0Translator
         public static R.Script? Analyze(
             S.Script sscript,
             M.ModuleName moduleName,
-            TypeExpInfoService typeExpInfoService,
-            ModuleInfoRepository externalModuleInfoRepo,
+            ExternalModuleInfoRepository externalModuleInfoRepo,
             ILogger logger)
         {
             try
             {
+                var typeExpInfoService = TypeExpEvaluator.Evaluate(moduleName, sscript, externalModuleInfoRepo, logger);
+
                 var (internalModuleInfo, itemValueFactory, globalItemValueFactory) = InternalModuleInfoBuilder.Build(
                     moduleName, sscript, typeExpInfoService, externalModuleInfoRepo
                 );

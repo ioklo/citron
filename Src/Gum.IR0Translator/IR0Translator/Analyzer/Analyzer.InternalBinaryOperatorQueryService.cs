@@ -8,6 +8,7 @@ using S = Gum.Syntax;
 using R = Gum.IR0;
 using System;
 using Gum.Infra;
+using Gum.Analysis;
 
 namespace Gum.IR0Translator
 {

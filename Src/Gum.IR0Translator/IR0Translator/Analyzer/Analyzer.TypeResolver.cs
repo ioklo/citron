@@ -1,4 +1,5 @@
-﻿using Gum.Collections;
+﻿using Gum.Analysis;
+using Gum.Collections;
 using System;
 using System.Collections.Generic;
 using System.Linq;

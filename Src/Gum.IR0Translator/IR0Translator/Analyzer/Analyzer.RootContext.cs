@@ -3,6 +3,7 @@ using Gum.Infra;
 using System;
 using R = Gum.IR0;
 using M = Gum.CompileTime;
+using Gum.Analysis;
 
 namespace Gum.IR0Translator
 {

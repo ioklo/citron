@@ -10,6 +10,7 @@ using S = Gum.Syntax;
 using R = Gum.IR0;
 using Pretune;
 using Gum.Infra;
+using Gum.Analysis;
 
 namespace Gum.IR0Translator
 {

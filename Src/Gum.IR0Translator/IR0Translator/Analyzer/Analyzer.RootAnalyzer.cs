@@ -10,6 +10,7 @@ using static Gum.IR0Translator.AnalyzeErrorCode;
 using S = Gum.Syntax;
 using R = Gum.IR0;
 using M = Gum.CompileTime;
+using Gum.Analysis;
 
 namespace Gum.IR0Translator
 {
@@ -239,12 +240,12 @@ namespace Gum.IR0Translator
                             for (int i = 0; i < classDecl.TypeParams.Length; i++)
                                 typeArgsBuilder.Add(globalContext.MakeTypeVarTypeValue(i));
 
-                            var structTypeValue = globalContext.MakeClassTypeValue(
+                            var classTypeValue = globalContext.MakeClassTypeValue(
                                 rootContext.MakeRootItemValueOuter(M.NamespacePath.Root),
                                 classInfo,
                                 typeArgsBuilder.MoveToImmutable());
 
-                            ClassAnalyzer.Analyze(globalContext, rootContext, classDecl, structTypeValue);
+                            ClassAnalyzer.Analyze(globalContext, rootContext, classDecl, classTypeValue);
                             break;
                         }
 

@@ -23,7 +23,7 @@ namespace Gum.IR0Translator.Test
         {
             var typeSkelRepo = TypeSkeletonCollector.Collect(script);
 
-            var externalModuleInfoRepo = new ModuleInfoRepository(default);
+            var externalModuleInfoRepo = new ExternalModuleInfoRepository(default);
             var logger = new TestLogger(true);
 
             var typeExpTypeValueService = TypeExpEvaluator.Evaluate(moduleName, script, externalModuleInfoRepo, typeSkelRepo, logger);

@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <AssemblyName>Gum.Analysis.ModuleInfo.Abstractions</AssemblyName>
+    <RootNamespace>Gum.Analysis</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Pretune" Version="0.8.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Gum.Infra\Gum.Infra.csproj" />
+    <ProjectReference Include="..\Gum.IR0\Gum.IR0.csproj" />
+    <ProjectReference Include="..\Gum.ModuleInfo\Gum.ModuleInfo.csproj" />
+    <ProjectReference Include="..\Gum.Syntax\Gum.Syntax.csproj" />
+  </ItemGroup>
+
+</Project>

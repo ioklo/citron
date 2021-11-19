@@ -9,6 +9,7 @@ using System.Linq;
 using R = Gum.IR0;
 using Pretune;
 using S = Gum.Syntax;
+using Gum.Analysis;
 
 namespace Gum.IR0Translator
 {

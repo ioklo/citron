@@ -8,6 +8,7 @@ using Gum.Collections;
 using R = Gum.IR0;
 using M = Gum.CompileTime;
 using Gum.Log;
+using Gum.Analysis;
 
 namespace Gum.IR0Translator
 {
@@ -18,13 +19,10 @@ namespace Gum.IR0Translator
         {
             Debug.Assert(!referenceInfos.Contains(RuntimeModuleInfo.Instance));
 
-            var externalModuleInfoRepo = new ModuleInfoRepository(referenceInfos.Add(RuntimeModuleInfo.Instance));
-
-            var typeSkelRepo = TypeSkeletonCollector.Collect(sscript);
-            var typeExpInfoService = TypeExpEvaluator.Evaluate(moduleName, sscript, externalModuleInfoRepo, typeSkelRepo, logger);
+            var externalModuleInfoRepo = new ExternalModuleInfoRepository(referenceInfos.Add(RuntimeModuleInfo.Instance));
 
             // Make syntax based Analyzer (almost translation)
-            var rscript = Analyzer.Analyze(sscript, moduleName, typeExpInfoService, externalModuleInfoRepo, logger);
+            var rscript = Analyzer.Analyze(sscript, moduleName, externalModuleInfoRepo, logger);
             if (rscript == null) return null;
 
             if (logger.HasError)

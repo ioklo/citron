@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using R = Gum.IR0;
 using System.Linq;
+using Gum.Analysis;
 
 namespace Gum.IR0Translator
 {

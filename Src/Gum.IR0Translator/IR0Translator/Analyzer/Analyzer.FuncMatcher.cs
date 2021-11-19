@@ -11,8 +11,8 @@ using S = Gum.Syntax;
 using M = Gum.CompileTime;
 using R = Gum.IR0;
 using Gum.Infra;
-using static Gum.IR0Translator.Misc;
 using static Gum.IR0Translator.AnalyzeErrorCode;
+using Gum.Analysis;
 
 namespace Gum.IR0Translator
 {

@@ -10,6 +10,7 @@ using static Gum.IR0Translator.AnalyzeErrorCode;
 using S = Gum.Syntax;
 using R = Gum.IR0;
 using Gum.Infra;
+using Gum.Analysis;
 
 namespace Gum.IR0Translator
 {

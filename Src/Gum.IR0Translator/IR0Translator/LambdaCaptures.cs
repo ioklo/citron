@@ -1,4 +1,6 @@
-﻿namespace Gum.IR0Translator
+﻿using Gum.Analysis;
+
+namespace Gum.IR0Translator
 {
     abstract record LambdaCapture;
     record NoneLambdaCapture : LambdaCapture { public static readonly NoneLambdaCapture Instance = new NoneLambdaCapture(); private NoneLambdaCapture() { } }
