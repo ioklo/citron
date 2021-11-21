@@ -34,7 +34,7 @@ namespace Gum.Analysis
             var itemPathEntry = new ItemPathEntry(name, typeParamCount);
 
             if (internalInfo.GetName().Equals(moduleName))
-                return GlobalItemQueryService.GetGlobalItem(internalInfo, namespacePath, itemPathEntry) as IModuleTypeInfo;
+                return internalInfo. // GlobalItemQueryService.GetGlobalItem(internalInfo, namespacePath, itemPathEntry) as IModuleTypeInfo;
 
             foreach (var externalInfo in externalInfos)
                 if (externalInfo.GetName().Equals(moduleName))

@@ -7,7 +7,7 @@ namespace Gum.Analysis
     [ImplementIEquatable]
     partial class ExternalModuleNamespaceInfo : IModuleNamespaceInfo
     {
-        M.NamespaceName name;
+        M.Name name;
         ExternalNamespaceDict namespaceDict;
         ModuleTypeDict typeDict;
         ModuleFuncDict funcDict;
@@ -16,16 +16,21 @@ namespace Gum.Analysis
         {
             name = mns.Name;
             namespaceDict = new ExternalNamespaceDict(mns.Namespaces);
-            typeDict = new ModuleTypeDict(mns.Types);
-            funcDict = new ModuleFuncDict(mns.Funcs);
+            typeDict = ExternalModuleMisc.MakeModuleTypeDict(mns.Types);
+            funcDict = ExternalModuleMisc.MakeModuleFuncDict(mns.Funcs);
         }
 
-        M.NamespaceName IModuleNamespaceInfo.GetName()
+        M.Name IModuleItemInfo.GetName()
         {
             return name;
         }
 
-        IModuleNamespaceInfo? IModuleNamespaceContainer.GetNamespace(M.NamespaceName name)
+        ImmutableArray<string> IModuleItemInfo.GetTypeParams()
+        {
+            return ImmutableArray<string>.Empty;
+        }   
+
+        IModuleNamespaceInfo? IModuleNamespaceContainer.GetNamespace(M.Name name)
         {
             return namespaceDict.Get(name);
         }

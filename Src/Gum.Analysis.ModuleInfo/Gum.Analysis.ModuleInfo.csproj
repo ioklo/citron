@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
@@ -10,7 +10,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Gum.Analysis.ModuleInfo.Abstractions\Gum.Analysis.ModuleInfo.Abstractions.csproj" />
-    <ProjectReference Include="..\Gum.Analysis.ModuleInfo\Gum.Analysis.ModuleInfo.csproj" />
     <ProjectReference Include="..\Gum.Infra\Gum.Infra.csproj" />
     <ProjectReference Include="..\Gum.ModuleInfo\Gum.ModuleInfo.csproj" />
   </ItemGroup>

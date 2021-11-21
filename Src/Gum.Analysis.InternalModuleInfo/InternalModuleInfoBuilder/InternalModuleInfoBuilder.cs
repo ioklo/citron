@@ -105,49 +105,6 @@ namespace Gum.Analysis
         }
     }
 
-    // syntax를 다 돌고 난 뒤의 후처리
-    class TypeBuilder : IQueryModuleTypeInfo
-    {
-        Dictionary<ItemPath, InternalModuleClassInfo> classes;
-        Dictionary<ItemPath, InternalModuleStructInfo> structs;
-
-        public TypeBuilder()
-        {
-            classes = new Dictionary<ItemPath, InternalModuleClassInfo>();
-            structs = new Dictionary<ItemPath, InternalModuleStructInfo>();
-        }
-
-        public void AddClass(ItemPath path, InternalModuleClassInfo classInfo)
-        {
-            classes.Add(path, classInfo);
-        }
-
-        public void AddStruct(ItemPath path, InternalModuleStructInfo structInfo)
-        {
-            structs.Add(path, structInfo);
-        }
-
-        IModuleClassInfo IQueryModuleTypeInfo.GetClass(ItemPath path)
-        {
-            // TODO: external 처리
-            return classes[path];
-        }
-
-        IModuleStructInfo IQueryModuleTypeInfo.GetStruct(ItemPath path)
-        {
-            return structs[path];
-        }
-        
-        public void SetBasesAndBuildTrivialConstructors(ItemValueFactory itemValueFactory)
-        {
-            foreach(IModuleClassInfo c in classes.Values)
-                c.SetBaseAndBuildTrivialConstructor(this, itemValueFactory);
-
-            foreach (IModuleStructInfo s in structs.Values)
-                s.SetBaseAndBuildTrivialConstructor(this, itemValueFactory);
-        }
-    }
-
     // Script에서 ModuleInfo 정보를 뽑는 역할    
     public partial struct InternalModuleInfoBuilder
     {

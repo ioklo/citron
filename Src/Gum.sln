@@ -75,17 +75,21 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gum.Analysis.ModuleInfo.Abs
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Analysis", "Analysis", "{57D000C2-0C20-4985-A40C-B2189F64F155}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gum.Analysis.TypeValues", "Gum.Analysis.TypeValues\Gum.Analysis.TypeValues.csproj", "{548CF11C-B65B-46EA-A3A5-79E2107EB5BC}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gum.Analysis.TypeExpEvaluator", "Gum.Analysis.TypeExpEvaluator\Gum.Analysis.TypeExpEvaluator.csproj", "{F5527A8E-6219-4E47-822A-6C8AE9DD1DE8}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gum.Analysis.InternalModuleInfo", "Gum.Analysis.InternalModuleInfo\Gum.Analysis.InternalModuleInfo.csproj", "{77CE2C56-205D-4D2E-821A-138E7B7C2623}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gum.Analysis.TypeExpInfo", "Gum.Analysis.TypeExpInfo\Gum.Analysis.TypeExpInfo.csproj", "{8E19680A-7775-4FA0-9284-E144A9D6D003}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gum.Analysis.TypeExpInfo", "Gum.Analysis.TypeExpInfo\Gum.Analysis.TypeExpInfo.csproj", "{8E19680A-7775-4FA0-9284-E144A9D6D003}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gum.Analysis.ExternalModuleInfo", "Gum.Analysis.ExternalModuleInfo\Gum.Analysis.ExternalModuleInfo.csproj", "{40A26402-FA7E-4EFE-871C-D83173699642}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gum.Analysis.ExternalModuleInfo", "Gum.Analysis.ExternalModuleInfo\Gum.Analysis.ExternalModuleInfo.csproj", "{40A26402-FA7E-4EFE-871C-D83173699642}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gum.Analysis.ModuleInfo.Else", "Gum.Analysis.ModuleInfo.Else\Gum.Analysis.ModuleInfo.Else.csproj", "{9D7C2806-F480-4083-989B-C13B9E765057}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gum.Analysis.ModuleInfo.Else", "Gum.Analysis.ModuleInfo.Else\Gum.Analysis.ModuleInfo.Else.csproj", "{9D7C2806-F480-4083-989B-C13B9E765057}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gum.Analysis.ItemValue", "Gum.Analysis.ItemValue\Gum.Analysis.ItemValue.csproj", "{AE8A098B-367C-4537-84D5-B229B09677B6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gum.Analysis.ModuleInfo", "Gum.Analysis.ModuleInfo\Gum.Analysis.ModuleInfo.csproj", "{62BED99B-73ED-4CA6-B1B7-D8FF6D891D99}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gum.Analysis.GlobalItemQueryService", "Gum.Analysis.GlobalItemQueryService\Gum.Analysis.GlobalItemQueryService.csproj", "{2D3EA763-48C7-4407-AEFE-5EB6004FBF14}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -207,10 +211,6 @@ Global
 		{1FBE3D34-3BB0-4E6A-A83E-D65DD47DDD5D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1FBE3D34-3BB0-4E6A-A83E-D65DD47DDD5D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1FBE3D34-3BB0-4E6A-A83E-D65DD47DDD5D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{548CF11C-B65B-46EA-A3A5-79E2107EB5BC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{548CF11C-B65B-46EA-A3A5-79E2107EB5BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{548CF11C-B65B-46EA-A3A5-79E2107EB5BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{548CF11C-B65B-46EA-A3A5-79E2107EB5BC}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F5527A8E-6219-4E47-822A-6C8AE9DD1DE8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F5527A8E-6219-4E47-822A-6C8AE9DD1DE8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F5527A8E-6219-4E47-822A-6C8AE9DD1DE8}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -231,6 +231,18 @@ Global
 		{9D7C2806-F480-4083-989B-C13B9E765057}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9D7C2806-F480-4083-989B-C13B9E765057}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9D7C2806-F480-4083-989B-C13B9E765057}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AE8A098B-367C-4537-84D5-B229B09677B6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AE8A098B-367C-4537-84D5-B229B09677B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AE8A098B-367C-4537-84D5-B229B09677B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AE8A098B-367C-4537-84D5-B229B09677B6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{62BED99B-73ED-4CA6-B1B7-D8FF6D891D99}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{62BED99B-73ED-4CA6-B1B7-D8FF6D891D99}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{62BED99B-73ED-4CA6-B1B7-D8FF6D891D99}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{62BED99B-73ED-4CA6-B1B7-D8FF6D891D99}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2D3EA763-48C7-4407-AEFE-5EB6004FBF14}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2D3EA763-48C7-4407-AEFE-5EB6004FBF14}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2D3EA763-48C7-4407-AEFE-5EB6004FBF14}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2D3EA763-48C7-4407-AEFE-5EB6004FBF14}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -250,12 +262,14 @@ Global
 		{424FE4E9-0B8A-4868-A884-F3558B5117E7} = {3ADD1601-A675-4B34-93C8-FA453C5A835F}
 		{8761C047-BE00-40A1-BBCF-48E908AAF5D2} = {1A6EEB17-CF65-4F76-9762-D458C5C3C123}
 		{1FBE3D34-3BB0-4E6A-A83E-D65DD47DDD5D} = {57D000C2-0C20-4985-A40C-B2189F64F155}
-		{548CF11C-B65B-46EA-A3A5-79E2107EB5BC} = {57D000C2-0C20-4985-A40C-B2189F64F155}
 		{F5527A8E-6219-4E47-822A-6C8AE9DD1DE8} = {57D000C2-0C20-4985-A40C-B2189F64F155}
 		{77CE2C56-205D-4D2E-821A-138E7B7C2623} = {57D000C2-0C20-4985-A40C-B2189F64F155}
 		{8E19680A-7775-4FA0-9284-E144A9D6D003} = {57D000C2-0C20-4985-A40C-B2189F64F155}
 		{40A26402-FA7E-4EFE-871C-D83173699642} = {57D000C2-0C20-4985-A40C-B2189F64F155}
 		{9D7C2806-F480-4083-989B-C13B9E765057} = {57D000C2-0C20-4985-A40C-B2189F64F155}
+		{AE8A098B-367C-4537-84D5-B229B09677B6} = {57D000C2-0C20-4985-A40C-B2189F64F155}
+		{62BED99B-73ED-4CA6-B1B7-D8FF6D891D99} = {57D000C2-0C20-4985-A40C-B2189F64F155}
+		{2D3EA763-48C7-4407-AEFE-5EB6004FBF14} = {57D000C2-0C20-4985-A40C-B2189F64F155}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {36419831-5C03-4845-9F0B-52FBB4EC43A6}

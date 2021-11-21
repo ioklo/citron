@@ -10,14 +10,14 @@ namespace Gum.Analysis
     partial class ExternalModuleStructInfo : IModuleStructInfo
     {
         M.StructInfo structInfo;
-        StructTypeValue? baseStruct;
+        IStructTypeValue? baseStruct;
         ModuleTypeDict typeDict;
         ModuleInfoBuildState state;
 
         public ExternalModuleStructInfo(M.StructInfo structInfo)
         {
             this.structInfo = structInfo;
-            this.typeDict = new ModuleTypeDict(structInfo.MemberTypes);
+            this.typeDict = ExternalModuleMisc.MakeModuleTypeDict(structInfo.MemberTypes);
 
             this.baseStruct = null;
             this.state = ModuleInfoBuildState.BeforeSetBaseAndBuildTrivialConstructor;
@@ -94,7 +94,7 @@ namespace Gum.Analysis
             return builder.MoveToImmutable();
         }
 
-        StructTypeValue? IModuleStructInfo.GetBaseStruct()
+        IStructTypeValue? IModuleStructInfo.GetBaseStruct()
         {
             Debug.Assert(state == ModuleInfoBuildState.Completed);
             return baseStruct;
@@ -109,26 +109,21 @@ namespace Gum.Analysis
             return null;
         }
 
-        ModuleInfoBuildState IModuleStructInfo.GetBuildState()
-        {
-            return ModuleInfoBuildState.Completed;
-        }
+        //public void SetBaseAndBuildTrivialConstructor(IQueryModuleTypeInfo query, IItemValueFactory itemValueFactory)
+        //{
+        //    if (state == ModuleInfoBuildState.Completed) return;
 
-        void IModuleStructInfo.SetBaseAndBuildTrivialConstructor(IQueryModuleTypeInfo query, ItemValueFactory itemValueFactory)
-        {
-            if (state == ModuleInfoBuildState.Completed) return;
+        //    if (structInfo.BaseType == null)
+        //    {
+        //        baseStruct = null;
+        //    }
+        //    else
+        //    {
+        //        baseStruct = (StructTypeValue)itemValueFactory.MakeTypeValueByMType(structInfo.BaseType);
+        //    }
 
-            if (structInfo.BaseType == null)
-            {
-                baseStruct = null;
-            }
-            else
-            {
-                baseStruct = (StructTypeValue)itemValueFactory.MakeTypeValueByMType(structInfo.BaseType);
-            }
-
-            state = ModuleInfoBuildState.Completed;
-            return;
-        }
+        //    state = ModuleInfoBuildState.Completed;
+        //    return;
+        //}
     }
 }

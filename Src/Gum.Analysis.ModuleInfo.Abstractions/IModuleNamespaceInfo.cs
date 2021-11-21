@@ -3,8 +3,7 @@
 namespace Gum.Analysis
 {
     // M.NamespaceInfo대체
-    public interface IModuleNamespaceInfo : IModuleNamespaceContainer, IModuleTypeContainer, IModuleFuncContainer
+    public interface IModuleNamespaceInfo : IModuleItemInfo, IModuleNamespaceContainer, IModuleTypeContainer, IModuleFuncContainer
     {
-        M.NamespaceName GetName();
     }
 }

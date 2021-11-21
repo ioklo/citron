@@ -9,8 +9,21 @@ using M = Gum.CompileTime;
 
 namespace Gum.Analysis
 {
-    partial class Misc
+    public partial class Misc
     {
+        //public static ImmutableArray<M.Type>? ToMTypeArgs(ImmutableArray<TypeExpInfo> typeArgs)
+        //{
+        //    var builder = ImmutableArray.CreateBuilder<M.Type>();
+        //    foreach (var typeArg in typeArgs)
+        //    {
+        //        if (typeArg is MTypeTypeExpInfo mtypeArg)
+        //            builder.Add(mtypeArg.Type);
+        //        else
+        //            return null; // 실패
+        //    }
+
+        //    return builder.ToImmutable();
+        //}
         //public static M.Type? ToModuleType(TypeValue typeValue)
         //{
         //    switch (typeValue)
@@ -83,7 +96,7 @@ namespace Gum.Analysis
         //        case M.TypeVarType typeVar:
         //            sb.Append($"`{typeVar.Index}");
         //            break;                
-                
+
         //        case M.GlobalType externalType:
         //            // [ModuleName]Namespace1.Namespace2.X<int>
 
@@ -115,13 +128,13 @@ namespace Gum.Analysis
         //    }
         //}
 
-        //public static M.ParamTypes MakeParamTypes(ImmutableArray<M.Param> parameters)
-        //{
-        //    var builder = ImmutableArray.CreateBuilder<M.ParamKindAndType>(parameters.Length);
-        //    foreach (var param in parameters)
-        //        builder.Add(new M.ParamKindAndType(param.Kind, param.Type));
+        public static M.ParamTypes MakeParamTypes(ImmutableArray<M.Param> parameters)
+        {
+            var builder = ImmutableArray.CreateBuilder<M.ParamKindAndType>(parameters.Length);
+            foreach (var param in parameters)
+                builder.Add(new M.ParamKindAndType(param.Kind, param.Type));
 
-        //    return new M.ParamTypes(builder.MoveToImmutable());
-        //}
+            return new M.ParamTypes(builder.MoveToImmutable());
+        }
     }
 }

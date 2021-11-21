@@ -10,7 +10,7 @@ namespace Gum.CompileTime
     [AutoConstructor]
     public partial class NamespaceInfo
     {
-        public NamespaceName Name { get; }
+        public Name Name { get; }
 
         public ImmutableArray<NamespaceInfo> Namespaces { get; }
         public ImmutableArray<TypeInfo> Types { get; }

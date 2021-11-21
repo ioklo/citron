@@ -18,12 +18,17 @@ namespace Gum.Analysis
             throw new System.NotImplementedException();
         }
 
-        M.NamespaceName IModuleNamespaceInfo.GetName()
+        M.Name IModuleItemInfo.GetName()
         {
             throw new System.NotImplementedException();
         }
 
-        IModuleNamespaceInfo? IModuleNamespaceContainer.GetNamespace(M.NamespaceName name)
+        ImmutableArray<string> IModuleItemInfo.GetTypeParams()
+        {
+            return ImmutableArray<string>.Empty;
+        }
+
+        IModuleNamespaceInfo? IModuleNamespaceContainer.GetNamespace(M.Name name)
         {
             throw new System.NotImplementedException();
         }

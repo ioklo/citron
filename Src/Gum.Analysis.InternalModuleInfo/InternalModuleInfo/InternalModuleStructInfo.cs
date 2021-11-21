@@ -22,7 +22,7 @@ namespace Gum.Analysis
         ModuleFuncDict funcDict;
 
         // state따라 valid 하지 않을수 있다
-        StructTypeValue? baseStruct;
+        IStructTypeValue? baseStruct;
         IModuleConstructorInfo? trivialConstructor;
 
         ModuleInfoBuildState state;
@@ -50,13 +50,8 @@ namespace Gum.Analysis
             this.trivialConstructor = null;
             this.state = ModuleInfoBuildState.BeforeSetBaseAndBuildTrivialConstructor;
         }
-
-        ModuleInfoBuildState IModuleStructInfo.GetBuildState()
-        {
-            return state;
-        }
-
-        void IModuleStructInfo.SetBaseAndBuildTrivialConstructor(IQueryModuleTypeInfo query, ItemValueFactory itemValueFactory) // throws InvalidOperation
+        
+        public void SetBaseAndBuildTrivialConstructor(IQueryModuleTypeInfo query, IItemValueFactoryByMType factory) // throws InvalidOperation
         {
             if (state == ModuleInfoBuildState.Completed) return;
 
@@ -69,8 +64,8 @@ namespace Gum.Analysis
             IModuleStructInfo? baseStructInfo = null;
             if (mbaseStruct != null)
             {
-                baseStructInfo = query.GetStruct(mbaseStruct.ToItemPath());
-                baseStruct = (StructTypeValue)itemValueFactory.MakeTypeValueByMType(mbaseStruct);
+                baseStructInfo = query.GetStruct(mbaseStruct.ToItemPath(), factory);
+                baseStruct = factory.MakeStructTypeValue(mbaseStruct);
             }
 
             var baseTrivialConstructor = baseStructInfo?.GetTrivialConstructor();
@@ -97,7 +92,7 @@ namespace Gum.Analysis
             return trivialConstructor;
         }
 
-        StructTypeValue? IModuleStructInfo.GetBaseStruct()
+        IStructTypeValue? IModuleStructInfo.GetBaseStruct()
         {
             Debug.Assert(state == ModuleInfoBuildState.Completed);
             return baseStruct;

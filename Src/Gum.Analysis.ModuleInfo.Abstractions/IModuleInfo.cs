@@ -9,5 +9,6 @@ namespace Gum.Analysis
     public interface IModuleInfo : IModuleNamespaceContainer, IModuleTypeContainer, IModuleFuncContainer, IPure
     {
         M.ModuleName GetName();
+        IModuleItemInfo? GetItem(M.Name name, int typeParamCount, M.ParamTypes paramTypes);
     }
 }

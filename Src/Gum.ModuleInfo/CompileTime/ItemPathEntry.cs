@@ -2,18 +2,17 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using M = Gum.CompileTime;
 
 namespace Gum.CompileTime
 {
     [ImplementIEquatable]
     public partial struct ItemPathEntry
     {
-        public M.Name Name { get; }
+        public Name Name { get; }
         public int TypeParamCount { get; }
-        public M.ParamTypes ParamTypes { get; }   // 함수에서 파라미터에 따라 달라지는 값
+        public ParamTypes ParamTypes { get; }   // 함수에서 파라미터에 따라 달라지는 값
 
-        public ItemPathEntry(M.Name name, int typeParamCount = 0, M.ParamTypes paramTypes = default)
+        public ItemPathEntry(Name name, int typeParamCount = 0, ParamTypes paramTypes = default)
         {
             Name = name;
             TypeParamCount = typeParamCount;

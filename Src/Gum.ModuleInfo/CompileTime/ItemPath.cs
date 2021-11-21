@@ -33,7 +33,7 @@ namespace Gum.Analysis
                     ItemPath curPath = new RootItemPath(globalType.ModuleName);
 
                     foreach (var ns in globalType.NamespacePath.Entries)
-                        curPath = curPath.Child(new M.Name.Normal(ns.Value));
+                        curPath = curPath.Child(ns);
 
                     return curPath.Child(globalType.Name, globalType.TypeArgs.Length);
 

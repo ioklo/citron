@@ -14,10 +14,10 @@ namespace Gum.Analysis
     {
         IModuleInfo moduleInfo;
 
-        public static IModuleItemInfo? GetGlobalItem(IModuleInfo moduleInfo, M.NamespacePath path, M.ItemPathEntry entry)
+        public static IModuleItemInfo? GetGlobalItem(IModuleInfo moduleInfo, M.ItemPathEntry entry)
         {
             var service = new GlobalItemQueryService(moduleInfo);
-            return service.GetGlobalItemCore(path, entry);
+            return service.GetGlobalItemCore(entry);
         }
 
         GlobalItemQueryService(IModuleInfo moduleInfo)
@@ -37,7 +37,7 @@ namespace Gum.Analysis
             return funcs.GetFunc(entry.Name, entry.TypeParamCount, entry.ParamTypes);
         }
 
-        IModuleItemInfo? GetGlobalItemCore(M.NamespacePath path, M.ItemPathEntry entry)
+        IModuleItemInfo? GetGlobalItemCore(M.ItemPathEntry entry)
         {
             if (path.IsRoot)
                 return GetChildItem(moduleInfo, moduleInfo, entry);

@@ -10,20 +10,20 @@ namespace Gum.CompileTime
     [ImplementIEquatable]
     public partial struct NamespacePath
     {
-        public ImmutableArray<NamespaceName> Entries { get; }
+        public ImmutableArray<Name> Entries { get; }
 
-        public static NamespacePath Root { get; } = new NamespacePath(ImmutableArray<NamespaceName>.Empty);
+        public static NamespacePath Root { get; } = new NamespacePath(ImmutableArray<Name>.Empty);
 
         public bool IsRoot { get => Entries.IsEmpty; }
 
-        private NamespacePath(ImmutableArray<NamespaceName> entries)
+        private NamespacePath(ImmutableArray<Name> entries)
         {
             Entries = entries;
         }
 
-        public NamespacePath(NamespaceName hdEntry, params NamespaceName[] tlEntries)
+        public NamespacePath(Name hdEntry, params Name[] tlEntries)
         {
-            var builder = ImmutableArray.CreateBuilder<NamespaceName>(tlEntries.Length + 1);
+            var builder = ImmutableArray.CreateBuilder<Name>(tlEntries.Length + 1);
             builder.Add(hdEntry);
             builder.AddRange(tlEntries);
             Entries = builder.MoveToImmutable();

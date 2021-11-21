@@ -6,7 +6,7 @@ using M = Gum.CompileTime;
 namespace Gum.Analysis
 {
     [ExcludeComparison]
-    partial struct ModuleFuncDict
+    public partial struct ModuleFuncDict
     {
         ImmutableDictionary<(M.Name Name, int TypeParamCount), ImmutableArray<IModuleFuncInfo>> funcs;
         ImmutableDictionary<(M.Name Name, int TypeParamCount, M.ParamTypes ParamTypes), IModuleFuncInfo> exactFuncs;
@@ -47,12 +47,7 @@ namespace Gum.Analysis
 
             exactFuncs = exactFuncsBuilder.ToImmutable();
         }
-
-        public ModuleFuncDict(ImmutableArray<M.FuncInfo> mfuncs)
-            : this(ImmutableArray.CreateRange(mfuncs, mfunc => (IModuleFuncInfo)new ExternalModuleFuncInfo(mfunc)))
-        {   
-        }
-
+        
         public ImmutableArray<IModuleFuncInfo> Get(M.Name name, int minTypeParamCount)
         {
             return funcs.GetValueOrDefault((name, minTypeParamCount));

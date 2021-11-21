@@ -24,7 +24,7 @@ namespace Gum.Analysis
         ImmutableArray<IModuleConstructorInfo> constructors;        
         ImmutableArray<IModuleMemberVarInfo> memberVars;
         
-        ClassTypeValue? baseClass; // Class선언 시점 typeEnv를 적용한 baseClass
+        IClassTypeValue? baseClass; // Class선언 시점 typeEnv를 적용한 baseClass
         IModuleConstructorInfo? trivialConstructor;
 
         ModuleInfoBuildState state;
@@ -57,14 +57,9 @@ namespace Gum.Analysis
             this.typeDict = new ModuleTypeDict(types);
             this.funcDict = new ModuleFuncDict(funcs);
         }
-
-        ModuleInfoBuildState IModuleClassInfo.GetBuildState()
-        {
-            return state;
-        }
         
         // trivial constructor를 하려면
-        void IModuleClassInfo.SetBaseAndBuildTrivialConstructor(IQueryModuleTypeInfo query, ItemValueFactory itemValueFactory) // throws InvalidOperationException
+        public void SetBaseAndBuildTrivialConstructor(IQueryModuleTypeInfo query, IItemValueFactoryByMType factory) // throws InvalidOperationException
         {
             if (state == ModuleInfoBuildState.Completed) return;
             if (state == ModuleInfoBuildState.DuringSetBaseAndBuildTrivialConstructor)
@@ -83,9 +78,7 @@ namespace Gum.Analysis
                 var baseClassPath = mbaseClass.ToItemPath();
 
                 baseClassInfo = query.GetClass(baseClassPath);
-                baseClassInfo.SetBaseAndBuildTrivialConstructor(query, itemValueFactory);
-
-                baseClass = (ClassTypeValue)itemValueFactory.MakeTypeValueByMType(mbaseClass);
+                baseClass = factory.MakeClassTypeValue(mbaseClass);
             }
 
             var baseTrivialConstructor = baseClassInfo?.GetTrivialConstructor();
@@ -113,10 +106,9 @@ namespace Gum.Analysis
         }        
 
         // Info자체에는 environment가 없으므로, typeEnv가 있어야
-        ClassTypeValue? IModuleClassInfo.GetBaseClass()
+        IClassTypeValue? IModuleClassInfo.GetBaseClass()
         {
             Debug.Assert(state == ModuleInfoBuildState.Completed);
-
             return baseClass;
         }
 

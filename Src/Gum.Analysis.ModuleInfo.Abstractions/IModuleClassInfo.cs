@@ -10,6 +10,6 @@ namespace Gum.Analysis
         ImmutableArray<IModuleFuncInfo> GetMemberFuncs();
         ImmutableArray<IModuleConstructorInfo> GetConstructors();
         ImmutableArray<IModuleMemberVarInfo> GetMemberVars();
-        ClassTypeValue? GetBaseClass();
+        IClassTypeValue? GetBaseClass();
     }
 }

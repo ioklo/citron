@@ -26,10 +26,10 @@ namespace Gum.Analysis
         public ExternalModuleInfo(M.ModuleInfo moduleInfo)
         {
             name = moduleInfo.Name;
-
             namespaceDict = new ExternalNamespaceDict(moduleInfo.Namespaces);
-            typeDict = new ModuleTypeDict(moduleInfo.Types);
-            funcDict = new ModuleFuncDict(moduleInfo.Funcs);
+
+            typeDict = ExternalModuleMisc.MakeModuleTypeDict(moduleInfo.Types);            
+            funcDict = ExternalModuleMisc.MakeModuleFuncDict(moduleInfo.Funcs);
         }
 
         public M.ModuleName GetName()
@@ -42,7 +42,7 @@ namespace Gum.Analysis
             return name;
         }
 
-        IModuleNamespaceInfo? IModuleNamespaceContainer.GetNamespace(M.NamespaceName name)
+        IModuleNamespaceInfo? IModuleNamespaceContainer.GetNamespace(M.Name name)
         {
             return namespaceDict.Get(name);
         }
@@ -61,5 +61,30 @@ namespace Gum.Analysis
         {
             return funcDict.Get(name, typeParamCount, paramTypes);
         }        
+
+        IModuleItemInfo? IModuleInfo.GetItem(M.Name name, int typeParamCount, M.ParamTypes paramTypes)
+        {
+            var candidates = new Candidates<IModuleItemInfo>();
+
+            if (typeParamCount == 0 && paramTypes.IsEmpty)
+            {
+                var ns = namespaceDict.Get(name);
+                if (ns != null)
+                    candidates.Add(ns);
+            }
+
+            if (paramTypes.IsEmpty)
+            {
+                var type = typeDict.Get(name, typeParamCount);
+                if (type != null)
+                    candidates.Add(type);
+            }
+
+            var func = funcDict.Get(name, typeParamCount, paramTypes);
+            if (func != null)
+                candidates.Add(func);
+
+            return candidates.GetSingle(); // TODO: 에러처리
+        }
     }
 }

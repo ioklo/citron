@@ -4,6 +4,6 @@ namespace Gum.Analysis
 {
     public interface IModuleNamespaceContainer
     {
-        IModuleNamespaceInfo? GetNamespace(M.NamespaceName name);
+        IModuleNamespaceInfo? GetNamespace(M.Name name);
     }
 }
