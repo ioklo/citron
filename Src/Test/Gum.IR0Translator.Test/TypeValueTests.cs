@@ -34,7 +34,7 @@ namespace Gum.IR0Translator.Test
             var xInfo = new M.StructDecl(new M.Name.Normal("X"), Arr("T"), null, default, default, default, default, default);
             var moduleInfo = new ExternalModuleDecl(new M.ModuleDecl(moduleName, default, Arr<M.TypeDecl>(xInfo), default));
 
-            var typeInfoRepo = new TypeInfoRepository(moduleInfo, new ExternalModuleInfoRepository(Arr(RuntimeModuleDecl.Instance)));
+            var typeInfoRepo = new TypeInfoRepository(moduleInfo, new ExternalModuleDeclRepository(Arr(RuntimeModuleDecl.Instance)));
             var ritemFactory = new RItemFactory();
             var factory = new ItemValueFactory(typeInfoRepo, ritemFactory);
 
@@ -52,7 +52,7 @@ namespace Gum.IR0Translator.Test
             var xInfo = new M.StructDecl(new M.Name.Normal("X"), Arr<string>("T"), null, default, Arr<M.TypeDecl>(yInfo), default, default, default);
 
             var internalModuleInfo = new ExternalModuleDecl(new M.ModuleDecl(moduleName, default, Arr<M.TypeDecl>(xInfo), default));
-            var externalModuleRepo = new ExternalModuleInfoRepository(Arr(RuntimeModuleDecl.Instance));
+            var externalModuleRepo = new ReferenceModuleDeclRepository(Arr(RuntimeModuleDecl.Instance));
 
             var typeInfoRepo = new TypeInfoRepository(internalModuleInfo, externalModuleRepo);
             var ritemFactory = new RItemFactory();
@@ -98,7 +98,7 @@ namespace Gum.IR0Translator.Test
             ), default, default, default);
 
             var testModule = new ExternalModuleDecl(new M.ModuleDecl(moduleName, default, Arr<M.TypeDecl>(xInfo, gInfo), default));
-            var externalModuleRepo = new ExternalModuleInfoRepository(Arr(RuntimeModuleDecl.Instance));
+            var externalModuleRepo = new ReferenceModuleDeclRepository(Arr(RuntimeModuleDecl.Instance));
             var typeInfoRepo = new TypeInfoRepository(testModule, externalModuleRepo);
             var ritemFactory = new RItemFactory();
             return new ItemValueFactory(typeInfoRepo, ritemFactory);

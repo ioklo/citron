@@ -16,6 +16,17 @@ namespace Gum.Analysis
 
     public static class FuncParameterKindExtensions
     {
+        public static FuncParameterKind MakeFuncParameterKind(this M.ParamKind kind)
+        {
+            return kind switch
+            {
+                M.ParamKind.Default => FuncParameterKind.Default,
+                M.ParamKind.Ref => FuncParameterKind.Ref,
+                M.ParamKind.Params => FuncParameterKind.Params,
+                _ => throw new UnreachableCodeException()
+            };
+        }
+
         public static M.ParamKind ToMParamKind(this FuncParameterKind kind)
         {
             return kind switch
@@ -45,7 +56,7 @@ namespace Gum.Analysis
     {
         public FuncParameterKind Kind { get; }
         public ITypeSymbolNode Type { get; }
-        public M.Name Name { get; }
+        public M.Name Name { get; }        
 
         public M.Param GetMParam()
         {

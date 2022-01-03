@@ -1,4 +1,5 @@
 ﻿using Gum.Collections;
+using System;
 using System.Diagnostics;
 
 namespace Gum.Analysis
@@ -53,6 +54,11 @@ namespace Gum.Analysis
             Debug.Assert(outerEnum != null);
 
             result = factory.MakeEnumElem(outerEnum, enumElemDecl);
+        }
+
+        public void VisitInterfaceDecl(InterfaceDeclSymbol interfaceDecl)
+        {
+            throw new NotImplementedException();
         }
 
         public void VisitStructDecl(StructDeclSymbol structDecl)

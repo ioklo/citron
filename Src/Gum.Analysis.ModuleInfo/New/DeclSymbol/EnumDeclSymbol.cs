@@ -1,5 +1,6 @@
 ﻿using Gum.Analysis;
 using Gum.Collections;
+using Gum.Infra;
 using System;
 using M = Gum.CompileTime;
 
@@ -7,13 +8,13 @@ namespace Gum.Analysis
 {
     public partial class EnumDeclSymbol : ITypeDeclSymbolNode
     {
-        Lazy<IDeclSymbolNode> outer;
+        IHolder<IDeclSymbolNode> outer;
 
         M.Name name;
         ImmutableArray<string> typeParams;
         ImmutableDictionary<M.Name, EnumElemDeclSymbol> elemDict;
 
-        public EnumDeclSymbol(Lazy<IDeclSymbolNode> outer, M.Name name, ImmutableArray<string> typeParams, ImmutableArray<EnumElemDeclSymbol> elemDecls)
+        public EnumDeclSymbol(IHolder<IDeclSymbolNode> outer, M.Name name, ImmutableArray<string> typeParams, ImmutableArray<EnumElemDeclSymbol> elemDecls)
         {
             this.outer = outer;
             this.name = name;
@@ -58,7 +59,7 @@ namespace Gum.Analysis
 
         public IDeclSymbolNode? GetOuterDeclNode()
         {
-            return outer.Value;
+            return outer.GetValue();
         }
 
         public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, M.ParamTypes paramTypes)

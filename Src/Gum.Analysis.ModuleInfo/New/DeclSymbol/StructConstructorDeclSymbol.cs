@@ -1,4 +1,5 @@
 ﻿using Gum.Collections;
+using Gum.Infra;
 using System;
 using M = Gum.CompileTime;
 using R = Gum.IR0;
@@ -7,11 +8,11 @@ namespace Gum.Analysis
 {
     public class StructConstructorDeclSymbol : IDeclSymbolNode
     {
-        Lazy<StructDeclSymbol> outer;
+        IHolder<StructDeclSymbol> outer;
         M.AccessModifier accessModifier;
         ImmutableArray<FuncParameter> parameters;
 
-        internal StructConstructorDeclSymbol(Lazy<StructDeclSymbol> outer, M.AccessModifier accessModifier, ImmutableArray<FuncParameter> parameters)
+        internal StructConstructorDeclSymbol(IHolder<StructDeclSymbol> outer, M.AccessModifier accessModifier, ImmutableArray<FuncParameter> parameters)
         {
             this.outer = outer;
             this.accessModifier = accessModifier;
@@ -20,7 +21,7 @@ namespace Gum.Analysis
 
         public IDeclSymbolNode? GetOuterDeclNode()
         {
-            return outer.Value;
+            return outer.GetValue();
         }
 
         public DeclSymbolNodeName GetNodeName()

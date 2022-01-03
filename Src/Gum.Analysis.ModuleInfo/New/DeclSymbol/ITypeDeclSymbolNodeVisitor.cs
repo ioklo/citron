@@ -6,5 +6,6 @@
         void VisitStructDecl(StructDeclSymbol structDecl);
         void VisitEnumDecl(EnumDeclSymbol enumDecl);
         void VisitEnumElemDecl(EnumElemDeclSymbol enumElemDecl);
+        void VisitInterfaceDecl(InterfaceDeclSymbol interfaceDecl);
     }
 }

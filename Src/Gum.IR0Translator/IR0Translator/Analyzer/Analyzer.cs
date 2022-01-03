@@ -80,7 +80,7 @@ namespace Gum.IR0Translator
         public static R.Script? Analyze(
             S.Script sscript,
             M.Name moduleName,
-            ExternalModuleInfoRepository externalModuleInfoRepo,
+            ExternalModuleDeclRepository externalModuleInfoRepo,
             ILogger logger)
         {
             try

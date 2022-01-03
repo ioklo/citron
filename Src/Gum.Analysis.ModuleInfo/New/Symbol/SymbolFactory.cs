@@ -23,6 +23,11 @@ namespace Gum.Analysis
             return new ClassConstructorSymbol(this, @class, decl);
         }
 
+        public InterfaceSymbol MakeInterface(ISymbolNode outer, InterfaceDeclSymbol decl, ImmutableArray<ITypeSymbolNode> typeArgs)
+        {
+            return new InterfaceSymbol(this, outer, decl, typeArgs);
+        }
+
         internal ClassMemberVarSymbol MakeClassMemberVar(ClassSymbol @class, ClassMemberVarDeclSymbol decl)
         {
             return new ClassMemberVarSymbol(this, @class, decl);

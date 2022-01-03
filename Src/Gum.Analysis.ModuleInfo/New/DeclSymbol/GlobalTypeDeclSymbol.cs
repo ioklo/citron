@@ -7,7 +7,13 @@ namespace Gum.Analysis
     [AutoConstructor]
     public partial class GlobalTypeDeclSymbol : IDeclSymbolNode
     {
+        M.AccessModifier accessModifier;
         ITypeDeclSymbolNode typeDecl;
+
+        public M.AccessModifier GetAccessModifier() 
+        { 
+            return accessModifier;
+        }
 
         public IDeclSymbolNode? GetOuterDeclNode()
         {

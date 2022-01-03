@@ -2,27 +2,28 @@
 using Gum.Collections;
 using R = Gum.IR0;
 using M = Gum.CompileTime;
+using Gum.Infra;
 
 namespace Gum.Analysis
 {
     public record ClassMemberFuncDeclSymbol : IDeclSymbolNode
     {
-        Lazy<ClassDeclSymbol> outer;
+        IHolder<ClassDeclSymbol> outer;
         M.AccessModifier accessModifier;
-        FuncReturn @return;
+        IHolder<FuncReturn> @return;
         M.Name name;
         ImmutableArray<string> typeParams;
-        ImmutableArray<FuncParameter> parameters;
-        bool bInstanceFunc;
+        IHolder<ImmutableArray<FuncParameter>> parameters;
+        bool bStatic;
 
         public ClassMemberFuncDeclSymbol(
-            Lazy<ClassDeclSymbol> outer, 
+            IHolder<ClassDeclSymbol> outer, 
             M.AccessModifier accessModifier, 
-            FuncReturn @return,
+            IHolder<FuncReturn> @return,
             M.Name name,
             ImmutableArray<string> typeParams,
-            ImmutableArray<FuncParameter> parameters,
-            bool bInstanceFunc)
+            IHolder<ImmutableArray<FuncParameter>> parameters,
+            bool bStatic)
         {
             this.outer = outer;
             this.accessModifier = accessModifier;
@@ -30,7 +31,7 @@ namespace Gum.Analysis
             this.name = name;
             this.typeParams = typeParams;
             this.parameters = parameters;
-            this.bInstanceFunc = bInstanceFunc;
+            this.bStatic = bStatic;
         }
 
         public M.AccessModifier GetAccessModifier()
@@ -40,37 +41,37 @@ namespace Gum.Analysis
 
         public int GetParameterCount()
         {
-            return parameters.Length;
+            return parameters.GetValue().Length;
         }
 
         public FuncParameter GetParameter(int index)
         {
-            return parameters[index];
+            return parameters.GetValue()[index];
         }
 
         public FuncReturn GetReturn()
         {
-            return @return;
+            return @return.GetValue();
         }
 
         public int GetTypeParamCount()
         {
             return typeParams.Length;
         }
-
-        public bool IsInstanceFunc()
+        
+        public bool IsStatic()
         {
-            return bInstanceFunc;
+            return bStatic;
         }
 
         public DeclSymbolNodeName GetNodeName()
         {
-            return new DeclSymbolNodeName(name, typeParams.Length, parameters.MakeMParamTypes());
+            return new DeclSymbolNodeName(name, typeParams.Length, parameters.GetValue().MakeMParamTypes());
         }
 
         public IDeclSymbolNode? GetOuterDeclNode()
         {
-            return outer.Value;
+            return outer.GetValue();
         }
 
         public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, M.ParamTypes paramTypes)
@@ -81,7 +82,7 @@ namespace Gum.Analysis
         public R.Path.Nested MakeRPath(R.Path.Nested outerPath, ImmutableArray<R.Path> typeArgs)
         {
             var rname = RItemFactory.MakeName(name);
-            var paramHash = new R.ParamHash(typeArgs.Length, parameters.MakeParamHashEntries());
+            var paramHash = new R.ParamHash(typeArgs.Length, parameters.GetValue().MakeParamHashEntries());
             return new R.Path.Nested(outerPath, rname, paramHash, typeArgs);
         }
     }

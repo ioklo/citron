@@ -1,5 +1,6 @@
 ﻿using Gum.Analysis;
 using Gum.Collections;
+using Gum.Infra;
 using Pretune;
 using System;
 using System.Collections.Generic;
@@ -19,20 +20,20 @@ namespace Gum.Analysis
     [ImplementIEquatable]
     public partial class ClassDeclSymbol : ITypeDeclSymbolNode
     {
-        Lazy<IDeclSymbolNode> outer;
+        IHolder<IDeclSymbolNode> outer;
 
         M.Name name;
         ImmutableArray<string> typeParams;
-        M.TypeId? baseClassId;
-        ImmutableArray<M.TypeId> interfaceTypes;
+        IHolder<ImmutableArray<InterfaceSymbol>> interfaceTypes;
 
         ImmutableArray<ClassMemberTypeDeclSymbol> typeDecls;
         ImmutableArray<ClassMemberFuncDeclSymbol> funcDecls;
-        ImmutableArray<ClassConstructorDeclSymbol> constructorDecls;
+        IHolder<ImmutableArray<ClassConstructorDeclSymbol>> constructorDecls; // 추가적으로 생성되는 것들 때문에 이렇게 했는데 약간 크게 잡은 경향이 있다
         ImmutableArray<ClassMemberVarDeclSymbol> varDecls;
-        
-        ClassSymbol? baseClass; // Class선언 시점 typeEnv를 적용한 baseClass
-        ClassConstructorDeclSymbol? trivialConstructor;
+
+        // Class선언 시점 typeEnv를 적용한 baseClass
+        IHolder<ClassSymbol> baseClass;        
+        IHolder<ClassConstructorDeclSymbol?> trivialConstructor;
 
         ClassDeclSymbolBuildState state;
 
@@ -43,27 +44,27 @@ namespace Gum.Analysis
         FuncDict<ClassMemberFuncDeclSymbol> funcDict;
         
         public ClassDeclSymbol(
-            Lazy<IDeclSymbolNode> outer,
+            IHolder<IDeclSymbolNode> outer,
             M.Name name, ImmutableArray<string> typeParams,
-            M.TypeId? baseClassId,
-            ImmutableArray<M.TypeId> interfaceTypes,
+            IHolder<ClassSymbol> baseClass,
+            IHolder<ImmutableArray<InterfaceSymbol>> interfaceTypes,
             ImmutableArray<ClassMemberTypeDeclSymbol> typeDecls,
             ImmutableArray<ClassMemberFuncDeclSymbol> funcDecls,
-            ImmutableArray<ClassConstructorDeclSymbol> constructorDecls,
-            ImmutableArray<ClassMemberVarDeclSymbol> varDecls)
+            ImmutableArray<ClassMemberVarDeclSymbol> varDecls,
+            IHolder<ImmutableArray<ClassConstructorDeclSymbol>> constructorDecls,
+            IHolder<ClassConstructorDeclSymbol?> trivialConstructor)
         {
             this.outer = outer;
             this.name = name;
             this.typeParams = typeParams;
-            this.baseClassId = baseClassId;
+            this.baseClass = baseClass;
             this.interfaceTypes = interfaceTypes;
             this.typeDecls = typeDecls;
-            this.funcDecls = funcDecls;
-            this.constructorDecls = constructorDecls;
+            this.funcDecls = funcDecls;            
             this.varDecls = varDecls;
 
-            this.baseClass = null;
-            this.trivialConstructor = null;
+            this.constructorDecls = constructorDecls;
+            this.trivialConstructor = trivialConstructor;
             this.state = ClassDeclSymbolBuildState.BeforeSetBaseAndBuildTrivialConstructor;
 
             this.typeDict = TypeDict.Build(typeDecls);
@@ -191,7 +192,7 @@ namespace Gum.Analysis
 
         public IDeclSymbolNode? GetOuterDeclNode()
         {
-            return outer.Value;
+            return outer.GetValue();
         }
 
         public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, M.ParamTypes paramTypes)

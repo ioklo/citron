@@ -99,7 +99,7 @@ namespace Gum.Analysis
             }
 
             // trivial constructor를 만듭니다
-            return new ClassConstructorDeclSymbol(new Lazy<ClassDeclSymbol>(outer), M.AccessModifier.Public, builder.MoveToImmutable());
+            return new ClassConstructorDeclSymbol(new Holder<ClassDeclSymbol>(outer), M.AccessModifier.Public, builder.MoveToImmutable());
         }
 
         public static StructConstructorDeclSymbol? GetConstructorHasSameParamWithTrivial(

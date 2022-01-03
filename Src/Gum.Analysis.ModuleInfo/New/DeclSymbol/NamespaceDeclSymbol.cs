@@ -1,4 +1,5 @@
 ﻿using Gum.Collections;
+using Gum.Infra;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,11 +12,11 @@ namespace Gum.Analysis
 {
     public class NamespaceDeclSymbol : ITopLevelDeclSymbolNode
     {
-        ITopLevelDeclSymbolNode outer;
+        IHolder<ITopLevelDeclSymbolNode> outer;
         M.Name name;
         TopLevelDeclDict dict;
 
-        public NamespaceDeclSymbol(ITopLevelDeclSymbolNode outer, M.Name name, ImmutableArray<NamespaceDeclSymbol> namespaces, ImmutableArray<GlobalTypeDeclSymbol> types, ImmutableArray<GlobalFuncDeclSymbol> funcs)
+        public NamespaceDeclSymbol(IHolder<ITopLevelDeclSymbolNode> outer, M.Name name, ImmutableArray<NamespaceDeclSymbol> namespaces, ImmutableArray<GlobalTypeDeclSymbol> types, ImmutableArray<GlobalFuncDeclSymbol> funcs)
         {
             this.outer = outer;
             this.name = name;
@@ -29,7 +30,7 @@ namespace Gum.Analysis
 
         public IDeclSymbolNode? GetOuterDeclNode()
         {
-            return outer;
+            return outer.GetValue();
         }
 
         public M.Name GetName()

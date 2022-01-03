@@ -22,7 +22,7 @@ namespace Gum.IR0Translator.Test
 
             var skelRepo = TypeSkeletonCollector.Collect(script);            
 
-            var moduleInfoRepo = new ExternalModuleInfoRepository(ImmutableArray<M.ModuleDecl>.Empty);
+            var moduleInfoRepo = new ExternalModuleDeclRepository(ImmutableArray<M.ModuleDecl>.Empty);
             var result = TypeExpEvaluator.Evaluate(moduleName, script, moduleInfoRepo, skelRepo, testLogger);
 
             Assert.NotNull(result);

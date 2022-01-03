@@ -35,5 +35,10 @@ namespace Gum.Analysis
 
             candidates.Add(new MemberQueryResult.EnumElem(symbolFactory.MakeEnumElem(outerEnum, enumElemDecl)));
         }
+
+        public void VisitInterfaceDecl(InterfaceDeclSymbol interfaceDecl)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

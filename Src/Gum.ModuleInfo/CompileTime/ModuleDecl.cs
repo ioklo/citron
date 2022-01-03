@@ -12,7 +12,7 @@ using System.Diagnostics.Contracts;
 namespace Gum.CompileTime
 {
     public record ModuleDecl(Name Name, ImmutableArray<NamespaceDecl> Namespaces, ImmutableArray<GlobalTypeDecl> Types, ImmutableArray<GlobalFuncDecl> Funcs);
-    public record NamespaceDecl(ImmutableArray<GlobalTypeDecl> Types, ImmutableArray<GlobalFuncDecl> Funcs);
+    public record NamespaceDecl(Name Name, ImmutableArray<NamespaceDecl> Namespaces, ImmutableArray<GlobalTypeDecl> Types, ImmutableArray<GlobalFuncDecl> Funcs);
 
     // 
     public abstract record TypeDecl;
@@ -25,7 +25,7 @@ namespace Gum.CompileTime
     public record ClassDecl(Name Name, ImmutableArray<string> TypeParams, TypeId? BaseType, ImmutableArray<TypeId> Interfaces, ImmutableArray<ClassMemberTypeDecl> MemberTypes, ImmutableArray<ClassConstructorDecl> Constructors, ImmutableArray<ClassMemberFuncDecl> MemberFuncs, ImmutableArray<ClassMemberVarDecl> MemberVars) : TypeDecl;
     public record ClassMemberTypeDecl(AccessModifier AccessModifier, TypeDecl TypeDecl);
     public record ClassConstructorDecl(AccessModifier AccessModifier, ImmutableArray<Param> Parameters, bool IsTrivial);
-    public record ClassMemberFuncDecl(AccessModifier AccessModifier, Name Name, bool IsRefReturn, bool IsInstanceFunc, ImmutableArray<string> TypeParams, TypeId RetType, ImmutableArray<Param> Parameters);
+    public record ClassMemberFuncDecl(AccessModifier AccessModifier, Name Name, bool IsRefReturn, bool IsStatic, ImmutableArray<string> TypeParams, TypeId RetType, ImmutableArray<Param> Parameters);
     public record ClassMemberVarDecl(AccessModifier AccessModifier, bool IsStatic, TypeId Type, Name Name);
 
     // Struct

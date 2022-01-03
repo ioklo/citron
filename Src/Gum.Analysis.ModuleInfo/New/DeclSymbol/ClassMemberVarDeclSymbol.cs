@@ -1,4 +1,5 @@
-﻿using Pretune;
+﻿using Gum.Infra;
+using Pretune;
 using System;
 
 using M = Gum.CompileTime;
@@ -7,14 +8,14 @@ namespace Gum.Analysis
 {
     public class ClassMemberVarDeclSymbol : IDeclSymbolNode
     {
-        Lazy<ClassDeclSymbol> outer;
+        IHolder<ClassDeclSymbol> outer;
         M.AccessModifier accessModifier;
         bool bStatic;
-        ITypeSymbolNode declType;
+        IHolder<ITypeSymbolNode> declType;
         M.Name name;
 
         // public static int s;
-        public ClassMemberVarDeclSymbol(Lazy<ClassDeclSymbol> outer, M.AccessModifier accessModifier, bool bStatic, ITypeSymbolNode declType, M.Name name)
+        public ClassMemberVarDeclSymbol(IHolder<ClassDeclSymbol> outer, M.AccessModifier accessModifier, bool bStatic, IHolder<ITypeSymbolNode> declType, M.Name name)
         {
             this.outer = outer;
             this.accessModifier = accessModifier;
@@ -25,12 +26,12 @@ namespace Gum.Analysis
 
         public ITypeSymbolNode GetDeclType()
         {
-            return declType;
+            return declType.GetValue();
         }
 
         public IDeclSymbolNode? GetOuterDeclNode()
         {
-            return outer.Value;
+            return outer.GetValue();
         }
 
         public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, M.ParamTypes paramTypes)

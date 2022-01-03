@@ -3,20 +3,23 @@ using System;
 
 using R = Gum.IR0;
 using M = Gum.CompileTime;
+using Gum.Infra;
 
 namespace Gum.Analysis
 {
     public record ClassConstructorDeclSymbol : IDeclSymbolNode
     {
-        Lazy<ClassDeclSymbol> outer;
+        IHolder<ClassDeclSymbol> outer;
         M.AccessModifier accessModifier;
-        ImmutableArray<FuncParameter> parameters;
+        IHolder<ImmutableArray<FuncParameter>> parameters;
+        bool bTrivial;
 
-        public ClassConstructorDeclSymbol(Lazy<ClassDeclSymbol> outer, M.AccessModifier accessModifier, ImmutableArray<FuncParameter> parameters)
+        public ClassConstructorDeclSymbol(IHolder<ClassDeclSymbol> outer, M.AccessModifier accessModifier, IHolder<ImmutableArray<FuncParameter>> parameters, bool bTrivial)
         {
             this.outer = outer;
             this.accessModifier = accessModifier;
             this.parameters = parameters;
+            this.bTrivial = bTrivial;
         }
 
         public M.AccessModifier GetAccessModifier()
@@ -26,22 +29,22 @@ namespace Gum.Analysis
 
         public int GetParameterCount()
         {
-            return parameters.Length;
+            return parameters.GetValue().Length;
         }
 
         public FuncParameter GetParameter(int index)
         {
-            return parameters[index];
+            return parameters.GetValue()[index];
         }
 
         public IDeclSymbolNode? GetOuterDeclNode()
         {
-            return outer.Value;
+            return outer.GetValue();
         }
 
         public DeclSymbolNodeName GetNodeName()
         {
-            return new DeclSymbolNodeName(M.Name.Constructor, 0, parameters.MakeMParamTypes());
+            return new DeclSymbolNodeName(M.Name.Constructor, 0, parameters.GetValue().MakeMParamTypes());
         }
 
         public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, M.ParamTypes paramTypes)
@@ -52,7 +55,7 @@ namespace Gum.Analysis
         // typeArgs가 없다
         public R.Path.Nested MakeRPath(R.Path.Normal outerPath)
         {   
-            var paramHash = new R.ParamHash(0, parameters.MakeParamHashEntries());
+            var paramHash = new R.ParamHash(0, parameters.GetValue().MakeParamHashEntries());
             return new R.Path.Nested(outerPath, R.Name.Constructor.Instance, paramHash, default);
         }
     }

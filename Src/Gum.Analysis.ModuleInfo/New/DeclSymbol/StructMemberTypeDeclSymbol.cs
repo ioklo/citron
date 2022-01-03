@@ -1,4 +1,5 @@
 ﻿using Gum.Collections;
+using Gum.Infra;
 using System;
 using M = Gum.CompileTime;
 
@@ -6,10 +7,10 @@ namespace Gum.Analysis
 {
     public class StructMemberTypeDeclSymbol : IDeclSymbolNode
     {
-        Lazy<StructDeclSymbol> outer;
+        IHolder<StructDeclSymbol> outer;
         ITypeDeclSymbolNode typeDecl;
 
-        public StructMemberTypeDeclSymbol(Lazy<StructDeclSymbol> outer, ITypeDeclSymbolNode typeDecl)
+        public StructMemberTypeDeclSymbol(IHolder<StructDeclSymbol> outer, ITypeDeclSymbolNode typeDecl)
         {
             this.outer = outer;
             this.typeDecl = typeDecl;
@@ -22,7 +23,7 @@ namespace Gum.Analysis
 
         public IDeclSymbolNode? GetOuterDeclNode()
         {
-            return outer.Value;
+            return outer.GetValue();
         }
 
         public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, M.ParamTypes paramTypes)

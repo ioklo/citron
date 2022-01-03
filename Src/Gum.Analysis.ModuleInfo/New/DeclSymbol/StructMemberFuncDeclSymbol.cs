@@ -1,4 +1,5 @@
 ﻿using Gum.Collections;
+using Gum.Infra;
 using Pretune;
 using System;
 using M = Gum.CompileTime;
@@ -9,7 +10,7 @@ namespace Gum.Analysis
     [AutoConstructor]
     public partial class StructMemberFuncDeclSymbol : IDeclSymbolNode
     {
-        Lazy<StructDeclSymbol> outer;
+        IHolder<StructDeclSymbol> outer;
 
         M.AccessModifier accessModifier;
         bool bInstanceFunc;
@@ -30,7 +31,7 @@ namespace Gum.Analysis
 
         public IDeclSymbolNode? GetOuterDeclNode()
         {
-            return outer.Value;
+            return outer.GetValue();
         }
 
         public int GetTypeParamCount()

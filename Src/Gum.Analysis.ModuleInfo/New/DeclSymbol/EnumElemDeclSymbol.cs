@@ -1,5 +1,6 @@
 ﻿using Gum.Analysis;
 using Gum.Collections;
+using Gum.Infra;
 using Pretune;
 using System;
 using M = Gum.CompileTime;
@@ -9,7 +10,7 @@ namespace Gum.Analysis
     [AutoConstructor, ImplementIEquatable]
     public partial class EnumElemDeclSymbol : ITypeDeclSymbolNode
     {
-        Lazy<EnumDeclSymbol> outer;
+        IHolder<EnumDeclSymbol> outer;
         M.Name name;
         ImmutableArray<EnumElemMemberVarDeclSymbol> memberVarDecls;
 
@@ -30,7 +31,7 @@ namespace Gum.Analysis
 
         public IDeclSymbolNode? GetOuterDeclNode()
         {
-            return outer.Value;
+            return outer.GetValue();
         }
 
         public DeclSymbolNodeName GetNodeName()

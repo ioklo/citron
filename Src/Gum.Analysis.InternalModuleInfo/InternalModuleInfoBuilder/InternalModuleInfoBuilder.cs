@@ -27,7 +27,7 @@ namespace Gum.Analysis
             M.Name moduleName, 
             S.Script script, 
             TypeExpInfoService typeExpInfoService,
-            ExternalModuleInfoRepository externalModuleInfoRepo)
+            ExternalModuleDeclRepository externalModuleInfoRepo)
         {
             var types = new List<IModuleTypeDecl>();
             var funcs = new List<IModuleFuncDecl>();
