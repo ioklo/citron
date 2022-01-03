@@ -8,10 +8,10 @@ namespace Gum.Runtime
     class NativeTypeInst : TypeInst
     {
         // key
-        TypeValue typeValue;
+        TypeSymbol typeValue;
         Func<Value> defaultValueFactory;
 
-        public NativeTypeInst(TypeValue typeValue, Func<Value> defaultValueFactory)
+        public NativeTypeInst(TypeSymbol typeValue, Func<Value> defaultValueFactory)
         {
             this.typeValue = typeValue;
             this.defaultValueFactory = defaultValueFactory;
@@ -22,7 +22,7 @@ namespace Gum.Runtime
             return defaultValueFactory();
         }
 
-        public override TypeValue GetTypeValue()
+        public override TypeSymbol GetTypeValue()
         {
             return typeValue;
         }
@@ -30,7 +30,7 @@ namespace Gum.Runtime
         public override bool Equals(object? obj)
         {
             return obj is NativeTypeInst inst &&
-                   EqualityComparer<TypeValue>.Default.Equals(typeValue, inst.typeValue);
+                   EqualityComparer<TypeSymbol>.Default.Equals(typeValue, inst.typeValue);
         }
 
         public override int GetHashCode()

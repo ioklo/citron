@@ -46,16 +46,9 @@ namespace Gum.IR0Translator
                 GlobalContext other,
                 CloneContext cloneContext)
             {
-                Infra.Misc.EnsurePure(other.itemValueFactory);
                 this.itemValueFactory = other.itemValueFactory;
-
-                Infra.Misc.EnsurePure(other.internalBinOpQueryService);
                 this.internalBinOpQueryService = other.internalBinOpQueryService;
-
-                Infra.Misc.EnsurePure(other.globalItemValueFactory);
                 this.globalItemValueFactory = other.globalItemValueFactory;
-
-                Infra.Misc.EnsurePure(other.typeExpInfoService);
                 this.typeExpInfoService = other.typeExpInfoService;
 
                 this.logger = cloneContext.GetClone(other.logger);
@@ -69,16 +62,9 @@ namespace Gum.IR0Translator
 
             public void Update(GlobalContext src, UpdateContext updateContext)
             {
-                Infra.Misc.EnsurePure(src.itemValueFactory);
                 this.itemValueFactory = src.itemValueFactory;
-
-                Infra.Misc.EnsurePure(src.internalBinOpQueryService);
                 this.internalBinOpQueryService = src.internalBinOpQueryService;
-
-                Infra.Misc.EnsurePure(src.globalItemValueFactory);
                 this.globalItemValueFactory = src.globalItemValueFactory;
-
-                Infra.Misc.EnsurePure(src.typeExpInfoService);
                 this.typeExpInfoService = src.typeExpInfoService;
 
                 updateContext.Update(this.logger, src.logger);
@@ -97,62 +83,62 @@ namespace Gum.IR0Translator
                 throw new AnalyzerFatalException();
             }            
 
-            public TypeValue GetVoidType()
+            public TypeSymbol GetVoidType()
             {
                 return itemValueFactory.Void;
             }
 
-            public TypeValue GetBoolType()
+            public TypeSymbol GetBoolType()
             {
                 return itemValueFactory.Bool;
             }
 
-            public TypeValue GetIntType()
+            public TypeSymbol GetIntType()
             {
                 return itemValueFactory.Int;
             }
 
-            public TypeValue GetStringType()
+            public TypeSymbol GetStringType()
             {
                 return itemValueFactory.String;
             }
 
-            public TypeValue GetListType(TypeValue elemType)
+            public TypeSymbol GetListType(TypeSymbol elemType)
             {
                 return itemValueFactory.MakeListType(elemType);
             }
             
-            public void AddInternalGlobalVarInfo(bool bRef, TypeValue typeValue, string name)
+            public void AddInternalGlobalVarInfo(bool bRef, TypeSymbol typeValue, string name)
             {
                 internalGlobalVarRepo.AddInternalGlobalVariable(bRef, typeValue, name);
             }
 
-            public bool IsBoolType(TypeValue typeValue)
+            public bool IsBoolType(TypeSymbol typeValue)
             {
                 return itemValueFactory.Bool.Equals(typeValue);
             }
 
-            public bool IsIntType(TypeValue typeValue)
+            public bool IsIntType(TypeSymbol typeValue)
             {
                 return itemValueFactory.Int.Equals(typeValue);
             }
 
-            public EnumElemTypeValue MakeEnumElemTypeValue(EnumTypeValue outer, IModuleEnumElemInfo elemInfo)
+            public EnumElemSymbol MakeEnumElemTypeValue(EnumTypeValue outer, IModuleEnumElemDecl elemInfo)
             {
                 return itemValueFactory.MakeEnumElemTypeValue(outer, elemInfo);
             }
 
-            public bool IsStringType(TypeValue typeValue)
+            public bool IsStringType(TypeSymbol typeValue)
             {
                 return itemValueFactory.String.Equals(typeValue);
             }
 
-            public TypeValue GetTypeValueByMType(M.Type type)
+            public TypeSymbol GetTypeValueByMType(M.TypeId type)
             {
                 return itemValueFactory.MakeTypeValueByMType(type);
             }
 
-            public TypeValue GetTypeValueByTypeExp(S.TypeExp typeExp)
+            public TypeSymbol GetTypeValueByTypeExp(S.TypeExp typeExp)
             {
                 var typeExpInfo = typeExpInfoService.GetTypeExpInfo(typeExp);
                 return itemValueFactory.MakeTypeValue(typeExpInfo);
@@ -168,17 +154,17 @@ namespace Gum.IR0Translator
                 return internalGlobalVarRepo.HasVariable(name);
             }
 
-            public LambdaTypeValue GetLambdaTypeValue(R.Path.Nested lambda, TypeValue retType, ImmutableArray<ParamInfo> paramInfos)
+            public LambdaTypeValue GetLambdaTypeValue(R.Path.Nested lambda, TypeSymbol retType, ImmutableArray<ParamInfo> paramInfos)
             {
                 return itemValueFactory.MakeLambdaType(lambda, retType, paramInfos);
             }
 
-            public SeqTypeValue GetSeqTypeValue(R.Path.Nested seq, TypeValue yieldType)
+            public SeqTypeValue GetSeqTypeValue(R.Path.Nested seq, TypeSymbol yieldType)
             {
                 return itemValueFactory.MakeSeqType(seq, yieldType);
             }
 
-            public ItemQueryResult GetGlobalItem(M.NamespacePath namespacePath, M.Name name, int typeParamCount)
+            public MemberQueryResult GetGlobalItem(M.NamespacePath namespacePath, M.Name name, int typeParamCount)
             {
                 return globalItemValueFactory.GetGlobal(namespacePath, name, typeParamCount);
             }
@@ -188,17 +174,17 @@ namespace Gum.IR0Translator
                 return internalBinOpQueryService.GetInfos(kind);
             }
 
-            public TypeValue MakeTypeValue(ItemValueOuter outer, IModuleTypeInfo typeInfo, ImmutableArray<TypeValue> typeArgs)
+            public TypeSymbol MakeTypeValue(ItemValueOuter outer, IModuleTypeDecl typeInfo, ImmutableArray<ITypeSymbolNode> typeArgs)
             {
                 return itemValueFactory.MakeTypeValue(outer, typeInfo, typeArgs);
             }
 
-            public FuncValue MakeFuncValue(ItemValueOuter outer, IModuleFuncInfo funcInfo, ImmutableArray<TypeValue> typeArgs)
+            public FuncValue MakeFuncValue(ItemValueOuter outer, IModuleFuncDecl funcInfo, ImmutableArray<ITypeSymbolNode> typeArgs)
             {
                 return itemValueFactory.MakeFunc(outer, funcInfo, typeArgs);
             }
 
-            public ConstructorValue MakeConstructorValue(NormalTypeValue outer, IModuleConstructorInfo info)
+            public ConstructorValue MakeConstructorValue(NormalTypeValue outer, IModuleConstructorDecl info)
             {
                 return itemValueFactory.MakeConstructorValue(outer, info);
             }
@@ -208,12 +194,12 @@ namespace Gum.IR0Translator
                 return itemValueFactory.MakeMemberVarValue(outer, info);
             }
 
-            public TupleTypeValue GetTupleType(ImmutableArray<(TypeValue Type, string? Name)> elems)
+            public TupleTypeValue GetTupleType(ImmutableArray<(TypeSymbol Type, string? Name)> elems)
             {
                 return itemValueFactory.MakeTupleType(elems);
             }
 
-            public ExpResult.Exp? TryCastExp_Exp(ExpResult.Exp expResult, TypeValue expectType) // nothrow
+            public ExpResult.Exp? TryCastExp_Exp(ExpResult.Exp expResult, TypeSymbol expectType) // nothrow
             {
                 // 같으면 그대로 리턴
                 if (expResult.TypeValue.Equals(expectType))
@@ -223,9 +209,9 @@ namespace Gum.IR0Translator
                 // expectType.TryCast(expResult); // expResult를 넣는것도 이상하다.. 그건 그때가서
 
                 // 1. enumElem -> enum
-                if (expResult.TypeValue is EnumElemTypeValue enumElemTypeValue)
+                if (expResult.TypeValue is EnumElemSymbol enumElemTypeValue)
                 {
-                    if (expectType is EnumTypeValue expectEnumType)
+                    if (expectType is EnumSymbol expectEnumType)
                     {
                         if (enumElemTypeValue.Outer.Equals(expectType))
                         {
@@ -238,9 +224,9 @@ namespace Gum.IR0Translator
                 }
 
                 // 2. exp is class type
-                if (expResult.TypeValue is ClassTypeValue classTypeValue)
+                if (expResult.TypeValue is ClassSymbol classTypeValue)
                 {
-                    if (expectType is ClassTypeValue expectClassType)
+                    if (expectType is ClassSymbol expectClassType)
                     {
                         // allows upcast
                         if (expectClassType.IsBaseOf(classTypeValue))
@@ -280,14 +266,14 @@ namespace Gum.IR0Translator
                 return itemValueFactory.MakeTypeVar(index);
             }
 
-            public StructTypeValue MakeStructTypeValue(ItemValueOuter outer, IModuleStructInfo structInfo, ImmutableArray<TypeValue> typeArgs)
+            public StructSymbol MakeStructTypeValue(ItemValueOuter outer, IModuleStructDecl structInfo, ImmutableArray<ITypeSymbolNode> typeArgs)
             {
                 return itemValueFactory.MakeStructValue(outer, structInfo, typeArgs);
             }
 
-            public ClassTypeValue MakeClassTypeValue(ItemValueOuter outer, IModuleClassInfo classInfo, ImmutableArray<TypeValue> typeArgs)
+            public ClassSymbol MakeClassTypeValue(ItemValueOuter outer, IModuleClassDecl classInfo, ImmutableArray<ITypeSymbolNode> typeArgs)
             {
-                return itemValueFactory.MakeClassValue(outer, classInfo, typeArgs);
+                return itemValueFactory.MakeClassSymbol(outer, classInfo, typeArgs);
             }
         }
     }

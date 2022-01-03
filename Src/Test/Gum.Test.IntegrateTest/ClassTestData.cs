@@ -181,7 +181,7 @@ var c = new C(3);
                     "c",
                     new R.NewClassExp(
                         RRoot("TestModule").Child("C"),
-                        new R.ParamHash(0, Arr(new R.ParamHashEntry(R.ParamKind.Normal, R.Path.Int))),
+                        new R.ParamHash(0, Arr(new R.ParamHashEntry(R.ParamKind.Default, R.Path.Int))),
                         Arr<R.Argument>(new R.Argument.Normal(RInt(3)))
                     )
                 )
@@ -246,7 +246,7 @@ var c = new C(3);
                     "c",
                     new R.NewClassExp(
                         CPath(),
-                        new R.ParamHash(0, Arr(new R.ParamHashEntry(R.ParamKind.Normal, R.Path.Int))),
+                        new R.ParamHash(0, Arr(new R.ParamHashEntry(R.ParamKind.Default, R.Path.Int))),
                         Arr<R.Argument>(new R.Argument.Normal(RInt(3)))
                     )
                 ),
@@ -308,7 +308,7 @@ var c = new C(3);         // but can do this
                     "c",
                     new R.NewClassExp(
                         RRoot(ModuleName).Child("C"),
-                        new R.ParamHash(0, Arr(new R.ParamHashEntry(R.ParamKind.Normal, R.Path.Int))),
+                        new R.ParamHash(0, Arr(new R.ParamHashEntry(R.ParamKind.Default, R.Path.Int))),
                         Arr<R.Argument>(new R.Argument.Normal(RInt(3)))
                     )
                 ),
@@ -371,7 +371,7 @@ c.x = 3;
                     "c",
                     new R.NewClassExp(
                         RRoot(ModuleName).Child("C"),
-                        new R.ParamHash(0, Arr(new R.ParamHashEntry(R.ParamKind.Normal, R.Path.Int))),
+                        new R.ParamHash(0, Arr(new R.ParamHashEntry(R.ParamKind.Default, R.Path.Int))),
                         Arr<R.Argument>(new R.Argument.Normal(RInt(2)))
                     )
                 ),
@@ -500,7 +500,7 @@ var i = c.F(2);
                         RBlock(RAssignStmt(R.ThisLoc.Instance.ClassMember(CxPath()), RLocalVarExp("x")))
                     )),
 
-                    Arr<R.FuncDecl>(new R.NormalFuncDecl(default, new R.Name.Normal("F"), true, default, Arr(new R.Param(R.ParamKind.Normal, R.Path.Int, new R.Name.Normal("y"))), RBlock(
+                    Arr<R.FuncDecl>(new R.NormalFuncDecl(default, new R.Name.Normal("F"), true, default, Arr(new R.Param(R.ParamKind.Default, R.Path.Int, new R.Name.Normal("y"))), RBlock(
                         new R.ReturnStmt(new R.ReturnInfo.Expression(new R.CallInternalBinaryOperatorExp(
                             R.InternalBinaryOperator.Add_Int_Int_Int,
                             new R.LoadExp(new R.ClassMemberLoc(R.ThisLoc.Instance, CxPath())),
@@ -518,7 +518,7 @@ var i = c.F(2);
                     "c",
                     new R.NewClassExp(
                         CPath(),
-                        new R.ParamHash(0, Arr(new R.ParamHashEntry(R.ParamKind.Normal, R.Path.Int))),
+                        new R.ParamHash(0, Arr(new R.ParamHashEntry(R.ParamKind.Default, R.Path.Int))),
                         Arr<R.Argument>(new R.Argument.Normal(RInt(3)))
                     )
                 ),

@@ -16,17 +16,17 @@ namespace Gum.IR0Translator
         abstract class TypeExpResult
         {
             public abstract TypeExpInfo GetTypeExpInfo();
-            public abstract M.Type? GetMType();
-            public abstract TypeExpResult? GetMemberInfo(string memberName, ImmutableArray<M.Type> typeArgs);
+            public abstract M.TypeId? GetMType();
+            public abstract TypeExpResult? GetMemberInfo(string memberName, ImmutableArray<M.TypeId> typeArgs);
         }
         
         class NoMemberTypeExpResult : TypeExpResult
         {
-            public static NoMemberTypeExpResult Void { get; } = new NoMemberTypeExpResult(new MTypeTypeExpInfo(M.VoidType.Instance, TypeExpInfoKind.Void, false));
+            public static NoMemberTypeExpResult Void { get; } = new NoMemberTypeExpResult(new MTypeTypeExpInfo(M.VoidTypeId.Instance, TypeExpInfoKind.Void, false));
             public static NoMemberTypeExpResult Var { get; } = new NoMemberTypeExpResult(VarTypeExpInfo.Instance);
-            public static NoMemberTypeExpResult TypeVar(M.TypeVarType typeVarType)
+            public static NoMemberTypeExpResult TypeVar(M.TypeVarTypeId typeVarType)
                 => new NoMemberTypeExpResult(new MTypeTypeExpInfo(typeVarType, TypeExpInfoKind.TypeVar, false));
-            public static NoMemberTypeExpResult Nullable(M.NullableType nullableType)
+            public static NoMemberTypeExpResult Nullable(M.NullableTypeId nullableType)
                 => new NoMemberTypeExpResult(new MTypeTypeExpInfo(nullableType, TypeExpInfoKind.Nullable, false));
 
             TypeExpInfo typeExpInfo;            
@@ -41,12 +41,12 @@ namespace Gum.IR0Translator
                 return typeExpInfo;
             }
 
-            public override M.Type? GetMType()
+            public override M.TypeId? GetMType()
             {
                 return typeExpInfo.GetMType();
             }
 
-            public override TypeExpResult? GetMemberInfo(string memberName, ImmutableArray<M.Type> typeArgs)
+            public override TypeExpResult? GetMemberInfo(string memberName, ImmutableArray<M.TypeId> typeArgs)
             {
                 return null;
             }
@@ -67,16 +67,16 @@ namespace Gum.IR0Translator
                 return typeExpInfo;
             }
 
-            public sealed override M.Type? GetMType()
+            public sealed override M.TypeId? GetMType()
             {
                 return typeExpInfo.GetMType();
             }
 
-            public sealed override TypeExpResult? GetMemberInfo(string memberName, ImmutableArray<M.Type> typeArgs)
+            public sealed override TypeExpResult? GetMemberInfo(string memberName, ImmutableArray<M.TypeId> typeArgs)
             {
-                Debug.Assert(typeExpInfo.Type is M.NormalType);
+                Debug.Assert(typeExpInfo.Type is M.NormalTypeId);
 
-                var mmemberType = new M.MemberType((M.NormalType)typeExpInfo.Type, new M.Name.Normal(memberName), typeArgs);
+                var mmemberType = new M.MemberType((M.NormalTypeId)typeExpInfo.Type, new M.Name.Normal(memberName), typeArgs);
                 return GetMemberInfo(memberName, typeArgs.Length, mmemberType);
             }
 
@@ -85,17 +85,17 @@ namespace Gum.IR0Translator
 
         class ExternalTypeExpResult : MTypeTypeExpResult
         {
-            M.TypeInfo typeInfo;
+            IModuleTypeDecl typeDecl;
 
-            public ExternalTypeExpResult(MTypeTypeExpInfo typeExpInfo, M.TypeInfo typeInfo)
+            public ExternalTypeExpResult(MTypeTypeExpInfo typeExpInfo, IModuleTypeDecl typeDecl)
                 : base(typeExpInfo)
             {
-                this.typeInfo = typeInfo;
-            }            
+                this.typeDecl = typeDecl;
+            }
 
             protected override TypeExpResult? GetMemberInfo(string memberName, int typeParamCount, M.MemberType mmemberType)
             {
-                var memberType = typeInfo.GetMemberType(memberName, typeParamCount);
+                var memberType = typeDecl.GetMemberType(new M.TypeName(new M.Name.Normal(memberName), typeParamCount));
                 if (memberType == null)
                     return null;
 

@@ -23,14 +23,14 @@ namespace Gum.IR0Translator
         {
             GlobalContext globalContext;
             S.StructDecl structDecl;
-            StructTypeValue structTypeValue;
+            StructSymbol structTypeValue;
 
             ImmutableArray<R.StructConstructorDecl>.Builder constructorsBuilder;
             ImmutableArray<R.FuncDecl>.Builder memberFuncsBuilder;
             ImmutableArray<R.StructMemberVarDecl>.Builder memberVarsBuilder;
 
             // Entry
-            public static void Analyze(GlobalContext globalContext, ITypeContainer typeContainer, S.StructDecl structDecl, StructTypeValue structTypeValue)
+            public static void Analyze(GlobalContext globalContext, ITypeContainer typeContainer, S.StructDecl structDecl, StructSymbol structTypeValue)
             {
                 var constructorsBuilder = ImmutableArray.CreateBuilder<R.StructConstructorDecl>();
                 var memberFuncsBuilder = ImmutableArray.CreateBuilder<R.FuncDecl>();
@@ -248,11 +248,12 @@ namespace Gum.IR0Translator
                 var parameters = trivialConstructor.GetParameters();
                 var paramBuilder = ImmutableArray.CreateBuilder<R.Param>(parameters.Length);
                 var stmtBuilder = ImmutableArray.CreateBuilder<R.Stmt>(parameters.Length);
+
                 foreach(var param in parameters)
                 {
                     var paramKind = param.Kind switch
                     {
-                        M.ParamKind.Normal => R.ParamKind.Normal,
+                        M.ParamKind.Default => R.ParamKind.Default,
                         M.ParamKind.Ref => R.ParamKind.Ref,
                         M.ParamKind.Params => R.ParamKind.Params,
                         _ => throw new UnreachableCodeException()

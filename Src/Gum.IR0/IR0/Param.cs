@@ -7,22 +7,17 @@ namespace Gum.IR0
 {
     public enum ParamKind
     {
-        Normal,
+        Default,
         Params,
         Ref,
     }
 
     // int a
     [AutoConstructor, ImplementIEquatable]
-    public partial struct Param : IPure
+    public partial struct Param 
     {
         public ParamKind Kind { get; }
         public Path Type { get; }
         public Name Name { get; }
-
-        public void EnsurePure()
-        {
-            Misc.EnsurePure(Type);
-        }
     }
 }

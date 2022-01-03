@@ -21,19 +21,19 @@ namespace Gum.IR0Translator
         {
         }
 
-        M.ModuleName internalModuleName;
-        ImmutableArray<IModuleInfo> externalInfos;
+        M.Name internalModuleName;
+        ImmutableArray<IModuleDecl> externalInfos;
         TypeSkeletonRepository skelRepo;
         ILogger logger;
         
         Dictionary<S.TypeExp, TypeExpInfo> infosByTypeExp;
-        ImmutableDictionary<string, M.TypeVarType> typeEnv;
+        ImmutableDictionary<string, M.TypeVarTypeId> typeEnv;
         int totalTypeParamCount;
 
         public static TypeExpInfoService Evaluate(
-            M.ModuleName internalModuleName,
+            M.Name internalModuleName,
             S.Script script,
-            ImmutableArray<IModuleInfo> externalInfos,            
+            ImmutableArray<IModuleDecl> externalInfos,            
             ILogger logger)
         {
             var skelRepo = TypeSkeletonCollector.Collect(script);
@@ -66,7 +66,7 @@ namespace Gum.IR0Translator
             return new TypeExpInfoService(evaluator.infosByTypeExp.ToImmutableDictionary());
         }
 
-        TypeExpEvaluator(M.ModuleName internalModuleName, ImmutableArray<IModuleInfo> externalInfos, TypeSkeletonRepository skelRepo, ILogger logger)
+        TypeExpEvaluator(M.Name internalModuleName, ImmutableArray<IModuleDecl> externalInfos, TypeSkeletonRepository skelRepo, ILogger logger)
         {
             this.internalModuleName = internalModuleName;
             this.externalInfos = externalInfos;
@@ -74,7 +74,7 @@ namespace Gum.IR0Translator
             this.logger = logger;
             
             infosByTypeExp = new Dictionary<S.TypeExp, TypeExpInfo>(ReferenceEqualityComparer.Instance);
-            typeEnv = ImmutableDictionary<string, M.TypeVarType>.Empty;
+            typeEnv = ImmutableDictionary<string, M.TypeVarTypeId>.Empty;
             totalTypeParamCount = 0;
         }        
 
@@ -90,7 +90,7 @@ namespace Gum.IR0Translator
             infosByTypeExp.Add(exp, info);
         }
 
-        M.TypeVarType? GetTypeVar(string name)
+        M.TypeVarTypeId? GetTypeVar(string name)
         {
             return typeEnv.GetValueOrDefault(name);
         }
@@ -102,7 +102,7 @@ namespace Gum.IR0Translator
             
             foreach (var typeParam in typeParams)
             {
-                typeEnv = typeEnv.SetItem(typeParam, new M.TypeVarType(totalTypeParamCount, typeParam));
+                typeEnv = typeEnv.SetItem(typeParam, new M.TypeVarTypeId(totalTypeParamCount, typeParam));
                 totalTypeParamCount++;
             }            
 
@@ -130,27 +130,27 @@ namespace Gum.IR0Translator
             throw new UnreachableCodeException();
         }
 
-        static TypeExpInfoKind GetTypeExpInfoKind(M.TypeInfo typeInfo)
+        static TypeExpInfoKind GetTypeExpInfoKind(IModuleTypeDecl typeInfo)
         {
             switch(typeInfo)
             {
-                case M.StructInfo: return TypeExpInfoKind.Struct;
-                case M.EnumInfo: return TypeExpInfoKind.Enum;
-                case M.EnumElemInfo: return TypeExpInfoKind.EnumElem;
-                case M.ClassInfo: return TypeExpInfoKind.Class;
+                case IModuleStructDecl: return TypeExpInfoKind.Struct;
+                case IModuleEnumDecl: return TypeExpInfoKind.Enum;
+                case IModuleEnumElemDecl: return TypeExpInfoKind.EnumElem;
+                case IModuleClassDecl : return TypeExpInfoKind.Class;
             }
 
             throw new UnreachableCodeException();
-        }
-
-        IEnumerable<TypeExpResult> GetTypeExpInfos(M.NamespacePath namespacePath, M.Name name, ImmutableArray<M.Type> typeArgs)
+        }        
+        
+        IEnumerable<TypeExpResult> GetTypeExpInfos(M.NamespacePath? ns, M.Name name, ImmutableArray<M.TypeId> typeArgs)
         {
-            var itemPathEntry = new M.ItemPathEntry(name, typeArgs.Length);
+            var declPath = new M.RootTypeDeclPath(ns, new M.TypeName(name, typeArgs.Length));
 
-            var typeSkel = skelRepo.GetRootTypeSkeleton(namespacePath, itemPathEntry);
+            var typeSkel = skelRepo.GetRootTypeSkeleton(declPath);
             if (typeSkel != null)
             {
-                var mtype = new M.GlobalType(internalModuleName, namespacePath, name, typeArgs);
+                var mtype = new M.RootTypeId(internalModuleName, ns, name, typeArgs);
                 var kind = GetTypeExpInfoKind(typeSkel.Kind);
 
                 var typeExpInfo = new MTypeTypeExpInfo(mtype, kind, true);
@@ -160,10 +160,11 @@ namespace Gum.IR0Translator
             // 3-2. Reference에서 검색, GlobalTypeSkeletons에 이름이 겹치지 않아야 한다.. ModuleInfo들 끼리도 이름이 겹칠 수 있다
             foreach (var externalInfo in externalInfos)
             {
-                var typeInfo = GlobalItemQueryService.GetGlobalItem(externalInfo, namespacePath, itemPathEntry) as M.TypeInfo;
+                var typeInfo = externalInfo.GetType(declPath);
+                
                 if (typeInfo != null)
                 {
-                    var mtype = new M.GlobalType(externalInfo.GetName(), namespacePath, name, typeArgs);
+                    var mtype = new M.RootTypeId(externalInfo.GetName(), ns, name, typeArgs);
                     var kind = GetTypeExpInfoKind(typeInfo);
                     var typeExpInfo = new MTypeTypeExpInfo(mtype, kind, false);
                     yield return new ExternalTypeExpResult(typeExpInfo, typeInfo);
@@ -365,9 +366,9 @@ namespace Gum.IR0Translator
             }
         }
 
-        ImmutableArray<M.Type> VisitTypeArgExps(ImmutableArray<S.TypeExp> typeArgExps)
+        ImmutableArray<M.TypeId> VisitTypeArgExps(ImmutableArray<S.TypeExp> typeArgExps)
         {
-            var builder = ImmutableArray.CreateBuilder<M.Type>(typeArgExps.Length);
+            var builder = ImmutableArray.CreateBuilder<M.TypeId>(typeArgExps.Length);
             foreach (var typeArgExp in typeArgExps)
             {
                 var typeArgResult = VisitTypeExp(typeArgExp);

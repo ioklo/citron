@@ -17,12 +17,12 @@ namespace Gum.IR0Translator.Test
     {
         TypeExpInfoService Evaluate(S.Script script)
         {
-            M.ModuleName moduleName = "TestModule";
+            M.Name moduleName = new M.Name.Normal("TestModule");
             var testLogger = new TestLogger(true);
 
             var skelRepo = TypeSkeletonCollector.Collect(script);            
 
-            var moduleInfoRepo = new ExternalModuleInfoRepository(ImmutableArray<M.ModuleInfo>.Empty);
+            var moduleInfoRepo = new ExternalModuleInfoRepository(ImmutableArray<M.ModuleDecl>.Empty);
             var result = TypeExpEvaluator.Evaluate(moduleName, script, moduleInfoRepo, skelRepo, testLogger);
 
             Assert.NotNull(result);
@@ -43,7 +43,7 @@ namespace Gum.IR0Translator.Test
             var result = Evaluate(script);
 
             var typeExpInfo = result.GetTypeExpInfo(intTypeExp);
-            var expected = new MTypeTypeExpInfo(new M.GlobalType("System.Runtime", new M.NamespacePath("System"), new M.Name.Normal("Int32"), ImmutableArray<M.Type>.Empty), TypeExpInfoKind.Struct, false);
+            var expected = new MTypeTypeExpInfo(new M.GlobalType("System.Runtime", new M.NamespacePath("System"), new M.Name.Normal("Int32"), ImmutableArray<M.TypeId>.Empty), TypeExpInfoKind.Struct, false);
 
             Assert.Equal(expected, typeExpInfo);
         }

@@ -14,113 +14,23 @@ using Pretune;
 using Gum.Analysis;
 
 namespace Gum.Analysis
-{
-    class InternalModuleTypeInfoBuilderMisc
-    {
-        static bool IsMatchTrivialConstructorParameters(M.ParamTypes? baseParamTypes, M.ParamTypes paramTypes, ImmutableArray<IModuleMemberVarInfo> memberVars)
-        {
-            int baseParamCount = baseParamTypes?.Length ?? 0;
-            int paramCount = paramTypes.Length;
-            int totalParamCount = baseParamCount + paramTypes.Length;
-
-            if (memberVars.Length != totalParamCount) return false;
-
-            for( int i = 0; i < baseParamCount; i++)
-            {
-                // normal로만 자동으로 생성한다
-                if (paramTypes[i].Kind != M.ParamKind.Normal) return false;
-
-                var memberVarType = memberVars[i].GetDeclType();
-                var paramType = paramTypes[i].Type;
-
-                if (!memberVarType.Equals(paramType)) return false;
-            }
-
-            for (int i = 0; i < paramCount; i++)
-            {
-                // normal로만 자동으로 생성한다
-                if (paramTypes[i].Kind != M.ParamKind.Normal) return false;
-
-                var memberVarType = memberVars[i + baseParamCount].GetDeclType();
-                var paramType = paramTypes[i].Type;
-
-                if (!memberVarType.Equals(paramType)) return false;
-            }
-
-            return true;
-        }
-
-        public static IModuleConstructorInfo? GetConstructorHasSameParamWithTrivial(
-            IModuleConstructorInfo? baseTrivialConstrutor,
-            ImmutableArray<IModuleConstructorInfo> constructors, ImmutableArray<IModuleMemberVarInfo> memberVars)
-        {
-            var baseParamTypes = baseTrivialConstrutor?.GetParamTypes();
-
-            // 생성자 중, 파라미터가 같은 것이 있는지 확인
-            foreach (var constructor in constructors)
-            {
-                if (IsMatchTrivialConstructorParameters(baseParamTypes, constructor.GetParamTypes(), memberVars))
-                    return constructor;
-            }
-
-            return null;
-        }
-
-        public static IModuleConstructorInfo MakeTrivialConstructor(
-            IModuleConstructorInfo? baseConstructorInfo,
-            ImmutableArray<IModuleMemberVarInfo> memberVars)
-        {
-            var baseConstructorParameters = baseConstructorInfo?.GetParameters();
-            var builder = ImmutableArray.CreateBuilder<M.Param>(
-                (baseConstructorParameters?.Length ?? 0) + memberVars.Length
-            );
-
-            // to prevent conflict between parameter names, using special name $'base'_<name>_index
-            // class A { A(int x) {} }
-            // class B : A { B(int $base_x0, int x) : base($base_x0) { } }
-            // class C : B { C(int $base_x0, int $base_x1, int x) : base($base_x0, $base_x1) { } }
-            if (baseConstructorParameters != null)
-            {
-                int i = 0;
-                foreach (var baseParam in baseConstructorParameters)
-                {
-                    // base로 가는 파라미터들은 다 이름이 base다.
-                    var newBaseParam = new M.Param(baseParam.Kind, baseParam.Type, new M.Name.ConstructorParam(i));
-                    builder.Add(newBaseParam);
-                    i++;
-                }
-            }
-
-            foreach (var memberVar in memberVars)
-            {
-                var type = memberVar.GetDeclType();
-                var name = memberVar.GetName();
-
-                var param = new M.Param(M.ParamKind.Normal, type, name);
-                builder.Add(param);
-            }
-
-            // trivial constructor를 만듭니다
-            return new InternalModuleConstructorInfo(M.AccessModifier.Public, builder.MoveToImmutable());
-        }
-    }
-
+{   
     // Script에서 ModuleInfo 정보를 뽑는 역할    
     public partial struct InternalModuleInfoBuilder
     {
         TypeExpInfoService typeExpInfoService;
         TypeBuilder typeBuilder;
-        List<IModuleTypeInfo> types;
-        List<IModuleFuncInfo> funcs;            
+        List<IModuleTypeDecl> types;
+        List<IModuleFuncDecl> funcs;            
             
-        public static (InternalModuleInfo, ItemValueFactory, GlobalItemValueFactory) Build(
-            M.ModuleName moduleName, 
+        public static (ModuleDeclSymbol, ItemValueFactory) Build(
+            M.Name moduleName, 
             S.Script script, 
             TypeExpInfoService typeExpInfoService,
             ExternalModuleInfoRepository externalModuleInfoRepo)
         {
-            var types = new List<IModuleTypeInfo>();
-            var funcs = new List<IModuleFuncInfo>();
+            var types = new List<IModuleTypeDecl>();
+            var funcs = new List<IModuleFuncDecl>();
             var typeBuilder = new TypeBuilder(); // 만들어진 타입 정보에 후처리 정보 추가
             var builder = new InternalModuleInfoBuilder(typeExpInfoService, typeBuilder, types, funcs);
             
@@ -145,17 +55,17 @@ namespace Gum.Analysis
 
             var internalModuleInfo = new InternalModuleInfo(moduleName, types.ToImmutableArray(), funcs.ToImmutableArray());
             var typeInfoRepo = new TypeInfoRepository(internalModuleInfo, externalModuleInfoRepo);
-            var globalItemValueFactory = new GlobalItemValueFactory(internalModuleInfo, externalModuleInfoRepo);
+            // var globalItemValueFactory = new GlobalItemValueFactory(internalModuleInfo, externalModuleInfoRepo);
             var ritemFactory = new RItemFactory();
             var itemValueFactory = new ItemValueFactory(typeInfoRepo, ritemFactory);
 
             // 후처리
             typeBuilder.SetBasesAndBuildTrivialConstructors(itemValueFactory);
 
-            return (internalModuleInfo, itemValueFactory, globalItemValueFactory);
+            return (internalModuleInfo, itemValueFactory);
         }
 
-        InternalModuleInfoBuilder(TypeExpInfoService typeExpInfoService, TypeBuilder typeBuilder, List<IModuleTypeInfo> types, List<IModuleFuncInfo> funcs)
+        InternalModuleInfoBuilder(TypeExpInfoService typeExpInfoService, TypeBuilder typeBuilder, List<IModuleTypeDecl> types, List<IModuleFuncDecl> funcs)
         {
             this.typeExpInfoService = typeExpInfoService;
             this.typeBuilder = typeBuilder;
@@ -164,9 +74,9 @@ namespace Gum.Analysis
         }
 
         // 여긴 Global
-        void BuildTypeDecl(M.ModuleName moduleName, S.TypeDecl typeDecl)
+        void BuildTypeDecl(M.Name moduleName, S.TypeDecl typeDecl)
         {
-            IntermediateTypeBuilder.BuildType(typeBuilder, types, typeExpInfoService, new RootItemPath(moduleName), typeDecl);
+            IntermediateTypeBuilder.BuildType(typeBuilder, types, typeExpInfoService, new ItemPath(null, moduleName), typeDecl);
         }
 
         void BuildFuncDecl(S.GlobalFuncDecl funcDecl)
@@ -200,7 +110,7 @@ namespace Gum.Analysis
             funcs.Add(funcInfo);
         }
 
-        static M.Type? GetMType(TypeExpInfo typeExpInfo)
+        static M.TypeId? GetMType(TypeExpInfo typeExpInfo)
         {
             switch (typeExpInfo)
             {
@@ -211,7 +121,7 @@ namespace Gum.Analysis
             return null;
         }
 
-        static M.Type? GetMType(TypeExpInfoService typeExpInfoService, S.TypeExp typeExp)
+        static M.TypeId? GetMType(TypeExpInfoService typeExpInfoService, S.TypeExp typeExp)
         {
             var typeExpInfo = typeExpInfoService.GetTypeExpInfo(typeExp);
             return GetMType(typeExpInfo);
@@ -227,7 +137,7 @@ namespace Gum.Analysis
 
                 M.ParamKind paramKind = sparam.Kind switch
                 {
-                    S.FuncParamKind.Normal => M.ParamKind.Normal,
+                    S.FuncParamKind.Normal => M.ParamKind.Default,
                     S.FuncParamKind.Params => M.ParamKind.Params,
                     S.FuncParamKind.Ref => M.ParamKind.Ref,
                     _ => throw new UnreachableCodeException()
@@ -241,11 +151,11 @@ namespace Gum.Analysis
         
         partial struct IntermediateTypeBuilder
         {
-            public static void BuildType(TypeBuilder typeBuilder, List<IModuleTypeInfo> types, TypeExpInfoService typeExpInfoService, ItemPath parentPath, S.TypeDecl typeDecl)
+            public static void BuildType(TypeBuilder typeBuilder, List<IModuleTypeDecl> types, TypeExpInfoService typeExpInfoService, ItemPath parentPath, S.TypeDecl typeDecl)
             {
                 switch (typeDecl)
                 {
-                    case S.StructDecl structDecl:                        
+                    case S.StructDecl structDecl:
                         IntermediateStructBuilder.Build(typeBuilder, types, typeExpInfoService, parentPath, structDecl);
                         break;
 
@@ -266,11 +176,11 @@ namespace Gum.Analysis
         partial struct IntermediateEnumBuilder
         {
             public static void Build(
-                List<IModuleTypeInfo> types,
+                List<IModuleTypeDecl> types,
                 TypeExpInfoService typeExpInfoService, 
                 S.EnumDecl enumDecl)
             {
-                var elemsBuilder = ImmutableArray.CreateBuilder<InternalModuleEnumElemInfo>(enumDecl.Elems.Length);
+                var elemsBuilder = ImmutableArray.CreateBuilder<EnumElemDeclSymbol>(enumDecl.Elems.Length);
                 foreach (var elem in enumDecl.Elems)
                 {
                     var fieldsBuilder = ImmutableArray.CreateBuilder<IModuleMemberVarInfo>(elem.Fields.Length);
@@ -284,12 +194,12 @@ namespace Gum.Analysis
                     }
 
                     var fields = fieldsBuilder.MoveToImmutable();
-                    var enumElemInfo = new InternalModuleEnumElemInfo(new M.Name.Normal(elem.Name), fields);
+                    var enumElemInfo = new EnumElemDeclSymbol(new M.Name.Normal(elem.Name), fields);
                     elemsBuilder.Add(enumElemInfo);
                 }
 
                 var elems = elemsBuilder.MoveToImmutable();
-                var enumInfo = new InternalModuleEnumInfo(new M.Name.Normal(enumDecl.Name), enumDecl.TypeParams, elems);
+                var enumInfo = new EnumDeclSymbol(new M.Name.Normal(enumDecl.Name), enumDecl.TypeParams, elems);
                 types.Add(enumInfo);
             }
         }
@@ -298,26 +208,26 @@ namespace Gum.Analysis
         partial struct IntermediateClassBuilder
         {
             TypeExpInfoService typeExpInfoService;
-            List<IModuleFuncInfo> funcs;
-            List<IModuleConstructorInfo> constructors;
+            List<IModuleFuncDecl> funcs;
+            List<IModuleConstructorDecl> constructors;
             List<IModuleMemberVarInfo> memberVars;
 
             public static void Build(
                 TypeBuilder typeBuilder,
-                List<IModuleTypeInfo> types,
+                List<IModuleTypeDecl> types,
                 TypeExpInfoService typeExpInfoService, 
                 ItemPath parentPath, S.ClassDecl classDecl)
             {
                 var classPath = parentPath.Child(new M.Name.Normal(classDecl.Name), classDecl.TypeParams.Length);
-                var nestedTypes = new List<IModuleTypeInfo>();
-                var nestedFuncs = new List<IModuleFuncInfo>();
-                var constructors = new List<IModuleConstructorInfo>();
+                var nestedTypes = new List<IModuleTypeDecl>();
+                var nestedFuncs = new List<IModuleFuncDecl>();
+                var constructors = new List<IModuleConstructorDecl>();
                 var memberVars = new List<IModuleMemberVarInfo>();
                 var builder = new IntermediateClassBuilder(typeExpInfoService, nestedFuncs, constructors, memberVars);
 
                 // base & interfaces
-                var baseTypeCandidates = new Candidates<M.Type>();
-                var interfacesBuilder = ImmutableArray.CreateBuilder<M.Type>();
+                var baseTypeCandidates = new Candidates<M.TypeId>();
+                var interfacesBuilder = ImmutableArray.CreateBuilder<M.TypeId>();
                 foreach (var baseType in classDecl.BaseTypes)
                 {
                     var baseTypeExpInfo = typeExpInfoService.GetTypeExpInfo(baseType);
@@ -377,7 +287,7 @@ namespace Gum.Analysis
                 }                
 
                 // 자식 type들에 dependency가 걸린다
-                var classInfo = new InternalModuleClassInfo(
+                var classInfo = new ModuleClassDecl(
                     new M.Name.Normal(classDecl.Name), classDecl.TypeParams, baseTypeExpInfoResult, interfacesBuilder.ToImmutable(), 
                     nestedTypes.ToImmutableArray(),
                     nestedFuncs.ToImmutableArray(), 
@@ -468,20 +378,20 @@ namespace Gum.Analysis
         partial struct IntermediateStructBuilder
         {
             TypeExpInfoService typeExpInfoService;
-            List<IModuleFuncInfo> funcs;
-            List<IModuleConstructorInfo> constructors;
+            List<IModuleFuncDecl> funcs;
+            List<IModuleConstructorDecl> constructors;
             List<IModuleMemberVarInfo> memberVars;
 
             public static void Build(
                 TypeBuilder typeBuilder, 
-                List<IModuleTypeInfo> types,
+                List<IModuleTypeDecl> types,
                 TypeExpInfoService typeExpInfoService,
                 ItemPath parentPath, S.StructDecl structDecl)
             {
                 var structPath = parentPath.Child(new M.Name.Normal(structDecl.Name), structDecl.TypeParams.Length);
-                var nestedTypes = new List<IModuleTypeInfo>();
-                var nestedFuncs = new List<IModuleFuncInfo>();
-                var constructors = new List<IModuleConstructorInfo>();
+                var nestedTypes = new List<IModuleTypeDecl>();
+                var nestedFuncs = new List<IModuleFuncDecl>();
+                var constructors = new List<IModuleConstructorDecl>();
                 var memberVars = new List<IModuleMemberVarInfo>();
                 var builder = new IntermediateStructBuilder(typeExpInfoService, nestedFuncs, constructors, memberVars);
 
@@ -523,7 +433,7 @@ namespace Gum.Analysis
                     }
                 }
 
-                var structInfo = new InternalModuleStructInfo(
+                var structInfo = new StructDeclSymbol(
                     new M.Name.Normal(structDecl.Name), structDecl.TypeParams, null, // TODO: baseStruct 지원
                     nestedTypes.ToImmutableArray(), nestedFuncs.ToImmutableArray(), constructors.ToImmutableArray(), memberVars.ToImmutableArray());
 

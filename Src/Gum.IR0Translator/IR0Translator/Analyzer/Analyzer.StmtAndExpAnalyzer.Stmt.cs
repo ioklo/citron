@@ -137,7 +137,7 @@ namespace Gum.IR0Translator
                 var targetResult = AnalyzeExp_Loc(ifTestStmt.Exp, ResolveHint.None);
                 var testType = globalContext.GetTypeValueByTypeExp(ifTestStmt.TestType);                
 
-                if (testType is EnumElemTypeValue enumElemType)
+                if (testType is EnumElemSymbol enumElemType)
                 {
                     // exact match
                     if (!enumElemType.Outer.Equals(targetResult.TypeValue))
@@ -175,11 +175,6 @@ namespace Gum.IR0Translator
                 {
                     throw new NotImplementedException();
                 }
-
-
-
-
-
 
                 // TODO: if (exp is Type v) 구문 추가
                 // var condResult = AnalyzeExp(ifStmt.Cond, ResolveHint.None);
@@ -451,7 +446,7 @@ namespace Gum.IR0Translator
                 return new StmtResult(new R.ExpStmt(expResult.Result));
             }
 
-            R.CapturedStatementDecl AnalyzeCapturedStatement(TypeValue? retTypeValue, S.Stmt body)
+            R.CapturedStatementDecl AnalyzeCapturedStatement(TypeSymbol? retTypeValue, S.Stmt body)
             {
                 var capturedStatementName = callableContext.NewAnonymousName();
                 var capturedStatementPath = MakePath(capturedStatementName, R.ParamHash.None, default);

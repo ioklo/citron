@@ -15,11 +15,11 @@ namespace Gum.IR0Translator
     // 외부 인터페이스
     public class Translator
     {
-        public static R.Script? Translate(M.ModuleName moduleName, ImmutableArray<M.ModuleInfo> referenceInfos, Syntax.Script sscript, ILogger logger)
+        public static R.Script? Translate(M.Name moduleName, ImmutableArray<M.ModuleDecl> referenceModules, Syntax.Script sscript, ILogger logger)
         {
-            Debug.Assert(!referenceInfos.Contains(RuntimeModuleInfo.Instance));
+            Debug.Assert(!referenceModules.Contains(RuntimeModuleDecl.Instance));
 
-            var externalModuleInfoRepo = new ExternalModuleInfoRepository(referenceInfos.Add(RuntimeModuleInfo.Instance));
+            var externalModuleInfoRepo = new ExternalModuleInfoRepository(referenceModules.Add(RuntimeModuleDecl.Instance));
 
             // Make syntax based Analyzer (almost translation)
             var rscript = Analyzer.Analyze(sscript, moduleName, externalModuleInfoRepo, logger);

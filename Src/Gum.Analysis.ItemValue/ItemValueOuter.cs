@@ -18,22 +18,19 @@ namespace Gum.Analysis
         public abstract int GetTotalTypeParamCount();
     }
 
-    // 최상위
+    // IModuleItemInfo류를 상위로 (TypeArgs가 없는 것들)
     [AutoConstructor, ImplementIEquatable]
     public partial class RootItemValueOuter : ItemValueOuter
     {
-        M.ModuleName moduleName;
-        M.NamespacePath namespacePath;
+        IModuleItemDecl item;
 
         public override R.Path.Normal GetRPath()
         {
-            var rmoduleName = RItemFactory.MakeModuleName(moduleName);
+            var entry = item.GetEntry();
+            Debug.Assert(entry.TypeParamCount == 0 && entry.ParamTypes.IsEmpty);
 
-            R.Path.Normal path = new R.Path.Root(rmoduleName);
-            foreach (var entry in namespacePath.Entries)
-                path = new R.Path.Nested(path, new R.Name.Normal(entry.Value), R.ParamHash.None, default);
-
-            return path;
+            var rmoduleName = RItemFactory.MakeModuleName(entry.Name);
+            return new R.Path.Root(rmoduleName);
         }
 
         public override void FillTypeEnv(TypeEnvBuilder builder)
@@ -47,7 +44,7 @@ namespace Gum.Analysis
 
         public override TypeEnv GetTypeEnv()
         {
-            return new TypeEnv(default);
+            return TypeEnv.None;
         }
 
         public override int GetTotalTypeParamCount()

@@ -75,6 +75,11 @@ namespace Gum.Collections
         // no heap allocation
         public IEnumerable<T> AsEnumerable() { if (array.IsDefault) return Enumerable.Empty<T>(); else return array; }
 
+        public static ImmutableArray<T> CastUp<TDerived>(ImmutableArray<TDerived> items) where TDerived : class, T
+        {
+            return new ImmutableArray<T>(System.Collections.Immutable.ImmutableArray<T>.CastUp(items.array));
+        }
+
         public Enumerator GetEnumerator()
         {
             if (array.IsDefault) return default;
@@ -88,7 +93,7 @@ namespace Gum.Collections
                 return new ImmutableArray<T>(System.Collections.Immutable.ImmutableArray<T>.Empty.Add(item));
 
             return new ImmutableArray<T>(array.Add(item));
-        }
+        }        
 
         public T this[int index] => array[index];
 
@@ -141,6 +146,14 @@ namespace Gum.Collections
             sb.Append(']');
 
             return sb.ToString();
+        }
+
+        public ImmutableArray<T> AddRange(ImmutableArray<T> items)
+        {
+            if (array.IsDefault)
+                return new ImmutableArray<T>(System.Collections.Immutable.ImmutableArray<T>.Empty.AddRange(items.array));
+
+            return new ImmutableArray<T>(array.AddRange(items.array));
         }
     }
 }

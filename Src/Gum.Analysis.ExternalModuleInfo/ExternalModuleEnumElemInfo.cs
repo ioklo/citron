@@ -5,47 +5,62 @@ using M = Gum.CompileTime;
 
 namespace Gum.Analysis
 {
-    [AutoConstructor, ImplementIEquatable]
-    partial class ExternalModuleEnumElemInfo : IModuleEnumElemInfo
+    [ImplementIEquatable]
+    partial class ExternalModuleEnumElemInfo : IModuleEnumElemDecl
     {
+        IModuleEnumDecl outer;
         M.EnumElemInfo elemInfo;
-        
-        ImmutableArray<IModuleMemberVarInfo> IModuleEnumElemInfo.GetFieldInfos()
+        ImmutableArray<IModuleMemberVarInfo> memberVarInfos;
+
+        public ExternalModuleEnumElemInfo(ExternalModuleEnumInfo outer, M.EnumElemInfo elemInfo)
         {
+            this.outer = outer;
+            this.elemInfo = elemInfo;
+
             var builder = ImmutableArray.CreateBuilder<IModuleMemberVarInfo>(elemInfo.FieldInfos.Length);
 
             foreach (var fieldInfo in elemInfo.FieldInfos)
                 builder.Add(new ExternalModuleMemberVarInfo(fieldInfo));
 
-            return builder.MoveToImmutable();
+            memberVarInfos = builder.MoveToImmutable();
+        }
+        
+        ImmutableArray<IModuleMemberVarInfo> IModuleEnumElemDecl.GetFieldInfos()
+        {
+            return memberVarInfos;
         }
 
-        IModuleFuncInfo? IModuleFuncContainer.GetFunc(M.Name name, int typeParamCount, M.ParamTypes paramTypes)
+        IModuleItemDecl? IModuleItemDecl.GetOuter()
+        {
+            return outer;
+        }
+
+        IModuleNamespaceInfo? IModuleItemDecl.GetNamespace(M.Name name)
+        {
+            return null;
+        }
+
+        IModuleFuncDecl? IModuleItemDecl.GetFunc(M.Name name, int typeParamCount, M.ParamTypes paramTypes)
         {
             throw new NotImplementedException();
         }
 
-        ImmutableArray<IModuleFuncInfo> IModuleFuncContainer.GetFuncs(M.Name name, int minTypeParamCount)
+        ImmutableArray<IModuleFuncDecl> IModuleItemDecl.GetFuncs(M.Name name, int minTypeParamCount)
         {
             throw new NotImplementedException();
         }
 
-        M.Name IModuleItemInfo.GetName()
+        M.ItemPathEntry IModuleItemDecl.GetEntry()
         {
-            return elemInfo.Name;
+            return new M.ItemPathEntry(elemInfo.Name, elemInfo.TypeParams.Length);
         }
 
-        IModuleTypeInfo? IModuleTypeContainer.GetType(M.Name name, int typeParamCount)
-        {
-            throw new NotImplementedException();
-        }
-
-        ImmutableArray<string> IModuleItemInfo.GetTypeParams()
+        IModuleTypeDecl? IModuleItemDecl.GetType(M.Name name, int typeParamCount)
         {
             throw new NotImplementedException();
-        }
+        }        
 
-        bool IModuleEnumElemInfo.IsStandalone()
+        bool IModuleEnumElemDecl.IsStandalone()
         {
             return elemInfo.FieldInfos.Length == 0;
         }

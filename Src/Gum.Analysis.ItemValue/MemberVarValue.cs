@@ -34,13 +34,13 @@ namespace Gum.Analysis
             outer.FillTypeEnv(builder);
         }
 
-        public TypeValue GetTypeValue()
+        public TypeSymbol GetTypeValue()
         {
             var typeEnv = MakeTypeEnv();
             var type = info.GetDeclType();
 
             var typeValue = factory.MakeTypeValueByMType(type);
-            return typeValue.Apply_TypeValue(typeEnv);
+            return typeValue.Apply(typeEnv);
         }
 
         public R.Path.Nested GetRPath_Nested()

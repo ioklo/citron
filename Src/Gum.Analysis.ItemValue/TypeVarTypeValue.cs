@@ -6,13 +6,13 @@ namespace Gum.Analysis
 {
     // T: depth는 지역적이므로, 주어진 컨텍스트 안에서만 의미가 있다
     [AutoConstructor, ImplementIEquatable]
-    public partial class TypeVarTypeValue : TypeValue
+    public partial class TypeVarTypeValue : TypeSymbol
     {
         RItemFactory ritemFactory;
 
         public int Index { get; }
 
-        public override TypeValue Apply_TypeValue(TypeEnv typeEnv)
+        public override TypeSymbol Apply(TypeEnv typeEnv)
         {
             var typeValue = typeEnv.GetValue(Index);
             if (typeValue != null)

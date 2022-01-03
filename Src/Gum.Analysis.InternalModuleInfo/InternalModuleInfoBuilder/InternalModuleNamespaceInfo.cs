@@ -8,22 +8,22 @@ namespace Gum.Analysis
     [AutoConstructor]
     partial class InternalModuleNamespaceInfo : IModuleNamespaceInfo
     {
-        IModuleFuncInfo? IModuleFuncContainer.GetFunc(M.Name name, int typeParamCount, M.ParamTypes paramTypes)
+        IModuleFuncDecl? IModuleFuncContainer.GetFunc(M.Name name, int typeParamCount, M.ParamTypes paramTypes)
         {
             throw new System.NotImplementedException();
         }
 
-        ImmutableArray<IModuleFuncInfo> IModuleFuncContainer.GetFuncs(M.Name name, int minTypeParamCount)
+        ImmutableArray<IModuleFuncDecl> IModuleFuncContainer.GetFuncs(M.Name name, int minTypeParamCount)
         {
             throw new System.NotImplementedException();
         }
 
-        M.Name IModuleItemInfo.GetName()
+        M.Name IModuleItemDecl.GetName()
         {
             throw new System.NotImplementedException();
         }
 
-        ImmutableArray<string> IModuleItemInfo.GetTypeParams()
+        ImmutableArray<string> IModuleItemDecl.GetTypeParams()
         {
             return ImmutableArray<string>.Empty;
         }
@@ -33,7 +33,7 @@ namespace Gum.Analysis
             throw new System.NotImplementedException();
         }
 
-        IModuleTypeInfo? IModuleTypeContainer.GetType(M.Name name, int typeParamCount)
+        IModuleTypeDecl? IModuleTypeContainer.GetType(M.Name name, int typeParamCount)
         {
             throw new System.NotImplementedException();
         }

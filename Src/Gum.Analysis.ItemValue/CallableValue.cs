@@ -7,7 +7,7 @@ namespace Gum.Analysis
 {
     public abstract class CallableValue : ItemValue
     {
-        protected abstract TypeValue MakeTypeValueByMType(M.Type type);
+        protected abstract TypeSymbol MakeTypeValueByMType(M.TypeId type);
         public abstract ImmutableArray<M.Param> GetParameters();
 
         // class X<T> { void Func<U>(T t, ref U u, int x); }
@@ -21,11 +21,11 @@ namespace Gum.Analysis
             foreach (var paramInfo in parameters)
             {
                 var paramTypeValue = MakeTypeValueByMType(paramInfo.Type);
-                var appliedParamTypeValue = paramTypeValue.Apply_TypeValue(typeEnv);
+                var appliedParamTypeValue = paramTypeValue.Apply(typeEnv);
 
                 var paramKind = paramInfo.Kind switch
                 {
-                    M.ParamKind.Normal => R.ParamKind.Normal,
+                    M.ParamKind.Default => R.ParamKind.Default,
                     M.ParamKind.Ref => R.ParamKind.Ref,
                     M.ParamKind.Params => R.ParamKind.Params,
                     _ => throw new UnreachableCodeException()

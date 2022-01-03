@@ -5,7 +5,7 @@ namespace Gum.CompileTime
 {
     public enum ParamKind
     {
-        Normal,
+        Default,
         Params,
         Ref,
     }
@@ -14,7 +14,7 @@ namespace Gum.CompileTime
     public partial struct Param
     {
         public ParamKind Kind { get; }
-        public Type Type { get; }
+        public TypeId Type { get; }
         public Name Name { get; }
     }
 }

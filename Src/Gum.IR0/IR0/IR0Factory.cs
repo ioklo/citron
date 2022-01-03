@@ -62,7 +62,7 @@ namespace Gum.IR0
 
         public static ImmutableArray<Param> RNormalParams(params (Path Path, string Name)[] elems)
         {
-            return elems.Select(e => new Param(ParamKind.Normal, e.Path, new Name.Normal(e.Name))).ToImmutableArray();
+            return elems.Select(e => new Param(ParamKind.Default, e.Path, new Name.Normal(e.Name))).ToImmutableArray();
         }
 
         public static ImmutableArray<Argument> RArgs(params Exp[] exps)
@@ -135,10 +135,10 @@ namespace Gum.IR0
 
         // no typeparams, all normal paramtypes
         public static Path.Nested Child(this Path.Normal outer, Name name, params Path[] types)
-            => new Path.Nested(outer, name, new ParamHash(0, types.Select(type => new ParamHashEntry(ParamKind.Normal, type)).ToImmutableArray()), default);
+            => new Path.Nested(outer, name, new ParamHash(0, types.Select(type => new ParamHashEntry(ParamKind.Default, type)).ToImmutableArray()), default);
 
         public static Path.Nested Child(this Path.Normal outer, string name, params Path[] types)
-            => new Path.Nested(outer, new Name.Normal(name), new ParamHash(0, types.Select(type => new ParamHashEntry(ParamKind.Normal, type)).ToImmutableArray()), default);
+            => new Path.Nested(outer, new Name.Normal(name), new ParamHash(0, types.Select(type => new ParamHashEntry(ParamKind.Default, type)).ToImmutableArray()), default);
 
 
         // no typeparams version
@@ -166,7 +166,7 @@ namespace Gum.IR0
 
         public static ParamHash RNormalParamHash(params Path[] paths)
         {
-            return new ParamHash(0, paths.Select(path => new ParamHashEntry(ParamKind.Normal, path)).ToImmutableArray());
+            return new ParamHash(0, paths.Select(path => new ParamHashEntry(ParamKind.Default, path)).ToImmutableArray());
         }
 
 

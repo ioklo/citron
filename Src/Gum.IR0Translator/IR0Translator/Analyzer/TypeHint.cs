@@ -15,14 +15,14 @@ namespace Gum.IR0Translator
 
     class TypeValueTypeHint : TypeHint
     {
-        public TypeValue TypeValue { get; }
-        public TypeValueTypeHint(TypeValue typeValue) { TypeValue = typeValue; }
+        public TypeSymbol TypeValue { get; }
+        public TypeValueTypeHint(TypeSymbol typeValue) { TypeValue = typeValue; }
     }
 
     // Callable분석에서 쓰인다. E.F()에서 E.F만을 가리켜야 할 때
     [AutoConstructor]
     partial class EnumConstructorTypeHint : TypeHint
     {
-        public EnumTypeValue EnumTypeValue { get; }
+        public EnumSymbol EnumTypeValue { get; }
     }
 }

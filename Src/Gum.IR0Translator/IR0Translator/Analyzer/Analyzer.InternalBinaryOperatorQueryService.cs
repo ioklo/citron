@@ -16,15 +16,15 @@ namespace Gum.IR0Translator
     {
         struct InternalBinaryOperatorInfo
         {
-            public TypeValue OperandType0 { get; }
-            public TypeValue OperandType1 { get; }
-            public TypeValue ResultType { get; }
+            public TypeSymbol OperandType0 { get; }
+            public TypeSymbol OperandType1 { get; }
+            public TypeSymbol ResultType { get; }
             public R.InternalBinaryOperator IR0Operator { get; }
 
             public InternalBinaryOperatorInfo(
-                TypeValue operandType0,
-                TypeValue operandType1,
-                TypeValue resultType,
+                TypeSymbol operandType0,
+                TypeSymbol operandType1,
+                TypeSymbol resultType,
                 R.InternalBinaryOperator ir0Operator)
             {
                 OperandType0 = operandType0;
@@ -34,7 +34,7 @@ namespace Gum.IR0Translator
             }
         }
 
-        struct InternalBinaryOperatorQueryService : IPure
+        struct InternalBinaryOperatorQueryService
         {
             Dictionary<S.BinaryOpKind, ImmutableArray<InternalBinaryOperatorInfo>> infos;
 
@@ -72,11 +72,6 @@ namespace Gum.IR0Translator
                         new InternalBinaryOperatorInfo(boolType, boolType, boolType, R.InternalBinaryOperator.Equal_Bool_Bool_Bool),
                         new InternalBinaryOperatorInfo(stringType, stringType, boolType, R.InternalBinaryOperator.Equal_String_String_Bool) ) },
                 };
-            }
-
-            public void EnsurePure()
-            {
-                // 더이상 infos를 바꾸는 경우가 없으므로 pure
             }
 
             public ImmutableArray<InternalBinaryOperatorInfo> GetInfos(S.BinaryOpKind kind)

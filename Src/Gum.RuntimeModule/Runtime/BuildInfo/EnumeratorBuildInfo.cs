@@ -25,13 +25,13 @@ namespace Gum.Runtime
             builder.AddMemberFunc(
                 "MoveNext",
                 false, true,
-                Array.Empty<string>(), boolTypeValue, Enumerable.Empty<TypeValue>(),
+                Array.Empty<string>(), boolTypeValue, Enumerable.Empty<TypeSymbol>(),
                 EnumeratorObject.NativeMoveNext);
 
             // T Enumerator<T>.GetCurrent()
             builder.AddMemberFunc("GetCurrent",
                 false, true,
-                Array.Empty<string>(), elemTypeValue, Enumerable.Empty<TypeValue>(),
+                Array.Empty<string>(), elemTypeValue, Enumerable.Empty<TypeSymbol>(),
                 EnumeratorObject.NativeGetCurrent);
         }
     }

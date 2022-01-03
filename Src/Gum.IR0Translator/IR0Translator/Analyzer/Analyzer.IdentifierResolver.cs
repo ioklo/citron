@@ -15,14 +15,14 @@ namespace Gum.IR0Translator
 {
     partial class Analyzer
     {   
-        static IdentifierResult.Error ToErrorIdentifierResult(ItemQueryResult.Error errorResult)
+        static IdentifierResult.Error ToErrorIdentifierResult(MemberQueryResult.Error errorResult)
         {
             switch(errorResult)
             {
-                case ItemQueryResult.Error.MultipleCandidates:
+                case MemberQueryResult.Error.MultipleCandidates:
                     return IdentifierResult.Error.MultipleCandiates.Instance;
 
-                case ItemQueryResult.Error.VarWithTypeArg:
+                case MemberQueryResult.Error.VarWithTypeArg:
                     return IdentifierResult.Error.VarWithTypeArg.Instance;
             }
 
@@ -33,7 +33,7 @@ namespace Gum.IR0Translator
         partial struct IdExpIdentifierResolver
         {
             string idName;
-            ImmutableArray<TypeValue> typeArgs;
+            ImmutableArray<ITypeSymbolNode> typeArgs;
             ResolveHint hint;
 
             GlobalContext globalContext;
@@ -41,7 +41,7 @@ namespace Gum.IR0Translator
             LocalContext localContext;
 
             public static IdentifierResult Resolve(
-                string idName, ImmutableArray<TypeValue> typeArgs, ResolveHint hint,
+                string idName, ImmutableArray<ITypeSymbolNode> typeArgs, ResolveHint hint,
                 GlobalContext globalContext,
                 ICallableContext callableContext,
                 LocalContext localContext)
@@ -81,27 +81,27 @@ namespace Gum.IR0Translator
 
                 switch(itemQueryResult)
                 {
-                    case ItemQueryResult.Error errorResult:
+                    case MemberQueryResult.Error errorResult:
                         return ToErrorIdentifierResult(errorResult);
 
-                    case ItemQueryResult.NotFound:
+                    case MemberQueryResult.NotFound:
                         return IdentifierResult.NotFound.Instance;
 
                     // 여기서부터 case ItemQueryResult.Valid 
-                    case ItemQueryResult.Type typeResult:
+                    case MemberQueryResult.Type typeResult:
                         var typeValue = globalContext.MakeTypeValue(typeResult.Outer, typeResult.TypeInfo, typeArgs);
                         return new IdentifierResult.Type(typeValue);
 
-                    case ItemQueryResult.Constructors:
+                    case MemberQueryResult.Constructors:
                         throw new UnreachableCodeException(); // 이름으로 참조 불가능
 
-                    case ItemQueryResult.Funcs funcsResult:
+                    case MemberQueryResult.Funcs funcsResult:
                         return new IdentifierResult.Funcs(funcsResult.Outer, funcsResult.FuncInfos, typeArgs, funcsResult.IsInstanceFunc);
 
-                    case ItemQueryResult.MemberVar memberVarResult:
+                    case MemberQueryResult.MemberVar memberVarResult:
                         return new IdentifierResult.MemberVar(memberVarResult.Outer, memberVarResult.MemberVarInfo);
 
-                    case ItemQueryResult.EnumElem:
+                    case MemberQueryResult.EnumElem:
                         throw new NotImplementedException();  // TODO: 무슨 뜻인지 확실히 해야 한다
                 }
 
@@ -127,26 +127,26 @@ namespace Gum.IR0Translator
 
                 switch (globalResult)
                 {
-                    case ItemQueryResult.NotFound: return IdentifierResult.NotFound.Instance;
-                    case ItemQueryResult.Error errorResult: return ToErrorIdentifierResult(errorResult);
-                    case ItemQueryResult.Type typeResult:
+                    case MemberQueryResult.NotFound: return IdentifierResult.NotFound.Instance;
+                    case MemberQueryResult.Error errorResult: return ToErrorIdentifierResult(errorResult);
+                    case MemberQueryResult.Type typeResult:
                         {
                             var typeValue = globalContext.MakeTypeValue(typeResult.Outer, typeResult.TypeInfo, typeArgs);
                             return new IdentifierResult.Type(typeValue);
                         }
 
-                    case ItemQueryResult.Constructors:
+                    case MemberQueryResult.Constructors:
                         throw new UnreachableCodeException(); // global item도 아닐뿐더러, 이름으로 참조가 불가능하다
 
-                    case ItemQueryResult.MemberVar:
+                    case MemberQueryResult.MemberVar:
                         throw new UnreachableCodeException();
 
-                    case ItemQueryResult.Funcs funcsResult:
+                    case MemberQueryResult.Funcs funcsResult:
                         {
                             return new IdentifierResult.Funcs(funcsResult.Outer, funcsResult.FuncInfos, typeArgs, funcsResult.IsInstanceFunc);
                         }
 
-                    case ItemQueryResult.EnumElem enumElemResult:
+                    case MemberQueryResult.EnumElem enumElemResult:
                         {
                             var elemTypeValue = globalContext.MakeEnumElemTypeValue(enumElemResult.Outer, enumElemResult.EnumElemInfo);
                             return new IdentifierResult.EnumElem(elemTypeValue);
@@ -193,7 +193,7 @@ namespace Gum.IR0Translator
             {
                 // 힌트가 E고, First가 써져 있으면 E.First를 검색한다
                 // enum 힌트 사용, typeArgs가 있으면 지나간다
-                if (hint.TypeHint is TypeValueTypeHint typeValueHintType && typeValueHintType.TypeValue is EnumTypeValue enumTypeValue)
+                if (hint.TypeHint is TypeValueTypeHint typeValueHintType && typeValueHintType.TypeValue is EnumSymbol enumTypeValue)
                 {
                     // First<T> 같은건 없기 때문에 없을때만 검색한다                    
                     var elemTypeValue = enumTypeValue.GetElement(idName);

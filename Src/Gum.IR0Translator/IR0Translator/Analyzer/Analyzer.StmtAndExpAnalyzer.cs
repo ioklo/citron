@@ -30,9 +30,9 @@ namespace Gum.IR0Translator
                 this.localContext = localContext;
             }
             
-            ImmutableArray<TypeValue> GetTypeValues(ImmutableArray<S.TypeExp> typeExps)
+            ImmutableArray<TypeSymbol> GetTypeValues(ImmutableArray<S.TypeExp> typeExps)
             {
-                var builder = ImmutableArray.CreateBuilder<TypeValue>(typeExps.Length);
+                var builder = ImmutableArray.CreateBuilder<TypeSymbol>(typeExps.Length);
 
                 foreach (var typeExp in typeExps)
                 {

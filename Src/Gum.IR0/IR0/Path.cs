@@ -15,10 +15,8 @@ namespace Gum.IR0
 
     // Path
     // Module, Namespace, Type, Func, Lambda, Sequence, Reserved(타입) 을 유일하게 가리킬 수 있는 구조
-    public abstract partial record Path : IPure
+    public abstract partial record Path
     {
-        public void EnsurePure() { }
-
         public abstract record Reserved : Path;
         public abstract record Normal : Path;
 

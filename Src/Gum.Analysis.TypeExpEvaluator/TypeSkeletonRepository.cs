@@ -12,21 +12,21 @@ namespace Gum.IR0Translator
     // ItemPath -> TypeSkeleton
     class TypeSkeletonRepository
     {
-        ImmutableDictionary<ItemPathEntry, TypeSkeleton> rootMembers;
+        ImmutableDictionary<TypeDeclPath, TypeSkeleton> members;
 
         public TypeSkeletonRepository(ImmutableArray<TypeSkeleton> rootMembers)
         {
-            var builder = ImmutableDictionary.CreateBuilder<ItemPathEntry, TypeSkeleton>();
+            var builder = ImmutableDictionary.CreateBuilder<TypeDeclPath, TypeSkeleton>();
+
             foreach (var member in rootMembers)
-                builder.Add(member.PathEntry, member);
-            this.rootMembers = builder.ToImmutable();
+                builder.Add(member.Path, member);
+
+            this.members = builder.ToImmutable();
         }
 
-        public TypeSkeleton? GetRootTypeSkeleton(NamespacePath namespacePath, ItemPathEntry entry)
+        public TypeSkeleton? GetRootTypeSkeleton(TypeDeclPath path)
         {
-            // TODO: namespace 까지 TypeSkeleton에 편입
-            Debug.Assert(namespacePath.IsRoot);
-            return rootMembers.GetValueOrDefault(entry);
+            return members.GetValueOrDefault(path);
         }
     }
 }

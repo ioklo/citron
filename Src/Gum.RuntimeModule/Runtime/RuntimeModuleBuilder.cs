@@ -35,7 +35,7 @@ namespace Gum.Runtime
             ItemId? outerTypeId,
             ItemId typeId,
             IEnumerable<string> typeParams,
-            TypeValue? baseTypeValue,
+            TypeSymbol? baseTypeValue,
             IEnumerable<ItemId> memberTypeIds,
             IEnumerable<ItemId> memberFuncIds,
             IEnumerable<ItemId> memberVarIds,
@@ -49,13 +49,13 @@ namespace Gum.Runtime
             ItemId? outerTypeId,
             ItemId typeId,
             IEnumerable<string> typeParams,
-            TypeValue? baseTypeValue,
+            TypeSymbol? baseTypeValue,
             IEnumerable<ItemId> memberTypeIds,
             IEnumerable<ItemId> memberFuncIds,
             IEnumerable<ItemId> memberVarIds,
             Func<Value> defaultValueFactory)
         {
-            typeInfos.Add(new StructInfo(outerTypeId, typeId, typeParams, baseTypeValue, memberTypeIds, memberFuncIds, memberVarIds));
+            typeInfos.Add(new StructDecl(outerTypeId, typeId, typeParams, baseTypeValue, memberTypeIds, memberFuncIds, memberVarIds));
             typeInstantiators.Add(new NativeTypeInstantiator(typeId, defaultValueFactory));
         }
 
@@ -65,15 +65,15 @@ namespace Gum.Runtime
             bool bSeqCall,
             bool bThisCall,
             IReadOnlyList<string> typeParams,
-            TypeValue retTypeValue,
-            IEnumerable<TypeValue> paramTypeValues,
+            TypeSymbol retTypeValue,
+            IEnumerable<TypeSymbol> paramTypeValues,
             Invoker invoker)
         {
             funcInfos.Add(new FuncInfo(outerId, funcId, bSeqCall, bThisCall, typeParams, retTypeValue, paramTypeValues));
             funcInstantiators.Add(new NativeFuncInstantiator(funcId, bThisCall, invoker));
         }
 
-        public void AddVar(ItemId? outerId, ItemId varId, bool bStatic, TypeValue typeValue)
+        public void AddVar(ItemId? outerId, ItemId varId, bool bStatic, TypeSymbol typeValue)
         {
             varInfos.Add(new VarInfo(outerId, varId, bStatic, typeValue));
         }

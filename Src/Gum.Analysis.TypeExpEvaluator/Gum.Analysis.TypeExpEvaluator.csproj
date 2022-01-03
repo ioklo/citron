@@ -5,7 +5,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Gum.Analysis.ModuleInfo.Abstractions\Gum.Analysis.ModuleInfo.Abstractions.csproj" />
     <ProjectReference Include="..\Gum.Analysis.TypeExpInfo\Gum.Analysis.TypeExpInfo.csproj" />
     <ProjectReference Include="..\Gum.Infra\Gum.Infra.csproj" />
     <ProjectReference Include="..\Gum.Log\Gum.Log.csproj" />

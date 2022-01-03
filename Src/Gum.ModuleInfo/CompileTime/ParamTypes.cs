@@ -12,7 +12,7 @@ namespace Gum.CompileTime
     public partial struct ParamKindAndType
     {
         public ParamKind Kind { get; }
-        public Type Type { get; }
+        public TypeId Type { get; }
     }
 
     [AutoConstructor, ImplementIEquatable]

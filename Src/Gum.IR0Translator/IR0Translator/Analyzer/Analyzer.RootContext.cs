@@ -35,13 +35,11 @@ namespace Gum.IR0Translator
             public RootContext(RootContext other, CloneContext cloneContext)
             {
                 this.moduleName = other.moduleName;
-                Infra.Misc.EnsurePure(other.itemValueFactory);
                 this.itemValueFactory = other.itemValueFactory;
                 this.globalTypeDecls = other.globalTypeDecls;
                 this.globalFuncDecls = other.globalFuncDecls;
                 this.callableMemberDecls = other.callableMemberDecls;
-
-                Infra.Misc.EnsurePure(other.topLevelStmts);
+                
                 this.topLevelStmts = other.topLevelStmts;
             }
 
@@ -66,15 +64,14 @@ namespace Gum.IR0Translator
             {
                 var src = (RootContext)src_callableContext;
 
-                Infra.Misc.EnsurePure(src.itemValueFactory);
                 this.itemValueFactory = src.itemValueFactory;
                 this.topLevelStmts = src.topLevelStmts;
             }
 
             public LocalVarInfo? GetLocalVarOutsideLambda(string varName) => null;
-            public TypeValue? GetRetTypeValue() => itemValueFactory.Int;            
-            public void SetRetTypeValue(TypeValue retTypeValue) => throw new UnreachableCodeException();
-            public void AddLambdaCapture(string capturedVarName, TypeValue capturedVarType) => throw new UnreachableCodeException();
+            public TypeSymbol? GetRetTypeValue() => itemValueFactory.Int;            
+            public void SetRetTypeValue(TypeSymbol retTypeValue) => throw new UnreachableCodeException();
+            public void AddLambdaCapture(string capturedVarName, TypeSymbol capturedVarType) => throw new UnreachableCodeException();
             public bool IsSeqFunc() => false;
 
             public void AddTopLevelStmt(R.Stmt stmt)

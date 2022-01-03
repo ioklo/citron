@@ -14,7 +14,7 @@ namespace Gum.IR0Translator
 {
     public partial class TypeExpEvaluator
     {
-        TypeExpResult HandleBuiltInType(S.IdTypeExp exp, M.Type mtype, TypeExpInfoKind kind)
+        TypeExpResult HandleBuiltInType(S.IdTypeExp exp, M.TypeId mtype, TypeExpInfoKind kind)
         {
             if (exp.TypeArgs.Length != 0)
                 throw new NotImplementedException();
@@ -69,7 +69,7 @@ namespace Gum.IR0Translator
             // 3. 전역에서 검색, 
             // TODO: 현재 namespace 상황에 따라서 Namespace.Root대신 인자를 집어넣어야 한다.
             var typeArgs = VisitTypeArgExps(typeExp.TypeArgs);
-            var candidates = GetTypeExpInfos(M.NamespacePath.Root, new M.Name.Normal(typeExp.Name), typeArgs).ToList();
+            var candidates = GetTypeExpInfos(null, new M.Name.Normal(typeExp.Name), typeArgs).ToList();
 
             if (candidates.Count == 1)
             {
@@ -116,7 +116,7 @@ namespace Gum.IR0Translator
             if (mtype == null)
                 throw new TypeExpEvaluatorFatalException();
 
-            return NoMemberTypeExpResult.Nullable(new M.NullableType(mtype));            
+            return NoMemberTypeExpResult.Nullable(new M.NullableTypeId(mtype));            
         }
 
         TypeExpResult VisitTypeExp(S.TypeExp exp)

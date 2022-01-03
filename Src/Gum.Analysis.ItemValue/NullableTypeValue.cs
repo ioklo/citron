@@ -3,26 +3,26 @@ using R = Gum.IR0;
 
 namespace Gum.Analysis
 {
-    public class NullableTypeValue : TypeValue
+    public class NullableTypeValue : TypeSymbol
     {
         ItemValueFactory factory;
-        TypeValue innerTypeValue;
+        TypeSymbol innerTypeValue;
 
-        public NullableTypeValue(ItemValueFactory factory, TypeValue innerTypeValue)
+        public NullableTypeValue(ItemValueFactory factory, TypeSymbol innerTypeValue)
         {
             this.factory = factory;
             this.innerTypeValue = innerTypeValue;
         }
 
-        public TypeValue GetInnerTypeValue()
+        public TypeSymbol GetInnerTypeValue()
         {
             return innerTypeValue;
         }
 
         // T? => int?
-        public override TypeValue Apply_TypeValue(TypeEnv typeEnv)
+        public override TypeSymbol Apply(TypeEnv typeEnv)
         {
-            var applied = innerTypeValue.Apply_TypeValue(typeEnv);
+            var applied = innerTypeValue.Apply(typeEnv);
             return factory.MakeNullableTypeValue(applied);
         }
 

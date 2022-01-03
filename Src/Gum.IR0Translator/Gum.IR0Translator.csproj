@@ -8,7 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Gum.A0\Gum.A0.csproj" />
-    <ProjectReference Include="..\Gum.Analysis.ModuleInfo.Abstractions\Gum.Analysis.ModuleInfo.Abstractions.csproj" />
+    <ProjectReference Include="..\Gum.Analysis.ModuleInfo\Gum.Analysis.ModuleInfo.csproj" />
     <ProjectReference Include="..\Gum.Analysis.TypeExpEvaluator\Gum.Analysis.TypeExpEvaluator.csproj" />
     <ProjectReference Include="..\Gum.Infra\Gum.Infra.csproj" />
     <ProjectReference Include="..\Gum.IR0NullRefAnalyzer\Gum.IR0NullRefAnalyzer.csproj" />
@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Pretune" Version="0.8.3" />
+    <PackageReference Include="Pretune" Version="0.8.4" />
   </ItemGroup>
 
 </Project>

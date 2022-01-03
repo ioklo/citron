@@ -131,7 +131,7 @@ namespace Gum.IR0Evaluator
                         var argValue = globalContext.AllocRefValue();
                         argValuesBuilder.Add(argValue);
                     }
-                    else if (param.Kind == R.ParamKind.Normal)
+                    else if (param.Kind == R.ParamKind.Default)
                     {
                         var argValue = globalContext.AllocValue(param.Type);
                         argValuesBuilder.Add(argValue);
@@ -200,8 +200,8 @@ namespace Gum.IR0Evaluator
                 return argsBuilder.ToImmutable();
             }
 
-            // runtime typeContext |- EvalCallFuncExp(CallFuncExp(X<int>.Y<T>.Func<int>, 
-            async ValueTask EvalCallFuncExpAsync(R.CallFuncExp exp, Value result)
+            // runtime typeContext |- EvalGlobalCallFuncExp(CallFuncExp(X<int>.Y<T>.Func<int>, 
+            async ValueTask EvalCallGlobalFuncExpAsync(R.CallGlobalFuncExp exp, Value result)
             {
                 // 1. 누가 FuncDecl들을 저장하고 있는가
                 // 2. 필요한 값: DeclId (Body가 있는 곳), TypeContext를 만들기 위한 
@@ -209,6 +209,37 @@ namespace Gum.IR0Evaluator
                 // 2) (declId, [[[int, short], string], bool])
                 // 누가 정보를 더 많이 가지고 있는가; 1) 필요한가? 
                 var funcInvoker = globalContext.GetRuntimeItem<FuncRuntimeItem>(exp.Func);
+
+                // TODO: typeContext를 계산합니다
+
+                // 인자를 계산 해서 처음 로컬 variable에 집어 넣는다
+                var args = await EvalArgumentsAsync(funcInvoker.Parameters, exp.Args);
+
+                await funcInvoker.InvokeAsync(null, args, result);
+            }
+
+            async ValueTask EvalCallClassMemberFuncExpAsync(R.CallClassMemberFuncExp exp, Value result)
+            {
+                var funcInvoker = globalContext.GetRuntimeItem<FuncRuntimeItem>(exp.ClassMemberFunc);
+
+                // TODO: typeContext를 계산합니다
+
+                // 함수는 this call이지만 instance가 없는 경우는 없다.
+                Value? thisValue;
+                if (exp.Instance != null)
+                    thisValue = await EvalLocAsync(exp.Instance);
+                else
+                    thisValue = null;
+
+                // 인자를 계산 해서 처음 로컬 variable에 집어 넣는다
+                var args = await EvalArgumentsAsync(funcInvoker.Parameters, exp.Args);
+
+                await funcInvoker.InvokeAsync(thisValue, args, result);
+            }
+            
+            async ValueTask EvalCallStructMemberFuncExpAsync(R.CallStructMemberFuncExp exp, Value result)
+            {
+                var funcInvoker = globalContext.GetRuntimeItem<FuncRuntimeItem>(exp.StructMemberFunc);
 
                 // TODO: typeContext를 계산합니다
 
@@ -225,23 +256,23 @@ namespace Gum.IR0Evaluator
                 await funcInvoker.InvokeAsync(thisValue, args, result);
             }
 
-            async ValueTask EvalCallSeqFuncExpAsync(R.CallSeqFuncExp exp, Value result)
-            {
-                var seqFuncItem = globalContext.GetRuntimeItem<SeqFuncRuntimeItem>(exp.SeqFunc);
+            //async ValueTask EvalCallSeqFuncExpAsync(R.CallSeqFuncExp exp, Value result)
+            //{
+            //    var seqFuncItem = globalContext.GetRuntimeItem<SeqFuncRuntimeItem>(exp.SeqFunc);
 
-                // 함수는 this call이지만 instance가 없는 경우는 없다.
-                Debug.Assert(!(seqFuncItem.IsThisCall && exp.Instance == null));
+            //    // 함수는 this call이지만 instance가 없는 경우는 없다.
+            //    Debug.Assert(!(seqFuncItem.IsThisCall && exp.Instance == null));
 
-                Value? thisValue = null;
-                if (exp.Instance != null)
-                {
-                    Debug.Assert(seqFuncItem.IsThisCall);
-                    thisValue = await EvalLocAsync(exp.Instance);
-                }
+            //    Value? thisValue = null;
+            //    if (exp.Instance != null)
+            //    {
+            //        Debug.Assert(seqFuncItem.IsThisCall);
+            //        thisValue = await EvalLocAsync(exp.Instance);
+            //    }
 
-                var args = await EvalArgumentsAsync(seqFuncItem.Parameters, exp.Args);
-                seqFuncItem.Invoke(thisValue, args, result);
-            }
+            //    var args = await EvalArgumentsAsync(seqFuncItem.Parameters, exp.Args);
+            //    seqFuncItem.Invoke(thisValue, args, result);
+            //}
 
             async ValueTask EvalCallValueExpAsync(R.CallValueExp exp, Value result)
             {
@@ -485,8 +516,10 @@ namespace Gum.IR0Evaluator
                     case R.CallInternalUnaryAssignOperatorExp ciuaoExp: await EvalCallInternalUnaryAssignOperatorExpAsync(ciuaoExp, result); break;
                     case R.CallInternalBinaryOperatorExp ciboExp: await EvalCallInternalBinaryOperatorExpAsync(ciboExp, result); break;
                     case R.AssignExp assignExp: await EvalAssignExpAsync(assignExp, result); break;
-                    case R.CallFuncExp callFuncExp: await EvalCallFuncExpAsync(callFuncExp, result); break;
-                    case R.CallSeqFuncExp callSeqFuncExp: await EvalCallSeqFuncExpAsync(callSeqFuncExp, result); break;
+                    case R.CallGlobalFuncExp callFuncExp: await EvalCallGlobalFuncExpAsync(callFuncExp, result); break;
+                    case R.CallClassMemberFuncExp ccmfe: await EvalCallClassMemberFuncExpAsync(ccmfe, result); break;
+                    case R.CallStructMemberFuncExp csmfe: await EvalCallStructMemberFuncExpAsync(csmfe, result); break;
+                    //case R.CallSeqFuncExp callSeqFuncExp: await EvalCallSeqFuncExpAsync(callSeqFuncExp, result); break;
                     case R.CallValueExp callValueExp: await EvalCallValueExpAsync(callValueExp, result); break;
                     case R.LambdaExp lambdaExp: EvalLambdaExp(lambdaExp, result); break;
                     case R.ListExp listExp: await EvalListExpAsync(listExp, result); break;

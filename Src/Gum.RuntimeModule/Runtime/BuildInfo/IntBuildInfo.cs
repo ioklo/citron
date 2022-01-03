@@ -20,10 +20,10 @@ namespace Gum.Runtime
 
         public override void Build(RuntimeModuleTypeBuilder builder)
         {
-            TypeValue intTypeValue = new NormalTypeValue(RuntimeModule.IntId);
+            TypeSymbol intTypeValue = new NormalTypeValue(RuntimeModule.IntId);
 
-            builder.AddMemberFunc(SpecialNames.OpInc, false, false, Array.Empty<string>(), intTypeValue, new TypeValue[] { intTypeValue }, OperatorInc);
-            builder.AddMemberFunc(SpecialNames.OpDec, false, false, Array.Empty<string>(), intTypeValue, new TypeValue[] { intTypeValue }, OperatorDec);
+            builder.AddMemberFunc(SpecialNames.OpInc, false, false, Array.Empty<string>(), intTypeValue, new TypeSymbol[] { intTypeValue }, OperatorInc);
+            builder.AddMemberFunc(SpecialNames.OpDec, false, false, Array.Empty<string>(), intTypeValue, new TypeSymbol[] { intTypeValue }, OperatorDec);
         }
 
         ValueTask OperatorInc(DomainService domainService, TypeArgumentList typeArgList, Value? thisValue, IReadOnlyList<Value> argValues, Value resultValue)

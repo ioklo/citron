@@ -579,7 +579,7 @@ namespace Gum.Test.Misc
         {
             switch (paramKind)
             {
-                case R.ParamKind.Normal: itw.Write("R.ParamKind.Normal"); break;
+                case R.ParamKind.Default: itw.Write("R.ParamKind.Normal"); break;
                 case R.ParamKind.Params: itw.Write("R.ParamKind.Params"); break;
                 case R.ParamKind.Ref: itw.Write("R.ParamKind.Ref"); break;
                 default: throw new UnreachableCodeException();

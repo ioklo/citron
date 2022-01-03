@@ -34,7 +34,7 @@ namespace Gum.IR0Translator
 
                 var kind = param.Kind switch
                 {
-                    S.FuncParamKind.Normal => R.ParamKind.Normal,
+                    S.FuncParamKind.Normal => R.ParamKind.Default,
                     S.FuncParamKind.Params => R.ParamKind.Params,
                     S.FuncParamKind.Ref => R.ParamKind.Ref,
                     _ => throw new UnreachableCodeException()
@@ -60,15 +60,15 @@ namespace Gum.IR0Translator
             return typeArgsBuilder.MoveToImmutable();
         }
 
-        static void HandleItemQueryResultError(GlobalContext globalContext, ItemQueryResult.Error error, S.ISyntaxNode nodeForErrorReport)
+        static void HandleItemQueryResultError(GlobalContext globalContext, MemberQueryResult.Error error, S.ISyntaxNode nodeForErrorReport)
         {
             switch (error)
             {
-                case ItemQueryResult.Error.MultipleCandidates:
+                case MemberQueryResult.Error.MultipleCandidates:
                     globalContext.AddFatalError(A2001_ResolveIdentifier_MultipleCandidatesForIdentifier, nodeForErrorReport);
                     throw new UnreachableCodeException();
 
-                case ItemQueryResult.Error.VarWithTypeArg:
+                case MemberQueryResult.Error.VarWithTypeArg:
                     globalContext.AddFatalError(A2002_ResolveIdentifier_VarWithTypeArg, nodeForErrorReport);
                     throw new UnreachableCodeException();
 
@@ -79,7 +79,7 @@ namespace Gum.IR0Translator
 
         public static R.Script? Analyze(
             S.Script sscript,
-            M.ModuleName moduleName,
+            M.Name moduleName,
             ExternalModuleInfoRepository externalModuleInfoRepo,
             ILogger logger)
         {

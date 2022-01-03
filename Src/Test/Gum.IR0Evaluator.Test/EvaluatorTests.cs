@@ -165,7 +165,7 @@ namespace Gum.IR0Evaluator.Test
             return new Path.Nested(
                 new Path.Root(moduleName), new Name.Normal(name), 
                 new ParamHash(
-                    typeArgs.Length, paramTypes.Select(paramType => new ParamHashEntry(ParamKind.Normal, paramType)).ToImmutableArray()
+                    typeArgs.Length, paramTypes.Select(paramType => new ParamHashEntry(ParamKind.Default, paramType)).ToImmutableArray()
                 ), 
                 typeArgs);
         }
@@ -197,7 +197,7 @@ namespace Gum.IR0Evaluator.Test
         public async Task CallSeqFuncExp_GenerateSequencesInForeach()
         {
             // Sequence
-            var seqFunc = new SequenceFuncDecl(default, new Name.Normal("F"), false, Path.Int, default, Arr(new Param(ParamKind.Normal, Path.Int, new Name.Normal("x")), new Param(ParamKind.Normal, Path.Int, new Name.Normal("y"))), RBlock(
+            var seqFunc = new SequenceFuncDecl(default, new Name.Normal("F"), false, Path.Int, default, Arr(new Param(ParamKind.Default, Path.Int, new Name.Normal("x")), new Param(ParamKind.Default, Path.Int, new Name.Normal("y"))), RBlock(
 
                 new YieldStmt(
                     new CallInternalBinaryOperatorExp(InternalBinaryOperator.Multiply_Int_Int_Int,
@@ -1185,13 +1185,13 @@ namespace Gum.IR0Evaluator.Test
                     {
                         var paramName = (paramInfo.Name != null) ? new Name.Normal(paramInfo.Name) : new Name.Normal($"@{index}");
 
-                        builder.Add(new Param(ParamKind.Normal, Path.String, paramName));
+                        builder.Add(new Param(ParamKind.Default, Path.String, paramName));
 
                         ParamKind paramKind;
                         if (paramInfo.ParameterType.IsByRef)
                             paramKind = ParamKind.Ref;
                         else
-                            paramKind = ParamKind.Normal;
+                            paramKind = ParamKind.Default;
 
                         pathsBuilder.Add(new ParamHashEntry(paramKind, Path.String));
 
@@ -1239,7 +1239,7 @@ namespace Gum.IR0Evaluator.Test
                     // matching
                     for (int i = 0; i < methodParams.Length; i++)
                     {
-                        if (paramHash.Entries[i].Kind == ParamKind.Normal &&
+                        if (paramHash.Entries[i].Kind == ParamKind.Default &&
                             paramHash.Entries[i].Type == Path.String && 
                             methodParams[i].ParameterType == typeof(string))
                             continue;
@@ -1331,7 +1331,7 @@ namespace Gum.IR0Evaluator.Test
 
             var system = new Path.Nested(new Path.Root(testExternalModuleName), new Name.Normal("System"), ParamHash.None, default);
             var system_Console = new Path.Nested(system, new Name.Normal("Console"), ParamHash.None, default);
-            var system_Console_Write = new Path.Nested(system_Console, new Name.Normal("Write"), new ParamHash(0, Arr(new ParamHashEntry(ParamKind.Normal, Path.String))), default);
+            var system_Console_Write = new Path.Nested(system_Console, new Name.Normal("Write"), new ParamHash(0, Arr(new ParamHashEntry(ParamKind.Default, Path.String))), default);
                 
             var script = RScript(moduleName, new ExpStmt(new CallFuncExp(system_Console_Write, null, RArgs(RString("Hello World")))));
 

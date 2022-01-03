@@ -49,7 +49,7 @@ namespace Gum.IR0Analyzer.NullRefAnalysis
             value.SetNotNull();
         }
         
-        public void VisitCallFuncExp(R.CallFuncExp callFuncExp, AbstractValue value)
+        public void VisitGlobalCallFuncExp(R.CallGlobalFuncExp callGlobalFuncExp, AbstractValue value)
         {
             // unknown으로 지정하지만, value가 null-disallow라면 notnull로 세팅된다
             value.SetUnknown();

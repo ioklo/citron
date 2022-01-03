@@ -23,7 +23,7 @@ namespace Gum.IR0Translator.Test
 {
     public class TranslatorTests
     {
-        M.ModuleName moduleName = "TestModule";
+        M.Name moduleName = new M.Name.Normal("TestModule");
         R.ModuleName rmoduleName = "TestModule";
 
         R.Script RScript(ImmutableArray<R.TypeDecl> globalTypeDecls, ImmutableArray<R.FuncDecl> globalFuncDecls, ImmutableArray<R.CallableMemberDecl> callableMemberDecls, params R.Stmt[] optTopLevelStmts)
@@ -1529,7 +1529,7 @@ namespace Gum.IR0Translator.Test
 
                 default,
 
-                new R.ExpStmt(new R.CallFuncExp(MakeRootPath("Func", new R.ParamHash(1, Arr(new R.ParamHashEntry(R.ParamKind.Normal, R.Path.Int))), Arr(R.Path.Int)), null, RArgs(RInt(3))))
+                new R.ExpStmt(new R.CallFuncExp(MakeRootPath("Func", new R.ParamHash(1, Arr(new R.ParamHashEntry(R.ParamKind.Default, R.Path.Int))), Arr(R.Path.Int)), null, RArgs(RInt(3))))
             );
 
             Assert.Equal(expected, script);
@@ -1566,7 +1566,7 @@ namespace Gum.IR0Translator.Test
                 default,
 
                 new R.ExpStmt(new R.CallFuncExp(
-                    MakeRootPath("Func", new R.ParamHash(0, Arr(new R.ParamHashEntry(R.ParamKind.Normal, R.Path.Int))), default), null, RArgs(RInt(3))))
+                    MakeRootPath("Func", new R.ParamHash(0, Arr(new R.ParamHashEntry(R.ParamKind.Default, R.Path.Int))), default), null, RArgs(RInt(3))))
             );
 
             Assert.Equal(expected, script);

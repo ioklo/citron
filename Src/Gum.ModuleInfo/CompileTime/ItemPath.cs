@@ -4,44 +4,38 @@ using System.Collections.Generic;
 using Gum.Collections;
 using System.Linq;
 
-using M = Gum.CompileTime;
 using Gum.Infra;
 
-namespace Gum.Analysis
+namespace Gum.CompileTime
 {
     // ItemPath를 다시 만들어 봅시다. 거의 IR0와 비슷하게 나올겁니다
-    public abstract record ItemPath
-    {
-        
-    }
-
-    public record RootItemPath(M.ModuleName ModuleName) : ItemPath; // 최상위
-    public record NestedItemPath(ItemPath Outer, M.Name Name, int TypeParamCount, M.ParamTypes ParamTypes): ItemPath;
+    public record ItemPath(ItemPath? Outer, Name Name, int TypeParamCount = 0, ParamTypes ParamTypes = default);
 
     public static class ItemPathExtensions
     {
-        public static ItemPath Child(this ItemPath outer, M.Name name, int typeParamCount = 0, M.ParamTypes paramTypes = default)
+        public static ItemPath Child(this ItemPath outer, string name, int typeParamCount = 0, ParamTypes paramTypes = default)
         {
-            return new NestedItemPath(outer, name, typeParamCount, paramTypes);
+            return new ItemPath(outer, new Name.Normal(name), typeParamCount, paramTypes);
         }
 
-        public static ItemPath ToItemPath(this M.Type type)
+        public static ItemPath Child(this ItemPath outer, Name name, int typeParamCount = 0, ParamTypes paramTypes = default)
+        {
+            return new ItemPath(outer, name, typeParamCount, paramTypes);
+        }
+
+        public static TypeDeclId ToTypeDeclId(this TypeId type)
         {   
             switch (type)
             {
-                case M.GlobalType globalType:
-                    ItemPath curPath = new RootItemPath(globalType.ModuleName);
+                case RootTypeId rootType:
+                    return new RootTypeDeclId(rootType.Module, rootType.Namespace, new TypeName(rootType.Name, rootType.TypeArgs.Length));
 
-                    foreach (var ns in globalType.NamespacePath.Entries)
-                        curPath = curPath.Child(ns);
+                case MemberTypeId memberType:
+                    var outerId = ToTypeDeclId(memberType.Outer);
+                    return new MemberTypeDeclId(outerId, new TypeName(memberType.Name, memberType.TypeArgs.Length));
 
-                    return curPath.Child(globalType.Name, globalType.TypeArgs.Length);
-
-                case M.MemberType memberType:
-                    return ToItemPath(memberType.Outer).Child(memberType.Name, memberType.TypeArgs.Length);
-
-                case M.TypeVarType:
-                case M.VoidType:
+                case TypeVarTypeId:
+                case VoidTypeId:
                 default:
                     throw new UnreachableCodeException();
             }

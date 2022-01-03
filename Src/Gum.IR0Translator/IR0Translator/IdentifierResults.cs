@@ -62,17 +62,17 @@ namespace Gum.IR0Translator
             ThisVar() { }
         }
 
-        public record LocalVar(bool IsRef, TypeValue TypeValue, string VarName) : Valid;
-        public record LocalVarOutsideLambda(bool IsRef, TypeValue TypeValue, string VarName) : Valid;
-        public record GlobalVar(bool IsRef, TypeValue TypeValue, string VarName) : Valid;            
+        public record LocalVar(bool IsRef, TypeSymbol TypeSymbol, string VarName) : Valid;
+        public record LocalVarOutsideLambda(bool IsRef, TypeSymbol TypeSymbol, string VarName) : Valid;
+        public record GlobalVar(bool IsRef, TypeSymbol TypeSymbol, string VarName) : Valid;
         public record MemberVar(NormalTypeValue Outer, IModuleMemberVarInfo MemberVarInfo) : Valid;
-        public record Funcs(ItemValueOuter Outer, ImmutableArray<IModuleFuncInfo> FuncInfos, ImmutableArray<TypeValue> TypeArgs, bool IsInstanceFunc) : Valid;
+        public record Funcs(ItemValueOuter Outer, ImmutableArray<IModuleFuncDecl> FuncInfos, ImmutableArray<TypeSymbol> TypeArgs, bool IsInstanceFunc) : Valid;
             
         // T
-        public record Type(TypeValue TypeValue) : Valid;
+        public record Type(TypeSymbol TypeSymbol) : Valid;
 
         // First => E.First
-        public record EnumElem(EnumElemTypeValue EnumElemTypeValue) : Valid;
+        public record EnumElem(EnumElemSymbol EnumElemSymbol) : Valid;
 
         public record NotFound : IdentifierResult
         {

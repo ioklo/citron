@@ -16,6 +16,37 @@ namespace Gum.IR0Translator
 {
     struct TypeSkeletonCollector
     {
+        abstract record BasePath
+        {
+            public abstract TypeDeclPath MakeChildPath(TypeName name);
+
+            public record Root : BasePath
+            {
+                public override TypeDeclPath MakeChildPath(TypeName name)
+                {
+                    return new RootTypeDeclPath(null, name);
+                }
+            }
+
+            public record Namespace(NamespacePath Path) : BasePath
+            {
+                public override TypeDeclPath MakeChildPath(TypeName name)
+                {
+                    return new RootTypeDeclPath(Path, name);
+                }
+            }
+
+            public record TypeDecl(TypeDeclPath Path) : BasePath
+            {
+                public override TypeDeclPath MakeChildPath(TypeName name)
+                {
+                    return new MemberTypeDeclPath(Path, name);
+                }
+            }
+        }
+
+        BasePath basePath;
+
         // runtime
         ImmutableArray<TypeSkeleton>.Builder skeletonsBuilder;
 
@@ -27,14 +58,20 @@ namespace Gum.IR0Translator
             return new TypeSkeletonRepository(typeSkeletonCollector.skeletonsBuilder.ToImmutable());
         }
 
-        TypeSkeletonCollector(ImmutableArray<TypeSkeleton>.Builder builder)
+        TypeSkeletonCollector(BasePath basePath, ImmutableArray<TypeSkeleton>.Builder builder)
         {
+            this.basePath = basePath;
             this.skeletonsBuilder = builder;
         }
         
         static TypeSkeletonCollector NewTypeSkeletonCollector()
         {
-            return new TypeSkeletonCollector(ImmutableArray.CreateBuilder<TypeSkeleton>());
+            return new TypeSkeletonCollector(new BasePath.Root(), ImmutableArray.CreateBuilder<TypeSkeleton>());
+        }
+
+        static TypeSkeletonCollector NewTypeSkeletonCollector(TypeDeclPath path)
+        {
+            return new TypeSkeletonCollector(new BasePath.TypeDecl(path), ImmutableArray.CreateBuilder<TypeSkeleton>());
         }
 
         void AddSkeleton(TypeSkeleton skeleton)
@@ -42,24 +79,38 @@ namespace Gum.IR0Translator
             skeletonsBuilder.Add(skeleton);
         }        
 
+        void VisitEnumElem(S.EnumDeclElement enumElem)
+        {
+            var elemName = new TypeName(new Name.Normal(enumElem.Name), 0);
+            var elemPath = basePath.MakeChildPath(elemName);
+
+            var enumElemSkel = new TypeSkeleton(elemPath, default, TypeSkeletonKind.EnumElem); // 
+            AddSkeleton(enumElemSkel);
+        }
+
+        // namespace일 경우 어떻게 할거냐
         void VisitEnumDecl(S.EnumDecl enumDecl)
         {
-            var newCollector = NewTypeSkeletonCollector();
+            var enumName = new TypeName(new Name.Normal(enumDecl.Name), enumDecl.TypeParams.Length);
+
+            var enumPath = basePath.MakeChildPath(enumName);
+            var newCollector = NewTypeSkeletonCollector(enumPath);
+
             foreach (var enumElem in enumDecl.Elems)
             {
-                var pathEntry = new ItemPathEntry(new Name.Normal(enumElem.Name));
-                var enumElemSkel = new TypeSkeleton(pathEntry, default, TypeSkeletonKind.EnumElem); // 
-                newCollector.AddSkeleton(enumElemSkel);
+                newCollector.VisitEnumElem(enumElem);
             }
-
-            var enumPathEntry = new ItemPathEntry(new Name.Normal(enumDecl.Name), enumDecl.TypeParams.Length);
-            var enumSkeleton = new TypeSkeleton(enumPathEntry, newCollector.skeletonsBuilder.ToImmutable(), TypeSkeletonKind.Enum);
+            
+            var enumSkeleton = new TypeSkeleton(enumPath, newCollector.skeletonsBuilder.ToImmutable(), TypeSkeletonKind.Enum);
             AddSkeleton(enumSkeleton);
         }
 
         void VisitStructDecl(S.StructDecl structDecl)
         {
-            var newCollector = NewTypeSkeletonCollector();
+            var structName = new TypeName(new Name.Normal(structDecl.Name), structDecl.TypeParams.Length);
+            var structPath = basePath.MakeChildPath(structName);
+
+            var newCollector = NewTypeSkeletonCollector(structPath);
             foreach(var elem in structDecl.MemberDecls)
             {
                 switch(elem)
@@ -69,14 +120,17 @@ namespace Gum.IR0Translator
                         break;
                 }
             }
-
-            var pathEntry = new ItemPathEntry(new Name.Normal(structDecl.Name), structDecl.TypeParams.Length);
-            var skeleton = new TypeSkeleton(pathEntry, newCollector.skeletonsBuilder.ToImmutable(), TypeSkeletonKind.Struct);
+            
+            
+            var skeleton = new TypeSkeleton(structPath, newCollector.skeletonsBuilder.ToImmutable(), TypeSkeletonKind.Struct);
             AddSkeleton(skeleton);
         }
 
         void VisitClassDecl(S.ClassDecl classDecl)
         {
+            var className = new TypeName(new Name.Normal(classDecl.Name), classDecl.TypeParams.Length);
+            var classPath = basePath.MakeChildPath(className);
+
             var newCollector = NewTypeSkeletonCollector();
             foreach (var memberDecl in classDecl.MemberDecls)
             {
@@ -87,9 +141,8 @@ namespace Gum.IR0Translator
                         break;
                 }
             }
-
-            var pathEntry = new ItemPathEntry(new Name.Normal(classDecl.Name), classDecl.TypeParams.Length);
-            var skeleton = new TypeSkeleton(pathEntry, newCollector.skeletonsBuilder.ToImmutable(), TypeSkeletonKind.Class);
+            
+            var skeleton = new TypeSkeleton(classPath, newCollector.skeletonsBuilder.ToImmutable(), TypeSkeletonKind.Class);
             AddSkeleton(skeleton);
         }
 

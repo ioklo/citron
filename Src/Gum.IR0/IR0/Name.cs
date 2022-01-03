@@ -3,10 +3,8 @@ using System.Diagnostics;
 
 namespace Gum.IR0
 {   
-    public abstract record Name : IPure
+    public abstract record Name
     {
-        public void EnsurePure() { }
-
         [DebuggerDisplay("{Value}")]
         public record Normal(string Value) : Name;
         public record IndexerGet : Name;

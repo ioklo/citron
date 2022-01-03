@@ -12,8 +12,9 @@ namespace Gum.IR0Visitor
         void VisitCallInternalUnaryAssignOperatorExp(R.CallInternalUnaryAssignOperatorExp ciuaoExp);
         void VisitCallInternalBinaryOperatorExp(R.CallInternalBinaryOperatorExp ciboExp);
         void VisitAssignExp(R.AssignExp assignExp);
-        void VisitCallFuncExp(R.CallFuncExp callFuncExp);
-        void VisitCallSeqFuncExp(R.CallSeqFuncExp callSeqFuncExp);
+        void VisitCallGlobalFuncExp(R.CallGlobalFuncExp callFuncExp);
+        void VisitCallClassMemberFuncExp(R.CallClassMemberFuncExp callFuncExp);
+        void VisitCallStructMemberFuncExp(R.CallStructMemberFuncExp callFuncExp);
         void VisitCallValueExp(R.CallValueExp callValueExp);
         void VisitLambdaExp(R.LambdaExp lambdaExp);
         void VisitListExp(R.ListExp listExp);
@@ -36,8 +37,9 @@ namespace Gum.IR0Visitor
         void VisitCallInternalUnaryAssignOperatorExp(R.CallInternalUnaryAssignOperatorExp ciuaoExp, TArg0 arg0);
         void VisitCallInternalBinaryOperatorExp(R.CallInternalBinaryOperatorExp ciboExp, TArg0 arg0);
         void VisitAssignExp(R.AssignExp assignExp, TArg0 arg0);
-        void VisitCallFuncExp(R.CallFuncExp callFuncExp, TArg0 arg0);
-        void VisitCallSeqFuncExp(R.CallSeqFuncExp callSeqFuncExp, TArg0 arg0);
+        void VisitCallGlobalFuncExp(R.CallGlobalFuncExp exp, TArg0 arg0);
+        void VisitCallClassMemberFuncExp(R.CallClassMemberFuncExp exp, TArg0 arg0);
+        void VisitCallStructMemberFuncExp(R.CallStructMemberFuncExp exp, TArg0 arg0);
         void VisitCallValueExp(R.CallValueExp callValueExp, TArg0 arg0);
         void VisitLambdaExp(R.LambdaExp lambdaExp, TArg0 arg0);
         void VisitListExp(R.ListExp listExp, TArg0 arg0);

@@ -12,20 +12,20 @@ namespace Gum.Analysis
     // 어디서 쓰이는가: TypeInfoRepository, TypeExpEvaluator, RootAnalyzer
     public struct GlobalItemQueryService
     {
-        IModuleInfo moduleInfo;
+        IModuleDecl moduleInfo;
 
-        public static IModuleItemInfo? GetGlobalItem(IModuleInfo moduleInfo, M.ItemPathEntry entry)
+        public static IModuleItemDecl? GetGlobalItem(IModuleDecl moduleInfo, M.ItemPathEntry entry)
         {
             var service = new GlobalItemQueryService(moduleInfo);
             return service.GetGlobalItemCore(entry);
         }
 
-        GlobalItemQueryService(IModuleInfo moduleInfo)
+        GlobalItemQueryService(IModuleDecl moduleInfo)
         {
             this.moduleInfo = moduleInfo;
         }        
         
-        IModuleItemInfo? GetChildItem(IModuleTypeContainer types, IModuleFuncContainer funcs, M.ItemPathEntry entry)
+        IModuleItemDecl? GetChildItem(IModuleTypeContainer types, IModuleFuncContainer funcs, M.ItemPathEntry entry)
         {
             // paramHash가 있으면 함수에서만 검색
             if (entry.ParamTypes.IsEmpty)
@@ -37,7 +37,7 @@ namespace Gum.Analysis
             return funcs.GetFunc(entry.Name, entry.TypeParamCount, entry.ParamTypes);
         }
 
-        IModuleItemInfo? GetGlobalItemCore(M.ItemPathEntry entry)
+        IModuleItemDecl? GetGlobalItemCore(M.ItemPathEntry entry)
         {
             if (path.IsRoot)
                 return GetChildItem(moduleInfo, moduleInfo, entry);

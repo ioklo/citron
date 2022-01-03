@@ -22,24 +22,24 @@ namespace Gum.IR0Translator
     // TODO: Type뿐 아니라 Namespace 등도 여기서
     class TypeSkeleton
     {
-        public ItemPathEntry PathEntry { get; }
+        public TypeDeclPath Path { get; }
         public TypeSkeletonKind Kind { get; }
-        ImmutableDictionary<ItemPathEntry, TypeSkeleton> membersByEntry;
+        ImmutableDictionary<TypeName, TypeSkeleton> membersByName;
 
-        public TypeSkeleton(ItemPathEntry pathEntry, ImmutableArray<TypeSkeleton> members, TypeSkeletonKind kind)
+        public TypeSkeleton(TypeDeclPath path, ImmutableArray<TypeSkeleton> members, TypeSkeletonKind kind)
         {
-            PathEntry = pathEntry;
+            Path = path;
             Kind = kind;
 
-            var builder = ImmutableDictionary.CreateBuilder<ItemPathEntry, TypeSkeleton>();
+            var builder = ImmutableDictionary.CreateBuilder<TypeName, TypeSkeleton>();
             foreach (var member in members)
-                builder.Add(member.PathEntry, member);
-            membersByEntry = builder.ToImmutable();
+                builder.Add(member.Path.Name, member);
+            membersByName = builder.ToImmutable();
         }
         
         public TypeSkeleton? GetMember(Name memberName, int typeParamCount)
         {
-            return membersByEntry.GetValueOrDefault(new ItemPathEntry(memberName, typeParamCount));
+            return membersByName.GetValueOrDefault(new TypeName(memberName, typeParamCount));
         }
     }
 }

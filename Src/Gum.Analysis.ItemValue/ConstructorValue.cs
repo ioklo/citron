@@ -20,7 +20,7 @@ namespace Gum.Analysis
 
         // X<int>.Y<short>
         NormalTypeValue outer;
-        IModuleConstructorInfo info;
+        IModuleConstructorDecl info;
 
         public override ItemValue Apply_ItemValue(TypeEnv typeEnv)
         {
@@ -28,7 +28,7 @@ namespace Gum.Analysis
             return itemValueFactory.MakeConstructorValue(appliedOuter, info);
         }
 
-        protected override TypeValue MakeTypeValueByMType(M.Type type)
+        protected override TypeSymbol MakeTypeValueByMType(M.TypeId type)
         {
             return itemValueFactory.MakeTypeValueByMType(type);
         }

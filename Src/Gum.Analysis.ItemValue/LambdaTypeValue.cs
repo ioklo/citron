@@ -5,14 +5,14 @@ using R = Gum.IR0;
 namespace Gum.Analysis
 {
     // ArgTypeValues => RetValueTypes
-    public class LambdaTypeValue : TypeValue, IEquatable<LambdaTypeValue>
+    public class LambdaTypeValue : TypeSymbol, IEquatable<LambdaTypeValue>
     {
         RItemFactory ritemFactory;
         public R.Path.Nested Lambda { get; } // Type의 path가 아니라 Lambda의 path
-        public TypeValue Return { get; }
+        public TypeSymbol Return { get; }
         public ImmutableArray<ParamInfo> Params { get; }
 
-        public LambdaTypeValue(RItemFactory ritemFactory, R.Path.Nested lambda, TypeValue ret, ImmutableArray<ParamInfo> parameters)
+        public LambdaTypeValue(RItemFactory ritemFactory, R.Path.Nested lambda, TypeSymbol ret, ImmutableArray<ParamInfo> parameters)
         {
             this.ritemFactory = ritemFactory;
             this.Lambda = lambda;
@@ -39,7 +39,7 @@ namespace Gum.Analysis
         //     var l = (T t) => t; // { l => LambdaTypeValue({id}, T, [T]) }
         // }
         // 분석중에 Apply할 일은 없고, 실행중에 할 일은 있을 것 같다
-        public override TypeValue Apply_TypeValue(TypeEnv typeEnv)
+        public override TypeSymbol Apply(TypeEnv typeEnv)
         {
             throw new InvalidOperationException();
         }

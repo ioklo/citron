@@ -1,53 +1,54 @@
 ﻿using System.Collections.Generic;
+using M = Gum.CompileTime;
 
 namespace Gum.Analysis
 {
     // syntax를 다 돌고 난 뒤의 후처리
-    class TypeBuilder : IQueryModuleTypeInfo
+    class TypeBuilder : IQueryModuleTypeDecl
     {
-        Dictionary<ItemPath, InternalModuleClassInfo> classes;
-        Dictionary<ItemPath, InternalModuleStructInfo> structs;
+        Dictionary<M.TypeDeclId, ClassDeclSymbol> classes;
+        Dictionary<M.TypeDeclId, StructDeclSymbol> structs;
 
         public TypeBuilder()
         {
-            classes = new Dictionary<ItemPath, InternalModuleClassInfo>();
-            structs = new Dictionary<ItemPath, InternalModuleStructInfo>();
+            classes = new Dictionary<M.TypeDeclId, ClassDeclSymbol>();
+            structs = new Dictionary<M.TypeDeclId, StructDeclSymbol>();
         }
 
-        public void AddClass(ItemPath path, InternalModuleClassInfo classInfo)
-        {
-            classes.Add(path, classInfo);
+        public void AddClass(M.TypeDeclId declId, ClassDeclSymbol classInfo)
+        {   
+            classes.Add(declId, classInfo);
         }
 
-        public void AddStruct(ItemPath path, InternalModuleStructInfo structInfo)
+        public void AddStruct(M.TypeDeclId declId, StructDeclSymbol structInfo)
         {
-            structs.Add(path, structInfo);
+            structs.Add(declId, structInfo);
         }
 
-        IModuleClassInfo IQueryModuleTypeInfo.GetClass(ItemPath path, IItemValueFactoryByMType factory)
+        ClassSymbol IQueryModuleTypeDecl.GetClass(M.TypeId typeId)
         {
-            var cls = classes[path];
-            cls.SetBaseAndBuildTrivialConstructor(this, factory);
+            var cls = classes[declId];
+            cls.EnsureSetBaseAndBuildTrivialConstructor(this);
 
             // TODO: external 처리
             return cls;
         }
 
-        IModuleStructInfo IQueryModuleTypeInfo.GetStruct(ItemPath path, IItemValueFactoryByMType factory)
+        StructSymbol IQueryModuleTypeDecl.GetStruct(M.TypeId declId)
         {
-            var s = structs[path];
-            s.SetBaseAndBuildTrivialConstructor(this, factory);
+            var s = structs[declId];
+            s.EnsureSetBaseAndBuildTrivialConstructor(this);
 
             return s;
         }
         
-        public void SetBasesAndBuildTrivialConstructors(IItemValueFactoryByMType factory)
+        public void SetBasesAndBuildTrivialConstructors()
         {
             foreach(var c in classes.Values)
-                c.SetBaseAndBuildTrivialConstructor(this, factory);
+                c.EnsureSetBaseAndBuildTrivialConstructor(this);
 
             foreach (var s in structs.Values)
-                s.SetBaseAndBuildTrivialConstructor(this, factory);
+                s.EnsureSetBaseAndBuildTrivialConstructor(this);
         }
     }
 

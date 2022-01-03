@@ -51,8 +51,8 @@ namespace Gum.Runtime
             Name funcName,
             bool bSeqCall, bool bThisCall,
             IReadOnlyList<string> typeParams,
-            TypeValue retTypeValue, 
-            IEnumerable<TypeValue> paramTypeValues,
+            TypeSymbol retTypeValue, 
+            IEnumerable<TypeSymbol> paramTypeValues,
             Invoker invoker)
         {
             var funcId = typeId.Append(funcName, typeParams.Count);
@@ -70,7 +70,7 @@ namespace Gum.Runtime
             memberFuncIds.Add(funcId);
         }
 
-        public void AddMemberVar(Name varName, bool bStatic, TypeValue typeValue)
+        public void AddMemberVar(Name varName, bool bStatic, TypeSymbol typeValue)
         {
             var varId = typeId.Append(varName);
 

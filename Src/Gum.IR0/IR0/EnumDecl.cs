@@ -9,23 +9,14 @@ using Gum.Infra;
 namespace Gum.IR0
 { 
     [AutoConstructor, ImplementIEquatable]
-    public partial struct EnumElementField : IPure
+    public partial struct EnumElementField
     {
         public Path Type { get; }
         public string Name { get; }
-
-        public void EnsurePure()
-        {
-            throw new NotImplementedException();
-        }
     }
     
-    public record EnumElement(string Name, ImmutableArray<EnumElementField> Fields) : IPure
+    public record EnumElement(string Name, ImmutableArray<EnumElementField> Fields)
     {
-        public void EnsurePure()
-        {
-            Misc.EnsurePure(Fields);
-        }
     }
     
     public record EnumDecl(string Name, ImmutableArray<string> TypeParams, ImmutableArray<EnumElement> Elems) : TypeDecl

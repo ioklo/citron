@@ -22,17 +22,17 @@ namespace Gum.Analysis
     public abstract record TypeExpInfo
     {
         public abstract TypeExpInfoKind GetKind();
-        public abstract M.Type? GetMType();
+        public abstract M.TypeId? GetMType();
         public abstract bool IsInternal();   // internal은 현재 컴파일 되고 있는 코드에 정의가 존재하는지 여부이다. 예를 들어 int는 internal이 아니다
     }
 
     public record MTypeTypeExpInfo : TypeExpInfo
     {
-        public M.Type Type { get; }
+        public M.TypeId Type { get; }
         public TypeExpInfoKind Kind { get; }
         bool bInternal;
 
-        public MTypeTypeExpInfo(M.Type type, TypeExpInfoKind kind, bool bInternal)
+        public MTypeTypeExpInfo(M.TypeId type, TypeExpInfoKind kind, bool bInternal)
         {
             this.Type = type;
             this.Kind = kind;
@@ -44,7 +44,7 @@ namespace Gum.Analysis
             return Kind;
         }
 
-        public override M.Type? GetMType()
+        public override M.TypeId? GetMType()
         {
             return Type;
         }
@@ -65,7 +65,7 @@ namespace Gum.Analysis
             return TypeExpInfoKind.Var;
         }
 
-        public override M.Type? GetMType()
+        public override M.TypeId? GetMType()
         {
             return null;
         }

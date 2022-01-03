@@ -5,7 +5,7 @@ using Pretune;
 namespace Gum.IR0
 {
     [AutoConstructor, ImplementIEquatable]
-    public partial struct OuterLocalVarInfo : IPure
+    public partial struct OuterLocalVarInfo
     {
         public Path Type { get; }
         public string Name { get; }
@@ -15,22 +15,13 @@ namespace Gum.IR0
             outType = Type;
             outName = Name;
         }
-
-        public void EnsurePure() { }
     }
 
     [AutoConstructor, ImplementIEquatable]
-    public partial struct CapturedStatement : IPure
+    public partial struct CapturedStatement
     {
         public Path? ThisType { get; }
         public ImmutableArray<OuterLocalVarInfo> OuterLocalVars { get; }
         public Stmt Body { get; }
-
-        public void EnsurePure()
-        {
-            Misc.EnsurePure(ThisType!);
-            Misc.EnsurePure(OuterLocalVars);
-            Misc.EnsurePure(Body);
-        }
     }
 }

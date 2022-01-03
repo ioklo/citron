@@ -15,20 +15,20 @@ namespace Gum.IR0Translator
             R.Path.Nested path;
             NormalTypeValue? thisTypeValue; // possible,
             LocalContext parentLocalContext;
-            TypeValue? retTypeValue;
+            TypeSymbol? retTypeValue;
             bool bCaptureThis;
-            Dictionary<string, TypeValue> localCaptures;
+            Dictionary<string, TypeSymbol> localCaptures;
             ImmutableArray<R.CallableMemberDecl> decls;
             AnonymousIdComponent AnonymousIdComponent;
 
-            public LambdaContext(R.Path.Nested path, NormalTypeValue? thisTypeValue, LocalContext parentLocalContext, TypeValue? retTypeValue)
+            public LambdaContext(R.Path.Nested path, NormalTypeValue? thisTypeValue, LocalContext parentLocalContext, TypeSymbol? retTypeValue)
             {
                 this.path = path;
                 this.thisTypeValue = thisTypeValue;
                 this.parentLocalContext = parentLocalContext;
                 this.retTypeValue = retTypeValue;
                 this.bCaptureThis = false;
-                this.localCaptures = new Dictionary<string, TypeValue>();
+                this.localCaptures = new Dictionary<string, TypeSymbol>();
             }
 
             public LambdaContext(LambdaContext other, CloneContext cloneContext)
@@ -37,7 +37,7 @@ namespace Gum.IR0Translator
                 this.parentLocalContext = cloneContext.GetClone(other.parentLocalContext);
                 this.retTypeValue = other.retTypeValue;
                 this.bCaptureThis = other.bCaptureThis;
-                this.localCaptures = new Dictionary<string, TypeValue>(other.localCaptures);
+                this.localCaptures = new Dictionary<string, TypeSymbol>(other.localCaptures);
                 this.decls = other.decls;
                 this.AnonymousIdComponent = other.AnonymousIdComponent;
             }
@@ -62,17 +62,17 @@ namespace Gum.IR0Translator
                 return parentLocalContext.GetLocalVarInfo(varName);
             }
 
-            public TypeValue? GetRetTypeValue()
+            public TypeSymbol? GetRetTypeValue()
             {
                 return retTypeValue;
             }
 
-            public void SetRetTypeValue(TypeValue retTypeValue)
+            public void SetRetTypeValue(TypeSymbol retTypeValue)
             {
                 this.retTypeValue = retTypeValue;
             }
 
-            public void AddLambdaCapture(string capturedVarName, TypeValue capturedVarType)
+            public void AddLambdaCapture(string capturedVarName, TypeSymbol capturedVarType)
             {
                 if (localCaptures.TryGetValue(capturedVarName, out var prevType))
                     Debug.Assert(prevType.Equals(capturedVarType));

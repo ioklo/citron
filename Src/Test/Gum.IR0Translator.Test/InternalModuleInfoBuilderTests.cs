@@ -17,9 +17,9 @@ namespace Gum.IR0Translator.Test
     public class InternalModuleInfoBuilderTests
     {
         // UnitOfWorkName_ScenarioName_ExpectedBehavior
-        public M.Type IntMType { get => new M.GlobalType("System.Runtime", new M.NamespacePath("System"), new M.Name.Normal("Int32"), default); }
+        public M.TypeId IntMType { get => new M.GlobalType("System.Runtime", new M.NamespacePath("System"), new M.Name.Normal("Int32"), default); }
         
-        InternalModuleInfo Build(M.ModuleName moduleName, S.Script script)
+        InternalModuleInfo Build(M.Name moduleName, S.Script script)
         {
             var typeSkelRepo = TypeSkeletonCollector.Collect(script);
 
@@ -36,10 +36,10 @@ namespace Gum.IR0Translator.Test
         public void ParamHash_TypeVarDifferentNameSameLocation_SameParamHash()
         {
             // F<T>(T t)
-            var paramTypes1 = new M.ParamTypes(Arr(new M.ParamKindAndType(M.ParamKind.Normal, new M.TypeVarType(0, "T"))));
+            var paramTypes1 = new M.ParamTypes(Arr(new M.ParamKindAndType(M.ParamKind.Default, new M.TypeVarTypeId(0, "T"))));
 
             // F<U>(U u)
-            var paramTypes2 = new M.ParamTypes(Arr(new M.ParamKindAndType(M.ParamKind.Normal, new M.TypeVarType(0, "U"))));
+            var paramTypes2 = new M.ParamTypes(Arr(new M.ParamKindAndType(M.ParamKind.Default, new M.TypeVarTypeId(0, "U"))));
 
             Assert.Equal(paramTypes1, paramTypes2);
         }
@@ -63,7 +63,9 @@ namespace Gum.IR0Translator.Test
             Assert.NotNull(result);
             Debug.Assert(result != null);
 
-            var paramTypes = new M.ParamTypes(Arr(new M.ParamKindAndType(M.ParamKind.Ref, new M.TypeVarType(0, "T"))));
+            var paramTypes = new M.ParamTypes(Arr(new M.ParamKindAndType(M.ParamKind.Ref, new M.TypeVarTypeId(0, "T"))));
+
+            result
 
             var funcInfo = GlobalItemQueryService.GetGlobalItem(result, M.NamespacePath.Root, new ItemPathEntry(new M.Name.Normal("Func"), 1, paramTypes));
             Assert.NotNull(funcInfo);
@@ -74,10 +76,10 @@ namespace Gum.IR0Translator.Test
                 bInstanceFunc: false,
                 bSeqFunc: false,
                 bRefReturn: true,
-                retType: new M.TypeVarType(0, "T"),
+                retType: new M.TypeVarTypeId(0, "T"),
                 name: new M.Name.Normal("Func"),                                
                 typeParams: Arr("T"),
-                parameters: Arr(new M.Param(M.ParamKind.Ref, new M.TypeVarType(0, "T"), new M.Name.Normal("t")))
+                parameters: Arr(new M.Param(M.ParamKind.Ref, new M.TypeVarTypeId(0, "T"), new M.Name.Normal("t")))
             );
 
             Assert.Equal(expected, funcInfo);
@@ -108,9 +110,9 @@ namespace Gum.IR0Translator.Test
             Debug.Assert(result != null);
 
             var paramTypes = new M.ParamTypes(Arr(
-                new M.ParamKindAndType(M.ParamKind.Normal, IntMType), 
-                new M.ParamKindAndType(M.ParamKind.Params, new M.TypeVarType(1, "U")), 
-                new M.ParamKindAndType(M.ParamKind.Normal, new M.TypeVarType(0, "T"))
+                new M.ParamKindAndType(M.ParamKind.Default, IntMType), 
+                new M.ParamKindAndType(M.ParamKind.Params, new M.TypeVarTypeId(1, "U")), 
+                new M.ParamKindAndType(M.ParamKind.Default, new M.TypeVarTypeId(0, "T"))
             ));
 
             var funcInfo = GlobalItemQueryService.GetGlobalItem(result, M.NamespacePath.Root, new ItemPathEntry(new M.Name.Normal("Func"), 2, paramTypes));
@@ -118,16 +120,16 @@ namespace Gum.IR0Translator.Test
             Debug.Assert(funcInfo != null);
 
             var parameters = Arr(
-                new M.Param(M.ParamKind.Normal, IntMType, new M.Name.Normal("x")), 
-                new M.Param(M.ParamKind.Params, new M.TypeVarType(1, "U"), new M.Name.Normal("y")), 
-                new M.Param(M.ParamKind.Normal, new M.TypeVarType(0, "T"), new M.Name.Normal("z")));
+                new M.Param(M.ParamKind.Default, IntMType, new M.Name.Normal("x")), 
+                new M.Param(M.ParamKind.Params, new M.TypeVarTypeId(1, "U"), new M.Name.Normal("y")), 
+                new M.Param(M.ParamKind.Default, new M.TypeVarTypeId(0, "T"), new M.Name.Normal("z")));
 
             var expected = new InternalModuleFuncInfo(
                 M.AccessModifier.Private,
                 bInstanceFunc: false,
                 bSeqFunc: false,
                 bRefReturn: false,
-                M.VoidType.Instance,
+                M.VoidTypeId.Instance,
                 new M.Name.Normal("Func"),
                 Arr("T", "U"),
                 parameters
@@ -189,34 +191,34 @@ namespace Gum.IR0Translator.Test
             Assert.NotNull(result);
             Debug.Assert(result != null);
 
-            var structInfo = GlobalItemQueryService.GetGlobalItem(result, M.NamespacePath.Root, new ItemPathEntry(new M.Name.Normal("S"), 1)) as IModuleStructInfo;
+            var structInfo = GlobalItemQueryService.GetGlobalItem(result, M.NamespacePath.Root, new ItemPathEntry(new M.Name.Normal("S"), 1)) as IModuleStructDecl;
             Assert.NotNull(structInfo);
             Debug.Assert(structInfo != null);
 
-            var trivialConstructor = new InternalModuleConstructorInfo(M.AccessModifier.Public, Arr(new M.Param(M.ParamKind.Normal, IntMType, new M.Name.Normal("x")), new M.Param(M.ParamKind.Normal, IntMType, new M.Name.Normal("y"))));
+            var trivialConstructor = new InternalModuleConstructorInfo(M.AccessModifier.Public, Arr(new M.Param(M.ParamKind.Default, IntMType, new M.Name.Normal("x")), new M.Param(M.ParamKind.Default, IntMType, new M.Name.Normal("y"))));
 
-            var expected = new InternalModuleStructInfo(
+            var expected = new StructDeclSymbol(
                 new M.Name.Normal("S"),
                 Arr("T"), 
                 mbaseStruct: null, //baseType: new M.GlobalType(moduleName, M.NamespacePath.Root, "B", Arr(IntMType)),
                 default,
-                Arr<IModuleFuncInfo>(
+                Arr<IModuleFuncDecl>(
                     new InternalModuleFuncInfo(
                         M.AccessModifier.Private,
                         bInstanceFunc: true,
                         bSeqFunc: false,
                         bRefReturn: false,
-                        new M.TypeVarType(1, "T"),
+                        new M.TypeVarTypeId(1, "T"),
                         new M.Name.Normal("Func"),                        
                         Arr("T", "U"),
                         Arr(
-                            new M.Param(M.ParamKind.Normal, new M.GlobalType(moduleName, M.NamespacePath.Root, new M.Name.Normal("S"), ImmutableArray.Create<M.Type>(IntMType)), new M.Name.Normal("s")),
-                            new M.Param(M.ParamKind.Normal, new M.TypeVarType(2, "U"), new M.Name.Normal("u"))
+                            new M.Param(M.ParamKind.Default, new M.GlobalType(moduleName, M.NamespacePath.Root, new M.Name.Normal("S"), ImmutableArray.Create<M.TypeId>(IntMType)), new M.Name.Normal("s")),
+                            new M.Param(M.ParamKind.Default, new M.TypeVarTypeId(2, "U"), new M.Name.Normal("u"))
                         )
                     )
                 ),
 
-                Arr<IModuleConstructorInfo>(trivialConstructor),
+                Arr<IModuleConstructorDecl>(trivialConstructor),
                 
                 Arr<IModuleMemberVarInfo>(
                     new InternalModuleMemberVarInfo(M.AccessModifier.Protected, false, IntMType, new M.Name.Normal("x")),

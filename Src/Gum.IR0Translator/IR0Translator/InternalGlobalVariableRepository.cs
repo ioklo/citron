@@ -10,7 +10,7 @@ using M = Gum.CompileTime;
 
 namespace Gum.IR0Translator
 {
-    record InternalGlobalVarInfo(bool IsRef, TypeValue TypeValue, string Name);
+    record InternalGlobalVarInfo(bool IsRef, TypeSymbol TypeValue, string Name);
     
     class InternalGlobalVariableRepository : IMutable<InternalGlobalVariableRepository>
     {
@@ -42,7 +42,7 @@ namespace Gum.IR0Translator
             return internalGlobalVarInfos.GetValueOrDefault(name);
         }
 
-        public void AddInternalGlobalVariable(bool bRef, TypeValue typeValue, string name)
+        public void AddInternalGlobalVariable(bool bRef, TypeSymbol typeValue, string name)
         {
             var globalVarInfo = new InternalGlobalVarInfo(bRef, typeValue, name);
             internalGlobalVarInfos = internalGlobalVarInfos.Add(name, globalVarInfo);

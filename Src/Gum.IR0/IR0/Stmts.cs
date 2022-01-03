@@ -10,9 +10,8 @@ using Gum.Infra;
 
 namespace Gum.IR0
 {   
-    public abstract record Stmt : IPure, INode
+    public abstract record Stmt : INode
     {
-        public void EnsurePure() { }
     }
 
     public record CommandStmt(ImmutableArray<StringExp> Commands) : Stmt;    

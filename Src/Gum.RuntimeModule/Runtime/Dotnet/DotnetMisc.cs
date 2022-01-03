@@ -8,7 +8,7 @@ namespace Gum.Runtime.Dotnet
 {
     static class DotnetMisc
     {
-        public static ItemId? MakeTypeId(Type type)
+        public static ItemId? MakeTypeId(TypeId type)
         {
             // ([^\s]+(`(\d+))?)([\.+][^\s]+(`(\d+))?)+
             // C20200622_Reflection.Type1`1+Type2`1<T, U>

@@ -13,11 +13,11 @@ namespace Gum.IR0Translator
         partial class StructConstructorContext : ICallableContext
         {
             R.Path.Nested path;
-            StructTypeValue structTypeValue;
+            StructSymbol structTypeValue;
             ImmutableArray<R.CallableMemberDecl> callableMemberDecls;
             AnonymousIdComponent AnonymousIdComponent;
 
-            public StructConstructorContext(R.Path.Nested path, StructTypeValue structTypeValue)
+            public StructConstructorContext(R.Path.Nested path, StructSymbol structTypeValue)
             {
                 this.path = path;
                 this.structTypeValue = structTypeValue;
@@ -30,7 +30,7 @@ namespace Gum.IR0Translator
                 this.AnonymousIdComponent = other.AnonymousIdComponent;
             }
 
-            public void AddLambdaCapture(string capturedVarName, TypeValue capturedVarType)
+            public void AddLambdaCapture(string capturedVarName, TypeSymbol capturedVarType)
             {
                 throw new UnreachableCodeException();
             }
@@ -59,7 +59,7 @@ namespace Gum.IR0Translator
                 return null;
             }            
 
-            public TypeValue? GetRetTypeValue()
+            public TypeSymbol? GetRetTypeValue()
             {
                 return VoidTypeValue.Instance;
             }
@@ -69,7 +69,7 @@ namespace Gum.IR0Translator
                 return false;
             }
 
-            public void SetRetTypeValue(TypeValue retTypeValue)
+            public void SetRetTypeValue(TypeSymbol retTypeValue)
             {
                 throw new UnreachableCodeException();
             }

@@ -10,16 +10,18 @@ using System.Threading.Tasks;
 namespace Gum.CompileTime
 {
     // AppliedType
-    public abstract record Type;
-    public abstract record NormalType : Type;
+    public abstract record TypeId;
 
-    public record GlobalType(ModuleName ModuleName, NamespacePath NamespacePath, Name Name, ImmutableArray<Type> TypeArgs) : NormalType;
-    public record MemberType(NormalType Outer, Name Name, ImmutableArray<Type> TypeArgs) : NormalType;
+    // NormalType
+    public record NormalTypeId : TypeId;
+    
+    public record RootTypeId(Name Module, NamespacePath? Namespace, Name Name, ImmutableArray<TypeId> TypeArgs) : NormalTypeId;
+    public record MemberTypeId(NormalTypeId Outer, Name Name, ImmutableArray<TypeId> TypeArgs) : NormalTypeId;
 
     // 로컬, 사용한 곳의 환경에 따라 가리키는 것이 달라진다
-    public sealed record TypeVarType(int Index, string Name) : Type
+    public sealed record TypeVarTypeId(int Index, string Name) : TypeId
     {
-        public bool Equals(TypeVarType? other)
+        public bool Equals(TypeVarTypeId? other)
         {
             if (other == null) return false;
             return Index == other.Index;
@@ -31,12 +33,12 @@ namespace Gum.CompileTime
         }
     }   
 
-    public record VoidType : Type
+    public record VoidTypeId : TypeId
     {
-        public static readonly VoidType Instance = new VoidType();
-        VoidType() { }
+        public static readonly VoidTypeId Instance = new VoidTypeId();
+        VoidTypeId() { }
     }
 
     // int?
-    public record NullableType(Type InnerType) : Type;
+    public record NullableTypeId(TypeId InnerType) : TypeId;
 }

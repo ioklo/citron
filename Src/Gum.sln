@@ -71,8 +71,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gum.Log", "Gum.Log\Gum.Log.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gum.A0", "Gum.A0\Gum.A0.csproj", "{5F1345B9-A80F-4FB7-9F69-71381B719A8F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gum.Analysis.ModuleInfo.Abstractions", "Gum.Analysis.ModuleInfo.Abstractions\Gum.Analysis.ModuleInfo.Abstractions.csproj", "{1FBE3D34-3BB0-4E6A-A83E-D65DD47DDD5D}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Analysis", "Analysis", "{57D000C2-0C20-4985-A40C-B2189F64F155}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gum.Analysis.TypeExpEvaluator", "Gum.Analysis.TypeExpEvaluator\Gum.Analysis.TypeExpEvaluator.csproj", "{F5527A8E-6219-4E47-822A-6C8AE9DD1DE8}"
@@ -85,11 +83,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gum.Analysis.ExternalModule
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gum.Analysis.ModuleInfo.Else", "Gum.Analysis.ModuleInfo.Else\Gum.Analysis.ModuleInfo.Else.csproj", "{9D7C2806-F480-4083-989B-C13B9E765057}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gum.Analysis.ItemValue", "Gum.Analysis.ItemValue\Gum.Analysis.ItemValue.csproj", "{AE8A098B-367C-4537-84D5-B229B09677B6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gum.Analysis.ItemValue", "Gum.Analysis.ItemValue\Gum.Analysis.ItemValue.csproj", "{AE8A098B-367C-4537-84D5-B229B09677B6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gum.Analysis.ModuleInfo", "Gum.Analysis.ModuleInfo\Gum.Analysis.ModuleInfo.csproj", "{62BED99B-73ED-4CA6-B1B7-D8FF6D891D99}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gum.Analysis.ModuleInfo", "Gum.Analysis.ModuleInfo\Gum.Analysis.ModuleInfo.csproj", "{62BED99B-73ED-4CA6-B1B7-D8FF6D891D99}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gum.Analysis.GlobalItemQueryService", "Gum.Analysis.GlobalItemQueryService\Gum.Analysis.GlobalItemQueryService.csproj", "{2D3EA763-48C7-4407-AEFE-5EB6004FBF14}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gum.Analysis.GlobalItemQueryService", "Gum.Analysis.GlobalItemQueryService\Gum.Analysis.GlobalItemQueryService.csproj", "{2D3EA763-48C7-4407-AEFE-5EB6004FBF14}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -207,10 +205,6 @@ Global
 		{5F1345B9-A80F-4FB7-9F69-71381B719A8F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5F1345B9-A80F-4FB7-9F69-71381B719A8F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5F1345B9-A80F-4FB7-9F69-71381B719A8F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1FBE3D34-3BB0-4E6A-A83E-D65DD47DDD5D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1FBE3D34-3BB0-4E6A-A83E-D65DD47DDD5D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1FBE3D34-3BB0-4E6A-A83E-D65DD47DDD5D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1FBE3D34-3BB0-4E6A-A83E-D65DD47DDD5D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F5527A8E-6219-4E47-822A-6C8AE9DD1DE8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F5527A8E-6219-4E47-822A-6C8AE9DD1DE8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F5527A8E-6219-4E47-822A-6C8AE9DD1DE8}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -261,7 +255,6 @@ Global
 		{912082F6-3EAB-4C52-91E1-1A98EDA063D5} = {3ADD1601-A675-4B34-93C8-FA453C5A835F}
 		{424FE4E9-0B8A-4868-A884-F3558B5117E7} = {3ADD1601-A675-4B34-93C8-FA453C5A835F}
 		{8761C047-BE00-40A1-BBCF-48E908AAF5D2} = {1A6EEB17-CF65-4F76-9762-D458C5C3C123}
-		{1FBE3D34-3BB0-4E6A-A83E-D65DD47DDD5D} = {57D000C2-0C20-4985-A40C-B2189F64F155}
 		{F5527A8E-6219-4E47-822A-6C8AE9DD1DE8} = {57D000C2-0C20-4985-A40C-B2189F64F155}
 		{77CE2C56-205D-4D2E-821A-138E7B7C2623} = {57D000C2-0C20-4985-A40C-B2189F64F155}
 		{8E19680A-7775-4FA0-9284-E144A9D6D003} = {57D000C2-0C20-4985-A40C-B2189F64F155}

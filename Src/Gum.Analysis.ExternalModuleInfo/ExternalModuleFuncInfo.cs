@@ -5,52 +5,55 @@ using M = Gum.CompileTime;
 
 namespace Gum.Analysis
 {
-    [AutoConstructor, ImplementIEquatable]
-    partial class ExternalModuleFuncInfo : IModuleFuncInfo
+    [ImplementIEquatable]
+    partial class ExternalModuleFuncInfo : IModuleFuncDecl
     {
+        IModuleItemDecl? outer;
         M.FuncInfo funcInfo;
 
-        M.AccessModifier IModuleCallableInfo.GetAccessModifier()
+        public ExternalModuleFuncInfo(IModuleItemDecl? outer, M.FuncInfo funcInfo)
+        {
+            this.outer = outer;
+            this.funcInfo = funcInfo;
+        }
+
+        IModuleItemDecl? GetOuter()
+        {
+            return outer;
+        }
+
+
+        M.AccessModifier IModuleCallableDecl.GetAccessModifier()
         {
             return funcInfo.AccessModifier;
         }
 
-        M.Name IModuleItemInfo.GetName()
+        M.ItemPathEntry GetEntry()
         {
-            return funcInfo.Name;
+            return new M.ItemPathEntry(funcInfo.Name, funcInfo.TypeParams.Length);
         }
 
-        ImmutableArray<M.Param> IModuleCallableInfo.GetParameters()
+        ImmutableArray<M.Param> IModuleCallableDecl.GetParameters()
         {
             return funcInfo.Parameters;
         }
-
-        M.ParamTypes IModuleCallableInfo.GetParamTypes()
-        {
-            return Misc.MakeParamTypes(funcInfo.Parameters);
-        }
-
-        M.Type IModuleFuncInfo.GetReturnType()
+        
+        M.Type IModuleFuncDecl.GetReturnType()
         {
             return funcInfo.RetType;
-        }
-        
-        ImmutableArray<string> IModuleItemInfo.GetTypeParams()
-        {
-            return funcInfo.TypeParams;
-        }
+        }        
 
-        bool IModuleFuncInfo.IsInstanceFunc()
+        bool IModuleFuncDecl.IsInstanceFunc()
         {
             return funcInfo.IsInstanceFunc;
         }
 
-        bool IModuleFuncInfo.IsInternal()
+        bool IModuleFuncDecl.IsInternal()
         {
             return false;
         }
 
-        bool IModuleFuncInfo.IsSequenceFunc()
+        bool IModuleFuncDecl.IsSequenceFunc()
         {
             return funcInfo.IsSequenceFunc;
         }        

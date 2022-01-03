@@ -4,12 +4,12 @@ using R = Gum.IR0;
 namespace Gum.Analysis
 {
     // "var"
-    public class VarTypeValue : TypeValue
+    public class VarTypeValue : TypeSymbol
     {
         public static readonly VarTypeValue Instance = new VarTypeValue();
         private VarTypeValue() { }
 
-        public override TypeValue Apply_TypeValue(TypeEnv typeEnv) { return this; }
+        public override TypeSymbol Apply(TypeEnv typeEnv) { return this; }
 
         // var는 translation패스에서 추론되기 때문에 IR0에 없다
         public override R.Path GetRPath() { throw new InvalidOperationException();  }

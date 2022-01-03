@@ -18,8 +18,8 @@ namespace Gum.Runtime
 
         public override void Build(RuntimeModuleTypeBuilder builder)
         {
-            TypeValue intTypeValue = new NormalTypeValue(RuntimeModule.IntId);
-            TypeValue listElemTypeValue = new TypeVarTypeValue(RuntimeModule.ListId, "T");
+            TypeSymbol intTypeValue = new NormalTypeValue(RuntimeModule.IntId);
+            TypeSymbol listElemTypeValue = new TypeVarTypeValue(RuntimeModule.ListId, "T");
 
             // List<T>.Add
             builder.AddMemberFunc("Add",
@@ -37,7 +37,7 @@ namespace Gum.Runtime
 
             builder.AddMemberFunc("GetEnumerator",
                 bSeqCall: false, bThisCall: true, Array.Empty<string>(),
-                new NormalTypeValue(RuntimeModule.EnumeratorId, TypeArgumentList.Make(listElemTypeValue)), Enumerable.Empty<TypeValue>(), wrappedGetEnumerator);
+                new NormalTypeValue(RuntimeModule.EnumeratorId, TypeArgumentList.Make(listElemTypeValue)), Enumerable.Empty<TypeSymbol>(), wrappedGetEnumerator);
 
             // T List<T>.Indexer(int index)
             builder.AddMemberFunc(SpecialNames.IndexerGet,

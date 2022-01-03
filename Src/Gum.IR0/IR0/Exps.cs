@@ -74,15 +74,21 @@ namespace Gum.IR0
     public record CallInternalBinaryOperatorExp(InternalBinaryOperator Operator, Exp Operand0, Exp Operand1) : Exp;
     
     // a = b
-    public record AssignExp(Loc Dest, Exp Src) : Exp;    
+    public record AssignExp(Loc Dest, Exp Src) : Exp;
 
-    // F(2, 3)    
-    public record CallFuncExp(Path.Nested Func, Loc? Instance, ImmutableArray<Argument> Args): Exp;
+    // F();
+    public record CallGlobalFuncExp(Path.Nested Func, ImmutableArray<Argument> Args) : Exp;
+
+    // c.F();
+    public record CallClassMemberFuncExp(Path.Nested ClassMemberFunc, Loc? Instance, ImmutableArray<Argument> Args) : Exp;
+
+    // s.F();
+    public record CallStructMemberFuncExp(Path.Nested StructMemberFunc, Loc? Instance, ImmutableArray<Argument> Args) : Exp;
     
-    public record CallSeqFuncExp(Path.Nested SeqFunc , Loc? Instance, ImmutableArray<Argument> Args): Exp
-    {   
-        // public bool NeedHeapAlloc { get; } Heap으로 할당시킬지 여부
-    }
+    //public record CallSeqFuncExp(Path.Nested SeqFunc , Loc? Instance, ImmutableArray<Argument> Args): Exp
+    //{   
+    //    // public bool NeedHeapAlloc { get; } Heap으로 할당시킬지 여부
+    //}
 
     // f(2, 3)    
     // Callable은 (() => {}) ()때문에 Loc이어야 한다

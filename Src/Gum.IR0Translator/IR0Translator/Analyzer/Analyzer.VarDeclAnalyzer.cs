@@ -31,10 +31,10 @@ namespace Gum.IR0Translator
             public partial struct VarDeclElementCoreResult
             {
                 public R.VarDeclElement Elem { get; }
-                public TypeValue TypeValue { get; }
+                public TypeSymbol TypeValue { get; }
             }
 
-            VarDeclElementCoreResult MakeRefVarDeclElementAndTypeCheck(string varName, S.Exp exp, S.ISyntaxNode nodeForErrorReport, TypeValue declType)
+            VarDeclElementCoreResult MakeRefVarDeclElementAndTypeCheck(string varName, S.Exp exp, S.ISyntaxNode nodeForErrorReport, TypeSymbol declType)
             {
                 var result = MakeRefVarDeclElement(varName, exp, nodeForErrorReport);
 
@@ -64,7 +64,7 @@ namespace Gum.IR0Translator
                 }
             }
 
-            public VarDeclElementCoreResult AnalyzeVarDeclElement(bool bLocal, S.VarDeclElement elem, bool bRefDeclType, TypeValue declType)
+            public VarDeclElementCoreResult AnalyzeVarDeclElement(bool bLocal, S.VarDeclElement elem, bool bRefDeclType, TypeSymbol declType)
             {
                 if (elem.Initializer == null)
                 {

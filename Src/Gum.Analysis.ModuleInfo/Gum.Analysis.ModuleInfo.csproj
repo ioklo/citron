@@ -5,12 +5,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Pretune" Version="0.8.3" />
+    <PackageReference Include="Pretune" Version="0.8.4" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Gum.Analysis.ModuleInfo.Abstractions\Gum.Analysis.ModuleInfo.Abstractions.csproj" />
     <ProjectReference Include="..\Gum.Infra\Gum.Infra.csproj" />
+    <ProjectReference Include="..\Gum.IR0\Gum.IR0.csproj" />
     <ProjectReference Include="..\Gum.ModuleInfo\Gum.ModuleInfo.csproj" />
   </ItemGroup>
 

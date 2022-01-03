@@ -4,7 +4,7 @@ using R = Gum.IR0;
 namespace Gum.Analysis
 {
     // "void"
-    public class VoidTypeValue : TypeValue
+    public class VoidTypeValue : TypeSymbol
     {
         public static readonly VoidTypeValue Instance = new VoidTypeValue();
         private VoidTypeValue() { }
@@ -13,7 +13,7 @@ namespace Gum.Analysis
             return obj == Instance;
         }
 
-        public override TypeValue Apply_TypeValue(TypeEnv typeEnv)
+        public override TypeSymbol Apply(TypeEnv typeEnv)
         {
             return this;
         }

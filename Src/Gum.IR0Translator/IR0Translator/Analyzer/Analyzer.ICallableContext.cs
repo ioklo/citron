@@ -14,9 +14,9 @@ namespace Gum.IR0Translator
             NormalTypeValue? GetThisTypeValue();
 
             LocalVarInfo? GetLocalVarOutsideLambda(string varName);
-            TypeValue? GetRetTypeValue();
-            void SetRetTypeValue(TypeValue retTypeValue);
-            void AddLambdaCapture(string capturedVarName, TypeValue capturedVarType);
+            TypeSymbol? GetRetTypeValue();
+            void SetRetTypeValue(TypeSymbol retTypeValue);
+            void AddLambdaCapture(string capturedVarName, TypeSymbol capturedVarType);
             bool IsSeqFunc();
 
             void AddCallableMemberDecl(R.CallableMemberDecl lambdaDecl);

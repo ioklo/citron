@@ -6,17 +6,13 @@ using Gum.Infra;
 
 namespace Gum.Analysis
 {
-    public class TypeExpInfoService : IPure
+    public class TypeExpInfoService
     {
         ImmutableDictionary<S.TypeExp, TypeExpInfo> typeExpInfosByTypeExp;
 
         public TypeExpInfoService(ImmutableDictionary<S.TypeExp, TypeExpInfo> typeExpInfosByTypeExp)
         {
             this.typeExpInfosByTypeExp = typeExpInfosByTypeExp;
-        }
-
-        public void EnsurePure()
-        {
         }
 
         public TypeExpInfo GetTypeExpInfo(S.TypeExp typeExp)

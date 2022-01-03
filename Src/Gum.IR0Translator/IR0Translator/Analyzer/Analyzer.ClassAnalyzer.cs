@@ -21,14 +21,14 @@ namespace Gum.IR0Translator
             GlobalContext globalContext;
             ITypeContainer typeContainer;
             S.ClassDecl classDecl;
-            ClassTypeValue classTypeValue;
+            ClassSymbol classTypeValue;
 
             ImmutableArray<R.ClassConstructorDecl>.Builder constructorsBuilder;
             ImmutableArray<R.FuncDecl>.Builder memberFuncsBuilder;
             ImmutableArray<R.ClassMemberVarDecl>.Builder memberVarsBuilder;
 
             // Entry
-            public static void Analyze(GlobalContext globalContext, ITypeContainer typeContainer, S.ClassDecl classDecl, ClassTypeValue classTypeValue)
+            public static void Analyze(GlobalContext globalContext, ITypeContainer typeContainer, S.ClassDecl classDecl, ClassSymbol classTypeValue)
             {
                 var constructorsBuilder = ImmutableArray.CreateBuilder<R.ClassConstructorDecl>();
                 var memberFuncsBuilder = ImmutableArray.CreateBuilder<R.FuncDecl>();
@@ -56,7 +56,7 @@ namespace Gum.IR0Translator
                     foreach (var baseType in classDecl.BaseTypes)
                     {
                         var typeValue = globalContext.GetTypeValueByTypeExp(baseType);
-                        if (typeValue is ClassTypeValue classTypeValue)
+                        if (typeValue is ClassSymbol classTypeValue)
                             return classTypeValue.GetRPath_Nested();
                     }
 
@@ -147,19 +147,19 @@ namespace Gum.IR0Translator
                         var result = baseTypeValue.GetMember(M.Name.Constructor, typeParamCount: 0); // NOTICE: constructor는 타입 파라미터가 없다
                         switch (result)
                         {
-                            case ItemQueryResult.Constructors constructorResult:
+                            case MemberQueryResult.Constructors constructorResult:
                                 var matchResult = FuncMatcher.Match(globalContext, callableContext, localContext, baseTypeValue.MakeTypeEnv(), constructorResult.ConstructorInfos, baseArgs.Value, default);
-                                if (matchResult is FuncMatchResult<IModuleConstructorInfo>.MultipleCandidates)
+                                if (matchResult is FuncMatchResult<IModuleConstructorDecl>.MultipleCandidates)
                                 {
                                     globalContext.AddFatalError(A2506_ClassDecl_CannotDecideWhichBaseConstructorUse, nodeForErrorReport);
                                     break;
                                 }
-                                else if (matchResult is FuncMatchResult<IModuleConstructorInfo>.NotFound)
+                                else if (matchResult is FuncMatchResult<IModuleConstructorDecl>.NotFound)
                                 {
                                     globalContext.AddFatalError(A2503_ClassDecl_CannotFindBaseClassConstructor, nodeForErrorReport);
                                     break;
                                 }
-                                else if (matchResult is FuncMatchResult<IModuleConstructorInfo>.Success matchedConstructor)
+                                else if (matchResult is FuncMatchResult<IModuleConstructorDecl>.Success matchedConstructor)
                                 {
                                     var constructorValue = globalContext.MakeConstructorValue(constructorResult.Outer, matchedConstructor.CallableInfo);
 
@@ -170,11 +170,11 @@ namespace Gum.IR0Translator
                                 }
                                 break;
 
-                            case ItemQueryResult.NotFound:
+                            case MemberQueryResult.NotFound:
                                 globalContext.AddFatalError(A2503_ClassDecl_CannotFindBaseClassConstructor, nodeForErrorReport);
                                 break;
 
-                            case ItemQueryResult.Error errorResult:
+                            case MemberQueryResult.Error errorResult:
                                 HandleItemQueryResultError(globalContext, errorResult, nodeForErrorReport);
                                 break;
                         }
@@ -322,7 +322,7 @@ namespace Gum.IR0Translator
                 {
                     var paramKind = param.Kind switch
                     {
-                        M.ParamKind.Normal => R.ParamKind.Normal,
+                        M.ParamKind.Default => R.ParamKind.Default,
                         M.ParamKind.Ref => R.ParamKind.Ref,
                         M.ParamKind.Params => R.ParamKind.Params,
                         _ => throw new UnreachableCodeException()
@@ -373,7 +373,7 @@ namespace Gum.IR0Translator
 
                         R.Argument arg = rparam.Kind switch
                         {
-                            R.ParamKind.Normal => new R.Argument.Normal(new R.LoadExp(new R.LocalVarLoc(rparam.Name))),
+                            R.ParamKind.Default => new R.Argument.Normal(new R.LoadExp(new R.LocalVarLoc(rparam.Name))),
                             R.ParamKind.Params => throw new UnreachableCodeException(),
                             R.ParamKind.Ref => new R.Argument.Ref(new R.LocalVarLoc(rparam.Name)),
                             _ => throw new UnreachableCodeException()

@@ -6,12 +6,12 @@ using Pretune;
 namespace Gum.Analysis
 {
     [AutoConstructor]
-    public partial class TupleTypeValue : TypeValue
+    public partial class TupleTypeValue : TypeSymbol
     {
         RItemFactory ritemFactory;
-        public ImmutableArray<(TypeValue Type, string? Name)> Elems { get; }
+        public ImmutableArray<(TypeSymbol Type, string? Name)> Elems { get; }
 
-        public override TypeValue Apply_TypeValue(TypeEnv typeEnv)
+        public override TypeSymbol Apply(TypeEnv typeEnv)
         {   
             throw new NotImplementedException();
         }

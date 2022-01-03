@@ -22,9 +22,9 @@ namespace Gum.IR0Translator
             GlobalContext globalContext;
             RootContext rootContext;
             LocalContext localContext;
-            InternalModuleInfo internalModuleInfo;   // 네임스페이스가 추가되면 Analyzer가 따로 생기거나 여기가 polymorphic이 되거나 해야한다
+            IModuleDecl internalModuleInfo;   // 네임스페이스가 추가되면 Analyzer가 따로 생기거나 여기가 polymorphic이 되거나 해야한다
 
-            RootAnalyzer(GlobalContext globalContext, RootContext rootContext, LocalContext localContext, InternalModuleInfo internalModuleInfo)
+            RootAnalyzer(GlobalContext globalContext, RootContext rootContext, LocalContext localContext, IModuleDecl internalModuleInfo)
             {
                 this.globalContext = globalContext;
                 this.rootContext = rootContext;
@@ -32,7 +32,7 @@ namespace Gum.IR0Translator
                 this.internalModuleInfo = internalModuleInfo;
             }
 
-            public static R.Script Analyze(GlobalContext globalContext, RootContext rootContext, InternalModuleInfo internalModuleInfo, S.Script script)
+            public static R.Script Analyze(GlobalContext globalContext, RootContext rootContext, IModuleDecl internalModuleInfo, S.Script script)
             {
                 var localContext = new LocalContext();
                 var analyzer = new RootAnalyzer(globalContext, rootContext, localContext, internalModuleInfo);
@@ -208,19 +208,19 @@ namespace Gum.IR0Translator
                     case S.StructDecl structDecl:
                         {
                             // TODO: 현재는 최상위 네임스페이스에서만 찾고 있음
-                            var structInfo = GlobalItemQueryService.GetGlobalItem(internalModuleInfo, M.NamespacePath.Root, new ItemPathEntry(new M.Name.Normal(structDecl.Name), structDecl.TypeParams.Length)) as IModuleStructInfo;
-                            Debug.Assert(structInfo != null);
+                            var moduleStructDecl = internalModuleInfo.GetGlobalType(null, new M.TypeName(new M.Name.Normal(structDecl.Name), structDecl.TypeParams.Length)) as IModuleStructDecl;
+                            Debug.Assert(moduleStructDecl != null);
 
                             // 이는 TaskStmt 등에서 path를 만들때 사용한다
                             // 고로 path는 TypeVar를 포함해서 만드는 것이 맞다
                             // 여기는 Root이므로 0부터 시작한다
-                            var typeArgsBuilder = ImmutableArray.CreateBuilder<TypeValue>(structDecl.TypeParams.Length);
+                            var typeArgsBuilder = ImmutableArray.CreateBuilder<TypeSymbol>(structDecl.TypeParams.Length);
                             for (int i = 0; i < structDecl.TypeParams.Length; i++)                                
                                 typeArgsBuilder.Add(globalContext.MakeTypeVarTypeValue(i));
 
                             var structTypeValue = globalContext.MakeStructTypeValue(
                                 rootContext.MakeRootItemValueOuter(M.NamespacePath.Root),
-                                structInfo, 
+                                moduleStructDecl, 
                                 typeArgsBuilder.MoveToImmutable());
 
                             StructAnalyzer.Analyze(globalContext, rootContext, structDecl, structTypeValue);
@@ -230,13 +230,14 @@ namespace Gum.IR0Translator
                     case S.ClassDecl classDecl:
                         {
                             // TODO: 현재는 최상위 네임스페이스에서만 찾고 있음
-                            var classInfo = GlobalItemQueryService.GetGlobalItem(internalModuleInfo, M.NamespacePath.Root, new ItemPathEntry(new M.Name.Normal(classDecl.Name), classDecl.TypeParams.Length)) as IModuleClassInfo;
-                            Debug.Assert(classInfo != null);
+                            var moduleTypeDecl = internalModuleInfo.GetGlobalType(null, new M.TypeName(new M.Name.Normal(classDecl.Name), classDecl.TypeParams.Length));
+                            var moduleClassDecl = moduleTypeDecl as IModuleClassDecl;
+                            Debug.Assert(moduleClassDecl != null);
 
                             // 이는 TaskStmt 등에서 path를 만들때 사용한다
                             // 고로 path는 TypeVar를 포함해서 만드는 것이 맞다
                             // 여기는 Root이므로 0부터 시작한다
-                            var typeArgsBuilder = ImmutableArray.CreateBuilder<TypeValue>(classDecl.TypeParams.Length);
+                            var typeArgsBuilder = ImmutableArray.CreateBuilder<TypeSymbol>(classDecl.TypeParams.Length);
                             for (int i = 0; i < classDecl.TypeParams.Length; i++)
                                 typeArgsBuilder.Add(globalContext.MakeTypeVarTypeValue(i));
 

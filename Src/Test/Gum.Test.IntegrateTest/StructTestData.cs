@@ -40,8 +40,8 @@ struct S
                             R.AccessModifier.Public,
                             default,
                             Arr(
-                                new R.Param(R.ParamKind.Normal, R.Path.Int, new R.Name.Normal("x")),
-                                new R.Param(R.ParamKind.Normal, R.Path.Int, new R.Name.Normal("y"))
+                                new R.Param(R.ParamKind.Default, R.Path.Int, new R.Name.Normal("x")),
+                                new R.Param(R.ParamKind.Default, R.Path.Int, new R.Name.Normal("y"))
                             ),
                             RBlock(
                                 new R.ExpStmt(new R.AssignExp(
@@ -97,7 +97,7 @@ struct S
                             new R.StructConstructorDecl(
                                 R.AccessModifier.Public,
                                 default,
-                                Arr(new R.Param(R.ParamKind.Normal, R.Path.Int, new R.Name.Normal("x"))),
+                                Arr(new R.Param(R.ParamKind.Default, R.Path.Int, new R.Name.Normal("x"))),
                                 RBlock()
                             ),
 
@@ -171,7 +171,7 @@ var s = S(3);
                             new R.StructConstructorDecl(
                                 R.AccessModifier.Public,
                                 default,
-                                Arr(new R.Param(R.ParamKind.Normal, R.Path.Int, new R.Name.Normal("x"))),
+                                Arr(new R.Param(R.ParamKind.Default, R.Path.Int, new R.Name.Normal("x"))),
                                 RBlock(RCommand(RString(new R.ExpStringExpElement(
                                     new R.CallInternalUnaryOperatorExp(R.InternalUnaryOperator.ToString_Int_String, new R.LoadExp(RLocalVarLoc("x"))))
                                 )))
@@ -197,7 +197,7 @@ var s = S(3);
                         new R.Path.Nested(
                             new R.Path.Nested(new R.Path.Root("TestModule"), new R.Name.Normal("S"), R.ParamHash.None, Arr<R.Path>()),
                             R.Name.Constructor.Instance,
-                            new R.ParamHash(0, Arr(new R.ParamHashEntry(R.ParamKind.Normal, R.Path.Int))),
+                            new R.ParamHash(0, Arr(new R.ParamHashEntry(R.ParamKind.Default, R.Path.Int))),
                             default
                         ),
                         Arr<R.Argument>(new R.Argument.Normal(RInt(3)))
@@ -245,7 +245,7 @@ var s = S(3);
                         new R.StructConstructorDecl(
                             R.AccessModifier.Public,
                             default,
-                            Arr(new R.Param(R.ParamKind.Normal, R.Path.Int, new R.Name.Normal("x"))),
+                            Arr(new R.Param(R.ParamKind.Default, R.Path.Int, new R.Name.Normal("x"))),
                             RBlock(
                                 new R.ExpStmt(new R.AssignExp(
                                     new R.StructMemberLoc(R.ThisLoc.Instance, new R.Path.Nested(SPath(), new R.Name.Normal("x"), R.ParamHash.None, default)),
@@ -269,7 +269,7 @@ var s = S(3);
                         new R.Path.Nested(
                             SPath(),
                             R.Name.Constructor.Instance,
-                            new R.ParamHash(0, Arr(new R.ParamHashEntry(R.ParamKind.Normal, R.Path.Int))),
+                            new R.ParamHash(0, Arr(new R.ParamHashEntry(R.ParamKind.Default, R.Path.Int))),
                             default
                         ),
                         Arr<R.Argument>(new R.Argument.Normal(RInt(3)))
@@ -321,7 +321,7 @@ var s = S(3);       // but can do this
                     Arr(new R.StructConstructorDecl(
                         R.AccessModifier.Public,
                         default,
-                        Arr(new R.Param(R.ParamKind.Normal, R.Path.Int, new R.Name.Normal("x"))),
+                        Arr(new R.Param(R.ParamKind.Default, R.Path.Int, new R.Name.Normal("x"))),
                         RBlock(
                             new R.ExpStmt(new R.AssignExp(
                                 new R.StructMemberLoc(R.ThisLoc.Instance, new R.Path.Nested(SPath(), new R.Name.Normal("x"), R.ParamHash.None, default)),
@@ -344,7 +344,7 @@ var s = S(3);       // but can do this
                         new R.Path.Nested(
                             SPath(),
                             R.Name.Constructor.Instance,
-                            new R.ParamHash(0, Arr(new R.ParamHashEntry(R.ParamKind.Normal, R.Path.Int))),
+                            new R.ParamHash(0, Arr(new R.ParamHashEntry(R.ParamKind.Default, R.Path.Int))),
                             default
                         ),
                         Arr<R.Argument>(new R.Argument.Normal(RInt(3)))
@@ -398,7 +398,7 @@ s.x = 3;
                     Arr(new R.StructConstructorDecl(
                         R.AccessModifier.Public,
                         default,
-                        Arr(new R.Param(R.ParamKind.Normal, R.Path.Int, new R.Name.Normal("x"))),
+                        Arr(new R.Param(R.ParamKind.Default, R.Path.Int, new R.Name.Normal("x"))),
                         RBlock(
                             new R.ExpStmt(new R.AssignExp(
                                 new R.StructMemberLoc(R.ThisLoc.Instance, new R.Path.Nested(SPath(), new R.Name.Normal("x"), R.ParamHash.None, default)),
@@ -422,7 +422,7 @@ s.x = 3;
                         new R.Path.Nested(
                             SPath(),
                             R.Name.Constructor.Instance,
-                            new R.ParamHash(0, Arr(new R.ParamHashEntry(R.ParamKind.Normal, R.Path.Int))),
+                            new R.ParamHash(0, Arr(new R.ParamHashEntry(R.ParamKind.Default, R.Path.Int))),
                             default
                         ),
                         Arr<R.Argument>(new R.Argument.Normal(RInt(2)))
@@ -548,7 +548,7 @@ var i = s.F(2);
                             R.AccessModifier.Public,
                             default,
                             Arr(
-                                new R.Param(R.ParamKind.Normal, R.Path.Int, new R.Name.Normal("x"))
+                                new R.Param(R.ParamKind.Default, R.Path.Int, new R.Name.Normal("x"))
                             ),
                             RBlock(
                                 new R.ExpStmt(new R.AssignExp(
@@ -558,7 +558,7 @@ var i = s.F(2);
                             )
                     )),
 
-                    Arr<R.FuncDecl>(new R.NormalFuncDecl(default, new R.Name.Normal("F"), true, default, Arr(new R.Param(R.ParamKind.Normal, R.Path.Int, new R.Name.Normal("y"))), RBlock(
+                    Arr<R.FuncDecl>(new R.NormalFuncDecl(default, new R.Name.Normal("F"), true, default, Arr(new R.Param(R.ParamKind.Default, R.Path.Int, new R.Name.Normal("y"))), RBlock(
                         new R.ReturnStmt(new R.ReturnInfo.Expression(new R.CallInternalBinaryOperatorExp(
                             R.InternalBinaryOperator.Add_Int_Int_Int,
                             new R.LoadExp(new R.StructMemberLoc(R.ThisLoc.Instance, SPath().Child("x"))),
