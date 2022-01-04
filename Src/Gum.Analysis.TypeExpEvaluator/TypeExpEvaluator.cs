@@ -22,7 +22,7 @@ namespace Gum.IR0Translator
         }
 
         M.Name internalModuleName;
-        ImmutableArray<IModuleDecl> externalInfos;
+        ImmutableArray<ModuleDeclSymbol> referenceModules;
         TypeSkeletonRepository skelRepo;
         ILogger logger;
         
@@ -33,7 +33,7 @@ namespace Gum.IR0Translator
         public static TypeExpInfoService Evaluate(
             M.Name internalModuleName,
             S.Script script,
-            ImmutableArray<IModuleDecl> externalInfos,            
+            ImmutableArray<ModuleDeclSymbol> externalInfos,
             ILogger logger)
         {
             var skelRepo = TypeSkeletonCollector.Collect(script);
@@ -69,7 +69,7 @@ namespace Gum.IR0Translator
         TypeExpEvaluator(M.Name internalModuleName, ImmutableArray<IModuleDecl> externalInfos, TypeSkeletonRepository skelRepo, ILogger logger)
         {
             this.internalModuleName = internalModuleName;
-            this.externalInfos = externalInfos;
+            this.referenceModules = externalInfos;
             this.skelRepo = skelRepo;
             this.logger = logger;
             
@@ -130,17 +130,16 @@ namespace Gum.IR0Translator
             throw new UnreachableCodeException();
         }
 
-        static TypeExpInfoKind GetTypeExpInfoKind(IModuleTypeDecl typeInfo)
+        static TypeExpInfoKind GetTypeExpInfoKind(ITypeDeclSymbolNode node)
         {
-            switch(typeInfo)
+            return node switch
             {
-                case IModuleStructDecl: return TypeExpInfoKind.Struct;
-                case IModuleEnumDecl: return TypeExpInfoKind.Enum;
-                case IModuleEnumElemDecl: return TypeExpInfoKind.EnumElem;
-                case IModuleClassDecl : return TypeExpInfoKind.Class;
-            }
-
-            throw new UnreachableCodeException();
+                ClassDeclSymbol => TypeExpInfoKind.Class,
+                StructDeclSymbol => TypeExpInfoKind.Struct,
+                EnumDeclSymbol => TypeExpInfoKind.Enum,
+                EnumElemDeclSymbol => TypeExpInfoKind.EnumElem,
+                _ => throw new UnreachableCodeException()
+            };
         }        
         
         IEnumerable<TypeExpResult> GetTypeExpInfos(M.NamespacePath? ns, M.Name name, ImmutableArray<M.TypeId> typeArgs)
@@ -158,13 +157,13 @@ namespace Gum.IR0Translator
             }
 
             // 3-2. Reference에서 검색, GlobalTypeSkeletons에 이름이 겹치지 않아야 한다.. ModuleInfo들 끼리도 이름이 겹칠 수 있다
-            foreach (var externalInfo in externalInfos)
+            foreach (var referenceModule in referenceModules)
             {
-                var typeInfo = externalInfo.GetType(declPath);
+                var typeInfo = referenceModule.GetType(declPath);
                 
                 if (typeInfo != null)
                 {
-                    var mtype = new M.RootTypeId(externalInfo.GetName(), ns, name, typeArgs);
+                    var mtype = new M.RootTypeId(referenceModule.GetName(), ns, name, typeArgs);
                     var kind = GetTypeExpInfoKind(typeInfo);
                     var typeExpInfo = new MTypeTypeExpInfo(mtype, kind, false);
                     yield return new ExternalTypeExpResult(typeExpInfo, typeInfo);

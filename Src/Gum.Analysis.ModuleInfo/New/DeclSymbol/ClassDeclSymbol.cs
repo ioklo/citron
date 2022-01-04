@@ -20,7 +20,7 @@ namespace Gum.Analysis
     [ImplementIEquatable]
     public partial class ClassDeclSymbol : ITypeDeclSymbolNode
     {
-        IHolder<IDeclSymbolNode> outer;
+        IHolder<IDeclSymbolNode> outerHolder;
 
         M.Name name;
         ImmutableArray<string> typeParams;
@@ -28,14 +28,12 @@ namespace Gum.Analysis
 
         ImmutableArray<ClassMemberTypeDeclSymbol> typeDecls;
         ImmutableArray<ClassMemberFuncDeclSymbol> funcDecls;
-        IHolder<ImmutableArray<ClassConstructorDeclSymbol>> constructorDecls; // 추가적으로 생성되는 것들 때문에 이렇게 했는데 약간 크게 잡은 경향이 있다
+        IHolder<ImmutableArray<ClassConstructorDeclSymbol>> constructorDeclsHolder; // 추가적으로 생성되는 것들 때문에 이렇게 했는데 약간 크게 잡은 경향이 있다
         ImmutableArray<ClassMemberVarDeclSymbol> varDecls;
 
         // Class선언 시점 typeEnv를 적용한 baseClass
-        IHolder<ClassSymbol> baseClass;        
-        IHolder<ClassConstructorDeclSymbol?> trivialConstructor;
-
-        ClassDeclSymbolBuildState state;
+        IHolder<ClassSymbol> baseClassHolder;        
+        IHolder<ClassConstructorDeclSymbol?> trivialConstructorHolder;
 
         [ExcludeComparison]
         TypeDict<ClassMemberTypeDeclSymbol> typeDict;
@@ -54,66 +52,66 @@ namespace Gum.Analysis
             IHolder<ImmutableArray<ClassConstructorDeclSymbol>> constructorDecls,
             IHolder<ClassConstructorDeclSymbol?> trivialConstructor)
         {
-            this.outer = outer;
+            this.outerHolder = outer;
             this.name = name;
             this.typeParams = typeParams;
-            this.baseClass = baseClass;
+            this.baseClassHolder = baseClass;
             this.interfaceTypes = interfaceTypes;
             this.typeDecls = typeDecls;
             this.funcDecls = funcDecls;            
             this.varDecls = varDecls;
 
-            this.constructorDecls = constructorDecls;
-            this.trivialConstructor = trivialConstructor;
-            this.state = ClassDeclSymbolBuildState.BeforeSetBaseAndBuildTrivialConstructor;
+            this.constructorDeclsHolder = constructorDecls;
+            this.trivialConstructorHolder = trivialConstructor;
 
             this.typeDict = TypeDict.Build(typeDecls);
             this.funcDict = FuncDict.Build(funcDecls);
         }
         
         // trivial constructor를 하려면
-        public void EnsureSetBaseAndBuildTrivialConstructor(IQueryModuleTypeDecl query) // throws InvalidOperationException
-        {
-            if (state == ClassDeclSymbolBuildState.Completed) return;
-            if (state == ClassDeclSymbolBuildState.DuringSetBaseAndBuildTrivialConstructor)
-                throw new InvalidOperationException();
+        // TODO: 임시 주석, InternalModuleInfoBuilder로 가야한다
+        //public void EnsureSetBaseAndBuildTrivialConstructor(IQueryModuleTypeDecl query) // throws InvalidOperationException
+        //{
+        //    if (state == ClassDeclSymbolBuildState.Completed) return;
+        //    if (state == ClassDeclSymbolBuildState.DuringSetBaseAndBuildTrivialConstructor)
+        //        throw new InvalidOperationException();
 
-            Debug.Assert(state == ClassDeclSymbolBuildState.BeforeSetBaseAndBuildTrivialConstructor);
-            state = ClassDeclSymbolBuildState.DuringSetBaseAndBuildTrivialConstructor;
+        //    Debug.Assert(state == ClassDeclSymbolBuildState.BeforeSetBaseAndBuildTrivialConstructor);
+        //    state = ClassDeclSymbolBuildState.DuringSetBaseAndBuildTrivialConstructor;
 
-            // base 클래스가 있다면
-            if (baseClassId != null)
-            {
-                // class B<T>
-                // {
-                //     public B(T t) { } // trivial
-                // }
-                // class C : B<int> { }
+        //    // base 클래스가 있다면
+        //    if (baseClassId != null)
+        //    {
+        //        // class B<T>
+        //        // {
+        //        //     public B(T t) { } // trivial
+        //        // }
+        //        // class C : B<int> { }
 
-                baseClass = query.GetClass(baseClassId);
-            }
+        //        baseClass = query.GetClass(baseClassId);
+        //    }
 
-            var baseTrivialConstructor = baseClass?.GetTrivialConstructor();
+        //    var baseTrivialConstructor = baseClass?.GetTrivialConstructor();
 
-            // baseClass가 있고, TrivialConstructor가 없는 경우 => 안 만들고 진행
-            // baseClass가 있고, TrivialConstructor가 있는 경우 => 진행
-            // baseClass가 없는 경우 => 없이 만들고 진행 
-            if (baseTrivialConstructor != null || baseClassId == null)
-            {
-                // 같은 인자의 생성자가 없으면 Trivial을 만든다
-                if (SymbolMisc.GetConstructorHasSameParamWithTrivial(baseTrivialConstructor, constructorDecls, varDecls) == null)
-                {
-                    trivialConstructor = SymbolMisc.MakeTrivialConstructorDecl(this, baseTrivialConstructor, varDecls);
-                    constructorDecls = constructorDecls.Add(trivialConstructor);
-                }
-            }
+        //    // baseClass가 있고, TrivialConstructor가 없는 경우 => 안 만들고 진행
+        //    // baseClass가 있고, TrivialConstructor가 있는 경우 => 진행
+        //    // baseClass가 없는 경우 => 없이 만들고 진행 
+        //    if (baseTrivialConstructor != null || baseClassId == null)
+        //    {
+        //        // 같은 인자의 생성자가 없으면 Trivial을 만든다
+        //        if (SymbolMisc.GetConstructorHasSameParamWithTrivial(baseTrivialConstructor, constructorDecls, varDecls) == null)
+        //        {
+        //            trivialConstructor = SymbolMisc.MakeTrivialConstructorDecl(this, baseTrivialConstructor, varDecls);
+        //            constructorDecls = constructorDecls.Add(trivialConstructor);
+        //        }
+        //    }
 
-            state = ClassDeclSymbolBuildState.Completed;
-        }
+        //    state = ClassDeclSymbolBuildState.Completed;
+        //}
 
         public ClassConstructorDeclSymbol? GetDefaultConstructorDecl()
         {
-            foreach (var decl in constructorDecls)
+            foreach (var decl in constructorDeclsHolder.GetValue())
             {
                 if (decl.GetParameterCount() == 0)
                     return decl;
@@ -134,20 +132,18 @@ namespace Gum.Analysis
 
         public ClassConstructorDeclSymbol? GetTrivialConstructor()
         {
-            Debug.Assert(state == ClassDeclSymbolBuildState.Completed);
-            return trivialConstructor;
+            return trivialConstructorHolder.GetValue();
         }        
 
         // Info자체에는 environment가 없으므로, typeEnv가 있어야
         public ClassSymbol? GetBaseClass()
-        {
-            Debug.Assert(state == ClassDeclSymbolBuildState.Completed);
-            return baseClass;
+        {            
+            return baseClassHolder.GetValue();
         }
         
         public ImmutableArray<ClassConstructorDeclSymbol> GetConstructors()
         {
-            return constructorDecls;
+            return constructorDeclsHolder.GetValue();
         }
 
         public ClassMemberFuncDeclSymbol? GetMemberFunc(M.Name name, int typeParamCount, M.ParamTypes paramTypes)
@@ -192,7 +188,7 @@ namespace Gum.Analysis
 
         public IDeclSymbolNode? GetOuterDeclNode()
         {
-            return outer.GetValue();
+            return outerHolder.GetValue();
         }
 
         public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, M.ParamTypes paramTypes)

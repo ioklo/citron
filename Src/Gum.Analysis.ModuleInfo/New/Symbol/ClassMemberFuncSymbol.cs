@@ -27,9 +27,7 @@ namespace Gum.Analysis
 
         // cached typeEnv
         TypeEnv typeEnv;
-
-        public bool IsStatic { get => !decl.IsInstanceFunc(); }
-
+        
         internal ClassMemberFuncSymbol(SymbolFactory factory, ClassSymbol outer, ClassMemberFuncDeclSymbol decl, ImmutableArray<ITypeSymbolNode> typeArgs)
         {
             this.factory = factory;
@@ -126,6 +124,11 @@ namespace Gum.Analysis
         public ImmutableArray<ITypeSymbolNode> GetTypeArgs()
         {
             return typeArgs;
+        }
+
+        public bool IsStatic()
+        {
+            return decl.IsStatic();
         }
     }
 }

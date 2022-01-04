@@ -19,10 +19,10 @@ namespace Gum.IR0Translator
         {
             Debug.Assert(!referenceModules.Contains(RuntimeModuleDecl.Instance));
 
-            var externalModuleInfoRepo = new ExternalModuleDeclRepository(referenceModules.Add(RuntimeModuleDecl.Instance));
+            var referenceModuleSymbols = ModuleDeclSymbolBuilder.Build(referenceModules);
 
             // Make syntax based Analyzer (almost translation), 결과는 ir0가 아니라 ir0와 정보를 갖고 있는 트리, 나중에 ir0로 export할 수 있다
-            var rscript = Analyzer.Analyze(sscript, moduleName, externalModuleInfoRepo, logger);
+            var rscript = Analyzer.Analyze(sscript, moduleName, referenceModuleSymbols, logger);
             if (rscript == null) return null;
 
             if (logger.HasError)

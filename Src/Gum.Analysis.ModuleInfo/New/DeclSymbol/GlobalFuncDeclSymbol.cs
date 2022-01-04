@@ -4,6 +4,7 @@ using R = Gum.IR0;
 using Pretune;
 using System;
 using M = Gum.CompileTime;
+using Gum.Infra;
 
 namespace Gum.Analysis
 {
@@ -11,14 +12,14 @@ namespace Gum.Analysis
     public partial class GlobalFuncDeclSymbol : IDeclSymbolNode
     {
         // module or namespace
-        ITopLevelDeclSymbolNode outer;
+        IHolder<ITopLevelDeclSymbolNode> outerHolder;
 
         M.AccessModifier accessModifier;
-        FuncReturn @return;
+        IHolder<FuncReturn> returnHolder;
         M.Name name;
 
         ImmutableArray<string> typeParams;
-        ImmutableArray<FuncParameter> parameters;
+        IHolder<ImmutableArray<FuncParameter>> parametersHolder;
 
         bool bInternal;
 
@@ -29,22 +30,22 @@ namespace Gum.Analysis
 
         public DeclSymbolNodeName GetNodeName()
         {
-            return new DeclSymbolNodeName(name, typeParams.Length, parameters.MakeMParamTypes());
+            return new DeclSymbolNodeName(name, typeParams.Length, parametersHolder.GetValue().MakeMParamTypes());
         }
         
         public int GetParameterCount()
         {
-            return parameters.Length;
+            return parametersHolder.GetValue().Length;
         }
 
         public FuncParameter GetParameter(int index)
         {
-            return parameters[index];
+            return parametersHolder.GetValue()[index];
         }
 
         public FuncReturn GetReturn()
         {
-            return @return;
+            return returnHolder.GetValue();
         }
 
         public ImmutableArray <string> GetTypeParams()
@@ -59,7 +60,7 @@ namespace Gum.Analysis
 
         public IDeclSymbolNode? GetOuterDeclNode()
         {
-            return outer;
+            return outerHolder.GetValue();
         }
 
         // 함수는 자식을 갖지 않는다
@@ -71,7 +72,7 @@ namespace Gum.Analysis
         public R.Path.Nested MakeRPath(R.Path.Normal outerPath, ImmutableArray<R.Path> typeArgs)
         {
             var rname = RItemFactory.MakeName(name);
-            var paramHash = new R.ParamHash(typeArgs.Length, parameters.MakeParamHashEntries());
+            var paramHash = new R.ParamHash(typeArgs.Length, parametersHolder.GetValue().MakeParamHashEntries());
             return new R.Path.Nested(outerPath, rname, paramHash, typeArgs);
         }
     }

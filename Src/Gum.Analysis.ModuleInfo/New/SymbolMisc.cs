@@ -1,4 +1,5 @@
 ﻿using Gum.Collections;
+using Gum.Infra;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -99,7 +100,7 @@ namespace Gum.Analysis
             }
 
             // trivial constructor를 만듭니다
-            return new ClassConstructorDeclSymbol(new Holder<ClassDeclSymbol>(outer), M.AccessModifier.Public, builder.MoveToImmutable());
+            return new ClassConstructorDeclSymbol(new Holder<ClassDeclSymbol>(outer), M.AccessModifier.Public, new Holder<ImmutableArray<FuncParameter>>(builder.MoveToImmutable()), true);
         }
 
         public static StructConstructorDeclSymbol? GetConstructorHasSameParamWithTrivial(
@@ -156,6 +157,7 @@ namespace Gum.Analysis
             return true;
         }
 
+        // baseConstructor가 만들어졌다는 가정하에 짜여짐 (인자에서 요구하는 형태)
         public static StructConstructorDeclSymbol MakeTrivialConstructorDecl(
             StructDeclSymbol outer,
             StructConstructorSymbol? baseConstructor,
@@ -190,7 +192,7 @@ namespace Gum.Analysis
             }
 
             // trivial constructor를 만듭니다
-            return new StructConstructorDeclSymbol(new Lazy<StructDeclSymbol>(outer), M.AccessModifier.Public, builder.MoveToImmutable());
+            return new StructConstructorDeclSymbol(new Holder<StructDeclSymbol>(outer), M.AccessModifier.Public, new Holder<ImmutableArray<FuncParameter>>(builder.MoveToImmutable()), true);
         }
     }
 }

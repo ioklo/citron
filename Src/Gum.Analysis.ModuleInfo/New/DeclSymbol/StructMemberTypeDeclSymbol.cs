@@ -7,12 +7,12 @@ namespace Gum.Analysis
 {
     public class StructMemberTypeDeclSymbol : IDeclSymbolNode
     {
-        IHolder<StructDeclSymbol> outer;
+        M.AccessModifier accessModifier;
         ITypeDeclSymbolNode typeDecl;
 
-        public StructMemberTypeDeclSymbol(IHolder<StructDeclSymbol> outer, ITypeDeclSymbolNode typeDecl)
+        public StructMemberTypeDeclSymbol(M.AccessModifier accessModifier, ITypeDeclSymbolNode typeDecl)
         {
-            this.outer = outer;
+            this.accessModifier = accessModifier;
             this.typeDecl = typeDecl;
         }
 
@@ -23,7 +23,7 @@ namespace Gum.Analysis
 
         public IDeclSymbolNode? GetOuterDeclNode()
         {
-            return outer.GetValue();
+            return typeDecl.GetOuterDeclNode();
         }
 
         public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, M.ParamTypes paramTypes)

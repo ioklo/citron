@@ -80,12 +80,12 @@ namespace Gum.IR0Translator
         public static R.Script? Analyze(
             S.Script sscript,
             M.Name moduleName,
-            ExternalModuleDeclRepository externalModuleInfoRepo,
+            ImmutableArray<ModuleDeclSymbol> referenceModuleSymbols,
             ILogger logger)
         {
             try
             {
-                var typeExpInfoService = TypeExpEvaluator.Evaluate(moduleName, sscript, externalModuleInfoRepo, logger);
+                var typeExpInfoService = TypeExpEvaluator.Evaluate(moduleName, sscript, referenceModuleSymbols, logger);
 
                 var (internalModuleInfo, itemValueFactory, globalItemValueFactory) = InternalModuleInfoBuilder.Build(
                     moduleName, sscript, typeExpInfoService, externalModuleInfoRepo

@@ -10,13 +10,15 @@ namespace Gum.Analysis
     {
         IHolder<StructDeclSymbol> outer;
         M.AccessModifier accessModifier;
-        ImmutableArray<FuncParameter> parameters;
+        IHolder<ImmutableArray<FuncParameter>> parametersHolder;
+        bool bTrivial;
 
-        internal StructConstructorDeclSymbol(IHolder<StructDeclSymbol> outer, M.AccessModifier accessModifier, ImmutableArray<FuncParameter> parameters)
+        public StructConstructorDeclSymbol(IHolder<StructDeclSymbol> outer, M.AccessModifier accessModifier, IHolder<ImmutableArray<FuncParameter>> parametersHolder, bool bTrivial)
         {
             this.outer = outer;
             this.accessModifier = accessModifier;
-            this.parameters = parameters;
+            this.parametersHolder = parametersHolder;
+            this.bTrivial = bTrivial;
         }
 
         public IDeclSymbolNode? GetOuterDeclNode()
@@ -26,7 +28,7 @@ namespace Gum.Analysis
 
         public DeclSymbolNodeName GetNodeName()
         {
-            return new DeclSymbolNodeName(M.Name.Constructor, 0, parameters.MakeMParamTypes());
+            return new DeclSymbolNodeName(M.Name.Constructor, 0, parametersHolder.GetValue().MakeMParamTypes());
         }
 
         public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, M.ParamTypes paramTypes)
@@ -36,18 +38,18 @@ namespace Gum.Analysis
 
         public R.Path.Nested MakeRPath(R.Path.Normal outer)
         {
-            var paramHash = new R.ParamHash(0, parameters.MakeParamHashEntries());
+            var paramHash = new R.ParamHash(0, parametersHolder.GetValue().MakeParamHashEntries());
             return new R.Path.Nested(outer, R.Name.Constructor.Instance, paramHash, default);
         }
 
         public int GetParameterCount()
         {
-            return parameters.Length;
+            return parametersHolder.GetValue().Length;
         }
 
         public FuncParameter GetParameter(int index)
         {
-            return parameters[index];
+            return parametersHolder.GetValue()[index];
         }
     }
 }

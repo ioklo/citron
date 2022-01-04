@@ -148,10 +148,10 @@ namespace Gum.Analysis
                 if (funcName.Name.Equals(memberName) &&
                     typeParamCount <= funcName.TypeParamCount)
                 {
-                    bool bInstance = memberFunc.IsInstanceFunc();
+                    bool bStatic = memberFunc.IsStatic();
 
-                    bHaveInstance |= bInstance;
-                    bHaveStatic |= !bInstance;
+                    bHaveInstance |= !bStatic;
+                    bHaveStatic |= bStatic;
 
                     builder.Add(typeArgs => factory.MakeClassMemberFunc(this, memberFunc, typeArgs));
                 }
