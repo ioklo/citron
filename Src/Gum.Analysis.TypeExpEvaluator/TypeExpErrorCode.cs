@@ -1,4 +1,4 @@
-﻿namespace Gum.IR0Translator
+﻿namespace Gum.Analysis
 {
     public enum TypeExpErrorCode
     {
@@ -9,7 +9,7 @@
         T0104_IdTypeExp_TypeNotFound,
         T0105_IdTypeExp_TypeVarCantApplyTypeArgs,
 
-        T0201_MemberTypeExp_TypeIsNotNormalType,
+        // T0201_MemberTypeExp_TypeIsNotNormalType,
         T0202_MemberTypeExp_MemberTypeNotFound,
         T0203_MemberTypeExp_ExpShouldNotBeType,
     }

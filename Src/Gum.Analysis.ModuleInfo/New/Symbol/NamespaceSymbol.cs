@@ -29,7 +29,7 @@ namespace Gum.Analysis
         public ISymbolNode? GetOuter()
         {
             return outer;
-        }
+        }        
 
         public (M.Name Module, M.NamespacePath? NamespacePath) GetRootPath()
         {

@@ -85,12 +85,16 @@ namespace Gum.IR0Translator
         {
             try
             {
+                // S.TypeExp => TypeExpInfo
                 var typeExpInfoService = TypeExpEvaluator.Evaluate(moduleName, sscript, referenceModuleSymbols, logger);
 
+                InternalDeclSymbolBuilder.Build(moudleName, sscript, referenceModuleSymbols);
+
                 var (internalModuleInfo, itemValueFactory, globalItemValueFactory) = InternalModuleInfoBuilder.Build(
-                    moduleName, sscript, typeExpInfoService, externalModuleInfoRepo
+                    moduleName, sscript, typeExpInfoService, referenceModuleSymbols
                 );
 
+                // InternalModuleBuilder에서는 TypeSymbolInfoService(S.TypeExp => ITypeSymbolNode)를 리턴한다
                 var rmoduleName = RItemFactory.MakeModuleName(moduleName);
 
                 var globalContext = new GlobalContext(itemValueFactory, globalItemValueFactory, typeExpInfoService, logger);

@@ -9,24 +9,25 @@ using Pretune;
 namespace Gum.Syntax
 {
     [AutoConstructor, ImplementIEquatable]
-    public partial struct EnumElementField
+    public partial struct EnumElemMemberVarDecl : ISyntaxNode
     {
         public TypeExp Type { get; }
         public string Name { get; }
     }
-
+    
     [AutoConstructor, ImplementIEquatable]
-    public partial class EnumDeclElement : ISyntaxNode
+    public partial class EnumElemDecl : ISyntaxNode
     {
         public string Name { get; }
-        public ImmutableArray<EnumElementField> Fields { get; }
+        public ImmutableArray<EnumElemMemberVarDecl> MemberVars { get; }
     }
 
     [AutoConstructor, ImplementIEquatable]
     public partial class EnumDecl : TypeDecl
     {
+        public AccessModifier? AccessModifier { get; }
         public string Name { get; }
         public ImmutableArray<string> TypeParams { get; }
-        public ImmutableArray<EnumDeclElement> Elems { get; }
+        public ImmutableArray<EnumElemDecl> Elems { get; }
     }
 }

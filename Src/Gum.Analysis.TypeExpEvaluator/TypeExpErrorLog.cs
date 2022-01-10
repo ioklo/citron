@@ -1,7 +1,7 @@
 ﻿using Gum.Log;
 using Gum.Syntax;
 
-namespace Gum.IR0Translator
+namespace Gum.Analysis
 {
     class TypeExpErrorLog : ILog
     {

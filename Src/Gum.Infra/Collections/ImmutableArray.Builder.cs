@@ -36,9 +36,19 @@ namespace Gum.Collections
                 builder.AddRange(items);
             }
 
+            public ICollection<T> AsCollection()
+            {
+                return builder;
+            }
+
             public IEnumerable<T> AsEnumerable()
             {
                 return builder;
+            }
+
+            public T this[int index]
+            {
+                get { return builder[index]; }
             }
         }
     }

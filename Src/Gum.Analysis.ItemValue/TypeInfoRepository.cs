@@ -34,7 +34,7 @@ namespace Gum.Analysis
             return null;
         }
         
-        IModuleItemDecl? GetItem(M.ItemPath path)
+        IModuleItemDecl? GetItem(M.DeclSymbolPath path)
         {
             if (path.Outer == null)
                 return GetModule(path.Name);
@@ -45,9 +45,9 @@ namespace Gum.Analysis
             return outerItem.GetItem(path.Name, path.TypeParamCount, path.ParamTypes);
         }
 
-        public IModuleTypeDecl? GetType(M.ItemPath path)
+        public ITypeDeclSymbolNode? GetType(M.DeclSymbolPath path)
         {
-            return GetItem(path) as IModuleTypeDecl;
+            return GetItem(path) as ITypeDeclSymbolNode;
         }
     }
 }

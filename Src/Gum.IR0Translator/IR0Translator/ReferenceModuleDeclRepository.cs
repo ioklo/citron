@@ -390,7 +390,7 @@ namespace Gum.Analysis
             var constructorsHolder = new Holder<ImmutableArray<StructConstructorDeclSymbol>>(constructors);
 
             // 미 확정 
-            var baseStructHolder = new Holder<StructSymbol>();
+            var baseStructHolder = new Holder<StructSymbol?>();
             //var interfacesHolder = new Holder<ImmutableArray<InterfaceSymbol>>();
 
             RegisterAfterBuildTask(context =>
@@ -402,6 +402,10 @@ namespace Gum.Analysis
                     // TODO: 에러 처리
                     Debug.Assert(baseStruct != null);
                     baseStructHolder.SetValue(baseStruct);
+                }
+                else
+                {
+                    baseStructHolder.SetValue(null);
                 }
 
                 // 현재 막아놓음

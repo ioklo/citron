@@ -8,7 +8,7 @@ using System.Linq;
 using S = Gum.Syntax;
 using Pretune;
 
-namespace Gum.IR0Translator
+namespace Gum.Analysis
 {
     enum TypeSkeletonKind
     {
@@ -22,24 +22,30 @@ namespace Gum.IR0Translator
     // TODO: Type뿐 아니라 Namespace 등도 여기서
     class TypeSkeleton
     {
-        public TypeDeclPath Path { get; }
+        public DeclSymbolPath Path { get; }
         public TypeSkeletonKind Kind { get; }
         ImmutableDictionary<TypeName, TypeSkeleton> membersByName;
 
-        public TypeSkeleton(TypeDeclPath path, ImmutableArray<TypeSkeleton> members, TypeSkeletonKind kind)
+        public TypeSkeleton(DeclSymbolPath path, ImmutableArray<TypeSkeleton> members, TypeSkeletonKind kind)
         {
             Path = path;
             Kind = kind;
 
             var builder = ImmutableDictionary.CreateBuilder<TypeName, TypeSkeleton>();
             foreach (var member in members)
-                builder.Add(member.Path.Name, member);
+                builder.Add(new TypeName(member.Path.Name, member.Path.TypeParamCount), member);
+
             membersByName = builder.ToImmutable();
         }
         
         public TypeSkeleton? GetMember(Name memberName, int typeParamCount)
         {
             return membersByName.GetValueOrDefault(new TypeName(memberName, typeParamCount));
+        }
+
+        public IEnumerable<TypeSkeleton> GetAllMembers()
+        {
+            return membersByName.Values;
         }
     }
 }

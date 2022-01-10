@@ -82,9 +82,9 @@ enum X
             var expected = new EnumDecl("X",
                 default,
                 Arr(
-                    new EnumDeclElement("First", default),
-                    new EnumDeclElement("Second", Arr(new EnumElementField(SIdTypeExp("int"), "i"))),
-                    new EnumDeclElement("Third", default)
+                    new EnumElemDecl("First", default),
+                    new EnumElemDecl("Second", Arr(new EnumElemMemberVarDecl(SIdTypeExp("int"), "i"))),
+                    new EnumElemDecl("Third", default)
                 )
             );
 

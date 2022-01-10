@@ -36,5 +36,21 @@ namespace Gum.Analysis
 
             return outerNode.GetTotalTypeParamCount() + node.GetTypeParamCount();
         }
+
+        // tree traversal, 못찾으면 null, declPath가 relative path여도 가능하다
+        public static IDeclSymbolNode? GetDeclSymbol(this IDeclSymbolNode node, DeclSymbolPath declPath)
+        {
+            if (declPath.Outer != null)
+            {
+                var outerDeclSymbol = node.GetDeclSymbol(declPath.Outer);
+                if (outerDeclSymbol == null) return null;
+
+                return outerDeclSymbol.GetMemberDeclNode(declPath.Name, declPath.TypeParamCount, declPath.ParamTypes);
+            }
+            else
+            {
+                return node.GetMemberDeclNode(declPath.Name, declPath.TypeParamCount, declPath.ParamTypes);
+            }
+        }
     }
 }

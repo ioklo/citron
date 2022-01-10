@@ -46,11 +46,11 @@ namespace Gum.Analysis
             public IModuleFuncDecl? GetFunc(M.Name name, int typeParamCount, M.ParamTypes paramTypes) => null;
             public ImmutableArray<IModuleFuncDecl> GetFuncs(M.Name name, int minTypeParamCount) => default;
             public ImmutableArray<IModuleFuncDecl> GetMemberFuncs() => default;
-            public ImmutableArray<IModuleTypeDecl> GetMemberTypes() => default;
+            public ImmutableArray<ITypeDeclSymbolNode> GetMemberTypes() => default;
             public ImmutableArray<IModuleMemberVarInfo> GetMemberVars() => default;
             public IModuleNamespaceInfo? GetNamespace(M.Name name) => null;
             public IModuleConstructorDecl? GetTrivialConstructor() => null;
-            public IModuleTypeDecl? GetType(M.Name name, int typeParamCount) => null;
+            public ITypeDeclSymbolNode? GetType(M.Name name, int typeParamCount) => null;
         }
 
         record DummySystemNamespaceInfo : IModuleNamespaceInfo
@@ -68,7 +68,7 @@ namespace Gum.Analysis
                 IModuleFuncDecl? IModuleItemDecl.GetFunc(M.Name name, int typeParamCount, M.ParamTypes paramTypes) => null;
                 ImmutableArray<IModuleFuncDecl> IModuleItemDecl.GetFuncs(M.Name name, int minTypeParamCount) => default;
                 IModuleItemDecl? IModuleItemDecl.GetOuter() => null;
-                IModuleTypeDecl? IModuleItemDecl.GetType(M.Name name, int typeParamCount) => null;
+                ITypeDeclSymbolNode? IModuleItemDecl.GetType(M.Name name, int typeParamCount) => null;
 
                 IModuleNamespaceInfo? IModuleItemDecl.GetNamespace(M.Name name)
                 {
@@ -90,7 +90,7 @@ namespace Gum.Analysis
             public IModuleFuncDecl? GetFunc(M.Name name, int typeParamCount, M.ParamTypes paramTypes) => null;
             public ImmutableArray<IModuleFuncDecl> GetFuncs(M.Name name, int minTypeParamCount) => default;
             public IModuleNamespaceInfo? GetNamespace(M.Name name) => null;
-            public IModuleTypeDecl? GetType(M.Name name, int typeParamCount);
+            public ITypeDeclSymbolNode? GetType(M.Name name, int typeParamCount);
         }
 
         public ItemValueFactory(TypeInfoRepository typeInfoRepo, RItemFactory ritemFactory)
@@ -117,12 +117,12 @@ namespace Gum.Analysis
             return MakeTypeValue(new RootItemValueOuter(namespaceInfo), structInfo, default);
         }
 
-        public TypeSymbol MakeTypeValue(TypeSymbol outer, IModuleTypeDecl typeInfo, ImmutableArray<ITypeSymbolNode> typeArgs)
+        public TypeSymbol MakeTypeValue(TypeSymbol outer, ITypeDeclSymbolNode typeInfo, ImmutableArray<ITypeSymbolNode> typeArgs)
         {
             return MakeTypeValue(new NestedItemValueOuter(outer), typeInfo, typeArgs);
         }
 
-        public NormalTypeValue MakeTypeValue(ItemValueOuter outer, IModuleTypeDecl typeInfo, ImmutableArray<ITypeSymbolNode> typeArgs)
+        public NormalTypeValue MakeTypeValue(ItemValueOuter outer, ITypeDeclSymbolNode typeInfo, ImmutableArray<ITypeSymbolNode> typeArgs)
         {
             switch (typeInfo)
             {
@@ -191,7 +191,7 @@ namespace Gum.Analysis
         }        
         
         // ItemValueOuter를 만듭니다
-        ItemValueOuter MakeItemValueOuter(M.ItemPath itemPath)
+        ItemValueOuter MakeItemValueOuter(M.DeclSymbolPath itemPath)
         {
             if (itemPath.Outer != null)
             {
@@ -281,7 +281,7 @@ namespace Gum.Analysis
         }
 
         // global
-        public FuncValue MakeGlobalFunc(M.ItemPath outerPath, IModuleFuncDecl funcInfo, ImmutableArray<ITypeSymbolNode> typeArgs)
+        public FuncValue MakeGlobalFunc(M.DeclSymbolPath outerPath, IModuleFuncDecl funcInfo, ImmutableArray<ITypeSymbolNode> typeArgs)
         {
             var itemValueOuter = MakeItemValueOuter(outerPath);
             return new FuncValue(this, itemValueOuter, funcInfo, typeArgs);

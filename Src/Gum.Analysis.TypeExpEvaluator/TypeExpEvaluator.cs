@@ -11,51 +11,53 @@ using System.Text;
 using S = Gum.Syntax;
 using M = Gum.CompileTime;
 using Gum.Log;
-using Gum.Analysis;
 
-namespace Gum.IR0Translator
+namespace Gum.Analysis
 {
     public partial class TypeExpEvaluator
     {
-        class TypeExpEvaluatorFatalException : Exception
+        class FatalException : Exception
         {
         }
-
-        M.Name internalModuleName;
-        ImmutableArray<ModuleDeclSymbol> referenceModules;
-        TypeSkeletonRepository skelRepo;
-        ILogger logger;
         
-        Dictionary<S.TypeExp, TypeExpInfo> infosByTypeExp;
-        ImmutableDictionary<string, M.TypeVarTypeId> typeEnv;
-        int totalTypeParamCount;
-
         public static TypeExpInfoService Evaluate(
             M.Name internalModuleName,
             S.Script script,
-            ImmutableArray<ModuleDeclSymbol> externalInfos,
+            ImmutableArray<ModuleDeclSymbol> referenceModules,
             ILogger logger)
         {
             var skelRepo = TypeSkeletonCollector.Collect(script);
-            var evaluator = new TypeExpEvaluator(internalModuleName, externalInfos, skelRepo, logger);
+            var typeEnv = TypeEnv.Empty;
+            var infosByTypeExp = new Dictionary<S.TypeExp, TypeExpInfo>();
+            var context = new Context(internalModuleName, referenceModules, skelRepo, logger, infosByTypeExp);
+            var declVisitor = new DeclVisitor(new DeclSymbolId(internalModuleName, null), typeEnv, 0, context);
+            var stmtVisitor = new StmtVisitor(typeEnv, context);
 
-            foreach(var elem in script.Elements)
+            try
             {
-                switch(elem)
+
+                foreach (var elem in script.Elements)
                 {
-                    case S.TypeDeclScriptElement typeDeclElem:
-                        evaluator.VisitTypeDecl(typeDeclElem.TypeDecl);
-                        break;
+                    switch (elem)
+                    {
+                        case S.TypeDeclScriptElement typeDeclElem:
+                            declVisitor.VisitTypeDecl(typeDeclElem.TypeDecl);
+                            break;
 
-                    case S.GlobalFuncDeclScriptElement funcDeclElem:
-                        evaluator.VisitGlobalFuncDecl(funcDeclElem.FuncDecl);
-                        break;
+                        case S.GlobalFuncDeclScriptElement funcDeclElem:
+                            declVisitor.VisitGlobalFuncDecl(funcDeclElem.FuncDecl);
+                            break;
 
-                    case S.StmtScriptElement stmtDeclElem:
-                        evaluator.VisitStmt(stmtDeclElem.Stmt);
-                        break;
+                        case S.StmtScriptElement stmtDeclElem:
+                            stmtVisitor.VisitStmt(stmtDeclElem.Stmt);
+                            break;
+                    }
                 }
-            }            
+            }
+            catch(FatalException)
+            {
+
+            }
 
             if (logger.HasError)
             {
@@ -63,330 +65,228 @@ namespace Gum.IR0Translator
                 throw new InvalidOperationException();
             }
             
-            return new TypeExpInfoService(evaluator.infosByTypeExp.ToImmutableDictionary());
+            return new TypeExpInfoService(infosByTypeExp.ToImmutableDictionary());
         }
 
-        TypeExpEvaluator(M.Name internalModuleName, ImmutableArray<IModuleDecl> externalInfos, TypeSkeletonRepository skelRepo, ILogger logger)
+        struct DeclVisitor
         {
-            this.internalModuleName = internalModuleName;
-            this.referenceModules = externalInfos;
-            this.skelRepo = skelRepo;
-            this.logger = logger;
-            
-            infosByTypeExp = new Dictionary<S.TypeExp, TypeExpInfo>(ReferenceEqualityComparer.Instance);
-            typeEnv = ImmutableDictionary<string, M.TypeVarTypeId>.Empty;
-            totalTypeParamCount = 0;
-        }        
+            DeclSymbolId declId;
+            TypeEnv typeEnv;
+            int totalTypeParamCount;
+            Context context;
 
-        [DoesNotReturn]
-        void Throw(TypeExpErrorCode code, S.ISyntaxNode node, string msg)
-        {
-            logger.Add(new TypeExpErrorLog(code, node, msg));
-            throw new TypeExpEvaluatorFatalException();
-        }
-
-        void AddInfo(S.TypeExp exp, TypeExpInfo info)
-        {
-            infosByTypeExp.Add(exp, info);
-        }
-
-        M.TypeVarTypeId? GetTypeVar(string name)
-        {
-            return typeEnv.GetValueOrDefault(name);
-        }
-
-        void ExecInScope(ImmutableArray<string> typeParams, Action action)
-        {
-            var prevTypeEnv = typeEnv;
-            var prevTotalTypeParamCount = totalTypeParamCount;            
-            
-            foreach (var typeParam in typeParams)
+            public DeclVisitor(DeclSymbolId declId, TypeEnv typeEnv, int totalTypeParamCount, Context context)
             {
-                typeEnv = typeEnv.SetItem(typeParam, new M.TypeVarTypeId(totalTypeParamCount, typeParam));
-                totalTypeParamCount++;
+                this.declId = declId;
+                this.typeEnv = typeEnv;
+                this.totalTypeParamCount = totalTypeParamCount;
+                this.context = context;
+            }
+
+            void VisitEnumElemDecl(S.EnumElemDecl enumDeclElem)
+            {
+                foreach (var param in enumDeclElem.MemberVars)
+                    TypeExpVisitor.Visit(param.Type, typeEnv, context);
             }            
 
-            try
+            void VisitEnumDecl(S.EnumDecl enumDecl)
             {
-                action();
-            }
-            finally
-            {
-                typeEnv = prevTypeEnv;
-                totalTypeParamCount = prevTotalTypeParamCount;
-            }
-        }
+                var newDeclId = declId.Child(new M.Name.Normal(enumDecl.Name), enumDecl.TypeParams.Length, default);
+                var newTypeEnv = typeEnv;
+                var newTotalTypeParamCount = totalTypeParamCount;
 
-        static TypeExpInfoKind GetTypeExpInfoKind(TypeSkeletonKind kind)
-        {
-            switch(kind)
-            {
-                case TypeSkeletonKind.Class: return TypeExpInfoKind.Class;
-                case TypeSkeletonKind.Struct: return TypeExpInfoKind.Struct;
-                case TypeSkeletonKind.Interface: return TypeExpInfoKind.Interface;
-                case TypeSkeletonKind.Enum: return TypeExpInfoKind.Enum;
-            }
-
-            throw new UnreachableCodeException();
-        }
-
-        static TypeExpInfoKind GetTypeExpInfoKind(ITypeDeclSymbolNode node)
-        {
-            return node switch
-            {
-                ClassDeclSymbol => TypeExpInfoKind.Class,
-                StructDeclSymbol => TypeExpInfoKind.Struct,
-                EnumDeclSymbol => TypeExpInfoKind.Enum,
-                EnumElemDeclSymbol => TypeExpInfoKind.EnumElem,
-                _ => throw new UnreachableCodeException()
-            };
-        }        
-        
-        IEnumerable<TypeExpResult> GetTypeExpInfos(M.NamespacePath? ns, M.Name name, ImmutableArray<M.TypeId> typeArgs)
-        {
-            var declPath = new M.RootTypeDeclPath(ns, new M.TypeName(name, typeArgs.Length));
-
-            var typeSkel = skelRepo.GetRootTypeSkeleton(declPath);
-            if (typeSkel != null)
-            {
-                var mtype = new M.RootTypeId(internalModuleName, ns, name, typeArgs);
-                var kind = GetTypeExpInfoKind(typeSkel.Kind);
-
-                var typeExpInfo = new MTypeTypeExpInfo(mtype, kind, true);
-                yield return new InternalTypeExpResult(typeSkel, typeExpInfo);
-            }
-
-            // 3-2. Reference에서 검색, GlobalTypeSkeletons에 이름이 겹치지 않아야 한다.. ModuleInfo들 끼리도 이름이 겹칠 수 있다
-            foreach (var referenceModule in referenceModules)
-            {
-                var typeInfo = referenceModule.GetType(declPath);
-                
-                if (typeInfo != null)
+                foreach (var typeParam in enumDecl.TypeParams)
                 {
-                    var mtype = new M.RootTypeId(referenceModule.GetName(), ns, name, typeArgs);
-                    var kind = GetTypeExpInfoKind(typeInfo);
-                    var typeExpInfo = new MTypeTypeExpInfo(mtype, kind, false);
-                    yield return new ExternalTypeExpResult(typeExpInfo, typeInfo);
+                    newTypeEnv.Add(declId, typeParam, newTotalTypeParamCount);
+                    newTotalTypeParamCount++;
                 }
-            }
-        }        
-       
-        void VisitEnumDeclElement(S.EnumDeclElement enumDeclElem)
-        {
-            foreach (var param in enumDeclElem.Fields)
-                VisitTypeExpOuterMost(param.Type);
-        }
 
-        void VisitEnumDecl(S.EnumDecl enumDecl)
-        {
-            ExecInScope(enumDecl.TypeParams, () =>
-            {
+                var newVisitor = new DeclVisitor(newDeclId, newTypeEnv, newTotalTypeParamCount, context);                
                 foreach (var elem in enumDecl.Elems)
-                {
-                    VisitEnumDeclElement(elem);
-                }
-            });
-        }
-
-        void VisitTypeDecl(S.TypeDecl typeDecl)
-        {
-            switch (typeDecl)
-            {
-                case S.StructDecl structDecl:
-                    VisitStructDecl(structDecl);
-                    break;
-
-                case S.ClassDecl classDecl:
-                    VisitClassDecl(classDecl);
-                    break;
-
-                case S.EnumDecl enumDecl:
-                    VisitEnumDecl(enumDecl);
-                    break;
-
+                    newVisitor.VisitEnumElemDecl(elem);
                 
-
-                default:
-                    throw new UnreachableCodeException();
             }
-        }
 
-        void VisitStructDecl(S.StructDecl structDecl)
-        {
-            ExecInScope(structDecl.TypeParams, () =>
+            public void VisitTypeDecl(S.TypeDecl typeDecl)
             {
-                foreach (var baseType in structDecl.BaseTypes)
-                    VisitTypeExpOuterMost(baseType);
-
-                foreach(var elem in structDecl.MemberDecls)
+                switch (typeDecl)
                 {
-                    switch(elem)
+                    case S.StructDecl structDecl:
+                        VisitStructDecl(structDecl);
+                        break;
+
+                    case S.ClassDecl classDecl:
+                        VisitClassDecl(classDecl);
+                        break;
+
+                    case S.EnumDecl enumDecl:
+                        VisitEnumDecl(enumDecl);
+                        break;
+
+                    default:
+                        throw new UnreachableCodeException();
+                }
+            }            
+
+            void VisitStructDecl(S.StructDecl structDecl)
+            {
+                var newDeclId = declId.Child(new M.Name.Normal(structDecl.Name), structDecl.TypeParams.Length, default);
+                var newTypeEnv = typeEnv;
+                var newTotalTypeParamCount = totalTypeParamCount;
+
+                foreach (var typeParam in structDecl.TypeParams)
+                {
+                    newTypeEnv.Add(declId, typeParam, newTotalTypeParamCount);
+                    newTotalTypeParamCount++;
+                }
+
+                var newVisitor = new DeclVisitor(newDeclId, newTypeEnv, newTotalTypeParamCount, context);
+
+                foreach (var baseType in structDecl.BaseTypes)
+                    TypeExpVisitor.Visit(baseType, newTypeEnv, context);
+
+                foreach (var elem in structDecl.MemberDecls)
+                {
+                    switch (elem)
                     {
                         case S.StructMemberTypeDecl typeDecl:
-                            VisitTypeDecl(typeDecl.TypeDecl);
+                            newVisitor.VisitTypeDecl(typeDecl.TypeDecl);
                             break;
 
                         case S.StructMemberFuncDecl funcDecl:
-                            VisitStructMemberFuncDecl(funcDecl);
+                            newVisitor.VisitStructMemberFuncDecl(funcDecl);
                             break;
 
                         case S.StructMemberVarDecl varDecl:
-                            VisitTypeExpOuterMost(varDecl.VarType);
+                            TypeExpVisitor.Visit(varDecl.VarType, newTypeEnv, context);
                             break;
 
                         case S.StructConstructorDecl constructorDecl:
-                            VisitStructConstructorDecl(constructorDecl);
+                            newVisitor.VisitStructConstructorDecl(constructorDecl);
                             break;
 
                         default:
                             throw new UnreachableCodeException();
                     }
                 }
-            });
-        }
+            }
 
-        void VisitClassDecl(S.ClassDecl classDecl)
-        {
-            ExecInScope(classDecl.TypeParams, () =>
+            void VisitClassDecl(S.ClassDecl classDecl)
             {
+                var newDeclId = declId.Child(new M.Name.Normal(classDecl.Name), classDecl.TypeParams.Length, default);
+                var newTypeEnv = typeEnv;
+                var newTotalTypeParamCount = totalTypeParamCount;
+
+                foreach (var typeParam in classDecl.TypeParams)
+                {
+                    newTypeEnv.Add(declId, typeParam, newTotalTypeParamCount);
+                    newTotalTypeParamCount++;
+                }
+
+                var newVisitor = new DeclVisitor(newDeclId, newTypeEnv, newTotalTypeParamCount, context);
+
                 foreach (var baseType in classDecl.BaseTypes)
-                    VisitTypeExpOuterMost(baseType);
+                    TypeExpVisitor.Visit(baseType, newTypeEnv, context);
 
                 foreach (var elem in classDecl.MemberDecls)
                 {
                     switch (elem)
                     {
                         case S.ClassMemberTypeDecl typeDecl:
-                            VisitTypeDecl(typeDecl.TypeDecl);
+                            newVisitor.VisitTypeDecl(typeDecl.TypeDecl);
                             break;
 
                         case S.ClassMemberFuncDecl funcDecl:
-                            VisitClassMemberFuncDecl(funcDecl);
+                            newVisitor.VisitClassMemberFuncDecl(funcDecl);
                             break;
 
                         case S.ClassMemberVarDecl varDecl:
-                            VisitTypeExpOuterMost(varDecl.VarType);
+                            TypeExpVisitor.Visit(varDecl.VarType, newTypeEnv, context);
                             break;
 
                         case S.ClassConstructorDecl constructorDecl:
-                            VisitClassConstructorDecl(constructorDecl);
+                            newVisitor.VisitClassConstructorDecl(constructorDecl);
                             break;
 
                         default:
                             throw new UnreachableCodeException();
                     }
                 }
-            });
-        }
-
-
-        void VisitGlobalFuncDecl(S.GlobalFuncDecl funcDecl)
-        {   
-            ExecInScope(funcDecl.TypeParams, () =>
-            {
-                VisitTypeExpOuterMost(funcDecl.RetType);
-
-                foreach (var param in funcDecl.Parameters)
-                    VisitTypeExpOuterMost(param.Type);
-
-                VisitStmt(funcDecl.Body);
-            });
-        }
-        
-        void VisitStructMemberFuncDecl(S.StructMemberFuncDecl funcDecl)
-        {
-            ExecInScope(funcDecl.TypeParams, () =>
-            {
-                VisitTypeExpOuterMost(funcDecl.RetType);
-
-                foreach (var param in funcDecl.Parameters)
-                    VisitTypeExpOuterMost(param.Type);
-
-                VisitStmt(funcDecl.Body);
-            });
-        }
-
-        void VisitStructConstructorDecl(S.StructConstructorDecl constructorDecl)
-        {
-            ExecInScope(default, () =>
-            {
-                foreach (var param in constructorDecl.Parameters)
-                    VisitTypeExpOuterMost(param.Type);
-
-                VisitStmt(constructorDecl.Body);
-            });
-        }
-
-        void VisitClassMemberFuncDecl(S.ClassMemberFuncDecl funcDecl)
-        {
-            ExecInScope(funcDecl.TypeParams, () =>
-            {
-                VisitTypeExpOuterMost(funcDecl.RetType);
-
-                foreach (var param in funcDecl.Parameters)
-                    VisitTypeExpOuterMost(param.Type);
-
-                VisitStmt(funcDecl.Body);
-            });
-        }
-
-        void VisitClassConstructorDecl(S.ClassConstructorDecl constructorDecl)
-        {
-            ExecInScope(default, () =>
-            {
-                foreach (var param in constructorDecl.Parameters)
-                    VisitTypeExpOuterMost(param.Type);
-
-                VisitStmt(constructorDecl.Body);
-            });
-        }
-
-        void VisitVarDecl(S.VarDecl varDecl)
-        {
-            VisitTypeExpOuterMost(varDecl.Type);
-
-            foreach (var varDeclElem in varDecl.Elems)
-            {
-                if (varDeclElem.Initializer != null)                
-                    VisitExp(varDeclElem.Initializer.Value.Exp);
             }
-        }
 
-        void VisitStringExpElements(ImmutableArray<S.StringExpElement> elems)
-        {
-            foreach (var elem in elems)
+            public void VisitGlobalFuncDecl(S.GlobalFuncDecl funcDecl)
             {
-                switch (elem)
+                var newTypeEnv = typeEnv;
+                var newTotalTypeParamCount = totalTypeParamCount;
+
+                foreach (var typeParam in funcDecl.TypeParams)
                 {
-                    case S.TextStringExpElement _: break;
-                    case S.ExpStringExpElement expElem: VisitExp(expElem.Exp); break;
-                    default: throw new UnreachableCodeException();
+                    newTypeEnv.Add(declId, typeParam, newTotalTypeParamCount);
+                    newTotalTypeParamCount++;
                 }
-            }
-        }
 
-        ImmutableArray<M.TypeId> VisitTypeArgExps(ImmutableArray<S.TypeExp> typeArgExps)
-        {
-            var builder = ImmutableArray.CreateBuilder<M.TypeId>(typeArgExps.Length);
-            foreach (var typeArgExp in typeArgExps)
+                
+                TypeExpVisitor.Visit(funcDecl.RetType, newTypeEnv, context);
+
+                foreach (var param in funcDecl.Parameters)
+                    TypeExpVisitor.Visit(param.Type, newTypeEnv, context);
+
+                StmtVisitor.Visit(funcDecl.Body, newTypeEnv, context);                
+            }
+
+            void VisitStructMemberFuncDecl(S.StructMemberFuncDecl funcDecl)
             {
-                var typeArgResult = VisitTypeExp(typeArgExp);
+                var newTypeEnv = typeEnv;
+                var newTotalTypeParamCount = totalTypeParamCount;
 
-                var mtypeArg = typeArgResult.GetMType();
+                foreach (var typeParam in funcDecl.TypeParams)
+                {
+                    newTypeEnv.Add(declId, typeParam, newTotalTypeParamCount);
+                    newTotalTypeParamCount++;
+                }
+                
+                TypeExpVisitor.Visit(funcDecl.RetType, newTypeEnv, context);
 
-                if (mtypeArg == null)
-                    throw new TypeExpEvaluatorFatalException();
+                foreach (var param in funcDecl.Parameters)
+                    TypeExpVisitor.Visit(param.Type, newTypeEnv, context);
 
-                builder.Add(mtypeArg);
+                StmtVisitor.Visit(funcDecl.Body, newTypeEnv, context);
             }
 
-            return builder.MoveToImmutable();
-        }
+            void VisitStructConstructorDecl(S.StructConstructorDecl constructorDecl)
+            {   
+                foreach (var param in constructorDecl.Parameters)
+                    TypeExpVisitor.Visit(param.Type, typeEnv, context);
 
-        void VisitTypeArgExpsOuterMost(ImmutableArray<S.TypeExp> typeArgExps)
-        {
-            foreach (var typeArgExp in typeArgExps)
-                VisitTypeExpOuterMost(typeArgExp);
+                StmtVisitor.Visit(constructorDecl.Body, typeEnv, context);
+            }
+
+            void VisitClassMemberFuncDecl(S.ClassMemberFuncDecl funcDecl)
+            {
+                var newTypeEnv = typeEnv;
+                var newTotalTypeParamCount = totalTypeParamCount;
+
+                foreach (var typeParam in funcDecl.TypeParams)
+                {
+                    newTypeEnv.Add(declId, typeParam, newTotalTypeParamCount);
+                    newTotalTypeParamCount++;
+                }
+                
+                TypeExpVisitor.Visit(funcDecl.RetType, newTypeEnv, context);
+
+                foreach (var param in funcDecl.Parameters)
+                    TypeExpVisitor.Visit(param.Type, newTypeEnv, context);
+
+                StmtVisitor.Visit(funcDecl.Body, newTypeEnv, context);
+            }
+
+            void VisitClassConstructorDecl(S.ClassConstructorDecl constructorDecl)
+            {
+                foreach (var param in constructorDecl.Parameters)
+                    TypeExpVisitor.Visit(param.Type, typeEnv, context);
+
+                StmtVisitor.Visit(constructorDecl.Body, typeEnv, context);
+            }
         }
     }
 }

@@ -4,7 +4,6 @@ using Gum.Collections;
 using Gum.Infra;
 using R = Gum.IR0;
 using M = Gum.CompileTime;
-using Gum.CompileTime;
 
 namespace Gum.Analysis
 {
@@ -52,7 +51,7 @@ namespace Gum.Analysis
             throw new NotImplementedException();
         }
 
-        public R.Path MakeGlobalFunc(M.ItemPath outerPath, M.GlobalFuncDecl funcDecl, ImmutableArray<R.Path> rtypeArgs)
+        public R.Path MakeGlobalFunc(DeclSymbolPath outerPath, M.GlobalFuncDecl funcDecl, ImmutableArray<R.Path> rtypeArgs)
         {
             throw new NotImplementedException();
         }

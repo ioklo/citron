@@ -24,15 +24,15 @@ namespace Gum.Analysis
 
         M.Name name;
         ImmutableArray<string> typeParams;
-        IHolder<ImmutableArray<InterfaceSymbol>> interfaceTypes;
+        IHolder<ImmutableArray<InterfaceSymbol>> interfacesHolder;
 
-        ImmutableArray<ClassMemberTypeDeclSymbol> typeDecls;
-        ImmutableArray<ClassMemberFuncDeclSymbol> funcDecls;
-        IHolder<ImmutableArray<ClassConstructorDeclSymbol>> constructorDeclsHolder; // 추가적으로 생성되는 것들 때문에 이렇게 했는데 약간 크게 잡은 경향이 있다
-        ImmutableArray<ClassMemberVarDeclSymbol> varDecls;
+        ImmutableArray<ClassMemberTypeDeclSymbol> memberTypes;
+        ImmutableArray<ClassMemberFuncDeclSymbol> memberFuncs;
+        IHolder<ImmutableArray<ClassConstructorDeclSymbol>> constructorsHolder; // 추가적으로 생성되는 것들 때문에 이렇게 했는데 약간 크게 잡은 경향이 있다
+        ImmutableArray<ClassMemberVarDeclSymbol> memberVars;
 
         // Class선언 시점 typeEnv를 적용한 baseClass
-        IHolder<ClassSymbol> baseClassHolder;        
+        IHolder<ClassSymbol?> baseClassHolder;        
         IHolder<ClassConstructorDeclSymbol?> trivialConstructorHolder;
 
         [ExcludeComparison]
@@ -42,76 +42,35 @@ namespace Gum.Analysis
         FuncDict<ClassMemberFuncDeclSymbol> funcDict;
         
         public ClassDeclSymbol(
-            IHolder<IDeclSymbolNode> outer,
+            IHolder<IDeclSymbolNode> outerHolder,
             M.Name name, ImmutableArray<string> typeParams,
-            IHolder<ClassSymbol> baseClass,
-            IHolder<ImmutableArray<InterfaceSymbol>> interfaceTypes,
-            ImmutableArray<ClassMemberTypeDeclSymbol> typeDecls,
-            ImmutableArray<ClassMemberFuncDeclSymbol> funcDecls,
-            ImmutableArray<ClassMemberVarDeclSymbol> varDecls,
-            IHolder<ImmutableArray<ClassConstructorDeclSymbol>> constructorDecls,
-            IHolder<ClassConstructorDeclSymbol?> trivialConstructor)
+            IHolder<ClassSymbol?> baseClassHolder,
+            IHolder<ImmutableArray<InterfaceSymbol>> interfacesHolder,
+            ImmutableArray<ClassMemberTypeDeclSymbol> memberTypes,
+            ImmutableArray<ClassMemberFuncDeclSymbol> memberFuncs,
+            ImmutableArray<ClassMemberVarDeclSymbol> memberVars,
+            IHolder<ImmutableArray<ClassConstructorDeclSymbol>> constructorDeclsHolder,
+            IHolder<ClassConstructorDeclSymbol?> trivialConstructorHolder)
         {
-            this.outerHolder = outer;
+            this.outerHolder = outerHolder;
             this.name = name;
             this.typeParams = typeParams;
-            this.baseClassHolder = baseClass;
-            this.interfaceTypes = interfaceTypes;
-            this.typeDecls = typeDecls;
-            this.funcDecls = funcDecls;            
-            this.varDecls = varDecls;
+            this.baseClassHolder = baseClassHolder;
+            this.interfacesHolder = interfacesHolder;
+            this.memberTypes = memberTypes;
+            this.memberFuncs = memberFuncs;
+            this.memberVars = memberVars;
 
-            this.constructorDeclsHolder = constructorDecls;
-            this.trivialConstructorHolder = trivialConstructor;
+            this.constructorsHolder = constructorDeclsHolder;
+            this.trivialConstructorHolder = trivialConstructorHolder;
 
-            this.typeDict = TypeDict.Build(typeDecls);
-            this.funcDict = FuncDict.Build(funcDecls);
+            this.typeDict = TypeDict.Build(memberTypes);
+            this.funcDict = FuncDict.Build(memberFuncs);
         }
-        
-        // trivial constructor를 하려면
-        // TODO: 임시 주석, InternalModuleInfoBuilder로 가야한다
-        //public void EnsureSetBaseAndBuildTrivialConstructor(IQueryModuleTypeDecl query) // throws InvalidOperationException
-        //{
-        //    if (state == ClassDeclSymbolBuildState.Completed) return;
-        //    if (state == ClassDeclSymbolBuildState.DuringSetBaseAndBuildTrivialConstructor)
-        //        throw new InvalidOperationException();
-
-        //    Debug.Assert(state == ClassDeclSymbolBuildState.BeforeSetBaseAndBuildTrivialConstructor);
-        //    state = ClassDeclSymbolBuildState.DuringSetBaseAndBuildTrivialConstructor;
-
-        //    // base 클래스가 있다면
-        //    if (baseClassId != null)
-        //    {
-        //        // class B<T>
-        //        // {
-        //        //     public B(T t) { } // trivial
-        //        // }
-        //        // class C : B<int> { }
-
-        //        baseClass = query.GetClass(baseClassId);
-        //    }
-
-        //    var baseTrivialConstructor = baseClass?.GetTrivialConstructor();
-
-        //    // baseClass가 있고, TrivialConstructor가 없는 경우 => 안 만들고 진행
-        //    // baseClass가 있고, TrivialConstructor가 있는 경우 => 진행
-        //    // baseClass가 없는 경우 => 없이 만들고 진행 
-        //    if (baseTrivialConstructor != null || baseClassId == null)
-        //    {
-        //        // 같은 인자의 생성자가 없으면 Trivial을 만든다
-        //        if (SymbolMisc.GetConstructorHasSameParamWithTrivial(baseTrivialConstructor, constructorDecls, varDecls) == null)
-        //        {
-        //            trivialConstructor = SymbolMisc.MakeTrivialConstructorDecl(this, baseTrivialConstructor, varDecls);
-        //            constructorDecls = constructorDecls.Add(trivialConstructor);
-        //        }
-        //    }
-
-        //    state = ClassDeclSymbolBuildState.Completed;
-        //}
 
         public ClassConstructorDeclSymbol? GetDefaultConstructorDecl()
         {
-            foreach (var decl in constructorDeclsHolder.GetValue())
+            foreach (var decl in constructorsHolder.GetValue())
             {
                 if (decl.GetParameterCount() == 0)
                     return decl;
@@ -143,7 +102,7 @@ namespace Gum.Analysis
         
         public ImmutableArray<ClassConstructorDeclSymbol> GetConstructors()
         {
-            return constructorDeclsHolder.GetValue();
+            return constructorsHolder.GetValue();
         }
 
         public ClassMemberFuncDeclSymbol? GetMemberFunc(M.Name name, int typeParamCount, M.ParamTypes paramTypes)
@@ -158,17 +117,17 @@ namespace Gum.Analysis
 
         public ImmutableArray<ClassMemberFuncDeclSymbol> GetMemberFuncs()
         {
-            return funcDecls;
+            return memberFuncs;
         }
 
         public ImmutableArray<ClassMemberTypeDeclSymbol> GetMemberTypes()
         {
-            return typeDecls;
+            return memberTypes;
         }
 
         public ImmutableArray<ClassMemberVarDeclSymbol> GetMemberVars()
         {
-            return varDecls;
+            return memberVars;
         }
 
         public M.Name GetName()
@@ -199,7 +158,7 @@ namespace Gum.Analysis
             {
                 if (typeParamCount == 0)
                 {
-                    foreach (var varDecl in varDecls)
+                    foreach (var varDecl in memberVars)
                         if (varDecl.GetName().Equals(name))
                             return varDecl;
                 }

@@ -174,7 +174,7 @@ namespace Gum.IR0Translator
                 return internalBinOpQueryService.GetInfos(kind);
             }
 
-            public TypeSymbol MakeTypeValue(ItemValueOuter outer, IModuleTypeDecl typeInfo, ImmutableArray<ITypeSymbolNode> typeArgs)
+            public TypeSymbol MakeTypeValue(ItemValueOuter outer, ITypeDeclSymbolNode typeInfo, ImmutableArray<ITypeSymbolNode> typeArgs)
             {
                 return itemValueFactory.MakeTypeValue(outer, typeInfo, typeArgs);
             }

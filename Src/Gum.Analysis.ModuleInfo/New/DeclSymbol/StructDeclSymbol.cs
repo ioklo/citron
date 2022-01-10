@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using M = Gum.CompileTime;
 
-using static Gum.CompileTime.ItemPathExtensions;
 using Gum.Infra;
 
 namespace Gum.Analysis
@@ -18,7 +17,7 @@ namespace Gum.Analysis
 
         M.Name name;
         ImmutableArray<string> typeParams;
-        IHolder<StructSymbol> baseStructHolder;
+        IHolder<StructSymbol?> baseStructHolder;
         ImmutableArray<StructMemberTypeDeclSymbol> typeDecls;
         ImmutableArray<StructMemberFuncDeclSymbol> funcDecls;        
         ImmutableArray<StructMemberVarDeclSymbol> varDecls;
@@ -29,16 +28,10 @@ namespace Gum.Analysis
         TypeDict<StructMemberTypeDeclSymbol> typeDict;
         FuncDict<StructMemberFuncDeclSymbol> funcDict;
 
-        // state따라 valid 하지 않을수 있다
-        StructSymbol? baseStruct;
-        StructConstructorDeclSymbol? trivialConstructor;
-
-        StructSymbolBuildState state;
-
         public StructDeclSymbol(
             IHolder<IDeclSymbolNode> outer,
             M.Name name, ImmutableArray<string> typeParams,
-            IHolder<StructSymbol> baseStructHolder,
+            IHolder<StructSymbol?> baseStructHolder,
             ImmutableArray<StructMemberTypeDeclSymbol> typeDecls,
             ImmutableArray<StructMemberFuncDeclSymbol> funcDecls,            
             ImmutableArray<StructMemberVarDeclSymbol> memberVars,
@@ -57,10 +50,6 @@ namespace Gum.Analysis
 
             this.typeDict = TypeDict.Build(typeDecls);
             this.funcDict = FuncDict.Build(funcDecls);
-
-            this.baseStruct = null;
-            this.trivialConstructor = null;
-            this.state = StructSymbolBuildState.BeforeSetBaseAndBuildTrivialConstructor;
         }
 
         public ImmutableArray<StructMemberTypeDeclSymbol> GetMemberTypes()
@@ -73,42 +62,6 @@ namespace Gum.Analysis
             return name;
         }
 
-        // TODO: InternalModuleInfoBuilder로 가야합
-        //public void EnsureSetBaseAndBuildTrivialConstructor(IQueryModuleTypeDecl query) // throws InvalidOperation
-        //{
-        //    if (state == StructSymbolBuildState.Completed) return;
-
-        //    if (state == StructSymbolBuildState.DuringSetBaseAndBuildTrivialConstructor)
-        //        throw new InvalidOperationException();
-
-        //    Debug.Assert(state == StructSymbolBuildState.BeforeSetBaseAndBuildTrivialConstructor);
-        //    state = StructSymbolBuildState.DuringSetBaseAndBuildTrivialConstructor;
-
-        //    StructSymbol? baseStruct = null;
-        //    if (baseStructId != null)
-        //    {
-        //        baseStruct = query.GetStruct(baseStructId);
-        //    }
-
-        //    var baseTrivialConstructor = baseStruct?.GetTrivialConstructor();
-
-        //    // baseClass가 있고, TrivialConstructor가 없는 경우 => 안 만들고 진행
-        //    // baseClass가 있고, TrivialConstructor가 있는 경우 => 진행
-        //    // baseClass가 없는 경우 => 없이 만들고 진행 
-        //    if (baseTrivialConstructor != null || baseStruct == null)
-        //    {
-        //        // 같은 인자의 생성자가 없으면 Trivial을 만든다
-        //        if (SymbolMisc.GetConstructorHasSameParamWithTrivial(baseTrivialConstructor, constructorDecls, varDecls) == null)
-        //        {
-        //            trivialConstructor = SymbolMisc.MakeTrivialConstructorDecl(this, baseTrivialConstructor, varDecls);
-        //            constructorDecls = constructorDecls.Add(trivialConstructor);
-        //        }
-        //    }
-
-        //    state = StructSymbolBuildState.Completed;
-        //    return;
-        //}
-
         public ImmutableArray<StructMemberFuncDeclSymbol> GetMemberFuncs()
         {
             return funcDecls;
@@ -116,13 +69,12 @@ namespace Gum.Analysis
 
         public StructConstructorDeclSymbol? GetTrivialConstructor()
         {
-            return trivialConstructor;
+            return trivialConstructorHolder.GetValue();
         }
 
         public StructSymbol? GetBaseStruct()
         {
-            Debug.Assert(state == StructSymbolBuildState.Completed);
-            return baseStruct;
+            return baseStructHolder.GetValue();
         }
 
         public ImmutableArray<StructConstructorDeclSymbol> GetConstructors()

@@ -287,7 +287,11 @@ namespace Gum
 
         internal async ValueTask<ParseResult<EnumDecl>> ParseEnumDeclAsync(ParserContext context)
         {
-            // enum E<T1, T2> { a , b () } 
+            // public enum E<T1, T2> { a , b () } 
+
+            if (!Parse(await ParseAccessModifierAsync(context), ref context, out var accessModifier))
+                return ParseResult<EnumDecl>.Invalid;
+            
             if (!Accept<EnumToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                 return ParseResult<EnumDecl>.Invalid;
 
@@ -300,7 +304,7 @@ namespace Gum
             if (!Accept<LBraceToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                 return ParseResult<EnumDecl>.Invalid;
 
-            var elemsBuilder = ImmutableArray.CreateBuilder<EnumDeclElement>();
+            var elemsBuilder = ImmutableArray.CreateBuilder<EnumElemDecl>();
             while (!Accept<RBraceToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
             {
                 if (0 < elemsBuilder.Count)
@@ -310,7 +314,7 @@ namespace Gum
                 if (!Accept<IdentifierToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context, out var elemName))
                     return ParseResult<EnumDecl>.Invalid;
 
-                var paramsBuilder = ImmutableArray.CreateBuilder<EnumElementField>();
+                var paramsBuilder = ImmutableArray.CreateBuilder<EnumElemMemberVarDecl>();
                 if (Accept<LParenToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                 {
                     while (!Accept<RParenToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
@@ -325,14 +329,14 @@ namespace Gum
                         if (!Accept<IdentifierToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context, out var paramName))
                             return ParseResult<EnumDecl>.Invalid;
 
-                        paramsBuilder.Add(new EnumElementField(typeExp!, paramName.Value));
+                        paramsBuilder.Add(new EnumElemMemberVarDecl(typeExp!, paramName.Value));
                     }
                 }
 
-                elemsBuilder.Add(new EnumDeclElement(elemName.Value, paramsBuilder.ToImmutable()));
+                elemsBuilder.Add(new EnumElemDecl(elemName.Value, paramsBuilder.ToImmutable()));
             }
 
-            return new ParseResult<EnumDecl>(new EnumDecl(enumName.Value, typeParams, elemsBuilder.ToImmutable()), context);
+            return new ParseResult<EnumDecl>(new EnumDecl(accessModifier, enumName.Value, typeParams, elemsBuilder.ToImmutable()), context);
         }
 
         async ValueTask<ParseResult<AccessModifier?>> ParseAccessModifierAsync(ParserContext context)

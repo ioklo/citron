@@ -67,7 +67,7 @@ namespace Gum.IR0Translator.Test
 
             result
 
-            var funcInfo = GlobalItemQueryService.GetGlobalItem(result, M.NamespacePath.Root, new ItemPathEntry(new M.Name.Normal("Func"), 1, paramTypes));
+            var funcInfo = GlobalItemQueryService.GetGlobalDeclSymbol(result, M.NamespacePath.Root, new ItemPathEntry(new M.Name.Normal("Func"), 1, paramTypes));
             Assert.NotNull(funcInfo);
             Debug.Assert(funcInfo != null);
 
@@ -115,7 +115,7 @@ namespace Gum.IR0Translator.Test
                 new M.ParamKindAndType(M.ParamKind.Default, new M.TypeVarTypeId(0, "T"))
             ));
 
-            var funcInfo = GlobalItemQueryService.GetGlobalItem(result, M.NamespacePath.Root, new ItemPathEntry(new M.Name.Normal("Func"), 2, paramTypes));
+            var funcInfo = GlobalItemQueryService.GetGlobalDeclSymbol(result, M.NamespacePath.Root, new ItemPathEntry(new M.Name.Normal("Func"), 2, paramTypes));
             Assert.NotNull(funcInfo);
             Debug.Assert(funcInfo != null);
 
@@ -191,7 +191,7 @@ namespace Gum.IR0Translator.Test
             Assert.NotNull(result);
             Debug.Assert(result != null);
 
-            var structInfo = GlobalItemQueryService.GetGlobalItem(result, M.NamespacePath.Root, new ItemPathEntry(new M.Name.Normal("S"), 1)) as IModuleStructDecl;
+            var structInfo = GlobalItemQueryService.GetGlobalDeclSymbol(result, M.NamespacePath.Root, new ItemPathEntry(new M.Name.Normal("S"), 1)) as IModuleStructDecl;
             Assert.NotNull(structInfo);
             Debug.Assert(structInfo != null);
 
