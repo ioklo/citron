@@ -48,11 +48,6 @@ namespace Gum.Analysis
             return typeEnv;
         }
 
-        public M.NormalTypeId MakeChildTypeId(M.Name name, ImmutableArray<M.TypeId> typeArgs)
-        {
-            throw new InvalidOperationException();
-        }
-
         // for return type covariance
         ISymbolNode ISymbolNode.Apply(TypeEnv typeEnv) => Apply(typeEnv);
         R.Path.Normal ISymbolNode.MakeRPath() => MakeRPath();

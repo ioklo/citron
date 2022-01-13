@@ -66,12 +66,6 @@ namespace Gum.Analysis
             return decl.GetTotalTypeParamCount();
         }
 
-        public M.NormalTypeId MakeChildTypeId(M.Name name, ImmutableArray<M.TypeId> typeArgs)
-        {
-            // TODO: 추후 전용 Exception을 새로 만든다
-            throw new InvalidOperationException();
-        }        
-
         public ImmutableArray<ITypeSymbolNode> GetTypeArgs()
         {
             return default;

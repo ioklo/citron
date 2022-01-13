@@ -22,7 +22,7 @@ namespace Gum.Analysis
             visitor.VisitInterfaceDecl(this);
         }
 
-        public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, M.ParamTypes paramTypes)
+        public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
         {
             return null;
         }
@@ -40,6 +40,11 @@ namespace Gum.Analysis
         public M.Name GetName()
         {
             return name;
+        }
+
+        public void Apply(IDeclSymbolNodeVisitor visitor)
+        {
+            visitor.VisitInterface(this);
         }
     }
 }

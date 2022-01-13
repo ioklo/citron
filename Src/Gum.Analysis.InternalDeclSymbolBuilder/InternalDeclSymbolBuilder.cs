@@ -10,7 +10,6 @@ using System.Runtime.Serialization;
 
 using System.Text;
 using Pretune;
-using Gum.Analysis;
 
 using S = Gum.Syntax;
 using M = Gum.CompileTime;
@@ -18,44 +17,127 @@ using M = Gum.CompileTime;
 using static Gum.Infra.Misc;
 
 namespace Gum.Analysis
-{   
-    public class InternalDeclSymbolBuilder
+{
+    public partial class InternalDeclSymbolBuilder
     {
         // 내부에서 빠져나오는 역할
         class FatalException : Exception
         {
         }
 
-        TypeExpInfoService typeExpInfoService;
-        ImmutableArray<ModuleDeclSymbol> referenceModules;
+        M.Name moduleName;
+        TypeExpInfoService typeExpInfoService;        
+        Dictionary<DeclSymbolId, AfterBuildTaskInfo> afterBuildTaskInfos;
 
-        InternalDeclSymbolBuilder(TypeExpInfoService typeExpInfoService, ImmutableArray<ModuleDeclSymbol> referenceModules)
+        InternalDeclSymbolBuilder(M.Name moduleName, TypeExpInfoService typeExpInfoService)
         {
-            this.typeExpInfoService = typeExpInfoService;
-            this.referenceModules = referenceModules;
+            this.moduleName = moduleName;
+            this.typeExpInfoService = typeExpInfoService;            
+            this.afterBuildTaskInfos = new Dictionary<DeclSymbolId, AfterBuildTaskInfo>();
         }
 
-        class AfterBuildContext
+        [AutoConstructor]
+        partial class AfterBuildContext
         {
+            TypeExpInfoService typeExpInfoService;
+            SymbolLoader loader;
+
+            // reference, internal 가리지 않고 리턴한다
             public ITypeSymbolNode GetTypeSymbolNode(S.TypeExp typeExp) // throw FatalException
             {
-                throw new NotImplementedException();
+                var info = typeExpInfoService.GetTypeExpInfo(typeExp);
+                var symbol = loader.Load(info.GetSymbolId()) as ITypeSymbolNode;
+
+                if (symbol == null)
+                    throw new NotImplementedException(); // 에러 처리
+
+                return symbol;
             }
         }
 
-        // dependency
-        void RegisterAfterBuild(ImmutableArray<DeclSymbolId> dependsOnSymbols, Action<AfterBuildContext> action)
+        [AutoConstructor]
+        partial struct AfterBuildTaskInfo
         {
-            throw new NotImplementedException();
+            public ImmutableArray<DeclSymbolId> DependsOnSymbols { get; }
+            public Action<AfterBuildContext> Action { get; }
         }
 
-        public static ModuleDeclSymbol? Build(M.Name moduleName, S.Script script, TypeExpInfoService typeExpInfoService, ImmutableArray<ModuleDeclSymbol> referenceModules) // nothrow
+        // dependency
+        void RegisterAfterBuildTask(DeclSymbolId thisSymbolId, ImmutableArray<DeclSymbolId> dependsOnSymbols, Action<AfterBuildContext> action)
         {
-            var builder = new InternalDeclSymbolBuilder(typeExpInfoService, referenceModules);
+            // [B, C] => D
+
+            // B => Info(...)
+            // D => Info(D, [B, C])
+
+            afterBuildTaskInfos.Add(thisSymbolId, new AfterBuildTaskInfo(dependsOnSymbols, action));
+        }
+
+        bool IsInternal(DeclSymbolId declId)
+        {
+            return moduleName.Equals(declId.ModuleName);
+        }
+
+        void VisitAfterBuildTask(HashSet<DeclSymbolId> visiting, HashSet<DeclSymbolId> visited, DeclSymbolId declSymbolId, AfterBuildContext context)
+        {
+            if (visited.Contains(declSymbolId))
+                return;
+
+            if (visiting.Contains(declSymbolId))
+                throw new NotImplementedException(); // 에러 처리
+
+            // reference라면 이미 생성되었으므로 건너 뛴다
+            if (IsInternal(declSymbolId))
+            {                
+                visiting.Add(declSymbolId);
+
+                try
+                {
+                    if (!afterBuildTaskInfos.TryGetValue(declSymbolId, out var info))
+                        throw new NotImplementedException(); // 에러 처리
+
+                    // dependency 먼저 방문
+                    foreach (var dependsOnSymbol in info.DependsOnSymbols)
+                        VisitAfterBuildTask(visiting, visited, dependsOnSymbol, context);
+
+                    info.Action.Invoke(context);
+                }
+                finally
+                {
+                    visiting.Remove(declSymbolId);
+                }
+            }
+
+            // 속도를 위해서 ReferenceSymbol이라도 visited리스트에 넣는다
+            visited.Add(declSymbolId);
+        }
+
+        void ExecuteAfterBuildTasks(SymbolLoader symbolLoader)
+        {
+            var context = new AfterBuildContext(typeExpInfoService, symbolLoader);
+            var visiting = new HashSet<DeclSymbolId>();
+            var visited = new HashSet<DeclSymbolId>();
+
+            foreach (var declSymbolId in afterBuildTaskInfos.Keys)
+            {
+                VisitAfterBuildTask(visiting, visited, declSymbolId, context);
+            }
+        }
+
+        public static (SymbolLoader, TypeSymbolInfoService)? Build(M.Name moduleName, S.Script script, SymbolFactory symbolFactory, TypeExpInfoService typeExpInfoService, ImmutableArray<ModuleDeclSymbol> referenceModules) // nothrow
+        {
+            var builder = new InternalDeclSymbolBuilder(moduleName, typeExpInfoService);
 
             try
             {                
-                return builder.BuildScript(moduleName, script);
+                var internalModuleDecl = builder.BuildScript(script); // partial
+
+                var moduleDecls = referenceModules.Add(internalModuleDecl);
+                var symbolLoader = new SymbolLoader(symbolFactory, moduleDecls);
+
+                builder.ExecuteAfterBuildTasks(symbolLoader); // fill
+
+                return (symbolLoader, new TypeSymbolInfoService(typeExpInfoService, symbolLoader));
             }
             catch(FatalException)
             {
@@ -71,7 +153,7 @@ namespace Gum.Analysis
             foreach (var sparam in sparams)
             {
                 var type = context.GetTypeSymbolNode(sparam.Type);
-                if (type == null) throw new FatalException();
+                if (type == null) throw new NotImplementedException(); // 에러 처리
 
                 var paramKind = sparam.Kind switch
                 {
@@ -99,18 +181,18 @@ namespace Gum.Analysis
             };
         }
 
-        ITypeDeclSymbolNode BuildType(IHolder<IDeclSymbolNode> outerHolder, S.TypeDecl decl)
+        ITypeDeclSymbolNode BuildType(DeclSymbolId outerId, IHolder<IDeclSymbolNode> outerHolder, S.TypeDecl decl)
         {
             switch (decl)
             {
                 case S.StructDecl structDecl:
-                    return BuildStruct(outerHolder, structDecl);
+                    return BuildStruct(outerId, outerHolder, structDecl);
 
                 case S.ClassDecl classDecl:
-                    return BuildClass(outerHolder, classDecl);
+                    return BuildClass(outerId, outerHolder, classDecl);
 
                 case S.EnumDecl enumDecl:
-                    return BuildEnum(outerHolder, enumDecl);
+                    return BuildEnum(outerId, outerHolder, enumDecl);
 
                 default:
                     throw new UnreachableCodeException();
@@ -119,8 +201,9 @@ namespace Gum.Analysis
 
         #endregion
 
-        ModuleDeclSymbol BuildScript(M.Name moduleName, S.Script script) // throw FatalException
+        ModuleDeclSymbol BuildScript(S.Script script) // throw FatalException
         {
+            var thisId = new DeclSymbolId(moduleName, null);
             var moduleDeclHolder = new Holder<ModuleDeclSymbol>();
 
             var namespaceDecls = ImmutableArray.CreateBuilder<NamespaceDeclSymbol>();
@@ -134,12 +217,12 @@ namespace Gum.Analysis
                     // TODO: namespace
 
                     case S.TypeDeclScriptElement typeDeclElem:
-                        var globalTypeDecl = BuildGlobalType(moduleDeclHolder, typeDeclElem.TypeDecl);
+                        var globalTypeDecl = BuildGlobalType(thisId, moduleDeclHolder, typeDeclElem.TypeDecl);
                         globalTypeDecls.Add(globalTypeDecl);
                         break;
 
                     case S.GlobalFuncDeclScriptElement globalFuncDeclElem:
-                        var globalFuncDecl = BuildGlobalFunc(moduleDeclHolder, globalFuncDeclElem.FuncDecl);
+                        var globalFuncDecl = BuildGlobalFunc(thisId, moduleDeclHolder, globalFuncDeclElem.FuncDecl);
                         globalFuncDecls.Add(globalFuncDecl);
                         break;
 
@@ -151,6 +234,12 @@ namespace Gum.Analysis
 
             var moduleDecl = new ModuleDeclSymbol(moduleName, namespaceDecls.ToImmutable(), globalTypeDecls.ToImmutable(), globalFuncDecls.ToImmutable());
             moduleDeclHolder.SetValue(moduleDecl);
+
+            // register한 것을 푼다
+
+
+
+
             return moduleDecl;
         }        
         
@@ -166,22 +255,47 @@ namespace Gum.Analysis
             };
         }
 
-        StructMemberTypeDeclSymbol BuildStructMemberType(IHolder<StructDeclSymbol> outerHolder, S.StructMemberTypeDecl decl)
+        StructMemberTypeDeclSymbol BuildStructMemberType(DeclSymbolId outerId, IHolder<StructDeclSymbol> outerHolder, S.StructMemberTypeDecl decl)
         {
-            var type = BuildType(outerHolder, decl.TypeDecl);
+            var type = BuildType(outerId, outerHolder, decl.TypeDecl);
             var syntaxAccessModifier = GetAccessModifier(decl.TypeDecl);
             var accessModifier = MakeStructMemberAccessModifier(syntaxAccessModifier);
 
             return new StructMemberTypeDeclSymbol(accessModifier, type);
         }        
 
-        StructMemberFuncDeclSymbol BuildStructMemberFunc(IHolder<StructDeclSymbol> outerHolder, S.StructMemberFuncDecl decl)
+        ImmutableArray<FuncParamId> MakeFuncParamIds(ImmutableArray<S.FuncParam> sfuncParams)
         {
+            var builder = ImmutableArray.CreateBuilder<FuncParamId>(sfuncParams.Length);
+
+            foreach (var sfuncParam in sfuncParams)
+            {
+                var paramKind = sfuncParam.Kind switch
+                {
+                    S.FuncParamKind.Normal => FuncParameterKind.Default,
+                    S.FuncParamKind.Params => FuncParameterKind.Params,
+                    S.FuncParamKind.Ref => FuncParameterKind.Ref,
+                    _ => throw new UnreachableCodeException()
+                };
+
+                var typeInfo = typeExpInfoService.GetTypeExpInfo(sfuncParam.Type);
+                var typeId = typeInfo.GetSymbolId();
+
+                builder.Add(new FuncParamId(paramKind, typeId));
+            }
+
+            return builder.MoveToImmutable();
+        }
+
+        StructMemberFuncDeclSymbol BuildStructMemberFunc(DeclSymbolId outerId, IHolder<StructDeclSymbol> outerHolder, S.StructMemberFuncDecl decl)
+        {
+            var thisId = outerId.Child(new M.Name.Normal(decl.Name), decl.TypeParams.Length, MakeFuncParamIds(decl.Parameters));
+
             var accessModifier = MakeStructMemberAccessModifier(decl.AccessModifier);
             var returnHolder = new Holder<FuncReturn>();
             var parametersHolder = new Holder<ImmutableArray<FuncParameter>>();
 
-            RegisterAfterBuild(default, context =>
+            RegisterAfterBuildTask(thisId, default, context =>
             {
                 var retType = context.GetTypeSymbolNode(decl.RetType);
                 returnHolder.SetValue(new FuncReturn(decl.IsRefReturn, retType));
@@ -194,32 +308,33 @@ namespace Gum.Analysis
         }        
 
         // 이 노드에서는 var가 여러개 나올수 있으므로 리턴처리하지 않고, 안에서 직접 추가한다
-        void BuildStructMemberVar(ImmutableArray<StructMemberVarDeclSymbol>.Builder builder, IHolder<StructDeclSymbol> outerHolder, S.StructMemberVarDecl decl)
+        void BuildStructMemberVar(ImmutableArray<StructMemberVarDeclSymbol>.Builder builder, DeclSymbolId outerId, IHolder<StructDeclSymbol> outerHolder, S.StructMemberVarDecl decl)
         {
-            // 아래 값들은 StructMemberVarDeclSymbol들끼리 공유한다
-            var accessModifier = MakeStructMemberAccessModifier(decl.AccessModifier);
-            var declTypeHolder = new Holder<ITypeSymbolNode>();
-
-            RegisterAfterBuild(default, context =>
-            {
-                var declType = context.GetTypeSymbolNode(decl.VarType);
-                declTypeHolder.SetValue(declType);
-            });
-
             foreach (var name in decl.VarNames)
             {
+                var thisId = outerId.Child(new M.Name.Normal(name), 0, default);
+                var accessModifier = MakeStructMemberAccessModifier(decl.AccessModifier);
+                var declTypeHolder = new Holder<ITypeSymbolNode>();
+
+                RegisterAfterBuildTask(thisId, default, context =>
+                {
+                    var declType = context.GetTypeSymbolNode(decl.VarType);
+                    declTypeHolder.SetValue(declType);
+                });
+
                 // TODO: var decl static지원
                 var symbol = new StructMemberVarDeclSymbol(outerHolder, accessModifier, false, declTypeHolder, new M.Name.Normal(name));
                 builder.Add(symbol);
             }
         }
 
-        StructConstructorDeclSymbol BuildStructConstructor(IHolder<StructDeclSymbol> outerHolder, S.StructConstructorDecl decl)
+        StructConstructorDeclSymbol BuildStructConstructor(DeclSymbolId outerId, IHolder<StructDeclSymbol> outerHolder, S.StructConstructorDecl decl)
         {
+            var thisId = outerId.Child(new M.Name.Normal(decl.Name), 0, MakeFuncParamIds(decl.Parameters));
             var accessModifier = MakeStructMemberAccessModifier(decl.AccessModifier);
             var parametersHolder = new Holder<ImmutableArray<FuncParameter>>();
 
-            RegisterAfterBuild(default, context =>
+            RegisterAfterBuildTask(thisId, default, context =>
             {
                 var parameters = MakeParameters(context, decl.Parameters);
                 parametersHolder.SetValue(parameters);
@@ -321,8 +436,10 @@ namespace Gum.Analysis
             return new StructConstructorDeclSymbol(outer, M.AccessModifier.Public, new Holder<ImmutableArray<FuncParameter>>(builder.MoveToImmutable()), true);
         }
 
-        StructDeclSymbol BuildStruct(IHolder<IDeclSymbolNode> outerHolder, S.StructDecl decl)
+        StructDeclSymbol BuildStruct(DeclSymbolId outerId, IHolder<IDeclSymbolNode> outerHolder, S.StructDecl decl)
         {
+            var thisId = outerId.Child(new M.Name.Normal(decl.Name), decl.TypeParams.Length, default);
+
             var structHolder = new Holder<StructDeclSymbol>();
             var baseStructHolder = new Holder<StructSymbol?>();
             var constructorsHolder = new Holder<ImmutableArray<StructConstructorDeclSymbol>>();
@@ -359,27 +476,27 @@ namespace Gum.Analysis
                 {
                     case S.StructMemberTypeDecl typeDecl:
                         {
-                            var symbol = BuildStructMemberType(structHolder, typeDecl);
+                            var symbol = BuildStructMemberType(thisId, structHolder, typeDecl);
                             memberTypeDeclsBuilder.Add(symbol);
                             break;
                         }
 
                     case S.StructMemberFuncDecl funcDecl:
                         {
-                            var symbol = BuildStructMemberFunc(structHolder, funcDecl);
+                            var symbol = BuildStructMemberFunc(thisId, structHolder, funcDecl);
                             memberFuncDeclsBuilder.Add(symbol);
                             break;
                         }
 
                     case S.StructMemberVarDecl varDecl:
                         {
-                            BuildStructMemberVar(memberVarDeclsBuilder, structHolder, varDecl);                            
+                            BuildStructMemberVar(memberVarDeclsBuilder, thisId, structHolder, varDecl);                            
                             break;
                         }
 
                     case S.StructConstructorDecl constructorDecl:
                         {
-                            var symbol = BuildStructConstructor(structHolder, constructorDecl);
+                            var symbol = BuildStructConstructor(thisId, structHolder, constructorDecl);
                             constructorDeclsBuilder.Add(symbol);
                             break;
                         }
@@ -391,7 +508,7 @@ namespace Gum.Analysis
 
             var memberVarDecls = memberVarDeclsBuilder.ToImmutable();
 
-            RegisterAfterBuild(dependsOnSymbolIds, context =>
+            RegisterAfterBuildTask(thisId, dependsOnSymbolIds, context =>
             {
                 StructSymbol? baseStructSymbol = null;
                 if (baseStruct != null)
@@ -534,22 +651,24 @@ namespace Gum.Analysis
             };
         }
 
-        ClassMemberTypeDeclSymbol BuildClassMemberType(IHolder<ClassDeclSymbol> outerHolder, S.ClassMemberTypeDecl decl)
+        ClassMemberTypeDeclSymbol BuildClassMemberType(DeclSymbolId outerId, IHolder<ClassDeclSymbol> outerHolder, S.ClassMemberTypeDecl decl)
         {
-            var type = BuildType(outerHolder, decl.TypeDecl);
+            var type = BuildType(outerId, outerHolder, decl.TypeDecl);
             var syntaxAccessModifier = GetAccessModifier(decl.TypeDecl);
             var accessModifier = MakeClassMemberAccessModifier(syntaxAccessModifier);
 
             return new ClassMemberTypeDeclSymbol(accessModifier, type);
         }
 
-        ClassMemberFuncDeclSymbol BuildClassMemberFunc(IHolder<ClassDeclSymbol> outerHolder, S.ClassMemberFuncDecl decl)
+        ClassMemberFuncDeclSymbol BuildClassMemberFunc(DeclSymbolId outerId, IHolder<ClassDeclSymbol> outerHolder, S.ClassMemberFuncDecl decl)
         {
+            var thisId = outerId.Child(new M.Name.Normal(decl.Name), decl.TypeParams.Length, MakeFuncParamIds(decl.Parameters));
+
             var accessModifier = MakeClassMemberAccessModifier(decl.AccessModifier);
             var returnHolder = new Holder<FuncReturn>();
             var parametersHolder = new Holder<ImmutableArray<FuncParameter>>();
 
-            RegisterAfterBuild(default, context =>
+            RegisterAfterBuildTask(thisId, default, context =>
             {
                 var retType = context.GetTypeSymbolNode(decl.RetType);
                 returnHolder.SetValue(new FuncReturn(decl.IsRefReturn, retType));
@@ -561,33 +680,33 @@ namespace Gum.Analysis
             return new ClassMemberFuncDeclSymbol(outerHolder, accessModifier, returnHolder, new M.Name.Normal(decl.Name), decl.TypeParams, parametersHolder, decl.IsStatic);
         }
 
-        void BuildClassMemberVar(ImmutableArray<ClassMemberVarDeclSymbol>.Builder builder, IHolder<ClassDeclSymbol> outerHolder, S.ClassMemberVarDecl decl)
-        {            
-            var accessModifier = MakeClassMemberAccessModifier(decl.AccessModifier);
-
-            // 아래 레퍼런스는 ClassMemberVarDeclSymbol들끼리 공유한다
-            var declTypeHolder = new Holder<ITypeSymbolNode>();
-
-            RegisterAfterBuild(default, context =>
-            {
-                var declType = context.GetTypeSymbolNode(decl.VarType);
-                declTypeHolder.SetValue(declType);
-            });
-
+        void BuildClassMemberVar(ImmutableArray<ClassMemberVarDeclSymbol>.Builder builder, DeclSymbolId outerId, IHolder<ClassDeclSymbol> outerHolder, S.ClassMemberVarDecl decl)
+        {
             foreach (var name in decl.VarNames)
             {
+                var thisId = outerId.Child(new M.Name.Normal(name), 0, default);
+                var accessModifier = MakeClassMemberAccessModifier(decl.AccessModifier);
+                var declTypeHolder = new Holder<ITypeSymbolNode>();
+
+                RegisterAfterBuildTask(thisId, default, context =>
+                {
+                    var declType = context.GetTypeSymbolNode(decl.VarType);
+                    declTypeHolder.SetValue(declType);
+                });
+
                 // TODO: bStatic 지원
                 var varDecl = new ClassMemberVarDeclSymbol(outerHolder, accessModifier, bStatic: false, declTypeHolder, new M.Name.Normal(name));
                 builder.Add(varDecl);
             }
         }
 
-        ClassConstructorDeclSymbol BuildClassConstructor(IHolder<ClassDeclSymbol> outerHolder, S.ClassConstructorDecl decl)
+        ClassConstructorDeclSymbol BuildClassConstructor(DeclSymbolId outerId, IHolder<ClassDeclSymbol> outerHolder, S.ClassConstructorDecl decl)
         {
+            var thisId = outerId.Child(new M.Name.Normal(decl.Name), 0, MakeFuncParamIds(decl.Parameters));
             var accessModifier = MakeClassMemberAccessModifier(decl.AccessModifier);
             var parametersHolder = new Holder<ImmutableArray<FuncParameter>>();
 
-            RegisterAfterBuild(default, context =>
+            RegisterAfterBuildTask(thisId, default, context =>
             {
                 var parameters = MakeParameters(context, decl.Parameters);
                 parametersHolder.SetValue(parameters);
@@ -597,8 +716,9 @@ namespace Gum.Analysis
             return new ClassConstructorDeclSymbol(outerHolder, accessModifier, parametersHolder, bTrivial: false);
         }
 
-        ClassDeclSymbol BuildClass(IHolder<IDeclSymbolNode> outerHolder, S.ClassDecl decl)
+        ClassDeclSymbol BuildClass(DeclSymbolId outerId, IHolder<IDeclSymbolNode> outerHolder, S.ClassDecl decl)
         {
+            var thisId = outerId.Child(new M.Name.Normal(decl.Name), decl.TypeParams.Length, default);
             var classHolder = new Holder<ClassDeclSymbol>();
 
             var baseClassHolder = new Holder<ClassSymbol?>();
@@ -616,14 +736,14 @@ namespace Gum.Analysis
                 {
                     case S.ClassMemberTypeDecl typeMember:
                         {
-                            var type = BuildClassMemberType(classHolder, typeMember);
+                            var type = BuildClassMemberType(thisId, classHolder, typeMember);
                             typesBuilder.Add(type);
                             break;
                         }
 
                     case S.ClassMemberFuncDecl funcMember:
                         {
-                            var func = BuildClassMemberFunc(classHolder, funcMember);
+                            var func = BuildClassMemberFunc(thisId, classHolder, funcMember);
                             funcsBuilder.Add(func);
                             break;
                         }
@@ -631,13 +751,13 @@ namespace Gum.Analysis
                     case S.ClassMemberVarDecl varMember:
                         {
                             // 여러개가 생길 수 있어서 직접 넣는다
-                            BuildClassMemberVar(varsBuilder, classHolder, varMember);
+                            BuildClassMemberVar(varsBuilder, thisId, classHolder, varMember);
                             break;
                         }
 
                     case S.ClassConstructorDecl constructorMember:
                         {
-                            BuildClassConstructor(classHolder, constructorMember);
+                            BuildClassConstructor(thisId, classHolder, constructorMember);
                             break;
                         }
                 }
@@ -651,7 +771,7 @@ namespace Gum.Analysis
             var dependsOnSymbolIds = MakeClassBuildingDependencies(baseClassInfo);
 
             // 
-            RegisterAfterBuild(dependsOnSymbolIds, context =>
+            RegisterAfterBuildTask(thisId, dependsOnSymbolIds, context =>
             {
                 ClassSymbol? baseClass = null;
                 if (baseClassInfo != null)
@@ -691,8 +811,7 @@ namespace Gum.Analysis
         void IdentifyBaseTypes(out TypeExpInfo? baseClassInfo, ImmutableArray<TypeExpInfo>.Builder baseInterfacInfos, S.ClassDecl decl)
         {
             var baseClassInfos = new Candidates<TypeExpInfo>();
-
-            // TODO: 이 작업은 밖에서 해야 할 거 같기도 하다
+            
             foreach (var baseType in decl.BaseTypes)
             {
                 var info = typeExpInfoService.GetTypeExpInfo(baseType);
@@ -749,11 +868,12 @@ namespace Gum.Analysis
 
         #region Enum
 
-        EnumElemMemberVarDeclSymbol BuildEnumElemMemberVar(IHolder<EnumElemDeclSymbol> outerHolder, S.EnumElemMemberVarDecl decl)
+        EnumElemMemberVarDeclSymbol BuildEnumElemMemberVar(DeclSymbolId outerId, IHolder<EnumElemDeclSymbol> outerHolder, S.EnumElemMemberVarDecl decl)
         {
+            var thisId = outerId.Child(new M.Name.Normal(decl.Name), 0, default);
             var declTypeHolder = new Holder<ITypeSymbolNode>();
 
-            RegisterAfterBuild(default, context =>
+            RegisterAfterBuildTask(thisId, default, context =>
             {
                 var declType = context.GetTypeSymbolNode(decl.Type);
                 declTypeHolder.SetValue(declType);
@@ -762,14 +882,15 @@ namespace Gum.Analysis
             return new EnumElemMemberVarDeclSymbol(outerHolder, declTypeHolder, new M.Name.Normal(decl.Name));
         }
 
-        EnumElemDeclSymbol BuildEnumElem(IHolder<EnumDeclSymbol> outerHolder, S.EnumElemDecl decl)
+        EnumElemDeclSymbol BuildEnumElem(DeclSymbolId outerId, IHolder<EnumDeclSymbol> outerHolder, S.EnumElemDecl decl)
         {
+            var thisId = outerId.Child(new M.Name.Normal(decl.Name), 0, default);
             var enumElemHolder = new Holder<EnumElemDeclSymbol>();
             var builder = ImmutableArray.CreateBuilder<EnumElemMemberVarDeclSymbol>(decl.MemberVars.Length);
 
             foreach(var memberVar in decl.MemberVars)
             {
-                var symbol = BuildEnumElemMemberVar(enumElemHolder, memberVar);
+                var symbol = BuildEnumElemMemberVar(thisId, enumElemHolder, memberVar);
                 builder.Add(symbol);
             }
 
@@ -778,14 +899,15 @@ namespace Gum.Analysis
             return enumElem;
         }
 
-        EnumDeclSymbol BuildEnum(IHolder<IDeclSymbolNode> outerHolder, S.EnumDecl decl)
+        EnumDeclSymbol BuildEnum(DeclSymbolId outerId, IHolder<IDeclSymbolNode> outerHolder, S.EnumDecl decl)
         {
+            var thisId = outerId.Child(new M.Name.Normal(decl.Name), decl.TypeParams.Length, default);
             var enumHolder = new Holder<EnumDeclSymbol>();
             var elemsBuilder = ImmutableArray.CreateBuilder<EnumElemDeclSymbol>(decl.Elems.Length);
 
             foreach(var elem in decl.Elems)
             {
-                var elemSymbol = BuildEnumElem(enumHolder, elem);
+                var elemSymbol = BuildEnumElem(thisId, enumHolder, elem);
                 elemsBuilder.Add(elemSymbol);
             }
 
@@ -808,21 +930,22 @@ namespace Gum.Analysis
             };
         }
 
-        GlobalTypeDeclSymbol BuildGlobalType(IHolder<ModuleDeclSymbol> moduleHolder, S.TypeDecl decl) // throw FatalException
+        GlobalTypeDeclSymbol BuildGlobalType(DeclSymbolId outerId, IHolder<ModuleDeclSymbol> moduleHolder, S.TypeDecl decl) // throw FatalException
         {
-            var type = BuildType(moduleHolder, decl);
+            var type = BuildType(outerId, moduleHolder, decl);
             var syntaxAccessModifier = GetAccessModifier(decl);
 
             var accessModifier = MakeGlobalAccessModifier(syntaxAccessModifier);
             return new GlobalTypeDeclSymbol(accessModifier, type);
         }
 
-        GlobalFuncDeclSymbol BuildGlobalFunc(IHolder<ITopLevelDeclSymbolNode> outerHolder, S.GlobalFuncDecl decl) // throw FatalException        
+        GlobalFuncDeclSymbol BuildGlobalFunc(DeclSymbolId outerId, IHolder<ITopLevelDeclSymbolNode> outerHolder, S.GlobalFuncDecl decl) // throw FatalException        
         {
+            var thisId = outerId.Child(new M.Name.Normal(decl.Name), decl.TypeParams.Length, MakeFuncParamIds(decl.Parameters));
             var returnHolder = new Holder<FuncReturn>();
             var parametersHolder = new Holder<ImmutableArray<FuncParameter>>();
 
-            RegisterAfterBuild(default, context =>
+            RegisterAfterBuildTask(thisId, default, context =>
             {
                 var retType = context.GetTypeSymbolNode(decl.RetType); // TODO: GetMType대신에 SymbolId
                 returnHolder.SetValue(new FuncReturn(decl.IsRefReturn, retType));

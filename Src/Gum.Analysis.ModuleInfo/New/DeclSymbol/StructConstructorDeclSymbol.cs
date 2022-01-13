@@ -28,10 +28,10 @@ namespace Gum.Analysis
 
         public DeclSymbolNodeName GetNodeName()
         {
-            return new DeclSymbolNodeName(M.Name.Constructor, 0, parametersHolder.GetValue().MakeMParamTypes());
+            return new DeclSymbolNodeName(M.Name.Constructor, 0, parametersHolder.GetValue().MakeFuncParamIds());
         }
 
-        public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, M.ParamTypes paramTypes)
+        public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
         {
             return null;
         }
@@ -50,6 +50,11 @@ namespace Gum.Analysis
         public FuncParameter GetParameter(int index)
         {
             return parametersHolder.GetValue()[index];
+        }
+
+        public void Apply(IDeclSymbolNodeVisitor visitor)
+        {
+            visitor.VisitStructConstructor(this);
         }
     }
 }

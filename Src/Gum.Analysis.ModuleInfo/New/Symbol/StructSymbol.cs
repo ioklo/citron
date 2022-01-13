@@ -235,13 +235,12 @@ namespace Gum.Analysis
         
         R.Path.Normal ISymbolNode.MakeRPath() => MakeRPath();
         ISymbolNode ISymbolNode.Apply(TypeEnv typeEnv) => Apply(typeEnv);
-        IDeclSymbolNode ISymbolNode.GetDeclSymbolNode() => decl;
-        ITypeDeclSymbolNode ITypeSymbolNode.GetDeclSymbolNode() => decl;
+        IDeclSymbolNode ISymbolNode.GetDeclSymbolNode() => GetDeclSymbolNode();
+        ITypeDeclSymbolNode ITypeSymbolNode.GetDeclSymbolNode() => GetDeclSymbolNode();
 
-        public M.NormalTypeId MakeChildTypeId(M.Name name, ImmutableArray<M.TypeId> typeArgs)
+        public StructDeclSymbol GetDeclSymbolNode()
         {
-            var thisTypeId = this.GetMTypeId();
-            return new M.MemberTypeId(thisTypeId, name, typeArgs);
+            return decl;
         }
 
         public ImmutableArray<ITypeSymbolNode> GetTypeArgs()

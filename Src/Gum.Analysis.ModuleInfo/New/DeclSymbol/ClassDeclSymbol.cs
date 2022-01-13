@@ -105,9 +105,9 @@ namespace Gum.Analysis
             return constructorsHolder.GetValue();
         }
 
-        public ClassMemberFuncDeclSymbol? GetMemberFunc(M.Name name, int typeParamCount, M.ParamTypes paramTypes)
+        public ClassMemberFuncDeclSymbol? GetMemberFunc(M.Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
         {
-            return funcDict.Get(new DeclSymbolNodeName(name, typeParamCount, paramTypes));
+            return funcDict.Get(new DeclSymbolNodeName(name, typeParamCount, paramIds));
         }
 
         public ImmutableArray<ClassMemberFuncDeclSymbol> GetFuncs(M.Name name, int minTypeParamCount)
@@ -150,11 +150,11 @@ namespace Gum.Analysis
             return outerHolder.GetValue();
         }
 
-        public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, M.ParamTypes paramTypes)
+        public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
         {
-            var nodeName = new DeclSymbolNodeName(name, typeParamCount, paramTypes);
+            var nodeName = new DeclSymbolNodeName(name, typeParamCount, paramIds);
 
-            if (paramTypes.IsEmpty)
+            if (paramIds.IsEmpty)
             {
                 if (typeParamCount == 0)
                 {
@@ -173,6 +173,11 @@ namespace Gum.Analysis
                 return funcDecl;
 
             return null;
+        }
+
+        public void Apply(IDeclSymbolNodeVisitor visitor)
+        {
+            visitor.VisitClass(this);
         }
     }
 }

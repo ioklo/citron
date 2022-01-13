@@ -108,11 +108,6 @@ namespace Gum.Analysis
 
         ISymbolNode ISymbolNode.Apply(TypeEnv typeEnv) => Apply(typeEnv);
 
-        public M.NormalTypeId MakeChildTypeId(M.Name name, ImmutableArray<M.TypeId> typeArgs)
-        {
-            throw new InvalidOperationException();
-        }
-
         public ImmutableArray<ITypeSymbolNode> GetTypeArgs()
         {
             return typeArgs;

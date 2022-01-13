@@ -15,14 +15,15 @@ namespace Gum.IR0Translator
     // 외부 인터페이스
     public class Translator
     {
-        public static R.Script? Translate(M.Name moduleName, ImmutableArray<M.ModuleDecl> referenceModules, Syntax.Script sscript, ILogger logger)
+        public static R.Script? Translate(M.Name moduleName, ImmutableArray<M.ModuleDecl> mreferenceModules, Syntax.Script sscript, ILogger logger)
         {
-            Debug.Assert(!referenceModules.Contains(RuntimeModuleDecl.Instance));
+            Debug.Assert(!mreferenceModules.Contains(RuntimeModuleDecl.Instance));
+            mreferenceModules = mreferenceModules.Add(RuntimeModuleDecl.Instance);
 
-            var referenceModuleSymbols = ModuleDeclSymbolBuilder.Build(referenceModules);
+            var referenceModules = ModuleDeclSymbolBuilder.Build(mreferenceModules);
 
             // Make syntax based Analyzer (almost translation), 결과는 ir0가 아니라 ir0와 정보를 갖고 있는 트리, 나중에 ir0로 export할 수 있다
-            var rscript = Analyzer.Analyze(sscript, moduleName, referenceModuleSymbols, logger);
+            var rscript = Analyzer.Analyze(sscript, moduleName, referenceModules, logger);
             if (rscript == null) return null;
 
             if (logger.HasError)

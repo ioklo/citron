@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Gum.A0\Gum.A0.csproj" />
+    <ProjectReference Include="..\Gum.Analysis.InternalDeclSymbolBuilder\Gum.Analysis.InternalDeclSymbolBuilder.csproj" />
     <ProjectReference Include="..\Gum.Analysis.ModuleInfo\Gum.Analysis.ModuleInfo.csproj" />
     <ProjectReference Include="..\Gum.Analysis.TypeExpEvaluator\Gum.Analysis.TypeExpEvaluator.csproj" />
     <ProjectReference Include="..\Gum.Infra\Gum.Infra.csproj" />

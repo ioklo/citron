@@ -62,9 +62,9 @@ namespace Gum.Analysis
             return outer.GetValue();
         }
 
-        public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, M.ParamTypes paramTypes)
+        public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
         {
-            if (paramTypes.IsEmpty && typeParamCount == 0)
+            if (paramIds.IsEmpty && typeParamCount == 0)
             {
                 var elem = elemDict.GetValueOrDefault(name);
                 if (elem != null)
@@ -72,6 +72,11 @@ namespace Gum.Analysis
             }
 
             return null;
+        }
+
+        public void Apply(IDeclSymbolNodeVisitor visitor)
+        {
+            visitor.VisitEnum(this);
         }
     }
 }

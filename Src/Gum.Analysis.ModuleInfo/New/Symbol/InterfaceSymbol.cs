@@ -54,12 +54,6 @@ namespace Gum.Analysis
             return typeEnv;
         }
 
-        public M.NormalTypeId MakeChildTypeId(M.Name name, ImmutableArray<M.TypeId> typeArgs)
-        {
-            var thisTypeId = this.GetMTypeId();
-            return new M.MemberTypeId(thisTypeId, name, typeArgs);
-        }
-
         public R.Path.Nested MakeRPath()
         {
             var rname = RItemFactory.MakeName(decl.GetName());

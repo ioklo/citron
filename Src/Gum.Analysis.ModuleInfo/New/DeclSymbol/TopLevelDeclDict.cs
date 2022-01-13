@@ -32,14 +32,14 @@ namespace Gum.Analysis
             return globalTypeDict.Get(new DeclSymbolNodeName(name, typeParamCount, default));
         }
 
-        public GlobalFuncDeclSymbol? GetFunc(M.Name name, int typeParamCount, M.ParamTypes paramTypes)
+        public GlobalFuncDeclSymbol? GetFunc(M.Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
         {
-            return globalFuncDict.Get(new DeclSymbolNodeName(name, typeParamCount, paramTypes));
+            return globalFuncDict.Get(new DeclSymbolNodeName(name, typeParamCount, paramIds));
         }
 
-        public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, M.ParamTypes paramTypes)
+        public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
         {
-            if (paramTypes.IsEmpty)
+            if (paramIds.IsEmpty)
             {
                 if (typeParamCount == 0)
                 {
@@ -53,7 +53,7 @@ namespace Gum.Analysis
                     return globalType;
             }
 
-            var globalFunc = GetFunc(name, typeParamCount, paramTypes);
+            var globalFunc = GetFunc(name, typeParamCount, paramIds);
             if (globalFunc != null)
                 return globalFunc;
 

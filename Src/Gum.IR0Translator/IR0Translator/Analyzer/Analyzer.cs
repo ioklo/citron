@@ -80,24 +80,23 @@ namespace Gum.IR0Translator
         public static R.Script? Analyze(
             S.Script sscript,
             M.Name moduleName,
-            ImmutableArray<ModuleDeclSymbol> referenceModuleSymbols,
+            ImmutableArray<ModuleDeclSymbol> referenceModules,
             ILogger logger)
         {
             try
             {
+                var symbolFactory = new SymbolFactory();
+
                 // S.TypeExp => TypeExpInfo
-                var typeExpInfoService = TypeExpEvaluator.Evaluate(moduleName, sscript, referenceModuleSymbols, logger);
-
-                InternalDeclSymbolBuilder.Build(moudleName, sscript, referenceModuleSymbols);
-
-                var (internalModuleInfo, itemValueFactory, globalItemValueFactory) = InternalModuleInfoBuilder.Build(
-                    moduleName, sscript, typeExpInfoService, referenceModuleSymbols
-                );
+                var typeExpInfoService = TypeExpEvaluator.Evaluate(moduleName, sscript, referenceModules, logger);
+                var declSymbolBuilderResult = InternalDeclSymbolBuilder.Build(moduleName, sscript, symbolFactory, typeExpInfoService, referenceModules);
+                if (!declSymbolBuilderResult.HasValue) return null;
+                var (symbolLoader, typeSymbolInfoService) = declSymbolBuilderResult.Value;
 
                 // InternalModuleBuilder에서는 TypeSymbolInfoService(S.TypeExp => ITypeSymbolNode)를 리턴한다
                 var rmoduleName = RItemFactory.MakeModuleName(moduleName);
 
-                var globalContext = new GlobalContext(itemValueFactory, globalItemValueFactory, typeExpInfoService, logger);
+                var globalContext = new GlobalContext(itemValueFactory, globalItemValueFactory, logger);
                 var rootContext = new RootContext(rmoduleName, itemValueFactory);
 
                 return RootAnalyzer.Analyze(globalContext, rootContext, internalModuleInfo, sscript);

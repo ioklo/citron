@@ -44,10 +44,10 @@ namespace Gum.Analysis
 
         public DeclSymbolNodeName GetNodeName()
         {
-            return new DeclSymbolNodeName(M.Name.Constructor, 0, parameters.GetValue().MakeMParamTypes());
+            return new DeclSymbolNodeName(M.Name.Constructor, 0, parameters.GetValue().MakeFuncParamIds());
         }
 
-        public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, M.ParamTypes paramTypes)
+        public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
         {
             return null;
         }
@@ -57,6 +57,11 @@ namespace Gum.Analysis
         {   
             var paramHash = new R.ParamHash(0, parameters.GetValue().MakeParamHashEntries());
             return new R.Path.Nested(outerPath, R.Name.Constructor.Instance, paramHash, default);
+        }
+
+        public void Apply(IDeclSymbolNodeVisitor visitor)
+        {
+            visitor.VisitClassConstructor(this);
         }
     }
 }

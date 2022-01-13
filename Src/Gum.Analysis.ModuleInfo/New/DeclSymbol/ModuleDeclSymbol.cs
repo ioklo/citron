@@ -40,9 +40,14 @@ namespace Gum.Analysis
             return dict.GetType(name, typeParamCount);
         }
 
-        public GlobalFuncDeclSymbol? GetFunc(M.Name name, int typeParamCount, M.ParamTypes paramTypes)
+        public GlobalFuncDeclSymbol? GetFunc(M.Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
         {
-            return dict.GetFunc(name, typeParamCount, paramTypes);
+            return dict.GetFunc(name, typeParamCount, paramIds);
+        }
+
+        public NamespaceDeclSymbol? GetNamespace(M.Name name)
+        {
+            return null;
         }
 
         public IDeclSymbolNode? GetOuterDeclNode()
@@ -50,20 +55,25 @@ namespace Gum.Analysis
             return null;
         }
 
-        public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, M.ParamTypes paramTypes)
+        public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
         {
-            if (paramTypes.IsEmpty)
+            if (paramIds.IsEmpty)
             {
                 var globalType = GetType(name, typeParamCount);
                 if (globalType != null)
                     return globalType;
             }
 
-            var globalFunc = GetFunc(name, typeParamCount, paramTypes);
+            var globalFunc = GetFunc(name, typeParamCount, paramIds);
             if (globalFunc != null)
                 return globalFunc;
 
             return null;
+        }
+
+        public void Apply(IDeclSymbolNodeVisitor visitor)
+        {
+            visitor.VisitModule(this);
         }
     }
 }

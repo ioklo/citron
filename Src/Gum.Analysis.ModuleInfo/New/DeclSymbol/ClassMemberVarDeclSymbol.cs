@@ -1,4 +1,5 @@
-﻿using Gum.Infra;
+﻿using Gum.Collections;
+using Gum.Infra;
 using Pretune;
 using System;
 
@@ -34,7 +35,7 @@ namespace Gum.Analysis
             return outer.GetValue();
         }
 
-        public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, M.ParamTypes paramTypes)
+        public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
         {
             return null;
         }
@@ -47,6 +48,11 @@ namespace Gum.Analysis
         public DeclSymbolNodeName GetNodeName()
         {
             return new DeclSymbolNodeName(name, 0, default);
+        }
+
+        public void Apply(IDeclSymbolNodeVisitor visitor)
+        {
+            visitor.VisitClassMemberVar(this);
         }
     }
 }

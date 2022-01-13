@@ -30,7 +30,7 @@ namespace Gum.Analysis
 
         public DeclSymbolNodeName GetNodeName()
         {
-            return new DeclSymbolNodeName(name, typeParams.Length, parametersHolder.GetValue().MakeMParamTypes());
+            return new DeclSymbolNodeName(name, typeParams.Length, parametersHolder.GetValue().MakeFuncParamIds());
         }
         
         public int GetParameterCount()
@@ -64,7 +64,7 @@ namespace Gum.Analysis
         }
 
         // 함수는 자식을 갖지 않는다
-        public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, M.ParamTypes paramTypes)
+        public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
         {
             return null;
         }
@@ -74,6 +74,11 @@ namespace Gum.Analysis
             var rname = RItemFactory.MakeName(name);
             var paramHash = new R.ParamHash(typeArgs.Length, parametersHolder.GetValue().MakeParamHashEntries());
             return new R.Path.Nested(outerPath, rname, paramHash, typeArgs);
+        }
+
+        public void Apply(IDeclSymbolNodeVisitor visitor)
+        {
+            visitor.VisitGlobalFunc(this);
         }
     }
 }

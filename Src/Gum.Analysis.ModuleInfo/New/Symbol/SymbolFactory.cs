@@ -1,6 +1,7 @@
 ﻿using Gum.Collections;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,73 +9,114 @@ using System.Threading.Tasks;
 namespace Gum.Analysis
 {
     // DeclSymbolFactory는 따로 만들자
-    class SymbolFactory
+    public class SymbolFactory
     {
         // Decl류는 한개만 존재하고, Class (instance)류는 매번 생성한다.
         // instance류는 속성 변경을 허용하지 않는다(되더라도 지역적으로만 전파되기 때문에 의미없다)
 
+        public ModuleSymbol MakeModule(ModuleDeclSymbol decl)
+        {
+            return new ModuleSymbol(decl);
+        }
+
         public ClassSymbol MakeClass(ISymbolNode outer, ClassDeclSymbol decl, ImmutableArray<ITypeSymbolNode> typeArgs)
         {
+            Debug.Assert(outer.GetDeclSymbolNode() == decl.GetOuterDeclNode());
+            Debug.Assert(decl.GetTypeParamCount() == typeArgs.Length);
+
             return new ClassSymbol(this, outer, decl, typeArgs);
         }
 
         public ClassConstructorSymbol MakeClassConstructor(ClassSymbol @class, ClassConstructorDeclSymbol decl)
         {
+            Debug.Assert(@class.GetDeclSymbolNode() == decl.GetOuterDeclNode());
             return new ClassConstructorSymbol(this, @class, decl);
         }
 
         public InterfaceSymbol MakeInterface(ISymbolNode outer, InterfaceDeclSymbol decl, ImmutableArray<ITypeSymbolNode> typeArgs)
         {
+            Debug.Assert(outer.GetDeclSymbolNode() == decl.GetOuterDeclNode());
+            Debug.Assert(decl.GetTypeParamCount() == typeArgs.Length);
+
             return new InterfaceSymbol(this, outer, decl, typeArgs);
         }
 
         internal ClassMemberVarSymbol MakeClassMemberVar(ClassSymbol @class, ClassMemberVarDeclSymbol decl)
         {
+            Debug.Assert(@class.GetDeclSymbolNode() == decl.GetOuterDeclNode());
             return new ClassMemberVarSymbol(this, @class, decl);
         }
 
         public ClassMemberFuncSymbol MakeClassMemberFunc(ClassSymbol outer, ClassMemberFuncDeclSymbol decl, ImmutableArray<ITypeSymbolNode> typeArgs)
         {
+            Debug.Assert(outer.GetDeclSymbolNode() == decl.GetOuterDeclNode());
+            Debug.Assert(decl.GetTypeParamCount() == typeArgs.Length);
+
             return new ClassMemberFuncSymbol(this, outer, decl, typeArgs);
         }
 
         public StructSymbol MakeStruct(ISymbolNode outer, StructDeclSymbol decl, ImmutableArray<ITypeSymbolNode> typeArgs)
         {
+            Debug.Assert(outer.GetDeclSymbolNode() == decl.GetOuterDeclNode());
+            Debug.Assert(decl.GetTypeParamCount() == typeArgs.Length);
+
             return new StructSymbol(this, outer, decl, typeArgs);
         }
 
         public StructConstructorSymbol MakeStructConstructor(StructSymbol @struct, StructConstructorDeclSymbol decl)
         {
+            Debug.Assert(@struct.GetDeclSymbolNode() == decl.GetOuterDeclNode());
+
             return new StructConstructorSymbol(this, @struct, decl);
         }
 
         public EnumSymbol MakeEnum(ISymbolNode outer, EnumDeclSymbol decl, ImmutableArray<ITypeSymbolNode> typeArgs)
         {
+            Debug.Assert(outer.GetDeclSymbolNode() == decl.GetOuterDeclNode());
+            Debug.Assert(decl.GetTypeParamCount() == typeArgs.Length);
+
             return new EnumSymbol(this, outer, decl, typeArgs);
         }
 
         public GlobalFuncSymbol MakeGlobalFunc(ITopLevelSymbolNode outer, GlobalFuncDeclSymbol decl, ImmutableArray<ITypeSymbolNode> typeArgs)
         {
+            Debug.Assert(outer.GetDeclSymbolNode() == decl.GetOuterDeclNode());
+            Debug.Assert(decl.GetTypeParamCount() == typeArgs.Length);
+
             return new GlobalFuncSymbol(this, outer, decl, typeArgs);
         }
 
         public StructMemberFuncSymbol MakeStructMemberFunc(StructSymbol @struct, StructMemberFuncDeclSymbol decl, ImmutableArray<ITypeSymbolNode> typeArgs)
         {
+            Debug.Assert(@struct.GetDeclSymbolNode() == decl.GetOuterDeclNode());
+            Debug.Assert(decl.GetTypeParamCount() == typeArgs.Length);
+
             return new StructMemberFuncSymbol(this, @struct, decl, typeArgs);
+        }
+
+        public NamespaceSymbol MakeNamespace(ITopLevelSymbolNode outer, NamespaceDeclSymbol decl)
+        {
+            Debug.Assert(outer.GetDeclSymbolNode() == decl.GetOuterDeclNode());
+            
+            return new NamespaceSymbol(outer, decl);
         }
 
         public EnumElemSymbol MakeEnumElem(EnumSymbol @enum, EnumElemDeclSymbol decl)
         {
+            Debug.Assert(@enum.GetDeclSymbolNode() == decl.GetOuterDeclNode());
+
             return new EnumElemSymbol(this, @enum, decl);
         }
 
         public EnumElemMemberVarSymbol MakeEnumElemMemberVar(EnumElemSymbol enumElem, EnumElemMemberVarDeclSymbol decl)
         {
+            Debug.Assert(enumElem.GetDeclSymbolNode() == decl.GetOuterDeclNode());
             return new EnumElemMemberVarSymbol(this, enumElem, decl);
         }
 
         public StructMemberVarSymbol MakeStructMemberVar(StructSymbol @struct, StructMemberVarDeclSymbol decl)
         {
+            Debug.Assert(@struct.GetDeclSymbolNode() == decl.GetOuterDeclNode());
             return new StructMemberVarSymbol(this, @struct, decl);
         }
     }

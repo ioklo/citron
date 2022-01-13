@@ -39,9 +39,9 @@ namespace Gum.Analysis
             return new DeclSymbolNodeName(name, 0, default);
         }
 
-        public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, M.ParamTypes paramTypes)
+        public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
         {
-            if (typeParamCount != 0 || !paramTypes.IsEmpty) return null;
+            if (typeParamCount != 0 || !paramIds.IsEmpty) return null;
 
             foreach(var decl in memberVarDecls)
             {
@@ -55,6 +55,11 @@ namespace Gum.Analysis
         public void Apply(ITypeDeclSymbolNodeVisitor visitor)
         {
             visitor.VisitEnumElemDecl(this);
+        }
+
+        public void Apply(IDeclSymbolNodeVisitor visitor)
+        {
+            visitor.VisitEnumElem(this);
         }
     }
 }

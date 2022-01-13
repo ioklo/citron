@@ -66,7 +66,7 @@ namespace Gum.Analysis
 
         public DeclSymbolNodeName GetNodeName()
         {
-            return new DeclSymbolNodeName(name, typeParams.Length, parameters.GetValue().MakeMParamTypes());
+            return new DeclSymbolNodeName(name, typeParams.Length, parameters.GetValue().MakeFuncParamIds());
         }
 
         public IDeclSymbolNode? GetOuterDeclNode()
@@ -74,7 +74,7 @@ namespace Gum.Analysis
             return outer.GetValue();
         }
 
-        public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, M.ParamTypes paramTypes)
+        public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
         {
             return null;
         }
@@ -84,6 +84,11 @@ namespace Gum.Analysis
             var rname = RItemFactory.MakeName(name);
             var paramHash = new R.ParamHash(typeArgs.Length, parameters.GetValue().MakeParamHashEntries());
             return new R.Path.Nested(outerPath, rname, paramHash, typeArgs);
+        }
+
+        public void Apply(IDeclSymbolNodeVisitor visitor)
+        {
+            visitor.VisitClassMemberFunc(this);
         }
     }
 }

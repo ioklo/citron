@@ -23,9 +23,9 @@ namespace Gum.Analysis
             this.dict = new TopLevelDeclDict(namespaces, types, funcs);
         }
 
-        public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, M.ParamTypes paramTypes)
+        public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
         {
-            return dict.GetMemberDeclNode(name, typeParamCount, paramTypes);
+            return dict.GetMemberDeclNode(name, typeParamCount, paramIds);
         }
 
         public IDeclSymbolNode? GetOuterDeclNode()
@@ -41,6 +41,11 @@ namespace Gum.Analysis
         public DeclSymbolNodeName GetNodeName()
         {
             return new DeclSymbolNodeName(name, 0, default);
+        }
+
+        public void Apply(IDeclSymbolNodeVisitor visitor)
+        {
+            visitor.VisitNamespace(this);
         }
     }
 }

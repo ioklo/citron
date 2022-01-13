@@ -46,13 +46,7 @@ namespace Gum.Analysis
         public TypeEnv GetTypeEnv()
         {
             return TypeEnv.Empty;
-        }
-
-        public M.NormalTypeId MakeChildTypeId(M.Name childName, ImmutableArray<M.TypeId> childTypeArgs)
-        {
-            var name = decl.GetName();
-            return new M.RootTypeId(name, null, childName, childTypeArgs);
-        }
+        }        
 
         public R.Path.Normal MakeRPath()
         {

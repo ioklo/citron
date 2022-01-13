@@ -1,4 +1,5 @@
-﻿using Gum.Infra;
+﻿using Gum.Collections;
+using Gum.Infra;
 using Pretune;
 using System;
 using M = Gum.CompileTime;
@@ -20,7 +21,7 @@ namespace Gum.Analysis
             return outer.GetValue();
         }
 
-        public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, M.ParamTypes paramTypes)
+        public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
         {
             return null;
         }
@@ -38,6 +39,11 @@ namespace Gum.Analysis
         public ITypeSymbolNode GetDeclType()
         {
             return declTypeHolder.GetValue();
+        }
+
+        public void Apply(IDeclSymbolNodeVisitor visitor)
+        {
+            visitor.VisitStructMemberVar(this);
         }
     }
 }

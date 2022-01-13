@@ -127,14 +127,5 @@ namespace Gum.Analysis
         //            throw new UnreachableCodeException();
         //    }
         //}
-
-        public static M.ParamTypes MakeParamTypes(ImmutableArray<M.Param> parameters)
-        {
-            var builder = ImmutableArray.CreateBuilder<M.ParamKindAndType>(parameters.Length);
-            foreach (var param in parameters)
-                builder.Add(new M.ParamKindAndType(param.Kind, param.Type));
-
-            return new M.ParamTypes(builder.MoveToImmutable());
-        }
     }
 }

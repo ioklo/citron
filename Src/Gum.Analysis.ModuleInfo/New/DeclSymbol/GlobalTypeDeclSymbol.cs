@@ -1,4 +1,5 @@
-﻿using Pretune;
+﻿using Gum.Collections;
+using Pretune;
 using M = Gum.CompileTime;
 
 namespace Gum.Analysis
@@ -20,14 +21,19 @@ namespace Gum.Analysis
             return typeDecl.GetOuterDeclNode();
         }
 
-        public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, M.ParamTypes paramTypes)
+        public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
         {
-            return typeDecl.GetMemberDeclNode(name, typeParamCount, paramTypes);
+            return typeDecl.GetMemberDeclNode(name, typeParamCount, paramIds);
         }
 
         public DeclSymbolNodeName GetNodeName()
         {
             return typeDecl.GetNodeName();
+        }
+
+        public void Apply(IDeclSymbolNodeVisitor visitor)
+        {
+            typeDecl.Apply(visitor);
         }
     }
 }

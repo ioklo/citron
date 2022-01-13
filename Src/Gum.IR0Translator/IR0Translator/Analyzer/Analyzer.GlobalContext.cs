@@ -13,6 +13,8 @@ using R = Gum.IR0;
 using Gum.Log;
 using Gum.Analysis;
 
+using static Gum.Infra.Misc;
+
 namespace Gum.IR0Translator
 {
     partial class Analyzer
@@ -20,7 +22,7 @@ namespace Gum.IR0Translator
         // Analyzer는 backtracking이 없어서, MutableContext를 쓴다 => TODO: 함수 인자 계산할때 backtracking이 생긴다
         class GlobalContext : IMutable<GlobalContext>
         {
-            ItemValueFactory itemValueFactory;
+            SymbolLoader symbolLoader;
             InternalBinaryOperatorQueryService internalBinOpQueryService;
             GlobalItemValueFactory globalItemValueFactory;
 
@@ -29,12 +31,12 @@ namespace Gum.IR0Translator
             InternalGlobalVariableRepository internalGlobalVarRepo;
 
             public GlobalContext(
-                ItemValueFactory itemValueFactory,
+                SymbolLoader symbolLoader,
                 GlobalItemValueFactory globalItemValueFactory,
                 TypeExpInfoService typeExpInfoService,
                 ILogger logger)
             {
-                this.itemValueFactory = itemValueFactory;
+                this.symbolLoader = symbolLoader;
                 this.internalBinOpQueryService = new InternalBinaryOperatorQueryService(itemValueFactory);
                 this.globalItemValueFactory = globalItemValueFactory;
                 this.typeExpInfoService = typeExpInfoService;
@@ -46,7 +48,7 @@ namespace Gum.IR0Translator
                 GlobalContext other,
                 CloneContext cloneContext)
             {
-                this.itemValueFactory = other.itemValueFactory;
+                this.symbolLoader = other.symbolLoader;
                 this.internalBinOpQueryService = other.internalBinOpQueryService;
                 this.globalItemValueFactory = other.globalItemValueFactory;
                 this.typeExpInfoService = other.typeExpInfoService;
@@ -62,7 +64,7 @@ namespace Gum.IR0Translator
 
             public void Update(GlobalContext src, UpdateContext updateContext)
             {
-                this.itemValueFactory = src.itemValueFactory;
+                // this.symbolLoader = src.symbolLoader; // 업데이트 대상이 아니다
                 this.internalBinOpQueryService = src.internalBinOpQueryService;
                 this.globalItemValueFactory = src.globalItemValueFactory;
                 this.typeExpInfoService = src.typeExpInfoService;
@@ -81,31 +83,38 @@ namespace Gum.IR0Translator
             {
                 logger.Add(new AnalyzeErrorLog(code, node, code.ToString()));
                 throw new AnalyzerFatalException();
-            }            
-
-            public TypeSymbol GetVoidType()
-            {
-                return itemValueFactory.Void;
             }
 
-            public TypeSymbol GetBoolType()
+            static VoidSymbolId voidId = new VoidSymbolId();
+            public ITypeSymbolNode GetVoidType()
             {
-                return itemValueFactory.Bool;
+                return (ITypeSymbolNode)symbolLoader.Load(new VoidSymbolId());
             }
 
-            public TypeSymbol GetIntType()
-            {
-                return itemValueFactory.Int;
+            static ModuleSymbolId boolId = new ModuleSymbolId(new M.Name.Normal("System.Runtime"), null).Child(new M.Name.Normal("System")).Child(new M.Name.Normal("Boolean"));
+            public ITypeSymbolNode GetBoolType()
+            {   
+                return (ITypeSymbolNode)symbolLoader.Load(boolId);                    
             }
 
-            public TypeSymbol GetStringType()
+            static ModuleSymbolId intId = new ModuleSymbolId(new M.Name.Normal("System.Runtime"), null).Child(new M.Name.Normal("System")).Child(new M.Name.Normal("Int32"));
+            public ITypeSymbolNode GetIntType()
             {
-                return itemValueFactory.String;
+                return (ITypeSymbolNode)symbolLoader.Load(boolId);
             }
 
-            public TypeSymbol GetListType(TypeSymbol elemType)
+            static ModuleSymbolId stringId = new ModuleSymbolId(new M.Name.Normal("System.Runtime"), null).Child(new M.Name.Normal("System")).Child(new M.Name.Normal("String"));
+            public ITypeSymbolNode GetStringType()
             {
-                return itemValueFactory.MakeListType(elemType);
+                return (ITypeSymbolNode)symbolLoader.Load(stringId);
+            }
+            
+            public ITypeSymbolNode GetListType(ITypeSymbolNode elemType)
+            {
+                var typeArgs = Arr(elemType.GetSymbolId());
+                var listId = new ModuleSymbolId(new M.Name.Normal("System.Runtime"), null).Child(new M.Name.Normal("System")).Child(new M.Name.Normal("List"), typeArgs);
+
+                return (ITypeSymbolNode)symbolLoader.Load(listId);
             }
             
             public void AddInternalGlobalVarInfo(bool bRef, TypeSymbol typeValue, string name)
@@ -113,14 +122,20 @@ namespace Gum.IR0Translator
                 internalGlobalVarRepo.AddInternalGlobalVariable(bRef, typeValue, name);
             }
 
-            public bool IsBoolType(TypeSymbol typeValue)
+            public bool IsBoolType(ITypeSymbolNode type)
             {
-                return itemValueFactory.Bool.Equals(typeValue);
+                var decl = type.GetDeclSymbolNode();
+                var declId = decl.GetDeclSymbolId();
+
+                return declId.Equals(boolId);
             }
 
-            public bool IsIntType(TypeSymbol typeValue)
+            public bool IsIntType(ITypeSymbolNode type)
             {
-                return itemValueFactory.Int.Equals(typeValue);
+                var decl = type.GetDeclSymbolNode();
+                var declId = decl.GetDeclSymbolId();
+
+                return declId.Equals(intId);
             }
 
             public EnumElemSymbol MakeEnumElemTypeValue(EnumTypeValue outer, IModuleEnumElemDecl elemInfo)

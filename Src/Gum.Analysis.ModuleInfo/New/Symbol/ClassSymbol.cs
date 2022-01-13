@@ -271,12 +271,6 @@ namespace Gum.Analysis
             return decl;
         }
 
-        public M.NormalTypeId MakeChildTypeId(M.Name name, ImmutableArray<M.TypeId> typeArgs)
-        {
-            var thisTypeId = this.GetMTypeId();
-            return new M.MemberTypeId(thisTypeId, name, typeArgs);
-        }
-
         public ImmutableArray<ITypeSymbolNode> GetTypeArgs()
         {
             return typeArgs;

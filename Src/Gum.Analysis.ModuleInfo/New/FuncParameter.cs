@@ -58,11 +58,6 @@ namespace Gum.Analysis
         public ITypeSymbolNode Type { get; }
         public M.Name Name { get; }        
 
-        public M.Param GetMParam()
-        {
-            return new M.Param(Kind.ToMParamKind(), Type.GetMTypeId(), Name);
-        }
-
         public FuncParameter Apply(TypeEnv typeEnv)
         {
             var appliedType = Type.Apply(typeEnv);
@@ -87,21 +82,6 @@ namespace Gum.Analysis
             }
 
             return entries.MoveToImmutable();
-        }
-
-        public static M.ParamTypes MakeMParamTypes(this ImmutableArray<FuncParameter> funcParams)
-        {
-            var builder = ImmutableArray.CreateBuilder<M.ParamKindAndType>(funcParams.Length);
-
-            foreach (var funcParam in funcParams)
-            {
-                var kind = funcParam.Kind.ToMParamKind();
-                var mtypeid = funcParam.Type.GetMTypeId();
-
-                builder.Add(new M.ParamKindAndType(kind, mtypeid));
-            }
-
-            return new M.ParamTypes(builder.MoveToImmutable());
         }
     }
 }

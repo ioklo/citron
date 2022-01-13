@@ -48,11 +48,6 @@ namespace Gum.Analysis
             return outer.GetTypeEnv();
         }
 
-        public M.NormalTypeId MakeChildTypeId(M.Name name, ImmutableArray<M.TypeId> typeArgs)
-        {
-            throw new InvalidOperationException();
-        }
-
         public R.Path.Nested MakeRPath()
         {
             var rname = RItemFactory.MakeName(decl.GetName());

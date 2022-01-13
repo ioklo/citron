@@ -37,9 +37,14 @@ namespace Gum.Analysis
             return typeDecl.GetOuterDeclNode();
         }
 
-        public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, M.ParamTypes paramTypes)
+        public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
         {
-            return typeDecl.GetMemberDeclNode(name, typeParamCount, paramTypes);
+            return typeDecl.GetMemberDeclNode(name, typeParamCount, paramIds);
+        }
+
+        public void Apply(IDeclSymbolNodeVisitor visitor)
+        {
+            typeDecl.Apply(visitor);
         }
     }
 }

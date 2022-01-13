@@ -65,11 +65,6 @@ namespace Gum.Analysis
             return typeEnv;
         }
 
-        public M.NormalTypeId MakeChildTypeId(M.Name name, ImmutableArray<M.TypeId> typeArgs)
-        {
-            throw new InvalidOperationException();
-        }
-
         Path.Normal ISymbolNode.MakeRPath() => MakeRPath();        
     }
 }

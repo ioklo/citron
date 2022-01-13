@@ -12,7 +12,7 @@ namespace Gum.Analysis
     // Module, SymbolPath
     public record SymbolId;
     
-    public record ModuleSymbolId(M.Name ModuleName, SymbolPath? Path) : SymbolId;   
+    public record ModuleSymbolId(M.Name ModuleName, SymbolPath? Path) : SymbolId;
 
     public record TypeVarSymbolId(DeclSymbolId DeclSymbolId) : SymbolId;
     
@@ -22,9 +22,9 @@ namespace Gum.Analysis
 
     public static class SymbolIdExtensions
     {
-        public static ModuleSymbolId Child(this ModuleSymbolId id, M.Name name, ImmutableArray<SymbolId> typeArgs = default, M.ParamTypes paramTypes = default)
+        public static ModuleSymbolId Child(this ModuleSymbolId id, M.Name name, ImmutableArray<SymbolId> typeArgs = default, ImmutableArray<FuncParamId> paramIds = default)
         {
-            return new ModuleSymbolId(id.ModuleName, id.Path.Child(name, typeArgs, paramTypes));
+            return new ModuleSymbolId(id.ModuleName, id.Path.Child(name, typeArgs, paramIds));
         }
     }
 }

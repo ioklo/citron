@@ -115,12 +115,6 @@ namespace Gum.Analysis
         R.Path.Normal ISymbolNode.MakeRPath() => MakeRPath();
         ISymbolNode ISymbolNode.Apply(TypeEnv typeEnv) => Apply(typeEnv);
 
-        public M.NormalTypeId MakeChildTypeId(M.Name name, ImmutableArray<M.TypeId> typeArgs)
-        {
-            // 자식아이템을 가질 수 없으므로 ChildTypeId를 만들 수 없다
-            throw new InvalidOperationException();
-        }
-
         public ImmutableArray<ITypeSymbolNode> GetTypeArgs()
         {
             return typeArgs;

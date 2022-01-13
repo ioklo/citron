@@ -14,17 +14,148 @@ namespace Gum.Analysis
 {   
     class ModuleDeclSymbolBuilder
     {
+        List<Action<AfterBuildContext>> afterBuildTasks;
+
         class AfterBuildContext
         {
-            public ITypeSymbolNode GetTypeSymbolNode(TypeId typeId)
+            SymbolFactory factory;
+            ImmutableArray<ModuleDeclSymbol> moduleDecls;
+
+            public AfterBuildContext(ImmutableArray<ModuleDeclSymbol> moduleDecls)
             {
+                this.moduleDecls = moduleDecls;
+            }
+
+            // 
+            ISymbolNode GetSymbolNode(ModuleDeclSymbol moduleDecl, NamespacePath? path)
+            {
+                if (path == null)
+                {
+                    var module = SymbolInstantiator.Instantiate(factory, null, moduleDecl, default);
+                    if (module == null)
+                        throw new NotImplementedException(); // 에러 처리
+
+                    return module;
+                }   
+                else
+                {
+                    var outer = GetSymbolNode(moduleDecl, path.Outer);
+                    var outerDecl = outer.GetDeclSymbolNode();
+                    var decl = outerDecl.GetMemberDeclNode(path.Name, 0, default);
+                    if (decl == null)
+                        throw new NotImplementedException(); // 에러 처리
+
+                    var instance = SymbolInstantiator.Instantiate(factory, outer, decl, default);
+                    if (instance == null)
+                        throw new NotImplementedException(); // 에러 처리
+
+                    return instance;
+                }
+            }
+
+            ISymbolNode GetTopLevelSymbolNode(Name moduleName, NamespacePath? namespacePath)
+            {
+                foreach (var moduleDecl in moduleDecls)
+                {
+                    if (moduleName.Equals(moduleDecl.GetName()))
+                    {
+                        var instance = GetSymbolNode(moduleDecl, namespacePath);
+                        if (instance == null)
+                            throw new NotImplementedException(); // 에러 처리
+
+                        return instance;
+                    }
+                }
+
+                // 에러 처리
                 throw new NotImplementedException();
             }
-        }
+
+            ImmutableArray<ITypeSymbolNode> MakeTypeArgs(ImmutableArray<TypeId> typeArgs)
+            {
+                var typeArgsBuilder = ImmutableArray.CreateBuilder<ITypeSymbolNode>(typeArgs.Length);
+                foreach (var typeArgId in typeArgs)
+                {
+                    var typeArg = GetTypeSymbolNode(typeArgId);
+                    if (typeArg == null)
+                        throw new NotImplementedException();
+
+                    typeArgsBuilder.Add(typeArg);
+                }
+
+                return typeArgsBuilder.MoveToImmutable();
+            }
+
+            public ITypeSymbolNode GetTypeSymbolNode(TypeId typeId)
+            {
+                switch (typeId)
+                {
+                    case RootTypeId rootTypeId:
+                        {
+                            var root = GetTopLevelSymbolNode(rootTypeId.Module, rootTypeId.Namespace);
+                            var rootDecl = root.GetDeclSymbolNode();
+                            var memberDecl = rootDecl.GetMemberDeclNode(rootTypeId.Name, rootTypeId.TypeArgs.Length, default);
+                            var typeArgs = MakeTypeArgs(rootTypeId.TypeArgs);
+
+                            var instance = SymbolInstantiator.Instantiate(factory, root, memberDecl, typeArgs) as ITypeSymbolNode;
+                            if (instance == null)
+                                throw new NotImplementedException();
+
+                            return instance;
+                        }
+
+                    case MemberTypeId memberTypeId:
+                        {
+                            var outerNode = GetTypeSymbolNode(memberTypeId.Outer);
+                            if (outerNode == null)
+                                throw new NotImplementedException();
+
+                            var outerDeclNode = outerNode.GetDeclSymbolNode();
+                            var declNode = outerDeclNode.GetMemberDeclNode(memberTypeId.Name, memberTypeId.TypeArgs.Length, default);
+                            if (declNode == null)
+                                throw new NotImplementedException();
+
+                            var typeArgs = MakeTypeArgs(memberTypeId.TypeArgs);
+                            var instance = SymbolInstantiator.Instantiate(factory, outerNode, declNode, typeArgs) as ITypeSymbolNode;
+                            if (instance == null)
+                                throw new NotImplementedException();
+
+                            return instance;
+                        }
+
+                    case TypeVarTypeId:
+                        throw new NotImplementedException(); // TypeVarSymbol
+
+                    case VoidTypeId:
+                        throw new NotImplementedException(); // VoidSymbol
+
+                    case NullableTypeId: // NullableSymbol 
+                        throw new NotImplementedException();
+
+                    default:
+                        throw new UnreachableCodeException();
+                }                        
+            }
+        }        
 
         void RegisterAfterBuildTask(Action<AfterBuildContext> action)
         {
-            throw new NotImplementedException();
+            afterBuildTasks.Add(action);
+        }
+
+        void ExecuteAfterBuildTasks(ImmutableArray<ModuleDeclSymbol> moduleDeclSymbols)
+        {
+            var context = new AfterBuildContext(moduleDeclSymbols);
+
+            foreach(var task in afterBuildTasks)
+            {
+                task.Invoke(context);
+            }
+        }
+
+        public ModuleDeclSymbolBuilder()
+        {
+            afterBuildTasks = new List<Action<AfterBuildContext>>();
         }
 
         // TODO: dependency (moduleDecl에 있어야 할 것 같다)
@@ -39,7 +170,11 @@ namespace Gum.Analysis
                 symbolsBuilder.Add(symbol);
             }
 
-            return symbolsBuilder.MoveToImmutable();
+            var moduleDeclSymbols = symbolsBuilder.MoveToImmutable();
+
+            builder.ExecuteAfterBuildTasks(moduleDeclSymbols);
+
+            return moduleDeclSymbols;
         }
 
         ModuleDeclSymbol BuildModule(ModuleDecl decl)

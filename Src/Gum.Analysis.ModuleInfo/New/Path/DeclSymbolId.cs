@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Gum.Collections;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -19,9 +20,9 @@ namespace Gum.Analysis
             return new DeclSymbolId(moduleSymbolId.ModuleName, declPath);            
         }
 
-        public static DeclSymbolId Child(this DeclSymbolId declId, M.Name name, int typeParamCount, M.ParamTypes paramTypes)
+        public static DeclSymbolId Child(this DeclSymbolId declId, M.Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
         {
-            return new DeclSymbolId(declId.ModuleName, declId.Path.Child(name, typeParamCount, paramTypes));
+            return new DeclSymbolId(declId.ModuleName, declId.Path.Child(name, typeParamCount, paramIds));
         }
     }
 }
