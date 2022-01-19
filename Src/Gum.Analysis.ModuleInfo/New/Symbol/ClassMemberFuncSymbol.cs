@@ -8,12 +8,11 @@ using System.Text;
 using System.Threading.Tasks;
 
 using M = Gum.CompileTime;
-using R = Gum.IR0;
 
 namespace Gum.Analysis
 {
     // X<int>.Y<short>.F_T_int_int<S>
-    public class ClassMemberFuncSymbol : ISymbolNode
+    public class ClassMemberFuncSymbol : IFuncSymbol
     {
         SymbolFactory factory;
 
@@ -23,12 +22,16 @@ namespace Gum.Analysis
         // F_int_int
         ClassMemberFuncDeclSymbol decl;
 
-        ImmutableArray<ITypeSymbolNode> typeArgs;
+        ImmutableArray<ITypeSymbol> typeArgs;
 
         // cached typeEnv
         TypeEnv typeEnv;
-        
-        internal ClassMemberFuncSymbol(SymbolFactory factory, ClassSymbol outer, ClassMemberFuncDeclSymbol decl, ImmutableArray<ITypeSymbolNode> typeArgs)
+
+        // for return type covariance        
+        ISymbolNode ISymbolNode.Apply(TypeEnv typeEnv) => Apply(typeEnv);
+        IFuncSymbol IFuncSymbol.Apply(TypeEnv typeEnv) => Apply(typeEnv);
+
+        internal ClassMemberFuncSymbol(SymbolFactory factory, ClassSymbol outer, ClassMemberFuncDeclSymbol decl, ImmutableArray<ITypeSymbol> typeArgs)
         {
             this.factory = factory;
             this.outer = outer;
@@ -60,16 +63,8 @@ namespace Gum.Analysis
             var appliedTypeArgs = ImmutableArray.CreateRange(typeArgs, typeArg => typeArg.Apply(typeEnv));
             return factory.MakeClassMemberFunc(appliedOuter, decl, appliedTypeArgs);
         }
-
-        public R.Path.Nested MakeRPath()
-        {
-            var outerPath = outer.MakeRPath();
-            var rtypeArgs = ImmutableArray.CreateRange<ITypeSymbolNode, R.Path>(typeArgs, typeArg => typeArg.MakeRPath());
-
-            return decl.MakeRPath(outerPath, rtypeArgs);
-        }
-
-        public bool CheckAccess(ITypeSymbolNode? userType)
+        
+        public bool CheckAccess(ITypeSymbol? userType)
         {
             var accessModifier = decl.GetAccessModifier();
             
@@ -110,12 +105,8 @@ namespace Gum.Analysis
         {
             return typeEnv;
         }
-
-        // for return type covariance
-        R.Path.Normal ISymbolNode.MakeRPath() => MakeRPath();
-        ISymbolNode ISymbolNode.Apply(TypeEnv typeEnv) => Apply(typeEnv);
-
-        public ImmutableArray<ITypeSymbolNode> GetTypeArgs()
+        
+        public ImmutableArray<ITypeSymbol> GetTypeArgs()
         {
             return typeArgs;
         }
@@ -123,6 +114,11 @@ namespace Gum.Analysis
         public bool IsStatic()
         {
             return decl.IsStatic();
+        }
+
+        public ITypeSymbol? GetOuterType()
+        {
+            return outer;
         }
     }
 }

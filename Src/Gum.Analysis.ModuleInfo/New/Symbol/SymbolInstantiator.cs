@@ -9,15 +9,15 @@ using System.Threading.Tasks;
 
 namespace Gum.Analysis
 {
-    public class SymbolInstantiator : IDeclSymbolNodeVisitor
+    public class SymbolInstantiator : IDeclSymbolNodeVisitor, ITypeDeclSymbolVisitor
     {
         SymbolFactory factory;        
         ISymbolNode? outer;
-        ImmutableArray<ITypeSymbolNode> typeArgs;
+        ImmutableArray<ITypeSymbol> typeArgs;
 
         ISymbolNode? result;
 
-        SymbolInstantiator(SymbolFactory factory, ISymbolNode? outer, ImmutableArray<ITypeSymbolNode> typeArgs)
+        SymbolInstantiator(SymbolFactory factory, ISymbolNode? outer, ImmutableArray<ITypeSymbol> typeArgs)
         {
             this.factory = factory;
             this.outer = outer;
@@ -25,7 +25,27 @@ namespace Gum.Analysis
             this.result = null;
         }
 
-        public static ISymbolNode? Instantiate(SymbolFactory factory, ISymbolNode? outer, IDeclSymbolNode decl, ImmutableArray<ITypeSymbolNode> typeArgs)
+        public static ITypeSymbol Instantiate(SymbolFactory factory, ISymbolNode outer, ClassMemberTypeDeclSymbol decl, ImmutableArray<ITypeSymbol> typeArgs)
+        {
+            var instantiator = new SymbolInstantiator(factory, outer, typeArgs);
+            decl.Apply(instantiator);
+
+            var typeSymbolResult = instantiator.result as ITypeSymbol;
+            Debug.Assert(typeSymbolResult != null);
+            return typeSymbolResult;
+        }
+
+        public static ITypeSymbol Instantiate(SymbolFactory factory, ISymbolNode outer, StructMemberTypeDeclSymbol decl, ImmutableArray<ITypeSymbol> typeArgs)
+        {
+            var instantiator = new SymbolInstantiator(factory, outer, typeArgs);
+            decl.Apply(instantiator);
+
+            var typeSymbolResult = instantiator.result as ITypeSymbol;
+            Debug.Assert(typeSymbolResult != null);
+            return typeSymbolResult;
+        }
+
+        public static ISymbolNode? Instantiate(SymbolFactory factory, ISymbolNode? outer, IDeclSymbolNode decl, ImmutableArray<ITypeSymbol> typeArgs)
         {
             var instantiator = new SymbolInstantiator(factory, outer, typeArgs);
             decl.Apply(instantiator);
@@ -150,6 +170,24 @@ namespace Gum.Analysis
             Debug.Assert(typeArgs.IsEmpty);
 
             result = factory.MakeStructMemberVar(@struct, decl);
+        }
+
+        public void VisitLambda(LambdaDeclSymbol decl)
+        {
+            var outerFunc = outer as IFuncSymbol;
+            Debug.Assert(outerFunc != null);
+            Debug.Assert(typeArgs.IsEmpty);
+
+            result = factory.MakeLambda(outerFunc, decl);
+        }
+
+        public void VisitLambdaMemberVar(LambdaMemberVarDeclSymbol decl)
+        {
+            var lambda = outer as LambdaSymbol;
+            Debug.Assert(lambda != null);
+            Debug.Assert(typeArgs.IsEmpty);
+
+            result = factory.MakeLambdaMemberVar(lambda, decl);
         }
     }
 }

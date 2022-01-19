@@ -72,7 +72,7 @@ namespace Gum.Analysis
     partial class ModuleSymbolTypeExpInfo : TypeExpInfo
     {
         ModuleSymbolId typeId;
-        ITypeDeclSymbolNode symbol;
+        ITypeDeclSymbol symbol;
         S.TypeExp typeExp; // 소스의 어디에서 이 타입정보가 나타나는가
 
         public override TypeExpInfoKind GetKind()
@@ -82,7 +82,7 @@ namespace Gum.Analysis
 
         public override TypeExpInfo? GetMemberInfo(string memberName, ImmutableArray<SymbolId> typeArgs, S.TypeExp memberTypeExp)
         {
-            var memberTypeNode = symbol.GetMemberDeclNode(new M.Name.Normal(memberName), typeArgs.Length, default) as ITypeDeclSymbolNode;
+            var memberTypeNode = symbol.GetMemberDeclNode(new M.Name.Normal(memberName), typeArgs.Length, default) as ITypeDeclSymbol;
             if (memberTypeNode == null)
                 return null;
 

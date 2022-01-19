@@ -8,7 +8,7 @@ using M = Gum.CompileTime;
 namespace Gum.Analysis
 {
     [AutoConstructor, ImplementIEquatable]
-    public partial class EnumElemDeclSymbol : ITypeDeclSymbolNode
+    public partial class EnumElemDeclSymbol : ITypeDeclSymbol, IDeclSymbolNode
     {
         IHolder<EnumDeclSymbol> outer;
         M.Name name;
@@ -52,9 +52,9 @@ namespace Gum.Analysis
             return null;
         }
 
-        public void Apply(ITypeDeclSymbolNodeVisitor visitor)
+        public void Apply(ITypeDeclSymbolVisitor visitor)
         {
-            visitor.VisitEnumElemDecl(this);
+            visitor.VisitEnumElem(this);
         }
 
         public void Apply(IDeclSymbolNodeVisitor visitor)

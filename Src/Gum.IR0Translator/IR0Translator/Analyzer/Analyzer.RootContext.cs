@@ -48,7 +48,7 @@ namespace Gum.IR0Translator
                 return new R.Path.Root(moduleName);
             }
 
-            public NormalTypeValue? GetThisTypeValue()
+            public NormalTypeValue? GetThisType()
             {
                 return null;
             }
@@ -69,9 +69,9 @@ namespace Gum.IR0Translator
             }
 
             public LocalVarInfo? GetLocalVarOutsideLambda(string varName) => null;
-            public TypeSymbol? GetRetTypeValue() => itemValueFactory.Int;            
-            public void SetRetTypeValue(TypeSymbol retTypeValue) => throw new UnreachableCodeException();
-            public void AddLambdaCapture(string capturedVarName, TypeSymbol capturedVarType) => throw new UnreachableCodeException();
+            public ITypeSymbol? GetReturn() => itemValueFactory.Int;            
+            public void SetRetType(ITypeSymbol retTypeValue) => throw new UnreachableCodeException();
+            public void AddLambdaCapture(string capturedVarName, ITypeSymbol capturedVarType) => throw new UnreachableCodeException();
             public bool IsSeqFunc() => false;
 
             public void AddTopLevelStmt(R.Stmt stmt)

@@ -1,7 +1,6 @@
 ﻿using Gum.Collections;
 using System;
 using M = Gum.CompileTime;
-using R = Gum.IR0;
 
 
 namespace Gum.Analysis
@@ -13,14 +12,19 @@ namespace Gum.Analysis
         ISymbolNode? GetOuter();
         IDeclSymbolNode GetDeclSymbolNode();
         
-        TypeEnv GetTypeEnv();        
-        R.Path.Normal MakeRPath();
+        TypeEnv GetTypeEnv();
         ISymbolNode Apply(TypeEnv typeEnv);        
-        ImmutableArray<ITypeSymbolNode> GetTypeArgs();
+        ImmutableArray<ITypeSymbol> GetTypeArgs();
     }
 
     public static class SymbolNodeExtensions
     {
+        public static int GetTotalTypeParamCount(this ISymbolNode symbol)
+        {
+            var decl = symbol.GetDeclSymbolNode();
+            return decl.GetTotalTypeParamCount();
+        }
+        
         public static SymbolId GetSymbolId(this ISymbolNode symbol)
         {
             var outer = symbol.GetOuter();

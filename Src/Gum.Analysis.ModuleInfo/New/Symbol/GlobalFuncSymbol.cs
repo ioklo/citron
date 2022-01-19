@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 
 using M = Gum.CompileTime;
-using R = Gum.IR0;
 using Gum.Infra;
 using Gum.Collections;
 using Gum.Analysis;
@@ -15,7 +14,7 @@ namespace Gum.Analysis
     // X<int>.Y<short>.F_T_int_int<S>
 
     // F<>
-    public class GlobalFuncSymbol : ISymbolNode
+    public class GlobalFuncSymbol : IFuncSymbol
     {
         SymbolFactory factory;
 
@@ -23,11 +22,14 @@ namespace Gum.Analysis
 
         // F_int_int
         GlobalFuncDeclSymbol decl;
-        ImmutableArray<ITypeSymbolNode> typeArgs;
+        ImmutableArray<ITypeSymbol> typeArgs;
 
-        TypeEnv typeEnv;        
-        
-        internal GlobalFuncSymbol(SymbolFactory factory, ITopLevelSymbolNode outer, GlobalFuncDeclSymbol funcDecl, ImmutableArray<ITypeSymbolNode> typeArgs)
+        TypeEnv typeEnv;
+
+        ISymbolNode ISymbolNode.Apply(TypeEnv typeEnv) => Apply(typeEnv);
+        IFuncSymbol IFuncSymbol.Apply(TypeEnv typeEnv) => Apply(typeEnv);
+
+        internal GlobalFuncSymbol(SymbolFactory factory, ITopLevelSymbolNode outer, GlobalFuncDeclSymbol funcDecl, ImmutableArray<ITypeSymbol> typeArgs)
         {
             this.factory = factory;
             this.outer = outer;
@@ -60,15 +62,7 @@ namespace Gum.Analysis
             var appliedTypeArgs = ImmutableArray.CreateRange(typeArgs, typeArg => typeArg.Apply(typeEnv));
             return factory.MakeGlobalFunc(appliedOuter, decl, appliedTypeArgs);
         }
-
-        public R.Path.Nested MakeRPath()
-        {
-            var outerPath = outer.MakeRPath();
-            var rtypeArgs = ImmutableArray.CreateRange<ITypeSymbolNode, R.Path>(typeArgs, typeArg => typeArg.MakeRPath());
-
-            return decl.MakeRPath(outerPath, rtypeArgs);
-        }
-
+        
         public int GetParameterCount()
         {
             return decl.GetParameterCount();
@@ -102,15 +96,16 @@ namespace Gum.Analysis
         public TypeEnv GetTypeEnv()
         {
             return typeEnv;
-        }
+        }        
 
-        R.Path.Normal ISymbolNode.MakeRPath() => MakeRPath();
-
-        ISymbolNode ISymbolNode.Apply(TypeEnv typeEnv) => Apply(typeEnv);
-
-        public ImmutableArray<ITypeSymbolNode> GetTypeArgs()
+        public ImmutableArray<ITypeSymbol> GetTypeArgs()
         {
             return typeArgs;
+        }
+
+        public ITypeSymbol? GetOuterType()
+        {
+            return null;
         }
     }
 }

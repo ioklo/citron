@@ -13,7 +13,7 @@ namespace Gum.Analysis
 
         M.AccessModifier accessModifier;
         bool bStatic;
-        IHolder<ITypeSymbolNode> declTypeHolder;
+        IHolder<ITypeSymbol> declTypeHolder;
         M.Name name;
 
         public IDeclSymbolNode? GetOuterDeclNode()
@@ -36,7 +36,7 @@ namespace Gum.Analysis
             return new DeclSymbolNodeName(name, 0, default);
         }
 
-        public ITypeSymbolNode GetDeclType()
+        public ITypeSymbol GetDeclType()
         {
             return declTypeHolder.GetValue();
         }

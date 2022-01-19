@@ -10,7 +10,6 @@ using static Gum.Infra.Misc;
 using static Gum.CompileTime.ItemPathExtensions;
 
 using M = Gum.CompileTime;
-using R = Gum.IR0;
 using Gum.Analysis;
 
 namespace Gum.Analysis
@@ -21,10 +20,10 @@ namespace Gum.Analysis
         TypeInfoRepository typeInfoRepo;
         RItemFactory ritemFactory;
 
-        public TypeSymbol Void { get; }
-        public TypeSymbol Bool { get; }
-        public TypeSymbol Int { get; }        
-        public TypeSymbol String { get; }
+        public ITypeSymbol Void { get; }
+        public ITypeSymbol Bool { get; }
+        public ITypeSymbol Int { get; }        
+        public ITypeSymbol String { get; }
 
         // temporary
         record DummyStructInfo : IModuleStructDecl
@@ -46,11 +45,11 @@ namespace Gum.Analysis
             public IModuleFuncDecl? GetFunc(M.Name name, int typeParamCount, M.ParamTypes paramTypes) => null;
             public ImmutableArray<IModuleFuncDecl> GetFuncs(M.Name name, int minTypeParamCount) => default;
             public ImmutableArray<IModuleFuncDecl> GetMemberFuncs() => default;
-            public ImmutableArray<ITypeDeclSymbolNode> GetMemberTypes() => default;
+            public ImmutableArray<ITypeDeclSymbol> GetMemberTypes() => default;
             public ImmutableArray<IModuleMemberVarInfo> GetMemberVars() => default;
             public IModuleNamespaceInfo? GetNamespace(M.Name name) => null;
             public IModuleConstructorDecl? GetTrivialConstructor() => null;
-            public ITypeDeclSymbolNode? GetType(M.Name name, int typeParamCount) => null;
+            public ITypeDeclSymbol? GetType(M.Name name, int typeParamCount) => null;
         }
 
         record DummySystemNamespaceInfo : IModuleNamespaceInfo
@@ -68,7 +67,7 @@ namespace Gum.Analysis
                 IModuleFuncDecl? IModuleItemDecl.GetFunc(M.Name name, int typeParamCount, M.ParamTypes paramTypes) => null;
                 ImmutableArray<IModuleFuncDecl> IModuleItemDecl.GetFuncs(M.Name name, int minTypeParamCount) => default;
                 IModuleItemDecl? IModuleItemDecl.GetOuter() => null;
-                ITypeDeclSymbolNode? IModuleItemDecl.GetType(M.Name name, int typeParamCount) => null;
+                ITypeDeclSymbol? IModuleItemDecl.GetType(M.Name name, int typeParamCount) => null;
 
                 IModuleNamespaceInfo? IModuleItemDecl.GetNamespace(M.Name name)
                 {
@@ -90,7 +89,7 @@ namespace Gum.Analysis
             public IModuleFuncDecl? GetFunc(M.Name name, int typeParamCount, M.ParamTypes paramTypes) => null;
             public ImmutableArray<IModuleFuncDecl> GetFuncs(M.Name name, int minTypeParamCount) => default;
             public IModuleNamespaceInfo? GetNamespace(M.Name name) => null;
-            public ITypeDeclSymbolNode? GetType(M.Name name, int typeParamCount);
+            public ITypeDeclSymbol? GetType(M.Name name, int typeParamCount);
         }
 
         public ItemValueFactory(TypeInfoRepository typeInfoRepo, RItemFactory ritemFactory)
@@ -111,18 +110,18 @@ namespace Gum.Analysis
         }
 
         // typeInfo의 outer가 ItemValue류가 아닐때 가능하다
-        TypeSymbol MakeDummyStructTypeValue(DummySystemNamespaceInfo namespaceInfo, string name)
+        ITypeSymbol MakeDummyStructTypeValue(DummySystemNamespaceInfo namespaceInfo, string name)
         {
             var structInfo = new DummyStructInfo(namespaceInfo, name);
             return MakeTypeValue(new RootItemValueOuter(namespaceInfo), structInfo, default);
         }
 
-        public TypeSymbol MakeTypeValue(TypeSymbol outer, ITypeDeclSymbolNode typeInfo, ImmutableArray<ITypeSymbolNode> typeArgs)
+        public ITypeSymbol MakeTypeValue(ITypeSymbol outer, ITypeDeclSymbol typeInfo, ImmutableArray<ITypeSymbol> typeArgs)
         {
             return MakeTypeValue(new NestedItemValueOuter(outer), typeInfo, typeArgs);
         }
 
-        public NormalTypeValue MakeTypeValue(ItemValueOuter outer, ITypeDeclSymbolNode typeInfo, ImmutableArray<ITypeSymbolNode> typeArgs)
+        public NormalTypeValue MakeTypeValue(ItemValueOuter outer, ITypeDeclSymbol typeInfo, ImmutableArray<ITypeSymbol> typeArgs)
         {
             switch (typeInfo)
             {
@@ -149,9 +148,9 @@ namespace Gum.Analysis
             return new MemberVarValue(this, outer, info);
         }        
         
-        ImmutableArray<TypeSymbol> MakeTypeValues(ImmutableArray<M.TypeId> mtypes)
+        ImmutableArray<ITypeSymbol> MakeTypeValues(ImmutableArray<M.TypeId> mtypes)
         {
-            var builder = ImmutableArray.CreateBuilder<TypeSymbol>();
+            var builder = ImmutableArray.CreateBuilder<ITypeSymbol>();
             foreach (var mtype in mtypes)
             {
                 var type = MakeTypeValueByMType(mtype);
@@ -161,21 +160,16 @@ namespace Gum.Analysis
             return builder.ToImmutable();
         }
 
-        public EnumSymbol MakeEnumTypeValue(ItemValueOuter outer, IModuleEnumDecl enumInfo, ImmutableArray<ITypeSymbolNode> typeArgs)
+        public EnumSymbol MakeEnumTypeValue(ItemValueOuter outer, IModuleEnumDecl enumInfo, ImmutableArray<ITypeSymbol> typeArgs)
         {
             return new EnumSymbol(this, outer, enumInfo, typeArgs);
-        }
-
-        public EnumElemSymbol MakeEnumElemTypeValue(EnumSymbol outer, IModuleEnumElemDecl elemInfo)
-        {
-            return new EnumElemSymbol(ritemFactory, this, outer, elemInfo);
-        }
+        }        
 
         // Gum.Analysis.ModuleInfo.Abstraction에서
         // [Gum.Analysis.TypeExpEvaluator] TypeExpInfo를 참조해야 한다
         // TypeExpInfo는 TypeExpEvaluator를 수행한 결과이다
         // [Gum.Analysis.TypeExpEvaluator]에서 [Gum.Analysis.TypeExpInfo]를 분리해 보자
-        public TypeSymbol MakeTypeValue(TypeExpInfo typeExpInfo)
+        public ITypeSymbol MakeTypeValue(TypeExpInfo typeExpInfo)
         {
             switch (typeExpInfo)
             {
@@ -211,7 +205,7 @@ namespace Gum.Analysis
             }
         }
         
-        public TypeSymbol MakeTypeValueByMType(M.TypeId mtype)
+        public ITypeSymbol MakeTypeValueByMType(M.TypeId mtype)
         {
             switch (mtype)
             {
@@ -264,7 +258,7 @@ namespace Gum.Analysis
             }
         }
 
-        public FuncValue MakeFunc(ItemValueOuter outer, IModuleFuncDecl funcInfo, ImmutableArray<ITypeSymbolNode> typeArgs)
+        public FuncValue MakeFunc(ItemValueOuter outer, IModuleFuncDecl funcInfo, ImmutableArray<ITypeSymbol> typeArgs)
         {
             return new FuncValue(this, outer, funcInfo, typeArgs);
         }
@@ -274,27 +268,27 @@ namespace Gum.Analysis
             return new TypeVarTypeValue(ritemFactory, index);
         }        
         
-        public FuncValue MakeMemberFunc(TypeSymbol outer, IModuleFuncDecl funcInfo, ImmutableArray<ITypeSymbolNode> typeArgs)
+        public FuncValue MakeMemberFunc(ITypeSymbol outer, IModuleFuncDecl funcInfo, ImmutableArray<ITypeSymbol> typeArgs)
         {
             var itemValueOuter = new NestedItemValueOuter(outer);
             return new FuncValue(this, itemValueOuter, funcInfo, typeArgs);
         }
 
         // global
-        public FuncValue MakeGlobalFunc(M.DeclSymbolPath outerPath, IModuleFuncDecl funcInfo, ImmutableArray<ITypeSymbolNode> typeArgs)
+        public FuncValue MakeGlobalFunc(M.DeclSymbolPath outerPath, IModuleFuncDecl funcInfo, ImmutableArray<ITypeSymbol> typeArgs)
         {
             var itemValueOuter = MakeItemValueOuter(outerPath);
             return new FuncValue(this, itemValueOuter, funcInfo, typeArgs);
         }
 
-        public SeqTypeValue MakeSeqType(R.Path.Nested seq, TypeSymbol yieldType)
+        public SeqTypeValue MakeSeqType(R.Path.Nested seq, ITypeSymbol yieldType)
         {
             return new SeqTypeValue(ritemFactory, seq, yieldType);
         }
 
-        public LambdaTypeValue MakeLambdaType(R.Path.Nested lambda, TypeSymbol retType, ImmutableArray<ParamInfo> paramInfos)
+        public LambdaSymbol MakeLambdaType(R.Path.Nested lambda, ITypeSymbol retType, ImmutableArray<ParamInfo> paramInfos)
         {
-            return new LambdaTypeValue(ritemFactory, lambda, retType, paramInfos);
+            return new LambdaSymbol(ritemFactory, lambda, retType, paramInfos);
         }
 
         public VarTypeValue MakeVarTypeValue()
@@ -302,12 +296,12 @@ namespace Gum.Analysis
             return VarTypeValue.Instance;
         }
 
-        public TupleTypeValue MakeTupleType(ImmutableArray<(TypeSymbol Type, string? Name)> elems)
+        public TupleTypeValue MakeTupleType(ImmutableArray<(ITypeSymbol Type, string? Name)> elems)
         {
             return new TupleTypeValue(ritemFactory, elems);
         }
 
-        public RuntimeListTypeValue MakeListType(TypeSymbol elemType)
+        public RuntimeListTypeValue MakeListType(ITypeSymbol elemType)
         {
             return new RuntimeListTypeValue(this, elemType);
         }
@@ -317,12 +311,12 @@ namespace Gum.Analysis
             return new ConstructorValue(this, outer, info);
         }
 
-        public StructSymbol MakeStructValue(ItemValueOuter outer, IModuleStructDecl structInfo, ImmutableArray<ITypeSymbolNode> typeArgs)
+        public StructSymbol MakeStructValue(ItemValueOuter outer, IModuleStructDecl structInfo, ImmutableArray<ITypeSymbol> typeArgs)
         {
             return new StructSymbol(this, ritemFactory, outer, structInfo, typeArgs);
         }        
 
-        public NullableTypeValue MakeNullableTypeValue(TypeSymbol innerTypeValue)
+        public NullableTypeValue MakeNullableTypeValue(ITypeSymbol innerTypeValue)
         {
             return new NullableTypeValue(this, innerTypeValue);
         }

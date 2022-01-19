@@ -6,7 +6,6 @@ using System.Linq;
 using System.Text;
 
 using M = Gum.CompileTime;
-using R = Gum.IR0;
 using Gum.Infra;
 using Gum.Analysis;
 
@@ -34,7 +33,7 @@ namespace Gum.Analysis
             outer.FillTypeEnv(builder);
         }
 
-        public TypeSymbol GetTypeValue()
+        public ITypeSymbol GetTypeValue()
         {
             var typeEnv = MakeTypeEnv();
             var type = info.GetDeclType();

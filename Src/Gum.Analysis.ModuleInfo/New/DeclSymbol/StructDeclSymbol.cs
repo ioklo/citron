@@ -11,9 +11,9 @@ using Gum.Infra;
 namespace Gum.Analysis
 {
     [ImplementIEquatable]
-    public partial class StructDeclSymbol : ITypeDeclSymbolNode
+    public partial class StructDeclSymbol : ITypeDeclSymbol, IDeclSymbolNode
     {
-        IHolder<IDeclSymbolNode> outer;
+        IHolder<ITypeDeclSymbolContainer> containerHolder;
 
         M.Name name;
         ImmutableArray<string> typeParams;
@@ -29,7 +29,7 @@ namespace Gum.Analysis
         FuncDict<StructMemberFuncDeclSymbol> funcDict;
 
         public StructDeclSymbol(
-            IHolder<IDeclSymbolNode> outer,
+            IHolder<ITypeDeclSymbolContainer> containerHolder,
             M.Name name, ImmutableArray<string> typeParams,
             IHolder<StructSymbol?> baseStructHolder,
             ImmutableArray<StructMemberTypeDeclSymbol> typeDecls,
@@ -38,7 +38,7 @@ namespace Gum.Analysis
             IHolder<ImmutableArray<StructConstructorDeclSymbol>> constructorsHolder,
             IHolder<StructConstructorDeclSymbol?> trivialConstructorHolder)
         {
-            this.outer = outer;
+            this.containerHolder = containerHolder;
             this.name = name;
             this.typeParams = typeParams;
             this.baseStructHolder = baseStructHolder;
@@ -117,14 +117,14 @@ namespace Gum.Analysis
             return new DeclSymbolNodeName(name, typeParams.Length, default);
         }
 
-        public void Apply(ITypeDeclSymbolNodeVisitor visitor)
+        public void Apply(ITypeDeclSymbolVisitor visitor)
         {
-            visitor.VisitStructDecl(this);
+            visitor.VisitStruct(this);
         }
 
         public IDeclSymbolNode? GetOuterDeclNode()
         {
-            return outer.GetValue();
+            return containerHolder.GetValue().GetOuterDeclNode();
         }
 
         public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
@@ -142,7 +142,7 @@ namespace Gum.Analysis
 
                 var typeDecl = typeDict.Get(nodeName);
                 if (typeDecl != null)
-                    return typeDecl;
+                    return typeDecl.GetNode();
             }
 
             var funcDecl = funcDict.Get(nodeName);

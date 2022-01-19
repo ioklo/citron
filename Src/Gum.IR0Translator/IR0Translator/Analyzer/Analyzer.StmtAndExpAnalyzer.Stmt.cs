@@ -135,12 +135,12 @@ namespace Gum.IR0Translator
                 // IfTestStmt -> IfTestClassStmt, IfTestEnumElemStmt
 
                 var targetResult = AnalyzeExp_Loc(ifTestStmt.Exp, ResolveHint.None);
-                var testType = globalContext.GetTypeValueByTypeExp(ifTestStmt.TestType);                
+                var testType = globalContext.GetSymbolByTypeExp(ifTestStmt.TestType);                
 
                 if (testType is EnumElemSymbol enumElemType)
                 {
                     // exact match
-                    if (!enumElemType.Outer.Equals(targetResult.TypeValue))
+                    if (!targetResult.TypeSymbol.Equals(enumElemType.GetOuter()))
                         globalContext.AddFatalError(A2301_IfTestStmt_CantDowncast, ifTestStmt.Exp);
 
                     // analyze body
@@ -168,7 +168,7 @@ namespace Gum.IR0Translator
                         elseBodyResult = null;
                     }
 
-                    var rstmt = new R.IfTestEnumElemStmt(targetResult.Result, enumElemType.GetRPath_Nested(), ifTestStmt.VarName, bodyResult.Stmt, elseBodyResult?.Stmt);
+                    var rstmt = new R.IfTestEnumElemStmt(targetResult.Result, enumElemType.MakeRPath(), ifTestStmt.VarName, bodyResult.Stmt, elseBodyResult?.Stmt);
                     return new StmtResult(rstmt);
                 }
                 else
@@ -274,7 +274,7 @@ namespace Gum.IR0Translator
                 if (forStmt.ContinueExp != null)
                 {
                     var continueResult = newAnalyzer.AnalyzeTopLevelExp_Exp(forStmt.ContinueExp, ResolveHint.None, A1103_ForStmt_ContinueExpShouldBeAssignOrCall);
-                    var contExpType = continueResult.TypeValue.GetRPath();
+                    var contExpType = continueResult.TypeSymbol.MakeRPath();
                     continueInfo = continueResult.Result;
                 }
                 
@@ -316,12 +316,12 @@ namespace Gum.IR0Translator
                 // 리턴 값이 없을 경우
                 if (returnStmt.Info == null)
                 {
-                    var retTypeValue = callableContext.GetRetTypeValue();
+                    var retTypeValue = callableContext.GetReturn();
                     var voidTypeValue = globalContext.GetVoidType();
 
                     if (retTypeValue == null)
                     {
-                        callableContext.SetRetTypeValue(voidTypeValue);
+                        callableContext.SetRetType(voidTypeValue);
                     }
                     else if (retTypeValue != voidTypeValue)
                     {
@@ -333,7 +333,7 @@ namespace Gum.IR0Translator
                 else if (returnStmt.Info.Value.IsRef) // return ref i; 또는  () => ref i;
                 {
                     // 이 함수의 적혀져 있던 리턴타입 or 첫번째로 발견되서 유지되고 있는 리턴타입
-                    var retTypeValue = callableContext.GetRetTypeValue();
+                    var retTypeValue = callableContext.GetReturn();
 
                     if (retTypeValue == null)
                     {
@@ -348,7 +348,7 @@ namespace Gum.IR0Translator
                             case ExpResult.Loc locResult:
                                 {
                                     // 리턴값이 안 적혀 있었으므로 적는다
-                                    callableContext.SetRetTypeValue(locResult.TypeValue);
+                                    callableContext.SetRetType(locResult.TypeSymbol);
                                     return new StmtResult(new R.ReturnStmt(new R.ReturnInfo.Ref(locResult.Result)));
                                 }
 
@@ -369,7 +369,7 @@ namespace Gum.IR0Translator
                                 {
                                     // 현재 함수 시그니처랑 맞춰서 같은지 확인한다
                                     // ExactMatch여야 한다
-                                    if (!locResult.TypeValue.Equals(retTypeValue))
+                                    if (!locResult.TypeSymbol.Equals(retTypeValue))
                                         globalContext.AddFatalError(A1201_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType, returnStmt);
 
                                     return new StmtResult(new R.ReturnStmt(new R.ReturnInfo.Ref(locResult.Result)));
@@ -384,7 +384,7 @@ namespace Gum.IR0Translator
                 else
                 {
                     // 이 함수의 적혀져 있던 리턴타입 or 첫번째로 발견되서 유지되고 있는 리턴타입
-                    var retTypeValue = callableContext.GetRetTypeValue();
+                    var retTypeValue = callableContext.GetReturn();
 
                     if (retTypeValue == null)
                     {
@@ -392,7 +392,7 @@ namespace Gum.IR0Translator
                         var valueResult = AnalyzeExp_Exp(returnStmt.Info.Value.Value, ResolveHint.None);
 
                         // 리턴값이 안 적혀 있었으므로 적는다
-                        callableContext.SetRetTypeValue(valueResult.TypeValue);
+                        callableContext.SetRetType(valueResult.TypeSymbol);
 
                         return new StmtResult(new R.ReturnStmt(new R.ReturnInfo.Expression(valueResult.Result)));
                     }
@@ -446,14 +446,14 @@ namespace Gum.IR0Translator
                 return new StmtResult(new R.ExpStmt(expResult.Result));
             }
 
-            R.CapturedStatementDecl AnalyzeCapturedStatement(TypeSymbol? retTypeValue, S.Stmt body)
+            R.CapturedStatementDecl AnalyzeCapturedStatement(ITypeSymbol? retTypeValue, S.Stmt body)
             {
                 var capturedStatementName = callableContext.NewAnonymousName();
                 var capturedStatementPath = MakePath(capturedStatementName, R.ParamHash.None, default);
 
                 // TODO: 리턴 타입은 타입 힌트를 반영해야 한다
                 // 파라미터는 람다 함수의 지역변수로 취급한다                
-                var newLambdaContext = new LambdaContext(capturedStatementPath, callableContext.GetThisTypeValue(), localContext, retTypeValue);
+                var newLambdaContext = new LambdaContext(capturedStatementPath, callableContext.GetThisType(), localContext, retTypeValue);
                 var newLocalContext = new LocalContext();
                 var newAnalyzer = new StmtAndExpAnalyzer(globalContext, newLambdaContext, newLocalContext);
 
@@ -504,11 +504,11 @@ namespace Gum.IR0Translator
                 var iteratorResult = AnalyzeExp_Loc(foreachStmt.Iterator, ResolveHint.None);
                 
                 // 먼저, iteratorResult가 anonymous_seq타입인지 확인한다
-                if (iteratorResult.TypeValue is SeqTypeValue seqIteratorType)
+                if (iteratorResult.TypeSymbol is SeqTypeSymbol seqIteratorType)
                 {
-                    var elemType = globalContext.GetTypeValueByTypeExp(foreachStmt.Type);
+                    var elemType = globalContext.GetSymbolByTypeExp(foreachStmt.Type);
                     
-                    if (elemType is VarTypeValue) // var type처리
+                    if (elemType is VarTypeSymbol) // var type처리
                     {
                         elemType = seqIteratorType.YieldType;
                     }
@@ -517,7 +517,7 @@ namespace Gum.IR0Translator
                         // 완전히 같은지 체크
                         if (elemType.Equals(seqIteratorType.YieldType))
                         {
-                            // relemType = elemType.GetRPath();
+                            // relemType = elemType.MakeRPath();
                         }
                         else
                         {
@@ -540,7 +540,7 @@ namespace Gum.IR0Translator
                     // 본문 분석
                     var bodyResult = loopAnalyzer.AnalyzeStmt(foreachStmt.Body);
 
-                    var rforeachStmt = new R.ForeachStmt(elemType.GetRPath(), foreachStmt.VarName, iteratorResult.Result, bodyResult.Stmt);
+                    var rforeachStmt = new R.ForeachStmt(elemType.MakeRPath(), foreachStmt.VarName, iteratorResult.Result, bodyResult.Stmt);
                     return new StmtResult(rforeachStmt);
                 }
                 else
@@ -548,11 +548,11 @@ namespace Gum.IR0Translator
                     // 축약형 처리
                     // anonymous_seq를 리턴하는 식으로 변경해준다
                     // foreach(var i in [1, 2, 3, 4]) => foreach(var i in [1, 2, 3, 4].GetEnumerator())
-                    if (iteratorResult.TypeValue is RuntimeListTypeValue runtimeListTypeValue)
+                    if (iteratorResult.TypeSymbol is RuntimeListTypeValue runtimeListTypeValue)
                     {
-                        var elemType = globalContext.GetTypeValueByTypeExp(foreachStmt.Type);
+                        var elemType = globalContext.GetSymbolByTypeExp(foreachStmt.Type);
 
-                        if (elemType is VarTypeValue) // var type처리
+                        if (elemType is VarTypeSymbol) // var type처리
                         {
                             elemType = runtimeListTypeValue.ElemType;
                         }
@@ -561,7 +561,7 @@ namespace Gum.IR0Translator
                             // 완전히 같은지 체크
                             if (elemType.Equals(runtimeListTypeValue.ElemType))
                             {
-                                // relemType = elemType.GetRPath();
+                                // relemType = elemType.MakeRPath();
                             }
                             else
                             {
@@ -586,7 +586,7 @@ namespace Gum.IR0Translator
                         // 본문 분석
                         var bodyResult = loopAnalyzer.AnalyzeStmt(foreachStmt.Body);
 
-                        var rforeachStmt = new R.ForeachStmt(elemType.GetRPath(), foreachStmt.VarName, listIterator, bodyResult.Stmt);
+                        var rforeachStmt = new R.ForeachStmt(elemType.MakeRPath(), foreachStmt.VarName, listIterator, bodyResult.Stmt);
                         return new StmtResult(rforeachStmt);
 
                     }
@@ -603,7 +603,7 @@ namespace Gum.IR0Translator
                     globalContext.AddFatalError(A1401_YieldStmt_YieldShouldBeInSeqFunc, yieldStmt);
 
                 // yield에서는 retType이 명시되는 경우만 있을 것이다
-                var retTypeValue = callableContext.GetRetTypeValue();
+                var retTypeValue = callableContext.GetReturn();
                 Debug.Assert(retTypeValue != null);
 
                 // NOTICE: 리턴 타입을 힌트로 넣었다

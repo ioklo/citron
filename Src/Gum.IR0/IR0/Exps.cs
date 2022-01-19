@@ -7,6 +7,7 @@ using Gum.Collections;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using Gum.Analysis;
 
 namespace Gum.IR0
 {   
@@ -113,8 +114,8 @@ namespace Gum.IR0
     public record NewClassExp(Path.Nested Class, ParamHash ConstructorParamHash, ImmutableArray<Argument> Args) : Exp;
 
     // 컨테이너를 enumElem -> enum으로
-    public record CastEnumElemToEnumExp(Exp Src, Path.Nested EnumElem) : Exp;
+    public record CastEnumElemToEnumExp(Exp Src, EnumElemSymbol enumElem) : Exp;
     
     // ClassStaticCast    
-    public record CastClassExp(Exp Src, Path Class) : Exp;
+    public record CastClassExp(Exp Src, ClassSymbol Class) : Exp;
 }

@@ -5,40 +5,48 @@ using System.Diagnostics;
 
 namespace Gum.Analysis
 {
-    // utility class for {ClassDeclSymbol, StructDeclSymbol} GetMember_Type
+    // utility class for {ClassDeclSymbol, StructDeclSymbol} QueryMember_Type
     [AutoConstructor]
-    partial class MemberQueryResultCandidatesBuilder : ITypeDeclSymbolNodeVisitor
+    partial class MemberQueryResultCandidatesBuilder : ITypeDeclSymbolVisitor
     {
         ISymbolNode outer;
         SymbolFactory symbolFactory;
-        Candidates<MemberQueryResult.Valid> candidates;
+        Candidates<SymbolQueryResult.Valid> candidates;
 
-        public void VisitClassDecl(ClassDeclSymbol classDecl)
+        public void VisitClass(ClassDeclSymbol classDecl)
         {
-            candidates.Add(new MemberQueryResult.Class(typeArgs => symbolFactory.MakeClass(outer, classDecl, typeArgs)));
+            candidates.Add(new SymbolQueryResult.Class(typeArgs => symbolFactory.MakeClass(outer, classDecl, typeArgs)));
         }
 
-        public void VisitStructDecl(StructDeclSymbol structDecl)
+        public void VisitStruct(StructDeclSymbol structDecl)
         {
-            candidates.Add(new MemberQueryResult.Struct(typeArgs => symbolFactory.MakeStruct(outer, structDecl, typeArgs)));
+            candidates.Add(new SymbolQueryResult.Struct(typeArgs => symbolFactory.MakeStruct(outer, structDecl, typeArgs)));
         }
 
-        public void VisitEnumDecl(EnumDeclSymbol enumDecl)
+        public void VisitEnum(EnumDeclSymbol enumDecl)
         {
-            candidates.Add(new MemberQueryResult.Enum(typeArgs => symbolFactory.MakeEnum(outer, enumDecl, typeArgs)));
+            candidates.Add(new SymbolQueryResult.Enum(typeArgs => symbolFactory.MakeEnum(outer, enumDecl, typeArgs)));
         }
 
-        public void VisitEnumElemDecl(EnumElemDeclSymbol enumElemDecl)
+        public void VisitEnumElem(EnumElemDeclSymbol enumElemDecl)
         {
             var outerEnum = outer as EnumSymbol;
             Debug.Assert(outerEnum != null);
 
-            candidates.Add(new MemberQueryResult.EnumElem(symbolFactory.MakeEnumElem(outerEnum, enumElemDecl)));
+            candidates.Add(new SymbolQueryResult.EnumElem(symbolFactory.MakeEnumElem(outerEnum, enumElemDecl)));
         }
 
-        public void VisitInterfaceDecl(InterfaceDeclSymbol interfaceDecl)
+        public void VisitInterface(InterfaceDeclSymbol interfaceDecl)
         {
             throw new NotImplementedException();
+        }
+
+        public void VisitLambda(LambdaDeclSymbol lambdaDecl)
+        {
+            var outerFunc = outer as IFuncSymbol;
+            Debug.Assert(outerFunc != null);
+
+            candidates.Add(new SymbolQueryResult.Lambda(symbolFactory.MakeLambda(outerFunc, lambdaDecl)));
         }
     }
 }

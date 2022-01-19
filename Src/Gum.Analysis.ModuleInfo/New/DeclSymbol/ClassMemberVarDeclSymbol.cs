@@ -12,11 +12,11 @@ namespace Gum.Analysis
         IHolder<ClassDeclSymbol> outer;
         M.AccessModifier accessModifier;
         bool bStatic;
-        IHolder<ITypeSymbolNode> declType;
+        IHolder<ITypeSymbol> declType;
         M.Name name;
 
         // public static int s;
-        public ClassMemberVarDeclSymbol(IHolder<ClassDeclSymbol> outer, M.AccessModifier accessModifier, bool bStatic, IHolder<ITypeSymbolNode> declType, M.Name name)
+        public ClassMemberVarDeclSymbol(IHolder<ClassDeclSymbol> outer, M.AccessModifier accessModifier, bool bStatic, IHolder<ITypeSymbol> declType, M.Name name)
         {
             this.outer = outer;
             this.accessModifier = accessModifier;
@@ -25,7 +25,7 @@ namespace Gum.Analysis
             this.name = name;
         }
 
-        public ITypeSymbolNode GetDeclType()
+        public ITypeSymbol GetDeclType()
         {
             return declType.GetValue();
         }

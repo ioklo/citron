@@ -18,9 +18,9 @@ namespace Gum.Analysis
     // outer = new StructDecl(innerClass);
 
     [ImplementIEquatable]
-    public partial class ClassDeclSymbol : ITypeDeclSymbolNode
+    public partial class ClassDeclSymbol : ITypeDeclSymbol, IDeclSymbolNode
     {
-        IHolder<IDeclSymbolNode> outerHolder;
+        IHolder<ITypeDeclSymbolContainer> containerHolder;
 
         M.Name name;
         ImmutableArray<string> typeParams;
@@ -42,7 +42,7 @@ namespace Gum.Analysis
         FuncDict<ClassMemberFuncDeclSymbol> funcDict;
         
         public ClassDeclSymbol(
-            IHolder<IDeclSymbolNode> outerHolder,
+            IHolder<ITypeDeclSymbolContainer> containerHolder,
             M.Name name, ImmutableArray<string> typeParams,
             IHolder<ClassSymbol?> baseClassHolder,
             IHolder<ImmutableArray<InterfaceSymbol>> interfacesHolder,
@@ -52,7 +52,7 @@ namespace Gum.Analysis
             IHolder<ImmutableArray<ClassConstructorDeclSymbol>> constructorDeclsHolder,
             IHolder<ClassConstructorDeclSymbol?> trivialConstructorHolder)
         {
-            this.outerHolder = outerHolder;
+            this.containerHolder = containerHolder;
             this.name = name;
             this.typeParams = typeParams;
             this.baseClassHolder = baseClassHolder;
@@ -135,9 +135,9 @@ namespace Gum.Analysis
             return name;
         }
         
-        public void Apply(ITypeDeclSymbolNodeVisitor visitor)
+        public void Apply(ITypeDeclSymbolVisitor visitor)
         {
-            visitor.VisitClassDecl(this);
+            visitor.VisitClass(this);
         }
 
         public DeclSymbolNodeName GetNodeName()
@@ -147,7 +147,7 @@ namespace Gum.Analysis
 
         public IDeclSymbolNode? GetOuterDeclNode()
         {
-            return outerHolder.GetValue();
+            return containerHolder.GetValue().GetOuterDeclNode();
         }
 
         public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
@@ -163,9 +163,9 @@ namespace Gum.Analysis
                             return varDecl;
                 }
 
-                var typeDecl = typeDict.Get(nodeName);
-                if (typeDecl != null)
-                    return typeDecl;
+                var type = typeDict.Get(nodeName);
+                if (type != null)
+                    return type.GetNode();
             }
 
             var funcDecl = funcDict.Get(nodeName);

@@ -1,13 +1,12 @@
 ﻿using Gum.Collections;
 using System;
 
-using R = Gum.IR0;
 using M = Gum.CompileTime;
 using Gum.Infra;
 
 namespace Gum.Analysis
 {
-    public record ClassConstructorDeclSymbol : IDeclSymbolNode
+    public record ClassConstructorDeclSymbol : IFuncDeclSymbol
     {
         IHolder<ClassDeclSymbol> outer;
         M.AccessModifier accessModifier;
@@ -50,13 +49,6 @@ namespace Gum.Analysis
         public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
         {
             return null;
-        }
-
-        // typeArgs가 없다
-        public R.Path.Nested MakeRPath(R.Path.Normal outerPath)
-        {   
-            var paramHash = new R.ParamHash(0, parameters.GetValue().MakeParamHashEntries());
-            return new R.Path.Nested(outerPath, R.Name.Constructor.Instance, paramHash, default);
         }
 
         public void Apply(IDeclSymbolNodeVisitor visitor)

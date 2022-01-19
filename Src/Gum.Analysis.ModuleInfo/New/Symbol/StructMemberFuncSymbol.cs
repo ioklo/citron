@@ -1,20 +1,20 @@
 ﻿using Gum.Collections;
-using Gum.IR0;
 using System;
 using M = Gum.CompileTime;
-using R = Gum.IR0;
 
 namespace Gum.Analysis
 {
-    public class StructMemberFuncSymbol : ISymbolNode
+    public class StructMemberFuncSymbol : IFuncSymbol
     {
         SymbolFactory factory;
         StructSymbol outer;
         StructMemberFuncDeclSymbol decl;
-        ImmutableArray<ITypeSymbolNode> typeArgs;
+        ImmutableArray<ITypeSymbol> typeArgs;
         TypeEnv typeEnv;
 
-        internal StructMemberFuncSymbol(SymbolFactory factory, StructSymbol outer, StructMemberFuncDeclSymbol decl, ImmutableArray<ITypeSymbolNode> typeArgs)
+        IFuncSymbol IFuncSymbol.Apply(TypeEnv typeEnv) => Apply(typeEnv);
+
+        internal StructMemberFuncSymbol(SymbolFactory factory, StructSymbol outer, StructMemberFuncDeclSymbol decl, ImmutableArray<ITypeSymbol> typeArgs)
         {
             this.factory = factory;
             this.outer = outer;
@@ -23,6 +23,17 @@ namespace Gum.Analysis
 
             var outerTypeEnv = outer.GetTypeEnv();
             this.typeEnv = outerTypeEnv.AddTypeArgs(typeArgs);
+        }
+
+        public int GetParameterCount()
+        {
+            return decl.GetParameterCount();
+        }
+
+        public FuncParameter GetParameter(int index)
+        {
+            var parameter = decl.GetParameter(index);
+            return parameter.Apply(typeEnv);
         }
 
         public ISymbolNode Apply(TypeEnv typeEnv)
@@ -42,20 +53,7 @@ namespace Gum.Analysis
             return outer;
         }
 
-        public R.Path.Nested MakeRPath()
-        {
-            var outerPath = outer.MakeRPath();
-            var rtypeArgs = ImmutableArray.CreateRange<ITypeSymbolNode, R.Path>(typeArgs, typeArg => typeArg.MakeRPath());
-
-            return decl.MakeRPath(outerPath, rtypeArgs);
-        }
-
-        public int GetTotalTypeParamCount()
-        {
-            return decl.GetTotalTypeParamCount();
-        }
-
-        public ImmutableArray<ITypeSymbolNode> GetTypeArgs()
+        public ImmutableArray<ITypeSymbol> GetTypeArgs()
         {
             throw new NotImplementedException();
         }
@@ -65,6 +63,9 @@ namespace Gum.Analysis
             return typeEnv;
         }
 
-        Path.Normal ISymbolNode.MakeRPath() => MakeRPath();        
+        public ITypeSymbol? GetOuterType()
+        {
+            return outer;
+        }
     }
 }

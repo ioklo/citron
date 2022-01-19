@@ -13,7 +13,7 @@ namespace Gum.Runtime.Dotnet
             this.typeInfo = typeInfo;
         }
 
-        public override TypeSymbol GetTypeValue()
+        public override ITypeSymbol GetTypeValue()
         {
             DotnetMisc.MakeTypeId(typeInfo.BaseType);
 

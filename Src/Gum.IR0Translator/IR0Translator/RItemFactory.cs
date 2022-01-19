@@ -36,9 +36,9 @@ namespace Gum.Analysis
             throw new UnreachableCodeException();
         }
 
-        public static ImmutableArray<R.Path> MakeRTypes(ImmutableArray<ITypeSymbolNode> typeValues)
+        public static ImmutableArray<R.Path> MakeRTypes(ImmutableArray<ITypeSymbol> typeValues)
         {
-            return ImmutableArray.CreateRange<ITypeSymbolNode, R.Path>(typeValues, typeValue => typeValue.MakeRPath());
+            return ImmutableArray.CreateRange<ITypeSymbol, R.Path>(typeValues, typeValue => typeValue.MakeRPath());
         }        
         
         public R.Path MakeMemberType(R.Path rtype, M.Name name, ImmutableArray<R.Path> rtypeArgs)

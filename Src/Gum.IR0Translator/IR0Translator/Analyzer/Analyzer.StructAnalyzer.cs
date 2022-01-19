@@ -23,20 +23,23 @@ namespace Gum.IR0Translator
         {
             GlobalContext globalContext;
             S.StructDecl structDecl;
-            StructSymbol structTypeValue;
+            StructSymbol structSymbol;
 
             ImmutableArray<R.StructConstructorDecl>.Builder constructorsBuilder;
             ImmutableArray<R.FuncDecl>.Builder memberFuncsBuilder;
             ImmutableArray<R.StructMemberVarDecl>.Builder memberVarsBuilder;
 
             // Entry
-            public static void Analyze(GlobalContext globalContext, ITypeContainer typeContainer, S.StructDecl structDecl, StructSymbol structTypeValue)
+            public static void Analyze(GlobalContext globalContext, ITypeContainer typeContainer, ModuleSymbolId outerId, S.StructDecl structDecl)
             {
+                var structSymbol = globalContext.LoadOpenSymbol<StructSymbol>(outerId, structDecl.Name, structDecl.TypeParams, default);
+                Debug.Assert(structSymbol != null);
+
                 var constructorsBuilder = ImmutableArray.CreateBuilder<R.StructConstructorDecl>();
                 var memberFuncsBuilder = ImmutableArray.CreateBuilder<R.FuncDecl>();
                 var memberVarsBuilder = ImmutableArray.CreateBuilder<R.StructMemberVarDecl>();
 
-                var analyzer = new StructAnalyzer(globalContext, structDecl, structTypeValue,
+                var analyzer = new StructAnalyzer(globalContext, structDecl, structSymbol,
                     constructorsBuilder, memberFuncsBuilder, memberVarsBuilder);
                 
                 R.AccessModifier accessModifier;
@@ -57,8 +60,8 @@ namespace Gum.IR0Translator
                     var builder = ImmutableArray.CreateBuilder<R.Path>(structDecl.BaseTypes.Length);
                     foreach (var baseType in structDecl.BaseTypes)
                     {
-                        var typeValue = globalContext.GetTypeValueByTypeExp(baseType);
-                        builder.Add(typeValue.GetRPath());
+                        var typeValue = globalContext.GetSymbolByTypeExp(baseType);
+                        builder.Add(typeValue.MakeRPath());
                     }
                     return builder.MoveToImmutable();
                 }
@@ -102,8 +105,8 @@ namespace Gum.IR0Translator
 
             void AnalyzeMemberVarDecl(S.StructMemberVarDecl varDecl)
             {
-                var varTypeValue = globalContext.GetTypeValueByTypeExp(varDecl.VarType);
-                var rtype = varTypeValue.GetRPath();
+                var varTypeValue = globalContext.GetSymbolByTypeExp(varDecl.VarType);
+                var rtype = varTypeValue.MakeRPath();
 
                 R.AccessModifier accessModifier = AnalyzeAccessModifier(varDecl.AccessModifier, varDecl);
                 memberVarsBuilder.Add(new R.StructMemberVarDecl(accessModifier, rtype, varDecl.VarNames));
@@ -119,14 +122,14 @@ namespace Gum.IR0Translator
                 
                 var (rparamHash, rparamInfos) = MakeParamHashAndParamInfos(globalContext, 0, constructorDecl.Parameters);
 
-                var constructorPath = new R.Path.Nested(structTypeValue.GetRPath_Nested(), R.Name.Constructor.Instance, rparamHash, default);
-                var constructorContext = new StructConstructorContext(constructorPath, structTypeValue);
+                var constructorPath = new R.Path.Nested(structSymbol.MakeRPath(), R.Name.Constructor.Instance, rparamHash, default);
+                var constructorContext = new StructConstructorContext(constructorPath, structSymbol);
                 var localContext = new LocalContext();
 
                 // 새로 만든 컨텍스트에 파라미터 순서대로 추가
                 foreach (var param in constructorDecl.Parameters)
                 {
-                    var paramTypeValue = globalContext.GetTypeValueByTypeExp(param.Type);
+                    var paramTypeValue = globalContext.GetSymbolByTypeExp(param.Type);
                     localContext.AddLocalVarInfo(param.Kind == S.FuncParamKind.Ref, paramTypeValue, param.Name);
                 }
 
@@ -150,15 +153,15 @@ namespace Gum.IR0Translator
             void AnalyzeSequenceFuncDeclElement(S.StructMemberFuncDecl funcDecl)
             {
                 // NOTICE: AnalyzeGlobalSequenceFuncDecl와 비슷한 코드
-                var retTypeValue = globalContext.GetTypeValueByTypeExp(funcDecl.RetType);
+                var retTypeValue = globalContext.GetSymbolByTypeExp(funcDecl.RetType);
                 var rname = new R.Name.Normal(funcDecl.Name);
                 var (rparamHash, rparamInfos) = MakeParamHashAndParamInfos(globalContext, funcDecl.TypeParams.Length, funcDecl.Parameters);
                 var rtypeArgs = MakeRTypeArgs(0, funcDecl.TypeParams); // NOTICE: global이므로 상위에 type parameter가 없다
 
-                var structPath = structTypeValue.GetRPath_Nested();
+                var structPath = structSymbol.MakeRPath();
                 var funcPath = new R.Path.Nested(structPath, rname, rparamHash, rtypeArgs);
 
-                var funcContext = new FuncContext(structTypeValue, retTypeValue, funcDecl.IsStatic, true, funcPath);
+                var funcContext = new FuncContext(structSymbol, retTypeValue, funcDecl.IsStatic, true, funcPath);
                 var localContext = new LocalContext();
                 var analyzer = new StmtAndExpAnalyzer(globalContext, funcContext, localContext);
 
@@ -168,7 +171,7 @@ namespace Gum.IR0Translator
                 // 파라미터 순서대로 추가
                 foreach (var param in funcDecl.Parameters)
                 {
-                    var paramTypeValue = globalContext.GetTypeValueByTypeExp(param.Type);
+                    var paramTypeValue = globalContext.GetSymbolByTypeExp(param.Type);
                     localContext.AddLocalVarInfo(param.Kind == S.FuncParamKind.Ref, paramTypeValue, param.Name);
                 }
 
@@ -177,7 +180,7 @@ namespace Gum.IR0Translator
 
                 Debug.Assert(retTypeValue != null, "문법상 Sequence 함수의 retValue가 없을수 없습니다");
 
-                var retRType = retTypeValue.GetRPath();
+                var retRType = retTypeValue.MakeRPath();
                 var parameters = funcDecl.Parameters.Select(param => param.Name).ToImmutableArray();
 
                 var decls = funcContext.GetCallableMemberDecls();
@@ -189,23 +192,23 @@ namespace Gum.IR0Translator
             void AnalyzeNormalFuncDeclElement(S.StructMemberFuncDecl funcDecl)
             {
                 // NOTICE: AnalyzeGlobalNormalFuncDecl와 비슷한 코드                
-                var retTypeValue = globalContext.GetTypeValueByTypeExp(funcDecl.RetType);
+                var retTypeValue = globalContext.GetSymbolByTypeExp(funcDecl.RetType);
 
                 var rname = new R.Name.Normal(funcDecl.Name);
                 var (rparamHash, rparamInfos) = MakeParamHashAndParamInfos(globalContext, funcDecl.TypeParams.Length, funcDecl.Parameters);
-                var rtypeArgs = MakeRTypeArgs(structTypeValue.GetTotalTypeParamCount(), funcDecl.TypeParams);
+                var rtypeArgs = MakeRTypeArgs(structSymbol.GetTotalTypeParamCount(), funcDecl.TypeParams);
 
-                var structPath = structTypeValue.GetRPath_Nested();
+                var structPath = structSymbol.MakeRPath();
                 var funcPath = new R.Path.Nested(structPath, rname, rparamHash, rtypeArgs);
 
-                var funcContext = new FuncContext(structTypeValue, retTypeValue, funcDecl.IsStatic, false, funcPath);
+                var funcContext = new FuncContext(structSymbol, retTypeValue, funcDecl.IsStatic, false, funcPath);
                 var localContext = new LocalContext();
                 var analyzer = new StmtAndExpAnalyzer(globalContext, funcContext, localContext);
 
                 // 파라미터 순서대로 추가
                 foreach (var param in funcDecl.Parameters)
                 {
-                    var paramTypeValue = globalContext.GetTypeValueByTypeExp(param.Type);
+                    var paramTypeValue = globalContext.GetSymbolByTypeExp(param.Type);
                     localContext.AddLocalVarInfo(param.Kind == S.FuncParamKind.Ref, paramTypeValue, param.Name);
                 }
 
@@ -241,30 +244,23 @@ namespace Gum.IR0Translator
 
             void BuildTrivialConstructor()
             {
-                var trivialConstructor = structTypeValue.GetTrivialConstructor();
-                if (trivialConstructor == null) return;                
+                var trivialConstructor = structSymbol.GetTrivialConstructor();
+                if (trivialConstructor == null) return;
 
-                var structPath = structTypeValue.GetRPath_Nested();
-                var parameters = trivialConstructor.GetParameters();
-                var paramBuilder = ImmutableArray.CreateBuilder<R.Param>(parameters.Length);
-                var stmtBuilder = ImmutableArray.CreateBuilder<R.Stmt>(parameters.Length);
+                var structPath = structSymbol.MakeRPath() as R.Path.Nested;
+                Debug.Assert(structPath != null);
 
-                foreach(var param in parameters)
+                var parameterCount = trivialConstructor.GetParameterCount();
+                var paramBuilder = ImmutableArray.CreateBuilder<R.Param>(parameterCount);
+                var stmtBuilder = ImmutableArray.CreateBuilder<R.Stmt>(parameterCount);
+
+                for(int i = 0; i < parameterCount; i++)
                 {
-                    var paramKind = param.Kind switch
-                    {
-                        M.ParamKind.Default => R.ParamKind.Default,
-                        M.ParamKind.Ref => R.ParamKind.Ref,
-                        M.ParamKind.Params => R.ParamKind.Params,
-                        _ => throw new UnreachableCodeException()
-                    };
-
-                    var paramTypeValue = globalContext.GetTypeValueByMType(param.Type);
+                    var param = trivialConstructor.GetParameter(i);
                     var rname = RItemFactory.MakeName(param.Name);
-
                     Debug.Assert(rname != null);                    
 
-                    paramBuilder.Add(new R.Param(paramKind, paramTypeValue.GetRPath(), rname));
+                    paramBuilder.Add(param.MakeRParam());
 
                     var structMemberPath = new R.Path.Nested(structPath, rname, R.ParamHash.None, default);
                     stmtBuilder.Add(new R.ExpStmt(new R.AssignExp(new R.StructMemberLoc(R.ThisLoc.Instance, structMemberPath), new R.LoadExp(new R.LocalVarLoc(rname)))));

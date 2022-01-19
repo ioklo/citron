@@ -31,15 +31,15 @@ namespace Gum.IR0Translator
             public partial struct VarDeclElementCoreResult
             {
                 public R.VarDeclElement Elem { get; }
-                public TypeSymbol TypeValue { get; }
+                public ITypeSymbol TypeSymbol { get; }
             }
 
-            VarDeclElementCoreResult MakeRefVarDeclElementAndTypeCheck(string varName, S.Exp exp, S.ISyntaxNode nodeForErrorReport, TypeSymbol declType)
+            VarDeclElementCoreResult MakeRefVarDeclElementAndTypeCheck(string varName, S.Exp exp, S.ISyntaxNode nodeForErrorReport, ITypeSymbol declType)
             {
                 var result = MakeRefVarDeclElement(varName, exp, nodeForErrorReport);
 
                 // 타입 체크, Exact Match
-                if (!result.TypeValue.Equals(declType))
+                if (!result.TypeSymbol.Equals(declType))
                     globalContext.AddFatalError(A0102_VarDecl_MismatchBetweenRefDeclTypeAndRefInitType, nodeForErrorReport);
 
                 return result;
@@ -55,7 +55,7 @@ namespace Gum.IR0Translator
                     case ExpResult.Loc locResult:
                         {
                             var relem = new R.VarDeclElement.Ref(varName, locResult.Result);
-                            return new VarDeclElementCoreResult(relem, locResult.TypeValue);
+                            return new VarDeclElementCoreResult(relem, locResult.TypeSymbol);
                         }
 
                     default:
@@ -64,7 +64,7 @@ namespace Gum.IR0Translator
                 }
             }
 
-            public VarDeclElementCoreResult AnalyzeVarDeclElement(bool bLocal, S.VarDeclElement elem, bool bRefDeclType, TypeSymbol declType)
+            public VarDeclElementCoreResult AnalyzeVarDeclElement(bool bLocal, S.VarDeclElement elem, bool bRefDeclType, ITypeSymbol declType)
             {
                 if (elem.Initializer == null)
                 {
@@ -80,7 +80,7 @@ namespace Gum.IR0Translator
                     if (declType is VarTypeValue)
                         globalContext.AddFatalError(A0101_VarDecl_CantInferVarType, elem);
 
-                    var rtype = declType.GetRPath();
+                    var rtype = declType.MakeRPath();
                     return new VarDeclElementCoreResult(new R.VarDeclElement.NormalDefault(rtype, elem.VarName), declType);
                 }
                 else
@@ -100,8 +100,8 @@ namespace Gum.IR0Translator
                         else
                         {
                             var initExpResult = stmtAndExpAnalyzer.AnalyzeExp_Exp(elem.Initializer.Value.Exp, ResolveHint.None);
-                            var rtype = initExpResult.TypeValue.GetRPath();
-                            return new VarDeclElementCoreResult(new R.VarDeclElement.Normal(rtype, elem.VarName, initExpResult.Result), initExpResult.TypeValue);
+                            var rtype = initExpResult.TypeSymbol.MakeRPath();
+                            return new VarDeclElementCoreResult(new R.VarDeclElement.Normal(rtype, elem.VarName, initExpResult.Result), initExpResult.TypeSymbol);
                         }
                     }
                     else
@@ -139,7 +139,7 @@ namespace Gum.IR0Translator
                                 var initExpResult = stmtAndExpAnalyzer.AnalyzeExp_Exp(elem.Initializer.Value.Exp, ResolveHint.Make(declType));
                                 var castExpResult = stmtAndExpAnalyzer.CastExp_Exp(initExpResult, declType, elem.Initializer.Value.Exp);
 
-                                var rtype = declType.GetRPath();
+                                var rtype = declType.MakeRPath();
                                 return new VarDeclElementCoreResult(new R.VarDeclElement.Normal(rtype, elem.VarName, castExpResult.Result), declType);
                             }
                         }

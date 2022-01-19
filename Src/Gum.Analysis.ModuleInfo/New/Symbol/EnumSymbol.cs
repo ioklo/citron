@@ -2,23 +2,22 @@
 using Gum.Collections;
 
 using M = Gum.CompileTime;
-using R = Gum.IR0;
 using Pretune;
 
 namespace Gum.Analysis
 {
     [ImplementIEquatable]
-    public partial class EnumSymbol : ITypeSymbolNode
+    public partial class EnumSymbol : ITypeSymbol
     {
         SymbolFactory factory;
 
         ISymbolNode outer;
         EnumDeclSymbol decl;
-        ImmutableArray<ITypeSymbolNode> typeArgs;
+        ImmutableArray<ITypeSymbol> typeArgs;
 
         TypeEnv typeEnv;
 
-        internal EnumSymbol(SymbolFactory factory, ISymbolNode outer, EnumDeclSymbol decl, ImmutableArray<ITypeSymbolNode> typeArgs)
+        internal EnumSymbol(SymbolFactory factory, ISymbolNode outer, EnumDeclSymbol decl, ImmutableArray<ITypeSymbol> typeArgs)
         {
             this.factory = factory;
             this.outer = outer;
@@ -29,14 +28,6 @@ namespace Gum.Analysis
             this.typeEnv = outerTypeEnv.AddTypeArgs(typeArgs);
         }
 
-        public R.Path.Nested MakeRPath()
-        {
-            var rname = RItemFactory.MakeName(decl.GetName());
-            var rtypeArgs = RItemFactory.MakeRTypes(typeArgs);
-
-            return new R.Path.Nested(outer.MakeRPath(), rname, new R.ParamHash(decl.GetTypeParamCount(), default), rtypeArgs);
-        }
-
         public EnumSymbol Apply(TypeEnv typeEnv)
         {
             var appliedOuter = outer.Apply(typeEnv);
@@ -45,18 +36,18 @@ namespace Gum.Analysis
         }
 
         //
-        public MemberQueryResult GetMember(M.Name memberName, int typeParamCount) 
+        public SymbolQueryResult QueryMember(M.Name memberName, int typeParamCount) 
         {
             // shortcut
             if (typeParamCount != 0)
-                return MemberQueryResult.NotFound.Instance;
+                return SymbolQueryResult.NotFound.Instance;
 
             var elemDecl = decl.GetElem(memberName);
-            if (elemDecl == null) return MemberQueryResult.NotFound.Instance;
+            if (elemDecl == null) return SymbolQueryResult.NotFound.Instance;
 
             var elem = factory.MakeEnumElem(this, elemDecl);
 
-            return new MemberQueryResult.EnumElem(elem);
+            return new SymbolQueryResult.EnumElem(elem);
         }
 
         public EnumElemSymbol? GetElement(string name)
@@ -67,7 +58,7 @@ namespace Gum.Analysis
             return factory.MakeEnumElem(this, elemDecl);
         }
 
-        public ITypeSymbolNode? GetMemberType(M.Name memberName, ImmutableArray<ITypeSymbolNode> typeArgs) 
+        public ITypeSymbol? GetMemberType(M.Name memberName, ImmutableArray<ITypeSymbol> typeArgs) 
         {
             // shortcut
             if (typeArgs.Length != 0)
@@ -78,18 +69,12 @@ namespace Gum.Analysis
 
             return factory.MakeEnumElem(this, elemDecl);
         }
-
-        public R.Loc MakeMemberLoc(R.Loc instance, R.Path.Nested member)
-        { 
-            throw new InvalidOperationException();
-        }
         
         IDeclSymbolNode ISymbolNode.GetDeclSymbolNode() => decl;
-        R.Path.Normal ISymbolNode.MakeRPath() => MakeRPath();
         ISymbolNode ISymbolNode.Apply(TypeEnv typeEnv) => Apply(typeEnv);
-        ITypeSymbolNode ITypeSymbolNode.Apply(TypeEnv typeEnv) => Apply(typeEnv);
+        ITypeSymbol ITypeSymbol.Apply(TypeEnv typeEnv) => Apply(typeEnv);
 
-        public ITypeDeclSymbolNode GetDeclSymbolNode()
+        public ITypeDeclSymbol GetDeclSymbolNode()
         {
             return decl;
         }
@@ -104,9 +89,14 @@ namespace Gum.Analysis
             return typeEnv;
         }        
         
-        public ImmutableArray<ITypeSymbolNode> GetTypeArgs()
+        public ImmutableArray<ITypeSymbol> GetTypeArgs()
         {
             return typeArgs;
+        }
+
+        public void Apply(ITypeSymbolVisitor visitor)
+        {
+            visitor.VisitEnum(this);
         }
     }
 }

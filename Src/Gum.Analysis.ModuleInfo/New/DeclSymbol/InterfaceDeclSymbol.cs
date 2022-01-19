@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Gum.Collections;
+using Gum.Infra;
 using Pretune;
 
 using M = Gum.CompileTime;
@@ -11,15 +12,16 @@ using M = Gum.CompileTime;
 namespace Gum.Analysis
 {
     [AutoConstructor]
-    public partial class InterfaceDeclSymbol : ITypeDeclSymbolNode
+    public partial class InterfaceDeclSymbol : ITypeDeclSymbol, IDeclSymbolNode
     {
-        IDeclSymbolNode outer;
+        IHolder<ITypeDeclSymbolContainer> containerHolder;
+
         M.Name name;
         ImmutableArray<string> typeParams;
 
-        public void Apply(ITypeDeclSymbolNodeVisitor visitor)
+        public void Apply(ITypeDeclSymbolVisitor visitor)
         {
-            visitor.VisitInterfaceDecl(this);
+            visitor.VisitInterface(this);
         }
 
         public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
@@ -34,7 +36,7 @@ namespace Gum.Analysis
 
         public IDeclSymbolNode? GetOuterDeclNode()
         {
-            return outer;
+            return containerHolder.GetValue().GetOuterDeclNode();
         }
 
         public M.Name GetName()

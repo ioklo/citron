@@ -2,14 +2,13 @@
 using System.Diagnostics;
 
 using M = Gum.CompileTime;
-using R = Gum.IR0;
 using Pretune;
 using System;
 
 namespace Gum.Analysis
 {
     // S.First, S.Second(int i, short s)    
-    public partial class EnumElemSymbol : ITypeSymbolNode
+    public partial class EnumElemSymbol : ITypeSymbol
     {
         SymbolFactory factory;
         EnumSymbol outer;
@@ -33,15 +32,6 @@ namespace Gum.Analysis
             return factory.MakeEnumElem(appliedOuter, decl);
         }
 
-        public R.Path.Nested MakeRPath()
-        {
-            var router = outer.MakeRPath();
-            var rname = RItemFactory.MakeName(decl.GetName());
-            Debug.Assert(router != null);
-
-            return new R.Path.Nested(router, rname, R.ParamHash.None, default);
-        }
-
         public ImmutableArray<FuncParameter> GetConstructorParamTypes()
         {
             var varDecls = decl.GetMemberVarDecls();
@@ -60,38 +50,31 @@ namespace Gum.Analysis
             return builder.MoveToImmutable();
         }
 
-        public MemberQueryResult GetMember(M.Name memberName, int typeParamCount)
+        public SymbolQueryResult GetMember(M.Name memberName, int typeParamCount)
         {
-            if (typeParamCount != 0) return MemberQueryResult.NotFound.Instance;
+            if (typeParamCount != 0) return SymbolQueryResult.NotFound.Instance;
 
             foreach (var varDecl in decl.GetMemberVarDecls())
             {
                 if (memberName.Equals(varDecl.GetName()))
                 {
                     if (typeParamCount != 0)
-                        return MemberQueryResult.Error.VarWithTypeArg.Instance;
+                        return SymbolQueryResult.Error.VarWithTypeArg.Instance;
 
                     var memberVar = factory.MakeEnumElemMemberVar(this, varDecl);
-                    return new MemberQueryResult.EnumElemMemberVar(memberVar);
+                    return new SymbolQueryResult.EnumElemMemberVar(memberVar);
                 }
             }
 
-            return MemberQueryResult.NotFound.Instance;
+            return SymbolQueryResult.NotFound.Instance;
         }
 
-        public R.Loc MakeMemberLoc(R.Loc instance, R.Path.Nested member)
-        {
-            return new R.EnumElemMemberLoc(instance, member);
-        }
-
-        
-
-        public ITypeDeclSymbolNode GetDeclSymbolNode()
+        public ITypeDeclSymbol GetDeclSymbolNode()
         {
             return decl;
         }
 
-        public ISymbolNode? GetOuter()
+        public EnumSymbol GetOuter()
         {
             return outer;
         }
@@ -101,14 +84,24 @@ namespace Gum.Analysis
             return outer.GetTypeEnv();
         }        
 
-        public ImmutableArray<ITypeSymbolNode> GetTypeArgs()
+        public ImmutableArray<ITypeSymbol> GetTypeArgs()
         {
             return default;
         }
 
-        ITypeSymbolNode ITypeSymbolNode.Apply(TypeEnv typeEnv) => Apply(typeEnv);
+        public SymbolQueryResult QueryMember(M.Name name, int typeParamCount)
+        {
+            return SymbolQueryResult.NotFound.Instance;
+        }
+
+        public void Apply(ITypeSymbolVisitor visitor)
+        {
+            visitor.VisitEnumElem(this);
+        }
+
+        ITypeSymbol ITypeSymbol.Apply(TypeEnv typeEnv) => Apply(typeEnv);
         IDeclSymbolNode ISymbolNode.GetDeclSymbolNode() => GetDeclSymbolNode();
-        R.Path.Normal ISymbolNode.MakeRPath() => MakeRPath();
         ISymbolNode ISymbolNode.Apply(TypeEnv typeEnv) => Apply(typeEnv);
+        ISymbolNode? ISymbolNode.GetOuter() => GetOuter();
     }
 }

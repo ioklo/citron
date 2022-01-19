@@ -13,24 +13,24 @@ namespace Gum.IR0Translator
         partial class StructConstructorContext : ICallableContext
         {
             R.Path.Nested path;
-            StructSymbol structTypeValue;
+            StructSymbol structSymbol;
             ImmutableArray<R.CallableMemberDecl> callableMemberDecls;
             AnonymousIdComponent AnonymousIdComponent;
 
-            public StructConstructorContext(R.Path.Nested path, StructSymbol structTypeValue)
+            public StructConstructorContext(R.Path.Nested path, StructSymbol structSymbol)
             {
                 this.path = path;
-                this.structTypeValue = structTypeValue;
+                this.structSymbol = structSymbol;
             }
 
             StructConstructorContext(StructConstructorContext other, CloneContext cloneContext)
             {
                 this.path = other.path;
-                this.structTypeValue = other.structTypeValue;
+                this.structSymbol = other.structSymbol;
                 this.AnonymousIdComponent = other.AnonymousIdComponent;
             }
 
-            public void AddLambdaCapture(string capturedVarName, TypeSymbol capturedVarType)
+            public void AddLambdaCapture(string capturedVarName, ITypeSymbol capturedVarType)
             {
                 throw new UnreachableCodeException();
             }
@@ -49,9 +49,9 @@ namespace Gum.IR0Translator
                 return path;
             }
 
-            public NormalTypeValue? GetThisTypeValue()
+            public ITypeSymbol? GetThisType()
             {
-                return structTypeValue;
+                return structSymbol;
             }
 
             public LocalVarInfo? GetLocalVarOutsideLambda(string varName)
@@ -59,9 +59,9 @@ namespace Gum.IR0Translator
                 return null;
             }            
 
-            public TypeSymbol? GetRetTypeValue()
+            public ITypeSymbol? GetReturn()
             {
-                return VoidTypeValue.Instance;
+                return null;
             }
 
             public bool IsSeqFunc()
@@ -69,7 +69,7 @@ namespace Gum.IR0Translator
                 return false;
             }
 
-            public void SetRetTypeValue(TypeSymbol retTypeValue)
+            public void SetRetType(ITypeSymbol retTypeValue)
             {
                 throw new UnreachableCodeException();
             }

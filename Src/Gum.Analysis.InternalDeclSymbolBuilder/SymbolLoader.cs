@@ -2,6 +2,8 @@
 using System;
 using Gum.Collections;
 using Pretune;
+using M = Gum.CompileTime;
+using System.Diagnostics;
 
 namespace Gum.Analysis
 {
@@ -64,5 +66,43 @@ namespace Gum.Analysis
                     throw new UnreachableCodeException();
             }
         }
+
+        public SymbolQueryResult Query(SymbolPath? outerPath, M.Name name, int typeParamCount)
+        {
+            var candidates = new Candidates<SymbolQueryResult>();
+
+            // 각 모듈 decl들에 대해서,
+            foreach (var moduleDecl in moduleDecls)
+            {
+                var symbol = LoadPath(moduleDecl, outerPath); // 실패할 경우
+                if (symbol is ITypeSymbol typeSymbol)
+                {
+                    var queryResult = typeSymbol.QueryMember(name, typeParamCount);
+                    if (queryResult is SymbolQueryResult.Error)
+                        return queryResult; // 즉시 종료
+
+                    if (queryResult is SymbolQueryResult.Valid)
+                    {
+                        candidates.Add(queryResult);
+                        continue;
+                    }
+
+                    Debug.Assert(queryResult is SymbolQueryResult.NotFound);
+                }
+            }
+
+            var result = candidates.GetSingle();
+            if (result != null)
+                return result;
+
+            if (candidates.IsEmpty)
+                return SymbolQueryResult.NotFound.Instance;
+
+            if (candidates.HasMultiple)
+                return SymbolQueryResult.Error.MultipleCandidates.Instance;
+
+            throw new UnreachableCodeException();
+        }
     }
+ 
 }

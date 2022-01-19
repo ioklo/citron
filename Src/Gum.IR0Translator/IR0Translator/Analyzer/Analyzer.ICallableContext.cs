@@ -10,13 +10,13 @@ namespace Gum.IR0Translator
         // 리턴 가능한 블럭의 정보
         interface ICallableContext : IMutable<ICallableContext>
         {
-            R.Path.Normal GetPath();
-            NormalTypeValue? GetThisTypeValue();
+            R.Path.Normal MakeRPath();
+            ITypeSymbol? GetOuterType();
 
             LocalVarInfo? GetLocalVarOutsideLambda(string varName);
-            TypeSymbol? GetRetTypeValue();
-            void SetRetTypeValue(TypeSymbol retTypeValue);
-            void AddLambdaCapture(string capturedVarName, TypeSymbol capturedVarType);
+            FuncReturn? GetReturn(); // no return일 경우 null
+            void SetRetType(ITypeSymbol retTypeValue);
+            void AddLambdaCapture(string capturedVarName, ITypeSymbol capturedVarType);
             bool IsSeqFunc();
 
             void AddCallableMemberDecl(R.CallableMemberDecl lambdaDecl);

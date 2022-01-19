@@ -1,6 +1,5 @@
 ﻿using System;
 using M = Gum.CompileTime;
-using R = Gum.IR0;
 using Pretune;
 using Gum.Collections;
 using Gum.Infra;
@@ -11,16 +10,16 @@ namespace Gum.Analysis
 {
     // value
     [ImplementIEquatable]
-    public partial class ClassSymbol : ITypeSymbolNode
+    public partial class ClassSymbol : ITypeSymbol
     {
         SymbolFactory factory;
         ISymbolNode outer;
         ClassDeclSymbol decl;
-        ImmutableArray<ITypeSymbolNode> typeArgs;
+        ImmutableArray<ITypeSymbol> typeArgs;
 
         TypeEnv typeEnv;
 
-        internal ClassSymbol(SymbolFactory factory, ISymbolNode outer, ClassDeclSymbol decl, ImmutableArray<ITypeSymbolNode> typeArgs)
+        internal ClassSymbol(SymbolFactory factory, ISymbolNode outer, ClassDeclSymbol decl, ImmutableArray<ITypeSymbol> typeArgs)
         {
             this.factory = factory;
             this.outer = outer;
@@ -40,7 +39,7 @@ namespace Gum.Analysis
         // class X<T> { class Y<U> : Z<T>.B<T> }
         // X<int>.Y<bool> c; // c의 classTypeValue { [int, bool], X<>.Y<> }
         // baseof(c) //  classTypeValue { [int, int], Z<>.B<> } <- 여기에
-        public ClassSymbol? GetBaseType() 
+        public ClassSymbol? GetBaseClass() 
         {
             // 지금 속한 클래스의 타입 환경에 종속된 ClassSymbol를 돌려준다
             // X<T>.C<U> : B<U, T> => ClassSymbol(B, [TV(1), TV(0)])
@@ -55,12 +54,12 @@ namespace Gum.Analysis
         // except itself
         public bool IsBaseOf(ClassSymbol derivedType)
         {
-            ClassSymbol? curBaseType = derivedType.GetBaseType();
+            ClassSymbol? curBaseType = derivedType.GetBaseClass();
 
             while(curBaseType != null)
             {
                 if (Equals(curBaseType)) return true;
-                curBaseType = curBaseType.GetBaseType();
+                curBaseType = curBaseType.GetBaseClass();
             }
 
             return false;
@@ -71,20 +70,7 @@ namespace Gum.Analysis
             var appliedOuter = outer.Apply(typeEnv);
             var appliedTypeArgs = ImmutableArray.CreateRange(typeArgs, typeArg => typeArg.Apply(typeEnv));
             return factory.MakeClass(appliedOuter, decl, appliedTypeArgs);
-        }
-
-        public R.Path.Nested MakeRPath()
-        {
-            var rname = RItemFactory.MakeName(decl.GetName());
-            var rtypeArgs = RItemFactory.MakeRTypes(typeArgs);
-
-            return new R.Path.Nested(outer.MakeRPath(), rname, new R.ParamHash(decl.GetTypeParamCount(), default), rtypeArgs);
-        }
-
-        public R.Loc MakeMemberLoc(R.Loc instance, R.Path.Nested memberPath)
-        {
-            return new R.ClassMemberLoc(instance, memberPath);
-        }
+        }        
 
         // 인자와 멤버변수가 1:1로 매칭되는 constructor를 의미한다. (base 클래스 포함). generate해야 한다. 미리 선언한 constructor는 trivial이 아니다
         public ClassConstructorSymbol? GetTrivialConstructor()
@@ -106,9 +92,9 @@ namespace Gum.Analysis
         }
         
         // 멤버 쿼리 서비스
-        MemberQueryResult GetMember_Type(M.Name memberName, int typeParamCount)
+        SymbolQueryResult QueryMember_Type(M.Name memberName, int typeParamCount)
         {
-            var candidates = new Candidates<MemberQueryResult.Valid>();
+            var candidates = new Candidates<SymbolQueryResult.Valid>();
             var candidatesBuilder = new MemberQueryResultCandidatesBuilder(this, factory, candidates);
 
             var nodeName = new DeclSymbolNodeName(memberName, typeParamCount, default);
@@ -127,17 +113,17 @@ namespace Gum.Analysis
                 return result;
 
             if (candidates.HasMultiple)
-                return MemberQueryResult.Error.MultipleCandidates.Instance;
+                return SymbolQueryResult.Error.MultipleCandidates.Instance;
 
             if (candidates.IsEmpty)
-                return MemberQueryResult.NotFound.Instance;
+                return SymbolQueryResult.NotFound.Instance;
 
             throw new UnreachableCodeException();
         }
 
-        MemberQueryResult GetMember_Func(M.Name memberName, int typeParamCount)
+        SymbolQueryResult QueryMember_Func(M.Name memberName, int typeParamCount)
         {
-            var builder = ImmutableArray.CreateBuilder<Func<ImmutableArray<ITypeSymbolNode>, ClassMemberFuncSymbol>>();
+            var builder = ImmutableArray.CreateBuilder<Func<ImmutableArray<ITypeSymbol>, ClassMemberFuncSymbol>>();
 
             bool bHaveInstance = false;
             bool bHaveStatic = false;
@@ -159,16 +145,16 @@ namespace Gum.Analysis
 
             // 여러개 있을 수 있기때문에 MultipleCandidates를 리턴하지 않는다
             if (builder.Count == 0)
-                return MemberQueryResult.NotFound.Instance;
+                return SymbolQueryResult.NotFound.Instance;
 
             // 둘다 가지고 있으면 안된다
             if (bHaveInstance && bHaveStatic)
-                return MemberQueryResult.Error.MultipleCandidates.Instance;
+                return SymbolQueryResult.Error.MultipleCandidates.Instance;
 
-            return new MemberQueryResult.ClassMemberFuncs(builder.ToImmutable());
+            return new SymbolQueryResult.ClassMemberFuncs(builder.ToImmutable());
         }
 
-        MemberQueryResult GetMember_Var(M.Name memberName, int typeParamCount)
+        SymbolQueryResult QueryMember_Var(M.Name memberName, int typeParamCount)
         {
             var candidates = new Candidates<ClassMemberVarSymbol>();
 
@@ -183,21 +169,35 @@ namespace Gum.Analysis
             {
                 // 변수를 찾았는데 타입 아규먼트가 있다면 에러
                 if (typeParamCount != 0)
-                    return MemberQueryResult.Error.VarWithTypeArg.Instance;
+                    return SymbolQueryResult.Error.VarWithTypeArg.Instance;
 
-                return new MemberQueryResult.ClassMemberVar(result);
+                return new SymbolQueryResult.ClassMemberVar(result);
             }
 
             if (candidates.HasMultiple)
-                return MemberQueryResult.Error.MultipleCandidates.Instance;
+                return SymbolQueryResult.Error.MultipleCandidates.Instance;
 
             if (candidates.IsEmpty)
-                return MemberQueryResult.NotFound.Instance;
+                return SymbolQueryResult.NotFound.Instance;
 
             throw new UnreachableCodeException();
         }
 
-        public MemberQueryResult GetMember(M.Name memberName, int typeParamCount)
+        public ImmutableArray<ClassConstructorSymbol> GetConstructors()
+        {
+            var constructorDecls = decl.GetConstructors();
+            var builder = ImmutableArray.CreateBuilder<ClassConstructorSymbol>(constructorDecls.Length);
+
+            foreach(var constructorDecl in constructorDecls)
+            {
+                var constructor = factory.MakeClassConstructor(this, constructorDecl);
+                builder.Add(constructor);
+            }
+
+            return builder.MoveToImmutable();
+        }
+
+        public SymbolQueryResult QueryMember(M.Name memberName, int typeParamCount)
         {
             if (memberName.Equals(M.Name.Constructor))
             {
@@ -207,37 +207,37 @@ namespace Gum.Analysis
                 foreach (var constructorDecl in decl.GetConstructors())
                     builder.Add(factory.MakeClassConstructor(this, constructorDecl));
 
-                return new MemberQueryResult.ClassConstructors(builder.MoveToImmutable());
+                return new SymbolQueryResult.ClassConstructors(builder.MoveToImmutable());
             }
 
             // TODO: caching
-            var results = new List<MemberQueryResult.Valid>();
+            var results = new List<SymbolQueryResult.Valid>();
 
             // error, notfound, found
-            var typeResult = GetMember_Type(memberName, typeParamCount);
-            if (typeResult is MemberQueryResult.Error) return typeResult;
-            if (typeResult is MemberQueryResult.Valid typeMemberResult) results.Add(typeMemberResult);
+            var typeResult = QueryMember_Type(memberName, typeParamCount);
+            if (typeResult is SymbolQueryResult.Error) return typeResult;
+            if (typeResult is SymbolQueryResult.Valid typeMemberResult) results.Add(typeMemberResult);
 
             // error, notfound, found
-            var funcResult = GetMember_Func(memberName, typeParamCount);
-            if (funcResult is MemberQueryResult.Error) return funcResult;
-            if (funcResult is MemberQueryResult.Valid funcMemberResult) results.Add(funcMemberResult);
+            var funcResult = QueryMember_Func(memberName, typeParamCount);
+            if (funcResult is SymbolQueryResult.Error) return funcResult;
+            if (funcResult is SymbolQueryResult.Valid funcMemberResult) results.Add(funcMemberResult);
 
             // error, notfound, found
-            var varResult = GetMember_Var(memberName, typeParamCount);
-            if (varResult is MemberQueryResult.Error) return varResult;
-            if (varResult is MemberQueryResult.Valid varMemberResult) results.Add(varMemberResult);
+            var varResult = QueryMember_Var(memberName, typeParamCount);
+            if (varResult is SymbolQueryResult.Error) return varResult;
+            if (varResult is SymbolQueryResult.Valid varMemberResult) results.Add(varMemberResult);
 
             if (1 < results.Count)
-                return MemberQueryResult.Error.MultipleCandidates.Instance;
+                return SymbolQueryResult.Error.MultipleCandidates.Instance;
 
             if (results.Count == 0)
             {
-                var baseTypeValue = GetBaseType();
+                var baseTypeValue = GetBaseClass();
                 if (baseTypeValue == null)
-                    return MemberQueryResult.NotFound.Instance;
+                    return SymbolQueryResult.NotFound.Instance;
 
-                return baseTypeValue.GetMember(memberName, typeParamCount);
+                return baseTypeValue.QueryMember(memberName, typeParamCount);
             }
             else
             {
@@ -245,7 +245,7 @@ namespace Gum.Analysis
             }
         }
 
-        public ITypeSymbolNode? GetMemberType(M.Name memberName, ImmutableArray<ITypeSymbolNode> typeArgs)
+        public ITypeSymbol? GetMemberType(M.Name memberName, ImmutableArray<ITypeSymbol> typeArgs)
         {
             // TODO: caching
             foreach (var memberTypeDecl in decl.GetMemberTypes())
@@ -254,7 +254,7 @@ namespace Gum.Analysis
 
                 if (typeName.Name.Equals(memberName) && typeName.TypeParamCount == typeArgs.Length)
                 {
-                    return MemberTypeInstantiator.Instantiate(factory, this, memberTypeDecl, typeArgs);
+                    return SymbolInstantiator.Instantiate(factory, this, memberTypeDecl, typeArgs);
                 }
             }
 
@@ -271,15 +271,19 @@ namespace Gum.Analysis
             return decl;
         }
 
-        public ImmutableArray<ITypeSymbolNode> GetTypeArgs()
+        public ImmutableArray<ITypeSymbol> GetTypeArgs()
         {
             return typeArgs;
         }
 
         // for covariance
         ISymbolNode ISymbolNode.Apply(TypeEnv typeEnv) => Apply(typeEnv);
-        ITypeSymbolNode ITypeSymbolNode.Apply(TypeEnv typeEnv) => Apply(typeEnv);
-        R.Path.Normal ISymbolNode.MakeRPath() => MakeRPath();
-        ITypeDeclSymbolNode ITypeSymbolNode.GetDeclSymbolNode() => decl;
+        ITypeSymbol ITypeSymbol.Apply(TypeEnv typeEnv) => Apply(typeEnv);        
+        ITypeDeclSymbol ITypeSymbol.GetDeclSymbolNode() => decl;
+
+        public void Apply(ITypeSymbolVisitor visitor)
+        {
+            visitor.VisitClass(this);
+        }
     }
 }

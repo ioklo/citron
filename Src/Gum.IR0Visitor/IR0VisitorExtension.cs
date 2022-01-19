@@ -115,8 +115,11 @@ namespace Gum.IR0Visitor
                 case R.CallInternalUnaryAssignOperatorExp ciuaoExp: visitor.VisitCallInternalUnaryAssignOperatorExp(ciuaoExp); break;
                 case R.CallInternalBinaryOperatorExp ciboExp: visitor.VisitCallInternalBinaryOperatorExp(ciboExp); break;
                 case R.AssignExp assignExp: visitor.VisitAssignExp(assignExp); break;
-                case R.CallFuncExp callFuncExp: visitor.VisitCallFuncExp(callFuncExp); break;
-                case R.CallSeqFuncExp callSeqFuncExp: visitor.VisitCallSeqFuncExp(callSeqFuncExp); break;
+
+                case R.CallGlobalFuncExp callGlobalFuncExp: visitor.VisitCallGlobalFuncExp(callGlobalFuncExp); break;
+                case R.CallClassMemberFuncExp callClassMemberFuncExp: visitor.VisitCallClassMemberFuncExp(callClassMemberFuncExp); break;
+                case R.CallStructMemberFuncExp callStructMemberFuncExp: visitor.VisitCallStructMemberFuncExp(callStructMemberFuncExp); break;
+
                 case R.CallValueExp callValueExp: visitor.VisitCallValueExp(callValueExp); break;
                 case R.LambdaExp lambdaExp: visitor.VisitLambdaExp(lambdaExp); break;
                 case R.ListExp listExp: visitor.VisitListExp(listExp); break;
@@ -144,8 +147,9 @@ namespace Gum.IR0Visitor
                 case R.CallInternalUnaryAssignOperatorExp ciuaoExp: visitor.VisitCallInternalUnaryAssignOperatorExp(ciuaoExp, arg0); break;
                 case R.CallInternalBinaryOperatorExp ciboExp: visitor.VisitCallInternalBinaryOperatorExp(ciboExp, arg0); break;
                 case R.AssignExp assignExp: visitor.VisitAssignExp(assignExp, arg0); break;
-                case R.CallFuncExp callFuncExp: visitor.VisitCallFuncExp(callFuncExp, arg0); break;
-                case R.CallSeqFuncExp callSeqFuncExp: visitor.VisitCallSeqFuncExp(callSeqFuncExp, arg0); break;
+                case R.CallGlobalFuncExp callGlobalFuncExp: visitor.VisitCallGlobalFuncExp(callGlobalFuncExp, arg0); break;
+                case R.CallClassMemberFuncExp callClassMemberFuncExp: visitor.VisitCallClassMemberFuncExp(callClassMemberFuncExp, arg0); break;
+                case R.CallStructMemberFuncExp callStructMemberFuncExp: visitor.VisitCallStructMemberFuncExp(callStructMemberFuncExp, arg0); break;
                 case R.CallValueExp callValueExp: visitor.VisitCallValueExp(callValueExp, arg0); break;
                 case R.LambdaExp lambdaExp: visitor.VisitLambdaExp(lambdaExp, arg0); break;
                 case R.ListExp listExp: visitor.VisitListExp(listExp, arg0); break;
@@ -173,8 +177,11 @@ namespace Gum.IR0Visitor
                 case R.CallInternalUnaryAssignOperatorExp ciuaoExp: visitor.VisitCallInternalUnaryAssignOperatorExp(ciuaoExp); break;
                 case R.CallInternalBinaryOperatorExp ciboExp: visitor.VisitCallInternalBinaryOperatorExp(ciboExp); break;
                 case R.AssignExp assignExp: visitor.VisitAssignExp(assignExp); break;
-                case R.CallFuncExp callFuncExp: visitor.VisitCallFuncExp(callFuncExp); break;
-                case R.CallSeqFuncExp callSeqFuncExp: visitor.VisitCallSeqFuncExp(callSeqFuncExp); break;
+
+                case R.CallGlobalFuncExp callGlobalFuncExp: visitor.VisitCallGlobalFuncExp(callGlobalFuncExp); break;
+                case R.CallClassMemberFuncExp callClassMemberFuncExp: visitor.VisitCallClassMemberFuncExp(callClassMemberFuncExp); break;
+                case R.CallStructMemberFuncExp callStructMemberFuncExp: visitor.VisitCallStructMemberFuncExp(callStructMemberFuncExp); break;
+
                 case R.CallValueExp callValueExp: visitor.VisitCallValueExp(callValueExp); break;
                 case R.LambdaExp lambdaExp: visitor.VisitLambdaExp(lambdaExp); break;
                 case R.ListExp listExp: visitor.VisitListExp(listExp); break;

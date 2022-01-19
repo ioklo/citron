@@ -8,7 +8,6 @@ using Gum.Collections;
 using Pretune;
 
 using M = Gum.CompileTime;
-using R = Gum.IR0;
 
 namespace Gum.Analysis
 {
@@ -38,7 +37,7 @@ namespace Gum.Analysis
             return (name, null);
         }
 
-        public ImmutableArray<ITypeSymbolNode> GetTypeArgs()
+        public ImmutableArray<ITypeSymbol> GetTypeArgs()
         {
             return default;
         }
@@ -46,13 +45,6 @@ namespace Gum.Analysis
         public TypeEnv GetTypeEnv()
         {
             return TypeEnv.Empty;
-        }        
-
-        public R.Path.Normal MakeRPath()
-        {
-            var name = decl.GetName();
-            var rmoduleName = RItemFactory.MakeModuleName(name);
-            return new R.Path.Root(rmoduleName);
         }
 
         ISymbolNode ISymbolNode.Apply(TypeEnv typeEnv) => Apply(typeEnv);

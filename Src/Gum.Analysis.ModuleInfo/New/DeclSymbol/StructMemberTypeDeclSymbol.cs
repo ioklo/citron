@@ -1,34 +1,28 @@
 ﻿using Gum.Collections;
 using Gum.Infra;
+using Pretune;
 using System;
 using M = Gum.CompileTime;
 
 namespace Gum.Analysis
 {
-    public class StructMemberTypeDeclSymbol : IDeclSymbolNode
+    [AutoConstructor]
+    public partial class StructMemberTypeDeclSymbol : ITypeDeclSymbolContainer, TypeDict.IHaveNodeName
     {
+        IHolder<StructDeclSymbol> outerHolder;
         M.AccessModifier accessModifier;
-        ITypeDeclSymbolNode typeDecl;
+        ITypeDeclSymbol typeDecl;
 
-        public StructMemberTypeDeclSymbol(M.AccessModifier accessModifier, ITypeDeclSymbolNode typeDecl)
+        IDeclSymbolNode ITypeDeclSymbolContainer.GetOuterDeclNode() => GetOuter();
+
+        public StructDeclSymbol GetOuter()
         {
-            this.accessModifier = accessModifier;
-            this.typeDecl = typeDecl;
+            return outerHolder.GetValue();
         }
 
         public DeclSymbolNodeName GetNodeName()
         {
             return typeDecl.GetNodeName();
-        }
-
-        public IDeclSymbolNode? GetOuterDeclNode()
-        {
-            return typeDecl.GetOuterDeclNode();
-        }
-
-        public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
-        {
-            return typeDecl.GetMemberDeclNode(name, typeParamCount, paramIds);
         }
         
         public int GetTypeParamCount()
@@ -36,14 +30,17 @@ namespace Gum.Analysis
             return typeDecl.GetTypeParamCount();
         }
 
-        public void Apply(ITypeDeclSymbolNodeVisitor visitor)
+        public IDeclSymbolNode GetNode()
+        {
+            return typeDecl;
+        }
+
+        public void Apply(ITypeDeclSymbolVisitor visitor)
         {
             typeDecl.Apply(visitor);
         }
 
-        public void Apply(IDeclSymbolNodeVisitor visitor)
-        {
-            typeDecl.Apply(visitor);
-        }
+        
+        
     }
 }

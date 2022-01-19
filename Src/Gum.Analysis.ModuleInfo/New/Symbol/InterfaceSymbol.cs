@@ -6,19 +6,18 @@ using System.Threading.Tasks;
 using Gum.Collections;
 
 using M = Gum.CompileTime;
-using R = Gum.IR0;
 
 namespace Gum.Analysis
 {
-    public class InterfaceSymbol : ITypeSymbolNode
+    public class InterfaceSymbol : ITypeSymbol
     {
         SymbolFactory factory;
         ISymbolNode outer;
         InterfaceDeclSymbol decl;
-        ImmutableArray<ITypeSymbolNode> typeArgs;
+        ImmutableArray<ITypeSymbol> typeArgs;
         TypeEnv typeEnv;        
 
-        internal InterfaceSymbol(SymbolFactory factory, ISymbolNode outer, InterfaceDeclSymbol decl, ImmutableArray<ITypeSymbolNode> typeArgs)
+        internal InterfaceSymbol(SymbolFactory factory, ISymbolNode outer, InterfaceDeclSymbol decl, ImmutableArray<ITypeSymbol> typeArgs)
         {
             this.factory = factory;
             this.outer = outer;
@@ -34,7 +33,12 @@ namespace Gum.Analysis
             return factory.MakeInterface(appliedOuter, decl, appliedTypeArgs);
         }
 
-        public ITypeDeclSymbolNode GetDeclSymbolNode()
+        public void Apply(ITypeSymbolVisitor visitor)
+        {
+            visitor.VisitInterface(this);
+        }
+
+        public ITypeDeclSymbol GetDeclSymbolNode()
         {
             return decl;
         }
@@ -44,7 +48,7 @@ namespace Gum.Analysis
             return outer;
         }
 
-        public ImmutableArray<ITypeSymbolNode> GetTypeArgs()
+        public ImmutableArray<ITypeSymbol> GetTypeArgs()
         {
             return typeArgs;
         }
@@ -54,17 +58,13 @@ namespace Gum.Analysis
             return typeEnv;
         }
 
-        public R.Path.Nested MakeRPath()
+        public SymbolQueryResult QueryMember(M.Name name, int typeParamCount)
         {
-            var rname = RItemFactory.MakeName(decl.GetName());
-            var rtypeArgs = RItemFactory.MakeRTypes(typeArgs);
-
-            return new R.Path.Nested(outer.MakeRPath(), rname, new R.ParamHash(decl.GetTypeParamCount(), default), rtypeArgs);
+            return SymbolQueryResult.NotFound.Instance;
         }
 
         ISymbolNode ISymbolNode.Apply(TypeEnv typeEnv) => Apply(typeEnv);
-        ITypeSymbolNode ITypeSymbolNode.Apply(TypeEnv typeEnv) => Apply(typeEnv);
+        ITypeSymbol ITypeSymbol.Apply(TypeEnv typeEnv) => Apply(typeEnv);
         IDeclSymbolNode ISymbolNode.GetDeclSymbolNode() => decl;
-        R.Path.Normal ISymbolNode.MakeRPath() => MakeRPath();        
     }
 }

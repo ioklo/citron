@@ -12,18 +12,18 @@ namespace Gum.IR0Translator
     {
         abstract class TypeResolver
         {
-            public abstract void AddConstraint(TypeSymbol x, TypeSymbol y);
-            public abstract ImmutableArray<TypeSymbol> Resolve();
+            public abstract void AddConstraint(ITypeSymbol x, ITypeSymbol y);
+            public abstract ImmutableArray<ITypeSymbol> Resolve();
         }
 
         // do nothing
         class NullTypeResolver : TypeResolver
         {
-            ImmutableArray<ITypeSymbolNode> typeArgs;
-            public NullTypeResolver(ImmutableArray<ITypeSymbolNode> typeArgs) { this.typeArgs = typeArgs; }
+            ImmutableArray<ITypeSymbol> typeArgs;
+            public NullTypeResolver(ImmutableArray<ITypeSymbol> typeArgs) { this.typeArgs = typeArgs; }
 
-            public override void AddConstraint(TypeSymbol x, TypeSymbol y) { }
-            public override ImmutableArray<TypeSymbol> Resolve() => typeArgs;
+            public override void AddConstraint(ITypeSymbol x, ITypeSymbol y) { }
+            public override ImmutableArray<ITypeSymbol> Resolve() => typeArgs;
         }
     }
 }

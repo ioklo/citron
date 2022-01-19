@@ -6,8 +6,13 @@ namespace Gum.Analysis
 {
     public class TypeDict
     {
+        public interface IHaveNodeName
+        {
+            DeclSymbolNodeName GetNodeName();
+        }
+
         public static TypeDict<TTypeDeclSymbol> Build<TTypeDeclSymbol>(ImmutableArray<TTypeDeclSymbol> types)
-            where TTypeDeclSymbol : IDeclSymbolNode
+            where TTypeDeclSymbol : IHaveNodeName
         {
             var typesBuilder = ImmutableDictionary.CreateBuilder<DeclSymbolNodeName, TTypeDeclSymbol>();
             foreach (var type in types)
@@ -23,7 +28,7 @@ namespace Gum.Analysis
 
     [ExcludeComparison]
     public partial struct TypeDict<TTypeDeclSymbol>
-        where TTypeDeclSymbol : IDeclSymbolNode
+        where TTypeDeclSymbol : TypeDict.IHaveNodeName
     {
         internal ImmutableDictionary<DeclSymbolNodeName, TTypeDeclSymbol> types;
         

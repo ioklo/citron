@@ -56,7 +56,7 @@ namespace Gum.Analysis
                 {
                     var declSymbol = referenceModule.GetDeclSymbol(declPath);
 
-                    if (declSymbol is ITypeDeclSymbolNode typeDeclSymbol)
+                    if (declSymbol is ITypeDeclSymbol typeDeclSymbol)
                     {
                         var symbolId = new ModuleSymbolId(referenceModule.GetName(), path);
                         yield return new ModuleSymbolTypeExpInfo(symbolId, typeDeclSymbol, typeExp);

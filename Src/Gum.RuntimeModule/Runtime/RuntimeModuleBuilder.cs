@@ -35,7 +35,7 @@ namespace Gum.Runtime
             ItemId? outerTypeId,
             ItemId typeId,
             IEnumerable<string> typeParams,
-            TypeSymbol? baseTypeValue,
+            ITypeSymbol? baseTypeValue,
             IEnumerable<ItemId> memberTypeIds,
             IEnumerable<ItemId> memberFuncIds,
             IEnumerable<ItemId> memberVarIds,
@@ -49,7 +49,7 @@ namespace Gum.Runtime
             ItemId? outerTypeId,
             ItemId typeId,
             IEnumerable<string> typeParams,
-            TypeSymbol? baseTypeValue,
+            ITypeSymbol? baseTypeValue,
             IEnumerable<ItemId> memberTypeIds,
             IEnumerable<ItemId> memberFuncIds,
             IEnumerable<ItemId> memberVarIds,
@@ -65,15 +65,15 @@ namespace Gum.Runtime
             bool bSeqCall,
             bool bThisCall,
             IReadOnlyList<string> typeParams,
-            TypeSymbol retTypeValue,
-            IEnumerable<TypeSymbol> paramTypeValues,
+            ITypeSymbol retTypeValue,
+            IEnumerable<ITypeSymbol> paramTypeValues,
             Invoker invoker)
         {
             funcInfos.Add(new FuncInfo(outerId, funcId, bSeqCall, bThisCall, typeParams, retTypeValue, paramTypeValues));
             funcInstantiators.Add(new NativeFuncInstantiator(funcId, bThisCall, invoker));
         }
 
-        public void AddVar(ItemId? outerId, ItemId varId, bool bStatic, TypeSymbol typeValue)
+        public void AddVar(ItemId? outerId, ItemId varId, bool bStatic, ITypeSymbol typeValue)
         {
             varInfos.Add(new VarInfo(outerId, varId, bStatic, typeValue));
         }

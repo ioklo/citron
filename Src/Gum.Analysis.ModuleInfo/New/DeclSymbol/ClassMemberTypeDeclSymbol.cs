@@ -1,4 +1,6 @@
 ﻿using Gum.Collections;
+using Gum.Infra;
+using Pretune;
 using System;
 using System.Diagnostics;
 using M = Gum.CompileTime;
@@ -6,15 +8,18 @@ using M = Gum.CompileTime;
 namespace Gum.Analysis
 {
     // 일단 M.-는 허용, 확장할 일이 있으면 감싸서 만든다
-    public record ClassMemberTypeDeclSymbol : IDeclSymbolNode
+    [AutoConstructor]
+    public partial class ClassMemberTypeDeclSymbol : ITypeDeclSymbolContainer, TypeDict.IHaveNodeName
     {
-        M.AccessModifier accessModifier;        
-        ITypeDeclSymbolNode typeDecl;
+        IHolder<ClassDeclSymbol> outerHolder;
+        M.AccessModifier accessModifier;
+        ITypeDeclSymbol typeDecl;
 
-        public ClassMemberTypeDeclSymbol(M.AccessModifier accessModifier, ITypeDeclSymbolNode typeDecl)
+        IDeclSymbolNode ITypeDeclSymbolContainer.GetOuterDeclNode() => GetOuter();
+        
+        public ClassDeclSymbol GetOuter()
         {
-            this.accessModifier = accessModifier;
-            this.typeDecl = typeDecl;
+            return outerHolder.GetValue();
         }
 
         public DeclSymbolNodeName GetNodeName() 
@@ -27,22 +32,12 @@ namespace Gum.Analysis
             return typeDecl.GetTypeParamCount();
         }
 
-        public void Apply(ITypeDeclSymbolNodeVisitor visitor)
+        public IDeclSymbolNode GetNode()
         {
-            typeDecl.Apply(visitor);
+            return typeDecl;
         }
 
-        public IDeclSymbolNode? GetOuterDeclNode()
-        {
-            return typeDecl.GetOuterDeclNode();
-        }
-
-        public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
-        {
-            return typeDecl.GetMemberDeclNode(name, typeParamCount, paramIds);
-        }
-
-        public void Apply(IDeclSymbolNodeVisitor visitor)
+        public void Apply(ITypeDeclSymbolVisitor visitor)
         {
             typeDecl.Apply(visitor);
         }

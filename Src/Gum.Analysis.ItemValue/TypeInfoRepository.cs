@@ -45,9 +45,9 @@ namespace Gum.Analysis
             return outerItem.GetItem(path.Name, path.TypeParamCount, path.ParamTypes);
         }
 
-        public ITypeDeclSymbolNode? GetType(M.DeclSymbolPath path)
+        public ITypeDeclSymbol? GetType(M.DeclSymbolPath path)
         {
-            return GetItem(path) as ITypeDeclSymbolNode;
+            return GetItem(path) as ITypeDeclSymbol;
         }
     }
 }

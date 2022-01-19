@@ -12,7 +12,6 @@
     <ProjectReference Include="..\Gum.Analysis.ModuleInfo\Gum.Analysis.ModuleInfo.csproj" />
     <ProjectReference Include="..\Gum.Analysis.TypeExpEvaluator\Gum.Analysis.TypeExpEvaluator.csproj" />
     <ProjectReference Include="..\Gum.Infra\Gum.Infra.csproj" />
-    <ProjectReference Include="..\Gum.IR0NullRefAnalyzer\Gum.IR0NullRefAnalyzer.csproj" />
     <ProjectReference Include="..\Gum.IR0\Gum.IR0.csproj" />
     <ProjectReference Include="..\Gum.Log\Gum.Log.csproj" />
     <ProjectReference Include="..\Gum.ModuleInfo\Gum.ModuleInfo.csproj" />

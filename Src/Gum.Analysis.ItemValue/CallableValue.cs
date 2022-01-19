@@ -1,13 +1,12 @@
 ﻿using Gum.Collections;
 using Gum.Infra;
 using M = Gum.CompileTime;
-using R = Gum.IR0;
 
 namespace Gum.Analysis
 {
     public abstract class CallableValue : ItemValue
     {
-        protected abstract TypeSymbol MakeTypeValueByMType(M.TypeId type);
+        protected abstract ITypeSymbol MakeTypeValueByMType(M.TypeId type);
         public abstract ImmutableArray<M.Param> GetParameters();
 
         // class X<T> { void Func<U>(T t, ref U u, int x); }

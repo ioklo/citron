@@ -27,13 +27,13 @@ namespace Gum.Runtime
             var elemTypeValue = new TypeVarTypeValue(0, 0, "T");
 
             // Enumerator<T>
-            var enumeratorTypeValue = new NormalTypeValue(enumeratorId, new TypeSymbol[] { elemTypeValue });
+            var enumeratorTypeValue = new NormalTypeValue(enumeratorId, new ITypeSymbol[] { elemTypeValue });
 
             Invoker wrappedGetEnumerator = 
                 (domainService, typeArgs, thisValue, args, result) => EnumerableObject.NativeGetEnumerator(domainService, enumeratorId, typeArgs, thisValue, args, result);
 
             builder.AddMemberFunc("GetEnumerator",
-                false, true, Array.Empty<string>(), enumeratorTypeValue, Enumerable.Empty<TypeSymbol>(),
+                false, true, Array.Empty<string>(), enumeratorTypeValue, Enumerable.Empty<ITypeSymbol>(),
                 wrappedGetEnumerator);
         }
         

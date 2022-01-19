@@ -16,15 +16,15 @@ namespace Gum.IR0Translator
     {
         struct InternalBinaryOperatorInfo
         {
-            public TypeSymbol OperandType0 { get; }
-            public TypeSymbol OperandType1 { get; }
-            public TypeSymbol ResultType { get; }
+            public ITypeSymbol OperandType0 { get; }
+            public ITypeSymbol OperandType1 { get; }
+            public ITypeSymbol ResultType { get; }
             public R.InternalBinaryOperator IR0Operator { get; }
 
             public InternalBinaryOperatorInfo(
-                TypeSymbol operandType0,
-                TypeSymbol operandType1,
-                TypeSymbol resultType,
+                ITypeSymbol operandType0,
+                ITypeSymbol operandType1,
+                ITypeSymbol resultType,
                 R.InternalBinaryOperator ir0Operator)
             {
                 OperandType0 = operandType0;
@@ -38,13 +38,9 @@ namespace Gum.IR0Translator
         {
             Dictionary<S.BinaryOpKind, ImmutableArray<InternalBinaryOperatorInfo>> infos;
 
-            public InternalBinaryOperatorQueryService(ItemValueFactory itemValueFactory)
+            public InternalBinaryOperatorQueryService(ITypeSymbol boolType, ITypeSymbol intType, ITypeSymbol stringType)
             {
-                infos = new Dictionary<S.BinaryOpKind, ImmutableArray<InternalBinaryOperatorInfo>>();
-
-                var boolType = itemValueFactory.Bool;
-                var intType = itemValueFactory.Int;
-                var stringType = itemValueFactory.String;
+                infos = new Dictionary<S.BinaryOpKind, ImmutableArray<InternalBinaryOperatorInfo>>();                
 
                 infos = new Dictionary<S.BinaryOpKind, ImmutableArray<InternalBinaryOperatorInfo>>()
                 {

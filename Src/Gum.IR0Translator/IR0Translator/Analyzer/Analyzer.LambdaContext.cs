@@ -13,31 +13,31 @@ namespace Gum.IR0Translator
         class LambdaContext : ICallableContext
         {
             R.Path.Nested path;
-            NormalTypeValue? thisTypeValue; // possible,
+            ITypeSymbol? thisType; // possible,
             LocalContext parentLocalContext;
-            TypeSymbol? retTypeValue;
+            ITypeSymbol? retType;
             bool bCaptureThis;
-            Dictionary<string, TypeSymbol> localCaptures;
+            Dictionary<string, ITypeSymbol> localCaptures;
             ImmutableArray<R.CallableMemberDecl> decls;
             AnonymousIdComponent AnonymousIdComponent;
 
-            public LambdaContext(R.Path.Nested path, NormalTypeValue? thisTypeValue, LocalContext parentLocalContext, TypeSymbol? retTypeValue)
+            public LambdaContext(R.Path.Nested path, ITypeSymbol? thisType, LocalContext parentLocalContext, ITypeSymbol? retType)
             {
                 this.path = path;
-                this.thisTypeValue = thisTypeValue;
+                this.thisType = thisType;
                 this.parentLocalContext = parentLocalContext;
-                this.retTypeValue = retTypeValue;
+                this.retType = retType;
                 this.bCaptureThis = false;
-                this.localCaptures = new Dictionary<string, TypeSymbol>();
+                this.localCaptures = new Dictionary<string, ITypeSymbol>();
             }
 
             public LambdaContext(LambdaContext other, CloneContext cloneContext)
             {
                 this.path = other.path;
                 this.parentLocalContext = cloneContext.GetClone(other.parentLocalContext);
-                this.retTypeValue = other.retTypeValue;
+                this.retType = other.retType;
                 this.bCaptureThis = other.bCaptureThis;
-                this.localCaptures = new Dictionary<string, TypeSymbol>(other.localCaptures);
+                this.localCaptures = new Dictionary<string, ITypeSymbol>(other.localCaptures);
                 this.decls = other.decls;
                 this.AnonymousIdComponent = other.AnonymousIdComponent;
             }
@@ -62,17 +62,17 @@ namespace Gum.IR0Translator
                 return parentLocalContext.GetLocalVarInfo(varName);
             }
 
-            public TypeSymbol? GetRetTypeValue()
+            public ITypeSymbol? GetReturn()
             {
-                return retTypeValue;
+                return retType;
             }
 
-            public void SetRetTypeValue(TypeSymbol retTypeValue)
+            public void SetRetType(ITypeSymbol retTypeValue)
             {
-                this.retTypeValue = retTypeValue;
+                this.retType = retTypeValue;
             }
 
-            public void AddLambdaCapture(string capturedVarName, TypeSymbol capturedVarType)
+            public void AddLambdaCapture(string capturedVarName, ITypeSymbol capturedVarType)
             {
                 if (localCaptures.TryGetValue(capturedVarName, out var prevType))
                     Debug.Assert(prevType.Equals(capturedVarType));
@@ -90,7 +90,7 @@ namespace Gum.IR0Translator
                 return localCaptures.Select(localCapture =>
                 {
                     var name = localCapture.Key;
-                    var type = localCapture.Value.GetRPath();
+                    var type = localCapture.Value.MakeRPath();
                     return new R.OuterLocalVarInfo(type, name);
                 }).ToImmutableArray();
             }
@@ -105,9 +105,9 @@ namespace Gum.IR0Translator
                 return path;
             }
 
-            public NormalTypeValue? GetThisTypeValue() 
+            public ITypeSymbol? GetThisType() 
             { 
-                return thisTypeValue; 
+                return thisType;
             }
 
             public void AddCallableMemberDecl(R.CallableMemberDecl decl)

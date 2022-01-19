@@ -18,17 +18,17 @@ namespace Gum.IR0Translator
         struct LocalVarInfo
         {
             public bool IsRef { get; }
-            public TypeSymbol TypeValue { get; }
+            public ITypeSymbol TypeSymbol { get; }
             public string Name { get; }
             
-            public LocalVarInfo(bool bRef, TypeSymbol typeValue, string name)
+            public LocalVarInfo(bool bRef, ITypeSymbol typeSymbol, string name)
             {
                 IsRef = bRef;
                 Name = name;
-                TypeValue = typeValue;
+                TypeSymbol = typeSymbol;
             }
 
-            public LocalVarInfo UpdateTypeValue(TypeSymbol newTypeValue)
+            public LocalVarInfo UpdateTypeValue(ITypeSymbol newTypeValue)
             {
                 return new LocalVarInfo(IsRef, newTypeValue, Name);
             }
@@ -90,12 +90,12 @@ namespace Gum.IR0Translator
                 return new LocalContext(this, true);
             }
 
-            public void AddLocalVarInfo(bool bRef, TypeSymbol typeValue, string name)
+            public void AddLocalVarInfo(bool bRef, ITypeSymbol typeValue, string name)
             {
                 localVarInfos = localVarInfos.SetItem(name, new LocalVarInfo(bRef, typeValue, name));
             }
 
-            public void SetLocalVarType(string name, TypeSymbol typeValue)
+            public void SetLocalVarType(string name, ITypeSymbol typeValue)
             {
                 var value = localVarInfos[name];
                 localVarInfos = localVarInfos.SetItem(name, value.UpdateTypeValue(typeValue));

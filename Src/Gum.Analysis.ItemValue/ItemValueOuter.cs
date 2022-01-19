@@ -3,7 +3,6 @@ using System;
 using Pretune;
 
 using M = Gum.CompileTime;
-using R = Gum.IR0;
 using System.Diagnostics;
 
 namespace Gum.Analysis

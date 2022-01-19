@@ -30,13 +30,13 @@ namespace Gum.IR0Translator
                 this.localContext = localContext;
             }
             
-            ImmutableArray<TypeSymbol> GetTypeValues(ImmutableArray<S.TypeExp> typeExps)
+            ImmutableArray<ITypeSymbol> GetTypeValues(ImmutableArray<S.TypeExp> typeExps)
             {
-                var builder = ImmutableArray.CreateBuilder<TypeSymbol>(typeExps.Length);
+                var builder = ImmutableArray.CreateBuilder<ITypeSymbol>(typeExps.Length);
 
                 foreach (var typeExp in typeExps)
                 {
-                    var typeValue = globalContext.GetTypeValueByTypeExp(typeExp);
+                    var typeValue = globalContext.GetSymbolByTypeExp(typeExp);
                     builder.Add(typeValue);
                 }
 
@@ -59,7 +59,7 @@ namespace Gum.IR0Translator
             R.LocalVarDecl AnalyzeLocalVarDecl(S.VarDecl varDecl)
             {
                 var varDeclAnalyzer = new VarDeclElemAnalyzer(globalContext, callableContext, localContext);
-                var declType = globalContext.GetTypeValueByTypeExp(varDecl.Type);
+                var declType = globalContext.GetSymbolByTypeExp(varDecl.Type);
 
                 var relems = new List<R.VarDeclElement>();
                 foreach (var elem in varDecl.Elems)
@@ -70,7 +70,7 @@ namespace Gum.IR0Translator
                     var result = varDeclAnalyzer.AnalyzeVarDeclElement(bLocal: true, elem, varDecl.IsRef, declType);
 
                     // varDecl.IsRef는 syntax에서 체크한 것이므로, syntax에서 ref가 아니더라도 ref일 수 있으므로 result.Elem으로 검사를 해야한다.
-                    localContext.AddLocalVarInfo(result.Elem is R.VarDeclElement.Ref, result.TypeValue, elem.VarName);
+                    localContext.AddLocalVarInfo(result.Elem is R.VarDeclElement.Ref, result.TypeSymbol, elem.VarName);
                     relems.Add(result.Elem);
                 }
 

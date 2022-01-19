@@ -15,14 +15,14 @@ namespace Gum.IR0Translator
 {
     partial class Analyzer
     {   
-        static IdentifierResult.Error ToErrorIdentifierResult(MemberQueryResult.Error errorResult)
+        static IdentifierResult.Error ToErrorIdentifierResult(SymbolQueryResult.Error errorResult)
         {
             switch(errorResult)
             {
-                case MemberQueryResult.Error.MultipleCandidates:
+                case SymbolQueryResult.Error.MultipleCandidates:
                     return IdentifierResult.Error.MultipleCandiates.Instance;
 
-                case MemberQueryResult.Error.VarWithTypeArg:
+                case SymbolQueryResult.Error.VarWithTypeArg:
                     return IdentifierResult.Error.VarWithTypeArg.Instance;
             }
 
@@ -33,7 +33,7 @@ namespace Gum.IR0Translator
         partial struct IdExpIdentifierResolver
         {
             string idName;
-            ImmutableArray<ITypeSymbolNode> typeArgs;
+            ImmutableArray<ITypeSymbol> typeArgs;
             ResolveHint hint;
 
             GlobalContext globalContext;
@@ -41,7 +41,7 @@ namespace Gum.IR0Translator
             LocalContext localContext;
 
             public static IdentifierResult Resolve(
-                string idName, ImmutableArray<ITypeSymbolNode> typeArgs, ResolveHint hint,
+                string idName, ImmutableArray<ITypeSymbol> typeArgs, ResolveHint hint,
                 GlobalContext globalContext,
                 ICallableContext callableContext,
                 LocalContext localContext)
@@ -58,7 +58,7 @@ namespace Gum.IR0Translator
                 var varInfo = callableContext.GetLocalVarOutsideLambda(idName);
                 if (varInfo == null) return IdentifierResult.NotFound.Instance;
 
-                return new IdentifierResult.LocalVarOutsideLambda(varInfo.Value.IsRef, varInfo.Value.TypeValue, varInfo.Value.Name);
+                return new IdentifierResult.LocalVarOutsideLambda(varInfo.Value.IsRef, varInfo.Value.TypeSymbol, varInfo.Value.Name);
             }
 
             IdentifierResult GetLocalVarInfo()
@@ -69,39 +69,39 @@ namespace Gum.IR0Translator
                 var varInfo = localContext.GetLocalVarInfo(idName);
                 if (varInfo == null) return IdentifierResult.NotFound.Instance;
 
-                return new IdentifierResult.LocalVar(varInfo.Value.IsRef, varInfo.Value.TypeValue, varInfo.Value.Name);
+                return new IdentifierResult.LocalVar(varInfo.Value.IsRef, varInfo.Value.TypeSymbol, varInfo.Value.Name);
             }
 
             IdentifierResult GetThisMemberInfo()
             {
-                var thisType = callableContext.GetThisTypeValue();
+                var thisType = callableContext.GetOuterType();
                 if (thisType == null) return IdentifierResult.NotFound.Instance;
 
                 var itemQueryResult = thisType.GetMember(new M.Name.Normal(idName), typeArgs.Length);
 
                 switch(itemQueryResult)
                 {
-                    case MemberQueryResult.Error errorResult:
+                    case SymbolQueryResult.Error errorResult:
                         return ToErrorIdentifierResult(errorResult);
 
-                    case MemberQueryResult.NotFound:
+                    case SymbolQueryResult.NotFound:
                         return IdentifierResult.NotFound.Instance;
 
                     // 여기서부터 case ItemQueryResult.Valid 
-                    case MemberQueryResult.Type typeResult:
+                    case SymbolQueryResult.Type typeResult:
                         var typeValue = globalContext.MakeTypeValue(typeResult.Outer, typeResult.TypeInfo, typeArgs);
                         return new IdentifierResult.Type(typeValue);
 
-                    case MemberQueryResult.Constructors:
+                    case SymbolQueryResult.Constructors:
                         throw new UnreachableCodeException(); // 이름으로 참조 불가능
 
-                    case MemberQueryResult.Funcs funcsResult:
+                    case SymbolQueryResult.Funcs funcsResult:
                         return new IdentifierResult.Funcs(funcsResult.Outer, funcsResult.FuncInfos, typeArgs, funcsResult.IsInstanceFunc);
 
-                    case MemberQueryResult.MemberVar memberVarResult:
+                    case SymbolQueryResult.MemberVar memberVarResult:
                         return new IdentifierResult.MemberVar(memberVarResult.Outer, memberVarResult.MemberVarInfo);
 
-                    case MemberQueryResult.EnumElem:
+                    case SymbolQueryResult.EnumElem:
                         throw new NotImplementedException();  // TODO: 무슨 뜻인지 확실히 해야 한다
                 }
 
@@ -116,40 +116,42 @@ namespace Gum.IR0Translator
                 var varInfo = globalContext.GetInternalGlobalVarInfo(idName);
                 if (varInfo == null) return IdentifierResult.NotFound.Instance;
 
-                return new IdentifierResult.GlobalVar(varInfo.IsRef, varInfo.TypeValue, varInfo.Name.ToString());
+                return new IdentifierResult.GlobalVar(varInfo.IsRef, varInfo.TypeSymbol, varInfo.Name.ToString());
             }
             
             IdentifierResult GetGlobalInfo()
             {
                 // TODO: outer namespace까지 다 돌아야 한다
-                var curNamespacePath = M.NamespacePath.Root;
-                var globalResult = globalContext.GetGlobalItem(curNamespacePath, new M.Name.Normal(idName), typeArgs.Length);
+                SymbolPath? namespacePath = null;
+                var globalResult = globalContext.QuerySymbol(namespacePath, new M.Name.Normal(idName), typeArgs.Length);
 
                 switch (globalResult)
                 {
-                    case MemberQueryResult.NotFound: return IdentifierResult.NotFound.Instance;
-                    case MemberQueryResult.Error errorResult: return ToErrorIdentifierResult(errorResult);
-                    case MemberQueryResult.Type typeResult:
+                    case SymbolQueryResult.NotFound: return IdentifierResult.NotFound.Instance;
+                    case SymbolQueryResult.Error errorResult: return ToErrorIdentifierResult(errorResult);
+                    case SymbolQueryResult.Class classResult:
+                        return new IdentifierResult.Type(classResult.ClassConstructor.Invoke(typeArgs));
+
+                    case SymbolQueryResult.Type typeResult:
                         {
                             var typeValue = globalContext.MakeTypeValue(typeResult.Outer, typeResult.TypeInfo, typeArgs);
                             return new IdentifierResult.Type(typeValue);
                         }
 
-                    case MemberQueryResult.Constructors:
+                    case SymbolQueryResult.Constructors:
                         throw new UnreachableCodeException(); // global item도 아닐뿐더러, 이름으로 참조가 불가능하다
 
-                    case MemberQueryResult.MemberVar:
+                    case SymbolQueryResult.MemberVar:
                         throw new UnreachableCodeException();
 
-                    case MemberQueryResult.Funcs funcsResult:
+                    case SymbolQueryResult.Funcs funcsResult:
                         {
                             return new IdentifierResult.Funcs(funcsResult.Outer, funcsResult.FuncInfos, typeArgs, funcsResult.IsInstanceFunc);
                         }
 
-                    case MemberQueryResult.EnumElem enumElemResult:
+                    case SymbolQueryResult.EnumElem enumElemResult:
                         {
-                            var elemTypeValue = globalContext.MakeEnumElemTypeValue(enumElemResult.Outer, enumElemResult.EnumElemInfo);
-                            return new IdentifierResult.EnumElem(elemTypeValue);
+                            return new IdentifierResult.EnumElem(enumElemResult.Symbol);
                         }
 
                     default:
@@ -193,7 +195,7 @@ namespace Gum.IR0Translator
             {
                 // 힌트가 E고, First가 써져 있으면 E.First를 검색한다
                 // enum 힌트 사용, typeArgs가 있으면 지나간다
-                if (hint.TypeHint is TypeValueTypeHint typeValueHintType && typeValueHintType.TypeValue is EnumSymbol enumTypeValue)
+                if (hint.TypeHint is TypeValueTypeHint typeValueHintType && typeValueHintType.TypeSymbol is EnumSymbol enumTypeValue)
                 {
                     // First<T> 같은건 없기 때문에 없을때만 검색한다                    
                     var elemTypeValue = enumTypeValue.GetElement(idName);

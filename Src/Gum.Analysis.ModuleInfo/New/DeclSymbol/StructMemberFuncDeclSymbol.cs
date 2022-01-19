@@ -3,12 +3,11 @@ using Gum.Infra;
 using Pretune;
 using System;
 using M = Gum.CompileTime;
-using R = Gum.IR0;
 
 namespace Gum.Analysis
 {
     [AutoConstructor]
-    public partial class StructMemberFuncDeclSymbol : IDeclSymbolNode
+    public partial class StructMemberFuncDeclSymbol : IFuncDeclSymbol
     {
         IHolder<StructDeclSymbol> outer;
 
@@ -19,6 +18,15 @@ namespace Gum.Analysis
         ImmutableArray<string> typeParams;
         IHolder<ImmutableArray<FuncParameter>> parametersHolder;
 
+        public int GetParameterCount()
+        {
+            return parametersHolder.GetValue().Length;
+        }
+
+        public FuncParameter GetParameter(int index)
+        {
+            return parametersHolder.GetValue()[index];
+        }
 
         public DeclSymbolNodeName GetNodeName()
         {
@@ -44,14 +52,6 @@ namespace Gum.Analysis
         {
             return bStatic;
         }        
-
-        public R.Path.Nested MakeRPath(R.Path.Normal outerPath, ImmutableArray<R.Path> typeArgs)
-        {
-            var rname = RItemFactory.MakeName(name);
-            var paramHash = new R.ParamHash(typeArgs.Length, parametersHolder.GetValue().MakeParamHashEntries());            
-
-            return new R.Path.Nested(outerPath, rname, paramHash, typeArgs);
-        }
 
         public void Apply(IDeclSymbolNodeVisitor visitor)
         {

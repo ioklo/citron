@@ -2,7 +2,6 @@
 using Gum.Collections;
 
 using M = Gum.CompileTime;
-using R = Gum.IR0;
 
 namespace Gum.Analysis
 {
@@ -37,7 +36,7 @@ namespace Gum.Analysis
             return decl;
         }        
 
-        public ImmutableArray<ITypeSymbolNode> GetTypeArgs()
+        public ImmutableArray<ITypeSymbol> GetTypeArgs()
         {
             return default;
         }
@@ -45,14 +44,6 @@ namespace Gum.Analysis
         public TypeEnv GetTypeEnv()
         {
             return outer.GetTypeEnv();
-        }
-
-        public R.Path.Normal MakeRPath()
-        {
-            var outerPath = outer.MakeRPath();
-            var name = RItemFactory.MakeName(decl.GetName());
-
-            return new R.Path.Nested(outerPath, name, R.ParamHash.None, default);
         }
     }
 }

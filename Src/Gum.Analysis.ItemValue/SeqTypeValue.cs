@@ -6,13 +6,13 @@ namespace Gum.Analysis
 {
     // seq ref int F(ref int a, ref int b) { yield ref a; }
     [AutoConstructor]
-    public partial class SeqTypeValue : TypeSymbol
+    public partial class SeqTypeValue : ITypeSymbol
     {
         RItemFactory ritemFactory;
         R.Path.Nested seqFunc;
-        public TypeSymbol YieldType { get; }
+        public ITypeSymbol YieldType { get; }
 
-        public override TypeSymbol Apply(TypeEnv typeEnv)
+        public override ITypeSymbol Apply(TypeEnv typeEnv)
         {
             throw new NotImplementedException();
         }

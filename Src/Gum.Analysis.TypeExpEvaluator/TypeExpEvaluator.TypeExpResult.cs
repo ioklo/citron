@@ -86,9 +86,9 @@ namespace Gum.Analysis
     //    class SymbolTypeExpResult : TypeExpResult
     //    {
     //        MTypeTypeExpInfo typeExpInfo;
-    //        ITypeDeclSymbolNode typeDecl;
+    //        ITypeDeclSymbol typeDecl;
 
-    //        public SymbolTypeExpResult(MTypeTypeExpInfo typeExpInfo, ITypeDeclSymbolNode typeDecl)
+    //        public SymbolTypeExpResult(MTypeTypeExpInfo typeExpInfo, ITypeDeclSymbol typeDecl)
     //        {
     //            this.typeExpInfo = typeExpInfo;
     //            this.typeDecl = typeDecl;
@@ -99,7 +99,7 @@ namespace Gum.Analysis
     //            var typeId = typeExpInfo.GetSymbolId();
     //            Debug.Assert(typeId != null);
                 
-    //            var memberTypeNode = typeDecl.GetMemberDeclNode(new M.Name.Normal(memberName), typeArgs.Length, default) as ITypeDeclSymbolNode;
+    //            var memberTypeNode = typeDecl.GetMemberDeclNode(new M.Name.Normal(memberName), typeArgs.Length, default) as ITypeDeclSymbol;
     //            if (memberTypeNode == null)
     //                return null;
                 

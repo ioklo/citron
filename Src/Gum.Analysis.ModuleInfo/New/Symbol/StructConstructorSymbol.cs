@@ -1,15 +1,18 @@
 ﻿using Gum.Collections;
 using System;
 using M = Gum.CompileTime;
-using R = Gum.IR0;
 
 namespace Gum.Analysis
 {
-    public class StructConstructorSymbol : ISymbolNode
+    public class StructConstructorSymbol : IFuncSymbol
     {
         SymbolFactory factory;
         StructSymbol outer;
         StructConstructorDeclSymbol decl;
+
+        ISymbolNode ISymbolNode.Apply(TypeEnv typeEnv) => Apply(typeEnv);
+        ISymbolNode? ISymbolNode.GetOuter() => outer;
+        IFuncSymbol IFuncSymbol.Apply(TypeEnv typeEnv) => Apply(typeEnv);
 
         internal StructConstructorSymbol(SymbolFactory factory, StructSymbol outer, StructConstructorDeclSymbol decl)
         {
@@ -34,7 +37,7 @@ namespace Gum.Analysis
             return outer;
         }
 
-        public ImmutableArray<ITypeSymbolNode> GetTypeArgs()
+        public ImmutableArray<ITypeSymbol> GetTypeArgs()
         {
             return default;
         }
@@ -42,12 +45,6 @@ namespace Gum.Analysis
         public TypeEnv GetTypeEnv()
         {
             return outer.GetTypeEnv();
-        }
-
-        public R.Path.Normal MakeRPath()
-        {
-            var outerPath = outer.MakeRPath();
-            return decl.MakeRPath(outerPath);
         }
 
         public int GetParameterCount()
@@ -61,9 +58,11 @@ namespace Gum.Analysis
             var typeEnv = GetTypeEnv();
 
             return parameter.Apply(typeEnv);
-        }
+        }        
 
-        ISymbolNode ISymbolNode.Apply(TypeEnv typeEnv) => Apply(typeEnv);
-        ISymbolNode? ISymbolNode.GetOuter() => outer;
+        public ITypeSymbol? GetOuterType()
+        {
+            return outer;
+        }
     }
 }

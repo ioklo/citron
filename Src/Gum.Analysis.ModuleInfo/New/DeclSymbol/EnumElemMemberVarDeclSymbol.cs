@@ -10,7 +10,7 @@ namespace Gum.Analysis
     public partial class EnumElemMemberVarDeclSymbol : IDeclSymbolNode
     {
         IHolder<EnumElemDeclSymbol> outerHolder;
-        IHolder<ITypeSymbolNode> declTypeHolder;
+        IHolder<ITypeSymbol> declTypeHolder;
         M.Name name;
 
         public M.Name GetName()
@@ -33,7 +33,7 @@ namespace Gum.Analysis
             return outerHolder.GetValue();
         }
 
-        public ITypeSymbolNode GetDeclType()
+        public ITypeSymbol GetDeclType()
         {
             return declTypeHolder.GetValue();
         }

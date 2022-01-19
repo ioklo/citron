@@ -14,23 +14,24 @@ namespace Gum.IR0Translator
         abstract record ExpResult
         {
             public record Namespace : ExpResult;
-            public record Type(TypeSymbol TypeSymbol) : ExpResult;
-            //public record Funcs(ItemValueOuter Outer, ImmutableArray<IModuleFuncDecl> FuncInfos, ImmutableArray<TypeSymbol> TypeArgs, R.Loc? Instance) : ExpResult;
+            public record Type(ITypeSymbol TypeSymbol) : ExpResult;
+            //public record Funcs(ItemValueOuter Outer, ImmutableArray<IModuleFuncDecl> FuncInfos, ImmutableArray<ITypeSymbol> TypeArgs, R.Loc? Instance) : ExpResult;
             public record GlobalFuncs : ExpResult
             {
                 // decls와 constructors는 크기가 같아야 한다
                 ImmutableArray<GlobalFuncDeclSymbol> decls;
-                ImmutableArray<Func<ImmutableArray<TypeSymbol>, GlobalFuncSymbol>> constructors;
+                ImmutableArray<Func<ImmutableArray<ITypeSymbol>, GlobalFuncSymbol>> constructors;
 
-                ImmutableArray<TypeSymbol> typeArgsForMatch; // partial typeArgs
+                ImmutableArray<ITypeSymbol> typeArgsForMatch; // partial typeArgs
 
                 public (GlobalFuncSymbol Func, ImmutableArray<R.Argument> RArgs)
                     Match(GlobalContext globalContext, ICallableContext callableContext, LocalContext localContext, ImmutableArray<S.Argument> sargs, ISyntaxNode nodeForErrorReport)
                 {
+
                     var parameterInfos = ImmutableArray.CreateRange(decls, decl => decl.GetParameters());
 
-                    // outer가 없으므로 outerTypeEnv는 None이다
-                    var result = FuncMatcher.Match(globalContext, callableContext, localContext, TypeEnv.None, parameterInfos, sargs, typeArgsForMatch);
+                    // outer가 없으므로 outerTypeEnv는 Empty이다
+                    var result = FuncMatcher.Match(globalContext, callableContext, localContext, TypeEnv.Empty, parameterInfos, sargs, typeArgsForMatch);
 
                     switch(result)
                     {
@@ -56,8 +57,8 @@ namespace Gum.IR0Translator
             public record ClassMemberFuncs
             {
                 ImmutableArray<ClassMemberFuncDeclSymbol> decls;
-                ImmutableArray<Func<ImmutableArray<TypeSymbol>, ClassMemberFuncSymbol>> constructors;
-                ImmutableArray<ITypeSymbolNode> typeArgsForMatch;
+                ImmutableArray<Func<ImmutableArray<ITypeSymbol>, ClassMemberFuncSymbol>> constructors;
+                ImmutableArray<ITypeSymbol> typeArgsForMatch;
 
                 public (ClassMemberFuncSymbol Func, ImmutableArray<R.Argument> RArgs) 
                     Match(GlobalContext globalContext, ICallableContext callableContext, LocalContext localContext, ImmutableArray<Argument> sargs)
@@ -86,8 +87,8 @@ namespace Gum.IR0Translator
             }
 
             public record EnumElem(EnumElemSymbol EnumElemSymbol) : ExpResult;
-            public record Exp(R.Exp Result, TypeSymbol TypeSymbol) : ExpResult;
-            public record Loc(R.Loc Result, TypeSymbol TypeSymbol) : ExpResult;
+            public record Exp(R.Exp Result, ITypeSymbol TypeSymbol) : ExpResult;
+            public record Loc(R.Loc Result, ITypeSymbol TypeSymbol) : ExpResult;
         }
     }
 }

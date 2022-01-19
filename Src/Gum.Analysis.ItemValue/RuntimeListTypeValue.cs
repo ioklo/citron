@@ -7,12 +7,12 @@ namespace Gum.Analysis
 {
     // 런타임 라이브러리로 구현할 리스트 타입
     [AutoConstructor]
-    public partial class RuntimeListTypeValue : TypeSymbol
+    public partial class RuntimeListTypeValue : ITypeSymbol
     {
         public ItemValueFactory itemValueFactory;
-        public TypeSymbol ElemType { get; }
+        public ITypeSymbol ElemType { get; }
 
-        public override TypeSymbol Apply(TypeEnv typeEnv)
+        public override ITypeSymbol Apply(TypeEnv typeEnv)
         {
             var appliedElemType = ElemType.Apply(typeEnv);
             return itemValueFactory.MakeListType(appliedElemType);

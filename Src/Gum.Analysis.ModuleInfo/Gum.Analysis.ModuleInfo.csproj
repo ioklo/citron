@@ -10,7 +10,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Gum.Infra\Gum.Infra.csproj" />
-    <ProjectReference Include="..\Gum.IR0\Gum.IR0.csproj" />
     <ProjectReference Include="..\Gum.ModuleInfo\Gum.ModuleInfo.csproj" />
   </ItemGroup>
 

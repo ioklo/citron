@@ -15,8 +15,8 @@ namespace Gum.IR0Translator
 
     class TypeValueTypeHint : TypeHint
     {
-        public TypeSymbol TypeValue { get; }
-        public TypeValueTypeHint(TypeSymbol typeValue) { TypeValue = typeValue; }
+        public ITypeSymbol TypeSymbol { get; }
+        public TypeValueTypeHint(ITypeSymbol typeValue) { TypeSymbol = typeValue; }
     }
 
     // Callable분석에서 쓰인다. E.F()에서 E.F만을 가리켜야 할 때

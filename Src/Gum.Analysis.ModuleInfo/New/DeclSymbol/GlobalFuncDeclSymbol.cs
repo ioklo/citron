@@ -1,6 +1,5 @@
 ﻿using Gum.Analysis;
 using Gum.Collections;
-using R = Gum.IR0;
 using Pretune;
 using System;
 using M = Gum.CompileTime;
@@ -9,7 +8,7 @@ using Gum.Infra;
 namespace Gum.Analysis
 {
     [AutoConstructor, ImplementIEquatable]
-    public partial class GlobalFuncDeclSymbol : IDeclSymbolNode
+    public partial class GlobalFuncDeclSymbol : IFuncDeclSymbol
     {
         // module or namespace
         IHolder<ITopLevelDeclSymbolNode> outerHolder;
@@ -67,13 +66,6 @@ namespace Gum.Analysis
         public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
         {
             return null;
-        }
-
-        public R.Path.Nested MakeRPath(R.Path.Normal outerPath, ImmutableArray<R.Path> typeArgs)
-        {
-            var rname = RItemFactory.MakeName(name);
-            var paramHash = new R.ParamHash(typeArgs.Length, parametersHolder.GetValue().MakeParamHashEntries());
-            return new R.Path.Nested(outerPath, rname, paramHash, typeArgs);
         }
 
         public void Apply(IDeclSymbolNodeVisitor visitor)

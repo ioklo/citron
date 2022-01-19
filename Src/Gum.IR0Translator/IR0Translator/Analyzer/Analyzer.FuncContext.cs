@@ -10,24 +10,22 @@ namespace Gum.IR0Translator
     {
         class FuncContext : ICallableContext
         {
-            NormalTypeValue? thisTypeValue; // global일때는 null, memberfunc의 경우 static이더라도 outer를 알아야 하기 때문에 null이 아니어야 한다
-            TypeSymbol? retTypeValue; // 리턴 타입이 미리 정해져 있다면 이걸 쓴다
-            bool bStatic;            // static call 
-            bool bSequence;          // 시퀀스 여부
-            R.Path.Nested path;
+            IFuncSymbol func;
+
+            ITypeSymbol? retType;
             ImmutableArray<R.CallableMemberDecl> callableMemberDecls;
             AnonymousIdComponent AnonymousIdComponent;
 
-            public FuncContext(NormalTypeValue? thisTypeValue, TypeSymbol? retTypeValue, bool bStatic, bool bSequence, R.Path.Nested path)
+            static FuncContext Make(IFuncSymbol func)
             {
-                // static 함수가 아니면, 전역 함수
-                Debug.Assert(bStatic || thisTypeValue != null); // static 함수가 아닌데, 전역 함수일수는 없다
+                return new FuncContext(func);
+            }
 
-                this.thisTypeValue = thisTypeValue;
-                this.retTypeValue = retTypeValue;
-                this.bStatic = bStatic;
-                this.bSequence = bSequence;
-                this.path = path;
+            FuncContext(IFuncSymbol func)
+            {
+                this.func = func;
+
+                this.retType = null;
                 this.callableMemberDecls = ImmutableArray<R.CallableMemberDecl>.Empty;
             }
 
@@ -43,9 +41,9 @@ namespace Gum.IR0Translator
 
             public FuncContext(FuncContext other, CloneContext cloneContext)
             {
-                this.retTypeValue = other.retTypeValue;
-                this.bSequence = other.bSequence;
-                this.path = other.path;
+                this.func = other.func;
+                this.callableMemberDecls = other.callableMemberDecls;
+                this.retType = other.retType;
             }
 
             ICallableContext IMutable<ICallableContext>.Clone(CloneContext cloneContext)
@@ -58,14 +56,14 @@ namespace Gum.IR0Translator
                 var src = (FuncContext)src_funcContext;
             }
             
-            public R.Path.Normal GetPath() => path;
-            public NormalTypeValue? GetThisTypeValue() { return thisTypeValue; }
+            public R.Path GetPath() => func.MakeRPath();
+            public ITypeSymbol? GetOuterType() { return func.GetOuterType(); }
             // TODO: 지금은 InnerFunc를 구현하지 않으므로, Outside가 없다. 나중에 지원
             public LocalVarInfo? GetLocalVarOutsideLambda(string varName) => null;
-            public TypeSymbol? GetRetTypeValue() => retTypeValue;
-            public void SetRetTypeValue(TypeSymbol retTypeValue) { this.retTypeValue = retTypeValue; }
-            public void AddLambdaCapture(string capturedVarName, TypeSymbol capturedVarType) => throw new UnreachableCodeException();
-            public bool IsSeqFunc() => bSequence;
+            public ITypeSymbol? GetReturn() => func.Get;
+            public void SetRetType(ITypeSymbol retTypeValue) { this.retType = retTypeValue; }
+            public void AddLambdaCapture(string capturedVarName, ITypeSymbol capturedVarType) => throw new UnreachableCodeException();
+            public bool IsSeqFunc() => func.IsSequence();
 
             public R.Name.Anonymous NewAnonymousName() => AnonymousIdComponent.NewAnonymousName();
         }

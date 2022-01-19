@@ -9,7 +9,6 @@ using System.Text;
 using System.Threading.Tasks;
 
 using M = Gum.CompileTime;
-using R = Gum.IR0;
 
 namespace Gum.Analysis
 {
@@ -28,7 +27,7 @@ namespace Gum.Analysis
             return itemValueFactory.MakeConstructorValue(appliedOuter, info);
         }
 
-        protected override TypeSymbol MakeTypeValueByMType(M.TypeId type)
+        protected override ITypeSymbol MakeTypeValueByMType(M.TypeId type)
         {
             return itemValueFactory.MakeTypeValueByMType(type);
         }

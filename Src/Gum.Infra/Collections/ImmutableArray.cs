@@ -20,6 +20,20 @@ namespace Gum.Collections
             return new ImmutableArray<T>.Builder(System.Collections.Immutable.ImmutableArray.CreateBuilder<T>(length));
         }
 
+        public static ImmutableArray<TElem> CreateRange<TElem>(Func<int> getCount, Func<int, TElem> getElem)
+        {
+            int count = getCount.Invoke();
+
+            var builder = CreateBuilder<TElem>(count);
+            for (int i = 0; i < count; i++)
+            {
+                var elem = getElem.Invoke(i);
+                builder.Add(elem);
+            }
+
+            return builder.MoveToImmutable();
+        }
+
         public static ImmutableArray<TResult> CreateRange<TElem, TResult>(ImmutableArray<TElem> source, Func<TElem, TResult> selector)
         {
             // default 거르기

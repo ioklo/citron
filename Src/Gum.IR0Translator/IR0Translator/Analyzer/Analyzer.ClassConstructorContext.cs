@@ -4,6 +4,7 @@ using Pretune;
 using Gum.Collections;
 using System;
 using Gum.Analysis;
+using System.Diagnostics;
 
 namespace Gum.IR0Translator
 {
@@ -12,25 +13,25 @@ namespace Gum.IR0Translator
         [ImplementIEquatable]
         partial class ClassConstructorContext : ICallableContext
         {
-            R.Path.Nested path;
-            ClassSymbol classTypeValue;
+            R.Path.Normal ICallableContext.MakeRPath() => MakeRPath();
+
+            ClassConstructorSymbol symbol;
             ImmutableArray<R.CallableMemberDecl> callableMemberDecls;
             AnonymousIdComponent AnonymousIdComponent;
 
-            public ClassConstructorContext(R.Path.Nested path, ClassSymbol classTypeValue)
+            public ClassConstructorContext(ClassConstructorSymbol symbol)
             {
-                this.path = path;
-                this.classTypeValue = classTypeValue;
+                this.symbol = symbol;
             }
 
             ClassConstructorContext(ClassConstructorContext other, CloneContext cloneContext)
             {
-                this.path = other.path;
-                this.classTypeValue = other.classTypeValue;
+                this.symbol = other.symbol;
+                this.callableMemberDecls = other.callableMemberDecls;
                 this.AnonymousIdComponent = other.AnonymousIdComponent;
             }
 
-            public void AddLambdaCapture(string capturedVarName, TypeSymbol capturedVarType)
+            public void AddLambdaCapture(string capturedVarName, ITypeSymbol capturedVarType)
             {
                 throw new UnreachableCodeException();
             }
@@ -44,14 +45,12 @@ namespace Gum.IR0Translator
             {   
             }
 
-            public R.Path.Normal GetPath()
+            public R.Path.Nested MakeRPath()
             {
-                return path;
-            }
+                var nestedPath = symbol.MakeRPath() as R.Path.Nested;
+                Debug.Assert(nestedPath != null);
 
-            public NormalTypeValue? GetThisTypeValue()
-            {
-                return classTypeValue;
+                return nestedPath;
             }
 
             public LocalVarInfo? GetLocalVarOutsideLambda(string varName)
@@ -59,9 +58,9 @@ namespace Gum.IR0Translator
                 return null;
             }            
 
-            public TypeSymbol? GetRetTypeValue()
+            public FuncReturn? GetReturn()
             {
-                return VoidTypeValue.Instance;
+                return null;
             }
 
             public bool IsSeqFunc()
@@ -69,14 +68,30 @@ namespace Gum.IR0Translator
                 return false;
             }
 
-            public void SetRetTypeValue(TypeSymbol retTypeValue)
+            public void SetRetType(ITypeSymbol retTypeValue)
             {
                 throw new UnreachableCodeException();
             }
 
-            public void AddCallableMemberDecl(R.CallableMemberDecl decl) { callableMemberDecls = callableMemberDecls.Add(decl); }
-            public ImmutableArray<R.CallableMemberDecl> GetCallableMemberDecls() { return callableMemberDecls; }
-            public R.Name.Anonymous NewAnonymousName() { return AnonymousIdComponent.NewAnonymousName(); }
+            public void AddCallableMemberDecl(R.CallableMemberDecl decl) 
+            { 
+                callableMemberDecls = callableMemberDecls.Add(decl); 
+            }
+
+            public ImmutableArray<R.CallableMemberDecl> GetCallableMemberDecls() 
+            { 
+                return callableMemberDecls; 
+            }
+
+            public R.Name.Anonymous NewAnonymousName() 
+            { 
+                return AnonymousIdComponent.NewAnonymousName(); 
+            }
+
+            public ITypeSymbol? GetOuterType()
+            {
+                return symbol.GetOuterType();
+            }
         }
     }
 }

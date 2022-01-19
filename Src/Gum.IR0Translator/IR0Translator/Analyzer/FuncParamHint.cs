@@ -16,8 +16,8 @@ namespace Gum.IR0Translator
 
     class DefaultFuncParamHint : FuncParamHint
     {
-        public ImmutableArray<TypeSymbol> TypeValues { get; }
-        public DefaultFuncParamHint(ImmutableArray<TypeSymbol> typeValues)
+        public ImmutableArray<ITypeSymbol> TypeValues { get; }
+        public DefaultFuncParamHint(ImmutableArray<ITypeSymbol> typeValues)
         {
             TypeValues = typeValues;
         }

@@ -9,11 +9,11 @@ namespace Gum.Analysis
         TypeExpInfoService typeExpInfoService;
         SymbolLoader loader;
 
-        public ITypeSymbolNode? GetSymbol(S.TypeExp typeExp)
+        public ITypeSymbol? GetSymbol(S.TypeExp typeExp)
         {
             var info = typeExpInfoService.GetTypeExpInfo(typeExp);
             var symbolId = info.GetSymbolId();
-            return loader.Load(symbolId) as ITypeSymbolNode;
+            return loader.Load(symbolId) as ITypeSymbol;
         }
     }
 }

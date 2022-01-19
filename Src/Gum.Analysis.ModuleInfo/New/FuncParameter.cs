@@ -3,7 +3,6 @@ using Gum.Infra;
 using Pretune;
 using System;
 using M = Gum.CompileTime;
-using R = Gum.IR0;
 
 namespace Gum.Analysis
 {
@@ -38,16 +37,7 @@ namespace Gum.Analysis
             };
         }
         
-        public static R.ParamKind ToRParamKind(this FuncParameterKind kind)
-        {
-            return kind switch
-            {
-                FuncParameterKind.Default => R.ParamKind.Default,
-                FuncParameterKind.Ref => R.ParamKind.Ref,
-                FuncParameterKind.Params => R.ParamKind.Params,
-                _ => throw new UnreachableCodeException()
-            };
-        }
+        
     }
 
     // value
@@ -55,33 +45,13 @@ namespace Gum.Analysis
     public partial struct FuncParameter
     {
         public FuncParameterKind Kind { get; }
-        public ITypeSymbolNode Type { get; }
+        public ITypeSymbol Type { get; }
         public M.Name Name { get; }        
 
         public FuncParameter Apply(TypeEnv typeEnv)
         {
             var appliedType = Type.Apply(typeEnv);
             return new FuncParameter(Kind, appliedType, Name);
-        }
-
-        public R.ParamHashEntry GetParamHashEntry()
-        {
-            return new R.ParamHashEntry(Kind.ToRParamKind(), Type.MakeRPath());
-        }
-    }    
-
-    public static class FuncParametersExtentions
-    {
-        public static ImmutableArray<R.ParamHashEntry> MakeParamHashEntries(this ImmutableArray<FuncParameter> parameters)
-        {
-            var entries = ImmutableArray.CreateBuilder<R.ParamHashEntry>(parameters.Length);
-            foreach (var parameter in parameters)
-            {
-                var paramHashEntry = parameter.GetParamHashEntry();
-                entries.Add(paramHashEntry);
-            }
-
-            return entries.MoveToImmutable();
         }
     }
 }

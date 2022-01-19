@@ -22,5 +22,8 @@
         void VisitEnumElemMemberVar(EnumElemMemberVarDeclSymbol enumElemMemberVarDeclSymbol);
 
         void VisitInterface(InterfaceDeclSymbol interfaceDeclSymbol);
+
+        void VisitLambda(LambdaDeclSymbol lambdaDeclSymbol);
+        void VisitLambdaMemberVar(LambdaMemberVarDeclSymbol lambdaMemberVarDeclSymbol);        
     }
 }

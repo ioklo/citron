@@ -28,9 +28,9 @@ namespace Gum.IR0Translator
 
             foreach (var param in parameters)
             {
-                var typeValue = globalContext.GetTypeValueByTypeExp(param.Type);
+                var typeValue = globalContext.GetSymbolByTypeExp(param.Type);
 
-                var type = typeValue.GetRPath();
+                var type = typeValue.MakeRPath();
 
                 var kind = param.Kind switch
                 {
@@ -60,15 +60,15 @@ namespace Gum.IR0Translator
             return typeArgsBuilder.MoveToImmutable();
         }
 
-        static void HandleItemQueryResultError(GlobalContext globalContext, MemberQueryResult.Error error, S.ISyntaxNode nodeForErrorReport)
+        static void HandleItemQueryResultError(GlobalContext globalContext, SymbolQueryResult.Error error, S.ISyntaxNode nodeForErrorReport)
         {
             switch (error)
             {
-                case MemberQueryResult.Error.MultipleCandidates:
+                case SymbolQueryResult.Error.MultipleCandidates:
                     globalContext.AddFatalError(A2001_ResolveIdentifier_MultipleCandidatesForIdentifier, nodeForErrorReport);
                     throw new UnreachableCodeException();
 
-                case MemberQueryResult.Error.VarWithTypeArg:
+                case SymbolQueryResult.Error.VarWithTypeArg:
                     globalContext.AddFatalError(A2002_ResolveIdentifier_VarWithTypeArg, nodeForErrorReport);
                     throw new UnreachableCodeException();
 
@@ -93,10 +93,10 @@ namespace Gum.IR0Translator
                 if (!declSymbolBuilderResult.HasValue) return null;
                 var (symbolLoader, typeSymbolInfoService) = declSymbolBuilderResult.Value;
 
-                // InternalModuleBuilder에서는 TypeSymbolInfoService(S.TypeExp => ITypeSymbolNode)를 리턴한다
+                // InternalModuleBuilder에서는 TypeSymbolInfoService(S.TypeExp => ITypeSymbol)를 리턴한다
                 var rmoduleName = RItemFactory.MakeModuleName(moduleName);
 
-                var globalContext = new GlobalContext(itemValueFactory, globalItemValueFactory, logger);
+                var globalContext = new GlobalContext(symbolLoader, globalItemValueFactory, logger);
                 var rootContext = new RootContext(rmoduleName, itemValueFactory);
 
                 return RootAnalyzer.Analyze(globalContext, rootContext, internalModuleInfo, sscript);

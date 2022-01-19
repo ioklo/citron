@@ -1,39 +1,39 @@
 ﻿using Gum.Collections;
+using Gum.Infra;
 using Pretune;
+using System;
 using M = Gum.CompileTime;
 
 namespace Gum.Analysis
 {
     // typeDecl에 대리
     [AutoConstructor]
-    public partial class GlobalTypeDeclSymbol : IDeclSymbolNode
+    public partial class GlobalTypeDeclSymbol : ITypeDeclSymbolContainer, TypeDict.IHaveNodeName
     {
+        IHolder<ITopLevelDeclSymbolNode> outerHolder;
         M.AccessModifier accessModifier;
-        ITypeDeclSymbolNode typeDecl;
+        ITypeDeclSymbol typeDecl;
+
+        IDeclSymbolNode ITypeDeclSymbolContainer.GetOuterDeclNode() => GetOuter();
+
+        public ITopLevelDeclSymbolNode GetOuter()
+        {
+            return outerHolder.GetValue();
+        }
 
         public M.AccessModifier GetAccessModifier() 
         { 
             return accessModifier;
         }
-
-        public IDeclSymbolNode? GetOuterDeclNode()
-        {
-            return typeDecl.GetOuterDeclNode();
-        }
-
-        public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
-        {
-            return typeDecl.GetMemberDeclNode(name, typeParamCount, paramIds);
-        }
-
+        
         public DeclSymbolNodeName GetNodeName()
         {
             return typeDecl.GetNodeName();
         }
 
-        public void Apply(IDeclSymbolNodeVisitor visitor)
+        public IDeclSymbolNode GetNode()
         {
-            typeDecl.Apply(visitor);
-        }
+            return typeDecl;
+        }        
     }
 }

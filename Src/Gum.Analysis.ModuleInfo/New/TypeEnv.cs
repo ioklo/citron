@@ -9,20 +9,20 @@ namespace Gum.Analysis
 {    
     public struct TypeEnv
     {
-        ImmutableArray<ITypeSymbolNode> data;
+        ImmutableArray<ITypeSymbol> data;
         public static TypeEnv Empty = new TypeEnv(default);
         
-        internal TypeEnv(ImmutableArray<ITypeSymbolNode> data)
+        internal TypeEnv(ImmutableArray<ITypeSymbol> data)
         {
             this.data = data;
         }
 
-        public ITypeSymbolNode GetValue(int index)
+        public ITypeSymbol GetValue(int index)
         {
             return data[index];
         }
 
-        public TypeEnv AddTypeArgs(ImmutableArray<ITypeSymbolNode> typeArgs)
+        public TypeEnv AddTypeArgs(ImmutableArray<ITypeSymbol> typeArgs)
         {
             return new TypeEnv(data.AddRange(typeArgs));
         }

@@ -6,17 +6,17 @@ using M = Gum.CompileTime;
 
 namespace Gum.Analysis
 {
-    public partial class EnumDeclSymbol : ITypeDeclSymbolNode
+    public partial class EnumDeclSymbol : ITypeDeclSymbol, IDeclSymbolNode
     {
-        IHolder<IDeclSymbolNode> outer;
+        IHolder<ITypeDeclSymbolContainer> containerHolder;
 
         M.Name name;
         ImmutableArray<string> typeParams;
         ImmutableDictionary<M.Name, EnumElemDeclSymbol> elemDict;
 
-        public EnumDeclSymbol(IHolder<IDeclSymbolNode> outer, M.Name name, ImmutableArray<string> typeParams, ImmutableArray<EnumElemDeclSymbol> elemDecls)
+        public EnumDeclSymbol(IHolder<ITypeDeclSymbolContainer> containerHolder, M.Name name, ImmutableArray<string> typeParams, ImmutableArray<EnumElemDeclSymbol> elemDecls)
         {
-            this.outer = outer;
+            this.containerHolder = containerHolder;
             this.name = name;
             this.typeParams = typeParams;
 
@@ -52,14 +52,14 @@ namespace Gum.Analysis
             return new DeclSymbolNodeName(name, typeParams.Length, default);
         }
 
-        public void Apply(ITypeDeclSymbolNodeVisitor visitor)
+        public void Apply(ITypeDeclSymbolVisitor visitor)
         {
-            visitor.VisitEnumDecl(this);
+            visitor.VisitEnum(this);
         }
 
         public IDeclSymbolNode? GetOuterDeclNode()
         {
-            return outer.GetValue();
+            return containerHolder.GetValue().GetOuterDeclNode();
         }
 
         public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)

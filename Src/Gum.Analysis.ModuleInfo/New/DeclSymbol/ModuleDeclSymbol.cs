@@ -61,7 +61,7 @@ namespace Gum.Analysis
             {
                 var globalType = GetType(name, typeParamCount);
                 if (globalType != null)
-                    return globalType;
+                    return globalType.GetNode();
             }
 
             var globalFunc = GetFunc(name, typeParamCount, paramIds);

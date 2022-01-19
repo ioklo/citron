@@ -1,12 +1,12 @@
 ﻿using Pretune;
 
 namespace Gum.Analysis
-{
+{   
     [AutoConstructor]
     public partial struct FuncReturn
     {
         public bool IsRef { get; }
-        public ITypeSymbolNode Type { get; }
+        public ITypeSymbol Type { get; }
 
         public FuncReturn Apply(TypeEnv typeEnv)
         {

@@ -21,20 +21,23 @@ namespace Gum.IR0Translator
             GlobalContext globalContext;
             ITypeContainer typeContainer;
             S.ClassDecl classDecl;
-            ClassSymbol classTypeValue;
+            ClassSymbol classSymbol;
 
             ImmutableArray<R.ClassConstructorDecl>.Builder constructorsBuilder;
             ImmutableArray<R.FuncDecl>.Builder memberFuncsBuilder;
             ImmutableArray<R.ClassMemberVarDecl>.Builder memberVarsBuilder;
 
             // Entry
-            public static void Analyze(GlobalContext globalContext, ITypeContainer typeContainer, S.ClassDecl classDecl, ClassSymbol classTypeValue)
+            public static void Analyze(GlobalContext globalContext, ITypeContainer typeContainer, ModuleSymbolId outerId, S.ClassDecl classDecl)
             {
+                var classSymbol = globalContext.LoadOpenSymbol<ClassSymbol>(outerId, classDecl.Name, classDecl.TypeParams, default);
+                Debug.Assert(classSymbol != null);
+
                 var constructorsBuilder = ImmutableArray.CreateBuilder<R.ClassConstructorDecl>();
                 var memberFuncsBuilder = ImmutableArray.CreateBuilder<R.FuncDecl>();
                 var memberVarsBuilder = ImmutableArray.CreateBuilder<R.ClassMemberVarDecl>();
                 
-                var classAnalyzer = new ClassAnalyzer(globalContext, typeContainer, classDecl, classTypeValue,
+                var classAnalyzer = new ClassAnalyzer(globalContext, typeContainer, classDecl, classSymbol,
                     constructorsBuilder, memberFuncsBuilder, memberVarsBuilder);
                 
                 R.AccessModifier accessModifier;
@@ -55,9 +58,9 @@ namespace Gum.IR0Translator
                     // IntenralModuleInfoBuilder에서 처리하기 때문에 여기서는 Base가 두개 이상 나올일이 없다
                     foreach (var baseType in classDecl.BaseTypes)
                     {
-                        var typeValue = globalContext.GetTypeValueByTypeExp(baseType);
-                        if (typeValue is ClassSymbol classTypeValue)
-                            return classTypeValue.GetRPath_Nested();
+                        var typeValue = globalContext.GetSymbolByTypeExp(baseType);
+                        if (typeValue is ClassSymbol classSymbol)
+                            return classSymbol.MakeRPath();
                     }
 
                     return null;
@@ -102,8 +105,8 @@ namespace Gum.IR0Translator
 
             void AnalyzeMemberVarDecl(S.ClassMemberVarDecl varDecl)
             {
-                var varTypeValue = globalContext.GetTypeValueByTypeExp(varDecl.VarType);
-                var rtype = varTypeValue.GetRPath();
+                var varTypeValue = globalContext.GetSymbolByTypeExp(varDecl.VarType);
+                var rtype = varTypeValue.MakeRPath();
 
                 R.AccessModifier accessModifier = AnalyzeAccessModifier(varDecl.AccessModifier, varDecl);
                 memberVarsBuilder.Add(new R.ClassMemberVarDecl(accessModifier, rtype, varDecl.VarNames));
@@ -113,7 +116,7 @@ namespace Gum.IR0Translator
             {
                 if (baseArgs == null)
                 {
-                    var baseTypeValue = classTypeValue.GetBaseType();
+                    var baseTypeValue = classSymbol.GetBaseClass();
                     if (baseTypeValue == null)
                         return null;
                     
@@ -126,7 +129,7 @@ namespace Gum.IR0Translator
                         throw new UnreachableCodeException();
                     }
 
-                    if (!constructor.CheckAccess(classTypeValue))
+                    if (!constructor.CheckAccess(classSymbol))
                         globalContext.AddFatalError(A2504_ClassDecl_CannotAccessBaseClassConstructor, nodeForErrorReport);
 
                     // no argument
@@ -135,49 +138,38 @@ namespace Gum.IR0Translator
                 else
                 {
                     // 인자가 있는 상황
-                    var baseTypeValue = classTypeValue.GetBaseType();
+                    var baseClass = classSymbol.GetBaseClass();
 
                     // 인자가 있는데 부모 클래스가 없으면,
-                    if (baseTypeValue == null)
-                    {
+                    if (baseClass == null)
                         globalContext.AddFatalError(A2505_ClassDecl_TryCallBaseConstructorWithoutBaseClass, nodeForErrorReport);
-                    }
-                    else
+
+                    var baseConstructors = baseClass.GetConstructors();
+
+                    if (baseConstructors.Length == 0)
+                        globalContext.AddFatalError(A2503_ClassDecl_CannotFindBaseClassConstructor, nodeForErrorReport);
+
+                    var matchResult = FuncMatcher.MatchIndex(globalContext, callableContext, localContext, baseClass.GetTypeEnv(),
+                        baseConstructors, baseArgs.Value, default);
+
+                    switch (matchResult)
                     {
-                        var result = baseTypeValue.GetMember(M.Name.Constructor, typeParamCount: 0); // NOTICE: constructor는 타입 파라미터가 없다
-                        switch (result)
-                        {
-                            case MemberQueryResult.Constructors constructorResult:
-                                var matchResult = FuncMatcher.Match(globalContext, callableContext, localContext, baseTypeValue.MakeTypeEnv(), constructorResult.ConstructorInfos, baseArgs.Value, default);
-                                if (matchResult is FuncMatchResult<IModuleConstructorDecl>.MultipleCandidates)
-                                {
-                                    globalContext.AddFatalError(A2506_ClassDecl_CannotDecideWhichBaseConstructorUse, nodeForErrorReport);
-                                    break;
-                                }
-                                else if (matchResult is FuncMatchResult<IModuleConstructorDecl>.NotFound)
-                                {
-                                    globalContext.AddFatalError(A2503_ClassDecl_CannotFindBaseClassConstructor, nodeForErrorReport);
-                                    break;
-                                }
-                                else if (matchResult is FuncMatchResult<IModuleConstructorDecl>.Success matchedConstructor)
-                                {
-                                    var constructorValue = globalContext.MakeConstructorValue(constructorResult.Outer, matchedConstructor.CallableInfo);
+                        case FuncMatchIndexResult.MultipleCandidates:
+                            globalContext.AddFatalError(A2506_ClassDecl_CannotDecideWhichBaseConstructorUse, nodeForErrorReport);
+                            break;
 
-                                    if (!constructorValue.CheckAccess(classTypeValue))
-                                        globalContext.AddFatalError(A2504_ClassDecl_CannotAccessBaseClassConstructor, nodeForErrorReport);
+                        case FuncMatchIndexResult.NotFound:
+                            globalContext.AddFatalError(A2503_ClassDecl_CannotFindBaseClassConstructor, nodeForErrorReport);
+                            break;
 
-                                    return new R.ConstructorBaseCallInfo(constructorValue.GetRPath_Nested().ParamHash, matchedConstructor.Args);
-                                }
-                                break;
+                        case FuncMatchIndexResult.Success match:
+                            var baseConstructor = baseConstructors[match.Index];
+                            Debug.Assert(match.TypeArgs.Length == 0);
 
-                            case MemberQueryResult.NotFound:
-                                globalContext.AddFatalError(A2503_ClassDecl_CannotFindBaseClassConstructor, nodeForErrorReport);
-                                break;
+                            if (!baseConstructor.CheckAccess(classSymbol))
+                                globalContext.AddFatalError(A2504_ClassDecl_CannotAccessBaseClassConstructor, nodeForErrorReport);
 
-                            case MemberQueryResult.Error errorResult:
-                                HandleItemQueryResultError(globalContext, errorResult, nodeForErrorReport);
-                                break;
-                        }
+                            return new R.ConstructorBaseCallInfo(baseConstructor.MakeRPath().ParamHash, match.Args);
                     }
                 }
 
@@ -194,14 +186,14 @@ namespace Gum.IR0Translator
 
                 var (rparamHash, rparamInfos) = MakeParamHashAndParamInfos(globalContext, 0, constructorDecl.Parameters);
 
-                var constructorPath = new R.Path.Nested(classTypeValue.GetRPath_Nested(), R.Name.Constructor.Instance, rparamHash, default);
-                var constructorContext = new ClassConstructorContext(constructorPath, classTypeValue);
+                var constructorPath = new R.Path.Nested(classSymbol.MakeRPath(), R.Name.Constructor.Instance, rparamHash, default);
+                var constructorContext = new ClassConstructorContext(constructorPath, classSymbol);
                 var localContext = new LocalContext();
 
                 // 새로 만든 컨텍스트에 파라미터 순서대로 추가
                 foreach (var param in constructorDecl.Parameters)
                 {
-                    var paramTypeValue = globalContext.GetTypeValueByTypeExp(param.Type);
+                    var paramTypeValue = globalContext.GetSymbolByTypeExp(param.Type);
                     localContext.AddLocalVarInfo(param.Kind == S.FuncParamKind.Ref, paramTypeValue, param.Name);
                 }
 
@@ -228,15 +220,15 @@ namespace Gum.IR0Translator
             void AnalyzeSequenceFuncDeclElement(S.ClassMemberFuncDecl funcDecl)
             {
                 // NOTICE: AnalyzeGlobalSequenceFuncDecl와 비슷한 코드
-                var retTypeValue = globalContext.GetTypeValueByTypeExp(funcDecl.RetType);
+                var retTypeValue = globalContext.GetSymbolByTypeExp(funcDecl.RetType);
                 var rname = new R.Name.Normal(funcDecl.Name);
                 var (rparamHash, rparamInfos) = MakeParamHashAndParamInfos(globalContext, funcDecl.TypeParams.Length, funcDecl.Parameters);
                 var rtypeArgs = MakeRTypeArgs(0, funcDecl.TypeParams); // NOTICE: global이므로 상위에 type parameter가 없다
 
-                var classPath = classTypeValue.GetRPath_Nested();
+                var classPath = classSymbol.MakeRPath();
                 var funcPath = new R.Path.Nested(classPath, rname, rparamHash, rtypeArgs);
 
-                var funcContext = new FuncContext(classTypeValue, retTypeValue, funcDecl.IsStatic, true, funcPath);
+                var funcContext = new FuncContext(classSymbol, retTypeValue, funcDecl.IsStatic, true, funcPath);
                 var localContext = new LocalContext();
                 var analyzer = new StmtAndExpAnalyzer(globalContext, funcContext, localContext);
 
@@ -246,7 +238,7 @@ namespace Gum.IR0Translator
                 // 파라미터 순서대로 추가
                 foreach (var param in funcDecl.Parameters)
                 {
-                    var paramTypeValue = globalContext.GetTypeValueByTypeExp(param.Type);
+                    var paramTypeValue = globalContext.GetSymbolByTypeExp(param.Type);
                     localContext.AddLocalVarInfo(param.Kind == S.FuncParamKind.Ref, paramTypeValue, param.Name);
                 }
 
@@ -255,7 +247,7 @@ namespace Gum.IR0Translator
 
                 Debug.Assert(retTypeValue != null, "문법상 Sequence 함수의 retValue가 없을수 없습니다");
 
-                var retRType = retTypeValue.GetRPath();
+                var retRType = retTypeValue.MakeRPath();
                 var parameters = funcDecl.Parameters.Select(param => param.Name).ToImmutableArray();
 
                 var decls = funcContext.GetCallableMemberDecls();
@@ -266,23 +258,25 @@ namespace Gum.IR0Translator
             void AnalyzeNormalFuncDeclElement(S.ClassMemberFuncDecl funcDecl)
             {
                 // NOTICE: AnalyzeGlobalNormalFuncDecl와 비슷한 코드                
-                var retTypeValue = globalContext.GetTypeValueByTypeExp(funcDecl.RetType);
+                var retTypeValue = globalContext.GetSymbolByTypeExp(funcDecl.RetType);
 
                 var rname = new R.Name.Normal(funcDecl.Name);
                 var (rparamHash, rparamInfos) = MakeParamHashAndParamInfos(globalContext, funcDecl.TypeParams.Length, funcDecl.Parameters);
-                var rtypeArgs = MakeRTypeArgs(classTypeValue.GetTotalTypeParamCount(), funcDecl.TypeParams);
+                var rtypeArgs = MakeRTypeArgs(classSymbol.GetTotalTypeParamCount(), funcDecl.TypeParams);
 
-                var structPath = classTypeValue.GetRPath_Nested();
-                var funcPath = new R.Path.Nested(structPath, rname, rparamHash, rtypeArgs);
+                globalContext.LoadOpenSymbol(classId,)
 
-                var funcContext = new FuncContext(classTypeValue, retTypeValue, funcDecl.IsStatic, false, funcPath);
+                var classPath = classSymbol.MakeRPath();
+                var funcPath = new R.Path.Nested(classPath, rname, rparamHash, rtypeArgs);
+
+                var funcContext = new FuncContext(classSymbol, retTypeValue, funcDecl.IsStatic, false, funcPath);
                 var localContext = new LocalContext();
                 var analyzer = new StmtAndExpAnalyzer(globalContext, funcContext, localContext);
 
                 // 파라미터 순서대로 추가
                 foreach (var param in funcDecl.Parameters)
                 {
-                    var paramTypeValue = globalContext.GetTypeValueByTypeExp(param.Type);
+                    var paramTypeValue = globalContext.GetSymbolByTypeExp(param.Type);
                     localContext.AddLocalVarInfo(param.Kind == S.FuncParamKind.Ref, paramTypeValue, param.Name);
                 }
 
@@ -318,36 +312,20 @@ namespace Gum.IR0Translator
 
             void BuildTrivialConstructor()
             {
-                static R.Param MakeParam(GlobalContext globalContext, M.Param param)
-                {
-                    var paramKind = param.Kind switch
-                    {
-                        M.ParamKind.Default => R.ParamKind.Default,
-                        M.ParamKind.Ref => R.ParamKind.Ref,
-                        M.ParamKind.Params => R.ParamKind.Params,
-                        _ => throw new UnreachableCodeException()
-                    };
-
-                    var paramTypeValue = globalContext.GetTypeValueByMType(param.Type);
-                    var rname = RItemFactory.MakeName(param.Name);
-
-                    return new R.Param(paramKind, paramTypeValue.GetRPath(), rname);
-                }
-
                 // if InternalModuleInfoBuilder decided not to generate TrivialConstructor, pass.
-                var trivialConstructor = classTypeValue.GetTrivialConstructor();
+                var trivialConstructor = classSymbol.GetTrivialConstructor();
                 if (trivialConstructor == null) return;
 
                 // to prevent conflict between parameter names, using special name $base- prefix
                 // B(int x) / C(int $base_x, int x) : base($base_x) { }
 
                 // 이미 base + current 합쳐진 매개변수
-                var parameters = trivialConstructor.GetParameters();
+                var parameterCount = trivialConstructor.GetParameterCount();
                 ImmutableArray<R.Param>.Builder paramBuilder = ImmutableArray.CreateBuilder<R.Param>(parameters.Length);
                 R.ConstructorBaseCallInfo? baseCallInfo;
                 int baseParamCount = 0;
                 
-                var baseTypeValue = classTypeValue.GetBaseType();
+                var baseTypeValue = classSymbol.GetBaseClass();
                 if (baseTypeValue != null)
                 {
                     // base에서 trivial constructor를 찾는다
@@ -360,48 +338,45 @@ namespace Gum.IR0Translator
                     // InternalModuleBuilder가 baseTrivialConstructor가 있을때만 trivial constructor 시그니처를 만들었을 것이다.
                     Debug.Assert(baseTrivialConstructor != null);
 
-                    var baseParameters = baseTrivialConstructor.GetParameters();
-                    var baseParamHashEntriesBuilder = ImmutableArray.CreateBuilder<R.ParamHashEntry>(baseParameters.Length);
-                    var baseConstructorArgs = ImmutableArray.CreateBuilder<R.Argument>(baseParameters.Length);
+                    baseParamCount = baseTrivialConstructor.GetParameterCount();
+                    var baseConstructorPath = baseTrivialConstructor.GetSymbolId().MakeRPath() as R.Path.Nested;
+                    Debug.Assert(baseConstructorPath != null);
 
-                    foreach (var param in baseParameters)
+                    var baseConstructorArgs = ImmutableArray.CreateBuilder<R.Argument>(baseParamCount);
+                    for(int i = 0; i < baseParamCount; i++)
                     {
-                        var rparam = MakeParam(globalContext, param);
-                        paramBuilder.Add(rparam);
+                        var baseParam = baseTrivialConstructor.GetParameter(i);
+                        var rbaseParam = baseParam.MakeRParam();
+                        paramBuilder.Add(rbaseParam);
 
-                        baseParamHashEntriesBuilder.Add(new R.ParamHashEntry(rparam.Kind, rparam.Type));
-
-                        R.Argument arg = rparam.Kind switch
+                        R.Argument arg = baseParam.Kind switch
                         {
-                            R.ParamKind.Default => new R.Argument.Normal(new R.LoadExp(new R.LocalVarLoc(rparam.Name))),
-                            R.ParamKind.Params => throw new UnreachableCodeException(),
-                            R.ParamKind.Ref => new R.Argument.Ref(new R.LocalVarLoc(rparam.Name)),
+                            FuncParameterKind.Default => new R.Argument.Normal(new R.LoadExp(new R.LocalVarLoc(rbaseParam.Name))),
+                            FuncParameterKind.Params => throw new UnreachableCodeException(),
+                            FuncParameterKind.Ref => new R.Argument.Ref(new R.LocalVarLoc(rbaseParam.Name)),
                             _ => throw new UnreachableCodeException()
                         };
-
                         baseConstructorArgs.Add(arg);
                     }
 
                     baseCallInfo = new R.ConstructorBaseCallInfo(
-                        new R.ParamHash(0, baseParamHashEntriesBuilder.MoveToImmutable()),
+                        baseConstructorPath.ParamHash,
                         baseConstructorArgs.MoveToImmutable()
                     );
-
-                    baseParamCount = baseParameters.Length;
                 }
                 else
                 {
                     baseCallInfo = null;
                     baseParamCount = 0;
                 }
-                
-                var classPath = classTypeValue.GetRPath_Nested();
-                var stmtBuilder = ImmutableArray.CreateBuilder<R.Stmt>(parameters.Length - baseParamCount);
-                for(int i = baseParamCount; i < parameters.Length; i++)
-                {
-                    var param = parameters[i];
 
-                    var rparam = MakeParam(globalContext, param);
+                var classPath = classSymbol.MakeRPath() as R.Path.Normal;
+                Debug.Assert(classPath != null);
+
+                var stmtBuilder = ImmutableArray.CreateBuilder<R.Stmt>(parameterCount - baseParamCount);
+                for(int i = baseParamCount; i < parameterCount; i++)
+                {
+                    var rparam = trivialConstructor.GetParameter(i).MakeRParam();
                     paramBuilder.Add(rparam);
 
                     var memberPath = new R.Path.Nested(classPath, rparam.Name, R.ParamHash.None, default);

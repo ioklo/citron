@@ -22,7 +22,7 @@ namespace Gum.Analysis
             throw new UnreachableCodeException();
         }
 
-        public static TypeExpInfoKind GetTypeExpInfoKind(this ITypeDeclSymbolNode node)
+        public static TypeExpInfoKind GetTypeExpInfoKind(this ITypeDeclSymbol node)
         {
             return node switch
             {

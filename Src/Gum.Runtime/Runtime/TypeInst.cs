@@ -7,7 +7,7 @@ namespace Gum.Runtime
 {
     public abstract class TypeInst
     {
-        public abstract TypeSymbol GetTypeValue();
+        public abstract ITypeSymbol GetTypeValue();
         public abstract Value MakeDefaultValue();
     }
 }

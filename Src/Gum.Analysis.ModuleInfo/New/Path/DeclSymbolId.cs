@@ -1,4 +1,5 @@
 ﻿using Gum.Collections;
+using Gum.Infra;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -23,6 +24,25 @@ namespace Gum.Analysis
         public static DeclSymbolId Child(this DeclSymbolId declId, M.Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
         {
             return new DeclSymbolId(declId.ModuleName, declId.Path.Child(name, typeParamCount, paramIds));
+        }
+
+        public static DeclSymbolId GetDeclSymbolId(this IDeclSymbolNode decl)
+        {
+            var outerDecl = decl.GetOuterDeclNode();
+            if (outerDecl != null)
+            {
+                var outerDeclId = outerDecl.GetDeclSymbolId();
+                var nodeName = decl.GetNodeName();
+                return outerDeclId.Child(nodeName.Name, nodeName.TypeParamCount, nodeName.ParamIds);
+            }
+            else if (decl is ModuleDeclSymbol moduleDecl)
+            {
+                return new DeclSymbolId(moduleDecl.GetName(), null);
+            }
+            else
+            {
+                throw new UnreachableCodeException();
+            }
         }
     }
 }

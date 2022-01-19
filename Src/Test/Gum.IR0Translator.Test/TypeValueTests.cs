@@ -121,7 +121,7 @@ namespace Gum.IR0Translator.Test
             Assert.Equal(expected, xyBaseTypeValue);
         }
 
-        // [X<int>.Y<bool>].GetMember("v").GetTypeValue() == X<bool>
+        // [X<int>.Y<bool>].QueryMember("v").GetTypeValue() == X<bool>
         [Fact]
         public void GettingMemberVar_FromNestedStruct_ApplyingTypeVarCorrectly()
         {
@@ -131,10 +131,10 @@ namespace Gum.IR0Translator.Test
                 new M.MemberType(
                     new M.GlobalType(moduleName, M.NamespacePath.Root, new M.Name.Normal("X"), Arr(MTypes.Int)), new M.Name.Normal("Y"), Arr(MTypes.Bool)));
 
-            var itemResult = xyTypeValue.GetMember(new M.Name.Normal("v"), default);
+            var itemResult = xyTypeValue.QueryMember(new M.Name.Normal("v"), default);
             var expected = factory.MakeTypeValueByMType(new M.GlobalType(moduleName, M.NamespacePath.Root, new M.Name.Normal("X"), Arr(MTypes.Bool)));
 
-            var memberVarResult = (MemberQueryResult.MemberVar)itemResult;
+            var memberVarResult = (SymbolQueryResult.MemberVar)itemResult;
             var memberVarValue = factory.MakeMemberVarValue(memberVarResult.Outer, memberVarResult.MemberVarInfo);
 
             Assert.Equal(expected, memberVarValue.GetTypeValue());
@@ -154,7 +154,7 @@ namespace Gum.IR0Translator.Test
             var xytype = factory.MakeTypeValueByMType(xymtype);
 
             // 지금은 query밖에 없다, ID를 통한 직접 참조를 할 일 이 생기게 되면 변경한다
-            var funcResult = (MemberQueryResult.Funcs)xytype.GetMember(new M.Name.Normal("F"), 1);
+            var funcResult = (SymbolQueryResult.Funcs)xytype.QueryMember(new M.Name.Normal("F"), 1);
             var funcValue = factory.MakeFunc(funcResult.Outer, funcResult.FuncInfos[0], Arr(factory.Bool));
 
             Assert.False(funcValue.IsStatic);

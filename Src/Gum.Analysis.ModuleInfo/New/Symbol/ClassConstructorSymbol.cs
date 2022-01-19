@@ -2,15 +2,17 @@
 using System;
 
 using M = Gum.CompileTime;
-using R = Gum.IR0;
 
 namespace Gum.Analysis
 {
-    public class ClassConstructorSymbol : ISymbolNode
+    public class ClassConstructorSymbol : IFuncSymbol
     {
         SymbolFactory factory;
         ClassSymbol outer;
         ClassConstructorDeclSymbol decl;
+
+        ISymbolNode ISymbolNode.Apply(TypeEnv typeEnv) => Apply(typeEnv);
+        IFuncSymbol IFuncSymbol.Apply(TypeEnv typeEnv) => Apply(typeEnv);
 
         internal ClassConstructorSymbol(SymbolFactory factory, ClassSymbol outer, ClassConstructorDeclSymbol decl)
         {
@@ -45,33 +47,21 @@ namespace Gum.Analysis
         {
             return outer.GetTypeEnv();
         }
-        
-        public R.Path.Nested MakeRPath()
-        {
-            var outerPath = outer.MakeRPath();
-
-            // path의 이름 부분은 apply 되지 않은 상태여야 한다
-            // decl이 직접 parameter로부터 path를 만들어 내는 것이 나은것 같다
-            return decl.MakeRPath(outerPath);
-        }
 
         public ClassConstructorSymbol Apply(TypeEnv typeEnv)
         {
             var appliedOuter = outer.Apply(typeEnv);
             return factory.MakeClassConstructor(appliedOuter, decl);
-        }
+        }        
 
-        public int GetTotalTypeParamCount()
-        {
-            return decl.GetTotalTypeParamCount();
-        }
-
-        public ImmutableArray<ITypeSymbolNode> GetTypeArgs()
+        public ImmutableArray<ITypeSymbol> GetTypeArgs()
         {
             return default;
         }
 
-        R.Path.Normal ISymbolNode.MakeRPath() => MakeRPath();
-        ISymbolNode ISymbolNode.Apply(TypeEnv typeEnv) => Apply(typeEnv);
+        public ITypeSymbol? GetOuterType()
+        {
+            return outer;
+        }        
     }
 }

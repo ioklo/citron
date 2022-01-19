@@ -25,7 +25,7 @@ namespace Gum.Runtime.Dotnet
             this.typeInfo = typeInfo;
         }        
 
-        public TypeSymbol? GetBaseTypeValue()
+        public ITypeSymbol? GetBaseTypeValue()
         {
             throw new NotImplementedException();
         }
