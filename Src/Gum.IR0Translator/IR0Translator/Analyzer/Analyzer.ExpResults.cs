@@ -61,10 +61,10 @@ namespace Gum.IR0Translator
                 ImmutableArray<ITypeSymbol> typeArgsForMatch;
 
                 public (ClassMemberFuncSymbol Func, ImmutableArray<R.Argument> RArgs) 
-                    Match(GlobalContext globalContext, ICallableContext callableContext, LocalContext localContext, ImmutableArray<Argument> sargs)
+                    Match(GlobalContext globalContext, ICallableContext callableContext, LocalContext localContext, ImmutableArray<S.Argument> sargs)
                 {
                     // outer가 없으므로 outerTypeEnv는 None이다
-                    var result = FuncMatcher.Match(globalContext, callableContext, localContext, TypeEnv.None, decls, sargs, typeArgsForMatch);
+                    var result = FuncMatcher.MatchIndex(globalContext, callableContext, localContext, TypeEnv.Empty, decls, sargs, typeArgsForMatch);
 
                     switch (result)
                     {
@@ -85,9 +85,8 @@ namespace Gum.IR0Translator
                     }
                 }
             }
-
-            public record EnumElem(EnumElemSymbol EnumElemSymbol) : ExpResult;
-            public record Exp(R.Exp Result, ITypeSymbol TypeSymbol) : ExpResult;
+            
+            public record Exp(R.Exp Result) : ExpResult;
             public record Loc(R.Loc Result, ITypeSymbol TypeSymbol) : ExpResult;
         }
     }

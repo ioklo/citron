@@ -32,16 +32,15 @@ namespace Gum.Analysis
 
         SymbolQueryResult QueryMember_Type(M.Name memberName, int typeParamCount)
         {
-            var candidates = new Candidates<SymbolQueryResult.Valid>();
-            var resultFactory = new MemberQueryResultCandidatesBuilder(this, symbolFactory, candidates);
-
+            var candidates = new Candidates<SymbolQueryResult>();
             var nodeName = new DeclSymbolNodeName(memberName, typeParamCount, default);
             foreach (var memberTypeDecl in decl.GetMemberTypes())
             {
                 // 이름이 같고, 타입 파라미터 개수가 같다면
                 if (nodeName.Equals(memberTypeDecl.GetNodeName()))
-                {   
-                    memberTypeDecl.Apply(resultFactory);
+                {
+                    var symbolQueryResult = SymbolQueryResultBuilder.Build(memberTypeDecl, this, symbolFactory);
+                    candidates.Add(symbolQueryResult);
                 }
             }
 

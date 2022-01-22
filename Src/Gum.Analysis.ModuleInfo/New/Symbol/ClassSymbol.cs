@@ -1,10 +1,13 @@
 ﻿using System;
-using M = Gum.CompileTime;
-using Pretune;
+using System.Collections.Generic;
+
 using Gum.Collections;
 using Gum.Infra;
-using System.Collections.Generic;
 using Gum.Analysis;
+
+using Pretune;
+
+using M = Gum.CompileTime;
 
 namespace Gum.Analysis
 {
@@ -94,9 +97,7 @@ namespace Gum.Analysis
         // 멤버 쿼리 서비스
         SymbolQueryResult QueryMember_Type(M.Name memberName, int typeParamCount)
         {
-            var candidates = new Candidates<SymbolQueryResult.Valid>();
-            var candidatesBuilder = new MemberQueryResultCandidatesBuilder(this, factory, candidates);
-
+            var candidates = new Candidates<SymbolQueryResult>();
             var nodeName = new DeclSymbolNodeName(memberName, typeParamCount, default);
 
             foreach (var memberTypeDecl in decl.GetMemberTypes())
@@ -104,7 +105,8 @@ namespace Gum.Analysis
                 // 이름이 같고, 타입 파라미터 개수가 같다면
                 if (nodeName.Equals(memberTypeDecl.GetNodeName()))
                 {
-                    memberTypeDecl.Apply(candidatesBuilder);
+                    var symbolQueryResult = SymbolQueryResultBuilder.Build(memberTypeDecl, this, factory);
+                    candidates.Add(symbolQueryResult);
                 }
             }
 
@@ -284,6 +286,14 @@ namespace Gum.Analysis
         public void Apply(ITypeSymbolVisitor visitor)
         {
             visitor.VisitClass(this);
+        }
+
+        public ClassMemberVarSymbol? GetMemberVar(M.Name name)
+        {
+            var memberVarDecl = decl.GetMemberVar(name);
+            if (memberVarDecl == null) return null;
+
+            return factory.MakeClassMemberVar(this, memberVarDecl);
         }
     }
 }

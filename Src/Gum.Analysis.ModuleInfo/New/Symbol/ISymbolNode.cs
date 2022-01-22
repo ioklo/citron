@@ -10,7 +10,7 @@ namespace Gum.Analysis
     {
         // 순회
         ISymbolNode? GetOuter();
-        IDeclSymbolNode GetDeclSymbolNode();
+        IDeclSymbolNode? GetDeclSymbolNode();
         
         TypeEnv GetTypeEnv();
         ISymbolNode Apply(TypeEnv typeEnv);        

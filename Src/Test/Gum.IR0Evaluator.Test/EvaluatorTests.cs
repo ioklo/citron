@@ -712,7 +712,7 @@ namespace Gum.IR0Evaluator.Test
             {
                 return new ForStmt(
                     new VarDeclForStmtInitializer(RLocalVarDecl(Path.Int, "i", new IntLiteralExp(0))),
-                    new CallInternalBinaryOperatorExp(InternalBinaryOperator.LessThan_Int_Int_Bool, new LoadExp(RLocalVarLoc("i")), new LoadExp(new CapturedVarLoc("count"))),
+                    new CallInternalBinaryOperatorExp(InternalBinaryOperator.LessThan_Int_Int_Bool, new LoadExp(RLocalVarLoc("i")), new LoadExp(new LambdaMemberVar("count"))),
                     new CallInternalUnaryAssignOperatorExp(InternalUnaryAssignOperator.PostfixInc_Int_Int, RLocalVarLoc("i")),
                     RPrintIntCmdStmt(RLocalVarExp("i"))
                 );
@@ -1431,7 +1431,7 @@ namespace Gum.IR0Evaluator.Test
         public async Task LambdaExp_CapturesLocalVariablesWithCopying() // TODO: wrong, need to be fix
         {   
             // [x] () => @"$x";
-            var lambdaDecl = new LambdaDecl(new Name.Anonymous(0), new CapturedStatement(null, Arr(new OuterLocalVarInfo(Path.Int, "x")), RPrintIntCmdStmt(new CapturedVarLoc("x"))), default);
+            var lambdaDecl = new LambdaDecl(new Name.Anonymous(0), new CapturedStatement(null, Arr(new OuterLocalVarInfo(Path.Int, "x")), RPrintIntCmdStmt(new LambdaMemberVar("x"))), default);
             var lambda = RootPath(new Name.Anonymous(0));
 
             // int x = 3;

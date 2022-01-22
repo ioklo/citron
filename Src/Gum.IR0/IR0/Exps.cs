@@ -14,24 +14,56 @@ namespace Gum.IR0
     public abstract record Exp : INode
     {
         internal Exp() { }
+        public abstract ITypeSymbol GetTypeSymbol();
     }
 
     // Location의 Value를 resultValue에 복사한다
-    public record LoadExp(Loc Loc) : Exp;
-    
+    public record LoadExp(Loc Loc, ITypeSymbol Type) : Exp
+    {
+        public override ITypeSymbol GetTypeSymbol()
+        {
+            return Type;
+        }
+    }
+
     // "dskfjslkf $abc "
-    public record StringExp(ImmutableArray<StringExpElement> Elements) : Exp;
+    public record StringExp(ImmutableArray<StringExpElement> Elements, ITypeSymbol StringSymbol) : Exp
+    {
+        public override ITypeSymbol GetTypeSymbol()
+        {
+            return StringSymbol;
+        }
+    }
 
     // 1    
-    public record IntLiteralExp(int Value) : Exp;
+    public record IntLiteralExp(int Value, ITypeSymbol IntSymbol) : Exp
+    {
+        public override ITypeSymbol GetTypeSymbol()
+        {
+            return IntSymbol;
+        }
+    }
 
     // false
-    public record BoolLiteralExp(bool Value) : Exp;
+    public record BoolLiteralExp(bool Value, ITypeSymbol BoolSymbol) : Exp
+    {
+        public override ITypeSymbol GetTypeSymbol()
+        {
+            return BoolSymbol;
+        }
+    }
     
-    // 한개로 합쳐서 만듭니다
+    // Nullable은 따로 만드는게 아니고, Runtime Library호출을 하도록 변경
+    // NewStruct(Nullable, ...)
     // TODO: 'New' 단어는 힙할당에만 쓰도록 하자
-    public record NewNullableExp(Path InnerType, Exp? ValueExp) : Exp;
-    
+    //public record NewNullableExp(Exp? ValueExp, ITypeSymbol TypeSymbol) : Exp
+    //{
+    //    public override ITypeSymbol GetTypeSymbol()
+    //    {
+    //        return NullableSymbol;
+    //    }
+    //}
+
     public enum InternalUnaryOperator
     {
         LogicalNot_Bool_Bool,
@@ -70,22 +102,66 @@ namespace Gum.IR0
         Equal_String_String_Bool
     }
 
-    public record CallInternalUnaryOperatorExp(InternalUnaryOperator Operator, Exp Operand) : Exp;
-    public record CallInternalUnaryAssignOperatorExp(InternalUnaryAssignOperator Operator, Loc Operand) : Exp;
-    public record CallInternalBinaryOperatorExp(InternalBinaryOperator Operator, Exp Operand0, Exp Operand1) : Exp;
-    
+    public record CallInternalUnaryOperatorExp(InternalUnaryOperator Operator, Exp Operand, ITypeSymbol Type) : Exp
+    {
+        public override ITypeSymbol GetTypeSymbol()
+        {
+            return Type;
+        }
+    }
+
+    public record CallInternalUnaryAssignOperatorExp(InternalUnaryAssignOperator Operator, Loc Operand, ITypeSymbol Type) : Exp
+    {
+        public override ITypeSymbol GetTypeSymbol()
+        {
+            return Type;
+        }
+    }
+
+    public record CallInternalBinaryOperatorExp(InternalBinaryOperator Operator, Exp Operand0, Exp Operand1, ITypeSymbol Type) : Exp
+    {
+        public override ITypeSymbol GetTypeSymbol()
+        {
+            return Type;
+        }
+    }
+
     // a = b
-    public record AssignExp(Loc Dest, Exp Src) : Exp;
+    public record AssignExp(Loc Dest, Exp Src) : Exp
+    {
+        public override ITypeSymbol GetTypeSymbol()
+        {
+            return Src.GetTypeSymbol();
+        }
+    }
 
     // F();
-    public record CallGlobalFuncExp(Path.Nested Func, ImmutableArray<Argument> Args) : Exp;
+    public record CallGlobalFuncExp(GlobalFuncSymbol Func, ImmutableArray<Argument> Args) : Exp
+    {
+        public override ITypeSymbol GetTypeSymbol()
+        {
+            return Func.GetReturn().Type;
+        }
+    }
 
     // c.F();
-    public record CallClassMemberFuncExp(Path.Nested ClassMemberFunc, Loc? Instance, ImmutableArray<Argument> Args) : Exp;
+    public record CallClassMemberFuncExp(ClassMemberFuncSymbol ClassMemberFunc, Loc? Instance, ImmutableArray<Argument> Args) : Exp
+    {
+        public override ITypeSymbol GetTypeSymbol()
+        {
+            return ClassMemberFunc.GetReturn().Type;
+        }
+    }
 
     // s.F();
-    public record CallStructMemberFuncExp(Path.Nested StructMemberFunc, Loc? Instance, ImmutableArray<Argument> Args) : Exp;
-    
+    public record CallStructMemberFuncExp(StructMemberFuncSymbol StructMemberFunc, Loc? Instance, ImmutableArray<Argument> Args) : Exp
+    {
+        public override ITypeSymbol GetTypeSymbol()
+        {
+            return StructMemberFunc.GetReturn().Type;
+        }
+    }
+
     //public record CallSeqFuncExp(Path.Nested SeqFunc , Loc? Instance, ImmutableArray<Argument> Args): Exp
     //{   
     //    // public bool NeedHeapAlloc { get; } Heap으로 할당시킬지 여부
@@ -93,29 +169,82 @@ namespace Gum.IR0
 
     // f(2, 3)    
     // Callable은 (() => {}) ()때문에 Loc이어야 한다
-    public record CallValueExp(Path.Nested Lambda, Loc Callable, ImmutableArray<Argument> Args) : Exp;
+    public record CallValueExp(LambdaSymbol Lambda, Loc Callable, ImmutableArray<Argument> Args) : Exp
+    {
+        public override ITypeSymbol GetTypeSymbol()
+        {
+            return Lambda.GetReturn().Type;
+        }
+    }
 
     // () => { return 1; }
-    // 문법에서 LambdaExp는 지역적으로 보이지만, 생성된 람다는 프로그램 실행시 전역적으로 호출될 수 있기 때문에
-    // LamdaExp안에 캡쳐할 정보와 Body 등을 바로 넣지 않고 Path로 접근한다    
-    public record LambdaExp(Path.Nested Lambda) : Exp;
-    
+    public record LambdaExp(LambdaSymbol Lambda) : Exp
+    {
+        public override ITypeSymbol GetTypeSymbol()
+        {
+            return Lambda;
+        }
+    }
+
     // [1, 2, 3]    
-    public record ListExp(Path ElemType, ImmutableArray<Exp> Elems) : Exp;    
-    public record ListIteratorExp(Loc ListLoc) : Exp;
+    public record ListExp(ImmutableArray<Exp> Elems, ITypeSymbol ListType) : Exp
+    {
+        public override ITypeSymbol GetTypeSymbol()
+        {
+            return ListType;
+        }
+    }
+
+    public record ListIteratorExp(Loc ListLoc, ITypeSymbol IteratorType) : Exp
+    {
+        public override ITypeSymbol GetTypeSymbol()
+        {
+            return IteratorType;
+        }
+    }
 
     // enum construction, E.First or E.Second(2, 3)    
-    public record NewEnumElemExp(Path.Nested Elem, ImmutableArray<Argument> Args) : Exp;
+    public record NewEnumElemExp(EnumElemSymbol EnumElem, ImmutableArray<Argument> Args) : Exp
+    {
+        public override ITypeSymbol GetTypeSymbol()
+        {
+            return EnumElem;
+        }
+    }
 
     // new S(2, 3, 4);
-    public record NewStructExp(Path.Nested Constructor, ImmutableArray<Argument> Args) : Exp;
+    public record NewStructExp(StructConstructorSymbol Constructor, ImmutableArray<Argument> Args) : Exp
+    {
+        public override ITypeSymbol GetTypeSymbol()
+        {
+            return Constructor.GetOuter();
+        }
+    }
 
     // new C(2, 3, 4);    
-    public record NewClassExp(Path.Nested Class, ParamHash ConstructorParamHash, ImmutableArray<Argument> Args) : Exp;
+    public record NewClassExp(ClassConstructorSymbol Constructor, ImmutableArray<Argument> Args) : Exp
+    {
+        public override ITypeSymbol GetTypeSymbol()
+        {
+            return Constructor.GetOuter();
+        }
+    }
 
     // 컨테이너를 enumElem -> enum으로
-    public record CastEnumElemToEnumExp(Exp Src, EnumElemSymbol enumElem) : Exp;
-    
+    public record CastEnumElemToEnumExp(Exp Src, EnumElemSymbol EnumElem) : Exp
+    {
+        public override ITypeSymbol GetTypeSymbol()
+        {
+            return EnumElem;
+        }
+    }
+
     // ClassStaticCast    
-    public record CastClassExp(Exp Src, ClassSymbol Class) : Exp;
+    public record CastClassExp(Exp Src, ClassSymbol Class) : Exp
+    {
+        public override ITypeSymbol GetTypeSymbol()
+        {
+            return Class;
+        }
+    }
 }

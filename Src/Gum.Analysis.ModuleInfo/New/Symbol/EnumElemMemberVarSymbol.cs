@@ -14,6 +14,8 @@ namespace Gum.Analysis
         EnumElemSymbol outer;
         EnumElemMemberVarDeclSymbol decl;
 
+        ISymbolNode ISymbolNode.Apply(TypeEnv typeEnv) => Apply(typeEnv);
+
         internal EnumElemMemberVarSymbol(SymbolFactory factory, EnumElemSymbol outer, EnumElemMemberVarDeclSymbol decl)
         {
             this.factory = factory;
@@ -47,6 +49,12 @@ namespace Gum.Analysis
             return outer.GetTypeEnv();
         }
 
-        ISymbolNode ISymbolNode.Apply(TypeEnv typeEnv) => Apply(typeEnv);
+        public ITypeSymbol GetDeclType()
+        {
+            var declType = GetDeclType();
+            var typeEnv = GetTypeEnv();
+
+            return declType.Apply(typeEnv);
+        }
     }
 }

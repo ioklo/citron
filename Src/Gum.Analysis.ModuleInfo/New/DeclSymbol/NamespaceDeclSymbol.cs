@@ -47,5 +47,20 @@ namespace Gum.Analysis
         {
             visitor.VisitNamespace(this);
         }
+
+        public GlobalTypeDeclSymbol? GetType(M.Name name, int typeParamCount)
+        {
+            return dict.GetType(name, typeParamCount);
+        }
+
+        public GlobalFuncDeclSymbol? GetFunc(M.Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
+        {
+            return dict.GetFunc(name, typeParamCount, paramIds);
+        }
+
+        public ImmutableArray<GlobalFuncDeclSymbol> GetFuncs(M.Name name, int minTypeParamCount)
+        {
+            return dict.GetFuncs(name, minTypeParamCount);
+        }
     }
 }

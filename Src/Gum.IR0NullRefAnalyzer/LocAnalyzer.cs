@@ -27,7 +27,7 @@ namespace Gum.IR0Analyzer.NullRefAnalysis
             return this.Visit<LocAnalyzer, AbstractValue>(loc);
         }
 
-        public AbstractValue VisitCapturedVarLoc(R.CapturedVarLoc loc)
+        public AbstractValue VisitCapturedVarLoc(R.LambdaMemberVar loc)
         {
             throw new NotImplementedException();
         }

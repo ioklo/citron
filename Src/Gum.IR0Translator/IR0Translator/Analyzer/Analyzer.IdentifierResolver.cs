@@ -74,10 +74,10 @@ namespace Gum.IR0Translator
 
             IdentifierResult GetThisMemberInfo()
             {
-                var thisType = callableContext.GetOuterType();
+                var thisType = callableContext.GetThisType();
                 if (thisType == null) return IdentifierResult.NotFound.Instance;
 
-                var itemQueryResult = thisType.GetMember(new M.Name.Normal(idName), typeArgs.Length);
+                var itemQueryResult = thisType.QueryMember(new M.Name.Normal(idName), typeArgs.Length);
 
                 switch(itemQueryResult)
                 {
@@ -88,21 +88,43 @@ namespace Gum.IR0Translator
                         return IdentifierResult.NotFound.Instance;
 
                     // 여기서부터 case ItemQueryResult.Valid 
-                    case SymbolQueryResult.Type typeResult:
-                        var typeValue = globalContext.MakeTypeValue(typeResult.Outer, typeResult.TypeInfo, typeArgs);
-                        return new IdentifierResult.Type(typeValue);
+                    #region Class
+                    case SymbolQueryResult.Class classResult:
+                        return new IdentifierResult.Class(classResult.ClassConstructor.Invoke(typeArgs));
 
-                    case SymbolQueryResult.Constructors:
+                    case SymbolQueryResult.ClassConstructors classConstructorsResult:
                         throw new UnreachableCodeException(); // 이름으로 참조 불가능
 
-                    case SymbolQueryResult.Funcs funcsResult:
-                        return new IdentifierResult.Funcs(funcsResult.Outer, funcsResult.FuncInfos, typeArgs, funcsResult.IsInstanceFunc);
+                    case SymbolQueryResult.ClassMemberFuncs classMemberFuncsResult:
+                        return new IdentifierResult.ClassMemberFuncs(classMemberFuncsResult.FuncConstructors);
 
-                    case SymbolQueryResult.MemberVar memberVarResult:
-                        return new IdentifierResult.MemberVar(memberVarResult.Outer, memberVarResult.MemberVarInfo);
+                    case SymbolQueryResult.ClassMemberVar classMemberVarResult:
+                        return new IdentifierResult.ClassMemberVar(classMemberVarResult.Var);
+
+                    #endregion
+
+                    #region Struct
+                    case SymbolQueryResult.Struct structResult:
+                        return new IdentifierResult.Struct(structResult.StructConstructor.Invoke(typeArgs));
+
+                    case SymbolQueryResult.StructConstructors structConstructorsResult:
+                        throw new UnreachableCodeException(); // 이름으로 참조 불가능                                                              
+
+                    case SymbolQueryResult.StructMemberFuncs structMemberFuncsResult:
+                        return new IdentifierResult.StructMemberFuncs(structMemberFuncsResult.FuncConstructors);
+
+                    case SymbolQueryResult.StructMemberVar structMemberVarResult:
+                        return new IdentifierResult.StructMemberVar(structMemberVarResult.Var);
+
+                    #endregion
+
+                    #region Enum
+                    case SymbolQueryResult.Enum enumResult:
+                        return new IdentifierResult.Enum(enumResult.EnumConstructor.Invoke(typeArgs));
 
                     case SymbolQueryResult.EnumElem:
                         throw new NotImplementedException();  // TODO: 무슨 뜻인지 확실히 해야 한다
+                    #endregion
                 }
 
                 // TODO: implementation
@@ -129,31 +151,33 @@ namespace Gum.IR0Translator
                 {
                     case SymbolQueryResult.NotFound: return IdentifierResult.NotFound.Instance;
                     case SymbolQueryResult.Error errorResult: return ToErrorIdentifierResult(errorResult);
+
+                    // Valid
                     case SymbolQueryResult.Class classResult:
-                        return new IdentifierResult.Type(classResult.ClassConstructor.Invoke(typeArgs));
+                        return new IdentifierResult.Class(classResult.ClassConstructor.Invoke(typeArgs));
 
-                    case SymbolQueryResult.Type typeResult:
-                        {
-                            var typeValue = globalContext.MakeTypeValue(typeResult.Outer, typeResult.TypeInfo, typeArgs);
-                            return new IdentifierResult.Type(typeValue);
-                        }
+                    case SymbolQueryResult.Struct structResult:
+                        return new IdentifierResult.Struct(structResult.StructConstructor.Invoke(typeArgs));
 
-                    case SymbolQueryResult.Constructors:
+                    case SymbolQueryResult.Enum enumResult:
+                        return new IdentifierResult.Enum(enumResult.EnumConstructor.Invoke(typeArgs));
+
+                    case SymbolQueryResult.GlobalFuncs globalFuncsResult:
+                        return new IdentifierResult.GlobalFuncs(globalFuncsResult.FuncConstructors);
+
+                    case SymbolQueryResult.EnumElem enumElemResult:                        
+                        return new IdentifierResult.EnumElem(enumElemResult.Symbol);
+
+                    // 리턴될 수 없는 것들
+                    case SymbolQueryResult.ClassMemberFuncs:
+                    case SymbolQueryResult.ClassMemberVar:
+                    case SymbolQueryResult.ClassConstructors:
+                    case SymbolQueryResult.StructMemberFuncs:
+                    case SymbolQueryResult.StructMemberVar:
+                    case SymbolQueryResult.StructConstructors:
                         throw new UnreachableCodeException(); // global item도 아닐뿐더러, 이름으로 참조가 불가능하다
 
-                    case SymbolQueryResult.MemberVar:
-                        throw new UnreachableCodeException();
-
-                    case SymbolQueryResult.Funcs funcsResult:
-                        {
-                            return new IdentifierResult.Funcs(funcsResult.Outer, funcsResult.FuncInfos, typeArgs, funcsResult.IsInstanceFunc);
-                        }
-
-                    case SymbolQueryResult.EnumElem enumElemResult:
-                        {
-                            return new IdentifierResult.EnumElem(enumElemResult.Symbol);
-                        }
-
+                    // 빼먹은 것들 트랩
                     default:
                         throw new UnreachableCodeException();
                 }

@@ -8,7 +8,7 @@ namespace Gum.IR0Visitor
         void VisitTempLoc(R.TempLoc loc);
         void VisitGlobalVarLoc(R.GlobalVarLoc loc);
         void VisitLocalVarLoc(R.LocalVarLoc loc);
-        void VisitCapturedVarLoc(R.CapturedVarLoc loc);
+        void VisitCapturedVarLoc(R.LambdaMemberVar loc);
         void VisitListIndexerLoc(R.ListIndexerLoc loc);
         void VisitStaticMemberLoc(R.StaticMemberLoc loc);
         void VisitStructMemberLoc(R.StructMemberLoc loc);
@@ -24,7 +24,7 @@ namespace Gum.IR0Visitor
         TRet VisitTempLoc(R.TempLoc loc);
         TRet VisitGlobalVarLoc(R.GlobalVarLoc loc);
         TRet VisitLocalVarLoc(R.LocalVarLoc loc);
-        TRet VisitCapturedVarLoc(R.CapturedVarLoc loc);
+        TRet VisitCapturedVarLoc(R.LambdaMemberVar loc);
         TRet VisitListIndexerLoc(R.ListIndexerLoc loc);
         TRet VisitStaticMemberLoc(R.StaticMemberLoc loc);
         TRet VisitStructMemberLoc(R.StructMemberLoc loc);

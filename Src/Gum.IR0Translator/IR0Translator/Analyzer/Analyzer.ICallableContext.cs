@@ -11,12 +11,12 @@ namespace Gum.IR0Translator
         interface ICallableContext : IMutable<ICallableContext>
         {
             R.Path.Normal MakeRPath();
-            ITypeSymbol? GetOuterType();
+            ITypeSymbol? GetThisType();
 
             LocalVarInfo? GetLocalVarOutsideLambda(string varName);
             FuncReturn? GetReturn(); // no return일 경우 null
             void SetRetType(ITypeSymbol retTypeValue);
-            void AddLambdaCapture(string capturedVarName, ITypeSymbol capturedVarType);
+            LambdaMemberVarSymbol AddLambdaCapture(string capturedVarName, ITypeSymbol capturedVarType);
             bool IsSeqFunc();
 
             void AddCallableMemberDecl(R.CallableMemberDecl lambdaDecl);

@@ -13,6 +13,7 @@ namespace Gum.Analysis
 
         ISymbolNode ISymbolNode.Apply(TypeEnv typeEnv) => Apply(typeEnv);
         IFuncSymbol IFuncSymbol.Apply(TypeEnv typeEnv) => Apply(typeEnv);
+        ISymbolNode? ISymbolNode.GetOuter() => GetOuter();
 
         internal ClassConstructorSymbol(SymbolFactory factory, ClassSymbol outer, ClassConstructorDeclSymbol decl)
         {
@@ -33,7 +34,7 @@ namespace Gum.Analysis
             return param.Apply(typeEnv);
         }
 
-        public ISymbolNode? GetOuter()
+        public ClassSymbol GetOuter()
         {
             return outer;
         }
@@ -62,6 +63,6 @@ namespace Gum.Analysis
         public ITypeSymbol? GetOuterType()
         {
             return outer;
-        }        
+        }
     }
 }

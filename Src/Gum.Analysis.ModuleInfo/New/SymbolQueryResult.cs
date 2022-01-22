@@ -37,21 +37,23 @@ namespace Gum.Analysis
         //public record Constructors(NormalTypeValue Outer, ImmutableArray<ConstructorDeclSymbol> ConstructorInfos) : Valid;
         //public record Funcs(ItemValueOuter Outer, ImmutableArray<IModuleFuncDecl> FuncInfos, bool IsInstanceFunc) : Valid;
 
-        // 멤버 검색으로 나올 수 있는 종류들
-        public record Class(Func<ImmutableArray<ITypeSymbol>, ClassSymbol> ClassConstructor) : Valid;
-        public record Struct(Func<ImmutableArray<ITypeSymbol>, StructSymbol> StructConstructor) : Valid;
-        public record Enum(Func<ImmutableArray<ITypeSymbol>, EnumSymbol> EnumConstructor) : Valid;
-        public record EnumElem(EnumElemSymbol Symbol) : Valid;
-        public record EnumElemMemberVar(EnumElemMemberVarSymbol Symbol) : Valid;
+        // 검색으로 나올 수 있는 종류들
 
-        // have constructors of constructors
+        public record GlobalFuncs(ImmutableArray<Func<ImmutableArray<ITypeSymbol>, GlobalFuncSymbol>> FuncConstructors) : Valid;
+
+        public record Class(Func<ImmutableArray<ITypeSymbol>, ClassSymbol> ClassConstructor) : Valid;
         public record ClassConstructors(ImmutableArray<ClassConstructorSymbol> Constructors) : Valid; // typeArgs가 없으니 확정
         public record ClassMemberFuncs(ImmutableArray<Func<ImmutableArray<ITypeSymbol>, ClassMemberFuncSymbol>> FuncConstructors) : Valid;
         public record ClassMemberVar(ClassMemberVarSymbol Var) : Valid;
 
+        public record Struct(Func<ImmutableArray<ITypeSymbol>, StructSymbol> StructConstructor) : Valid;
         public record StructConstructors(ImmutableArray<StructConstructorSymbol> Constructors) : Valid;
         public record StructMemberFuncs(ImmutableArray<Func<ImmutableArray<ITypeSymbol>, StructMemberFuncSymbol>> FuncConstructors) : Valid;
         public record StructMemberVar(StructMemberVarSymbol Var) : Valid;
+
+        public record Enum(Func<ImmutableArray<ITypeSymbol>, EnumSymbol> EnumConstructor) : Valid;
+        public record EnumElem(EnumElemSymbol Symbol) : Valid;
+        public record EnumElemMemberVar(EnumElemMemberVarSymbol Symbol) : Valid;
 
         public record Lambda(LambdaSymbol Symbol) : Valid;
         public record LambdaMemberVar(LambdaMemberVarSymbol Symbol) : Valid;

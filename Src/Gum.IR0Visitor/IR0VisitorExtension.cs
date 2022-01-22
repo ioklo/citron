@@ -216,7 +216,7 @@ namespace Gum.IR0Visitor
                 case R.TempLoc tempLoc: visitor.VisitTempLoc(tempLoc); break;
                 case R.GlobalVarLoc globalVarLoc: visitor.VisitGlobalVarLoc(globalVarLoc); break;
                 case R.LocalVarLoc localVarLoc: visitor.VisitLocalVarLoc(localVarLoc); break;
-                case R.CapturedVarLoc capturedVarLoc: visitor.VisitCapturedVarLoc(capturedVarLoc); break;
+                case R.LambdaMemberVar capturedVarLoc: visitor.VisitCapturedVarLoc(capturedVarLoc); break;
                 case R.ListIndexerLoc listIndexerLoc: visitor.VisitListIndexerLoc(listIndexerLoc); break;
                 case R.StaticMemberLoc staticMemberLoc: visitor.VisitStaticMemberLoc(staticMemberLoc); break;
                 case R.StructMemberLoc structMemberLoc: visitor.VisitStructMemberLoc(structMemberLoc); break;
@@ -237,7 +237,7 @@ namespace Gum.IR0Visitor
                 case R.TempLoc tempLoc: return visitor.VisitTempLoc(tempLoc);
                 case R.GlobalVarLoc globalVarLoc: return visitor.VisitGlobalVarLoc(globalVarLoc);
                 case R.LocalVarLoc localVarLoc: return visitor.VisitLocalVarLoc(localVarLoc);
-                case R.CapturedVarLoc capturedVarLoc: return visitor.VisitCapturedVarLoc(capturedVarLoc);
+                case R.LambdaMemberVar capturedVarLoc: return visitor.VisitCapturedVarLoc(capturedVarLoc);
                 case R.ListIndexerLoc listIndexerLoc: return visitor.VisitListIndexerLoc(listIndexerLoc);
                 case R.StaticMemberLoc staticMemberLoc: return visitor.VisitStaticMemberLoc(staticMemberLoc);
                 case R.StructMemberLoc structMemberLoc: return visitor.VisitStructMemberLoc(structMemberLoc);

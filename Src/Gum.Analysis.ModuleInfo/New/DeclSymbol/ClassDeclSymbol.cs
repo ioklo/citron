@@ -179,5 +179,16 @@ namespace Gum.Analysis
         {
             visitor.VisitClass(this);
         }
+
+        public ClassMemberVarDeclSymbol? GetMemberVar(M.Name name)
+        {
+            foreach(var memberVar in memberVars)
+            {
+                if (name.Equals(memberVar.GetName()))
+                    return memberVar;
+            }
+
+            return null;
+        }
     }
 }

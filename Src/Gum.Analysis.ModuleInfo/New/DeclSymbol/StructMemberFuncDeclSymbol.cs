@@ -57,5 +57,10 @@ namespace Gum.Analysis
         {
             visitor.VisitStructMemberFunc(this);
         }
+
+        public FuncReturn GetReturn()
+        {
+            return returnHolder.GetValue();
+        }
     }
 }

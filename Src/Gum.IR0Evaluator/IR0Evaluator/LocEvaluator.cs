@@ -35,7 +35,9 @@ namespace Gum.IR0Evaluator
 
             async ValueTask<Value> EvalTempLocAsync(R.TempLoc loc)
             {
-                var result = globalContext.AllocValue(loc.Type);
+                var type = loc.Exp.GetTypeSymbol();
+
+                var result = globalContext.AllocValue(type);
                 await EvalExpAsync(loc.Exp, result);
                 return result;
             }
@@ -64,7 +66,7 @@ namespace Gum.IR0Evaluator
                     case R.LocalVarLoc localVarLoc:
                         return localContext.GetLocalValue(localVarLoc.Name);
 
-                    case R.CapturedVarLoc capturedVarLoc:
+                    case R.LambdaMemberVar capturedVarLoc:
                         return context.GetCapturedValue(capturedVarLoc.Name);
 
                     case R.ListIndexerLoc listIndexerLoc:

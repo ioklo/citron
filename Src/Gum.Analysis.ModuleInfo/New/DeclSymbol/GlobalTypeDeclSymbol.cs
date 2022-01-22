@@ -34,6 +34,11 @@ namespace Gum.Analysis
         public IDeclSymbolNode GetNode()
         {
             return typeDecl;
-        }        
+        }
+
+        public void Apply(ITypeDeclSymbolVisitor visitor)
+        {
+            typeDecl.Apply(visitor);
+        }
     }
 }

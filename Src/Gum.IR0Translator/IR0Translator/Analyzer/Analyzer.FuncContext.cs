@@ -57,7 +57,7 @@ namespace Gum.IR0Translator
             }
             
             public R.Path GetPath() => func.MakeRPath();
-            public ITypeSymbol? GetOuterType() { return func.GetOuterType(); }
+            public ITypeSymbol? GetThisType() { return func.GetOuterType(); }
             // TODO: 지금은 InnerFunc를 구현하지 않으므로, Outside가 없다. 나중에 지원
             public LocalVarInfo? GetLocalVarOutsideLambda(string varName) => null;
             public ITypeSymbol? GetReturn() => func.Get;

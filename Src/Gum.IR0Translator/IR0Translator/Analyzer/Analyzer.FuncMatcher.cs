@@ -87,32 +87,32 @@ namespace Gum.IR0Translator
             }            
 
             // entry 1
-            public static FuncMatchIndexResult MatchIndex<TFuncSymbol>(
+            public static FuncMatchIndexResult MatchIndex<TFuncDeclSymbol>(
                 GlobalContext globalContext,
                 ICallableContext callableContext,
                 LocalContext localContext,
                 TypeEnv outerTypeEnv, 
-                ImmutableArray<TFuncSymbol> funcs,
+                ImmutableArray<TFuncDeclSymbol> funcDecls,
                 ImmutableArray<S.Argument> sargs, 
                 ImmutableArray<ITypeSymbol> typeArgs)
-                where TFuncSymbol : IFuncSymbol
+                where TFuncDeclSymbol : IFuncDeclSymbol
             {
                 // 여러 함수 중에서 인자가 맞는것을 선택해야 한다
                 var exactCandidates = new Candidates<MatchedFunc?>();
                 var restCandidates = new Candidates<MatchedFunc?>();
 
                 // Type inference
-                for(int i = 0; i < funcs.Length; i++)
+                for(int i = 0; i < funcDecls.Length; i++)
                 {
-                    var func = funcs[i];
+                    var funcDecl = funcDecls[i];
 
                     var cloneContext = CloneContext.Make();
                     var clonedGlobalContext = cloneContext.GetClone(globalContext);
                     var clonedCallableContext = cloneContext.GetClone(callableContext);
                     var clonedLocalContext = cloneContext.GetClone(localContext);
 
-                    var paramTypes = ImmutableArray.CreateRange(func.GetParameterCount, index => func.GetParameter(index));
-                    var variadicParamIndex = GetVariadicParamIndex(globalContext, func);
+                    var paramTypes = ImmutableArray.CreateRange(funcDecl.GetParameterCount, index => funcDecl.GetParameter(index));
+                    var variadicParamIndex = GetVariadicParamIndex(funcDecl);
 
                     var matchResult = MatchCallableCore(clonedGlobalContext, clonedCallableContext, clonedLocalContext, outerTypeEnv, paramTypes, variadicParamIndex, typeArgs, sargs);
 
@@ -194,14 +194,14 @@ namespace Gum.IR0Translator
             }
             
             // Match에서만 쓰인다
-            static int? GetVariadicParamIndex(GlobalContext globalContext, IFuncSymbol func)
+            static int? GetVariadicParamIndex(IFuncDeclSymbol funcDecl)
             {
                 int? variadicParamsIndex = null;
-                int paramCount = func.GetParameterCount();
+                int paramCount = funcDecl.GetParameterCount();
 
                 for(int i = 0; i < paramCount; i++)
                 {
-                    var param = func.GetParameter(i);
+                    var param = funcDecl.GetParameter(i);
 
                     if (param.Kind == FuncParameterKind.Params)
                     {
@@ -256,14 +256,15 @@ namespace Gum.IR0Translator
                 {
                     StmtAndExpAnalyzer analyzer;
                     GlobalContext globalContext;
-                    S.Exp exp;
-                    ExpResult.Exp? expResult;
+                    S.Exp sexp;
+                    R.Exp? exp;
 
-                    public Normal(GlobalContext globalContext, ICallableContext callableContext, LocalContext localContext, S.Exp exp)
+                    public Normal(GlobalContext globalContext, ICallableContext callableContext, LocalContext localContext, S.Exp sexp)
                     {
                         this.analyzer = new StmtAndExpAnalyzer(globalContext, callableContext, localContext);
                         this.globalContext = globalContext;
-                        this.exp = exp;
+                        this.sexp = sexp;
+                        this.exp = null;
                     }
 
                     public override void DoAnalyze(FuncParameter? paramInfo) // throws FuncMatcherFatalException
@@ -280,29 +281,29 @@ namespace Gum.IR0Translator
                             else
                             {
                                 var hint = ResolveHint.Make(paramInfo.Value.Type);
-                                var argResult = analyzer.AnalyzeExp_Exp(exp, hint);
-                                expResult = globalContext.TryCastExp_Exp(argResult, paramInfo.Value.Type);
+                                var argResult = analyzer.AnalyzeExp_Exp(sexp, hint);
+                                exp = globalContext.TryCastExp_Exp(argResult, paramInfo.Value.Type);
 
-                                if (expResult == null)
+                                if (exp == null)
                                     throw new FuncMatcherFatalException();
                             }
                         }
                         else // none, EnumConstructor
                         {
-                            expResult = analyzer.AnalyzeExp_Exp(exp, ResolveHint.None);
+                            exp = analyzer.AnalyzeExp_Exp(sexp, ResolveHint.None);
                         }
                     }
 
                     public override ITypeSymbol GetTypeValue()
                     {
-                        Debug.Assert(expResult != null);
-                        return expResult.TypeSymbol;
+                        Debug.Assert(exp != null);
+                        return exp.GetTypeSymbol();
                     }
 
                     public override R.Argument? GetRArgument()
                     {
-                        Debug.Assert(expResult != null);
-                        return new R.Argument.Normal(expResult.Result);
+                        Debug.Assert(exp != null);
+                        return new R.Argument.Normal(exp);
                     }
                 }
 
@@ -433,25 +434,27 @@ namespace Gum.IR0Translator
                     else if (sarg is S.Argument.Params sParamsArg)
                     {
                         // expanded argument는 먼저 타입을 알아내야 한다
-                        ExpResult.Exp expResult;
+                        R.Exp exp;
                         try
                         {
-                            expResult = StmtAndExpAnalyzer.AnalyzeExp_Exp(globalContext, callableContext, localContext, sParamsArg.Exp, ResolveHint.None);
+                            exp = StmtAndExpAnalyzer.AnalyzeExp_Exp(globalContext, callableContext, localContext, sParamsArg.Exp, ResolveHint.None);
                         }
                         catch (AnalyzerFatalException)
                         {
                             throw new FuncMatcherFatalException();
                         }
 
-                        if (expResult.TypeSymbol is TupleTypeSymbol tupleTypeSymbol)
+                        var expType = exp.GetType();
+
+                        if (expType is TupleTypeSymbol tupleExpType)
                         {
                             FuncMatcherArgument.ParamsHead? head = null;
                             int index = 0;
-                            foreach (var tupleElem in tupleTypeValue.Elems)
+                            foreach (var tupleElem in tupleExpType.Elems)
                             {
                                 if (head == null)
                                 {
-                                    head = new FuncMatcherArgument.ParamsHead(expResult.Result, tupleTypeValue.Elems.Length, tupleElem.Type);
+                                    head = new FuncMatcherArgument.ParamsHead(exp, tupleExpType.Elems.Length, tupleElem.Type);
                                     args.Add(head);
                                 }
                                 else
@@ -553,9 +556,9 @@ namespace Gum.IR0Translator
             void MatchParamsArguments(int paramIndex, int argsBegin, int argsEnd) // throws FuncMatcherFatalException
             {
                 var paramInfo = paramInfos[paramIndex];
-                Debug.Assert(paramInfo.ParamKind == R.ParamKind.Params);
+                Debug.Assert(paramInfo.Kind == FuncParameterKind.Params);
 
-                if (paramInfo.Type is TupleTypeValue tupleParamType)
+                if (paramInfo.Type is TupleTypeSymbol tupleParamType)
                 {
                     if (tupleParamType.Elems.Length != argsEnd - argsBegin)
                         throw new FuncMatcherFatalException();
@@ -568,7 +571,7 @@ namespace Gum.IR0Translator
                         var tupleElemType = tupleParamType.Elems[i].Type;
                         var arg = expandedArgs[argsBegin + i];
 
-                        MatchArgument(new ParamInfo(R.ParamKind.Default, tupleElemType), arg);
+                        MatchArgument(new FuncParameter(FuncParameterKind.Default, tupleElemType, tupleParamType.Elems[i].Name), arg);
 
                         // MatchArgument마다 Constraint추가
                         typeResolver.AddConstraint(tupleElemType, arg.GetTypeValue());

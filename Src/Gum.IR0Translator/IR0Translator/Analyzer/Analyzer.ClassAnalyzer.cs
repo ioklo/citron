@@ -376,11 +376,14 @@ namespace Gum.IR0Translator
                 var stmtBuilder = ImmutableArray.CreateBuilder<R.Stmt>(parameterCount - baseParamCount);
                 for(int i = baseParamCount; i < parameterCount; i++)
                 {
-                    var rparam = trivialConstructor.GetParameter(i).MakeRParam();
+                    var param = trivialConstructor.GetParameter(i);
+                    var rparam = param.MakeRParam();
                     paramBuilder.Add(rparam);
+                    
+                    var memberVar = classSymbol.GetMemberVar(param.Name);
+                    Debug.Assert(memberVar != null);
 
-                    var memberPath = new R.Path.Nested(classPath, rparam.Name, R.ParamHash.None, default);
-                    stmtBuilder.Add(new R.ExpStmt(new R.AssignExp(new R.ClassMemberLoc(R.ThisLoc.Instance, memberPath), new R.LoadExp(new R.LocalVarLoc(rparam.Name)))));
+                    stmtBuilder.Add(new R.ExpStmt(new R.AssignExp(new R.ClassMemberLoc(new R.ThisLoc(classSymbol), memberVar), new R.LoadExp(new R.LocalVarLoc(rparam.Name)))));
                 }
 
                 var body = new R.BlockStmt(stmtBuilder.MoveToImmutable());

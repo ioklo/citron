@@ -16,7 +16,7 @@ namespace Gum.Analysis
 
         public ModuleSymbol MakeModule(ModuleDeclSymbol decl)
         {
-            return new ModuleSymbol(decl);
+            return new ModuleSymbol(this, decl);
         }
 
         public VoidSymbol MakeVoid()
@@ -113,7 +113,7 @@ namespace Gum.Analysis
         {
             Debug.Assert(outer.GetDeclSymbolNode() == decl.GetOuterDeclNode());
             
-            return new NamespaceSymbol(outer, decl);
+            return new NamespaceSymbol(this, outer, decl);
         }
 
         public EnumElemSymbol MakeEnumElem(EnumSymbol @enum, EnumElemDeclSymbol decl)

@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using Gum.Collections;
 using Gum.Infra;
+using Pretune;
 using M = Gum.CompileTime;
 
 namespace Gum.Analysis
 {
-    public class LambdaMemberVarDeclSymbol : IDeclSymbolNode
+    [AutoConstructor]
+    public partial class LambdaMemberVarDeclSymbol : IDeclSymbolNode
     {
         IHolder<LambdaDeclSymbol> outerHolder;
         ITypeSymbol type;
@@ -38,7 +40,8 @@ namespace Gum.Analysis
         }
     }
 
-    public class LambdaMemberVarSymbol : ISymbolNode
+    [AutoConstructor]
+    public partial class LambdaMemberVarSymbol : ISymbolNode
     {
         SymbolFactory factory;
         LambdaSymbol outer;
@@ -72,7 +75,8 @@ namespace Gum.Analysis
     }
 
     // ITypeSymbol과 IFuncSymbol의 성격을 동시에 가지는데, 그렇다면 ITypeSymbol이 더 일반적이다(함수적 성격은 멤버함수라고 생각하면 된다)
-    public class LambdaDeclSymbol : ITypeDeclSymbol
+    [AutoConstructor]
+    public partial class LambdaDeclSymbol : ITypeDeclSymbol
     {
         IFuncDeclSymbol outer;
 
@@ -124,15 +128,16 @@ namespace Gum.Analysis
     }
 
     // ArgTypeValues => RetValueTypes
-    public class LambdaSymbol : ITypeSymbol // , IEquatable<LambdaSymbol>
+    [AutoConstructor]
+    public partial class LambdaSymbol : ITypeSymbol // , IEquatable<LambdaSymbol>
     {
-        ISymbolNode ISymbolNode.Apply(TypeEnv typeEnv) => Apply(typeEnv);
-        IDeclSymbolNode ISymbolNode.GetDeclSymbolNode() => GetDeclSymbolNode();
-        ITypeSymbol ITypeSymbol.Apply(TypeEnv typeEnv) => Apply(typeEnv);
-
         SymbolFactory factory;
         IFuncSymbol outer;
         LambdaDeclSymbol decl;
+
+        ISymbolNode ISymbolNode.Apply(TypeEnv typeEnv) => Apply(typeEnv);
+        IDeclSymbolNode ISymbolNode.GetDeclSymbolNode() => GetDeclSymbolNode();
+        ITypeSymbol ITypeSymbol.Apply(TypeEnv typeEnv) => Apply(typeEnv);
 
         public LambdaSymbol Apply(TypeEnv typeEnv)
         {

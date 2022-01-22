@@ -296,9 +296,9 @@ namespace Gum.Analysis
             return VarTypeValue.Instance;
         }
 
-        public TupleTypeValue MakeTupleType(ImmutableArray<(ITypeSymbol Type, string? Name)> elems)
+        public TupleSymbol MakeTupleType(ImmutableArray<(ITypeSymbol Type, string? Name)> elems)
         {
-            return new TupleTypeValue(ritemFactory, elems);
+            return new TupleSymbol(ritemFactory, elems);
         }
 
         public RuntimeListTypeValue MakeListType(ITypeSymbol elemType)
@@ -316,9 +316,9 @@ namespace Gum.Analysis
             return new StructSymbol(this, ritemFactory, outer, structInfo, typeArgs);
         }        
 
-        public NullableTypeValue MakeNullableTypeValue(ITypeSymbol innerTypeValue)
+        public NullableSymbol MakeNullableTypeValue(ITypeSymbol innerTypeValue)
         {
-            return new NullableTypeValue(this, innerTypeValue);
+            return new NullableSymbol(this, innerTypeValue);
         }
     }
 }

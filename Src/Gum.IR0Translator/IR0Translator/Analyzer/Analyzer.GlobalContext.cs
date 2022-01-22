@@ -31,6 +31,29 @@ namespace Gum.IR0Translator
             ILogger logger;
             InternalGlobalVariableRepository internalGlobalVarRepo;
 
+            static VoidSymbolId voidId;
+            static ModuleSymbolId boolId, intId, stringId;
+            static DeclSymbolId boolDeclId, intDeclId, stringDeclId;
+
+            static DeclSymbolId nullableDeclId, listDeclId;
+
+            static GlobalContext()
+            {
+                voidId = new VoidSymbolId();
+
+                boolDeclId = new DeclSymbolId(new M.Name.Normal("System.Runtime"), null).Child(new M.Name.Normal("System")).Child(new M.Name.Normal("Boolean"));
+                boolId = new ModuleSymbolId(new M.Name.Normal("System.Runtime"), null).Child(new M.Name.Normal("System")).Child(new M.Name.Normal("Boolean"));
+
+                intDeclId = new DeclSymbolId(new M.Name.Normal("System.Runtime"), null).Child(new M.Name.Normal("System")).Child(new M.Name.Normal("Int32"));
+                intId = new ModuleSymbolId(new M.Name.Normal("System.Runtime"), null).Child(new M.Name.Normal("System")).Child(new M.Name.Normal("Int32"));
+
+                stringDeclId = new DeclSymbolId(new M.Name.Normal("System.Runtime"), null).Child(new M.Name.Normal("System")).Child(new M.Name.Normal("String"));
+                stringId = new ModuleSymbolId(new M.Name.Normal("System.Runtime"), null).Child(new M.Name.Normal("System")).Child(new M.Name.Normal("String"));
+
+                listDeclId = new DeclSymbolId(new M.Name.Normal("System.Runtime"), null).Child(new M.Name.Normal("System")).Child(new M.Name.Normal("List"), 1);
+                nullableDeclId = new DeclSymbolId(new M.Name.Normal("System.Runtime"), null).Child(new M.Name.Normal("System")).Child(new M.Name.Normal("Nullable"), 1);
+            }
+
             public GlobalContext(SymbolLoader symbolLoader, TypeSymbolInfoService typeSymbolInfoService, ILogger logger)
             {
                 this.symbolLoader = symbolLoader;
@@ -98,26 +121,22 @@ namespace Gum.IR0Translator
                 logger.Add(new AnalyzeErrorLog(code, node, code.ToString()));
                 throw new AnalyzerFatalException();
             }
-
-            static VoidSymbolId voidId = new VoidSymbolId();
+            
             public ITypeSymbol GetVoidType()
             {
                 return (ITypeSymbol)symbolLoader.Load(new VoidSymbolId());
-            }
+            }            
 
-            static ModuleSymbolId boolId = new ModuleSymbolId(new M.Name.Normal("System.Runtime"), null).Child(new M.Name.Normal("System")).Child(new M.Name.Normal("Boolean"));
             public ITypeSymbol GetBoolType()
             {   
                 return (ITypeSymbol)symbolLoader.Load(boolId);                    
             }
-
-            static ModuleSymbolId intId = new ModuleSymbolId(new M.Name.Normal("System.Runtime"), null).Child(new M.Name.Normal("System")).Child(new M.Name.Normal("Int32"));
+            
             public ITypeSymbol GetIntType()
             {
                 return (ITypeSymbol)symbolLoader.Load(boolId);
             }
-
-            static ModuleSymbolId stringId = new ModuleSymbolId(new M.Name.Normal("System.Runtime"), null).Child(new M.Name.Normal("System")).Child(new M.Name.Normal("String"));
+            
             public ITypeSymbol GetStringType()
             {
                 return (ITypeSymbol)symbolLoader.Load(stringId);
@@ -136,30 +155,48 @@ namespace Gum.IR0Translator
                 internalGlobalVarRepo.AddInternalGlobalVariable(bRef, typeValue, name);
             }
 
-            public bool IsBoolType(ITypeSymbol type)
+            public bool IsBool(ITypeSymbol type)
             {
                 var decl = type.GetDeclSymbolNode();
                 var declId = decl.GetDeclSymbolId();
 
-                return declId.Equals(boolId);
+                return declId.Equals(boolDeclId);
             }
 
-            public bool IsIntType(ITypeSymbol type)
+            public bool IsInt(ITypeSymbol type)
             {
                 var decl = type.GetDeclSymbolNode();
                 var declId = decl.GetDeclSymbolId();
 
-                return declId.Equals(intId);
+                return declId.Equals(intDeclId);
             }            
 
-            public bool IsStringType(ITypeSymbol type)
+            public bool IsString(ITypeSymbol type)
             {
                 var decl = type.GetDeclSymbolNode();
                 var declId = decl.GetDeclSymbolId();
 
-                return declId.Equals(stringId);
+                return declId.Equals(stringDeclId);            
             }
-            
+
+            public bool IsNullable(ITypeSymbol type, [NotNullWhen(returnValue: true)] out ITypeSymbol? innerType)
+            {
+                var declType = type.GetDeclSymbolNode();
+                var declId = declType.GetDeclSymbolId();
+
+                if (!declId.Equals(nullableDeclId))
+                {
+                    innerType = null;
+                    return false;
+                }
+
+                var typeArgs = type.GetTypeArgs();
+                Debug.Assert(typeArgs.Length == 1);
+
+                innerType = typeArgs[0];
+                return true;
+            }
+
             public ITypeSymbol GetSymbolByTypeExp(S.TypeExp typeExp)
             {
                 var symbol = typeSymbolInfoService.GetSymbol(typeExp);
@@ -219,28 +256,30 @@ namespace Gum.IR0Translator
                 return itemValueFactory.MakeMemberVarValue(outer, info);
             }
 
-            public TupleTypeValue GetTupleType(ImmutableArray<(ITypeSymbol Type, string? Name)> elems)
+            public TupleSymbol GetTupleType(ImmutableArray<(ITypeSymbol Type, string? Name)> elems)
             {
                 return symbolLoader.Load(.MakeTupleType(elems);
-            }
+            }            
 
-            public R.Exp? TryCastExp_Exp(ExpResult.Exp expResult, ITypeSymbol expectedType) // nothrow
+            public R.Exp? TryCastExp_Exp(R.Exp exp, ITypeSymbol expectedType) // nothrow
             {
+                var expType = exp.GetTypeSymbol();
+
                 // 같으면 그대로 리턴
-                if (expResult.TypeSymbol.Equals(expectedType))
-                    return expResult;
+                if (expectedType.Equals(expType))
+                    return exp;
 
                 // TODO: TypeValue에 TryCast를 각각 넣기
-                // expectType.TryCast(expResult); // expResult를 넣는것도 이상하다.. 그건 그때가서
+                // expectType.TryCast(exp); // expResult를 넣는것도 이상하다.. 그건 그때가서
 
                 // 1. enumElem -> enum
-                if (expResult.TypeSymbol is EnumElemSymbol enumElem)
+                if (expType is EnumElemSymbol enumElem)
                 {
                     if (expectedType is EnumSymbol expectEnumType)
                     {
                         if (expectedType.Equals(enumElem.GetOuter()))
                         {
-                            return new R.CastEnumElemToEnumExp(expResult.Result, enumElem);
+                            return new R.CastEnumElemToEnumExp(exp, enumElem);
                         }
                     }
 
@@ -248,14 +287,14 @@ namespace Gum.IR0Translator
                 }
 
                 // 2. exp is class type
-                if (expResult.TypeSymbol is ClassSymbol @class)
+                if (expType is ClassSymbol @class)
                 {
                     if (expectedType is ClassSymbol expectedClass)
                     {
                         // allows upcast
                         if (expectedClass.IsBaseOf(@class))
                         {
-                            return new R.CastClassExp(expResult.Result, expectedClass);
+                            return new R.CastClassExp(exp, expectedClass);
                         }
 
                         return null;
@@ -265,19 +304,17 @@ namespace Gum.IR0Translator
                     // if (expectType is InterfaceTypeValue )
                 }
 
-                // 3. T -> T? 는 허용
-                if (expectedType is NullableSymbol expectedNullableType)
+                // 3. C -> Nullable<C>, C -> B -> Nullable<B> 허용
+                if (IsNullable(expectedType, out var expectedInnerType))
                 {
-                    // C -> B -> B? 허용
-                    var expectInnerType = expectedNullableType.GetInnerTypeValue();
-
                     // C -> B 시도
-                    var castToInnerTypeResult = TryCastExp_Exp(expResult, expectInnerType);
-                    if (castToInnerTypeResult != null)
+                    var castToInnerTypeExp = TryCastExp_Exp(exp, expectedInnerType);
+                    if (castToInnerTypeExp != null)
                     {
                         // B -> B?
-                        var castExp = new R.NewNullableExp(expectInnerType.MakeRPath(), castToInnerTypeResult.Result);
-                        return new ExpResult.Exp(castExp, expectedType);
+                        return MakeNullableExp(castToInnerTypeExp);
+
+                        return new R.NewNullableExp(castToInnerTypeExp, expectedNullableType);
                     }
                 }
 

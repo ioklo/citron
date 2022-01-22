@@ -21,7 +21,7 @@ namespace Gum.Analysis
             return new DeclSymbolId(moduleSymbolId.ModuleName, declPath);            
         }
 
-        public static DeclSymbolId Child(this DeclSymbolId declId, M.Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
+        public static DeclSymbolId Child(this DeclSymbolId declId, M.Name name, int typeParamCount = 0, ImmutableArray<FuncParamId> paramIds = default)
         {
             return new DeclSymbolId(declId.ModuleName, declId.Path.Child(name, typeParamCount, paramIds));
         }

@@ -487,9 +487,9 @@ namespace Gum.Test.Misc
                 writer.WriteNew("R.LocalVarLoc", loc.Name);
             }
 
-            public void VisitCapturedVarLoc(R.CapturedVarLoc loc)
+            public void VisitLambdaMemberVarLoc(R.LambdaMemberVar loc)
             {
-                writer.WriteNew("R.CapturedVarLoc", loc.Name);
+                writer.WriteNew("R.LambdaMemberVarLoc", loc.Name);
             }
 
             public void VisitListIndexerLoc(R.ListIndexerLoc loc)

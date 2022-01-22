@@ -48,5 +48,13 @@ namespace Gum.Analysis
         {
             return default;
         }
+
+        public ITypeSymbol GetDeclType()
+        {
+            var declType = decl.GetDeclType();
+            var typeEnv = GetTypeEnv();
+
+            return declType.Apply(typeEnv);
+        }
     }
 }

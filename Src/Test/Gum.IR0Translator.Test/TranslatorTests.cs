@@ -762,7 +762,7 @@ namespace Gum.IR0Translator.Test
                 new R.CapturedStatement(
                     null,
                     Arr(new R.OuterLocalVarInfo(R.Path.Int, "x")),
-                    RLocalVarDeclStmt(R.Path.Int, "y", new R.LoadExp(new R.CapturedVarLoc("x")))
+                    RLocalVarDeclStmt(R.Path.Int, "y", new R.LoadExp(new R.LambdaMemberVar("x")))
                 )
             );
 
@@ -893,7 +893,7 @@ namespace Gum.IR0Translator.Test
             var capturedStmtDecl = new R.CapturedStatementDecl(capturedStmtName, new R.CapturedStatement(
                 default,
                 Arr(new R.OuterLocalVarInfo(R.Path.Int, "x")),
-                RLocalVarDeclStmt(R.Path.Int, "x", new R.LoadExp(new R.CapturedVarLoc("x")))
+                RLocalVarDeclStmt(R.Path.Int, "x", new R.LoadExp(new R.LambdaMemberVar("x")))
             ));
 
             var expected = RScript(

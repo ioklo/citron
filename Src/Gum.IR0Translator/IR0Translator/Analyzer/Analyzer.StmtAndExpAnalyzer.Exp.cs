@@ -52,14 +52,14 @@ namespace Gum.IR0Translator
                         }
                         else
                         {
-                            return new ExpResult.Loc(R.ThisLoc.Instance, thisTypeValue);
+                            return new ExpResult.Loc(new R.ThisLoc(), thisTypeValue);
                         }
 
                     case IdentifierResult.LocalVarOutsideLambda localVarOutsideLambdaResult:
                         
                         // TODO: 여러번 캡쳐해도 한번만
-                        callableContext.AddLambdaCapture(localVarOutsideLambdaResult.VarName, localVarOutsideLambdaResult.TypeSymbol);
-                        return new ExpResult.Loc(new R.CapturedVarLoc(localVarOutsideLambdaResult.VarName), localVarOutsideLambdaResult.TypeSymbol);
+                        var memberVar = callableContext.AddLambdaCapture(localVarOutsideLambdaResult.VarName, localVarOutsideLambdaResult.TypeSymbol);
+                        return new ExpResult.Loc(new R.LambdaMemberVarLoc(memberVar), localVarOutsideLambdaResult.TypeSymbol);
 
                     case IdentifierResult.LocalVar localVarResult:
                         {
@@ -121,9 +121,9 @@ namespace Gum.IR0Translator
             {
                 if (hint.TypeHint is TypeValueTypeHint typeValueHint)
                 {
-                    if (typeValueHint.TypeSymbol is NullableTypeValue nullableTypeValue)
+                    if (typeValueHint.TypeSymbol is NullableSymbol nullableTypeValue)
                     {
-                        return new ExpResult.Exp(new R.NewNullableExp(nullableTypeValue.GetInnerTypeValue().MakeRPath(), null), nullableTypeValue);
+                        return new ExpResult.Exp(new R.NewNullableExp(null, nullableTypeValue));
                     }
                 }
 
@@ -133,12 +133,12 @@ namespace Gum.IR0Translator
 
             ExpResult.Exp AnalyzeBoolLiteralExp(S.BoolLiteralExp boolExp)
             {
-                return new ExpResult.Exp(new R.BoolLiteralExp(boolExp.Value), globalContext.GetBoolType());
+                return new ExpResult.Exp(new R.BoolLiteralExp(boolExp.Value, globalContext.GetBoolType()));
             }
 
             ExpResult.Exp AnalyzeIntLiteralExp(S.IntLiteralExp intExp)
             {
-                return new ExpResult.Exp(new R.IntLiteralExp(intExp.Value), globalContext.GetIntType());
+                return new ExpResult.Exp(new R.IntLiteralExp(intExp.Value, globalContext.GetIntType()));
             }
 
             [AutoConstructor]
@@ -169,7 +169,7 @@ namespace Gum.IR0Translator
                 if (bFatal)
                     throw new AnalyzerFatalException();
 
-                return new ExpResult.Exp(new R.StringExp(builder.ToImmutable()), globalContext.GetStringType());
+                return new ExpResult.Exp(new R.StringExp(builder.ToImmutable(), globalContext.GetStringType()));
             }
 
 
@@ -180,11 +180,13 @@ namespace Gum.IR0Translator
 
                 if (operandResult is ExpResult.Loc locResult)
                 {
+                    var intType = globalContext.GetIntType();
+
                     // int type 검사, exact match
-                    if (!locResult.TypeSymbol.Equals(globalContext.GetIntType()))
+                    if (!intType.Equals(locResult.Result.GetTypeSymbol()))
                         globalContext.AddFatalError(A0601_UnaryAssignOp_IntTypeIsAllowedOnly, operand);
 
-                    return new ExpResult.Exp(new R.CallInternalUnaryAssignOperatorExp(op, locResult.Result), globalContext.GetIntType());
+                    return new ExpResult.Exp(new R.CallInternalUnaryAssignOperatorExp(op, locResult.Result, intType));
                 }
                 else
                 {
@@ -202,7 +204,7 @@ namespace Gum.IR0Translator
                     case S.UnaryOpKind.LogicalNot:
                         {
                             // exact match
-                            if (!operandResult.TypeSymbol.Equals(globalContext.GetBoolType()))
+                            if (!operandResult.Result.GetTypeSymbol().Equals(globalContext.GetBoolType()))
                                 globalContext.AddFatalError(A0701_UnaryOp_LogicalNotOperatorIsAppliedToBoolTypeOperandOnly, unaryOpExp.Operand);
 
                             return new ExpResult.Exp(
@@ -260,7 +262,7 @@ namespace Gum.IR0Translator
                     switch (destLoc)
                     {
                         // int x = 0; var l = () { x = 3; }, TODO: 이거 가능하도록
-                        case R.CapturedVarLoc:
+                        case R.LambdaMemberVar:
                             globalContext.AddFatalError(A0803_BinaryOp_LeftOperandIsNotAssignable, exp.Operand0);
                             throw new UnreachableCodeException();
 
@@ -870,7 +872,7 @@ namespace Gum.IR0Translator
                         case IdentifierResult.LocalVarOutsideLambda localVarOutsideLambdaResult:
                             // TODO: 여러번 캡쳐해도 한번만
                             callableContext.AddLambdaCapture(localVarOutsideLambdaResult.VarName, localVarOutsideLambdaResult.TypeSymbol);
-                            return AnalyzeMemberExpLocParent(memberExp, new R.CapturedVarLoc(localVarOutsideLambdaResult.VarName), localVarOutsideLambdaResult.TypeSymbol);
+                            return AnalyzeMemberExpLocParent(memberExp, new R.LambdaMemberVar(localVarOutsideLambdaResult.VarName), localVarOutsideLambdaResult.TypeSymbol);
 
                         case IdentifierResult.LocalVar localVarResult:
                             {
@@ -1078,39 +1080,38 @@ namespace Gum.IR0Translator
                 throw new UnreachableCodeException();
             }
 
-            public static ExpResult.Exp AnalyzeExp_Exp(GlobalContext globalContext, ICallableContext callableContext, LocalContext localContext, S.Exp exp, ResolveHint hint)
+            public static R.Exp AnalyzeExp_Exp(GlobalContext globalContext, ICallableContext callableContext, LocalContext localContext, S.Exp exp, ResolveHint hint)
             {
                 var analyzer = new StmtAndExpAnalyzer(globalContext, callableContext, localContext);
                 return analyzer.AnalyzeExp_Exp(exp, hint);
             }
 
-            internal ExpResult.Exp AnalyzeExp_Exp(S.Exp exp, ResolveHint hint)
+            internal R.Exp AnalyzeExp_Exp(S.Exp exp, ResolveHint hint)
             {
                 var result = AnalyzeExp(exp, hint);
                 switch (result)
                 {
                     case ExpResult.Exp expResult:
-                        return expResult;
+                        return expResult.Result;
 
                     case ExpResult.Loc locResult:
-                        return new ExpResult.Exp(new R.LoadExp(locResult.Result), locResult.TypeSymbol);
+                        return new R.LoadExp(locResult.Result);
 
                     case ExpResult.Type typeResult:
-                        if (typeResult.TypeSymbol is EnumElemSymbol enumElemTypeValue) // E.F
+                        
+                        if (typeResult.TypeSymbol is EnumElemSymbol) // E.F
                         {
-                            if (enumElemTypeValue.IsStandalone())
-                                return new ExpResult.Exp(new R.NewEnumElemExp(enumElemTypeValue.MakeRPath(), default), enumElemTypeValue);
-                            else // 함수로 
-                                throw new NotImplementedException();
+                            Debug.Assert(false);
+                            // 여기서 처리할게 아닌거 같다
+                            // EnumElemSymbol이면 ExpResult.Exp 로 들어와야 한다
+
+                            //if (enumElem.IsStandalone())
+                            //    return new R.NewEnumElemExp(enumElem, default);
+                            //else // 함수로 
+                            //    throw new NotImplementedException();
                         }
                         globalContext.AddFatalError(A2008_ResolveIdentifier_CantUseTypeAsExpression, exp);
                         throw new UnreachableCodeException();
-
-                    case ExpResult.EnumElem enumElemResult:
-                        if (enumElemResult.EnumElemTypeValue.IsStandalone())
-                            return new ExpResult.Exp(new R.NewEnumElemExp(enumElemResult.EnumElemTypeValue.MakeRPath(), default), enumElemResult.EnumElemTypeValue);
-                        else
-                            throw new NotImplementedException(); // 함수로
 
                     default:
                         throw new UnreachableCodeException();
@@ -1119,35 +1120,41 @@ namespace Gum.IR0Translator
 
             R.StringExpElement AnalyzeStringExpElement(S.StringExpElement elem)
             {
+                var stringType = globalContext.GetStringType();
+
                 if (elem is S.ExpStringExpElement expElem)
                 {
-                    var expResult = AnalyzeExp_Exp(expElem.Exp, ResolveHint.None);
+                    var exp = AnalyzeExp_Exp(expElem.Exp, ResolveHint.None);
+                    var expType = exp.GetTypeSymbol();
 
                     // 캐스팅이 필요하다면 
-                    if (globalContext.IsIntType(expResult.TypeSymbol))
+                    if (globalContext.IsInt(expType))
                     {
                         return new R.ExpStringExpElement(
                             new R.CallInternalUnaryOperatorExp(
                                 R.InternalUnaryOperator.ToString_Int_String,
-                                expResult.Result
+                                exp,
+                                stringType
                             )
                         );
                     }
-                    else if (globalContext.IsBoolType(expResult.TypeSymbol))
+                    else if (globalContext.IsBool(expType))
                     {
                         return new R.ExpStringExpElement(
                                 new R.CallInternalUnaryOperatorExp(
                                 R.InternalUnaryOperator.ToString_Bool_String,
-                                expResult.Result
+                                exp,
+                                stringType
                             )
                         );
                     }
-                    else if (globalContext.IsStringType(expResult.TypeSymbol))
+                    else if (globalContext.IsString(expType))
                     {
-                        return new R.ExpStringExpElement(expResult.Result);
+                        return new R.ExpStringExpElement(exp);
                     }
                     else
                     {
+                        // TODO: ToString
                         globalContext.AddFatalError(A1901_StringExp_ExpElementShouldBeBoolOrIntOrString, expElem.Exp);
                     }
                 }
@@ -1160,9 +1167,9 @@ namespace Gum.IR0Translator
             }
 
             // 값의 겉보기 타입을 변경한다
-            internal ExpResult.Exp CastExp_Exp(ExpResult.Exp expResult, ITypeSymbol expectType, S.ISyntaxNode nodeForErrorReport) // throws AnalyzeFatalException
+            internal R.Exp CastExp_Exp(R.Exp exp, ITypeSymbol expectedType, S.ISyntaxNode nodeForErrorReport) // throws AnalyzeFatalException
             {
-                var result = globalContext.TryCastExp_Exp(expResult, expectType);
+                var result = globalContext.TryCastExp_Exp(exp, expectedType);
                 if (result != null) return result;
 
                 globalContext.AddFatalError(A2201_Cast_Failed, nodeForErrorReport);

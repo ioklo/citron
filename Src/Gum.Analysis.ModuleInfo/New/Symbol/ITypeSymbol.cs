@@ -7,7 +7,7 @@ namespace Gum.Analysis
     public interface ITypeSymbol : ISymbolNode
     {
         new ITypeSymbol Apply(TypeEnv typeEnv);
-        new ITypeDeclSymbol GetDeclSymbolNode();
+        new ITypeDeclSymbol? GetDeclSymbolNode();
 
         void Apply(ITypeSymbolVisitor visitor);
 

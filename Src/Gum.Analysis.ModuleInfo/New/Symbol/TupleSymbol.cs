@@ -1,14 +1,14 @@
 ﻿using System;
 using Gum.Collections;
-using R = Gum.IR0;
 using Pretune;
 
 namespace Gum.Analysis
 {
     [AutoConstructor]
-    public partial class TupleTypeValue : ITypeSymbol
+    public partial class TupleSymbol : ITypeSymbol
     {
-        RItemFactory ritemFactory;
+        TupleDeclSymbol decl;
+
         public ImmutableArray<(ITypeSymbol Type, string? Name)> Elems { get; }
 
         public override ITypeSymbol Apply(TypeEnv typeEnv)

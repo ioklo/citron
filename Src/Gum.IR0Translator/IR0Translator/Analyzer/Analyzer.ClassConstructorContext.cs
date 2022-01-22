@@ -88,7 +88,7 @@ namespace Gum.IR0Translator
                 return AnonymousIdComponent.NewAnonymousName(); 
             }
 
-            public ITypeSymbol? GetOuterType()
+            public ITypeSymbol? GetThisType()
             {
                 return symbol.GetOuterType();
             }
