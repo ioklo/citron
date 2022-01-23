@@ -60,6 +60,11 @@ namespace Gum.Analysis
             return parametersHolder.GetValue()[index];
         }
 
+        public M.AccessModifier GetAccessModifier()
+        {
+            return accessModifier;
+        }
+
         public void Apply(IDeclSymbolNodeVisitor visitor)
         {
             visitor.VisitStructConstructor(this);

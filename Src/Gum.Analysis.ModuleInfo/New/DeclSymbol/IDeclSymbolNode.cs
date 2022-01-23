@@ -1,4 +1,6 @@
 ﻿using Gum.Collections;
+using Gum.Infra;
+using System;
 using M = Gum.CompileTime;
 
 namespace Gum.Analysis
@@ -8,6 +10,7 @@ namespace Gum.Analysis
     // DeclSymbol 간에 참조할 수 있는 인터페이스 확장에는 닫혀있다 
     public interface IDeclSymbolNode
     {
+        M.AccessModifier GetAccessModifier();
         IDeclSymbolNode? GetOuterDeclNode(); // 최상위 계층에는 Outer가 없다
         DeclSymbolNodeName GetNodeName();
         IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds);
@@ -30,6 +33,31 @@ namespace Gum.Analysis
 
             if (thisOuterDecl.Equals(containerDecl)) return true;
             return thisOuterDecl.IsDescendantOf(containerDecl);
+        }
+
+        public static bool CanAccess(this IDeclSymbolNode user, IDeclSymbolNode target)
+        {
+            var accessModifier = target.GetAccessModifier();
+            var targetOuter = target.GetOuterDeclNode();
+            if (targetOuter == null)
+                return false;
+            
+            switch (accessModifier)
+            {
+                case M.AccessModifier.Public: return true;
+                case M.AccessModifier.Protected: throw new NotImplementedException();
+                case M.AccessModifier.Private:
+                    {
+                        // 같은 경우는 허용
+                        if (user.Equals(targetOuter))
+                            return true;
+
+                        // base클래스가 아니라 container에 속하는지를 본다
+                        return user.IsDescendantOf(targetOuter);
+                    }
+
+                default: throw new UnreachableCodeException();
+            }
         }
 
         public static int GetTotalTypeParamCount(this IDeclSymbolNode node)

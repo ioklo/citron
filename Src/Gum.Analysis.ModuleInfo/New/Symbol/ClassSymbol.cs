@@ -8,6 +8,7 @@ using Gum.Analysis;
 using Pretune;
 
 using M = Gum.CompileTime;
+using System.Diagnostics;
 
 namespace Gum.Analysis
 {
@@ -125,7 +126,7 @@ namespace Gum.Analysis
 
         SymbolQueryResult QueryMember_Func(M.Name memberName, int typeParamCount)
         {
-            var builder = ImmutableArray.CreateBuilder<Func<ImmutableArray<ITypeSymbol>, ClassMemberFuncSymbol>>();
+            var builder = ImmutableArray.CreateBuilder<DeclAndConstructor<ClassMemberFuncDeclSymbol, ClassMemberFuncSymbol>>();
 
             bool bHaveInstance = false;
             bool bHaveStatic = false;
@@ -141,7 +142,12 @@ namespace Gum.Analysis
                     bHaveInstance |= !bStatic;
                     bHaveStatic |= bStatic;
 
-                    builder.Add(typeArgs => factory.MakeClassMemberFunc(this, memberFunc, typeArgs));
+                    var dac = new DeclAndConstructor<ClassMemberFuncDeclSymbol, ClassMemberFuncSymbol>(
+                        memberFunc,
+                        typeArgs => factory.MakeClassMemberFunc(this, memberFunc, typeArgs)
+                    );
+
+                    builder.Add(dac);
                 }
             }
 
@@ -200,18 +206,7 @@ namespace Gum.Analysis
         }
 
         public SymbolQueryResult QueryMember(M.Name memberName, int typeParamCount)
-        {
-            if (memberName.Equals(M.Name.Constructor))
-            {
-                var constructorDecls = decl.GetConstructors();
-                var builder = ImmutableArray.CreateBuilder<ClassConstructorSymbol>(constructorDecls.Length);
-
-                foreach (var constructorDecl in decl.GetConstructors())
-                    builder.Add(factory.MakeClassConstructor(this, constructorDecl));
-
-                return new SymbolQueryResult.ClassConstructors(builder.MoveToImmutable());
-            }
-
+        {   
             // TODO: caching
             var results = new List<SymbolQueryResult.Valid>();
 

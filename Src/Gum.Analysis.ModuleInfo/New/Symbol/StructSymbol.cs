@@ -5,6 +5,7 @@ using Gum.Collections;
 
 using M = Gum.CompileTime;
 using Pretune;
+using System.Diagnostics;
 
 namespace Gum.Analysis
 {
@@ -21,7 +22,7 @@ namespace Gum.Analysis
 
         internal StructSymbol(SymbolFactory symbolFactory, ISymbolNode outer, StructDeclSymbol structDecl, ImmutableArray<ITypeSymbol> typeArgs)
         {
-            this.symbolFactory = symbolFactory;            
+            this.symbolFactory = symbolFactory;
             this.outer = outer;
             this.decl = structDecl;
             this.typeArgs = typeArgs;
@@ -56,10 +57,10 @@ namespace Gum.Analysis
 
             throw new UnreachableCodeException();
         }
-        
+
         SymbolQueryResult QueryMember_Func(M.Name memberName, int typeParamCount)
         {
-            var funcsBuilder = ImmutableArray.CreateBuilder<Func<ImmutableArray<ITypeSymbol>, StructMemberFuncSymbol>>();
+            var funcsBuilder = ImmutableArray.CreateBuilder<DeclAndConstructor<StructMemberFuncDeclSymbol, StructMemberFuncSymbol>>();
 
             bool bHaveInstance = false;
             bool bHaveStatic = false;
@@ -74,8 +75,13 @@ namespace Gum.Analysis
 
                     bHaveInstance |= !bStaticFunc;
                     bHaveStatic |= bStaticFunc;
-                    
-                    funcsBuilder.Add(typeArgs => symbolFactory.MakeStructMemberFunc(this, memberFuncDecl, typeArgs));
+
+                    var dac = new DeclAndConstructor<StructMemberFuncDeclSymbol, StructMemberFuncSymbol>(
+                        memberFuncDecl, 
+                        typeArgs => symbolFactory.MakeStructMemberFunc(this, memberFuncDecl, typeArgs)
+                    );
+
+                    funcsBuilder.Add(dac);
                 }
             }
 
@@ -87,10 +93,10 @@ namespace Gum.Analysis
             if (bHaveInstance && bHaveStatic)
                 return SymbolQueryResult.Error.MultipleCandidates.Instance;
 
-            return new SymbolQueryResult.StructMemberFuncs(funcsBuilder.ToImmutable()); 
+            return new SymbolQueryResult.StructMemberFuncs(funcsBuilder.ToImmutable());
             // new NestedItemValueOuter(this), funcsBuilder.ToImmutable(), bHaveInstance);
         }
-        
+
         SymbolQueryResult QueryMember_Var(M.Name memberName, int typeParamCount)
         {
             var candidates = new Candidates<SymbolQueryResult.StructMemberVar>();
@@ -131,17 +137,6 @@ namespace Gum.Analysis
 
         public SymbolQueryResult QueryMember(M.Name memberName, int typeParamCount)
         {
-            if (memberName.Equals(M.Name.Constructor))
-            {
-                // TODO: Constructor를 GetMember로 가져오는것이 맞는가??
-                var constructors = ImmutableArray.CreateBuilder<StructConstructorSymbol>();
-                
-                foreach(var constructorDecl in decl.GetConstructors())
-                    constructors.Add(symbolFactory.MakeStructConstructor(this, constructorDecl));
-
-                return new SymbolQueryResult.StructConstructors(constructors.ToImmutable());
-            }
-
             // TODO: caching
             var results = new List<SymbolQueryResult.Valid>();
 
@@ -158,7 +153,7 @@ namespace Gum.Analysis
             // error, notfound, found
             var varResult = QueryMember_Var(memberName, typeParamCount);
             if (varResult is SymbolQueryResult.Error) return varResult;
-            if (varResult is SymbolQueryResult.Valid varMemberResult) results.Add(varMemberResult);            
+            if (varResult is SymbolQueryResult.Valid varMemberResult) results.Add(varMemberResult);
 
             if (1 < results.Count)
                 return SymbolQueryResult.Error.MultipleCandidates.Instance;
@@ -182,7 +177,7 @@ namespace Gum.Analysis
 
             return null;
         }
-        
+
         public StructSymbol Apply(TypeEnv typeEnv)
         {
             // [X<00T>.Y<10U>.Z<20V>].Apply([00 => int, 10 => short, 20 => string])
@@ -211,8 +206,8 @@ namespace Gum.Analysis
         public ISymbolNode? GetOuter()
         {
             return outer;
-        }        
-        
+        }
+
         ISymbolNode ISymbolNode.Apply(TypeEnv typeEnv) => Apply(typeEnv);
         IDeclSymbolNode ISymbolNode.GetDeclSymbolNode() => GetDeclSymbolNode();
         ITypeDeclSymbol ITypeSymbol.GetDeclSymbolNode() => GetDeclSymbolNode();
@@ -230,6 +225,22 @@ namespace Gum.Analysis
         public void Apply(ITypeSymbolVisitor visitor)
         {
             visitor.VisitStruct(this);
+        }
+
+        public int GetConstructorCount()
+        {
+            return decl.GetConstructorCount();
+        }
+
+        public StructConstructorSymbol GetConstructor(int index)
+        {
+            var constructorDecl = decl.GetConstructor(index);
+            return symbolFactory.MakeStructConstructor(this, constructorDecl);
+        }
+
+        public StructDeclSymbol GetDecl()
+        {
+            return decl;
         }
     }
 }

@@ -68,21 +68,6 @@ namespace Gum.Analysis
             return decl.GetParameterCount();
         }
 
-        public bool CheckAccess() // user는 지금 compilation되고 있으므로 internal이다
-        {
-            var accessModifier = decl.GetAccessModifier();
-
-            switch (accessModifier)
-            {
-                case M.AccessModifier.Public: return true;
-                case M.AccessModifier.Protected: throw new UnreachableCodeException(); // global에 이런게 나올수 없다
-                case M.AccessModifier.Private:
-                    return decl.IsInternal();
-
-                default: throw new UnreachableCodeException();
-            }
-        }
-
         public ISymbolNode? GetOuter()
         {
             return outer;

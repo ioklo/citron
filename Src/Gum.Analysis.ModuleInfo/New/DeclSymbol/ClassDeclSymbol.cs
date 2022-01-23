@@ -18,10 +18,10 @@ namespace Gum.Analysis
     // outer = new StructDecl(innerClass);
 
     [ImplementIEquatable]
-    public partial class ClassDeclSymbol : ITypeDeclSymbol, IDeclSymbolNode
+    public partial class ClassDeclSymbol : ITypeDeclSymbol
     {
         IHolder<ITypeDeclSymbolContainer> containerHolder;
-
+        
         M.Name name;
         ImmutableArray<string> typeParams;
         IHolder<ImmutableArray<InterfaceSymbol>> interfacesHolder;
@@ -189,6 +189,11 @@ namespace Gum.Analysis
             }
 
             return null;
+        }
+
+        public M.AccessModifier GetAccessModifier()
+        {
+            return containerHolder.GetValue().GetAccessModifier();
         }
     }
 }

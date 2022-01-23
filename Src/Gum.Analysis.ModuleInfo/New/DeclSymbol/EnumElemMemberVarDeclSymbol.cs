@@ -42,5 +42,10 @@ namespace Gum.Analysis
         {
             visitor.VisitEnumElemMemberVar(this);
         }
+
+        public M.AccessModifier GetAccessModifier()
+        {
+            return M.AccessModifier.Public;
+        }
     }
 }

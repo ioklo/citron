@@ -9,5 +9,6 @@
         void VisitStruct(StructSymbol symbol);
         void VisitVoid(VoidSymbol symbol);
         void VisitLambda(LambdaSymbol symbol);
+        void VisitTuple(TupleSymbol symbol);
     }
 }

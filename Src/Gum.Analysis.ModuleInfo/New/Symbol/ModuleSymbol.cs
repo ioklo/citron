@@ -64,10 +64,15 @@ namespace Gum.Analysis
             if (memberTypeDecl != null)
                 return SymbolQueryResultBuilder.Build(memberTypeDecl, this, factory);
 
-            var builder = ImmutableArray.CreateBuilder<Func<ImmutableArray<ITypeSymbol>, GlobalFuncSymbol>>();
+            var builder = ImmutableArray.CreateBuilder<DeclAndConstructor<GlobalFuncDeclSymbol, GlobalFuncSymbol>>();
             foreach (var memberFunc in decl.GetFuncs(memberName, typeParamCount))
             {
-                builder.Add(typeArgs => factory.MakeGlobalFunc(this, memberFunc, typeArgs));
+                var dac = new DeclAndConstructor<GlobalFuncDeclSymbol, GlobalFuncSymbol>(
+                    memberFunc,
+                    typeArgs => factory.MakeGlobalFunc(this, memberFunc, typeArgs)
+                );
+
+                builder.Add(dac);
             }
 
             // 여러개 있을 수 있기때문에 MultipleCandidates를 리턴하지 않는다

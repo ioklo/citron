@@ -23,6 +23,7 @@ namespace Gum.IR0Translator
             ImmutableArray<R.CallableMemberDecl> GetCallableMemberDecls();
 
             R.Name.Anonymous NewAnonymousName();
+            ISymbolNode GetThisNode();
         }
 
         struct AnonymousIdComponent

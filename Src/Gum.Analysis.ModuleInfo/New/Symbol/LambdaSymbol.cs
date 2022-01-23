@@ -38,6 +38,11 @@ namespace Gum.Analysis
         {
             return outerHolder.GetValue();
         }
+
+        public M.AccessModifier GetAccessModifier()
+        {
+            return M.AccessModifier.Private; // 
+        }
     }
 
     [AutoConstructor]
@@ -124,6 +129,11 @@ namespace Gum.Analysis
         public ImmutableArray<LambdaMemberVarDeclSymbol> GetMemberVars()
         {
             return memberVars;
+        }
+
+        public M.AccessModifier GetAccessModifier()
+        {
+            return M.AccessModifier.Public;
         }
     }
 

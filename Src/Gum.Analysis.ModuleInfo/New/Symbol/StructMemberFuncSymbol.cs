@@ -1,5 +1,7 @@
 ﻿using Gum.Collections;
+using Gum.Infra;
 using System;
+using System.Diagnostics;
 using M = Gum.CompileTime;
 
 namespace Gum.Analysis
@@ -73,6 +75,11 @@ namespace Gum.Analysis
         {
             var @return = decl.GetReturn();
             return @return.Apply(typeEnv);
+        }
+
+        public bool IsStatic()
+        {
+            return decl.IsStatic();
         }
     }
 }

@@ -53,5 +53,10 @@ namespace Gum.Analysis
 
             return declType.Apply(typeEnv);
         }
+
+        public bool IsStatic()
+        {
+            return decl.IsStatic();
+        }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Gum.Collections;
+using Gum.Infra;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -32,10 +33,20 @@ namespace Gum.Analysis
             return new ClassSymbol(this, outer, decl, typeArgs);
         }
 
+        public TupleMemberVarSymbol MakeTupleMemberVar(IHolder<TupleSymbol> outerHolder, ITypeSymbol declType, string? name, int index)
+        {
+            return new TupleMemberVarSymbol(this, outerHolder, declType, name, index);
+        }
+
         public ClassConstructorSymbol MakeClassConstructor(ClassSymbol @class, ClassConstructorDeclSymbol decl)
         {
             Debug.Assert(@class.GetDeclSymbolNode() == decl.GetOuterDeclNode());
             return new ClassConstructorSymbol(this, @class, decl);
+        }
+
+        public TupleSymbol MakeTuple(ImmutableArray<TupleMemberVarSymbol> memberVars)
+        {
+            return new TupleSymbol(this, memberVars);
         }
 
         public InterfaceSymbol MakeInterface(ISymbolNode outer, InterfaceDeclSymbol decl, ImmutableArray<ITypeSymbol> typeArgs)

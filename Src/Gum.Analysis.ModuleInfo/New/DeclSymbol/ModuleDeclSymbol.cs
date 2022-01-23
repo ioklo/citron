@@ -75,5 +75,10 @@ namespace Gum.Analysis
         {
             visitor.VisitModule(this);
         }
+
+        public M.AccessModifier GetAccessModifier()
+        {
+            return M.AccessModifier.Public;
+        }
     }
 }

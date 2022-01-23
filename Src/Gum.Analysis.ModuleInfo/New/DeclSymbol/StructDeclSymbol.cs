@@ -1,17 +1,18 @@
-﻿using Gum.Analysis;
-using Gum.Collections;
-using Pretune;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using M = Gum.CompileTime;
 
+using Gum.Analysis;
+using Gum.Collections;
 using Gum.Infra;
+
+using Pretune;
+using M = Gum.CompileTime;
 
 namespace Gum.Analysis
 {
     [ImplementIEquatable]
-    public partial class StructDeclSymbol : ITypeDeclSymbol, IDeclSymbolNode
+    public partial class StructDeclSymbol : ITypeDeclSymbol
     {
         IHolder<ITypeDeclSymbolContainer> containerHolder;
 
@@ -155,6 +156,21 @@ namespace Gum.Analysis
         public void Apply(IDeclSymbolNodeVisitor visitor)
         {
             visitor.VisitStruct(this);
+        }
+
+        public int GetConstructorCount()
+        {
+            return constructorsHolder.GetValue().Length;
+        }
+
+        public StructConstructorDeclSymbol GetConstructor(int index)
+        {
+            return constructorsHolder.GetValue()[index];
+        }
+
+        public M.AccessModifier GetAccessModifier()
+        {
+            return containerHolder.GetValue().GetAccessModifier();
         }
     }
 }

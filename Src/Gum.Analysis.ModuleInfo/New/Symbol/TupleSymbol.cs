@@ -1,43 +1,70 @@
 ﻿using System;
 using Gum.Collections;
+using M = Gum.CompileTime;
 using Pretune;
 
 namespace Gum.Analysis
 {
-    [AutoConstructor]
-    public partial class TupleSymbol : ITypeSymbol
+    public class TupleSymbol : ITypeSymbol
     {
-        TupleDeclSymbol decl;
+        SymbolFactory factory;
+        ImmutableArray<TupleMemberVarSymbol> memberVars;
 
-        public ImmutableArray<(ITypeSymbol Type, string? Name)> Elems { get; }
+        ITypeSymbol ITypeSymbol.Apply(TypeEnv typeEnv) => Apply(typeEnv);
+        ISymbolNode ISymbolNode.Apply(TypeEnv typeEnv) => Apply(typeEnv);
+        IDeclSymbolNode? ISymbolNode.GetDeclSymbolNode() => GetDeclSymbolNode();
 
-        public override ITypeSymbol Apply(TypeEnv typeEnv)
-        {   
-            throw new NotImplementedException();
+        internal TupleSymbol(SymbolFactory factory, ImmutableArray<TupleMemberVarSymbol> memberVars)
+        {
+            this.factory = factory;            
+            this.memberVars = memberVars;
         }
 
-        public override R.Path GetRPath()
+        public TupleSymbol Apply(TypeEnv typeEnv)
         {
-            var builder = ImmutableArray.CreateBuilder<R.TupleTypeElem>(Elems.Length);
-            foreach(var elem in Elems)
-            {
-                var rpath = elem.Type.GetRPath();
-                if (elem.Name == null)
-                    throw new NotImplementedException(); // unnamed tuple
-                var name = elem.Name;
+            var appliedMemberVars = ImmutableArray.CreateRange(memberVars, memberVar => memberVar.Apply(typeEnv));
+            return factory.MakeTuple(appliedMemberVars);
+        }
 
-                builder.Add(new R.TupleTypeElem(rpath, new R.Name.Normal(name)));
+        public void Apply(ITypeSymbolVisitor visitor)
+        {
+            visitor.VisitTuple(this);
+        }
+
+        public ITypeDeclSymbol? GetDeclSymbolNode()
+        {
+            return null;
+        }
+
+        public ISymbolNode? GetOuter()
+        {
+            return null;
+        }
+
+        public ImmutableArray<ITypeSymbol> GetTypeArgs()
+        {
+            return default;
+        }
+
+        public TypeEnv GetTypeEnv()
+        {
+            return TypeEnv.Empty;
+        }
+
+        public SymbolQueryResult QueryMember(M.Name memberName, int typeParamCount)
+        {
+            foreach(var memberVar in memberVars)
+            {
+                if (memberName.Equals(memberVar.GetName()))
+                {
+                    if (typeParamCount != 0)
+                        return SymbolQueryResult.Error.VarWithTypeArg.Instance;
+
+                    return new SymbolQueryResult.TupleMemberVar(memberVar);
+                }
             }
 
-            return ritemFactory.MakeTupleType(builder.MoveToImmutable());
+            return SymbolQueryResult.NotFound.Instance;
         }
-
-        public override int GetTotalTypeParamCount()
-        {
-            return 0;
-        }
-
-        public override R.Loc MakeMemberLoc(R.Loc instance, R.Path.Nested member)
-            => throw new NotImplementedException();
     }
 }

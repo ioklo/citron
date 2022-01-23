@@ -93,52 +93,5 @@ namespace Gum.IR0Translator
 
             return new R.Param(rparamKind, param.Type.MakeRPath(), rname);
         }
-
-        class MemberLocVisitor : ITypeSymbolVisitor
-        {
-            R.Loc instance;
-            R.Path.Nested member;            
-            public R.Loc? Result { get; private set; }
-
-            public MemberLocVisitor(R.Loc instance, R.Path.Nested member)
-            {
-                this.instance = instance;
-                this.member = member;
-            }
-
-            public void VisitEnumElem(EnumElemSymbol symbol)
-            {
-                Result = new R.EnumElemMemberLoc(instance, member);
-            }
-
-            public void VisitClass(ClassSymbol symbol)
-            {
-                Result = new R.ClassMemberLoc(instance, member);                
-            }
-
-            public void VisitEnum(EnumSymbol symbol)
-            {
-                throw new NotImplementedException(); // 에러 처리
-            }
-
-            public void VisitInterface(InterfaceSymbol symbol)
-            {
-                throw new NotImplementedException(); // 에러 처리
-            }
-
-            public void VisitStruct(StructSymbol symbol)
-            {
-                Result = new R.StructMemberLoc(instance, member);
-            }
-        }
-
-        public static R.Loc MakeMemberLoc(this ITypeSymbol typeSymbol, R.Loc instance, R.Path.Nested member)
-        {
-            var visitor = new MemberLocVisitor(instance, member);
-            typeSymbol.Apply(visitor);
-            Debug.Assert(visitor.Result != null);
-
-            return visitor.Result;
-        }
     }
 }

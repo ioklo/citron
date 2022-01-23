@@ -30,25 +30,22 @@ namespace Gum.Analysis
         }
 
         public abstract record Valid : SymbolQueryResult;
-        
+
         // ItemValue류 대신에 => 아직 정보가 부족해서 그랬다
         // public record Type(ItemValueOuter Outer, IModuleTypeDecl TypeInfo) : Valid;
         // public record Type(Func<ImmutableArray<ITypeSymbol>, ITypeSymbolNode> SymbolConstructor) : Valid;
         //public record Constructors(NormalTypeValue Outer, ImmutableArray<ConstructorDeclSymbol> ConstructorInfos) : Valid;
-        //public record Funcs(ItemValueOuter Outer, ImmutableArray<IModuleFuncDecl> FuncInfos, bool IsInstanceFunc) : Valid;
-
+        //public record Funcs(ItemValueOuter Outer, ImmutableArray<IModuleFuncDecl> FuncInfos, bool IsInstanceFunc) : Valid;       
+        
         // 검색으로 나올 수 있는 종류들
-
-        public record GlobalFuncs(ImmutableArray<Func<ImmutableArray<ITypeSymbol>, GlobalFuncSymbol>> FuncConstructors) : Valid;
+        public record GlobalFuncs(ImmutableArray<DeclAndConstructor<GlobalFuncDeclSymbol, GlobalFuncSymbol>> Infos) : Valid;
 
         public record Class(Func<ImmutableArray<ITypeSymbol>, ClassSymbol> ClassConstructor) : Valid;
-        public record ClassConstructors(ImmutableArray<ClassConstructorSymbol> Constructors) : Valid; // typeArgs가 없으니 확정
-        public record ClassMemberFuncs(ImmutableArray<Func<ImmutableArray<ITypeSymbol>, ClassMemberFuncSymbol>> FuncConstructors) : Valid;
+        public record ClassMemberFuncs(ImmutableArray<DeclAndConstructor<ClassMemberFuncDeclSymbol, ClassMemberFuncSymbol>> Infos) : Valid;
         public record ClassMemberVar(ClassMemberVarSymbol Var) : Valid;
 
-        public record Struct(Func<ImmutableArray<ITypeSymbol>, StructSymbol> StructConstructor) : Valid;
-        public record StructConstructors(ImmutableArray<StructConstructorSymbol> Constructors) : Valid;
-        public record StructMemberFuncs(ImmutableArray<Func<ImmutableArray<ITypeSymbol>, StructMemberFuncSymbol>> FuncConstructors) : Valid;
+        public record Struct(Func<ImmutableArray<ITypeSymbol>, StructSymbol> StructConstructor) : Valid;        
+        public record StructMemberFuncs(ImmutableArray<DeclAndConstructor<StructMemberFuncDeclSymbol, StructMemberFuncSymbol>> Infos) : Valid;
         public record StructMemberVar(StructMemberVarSymbol Var) : Valid;
 
         public record Enum(Func<ImmutableArray<ITypeSymbol>, EnumSymbol> EnumConstructor) : Valid;
@@ -57,5 +54,7 @@ namespace Gum.Analysis
 
         public record Lambda(LambdaSymbol Symbol) : Valid;
         public record LambdaMemberVar(LambdaMemberVarSymbol Symbol) : Valid;
+
+        public record TupleMemberVar(TupleMemberVarSymbol Symbol) : Valid;
     }
 }

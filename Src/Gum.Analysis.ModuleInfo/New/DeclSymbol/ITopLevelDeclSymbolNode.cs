@@ -1,4 +1,5 @@
-﻿using M = Gum.CompileTime;
+﻿using Gum.CompileTime;
+using M = Gum.CompileTime;
 
 namespace Gum.Analysis
 {

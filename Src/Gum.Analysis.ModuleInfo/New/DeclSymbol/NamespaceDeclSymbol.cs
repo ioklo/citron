@@ -62,5 +62,10 @@ namespace Gum.Analysis
         {
             return dict.GetFuncs(name, minTypeParamCount);
         }
+
+        public M.AccessModifier GetAccessModifier()
+        {
+            return M.AccessModifier.Public; // TODO: private으로 지정할 수 있을까
+        }
     }
 }

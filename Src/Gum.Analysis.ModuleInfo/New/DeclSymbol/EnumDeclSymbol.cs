@@ -6,7 +6,7 @@ using M = Gum.CompileTime;
 
 namespace Gum.Analysis
 {
-    public partial class EnumDeclSymbol : ITypeDeclSymbol, IDeclSymbolNode
+    public partial class EnumDeclSymbol : ITypeDeclSymbol
     {
         IHolder<ITypeDeclSymbolContainer> containerHolder;
 
@@ -77,6 +77,11 @@ namespace Gum.Analysis
         public void Apply(IDeclSymbolNodeVisitor visitor)
         {
             visitor.VisitEnum(this);
+        }
+
+        public M.AccessModifier GetAccessModifier()
+        {
+            return containerHolder.GetValue().GetAccessModifier();
         }
     }
 }

@@ -41,5 +41,10 @@ namespace Gum.Analysis
         {
             typeDecl.Apply(visitor);
         }
+
+        public M.AccessModifier GetAccessModifier()
+        {
+            return accessModifier;
+        }
     }
 }

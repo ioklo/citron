@@ -28,6 +28,8 @@ namespace Gum.Analysis
             {
                 var outer = LoadPath(moduleDecl, path.Outer);
                 var outerDecl = outer.GetDeclSymbolNode();
+                if (outerDecl == null)
+                    throw new NotImplementedException(); // 에러 처리
 
                 var decl = outerDecl.GetMemberDeclNode(path.Name, path.TypeArgs.Length, path.ParamIds);
                 if (decl == null)

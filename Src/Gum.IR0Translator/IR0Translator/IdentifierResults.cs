@@ -13,7 +13,13 @@ namespace Gum.IR0Translator
     // 분석 중에 나타나는 Identifier들의 정보
     abstract record IdentifierResult
     {
-        // Error, Valid, NotFound
+        // NotFound, Error, Valid
+        public record NotFound : IdentifierResult
+        {
+            public static readonly NotFound Instance = new NotFound();
+            NotFound() { }
+        }
+
         public abstract record Error : IdentifierResult 
         {
             // TODO: 추후 에러 메세지를 자세하게 만들게 하기 위해 singleton이 아니게 될 수 있다
@@ -66,28 +72,21 @@ namespace Gum.IR0Translator
         public record LocalVarOutsideLambda(bool IsRef, ITypeSymbol TypeSymbol, string VarName) : Valid;
         public record GlobalVar(bool IsRef, ITypeSymbol TypeSymbol, string VarName) : Valid;
 
-        public record GlobalFuncs(ImmutableArray<Func<ImmutableArray<ITypeSymbol>, GlobalFuncSymbol>> FuncConstructors) : Valid;
+        public record GlobalFuncs(SymbolQueryResult.GlobalFuncs QueryResult, ImmutableArray<ITypeSymbol> TypeArgsForMatch) : Valid;
             
         // T
         public record Class(ClassSymbol Symbol) : Valid;
-        public record ClassMemberFuncs(ImmutableArray<Func<ImmutableArray<ITypeSymbol>, ClassMemberFuncSymbol>> FuncConstructors) : Valid;
+        public record ClassMemberFuncs(SymbolQueryResult.ClassMemberFuncs QueryResult, ImmutableArray<ITypeSymbol> TypeArgsForMatch) : Valid;
         public record ClassMemberVar(ClassMemberVarSymbol Symbol) : Valid;
 
         public record Struct(StructSymbol Symbol) : Valid;
-        public record StructMemberFuncs(ImmutableArray<Func<ImmutableArray<ITypeSymbol>, StructMemberFuncSymbol>> FuncConstructors) : Valid;
+        public record StructMemberFuncs(SymbolQueryResult.StructMemberFuncs QueryResult, ImmutableArray<ITypeSymbol> TypeArgsForMatch) : Valid;
         public record StructMemberVar(StructMemberVarSymbol Symbol) : Valid;
 
         public record Enum(EnumSymbol Symbol) : Valid;
 
         // First => E.First
         public record EnumElem(EnumElemSymbol EnumElemSymbol) : Valid;
-
-        public record NotFound : IdentifierResult
-        {
-            public static readonly NotFound Instance = new NotFound();
-            NotFound() { }
-        }
-
     }       
     
     

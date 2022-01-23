@@ -92,11 +92,8 @@ namespace Gum.IR0Translator
                     case SymbolQueryResult.Class classResult:
                         return new IdentifierResult.Class(classResult.ClassConstructor.Invoke(typeArgs));
 
-                    case SymbolQueryResult.ClassConstructors classConstructorsResult:
-                        throw new UnreachableCodeException(); // 이름으로 참조 불가능
-
                     case SymbolQueryResult.ClassMemberFuncs classMemberFuncsResult:
-                        return new IdentifierResult.ClassMemberFuncs(classMemberFuncsResult.FuncConstructors);
+                        return new IdentifierResult.ClassMemberFuncs(classMemberFuncsResult, typeArgs);
 
                     case SymbolQueryResult.ClassMemberVar classMemberVarResult:
                         return new IdentifierResult.ClassMemberVar(classMemberVarResult.Var);
@@ -111,7 +108,7 @@ namespace Gum.IR0Translator
                         throw new UnreachableCodeException(); // 이름으로 참조 불가능                                                              
 
                     case SymbolQueryResult.StructMemberFuncs structMemberFuncsResult:
-                        return new IdentifierResult.StructMemberFuncs(structMemberFuncsResult.FuncConstructors);
+                        return new IdentifierResult.StructMemberFuncs(structMemberFuncsResult, typeArgs);
 
                     case SymbolQueryResult.StructMemberVar structMemberVarResult:
                         return new IdentifierResult.StructMemberVar(structMemberVarResult.Var);
@@ -163,19 +160,17 @@ namespace Gum.IR0Translator
                         return new IdentifierResult.Enum(enumResult.EnumConstructor.Invoke(typeArgs));
 
                     case SymbolQueryResult.GlobalFuncs globalFuncsResult:
-                        return new IdentifierResult.GlobalFuncs(globalFuncsResult.FuncConstructors);
+                        return new IdentifierResult.GlobalFuncs(globalFuncsResult, typeArgs);
 
                     case SymbolQueryResult.EnumElem enumElemResult:                        
                         return new IdentifierResult.EnumElem(enumElemResult.Symbol);
 
-                    // 리턴될 수 없는 것들
+                    // GlobalItem이 아니라서 리턴될 수 없는 것들
                     case SymbolQueryResult.ClassMemberFuncs:
-                    case SymbolQueryResult.ClassMemberVar:
-                    case SymbolQueryResult.ClassConstructors:
+                    case SymbolQueryResult.ClassMemberVar:                    
                     case SymbolQueryResult.StructMemberFuncs:
-                    case SymbolQueryResult.StructMemberVar:
-                    case SymbolQueryResult.StructConstructors:
-                        throw new UnreachableCodeException(); // global item도 아닐뿐더러, 이름으로 참조가 불가능하다
+                    case SymbolQueryResult.StructMemberVar:                    
+                        throw new UnreachableCodeException();
 
                     // 빼먹은 것들 트랩
                     default:

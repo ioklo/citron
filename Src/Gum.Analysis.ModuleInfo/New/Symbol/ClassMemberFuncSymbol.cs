@@ -63,33 +63,6 @@ namespace Gum.Analysis
             var appliedTypeArgs = ImmutableArray.CreateRange(typeArgs, typeArg => typeArg.Apply(typeEnv));
             return factory.MakeClassMemberFunc(appliedOuter, decl, appliedTypeArgs);
         }
-        
-        public bool CheckAccess(ITypeSymbol? userType)
-        {
-            var accessModifier = decl.GetAccessModifier();
-            
-            switch (accessModifier)
-            {
-                case M.AccessModifier.Public: return true;
-                case M.AccessModifier.Protected: throw new NotImplementedException();
-                case M.AccessModifier.Private:
-                    {
-                        // NOTICE: ConstructorValue, MemberVarValue에도 같은 코드가 있다 
-                        if (userType == null) return false;
-
-                        // decl끼리 비교한다
-                        var outerDecl = outer.GetDeclSymbolNode();
-                        var userTypeDecl = userType.GetDeclSymbolNode();
-
-                        if (userTypeDecl.Equals(outerDecl))
-                            return true;
-
-                        return userTypeDecl.IsDescendantOf(outerDecl);
-                    }
-
-                default: throw new UnreachableCodeException();
-            }
-        }
 
         public ISymbolNode? GetOuter()
         {

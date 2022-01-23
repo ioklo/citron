@@ -129,7 +129,7 @@ namespace Gum.IR0Translator
                         throw new UnreachableCodeException();
                     }
 
-                    if (!constructor.CheckAccess(classSymbol))
+                    if (!classSymbol.CanAccess(constructor))
                         globalContext.AddFatalError(A2504_ClassDecl_CannotAccessBaseClassConstructor, nodeForErrorReport);
 
                     // no argument
@@ -166,7 +166,7 @@ namespace Gum.IR0Translator
                             var baseConstructor = baseConstructors[match.Index];
                             Debug.Assert(match.TypeArgs.Length == 0);
 
-                            if (!baseConstructor.CheckAccess(classSymbol))
+                            if (!classSymbol.CanAccess(baseConstructor))
                                 globalContext.AddFatalError(A2504_ClassDecl_CannotAccessBaseClassConstructor, nodeForErrorReport);
 
                             return new R.ConstructorBaseCallInfo(baseConstructor.MakeRPath().ParamHash, match.Args);

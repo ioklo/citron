@@ -54,5 +54,15 @@ namespace Gum.Analysis
         {
             visitor.VisitClassMemberVar(this);
         }
+
+        public bool IsStatic()
+        {
+            return bStatic;
+        }
+
+        public M.AccessModifier GetAccessModifier()
+        {
+            return accessModifier;
+        }
     }
 }

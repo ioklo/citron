@@ -12,7 +12,7 @@ using M = Gum.CompileTime;
 namespace Gum.Analysis
 {
     [AutoConstructor]
-    public partial class InterfaceDeclSymbol : ITypeDeclSymbol, IDeclSymbolNode
+    public partial class InterfaceDeclSymbol : ITypeDeclSymbol
     {
         IHolder<ITypeDeclSymbolContainer> containerHolder;
 
@@ -47,6 +47,11 @@ namespace Gum.Analysis
         public void Apply(IDeclSymbolNodeVisitor visitor)
         {
             visitor.VisitInterface(this);
+        }
+
+        public M.AccessModifier GetAccessModifier()
+        {
+            return containerHolder.GetValue().GetAccessModifier();
         }
     }
 }

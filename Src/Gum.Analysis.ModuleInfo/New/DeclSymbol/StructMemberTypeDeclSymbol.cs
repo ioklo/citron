@@ -1,7 +1,9 @@
-﻿using Gum.Collections;
+﻿using System;
+
+using Gum.Collections;
 using Gum.Infra;
 using Pretune;
-using System;
+
 using M = Gum.CompileTime;
 
 namespace Gum.Analysis
@@ -40,7 +42,9 @@ namespace Gum.Analysis
             typeDecl.Apply(visitor);
         }
 
-        
-        
+        public M.AccessModifier GetAccessModifier()
+        {
+            return accessModifier;
+        }
     }
 }

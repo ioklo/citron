@@ -1,5 +1,7 @@
 ﻿using Gum.Collections;
+using Gum.Infra;
 using System;
+using System.Diagnostics;
 using M = Gum.CompileTime;
 
 namespace Gum.Analysis

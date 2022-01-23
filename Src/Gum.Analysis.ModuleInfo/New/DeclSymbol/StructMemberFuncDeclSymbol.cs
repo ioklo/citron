@@ -62,5 +62,10 @@ namespace Gum.Analysis
         {
             return returnHolder.GetValue();
         }
+
+        public M.AccessModifier GetAccessModifier()
+        {
+            return accessModifier;
+        }
     }
 }

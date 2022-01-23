@@ -1,7 +1,9 @@
-﻿using Gum.Collections;
+﻿using System;
+
+using Gum.Collections;
 using Gum.Infra;
 using Pretune;
-using System;
+
 using M = Gum.CompileTime;
 
 namespace Gum.Analysis
@@ -44,6 +46,16 @@ namespace Gum.Analysis
         public void Apply(IDeclSymbolNodeVisitor visitor)
         {
             visitor.VisitStructMemberVar(this);
+        }
+
+        public bool IsStatic()
+        {
+            return bStatic;
+        }
+
+        public M.AccessModifier GetAccessModifier()
+        {
+            return accessModifier;
         }
     }
 }

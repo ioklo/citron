@@ -1,5 +1,6 @@
 ﻿using Gum.Collections;
 using System;
+using System.Diagnostics;
 using M = Gum.CompileTime;
 
 
@@ -22,7 +23,18 @@ namespace Gum.Analysis
         public static int GetTotalTypeParamCount(this ISymbolNode symbol)
         {
             var decl = symbol.GetDeclSymbolNode();
+            if (decl == null) return 0;
+
             return decl.GetTotalTypeParamCount();
+        }
+
+        public static bool CanAccess(this ISymbolNode user, ISymbolNode target)
+        {
+            var targetDecl = target.GetDeclSymbolNode();
+            var userDecl = user.GetDeclSymbolNode();
+            Debug.Assert(targetDecl != null && userDecl != null);
+
+            return userDecl.CanAccess(targetDecl);
         }
         
         public static SymbolId GetSymbolId(this ISymbolNode symbol)
@@ -35,6 +47,8 @@ namespace Gum.Analysis
                 if (outerId is ModuleSymbolId outerModuleId)
                 {
                     var decl = symbol.GetDeclSymbolNode();
+                    Debug.Assert(decl != null); // ModuleSymbolId이기 때문에 무조건 있다
+
                     var declName = decl.GetNodeName();
                     var typeArgIds = ImmutableArray.CreateRange(symbol.GetTypeArgs(), typeArg => typeArg.GetSymbolId());                    
 

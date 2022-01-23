@@ -11,6 +11,10 @@ namespace Gum.Analysis
         ClassMemberVarDeclSymbol decl;        
         TypeEnv typeEnv;
 
+        // for return type covariance
+        ISymbolNode ISymbolNode.Apply(TypeEnv typeEnv) => Apply(typeEnv);
+        ISymbolNode? ISymbolNode.GetOuter() => GetOuter();
+
         internal ClassMemberVarSymbol(SymbolFactory factory, ClassSymbol outer, ClassMemberVarDeclSymbol decl)
         {
             this.factory = factory;
@@ -31,7 +35,7 @@ namespace Gum.Analysis
             return decl;
         }
 
-        public ISymbolNode? GetOuter()
+        public ClassSymbol GetOuter()
         {
             return outer;
         }
@@ -40,9 +44,6 @@ namespace Gum.Analysis
         {
             return typeEnv;
         }
-
-        // for return type covariance
-        ISymbolNode ISymbolNode.Apply(TypeEnv typeEnv) => Apply(typeEnv);        
 
         public ImmutableArray<ITypeSymbol> GetTypeArgs()
         {
@@ -55,6 +56,11 @@ namespace Gum.Analysis
             var typeEnv = GetTypeEnv();
 
             return declType.Apply(typeEnv);
+        }
+
+        public bool IsStatic()
+        {
+            return decl.IsStatic();
         }
     }
 }
