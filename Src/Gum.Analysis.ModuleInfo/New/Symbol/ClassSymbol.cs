@@ -191,18 +191,15 @@ namespace Gum.Analysis
             throw new UnreachableCodeException();
         }
 
-        public ImmutableArray<ClassConstructorSymbol> GetConstructors()
+        public ClassConstructorSymbol GetConstructor(int index)
         {
-            var constructorDecls = decl.GetConstructors();
-            var builder = ImmutableArray.CreateBuilder<ClassConstructorSymbol>(constructorDecls.Length);
+            var constructorDecl = decl.GetConstructor(index);
+            return factory.MakeClassConstructor(this, constructorDecl);
+        }
 
-            foreach(var constructorDecl in constructorDecls)
-            {
-                var constructor = factory.MakeClassConstructor(this, constructorDecl);
-                builder.Add(constructor);
-            }
-
-            return builder.MoveToImmutable();
+        public int GetConstructorCount()
+        {
+            return decl.GetConstructorCount();
         }
 
         public SymbolQueryResult QueryMember(M.Name memberName, int typeParamCount)
@@ -289,6 +286,11 @@ namespace Gum.Analysis
             if (memberVarDecl == null) return null;
 
             return factory.MakeClassMemberVar(this, memberVarDecl);
+        }
+
+        public ClassDeclSymbol GetDecl()
+        {
+            return decl;
         }
     }
 }

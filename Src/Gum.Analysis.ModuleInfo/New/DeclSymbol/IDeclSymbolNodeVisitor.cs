@@ -9,9 +9,10 @@
         
         void VisitStruct(StructDeclSymbol structDeclSymbol);
         void VisitStructConstructor(StructConstructorDeclSymbol structConstructorDeclSymbol);
+        
         void VisitStructMemberFunc(StructMemberFuncDeclSymbol structMemberFuncDeclSymbol);
         void VisitStructMemberVar(StructMemberVarDeclSymbol structMemberVarDeclSymbol);
-
+        
         void VisitClass(ClassDeclSymbol classDeclSymbol);
         void VisitClassConstructor(ClassConstructorDeclSymbol classConstructorDeclSymbol);        
         void VisitClassMemberFunc(ClassMemberFuncDeclSymbol classMemberFuncDeclSymbol);

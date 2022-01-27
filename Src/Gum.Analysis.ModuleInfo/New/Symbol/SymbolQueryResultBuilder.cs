@@ -58,10 +58,13 @@ namespace Gum.Analysis
 
         public void VisitLambda(LambdaDeclSymbol lambdaDecl)
         {
-            var outerFunc = outer as IFuncSymbol;
-            Debug.Assert(outerFunc != null);
+            // 람다를 QueryResult로 줄 수 없다
+            throw new UnreachableCodeException();
 
-            result = new SymbolQueryResult.Lambda(symbolFactory.MakeLambda(outerFunc, lambdaDecl));
+            //var outerFunc = outer as IFuncSymbol;
+            //Debug.Assert(outerFunc != null);
+
+            //result = new SymbolQueryResult.Lambda(symbolFactory.MakeLambda(outerFunc, lambdaDecl));
         }
     }
 }

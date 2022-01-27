@@ -5,8 +5,8 @@ using System.Collections.Generic;
 using Gum.Collections;
 using System.Diagnostics;
 using System.Linq;
-using System.Xml.XPath;
 using Gum.Infra;
+using Gum.Analysis;
 
 namespace Gum.IR0
 {   
@@ -20,8 +20,8 @@ namespace Gum.IR0
     public record GlobalVarDeclStmt(ImmutableArray<VarDeclElement> Elems) : Stmt;
     public record LocalVarDeclStmt(LocalVarDecl VarDecl) : Stmt;
     public record IfStmt(Exp Cond, Stmt Body, Stmt? ElseBody) : Stmt;
-    public record IfTestClassStmt(Loc Target, Path TestType, Name VarName, Stmt Body, Stmt? ElseBody) : Stmt;
-    public record IfTestEnumElemStmt(Loc Target, Path.Nested EnumElem, string? VarName, Stmt Body, Stmt? ElseBody) : Stmt;
+    public record IfTestClassStmt(Loc Target, ClassSymbol Class, Name VarName, Stmt Body, Stmt? ElseBody) : Stmt;
+    public record IfTestEnumElemStmt(Loc Target, EnumElemSymbol EnumElem, string? VarName, Stmt Body, Stmt? ElseBody) : Stmt;
     public record ForStmt(ForStmtInitializer? Initializer, Exp? CondExp, Exp? ContinueExp, Stmt Body) : Stmt;
     // singleton
     public record ContinueStmt : Stmt
@@ -61,13 +61,13 @@ namespace Gum.IR0
 
     public record ExpStmt(Exp Exp) : Stmt;
 
-    public record TaskStmt(Path.Nested CapturedStatementDecl) : Stmt;    
+    public record TaskStmt(LambdaSymbol Lambda, Stmt Body) : Stmt;    
 
     public record AwaitStmt(Stmt Body) : Stmt;
     
-    public record AsyncStmt(Path.Nested CapturedStatementDecl) : Stmt;
+    public record AsyncStmt(LambdaSymbol Lambda, Stmt Body) : Stmt;
     
-    public record ForeachStmt(Path ElemType, string ElemName, Loc Iterator, Stmt Body) : Stmt;
+    public record ForeachStmt(ITypeSymbol ElemType, string ElemName, Loc Iterator, Stmt Body) : Stmt;
     public record YieldStmt(Exp Value) : Stmt;
     
     public abstract record DirectiveStmt : Stmt

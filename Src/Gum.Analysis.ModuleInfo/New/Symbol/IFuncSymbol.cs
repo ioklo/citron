@@ -3,6 +3,7 @@
     public interface IFuncSymbol : ISymbolNode
     {
         new IFuncSymbol Apply(TypeEnv typeEnv);
+        new IFuncDeclSymbol GetDeclSymbolNode();
 
         ITypeSymbol? GetOuterType();
 

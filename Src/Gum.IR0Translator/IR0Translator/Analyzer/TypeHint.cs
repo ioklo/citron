@@ -13,10 +13,10 @@ namespace Gum.IR0Translator
         private NoneTypeHint() { }
     }
 
-    class TypeValueTypeHint : TypeHint
+    class TypeSymbolTypeHint : TypeHint
     {
         public ITypeSymbol TypeSymbol { get; }
-        public TypeValueTypeHint(ITypeSymbol typeValue) { TypeSymbol = typeValue; }
+        public TypeSymbolTypeHint(ITypeSymbol typeValue) { TypeSymbol = typeValue; }
     }
 
     // Callable분석에서 쓰인다. E.F()에서 E.F만을 가리켜야 할 때

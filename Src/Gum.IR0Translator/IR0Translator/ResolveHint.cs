@@ -13,7 +13,7 @@ namespace Gum.IR0Translator
 
         public static ResolveHint Make(ITypeSymbol typeValue)
         {
-            return new ResolveHint(new TypeValueTypeHint(typeValue));
+            return new ResolveHint(new TypeSymbolTypeHint(typeValue));
         }
     }
 }

@@ -28,6 +28,7 @@ namespace Gum.Analysis
 
         ISymbolNode ISymbolNode.Apply(TypeEnv typeEnv) => Apply(typeEnv);
         IFuncSymbol IFuncSymbol.Apply(TypeEnv typeEnv) => Apply(typeEnv);
+        IDeclSymbolNode ISymbolNode.GetDeclSymbolNode() => GetDeclSymbolNode();
 
         internal GlobalFuncSymbol(SymbolFactory factory, ITopLevelSymbolNode outer, GlobalFuncDeclSymbol funcDecl, ImmutableArray<ITypeSymbol> typeArgs)
         {
@@ -73,7 +74,7 @@ namespace Gum.Analysis
             return outer;
         }
 
-        public IDeclSymbolNode GetDeclSymbolNode()
+        public IFuncDeclSymbol GetDeclSymbolNode()
         {
             return decl;
         }

@@ -12,6 +12,7 @@ namespace Gum.Analysis
         ClassConstructorDeclSymbol decl;
 
         ISymbolNode ISymbolNode.Apply(TypeEnv typeEnv) => Apply(typeEnv);
+        IDeclSymbolNode ISymbolNode.GetDeclSymbolNode() => GetDeclSymbolNode();
         IFuncSymbol IFuncSymbol.Apply(TypeEnv typeEnv) => Apply(typeEnv);
         ISymbolNode? ISymbolNode.GetOuter() => GetOuter();
 
@@ -39,7 +40,7 @@ namespace Gum.Analysis
             return outer;
         }
 
-        public IDeclSymbolNode GetDeclSymbolNode()
+        public IFuncDeclSymbol GetDeclSymbolNode()
         {
             return decl;
         }

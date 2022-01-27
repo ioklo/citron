@@ -144,10 +144,10 @@ namespace Gum.Analysis
     class NoMemberTypeExpInfo : TypeExpInfo
     {
         TypeExpInfoKind kind;
-        SymbolId? id;
+        SymbolId id;
         S.TypeExp typeExp;
 
-        public NoMemberTypeExpInfo(TypeExpInfoKind kind, SymbolId? id, S.TypeExp typeExp)
+        public NoMemberTypeExpInfo(TypeExpInfoKind kind, SymbolId id, S.TypeExp typeExp)
         {
             this.kind = kind;
             this.id = id;
@@ -165,8 +165,7 @@ namespace Gum.Analysis
         }
 
         public override SymbolId GetSymbolId()
-        {            
-            Debug.Assert(id != null); // null을 실제로 사용할 경우를 알아보기 위해 일부러 넣음
+        {
             return id;
         }
         
@@ -181,7 +180,7 @@ namespace Gum.Analysis
     {
         public static TypeExpInfo Var(S.TypeExp typeExp)
         {
-            return new NoMemberTypeExpInfo(TypeExpInfoKind.Var, null, typeExp);
+            return new NoMemberTypeExpInfo(TypeExpInfoKind.Var, new VarSymbolId(), typeExp);
         }
 
         public static TypeExpInfo Void(S.TypeExp typeExp)

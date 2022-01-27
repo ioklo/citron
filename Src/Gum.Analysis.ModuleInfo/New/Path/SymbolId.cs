@@ -20,6 +20,8 @@ namespace Gum.Analysis
 
     public record VoidSymbolId : SymbolId;    
 
+    public record VarSymbolId : SymbolId;
+
     public static class SymbolIdExtensions
     {
         public static ModuleSymbolId Child(this ModuleSymbolId id, M.Name name, ImmutableArray<SymbolId> typeArgs = default, ImmutableArray<FuncParamId> paramIds = default)

@@ -6,90 +6,68 @@ using M = Gum.CompileTime;
 
 namespace Gum.Analysis
 {
-    //public class NullableDeclSymbol : ITypeDeclSymbol
-    //{
-    //    public void Apply(ITypeDeclSymbolVisitor visitor)
-    //    {
-    //        visitor.VisitNullable(this);
-    //    }
-
-    //    public void Apply(IDeclSymbolNodeVisitor visitor)
-    //    {
-    //        visitor.VisitNullable(this);
-    //    }
-
-    //    public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
-    //    {
-    //        return null;
-    //    }
-
-    //    public DeclSymbolNodeName GetNodeName()
-    //    {
-    //        throw new NotImplementedException();            
-    //    }
-
-    //    public IDeclSymbolNode? GetOuterDeclNode()
-    //    {
-    //        return null;
-    //    }
-    //}
-
     // int?
-    //public class NullableSymbol : ITypeSymbol
-    //{
-    //    SymbolFactory factory;
-    //    ITypeSymbol innerType;
+    public class NullableSymbol : ITypeSymbol
+    {   
+        SymbolFactory factory;
+        ITypeSymbol innerType;
 
-    //    IDeclSymbolNode ISymbolNode.GetDeclSymbolNode() => GetDeclSymbolNode();
-    //    ISymbolNode ISymbolNode.Apply(TypeEnv typeEnv) => Apply(typeEnv);
-    //    ITypeSymbol ITypeSymbol.Apply(TypeEnv typeEnv) => Apply(typeEnv);
+        IDeclSymbolNode? ISymbolNode.GetDeclSymbolNode() => GetDeclSymbolNode();
+        ISymbolNode ISymbolNode.Apply(TypeEnv typeEnv) => Apply(typeEnv);
+        ITypeSymbol ITypeSymbol.Apply(TypeEnv typeEnv) => Apply(typeEnv);
 
-    //    public NullableSymbol(SymbolFactory factory, ITypeSymbol innerType)
-    //    {
-    //        this.factory = factory;
-    //        this.innerType = innerType;
-    //    }
+        internal NullableSymbol(SymbolFactory factory, ITypeSymbol innerType)
+        {
+            this.factory = factory;
+            this.innerType = innerType;
+        }
 
-    //    public ITypeSymbol GetInnerType()
-    //    {
-    //        return innerType;
-    //    }
+        public ITypeSymbol GetInnerType()
+        {
+            return innerType;
+        }
 
-    //    // T? => int?
-    //    public NullableSymbol Apply(TypeEnv typeEnv)
-    //    {
-    //        var appliedInnerType = innerType.Apply(typeEnv);
-    //        return factory.MakeNullable(appliedInnerType);
-    //    }
-        
-    //    public ITypeDeclSymbol GetDeclSymbolNode()
-    //    {
-    //        throw new NotImplementedException();
-    //    }
+        // T? => int?
+        public NullableSymbol Apply(TypeEnv typeEnv)
+        {
+            var appliedInnerType = innerType.Apply(typeEnv);
+            return factory.MakeNullable(appliedInnerType);
+        }
 
-    //    public void Apply(ITypeSymbolVisitor visitor)
-    //    {
-    //        throw new NotImplementedException();
-    //    }
+        public ITypeDeclSymbol? GetDeclSymbolNode()
+        {
+            return null;
+        }
 
-    //    public SymbolQueryResult QueryMember(M.Name memberName, int typeParamCount)
-    //    {
-    //        throw new UnreachableCodeException();
-    //    }
+        public void Apply(ITypeSymbolVisitor visitor)
+        {
+            visitor.VisitNullable(this);
+        }
 
-    //    public ISymbolNode? GetOuter()
-    //    {
-    //        return null;
-    //    }        
+        public SymbolQueryResult QueryMember(M.Name memberName, int typeParamCount)
+        {
+            throw new UnreachableCodeException();
+        }
 
-    //    public TypeEnv GetTypeEnv()
-    //    {
-    //        return default;
-    //    }
+        public ISymbolNode? GetOuter()
+        {
+            return null;
+        }
 
-    //    public ImmutableArray<ITypeSymbol> GetTypeArgs()
-    //    {
-    //        return default;
-    //    }
-    //}
+        public TypeEnv GetTypeEnv()
+        {
+            return default;
+        }
+
+        public ImmutableArray<ITypeSymbol> GetTypeArgs()
+        {
+            return default;
+        }
+
+        public StructConstructorSymbol GetDefaultConstructor()
+        {
+            throw new NotImplementedException();
+            // return new StructConstructorSymbol(factory, )
+        }
+    }
 }

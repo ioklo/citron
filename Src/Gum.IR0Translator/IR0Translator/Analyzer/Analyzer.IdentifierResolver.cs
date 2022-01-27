@@ -214,7 +214,7 @@ namespace Gum.IR0Translator
             {
                 // 힌트가 E고, First가 써져 있으면 E.First를 검색한다
                 // enum 힌트 사용, typeArgs가 있으면 지나간다
-                if (hint.TypeHint is TypeValueTypeHint typeValueHintType && typeValueHintType.TypeSymbol is EnumSymbol enumTypeValue)
+                if (hint.TypeHint is TypeSymbolTypeHint typeValueHintType && typeValueHintType.TypeSymbol is EnumSymbol enumTypeValue)
                 {
                     // First<T> 같은건 없기 때문에 없을때만 검색한다                    
                     var elemTypeValue = enumTypeValue.GetElement(idName);

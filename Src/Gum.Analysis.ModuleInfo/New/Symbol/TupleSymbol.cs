@@ -13,7 +13,7 @@ namespace Gum.Analysis
         ITypeSymbol ITypeSymbol.Apply(TypeEnv typeEnv) => Apply(typeEnv);
         ISymbolNode ISymbolNode.Apply(TypeEnv typeEnv) => Apply(typeEnv);
         IDeclSymbolNode? ISymbolNode.GetDeclSymbolNode() => GetDeclSymbolNode();
-
+        
         internal TupleSymbol(SymbolFactory factory, ImmutableArray<TupleMemberVarSymbol> memberVars)
         {
             this.factory = factory;            

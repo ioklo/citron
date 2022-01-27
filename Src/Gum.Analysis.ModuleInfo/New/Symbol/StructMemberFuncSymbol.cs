@@ -16,6 +16,7 @@ namespace Gum.Analysis
 
         IFuncSymbol IFuncSymbol.Apply(TypeEnv typeEnv) => Apply(typeEnv);
         ISymbolNode ISymbolNode.Apply(TypeEnv typeEnv) => Apply(typeEnv);
+        IDeclSymbolNode ISymbolNode.GetDeclSymbolNode() => GetDeclSymbolNode();
 
         internal StructMemberFuncSymbol(SymbolFactory factory, StructSymbol outer, StructMemberFuncDeclSymbol decl, ImmutableArray<ITypeSymbol> typeArgs)
         {
@@ -46,7 +47,7 @@ namespace Gum.Analysis
             return factory.MakeStructMemberFunc(appliedOuter, decl, appliedTypeArgs);
         }
 
-        public IDeclSymbolNode GetDeclSymbolNode()
+        public IFuncDeclSymbol GetDeclSymbolNode()
         {
             return decl;
         }

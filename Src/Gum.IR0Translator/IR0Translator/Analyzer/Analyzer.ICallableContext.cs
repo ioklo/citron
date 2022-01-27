@@ -2,6 +2,7 @@
 using Gum.Collections;
 using Gum.Infra;
 using R = Gum.IR0;
+using M = Gum.CompileTime;
 
 namespace Gum.IR0Translator
 {
@@ -10,7 +11,6 @@ namespace Gum.IR0Translator
         // 리턴 가능한 블럭의 정보
         interface ICallableContext : IMutable<ICallableContext>
         {
-            R.Path.Normal MakeRPath();
             ITypeSymbol? GetThisType();
 
             LocalVarInfo? GetLocalVarOutsideLambda(string varName);
@@ -22,8 +22,9 @@ namespace Gum.IR0Translator
             void AddCallableMemberDecl(R.CallableMemberDecl lambdaDecl);
             ImmutableArray<R.CallableMemberDecl> GetCallableMemberDecls();
 
-            R.Name.Anonymous NewAnonymousName();
-            ISymbolNode GetThisNode();
+            M.Name.Anonymous NewAnonymousName();
+            IFuncSymbol GetThisNode();
+            void AddLambdaDecl(LambdaDeclSymbol lambdaDecl);
         }
 
         struct AnonymousIdComponent

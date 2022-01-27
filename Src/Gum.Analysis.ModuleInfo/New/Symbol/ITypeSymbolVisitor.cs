@@ -10,5 +10,6 @@
         void VisitVoid(VoidSymbol symbol);
         void VisitLambda(LambdaSymbol symbol);
         void VisitTuple(TupleSymbol symbol);
+        void VisitNullable(NullableSymbol symbol);
     }
 }

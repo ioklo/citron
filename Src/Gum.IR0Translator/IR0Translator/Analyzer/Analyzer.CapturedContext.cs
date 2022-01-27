@@ -2,17 +2,20 @@
 using Gum.Infra;
 using System.Collections.Generic;
 using System.Diagnostics;
-using R = Gum.IR0;
+
 using System.Linq;
 using Gum.Analysis;
+
+using R = Gum.IR0;
+using M = Gum.CompileTime;
+using System;
 
 namespace Gum.IR0Translator
 {
     partial class Analyzer
     {
-        class LambdaContext : ICallableContext
+        class CapturedContext : ICallableContext
         {
-            R.Path.Nested path;
             ITypeSymbol? thisType; // possible,
             LocalContext parentLocalContext;
             ITypeSymbol? retType;
@@ -21,9 +24,8 @@ namespace Gum.IR0Translator
             ImmutableArray<R.CallableMemberDecl> decls;
             AnonymousIdComponent AnonymousIdComponent;
 
-            public LambdaContext(R.Path.Nested path, ITypeSymbol? thisType, LocalContext parentLocalContext, ITypeSymbol? retType)
+            public CapturedContext(ITypeSymbol? thisType, LocalContext parentLocalContext, ITypeSymbol? retType)
             {
-                this.path = path;
                 this.thisType = thisType;
                 this.parentLocalContext = parentLocalContext;
                 this.retType = retType;
@@ -31,9 +33,8 @@ namespace Gum.IR0Translator
                 this.localCaptures = new Dictionary<string, ITypeSymbol>();
             }
 
-            public LambdaContext(LambdaContext other, CloneContext cloneContext)
+            public CapturedContext(CapturedContext other, CloneContext cloneContext)
             {
-                this.path = other.path;
                 this.parentLocalContext = cloneContext.GetClone(other.parentLocalContext);
                 this.retType = other.retType;
                 this.bCaptureThis = other.bCaptureThis;
@@ -44,12 +45,12 @@ namespace Gum.IR0Translator
 
             ICallableContext IMutable<ICallableContext>.Clone(CloneContext context)
             {
-                return new LambdaContext(this, context);
+                return new CapturedContext(this, context);
             }
 
             void IMutable<ICallableContext>.Update(ICallableContext src_callableContext, UpdateContext updateContext)
             {
-                var src = (LambdaContext)src_callableContext;
+                var src = (CapturedContext)src_callableContext;
                 updateContext.Update(this.parentLocalContext, src.parentLocalContext);
 
                 this.localCaptures.Clear();
@@ -62,9 +63,12 @@ namespace Gum.IR0Translator
                 return parentLocalContext.GetLocalVarInfo(varName);
             }
 
-            public ITypeSymbol? GetReturn()
+            public FuncReturn GetReturn()
             {
-                return retType;
+                if (retType == null)
+                    throw new NotImplementedException();
+
+                return new FuncReturn(false, retType);
             }
 
             public void SetRetType(ITypeSymbol retTypeValue)
@@ -85,24 +89,14 @@ namespace Gum.IR0Translator
                 return false; // 아직 sequence lambda 기능이 없으므로
             }
 
-            public ImmutableArray<R.OuterLocalVarInfo> GetCapturedLocalVars()
+            public ImmutableArray<(ITypeSymbol DeclType, M.Name VarName)> GetCapturedLocalVars()
             {
-                return localCaptures.Select(localCapture =>
-                {
-                    var name = localCapture.Key;
-                    var type = localCapture.Value.MakeRPath();
-                    return new R.OuterLocalVarInfo(type, name);
-                }).ToImmutableArray();
+                return localCaptures.Select(localCapture => (localCapture.Value, (M.Name)new M.Name.Normal(localCapture.Key))).ToImmutableArray();
             }
 
             public bool NeedCaptureThis()
             {
                 return bCaptureThis;
-            }
-
-            public R.Path.Normal GetPath()
-            {   
-                return path;
             }
 
             public ITypeSymbol? GetThisType() 
@@ -123,7 +117,12 @@ namespace Gum.IR0Translator
             public R.Name.Anonymous NewAnonymousName()
             {
                 return AnonymousIdComponent.NewAnonymousName();
-            }            
+            }
+
+            public ImmutableArray<FuncParameter> GetParameters()
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }

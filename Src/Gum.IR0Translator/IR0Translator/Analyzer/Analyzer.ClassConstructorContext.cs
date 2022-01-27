@@ -12,9 +12,7 @@ namespace Gum.IR0Translator
     {
         [ImplementIEquatable]
         partial class ClassConstructorContext : ICallableContext
-        {
-            R.Path.Normal ICallableContext.MakeRPath() => MakeRPath();
-
+        {   
             ClassConstructorSymbol symbol;
             ImmutableArray<R.CallableMemberDecl> callableMemberDecls;
             AnonymousIdComponent AnonymousIdComponent;

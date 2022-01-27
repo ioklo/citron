@@ -15,6 +15,9 @@ namespace Gum.CompileTime
         public static readonly Singleton OpInc = new Singleton("OpInc");
         public static readonly Singleton OpDec = new Singleton("OpDec");
 
+        public static readonly Name Nullable = new Singleton("Nullable");
+        public static readonly Name CapturedThis = new Singleton("CapturedThis");
+
         public record Anonymous(int Index) : Name;
         public record ConstructorParam(int Index) : Name;
         public record Normal(string Text) : Name;

@@ -1,153 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 using Gum.Collections;
-using Gum.Infra;
 using Pretune;
 using M = Gum.CompileTime;
 
 namespace Gum.Analysis
 {
-    [AutoConstructor]
-    public partial class LambdaMemberVarDeclSymbol : IDeclSymbolNode
-    {
-        IHolder<LambdaDeclSymbol> outerHolder;
-        ITypeSymbol type;
-        M.Name name;
-
-        public M.Name GetName()
-        {
-            return name;
-        }
-
-        public void Apply(IDeclSymbolNodeVisitor visitor)
-        {
-            visitor.VisitLambdaMemberVar(this);
-        }
-
-        public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
-        {
-            return null;
-        }
-
-        public DeclSymbolNodeName GetNodeName()
-        {
-            return new DeclSymbolNodeName(name, 0, default);
-        }
-
-        public IDeclSymbolNode? GetOuterDeclNode()
-        {
-            return outerHolder.GetValue();
-        }
-
-        public M.AccessModifier GetAccessModifier()
-        {
-            return M.AccessModifier.Private; // 
-        }
-    }
-
-    [AutoConstructor]
-    public partial class LambdaMemberVarSymbol : ISymbolNode
-    {
-        SymbolFactory factory;
-        LambdaSymbol outer;
-        LambdaMemberVarDeclSymbol decl;
-
-        public ISymbolNode Apply(TypeEnv typeEnv)
-        {
-            var appliedOuter = outer.Apply(typeEnv);
-            return factory.MakeLambdaMemberVar(appliedOuter, decl);
-        }
-
-        public IDeclSymbolNode GetDeclSymbolNode()
-        {
-            return decl;
-        }
-
-        public ISymbolNode? GetOuter()
-        {
-            return outer;
-        }
-
-        public ImmutableArray<ITypeSymbol> GetTypeArgs()
-        {
-            return default;
-        }
-
-        public TypeEnv GetTypeEnv()
-        {
-            return outer.GetTypeEnv();
-        }
-    }
-
-    // ITypeSymbol과 IFuncSymbol의 성격을 동시에 가지는데, 그렇다면 ITypeSymbol이 더 일반적이다(함수적 성격은 멤버함수라고 생각하면 된다)
-    [AutoConstructor]
-    public partial class LambdaDeclSymbol : ITypeDeclSymbol
-    {
-        IFuncDeclSymbol outer;
-
-        int anonymousId;
-
-        // Invoke 함수 시그니처
-        FuncReturn @return;
-        ImmutableArray<FuncParameter> parameters;
-
-        // 가지고 있어야 할 멤버 변수들, type, name, ref 여부
-        ImmutableArray<LambdaMemberVarDeclSymbol> memberVars;
-
-        public void Apply(ITypeDeclSymbolVisitor visitor)
-        {
-            visitor.VisitLambda(this);
-        }
-
-        public void Apply(IDeclSymbolNodeVisitor visitor)
-        {
-            visitor.VisitLambda(this);
-        }
-
-        public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
-        {
-            if (typeParamCount != 0 || !paramIds.IsEmpty)
-                return null;
-
-            foreach (var memberVar in memberVars)
-                if (name.Equals(memberVar.GetName()))
-                    return memberVar;
-
-            return null;
-        }
-
-        public DeclSymbolNodeName GetNodeName()
-        {
-            return new DeclSymbolNodeName(new M.Name.Anonymous(anonymousId), 0, default);
-        }
-
-        public IDeclSymbolNode? GetOuterDeclNode()
-        {
-            return outer;
-        }
-
-        public ImmutableArray<LambdaMemberVarDeclSymbol> GetMemberVars()
-        {
-            return memberVars;
-        }
-
-        public M.AccessModifier GetAccessModifier()
-        {
-            return M.AccessModifier.Public;
-        }
-    }
-
     // ArgTypeValues => RetValueTypes
     [AutoConstructor]
-    public partial class LambdaSymbol : ITypeSymbol // , IEquatable<LambdaSymbol>
+    public partial class LambdaSymbol : ITypeSymbol, IFuncSymbol
     {
         SymbolFactory factory;
-        IFuncSymbol outer;
+        IFuncSymbol outer; // IFuncSymbol | ITypeSymbol
         LambdaDeclSymbol decl;
 
-        ISymbolNode ISymbolNode.Apply(TypeEnv typeEnv) => Apply(typeEnv);
-        IDeclSymbolNode ISymbolNode.GetDeclSymbolNode() => GetDeclSymbolNode();
+        ISymbolNode ISymbolNode.Apply(TypeEnv typeEnv) => Apply(typeEnv);        
         ITypeSymbol ITypeSymbol.Apply(TypeEnv typeEnv) => Apply(typeEnv);
+        IFuncSymbol IFuncSymbol.Apply(TypeEnv typeEnv) => Apply(typeEnv);
 
         public LambdaSymbol Apply(TypeEnv typeEnv)
         {
@@ -158,9 +27,19 @@ namespace Gum.Analysis
         public void Apply(ITypeSymbolVisitor visitor)
         {
             visitor.VisitLambda(this);
+        }        
+
+        ITypeDeclSymbol ITypeSymbol.GetDeclSymbolNode()
+        {
+            return decl;
         }
 
-        public ITypeDeclSymbol GetDeclSymbolNode()
+        IFuncDeclSymbol IFuncSymbol.GetDeclSymbolNode()
+        {
+            return decl;
+        }
+
+        IDeclSymbolNode ISymbolNode.GetDeclSymbolNode()
         {
             return decl;
         }
@@ -196,6 +75,27 @@ namespace Gum.Analysis
 
             return SymbolQueryResult.Error.NotFound.Instance;
         }
+        
+        public FuncReturn GetReturn()
+        {
+            return decl.GetReturn();
+        }
+
+        public FuncParameter GetParameter(int index)
+        {
+            var parameter = decl.GetParameter(index);
+            return parameter.Apply(outer.GetTypeEnv());
+        }
+
+        public int GetParameterCount()
+        {
+            return decl.GetParameterCount();
+        }
+
+        public ITypeSymbol? GetOuterType()
+        {
+            return outer as ITypeSymbol;
+        }        
 
         //public LambdaSymbol(RItemFactory ritemFactory, R.Path.Nested lambda, ITypeSymbol ret, ImmutableArray<ParamInfo> parameters)
         //{

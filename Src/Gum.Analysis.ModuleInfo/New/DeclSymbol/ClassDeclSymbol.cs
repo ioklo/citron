@@ -98,12 +98,7 @@ namespace Gum.Analysis
         public ClassSymbol? GetBaseClass()
         {            
             return baseClassHolder.GetValue();
-        }
-        
-        public ImmutableArray<ClassConstructorDeclSymbol> GetConstructors()
-        {
-            return constructorsHolder.GetValue();
-        }
+        }        
 
         public ClassMemberFuncDeclSymbol? GetMemberFunc(M.Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
         {
@@ -194,6 +189,16 @@ namespace Gum.Analysis
         public M.AccessModifier GetAccessModifier()
         {
             return containerHolder.GetValue().GetAccessModifier();
+        }
+
+        public int GetConstructorCount()
+        {
+            return constructorsHolder.GetValue().Length;
+        }
+
+        public ClassConstructorDeclSymbol GetConstructor(int index)
+        {
+            return constructorsHolder.GetValue()[index];
         }
     }
 }

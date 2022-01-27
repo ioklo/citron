@@ -7,7 +7,7 @@ namespace Gum.Analysis
     // "void"
     public class VoidSymbol : ITypeSymbol
     {
-        IDeclSymbolNode ISymbolNode.GetDeclSymbolNode() => GetDeclSymbolNode();
+        IDeclSymbolNode? ISymbolNode.GetDeclSymbolNode() => GetDeclSymbolNode();
         ISymbolNode ISymbolNode.Apply(TypeEnv typeEnv) => Apply(typeEnv);
 
         internal VoidSymbol() { }
@@ -17,9 +17,9 @@ namespace Gum.Analysis
             return this;
         }
         
-        public ITypeDeclSymbol GetDeclSymbolNode()
+        public ITypeDeclSymbol? GetDeclSymbolNode()
         {
-            throw new NotImplementedException(); // void는 decl이 없다
+            return null;
         }
 
         public void Apply(ITypeSymbolVisitor visitor)

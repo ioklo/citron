@@ -10,6 +10,7 @@ using static Gum.IR0Translator.AnalyzeErrorCode;
 
 using S = Gum.Syntax;
 using R = Gum.IR0;
+using M = Gum.CompileTime;
 using Pretune;
 using System.Linq;
 using Gum.Infra;
@@ -137,10 +138,10 @@ namespace Gum.IR0Translator
                 var targetResult = AnalyzeExp_Loc(ifTestStmt.Exp, ResolveHint.None);
                 var testType = globalContext.GetSymbolByTypeExp(ifTestStmt.TestType);                
 
-                if (testType is EnumElemSymbol enumElemType)
+                if (testType is EnumElemSymbol enumElem)
                 {
                     // exact match
-                    if (!targetResult.TypeSymbol.Equals(enumElemType.GetOuter()))
+                    if (!targetResult.TypeSymbol.Equals(enumElem.GetOuter()))
                         globalContext.AddFatalError(A2301_IfTestStmt_CantDowncast, ifTestStmt.Exp);
 
                     // analyze body
@@ -148,7 +149,7 @@ namespace Gum.IR0Translator
                     if (ifTestStmt.VarName != null)
                     {
                         var newAnalyzer = NewAnalyzer();
-                        newAnalyzer.localContext.AddLocalVarInfo(true, enumElemType, ifTestStmt.VarName);
+                        newAnalyzer.localContext.AddLocalVarInfo(true, enumElem, ifTestStmt.VarName);
 
                         bodyResult = newAnalyzer.AnalyzeStmt(ifTestStmt.Body);
                     }
@@ -168,7 +169,7 @@ namespace Gum.IR0Translator
                         elseBodyResult = null;
                     }
 
-                    var rstmt = new R.IfTestEnumElemStmt(targetResult.Result, enumElemType.MakeRPath(), ifTestStmt.VarName, bodyResult.Stmt, elseBodyResult?.Stmt);
+                    var rstmt = new R.IfTestEnumElemStmt(targetResult.Result, enumElem, ifTestStmt.VarName, bodyResult.Stmt, elseBodyResult?.Stmt);
                     return new StmtResult(rstmt);
                 }
                 else
@@ -209,16 +210,16 @@ namespace Gum.IR0Translator
             StmtResult AnalyzeIfStmt(S.IfStmt ifStmt)
             {
                 // 순회
-                var condResult = AnalyzeExp_Exp(ifStmt.Cond, ResolveHint.None);
+                var condExp = AnalyzeExp_Exp(ifStmt.Cond, ResolveHint.None);
                 var bodyResult = AnalyzeStmt(ifStmt.Body);
                 StmtResult? elseBodyResult = (ifStmt.ElseBody != null) ? AnalyzeStmt(ifStmt.ElseBody) : null;
 
-                condResult = globalContext.TryCastExp_Exp(condResult, globalContext.GetBoolType());
+                condExp = globalContext.TryCastExp_Exp(condExp, globalContext.GetBoolType());
 
-                if (condResult == null)
+                if (condExp == null)
                     globalContext.AddFatalError(A1001_IfStmt_ConditionShouldBeBool, ifStmt.Cond);
 
-                return new StmtResult(new R.IfStmt(condResult.Result, bodyResult.Stmt, elseBodyResult?.Stmt));
+                return new StmtResult(new R.IfStmt(condExp, bodyResult.Stmt, elseBodyResult?.Stmt));
             }
 
             [AutoConstructor]
@@ -237,8 +238,8 @@ namespace Gum.IR0Translator
                         return new ForStmtInitializerResult(new R.VarDeclForStmtInitializer(localVarDecl));
 
                     case S.ExpForStmtInitializer expInit:
-                        var expResult = AnalyzeTopLevelExp_Exp(expInit.Exp, ResolveHint.None, A1102_ForStmt_ExpInitializerShouldBeAssignOrCall);
-                        return new ForStmtInitializerResult(new R.ExpForStmtInitializer(expResult.Result));
+                        var exp = AnalyzeTopLevelExp_Exp(expInit.Exp, ResolveHint.None, A1102_ForStmt_ExpInitializerShouldBeAssignOrCall);
+                        return new ForStmtInitializerResult(new R.ExpForStmtInitializer(exp));
 
                     default:
                         throw new NotImplementedException();
@@ -260,28 +261,21 @@ namespace Gum.IR0Translator
                 if (forStmt.CondExp != null)
                 {
                     // 밑에서 쓰이므로 분석실패시 종료
-                    var condResult = newAnalyzer.AnalyzeExp_Exp(forStmt.CondExp, ResolveHint.None);
-                    
-                    condResult = globalContext.TryCastExp_Exp(condResult, globalContext.GetBoolType());
+                    var rawCond = newAnalyzer.AnalyzeExp_Exp(forStmt.CondExp, ResolveHint.None);
+                    cond = globalContext.TryCastExp_Exp(rawCond, globalContext.GetBoolType());
 
-                    if (condResult == null)
+                    if (cond == null)
                         globalContext.AddFatalError(A1101_ForStmt_ConditionShouldBeBool, forStmt.CondExp);
-
-                    cond = condResult.Result;
                 }
 
-                R.Exp? continueInfo = null;
+                R.Exp? continueExp = null;
                 if (forStmt.ContinueExp != null)
-                {
-                    var continueResult = newAnalyzer.AnalyzeTopLevelExp_Exp(forStmt.ContinueExp, ResolveHint.None, A1103_ForStmt_ContinueExpShouldBeAssignOrCall);
-                    var contExpType = continueResult.TypeSymbol.MakeRPath();
-                    continueInfo = continueResult.Result;
-                }
+                    continueExp = newAnalyzer.AnalyzeTopLevelExp_Exp(forStmt.ContinueExp, ResolveHint.None, A1103_ForStmt_ContinueExpShouldBeAssignOrCall);
                 
                 var newLoopStmtAnalyzer = newAnalyzer.NewAnalyzerWithLoop();
                 var bodyResult = newLoopStmtAnalyzer.AnalyzeStmt(forStmt.Body);
 
-                return new StmtResult(new R.ForStmt(initializer, cond, continueInfo, bodyResult.Stmt));
+                return new StmtResult(new R.ForStmt(initializer, cond, continueExp, bodyResult.Stmt));
             }
 
             StmtResult AnalyzeContinueStmt(S.ContinueStmt continueStmt)
@@ -316,14 +310,14 @@ namespace Gum.IR0Translator
                 // 리턴 값이 없을 경우
                 if (returnStmt.Info == null)
                 {
-                    var retTypeValue = callableContext.GetReturn();
+                    var callableReturn = callableContext.GetReturn();
                     var voidTypeValue = globalContext.GetVoidType();
 
-                    if (retTypeValue == null)
+                    if (callableReturn == null)
                     {
                         callableContext.SetRetType(voidTypeValue);
                     }
-                    else if (retTypeValue != voidTypeValue)
+                    else if (!globalContext.IsVoidType(callableReturn.Value.Type))
                     {
                         globalContext.AddFatalError(A1201_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType, returnStmt);
                     }
@@ -384,27 +378,27 @@ namespace Gum.IR0Translator
                 else
                 {
                     // 이 함수의 적혀져 있던 리턴타입 or 첫번째로 발견되서 유지되고 있는 리턴타입
-                    var retTypeValue = callableContext.GetReturn();
+                    var callableReturn = callableContext.GetReturn();
 
-                    if (retTypeValue == null)
+                    if (callableReturn == null)
                     {
                         // 힌트타입 없이 분석
-                        var valueResult = AnalyzeExp_Exp(returnStmt.Info.Value.Value, ResolveHint.None);
+                        var retValueExp = AnalyzeExp_Exp(returnStmt.Info.Value.Value, ResolveHint.None);
 
                         // 리턴값이 안 적혀 있었으므로 적는다
-                        callableContext.SetRetType(valueResult.TypeSymbol);
+                        callableContext.SetRetType(retValueExp.GetTypeSymbol());
 
-                        return new StmtResult(new R.ReturnStmt(new R.ReturnInfo.Expression(valueResult.Result)));
+                        return new StmtResult(new R.ReturnStmt(new R.ReturnInfo.Expression(retValueExp)));
                     }
                     else
                     {
                         // 리턴타입을 힌트로 사용한다
-                        var valueResult = AnalyzeExp_Exp(returnStmt.Info.Value.Value, ResolveHint.Make(retTypeValue));
+                        var retValueExp = AnalyzeExp_Exp(returnStmt.Info.Value.Value, ResolveHint.Make(callableReturn.Value.Type)); // TODO: ref 고려?
 
                         // 현재 함수 시그니처랑 맞춰서 같은지 확인한다
-                        valueResult = CastExp_Exp(valueResult, retTypeValue, returnStmt.Info.Value.Value);
+                        retValueExp = CastExp_Exp(retValueExp, callableReturn.Value.Type, returnStmt.Info.Value.Value);
 
-                        return new StmtResult(new R.ReturnStmt(new R.ReturnInfo.Expression(valueResult.Result)));
+                        return new StmtResult(new R.ReturnStmt(new R.ReturnInfo.Expression(retValueExp)));
                     }
                 }
             }
@@ -442,43 +436,14 @@ namespace Gum.IR0Translator
 
             StmtResult AnalyzeExpStmt(S.ExpStmt expStmt)
             {
-                var expResult = AnalyzeTopLevelExp_Exp(expStmt.Exp, ResolveHint.None, A1301_ExpStmt_ExpressionShouldBeAssignOrCall);
-                return new StmtResult(new R.ExpStmt(expResult.Result));
-            }
-
-            R.CapturedStatementDecl AnalyzeCapturedStatement(ITypeSymbol? retTypeValue, S.Stmt body)
-            {
-                var capturedStatementName = callableContext.NewAnonymousName();
-                var capturedStatementPath = MakePath(capturedStatementName, R.ParamHash.None, default);
-
-                // TODO: 리턴 타입은 타입 힌트를 반영해야 한다
-                // 파라미터는 람다 함수의 지역변수로 취급한다                
-                var newLambdaContext = new LambdaContext(capturedStatementPath, callableContext.GetThisType(), localContext, retTypeValue);
-                var newLocalContext = new LocalContext();
-                var newAnalyzer = new StmtAndExpAnalyzer(globalContext, newLambdaContext, newLocalContext);
-
-                // 본문 분석
-                var bodyResult = newAnalyzer.AnalyzeStmt(body);                
-                var capturedLocalVars = newLambdaContext.GetCapturedLocalVars();
-
-                // TODO: need capture this확인해서 this 넣기
-                // var bCaptureThis = newLambdaContext.NeedCaptureThis();
-                R.Path? capturedThisType = null;                
-
-                return new R.CapturedStatementDecl(capturedStatementName, new R.CapturedStatement(capturedThisType, capturedLocalVars, bodyResult.Stmt));
-            }
-
-            R.Path.Nested MakePath(R.Name name, R.ParamHash paramHash, ImmutableArray<R.Path> typeArgs)
-            {
-                var parentPath = callableContext.GetPath();
-                return new R.Path.Nested(parentPath, name, paramHash, typeArgs);
+                var exp = AnalyzeTopLevelExp_Exp(expStmt.Exp, ResolveHint.None, A1301_ExpStmt_ExpressionShouldBeAssignOrCall);
+                return new StmtResult(new R.ExpStmt(exp));
             }
 
             StmtResult AnalyzeTaskStmt(S.TaskStmt taskStmt)
             {
-                var capturedStatement = AnalyzeCapturedStatement(globalContext.GetVoidType(), taskStmt.Body);
-                var path = MakePath(capturedStatement.Name, R.ParamHash.None, default);
-                return new StmtResult(new R.TaskStmt(path));
+                var (lambda, body) = AnalyzeLambda(globalContext.GetVoidType(), default, taskStmt.Body, taskStmt);
+                return new StmtResult(new R.TaskStmt(lambda, body));
             }
 
             StmtResult AnalyzeAwaitStmt(S.AwaitStmt awaitStmt)
@@ -491,10 +456,8 @@ namespace Gum.IR0Translator
 
             StmtResult AnalyzeAsyncStmt(S.AsyncStmt asyncStmt)
             {
-                var capturedStatement = AnalyzeCapturedStatement(globalContext.GetVoidType(), asyncStmt.Body);
-                var path = MakePath(capturedStatement.Name, R.ParamHash.None, default);
-                callableContext.AddCallableMemberDecl(capturedStatement);
-                return new StmtResult(new R.AsyncStmt(path));
+                var (lambda, body) = AnalyzeLambda(globalContext.GetVoidType(), default, asyncStmt.Body, asyncStmt);
+                return new StmtResult(new R.AsyncStmt(lambda, body));
             }
 
             StmtResult AnalyzeForeachStmt(S.ForeachStmt foreachStmt)
@@ -504,18 +467,18 @@ namespace Gum.IR0Translator
                 var iteratorResult = AnalyzeExp_Loc(foreachStmt.Iterator, ResolveHint.None);
                 
                 // 먼저, iteratorResult가 anonymous_seq타입인지 확인한다
-                if (iteratorResult.TypeSymbol is SeqTypeSymbol seqIteratorType)
+                if (globalContext.IsSeqType(iteratorResult.TypeSymbol, out var seqItemType)) // seq<>
                 {
                     var elemType = globalContext.GetSymbolByTypeExp(foreachStmt.Type);
                     
-                    if (elemType is VarTypeSymbol) // var type처리
+                    if (elemType is VarSymbol) // var type처리
                     {
-                        elemType = seqIteratorType.YieldType;
+                        elemType = seqItemType;
                     }
                     else
                     {
                         // 완전히 같은지 체크
-                        if (elemType.Equals(seqIteratorType.YieldType))
+                        if (elemType.Equals(seqItemType))
                         {
                             // relemType = elemType.MakeRPath();
                         }
@@ -540,7 +503,7 @@ namespace Gum.IR0Translator
                     // 본문 분석
                     var bodyResult = loopAnalyzer.AnalyzeStmt(foreachStmt.Body);
 
-                    var rforeachStmt = new R.ForeachStmt(elemType.MakeRPath(), foreachStmt.VarName, iteratorResult.Result, bodyResult.Stmt);
+                    var rforeachStmt = new R.ForeachStmt(elemType, foreachStmt.VarName, iteratorResult.Result, bodyResult.Stmt);
                     return new StmtResult(rforeachStmt);
                 }
                 else
@@ -548,18 +511,18 @@ namespace Gum.IR0Translator
                     // 축약형 처리
                     // anonymous_seq를 리턴하는 식으로 변경해준다
                     // foreach(var i in [1, 2, 3, 4]) => foreach(var i in [1, 2, 3, 4].GetEnumerator())
-                    if (iteratorResult.TypeSymbol is RuntimeListTypeValue runtimeListTypeValue)
+                    if (globalContext.IsListType(iteratorResult.TypeSymbol, out var listItemType))
                     {
                         var elemType = globalContext.GetSymbolByTypeExp(foreachStmt.Type);
 
-                        if (elemType is VarTypeSymbol) // var type처리
+                        if (elemType is VarSymbol) // var type처리
                         {
-                            elemType = runtimeListTypeValue.ElemType;
+                            elemType = listItemType;
                         }
                         else
                         {
                             // 완전히 같은지 체크
-                            if (elemType.Equals(runtimeListTypeValue.ElemType))
+                            if (elemType.Equals(listItemType))
                             {
                                 // relemType = elemType.MakeRPath();
                             }
@@ -571,7 +534,7 @@ namespace Gum.IR0Translator
                             }
                         }
 
-                        var listIterator = new R.TempLoc(new R.ListIteratorExp(iteratorResult.Result), runtimeListTypeValue.GetIterRPath());
+                        var listIterator = new R.TempLoc(new R.ListIteratorExp(iteratorResult.Result, globalContext.GetListIterType(listItemType)));
 
                         // 루프 컨텍스트를 하나 열고
                         var loopAnalyzer = NewAnalyzerWithLoop();
@@ -586,7 +549,7 @@ namespace Gum.IR0Translator
                         // 본문 분석
                         var bodyResult = loopAnalyzer.AnalyzeStmt(foreachStmt.Body);
 
-                        var rforeachStmt = new R.ForeachStmt(elemType.MakeRPath(), foreachStmt.VarName, listIterator, bodyResult.Stmt);
+                        var rforeachStmt = new R.ForeachStmt(elemType, foreachStmt.VarName, listIterator, bodyResult.Stmt);
                         return new StmtResult(rforeachStmt);
 
                     }
@@ -603,14 +566,14 @@ namespace Gum.IR0Translator
                     globalContext.AddFatalError(A1401_YieldStmt_YieldShouldBeInSeqFunc, yieldStmt);
 
                 // yield에서는 retType이 명시되는 경우만 있을 것이다
-                var retTypeValue = callableContext.GetReturn();
-                Debug.Assert(retTypeValue != null);
+                var callableReturn = callableContext.GetReturn();
+                Debug.Assert(callableReturn != null);
 
                 // NOTICE: 리턴 타입을 힌트로 넣었다
-                var valueResult = AnalyzeExp_Exp(yieldStmt.Value, ResolveHint.Make(retTypeValue));
-                valueResult = CastExp_Exp(valueResult, retTypeValue, yieldStmt.Value);
+                var retValueExp = AnalyzeExp_Exp(yieldStmt.Value, ResolveHint.Make(callableReturn.Value.Type)); // TODO: ref 처리?
+                retValueExp = CastExp_Exp(retValueExp, callableReturn.Value.Type, yieldStmt.Value);
 
-                return new StmtResult(new R.YieldStmt(valueResult.Result));
+                return new StmtResult(new R.YieldStmt(retValueExp));
             }            
 
             StmtResult AnalyzeDirectiveStmt(S.DirectiveStmt directiveStmt)
@@ -683,7 +646,7 @@ namespace Gum.IR0Translator
                 }
             }
 
-            ExpResult.Exp AnalyzeTopLevelExp_Exp(S.Exp exp, ResolveHint hint, AnalyzeErrorCode code)
+            R.Exp AnalyzeTopLevelExp_Exp(S.Exp exp, ResolveHint hint, AnalyzeErrorCode code)
             {
                 if (!IsTopLevelExp(exp))
                     globalContext.AddFatalError(code, exp);

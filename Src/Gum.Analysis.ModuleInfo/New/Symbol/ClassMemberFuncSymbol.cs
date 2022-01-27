@@ -29,7 +29,8 @@ namespace Gum.Analysis
 
         // for return type covariance        
         ISymbolNode ISymbolNode.Apply(TypeEnv typeEnv) => Apply(typeEnv);
-        IFuncSymbol IFuncSymbol.Apply(TypeEnv typeEnv) => Apply(typeEnv);
+        IDeclSymbolNode ISymbolNode.GetDeclSymbolNode() => GetDeclSymbolNode();
+        IFuncSymbol IFuncSymbol.Apply(TypeEnv typeEnv) => Apply(typeEnv);        
 
         internal ClassMemberFuncSymbol(SymbolFactory factory, ClassSymbol outer, ClassMemberFuncDeclSymbol decl, ImmutableArray<ITypeSymbol> typeArgs)
         {
@@ -69,7 +70,7 @@ namespace Gum.Analysis
             return outer;
         }
 
-        public IDeclSymbolNode GetDeclSymbolNode()
+        public IFuncDeclSymbol GetDeclSymbolNode()
         {
             return decl;
         }

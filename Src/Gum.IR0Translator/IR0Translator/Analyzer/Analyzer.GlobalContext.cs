@@ -24,6 +24,7 @@ namespace Gum.IR0Translator
         {
             SymbolLoader symbolLoader;
             TypeSymbolInfoService typeSymbolInfoService;
+            SymbolFactory symbolFactory;
 
             InternalBinaryOperatorQueryService internalBinOpQueryService;            
 
@@ -141,7 +142,12 @@ namespace Gum.IR0Translator
             {
                 return (ITypeSymbol)symbolLoader.Load(stringId);
             }
-            
+
+            internal ITypeSymbol GetListIterType(ITypeSymbol? itemType)
+            {
+                throw new NotImplementedException();
+            }
+
             public ITypeSymbol GetListType(ITypeSymbol elemType)
             {
                 var typeArgs = Arr(elemType.GetSymbolId());
@@ -155,47 +161,46 @@ namespace Gum.IR0Translator
                 internalGlobalVarRepo.AddInternalGlobalVariable(bRef, typeValue, name);
             }
 
-            public bool IsBool(ITypeSymbol type)
+            public bool IsVoidType(ITypeSymbol type)
             {
-                var decl = type.GetDeclSymbolNode();
-                var declId = decl.GetDeclSymbolId();
-
-                return declId.Equals(boolDeclId);
+                return type.GetSymbolId().Equals(voidId);
             }
 
-            public bool IsInt(ITypeSymbol type)
+            public bool IsBoolType(ITypeSymbol type)
             {
-                var decl = type.GetDeclSymbolNode();
-                var declId = decl.GetDeclSymbolId();
+                var declId = type.GetDeclSymbolId();
+                return boolDeclId.Equals(declId);
+            }
 
-                return declId.Equals(intDeclId);
+            public bool IsIntType(ITypeSymbol type)
+            {
+                var declId = type.GetDeclSymbolId();
+                return intDeclId.Equals(declId);
             }            
 
-            public bool IsString(ITypeSymbol type)
+            public bool IsStringType(ITypeSymbol type)
             {
-                var decl = type.GetDeclSymbolNode();
-                var declId = decl.GetDeclSymbolId();
-
-                return declId.Equals(stringDeclId);            
+                var declId = type.GetDeclSymbolId();
+                return stringDeclId.Equals(declId);
             }
 
-            public bool IsNullable(ITypeSymbol type, [NotNullWhen(returnValue: true)] out ITypeSymbol? innerType)
-            {
-                var declType = type.GetDeclSymbolNode();
-                var declId = declType.GetDeclSymbolId();
+            //public bool IsNullableType(ITypeSymbol type, [NotNullWhen(returnValue: true)] out ITypeSymbol? innerType)
+            //{
+            //    var declType = type.GetDeclSymbolNode();
+            //    var declId = declType.GetDeclSymbolId();
 
-                if (!declId.Equals(nullableDeclId))
-                {
-                    innerType = null;
-                    return false;
-                }
+            //    if (!declId.Equals(nullableDeclId))
+            //    {
+            //        innerType = null;
+            //        return false;
+            //    }
 
-                var typeArgs = type.GetTypeArgs();
-                Debug.Assert(typeArgs.Length == 1);
+            //    var typeArgs = type.GetTypeArgs();
+            //    Debug.Assert(typeArgs.Length == 1);
 
-                innerType = typeArgs[0];
-                return true;
-            }
+            //    innerType = typeArgs[0];
+            //    return true;
+            //}
 
             public ITypeSymbol GetSymbolByTypeExp(S.TypeExp typeExp)
             {
@@ -212,13 +217,7 @@ namespace Gum.IR0Translator
             public bool DoesInternalGlobalVarNameExist(string name)
             {
                 return internalGlobalVarRepo.HasVariable(name);
-            }
-
-            // 람다는 모듈 레퍼런스에 존재하지 않은
-            public LambdaSymbol MakeLambdaSymbol(IFuncSymbol outer, ITypeSymbol retType, ImmutableArray<ParamInfo> paramInfos)
-            {
-                return symbolLoader.Load(.MakeLambdaType(lambda, retType, paramInfos);
-            }
+            }            
 
             public SeqTypeValue GetSeqTypeValue(R.Path.Nested seq, ITypeSymbol yieldType)
             {
@@ -300,7 +299,7 @@ namespace Gum.IR0Translator
                 }
 
                 // 3. C -> Nullable<C>, C -> B -> Nullable<B> 허용
-                if (IsNullable(expectedType, out var expectedInnerType))
+                if (IsNullableType(expectedType, out var expectedInnerType))
                 {
                     // C -> B 시도
                     var castToInnerTypeExp = TryCastExp_Exp(exp, expectedInnerType);
@@ -324,6 +323,22 @@ namespace Gum.IR0Translator
             public ClassSymbol MakeClassTypeValue(ItemValueOuter outer, IModuleClassDecl classInfo, ImmutableArray<ITypeSymbol> typeArgs)
             {
                 return itemValueFactory.MakeClassSymbol(outer, classInfo, typeArgs);
+            }
+
+            // TODO: 람다는 현재, 모듈 레퍼런스에 존재하지 않음
+            public LambdaSymbol MakeLambda(IFuncSymbol outer, LambdaDeclSymbol decl)
+            {
+                return symbolFactory.MakeLambda(outer, decl);
+            }
+
+            public bool IsSeqType(ITypeSymbol typeSymbol, [NotNullWhen(returnValue: true)] out ITypeSymbol? itemType)
+            {
+                throw new NotImplementedException();
+            }
+
+            public bool IsListType(ITypeSymbol typeSymbol, [NotNullWhen(returnValue: true)] out ITypeSymbol? itemType)
+            {
+                throw new NotImplementedException();
             }
         }
     }

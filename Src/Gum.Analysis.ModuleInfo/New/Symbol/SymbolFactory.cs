@@ -49,6 +49,11 @@ namespace Gum.Analysis
             return new TupleSymbol(this, memberVars);
         }
 
+        public NullableSymbol MakeNullable(ITypeSymbol innerType)
+        {
+            return new NullableSymbol(this, innerType);
+        }
+
         public InterfaceSymbol MakeInterface(ISymbolNode outer, InterfaceDeclSymbol decl, ImmutableArray<ITypeSymbol> typeArgs)
         {
             Debug.Assert(outer.GetDeclSymbolNode() == decl.GetOuterDeclNode());

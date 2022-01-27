@@ -178,7 +178,7 @@ namespace Gum.IR0
     }
 
     // () => { return 1; }
-    public record LambdaExp(LambdaSymbol Lambda) : Exp
+    public record LambdaExp(LambdaSymbol Lambda, Stmt Body) : Exp
     {
         public override ITypeSymbol GetTypeSymbol()
         {

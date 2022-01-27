@@ -13,4 +13,15 @@ namespace Gum.Analysis
 
         SymbolQueryResult QueryMember(M.Name memberName, int typeParamCount);
     }
+
+    public static class TypeSymbolExtensions
+    {
+        public static DeclSymbolId? GetDeclSymbolId(this ITypeSymbol type)
+        {
+            var decl = type.GetDeclSymbolNode();
+            if (decl == null) return null;
+
+            return decl.GetDeclSymbolId();
+        }
+    }
 }
