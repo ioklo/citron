@@ -1,5 +1,4 @@
-﻿using Gum.CompileTime;
-using Gum.Infra;
+﻿using Gum.Infra;
 using System;
 using System.Collections.Generic;
 using Gum.Collections;
@@ -10,12 +9,15 @@ using System.Net.Http.Headers;
 using System.Text;
 
 using S = Gum.Syntax;
+using M = Gum.CompileTime;
 
-namespace Gum.Analysis
+using static Gum.CompileTime.DeclSymbolPathExtensions;
+
+namespace Citron.Analysis
 {
     struct TypeSkeletonCollector
     {
-        DeclSymbolPath? basePath; // 현재 위치
+        M.DeclSymbolPath? basePath; // 현재 위치
 
         // runtime
         ImmutableArray<TypeSkeleton>.Builder skeletonsBuilder;
@@ -28,7 +30,7 @@ namespace Gum.Analysis
             return TypeSkeletonRepository.Build(typeSkeletonCollector.skeletonsBuilder.ToImmutable());
         }
 
-        TypeSkeletonCollector(DeclSymbolPath? basePath, ImmutableArray<TypeSkeleton>.Builder builder)
+        TypeSkeletonCollector(M.DeclSymbolPath? basePath, ImmutableArray<TypeSkeleton>.Builder builder)
         {
             this.basePath = basePath;
             this.skeletonsBuilder = builder;
@@ -39,7 +41,7 @@ namespace Gum.Analysis
             return new TypeSkeletonCollector(null, ImmutableArray.CreateBuilder<TypeSkeleton>());
         }
 
-        static TypeSkeletonCollector NewTypeSkeletonCollector(DeclSymbolPath path)
+        static TypeSkeletonCollector NewTypeSkeletonCollector(M.DeclSymbolPath path)
         {
             return new TypeSkeletonCollector(path, ImmutableArray.CreateBuilder<TypeSkeleton>());
         }
@@ -51,7 +53,7 @@ namespace Gum.Analysis
 
         void VisitEnumElem(S.EnumElemDecl enumElem)
         {
-            var elemPath = basePath.Child(new Name.Normal(enumElem.Name), 0);
+            var elemPath = basePath.Child(new M.Name.Normal(enumElem.Name), 0);
 
             var enumElemSkel = new TypeSkeleton(elemPath, default, TypeSkeletonKind.EnumElem); // 
             AddSkeleton(enumElemSkel);
@@ -60,7 +62,7 @@ namespace Gum.Analysis
         // namespace일 경우 어떻게 할거냐
         void VisitEnumDecl(S.EnumDecl enumDecl)
         {
-            var enumPath = basePath.Child(new Name.Normal(enumDecl.Name), enumDecl.TypeParams.Length);
+            var enumPath = basePath.Child(new M.Name.Normal(enumDecl.Name), enumDecl.TypeParams.Length);
             var newCollector = NewTypeSkeletonCollector(enumPath);
 
             foreach (var enumElem in enumDecl.Elems)
@@ -74,7 +76,7 @@ namespace Gum.Analysis
 
         void VisitStructDecl(S.StructDecl structDecl)
         {
-            var structPath = basePath.Child(new Name.Normal(structDecl.Name), structDecl.TypeParams.Length);
+            var structPath = basePath.Child(new M.Name.Normal(structDecl.Name), structDecl.TypeParams.Length);
 
             var newCollector = NewTypeSkeletonCollector(structPath);
             foreach(var elem in structDecl.MemberDecls)
@@ -94,7 +96,7 @@ namespace Gum.Analysis
 
         void VisitClassDecl(S.ClassDecl classDecl)
         {
-            var classPath = basePath.Child(new Name.Normal(classDecl.Name), classDecl.TypeParams.Length);
+            var classPath = basePath.Child(new M.Name.Normal(classDecl.Name), classDecl.TypeParams.Length);
 
             var newCollector = NewTypeSkeletonCollector();
             foreach (var memberDecl in classDecl.MemberDecls)

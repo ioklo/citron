@@ -7,7 +7,7 @@ using M = Gum.CompileTime;
 using Pretune;
 using System.Diagnostics;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     [ImplementIEquatable]
     public partial class StructSymbol : ITypeSymbol
@@ -58,6 +58,17 @@ namespace Gum.Analysis
             throw new UnreachableCodeException();
         }
 
+        public int GetMemberVarCount()
+        {
+            return decl.GetMemberVarCount();
+        }
+
+        public StructMemberVarSymbol GetMemberVar(int index)
+        {
+            var memberVarDecl = decl.GetMemberVar(index);
+            return symbolFactory.MakeStructMemberVar(this, memberVarDecl);
+        }
+
         SymbolQueryResult QueryMember_Func(M.Name memberName, int typeParamCount)
         {
             var funcsBuilder = ImmutableArray.CreateBuilder<DeclAndConstructor<StructMemberFuncDeclSymbol, StructMemberFuncSymbol>>();
@@ -101,11 +112,18 @@ namespace Gum.Analysis
         {
             var candidates = new Candidates<SymbolQueryResult.StructMemberVar>();
 
-            foreach (var memberVar in decl.GetMemberVars())
+            int memberVarCount = decl.GetMemberVarCount();            
+
+            for (int i = 0; i < memberVarCount; i++)
+            {
+                var memberVar = decl.GetMemberVar(i);
+
                 if (memberVar.GetName().Equals(memberName))
                 {
                     candidates.Add(new SymbolQueryResult.StructMemberVar(symbolFactory.MakeStructMemberVar(this, memberVar)));
                 }
+            }
+            
 
             var result = candidates.GetSingle();
             if (result != null)
@@ -210,9 +228,8 @@ namespace Gum.Analysis
 
         ISymbolNode ISymbolNode.Apply(TypeEnv typeEnv) => Apply(typeEnv);
         IDeclSymbolNode ISymbolNode.GetDeclSymbolNode() => GetDeclSymbolNode();
-        ITypeDeclSymbol ITypeSymbol.GetDeclSymbolNode() => GetDeclSymbolNode();
 
-        public StructDeclSymbol GetDeclSymbolNode()
+        public ITypeDeclSymbol GetDeclSymbolNode()
         {
             return decl;
         }

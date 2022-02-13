@@ -7,7 +7,9 @@ using S = Gum.Syntax;
 using M = Gum.CompileTime;
 using System.Collections.Generic;
 
-namespace Gum.Analysis
+using static Gum.CompileTime.DeclSymbolPathExtensions;
+
+namespace Citron.Analysis
 {
     public partial class TypeExpEvaluator
     {
@@ -41,14 +43,14 @@ namespace Gum.Analysis
                 infosByTypeExp.Add(exp, info);
             }
 
-            public IEnumerable<TypeExpInfo> GetTypeExpInfos(SymbolPath path, S.TypeExp typeExp)
+            public IEnumerable<TypeExpInfo> GetTypeExpInfos(M.SymbolPath path, S.TypeExp typeExp)
             {
                 var declPath = path.GetDeclSymbolPath();
 
                 var typeSkel = skelRepo.GetTypeSkeleton(declPath);
                 if (typeSkel != null)
                 {
-                    yield return new InternalTypeExpInfo(new ModuleSymbolId(internalModuleName, path), typeSkel, typeExp);
+                    yield return new InternalTypeExpInfo(new M.ModuleSymbolId(internalModuleName, path), typeSkel, typeExp);
                 }
 
                 // 3-2. Reference에서 검색, GlobalTypeSkeletons에 이름이 겹치지 않아야 한다.. ModuleInfo들 끼리도 이름이 겹칠 수 있다
@@ -58,7 +60,7 @@ namespace Gum.Analysis
 
                     if (declSymbol is ITypeDeclSymbol typeDeclSymbol)
                     {
-                        var symbolId = new ModuleSymbolId(referenceModule.GetName(), path);
+                        var symbolId = new M.ModuleSymbolId(referenceModule.GetName(), path);
                         yield return new ModuleSymbolTypeExpInfo(symbolId, typeDeclSymbol, typeExp);
                     }
                 }

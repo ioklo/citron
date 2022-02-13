@@ -1,10 +1,10 @@
-﻿using Gum.Analysis;
+﻿using Citron.Analysis;
 using Gum.Collections;
 using Gum.Infra;
 using System;
 using M = Gum.CompileTime;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     public partial class EnumDeclSymbol : ITypeDeclSymbol
     {
@@ -62,7 +62,7 @@ namespace Gum.Analysis
             return containerHolder.GetValue().GetOuterDeclNode();
         }
 
-        public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
+        public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, ImmutableArray<M.FuncParamId> paramIds)
         {
             if (paramIds.IsEmpty && typeParamCount == 0)
             {

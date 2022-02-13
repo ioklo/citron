@@ -3,8 +3,6 @@ using R = Gum.IR0;
 
 namespace Gum.IR0Evaluator
 {
-    public partial class Evaluator
-    {
         class ItemContainer : IItemContainer
         {
             Dictionary<(R.Name, R.ParamHash), ItemContainer> containers;
@@ -37,5 +35,4 @@ namespace Gum.IR0Evaluator
                 runtimeItems.Add((runtimeItem.Name, runtimeItem.ParamHash), runtimeItem);
             }
         }
-    }    
 }

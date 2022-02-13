@@ -3,7 +3,7 @@ using Pretune;
 using System;
 using System.Collections.Generic;
 
-namespace Gum.IR0
+namespace Citron.IR0
 {
     public enum ParamKind
     {

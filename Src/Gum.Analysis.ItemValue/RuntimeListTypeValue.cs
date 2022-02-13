@@ -3,7 +3,7 @@ using static Gum.Infra.Misc;
 using R = Gum.IR0;
 using Pretune;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     // 런타임 라이브러리로 구현할 리스트 타입
     [AutoConstructor]

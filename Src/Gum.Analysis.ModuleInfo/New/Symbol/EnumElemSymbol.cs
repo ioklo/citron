@@ -5,7 +5,7 @@ using M = Gum.CompileTime;
 using Pretune;
 using System;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     // S.First, S.Second(int i, short s)    
     public partial class EnumElemSymbol : ITypeSymbol
@@ -34,28 +34,34 @@ namespace Gum.Analysis
 
         public ImmutableArray<FuncParameter> GetConstructorParamTypes()
         {
-            var varDecls = decl.GetMemberVarDecls();
+            var memberVarCount = decl.GetMemberVarCount();
 
-            var builder = ImmutableArray.CreateBuilder<FuncParameter>(varDecls.Length);
-            foreach(var varDecl in varDecls)
+            var builder = ImmutableArray.CreateBuilder<FuncParameter>(memberVarCount);
+            for(int i = 0; i < memberVarCount; i++)
             {
+                var memberVar = decl.GetMemberVar(i);
+
                 var typeEnv = outer.GetTypeEnv();
-                var declType = varDecl.GetDeclType();
+                var declType = memberVar.GetDeclType();
                 
                 var appliedDeclType = declType.Apply(typeEnv);
 
-                builder.Add(new FuncParameter(FuncParameterKind.Default, appliedDeclType, decl.GetName())); // TODO: EnumElemFields에 ref를 지원할지
+                builder.Add(new FuncParameter(M.FuncParameterKind.Default, appliedDeclType, decl.GetName())); // TODO: EnumElemFields에 ref를 지원할지
             }
 
             return builder.MoveToImmutable();
         }
 
-        public SymbolQueryResult GetMember(M.Name memberName, int typeParamCount)
+        public SymbolQueryResult QueryMember(M.Name memberName, int typeParamCount)
         {
             if (typeParamCount != 0) return SymbolQueryResult.NotFound.Instance;
 
-            foreach (var varDecl in decl.GetMemberVarDecls())
+            int memberVarCount = decl.GetMemberVarCount();
+
+            for(int i = 0; i < memberVarCount; i++)
             {
+                var varDecl = decl.GetMemberVar(i);
+
                 if (memberName.Equals(varDecl.GetName()))
                 {
                     if (typeParamCount != 0)
@@ -89,9 +95,15 @@ namespace Gum.Analysis
             return default;
         }
 
-        public SymbolQueryResult QueryMember(M.Name name, int typeParamCount)
+        public int GetMemberVarCount()
         {
-            return SymbolQueryResult.NotFound.Instance;
+            return decl.GetMemberVarCount();
+        }
+
+        public EnumElemMemberVarSymbol GetMemberVar(int i)
+        {
+            var memberVarDecl = decl.GetMemberVar(i);
+            return factory.MakeEnumElemMemberVar(this, memberVarDecl);
         }
 
         public void Apply(ITypeSymbolVisitor visitor)

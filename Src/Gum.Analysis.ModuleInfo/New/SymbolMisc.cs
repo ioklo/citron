@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using M = Gum.CompileTime;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     class SymbolMisc
     {
@@ -46,8 +46,8 @@ namespace Gum.Analysis
                 if (!baseParameter.Equals(parameter)) return false;
 
                 // 추가 조건, normal로만 자동으로 생성한다
-                if (baseParameter.Kind != FuncParameterKind.Default ||
-                    parameter.Kind != FuncParameterKind.Default) return false;
+                if (baseParameter.Kind != M.FuncParameterKind.Default ||
+                    parameter.Kind != M.FuncParameterKind.Default) return false;
             }
 
             // baseParam을 제외한 뒷부분이 memberVarType과 맞는지 봐야 한다
@@ -60,7 +60,7 @@ namespace Gum.Analysis
                 if (!parameter.Type.Equals(memberVarType)) return false;
 
                 // 기본으로만 자동으로 생성한다
-                if (parameter.Kind != FuncParameterKind.Default) return false;
+                if (parameter.Kind != M.FuncParameterKind.Default) return false;
             }
 
             return true;
@@ -95,7 +95,7 @@ namespace Gum.Analysis
                 var type = memberVar.GetDeclType();
                 var name = memberVar.GetName();
 
-                var param = new FuncParameter(FuncParameterKind.Default, type, name);
+                var param = new FuncParameter(M.FuncParameterKind.Default, type, name);
                 builder.Add(param);
             }
 

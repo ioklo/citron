@@ -13,4 +13,8 @@
     <ProjectReference Include="..\Gum.ModuleInfo\Gum.ModuleInfo.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="New\Path\" />
+  </ItemGroup>
+
 </Project>

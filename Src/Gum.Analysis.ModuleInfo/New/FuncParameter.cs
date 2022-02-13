@@ -4,47 +4,13 @@ using Pretune;
 using System;
 using M = Gum.CompileTime;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
-    public enum FuncParameterKind
-    {
-        Default,
-        Params,
-        Ref,        
-    }
-
-    public static class FuncParameterKindExtensions
-    {
-        public static FuncParameterKind MakeFuncParameterKind(this M.ParamKind kind)
-        {
-            return kind switch
-            {
-                M.ParamKind.Default => FuncParameterKind.Default,
-                M.ParamKind.Ref => FuncParameterKind.Ref,
-                M.ParamKind.Params => FuncParameterKind.Params,
-                _ => throw new UnreachableCodeException()
-            };
-        }
-
-        public static M.ParamKind ToMParamKind(this FuncParameterKind kind)
-        {
-            return kind switch
-            {
-                FuncParameterKind.Default => M.ParamKind.Default,
-                FuncParameterKind.Ref => M.ParamKind.Ref,
-                FuncParameterKind.Params => M.ParamKind.Params,
-                _ => throw new UnreachableCodeException()
-            };
-        }
-        
-        
-    }
-
     // value
     [AutoConstructor]
     public partial struct FuncParameter
     {
-        public FuncParameterKind Kind { get; }
+        public M.FuncParameterKind Kind { get; }
         public ITypeSymbol Type { get; }
         public M.Name Name { get; }        
 
@@ -52,6 +18,24 @@ namespace Gum.Analysis
         {
             var appliedType = Type.Apply(typeEnv);
             return new FuncParameter(Kind, appliedType, Name);
+        }
+    }
+
+    public static class FuncParameterExtensions
+    {
+        public static ImmutableArray<M.FuncParamId> MakeFuncParamIds(this ImmutableArray<FuncParameter> funcParams)
+        {
+            var builder = ImmutableArray.CreateBuilder<M.FuncParamId>(funcParams.Length);
+
+            foreach (var funcParam in funcParams)
+            {
+                var kind = funcParam.Kind;
+                var typeId = funcParam.Type.GetSymbolId();
+
+                builder.Add(new M.FuncParamId(kind, typeId));
+            }
+
+            return builder.MoveToImmutable();
         }
     }
 }

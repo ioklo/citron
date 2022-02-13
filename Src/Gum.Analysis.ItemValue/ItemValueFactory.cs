@@ -10,9 +10,9 @@ using static Gum.Infra.Misc;
 using static Gum.CompileTime.ItemPathExtensions;
 
 using M = Gum.CompileTime;
-using Gum.Analysis;
+using Citron.Analysis;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     // Low-level ItemValue factory
     public class ItemValueFactory

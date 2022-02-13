@@ -1,4 +1,6 @@
-﻿using Gum.Collections;
+﻿using Citron;
+using Gum.Collections;
+using Gum.CompileTime;
 using Gum.Infra;
 using System;
 using System.Collections.Generic;
@@ -9,13 +11,11 @@ using R = Gum.IR0;
 
 namespace Gum.IR0Evaluator
 {
-    public partial class Evaluator
-    {
-        partial struct ExpEvaluator
+        partial struct IR0ExpEvaluator
         {
             async ValueTask Operator_LogicalNot_Bool_Bool(R.Exp operandExp, BoolValue result)
             {
-                var operandValue = globalContext.AllocValue<BoolValue>(R.Path.Bool);
+                var operandValue = context.AllocValue<BoolValue>(ModuleSymbolId.Bool);
                 await EvalExpAsync(operandExp, operandValue);
 
                 result.SetBool(!operandValue.GetBool());
@@ -38,7 +38,7 @@ namespace Gum.IR0Evaluator
 
             async ValueTask Operator_UnaryMinus_Int_Int(R.Exp operandExp, IntValue result)
             {
-                var operandValue = globalContext.AllocValue<IntValue>(R.Path.Int);
+                var operandValue = context.AllocValue<IntValue>(ModuleSymbolId.Int);
                 await EvalExpAsync(operandExp, operandValue);
 
                 result.SetInt(-operandValue.GetInt());
@@ -46,7 +46,7 @@ namespace Gum.IR0Evaluator
 
             async ValueTask Operator_ToString_Bool_String(R.Exp operandExp, StringValue result)
             {
-                var operandValue = globalContext.AllocValue<BoolValue>(R.Path.Bool);
+                var operandValue = context.AllocValue<BoolValue>(ModuleSymbolId.Bool);
                 await EvalExpAsync(operandExp, operandValue);
 
                 result.SetString(operandValue.GetBool() ? "true" : "false");
@@ -54,7 +54,7 @@ namespace Gum.IR0Evaluator
 
             async ValueTask Operator_ToString_Int_String(R.Exp operandExp, StringValue result)
             {
-                var operandValue = globalContext.AllocValue<IntValue>(R.Path.Int);
+                var operandValue = context.AllocValue<IntValue>(ModuleSymbolId.Int);
                 await EvalExpAsync(operandExp, operandValue);
 
                 result.SetString(operandValue.GetInt().ToString());
@@ -62,8 +62,8 @@ namespace Gum.IR0Evaluator
 
             async ValueTask Operator_Multiply_Int_Int_Int(R.Exp operandExp0, R.Exp operandExp1, IntValue result)
             {
-                var operandValue0 = globalContext.AllocValue<IntValue>(R.Path.Int);
-                var operandValue1 = globalContext.AllocValue<IntValue>(R.Path.Int);
+                var operandValue0 = context.AllocValue<IntValue>(ModuleSymbolId.Int);
+                var operandValue1 = context.AllocValue<IntValue>(ModuleSymbolId.Int);
 
                 await EvalExpAsync(operandExp0, operandValue0);
                 await EvalExpAsync(operandExp1, operandValue1);
@@ -73,8 +73,8 @@ namespace Gum.IR0Evaluator
 
             async ValueTask Operator_Divide_Int_Int_Int(R.Exp operandExp0, R.Exp operandExp1, IntValue result)
             {
-                var operandValue0 = globalContext.AllocValue<IntValue>(R.Path.Int);
-                var operandValue1 = globalContext.AllocValue<IntValue>(R.Path.Int);
+                var operandValue0 = context.AllocValue<IntValue>(ModuleSymbolId.Int);
+                var operandValue1 = context.AllocValue<IntValue>(ModuleSymbolId.Int);
 
                 await EvalExpAsync(operandExp0, operandValue0);
                 await EvalExpAsync(operandExp1, operandValue1);
@@ -84,8 +84,8 @@ namespace Gum.IR0Evaluator
 
             async ValueTask Operator_Modulo_Int_Int_Int(R.Exp operandExp0, R.Exp operandExp1, IntValue result)
             {
-                var operandValue0 = globalContext.AllocValue<IntValue>(R.Path.Int);
-                var operandValue1 = globalContext.AllocValue<IntValue>(R.Path.Int);
+                var operandValue0 = context.AllocValue<IntValue>(ModuleSymbolId.Int);
+                var operandValue1 = context.AllocValue<IntValue>(ModuleSymbolId.Int);
 
                 await EvalExpAsync(operandExp0, operandValue0);
                 await EvalExpAsync(operandExp1, operandValue1);
@@ -95,8 +95,8 @@ namespace Gum.IR0Evaluator
 
             async ValueTask Operator_Add_Int_Int_Int(R.Exp operandExp0, R.Exp operandExp1, IntValue result)
             {
-                var operandValue0 = globalContext.AllocValue<IntValue>(R.Path.Int);
-                var operandValue1 = globalContext.AllocValue<IntValue>(R.Path.Int);
+                var operandValue0 = context.AllocValue<IntValue>(ModuleSymbolId.Int);
+                var operandValue1 = context.AllocValue<IntValue>(ModuleSymbolId.Int);
 
                 await EvalExpAsync(operandExp0, operandValue0);
                 await EvalExpAsync(operandExp1, operandValue1);
@@ -106,8 +106,8 @@ namespace Gum.IR0Evaluator
 
             async ValueTask Operator_Add_String_String_String(R.Exp operandExp0, R.Exp operandExp1, StringValue result)
             {
-                var operandValue0 = globalContext.AllocValue<StringValue>(R.Path.String);
-                var operandValue1 = globalContext.AllocValue<StringValue>(R.Path.String);
+                var operandValue0 = context.AllocValue<StringValue>(ModuleSymbolId.String);
+                var operandValue1 = context.AllocValue<StringValue>(ModuleSymbolId.String);
 
                 await EvalExpAsync(operandExp0, operandValue0);
                 await EvalExpAsync(operandExp1, operandValue1);
@@ -117,8 +117,8 @@ namespace Gum.IR0Evaluator
 
             async ValueTask Operator_Subtract_Int_Int_Int(R.Exp operandExp0, R.Exp operandExp1, IntValue result)
             {
-                var operandValue0 = globalContext.AllocValue<IntValue>(R.Path.Int);
-                var operandValue1 = globalContext.AllocValue<IntValue>(R.Path.Int);
+                var operandValue0 = context.AllocValue<IntValue>(ModuleSymbolId.Int);
+                var operandValue1 = context.AllocValue<IntValue>(ModuleSymbolId.Int);
 
                 await EvalExpAsync(operandExp0, operandValue0);
                 await EvalExpAsync(operandExp1, operandValue1);
@@ -128,8 +128,8 @@ namespace Gum.IR0Evaluator
 
             async ValueTask Operator_LessThan_Int_Int_Bool(R.Exp operandExp0, R.Exp operandExp1, BoolValue result)
             {
-                var operandValue0 = globalContext.AllocValue<IntValue>(R.Path.Int);
-                var operandValue1 = globalContext.AllocValue<IntValue>(R.Path.Int);
+                var operandValue0 = context.AllocValue<IntValue>(ModuleSymbolId.Int);
+                var operandValue1 = context.AllocValue<IntValue>(ModuleSymbolId.Int);
 
                 await EvalExpAsync(operandExp0, operandValue0);
                 await EvalExpAsync(operandExp1, operandValue1);
@@ -139,8 +139,8 @@ namespace Gum.IR0Evaluator
 
             async ValueTask Operator_LessThan_String_String_Bool(R.Exp operandExp0, R.Exp operandExp1, BoolValue result)
             {
-                var operandValue0 = globalContext.AllocValue<StringValue>(R.Path.String);
-                var operandValue1 = globalContext.AllocValue<StringValue>(R.Path.String);
+                var operandValue0 = context.AllocValue<StringValue>(ModuleSymbolId.String);
+                var operandValue1 = context.AllocValue<StringValue>(ModuleSymbolId.String);
 
                 await EvalExpAsync(operandExp0, operandValue0);
                 await EvalExpAsync(operandExp1, operandValue1);
@@ -150,8 +150,8 @@ namespace Gum.IR0Evaluator
 
             async ValueTask Operator_GreaterThan_Int_Int_Bool(R.Exp operandExp0, R.Exp operandExp1, BoolValue result)
             {
-                var operandValue0 = globalContext.AllocValue<IntValue>(R.Path.Int);
-                var operandValue1 = globalContext.AllocValue<IntValue>(R.Path.Int);
+                var operandValue0 = context.AllocValue<IntValue>(ModuleSymbolId.Int);
+                var operandValue1 = context.AllocValue<IntValue>(ModuleSymbolId.Int);
 
                 await EvalExpAsync(operandExp0, operandValue0);
                 await EvalExpAsync(operandExp1, operandValue1);
@@ -161,8 +161,8 @@ namespace Gum.IR0Evaluator
 
             async ValueTask Operator_GreaterThan_String_String_Bool(R.Exp operandExp0, R.Exp operandExp1, BoolValue result)
             {
-                var operandValue0 = globalContext.AllocValue<StringValue>(R.Path.String);
-                var operandValue1 = globalContext.AllocValue<StringValue>(R.Path.String);
+                var operandValue0 = context.AllocValue<StringValue>(ModuleSymbolId.String);
+                var operandValue1 = context.AllocValue<StringValue>(ModuleSymbolId.String);
 
                 await EvalExpAsync(operandExp0, operandValue0);
                 await EvalExpAsync(operandExp1, operandValue1);
@@ -172,8 +172,8 @@ namespace Gum.IR0Evaluator
 
             async ValueTask Operator_LessThanOrEqual_Int_Int_Bool(R.Exp operandExp0, R.Exp operandExp1, BoolValue result)
             {
-                var operandValue0 = globalContext.AllocValue<IntValue>(R.Path.Int);
-                var operandValue1 = globalContext.AllocValue<IntValue>(R.Path.Int);
+                var operandValue0 = context.AllocValue<IntValue>(ModuleSymbolId.Int);
+                var operandValue1 = context.AllocValue<IntValue>(ModuleSymbolId.Int);
 
                 await EvalExpAsync(operandExp0, operandValue0);
                 await EvalExpAsync(operandExp1, operandValue1);
@@ -183,8 +183,8 @@ namespace Gum.IR0Evaluator
 
             async ValueTask Operator_LessThanOrEqual_String_String_Bool(R.Exp operandExp0, R.Exp operandExp1, BoolValue result)
             {
-                var operandValue0 = globalContext.AllocValue<StringValue>(R.Path.String);
-                var operandValue1 = globalContext.AllocValue<StringValue>(R.Path.String);
+                var operandValue0 = context.AllocValue<StringValue>(ModuleSymbolId.String);
+                var operandValue1 = context.AllocValue<StringValue>(ModuleSymbolId.String);
 
                 await EvalExpAsync(operandExp0, operandValue0);
                 await EvalExpAsync(operandExp1, operandValue1);
@@ -194,8 +194,8 @@ namespace Gum.IR0Evaluator
 
             async ValueTask Operator_GreaterThanOrEqual_Int_Int_Bool(R.Exp operandExp0, R.Exp operandExp1, BoolValue result)
             {
-                var operandValue0 = globalContext.AllocValue<IntValue>(R.Path.Int);
-                var operandValue1 = globalContext.AllocValue<IntValue>(R.Path.Int);
+                var operandValue0 = context.AllocValue<IntValue>(ModuleSymbolId.Int);
+                var operandValue1 = context.AllocValue<IntValue>(ModuleSymbolId.Int);
 
                 await EvalExpAsync(operandExp0, operandValue0);
                 await EvalExpAsync(operandExp1, operandValue1);
@@ -205,8 +205,8 @@ namespace Gum.IR0Evaluator
 
             async ValueTask Operator_GreaterThanOrEqual_String_String_Bool(R.Exp operandExp0, R.Exp operandExp1, BoolValue result)
             {
-                var operandValue0 = globalContext.AllocValue<StringValue>(R.Path.String);
-                var operandValue1 = globalContext.AllocValue<StringValue>(R.Path.String);
+                var operandValue0 = context.AllocValue<StringValue>(ModuleSymbolId.String);
+                var operandValue1 = context.AllocValue<StringValue>(ModuleSymbolId.String);
 
                 await EvalExpAsync(operandExp0, operandValue0);
                 await EvalExpAsync(operandExp1, operandValue1);
@@ -216,8 +216,8 @@ namespace Gum.IR0Evaluator
 
             async ValueTask Operator_Equal_Int_Int_Bool(R.Exp operandExp0, R.Exp operandExp1, BoolValue result)
             {
-                var operandValue0 = globalContext.AllocValue<IntValue>(R.Path.Int);
-                var operandValue1 = globalContext.AllocValue<IntValue>(R.Path.Int);
+                var operandValue0 = context.AllocValue<IntValue>(ModuleSymbolId.Int);
+                var operandValue1 = context.AllocValue<IntValue>(ModuleSymbolId.Int);
 
                 await EvalExpAsync(operandExp0, operandValue0);
                 await EvalExpAsync(operandExp1, operandValue1);
@@ -227,8 +227,8 @@ namespace Gum.IR0Evaluator
 
             async ValueTask Operator_Equal_Bool_Bool_Bool(R.Exp operandExp0, R.Exp operandExp1, BoolValue result)
             {
-                var operandValue0 = globalContext.AllocValue<BoolValue>(R.Path.Bool);
-                var operandValue1 = globalContext.AllocValue<BoolValue>(R.Path.Bool);
+                var operandValue0 = context.AllocValue<BoolValue>(ModuleSymbolId.Bool);
+                var operandValue1 = context.AllocValue<BoolValue>(ModuleSymbolId.Bool);
 
                 await EvalExpAsync(operandExp0, operandValue0);
                 await EvalExpAsync(operandExp1, operandValue1);
@@ -238,8 +238,8 @@ namespace Gum.IR0Evaluator
 
             async ValueTask Operator_Equal_String_String_Bool(R.Exp operandExp0, R.Exp operandExp1, BoolValue result)
             {
-                var operandValue0 = globalContext.AllocValue<StringValue>(R.Path.String);
-                var operandValue1 = globalContext.AllocValue<StringValue>(R.Path.String);
+                var operandValue0 = context.AllocValue<StringValue>(ModuleSymbolId.String);
+                var operandValue1 = context.AllocValue<StringValue>(ModuleSymbolId.String);
 
                 await EvalExpAsync(operandExp0, operandValue0);
                 await EvalExpAsync(operandExp1, operandValue1);
@@ -315,5 +315,5 @@ namespace Gum.IR0Evaluator
                 }
             }
         }
-    }
+
 }

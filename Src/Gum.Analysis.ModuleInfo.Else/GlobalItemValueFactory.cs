@@ -8,9 +8,9 @@
 //using System.Threading.Tasks;
 
 //using M = Gum.CompileTime;
-//using Gum.Analysis;
+//using Citron.Analysis;
 
-//namespace Gum.Analysis
+//namespace Citron.Analysis
 //{
 //    // 이름만으로 Global을 찾고 싶을땐.. 인데.. 사실 이름 전체로 찾고 싶을 경우가 더 많을 것이다
 //    // 더 로우레벨인데 이름만 봐서는 그런 느낌이 들지 않아서, 이름 전체로 찾는 것과 이거 중에 고민을 하게 된다

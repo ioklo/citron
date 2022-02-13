@@ -3,7 +3,7 @@ using Gum.Collections;
 
 using M = Gum.CompileTime;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     public class StructMemberVarSymbol : ISymbolNode
     {
@@ -29,6 +29,11 @@ namespace Gum.Analysis
         public ISymbolNode? GetOuter()
         {
             return outer;
+        }
+
+        public M.Name GetName()
+        {
+            return decl.GetName();
         }
 
         public IDeclSymbolNode GetDeclSymbolNode()

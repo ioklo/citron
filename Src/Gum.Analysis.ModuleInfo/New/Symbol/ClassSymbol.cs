@@ -3,14 +3,14 @@ using System.Collections.Generic;
 
 using Gum.Collections;
 using Gum.Infra;
-using Gum.Analysis;
+using Citron.Analysis;
 
 using Pretune;
 
 using M = Gum.CompileTime;
 using System.Diagnostics;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     // value
     [ImplementIEquatable]
@@ -166,11 +166,15 @@ namespace Gum.Analysis
         {
             var candidates = new Candidates<ClassMemberVarSymbol>();
 
-            foreach (var memberVar in decl.GetMemberVars())
+            int count = decl.GetMemberVarCount();            
+            for (int i = 0; i < count; i++)
+            {
+                var memberVar = decl.GetMemberVar(i);
                 if (memberVar.GetName().Equals(memberName))
                 {
                     candidates.Add(factory.MakeClassMemberVar(this, memberVar));
                 }
+            }
 
             var result = candidates.GetSingle();
             if (result != null)
@@ -288,9 +292,20 @@ namespace Gum.Analysis
             return factory.MakeClassMemberVar(this, memberVarDecl);
         }
 
+        public int GetMemberVarCount()
+        {
+            return decl.GetMemberVarCount();
+        }
+
+        public ClassMemberVarSymbol GetMemberVar(int index)
+        {
+            var memberVar = decl.GetMemberVar(index);
+            return factory.MakeClassMemberVar(this, memberVar);
+        }
+
         public ClassDeclSymbol GetDecl()
         {
             return decl;
-        }
+        }        
     }
 }

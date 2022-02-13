@@ -1,5 +1,5 @@
 ﻿
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     // (struct, class, enum) (external/internal) (global/member) type
     public abstract partial class NormalTypeValue : ITypeSymbol

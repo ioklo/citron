@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 using M = Gum.CompileTime;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     public class NamespaceDeclSymbol : ITopLevelDeclSymbolNode
     {
@@ -23,7 +23,7 @@ namespace Gum.Analysis
             this.dict = new TopLevelDeclDict(namespaces, types, funcs);
         }
 
-        public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
+        public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, ImmutableArray<M.FuncParamId> paramIds)
         {
             return dict.GetMemberDeclNode(name, typeParamCount, paramIds);
         }
@@ -53,7 +53,7 @@ namespace Gum.Analysis
             return dict.GetType(name, typeParamCount);
         }
 
-        public GlobalFuncDeclSymbol? GetFunc(M.Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
+        public GlobalFuncDeclSymbol? GetFunc(M.Name name, int typeParamCount, ImmutableArray<M.FuncParamId> paramIds)
         {
             return dict.GetFunc(name, typeParamCount, paramIds);
         }

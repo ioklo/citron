@@ -1,10 +1,9 @@
-﻿using Gum.CompileTime;
-using Gum.Collections;
+﻿using Gum.Collections;
 
 using S = Gum.Syntax;
 using Gum.Infra;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     public class TypeExpInfoService
     {

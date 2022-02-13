@@ -5,7 +5,7 @@ using Pretune;
 using M = Gum.CompileTime;
 using System.Diagnostics;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     // reserved가 아닌 아이템에서나 존재함
     public abstract class ItemValueOuter

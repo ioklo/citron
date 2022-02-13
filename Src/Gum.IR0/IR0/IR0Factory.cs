@@ -7,11 +7,23 @@ using System.Text;
 using System.Threading.Tasks;
 
 using static Gum.Infra.Misc;
+using Citron.Analysis;
+using System.Diagnostics.CodeAnalysis;
 
-namespace Gum.IR0
+namespace Citron.IR0
 {
     public static class IR0Factory
-    {
+    {           
+        [AllowNull]
+        static ITypeSymbol BoolType, IntType, StringType;
+
+        public static void Init(ITypeSymbol boolType, ITypeSymbol intType, ITypeSymbol stringType)
+        {
+            BoolType = boolType;
+            IntType = intType;
+            StringType = stringType;
+        }
+
         public static Script RScript(ModuleName moduleName, ImmutableArray<TypeDecl> typeDecls, ImmutableArray<FuncDecl> funcDecls, ImmutableArray<CallableMemberDecl> callableMemberDecls, params Stmt[] optTopLevelStmts)
         {   
             ImmutableArray<Stmt> topLevelStmts = optTopLevelStmts.ToImmutableArray();
@@ -29,10 +41,10 @@ namespace Gum.IR0
             => new BlockStmt(Arr(stmts));
 
         public static StringExp RString(params StringExpElement[] elems)
-            => new StringExp(Arr(elems));
+            => new StringExp(Arr(elems), StringType);
 
         public static StringExp RString(string v)
-            => new StringExp(Arr<StringExpElement>(new TextStringExpElement(v)));
+            => new StringExp(Arr<StringExpElement>(new TextStringExpElement(v)), StringType);
 
         public static Stmt RAssignStmt(Loc dest, Exp src)
         {
@@ -57,8 +69,8 @@ namespace Gum.IR0
         public static LocalVarDecl RLocalVarDecl(Path typeId, string name, Exp initExp)
             => new LocalVarDecl(Arr<VarDeclElement>(new VarDeclElement.Normal(typeId, name, initExp)));
 
-        public static IntLiteralExp RInt(int v) => new IntLiteralExp(v);
-        public static BoolLiteralExp RBool(bool v) => new BoolLiteralExp(v);
+        public static IntLiteralExp RInt(int v) => new IntLiteralExp(v, IntType);
+        public static BoolLiteralExp RBool(bool v) => new BoolLiteralExp(v, BoolType);
 
         public static ImmutableArray<Param> RNormalParams(params (Path Path, string Name)[] elems)
         {
@@ -75,7 +87,8 @@ namespace Gum.IR0
             return RCommand(RString(new ExpStringExpElement(
                 new CallInternalUnaryOperatorExp(
                     InternalUnaryOperator.ToString_Bool_String,
-                    exp
+                    exp,
+                    StringType
                 )
             )));
         }
@@ -85,7 +98,9 @@ namespace Gum.IR0
             return RCommand(RString(new ExpStringExpElement(
                 new CallInternalUnaryOperatorExp(
                     InternalUnaryOperator.ToString_Int_String,
-                    new LoadExp(loc))
+                    new LoadExp(loc, IntType),
+                    StringType
+                )
             )));
         }
 
@@ -95,13 +110,15 @@ namespace Gum.IR0
             return RCommand(RString(new ExpStringExpElement(
                 new CallInternalUnaryOperatorExp(
                     InternalUnaryOperator.ToString_Int_String,
-                    varExp)
+                    varExp,
+                    StringType
+                )
             )));
         }
 
-        public static CommandStmt RPrintStringCmdStmt(Loc loc)
+        public static CommandStmt RPrintStringCmdStmt(Loc loc, ITypeSymbol locType)
         {
-            return RCommand(RString(new ExpStringExpElement(new LoadExp(loc))));
+            return RCommand(RString(new ExpStringExpElement(new LoadExp(loc, locType))));
         }
 
 
@@ -116,42 +133,11 @@ namespace Gum.IR0
         }
 
         public static Path.Root RRoot(string moduleName)
-            => new Path.Root(new ModuleName(moduleName));        
+            => new Path.Root(new ModuleName(moduleName));
 
-
-        public static Path.Nested Child(this Path.Normal outer, Name name, ParamHash paramHash, ImmutableArray<Path> typeArgs)
-            => new Path.Nested(outer, name, paramHash, typeArgs);
-
-        public static Path.Nested Child(this Path.Normal outer, string name, ParamHash paramHash, ImmutableArray<Path> typeArgs)
-            => new Path.Nested(outer, new Name.Normal(name), paramHash, typeArgs);
-
-
-        public static Path.Nested Child(this Path.Normal outer, Name name)
-            => new Path.Nested(outer, name, ParamHash.None, default);
-
-        public static Path.Nested Child(this Path.Normal outer, string name)
-            => new Path.Nested(outer, new Name.Normal(name), ParamHash.None, default);
-
-
-        // no typeparams, all normal paramtypes
-        public static Path.Nested Child(this Path.Normal outer, Name name, params Path[] types)
-            => new Path.Nested(outer, name, new ParamHash(0, types.Select(type => new ParamHashEntry(ParamKind.Default, type)).ToImmutableArray()), default);
-
-        public static Path.Nested Child(this Path.Normal outer, string name, params Path[] types)
-            => new Path.Nested(outer, new Name.Normal(name), new ParamHash(0, types.Select(type => new ParamHashEntry(ParamKind.Default, type)).ToImmutableArray()), default);
-
-
-        // no typeparams version
-        public static Path.Nested Child(this Path.Normal outer, Name name, params ParamHashEntry[] entries)
-            => new Path.Nested(outer, name, new ParamHash(0, entries.ToImmutableArray()), default);
-
-        public static Path.Nested Child(this Path.Normal outer, string name, params ParamHashEntry[] entries)
-            => new Path.Nested(outer, new Name.Normal(name), new ParamHash(0, entries.ToImmutableArray()), default);
-
-
-        public static ClassMemberLoc ClassMember(this Loc instance, Path.Nested memberPath)
+        public static ClassMemberLoc ClassMember(this Loc instance, ClassMemberVarSymbol memberVar)
         {
-            return new ClassMemberLoc(instance, memberPath);
+            return new ClassMemberLoc(instance, memberVar);
         }
 
         public static Loc RLocalVarLoc(string name)
@@ -159,9 +145,9 @@ namespace Gum.IR0
             return new LocalVarLoc(new Name.Normal(name));
         }
 
-        public static Exp RLocalVarExp(string name)
+        public static Exp RLocalVarExp(string name, ITypeSymbol varType)
         {
-            return new LoadExp(new LocalVarLoc(new Name.Normal(name)));
+            return new LoadExp(new LocalVarLoc(new Name.Normal(name)), varType);
         }
 
         public static ParamHash RNormalParamHash(params Path[] paths)

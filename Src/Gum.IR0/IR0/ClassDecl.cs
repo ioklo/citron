@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 using Gum.Infra;
 
-namespace Gum.IR0
+namespace Citron.IR0
 {
     public partial record ClassDecl(
         AccessModifier AccessModifier,

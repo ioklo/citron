@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using M = Gum.CompileTime;
 using Gum.Collections;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     //public class NullableDeclSymbol : ITypeDeclSymbol
     //{

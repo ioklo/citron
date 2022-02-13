@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 
-using Gum.Analysis;
+using Citron.Analysis;
 using Gum.Collections;
 using Gum.Infra;
 
 using Pretune;
 using M = Gum.CompileTime;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     [ImplementIEquatable]
     public partial class StructDeclSymbol : ITypeDeclSymbol
@@ -83,7 +83,7 @@ namespace Gum.Analysis
             return constructorsHolder.GetValue();
         }
 
-        public StructMemberFuncDeclSymbol? GetFunc(M.Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
+        public StructMemberFuncDeclSymbol? GetFunc(M.Name name, int typeParamCount, ImmutableArray<M.FuncParamId> paramIds)
         {
             return funcDict.Get(new DeclSymbolNodeName(name, typeParamCount, paramIds));
         }
@@ -91,11 +91,6 @@ namespace Gum.Analysis
         public ImmutableArray<StructMemberFuncDeclSymbol> GetFuncs(M.Name name, int minTypeParamCount)
         {
             return funcDict.Get(name, minTypeParamCount);
-        }        
-
-        public ImmutableArray<StructMemberVarDeclSymbol> GetMemberVars()
-        {
-            return varDecls;
         }
 
         public StructMemberTypeDeclSymbol? GetType(M.Name name, int typeParamCount)
@@ -118,6 +113,16 @@ namespace Gum.Analysis
             return new DeclSymbolNodeName(name, typeParams.Length, default);
         }
 
+        public int GetMemberVarCount()
+        {
+            return varDecls.Length;
+        }
+
+        public StructMemberVarDeclSymbol GetMemberVar(int index)
+        {
+            return varDecls[index];
+        }
+
         public void Apply(ITypeDeclSymbolVisitor visitor)
         {
             visitor.VisitStruct(this);
@@ -128,7 +133,7 @@ namespace Gum.Analysis
             return containerHolder.GetValue().GetOuterDeclNode();
         }
 
-        public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
+        public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, ImmutableArray<M.FuncParamId> paramIds)
         {
             var nodeName = new DeclSymbolNodeName(name, typeParamCount, paramIds);
 

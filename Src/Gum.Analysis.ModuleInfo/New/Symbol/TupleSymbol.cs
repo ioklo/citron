@@ -3,7 +3,7 @@ using Gum.Collections;
 using M = Gum.CompileTime;
 using Pretune;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     public class TupleSymbol : ITypeSymbol
     {
@@ -49,6 +49,16 @@ namespace Gum.Analysis
         public TypeEnv GetTypeEnv()
         {
             return TypeEnv.Empty;
+        }
+
+        public int GetMemberVarCount()
+        {
+            return memberVars.Length;
+        }
+
+        public TupleMemberVarSymbol GetMemberVar(int index)
+        {
+            return memberVars[index];
         }
 
         public SymbolQueryResult QueryMember(M.Name memberName, int typeParamCount)

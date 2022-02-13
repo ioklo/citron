@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Pretune;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     [AutoConstructor]
     public partial class NamespaceSymbol : ITopLevelSymbolNode

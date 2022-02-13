@@ -19,7 +19,7 @@ namespace Gum.IR0Evaluator.Test
 {
     public class EvaluatorTests
     {
-        class TestCommandProvider : ICommandProvider
+        class TestCommandProvider : IIR0CommandProvider
         {
             StringBuilder sb;
 
@@ -61,7 +61,8 @@ namespace Gum.IR0Evaluator.Test
                 new ExpStringExpElement(                    
                     new CallInternalUnaryOperatorExp(
                         InternalUnaryOperator.ToString_Int_String,
-                        new IntLiteralExp(i)
+                        new IntLiteralExp(i),
+                        IntType
                     )
                 )
             ));
@@ -69,7 +70,7 @@ namespace Gum.IR0Evaluator.Test
 
         Loc IntLoc(int i)
         {
-            return new TempLoc(new IntLiteralExp(i), Path.Int);
+            return new TempLoc(new IntLiteralExp(i));
         }
 
         async Task<string> EvalAsync(Script script)

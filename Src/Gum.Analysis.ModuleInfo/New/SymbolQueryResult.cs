@@ -1,9 +1,9 @@
 ﻿using Gum.Infra;
 using Gum.Collections;
-using Gum.Analysis;
+using Citron.Analysis;
 using System;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     // Error/NotFound/Value
     public abstract record SymbolQueryResult

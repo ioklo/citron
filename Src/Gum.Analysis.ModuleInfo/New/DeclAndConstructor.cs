@@ -1,7 +1,7 @@
 ﻿using Gum.Collections;
 using System;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     public class DeclAndConstructor<TDeclSymbol, TSymbol>
     {

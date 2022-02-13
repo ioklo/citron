@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Gum.IR0
+namespace Citron.IR0
 {
     [AutoConstructor, ImplementIEquatable]
     public partial struct ModuleName

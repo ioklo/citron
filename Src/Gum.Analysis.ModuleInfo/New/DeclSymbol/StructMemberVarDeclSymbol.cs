@@ -6,7 +6,7 @@ using Pretune;
 
 using M = Gum.CompileTime;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     [AutoConstructor]
     public partial class StructMemberVarDeclSymbol : IDeclSymbolNode
@@ -23,7 +23,7 @@ namespace Gum.Analysis
             return outer.GetValue();
         }
 
-        public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
+        public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, ImmutableArray<M.FuncParamId> paramIds)
         {
             return null;
         }

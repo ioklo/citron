@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
-    <RootNamespace>Gum.Analysis</RootNamespace>
+    <RootNamespace>Citron.Analysis</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -10,6 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Citron.Analysis.SymbolLoader\Citron.Analysis.SymbolLoader.csproj" />
     <ProjectReference Include="..\Gum.Analysis.ModuleInfo\Gum.Analysis.ModuleInfo.csproj" />
     <ProjectReference Include="..\Gum.Analysis.TypeExpEvaluator\Gum.Analysis.TypeExpEvaluator.csproj" />
     <ProjectReference Include="..\Gum.Infra\Gum.Infra.csproj" />

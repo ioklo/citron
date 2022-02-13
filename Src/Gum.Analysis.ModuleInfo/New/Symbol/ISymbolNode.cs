@@ -2,9 +2,9 @@
 using System;
 using System.Diagnostics;
 using M = Gum.CompileTime;
+using static Gum.CompileTime.SymbolIdExtensions;
 
-
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     // 자식으로 가는 줄기는 없다
     public interface ISymbolNode
@@ -37,14 +37,14 @@ namespace Gum.Analysis
             return userDecl.CanAccess(targetDecl);
         }
         
-        public static SymbolId GetSymbolId(this ISymbolNode symbol)
+        public static M.SymbolId GetSymbolId(this ISymbolNode symbol)
         {
             var outer = symbol.GetOuter();
             if (outer != null)
             {
                 var outerId = outer.GetSymbolId();
 
-                if (outerId is ModuleSymbolId outerModuleId)
+                if (outerId is M.ModuleSymbolId outerModuleId)
                 {
                     var decl = symbol.GetDeclSymbolNode();
                     Debug.Assert(decl != null); // ModuleSymbolId이기 때문에 무조건 있다
@@ -67,7 +67,7 @@ namespace Gum.Analysis
                     case ModuleSymbol module:
                         var moduleDecl = module.GetDeclSymbolNode();
                         {
-                            return new ModuleSymbolId(moduleDecl.GetNodeName().Name, null);
+                            return new M.ModuleSymbolId(moduleDecl.GetNodeName().Name, null);
                         }
 
                     // case NullableSymbol: return new NullableSymbolId();

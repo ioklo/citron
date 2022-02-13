@@ -8,7 +8,11 @@ using System.Linq;
 using S = Gum.Syntax;
 using M = Gum.CompileTime;
 
-namespace Gum.Analysis
+using static Gum.CompileTime.DeclSymbolIdExtensions;
+using static Gum.CompileTime.SymbolIdExtensions;
+using static Gum.CompileTime.SymbolPathExtensions;
+
+namespace Citron.Analysis
 {
     public enum TypeExpInfoKind
     {
@@ -28,16 +32,16 @@ namespace Gum.Analysis
     public abstract class TypeExpInfo
     {
         public abstract TypeExpInfoKind GetKind();
-        public abstract SymbolId GetSymbolId();
+        public abstract M.SymbolId GetSymbolId();
         // memberTypeExp: 리턴할 TypeExpInfo를 생성하는데 필요한 typeExp
-        public abstract TypeExpInfo? GetMemberInfo(string name, ImmutableArray<SymbolId> typeArgs, S.TypeExp memberTypeExp); 
+        public abstract TypeExpInfo? GetMemberInfo(string name, ImmutableArray<M.SymbolId> typeArgs, S.TypeExp memberTypeExp); 
         public abstract S.TypeExp GetTypeExp();
     }   
     
     [AutoConstructor]
     partial class InternalTypeExpInfo : TypeExpInfo
     {
-        ModuleSymbolId typeId;
+        M.ModuleSymbolId typeId;
         TypeSkeleton skeleton; // 멤버를 갖고 오기 위한 수단
         S.TypeExp typeExp;
 
@@ -46,12 +50,12 @@ namespace Gum.Analysis
             return skeleton.Kind.GetTypeExpInfoKind();
         }
 
-        public override SymbolId GetSymbolId()
+        public override M.SymbolId GetSymbolId()
         {
             return typeId;
         }
 
-        public override TypeExpInfo? GetMemberInfo(string name, ImmutableArray<SymbolId> typeArgs, S.TypeExp memberTypeExp)
+        public override TypeExpInfo? GetMemberInfo(string name, ImmutableArray<M.SymbolId> typeArgs, S.TypeExp memberTypeExp)
         {
             var mname = new M.Name.Normal(name);
 
@@ -71,7 +75,7 @@ namespace Gum.Analysis
     [AutoConstructor]
     partial class ModuleSymbolTypeExpInfo : TypeExpInfo
     {
-        ModuleSymbolId typeId;
+        M.ModuleSymbolId typeId;
         ITypeDeclSymbol symbol;
         S.TypeExp typeExp; // 소스의 어디에서 이 타입정보가 나타나는가
 
@@ -80,7 +84,7 @@ namespace Gum.Analysis
             return symbol.GetTypeExpInfoKind();
         }
 
-        public override TypeExpInfo? GetMemberInfo(string memberName, ImmutableArray<SymbolId> typeArgs, S.TypeExp memberTypeExp)
+        public override TypeExpInfo? GetMemberInfo(string memberName, ImmutableArray<M.SymbolId> typeArgs, S.TypeExp memberTypeExp)
         {
             var memberTypeNode = symbol.GetMemberDeclNode(new M.Name.Normal(memberName), typeArgs.Length, default) as ITypeDeclSymbol;
             if (memberTypeNode == null)
@@ -90,7 +94,7 @@ namespace Gum.Analysis
             return new ModuleSymbolTypeExpInfo(memberTypeId, memberTypeNode, memberTypeExp);
         }
 
-        public override SymbolId GetSymbolId()
+        public override M.SymbolId GetSymbolId()
         {
             return typeId;
         }
@@ -103,14 +107,12 @@ namespace Gum.Analysis
 
     public class InternalTypeVarTypeExpInfo : TypeExpInfo
     {
-        TypeVarSymbolId id;
-        int index;
+        M.TypeVarSymbolId id;
         S.TypeExp typeExp;
 
-        InternalTypeVarTypeExpInfo(TypeVarSymbolId id, int index, S.TypeExp typeExp)
+        InternalTypeVarTypeExpInfo(M.TypeVarSymbolId id, S.TypeExp typeExp)
         {
             this.id = id;
-            this.index = index;
             this.typeExp = typeExp;
         }
 
@@ -119,7 +121,7 @@ namespace Gum.Analysis
             return TypeExpInfoKind.TypeVar;
         }
 
-        public override TypeExpInfo? GetMemberInfo(string name, ImmutableArray<SymbolId> typeArgs, S.TypeExp memberTypeExp)
+        public override TypeExpInfo? GetMemberInfo(string name, ImmutableArray<M.SymbolId> typeArgs, S.TypeExp memberTypeExp)
         {
             return null;
         }
@@ -129,25 +131,25 @@ namespace Gum.Analysis
             return typeExp;
         }
 
-        public override SymbolId GetSymbolId()
+        public override M.SymbolId GetSymbolId()
         {
             return id;
         }
 
-        public static InternalTypeVarTypeExpInfo Make(DeclSymbolId outerDeclId, string typeParam, int index, S.TypeExp typeExp)
+        public static InternalTypeVarTypeExpInfo Make(M.DeclSymbolId outerDeclId, string typeParam, int index, S.TypeExp typeExp)
         {            
             var declId = outerDeclId.Child(new M.Name.Normal(typeParam), 0, default);
-            return new InternalTypeVarTypeExpInfo(new TypeVarSymbolId(declId), index, typeExp);
+            return new InternalTypeVarTypeExpInfo(new M.TypeVarSymbolId(declId, index), typeExp);
         }
     }
 
     class NoMemberTypeExpInfo : TypeExpInfo
     {
         TypeExpInfoKind kind;
-        SymbolId id;
+        M.SymbolId id;
         S.TypeExp typeExp;
 
-        public NoMemberTypeExpInfo(TypeExpInfoKind kind, SymbolId id, S.TypeExp typeExp)
+        public NoMemberTypeExpInfo(TypeExpInfoKind kind, M.SymbolId id, S.TypeExp typeExp)
         {
             this.kind = kind;
             this.id = id;
@@ -159,12 +161,12 @@ namespace Gum.Analysis
             return kind;
         }
 
-        public override TypeExpInfo? GetMemberInfo(string name, ImmutableArray<SymbolId> typeArgs, S.TypeExp memberTypeExp)
+        public override TypeExpInfo? GetMemberInfo(string name, ImmutableArray<M.SymbolId> typeArgs, S.TypeExp memberTypeExp)
         {
             return null;
         }
 
-        public override SymbolId GetSymbolId()
+        public override M.SymbolId GetSymbolId()
         {
             return id;
         }
@@ -180,17 +182,17 @@ namespace Gum.Analysis
     {
         public static TypeExpInfo Var(S.TypeExp typeExp)
         {
-            return new NoMemberTypeExpInfo(TypeExpInfoKind.Var, new VarSymbolId(), typeExp);
+            return new NoMemberTypeExpInfo(TypeExpInfoKind.Var, new M.VarSymbolId(), typeExp);
         }
 
         public static TypeExpInfo Void(S.TypeExp typeExp)
         {
-            return new NoMemberTypeExpInfo(TypeExpInfoKind.Void, new VoidSymbolId(), typeExp);
+            return new NoMemberTypeExpInfo(TypeExpInfoKind.Void, new M.VoidSymbolId(), typeExp);
         }
 
-        public static TypeExpInfo Nullable(SymbolId innerTypeId, S.TypeExp typeExp)
+        public static TypeExpInfo Nullable(M.SymbolId innerTypeId, S.TypeExp typeExp)
         {
-            return new NoMemberTypeExpInfo(TypeExpInfoKind.Nullable, new NullableSymbolId(innerTypeId), typeExp);
+            return new NoMemberTypeExpInfo(TypeExpInfoKind.Nullable, new M.NullableSymbolId(innerTypeId), typeExp);
         }
     }
 
@@ -199,27 +201,27 @@ namespace Gum.Analysis
     public static class BuiltinTypeExpInfo
     {
         static M.Name.Normal runtimeModule;
-        static SymbolPath systemPath;
+        static M.SymbolPath systemPath;
 
         static BuiltinTypeExpInfo()
         {
             runtimeModule = new M.Name.Normal("System.Runtime");
-            systemPath = new SymbolPath(null, new M.Name.Normal("System"));
+            systemPath = new M.SymbolPath(null, new M.Name.Normal("System"));
         }
 
         public static TypeExpInfo Bool(S.TypeExp typeExp)
         {
-            return new NoMemberTypeExpInfo(TypeExpInfoKind.Struct, new ModuleSymbolId(runtimeModule, systemPath.Child(new M.Name.Normal("Int32"))), typeExp);
+            return new NoMemberTypeExpInfo(TypeExpInfoKind.Struct, new M.ModuleSymbolId(runtimeModule, systemPath.Child(new M.Name.Normal("Int32"))), typeExp);
         }
 
         public static TypeExpInfo Int(S.TypeExp typeExp)
         {
-            return new NoMemberTypeExpInfo(TypeExpInfoKind.Struct, new ModuleSymbolId(runtimeModule, systemPath.Child(new M.Name.Normal("Boolean"))), typeExp);
+            return new NoMemberTypeExpInfo(TypeExpInfoKind.Struct, new M.ModuleSymbolId(runtimeModule, systemPath.Child(new M.Name.Normal("Boolean"))), typeExp);
         }
 
         public static TypeExpInfo String(S.TypeExp typeExp)
         {
-            return new NoMemberTypeExpInfo(TypeExpInfoKind.Struct, new ModuleSymbolId(runtimeModule, systemPath.Child(new M.Name.Normal("String"))), typeExp);
+            return new NoMemberTypeExpInfo(TypeExpInfoKind.Struct, new M.ModuleSymbolId(runtimeModule, systemPath.Child(new M.Name.Normal("String"))), typeExp);
         }        
     }
 }

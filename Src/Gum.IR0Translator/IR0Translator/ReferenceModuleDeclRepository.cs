@@ -10,7 +10,7 @@ using Gum.Infra;
 using System.Diagnostics.Contracts;
 using Gum.CompileTime;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {   
     class ModuleDeclSymbolBuilder
     {

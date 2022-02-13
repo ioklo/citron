@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 using M = Gum.CompileTime;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     static class DeclSymbolMisc
     {   

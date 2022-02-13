@@ -1,4 +1,4 @@
-﻿using Gum.Analysis;
+﻿using Citron.Analysis;
 using Gum.Collections;
 using Gum.Infra;
 using Pretune;
@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 using M = Gum.CompileTime;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     // StructDel? outer = null;
     // var innerClass = new ClassDeclSymbol(() => outer!, ....);
@@ -100,7 +100,7 @@ namespace Gum.Analysis
             return baseClassHolder.GetValue();
         }        
 
-        public ClassMemberFuncDeclSymbol? GetMemberFunc(M.Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
+        public ClassMemberFuncDeclSymbol? GetMemberFunc(M.Name name, int typeParamCount, ImmutableArray<M.FuncParamId> paramIds)
         {
             return funcDict.Get(new DeclSymbolNodeName(name, typeParamCount, paramIds));
         }
@@ -120,9 +120,14 @@ namespace Gum.Analysis
             return memberTypes;
         }
 
-        public ImmutableArray<ClassMemberVarDeclSymbol> GetMemberVars()
+        public int GetMemberVarCount()
         {
-            return memberVars;
+            return memberVars.Length;
+        }
+
+        public ClassMemberVarDeclSymbol GetMemberVar(int index)
+        {
+            return memberVars[index];
         }
 
         public M.Name GetName()
@@ -145,7 +150,7 @@ namespace Gum.Analysis
             return containerHolder.GetValue().GetOuterDeclNode();
         }
 
-        public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
+        public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, ImmutableArray<M.FuncParamId> paramIds)
         {
             var nodeName = new DeclSymbolNodeName(name, typeParamCount, paramIds);
 

@@ -1,7 +1,7 @@
 ﻿using Gum.Collections;
 using Gum.Infra;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     public class TupleMemberVarSymbol : ISymbolNode
     {

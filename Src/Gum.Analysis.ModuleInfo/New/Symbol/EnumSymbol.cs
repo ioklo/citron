@@ -4,7 +4,7 @@ using Gum.Collections;
 using M = Gum.CompileTime;
 using Pretune;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     [ImplementIEquatable]
     public partial class EnumSymbol : ITypeSymbol

@@ -5,7 +5,7 @@ using Gum.Infra;
 using R = Gum.IR0;
 using M = Gum.CompileTime;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     public class RItemFactory
     {

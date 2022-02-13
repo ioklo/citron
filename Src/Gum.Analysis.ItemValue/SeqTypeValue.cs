@@ -2,7 +2,7 @@
 using R = Gum.IR0;
 using Pretune;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     // seq ref int F(ref int a, ref int b) { yield ref a; }
     [AutoConstructor]

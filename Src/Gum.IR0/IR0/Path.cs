@@ -3,8 +3,9 @@ using static Gum.Infra.Misc;
 using Pretune;
 using Gum.Infra;
 using System.Diagnostics;
+using System.Linq;
 
-namespace Gum.IR0
+namespace Citron.IR0
 {
     [AutoConstructor]
     public partial struct TupleTypeElem
@@ -94,5 +95,34 @@ namespace Gum.IR0
 
             return false;
         }
+
+        public static Path.Nested Child(this Path.Normal outer, Name name, ParamHash paramHash, ImmutableArray<Path> typeArgs)
+            => new Path.Nested(outer, name, paramHash, typeArgs);
+
+        public static Path.Nested Child(this Path.Normal outer, string name, ParamHash paramHash, ImmutableArray<Path> typeArgs)
+            => new Path.Nested(outer, new Name.Normal(name), paramHash, typeArgs);
+
+
+        public static Path.Nested Child(this Path.Normal outer, Name name)
+            => new Path.Nested(outer, name, ParamHash.None, default);
+
+        public static Path.Nested Child(this Path.Normal outer, string name)
+            => new Path.Nested(outer, new Name.Normal(name), ParamHash.None, default);
+
+
+        // no typeparams, all normal paramtypes
+        public static Path.Nested Child(this Path.Normal outer, Name name, params Path[] types)
+            => new Path.Nested(outer, name, new ParamHash(0, types.Select(type => new ParamHashEntry(ParamKind.Default, type)).ToImmutableArray()), default);
+
+        public static Path.Nested Child(this Path.Normal outer, string name, params Path[] types)
+            => new Path.Nested(outer, new Name.Normal(name), new ParamHash(0, types.Select(type => new ParamHashEntry(ParamKind.Default, type)).ToImmutableArray()), default);
+
+
+        // no typeparams version
+        public static Path.Nested Child(this Path.Normal outer, Name name, params ParamHashEntry[] entries)
+            => new Path.Nested(outer, name, new ParamHash(0, entries.ToImmutableArray()), default);
+
+        public static Path.Nested Child(this Path.Normal outer, string name, params ParamHashEntry[] entries)
+            => new Path.Nested(outer, new Name.Normal(name), new ParamHash(0, entries.ToImmutableArray()), default);
     }
 }

@@ -2,7 +2,7 @@
 using R = Gum.IR0;
 using Pretune;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     // T: depth는 지역적이므로, 주어진 컨텍스트 안에서만 의미가 있다
     [AutoConstructor, ImplementIEquatable]

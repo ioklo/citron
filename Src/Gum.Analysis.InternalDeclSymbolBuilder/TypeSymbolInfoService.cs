@@ -1,7 +1,7 @@
 ﻿using Pretune;
 using S = Gum.Syntax;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     [AutoConstructor]
     public partial class TypeSymbolInfoService

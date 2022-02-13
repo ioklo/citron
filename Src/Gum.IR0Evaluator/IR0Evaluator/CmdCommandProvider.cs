@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Gum.IR0Evaluator
 {
-    public class CmdCommandProvider : ICommandProvider
+    public class CmdCommandProvider : IIR0CommandProvider
     {
         public Task ExecuteAsync(string cmdText)
         {

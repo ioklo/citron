@@ -4,7 +4,7 @@ using Pretune;
 using System;
 using M = Gum.CompileTime;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     // typeDecl에 대리
     [AutoConstructor]

@@ -1,6 +1,6 @@
 ﻿using Pretune;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {   
     [AutoConstructor]
     public partial struct FuncReturn

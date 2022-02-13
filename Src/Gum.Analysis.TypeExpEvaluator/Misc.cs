@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     static class Misc
     {

@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using M = Gum.CompileTime;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     public interface ITypeSymbol : ISymbolNode
     {
@@ -16,7 +16,7 @@ namespace Gum.Analysis
 
     public static class TypeSymbolExtensions
     {
-        public static DeclSymbolId? GetDeclSymbolId(this ITypeSymbol type)
+        public static M.DeclSymbolId? GetDeclSymbolId(this ITypeSymbol type)
         {
             var decl = type.GetDeclSymbolNode();
             if (decl == null) return null;

@@ -12,7 +12,7 @@ using M = Gum.CompileTime;
 using R = Gum.IR0;
 using Gum.Infra;
 using static Gum.IR0Translator.AnalyzeErrorCode;
-using Gum.Analysis;
+using Citron.Analysis;
 
 namespace Gum.IR0Translator
 {

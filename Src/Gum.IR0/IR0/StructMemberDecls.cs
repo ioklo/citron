@@ -1,6 +1,6 @@
 ﻿using Gum.Collections;
 
-namespace Gum.IR0
+namespace Citron.IR0
 {
     public record StructMemberVarDecl(AccessModifier AccessModifier, Path Type, ImmutableArray<string> Names);
 

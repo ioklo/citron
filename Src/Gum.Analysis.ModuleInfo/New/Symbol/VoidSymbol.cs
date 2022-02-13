@@ -2,7 +2,7 @@
 using Gum.CompileTime;
 using System;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     // "void"
     public class VoidSymbol : ITypeSymbol

@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 using M = Gum.CompileTime;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     // X<int>.Y<short>.F_T_int_int<S>
     public class ClassMemberFuncSymbol : IFuncSymbol

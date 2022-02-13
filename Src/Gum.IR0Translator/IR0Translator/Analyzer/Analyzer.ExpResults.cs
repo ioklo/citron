@@ -3,7 +3,7 @@ using Gum.Collections;
 
 using M = Gum.CompileTime;
 using R = Gum.IR0;
-using Gum.Analysis;
+using Citron.Analysis;
 using S = Gum.Syntax;
 using System;
 

@@ -3,7 +3,7 @@ using System;
 
 using M = Gum.CompileTime;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     public class ClassConstructorSymbol : IFuncSymbol
     {

@@ -11,7 +11,7 @@ using S = Gum.Syntax;
 using M = Gum.CompileTime;
 using R = Gum.IR0;
 using Gum.Log;
-using Gum.Analysis;
+using Citron.Analysis;
 
 using static Gum.Infra.Misc;
 

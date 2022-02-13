@@ -6,9 +6,9 @@ using System.Linq;
 using M = Gum.CompileTime;
 using System.Diagnostics;
 using Gum.Infra;
-using Gum.Analysis;
+using Citron.Analysis;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     // reference module에서 타입 정보를 얻어오는 역할
     public class TypeInfoRepository

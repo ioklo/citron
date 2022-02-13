@@ -1,7 +1,7 @@
 ﻿using Gum.Collections;
 using Gum.CompileTime;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     //public class CapturedVarSymbol : ISymbolNode
     //{

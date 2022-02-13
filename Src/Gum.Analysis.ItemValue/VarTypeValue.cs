@@ -1,7 +1,7 @@
 ﻿using System;
 using R = Gum.IR0;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     // "var"
     public class VarTypeValue : ITypeSymbol

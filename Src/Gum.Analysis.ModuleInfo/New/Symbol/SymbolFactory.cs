@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     // DeclSymbolFactory는 따로 만들자
     public class SymbolFactory
@@ -60,6 +60,11 @@ namespace Gum.Analysis
             Debug.Assert(decl.GetTypeParamCount() == typeArgs.Length);
 
             return new InterfaceSymbol(this, outer, decl, typeArgs);
+        }
+
+        public VarSymbol MakeVar()
+        {
+            return new VarSymbol();
         }
 
         internal ClassMemberVarSymbol MakeClassMemberVar(ClassSymbol @class, ClassMemberVarDeclSymbol decl)

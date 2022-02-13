@@ -4,7 +4,7 @@ using System;
 using System.Diagnostics;
 using M = Gum.CompileTime;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     public class StructConstructorSymbol : IFuncSymbol
     {

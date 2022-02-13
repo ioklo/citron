@@ -3,7 +3,7 @@ using Pretune;
 using System.Collections.Generic;
 using M = Gum.CompileTime;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     public class FuncDict
     {

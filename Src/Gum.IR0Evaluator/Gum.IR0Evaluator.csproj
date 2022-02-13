@@ -13,9 +13,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Citron.Analysis.SymbolLoader\Citron.Analysis.SymbolLoader.csproj" />
+    <ProjectReference Include="..\Citron.Evaluator\Citron.Evaluator.csproj" />
     <ProjectReference Include="..\Gum.Analysis.ModuleInfo\Gum.Analysis.ModuleInfo.csproj" />
     <ProjectReference Include="..\Gum.Infra\Gum.Infra.csproj" />
     <ProjectReference Include="..\Gum.IR0\Gum.IR0.csproj" />
+    <ProjectReference Include="..\Gum.ModuleInfo\Gum.ModuleInfo.csproj" />
   </ItemGroup>
 
 </Project>

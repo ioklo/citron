@@ -1,7 +1,7 @@
 ﻿using Gum.Collections;
 using Pretune;
 
-namespace Gum.IR0
+namespace Citron.IR0
 {    
     [AutoConstructor, ImplementIEquatable]
     public partial struct ParamHashEntry

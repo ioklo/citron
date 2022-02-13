@@ -9,7 +9,7 @@ using Pretune;
 
 using M = Gum.CompileTime;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     [AutoConstructor]
     public partial class InterfaceDeclSymbol : ITypeDeclSymbol
@@ -24,7 +24,7 @@ namespace Gum.Analysis
             visitor.VisitInterface(this);
         }
 
-        public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
+        public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, ImmutableArray<M.FuncParamId> paramIds)
         {
             return null;
         }

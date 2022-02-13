@@ -4,7 +4,7 @@ using Gum.Collections;
 using Pretune;
 using M = Gum.CompileTime;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     // ArgTypeValues => RetValueTypes
     [AutoConstructor]

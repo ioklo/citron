@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Text;
 using S = Gum.Syntax;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     public partial class TypeExpEvaluator
     {

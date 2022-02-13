@@ -4,7 +4,7 @@ using System;
 
 using M = Gum.CompileTime;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     // int?
     public class NullableSymbol : ITypeSymbol

@@ -6,7 +6,7 @@ using Pretune;
 
 using M = Gum.CompileTime;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     [AutoConstructor]
     public partial class StructMemberTypeDeclSymbol : ITypeDeclSymbolContainer, TypeDict.IHaveNodeName

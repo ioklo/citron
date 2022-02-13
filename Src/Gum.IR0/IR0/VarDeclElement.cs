@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Gum.IR0
+namespace Citron.IR0
 {
     public abstract record VarDeclElement
     {

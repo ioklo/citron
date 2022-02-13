@@ -14,7 +14,7 @@ using static Gum.IR0Translator.AnalyzeErrorCode;
 using S = Gum.Syntax;
 using R = Gum.IR0;
 using Gum.Log;
-using Gum.Analysis;
+using Citron.Analysis;
 
 namespace Gum.IR0Translator
 {

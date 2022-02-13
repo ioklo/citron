@@ -7,12 +7,14 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection.Emit;
 using System.Text;
+using Gum.Log;
 
 using S = Gum.Syntax;
 using M = Gum.CompileTime;
-using Gum.Log;
 
-namespace Gum.Analysis
+using static Gum.CompileTime.DeclSymbolIdExtensions;
+
+namespace Citron.Analysis
 {
     public partial class TypeExpEvaluator
     {
@@ -30,7 +32,7 @@ namespace Gum.Analysis
             var typeEnv = TypeEnv.Empty;
             var infosByTypeExp = new Dictionary<S.TypeExp, TypeExpInfo>();
             var context = new Context(internalModuleName, referenceModules, skelRepo, logger, infosByTypeExp);
-            var declVisitor = new DeclVisitor(new DeclSymbolId(internalModuleName, null), typeEnv, 0, context);
+            var declVisitor = new DeclVisitor(new M.DeclSymbolId(internalModuleName, null), typeEnv, 0, context);
             var stmtVisitor = new StmtVisitor(typeEnv, context);
 
             try
@@ -70,12 +72,12 @@ namespace Gum.Analysis
 
         struct DeclVisitor
         {
-            DeclSymbolId declId;
+            M.DeclSymbolId declId;
             TypeEnv typeEnv;
             int totalTypeParamCount;
             Context context;
 
-            public DeclVisitor(DeclSymbolId declId, TypeEnv typeEnv, int totalTypeParamCount, Context context)
+            public DeclVisitor(M.DeclSymbolId declId, TypeEnv typeEnv, int totalTypeParamCount, Context context)
             {
                 this.declId = declId;
                 this.typeEnv = typeEnv;

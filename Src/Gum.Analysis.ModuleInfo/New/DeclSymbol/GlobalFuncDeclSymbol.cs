@@ -1,11 +1,11 @@
-﻿using Gum.Analysis;
+﻿using Citron.Analysis;
 using Gum.Collections;
 using Pretune;
 using System;
 using M = Gum.CompileTime;
 using Gum.Infra;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     [AutoConstructor, ImplementIEquatable]
     public partial class GlobalFuncDeclSymbol : IFuncDeclSymbol
@@ -63,7 +63,7 @@ namespace Gum.Analysis
         }
 
         // 함수는 자식을 갖지 않는다
-        public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
+        public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, ImmutableArray<M.FuncParamId> paramIds)
         {
             return null;
         }

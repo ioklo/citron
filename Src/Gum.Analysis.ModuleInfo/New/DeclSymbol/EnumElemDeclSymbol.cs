@@ -1,11 +1,11 @@
-﻿using Gum.Analysis;
+﻿using Citron.Analysis;
 using Gum.Collections;
 using Gum.Infra;
 using Pretune;
 using System;
 using M = Gum.CompileTime;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     [AutoConstructor, ImplementIEquatable]
     public partial class EnumElemDeclSymbol : ITypeDeclSymbol
@@ -13,10 +13,15 @@ namespace Gum.Analysis
         IHolder<EnumDeclSymbol> outer;
         M.Name name;
         ImmutableArray<EnumElemMemberVarDeclSymbol> memberVarDecls;
-
-        public ImmutableArray<EnumElemMemberVarDeclSymbol> GetMemberVarDecls()
+        
+        public int GetMemberVarCount()
         {
-            return memberVarDecls;
+            return memberVarDecls.Length;
+        }
+
+        public EnumElemMemberVarDeclSymbol GetMemberVar(int index)
+        {
+            return memberVarDecls[index];
         }
         
         public bool IsStandalone()
@@ -39,7 +44,7 @@ namespace Gum.Analysis
             return new DeclSymbolNodeName(name, 0, default);
         }
 
-        public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
+        public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, ImmutableArray<M.FuncParamId> paramIds)
         {
             if (typeParamCount != 0 || !paramIds.IsEmpty) return null;
 

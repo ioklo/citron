@@ -3,7 +3,7 @@ using Gum.Collections;
 using M = Gum.CompileTime;
 using Gum.Infra;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     public record ClassMemberFuncDeclSymbol : IFuncDeclSymbol
     {
@@ -73,7 +73,7 @@ namespace Gum.Analysis
             return outer.GetValue();
         }
 
-        public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
+        public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, ImmutableArray<M.FuncParamId> paramIds)
         {
             return null;
         }

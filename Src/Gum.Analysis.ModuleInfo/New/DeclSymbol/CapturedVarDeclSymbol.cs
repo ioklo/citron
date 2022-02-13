@@ -3,7 +3,7 @@ using Gum.Infra;
 using System;
 using M = Gum.CompileTime;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     //public class CapturedVarDeclSymbol : IDeclSymbolNode
     //{
@@ -28,7 +28,7 @@ namespace Gum.Analysis
     //        return M.AccessModifier.Private;
     //    }
 
-    //    public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
+    //    public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, ImmutableArray<M.FuncParamId> paramIds)
     //    {
     //        return null;
     //    }

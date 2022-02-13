@@ -9,7 +9,7 @@ using Gum.Collections;
 using Pretune;
 using static Gum.IR0Translator.AnalyzeErrorCode;
 using System.Diagnostics;
-using Gum.Analysis;
+using Citron.Analysis;
 
 namespace Gum.IR0Translator
 {
@@ -58,8 +58,8 @@ namespace Gum.IR0Translator
                     // IntenralModuleInfoBuilder에서 처리하기 때문에 여기서는 Base가 두개 이상 나올일이 없다
                     foreach (var baseType in classDecl.BaseTypes)
                     {
-                        var typeValue = globalContext.GetSymbolByTypeExp(baseType);
-                        if (typeValue is ClassSymbol classSymbol)
+                        var typeSymbol = globalContext.GetSymbolByTypeExp(baseType);
+                        if (typeSymbol is ClassSymbol classSymbol)
                             return classSymbol.MakeRPath();
                     }
 

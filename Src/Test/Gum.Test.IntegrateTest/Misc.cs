@@ -22,7 +22,7 @@ namespace Gum.Test.IntegrateTest
 {
     static class Misc
     {   
-        class TestCmdProvider : ICommandProvider
+        class TestCmdProvider : IIR0CommandProvider
         {
             public bool Error = false;
             public string Output { get => sb.ToString(); }

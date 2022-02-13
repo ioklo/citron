@@ -2,10 +2,11 @@
 using Gum.Infra;
 using System;
 using M = Gum.CompileTime;
+using static Gum.CompileTime.DeclSymbolIdExtensions;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
-    public record DeclSymbolNodeName(M.Name Name, int TypeParamCount, ImmutableArray<FuncParamId> ParamIds);
+    public record DeclSymbolNodeName(M.Name Name, int TypeParamCount, ImmutableArray<M.FuncParamId> ParamIds);
 
     // DeclSymbol 간에 참조할 수 있는 인터페이스 확장에는 닫혀있다 
     public interface IDeclSymbolNode
@@ -13,7 +14,7 @@ namespace Gum.Analysis
         M.AccessModifier GetAccessModifier();
         IDeclSymbolNode? GetOuterDeclNode(); // 최상위 계층에는 Outer가 없다
         DeclSymbolNodeName GetNodeName();
-        IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds);
+        IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, ImmutableArray<M.FuncParamId> paramIds);
 
         void Apply(IDeclSymbolNodeVisitor visitor);
     }
@@ -69,7 +70,7 @@ namespace Gum.Analysis
         }
 
         // tree traversal, 못찾으면 null, declPath가 relative path여도 가능하다
-        public static IDeclSymbolNode? GetDeclSymbol(this IDeclSymbolNode node, DeclSymbolPath declPath)
+        public static IDeclSymbolNode? GetDeclSymbol(this IDeclSymbolNode node, M.DeclSymbolPath declPath)
         {
             if (declPath.Outer != null)
             {
@@ -81,6 +82,25 @@ namespace Gum.Analysis
             else
             {
                 return node.GetMemberDeclNode(declPath.Name, declPath.TypeParamCount, declPath.ParamIds);
+            }
+        }
+
+        public static M.DeclSymbolId GetDeclSymbolId(this IDeclSymbolNode decl)
+        {
+            var outerDecl = decl.GetOuterDeclNode();
+            if (outerDecl != null)
+            {
+                var outerDeclId = outerDecl.GetDeclSymbolId();
+                var nodeName = decl.GetNodeName();
+                return outerDeclId.Child(nodeName.Name, nodeName.TypeParamCount, nodeName.ParamIds);
+            }
+            else if (decl is ModuleDeclSymbol moduleDecl)
+            {
+                return new M.DeclSymbolId(moduleDecl.GetName(), null);
+            }
+            else
+            {
+                throw new UnreachableCodeException();
             }
         }
     }

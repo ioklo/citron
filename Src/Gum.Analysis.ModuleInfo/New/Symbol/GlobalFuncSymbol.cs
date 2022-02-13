@@ -7,9 +7,9 @@ using System.Text;
 using M = Gum.CompileTime;
 using Gum.Infra;
 using Gum.Collections;
-using Gum.Analysis;
+using Citron.Analysis;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     // X<int>.Y<short>.F_T_int_int<S>
 

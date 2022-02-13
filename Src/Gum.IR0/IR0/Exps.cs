@@ -7,9 +7,9 @@ using Gum.Collections;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using Gum.Analysis;
+using Citron.Analysis;
 
-namespace Gum.IR0
+namespace Citron.IR0
 {   
     public abstract record Exp : INode
     {

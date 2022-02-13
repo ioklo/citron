@@ -1,14 +1,14 @@
-﻿using Gum.CompileTime;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Gum.Collections;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using S = Gum.Syntax;
+using M = Gum.CompileTime;
 using Pretune;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     enum TypeSkeletonKind
     {
@@ -22,25 +22,25 @@ namespace Gum.Analysis
     // TODO: Type뿐 아니라 Namespace 등도 여기서
     class TypeSkeleton
     {
-        public DeclSymbolPath Path { get; }
+        public M.DeclSymbolPath Path { get; }
         public TypeSkeletonKind Kind { get; }
-        ImmutableDictionary<TypeName, TypeSkeleton> membersByName;
+        ImmutableDictionary<M.TypeName, TypeSkeleton> membersByName;
 
-        public TypeSkeleton(DeclSymbolPath path, ImmutableArray<TypeSkeleton> members, TypeSkeletonKind kind)
+        public TypeSkeleton(M.DeclSymbolPath path, ImmutableArray<TypeSkeleton> members, TypeSkeletonKind kind)
         {
             Path = path;
             Kind = kind;
 
-            var builder = ImmutableDictionary.CreateBuilder<TypeName, TypeSkeleton>();
+            var builder = ImmutableDictionary.CreateBuilder<M.TypeName, TypeSkeleton>();
             foreach (var member in members)
-                builder.Add(new TypeName(member.Path.Name, member.Path.TypeParamCount), member);
+                builder.Add(new M.TypeName(member.Path.Name, member.Path.TypeParamCount), member);
 
             membersByName = builder.ToImmutable();
         }
         
-        public TypeSkeleton? GetMember(Name memberName, int typeParamCount)
+        public TypeSkeleton? GetMember(M.Name memberName, int typeParamCount)
         {
-            return membersByName.GetValueOrDefault(new TypeName(memberName, typeParamCount));
+            return membersByName.GetValueOrDefault(new M.TypeName(memberName, typeParamCount));
         }
 
         public IEnumerable<TypeSkeleton> GetAllMembers()

@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     public class SymbolInstantiator : IDeclSymbolNodeVisitor, ITypeDeclSymbolVisitor
     {

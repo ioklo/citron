@@ -9,7 +9,7 @@ using R = Gum.IR0;
 using Gum.Infra;
 using System.Diagnostics;
 using Pretune;
-using Gum.Analysis;
+using Citron.Analysis;
 
 namespace Gum.IR0Translator
 {

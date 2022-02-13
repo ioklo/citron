@@ -3,7 +3,7 @@ using Pretune;
 using System;
 using System.Diagnostics;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     // utility class for {ClassDeclSymbol, StructDeclSymbol} QueryMember_Type
     class SymbolQueryResultBuilder : ITypeDeclSymbolVisitor

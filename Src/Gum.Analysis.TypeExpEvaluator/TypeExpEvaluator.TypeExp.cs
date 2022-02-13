@@ -7,9 +7,9 @@ using M = Gum.CompileTime;
 using System.Linq;
 using Gum.Collections;
 
-using static Gum.Analysis.TypeExpErrorCode;
+using static Citron.Analysis.TypeExpErrorCode;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     public partial class TypeExpEvaluator
     {
@@ -84,7 +84,7 @@ namespace Gum.Analysis
                 // 3. 전역에서 검색, 
                 // TODO: 현재 namespace 상황에 따라서 Namespace.Root대신 인자를 집어넣어야 한다.
                 var typeArgs = VisitTypeArgExps(typeExp.TypeArgs);
-                var candidates = context.GetTypeExpInfos(new SymbolPath(null, new M.Name.Normal(typeExp.Name), typeArgs), typeExp).ToList();
+                var candidates = context.GetTypeExpInfos(new M.SymbolPath(null, new M.Name.Normal(typeExp.Name), typeArgs), typeExp).ToList();
 
                 if (candidates.Count == 1)
                 {
@@ -154,9 +154,9 @@ namespace Gum.Analysis
                 }
             }
 
-            ImmutableArray<SymbolId> VisitTypeArgExps(ImmutableArray<S.TypeExp> typeArgExps)
+            ImmutableArray<M.SymbolId> VisitTypeArgExps(ImmutableArray<S.TypeExp> typeArgExps)
             {
-                var builder = ImmutableArray.CreateBuilder<SymbolId>(typeArgExps.Length);
+                var builder = ImmutableArray.CreateBuilder<M.SymbolId>(typeArgExps.Length);
                 foreach (var typeArgExp in typeArgExps)
                 {
                     var typeArgResult = VisitTypeExp(typeArgExp);

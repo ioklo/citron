@@ -7,7 +7,7 @@ using Gum.Infra;
 
 using M = Gum.CompileTime;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     public partial class Misc
     {

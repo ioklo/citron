@@ -3,7 +3,7 @@ using Gum.Collections;
 using Pretune;
 using M = Gum.CompileTime;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     // ITypeSymbol과 IFuncSymbol의 성격을 동시에 가지는데, 그렇다면 ITypeSymbol이 더 일반적이다(함수적 성격은 멤버함수라고 생각하면 된다)
     [AutoConstructor]
@@ -29,7 +29,7 @@ namespace Gum.Analysis
             visitor.VisitLambda(this);
         }
 
-        public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
+        public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, ImmutableArray<M.FuncParamId> paramIds)
         {
             if (typeParamCount != 0 || !paramIds.IsEmpty)
                 return null;

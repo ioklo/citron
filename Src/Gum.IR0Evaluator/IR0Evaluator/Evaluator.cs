@@ -16,32 +16,31 @@ namespace Gum.IR0Evaluator
 {
     // 레퍼런스용 Big Step Evaluator, 
     // TODO: Small Step으로 가야하지 않을까 싶다 (yield로 실행 point 잡는거 해보면 재미있을 것 같다)
-    public partial class Evaluator
-    {
-        public static async ValueTask<int> EvalAsync(ImmutableArray<IModuleDriver> moduleDrivers, ICommandProvider commandProvider, R.Script script)
-        {   
-            var globalContext = new GlobalContext(commandProvider);
+    
+        //public static async ValueTask<int> EvalAsync(ImmutableArray<IModuleDriver> moduleDrivers, ICommandProvider commandProvider, R.Script script)
+        //{   
+        //    var globalContext = new GlobalContext(commandProvider);
 
-            foreach (var moduleDriver in moduleDrivers)
-            {
-                var containerInfos = moduleDriver.GetRootContainers();
-                foreach (var containerInfo in containerInfos)
-                    globalContext.AddRootItemContainer(containerInfo.ModuleName, containerInfo.Container);
-            }
+        //    foreach (var moduleDriver in moduleDrivers)
+        //    {
+        //        var containerInfos = moduleDriver.GetRootContainers();
+        //        foreach (var containerInfo in containerInfos)
+        //            globalContext.AddRootItemContainer(containerInfo.ModuleName, containerInfo.Container);
+        //    }
 
-            var rootItemContainer = new ItemContainer();
-            DeclEvaluator.EvalDeclsInScript(globalContext, rootItemContainer, new R.Path.Root(script.Name), 0, script);
-            globalContext.AddRootItemContainer(script.Name, rootItemContainer);
+        //    var rootItemContainer = new ItemContainer();
+        //    DeclEvaluator.EvalDeclsInScript(globalContext, rootItemContainer, new R.Path.Root(script.Name), 0, script);
+        //    globalContext.AddRootItemContainer(script.Name, rootItemContainer);
 
-            var topLevelRetValue = new IntValue();
-            var context = new EvalContext(topLevelRetValue);
-            var localContext = new LocalContext(ImmutableDictionary<R.Name, Value>.Empty);
-            var localTaskContext = new LocalTaskContext();
+        //    var topLevelRetValue = new IntValue();
+        //    var context = new EvalContext(topLevelRetValue);
+        //    var localContext = new LocalContext(ImmutableDictionary<R.Name, Value>.Empty);
+        //    var localTaskContext = new LocalTaskContext();
 
-            await StmtEvaluator.EvalTopLevelStmtsAsync(globalContext, context, localContext, localTaskContext, script.TopLevelStmts);
+        //    await StmtEvaluator.EvalTopLevelStmtsAsync(globalContext, context, localContext, localTaskContext, script.TopLevelStmts);
             
-            return ((IntValue)context.GetRetValue()).GetInt();
-        }
+        //    return ((IntValue)context.GetRetValue()).GetInt();
+        //}
 
         static bool GetBaseType(R.Path type, [NotNullWhen(true)] out R.Path? outBaseType)
         {
@@ -85,7 +84,7 @@ namespace Gum.IR0Evaluator
         }
 
         // 캡쳐는 람다 Value안에 값을 세팅한다        
-        static void CaptureLocals(EvalContext context, LocalContext localContext, Value? capturedThis, ImmutableDictionary<string, Value> localVars, R.CapturedStatement capturedStatement)
+        static void CaptureLocals(IR0EvalContext context, LocalContext localContext, Value? capturedThis, ImmutableDictionary<string, Value> localVars, R.CapturedStatement capturedStatement)
         {
             if (capturedStatement.ThisType != null)
             {
@@ -99,5 +98,5 @@ namespace Gum.IR0Evaluator
                 localVars[typeAndName.Name].SetValue(origValue);
             }
         }        
-    }
+ 
 }

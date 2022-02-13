@@ -18,7 +18,7 @@ using Pretune;
 using System.Diagnostics.Contracts;
 using Gum.Infra;
 using Gum.Collections;
-using Gum.Analysis;
+using Citron.Analysis;
 
 namespace Gum.IR0Translator
 {
@@ -626,9 +626,9 @@ namespace Gum.IR0Translator
                 // var memberResult = objResult.TypeSymbol.QueryMember(new M.Name(M.SpecialName.IndexerGet, null), 0);
 
                 // 리스트 타입의 경우,
-                if (objResult.TypeSymbol is RuntimeListTypeSymbol listTypeValue)
+                if (globalContext.IsListType(objResult.TypeSymbol, out var itemType))
                 {
-                    return new ExpResult.Loc(new R.ListIndexerLoc(objResult.Result, castIndexResult.Result), listTypeValue.ElemType);
+                    return new ExpResult.Loc(new R.ListIndexerLoc(objResult.Result, castIndexResult), itemType);
                 }
                 else
                 {

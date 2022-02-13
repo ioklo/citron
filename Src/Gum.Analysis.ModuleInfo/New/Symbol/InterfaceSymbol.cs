@@ -7,7 +7,7 @@ using Gum.Collections;
 
 using M = Gum.CompileTime;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     public class InterfaceSymbol : ITypeSymbol
     {

@@ -15,7 +15,7 @@ using Pretune;
 using System.Linq;
 using Gum.Infra;
 using Gum.Collections;
-using Gum.Analysis;
+using Citron.Analysis;
 
 namespace Gum.IR0Translator
 {

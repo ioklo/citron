@@ -1,7 +1,8 @@
-﻿using Gum.Collections;
-using Pretune;
+﻿using Pretune;
+using Gum.Collections;
+using Gum.CompileTime;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     [AutoConstructor]
     public partial class LambdaMemberVarSymbol : ISymbolNode
@@ -34,6 +35,11 @@ namespace Gum.Analysis
         public TypeEnv GetTypeEnv()
         {
             return outer.GetTypeEnv();
+        }
+
+        public Name GetName()
+        {
+            return decl.GetName();
         }
     }
 }

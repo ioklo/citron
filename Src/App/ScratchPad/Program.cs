@@ -79,7 +79,7 @@ namespace ScratchPad
             }
         }
 
-        class DemoCommandProvider : ICommandProvider
+        class DemoCommandProvider : IIR0CommandProvider
         {
             public async Task ExecuteAsync(string text)
             {

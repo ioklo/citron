@@ -4,7 +4,7 @@ using System;
 using M = Gum.CompileTime;
 using Gum.Infra;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     public record ClassConstructorDeclSymbol : IFuncDeclSymbol
     {
@@ -46,7 +46,7 @@ namespace Gum.Analysis
             return new DeclSymbolNodeName(M.Name.Constructor, 0, parameters.GetValue().MakeFuncParamIds());
         }
 
-        public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
+        public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, ImmutableArray<M.FuncParamId> paramIds)
         {
             return null;
         }

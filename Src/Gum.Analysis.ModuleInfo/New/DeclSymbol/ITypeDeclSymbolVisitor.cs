@@ -1,4 +1,4 @@
-﻿namespace Gum.Analysis
+﻿namespace Citron.Analysis
 {
     public interface ITypeDeclSymbolVisitor
     {

@@ -1,22 +1,22 @@
-﻿using Gum.CompileTime;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Gum.Collections;
 using System.Text;
-using S = Gum.Syntax;
 using System.Diagnostics;
-using Gum.Analysis;
 
-namespace Gum.Analysis
+using S = Gum.Syntax;
+using M = Gum.CompileTime;
+
+namespace Citron.Analysis
 {
     // DeclSymbolPath -> TypeSkeleton
     class TypeSkeletonRepository
     {
-        ImmutableDictionary<DeclSymbolPath, TypeSkeleton> allMembers;
+        ImmutableDictionary<M.DeclSymbolPath, TypeSkeleton> allMembers;
 
         public static TypeSkeletonRepository Build(ImmutableArray<TypeSkeleton> rootMembers)
         {
-            var allMembersBuilder = ImmutableDictionary.CreateBuilder<DeclSymbolPath, TypeSkeleton>();            
+            var allMembersBuilder = ImmutableDictionary.CreateBuilder<M.DeclSymbolPath, TypeSkeleton>();            
 
             foreach (var rootMember in rootMembers)
             {
@@ -28,7 +28,7 @@ namespace Gum.Analysis
             return new TypeSkeletonRepository(allMembersBuilder.ToImmutable());
         }
 
-        static void FillChild(ImmutableDictionary<DeclSymbolPath, TypeSkeleton>.Builder builder, TypeSkeleton skel)
+        static void FillChild(ImmutableDictionary<M.DeclSymbolPath, TypeSkeleton>.Builder builder, TypeSkeleton skel)
         {
             foreach (var elem in skel.GetAllMembers())
             {
@@ -37,12 +37,12 @@ namespace Gum.Analysis
             }
         }
 
-        TypeSkeletonRepository(ImmutableDictionary<DeclSymbolPath, TypeSkeleton> allMembers)
+        TypeSkeletonRepository(ImmutableDictionary<M.DeclSymbolPath, TypeSkeleton> allMembers)
         {
             this.allMembers = allMembers;
         }
 
-        public TypeSkeleton? GetTypeSkeleton(DeclSymbolPath path)
+        public TypeSkeleton? GetTypeSkeleton(M.DeclSymbolPath path)
         {
             return allMembers.GetValueOrDefault(path);
         }

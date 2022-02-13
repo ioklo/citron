@@ -1,7 +1,7 @@
 ﻿using Gum.CompileTime;
 using M = Gum.CompileTime;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     // module, namespace
     public interface ITopLevelDeclSymbolNode : IDeclSymbolNode

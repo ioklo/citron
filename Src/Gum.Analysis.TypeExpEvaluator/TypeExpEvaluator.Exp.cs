@@ -4,8 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using S = Gum.Syntax;
+using M = Gum.CompileTime;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     public partial class TypeExpEvaluator
     {   
@@ -28,7 +29,7 @@ namespace Gum.Analysis
                 return null;
             }
 
-            public void Add(DeclSymbolId declId, string typeParam, int index)
+            public void Add(M.DeclSymbolId declId, string typeParam, int index)
             {
                 dict = dict.SetItem(typeParam, typeExp => InternalTypeVarTypeExpInfo.Make(declId, typeParam, index, typeExp));
             }

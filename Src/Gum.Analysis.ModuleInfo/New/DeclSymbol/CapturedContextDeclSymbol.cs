@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     //public class CapturedContextDeclSymbol : ITypeDeclSymbol
     //{
@@ -36,7 +36,7 @@ namespace Gum.Analysis
     //        return M.AccessModifier.Public;
     //    }
 
-    //    public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
+    //    public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, ImmutableArray<M.FuncParamId> paramIds)
     //    {
     //        if (typeParamCount != 0 || !paramIds.IsEmpty)
     //            return null;

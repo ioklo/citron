@@ -6,9 +6,9 @@ using Gum.Collections;
 using System.Diagnostics;
 using System.Linq;
 using Gum.Infra;
-using Gum.Analysis;
+using Citron.Analysis;
 
-namespace Gum.IR0
+namespace Citron.IR0
 {   
     public abstract record Stmt : INode
     {

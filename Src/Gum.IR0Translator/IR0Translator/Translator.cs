@@ -8,7 +8,7 @@ using Gum.Collections;
 using R = Gum.IR0;
 using M = Gum.CompileTime;
 using Gum.Log;
-using Gum.Analysis;
+using Citron.Analysis;
 
 namespace Gum.IR0Translator
 {

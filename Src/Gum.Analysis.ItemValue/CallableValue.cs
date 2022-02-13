@@ -2,7 +2,7 @@
 using Gum.Infra;
 using M = Gum.CompileTime;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     public abstract class CallableValue : ItemValue
     {

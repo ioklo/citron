@@ -5,7 +5,7 @@ using System.Text;
 using Pretune;
 using Gum.Infra;
 
-namespace Gum.IR0
+namespace Citron.IR0
 {
     public record SequenceFuncDecl(
         ImmutableArray<CallableMemberDecl> CallableMemberDecls,

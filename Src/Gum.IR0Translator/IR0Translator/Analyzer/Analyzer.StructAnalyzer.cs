@@ -12,7 +12,7 @@ using Gum.Collections;
 using Pretune;
 using static Gum.IR0Translator.AnalyzeErrorCode;
 using System.Diagnostics;
-using Gum.Analysis;
+using Citron.Analysis;
 
 namespace Gum.IR0Translator
 {

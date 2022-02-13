@@ -2,7 +2,7 @@
 
 using M = Gum.CompileTime;
 
-namespace Gum.Analysis
+namespace Citron.Analysis
 {
     // ModuleDecl, NamespaceDecl에서 쓰이는 로직
     struct TopLevelDeclDict
@@ -32,12 +32,12 @@ namespace Gum.Analysis
             return globalTypeDict.Get(new DeclSymbolNodeName(name, typeParamCount, default));
         }
 
-        public GlobalFuncDeclSymbol? GetFunc(M.Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
+        public GlobalFuncDeclSymbol? GetFunc(M.Name name, int typeParamCount, ImmutableArray<M.FuncParamId> paramIds)
         {
             return globalFuncDict.Get(new DeclSymbolNodeName(name, typeParamCount, paramIds));
         }
 
-        public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
+        public IDeclSymbolNode? GetMemberDeclNode(M.Name name, int typeParamCount, ImmutableArray<M.FuncParamId> paramIds)
         {
             if (paramIds.IsEmpty)
             {
