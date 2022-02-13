@@ -13,14 +13,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Gum.Infra\Gum.Infra.csproj" />
-    <ProjectReference Include="..\..\Gum.IR0Evaluator\Gum.IR0Evaluator.csproj" />
-    <ProjectReference Include="..\..\Gum.IR0Translator\Gum.IR0Translator.csproj" />
-    <ProjectReference Include="..\..\Gum.IR0\Gum.IR0.csproj" />
-    <ProjectReference Include="..\..\Gum.Log\Gum.Log.csproj" />
-    <ProjectReference Include="..\..\Gum.ModuleInfo\Gum.ModuleInfo.csproj" />
-    <ProjectReference Include="..\..\Gum.Syntax\Gum.Syntax.csproj" />
-    <ProjectReference Include="..\..\Gum.TextAnalysis\Gum.TextAnalysis.csproj" />
+    <ProjectReference Include="..\..\Infra\Infra.csproj" />
+    <ProjectReference Include="..\..\IR0Evaluator\IR0Evaluator.csproj" />
+    <ProjectReference Include="..\..\IR0Translator\IR0Translator.csproj" />
+    <ProjectReference Include="..\..\IR0\IR0.csproj" />
+    <ProjectReference Include="..\..\Log\Log.csproj" />
+    <ProjectReference Include="..\..\ModuleInfo\ModuleInfo.csproj" />
+    <ProjectReference Include="..\..\Syntax\Syntax.csproj" />
+    <ProjectReference Include="..\..\TextAnalysis\TextAnalysis.csproj" />
   </ItemGroup>
 
 </Project>

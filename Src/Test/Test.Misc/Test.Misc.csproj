@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Infra\Infra.csproj" />
+    <ProjectReference Include="..\..\IR0Visitor\IR0Visitor.csproj" />
+    <ProjectReference Include="..\..\IR0\IR0.csproj" />
+    <ProjectReference Include="..\..\Log\Log.csproj" />
+    <ProjectReference Include="..\..\Syntax\Syntax.csproj" />
+  </ItemGroup>
+
+</Project>

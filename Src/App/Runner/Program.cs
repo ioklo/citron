@@ -1,8 +1,8 @@
-﻿using Gum;
-using Gum.Infra;
-using Gum.IR0Evaluator;
-using Gum.IR0Translator;
-using Gum.Log;
+﻿using Citron;
+using Citron.Infra;
+using Citron.IR0Evaluator;
+using Citron.IR0Translator;
+using Citron.Log;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -90,7 +90,7 @@ namespace Runner
             var lexer = new Lexer();
             var parser = new Parser(lexer);
 
-            var buffer = new Gum.Buffer(new StreamReader(args[0]));
+            var buffer = new Citron.Buffer(new StreamReader(args[0]));
             var bufferPos = await buffer.MakePosition().NextAsync();
             var lexerContext = LexerContext.Make(bufferPos);
             var parserContext = ParserContext.Make(lexerContext);

@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <RootNamespace>Citron</RootNamespace>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Analysis.InternalDeclSymbolBuilder\Analysis.InternalDeclSymbolBuilder.csproj" />
+    <ProjectReference Include="..\Analysis.ModuleInfo\Analysis.ModuleInfo.csproj" />
+    <ProjectReference Include="..\Analysis.TypeExpEvaluator\Analysis.TypeExpEvaluator.csproj" />
+    <ProjectReference Include="..\Infra\Infra.csproj" />
+    <ProjectReference Include="..\IR0\IR0.csproj" />
+    <ProjectReference Include="..\Log\Log.csproj" />
+    <ProjectReference Include="..\ModuleInfo\ModuleInfo.csproj" />
+    <ProjectReference Include="..\Syntax\Syntax.csproj" />
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+      <_Parameter1>IR0Translator.Test</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Pretune" Version="0.8.4" />
+  </ItemGroup>
+
+</Project>

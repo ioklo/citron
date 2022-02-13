@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <RootNamespace>Citron.IR0Analyzer</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Infra\Infra.csproj" />
+    <ProjectReference Include="..\IR0Visitor\IR0Visitor.csproj" />
+    <ProjectReference Include="..\IR0\IR0.csproj" />
+  </ItemGroup>
+
+</Project>

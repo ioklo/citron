@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Pretune" Version="0.8.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Infra\Infra.csproj" />
+    <ProjectReference Include="..\IR0\IR0.csproj" />
+    <ProjectReference Include="..\ModuleInfo\ModuleInfo.csproj" />
+  </ItemGroup>
+
+</Project>

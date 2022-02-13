@@ -1,8 +1,8 @@
-﻿using Gum;
-using Gum.Infra;
-using Gum.IR0Evaluator;
-using Gum.IR0Translator;
-using Gum.Test.Misc;
+﻿using Citron;
+using Citron.Infra;
+using Citron.IR0Evaluator;
+using Citron.IR0Translator;
+using Citron.Test.Misc;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -73,7 +73,7 @@ namespace EvalTest
             var lexer = new Lexer();
             var parser = new Parser(lexer);
 
-            var buffer = new Gum.Buffer(new StringReader(text));
+            var buffer = new Citron.Buffer(new StringReader(text));
             var bufferPos = await buffer.MakePosition().NextAsync();
             var lexerContext = LexerContext.Make(bufferPos);
             var parserContext = ParserContext.Make(lexerContext);

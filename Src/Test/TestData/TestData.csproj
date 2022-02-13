@@ -2,12 +2,12 @@
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
-    <RootNamespace>Gum.TestData</RootNamespace>
+    <RootNamespace>Citron.TestData</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Gum.IR0\Gum.IR0.csproj" />
-    <ProjectReference Include="..\..\Gum.Syntax\Gum.Syntax.csproj" />
+    <ProjectReference Include="..\..\IR0\IR0.csproj" />
+    <ProjectReference Include="..\..\Syntax\Syntax.csproj" />
   </ItemGroup>
 
 </Project>

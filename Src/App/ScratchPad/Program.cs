@@ -1,8 +1,8 @@
-using Gum;
-using Gum.Infra;
-using Gum.IR0Evaluator;
-using Gum.IR0Translator;
-using Gum.Log;
+using Citron;
+using Citron.Infra;
+using Citron.IR0Evaluator;
+using Citron.IR0Translator;
+using Citron.Log;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,7 +16,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
-using ILogger = Gum.Log.ILogger;
+using ILogger = Citron.Log.ILogger;
 
 namespace ScratchPad
 {
@@ -115,7 +115,7 @@ namespace ScratchPad
             var lexer = new Lexer();
             var parser = new Parser(lexer);
 
-            var buffer = new Gum.Buffer(new StringReader(input));
+            var buffer = new Citron.Buffer(new StringReader(input));
             var bufferPos = await buffer.MakePosition().NextAsync();
             var lexerContext = LexerContext.Make(bufferPos);
             var parserContext = ParserContext.Make(lexerContext);

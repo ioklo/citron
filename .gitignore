@@ -344,4 +344,4 @@ PretuneGenerated/
 /Docs/.obsidian/workspace
 
 # for Gum.Log project
-!*.log/ 
+!/Src/Log/ 
