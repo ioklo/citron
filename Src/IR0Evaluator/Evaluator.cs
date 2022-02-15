@@ -11,7 +11,7 @@ using Citron.Collections;
 
 using R = Citron.IR0;
 
-namespace Citron.IR0Evaluator
+namespace Citron
 {
     // 레퍼런스용 Big Step Evaluator, 
     // TODO: Small Step으로 가야하지 않을까 싶다 (yield로 실행 point 잡는거 해보면 재미있을 것 같다)
@@ -59,43 +59,22 @@ namespace Citron.IR0Evaluator
             //outBaseType = null;
             //return false;
         }
-        
-        // xType이 y타입인가 묻는 것
-        static bool IsType(R.Path xType, R.Path yType)
-        {
-            R.Path? curType = xType;
-
-            while (curType != null)
-            {
-                if (EqualityComparer<R.Path?>.Default.Equals(curType, yType))
-                    return true;
-
-                if (!GetBaseType(curType, out var baseTypeValue))
-                    throw new InvalidOperationException();
-
-                if (baseTypeValue == null)
-                    break;
-
-                curType = baseTypeValue;
-            }
-
-            return false;
-        }
 
         // 캡쳐는 람다 Value안에 값을 세팅한다        
-        static void CaptureLocals(IR0EvalContext context, LocalContext localContext, Value? capturedThis, ImmutableDictionary<string, Value> localVars, R.CapturedStatement capturedStatement)
-        {
-            if (capturedStatement.ThisType != null)
-            {
-                Debug.Assert(capturedThis != null);
-                capturedThis.SetValue(context.GetThisValue()!);
-            }
+        // TODO: 사용하는 곳이 없으면 삭제
+        //static void CaptureLocals(IR0EvalContext context, LocalContext localContext, Value? capturedThis, ImmutableDictionary<string, Value> localVars, R.CapturedStatement capturedStatement)
+        //{
+        //    if (capturedStatement.ThisType != null)
+        //    {
+        //        Debug.Assert(capturedThis != null);
+        //        capturedThis.SetValue(context.GetThisValue()!);
+        //    }
 
-            foreach (var typeAndName in capturedStatement.OuterLocalVars)
-            {
-                var origValue = localContext.GetLocalValue(new R.Name.Normal(typeAndName.Name));
-                localVars[typeAndName.Name].SetValue(origValue);
-            }
-        }        
+        //    foreach (var typeAndName in capturedStatement.OuterLocalVars)
+        //    {
+        //        var origValue = localContext.GetLocalValue(new R.Name.Normal(typeAndName.Name));
+        //        localVars[typeAndName.Name].SetValue(origValue);
+        //    }
+        //}        
  
 }

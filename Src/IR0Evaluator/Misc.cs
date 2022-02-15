@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using R = Citron.IR0;
 
-namespace Citron.IR0Evaluator
+namespace Citron
 {
     static class Misc
     {

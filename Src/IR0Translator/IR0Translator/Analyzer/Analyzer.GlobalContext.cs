@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 
 using S = Citron.Syntax;
-using M = Citron.CompileTime;
+using Citron.CompileTime;
 using R = Citron.IR0;
 using Citron.Log;
 using Citron.Analysis;
@@ -42,17 +42,17 @@ namespace Citron.IR0Translator
             {
                 voidId = new VoidSymbolId();
 
-                boolDeclId = new DeclSymbolId(new M.Name.Normal("System.Runtime"), null).Child(new M.Name.Normal("System")).Child(new M.Name.Normal("Boolean"));
-                boolId = new ModuleSymbolId(new M.Name.Normal("System.Runtime"), null).Child(new M.Name.Normal("System")).Child(new M.Name.Normal("Boolean"));
+                boolDeclId = new DeclSymbolId(new Name.Normal("System.Runtime"), null).Child(new Name.Normal("System")).Child(new Name.Normal("Boolean"));
+                boolId = new ModuleSymbolId(new Name.Normal("System.Runtime"), null).Child(new Name.Normal("System")).Child(new Name.Normal("Boolean"));
 
-                intDeclId = new DeclSymbolId(new M.Name.Normal("System.Runtime"), null).Child(new M.Name.Normal("System")).Child(new M.Name.Normal("Int32"));
-                intId = new ModuleSymbolId(new M.Name.Normal("System.Runtime"), null).Child(new M.Name.Normal("System")).Child(new M.Name.Normal("Int32"));
+                intDeclId = new DeclSymbolId(new Name.Normal("System.Runtime"), null).Child(new Name.Normal("System")).Child(new Name.Normal("Int32"));
+                intId = new ModuleSymbolId(new Name.Normal("System.Runtime"), null).Child(new Name.Normal("System")).Child(new Name.Normal("Int32"));
 
-                stringDeclId = new DeclSymbolId(new M.Name.Normal("System.Runtime"), null).Child(new M.Name.Normal("System")).Child(new M.Name.Normal("String"));
-                stringId = new ModuleSymbolId(new M.Name.Normal("System.Runtime"), null).Child(new M.Name.Normal("System")).Child(new M.Name.Normal("String"));
+                stringDeclId = new DeclSymbolId(new Name.Normal("System.Runtime"), null).Child(new Name.Normal("System")).Child(new Name.Normal("String"));
+                stringId = new ModuleSymbolId(new Name.Normal("System.Runtime"), null).Child(new Name.Normal("System")).Child(new Name.Normal("String"));
 
-                listDeclId = new DeclSymbolId(new M.Name.Normal("System.Runtime"), null).Child(new M.Name.Normal("System")).Child(new M.Name.Normal("List"), 1);
-                nullableDeclId = new DeclSymbolId(new M.Name.Normal("System.Runtime"), null).Child(new M.Name.Normal("System")).Child(new M.Name.Normal("Nullable"), 1);
+                listDeclId = new DeclSymbolId(new Name.Normal("System.Runtime"), null).Child(new Name.Normal("System")).Child(new Name.Normal("List"), 1);
+                nullableDeclId = new DeclSymbolId(new Name.Normal("System.Runtime"), null).Child(new Name.Normal("System")).Child(new Name.Normal("Nullable"), 1);
             }
 
             public GlobalContext(SymbolLoader symbolLoader, TypeSymbolInfoService typeSymbolInfoService, ILogger logger)
@@ -72,16 +72,17 @@ namespace Citron.IR0Translator
             {
                 // typeVarId만들어야 함
                 var outerDeclId = outerId.GetDeclSymbolId();
+                var outerTypeArgCount = outerId.GetTotalTypeArgCount();
 
                 var typeArgIdsBuilder = ImmutableArray.CreateBuilder<SymbolId>();
-                foreach (var typeParam in typeParams)
+                for(int i = 0; i < typeParams.Length; i++)
                 {
-                    var typeVarDeclId = outerDeclId.Child(new M.Name.Normal(typeParam), 0, default);
-                    var typeVarId = new TypeVarSymbolId(typeVarDeclId);
+                    var typeVarDeclId = outerDeclId.Child(new Name.Normal(typeParams[i]), 0, default);
+                    var typeVarId = new TypeVarSymbolId(typeVarDeclId, outerTypeArgCount + i);
                     typeArgIdsBuilder.Add(typeVarId);
                 }
 
-                return symbolLoader.Load(outerId.Child(new M.Name.Normal(name), typeArgIdsBuilder.ToImmutable(), paramIds)) as TSymbol;
+                return symbolLoader.Load(outerId.Child(new Name.Normal(name), typeArgIdsBuilder.ToImmutable(), paramIds)) as TSymbol;
             }
 
             GlobalContext(
@@ -151,7 +152,7 @@ namespace Citron.IR0Translator
             public ITypeSymbol GetListType(ITypeSymbol elemType)
             {
                 var typeArgs = Arr(elemType.GetSymbolId());
-                var listId = new ModuleSymbolId(new M.Name.Normal("System.Runtime"), null).Child(new M.Name.Normal("System")).Child(new M.Name.Normal("List"), typeArgs);
+                var listId = new ModuleSymbolId(new Name.Normal("System.Runtime"), null).Child(new Name.Normal("System")).Child(new Name.Normal("List"), typeArgs);
 
                 return (ITypeSymbol)symbolLoader.Load(listId);
             }
@@ -225,7 +226,7 @@ namespace Citron.IR0Translator
             }
 
             // outerDeclPath 밑의 (name, typeParamCount)로 가능한 것들을 돌려준다
-            public SymbolQueryResult QuerySymbol(SymbolPath? outerPath, M.Name name, int typeParamCount)
+            public SymbolQueryResult QuerySymbol(SymbolPath? outerPath, Name name, int typeParamCount)
             {
                 return symbolLoader.Query(outerPath, name, typeParamCount);
             } 

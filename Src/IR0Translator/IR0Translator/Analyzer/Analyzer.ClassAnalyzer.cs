@@ -264,7 +264,7 @@ namespace Citron.IR0Translator
                 var (rparamHash, rparamInfos) = MakeParamHashAndParamInfos(globalContext, funcDecl.TypeParams.Length, funcDecl.Parameters);
                 var rtypeArgs = MakeRTypeArgs(classSymbol.GetTotalTypeParamCount(), funcDecl.TypeParams);
 
-                globalContext.LoadOpenSymbol(classId,)
+                globalContext.LoadOpenSymbol<ClassMemberFuncSymbol>(classSymbol.GetSymbolId(), funcDecl.Name, funcDecl.TypeParams, funcDecl. )
 
                 var classPath = classSymbol.MakeRPath();
                 var funcPath = new R.Path.Nested(classPath, rname, rparamHash, rtypeArgs);

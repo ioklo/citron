@@ -131,9 +131,9 @@ namespace Citron
 
     public class StructValue : Value
     {
-        ImmutableDictionary<Name, Value> values;
+        ImmutableArray<Value> values;        
 
-        public StructValue(ImmutableDictionary<Name, Value> values)
+        public StructValue(ImmutableArray<Value> values)
         {
             this.values = values;
         }
@@ -142,13 +142,15 @@ namespace Citron
         {
             StructValue from = (StructValue)from_value;
 
-            foreach (var (name, value) in values)
-                value.SetValue(from.values[name]);            
+            Debug.Assert(from.values.Length == this.values.Length);
+
+            for (int i = 0; i < values.Length; i++)
+                values[i].SetValue(from.values[i]);           
         }
 
-        public Value GetMemberValue(Name name)
+        public Value GetMemberValue(int index)
         {
-            return values[name];
+            return values[index];
         }
     }    
 
@@ -210,43 +212,52 @@ namespace Citron
     [AutoConstructor]
     public partial class EnumValue : Value
     {
-        TypeContext typeContext;
-        EnumElemRuntimeItem? enumElemItem;
-        EnumElemValue? elemValue;        
-        
+        // 이 implementation에서는 EnumElem에 해당하는 모든 Value를 다 할당한다
+        Func<SymbolId, EnumElemValue> elemAllocator; // lazy allocation
+        SymbolId? elemId;
+        Dictionary<SymbolId, EnumElemValue> elems;
+
         // E e1, e2;
         // e1 = e2;
-        public override void SetValue(Value value_value)
+        public override void SetValue(Value src_value)
         {
-            var value = (EnumValue)value_value;
+            var src = (EnumValue)src_value;
 
-            Debug.Assert(value.enumElemItem != null);
-            SetEnumElemItem(value.enumElemItem);
+            Debug.Assert(src.elemId != null);
+            this.elemId = src.elemId;
 
-            Debug.Assert(elemValue != null && value.elemValue != null);
-            elemValue.SetValue(value.elemValue);
+            var elem = GetElemValue();
+            var srcElem = src.GetElemValue();
+            elem.SetValue(srcElem);
         }
 
-        public bool IsElem(EnumElemRuntimeItem enumElemItem)
+        public bool IsElem(SymbolId elemId)
         {
-            Debug.Assert(this.enumElemItem != null);
+            if (this.elemId == null)
+                return false;
 
-            return this.enumElemItem.Equals(enumElemItem); // reference 비교 가능하도록, 불가능 하면 R.EnumElement를 쓰지 말고 동적으로 생성되는 타입을 하나 만든다
+            return this.elemId.Equals(elemId); // reference 비교 가능하도록, 불가능 하면 R.EnumElement를 쓰지 말고 동적으로 생성되는 타입을 하나 만든다
         }
 
-        public void SetEnumElemItem(EnumElemRuntimeItem enumElemItem)
+        public void SetEnumElemId(SymbolId enumElemId)
         {
-            if (EqualityComparer<EnumElemRuntimeItem>.Default.Equals(this.enumElemItem, enumElemItem))
+            if (EqualityComparer<SymbolId>.Default.Equals(this.elemId, enumElemId))
                 return;
 
-            this.enumElemItem = enumElemItem;
-            Debug.Assert(enumElemItem != null);
-            elemValue = (EnumElemValue)enumElemItem.Alloc(typeContext);
+            this.elemId = enumElemId;
         }
 
         public EnumElemValue GetElemValue()
         {
-            return elemValue!;
+            Debug.Assert(elemId != null);
+
+            if (!elems.TryGetValue(elemId, out var elem))
+            {
+                elem = elemAllocator.Invoke(elemId);
+                elems.Add(elemId, elem);
+            }
+
+            return elem;
         }
     }
 
@@ -312,6 +323,11 @@ namespace Citron
         {
             this.memberVars = memberVars;
         }        
+
+        public void Update(Name name, Value value)
+        {
+            memberVars[name].SetValue(value);
+        }
         
         // memberwise copy의 성격이 더 가깝다
         public override void SetValue(Value srcValue)

@@ -8,6 +8,7 @@ using Citron.CompileTime;
 using Citron.Collections;
 using Citron.Infra;
 using System.Runtime.InteropServices;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Citron
 {
@@ -94,8 +95,8 @@ namespace Citron
         //    }
         //}
     }
-
-    // 겉 껍데기
+    
+    // 다 속도가 느린 버전
     public class Evaluator
     {
         public static async ValueTask<int> EvalAsync(ImmutableArray<Func<ModuleDriverInitializationContext, IModuleDriver>> moduleDriverConstructors, ModuleSymbolId entry)
@@ -120,17 +121,22 @@ namespace Citron
 
             return ret.GetInt();
         }
-
+        
         internal Evaluator()
         {
-        }
-        
+        }        
+
         (IModuleDriver Driver, SymbolPath Path) GetModuleDriverAndPath(SymbolId Id)
         {
             throw new NotImplementedException();
-        }        
+        }
+
+        public Value GetClassStaticMemberValue(SymbolId memberVarId)
+        {
+            var (driver, path) = GetModuleDriverAndPath(memberVarId);
+            return driver.GetClassStaticMemberValue(path);
+        }
         
-        // 다 속도가 느린 버전
         public Value GetClassMemberValue(ClassValue classValue, SymbolId classMemberVarId)
         {
             // module이름으로 driver선택
@@ -167,6 +173,39 @@ namespace Citron
             // module이름으로 driver선택
             var (driver, path) = GetModuleDriverAndPath(memberFuncId);
             return driver.ExecuteClassMemberFuncAsync(path, thisValue, args, retValue);
+        }
+
+        public bool IsEnumElem(EnumValue value, SymbolId elemId)
+        {
+            return value.IsElem(elemId);
+        }
+
+        // 실패시 RuntimeFatalException        
+        // null리턴하면 이 클래스에 진짜 Base가 없는 것이다
+        public SymbolId? GetBaseClass(SymbolId classId)
+        {
+            var (driver, path) = GetModuleDriverAndPath(classId);
+            return driver.GetBaseClass(path);
+        }
+
+        // target, class 둘다 확정 타입이 들어온다
+        public bool IsDerivedClassOf(SymbolId targetId, SymbolId classId)
+        {
+            SymbolId? curId = targetId;
+
+            while (curId != null)
+            {
+                if (EqualityComparer<SymbolId?>.Default.Equals(curId, classId))
+                    return true;
+
+                var baseId = GetBaseClass(curId);
+                if (baseId == null)
+                    break;
+
+                curId = baseId;
+            }
+
+            return false;
         }
 
         public ValueTask ExecuteStructMemberFuncAsync(SymbolId memberFuncId, Value? thisValue, ImmutableArray<Value> args, Value retValue)
@@ -215,7 +254,7 @@ namespace Citron
             {
                 return VoidValue.Instance;
             }
-            else if (typeId.IsList())
+            else if (typeId.IsList(out var _))
             {
                 return new ListValue();
             }
@@ -280,6 +319,19 @@ namespace Citron
             InitializeClassInstance(classId, memberVars);
 
             return new ClassInstance(classId, memberVars.MoveToImmutable());
+        }
+
+        public Value GetStructStaticMemberValue(SymbolId memberVarId)
+        {
+            var (driver, path) = GetModuleDriverAndPath(memberVarId);
+            return driver.GetStructStaticMemberValue(path);
+        }
+
+        public Value GetStructMemberValue(StructValue structValue, SymbolId memberVarId)
+        {
+            var (driver, path) = GetModuleDriverAndPath(memberVarId);
+            var index = driver.GetStructMemberVarIndex(path);
+            return structValue.GetMemberValue(index);
         }
     }
 }

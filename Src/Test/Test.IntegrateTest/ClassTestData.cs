@@ -39,15 +39,15 @@ class C
                         null,
                         RBlock(
                             new R.ExpStmt(new R.AssignExp(
-                                new R.ClassMemberLoc(R.ThisLoc.Instance, RRoot(ModuleName).Child("C").Child("x")),
+                                new R.ClassMemberLoc(new R.ThisLoc(), RRoot(ModuleName).Child("C").Child("x")),
                                 new R.LoadExp(RLocalVarLoc("x"))
                             )),
                             new R.ExpStmt(new R.AssignExp(
-                                new R.ClassMemberLoc(R.ThisLoc.Instance, RRoot(ModuleName).Child("C").Child("y")),
+                                new R.ClassMemberLoc(new R.ThisLoc(), RRoot(ModuleName).Child("C").Child("y")),
                                 new R.LoadExp(RLocalVarLoc("y"))
                             )),
                             new R.ExpStmt(new R.AssignExp(
-                                new R.ClassMemberLoc(R.ThisLoc.Instance, RRoot(ModuleName).Child("C").Child("s")),
+                                new R.ClassMemberLoc(new R.ThisLoc(), RRoot(ModuleName).Child("C").Child("s")),
                                 new R.LoadExp(RLocalVarLoc("s"))
                             ))
                         )
@@ -229,7 +229,7 @@ var c = new C(3);
                         RNormalParams((R.Path.Int, "x")),
                         null,
                         RBlock(RAssignStmt(
-                            R.ThisLoc.Instance.ClassMember(CPath().Child("x")),
+                            new R.ThisLoc().ClassMember(CPath().Child("x")),
                             RLocalVarExp("x")
                         ))
                     )),
@@ -293,7 +293,7 @@ var c = new C(3);         // but can do this
                         default,
                         RNormalParams((R.Path.Int, "x")),
                         null,
-                        RBlock(RAssignStmt(R.ThisLoc.Instance.ClassMember(RRoot(ModuleName).Child("C").Child("x")), RLocalVarExp("x")))
+                        RBlock(RAssignStmt(new R.ThisLoc().ClassMember(RRoot(ModuleName).Child("C").Child("x")), RLocalVarExp("x")))
                     )),
 
                     default,
@@ -355,7 +355,7 @@ c.x = 3;
                         default,
                         RNormalParams((R.Path.Int, "x")),
                         null,
-                        RBlock(RAssignStmt(R.ThisLoc.Instance.ClassMember(RRoot(ModuleName).Child("C").Child("x")), RLocalVarExp("x")))
+                        RBlock(RAssignStmt(new R.ThisLoc().ClassMember(RRoot(ModuleName).Child("C").Child("x")), RLocalVarExp("x")))
                     )),
 
                     default,
@@ -497,13 +497,13 @@ var i = c.F(2);
                         default,
                         RNormalParams((R.Path.Int, "x")),
                         null,
-                        RBlock(RAssignStmt(R.ThisLoc.Instance.ClassMember(CxPath()), RLocalVarExp("x")))
+                        RBlock(RAssignStmt(new R.ThisLoc().ClassMember(CxPath()), RLocalVarExp("x")))
                     )),
 
                     Arr<R.FuncDecl>(new R.NormalFuncDecl(default, new R.Name.Normal("F"), true, default, Arr(new R.Param(R.ParamKind.Default, R.Path.Int, new R.Name.Normal("y"))), RBlock(
                         new R.ReturnStmt(new R.ReturnInfo.Expression(new R.CallInternalBinaryOperatorExp(
                             R.InternalBinaryOperator.Add_Int_Int_Int,
-                            new R.LoadExp(new R.ClassMemberLoc(R.ThisLoc.Instance, CxPath())),
+                            new R.LoadExp(new R.ClassMemberLoc(new R.ThisLoc(), CxPath())),
                             new R.LoadExp(RLocalVarLoc("y"))
                         )))
                     ))),
@@ -673,7 +673,7 @@ var c = new C(2, 3);
                     // B
                     new R.ClassDecl(R.AccessModifier.Private, "B", default, null, default, 
                         Arr(new R.ClassConstructorDecl(R.AccessModifier.Public, default, RNormalParams((R.Path.Int, "x")), null, RBlock(
-                            RAssignStmt(R.ThisLoc.Instance.ClassMember(RRoot(ModuleName).Child("B").Child("x")), RLocalVarExp("x"))
+                            RAssignStmt(new R.ThisLoc().ClassMember(RRoot(ModuleName).Child("B").Child("x")), RLocalVarExp("x"))
                         ))),
 
                         default,
@@ -689,7 +689,7 @@ var c = new C(2, 3);
                                 RNormalParamHash(R.Path.Int),
                                 RArgs(RLocalVarExp("x"))
                             ),
-                            RBlock(RAssignStmt(R.ThisLoc.Instance.ClassMember(RRoot(ModuleName).Child("C").Child("y")), RLocalVarExp("y")))
+                            RBlock(RAssignStmt(new R.ThisLoc().ClassMember(RRoot(ModuleName).Child("C").Child("y")), RLocalVarExp("y")))
                         )),
 
                         default,

@@ -15,7 +15,7 @@ using System.Reflection;
 using System.Diagnostics;
 using Citron.Test.Misc;
 
-namespace Citron.IR0Evaluator.Test
+namespace Citron.Test
 {
     public class EvaluatorTests
     {

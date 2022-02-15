@@ -203,7 +203,7 @@ namespace Citron.IR0Translator
                 {
                     var param = funcDecl.GetParameter(i);
 
-                    if (param.Kind == FuncParameterKind.Params)
+                    if (param.Kind == M.FuncParameterKind..Params)
                     {
                         Debug.Assert(variadicParamsIndex == null);
                         variadicParamsIndex = i;
@@ -272,7 +272,7 @@ namespace Citron.IR0Translator
                         if (paramInfo != null)
                         {
                             // ref 파라미터를 원했는데, ref가 안달려 나온 경우, box타입이면 가능하다
-                            if (paramInfo.Value.Kind == FuncParameterKind.Ref)
+                            if (paramInfo.Value.Kind == M.FuncParameterKind.Ref)
                             {
                                 // void F(ref int i) {...}
                                 // F(box 3); // 가능
@@ -390,7 +390,7 @@ namespace Citron.IR0Translator
                         {
                             // 1. void F(int i) { ... } 파라미터에 ref가 안 붙은 경우, 매칭을 하지 않는다
                             // F(ref j);
-                            if (paramInfo.Value.Kind != FuncParameterKind.Ref)
+                            if (paramInfo.Value.Kind != M.FuncParameterKind.Ref)
                                 throw new FuncMatcherFatalException();
 
                             // 2. void F(ref int i)
@@ -444,7 +444,7 @@ namespace Citron.IR0Translator
                             throw new FuncMatcherFatalException();
                         }
 
-                        var expType = exp.GetType();
+                        var expType = exp.GetTypeSymbol();
 
                         if (expType is TupleTypeSymbol tupleExpType)
                         {
@@ -556,7 +556,7 @@ namespace Citron.IR0Translator
             void MatchParamsArguments(int paramIndex, int argsBegin, int argsEnd) // throws FuncMatcherFatalException
             {
                 var paramInfo = paramInfos[paramIndex];
-                Debug.Assert(paramInfo.Kind == FuncParameterKind.Params);
+                Debug.Assert(paramInfo.Kind == M.FuncParameterKind..Params);
 
                 if (paramInfo.Type is TupleTypeSymbol tupleParamType)
                 {
@@ -571,7 +571,7 @@ namespace Citron.IR0Translator
                         var tupleElemType = tupleParamType.Elems[i].Type;
                         var arg = expandedArgs[argsBegin + i];
 
-                        MatchArgument(new FuncParameter(FuncParameterKind.Default, tupleElemType, tupleParamType.Elems[i].Name), arg);
+                        MatchArgument(new FuncParameter(M.FuncParameterKind..Default, tupleElemType, tupleParamType.Elems[i].Name), arg);
 
                         // MatchArgument마다 Constraint추가
                         typeResolver.AddConstraint(tupleElemType, arg.GetTypeValue());

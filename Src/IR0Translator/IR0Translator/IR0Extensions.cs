@@ -9,7 +9,7 @@ using Citron.Infra;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics;
 using R = Citron.IR0;
-using M = Citron.CompileTime;
+using Citron.CompileTime;
 
 namespace Citron.IR0Translator
 {
@@ -21,7 +21,7 @@ namespace Citron.IR0Translator
             return symbolId.MakeRPath();
         }
 
-        static R.Path.Normal MakeRPath(M.Name moduleName, SymbolPath? path)
+        static R.Path.Normal MakeRPath(Name moduleName, SymbolPath? path)
         {
             if (path == null)
             {
@@ -92,6 +92,22 @@ namespace Citron.IR0Translator
             var rname = RItemFactory.MakeName(param.Name);
 
             return new R.Param(rparamKind, param.Type.MakeRPath(), rname);
+        }
+
+        public static int GetTotalTypeArgCount(this SymbolPath? path)
+        {
+            if (path == null)
+                return 0;
+
+            if (path.Outer == null)
+                return path.TypeArgs.Length;
+
+            return GetTotalTypeArgCount(path.Outer) + path.TypeArgs.Length;
+        }
+
+        public static int GetTotalTypeArgCount(this ModuleSymbolId id)
+        {
+            return id.Path.GetTotalTypeArgCount();
         }
     }
 }

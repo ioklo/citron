@@ -61,8 +61,12 @@ namespace Citron.Analysis
 
         public SymbolQueryResult QueryMember(M.Name memberName, int typeParamCount)
         {
-            foreach (var memberVar in decl.GetMemberVars())
+            int count = decl.GetMemberVarCount();
+
+            for(int i = 0; i < count; i++)
             {
+                var memberVar = decl.GetMemberVar(i);
+
                 if (memberVar.GetName().Equals(memberName))
                 {
                     if (typeParamCount != 0)
@@ -74,6 +78,17 @@ namespace Citron.Analysis
             }
 
             return SymbolQueryResult.Error.NotFound.Instance;
+        }
+
+        public int GetMemberVarCount()
+        {
+            return decl.GetMemberVarCount();
+        }
+
+        public LambdaMemberVarSymbol GetMemberVar(int index)
+        {
+            var memberVarDecl = decl.GetMemberVar(index);
+            return factory.MakeLambdaMemberVar(this, memberVarDecl);
         }
         
         public FuncReturn GetReturn()

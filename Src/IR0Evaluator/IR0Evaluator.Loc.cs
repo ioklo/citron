@@ -1,4 +1,6 @@
-﻿using Citron.Collections;
+﻿using Citron.Analysis;
+using Citron.Collections;
+using Citron.CompileTime;
 using Citron.Infra;
 using System;
 using System.Collections.Generic;
@@ -8,34 +10,15 @@ using System.Threading.Tasks;
 
 using R = Citron.IR0;
 
-namespace Citron.IR0Evaluator
+namespace Citron
 {
-    struct IR0LocEvaluator
+    partial struct IR0Evaluator
     {
-        IR0GlobalContext globalContext;
-        IR0EvalContext context;
-        LocalContext localContext;
-
-        public static ValueTask<Value> EvalAsync(IR0GlobalContext globalContext, IR0EvalContext context, LocalContext localContext, R.Loc loc)
-        {
-            var evaluator = new IR0LocEvaluator(globalContext, context, localContext);
-            return evaluator.EvalLocAsync(loc);
-        }
-
-        IR0LocEvaluator(IR0GlobalContext globalContext, IR0EvalContext context, LocalContext localContext)
-        {
-            this.globalContext = globalContext;
-            this.context = context;
-            this.localContext = localContext;
-        }
-
-        ValueTask EvalExpAsync(R.Exp exp, Value result) => IR0ExpEvaluator.EvalAsync(globalContext, context, localContext, exp, result);
-
         async ValueTask<Value> EvalTempLocAsync(R.TempLoc loc)
         {
             var type = loc.Exp.GetTypeSymbol();
 
-            var result = context.AllocValue(type);
+            var result = evalContext.AllocValue(type);
             await EvalExpAsync(loc.Exp, result);
             return result;
         }
@@ -44,7 +27,7 @@ namespace Citron.IR0Evaluator
         {
             var listValue = (ListValue)await EvalLocAsync(loc.List);
 
-            var indexValue = context.AllocValue<IntValue>(R.Path.Int);
+            var indexValue = evalContext.AllocValue<IntValue>(SymbolId.Int);
             await EvalExpAsync(loc.Index, indexValue);
 
             var list = listValue.GetList();
@@ -66,36 +49,29 @@ namespace Citron.IR0Evaluator
 
                 case R.LambdaMemberVarLoc lambdaMemberVarLoc:
                     {
-                        var lambdaThis = (LambdaValue)context.GetThisValue();
+                        var lambdaThis = (LambdaValue)evalContext.GetThisValue();
                         return lambdaThis.GetMemberValue(lambdaMemberVarLoc.MemberVar.GetName());
                     }
-
-                    return context.GetCapturedValue(capturedVarLoc.Name);
 
                 case R.ListIndexerLoc listIndexerLoc:
                     return await EvalListIndexerLocAsync(listIndexerLoc);
 
-                case R.StaticMemberLoc staticMemberLoc:                        
-
-                    var staticValue = (StaticValue)context.GetStaticValue(staticMemberLoc.MemberPath.Outer);
-                    var name = ((R.Name.Normal)staticMemberLoc.MemberPath.Name).Value;
-
-                    return staticValue.GetMemberValue(name);
-
                 case R.StructMemberLoc structMemberLoc:
                     {
-                        var structValue = (StructValue)await EvalLocAsync(structMemberLoc.Instance);
-                        var memberVarItem = globalContext.GetRuntimeItem<StructMemberVarRuntimeItem>(structMemberLoc.MemberPath);
+                        if (structMemberLoc.Instance == null)
+                            return globalContext.GetStructStaticMemberValue(structMemberLoc.MemberVar.GetSymbolId());
 
-                        return memberVarItem.GetMemberValue(structValue);
+                        var structValue = (StructValue)await EvalLocAsync(structMemberLoc.Instance);
+                        return globalContext.GetStructMemberValue(structValue, structMemberLoc.MemberVar.GetSymbolId());
                     }
 
                 case R.ClassMemberLoc classMemberLoc:
                     {
-                        var classValue = (ClassValue)await EvalLocAsync(classMemberLoc.Instance);
-                        var memberVarItem = globalContext.GetRuntimeItem<ClassMemberVarRuntimeItem>(classMemberLoc.MemberPath);
+                        if (classMemberLoc.Instance == null)
+                            return globalContext.GetClassStaticMemberValue(classMemberLoc.MemberVar.GetSymbolId());
 
-                        return memberVarItem.GetMemberValue(classValue);
+                        var classValue = (ClassValue)await EvalLocAsync(classMemberLoc.Instance);
+                        return globalContext.GetClassMemberValue(classValue, classMemberLoc.MemberVar.GetSymbolId());
                     }
 
                 case R.EnumElemMemberLoc enumMemberLoc:
@@ -104,8 +80,8 @@ namespace Citron.IR0Evaluator
 
                     return enumElemFieldRuntimeItem.GetMemberValue(enumElemValue);
 
-                case R.ThisLoc thisLoc:
-                    return context.GetThisValue();
+                case R.ThisLoc:
+                    return evalContext.GetThisValue();
 
                 case R.DerefLocLoc derefLoc:
                     {
@@ -115,7 +91,7 @@ namespace Citron.IR0Evaluator
 
                 case R.DerefExpLoc derefExpLoc:
                     {
-                        var refValue = globalContext.AllocRefValue();
+                        var refValue = evalContext.AllocRefValue();
                         await EvalExpAsync(derefExpLoc.Exp, refValue);
                         return refValue.GetTarget();
                     }

@@ -13,7 +13,7 @@ namespace Citron.IR0Translator
         class RootContext : ICallableContext, ITypeContainer
         {
             R.ModuleName moduleName;
-            ItemValueFactory itemValueFactory;
+            SymbolFactory symbolFactory;
 
             ImmutableArray<R.TypeDecl> globalTypeDecls;
             ImmutableArray<R.FuncDecl> globalFuncDecls;
@@ -22,10 +22,10 @@ namespace Citron.IR0Translator
 
             AnonymousIdComponent AnonymousIdComponent;
 
-            public RootContext(R.ModuleName moduleName, ItemValueFactory itemValueFactory)
+            public RootContext(R.ModuleName moduleName, SymbolFactory symbolFactory)
             {
                 this.moduleName = moduleName;
-                this.itemValueFactory = itemValueFactory;
+                this.symbolFactory = symbolFactory;
                 this.globalTypeDecls = ImmutableArray<R.TypeDecl>.Empty;
                 this.globalFuncDecls = ImmutableArray<R.FuncDecl>.Empty;
                 this.callableMemberDecls = ImmutableArray<R.CallableMemberDecl>.Empty;
@@ -35,7 +35,7 @@ namespace Citron.IR0Translator
             public RootContext(RootContext other, CloneContext cloneContext)
             {
                 this.moduleName = other.moduleName;
-                this.itemValueFactory = other.itemValueFactory;
+                this.symbolFactory = other.symbolFactory;
                 this.globalTypeDecls = other.globalTypeDecls;
                 this.globalFuncDecls = other.globalFuncDecls;
                 this.callableMemberDecls = other.callableMemberDecls;
@@ -64,12 +64,12 @@ namespace Citron.IR0Translator
             {
                 var src = (RootContext)src_callableContext;
 
-                this.itemValueFactory = src.itemValueFactory;
+                this.symbolFactory = src.symbolFactory;
                 this.topLevelStmts = src.topLevelStmts;
             }
 
             public LocalVarInfo? GetLocalVarOutsideLambda(string varName) => null;
-            public ITypeSymbol? GetReturn() => itemValueFactory.Int;            
+            public ITypeSymbol? GetReturn() => symbolFactory.Int;            
             public void SetRetType(ITypeSymbol retTypeValue) => throw new UnreachableCodeException();
             public void AddLambdaCapture(string capturedVarName, ITypeSymbol capturedVarType) => throw new UnreachableCodeException();
             public bool IsSeqFunc() => false;

@@ -51,9 +51,14 @@ namespace Citron.Analysis
             return outer;
         }
 
-        public ImmutableArray<LambdaMemberVarDeclSymbol> GetMemberVars()
+        public int GetMemberVarCount()
         {
-            return memberVars;
+            return memberVars.Length;
+        }
+
+        public LambdaMemberVarDeclSymbol GetMemberVar(int index)
+        {
+            return memberVars[index];
         }
 
         public M.AccessModifier GetAccessModifier()

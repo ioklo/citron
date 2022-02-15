@@ -6,6 +6,7 @@ using Citron.CompileTime;
 
 namespace Citron
 {
+    // TODO: IR0Evaluator로 옮긴다
     public class TypeContext
     {
         // index -> type
@@ -28,6 +29,13 @@ namespace Citron
                 builder.Add(typeArg);
         }
 
+        public static TypeContext Make(SymbolPath? path)
+        {
+            var builder = ImmutableArray.CreateBuilder<SymbolId>();
+            InnerMake(path, builder);
+            return new TypeContext(builder.ToImmutable());
+        }
+
         // G<List<T>>, T => int
         // Make((G<>, [(List<>, [T])]), [T => int])
         // => [(List<>, [int])]
@@ -41,9 +49,7 @@ namespace Citron
         {
             if (symbolId is ModuleSymbolId moduleSymbolId)
             {
-                var builder = ImmutableArray.CreateBuilder<SymbolId>();
-                InnerMake(moduleSymbolId.Path, builder);
-                return new TypeContext(builder.ToImmutable());
+                return Make(moduleSymbolId.Path);
             }
             else
             {

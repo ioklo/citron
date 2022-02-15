@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using static Citron.Infra.Misc;
 using Citron.Analysis;
 using System.Diagnostics.CodeAnalysis;
+using Citron.CompileTime;
 
 namespace Citron.IR0
 {
@@ -24,15 +25,20 @@ namespace Citron.IR0
             StringType = stringType;
         }
 
-        public static Script RScript(ModuleName moduleName, ImmutableArray<TypeDecl> typeDecls, ImmutableArray<FuncDecl> funcDecls, ImmutableArray<CallableMemberDecl> callableMemberDecls, params Stmt[] optTopLevelStmts)
+        public static IR0StmtBody RStmtBody(DeclSymbolPath path, Stmt body)
+        {
+            return new IR0StmtBody(path, body);
+        }
+
+        public static Script RScript(ModuleName moduleName, ImmutableArray<IR0StmtBody> rstmtBodies, params Stmt[] optTopLevelStmts)
         {   
             ImmutableArray<Stmt> topLevelStmts = optTopLevelStmts.ToImmutableArray();
 
-            return new Script(moduleName, typeDecls, funcDecls, callableMemberDecls, topLevelStmts);
+            return new Script(moduleName, rstmtBodies, topLevelStmts);
         }
 
         public static Script RScript(ModuleName moduleName, params Stmt[] stmts)
-            => RScript(moduleName, default, default, default, stmts);
+            => RScript(moduleName, default, stmts);
 
         public static CommandStmt RCommand(params StringExp[] cmds)
             => new CommandStmt(Arr(cmds));

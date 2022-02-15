@@ -14,7 +14,7 @@ namespace Citron.IR0
     [AutoConstructor]
     public partial struct IR0StmtBody
     {
-        public DeclSymbolId Id { get; }
+        public DeclSymbolPath Path { get; }
         public Stmt Body { get; }
     }
 
@@ -23,10 +23,11 @@ namespace Citron.IR0
     {
         public ModuleName Name { get; }
         public ImmutableArray<IR0StmtBody> Bodies { get; }
-        
+        public ImmutableArray<Stmt> TopLevelStmts { get; }
+
         //public ImmutableArray<TypeDecl> GlobalTypeDecls { get; }
         //public ImmutableArray<FuncDecl> GlobalFuncDecls { get; }
         //public ImmutableArray<CallableMemberDecl> CallableMemberDecls { get; }
-        //public ImmutableArray<Stmt> TopLevelStmts { get; }
+
     }
 }

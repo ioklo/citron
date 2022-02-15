@@ -9,7 +9,7 @@ using static Citron.IR0Translator.AnalyzeErrorCode;
 
 using S = Citron.Syntax;
 using R = Citron.IR0;
-using M = Citron.CompileTime;
+using Citron.CompileTime;
 using Citron.Analysis;
 
 namespace Citron.IR0Translator
@@ -33,7 +33,7 @@ namespace Citron.IR0Translator
                 this.thisId = moduleId;
             }
 
-            public static R.Script Analyze(GlobalContext globalContext, RootContext rootContext, M.Name moduleName, S.Script script)
+            public static R.Script Analyze(GlobalContext globalContext, RootContext rootContext, Name moduleName, S.Script script)
             {
                 var moduleId = new ModuleSymbolId(moduleName, null);
                 var localContext = new LocalContext();

@@ -9,7 +9,7 @@ using Citron.CompileTime;
 using R = Citron.IR0;
 using Void = Citron.Infra.Void;
 
-namespace Citron.IR0Evaluator
+namespace Citron
 {
     // 함수 실행단위
     public partial class IR0EvalContext
@@ -17,7 +17,7 @@ namespace Citron.IR0Evaluator
         Evaluator evaluator;
 
         TypeContext typeContext;
-        EvalFlowControl flowControl;
+        IR0EvalFlowControl flowControl;
         Value? thisValue;
         Value retValue;
         Value? yieldValue;
@@ -26,7 +26,7 @@ namespace Citron.IR0Evaluator
         {
             this.evaluator = evaluator;
             this.typeContext = TypeContext.Empty;
-            this.flowControl = EvalFlowControl.None;
+            this.flowControl = IR0EvalFlowControl.None;
             this.thisValue = null;
             this.retValue = retValue;
         }
@@ -34,7 +34,7 @@ namespace Citron.IR0Evaluator
         public IR0EvalContext(
             Evaluator evaluator,
             TypeContext typeContext,
-            EvalFlowControl flowControl,
+            IR0EvalFlowControl flowControl,
             Value? thisValue,
             Value retValue)
         {
@@ -50,17 +50,17 @@ namespace Citron.IR0Evaluator
             throw new NotImplementedException();
         }
 
-        public bool IsFlowControl(EvalFlowControl testValue)
+        public bool IsFlowControl(IR0EvalFlowControl testValue)
         {
             return flowControl == testValue;
         }
 
-        public EvalFlowControl GetFlowControl()
+        public IR0EvalFlowControl GetFlowControl()
         {
             return flowControl;
         }
 
-        public void SetFlowControl(EvalFlowControl newFlowControl)
+        public void SetFlowControl(IR0EvalFlowControl newFlowControl)
         {
             flowControl = newFlowControl;
         }
@@ -94,6 +94,11 @@ namespace Citron.IR0Evaluator
             var appliedClassId = typeContext.Apply(classId);
             
             return evaluator.AllocClassInstance(appliedClassId);
+        }
+
+        public RefValue AllocRefValue()
+        {
+            return evaluator.AllocRefValue();
         }
 
         public TValue AllocValue<TValue>(SymbolId typeId)
@@ -151,6 +156,31 @@ namespace Citron.IR0Evaluator
             var appliedFuncId = typeContext.Apply(funcId);
 
             return evaluator.ExecuteStructMemberFuncAsync(appliedFuncId, thisValue, args, result);
+        }
+
+        public IR0EvalContext NewLambdaContext(LambdaValue lambdaValue, Value result)
+        {
+            return new IR0EvalContext(evaluator, typeContext, IR0EvalFlowControl.None, lambdaValue, result);
+        }
+        
+        // value는 TypeContext없는 실제 타입을 가지고 있고,
+        // class는 TypeContext를 반영해야 한다
+        public bool IsDerivedClassOf(ClassValue value, ClassSymbol @class)
+        {
+            var targetId = value.GetActualType();
+
+            var classId = @class.GetSymbolId();
+            var appliedClassId = typeContext.Apply(classId);
+
+            return evaluator.IsDerivedClassOf(targetId, appliedClassId);
+        }
+
+        public bool IsEnumElem(EnumValue value, EnumElemSymbol enumElem)
+        {
+            var enumElemId = enumElem.GetSymbolId();
+            var appliedEnumElemId = typeContext.Apply(enumElemId);
+
+            return evaluator.IsEnumElem(value, appliedEnumElemId);
         }
     }
 }

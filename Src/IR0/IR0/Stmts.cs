@@ -61,15 +61,19 @@ namespace Citron.IR0
 
     public record ExpStmt(Exp Exp) : Stmt;
 
-    public record TaskStmt(LambdaSymbol Lambda, Stmt Body) : Stmt;    
+    public record TaskStmt(LambdaSymbol Lambda, ImmutableArray<Argument> CaptureArgs, Stmt Body) : Stmt;    
 
     public record AwaitStmt(Stmt Body) : Stmt;
     
-    public record AsyncStmt(LambdaSymbol Lambda, Stmt Body) : Stmt;
+    public record AsyncStmt(LambdaSymbol Lambda, ImmutableArray<Argument> CaptureArgs, Stmt Body) : Stmt;
     
     public record ForeachStmt(ITypeSymbol ElemType, string ElemName, Loc Iterator, Stmt Body) : Stmt;
     public record YieldStmt(Exp Value) : Stmt;
-    
+
+    // Constructor 내에서 상위 Constructor 호출시 사용
+    public record CallClassConstructorStmt(ClassConstructorSymbol Constructor, ImmutableArray<Argument> Args) : Stmt;
+    public record CallStructConstructorStmt(StructConstructorSymbol Constructor, ImmutableArray<Argument> Args) : Stmt;
+
     public abstract record DirectiveStmt : Stmt
     {
         // init은 지원하지 않기로,

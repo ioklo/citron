@@ -1,6 +1,8 @@
 ﻿using Citron.Collections;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -49,14 +51,21 @@ namespace Citron.CompileTime
             return new ModuleSymbolId(id.ModuleName, id.Path.Child(name, typeArgs, paramIds));
         }
 
-        public static bool IsList(this SymbolId symbolId)
+        public static bool IsList(this SymbolId symbolId, [NotNullWhen(returnValue: true)]out SymbolId? itemId)
         {
             if (symbolId is ModuleSymbolId moduleSymbolId)
             {
                 var declSymbolId = moduleSymbolId.GetDeclSymbolId();
-                return declSymbolId.Equals(DeclSymbolId.List);
+                if (declSymbolId.Equals(DeclSymbolId.List))
+                {
+                    Debug.Assert(moduleSymbolId.Path != null);
+
+                    itemId = moduleSymbolId.Path.TypeArgs[0];
+                    return true;
+                }
             }
 
+            itemId = null;
             return false;
         }
 

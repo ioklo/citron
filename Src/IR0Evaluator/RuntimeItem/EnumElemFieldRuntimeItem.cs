@@ -1,7 +1,7 @@
 ﻿using Pretune;
 using R = Citron.IR0;
 
-namespace Citron.IR0Evaluator
+namespace Citron
 {
     abstract class EnumElemFieldRuntimeItem : RuntimeItem
     {

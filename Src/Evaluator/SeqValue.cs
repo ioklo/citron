@@ -2,29 +2,32 @@
 using Pretune;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
-
-using Void = Citron.Infra.Void;
 
 namespace Citron
 {
-    [AutoConstructor, ImplementIEquatable]
-    partial class SeqValue : Value
+    public interface ISequence
     {
-        IAsyncEnumerator<Void>? enumerator;
-        IR0EvalContext? context;
+        ValueTask<bool> MoveNextAsync(Value value);
+    }
+
+    // anonymous seq, supporting seq<T>
+    [AutoConstructor, ImplementIEquatable]
+    public partial class SeqValue : Value
+    {
+        [AllowNull]
+        ISequence sequence;
 
         public SeqValue()
         {
-            enumerator = null;
-            context = null;
+            sequence = null;
         }
 
-        public void SetEnumerator(IAsyncEnumerator<Void> enumerator, IR0EvalContext context)
+        public void SetSequence(ISequence sequence)
         {
-            this.enumerator = enumerator;
-            this.context = context;
-        }
+            this.sequence = sequence;
+        }        
 
         public override void SetValue(Value value)
         {
@@ -35,10 +38,8 @@ namespace Citron
         // 
         public ValueTask<bool> NextAsync(Value yieldValue)
         {
-            Debug.Assert(enumerator != null && context != null);
-
-            context.SetYieldValue(yieldValue);
-            return enumerator.MoveNextAsync();
-        }   
+            Debug.Assert(sequence != null);
+            return sequence.MoveNextAsync(yieldValue);
+        }
     }
 }

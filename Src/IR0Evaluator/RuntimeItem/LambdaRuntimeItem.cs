@@ -7,14 +7,14 @@ using System.Text;
 using System.Threading.Tasks;
 using R = Citron.IR0;
 
-namespace Citron.IR0Evaluator
+namespace Citron
 {
     abstract class LambdaRuntimeItem : AllocatableRuntimeItem
     {
         public abstract ImmutableArray<R.Param> Parameters { get; }
         
         public abstract ValueTask InvokeAsync(Value? capturedThis, ImmutableDictionary<string, Value> capturedVars, ImmutableArray<Value> args, Value result);
-        public abstract void Capture(IR0EvalContext context, LocalContext localContext, LambdaValue lambdaValue);
+        public abstract void Capture(IR0EvalContext context, IR0LocalContext localContext, LambdaValue lambdaValue);
     }
 
         [AutoConstructor]
@@ -57,7 +57,7 @@ namespace Citron.IR0Evaluator
                 
             }
 
-            public override void Capture(IR0EvalContext context, LocalContext localContext, LambdaValue lambdaValue)
+            public override void Capture(IR0EvalContext context, IR0LocalContext localContext, LambdaValue lambdaValue)
             {
                 Evaluator.CaptureLocals(context, localContext, lambdaValue.CapturedThis, lambdaValue.Captures, lambdaDecl.CapturedStatement);
             }

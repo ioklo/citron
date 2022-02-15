@@ -1,6 +1,6 @@
-﻿namespace Citron.IR0Evaluator
+﻿namespace Citron
 {
-    public enum EvalFlowControl 
+    public enum IR0EvalFlowControl 
     {
         None,
         Break,

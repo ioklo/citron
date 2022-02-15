@@ -13,33 +13,10 @@ using R = Citron.IR0;
 using Citron.CompileTime;
 using Citron.Analysis;
 
-namespace Citron.IR0Evaluator
+namespace Citron
 {
-    partial struct IR0ExpEvaluator
+    partial struct IR0Evaluator
     {
-        IR0GlobalContext globalContext;
-        IR0EvalContext context;
-        LocalContext localContext;
-
-        public static ValueTask EvalAsync(IR0GlobalContext globalContext, IR0EvalContext context, LocalContext localContext, R.Exp exp, Value result)
-        {
-            var evaluator = new IR0ExpEvaluator(globalContext, context, localContext);
-            return evaluator.EvalExpAsync(exp, result);
-        }
-
-        public static ValueTask EvalStringExpAsync(IR0GlobalContext globalContext, IR0EvalContext context, LocalContext localContext, R.StringExp stringExp, Value result)
-        {
-            var evaluator = new IR0ExpEvaluator(globalContext, context, localContext);
-            return evaluator.EvalStringExpAsync(stringExp, result);
-        }
-
-        IR0ExpEvaluator(IR0GlobalContext globalContext, IR0EvalContext context, LocalContext localContext)
-        {
-            this.globalContext = globalContext;
-            this.context = context;
-            this.localContext = localContext;
-        }
-
         void EvalBoolLiteralExp(R.BoolLiteralExp boolLiteralExp, Value result)
         {
             ((BoolValue)result).SetBool(boolLiteralExp.Value);
@@ -50,19 +27,13 @@ namespace Citron.IR0Evaluator
             ((IntValue)result).SetInt(intLiteralExp.Value);
         }
 
-        ValueTask<Value> EvalLocAsync(R.Loc loc)
-        {
-            return IR0LocEvaluator.EvalAsync(globalContext, context, localContext, loc);
-        }
-
         async ValueTask EvalLoadExpAsync(R.LoadExp loadExp, Value result)
         {
             var value = await EvalLocAsync(loadExp.Loc);
             result.SetValue(value);
         }
-
-        // expEvaluator에서 직접 호출하기 때문에 internal
-        internal async ValueTask EvalStringExpAsync(R.StringExp stringExp, Value result)
+        
+        async ValueTask EvalStringExpAsync(R.StringExp stringExp, Value result)
         {
             // stringExp는 element들의 concatenation
             var sb = new StringBuilder();
@@ -76,7 +47,7 @@ namespace Citron.IR0Evaluator
 
                     case R.ExpStringExpElement expElem:
                         {
-                            var strValue = context.AllocValue<StringValue>(ModuleSymbolId.String);
+                            var strValue = evalContext.AllocValue<StringValue>(ModuleSymbolId.String);
                             await EvalExpAsync(expElem.Exp, strValue);
                             sb.Append(strValue.GetString());
                             break;
@@ -130,18 +101,18 @@ namespace Citron.IR0Evaluator
                     for(int j = 0; j < memberVarCount; j++)
                     {
                         var memberVar = tupleType.GetMemberVar(j);
-                        var argValue = context.AllocValue(memberVar.GetDeclType());
+                        var argValue = evalContext.AllocValue(memberVar.GetDeclType());
                         argValuesBuilder.Add(argValue);
                     }
                 }
                 else if (param.Kind == FuncParameterKind.Ref)
                 {   
-                    var argValue = globalContext.AllocRefValue();
+                    var argValue = evalContext.AllocRefValue();
                     argValuesBuilder.Add(argValue);
                 }
                 else if (param.Kind == FuncParameterKind.Default)
                 {
-                    var argValue = context.AllocValue(param.Type);
+                    var argValue = evalContext.AllocValue(param.Type);
                     argValuesBuilder.Add(argValue);
                 }
                 else
@@ -191,13 +162,13 @@ namespace Citron.IR0Evaluator
                 if (param.Kind == FuncParameterKind.Params)
                 {
                     // TODO: 꼭 tuple이 아닐수도 있다
-                    var tupleType = (R.Path.TupleType)param.Type;
-                    var tupleElems = ImmutableArray.Create(argValues, argValueIndex, tupleType.Elems.Length);
+                    var tupleType = (TupleSymbolId)param.Type;
+                    var tupleElems = ImmutableArray.Create(argValues, argValueIndex, tupleType.MemberVarIds.Length);
 
                     var tupleValue = new TupleValue(tupleElems);
                     argsBuilder.Add(tupleValue);
 
-                    argValueIndex += tupleType.Elems.Length;
+                    argValueIndex += tupleType.MemberVarIds.Length;
                 }
                 else
                 {
@@ -215,7 +186,7 @@ namespace Citron.IR0Evaluator
         {
             // 인자를 계산 해서 처음 로컬 variable에 집어 넣는다
             var args = await EvalArgumentsAsync(exp.Func, exp.Args);
-            await context.ExecuteGlobalFuncAsync(exp.Func, args, result);
+            await evalContext.ExecuteGlobalFuncAsync(exp.Func, args, result);
         }
 
         async ValueTask EvalCallClassMemberFuncExpAsync(R.CallClassMemberFuncExp exp, Value result)
@@ -229,7 +200,7 @@ namespace Citron.IR0Evaluator
 
             // 인자를 계산 해서 처음 로컬 variable에 집어 넣는다
             var args = await EvalArgumentsAsync(exp.ClassMemberFunc, exp.Args);
-            await context.ExecuteClassMemberFuncAsync(exp.ClassMemberFunc, thisValue, args, result);
+            await evalContext.ExecuteClassMemberFuncAsync(exp.ClassMemberFunc, thisValue, args, result);
         }
             
         async ValueTask EvalCallStructMemberFuncExpAsync(R.CallStructMemberFuncExp exp, Value result)
@@ -244,7 +215,7 @@ namespace Citron.IR0Evaluator
             // 인자를 계산 해서 처음 로컬 variable에 집어 넣는다
             var args = await EvalArgumentsAsync(exp.StructMemberFunc, exp.Args);
 
-            await context.ExecuteStructMemberFuncAsync(exp.StructMemberFunc, thisValue, args, result);
+            await evalContext.ExecuteStructMemberFuncAsync(exp.StructMemberFunc, thisValue, args, result);
         }
 
         //async ValueTask EvalCallSeqFuncExpAsync(R.CallSeqFuncExp exp, Value result)
@@ -271,7 +242,7 @@ namespace Citron.IR0Evaluator
             var lambda = exp.Lambda;
 
             var lambdaValue = (LambdaValue)await EvalLocAsync(exp.Callable);
-            var localVars = await EvalArgumentsAsync(lambda, exp.Args);            
+            var localVars = await EvalArgumentsAsync(lambda, exp.Args);
 
             var builder = ImmutableDictionary.CreateBuilder<Name, Value>();
             // args는 로컬 변수로 등록된다
@@ -281,27 +252,55 @@ namespace Citron.IR0Evaluator
                 builder.Add(parameter.Name, localVars[i]);
             }
 
+            // Func<int>(); // 실행시점. TypeContext(T => int)
+            // void Func<T>()
+            // {
+            //     T t;             // 실행시점. TypeContext(T => int)
+            //     var l = () => t; // 실행시점. Func<T>.L0, TypeContext(T => int)
+            //     l();             // 실행시점. l body의 typeContext는 지금 컨텍스트와 같다
+            // }
+
             // typeContext를 
             // var typeContext = TypeContext.Make(lambda.GetSymbolId());
 
-            var context = new IR0EvalContext(evaluator, typeContext, EvalFlowControl.None, lambdaValue, result);
-            var localContext = new LocalContext(builder.ToImmutable());
-            var localTaskContext = new LocalTaskContext();
+            var newContext = evalContext.NewLambdaContext(lambdaValue, result);
+            var newLocalContext = new IR0LocalContext(builder.ToImmutable(), default);
 
-            var body = globalContext.GetBodyStmt(lambda.GetSymbolId());
+            var lambdaId = lambda.GetSymbolId() as ModuleSymbolId;
+            Debug.Assert(lambdaId != null);
+            Debug.Assert(lambdaId.ModuleName != globalContext.GetInternalModuleName());
+            Debug.Assert(lambdaId.Path != null);
 
-            return IR0StmtEvaluator.EvalAsync(globalContext, context, localContext, localTaskContext, lambdaDecl.CapturedStatement.Body);
+            var body = globalContext.GetBodyStmt(lambdaId.Path);
 
-            await context.ExecuteLambdaAsync(lambda, lambdaValue.CapturedThis, lambdaValue.Captures, localVars, result);
+            var evaluator = new IR0Evaluator(globalContext, newContext, newLocalContext);
+            await evaluator.EvalStmtSkipYieldAsync(body);
         }
 
-        void EvalLambdaExp(R.LambdaExp exp, Value result)
+        // TODO: StmtEvaluator에서 사용, 합쳐지면 internal 뗀다
+        internal async ValueTask EvalCaptureArgs(LambdaSymbol lambda, LambdaValue value, ImmutableArray<R.Argument> captureArgs)
         {
-            var lambdaRuntimeItem = globalContext.GetRuntimeItem<LambdaRuntimeItem>(exp.Lambda);
-            lambdaRuntimeItem.Capture(context, localContext, (LambdaValue)result);
+            // 1:1로 직접 꽂아보자
+            var memberVarCount = lambda.GetMemberVarCount();
+            Debug.Assert(captureArgs.Length == memberVarCount);
+            
+            for (int i = 0; i < memberVarCount; i++)
+            {
+                var memberVar = lambda.GetMemberVar(i);
+                var memberValue = value.GetMemberValue(memberVar.GetName());
+                
+                var normalArg = captureArgs[i] as R.Argument.Normal;
+                if (normalArg == null)
+                    throw new NotImplementedException(); // 일단 normal만 지원
 
-            // TODO: evaluator로 외부 호출을 하지 않고 직접 호출한다
-
+                await EvalExpAsync(normalArg.Exp, memberValue);
+            }
+        }
+        
+        ValueTask EvalLambdaExpAsync(R.LambdaExp exp, Value result_value)
+        {
+            LambdaValue result = (LambdaValue)result_value;
+            return EvalCaptureArgs(exp.Lambda, result, exp.Args);
         }
 
         //async ValueTask EvalMemberCallExpAsync(MemberCallExp exp, Value result)
@@ -394,10 +393,13 @@ namespace Citron.IR0Evaluator
         async ValueTask EvalListExpAsync(R.ListExp exp, Value result)
         {
             var list = new List<Value>(exp.Elems.Length);
+            var itemType = globalContext.GetListItemType(exp.ListType);
+            if (itemType == null)
+                throw new RuntimeFatalException();
 
             foreach (var elemExp in exp.Elems)
             {
-                var elemValue = context.AllocValue(exp.ElemType);
+                var elemValue = evalContext.AllocValue(itemType);
                 list.Add(elemValue);
 
                 await EvalExpAsync(elemExp, elemValue);
@@ -406,32 +408,39 @@ namespace Citron.IR0Evaluator
             ((ListValue)result).SetList(list);
         }
 
+        class ListSequence : ISequence
+        {
+            List<Value> values;
+            int index;
+
+            public ListSequence(List<Value> values)
+            {
+                this.values = values;
+                this.index = 0;
+            }
+
+            public ValueTask<bool> MoveNextAsync(Value value)
+            {
+                if (index < values.Count)
+                {
+                    value.SetValue(values[index]);
+                    index++;
+                    return new ValueTask<bool>(true);
+                }
+
+                return new ValueTask<bool>(false);
+            }
+        }
+
         async ValueTask EvalListIterExpAsync(R.ListIteratorExp exp, Value result_value)
         {
             var listValue = (ListValue)await EvalLocAsync(exp.ListLoc);
-            var result = (SeqValue)result_value;
-                
-            // evaluator 복제
-            var newContext = new IR0EvalContext(default, EvalFlowControl.None, null, VoidValue.Instance);
+            var result = (SeqValue)result_value;            
 
-            // asyncEnum을 만들기 위해서 내부 함수를 씁니다
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-            async IAsyncEnumerator<Infra.Void> WrapAsyncEnum()
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
-            {
-                var list = listValue.GetList();                    
+            var list = listValue.GetList();
+            var sequence = new ListSequence(list);
 
-                foreach (var elem in list)
-                {
-                    var yieldValue = newContext.GetYieldValue();
-                    yieldValue.SetValue(elem); // 복사
-
-                    yield return Infra.Void.Instance;
-                }
-            }
-
-            var enumerator = WrapAsyncEnum();
-            result.SetEnumerator(enumerator, newContext);
+            result.SetSequence(sequence);
         }
 
         // Value에 넣어야 한다, 묶는 방법도 설명해야 한다
@@ -481,7 +490,7 @@ namespace Citron.IR0Evaluator
         {
             StructValue thisValue = (StructValue)result;
             var args = await EvalArgumentsAsync(exp.Constructor, exp.Args);
-            context.ExecuteStructConstructor(exp.Constructor, thisValue, args);
+            evalContext.ExecuteStructConstructor(exp.Constructor, thisValue, args);
         }
 
         async ValueTask EvalNewClassExpAsync(R.NewClassExp exp, Value result_value)
@@ -494,7 +503,7 @@ namespace Citron.IR0Evaluator
             // }
 
             // 1. 인스턴스를 만들고
-            var instance = context.AllocClassInstance(exp.Constructor.GetOuter());
+            var instance = evalContext.AllocClassInstance(exp.Constructor.GetOuter());
 
             // 2. 클래스 값에 넣은다음
             ClassValue thisValue = (ClassValue)result_value;
@@ -502,16 +511,15 @@ namespace Citron.IR0Evaluator
 
             // 3. 생성자 호출
             var args = await EvalArgumentsAsync(exp.Constructor, exp.Args);
-            context.ExecuteClassConstructor(exp.Constructor, thisValue, args);
+            evalContext.ExecuteClassConstructor(exp.Constructor, thisValue, args);
         }
 
         // E e = (E)E.First;
         async ValueTask EvalCastEnumElemToEnumExp(R.CastEnumElemToEnumExp castEnumElemToEnumExp, Value result_value)
         {
             var result = (EnumValue)result_value;
-            var enumElemItem = globalContext.GetRuntimeItem<EnumElemRuntimeItem>(castEnumElemToEnumExp.EnumElem);
 
-            result.SetEnumElemItem(enumElemItem);
+            result.SetEnumElemId(castEnumElemToEnumExp.EnumElem.GetSymbolId());
             await EvalExpAsync(castEnumElemToEnumExp.Src, result.GetElemValue());
         }
 
@@ -537,7 +545,7 @@ namespace Citron.IR0Evaluator
                 case R.CallStructMemberFuncExp csmfe: await EvalCallStructMemberFuncExpAsync(csmfe, result); break;
                 //case R.CallSeqFuncExp callSeqFuncExp: await EvalCallSeqFuncExpAsync(callSeqFuncExp, result); break;
                 case R.CallValueExp callValueExp: await EvalCallValueExpAsync(callValueExp, result); break;
-                case R.LambdaExp lambdaExp: EvalLambdaExp(lambdaExp, result); break;
+                case R.LambdaExp lambdaExp: await EvalLambdaExpAsync(lambdaExp, result); break;
                 case R.ListExp listExp: await EvalListExpAsync(listExp, result); break;
                 case R.ListIteratorExp listIterExp: await EvalListIterExpAsync(listIterExp, result); break;
                 case R.NewEnumElemExp enumExp: await EvalNewEnumExpAsync(enumExp, result); break;

@@ -10,7 +10,7 @@ using System.Text;
 using Citron.Analysis;
 
 namespace Citron.IR0
-{   
+{
     public abstract record Exp : INode
     {
         internal Exp() { }
@@ -177,8 +177,11 @@ namespace Citron.IR0
         }
     }
 
-    // () => { return 1; }
-    public record LambdaExp(LambdaSymbol Lambda, Stmt Body) : Exp
+    // int x = 1;
+    // var l = () => { return x; }; // lambda type
+    // 
+    // Lambda(lambda_type_0, x); // with captured variable
+    public record LambdaExp(LambdaSymbol Lambda, ImmutableArray<Argument> Args) : Exp
     {
         public override ITypeSymbol GetTypeSymbol()
         {
