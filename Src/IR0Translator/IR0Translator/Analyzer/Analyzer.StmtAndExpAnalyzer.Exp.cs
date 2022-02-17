@@ -57,7 +57,7 @@ namespace Citron.IR0Translator
 
                     case IdentifierResult.LocalVar localVarResult:
                         {
-                            R.Loc loc = new R.LocalVarLoc(new R.Name.Normal(localVarResult.VarName));
+                            R.Loc loc = new R.LocalVarLoc(new M.Name.Normal(localVarResult.VarName));
 
                             if (localVarResult.IsRef)
                                 loc = new R.DerefLocLoc(loc);
@@ -131,10 +131,10 @@ namespace Citron.IR0Translator
             {
                 if (hint.TypeHint is TypeSymbolTypeHint typeValueHint)
                 {
+                    // int? i = null;
                     if (typeValueHint.TypeSymbol is NullableSymbol nullableSymbol)
-                    {
-                        var constructor = nullableSymbol.GetDefaultConstructor();
-                        return new ExpResult.Exp(new R.NewStructExp(constructor, default));
+                    {   
+                        return new ExpResult.Exp(new R.NewNullableExp(null, nullableSymbol));
                     }
                 }
 
@@ -931,7 +931,7 @@ namespace Citron.IR0Translator
 
                         case IdentifierResult.LocalVar localVarResult:
                             {
-                                R.Loc loc = new R.LocalVarLoc(new R.Name.Normal(localVarResult.VarName));
+                                R.Loc loc = new R.LocalVarLoc(new M.Name.Normal(localVarResult.VarName));
                                 if (localVarResult.IsRef)
                                     loc = new R.DerefLocLoc(loc);
 

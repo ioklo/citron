@@ -21,13 +21,8 @@ namespace Citron.IR0
     [AutoConstructor, ImplementIEquatable]
     public partial class Script
     {
-        public ModuleName Name { get; }
+        public Name Name { get; }
         public ImmutableArray<IR0StmtBody> Bodies { get; }
         public ImmutableArray<Stmt> TopLevelStmts { get; }
-
-        //public ImmutableArray<TypeDecl> GlobalTypeDecls { get; }
-        //public ImmutableArray<FuncDecl> GlobalFuncDecls { get; }
-        //public ImmutableArray<CallableMemberDecl> CallableMemberDecls { get; }
-
     }
 }

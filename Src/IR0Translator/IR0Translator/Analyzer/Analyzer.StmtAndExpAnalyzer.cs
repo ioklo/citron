@@ -4,13 +4,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Pretune;
+using Citron.Infra;
+using Citron.Analysis;
+using Citron.CompileTime;
+
 using static Citron.IR0Translator.AnalyzeErrorCode;
 
 using S = Citron.Syntax;
 using R = Citron.IR0;
-using Pretune;
-using Citron.Infra;
-using Citron.Analysis;
 
 namespace Citron.IR0Translator
 {
@@ -77,7 +79,7 @@ namespace Citron.IR0Translator
                 return new R.LocalVarDecl(relems.ToImmutableArray());
             }
 
-            (LambdaSymbol Lambda, R.Stmt Body) AnalyzeLambda(ITypeSymbol? retType, ImmutableArray<S.LambdaExpParam> sparams, S.Stmt body, S.ISyntaxNode nodeForErrorReport)
+            (LambdaSymbol Lambda, ImmutableArray<R.Argument> Args, R.Stmt Body) AnalyzeLambda(ITypeSymbol? retType, ImmutableArray<S.LambdaExpParam> sparams, S.Stmt body, S.ISyntaxNode nodeForErrorReport)
             {
                 // TODO: 리턴 타입은 타입 힌트를 반영해야 한다
                 // 파라미터는 람다 함수의 지역변수로 취급한다                
@@ -101,7 +103,7 @@ namespace Citron.IR0Translator
                         _ => throw new UnreachableCodeException()
                     };
 
-                    funcParameters.Add(new FuncParameter(paramKind, paramType, new M.Name.Normal(sparam.Name)));
+                    funcParameters.Add(new FuncParameter(paramKind, paramType, new Name.Normal(sparam.Name)));
                     newLocalContext.AddLocalVarInfo(sparam.ParamKind == S.FuncParamKind.Ref, paramType, sparam.Name);
                 }
 
@@ -124,7 +126,7 @@ namespace Citron.IR0Translator
                 var memberVarsBuilder = ImmutableArray.CreateBuilder<LambdaMemberVarDeclSymbol>(memberVarCount);
                 if (capturedThisType != null)
                 {
-                    var memberVar = new LambdaMemberVarDeclSymbol(lambdaDeclHolder, capturedThisType, M.Name.CapturedThis);
+                    var memberVar = new LambdaMemberVarDeclSymbol(lambdaDeclHolder, capturedThisType, Name.CapturedThis);
                     memberVarsBuilder.Add(memberVar);
                 }
 

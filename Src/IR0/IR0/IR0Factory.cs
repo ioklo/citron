@@ -13,154 +13,234 @@ using Citron.CompileTime;
 
 namespace Citron.IR0
 {
-    public static class IR0Factory
-    {           
+    public class IR0Factory
+    {
         [AllowNull]
-        static ITypeSymbol BoolType, IntType, StringType;
+        ITypeSymbol boolType;
 
-        public static void Init(ITypeSymbol boolType, ITypeSymbol intType, ITypeSymbol stringType)
+        [AllowNull]
+        ITypeSymbol intType;
+
+        [AllowNull]
+        ITypeSymbol stringType;
+
+        public IR0Factory(ITypeSymbol boolType, ITypeSymbol intType, ITypeSymbol stringType)
         {
-            BoolType = boolType;
-            IntType = intType;
-            StringType = stringType;
+            this.boolType = boolType;
+            this.intType = intType;
+            this.stringType = stringType;
         }
 
-        public static IR0StmtBody RStmtBody(DeclSymbolPath path, Stmt body)
+        public IR0StmtBody StmtBody(DeclSymbolPath path, Stmt body)
         {
             return new IR0StmtBody(path, body);
         }
 
-        public static Script RScript(ModuleName moduleName, ImmutableArray<IR0StmtBody> rstmtBodies, params Stmt[] optTopLevelStmts)
+        #region Script
+
+        public Script Script(Name moduleName, params Stmt[] stmts)
+        {
+            return Script(moduleName, default, stmts);
+        }
+
+        public Script Script(Name moduleName, ImmutableArray<IR0StmtBody> rstmtBodies, params Stmt[] optTopLevelStmts)
         {   
             ImmutableArray<Stmt> topLevelStmts = optTopLevelStmts.ToImmutableArray();
-
             return new Script(moduleName, rstmtBodies, topLevelStmts);
         }
 
-        public static Script RScript(ModuleName moduleName, params Stmt[] stmts)
-            => RScript(moduleName, default, stmts);
+        #endregion
 
-        public static CommandStmt RCommand(params StringExp[] cmds)
-            => new CommandStmt(Arr(cmds));
+        #region Stmt
 
-        public static BlockStmt RBlock(params Stmt[] stmts)
-            => new BlockStmt(Arr(stmts));
+        #region CommandStmt
 
-        public static StringExp RString(params StringExpElement[] elems)
-            => new StringExp(Arr(elems), StringType);
+        public CommandStmt Command(params StringExp[] cmds)
+        { 
+            return new CommandStmt(Arr(cmds));
+        }
 
-        public static StringExp RString(string v)
-            => new StringExp(Arr<StringExpElement>(new TextStringExpElement(v)), StringType);
+        #endregion
 
-        public static Stmt RAssignStmt(Loc dest, Exp src)
+        #region BlockStmt
+
+        public BlockStmt Block(params Stmt[] stmts)
+        {
+            return new BlockStmt(Arr(stmts));
+        }
+
+        #endregion        
+
+        #region ExpStmt
+
+        public ExpStmt Assign(Loc dest, Exp src)
         {
             return new ExpStmt(new AssignExp(dest, src));
         }
 
-        public static GlobalVarDeclStmt RGlobalVarDeclStmt(Path type, string name, Exp? initExp = null)
+        #endregion        
+
+        #region GlobalVarDeclStmt
+        public GlobalVarDeclStmt GlobalVarDecl(ITypeSymbol type, string name, Exp? initExp = null)
         {
             if (initExp == null)
                 return new GlobalVarDeclStmt(Arr<VarDeclElement>(new VarDeclElement.NormalDefault(type, name)));
 
-            else 
+            else
                 return new GlobalVarDeclStmt(Arr<VarDeclElement>(new VarDeclElement.Normal(type, name, initExp)));
         }
 
-        public static GlobalVarDeclStmt RGlobalRefVarDeclStmt(string name, Loc loc)
-            => new GlobalVarDeclStmt(Arr<VarDeclElement>(new VarDeclElement.Ref(name, loc)));
-
-        public static LocalVarDeclStmt RLocalVarDeclStmt(Path typeId, string name, Exp initExp)
-            => new LocalVarDeclStmt(RLocalVarDecl(typeId, name, initExp));
-
-        public static LocalVarDecl RLocalVarDecl(Path typeId, string name, Exp initExp)
-            => new LocalVarDecl(Arr<VarDeclElement>(new VarDeclElement.Normal(typeId, name, initExp)));
-
-        public static IntLiteralExp RInt(int v) => new IntLiteralExp(v, IntType);
-        public static BoolLiteralExp RBool(bool v) => new BoolLiteralExp(v, BoolType);
-
-        public static ImmutableArray<Param> RNormalParams(params (Path Path, string Name)[] elems)
+        public GlobalVarDeclStmt GlobalRefVarDecl(string name, Loc loc)
         {
-            return elems.Select(e => new Param(ParamKind.Default, e.Path, new Name.Normal(e.Name))).ToImmutableArray();
+            return new GlobalVarDeclStmt(Arr<VarDeclElement>(new VarDeclElement.Ref(name, loc)));
         }
 
-        public static ImmutableArray<Argument> RArgs(params Exp[] exps)
-        {
-            return exps.Select(e => (Argument)new Argument.Normal(e)).ToImmutableArray();
-        }
+        #endregion
 
-        public static CommandStmt RPrintBoolCmdStmt(Exp exp)
+        #region LocalVarDeclStmt
+        public LocalVarDeclStmt LocalVarDecl(ITypeSymbol type, string name, Exp initExp)
         {
-            return RCommand(RString(new ExpStringExpElement(
+            return new LocalVarDeclStmt(new LocalVarDecl(Arr<VarDeclElement>(new VarDeclElement.Normal(type, name, initExp))));
+        }
+        #endregion
+
+        #region CommandStmt
+
+        public CommandStmt PrintBool(Exp exp)
+        {
+            return Command(String(new ExpStringExpElement(
                 new CallInternalUnaryOperatorExp(
                     InternalUnaryOperator.ToString_Bool_String,
                     exp,
-                    StringType
+                    stringType
                 )
             )));
         }
 
-        public static CommandStmt RPrintIntCmdStmt(Loc loc)
+        public CommandStmt PrintInt(Loc loc)
         {
-            return RCommand(RString(new ExpStringExpElement(
+            return Command(String(new ExpStringExpElement(
                 new CallInternalUnaryOperatorExp(
                     InternalUnaryOperator.ToString_Int_String,
-                    new LoadExp(loc, IntType),
-                    StringType
+                    new LoadExp(loc, intType),
+                    stringType
                 )
             )));
         }
 
-
-        public static CommandStmt RPrintIntCmdStmt(Exp varExp)
+        public CommandStmt PrintInt(Exp varExp)
         {
-            return RCommand(RString(new ExpStringExpElement(
+            return Command(String(new ExpStringExpElement(
                 new CallInternalUnaryOperatorExp(
                     InternalUnaryOperator.ToString_Int_String,
                     varExp,
-                    StringType
+                    stringType
                 )
             )));
         }
 
-        public static CommandStmt RPrintStringCmdStmt(Loc loc, ITypeSymbol locType)
+        public CommandStmt PrintStringCmdStmt(Loc loc, ITypeSymbol locType)
         {
-            return RCommand(RString(new ExpStringExpElement(new LoadExp(loc, locType))));
+            return Command(String(new ExpStringExpElement(new LoadExp(loc, locType))));
         }
 
-
-        public static CommandStmt RPrintStringCmdStmt(Exp varExp)
+        public CommandStmt PrintStringCmdStmt(Exp varExp)
         {
-            return RCommand(RString(new ExpStringExpElement(varExp)));
+            return Command(String(new ExpStringExpElement(varExp)));
         }
 
-        public static CommandStmt RPrintStringCmdStmt(string text)
+        public CommandStmt PrintStringCmdStmt(string text)
         {
-            return RCommand(RString(text));
+            return Command(String(text));
         }
 
-        public static Path.Root RRoot(string moduleName)
-            => new Path.Root(new ModuleName(moduleName));
+        #endregion
 
-        public static ClassMemberLoc ClassMember(this Loc instance, ClassMemberVarSymbol memberVar)
+        #endregion
+
+        #region Exp
+
+        #region StringExp
+        public StringExp String(params StringExpElement[] elems)
         {
-            return new ClassMemberLoc(instance, memberVar);
+            return new StringExp(Arr(elems), stringType);
         }
 
-        public static Loc RLocalVarLoc(string name)
-        {
-            return new LocalVarLoc(new Name.Normal(name));
+        public StringExp String(string v)
+        { 
+            return new StringExp(Arr<StringExpElement>(new TextStringExpElement(v)), stringType);
         }
 
-        public static Exp RLocalVarExp(string name, ITypeSymbol varType)
+        #endregion
+
+        #region IntLiteralExp
+
+        public IntLiteralExp Int(int v)
+        {
+            return new IntLiteralExp(v, intType);
+        }
+
+        #endregion
+
+        #region BoolLiteralExp
+
+        public BoolLiteralExp Bool(bool v)
+        {
+            return new BoolLiteralExp(v, boolType);
+        }
+
+        #endregion
+
+        #region LoadExp
+
+        public LoadExp LoadLocalVar(string name, ITypeSymbol varType)
         {
             return new LoadExp(new LocalVarLoc(new Name.Normal(name)), varType);
         }
 
-        public static ParamHash RNormalParamHash(params Path[] paths)
+        #endregion
+
+        #endregion
+
+        #region Loc
+
+        public LocalVarLoc LocalVar(string name)
         {
-            return new ParamHash(0, paths.Select(path => new ParamHashEntry(ParamKind.Default, path)).ToImmutableArray());
+            return new LocalVarLoc(new Name.Normal(name));
         }
 
+        #endregion
 
+        #region Else
+
+        public VarDeclForStmtInitializer VarDeclForStmtInitializer(ITypeSymbol type, string name, Exp initExp)
+        {
+            return new VarDeclForStmtInitializer(new LocalVarDecl(Arr<VarDeclElement>(new VarDeclElement.Normal(type, name, initExp))));
+        }
+
+        public ImmutableArray<Param> NormalParams(params (SymbolId Type, string Name)[] elems)
+        {
+            return elems.Select(e => new Param(ParamKind.Default, e.Type, new Name.Normal(e.Name))).ToImmutableArray();
+        }
+
+        public ImmutableArray<Argument> Args(params Exp[] exps)
+        {
+            return exps.Select(e => (Argument)new Argument.Normal(e)).ToImmutableArray();
+        }
+
+        public ModuleSymbolId Module(string moduleName)
+        {
+            return new ModuleSymbolId(new Name.Normal(moduleName), null);
+        }
+
+        #endregion
+    }
+
+    public static class IR0Extensions
+    {
+        public static ClassMemberLoc ClassMember(this Loc instance, ClassMemberVarSymbol memberVar)
+        {
+            return new ClassMemberLoc(instance, memberVar);
+        }
     }
 }

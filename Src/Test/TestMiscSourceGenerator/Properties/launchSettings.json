@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "TestMiscSourceGenerator": {
+      "commandName": "Project",
+      "commandLineArgs": "Z:\\Temp"
+    }
+  }
+}

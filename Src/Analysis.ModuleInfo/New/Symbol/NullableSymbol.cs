@@ -63,11 +63,5 @@ namespace Citron.Analysis
         {
             return default;
         }
-
-        public StructConstructorSymbol GetDefaultConstructor()
-        {
-            throw new NotImplementedException();
-            // return new StructConstructorSymbol(factory, )
-        }
     }
 }

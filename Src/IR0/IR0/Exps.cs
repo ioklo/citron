@@ -53,16 +53,14 @@ namespace Citron.IR0
         }
     }
     
-    // Nullable은 따로 만드는게 아니고, Runtime Library호출을 하도록 변경
-    // NewStruct(Nullable, ...)
     // TODO: 'New' 단어는 힙할당에만 쓰도록 하자
-    //public record NewNullableExp(Exp? ValueExp, ITypeSymbol TypeSymbol) : Exp
-    //{
-    //    public override ITypeSymbol GetTypeSymbol()
-    //    {
-    //        return NullableSymbol;
-    //    }
-    //}
+    public record NewNullableExp(Exp? ValueExp, ITypeSymbol TypeSymbol) : Exp
+    {
+        public override ITypeSymbol GetTypeSymbol()
+        {
+            return TypeSymbol;
+        }
+    }
 
     public enum InternalUnaryOperator
     {

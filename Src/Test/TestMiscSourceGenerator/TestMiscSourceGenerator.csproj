@@ -1,22 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <OutputType>Exe</OutputType>
     <TargetFramework>net5.0</TargetFramework>
-    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\Analysis.ModuleInfo\Analysis.ModuleInfo.csproj" />
     <ProjectReference Include="..\..\Infra\Infra.csproj" />
-    <ProjectReference Include="..\..\IR0Visitor\IR0Visitor.csproj" />
     <ProjectReference Include="..\..\IR0\IR0.csproj" />
-    <ProjectReference Include="..\..\Log\Log.csproj" />
     <ProjectReference Include="..\..\ModuleInfo\ModuleInfo.csproj" />
-    <ProjectReference Include="..\..\Syntax\Syntax.csproj" />
   </ItemGroup>
-
-  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="dotnet run --project $(ProjectDir)..\TestMiscSourceGenerator $(ProjectDir)" />
-  </Target>
 
 </Project>

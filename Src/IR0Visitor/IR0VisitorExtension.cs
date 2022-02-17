@@ -64,43 +64,7 @@ namespace Citron.IR0Visitor
                 case R.DirectiveStmt yieldStmt: visitor.VisitDirectiveStmt(yieldStmt); break;
                 default: throw new UnreachableCodeException();
             }
-        }
-
-        public static void Visit<TVisitor>(this ref TVisitor visitor, R.TypeDecl typeDecl)
-            where TVisitor : struct, IIR0TypeDeclVisitor
-        {
-            switch (typeDecl)
-            {
-                case R.StructDecl structDecl: visitor.VisitStructDecl(structDecl); break;
-                case R.ClassDecl classDecl: visitor.VisitClassDecl(classDecl); break;
-                case R.EnumDecl enumDecl: visitor.VisitEnumDecl(enumDecl); break;
-                default: throw new UnreachableCodeException();
-            }
-        }
-
-        public static void Visit<TVisitor>(this TVisitor visitor, R.TypeDecl typeDecl)
-            where TVisitor : class, IIR0TypeDeclVisitor
-        {
-            switch (typeDecl)
-            {
-                case R.StructDecl structDecl: visitor.VisitStructDecl(structDecl); break;
-                case R.ClassDecl classDecl: visitor.VisitClassDecl(classDecl); break;
-                case R.EnumDecl enumDecl: visitor.VisitEnumDecl(enumDecl); break;
-                default: throw new UnreachableCodeException();
-            }
-        }
-
-        // TODO: class 버전
-        public static void Visit<TVisitor>(this ref TVisitor visitor, R.CallableMemberDecl decl)
-            where TVisitor : struct, IIR0CallableMemberDeclVisitor
-        {
-            switch (decl)
-            {
-                case R.LambdaDecl lambdaDecl: visitor.VisitLambdaDecl(lambdaDecl); break;
-                case R.CapturedStatementDecl capturedStatementDecl: visitor.VisitCapturedStatementDecl(capturedStatementDecl); break;
-                default: throw new UnreachableCodeException();
-            }
-        }
+        }        
 
         public static void Visit<TVisitor>(this ref TVisitor visitor, R.Exp exp)
             where TVisitor : struct, IIR0ExpVisitor
@@ -196,18 +160,6 @@ namespace Citron.IR0Visitor
         }
 
         // TODO: class version
-        public static void Visit<TVisitor>(this ref TVisitor visitor, R.FuncDecl funcDecl)
-            where TVisitor : struct, IIR0FuncDeclVisitor
-        {
-            switch (funcDecl)
-            {
-                case R.NormalFuncDecl normalFuncDecl: visitor.VisitNormalFuncDecl(normalFuncDecl); break;
-                case R.SequenceFuncDecl seqFuncDecl: visitor.VisitSequenceFuncDecl(seqFuncDecl); break;
-                default: throw new UnreachableCodeException();
-            }
-        }
-
-        // TODO: class version
         public static void Visit<TVisitor>(this ref TVisitor visitor, R.Loc loc)
             where TVisitor : struct, IIR0LocVisitor
         {
@@ -216,9 +168,8 @@ namespace Citron.IR0Visitor
                 case R.TempLoc tempLoc: visitor.VisitTempLoc(tempLoc); break;
                 case R.GlobalVarLoc globalVarLoc: visitor.VisitGlobalVarLoc(globalVarLoc); break;
                 case R.LocalVarLoc localVarLoc: visitor.VisitLocalVarLoc(localVarLoc); break;
-                case R.LambdaMemberVar capturedVarLoc: visitor.VisitCapturedVarLoc(capturedVarLoc); break;
+                case R.LambdaMemberVarLoc capturedVarLoc: visitor.VisitLambdaMemberVarLoc(capturedVarLoc); break;
                 case R.ListIndexerLoc listIndexerLoc: visitor.VisitListIndexerLoc(listIndexerLoc); break;
-                case R.StaticMemberLoc staticMemberLoc: visitor.VisitStaticMemberLoc(staticMemberLoc); break;
                 case R.StructMemberLoc structMemberLoc: visitor.VisitStructMemberLoc(structMemberLoc); break;
                 case R.ClassMemberLoc classMemberLoc: visitor.VisitClassMemberLoc(classMemberLoc); break;
                 case R.EnumElemMemberLoc enumElemeMemberLoc: visitor.VisitEnumElemMemberLoc(enumElemeMemberLoc); break;
@@ -237,9 +188,8 @@ namespace Citron.IR0Visitor
                 case R.TempLoc tempLoc: return visitor.VisitTempLoc(tempLoc);
                 case R.GlobalVarLoc globalVarLoc: return visitor.VisitGlobalVarLoc(globalVarLoc);
                 case R.LocalVarLoc localVarLoc: return visitor.VisitLocalVarLoc(localVarLoc);
-                case R.LambdaMemberVar capturedVarLoc: return visitor.VisitCapturedVarLoc(capturedVarLoc);
+                case R.LambdaMemberVarLoc lambdaMemberVarLoc: return visitor.VisitLambdaMemberVarLoc(lambdaMemberVarLoc);
                 case R.ListIndexerLoc listIndexerLoc: return visitor.VisitListIndexerLoc(listIndexerLoc);
-                case R.StaticMemberLoc staticMemberLoc: return visitor.VisitStaticMemberLoc(staticMemberLoc);
                 case R.StructMemberLoc structMemberLoc: return visitor.VisitStructMemberLoc(structMemberLoc);
                 case R.ClassMemberLoc classMemberLoc: return visitor.VisitClassMemberLoc(classMemberLoc);
                 case R.EnumElemMemberLoc enumElemeMemberLoc: return visitor.VisitEnumElemMemberLoc(enumElemeMemberLoc);

@@ -8,9 +8,8 @@ namespace Citron.IR0Visitor
         void VisitTempLoc(R.TempLoc loc);
         void VisitGlobalVarLoc(R.GlobalVarLoc loc);
         void VisitLocalVarLoc(R.LocalVarLoc loc);
-        void VisitCapturedVarLoc(R.LambdaMemberVar loc);
-        void VisitListIndexerLoc(R.ListIndexerLoc loc);
-        void VisitStaticMemberLoc(R.StaticMemberLoc loc);
+        void VisitLambdaMemberVarLoc(R.LambdaMemberVarLoc loc);
+        void VisitListIndexerLoc(R.ListIndexerLoc loc);        
         void VisitStructMemberLoc(R.StructMemberLoc loc);
         void VisitClassMemberLoc(R.ClassMemberLoc loc);
         void VisitEnumElemMemberLoc(R.EnumElemMemberLoc loc);
@@ -24,9 +23,8 @@ namespace Citron.IR0Visitor
         TRet VisitTempLoc(R.TempLoc loc);
         TRet VisitGlobalVarLoc(R.GlobalVarLoc loc);
         TRet VisitLocalVarLoc(R.LocalVarLoc loc);
-        TRet VisitCapturedVarLoc(R.LambdaMemberVar loc);
+        TRet VisitLambdaMemberVarLoc(R.LambdaMemberVarLoc loc);
         TRet VisitListIndexerLoc(R.ListIndexerLoc loc);
-        TRet VisitStaticMemberLoc(R.StaticMemberLoc loc);
         TRet VisitStructMemberLoc(R.StructMemberLoc loc);
         TRet VisitClassMemberLoc(R.ClassMemberLoc loc);
         TRet VisitEnumElemMemberLoc(R.EnumElemMemberLoc loc);

@@ -14,7 +14,7 @@ namespace Citron.CompileTime
     public partial struct Param
     {
         public ParamKind Kind { get; }
-        public TypeId Type { get; }
+        public SymbolId Type { get; }
         public Name Name { get; }
     }
 }
