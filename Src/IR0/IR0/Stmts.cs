@@ -48,24 +48,14 @@ namespace Citron.IR0
         }
     }
     
-    public record ReturnStmt(ReturnInfo Info): Stmt;
-    
-    public record BlockStmt(ImmutableArray<Stmt> Stmts) : Stmt;
-    
-    // singleton
-    public record BlankStmt : Stmt
-    {
-        public static readonly BlankStmt Instance = new BlankStmt();
-        BlankStmt() { }
-    }
-
+    public record ReturnStmt(ReturnInfo Info): Stmt;    
+    public record BlockStmt(ImmutableArray<Stmt> Stmts) : Stmt;    
+    public record BlankStmt : Stmt;
     public record ExpStmt(Exp Exp) : Stmt;
-
-    public record TaskStmt(LambdaSymbol Lambda, ImmutableArray<Argument> CaptureArgs, Stmt Body) : Stmt;    
-
+    public record TaskStmt(LambdaSymbol Lambda, ImmutableArray<Argument> CaptureArgs, ImmutableArray<Stmt> Body) : Stmt;
     public record AwaitStmt(Stmt Body) : Stmt;
     
-    public record AsyncStmt(LambdaSymbol Lambda, ImmutableArray<Argument> CaptureArgs, Stmt Body) : Stmt;
+    public record AsyncStmt(LambdaSymbol Lambda, ImmutableArray<Argument> CaptureArgs, ImmutableArray<Stmt> Body) : Stmt;
     
     public record ForeachStmt(ITypeSymbol ElemType, string ElemName, Loc Iterator, Stmt Body) : Stmt;
     public record YieldStmt(Exp Value) : Stmt;

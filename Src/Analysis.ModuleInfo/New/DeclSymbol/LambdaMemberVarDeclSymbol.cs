@@ -1,6 +1,7 @@
 ﻿using Citron.Collections;
 using Citron.Infra;
 using Pretune;
+using System;
 using M = Citron.CompileTime;
 
 namespace Citron.Analysis
@@ -35,6 +36,11 @@ namespace Citron.Analysis
         public IDeclSymbolNode? GetOuterDeclNode()
         {
             return outerHolder.GetValue();
+        }
+
+        public ITypeSymbol GetDeclType()
+        {
+            return type;
         }
 
         public M.AccessModifier GetAccessModifier()

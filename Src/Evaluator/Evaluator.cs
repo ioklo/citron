@@ -39,7 +39,7 @@ namespace Citron
             return ret.GetInt();
         }
         
-        internal Evaluator()
+        public Evaluator()
         {
         }        
 

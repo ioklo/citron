@@ -7,31 +7,31 @@ using R = Citron.IR0;
 using Citron.CompileTime;
 using Citron.Analysis;
 using System.Diagnostics;
+using Citron.IR0;
 
 namespace Citron
 {
     public class IR0GlobalContext
     {
         Evaluator evaluator;
-        SymbolLoader symbolLoader;
+        IR0Loader loader;
         Name internalModuleName;
         IIR0CommandProvider commandProvider;
-        Dictionary<R.ModuleName, IItemContainer> rootContainers;
-        Dictionary<string, Value> globalVars;
+        Dictionary<string, Value> globalVars;        
 
-        public IR0GlobalContext(Evaluator evaluator, SymbolLoader symbolLoader, Name internalModuleName, IIR0CommandProvider commandProvider)
+        public IR0GlobalContext(Evaluator evaluator, IR0Loader loader, Name internalModuleName, IIR0CommandProvider commandProvider)
         {
             this.evaluator = evaluator;
+            this.loader = loader;
             this.internalModuleName = internalModuleName;
             this.commandProvider = commandProvider;
-            this.rootContainers = new Dictionary<R.ModuleName, IItemContainer>();
             this.globalVars = new Dictionary<string, Value>();
         }
 
         public TSymbol LoadSymbol<TSymbol>(SymbolPath symbolPath)
             where TSymbol : class, ISymbolNode
         {
-            return (TSymbol)symbolLoader.Load(new ModuleSymbolId(internalModuleName, symbolPath));
+            return loader.LoadSymbol<TSymbol>(symbolPath);
         }
 
         public Value GetGlobalValue(string name)
@@ -101,7 +101,7 @@ namespace Citron
         public void AddRootItemContainer(R.ModuleName moduleName, IItemContainer container)
         {
             rootContainers.Add(moduleName, container);
-        }
+        }        
 
         public Task ExecuteCommandAsync(string cmdText)
         {

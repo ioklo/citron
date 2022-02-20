@@ -12,34 +12,23 @@ namespace Citron.IR0Translator
         // 최상위 레벨 컨텍스트
         class RootContext : ICallableContext, ITypeContainer
         {
-            R.ModuleName moduleName;
+            ModuleDeclSymbol moduleDecl;
             SymbolFactory symbolFactory;
-
-            ImmutableArray<R.TypeDecl> globalTypeDecls;
-            ImmutableArray<R.FuncDecl> globalFuncDecls;
-            ImmutableArray<R.CallableMemberDecl> callableMemberDecls;
             ImmutableArray<R.Stmt> topLevelStmts;
 
             AnonymousIdComponent AnonymousIdComponent;
 
-            public RootContext(R.ModuleName moduleName, SymbolFactory symbolFactory)
+            public RootContext(ModuleDeclSymbol moduleDecl, SymbolFactory symbolFactory)
             {
-                this.moduleName = moduleName;
+                this.moduleDecl = moduleDecl;
                 this.symbolFactory = symbolFactory;
-                this.globalTypeDecls = ImmutableArray<R.TypeDecl>.Empty;
-                this.globalFuncDecls = ImmutableArray<R.FuncDecl>.Empty;
-                this.callableMemberDecls = ImmutableArray<R.CallableMemberDecl>.Empty;
                 this.topLevelStmts = ImmutableArray<R.Stmt>.Empty;
             }
             
             public RootContext(RootContext other, CloneContext cloneContext)
             {
-                this.moduleName = other.moduleName;
+                this.moduleDecl = other.moduleDecl;
                 this.symbolFactory = other.symbolFactory;
-                this.globalTypeDecls = other.globalTypeDecls;
-                this.globalFuncDecls = other.globalFuncDecls;
-                this.callableMemberDecls = other.callableMemberDecls;
-                
                 this.topLevelStmts = other.topLevelStmts;
             }
 
@@ -81,7 +70,8 @@ namespace Citron.IR0Translator
 
             public R.Script MakeScript()
             {
-                return new R.Script(moduleName, globalTypeDecls, globalFuncDecls, callableMemberDecls, topLevelStmts);
+                stmtBodiesBuilder.Add(M.Name.TopLevel, topLevelStmts);
+                return new R.Script(moduleDeclSymbol, stmtBodiesBuilder.ToImmutable());
             }
 
             public void AddGlobalFuncDecl(R.FuncDecl globalFuncDecl)

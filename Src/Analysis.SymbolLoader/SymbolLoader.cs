@@ -6,7 +6,6 @@ using Citron.Collections;
 using Pretune;
 
 using M = Citron.CompileTime;
-using Citron.Analysis;
 
 namespace Citron.Analysis
 {

@@ -37,6 +37,12 @@ namespace Citron.Analysis
             return outer.GetTypeEnv();
         }
 
+        public ITypeSymbol GetDeclType()
+        {
+            var declType = decl.GetDeclType();
+            return declType.Apply(GetTypeEnv());
+        }
+
         public Name GetName()
         {
             return decl.GetName();

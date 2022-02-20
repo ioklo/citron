@@ -1,5 +1,6 @@
 ﻿using System;
 using Citron.Collections;
+using Citron.Infra;
 using Pretune;
 using M = Citron.CompileTime;
 
@@ -9,7 +10,7 @@ namespace Citron.Analysis
     [AutoConstructor]
     public partial class LambdaDeclSymbol : ITypeDeclSymbol, IFuncDeclSymbol
     {
-        IFuncDeclSymbol outer;
+        IHolder<IDeclSymbolNode> outer; // 대체로 FuncDeclSymbol이지만, TopLevel의 경우 module이나 namespace
         M.Name name;
 
         // Invoke 함수 시그니처
@@ -48,7 +49,7 @@ namespace Citron.Analysis
 
         public IDeclSymbolNode? GetOuterDeclNode()
         {
-            return outer;
+            return outer.GetValue();
         }
 
         public int GetMemberVarCount()

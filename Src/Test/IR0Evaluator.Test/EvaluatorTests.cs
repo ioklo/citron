@@ -1,19 +1,22 @@
-﻿using Citron.IR0;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using Citron.Collections;
+using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+
 using Xunit;
 
-using static Citron.Infra.Misc;
-using static Citron.IR0.IR0Factory;
 using Citron.Infra;
-using System.Reflection;
-using System.Diagnostics;
+using Citron.Collections;
+using Citron.IR0;
 using Citron.Test.Misc;
+using Citron.CompileTime;
+
+using static Citron.Infra.Misc;
+using Citron.Analysis;
 
 namespace Citron.Test
 {
@@ -52,17 +55,31 @@ namespace Citron.Test
             }
         }
 
-        ModuleName moduleName = new ModuleName("TestModule");
+        Name moduleName = new Name.Normal("TestModule");
+        SymbolFactory factory;
+        IR0Factory r;
+        ITypeSymbol boolType, intType, stringType;
+        
+        public EvaluatorTests()
+        {
+            // [System.Runtime] System.Int32
+            this.factory = new SymbolFactory();
+
+            boolType = factory.MakeBool();
+            intType = factory.MakeInt();
+            stringType = factory.MakeString();
+
+            this.r = new IR0Factory(boolType, intType, stringType);
+        }
 
         CommandStmt Sleep(int i)
         {
-            return RCommand(RString(
-                new TextStringExpElement("#Sleep"),
-                new ExpStringExpElement(                    
-                    new CallInternalUnaryOperatorExp(
+            return r.Command(r.String(
+                r.TextElem("#Sleep"),
+                r.ExpElem(
+                    r.CallInternalUnary(
                         InternalUnaryOperator.ToString_Int_String,
-                        new IntLiteralExp(i),
-                        IntType
+                        r.Int(i)
                     )
                 )
             ));
@@ -70,61 +87,100 @@ namespace Citron.Test
 
         Loc IntLoc(int i)
         {
-            return new TempLoc(new IntLiteralExp(i));
+            return new TempLoc(r.Int(i));
         }
 
+        // with script
         async Task<string> EvalAsync(Script script)
         {
             var (output, _) = await EvalAsyncWithRetValue(default, script);
             return output;
         }
 
+        // TopLevelStmt
         async Task<string> EvalAsync(ImmutableArray<Stmt> topLevelStmts)
         {
-            var script = new Script(moduleName, default, default, default, topLevelStmts);
+            var script = r.Script(new ModuleDeclSymbol(moduleName, default, default, default), Arr(new StmtBody(new DeclSymbolPath(null, Name.TopLevel), topLevelStmts)));
             var (output, _) = await EvalAsyncWithRetValue(default, script);
             return output;
         }
 
-        async Task<string> EvalAsync(ImmutableArray<FuncDecl> globalFuncDecls, ImmutableArray<Stmt> topLevelStmts)
+        //async Task<string> EvalAsync(ImmutableArray<StmtBody> stmtBodies, ImmutableArray<Stmt> topLevelStmts)
+        //{
+        //    var moduleDecl = new ModuleDeclSymbol(moduleName, default, default, default);
+
+        //    var script = r.Script(moduleDecl, Arr(new StmtBody(new DeclSymbolPath(null, Name.TopLevel), topLevelStmts)));
+
+        //    var script = r.Script(moduleName, stmtBodies, topLevelStmts);
+        //    var (output, _) = await EvalAsyncWithRetValue(default, script);
+        //    return output;
+        //}
+
+        //async Task<string> EvalAsync(StmtBody stmtBody, ImmutableArray<Stmt> topLevelStmts)
+        //{
+        //    var script = new Script(moduleName, Arr(stmtBody), topLevelStmts);
+        //    var (output, _) = await EvalAsyncWithRetValue(default, script);
+        //    return output;
+        //}
+
+        Task<(string Output, int RetValue)> EvalAsyncWithRetValue(
+            ImmutableArray<Func<ModuleDriverInitializationContext, IModuleDriver>> moduleDrivers, Script script)
         {
-            var script = new Script(moduleName, default, globalFuncDecls, default, topLevelStmts);
-            var (output, _) = await EvalAsyncWithRetValue(default, script);
-            return output;
-        }
-
-        async Task<string> EvalAsync(FuncDecl funcDecl, ImmutableArray<Stmt> topLevelStmts)
-        {
-            var script = new Script(moduleName, default, Arr(funcDecl), default, topLevelStmts);
-            var (output, _) = await EvalAsyncWithRetValue(default, script);
-            return output;
-        }
-
-        async Task<string> EvalAsync(ImmutableArray<CallableMemberDecl> callableMemberDecls, ImmutableArray<Stmt> topLevelStmts)
-        {
-            var script = new Script(moduleName, default, default, callableMemberDecls, topLevelStmts);
-            var (output, _) = await EvalAsyncWithRetValue(default, script);
-            return output;
-        }
-
-        async Task<(string Output, int RetValue)> EvalAsyncWithRetValue(ImmutableArray<IModuleDriver> moduleDrivers, Script script)
-        {   
             var commandProvider = new TestCommandProvider();
-            var retValue = await Evaluator.EvalAsync(moduleDrivers, commandProvider, script);
+            return EvalAsyncWithRetValue(commandProvider, moduleDrivers, script);
+        }
+
+        async Task<(string Output, int RetValue)> EvalAsyncWithRetValue(TestCommandProvider commandProvider, ImmutableArray<Func<ModuleDriverInitializationContext, IModuleDriver>> moduleDrivers, Script script)
+        {   
+            // moduleDrivers에 추가
+            moduleDrivers = moduleDrivers.Add(initContext =>
+            {
+                var evaluator = new Evaluator();
+                var symbolFactory = new SymbolFactory();
+                var symbolLoader = IR0Loader.Make(symbolFactory, script);
+                var globalContext = new IR0GlobalContext(evaluator, symbolLoader, moduleName, commandProvider);
+
+                return IR0ModuleDriver.Make(initContext, evaluator, globalContext);
+            });
+
+            // entry는 TopLevel
+            var entry = new ModuleSymbolId(moduleName, new SymbolPath(null, Name.TopLevel));
+
+            var retValue = await Evaluator.EvalAsync(moduleDrivers, entry);
             return (commandProvider.GetOutput(), retValue);
         }
 
-        async Task<(string Output, int RetValue)> EvalAsyncWithRetValue(TestCommandProvider commandProvider, ImmutableArray<IModuleDriver> moduleDrivers, Script script)
-        {
-            var retValue = await Evaluator.EvalAsync(moduleDrivers, commandProvider, script);
-            return (commandProvider.GetOutput(), retValue);
-        }
+        // without typeArgs
+        //Path.Nested RootPath(string name)
+        //{
+        //    return new Path.Nested(new Path.Root(moduleName), new Name.Normal(name), ParamHash.None, default);
+        //}
+
+        //Path.Nested RootPath(Name name)
+        //{
+        //    return new Path.Nested(new Path.Root(moduleName), name, ParamHash.None, default);
+        //}
+
+        //Path.Nested RootPath(string name, ImmutableArray<ParamHashEntry> paramWithoutNames, ImmutableArray<Path> typeArgs)
+        //{
+        //    return new Path.Nested(new Path.Root(moduleName), new Name.Normal(name), new ParamHash(typeArgs.Length, paramWithoutNames), typeArgs);
+        //}
+
+        //Path.Nested RootPath(string name, ImmutableArray<Path> paramTypes, ImmutableArray<Path> typeArgs)
+        //{
+        //    return new Path.Nested(
+        //        new Path.Root(moduleName), new Name.Normal(name),
+        //        new ParamHash(
+        //            typeArgs.Length, paramTypes.Select(paramType => new ParamHashEntry(ParamKind.Default, paramType)).ToImmutableArray()
+        //        ),
+        //        typeArgs);
+        //}
 
 
         [Fact]
         public async Task CommandStmt_WorksProperly()
         {
-            var topLevelStmts = Arr<Stmt>(RCommand(RString("Hello World")));
+            var topLevelStmts = Arr<Stmt>(r.Command(r.String("Hello World")));
             var output = await EvalAsync(topLevelStmts);
 
             Assert.Equal("Hello World", output);
@@ -137,147 +193,286 @@ namespace Citron.Test
         {   
             var topLevelStmts = Arr<Stmt>
             (
-                RGlobalVarDeclStmt(Path.Int, "x", new IntLiteralExp(3)),
-                RPrintIntCmdStmt(new GlobalVarLoc("x"))
+                r.GlobalVarDecl(intType, "x", r.Int(3)),
+                r.PrintInt(r.GlobalVar("x"))
             );
 
             var output = await EvalAsync(topLevelStmts);
             Assert.Equal("3", output);
         }
 
-        // without typeArgs
-        Path.Nested RootPath(string name)
-        {            
-            return new Path.Nested(new Path.Root(moduleName), new Name.Normal(name), ParamHash.None, default);
-        }
-
-        Path.Nested RootPath(Name name)
+        class LambdaDeclBuilder<TOuterDeclBuilder>            
         {
-            return new Path.Nested(new Path.Root(moduleName), name, ParamHash.None, default);
+            TOuterDeclBuilder outerBuilder;
+            Func<ImmutableArray<LambdaMemberVarDeclSymbol>, LambdaDeclSymbol> onFinish;
+
+            Holder<LambdaDeclSymbol> lambdaDeclHolder;
+            ImmutableArray<LambdaMemberVarDeclSymbol>.Builder memberVarsBuilder;
+            
+
+            public LambdaDeclBuilder(TOuterDeclBuilder outerBuilder, Func<ImmutableArray<LambdaMemberVarDeclSymbol>, LambdaDeclSymbol> onFinish)
+            {
+                this.outerBuilder = outerBuilder;
+                this.onFinish = onFinish;
+
+                this.lambdaDeclHolder = new Holder<LambdaDeclSymbol>();
+                this.memberVarsBuilder = ImmutableArray.CreateBuilder<LambdaMemberVarDeclSymbol>();
+            }
+
+            public LambdaDeclBuilder<TOuterDeclBuilder> MemberVar(ITypeSymbol declType, string name, out LambdaMemberVarDeclSymbol memberVarDecl)
+            {
+                memberVarDecl = new LambdaMemberVarDeclSymbol(lambdaDeclHolder, declType, new Name.Normal(name));
+                memberVarsBuilder.Add(memberVarDecl);
+
+                return this;
+            }
+
+            public TOuterDeclBuilder EndLambda(out LambdaDeclSymbol lambdaDecl)
+            {
+                lambdaDecl = onFinish.Invoke(memberVarsBuilder.ToImmutable());
+                lambdaDeclHolder.SetValue(lambdaDecl);
+
+                return outerBuilder;
+            }
         }
 
-        Path.Nested RootPath(string name, ImmutableArray<ParamHashEntry> paramWithoutNames, ImmutableArray<Path> typeArgs)
+        class ModuleDeclBuilder
         {
-            return new Path.Nested(new Path.Root(moduleName), new Name.Normal(name), new ParamHash(typeArgs.Length, paramWithoutNames), typeArgs);
+            SymbolFactory factory;
+            Name moduleName;
+            Holder<ModuleDeclSymbol> moduleDeclHolder;
+            ImmutableArray<GlobalFuncDeclSymbol>.Builder globalFuncDeclsBuilder;
+            int anonymousCount; 
+
+            public ModuleDeclBuilder(SymbolFactory factory, Name moduleName)
+            {
+                this.factory = factory;
+                this.moduleName = moduleName;
+                this.moduleDeclHolder = new Holder<ModuleDeclSymbol>();
+                this.globalFuncDeclsBuilder = ImmutableArray.CreateBuilder<GlobalFuncDeclSymbol>();
+                this.anonymousCount = 0;
+            }
+
+            public ModuleDeclBuilder GlobalFunc(string funcName, out GlobalFuncDeclSymbol globalFuncDecl)
+            {
+                globalFuncDecl = new GlobalFuncDeclSymbol(
+                    moduleDeclHolder, AccessModifier.Public,
+                    new Holder<FuncReturn>(new FuncReturn(false, factory.MakeVoid())), new Name.Normal(funcName), default,
+                    new Holder<ImmutableArray<FuncParameter>>(default),
+                    bInternal: true
+                );
+
+                globalFuncDeclsBuilder.Add(globalFuncDecl);
+                return this;
+            }
+            
+            public ModuleDeclBuilder Lambda(out LambdaDeclSymbol lambdaDecl)
+            {
+                lambdaDecl = new LambdaDeclSymbol(
+                    moduleDeclHolder, new Name.Anonymous(anonymousCount),
+                    new FuncReturn(false, factory.MakeVoid()), parameters: default, memberVars: default); 
+                anonymousCount++;
+
+                return this;
+            }
+
+            public ModuleDeclSymbol Make()
+            {
+                var moduleDecl = new ModuleDeclSymbol(moduleName, default, default, globalFuncDeclsBuilder.ToImmutable());
+                moduleDeclHolder.SetValue(moduleDecl);
+
+                return moduleDecl;
+            }
+
+            public LambdaDeclBuilder<ModuleDeclBuilder> BeginLambda()
+            {
+                return new LambdaDeclBuilder<ModuleDeclBuilder>(this, memberVars =>
+                {
+                    var lambdaDecl = new LambdaDeclSymbol(
+                        moduleDeclHolder, new Name.Anonymous(anonymousCount),
+                        new FuncReturn(false, factory.MakeVoid()), parameters: default, memberVars: default);
+                        anonymousCount++;
+
+                    return lambdaDecl;
+                });
+            }
         }
 
-        Path.Nested RootPath(string name, ImmutableArray<Path> paramTypes, ImmutableArray<Path> typeArgs)
+        class ScriptBuilder
         {
-            return new Path.Nested(
-                new Path.Root(moduleName), new Name.Normal(name), 
-                new ParamHash(
-                    typeArgs.Length, paramTypes.Select(paramType => new ParamHashEntry(ParamKind.Default, paramType)).ToImmutableArray()
-                ), 
-                typeArgs);
+            ModuleDeclSymbol moduleDecl;
+            ImmutableArray<StmtBody>.Builder stmtBodiesBuilder;
+
+            public ScriptBuilder(ModuleDeclSymbol moduleDecl)
+            {
+                this.moduleDecl = moduleDecl;
+                this.stmtBodiesBuilder = ImmutableArray.CreateBuilder<StmtBody>();
+            }
+
+            public ScriptBuilder Add(IFuncDeclSymbol funcDecl, params Stmt[] bodyStmts)
+            {
+                var declSymbolId = funcDecl.GetDeclSymbolId();
+                Debug.Assert(declSymbolId.ModuleName.Equals(moduleDecl.GetName()));
+                Debug.Assert(declSymbolId.Path != null);
+                stmtBodiesBuilder.Add(new StmtBody(declSymbolId.Path, bodyStmts.ToImmutableArray()));
+
+                return this;
+            }
+
+            public ScriptBuilder AddTopLevel(params Stmt[] topLevelStmts)
+            {
+                stmtBodiesBuilder.Add(new StmtBody(new DeclSymbolPath(null, Name.TopLevel), topLevelStmts.ToImmutableArray()));
+                return this;
+            }
+
+            public Script Make()
+            {
+                return new Script(moduleDecl, stmtBodiesBuilder.ToImmutable());
+            }
         }
 
+        // void TestFunc()
+        // {
+        //     @x
+        // }
+        // 
+        // string x = "Hello";
+        // TestFunc();
         [Fact]
         public async Task GlobalVariableExp_GetGlobalValueInFunc()
         {
-            var func0 = new NormalFuncDecl(default, new Name.Normal("TestFunc"), false, default, default, RBlock(
-                RPrintStringCmdStmt(new GlobalVarLoc("x"))));
+            // 1. decl 
+            var moduleDecl = new ModuleDeclBuilder(factory, moduleName)
+                .GlobalFunc("TestFunc", out var testFuncDecl)
+                .Make();
+
+            // 2. body 
+            var module = factory.MakeModule(moduleDecl);
+            var testFunc = factory.MakeGlobalFunc(module, testFuncDecl, default);
+
+            var script = new ScriptBuilder(moduleDecl)
+                .Add(testFuncDecl,
+                    r.PrintString(r.GlobalVar("x"))
+                )
+                .AddTopLevel(
+                    r.GlobalVarDecl(stringType, "x", r.String("Hello")),
+                    r.Call(testFunc, default)
+                )
+                .Make();
             
-            var func = RootPath("TestFunc");
-
-            var topLevelStmts = Arr<Stmt>
-            (
-                RGlobalVarDeclStmt(Path.String, "x", RString("Hello")),
-                new ExpStmt(new CallFuncExp(func, null, default))
-            );
-
-            var output = await EvalAsync(func0, topLevelStmts);
-
+            var output = await EvalAsync(script);
             Assert.Equal("Hello", output);
         }
 
+        // TODO: sequence를 살리면 다시 살린다
         // SeqCall
         // seq int F(int x, int y) { yield x * 2; yield y + 3; } // struct anonymous_sequence_#1
         // foreach(var e in F(1, 2)) // e의 타입은 int,
         //    CommandStmt
-        [Fact]
-        public async Task CallSeqFuncExp_GenerateSequencesInForeach()
-        {
-            // Sequence
-            var seqFunc = new SequenceFuncDecl(default, new Name.Normal("F"), false, Path.Int, default, Arr(new Param(ParamKind.Default, Path.Int, new Name.Normal("x")), new Param(ParamKind.Default, Path.Int, new Name.Normal("y"))), RBlock(
+        // 
+        // seq func를 어떻게 할건데
+        // seq<int> F(int x, int y)
+        // {
+        //     // 결국 Seq만드는 특수 명령어를 넣어야 할 것 같다;
+        //     return MakeSeq( [x, y],  yield x * 2; yield y + 3; } );
+        // }
+        //[Fact]
+        //public async Task CallSeqFuncExp_GenerateSequencesInForeach()
+        //{
+        //    // Sequence
+        //    var seqFunc = new SequenceFuncDecl(default, new Name.Normal("F"), false, intType, default, Arr(new Param(ParamKind.Default, intType, new Name.Normal("x")), new Param(ParamKind.Default, intType, new Name.Normal("y"))), r.Block(
 
-                new YieldStmt(
-                    new CallInternalBinaryOperatorExp(InternalBinaryOperator.Multiply_Int_Int_Int,
-                        new LoadExp(RLocalVarLoc("x")),
-                        new IntLiteralExp(2))),
+        //        new YieldStmt(
+        //            r.CallInternalBinary(InternalBinaryOperator.Multiply_Int_Int_Int,
+        //                new LoadExp(r.LocalVar("x")),
+        //                r.Int(2))),
 
-                new YieldStmt(
-                    new CallInternalBinaryOperatorExp(InternalBinaryOperator.Add_Int_Int_Int,
-                        new LoadExp(RLocalVarLoc("y")),
-                        new IntLiteralExp(3)))));
+        //        new YieldStmt(
+        //            r.CallInternalBinary(InternalBinaryOperator.Add_Int_Int_Int,
+        //                new LoadExp(r.LocalVar("y")),
+        //                r.Int(3)))));
 
-            var funcF = RootPath("F", Arr(Path.Int, Path.Int), default);
-            var seqTypeF = funcF;
+        //    var funcF = RootPath("F", Arr(intType, intType), default);
+        //    var seqTypeF = funcF;
 
-            var stmts = Arr<Stmt>
-            (
-                new ForeachStmt(
-                    Path.Int,
-                    "e",
-                    new TempLoc(
-                        new CallSeqFuncExp(
-                            funcF,
-                            null,
-                            RArgs(
-                                new IntLiteralExp(1),
-                                new IntLiteralExp(2)
-                            )
-                        ),
+        //    var stmts = Arr<Stmt>
+        //    (
+        //        new ForeachStmt(
+        //            intType,
+        //            "e",
+        //            new TempLoc(
+        //                new CallSeqFuncExp(
+        //                    funcF,
+        //                    null,
+        //                    RArgs(
+        //                        r.Int(1),
+        //                        r.Int(2)
+        //                    )
+        //                ),
                         
-                        seqTypeF
-                    ),
+        //                seqTypeF
+        //            ),
 
-                    RPrintIntCmdStmt(RLocalVarExp("e"))
-                )
-            );
+        //            r.PrintInt(r.LocalVar("e"))
+        //        )
+        //    );
 
-            var output = await EvalAsync(seqFunc, stmts);
+        //    var output = await EvalAsync(seqFunc, stmts);
 
-            Assert.Equal("25", output);
-        }
+        //    Assert.Equal("25", output);
+        //}
 
+        // (local) int x = 23; // syntax로는 만들 수 없다
+        // {
+        //     string x = "Hello";
+        //     @x
+        // }
+        // @x
         [Fact]
         public async Task LocalVarDeclStmt_OverlapsParentScope()
         {
-            var stmts = Arr<Stmt>
-            (
-                RLocalVarDeclStmt(Path.Int, "x", new IntLiteralExp(23)),
+            var topLevelStmts = Arr<Stmt>(
 
-                RBlock(
-                    RLocalVarDeclStmt(Path.String, "x", RString("Hello")),
-                    RPrintStringCmdStmt(RLocalVarLoc("x"))
+                r.LocalVarDecl(intType, "x", r.Int(23)),
+
+                r.Block(
+                    r.LocalVarDecl(stringType, "x", r.String("Hello")),
+                    r.PrintString(r.LocalVar("x"))
                 ),
 
-                RPrintIntCmdStmt(RLocalVarExp("x"))
+                r.PrintInt(r.LocalVar("x"))
             );
 
-            var output = await EvalAsync(stmts);
+            var output = await EvalAsync(topLevelStmts);
             Assert.Equal("Hello23", output);
         }
 
+        // int x = 23; // decl global var x
+        // {
+        //     string x = "Hello"; // decl local var x
+        //     @x
+        // }
+        // @x
         [Fact]
         public async Task LocalVarDeclStmt_OverlapsGlobalVar()
         {
-            var stmts = Arr<Stmt>
+            var topLevelStmts = Arr<Stmt>
             (
-                RGlobalVarDeclStmt(Path.Int, "x", new IntLiteralExp(23)),
+                r.GlobalVarDecl(intType, "x", r.Int(23)),
 
-                RBlock(
-                    RLocalVarDeclStmt(Path.String, "x", RString("Hello")),
-                    RPrintStringCmdStmt(RLocalVarLoc("x"))
+                r.Block(
+                    r.LocalVarDecl(stringType, "x", r.String("Hello")),
+                    r.PrintString(r.LocalVar("x"))
                 ),
 
-                RPrintIntCmdStmt(new GlobalVarLoc("x"))
+                r.PrintInt(r.GlobalVar("x"))
             );
 
-            var output = await EvalAsync(stmts);
+            var output = await EvalAsync(topLevelStmts);
             Assert.Equal("Hello23", output);
         }
 
+        // 
         [Fact]
         public async Task GlobalRefVarDeclStmt_RefDeclAndRefExp_WorksProperly()
         {
@@ -285,22 +480,22 @@ namespace Citron.Test
             // ref int x = ref i;
             // x = 4 + x;
             // @$i
-            var stmts = Arr<Stmt>(
-                RGlobalVarDeclStmt(Path.Int, "i", RInt(3)),
-                RGlobalRefVarDeclStmt("x", new GlobalVarLoc("i")), // type이 빠진다
-                new ExpStmt(new AssignExp(
-                    new DerefLocLoc(new GlobalVarLoc("x")), 
-                    new CallInternalBinaryOperatorExp(
+            var topLevelStmts = Arr<Stmt>(
+                r.GlobalVarDecl(intType, "i", r.Int(3)),
+                r.GlobalRefVarDecl("x", r.GlobalVar("i")), // type이 빠진다
+                r.Assign(
+                    r.Deref(r.GlobalVar("x")), 
+                    r.CallInternalBinary(
                         InternalBinaryOperator.Add_Int_Int_Int, 
-                        RInt(4),
-                        new LoadExp(new DerefLocLoc(new GlobalVarLoc("x")))
+                        r.Int(4),
+                        r.Load(r.Deref(r.GlobalVar("x")), intType)
                     )
-                )),
+                ),
 
-                RPrintIntCmdStmt(new GlobalVarLoc("i")) 
+                r.PrintInt(r.GlobalVar("i")) 
             );
 
-            var output = await EvalAsync(stmts);
+            var output = await EvalAsync(topLevelStmts);
             Assert.Equal("7", output);
         }
 
@@ -308,7 +503,8 @@ namespace Citron.Test
         [Fact]
         public async Task IfStmt_SelectThenBranchWhenConditionTrue()
         {
-            var stmts = Arr<Stmt>(new IfStmt(new BoolLiteralExp(true), RPrintStringCmdStmt("True"), null));
+            // if(true) @True
+            var stmts = Arr<Stmt>(r.If(r.Bool(true), r.PrintString("True")));
             var output = await EvalAsync(stmts);
 
             Assert.Equal("True", output);
@@ -317,7 +513,8 @@ namespace Citron.Test
         [Fact]
         public async Task IfStmt_SelectElseBranchWhenConditionFalse()
         {
-            var stmts = Arr<Stmt>(new IfStmt(new BoolLiteralExp(false), BlankStmt.Instance, RPrintStringCmdStmt("False")));
+            // if (false) else @False
+            var stmts = Arr<Stmt>(r.If(r.Bool(false), r.Blank(), r.PrintString("False")));
             var output = await EvalAsync(stmts);
 
             Assert.Equal("False", output);
@@ -354,15 +551,15 @@ namespace Citron.Test
         {
             var stmts = Arr<Stmt> (
 
-                RLocalVarDeclStmt(Path.Int, "x", new IntLiteralExp(34)),
+                r.LocalVarDecl(intType, "x", r.Int(34)),
 
-                new ForStmt(
-                    new VarDeclForStmtInitializer(RLocalVarDecl(Path.Int, "x", new IntLiteralExp(0))),
-                    new CallInternalBinaryOperatorExp(InternalBinaryOperator.Equal_Int_Int_Bool, new LoadExp(RLocalVarLoc("x")), new IntLiteralExp(0)),
-                    new AssignExp(RLocalVarLoc("x"), new IntLiteralExp(1)),
-                    RPrintIntCmdStmt(RLocalVarExp("x"))),
+                r.For(
+                    intType, "x", r.Int(0),
+                    r.CallInternalBinary(InternalBinaryOperator.Equal_Int_Int_Bool, r.LoadLocalVar("x", intType), r.Int(0)),
+                    new AssignExp(r.LocalVar("x"), r.Int(1)),
+                    r.PrintInt(r.LocalVar("x"))),
 
-                RPrintIntCmdStmt(RLocalVarExp("x"))
+                r.PrintInt(r.LocalVar("x"))
             );
 
             var output = await EvalAsync(stmts);
@@ -374,17 +571,17 @@ namespace Citron.Test
         {
             var stmts = Arr<Stmt> (
 
-                RLocalVarDeclStmt(Path.Int, "x", new IntLiteralExp(34)),
+                r.LocalVarDecl(intType, "x", r.Int(34)),
 
-                RPrintIntCmdStmt(RLocalVarExp("x")),
+                r.PrintInt(r.LocalVar("x")),
 
-                new ForStmt(
-                    new ExpForStmtInitializer(new AssignExp(RLocalVarLoc("x"), new IntLiteralExp(12))),
-                    new CallInternalBinaryOperatorExp(InternalBinaryOperator.Equal_Int_Int_Bool, new LoadExp(RLocalVarLoc("x")), new IntLiteralExp(12)),
-                    new AssignExp(RLocalVarLoc("x"), new IntLiteralExp(1)),
-                    RPrintIntCmdStmt(RLocalVarExp("x"))),
+                r.For(
+                    new AssignExp(r.LocalVar("x"), r.Int(12)),
+                    r.CallInternalBinary(InternalBinaryOperator.Equal_Int_Int_Bool, r.LoadLocalVar("x", intType), r.Int(12)),
+                    new AssignExp(r.LocalVar("x"), r.Int(1)),
+                    r.PrintInt(r.LocalVar("x"))),
 
-                RPrintIntCmdStmt(RLocalVarExp("x"))
+                r.PrintInt(r.LocalVar("x"))
             );
 
             var output = await EvalAsync(stmts);
@@ -396,13 +593,12 @@ namespace Citron.Test
         {
             var stmts = Arr<Stmt> (
                 
-                new ForStmt(
+                r.For(
+                    r.Bool(false),
                     null,
-                    new BoolLiteralExp(false),
-                    null,
-                    RPrintStringCmdStmt("Wrong")),
+                    r.PrintString("Wrong")),
 
-                RPrintStringCmdStmt("Completed")
+                r.PrintString("Completed")
             );
 
             var output = await EvalAsync(stmts);
@@ -414,15 +610,14 @@ namespace Citron.Test
         {
             var stmts = Arr<Stmt> (
 
-                RLocalVarDeclStmt(Path.Bool, "x", new BoolLiteralExp(true)),
+                r.LocalVarDecl(boolType, "x", r.Bool(true)),
 
-                new ForStmt(
-                    null,
-                    new LoadExp(RLocalVarLoc("x")),
-                    new AssignExp(RLocalVarLoc("x"), new BoolLiteralExp(false)),
-                    RPrintStringCmdStmt("Once")),
+                r.For(
+                    r.LoadLocalVar("x", boolType),
+                    new AssignExp(r.LocalVar("x"), r.Bool(false)),
+                    r.PrintString("Once")),
 
-                RPrintStringCmdStmt("Completed")
+                r.PrintString("Completed")
             );
 
             var output = await EvalAsync(stmts);
@@ -432,23 +627,30 @@ namespace Citron.Test
         [Fact]
         public async Task ForStmt_EvalContinueExpAndEvalCondExpAfterEvalContinueStmt()
         {
+            // (local) bool x = true;
+            // for(; x;x = false)
+            // {
+            //     @Once
+            //     continue;
+            //     @Wrong
+            // }
+            // @Completed
+
             var stmts = Arr<Stmt> (
 
+                r.LocalVarDecl(boolType, "x", r.Bool(true)),
 
-                RLocalVarDeclStmt(Path.Bool, "x", new BoolLiteralExp(true)),
-
-                new ForStmt(
-                    null,
-                    new LoadExp(RLocalVarLoc("x")),
-                    new AssignExp(RLocalVarLoc("x"), new BoolLiteralExp(false)),
-                    RBlock(
-                        RPrintStringCmdStmt("Once"),
+                r.For(
+                    r.LoadLocalVar("x", boolType),
+                    new AssignExp(r.LocalVar("x"), r.Bool(false)),
+                    r.Block(
+                        r.PrintString("Once"),
                         ContinueStmt.Instance,
-                        RPrintStringCmdStmt("Wrong")
+                        r.PrintString("Wrong")
                     )
                 ),
 
-                RPrintStringCmdStmt("Completed")
+                r.PrintString("Completed")
             );
 
             var output = await EvalAsync(stmts);
@@ -458,23 +660,32 @@ namespace Citron.Test
         [Fact]
         public async Task ForStmt_ExitBodyImmediatelyAfterEvalBreakStmt()
         {
+            // (local) bool x = true;
+            // for(; x; x = false)
+            // {
+            //     @Once
+            //     break;
+            //     @Wrong
+            // }
+            // @x
+            // @Completed
+
             var stmts = Arr<Stmt> (
 
-                RLocalVarDeclStmt(Path.Bool, "x", new BoolLiteralExp(true)),
+                r.LocalVarDecl(boolType, "x", r.Bool(true)),
 
-                new ForStmt(
-                    null,
-                    new LoadExp(RLocalVarLoc("x")),
-                    new AssignExp(RLocalVarLoc("x"), new BoolLiteralExp(false)),
-                    RBlock(
-                        RPrintStringCmdStmt("Once"),
+                r.For(
+                    r.LoadLocalVar("x", boolType),
+                    new AssignExp(r.LocalVar("x"), r.Bool(false)),
+                    r.Block(
+                        r.PrintString("Once"),
                         BreakStmt.Instance,
-                        RPrintStringCmdStmt("Wrong")
+                        r.PrintString("Wrong")
                     )
                 ),
 
-                RPrintBoolCmdStmt(new LoadExp(RLocalVarLoc("x"))),
-                RPrintStringCmdStmt("Completed")
+                r.PrintBool(r.LocalVar("x")),
+                r.PrintString("Completed")
             );
 
             var output = await EvalAsync(stmts);
@@ -484,22 +695,30 @@ namespace Citron.Test
         [Fact]
         public async Task ForStmt_ExitBodyImmediatelyAfterEvalReturnStmt()
         {
-            var script = RScript(
-                moduleName, 
-                RLocalVarDeclStmt(Path.Bool, "x", new BoolLiteralExp(true)),
-                new ForStmt(
-                    null,
-                    new LoadExp(RLocalVarLoc("x")),
-                    new AssignExp(RLocalVarLoc("x"), new BoolLiteralExp(false)),
-                    RBlock(
-                        RPrintStringCmdStmt("Once"),
-                        new ReturnStmt(new ReturnInfo.Expression(new IntLiteralExp(2))),
-                        RPrintStringCmdStmt("Wrong")
+            // (local) bool x = true;
+            // for(; x; x = false)
+            // {
+            //     @Once
+            //     return 2;
+            //     @Wrong
+            // }
+            // @Wrong
+            var topLevelStmts = Arr<Stmt>(
+                r.LocalVarDecl(boolType, "x", r.Bool(true)),
+                r.For(
+                    r.LoadLocalVar("x", boolType),
+                    r.AssignExp(r.LocalVar("x"), r.Bool(false)),
+                    r.Block(
+                        r.PrintString("Once"),
+                        r.Return(r.Int(2)),                        
+                        r.PrintString("Wrong")
                     )
                 ),
-                
-                RPrintStringCmdStmt("Wrong")
+
+                r.PrintString("Wrong")
             );
+
+            var script = r.Script(moduleName, topLevelStmts);
 
             var (output, result) = await EvalAsyncWithRetValue(default, script);
             Assert.Equal("Once", output);
@@ -511,23 +730,23 @@ namespace Citron.Test
         {
             var stmts = Arr<Stmt> (
 
-                new ForStmt(
-                    new VarDeclForStmtInitializer(RLocalVarDecl(Path.Int, "i", new IntLiteralExp(0))),
-                    new CallInternalBinaryOperatorExp(InternalBinaryOperator.LessThan_Int_Int_Bool, new LoadExp(RLocalVarLoc("i")), RInt(2)),
-                    new CallInternalUnaryAssignOperatorExp(InternalUnaryAssignOperator.PostfixInc_Int_Int, RLocalVarLoc("i")),
+                r.For(
+                    intType, "i", r.Int(0),
+                    r.CallInternalBinary(InternalBinaryOperator.LessThan_Int_Int_Bool, r.LoadLocalVar("i", intType), r.Int(2)),
+                    r.CallInternalUnaryAssign(InternalUnaryAssignOperator.PostfixInc_Int_Int, r.LocalVar("i")),
 
-                    RBlock(
+                    r.Block(
 
-                        RPrintIntCmdStmt(RLocalVarExp("i")),
+                        r.PrintInt(r.LocalVar("i")),
 
-                        new ForStmt(
-                            new VarDeclForStmtInitializer(RLocalVarDecl(Path.Int, "j", new IntLiteralExp(0))),
-                            new CallInternalBinaryOperatorExp(InternalBinaryOperator.LessThan_Int_Int_Bool, new LoadExp(RLocalVarLoc("j")), RInt(2)),
-                            new CallInternalUnaryAssignOperatorExp(InternalUnaryAssignOperator.PostfixInc_Int_Int, RLocalVarLoc("j")),
-                            RBlock(
-                                RPrintIntCmdStmt(RLocalVarExp("j")),
+                        r.For(
+                            intType, "j", r.Int(0),
+                            r.CallInternalBinary(InternalBinaryOperator.LessThan_Int_Int_Bool, r.LoadLocalVar("j", intType), r.Int(2)),
+                            r.CallInternalUnaryAssign(InternalUnaryAssignOperator.PostfixInc_Int_Int, r.LocalVar("j")),
+                            r.Block(
+                                r.PrintInt(r.LocalVar("j")),
                                 ContinueStmt.Instance,
-                                RPrintIntCmdStmt(RLocalVarExp("Wrong"))
+                                r.PrintInt(r.LocalVar("Wrong"))
                             )
                         )
                     )
@@ -543,23 +762,23 @@ namespace Citron.Test
         {
             var stmts = Arr<Stmt> (
 
-                new ForStmt(
-                    new VarDeclForStmtInitializer(RLocalVarDecl(Path.Int, "i", new IntLiteralExp(0))),
-                    new CallInternalBinaryOperatorExp(InternalBinaryOperator.LessThan_Int_Int_Bool, new LoadExp(RLocalVarLoc("i")), RInt(2)),
-                    new CallInternalUnaryAssignOperatorExp(InternalUnaryAssignOperator.PostfixInc_Int_Int, RLocalVarLoc("i")),
+                r.For(
+                    intType, "i", r.Int(0),
+                    r.CallInternalBinary(InternalBinaryOperator.LessThan_Int_Int_Bool, r.LoadLocalVar("i", intType), r.Int(2)),
+                    r.CallInternalUnaryAssign(InternalUnaryAssignOperator.PostfixInc_Int_Int, r.LocalVar("i")),
 
-                    RBlock(
+                    r.Block(
 
-                        RPrintIntCmdStmt(RLocalVarExp("i")),
+                        r.PrintInt(r.LocalVar("i")),
 
-                        new ForStmt(
-                            new VarDeclForStmtInitializer(RLocalVarDecl(Path.Int, "j", new IntLiteralExp(0))),
-                            new CallInternalBinaryOperatorExp(InternalBinaryOperator.LessThan_Int_Int_Bool, new LoadExp(RLocalVarLoc("j")), RInt(2)),
-                            new CallInternalUnaryAssignOperatorExp(InternalUnaryAssignOperator.PostfixInc_Int_Int, RLocalVarLoc("j")),
-                            RBlock(
-                                RPrintIntCmdStmt(RLocalVarExp("j")),
+                        r.For(
+                            intType, "j", r.Int(0),
+                            r.CallInternalBinary(InternalBinaryOperator.LessThan_Int_Int_Bool, r.LoadLocalVar("j", intType), r.Int(2)),
+                            r.CallInternalUnaryAssign(InternalUnaryAssignOperator.PostfixInc_Int_Int, r.LocalVar("j")),
+                            r.Block(
+                                r.PrintInt(r.LocalVar("j")),
                                 BreakStmt.Instance,
-                                RPrintIntCmdStmt(RLocalVarExp("Wrong"))
+                                r.PrintInt(r.LocalVar("Wrong"))
                             )
                         )
                     )
@@ -570,31 +789,49 @@ namespace Citron.Test
             Assert.Equal("0010", output);
         }
 
+        // void F()
+        // {
+        //     return;
+        //     @Wrong
+        // }
+        // F();
+        // @Completed
         [Fact]
         public async Task ReturnStmt_ExitsFuncImmediately()
         {
-            var funcDecl = new NormalFuncDecl(default, new Name.Normal("F"), false, default, default,
-                RBlock(
-                    new ReturnStmt(ReturnInfo.None.Instance),
-                    RPrintStringCmdStmt("Wrong")
+            // 1. make decl
+            var moduleDecl = new ModuleDeclBuilder(factory, moduleName)
+                .GlobalFunc("F", out var fFuncDecl)
+                .Make();
+
+            // 2. make body
+            var module = factory.MakeModule(moduleDecl);
+            var fFunc = factory.MakeGlobalFunc(module, fFuncDecl, default);
+
+            var script = new ScriptBuilder(moduleDecl)
+                .Add(fFuncDecl,
+                    r.Return(),
+                    r.PrintString("Wrong")
                 )
-            );
+                .AddTopLevel(
+                    r.Call(fFunc, args: default),
+                    r.PrintString("Completed")
+                )
+                .Make();
 
-            var func = RootPath("F");
-
-            var stmts = Arr<Stmt> (
-                new ExpStmt(new CallFuncExp(func, null, default)),
-                RPrintStringCmdStmt("Completed")
-            );
-
-            var output = await EvalAsync(funcDecl, stmts);
+            var output = await EvalAsync(script);
             Assert.Equal("Completed", output);
         }
 
         [Fact]
         public async Task ReturnStmt_ReturnProperlyInTopLevel()
         {
-            var script = RScript(moduleName, new ReturnStmt(new ReturnInfo.Expression(new IntLiteralExp(34))));
+            // return 34;
+            var topLevelStmts = Arr<Stmt>(
+                r.Return(r.Int(34))
+            );
+
+            var script = r.Script(moduleName, topLevelStmts);
             var (_, retValue) = await EvalAsyncWithRetValue(default, script);
 
             Assert.Equal(34, retValue);
@@ -602,21 +839,34 @@ namespace Citron.Test
 
         [Fact]
         public async Task ReturnStmt_SetReturnValueToCaller()
-        {   
-            var funcDecl = new NormalFuncDecl(default, new Name.Normal("F"), false, default, default,
-                RBlock(
-                    new ReturnStmt(new ReturnInfo.Expression(new IntLiteralExp(77))),
-                    RPrintStringCmdStmt("Wrong")
+        {
+            // void F()
+            // {
+            //     return 77;
+            //     @Wrong
+            // }
+            // F();
+
+            // 1. decl
+            var moduleDecl = new ModuleDeclBuilder(factory, moduleName)
+                .GlobalFunc("F", out var fFuncDecl)
+                .Make();
+
+            // 2. script            
+            var module = factory.MakeModule(moduleDecl);
+            var fFunc = factory.MakeGlobalFunc(module, fFuncDecl, default);
+
+            var script = new ScriptBuilder(moduleDecl)
+                .Add(fFuncDecl,
+                    r.Return(r.Int(77)),
+                    r.PrintString("Wrong")
                 )
-            );
+                .AddTopLevel(
+                    r.PrintInt(r.CallExp(fFunc, args: default))
+                )
+                .Make();
 
-            var func = RootPath("F");
-
-            var stmts = Arr<Stmt> (
-                RPrintIntCmdStmt(new CallFuncExp(func, null, default))
-            );
-
-            var output = await EvalAsync(funcDecl, stmts);
+            var output = await EvalAsync(script);
             Assert.Equal("77", output);
         }
 
@@ -625,9 +875,9 @@ namespace Citron.Test
         public async Task BlockStmt_EvalInnerStatementsSequencially()
         {
             var stmts = Arr<Stmt> (
-                RPrintIntCmdStmt(new IntLiteralExp(1)),
-                RPrintIntCmdStmt(new IntLiteralExp(23)),
-                RPrintIntCmdStmt(new IntLiteralExp(4))
+                r.PrintInt(r.Int(1)),
+                r.PrintInt(r.Int(23)),
+                r.PrintInt(r.Int(4))
             );
 
             var output = await EvalAsync(stmts);
@@ -640,9 +890,9 @@ namespace Citron.Test
         public async Task ExpStmt_EvalInnerExp()
         {
             var stmts = Arr<Stmt> (
-                RLocalVarDeclStmt(Path.Int, "x", RInt(0)),
-                new ExpStmt(new AssignExp(RLocalVarLoc("x"), new IntLiteralExp(3))),
-                RPrintIntCmdStmt(RLocalVarExp("x"))
+                r.LocalVarDecl(intType, "x", r.Int(0)),
+                r.Assign(r.LocalVar("x"), r.Int(3)),
+                r.PrintInt(r.LocalVar("x"))
             );
 
             var output = await EvalAsync(stmts);
@@ -653,35 +903,51 @@ namespace Citron.Test
         [Fact]
         public async Task TaskStmt_EvalParallel()
         {
+            // await
+            // {
+            //     task
+            //     {
+            //         for(int i = 0; i < 5; i++)
+            //             @i
+            //     }
+            //     task
+            //     {
+            //         for(int i = 0; i < 5; i++)
+            //             @i
+            //     }
+            // }
+
             Stmt PrintNumbersStmt(int count)
             {
-                return new ForStmt(
-                    new VarDeclForStmtInitializer(RLocalVarDecl(Path.Int, "i", new IntLiteralExp(0))),
-                    new CallInternalBinaryOperatorExp(InternalBinaryOperator.LessThan_Int_Int_Bool, new LoadExp(RLocalVarLoc("i")), RInt(count)),
-                    new CallInternalUnaryAssignOperatorExp(InternalUnaryAssignOperator.PostfixInc_Int_Int, RLocalVarLoc("i")),
-                    RPrintIntCmdStmt(RLocalVarExp("i"))
+                return r.For(
+                    intType, "i", r.Int(0),
+                    r.CallInternalBinary(InternalBinaryOperator.LessThan_Int_Int_Bool, r.LoadLocalVar("i", intType), r.Int(count)),
+                    r.CallInternalUnaryAssign(InternalUnaryAssignOperator.PostfixInc_Int_Int, r.LocalVar("i")),
+                    r.PrintInt(r.LocalVar("i"))
                 );
             }
 
-            var anonymousName0 = new Name.Anonymous(0);
-            var anonymousName1 = new Name.Anonymous(1);
+            // decl
+            var moduleDecl = new ModuleDeclBuilder(factory, moduleName)
+                .Lambda(out var lambdaDecl0)
+                .Lambda(out var lambdaDecl1)
+                .Make();
 
-            var capturedStmtDecl0 = new CapturedStatementDecl(anonymousName0, new CapturedStatement(null, default, PrintNumbersStmt(5)));
-            var capturedStmtDecl1 = new CapturedStatementDecl(anonymousName1, new CapturedStatement(null, default, PrintNumbersStmt(5)));
+            var module = factory.MakeModule(moduleDecl);
+            var lambda0 = factory.MakeLambda(module, lambdaDecl0);
+            var lambda1 = factory.MakeLambda(module, lambdaDecl1);
 
-            var path0 = RootPath(anonymousName0);
-            var path1 = RootPath(anonymousName1);
-
-            var stmts = Arr<Stmt> (
-                new AwaitStmt(
-                    RBlock(
-                        new TaskStmt(path0),
-                        new TaskStmt(path1)
+            // script
+            var script = new ScriptBuilder(moduleDecl)
+                .AddTopLevel(
+                    r.Await(                    
+                        r.Task(lambda0, Arr<Stmt>(PrintNumbersStmt(5))),
+                        r.Task(lambda1, Arr<Stmt>(PrintNumbersStmt(5)))
                     )
                 )
-            );
+                .Make();
 
-            var output = await EvalAsync(Arr<CallableMemberDecl>(capturedStmtDecl0, capturedStmtDecl1), stmts);
+            var output = await EvalAsync(script);
 
             // 01234 01234 두개가 그냥 섞여 있을 것이다.
 
@@ -708,39 +974,60 @@ namespace Citron.Test
         [Fact]
         public async Task TaskStmt_CapturesLocalVariable()
         {
+            // int count = 5;
+            // await 
+            // {
+            //     task 
+            //     {
+            //          for(int i = 0; i < count; i++) i++;
+            //     }
+            //     task 
+            //     {
+            //          for(int i = 0; i < count; i++) i++;
+            //     }
+            // }
+
             // for(int i = 0; i < count; i++) i++;
-            Stmt PrintNumbersStmt()
+            Stmt PrintNumbersStmt(LambdaMemberVarSymbol memberVar)
             {
-                return new ForStmt(
-                    new VarDeclForStmtInitializer(RLocalVarDecl(Path.Int, "i", new IntLiteralExp(0))),
-                    new CallInternalBinaryOperatorExp(InternalBinaryOperator.LessThan_Int_Int_Bool, new LoadExp(RLocalVarLoc("i")), new LoadExp(new LambdaMemberVar("count"))),
-                    new CallInternalUnaryAssignOperatorExp(InternalUnaryAssignOperator.PostfixInc_Int_Int, RLocalVarLoc("i")),
-                    RPrintIntCmdStmt(RLocalVarExp("i"))
+                return r.For(
+                    intType, "i", r.Int(0),
+                    r.CallInternalBinary(InternalBinaryOperator.LessThan_Int_Int_Bool, r.LoadLocalVar("i", intType), r.LoadLambdaMember(memberVar)),
+                    r.CallInternalUnaryAssign(InternalUnaryAssignOperator.PostfixInc_Int_Int, r.LocalVar("i")),
+                    r.PrintInt(r.LocalVar("i"))
                 );
             }
 
             // [count] { for(int i = 0; i < count; i++) i++; }
-            var name0 = new Name.Anonymous(0);
-            var capturedStmtDecl0 = new CapturedStatementDecl(name0, new CapturedStatement(null, Arr(new OuterLocalVarInfo(Path.Int, "count")), PrintNumbersStmt()));
-            var path0 = new Path.Nested(new Path.Root(moduleName), name0, ParamHash.None, default);            
+            var moduleDecl = new ModuleDeclBuilder(factory, moduleName)
+                .BeginLambda()
+                    .MemberVar(intType, "count", out var lambdaMemberVarDecl0)
+                .EndLambda(out var lambdaDecl0)
+                .BeginLambda()
+                    .MemberVar(intType, "count", out var lambdaMemberVarDecl1)
+                .EndLambda(out var lambdaDecl1)
+                .Make();
 
-            var name1 = new Name.Anonymous(1);
-            var capturedStmtDecl1 = new CapturedStatementDecl(name1, new CapturedStatement(null, Arr(new OuterLocalVarInfo(Path.Int, "count")), PrintNumbersStmt()));
-            var path1 = new Path.Nested(new Path.Root(moduleName), name1, ParamHash.None, default);
 
-            var stmts = Arr<Stmt> (
-                RLocalVarDeclStmt(Path.Int, "count", new IntLiteralExp(5)),
+            var module = factory.MakeModule(moduleDecl);
+            var lambda0 = factory.MakeLambda(module, lambdaDecl0);
+            var lambdaMemberVar0 = factory.MakeLambdaMemberVar(lambda0, lambdaMemberVarDecl0);
 
-                new AwaitStmt(
-                    RBlock(
-                        new TaskStmt(path0),
-                        new ExpStmt(new AssignExp(RLocalVarLoc("count"), new IntLiteralExp(4))),
-                        new TaskStmt(path1)
+            var lambda1 = factory.MakeLambda(module, lambdaDecl1);
+            var lambdaMemberVar1 = factory.MakeLambdaMemberVar(lambda1, lambdaMemberVarDecl1);
+
+            var script = new ScriptBuilder(moduleDecl)
+                .AddTopLevel(
+                    r.LocalVarDecl(intType, "count", r.Int(5)),
+                    r.Await(
+                        r.Task(lambda0, r.Args(r.LoadLocalVar("count", intType)), Arr<Stmt>(PrintNumbersStmt(lambdaMemberVar0))),
+                        r.Assign(r.LocalVar("count"), r.Int(4)),
+                        r.Task(lambda1, r.Args(r.LoadLocalVar("count", intType)), Arr<Stmt>(PrintNumbersStmt(lambdaMemberVar1)))
                     )
                 )
-            );
+                .Make();
 
-            var output = await EvalAsync(Arr<CallableMemberDecl>(capturedStmtDecl0, capturedStmtDecl1), stmts);
+            var output = await EvalAsync(script);
 
             // 01234 01234 두개가 그냥 섞여 있을 것이다.
 
@@ -763,19 +1050,18 @@ namespace Citron.Test
             Assert.True((cur0 == '5' && cur1 == '4') || (cur0 == '4' && cur1 == '5'));
         }
 
-
         // Async Await
         [Fact]
         public async Task AsyncStmt_EvalAsynchronously()
         {
             Stmt PrintNumbersStmt(int count)
             {
-                return new ForStmt(
-                    new VarDeclForStmtInitializer(RLocalVarDecl(Path.Int, "i", new IntLiteralExp(0))),
-                    new CallInternalBinaryOperatorExp(InternalBinaryOperator.LessThan_Int_Int_Bool, new LoadExp(RLocalVarLoc("i")), RInt(count)),
-                    new CallInternalUnaryAssignOperatorExp(InternalUnaryAssignOperator.PostfixInc_Int_Int, RLocalVarLoc("i")),
-                    RBlock(
-                        RPrintIntCmdStmt(RLocalVarExp("i")),
+                return r.For(
+                    intType, "i", r.Int(0),
+                    r.CallInternalBinary(InternalBinaryOperator.LessThan_Int_Int_Bool, r.LoadLocalVar("i", intType)), r.Int(count),
+                    r.CallInternalUnaryAssign(InternalUnaryAssignOperator.PostfixInc_Int_Int, r.LocalVar("i")),
+                    r.Block(
+                        r.PrintInt(r.LocalVar("i")),
                         Sleep(1)
                     )
                 );
@@ -791,7 +1077,7 @@ namespace Citron.Test
 
             var stmts = Arr<Stmt> (
                 new AwaitStmt(
-                    RBlock(
+                    r.Block(
                         new AsyncStmt(path0),
                         new AsyncStmt(path1)
                     )
@@ -811,27 +1097,27 @@ namespace Citron.Test
             var seqFunc0 = RootPath("F0");
             var seqFunc1 = RootPath("F1");
 
-            var seqFuncDecl0 = new SequenceFuncDecl(default, new Name.Normal("F0"), false, Path.Int, default, default,
+            var seqFuncDecl0 = new SequenceFuncDecl(default, new Name.Normal("F0"), false, intType, default, default,
                 new ForeachStmt(
-                    Path.Int, "elem", 
+                    intType, "elem", 
                     new TempLoc(new CallSeqFuncExp(seqFunc1, null, default), seqFunc1),
-                    RBlock(
-                        RPrintIntCmdStmt(RLocalVarExp("elem")),
-                        new YieldStmt(new LoadExp(RLocalVarLoc("elem")))
+                    r.Block(
+                        r.PrintInt(r.LocalVar("elem")),
+                        new YieldStmt(r.LoadLocalVar("elem", intType))
                     )
                 )
             );
 
-            var seqFuncDecl1 = new SequenceFuncDecl(default, new Name.Normal("F1"), false, Path.Int, default, default,
-                RBlock(
-                    new YieldStmt(new IntLiteralExp(34)),
-                    new YieldStmt(new IntLiteralExp(56))
+            var seqFuncDecl1 = new SequenceFuncDecl(default, new Name.Normal("F1"), false, intType, default, default,
+                r.Block(
+                    new YieldStmt(r.Int(34)),
+                    new YieldStmt(r.Int(56))
                 )
             );
 
             var stmts = Arr<Stmt>(
-                new ForeachStmt(Path.Int, "x", new TempLoc(new CallSeqFuncExp(seqFunc0, null, default), seqFunc0),
-                    RPrintIntCmdStmt(RLocalVarExp("x")))
+                new ForeachStmt(intType, "x", new TempLoc(new CallSeqFuncExp(seqFunc0, null, default), seqFunc0),
+                    r.PrintInt(r.LocalVar("x")))
             );
 
             var output = await EvalAsync(Arr<FuncDecl>(seqFuncDecl0, seqFuncDecl1), stmts);
@@ -867,8 +1153,8 @@ namespace Citron.Test
         public async Task BoolLiteralExp_MakesBoolValue()
         {
             var stmts = Arr<Stmt> (            
-                RPrintBoolCmdStmt(new BoolLiteralExp(false)),
-                RPrintBoolCmdStmt(new BoolLiteralExp(true))
+                r.PrintBool(r.Bool(false)),
+                r.PrintBool(r.Bool(true))
             );
 
             var output = await EvalAsync(stmts);
@@ -879,7 +1165,7 @@ namespace Citron.Test
         public async Task IntLiteralExp_MakesIntValue()
         {
             var stmts = Arr<Stmt>(
-                RPrintIntCmdStmt(new IntLiteralExp(-2))
+                r.PrintInt(r.Int(-2))
             );
 
             var output = await EvalAsync(stmts);
@@ -890,7 +1176,7 @@ namespace Citron.Test
         public async Task StringExp_ConcatStringsUsingTextStringExpElements()
         {
             var stmts = Arr<Stmt>(
-                RPrintStringCmdStmt(RString(
+                r.PrintString(r.String(
                     new TextStringExpElement("Hello "),
                     new TextStringExpElement("World")
                 ))
@@ -905,11 +1191,11 @@ namespace Citron.Test
         {
             var stmts = Arr<Stmt>
             (
-                RLocalVarDeclStmt(Path.String, "x", RString("New ")),
+                r.LocalVarDecl(stringType, "x", r.String("New ")),
 
-                RPrintStringCmdStmt(RString(
+                r.PrintString(r.String(
                     new TextStringExpElement("Hello "),
-                    new ExpStringExpElement(new LoadExp(RLocalVarLoc("x"))),
+                    new ExpStringExpElement(r.LoadLocalVar("x", stringType))),
                     new TextStringExpElement("World")))
             );
 
@@ -922,13 +1208,13 @@ namespace Citron.Test
         {
             var stmts = Arr<Stmt>
             (
-                RLocalVarDeclStmt(Path.Int, "x", new IntLiteralExp(3)),
-                RLocalVarDeclStmt(Path.Int, "y", new IntLiteralExp(4)),
+                r.LocalVarDecl(intType, "x", r.Int(3)),
+                r.LocalVarDecl(intType, "y", r.Int(4)),
 
                 // y = x = 10;
-                new ExpStmt(new AssignExp(RLocalVarLoc("y"), new AssignExp(RLocalVarLoc("x"), new IntLiteralExp(10)))),
-                RPrintIntCmdStmt(RLocalVarLoc("x")),
-                RPrintIntCmdStmt(RLocalVarLoc("y"))
+                r.Assign(r.LocalVar("y"), new AssignExp(r.LocalVar("x"), r.Int(10))),
+                r.PrintInt(r.LocalVar("x")),
+                r.PrintInt(r.LocalVar("y"))
             );
 
             var output = await EvalAsync(stmts);
@@ -954,20 +1240,20 @@ namespace Citron.Test
                 default,
                 Arr<FuncDecl>(
                     new NormalFuncDecl(
-                        default, new Name.Normal("F"), false, default, Arr(new Param(ParamKind.Ref, Path.Int, new Name.Normal("i"))),
-                        RBlock(new ExpStmt(new AssignExp(new DerefLocLoc(RLocalVarLoc("i")), RInt(7))))
+                        default, new Name.Normal("F"), false, default, Arr(new Param(ParamKind.Ref, intType, new Name.Normal("i"))),
+                        r.Block(r.Assign(new DerefLocLoc(r.LocalVar("i")), r.Int(7)))
                     )
                 ),
 
                 default,
 
-                RGlobalVarDeclStmt(Path.Int, "j", RInt(3)),
+                r.GlobalVarDecl(intType, "j", r.Int(3)),
                 new ExpStmt(new CallFuncExp(
-                    RootPath("F", Arr(new ParamHashEntry(ParamKind.Ref, Path.Int)), default),
-                    null, Arr<Argument>(new Argument.Ref(new GlobalVarLoc("j")))
+                    RootPath("F", Arr(new ParamHashEntry(ParamKind.Ref, intType)), default),
+                    null, Arr<Argument>(new Argument.Ref(r.GlobalVar("j")))
                 )),
 
-                RPrintIntCmdStmt(new GlobalVarLoc("j"))
+                r.PrintInt(r.GlobalVar("j"))
             );
 
             var output = await EvalAsync(script);
@@ -988,21 +1274,21 @@ namespace Citron.Test
                 default, 
                 Arr<FuncDecl>(                    
                     new NormalFuncDecl(
-                        default, new Name.Normal("G"), false, default, Arr(new Param(ParamKind.Ref, Path.Int, new Name.Normal("i"))),
-                        RBlock(new ReturnStmt(new ReturnInfo.Ref(new GlobalVarLoc("x"))))
+                        default, new Name.Normal("G"), false, default, Arr(new Param(ParamKind.Ref, intType, new Name.Normal("i"))),
+                        r.Block(r.ReturnRef(r.GlobalVar("x")))
                     )
                 ),
                 default,
-                RGlobalVarDeclStmt(Path.Int, "x", RInt(3)),
-                RGlobalRefVarDeclStmt("i", new DerefExpLoc(
+                r.GlobalVarDecl(intType, "x", r.Int(3)),
+                r.GlobalRefVarDecl("i", new DerefExpLoc(
                     new CallFuncExp(
-                        RootPath("G", Arr(new ParamHashEntry(ParamKind.Ref, Path.Int)), default),
+                        RootPath("G", Arr(new ParamHashEntry(ParamKind.Ref, intType)), default),
                         null,
                         default
                     )
                 )),
-                new ExpStmt(new AssignExp(new DerefLocLoc(new GlobalVarLoc("i")), RInt(4))),
-                RPrintIntCmdStmt(new LoadExp(new GlobalVarLoc("x")))
+                r.Assign(new DerefLocLoc(r.GlobalVar("i")), r.Int(4)),
+                r.PrintInt(new LoadExp(r.GlobalVar("x")))
             );
 
             var output = await EvalAsync(script);
@@ -1030,24 +1316,24 @@ namespace Citron.Test
         [Fact]
         public async Task CallFuncExp_EvaluatesArgumentsInOrder()
         {
-            var printFunc = RootPath("Print", Arr(Path.Int), default);
-            var testFunc = RootPath("TestFunc", Arr(Path.Int, Path.Int, Path.Int), default);
+            var printFunc = RootPath("Print", Arr(intType), default);
+            var testFunc = RootPath("TestFunc", Arr(intType, intType, intType), default);
 
             // Print(int x)
-            var printFuncDecl = new NormalFuncDecl(default, new Name.Normal("Print"), false, default, RNormalParams((Path.Int, "x")),
-                RBlock(
-                    RPrintIntCmdStmt(RLocalVarLoc("x")),
-                    new ReturnStmt(new ReturnInfo.Expression(new LoadExp(RLocalVarLoc("x"))))
+            var printFuncDecl = new NormalFuncDecl(default, new Name.Normal("Print"), false, default, RNormalParams((intType, "x")),
+                r.Block(
+                    r.PrintInt(r.LocalVar("x")),
+                    r.Return(r.LoadLocalVar("x", intType))
                 )
             );
 
             // TestFunc(int i, int j, int k)
-            var testFuncDecl = new NormalFuncDecl(default, new Name.Normal("TestFunc"), false, default, RNormalParams((Path.Int, "i"), (Path.Int, "j"), (Path.Int, "k")),
-                RPrintStringCmdStmt("TestFunc")
+            var testFuncDecl = new NormalFuncDecl(default, new Name.Normal("TestFunc"), false, default, RNormalParams((intType, "i"), (intType, "j"), (intType, "k")),
+                r.PrintString("TestFunc")
             );
 
             Exp MakePrintCall(int v) =>
-                new CallFuncExp(printFunc, null, RArgs(new IntLiteralExp(v)));
+                new CallFuncExp(printFunc, null, RArgs(r.Int(v)));
 
             var stmts = Arr<Stmt>
             (
@@ -1073,9 +1359,9 @@ namespace Citron.Test
         {
             var func = RootPath("F");
             // F() { return "hello world"; }
-            var funcDecl = new NormalFuncDecl(default, new Name.Normal("F"), false, default, default, new ReturnStmt(new ReturnInfo.Expression(RString("Hello World"))));
+            var funcDecl = new NormalFuncDecl(default, new Name.Normal("F"), false, default, default, r.Return(r.String("Hello World")));
 
-            var stmts = Arr<Stmt>(RPrintStringCmdStmt(new CallFuncExp(func, null, default)));
+            var stmts = Arr<Stmt>(r.PrintString(new CallFuncExp(func, null, default)));
 
             var output = await EvalAsync(funcDecl, stmts);
             Assert.Equal("Hello World", output);
@@ -1148,7 +1434,7 @@ namespace Citron.Test
             var testDriver = new TestDriver(testExternalModuleName, commandProvider);
 
             var func = new Path.Nested(new Path.Root(testExternalModuleName), new Name.Normal("F"), ParamHash.None, default);
-            var script = RScript(moduleName, RPrintStringCmdStmt(new CallFuncExp(func, null, default)));
+            var script = RScript(moduleName, r.PrintString(new CallFuncExp(func, null, default)));
 
             var (output, _) = await EvalAsyncWithRetValue(commandProvider, Arr<IModuleDriver>(testDriver), script);
             Assert.Equal("Hello World", output);
@@ -1186,7 +1472,7 @@ namespace Citron.Test
                     {
                         var paramName = (paramInfo.Name != null) ? new Name.Normal(paramInfo.Name) : new Name.Normal($"@{index}");
 
-                        builder.Add(new Param(ParamKind.Default, Path.String, paramName));
+                        builder.Add(new Param(ParamKind.Default, stringType, paramName));
 
                         ParamKind paramKind;
                         if (paramInfo.ParameterType.IsByRef)
@@ -1194,7 +1480,7 @@ namespace Citron.Test
                         else
                             paramKind = ParamKind.Default;
 
-                        pathsBuilder.Add(new ParamHashEntry(paramKind, Path.String));
+                        pathsBuilder.Add(new ParamHashEntry(paramKind, stringType));
 
                         index++;
                     }
@@ -1241,7 +1527,7 @@ namespace Citron.Test
                     for (int i = 0; i < methodParams.Length; i++)
                     {
                         if (paramHash.Entries[i].Kind == ParamKind.Default &&
-                            paramHash.Entries[i].Type == Path.String && 
+                            paramHash.Entries[i].Type == stringType && 
                             methodParams[i].ParameterType == typeof(string))
                             continue;
 
@@ -1332,9 +1618,9 @@ namespace Citron.Test
 
             var system = new Path.Nested(new Path.Root(testExternalModuleName), new Name.Normal("System"), ParamHash.None, default);
             var system_Console = new Path.Nested(system, new Name.Normal("Console"), ParamHash.None, default);
-            var system_Console_Write = new Path.Nested(system_Console, new Name.Normal("Write"), new ParamHash(0, Arr(new ParamHashEntry(ParamKind.Default, Path.String))), default);
+            var system_Console_Write = new Path.Nested(system_Console, new Name.Normal("Write"), new ParamHash(0, Arr(new ParamHashEntry(ParamKind.Default, stringType))), default);
                 
-            var script = RScript(moduleName, new ExpStmt(new CallFuncExp(system_Console_Write, null, RArgs(RString("Hello World")))));
+            var script = RScript(moduleName, new ExpStmt(new CallFuncExp(system_Console_Write, null, RArgs(r.String("Hello World")))));
 
             using (var writer = new System.IO.StringWriter())
             {
@@ -1353,15 +1639,15 @@ namespace Citron.Test
         public async Task CallSeqFuncExp_ReturnsAnonymousSeqTypeValue()
         {
             var seqFunc = RootPath("F");
-            var seqFuncDecl = new SequenceFuncDecl(default, new Name.Normal("F"), false, Path.String, default, default, BlankStmt.Instance); // return nothing
+            var seqFuncDecl = new SequenceFuncDecl(default, new Name.Normal("F"), false, stringType, default, default, BlankStmt.Instance); // return nothing
 
             var stmts = Arr<Stmt>
             (
                 // 선언하자 마자 대입하기
-                RLocalVarDeclStmt(seqFunc, "x", new CallSeqFuncExp(seqFunc, null, default)),
+                r.LocalVarDecl(seqFunc, "x", new CallSeqFuncExp(seqFunc, null, default)),
 
                 // 로컬 변수에 새 값 대입하기
-                new ExpStmt(new AssignExp(RLocalVarLoc("x"), new CallSeqFuncExp(seqFunc, null, default)))
+                r.Assign(r.LocalVar("x"), new CallSeqFuncExp(seqFunc, null, default))
             );
 
             await EvalAsync(seqFuncDecl, stmts);
@@ -1372,34 +1658,34 @@ namespace Citron.Test
         [Fact]
         public async Task CallValueExp_EvaluateCallableAndArgumentsInOrder()
         {
-            var printFunc = RootPath("Print", Arr(Path.Int), default);
+            var printFunc = RootPath("Print", Arr(intType), default);
             var makeLambda = RootPath("MakeLambda", Arr<Path>(), default);
             var lambda = new Path.Nested(makeLambda, new Name.Anonymous(0), ParamHash.None, default);
 
             // Print(int x) { 
-            var printFuncDecl = new NormalFuncDecl(default, new Name.Normal("Print"), false, default, RNormalParams((Path.Int, "x")),
-                RBlock(
-                    RPrintIntCmdStmt(new LocalVarLoc(new Name.Normal("x"))),
-                    new ReturnStmt(new ReturnInfo.Expression(new LoadExp(RLocalVarLoc("x"))))
+            var printFuncDecl = new NormalFuncDecl(default, new Name.Normal("Print"), false, default, RNormalParams((intType, "x")),
+                r.Block(
+                    r.PrintInt(new LocalVarLoc(new Name.Normal("x"))),
+                    r.Return(r.LoadLocalVar("x", intType))
                 )
             );
 
             // MakeLambda() { return (int i, int j, int k) => @"TestFunc";}
             var lambdaDecl = new LambdaDecl(
                 new Name.Anonymous(0),
-                new CapturedStatement(null, default, RPrintStringCmdStmt("TestFunc")),
-                RNormalParams((Path.Int, "i"), (Path.Int, "j"), (Path.Int, "k"))
+                new CapturedStatement(null, default, r.PrintString("TestFunc")),
+                RNormalParams((intType, "i"), (intType, "j"), (intType, "k"))
             );
             
             var makeLambdaDecl = new NormalFuncDecl(Arr<CallableMemberDecl>(lambdaDecl), new Name.Normal("MakeLambda"), false, default, default,
-                RBlock(                    
-                    RPrintStringCmdStmt("MakeLambda"),
-                    new ReturnStmt(new ReturnInfo.Expression(new LambdaExp(lambda)))
+                r.Block(                    
+                    r.PrintString("MakeLambda"),
+                    r.Return(new LambdaExp(lambda))
                 )
             );
 
             Exp MakePrintCall(int v) =>
-                new CallFuncExp(printFunc, null, RArgs(new IntLiteralExp(v)));
+                new CallFuncExp(printFunc, null, RArgs(r.Int(v)));
             
             var stmts = Arr<Stmt>
             (
@@ -1432,7 +1718,7 @@ namespace Citron.Test
         public async Task LambdaExp_CapturesLocalVariablesWithCopying() // TODO: wrong, need to be fix
         {   
             // [x] () => @"$x";
-            var lambdaDecl = new LambdaDecl(new Name.Anonymous(0), new CapturedStatement(null, Arr(new OuterLocalVarInfo(Path.Int, "x")), RPrintIntCmdStmt(new LambdaMemberVar("x"))), default);
+            var lambdaDecl = new LambdaDecl(new Name.Anonymous(0), new CapturedStatement(null, Arr(new OuterLocalVarInfo(intType, "x")), r.PrintInt(new LambdaMemberVar("x"))), default);
             var lambda = RootPath(new Name.Anonymous(0));
 
             // int x = 3;
@@ -1440,11 +1726,11 @@ namespace Citron.Test
             // x = 34;
             // func();
             var stmts = Arr<Stmt> (
-                RLocalVarDeclStmt(Path.Int, "x", new IntLiteralExp(3)),
-                RLocalVarDeclStmt(lambda, "func", new LambdaExp(lambda)),
+                r.LocalVarDecl(intType, "x", r.Int(3)),
+                r.LocalVarDecl(lambda, "func", new LambdaExp(lambda)),
 
-                new ExpStmt(new AssignExp(RLocalVarLoc("x"), new IntLiteralExp(34))),
-                new ExpStmt(new CallValueExp(lambda, RLocalVarLoc("func"), default))
+                r.Assign(r.LocalVar("x"), r.Int(34)),
+                new ExpStmt(new CallValueExp(lambda, r.LocalVar("func"), default))
             );
 
             var output = await EvalAsync(Arr<CallableMemberDecl>(lambdaDecl), stmts);
@@ -1456,8 +1742,8 @@ namespace Citron.Test
         public async Task ListIndexerExp_GetElement()
         {
             var stmts = Arr<Stmt> (
-                RLocalVarDeclStmt(Path.List(Path.Int), "list", new ListExp(Path.Int, Arr<Exp>(new IntLiteralExp(34), new IntLiteralExp(56)))),
-                RPrintIntCmdStmt(new ListIndexerLoc(new LocalVarLoc(new Name.Normal("list")), new IntLiteralExp(1)))
+                r.LocalVarDecl(Path.List(intType), "list", new ListExp(intType, Arr<Exp>(r.Int(34), r.Int(56)))),
+                r.PrintInt(new ListIndexerLoc(new LocalVarLoc(new Name.Normal("list")), r.Int(1)))
             );
 
             var output = await EvalAsync(stmts);
@@ -1468,23 +1754,23 @@ namespace Citron.Test
         [Fact]
         public async Task ListExp_EvaluatesElementExpInOrder()
         {
-            var printFunc = RootPath("Print", Arr(Path.Int), default);
+            var printFunc = RootPath("Print", Arr(intType), default);
 
             // print(int x)
-            var printFuncDecl = new NormalFuncDecl(default, new Name.Normal("Print"), false, default, RNormalParams((Path.Int, "x")),
+            var printFuncDecl = new NormalFuncDecl(default, new Name.Normal("Print"), false, default, RNormalParams((intType, "x")),
 
-                RBlock(
-                    RPrintIntCmdStmt(new LocalVarLoc(new Name.Normal("x"))),
-                    new ReturnStmt(new ReturnInfo.Expression(new LoadExp(new LocalVarLoc(new Name.Normal("x")))))
+                r.Block(
+                    r.PrintInt(new LocalVarLoc(new Name.Normal("x"))),
+                    r.Return(r.LoadLocalVar("x", intType))
                 )
             );
 
             Exp MakePrintCall(int v) =>
-                new CallFuncExp(printFunc, null, RArgs(new IntLiteralExp(v)));
+                new CallFuncExp(printFunc, null, RArgs(r.Int(v)));
 
             var stmts = Arr<Stmt> (
-                RGlobalVarDeclStmt(Path.List(Path.Int), "l", 
-                    new ListExp(Path.Int, Arr(
+                r.GlobalVarDecl(Path.List(intType), "l", 
+                    new ListExp(intType, Arr(
                         MakePrintCall(34),
                         MakePrintCall(56)
                     ))
@@ -1515,8 +1801,6 @@ namespace Citron.Test
         public Task NewClassExp_MakesClassValue()
         {
             throw new PrerequisiteRequiredException(Prerequisite.Class);
-        }        
-
-        
+        }
     }
 }

@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 namespace Citron
 {
     // 컴파일 중간 결과물을 모듈로 만들어서 테스트 용도로 쓰는 드라이버..
-    class IR0ModuleDriver : IModuleDriver
+    public class IR0ModuleDriver : IModuleDriver
     {
         Evaluator evaluator;            // 외부 오퍼레이션
         IR0GlobalContext globalContext; // 내부 오퍼레이션 
@@ -120,7 +120,12 @@ namespace Citron
             {
                 throw new UnreachableCodeException();
             }
-        }        
+        }
+
+        public static IModuleDriver Make(ModuleDriverInitializationContext initContext, Evaluator evaluator, IR0GlobalContext globalContext)
+        {
+            throw new NotImplementedException();
+        }
 
         public Value AllocValue(SymbolPath typePath)
         {            

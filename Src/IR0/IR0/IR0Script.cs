@@ -7,22 +7,22 @@ using System.Text;
 
 using Citron.Collections;
 using Citron.CompileTime;
+using Citron.Analysis;
 
 namespace Citron.IR0
 {
     // DeclSymbolId -> Stmt
     [AutoConstructor]
-    public partial struct IR0StmtBody
+    public partial struct StmtBody
     {
         public DeclSymbolPath Path { get; }
-        public Stmt Body { get; }
+        public ImmutableArray<Stmt> Stmts { get; }
     }
 
     [AutoConstructor, ImplementIEquatable]
     public partial class Script
     {
-        public Name Name { get; }
-        public ImmutableArray<IR0StmtBody> Bodies { get; }
-        public ImmutableArray<Stmt> TopLevelStmts { get; }
+        public ModuleDeclSymbol ModuleDeclSymbol { get; }
+        public ImmutableArray<StmtBody> StmtBodies { get; }
     }
 }

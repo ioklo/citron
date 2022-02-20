@@ -89,8 +89,10 @@ namespace Citron.Analysis
             return new StructSymbol(this, outer, decl, typeArgs);
         }
 
-        public LambdaSymbol MakeLambda(IFuncSymbol outer, LambdaDeclSymbol decl)
+        public LambdaSymbol MakeLambda(ISymbolNode outer, LambdaDeclSymbol decl)
         {
+            Debug.Assert(outer.GetDeclSymbolNode() == decl.GetOuterDeclNode());
+
             return new LambdaSymbol(this, outer, decl);
         }
 
@@ -155,5 +157,22 @@ namespace Citron.Analysis
             Debug.Assert(@struct.GetDeclSymbolNode() == decl.GetOuterDeclNode());
             return new StructMemberVarSymbol(this, @struct, decl);
         }
+
+        #region Runtime special symbols (proxies)
+        public BoolSymbol MakeBool()
+        {
+            return new BoolSymbol();
+        }
+
+        public IntSymbol MakeInt()
+        {
+            return new IntSymbol();
+        }
+
+        public StringSymbol MakeString()
+        {
+            return new StringSymbol();
+        }
+        #endregion
     }
 }

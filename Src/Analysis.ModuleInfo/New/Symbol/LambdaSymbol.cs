@@ -11,7 +11,7 @@ namespace Citron.Analysis
     public partial class LambdaSymbol : ITypeSymbol, IFuncSymbol
     {
         SymbolFactory factory;
-        IFuncSymbol outer; // IFuncSymbol | ITypeSymbol
+        ISymbolNode outer; // IFuncSymbol | ITypeSymbol
         LambdaDeclSymbol decl;
 
         ISymbolNode ISymbolNode.Apply(TypeEnv typeEnv) => Apply(typeEnv);        

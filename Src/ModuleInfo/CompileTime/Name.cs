@@ -18,6 +18,9 @@ namespace Citron.CompileTime
         public static readonly Name Nullable = new Singleton("Nullable");
         public static readonly Name CapturedThis = new Singleton("CapturedThis");
 
+        // for TopLevelStmt
+        public static readonly Name TopLevel = new Singleton("TopLevel");
+
         public record Anonymous(int Index) : Name;
         public record ConstructorParam(int Index) : Name;
         public record Normal(string Text) : Name;

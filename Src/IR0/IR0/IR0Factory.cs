@@ -10,6 +10,7 @@ using static Citron.Infra.Misc;
 using Citron.Analysis;
 using System.Diagnostics.CodeAnalysis;
 using Citron.CompileTime;
+using Citron.Infra;
 
 namespace Citron.IR0
 {
@@ -31,22 +32,24 @@ namespace Citron.IR0
             this.stringType = stringType;
         }
 
-        public IR0StmtBody StmtBody(DeclSymbolPath path, Stmt body)
+        public StmtBody StmtBody(DeclSymbolPath path, Stmt body)
         {
-            return new IR0StmtBody(path, body);
+            return new StmtBody(path, body);
         }
 
         #region Script
 
-        public Script Script(Name moduleName, params Stmt[] stmts)
-        {
-            return Script(moduleName, default, stmts);
+        public Script Script(ModuleDeclSymbol moduleDecl, ImmutableArray<StmtBody> rstmtBodies)
+        {   
+            return new Script(moduleDecl, rstmtBodies);
         }
 
-        public Script Script(Name moduleName, ImmutableArray<IR0StmtBody> rstmtBodies, params Stmt[] optTopLevelStmts)
-        {   
-            ImmutableArray<Stmt> topLevelStmts = optTopLevelStmts.ToImmutableArray();
-            return new Script(moduleName, rstmtBodies, topLevelStmts);
+        // only have top level stmts
+        public Script Script(Name moduleName, ImmutableArray<Stmt> topLevelStmts)
+        {
+            var moduleDecl = new ModuleDeclSymbol(moduleName, default, default, default);
+            var stmtBodies = Arr(new StmtBody(new DeclSymbolPath(null, Name.TopLevel), topLevelStmts));
+            return new Script(moduleDecl, stmtBodies);
         }
 
         #endregion
@@ -62,6 +65,37 @@ namespace Citron.IR0
 
         #endregion
 
+        #region IfStmt
+        public IfStmt If(Exp cond, Stmt body, Stmt? elseBody = null)
+        {
+            return new IfStmt(cond, body, elseBody);
+        }
+        #endregion
+
+        #region ForStmt
+
+        // skip initializer
+        public ForStmt For(Exp? condExp, Exp? contExp, Stmt body)
+        {
+            return new ForStmt(null, condExp, contExp, body);
+        }
+
+        // with local item var decl
+        public ForStmt For(ITypeSymbol itemType, string itemName, Exp itemInit, Exp? cond, Exp? cont, Stmt body)
+        {
+            return new ForStmt(
+                new VarDeclForStmtInitializer(new LocalVarDecl(Arr<VarDeclElement>(new VarDeclElement.Normal(itemType, itemName, itemInit)))),
+                cond, cont, body
+            );
+        }
+
+        public ForStmt For(Exp init, Exp? cond, Exp? cont, Stmt body)
+        {
+            return new ForStmt(new ExpForStmtInitializer(init), cond, cont, body);
+        }
+
+        #endregion
+
         #region BlockStmt
 
         public BlockStmt Block(params Stmt[] stmts)
@@ -69,13 +103,75 @@ namespace Citron.IR0
             return new BlockStmt(Arr(stmts));
         }
 
-        #endregion        
+        public CallInternalUnaryOperatorExp CallInternalUnary(InternalUnaryOperator op, Exp exp)
+        {
+            var type = op switch
+            {
+                InternalUnaryOperator.LogicalNot_Bool_Bool => boolType,
+                InternalUnaryOperator.UnaryMinus_Int_Int => intType,
+                InternalUnaryOperator.ToString_Bool_String => stringType,
+                InternalUnaryOperator.ToString_Int_String => stringType,
+                _ => throw new UnreachableCodeException()
+            };
+            
+            return new CallInternalUnaryOperatorExp(op, exp, type);
+        }
+
+        public Exp CallInternalBinary(InternalBinaryOperator op, Exp operand0, Exp operand1)
+        {
+            var type = op switch
+            {
+                InternalBinaryOperator.Multiply_Int_Int_Int => intType,
+                InternalBinaryOperator.Divide_Int_Int_Int => intType,
+                InternalBinaryOperator.Modulo_Int_Int_Int => intType,
+                InternalBinaryOperator.Add_Int_Int_Int => intType,
+                InternalBinaryOperator.Add_String_String_String => stringType,
+                InternalBinaryOperator.Subtract_Int_Int_Int => intType,
+                InternalBinaryOperator.LessThan_Int_Int_Bool => boolType,
+                InternalBinaryOperator.LessThan_String_String_Bool => boolType,
+                InternalBinaryOperator.GreaterThan_Int_Int_Bool => boolType,
+                InternalBinaryOperator.GreaterThan_String_String_Bool => boolType,
+                InternalBinaryOperator.LessThanOrEqual_Int_Int_Bool => boolType,
+                InternalBinaryOperator.LessThanOrEqual_String_String_Bool => boolType,
+                InternalBinaryOperator.GreaterThanOrEqual_Int_Int_Bool => boolType,
+                InternalBinaryOperator.GreaterThanOrEqual_String_String_Bool => boolType,
+                InternalBinaryOperator.Equal_Int_Int_Bool => boolType,
+                InternalBinaryOperator.Equal_Bool_Bool_Bool => boolType,
+                InternalBinaryOperator.Equal_String_String_Bool => boolType,
+                _ => throw new UnreachableCodeException()
+            };
+
+            return new CallInternalBinaryOperatorExp(op, operand0, operand1, type);
+        }
+
+        public Exp CallInternalUnaryAssign(InternalUnaryAssignOperator op, Loc operand)
+        {
+            var type = op switch
+            {
+                InternalUnaryAssignOperator.PrefixInc_Int_Int => intType,
+                InternalUnaryAssignOperator.PrefixDec_Int_Int => intType,
+                InternalUnaryAssignOperator.PostfixInc_Int_Int => intType,
+                InternalUnaryAssignOperator.PostfixDec_Int_Int => intType,
+
+                _ => throw new UnreachableCodeException()
+            };
+
+
+            return new CallInternalUnaryAssignOperatorExp(op, operand, type);
+        }
+
+        #endregion
 
         #region ExpStmt
 
         public ExpStmt Assign(Loc dest, Exp src)
         {
             return new ExpStmt(new AssignExp(dest, src));
+        }
+
+        public ExpStmt Call(GlobalFuncSymbol globalFunc, ImmutableArray<Argument> args)
+        {
+            return new ExpStmt(new CallGlobalFuncExp(globalFunc, args));
         }
 
         #endregion        
@@ -104,7 +200,19 @@ namespace Citron.IR0
         }
         #endregion
 
+        #region BlankStmt
+        public BlankStmt Blank()
+        {
+            return new BlankStmt();
+        }
+        #endregion
+
         #region CommandStmt
+
+        public CommandStmt PrintBool(Loc loc)
+        {
+            return PrintBool(new LoadExp(loc, boolType));
+        }
 
         public CommandStmt PrintBool(Exp exp)
         {
@@ -139,21 +247,51 @@ namespace Citron.IR0
             )));
         }
 
-        public CommandStmt PrintStringCmdStmt(Loc loc, ITypeSymbol locType)
+        public CommandStmt PrintString(Loc loc)
         {
-            return Command(String(new ExpStringExpElement(new LoadExp(loc, locType))));
+            return Command(String(new ExpStringExpElement(new LoadExp(loc, stringType))));
         }
 
-        public CommandStmt PrintStringCmdStmt(Exp varExp)
+        public CommandStmt PrintString(Exp varExp)
         {
             return Command(String(new ExpStringExpElement(varExp)));
         }
 
-        public CommandStmt PrintStringCmdStmt(string text)
+        public CommandStmt PrintString(string text)
         {
             return Command(String(text));
         }
 
+        #endregion
+
+        #region ReturnStmt
+        public ReturnStmt Return(Exp retValue)
+        {
+            return new ReturnStmt(new ReturnInfo.Expression(retValue));
+        }
+
+        public ReturnStmt Return()
+        {
+            return new ReturnStmt(ReturnInfo.None.Instance);
+        }
+
+        public ReturnStmt ReturnRef(Loc loc)
+        {
+            return new ReturnStmt(new ReturnInfo.Ref(loc));
+        }
+
+        #endregion
+
+        #region TaskStmt
+        public TaskStmt Task(LambdaSymbol lambda, ImmutableArray<Stmt> body)
+        {
+            return new TaskStmt(lambda, default, body);
+        }
+
+        public TaskStmt Task(LambdaSymbol lambda, ImmutableArray<Argument> args, ImmutableArray<Stmt> body)
+        {
+            return new TaskStmt(lambda, args, body);
+        }
         #endregion
 
         #endregion
@@ -198,6 +336,21 @@ namespace Citron.IR0
             return new LoadExp(new LocalVarLoc(new Name.Normal(name)), varType);
         }
 
+        public LoadExp LoadGlobalVar(string name, ITypeSymbol varType)
+        {
+            return new LoadExp(new GlobalVarLoc(name), varType);
+        }
+
+        public LoadExp Load(Loc loc, ITypeSymbol typeSymbol)
+        {
+            return new LoadExp(loc, typeSymbol);
+        }
+
+        public LoadExp LoadLambdaMember(LambdaMemberVarSymbol memberVar)
+        {
+            return new LoadExp(new LambdaMemberVarLoc(memberVar), memberVar.GetDeclType());
+        }
+
         #endregion
 
         #endregion
@@ -209,14 +362,19 @@ namespace Citron.IR0
             return new LocalVarLoc(new Name.Normal(name));
         }
 
+        public Loc GlobalVar(string name)
+        {
+            return new GlobalVarLoc(name);
+        }
+
+        public Loc Deref(Loc loc)
+        {
+            return new DerefLocLoc(loc);
+        }
+
         #endregion
 
-        #region Else
-
-        public VarDeclForStmtInitializer VarDeclForStmtInitializer(ITypeSymbol type, string name, Exp initExp)
-        {
-            return new VarDeclForStmtInitializer(new LocalVarDecl(Arr<VarDeclElement>(new VarDeclElement.Normal(type, name, initExp))));
-        }
+        #region Else        
 
         public ImmutableArray<Param> NormalParams(params (SymbolId Type, string Name)[] elems)
         {
@@ -231,6 +389,31 @@ namespace Citron.IR0
         public ModuleSymbolId Module(string moduleName)
         {
             return new ModuleSymbolId(new Name.Normal(moduleName), null);
+        }
+
+        public TextStringExpElement TextElem(string text)
+        {
+            return new TextStringExpElement(text);
+        }
+
+        public ExpStringExpElement ExpElem(Exp exp)
+        {
+            return new ExpStringExpElement(exp);
+        }
+
+        public Exp AssignExp(Loc dest, Exp src)
+        {
+            return new AssignExp(dest, src);
+        }
+
+        public Exp CallExp(GlobalFuncSymbol globalFunc, ImmutableArray<Argument> args)
+        {
+            return CallExp(globalFunc, args);
+        }
+
+        public AwaitStmt Await(params Stmt[] stmts)
+        {
+            return new AwaitStmt(new BlockStmt(stmts.ToImmutableArray()));
         }
 
         #endregion
