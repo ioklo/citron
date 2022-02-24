@@ -167,7 +167,7 @@ namespace Citron.IR0
 
     // f(2, 3)    
     // Callable은 (() => {}) ()때문에 Loc이어야 한다
-    public record CallValueExp(LambdaSymbol Lambda, Loc Callable, ImmutableArray<Argument> Args) : Exp
+    public record CallValueExp(LambdaFSymbol Lambda, Loc Callable, ImmutableArray<Argument> Args) : Exp
     {
         public override ITypeSymbol GetTypeSymbol()
         {
@@ -179,7 +179,7 @@ namespace Citron.IR0
     // var l = () => { return x; }; // lambda type
     // 
     // Lambda(lambda_type_0, x); // with captured variable
-    public record LambdaExp(LambdaSymbol Lambda, ImmutableArray<Argument> Args) : Exp
+    public record LambdaExp(LambdaFSymbol Lambda, ImmutableArray<Argument> Args) : Exp
     {
         public override ITypeSymbol GetTypeSymbol()
         {

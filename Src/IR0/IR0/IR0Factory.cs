@@ -32,7 +32,7 @@ namespace Citron.IR0
             this.stringType = stringType;
         }
 
-        public StmtBody StmtBody(DeclSymbolPath path, Stmt body)
+        public StmtBody StmtBody(DeclSymbolPath path, ImmutableArray<Stmt> body)
         {
             return new StmtBody(path, body);
         }
@@ -167,11 +167,16 @@ namespace Citron.IR0
         public ExpStmt Assign(Loc dest, Exp src)
         {
             return new ExpStmt(new AssignExp(dest, src));
+        }        
+
+        public ExpStmt Call(GlobalFuncSymbol globalFunc, params Argument[] args)
+        {
+            return new ExpStmt(new CallGlobalFuncExp(globalFunc, args.ToImmutableArray()));
         }
 
-        public ExpStmt Call(GlobalFuncSymbol globalFunc, ImmutableArray<Argument> args)
+        public ExpStmt Call(LambdaFSymbol lambda, Loc loc, params Argument[] args)
         {
-            return new ExpStmt(new CallGlobalFuncExp(globalFunc, args));
+            return new ExpStmt(new CallValueExp(lambda, loc, args.ToImmutableArray()));
         }
 
         #endregion        
@@ -252,9 +257,9 @@ namespace Citron.IR0
             return Command(String(new ExpStringExpElement(new LoadExp(loc, stringType))));
         }
 
-        public CommandStmt PrintString(Exp varExp)
+        public CommandStmt PrintString(Exp exp)
         {
-            return Command(String(new ExpStringExpElement(varExp)));
+            return Command(String(new ExpStringExpElement(exp)));
         }
 
         public CommandStmt PrintString(string text)
@@ -283,15 +288,23 @@ namespace Citron.IR0
         #endregion
 
         #region TaskStmt
-        public TaskStmt Task(LambdaSymbol lambda, ImmutableArray<Stmt> body)
+        public TaskStmt Task(LambdaFSymbol lambda, ImmutableArray<Stmt> body)
         {
             return new TaskStmt(lambda, default, body);
         }
 
-        public TaskStmt Task(LambdaSymbol lambda, ImmutableArray<Argument> args, ImmutableArray<Stmt> body)
+        public TaskStmt Task(LambdaFSymbol lambda, ImmutableArray<Argument> args, ImmutableArray<Stmt> body)
         {
             return new TaskStmt(lambda, args, body);
         }
+        #endregion
+
+        #region AsyncStmt
+        public AsyncStmt Async(LambdaFSymbol lambda, ImmutableArray<Argument> args, ImmutableArray<Stmt> body)
+        {
+            return new AsyncStmt(lambda, args, body);
+        }
+
         #endregion
 
         #endregion
@@ -346,7 +359,7 @@ namespace Citron.IR0
             return new LoadExp(loc, typeSymbol);
         }
 
-        public LoadExp LoadLambdaMember(LambdaMemberVarSymbol memberVar)
+        public LoadExp LoadLambdaMember(LambdaMemberVarFSymbol memberVar)
         {
             return new LoadExp(new LambdaMemberVarLoc(memberVar), memberVar.GetDeclType());
         }
@@ -372,13 +385,18 @@ namespace Citron.IR0
             return new DerefLocLoc(loc);
         }
 
+        public TempLoc TempLoc(Exp e)
+        {
+            return new TempLoc(e);
+        }
+
         #endregion
 
         #region Else        
 
-        public ImmutableArray<Param> NormalParams(params (SymbolId Type, string Name)[] elems)
+        public ImmutableArray<FuncParameter> FuncParam(params (ITypeSymbol Type, string Name)[] elems)
         {
-            return elems.Select(e => new Param(ParamKind.Default, e.Type, new Name.Normal(e.Name))).ToImmutableArray();
+            return elems.Select(e => new FuncParameter(FuncParameterKind.Default, e.Type, new Name.Normal(e.Name))).ToImmutableArray();
         }
 
         public ImmutableArray<Argument> Args(params Exp[] exps)
@@ -406,7 +424,7 @@ namespace Citron.IR0
             return new AssignExp(dest, src);
         }
 
-        public Exp CallExp(GlobalFuncSymbol globalFunc, ImmutableArray<Argument> args)
+        public Exp CallExp(GlobalFuncSymbol globalFunc, params Argument[] args)
         {
             return CallExp(globalFunc, args);
         }
@@ -416,7 +434,35 @@ namespace Citron.IR0
             return new AwaitStmt(new BlockStmt(stmts.ToImmutableArray()));
         }
 
+        public FuncParameter RefParam(ITypeSymbol type, string name)
+        {
+            return new FuncParameter(FuncParameterKind.Ref, type, new Name.Normal(name));
+        }
+
+        public FuncReturn FuncRet(ITypeSymbol type)
+        {
+            return new FuncReturn(false, type);
+        }
+
+        public Argument RefArg(Loc loc)
+        {
+            return new Argument.Ref(loc);
+        }
+
+        public Argument Arg(Exp exp)
+        {
+            return new Argument.Normal(exp);
+        }
+
+        public IHolder<T> Holder<T>(T t)
+        {
+            return new Holder<T>(t);
+        }
+
+
         #endregion
+
+        
     }
 
     public static class IR0Extensions

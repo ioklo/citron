@@ -278,7 +278,7 @@ namespace Citron
         }
 
         // TODO: StmtEvaluator에서 사용, 합쳐지면 internal 뗀다
-        internal async ValueTask EvalCaptureArgs(LambdaSymbol lambda, LambdaValue value, ImmutableArray<R.Argument> captureArgs)
+        internal async ValueTask EvalCaptureArgs(LambdaFSymbol lambda, LambdaValue value, ImmutableArray<R.Argument> captureArgs)
         {
             // 1:1로 직접 꽂아보자
             var memberVarCount = lambda.GetMemberVarCount();

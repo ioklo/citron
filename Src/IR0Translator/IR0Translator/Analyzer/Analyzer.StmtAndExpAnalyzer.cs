@@ -79,7 +79,7 @@ namespace Citron.IR0Translator
                 return new R.LocalVarDecl(relems.ToImmutableArray());
             }
 
-            (LambdaSymbol Lambda, ImmutableArray<R.Argument> Args, R.Stmt Body) AnalyzeLambda(ITypeSymbol? retType, ImmutableArray<S.LambdaExpParam> sparams, S.Stmt body, S.ISyntaxNode nodeForErrorReport)
+            (LambdaFSymbol Lambda, ImmutableArray<R.Argument> Args, R.Stmt Body) AnalyzeLambda(ITypeSymbol? retType, ImmutableArray<S.LambdaExpParam> sparams, S.Stmt body, S.ISyntaxNode nodeForErrorReport)
             {
                 // TODO: 리턴 타입은 타입 힌트를 반영해야 한다
                 // 파라미터는 람다 함수의 지역변수로 취급한다                
@@ -119,24 +119,24 @@ namespace Citron.IR0Translator
                 var funcNode = callableContext.GetThisNode();
 
                 var capturedContextName = callableContext.NewAnonymousName();
-                var lambdaDeclHolder = new Holder<LambdaDeclSymbol>();
+                var lambdaDeclHolder = new Holder<LambdaFDeclSymbol>();
 
                 var capturedLocalVars = newCapturedContext.GetCapturedLocalVars();
                 int memberVarCount = capturedLocalVars.Length + (capturedThisType != null ? 1 : 0);
-                var memberVarsBuilder = ImmutableArray.CreateBuilder<LambdaMemberVarDeclSymbol>(memberVarCount);
+                var memberVarsBuilder = ImmutableArray.CreateBuilder<LambdaMemberVarFDeclSymbol>(memberVarCount);
                 if (capturedThisType != null)
                 {
-                    var memberVar = new LambdaMemberVarDeclSymbol(lambdaDeclHolder, capturedThisType, Name.CapturedThis);
+                    var memberVar = new LambdaMemberVarFDeclSymbol(lambdaDeclHolder, capturedThisType, Name.CapturedThis);
                     memberVarsBuilder.Add(memberVar);
                 }
 
                 foreach (var capturedLocalVar in capturedLocalVars)
                 {
-                    var memberVar = new LambdaMemberVarDeclSymbol(lambdaDeclHolder, capturedLocalVar.DeclType, capturedLocalVar.VarName);
+                    var memberVar = new LambdaMemberVarFDeclSymbol(lambdaDeclHolder, capturedLocalVar.DeclType, capturedLocalVar.VarName);
                     memberVarsBuilder.Add(memberVar);
                 }
 
-                var lambdaDecl = new LambdaDeclSymbol(funcNode.GetDeclSymbolNode(), capturedContextName, newCapturedContext.GetReturn(), funcParameters.MoveToImmutable(), memberVarsBuilder.MoveToImmutable());
+                var lambdaDecl = new LambdaFDeclSymbol(funcNode.GetDeclSymbolNode(), capturedContextName, newCapturedContext.GetReturn(), funcParameters.MoveToImmutable(), memberVarsBuilder.MoveToImmutable());
                 lambdaDeclHolder.SetValue(lambdaDecl);
 
                 // Stmt분석시점에 추가되는 Declaration

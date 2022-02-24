@@ -286,9 +286,9 @@ namespace Citron.Analysis
             return new SeqTypeValue(ritemFactory, seq, yieldType);
         }
 
-        public LambdaSymbol MakeLambdaType(R.Path.Nested lambda, ITypeSymbol retType, ImmutableArray<ParamInfo> paramInfos)
+        public LambdaFSymbol MakeLambdaType(R.Path.Nested lambda, ITypeSymbol retType, ImmutableArray<ParamInfo> paramInfos)
         {
-            return new LambdaSymbol(ritemFactory, lambda, retType, paramInfos);
+            return new LambdaFSymbol(ritemFactory, lambda, retType, paramInfos);
         }
 
         public VarTypeValue MakeVarTypeValue()

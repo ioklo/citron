@@ -9,6 +9,8 @@ namespace Citron.Infra
         Class,
         Struct,
 
+        Sequence,
+
         Enum,
         TypeHint,
         IfTestClassStmt,

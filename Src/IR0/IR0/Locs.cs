@@ -19,7 +19,7 @@ namespace Citron.IR0
     public record LocalVarLoc(Name Name) : Loc;    
 
     // only this member allowed, so no need this
-    public record LambdaMemberVarLoc(LambdaMemberVarSymbol MemberVar) : Loc;
+    public record LambdaMemberVarLoc(LambdaMemberVarFSymbol MemberVar) : Loc;
 
     // l[b], l is list    
     public record ListIndexerLoc(Loc List, Exp Index) : Loc;

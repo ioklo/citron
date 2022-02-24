@@ -100,7 +100,7 @@ namespace Citron
                 throw new NotImplementedException();
             }
 
-            public void VisitLambda(LambdaSymbol symbol)
+            public void VisitLambda(LambdaFSymbol symbol)
             {
                 throw new NotImplementedException();
             }

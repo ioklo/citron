@@ -1,18 +1,16 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <RootNamespace>Citron</RootNamespace>
+    <RootNamespace>Citron.Analysis</RootNamespace>
+    <AssemblyName>Analysis.FSymbol</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Pretune" Version="0.8.4" />
-    <PackageReference Include="System.Collections.Immutable" Version="1.7.1" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Analysis.FSymbol\Analysis.FSymbol.csproj" />
     <ProjectReference Include="..\Analysis.ModuleInfo\Analysis.ModuleInfo.csproj" />
     <ProjectReference Include="..\Infra\Infra.csproj" />
     <ProjectReference Include="..\ModuleInfo\ModuleInfo.csproj" />
