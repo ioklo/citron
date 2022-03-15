@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Citron.Collections;
+using Citron.Infra;
 using Pretune;
 using M = Citron.CompileTime;
 
@@ -8,28 +9,34 @@ namespace Citron.Analysis
 {
     // ArgTypeValues => RetValueTypes
     [AutoConstructor]
-    public partial class LambdaFSymbol : IFSymbolNode
+    public partial class LambdaSymbol : ITypeSymbol, IFuncSymbol
     {
-        FSymbolFactory factory;
-        FSymbolOuter outer;
-        LambdaFDeclSymbol decl;
+        SymbolFactory factory;
+        ISymbolNode outer;
+        LambdaDeclSymbol decl;
 
-        IFSymbolNode IFSymbolNode.Apply(TypeEnv typeEnv) => Apply(typeEnv);
+        ISymbolNode ISymbolNode.Apply(TypeEnv typeEnv) => Apply(typeEnv);
+        ITypeSymbol ITypeSymbol.Apply(TypeEnv typeEnv) => Apply(typeEnv);
+        ITypeDeclSymbol? ITypeSymbol.GetDeclSymbolNode() => decl;
+        IDeclSymbolNode? ISymbolNode.GetDeclSymbolNode() => decl;
 
-        public LambdaFSymbol Apply(TypeEnv typeEnv)
+        IFuncSymbol IFuncSymbol.Apply(TypeEnv typeEnv) => Apply(typeEnv);
+        IFuncDeclSymbol IFuncSymbol.GetDeclSymbolNode() => decl;
+
+        public LambdaSymbol Apply(TypeEnv typeEnv)
         {
             var appliedOuter = outer.Apply(typeEnv);
             return factory.MakeLambda(appliedOuter, decl);
         }
         
-        public FSymbolOuter GetOuter()
+        public ISymbolNode GetOuter()
         {
             return outer;
         }
 
-        public ImmutableArray<ITypeSymbol> GetTypeArgs()
+        public ITypeSymbol GetTypeArg(int index)
         {
-            return default;
+            throw new RuntimeFatalException();
         }
 
         public TypeEnv GetTypeEnv()
@@ -42,7 +49,7 @@ namespace Citron.Analysis
             return decl.GetMemberVarCount();
         }
 
-        public LambdaMemberVarFSymbol GetMemberVar(int index)
+        public LambdaMemberVarSymbol GetMemberVar(int index)
         {
             var memberVarDecl = decl.GetMemberVar(index);
             return factory.MakeLambdaMemberVar(this, memberVarDecl);
@@ -64,10 +71,36 @@ namespace Citron.Analysis
             return decl.GetParameterCount();
         }
 
+        public void Apply(ITypeSymbolVisitor visitor)
+        {
+            visitor.VisitLambda(this);
+        }
+
+        public SymbolQueryResult QueryMember(M.Name memberName, int typeParamCount)
+        {
+            int memberVarCount = decl.GetMemberVarCount();
+
+            for(int i = 0; i < memberVarCount; i++)
+            {
+                var memberVar = decl.GetMemberVar(i);
+
+                if (memberVar.GetName().Equals(memberName))
+                {
+                    if (typeParamCount != 0)
+                        return SymbolQueryResult.Error.VarWithTypeArg.Instance;
+
+                    var memberVarSymbol = factory.MakeLambdaMemberVar(this, memberVar);
+                    return new SymbolQueryResult.LambdaMemberVar(memberVarSymbol);
+                }
+            }
+
+            return SymbolQueryResult.Error.NotFound.Instance;
+        }
+
         public ITypeSymbol? GetOuterType()
         {
             return outer as ITypeSymbol;
-        }        
+        }
 
         //public LambdaSymbol(RItemFactory ritemFactory, R.Path.Nested lambda, ITypeSymbol ret, ImmutableArray<ParamInfo> parameters)
         //{

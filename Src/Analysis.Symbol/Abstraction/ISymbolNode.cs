@@ -15,7 +15,7 @@ namespace Citron.Analysis
         
         TypeEnv GetTypeEnv();
         ISymbolNode Apply(TypeEnv typeEnv);        
-        ImmutableArray<ITypeSymbol> GetTypeArgs();
+        ITypeSymbol GetTypeArg(int i);
     }
 
     public static class SymbolNodeExtensions
@@ -50,9 +50,16 @@ namespace Citron.Analysis
                     Debug.Assert(decl != null); // ModuleSymbolId이기 때문에 무조건 있다
 
                     var declName = decl.GetNodeName();
-                    var typeArgIds = ImmutableArray.CreateRange(symbol.GetTypeArgs(), typeArg => typeArg.GetSymbolId());                    
 
-                    return outerModuleId.Child(declName.Name, typeArgIds, declName.ParamIds);
+                    int typeParamCount = decl.GetTypeParamCount();
+                    var typeArgIdsBuilder = ImmutableArray.CreateBuilder<M.SymbolId>(typeParamCount);
+                    for (int i = 0; i < typeParamCount; i++)
+                    {
+                        var typeArgId = symbol.GetTypeArg(i);
+                        typeArgIdsBuilder.Add(typeArgId.GetSymbolId());
+                    }
+
+                    return outerModuleId.Child(declName.Name, typeArgIdsBuilder.MoveToImmutable(), declName.ParamIds);
                 }
                 else
                 {

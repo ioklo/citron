@@ -17,20 +17,6 @@ namespace Citron
 {
     partial struct IR0Evaluator
     {
-        // yield를 먹는다
-        public static async ValueTask EvalTopLevelStmtsAsync(IR0GlobalContext globalContext, IR0EvalContext context, IR0LocalContext localContext, ImmutableArray<R.Stmt> topLevelStmts)
-        {
-            var stmtEvaluator = new IR0Evaluator(globalContext, context, localContext);
-
-            foreach (var topLevelStmt in topLevelStmts)
-            {
-                await foreach (var _ in stmtEvaluator.EvalStmtAsync(topLevelStmt));
-
-                if (context.GetFlowControl() == IR0EvalFlowControl.Return)
-                    break;
-            }
-        }
-
         public static async IAsyncEnumerator<Infra.Void> EvalAsyncEnum(IR0GlobalContext globalContext, IR0EvalContext context, IR0LocalContext localContext, R.Stmt stmt)
         {
             // asyncEnum을 만들기 위해서 내부 함수를 씁니다
@@ -368,8 +354,13 @@ namespace Citron
             var newLocalContext = new IR0LocalContext(default, default);
             var newEvaluator = new IR0Evaluator(globalContext, newEvalContext, newLocalContext);
 
-            // 스레드풀에서 실행            
-            var task = Task.Run(() => newEvaluator.EvalStmtSkipYieldAsync(taskStmt.Body));
+            // 스레드풀에서 실행
+            var task = Task.Run(async () =>
+            {
+                foreach (var stmt in taskStmt.Body)
+                    await newEvaluator.EvalStmtSkipYieldAsync(stmt);
+            });
+
             localContext.AddTask(task);
         }
 
@@ -396,10 +387,17 @@ namespace Citron
             var newEvalContext = evalContext.NewLambdaContext(lambdaValue, VoidValue.Instance);
             var newLocalContext = new IR0LocalContext(ImmutableDictionary<Name, Value>.Empty, default);
             var newEvaluator = new IR0Evaluator(globalContext, newEvalContext, newLocalContext);
-                        
+
             // 현재 컨텍스트에서 실행
-            var task = newEvaluator.EvalStmtSkipYieldAsync(asyncStmt.Body).AsTask();
-            localContext.AddTask(task);
+            var taskCompletionSource = new TaskCompletionSource();
+            localContext.AddTask(taskCompletionSource.Task);
+
+            foreach (var stmt in asyncStmt.Body)
+            {
+                await newEvaluator.EvalStmtSkipYieldAsync(stmt);
+            }
+
+            taskCompletionSource.SetResult();
         }
 
         async IAsyncEnumerable<Void> EvalForeachStmtCoreAsync(R.ForeachStmt stmt)
@@ -501,7 +499,6 @@ namespace Citron
                     return Empty(EvalExpStmtAsync(expStmt));
 
                 case R.TaskStmt taskStmt:
-                    return AsyncEnumerable.Empty<Void>();
                     return Empty(EvalTaskStmtAsync(taskStmt));
 
                 case R.AwaitStmt awaitStmt:
@@ -525,6 +522,18 @@ namespace Citron
         public async ValueTask EvalStmtSkipYieldAsync(R.Stmt stmt)
         {
             await foreach (var _ in EvalStmtAsync(stmt)) { }
+        }
+
+        // yield를 먹는다
+        public async ValueTask EvalBodySkipYieldAsync(ImmutableArray<R.Stmt> body)
+        {
+            foreach (var stmt in body)
+            {
+                await foreach (var _ in EvalStmtAsync(stmt)) ;
+
+                if (evalContext.GetFlowControl() == IR0EvalFlowControl.Return)
+                    break;
+            }
         }
     }
 }

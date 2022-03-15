@@ -4,5 +4,7 @@
     {
         int GetParameterCount();
         FuncParameter GetParameter(int index);
+
+        void AddLambda(LambdaDeclSymbol symbol);
     }
 }

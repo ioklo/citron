@@ -288,6 +288,12 @@ namespace Citron.Test.Misc
                 return;
             }
 
+            if (@name == Citron.CompileTime.Name.TopLevel)
+            {
+                itw.Write("Citron.CompileTime.Name.TopLevel");
+                return;
+            }
+
             switch(@name)
             {
                 case Citron.CompileTime.Name.Singleton @singleton: Write_Name_Singleton(@singleton); break;
@@ -1043,7 +1049,7 @@ namespace Citron.Test.Misc
             itw1.WriteLine(",");
             writer1.Write_ImmutableArray(Write_Argument, "Citron.IR0.Argument", @taskStmt.CaptureArgs);
             itw1.WriteLine(",");
-            writer1.Write_Stmt(@taskStmt.Body);
+            writer1.Write_ImmutableArray(Write_Stmt, "Citron.IR0.Stmt", @taskStmt.Body);
             itw.Write(")");
         }
 
@@ -1069,7 +1075,7 @@ namespace Citron.Test.Misc
             itw1.WriteLine(",");
             writer1.Write_ImmutableArray(Write_Argument, "Citron.IR0.Argument", @asyncStmt.CaptureArgs);
             itw1.WriteLine(",");
-            writer1.Write_Stmt(@asyncStmt.Body);
+            writer1.Write_ImmutableArray(Write_Stmt, "Citron.IR0.Stmt", @asyncStmt.Body);
             itw.Write(")");
         }
 

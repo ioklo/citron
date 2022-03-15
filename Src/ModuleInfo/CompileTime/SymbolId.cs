@@ -46,6 +46,13 @@ namespace Citron.CompileTime
 
     public static class SymbolIdExtensions
     {
+        public static ModuleSymbolId GetOuter(this ModuleSymbolId id)
+        {
+            Debug.Assert(id.Path != null);
+
+            return new ModuleSymbolId(id.ModuleName, id.Path.Outer);
+        }
+
         public static ModuleSymbolId Child(this ModuleSymbolId id, Name name, ImmutableArray<SymbolId> typeArgs = default, ImmutableArray<FuncParamId> paramIds = default)
         {
             return new ModuleSymbolId(id.ModuleName, id.Path.Child(name, typeArgs, paramIds));

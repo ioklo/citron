@@ -47,9 +47,12 @@ namespace Citron.IR0
         // only have top level stmts
         public Script Script(Name moduleName, ImmutableArray<Stmt> topLevelStmts)
         {
-            var moduleDecl = new ModuleDeclSymbol(moduleName, default, default, default);
-            var stmtBodies = Arr(new StmtBody(new DeclSymbolPath(null, Name.TopLevel), topLevelStmts));
-            return new Script(moduleDecl, stmtBodies);
+            // TopLevel정의를 추가시켜야 한다
+            throw new NotImplementedException();
+
+            //var moduleDecl = new ModuleDeclSymbol(moduleName, default, default, default);
+            //var stmtBodies = Arr(new StmtBody(new DeclSymbolPath(null, Name.TopLevel), topLevelStmts));
+            //return new Script(moduleDecl, stmtBodies);
         }
 
         #endregion
@@ -174,7 +177,12 @@ namespace Citron.IR0
             return new ExpStmt(new CallGlobalFuncExp(globalFunc, args.ToImmutableArray()));
         }
 
-        public ExpStmt Call(LambdaFSymbol lambda, Loc loc, params Argument[] args)
+        public ExpStmt Call(ClassMemberFuncSymbol classMemberFunc, Loc? instance, params Argument[] args)
+        {
+            return new ExpStmt(new CallClassMemberFuncExp(classMemberFunc, instance, args.ToImmutableArray()));
+        }
+
+        public ExpStmt Call(LambdaSymbol lambda, Loc loc, params Argument[] args)
         {
             return new ExpStmt(new CallValueExp(lambda, loc, args.ToImmutableArray()));
         }
@@ -288,19 +296,19 @@ namespace Citron.IR0
         #endregion
 
         #region TaskStmt
-        public TaskStmt Task(LambdaFSymbol lambda, ImmutableArray<Stmt> body)
+        public TaskStmt Task(LambdaSymbol lambda, ImmutableArray<Stmt> body)
         {
             return new TaskStmt(lambda, default, body);
         }
 
-        public TaskStmt Task(LambdaFSymbol lambda, ImmutableArray<Argument> args, ImmutableArray<Stmt> body)
+        public TaskStmt Task(LambdaSymbol lambda, ImmutableArray<Argument> args, ImmutableArray<Stmt> body)
         {
             return new TaskStmt(lambda, args, body);
         }
         #endregion
 
         #region AsyncStmt
-        public AsyncStmt Async(LambdaFSymbol lambda, ImmutableArray<Argument> args, ImmutableArray<Stmt> body)
+        public AsyncStmt Async(LambdaSymbol lambda, ImmutableArray<Argument> args, ImmutableArray<Stmt> body)
         {
             return new AsyncStmt(lambda, args, body);
         }
@@ -359,7 +367,7 @@ namespace Citron.IR0
             return new LoadExp(loc, typeSymbol);
         }
 
-        public LoadExp LoadLambdaMember(LambdaMemberVarFSymbol memberVar)
+        public LoadExp LoadLambdaMember(LambdaMemberVarSymbol memberVar)
         {
             return new LoadExp(new LambdaMemberVarLoc(memberVar), memberVar.GetDeclType());
         }
@@ -398,6 +406,22 @@ namespace Citron.IR0
         {
             return elems.Select(e => new FuncParameter(FuncParameterKind.Default, e.Type, new Name.Normal(e.Name))).ToImmutableArray();
         }
+
+        public IHolder<ImmutableArray<FuncParameter>> FuncParamHolder()
+        {
+            return new Holder<ImmutableArray<FuncParameter>>(default);
+        }
+
+        public IHolder<ImmutableArray<FuncParameter>> FuncParamHolder(params (ITypeSymbol Type, string Name)[] elems)
+        {
+            return new Holder<ImmutableArray<FuncParameter>>(elems.Select(e => new FuncParameter(FuncParameterKind.Default, e.Type, new Name.Normal(e.Name))).ToImmutableArray());
+        }
+
+        public IHolder<ImmutableArray<FuncParameter>> FuncParamHolder(params FuncParameter[] funcParams)
+        {
+            return new Holder<ImmutableArray<FuncParameter>>(funcParams.ToImmutableArray());
+        }
+
 
         public ImmutableArray<Argument> Args(params Exp[] exps)
         {
@@ -439,6 +463,11 @@ namespace Citron.IR0
             return new FuncParameter(FuncParameterKind.Ref, type, new Name.Normal(name));
         }
 
+        public IHolder<FuncReturn> FuncRetHolder(ITypeSymbol type)
+        {
+            return new Holder<FuncReturn>(new FuncReturn(false, type));
+        }
+
         public FuncReturn FuncRet(ITypeSymbol type)
         {
             return new FuncReturn(false, type);
@@ -454,15 +483,24 @@ namespace Citron.IR0
             return new Argument.Normal(exp);
         }
 
-        public IHolder<T> Holder<T>(T t)
+        public LambdaExp Lambda(LambdaSymbol lambda, params Argument[] args)
         {
-            return new Holder<T>(t);
+            return new LambdaExp(lambda, args.ToImmutableArray());
         }
 
+        public ListExp List(ListSymbol listType, params Exp[] exps)
+        {
+            return new ListExp(exps.ToImmutableArray(), listType);
+        }
+
+        public ListIndexerLoc ListIndexer(LocalVarLoc list, Exp index)
+        {
+            return new ListIndexerLoc(list, index);
+        }
 
         #endregion
 
-        
+
     }
 
     public static class IR0Extensions

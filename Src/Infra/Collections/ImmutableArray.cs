@@ -164,6 +164,9 @@ namespace Citron.Collections
 
         public ImmutableArray<T> AddRange(ImmutableArray<T> items)
         {
+            if (items.array.IsDefault)
+                return default;
+
             if (array.IsDefault)
                 return new ImmutableArray<T>(System.Collections.Immutable.ImmutableArray<T>.Empty.AddRange(items.array));
 

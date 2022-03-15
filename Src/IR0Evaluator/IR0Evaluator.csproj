@@ -15,7 +15,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Analysis.SymbolLoader\Analysis.SymbolLoader.csproj" />
     <ProjectReference Include="..\Evaluator\Evaluator.csproj" />
-    <ProjectReference Include="..\Analysis.ModuleInfo\Analysis.ModuleInfo.csproj" />
+    <ProjectReference Include="..\Analysis.Symbol\Analysis.Symbol.csproj" />
     <ProjectReference Include="..\Infra\Infra.csproj" />
     <ProjectReference Include="..\IR0\IR0.csproj" />
     <ProjectReference Include="..\ModuleInfo\ModuleInfo.csproj" />

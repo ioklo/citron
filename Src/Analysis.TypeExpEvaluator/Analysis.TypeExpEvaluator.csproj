@@ -9,7 +9,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Analysis.ModuleInfo\Analysis.ModuleInfo.csproj" />
+    <ProjectReference Include="..\Analysis.Symbol\Analysis.Symbol.csproj" />
     <ProjectReference Include="..\Infra\Infra.csproj" />
     <ProjectReference Include="..\Log\Log.csproj" />
     <ProjectReference Include="..\ModuleInfo\ModuleInfo.csproj" />

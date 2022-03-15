@@ -16,7 +16,7 @@ namespace Citron.IR0Translator
             LocalVarInfo? GetLocalVarOutsideLambda(string varName);
             FuncReturn? GetReturn(); // no return일 경우 null
             void SetRetType(ITypeSymbol retTypeValue);
-            LambdaMemberVarFSymbol AddLambdaCapture(string capturedVarName, ITypeSymbol capturedVarType);
+            LambdaMemberVarSymbol AddLambdaCapture(string capturedVarName, ITypeSymbol capturedVarType);
             bool IsSeqFunc();
 
             void AddCallableMemberDecl(R.CallableMemberDecl lambdaDecl);
@@ -24,7 +24,7 @@ namespace Citron.IR0Translator
 
             M.Name.Anonymous NewAnonymousName();
             IFuncSymbol GetThisNode();
-            void AddLambdaDecl(LambdaFDeclSymbol lambdaDecl);
+            void AddLambdaDecl(LambdaDeclSymbol lambdaDecl);
         }
 
         struct AnonymousIdComponent

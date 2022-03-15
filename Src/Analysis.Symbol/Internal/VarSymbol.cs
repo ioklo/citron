@@ -27,9 +27,9 @@ namespace Citron.Analysis
             return null;
         }
 
-        public ImmutableArray<ITypeSymbol> GetTypeArgs()
+        public ITypeSymbol GetTypeArg(int index)
         {
-            throw new UnreachableCodeException();
+            throw new RuntimeFatalException();
         }
 
         public TypeEnv GetTypeEnv()

@@ -9,9 +9,9 @@ using M = Citron.CompileTime;
 namespace Citron.Analysis
 {
     [AutoConstructor]
-    public partial class LambdaMemberVarFDeclSymbol : IFDeclSymbolNode
+    public partial class LambdaMemberVarDeclSymbol : IDeclSymbolNode
     {
-        IHolder<LambdaFDeclSymbol> outerHolder;
+        IHolder<LambdaDeclSymbol> outerHolder;
         ITypeSymbol type;
         M.Name name;
 
@@ -30,9 +30,9 @@ namespace Citron.Analysis
             return new DeclSymbolNodeName(name, 0, default);
         }
 
-        public FDeclSymbolOuter GetOuterDeclNode()
+        public IDeclSymbolNode? GetOuterDeclNode()
         {
-            return new FDeclSymbolOuter.FDecl(outerHolder.GetValue());
+            return outerHolder.GetValue();
         }
 
         public ITypeSymbol GetDeclType()
@@ -43,6 +43,11 @@ namespace Citron.Analysis
         public M.AccessModifier GetAccessModifier()
         {
             return M.AccessModifier.Private; // 
+        }
+
+        public void Apply(IDeclSymbolNodeVisitor visitor)
+        {
+            visitor.VisitLambdaMemberVar(this);
         }
     }
 }

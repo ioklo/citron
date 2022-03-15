@@ -2,6 +2,7 @@
 using Citron.Collections;
 using M = Citron.CompileTime;
 using Pretune;
+using Citron.Infra;
 
 namespace Citron.Analysis
 {
@@ -41,9 +42,9 @@ namespace Citron.Analysis
             return null;
         }
 
-        public ImmutableArray<ITypeSymbol> GetTypeArgs()
+        public ITypeSymbol GetTypeArg(int index)
         {
-            return default;
+            throw new RuntimeFatalException();
         }
 
         public TypeEnv GetTypeEnv()

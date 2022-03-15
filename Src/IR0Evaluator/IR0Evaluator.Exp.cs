@@ -181,6 +181,43 @@ namespace Citron
             return argsBuilder.ToImmutable();
         }
 
+        // Value에 넣어야 한다, 묶는 방법도 설명해야 한다
+        // values: params까지 포함한 분절단위
+        async ValueTask EvalArgumentsAsync(EnumElemValue elemValue, ImmutableArray<R.Argument> args)
+        {
+            // argument들을 순서대로 할당한다
+            int argValueIndex = 0;
+            foreach (var arg in args)                
+            {
+                switch (arg)
+                {
+                    case R.Argument.Normal normalArg:
+                        await EvalExpAsync(normalArg.Exp, elemValue.GetMemberValue(argValueIndex));
+                        argValueIndex++;
+                        break;
+
+                    // params가 들어있다면
+                    case R.Argument.Params paramsArg:
+                        // CitronVM단계에서는 시퀀셜하게 메모리를 던져줄 것이지만, C# 버전에서는 그렇게 못하므로
+                        // ArgValues들을 가리키는 TupleValue를 임의로 생성하고 값을 저장하도록 한다
+                        var builder = ImmutableArray.CreateBuilder<Value>(paramsArg.ElemCount - argValueIndex);
+                        for (int i = argValueIndex; i < paramsArg.ElemCount; i++)
+                            builder.Add(elemValue.GetMemberValue(i));
+                        var tupleElems = builder.MoveToImmutable();
+
+                        var tupleValue = new TupleValue(tupleElems);
+                        await EvalExpAsync(paramsArg.Exp, tupleValue);
+                        argValueIndex += paramsArg.ElemCount;
+                        break;
+
+                    case R.Argument.Ref refArg:
+                        throw new NotImplementedException();
+                        // argValueIndex++;
+
+                }
+            }
+        }
+
         // runtime typeContext |- EvalGlobalCallFuncExp(CallFuncExp(X<int>.Y<T>.Func<int>, 
         async ValueTask EvalCallGlobalFuncExpAsync(R.CallGlobalFuncExp exp, Value result)
         {
@@ -265,20 +302,15 @@ namespace Citron
 
             var newContext = evalContext.NewLambdaContext(lambdaValue, result);
             var newLocalContext = new IR0LocalContext(builder.ToImmutable(), default);
-
-            var lambdaId = lambda.GetSymbolId() as ModuleSymbolId;
-            Debug.Assert(lambdaId != null);
-            Debug.Assert(lambdaId.ModuleName != globalContext.GetInternalModuleName());
-            Debug.Assert(lambdaId.Path != null);
-
-            var body = globalContext.GetBodyStmt(lambdaId.Path);
+            
+            var body = globalContext.GetBodyStmt(lambda.GetSymbolId());
 
             var evaluator = new IR0Evaluator(globalContext, newContext, newLocalContext);
-            await evaluator.EvalStmtSkipYieldAsync(body);
+            await evaluator.EvalBodySkipYieldAsync(body);
         }
 
         // TODO: StmtEvaluator에서 사용, 합쳐지면 internal 뗀다
-        internal async ValueTask EvalCaptureArgs(LambdaFSymbol lambda, LambdaValue value, ImmutableArray<R.Argument> captureArgs)
+        internal async ValueTask EvalCaptureArgs(LambdaSymbol lambda, LambdaValue value, ImmutableArray<R.Argument> captureArgs)
         {
             // 1:1로 직접 꽂아보자
             var memberVarCount = lambda.GetMemberVarCount();
@@ -443,46 +475,12 @@ namespace Citron
             result.SetSequence(sequence);
         }
 
-        // Value에 넣어야 한다, 묶는 방법도 설명해야 한다
-        // values: params까지 포함한 분절단위
-        async ValueTask EvalArgumentsAsync(ImmutableArray<Value> values, ImmutableArray<R.Argument> args)
-        {
-            // argument들을 순서대로 할당한다
-            int argValueIndex = 0;
-            foreach (var arg in args)
-            {
-                switch (arg)
-                {
-                    case R.Argument.Normal normalArg:
-                        await EvalExpAsync(normalArg.Exp, values[argValueIndex]);
-                        argValueIndex++;
-                        break;
-
-                    // params가 들어있다면
-                    case R.Argument.Params paramsArg:
-                        // GumVM단계에서는 시퀀셜하게 메모리를 던져줄 것이지만, C# 버전에서는 그렇게 못하므로
-                        // ArgValues들을 가리키는 TupleValue를 임의로 생성하고 값을 저장하도록 한다
-                        var tupleElems = ImmutableArray.Create(values, argValueIndex, paramsArg.ElemCount);
-
-                        var tupleValue = new TupleValue(tupleElems);
-                        await EvalExpAsync(paramsArg.Exp, tupleValue);
-                        argValueIndex += paramsArg.ElemCount;
-                        break;
-
-                    case R.Argument.Ref refArg:
-                        throw new NotImplementedException();
-                        // argValueIndex++;
-
-                }
-            }
-        }
-
         async ValueTask EvalNewEnumExpAsync(R.NewEnumElemExp exp, Value result_value)
         {
             var result = (EnumElemValue)result_value;
 
             // 메모리 시퀀스                
-            await EvalArgumentsAsync(result.Fields, exp.Args);
+            await EvalArgumentsAsync(result, exp.Args);
         }
 
         // 할당은 result에서 미리 하고, 여기서는 Constructor만 호출해준다

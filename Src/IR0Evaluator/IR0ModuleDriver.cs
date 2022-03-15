@@ -25,22 +25,23 @@ namespace Citron
         }
 
         // globalFuncId는 이미 Apply된 상태
-        public ValueTask ExecuteGlobalFuncAsync(SymbolPath globalFuncPath, ImmutableArray<Value> args, Value retValue)
+        public ValueTask ExecuteGlobalFuncAsync(SymbolId globalFunc, ImmutableArray<Value> args, Value retValue)
         {
             // 심볼만 얻어서는.. Body도 얻어와야 한다
-            var globalFuncSymbol = globalContext.LoadSymbol<GlobalFuncSymbol>(globalFuncPath);
-            var body = globalContext.GetBodyStmt(globalFuncPath);
+            var globalFuncSymbol = globalContext.LoadSymbol<GlobalFuncSymbol>(globalFunc);
+            var body = globalContext.GetBodyStmt(globalFunc);
 
             var builder = ImmutableDictionary.CreateBuilder<Name, Value>();
 
             for (int i = 0; i < args.Length; i++)
                 builder.Add(globalFuncSymbol.GetParameter(i).Name, args[i]);
-            
-            var evalContext = globalContext.NewEvalContext(globalFuncPath, thisValue: null, retValue);
+
+            var typeContext = TypeContext.Make(globalFunc);
+            var evalContext = globalContext.NewEvalContext(typeContext, thisValue: null, retValue);
             var localContext = new IR0LocalContext(builder.ToImmutable(), default);
 
             var evaluator = new IR0Evaluator(globalContext, evalContext, localContext);
-            return evaluator.EvalStmtSkipYieldAsync(body);
+            return evaluator.EvalBodySkipYieldAsync(body);
         }
 
         class TypeAllocator : ITypeSymbolVisitor
@@ -77,7 +78,29 @@ namespace Citron
 
             public void VisitEnum(EnumSymbol symbol)
             {
-                return new EnumValue(null, null);
+                EnumElemValue ElemAllocator(SymbolId id_symbol)
+                {
+                    var id = id_symbol as ModuleSymbolId;
+                    Debug.Assert(id != null);
+                    Debug.Assert(id.GetOuter().Equals(symbol.GetSymbolId()));
+                    Debug.Assert(id.Path != null);
+
+                    var elem = symbol.GetElement(((Name.Normal)id.Path.Name).Text);
+                    Debug.Assert(elem != null);
+
+                    var memberVarCount = elem.GetMemberVarCount();
+                    var builder = ImmutableArray.CreateBuilder<Value>(memberVarCount);
+                    for (int i = 0; i < memberVarCount; i++)
+                    {
+                        var memberVar = elem.GetMemberVar(i);
+                        var memberValue = evaluator.AllocValue(memberVar.GetDeclType().GetSymbolId());
+                        builder.Add(memberValue);
+                    }
+
+                    return new EnumElemValue(builder.MoveToImmutable());
+                }
+
+                result = new EnumValue(ElemAllocator, null);
             }
 
             public void VisitEnumElem(EnumElemSymbol symbol)
@@ -100,11 +123,6 @@ namespace Citron
                 throw new NotImplementedException();
             }
 
-            public void VisitLambda(LambdaFSymbol symbol)
-            {
-                throw new NotImplementedException();
-            }
-
             // 최상위 타입들은 여기서 allocation하지 않는다.
             public void VisitNullable(NullableSymbol symbol)
             {
@@ -120,25 +138,33 @@ namespace Citron
             {
                 throw new UnreachableCodeException();
             }
+
+            public void VisitLambda(LambdaSymbol lambdaSymbol)
+            {
+                throw new NotImplementedException();
+            }
         }
 
-        public static IModuleDriver Make(ModuleDriverInitializationContext initContext, Evaluator evaluator, IR0GlobalContext globalContext)
+        // 단일 IR0 모듈 
+        public static void Init(ModuleDriverContext driverContext, Evaluator evaluator, IR0GlobalContext globalContext, Name moduleName)
         {
-            throw new NotImplementedException();
+            var driver = new IR0ModuleDriver(evaluator, globalContext);
+            driverContext.AddDriver(driver);
+            driverContext.AddModule(moduleName, driver);
         }
 
-        public Value AllocValue(SymbolPath typePath)
+        public Value AllocValue(SymbolId typeId)
         {            
-            var typeSymbol = globalContext.LoadSymbol<ITypeSymbol>(typePath);
+            var typeSymbol = globalContext.LoadSymbol<ITypeSymbol>(typeId);
 
             var allocator = new TypeAllocator(evaluator);
             typeSymbol.Apply(allocator);
             return allocator.result;
         }
 
-        public void InitializeClassInstance(SymbolPath path, ImmutableArray<Value>.Builder builder)
+        public void InitializeClassInstance(SymbolId classId, ImmutableArray<Value>.Builder builder)
         {
-            var classSymbol = globalContext.LoadSymbol<ClassSymbol>(path);
+            var classSymbol = globalContext.LoadSymbol<ClassSymbol>(classId);
 
             // base 
             var baseClass = classSymbol.GetBaseClass();
@@ -157,9 +183,9 @@ namespace Citron
             }
         }
 
-        public int GetTotalClassMemberVarCount(SymbolPath classPath)
+        public int GetTotalClassMemberVarCount(SymbolId classId)
         {
-            var classSymbol = globalContext.LoadSymbol<ClassSymbol>(classPath);
+            var classSymbol = globalContext.LoadSymbol<ClassSymbol>(classId);
             Debug.Assert(classSymbol != null);
 
             // base 
@@ -171,9 +197,9 @@ namespace Citron
             return baseCount + classSymbol.GetMemberVarCount();
         }
 
-        public int GetClassMemberVarIndex(SymbolPath memberVarPath)
+        public int GetClassMemberVarIndex(SymbolId memberVarId)
         {
-            var memberVar = globalContext.LoadSymbol<ClassMemberVarSymbol>(memberVarPath);
+            var memberVar = globalContext.LoadSymbol<ClassMemberVarSymbol>(memberVarId);
             Debug.Assert(memberVar != null);
 
             var @class = memberVar.GetOuter();
@@ -195,20 +221,37 @@ namespace Citron
             throw new RuntimeFatalException();
         }
 
-        Value IModuleDriver.Alloc(SymbolPath typePath)
+        Value IModuleDriver.Alloc(SymbolId id)
         {
             throw new NotImplementedException();
         }
 
-        ValueTask IModuleDriver.ExecuteGlobalFuncAsync(SymbolPath globalFuncPath, ImmutableArray<Value> args, Value retValue)
+        ValueTask IModuleDriver.ExecuteGlobalFuncAsync(SymbolId globalFuncId, ImmutableArray<Value> args, Value retValue)
         {
-            throw new NotImplementedException();
+            var typeContext = TypeContext.Make(globalFuncId);
+            var evalContext = globalContext.NewEvalContext(typeContext, null, retValue);
+            var globalFunc = globalContext.LoadSymbol<GlobalFuncSymbol>(globalFuncId);
+
+            var paramCount = globalFunc.GetParameterCount();
+            Debug.Assert(paramCount == args.Length);
+
+            var builder = ImmutableDictionary.CreateBuilder<Name, Value>();
+            for (int i = 0; i < paramCount; i++)
+                builder.Add(globalFunc.GetParameter(i).Name, args[i]);
+
+            var localContext = new IR0LocalContext(builder.ToImmutable(), default);
+            var body = globalContext.GetBodyStmt(globalFuncId);
+
+            var evaluator = new IR0Evaluator(globalContext, evalContext, localContext);
+            return evaluator.EvalBodySkipYieldAsync(body);
         }
 
-        ValueTask IModuleDriver.ExecuteClassConstructor(SymbolPath constructorPath, ClassValue thisValue, ImmutableArray<Value> args)
+        ValueTask IModuleDriver.ExecuteClassConstructor(SymbolId constructor, ClassValue thisValue, ImmutableArray<Value> args)
         {
-            var evalContext = globalContext.NewEvalContext(constructorPath, thisValue, VoidValue.Instance);
-            var constructorSymbol = globalContext.LoadSymbol<ClassConstructorSymbol>(constructorPath);
+            var typeContext = TypeContext.Make(constructor);
+
+            var evalContext = globalContext.NewEvalContext(typeContext, thisValue, VoidValue.Instance);
+            var constructorSymbol = globalContext.LoadSymbol<ClassConstructorSymbol>(constructor);
 
             var paramCount = constructorSymbol.GetParameterCount();
             Debug.Assert(paramCount == args.Length);
@@ -218,44 +261,49 @@ namespace Citron
                 builder.Add(constructorSymbol.GetParameter(i).Name, args[i]);
 
             var localContext = new IR0LocalContext(builder.ToImmutable(), default);
-            var body = globalContext.GetBodyStmt(constructorPath);
+            var body = globalContext.GetBodyStmt(constructor);
 
             var evaluator = new IR0Evaluator(globalContext, evalContext, localContext);
-            return evaluator.EvalStmtSkipYieldAsync(body);
+            return evaluator.EvalBodySkipYieldAsync(body);
         }
 
-        ValueTask IModuleDriver.ExecuteClassMemberFuncAsync(SymbolPath memberFuncPath, Value? thisValue, ImmutableArray<Value> args, Value retValue)
+        ValueTask IModuleDriver.ExecuteClassMemberFuncAsync(SymbolId memberFunc, Value? thisValue, ImmutableArray<Value> args, Value retValue)
         {
             throw new NotImplementedException();
         }
 
-        ValueTask IModuleDriver.ExecuteStructMemberFuncAsync(SymbolPath memberFuncPath, Value? thisValue, ImmutableArray<Value> args, Value retValue)
+        ValueTask IModuleDriver.ExecuteStructMemberFuncAsync(SymbolId memberFunc, Value? thisValue, ImmutableArray<Value> args, Value retValue)
         {
             throw new NotImplementedException();
         }
 
-        ValueTask IModuleDriver.ExecuteStructConstructor(SymbolPath constructorPath, StructValue thisValue, ImmutableArray<Value> args)
+        ValueTask IModuleDriver.ExecuteStructConstructor(SymbolId constructor, StructValue thisValue, ImmutableArray<Value> args)
         {
             throw new NotImplementedException();
         }
 
-        SymbolId? IModuleDriver.GetBaseClass(SymbolPath classPath)
+        SymbolId? IModuleDriver.GetBaseClass(SymbolId baseClass)
         {
-            var @class = globalContext.LoadSymbol<ClassSymbol>(classPath);
+            var @class = globalContext.LoadSymbol<ClassSymbol>(baseClass);
             return @class.GetBaseClass()?.GetSymbolId();
         }
 
-        int IModuleDriver.GetStructMemberVarIndex(SymbolPath memberPath)
+        int IModuleDriver.GetStructMemberVarIndex(SymbolId memberVar)
         {
             throw new NotImplementedException();
         }
 
-        public Value GetClassStaticMemberValue(SymbolPath path)
+        Value IModuleDriver.GetClassStaticMemberValue(SymbolId memberVarId)
         {
             throw new NotImplementedException();
         }
 
-        public Value GetStructStaticMemberValue(SymbolPath path)
+        Value IModuleDriver.GetStructStaticMemberValue(SymbolId memberVarId)
+        {
+            throw new NotImplementedException();
+        }
+
+        int IModuleDriver.GetEnumElemMemberVarIndex(SymbolId memberVarId)
         {
             throw new NotImplementedException();
         }

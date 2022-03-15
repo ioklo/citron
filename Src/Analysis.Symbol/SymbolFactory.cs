@@ -15,15 +15,41 @@ namespace Citron.Analysis
         // Decl류는 한개만 존재하고, Class (instance)류는 매번 생성한다.
         // instance류는 속성 변경을 허용하지 않는다(되더라도 지역적으로만 전파되기 때문에 의미없다)
 
+        // for runtime
+        RuntimeModuleDeclSymbol runtimeModule;
+        SystemNamespaceSymbol systemNamespace;
+        IntDeclSymbol intDecl;
+
+        public SymbolFactory()
+        {
+
+        }
+
+        #region Global
+
         public ModuleSymbol MakeModule(ModuleDeclSymbol decl)
         {
             return new ModuleSymbol(this, decl);
         }
 
-        public VoidSymbol MakeVoid()
+        public NamespaceSymbol MakeNamespace(ITopLevelSymbolNode outer, NamespaceDeclSymbol decl)
         {
-            return new VoidSymbol();
+            Debug.Assert(outer.GetDeclSymbolNode() == decl.GetOuterDeclNode());
+
+            return new NamespaceSymbol(this, outer, decl);
         }
+
+        public GlobalFuncSymbol MakeGlobalFunc(ITopLevelSymbolNode outer, GlobalFuncDeclSymbol decl, ImmutableArray<ITypeSymbol> typeArgs)
+        {
+            Debug.Assert(outer.GetDeclSymbolNode() == decl.GetOuterDeclNode());
+            Debug.Assert(decl.GetTypeParamCount() == typeArgs.Length);
+
+            return new GlobalFuncSymbol(this, outer, decl, typeArgs);
+        }
+
+        #endregion
+
+        #region Class
 
         public ClassSymbol MakeClass(ISymbolNode outer, ClassDeclSymbol decl, ImmutableArray<ITypeSymbol> typeArgs)
         {
@@ -33,41 +59,13 @@ namespace Citron.Analysis
             return new ClassSymbol(this, outer, decl, typeArgs);
         }
 
-        public TupleMemberVarSymbol MakeTupleMemberVar(IHolder<TupleSymbol> outerHolder, ITypeSymbol declType, string? name, int index)
-        {
-            return new TupleMemberVarSymbol(this, outerHolder, declType, name, index);
-        }
-
         public ClassConstructorSymbol MakeClassConstructor(ClassSymbol @class, ClassConstructorDeclSymbol decl)
         {
             Debug.Assert(@class.GetDeclSymbolNode() == decl.GetOuterDeclNode());
             return new ClassConstructorSymbol(this, @class, decl);
         }
 
-        public TupleSymbol MakeTuple(ImmutableArray<TupleMemberVarSymbol> memberVars)
-        {
-            return new TupleSymbol(this, memberVars);
-        }
-
-        public NullableSymbol MakeNullable(ITypeSymbol innerType)
-        {
-            return new NullableSymbol(this, innerType);
-        }
-
-        public InterfaceSymbol MakeInterface(ISymbolNode outer, InterfaceDeclSymbol decl, ImmutableArray<ITypeSymbol> typeArgs)
-        {
-            Debug.Assert(outer.GetDeclSymbolNode() == decl.GetOuterDeclNode());
-            Debug.Assert(decl.GetTypeParamCount() == typeArgs.Length);
-
-            return new InterfaceSymbol(this, outer, decl, typeArgs);
-        }
-
-        public VarSymbol MakeVar()
-        {
-            return new VarSymbol();
-        }
-
-        internal ClassMemberVarSymbol MakeClassMemberVar(ClassSymbol @class, ClassMemberVarDeclSymbol decl)
+        public ClassMemberVarSymbol MakeClassMemberVar(ClassSymbol @class, ClassMemberVarDeclSymbol decl)
         {
             Debug.Assert(@class.GetDeclSymbolNode() == decl.GetOuterDeclNode());
             return new ClassMemberVarSymbol(this, @class, decl);
@@ -81,6 +79,34 @@ namespace Citron.Analysis
             return new ClassMemberFuncSymbol(this, outer, decl, typeArgs);
         }
 
+        #endregion
+
+        #region Tuple
+        public TupleSymbol MakeTuple(ImmutableArray<TupleMemberVarSymbol> memberVars)
+        {
+            return new TupleSymbol(this, memberVars);
+        }
+
+        public TupleMemberVarSymbol MakeTupleMemberVar(IHolder<TupleSymbol> outerHolder, ITypeSymbol declType, string? name, int index)
+        {
+            return new TupleMemberVarSymbol(this, outerHolder, declType, name, index);
+        }
+        #endregion
+
+        #region Interface
+
+        public InterfaceSymbol MakeInterface(ISymbolNode outer, InterfaceDeclSymbol decl, ImmutableArray<ITypeSymbol> typeArgs)
+        {
+            Debug.Assert(outer.GetDeclSymbolNode() == decl.GetOuterDeclNode());
+            Debug.Assert(decl.GetTypeParamCount() == typeArgs.Length);
+
+            return new InterfaceSymbol(this, outer, decl, typeArgs);
+        }
+
+        #endregion
+
+        #region Struct
+
         public StructSymbol MakeStruct(ISymbolNode outer, StructDeclSymbol decl, ImmutableArray<ITypeSymbol> typeArgs)
         {
             Debug.Assert(outer.GetDeclSymbolNode() == decl.GetOuterDeclNode());
@@ -88,28 +114,12 @@ namespace Citron.Analysis
 
             return new StructSymbol(this, outer, decl, typeArgs);
         }
-        
+
         public StructConstructorSymbol MakeStructConstructor(StructSymbol @struct, StructConstructorDeclSymbol decl)
         {
             Debug.Assert(@struct.GetDeclSymbolNode() == decl.GetOuterDeclNode());
 
             return new StructConstructorSymbol(this, @struct, decl);
-        }
-
-        public EnumSymbol MakeEnum(ISymbolNode outer, EnumDeclSymbol decl, ImmutableArray<ITypeSymbol> typeArgs)
-        {
-            Debug.Assert(outer.GetDeclSymbolNode() == decl.GetOuterDeclNode());
-            Debug.Assert(decl.GetTypeParamCount() == typeArgs.Length);
-
-            return new EnumSymbol(this, outer, decl, typeArgs);
-        }
-
-        public GlobalFuncSymbol MakeGlobalFunc(ITopLevelSymbolNode outer, GlobalFuncDeclSymbol decl, ImmutableArray<ITypeSymbol> typeArgs)
-        {
-            Debug.Assert(outer.GetDeclSymbolNode() == decl.GetOuterDeclNode());
-            Debug.Assert(decl.GetTypeParamCount() == typeArgs.Length);
-
-            return new GlobalFuncSymbol(this, outer, decl, typeArgs);
         }
 
         public StructMemberFuncSymbol MakeStructMemberFunc(StructSymbol @struct, StructMemberFuncDeclSymbol decl, ImmutableArray<ITypeSymbol> typeArgs)
@@ -120,11 +130,22 @@ namespace Citron.Analysis
             return new StructMemberFuncSymbol(this, @struct, decl, typeArgs);
         }
 
-        public NamespaceSymbol MakeNamespace(ITopLevelSymbolNode outer, NamespaceDeclSymbol decl)
+        public StructMemberVarSymbol MakeStructMemberVar(StructSymbol @struct, StructMemberVarDeclSymbol decl)
+        {
+            Debug.Assert(@struct.GetDeclSymbolNode() == decl.GetOuterDeclNode());
+            return new StructMemberVarSymbol(this, @struct, decl);
+        }
+
+        #endregion
+
+        #region Enum
+
+        public EnumSymbol MakeEnum(ISymbolNode outer, EnumDeclSymbol decl, ImmutableArray<ITypeSymbol> typeArgs)
         {
             Debug.Assert(outer.GetDeclSymbolNode() == decl.GetOuterDeclNode());
-            
-            return new NamespaceSymbol(this, outer, decl);
+            Debug.Assert(decl.GetTypeParamCount() == typeArgs.Length);
+
+            return new EnumSymbol(this, outer, decl, typeArgs);
         }
 
         public EnumElemSymbol MakeEnumElem(EnumSymbol @enum, EnumElemDeclSymbol decl)
@@ -140,11 +161,39 @@ namespace Citron.Analysis
             return new EnumElemMemberVarSymbol(this, enumElem, decl);
         }
 
-        public StructMemberVarSymbol MakeStructMemberVar(StructSymbol @struct, StructMemberVarDeclSymbol decl)
+        #endregion
+
+        #region Lambda
+
+        public LambdaSymbol MakeLambda(ISymbolNode outer, LambdaDeclSymbol decl)
         {
-            Debug.Assert(@struct.GetDeclSymbolNode() == decl.GetOuterDeclNode());
-            return new StructMemberVarSymbol(this, @struct, decl);
+            return new LambdaSymbol(this, outer, decl);
         }
+
+        public LambdaMemberVarSymbol MakeLambdaMemberVar(LambdaSymbol outer, LambdaMemberVarDeclSymbol decl)
+        {
+            return new LambdaMemberVarSymbol(this, outer, decl);
+        }
+        #endregion
+
+        #region Special
+
+        public VarSymbol MakeVar()
+        {
+            return new VarSymbol();
+        }
+
+        public VoidSymbol MakeVoid()
+        {
+            return new VoidSymbol();
+        }
+
+        public NullableSymbol MakeNullable(ITypeSymbol innerType)
+        {
+            return new NullableSymbol(this, innerType);
+        }
+
+        #endregion
 
         #region Runtime special symbols (proxies)
         public BoolSymbol MakeBool()
@@ -154,13 +203,27 @@ namespace Citron.Analysis
 
         public IntSymbol MakeInt()
         {
-            return new IntSymbol();
+            var systemNS = MakeSystemNS();
+            var intDecl = GetIntDecl();
+
+            return new IntSymbol(systemNS, intDecl);
         }
 
         public StringSymbol MakeString()
         {
             return new StringSymbol();
         }
+
+        public ListSymbol MakeList(ITypeSymbol itemType)
+        {
+            return new ListSymbol(this, itemType);
+        }
+
+        IntDeclSymbol GetIntDecl()
+        {
+            return new IntDeclSymbol();
+        }
+
         #endregion
     }
 }

@@ -13,6 +13,7 @@ namespace Citron.Analysis
 
         M.Name name;
         ImmutableArray<string> typeParams;
+        ImmutableArray<EnumElemDeclSymbol> elems;
         ImmutableDictionary<M.Name, EnumElemDeclSymbol> elemDict;
 
         public EnumDeclSymbol(IHolder<ITypeDeclSymbolContainer> containerHolder, M.Name name, ImmutableArray<string> typeParams, ImmutableArray<EnumElemDeclSymbol> elemDecls)
@@ -20,6 +21,7 @@ namespace Citron.Analysis
             this.containerHolder = containerHolder;
             this.name = name;
             this.typeParams = typeParams;
+            this.elems = elemDecls;
 
             var builder = ImmutableDictionary.CreateBuilder<M.Name, EnumElemDeclSymbol>();
             foreach(var elemDecl in elemDecls)
@@ -76,6 +78,16 @@ namespace Citron.Analysis
         public M.AccessModifier GetAccessModifier()
         {
             return containerHolder.GetValue().GetAccessModifier();
+        }
+
+        public int GetElemCount()
+        {
+            return elems.Length;
+        }
+
+        public EnumElemDeclSymbol GetElement(int index)
+        {
+            return elems[index];
         }
     }
 }

@@ -100,7 +100,7 @@ namespace Citron.Analysis
             }
 
             // trivial constructor를 만듭니다
-            return new ClassConstructorDeclSymbol(new Holder<ClassDeclSymbol>(outer), M.AccessModifier.Public, new Holder<ImmutableArray<FuncParameter>>(builder.MoveToImmutable()), true);
+            return new ClassConstructorDeclSymbol(new Holder<ClassDeclSymbol>(outer), M.AccessModifier.Public, new Holder<ImmutableArray<FuncParameter>>(builder.MoveToImmutable()), true, default);
         }        
 
         

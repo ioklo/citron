@@ -76,9 +76,7 @@ namespace Citron
 
                 case R.EnumElemMemberLoc enumMemberLoc:
                     var enumElemValue = (EnumElemValue)await EvalLocAsync(enumMemberLoc.Instance);
-                    var enumElemFieldRuntimeItem = globalContext.GetRuntimeItem<EnumElemFieldRuntimeItem>(enumMemberLoc.EnumElemField);
-
-                    return enumElemFieldRuntimeItem.GetMemberValue(enumElemValue);
+                    return globalContext.GetEnumElemMemberValue(enumElemValue, enumMemberLoc.MemberVar.GetSymbolId());
 
                 case R.ThisLoc:
                     return evalContext.GetThisValue();

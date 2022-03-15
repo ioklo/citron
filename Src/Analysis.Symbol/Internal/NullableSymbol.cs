@@ -59,9 +59,9 @@ namespace Citron.Analysis
             return default;
         }
 
-        public ImmutableArray<ITypeSymbol> GetTypeArgs()
+        public ITypeSymbol GetTypeArg(int index)
         {
-            return default;
+            throw new NotImplementedException();
         }
     }
 }

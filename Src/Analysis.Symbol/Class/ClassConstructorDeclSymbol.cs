@@ -14,13 +14,19 @@ namespace Citron.Analysis
         M.AccessModifier accessModifier;
         IHolder<ImmutableArray<FuncParameter>> parameters;
         bool bTrivial;
+        LambdaDeclSymbolContainerComponent lambdaDeclContainerComponent;
 
-        public ClassConstructorDeclSymbol(IHolder<ClassDeclSymbol> outer, M.AccessModifier accessModifier, IHolder<ImmutableArray<FuncParameter>> parameters, bool bTrivial)
+        public void AddLambda(LambdaDeclSymbol lambdaDecl)
+            => lambdaDeclContainerComponent.AddLambda(lambdaDecl);
+
+        public ClassConstructorDeclSymbol(IHolder<ClassDeclSymbol> outer, M.AccessModifier accessModifier, IHolder<ImmutableArray<FuncParameter>> parameters, bool bTrivial, ImmutableArray<LambdaDeclSymbol> lambdaDecls)
         {
             this.outer = outer;
             this.accessModifier = accessModifier;
             this.parameters = parameters;
             this.bTrivial = bTrivial;
+
+            this.lambdaDeclContainerComponent = new LambdaDeclSymbolContainerComponent(lambdaDecls);
         }
 
         public M.AccessModifier GetAccessModifier()

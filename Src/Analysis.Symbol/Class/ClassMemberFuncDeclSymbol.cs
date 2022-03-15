@@ -16,6 +16,10 @@ namespace Citron.Analysis
         ImmutableArray<string> typeParams;
         IHolder<ImmutableArray<FuncParameter>> parameters;        
         bool bStatic;
+        LambdaDeclSymbolContainerComponent lambdaDeclContainerComponent;
+
+        public void AddLambda(LambdaDeclSymbol lambdaDecl)
+            => lambdaDeclContainerComponent.AddLambda(lambdaDecl);
 
         public ClassMemberFuncDeclSymbol(
             IHolder<ClassDeclSymbol> outer, 
@@ -24,7 +28,8 @@ namespace Citron.Analysis
             M.Name name,
             ImmutableArray<string> typeParams,
             IHolder<ImmutableArray<FuncParameter>> parameters,
-            bool bStatic)
+            bool bStatic,
+            ImmutableArray<LambdaDeclSymbol> lambdaDecls)
         {
             this.outer = outer;
             this.accessModifier = accessModifier;
@@ -33,6 +38,8 @@ namespace Citron.Analysis
             this.typeParams = typeParams;
             this.parameters = parameters;
             this.bStatic = bStatic;
+
+            this.lambdaDeclContainerComponent = new LambdaDeclSymbolContainerComponent(lambdaDecls);
         }
 
         public M.AccessModifier GetAccessModifier()

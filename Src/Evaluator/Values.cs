@@ -208,14 +208,20 @@ namespace Citron
         }
     }
 
-    // E
-    [AutoConstructor]
-    public partial class EnumValue : Value
+    // E    
+    public class EnumValue : Value
     {
         // 이 implementation에서는 EnumElem에 해당하는 모든 Value를 다 할당한다
         Func<SymbolId, EnumElemValue> elemAllocator; // lazy allocation
         SymbolId? elemId;
         Dictionary<SymbolId, EnumElemValue> elems;
+
+        public EnumValue(Func<SymbolId, EnumElemValue> elemAllocator, SymbolId? elemId)
+        {
+            this.elemAllocator = elemAllocator;
+            this.elemId = elemId;
+            this.elems = new Dictionary<SymbolId, EnumElemValue>();
+        }
 
         // E e1, e2;
         // e1 = e2;
@@ -265,13 +271,18 @@ namespace Citron
     [AutoConstructor]
     public partial class EnumElemValue : Value
     {
-        public ImmutableArray<Value> Fields { get; }
+        ImmutableArray<Value> memberValues;
 
         public override void SetValue(Value value)
         {
             var enumElemValue = (EnumElemValue)value;
-            for(int i = 0; i < Fields.Length; i++)
-                Fields[i].SetValue(enumElemValue.Fields[i]);
+            for(int i = 0; i < memberValues.Length; i++)
+                memberValues[i].SetValue(enumElemValue.memberValues[i]);
+        }
+
+        public Value GetMemberValue(int index)
+        {
+            return memberValues[index];
         }
     }
 

@@ -40,9 +40,9 @@ namespace Citron.Analysis
             return outer;
         }
 
-        public ImmutableArray<ITypeSymbol> GetTypeArgs()
+        public ITypeSymbol GetTypeArg(int index)
         {
-            return default;
+            throw new RuntimeFatalException();
         }
 
         public TypeEnv GetTypeEnv()

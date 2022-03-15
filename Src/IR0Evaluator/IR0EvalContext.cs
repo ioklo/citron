@@ -45,11 +45,6 @@ namespace Citron
             this.retValue = retValue;
         }
 
-        public Value GetStaticValue(R.Path type)
-        {
-            throw new NotImplementedException();
-        }
-
         public bool IsFlowControl(IR0EvalFlowControl testValue)
         {
             return flowControl == testValue;

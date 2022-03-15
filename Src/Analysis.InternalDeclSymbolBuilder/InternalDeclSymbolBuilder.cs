@@ -234,7 +234,7 @@ namespace Citron.Analysis
                 }
             }
 
-            var moduleDecl = new ModuleDeclSymbol(moduleName, namespaceDecls.ToImmutable(), globalTypeDecls.ToImmutable(), globalFuncDecls.ToImmutable());
+            var moduleDecl = new ModuleDeclSymbol(moduleName, namespaceDecls.ToImmutable(), globalTypeDecls.ToImmutable(), globalFuncDecls.ToImmutable(), default);
             moduleDeclHolder.SetValue(moduleDecl);
 
             // register한 것을 푼다

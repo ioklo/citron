@@ -17,8 +17,9 @@ namespace Citron
         //unsafe void* retPtr;
         //unsafe byte* curPtr; // increase 하기 위해서 byte
 
-        public EvalThread()
-        {   
+        public EvalThread(Evaluator evaluator)
+        {
+            this.evaluator = evaluator;
             //var stack = Marshal.AllocHGlobal(STACK_SIZE);
             //GC.AddMemoryPressure(STACK_SIZE);
 

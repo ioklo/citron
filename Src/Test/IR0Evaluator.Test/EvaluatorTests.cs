@@ -20,7 +20,7 @@ using Citron.Analysis;
 
 namespace Citron.Test
 {
-    public class EvaluatorTests
+    public partial class EvaluatorTests
     {
         class TestCommandProvider : IIR0CommandProvider
         {
@@ -57,7 +57,6 @@ namespace Citron.Test
 
         Name moduleName = new Name.Normal("TestModule");
         SymbolFactory factory;
-        FSymbolFactory ffactory;
         IR0Factory r;
         ITypeSymbol boolType, intType, stringType, voidType;
         
@@ -65,7 +64,6 @@ namespace Citron.Test
         {
             // [System.Runtime] System.Int32
             this.factory = new SymbolFactory();
-            this.ffactory = new FSymbolFactory();
 
             boolType = factory.MakeBool();
             intType = factory.MakeInt();
@@ -103,7 +101,11 @@ namespace Citron.Test
         // TopLevelStmt
         async Task<string> EvalAsync(ImmutableArray<Stmt> topLevelStmts)
         {
-            var script = r.Script(new ModuleDeclSymbol(moduleName, default, default, default), Arr(new StmtBody(new DeclSymbolPath(null, Name.TopLevel), topLevelStmts)));
+            var moduleDecl = new ModuleDeclBuilder(factory, moduleName).Make();
+            var script = new ScriptBuilder(moduleDecl)
+                .AddTopLevel(topLevelStmts)
+                .Make();
+            
             var (output, _) = await EvalAsyncWithRetValue(default, script);
             return output;
         }
@@ -127,29 +129,30 @@ namespace Citron.Test
         //}
 
         Task<(string Output, int RetValue)> EvalAsyncWithRetValue(
-            ImmutableArray<Func<ModuleDriverInitializationContext, IModuleDriver>> moduleDrivers, Script script)
+            ImmutableArray<Action<ModuleDriverContext>> moduleDriverInitializers, Script script)
         {
             var commandProvider = new TestCommandProvider();
-            return EvalAsyncWithRetValue(commandProvider, moduleDrivers, script);
+            return EvalAsyncWithRetValue(commandProvider, moduleDriverInitializers, script);
         }
 
-        async Task<(string Output, int RetValue)> EvalAsyncWithRetValue(TestCommandProvider commandProvider, ImmutableArray<Func<ModuleDriverInitializationContext, IModuleDriver>> moduleDrivers, Script script)
+        async Task<(string Output, int RetValue)> EvalAsyncWithRetValue(TestCommandProvider commandProvider, ImmutableArray<Action<ModuleDriverContext>> moduleDriverInitializers, Script script)
         {   
             // moduleDrivers에 추가
-            moduleDrivers = moduleDrivers.Add(initContext =>
+            moduleDriverInitializers = moduleDriverInitializers.Add(driverContext =>
             {
-                var evaluator = new Evaluator();
+                var evaluator = driverContext.GetEvaluator();
+
                 var symbolFactory = new SymbolFactory();
                 var symbolLoader = IR0Loader.Make(symbolFactory, script);
                 var globalContext = new IR0GlobalContext(evaluator, symbolLoader, moduleName, commandProvider);
 
-                return IR0ModuleDriver.Make(initContext, evaluator, globalContext);
+                IR0ModuleDriver.Init(driverContext, evaluator, globalContext, script.ModuleDeclSymbol.GetName());
             });
 
             // entry는 TopLevel
             var entry = new ModuleSymbolId(moduleName, new SymbolPath(null, Name.TopLevel));
 
-            var retValue = await Evaluator.EvalAsync(moduleDrivers, entry);
+            var retValue = await Evaluator.EvalAsync(moduleDriverInitializers, entry);
             return (commandProvider.GetOutput(), retValue);
         }
 
@@ -204,209 +207,7 @@ namespace Citron.Test
             Assert.Equal("3", output);
         }
 
-        class LambdaFDeclBuilder
-        {
-            internal delegate LambdaFDeclSymbol OnFinish(ImmutableArray<LambdaMemberVarFDeclSymbol> memberVarDecls);
-            
-            FDeclsBuilder outerBuilder;
-            OnFinish onFinish;
-
-            Holder<LambdaFDeclSymbol> lambdaDeclHolder;
-            ImmutableArray<LambdaMemberVarFDeclSymbol>.Builder builder;
-
-            internal LambdaFDeclBuilder(FDeclsBuilder outerBuilder, OnFinish onFinish)
-            {
-                this.outerBuilder = outerBuilder;
-                this.onFinish = onFinish;
-
-                this.lambdaDeclHolder = new Holder<LambdaFDeclSymbol>();
-                this.builder = ImmutableArray.CreateBuilder<LambdaMemberVarFDeclSymbol>();
-            }
-            
-            public LambdaFDeclBuilder MemberVar(ITypeSymbol declType, string name, out LambdaMemberVarFDeclSymbol memberVarDecl)
-            {
-                memberVarDecl = new LambdaMemberVarFDeclSymbol(lambdaDeclHolder, declType, new Name.Normal(name));
-                builder.Add(memberVarDecl);
-                return this;
-            }
-            
-            public FDeclsBuilder EndLambda(out LambdaFDeclSymbol lambdaDecl)
-            {
-                lambdaDecl = onFinish.Invoke(builder.ToImmutable());
-                lambdaDeclHolder.SetValue(lambdaDecl);
-                return outerBuilder;
-            }
-        }
-
-        class FDeclsBuilder
-        {
-            SymbolFactory factory; // for making void 
-            int anonymousCount;
-            ImmutableArray<IFDeclSymbolNode>.Builder builder;
-
-            public FDeclsBuilder(SymbolFactory factory)
-            {
-                this.factory = factory;
-                this.anonymousCount = 0;
-                this.builder = ImmutableArray.CreateBuilder<IFDeclSymbolNode>();
-            }
-
-            public LambdaFDeclBuilder BeginLambda(IDeclSymbolNode outer)
-            {
-                var fouter = new Holder<FDeclSymbolOuter>(new FDeclSymbolOuter.Decl(outer));
-
-                int curCount = anonymousCount; // holder, 지우지 말 것
-                var lambdaDeclBuilder = new LambdaFDeclBuilder(this, memberVarDecls =>
-                {
-                    var lambdaDecl = new LambdaFDeclSymbol(fouter, new Name.Anonymous(curCount),
-                        new FuncReturn(false, factory.MakeVoid()), default, memberVarDecls);
-
-                    builder.Add(lambdaDecl);
-                    return lambdaDecl;
-                });
-
-                anonymousCount++;
-                return lambdaDeclBuilder;
-            }
-            
-            public LambdaFDeclBuilder BeginLambda(IDeclSymbolNode outer, FuncReturn funcRet, ImmutableArray<FuncParameter> funcParams)
-            {
-                int curCount = anonymousCount; // holder, 지우지 말 것
-                var fouterHolder = new Holder<FDeclSymbolOuter>(new FDeclSymbolOuter.Decl(outer));
-
-                var lambdaDeclBuilder = new LambdaFDeclBuilder(this, memberVarDecls =>
-                {
-                    var lambdaDecl = new LambdaFDeclSymbol(fouterHolder, new Name.Anonymous(curCount), funcRet, funcParams, memberVarDecls);
-                    builder.Add(lambdaDecl);
-                    return lambdaDecl;
-                });
-
-                anonymousCount++;
-                return lambdaDeclBuilder;
-            }
-
-            public FDeclsBuilder Lambda(IDeclSymbolNode outer, out LambdaFDeclSymbol lambdaDecl)
-            {
-                lambdaDecl = new LambdaFDeclSymbol(
-                    new Holder<FDeclSymbolOuter>(new FDeclSymbolOuter.Decl(outer)), new Name.Anonymous(anonymousCount),
-                    new FuncReturn(false, factory.MakeVoid()), parameters: default, memberVars: default);
-                builder.Add(lambdaDecl);
-
-                anonymousCount++;
-                return this;
-            }
-
-            // 뭘 리턴해야 하나
-            public ImmutableArray<IFDeclSymbolNode> Make()
-            {
-                return builder.ToImmutable();
-            }
-        }
-
-        class ModuleDeclBuilder
-        {
-            SymbolFactory factory;
-            Name moduleName;
-            Holder<ModuleDeclSymbol> moduleDeclHolder;
-            ImmutableArray<GlobalFuncDeclSymbol>.Builder globalFuncDeclsBuilder;
-            ImmutableArray<LambdaFDeclSymbol>.Builder lambdaDeclsBuilder;
-            int anonymousCount; 
-
-            public ModuleDeclBuilder(SymbolFactory factory, Name moduleName)
-            {
-                this.factory = factory;
-                this.moduleName = moduleName;
-                this.moduleDeclHolder = new Holder<ModuleDeclSymbol>();
-                this.globalFuncDeclsBuilder = ImmutableArray.CreateBuilder<GlobalFuncDeclSymbol>();
-                this.anonymousCount = 0;
-            }
-
-            public ModuleDeclBuilder GlobalFunc(string funcName, out GlobalFuncDeclSymbol globalFuncDecl)
-            {
-                globalFuncDecl = new GlobalFuncDeclSymbol(
-                    moduleDeclHolder, AccessModifier.Public,
-                    new Holder<FuncReturn>(new FuncReturn(false, factory.MakeVoid())), new Name.Normal(funcName), default,
-                    new Holder<ImmutableArray<FuncParameter>>(default),
-                    bInternal: true
-                );
-
-                globalFuncDeclsBuilder.Add(globalFuncDecl);
-                return this;
-            }
-            
-
-            // void, 인자 1개짜리
-            public ModuleDeclBuilder GlobalFunc(string funcName, FuncParameter funcParameter, out GlobalFuncDeclSymbol globalFuncDecl)
-            {
-                globalFuncDecl = new GlobalFuncDeclSymbol(
-                    moduleDeclHolder, AccessModifier.Public,
-                    new Holder<FuncReturn>(new FuncReturn(false, factory.MakeVoid())), new Name.Normal(funcName), default,
-
-                    new Holder<ImmutableArray<FuncParameter>>(Arr<FuncParameter>(funcParameter)),
-                    bInternal: true
-                );
-
-                globalFuncDeclsBuilder.Add(globalFuncDecl);
-                return this;
-            }
-
-            // 
-            public ModuleDeclBuilder GlobalFunc(IHolder<FuncReturn> funcReturnHolder, string funcName, 
-                IHolder<ImmutableArray<FuncParameter>> funcParametersHolder, out GlobalFuncDeclSymbol globalFuncDecl)
-            {
-                globalFuncDecl = new GlobalFuncDeclSymbol(
-                    moduleDeclHolder, AccessModifier.Public,
-                    funcReturnHolder, new Name.Normal(funcName), default,
-                    funcParametersHolder,
-                    bInternal: true
-                );
-
-                globalFuncDeclsBuilder.Add(globalFuncDecl);
-                return this;
-            }            
-
-            public ModuleDeclSymbol Make()
-            {
-                var moduleDecl = new ModuleDeclSymbol(moduleName, default, default, globalFuncDeclsBuilder.ToImmutable());
-                moduleDeclHolder.SetValue(moduleDecl);
-
-                return moduleDecl;
-            }
-        }
-
-        class ScriptBuilder
-        {
-            ModuleDeclSymbol moduleDecl;
-            ImmutableArray<StmtBody>.Builder stmtBodiesBuilder;
-
-            public ScriptBuilder(ModuleDeclSymbol moduleDecl)
-            {
-                this.moduleDecl = moduleDecl;
-                this.stmtBodiesBuilder = ImmutableArray.CreateBuilder<StmtBody>();
-            }
-
-            public ScriptBuilder Add(IFuncDeclSymbol funcDecl, params Stmt[] bodyStmts)
-            {
-                var declSymbolId = funcDecl.GetDeclSymbolId();
-                Debug.Assert(declSymbolId.ModuleName.Equals(moduleDecl.GetName()));
-                Debug.Assert(declSymbolId.Path != null);
-                stmtBodiesBuilder.Add(new StmtBody(declSymbolId.Path, bodyStmts.ToImmutableArray()));
-
-                return this;
-            }
-
-            public ScriptBuilder AddTopLevel(params Stmt[] topLevelStmts)
-            {
-                stmtBodiesBuilder.Add(new StmtBody(new DeclSymbolPath(null, Name.TopLevel), topLevelStmts.ToImmutableArray()));
-                return this;
-            }
-
-            public Script Make()
-            {
-                return new Script(moduleDecl, stmtBodiesBuilder.ToImmutable());
-            }
-        }
-
+        
         // void TestFunc()
         // {
         //     @$x
@@ -419,7 +220,7 @@ namespace Citron.Test
         {
             // 1. decl 
             var moduleDecl = new ModuleDeclBuilder(factory, moduleName)
-                .GlobalFunc("TestFunc", out var testFuncDecl)
+                .GlobalFunc(voidType, "TestFunc", out var testFuncDecl)
                 .Make();
 
             // 2. body 
@@ -453,7 +254,7 @@ namespace Citron.Test
         //     return MakeSeq( [x, y],  yield x * 2; yield y + 3; } );
         // }
         [Fact]
-        public async Task CallSeqFuncExp_GenerateSequencesInForeach()
+        public Task CallSeqFuncExp_GenerateSequencesInForeach()
         {
             throw new PrerequisiteRequiredException(Prerequisite.Sequence);        
         //    // Sequence
@@ -878,7 +679,7 @@ namespace Citron.Test
         {
             // 1. make decl
             var moduleDecl = new ModuleDeclBuilder(factory, moduleName)
-                .GlobalFunc("F", out var fFuncDecl)
+                .GlobalFunc(voidType, "F", out var fFuncDecl)
                 .Make();
 
             // 2. make body
@@ -926,7 +727,7 @@ namespace Citron.Test
 
             // 1. decl
             var moduleDecl = new ModuleDeclBuilder(factory, moduleName)
-                .GlobalFunc("F", out var fFuncDecl)
+                .GlobalFunc(voidType, "F", out var fFuncDecl)
                 .Make();
 
             // 2. script            
@@ -1006,16 +807,15 @@ namespace Citron.Test
 
             // decl
             var moduleDecl = new ModuleDeclBuilder(factory, moduleName)
-                .Make();
-
-            var fdecl = new FDeclsBuilder(factory)
-                .Lambda(moduleDecl, out var lambdaDecl0)
-                .Lambda(moduleDecl, out var lambdaDecl1)
+                .BeginTopLevelFunc()
+                    .Lambda(out var lambdaDecl0)
+                    .Lambda(out var lambdaDecl1)
+                .EndTopLevelFunc()
                 .Make();
 
             var module = factory.MakeModule(moduleDecl);
-            var lambda0 = ffactory.MakeLambda(module, lambdaDecl0);
-            var lambda1 = ffactory.MakeLambda(module, lambdaDecl1);
+            var lambda0 = factory.MakeLambda(module, lambdaDecl0);
+            var lambda1 = factory.MakeLambda(module, lambdaDecl1);
 
             // script
             var script = new ScriptBuilder(moduleDecl)
@@ -1068,7 +868,7 @@ namespace Citron.Test
             // }
 
             // for(int i = 0; i < count; i++) i++;
-            Stmt PrintNumbersStmt(LambdaMemberVarFSymbol memberVar)
+            Stmt PrintNumbersStmt(LambdaMemberVarSymbol memberVar)
             {
                 return r.For(
                     intType, "i", r.Int(0),
@@ -1079,17 +879,15 @@ namespace Citron.Test
             }
 
             // [count] { for(int i = 0; i < count; i++) i++; }
-            var moduleDecl = new ModuleDeclBuilder(factory, moduleName)
-                .Make();
-                
-            // make lambda decls
-            var lambdasBuilder = new LambdaDeclsBuilder(factory)
-                .BeginLambda(moduleDecl)
-                    .MemberVar(intType, "count", out var lambdaMemberVarDecl0)
-                .EndLambda(out var lambdaDecl0)
-                .BeginLambda(moduleDecl)
-                    .MemberVar(intType, "count", out var lambdaMemberVarDecl1)
-                .EndLambda(out var lambdaDecl1)
+            var moduleDecl = new ModuleDeclBuilder(factory, moduleName)            
+                .BeginTopLevelFunc()
+                    .BeginLambda()
+                        .MemberVar(intType, "count", out var lambdaMemberVarDecl0)
+                    .EndLambda(out var lambdaDecl0)
+                    .BeginLambda()
+                        .MemberVar(intType, "count", out var lambdaMemberVarDecl1)
+                    .EndLambda(out var lambdaDecl1)
+                .EndTopLevelFunc()
                 .Make();
             
             // make lambda
@@ -1172,8 +970,10 @@ namespace Citron.Test
             }
 
             var moduleDecl = new ModuleDeclBuilder(factory, moduleName)
-                .Lambda(out var lambdaDecl0)
-                .Lambda(out var lambdaDecl1)
+                .BeginTopLevelFunc()
+                    .Lambda(out var lambdaDecl0)
+                    .Lambda(out var lambdaDecl1)
+                .EndTopLevelFunc()
                 .Make();
 
             var module = factory.MakeModule(moduleDecl);
@@ -1195,7 +995,7 @@ namespace Citron.Test
         // seq int F0() { ... }
         // seq int F1() { ... }
         [Fact]
-        public async Task YieldStmt_GenerateElementForInnerMostForeachStmt()
+        public Task YieldStmt_GenerateElementForInnerMostForeachStmt()
         {
             throw new PrerequisiteRequiredException(Prerequisite.Sequence);
 
@@ -1346,7 +1146,7 @@ namespace Citron.Test
             //@$j
 
             var moduleDecl = new ModuleDeclBuilder(factory, moduleName)
-                .GlobalFunc("F", r.RefParam(intType, "i"), out var fFuncDecl)
+                .GlobalFunc(r.FuncRetHolder(voidType), "F", r.FuncParamHolder(r.RefParam(intType, "i")), out var fFuncDecl)
                 .Make();
 
             var module = factory.MakeModule(moduleDecl);
@@ -1378,7 +1178,7 @@ namespace Citron.Test
 
             // decl
             var moduleDecl = new ModuleDeclBuilder(factory, moduleName)
-                .GlobalFunc(new FuncReturn(false, voidType), "G", default, out var gFuncDecl)
+                .GlobalFunc(r.FuncRetHolder(voidType), "G", r.FuncParamHolder(), out var gFuncDecl)
                 .Make();
 
             var module = factory.MakeModule(moduleDecl);
@@ -1433,8 +1233,8 @@ namespace Citron.Test
             // TestFunc(Print(1), Print(2), Print(3));
 
             var moduleDecl = new ModuleDeclBuilder(factory, moduleName)
-                .GlobalFunc(r.FuncRet(intType), "Print", r.FuncParam((intType, "x")), out var printFuncDecl)
-                .GlobalFunc(r.FuncRet(voidType), "TestFunc", r.FuncParam((intType, "i"), (intType, "j"), (intType, "k")), out var testFuncFuncDecl)
+                .GlobalFunc(r.FuncRetHolder(intType), "Print", r.FuncParamHolder((intType, "x")), out var printFuncDecl)
+                .GlobalFunc(r.FuncRetHolder(voidType), "TestFunc", r.FuncParamHolder((intType, "i"), (intType, "j"), (intType, "k")), out var testFuncFuncDecl)
                 .Make();
 
             var module = factory.MakeModule(moduleDecl);
@@ -1469,7 +1269,7 @@ namespace Citron.Test
             // string F() { return "hello world"; }
 
             var moduleDecl = new ModuleDeclBuilder(factory, moduleName)
-                .GlobalFunc(r.FuncRet(stringType), "F", default, out var fFuncDecl)
+                .GlobalFunc(stringType, "F", out var fFuncDecl)
                 .Make();
 
             var module = factory.MakeModule(moduleDecl);
@@ -1497,7 +1297,7 @@ namespace Citron.Test
                 this.cmdProvider = cmdProvider;
             }
 
-            public ValueTask ExecuteGlobalFuncAsync(SymbolPath globalFuncPath, ImmutableArray<Value> args, Value retValue)
+            public ValueTask ExecuteGlobalFuncAsync(SymbolId globalFuncId, ImmutableArray<Value> args, Value retValue)
             {
                 cmdProvider.Append("Hello World");
                 return ValueTask.CompletedTask;
@@ -1505,62 +1305,72 @@ namespace Citron.Test
 
             #region Ignore
 
-            public Value Alloc(SymbolPath typePath)
-            {
-                throw new NotImplementedException();
-            }            
-
-            public ValueTask ExecuteClassConstructor(SymbolPath constructorPath, ClassValue thisValue, ImmutableArray<Value> args)
+            Value IModuleDriver.Alloc(SymbolId type)
             {
                 throw new NotImplementedException();
             }
 
-            public ValueTask ExecuteClassMemberFuncAsync(SymbolPath memberFuncPath, Value? thisValue, ImmutableArray<Value> args, Value retValue)
+            ValueTask IModuleDriver.ExecuteClassConstructor(SymbolId constructor, ClassValue thisValue, ImmutableArray<Value> args)
             {
                 throw new NotImplementedException();
             }
 
-            public void InitializeClassInstance(SymbolPath path, ImmutableArray<Value>.Builder builder)
+            ValueTask IModuleDriver.ExecuteClassMemberFuncAsync(SymbolId memberFunc, Value? thisValue, ImmutableArray<Value> args, Value retValue)
             {
                 throw new NotImplementedException();
             }
 
-            public int GetTotalClassMemberVarCount(SymbolPath classPath)
+            ValueTask IModuleDriver.ExecuteGlobalFuncAsync(SymbolId globalFunc, ImmutableArray<Value> args, Value retValue)
             {
                 throw new NotImplementedException();
             }
 
-            public Value GetClassStaticMemberValue(SymbolPath path)
+            ValueTask IModuleDriver.ExecuteStructConstructor(SymbolId constructor, StructValue thisValue, ImmutableArray<Value> args)
             {
                 throw new NotImplementedException();
             }
 
-            public int GetClassMemberVarIndex(SymbolPath path)
+            ValueTask IModuleDriver.ExecuteStructMemberFuncAsync(SymbolId memberFunc, Value? thisValue, ImmutableArray<Value> args, Value retValue)
             {
                 throw new NotImplementedException();
             }
 
-            public SymbolId? GetBaseClass(SymbolPath path)
+            SymbolId? IModuleDriver.GetBaseClass(SymbolId baseClass)
             {
                 throw new NotImplementedException();
             }
 
-            public ValueTask ExecuteStructMemberFuncAsync(SymbolPath memberFuncPath, Value? thisValue, ImmutableArray<Value> args, Value retValue)
+            int IModuleDriver.GetClassMemberVarIndex(SymbolId memberVar)
             {
                 throw new NotImplementedException();
             }
 
-            public ValueTask ExecuteStructConstructor(SymbolPath constructorPath, StructValue thisValue, ImmutableArray<Value> args)
+            Value IModuleDriver.GetClassStaticMemberValue(SymbolId memberVar)
             {
                 throw new NotImplementedException();
             }
 
-            public int GetStructMemberVarIndex(SymbolPath path)
+            int IModuleDriver.GetEnumElemMemberVarIndex(SymbolId memberVar)
             {
                 throw new NotImplementedException();
             }
 
-            public Value GetStructStaticMemberValue(SymbolPath path)
+            int IModuleDriver.GetStructMemberVarIndex(SymbolId memberVar)
+            {
+                throw new NotImplementedException();
+            }
+
+            Value IModuleDriver.GetStructStaticMemberValue(SymbolId memberVar)
+            {
+                throw new NotImplementedException();
+            }
+
+            int IModuleDriver.GetTotalClassMemberVarCount(SymbolId @class)
+            {
+                throw new NotImplementedException();
+            }
+
+            void IModuleDriver.InitializeClassInstance(SymbolId @class, ImmutableArray<Value>.Builder builder)
             {
                 throw new NotImplementedException();
             }
@@ -1579,20 +1389,25 @@ namespace Citron.Test
             // 외부 모듈 작성
             var testExternalModuleName = new Name.Normal("TestExternalModule");
             var testDriver = new TestDriver(testExternalModuleName, commandProvider);
-            var moduleInitializer = Arr<Func<ModuleDriverInitializationContext, IModuleDriver>>(
-                context => new TestDriver(testExternalModuleName, commandProvider)
+            var moduleInitializer = Arr<Action<ModuleDriverContext>>(
+                context =>
+                {
+                    context.AddDriver(new TestDriver(testExternalModuleName, commandProvider));
+                }
             );
 
             // F();
 
             // 외부 모듈에 대한 decl symbol 작성
-            var moduleDecl = new ModuleDeclBuilder(factory, testExternalModuleName)
-                .GlobalFunc("F", out var fFuncDecl)
+            var externalModuleDecl = new ModuleDeclBuilder(factory, testExternalModuleName)
+                .GlobalFunc(voidType, "F", out var fFuncDecl)
                 .Make();
 
-            var module = factory.MakeModule(moduleDecl);
-            var fFunc = factory.MakeGlobalFunc(module, fFuncDecl, default);
+            var externalModule = factory.MakeModule(externalModuleDecl);
+            var fFunc = factory.MakeGlobalFunc(externalModule, fFuncDecl, default);
 
+            // internal module
+            var moduleDecl = new ModuleDeclBuilder(factory, moduleName).Make();
             var script = new ScriptBuilder(moduleDecl)
                 .AddTopLevel(r.Call(fFunc))
                 .Make();            
@@ -1605,188 +1420,279 @@ namespace Citron.Test
         // [System.Console]* 모든 것, Single
         class TestDotnetDriver : IModuleDriver
         {
-            ModuleName moduleName; // System.Console
-                                   // System.Console, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+            Name moduleName; // System.Console
+                             // System.Console, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
 
-            public TestDotnetDriver(ModuleName moduleName)
+            public TestDotnetDriver(Name moduleName)
             {
                 this.moduleName = moduleName;
             }
 
-            class TestFuncRuntimeItem : FuncRuntimeItem
-            {
-                MethodInfo methodInfo;
-                public override Name Name => new Name.Normal(methodInfo.Name);
-                public override ImmutableArray<Param> Parameters { get; }
-                public override ParamHash ParamHash { get; }
+            //class TestFuncRuntimeItem : FuncRuntimeItem
+            //{
+            //    MethodInfo methodInfo;
+            //    public override Name Name => new Name.Normal(methodInfo.Name);
+            //    public override ImmutableArray<Param> Parameters { get; }
+            //    public override ParamHash ParamHash { get; }
 
-                public TestFuncRuntimeItem(MethodInfo methodInfo) 
-                { 
-                    this.methodInfo = methodInfo;
+            //    public TestFuncRuntimeItem(MethodInfo methodInfo) 
+            //    { 
+            //        this.methodInfo = methodInfo;
 
-                    int index = 0;
-                    var paramInfos = methodInfo.GetParameters();
-                    var builder = ImmutableArray.CreateBuilder<Param>(paramInfos.Length);
-                    var pathsBuilder = ImmutableArray.CreateBuilder<ParamHashEntry>(paramInfos.Length);
-                    foreach(var paramInfo in paramInfos)
-                    {
-                        var paramName = (paramInfo.Name != null) ? new Name.Normal(paramInfo.Name) : new Name.Normal($"@{index}");
+            //        int index = 0;
+            //        var paramInfos = methodInfo.GetParameters();
+            //        var builder = ImmutableArray.CreateBuilder<Param>(paramInfos.Length);
+            //        var pathsBuilder = ImmutableArray.CreateBuilder<ParamHashEntry>(paramInfos.Length);
+            //        foreach(var paramInfo in paramInfos)
+            //        {
+            //            var paramName = (paramInfo.Name != null) ? new Name.Normal(paramInfo.Name) : new Name.Normal($"@{index}");
 
-                        builder.Add(new Param(ParamKind.Default, stringType, paramName));
+            //            builder.Add(new Param(ParamKind.Default, stringType, paramName));
 
-                        ParamKind paramKind;
-                        if (paramInfo.ParameterType.IsByRef)
-                            paramKind = ParamKind.Ref;
-                        else
-                            paramKind = ParamKind.Default;
+            //            ParamKind paramKind;
+            //            if (paramInfo.ParameterType.IsByRef)
+            //                paramKind = ParamKind.Ref;
+            //            else
+            //                paramKind = ParamKind.Default;
 
-                        pathsBuilder.Add(new ParamHashEntry(paramKind, stringType));
+            //            pathsBuilder.Add(new ParamHashEntry(paramKind, stringType));
 
-                        index++;
-                    }
+            //            index++;
+            //        }
 
-                    Parameters = builder.MoveToImmutable();
-                    ParamHash = new ParamHash(methodInfo.GetGenericArguments().Length, pathsBuilder.MoveToImmutable());
-                }
+            //        Parameters = builder.MoveToImmutable();
+            //        ParamHash = new ParamHash(methodInfo.GetGenericArguments().Length, pathsBuilder.MoveToImmutable());
+            //    }
 
-                public override ValueTask InvokeAsync(Value? thisValue, ImmutableArray<Value> args, Value result)
-                {
-                    if (thisValue != null)
-                        throw new NotImplementedException();
+            //    public override ValueTask InvokeAsync(Value? thisValue, ImmutableArray<Value> args, Value result)
+            //    {
+            //        if (thisValue != null)
+            //            throw new NotImplementedException();
 
-                    object[] dotnetArgs = new object[args.Length];
-                    for (int i = 0; i < args.Length; i++)
-                        dotnetArgs[i] = ((StringValue)args[i]).GetString();
+            //        object[] dotnetArgs = new object[args.Length];
+            //        for (int i = 0; i < args.Length; i++)
+            //            dotnetArgs[i] = ((StringValue)args[i]).GetString();
 
-                    methodInfo.Invoke(null, dotnetArgs);
+            //        methodInfo.Invoke(null, dotnetArgs);
 
-                    // TODO: Task를 리턴하는 것이었으면.. await 시켜야
+            //        // TODO: Task를 리턴하는 것이었으면.. await 시켜야
 
-                    return ValueTask.CompletedTask;
-                }
-            }
+            //        return ValueTask.CompletedTask;
+            //    }
+            //}
            
-            record TypeItemContainer(Type type) : IItemContainer
+            //record TypeItemContainer(Type type) : IItemContainer
+            //{
+            //    public IItemContainer GetContainer(Name name, ParamHash paramHash)
+            //    {
+            //        throw new NotImplementedException();
+            //    }
+
+            //    bool Match(ParamHash paramHash, MethodInfo methodInfo)
+            //    {
+            //        // paramHash랑 매칭
+            //        if (paramHash.TypeParamCount != methodInfo.GetGenericArguments().Length)
+            //            return false;
+
+            //        var methodParams = methodInfo.GetParameters();
+            //        if (paramHash.Entries.Length != methodParams.Length)
+            //            return false;
+
+            //        // matching
+            //        for (int i = 0; i < methodParams.Length; i++)
+            //        {
+            //            if (paramHash.Entries[i].Kind == ParamKind.Default &&
+            //                paramHash.Entries[i].Type == stringType && 
+            //                methodParams[i].ParameterType == typeof(string))
+            //                continue;
+
+            //            // 나머지는 false
+            //            return false;
+            //        }
+
+            //        return true;
+            //    }
+
+            //    public TRuntimeItem GetRuntimeItem<TRuntimeItem>(Name name_name, ParamHash paramHash) where TRuntimeItem : RuntimeItem
+            //    {
+            //        var name = (Name.Normal)name_name;
+
+            //        // WriteLine
+            //        var memberInfos = type.GetMember(name.Value);
+
+            //        foreach (var memberInfo in memberInfos)
+            //        {
+            //            var methodInfo = memberInfo as MethodInfo;
+            //            if (methodInfo == null)
+            //                continue;
+
+            //            if (Match(paramHash, methodInfo))
+            //            {
+            //                RuntimeItem ri = new TestFuncRuntimeItem(methodInfo);
+            //                return (TRuntimeItem)ri;
+            //            }
+            //        }
+
+            //        throw new InvalidOperationException();
+            //    }
+            //}
+
+            //record NamespaceItemContainer(Assembly assembly, string namespaceName) : IItemContainer
+            //{
+            //    public IItemContainer GetContainer(Name name_name, ParamHash paramHash)
+            //    {
+            //        // namespaceName.name
+            //        Name.Normal name = (Name.Normal)name_name;
+
+            //        var fullName = $"{namespaceName}.{name.Value}";
+            //        var type = assembly.GetType(fullName); // TODO: paramHash고려
+            //        if (type != null)
+            //            return new TypeItemContainer(type);
+
+            //        return new NamespaceItemContainer(assembly, fullName);
+            //    }
+
+            //    public TRuntimeItem GetRuntimeItem<TRuntimeItem>(Name name, ParamHash paramHash) where TRuntimeItem : RuntimeItem
+            //    {
+            //        throw new NotImplementedException();
+            //    }
+            //}
+
+            //record AssemblyItemContainer(Assembly assembly) : IItemContainer
+            //{
+            //    // namespace 구분이 없어서, type이 있는지 보고 없으면 네임스페이스로
+            //    public IItemContainer GetContainer(Name name_name, ParamHash paramHash)
+            //    {
+            //        Name.Normal name = (Name.Normal)name_name;
+            //        var type = assembly.GetType(name.Value); // TODO: paramHash고려
+            //        if (type != null)
+            //            return new TypeItemContainer(type);
+
+            //        return new NamespaceItemContainer(assembly, name.Value);
+            //    }
+
+            //    public TRuntimeItem GetRuntimeItem<TRuntimeItem>(Name name, ParamHash paramHash) where TRuntimeItem : RuntimeItem
+            //    {
+            //        throw new NotImplementedException();
+            //    }
+            //}
+
+            //public ImmutableArray<(ModuleName, IItemContainer)> GetRootContainers()
+            //{
+            //    var assembly = Assembly.Load(new AssemblyName(moduleName.Value));
+
+            //    return Arr<(ModuleName, IItemContainer)>((moduleName, new AssemblyItemContainer(assembly)));
+            //}
+
+            Value IModuleDriver.Alloc(SymbolId type)
             {
-                public IItemContainer GetContainer(Name name, ParamHash paramHash)
-                {
-                    throw new NotImplementedException();
-                }
-
-                bool Match(ParamHash paramHash, MethodInfo methodInfo)
-                {
-                    // paramHash랑 매칭
-                    if (paramHash.TypeParamCount != methodInfo.GetGenericArguments().Length)
-                        return false;
-
-                    var methodParams = methodInfo.GetParameters();
-                    if (paramHash.Entries.Length != methodParams.Length)
-                        return false;
-
-                    // matching
-                    for (int i = 0; i < methodParams.Length; i++)
-                    {
-                        if (paramHash.Entries[i].Kind == ParamKind.Default &&
-                            paramHash.Entries[i].Type == stringType && 
-                            methodParams[i].ParameterType == typeof(string))
-                            continue;
-
-                        // 나머지는 false
-                        return false;
-                    }
-
-                    return true;
-                }
-
-                public TRuntimeItem GetRuntimeItem<TRuntimeItem>(Name name_name, ParamHash paramHash) where TRuntimeItem : RuntimeItem
-                {
-                    var name = (Name.Normal)name_name;
-
-                    // WriteLine
-                    var memberInfos = type.GetMember(name.Value);
-
-                    foreach (var memberInfo in memberInfos)
-                    {
-                        var methodInfo = memberInfo as MethodInfo;
-                        if (methodInfo == null)
-                            continue;
-
-                        if (Match(paramHash, methodInfo))
-                        {
-                            RuntimeItem ri = new TestFuncRuntimeItem(methodInfo);
-                            return (TRuntimeItem)ri;
-                        }
-                    }
-
-                    throw new InvalidOperationException();
-                }
+                throw new NotImplementedException();
             }
 
-            record NamespaceItemContainer(Assembly assembly, string namespaceName) : IItemContainer
+            ValueTask IModuleDriver.ExecuteGlobalFuncAsync(SymbolId globalFunc, ImmutableArray<Value> args, Value retValue)
             {
-                public IItemContainer GetContainer(Name name_name, ParamHash paramHash)
-                {
-                    // namespaceName.name
-                    Name.Normal name = (Name.Normal)name_name;
-
-                    var fullName = $"{namespaceName}.{name.Value}";
-                    var type = assembly.GetType(fullName); // TODO: paramHash고려
-                    if (type != null)
-                        return new TypeItemContainer(type);
-
-                    return new NamespaceItemContainer(assembly, fullName);
-                }
-
-                public TRuntimeItem GetRuntimeItem<TRuntimeItem>(Name name, ParamHash paramHash) where TRuntimeItem : RuntimeItem
-                {
-                    throw new NotImplementedException();
-                }
+                throw new NotImplementedException();
             }
 
-            record AssemblyItemContainer(Assembly assembly) : IItemContainer
+            ValueTask IModuleDriver.ExecuteClassConstructor(SymbolId constructor, ClassValue thisValue, ImmutableArray<Value> args)
             {
-                // namespace 구분이 없어서, type이 있는지 보고 없으면 네임스페이스로
-                public IItemContainer GetContainer(Name name_name, ParamHash paramHash)
-                {
-                    Name.Normal name = (Name.Normal)name_name;
-                    var type = assembly.GetType(name.Value); // TODO: paramHash고려
-                    if (type != null)
-                        return new TypeItemContainer(type);
-
-                    return new NamespaceItemContainer(assembly, name.Value);
-                }
-
-                public TRuntimeItem GetRuntimeItem<TRuntimeItem>(Name name, ParamHash paramHash) where TRuntimeItem : RuntimeItem
-                {
-                    throw new NotImplementedException();
-                }
+                throw new NotImplementedException();
             }
 
-            public ImmutableArray<(ModuleName, IItemContainer)> GetRootContainers()
+            ValueTask IModuleDriver.ExecuteClassMemberFuncAsync(SymbolId memberFunc, Value? thisValue, ImmutableArray<Value> args, Value retValue)
             {
-                var assembly = Assembly.Load(new AssemblyName(moduleName.Value));
+                throw new NotImplementedException();
+            }
 
-                return Arr<(ModuleName, IItemContainer)>((moduleName, new AssemblyItemContainer(assembly)));
+            void IModuleDriver.InitializeClassInstance(SymbolId @class, ImmutableArray<Value>.Builder builder)
+            {
+                throw new NotImplementedException();
+            }
+
+            int IModuleDriver.GetTotalClassMemberVarCount(SymbolId @class)
+            {
+                throw new NotImplementedException();
+            }
+
+            Value IModuleDriver.GetClassStaticMemberValue(SymbolId memberVar)
+            {
+                throw new NotImplementedException();
+            }
+
+            int IModuleDriver.GetClassMemberVarIndex(SymbolId memberVar)
+            {
+                throw new NotImplementedException();
+            }
+
+            SymbolId? IModuleDriver.GetBaseClass(SymbolId baseClass)
+            {
+                throw new NotImplementedException();
+            }
+
+            ValueTask IModuleDriver.ExecuteStructMemberFuncAsync(SymbolId memberFunc, Value? thisValue, ImmutableArray<Value> args, Value retValue)
+            {
+                throw new NotImplementedException();
+            }
+
+            ValueTask IModuleDriver.ExecuteStructConstructor(SymbolId constructor, StructValue thisValue, ImmutableArray<Value> args)
+            {
+                throw new NotImplementedException();
+            }
+
+            int IModuleDriver.GetStructMemberVarIndex(SymbolId memberVar)
+            {
+                throw new NotImplementedException();
+            }
+
+            Value IModuleDriver.GetStructStaticMemberValue(SymbolId memberVar)
+            {
+                throw new NotImplementedException();
+            }
+
+            int IModuleDriver.GetEnumElemMemberVarIndex(SymbolId memberVar)
+            {
+                throw new NotImplementedException();
             }
         }
 
         [Fact]
         public async Task CallFuncExp_CallDotnetExternal()
         {
-            var testExternalModuleName = "System.Console";
-            var testDriver = new TestDotnetDriver(testExternalModuleName);            
+            var testExternalModuleName = new Name.Normal("System.Console");
 
-            var system = new Path.Nested(new Path.Root(testExternalModuleName), new Name.Normal("System"), ParamHash.None, default);
-            var system_Console = new Path.Nested(system, new Name.Normal("Console"), ParamHash.None, default);
-            var system_Console_Write = new Path.Nested(system_Console, new Name.Normal("Write"), new ParamHash(0, Arr(new ParamHashEntry(ParamKind.Default, stringType))), default);
-                
-            var script = RScript(moduleName, new ExpStmt(new CallFuncExp(system_Console_Write, null, RArgs(r.String("Hello World")))));
+            void TestDriverInitializer(ModuleDriverContext driverContext)
+            {
+                driverContext.AddDriver(new TestDotnetDriver(testExternalModuleName));
+            }
+            
+            // System.Console.Write("Hello World");
+
+            var testExternalModuleDecl = new ModuleDeclBuilder(factory, testExternalModuleName)
+                .BeginNamespace("System")
+                    .BeginClass("Console")
+                        .StaticMemberFunc(voidType, "Write", stringType, "arg", out var writeDecl)
+                    .EndClass(out var consoleDecl)
+                .EndNamespace(out var systemNSDecl)
+                .Make();
+
+            var testExternalModule = factory.MakeModule(testExternalModuleDecl);
+            var systemNS = factory.MakeNamespace(testExternalModule, systemNSDecl);
+            var console = factory.MakeClass(systemNS, consoleDecl, default);
+            var write = factory.MakeClassMemberFunc(console, writeDecl, default);
+
+            var moduleDecl = new ModuleDeclBuilder(factory, moduleName).Make();
+
+            var script = new ScriptBuilder(moduleDecl)
+                .AddTopLevel(
+                    r.Call(write, null, r.Arg(r.String("Hello World")))
+                )
+                .Make();
 
             using (var writer = new System.IO.StringWriter())
             {
                 System.Console.SetOut(writer);
 
-                var (output, _) = await EvalAsyncWithRetValue(Arr<IModuleDriver>(testDriver), script);
+                var (output, _) = await EvalAsyncWithRetValue(Arr<Action<ModuleDriverContext>>(TestDriverInitializer), script);
                 
                 Assert.Equal("Hello World", writer.GetStringBuilder().ToString());
             }
@@ -1841,17 +1747,15 @@ namespace Citron.Test
 
             // make module
             var moduleDecl = new ModuleDeclBuilder(factory, moduleName)
-                 .GlobalFunc(r.Holder(r.FuncRet(intType)), "Print", r.Holder(r.FuncParam((intType, "x"))), out var printFuncDecl)
-                 .GlobalFunc(makeLambdaFuncRetHolder, "MakeLambda", new Holder<ImmutableArray<FuncParameter>>(default), out var makeLambdaFuncDecl)
-                 .Make();
-            
-            // make lambda
-            var lambdaDecl0 = new LambdaFDeclSymbol(r.Holder(makeLambdaFuncDecl), new Name.Anonymous(0), r.FuncRet(stringType),
-                r.FuncParam((intType, "i"), (intType, "j"), (intType, "k")), default);
-            makeLambdaFuncDecl.AddLambda(lambdaDecl0);
+                .GlobalFunc(r.FuncRetHolder(intType), "Print", r.FuncParamHolder((intType, "x")), out var printFuncDecl)
+                .BeginGlobalFunc(makeLambdaFuncRetHolder, new Name.Normal("MakeLambda"), r.FuncParamHolder())
+                    .Lambda(r.FuncRet(stringType), r.FuncParam((intType, "i"), (intType, "j"), (intType, "k")), out var lambdaDecl0)
+                .EndGlobalFunc(out var makeLambdaFuncDecl)
+                .Make();
 
             // script body
             var module = factory.MakeModule(moduleDecl);
+            var printFunc = factory.MakeGlobalFunc(module, printFuncDecl, default);
             var makeLambdaFunc = factory.MakeGlobalFunc(module, makeLambdaFuncDecl, default);
             var lambda0 = factory.MakeLambda(makeLambdaFunc, lambdaDecl0);
 
@@ -1864,14 +1768,14 @@ namespace Citron.Test
                     r.PrintString("MakeLambda"),
                     r.Return(new LambdaExp(lambda0, Args: default))
                 )
-                .Add(lambdaDecl0, 
+                .Add(lambdaDecl0,
                     r.PrintString("TestFunc")
                 )
                 .AddTopLevel(
-                    r.Call(lambda, r.TempLoc(r.CallExp(makeLambda)),
-                        r.Arg(r.Call(printFunc, r.Int(1))),
-                        r.Arg(r.Call(printFunc, r.Int(2))),
-                        r.Arg(r.Call(printFunc, r.Int(3)))
+                    r.Call(lambda0, r.TempLoc(r.CallExp(makeLambdaFunc)),
+                        r.Arg(r.CallExp(printFunc, r.Arg(r.Int(1)))),
+                        r.Arg(r.CallExp(printFunc, r.Arg(r.Int(2)))),
+                        r.Arg(r.CallExp(printFunc, r.Arg(r.Int(3))))
                     )
                 )
                 .Make();
@@ -1889,25 +1793,41 @@ namespace Citron.Test
 
         // Lambda Purity
         [Fact]
-        public async Task LambdaExp_CapturesLocalVariablesWithCopying() // TODO: wrong, need to be fix
-        {   
-            // [x] () => @"$x";
-            var lambdaDecl = new LambdaDecl(new Name.Anonymous(0), new CapturedStatement(null, Arr(new OuterLocalVarInfo(intType, "x")), r.PrintInt(new LambdaMemberVar("x"))), default);
-            var lambda = RootPath(new Name.Anonymous(0));
+        public async Task LambdaExp_CapturesLocalVariablesWithCopying()
+        {
+            // module decl
+            var moduleDecl = new ModuleDeclBuilder(factory, moduleName)
+                .BeginTopLevelFunc()
+                    .BeginLambda(r.FuncRet(intType), default)
+                        .MemberVar(intType, "x", out var lambdaMemberVarDecl0)
+                    .EndLambda(out var lambdaDecl0)
+                .EndTopLevelFunc()
+                .Make();
 
-            // int x = 3;
-            // var func = () => x; // [ref int x = ref x] () => x;
-            // x = 34;
-            // func();
-            var stmts = Arr<Stmt> (
-                r.LocalVarDecl(intType, "x", r.Int(3)),
-                r.LocalVarDecl(lambda, "func", new LambdaExp(lambda)),
+            var module = factory.MakeModule(moduleDecl);
+            var lambda0 = factory.MakeLambda(module, lambdaDecl0);
+            var lambdaMemberVar0 = factory.MakeLambdaMemberVar(lambda0, lambdaMemberVarDecl0);
+            
+            var script = new ScriptBuilder(moduleDecl)
+                .Add(lambdaDecl0,
+                    // [x] () => @"$x";
+                    r.PrintInt(r.LoadLambdaMember(lambdaMemberVar0))
+                )
+                .AddTopLevel(
+                    // int x = 3;
+                    // var func = () => x; // [int x = x] () => x;
+                    // x = 34;
+                    // func();
 
-                r.Assign(r.LocalVar("x"), r.Int(34)),
-                new ExpStmt(new CallValueExp(lambda, r.LocalVar("func"), default))
-            );
+                    r.LocalVarDecl(intType, "x", r.Int(3)),
+                    r.LocalVarDecl(lambda0, "func", r.Lambda(lambda0, r.Arg(r.LoadLocalVar("x", intType)))),
 
-            var output = await EvalAsync(Arr<CallableMemberDecl>(lambdaDecl), stmts);
+                    r.Assign(r.LocalVar("x"), r.Int(34)),
+                    r.Call(lambda0, r.LocalVar("func"))
+                )
+                .Make();
+
+            var output = await EvalAsync(script);
             Assert.Equal("3", output);
         }
 
@@ -1915,12 +1835,21 @@ namespace Citron.Test
         [Fact]
         public async Task ListIndexerExp_GetElement()
         {
-            var stmts = Arr<Stmt> (
-                r.LocalVarDecl(Path.List(intType), "list", new ListExp(intType, Arr<Exp>(r.Int(34), r.Int(56)))),
-                r.PrintInt(new ListIndexerLoc(new LocalVarLoc(new Name.Normal("list")), r.Int(1)))
-            );
+            // var list = [34, 56];
+            // @${list[1]}
 
-            var output = await EvalAsync(stmts);
+            var moduleDecl = new ModuleDeclBuilder(factory, moduleName).Make();
+
+            var intListType = factory.MakeList(intType);
+
+            var script = new ScriptBuilder(moduleDecl)
+                .AddTopLevel(
+                    r.LocalVarDecl(intListType, "list", r.List(intListType, r.Int(34), r.Int(56))),
+                    r.PrintInt(r.ListIndexer(r.LocalVar("list"), r.Int(1)))
+                )
+                .Make();
+            
+            var output = await EvalAsync(script);
             Assert.Equal("56", output);
         }
 
@@ -1928,30 +1857,38 @@ namespace Citron.Test
         [Fact]
         public async Task ListExp_EvaluatesElementExpInOrder()
         {
-            var printFunc = RootPath("Print", Arr(intType), default);
+            // int Print(int x)
+            // {
+            //     @$x
+            //     return x;
+            // }
 
-            // print(int x)
-            var printFuncDecl = new NormalFuncDecl(default, new Name.Normal("Print"), false, default, RNormalParams((intType, "x")),
+            // var l = [Print(34), Print(56)];
 
-                r.Block(
-                    r.PrintInt(new LocalVarLoc(new Name.Normal("x"))),
+            var moduleDecl = new ModuleDeclBuilder(factory, moduleName)
+                .GlobalFunc(intType, "Print", intType, "x", out var printFuncDecl)
+                .Make();
+
+            var module = factory.MakeModule(moduleDecl);
+            var printFunc = factory.MakeGlobalFunc(module, printFuncDecl, default);
+            var intListType = factory.MakeList(intType);
+
+            var script = new ScriptBuilder(moduleDecl)
+                .Add(printFuncDecl,
+                    r.PrintInt(r.LocalVar("x")),
                     r.Return(r.LoadLocalVar("x", intType))
                 )
-            );
-
-            Exp MakePrintCall(int v) =>
-                new CallFuncExp(printFunc, null, RArgs(r.Int(v)));
-
-            var stmts = Arr<Stmt> (
-                r.GlobalVarDecl(Path.List(intType), "l", 
-                    new ListExp(intType, Arr(
-                        MakePrintCall(34),
-                        MakePrintCall(56)
-                    ))
+                .AddTopLevel(
+                    r.GlobalVarDecl(intListType, "l",
+                        r.List(intListType,
+                            r.CallExp(printFunc, r.Arg(r.Int(34))),
+                            r.CallExp(printFunc, r.Arg(r.Int(56)))
+                        )
+                    )
                 )
-            );
-
-            var output = await EvalAsync(printFuncDecl, stmts);
+                .Make();
+            
+            var output = await EvalAsync(script);
             Assert.Equal("3456", output);
         }
 

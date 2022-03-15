@@ -1,6 +1,6 @@
 ﻿using System;
 using Citron.Collections;
-
+using Citron.Infra;
 using M = Citron.CompileTime;
 
 namespace Citron.Analysis
@@ -39,11 +39,11 @@ namespace Citron.Analysis
         public IDeclSymbolNode GetDeclSymbolNode()
         {
             return decl;
-        }        
+        }
 
-        public ImmutableArray<ITypeSymbol> GetTypeArgs()
+        public ITypeSymbol GetTypeArg(int index)
         {
-            return default;
+            throw new RuntimeFatalException();
         }
 
         public TypeEnv GetTypeEnv()

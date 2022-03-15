@@ -1,8 +1,49 @@
 ﻿using Citron.Collections;
 using Citron.CompileTime;
+using System.Collections.Generic;
 
 namespace Citron.Analysis
 {
+    public class StringDeclSymbol : ITypeDeclSymbol
+    {
+        SystemNamespaceDeclSymbol outer;
+
+        public StringDeclSymbol(SystemNamespaceDeclSymbol outer)
+        {
+            this.outer = outer;
+        }
+
+        void ITypeDeclSymbol.Apply(ITypeDeclSymbolVisitor visitor)
+        {
+            visitor.VisitString(this);
+        }
+
+        void IDeclSymbolNode.Apply(IDeclSymbolNodeVisitor visitor)
+        {
+            visitor.VisitString(this);
+        }
+
+        AccessModifier IDeclSymbolNode.GetAccessModifier()
+        {
+            return AccessModifier.Public;
+        }
+
+        IEnumerable<IDeclSymbolNode> IDeclSymbolNode.GetMemberDeclNodes()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        DeclSymbolNodeName IDeclSymbolNode.GetNodeName()
+        {
+            return new DeclSymbolNodeName(new Name.Normal("String"), 0, default);
+        }
+
+        IDeclSymbolNode? IDeclSymbolNode.GetOuterDeclNode()
+        {
+            return outer;
+        }
+    }
+
     public class StringSymbol : ITypeSymbol
     {
         public ITypeSymbol Apply(TypeEnv typeEnv)
@@ -25,7 +66,7 @@ namespace Citron.Analysis
             throw new System.NotImplementedException();
         }
 
-        public ImmutableArray<ITypeSymbol> GetTypeArgs()
+        public ITypeSymbol GetTypeArg(int index)
         {
             throw new System.NotImplementedException();
         }

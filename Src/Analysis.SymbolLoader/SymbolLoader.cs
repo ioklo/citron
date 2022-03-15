@@ -33,7 +33,7 @@ namespace Citron.Analysis
                 if (outerDecl == null)
                     throw new NotImplementedException(); // 에러 처리
 
-                var decl = outerDecl.GetMemberDeclNode(path.Name, path.TypeArgs.Length, path.ParamIds);
+                var decl = outerDecl.GetMemberDeclNode(new DeclSymbolNodeName(path.Name, path.TypeArgs.Length, path.ParamIds));
                 if (decl == null)
                     throw new NotImplementedException(); // 에러 처리
 

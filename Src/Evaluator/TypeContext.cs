@@ -53,7 +53,7 @@ namespace Citron
             }
             else
             {
-                return new TypeContext(default);
+                throw new NotImplementedException();
             }
         }
 

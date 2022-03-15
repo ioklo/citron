@@ -87,16 +87,27 @@ namespace Citron.Analysis
         public TypeEnv GetTypeEnv()
         {
             return typeEnv;
-        }        
-        
-        public ImmutableArray<ITypeSymbol> GetTypeArgs()
+        }
+
+        public ITypeSymbol GetTypeArg(int index)
         {
-            return typeArgs;
+            return typeArgs[index];
         }
 
         public void Apply(ITypeSymbolVisitor visitor)
         {
             visitor.VisitEnum(this);
+        }
+
+        public int GetElemCount()
+        {
+            return decl.GetElemCount();
+        }
+
+        public EnumElemSymbol GetElement(int index)
+        {
+            var elemDecl = decl.GetElement(index);
+            return factory.MakeEnumElem(this, elemDecl);
         }
     }
 }

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using M = Citron.CompileTime;
 using Pretune;
 using System;
+using Citron.Infra;
 
 namespace Citron.Analysis
 {
@@ -88,11 +89,11 @@ namespace Citron.Analysis
         public TypeEnv GetTypeEnv()
         {
             return outer.GetTypeEnv();
-        }        
+        }
 
-        public ImmutableArray<ITypeSymbol> GetTypeArgs()
+        public ITypeSymbol GetTypeArg(int index)
         {
-            return default;
+            throw new RuntimeFatalException();
         }
 
         public int GetMemberVarCount()

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Citron.Collections;
 using Citron.Infra;
-using R = Citron.IR0;
 using Citron.CompileTime;
 using Citron.Analysis;
 using System.Diagnostics;
@@ -27,11 +26,15 @@ namespace Citron
             this.commandProvider = commandProvider;
             this.globalVars = new Dictionary<string, Value>();
         }
-
-        public TSymbol LoadSymbol<TSymbol>(SymbolPath symbolPath)
+        
+        public TSymbol LoadSymbol<TSymbol>(SymbolId symbolId)
             where TSymbol : class, ISymbolNode
         {
-            return loader.LoadSymbol<TSymbol>(symbolPath);
+            var moduleSymbolId = symbolId as ModuleSymbolId;
+            Debug.Assert(moduleSymbolId != null);
+            Debug.Assert(moduleSymbolId.Path != null);
+
+            return loader.LoadSymbol<TSymbol>(moduleSymbolId.Path);
         }
 
         public Value GetGlobalValue(string name)
@@ -39,9 +42,8 @@ namespace Citron
             return globalVars[name];
         }
 
-        public IR0EvalContext NewEvalContext(SymbolPath path, Value? thisValue, Value retValue)
-        {
-            var typeContext = TypeContext.Make(path);
+        public IR0EvalContext NewEvalContext(TypeContext typeContext, Value? thisValue, Value retValue)
+        {   
             return new IR0EvalContext(evaluator, typeContext, IR0EvalFlowControl.None, thisValue, retValue);
         }
 
@@ -55,21 +57,6 @@ namespace Citron
             globalVars.Add(name, value);
         }
 
-        IItemContainer GetContainer(R.Path path)
-        {
-            if (path is R.Path.Root rootPath)
-            {
-                return rootContainers[rootPath.ModuleName];
-            }
-            else if (path is R.Path.Nested nestedPath)
-            {
-                var outer = GetContainer(nestedPath.Outer);
-                return outer.GetContainer(nestedPath.Name, nestedPath.ParamHash);
-            }
-
-            throw new UnreachableCodeException();
-        }
-
         public Value GetStructStaticMemberValue(SymbolId memberVarId)
         {
             return evaluator.GetStructStaticMemberValue(memberVarId);
@@ -78,14 +65,7 @@ namespace Citron
         public Value GetStructMemberValue(StructValue structValue, SymbolId memberVarId)
         {
             return evaluator.GetStructMemberValue(structValue, memberVarId);
-        }
-
-        public TRuntimeItem GetRuntimeItem<TRuntimeItem>(R.Path.Nested path)
-            where TRuntimeItem : RuntimeItem
-        {
-            var outer = GetContainer(path.Outer);
-            return outer.GetRuntimeItem<TRuntimeItem>(path.Name, path.ParamHash);
-        }
+        }        
 
         public Value GetClassStaticMemberValue(SymbolId memberVarId)
         {
@@ -97,20 +77,26 @@ namespace Citron
             return evaluator.GetClassMemberValue(classValue, memberVarId);
         }
 
-        // 
-        public void AddRootItemContainer(R.ModuleName moduleName, IItemContainer container)
+        public Value GetEnumElemMemberValue(EnumElemValue enumElemValue, SymbolId memberVarId)
         {
-            rootContainers.Add(moduleName, container);
-        }        
+            return evaluator.GetEnumElemMemberValue(enumElemValue, memberVarId);
+        }
 
         public Task ExecuteCommandAsync(string cmdText)
         {
             return commandProvider.ExecuteAsync(cmdText);
         }
 
-        public R.Stmt GetBodyStmt(SymbolPath path)
+        public ImmutableArray<Stmt> GetBodyStmt(SymbolId symbolId)
         {
-            throw new NotImplementedException();
+            var moduleSymbolId = symbolId as ModuleSymbolId;
+            Debug.Assert(moduleSymbolId != null);
+
+            var declSymbolId = moduleSymbolId.GetDeclSymbolId();
+            Debug.Assert(declSymbolId.ModuleName.Equals(internalModuleName));
+            Debug.Assert(declSymbolId.Path != null);
+
+            return loader.GetBody(declSymbolId.Path);
         }
 
         public Name GetInternalModuleName()
@@ -118,12 +104,13 @@ namespace Citron
             return internalModuleName;
         }
 
+        // symbol의 사용범위.. IR0에 
         public ITypeSymbol? GetListItemType(ITypeSymbol listType)
         {
             var listTypeId = listType.GetSymbolId() as ModuleSymbolId;
             Debug.Assert(listTypeId != null);
-            if (listTypeId.IsList(out var itemId))
-                return symbolLoader.Load(itemId) as ITypeSymbol;
+            if (listTypeId.IsList(out var _))
+                return listType.GetTypeArg(0);
 
             return null;
         }

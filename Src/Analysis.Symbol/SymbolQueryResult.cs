@@ -46,5 +46,7 @@ namespace Citron.Analysis
         public record EnumElem(EnumElemSymbol Symbol) : Valid;
         public record EnumElemMemberVar(EnumElemMemberVarSymbol Symbol) : Valid;
         public record TupleMemberVar(TupleMemberVarSymbol Symbol) : Valid;
+
+        public record LambdaMemberVar(LambdaMemberVarSymbol Symbol) : Valid;
     }
 }

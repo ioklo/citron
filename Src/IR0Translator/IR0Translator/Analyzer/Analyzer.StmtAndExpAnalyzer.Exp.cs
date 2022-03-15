@@ -457,7 +457,7 @@ namespace Citron.IR0Translator
             ExpResult.Exp AnalyzeCallExpExpCallable(R.Loc callableLoc, ITypeSymbol callable, ImmutableArray<S.Argument> sargs, S.CallExp nodeForErrorReport)
             {
                 // TODO: Lambda말고 func<>도 있다
-                var lambdaCallable = callable as LambdaFSymbol;
+                var lambdaCallable = callable as LambdaSymbol;
                 if (lambdaCallable == null)
                     globalContext.AddFatalError(A0902_CallExp_CallableExpressionIsNotCallable, nodeForErrorReport.Callable);
 

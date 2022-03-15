@@ -24,12 +24,19 @@ namespace Citron.Analysis
         //     G(e => e, 2); // 인자에 맞는 함수를 검색하면서 e => e가 두번 평가된다
         // }
 
-        public StructConstructorDeclSymbol(IHolder<StructDeclSymbol> outer, M.AccessModifier accessModifier, IHolder<ImmutableArray<FuncParameter>> parametersHolder, bool bTrivial)
+        LambdaDeclSymbolContainerComponent lambdaDeclContainerComponent;
+
+        public void AddLambda(LambdaDeclSymbol lambdaDecl)
+            => lambdaDeclContainerComponent.AddLambda(lambdaDecl);
+
+        public StructConstructorDeclSymbol(IHolder<StructDeclSymbol> outer, M.AccessModifier accessModifier, IHolder<ImmutableArray<FuncParameter>> parametersHolder, bool bTrivial, ImmutableArray<LambdaDeclSymbol> lambdaDecls)
         {
             this.outer = outer;
             this.accessModifier = accessModifier;
             this.parametersHolder = parametersHolder;
             this.bTrivial = bTrivial;
+
+            this.lambdaDeclContainerComponent = new LambdaDeclSymbolContainerComponent(lambdaDecls);
         }
 
         public IDeclSymbolNode? GetOuterDeclNode()

@@ -16,49 +16,40 @@ namespace Citron
     // TODO: Small Step으로 가야하지 않을까 싶다 (yield로 실행 point 잡는거 해보면 재미있을 것 같다)    
     public class Evaluator
     {
-        public static async ValueTask<int> EvalAsync(ImmutableArray<Func<ModuleDriverInitializationContext, IModuleDriver>> moduleDriverConstructors, ModuleSymbolId entry)
+        [AllowNull]
+        ModuleDriverContext driverContext;
+
+        public static async ValueTask<int> EvalAsync(ImmutableArray<Action<ModuleDriverContext>> moduleDriverInitializers, ModuleSymbolId entry)
         {
-            // 일단 module들 등록
-            var initContext = new ModuleDriverInitializationContext();
-            foreach(var moduleDriverConstructor in moduleDriverConstructors)
-            {
-                //  여기에 등록 컨텍스트를 넣어서 모듈에서 알아서 등록하도록
-                moduleDriverConstructor.Invoke(initContext);
-            }
-
             var evaluator = new Evaluator();
-            // MakeEvaluator with initContext
-            // var context = ;
+            evaluator.driverContext = new ModuleDriverContext(evaluator);
 
-            var mainThread = new EvalThread();
+            foreach(var moduleDriverInitializer in moduleDriverInitializers)
+            {
+                moduleDriverInitializer.Invoke(evaluator.driverContext);
+            }            
+
+            var mainThread = new EvalThread(evaluator);
             var ret = mainThread.StackAlloc<IntValue>(ModuleSymbolId.Int);
 
-            // TODO: static인거 확인하고, 인자 없는거 확인하고, int리턴하는지 확인하고            
+            // TODO: static인거 확인하고, 인자 없는거 확인하고, int리턴하는지 확인하고
             await evaluator.ExecuteGlobalFuncAsync(entry, default, ret);
 
             return ret.GetInt();
-        }
+        }       
         
-        public Evaluator()
-        {
-        }        
-
-        (IModuleDriver Driver, SymbolPath Path) GetModuleDriverAndPath(SymbolId Id)
-        {
-            throw new NotImplementedException();
-        }
 
         public Value GetClassStaticMemberValue(SymbolId memberVarId)
         {
-            var (driver, path) = GetModuleDriverAndPath(memberVarId);
-            return driver.GetClassStaticMemberValue(path);
+            var driver = driverContext.GetModuleDriver(memberVarId);
+            return driver.GetClassStaticMemberValue(memberVarId);
         }
         
         public Value GetClassMemberValue(ClassValue classValue, SymbolId classMemberVarId)
         {
             // module이름으로 driver선택
-            var (driver, path) = GetModuleDriverAndPath(classMemberVarId);
-            var index = driver.GetClassMemberVarIndex(path);
+            var driver = driverContext.GetModuleDriver(classMemberVarId);
+            var index = driver.GetClassMemberVarIndex(classMemberVarId);
 
             return classValue.GetInstance().GetMemberValue(index);
         }
@@ -66,30 +57,38 @@ namespace Citron
         public int GetTotalClassMemberVarCount(SymbolId classId)
         {
             // module이름으로 driver선택
-            var (driver, classPath) = GetModuleDriverAndPath(classId);
-            return driver.GetTotalClassMemberVarCount(classPath);
+            var driver = driverContext.GetModuleDriver(classId);
+            return driver.GetTotalClassMemberVarCount(classId);
         }
 
         // Local은 이 단계에서는 보이지 않는다
         public async ValueTask ExecuteGlobalFuncAsync(SymbolId globalFuncId, ImmutableArray<Value> args, Value retValue)
         {
             // module이름으로 driver선택
-            var (driver, path) = GetModuleDriverAndPath(globalFuncId);
-            await driver.ExecuteGlobalFuncAsync(path, args, retValue);
+            var driver = driverContext.GetModuleDriver(globalFuncId);
+            await driver.ExecuteGlobalFuncAsync(globalFuncId, args, retValue);
         }
 
         public void ExecuteStructConstructor(SymbolId constructorId, StructValue thisValue, ImmutableArray<Value> args)
         {
             // module이름으로 driver선택
-            var (driver, path) = GetModuleDriverAndPath(constructorId);
-            driver.ExecuteStructConstructor(path, thisValue, args);
+            var driver = driverContext.GetModuleDriver(constructorId);
+            driver.ExecuteStructConstructor(constructorId, thisValue, args);
         }
 
         public ValueTask ExecuteClassMemberFuncAsync(SymbolId memberFuncId, Value? thisValue, ImmutableArray<Value> args, Value retValue)
         {
             // module이름으로 driver선택
-            var (driver, path) = GetModuleDriverAndPath(memberFuncId);
-            return driver.ExecuteClassMemberFuncAsync(path, thisValue, args, retValue);
+            var driver = driverContext.GetModuleDriver(memberFuncId);
+            return driver.ExecuteClassMemberFuncAsync(memberFuncId, thisValue, args, retValue);
+        }
+
+        public Value GetEnumElemMemberValue(EnumElemValue enumElemValue, SymbolId memberVarId)
+        {
+            // module이름으로 driver선택
+            var driver = driverContext.GetModuleDriver(memberVarId);
+            int index = driver.GetEnumElemMemberVarIndex(memberVarId);
+            return enumElemValue.GetMemberValue(index);
         }
 
         public bool IsEnumElem(EnumValue value, SymbolId elemId)
@@ -101,8 +100,8 @@ namespace Citron
         // null리턴하면 이 클래스에 진짜 Base가 없는 것이다
         public SymbolId? GetBaseClass(SymbolId classId)
         {
-            var (driver, path) = GetModuleDriverAndPath(classId);
-            return driver.GetBaseClass(path);
+            var driver = driverContext.GetModuleDriver(classId);
+            return driver.GetBaseClass(classId);
         }
 
         // target, class 둘다 확정 타입이 들어온다
@@ -128,15 +127,15 @@ namespace Citron
         public ValueTask ExecuteStructMemberFuncAsync(SymbolId memberFuncId, Value? thisValue, ImmutableArray<Value> args, Value retValue)
         {
             // module이름으로 driver선택
-            var (driver, path) = GetModuleDriverAndPath(memberFuncId);
-            return driver.ExecuteStructMemberFuncAsync(path, thisValue, args, retValue);
+            var driver = driverContext.GetModuleDriver(memberFuncId);
+            return driver.ExecuteStructMemberFuncAsync(memberFuncId, thisValue, args, retValue);
         }
 
         public void ExecuteClassConstructor(SymbolId constructorId, ClassValue thisValue, ImmutableArray<Value> args)
         {
             // module이름으로 driver선택
-            var (driver, path) = GetModuleDriverAndPath(constructorId);
-            driver.ExecuteClassConstructor(path, thisValue, args);
+            var driver = driverContext.GetModuleDriver(constructorId);
+            driver.ExecuteClassConstructor(constructorId, thisValue, args);
         }
 
         public TValue AllocValue<TValue>(SymbolId typeId)
@@ -185,8 +184,8 @@ namespace Citron
                 case ModuleSymbolId moduleTypeId:
                     {
                         // 드라이버에서 처리
-                        var (driver, path) = GetModuleDriverAndPath(moduleTypeId);
-                        return driver.Alloc(path);
+                        var driver = driverContext.GetModuleDriver(moduleTypeId);
+                        return driver.Alloc(moduleTypeId);
                     }
 
                 // int? => Nullable<int>
@@ -223,10 +222,10 @@ namespace Citron
             }
         }
 
-        public void InitializeClassInstance(SymbolId symbolId, ImmutableArray<Value>.Builder builder)
+        public void InitializeClassInstance(SymbolId classId, ImmutableArray<Value>.Builder builder)
         {
-            var (driver, path) = GetModuleDriverAndPath(symbolId);
-            driver.InitializeClassInstance(path, builder);
+            var driver = driverContext.GetModuleDriver(classId);
+            driver.InitializeClassInstance(classId, builder);
         } 
 
         // 최종으로 치환된 타입이 들어온다
@@ -240,14 +239,14 @@ namespace Citron
 
         public Value GetStructStaticMemberValue(SymbolId memberVarId)
         {
-            var (driver, path) = GetModuleDriverAndPath(memberVarId);
-            return driver.GetStructStaticMemberValue(path);
+            var driver = driverContext.GetModuleDriver(memberVarId);
+            return driver.GetStructStaticMemberValue(memberVarId);
         }
 
         public Value GetStructMemberValue(StructValue structValue, SymbolId memberVarId)
         {
-            var (driver, path) = GetModuleDriverAndPath(memberVarId);
-            var index = driver.GetStructMemberVarIndex(path);
+            var driver = driverContext.GetModuleDriver(memberVarId);
+            var index = driver.GetStructMemberVarIndex(memberVarId);
             return structValue.GetMemberValue(index);
         }
     }

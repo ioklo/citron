@@ -123,6 +123,23 @@ namespace Citron.Analysis
             result = factory.MakeInterface(outer, decl, typeArgs);
         }
 
+        public void VisitLambda(LambdaDeclSymbol decl)
+        {
+            Debug.Assert(outer != null);
+            Debug.Assert(typeArgs.IsEmpty);
+
+            result = factory.MakeLambda(outer, decl);
+        }
+
+        public void VisitLambdaMemberVar(LambdaMemberVarDeclSymbol decl)
+        {
+            var lambdaOuter = outer as LambdaSymbol;
+            Debug.Assert(lambdaOuter != null);
+            Debug.Assert(typeArgs.IsEmpty);
+
+            result = factory.MakeLambdaMemberVar(lambdaOuter, decl);
+        }
+
         public void VisitModule(ModuleDeclSymbol decl)
         {
             Debug.Assert(outer == null);

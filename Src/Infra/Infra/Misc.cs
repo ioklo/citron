@@ -26,25 +26,38 @@ namespace Citron.Infra
     public class Holder<TValue> : IHolder<TValue>
     {
         TValue? value;
+        bool bSet;
 
         public Holder()
         {
             this.value = default;
+            bSet = false;
         }
 
-        public Holder(TValue value)
+        public Holder(TValue? value)
         {
             this.value = value;
-        }
+            bSet = true;
+        }        
 
         public TValue GetValue() 
-        { 
+        {
+            Debug.Assert(bSet);
             return value!; 
         }
 
         public void SetValue(TValue value) 
         {
-            this.value = value; 
+            this.value = value;
+            bSet = true;
+        }
+    }
+
+    public static class HolderExtensions
+    {
+        public static IHolder<TValue> ToHolder<TValue>(this TValue value)
+        {
+            return new Holder<TValue>(value);
         }
     }
 }

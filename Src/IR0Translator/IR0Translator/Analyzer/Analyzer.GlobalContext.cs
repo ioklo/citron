@@ -327,7 +327,7 @@ namespace Citron.IR0Translator
             }
 
             // TODO: 람다는 현재, 모듈 레퍼런스에 존재하지 않음
-            public LambdaFSymbol MakeLambda(IFuncSymbol outer, LambdaFDeclSymbol decl)
+            public LambdaSymbol MakeLambda(IFuncSymbol outer, LambdaFDeclSymbol decl)
             {
                 return symbolFactory.MakeLambda(outer, decl);
             }

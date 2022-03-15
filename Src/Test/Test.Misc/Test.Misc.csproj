@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Analysis.ModuleInfo\Analysis.ModuleInfo.csproj" />
+    <ProjectReference Include="..\..\Analysis.Symbol\Analysis.Symbol.csproj" />
     <ProjectReference Include="..\..\Infra\Infra.csproj" />
     <ProjectReference Include="..\..\IR0Visitor\IR0Visitor.csproj" />
     <ProjectReference Include="..\..\IR0\IR0.csproj" />

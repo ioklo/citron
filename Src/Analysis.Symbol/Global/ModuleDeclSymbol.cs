@@ -12,7 +12,7 @@ namespace Citron.Analysis
     public class ModuleDeclSymbol : ITopLevelDeclSymbolNode
     {
         M.Name moduleName;
-        TopLevelDeclDict dict;        
+        TopLevelDeclDict dict;
 
         public ModuleDeclSymbol(M.Name moduleName, ImmutableArray<NamespaceDeclSymbol> namespaces, ImmutableArray<GlobalTypeDeclSymbol> types, ImmutableArray<GlobalFuncDeclSymbol> funcs)
         {

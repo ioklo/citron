@@ -1,35 +1,38 @@
 ﻿using Pretune;
 using Citron.Collections;
 using Citron.CompileTime;
+using Citron.Infra;
 
 namespace Citron.Analysis
 {
     [AutoConstructor]
-    public partial class LambdaMemberVarFSymbol : IFSymbolNode
+    public partial class LambdaMemberVarSymbol : ISymbolNode
     {
-        FSymbolFactory factory;
-        LambdaFSymbol outer;
-        LambdaMemberVarFDeclSymbol decl;
+        SymbolFactory factory;
+        LambdaSymbol outer;
+        LambdaMemberVarDeclSymbol decl;
 
-        public IFSymbolNode Apply(TypeEnv typeEnv)
+        ISymbolNode ISymbolNode.Apply(TypeEnv typeEnv) => Apply(typeEnv);
+
+        public LambdaMemberVarSymbol Apply(TypeEnv typeEnv)
         {
             var appliedOuter = outer.Apply(typeEnv);
             return factory.MakeLambdaMemberVar(appliedOuter, decl);
         }
 
-        public IFDeclSymbolNode GetDeclFSymbolNode()
+        public IDeclSymbolNode GetDeclFSymbolNode()
         {
             return decl;
         }
 
-        public FSymbolOuter GetOuter()
+        public ISymbolNode GetOuter()
         {
-            return new FSymbolOuter.FSymbol(outer);
+            return outer;
         }
 
-        public ImmutableArray<ITypeSymbol> GetTypeArgs()
+        public ITypeSymbol GetTypeArg(int index)
         {
-            return default;
+            throw new RuntimeFatalException();
         }
 
         public TypeEnv GetTypeEnv()
@@ -46,6 +49,11 @@ namespace Citron.Analysis
         public Name GetName()
         {
             return decl.GetName();
+        }
+
+        public IDeclSymbolNode? GetDeclSymbolNode()
+        {
+            return decl;
         }
     }
 }

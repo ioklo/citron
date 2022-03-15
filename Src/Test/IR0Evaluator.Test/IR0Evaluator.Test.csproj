@@ -22,8 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Analysis.FSymbol\Analysis.FSymbol.csproj" />
-    <ProjectReference Include="..\..\Analysis.ModuleInfo\Analysis.ModuleInfo.csproj" />
+    <ProjectReference Include="..\..\Analysis.Symbol\Analysis.Symbol.csproj" />
     <ProjectReference Include="..\..\Evaluator\Evaluator.csproj" />
     <ProjectReference Include="..\..\Infra\Infra.csproj" />
     <ProjectReference Include="..\..\IR0Evaluator\IR0Evaluator.csproj" />

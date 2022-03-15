@@ -79,10 +79,10 @@ namespace Citron.Analysis
         {
             return typeEnv;
         }
-        
-        public ImmutableArray<ITypeSymbol> GetTypeArgs()
+
+        public ITypeSymbol GetTypeArg(int index)
         {
-            return typeArgs;
+            return typeArgs[index];
         }
 
         public bool IsStatic()

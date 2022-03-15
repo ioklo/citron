@@ -1,5 +1,6 @@
 ﻿using Citron.Collections;
 using Citron.CompileTime;
+using Citron.Infra;
 using System;
 
 namespace Citron.Analysis
@@ -42,9 +43,9 @@ namespace Citron.Analysis
             return default;
         }
 
-        public ImmutableArray<ITypeSymbol> GetTypeArgs()
+        public ITypeSymbol GetTypeArg(int index)
         {
-            return default;
+            throw new RuntimeFatalException();
         }
     }
 }

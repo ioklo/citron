@@ -40,15 +40,15 @@ namespace Citron.Analysis
             return null;
         }
 
-        public (M.Name Module, M.NamespacePath? NamespacePath) GetRootPath()
-        {
-            var name = decl.GetName();
-            return (name, null);
-        }
+        //public (M.Name Module, M.NamespacePath? NamespacePath) GetRootPath()
+        //{
+        //    var name = decl.GetName();
+        //    return (name, null);
+        //}
 
-        public ImmutableArray<ITypeSymbol> GetTypeArgs()
+        public ITypeSymbol GetTypeArg(int index)
         {
-            return default;
+            throw new RuntimeFatalException();
         }
 
         public TypeEnv GetTypeEnv()

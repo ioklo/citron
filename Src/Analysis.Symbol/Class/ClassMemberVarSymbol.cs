@@ -1,4 +1,5 @@
 ﻿using Citron.Collections;
+using Citron.Infra;
 using System;
 using M = Citron.CompileTime;
 
@@ -45,9 +46,9 @@ namespace Citron.Analysis
             return typeEnv;
         }
 
-        public ImmutableArray<ITypeSymbol> GetTypeArgs()
+        public ITypeSymbol GetTypeArg(int index)
         {
-            return default;
+            throw new RuntimeFatalException();
         }
 
         public ITypeSymbol GetDeclType()

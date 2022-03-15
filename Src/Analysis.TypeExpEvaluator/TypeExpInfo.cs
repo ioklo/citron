@@ -86,7 +86,7 @@ namespace Citron.Analysis
 
         public override TypeExpInfo? GetMemberInfo(string memberName, ImmutableArray<M.SymbolId> typeArgs, S.TypeExp memberTypeExp)
         {
-            var memberTypeNode = symbol.GetMemberDeclNode(new M.Name.Normal(memberName), typeArgs.Length, default) as ITypeDeclSymbol;
+            var memberTypeNode = symbol.GetMemberDeclNode(new DeclSymbolNodeName(new M.Name.Normal(memberName), typeArgs.Length, default)) as ITypeDeclSymbol;
             if (memberTypeNode == null)
                 return null;
 

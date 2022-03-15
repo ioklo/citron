@@ -269,9 +269,9 @@ namespace Citron.Analysis
             return decl;
         }
 
-        public ImmutableArray<ITypeSymbol> GetTypeArgs()
+        public ITypeSymbol GetTypeArg(int index)
         {
-            return typeArgs;
+            return typeArgs[index];
         }
 
         // for covariance

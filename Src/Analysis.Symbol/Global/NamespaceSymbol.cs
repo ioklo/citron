@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Pretune;
+using Citron.Infra;
 
 namespace Citron.Analysis
 {
@@ -33,17 +34,17 @@ namespace Citron.Analysis
             return outer;
         }        
 
-        public (M.Name Module, M.NamespacePath? NamespacePath) GetRootPath()
-        {
-            var (module, outerNamespacePath) = outer.GetRootPath();
-            var name = decl.GetName();
+        //public (M.Name Module, M.NamespacePath? NamespacePath) GetRootPath()
+        //{
+        //    var (module, outerNamespacePath) = outer.GetRootPath();
+        //    var name = decl.GetName();
 
-            return (module, new M.NamespacePath(outerNamespacePath, name));
-        }
+        //    return (module, new M.NamespacePath(outerNamespacePath, name));
+        //}
 
-        public ImmutableArray<ITypeSymbol> GetTypeArgs()
+        public ITypeSymbol GetTypeArg(int index)
         {
-            return default;
+            throw new RuntimeFatalException();
         }
 
         public TypeEnv GetTypeEnv()

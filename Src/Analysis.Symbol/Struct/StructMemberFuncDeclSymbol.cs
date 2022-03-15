@@ -8,10 +8,9 @@ using M = Citron.CompileTime;
 
 namespace Citron.Analysis
 {
-    [AutoConstructor]
-    public partial class StructMemberFuncDeclSymbol : IFuncDeclSymbol
+    public class StructMemberFuncDeclSymbol : IFuncDeclSymbol
     {
-        IHolder<StructDeclSymbol> outer;
+        IHolder<StructDeclSymbol> outerHolder;
 
         M.AccessModifier accessModifier;
         bool bStatic;
@@ -19,6 +18,31 @@ namespace Citron.Analysis
         M.Name name;
         ImmutableArray<string> typeParams;
         IHolder<ImmutableArray<FuncParameter>> parametersHolder;
+
+        LambdaDeclSymbolContainerComponent lambdaDeclContainerComponent;
+
+        public void AddLambda(LambdaDeclSymbol lambdaDecl)
+            => lambdaDeclContainerComponent.AddLambda(lambdaDecl);
+
+        public StructMemberFuncDeclSymbol(
+            IHolder<StructDeclSymbol> outerHolder, 
+            M.AccessModifier accessModifier, 
+            bool bStatic, 
+            IHolder<FuncReturn> returnHolder,
+            M.Name name,
+            ImmutableArray<string> typeParams,
+            IHolder<ImmutableArray<FuncParameter>> paramsHolder,
+            ImmutableArray<LambdaDeclSymbol> lambdaDecls)
+        {
+            this.outerHolder = outerHolder;
+            this.accessModifier = accessModifier;
+            this.bStatic = bStatic;
+            this.returnHolder = returnHolder;
+            this.name = name;
+            this.typeParams = typeParams;
+            this.parametersHolder = paramsHolder;
+            this.lambdaDeclContainerComponent = new LambdaDeclSymbolContainerComponent(lambdaDecls);
+        }
 
         public int GetParameterCount()
         {
@@ -42,7 +66,7 @@ namespace Citron.Analysis
         
         public IDeclSymbolNode? GetOuterDeclNode()
         {
-            return outer.GetValue();
+            return outerHolder.GetValue();
         }
 
         public int GetTypeParamCount()
