@@ -13,10 +13,11 @@
     <ProjectReference Include="..\..\Log\Log.csproj" />
     <ProjectReference Include="..\..\ModuleInfo\ModuleInfo.csproj" />
     <ProjectReference Include="..\..\Syntax\Syntax.csproj" />
+	<ProjectReference Include="..\TestMiscSourceGenerator\TestMiscSourceGenerator.csproj" />
   </ItemGroup>
 
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="dotnet run --project $(ProjectDir)..\TestMiscSourceGenerator $(ProjectDir)" />
+    <Exec Command="dotnet run --no-build --project $(ProjectDir)..\TestMiscSourceGenerator $(ProjectDir)" />
   </Target>
 
 </Project>
