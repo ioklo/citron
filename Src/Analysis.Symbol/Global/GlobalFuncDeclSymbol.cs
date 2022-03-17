@@ -85,7 +85,7 @@ namespace Citron.Analysis
 
         public IEnumerable<IDeclSymbolNode> GetMemberDeclNodes()
         {
-            return Enumerable.Empty<IDeclSymbolNode>();
+            return lambdaDeclContainer.GetLambdaDecls();
         }        
 
         public void Apply(IDeclSymbolNodeVisitor visitor)

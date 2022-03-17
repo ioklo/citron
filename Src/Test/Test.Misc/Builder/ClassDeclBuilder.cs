@@ -23,6 +23,7 @@ namespace Citron.Test.Misc
             this.onFinish = onFinish;
 
             this.classDeclHolder = new Holder<ClassDeclSymbol>();
+            this.memberFuncDeclsBuilder = ImmutableArray.CreateBuilder<ClassMemberFuncDeclSymbol>();
         }
 
         public TOuterBuilder EndClass(out ClassDeclSymbol classDecl)

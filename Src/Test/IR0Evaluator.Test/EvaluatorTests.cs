@@ -58,19 +58,42 @@ namespace Citron.Test
         Name moduleName = new Name.Normal("TestModule");
         SymbolFactory factory;
         IR0Factory r;
-        ITypeSymbol boolType, intType, stringType, voidType;
+
+        ModuleSymbol runtimeModule;
+        NamespaceSymbol systemNS;
+        StructSymbol boolType, intType;
+        ClassSymbol stringType;
+        VoidSymbol voidType;
+        ClassDeclSymbol listTypeDecl;
         
         public EvaluatorTests()
         {
             // [System.Runtime] System.Int32
             this.factory = new SymbolFactory();
 
-            boolType = factory.MakeBool();
-            intType = factory.MakeInt();
-            stringType = factory.MakeString();
-            voidType = factory.MakeVoid();
+            var runtimeModuleDecl = new ModuleDeclBuilder(this.factory, new Name.Normal("System.Runtime"))
+                .BeginNamespace("System")
+                    .Struct("Boolean", out var boolDecl)
+                    .Struct("Int32", out var intDecl)
+                    .Class("String", typeParams: default, out var stringDecl)
+                    .Class("List", Arr("TItem"), out listTypeDecl)
+                .EndNamespace(out var systemNSDecl)
+                .Make();
 
-            this.r = new IR0Factory(boolType, intType, stringType);
+            this.runtimeModule = factory.MakeModule(runtimeModuleDecl);
+            this.systemNS = factory.MakeNamespace(runtimeModule, systemNSDecl);
+
+            this.boolType = factory.MakeStruct(systemNS, boolDecl, default);
+            this.intType = factory.MakeStruct(systemNS, intDecl, default);
+            this.stringType = factory.MakeClass(systemNS, stringDecl, default);
+            this.voidType = factory.MakeVoid();
+
+            this.r = new IR0Factory(boolType, intType, stringType, MakeListSymbol);
+        }       
+        
+        ITypeSymbol MakeListSymbol(ITypeSymbol itemType)
+        {
+            return factory.MakeClass(systemNS, listTypeDecl, Arr(itemType));
         }
 
         CommandStmt Sleep(int i)
@@ -810,12 +833,13 @@ namespace Citron.Test
                 .BeginTopLevelFunc()
                     .Lambda(out var lambdaDecl0)
                     .Lambda(out var lambdaDecl1)
-                .EndTopLevelFunc()
+                .EndTopLevelFunc(out var topLevelFuncDecl)
                 .Make();
 
             var module = factory.MakeModule(moduleDecl);
-            var lambda0 = factory.MakeLambda(module, lambdaDecl0);
-            var lambda1 = factory.MakeLambda(module, lambdaDecl1);
+            var topLevelFunc = factory.MakeGlobalFunc(module, topLevelFuncDecl, default);
+            var lambda0 = factory.MakeLambda(topLevelFunc, lambdaDecl0);
+            var lambda1 = factory.MakeLambda(topLevelFunc, lambdaDecl1);
 
             // script
             var script = new ScriptBuilder(moduleDecl)
@@ -887,15 +911,16 @@ namespace Citron.Test
                     .BeginLambda()
                         .MemberVar(intType, "count", out var lambdaMemberVarDecl1)
                     .EndLambda(out var lambdaDecl1)
-                .EndTopLevelFunc()
+                .EndTopLevelFunc(out var topLevelFuncDecl)
                 .Make();
             
             // make lambda
             var module = factory.MakeModule(moduleDecl);
-            var lambda0 = factory.MakeLambda(module, lambdaDecl0);
+            var topLevelFunc = factory.MakeGlobalFunc(module, topLevelFuncDecl, default);
+            var lambda0 = factory.MakeLambda(topLevelFunc, lambdaDecl0);
             var lambdaMemberVar0 = factory.MakeLambdaMemberVar(lambda0, lambdaMemberVarDecl0);
 
-            var lambda1 = factory.MakeLambda(module, lambdaDecl1);
+            var lambda1 = factory.MakeLambda(topLevelFunc, lambdaDecl1);
             var lambdaMemberVar1 = factory.MakeLambdaMemberVar(lambda1, lambdaMemberVarDecl1);
 
             var script = new ScriptBuilder(moduleDecl)
@@ -973,12 +998,13 @@ namespace Citron.Test
                 .BeginTopLevelFunc()
                     .Lambda(out var lambdaDecl0)
                     .Lambda(out var lambdaDecl1)
-                .EndTopLevelFunc()
+                .EndTopLevelFunc(out var topLevelFuncDecl)
                 .Make();
 
             var module = factory.MakeModule(moduleDecl);
-            var lambda0 = factory.MakeLambda(module, lambdaDecl0);
-            var lambda1 = factory.MakeLambda(module, lambdaDecl1);
+            var topLevelFunc = factory.MakeGlobalFunc(module, topLevelFuncDecl, default);
+            var lambda0 = factory.MakeLambda(topLevelFunc, lambdaDecl0);
+            var lambda1 = factory.MakeLambda(topLevelFunc, lambdaDecl1);
 
             var script = new ScriptBuilder(moduleDecl).AddTopLevel(
                 r.Await(
@@ -1283,7 +1309,7 @@ namespace Citron.Test
                 .Make();
 
             var output = await EvalAsync(script);
-            Assert.Equal("Hello World", output);
+            Assert.Equal("hello world", output);
         }
         
         class TestDriver : IModuleDriver
@@ -1662,11 +1688,13 @@ namespace Citron.Test
 
             void TestDriverInitializer(ModuleDriverContext driverContext)
             {
-                driverContext.AddDriver(new TestDotnetDriver(testExternalModuleName));
+                var driver = new TestDotnetDriver(testExternalModuleName);
+
+                driverContext.AddDriver(driver);
+                driverContext.AddModule(new Name.Normal("System.Console"), driver);
             }
             
             // System.Console.Write("Hello World");
-
             var testExternalModuleDecl = new ModuleDeclBuilder(factory, testExternalModuleName)
                 .BeginNamespace("System")
                     .BeginClass("Console")
@@ -1759,6 +1787,9 @@ namespace Citron.Test
             var makeLambdaFunc = factory.MakeGlobalFunc(module, makeLambdaFuncDecl, default);
             var lambda0 = factory.MakeLambda(makeLambdaFunc, lambdaDecl0);
 
+            // 문법상으로 적기는 힘들거 같다
+            makeLambdaFuncRetHolder.SetValue(new FuncReturn(false, lambda0));
+
             var script = new ScriptBuilder(moduleDecl)
                 .Add(printFuncDecl,
                     r.PrintInt(new LocalVarLoc(new Name.Normal("x"))),
@@ -1801,11 +1832,12 @@ namespace Citron.Test
                     .BeginLambda(r.FuncRet(intType), default)
                         .MemberVar(intType, "x", out var lambdaMemberVarDecl0)
                     .EndLambda(out var lambdaDecl0)
-                .EndTopLevelFunc()
+                .EndTopLevelFunc(out var topLevelFuncDecl)
                 .Make();
 
             var module = factory.MakeModule(moduleDecl);
-            var lambda0 = factory.MakeLambda(module, lambdaDecl0);
+            var topLevelFunc = factory.MakeGlobalFunc(module, topLevelFuncDecl, default);
+            var lambda0 = factory.MakeLambda(topLevelFunc, lambdaDecl0);
             var lambdaMemberVar0 = factory.MakeLambdaMemberVar(lambda0, lambdaMemberVarDecl0);
             
             var script = new ScriptBuilder(moduleDecl)
@@ -1840,11 +1872,11 @@ namespace Citron.Test
 
             var moduleDecl = new ModuleDeclBuilder(factory, moduleName).Make();
 
-            var intListType = factory.MakeList(intType);
+            var intListType = MakeListSymbol(intType);
 
             var script = new ScriptBuilder(moduleDecl)
                 .AddTopLevel(
-                    r.LocalVarDecl(intListType, "list", r.List(intListType, r.Int(34), r.Int(56))),
+                    r.LocalVarDecl(intListType, "list", r.List(intType, r.Int(34), r.Int(56))),
                     r.PrintInt(r.ListIndexer(r.LocalVar("list"), r.Int(1)))
                 )
                 .Make();
@@ -1871,7 +1903,7 @@ namespace Citron.Test
 
             var module = factory.MakeModule(moduleDecl);
             var printFunc = factory.MakeGlobalFunc(module, printFuncDecl, default);
-            var intListType = factory.MakeList(intType);
+            var intListType = MakeListSymbol(intType);
 
             var script = new ScriptBuilder(moduleDecl)
                 .Add(printFuncDecl,
@@ -1880,7 +1912,7 @@ namespace Citron.Test
                 )
                 .AddTopLevel(
                     r.GlobalVarDecl(intListType, "l",
-                        r.List(intListType,
+                        r.List(intType,
                             r.CallExp(printFunc, r.Arg(r.Int(34))),
                             r.CallExp(printFunc, r.Arg(r.Int(56)))
                         )

@@ -16,20 +16,17 @@ namespace Citron.IR0
 {
     public class IR0Factory
     {
-        [AllowNull]
-        ITypeSymbol boolType;
+        public delegate ITypeSymbol ListTypeConstructor(ITypeSymbol itemType);
 
-        [AllowNull]
-        ITypeSymbol intType;
+        ITypeSymbol boolType, intType, stringType;
+        ListTypeConstructor listTypeConstructor;
 
-        [AllowNull]
-        ITypeSymbol stringType;
-
-        public IR0Factory(ITypeSymbol boolType, ITypeSymbol intType, ITypeSymbol stringType)
+        public IR0Factory(ITypeSymbol boolType, ITypeSymbol intType, ITypeSymbol stringType, ListTypeConstructor listTypeConstructor)
         {
             this.boolType = boolType;
             this.intType = intType;
             this.stringType = stringType;
+            this.listTypeConstructor = listTypeConstructor;
         }
 
         public StmtBody StmtBody(DeclSymbolPath path, ImmutableArray<Stmt> body)
@@ -47,12 +44,16 @@ namespace Citron.IR0
         // only have top level stmts
         public Script Script(Name moduleName, ImmutableArray<Stmt> topLevelStmts)
         {
-            // TopLevel정의를 추가시켜야 한다
-            throw new NotImplementedException();
+            var moduleDeclHolder = new Holder<ModuleDeclSymbol>();
+            var topLevelFuncDecl = new GlobalFuncDeclSymbol(moduleDeclHolder, AccessModifier.Public, new Holder<FuncReturn>(new FuncReturn(false, intType)), Name.TopLevel, typeParams: default,
+                new Holder<ImmutableArray<FuncParameter>>(default), true, lambdaDecls: default);
 
-            //var moduleDecl = new ModuleDeclSymbol(moduleName, default, default, default);
-            //var stmtBodies = Arr(new StmtBody(new DeclSymbolPath(null, Name.TopLevel), topLevelStmts));
-            //return new Script(moduleDecl, stmtBodies);
+            var moduleDecl = new ModuleDeclSymbol(moduleName, default, default, Arr(topLevelFuncDecl));
+            moduleDeclHolder.SetValue(moduleDecl);
+            var stmtBodies = Arr(new StmtBody(new DeclSymbolPath(null, Name.TopLevel), topLevelStmts));
+            
+
+            return new Script(moduleDecl, stmtBodies);
         }
 
         #endregion
@@ -448,9 +449,9 @@ namespace Citron.IR0
             return new AssignExp(dest, src);
         }
 
-        public Exp CallExp(GlobalFuncSymbol globalFunc, params Argument[] args)
+        public CallGlobalFuncExp CallExp(GlobalFuncSymbol globalFunc, params Argument[] args)
         {
-            return CallExp(globalFunc, args);
+            return new CallGlobalFuncExp(globalFunc, args.ToImmutableArray());
         }
 
         public AwaitStmt Await(params Stmt[] stmts)
@@ -488,8 +489,9 @@ namespace Citron.IR0
             return new LambdaExp(lambda, args.ToImmutableArray());
         }
 
-        public ListExp List(ListSymbol listType, params Exp[] exps)
+        public ListExp List(ITypeSymbol itemType, params Exp[] exps)
         {
+            var listType = listTypeConstructor.Invoke(itemType);
             return new ListExp(exps.ToImmutableArray(), listType);
         }
 

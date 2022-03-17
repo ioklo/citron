@@ -23,6 +23,11 @@ namespace Citron.Analysis
         IFuncSymbol IFuncSymbol.Apply(TypeEnv typeEnv) => Apply(typeEnv);
         IFuncDeclSymbol IFuncSymbol.GetDeclSymbolNode() => decl;
 
+        public IDeclSymbolNode? GetDeclSymbolNode()
+        {
+            return decl;
+        }
+
         public LambdaSymbol Apply(TypeEnv typeEnv)
         {
             var appliedOuter = outer.Apply(typeEnv);

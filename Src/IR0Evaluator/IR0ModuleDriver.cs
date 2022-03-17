@@ -141,7 +141,20 @@ namespace Citron
 
             public void VisitLambda(LambdaSymbol lambdaSymbol)
             {
-                throw new NotImplementedException();
+                var builder = ImmutableDictionary.CreateBuilder<Name, Value>();
+
+                int memberVarCount = lambdaSymbol.GetMemberVarCount();
+                for (int i = 0; i < memberVarCount; i++)
+                {
+                    var memberVar = lambdaSymbol.GetMemberVar(i);
+                    var memberName = memberVar.GetName();
+
+                    var memberDeclType = memberVar.GetDeclType();
+                    var memberValue = evaluator.AllocValue(memberDeclType.GetSymbolId());
+
+                    builder.Add(memberName, memberValue);
+                    result = new LambdaValue(builder.ToImmutable());
+                }
             }
         }
 
@@ -221,10 +234,7 @@ namespace Citron
             throw new RuntimeFatalException();
         }
 
-        Value IModuleDriver.Alloc(SymbolId id)
-        {
-            throw new NotImplementedException();
-        }
+        Value IModuleDriver.Alloc(SymbolId id) => AllocValue(id);
 
         ValueTask IModuleDriver.ExecuteGlobalFuncAsync(SymbolId globalFuncId, ImmutableArray<Value> args, Value retValue)
         {

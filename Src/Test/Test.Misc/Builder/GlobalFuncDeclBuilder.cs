@@ -36,15 +36,18 @@ namespace Citron.Test.Misc
             => lambdaComponent.BeginLambda(funcRet, funcParams);
 
         // sugar
-        public TOuterBuilder EndTopLevelFunc()
+        public TOuterBuilder EndTopLevelFunc(out GlobalFuncDeclSymbol topLevelFuncDecl)
         {
-            onFinish.Invoke(lambdaComponent.MakeLambdaDecls());
+            topLevelFuncDecl = onFinish.Invoke(lambdaComponent.MakeLambdaDecls());
+            globalFuncDeclHolder.SetValue(topLevelFuncDecl);
+
             return outerBuilder;
         }
 
         public TOuterBuilder EndGlobalFunc(out GlobalFuncDeclSymbol globalFuncDecl)
         {
             globalFuncDecl = onFinish.Invoke(lambdaComponent.MakeLambdaDecls());
+            globalFuncDeclHolder.SetValue(globalFuncDecl);
             return outerBuilder;
         }
     }

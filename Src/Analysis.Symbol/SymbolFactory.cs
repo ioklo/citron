@@ -15,11 +15,6 @@ namespace Citron.Analysis
         // Decl류는 한개만 존재하고, Class (instance)류는 매번 생성한다.
         // instance류는 속성 변경을 허용하지 않는다(되더라도 지역적으로만 전파되기 때문에 의미없다)
 
-        // for runtime
-        RuntimeModuleDeclSymbol runtimeModule;
-        SystemNamespaceSymbol systemNamespace;
-        IntDeclSymbol intDecl;
-
         public SymbolFactory()
         {
 
@@ -167,11 +162,13 @@ namespace Citron.Analysis
 
         public LambdaSymbol MakeLambda(ISymbolNode outer, LambdaDeclSymbol decl)
         {
+            Debug.Assert(outer.GetDeclSymbolNode() == decl.GetOuterDeclNode());
             return new LambdaSymbol(this, outer, decl);
         }
 
         public LambdaMemberVarSymbol MakeLambdaMemberVar(LambdaSymbol outer, LambdaMemberVarDeclSymbol decl)
         {
+            Debug.Assert(outer.GetDeclSymbolNode() == decl.GetOuterDeclNode());
             return new LambdaMemberVarSymbol(this, outer, decl);
         }
         #endregion
@@ -191,37 +188,6 @@ namespace Citron.Analysis
         public NullableSymbol MakeNullable(ITypeSymbol innerType)
         {
             return new NullableSymbol(this, innerType);
-        }
-
-        #endregion
-
-        #region Runtime special symbols (proxies)
-        public BoolSymbol MakeBool()
-        {
-            return new BoolSymbol();
-        }
-
-        public IntSymbol MakeInt()
-        {
-            var systemNS = MakeSystemNS();
-            var intDecl = GetIntDecl();
-
-            return new IntSymbol(systemNS, intDecl);
-        }
-
-        public StringSymbol MakeString()
-        {
-            return new StringSymbol();
-        }
-
-        public ListSymbol MakeList(ITypeSymbol itemType)
-        {
-            return new ListSymbol(this, itemType);
-        }
-
-        IntDeclSymbol GetIntDecl()
-        {
-            return new IntDeclSymbol();
         }
 
         #endregion

@@ -189,7 +189,7 @@ namespace Citron.IR0
 
     // [1, 2, 3]    
     public record ListExp(ImmutableArray<Exp> Elems, ITypeSymbol ListType) : Exp
-    {
+    {   
         public override ITypeSymbol GetTypeSymbol()
         {
             return ListType;

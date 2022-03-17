@@ -13,6 +13,11 @@ namespace Citron.Analysis
             this.lambdaDecls = new List<LambdaDeclSymbol>(lambdaDecls.AsEnumerable());
         }
 
+        public IEnumerable<LambdaDeclSymbol> GetLambdaDecls()
+        {
+            return lambdaDecls;
+        }
+
         public void AddLambda(LambdaDeclSymbol lambdaDecl)
         {
             lambdaDecls.Add(lambdaDecl);
