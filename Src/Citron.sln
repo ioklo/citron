@@ -95,6 +95,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3_Evaluator", "3_Evaluator"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "0_Infra", "0_Infra", "{DB52667F-0993-49D9-B177-77B9D3DDA5EB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Analysis.SyntaxAnalyzer", "Analysis.SyntaxAnalyzer\Analysis.SyntaxAnalyzer.csproj", "{846453FE-71EE-4E11-9A01-626DE0508E5E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -231,6 +233,10 @@ Global
 		{3077B0FD-AD66-4C82-9AB9-56AC0DACF875}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3077B0FD-AD66-4C82-9AB9-56AC0DACF875}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3077B0FD-AD66-4C82-9AB9-56AC0DACF875}.Release|Any CPU.Build.0 = Release|Any CPU
+		{846453FE-71EE-4E11-9A01-626DE0508E5E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{846453FE-71EE-4E11-9A01-626DE0508E5E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{846453FE-71EE-4E11-9A01-626DE0508E5E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{846453FE-71EE-4E11-9A01-626DE0508E5E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -271,6 +277,7 @@ Global
 		{A9FE7188-41B2-46ED-B76A-42B96CD4F668} = {57D000C2-0C20-4985-A40C-B2189F64F155}
 		{014163E7-9689-4329-99C3-4B03ED9F58E7} = {57D000C2-0C20-4985-A40C-B2189F64F155}
 		{8F25ED68-EF41-4E3C-89DE-C7EBBF136643} = {57D000C2-0C20-4985-A40C-B2189F64F155}
+		{846453FE-71EE-4E11-9A01-626DE0508E5E} = {8F25ED68-EF41-4E3C-89DE-C7EBBF136643}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {36419831-5C03-4845-9F0B-52FBB4EC43A6}

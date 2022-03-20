@@ -16,9 +16,9 @@ namespace Citron.IR0Translator.Test
 {
     static class TestMisc
     {   
-        public static void VerifyError(IEnumerable<ILog> logs, AnalyzeErrorCode code, S.ISyntaxNode node)
+        public static void VerifyError(IEnumerable<ILog> logs, SyntaxAnalysisErrorCode code, S.ISyntaxNode node)
         {
-            var result = logs.OfType<AnalyzeErrorLog>()
+            var result = logs.OfType<SyntaxAnalysisErrorLog>()
                 .Any(error => error.Code == code && error.Node == node);
 
             Assert.True(result, $"Errors doesn't contain (Code: {code}, Node: {node})");

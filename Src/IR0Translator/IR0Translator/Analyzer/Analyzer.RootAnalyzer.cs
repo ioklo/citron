@@ -5,7 +5,7 @@ using System.Diagnostics;
 using Citron.Infra;
 using Citron.Collections;
 
-using static Citron.IR0Translator.AnalyzeErrorCode;
+using static Citron.IR0Translator.SyntaxAnalysisErrorCode;
 
 using S = Citron.Syntax;
 using R = Citron.IR0;
@@ -33,69 +33,69 @@ namespace Citron.IR0Translator
                 this.thisId = moduleId;
             }
 
-            public static R.Script Analyze(GlobalContext globalContext, RootContext rootContext, Name moduleName, S.Script script)
-            {
-                var moduleId = new ModuleSymbolId(moduleName, null);
-                var localContext = new LocalContext();
-                var analyzer = new RootAnalyzer(globalContext, rootContext, localContext, moduleId);
-                var stmtAndExpAnalyzer = new StmtAndExpAnalyzer(globalContext, rootContext, localContext);
+            //public static R.Script Analyze(GlobalContext globalContext, RootContext rootContext, Name moduleName, S.Script script)
+            //{
+            //    var moduleId = new ModuleSymbolId(moduleName, null);
+            //    var localContext = new LocalContext();
+            //    var analyzer = new RootAnalyzer(globalContext, rootContext, localContext, moduleId);
+            //    var stmtAndExpAnalyzer = new StmtAndExpAnalyzer(globalContext, rootContext, localContext);
 
-                // 첫번째 페이즈, global var를 검사하는 겸 
-                foreach (var elem in script.Elements)
-                {
-                    if (elem is S.StmtScriptElement stmtElem)
-                    {
-                        if (stmtElem.Stmt is S.VarDeclStmt varDeclStmt)
-                        {
-                            var rstmt = analyzer.AnalyzeGlobalVarDecl(varDeclStmt.VarDecl);
-                            rootContext.AddTopLevelStmt(rstmt);
-                        }
-                        else
-                        {
-                            var stmtResult = stmtAndExpAnalyzer.AnalyzeStmt(stmtElem.Stmt);
-                            rootContext.AddTopLevelStmt(stmtResult.Stmt);
-                        }
-                    }
-                }
+            //    // 첫번째 페이즈, global var를 검사하는 겸 
+            //    foreach (var elem in script.Elements)
+            //    {
+            //        if (elem is S.StmtScriptElement stmtElem)
+            //        {
+            //            if (stmtElem.Stmt is S.VarDeclStmt varDeclStmt)
+            //            {
+            //                var rstmt = analyzer.AnalyzeGlobalVarDecl(varDeclStmt.VarDecl);
+            //                rootContext.AddTopLevelStmt(rstmt);
+            //            }
+            //            else
+            //            {
+            //                var stmtResult = stmtAndExpAnalyzer.AnalyzeStmt(stmtElem.Stmt);
+            //                rootContext.AddTopLevelStmt(stmtResult.Stmt);
+            //            }
+            //        }
+            //    }
 
-                // 두번째 페이즈, declaration을 훑는다                
-                foreach (var elem in script.Elements)
-                {
-                    switch (elem)
-                    {
-                        case S.GlobalFuncDeclScriptElement globalFuncDeclElem:
-                            analyzer.AnalyzeGlobalFuncDecl(globalFuncDeclElem.FuncDecl);
+            //    // 두번째 페이즈, declaration을 훑는다                
+            //    foreach (var elem in script.Elements)
+            //    {
+            //        switch (elem)
+            //        {
+            //            case S.GlobalFuncDeclScriptElement globalFuncDeclElem:
+            //                analyzer.AnalyzeGlobalFuncDecl(globalFuncDeclElem.FuncDecl);
 
-                            break;
+            //                break;
 
-                        case S.TypeDeclScriptElement typeDeclElem:
-                            analyzer.AnalyzeTypeDecl(typeDeclElem.TypeDecl);
-                            break;
-                    }
-                }
+            //            case S.TypeDeclScriptElement typeDeclElem:
+            //                analyzer.AnalyzeTypeDecl(typeDeclElem.TypeDecl);
+            //                break;
+            //        }
+            //    }
 
-                return rootContext.MakeScript();
-            }
+            //    return rootContext.MakeScript();
+            //}
 
             public R.GlobalVarDeclStmt AnalyzeGlobalVarDecl(S.VarDecl varDecl)
             {
-                var varDeclAnalyzer = new VarDeclElemAnalyzer(globalContext, rootContext, localContext);
-                var declType = globalContext.GetSymbolByTypeExp(varDecl.Type);
+                //var varDeclAnalyzer = new VarDeclElemAnalyzer(globalContext, rootContext, localContext);
+                //var declType = globalContext.GetSymbolByTypeExp(varDecl.Type);
 
-                var elems = new List<R.VarDeclElement>();
-                foreach (var elem in varDecl.Elems)
-                {                    
-                    if (globalContext.DoesInternalGlobalVarNameExist(elem.VarName))
-                        globalContext.AddFatalError(A0104_VarDecl_GlobalVariableNameShouldBeUnique, elem);
+                //var elems = new List<R.VarDeclElement>();
+                //foreach (var elem in varDecl.Elems)
+                //{                    
+                //    if (globalContext.DoesInternalGlobalVarNameExist(elem.VarName))
+                //        globalContext.AddFatalError(A0104_VarDecl_GlobalVariableNameShouldBeUnique, elem);
 
-                    var result = varDeclAnalyzer.AnalyzeVarDeclElement(bLocal: false, elem, varDecl.IsRef, declType);
+                //    var result = varDeclAnalyzer.AnalyzeVarDeclElement(bLocal: false, elem, varDecl.IsRef, declType);
 
-                    globalContext.AddInternalGlobalVarInfo(result.Elem is R.VarDeclElement.Ref, result.TypeSymbol, elem.VarName);
+                //    globalContext.AddInternalGlobalVarInfo(result.Elem is R.VarDeclElement.Ref, result.TypeSymbol, elem.VarName);
 
-                    elems.Add(result.Elem);
-                }
+                //    elems.Add(result.Elem);
+                //}
 
-                return new R.GlobalVarDeclStmt(elems.ToImmutableArray());
+                //return new R.GlobalVarDeclStmt(elems.ToImmutableArray());
             }
 
             (R.ParamHash ParamHash, ImmutableArray<R.Param> Params) MakeParamHashAndParamInfos(S.GlobalFuncDecl funcDecl)

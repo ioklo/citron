@@ -1,8 +1,7 @@
-﻿using Citron.Analysis;
-using Pretune;
+﻿using Pretune;
 using System;
 
-namespace Citron.IR0Translator
+namespace Citron.Analysis
 {
     [AutoConstructor]
     partial struct ResolveHint

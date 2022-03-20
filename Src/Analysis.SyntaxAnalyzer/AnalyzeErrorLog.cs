@@ -4,22 +4,22 @@ using System;
 using System.Collections.Generic;
 using S = Citron.Syntax;
 
-namespace Citron.IR0Translator
+namespace Citron.Analysis
 {
-    public class AnalyzeErrorLog : ILog
+    public class SyntaxAnalysisErrorLog : ILog
     {
-        public AnalyzeErrorCode Code { get; }
+        public SyntaxAnalysisErrorCode Code { get; }
         public S.ISyntaxNode Node { get; }
         public string Message { get; }
 
-        public AnalyzeErrorLog(AnalyzeErrorCode code, S.ISyntaxNode node, string msg)
+        public SyntaxAnalysisErrorLog(SyntaxAnalysisErrorCode code, S.ISyntaxNode node, string msg)
         {
             (Code, Node, Message) = (code, node, msg);
         }
 
         public override bool Equals(object? obj)
         {
-            return obj is AnalyzeErrorLog log &&
+            return obj is SyntaxAnalysisErrorLog log &&
                    Code == log.Code &&
                    EqualityComparer<ISyntaxNode>.Default.Equals(Node, log.Node);
                    // Message == log.Message; 메세지 비교 무시

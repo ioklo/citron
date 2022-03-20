@@ -109,7 +109,7 @@ namespace Citron.Test.IntegrateTest
             Assert.Equal(result, commandProvider.Output);
         }
 
-        public static async Task TestEvalWithErrorAsync(string code, AnalyzeErrorCode errorCode)
+        public static async Task TestEvalWithErrorAsync(string code, SyntaxAnalysisErrorCode errorCode)
         {
             var testLogger = new TestLogger(false);
 
@@ -126,7 +126,7 @@ namespace Citron.Test.IntegrateTest
 
             var commandProvider = new TestCmdProvider();
 
-            var result = testLogger.Logs.OfType<AnalyzeErrorLog>()
+            var result = testLogger.Logs.OfType<SyntaxAnalysisErrorLog>()
                 .Any(error => error.Code == errorCode);
 
             Assert.True(result, $"Errors doesn't contain (Code: {code}");

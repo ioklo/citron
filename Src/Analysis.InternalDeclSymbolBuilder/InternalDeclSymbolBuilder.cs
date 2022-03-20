@@ -234,13 +234,10 @@ namespace Citron.Analysis
                 }
             }
 
-            var moduleDecl = new ModuleDeclSymbol(moduleName, namespaceDecls.ToImmutable(), globalTypeDecls.ToImmutable(), globalFuncDecls.ToImmutable(), default);
+            var moduleDecl = new ModuleDeclSymbol(moduleName, namespaceDecls.ToImmutable(), globalTypeDecls.ToImmutable(), globalFuncDecls.ToImmutable());
             moduleDeclHolder.SetValue(moduleDecl);
 
             // register한 것을 푼다
-
-
-
 
             return moduleDecl;
         }        
@@ -310,7 +307,7 @@ namespace Citron.Analysis
                 parametersHolder.SetValue(parameters);
             });
 
-            return new StructMemberFuncDeclSymbol(outerHolder, accessModifier, decl.IsStatic, returnHolder, new M.Name.Normal(decl.Name), decl.TypeParams, parametersHolder);
+            return new StructMemberFuncDeclSymbol(outerHolder, accessModifier, decl.IsStatic, returnHolder, new M.Name.Normal(decl.Name), decl.TypeParams, parametersHolder, lambdaDecls: default);
         }        
 
         // 이 노드에서는 var가 여러개 나올수 있으므로 리턴처리하지 않고, 안에서 직접 추가한다
@@ -347,7 +344,7 @@ namespace Citron.Analysis
             });
 
             // TODO: 타이프 쳐서 만들어진 constructor는 'trivial' 표시를 하기 전까지는 trivial로 인식하지 않는다 (하위 타입의 trivial constructor가 이 constructor를 참조하지 않는다)
-            return new StructConstructorDeclSymbol(outerHolder, accessModifier, parametersHolder, bTrivial: false);
+            return new StructConstructorDeclSymbol(outerHolder, accessModifier, parametersHolder, bTrivial: false, lambdaDecls: default);
         }
 
         // NOTICE: comparing with baseConstructor and constructor'Decl'
@@ -439,7 +436,7 @@ namespace Citron.Analysis
             }
 
             // trivial constructor를 만듭니다
-            return new StructConstructorDeclSymbol(outer, M.AccessModifier.Public, new Holder<ImmutableArray<FuncParameter>>(builder.MoveToImmutable()), true);
+            return new StructConstructorDeclSymbol(outer, M.AccessModifier.Public, new Holder<ImmutableArray<FuncParameter>>(builder.MoveToImmutable()), bTrivial: true, lambdaDecls: default);
         }
 
         StructDeclSymbol BuildStruct(M.DeclSymbolId outerId, IHolder<ITypeDeclSymbolContainer> containerHolder, S.StructDecl decl)
@@ -629,7 +626,7 @@ namespace Citron.Analysis
             }
 
             // trivial constructor를 만듭니다
-            return new ClassConstructorDeclSymbol(outer, M.AccessModifier.Public, new Holder<ImmutableArray<FuncParameter>>(builder.MoveToImmutable()), true);
+            return new ClassConstructorDeclSymbol(outer, M.AccessModifier.Public, new Holder<ImmutableArray<FuncParameter>>(builder.MoveToImmutable()), bTrivial: true, lambdaDecls: default);
         }
 
         static ClassConstructorDeclSymbol? GetClassConstructorHasSameParamWithTrivial(
@@ -687,7 +684,7 @@ namespace Citron.Analysis
                 parametersHolder.SetValue(parameters);
             });
 
-            return new ClassMemberFuncDeclSymbol(outerHolder, accessModifier, returnHolder, new M.Name.Normal(decl.Name), decl.TypeParams, parametersHolder, decl.IsStatic);
+            return new ClassMemberFuncDeclSymbol(outerHolder, accessModifier, returnHolder, new M.Name.Normal(decl.Name), decl.TypeParams, parametersHolder, decl.IsStatic, lambdaDecls: default);
         }
 
         void BuildClassMemberVar(ImmutableArray<ClassMemberVarDeclSymbol>.Builder builder, M.DeclSymbolId outerId, IHolder<ClassDeclSymbol> outerHolder, S.ClassMemberVarDecl decl)
@@ -723,7 +720,7 @@ namespace Citron.Analysis
             });
 
             // TODO: trivial 마킹하면 검사하고 trivial로 만든다
-            return new ClassConstructorDeclSymbol(outerHolder, accessModifier, parametersHolder, bTrivial: false);
+            return new ClassConstructorDeclSymbol(outerHolder, accessModifier, parametersHolder, bTrivial: false, lambdaDecls: default);
         }
 
         ClassDeclSymbol BuildClass(M.DeclSymbolId outerId, IHolder<ITypeDeclSymbolContainer> containerHolder, S.ClassDecl decl)
@@ -969,7 +966,7 @@ namespace Citron.Analysis
 
             var accessModifier = MakeGlobalAccessModifier(decl.AccessModifier);
             
-            return new GlobalFuncDeclSymbol(outerHolder, accessModifier, returnHolder, new M.Name.Normal(decl.Name), decl.TypeParams, parametersHolder, true);
+            return new GlobalFuncDeclSymbol(outerHolder, accessModifier, returnHolder, new M.Name.Normal(decl.Name), decl.TypeParams, parametersHolder, bInternal: true, lambdaDecls: default);
         }
 
         #endregion

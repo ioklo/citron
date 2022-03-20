@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Citron.IR0Translator
+namespace Citron.Analysis
 {
     // 에러 코드는 여기서 모두 관리한다
-    public enum AnalyzeErrorCode
+    public enum SyntaxAnalysisErrorCode
     {
         // Analyzer
         A0101_VarDecl_CantInferVarType,

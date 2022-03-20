@@ -7,7 +7,7 @@ using M = Citron.CompileTime;
 using Citron.Infra;
 using Citron.Collections;
 using Pretune;
-using static Citron.IR0Translator.AnalyzeErrorCode;
+using static Citron.IR0Translator.SyntaxAnalysisErrorCode;
 using System.Diagnostics;
 using Citron.Analysis;
 

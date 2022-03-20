@@ -1,7 +1,6 @@
-﻿using Citron.Analysis;
-using Pretune;
+﻿using Pretune;
 
-namespace Citron.IR0Translator
+namespace Citron.Analysis
 {
     abstract class TypeHint
     {

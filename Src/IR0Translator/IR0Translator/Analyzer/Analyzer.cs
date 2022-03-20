@@ -9,7 +9,7 @@ using System.Text;
 using M = Citron.CompileTime;
 using Citron.Infra;
 using Pretune;
-using static Citron.IR0Translator.AnalyzeErrorCode;
+using static Citron.IR0Translator.SyntaxAnalysisErrorCode;
 
 using S = Citron.Syntax;
 using R = Citron.IR0;

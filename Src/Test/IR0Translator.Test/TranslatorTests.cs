@@ -10,7 +10,7 @@ using S = Citron.Syntax;
 using M = Citron.CompileTime;
 using R = Citron.IR0;
 
-using static Citron.IR0Translator.AnalyzeErrorCode;
+using static Citron.IR0Translator.SyntaxAnalysisErrorCode;
 using static Citron.Infra.Misc;
 using static Citron.IR0Translator.Test.TestMisc;
 using static Citron.Syntax.SyntaxFactory;

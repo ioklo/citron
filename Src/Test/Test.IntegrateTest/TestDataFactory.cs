@@ -93,11 +93,11 @@ namespace Citron.Test.IntegrateTest
         S.Script sscript;
         ILog log;
 
-        public ParseTranslateWithErrorTestData(string code, S.Script sscript, AnalyzeErrorCode errorCode, S.ISyntaxNode node)
+        public ParseTranslateWithErrorTestData(string code, S.Script sscript, SyntaxAnalysisErrorCode errorCode, S.ISyntaxNode node)
         {
             this.code = code;
             this.sscript = sscript;
-            this.log = new AnalyzeErrorLog(errorCode, node, "");
+            this.log = new SyntaxAnalysisErrorLog(errorCode, node, "");
         }
 
         public ParseTranslateWithErrorTestData(string code, S.Script sscript, ILog log)
@@ -159,7 +159,7 @@ namespace Citron.Test.IntegrateTest
         }
     }
 
-    public record EvalWithErrorTestData(string Code, AnalyzeErrorCode ErrorCode) : TestData
+    public record EvalWithErrorTestData(string Code, SyntaxAnalysisErrorCode ErrorCode) : TestData
     {
         public override string? GetCode()
         {

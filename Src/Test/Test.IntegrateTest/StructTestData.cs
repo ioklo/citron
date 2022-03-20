@@ -5,7 +5,7 @@ using R = Citron.IR0;
 using static Citron.Infra.Misc;
 using static Citron.Syntax.SyntaxFactory;
 using static Citron.IR0.IR0Factory;
-using static Citron.IR0Translator.AnalyzeErrorCode;
+using static Citron.IR0Translator.SyntaxAnalysisErrorCode;
 
 namespace Citron.Test.IntegrateTest
 {
