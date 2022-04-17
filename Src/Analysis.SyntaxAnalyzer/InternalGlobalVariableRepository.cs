@@ -1,5 +1,5 @@
-﻿using Citron.Analysis;
-using Citron.Collections;
+﻿using Citron.Collections;
+using Citron.CompileTime;
 using Citron.Infra;
 using System;
 using System.Linq;
@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 
 using M = Citron.CompileTime;
 
-namespace Citron.IR0Translator
+namespace Citron.Analysis
 {
-    record InternalGlobalVarInfo(bool IsRef, ITypeSymbol TypeSymbol, string Name);
+    record InternalGlobalVarInfo(bool IsRef, ITypeSymbol TypeSymbol, Name Name);
     
     class InternalGlobalVariableRepository : IMutable<InternalGlobalVariableRepository>
     {

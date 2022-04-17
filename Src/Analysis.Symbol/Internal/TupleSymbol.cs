@@ -21,6 +21,8 @@ namespace Citron.Analysis
             this.memberVars = memberVars;
         }
 
+        
+
         public TupleSymbol Apply(TypeEnv typeEnv)
         {
             var appliedMemberVars = ImmutableArray.CreateRange(memberVars, memberVar => memberVar.Apply(typeEnv));

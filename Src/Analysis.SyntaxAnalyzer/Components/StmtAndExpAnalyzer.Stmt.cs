@@ -9,11 +9,11 @@ using static Citron.Analysis.SyntaxAnalysisErrorCode;
 
 using S = Citron.Syntax;
 using R = Citron.IR0;
-using M = Citron.CompileTime;
 using Pretune;
 using System.Linq;
 using Citron.Infra;
 using Citron.Collections;
+using Citron.CompileTime;
 
 namespace Citron.Analysis
 {
@@ -21,10 +21,11 @@ namespace Citron.Analysis
     partial struct StmtResult
     {
         public R.Stmt Stmt { get; }
+        public bool bFlowEndCompletely { get; } // 모든 구문에 리턴이 있어서 더이상 진행할 수 없다
     }
 
     // StmtAndExpAnalyzer
-    partial struct StmtAndExpAnalyzer
+    partial class StmtAndExpAnalyzer
     {   
         // CommandStmt에 있는 expStringElement를 분석한다
         StmtResult AnalyzeCommandStmt(S.CommandStmt cmdStmt)
@@ -37,13 +38,13 @@ namespace Citron.Analysis
                 builder.Add((R.StringExp)expResult.Result);
             }
 
-            return new StmtResult(new R.CommandStmt(builder.ToImmutable()));
+            return new StmtResult(new R.CommandStmt(builder.ToImmutable()), bFlowEndCompletely: false);
         }
             
         StmtResult AnalyzeLocalVarDeclStmt(S.VarDeclStmt varDeclStmt)
         {
             var localVarDecl = AnalyzeLocalVarDecl(varDeclStmt.VarDecl);
-            return new StmtResult(new R.LocalVarDeclStmt(localVarDecl));
+            return new StmtResult(new R.LocalVarDeclStmt(localVarDecl), bFlowEndCompletely: false);
         }
 
         //bool AnalyzeIfTestEnumStmt(
@@ -145,7 +146,7 @@ namespace Citron.Analysis
                 if (ifTestStmt.VarName != null)
                 {
                     var newAnalyzer = NewAnalyzer();
-                    newAnalyzer.localContext.AddLocalVarInfo(true, enumElem, ifTestStmt.VarName);
+                    newAnalyzer.localContext.AddLocalVarInfo(true, enumElem, new Name.Normal(ifTestStmt.VarName));
 
                     bodyResult = newAnalyzer.AnalyzeStmt(ifTestStmt.Body);
                 }
@@ -156,17 +157,21 @@ namespace Citron.Analysis
 
                 // analyze elseBody
                 StmtResult? elseBodyResult;
+                bool bFlowEndCompletely;
+
                 if (ifTestStmt.ElseBody != null)
                 {
                     elseBodyResult = AnalyzeStmt(ifTestStmt.ElseBody);
+                    bFlowEndCompletely = bodyResult.bFlowEndCompletely && elseBodyResult.Value.bFlowEndCompletely;
                 }
                 else
                 {
                     elseBodyResult = null;
+                    bFlowEndCompletely = false;
                 }
 
                 var rstmt = new R.IfTestEnumElemStmt(targetResult.Result, enumElem, ifTestStmt.VarName, bodyResult.Stmt, elseBodyResult?.Stmt);
-                return new StmtResult(rstmt);
+                return new StmtResult(rstmt, bFlowEndCompletely);
             }
             else
             {
@@ -202,20 +207,77 @@ namespace Citron.Analysis
             //    throw new UnreachableCodeException();
             //}
         }
+        
+        public void AnalyzeBody(ImmutableArray<S.Stmt> body, S.ISyntaxNode nodeForErrorReport)
+        {
+            bool bFlowEndCompletely = false;
+
+            // TODO: Body가 실제로 리턴을 제대로 하는지 확인해야 한다
+            foreach (var stmt in body)
+            {
+                if (bFlowEndCompletely) // 플로우가 끝났는데도 왔으면 워닝, 계속 진행은 해야 한다
+                {
+                    throw new NotImplementedException();
+                }
+                else
+                {
+                    var result = AnalyzeStmt(stmt);
+                    bFlowEndCompletely = result.bFlowEndCompletely;
+                }
+            }
+
+            // return/throw구문이 없는 상태로 끝났을 경우 리턴 체크
+            if (!bFlowEndCompletely)
+            {
+                // constructor이거나, void리턴인 경우,
+                if (bodyContext.IsSetReturn()) // 함수, 람다 등에서 리턴 타입이 확정된 경우
+                {
+                    var funcReturn = bodyContext.GetReturn();
+
+                    if(funcReturn == null) // constructor 인 경우 통과
+                    {
+                    }
+                    else if(funcReturn.Value.IsRef == false && globalContext.IsVoidType(funcReturn.Value.Type)) // void 리턴인 경우 통과
+                    {
+                    }
+                    else
+                    {
+                        globalContext.AddFatalError(A2901_BodyShouldReturn, nodeForErrorReport);
+                    }
+                }
+                else // 리턴타입이 확정되지 않은 경우
+                {
+                    bodyContext.SetReturn(false, globalContext.GetVoidType());
+                }
+            }
+        }
 
         StmtResult AnalyzeIfStmt(S.IfStmt ifStmt)
         {
             // 순회
             var condExp = AnalyzeExp_Exp(ifStmt.Cond, ResolveHint.None);
             var bodyResult = AnalyzeStmt(ifStmt.Body);
-            StmtResult? elseBodyResult = (ifStmt.ElseBody != null) ? AnalyzeStmt(ifStmt.ElseBody) : null;
+
+            StmtResult? elseBodyResult;
+            bool bFlowEndCompletely;
+
+            if (ifStmt.ElseBody != null)
+            {
+                elseBodyResult = AnalyzeStmt(ifStmt.ElseBody);
+                bFlowEndCompletely = bodyResult.bFlowEndCompletely && elseBodyResult.Value.bFlowEndCompletely;
+            }
+            else
+            {
+                elseBodyResult = null;
+                bFlowEndCompletely = false;
+            }
 
             condExp = globalContext.TryCastExp_Exp(condExp, globalContext.GetBoolType());
 
             if (condExp == null)
                 globalContext.AddFatalError(A1001_IfStmt_ConditionShouldBeBool, ifStmt.Cond);
 
-            return new StmtResult(new R.IfStmt(condExp, bodyResult.Stmt, elseBodyResult?.Stmt));
+            return new StmtResult(new R.IfStmt(condExp, bodyResult.Stmt, elseBodyResult?.Stmt), bFlowEndCompletely);
         }
 
         [AutoConstructor]
@@ -271,7 +333,7 @@ namespace Citron.Analysis
             var newLoopStmtAnalyzer = newAnalyzer.NewAnalyzerWithLoop();
             var bodyResult = newLoopStmtAnalyzer.AnalyzeStmt(forStmt.Body);
 
-            return new StmtResult(new R.ForStmt(initializer, cond, continueExp, bodyResult.Stmt));
+            return new StmtResult(new R.ForStmt(initializer, cond, continueExp, bodyResult.Stmt), bodyResult.bFlowEndCompletely);
         }
 
         StmtResult AnalyzeContinueStmt(S.ContinueStmt continueStmt)
@@ -279,7 +341,7 @@ namespace Citron.Analysis
             if (!localContext.IsInLoop())
                 globalContext.AddFatalError(A1501_ContinueStmt_ShouldUsedInLoop, continueStmt);
 
-            return new StmtResult(R.ContinueStmt.Instance);
+            return new StmtResult(R.ContinueStmt.Instance, bFlowEndCompletely: false);
         }
 
         StmtResult AnalyzeBreakStmt(S.BreakStmt breakStmt)
@@ -289,57 +351,57 @@ namespace Citron.Analysis
                 globalContext.AddFatalError(A1601_BreakStmt_ShouldUsedInLoop, breakStmt);
             }
 
-            return new StmtResult(R.BreakStmt.Instance);
+            return new StmtResult(R.BreakStmt.Instance, bFlowEndCompletely: false);
         }
 
         StmtResult AnalyzeReturnStmt(S.ReturnStmt returnStmt)
         {
             // seq 함수는 여기서 모두 처리 
-            if (callableContext.IsSeqFunc())
+            if (bodyContext.IsSeqFunc())
             {
                 if (returnStmt.Info != null)
                     globalContext.AddFatalError(A1202_ReturnStmt_SeqFuncShouldReturnVoid, returnStmt);
 
-                return new StmtResult(new R.ReturnStmt(R.ReturnInfo.None.Instance));
+                return new StmtResult(new R.ReturnStmt(R.ReturnInfo.None.Instance), bFlowEndCompletely: true);
             }
 
             // 리턴 값이 없을 경우
             if (returnStmt.Info == null)
             {
-                var callableReturn = callableContext.GetReturn();
-                var voidTypeValue = globalContext.GetVoidType();
-
-                if (callableReturn == null)
+                // 리턴값이 이미 정해져 있는 경우
+                if (bodyContext.IsSetReturn())
                 {
-                    callableContext.SetRetType(voidTypeValue);
-                }
-                else if (!globalContext.IsVoidType(callableReturn.Value.Type))
-                {
-                    globalContext.AddFatalError(A1201_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType, returnStmt);
-                }
+                    var funcReturn = bodyContext.GetReturn();
 
-                return new StmtResult(new R.ReturnStmt(R.ReturnInfo.None.Instance));
+                    // 생성자거나, void 함수가 아니라면 에러
+                    if (funcReturn != null && !globalContext.IsVoidType(funcReturn.Value.Type))
+                    {
+                        globalContext.AddFatalError(A1201_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType, returnStmt);
+                    }
+                }
+                else
+                {
+                    // 처음으로 보이는 return; 으로 이 함수는 void 리턴을 확정 한다.
+                    bodyContext.SetReturn(false, globalContext.GetVoidType());
+                }
+                
+                return new StmtResult(new R.ReturnStmt(R.ReturnInfo.None.Instance), bFlowEndCompletely: true);
             }
             else if (returnStmt.Info.Value.IsRef) // return ref i; 또는  () => ref i;
-            {
-                // 이 함수의 적혀져 있던 리턴타입 or 첫번째로 발견되서 유지되고 있는 리턴타입
-                var retTypeValue = callableContext.GetReturn();
-
-                if (retTypeValue == null)
+            {                
+                if (!bodyContext.IsSetReturn())
                 {
-                    // 힌트타입 없이 분석
+                    // 아직 리턴값이 안정해졌다면, 힌트타입 없이 분석
                     var valueResult = AnalyzeExp(returnStmt.Info.Value.Value, ResolveHint.None);
 
                     switch(valueResult)
                     {
                         // TODO: box
-
-
                         case ExpResult.Loc locResult:
                             {
                                 // 리턴값이 안 적혀 있었으므로 적는다
-                                callableContext.SetRetType(locResult.TypeSymbol);
-                                return new StmtResult(new R.ReturnStmt(new R.ReturnInfo.Ref(locResult.Result)));
+                                bodyContext.SetReturn(true, locResult.TypeSymbol);
+                                return new StmtResult(new R.ReturnStmt(new R.ReturnInfo.Ref(locResult.Result)), bFlowEndCompletely: true);
                             }
 
                         default:
@@ -349,6 +411,11 @@ namespace Citron.Analysis
                 }
                 else
                 {
+                    var funcReturn = bodyContext.GetReturn();
+
+                    if (funcReturn == null || !funcReturn.Value.IsRef)
+                        globalContext.AddFatalError(A1201_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType, returnStmt);
+
                     // ref return은 힌트를 쓰지 않는다
                     var valueResult = AnalyzeExp(returnStmt.Info.Value.Value, ResolveHint.None);
 
@@ -359,10 +426,10 @@ namespace Citron.Analysis
                             {
                                 // 현재 함수 시그니처랑 맞춰서 같은지 확인한다
                                 // ExactMatch여야 한다
-                                if (!locResult.TypeSymbol.Equals(retTypeValue))
+                                if (!locResult.TypeSymbol.Equals(funcReturn.Value))
                                     globalContext.AddFatalError(A1201_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType, returnStmt);
 
-                                return new StmtResult(new R.ReturnStmt(new R.ReturnInfo.Ref(locResult.Result)));
+                                return new StmtResult(new R.ReturnStmt(new R.ReturnInfo.Ref(locResult.Result)), bFlowEndCompletely: true);
                             }
 
                         default:
@@ -371,30 +438,38 @@ namespace Citron.Analysis
                     }
                 }
             }
-            else
+            else // 일반적인 리턴 값일 경우
             {
-                // 이 함수의 적혀져 있던 리턴타입 or 첫번째로 발견되서 유지되고 있는 리턴타입
-                var callableReturn = callableContext.GetReturn();
-
-                if (callableReturn == null)
+                // 아직 리턴값이 정해지지 않은 경우
+                if (!bodyContext.IsSetReturn())
                 {
                     // 힌트타입 없이 분석
                     var retValueExp = AnalyzeExp_Exp(returnStmt.Info.Value.Value, ResolveHint.None);
 
                     // 리턴값이 안 적혀 있었으므로 적는다
-                    callableContext.SetRetType(retValueExp.GetTypeSymbol());
+                    bodyContext.SetReturn(false, retValueExp.GetTypeSymbol());
 
-                    return new StmtResult(new R.ReturnStmt(new R.ReturnInfo.Expression(retValueExp)));
+                    return new StmtResult(new R.ReturnStmt(new R.ReturnInfo.Expression(retValueExp)), bFlowEndCompletely: true);
                 }
                 else
                 {
+                    var funcReturn = bodyContext.GetReturn();
+
+                    // 생성자였다면
+                    if (funcReturn == null)
+                        throw new NotImplementedException(); // 에러 처리
+
+                    // TODO: ref 고려
+                    if (funcReturn.Value.IsRef)
+                        throw new NotImplementedException();
+
                     // 리턴타입을 힌트로 사용한다
-                    var retValueExp = AnalyzeExp_Exp(returnStmt.Info.Value.Value, ResolveHint.Make(callableReturn.Value.Type)); // TODO: ref 고려?
+                    var retValueExp = AnalyzeExp_Exp(returnStmt.Info.Value.Value, ResolveHint.Make(funcReturn.Value.Type));
 
                     // 현재 함수 시그니처랑 맞춰서 같은지 확인한다
-                    retValueExp = CastExp_Exp(retValueExp, callableReturn.Value.Type, returnStmt.Info.Value.Value);
+                    retValueExp = CastExp_Exp(retValueExp, funcReturn.Value.Type, returnStmt.Info.Value.Value);
 
-                    return new StmtResult(new R.ReturnStmt(new R.ReturnInfo.Expression(retValueExp)));
+                    return new StmtResult(new R.ReturnStmt(new R.ReturnInfo.Expression(retValueExp)), bFlowEndCompletely: true);
                 }
             }
         }
@@ -402,6 +477,7 @@ namespace Citron.Analysis
         StmtResult AnalyzeBlockStmt(S.BlockStmt blockStmt)
         {
             bool bFatal = false;
+            bool bFlowEndCompletely = false;
             var builder = ImmutableArray.CreateBuilder<R.Stmt>();
 
             var newStmtAnalyzer = NewAnalyzer();
@@ -410,8 +486,16 @@ namespace Citron.Analysis
             {
                 try
                 {
-                    var stmtResult = newStmtAnalyzer.AnalyzeStmt(stmt);
-                    builder.Add(stmtResult.Stmt);
+                    if (bFlowEndCompletely) // return/throw 이후에 구문이 나오면 워닝 처리하고 계속 진행한다
+                    {
+                        throw new NotImplementedException();
+                    }
+                    else
+                    {
+                        var stmtResult = newStmtAnalyzer.AnalyzeStmt(stmt);
+                        builder.Add(stmtResult.Stmt);
+                        bFlowEndCompletely = stmtResult.bFlowEndCompletely; // 항상 마지막 것으로 업데이트
+                    }
                 }
                 catch (AnalyzerFatalException)
                 {
@@ -422,24 +506,26 @@ namespace Citron.Analysis
             if (bFatal)
                 throw new AnalyzerFatalException();
 
-            return new StmtResult(new R.BlockStmt(builder.ToImmutable()));
+            return new StmtResult(new R.BlockStmt(builder.ToImmutable()), bFlowEndCompletely);
         }
 
         StmtResult AnalyzeBlankStmt()
         {
-            return new StmtResult(R.BlankStmt.Instance);
+            return new StmtResult(new R.BlankStmt(), bFlowEndCompletely: false);
         }
 
         StmtResult AnalyzeExpStmt(S.ExpStmt expStmt)
         {
             var exp = AnalyzeTopLevelExp_Exp(expStmt.Exp, ResolveHint.None, A1301_ExpStmt_ExpressionShouldBeAssignOrCall);
-            return new StmtResult(new R.ExpStmt(exp));
+
+            // TODO: throw가 나오면 bFlowEndCompletely가 
+            return new StmtResult(new R.ExpStmt(exp), bFlowEndCompletely: false);
         }
 
         StmtResult AnalyzeTaskStmt(S.TaskStmt taskStmt)
         {
-            var (lambda, body) = AnalyzeLambda(globalContext.GetVoidType(), default, taskStmt.Body, taskStmt);
-            return new StmtResult(new R.TaskStmt(lambda, body));
+            var (lambda, args, body) = AnalyzeLambda(globalContext.GetVoidType(), default, taskStmt.Body, taskStmt);
+            return new StmtResult(new R.TaskStmt(lambda, args, body), bFlowEndCompletely: false);
         }
 
         StmtResult AnalyzeAwaitStmt(S.AwaitStmt awaitStmt)
@@ -447,13 +533,13 @@ namespace Citron.Analysis
             var newStmtAnalyzer = NewAnalyzer();
 
             var bodyResult = newStmtAnalyzer.AnalyzeStmt(awaitStmt.Body);
-            return new StmtResult(new R.AwaitStmt(bodyResult.Stmt));
+            return new StmtResult(new R.AwaitStmt(bodyResult.Stmt), bFlowEndCompletely: false);
         }
 
         StmtResult AnalyzeAsyncStmt(S.AsyncStmt asyncStmt)
         {
-            var (lambda, body) = AnalyzeLambda(globalContext.GetVoidType(), default, asyncStmt.Body, asyncStmt);
-            return new StmtResult(new R.AsyncStmt(lambda, body));
+            var (lambda, args, body) = AnalyzeLambda(globalContext.GetVoidType(), default, asyncStmt.Body, asyncStmt);
+            return new StmtResult(new R.AsyncStmt(lambda, args, body), bFlowEndCompletely: false);
         }
 
         StmtResult AnalyzeForeachStmt(S.ForeachStmt foreachStmt)
@@ -494,13 +580,13 @@ namespace Citron.Analysis
                     throw new NotImplementedException();
 
                 // 루프 컨텍스트에 로컬을 하나 추가하고
-                loopAnalyzer.localContext.AddLocalVarInfo(false, elemType, foreachStmt.VarName);
+                loopAnalyzer.localContext.AddLocalVarInfo(false, elemType, new Name.Normal(foreachStmt.VarName));
 
                 // 본문 분석
                 var bodyResult = loopAnalyzer.AnalyzeStmt(foreachStmt.Body);
 
                 var rforeachStmt = new R.ForeachStmt(elemType, foreachStmt.VarName, iteratorResult.Result, bodyResult.Stmt);
-                return new StmtResult(rforeachStmt);
+                return new StmtResult(rforeachStmt, bodyResult.bFlowEndCompletely);
             }
             else
             {
@@ -540,13 +626,13 @@ namespace Citron.Analysis
                         throw new NotImplementedException();
 
                     // 루프 컨텍스트에 로컬을 하나 추가하고
-                    loopAnalyzer.localContext.AddLocalVarInfo(false, elemType, foreachStmt.VarName);
+                    loopAnalyzer.localContext.AddLocalVarInfo(false, elemType, new Name.Normal(foreachStmt.VarName));
 
                     // 본문 분석
                     var bodyResult = loopAnalyzer.AnalyzeStmt(foreachStmt.Body);
 
                     var rforeachStmt = new R.ForeachStmt(elemType, foreachStmt.VarName, listIterator, bodyResult.Stmt);
-                    return new StmtResult(rforeachStmt);
+                    return new StmtResult(rforeachStmt, bodyResult.bFlowEndCompletely);
 
                 }
                 else
@@ -558,18 +644,18 @@ namespace Citron.Analysis
 
         StmtResult AnalyzeYieldStmt(S.YieldStmt yieldStmt)
         {
-            if (!callableContext.IsSeqFunc())
+            if (!bodyContext.IsSeqFunc())
                 globalContext.AddFatalError(A1401_YieldStmt_YieldShouldBeInSeqFunc, yieldStmt);
 
             // yield에서는 retType이 명시되는 경우만 있을 것이다
-            var callableReturn = callableContext.GetReturn();
+            var callableReturn = bodyContext.GetReturn();
             Debug.Assert(callableReturn != null);
 
             // NOTICE: 리턴 타입을 힌트로 넣었다
             var retValueExp = AnalyzeExp_Exp(yieldStmt.Value, ResolveHint.Make(callableReturn.Value.Type)); // TODO: ref 처리?
             retValueExp = CastExp_Exp(retValueExp, callableReturn.Value.Type, yieldStmt.Value);
 
-            return new StmtResult(new R.YieldStmt(retValueExp));
+            return new StmtResult(new R.YieldStmt(retValueExp), bFlowEndCompletely: false);
         }            
 
         StmtResult AnalyzeDirectiveStmt(S.DirectiveStmt directiveStmt)
@@ -584,7 +670,7 @@ namespace Citron.Analysis
                     switch(argResult)
                     {
                         case ExpResult.Loc locResult:
-                            return new StmtResult(new R.DirectiveStmt.StaticNotNull(locResult.Result));
+                            return new StmtResult(new R.DirectiveStmt.StaticNotNull(locResult.Result), bFlowEndCompletely: false);
 
                         default:
                             globalContext.AddFatalError(A2802_StaticNotNullDirective_ArgumentMustBeLocation, directiveStmt);
@@ -596,7 +682,7 @@ namespace Citron.Analysis
             }
         }
 
-        public StmtResult AnalyzeStmt(S.Stmt stmt)
+        StmtResult AnalyzeStmt(S.Stmt stmt)
         {   
             switch (stmt)
             {

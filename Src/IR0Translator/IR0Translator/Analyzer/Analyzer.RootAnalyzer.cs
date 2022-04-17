@@ -116,7 +116,7 @@ namespace Citron.IR0Translator
                 var (rparamHash, rparamInfos) = MakeParamHashAndParamInfos(funcDecl);
                 var rtypeArgs = MakeRTypeArgs(0, funcDecl.TypeParams); // NOTICE: Global이므로 상위에 type parameter가 없다
 
-                var funcContext = new FuncContext(null, retTypeValue, true, false, MakePath(rname, rparamHash, rtypeArgs));
+                var funcContext = new FuncBodyContext(null, retTypeValue, true, false, MakePath(rname, rparamHash, rtypeArgs));
                 var localContext = new LocalContext();
                 var analyzer = new StmtAndExpAnalyzer(globalContext, funcContext, localContext);
 
@@ -142,7 +142,7 @@ namespace Citron.IR0Translator
                 var (rparamHash, rparamInfos) = MakeParamHashAndParamInfos(funcDecl);
                 var rtypeArgs = MakeRTypeArgs(0, funcDecl.TypeParams); // NOTICE: global이므로 상위에 type parameter가 없다
 
-                var funcContext = new FuncContext(null, retTypeValue, true, true, MakePath(rname, rparamHash, rtypeArgs));
+                var funcContext = new FuncBodyContext(null, retTypeValue, true, true, MakePath(rname, rparamHash, rtypeArgs));
                 var localContext = new LocalContext();
                 var analyzer = new StmtAndExpAnalyzer(globalContext, funcContext, localContext);
 

@@ -21,13 +21,13 @@ using Citron.Collections;
 namespace Citron.Analysis
 {
     // 어떤 Exp에서 타입 정보 등을 알아냅니다    
-    partial struct StmtAndExpAnalyzer
+    partial class StmtAndExpAnalyzer
     {
         // x
         ExpResult AnalyzeIdExp(S.IdentifierExp idExp, ResolveHint resolveHint)
         {
             var typeArgs = GetTypeValues(idExp.TypeArgs);
-            var result = IdExpIdentifierResolver.Resolve(idExp.Value, typeArgs, resolveHint, globalContext, callableContext, localContext);
+            var result = IdExpIdentifierResolver.Resolve(idExp.Value, typeArgs, resolveHint, globalContext, bodyContext, localContext);
 
             switch (result)
             {
@@ -38,22 +38,14 @@ namespace Citron.Analysis
                 case IdentifierResult.Error errorResult:
                     HandleErrorIdentifierResult(idExp, errorResult);
                     break;
-
-                case IdentifierResult.ThisVar:
-                    var thisTypeValue = callableContext.GetThisType();
-                    if (thisTypeValue == null)
-                    {
-                        globalContext.AddFatalError(A2010_ResolveIdentifier_ThisIsNotInTheContext, idExp);
-                        break;
-                    }
-                    else
-                    {
-                        return new ExpResult.Loc(new R.ThisLoc(), thisTypeValue);
-                    }
+                    
+                // 실제 this인 경우만 해당된다. 람다에서 참조한 this는 LocalVarOutsideLambda로 들어온다
+                case IdentifierResult.ThisVar thisVarResult:
+                    return new ExpResult.Loc(new R.ThisLoc(), thisVarResult.TypeSymbol);
 
                 case IdentifierResult.LocalVar localVarResult:
                     {
-                        R.Loc loc = new R.LocalVarLoc(new M.Name.Normal(localVarResult.VarName));
+                        R.Loc loc = new R.LocalVarLoc(localVarResult.VarName);
 
                         if (localVarResult.IsRef)
                             loc = new R.DerefLocLoc(loc);
@@ -62,9 +54,7 @@ namespace Citron.Analysis
                     }
 
                 case IdentifierResult.LocalVarOutsideLambda localVarOutsideLambdaResult:
-                        
-                    // TODO: 여러번 캡쳐해도 한번만
-                    var memberVar = callableContext.AddLambdaCapture(localVarOutsideLambdaResult.VarName, localVarOutsideLambdaResult.TypeSymbol);
+                    var memberVar = bodyContext.MarkLocalVarCaptured(localVarOutsideLambdaResult.VarName, localVarOutsideLambdaResult.TypeSymbol);
                     return new ExpResult.Loc(new R.LambdaMemberVarLoc(memberVar), localVarOutsideLambdaResult.TypeSymbol);
 
                 case IdentifierResult.GlobalVar globalVarResult:
@@ -85,14 +75,27 @@ namespace Citron.Analysis
                     return new ExpResult.Class(classResult.Symbol);
 
                 // 'F' (inside class context C)
-                case IdentifierResult.ClassMemberFuncs classMemberFuncsResult:                        
-                    return new ExpResult.ClassMemberFuncs(classMemberFuncsResult.QueryResult, classMemberFuncsResult.TypeArgsForMatch, new R.ThisLoc(), bCheckInstanceForStatic: false);
+                case IdentifierResult.ClassMemberFuncs classMemberFuncsResult:
+                    {
+                        // this.F(); 혹은 C.F();
+                        return new ExpResult.ClassMemberFuncs(classMemberFuncsResult.QueryResult, classMemberFuncsResult.TypeArgsForMatch, HasExplicitInstance: false, null);
+                    }
 
                 // 'x' (inside class context C)
                 case IdentifierResult.ClassMemberVar classMemberVarResult:
                     {
-                        var instance = classMemberVarResult.Symbol.IsStatic() ? null : new R.ThisLoc();
-                        return new ExpResult.Loc(new R.ClassMemberLoc(instance, classMemberVarResult.Symbol), classMemberVarResult.Symbol.GetDeclType());
+                        var classMemberVar = classMemberVarResult.Symbol;
+
+                        // this.x, 람다인 경우 캡쳐가 필요하다
+                        if (!classMemberVar.IsStatic()) 
+                        {
+                            var thisLoc = MakeThisLoc(idExp);
+                            return new ExpResult.Loc(new R.ClassMemberLoc(thisLoc, classMemberVar), classMemberVar.GetDeclType());
+                        }
+                        else // C.x
+                        {
+                            return new ExpResult.Loc(new R.ClassMemberLoc(null, classMemberVar), classMemberVar.GetDeclType());
+                        }
                     }
 
                 // 'S'
@@ -101,13 +104,23 @@ namespace Citron.Analysis
 
                 // 'F' (inside struct context S)
                 case IdentifierResult.StructMemberFuncs structMemberFuncsResult:
-                    return new ExpResult.StructMemberFuncs(structMemberFuncsResult.QueryResult, structMemberFuncsResult.TypeArgsForMatch, new R.ThisLoc(), bCheckInstanceForStatic: false);
+                    return new ExpResult.StructMemberFuncs(structMemberFuncsResult.QueryResult, structMemberFuncsResult.TypeArgsForMatch, HasExplicitInstance: false, null);
 
                 // 'x' (inside struct context S)
                 case IdentifierResult.StructMemberVar structMemberVarResult:
                     {
-                        var instance = structMemberVarResult.Symbol.IsStatic() ? null : new R.ThisLoc();
-                        return new ExpResult.Loc(new R.StructMemberLoc(instance, structMemberVarResult.Symbol), structMemberVarResult.Symbol.GetDeclType());
+                        var structMemberVar = structMemberVarResult.Symbol;
+
+                        // this.x, 람다인 경우 캡쳐가 필요하다
+                        if (!structMemberVar.IsStatic())
+                        {
+                            var thisLoc = MakeThisLoc(idExp);
+                            return new ExpResult.Loc(new R.StructMemberLoc(thisLoc, structMemberVar), structMemberVar.GetDeclType());
+                        }
+                        else // S.x
+                        {
+                            return new ExpResult.Loc(new R.StructMemberLoc(null, structMemberVar), structMemberVar.GetDeclType());
+                        }
                     }
 
                 // 'E'
@@ -347,7 +360,7 @@ namespace Citron.Analysis
             var decls = ImmutableArray.CreateRange(declAndConstructors, declAndConstructor => declAndConstructor.GetDecl());
 
             // outer가 없으므로 outerTypeEnv는 None이다
-            var result = FuncMatcher.MatchIndex(globalContext, callableContext, localContext, TypeEnv.Empty, decls, sargs, typeArgsForMatch);
+            var result = FuncMatcher.MatchIndex(globalContext, bodyContext, localContext, TypeEnv.Empty, decls, sargs, typeArgsForMatch);
 
             switch (result)
             {
@@ -373,38 +386,45 @@ namespace Citron.Analysis
         {
             var (func, args) = InternalMatchFunc(funcs.QueryResult.Infos, funcs.TypeArgsForMatch, sargs, nodeForErrorReport);
 
-            if (!CanAccess(func))
+            if (!bodyContext.CanAccess(func))
                 globalContext.AddFatalError(A2011_ResolveIdentifier_TryAccessingPrivateMember, nodeForErrorReport);
                 
             return new ExpResult.Exp(new R.CallGlobalFuncExp(func, args));
-        }
-
-        bool CanAccess(ISymbolNode target)
-        {
-            var thisNode = callableContext.GetThisNode();
-            return thisNode.CanAccess(target);
-        }
+        }        
 
         // CallExp분석에서 Callable이 ClassMemberFuncs인 경우 처리
         ExpResult.Exp AnalyzeCallExpClassMemberFuncsCallable(ExpResult.ClassMemberFuncs funcs, ImmutableArray<S.Argument> sargs, S.ISyntaxNode nodeForErrorReport)
         {
             var (func, args) = InternalMatchFunc(funcs.QueryResult.Infos, funcs.TypeArgsForMatch, sargs, nodeForErrorReport);
 
-            if (CanAccess(func))
+            if (bodyContext.CanAccess(func))
                 globalContext.AddFatalError(A2011_ResolveIdentifier_TryAccessingPrivateMember, nodeForErrorReport);
-
-            // static 함수를 호출하는 위치가 선언한 타입 내부라면 체크하지 않고 넘어간다 (멤버 호출이 아닌 경우)
-            if (funcs.bCheckInstanceForStatic)
+            
+            if (funcs.HasExplicitInstance) // x.F, C.F 등 인스턴스 부분이 명시적으로 정해졌다면
             {
-                // static this 체크
-                if (func.IsStatic() && funcs.Instance != null)
+                // static함수를 인스턴스를 통해 접근하려고 했을 경우 에러 처리
+                if (func.IsStatic() && funcs.ExplicitInstance != null) 
                     globalContext.AddFatalError(A2003_ResolveIdentifier_CantGetStaticMemberThroughInstance, nodeForErrorReport);
 
-                // 반대의 경우도 체크
-                if (!func.IsStatic() && funcs.Instance == null)
+                // 인스턴스 함수를 인스턴스 없이 호출하려고 했다면
+                if (!func.IsStatic() && funcs.ExplicitInstance == null)
                     globalContext.AddFatalError(A2005_ResolveIdentifier_CantGetInstanceMemberThroughType, nodeForErrorReport);
-            }
 
+                return new ExpResult.Exp(new R.CallClassMemberFuncExp(func, funcs.ExplicitInstance, args));
+            }
+            else // F 로 인스턴스를 명시적으로 정하지 않았다면 
+            {
+                if (func.IsStatic()) // 정적함수이면 인스턴스에 null
+                {
+                    return new ExpResult.Exp(new R.CallClassMemberFuncExp(func, null, args));
+                }
+                else // 인스턴스 함수이면 인스턴스에 this가 들어간다 B.F 로 접근할 경우 어떻게 하나
+                {
+                    var thisLoc = MakeThisLoc(nodeForErrorReport);
+                    return new ExpResult.Exp(new R.CallClassMemberFuncExp(func, thisLoc, args));
+                }
+            }
+            
             //if (func.IsSequence)
             //{
             //    // TODO: funcValue.RetType을 쓰면 의미가 와닿지 않는데, 쉽게 실수 할 수 있을 것 같다
@@ -412,9 +432,9 @@ namespace Citron.Analysis
             //    return new ExpResult.Exp(new R.CallSeqFuncExp(funcValue.MakeRPath(), funcsResult.Instance, matchedFunc.Args), seqTypeValue);
             //}
             //else
-            {
-                return new ExpResult.Exp(new R.CallClassMemberFuncExp(func, funcs.Instance, args));
-            }
+            //{
+            //    return new ExpResult.Exp(new R.CallClassMemberFuncExp(func, funcs.Instance, args));
+            //}
         }
 
         // CallExp분석에서 Callable이 StructMemberFuncs인 경우 처리
@@ -422,19 +442,33 @@ namespace Citron.Analysis
         {
             var (func, args) = InternalMatchFunc(funcs.QueryResult.Infos, funcs.TypeArgsForMatch, sargs, nodeForErrorReport);
 
-            if (CanAccess(func))
+            if (bodyContext.CanAccess(func))
                 globalContext.AddFatalError(A2011_ResolveIdentifier_TryAccessingPrivateMember, nodeForErrorReport);
 
             // static 함수를 호출하는 위치가 선언한 타입 내부라면 체크하지 않고 넘어간다 (멤버 호출이 아닌 경우)
-            if (funcs.bCheckInstanceForStatic)
+            if (funcs.HasExplicitInstance)
             {
                 // static this 체크
-                if (func.IsStatic() && funcs.Instance != null)
+                if (func.IsStatic() && funcs.ExplicitInstance != null)
                     globalContext.AddFatalError(A2003_ResolveIdentifier_CantGetStaticMemberThroughInstance, nodeForErrorReport);
 
                 // 반대의 경우도 체크
-                if (!func.IsStatic() && funcs.Instance == null)
+                if (!func.IsStatic() && funcs.ExplicitInstance == null)
                     globalContext.AddFatalError(A2005_ResolveIdentifier_CantGetInstanceMemberThroughType, nodeForErrorReport);
+
+                return new ExpResult.Exp(new R.CallStructMemberFuncExp(func, funcs.ExplicitInstance, args));
+            }
+            else
+            {
+                if (func.IsStatic()) // 정적함수이면 인스턴스에 null
+                {
+                    return new ExpResult.Exp(new R.CallStructMemberFuncExp(func, null, args));
+                }
+                else // 인스턴스 함수이면 인스턴스에 this가 들어간다 B.F 로 접근할 경우 어떻게 하나
+                {
+                    var thisLoc = MakeThisLoc(nodeForErrorReport);
+                    return new ExpResult.Exp(new R.CallStructMemberFuncExp(func, thisLoc, args));
+                }
             }
 
             //if (func.IsSequence)
@@ -444,9 +478,9 @@ namespace Citron.Analysis
             //    return new ExpResult.Exp(new R.CallSeqFuncExp(funcValue.MakeRPath(), funcsResult.Instance, matchedFunc.Args), seqTypeValue);
             //}
             //else
-            {
-                return new ExpResult.Exp(new R.CallStructMemberFuncExp(func, funcs.Instance, args));
-            }
+            //{
+            //    return new ExpResult.Exp(new R.CallStructMemberFuncExp(func, funcs.ExplicitInstance, args));
+            //}
         }            
 
         // CallExp 분석에서 Callable이 Exp인 경우 처리
@@ -466,7 +500,7 @@ namespace Citron.Analysis
             // TODO: 메모리를 덜 먹는 방법으로
             var parameters = ImmutableArray.CreateRange(lambdaCallable.GetParameterCount, lambdaCallable.GetParameter);
 
-            var match = FuncMatcher.Match(globalContext, callableContext, localContext, outerTypeEnv, parameters, null, default, sargs);
+            var match = FuncMatcher.Match(globalContext, bodyContext, localContext, outerTypeEnv, parameters, null, default, sargs);
 
             if (match != null)
             {
@@ -490,7 +524,7 @@ namespace Citron.Analysis
             // args는 params를 지원 할 수 있음
             // TODO: MatchFunc에 OuterTypeEnv를 넣는 것이 나은지, fieldParamTypes에 미리 적용해서 넣는 것이 나은지
             // paramTypes으로 typeValues를 건네 줄것이면 적용해서 넣는게 나을 것 같은데, TypeResolver 동작때문에 어떻게 될지 몰라서 일단 여기서는 적용하고 TypeEnv.None을 넘겨준다
-            var result = FuncMatcher.Match(globalContext, callableContext, localContext, TypeEnv.Empty, fieldParamTypes, null, default, sargs);
+            var result = FuncMatcher.Match(globalContext, bodyContext, localContext, TypeEnv.Empty, fieldParamTypes, null, default, sargs);
 
             if (result != null)
             {
@@ -510,7 +544,7 @@ namespace Citron.Analysis
 
             var constructorDecls = ImmutableArray.CreateRange(structDecl.GetConstructorCount, structDecl.GetConstructor);
 
-            var result = FuncMatcher.MatchIndex(globalContext, callableContext, localContext, 
+            var result = FuncMatcher.MatchIndex(globalContext, bodyContext, localContext, 
                 structCallable.GetTypeEnv(), constructorDecls, sargs, default);
 
             switch (result)
@@ -530,7 +564,7 @@ namespace Citron.Analysis
                     // SymbolInstantiator.Instantiate(factory, structCallable, constructorDecl, successResult.TypeArgs);
                     var constructor = structCallable.GetConstructor(successResult.Index);
 
-                    if (!CanAccess(constructor))
+                    if (!bodyContext.CanAccess(constructor))
                         globalContext.AddFatalError(A2011_ResolveIdentifier_TryAccessingPrivateMember, nodeForErrorReport);
 
                     return new ExpResult.Exp(new R.NewStructExp(constructor, successResult.Args));
@@ -608,8 +642,8 @@ namespace Citron.Analysis
             // TODO: 리턴 타입과 인자타입은 타입 힌트를 반영해야 한다
             ITypeSymbol? retType = null;
 
-            var (lambda, body) = AnalyzeLambda(retType, exp.Params, exp.Body, exp);
-            return new ExpResult.Exp(new R.LambdaExp(lambda, body));
+            var (lambda, args, _) = AnalyzeLambda(retType, exp.Params, exp.Body, exp);
+            return new ExpResult.Exp(new R.LambdaExp(lambda, args));
         }
             
         ExpResult AnalyzeIndexerExp(S.IndexerExp exp)
@@ -662,7 +696,24 @@ namespace Citron.Analysis
             //    return true;
             //}
         }
-            
+
+        void HandleItemQueryResultError(SymbolQueryResult.Error error, S.ISyntaxNode nodeForErrorReport)
+        {
+            switch (error)
+            {
+                case SymbolQueryResult.Error.MultipleCandidates:
+                    globalContext.AddFatalError(A2001_ResolveIdentifier_MultipleCandidatesForIdentifier, nodeForErrorReport);
+                    throw new UnreachableCodeException();
+
+                case SymbolQueryResult.Error.VarWithTypeArg:
+                    globalContext.AddFatalError(A2002_ResolveIdentifier_VarWithTypeArg, nodeForErrorReport);
+                    throw new UnreachableCodeException();
+
+                default:
+                    throw new UnreachableCodeException();
+            }
+        }
+
         // exp.x
         ExpResult AnalyzeMemberExpLocParent(S.MemberExp memberExp, R.Loc parentLoc, ITypeSymbol instanceType)
         {
@@ -672,7 +723,7 @@ namespace Citron.Analysis
             switch (memberResult)
             {
                 case SymbolQueryResult.Error errorResult:
-                    HandleItemQueryResultError(globalContext, errorResult, memberExp);
+                    HandleItemQueryResultError(errorResult, memberExp);
                     break;
 
                 case SymbolQueryResult.NotFound:
@@ -689,7 +740,7 @@ namespace Citron.Analysis
 
                 // exp.F
                 case SymbolQueryResult.ClassMemberFuncs classMemberFuncsResult:
-                    return new ExpResult.ClassMemberFuncs(classMemberFuncsResult, typeArgs, parentLoc, bCheckInstanceForStatic: true);
+                    return new ExpResult.ClassMemberFuncs(classMemberFuncsResult, typeArgs, HasExplicitInstance: true, parentLoc);
 
                 // exp.x
                 case SymbolQueryResult.ClassMemberVar classMemberVarResult:
@@ -701,7 +752,7 @@ namespace Citron.Analysis
                             globalContext.AddFatalError(A2003_ResolveIdentifier_CantGetStaticMemberThroughInstance, memberExp);
 
                         // access modifier 검사                            
-                        if (!CanAccess(symbol))
+                        if (!bodyContext.CanAccess(symbol))
                             globalContext.AddFatalError(A2011_ResolveIdentifier_TryAccessingPrivateMember, memberExp);
 
                         return new ExpResult.Loc(new R.ClassMemberLoc(parentLoc, symbol), symbol.GetDeclType());
@@ -714,7 +765,7 @@ namespace Citron.Analysis
 
                 // exp.F
                 case SymbolQueryResult.StructMemberFuncs structMemberFuncsResult:
-                    return new ExpResult.StructMemberFuncs(structMemberFuncsResult, typeArgs, parentLoc, bCheckInstanceForStatic: true);
+                    return new ExpResult.StructMemberFuncs(structMemberFuncsResult, typeArgs, HasExplicitInstance: true, parentLoc);
 
                 // exp.x
                 case SymbolQueryResult.StructMemberVar structMemberVarResult:
@@ -726,7 +777,7 @@ namespace Citron.Analysis
                             globalContext.AddFatalError(A2003_ResolveIdentifier_CantGetStaticMemberThroughInstance, memberExp);
 
                         // access modifier 검사                            
-                        if (!CanAccess(symbol))
+                        if (!bodyContext.CanAccess(symbol))
                             globalContext.AddFatalError(A2011_ResolveIdentifier_TryAccessingPrivateMember, memberExp);
 
                         return new ExpResult.Loc(new R.StructMemberLoc(parentLoc, symbol), symbol.GetDeclType());
@@ -764,7 +815,7 @@ namespace Citron.Analysis
                     throw new UnreachableCodeException();
 
                 case SymbolQueryResult.Error errorResult:
-                    HandleItemQueryResultError(globalContext, errorResult, nodeForErrorReport);
+                    HandleItemQueryResultError(errorResult, nodeForErrorReport);
                     throw new UnreachableCodeException();
 
                 // T.C
@@ -774,7 +825,7 @@ namespace Citron.Analysis
                         var classSymbol = classResult.ClassConstructor.Invoke(typeArgs);
 
                         // check access
-                        if (!CanAccess(classSymbol))
+                        if (!bodyContext.CanAccess(classSymbol))
                             globalContext.AddFatalError(A2011_ResolveIdentifier_TryAccessingPrivateMember, nodeForErrorReport);
 
                         return new ExpResult.Class(classSymbol);
@@ -784,7 +835,7 @@ namespace Citron.Analysis
                 case SymbolQueryResult.ClassMemberFuncs classMemberFuncsResult:
                     {
                         var typeArgs = GetTypeValues(stypeArgs);
-                        return new ExpResult.ClassMemberFuncs(classMemberFuncsResult, typeArgs, null, true);
+                        return new ExpResult.ClassMemberFuncs(classMemberFuncsResult, typeArgs, HasExplicitInstance: true, null);
                     }
 
                 // T.x
@@ -795,7 +846,7 @@ namespace Citron.Analysis
                         if (!symbol.IsStatic())
                             globalContext.AddFatalError(A2005_ResolveIdentifier_CantGetInstanceMemberThroughType, nodeForErrorReport);
 
-                        if (!CanAccess(symbol))
+                        if (!bodyContext.CanAccess(symbol))
                             globalContext.AddFatalError(A2011_ResolveIdentifier_TryAccessingPrivateMember, nodeForErrorReport);
 
                         return new ExpResult.Loc(new R.ClassMemberLoc(null, symbol), symbol.GetDeclType());
@@ -808,7 +859,7 @@ namespace Citron.Analysis
                         var structSymbol = structResult.StructConstructor.Invoke(typeArgs);
 
                         // check access
-                        if (!CanAccess(structSymbol))
+                        if (!bodyContext.CanAccess(structSymbol))
                             globalContext.AddFatalError(A2011_ResolveIdentifier_TryAccessingPrivateMember, nodeForErrorReport);
 
                         return new ExpResult.Struct(structSymbol);
@@ -818,7 +869,7 @@ namespace Citron.Analysis
                 case SymbolQueryResult.StructMemberFuncs structMemberFuncsResult:
                     {
                         var typeArgs = GetTypeValues(stypeArgs);
-                        return new ExpResult.StructMemberFuncs(structMemberFuncsResult, typeArgs, null, true);
+                        return new ExpResult.StructMemberFuncs(structMemberFuncsResult, typeArgs, HasExplicitInstance: true, ExplicitInstance: null);
                     }
 
                 // T.x
@@ -829,7 +880,7 @@ namespace Citron.Analysis
                         if (!symbol.IsStatic())
                             globalContext.AddFatalError(A2005_ResolveIdentifier_CantGetInstanceMemberThroughType, nodeForErrorReport);
 
-                        if (!CanAccess(symbol))
+                        if (!bodyContext.CanAccess(symbol))
                             globalContext.AddFatalError(A2011_ResolveIdentifier_TryAccessingPrivateMember, nodeForErrorReport);
 
                         return new ExpResult.Loc(new R.StructMemberLoc(null, symbol), symbol.GetDeclType());
@@ -842,7 +893,7 @@ namespace Citron.Analysis
                         var enumSymbol = enumResult.EnumConstructor.Invoke(typeArgs);
 
                         // check access
-                        if (!CanAccess(enumSymbol))
+                        if (!bodyContext.CanAccess(enumSymbol))
                             globalContext.AddFatalError(A2011_ResolveIdentifier_TryAccessingPrivateMember, nodeForErrorReport);
 
                         return new ExpResult.Enum(enumSymbol);
@@ -857,36 +908,21 @@ namespace Citron.Analysis
             }
         }
 
+        static Dictionary<IdentifierResult.Error, SyntaxAnalysisErrorCode> errorMap = new Dictionary<IdentifierResult.Error, SyntaxAnalysisErrorCode>
+        {
+            { IdentifierResult.Error.MultipleCandiates,  A2001_ResolveIdentifier_MultipleCandidatesForIdentifier },
+            { IdentifierResult.Error.VarWithTypeArg, A2002_ResolveIdentifier_VarWithTypeArg },
+            { IdentifierResult.Error.CantGetStaticMemberThroughInstance, A2003_ResolveIdentifier_CantGetStaticMemberThroughInstance },
+            { IdentifierResult.Error.CantGetTypeMemberThroughInstance, A2004_ResolveIdentifier_CantGetTypeMemberThroughInstance },
+            { IdentifierResult.Error.CantGetInstanceMemberThroughType, A2005_ResolveIdentifier_CantGetInstanceMemberThroughType },
+            { IdentifierResult.Error.FuncCantHaveMember, A2006_ResolveIdentifier_FuncCantHaveMember },
+            { IdentifierResult.Error.CantGetThis, A2010_ResolveIdentifier_ThisIsNotInTheContext }
+        };
+
         void HandleErrorIdentifierResult(S.ISyntaxNode nodeForErrorReport, IdentifierResult.Error errorResult)
         {
-            switch (errorResult)
-            {
-                case IdentifierResult.Error.MultipleCandiates:
-                    globalContext.AddFatalError(A2001_ResolveIdentifier_MultipleCandidatesForIdentifier, nodeForErrorReport);
-                    break;
-
-                case IdentifierResult.Error.VarWithTypeArg:
-                    globalContext.AddFatalError(A2002_ResolveIdentifier_VarWithTypeArg, nodeForErrorReport);
-                    break;
-
-                case IdentifierResult.Error.CantGetStaticMemberThroughInstance:
-                    globalContext.AddFatalError(A2003_ResolveIdentifier_CantGetStaticMemberThroughInstance, nodeForErrorReport);
-                    break;
-
-                case IdentifierResult.Error.CantGetTypeMemberThroughInstance:
-                    globalContext.AddFatalError(A2004_ResolveIdentifier_CantGetTypeMemberThroughInstance, nodeForErrorReport);
-                    break;
-
-                case IdentifierResult.Error.CantGetInstanceMemberThroughType:
-                    globalContext.AddFatalError(A2005_ResolveIdentifier_CantGetInstanceMemberThroughType, nodeForErrorReport);
-                    break;
-
-                case IdentifierResult.Error.FuncCantHaveMember:
-                    globalContext.AddFatalError(A2006_ResolveIdentifier_FuncCantHaveMember, nodeForErrorReport);
-                    break;
-            }
-
-            throw new UnreachableCodeException();
+            var code = errorMap[errorResult];
+            globalContext.AddFatalError(code, nodeForErrorReport);
         }
 
         // exp를 돌려주는 버전
@@ -896,7 +932,7 @@ namespace Citron.Analysis
             if (memberExp.Parent is S.IdentifierExp idParent)
             {
                 var typeArgs = GetTypeValues(idParent.TypeArgs);
-                var result = IdExpIdentifierResolver.Resolve(idParent.Value, typeArgs, ResolveHint.None, globalContext, callableContext, localContext);
+                var result = IdExpIdentifierResolver.Resolve(idParent.Value, typeArgs, ResolveHint.None, globalContext, bodyContext, localContext);
 
                 switch (result)
                 {
@@ -908,26 +944,17 @@ namespace Citron.Analysis
                         HandleErrorIdentifierResult(idParent, errorResult);
                         throw new UnreachableCodeException();
 
-                    case IdentifierResult.ThisVar:
-                        {
-                            var thisTypeValue = callableContext.GetThisType();
-                            if (thisTypeValue == null)
-                            {
-                                globalContext.AddFatalError(A2010_ResolveIdentifier_ThisIsNotInTheContext, idParent);
-                                throw new UnreachableCodeException();
-                            }
-
-                            return AnalyzeMemberExpLocParent(memberExp, new R.ThisLoc(), thisTypeValue);
-                        }
+                    // 함수 안에서 this를 참조한 경우
+                    case IdentifierResult.ThisVar thisVarResult:
+                        return new ExpResult.Loc(new R.ThisLoc(), thisVarResult.TypeSymbol);
 
                     case IdentifierResult.LocalVarOutsideLambda localVarOutsideLambdaResult:
-                        // TODO: 여러번 캡쳐해도 한번만
-                        var lambdaMemberVar = callableContext.AddLambdaCapture(localVarOutsideLambdaResult.VarName, localVarOutsideLambdaResult.TypeSymbol);
+                        var lambdaMemberVar = bodyContext.MarkLocalVarCaptured(localVarOutsideLambdaResult.VarName, localVarOutsideLambdaResult.TypeSymbol);
                         return AnalyzeMemberExpLocParent(memberExp, new R.LambdaMemberVarLoc(lambdaMemberVar), localVarOutsideLambdaResult.TypeSymbol);
 
                     case IdentifierResult.LocalVar localVarResult:
                         {
-                            R.Loc loc = new R.LocalVarLoc(new M.Name.Normal(localVarResult.VarName));
+                            R.Loc loc = new R.LocalVarLoc(localVarResult.VarName);
                             if (localVarResult.IsRef)
                                 loc = new R.DerefLocLoc(loc);
 
@@ -1097,7 +1124,7 @@ namespace Citron.Analysis
             var classDecl = classSymbol.GetDecl();
             var constructorDecls = ImmutableArray.CreateRange(classDecl.GetConstructorCount, classDecl.GetConstructor);
                 
-            var funcMatchResult = FuncMatcher.MatchIndex(globalContext, callableContext, localContext, classSymbol.GetTypeEnv(), constructorDecls, newExp.Args, default);
+            var funcMatchResult = FuncMatcher.MatchIndex(globalContext, bodyContext, localContext, classSymbol.GetTypeEnv(), constructorDecls, newExp.Args, default);
 
             switch(funcMatchResult)
             {
@@ -1113,7 +1140,7 @@ namespace Citron.Analysis
 
                     var constructor = classSymbol.GetConstructor(successResult.Index);
 
-                    if (!CanAccess(constructor))
+                    if (!bodyContext.CanAccess(constructor))
                         globalContext.AddFatalError(A2011_ResolveIdentifier_TryAccessingPrivateMember, newExp);
 
                     return new ExpResult.Exp(new R.NewClassExp(constructor, successResult.Args));
@@ -1163,9 +1190,9 @@ namespace Citron.Analysis
             throw new UnreachableCodeException();
         }
 
-        public static R.Exp AnalyzeExp_Exp(GlobalContext globalContext, ICallableContext callableContext, LocalContext localContext, S.Exp exp, ResolveHint hint)
+        public static R.Exp AnalyzeExp_Exp(GlobalContext globalContext, BodyContext bodyContext, LocalContext localContext, S.Exp exp, ResolveHint hint)
         {
-            var analyzer = new StmtAndExpAnalyzer(globalContext, callableContext, localContext);
+            var analyzer = new StmtAndExpAnalyzer(globalContext, bodyContext, localContext);
             return analyzer.AnalyzeExp_Exp(exp, hint);
         }
 

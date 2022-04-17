@@ -16,7 +16,7 @@ namespace Citron.IR0Translator
             SymbolFactory symbolFactory;
             ImmutableArray<R.Stmt> topLevelStmts;
 
-            AnonymousIdComponent AnonymousIdComponent;
+            LambdaIdComponent AnonymousIdComponent;
 
             public RootContext(ModuleDeclSymbol moduleDecl, SymbolFactory symbolFactory)
             {

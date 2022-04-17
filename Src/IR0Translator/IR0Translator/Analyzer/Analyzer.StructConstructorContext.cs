@@ -15,7 +15,7 @@ namespace Citron.IR0Translator
             R.Path.Nested path;
             StructSymbol structSymbol;
             ImmutableArray<R.CallableMemberDecl> callableMemberDecls;
-            AnonymousIdComponent AnonymousIdComponent;
+            LambdaIdComponent AnonymousIdComponent;
 
             public StructConstructorContext(R.Path.Nested path, StructSymbol structSymbol)
             {

@@ -16,19 +16,19 @@ using R = Citron.IR0;
 namespace Citron.Analysis
 {
     // 어떤 Exp에서 타입 정보 등을 알아냅니다    
-    partial struct StmtAndExpAnalyzer 
+    partial class StmtAndExpAnalyzer 
     {
         GlobalContext globalContext;
-        ICallableContext callableContext;
+        BodyContext bodyContext;
         LocalContext localContext;
 
-        public StmtAndExpAnalyzer(GlobalContext globalContext, ICallableContext callableContext, LocalContext localContext)
+        public StmtAndExpAnalyzer(GlobalContext globalContext, BodyContext bodyContext, LocalContext localContext)
         {
             this.globalContext = globalContext;
-            this.callableContext = callableContext;
+            this.bodyContext = bodyContext;
             this.localContext = localContext;
         }
-            
+
         ImmutableArray<ITypeSymbol> GetTypeValues(ImmutableArray<S.TypeExp> typeExps)
         {
             var builder = ImmutableArray.CreateBuilder<ITypeSymbol>(typeExps.Length);
@@ -45,44 +45,68 @@ namespace Citron.Analysis
         StmtAndExpAnalyzer NewAnalyzer()
         {
             var newLocalContext = localContext.NewLocalContext();
-            return new StmtAndExpAnalyzer(globalContext, callableContext, newLocalContext);
+            return new StmtAndExpAnalyzer(globalContext, bodyContext, newLocalContext);
         }            
 
         StmtAndExpAnalyzer NewAnalyzerWithLoop()
         {
             var newLocalContext = localContext.NewLocalContextWithLoop();
-            return new StmtAndExpAnalyzer(globalContext, callableContext, newLocalContext);
+            return new StmtAndExpAnalyzer(globalContext, bodyContext, newLocalContext);
+        }
+
+        class LocalVarDeclComponent : VarDeclComponent
+        {
+            GlobalContext globalContext;
+            LocalContext localContext;
+
+            ImmutableArray<R.VarDeclElement>.Builder elemsBuilder;
+
+            public LocalVarDeclComponent(GlobalContext globalContext, LocalContext localContext, StmtAndExpAnalyzer stmtAndExpAnalyzer)
+                :base(globalContext, stmtAndExpAnalyzer, bCheckLocalInitializer: true)
+            {
+                this.globalContext = globalContext;
+                this.localContext = localContext;
+            }
+
+            public override void OnElemCreated(ITypeSymbol type, string name, S.VarDeclElement selem, R.VarDeclElement elem)
+            {
+                if (localContext.DoesLocalVarNameExistInScope(name))
+                    globalContext.AddFatalError(A0103_VarDecl_LocalVarNameShouldBeUniqueWithinScope, selem);
+
+                // varDecl.IsRef는 syntax에서 체크한 것이므로, syntax에서 ref가 아니더라도 ref일 수 있으므로 result.Elem으로 검사를 해야한다.
+                localContext.AddLocalVarInfo(elem is R.VarDeclElement.Ref, type, new Name.Normal(name));
+
+                elemsBuilder.Add(elem);
+            }
+
+            public override void OnCompleted()
+            {   
+                // do nothing
+            }
+
+            public R.LocalVarDecl Make()
+            {
+                return new R.LocalVarDecl(elemsBuilder.ToImmutable());
+            }
         }
 
         // var x = 3, y = ref i; 라면 
         R.LocalVarDecl AnalyzeLocalVarDecl(S.VarDecl varDecl)
         {
-            var varDeclAnalyzer = new VarDeclElemAnalyzer(globalContext, callableContext, localContext);
-            var declType = globalContext.GetSymbolByTypeExp(varDecl.Type);
+            var localVarDeclComponent = new LocalVarDeclComponent(globalContext, localContext, this);
+            localVarDeclComponent.AnalyzeVarDecl(varDecl);
 
-            var relems = new List<R.VarDeclElement>();
-            foreach (var elem in varDecl.Elems)
-            {
-                if (localContext.DoesLocalVarNameExistInScope(elem.VarName))
-                    globalContext.AddFatalError(A0103_VarDecl_LocalVarNameShouldBeUniqueWithinScope, elem);
-
-                var result = varDeclAnalyzer.AnalyzeVarDeclElement(bLocal: true, elem, varDecl.IsRef, declType);
-
-                // varDecl.IsRef는 syntax에서 체크한 것이므로, syntax에서 ref가 아니더라도 ref일 수 있으므로 result.Elem으로 검사를 해야한다.
-                localContext.AddLocalVarInfo(result.Elem is R.VarDeclElement.Ref, result.TypeSymbol, elem.VarName);
-                relems.Add(result.Elem);
-            }
-
-            return new R.LocalVarDecl(relems.ToImmutableArray());
+            return localVarDeclComponent.Make();
         }
 
-        (LambdaSymbol Lambda, ImmutableArray<R.Argument> Args, R.Stmt Body) AnalyzeLambda(ITypeSymbol? retType, ImmutableArray<S.LambdaExpParam> sparams, S.Stmt body, S.ISyntaxNode nodeForErrorReport)
+        // retType이 null이면 아직 안정해졌다는 뜻이다
+        (LambdaSymbol Lambda, ImmutableArray<R.Argument> Args, ImmutableArray<R.Stmt> Body) AnalyzeLambda(ITypeSymbol? retType, ImmutableArray<S.LambdaExpParam> sparams, ImmutableArray<S.Stmt> body, S.ISyntaxNode nodeForErrorReport)
         {
             // TODO: 리턴 타입은 타입 힌트를 반영해야 한다
-            // 파라미터는 람다 함수의 지역변수로 취급한다                
-            var newCapturedContext = new CapturedContext(callableContext.GetThisType(), localContext, retType);
-
+            // 파라미터는 람다 함수의 지역변수로 취급한다
+            var newLambdaBodyContext = bodyContext.NewLambdaBodyContext(localContext); // new FuncContext(lambdaDeclHolder, bodyContext.GetThisType(), bSeqFunc: false, localContext);
             var newLocalContext = new LocalContext();
+
             // 람다 파라미터를 지역 변수로 추가한다
             var funcParameters = ImmutableArray.CreateBuilder<FuncParameter>(sparams.Length);
             foreach (var sparam in sparams)
@@ -101,47 +125,17 @@ namespace Citron.Analysis
                 };
 
                 funcParameters.Add(new FuncParameter(paramKind, paramType, new Name.Normal(sparam.Name)));
-                newLocalContext.AddLocalVarInfo(sparam.ParamKind == S.FuncParamKind.Ref, paramType, sparam.Name);
+                newLocalContext.AddLocalVarInfo(sparam.ParamKind == S.FuncParamKind.Ref, paramType, new Name.Normal(sparam.Name));
             }
 
-            var newAnalyzer = new StmtAndExpAnalyzer(globalContext, newCapturedContext, newLocalContext);
+            var newAnalyzer = new StmtAndExpAnalyzer(globalContext, newLambdaBodyContext, newLocalContext);
 
             // 본문 분석
-            var bodyResult = newAnalyzer.AnalyzeStmt(body);
+            newAnalyzer.AnalyzeBody(body, nodeForErrorReport);
 
-            // TODO: need capture this확인해서 this 넣기
-            // var bCaptureThis = newLambdaContext.NeedCaptureThis();
-            ITypeSymbol? capturedThisType = null;
-
-            var funcNode = callableContext.GetThisNode();
-
-            var capturedContextName = callableContext.NewAnonymousName();
-            var lambdaDeclHolder = new Holder<LambdaDeclSymbol>();
-
-            var capturedLocalVars = newCapturedContext.GetCapturedLocalVars();
-            int memberVarCount = capturedLocalVars.Length + (capturedThisType != null ? 1 : 0);
-            var memberVarsBuilder = ImmutableArray.CreateBuilder<LambdaMemberVarDeclSymbol>(memberVarCount);
-            if (capturedThisType != null)
-            {
-                var memberVar = new LambdaMemberVarDeclSymbol(lambdaDeclHolder, capturedThisType, Name.CapturedThis);
-                memberVarsBuilder.Add(memberVar);
-            }
-
-            foreach (var capturedLocalVar in capturedLocalVars)
-            {
-                var memberVar = new LambdaMemberVarDeclSymbol(lambdaDeclHolder, capturedLocalVar.DeclType, capturedLocalVar.VarName);
-                memberVarsBuilder.Add(memberVar);
-            }
-
-            var lambdaDecl = new LambdaDeclSymbol(funcNode.GetDeclSymbolNode(), capturedContextName, newCapturedContext.GetReturn(), funcParameters.MoveToImmutable(), memberVarsBuilder.MoveToImmutable());
-            lambdaDeclHolder.SetValue(lambdaDecl);
-
-            // Stmt분석시점에 추가되는 Declaration
-            callableContext.AddLambdaDecl(lambdaDecl);
-            var context = globalContext.MakeLambda(funcNode, lambdaDecl);
-
-            return (context, bodyResult.Stmt);
+            // lambdaBodyContext로 람다를 만들어서 현재 bodyContext에 넣음. 이걸 밖에서 해야하나 아니면 그냥 내부에서 처리하는게 나을까
+            // var lambdaDecl = newLambdaBodyContext.MakeLambda();
+            // bodyContext.AddLambdaDecl(lambdaDecl);
         }
     }
-    
 }

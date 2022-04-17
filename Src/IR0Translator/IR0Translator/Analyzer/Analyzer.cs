@@ -60,23 +60,6 @@ namespace Citron.IR0Translator
             return typeArgsBuilder.MoveToImmutable();
         }
 
-        static void HandleItemQueryResultError(GlobalContext globalContext, SymbolQueryResult.Error error, S.ISyntaxNode nodeForErrorReport)
-        {
-            switch (error)
-            {
-                case SymbolQueryResult.Error.MultipleCandidates:
-                    globalContext.AddFatalError(A2001_ResolveIdentifier_MultipleCandidatesForIdentifier, nodeForErrorReport);
-                    throw new UnreachableCodeException();
-
-                case SymbolQueryResult.Error.VarWithTypeArg:
-                    globalContext.AddFatalError(A2002_ResolveIdentifier_VarWithTypeArg, nodeForErrorReport);
-                    throw new UnreachableCodeException();
-
-                default:
-                    throw new UnreachableCodeException();
-            }
-        }
-
         public static R.Script? Analyze(
             S.Script sscript,
             M.Name moduleName,

@@ -15,7 +15,7 @@ namespace Citron.IR0Translator
         {   
             ClassConstructorSymbol symbol;
             ImmutableArray<R.CallableMemberDecl> callableMemberDecls;
-            AnonymousIdComponent AnonymousIdComponent;
+            LambdaIdComponent AnonymousIdComponent;
 
             public ClassConstructorContext(ClassConstructorSymbol symbol)
             {

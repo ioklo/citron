@@ -131,6 +131,8 @@ namespace Citron.Analysis
         A2801_StaticNotNullDirective_ShouldHaveOneArgument,
         A2802_StaticNotNullDirective_ArgumentMustBeLocation,
 
+        A2901_BodyShouldReturn, // 리턴 타입이 있는 본문에 리턴이 없다
+
         A9901_NotSupported_LambdaParameterInference,
     }
 }

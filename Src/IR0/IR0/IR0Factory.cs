@@ -360,7 +360,7 @@ namespace Citron.IR0
 
         public LoadExp LoadGlobalVar(string name, ITypeSymbol varType)
         {
-            return new LoadExp(new GlobalVarLoc(name), varType);
+            return new LoadExp(new GlobalVarLoc(new Name.Normal(name)), varType);
         }
 
         public LoadExp Load(Loc loc, ITypeSymbol typeSymbol)
@@ -386,7 +386,7 @@ namespace Citron.IR0
 
         public Loc GlobalVar(string name)
         {
-            return new GlobalVarLoc(name);
+            return new GlobalVarLoc(new Name.Normal(name));
         }
 
         public Loc Deref(Loc loc)

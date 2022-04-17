@@ -11,6 +11,7 @@ using Citron.Collections;
 using Citron.Infra;
 
 using static Citron.Analysis.SyntaxAnalysisErrorCode;
+using System.Diagnostics;
 
 namespace Citron.Analysis
 {
@@ -44,10 +45,10 @@ namespace Citron.Analysis
                 this.builder = ImmutableArray.CreateBuilder<R.VarDeclElement>();
             }
 
-            public override void OnElemCreated(ITypeSymbol type, string name, R.VarDeclElement elem)
+            public override void OnElemCreated(ITypeSymbol type, string name, S.VarDeclElement selem, R.VarDeclElement elem)
             {
                 if (globalContext.DoesInternalGlobalVarNameExist(name))
-                    globalContext.AddFatalError(A0104_VarDecl_GlobalVariableNameShouldBeUnique, elem);
+                    globalContext.AddFatalError(A0104_VarDecl_GlobalVariableNameShouldBeUnique, selem);
 
                 globalContext.AddInternalGlobalVarInfo(elem is R.VarDeclElement.Ref, type, name);
 
@@ -65,10 +66,10 @@ namespace Citron.Analysis
         
         ImmutableArray<R.StmtBody>.Builder stmtBodiesBuilder;        
 
-        public static R.Script Analyze(GlobalContext globalContext, S.Script script, ModuleDeclSymbol moduleDecl, RootContext rootContext, Name moduleName, ImmutableArray<FuncDeclSymbolSyntaxInfo> funcDeclSymbolSyntaxInfos)
+        public static R.Script Analyze(GlobalContext globalContext, S.Script script, ModuleDeclSymbol moduleDecl, ImmutableArray<FuncDeclSymbolSyntaxInfo> funcDeclSymbolSyntaxInfos)
         {
             var localContext = new LocalContext();
-            var stmtAndExpAnalyzer = new StmtAndExpAnalyzer(globalContext, rootContext, localContext);
+            var stmtAndExpAnalyzer = new StmtAndExpAnalyzer(globalContext, bodyContext, localContext);
             
             var scriptAnalyzer = new ScriptAnalyzer(globalContext, stmtAndExpAnalyzer);
             scriptAnalyzer.Analyze(script, funcDeclSymbolSyntaxInfos);
@@ -79,6 +80,7 @@ namespace Citron.Analysis
         {
             this.globalContext = globalContext;
             this.stmtAndExpAnalyzer = stmtAndExpAnalyzer;
+
             this.stmtBodiesBuilder = ImmutableArray.CreateBuilder<R.StmtBody>();
         }
 
@@ -103,6 +105,31 @@ namespace Citron.Analysis
             }
 
             stmtBodiesBuilder.Add(new R.StmtBody(new DeclSymbolPath(null, Name.TopLevel), topLevelStmtsBuilder.ToImmutable()));
+        }
+
+        void AnalyzeGlobalFuncDecl(GlobalFuncDeclSymbol symbol, S.GlobalFuncDecl syntax)
+        {   
+            var retTypeValue = globalContext.GetSymbolByTypeExp(syntax.RetType);
+
+            var funcContext = new FuncBodyContext(symbol, null, symbol.GetReturn(), symbol.IsSequence);
+            var localContext = new LocalContext();
+            var analyzer = new StmtAndExpAnalyzer(globalContext, funcContext, localContext);
+
+            // 파라미터를 로컬에 순서대로 추가
+            int paramCount = symbol.GetParameterCount();
+            for(int i = 0; i < paramCount; i++)
+            {
+                var param = symbol.GetParameter(i);
+                localContext.AddLocalVarInfo(param.Kind == FuncParameterKind.Ref, param.Type, param.Name);
+            }
+            
+            analyzer.AnalyzeBody(syntax.Body);
+
+            //var declSymbolId = symbol.GetDeclSymbolId();            
+            // funcContext에 심어져 있는 Lambda가져와서 넣기
+            //symbol.AddLambda(...)
+            //stmtBodiesBuilder.Add(new R.StmtBody(declSymbolId.Path, analyzer.MakeStmts()));
+            throw new NotImplementedException();
         }
 
         void Analyze(S.Script script, ImmutableArray<FuncDeclSymbolSyntaxInfo> funcDeclSymbolSyntaxInfos)

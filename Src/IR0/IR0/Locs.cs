@@ -14,7 +14,7 @@ namespace Citron.IR0
 
     // 임시 value를 만들어서 Exp를 실행해서 대입해주는 역할, ExpInfo 대신 쓴다    
     public record TempLoc(Exp Exp) : Loc;
-    public record GlobalVarLoc(string Name) : Loc;
+    public record GlobalVarLoc(Name Name) : Loc;
 
     public record LocalVarLoc(Name Name) : Loc;    
 

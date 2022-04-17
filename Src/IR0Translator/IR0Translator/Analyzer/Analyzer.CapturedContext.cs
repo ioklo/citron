@@ -22,7 +22,7 @@ namespace Citron.IR0Translator
             bool bCaptureThis;
             Dictionary<string, ITypeSymbol> localCaptures;
             ImmutableArray<R.CallableMemberDecl> decls;
-            AnonymousIdComponent AnonymousIdComponent;
+            LambdaIdComponent AnonymousIdComponent;
 
             public CapturedContext(ITypeSymbol? thisType, LocalContext parentLocalContext, ITypeSymbol? retType)
             {

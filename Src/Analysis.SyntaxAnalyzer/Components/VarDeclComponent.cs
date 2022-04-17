@@ -35,7 +35,7 @@ namespace Citron.Analysis
             this.bCheckLocalInitializer = bCheckLocalInitializer;
         }
 
-        public abstract void OnElemCreated(ITypeSymbol type, string name, R.VarDeclElement elem);
+        public abstract void OnElemCreated(ITypeSymbol type, string name, S.VarDeclElement selem, R.VarDeclElement elem);
         public abstract void OnCompleted();
 
         public void AnalyzeVarDecl(S.VarDecl varDecl)

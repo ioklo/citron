@@ -14,6 +14,6 @@ namespace Citron.Syntax
         public string Name { get; }
         public ImmutableArray<string> TypeParams { get; }
         public ImmutableArray<FuncParam> Parameters { get; }
-        public BlockStmt Body { get; }
+        public ImmutableArray<Stmt> Body { get; }
     }
 }

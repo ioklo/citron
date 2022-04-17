@@ -251,7 +251,8 @@ namespace Citron.Analysis
 
         public TupleSymbol GetTupleType(ImmutableArray<(ITypeSymbol Type, string? Name)> elems)
         {
-            return symbolLoader.Load(.MakeTupleType(elems);
+            throw new NotImplementedException();
+            // return symbolLoader.Load(.MakeTupleType(elems);
         }            
 
         public R.Exp? TryCastExp_Exp(R.Exp exp, ITypeSymbol expectedType) // nothrow

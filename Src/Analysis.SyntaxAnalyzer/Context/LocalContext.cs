@@ -10,6 +10,7 @@ using R = Citron.IR0;
 using Pretune;
 using S = Citron.Syntax;
 using Citron.Analysis;
+using Citron.CompileTime;
 
 namespace Citron.Analysis
 {   
@@ -17,9 +18,9 @@ namespace Citron.Analysis
     {
         public bool IsRef { get; }
         public ITypeSymbol TypeSymbol { get; }
-        public string Name { get; }
+        public Name Name { get; }
             
-        public LocalVarInfo(bool bRef, ITypeSymbol typeSymbol, string name)
+        public LocalVarInfo(bool bRef, ITypeSymbol typeSymbol, Name name)
         {
             IsRef = bRef;
             Name = name;
@@ -88,7 +89,7 @@ namespace Citron.Analysis
             return new LocalContext(this, true);
         }
 
-        public void AddLocalVarInfo(bool bRef, ITypeSymbol typeValue, string name)
+        public void AddLocalVarInfo(bool bRef, ITypeSymbol typeValue, Name name)
         {
             localVarInfos = localVarInfos.SetItem(name, new LocalVarInfo(bRef, typeValue, name));
         }
@@ -99,7 +100,7 @@ namespace Citron.Analysis
             localVarInfos = localVarInfos.SetItem(name, value.UpdateTypeValue(typeValue));
         }
 
-        public LocalVarInfo? GetLocalVarInfo(string varName)
+        public LocalVarInfo? GetLocalVarInfo(Name varName)
         {
             if (localVarInfos.TryGetValue(varName, out var info))
                 return info;

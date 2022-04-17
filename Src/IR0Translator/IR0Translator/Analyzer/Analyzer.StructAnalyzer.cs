@@ -161,7 +161,7 @@ namespace Citron.IR0Translator
                 var structPath = structSymbol.MakeRPath();
                 var funcPath = new R.Path.Nested(structPath, rname, rparamHash, rtypeArgs);
 
-                var funcContext = new FuncContext(structSymbol, retTypeValue, funcDecl.IsStatic, true, funcPath);
+                var funcContext = new FuncBodyContext(structSymbol, retTypeValue, funcDecl.IsStatic, true, funcPath);
                 var localContext = new LocalContext();
                 var analyzer = new StmtAndExpAnalyzer(globalContext, funcContext, localContext);
 
@@ -201,7 +201,7 @@ namespace Citron.IR0Translator
                 var structPath = structSymbol.MakeRPath();
                 var funcPath = new R.Path.Nested(structPath, rname, rparamHash, rtypeArgs);
 
-                var funcContext = new FuncContext(structSymbol, retTypeValue, funcDecl.IsStatic, false, funcPath);
+                var funcContext = new FuncBodyContext(structSymbol, retTypeValue, funcDecl.IsStatic, false, funcPath);
                 var localContext = new LocalContext();
                 var analyzer = new StmtAndExpAnalyzer(globalContext, funcContext, localContext);
 
