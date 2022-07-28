@@ -68,11 +68,9 @@ namespace Citron.Analysis
 
         public static R.Script Analyze(GlobalContext globalContext, S.Script script, ModuleDeclSymbol moduleDecl, ImmutableArray<FuncDeclSymbolSyntaxInfo> funcDeclSymbolSyntaxInfos)
         {
-            var localContext = new LocalContext();
-            var stmtAndExpAnalyzer = new StmtAndExpAnalyzer(globalContext, bodyContext, localContext);
-            
             var scriptAnalyzer = new ScriptAnalyzer(globalContext, stmtAndExpAnalyzer);
-            scriptAnalyzer.Analyze(script, funcDeclSymbolSyntaxInfos);
+            scriptAnalyzer.AnalyzeScript(script, funcDeclSymbolSyntaxInfos);
+            
             return scriptAnalyzer.MakeScript(moduleDecl);
         }
 
@@ -107,11 +105,12 @@ namespace Citron.Analysis
             stmtBodiesBuilder.Add(new R.StmtBody(new DeclSymbolPath(null, Name.TopLevel), topLevelStmtsBuilder.ToImmutable()));
         }
 
+        // 전역함수를 분석한다
         void AnalyzeGlobalFuncDecl(GlobalFuncDeclSymbol symbol, S.GlobalFuncDecl syntax)
         {   
             var retTypeValue = globalContext.GetSymbolByTypeExp(syntax.RetType);
-
-            var funcContext = new FuncBodyContext(symbol, null, symbol.GetReturn(), symbol.IsSequence);
+            
+            var funcContext = new FuncBodyContext(symbol, null, symbol.GetReturn(), syntax.IsSequence);
             var localContext = new LocalContext();
             var analyzer = new StmtAndExpAnalyzer(globalContext, funcContext, localContext);
 
@@ -123,7 +122,7 @@ namespace Citron.Analysis
                 localContext.AddLocalVarInfo(param.Kind == FuncParameterKind.Ref, param.Type, param.Name);
             }
             
-            analyzer.AnalyzeBody(syntax.Body);
+            analyzer.AnalyzeBody(syntax.Body, syntax);
 
             //var declSymbolId = symbol.GetDeclSymbolId();            
             // funcContext에 심어져 있는 Lambda가져와서 넣기
@@ -132,7 +131,7 @@ namespace Citron.Analysis
             throw new NotImplementedException();
         }
 
-        void Analyze(S.Script script, ImmutableArray<FuncDeclSymbolSyntaxInfo> funcDeclSymbolSyntaxInfos)
+        void AnalyzeScript(S.Script script, ImmutableArray<FuncDeclSymbolSyntaxInfo> funcDeclSymbolSyntaxInfos)
         {
             // 첫번째 페이즈, global var를 검사하는 겸 
             AnalyzeTopLevelStmts(script);
@@ -146,21 +145,21 @@ namespace Citron.Analysis
                         AnalyzeGlobalFuncDecl(globalFuncDeclSymbol, (S.GlobalFuncDecl)info.Syntax);
                         break;
 
-                    case ClassConstructorSymbol classConstructorSymbol: 
-                        AnalyzeClassConstructor(classConsturctorSymbol, (S.ClassConstructorDecl)info.Syntax);
-                        break;
+                    //case ClassConstructorSymbol classConstructorSymbol:
+                    //    AnalyzeClassConstructor(classConsturctorSymbol, (S.ClassConstructorDecl)info.Syntax);
+                    //    break;
 
-                    case ClassMemberFuncDeclSymbol classMemberFuncSymbol: 
-                        AnalyzeClassMemberFunc(classMemberFuncSymbol, (S.ClassMemberFuncDecl)info.Syntax);
-                        break;
+                    //case ClassMemberFuncDeclSymbol classMemberFuncSymbol:
+                    //    AnalyzeClassMemberFunc(classMemberFuncSymbol, (S.ClassMemberFuncDecl)info.Syntax);
+                    //    break;
 
-                    case StructConstructorSymbol structConstructorSymbol:
-                        AnalyzeStructConstructor(structConstructorSymbol, (S.StructConstructorDecl)info.Syntax);
-                        break;
+                    //case StructConstructorSymbol structConstructorSymbol:
+                    //    AnalyzeStructConstructor(structConstructorSymbol, (S.StructConstructorDecl)info.Syntax);
+                    //    break;
 
-                    case StructMemberFuncDeclSymbol structMemberFuncSymbol:
-                        AnalyzeStructMemberFuncDecl(structMemberFuncSymbol, (S.StructMemberFuncDecl)info.Syntax);
-                        break;
+                    //case StructMemberFuncDeclSymbol structMemberFuncSymbol:
+                    //    AnalyzeStructMemberFuncDecl(structMemberFuncSymbol, (S.StructMemberFuncDecl)info.Syntax);
+                    //    break;
 
                     default: 
                         throw new UnreachableCodeException();

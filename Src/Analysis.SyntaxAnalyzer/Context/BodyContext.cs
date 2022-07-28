@@ -54,6 +54,7 @@ namespace Citron.Analysis
         }
 
         // 바깥쪽
+        public abstract bool HasOuterBodyContext();
         public abstract IdentifierResult ResolveIdentifierOuter(string idName, ImmutableArray<ITypeSymbol> typeArgs, ResolveHint hint, GlobalContext globalContext);
 
         // 시퀀스 함수인가
@@ -69,7 +70,7 @@ namespace Citron.Analysis
         public abstract BodyContext NewLambdaBodyContext(LocalContext localContext);
 
         // 람다 관련
-        public abstract LambdaMemberVarDeclSymbol MarkCaptured(IdentifierResult.Valid valid);
+        public abstract LambdaMemberVarSymbol Capture(IdentifierResult.LambdaMemberVar outsideLambda);
         public abstract bool IsLambda();
         public abstract R.Loc MakeThisLoc();
 

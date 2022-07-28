@@ -15,7 +15,7 @@ namespace Citron.Syntax
         string Name,
         ImmutableArray<string> TypeParams,
         ImmutableArray<FuncParam> Parameters,
-        BlockStmt Body
+        ImmutableArray<Stmt> Body
     ) : ClassMemberDecl;
     
     public record ClassConstructorDecl(
@@ -23,7 +23,7 @@ namespace Citron.Syntax
         string Name, 
         ImmutableArray<FuncParam> Parameters, 
         ImmutableArray<Argument>? BaseArgs,
-        BlockStmt Body) : ClassMemberDecl;
+        ImmutableArray<Stmt> Body) : ClassMemberDecl;
 
     public record ClassMemberVarDecl(AccessModifier? AccessModifier, TypeExp VarType, ImmutableArray<string> VarNames) : ClassMemberDecl;
 }

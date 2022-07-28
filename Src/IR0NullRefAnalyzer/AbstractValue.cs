@@ -17,7 +17,7 @@ namespace Citron.IR0Analyzer.NullRefAnalysis
         public abstract void SetUnknown();
 
         public abstract bool IsNotNull();
-        public abstract AbstractValue GetMemberValue(Path.Nested memberPath);
+        // public abstract AbstractValue GetMemberValue(Path.Nested memberPath);
     }
 
     // ExpStmt에서 사용하는 Value, Assign등이 쓸일 없으므로 무효화된다

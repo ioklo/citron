@@ -208,6 +208,23 @@ namespace Citron
             return new ParseResult<ImmutableArray<FuncParam>>(paramsBuilder.ToImmutable(), context);
         }
 
+        public async ValueTask<ParseResult<ImmutableArray<Stmt>>> ParseFuncBodyAsync(ParserContext context)
+        {
+            var stmtsBuilder = ImmutableArray.CreateBuilder<Stmt>();
+            while (!Accept<RBraceToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
+            {
+                if (Parse(await ParseStmtAsync(context), ref context, out var stmt))
+                {
+                    stmtsBuilder.Add(stmt!);
+                    continue;
+                }
+
+                return ParseResult<ImmutableArray<Stmt>>.Invalid;
+            }
+
+            return new ParseResult<ImmutableArray<Stmt>>(stmtsBuilder.ToImmutable(), context);
+        }
+
         internal async ValueTask<ParseResult<GlobalFuncDecl>> ParseGlobalFuncDeclAsync(ParserContext context)
         {
             static ParseResult<GlobalFuncDecl> Invalid() => ParseResult<GlobalFuncDecl>.Invalid;
@@ -231,20 +248,24 @@ namespace Citron
             if (!Parse(await ParseFuncDeclParamsAsync(context), ref context, out var paramInfo))
                 return Invalid();
 
-            if (!Parse(await stmtParser.ParseBlockStmtAsync(context), ref context, out var body))
+            if (!Accept<LBraceToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                 return Invalid();
 
-            return new ParseResult<GlobalFuncDecl>(
-                new GlobalFuncDecl(
-                    null, // TODO: 일단 null
-                    bSequence,
-                    bRefReturn,
-                    retType, 
-                    funcName.Value,
-                    default,
-                    paramInfo,
-                    body), 
-                context);
+            if (!Parse(await ParseFuncBodyAsync(context), ref context, out var body))
+                return Invalid();
+
+            var globalFuncDecl = new GlobalFuncDecl(
+                null, // TODO: 일단 null
+                bSequence,
+                bRefReturn,
+                retType,
+                funcName.Value,
+                default,
+                paramInfo,
+                body
+            );
+
+            return new ParseResult<GlobalFuncDecl>(globalFuncDecl, context);
         }
 
         // <T1, T2, ...>
@@ -426,7 +447,7 @@ namespace Citron
                 return Invalid();
 
             // ex) { ... }
-            if (!Parse(await stmtParser.ParseBlockStmtAsync(context), ref context, out var body))
+            if (!Parse(await ParseFuncBodyAsync(context), ref context, out var body))
                 return Invalid();
 
             var funcDeclElem = new StructMemberFuncDecl(
@@ -452,7 +473,7 @@ namespace Citron
                 return Invalid();
 
             // ex) { ... }
-            if (!Parse(await stmtParser.ParseBlockStmtAsync(context), ref context, out var body))
+            if (!Parse(await ParseFuncBodyAsync(context), ref context, out var body))
                 return Invalid();
 
             var constructorDeclElem = new StructConstructorDecl(accessModifier, name.Value, paramInfo, body);
@@ -566,7 +587,7 @@ namespace Citron
                 return Invalid();
 
             // ex) { ... }
-            if (!Parse(await stmtParser.ParseBlockStmtAsync(context), ref context, out var body))
+            if (!Parse(await ParseFuncBodyAsync(context), ref context, out var body))
                 return Invalid();
 
             var funcDeclElem = new ClassMemberFuncDecl(accessModifier, bStatic, bSequence, bRefReturn, retType, funcName.Value, typeParams, paramInfo, body);
@@ -614,7 +635,7 @@ namespace Citron
             }
 
             // ex) { ... }
-            if (!Parse(await stmtParser.ParseBlockStmtAsync(context), ref context, out var body))
+            if (!Parse(await ParseFuncBodyAsync(context), ref context, out var body))
                 return Invalid();
 
             var constructorDecl = new ClassConstructorDecl(accessModifier, name.Value, paramInfo, baseArgs, body);

@@ -94,20 +94,8 @@ namespace Citron.IR0Translator
             return new R.Param(rparamKind, param.Type.MakeRPath(), rname);
         }
 
-        public static int GetTotalTypeArgCount(this SymbolPath? path)
-        {
-            if (path == null)
-                return 0;
+        
 
-            if (path.Outer == null)
-                return path.TypeArgs.Length;
-
-            return GetTotalTypeArgCount(path.Outer) + path.TypeArgs.Length;
-        }
-
-        public static int GetTotalTypeArgCount(this ModuleSymbolId id)
-        {
-            return id.Path.GetTotalTypeArgCount();
-        }
+        
     }
 }

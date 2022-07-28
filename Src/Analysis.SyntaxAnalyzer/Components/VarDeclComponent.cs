@@ -45,7 +45,7 @@ namespace Citron.Analysis
             foreach (var elem in varDecl.Elems)
             {
                 var result = AnalyzeVarDeclElement(elem, varDecl.IsRef, declType);
-                OnElemCreated(result.Type, elem.VarName, result.Elem);
+                OnElemCreated(result.Type, elem.VarName, elem, result.Elem);
             }
 
             OnCompleted();
@@ -114,10 +114,10 @@ namespace Citron.Analysis
                     }
                     else
                     {
-                        var initExpResult = stmtAndExpAnalyzer.AnalyzeExp_Exp(elem.Initializer.Value.Exp, ResolveHint.None);
-                        var varDeclElem = new R.VarDeclElement.Normal(initExpResult.TypeSymbol, elem.VarName, initExpResult.Result);
+                        var initExp = stmtAndExpAnalyzer.AnalyzeExp_Exp(elem.Initializer.Value.Exp, ResolveHint.None);
+                        var varDeclElem = new R.VarDeclElement.Normal(initExp.GetTypeSymbol(), elem.VarName, initExp);
 
-                        return new Result(initExpResult.TypeSymbol, varDeclElem);
+                        return new Result(initExp.GetTypeSymbol(), varDeclElem);
                     }
                 }
                 else
@@ -152,10 +152,10 @@ namespace Citron.Analysis
                             if (elem.Initializer.Value.IsRef)
                                 globalContext.AddFatalError(A0110_VarDecl_RefInitializerUsedOnNonRefVarDecl, elem);
 
-                            var initExpResult = stmtAndExpAnalyzer.AnalyzeExp_Exp(elem.Initializer.Value.Exp, ResolveHint.Make(declType));
-                            var castExpResult = stmtAndExpAnalyzer.CastExp_Exp(initExpResult, declType, elem.Initializer.Value.Exp);
+                            var initExp = stmtAndExpAnalyzer.AnalyzeExp_Exp(elem.Initializer.Value.Exp, ResolveHint.Make(declType));
+                            var castExp = stmtAndExpAnalyzer.CastExp_Exp(initExp, declType, elem.Initializer.Value.Exp);
 
-                            return new Result(declType, new R.VarDeclElement.Normal(declType, elem.VarName, castExpResult.Result));
+                            return new Result(declType, new R.VarDeclElement.Normal(declType, elem.VarName, castExp));
                         }
                     }
                 }

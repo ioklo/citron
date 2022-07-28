@@ -16,7 +16,7 @@ namespace Citron
         IR0Loader loader;
         Name internalModuleName;
         IIR0CommandProvider commandProvider;
-        Dictionary<string, Value> globalVars;        
+        Dictionary<Name, Value> globalVars;
 
         public IR0GlobalContext(Evaluator evaluator, IR0Loader loader, Name internalModuleName, IIR0CommandProvider commandProvider)
         {
@@ -24,7 +24,7 @@ namespace Citron
             this.loader = loader;
             this.internalModuleName = internalModuleName;
             this.commandProvider = commandProvider;
-            this.globalVars = new Dictionary<string, Value>();
+            this.globalVars = new Dictionary<Name, Value>();
         }
         
         public TSymbol LoadSymbol<TSymbol>(SymbolId symbolId)
@@ -37,7 +37,7 @@ namespace Citron
             return loader.LoadSymbol<TSymbol>(moduleSymbolId.Path);
         }
 
-        public Value GetGlobalValue(string name)
+        public Value GetGlobalValue(Name name)
         {
             return globalVars[name];
         }
@@ -54,7 +54,7 @@ namespace Citron
 
         public void AddGlobalVar(string name, Value value)
         {
-            globalVars.Add(name, value);
+            globalVars.Add(new Name.Normal(name), value);
         }
 
         public Value GetStructStaticMemberValue(SymbolId memberVarId)

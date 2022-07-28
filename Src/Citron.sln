@@ -95,7 +95,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3_Evaluator", "3_Evaluator"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "0_Infra", "0_Infra", "{DB52667F-0993-49D9-B177-77B9D3DDA5EB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Analysis.SyntaxAnalyzer", "Analysis.SyntaxAnalyzer\Analysis.SyntaxAnalyzer.csproj", "{846453FE-71EE-4E11-9A01-626DE0508E5E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Analysis.SyntaxAnalyzer", "Analysis.SyntaxAnalyzer\Analysis.SyntaxAnalyzer.csproj", "{846453FE-71EE-4E11-9A01-626DE0508E5E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -194,7 +194,6 @@ Global
 		{8761C047-BE00-40A1-BBCF-48E908AAF5D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8761C047-BE00-40A1-BBCF-48E908AAF5D2}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D2530292-6338-4462-BB0B-71D552E91E29}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D2530292-6338-4462-BB0B-71D552E91E29}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D2530292-6338-4462-BB0B-71D552E91E29}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D2530292-6338-4462-BB0B-71D552E91E29}.Release|Any CPU.Build.0 = Release|Any CPU
 		{FD081D11-E42B-4F82-90D5-1122CBEB9A41}.Debug|Any CPU.ActiveCfg = Debug|Any CPU

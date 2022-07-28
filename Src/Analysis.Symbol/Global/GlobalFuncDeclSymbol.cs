@@ -21,7 +21,7 @@ namespace Citron.Analysis
 
         ImmutableArray<string> typeParams;
         IHolder<ImmutableArray<FuncParameter>> parametersHolder;
-
+        
         bool bInternal;
 
         LambdaDeclSymbolContainerComponent lambdaDeclContainer;

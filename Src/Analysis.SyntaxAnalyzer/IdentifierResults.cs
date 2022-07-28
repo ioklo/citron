@@ -38,7 +38,8 @@ namespace Citron.Analysis
 
         public record ThisVar(ITypeSymbol TypeSymbol) : Valid;
         public record LocalVar(bool IsRef, ITypeSymbol TypeSymbol, Name VarName) : Valid;
-        public record OutsideLambda(IdentifierResult.Valid Result) : Valid;
+        public record LambdaMemberVar(Func<LambdaMemberVarSymbol> SymbolConstructor) : Valid;
+
         public record GlobalVar(bool IsRef, ITypeSymbol TypeSymbol, Name VarName) : Valid;
 
         public record GlobalFuncs(SymbolQueryResult.GlobalFuncs QueryResult, ImmutableArray<ITypeSymbol> TypeArgsForMatch) : Valid;

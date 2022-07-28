@@ -42,8 +42,8 @@ namespace Citron.CompileTime
             // X<int>.Y<short>.Z<int> 만들어 보기
             var intType = new RootTypeId(N("System.Runtime"), NS("System"), N("Int32"), default);
             var shortType = new RootTypeId(N("System.Runtime"), NS("System"), N("Int16"), default);
-            var zType = new MemberType(
-                new MemberType(
+            var zType = new MemberTypeId(
+                new MemberTypeId(
                     new RootTypeId(moduleName, null, N("X"), ImmutableArray.Create<TypeId>(intType)),
                     N("Y"),
                     ImmutableArray.Create<TypeId>(shortType)
@@ -52,13 +52,13 @@ namespace Citron.CompileTime
                 ImmutableArray.Create<TypeId>(intType)
             );
 
-            Assert.Equal(N("MyModule"), ((RootTypeId)((MemberType)zType.Outer).Outer).Module);
-            Assert.Null(((RootTypeId)((MemberType)zType.Outer).Outer).Namespace);
-            Assert.Equal(N("X"), ((RootTypeId)((MemberType)zType.Outer).Outer).Name);
-            Assert.Equal(intType, ((RootTypeId)((MemberType)zType.Outer).Outer).TypeArgs[0]);
+            Assert.Equal(N("MyModule"), ((RootTypeId)((MemberTypeId)zType.Outer).Outer).Module);
+            Assert.Null(((RootTypeId)((MemberTypeId)zType.Outer).Outer).Namespace);
+            Assert.Equal(N("X"), ((RootTypeId)((MemberTypeId)zType.Outer).Outer).Name);
+            Assert.Equal(intType, ((RootTypeId)((MemberTypeId)zType.Outer).Outer).TypeArgs[0]);
 
-            Assert.Equal(N("Y"), ((MemberType)zType.Outer).Name);
-            Assert.Equal(shortType, ((MemberType)zType.Outer).TypeArgs[0]);
+            Assert.Equal(N("Y"), ((MemberTypeId)zType.Outer).Name);
+            Assert.Equal(shortType, ((MemberTypeId)zType.Outer).TypeArgs[0]);
 
             Assert.Equal(N("Z"), zType.Name);
             Assert.Equal(intType, zType.TypeArgs[0]);

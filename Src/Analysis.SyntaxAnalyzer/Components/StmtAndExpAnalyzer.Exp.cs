@@ -27,6 +27,7 @@ namespace Citron.Analysis
         ExpResult AnalyzeIdExp(S.IdentifierExp idExp, ResolveHint resolveHint)
         {
             var typeArgs = GetTypeValues(idExp.TypeArgs);
+            
             var result = IdExpIdentifierResolver.Resolve(idExp.Value, typeArgs, resolveHint, globalContext, bodyContext, localContext);
 
             switch (result)
@@ -53,9 +54,9 @@ namespace Citron.Analysis
                         return new ExpResult.Loc(loc, localVarResult.TypeSymbol);
                     }
 
-                case IdentifierResult.LocalVarOutsideLambda localVarOutsideLambdaResult:
-                    var memberVar = bodyContext.MarkLocalVarCaptured(localVarOutsideLambdaResult.VarName, localVarOutsideLambdaResult.TypeSymbol);
-                    return new ExpResult.Loc(new R.LambdaMemberVarLoc(memberVar), localVarOutsideLambdaResult.TypeSymbol);
+                // 캡쳐 되었습니다
+                case IdentifierResult.LambdaMemberVar lambdaMemberVarResult:
+                    return new ExpResult.Loc(new R.LambdaMemberVarLoc(lambdaMemberVarResult.Symbol), lambdaMemberVarResult.Symbol.GetDeclType());
 
                 case IdentifierResult.GlobalVar globalVarResult:
                     {
@@ -82,14 +83,14 @@ namespace Citron.Analysis
                     }
 
                 // 'x' (inside class context C)
-                case IdentifierResult.ClassMemberVar classMemberVarResult:
+                case IdentifierResult.ClassMemberVar classMemberVarResult: // 람다라면 내부에서 this capture되었을
                     {
                         var classMemberVar = classMemberVarResult.Symbol;
 
                         // this.x, 람다인 경우 캡쳐가 필요하다
                         if (!classMemberVar.IsStatic()) 
                         {
-                            var thisLoc = MakeThisLoc(idExp);
+                            var thisLoc = bodyContext.MakeThisLoc(); // lambda 내부라면 CapturedThis멤버, 일반 함수라면 this 가져오기
                             return new ExpResult.Loc(new R.ClassMemberLoc(thisLoc, classMemberVar), classMemberVar.GetDeclType());
                         }
                         else // C.x
@@ -110,11 +111,10 @@ namespace Citron.Analysis
                 case IdentifierResult.StructMemberVar structMemberVarResult:
                     {
                         var structMemberVar = structMemberVarResult.Symbol;
-
-                        // this.x, 람다인 경우 캡쳐가 필요하다
+                        
                         if (!structMemberVar.IsStatic())
                         {
-                            var thisLoc = MakeThisLoc(idExp);
+                            var thisLoc = bodyContext.MakeThisLoc();
                             return new ExpResult.Loc(new R.StructMemberLoc(thisLoc, structMemberVar), structMemberVar.GetDeclType());
                         }
                         else // S.x

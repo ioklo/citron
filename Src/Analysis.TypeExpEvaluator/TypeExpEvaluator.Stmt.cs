@@ -20,10 +20,13 @@ namespace Citron.Analysis
                 this.context = context;
             }
 
-            public static void Visit(S.Stmt stmt, TypeEnv typeEnv, Context context)
+            // Body version
+            public static void Visit(ImmutableArray<S.Stmt> body, TypeEnv typeEnv, Context context)
             {
                 var visitor = new StmtVisitor(typeEnv, context);
-                visitor.VisitStmt(stmt);
+
+                foreach(var stmt in body)
+                    visitor.VisitStmt(stmt);
             }
 
             void VisitCommandStmt(S.CommandStmt cmdStmt)

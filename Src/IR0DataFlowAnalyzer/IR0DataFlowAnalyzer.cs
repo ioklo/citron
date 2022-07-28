@@ -20,8 +20,9 @@ namespace Citron.IR0Analyzer
         {
             var extension = new IR0DataFlowAnalyzerExtension(analyzer);
 
-            foreach (var stmt in script.TopLevelStmts)
-                extension.Visit(stmt);
+            throw new NotImplementedException();
+            //foreach (var stmt in script.TopLevelStmts)
+            //    extension.Visit(stmt);
         }
 
         void IIR0StmtVisitor.VisitAsyncStmt(R.AsyncStmt asyncStmt)

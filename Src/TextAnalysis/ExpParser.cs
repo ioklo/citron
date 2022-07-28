@@ -411,10 +411,11 @@ namespace Citron
 
             // exp => return exp;
             // { ... }
-            Stmt body;
+            ImmutableArray<Stmt> body;
             if (Peek<LBraceToken>(await lexer.LexNormalModeAsync(context.LexerContext, true)))
             {
-                if (!Parse(await parser.ParseStmtAsync(context), ref context, out var stmtBody))
+                // FuncBody 파싱을 그대로 쓴다
+                if (!Parse(await parser.ParseFuncBodyAsync(context), ref context, out var stmtBody))
                     return Invalid();
 
                 body = stmtBody;
@@ -427,7 +428,7 @@ namespace Citron
                 if (!Parse(await parser.ParseExpAsync(context), ref context, out var expBody))
                     return Invalid();
 
-                body = new ReturnStmt(new ReturnValueInfo(bRef, expBody));
+                body = ImmutableArray<Stmt>.Empty.Add(new ReturnStmt(new ReturnValueInfo(bRef, expBody)));
             }
 
             return new ExpParseResult(new LambdaExp(paramsBuilder.ToImmutable(), body), context);

@@ -5,7 +5,7 @@ using Pretune;
 namespace Citron.Syntax
 {
     [AutoConstructor, ImplementIEquatable]
-    public partial class GlobalFuncDecl
+    public partial class GlobalFuncDecl : ISyntaxNode
     {
         public AccessModifier? AccessModifier { get; }
         public bool IsSequence { get; } // seq 함수인가        

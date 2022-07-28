@@ -15,7 +15,7 @@ namespace Citron.Analysis
         
         // 함수 안에서 선언된 람다 수집용
         ImmutableArray<LambdaDeclSymbol> lambdaDecls;
-        LambdaIdComponent AnonymousIdComponent;
+        LambdaIdComponent LambdaIdComponent;
 
         // 리턴타입 확정 버전
         public FuncBodyContext(IFuncDeclSymbol funcDecl, ITypeSymbol? thisType, FuncReturn funcReturn, bool bSeqFunc)
@@ -25,7 +25,7 @@ namespace Citron.Analysis
             this.thisType = thisType;
 
             this.lambdaDecls = default;
-            this.AnonymousIdComponent = new AnonymousIdComponent();
+            this.LambdaIdComponent = new LambdaIdComponent();
         }
         
         public ITypeSymbol? EnsureCaptureThis()
@@ -84,13 +84,18 @@ namespace Citron.Analysis
         {
             throw new NotImplementedException();
         }
-
-        public override LambdaMemberVarDeclSymbol MarkCaptured(IdentifierResult.Valid valid)
+        
+        public override bool IsLambda()
         {
             throw new NotImplementedException();
         }
 
-        public override bool IsLambda()
+        public override bool HasOuterBodyContext()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override LambdaMemberVarSymbol Capture(IdentifierResult.LambdaMemberVar outsideLambda)
         {
             throw new NotImplementedException();
         }

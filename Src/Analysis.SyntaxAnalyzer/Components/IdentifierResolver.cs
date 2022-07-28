@@ -32,24 +32,7 @@ namespace Citron.Analysis
         {
             var resolver = new IdExpIdentifierResolver(idName, typeArgs, hint, globalContext, bodyContext, localContext);
             return resolver.Resolve();
-        }
-
-        IdentifierResult ResolveOutsideLambda()
-        {
-            var outerResult = bodyContext.ResolveIdentifierOuter(idName, typeArgs, hint, globalContext);
-
-            switch (outerResult)
-            {
-                case IdentifierResult.NotFound:
-                case IdentifierResult.Error:
-                    return outerResult;
-
-                case IdentifierResult.Valid validResult:
-                    return new IdentifierResult.OutsideLambda(validResult);
-            }
-
-            throw new UnreachableCodeException();
-        }
+        }        
 
         IdentifierResult GetLocalVarInfo()
         {
@@ -166,9 +149,19 @@ namespace Citron.Analysis
             }
         }
 
-        IdentifierResult ResolveScope()
-        {
-            // 0. 'this'
+        IdentifierResult ResolveScope() // nothrow
+        {            
+            // 1. local 변수, local 변수에서는 힌트를 쓸 일이 없다
+            var localVarInfo = GetLocalVarInfo();
+            if (localVarInfo != IdentifierResult.NotFound.Instance) return localVarInfo;
+
+            // 2. OuterBody가 있다면, 그것을 따르도록 한다. outer에서 global탐색을 진행한다
+            if (bodyContext.HasOuterBodyContext())
+            {
+                return bodyContext.ResolveIdentifierOuter(idName, typeArgs, hint, globalContext);
+            }
+
+            // 3. 'this', outerBody가 있었으면, 2번에서 람다 멤버변수로 사용하도록 걸러진다
             // TODO: this 키워드 넣기
             if (idName == "this" && typeArgs.Length == 0)
             {
@@ -181,25 +174,17 @@ namespace Citron.Analysis
                 return new IdentifierResult.ThisVar(thisType);
             }
 
-            // 1. local 변수, local 변수에서는 힌트를 쓸 일이 없다
-            var localVarInfo = GetLocalVarInfo();
-            if (localVarInfo != IdentifierResult.NotFound.Instance) return localVarInfo;
-
-            // 2. 람다 바깥의 Identifier
-            var outsideLambdaInfo = ResolveOutsideLambda();
-            if (outsideLambdaInfo != IdentifierResult.NotFound.Instance) return outsideLambdaInfo;            
-
-            // 3. thisType의 {{instance, static} * {변수, 함수}}, 타입. 아직 지원 안함
+            // 4. thisType의 {{instance, static} * {변수, 함수}}, 타입. 아직 지원 안함
             // 힌트는 오버로딩 함수 선택에 쓰일수도 있고,
             // 힌트가 thisType안의 enum인 경우 elem을 선택할 수도 있다
             var thisMemberInfo = GetThisMemberInfo();
             if (thisMemberInfo != IdentifierResult.NotFound.Instance) return thisMemberInfo;
 
-            // 4. internal global 'variable', 변수이므로 힌트를 쓸 일이 없다
+            // 5. internal global 'variable', 변수이므로 힌트를 쓸 일이 없다
             var internalGlobalVarInfo = GetInternalGlobalVarInfo();
             if (internalGlobalVarInfo != IdentifierResult.NotFound.Instance) return internalGlobalVarInfo;
 
-            // 5. 네임스페이스 -> 바깥 네임스페이스 -> module global, 함수, 타입, 
+            // 6. 네임스페이스 -> 바깥 네임스페이스 -> module global, 함수, 타입, 
             // 오버로딩 함수 선택, hint가 global enum인 경우, elem선택
             var externalGlobalInfo = GetGlobalInfo();
             if (externalGlobalInfo != IdentifierResult.NotFound.Instance) return externalGlobalInfo;

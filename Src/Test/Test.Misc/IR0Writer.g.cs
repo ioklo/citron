@@ -376,7 +376,7 @@ namespace Citron.Test.Misc
             if (@globalVarLoc == null) { itw.Write("null"); return; }
 
             itw.Write("new Citron.IR0.GlobalVarLoc(");
-            this.Write_String(@globalVarLoc.Name);
+            this.Write_Name(@globalVarLoc.Name);
             itw.Write(")");
         }
 

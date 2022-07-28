@@ -33,7 +33,7 @@ namespace Citron.Syntax
         public string Name { get; }
     }
 
-    public record LambdaExp(ImmutableArray<LambdaExpParam> Params, Stmt Body) : Exp;
+    public record LambdaExp(ImmutableArray<LambdaExpParam> Params, ImmutableArray<Stmt> Body) : Exp;
     
     // a[b]
     public record IndexerExp(Exp Object, Exp Index) : Exp;    

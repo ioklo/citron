@@ -53,10 +53,11 @@ namespace Citron.Analysis
             nullableDeclId = new DeclSymbolId(new Name.Normal("System.Runtime"), null).Child(new Name.Normal("System")).Child(new Name.Normal("Nullable"), 1);
         }
 
-        public GlobalContext(SymbolLoader symbolLoader, TypeSymbolInfoService typeSymbolInfoService, ILogger logger)
+        public GlobalContext(SymbolLoader symbolLoader, TypeSymbolInfoService typeSymbolInfoService, SymbolFactory symbolFactory, ILogger logger)
         {
             this.symbolLoader = symbolLoader;
             this.typeSymbolInfoService = typeSymbolInfoService;
+            this.symbolFactory = symbolFactory;
 
             this.internalBinOpQueryService = new InternalBinaryOperatorQueryService(GetBoolType(), GetIntType(), GetStringType());
                 
@@ -218,10 +219,10 @@ namespace Citron.Analysis
             return internalGlobalVarRepo.HasVariable(name);
         }            
 
-        public SeqTypeValue GetSeqTypeValue(R.Path.Nested seq, ITypeSymbol yieldType)
-        {
-            return itemValueFactory.MakeSeqType(seq, yieldType);
-        }
+        //public SeqTypeValue GetSeqTypeValue(R.Path.Nested seq, ITypeSymbol yieldType)
+        //{
+        //    return itemValueFactory.MakeSeqType(seq, yieldType);
+        //}
 
         // outerDeclPath 밑의 (name, typeParamCount)로 가능한 것들을 돌려준다
         public SymbolQueryResult QuerySymbol(SymbolPath? outerPath, Name name, int typeParamCount)
@@ -232,21 +233,6 @@ namespace Citron.Analysis
         public ImmutableArray<InternalBinaryOperatorInfo> GetBinaryOpInfos(S.BinaryOpKind kind)
         {
             return internalBinOpQueryService.GetInfos(kind);
-        }
-
-        public ITypeSymbol MakeTypeValue(ItemValueOuter outer, ITypeDeclSymbol typeInfo, ImmutableArray<ITypeSymbol> typeArgs)
-        {
-            return itemValueFactory.MakeTypeValue(outer, typeInfo, typeArgs);
-        }
-
-        public FuncValue MakeFuncValue(ItemValueOuter outer, IModuleFuncDecl funcInfo, ImmutableArray<ITypeSymbol> typeArgs)
-        {
-            return itemValueFactory.MakeFunc(outer, funcInfo, typeArgs);
-        }
-
-        public MemberVarValue MakeMemberVarValue(NormalTypeValue outer, IModuleMemberVarInfo info)
-        {
-            return itemValueFactory.MakeMemberVarValue(outer, info);
         }
 
         public TupleSymbol GetTupleType(ImmutableArray<(ITypeSymbol Type, string? Name)> elems)
@@ -297,36 +283,24 @@ namespace Citron.Analysis
                 // TODO: interface
                 // if (expectType is InterfaceTypeValue )
             }
-
-            // 3. C -> Nullable<C>, C -> B -> Nullable<B> 허용
-            if (IsNullableType(expectedType, out var expectedInnerType))
-            {
-                // C -> B 시도
-                var castToInnerTypeExp = TryCastExp_Exp(exp, expectedInnerType);
-                if (castToInnerTypeExp != null)
-                {
-                    // B -> B?
-                    return MakeNullableExp(castToInnerTypeExp);
-
-                    return new R.NewNullableExp(castToInnerTypeExp, expectedNullableType);
-                }
-            }
+            
+            // TODO: 3. C -> Nullable<C>, C -> B -> Nullable<B> 허용
+            //if (IsNullableType(expectedType, out var expectedInnerType))
+            //{
+            //    // C -> B 시도
+            //    var castToInnerTypeExp = TryCastExp_Exp(exp, expectedInnerType);
+            //    if (castToInnerTypeExp != null)
+            //    {
+            //        // B -> B?
+            //        return MakeNullableExp(castToInnerTypeExp);
+            //        return new R.NewNullableExp(castToInnerTypeExp, expectedNullableType);
+            //    }
+            //}
 
             return null;
-        }            
-
-        public StructSymbol MakeStructTypeValue(ItemValueOuter outer, IModuleStructDecl structInfo, ImmutableArray<ITypeSymbol> typeArgs)
-        {
-            return itemValueFactory.MakeStructValue(outer, structInfo, typeArgs);
         }
 
-        public ClassSymbol MakeClassTypeValue(ItemValueOuter outer, IModuleClassDecl classInfo, ImmutableArray<ITypeSymbol> typeArgs)
-        {
-            return itemValueFactory.MakeClassSymbol(outer, classInfo, typeArgs);
-        }
-
-        // TODO: 람다는 현재, 모듈 레퍼런스에 존재하지 않음
-        public LambdaSymbol MakeLambda(IFuncSymbol outer, LambdaFDeclSymbol decl)
+        public LambdaSymbol MakeLambda(IFuncSymbol outer, LambdaDeclSymbol decl)
         {
             return symbolFactory.MakeLambda(outer, decl);
         }
