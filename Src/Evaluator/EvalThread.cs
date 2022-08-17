@@ -1,5 +1,5 @@
 ﻿using System;
-using Citron.CompileTime;
+using Citron.Module;
 
 namespace Citron
 {

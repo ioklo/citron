@@ -1,7 +1,7 @@
 ﻿using Citron.Infra;
 using Citron.Collections;
-using Citron.CompileTime;
-using Citron.Analysis;
+using Citron.Module;
+using Citron.Symbol;
 
 namespace Citron.Test.Misc
 {

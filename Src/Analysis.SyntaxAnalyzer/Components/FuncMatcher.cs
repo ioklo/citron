@@ -11,7 +11,7 @@ using S = Citron.Syntax;
 using R = Citron.IR0;
 using Citron.Infra;
 using static Citron.Analysis.SyntaxAnalysisErrorCode;
-using Citron.CompileTime;
+using Citron.Module;
 
 namespace Citron.Analysis
 {

@@ -1,6 +1,6 @@
 ﻿using Citron.Analysis;
 using Citron.Collections;
-using Citron.CompileTime;
+using Citron.Module;
 using Citron.Infra;
 using Citron.IR0;
 using System;

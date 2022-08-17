@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Citron.Collections;
 using Citron.Infra;
-using Citron.CompileTime;
+using Citron.Module;
 using Citron.Analysis;
 using System.Diagnostics;
 using Citron.IR0;

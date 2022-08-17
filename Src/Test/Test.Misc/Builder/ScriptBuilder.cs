@@ -1,8 +1,8 @@
 ﻿using Citron.Collections;
-using Citron.CompileTime;
-using Citron.Analysis;
+using Citron.Module;
 using Citron.IR0;
 using System.Diagnostics;
+using Citron.Symbol;
 
 namespace Citron.Test.Misc
 {

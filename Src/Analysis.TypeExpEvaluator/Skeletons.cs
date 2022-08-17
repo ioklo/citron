@@ -5,8 +5,9 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using S = Citron.Syntax;
-using M = Citron.CompileTime;
+using M = Citron.Module;
 using Pretune;
+using Citron.Symbol;
 
 namespace Citron.Analysis
 {
@@ -22,11 +23,11 @@ namespace Citron.Analysis
     // TODO: Type뿐 아니라 Namespace 등도 여기서
     class TypeSkeleton
     {
-        public M.DeclSymbolPath Path { get; }
+        public DeclSymbolPath Path { get; }
         public TypeSkeletonKind Kind { get; }
         ImmutableDictionary<M.TypeName, TypeSkeleton> membersByName;
 
-        public TypeSkeleton(M.DeclSymbolPath path, ImmutableArray<TypeSkeleton> members, TypeSkeletonKind kind)
+        public TypeSkeleton(DeclSymbolPath path, ImmutableArray<TypeSkeleton> members, TypeSkeletonKind kind)
         {
             Path = path;
             Kind = kind;

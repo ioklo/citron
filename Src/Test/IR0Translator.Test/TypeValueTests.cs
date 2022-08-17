@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
-using M = Citron.CompileTime;
+using M = Citron.Module;
 using R = Citron.IR0;
 
 using static Citron.Infra.Misc;

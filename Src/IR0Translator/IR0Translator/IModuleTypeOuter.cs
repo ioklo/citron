@@ -1,4 +1,4 @@
-﻿using M = Citron.CompileTime;
+﻿using M = Citron.Module;
 
 namespace Citron.IR0Translator
 {   

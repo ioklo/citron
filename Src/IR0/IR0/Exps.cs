@@ -1,4 +1,4 @@
-﻿using Citron.CompileTime;
+﻿using Citron.Module;
 using Citron.Infra;
 using Pretune;
 using System;
@@ -7,7 +7,7 @@ using Citron.Collections;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using Citron.Analysis;
+using Citron.Symbol;
 
 namespace Citron.IR0
 {

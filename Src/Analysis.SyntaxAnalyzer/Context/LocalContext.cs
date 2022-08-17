@@ -10,7 +10,7 @@ using R = Citron.IR0;
 using Pretune;
 using S = Citron.Syntax;
 using Citron.Analysis;
-using Citron.CompileTime;
+using Citron.Module;
 
 namespace Citron.Analysis
 {   
@@ -37,13 +37,13 @@ namespace Citron.Analysis
     class LocalContext : IMutable<LocalContext>
     {
         LocalContext? parentLocalContext;
-        ImmutableDictionary<string, LocalVarInfo> localVarInfos;
+        ImmutableDictionary<Name, LocalVarInfo> localVarInfos;
         bool bLoop;
 
         LocalContext(LocalContext? parentLocalContext, bool bLoop)
         {   
             this.parentLocalContext = parentLocalContext;
-            this.localVarInfos = ImmutableDictionary<string, LocalVarInfo>.Empty;
+            this.localVarInfos = ImmutableDictionary<Name, LocalVarInfo>.Empty;
             this.bLoop = bLoop;
         }
 
@@ -96,8 +96,10 @@ namespace Citron.Analysis
 
         public void SetLocalVarType(string name, ITypeSymbol typeValue)
         {
-            var value = localVarInfos[name];
-            localVarInfos = localVarInfos.SetItem(name, value.UpdateTypeValue(typeValue));
+            var normalName = new Name.Normal(name);
+
+            var value = localVarInfos[normalName];
+            localVarInfos = localVarInfos.SetItem(normalName, value.UpdateTypeValue(typeValue));
         }
 
         public LocalVarInfo? GetLocalVarInfo(Name varName)
@@ -113,7 +115,7 @@ namespace Citron.Analysis
 
         public bool DoesLocalVarNameExistInScope(string name)
         {
-            return localVarInfos.ContainsKey(name);
+            return localVarInfos.ContainsKey(new Name.Normal(name));
         }
 
         public bool IsInLoop()

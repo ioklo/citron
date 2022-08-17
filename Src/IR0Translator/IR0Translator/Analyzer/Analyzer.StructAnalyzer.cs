@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 using S = Citron.Syntax;
 using R = Citron.IR0;
-using M = Citron.CompileTime;
+using M = Citron.Module;
 using Citron.Infra;
 using Citron.Collections;
 using Pretune;

@@ -8,7 +8,8 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using Citron.Infra;
 using System.Diagnostics.Contracts;
-using Citron.CompileTime;
+using Citron.Module;
+using Citron.Symbol;
 
 namespace Citron.Analysis
 {   
@@ -21,8 +22,9 @@ namespace Citron.Analysis
             SymbolFactory factory;
             ImmutableArray<ModuleDeclSymbol> moduleDecls;
 
-            public AfterBuildContext(ImmutableArray<ModuleDeclSymbol> moduleDecls)
+            public AfterBuildContext(SymbolFactory factory, ImmutableArray<ModuleDeclSymbol> moduleDecls)
             {
+                this.factory = factory;
                 this.moduleDecls = moduleDecls;
             }
 

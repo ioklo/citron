@@ -1,17 +1,18 @@
-﻿using Citron.Infra;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using Citron.Collections;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 
-using S = Citron.Syntax;
-using Citron.CompileTime;
-using R = Citron.IR0;
+using Citron.Module;
 using Citron.Log;
-using Citron.Analysis;
+using Citron.Symbol;
+using Citron.Collections;
+using Citron.Infra;
+
+using S = Citron.Syntax;
+using R = Citron.IR0;
 
 using static Citron.Infra.Misc;
 
@@ -24,9 +25,8 @@ namespace Citron.Analysis
         TypeSymbolInfoService typeSymbolInfoService;
         SymbolFactory symbolFactory;
 
-        InternalBinaryOperatorQueryService internalBinOpQueryService;            
-
-        TypeExpInfoService typeExpInfoService;            
+        InternalBinaryOperatorQueryService internalBinOpQueryService;
+        
         ILogger logger;
         InternalGlobalVariableRepository internalGlobalVarRepo;
 
@@ -76,10 +76,19 @@ namespace Citron.Analysis
             var typeArgIdsBuilder = ImmutableArray.CreateBuilder<SymbolId>();
             for(int i = 0; i < typeParams.Length; i++)
             {
-                var typeVarDeclId = outerDeclId.Child(new Name.Normal(typeParams[i]), 0, default);
-                var typeVarId = new TypeVarSymbolId(typeVarDeclId, outerTypeArgCount + i);
+                // 일단 null로 지정한다
+                var typeVarPath = new SymbolPath(null, new Name.Normal(typeParams[i]));
+                var typeVarId = new ModuleSymbolId(outerId.ModuleName, typeVarPath);
                 typeArgIdsBuilder.Add(typeVarId);
             }
+
+            // class C<T, U> { C<T, U> c; }
+            // C<T, U>.T에서 T를 만들려면 C<T, U>정의가 필요하고, C<T, U>를 만들려면 T의 정의가 필요하다
+            var symbolId = outerId.ChildWithTypeVars(new Name.Normal(name), typeParams, paramIds);
+
+            // ChildWithTypeVars는
+            SymbolPath path;
+            path.Outer = null;
 
             return symbolLoader.Load(outerId.Child(new Name.Normal(name), typeArgIdsBuilder.ToImmutable(), paramIds)) as TSymbol;
         }
@@ -90,7 +99,6 @@ namespace Citron.Analysis
         {
             this.symbolLoader = other.symbolLoader;
             this.internalBinOpQueryService = other.internalBinOpQueryService;
-            this.typeExpInfoService = other.typeExpInfoService;
 
             this.logger = cloneContext.GetClone(other.logger);
             this.internalGlobalVarRepo = cloneContext.GetClone(other.internalGlobalVarRepo);
@@ -105,7 +113,6 @@ namespace Citron.Analysis
         {
             // this.symbolLoader = src.symbolLoader; // 업데이트 대상이 아니다
             this.internalBinOpQueryService = src.internalBinOpQueryService;
-            this.typeExpInfoService = src.typeExpInfoService;
 
             updateContext.Update(this.logger, src.logger);
             updateContext.Update(this.internalGlobalVarRepo, src.internalGlobalVarRepo);

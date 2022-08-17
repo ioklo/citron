@@ -1,7 +1,7 @@
-﻿using Citron.Analysis;
-using Citron.Collections;
+﻿using Citron.Collections;
 using Citron.Infra;
 using Citron.IR0Visitor;
+using Citron.Symbol;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using M = Citron.CompileTime;
+using M = Citron.Module;
 using R = Citron.IR0;
 
 namespace Citron.Test.Misc

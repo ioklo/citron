@@ -11,7 +11,7 @@ using Citron.Infra;
 using Void = Citron.Infra.Void;
 using R = Citron.IR0;
 using Citron.Analysis;
-using Citron.CompileTime;
+using Citron.Module;
 
 namespace Citron
 {

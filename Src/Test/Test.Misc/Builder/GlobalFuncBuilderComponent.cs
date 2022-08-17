@@ -1,9 +1,9 @@
-﻿using Citron.Analysis;
-using Citron.Collections;
-using Citron.CompileTime;
+﻿using Citron.Collections;
+using Citron.Module;
 using Citron.Infra;
 using System;
 using static Citron.Infra.Misc;
+using Citron.Symbol;
 
 namespace Citron.Test.Misc
 {

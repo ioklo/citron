@@ -145,19 +145,19 @@ namespace TestMiscSourceGenerator
         void PrintAbstract(IndentedTextWriter writer, Type type)
         {
             // abstract case, 말단으로 토스
-            // void Write_Name(Citron.CompileTime.Name name)
+            // void Write_Name(Citron.Module.Name name)
             // {
             //     // static 처리
-            //     if (name == Citron.CompileTime.Name.IndexerGet)
+            //     if (name == Citron.Module.Name.IndexerGet)
             //     {
-            //         writer.Write("Citron.CompileTime.Name.IndexerGet");
+            //         writer.Write("Citron.Module.Name.IndexerGet");
             //         return;
             //     }
             //     
             //     switch(name)
             //     {
-            //         case Citron.CompileTime.Name.Normal normal: Write_Name_Normal(normal);
-            //         case Citron.CompileTime.Name.ConstructorParam constructorParam: Write_Name_ConstructorParam(constructorParam);
+            //         case Citron.Module.Name.Normal normal: Write_Name_Normal(normal);
+            //         case Citron.Module.Name.ConstructorParam constructorParam: Write_Name_ConstructorParam(constructorParam);
             //     }
             // }
 
@@ -221,7 +221,7 @@ namespace TestMiscSourceGenerator
             }
             // 2. 'nullable reference라면..' 을 .net 6+가 아니라면 공식적으로 얻어낼 수 없다. 그냥 함수들에게 ?를 붙인다
             // 3. ISymbolNode를 상속받았다면 
-            else if (memberType.GetInterface(nameof(Citron.Analysis.ISymbolNode)) != null)
+            else if (memberType.GetInterface(nameof(Citron.Symbol.ISymbolNode)) != null)
             {
                 // Write_ISymbolNode(x.Symbol);
                 writer.WriteLine($"{writerInstance}.Write_ISymbolNode({instanceName}.{memberName});");
@@ -235,10 +235,10 @@ namespace TestMiscSourceGenerator
 
         void PrintConcrete(IndentedTextWriter writer, Type type)
         {
-            // void Write_Name_Normal(Citron.CompileTime.Name.Normal? normal)
+            // void Write_Name_Normal(Citron.Module.Name.Normal? normal)
             // {
             //     if (normal == null) { itw.Write("null"); return; }
-            //     itw.Write(@"new "new Citron.CompileTime.Name.Normal(");
+            //     itw.Write(@"new "new Citron.Module.Name.Normal(");
             //     Write_String(normal.Text);
             //     writer.Write(")");
             // }
@@ -384,7 +384,7 @@ namespace TestMiscSourceGenerator
             AddWithDerivedInSameAssembly(types, typeof(Citron.IR0.ReturnInfo));
 
             AddWithDerivedInSameAssembly(types, typeof(Citron.IR0.StringExpElement));
-            AddWithDerivedInSameAssembly(types, typeof(Citron.CompileTime.Name));
+            AddWithDerivedInSameAssembly(types, typeof(Citron.Module.Name));
             AddWithDerivedInSameAssembly(types, typeof(Citron.IR0.Loc));
             AddWithDerivedInSameAssembly(types, typeof(Citron.IR0.Exp));
             AddWithDerivedInSameAssembly(types, typeof(Citron.IR0.Stmt));

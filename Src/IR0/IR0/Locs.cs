@@ -1,5 +1,5 @@
-﻿using Citron.Analysis;
-using Citron.CompileTime;
+﻿using Citron.Module;
+using Citron.Symbol;
 using Pretune;
 using System;
 using System.Collections.Generic;

@@ -1,6 +1,6 @@
-﻿using Citron.Analysis;
-using Citron.Collections;
+﻿using Citron.Collections;
 using Citron.Infra;
+using Citron.Symbol;
 
 namespace Citron.Test.Misc
 {

@@ -5,18 +5,19 @@ using System.Text;
 using System.Diagnostics;
 
 using S = Citron.Syntax;
-using M = Citron.CompileTime;
+using M = Citron.Module;
+using Citron.Symbol;
 
 namespace Citron.Analysis
 {
     // DeclSymbolPath -> TypeSkeleton
     class TypeSkeletonRepository
     {
-        ImmutableDictionary<M.DeclSymbolPath, TypeSkeleton> allMembers;
+        ImmutableDictionary<DeclSymbolPath, TypeSkeleton> allMembers;
 
         public static TypeSkeletonRepository Build(ImmutableArray<TypeSkeleton> rootMembers)
         {
-            var allMembersBuilder = ImmutableDictionary.CreateBuilder<M.DeclSymbolPath, TypeSkeleton>();            
+            var allMembersBuilder = ImmutableDictionary.CreateBuilder<DeclSymbolPath, TypeSkeleton>();            
 
             foreach (var rootMember in rootMembers)
             {
@@ -28,7 +29,7 @@ namespace Citron.Analysis
             return new TypeSkeletonRepository(allMembersBuilder.ToImmutable());
         }
 
-        static void FillChild(ImmutableDictionary<M.DeclSymbolPath, TypeSkeleton>.Builder builder, TypeSkeleton skel)
+        static void FillChild(ImmutableDictionary<DeclSymbolPath, TypeSkeleton>.Builder builder, TypeSkeleton skel)
         {
             foreach (var elem in skel.GetAllMembers())
             {
@@ -37,12 +38,12 @@ namespace Citron.Analysis
             }
         }
 
-        TypeSkeletonRepository(ImmutableDictionary<M.DeclSymbolPath, TypeSkeleton> allMembers)
+        TypeSkeletonRepository(ImmutableDictionary<DeclSymbolPath, TypeSkeleton> allMembers)
         {
             this.allMembers = allMembers;
         }
 
-        public TypeSkeleton? GetTypeSkeleton(M.DeclSymbolPath path)
+        public TypeSkeleton? GetTypeSkeleton(DeclSymbolPath path)
         {
             return allMembers.GetValueOrDefault(path);
         }

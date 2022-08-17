@@ -2,7 +2,7 @@
 using Citron.Infra;
 using System;
 using R = Citron.IR0;
-using M = Citron.CompileTime;
+using M = Citron.Module;
 using Citron.Analysis;
 
 namespace Citron.IR0Translator

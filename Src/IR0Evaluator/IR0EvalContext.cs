@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Citron.Analysis;
 using Citron.Collections;
-using Citron.CompileTime;
+using Citron.Module;
 using R = Citron.IR0;
 using Void = Citron.Infra.Void;
 

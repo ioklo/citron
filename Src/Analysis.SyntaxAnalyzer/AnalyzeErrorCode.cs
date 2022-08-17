@@ -134,5 +134,6 @@ namespace Citron.Analysis
         A2901_BodyShouldReturn, // 리턴 타입이 있는 본문에 리턴이 없다
 
         A9901_NotSupported_LambdaParameterInference,
+        A9902_NotSupported_LambdaReturnTypeInference,
     }
 }

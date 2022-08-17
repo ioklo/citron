@@ -5,7 +5,7 @@ using Xunit;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Text;
-using Citron.CompileTime;
+using Citron.Module;
 using static Citron.IR1.Runtime.Evaluator;
 using static Citron.IR1.Command;
 

@@ -6,7 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using System.Text;
-using M = Citron.CompileTime;
+using M = Citron.Module;
 using Citron.Infra;
 using Pretune;
 using static Citron.IR0Translator.SyntaxAnalysisErrorCode;
@@ -71,8 +71,9 @@ namespace Citron.IR0Translator
                 var symbolFactory = new SymbolFactory();
 
                 // S.TypeExp => TypeExpInfo
-                var typeExpInfoService = TypeExpEvaluator.Evaluate(moduleName, sscript, referenceModules, logger);
-                var declSymbolBuilderResult = InternalDeclSymbolBuilder.Build(moduleName, sscript, symbolFactory, typeExpInfoService, referenceModules);
+                TypeExpEvaluator.Evaluate(moduleName, sscript, referenceModules, logger);
+
+                var declSymbolBuilderResult = InternalModuleDeclSymbolBuilder.Build(moduleName, sscript, symbolFactory, referenceModules);
                 if (!declSymbolBuilderResult.HasValue) return null;
                 var (symbolLoader, typeSymbolInfoService) = declSymbolBuilderResult.Value;
 

@@ -1,4 +1,4 @@
-﻿using Citron.CompileTime;
+﻿using Citron.Module;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -62,29 +62,31 @@ namespace Citron.Analysis
         }
 
         GlobalContext globalContext;
-        StmtAndExpAnalyzer stmtAndExpAnalyzer;
-        
-        ImmutableArray<R.StmtBody>.Builder stmtBodiesBuilder;        
+
+        // 함수 위치별 Body를 수집한다
+        ImmutableArray<R.StmtBody>.Builder stmtBodiesBuilder;
 
         public static R.Script Analyze(GlobalContext globalContext, S.Script script, ModuleDeclSymbol moduleDecl, ImmutableArray<FuncDeclSymbolSyntaxInfo> funcDeclSymbolSyntaxInfos)
         {
-            var scriptAnalyzer = new ScriptAnalyzer(globalContext, stmtAndExpAnalyzer);
+            var scriptAnalyzer = new ScriptAnalyzer(globalContext);
             scriptAnalyzer.AnalyzeScript(script, funcDeclSymbolSyntaxInfos);
             
             return scriptAnalyzer.MakeScript(moduleDecl);
         }
 
-        ScriptAnalyzer(GlobalContext globalContext, StmtAndExpAnalyzer stmtAndExpAnalyzer)
+        ScriptAnalyzer(GlobalContext globalContext)
         {
             this.globalContext = globalContext;
-            this.stmtAndExpAnalyzer = stmtAndExpAnalyzer;
-
             this.stmtBodiesBuilder = ImmutableArray.CreateBuilder<R.StmtBody>();
         }
 
         void AnalyzeTopLevelStmts(S.Script script)
         {
             var topLevelStmtsBuilder = ImmutableArray.CreateBuilder<R.Stmt>();
+
+            var topLevelBodyContext = new TopLevelBodyContext();
+            var localContext = new LocalContext();
+            var stmtAndExpAnalyzer = new StmtAndExpAnalyzer(globalContext, topLevelBodyContext, localContext);
             var globalVarDeclComponent = new GlobalVarDeclComponent(globalContext, stmtAndExpAnalyzer, topLevelStmtsBuilder);
 
             foreach (var elem in script.Elements)
@@ -101,6 +103,7 @@ namespace Citron.Analysis
                     topLevelStmtsBuilder.Add(stmtResult.Stmt);
                 }   
             }
+            
 
             stmtBodiesBuilder.Add(new R.StmtBody(new DeclSymbolPath(null, Name.TopLevel), topLevelStmtsBuilder.ToImmutable()));
         }
@@ -108,8 +111,6 @@ namespace Citron.Analysis
         // 전역함수를 분석한다
         void AnalyzeGlobalFuncDecl(GlobalFuncDeclSymbol symbol, S.GlobalFuncDecl syntax)
         {   
-            var retTypeValue = globalContext.GetSymbolByTypeExp(syntax.RetType);
-            
             var funcContext = new FuncBodyContext(symbol, null, symbol.GetReturn(), syntax.IsSequence);
             var localContext = new LocalContext();
             var analyzer = new StmtAndExpAnalyzer(globalContext, funcContext, localContext);
@@ -119,7 +120,7 @@ namespace Citron.Analysis
             for(int i = 0; i < paramCount; i++)
             {
                 var param = symbol.GetParameter(i);
-                localContext.AddLocalVarInfo(param.Kind == FuncParameterKind.Ref, param.Type, param.Name);
+                localContext.AddLocalVarInfo(bRef: param.Kind == FuncParameterKind.Ref, param.Type, param.Name);
             }
             
             analyzer.AnalyzeBody(syntax.Body, syntax);

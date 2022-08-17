@@ -11,7 +11,7 @@ using static Citron.Infra.CollectionExtensions;
 using static Citron.Analysis.SyntaxAnalysisErrorCode;
 
 using S = Citron.Syntax;
-using M = Citron.CompileTime;
+using M = Citron.Module;
 using R = Citron.IR0;
 using Pretune;
 using System.Diagnostics.Contracts;
@@ -20,7 +20,6 @@ using Citron.Collections;
 
 namespace Citron.Analysis
 {
-    // 어떤 Exp에서 타입 정보 등을 알아냅니다    
     partial class StmtAndExpAnalyzer
     {
         // x
@@ -929,6 +928,8 @@ namespace Citron.Analysis
         // parent."x"<>
         ExpResult AnalyzeMemberExp(S.MemberExp memberExp)
         {   
+            // 왜 앞부분이 id일 경우만 따로 처리하는가?
+            //  => id가 exp가 아닐 경우, AnalyzeExp를 통과하면 exp로 확정되어버리는 경우가 생기기 때문
             if (memberExp.Parent is S.IdentifierExp idParent)
             {
                 var typeArgs = GetTypeValues(idParent.TypeArgs);

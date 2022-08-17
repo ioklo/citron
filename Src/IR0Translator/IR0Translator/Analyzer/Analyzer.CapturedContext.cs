@@ -7,7 +7,7 @@ using System.Linq;
 using Citron.Analysis;
 
 using R = Citron.IR0;
-using M = Citron.CompileTime;
+using M = Citron.Module;
 using System;
 
 namespace Citron.IR0Translator

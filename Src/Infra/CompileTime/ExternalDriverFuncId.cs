@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Citron.CompileTime
+namespace Citron.Module
 {
     // 범위: ExternalDriver별
     public struct ExternalDriverFuncId

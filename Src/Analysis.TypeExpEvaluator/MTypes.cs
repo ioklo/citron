@@ -4,7 +4,7 @@ using Citron.Collections;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using M = Citron.CompileTime;
+using M = Citron.Module;
 
 namespace Citron.Analysis
 {

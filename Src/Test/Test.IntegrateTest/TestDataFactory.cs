@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using S = Citron.Syntax;
-using M = Citron.CompileTime;
+using M = Citron.Module;
 using R = Citron.IR0;
 using Xunit.Abstractions;
 using System.Diagnostics;

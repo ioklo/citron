@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <AssemblyName>Analysis.NewSyntaxAnalyzer</AssemblyName>
+    <RootNamespace>Citron.Analysis</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Infra\Infra.csproj" />
+    <ProjectReference Include="..\Syntax\Syntax.csproj" />
+  </ItemGroup>
+
+</Project>

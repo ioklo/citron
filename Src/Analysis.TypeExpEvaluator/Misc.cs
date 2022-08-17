@@ -1,4 +1,7 @@
 ﻿using Citron.Infra;
+using Citron.Symbol;
+using Citron.Syntax;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;

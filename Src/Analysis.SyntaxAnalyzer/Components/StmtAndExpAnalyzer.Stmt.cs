@@ -13,7 +13,7 @@ using Pretune;
 using System.Linq;
 using Citron.Infra;
 using Citron.Collections;
-using Citron.CompileTime;
+using Citron.Module;
 
 namespace Citron.Analysis
 {
@@ -682,7 +682,7 @@ namespace Citron.Analysis
             }
         }
 
-        StmtResult AnalyzeStmt(S.Stmt stmt)
+        public StmtResult AnalyzeStmt(S.Stmt stmt)
         {   
             switch (stmt)
             {

@@ -9,7 +9,7 @@ using Citron.Infra;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics;
 using R = Citron.IR0;
-using Citron.CompileTime;
+using Citron.Module;
 
 namespace Citron.IR0Translator
 {

@@ -7,7 +7,7 @@ using Citron.Infra;
 using System.Linq;
 
 using S = Citron.Syntax;
-using M = Citron.CompileTime;
+using M = Citron.Module;
 using R = Citron.IR0;
 
 using static Citron.IR0Translator.SyntaxAnalysisErrorCode;

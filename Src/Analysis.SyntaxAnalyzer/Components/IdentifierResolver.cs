@@ -4,12 +4,12 @@ using Citron.Collections;
 using System.Linq;
 
 using S = Citron.Syntax;
-using M = Citron.CompileTime;
+using M = Citron.Module;
 using R = Citron.IR0;
 using Citron.Infra;
 using System.Diagnostics;
 using Pretune;
-using Citron.CompileTime;
+using Citron.Symbol;
 
 namespace Citron.Analysis
 {
@@ -39,19 +39,16 @@ namespace Citron.Analysis
             // 지역 스코프에는 변수만 있고, 함수, 타입은 없으므로 이름이 겹치는 것이 있는지 검사하지 않아도 된다
             if (typeArgs.Length != 0) return IdentifierResult.NotFound.Instance;
 
-            var varInfo = localContext.GetLocalVarInfo(idName);
+            var varInfo = localContext.GetLocalVarInfo(new M.Name.Normal(idName));
             if (varInfo == null) return IdentifierResult.NotFound.Instance;
 
             return new IdentifierResult.LocalVar(varInfo.Value.IsRef, varInfo.Value.TypeSymbol, varInfo.Value.Name);
         }
 
-        // TODO: LambdaMemberVar
-        IdentifierResult GetThisMemberInfo()
+        // 클래스 멤버 함수였으면 this 멤버변수를, 람다 안이라면 람다의 멤버변수를 리턴한다
+        IdentifierResult GetContextMemberInfo()
         {
-            var thisType = bodyContext.GetThisType();
-            if (thisType == null) return IdentifierResult.NotFound.Instance;
-
-            var itemQueryResult = thisType.QueryMember(new Name.Normal(idName), typeArgs.Length);
+            var itemQueryResult = bodyContext.QueryMember(idName, typeArgs.Length);
 
             switch(itemQueryResult)
             {
@@ -93,6 +90,9 @@ namespace Citron.Analysis
                 case SymbolQueryResult.EnumElem:
                     throw new NotImplementedException();  // TODO: 무슨 뜻인지 확실히 해야 한다
                 #endregion
+
+                case SymbolQueryResult.LambdaMemberVar lambdaMemberVarResult:
+                    return new IdentifierResult.LambdaMemberVar(() => lambdaMemberVarResult.Symbol);
             }
 
             // TODO: implementation
@@ -155,17 +155,11 @@ namespace Citron.Analysis
             var localVarInfo = GetLocalVarInfo();
             if (localVarInfo != IdentifierResult.NotFound.Instance) return localVarInfo;
 
-            // 2. OuterBody가 있다면, 그것을 따르도록 한다. outer에서 global탐색을 진행한다
-            if (bodyContext.HasOuterBodyContext())
-            {
-                return bodyContext.ResolveIdentifierOuter(idName, typeArgs, hint, globalContext);
-            }
-
-            // 3. 'this', outerBody가 있었으면, 2번에서 람다 멤버변수로 사용하도록 걸러진다
+            // 2. this            
             // TODO: this 키워드 넣기
             if (idName == "this" && typeArgs.Length == 0)
             {
-                var thisType = bodyContext.GetThisType();
+                var thisType = bodyContext.GetThisType(); // NOTICE: 람다는 여기서 null을 리턴한다
 
                 if (thisType == null)
                     return IdentifierResult.Error.CantGetThis;
@@ -174,17 +168,18 @@ namespace Citron.Analysis
                 return new IdentifierResult.ThisVar(thisType);
             }
 
-            // 4. thisType의 {{instance, static} * {변수, 함수}}, 타입. 아직 지원 안함
+            // 3. contextMember. this멤버이거나, 람다 멤버
+            // thisType의 {{instance, static} * {변수, 함수}}, 타입. 아직 지원 안함
             // 힌트는 오버로딩 함수 선택에 쓰일수도 있고,
             // 힌트가 thisType안의 enum인 경우 elem을 선택할 수도 있다
-            var thisMemberInfo = GetThisMemberInfo();
-            if (thisMemberInfo != IdentifierResult.NotFound.Instance) return thisMemberInfo;
+            var contextMemberInfo = GetContextMemberInfo();
+            if (contextMemberInfo != IdentifierResult.NotFound.Instance) return contextMemberInfo;
 
-            // 5. internal global 'variable', 변수이므로 힌트를 쓸 일이 없다
+            // 4. internal global 'variable', 변수이므로 힌트를 쓸 일이 없다
             var internalGlobalVarInfo = GetInternalGlobalVarInfo();
             if (internalGlobalVarInfo != IdentifierResult.NotFound.Instance) return internalGlobalVarInfo;
 
-            // 6. 네임스페이스 -> 바깥 네임스페이스 -> module global, 함수, 타입, 
+            // 5. 네임스페이스 -> 바깥 네임스페이스 -> module global, 함수, 타입, 
             // 오버로딩 함수 선택, hint가 global enum인 경우, elem선택
             var externalGlobalInfo = GetGlobalInfo();
             if (externalGlobalInfo != IdentifierResult.NotFound.Instance) return externalGlobalInfo;

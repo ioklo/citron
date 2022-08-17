@@ -10,9 +10,10 @@ using System.Text;
 using Citron.Log;
 
 using S = Citron.Syntax;
-using M = Citron.CompileTime;
+using M = Citron.Module;
 
-using static Citron.CompileTime.DeclSymbolIdExtensions;
+using static Citron.Symbol.DeclSymbolIdExtensions;
+using Citron.Symbol;
 
 namespace Citron.Analysis
 {
@@ -22,17 +23,17 @@ namespace Citron.Analysis
         {
         }
         
-        public static TypeExpInfoService Evaluate(
+        // TypeExpInfo를 Syntax 트리에 추가한다
+        public static void Evaluate(
             M.Name internalModuleName,
             S.Script script,
             ImmutableArray<ModuleDeclSymbol> referenceModules,
             ILogger logger)
         {
             var skelRepo = TypeSkeletonCollector.Collect(script);
-            var typeEnv = TypeEnv.Empty;
-            var infosByTypeExp = new Dictionary<S.TypeExp, TypeExpInfo>();
-            var context = new Context(internalModuleName, referenceModules, skelRepo, logger, infosByTypeExp);
-            var declVisitor = new DeclVisitor(new M.DeclSymbolId(internalModuleName, null), typeEnv, 0, context);
+            var typeEnv = TypeEnv.Empty;            
+            var context = new Context(internalModuleName, referenceModules, skelRepo, logger);
+            var declVisitor = new DeclVisitor(new DeclSymbolId(internalModuleName, null), typeEnv, 0, context);
             var stmtVisitor = new StmtVisitor(typeEnv, context);
 
             try
@@ -65,19 +66,17 @@ namespace Citron.Analysis
             {
                 // TODO: 검토
                 throw new InvalidOperationException();
-            }
-            
-            return new TypeExpInfoService(infosByTypeExp.ToImmutableDictionary());
+            }            
         }
 
         struct DeclVisitor
         {
-            M.DeclSymbolId declId;
+            DeclSymbolId declId;
             TypeEnv typeEnv;
             int totalTypeParamCount;
             Context context;
 
-            public DeclVisitor(M.DeclSymbolId declId, TypeEnv typeEnv, int totalTypeParamCount, Context context)
+            public DeclVisitor(DeclSymbolId declId, TypeEnv typeEnv, int totalTypeParamCount, Context context)
             {
                 this.declId = declId;
                 this.typeEnv = typeEnv;

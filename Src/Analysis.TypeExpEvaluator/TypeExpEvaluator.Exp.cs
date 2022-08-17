@@ -4,7 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using S = Citron.Syntax;
-using M = Citron.CompileTime;
+using M = Citron.Module;
+using Citron.Symbol;
 
 namespace Citron.Analysis
 {
@@ -29,7 +30,7 @@ namespace Citron.Analysis
                 return null;
             }
 
-            public void Add(M.DeclSymbolId declId, string typeParam, int index)
+            public void Add(DeclSymbolId declId, string typeParam, int index)
             {
                 dict = dict.SetItem(typeParam, typeExp => InternalTypeVarTypeExpInfo.Make(declId, typeParam, index, typeExp));
             }

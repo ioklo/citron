@@ -13,6 +13,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Infra\Infra.csproj" />
+    <ProjectReference Include="..\Module\Module.csproj" />
+    <ProjectReference Include="..\SymbolId\SymbolId.csproj" />
+    <ProjectReference Include="..\Symbol\Symbol.csproj" />
   </ItemGroup>
 
 </Project>

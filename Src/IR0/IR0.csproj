@@ -12,9 +12,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Analysis.Symbol\Analysis.Symbol.csproj" />
     <ProjectReference Include="..\Infra\Infra.csproj" />
-    <ProjectReference Include="..\ModuleInfo\ModuleInfo.csproj" />
+    <ProjectReference Include="..\Module\Module.csproj" />
+    <ProjectReference Include="..\SymbolId\SymbolId.csproj" />
+    <ProjectReference Include="..\Symbol\Symbol.csproj" />
   </ItemGroup>
 
 </Project>

@@ -9,7 +9,7 @@ using static Citron.IR0Translator.SyntaxAnalysisErrorCode;
 
 using S = Citron.Syntax;
 using R = Citron.IR0;
-using Citron.CompileTime;
+using Citron.Module;
 using Citron.Analysis;
 
 namespace Citron.IR0Translator

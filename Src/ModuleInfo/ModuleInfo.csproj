@@ -15,4 +15,8 @@
     <ProjectReference Include="..\Infra\Infra.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="CompileTime\" />
+  </ItemGroup>
+
 </Project>

@@ -1,4 +1,4 @@
-﻿using Citron.Analysis;
+﻿using Citron.Symbol;
 using Pretune;
 using System;
 using System.Collections.Generic;

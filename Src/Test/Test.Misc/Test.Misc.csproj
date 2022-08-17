@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
@@ -6,12 +6,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Analysis.Symbol\Analysis.Symbol.csproj" />
     <ProjectReference Include="..\..\Infra\Infra.csproj" />
     <ProjectReference Include="..\..\IR0Visitor\IR0Visitor.csproj" />
     <ProjectReference Include="..\..\IR0\IR0.csproj" />
     <ProjectReference Include="..\..\Log\Log.csproj" />
-    <ProjectReference Include="..\..\ModuleInfo\ModuleInfo.csproj" />
+    <ProjectReference Include="..\..\Module\Module.csproj" />
+    <ProjectReference Include="..\..\SymbolId\SymbolId.csproj" />
+    <ProjectReference Include="..\..\Symbol\Symbol.csproj" />
     <ProjectReference Include="..\..\Syntax\Syntax.csproj" />
 	<ProjectReference Include="..\TestMiscSourceGenerator\TestMiscSourceGenerator.csproj" />
   </ItemGroup>

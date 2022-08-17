@@ -6,10 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Analysis.Symbol\Analysis.Symbol.csproj" />
     <ProjectReference Include="..\..\Infra\Infra.csproj" />
     <ProjectReference Include="..\..\IR0\IR0.csproj" />
-    <ProjectReference Include="..\..\ModuleInfo\ModuleInfo.csproj" />
+    <ProjectReference Include="..\..\Module\Module.csproj" />
+    <ProjectReference Include="..\..\Symbol\Symbol.csproj" />
   </ItemGroup>
 
 </Project>

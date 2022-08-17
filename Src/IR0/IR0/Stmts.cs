@@ -1,4 +1,4 @@
-﻿using Citron.CompileTime;
+﻿using Citron.Module;
 using Pretune;
 using System;
 using System.Collections.Generic;
@@ -6,7 +6,7 @@ using Citron.Collections;
 using System.Diagnostics;
 using System.Linq;
 using Citron.Infra;
-using Citron.Analysis;
+using Citron.Symbol;
 
 namespace Citron.IR0
 {   

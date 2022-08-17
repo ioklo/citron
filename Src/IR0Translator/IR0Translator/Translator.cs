@@ -6,7 +6,7 @@ using Citron.Infra;
 using Citron.Collections;
 
 using R = Citron.IR0;
-using M = Citron.CompileTime;
+using M = Citron.Module;
 using Citron.Log;
 using Citron.Analysis;
 

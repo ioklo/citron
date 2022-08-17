@@ -7,10 +7,10 @@ using System.Text;
 using System.Threading.Tasks;
 
 using static Citron.Infra.Misc;
-using Citron.Analysis;
 using System.Diagnostics.CodeAnalysis;
-using Citron.CompileTime;
+using Citron.Module;
 using Citron.Infra;
+using Citron.Symbol;
 
 namespace Citron.IR0
 {

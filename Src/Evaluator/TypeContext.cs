@@ -2,7 +2,7 @@
 
 using Citron.Collections;
 using Citron.Infra;
-using Citron.CompileTime;
+using Citron.Module;
 
 namespace Citron
 {

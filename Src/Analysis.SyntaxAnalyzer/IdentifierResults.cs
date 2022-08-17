@@ -1,12 +1,12 @@
 ﻿using System;
 
 using S = Citron.Syntax;
-using M = Citron.CompileTime;
+using M = Citron.Module;
 using R = Citron.IR0;
 using Citron.Collections;
 using System.Diagnostics;
 using Pretune;
-using Citron.CompileTime;
+using Citron.Module;
 
 namespace Citron.Analysis
 {

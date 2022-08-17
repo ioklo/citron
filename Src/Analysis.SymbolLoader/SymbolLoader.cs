@@ -5,7 +5,8 @@ using Citron.Infra;
 using Citron.Collections;
 using Pretune;
 
-using M = Citron.CompileTime;
+using Citron.Module;
+using Citron.Symbol;
 
 namespace Citron.Analysis
 {
@@ -16,7 +17,7 @@ namespace Citron.Analysis
         SymbolFactory factory;
         ImmutableArray<ModuleDeclSymbol> moduleDecls;
 
-        ISymbolNode LoadPath(ModuleDeclSymbol moduleDecl, M.SymbolPath? path)
+        ISymbolNode LoadPath(ModuleDeclSymbol moduleDecl, SymbolPath? path)
         {
             if (path == null)
             {
@@ -46,27 +47,24 @@ namespace Citron.Analysis
             }
         }
             
-        public ISymbolNode Load(M.SymbolId id)
+        public ISymbolNode Load(SymbolId id)
         {
             switch(id)
             {
-                case M.ModuleSymbolId moduleId:
+                case ModuleSymbolId moduleId:
                     foreach (var moduleDecl in moduleDecls)
                         if (moduleDecl.Equals(moduleId.ModuleName))
                             return LoadPath(moduleDecl, moduleId.Path);
 
                     throw new NotImplementedException(); // 에러 처리
 
-                case M.VarSymbolId:
+                case VarSymbolId:
                     return factory.MakeVar();
 
-                case M.TypeVarSymbolId typeVarId:
-                    throw new NotImplementedException(); // TypeVarSymbol
-
-                case M.NullableSymbolId nullableId:                        
+                case NullableSymbolId nullableId:                        
                     throw new NotImplementedException(); // NullableSymbol
 
-                case M.VoidSymbolId voidId:
+                case VoidSymbolId voidId:
                     throw new NotImplementedException(); // VoidSymbol
 
                 default:
@@ -74,7 +72,7 @@ namespace Citron.Analysis
             }
         }
 
-        public SymbolQueryResult Query(M.SymbolPath? outerPath, M.Name name, int typeParamCount)
+        public SymbolQueryResult Query(SymbolPath? outerPath, Name name, int typeParamCount)
         {
             var candidates = new Candidates<SymbolQueryResult>();
 

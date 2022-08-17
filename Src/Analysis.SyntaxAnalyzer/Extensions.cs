@@ -1,4 +1,5 @@
-﻿using Citron.CompileTime;
+﻿using Citron.Module;
+using Citron.Symbol;
 using System;
 using System.Collections.Generic;
 using System.Linq;

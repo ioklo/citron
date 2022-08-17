@@ -242,100 +242,100 @@ namespace Citron.Test.Misc
             itw.Write(")");
         }
 
-        public void Write_Name(Citron.CompileTime.Name? @name)
+        public void Write_Name(Citron.Module.Name? @name)
         {
             if (@name == null) { itw.Write("null"); return; }
 
-            if (@name == Citron.CompileTime.Name.IndexerGet)
+            if (@name == Citron.Module.Name.IndexerGet)
             {
-                itw.Write("Citron.CompileTime.Name.IndexerGet");
+                itw.Write("Citron.Module.Name.IndexerGet");
                 return;
             }
 
-            if (@name == Citron.CompileTime.Name.IndexerSet)
+            if (@name == Citron.Module.Name.IndexerSet)
             {
-                itw.Write("Citron.CompileTime.Name.IndexerSet");
+                itw.Write("Citron.Module.Name.IndexerSet");
                 return;
             }
 
-            if (@name == Citron.CompileTime.Name.Constructor)
+            if (@name == Citron.Module.Name.Constructor)
             {
-                itw.Write("Citron.CompileTime.Name.Constructor");
+                itw.Write("Citron.Module.Name.Constructor");
                 return;
             }
 
-            if (@name == Citron.CompileTime.Name.OpInc)
+            if (@name == Citron.Module.Name.OpInc)
             {
-                itw.Write("Citron.CompileTime.Name.OpInc");
+                itw.Write("Citron.Module.Name.OpInc");
                 return;
             }
 
-            if (@name == Citron.CompileTime.Name.OpDec)
+            if (@name == Citron.Module.Name.OpDec)
             {
-                itw.Write("Citron.CompileTime.Name.OpDec");
+                itw.Write("Citron.Module.Name.OpDec");
                 return;
             }
 
-            if (@name == Citron.CompileTime.Name.Nullable)
+            if (@name == Citron.Module.Name.Nullable)
             {
-                itw.Write("Citron.CompileTime.Name.Nullable");
+                itw.Write("Citron.Module.Name.Nullable");
                 return;
             }
 
-            if (@name == Citron.CompileTime.Name.CapturedThis)
+            if (@name == Citron.Module.Name.CapturedThis)
             {
-                itw.Write("Citron.CompileTime.Name.CapturedThis");
+                itw.Write("Citron.Module.Name.CapturedThis");
                 return;
             }
 
-            if (@name == Citron.CompileTime.Name.TopLevel)
+            if (@name == Citron.Module.Name.TopLevel)
             {
-                itw.Write("Citron.CompileTime.Name.TopLevel");
+                itw.Write("Citron.Module.Name.TopLevel");
                 return;
             }
 
             switch(@name)
             {
-                case Citron.CompileTime.Name.Singleton @singleton: Write_Name_Singleton(@singleton); break;
-                case Citron.CompileTime.Name.Anonymous @anonymous: Write_Name_Anonymous(@anonymous); break;
-                case Citron.CompileTime.Name.ConstructorParam @constructorParam: Write_Name_ConstructorParam(@constructorParam); break;
-                case Citron.CompileTime.Name.Normal @normal: Write_Name_Normal(@normal); break;
+                case Citron.Module.Name.Singleton @singleton: Write_Name_Singleton(@singleton); break;
+                case Citron.Module.Name.Anonymous @anonymous: Write_Name_Anonymous(@anonymous); break;
+                case Citron.Module.Name.ConstructorParam @constructorParam: Write_Name_ConstructorParam(@constructorParam); break;
+                case Citron.Module.Name.Normal @normal: Write_Name_Normal(@normal); break;
                 default: throw new Citron.Infra.UnreachableCodeException();
             }
         }
 
-        public void Write_Name_Singleton(Citron.CompileTime.Name.Singleton? @singleton)
+        public void Write_Name_Singleton(Citron.Module.Name.Singleton? @singleton)
         {
             if (@singleton == null) { itw.Write("null"); return; }
 
-            itw.Write("new Citron.CompileTime.Name.Singleton(");
+            itw.Write("new Citron.Module.Name.Singleton(");
             this.Write_String(@singleton.DebugText);
             itw.Write(")");
         }
 
-        public void Write_Name_Anonymous(Citron.CompileTime.Name.Anonymous? @anonymous)
+        public void Write_Name_Anonymous(Citron.Module.Name.Anonymous? @anonymous)
         {
             if (@anonymous == null) { itw.Write("null"); return; }
 
-            itw.Write("new Citron.CompileTime.Name.Anonymous(");
+            itw.Write("new Citron.Module.Name.Anonymous(");
             this.Write_Int32(@anonymous.Index);
             itw.Write(")");
         }
 
-        public void Write_Name_ConstructorParam(Citron.CompileTime.Name.ConstructorParam? @constructorParam)
+        public void Write_Name_ConstructorParam(Citron.Module.Name.ConstructorParam? @constructorParam)
         {
             if (@constructorParam == null) { itw.Write("null"); return; }
 
-            itw.Write("new Citron.CompileTime.Name.ConstructorParam(");
+            itw.Write("new Citron.Module.Name.ConstructorParam(");
             this.Write_Int32(@constructorParam.Index);
             itw.Write(")");
         }
 
-        public void Write_Name_Normal(Citron.CompileTime.Name.Normal? @normal)
+        public void Write_Name_Normal(Citron.Module.Name.Normal? @normal)
         {
             if (@normal == null) { itw.Write("null"); return; }
 
-            itw.Write("new Citron.CompileTime.Name.Normal(");
+            itw.Write("new Citron.Module.Name.Normal(");
             this.Write_String(@normal.Text);
             itw.Write(")");
         }

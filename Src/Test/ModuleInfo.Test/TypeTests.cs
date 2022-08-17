@@ -6,7 +6,7 @@ using System.Text;
 using Xunit;
 using static Citron.Infra.Misc;
 
-namespace Citron.CompileTime
+namespace Citron.Module
 {
     public class TypeTests
     {

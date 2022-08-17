@@ -1,7 +1,7 @@
 ﻿using Citron.Collections;
 using Citron.Infra;
 using R = Citron.IR0;
-using M = Citron.CompileTime;
+using M = Citron.Module;
 
 namespace Citron.Analysis
 {

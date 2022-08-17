@@ -2,12 +2,13 @@
 using System.Text;
 using Citron.Infra;
 
-using S = Citron.Syntax;
-using M = Citron.CompileTime;
+using Citron.Syntax;
+using Citron.Module;
 using System.Linq;
 using Citron.Collections;
 
 using static Citron.Analysis.TypeExpErrorCode;
+using Citron.Symbol;
 
 namespace Citron.Analysis
 {
@@ -24,13 +25,13 @@ namespace Citron.Analysis
                 this.context = context;
             }
 
-            public static void Visit(S.TypeExp exp, TypeEnv typeEnv, Context context)
+            public static void Visit(TypeExp exp, TypeEnv typeEnv, Context context)
             {
                 var visitor = new TypeExpVisitor(typeEnv, context);
                 visitor.VisitTypeExpOuterMost(exp);
             }
 
-            public static void Visit(ImmutableArray<S.TypeExp> typeArgExps, TypeEnv typeEnv, Context context)
+            public static void Visit(ImmutableArray<TypeExp> typeArgExps, TypeEnv typeEnv, Context context)
             {
                 var visitor = new TypeExpVisitor(typeEnv, context);
 
@@ -38,7 +39,7 @@ namespace Citron.Analysis
                     visitor.VisitTypeExpOuterMost(typeArgExp);
             }            
 
-            TypeExpInfo VisitIdTypeExp(S.IdTypeExp typeExp)
+            TypeExpInfo VisitIdTypeExp(IdTypeExp typeExp)
             {
                 if (typeExp.Name == "var")
                 {
@@ -84,7 +85,7 @@ namespace Citron.Analysis
                 // 3. 전역에서 검색, 
                 // TODO: 현재 namespace 상황에 따라서 Namespace.Root대신 인자를 집어넣어야 한다.
                 var typeArgs = VisitTypeArgExps(typeExp.TypeArgs);
-                var candidates = context.GetTypeExpInfos(new M.SymbolPath(null, new M.Name.Normal(typeExp.Name), typeArgs), typeExp).ToList();
+                var candidates = context.GetTypeExpInfos(new SymbolPath(null, new Name.Normal(typeExp.Name), typeArgs), typeExp).ToList();
 
                 if (candidates.Count == 1)
                 {
@@ -103,7 +104,7 @@ namespace Citron.Analysis
             }
 
             // X<T>.Y<U, V>
-            TypeExpInfo VisitMemberTypeExp(S.MemberTypeExp exp)
+            TypeExpInfo VisitMemberTypeExp(MemberTypeExp exp)
             {
                 // X<T>
                 var parentResult = VisitTypeExp(exp.Parent);
@@ -119,7 +120,7 @@ namespace Citron.Analysis
             }
 
             // int?
-            TypeExpInfo VisitNullableTypeExp(S.NullableTypeExp exp)
+            TypeExpInfo VisitNullableTypeExp(NullableTypeExp exp)
             {
                 // int
                 var innerTypeResult = VisitTypeExp(exp.InnerTypeExp);
@@ -128,20 +129,20 @@ namespace Citron.Analysis
                 return SpecialTypeExpInfo.Nullable(typeId, exp);
             }
 
-            TypeExpInfo VisitTypeExp(S.TypeExp exp)
+            TypeExpInfo VisitTypeExp(TypeExp exp)
             {
                 switch (exp)
                 {
-                    case S.IdTypeExp idExp: return VisitIdTypeExp(idExp);
-                    case S.MemberTypeExp memberExp: return VisitMemberTypeExp(memberExp);
-                    case S.NullableTypeExp nullableExp: return VisitNullableTypeExp(nullableExp);
+                    case IdTypeExp idExp: return VisitIdTypeExp(idExp);
+                    case MemberTypeExp memberExp: return VisitMemberTypeExp(memberExp);
+                    case NullableTypeExp nullableExp: return VisitNullableTypeExp(nullableExp);
 
                     default: throw new UnreachableCodeException();
                 }
             }
 
             // VisitTypeExp와 다른 점은 실행 후 (TypeExp => TypeExpInfo) 정보를 추가
-            void VisitTypeExpOuterMost(S.TypeExp exp)
+            void VisitTypeExpOuterMost(TypeExp exp)
             {
                 try
                 {
@@ -154,9 +155,9 @@ namespace Citron.Analysis
                 }
             }
 
-            ImmutableArray<M.SymbolId> VisitTypeArgExps(ImmutableArray<S.TypeExp> typeArgExps)
+            ImmutableArray<SymbolId> VisitTypeArgExps(ImmutableArray<TypeExp> typeArgExps)
             {
-                var builder = ImmutableArray.CreateBuilder<M.SymbolId>(typeArgExps.Length);
+                var builder = ImmutableArray.CreateBuilder<SymbolId>(typeArgExps.Length);
                 foreach (var typeArgExp in typeArgExps)
                 {
                     var typeArgResult = VisitTypeExp(typeArgExp);

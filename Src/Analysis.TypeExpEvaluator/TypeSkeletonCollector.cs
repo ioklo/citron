@@ -9,15 +9,16 @@ using System.Net.Http.Headers;
 using System.Text;
 
 using S = Citron.Syntax;
-using M = Citron.CompileTime;
+using M = Citron.Module;
 
-using static Citron.CompileTime.DeclSymbolPathExtensions;
+using static Citron.Symbol.DeclSymbolPathExtensions;
+using Citron.Symbol;
 
 namespace Citron.Analysis
 {
     struct TypeSkeletonCollector
     {
-        M.DeclSymbolPath? basePath; // 현재 위치
+        DeclSymbolPath? basePath; // 현재 위치
 
         // runtime
         ImmutableArray<TypeSkeleton>.Builder skeletonsBuilder;
@@ -30,7 +31,7 @@ namespace Citron.Analysis
             return TypeSkeletonRepository.Build(typeSkeletonCollector.skeletonsBuilder.ToImmutable());
         }
 
-        TypeSkeletonCollector(M.DeclSymbolPath? basePath, ImmutableArray<TypeSkeleton>.Builder builder)
+        TypeSkeletonCollector(DeclSymbolPath? basePath, ImmutableArray<TypeSkeleton>.Builder builder)
         {
             this.basePath = basePath;
             this.skeletonsBuilder = builder;
@@ -41,7 +42,7 @@ namespace Citron.Analysis
             return new TypeSkeletonCollector(null, ImmutableArray.CreateBuilder<TypeSkeleton>());
         }
 
-        static TypeSkeletonCollector NewTypeSkeletonCollector(M.DeclSymbolPath path)
+        static TypeSkeletonCollector NewTypeSkeletonCollector(DeclSymbolPath path)
         {
             return new TypeSkeletonCollector(path, ImmutableArray.CreateBuilder<TypeSkeleton>());
         }
