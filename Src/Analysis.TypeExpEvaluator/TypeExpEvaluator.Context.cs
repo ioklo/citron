@@ -3,25 +3,27 @@ using System.Diagnostics.CodeAnalysis;
 using Citron.Log;
 using Citron.Collections;
 
-using Citron.Syntax;
-using Citron.Module;
+using S = Citron.Syntax;
+using M = Citron.Module;
 using System.Collections.Generic;
 
 using static Citron.Symbol.DeclSymbolPathExtensions;
 using Citron.Symbol;
+using Citron.Infra;
 
 namespace Citron.Analysis
 {
     public partial class TypeExpEvaluator
     {
-        class Context
+        // global
+        class GlobalContext
         {
-            Name internalModuleName;
+            M.Name internalModuleName;
             ImmutableArray<ModuleDeclSymbol> referenceModules;
             TypeSkeletonRepository skelRepo;
             ILogger logger;
 
-            public Context(Name internalModuleName, ImmutableArray<ModuleDeclSymbol> referenceModules, TypeSkeletonRepository skelRepo, ILogger logger)
+            public GlobalContext(M.Name internalModuleName, ImmutableArray<ModuleDeclSymbol> referenceModules, TypeSkeletonRepository skelRepo, ILogger logger)
             {
                 this.internalModuleName = internalModuleName;
                 this.referenceModules = referenceModules;
@@ -30,25 +32,27 @@ namespace Citron.Analysis
             }
 
             [DoesNotReturn]
-            public void Throw(TypeExpErrorCode code, ISyntaxNode node, string msg)
+            public void Throw(TypeExpErrorCode code, S.ISyntaxNode node, string msg)
             {
                 logger.Add(new TypeExpErrorLog(code, node, msg));
                 throw new FatalException();
             }
 
-            public void AddInfo(TypeExp exp, TypeExpInfo info)
+            public void AddInfo(S.TypeExp exp, S.TypeExpInfo info)
             {
                 exp.Info = info;
             }
+            
 
-            public IEnumerable<TypeExpInfo> GetTypeExpInfos(SymbolPath path, TypeExp typeExp)
+            public Candidates<Func<S.TypeExp, S.TypeExpInfo>> MakeCandidates(SymbolPath path)
             {
+                var candidates = new Candidates<Func<S.TypeExp, S.TypeExpInfo>>();
                 var declPath = path.GetDeclSymbolPath();
 
                 var typeSkel = skelRepo.GetTypeSkeleton(declPath);
                 if (typeSkel != null)
                 {
-                    yield return new InternalTypeExpInfo(new ModuleSymbolId(internalModuleName, path), typeSkel, typeExp);
+                    candidates.Add(typeExp => new InternalTypeExpInfo(new ModuleSymbolId(internalModuleName, path), typeSkel, typeExp));
                 }
 
                 // 3-2. Reference에서 검색, GlobalTypeSkeletons에 이름이 겹치지 않아야 한다.. ModuleInfo들 끼리도 이름이 겹칠 수 있다
@@ -59,9 +63,16 @@ namespace Citron.Analysis
                     if (declSymbol is ITypeDeclSymbol typeDeclSymbol)
                     {
                         var symbolId = new ModuleSymbolId(referenceModule.GetName(), path);
-                        yield return new ModuleSymbolTypeExpInfo(symbolId, typeDeclSymbol, typeExp);
+                        candidates.Add(typeExp => new ModuleSymbolTypeExpInfo(symbolId, typeDeclSymbol, typeExp));
                     }
                 }
+
+                return candidates;
+            }
+
+            public TypeSkeleton? GetSkeleton(DeclSymbolPath path)
+            {
+                return skelRepo.GetTypeSkeleton(path);
             }
         }
     }

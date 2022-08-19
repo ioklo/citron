@@ -1,18 +1,19 @@
-﻿using Citron.Infra;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using Citron.Collections;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Http.Headers;
 using System.Text;
 
+using Citron.Infra;
+using Citron.Collections;
+using Citron.Symbol;
+
 using S = Citron.Syntax;
 using M = Citron.Module;
 
 using static Citron.Symbol.DeclSymbolPathExtensions;
-using Citron.Symbol;
 
 namespace Citron.Analysis
 {
@@ -31,24 +32,34 @@ namespace Citron.Analysis
             return TypeSkeletonRepository.Build(typeSkeletonCollector.skeletonsBuilder.ToImmutable());
         }
 
-        TypeSkeletonCollector(DeclSymbolPath? basePath, ImmutableArray<TypeSkeleton>.Builder builder)
+        TypeSkeletonCollector(DeclSymbolPath? basePath)
         {
             this.basePath = basePath;
-            this.skeletonsBuilder = builder;
-        }
-        
-        static TypeSkeletonCollector NewTypeSkeletonCollector()
-        {
-            return new TypeSkeletonCollector(null, ImmutableArray.CreateBuilder<TypeSkeleton>());
+            this.skeletonsBuilder = ImmutableArray.CreateBuilder<TypeSkeleton>();
         }
 
-        static TypeSkeletonCollector NewTypeSkeletonCollector(DeclSymbolPath path)
+        // 타입 파라미터를 인자로 받아서, 자식 Skeleton으로 넣는다
+        static TypeSkeletonCollector NewTypeSkeletonCollector(DeclSymbolPath? declPath = null, ImmutableArray<string> typeParams = default)
         {
-            return new TypeSkeletonCollector(path, ImmutableArray.CreateBuilder<TypeSkeleton>());
+            var collector = new TypeSkeletonCollector(declPath);
+
+            foreach (var typeParam in typeParams)
+            {
+                var path = declPath.Child(new M.Name.Normal(typeParam));
+                var skel = new TypeSkeleton(path, default, TypeSkeletonKind.TypeVar);
+
+                collector.AddSkeleton(skel);
+            }
+
+            return collector;
         }
 
         void AddSkeleton(TypeSkeleton skeleton)
-        {   
+        {
+            // TODO: 같은 이름이 추가되면 에러를 내야 한다, 테스트 작성도 하자
+            if (skeletonsBuilder.AsEnumerable().Any(skel => skel.Path == skeleton.Path))
+                throw new NotImplementedException();
+
             skeletonsBuilder.Add(skeleton);
         }        
 
@@ -64,7 +75,7 @@ namespace Citron.Analysis
         void VisitEnumDecl(S.EnumDecl enumDecl)
         {
             var enumPath = basePath.Child(new M.Name.Normal(enumDecl.Name), enumDecl.TypeParams.Length);
-            var newCollector = NewTypeSkeletonCollector(enumPath);
+            var newCollector = NewTypeSkeletonCollector(enumPath, enumDecl.TypeParams);
 
             foreach (var enumElem in enumDecl.Elems)
             {
@@ -79,7 +90,7 @@ namespace Citron.Analysis
         {
             var structPath = basePath.Child(new M.Name.Normal(structDecl.Name), structDecl.TypeParams.Length);
 
-            var newCollector = NewTypeSkeletonCollector(structPath);
+            var newCollector = NewTypeSkeletonCollector(structPath, structDecl.TypeParams);
             foreach(var elem in structDecl.MemberDecls)
             {
                 switch(elem)
@@ -99,7 +110,7 @@ namespace Citron.Analysis
         {
             var classPath = basePath.Child(new M.Name.Normal(classDecl.Name), classDecl.TypeParams.Length);
 
-            var newCollector = NewTypeSkeletonCollector();
+            var newCollector = NewTypeSkeletonCollector(classPath, classDecl.TypeParams);
             foreach (var memberDecl in classDecl.MemberDecls)
             {
                 switch (memberDecl)

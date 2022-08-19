@@ -1,14 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.Text;
-using Citron.Infra;
+using System.Linq;
 
+using Citron.Infra;
 using Citron.Syntax;
 using Citron.Module;
-using System.Linq;
+using Citron.Symbol;
 using Citron.Collections;
 
 using static Citron.Analysis.TypeExpErrorCode;
-using Citron.Symbol;
 
 namespace Citron.Analysis
 {
@@ -16,24 +16,24 @@ namespace Citron.Analysis
     {
         struct TypeExpVisitor
         {
-            TypeEnv typeEnv;
-            Context context;
+            LocalContext localContext;
+            GlobalContext globalContext;
 
-            public TypeExpVisitor(TypeEnv typeEnv, Context context)
+            public TypeExpVisitor(LocalContext localContext, GlobalContext globalContext)
             {
-                this.typeEnv = typeEnv;
-                this.context = context;
+                this.localContext = localContext;
+                this.globalContext = globalContext;
             }
 
-            public static void Visit(TypeExp exp, TypeEnv typeEnv, Context context)
+            public static void Visit(TypeExp exp, LocalContext localContext, GlobalContext globalContext)
             {
-                var visitor = new TypeExpVisitor(typeEnv, context);
+                var visitor = new TypeExpVisitor(localContext, globalContext);
                 visitor.VisitTypeExpOuterMost(exp);
             }
 
-            public static void Visit(ImmutableArray<TypeExp> typeArgExps, TypeEnv typeEnv, Context context)
+            public static void Visit(ImmutableArray<TypeExp> typeArgExps, LocalContext localContext, GlobalContext globalContext)
             {
-                var visitor = new TypeExpVisitor(typeEnv, context);
+                var visitor = new TypeExpVisitor(localContext, globalContext);
 
                 foreach (var typeArgExp in typeArgExps)
                     visitor.VisitTypeExpOuterMost(typeArgExp);
@@ -44,14 +44,14 @@ namespace Citron.Analysis
                 if (typeExp.Name == "var")
                 {
                     if (typeExp.TypeArgs.Length != 0)
-                        context.Throw(T0102_IdTypeExp_VarTypeCantApplyTypeArgs, typeExp, "var는 타입 인자를 가질 수 없습니다");
+                        globalContext.Throw(T0102_IdTypeExp_VarTypeCantApplyTypeArgs, typeExp, "var는 타입 인자를 가질 수 없습니다");
 
                     return SpecialTypeExpInfo.Var(typeExp);
                 }
                 else if (typeExp.Name == "void")
                 {
                     if (typeExp.TypeArgs.Length != 0)
-                        context.Throw(T0101_IdTypeExp_TypeDoesntHaveTypeParams, typeExp, "void는 타입 인자를 가질 수 없습니다");
+                        globalContext.Throw(T0101_IdTypeExp_TypeDoesntHaveTypeParams, typeExp, "void는 타입 인자를 가질 수 없습니다");
 
                     return SpecialTypeExpInfo.Void(typeExp);
                 }
@@ -71,33 +71,42 @@ namespace Citron.Analysis
                 }
 
                 // 1. TypeVar에서 먼저 검색
-                var typeVar = typeEnv.TryMakeTypeVar(typeExp.Name, typeExp);
-                if (typeVar != null)
-                {
-                    if (typeExp.TypeArgs.Length != 0)
-                        context.Throw(T0105_IdTypeExp_TypeVarCantApplyTypeArgs, typeExp, "타입 변수는 타입 인자를 가질 수 없습니다");
+                // 
+                //var typeVar = typeEnv.TryMakeTypeVar(typeExp.Name, typeExp);
+                //if (typeVar != null)
+                //{
+                //    if (typeExp.TypeArgs.Length != 0)
+                //        context.Throw(T0105_IdTypeExp_TypeVarCantApplyTypeArgs, typeExp, "타입 변수는 타입 인자를 가질 수 없습니다");
 
-                    return typeVar;
-                }
+                //    return typeVar;
+                //}
+                // => this context에서 검색하면 되도록 수정되었다
 
-                // TODO: 2. 현재 This Context에서 검색
+                var typeArgs = VisitTypeArgExps(typeExp.TypeArgs);
+
+                // 2. 현재 TypeEnv에서 검색
+                // class C<T, U> { struct S<T, U> { void F<X>() { 'S<T, X>' s; } }
+                // typeEnv.MakeInternalTypeExpInfo(new SymbolPath(outer: ))
+                var localTypeExpInfo = localContext.MakeTypeExpInfo(typeExp.Name, typeArgs.Length, typeExp);
+                if (localTypeExpInfo != null)
+                    return localTypeExpInfo;
 
                 // 3. 전역에서 검색, 
-                // TODO: 현재 namespace 상황에 따라서 Namespace.Root대신 인자를 집어넣어야 한다.
-                var typeArgs = VisitTypeArgExps(typeExp.TypeArgs);
-                var candidates = context.GetTypeExpInfos(new SymbolPath(null, new Name.Normal(typeExp.Name), typeArgs), typeExp).ToList();
+                // TODO: 현재 namespace 상황에 따라서 outer에 null대신 인자를 집어넣어야 한다.                
+                var candidates = globalContext.MakeCandidates(new SymbolPath(outer: null, new Name.Normal(typeExp.Name), typeArgs));
+                var candidate = candidates.GetSingle();
 
-                if (candidates.Count == 1)
+                if (candidate != null)
                 {
-                    return candidates[0];
+                    return candidate.Invoke(typeExp);
                 }
-                else if (1 < candidates.Count)
+                else if (candidates.HasMultiple)
                 {
-                    context.Throw(T0103_IdTypeExp_MultipleTypesOfSameName, typeExp, $"이름이 같은 {typeExp} 타입이 여러개 입니다");
+                    globalContext.Throw(T0103_IdTypeExp_MultipleTypesOfSameName, typeExp, $"이름이 같은 {typeExp} 타입이 여러개 입니다");
                 }
-                else
+                else if (candidates.IsEmpty)
                 {
-                    context.Throw(T0104_IdTypeExp_TypeNotFound, typeExp, $"{typeExp}를 찾지 못했습니다");
+                    globalContext.Throw(T0104_IdTypeExp_TypeNotFound, typeExp, $"{typeExp}를 찾지 못했습니다");
                 }
 
                 throw new UnreachableCodeException();
@@ -112,9 +121,9 @@ namespace Citron.Analysis
                 // U, V            
                 var typeArgs = VisitTypeArgExps(exp.TypeArgs);
 
-                var memberResult = parentResult.GetMemberInfo(exp.MemberName, typeArgs, exp);
+                var memberResult = parentResult.MakeMemberInfo(exp.MemberName, typeArgs, exp);
                 if (memberResult == null)
-                    context.Throw(T0202_MemberTypeExp_MemberTypeNotFound, exp, $"{parentResult}에서 {exp.MemberName}을 찾을 수 없습니다");
+                    globalContext.Throw(T0202_MemberTypeExp_MemberTypeNotFound, exp, $"{parentResult}에서 {exp.MemberName}을 찾을 수 없습니다");
 
                 return memberResult;
             }
@@ -147,7 +156,7 @@ namespace Citron.Analysis
                 try
                 {
                     var result = VisitTypeExp(exp);
-                    context.AddInfo(exp, result);
+                    globalContext.AddInfo(exp, result);
                 }
                 catch (FatalException)
                 {

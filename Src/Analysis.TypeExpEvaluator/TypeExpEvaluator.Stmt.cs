@@ -11,19 +11,19 @@ namespace Citron.Analysis
     {
         struct StmtVisitor
         {
-            TypeEnv typeEnv;
-            Context context;
+            LocalContext localContext;
+            GlobalContext globalContext;
 
-            public StmtVisitor(TypeEnv typeEnv, Context context)
+            public StmtVisitor(LocalContext localContext, GlobalContext globalContext)
             {
-                this.typeEnv = typeEnv;
-                this.context = context;
+                this.localContext = localContext;
+                this.globalContext = globalContext;
             }
 
             // Body version
-            public static void Visit(ImmutableArray<S.Stmt> body, TypeEnv typeEnv, Context context)
+            public static void Visit(ImmutableArray<S.Stmt> body, LocalContext localContext, GlobalContext globalContext)
             {
-                var visitor = new StmtVisitor(typeEnv, context);
+                var visitor = new StmtVisitor(localContext, globalContext);
 
                 foreach(var stmt in body)
                     visitor.VisitStmt(stmt);
@@ -32,17 +32,17 @@ namespace Citron.Analysis
             void VisitCommandStmt(S.CommandStmt cmdStmt)
             {
                 foreach (var cmd in cmdStmt.Commands)
-                    ExpVisitor.Visit(cmd.Elements, typeEnv, context);
+                    ExpVisitor.Visit(cmd.Elements, localContext, globalContext);
             }
 
             void VisitVarDecl(S.VarDecl varDecl)
             {
-                TypeExpVisitor.Visit(varDecl.Type, typeEnv, context);
+                TypeExpVisitor.Visit(varDecl.Type, localContext, globalContext);
 
                 foreach (var varDeclElem in varDecl.Elems)
                 {
                     if (varDeclElem.Initializer != null)
-                        ExpVisitor.Visit(varDeclElem.Initializer.Value.Exp, typeEnv, context);
+                        ExpVisitor.Visit(varDeclElem.Initializer.Value.Exp, localContext, globalContext);
                 }
             }
 
@@ -53,7 +53,7 @@ namespace Citron.Analysis
 
             void VisitIfStmt(S.IfStmt ifStmt)
             {
-                ExpVisitor.Visit(ifStmt.Cond, typeEnv, context);
+                ExpVisitor.Visit(ifStmt.Cond, localContext, globalContext);
                 VisitStmt(ifStmt.Body);
 
                 if (ifStmt.ElseBody != null)
@@ -62,8 +62,8 @@ namespace Citron.Analysis
 
             void VisitIfTestStmt(S.IfTestStmt ifTestStmt)
             {
-                ExpVisitor.Visit(ifTestStmt.Exp, typeEnv, context);
-                TypeExpVisitor.Visit(ifTestStmt.TestType, typeEnv, context);
+                ExpVisitor.Visit(ifTestStmt.Exp, localContext, globalContext);
+                TypeExpVisitor.Visit(ifTestStmt.TestType, localContext, globalContext);
                 VisitStmt(ifTestStmt.Body);
                 if (ifTestStmt.ElseBody != null)
                     VisitStmt(ifTestStmt.ElseBody);
@@ -73,7 +73,7 @@ namespace Citron.Analysis
             {
                 switch (initializer)
                 {
-                    case S.ExpForStmtInitializer expInit: ExpVisitor.Visit(expInit.Exp, typeEnv, context); break;
+                    case S.ExpForStmtInitializer expInit: ExpVisitor.Visit(expInit.Exp, localContext, globalContext); break;
                     case S.VarDeclForStmtInitializer varDeclInit: VisitVarDecl(varDeclInit.VarDecl); break;
                     default: throw new UnreachableCodeException();
                 }
@@ -85,10 +85,10 @@ namespace Citron.Analysis
                     VisitForStmtInitializer(forStmt.Initializer);
 
                 if (forStmt.CondExp != null)
-                    ExpVisitor.Visit(forStmt.CondExp, typeEnv, context);
+                    ExpVisitor.Visit(forStmt.CondExp, localContext, globalContext);
 
                 if (forStmt.ContinueExp != null)
-                    ExpVisitor.Visit(forStmt.ContinueExp, typeEnv, context);
+                    ExpVisitor.Visit(forStmt.ContinueExp, localContext, globalContext);
 
                 VisitStmt(forStmt.Body);
             }
@@ -104,7 +104,7 @@ namespace Citron.Analysis
             void VisitReturnStmt(S.ReturnStmt returnStmt)
             {
                 if (returnStmt.Info != null)
-                    ExpVisitor.Visit(returnStmt.Info.Value.Value, typeEnv, context);
+                    ExpVisitor.Visit(returnStmt.Info.Value.Value, localContext, globalContext);
             }
 
             void VisitBlockStmt(S.BlockStmt blockStmt)
@@ -115,7 +115,7 @@ namespace Citron.Analysis
 
             void VisitExpStmt(S.ExpStmt expStmt)
             {
-                ExpVisitor.Visit(expStmt.Exp, typeEnv, context);
+                ExpVisitor.Visit(expStmt.Exp, localContext, globalContext);
             }
 
             void VisitTaskStmt(S.TaskStmt taskStmt)
@@ -135,20 +135,20 @@ namespace Citron.Analysis
 
             void VisitForeachStmt(S.ForeachStmt foreachStmt)
             {
-                TypeExpVisitor.Visit(foreachStmt.Type, typeEnv, context);
-                ExpVisitor.Visit(foreachStmt.Iterator, typeEnv, context);
+                TypeExpVisitor.Visit(foreachStmt.Type, localContext, globalContext);
+                ExpVisitor.Visit(foreachStmt.Iterator, localContext, globalContext);
                 VisitStmt(foreachStmt.Body);
             }
 
             void VisitYieldStmt(S.YieldStmt yieldStmt)
             {
-                ExpVisitor.Visit(yieldStmt.Value, typeEnv, context);
+                ExpVisitor.Visit(yieldStmt.Value, localContext, globalContext);
             }
 
             void VisitDirectiveStmt(S.DirectiveStmt directiveStmt)
             {
                 foreach (var arg in directiveStmt.Args)
-                    ExpVisitor.Visit(arg, typeEnv, context);
+                    ExpVisitor.Visit(arg, localContext, globalContext);
             }
 
             public void VisitStmt(S.Stmt stmt)

@@ -18,6 +18,7 @@ namespace Citron.Analysis
         Interface,
         Enum,
         EnumElem,
+        TypeVar,
     }
 
     // TODO: Type뿐 아니라 Namespace 등도 여기서

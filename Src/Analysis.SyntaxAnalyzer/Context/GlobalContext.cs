@@ -69,28 +69,31 @@ namespace Citron.Analysis
         public TSymbol? LoadOpenSymbol<TSymbol>(ModuleSymbolId outerId, string name, ImmutableArray<string> typeParams, ImmutableArray<FuncParamId> paramIds)
             where TSymbol : class, ISymbolNode
         {
-            // typeVarId만들어야 함
-            var outerDeclId = outerId.GetDeclSymbolId();
-            var outerTypeArgCount = outerId.GetTotalTypeArgCount();
+            // class C<T, U> { C<T, U> c; }
+            // C<T, U>.T에서 T를 만들려면 C<T, U>정의가 필요하고, C<T, U>를 만들려면 T의 정의가 필요하다
+            // 먼저, T, U를 outer 없이 만들고, C<T, U>를 만든 다음, outer에 채워넣는다
 
+            // 1. typeArgIds만들기
+            var typeVarPaths = new List<SymbolPath>(); // 나중에 outer를 넣기 위해 저장
             var typeArgIdsBuilder = ImmutableArray.CreateBuilder<SymbolId>();
             for(int i = 0; i < typeParams.Length; i++)
             {
-                // 일단 null로 지정한다
+                // outer를 일단 null로 지정한다
                 var typeVarPath = new SymbolPath(null, new Name.Normal(typeParams[i]));
                 var typeVarId = new ModuleSymbolId(outerId.ModuleName, typeVarPath);
                 typeArgIdsBuilder.Add(typeVarId);
+                typeVarPaths.Add(typeVarPath);
             }
+            var typeArgIds = typeArgIdsBuilder.ToImmutable();
 
-            // class C<T, U> { C<T, U> c; }
-            // C<T, U>.T에서 T를 만들려면 C<T, U>정의가 필요하고, C<T, U>를 만들려면 T의 정의가 필요하다
-            var symbolId = outerId.ChildWithTypeVars(new Name.Normal(name), typeParams, paramIds);
+            // 2. C<T, U>만들기
+            var symbolId = outerId.Child(new Name.Normal(name), typeArgIds, paramIds);
 
-            // ChildWithTypeVars는
-            SymbolPath path;
-            path.Outer = null;
+            // 3. 다시 채워넣기, NOTICE: typeVarPath가 ref type이라서 가능하다
+            foreach(var typeVarPath in typeVarPaths)
+                typeVarPath.Outer = symbolId.Path;
 
-            return symbolLoader.Load(outerId.Child(new Name.Normal(name), typeArgIdsBuilder.ToImmutable(), paramIds)) as TSymbol;
+            return symbolLoader.Load(symbolId) as TSymbol;
         }
 
         GlobalContext(

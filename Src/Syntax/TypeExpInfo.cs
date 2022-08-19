@@ -13,7 +13,7 @@ namespace Citron.Syntax
         public abstract TypeExpInfoKind GetKind();
         public abstract SymbolId GetSymbolId();
         // memberTypeExp: 리턴할 TypeExpInfo를 생성하는데 필요한 typeExp
-        public abstract TypeExpInfo? GetMemberInfo(string name, ImmutableArray<SymbolId> typeArgs, TypeExp memberTypeExp);
+        public abstract TypeExpInfo? MakeMemberInfo(string name, ImmutableArray<SymbolId> typeArgs, TypeExp memberTypeExp);
         public abstract TypeExp GetTypeExp(); // back reference
     }
 }

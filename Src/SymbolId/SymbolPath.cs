@@ -3,11 +3,10 @@ using Citron.Module;
 using Pretune;
 
 namespace Citron.Symbol
-{
-    [ImplementIEquatable]
+{    
     public record SymbolPath
     {
-        public SymbolPath? Outer { get; set; }
+        public SymbolPath? Outer { get; set; } // 오픈한 이유는
         public Name Name { get; }
         public ImmutableArray<SymbolId> TypeArgs { get; }
         public ImmutableArray<FuncParamId> ParamIds { get; } 

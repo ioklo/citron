@@ -1,98 +1,70 @@
 ﻿using Citron.Collections;
 using Citron.Infra;
-using System;
 using System.Collections.Generic;
 using System.Text;
-using S = Citron.Syntax;
-using M = Citron.Module;
-using Citron.Symbol;
+using Citron.Syntax;
 
 namespace Citron.Analysis
 {
     public partial class TypeExpEvaluator
     {   
-        struct TypeEnv
-        {
-            public static readonly TypeEnv Empty = new TypeEnv(default);
-
-            ImmutableDictionary<string, Func<S.TypeExp, InternalTypeVarTypeExpInfo>> dict;
-
-            TypeEnv(ImmutableDictionary<string, Func<S.TypeExp, InternalTypeVarTypeExpInfo>> dict)
-            {
-                this.dict = dict;
-            }
-
-            public InternalTypeVarTypeExpInfo? TryMakeTypeVar(string name, S.TypeExp typeExp)
-            {
-                if (dict.TryGetValue(name, out var constructor))
-                    return constructor.Invoke(typeExp);
-
-                return null;
-            }
-
-            public void Add(DeclSymbolId declId, string typeParam, int index)
-            {
-                dict = dict.SetItem(typeParam, typeExp => InternalTypeVarTypeExpInfo.Make(declId, typeParam, index, typeExp));
-            }
-        }
-
         struct ExpVisitor
         {
-            TypeEnv typeEnv;
-            Context context;
+            LocalContext localContext;
+            GlobalContext globalContext;
 
-            ExpVisitor(TypeEnv typeEnv, Context context)
+            ExpVisitor(LocalContext typeEnv, GlobalContext globalContext)
             {
-                this.typeEnv = typeEnv;
-                this.context = context;
+                this.localContext = typeEnv;
+                this.globalContext = globalContext;
             }
 
-            public static void Visit(S.Exp exp, TypeEnv typeEnv, Context context)
+            public static void Visit(Exp exp, LocalContext typeEnv, GlobalContext context)
             {
                 var visitor = new ExpVisitor(typeEnv, context);
                 visitor.VisitExp(exp);
             }
 
-            public static void Visit(ImmutableArray<S.StringExpElement> elems, TypeEnv typeEnv, Context context)
+            public static void Visit(ImmutableArray<StringExpElement> elems, LocalContext typeEnv, GlobalContext context)
             {
                 var visitor = new ExpVisitor(typeEnv, context);
                 visitor.VisitStringExpElements(elems);
             }
 
-            void VisitIdExp(S.IdentifierExp idExp)
+            void VisitIdExp(IdentifierExp idExp)
             {
-                TypeExpVisitor.Visit(idExp.TypeArgs, typeEnv, context);
+                TypeExpVisitor.Visit(idExp.TypeArgs, localContext, globalContext);
             }
 
-            void VisitNullLiteralExp(S.NullLiteralExp nullExp)
-            {
-            }
-
-            void VisitBoolLiteralExp(S.BoolLiteralExp boolExp)
+            void VisitNullLiteralExp(NullLiteralExp nullExp)
             {
             }
 
-            void VisitIntLiteralExp(S.IntLiteralExp intExp)
+            void VisitBoolLiteralExp(BoolLiteralExp boolExp)
             {
             }
 
-            void VisitStringExp(S.StringExp stringExp)
+            void VisitIntLiteralExp(IntLiteralExp intExp)
+            {
+            }
+
+            void VisitStringExp(StringExp stringExp)
             {
                 VisitStringExpElements(stringExp.Elements);
             }
 
-            void VisitUnaryOpExp(S.UnaryOpExp unaryOpExp)
+            void VisitUnaryOpExp(UnaryOpExp unaryOpExp)
             {
                 VisitExp(unaryOpExp.Operand);
             }
 
-            void VisitBinaryOpExp(S.BinaryOpExp binaryOpExp)
+            void VisitBinaryOpExp(BinaryOpExp binaryOpExp)
             {
                 VisitExp(binaryOpExp.Operand0);
                 VisitExp(binaryOpExp.Operand1);
             }
 
-            void VisitCallExp(S.CallExp callExp)
+            void VisitCallExp(CallExp callExp)
             {
                 VisitExp(callExp.Callable);
 
@@ -100,68 +72,68 @@ namespace Citron.Analysis
                     VisitArgument(arg);
             }
 
-            void VisitLambdaExp(S.LambdaExp lambdaExp)
+            void VisitLambdaExp(LambdaExp lambdaExp)
             {   
                 foreach (var param in lambdaExp.Params)
                 {
                     if (param.Type != null)
                     {
-                        TypeExpVisitor.Visit(param.Type, typeEnv, context);
+                        TypeExpVisitor.Visit(param.Type, localContext, globalContext);
                     }
                 }
 
-                StmtVisitor.Visit(lambdaExp.Body, typeEnv, context);
+                StmtVisitor.Visit(lambdaExp.Body, localContext, globalContext);
             }
 
-            void VisitIndexerExp(S.IndexerExp exp)
+            void VisitIndexerExp(IndexerExp exp)
             {
                 VisitExp(exp.Object);
                 VisitExp(exp.Index);
             }
 
             // T<int, short>.x
-            void VisitMemberExp(S.MemberExp memberExp)
+            void VisitMemberExp(MemberExp memberExp)
             {
                 VisitExp(memberExp.Parent);
-                TypeExpVisitor.Visit(memberExp.MemberTypeArgs, typeEnv, context);
+                TypeExpVisitor.Visit(memberExp.MemberTypeArgs, localContext, globalContext);
             }
 
-            void VisitListExp(S.ListExp listExp)
+            void VisitListExp(ListExp listExp)
             {
                 if (listExp.ElemType != null)
-                    TypeExpVisitor.Visit(listExp.ElemType, typeEnv, context);
+                    TypeExpVisitor.Visit(listExp.ElemType, localContext, globalContext);
 
                 foreach (var elem in listExp.Elems)
                     VisitExp(elem);
             }
 
-            void VisitNewExp(S.NewExp newExp)
+            void VisitNewExp(NewExp newExp)
             {
-                TypeExpVisitor.Visit(newExp.Type, typeEnv, context);
+                TypeExpVisitor.Visit(newExp.Type, localContext, globalContext);
 
                 foreach (var arg in newExp.Args)
                     VisitArgument(arg);
             }
 
-            void VisitExp(S.Exp exp)
+            void VisitExp(Exp exp)
             {
                 try
                 {
                     switch (exp)
                     {
-                        case S.IdentifierExp idExp: VisitIdExp(idExp); break;
-                        case S.NullLiteralExp nullExp: VisitNullLiteralExp(nullExp); break;
-                        case S.BoolLiteralExp boolExp: VisitBoolLiteralExp(boolExp); break;
-                        case S.IntLiteralExp intExp: VisitIntLiteralExp(intExp); break;
-                        case S.StringExp stringExp: VisitStringExp(stringExp); break;
-                        case S.UnaryOpExp unaryOpExp: VisitUnaryOpExp(unaryOpExp); break;
-                        case S.BinaryOpExp binaryOpExp: VisitBinaryOpExp(binaryOpExp); break;
-                        case S.CallExp callExp: VisitCallExp(callExp); break;
-                        case S.LambdaExp lambdaExp: VisitLambdaExp(lambdaExp); break;
-                        case S.IndexerExp indexerExp: VisitIndexerExp(indexerExp); break;
-                        case S.MemberExp memberExp: VisitMemberExp(memberExp); break;
-                        case S.ListExp listExp: VisitListExp(listExp); break;
-                        case S.NewExp newExp: VisitNewExp(newExp); break;
+                        case IdentifierExp idExp: VisitIdExp(idExp); break;
+                        case NullLiteralExp nullExp: VisitNullLiteralExp(nullExp); break;
+                        case BoolLiteralExp boolExp: VisitBoolLiteralExp(boolExp); break;
+                        case IntLiteralExp intExp: VisitIntLiteralExp(intExp); break;
+                        case StringExp stringExp: VisitStringExp(stringExp); break;
+                        case UnaryOpExp unaryOpExp: VisitUnaryOpExp(unaryOpExp); break;
+                        case BinaryOpExp binaryOpExp: VisitBinaryOpExp(binaryOpExp); break;
+                        case CallExp callExp: VisitCallExp(callExp); break;
+                        case LambdaExp lambdaExp: VisitLambdaExp(lambdaExp); break;
+                        case IndexerExp indexerExp: VisitIndexerExp(indexerExp); break;
+                        case MemberExp memberExp: VisitMemberExp(memberExp); break;
+                        case ListExp listExp: VisitListExp(listExp); break;
+                        case NewExp newExp: VisitNewExp(newExp); break;
                         default: throw new UnreachableCodeException();
                     }
                 }
@@ -171,32 +143,32 @@ namespace Citron.Analysis
                 }
             }
 
-            void VisitStringExpElements(ImmutableArray<S.StringExpElement> elems)
+            void VisitStringExpElements(ImmutableArray<StringExpElement> elems)
             {
                 foreach (var elem in elems)
                 {
                     switch (elem)
                     {
-                        case S.TextStringExpElement _: break;
-                        case S.ExpStringExpElement expElem: VisitExp(expElem.Exp); break;
+                        case TextStringExpElement _: break;
+                        case ExpStringExpElement expElem: VisitExp(expElem.Exp); break;
                         default: throw new UnreachableCodeException();
                     }
                 }
             }
 
-            void VisitArgument(S.Argument arg)
+            void VisitArgument(Argument arg)
             {
                 switch (arg)
                 {
-                    case S.Argument.Normal normalArg:
+                    case Argument.Normal normalArg:
                         VisitExp(normalArg.Exp);
                         break;
 
-                    case S.Argument.Params paramsArg:
+                    case Argument.Params paramsArg:
                         VisitExp(paramsArg.Exp);
                         break;
 
-                    case S.Argument.Ref refArg:
+                    case Argument.Ref refArg:
                         VisitExp(refArg.Exp);
                         break;
                 }

@@ -32,7 +32,7 @@ namespace Citron.Analysis
             return typeId;
         }
 
-        public override S.TypeExpInfo? GetMemberInfo(string name, ImmutableArray<SymbolId> typeArgs, S.TypeExp memberTypeExp)
+        public override S.TypeExpInfo? MakeMemberInfo(string name, ImmutableArray<SymbolId> typeArgs, S.TypeExp memberTypeExp)
         {
             var mname = new M.Name.Normal(name);
 
@@ -53,17 +53,17 @@ namespace Citron.Analysis
     partial class ModuleSymbolTypeExpInfo : S.TypeExpInfo
     {
         ModuleSymbolId typeId;
-        ITypeDeclSymbol symbol;
+        ITypeDeclSymbol declSymbol;
         S.TypeExp typeExp; // 소스의 어디에서 이 타입정보가 나타나는가
 
         public override S.TypeExpInfoKind GetKind()
         {
-            return symbol.GetTypeExpInfoKind();
+            return declSymbol.GetTypeExpInfoKind();
         }
 
-        public override S.TypeExpInfo? GetMemberInfo(string memberName, ImmutableArray<SymbolId> typeArgs, S.TypeExp memberTypeExp)
+        public override S.TypeExpInfo? MakeMemberInfo(string memberName, ImmutableArray<SymbolId> typeArgs, S.TypeExp memberTypeExp)
         {
-            var memberTypeNode = symbol.GetMemberDeclNode(new DeclSymbolNodeName(new M.Name.Normal(memberName), typeArgs.Length, default)) as ITypeDeclSymbol;
+            var memberTypeNode = declSymbol.GetMemberDeclNode(new DeclSymbolNodeName(new M.Name.Normal(memberName), typeArgs.Length, default)) as ITypeDeclSymbol;
             if (memberTypeNode == null)
                 return null;
 
@@ -79,44 +79,6 @@ namespace Citron.Analysis
         public override S.TypeExp GetTypeExp()
         {
             return typeExp;
-        }
-    }
-
-    public class InternalTypeVarTypeExpInfo : S.TypeExpInfo
-    {
-        TypeVarSymbolId id;
-        S.TypeExp typeExp;
-
-        InternalTypeVarTypeExpInfo(TypeVarSymbolId id, S.TypeExp typeExp)
-        {
-            this.id = id;
-            this.typeExp = typeExp;
-        }
-
-        public override S.TypeExpInfoKind GetKind()
-        {
-            return S.TypeExpInfoKind.TypeVar;
-        }
-
-        public override S.TypeExpInfo? GetMemberInfo(string name, ImmutableArray<SymbolId> typeArgs, S.TypeExp memberTypeExp)
-        {
-            return null;
-        }
-        
-        public override S.TypeExp GetTypeExp()
-        {
-            return typeExp;
-        }
-
-        public override SymbolId GetSymbolId()
-        {
-            return id;
-        }
-
-        public static InternalTypeVarTypeExpInfo Make(DeclSymbolId outerDeclId, string typeParam, int index, S.TypeExp typeExp)
-        {            
-            var declId = outerDeclId.Child(new M.Name.Normal(typeParam), 0, default);
-            return new InternalTypeVarTypeExpInfo(new TypeVarSymbolId(declId, index), typeExp);
         }
     }
 
@@ -138,7 +100,7 @@ namespace Citron.Analysis
             return kind;
         }
 
-        public override S.TypeExpInfo? GetMemberInfo(string name, ImmutableArray<SymbolId> typeArgs, S.TypeExp memberTypeExp)
+        public override S.TypeExpInfo? MakeMemberInfo(string name, ImmutableArray<SymbolId> typeArgs, S.TypeExp memberTypeExp)
         {
             return null;
         }
