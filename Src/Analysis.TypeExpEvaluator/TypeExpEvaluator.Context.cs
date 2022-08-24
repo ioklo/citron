@@ -20,14 +20,14 @@ namespace Citron.Analysis
         {
             M.Name internalModuleName;
             ImmutableArray<ModuleDeclSymbol> referenceModules;
-            TypeSkeletonRepository skelRepo;
+            Skeleton moduleSkel;
             ILogger logger;
 
-            public GlobalContext(M.Name internalModuleName, ImmutableArray<ModuleDeclSymbol> referenceModules, TypeSkeletonRepository skelRepo, ILogger logger)
+            public GlobalContext(M.Name internalModuleName, ImmutableArray<ModuleDeclSymbol> referenceModules, Skeleton moduleSkel, ILogger logger)
             {
                 this.internalModuleName = internalModuleName;
                 this.referenceModules = referenceModules;
-                this.skelRepo = skelRepo;
+                this.moduleSkel = moduleSkel;
                 this.logger = logger;
             }
 
@@ -42,8 +42,18 @@ namespace Citron.Analysis
             {
                 exp.Info = info;
             }
-            
 
+            // 타입에 관련된 Skeleton만 검색한다
+            Skeleton GetTypeSkeleton(DeclSymbolPath? path)
+            {
+                if (path == null)
+                    return moduleSkel;
+
+                var outerSkel = GetSkeleton(path.Outer);
+                outerSkel.Get
+            }
+
+            // path는 fullPath
             public Candidates<Func<S.TypeExp, S.TypeExpInfo>> MakeCandidates(SymbolPath path)
             {
                 var candidates = new Candidates<Func<S.TypeExp, S.TypeExpInfo>>();
@@ -68,11 +78,6 @@ namespace Citron.Analysis
                 }
 
                 return candidates;
-            }
-
-            public TypeSkeleton? GetSkeleton(DeclSymbolPath path)
-            {
-                return skelRepo.GetTypeSkeleton(path);
             }
         }
     }

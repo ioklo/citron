@@ -49,7 +49,7 @@ namespace Citron.TextAnalysis.Test
             var lexer = new Lexer();
             var context = await MakeContextAsync(
                 "if else for continue break exec task params return async await foreach in yield seq enum struct class is ref null public protected private static " + 
-                "new " +
+                "new namespace " +
                 "++ -- <= >= => == != " +
                 "@ < > ; , = { } ( ) [ ] + - * / % ! . ? : `");
 
@@ -84,6 +84,7 @@ namespace Citron.TextAnalysis.Test
                 StaticToken.Instance,
 
                 NewToken.Instance,
+                NamespaceToken.Instance,
 
                 PlusPlusToken.Instance,
                 MinusMinusToken.Instance,

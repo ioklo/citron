@@ -27,7 +27,7 @@ namespace Citron.Syntax
     {
         public AccessModifier? AccessModifier { get; }
         public string Name { get; }
-        public ImmutableArray<string> TypeParams { get; }
+        public ImmutableArray<TypeParam> TypeParams { get; }
         public ImmutableArray<EnumElemDecl> Elems { get; }
     }
 }

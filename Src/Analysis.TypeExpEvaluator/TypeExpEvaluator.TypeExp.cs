@@ -70,6 +70,9 @@ namespace Citron.Analysis
                     return BuiltinTypeExpInfo.String(typeExp);
                 }
 
+                // 다시 짜보자
+
+
                 // 1. TypeVar에서 먼저 검색
                 // 
                 //var typeVar = typeEnv.TryMakeTypeVar(typeExp.Name, typeExp);
@@ -77,7 +80,6 @@ namespace Citron.Analysis
                 //{
                 //    if (typeExp.TypeArgs.Length != 0)
                 //        context.Throw(T0105_IdTypeExp_TypeVarCantApplyTypeArgs, typeExp, "타입 변수는 타입 인자를 가질 수 없습니다");
-
                 //    return typeVar;
                 //}
                 // => this context에서 검색하면 되도록 수정되었다

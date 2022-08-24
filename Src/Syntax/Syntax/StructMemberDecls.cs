@@ -20,7 +20,7 @@ namespace Citron.Syntax
         bool IsRefReturn,
         TypeExp RetType,
         string Name,
-        ImmutableArray<string> TypeParams,
+        ImmutableArray<TypeParam> TypeParams,
         ImmutableArray<FuncParam> Parameters,
         ImmutableArray<Stmt> Body
     ) : StructMemberDecl;

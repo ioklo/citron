@@ -59,13 +59,14 @@ namespace Citron.LexicalAnalysis
     public class ClassToken : Token { public static readonly ClassToken Instance = new ClassToken(); private ClassToken() { } }
     public class IsToken : Token { public static readonly IsToken Instance = new IsToken(); private IsToken() { } }
     public class RefToken : Token { public static readonly RefToken Instance = new RefToken(); private RefToken() { } }
-    public class NullToken : Token { public static readonly NullToken Instance = new NullToken(); private NullToken() { } }    
+    public class NullToken : Token { public static readonly NullToken Instance = new NullToken(); private NullToken() { } }
 
     public class PublicToken : Token { public static readonly PublicToken Instance = new PublicToken(); private PublicToken() { } }
     public class ProtectedToken : Token { public static readonly ProtectedToken Instance = new ProtectedToken(); private ProtectedToken() { } }
     public class PrivateToken : Token { public static readonly PrivateToken Instance = new PrivateToken(); private PrivateToken() { } }
     public class StaticToken : Token { public static readonly StaticToken Instance = new StaticToken(); private StaticToken() { } }
     public class NewToken : Token { public static readonly NewToken Instance = new NewToken(); private NewToken() { } }
+    public class NamespaceToken : Token { public static readonly NamespaceToken Instance = new NamespaceToken(); private NamespaceToken() { } }
 
     public class ColonToken : Token { public static readonly ColonToken Instance = new ColonToken(); private ColonToken() { } }
     public class BacktickToken : Token { public static readonly BacktickToken Instance = new BacktickToken(); private BacktickToken() { } }

@@ -118,6 +118,7 @@ namespace Citron
             { "private", PrivateToken.Instance },
             { "static", StaticToken.Instance },
             { "new", NewToken.Instance },
+            { "namespace", NamespaceToken.Instance },
         };
 
         private static (string Text, Func<Token> Constructor)[] infos = new (string Text, Func<Token> Constructor)[]

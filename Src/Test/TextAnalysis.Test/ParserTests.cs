@@ -60,9 +60,57 @@ namespace Citron.TextAnalysis.Test
                     new FuncParam(FuncParamKind.Params, SIdTypeExp("string"), "y"),
                     new FuncParam(FuncParamKind.Normal, SIdTypeExp("int"), "z")
                 ),
-                SBlock(new VarDeclStmt(new VarDecl(false, SIdTypeExp("int"), Arr(new VarDeclElement("a", new VarDeclElemInitializer(false, new IntLiteralExp(0))))))));
+                Arr<Stmt>(
+                    new VarDeclStmt(
+                        new VarDecl(false, 
+                            SIdTypeExp("int"), 
+                            Arr(
+                                new VarDeclElement("a", new VarDeclElemInitializer(false, new IntLiteralExp(0)))
+                            )
+                        )
+                    )
+                )
+            );
 
             Assert.Equal(expected, funcDecl.Elem);
+        }
+
+        [Fact]
+        public async Task TestParseNamespaceDeclAsync()
+        {
+            var lexer = new Lexer();
+            var parser = new Parser(lexer);
+            var context = await MakeContextAsync(@"
+namespace NS1
+{
+    namespace NS2.NS3
+    {
+        void F()
+        {
+
+        }
+    }
+}");
+            var script = await parser.ParseScriptAsync(context);
+
+            var expected = new Script(Arr<ScriptElement>(new NamespaceScriptElement(new NamespaceDecl(
+                Arr("NS1"),
+                Arr<NamespaceElement>(new NamespaceDeclNamespaceElement(new NamespaceDecl(
+                    Arr("NS2", "NS3"),
+                    Arr<NamespaceElement>(new GlobalFuncDeclNamespaceElement(new GlobalFuncDecl(
+                            null,
+                            isSequence: false, 
+                            isRefReturn: false,
+                            SVoidTypeExp(),
+                            "F",
+                            typeParams: default,
+                            parameters: default,
+                            body: default
+                    )))
+                )))
+            ))));
+
+            Assert.Equal(expected, script.Elem);
         }
 
         [Fact]
@@ -79,7 +127,7 @@ enum X
 }");
             var enumDecl = await parser.ParseEnumDeclAsync(context);
 
-            var expected = new EnumDecl("X",
+            var expected = new EnumDecl(null, "X",
                 default,
                 Arr(
                     new EnumElemDecl("First", default),
@@ -90,6 +138,7 @@ enum X
 
             Assert.Equal(expected, enumDecl.Elem);
         }
+        
 
         [Fact]
         public async Task TestParseStructDeclAsync()
@@ -113,7 +162,7 @@ public struct S<T> : B, I
             var structDecl = await parser.ParseStructDeclAsync(context);
 
             var expected = new StructDecl(AccessModifier.Public, "S",
-                Arr( "T" ),
+                Arr(new TypeParam("T")),
 
                 Arr<TypeExp>( SIdTypeExp("B"), SIdTypeExp("I") ),
 
@@ -124,7 +173,7 @@ public struct S<T> : B, I
                     new StructMemberVarDecl(AccessModifier.Private, SIdTypeExp("int"), Arr("z")),
 
                     new StructMemberTypeDecl(new StructDecl(
-                        AccessModifier.Public, "Nested", Arr( "U" ), Arr<TypeExp>( SIdTypeExp("B"), SIdTypeExp("I")),
+                        AccessModifier.Public, "Nested", Arr(new TypeParam("U")), Arr<TypeExp>( SIdTypeExp("B"), SIdTypeExp("I")),
                         Arr<StructMemberDecl>(new StructMemberVarDecl(null, SIdTypeExp("int"), Arr("x")))
                     )),
 
@@ -135,9 +184,9 @@ public struct S<T> : B, I
                         IsRefReturn: false,
                         SIdTypeExp("void"),
                         "Func",
-                        Arr("X"),
+                        Arr(new TypeParam("X")),
                         Arr(new FuncParam(FuncParamKind.Normal, SIdTypeExp("string"), "s")),
-                        SBlock()
+                        Arr<Stmt>()
                     ),
 
                     new StructMemberFuncDecl(
@@ -147,9 +196,9 @@ public struct S<T> : B, I
                         IsRefReturn: false,
                         SIdTypeExp("int"),
                         "F2",
-                        Arr("T"),
+                        Arr(new TypeParam("T")),
                         default,
-                        SBlock(new YieldStmt(new IntLiteralExp(4)))
+                        Arr<Stmt>(new YieldStmt(new IntLiteralExp(4)))
                     )
                 )
             );

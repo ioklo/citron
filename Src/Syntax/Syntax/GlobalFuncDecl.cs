@@ -12,7 +12,7 @@ namespace Citron.Syntax
         public bool IsRefReturn { get; }
         public TypeExp RetType { get; }
         public string Name { get; }
-        public ImmutableArray<string> TypeParams { get; }
+        public ImmutableArray<TypeParam> TypeParams { get; }
         public ImmutableArray<FuncParam> Parameters { get; }
         public ImmutableArray<Stmt> Body { get; }
     }

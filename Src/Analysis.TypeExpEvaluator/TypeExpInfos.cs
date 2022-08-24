@@ -19,7 +19,7 @@ namespace Citron.Analysis
     partial class InternalTypeExpInfo : S.TypeExpInfo
     {
         ModuleSymbolId typeId;
-        TypeSkeleton skeleton; // 멤버를 갖고 오기 위한 수단
+        Skeleton skeleton; // 멤버를 갖고 오기 위한 수단
         S.TypeExp typeExp;
 
         public override S.TypeExpInfoKind GetKind()

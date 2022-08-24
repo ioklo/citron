@@ -130,7 +130,7 @@ namespace Citron.TextAnalysis.Test
                 SId("a"),
                 new LambdaExp(
                     Arr(new LambdaExpParam(FuncParamKind.Normal, null, "b")),
-                    new ReturnStmt(
+                    Arr<Stmt>(new ReturnStmt(
                         new ReturnValueInfo(
                             false,
                             new LambdaExp(
@@ -138,10 +138,10 @@ namespace Citron.TextAnalysis.Test
                                     new LambdaExpParam(FuncParamKind.Normal, null, "c"),
                                     new LambdaExpParam(FuncParamKind.Normal, new IdTypeExp("int", default), "d")
                                 ),
-                                new ReturnStmt(new ReturnValueInfo(false, SId("e")))
+                                Arr<Stmt>(new ReturnStmt(new ReturnValueInfo(false, SId("e"))))
                             )
                         )
-                    )
+                    ))
                 )
             );
 

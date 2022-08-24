@@ -40,6 +40,10 @@ namespace Citron.Symbol
     // public record TypeVarSymbolId(int Index) : SymbolId;    
     // => TypeVarSymbolId도 ModuleSymbolId의 일부분으로 통합한다. 사용할 때 resolution이 필요할거 같지만 큰 문제는 아닌 것 같다
     // 'MyModule.MyClass<X, Y>.MyStruct<T, U, X>.X'
+    // => 순환참조때문에 누적 Index를 사용하는 TypeVarSymbolId로 다시 롤백한다
+    // 'MyModule.MyClass<X, Y>.MyStruct<T, U, X>.Func<T>(T, int).T' path에 Func<T>와 T가 순환 참조된다
+    // => TypeVarSymbolId(5)로 참조하게 한다
+    public record TypeVarSymbolId(int Index) : SymbolId; 
 
     public record NullableSymbolId(SymbolId InnerTypeId) : SymbolId;
 

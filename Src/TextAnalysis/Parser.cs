@@ -210,6 +210,9 @@ namespace Citron
 
         public async ValueTask<ParseResult<ImmutableArray<Stmt>>> ParseFuncBodyAsync(ParserContext context)
         {
+            if (!Accept<LBraceToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
+                return ParseResult<ImmutableArray<Stmt>>.Invalid;
+
             var stmtsBuilder = ImmutableArray.CreateBuilder<Stmt>();
             while (!Accept<RBraceToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
             {
@@ -248,9 +251,6 @@ namespace Citron
             if (!Parse(await ParseFuncDeclParamsAsync(context), ref context, out var paramInfo))
                 return Invalid();
 
-            if (!Accept<LBraceToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
-                return Invalid();
-
             if (!Parse(await ParseFuncBodyAsync(context), ref context, out var body))
                 return Invalid();
 
@@ -269,27 +269,27 @@ namespace Citron
         }
 
         // <T1, T2, ...>
-        async ValueTask<ParseResult<ImmutableArray<string>>> ParseTypeParamsAsync(ParserContext context)
+        async ValueTask<ParseResult<ImmutableArray<TypeParam>>> ParseTypeParamsAsync(ParserContext context)
         {
             // typeParams
-            var typeParamsBuilder = ImmutableArray.CreateBuilder<string>();
+            var typeParamsBuilder = ImmutableArray.CreateBuilder<TypeParam>();
             if (Accept<LessThanToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
             {
                 while (!Accept<GreaterThanToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                 {
                     if (0 < typeParamsBuilder.Count)
                         if (!Accept<CommaToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
-                            return ParseResult<ImmutableArray<string>>.Invalid;
+                            return ParseResult<ImmutableArray<TypeParam>>.Invalid;
 
                     // 변수 이름만 받을 것이므로 TypeExp가 아니라 Identifier여야 한다
                     if (!Accept<IdentifierToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context, out var typeParam))
-                        return ParseResult<ImmutableArray<string>>.Invalid;
+                        return ParseResult<ImmutableArray<TypeParam>>.Invalid;
 
-                    typeParamsBuilder.Add(typeParam.Value);
+                    typeParamsBuilder.Add(new TypeParam(typeParam.Value));
                 }
             }
 
-            return new ParseResult<ImmutableArray<string>>(typeParamsBuilder.ToImmutable(), context);
+            return new ParseResult<ImmutableArray<TypeParam>>(typeParamsBuilder.ToImmutable(), context);
         }
 
         internal async ValueTask<ParseResult<TypeDecl>> ParseTypeDeclAsync(ParserContext context)
@@ -745,8 +745,71 @@ namespace Citron
             return new ParseResult<ClassDecl>(new ClassDecl(accessModifier, className.Value, typeParams, baseTypesBuilder.ToImmutable(), membersBuilder.ToImmutable()), context);
         }
 
+        async ValueTask<ParseResult<NamespaceElement>> ParseNamespaceElementAsync(ParserContext context)
+        {
+            if (Parse(await ParseNamespaceDeclAsync(context), ref context, out var namespaceDecl))
+                return new ParseResult<NamespaceElement>(new NamespaceDeclNamespaceElement(namespaceDecl), context);
+
+            if (Parse(await ParseTypeDeclAsync(context), ref context, out var typeDecl))
+                return new ParseResult<NamespaceElement>(new TypeDeclNamespaceElement(typeDecl), context);
+
+            if (Parse(await ParseGlobalFuncDeclAsync(context), ref context, out var funcDecl))
+                return new ParseResult<NamespaceElement>(new GlobalFuncDeclNamespaceElement(funcDecl), context);
+
+            return ParseResult<NamespaceElement>.Invalid;
+        }
+
+        async ValueTask<ParseResult<NamespaceDecl>> ParseNamespaceDeclAsync(ParserContext context)
+        {
+            ParseResult<NamespaceDecl> Invalid() => ParseResult<NamespaceDecl>.Invalid;
+
+            // <NAMESPACE> <NAME>(.<NAME> ...) <LBRACE>  ... <RBRACE>
+
+            // namespace
+            if (!Accept<NamespaceToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
+                return Invalid();
+
+            var nsNamesBuilder = ImmutableArray.CreateBuilder<string>();
+            IdentifierToken? nsName;
+
+            // ex) NS
+            if (!Accept(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context, out nsName))
+                return Invalid();
+
+            nsNamesBuilder.Add(nsName.Value);
+            
+            // . optional
+            while (Accept<DotToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
+            {
+                // ex) NS
+                if (!Accept(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context, out nsName))
+                    return Invalid();
+
+                nsNamesBuilder.Add(nsName.Value);
+            }
+
+            // {
+            if (!Accept<LBraceToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
+                return Invalid();
+
+            var elemsBuilder = ImmutableArray.CreateBuilder<NamespaceElement>();
+            // } 가 나올때까지
+            while (!Accept<RBraceToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
+            {
+                if (!Parse(await ParseNamespaceElementAsync(context), ref context, out var elem))
+                    return Invalid();
+
+                elemsBuilder.Add(elem);
+            }
+
+            return new ParseResult<NamespaceDecl>(new NamespaceDecl(nsNamesBuilder.ToImmutable(), elemsBuilder.ToImmutable()), context);
+        }
+
         async ValueTask<ParseResult<ScriptElement>> ParseScriptElementAsync(ParserContext context)
         {
+            if (Parse(await ParseNamespaceDeclAsync(context), ref context, out var namespaceDecl))
+                return new ParseResult<ScriptElement>(new NamespaceDeclScriptElement(namespaceDecl), context);
+
             if (Parse(await ParseTypeDeclAsync(context), ref context, out var typeDecl))
                 return new ParseResult<ScriptElement>(new TypeDeclScriptElement(typeDecl), context);
             

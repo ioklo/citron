@@ -25,7 +25,7 @@ namespace Citron.Syntax
             TypeExpEvaluator.Evaluate(moduleName, script, default, testLogger);
         }
 
-        // UnitOfWorkName_ScenarioName_ExpectedBehavior                
+        // UnitOfWorkName_ScenarioName_ExpectedBehavior
         
         [Fact]
         public void EvaluateType_TopLevelStmt_WorksProperly()

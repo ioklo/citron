@@ -12,14 +12,14 @@ namespace Citron.Analysis
 {
     static class Misc
     {
-        public static TypeExpInfoKind GetTypeExpInfoKind(this TypeSkeletonKind kind)
+        public static TypeExpInfoKind GetTypeExpInfoKind(this SkeletonKind kind)
         {
             switch (kind)
             {
-                case TypeSkeletonKind.Class: return TypeExpInfoKind.Class;
-                case TypeSkeletonKind.Struct: return TypeExpInfoKind.Struct;
-                case TypeSkeletonKind.Interface: return TypeExpInfoKind.Interface;
-                case TypeSkeletonKind.Enum: return TypeExpInfoKind.Enum;
+                case SkeletonKind.Class: return TypeExpInfoKind.Class;
+                case SkeletonKind.Struct: return TypeExpInfoKind.Struct;
+                case SkeletonKind.Interface: return TypeExpInfoKind.Interface;
+                case SkeletonKind.Enum: return TypeExpInfoKind.Enum;
             }
 
             throw new UnreachableCodeException();

@@ -74,7 +74,6 @@ namespace Citron.IR0Translator.Test
             Debug.Assert(result != null);
 
             // var paramTypes = new M.ParamTypes(Arr(new M.ParamKindAndType(M.ParamKind.Ref, new M.TypeVarTypeId(0, "T"))));
-
             var paramId = new FuncParamId(M.FuncParameterKind.Ref, new TypeVarSymbolId(0));
             var path = new DeclSymbolPath(null, NormalName("Func"), 1, Arr(paramId));
 
@@ -85,7 +84,7 @@ namespace Citron.IR0Translator.Test
             var factory = new SymbolFactory();
             var builder = new ModuleDeclBuilder(factory, moduleName);
             builder.BeginGlobalFunc(
-                new FuncReturn(isRef: true),
+                new FuncReturn(isRef: true ),
                 NormalName("Func"),
                 Arr<FuncParameter>(new FuncParameter(M.FuncParameterKind.Ref, ))
 

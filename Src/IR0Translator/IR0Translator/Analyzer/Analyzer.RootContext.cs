@@ -70,7 +70,7 @@ namespace Citron.IR0Translator
 
             public R.Script MakeScript()
             {
-                stmtBodiesBuilder.Add(M.Name.TopLevel, topLevelStmts);
+                stmtBodiesBuilder.Add(M.Name.Root, topLevelStmts);
                 return new R.Script(moduleDeclSymbol, stmtBodiesBuilder.ToImmutable());
             }
 

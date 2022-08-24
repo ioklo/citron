@@ -27,9 +27,9 @@ namespace Citron.Analysis
             ImmutableArray<ModuleDeclSymbol> referenceModules,
             ILogger logger)
         {
-            var skelRepo = TypeSkeletonCollector.Collect(script);
+            var moduleSkel = SkeletonCollector.Collect(script);
             var localContext = new LocalContext();
-            var globalContext = new GlobalContext(internalModuleName, referenceModules, skelRepo, logger);
+            var globalContext = new GlobalContext(internalModuleName, referenceModules, moduleSkel, logger);
 
             var declVisitor = new DeclVisitor(localContext, globalContext);
             var stmtVisitor = new StmtVisitor(localContext, globalContext);

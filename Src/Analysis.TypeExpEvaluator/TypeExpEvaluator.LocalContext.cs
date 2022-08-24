@@ -3,6 +3,7 @@ using System;
 using Citron.Symbol;
 using Citron.Syntax;
 using Citron.Module;
+using System.Diagnostics;
 
 namespace Citron.Analysis
 {
@@ -10,51 +11,27 @@ namespace Citron.Analysis
     {
         class LocalContext
         {
-            DeclSymbolPath? declPath; // 현재 decl 위치
-            ImmutableDictionary<(Name Name, int TypeParamCount), Func<TypeExp, TypeExpInfo>> dict;
+            Skeleton skeleton; // 현재 Skeleton 위치
 
-            public LocalContext()
+            public LocalContext(Skeleton skeleton)
             {
-                declPath = null;
-                dict = ImmutableDictionary<(Name Name, int TypeParamCount), Func<TypeExp, TypeExpInfo>>.Empty;
+                this.skeleton = skeleton;
+            }            
+
+            public LocalContext NewLocalContextWithFuncDecl(ISyntaxNode node)
+            {
+                var funcSkel = skeleton.GetFuncDeclMember(node);
+                Debug.Assert(funcSkel != null);
+
+                return new LocalContext(funcSkel);
             }
 
-            LocalContext(DeclSymbolPath? declPath, ImmutableDictionary<(Name Name, int TypeParamCount), Func<TypeExp, TypeExpInfo>> dict)
+            public LocalContext NewLocalContext(Name.Normal name, int typeParamCount)
             {
-                this.declPath = declPath;
-                this.dict = dict;
-            }
+                var memberSkel = skeleton.GetMember(name, typeParamCount, 0);
+                Debug.Assert(memberSkel != null);
 
-            public LocalContext NewLocalContext(Name.Normal name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
-            {
-                var newDeclPath = declPath.Child(name, typeParamCount, paramIds);
-                return new LocalContext(newDeclPath, dict);
-            }
-            
-            public LocalContext NewLocalContext(ImmutableArray<string> typeParams)
-            {
-                var newDict = dict.Add(typeParams);
-                return new LocalContext(declPath, newDict);
-            }
-
-            public TypeExpInfo? TryMakeTypeVar(Name name, TypeExp typeExp)
-            {
-                if (dict.TryGetValue(name, out var constructor))
-                    return constructor.Invoke(typeExp);
-
-                return null;
-            }
-
-            
-
-            public TypeExpInfo? MakeTypeExpInfo(string name, int typeParamCount, TypeExp typeExp)
-            {
-                var key = (new Name.Normal(name), typeParamCount);
-
-                if (dict.TryGetValue(key, out var constructor))
-                    return constructor.Invoke(typeExp);
-
-                return null;
+                return new LocalContext(memberSkel);
             }
         }
     }

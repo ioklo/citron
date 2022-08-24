@@ -47,8 +47,7 @@ namespace Citron.Analysis
             #region Global
             public void VisitGlobalFuncDecl(S.GlobalFuncDecl funcDecl)
             {
-                // skeleton에는 타입에 관한 정보만 들어있었기 때문에, funcDecl의 typeVar는 손수 넣어줘야 한다
-                var newLocalContext = localContext.NewLocalContext(funcDecl.TypeParams);
+                var newLocalContext = localContext.NewLocalContextWithFuncDecl(funcDecl);
 
                 TypeExpVisitor.Visit(funcDecl.RetType, newLocalContext, globalContext);
 
@@ -63,7 +62,7 @@ namespace Citron.Analysis
 
             void VisitStructDecl(S.StructDecl structDecl)
             {
-                var newLocalContext = localContext.NewLocalContext(new M.Name.Normal(structDecl.Name), structDecl.TypeParams.Length, default);
+                var newLocalContext = localContext.NewLocalContext(new M.Name.Normal(structDecl.Name), structDecl.TypeParams.Length);
 
                 // 베이스 타입
                 foreach (var baseType in structDecl.BaseTypes)
@@ -105,7 +104,7 @@ namespace Citron.Analysis
             void VisitStructMemberFuncDecl(S.StructMemberFuncDecl funcDecl)
             {
                 // skeleton에는 타입에 관한 정보만 들어있었기 때문에, funcDecl의 typeVar는 손수 넣어줘야 한다
-                var newLocalContext = localContext.NewLocalContext(funcDecl.TypeParams);
+                var newLocalContext = localContext.NewLocalContextWithFuncDecl(funcDecl);
                 
                 TypeExpVisitor.Visit(funcDecl.RetType, newLocalContext, globalContext);
 
@@ -127,7 +126,7 @@ namespace Citron.Analysis
             #region Class
             void VisitClassDecl(S.ClassDecl classDecl)
             {
-                var newLocalContext = localContext.NewLocalContext(new M.Name.Normal(classDecl.Name), classDecl.TypeParams.Length, default);
+                var newLocalContext = localContext.NewLocalContext(new M.Name.Normal(classDecl.Name), classDecl.TypeParams.Length);
 
                 // 베이스 타입
                 foreach (var baseType in classDecl.BaseTypes)
@@ -169,7 +168,7 @@ namespace Citron.Analysis
             void VisitClassMemberFuncDecl(S.ClassMemberFuncDecl funcDecl)
             {
                 // skeleton에는 타입에 관한 정보만 들어있었기 때문에, funcDecl의 typeVar는 손수 넣어줘야 한다
-                var newLocalContext = localContext.NewLocalContext(funcDecl.TypeParams);
+                var newLocalContext = localContext.NewLocalContextWithFuncDecl(funcDecl);
 
                 TypeExpVisitor.Visit(funcDecl.RetType, newLocalContext, globalContext);
 
@@ -191,7 +190,7 @@ namespace Citron.Analysis
             #region Enum
             void VisitEnumDecl(S.EnumDecl enumDecl)
             {
-                var newLocalContext = localContext.NewLocalContext(new M.Name.Normal(enumDecl.Name), enumDecl.TypeParams.Length, default);
+                var newLocalContext = localContext.NewLocalContext(new M.Name.Normal(enumDecl.Name), enumDecl.TypeParams.Length);
 
                 // 멤버 타입들
                 var newVisitor = new DeclVisitor(newLocalContext, globalContext);
