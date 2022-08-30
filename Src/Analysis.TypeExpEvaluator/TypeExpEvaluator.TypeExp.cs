@@ -9,6 +9,8 @@ using Citron.Symbol;
 using Citron.Collections;
 
 using static Citron.Analysis.TypeExpErrorCode;
+using System;
+using System.Diagnostics;
 
 namespace Citron.Analysis
 {
@@ -37,7 +39,92 @@ namespace Citron.Analysis
 
                 foreach (var typeArgExp in typeArgExps)
                     visitor.VisitTypeExpOuterMost(typeArgExp);
-            }            
+            }
+
+            // 입구 함수
+            UniqueQueryResult<TypeExpInfo> QueryOnSkeleton(LocalContext? curContext, Name name, ImmutableArray<SymbolId> typeArgs, TypeExp typeExp)
+            {
+                // curContext가 없는 것은 모듈의 부모일때 밖에 없다. 검색 불가능                
+                if (curContext == null) 
+                    return UniqueQueryResults<TypeExpInfo>.NotFound;
+
+                // 컨텍스트가 네임스페이스라면 네임 스페이스 전용 쿼리로 넘어간다 (skeleton과 모듈에서 동시 검색)
+                if (curContext.IsOnModuleOrNamespace())
+                {
+                    var curPath = curContext.GetNamespacePath();
+                    return QueryOnSkeletonAndRefModules(curContext, curPath, name, typeArgs, typeExp);
+                }
+                else
+                {
+                    return QueryOnSkeletonOnly(curContext, name, typeArgs, typeExp);
+                }
+            }
+
+            // C<>.F<>.T는 있지만 symbol decl space에 존재, 
+            // C<int>.F<short>.T는 없다.. id space에서는 없다?
+            // typealias로 존재해야 하는거 아니냐? T = short
+            UniqueQueryResult<TypeExpInfo> QueryOnSkeletonOnly(LocalContext curContext, Name name, ImmutableArray<SymbolId> typeArgs, TypeExp typeExp)
+            {
+                var result = curContext.GetUniqueSkeletonMember(name, typeArgs.Length);
+
+                switch (result)
+                {
+                    case UniqueQueryResult<Skeleton>.Found foundResult:
+                        var typeExpInfo = new InternalTypeExpInfo(foundResult.Value, typeArgs, typeExp);
+                        return UniqueQueryResults<TypeExpInfo>.Found(typeExpInfo);
+
+                    case UniqueQueryResult<Skeleton>.MultipleError:
+                        return UniqueQueryResults<TypeExpInfo>.MultipleError;
+
+                    // 발견을 못했을 경우
+                    case UniqueQueryResult<Skeleton>.NotFound:
+                        var outerContext = curContext.GetOuter();
+                        return QueryOnSkeleton(outerContext, name, typeArgs, typeExp);
+                        
+                    default:
+                        throw new UnreachableCodeException();
+                }
+            }
+
+            UniqueQueryResult<TypeExpInfo> QueryOnSkeletonAndRefModules(LocalContext curContext, SymbolPath? curPath, Name name, ImmutableArray<SymbolId> typeArgs, TypeExp typeExp)
+            {
+                var candidates = new Candidates<TypeExpInfo>();
+
+                foreach (var member in localContext.GetSkeletonMembers(name, typeArgs.Length))
+                {
+                    candidates.Add(new InternalTypeExpInfo(member, typeArgs, typeExp));
+                }
+                
+                // type만 쿼리하므로 FuncParamId는 쓰지 않는다
+                var path = curPath.Child(name, typeArgs);
+                foreach(var (typeId, declSymbol) in globalContext.QuerySymbolsOnReference(path))
+                {
+                    candidates.Add(new ModuleSymbolTypeExpInfo(typeId, declSymbol, typeExp));
+                }
+
+                var result = candidates.GetResult();
+                switch(result)
+                {
+                    case UniqueQueryResult<TypeExpInfo>.Found:
+                    case UniqueQueryResult<TypeExpInfo>.MultipleError:
+                        return result;
+
+                    case UniqueQueryResult<TypeExpInfo>.NotFound:
+                        var outerContext = curContext.GetOuter();
+                        if (outerContext != null)
+                        {
+                            Debug.Assert(curPath != null);
+                            return QueryOnSkeletonAndRefModules(outerContext, curPath.Outer, name, typeArgs, typeExp);
+                        }
+                        else
+                        {
+                            return UniqueQueryResults<TypeExpInfo>.NotFound;
+                        }
+
+                    default: 
+                        throw new UnreachableCodeException();
+                }
+            }
 
             TypeExpInfo VisitIdTypeExp(IdTypeExp typeExp)
             {
@@ -70,48 +157,28 @@ namespace Citron.Analysis
                     return BuiltinTypeExpInfo.String(typeExp);
                 }
 
-                // 다시 짜보자
-
-
-                // 1. TypeVar에서 먼저 검색
-                // 
-                //var typeVar = typeEnv.TryMakeTypeVar(typeExp.Name, typeExp);
-                //if (typeVar != null)
-                //{
-                //    if (typeExp.TypeArgs.Length != 0)
-                //        context.Throw(T0105_IdTypeExp_TypeVarCantApplyTypeArgs, typeExp, "타입 변수는 타입 인자를 가질 수 없습니다");
-                //    return typeVar;
-                //}
-                // => this context에서 검색하면 되도록 수정되었다
-
+                // 1. 먼저 typeArgs를 다 TypeExpInfo로 만든다
                 var typeArgs = VisitTypeArgExps(typeExp.TypeArgs);
 
-                // 2. 현재 TypeEnv에서 검색
-                // class C<T, U> { struct S<T, U> { void F<X>() { 'S<T, X>' s; } }
-                // typeEnv.MakeInternalTypeExpInfo(new SymbolPath(outer: ))
-                var localTypeExpInfo = localContext.MakeTypeExpInfo(typeExp.Name, typeArgs.Length, typeExp);
-                if (localTypeExpInfo != null)
-                    return localTypeExpInfo;
+                // 2. TypeExp가 현재 속한 skeleton을 시작으로, skeleton과 레퍼런스에서 해당 이름을 검색한다
+                var result = QueryOnSkeleton(localContext, new Name.Normal(typeExp.Name), typeArgs, typeExp);
 
-                // 3. 전역에서 검색, 
-                // TODO: 현재 namespace 상황에 따라서 outer에 null대신 인자를 집어넣어야 한다.                
-                var candidates = globalContext.MakeCandidates(new SymbolPath(outer: null, new Name.Normal(typeExp.Name), typeArgs));
-                var candidate = candidates.GetSingle();
+                switch(result)
+                {
+                    case UniqueQueryResult<TypeExpInfo>.Found foundResult:
+                        return foundResult.Value;
+                        
+                    case UniqueQueryResult<TypeExpInfo>.MultipleError:
+                        globalContext.Throw(T0103_IdTypeExp_MultipleTypesOfSameName, typeExp, $"이름이 같은 {typeExp} 타입이 여러개 입니다");
+                        throw new UnreachableCodeException();
 
-                if (candidate != null)
-                {
-                    return candidate.Invoke(typeExp);
-                }
-                else if (candidates.HasMultiple)
-                {
-                    globalContext.Throw(T0103_IdTypeExp_MultipleTypesOfSameName, typeExp, $"이름이 같은 {typeExp} 타입이 여러개 입니다");
-                }
-                else if (candidates.IsEmpty)
-                {
-                    globalContext.Throw(T0104_IdTypeExp_TypeNotFound, typeExp, $"{typeExp}를 찾지 못했습니다");
-                }
+                    case UniqueQueryResult<TypeExpInfo>.NotFound:
+                        globalContext.Throw(T0104_IdTypeExp_TypeNotFound, typeExp, $"{typeExp}를 찾지 못했습니다");
+                        throw new UnreachableCodeException();
 
-                throw new UnreachableCodeException();
+                    default: 
+                        throw new UnreachableCodeException();
+                }
             }
 
             // X<T>.Y<U, V>

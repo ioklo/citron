@@ -66,5 +66,11 @@ namespace Citron.Symbol
 
             //result = new SymbolQueryResult.Lambda(symbolFactory.MakeLambda(outerFunc, lambdaDecl));
         }
+
+        public void VisitTypeVar(TypeVarDeclSymbol typeVarDecl)
+        {
+            var typeVar = symbolFactory.MakeTypeVar(outer, typeVarDecl);
+            result = new SymbolQueryResult.TypeVar(typeVar);
+        }
     }
 }

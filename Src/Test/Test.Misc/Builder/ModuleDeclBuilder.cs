@@ -49,6 +49,17 @@ namespace Citron.Test.Misc
             IHolder<ImmutableArray<FuncParameter>> funcParametersHolder, out GlobalFuncDeclSymbol globalFuncDecl)
             => globalFuncComponent.GlobalFunc(funcReturnHolder, funcName, funcParametersHolder, out globalFuncDecl);
 
+        public ModuleDeclBuilder GlobalFunc(
+            AccessModifier accessModifier,
+            IHolder<FuncReturn> returnHolder,
+            Name name,
+            ImmutableArray<string> typeParams,
+            IHolder<ImmutableArray<FuncParameter>> parametersHolder,
+            bool bInternal,
+            ImmutableArray<LambdaDeclSymbol> lambdaDecls,
+            out GlobalFuncDeclSymbol globalFuncDecl
+        ) => globalFuncComponent.GlobalFunc(accessModifier, returnHolder, name, typeParams, parametersHolder, bInternal, lambdaDecls, out globalFuncDecl);
+
         public GlobalFuncDeclBuilder<ModuleDeclBuilder> BeginGlobalFunc(IHolder<FuncReturn> funcRetHolder, Name funcName, IHolder<ImmutableArray<FuncParameter>> funcParamHolder)
             => globalFuncComponent.BeginGlobalFunc(funcRetHolder, funcName, funcParamHolder);
 

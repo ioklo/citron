@@ -7,6 +7,9 @@ using System.Linq;
 
 namespace Citron.Symbol
 {
+    public record ClassMemberFuncTypeDeclContainer(IHolder<StructDeclSymbol> outerHolder, AccessModifier accessModifier, ITypeDeclSymbol typeDecl) 
+        : TypeDeclContainer<ClassMemberFuncDeclSymbol>;
+
     public record ClassMemberFuncDeclSymbol : IFuncDeclSymbol
     {
         IHolder<ClassDeclSymbol> outer;

@@ -12,14 +12,15 @@ using static Citron.Symbol.DeclSymbolIdExtensions;
 using static Citron.Symbol.SymbolIdExtensions;
 using static Citron.Symbol.SymbolPathExtensions;
 using Citron.Symbol;
+using Citron.Infra;
 
 namespace Citron.Analysis
 {   
     [AutoConstructor]
     partial class InternalTypeExpInfo : S.TypeExpInfo
-    {
-        ModuleSymbolId typeId;
+    {   
         Skeleton skeleton; // 멤버를 갖고 오기 위한 수단
+        ImmutableArray<SymbolId> typeArgs;
         S.TypeExp typeExp;
 
         public override S.TypeExpInfoKind GetKind()
@@ -29,18 +30,30 @@ namespace Citron.Analysis
 
         public override SymbolId GetSymbolId()
         {
+            // 이걸 어떻게 만들 것인가
             return typeId;
         }
 
+        // 이 시점에 typeArgs가 유효한가?
         public override S.TypeExpInfo? MakeMemberInfo(string name, ImmutableArray<SymbolId> typeArgs, S.TypeExp memberTypeExp)
         {
             var mname = new M.Name.Normal(name);
 
-            var memberSkeleton = skeleton.GetMember(mname, typeArgs.Length);
-            if (memberSkeleton == null) return null;
+            var result = skeleton.GetUniqueMember(mname, typeArgs.Length);
+            switch(result)
+            {
+                case UniqueQueryResult<Skeleton>.Found foundResult:
+                    return new InternalTypeExpInfo(foundResult.Value, typeArgs, memberTypeExp);
 
-            var memberId = typeId.Child(mname, typeArgs, default);
-            return new InternalTypeExpInfo(memberId, memberSkeleton, memberTypeExp);
+                case UniqueQueryResult<Skeleton>.MultipleError:
+                    return null;
+
+                case UniqueQueryResult<Skeleton>.NotFound:
+                    return null;
+
+                default:
+                    throw new UnreachableCodeException();
+            }
         }
         
         public override S.TypeExp GetTypeExp()

@@ -43,41 +43,19 @@ namespace Citron.Analysis
                 exp.Info = info;
             }
 
-            // 타입에 관련된 Skeleton만 검색한다
-            Skeleton GetTypeSkeleton(DeclSymbolPath? path)
+            public IEnumerable<(ModuleSymbolId, ITypeDeclSymbol)> QuerySymbolsOnReference(SymbolPath path)
             {
-                if (path == null)
-                    return moduleSkel;
-
-                var outerSkel = GetSkeleton(path.Outer);
-                outerSkel.Get
-            }
-
-            // path는 fullPath
-            public Candidates<Func<S.TypeExp, S.TypeExpInfo>> MakeCandidates(SymbolPath path)
-            {
-                var candidates = new Candidates<Func<S.TypeExp, S.TypeExpInfo>>();
                 var declPath = path.GetDeclSymbolPath();
 
-                var typeSkel = skelRepo.GetTypeSkeleton(declPath);
-                if (typeSkel != null)
-                {
-                    candidates.Add(typeExp => new InternalTypeExpInfo(new ModuleSymbolId(internalModuleName, path), typeSkel, typeExp));
-                }
-
-                // 3-2. Reference에서 검색, GlobalTypeSkeletons에 이름이 겹치지 않아야 한다.. ModuleInfo들 끼리도 이름이 겹칠 수 있다
                 foreach (var referenceModule in referenceModules)
                 {
                     var declSymbol = referenceModule.GetDeclSymbol(declPath);
-
                     if (declSymbol is ITypeDeclSymbol typeDeclSymbol)
                     {
                         var symbolId = new ModuleSymbolId(referenceModule.GetName(), path);
-                        candidates.Add(typeExp => new ModuleSymbolTypeExpInfo(symbolId, typeDeclSymbol, typeExp));
+                        yield return (symbolId, typeDeclSymbol);
                     }
                 }
-
-                return candidates;
             }
         }
     }

@@ -69,6 +69,22 @@ namespace Citron.Test.Misc
             return builder;
         }
 
+        // general
+        public TBuilder GlobalFunc(
+            AccessModifier accessModifier, 
+            IHolder<FuncReturn> returnHolder,
+            Name name, 
+            ImmutableArray<string> typeParams, 
+            IHolder<ImmutableArray<FuncParameter>> parametersHolder, 
+            bool bInternal, 
+            ImmutableArray<LambdaDeclSymbol> lambdaDecls,
+            out GlobalFuncDeclSymbol globalFuncDecl)
+        {
+            globalFuncDecl = new GlobalFuncDeclSymbol(outerHolder, accessModifier, returnHolder, name, typeParams, parametersHolder, bInternal, lambdaDecls);
+            globalFuncDeclsBuilder.Add(globalFuncDecl);
+            return builder;
+        }
+
         public GlobalFuncDeclBuilder<TBuilder> BeginGlobalFunc(IHolder<FuncReturn> funcRetHolder, Name funcName, IHolder<ImmutableArray<FuncParameter>> funcParamHolder)
         {
             return new GlobalFuncDeclBuilder<TBuilder>(factory, builder, lambdaDecls =>

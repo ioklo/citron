@@ -8,5 +8,6 @@
         void VisitEnumElem(EnumElemDeclSymbol enumElemDecl);        
         void VisitInterface(InterfaceDeclSymbol interfaceDecl);
         void VisitLambda(LambdaDeclSymbol lambdaDecl);
+        void VisitTypeVar(TypeVarDeclSymbol typeVarDecl);
     }
 }

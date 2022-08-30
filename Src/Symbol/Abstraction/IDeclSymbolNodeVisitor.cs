@@ -23,5 +23,6 @@
         void VisitLambdaMemberVar(LambdaMemberVarDeclSymbol lambdaMemberVarDeclSymbol);
 
         void VisitInterface(InterfaceDeclSymbol interfaceDeclSymbol);
+        void VisitTypeVar(TypeVarDeclSymbol typeVarDeclSymbol);
     }
 }

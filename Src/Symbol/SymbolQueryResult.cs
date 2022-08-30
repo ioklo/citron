@@ -47,5 +47,6 @@ namespace Citron.Symbol
         public record TupleMemberVar(TupleMemberVarSymbol Symbol) : Valid;
 
         public record LambdaMemberVar(LambdaMemberVarSymbol Symbol) : Valid;
+        public record TypeVar(TypeVarSymbol Symbol) : Valid;
     }
 }

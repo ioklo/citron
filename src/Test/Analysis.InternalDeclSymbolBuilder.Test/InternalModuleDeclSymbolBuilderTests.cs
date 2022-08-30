@@ -63,7 +63,7 @@ namespace Citron.IR0Translator.Test
                 isRefReturn: true,
                 retType: new S.IdTypeExp("T", default),
                 name: "Func",
-                typeParams: Arr("T"),
+                typeParams: Arr(new S.TypeParam("T")),
                 parameters: Arr(new S.FuncParam(S.FuncParamKind.Ref, new S.IdTypeExp("T", default), "t")),
                 body: Arr<S.Stmt>(new S.ReturnStmt(new S.ReturnValueInfo(true, new S.IdentifierExp("t", default))))
             )));
@@ -82,24 +82,20 @@ namespace Citron.IR0Translator.Test
 
             // declSymbol을 얻어낼 수 있는 방법
             var factory = new SymbolFactory();
+
+            var typeVarT = factory.MakeTypeVar();
             var builder = new ModuleDeclBuilder(factory, moduleName);
-            builder.BeginGlobalFunc(
-                new FuncReturn(isRef: true ),
-                NormalName("Func"),
-                Arr<FuncParameter>(new FuncParameter(M.FuncParameterKind.Ref, ))
-
-            var expected = new GlobalFuncDeclSymbol(
+            builder.GlobalFunc(
                 M.AccessModifier.Private,
-                bInstanceFunc: false,
-                bSeqFunc: false,
-                bRefReturn: true,
-                retType: new M.TypeVarTypeId(0, "T"),
-                name: NormalName("Func"),                                
-                typeParams: Arr("T"),
-                parameters: Arr(new M.Param(M.ParamKind.Ref, new M.TypeVarTypeId(0, "T"), NormalName("t")))
-            );
+                new FuncReturn(isRef: true, typeVarT).ToHolder(),
+                NormalName("Func"),
+                Arr("T"),
+                Arr(new FuncParameter(M.FuncParameterKind.Ref, typeVarT, NormalName("t"))).ToHolder(),
+                bInternal: true,
+                default,
+                out var expected);
 
-            Assert.Equal(expected, funcInfo);
+            Assert.Equal(expected, resultDecl);
         }
 
         [Fact]

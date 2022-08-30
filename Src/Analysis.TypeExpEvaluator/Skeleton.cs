@@ -8,6 +8,8 @@ using S = Citron.Syntax;
 using M = Citron.Module;
 using Pretune;
 using Citron.Symbol;
+using Citron.Infra;
+using Citron.Module;
 
 namespace Citron.Analysis
 {
@@ -59,6 +61,33 @@ namespace Citron.Analysis
                 membersByFuncDecl.Add(funcNode, skel);
 
             return skel;
+        }
+
+        public IEnumerable<Skeleton> GetMembers(Name name, int typeParamCount)
+        {
+            var key = (name, typeParamCount);
+
+            if (membersByName.TryGetValue(key, out var members))
+                return members;
+            else
+                return Enumerable.Empty<Skeleton>();
+        }
+
+        // 유일하지 않다면 null을 리턴한다
+        public UniqueQueryResult<Skeleton> GetUniqueMember(M.Name name, int typeParamCount)
+        {
+            var key = (name, typeParamCount);
+
+            if (membersByName.TryGetValue(key, out var members))
+            {
+                if (members.Count == 1)
+                    return UniqueQueryResults<Skeleton>.Found(members[0]);
+
+                if (1 < members.Count)
+                    return UniqueQueryResults<Skeleton>.MultipleError;
+            }
+
+            return UniqueQueryResults<Skeleton>.NotFound;
         }
 
         // get member

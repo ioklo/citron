@@ -58,9 +58,9 @@ namespace Citron.Syntax
 
             var script = SScript(
                 new TypeDeclScriptElement(new StructDecl(
-                    AccessModifier.Public, "X", Arr("T"), Arr<TypeExp>(), Arr<StructMemberDecl>(
+                    AccessModifier.Public, "X", Arr(new TypeParam("T")), Arr<TypeExp>(), Arr<StructMemberDecl>(
                         new StructMemberTypeDecl(new StructDecl(
-                            AccessModifier.Public, "Y", Arr<string>(), Arr<TypeExp>(), Arr<StructMemberDecl>()
+                            AccessModifier.Public, "Y", Arr<TypeParam>(), Arr<TypeExp>(), Arr<StructMemberDecl>()
                         ))
                     )
                 )),

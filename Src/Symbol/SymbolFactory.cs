@@ -124,7 +124,7 @@ namespace Citron.Symbol
 
             return new StructMemberFuncSymbol(this, @struct, decl, typeArgs);
         }
-
+        
         public StructMemberVarSymbol MakeStructMemberVar(StructSymbol @struct, StructMemberVarDeclSymbol decl)
         {
             Debug.Assert(@struct.GetDeclSymbolNode() == decl.GetOuterDeclNode());
@@ -171,6 +171,15 @@ namespace Citron.Symbol
             Debug.Assert(outer.GetDeclSymbolNode() == decl.GetOuterDeclNode());
             return new LambdaMemberVarSymbol(this, outer, decl);
         }
+        #endregion
+
+        #region TypeVar
+        public TypeVarSymbol MakeTypeVar(ISymbolNode outer, TypeVarDeclSymbol decl)
+        {
+            Debug.Assert(outer.GetDeclSymbolNode() == decl.GetOuterDeclNode());
+            return new TypeVarSymbol(this, outer, decl);
+        }
+
         #endregion
 
         #region Special

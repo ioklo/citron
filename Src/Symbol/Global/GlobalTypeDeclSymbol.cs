@@ -6,39 +6,45 @@ using Citron.Module;
 
 namespace Citron.Symbol
 {
-    // typeDecl에 대리
-    [AutoConstructor]
-    public partial class GlobalTypeDeclSymbol : ITypeDeclSymbolContainer, TypeDict.IHaveNodeName
+    public class GlobalTypeDeclSymbol : TypeDeclContainer<ITopLevelDeclSymbolNode>
     {
-        IHolder<ITopLevelDeclSymbolNode> outerHolder;
-        AccessModifier accessModifier;
-        ITypeDeclSymbol typeDecl;
-
-        IDeclSymbolNode ITypeDeclSymbolContainer.GetOuterDeclNode() => GetOuter();
-
-        public ITopLevelDeclSymbolNode GetOuter()
-        {
-            return outerHolder.GetValue();
-        }
-
-        public AccessModifier GetAccessModifier() 
-        { 
-            return accessModifier;
-        }
-        
-        public DeclSymbolNodeName GetNodeName()
-        {
-            return typeDecl.GetNodeName();
-        }
-
-        public IDeclSymbolNode GetNode()
-        {
-            return typeDecl;
-        }
-
-        public void Apply(ITypeDeclSymbolVisitor visitor)
-        {
-            typeDecl.Apply(visitor);
-        }
+        public GlobalTypeDeclSymbol(IHolder<ITopLevelDeclSymbolNode> outerHolder, AccessModifier accessModifier, ITypeDeclSymbol typeDecl)
+            : base(outerHolder, accessModifier, typeDecl) { }
     }
+
+    // typeDecl에 대리
+    //[AutoConstructor]
+    //public partial class GlobalTypeDeclSymbol : ITypeDeclSymbolContainer, TypeDict.IHaveNodeName
+    //{
+    //    IHolder<ITopLevelDeclSymbolNode> outerHolder;
+    //    AccessModifier accessModifier;
+    //    ITypeDeclSymbol typeDecl;
+
+    //    IDeclSymbolNode ITypeDeclSymbolContainer.GetOuterDeclNode() => GetOuter();
+
+    //    public ITopLevelDeclSymbolNode GetOuter()
+    //    {
+    //        return outerHolder.GetValue();
+    //    }
+
+    //    public AccessModifier GetAccessModifier() 
+    //    { 
+    //        return accessModifier;
+    //    }
+        
+    //    public DeclSymbolNodeName GetNodeName()
+    //    {
+    //        return typeDecl.GetNodeName();
+    //    }
+
+    //    public IDeclSymbolNode GetNode()
+    //    {
+    //        return typeDecl;
+    //    }
+
+    //    public void Apply(ITypeDeclSymbolVisitor visitor)
+    //    {
+    //        typeDecl.Apply(visitor);
+    //    }
+    //}
 }

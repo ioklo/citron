@@ -20,8 +20,8 @@ namespace Citron.Symbol
     {
         IHolder<ITypeDeclSymbolContainer> containerHolder;
         
-        Name name;
-        ImmutableArray<string> typeParams;
+        Name name;        
+        ImmutableArray<TypeVarDeclSymbol> typeParams;
         IHolder<ImmutableArray<InterfaceSymbol>> interfacesHolder;
 
         ImmutableArray<ClassMemberTypeDeclSymbol> memberTypes;
@@ -41,7 +41,7 @@ namespace Citron.Symbol
         
         public ClassDeclSymbol(
             IHolder<ITypeDeclSymbolContainer> containerHolder,
-            Name name, ImmutableArray<string> typeParams,
+            Name name, ImmutableArray<TypeVarDeclSymbol> typeParams,
             IHolder<ClassSymbol?> baseClassHolder,
             IHolder<ImmutableArray<InterfaceSymbol>> interfacesHolder,
             ImmutableArray<ClassMemberTypeDeclSymbol> memberTypes,

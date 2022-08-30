@@ -6,10 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="DeclSymbol\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Pretune" Version="0.8.4" />
   </ItemGroup>
 

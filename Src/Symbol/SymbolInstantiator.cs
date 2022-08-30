@@ -123,6 +123,13 @@ namespace Citron.Symbol
             result = factory.MakeInterface(outer, decl, typeArgs);
         }
 
+        public void VisitTypeVar(TypeVarDeclSymbol decl)
+        {
+            Debug.Assert(outer != null);
+            Debug.Assert(typeArgs.IsEmpty);
+            result = factory.MakeTypeVar(outer, decl);
+        }
+
         public void VisitLambda(LambdaDeclSymbol decl)
         {
             Debug.Assert(outer != null);

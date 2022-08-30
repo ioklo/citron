@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -33,5 +34,17 @@ namespace Citron.Infra
         public T? GetSingle() { return one; }
         public bool IsEmpty { get => one == null && rests == null; }
         public bool HasMultiple { get => rests != null; }
+
+        public UniqueQueryResult<T> GetResult()
+        {
+            if (one != null)            
+                return UniqueQueryResults<T>.Found(one);
+
+            if (rests != null)
+                return UniqueQueryResults<T>.MultipleError;
+
+            Debug.Assert(one == null && rests == null);
+            return UniqueQueryResults<T>.NotFound;
+        }
     }
 }

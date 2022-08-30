@@ -93,7 +93,7 @@ namespace NS1
 }");
             var script = await parser.ParseScriptAsync(context);
 
-            var expected = new Script(Arr<ScriptElement>(new NamespaceScriptElement(new NamespaceDecl(
+            var expected = new Script(Arr<ScriptElement>(new NamespaceDeclScriptElement(new NamespaceDecl(
                 Arr("NS1"),
                 Arr<NamespaceElement>(new NamespaceDeclNamespaceElement(new NamespaceDecl(
                     Arr("NS2", "NS3"),
