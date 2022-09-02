@@ -13,7 +13,7 @@ namespace Citron.Symbol
         Name moduleName;
         TopLevelDeclDict dict;
 
-        public ModuleDeclSymbol(Name moduleName, ImmutableArray<NamespaceDeclSymbol> namespaces, ImmutableArray<GlobalTypeDeclSymbol> types, ImmutableArray<GlobalFuncDeclSymbol> funcs)
+        public ModuleDeclSymbol(Name moduleName, ImmutableArray<NamespaceDeclSymbol> namespaces, ImmutableArray<ITypeDeclSymbol> types, ImmutableArray<GlobalFuncDeclSymbol> funcs)
         {
             this.moduleName = moduleName;
             this.dict = new TopLevelDeclDict(namespaces, types, funcs);
@@ -34,7 +34,7 @@ namespace Citron.Symbol
             return dict.GetFuncs(name, minTypeParamCount);
         }
         
-        public GlobalTypeDeclSymbol? GetType(Name name, int typeParamCount)
+        public ITypeDeclSymbol? GetType(Name name, int typeParamCount)
         {
             return dict.GetType(name, typeParamCount);
         }

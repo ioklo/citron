@@ -7,8 +7,8 @@ using Citron.Module;
 
 namespace Citron.Symbol
 {
-    public record ClassMemberTypeDeclSymbol(IHolder<ClassDeclSymbol> outerHolder, AccessModifier accessModifier, ITypeDeclSymbol typeDecl) 
-        : TypeDeclContainer<ClassDeclSymbol>(outerHolder, accessModifier, typeDecl);
+    //public record ClassMemberTypeDeclSymbol(IHolder<ClassDeclSymbol> outerHolder, AccessModifier accessModifier, ITypeDeclSymbol typeDecl) 
+    //    : TypeDeclContainer<ClassDeclSymbol>(outerHolder, accessModifier, typeDecl);
     
     // 일단 -는 허용, 확장할 일이 있으면 감싸서 만든다
     //[AutoConstructor]

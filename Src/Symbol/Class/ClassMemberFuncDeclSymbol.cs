@@ -6,17 +6,14 @@ using System.Collections.Generic;
 using System.Linq;
 
 namespace Citron.Symbol
-{
-    public record ClassMemberFuncTypeDeclContainer(IHolder<StructDeclSymbol> outerHolder, AccessModifier accessModifier, ITypeDeclSymbol typeDecl) 
-        : TypeDeclContainer<ClassMemberFuncDeclSymbol>;
-
+{   
     public record ClassMemberFuncDeclSymbol : IFuncDeclSymbol
     {
         IHolder<ClassDeclSymbol> outer;
         AccessModifier accessModifier;
         IHolder<FuncReturn> @return;
         Name name;
-        ImmutableArray<string> typeParams;
+        ImmutableArray<TypeVarDeclSymbol> typeParams;
         IHolder<ImmutableArray<FuncParameter>> parameters;        
         bool bStatic;
         LambdaDeclSymbolContainerComponent lambdaDeclContainerComponent;
@@ -29,7 +26,7 @@ namespace Citron.Symbol
             AccessModifier accessModifier, 
             IHolder<FuncReturn> @return,
             Name name,
-            ImmutableArray<string> typeParams,
+            ImmutableArray<TypeVarDeclSymbol> typeParams,
             IHolder<ImmutableArray<FuncParameter>> parameters,
             bool bStatic,
             ImmutableArray<LambdaDeclSymbol> lambdaDecls)
@@ -87,7 +84,7 @@ namespace Citron.Symbol
 
         public IEnumerable<IDeclSymbolNode> GetMemberDeclNodes()
         {
-            return Enumerable.Empty<IDeclSymbolNode>();
+            return typeParams.AsEnumerable();
         }
 
         public void Apply(IDeclSymbolNodeVisitor visitor)

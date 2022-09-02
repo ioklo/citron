@@ -15,7 +15,7 @@ namespace Citron.Symbol
         Name name;
         TopLevelDeclDict dict;
 
-        public NamespaceDeclSymbol(IHolder<ITopLevelDeclSymbolNode> outer, Name name, ImmutableArray<NamespaceDeclSymbol> namespaces, ImmutableArray<GlobalTypeDeclSymbol> types, ImmutableArray<GlobalFuncDeclSymbol> funcs)
+        public NamespaceDeclSymbol(IHolder<ITopLevelDeclSymbolNode> outer, Name name, ImmutableArray<NamespaceDeclSymbol> namespaces, ImmutableArray<ITypeDeclSymbol> types, ImmutableArray<GlobalFuncDeclSymbol> funcs)
         {
             this.outer = outer;
             this.name = name;
@@ -47,7 +47,7 @@ namespace Citron.Symbol
             visitor.VisitNamespace(this);
         }
 
-        public GlobalTypeDeclSymbol? GetType(Name name, int typeParamCount)
+        public ITypeDeclSymbol? GetType(Name name, int typeParamCount)
         {
             return dict.GetType(name, typeParamCount);
         }

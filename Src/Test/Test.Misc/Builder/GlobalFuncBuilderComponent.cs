@@ -68,33 +68,17 @@ namespace Citron.Test.Misc
             globalFuncDeclsBuilder.Add(globalFuncDecl);
             return builder;
         }
-
-        // general
-        public TBuilder GlobalFunc(
-            AccessModifier accessModifier, 
-            IHolder<FuncReturn> returnHolder,
-            Name name, 
-            ImmutableArray<string> typeParams, 
-            IHolder<ImmutableArray<FuncParameter>> parametersHolder, 
-            bool bInternal, 
-            ImmutableArray<LambdaDeclSymbol> lambdaDecls,
-            out GlobalFuncDeclSymbol globalFuncDecl)
+        
+        public GlobalFuncDeclBuilder<TBuilder> BeginGlobalFunc(AccessModifier accessModifier, Name funcName, bool bInternal)
         {
-            globalFuncDecl = new GlobalFuncDeclSymbol(outerHolder, accessModifier, returnHolder, name, typeParams, parametersHolder, bInternal, lambdaDecls);
-            globalFuncDeclsBuilder.Add(globalFuncDecl);
-            return builder;
+            return new GlobalFuncDeclBuilder<TBuilder>(factory, builder, globalFuncDeclsBuilder, outerHolder, accessModifier, funcName, bInternal);
+
+            //{
+            //    var globalFuncDecl = new GlobalFuncDeclSymbol(outerHolder, accessModifier, returnHolder, funcName, typeParams, parametersHolder, bInternal, lambdaDecls);
+            //    globalFuncDeclsBuilder.Add(globalFuncDecl);
+            //    return globalFuncDecl;
+            //});
         }
-
-        public GlobalFuncDeclBuilder<TBuilder> BeginGlobalFunc(IHolder<FuncReturn> funcRetHolder, Name funcName, IHolder<ImmutableArray<FuncParameter>> funcParamHolder)
-        {
-            return new GlobalFuncDeclBuilder<TBuilder>(factory, builder, lambdaDecls =>
-            {
-                var globalFuncDecl = new GlobalFuncDeclSymbol(outerHolder, AccessModifier.Public, funcRetHolder, funcName, default, funcParamHolder, true, lambdaDecls);
-                globalFuncDeclsBuilder.Add(globalFuncDecl);
-
-                return globalFuncDecl;
-            });
-        }        
 
         public ImmutableArray<GlobalFuncDeclSymbol> MakeGlobalFuncDecls()
         {

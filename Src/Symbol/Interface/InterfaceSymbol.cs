@@ -60,7 +60,7 @@ namespace Citron.Symbol
 
         public SymbolQueryResult QueryMember(Name name, int typeParamCount)
         {
-            return SymbolQueryResult.NotFound.Instance;
+            return SymbolQueryResults.NotFound;
         }
 
         ISymbolNode ISymbolNode.Apply(TypeEnv typeEnv) => Apply(typeEnv);

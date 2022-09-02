@@ -379,7 +379,7 @@ namespace Citron.Analysis
             return builder.MoveToImmutable();
         }
 
-        ClassDeclSymbol BuildClass(IHolder<ITypeDeclSymbolContainer> containerHolder, ClassDecl classDecl)
+        ClassDeclSymbol BuildClass(IHolder<IDeclSymbolNode> outerHolder, AccessModifier accessModifier, ClassDecl classDecl)
         {
             var holder = new Holder<ClassDeclSymbol>();
 
@@ -422,7 +422,7 @@ namespace Citron.Analysis
                 interfacesHolder.SetValue(interfacesBuilder.MoveToImmutable());
             });
 
-            var symbol = new ClassDeclSymbol(containerHolder, classDecl.Name, classDecl.TypeParams, baseClassHolder, interfacesHolder, memberTypes, memberFuncs, memberVars, constructorsHolder, trivialConstructorHolder);
+            var symbol = new ClassDeclSymbol(outerHolder, accessModifier, classDecl.Name, classDecl.TypeParams, baseClassHolder, interfacesHolder, memberTypes, memberFuncs, memberVars, constructorsHolder, trivialConstructorHolder);
             holder.SetValue(symbol);
 
             return symbol;
@@ -523,7 +523,7 @@ namespace Citron.Analysis
             return builder.MoveToImmutable();
         }
 
-        StructDeclSymbol BuildStruct(IHolder<ITypeDeclSymbolContainer> containerHolder, StructDecl structDecl)
+        StructDeclSymbol BuildStruct(IHolder<IDeclSymbolNode> outerHolder, AccessModifier accessModifier, StructDecl structDecl)
         {
             var holder = new Holder<StructDeclSymbol>();
 
@@ -572,7 +572,7 @@ namespace Citron.Analysis
                 //interfacesHolder.SetValue(interfacesBuilder.MoveToImmutable());
             });
 
-            var symbol = new StructDeclSymbol(containerHolder, structDecl.Name, structDecl.TypeParams, baseStructHolder, memberTypes, memberFuncs, memberVars, constructorsHolder, trivialConstructorHolder);
+            var symbol = new StructDeclSymbol(outerHolder, accessModifier, structDecl.Name, structDecl.TypeParams, baseStructHolder, memberTypes, memberFuncs, memberVars, constructorsHolder, trivialConstructorHolder);
             holder.SetValue(symbol);
 
             return symbol;
@@ -607,7 +607,7 @@ namespace Citron.Analysis
             return enumElem;
         }
 
-        EnumDeclSymbol BuildEnum(IHolder<ITypeDeclSymbolContainer> containerHolder, EnumDecl decl)
+        EnumDeclSymbol BuildEnum(IHolder<IDeclSymbolNode> outerHolder, AccessModifier accessModifier, EnumDecl decl)
         {
             var enumHolder = new Holder<EnumDeclSymbol>();
 
@@ -618,19 +618,19 @@ namespace Citron.Analysis
                 elemsBuilder.Add(elemSymbol);
             }
 
-            var @enum = new EnumDeclSymbol(containerHolder, decl.Name, decl.TypeParams, elemsBuilder.MoveToImmutable());
+            var @enum = new EnumDeclSymbol(outerHolder, accessModifier, decl.Name, decl.TypeParams, elemsBuilder.MoveToImmutable());
             enumHolder.SetValue(@enum);
 
             return @enum;
         }
 
-        ITypeDeclSymbol BuildType(IHolder<ITypeDeclSymbolContainer> containerHolder, TypeDecl typeDecl)
+        ITypeDeclSymbol BuildType(AccessModifier accessModifier, IHolder<IDeclSymbolNode> outerHolder, TypeDecl typeDecl)
         {
             switch(typeDecl)
             {
-                case ClassDecl classDecl: return BuildClass(containerHolder, classDecl);
-                case StructDecl structDecl: return BuildStruct(containerHolder, structDecl);
-                case EnumDecl enumDecl: return BuildEnum(containerHolder, enumDecl);
+                case ClassDecl classDecl: return BuildClass(outerHolder, accessModifier, classDecl);
+                case StructDecl structDecl: return BuildStruct(outerHolder, accessModifier, structDecl);
+                case EnumDecl enumDecl: return BuildEnum(outerHolder, accessModifier, enumDecl);
                 default: throw new UnreachableCodeException();
             }
         }

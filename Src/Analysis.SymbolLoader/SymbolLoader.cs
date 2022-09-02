@@ -101,10 +101,10 @@ namespace Citron.Analysis
                 return result;
 
             if (candidates.IsEmpty)
-                return SymbolQueryResult.NotFound.Instance;
+                return SymbolQueryResults.NotFound;
 
             if (candidates.HasMultiple)
-                return SymbolQueryResult.Error.MultipleCandidates.Instance;
+                return SymbolQueryResults.Error.MultipleCandidates;
 
             throw new UnreachableCodeException();
         }

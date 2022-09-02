@@ -10,17 +10,17 @@ namespace Citron.Symbol
     struct TopLevelDeclDict
     {
         ImmutableDictionary<Name, NamespaceDeclSymbol> namespaceDict;
-        TypeDict<GlobalTypeDeclSymbol> globalTypeDict;
+        TypeDict globalTypeDict;
         FuncDict<GlobalFuncDeclSymbol> globalFuncDict;        
 
-        public TopLevelDeclDict(ImmutableArray<NamespaceDeclSymbol> namespaces, ImmutableArray<GlobalTypeDeclSymbol> types, ImmutableArray<GlobalFuncDeclSymbol> funcs)
+        public TopLevelDeclDict(ImmutableArray<NamespaceDeclSymbol> namespaces, ImmutableArray<ITypeDeclSymbol> types, ImmutableArray<GlobalFuncDeclSymbol> funcs)
         {
             var builder = ImmutableDictionary.CreateBuilder<Name, NamespaceDeclSymbol>();
             foreach (var ns in namespaces)
                 builder.Add(ns.GetName(), ns);
 
             this.namespaceDict = builder.ToImmutable();
-            this.globalTypeDict = TypeDict.Build(types);
+            this.globalTypeDict = TypeDict.Build(typeVars: default, types); // TopLevel에는 TypeVar가 없다
             this.globalFuncDict = FuncDict.Build(funcs);
         }
 
@@ -29,7 +29,7 @@ namespace Citron.Symbol
             return globalFuncDict.Get(name, minTypeParamCount);
         }
 
-        public GlobalTypeDeclSymbol? GetType(Name name, int typeParamCount)
+        public ITypeDeclSymbol? GetType(Name name, int typeParamCount)
         {
             return globalTypeDict.Get(new DeclSymbolNodeName(name, typeParamCount, default));
         }
@@ -42,7 +42,7 @@ namespace Citron.Symbol
         public IEnumerable<IDeclSymbolNode> GetMemberDeclNodes()
         {
             return namespaceDict.Values.OfType<IDeclSymbolNode>()
-                .Concat(globalTypeDict.GetEnumerable().Select(globalType => globalType.GetNode()))
+                .Concat(globalTypeDict.GetEnumerable())
                 .Concat(globalFuncDict.GetEnumerable());
         }
     }

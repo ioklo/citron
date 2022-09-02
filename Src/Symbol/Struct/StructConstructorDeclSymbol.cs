@@ -9,7 +9,7 @@ namespace Citron.Symbol
 {
     public class StructConstructorDeclSymbol : IFuncDeclSymbol
     {
-        IHolder<StructDeclSymbol> outer;
+        IHolder<StructDeclSymbol> outerHolder;
         AccessModifier accessModifier;
         IHolder<ImmutableArray<FuncParameter>> parametersHolder;
         bool bTrivial;
@@ -29,9 +29,9 @@ namespace Citron.Symbol
         public void AddLambda(LambdaDeclSymbol lambdaDecl)
             => lambdaDeclContainerComponent.AddLambda(lambdaDecl);
 
-        public StructConstructorDeclSymbol(IHolder<StructDeclSymbol> outer, AccessModifier accessModifier, IHolder<ImmutableArray<FuncParameter>> parametersHolder, bool bTrivial, ImmutableArray<LambdaDeclSymbol> lambdaDecls)
+        public StructConstructorDeclSymbol(IHolder<StructDeclSymbol> outerHolder, AccessModifier accessModifier, IHolder<ImmutableArray<FuncParameter>> parametersHolder, bool bTrivial, ImmutableArray<LambdaDeclSymbol> lambdaDecls)
         {
-            this.outer = outer;
+            this.outerHolder = outerHolder;
             this.accessModifier = accessModifier;
             this.parametersHolder = parametersHolder;
             this.bTrivial = bTrivial;
@@ -41,7 +41,7 @@ namespace Citron.Symbol
 
         public IDeclSymbolNode? GetOuterDeclNode()
         {
-            return outer.GetValue();
+            return outerHolder.GetValue();
         }
 
         public DeclSymbolNodeName GetNodeName()

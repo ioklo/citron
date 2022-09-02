@@ -55,7 +55,7 @@ namespace Citron.Symbol
 
         public SymbolQueryResult QueryMember(Name memberName, int typeParamCount)
         {
-            if (typeParamCount != 0) return SymbolQueryResult.NotFound.Instance;
+            if (typeParamCount != 0) return SymbolQueryResults.NotFound;
 
             int memberVarCount = decl.GetMemberVarCount();
 
@@ -66,14 +66,14 @@ namespace Citron.Symbol
                 if (memberName.Equals(varDecl.GetName()))
                 {
                     if (typeParamCount != 0)
-                        return SymbolQueryResult.Error.VarWithTypeArg.Instance;
+                        return SymbolQueryResults.Error.VarWithTypeArg;
 
                     var memberVar = factory.MakeEnumElemMemberVar(this, varDecl);
                     return new SymbolQueryResult.EnumElemMemberVar(memberVar);
                 }
             }
 
-            return SymbolQueryResult.NotFound.Instance;
+            return SymbolQueryResults.NotFound;
         }
 
         public ITypeDeclSymbol GetDeclSymbolNode()

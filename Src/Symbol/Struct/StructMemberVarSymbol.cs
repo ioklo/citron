@@ -10,6 +10,7 @@ namespace Citron.Symbol
         SymbolFactory factory;
         StructSymbol outer;
         StructMemberVarDeclSymbol decl;
+        ISymbolNode ISymbolNode.Apply(TypeEnv typeEnv) => Apply(typeEnv);
 
         internal StructMemberVarSymbol(SymbolFactory factory, StructSymbol outer, StructMemberVarDeclSymbol decl)
         {
@@ -23,8 +24,6 @@ namespace Citron.Symbol
             var appliedOuter = outer.Apply(typeEnv);
             return factory.MakeStructMemberVar(appliedOuter, decl);
         }
-
-        ISymbolNode ISymbolNode.Apply(TypeEnv typeEnv) => Apply(typeEnv);
 
         public ISymbolNode? GetOuter()
         {

@@ -16,7 +16,7 @@ namespace Citron.Symbol
         bool bStatic;
         IHolder<FuncReturn> returnHolder;
         Name name;
-        ImmutableArray<string> typeParams;
+        ImmutableArray<TypeVarDeclSymbol> typeParams;
         IHolder<ImmutableArray<FuncParameter>> parametersHolder;
 
         LambdaDeclSymbolContainerComponent lambdaDeclContainerComponent;
@@ -30,7 +30,7 @@ namespace Citron.Symbol
             bool bStatic, 
             IHolder<FuncReturn> returnHolder,
             Name name,
-            ImmutableArray<string> typeParams,
+            ImmutableArray<TypeVarDeclSymbol> typeParams,
             IHolder<ImmutableArray<FuncParameter>> paramsHolder,
             ImmutableArray<LambdaDeclSymbol> lambdaDecls)
         {
@@ -61,7 +61,7 @@ namespace Citron.Symbol
         
         public IEnumerable<IDeclSymbolNode> GetMemberDeclNodes()
         {
-            return Enumerable.Empty<IDeclSymbolNode>();
+            return typeParams.AsEnumerable();
         }
         
         public IDeclSymbolNode? GetOuterDeclNode()

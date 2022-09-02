@@ -3,21 +3,24 @@ using Citron.Infra;
 using System;
 using System.Collections.Generic;
 using Citron.Module;
+using System.Linq;
 
 namespace Citron.Symbol
 {
     public partial class EnumDeclSymbol : ITypeDeclSymbol
     {
-        IHolder<ITypeDeclSymbolContainer> containerHolder;
+        IHolder<IDeclSymbolNode> outerHolder;
+        AccessModifier accessModifier;
 
         Name name;
-        ImmutableArray<string> typeParams;
+        ImmutableArray<TypeVarDeclSymbol> typeParams;
         ImmutableArray<EnumElemDeclSymbol> elems;
         ImmutableDictionary<Name, EnumElemDeclSymbol> elemDict;
 
-        public EnumDeclSymbol(IHolder<ITypeDeclSymbolContainer> containerHolder, Name name, ImmutableArray<string> typeParams, ImmutableArray<EnumElemDeclSymbol> elemDecls)
+        public EnumDeclSymbol(IHolder<IDeclSymbolNode> outerHolder, AccessModifier accessModifier, Name name, ImmutableArray<TypeVarDeclSymbol> typeParams, ImmutableArray<EnumElemDeclSymbol> elemDecls)
         {
-            this.containerHolder = containerHolder;
+            this.outerHolder = outerHolder;
+            this.accessModifier = accessModifier;
             this.name = name;
             this.typeParams = typeParams;
             this.elems = elemDecls;
@@ -39,11 +42,6 @@ namespace Citron.Symbol
             return name;
         }
 
-        public ImmutableArray<string> GetTypeParams()
-        {
-            return typeParams;
-        }
-
         public int GetTypeParamCount()
         {
             return typeParams.Length;
@@ -61,12 +59,13 @@ namespace Citron.Symbol
 
         public IDeclSymbolNode? GetOuterDeclNode()
         {
-            return containerHolder.GetValue().GetOuterDeclNode();
+            return outerHolder.GetValue();
         }
 
         public IEnumerable<IDeclSymbolNode> GetMemberDeclNodes()
         {
-            return elemDict.Values;
+            return typeParams.AsEnumerable().OfType<IDeclSymbolNode>()
+                .Concat(elemDict.Values);
         }
 
         public void Apply(IDeclSymbolNodeVisitor visitor)
@@ -76,7 +75,7 @@ namespace Citron.Symbol
 
         public AccessModifier GetAccessModifier()
         {
-            return containerHolder.GetValue().GetAccessModifier();
+            return accessModifier;
         }
 
         public int GetElemCount()

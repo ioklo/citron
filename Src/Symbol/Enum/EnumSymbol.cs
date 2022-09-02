@@ -40,10 +40,10 @@ namespace Citron.Symbol
         {
             // shortcut
             if (typeParamCount != 0)
-                return SymbolQueryResult.NotFound.Instance;
+                return SymbolQueryResults.NotFound;
 
             var elemDecl = decl.GetElem(memberName);
-            if (elemDecl == null) return SymbolQueryResult.NotFound.Instance;
+            if (elemDecl == null) return SymbolQueryResults.NotFound;
 
             var elem = factory.MakeEnumElem(this, elemDecl);
 

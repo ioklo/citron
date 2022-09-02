@@ -9,13 +9,15 @@ namespace Citron.Test.Misc
 {
     public class ClassDeclBuilder<TOuterBuilder>
     {
-        internal delegate ClassDeclSymbol OnFinish(ImmutableArray<ClassMemberFuncDeclSymbol> memberFuncDecls);
+        internal delegate ClassDeclSymbol OnFinish(ImmutableArray<TypeVarDeclSymbol> typeParams, ImmutableArray<ClassMemberFuncDeclSymbol> memberFuncDecls);
 
         TOuterBuilder outerBuilder;
         OnFinish onFinish;
 
         Holder<ClassDeclSymbol> classDeclHolder;
         ImmutableArray<ClassMemberFuncDeclSymbol>.Builder memberFuncDeclsBuilder;
+
+        TypeParamBuilderComponent<ClassDeclBuilder<TOuterBuilder>> typeParamComponent;
 
         internal ClassDeclBuilder(TOuterBuilder outerBuilder, OnFinish onFinish)
         {
@@ -24,11 +26,15 @@ namespace Citron.Test.Misc
 
             this.classDeclHolder = new Holder<ClassDeclSymbol>();
             this.memberFuncDeclsBuilder = ImmutableArray.CreateBuilder<ClassMemberFuncDeclSymbol>();
+            this.typeParamComponent = new TypeParamBuilderComponent<ClassDeclBuilder<TOuterBuilder>>(this, classDeclHolder);
         }
+
+        public ClassDeclBuilder<TOuterBuilder> TypeParam(string name, out TypeVarDeclSymbol typeVarDecl)
+            => typeParamComponent.TypeParam(name, out typeVarDecl);
 
         public TOuterBuilder EndClass(out ClassDeclSymbol classDecl)
         {
-            classDecl = onFinish.Invoke(memberFuncDeclsBuilder.ToImmutable());
+            classDecl = onFinish.Invoke(typeParamComponent.MakeTypeParams(), memberFuncDeclsBuilder.ToImmutable());
             classDeclHolder.SetValue(classDecl);
             return outerBuilder;
         }

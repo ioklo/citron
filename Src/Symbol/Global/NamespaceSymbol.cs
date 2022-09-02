@@ -76,7 +76,7 @@ namespace Citron.Symbol
             if (builder.Count != 0)
                 return new SymbolQueryResult.GlobalFuncs(builder.ToImmutable());
 
-            return SymbolQueryResult.NotFound.Instance;
+            return SymbolQueryResults.NotFound;
         }
     }
 }

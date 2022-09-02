@@ -18,7 +18,7 @@ namespace Citron.Symbol
         IHolder<FuncReturn> returnHolder;
         Name name;
 
-        ImmutableArray<string> typeParams;
+        ImmutableArray<TypeVarDeclSymbol> typeParams;
         IHolder<ImmutableArray<FuncParameter>> parametersHolder;
         
         bool bInternal;
@@ -30,7 +30,7 @@ namespace Citron.Symbol
 
         public GlobalFuncDeclSymbol(
             IHolder<ITopLevelDeclSymbolNode> outerHolder, AccessModifier accessModifier, IHolder<FuncReturn> returnHolder, 
-            Name name, ImmutableArray<string> typeParams, IHolder<ImmutableArray<FuncParameter>> parametersHolder, bool bInternal, ImmutableArray<LambdaDeclSymbol> lambdaDecls)
+            Name name, ImmutableArray<TypeVarDeclSymbol> typeParams, IHolder<ImmutableArray<FuncParameter>> parametersHolder, bool bInternal, ImmutableArray<LambdaDeclSymbol> lambdaDecls)
         {
             this.outerHolder = outerHolder;
             this.accessModifier = accessModifier;
@@ -66,11 +66,6 @@ namespace Citron.Symbol
         {
             return returnHolder.GetValue();
         }
-
-        public ImmutableArray <string> GetTypeParams()
-        {
-            return typeParams;
-        }
         
         public bool IsInternal()
         {
@@ -84,7 +79,8 @@ namespace Citron.Symbol
 
         public IEnumerable<IDeclSymbolNode> GetMemberDeclNodes()
         {
-            return lambdaDeclContainer.GetLambdaDecls();
+            return typeParams.AsEnumerable().OfType<IDeclSymbolNode>()
+                .Concat(lambdaDeclContainer.GetLambdaDecls());
         }        
 
         public void Apply(IDeclSymbolNodeVisitor visitor)

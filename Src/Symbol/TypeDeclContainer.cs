@@ -3,51 +3,51 @@ using Citron.Module;
 
 namespace Citron.Symbol
 {
-    public record TypeDeclContainer<TOuterDeclSymbol>
-        : ITypeDeclSymbolContainer, TypeDict.IHaveNodeName
-        where TOuterDeclSymbol : IDeclSymbolNode
-    {
-        IHolder<TOuterDeclSymbol> outerHolder;
-        AccessModifier accessModifier;
-        ITypeDeclSymbol typeDecl;
+    //public record TypeDeclContainer<TOuterDeclSymbol>
+    //    : ITypeDeclSymbolContainer, TypeDict.IHaveNodeName
+    //    where TOuterDeclSymbol : IDeclSymbolNode
+    //{
+    //    IHolder<TOuterDeclSymbol> outerHolder;
+    //    AccessModifier accessModifier;
+    //    ITypeDeclSymbol typeDecl;
 
-        internal TypeDeclContainer(IHolder<TOuterDeclSymbol> outerHolder, AccessModifier accessModifier, ITypeDeclSymbol typeDecl)
-        {
-            this.outerHolder = outerHolder;
-            this.accessModifier = accessModifier;
-            this.typeDecl = typeDecl;
-        }
+    //    internal TypeDeclContainer(IHolder<TOuterDeclSymbol> outerHolder, AccessModifier accessModifier, ITypeDeclSymbol typeDecl)
+    //    {
+    //        this.outerHolder = outerHolder;
+    //        this.accessModifier = accessModifier;
+    //        this.typeDecl = typeDecl;
+    //    }
 
-        IDeclSymbolNode ITypeDeclSymbolContainer.GetOuterDeclNode()
-            => GetOuter();
+    //    IDeclSymbolNode ITypeDeclSymbolContainer.GetOuterDeclNode()
+    //        => GetOuter();
 
-        // ITypeDeclSymbolContainer
-        public void Apply(ITypeDeclSymbolVisitor visitor)
-        {
-            typeDecl.Apply(visitor);
-        }
+    //    // ITypeDeclSymbolContainer
+    //    public void Apply(ITypeDeclSymbolVisitor visitor)
+    //    {
+    //        typeDecl.Apply(visitor);
+    //    }
 
-        // ITypeDeclSymbolContainer
-        public AccessModifier GetAccessModifier()
-        {
-            return accessModifier;
-        }
+    //    // ITypeDeclSymbolContainer
+    //    public AccessModifier GetAccessModifier()
+    //    {
+    //        return accessModifier;
+    //    }
 
-        public DeclSymbolNodeName GetNodeName()
-        {
-            return typeDecl.GetNodeName();
-        }
+    //    public DeclSymbolNodeName GetNodeName()
+    //    {
+    //        return typeDecl.GetNodeName();
+    //    }
 
-        public TOuterDeclSymbol GetOuter()
-        {
-            return outerHolder.GetValue();
-        }
+    //    public TOuterDeclSymbol GetOuter()
+    //    {
+    //        return outerHolder.GetValue();
+    //    }
 
-        public IDeclSymbolNode GetNode()
-        {
-            return typeDecl;
-        }
-    }
+    //    public IDeclSymbolNode GetNode()
+    //    {
+    //        return typeDecl;
+    //    }
+    //}
 
     // 일단 -는 허용, 확장할 일이 있으면 감싸서 만든다
     //[AutoConstructor]

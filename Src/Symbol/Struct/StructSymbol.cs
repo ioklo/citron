@@ -50,10 +50,10 @@ namespace Citron.Symbol
                 return result;
 
             if (candidates.HasMultiple)
-                return SymbolQueryResult.Error.MultipleCandidates.Instance;
+                return SymbolQueryResults.Error.MultipleCandidates;
 
             if (candidates.IsEmpty)
-                return SymbolQueryResult.NotFound.Instance;
+                return SymbolQueryResults.NotFound;
 
             throw new UnreachableCodeException();
         }
@@ -98,11 +98,11 @@ namespace Citron.Symbol
 
             // 여러개 있을 수 있기때문에 MultipleCandidates를 리턴하지 않는다
             if (funcsBuilder.Count == 0)
-                return SymbolQueryResult.NotFound.Instance;
+                return SymbolQueryResults.NotFound;
 
             // 둘다 가지고 있으면 안된다
             if (bHaveInstance && bHaveStatic)
-                return SymbolQueryResult.Error.MultipleCandidates.Instance;
+                return SymbolQueryResults.Error.MultipleCandidates;
 
             return new SymbolQueryResult.StructMemberFuncs(funcsBuilder.ToImmutable());
             // new NestedItemValueOuter(this), funcsBuilder.ToImmutable(), bHaveInstance);
@@ -130,16 +130,16 @@ namespace Citron.Symbol
             {
                 // 변수를 찾았는데 타입 아규먼트가 있다면 에러
                 if (typeParamCount != 0)
-                    return SymbolQueryResult.Error.VarWithTypeArg.Instance;
+                    return SymbolQueryResults.Error.VarWithTypeArg;
 
                 return result;
             }
 
             if (candidates.HasMultiple)
-                return SymbolQueryResult.Error.MultipleCandidates.Instance;
+                return SymbolQueryResults.Error.MultipleCandidates;
 
             if (candidates.IsEmpty)
-                return SymbolQueryResult.NotFound.Instance;
+                return SymbolQueryResults.NotFound;
 
             throw new UnreachableCodeException();
         }
@@ -174,10 +174,10 @@ namespace Citron.Symbol
             if (varResult is SymbolQueryResult.Valid varMemberResult) results.Add(varMemberResult);
 
             if (1 < results.Count)
-                return SymbolQueryResult.Error.MultipleCandidates.Instance;
+                return SymbolQueryResults.Error.MultipleCandidates;
 
             if (results.Count == 0)
-                return SymbolQueryResult.NotFound.Instance;
+                return SymbolQueryResults.NotFound;
 
             return results[0];
         }

@@ -4,41 +4,32 @@ using Pretune;
 using Citron.Module;
 
 namespace Citron.Symbol
-{
-    public class TypeDict
+{   
+    [ExcludeComparison]
+    public partial struct TypeDict
     {
-        public interface IHaveNodeName
+        public static TypeDict Build(ImmutableArray<TypeVarDeclSymbol> typeVars, ImmutableArray<ITypeDeclSymbol> types)
         {
-            DeclSymbolNodeName GetNodeName();
-        }
+            var typesBuilder = ImmutableDictionary.CreateBuilder<DeclSymbolNodeName, ITypeDeclSymbol>();
+            foreach(var typeVar in typeVars)
+                typesBuilder.Add(typeVar.GetNodeName(), typeVar);
 
-        public static TypeDict<TTypeDeclSymbol> Build<TTypeDeclSymbol>(ImmutableArray<TTypeDeclSymbol> types)
-            where TTypeDeclSymbol : IHaveNodeName
-        {
-            var typesBuilder = ImmutableDictionary.CreateBuilder<DeclSymbolNodeName, TTypeDeclSymbol>();
             foreach (var type in types)
-            {
                 typesBuilder.Add(type.GetNodeName(), type);
-            }
 
-            var dict = new TypeDict<TTypeDeclSymbol>();
+            var dict = new TypeDict();
             dict.types = typesBuilder.ToImmutable();
             return dict;
         }
-    }
 
-    [ExcludeComparison]
-    public partial struct TypeDict<TTypeDeclSymbol>
-        where TTypeDeclSymbol : TypeDict.IHaveNodeName
-    {
-        internal ImmutableDictionary<DeclSymbolNodeName, TTypeDeclSymbol> types;
+        internal ImmutableDictionary<DeclSymbolNodeName, ITypeDeclSymbol> types;
 
-        public IEnumerable<TTypeDeclSymbol> GetEnumerable()
+        public IEnumerable<ITypeDeclSymbol> GetEnumerable()
         {
             return types.Values;
         }
         
-        public TTypeDeclSymbol? Get(DeclSymbolNodeName name)
+        public ITypeDeclSymbol? Get(DeclSymbolNodeName name)
         {
             return types.GetValueOrDefault(name);
         }

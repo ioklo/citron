@@ -8,7 +8,7 @@ namespace Citron.Test.Misc
     public class NamespaceDeclBuilder<TOuterBuilder>
     {
         // 람다 금지ㅋ
-        internal delegate NamespaceDeclSymbol OnFinish(ImmutableArray<NamespaceDeclSymbol> namespaces, ImmutableArray<GlobalTypeDeclSymbol> types, ImmutableArray<GlobalFuncDeclSymbol> funcs);
+        internal delegate NamespaceDeclSymbol OnFinish(ImmutableArray<NamespaceDeclSymbol> namespaces, ImmutableArray<ITypeDeclSymbol> types, ImmutableArray<GlobalFuncDeclSymbol> funcs);
 
         TOuterBuilder outerBuilder;
         OnFinish onFinish;
@@ -17,7 +17,7 @@ namespace Citron.Test.Misc
 
         // 자식 네임스페이스
         NamespaceBuilderComponent<NamespaceDeclBuilder<TOuterBuilder>> namespaceComponent;
-        TypeBuilderComponent<NamespaceDeclBuilder<TOuterBuilder>, GlobalTypeDeclSymbol> globalTypeComponent;
+        TypeBuilderComponent<NamespaceDeclBuilder<TOuterBuilder>> globalTypeComponent;
         GlobalFuncBuilderComponent<NamespaceDeclBuilder<TOuterBuilder>> globalFuncComponent;
 
         internal NamespaceDeclBuilder(SymbolFactory factory, TOuterBuilder outerBuilder, OnFinish onFinish)
@@ -27,10 +27,7 @@ namespace Citron.Test.Misc
 
             this.namespaceDeclHolder = new Holder<NamespaceDeclSymbol>();
             this.namespaceComponent = new NamespaceBuilderComponent<NamespaceDeclBuilder<TOuterBuilder>>(factory, this, namespaceDeclHolder);
-            this.globalTypeComponent = new TypeBuilderComponent<NamespaceDeclBuilder<TOuterBuilder>, GlobalTypeDeclSymbol>(this, typeDecl =>            
-                new GlobalTypeDeclSymbol(namespaceDeclHolder, AccessModifier.Public, typeDecl)
-            );            
-
+            this.globalTypeComponent = new TypeBuilderComponent<NamespaceDeclBuilder<TOuterBuilder>>(this, factory, namespaceDeclHolder, AccessModifier.Private);
             this.globalFuncComponent = new GlobalFuncBuilderComponent<NamespaceDeclBuilder<TOuterBuilder>>(factory, this, namespaceDeclHolder);
         }
 
@@ -41,8 +38,8 @@ namespace Citron.Test.Misc
         public ClassDeclBuilder<NamespaceDeclBuilder<TOuterBuilder>> BeginClass(string name)
             => globalTypeComponent.BeginClass(name);
 
-        public NamespaceDeclBuilder<TOuterBuilder> Class(string name, ImmutableArray<string> typeParams, out ClassDeclSymbol decl)
-            => globalTypeComponent.Class(name, typeParams, out decl);
+        public NamespaceDeclBuilder<TOuterBuilder> Class(string name, out ClassDeclSymbol decl)
+            => globalTypeComponent.Class(name, out decl);
 
         public NamespaceDeclBuilder<TOuterBuilder> Struct(string name, out StructDeclSymbol decl)
             => globalTypeComponent.Struct(name, out decl);        
@@ -56,11 +53,6 @@ namespace Citron.Test.Misc
         public NamespaceDeclBuilder<TOuterBuilder> GlobalFunc(IHolder<FuncReturn> funcReturnHolder, string funcName,
             IHolder<ImmutableArray<FuncParameter>> funcParametersHolder, out GlobalFuncDeclSymbol globalFuncDecl)
             => globalFuncComponent.GlobalFunc(funcReturnHolder, funcName, funcParametersHolder, out globalFuncDecl);        
-
-        public GlobalFuncDeclBuilder<NamespaceDeclBuilder<TOuterBuilder>> BeginGlobalFunc(IHolder<FuncReturn> funcRetHolder, Name funcName, IHolder<ImmutableArray<FuncParameter>> funcParamHolder)
-            => globalFuncComponent.BeginGlobalFunc(funcRetHolder, funcName, funcParamHolder);
-
-        
 
         // NOTICE: not relevant BeginNamespace above
         public TOuterBuilder EndNamespace(out NamespaceDeclSymbol namespaceDecl)

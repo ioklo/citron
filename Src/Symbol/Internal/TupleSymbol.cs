@@ -71,13 +71,13 @@ namespace Citron.Symbol
                 if (memberName.Equals(memberVar.GetName()))
                 {
                     if (typeParamCount != 0)
-                        return SymbolQueryResult.Error.VarWithTypeArg.Instance;
+                        return SymbolQueryResults.Error.VarWithTypeArg;
 
                     return new SymbolQueryResult.TupleMemberVar(memberVar);
                 }
             }
 
-            return SymbolQueryResult.NotFound.Instance;
+            return SymbolQueryResults.NotFound;
         }
     }
 }

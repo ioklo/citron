@@ -11,21 +11,18 @@ namespace Citron.Symbol
         {
             public record VarWithTypeArg : Error
             {
-                public static readonly VarWithTypeArg Instance = new VarWithTypeArg();
-                VarWithTypeArg() { }
+                internal VarWithTypeArg() { }
             }
 
             public record MultipleCandidates : Error
             {
-                public static readonly MultipleCandidates Instance = new MultipleCandidates();
-                MultipleCandidates() { }
+                internal MultipleCandidates() { }
             }
         }
 
         public record NotFound : SymbolQueryResult
-        {
-            public static readonly NotFound Instance = new NotFound();
-            NotFound() { }
+        {   
+            internal NotFound() { }
         }
 
         // 검색으로 나올 수 있는 종류들
@@ -48,5 +45,15 @@ namespace Citron.Symbol
 
         public record LambdaMemberVar(LambdaMemberVarSymbol Symbol) : Valid;
         public record TypeVar(TypeVarSymbol Symbol) : Valid;
+    }
+
+    public static class SymbolQueryResults
+    {
+        public static SymbolQueryResult.NotFound NotFound = new SymbolQueryResult.NotFound();
+        public static class Error
+        {
+            public static SymbolQueryResult.Error.VarWithTypeArg VarWithTypeArg = new SymbolQueryResult.Error.VarWithTypeArg();
+            public static SymbolQueryResult.Error.MultipleCandidates MultipleCandidates = new SymbolQueryResult.Error.MultipleCandidates();
+        }
     }
 }

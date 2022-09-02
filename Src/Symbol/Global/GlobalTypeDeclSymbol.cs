@@ -6,11 +6,11 @@ using Citron.Module;
 
 namespace Citron.Symbol
 {
-    public class GlobalTypeDeclSymbol : TypeDeclContainer<ITopLevelDeclSymbolNode>
-    {
-        public GlobalTypeDeclSymbol(IHolder<ITopLevelDeclSymbolNode> outerHolder, AccessModifier accessModifier, ITypeDeclSymbol typeDecl)
-            : base(outerHolder, accessModifier, typeDecl) { }
-    }
+    //public class GlobalTypeDeclSymbol : TypeDeclContainer<ITopLevelDeclSymbolNode>
+    //{
+    //    public GlobalTypeDeclSymbol(IHolder<ITopLevelDeclSymbolNode> outerHolder, AccessModifier accessModifier, ITypeDeclSymbol typeDecl)
+    //        : base(outerHolder, accessModifier, typeDecl) { }
+    //}
 
     // typeDecl에 대리
     //[AutoConstructor]

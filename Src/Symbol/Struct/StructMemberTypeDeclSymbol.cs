@@ -8,8 +8,8 @@ using Citron.Module;
 
 namespace Citron.Symbol
 {
-    public record StructMemberTypeDeclSymbol(IHolder<StructDeclSymbol> outerHolder, AccessModifier accessModifier, ITypeDeclSymbol typeDecl)
-        : TypeDeclContainer<StructDeclSymbol>(outerHolder, accessModifier, typeDecl);
+    //public record StructMemberTypeDeclSymbol(IHolder<StructDeclSymbol> outerHolder, AccessModifier accessModifier, ITypeDeclSymbol typeDecl)
+    //    : TypeDeclContainer<StructDeclSymbol>(outerHolder, accessModifier, typeDecl);
 
     //[AutoConstructor]
     //public partial class StructMemberTypeDeclSymbol : ITypeDeclSymbolContainer, TypeDict.IHaveNodeName

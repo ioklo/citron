@@ -14,7 +14,8 @@ namespace Citron.Symbol
     [AutoConstructor]
     public partial class InterfaceDeclSymbol : ITypeDeclSymbol
     {
-        IHolder<ITypeDeclSymbolContainer> containerHolder;
+        IHolder<IDeclSymbolNode> outerHolder;
+        AccessModifier accessModifier;
 
         Name name;
         ImmutableArray<string> typeParams;
@@ -37,7 +38,7 @@ namespace Citron.Symbol
 
         public IDeclSymbolNode? GetOuterDeclNode()
         {
-            return containerHolder.GetValue().GetOuterDeclNode();
+            return outerHolder.GetValue();
         }
 
         public Name GetName()
@@ -52,7 +53,7 @@ namespace Citron.Symbol
 
         public AccessModifier GetAccessModifier()
         {
-            return containerHolder.GetValue().GetAccessModifier();
+            return accessModifier;
         }
     }
 }

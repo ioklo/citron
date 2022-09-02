@@ -13,6 +13,7 @@ using System;
 using System.IO;
 using Citron.Analysis;
 using Citron.Symbol;
+using Citron.Infra;
 
 namespace Citron.IR0Translator.Test
 {    
@@ -22,20 +23,49 @@ namespace Citron.IR0Translator.Test
 
         // public M.TypeId IntMType { get => new M.GlobalType("System.Runtime", new M.NamespacePath("System"), NormalName("Int32"), default); }
 
+        SymbolFactory factory;
+        ModuleDeclSymbol runtimeModuleDecl;
+        StructSymbol boolType, intType;
+        ClassSymbol stringType;
+        VoidSymbol voidType;
+
         M.Name.Normal NormalName(string text)
         {
             return NormalName(text);
         }
-        
+
+        InternalModuleDeclSymbolBuilderTests()
+        {
+            factory = new SymbolFactory();
+
+            runtimeModuleDecl = new ModuleDeclBuilder(factory, NormalName("System.Runtime"))
+                    .BeginNamespace("System")
+                        .Struct("Boolean", out var boolDecl)
+                        .Struct("Int32", out var intDecl)
+                        .Class("String", out var stringDecl)
+                        .BeginClass("List")
+                            .TypeParam("TItem", out var _)
+                        .EndClass(out var listTypeDecl)
+                    .EndNamespace(out var systemNSDecl)
+                    .Make();
+
+            var runtimeModule = factory.MakeModule(runtimeModuleDecl);
+            var systemNS = factory.MakeNamespace(runtimeModule, systemNSDecl);
+
+            boolType = factory.MakeStruct(systemNS, boolDecl, default);
+            intType = factory.MakeStruct(systemNS, intDecl, default);
+            stringType = factory.MakeClass(systemNS, stringDecl, default);
+            voidType = factory.MakeVoid();
+        }
+
         ModuleDeclSymbol Build(M.Name moduleName, S.Script script)
         {   
-            ImmutableArray<ModuleDeclSymbol> referenceModules = default;
+            var referenceModules = Arr(runtimeModuleDecl);
 
             var logger = new TestLogger(true);
             TypeExpEvaluator.Evaluate(moduleName, script, referenceModules, logger);
-
-            var symbolFactory = new SymbolFactory();
-            var result = InternalModuleDeclSymbolBuilder.Build(moduleName, script, symbolFactory, referenceModules);
+            
+            var result = InternalModuleDeclSymbolBuilder.Build(moduleName, script, factory, referenceModules);
 
             Assert.NotNull(result);
             return result!.Value.ModuleDecl;
@@ -81,75 +111,76 @@ namespace Citron.IR0Translator.Test
             Debug.Assert(resultDecl != null);
 
             // declSymbol을 얻어낼 수 있는 방법
-            var factory = new SymbolFactory();
+            var _ = new ModuleDeclBuilder(factory, moduleName)
+                .BeginGlobalFunc(M.AccessModifier.Private, NormalName("Func"), bInternal: true)
+                    .TypeParam("T", out var typeVarDecl)
+                    .FuncReturnHolder(out var funcRetHolder)
+                    .FuncParametersHolder(out var funcParamsHolder)
+                .EndGlobalFunc(out var globalFuncDecl)
+                .Make();
 
-            var typeVarT = factory.MakeTypeVar();
-            var builder = new ModuleDeclBuilder(factory, moduleName);
-            builder.GlobalFunc(
-                M.AccessModifier.Private,
-                new FuncReturn(isRef: true, typeVarT).ToHolder(),
-                NormalName("Func"),
-                Arr("T"),
-                Arr(new FuncParameter(M.FuncParameterKind.Ref, typeVarT, NormalName("t"))).ToHolder(),
-                bInternal: true,
-                default,
-                out var expected);
+            var typeVar = factory.MakeTypeVar(typeVarDecl);
 
-            Assert.Equal(expected, resultDecl);
+            funcRetHolder.SetValue(new FuncReturn(isRef: false, typeVar));
+            funcParamsHolder.SetValue(Arr(new FuncParameter(M.FuncParameterKind.Ref, typeVar, NormalName("t"))));
+
+            Assert.Equal(globalFuncDecl, resultDecl);
         }
-
+        
         [Fact]
         public void Build_FuncDecl_ModuleInfoHasFuncInfo()
         {
-            // void Func<T, U>(int x, params U y, T z)
+            // void Func<T, U>(int x, params U y, ref T z)
             var script = SScript(new S.GlobalFuncDeclScriptElement(new S.GlobalFuncDecl(
                 null,
                 isSequence: false,
                 isRefReturn: false,
                 SVoidTypeExp(),
                 "Func",
-                Arr("T", "U"),
+                Arr(new S.TypeParam("T"), new S.TypeParam("U")),
                 Arr(
                     new S.FuncParam(S.FuncParamKind.Normal, SIntTypeExp(), "x"),
                     new S.FuncParam(S.FuncParamKind.Params, new S.IdTypeExp("U", default), "y"),
-                    new S.FuncParam(S.FuncParamKind.Normal, new S.IdTypeExp("T", default), "z")
+                    new S.FuncParam(S.FuncParamKind.Ref, new S.IdTypeExp("T", default), "z")
                 ),
                 Arr<S.Stmt>()
             )));
 
             var result = Build(NormalName("TestModule"), script);
 
-            Assert.NotNull(result);
-            Debug.Assert(result != null);
-
-            var paramTypes = new M.ParamTypes(Arr(
-                new M.ParamKindAndType(M.ParamKind.Default, IntMType), 
-                new M.ParamKindAndType(M.ParamKind.Params, new M.TypeVarTypeId(1, "U")), 
-                new M.ParamKindAndType(M.ParamKind.Default, new M.TypeVarTypeId(0, "T"))
-            ));
-
-
-            var funcInfo = GlobalItemQueryService.GetGlobalDeclSymbol(result, M.NamespacePath.Root, new ItemPathEntry(NormalName("Func"), 2, paramTypes));
-            Assert.NotNull(funcInfo);
-            Debug.Assert(funcInfo != null);
-
-            var parameters = Arr(
-                new M.Param(M.ParamKind.Default, IntMType, NormalName("x")), 
-                new M.Param(M.ParamKind.Params, new M.TypeVarTypeId(1, "U"), NormalName("y")), 
-                new M.Param(M.ParamKind.Default, new M.TypeVarTypeId(0, "T"), NormalName("z")));
-
-            var expected = new InternalModuleFuncInfo(
-                M.AccessModifier.Private,
-                bInstanceFunc: false,
-                bSeqFunc: false,
-                bRefReturn: false,
-                M.VoidTypeId.Instance,
-                NormalName("Func"),
-                Arr("T", "U"),
-                parameters
+            var path = new DeclSymbolPath(
+                null, 
+                NormalName("Func"), 2, 
+                Arr(
+                    new FuncParamId(M.FuncParameterKind.Default, SymbolId.Int),
+                    new FuncParamId(M.FuncParameterKind.Params, new TypeVarSymbolId(1)),
+                    new FuncParamId(M.FuncParameterKind.Ref, new TypeVarSymbolId(0))
+                )
             );
 
-            Assert.Equal(expected, funcInfo);
+            var resultDecl = result.GetDeclSymbol(path) as GlobalFuncDeclSymbol;
+            Debug.Assert(resultDecl != null);
+
+            // expected 만들기
+            var _ = new ModuleDeclBuilder(factory, NormalName("TestModule"))
+                .BeginGlobalFunc(M.AccessModifier.Private, NormalName("Func"), true)
+                    .TypeParam("T", out var tDecl)
+                    .TypeParam("U", out var uDecl)
+                    .FuncReturn(isRef: false, voidType)
+                    .FuncParametersHolder(out var paramsHolder)
+                .EndGlobalFunc(out var expectedGlobalFuncDecl)
+                .Make();
+
+            var t = factory.MakeTypeVar(tDecl);
+            var u = factory.MakeTypeVar(uDecl);
+
+            paramsHolder.SetValue(Arr(
+                new FuncParameter(M.FuncParameterKind.Default, intType, NormalName("x")),
+                new FuncParameter(M.FuncParameterKind.Params, u, NormalName("y")),
+                new FuncParameter(M.FuncParameterKind.Ref, t, NormalName("z"))
+            ));
+
+            Assert.Equal(expectedGlobalFuncDecl, resultDecl);
         }
         
         // public struct S<T> : B<int>
@@ -165,8 +196,8 @@ namespace Citron.IR0Translator.Test
                 new S.TypeDeclScriptElement(new S.StructDecl(
                     S.AccessModifier.Public,
                     "S",
-                    Arr("T"),
-                    default, // Arr<S.TypeExp>(new S.IdTypeExp("B", Arr(SIntTypeExp()))),
+                    Arr(new S.TypeParam("T")),
+                    Arr<S.TypeExp>(new S.IdTypeExp("B", Arr(SIntTypeExp()))),
                     Arr<S.StructMemberDecl>(
                         new S.StructMemberFuncDecl(
                             S.AccessModifier.Private,
@@ -175,12 +206,12 @@ namespace Citron.IR0Translator.Test
                             IsRefReturn: false,
                             new S.IdTypeExp("T", default),
                             "Func",
-                            Arr("T", "U"),
+                            Arr(new S.TypeParam("T"), new S.TypeParam("U")),
                             Arr(
                                 new S.FuncParam(S.FuncParamKind.Normal, SIdTypeExp("S", SIntTypeExp()), "s"), 
                                 new S.FuncParam(S.FuncParamKind.Normal, SIdTypeExp("U"), "u")
                             ),
-                            new S.BlockStmt(Arr<S.Stmt>())
+                            default
                         ),
 
                         new S.StructMemberVarDecl(
@@ -194,57 +225,57 @@ namespace Citron.IR0Translator.Test
                 new S.TypeDeclScriptElement(new S.StructDecl(
                     S.AccessModifier.Private,
                     "B",
-                    Arr("T"),
+                    Arr(new S.TypeParam("T")),
                     default,
                     default
                 ))
             );
-            var moduleName = "TestModule";
+
+            var moduleName = NormalName("TestModule");
             var result = Build(moduleName, script);
 
-            Assert.NotNull(result);
-            Debug.Assert(result != null);
+            // var trivialConstructor = new InternalModuleConstructorInfo(M.AccessModifier.Public, Arr(new M.Param(M.ParamKind.Default, IntMType, NormalName("x")), new M.Param(M.ParamKind.Default, IntMType, NormalName("y"))));
 
-            var structInfo = GlobalItemQueryService.GetGlobalDeclSymbol(result, M.NamespacePath.Root, new ItemPathEntry(NormalName("S"), 1)) as IModuleStructDecl;
-            Assert.NotNull(structInfo);
-            Debug.Assert(structInfo != null);
+            var expected = new ModuleDeclBuilder(factory, moduleName)
+                .BeginStruct(M.AccessModifier.Public, "S")
+                    .TypeParam("T", out var _)
+                    .BaseHolder(out var baseHolder) // B<int>
+                    .BeginFunc(M.AccessModifier.Private, bStatic: false, NormalName("Func"))
+                        .TypeParam("T", out var typeVarFuncTDecl)
+                        .TypeParam("U", out var typeVarFuncUDecl)
+                        .FuncReturnHolder(out var funcRetHolder)
+                        .FuncParametersHolder(out var funcParamsHolder)
+                    .EndFunc(out var _)
+                    .Var(M.AccessModifier.Protected, bStatic: false, intType.ToHolder(), NormalName("x"))
+                    .Var(M.AccessModifier.Protected, bStatic: false, intType.ToHolder(), NormalName("y"))
+                    .BeginConstructor(M.AccessModifier.Public, bTrivial: true)
+                        .FuncParameter(M.FuncParameterKind.Default, intType, NormalName("x"))
+                        .FuncParameter(M.FuncParameterKind.Default, intType, NormalName("y"))
+                    .EndConstructor(out var _)
+                .EndStruct(out var expectedSDecl)
+                .BeginStruct(M.AccessModifier.Private, "B")
+                    .TypeParam("T", out var _)
+                .EndStruct(out var expectedBDecl)
+                .Make();
 
-            var trivialConstructor = new InternalModuleConstructorInfo(M.AccessModifier.Public, Arr(new M.Param(M.ParamKind.Default, IntMType, NormalName("x")), new M.Param(M.ParamKind.Default, IntMType, NormalName("y"))));
+            var expectedModule = factory.MakeModule(expected);
+            var expectedB_int = factory.MakeStruct(expectedModule, expectedBDecl, Arr<ITypeSymbol>(intType));
+            baseHolder.SetValue(expectedB_int);
 
-            var expected = new StructDeclSymbol(
-                NormalName("S"),
-                Arr("T"), 
-                mbaseStruct: null, //baseType: new M.GlobalType(moduleName, M.NamespacePath.Root, "B", Arr(IntMType)),
-                default,
-                Arr<IModuleFuncDecl>(
-                    new InternalModuleFuncInfo(
-                        M.AccessModifier.Private,
-                        bInstanceFunc: true,
-                        bSeqFunc: false,
-                        bRefReturn: false,
-                        new M.TypeVarTypeId(1, "T"),
-                        NormalName("Func"),                        
-                        Arr("T", "U"),
-                        Arr(
-                            new M.Param(M.ParamKind.Default, new M.GlobalType(moduleName, M.NamespacePath.Root, NormalName("S"), ImmutableArray.Create<M.TypeId>(IntMType)), NormalName("s")),
-                            new M.Param(M.ParamKind.Default, new M.TypeVarTypeId(2, "U"), NormalName("u"))
-                        )
-                    )
-                ),
+            var expectedS_int = factory.MakeStruct(expectedModule, expectedSDecl, Arr<ITypeSymbol>(intType));
 
-                Arr<IModuleConstructorDecl>(trivialConstructor),
-                
-                Arr<IModuleMemberVarInfo>(
-                    new InternalModuleMemberVarInfo(M.AccessModifier.Protected, false, IntMType, NormalName("x")),
-                    new InternalModuleMemberVarInfo(M.AccessModifier.Protected, false, IntMType, NormalName("y"))
-                )
-            );
+            var typeVarFuncT = factory.MakeTypeVar(typeVarFuncTDecl);
+            var typeVarFuncU = factory.MakeTypeVar(typeVarFuncUDecl);
+            funcRetHolder.SetValue(new FuncReturn(isRef: false, typeVarFuncT));
+            funcParamsHolder.SetValue(Arr(
+                new FuncParameter(M.FuncParameterKind.Default, expectedS_int, NormalName("s")),
+                new FuncParameter(M.FuncParameterKind.Default, typeVarFuncU, NormalName("u"))
+            ));
 
             // TODO: expected에 trivialConstructor를 강제로 꽂을 방법이 없어서 equals체크를 하면 실패한다
             //       1:1로 비교하면 되는데, 그건 그거대로 고통스럽다
 
-            expected.Equals(structInfo);
-            Assert.Equal(expected, structInfo);
+            Assert.Equal(expected, result);
         }
     }
 }

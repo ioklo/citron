@@ -13,48 +13,55 @@ namespace Citron.Symbol
     [ImplementIEquatable]
     public partial class StructDeclSymbol : ITypeDeclSymbol
     {
-        IHolder<ITypeDeclSymbolContainer> containerHolder;
+        IHolder<IDeclSymbolNode> outerHolder;
+        AccessModifier accessModifier;
 
         Name name;
-        ImmutableArray<string> typeParams;
+        ImmutableArray<TypeVarDeclSymbol> typeParams;
         IHolder<StructSymbol?> baseStructHolder;
-        ImmutableArray<StructMemberTypeDeclSymbol> typeDecls;
+        ImmutableArray<ITypeDeclSymbol> memberTypesExceptTypeVars;
         ImmutableArray<StructMemberFuncDeclSymbol> funcDecls;        
         ImmutableArray<StructMemberVarDeclSymbol> varDecls;
 
         IHolder<ImmutableArray<StructConstructorDeclSymbol>> constructorsHolder;
         IHolder<StructConstructorDeclSymbol?> trivialConstructorHolder;
 
-        TypeDict<StructMemberTypeDeclSymbol> typeDict;
+        TypeDict typeDict;
         FuncDict<StructMemberFuncDeclSymbol> funcDict;
 
         public StructDeclSymbol(
-            IHolder<ITypeDeclSymbolContainer> containerHolder,
-            Name name, ImmutableArray<string> typeParams,
+            IHolder<IDeclSymbolNode> outerHolder,
+            AccessModifier accessModifier,
+            Name name, ImmutableArray<TypeVarDeclSymbol> typeParams,
             IHolder<StructSymbol?> baseStructHolder,
-            ImmutableArray<StructMemberTypeDeclSymbol> typeDecls,
-            ImmutableArray<StructMemberFuncDeclSymbol> funcDecls,            
+            ImmutableArray<ITypeDeclSymbol> memberTypesExceptTypeVars,
+            ImmutableArray<StructMemberFuncDeclSymbol> memberFuncs,            
             ImmutableArray<StructMemberVarDeclSymbol> memberVars,
             IHolder<ImmutableArray<StructConstructorDeclSymbol>> constructorsHolder,
             IHolder<StructConstructorDeclSymbol?> trivialConstructorHolder)
         {
-            this.containerHolder = containerHolder;
+            this.outerHolder = outerHolder;
+            this.accessModifier = accessModifier;
             this.name = name;
             this.typeParams = typeParams;
             this.baseStructHolder = baseStructHolder;
-            this.typeDecls = typeDecls;
-            this.funcDecls = funcDecls;            
+            this.memberTypesExceptTypeVars = memberTypesExceptTypeVars;
+            this.funcDecls = memberFuncs;            
             this.varDecls = memberVars;
             this.constructorsHolder = constructorsHolder;
             this.trivialConstructorHolder = trivialConstructorHolder;
 
-            this.typeDict = TypeDict.Build(typeDecls);
-            this.funcDict = FuncDict.Build(funcDecls);
+            this.typeDict = TypeDict.Build(typeParams, memberTypesExceptTypeVars);
+            this.funcDict = FuncDict.Build(memberFuncs);
         }
 
-        public ImmutableArray<StructMemberTypeDeclSymbol> GetMemberTypes()
+        // include type parameters
+        public ImmutableArray<ITypeDeclSymbol> GetMemberTypes()
         {
-            return typeDecls;
+            var builder = ImmutableArray.CreateBuilder<ITypeDeclSymbol>(typeParams.Length + memberTypesExceptTypeVars.Length);
+            builder.AddRange(typeParams.AsEnumerable());
+            builder.AddRange(memberTypesExceptTypeVars.AsEnumerable());
+            return builder.MoveToImmutable();
         }
 
         public Name GetName()
@@ -92,16 +99,11 @@ namespace Citron.Symbol
             return funcDict.Get(name, minTypeParamCount);
         }
 
-        public StructMemberTypeDeclSymbol? GetType(Name name, int typeParamCount)
+        public ITypeDeclSymbol? GetType(Name name, int typeParamCount)
         {
             return typeDict.Get(new DeclSymbolNodeName(name, typeParamCount, default));
         }
-
-        public ImmutableArray<string> GetTypeParams()
-        {
-            return typeParams;
-        }
-
+        
         public int GetTypeParamCount()
         {
             return typeParams.Length;
@@ -129,7 +131,7 @@ namespace Citron.Symbol
 
         public IDeclSymbolNode? GetOuterDeclNode()
         {
-            return containerHolder.GetValue().GetOuterDeclNode();
+            return outerHolder.GetValue();
         }
         
         public IEnumerable<IDeclSymbolNode> GetMemberDeclNodes()
@@ -156,7 +158,7 @@ namespace Citron.Symbol
 
         public AccessModifier GetAccessModifier()
         {
-            return containerHolder.GetValue().GetAccessModifier();
+            return accessModifier;
         }
     }
 }

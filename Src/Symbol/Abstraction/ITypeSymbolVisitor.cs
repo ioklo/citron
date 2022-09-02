@@ -11,5 +11,6 @@
         void VisitTuple(TupleSymbol symbol);
         void VisitNullable(NullableSymbol symbol);
         void VisitLambda(LambdaSymbol lambdaSymbol);
+        void VisitTypeVar(TypeVarSymbol typeVarSymbol);
     }
 }

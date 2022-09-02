@@ -19,10 +19,10 @@ namespace Citron.Symbol
             this.result = null;
         }
 
-        public static SymbolQueryResult Build(ITypeDeclSymbolContainer container, ISymbolNode outer, SymbolFactory symbolFactory)
+        public static SymbolQueryResult Build(ITypeDeclSymbol decl, ISymbolNode outer, SymbolFactory symbolFactory)
         {
             var builder = new SymbolQueryResultBuilder(outer, symbolFactory);
-            container.Apply(builder);
+            decl.Apply(builder);
 
             Debug.Assert(builder.result != null);
             return builder.result;
@@ -69,7 +69,7 @@ namespace Citron.Symbol
 
         public void VisitTypeVar(TypeVarDeclSymbol typeVarDecl)
         {
-            var typeVar = symbolFactory.MakeTypeVar(outer, typeVarDecl);
+            var typeVar = symbolFactory.MakeTypeVar(typeVarDecl);
             result = new SymbolQueryResult.TypeVar(typeVar);
         }
     }

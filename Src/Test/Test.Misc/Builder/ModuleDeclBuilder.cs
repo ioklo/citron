@@ -15,7 +15,7 @@ namespace Citron.Test.Misc
         Holder<ModuleDeclSymbol> moduleDeclHolder;
 
         NamespaceBuilderComponent<ModuleDeclBuilder> namespaceComponent;
-        TypeBuilderComponent<ModuleDeclBuilder, GlobalTypeDeclSymbol> globalTypeComponent;
+        TypeBuilderComponent<ModuleDeclBuilder> globalTypeComponent;
         GlobalFuncBuilderComponent<ModuleDeclBuilder> globalFuncComponent;
 
         public ModuleDeclBuilder(SymbolFactory factory, Name moduleName)
@@ -25,9 +25,7 @@ namespace Citron.Test.Misc
             this.moduleDeclHolder = new Holder<ModuleDeclSymbol>();
 
             this.namespaceComponent = new NamespaceBuilderComponent<ModuleDeclBuilder>(factory, this, moduleDeclHolder);
-            this.globalTypeComponent = new TypeBuilderComponent<ModuleDeclBuilder, GlobalTypeDeclSymbol>(this, typeDecl => {
-                return new GlobalTypeDeclSymbol(moduleDeclHolder, AccessModifier.Public, typeDecl);
-            });
+            this.globalTypeComponent = new TypeBuilderComponent<ModuleDeclBuilder>(this, factory, moduleDeclHolder, AccessModifier.Private);
             this.globalFuncComponent = new GlobalFuncBuilderComponent<ModuleDeclBuilder>(factory, this, moduleDeclHolder);
         }
 
@@ -39,6 +37,9 @@ namespace Citron.Test.Misc
         public ClassDeclBuilder<ModuleDeclBuilder> BeginClass(string name)
             => globalTypeComponent.BeginClass(name);
 
+        public StructDeclBuilder<ModuleDeclBuilder> BeginStruct(AccessModifier accessModifier, string name)
+            => globalTypeComponent.BeginStruct(accessModifier, name);
+
         public ModuleDeclBuilder GlobalFunc(ITypeSymbol retType, string funcName, out GlobalFuncDeclSymbol globalFuncDecl)
             => globalFuncComponent.GlobalFunc(retType, funcName, out globalFuncDecl);
 
@@ -49,26 +50,13 @@ namespace Citron.Test.Misc
             IHolder<ImmutableArray<FuncParameter>> funcParametersHolder, out GlobalFuncDeclSymbol globalFuncDecl)
             => globalFuncComponent.GlobalFunc(funcReturnHolder, funcName, funcParametersHolder, out globalFuncDecl);
 
-        public ModuleDeclBuilder GlobalFunc(
-            AccessModifier accessModifier,
-            IHolder<FuncReturn> returnHolder,
-            Name name,
-            ImmutableArray<string> typeParams,
-            IHolder<ImmutableArray<FuncParameter>> parametersHolder,
-            bool bInternal,
-            ImmutableArray<LambdaDeclSymbol> lambdaDecls,
-            out GlobalFuncDeclSymbol globalFuncDecl
-        ) => globalFuncComponent.GlobalFunc(accessModifier, returnHolder, name, typeParams, parametersHolder, bInternal, lambdaDecls, out globalFuncDecl);
-
-        public GlobalFuncDeclBuilder<ModuleDeclBuilder> BeginGlobalFunc(IHolder<FuncReturn> funcRetHolder, Name funcName, IHolder<ImmutableArray<FuncParameter>> funcParamHolder)
-            => globalFuncComponent.BeginGlobalFunc(funcRetHolder, funcName, funcParamHolder);
+        public GlobalFuncDeclBuilder<ModuleDeclBuilder> BeginGlobalFunc(AccessModifier accessModifier, Name funcName, bool bInternal)
+            => globalFuncComponent.BeginGlobalFunc(accessModifier, funcName, bInternal);
 
         public GlobalFuncDeclBuilder<ModuleDeclBuilder> BeginTopLevelFunc()
         {
-            var funcReturnHolder = new Holder<FuncReturn>(new FuncReturn(false, factory.MakeVoid()));
-            var funcParamsHolder = new Holder<ImmutableArray<FuncParameter>>(default);
-
-            return globalFuncComponent.BeginGlobalFunc(funcReturnHolder, Name.TopLevel, funcParamsHolder);
+            return globalFuncComponent.BeginGlobalFunc(AccessModifier.Public, Name.TopLevel, true)
+                .FuncReturn(false, factory.MakeVoid());
         }
 
         public ModuleDeclSymbol Make()

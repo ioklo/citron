@@ -16,8 +16,8 @@ namespace Citron.Symbol
         IHolder<IDeclSymbolNode> outerHolder; // 타입일 수도, 함수일 수도
         Name name;
 
-        IDeclSymbolNode? IDeclSymbolNode.GetOuterDeclNode()
-            => GetOuterDeclNode();
+        IDeclSymbolNode? IDeclSymbolNode.GetOuterDeclNode() => GetOuterDeclNode();
+        DeclSymbolNodeName IDeclSymbolNode.GetNodeName() => GetNodeName();
 
         void ITypeDeclSymbol.Apply(ITypeDeclSymbolVisitor visitor)
         {
@@ -39,7 +39,7 @@ namespace Citron.Symbol
             return Enumerable.Empty<IDeclSymbolNode>();
         }
 
-        DeclSymbolNodeName IDeclSymbolNode.GetNodeName()
+        public DeclSymbolNodeName GetNodeName()
         {
             return new DeclSymbolNodeName(name, 0, default);
         }

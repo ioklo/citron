@@ -30,7 +30,7 @@ namespace Citron.Symbol
 
         public SymbolQueryResult QueryMember(Name memberName, int typeParamCount)
         {
-            return SymbolQueryResult.NotFound.Instance;
+            return SymbolQueryResults.NotFound;
         }
 
         public ISymbolNode? GetOuter()

@@ -185,18 +185,18 @@ namespace Citron.Analysis
             };
         }
 
-        ITypeDeclSymbol BuildType(DeclSymbolId outerId, IHolder<ITypeDeclSymbolContainer> containerHolder, S.TypeDecl decl)
+        ITypeDeclSymbol BuildType(DeclSymbolId outerId, IHolder<IDeclSymbolNode> outerHolder, M.AccessModifier accessModifier, S.TypeDecl decl)
         {
             switch (decl)
             {
                 case S.StructDecl structDecl:
-                    return BuildStruct(outerId, containerHolder, structDecl);
+                    return BuildStruct(outerId, outerHolder, accessModifier, structDecl);
 
                 case S.ClassDecl classDecl:
-                    return BuildClass(outerId, containerHolder, classDecl);
+                    return BuildClass(outerId, outerHolder, accessModifier, classDecl);
 
                 case S.EnumDecl enumDecl:
-                    return BuildEnum(outerId, containerHolder, enumDecl);
+                    return BuildEnum(outerId, outerHolder, accessModifier, enumDecl);
 
                 default:
                     throw new UnreachableCodeException();
@@ -211,7 +211,7 @@ namespace Citron.Analysis
             var moduleDeclHolder = new Holder<ModuleDeclSymbol>();
 
             var namespaceDecls = ImmutableArray.CreateBuilder<NamespaceDeclSymbol>();
-            var globalTypeDecls = ImmutableArray.CreateBuilder<GlobalTypeDeclSymbol>();
+            var globalTypeDecls = ImmutableArray.CreateBuilder<ITypeDeclSymbol>();
             var globalFuncDecls = ImmutableArray.CreateBuilder<GlobalFuncDeclSymbol>();
 
             foreach (var elem in script.Elements)
@@ -256,17 +256,12 @@ namespace Citron.Analysis
             };
         }
 
-        StructMemberTypeDeclSymbol BuildStructMemberType(DeclSymbolId outerId, IHolder<StructDeclSymbol> outerHolder, S.StructMemberTypeDecl decl)
+        ITypeDeclSymbol BuildStructMemberType(DeclSymbolId outerId, IHolder<StructDeclSymbol> outerHolder, S.StructMemberTypeDecl decl)
         {
-            var memberTypeDeclHolder = new Holder<StructMemberTypeDeclSymbol>();
-
-            var type = BuildType(outerId, memberTypeDeclHolder, decl.TypeDecl);
             var syntaxAccessModifier = GetAccessModifier(decl.TypeDecl);
             var accessModifier = MakeStructMemberAccessModifier(syntaxAccessModifier);
 
-            var memberTypeDecl = new StructMemberTypeDeclSymbol(outerHolder, accessModifier, type);
-            memberTypeDeclHolder.SetValue(memberTypeDecl);
-            return memberTypeDecl;
+            return BuildType(outerId, outerHolder, accessModifier, decl.TypeDecl);
         }        
 
         ImmutableArray<FuncParamId> MakeFuncParamIds(ImmutableArray<S.FuncParam> sfuncParams)
@@ -300,6 +295,9 @@ namespace Citron.Analysis
             var returnHolder = new Holder<FuncReturn>();
             var parametersHolder = new Holder<ImmutableArray<FuncParameter>>();
 
+            var funcHolder = new Holder<StructMemberFuncDeclSymbol>();
+            var typeVarDecls = BuildTypeVarDecls(funcHolder, decl.TypeParams);
+
             RegisterAfterBuildTask(thisId, default, context =>
             {
                 var retType = context.GetTypeSymbolNode(decl.RetType);
@@ -309,7 +307,9 @@ namespace Citron.Analysis
                 parametersHolder.SetValue(parameters);
             });
 
-            return new StructMemberFuncDeclSymbol(outerHolder, accessModifier, decl.IsStatic, returnHolder, new M.Name.Normal(decl.Name), decl.TypeParams, parametersHolder, lambdaDecls: default);
+            var func = new StructMemberFuncDeclSymbol(outerHolder, accessModifier, decl.IsStatic, returnHolder, new M.Name.Normal(decl.Name), typeVarDecls, parametersHolder, lambdaDecls: default);
+            funcHolder.SetValue(func);
+            return func;
         }        
 
         // 이 노드에서는 var가 여러개 나올수 있으므로 리턴처리하지 않고, 안에서 직접 추가한다
@@ -441,7 +441,7 @@ namespace Citron.Analysis
             return new StructConstructorDeclSymbol(outer, M.AccessModifier.Public, new Holder<ImmutableArray<FuncParameter>>(builder.MoveToImmutable()), bTrivial: true, lambdaDecls: default);
         }
 
-        StructDeclSymbol BuildStruct(DeclSymbolId outerId, IHolder<ITypeDeclSymbolContainer> containerHolder, S.StructDecl decl)
+        StructDeclSymbol BuildStruct(DeclSymbolId outerId, IHolder<IDeclSymbolNode> outerHolder, M.AccessModifier accessModifier, S.StructDecl decl)
         {
             var thisId = outerId.Child(new M.Name.Normal(decl.Name), decl.TypeParams.Length, default);
 
@@ -450,10 +450,12 @@ namespace Citron.Analysis
             var constructorsHolder = new Holder<ImmutableArray<StructConstructorDeclSymbol>>();
             var trivialConstructorHolder = new Holder<StructConstructorDeclSymbol?>();
 
-            var memberTypeDeclsBuilder = ImmutableArray.CreateBuilder<StructMemberTypeDeclSymbol>();
+            var memberTypeDeclsBuilder = ImmutableArray.CreateBuilder<ITypeDeclSymbol>();
             var memberFuncDeclsBuilder = ImmutableArray.CreateBuilder<StructMemberFuncDeclSymbol>();
             var memberVarDeclsBuilder = ImmutableArray.CreateBuilder<StructMemberVarDeclSymbol>();
             var constructorDeclsBuilder = ImmutableArray.CreateBuilder<StructConstructorDeclSymbol>();
+
+            var typeVarDecls = BuildTypeVarDecls(structHolder, decl.TypeParams);
 
             // 임시, baseType은 한개 (syntax에는 여러개를 받을 수 있게 되어있으므로 하나로 변경한다
             Debug.Assert(decl.BaseTypes.Length <= 1);
@@ -543,7 +545,7 @@ namespace Citron.Analysis
                 trivialConstructorHolder.SetValue(trivialConstructor);
             });
 
-            var @struct = new StructDeclSymbol(containerHolder, new M.Name.Normal(decl.Name), decl.TypeParams, baseStructHolder,
+            var @struct = new StructDeclSymbol(outerHolder, accessModifier, new M.Name.Normal(decl.Name), typeVarDecls, baseStructHolder,
                 memberTypeDeclsBuilder.ToImmutable(), memberFuncDeclsBuilder.ToImmutable(), memberVarDecls, 
                 constructorsHolder, trivialConstructorHolder);
             structHolder.SetValue(@struct);
@@ -655,26 +657,24 @@ namespace Citron.Analysis
             };
         }
 
-        ClassMemberTypeDeclSymbol BuildClassMemberType(DeclSymbolId outerId, IHolder<ClassDeclSymbol> outerHolder, S.ClassMemberTypeDecl decl)
+        ITypeDeclSymbol BuildClassMemberType(DeclSymbolId outerId, IHolder<ClassDeclSymbol> outerHolder, S.ClassMemberTypeDecl decl)
         {
-            var memberTypeDeclHolder = new Holder<ClassMemberTypeDeclSymbol>();
-
-            var type = BuildType(outerId, memberTypeDeclHolder, decl.TypeDecl);
             var syntaxAccessModifier = GetAccessModifier(decl.TypeDecl);
             var accessModifier = MakeClassMemberAccessModifier(syntaxAccessModifier);
 
-            var memberTypeDecl = new ClassMemberTypeDeclSymbol(outerHolder, accessModifier, type);
-            memberTypeDeclHolder.SetValue(memberTypeDecl);
-            return memberTypeDecl;
+            return BuildType(outerId, outerHolder, accessModifier, decl.TypeDecl);
         }
 
         ClassMemberFuncDeclSymbol BuildClassMemberFunc(DeclSymbolId outerId, IHolder<ClassDeclSymbol> outerHolder, S.ClassMemberFuncDecl decl)
         {
             var thisId = outerId.Child(new M.Name.Normal(decl.Name), decl.TypeParams.Length, MakeFuncParamIds(decl.Parameters));
 
+            var funcHolder = new Holder<ClassMemberFuncDeclSymbol>();
             var accessModifier = MakeClassMemberAccessModifier(decl.AccessModifier);
             var returnHolder = new Holder<FuncReturn>();
             var parametersHolder = new Holder<ImmutableArray<FuncParameter>>();
+
+            var typeVarDecls = BuildTypeVarDecls(funcHolder, decl.TypeParams);
 
             RegisterAfterBuildTask(thisId, default, context =>
             {
@@ -685,7 +685,10 @@ namespace Citron.Analysis
                 parametersHolder.SetValue(parameters);
             });
 
-            return new ClassMemberFuncDeclSymbol(outerHolder, accessModifier, returnHolder, new M.Name.Normal(decl.Name), decl.TypeParams, parametersHolder, decl.IsStatic, lambdaDecls: default);
+            var func = new ClassMemberFuncDeclSymbol(outerHolder, accessModifier, returnHolder, new M.Name.Normal(decl.Name), typeVarDecls, parametersHolder, decl.IsStatic, lambdaDecls: default);
+            funcHolder.SetValue(func);
+            return func;
+
         }
 
         void BuildClassMemberVar(ImmutableArray<ClassMemberVarDeclSymbol>.Builder builder, DeclSymbolId outerId, IHolder<ClassDeclSymbol> outerHolder, S.ClassMemberVarDecl decl)
@@ -724,23 +727,25 @@ namespace Citron.Analysis
             return new ClassConstructorDeclSymbol(outerHolder, accessModifier, parametersHolder, bTrivial: false, lambdaDecls: default);
         }
 
-        ClassDeclSymbol BuildClass(DeclSymbolId outerId, IHolder<ITypeDeclSymbolContainer> containerHolder, S.ClassDecl decl)
+        ClassDeclSymbol BuildClass(DeclSymbolId outerId, IHolder<IDeclSymbolNode> outerHolder, M.AccessModifier accessModifier, S.ClassDecl decl)
         {
             var thisId = outerId.Child(new M.Name.Normal(decl.Name), decl.TypeParams.Length, default);
             var classHolder = new Holder<ClassDeclSymbol>();
-
+            
             var baseClassHolder = new Holder<ClassSymbol?>();
             var interfacesHolder = new Holder<ImmutableArray<InterfaceSymbol>>();
-            var typesBuilder = ImmutableArray.CreateBuilder<ClassMemberTypeDeclSymbol>();
+            var typesBuilder = ImmutableArray.CreateBuilder<ITypeDeclSymbol>();
             var funcsBuilder = ImmutableArray.CreateBuilder<ClassMemberFuncDeclSymbol>();
             var varsBuilder = ImmutableArray.CreateBuilder<ClassMemberVarDeclSymbol>();
             var constructorsBuilder = ImmutableArray.CreateBuilder<ClassConstructorDeclSymbol>();
             var constructorsHolder = new Holder<ImmutableArray<ClassConstructorDeclSymbol>>();
             var trivialConstructorHolder = new Holder<ClassConstructorDeclSymbol?>();
 
-            foreach(var member in decl.MemberDecls)
+            var typeVarDecls = BuildTypeVarDecls(classHolder, decl.TypeParams);
+
+            foreach (var member in decl.MemberDecls)
             {
-                switch(member)
+                switch (member)
                 {
                     case S.ClassMemberTypeDecl typeMember:
                         {
@@ -773,7 +778,7 @@ namespace Citron.Analysis
 
             var memberVars = varsBuilder.ToImmutable();
 
-            var baseInterfaceInfos = ImmutableArray.CreateBuilder<S.TypeExpInfo>();             
+            var baseInterfaceInfos = ImmutableArray.CreateBuilder<S.TypeExpInfo>();
             IdentifyBaseTypes(out var baseClassInfo, baseInterfaceInfos, decl);
 
             var dependsOnSymbolIds = MakeClassBuildingDependencies(baseClassInfo);
@@ -810,10 +815,24 @@ namespace Citron.Analysis
                 trivialConstructorHolder.SetValue(trivialConstructor);
             });
 
-            var @class = new ClassDeclSymbol(containerHolder, new M.Name.Normal(decl.Name), decl.TypeParams, baseClassHolder, interfacesHolder, 
+            var @class = new ClassDeclSymbol(outerHolder, accessModifier, new M.Name.Normal(decl.Name),
+                typeVarDecls, baseClassHolder, interfacesHolder,
                 typesBuilder.ToImmutable(), funcsBuilder.ToImmutable(), memberVars, constructorsHolder, trivialConstructorHolder);
             classHolder.SetValue(@class);
             return @class;
+        }
+
+        private static ImmutableArray<TypeVarDeclSymbol> BuildTypeVarDecls(IHolder<IDeclSymbolNode> outerHolder, ImmutableArray<S.TypeParam> typeParams)
+        {
+            var typeVarDeclsBuilder = ImmutableArray.CreateBuilder<TypeVarDeclSymbol>(typeParams.Length);
+
+            foreach (var typeParam in typeParams)
+            {
+                var typeVarDecl = new TypeVarDeclSymbol(outerHolder, new M.Name.Normal(typeParam.Name));
+                typeVarDeclsBuilder.Add(typeVarDecl);
+            }
+
+            return typeVarDeclsBuilder.MoveToImmutable();
         }
 
         void IdentifyBaseTypes(out S.TypeExpInfo? baseClassInfo, ImmutableArray<S.TypeExpInfo>.Builder baseInterfacInfos, S.ClassDecl decl)
@@ -908,11 +927,13 @@ namespace Citron.Analysis
             return enumElem;
         }
 
-        EnumDeclSymbol BuildEnum(DeclSymbolId outerId, IHolder<ITypeDeclSymbolContainer> containerHolder, S.EnumDecl decl)
+        EnumDeclSymbol BuildEnum(DeclSymbolId outerId, IHolder<IDeclSymbolNode> outerHolder, M.AccessModifier accessModifier, S.EnumDecl decl)
         {
             var thisId = outerId.Child(new M.Name.Normal(decl.Name), decl.TypeParams.Length, default);
             var enumHolder = new Holder<EnumDeclSymbol>();
             var elemsBuilder = ImmutableArray.CreateBuilder<EnumElemDeclSymbol>(decl.Elems.Length);
+
+            var typeVarDecls = BuildTypeVarDecls(enumHolder, decl.TypeParams);
 
             foreach(var elem in decl.Elems)
             {
@@ -920,7 +941,7 @@ namespace Citron.Analysis
                 elemsBuilder.Add(elemSymbol);
             }
 
-            var @enum = new EnumDeclSymbol(containerHolder, new M.Name.Normal(decl.Name), decl.TypeParams, elemsBuilder.MoveToImmutable());
+            var @enum = new EnumDeclSymbol(outerHolder, accessModifier, new M.Name.Normal(decl.Name), typeVarDecls, elemsBuilder.MoveToImmutable());
             enumHolder.SetValue(@enum);
             return @enum;
         }
@@ -939,23 +960,22 @@ namespace Citron.Analysis
             };
         }
 
-        GlobalTypeDeclSymbol BuildGlobalType(DeclSymbolId outerId, IHolder<ITopLevelDeclSymbolNode> outerHolder, S.TypeDecl decl) // throw FatalException
+        ITypeDeclSymbol BuildGlobalType(DeclSymbolId outerId, IHolder<ITopLevelDeclSymbolNode> outerHolder, S.TypeDecl decl) // throw FatalException
         {
-            var globalTypeDeclHolder = new Holder<GlobalTypeDeclSymbol>();
-            var type = BuildType(outerId, globalTypeDeclHolder, decl);
             var syntaxAccessModifier = GetAccessModifier(decl);
-
             var accessModifier = MakeGlobalAccessModifier(syntaxAccessModifier);
-            var globalTypeDecl = new GlobalTypeDeclSymbol(outerHolder, accessModifier, type);
-            globalTypeDeclHolder.SetValue(globalTypeDecl);
-            return globalTypeDecl;
+
+            return BuildType(outerId, outerHolder, accessModifier, decl);
         }
 
         GlobalFuncDeclSymbol BuildGlobalFunc(DeclSymbolId outerId, IHolder<ITopLevelDeclSymbolNode> outerHolder, S.GlobalFuncDecl decl) // throw FatalException        
         {
             var thisId = outerId.Child(new M.Name.Normal(decl.Name), decl.TypeParams.Length, MakeFuncParamIds(decl.Parameters));
+            var funcHolder = new Holder<GlobalFuncDeclSymbol>();
             var returnHolder = new Holder<FuncReturn>();
             var parametersHolder = new Holder<ImmutableArray<FuncParameter>>();
+
+            var typeVarDecls = BuildTypeVarDecls(funcHolder, decl.TypeParams);
 
             RegisterAfterBuildTask(thisId, default, context =>
             {
@@ -968,7 +988,9 @@ namespace Citron.Analysis
 
             var accessModifier = MakeGlobalAccessModifier(decl.AccessModifier);
             
-            return new GlobalFuncDeclSymbol(outerHolder, accessModifier, returnHolder, new M.Name.Normal(decl.Name), decl.TypeParams, parametersHolder, bInternal: true, lambdaDecls: default);
+            var func = new GlobalFuncDeclSymbol(outerHolder, accessModifier, returnHolder, new M.Name.Normal(decl.Name), typeVarDecls, parametersHolder, bInternal: true, lambdaDecls: default);
+            funcHolder.SetValue(func);
+            return func;
         }
 
         #endregion

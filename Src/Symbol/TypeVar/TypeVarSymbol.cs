@@ -1,24 +1,31 @@
 ﻿using System;
 
 using Citron.Infra;
+using Citron.Module;
 
 namespace Citron.Symbol
 {
-    public class TypeVarSymbol : ISymbolNode
-    {
-        SymbolFactory factory;
-        ISymbolNode outer;
+    // TypeVar
+    // 두개의 안중 1안을 선택한다
+    // void Func<T>(T t); 의 시그니처
+    // 1. Func<T>.T Func<T>(Func<T>.T t)
+    // 2. Func<>.T Func<T>(Func<>.T t)
+    public class TypeVarSymbol : ITypeSymbol
+    {   
         TypeVarDeclSymbol decl;
 
-        internal TypeVarSymbol(SymbolFactory factory, ISymbolNode outer, TypeVarDeclSymbol decl)
+        ISymbolNode ISymbolNode.Apply(TypeEnv typeEnv)
+            => Apply(typeEnv);
+
+        ITypeSymbol ITypeSymbol.Apply(TypeEnv typeEnv)
+            => Apply(typeEnv);
+
+        internal TypeVarSymbol(TypeVarDeclSymbol decl)
         {
-            this.factory = factory;
-            this.outer = outer;
             this.decl = decl;
         }
-
-        // 이 함수는 void F<T>() { C<T> c; }
-        ISymbolNode ISymbolNode.Apply(TypeEnv typeEnv)
+        
+        public ITypeSymbol Apply(TypeEnv typeEnv)
         {
             // 정확히 뭘 하는지 생각하고 작성한다
             throw new NotImplementedException();
@@ -29,14 +36,27 @@ namespace Citron.Symbol
             // return typeEnv.GetValue(index)            
         }
 
+        void ITypeSymbol.Apply(ITypeSymbolVisitor visitor)
+        {
+            visitor.VisitTypeVar(this);
+        }
+
         IDeclSymbolNode? ISymbolNode.GetDeclSymbolNode()
+            => GetDeclSymbolNode();
+        
+
+        ITypeDeclSymbol? ITypeSymbol.GetDeclSymbolNode()
+            => GetDeclSymbolNode();
+
+        public TypeVarDeclSymbol GetDeclSymbolNode()
         {
             return decl;
         }
 
+        // 이 심볼의 outer는 누구인가, 최상위면 null일 것이고, 정의되지 않았으면 exception
         ISymbolNode? ISymbolNode.GetOuter()
         {
-            return outer;
+            throw new NotImplementedException();
         }
 
         ITypeSymbol ISymbolNode.GetTypeArg(int i)
@@ -46,7 +66,12 @@ namespace Citron.Symbol
 
         TypeEnv ISymbolNode.GetTypeEnv()
         {
-            return outer.GetTypeEnv();
+            throw new NotImplementedException();
+        }
+
+        SymbolQueryResult ITypeSymbol.QueryMember(Name memberName, int typeParamCount)
+        {
+            return SymbolQueryResults.NotFound;
         }
     }
 }

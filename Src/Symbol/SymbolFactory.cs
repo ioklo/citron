@@ -109,7 +109,7 @@ namespace Citron.Symbol
 
             return new StructSymbol(this, outer, decl, typeArgs);
         }
-
+        
         public StructConstructorSymbol MakeStructConstructor(StructSymbol @struct, StructConstructorDeclSymbol decl)
         {
             Debug.Assert(@struct.GetDeclSymbolNode() == decl.GetOuterDeclNode());
@@ -174,10 +174,11 @@ namespace Citron.Symbol
         #endregion
 
         #region TypeVar
-        public TypeVarSymbol MakeTypeVar(ISymbolNode outer, TypeVarDeclSymbol decl)
+        public TypeVarSymbol MakeTypeVar(TypeVarDeclSymbol decl)
         {
-            Debug.Assert(outer.GetDeclSymbolNode() == decl.GetOuterDeclNode());
-            return new TypeVarSymbol(this, outer, decl);
+            // outer가 확정이 안되었을 수 있어서 assert를 시킬 수 없다
+            // Debug.Assert(outer.GetDeclSymbolNode() == decl.GetOuterDeclNode());
+            return new TypeVarSymbol(decl);
         }
 
         #endregion

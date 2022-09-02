@@ -92,14 +92,14 @@ namespace Citron.Symbol
                 if (memberVar.GetName().Equals(memberName))
                 {
                     if (typeParamCount != 0)
-                        return SymbolQueryResult.Error.VarWithTypeArg.Instance;
+                        return SymbolQueryResults.Error.VarWithTypeArg;
 
                     var memberVarSymbol = factory.MakeLambdaMemberVar(this, memberVar);
                     return new SymbolQueryResult.LambdaMemberVar(memberVarSymbol);
                 }
             }
 
-            return SymbolQueryResult.Error.NotFound.Instance;
+            return SymbolQueryResults.NotFound;
         }
 
         public ITypeSymbol? GetOuterType()
