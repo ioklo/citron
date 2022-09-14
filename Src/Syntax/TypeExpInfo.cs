@@ -4,7 +4,7 @@ using System;
 
 namespace Citron.Syntax
 {
-    // 직접 InternalModuleDeclSymbol을 만들지 않고 TypeExpInfo를 Syntax Node에 먼저 만들고 나서 하는 이유
+    // 직접 ModuleDeclSymbol을 만들지 않고 TypeExpInfo를 Syntax Node에 먼저 만들고 나서 하는 이유
     // ModuleDeclSymbol 없는 상태에서 GetMemberInfo를 하려면 정보가 필요하다
     
     // X<int>.Y<T>, closed

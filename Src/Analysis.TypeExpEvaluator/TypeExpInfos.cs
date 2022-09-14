@@ -8,19 +8,21 @@ using System.Linq;
 using S = Citron.Syntax;
 using M = Citron.Module;
 
+using Citron.Symbol;
+using Citron.Infra;
+
 using static Citron.Symbol.DeclSymbolIdExtensions;
 using static Citron.Symbol.SymbolIdExtensions;
 using static Citron.Symbol.SymbolPathExtensions;
-using Citron.Symbol;
-using Citron.Infra;
 
 namespace Citron.Analysis
 {   
     [AutoConstructor]
     partial class InternalTypeExpInfo : S.TypeExpInfo
-    {   
-        Skeleton skeleton; // 멤버를 갖고 오기 위한 수단
-        ImmutableArray<SymbolId> typeArgs;
+    {
+        // TypeExp는 instantiated space
+        SymbolId symbolId;
+        Skeleton skeleton;        // 멤버를 갖고 오기 위한 수단
         S.TypeExp typeExp;
 
         public override S.TypeExpInfoKind GetKind()
@@ -31,7 +33,7 @@ namespace Citron.Analysis
         public override SymbolId GetSymbolId()
         {
             // 이걸 어떻게 만들 것인가
-            return typeId;
+            return symbolId;
         }
 
         // 이 시점에 typeArgs가 유효한가?
@@ -43,7 +45,15 @@ namespace Citron.Analysis
             switch(result)
             {
                 case UniqueQueryResult<Skeleton>.Found foundResult:
-                    return new InternalTypeExpInfo(foundResult.Value, typeArgs, memberTypeExp);
+                    {
+                        var skel = foundResult.Value;
+
+                        var moduleSymbolId = symbolId as ModuleSymbolId;
+                        Debug.Assert(moduleSymbolId != null);
+
+                        var memberSymbolId = moduleSymbolId.Child(foundResult.Value.Name, typeArgs);
+                        return new InternalTypeExpInfo(memberSymbolId, skel, typeExp);
+                    }
 
                 case UniqueQueryResult<Skeleton>.MultipleError:
                     return null;

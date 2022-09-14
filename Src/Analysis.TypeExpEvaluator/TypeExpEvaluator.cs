@@ -28,7 +28,7 @@ namespace Citron.Analysis
             ILogger logger)
         {
             var moduleSkel = SkeletonCollector.Collect(script);
-            var localContext = new LocalContext();
+            var localContext = LocalContext.NewModuleContext(moduleSkel);
             var globalContext = new GlobalContext(internalModuleName, referenceModules, moduleSkel, logger);
 
             var declVisitor = new DeclVisitor(localContext, globalContext);

@@ -17,32 +17,37 @@ namespace Citron.Analysis
     struct SkeletonCollector
     {        
         Skeleton skeleton; // 만들어지고 있는 스켈레톤
+        int outerTotalTypeParamCount;
 
-        SkeletonCollector(Skeleton skeleton)
+        SkeletonCollector(Skeleton skeleton, int outerTotalTypeParamCount)
         {
             this.skeleton = skeleton;
+            this.outerTotalTypeParamCount = outerTotalTypeParamCount;
         }
 
         public static Skeleton Collect(S.Script script)
         {
-            var skel = new Skeleton(SkeletonKind.Module, M.Name.TopLevel, 0, 0, null);
+            var skel = new Skeleton(SkeletonKind.Module, M.Name.TopLevel, typeParamCount: 0, typeParamIndex: null, funcIndex: 0, funcNode: null);
 
-            var collector = NewSkeletonCollector(skel);
+            var collector = NewSkeletonCollector(skel, 0);
             collector.VisitScript(script);
 
             return skel;
         }
 
         // 타입 파라미터를 인자로 받아서, 자식 Skeleton으로 넣는다
-        static SkeletonCollector NewSkeletonCollector(Skeleton skeleton)
+        static SkeletonCollector NewSkeletonCollector(Skeleton skeleton, int outerTotalTypeParamCount)
         {
-            return new SkeletonCollector(skeleton);
+            return new SkeletonCollector(skeleton, outerTotalTypeParamCount);
         }
 
         void AddTypeParams(ImmutableArray<S.TypeParam> typeParams)
         {
-            foreach (var typeParam in typeParams)
-                skeleton.AddMember(SkeletonKind.TypeVar, new M.Name.Normal(typeParam.Name), 0);
+            for(int i = 0; i < typeParams.Length; i++)
+            {
+                var typeParam = typeParams[i];
+                skeleton.AddMember(SkeletonKind.TypeVar, new M.Name.Normal(typeParam.Name), typeParamCount: 0, typeParamIndex: outerTotalTypeParamCount + i);
+            }   
         }
 
         // 이름이랑 타입인자가 같은 것이 이미 있다면 index를 하나 증가시켜서 ChildPath를 만든다        
@@ -57,7 +62,7 @@ namespace Citron.Analysis
         {
             var enumDeclSkel = skeleton.AddMember(SkeletonKind.Enum, new M.Name.Normal(enumDecl.Name), enumDecl.TypeParams.Length);
 
-            var newCollector = NewSkeletonCollector(enumDeclSkel);
+            var newCollector = NewSkeletonCollector(enumDeclSkel, outerTotalTypeParamCount + enumDecl.TypeParams.Length);
             newCollector.AddTypeParams(enumDecl.TypeParams);
 
             foreach (var enumElem in enumDecl.Elems)
@@ -69,7 +74,7 @@ namespace Citron.Analysis
         void VisitStructDecl(S.StructDecl structDecl)
         {
             var structDeclSkel = skeleton.AddMember(SkeletonKind.Struct, new M.Name.Normal(structDecl.Name), structDecl.TypeParams.Length);
-            var newCollector = NewSkeletonCollector(structDeclSkel);
+            var newCollector = NewSkeletonCollector(structDeclSkel, outerTotalTypeParamCount + structDecl.TypeParams.Length);
 
             newCollector.AddTypeParams(structDecl.TypeParams);
 
@@ -91,9 +96,9 @@ namespace Citron.Analysis
 
         void VisitStructMemberFuncDecl(S.StructMemberFuncDecl decl)
         {
-            var declSkel = skeleton.AddMember(SkeletonKind.StructMemberFunc, new M.Name.Normal(decl.Name), decl.TypeParams.Length, decl);
+            var declSkel = skeleton.AddMember(SkeletonKind.StructMemberFunc, new M.Name.Normal(decl.Name), decl.TypeParams.Length, typeParamIndex: null, decl);
 
-            var newCollector = NewSkeletonCollector(declSkel);
+            var newCollector = NewSkeletonCollector(declSkel, outerTotalTypeParamCount + decl.TypeParams.Length);
             newCollector.AddTypeParams(decl.TypeParams);
         }
 
@@ -101,7 +106,7 @@ namespace Citron.Analysis
         {
             var classDeclSkel = skeleton.AddMember(SkeletonKind.Class, new M.Name.Normal(classDecl.Name), classDecl.TypeParams.Length);
 
-            var newCollector = NewSkeletonCollector(classDeclSkel);
+            var newCollector = NewSkeletonCollector(classDeclSkel, outerTotalTypeParamCount + classDecl.TypeParams.Length);
             newCollector.AddTypeParams(classDecl.TypeParams);
 
             foreach (var memberDecl in classDecl.MemberDecls)
@@ -121,10 +126,10 @@ namespace Citron.Analysis
 
         void VisitClassMemberFuncDecl(S.ClassMemberFuncDecl decl)
         {
-            var declSkel = skeleton.AddMember(SkeletonKind.ClassMemberFunc, new M.Name.Normal(decl.Name), decl.TypeParams.Length, decl);
+            var declSkel = skeleton.AddMember(SkeletonKind.ClassMemberFunc, new M.Name.Normal(decl.Name), decl.TypeParams.Length, typeParamIndex: null, decl);
 
             // class C { void F<T>() { } }
-            var newCollector = NewSkeletonCollector(declSkel);
+            var newCollector = NewSkeletonCollector(declSkel, outerTotalTypeParamCount + decl.TypeParams.Length);
             newCollector.AddTypeParams(decl.TypeParams);
         }
 
@@ -142,9 +147,9 @@ namespace Citron.Analysis
         // void Func<T>() ... 라면
         void VisitGlobalFuncDecl(S.GlobalFuncDecl globalFuncDecl)
         {
-            var funcSkel = skeleton.AddMember(SkeletonKind.GlobalFunc, new M.Name.Normal(globalFuncDecl.Name), globalFuncDecl.TypeParams.Length, globalFuncDecl);
+            var funcSkel = skeleton.AddMember(SkeletonKind.GlobalFunc, new M.Name.Normal(globalFuncDecl.Name), globalFuncDecl.TypeParams.Length, typeParamIndex: null, globalFuncDecl);
 
-            var newCollector = NewSkeletonCollector(funcSkel);
+            var newCollector = NewSkeletonCollector(funcSkel, outerTotalTypeParamCount + globalFuncDecl.TypeParams.Length);
             newCollector.AddTypeParams(globalFuncDecl.TypeParams);
         }
 
@@ -171,7 +176,9 @@ namespace Citron.Analysis
         {
             // 중첩이름 처리 NS1.NS2.NS3
             var namespaceSkel = GetOrAddNamespaceSkel(namespaceDecl.Names);
-            var newSkeletonCollector = NewSkeletonCollector(namespaceSkel);
+
+            Debug.Assert(outerTotalTypeParamCount == 0);
+            var newSkeletonCollector = NewSkeletonCollector(namespaceSkel, outerTotalTypeParamCount);
 
             foreach (var elem in namespaceDecl.Elements)
             {

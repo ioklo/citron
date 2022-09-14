@@ -1,12 +1,13 @@
-﻿using Citron.Infra;
+﻿using System.Diagnostics;
+
+using Citron.Infra;
+using Citron.Symbol;
+using Citron.Collections;
 
 using S = Citron.Syntax;
 using M = Citron.Module;
 
 using static Citron.Symbol.DeclSymbolIdExtensions;
-using Citron.Symbol;
-using System.Diagnostics;
-using Citron.Collections;
 
 namespace Citron.Analysis
 {
@@ -44,15 +45,30 @@ namespace Citron.Analysis
                 }
             }
 
+            void VisitFuncParams(LocalContext thisLocalContext, Holder<ImmutableArray<FuncParamId>> holder, ImmutableArray<S.FuncParam> funcParams)
+            {
+                var builder = ImmutableArray.CreateBuilder<FuncParamId>(funcParams.Length);
+                foreach (var param in funcParams)
+                {
+                    var info = TypeExpVisitor.Visit(param.Type, thisLocalContext, globalContext);
+
+                    // NOTICE: 여기 SymbolId는 This없이도 가능하다
+                    var paramId = new FuncParamId(param.Kind.ToFuncParameterKind(), info.GetSymbolId());
+                    builder.Add(paramId);
+                }
+
+                holder.SetValue(builder.MoveToImmutable());
+            }
+            
             #region Global
             public void VisitGlobalFuncDecl(S.GlobalFuncDecl funcDecl)
             {
-                var newLocalContext = localContext.NewLocalContextWithFuncDecl(funcDecl);
+                var holder = new Holder<ImmutableArray<FuncParamId>>();
+                var newLocalContext = localContext.NewLocalContextWithFuncDecl(holder, funcDecl);
 
                 TypeExpVisitor.Visit(funcDecl.RetType, newLocalContext, globalContext);
 
-                foreach (var param in funcDecl.Parameters)
-                    TypeExpVisitor.Visit(param.Type, newLocalContext, globalContext);
+                VisitFuncParams(newLocalContext, holder, funcDecl.Parameters);
 
                 StmtVisitor.Visit(funcDecl.Body, newLocalContext, globalContext);
             }
@@ -103,13 +119,13 @@ namespace Citron.Analysis
 
             void VisitStructMemberFuncDecl(S.StructMemberFuncDecl funcDecl)
             {
-                // skeleton에는 타입에 관한 정보만 들어있었기 때문에, funcDecl의 typeVar는 손수 넣어줘야 한다
-                var newLocalContext = localContext.NewLocalContextWithFuncDecl(funcDecl);
+                // skeleton에는 타입에 관한 정보만 들어있었기 때문에, funcDecl의 typeVar는 손수 넣어줘야 한다                
+                var holder = new Holder<ImmutableArray<FuncParamId>>();
+                var newLocalContext = localContext.NewLocalContextWithFuncDecl(holder, funcDecl);
                 
                 TypeExpVisitor.Visit(funcDecl.RetType, newLocalContext, globalContext);
 
-                foreach (var param in funcDecl.Parameters)
-                    TypeExpVisitor.Visit(param.Type, newLocalContext, globalContext);
+                VisitFuncParams(newLocalContext, holder, funcDecl.Parameters);
 
                 StmtVisitor.Visit(funcDecl.Body, newLocalContext, globalContext);
             }
@@ -167,13 +183,14 @@ namespace Citron.Analysis
 
             void VisitClassMemberFuncDecl(S.ClassMemberFuncDecl funcDecl)
             {
+                var holder = new Holder<ImmutableArray<FuncParamId>>();
+
                 // skeleton에는 타입에 관한 정보만 들어있었기 때문에, funcDecl의 typeVar는 손수 넣어줘야 한다
-                var newLocalContext = localContext.NewLocalContextWithFuncDecl(funcDecl);
+                var newLocalContext = localContext.NewLocalContextWithFuncDecl(holder, funcDecl);
 
                 TypeExpVisitor.Visit(funcDecl.RetType, newLocalContext, globalContext);
 
-                foreach (var param in funcDecl.Parameters)
-                    TypeExpVisitor.Visit(param.Type, newLocalContext, globalContext);
+                VisitFuncParams(newLocalContext, holder, funcDecl.Parameters);
 
                 StmtVisitor.Visit(funcDecl.Body, newLocalContext, globalContext);
             }

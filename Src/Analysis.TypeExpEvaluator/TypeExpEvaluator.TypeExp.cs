@@ -27,18 +27,24 @@ namespace Citron.Analysis
                 this.globalContext = globalContext;
             }
 
-            public static void Visit(TypeExp exp, LocalContext localContext, GlobalContext globalContext)
+            public static TypeExpInfo Visit(TypeExp exp, LocalContext localContext, GlobalContext globalContext)
             {
                 var visitor = new TypeExpVisitor(localContext, globalContext);
-                visitor.VisitTypeExpOuterMost(exp);
+                return visitor.VisitTypeExpOuterMost(exp);
             }
 
-            public static void Visit(ImmutableArray<TypeExp> typeArgExps, LocalContext localContext, GlobalContext globalContext)
+            public static ImmutableArray<TypeExpInfo> Visit(ImmutableArray<TypeExp> typeArgExps, LocalContext localContext, GlobalContext globalContext)
             {
                 var visitor = new TypeExpVisitor(localContext, globalContext);
 
+                var builder = ImmutableArray.CreateBuilder<TypeExpInfo>(typeArgExps.Length);
                 foreach (var typeArgExp in typeArgExps)
-                    visitor.VisitTypeExpOuterMost(typeArgExp);
+                {
+                    var info = visitor.VisitTypeExpOuterMost(typeArgExp);
+                    builder.Add(info);
+                }
+
+                return builder.MoveToImmutable();
             }
 
             // 입구 함수
@@ -60,6 +66,49 @@ namespace Citron.Analysis
                 }
             }
 
+            public TypeExpInfo MakeInternalTypeExpInfo(LocalContext curContext, Skeleton skel, ImmutableArray<SymbolId> typeArgs, TypeExp typeExp)
+            {
+                switch (skel.Kind)
+                {
+                    // 불가능 에러
+                    case SkeletonKind.Module:
+                        throw new UnreachableCodeException();
+
+                    // 일반 케이스
+                    case SkeletonKind.Namespace:
+                    case SkeletonKind.Class:
+                    case SkeletonKind.Struct:
+                    case SkeletonKind.Interface:
+                    case SkeletonKind.Enum:
+                    case SkeletonKind.EnumElem:
+                        {
+                            var symbolId = curContext.GetThisSymbolId();
+                            var memberSymbolId = symbolId.Child(skel.Name, typeArgs);
+                            return new InternalTypeExpInfo(memberSymbolId, skel, typeExp);
+                        }
+
+                    // TypeVar는 따로 처리
+                    case SkeletonKind.TypeVar:
+                        {
+                            Debug.Assert(typeArgs.Length == 0);
+                            Debug.Assert(skel.TypeParamIndex != null);
+
+                            var memberSymbolId = new TypeVarSymbolId(skel.TypeParamIndex.Value);
+                            return new InternalTypeExpInfo(memberSymbolId, skel, typeExp);
+                        }
+
+                    // 함수 참조 에러
+                    case SkeletonKind.GlobalFunc:
+                    case SkeletonKind.ClassMemberFunc:
+                    case SkeletonKind.StructMemberFunc:
+                        // TODO: 함수 참조 에러 
+                        throw new NotImplementedException();
+
+                    default:
+                        throw new UnreachableCodeException();
+                }
+            }
+
             // C<>.F<>.T는 있지만 symbol decl space에 존재, 
             // C<int>.F<short>.T는 없다.. id space에서는 없다?
             // typealias로 존재해야 하는거 아니냐? T = short
@@ -70,8 +119,10 @@ namespace Citron.Analysis
                 switch (result)
                 {
                     case UniqueQueryResult<Skeleton>.Found foundResult:
-                        var typeExpInfo = new InternalTypeExpInfo(foundResult.Value, typeArgs, typeExp);
-                        return UniqueQueryResults<TypeExpInfo>.Found(typeExpInfo);
+                        {
+                            var typeExpInfo = MakeInternalTypeExpInfo(curContext, foundResult.Value, typeArgs, typeExp);
+                            return UniqueQueryResults<TypeExpInfo>.Found(typeExpInfo);
+                        }
 
                     case UniqueQueryResult<Skeleton>.MultipleError:
                         return UniqueQueryResults<TypeExpInfo>.MultipleError;
@@ -92,7 +143,7 @@ namespace Citron.Analysis
 
                 foreach (var member in localContext.GetSkeletonMembers(name, typeArgs.Length))
                 {
-                    candidates.Add(new InternalTypeExpInfo(member, typeArgs, typeExp));
+                    candidates.Add(MakeInternalTypeExpInfo(curContext, member, typeArgs, typeExp));
                 }
                 
                 // type만 쿼리하므로 FuncParamId는 쓰지 않는다
@@ -220,17 +271,19 @@ namespace Citron.Analysis
             }
 
             // VisitTypeExp와 다른 점은 실행 후 (TypeExp => TypeExpInfo) 정보를 추가
-            void VisitTypeExpOuterMost(TypeExp exp)
+            TypeExpInfo VisitTypeExpOuterMost(TypeExp exp)
             {
                 try
                 {
                     var result = VisitTypeExp(exp);
                     globalContext.AddInfo(exp, result);
+                    return result;
                 }
                 catch (FatalException)
                 {
-
-                }
+                    // 에러 처리를 해야 한다
+                    throw new NotImplementedException();
+                }                
             }
 
             ImmutableArray<SymbolId> VisitTypeArgExps(ImmutableArray<TypeExp> typeArgExps)

@@ -76,7 +76,7 @@ namespace Citron.Test.Misc
             Debug.Assert(funcRetHolder != null);
 
             // funcParamsHolder가 있을 경우, Count는 0이 아니어야 한다
-            Debug.Assert(funcParamsHolder != null && funcParamsBuilder.Count == 0);
+            Debug.Assert(funcParamsHolder == null || funcParamsBuilder.Count == 0);
 
             if (funcParamsHolder == null)
                 funcParamsHolder = funcParamsBuilder.ToImmutable().ToHolder();

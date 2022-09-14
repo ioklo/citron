@@ -8,10 +8,23 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using M = Citron.Module;
+
 namespace Citron.Analysis
 {
     static class Misc
     {
+        public static M.FuncParameterKind ToFuncParameterKind(this FuncParamKind kind)
+        {
+            return kind switch
+            {
+                FuncParamKind.Normal => M.FuncParameterKind.Default,
+                FuncParamKind.Params => M.FuncParameterKind.Params,
+                FuncParamKind.Ref => M.FuncParameterKind.Ref,
+                _ => throw new UnreachableCodeException()
+            };
+        }
+
         public static TypeExpInfoKind GetTypeExpInfoKind(this SkeletonKind kind)
         {
             switch (kind)

@@ -16,6 +16,7 @@ namespace Citron.Symbol
 
         AccessModifier accessModifier;
         IHolder<FuncReturn> returnHolder;
+        DeclSymbolNodeName nodeName;
         Name name;
 
         ImmutableArray<TypeVarDeclSymbol> typeParams;
@@ -29,13 +30,18 @@ namespace Citron.Symbol
             => lambdaDeclContainer.AddLambda(lambdaDecl);
 
         public GlobalFuncDeclSymbol(
-            IHolder<ITopLevelDeclSymbolNode> outerHolder, AccessModifier accessModifier, IHolder<FuncReturn> returnHolder, 
-            Name name, ImmutableArray<TypeVarDeclSymbol> typeParams, IHolder<ImmutableArray<FuncParameter>> parametersHolder, bool bInternal, ImmutableArray<LambdaDeclSymbol> lambdaDecls)
+            IHolder<ITopLevelDeclSymbolNode> outerHolder, AccessModifier accessModifier, 
+            IHolder<FuncReturn> returnHolder,
+            DeclSymbolNodeName nodeName,
+            ImmutableArray<TypeVarDeclSymbol> typeParams, 
+            IHolder<ImmutableArray<FuncParameter>> parametersHolder, 
+            bool bInternal, 
+            ImmutableArray<LambdaDeclSymbol> lambdaDecls)
         {
             this.outerHolder = outerHolder;
             this.accessModifier = accessModifier;
             this.returnHolder = returnHolder;
-            this.name = name;
+            this.nodeName = nodeName;
             this.typeParams = typeParams;
             this.parametersHolder = parametersHolder;
             this.bInternal = bInternal;

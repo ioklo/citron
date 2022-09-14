@@ -11,41 +11,41 @@ using Citron.Symbol;
 namespace Citron.Analysis
 {
     // DeclSymbolPath -> TypeSkeleton
-    class SkeletonRepository
-    {
-        ImmutableDictionary<DeclSymbolPath, Skeleton> allMembers;
+    //class SkeletonRepository
+    //{
+    //    ImmutableDictionary<DeclSymbolPath, Skeleton> allMembers;
 
-        public static SkeletonRepository Build(ImmutableArray<Skeleton> rootMembers)
-        {
-            var allMembersBuilder = ImmutableDictionary.CreateBuilder<DeclSymbolPath, Skeleton>();            
+    //    public static SkeletonRepository Build(ImmutableArray<Skeleton> rootMembers)
+    //    {
+    //        var allMembersBuilder = ImmutableDictionary.CreateBuilder<DeclSymbolPath, Skeleton>();            
 
-            foreach (var rootMember in rootMembers)
-            {
-                FillChild(allMembersBuilder, rootMember);
+    //        foreach (var rootMember in rootMembers)
+    //        {
+    //            FillChild(allMembersBuilder, rootMember);
 
-                allMembersBuilder.Add(rootMember.Path, rootMember);
-            }
+    //            allMembersBuilder.Add(rootMember.Path, rootMember);
+    //        }
 
-            return new SkeletonRepository(allMembersBuilder.ToImmutable());
-        }
+    //        return new SkeletonRepository(allMembersBuilder.ToImmutable());
+    //    }
 
-        static void FillChild(ImmutableDictionary<DeclSymbolPath, Skeleton>.Builder builder, Skeleton skel)
-        {
-            foreach (var elem in skel.GetAllMembers())
-            {
-                FillChild(builder, elem);
-                builder.Add(skel.Path, skel);
-            }
-        }
+    //    static void FillChild(ImmutableDictionary<DeclSymbolPath, Skeleton>.Builder builder, Skeleton skel)
+    //    {
+    //        foreach (var elem in skel.GetAllMembers())
+    //        {
+    //            FillChild(builder, elem);
+    //            builder.Add(skel.Path, skel);
+    //        }
+    //    }
 
-        SkeletonRepository(ImmutableDictionary<DeclSymbolPath, Skeleton> allMembers)
-        {
-            this.allMembers = allMembers;
-        }
+    //    SkeletonRepository(ImmutableDictionary<DeclSymbolPath, Skeleton> allMembers)
+    //    {
+    //        this.allMembers = allMembers;
+    //    }
 
-        public Skeleton? GetTypeSkeleton(DeclSymbolPath path)
-        {
-            return allMembers.GetValueOrDefault(path);
-        }
-    }
+    //    public Skeleton? GetTypeSkeleton(DeclSymbolPath path)
+    //    {
+    //        return allMembers.GetValueOrDefault(path);
+    //    }
+    //}
 }

@@ -10,7 +10,7 @@ namespace Citron.Module
     }
 
     public static class FuncParameterKindExtensions
-    {
+    {   
         public static FuncParameterKind MakeFuncParameterKind(this ParamKind kind)
         {
             return kind switch
