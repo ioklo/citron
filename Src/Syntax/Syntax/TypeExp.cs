@@ -11,17 +11,18 @@ namespace Citron.Syntax
     public abstract record TypeExp : ISyntaxNode
     {
         TypeExpInfo? info;
-        
-        public TypeExpInfo Info
+
+        public void SetTypeExpInfo(TypeExpInfo info)
         {
-            get 
-            {
-                if (info == null)
-                    throw new NullReferenceException();
-                
-                return info; 
-            } // valid after TypeExpEvaluationPhase
-            set { info = value; }
+            this.info = info;
+        }
+
+        public TypeExpInfo GetTypeExpInfo()
+        {
+            if (info == null)
+                throw new NullReferenceException();
+
+            return info;
         }
     }
 

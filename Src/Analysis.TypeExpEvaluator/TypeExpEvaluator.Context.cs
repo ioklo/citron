@@ -38,11 +38,6 @@ namespace Citron.Analysis
                 throw new FatalException();
             }
 
-            public void AddInfo(S.TypeExp exp, S.TypeExpInfo info)
-            {
-                exp.Info = info;
-            }
-
             public IEnumerable<(ModuleSymbolId, ITypeDeclSymbol)> QuerySymbolsOnReference(SymbolPath path)
             {
                 var declPath = path.GetDeclSymbolPath();

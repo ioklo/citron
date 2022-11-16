@@ -46,14 +46,15 @@ namespace Citron.Analysis
                 return instance;
             }
         }
-            
-        public ISymbolNode Load(SymbolId id)
+
+        // TypeVar때문에 환경을 알고 있어야 한다
+        public ISymbolNode Load(TypeEnv typeEnv, SymbolId id)
         {
-            switch(id)
+            switch (id)
             {
                 case ModuleSymbolId moduleId:
                     foreach (var moduleDecl in moduleDecls)
-                        if (moduleDecl.Equals(moduleId.ModuleName))
+                        if (moduleDecl.GetName().Equals(moduleId.ModuleName))
                             return LoadPath(moduleDecl, moduleId.Path);
 
                     throw new NotImplementedException(); // 에러 처리
@@ -61,11 +62,21 @@ namespace Citron.Analysis
                 case VarSymbolId:
                     return factory.MakeVar();
 
-                case NullableSymbolId nullableId:                        
+                case NullableSymbolId nullableId:
                     throw new NotImplementedException(); // NullableSymbol
 
-                case VoidSymbolId voidId:
-                    throw new NotImplementedException(); // VoidSymbol
+                case VoidSymbolId:
+                    return factory.MakeVoid();
+
+                // class C<T> { class D<U> { "여기를 분석할 때" } }
+                // 분석중인 Decl환경에서 C<T>.D<U>
+                // TypeVarSymbolId는 index만 갖고 있다 (1이면 U이다)
+                // 그럼 지금 위치 (C<T>.D<U>)를 넘겨주던가
+                // [T, U] 리스트를 넘겨주던가 해야한다
+                case TypeVarSymbolId typeVarId: // 3이러면 어떻게 아는가
+                    factory.MakeTypeVar()
+                    typeId = env.GetTypeId(typeVarId.Index);
+                    break;
 
                 default:
                     throw new UnreachableCodeException();

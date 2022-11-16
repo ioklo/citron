@@ -59,12 +59,12 @@ namespace Citron.Test.Misc
         public StructConstructorDeclBuilder<TOuterBuilder> FuncParameter(FuncParameterKind kind, ITypeSymbol type, Name name)
             => funcRetParamsComponent.FuncParameter(kind, type, name);
 
-        public StructConstructorDeclBuilder<TOuterBuilder> FuncParametersHolder(out Holder<ImmutableArray<FuncParameter>> funcParamsHolder)
-            => funcRetParamsComponent.FuncParametersHolder(out funcParamsHolder);
+        public StructConstructorDeclBuilder<TOuterBuilder> FuncParametersHolder(ImmutableArray<FuncParamId> paramIds, out Holder<ImmutableArray<FuncParameter>> funcParamsHolder)
+            => funcRetParamsComponent.FuncParametersHolder(paramIds, out funcParamsHolder);
 
         public TOuterBuilder EndConstructor(out StructConstructorDeclSymbol constructorDecl)
         {
-            var paramsHolder = funcRetParamsComponent.GetParamsHolderOnly();
+            var (paramIds, paramsHolder) = funcRetParamsComponent.GetParamsOnly();
             var lambdaDecls = lambdaComponent.MakeLambdaDecls();
 
             constructorDecl = new StructConstructorDeclSymbol(outerHolder, accessModifier, paramsHolder, bTrivial, lambdaDecls);

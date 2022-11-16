@@ -45,7 +45,10 @@ namespace Citron.IR0
         public Script Script(Name moduleName, ImmutableArray<Stmt> topLevelStmts)
         {
             var moduleDeclHolder = new Holder<ModuleDeclSymbol>();
-            var topLevelFuncDecl = new GlobalFuncDeclSymbol(moduleDeclHolder, AccessModifier.Public, new Holder<FuncReturn>(new FuncReturn(false, intType)), Name.TopLevel, typeParams: default,
+            var topLevelFuncDecl = new GlobalFuncDeclSymbol(
+                moduleDeclHolder, 
+                AccessModifier.Public, 
+                new Holder<FuncReturn>(new FuncReturn(false, intType)), Name.TopLevel, typeParams: default, paramIds: default,
                 new Holder<ImmutableArray<FuncParameter>>(default), true, lambdaDecls: default);
 
             var moduleDecl = new ModuleDeclSymbol(moduleName, default, default, Arr(topLevelFuncDecl));

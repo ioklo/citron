@@ -70,8 +70,8 @@ namespace Citron.Test.Misc
         public GlobalFuncDeclBuilder<TOuterBuilder> FuncParameter(FuncParameterKind kind, ITypeSymbol type, Name name)
             => funcRetParamsComponent.FuncParameter(kind, type, name);
 
-        public GlobalFuncDeclBuilder<TOuterBuilder> FuncParametersHolder(out Holder<ImmutableArray<FuncParameter>> funcParamsHolder)
-            => funcRetParamsComponent.FuncParametersHolder(out funcParamsHolder);
+        public GlobalFuncDeclBuilder<TOuterBuilder> FuncParametersHolder(ImmutableArray<FuncParamId> paramIds, out Holder<ImmutableArray<FuncParameter>> funcParamsHolder)
+            => funcRetParamsComponent.FuncParametersHolder(paramIds, out funcParamsHolder);
 
         // sugar
         public TOuterBuilder EndTopLevelFunc(out GlobalFuncDeclSymbol topLevelFuncDecl)
@@ -79,14 +79,14 @@ namespace Citron.Test.Misc
 
         public TOuterBuilder EndGlobalFunc(out GlobalFuncDeclSymbol globalFuncDecl)
         {
-            var (funcRetHolder, funcParamsHolder) = funcRetParamsComponent.Get();
+            var (funcRetHolder, funcParamIds, funcParamsHolder) = funcRetParamsComponent.Get();
 
             var typeParams = typeParamComponent.MakeTypeParams();
             var lambdaDecls = lambdaComponent.MakeLambdaDecls();
 
             globalFuncDecl = new GlobalFuncDeclSymbol(
                 outerHolder, accessModifier, funcRetHolder,
-                funcName, typeParams, funcParamsHolder, bInternal, lambdaDecls);
+                funcName, typeParams, funcParamIds, funcParamsHolder, bInternal, lambdaDecls);
             
             globalFuncDeclHolder.SetValue(globalFuncDecl);
             globalFuncDeclsBuilder.Add(globalFuncDecl);

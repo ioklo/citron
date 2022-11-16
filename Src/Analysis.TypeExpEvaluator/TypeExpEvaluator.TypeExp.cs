@@ -276,7 +276,7 @@ namespace Citron.Analysis
                 try
                 {
                     var result = VisitTypeExp(exp);
-                    globalContext.AddInfo(exp, result);
+                    exp.SetTypeExpInfo(result);
                     return result;
                 }
                 catch (FatalException)

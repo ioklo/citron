@@ -27,7 +27,9 @@ namespace Citron.Test.Misc
         {
             globalFuncDecl = new GlobalFuncDeclSymbol(
                 outerHolder, AccessModifier.Public,
-                new Holder<FuncReturn>(new FuncReturn(false, retType)), new Name.Normal(funcName), default,
+                new Holder<FuncReturn>(new FuncReturn(false, retType)), new Name.Normal(funcName), 
+                typeParams: default,
+                paramIds: default,
                 new Holder<ImmutableArray<FuncParameter>>(default),
                 bInternal: true,
                 lambdaDecls: default
@@ -42,8 +44,8 @@ namespace Citron.Test.Misc
         {
             globalFuncDecl = new GlobalFuncDeclSymbol(
                 outerHolder, AccessModifier.Public,
-                new Holder<FuncReturn>(new FuncReturn(false, retType)), new Name.Normal(funcName), default,
-
+                new Holder<FuncReturn>(new FuncReturn(false, retType)), new Name.Normal(funcName), 
+                typeParams: default, paramIds: default,
                 new Holder<ImmutableArray<FuncParameter>>(Arr<FuncParameter>(new FuncParameter(FuncParameterKind.Default, paramType, new Name.Normal(paramName)))),
                 bInternal: true,
                 lambdaDecls: default
@@ -59,7 +61,8 @@ namespace Citron.Test.Misc
         {
             globalFuncDecl = new GlobalFuncDeclSymbol(
                 outerHolder, AccessModifier.Public,
-                funcReturnHolder, new Name.Normal(funcName), default,
+                funcReturnHolder, new Name.Normal(funcName), 
+                typeParams: default, paramIds: default,
                 funcParametersHolder,
                 bInternal: true,
                 lambdaDecls: default

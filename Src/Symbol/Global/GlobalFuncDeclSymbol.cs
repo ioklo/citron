@@ -17,7 +17,6 @@ namespace Citron.Symbol
         AccessModifier accessModifier;
         IHolder<FuncReturn> returnHolder;
         DeclSymbolNodeName nodeName;
-        Name name;
 
         ImmutableArray<TypeVarDeclSymbol> typeParams;
         IHolder<ImmutableArray<FuncParameter>> parametersHolder;
@@ -32,8 +31,9 @@ namespace Citron.Symbol
         public GlobalFuncDeclSymbol(
             IHolder<ITopLevelDeclSymbolNode> outerHolder, AccessModifier accessModifier, 
             IHolder<FuncReturn> returnHolder,
-            DeclSymbolNodeName nodeName,
-            ImmutableArray<TypeVarDeclSymbol> typeParams, 
+            Name name,            
+            ImmutableArray<TypeVarDeclSymbol> typeParams,
+            ImmutableArray<FuncParamId> paramIds, // 이름을 만들 용도로 미리 받아놔야 한다
             IHolder<ImmutableArray<FuncParameter>> parametersHolder, 
             bool bInternal, 
             ImmutableArray<LambdaDeclSymbol> lambdaDecls)
@@ -41,7 +41,7 @@ namespace Citron.Symbol
             this.outerHolder = outerHolder;
             this.accessModifier = accessModifier;
             this.returnHolder = returnHolder;
-            this.nodeName = nodeName;
+            this.nodeName = new DeclSymbolNodeName(name, typeParams.Length, paramIds);
             this.typeParams = typeParams;
             this.parametersHolder = parametersHolder;
             this.bInternal = bInternal;
@@ -55,7 +55,7 @@ namespace Citron.Symbol
 
         public DeclSymbolNodeName GetNodeName()
         {
-            return new DeclSymbolNodeName(name, typeParams.Length, parametersHolder.GetValue().MakeFuncParamIds());
+            return nodeName;
         }
         
         public int GetParameterCount()

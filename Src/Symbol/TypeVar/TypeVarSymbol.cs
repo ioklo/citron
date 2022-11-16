@@ -6,7 +6,7 @@ using Citron.Module;
 namespace Citron.Symbol
 {
     // TypeVar
-    // 두개의 안중 1안을 선택한다
+    // 두개의 안중 2안을 선택한다
     // void Func<T>(T t); 의 시그니처
     // 1. Func<T>.T Func<T>(Func<T>.T t)
     // 2. Func<>.T Func<T>(Func<>.T t)

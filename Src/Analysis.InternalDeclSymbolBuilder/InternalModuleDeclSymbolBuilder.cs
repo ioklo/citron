@@ -34,9 +34,10 @@ namespace Citron.Analysis
             SymbolLoader loader;
 
             // reference, internal 가리지 않고 리턴한다
-            public ITypeSymbol GetTypeSymbolNode(S.TypeExp typeExp) // throw FatalException
+            public ITypeSymbol GetTypeSymbolNode(S.TypeExp typeExp) 
             {
-                var symbol = loader.Load(typeExp.Info.GetSymbolId()) as ITypeSymbol;
+                var typeExpInfo = typeExp.GetTypeExpInfo();
+                var symbol = loader.Load(typeExpInfo.GetSymbolId()) as ITypeSymbol;
 
                 if (symbol == null)
                     throw new NotImplementedException(); // 에러 처리
@@ -970,7 +971,9 @@ namespace Citron.Analysis
 
         GlobalFuncDeclSymbol BuildGlobalFunc(DeclSymbolId outerId, IHolder<ITopLevelDeclSymbolNode> outerHolder, S.GlobalFuncDecl decl) // throw FatalException        
         {
-            var thisId = outerId.Child(new M.Name.Normal(decl.Name), decl.TypeParams.Length, MakeFuncParamIds(decl.Parameters));
+            var funcIds = MakeFuncParamIds(decl.Parameters);
+
+            var thisId = outerId.Child(new M.Name.Normal(decl.Name), decl.TypeParams.Length, funcIds);
             var funcHolder = new Holder<GlobalFuncDeclSymbol>();
             var returnHolder = new Holder<FuncReturn>();
             var parametersHolder = new Holder<ImmutableArray<FuncParameter>>();
@@ -988,7 +991,17 @@ namespace Citron.Analysis
 
             var accessModifier = MakeGlobalAccessModifier(decl.AccessModifier);
             
-            var func = new GlobalFuncDeclSymbol(outerHolder, accessModifier, returnHolder, new M.Name.Normal(decl.Name), typeVarDecls, parametersHolder, bInternal: true, lambdaDecls: default);
+            var func = new GlobalFuncDeclSymbol(
+                outerHolder, 
+                accessModifier, 
+                returnHolder, 
+                new M.Name.Normal(decl.Name), 
+                typeVarDecls,
+                funcIds,
+                parametersHolder, 
+                bInternal: true, 
+                lambdaDecls: default);
+
             funcHolder.SetValue(func);
             return func;
         }

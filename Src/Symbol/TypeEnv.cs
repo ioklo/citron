@@ -7,6 +7,9 @@ using Citron.Module;
 
 namespace Citron.Symbol
 {    
+    // decl type env
+    // 코드 decl/body에 나타나는 TypeEnv만을 가리킨다 그건 TypeVar만 있을 것이다
+    // 실행중에는 runtime type env
     public struct TypeEnv
     {
         ImmutableArray<ITypeSymbol> data;

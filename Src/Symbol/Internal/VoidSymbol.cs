@@ -11,7 +11,8 @@ namespace Citron.Symbol
         IDeclSymbolNode? ISymbolNode.GetDeclSymbolNode() => GetDeclSymbolNode();
         ISymbolNode ISymbolNode.Apply(TypeEnv typeEnv) => Apply(typeEnv);
 
-        internal VoidSymbol() { }
+        // symbolFactory.MakeVoid로 생성하세요
+        internal VoidSymbol() { } 
 
         public ITypeSymbol Apply(TypeEnv typeEnv)
         {

@@ -111,8 +111,8 @@ namespace Citron.IR0Translator.Test
             Debug.Assert(result != null);
 
             // var paramTypes = new M.ParamTypes(Arr(new M.ParamKindAndType(M.ParamKind.Ref, new M.TypeVarTypeId(0, "T"))));
-            var paramId = new FuncParamId(M.FuncParameterKind.Ref, new TypeVarSymbolId(0));
-            var path = new DeclSymbolPath(null, NormalName("Func"), 1, Arr(paramId));
+            var paramIds = Arr(new FuncParamId(M.FuncParameterKind.Ref, new TypeVarSymbolId(0)));
+            var path = new DeclSymbolPath(null, NormalName("Func"), 1, paramIds);
 
             var resultDecl = result.GetDeclSymbol(path) as GlobalFuncDeclSymbol;
             Debug.Assert(resultDecl != null);
@@ -122,7 +122,7 @@ namespace Citron.IR0Translator.Test
                 .BeginGlobalFunc(M.AccessModifier.Private, NormalName("Func"), bInternal: true)
                     .TypeParam("T", out var typeVarDecl)
                     .FuncReturnHolder(out var funcRetHolder)
-                    .FuncParametersHolder(out var funcParamsHolder)
+                    .FuncParametersHolder(paramIds, out var funcParamsHolder)
                 .EndGlobalFunc(out var globalFuncDecl)
                 .Make();
 
@@ -155,14 +155,16 @@ namespace Citron.IR0Translator.Test
 
             var result = Build(NormalName("TestModule"), script);
 
+            var paramIds = Arr(
+                new FuncParamId(M.FuncParameterKind.Default, SymbolId.Int),
+                new FuncParamId(M.FuncParameterKind.Params, new TypeVarSymbolId(1)),
+                new FuncParamId(M.FuncParameterKind.Ref, new TypeVarSymbolId(0))
+            );
+
             var path = new DeclSymbolPath(
                 null, 
                 NormalName("Func"), 2, 
-                Arr(
-                    new FuncParamId(M.FuncParameterKind.Default, SymbolId.Int),
-                    new FuncParamId(M.FuncParameterKind.Params, new TypeVarSymbolId(1)),
-                    new FuncParamId(M.FuncParameterKind.Ref, new TypeVarSymbolId(0))
-                )
+                paramIds
             );
 
             var resultDecl = result.GetDeclSymbol(path) as GlobalFuncDeclSymbol;
@@ -174,7 +176,7 @@ namespace Citron.IR0Translator.Test
                     .TypeParam("T", out var tDecl)
                     .TypeParam("U", out var uDecl)
                     .FuncReturn(isRef: false, voidType)
-                    .FuncParametersHolder(out var paramsHolder)
+                    .FuncParametersHolder(paramIds, out var paramsHolder)
                 .EndGlobalFunc(out var expectedGlobalFuncDecl)
                 .Make();
 
@@ -241,17 +243,27 @@ namespace Citron.IR0Translator.Test
             var moduleName = NormalName("TestModule");
             var result = Build(moduleName, script);
 
+            var s_intId = new ModuleSymbolId(moduleName, new SymbolPath(null, NormalName("S"), Arr(SymbolId.Int)));
+            var uId = new TypeVarSymbolId(2);
+
+            var funcParamIds = Arr(
+                new FuncParamId(M.FuncParameterKind.Default, s_intId),
+                new FuncParamId(M.FuncParameterKind.Default, uId)
+            );
+
             // var trivialConstructor = new InternalModuleConstructorInfo(M.AccessModifier.Public, Arr(new M.Param(M.ParamKind.Default, IntMType, NormalName("x")), new M.Param(M.ParamKind.Default, IntMType, NormalName("y"))));
 
             var expected = new ModuleDeclBuilder(factory, moduleName)
                 .BeginStruct(M.AccessModifier.Public, "S")
                     .TypeParam("T", out var _)
                     .BaseHolder(out var baseHolder) // B<int>
+
+                    // private static T Func<T, U>(S<int> s, U u) { }
                     .BeginFunc(M.AccessModifier.Private, bStatic: false, NormalName("Func"))
                         .TypeParam("T", out var typeVarFuncTDecl)
                         .TypeParam("U", out var typeVarFuncUDecl)
                         .FuncReturnHolder(out var funcRetHolder)
-                        .FuncParametersHolder(out var funcParamsHolder)
+                        .FuncParametersHolder(funcParamIds, out var funcParamsHolder)
                     .EndFunc(out var _)
                     .Var(M.AccessModifier.Protected, bStatic: false, intType.ToHolder(), NormalName("x"))
                     .Var(M.AccessModifier.Protected, bStatic: false, intType.ToHolder(), NormalName("y"))

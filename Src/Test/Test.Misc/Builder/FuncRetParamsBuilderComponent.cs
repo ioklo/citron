@@ -7,21 +7,35 @@ using System.Diagnostics;
 
 namespace Citron.Test.Misc
 {
-    internal class FuncRetParamsBuilderComponent<TBuilder>
+    // closed state
+    internal partial class FuncRetParamsBuilderComponent<TBuilder>
     {
-        TBuilder builder;
+        // 함수 파라미터 입력에 관한 상태
+        abstract record FuncParamState;
+
+        // 1. 아무것도 안한 경우 (처음), 직접 입력하거나 Holder를 발급 받거나, 파라미터가 없는 상태로 둘수 있다
+        record NoneFuncParamState : FuncParamState;
+
+        // 2. Holder를 발급 받은 경우, 직접 입력했었으면 에러.
+        record HolderFuncParamState(ImmutableArray<FuncParamId> ParamIds, IHolder<ImmutableArray<FuncParameter>> Holder) : FuncParamState;
+
+        // 3. 직접 입력하는 경우, Holder를 발급받았으면 에러.
+        record EagerFuncParamState(ImmutableArray<FuncParameter>.Builder Builder) : FuncParamState;
+    }
+
+    internal partial class FuncRetParamsBuilderComponent<TBuilder>
+    {
+        TBuilder builder;        
 
         IHolder<FuncReturn>? funcRetHolder;
-        IHolder<ImmutableArray<FuncParameter>>? funcParamsHolder;
-        ImmutableArray<FuncParameter>.Builder funcParamsBuilder;
+        FuncParamState funcParamState;
 
         internal FuncRetParamsBuilderComponent(TBuilder builder)
         {
             this.builder = builder;
 
             this.funcRetHolder = null;
-            this.funcParamsHolder = null;
-            this.funcParamsBuilder = ImmutableArray.CreateBuilder<FuncParameter>();
+            this.funcParamState = new NoneFuncParamState();
         }
 
         public TBuilder FuncReturn(bool isRef, ITypeSymbol type)
@@ -38,50 +52,81 @@ namespace Citron.Test.Misc
             this.funcRetHolder = funcRetHolder;
             return builder;
         }
-
+        
+        // FuncParameter를 명시합니다
         public TBuilder FuncParameter(FuncParameterKind kind, ITypeSymbol type, Name name)
         {
-            Debug.Assert(this.funcParamsHolder == null);
+            switch(funcParamState)
+            {
+                case NoneFuncParamState:
+                    {
+                        var builder = ImmutableArray.CreateBuilder<FuncParameter>();
+                        funcParamState = new EagerFuncParamState(builder);
 
-            var parameter = new FuncParameter(kind, type, name);
-            funcParamsBuilder.Add(parameter);
+                        var parameter = new FuncParameter(kind, type, name);
+                        builder.Add(parameter);
+                        break;
+                    }
+
+                case HolderFuncParamState:
+                    Debug.Assert(false);
+                    break;
+
+                case EagerFuncParamState explicitState:
+                    {
+                        var parameter = new FuncParameter(kind, type, name);
+                        explicitState.Builder.Add(parameter);
+                        break;
+                    }
+
+                default:
+                    throw new UnreachableCodeException();
+            }
+
             return builder;
         }
 
-        public TBuilder FuncParametersHolder(out Holder<ImmutableArray<FuncParameter>> funcParamsHolder)
+        // Parameter자체는 나중에 제공하더라도, 파라미터 id는 먼저 제공해야 한다
+        public TBuilder FuncParametersHolder(ImmutableArray<FuncParamId> paramIds, out Holder<ImmutableArray<FuncParameter>> funcParamsHolder)
         {
-            Debug.Assert(this.funcParamsBuilder.Count == 0);
-            Debug.Assert(this.funcParamsHolder == null);
+            if (funcParamState is not NoneFuncParamState)
+                Debug.Assert(false);            
 
             funcParamsHolder = new Holder<ImmutableArray<FuncParameter>>();
-            this.funcParamsHolder = funcParamsHolder;
+            funcParamState = new HolderFuncParamState(paramIds, funcParamsHolder);
 
             return builder;
         }
 
         // constructor의 경우, Return이 없으므로
-        public IHolder<ImmutableArray<FuncParameter>> GetParamsHolderOnly()
+        public (ImmutableArray<FuncParamId> ParamIds, IHolder<ImmutableArray<FuncParameter>> FuncParam) GetParamsOnly()
         {
-            // funcParamsHolder가 있을 경우, Count는 0이 아니어야 한다
-            Debug.Assert(funcParamsHolder != null && funcParamsBuilder.Count == 0);
+            switch(funcParamState)
+            {
+                case NoneFuncParamState:
+                    return (default, new Holder<ImmutableArray<FuncParameter>>(default));
 
-            if (funcParamsHolder == null)
-                funcParamsHolder = funcParamsBuilder.ToImmutable().ToHolder();
+                case HolderFuncParamState holderState:
+                    return (holderState.ParamIds, holderState.Holder);
 
-            return funcParamsHolder;
+                case EagerFuncParamState explicitState:
+                    {
+                        var funcParams = explicitState.Builder.ToImmutable();
+                        var paramIds = funcParams.MakeFuncParamIds();
+                        return (paramIds, funcParams.ToHolder());
+                    }
+
+                default:
+                    throw new UnreachableCodeException();
+            }
         }
 
-        public (IHolder<FuncReturn> RetHolder, IHolder<ImmutableArray<FuncParameter>> ParamsHolder) Get()
+        public (IHolder<FuncReturn> RetHolder, ImmutableArray<FuncParamId> ParamIds, IHolder<ImmutableArray<FuncParameter>> ParamsHolder) Get()
         {
             Debug.Assert(funcRetHolder != null);
+            var (paramIds, paramsHolder) = GetParamsOnly();
 
-            // funcParamsHolder가 있을 경우, Count는 0이 아니어야 한다
-            Debug.Assert(funcParamsHolder == null || funcParamsBuilder.Count == 0);
-
-            if (funcParamsHolder == null)
-                funcParamsHolder = funcParamsBuilder.ToImmutable().ToHolder();
-
-            return (funcRetHolder, funcParamsHolder);
+            return (funcRetHolder, paramIds, paramsHolder);
         }
     }
 }

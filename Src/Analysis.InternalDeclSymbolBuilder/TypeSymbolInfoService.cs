@@ -11,7 +11,8 @@ namespace Citron.Analysis
 
         public ITypeSymbol? GetSymbol(S.TypeExp typeExp)
         {
-            var symbolId = typeExp.Info.GetSymbolId();
+            var typeExpInfo = typeExp.GetTypeExpInfo();
+            var symbolId = typeExpInfo.GetSymbolId();
             return loader.Load(symbolId) as ITypeSymbol;
         }
     }
