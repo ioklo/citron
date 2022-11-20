@@ -36,7 +36,7 @@ namespace Citron.Syntax
 
             Evaluate(script);
 
-            var info = intTypeExp.Info;            
+            var info = intTypeExp.GetTypeExpInfo();
 
             // 겉보기만 제대로 되면 된다
             Assert.Equal(TypeExpInfoKind.Struct, info.GetKind());
@@ -70,7 +70,7 @@ namespace Citron.Syntax
 
             Evaluate(script);
 
-            Assert.ThrowsAny<Exception>(() => innerTypeExp.Info);
+            Assert.ThrowsAny<Exception>(() => innerTypeExp.GetTypeExpInfo());
         }
     }
 }

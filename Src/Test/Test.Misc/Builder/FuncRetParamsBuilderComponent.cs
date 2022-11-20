@@ -99,21 +99,20 @@ namespace Citron.Test.Misc
         }
 
         // constructor의 경우, Return이 없으므로
-        public (ImmutableArray<FuncParamId> ParamIds, IHolder<ImmutableArray<FuncParameter>> FuncParam) GetParamsOnly()
+        public IHolder<ImmutableArray<FuncParameter>> GetParamsOnly()
         {
             switch(funcParamState)
             {
                 case NoneFuncParamState:
-                    return (default, new Holder<ImmutableArray<FuncParameter>>(default));
+                    return new Holder<ImmutableArray<FuncParameter>>(default);
 
                 case HolderFuncParamState holderState:
-                    return (holderState.ParamIds, holderState.Holder);
+                    return holderState.Holder;
 
                 case EagerFuncParamState explicitState:
                     {
                         var funcParams = explicitState.Builder.ToImmutable();
-                        var paramIds = funcParams.MakeFuncParamIds();
-                        return (paramIds, funcParams.ToHolder());
+                        return funcParams.ToHolder();
                     }
 
                 default:
@@ -121,12 +120,12 @@ namespace Citron.Test.Misc
             }
         }
 
-        public (IHolder<FuncReturn> RetHolder, ImmutableArray<FuncParamId> ParamIds, IHolder<ImmutableArray<FuncParameter>> ParamsHolder) Get()
+        public (IHolder<FuncReturn> RetHolder, IHolder<ImmutableArray<FuncParameter>> ParamsHolder) Get()
         {
             Debug.Assert(funcRetHolder != null);
-            var (paramIds, paramsHolder) = GetParamsOnly();
+            var paramsHolder = GetParamsOnly();
 
-            return (funcRetHolder, paramIds, paramsHolder);
+            return (funcRetHolder, paramsHolder);
         }
     }
 }

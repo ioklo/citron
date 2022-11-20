@@ -79,14 +79,14 @@ namespace Citron.Test.Misc
 
         public TOuterBuilder EndGlobalFunc(out GlobalFuncDeclSymbol globalFuncDecl)
         {
-            var (funcRetHolder, funcParamIds, funcParamsHolder) = funcRetParamsComponent.Get();
+            var (funcRetHolder, funcParamsHolder) = funcRetParamsComponent.Get();
 
             var typeParams = typeParamComponent.MakeTypeParams();
             var lambdaDecls = lambdaComponent.MakeLambdaDecls();
 
             globalFuncDecl = new GlobalFuncDeclSymbol(
                 outerHolder, accessModifier, funcRetHolder,
-                funcName, typeParams, funcParamIds, funcParamsHolder, bInternal, lambdaDecls);
+                funcName, typeParams, funcParamsHolder, bInternal, lambdaDecls);
             
             globalFuncDeclHolder.SetValue(globalFuncDecl);
             globalFuncDeclsBuilder.Add(globalFuncDecl);

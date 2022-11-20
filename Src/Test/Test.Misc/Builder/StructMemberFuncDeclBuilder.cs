@@ -69,7 +69,7 @@ namespace Citron.Test.Misc
         public TOuterBuilder EndFunc(out StructMemberFuncDeclSymbol funcDecl)
         {
             var typeParams = typeParamComponent.MakeTypeParams();
-            var (retHolder, paramIds, paramsHolder) = funcRetParamsComponent.Get();
+            var (retHolder, paramsHolder) = funcRetParamsComponent.Get();
             var lambdaDecls = lambdaComponent.MakeLambdaDecls();
 
             funcDecl = new StructMemberFuncDeclSymbol(outerHolder, accessModifier, bStatic, retHolder, name, typeParams, paramsHolder, lambdaDecls);

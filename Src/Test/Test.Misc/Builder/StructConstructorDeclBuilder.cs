@@ -64,7 +64,7 @@ namespace Citron.Test.Misc
 
         public TOuterBuilder EndConstructor(out StructConstructorDeclSymbol constructorDecl)
         {
-            var (paramIds, paramsHolder) = funcRetParamsComponent.GetParamsOnly();
+            var paramsHolder = funcRetParamsComponent.GetParamsOnly();
             var lambdaDecls = lambdaComponent.MakeLambdaDecls();
 
             constructorDecl = new StructConstructorDeclSymbol(outerHolder, accessModifier, paramsHolder, bTrivial, lambdaDecls);

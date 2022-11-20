@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Citron.Collections;
 
@@ -11,7 +12,7 @@ namespace Citron.Symbol
     {
         ImmutableDictionary<Name, NamespaceDeclSymbol> namespaceDict;
         TypeDict globalTypeDict;
-        FuncDict<GlobalFuncDeclSymbol> globalFuncDict;        
+        Lazy<FuncDict<GlobalFuncDeclSymbol>> lazyGlobalFuncDict;        
 
         public TopLevelDeclDict(ImmutableArray<NamespaceDeclSymbol> namespaces, ImmutableArray<ITypeDeclSymbol> types, ImmutableArray<GlobalFuncDeclSymbol> funcs)
         {
@@ -21,12 +22,12 @@ namespace Citron.Symbol
 
             this.namespaceDict = builder.ToImmutable();
             this.globalTypeDict = TypeDict.Build(typeVars: default, types); // TopLevel에는 TypeVar가 없다
-            this.globalFuncDict = FuncDict.Build(funcs);
+            this.lazyGlobalFuncDict = new Lazy<FuncDict<GlobalFuncDeclSymbol>>(() => FuncDict.Build(funcs));
         }
 
         public ImmutableArray<GlobalFuncDeclSymbol> GetFuncs(Name name, int minTypeParamCount)
         {
-            return globalFuncDict.Get(name, minTypeParamCount);
+            return lazyGlobalFuncDict.Value.Get(name, minTypeParamCount);
         }
 
         public ITypeDeclSymbol? GetType(Name name, int typeParamCount)
@@ -36,14 +37,14 @@ namespace Citron.Symbol
 
         public GlobalFuncDeclSymbol? GetFunc(Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
         {
-            return globalFuncDict.Get(new DeclSymbolNodeName(name, typeParamCount, paramIds));
+            return lazyGlobalFuncDict.Value.Get(new DeclSymbolNodeName(name, typeParamCount, paramIds));
         }
 
         public IEnumerable<IDeclSymbolNode> GetMemberDeclNodes()
         {
             return namespaceDict.Values.OfType<IDeclSymbolNode>()
                 .Concat(globalTypeDict.GetEnumerable())
-                .Concat(globalFuncDict.GetEnumerable());
+                .Concat(lazyGlobalFuncDict.Value.GetEnumerable());
         }
     }
 }

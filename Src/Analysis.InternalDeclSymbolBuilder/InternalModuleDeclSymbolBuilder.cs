@@ -279,7 +279,7 @@ namespace Citron.Analysis
                     _ => throw new UnreachableCodeException()
                 };
 
-                var typeInfo = sfuncParam.Type.Info;
+                var typeInfo = sfuncParam.Type.GetTypeExpInfo();
                 var typeId = typeInfo.GetSymbolId();
 
                 builder.Add(new FuncParamId(paramKind, typeId));
@@ -466,7 +466,7 @@ namespace Citron.Analysis
             ImmutableArray<DeclSymbolId> dependsOnSymbolIds = default;
             if (baseStruct != null)
             {
-                if (baseStruct.Info.GetSymbolId() is ModuleSymbolId baseTypeModuleSymbolId)
+                if (baseStruct.GetTypeExpInfo().GetSymbolId() is ModuleSymbolId baseTypeModuleSymbolId)
                 {
                     var baseTypeDeclSymbolId = baseTypeModuleSymbolId.GetDeclSymbolId();
                     dependsOnSymbolIds = Arr(baseTypeDeclSymbolId);
@@ -842,7 +842,7 @@ namespace Citron.Analysis
             
             foreach (var baseType in decl.BaseTypes)
             {
-                var info = baseType.Info;
+                var info = baseType.GetTypeExpInfo();
 
                 switch (info.GetKind())
                 {
@@ -997,8 +997,7 @@ namespace Citron.Analysis
                 returnHolder, 
                 new M.Name.Normal(decl.Name), 
                 typeVarDecls,
-                funcIds,
-                parametersHolder, 
+                parametersHolder,
                 bInternal: true, 
                 lambdaDecls: default);
 

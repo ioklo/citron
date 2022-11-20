@@ -48,7 +48,7 @@ namespace Citron.Analysis
         }
 
         // TypeVar때문에 환경을 알고 있어야 한다
-        public ISymbolNode Load(TypeEnv typeEnv, SymbolId id)
+        public ISymbolNode Load(SymbolId id)
         {
             switch (id)
             {
@@ -74,9 +74,7 @@ namespace Citron.Analysis
                 // 그럼 지금 위치 (C<T>.D<U>)를 넘겨주던가
                 // [T, U] 리스트를 넘겨주던가 해야한다
                 case TypeVarSymbolId typeVarId: // 3이러면 어떻게 아는가
-                    factory.MakeTypeVar()
-                    typeId = env.GetTypeId(typeVarId.Index);
-                    break;
+                    throw new NotImplementedException();                    
 
                 default:
                     throw new UnreachableCodeException();

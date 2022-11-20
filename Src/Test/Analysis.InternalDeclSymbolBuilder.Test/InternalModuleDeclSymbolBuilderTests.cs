@@ -37,32 +37,26 @@ namespace Citron.IR0Translator.Test
         public InternalModuleDeclSymbolBuilderTests()
         {
             factory = new SymbolFactory();
-            try
-            {
-                runtimeModuleDecl = new ModuleDeclBuilder(factory, NormalName("System.Runtime"))
-                        .BeginNamespace("System")
-                            .Struct("Boolean", out var boolDecl)
-                            .Struct("Int32", out var intDecl)
-                            .Class("String", out var stringDecl)
-                            .BeginClass("List")
-                                .TypeParam("TItem", out var _)
-                            .EndClass(out var listTypeDecl)
-                        .EndNamespace(out var systemNSDecl)
-                        .Make();
+
+            runtimeModuleDecl = new ModuleDeclBuilder(factory, NormalName("System.Runtime"))
+                    .BeginNamespace("System")
+                        .Struct("Boolean", out var boolDecl)
+                        .Struct("Int32", out var intDecl)
+                        .Class("String", out var stringDecl)
+                        .BeginClass("List")
+                            .TypeParam("TItem", out var _)
+                        .EndClass(out var listTypeDecl)
+                    .EndNamespace(out var systemNSDecl)
+                    .Make();
 
 
-                var runtimeModule = factory.MakeModule(runtimeModuleDecl);
-                var systemNS = factory.MakeNamespace(runtimeModule, systemNSDecl);
+            var runtimeModule = factory.MakeModule(runtimeModuleDecl);
+            var systemNS = factory.MakeNamespace(runtimeModule, systemNSDecl);
 
-                boolType = factory.MakeStruct(systemNS, boolDecl, default);
-                intType = factory.MakeStruct(systemNS, intDecl, default);
-                stringType = factory.MakeClass(systemNS, stringDecl, default);
-                voidType = factory.MakeVoid();
-            }
-            catch(Exception e)
-            {
-
-            }
+            boolType = factory.MakeStruct(systemNS, boolDecl, default);
+            intType = factory.MakeStruct(systemNS, intDecl, default);
+            stringType = factory.MakeClass(systemNS, stringDecl, default);
+            voidType = factory.MakeVoid();
         }
 
         ModuleDeclSymbol Build(M.Name moduleName, S.Script script)

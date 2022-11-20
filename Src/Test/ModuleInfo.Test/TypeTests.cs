@@ -12,7 +12,7 @@ namespace Citron.Module
     {
         static Name N(string text)
         {
-            return N(text);
+            return new Name.Normal(text);
         }
 
         static NamespacePath NS(string name)
