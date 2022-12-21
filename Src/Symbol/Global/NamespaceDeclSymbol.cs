@@ -9,27 +9,23 @@ using System.Threading.Tasks;
 
 namespace Citron.Symbol
 {
-    public class NamespaceDeclSymbol : ITopLevelDeclSymbolNode
+    public class NamespaceDeclSymbol : ITopLevelDeclSymbolNode, ITopLevelDeclContainable
     {
-        IHolder<ITopLevelDeclSymbolNode> outer;
+        ITopLevelDeclSymbolNode outer;
         Name name;
-        TopLevelDeclDict dict;
 
-        public NamespaceDeclSymbol(IHolder<ITopLevelDeclSymbolNode> outer, Name name, ImmutableArray<NamespaceDeclSymbol> namespaces, ImmutableArray<ITypeDeclSymbol> types, ImmutableArray<GlobalFuncDeclSymbol> funcs)
+        TopLevelDeclSymbolComponent topLevelComp;
+
+        public NamespaceDeclSymbol(ITopLevelDeclSymbolNode outer, Name name)
         {
             this.outer = outer;
             this.name = name;
-            this.dict = new TopLevelDeclDict(namespaces, types, funcs);
-        }
-        
-        public IEnumerable<IDeclSymbolNode> GetMemberDeclNodes()
-        {
-            return dict.GetMemberDeclNodes();
+            this.topLevelComp = TopLevelDeclSymbolComponent.Make();
         }
 
         public IDeclSymbolNode? GetOuterDeclNode()
-        {
-            return outer.GetValue();
+        {   
+            return outer;
         }
 
         public Name GetName()
@@ -46,25 +42,31 @@ namespace Citron.Symbol
         {
             visitor.VisitNamespace(this);
         }
+        
+        public Accessor GetAccessor()
+        {
+            return Accessor.Public; // TODO: private으로 지정할 수 있을까
+        }
 
         public ITypeDeclSymbol? GetType(Name name, int typeParamCount)
-        {
-            return dict.GetType(name, typeParamCount);
-        }
+           => topLevelComp.GetType(name, typeParamCount);
 
         public GlobalFuncDeclSymbol? GetFunc(Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
-        {
-            return dict.GetFunc(name, typeParamCount, paramIds);
-        }
+            => topLevelComp.GetFunc(name, typeParamCount, paramIds);
 
-        public ImmutableArray<GlobalFuncDeclSymbol> GetFuncs(Name name, int minTypeParamCount)
-        {
-            return dict.GetFuncs(name, minTypeParamCount);
-        }
+        public IEnumerable<GlobalFuncDeclSymbol> GetFuncs(Name name, int minTypeParamCount)
+            => topLevelComp.GetFuncs(name, minTypeParamCount);
 
-        public AccessModifier GetAccessModifier()
-        {
-            return AccessModifier.Public; // TODO: private으로 지정할 수 있을까
-        }
+        public IEnumerable<IDeclSymbolNode> GetMemberDeclNodes()
+            => topLevelComp.GetMemberDeclNodes();
+
+        public void AddNamespace(NamespaceDeclSymbol declSymbol)
+            => topLevelComp.AddNamespace(declSymbol);
+
+        public void AddType(ITypeDeclSymbol typeDeclSymbol)
+            => topLevelComp.AddType(typeDeclSymbol);
+
+        public void AddFunc(GlobalFuncDeclSymbol funcDeclSymbol)
+            => topLevelComp.AddFunc(funcDeclSymbol);
     }
 }

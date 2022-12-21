@@ -4,6 +4,7 @@ using System;
 using Citron.Module;
 using static Citron.Symbol.DeclSymbolIdExtensions;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Citron.Symbol
 {
@@ -12,13 +13,20 @@ namespace Citron.Symbol
     // DeclSymbol 간에 참조할 수 있는 인터페이스 확장에는 닫혀있다 
     public interface IDeclSymbolNode
     {
-        AccessModifier GetAccessModifier();
+        Accessor GetAccessor();
         IDeclSymbolNode? GetOuterDeclNode(); // 최상위 계층에는 Outer가 없다
         DeclSymbolNodeName GetNodeName();
         IEnumerable<IDeclSymbolNode> GetMemberDeclNodes();
 
+        Name GetTypeParam(int i);
         void Apply(IDeclSymbolNodeVisitor visitor);
     }
+    
+    // TypeDecl을 소유할 수 있는
+    public interface ITypeDeclContainable
+    {
+        void AddType(ITypeDeclSymbol declSymbol);
+    }    
 
     public static class IDeclSymbolNodeExtensions
     {
@@ -26,6 +34,18 @@ namespace Citron.Symbol
         {
             var nodeName = node.GetNodeName();
             return nodeName.TypeParamCount;
+        }
+
+        public static ModuleDeclSymbol GetModule(this IDeclSymbolNode node)
+        {
+            while(true) // 괜히 걱정, 언젠가는 최상위 outerNode를 만날 것이다
+            {
+                var outerNode = node.GetOuterDeclNode();
+                if (outerNode == null)
+                    return (ModuleDeclSymbol)node;
+
+                node = outerNode;
+            }
         }
 
         public static bool IsDescendantOf(this IDeclSymbolNode thisDecl, IDeclSymbolNode containerDecl)
@@ -39,16 +59,16 @@ namespace Citron.Symbol
 
         public static bool CanAccess(this IDeclSymbolNode user, IDeclSymbolNode target)
         {
-            var accessModifier = target.GetAccessModifier();
+            var accessModifier = target.GetAccessor();
             var targetOuter = target.GetOuterDeclNode();
             if (targetOuter == null)
                 return false;
             
             switch (accessModifier)
             {
-                case AccessModifier.Public: return true;
-                case AccessModifier.Protected: throw new NotImplementedException();
-                case AccessModifier.Private:
+                case Accessor.Public: return true;
+                case Accessor.Protected: throw new NotImplementedException();
+                case Accessor.Private:
                     {
                         // 같은 경우는 허용
                         if (user.Equals(targetOuter))

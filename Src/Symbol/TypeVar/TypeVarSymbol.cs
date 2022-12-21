@@ -11,8 +11,8 @@ namespace Citron.Symbol
     // 1. Func<T>.T Func<T>(Func<T>.T t)
     // 2. Func<>.T Func<T>(Func<>.T t)
     public class TypeVarSymbol : ITypeSymbol
-    {   
-        TypeVarDeclSymbol decl;
+    {
+        int index;
 
         ISymbolNode ISymbolNode.Apply(TypeEnv typeEnv)
             => Apply(typeEnv);
@@ -20,9 +20,9 @@ namespace Citron.Symbol
         ITypeSymbol ITypeSymbol.Apply(TypeEnv typeEnv)
             => Apply(typeEnv);
 
-        internal TypeVarSymbol(TypeVarDeclSymbol decl)
+        internal TypeVarSymbol(int index)
         {
-            this.decl = decl;
+            this.index = index;
         }
         
         public ITypeSymbol Apply(TypeEnv typeEnv)
@@ -42,16 +42,11 @@ namespace Citron.Symbol
         }
 
         IDeclSymbolNode? ISymbolNode.GetDeclSymbolNode()
-            => GetDeclSymbolNode();
-        
+            => null;
+
 
         ITypeDeclSymbol? ITypeSymbol.GetDeclSymbolNode()
-            => GetDeclSymbolNode();
-
-        public TypeVarDeclSymbol GetDeclSymbolNode()
-        {
-            return decl;
-        }
+            => null;
 
         // 이 심볼의 outer는 누구인가, 최상위면 null일 것이고, 정의되지 않았으면 exception
         ISymbolNode? ISymbolNode.GetOuter()

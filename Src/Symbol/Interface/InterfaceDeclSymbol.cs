@@ -15,7 +15,7 @@ namespace Citron.Symbol
     public partial class InterfaceDeclSymbol : ITypeDeclSymbol
     {
         IHolder<IDeclSymbolNode> outerHolder;
-        AccessModifier accessModifier;
+        Accessor accessModifier;
 
         Name name;
         ImmutableArray<string> typeParams;
@@ -51,7 +51,7 @@ namespace Citron.Symbol
             visitor.VisitInterface(this);
         }
 
-        public AccessModifier GetAccessModifier()
+        public Accessor GetAccessor()
         {
             return accessModifier;
         }

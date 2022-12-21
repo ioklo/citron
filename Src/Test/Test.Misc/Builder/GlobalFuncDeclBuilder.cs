@@ -12,7 +12,7 @@ namespace Citron.Test.Misc
         ImmutableArray<GlobalFuncDeclSymbol>.Builder globalFuncDeclsBuilder; // result
 
         IHolder<ITopLevelDeclSymbolNode> outerHolder;
-        AccessModifier accessModifier;
+        Accessor accessModifier;
         Name funcName;
         bool bInternal;
 
@@ -27,7 +27,7 @@ namespace Citron.Test.Misc
             TOuterBuilder outerBuilder,
             ImmutableArray<GlobalFuncDeclSymbol>.Builder globalFuncDeclsBuilder,
             IHolder<ITopLevelDeclSymbolNode> outerHolder,
-            AccessModifier accessModifier,
+            Accessor accessModifier,
             Name funcName,
             bool bInternal)
         {
@@ -45,7 +45,7 @@ namespace Citron.Test.Misc
             this.lambdaComponent = new LambdaBuilderComponent<GlobalFuncDeclBuilder<TOuterBuilder>>(factory, this, globalFuncDeclHolder);
         }
         
-        public GlobalFuncDeclBuilder<TOuterBuilder> TypeParam(string name, out TypeVarDeclSymbol typeVarDecl)
+        public GlobalFuncDeclBuilder<TOuterBuilder> TypeParam(string name, out Name typeVarDecl)
             => typeParamComponent.TypeParam(name, out typeVarDecl);
 
         public GlobalFuncDeclBuilder<TOuterBuilder> Lambda(out LambdaDeclSymbol lambdaDecl)

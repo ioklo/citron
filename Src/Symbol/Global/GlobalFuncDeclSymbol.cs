@@ -5,71 +5,85 @@ using Citron.Module;
 using Citron.Infra;
 using System.Linq;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Citron.Symbol
 {
     [ImplementIEquatable]
     public partial class GlobalFuncDeclSymbol : IFuncDeclSymbol
     {
-        // module or namespace
-        IHolder<ITopLevelDeclSymbolNode> outerHolder;
+        enum InitializeState
+        {
+            BeforeInitFuncReturnAndParams,
+            AfterInitFuncReturnAndParams,
+        }
 
-        AccessModifier accessModifier;
-        IHolder<FuncReturn> returnHolder;
+        // module or namespace
+        ITopLevelDeclSymbolNode outer;
+
+        Accessor accessModifier;
+        FuncReturn @return;
         Name name;
 
-        ImmutableArray<TypeVarDeclSymbol> typeParams;
-        IHolder<ImmutableArray<FuncParameter>> parametersHolder;
+        ImmutableArray<Name> typeParams;
+        ImmutableArray<FuncParameter> parameters;
         
         bool bInternal;
 
-        LambdaDeclSymbolContainerComponent lambdaDeclContainer;
-
-        public void AddLambda(LambdaDeclSymbol lambdaDecl)
-            => lambdaDeclContainer.AddLambda(lambdaDecl);
+        InitializeState initState;
 
         public GlobalFuncDeclSymbol(
-            IHolder<ITopLevelDeclSymbolNode> outerHolder, AccessModifier accessModifier, 
-            IHolder<FuncReturn> returnHolder,
-            Name name,            
-            ImmutableArray<TypeVarDeclSymbol> typeParams,
-            IHolder<ImmutableArray<FuncParameter>> parametersHolder, 
-            bool bInternal, 
-            ImmutableArray<LambdaDeclSymbol> lambdaDecls)
+            ITopLevelDeclSymbolNode outer, Accessor accessModifier, 
+            Name name,
+            ImmutableArray<Name> typeParams,
+            bool bInternal)
         {
-            this.outerHolder = outerHolder;
+            this.outer = outer;
             this.accessModifier = accessModifier;
-            this.returnHolder = returnHolder;
             this.name = name;
-            this.typeParams = typeParams;
-            this.parametersHolder = parametersHolder;
+            this.typeParams = typeParams; 
             this.bInternal = bInternal;
-            this.lambdaDeclContainer = new LambdaDeclSymbolContainerComponent(lambdaDecls);
+
+            this.initState = InitializeState.BeforeInitFuncReturnAndParams;
         }
 
-        public AccessModifier GetAccessModifier()
+        public void InitFuncReturnAndParams(FuncReturn @return, ImmutableArray<FuncParameter> parameters)
+        {
+            Debug.Assert(initState == InitializeState.BeforeInitFuncReturnAndParams);
+
+            this.@return = @return;
+            this.parameters = parameters;
+
+            this.initState = InitializeState.AfterInitFuncReturnAndParams;
+        }
+
+        public Accessor GetAccessor()
         {
             return accessModifier;
         }
 
         public DeclSymbolNodeName GetNodeName()
         {
-            return new DeclSymbolNodeName(name, typeParams.Length, parametersHolder.GetValue().MakeFuncParamIds());
+            Debug.Assert(InitializeState.AfterInitFuncReturnAndParams < initState);
+            return new DeclSymbolNodeName(name, typeParams.Length, parameters.MakeFuncParamIds());
         }
         
         public int GetParameterCount()
         {
-            return parametersHolder.GetValue().Length;
+            Debug.Assert(InitializeState.AfterInitFuncReturnAndParams < initState);
+            return parameters.Length;
         }
 
         public FuncParameter GetParameter(int index)
         {
-            return parametersHolder.GetValue()[index];
+            Debug.Assert(InitializeState.AfterInitFuncReturnAndParams < initState);
+            return parameters[index];
         }
 
         public FuncReturn GetReturn()
         {
-            return returnHolder.GetValue();
+            Debug.Assert(InitializeState.AfterInitFuncReturnAndParams < initState);
+            return @return;
         }
         
         public bool IsInternal()
@@ -79,13 +93,12 @@ namespace Citron.Symbol
 
         public IDeclSymbolNode? GetOuterDeclNode()
         {
-            return outerHolder.GetValue();
+            return outer;
         }
 
         public IEnumerable<IDeclSymbolNode> GetMemberDeclNodes()
         {
-            return typeParams.AsEnumerable().OfType<IDeclSymbolNode>()
-                .Concat(lambdaDeclContainer.GetLambdaDecls());
+            return typeParams.AsEnumerable().OfType<IDeclSymbolNode>();
         }        
 
         public void Apply(IDeclSymbolNodeVisitor visitor)

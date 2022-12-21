@@ -4,23 +4,53 @@ using Pretune;
 using System;
 using System.Collections.Generic;
 using Citron.Module;
+using System.Diagnostics;
+using System.Linq;
 
 namespace Citron.Symbol
 {
-    [AutoConstructor, ImplementIEquatable]
+    [ImplementIEquatable]
     public partial class EnumElemDeclSymbol : ITypeDeclSymbol
     {
-        IHolder<EnumDeclSymbol> outer;
+        enum InitializeState
+        {
+            BeforeInitMemberVars,
+            AfterInitMemberVars
+        }
+
+        EnumDeclSymbol outer;
         Name name;
         ImmutableArray<EnumElemMemberVarDeclSymbol> memberVarDecls;
-        
+
+        InitializeState initState;
+
+        public EnumElemDeclSymbol(EnumDeclSymbol outer, Name name)
+        {
+            this.outer = outer;
+            this.name = name;
+
+            this.initState = InitializeState.BeforeInitMemberVars;
+        }
+
+        public void InitMemberVars(ImmutableArray<EnumElemMemberVarDeclSymbol> memberVarDecls)
+        {
+            Debug.Assert(initState == InitializeState.BeforeInitMemberVars);
+            Debug.Assert(memberVarDecls.AsEnumerable().All(memberVarDecl => memberVarDecl.GetOuterDeclNode() == outer));
+
+            this.memberVarDecls = memberVarDecls;
+
+            this.initState = InitializeState.AfterInitMemberVars;
+        }
+
         public int GetMemberVarCount()
         {
+            Debug.Assert(InitializeState.BeforeInitMemberVars < initState);
             return memberVarDecls.Length;
         }
 
         public EnumElemMemberVarDeclSymbol GetMemberVar(int index)
         {
+            Debug.Assert(InitializeState.BeforeInitMemberVars < initState);
             return memberVarDecls[index];
         }
         
@@ -36,7 +66,7 @@ namespace Citron.Symbol
 
         public IDeclSymbolNode? GetOuterDeclNode()
         {
-            return outer.GetValue();
+            return outer;
         }
 
         public DeclSymbolNodeName GetNodeName()
@@ -46,6 +76,7 @@ namespace Citron.Symbol
 
         public IEnumerable<IDeclSymbolNode> GetMemberDeclNodes()
         {
+            Debug.Assert(InitializeState.BeforeInitMemberVars < initState);
             return memberVarDecls.AsEnumerable();
         }
 
@@ -59,9 +90,9 @@ namespace Citron.Symbol
             visitor.VisitEnumElem(this);
         }
 
-        public AccessModifier GetAccessModifier()
+        public Accessor GetAccessor()
         {
-            return AccessModifier.Public;
+            return Accessor.Public;
         }
     }
 }

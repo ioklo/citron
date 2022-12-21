@@ -25,7 +25,7 @@ namespace Citron.Test.Misc
             this.moduleDeclHolder = new Holder<ModuleDeclSymbol>();
 
             this.namespaceComponent = new NamespaceBuilderComponent<ModuleDeclBuilder>(factory, this, moduleDeclHolder);
-            this.globalTypeComponent = new TypeBuilderComponent<ModuleDeclBuilder>(this, factory, moduleDeclHolder, AccessModifier.Private);
+            this.globalTypeComponent = new TypeBuilderComponent<ModuleDeclBuilder>(this, factory, moduleDeclHolder, Accessor.Private);
             this.globalFuncComponent = new GlobalFuncBuilderComponent<ModuleDeclBuilder>(factory, this, moduleDeclHolder);
         }
 
@@ -37,7 +37,7 @@ namespace Citron.Test.Misc
         public ClassDeclBuilder<ModuleDeclBuilder> BeginClass(string name)
             => globalTypeComponent.BeginClass(name);
 
-        public StructDeclBuilder<ModuleDeclBuilder> BeginStruct(AccessModifier accessModifier, string name)
+        public StructDeclBuilder<ModuleDeclBuilder> BeginStruct(Accessor accessModifier, string name)
             => globalTypeComponent.BeginStruct(accessModifier, name);
 
         public ModuleDeclBuilder GlobalFunc(ITypeSymbol retType, string funcName, out GlobalFuncDeclSymbol globalFuncDecl)
@@ -50,12 +50,12 @@ namespace Citron.Test.Misc
             IHolder<ImmutableArray<FuncParameter>> funcParametersHolder, out GlobalFuncDeclSymbol globalFuncDecl)
             => globalFuncComponent.GlobalFunc(funcReturnHolder, funcName, funcParametersHolder, out globalFuncDecl);
 
-        public GlobalFuncDeclBuilder<ModuleDeclBuilder> BeginGlobalFunc(AccessModifier accessModifier, Name funcName, bool bInternal)
+        public GlobalFuncDeclBuilder<ModuleDeclBuilder> BeginGlobalFunc(Accessor accessModifier, Name funcName, bool bInternal)
             => globalFuncComponent.BeginGlobalFunc(accessModifier, funcName, bInternal);
 
         public GlobalFuncDeclBuilder<ModuleDeclBuilder> BeginTopLevelFunc()
         {
-            return globalFuncComponent.BeginGlobalFunc(AccessModifier.Public, Name.TopLevel, true)
+            return globalFuncComponent.BeginGlobalFunc(Accessor.Public, Name.TopLevel, true)
                 .FuncReturn(false, factory.MakeVoid());
         }
 

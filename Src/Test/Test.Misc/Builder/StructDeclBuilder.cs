@@ -15,7 +15,7 @@ namespace Citron.Test.Misc
         ImmutableArray<ITypeDeclSymbol>.Builder typeDeclsBuilder;
 
         IHolder<IDeclSymbolNode> outerHolder;
-        AccessModifier accessModifier;
+        Accessor accessModifier;
         string name;        
         
         // allocated inside
@@ -33,7 +33,7 @@ namespace Citron.Test.Misc
             TOuterBuilder outerBuilder, 
             SymbolFactory factory,
             ImmutableArray<ITypeDeclSymbol>.Builder typeDeclsBuilder, 
-            IHolder<IDeclSymbolNode> outerHolder, AccessModifier accessModifier, string name)
+            IHolder<IDeclSymbolNode> outerHolder, Accessor accessModifier, string name)
         {
             this.outerBuilder = outerBuilder;
             this.factory = factory;
@@ -51,7 +51,7 @@ namespace Citron.Test.Misc
             this.typeParamComponent = new TypeParamBuilderComponent<StructDeclBuilder<TOuterBuilder>>(this, structDeclHolder);
         }
 
-        public StructDeclBuilder<TOuterBuilder> TypeParam(string name, out TypeVarDeclSymbol typeVarDecl)
+        public StructDeclBuilder<TOuterBuilder> TypeParam(string name, out Name typeVarDecl)
             => typeParamComponent.TypeParam(name, out typeVarDecl);
 
         public StructDeclBuilder<TOuterBuilder> BaseHolder(out Holder<StructSymbol?> baseHolder)
@@ -63,14 +63,14 @@ namespace Citron.Test.Misc
             return this;
         }
 
-        public StructConstructorDeclBuilder<StructDeclBuilder<TOuterBuilder>> BeginConstructor(AccessModifier accessModifier, bool bTrivial)
+        public StructConstructorDeclBuilder<StructDeclBuilder<TOuterBuilder>> BeginConstructor(Accessor accessModifier, bool bTrivial)
         {
             return new StructConstructorDeclBuilder<StructDeclBuilder<TOuterBuilder>>(
                 this, constructorDeclsBuilder, factory, structDeclHolder,
                 accessModifier, bTrivial);
         }
 
-        public StructMemberFuncDeclBuilder<StructDeclBuilder<TOuterBuilder>> BeginFunc(AccessModifier accessModifier, bool bStatic, Name name)
+        public StructMemberFuncDeclBuilder<StructDeclBuilder<TOuterBuilder>> BeginFunc(Accessor accessModifier, bool bStatic, Name name)
         {
             return new StructMemberFuncDeclBuilder<StructDeclBuilder<TOuterBuilder>>(
                 this, memberFuncDeclsBuilder, factory, structDeclHolder,
@@ -81,7 +81,7 @@ namespace Citron.Test.Misc
         public StructDeclBuilder<TOuterBuilder> StaticMemberFunc(ITypeSymbol retType, string name, ITypeSymbol paramType, string paramName, out StructMemberFuncDeclSymbol funcDecl)
         {
             funcDecl = new StructMemberFuncDeclSymbol(
-                structDeclHolder, AccessModifier.Public,
+                structDeclHolder, Accessor.Public,
                 bStatic: true,
                 new Holder<FuncReturn>(new FuncReturn(false, retType)),
                 new Name.Normal(name),
@@ -96,7 +96,7 @@ namespace Citron.Test.Misc
             return this;
         }
 
-        public StructDeclBuilder<TOuterBuilder> Var(AccessModifier accessModifier, bool bStatic, IHolder<ITypeSymbol> typeHolder, Name name)
+        public StructDeclBuilder<TOuterBuilder> Var(Accessor accessModifier, bool bStatic, IHolder<ITypeSymbol> typeHolder, Name name)
         {
             var varDecl = new StructMemberVarDeclSymbol(structDeclHolder, accessModifier, bStatic, typeHolder, name);
             memberVarDeclsBuilder.Add(varDecl);

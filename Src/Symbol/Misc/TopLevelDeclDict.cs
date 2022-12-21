@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Citron.Collections;
 
@@ -8,43 +9,56 @@ using Citron.Module;
 namespace Citron.Symbol
 {
     // ModuleDecl, NamespaceDecl에서 쓰이는 로직
-    struct TopLevelDeclDict
+    struct TopLevelDeclSymbolComponent
     {
-        ImmutableDictionary<Name, NamespaceDeclSymbol> namespaceDict;
-        TypeDict globalTypeDict;
-        Lazy<FuncDict<GlobalFuncDeclSymbol>> lazyGlobalFuncDict;        
+        List<NamespaceDeclSymbol> namespaceDecls;
+        Dictionary<Name, NamespaceDeclSymbol> namespaceDict;
 
-        public TopLevelDeclDict(ImmutableArray<NamespaceDeclSymbol> namespaces, ImmutableArray<ITypeDeclSymbol> types, ImmutableArray<GlobalFuncDeclSymbol> funcs)
+        TypeDeclSymbolComponent typeComp;
+        FuncDeclSymbolComponent<GlobalFuncDeclSymbol> funcComp;
+
+        public static TopLevelDeclSymbolComponent Make()
         {
-            var builder = ImmutableDictionary.CreateBuilder<Name, NamespaceDeclSymbol>();
-            foreach (var ns in namespaces)
-                builder.Add(ns.GetName(), ns);
-
-            this.namespaceDict = builder.ToImmutable();
-            this.globalTypeDict = TypeDict.Build(typeVars: default, types); // TopLevel에는 TypeVar가 없다
-            this.lazyGlobalFuncDict = new Lazy<FuncDict<GlobalFuncDeclSymbol>>(() => FuncDict.Build(funcs));
-        }
-
-        public ImmutableArray<GlobalFuncDeclSymbol> GetFuncs(Name name, int minTypeParamCount)
-        {
-            return lazyGlobalFuncDict.Value.Get(name, minTypeParamCount);
+            var comp = new TopLevelDeclSymbolComponent();
+            comp.namespaceDecls = new List<NamespaceDeclSymbol>();
+            comp.namespaceDict = new Dictionary<Name, NamespaceDeclSymbol>();
+            comp.typeComp = TypeDeclSymbolComponent.Make();
+            comp.funcComp = FuncDeclSymbolComponent.Make<GlobalFuncDeclSymbol>();
+            return comp;
         }
 
         public ITypeDeclSymbol? GetType(Name name, int typeParamCount)
-        {
-            return globalTypeDict.Get(new DeclSymbolNodeName(name, typeParamCount, default));
-        }
+            => typeComp.GetType(name, typeParamCount);
+
+        public void AddType(ITypeDeclSymbol decl)
+            => typeComp.AddType(decl);
+
+        public IEnumerable<GlobalFuncDeclSymbol> GetFuncs(Name name, int minTypeParamCount)
+            => funcComp.GetFuncs(name, minTypeParamCount);
 
         public GlobalFuncDeclSymbol? GetFunc(Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
+            => funcComp.GetFunc(new DeclSymbolNodeName(name, typeParamCount, paramIds));
+
+        public void AddFunc(GlobalFuncDeclSymbol decl)
+            => funcComp.AddFunc(decl);
+
+        public void AddNamespace(NamespaceDeclSymbol decl)
         {
-            return lazyGlobalFuncDict.Value.Get(new DeclSymbolNodeName(name, typeParamCount, paramIds));
+            namespaceDecls.Add(decl);
+            namespaceDict.Add(decl.GetName(), decl);
+        }
+
+        public NamespaceDeclSymbol? GetNamespace(Name name)
+        {
+            return namespaceDict.GetValueOrDefault(name);
         }
 
         public IEnumerable<IDeclSymbolNode> GetMemberDeclNodes()
         {
-            return namespaceDict.Values.OfType<IDeclSymbolNode>()
-                .Concat(globalTypeDict.GetEnumerable())
-                .Concat(lazyGlobalFuncDict.Value.GetEnumerable());
+            return namespaceDict.Values
+                .Concat<IDeclSymbolNode>(namespaceDecls)
+                .Concat(typeComp.GetEnumerable())
+                .Concat(funcComp.GetEnumerable());
         }
     }
 }

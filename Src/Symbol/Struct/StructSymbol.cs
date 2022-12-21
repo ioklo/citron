@@ -75,7 +75,7 @@ namespace Citron.Symbol
 
             bool bHaveInstance = false;
             bool bHaveStatic = false;
-            foreach (var memberFuncDecl in decl.GetMemberFuncs())
+            foreach (var memberFuncDecl in decl.GetFuncs())
             {
                 var funcName = memberFuncDecl.GetNodeName();
 

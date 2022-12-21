@@ -174,11 +174,11 @@ namespace Citron.Symbol
         #endregion
 
         #region TypeVar
-        public TypeVarSymbol MakeTypeVar(TypeVarDeclSymbol decl)
+        public TypeVarSymbol MakeTypeVar(int index)
         {
             // outer가 확정이 안되었을 수 있어서 assert를 시킬 수 없다
             // Debug.Assert(outer.GetDeclSymbolNode() == decl.GetOuterDeclNode());
-            return new TypeVarSymbol(decl);
+            return new TypeVarSymbol(index);
         }
 
         #endregion

@@ -5,15 +5,38 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Citron.Module;
+using System.Diagnostics;
 
 namespace Citron.Symbol
 {
-    [AutoConstructor]
-    public partial class EnumElemMemberVarDeclSymbol : IDeclSymbolNode
+    public class EnumElemMemberVarDeclSymbol : IDeclSymbolNode
     {
-        IHolder<EnumElemDeclSymbol> outerHolder;
-        IHolder<ITypeSymbol> declTypeHolder;
+        enum InitializeState
+        {
+            BeforeInitDeclType,
+            AfterInitDeclType
+        }
+
+        EnumElemDeclSymbol outer;
+        ITypeSymbol? declType;
         Name name;
+
+        InitializeState initState;
+
+        public EnumElemMemberVarDeclSymbol(EnumElemDeclSymbol outer, Name name)
+        {
+            this.outer = outer;
+            this.name = name;
+
+            this.initState = InitializeState.BeforeInitDeclType;
+        }
+
+        public void InitDeclType(ITypeSymbol declType)
+        {
+            Debug.Assert(InitializeState.BeforeInitDeclType == initState);
+            this.declType = declType;
+            initState = InitializeState.AfterInitDeclType;
+        }
 
         public Name GetName()
         {
@@ -32,22 +55,23 @@ namespace Citron.Symbol
 
         public IDeclSymbolNode? GetOuterDeclNode()
         {
-            return outerHolder.GetValue();
+            return outer;
         }
 
         public ITypeSymbol GetDeclType()
         {
-            return declTypeHolder.GetValue();
+            Debug.Assert(InitializeState.BeforeInitDeclType < initState);            
+            return declType!;
         }
-
+        
         public void Apply(IDeclSymbolNodeVisitor visitor)
         {
             visitor.VisitEnumElemMemberVar(this);
         }
 
-        public AccessModifier GetAccessModifier()
+        public Accessor GetAccessor()
         {
-            return AccessModifier.Public;
+            return Accessor.Public;
         }
     }
 }

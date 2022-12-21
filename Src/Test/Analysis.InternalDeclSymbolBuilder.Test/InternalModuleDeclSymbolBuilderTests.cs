@@ -113,7 +113,7 @@ namespace Citron.IR0Translator.Test
 
             // declSymbol을 얻어낼 수 있는 방법
             var _ = new ModuleDeclBuilder(factory, moduleName)
-                .BeginGlobalFunc(M.AccessModifier.Private, NormalName("Func"), bInternal: true)
+                .BeginGlobalFunc(M.Accessor.Private, NormalName("Func"), bInternal: true)
                     .TypeParam("T", out var typeVarDecl)
                     .FuncReturnHolder(out var funcRetHolder)
                     .FuncParametersHolder(paramIds, out var funcParamsHolder)
@@ -166,7 +166,7 @@ namespace Citron.IR0Translator.Test
 
             // expected 만들기
             var _ = new ModuleDeclBuilder(factory, NormalName("TestModule"))
-                .BeginGlobalFunc(M.AccessModifier.Private, NormalName("Func"), true)
+                .BeginGlobalFunc(M.Accessor.Private, NormalName("Func"), true)
                     .TypeParam("T", out var tDecl)
                     .TypeParam("U", out var uDecl)
                     .FuncReturn(isRef: false, voidType)
@@ -245,28 +245,28 @@ namespace Citron.IR0Translator.Test
                 new FuncParamId(M.FuncParameterKind.Default, uId)
             );
 
-            // var trivialConstructor = new InternalModuleConstructorInfo(M.AccessModifier.Public, Arr(new M.Param(M.ParamKind.Default, IntMType, NormalName("x")), new M.Param(M.ParamKind.Default, IntMType, NormalName("y"))));
+            // var trivialConstructor = new InternalModuleConstructorInfo(M.Accessor.Public, Arr(new M.Param(M.ParamKind.Default, IntMType, NormalName("x")), new M.Param(M.ParamKind.Default, IntMType, NormalName("y"))));
 
             var expected = new ModuleDeclBuilder(factory, moduleName)
-                .BeginStruct(M.AccessModifier.Public, "S")
+                .BeginStruct(M.Accessor.Public, "S")
                     .TypeParam("T", out var _)
                     .BaseHolder(out var baseHolder) // B<int>
 
                     // private static T Func<T, U>(S<int> s, U u) { }
-                    .BeginFunc(M.AccessModifier.Private, bStatic: false, NormalName("Func"))
+                    .BeginFunc(M.Accessor.Private, bStatic: false, NormalName("Func"))
                         .TypeParam("T", out var typeVarFuncTDecl)
                         .TypeParam("U", out var typeVarFuncUDecl)
                         .FuncReturnHolder(out var funcRetHolder)
                         .FuncParametersHolder(funcParamIds, out var funcParamsHolder)
                     .EndFunc(out var _)
-                    .Var(M.AccessModifier.Protected, bStatic: false, intType.ToHolder(), NormalName("x"))
-                    .Var(M.AccessModifier.Protected, bStatic: false, intType.ToHolder(), NormalName("y"))
-                    .BeginConstructor(M.AccessModifier.Public, bTrivial: true)
+                    .Var(M.Accessor.Protected, bStatic: false, intType.ToHolder(), NormalName("x"))
+                    .Var(M.Accessor.Protected, bStatic: false, intType.ToHolder(), NormalName("y"))
+                    .BeginConstructor(M.Accessor.Public, bTrivial: true)
                         .FuncParameter(M.FuncParameterKind.Default, intType, NormalName("x"))
                         .FuncParameter(M.FuncParameterKind.Default, intType, NormalName("y"))
                     .EndConstructor(out var _)
                 .EndStruct(out var expectedSDecl)
-                .BeginStruct(M.AccessModifier.Private, "B")
+                .BeginStruct(M.Accessor.Private, "B")
                     .TypeParam("T", out var _)
                 .EndStruct(out var expectedBDecl)
                 .Make();

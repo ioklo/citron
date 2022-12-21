@@ -1,6 +1,6 @@
 ﻿namespace Citron.Module
 {
-    public enum AccessModifier
+    public enum Accessor
     {
         Public,
         Protected,

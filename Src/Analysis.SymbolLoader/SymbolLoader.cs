@@ -47,7 +47,8 @@ namespace Citron.Analysis
             }
         }
 
-        // TypeVar때문에 환경을 알고 있어야 한다
+        // TypeVar때문에 환경을 알고 있어야 한다? => 재귀적이기 때문에 Id만 완전하면 환경을 몰라도 된다
+        // class C<X> { class D<X> { X x; } } // 여기서 X x;의 X의 Symbol은 C<TypeVar(0)>.D<TypeVar(1)>.TypeVar(1)
         public ISymbolNode Load(SymbolId id)
         {
             switch (id)

@@ -10,7 +10,7 @@ namespace Citron.Test.Misc
         TOuterBuilder outerBuilder;
         ImmutableArray<StructConstructorDeclSymbol>.Builder constructorDeclsBuilder;
         IHolder<StructDeclSymbol> outerHolder;
-        AccessModifier accessModifier;
+        Accessor accessModifier;
         bool bTrivial;
 
         Holder<StructConstructorDeclSymbol> constructorDeclHolder;
@@ -23,7 +23,7 @@ namespace Citron.Test.Misc
             ImmutableArray<StructConstructorDeclSymbol>.Builder constructorDeclsBuilder, 
             SymbolFactory factory,
             IHolder<StructDeclSymbol> outerHolder, 
-            AccessModifier accessModifier,
+            Accessor accessModifier,
             bool bTrivial)
         {
             this.outerBuilder = outerBuilder;

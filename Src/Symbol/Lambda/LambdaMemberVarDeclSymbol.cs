@@ -40,9 +40,9 @@ namespace Citron.Symbol
             return type;
         }
 
-        public AccessModifier GetAccessModifier()
+        public Accessor GetAccessor()
         {
-            return AccessModifier.Private; // 
+            return Accessor.Private; // 
         }
 
         public void Apply(IDeclSymbolNodeVisitor visitor)

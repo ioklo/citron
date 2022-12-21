@@ -10,7 +10,7 @@ namespace Citron.Test.Misc
         TOuterBuilder outerBuilder;
         ImmutableArray<StructMemberFuncDeclSymbol>.Builder funcDeclsBuilder;
         IHolder<StructDeclSymbol> outerHolder;
-        AccessModifier accessModifier;
+        Accessor accessModifier;
         bool bStatic;
         Name name;
 
@@ -22,7 +22,7 @@ namespace Citron.Test.Misc
         internal StructMemberFuncDeclBuilder(
             TOuterBuilder outerBuilder,
             ImmutableArray<StructMemberFuncDeclSymbol>.Builder funcDeclsBuilder,
-            SymbolFactory factory, IHolder<StructDeclSymbol> outerHolder, AccessModifier accessModifier, bool bStatic, Name name)
+            SymbolFactory factory, IHolder<StructDeclSymbol> outerHolder, Accessor accessModifier, bool bStatic, Name name)
         {
             this.outerBuilder = outerBuilder;
             this.funcDeclsBuilder = funcDeclsBuilder;
@@ -38,7 +38,7 @@ namespace Citron.Test.Misc
         }
 
 
-        public StructMemberFuncDeclBuilder<TOuterBuilder> TypeParam(string name, out TypeVarDeclSymbol typeVarDecl)
+        public StructMemberFuncDeclBuilder<TOuterBuilder> TypeParam(string name, out Name typeVarDecl)
             => typeParamComponent.TypeParam(name, out typeVarDecl);
 
         public StructMemberFuncDeclBuilder<TOuterBuilder> Lambda(out LambdaDeclSymbol lambdaDecl)

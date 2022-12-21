@@ -26,7 +26,7 @@ namespace Citron.Test.Misc
         public TBuilder GlobalFunc(ITypeSymbol retType, string funcName, out GlobalFuncDeclSymbol globalFuncDecl)
         {
             globalFuncDecl = new GlobalFuncDeclSymbol(
-                outerHolder, AccessModifier.Public,
+                outerHolder, Accessor.Public,
                 new Holder<FuncReturn>(new FuncReturn(false, retType)), new Name.Normal(funcName), 
                 typeParams: default,
                 new Holder<ImmutableArray<FuncParameter>>(default),
@@ -42,7 +42,7 @@ namespace Citron.Test.Misc
         public TBuilder GlobalFunc(ITypeSymbol retType, string funcName, ITypeSymbol paramType, string paramName, out GlobalFuncDeclSymbol globalFuncDecl)
         {
             globalFuncDecl = new GlobalFuncDeclSymbol(
-                outerHolder, AccessModifier.Public,
+                outerHolder, Accessor.Public,
                 new Holder<FuncReturn>(new FuncReturn(false, retType)), new Name.Normal(funcName), 
                 typeParams: default,
                 new Holder<ImmutableArray<FuncParameter>>(Arr<FuncParameter>(new FuncParameter(FuncParameterKind.Default, paramType, new Name.Normal(paramName)))),
@@ -59,7 +59,7 @@ namespace Citron.Test.Misc
             IHolder<ImmutableArray<FuncParameter>> funcParametersHolder, out GlobalFuncDeclSymbol globalFuncDecl)
         {
             globalFuncDecl = new GlobalFuncDeclSymbol(
-                outerHolder, AccessModifier.Public,
+                outerHolder, Accessor.Public,
                 funcReturnHolder, new Name.Normal(funcName), 
                 typeParams: default, 
                 funcParametersHolder,
@@ -71,7 +71,7 @@ namespace Citron.Test.Misc
             return builder;
         }
         
-        public GlobalFuncDeclBuilder<TBuilder> BeginGlobalFunc(AccessModifier accessModifier, Name funcName, bool bInternal)
+        public GlobalFuncDeclBuilder<TBuilder> BeginGlobalFunc(Accessor accessModifier, Name funcName, bool bInternal)
         {
             return new GlobalFuncDeclBuilder<TBuilder>(factory, builder, globalFuncDeclsBuilder, outerHolder, accessModifier, funcName, bInternal);
 

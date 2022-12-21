@@ -20,6 +20,7 @@ namespace Citron.Infra
     public interface IHolder<out TValue>
     {
         public TValue GetValue();
+        public event Action<TValue> OnSetValue;
     }
 
     // lazy evaluation for circular dependency
@@ -28,16 +29,39 @@ namespace Citron.Infra
         TValue? value;
         bool bSet;
 
+        Action<TValue>? onSetValueDelegate;
+
+        public event Action<TValue> OnSetValue
+        {
+            add
+            {
+                if (bSet)
+                    value.Invoke(this.value!);
+                else
+                    onSetValueDelegate += value;
+            }
+
+            remove
+            {
+                Debug.Assert(!bSet); // 세팅이 안되었을 때만 유효하다
+
+                if (onSetValueDelegate != null)
+                    onSetValueDelegate -= value;
+            }
+        }
+
         public Holder()
         {
             this.value = default;
-            bSet = false;
+            this.bSet = false;
+            this.onSetValueDelegate = null;
         }
 
         public Holder(TValue? value)
         {
             this.value = value;
-            bSet = true;
+            this.bSet = true;
+            this.onSetValueDelegate = null;
         }        
 
         public TValue GetValue() 
@@ -48,8 +72,16 @@ namespace Citron.Infra
 
         public void SetValue(TValue value) 
         {
+            Debug.Assert(!bSet);
+
             this.value = value;
             bSet = true;
+
+            if (onSetValueDelegate != null)
+            {
+                onSetValueDelegate.Invoke(value);
+                onSetValueDelegate = null;
+            }
         }
     }
 

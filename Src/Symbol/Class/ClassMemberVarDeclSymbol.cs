@@ -10,14 +10,14 @@ namespace Citron.Symbol
 {
     public class ClassMemberVarDeclSymbol : IDeclSymbolNode
     {
-        IHolder<ClassDeclSymbol> outer;
-        AccessModifier accessModifier;
+        ClassDeclSymbol outer;
+        Accessor accessModifier;
         bool bStatic;
-        IHolder<ITypeSymbol> declType;
+        ITypeSymbol declType;
         Name name;
 
         // public static int s;
-        public ClassMemberVarDeclSymbol(IHolder<ClassDeclSymbol> outer, AccessModifier accessModifier, bool bStatic, IHolder<ITypeSymbol> declType, Name name)
+        public ClassMemberVarDeclSymbol(ClassDeclSymbol outer, Accessor accessModifier, bool bStatic, ITypeSymbol declType, Name name)
         {
             this.outer = outer;
             this.accessModifier = accessModifier;
@@ -28,12 +28,12 @@ namespace Citron.Symbol
 
         public ITypeSymbol GetDeclType()
         {
-            return declType.GetValue();
+            return declType;
         }
 
         public IDeclSymbolNode? GetOuterDeclNode()
         {
-            return outer.GetValue();
+            return outer;
         }
 
         public IEnumerable<IDeclSymbolNode> GetMemberDeclNodes()
@@ -61,7 +61,7 @@ namespace Citron.Symbol
             return bStatic;
         }
 
-        public AccessModifier GetAccessModifier()
+        public Accessor GetAccessor()
         {
             return accessModifier;
         }

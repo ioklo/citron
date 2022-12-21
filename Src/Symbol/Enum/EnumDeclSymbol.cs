@@ -4,37 +4,57 @@ using System;
 using System.Collections.Generic;
 using Citron.Module;
 using System.Linq;
+using System.Diagnostics;
 
 namespace Citron.Symbol
 {
     public partial class EnumDeclSymbol : ITypeDeclSymbol
     {
-        IHolder<IDeclSymbolNode> outerHolder;
-        AccessModifier accessModifier;
+        enum InitializeState
+        {
+            BeforeInitEnumElems,
+            AfterInitEnumElems,
+        }
+
+        IDeclSymbolNode outer;
+        Accessor accessor;
 
         Name name;
-        ImmutableArray<TypeVarDeclSymbol> typeParams;
-        ImmutableArray<EnumElemDeclSymbol> elems;
-        ImmutableDictionary<Name, EnumElemDeclSymbol> elemDict;
+        ImmutableArray<Name> typeParams;
 
-        public EnumDeclSymbol(IHolder<IDeclSymbolNode> outerHolder, AccessModifier accessModifier, Name name, ImmutableArray<TypeVarDeclSymbol> typeParams, ImmutableArray<EnumElemDeclSymbol> elemDecls)
+        ImmutableArray<EnumElemDeclSymbol> elems;
+        ImmutableDictionary<Name, EnumElemDeclSymbol> elemsDict;
+        
+        InitializeState initState;
+
+        public EnumDeclSymbol(IDeclSymbolNode outer, Accessor accessor, Name name, ImmutableArray<Name> typeParams)
         {
-            this.outerHolder = outerHolder;
-            this.accessModifier = accessModifier;
+            this.outer = outer;
+            this.accessor = accessor;
             this.name = name;
             this.typeParams = typeParams;
-            this.elems = elemDecls;
+
+            this.initState = InitializeState.BeforeInitEnumElems;
+        }
+        
+        public void InitElems(ImmutableArray<EnumElemDeclSymbol> elems)
+        {
+            Debug.Assert(initState == InitializeState.BeforeInitEnumElems);
+            this.elems = elems;
 
             var builder = ImmutableDictionary.CreateBuilder<Name, EnumElemDeclSymbol>();
-            foreach(var elemDecl in elemDecls)
-                builder.Add(elemDecl.GetName(), elemDecl);
+            foreach(var elem in elems)
+                builder.Add(elem.GetName(), elem);
 
-            elemDict = builder.ToImmutable();
+            this.elemsDict = builder.ToImmutable();
+
+            initState = InitializeState.AfterInitEnumElems;
         }
 
         public EnumElemDeclSymbol? GetElem(Name memberName)
         {
-            return elemDict.GetValueOrDefault(memberName);
+            Debug.Assert(InitializeState.BeforeInitEnumElems < initState);
+            return elemsDict.GetValueOrDefault(memberName);
         }
 
         public Name GetName()
@@ -59,13 +79,15 @@ namespace Citron.Symbol
 
         public IDeclSymbolNode? GetOuterDeclNode()
         {
-            return outerHolder.GetValue();
+            return outer;
         }
 
         public IEnumerable<IDeclSymbolNode> GetMemberDeclNodes()
         {
+            Debug.Assert(InitializeState.BeforeInitEnumElems < initState);
+
             return typeParams.AsEnumerable().OfType<IDeclSymbolNode>()
-                .Concat(elemDict.Values);
+                .Concat(elemsDict.Values);
         }
 
         public void Apply(IDeclSymbolNodeVisitor visitor)
@@ -73,18 +95,20 @@ namespace Citron.Symbol
             visitor.VisitEnum(this);
         }
 
-        public AccessModifier GetAccessModifier()
+        public Accessor GetAccessor()
         {
-            return accessModifier;
+            return accessor;
         }
 
         public int GetElemCount()
         {
+            Debug.Assert(InitializeState.BeforeInitEnumElems < initState);
             return elems.Length;
         }
 
         public EnumElemDeclSymbol GetElement(int index)
         {
+            Debug.Assert(InitializeState.BeforeInitEnumElems < initState);
             return elems[index];
         }
     }

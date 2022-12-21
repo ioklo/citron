@@ -9,9 +9,9 @@ namespace Citron.Symbol
 {
     public class StructConstructorDeclSymbol : IFuncDeclSymbol
     {
-        IHolder<StructDeclSymbol> outerHolder;
-        AccessModifier accessModifier;
-        IHolder<ImmutableArray<FuncParameter>> parametersHolder;
+        StructDeclSymbol outer;
+        Accessor accessModifier;
+        ImmutableArray<FuncParameter> parameters;
         bool bTrivial;
 
         // 분석중에 추가되는 LambdaDeclSymbol, 분석이 backtracking 될 수 있기 때문에 롤백할수 있어야 한다
@@ -24,29 +24,22 @@ namespace Citron.Symbol
         //     G(e => e, 2); // 인자에 맞는 함수를 검색하면서 e => e가 두번 평가된다
         // }
 
-        LambdaDeclSymbolContainerComponent lambdaDeclContainerComponent;
-
-        public void AddLambda(LambdaDeclSymbol lambdaDecl)
-            => lambdaDeclContainerComponent.AddLambda(lambdaDecl);
-
-        public StructConstructorDeclSymbol(IHolder<StructDeclSymbol> outerHolder, AccessModifier accessModifier, IHolder<ImmutableArray<FuncParameter>> parametersHolder, bool bTrivial, ImmutableArray<LambdaDeclSymbol> lambdaDecls)
+        public StructConstructorDeclSymbol(StructDeclSymbol outer, Accessor accessModifier, ImmutableArray<FuncParameter> parameters, bool bTrivial)
         {
-            this.outerHolder = outerHolder;
+            this.outer = outer;
             this.accessModifier = accessModifier;
-            this.parametersHolder = parametersHolder;
+            this.parameters = parameters;
             this.bTrivial = bTrivial;
-
-            this.lambdaDeclContainerComponent = new LambdaDeclSymbolContainerComponent(lambdaDecls);
         }
 
         public IDeclSymbolNode? GetOuterDeclNode()
         {
-            return outerHolder.GetValue();
+            return outer;
         }
 
         public DeclSymbolNodeName GetNodeName()
         {
-            return new DeclSymbolNodeName(Name.Constructor, 0, parametersHolder.GetValue().MakeFuncParamIds());
+            return new DeclSymbolNodeName(Name.Constructor, 0, parameters.MakeFuncParamIds());
         }
 
         public IEnumerable<IDeclSymbolNode> GetMemberDeclNodes()
@@ -56,17 +49,22 @@ namespace Citron.Symbol
 
         public int GetParameterCount()
         {
-            return parametersHolder.GetValue().Length;
+            return parameters.Length;
         }
 
         public FuncParameter GetParameter(int index)
         {
-            return parametersHolder.GetValue()[index];
+            return parameters[index];
         }
 
-        public AccessModifier GetAccessModifier()
+        public Accessor GetAccessor()
         {
             return accessModifier;
+        }
+
+        public bool IsTrivial()
+        {
+            return bTrivial;
         }
 
         public void Apply(IDeclSymbolNodeVisitor visitor)

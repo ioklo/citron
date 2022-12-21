@@ -21,6 +21,8 @@ using Citron.Symbol;
 
 namespace Citron.Analysis
 {
+
+    // 
     public partial class InternalModuleDeclSymbolBuilder
     {
         // 내부에서 빠져나오는 역할
@@ -186,7 +188,7 @@ namespace Citron.Analysis
             };
         }
 
-        ITypeDeclSymbol BuildType(DeclSymbolId outerId, IHolder<IDeclSymbolNode> outerHolder, M.AccessModifier accessModifier, S.TypeDecl decl)
+        ITypeDeclSymbol BuildType(DeclSymbolId outerId, IHolder<IDeclSymbolNode> outerHolder, M.Accessor accessModifier, S.TypeDecl decl)
         {
             switch (decl)
             {
@@ -247,12 +249,12 @@ namespace Citron.Analysis
         
         #region Struct
 
-        M.AccessModifier MakeStructMemberAccessModifier(S.AccessModifier? accessModifier) // throws FatalException
+        M.Accessor MakeStructMemberAccessModifier(S.AccessModifier? accessModifier) // throws FatalException
         {
             return accessModifier switch
             {
-                null => M.AccessModifier.Public,
-                S.AccessModifier.Private => M.AccessModifier.Private,
+                null => M.Accessor.Public,
+                S.AccessModifier.Private => M.Accessor.Private,
                 _ => throw new NotImplementedException() // 에러처리
             };
         }
@@ -439,10 +441,10 @@ namespace Citron.Analysis
             }
 
             // trivial constructor를 만듭니다
-            return new StructConstructorDeclSymbol(outer, M.AccessModifier.Public, new Holder<ImmutableArray<FuncParameter>>(builder.MoveToImmutable()), bTrivial: true, lambdaDecls: default);
+            return new StructConstructorDeclSymbol(outer, M.Accessor.Public, new Holder<ImmutableArray<FuncParameter>>(builder.MoveToImmutable()), bTrivial: true, lambdaDecls: default);
         }
 
-        StructDeclSymbol BuildStruct(DeclSymbolId outerId, IHolder<IDeclSymbolNode> outerHolder, M.AccessModifier accessModifier, S.StructDecl decl)
+        StructDeclSymbol BuildStruct(DeclSymbolId outerId, IHolder<IDeclSymbolNode> outerHolder, M.Accessor accessModifier, S.StructDecl decl)
         {
             var thisId = outerId.Child(new M.Name.Normal(decl.Name), decl.TypeParams.Length, default);
 
@@ -630,7 +632,7 @@ namespace Citron.Analysis
             }
 
             // trivial constructor를 만듭니다
-            return new ClassConstructorDeclSymbol(outer, M.AccessModifier.Public, new Holder<ImmutableArray<FuncParameter>>(builder.MoveToImmutable()), bTrivial: true, lambdaDecls: default);
+            return new ClassConstructorDeclSymbol(outer, M.Accessor.Public, new Holder<ImmutableArray<FuncParameter>>(builder.MoveToImmutable()), bTrivial: true, lambdaDecls: default);
         }
 
         static ClassConstructorDeclSymbol? GetClassConstructorHasSameParamWithTrivial(
@@ -648,12 +650,12 @@ namespace Citron.Analysis
             return null;
         }
 
-        static M.AccessModifier MakeClassMemberAccessModifier(S.AccessModifier? accessModifier) // throws FatalException
+        static M.Accessor MakeClassMemberAccessModifier(S.AccessModifier? accessModifier) // throws FatalException
         {
             return accessModifier switch
             {
-                null => M.AccessModifier.Private,
-                S.AccessModifier.Public => M.AccessModifier.Public,
+                null => M.Accessor.Private,
+                S.AccessModifier.Public => M.Accessor.Public,
                 _ => throw new NotImplementedException() // 에러처리
             };
         }
@@ -728,7 +730,7 @@ namespace Citron.Analysis
             return new ClassConstructorDeclSymbol(outerHolder, accessModifier, parametersHolder, bTrivial: false, lambdaDecls: default);
         }
 
-        ClassDeclSymbol BuildClass(DeclSymbolId outerId, IHolder<IDeclSymbolNode> outerHolder, M.AccessModifier accessModifier, S.ClassDecl decl)
+        ClassDeclSymbol BuildClass(DeclSymbolId outerId, IHolder<IDeclSymbolNode> outerHolder, M.Accessor accessModifier, S.ClassDecl decl)
         {
             var thisId = outerId.Child(new M.Name.Normal(decl.Name), decl.TypeParams.Length, default);
             var classHolder = new Holder<ClassDeclSymbol>();
@@ -823,57 +825,20 @@ namespace Citron.Analysis
             return @class;
         }
 
-        private static ImmutableArray<TypeVarDeclSymbol> BuildTypeVarDecls(IHolder<IDeclSymbolNode> outerHolder, ImmutableArray<S.TypeParam> typeParams)
+        private static ImmutableArray<M.Name> BuildTypeVarDecls(IHolder<IDeclSymbolNode> outerHolder, ImmutableArray<S.TypeParam> typeParams)
         {
-            var typeVarDeclsBuilder = ImmutableArray.CreateBuilder<TypeVarDeclSymbol>(typeParams.Length);
+            var typeVarDeclsBuilder = ImmutableArray.CreateBuilder<M.Name>(typeParams.Length);
 
             foreach (var typeParam in typeParams)
             {
-                var typeVarDecl = new TypeVarDeclSymbol(outerHolder, new M.Name.Normal(typeParam.Name));
+                var typeVarDecl = new M.Name.Normal(typeParam.Name);
                 typeVarDeclsBuilder.Add(typeVarDecl);
             }
 
             return typeVarDeclsBuilder.MoveToImmutable();
         }
 
-        void IdentifyBaseTypes(out S.TypeExpInfo? baseClassInfo, ImmutableArray<S.TypeExpInfo>.Builder baseInterfacInfos, S.ClassDecl decl)
-        {
-            var baseClassInfos = new Candidates<S.TypeExpInfo>();
-            
-            foreach (var baseType in decl.BaseTypes)
-            {
-                var info = baseType.GetTypeExpInfo();
-
-                switch (info.GetKind())
-                {
-                    case S.TypeExpInfoKind.Class:
-                        baseClassInfos.Add(info);
-                        break;
-
-                    case S.TypeExpInfoKind.Interface:
-                        baseInterfacInfos.Add(info);
-                        break;
-
-                    default:
-                        // 에러 처리                        
-                        throw new NotImplementedException();
-                }
-            }
-
-            baseClassInfo = baseClassInfos.GetSingle();
-            if (baseClassInfo == null)
-            {
-                if (baseClassInfos.HasMultiple)
-                {
-                    // 에러 처리
-                    throw new NotImplementedException();
-                }
-
-                // 비어있는건 괜찮다
-                Debug.Assert(baseClassInfos.IsEmpty);                
-            }
-        }
-
+        
         ImmutableArray<DeclSymbolId> MakeClassBuildingDependencies(S.TypeExpInfo? baseClassInfo) // throw 
         {
             if (baseClassInfo != null)
@@ -928,7 +893,7 @@ namespace Citron.Analysis
             return enumElem;
         }
 
-        EnumDeclSymbol BuildEnum(DeclSymbolId outerId, IHolder<IDeclSymbolNode> outerHolder, M.AccessModifier accessModifier, S.EnumDecl decl)
+        EnumDeclSymbol BuildEnum(DeclSymbolId outerId, IHolder<IDeclSymbolNode> outerHolder, M.Accessor accessModifier, S.EnumDecl decl)
         {
             var thisId = outerId.Child(new M.Name.Normal(decl.Name), decl.TypeParams.Length, default);
             var enumHolder = new Holder<EnumDeclSymbol>();
@@ -951,12 +916,12 @@ namespace Citron.Analysis
 
         #region Global
 
-        M.AccessModifier MakeGlobalAccessModifier(S.AccessModifier? accessModifier) // throws FatalException
+        M.Accessor MakeGlobalAccessModifier(S.AccessModifier? accessModifier) // throws FatalException
         {
             return accessModifier switch
             {
-                null => M.AccessModifier.Private,
-                S.AccessModifier.Public => M.AccessModifier.Public,
+                null => M.Accessor.Private,
+                S.AccessModifier.Public => M.Accessor.Public,
                 _ => throw new FatalException()
             };
         }

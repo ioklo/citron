@@ -5,68 +5,81 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Citron.Module;
+using System.Diagnostics;
 
 namespace Citron.Symbol
 {
     public class StructMemberFuncDeclSymbol : IFuncDeclSymbol
     {
-        IHolder<StructDeclSymbol> outerHolder;
+        enum InitializeState
+        {
+            BeforeInitFuncReturnAndParams,
+            AfterInitFuncReturnAndParams,
+        }
 
-        AccessModifier accessModifier;
+        StructDeclSymbol outer;
+
+        Accessor accessModifier;
         bool bStatic;
-        IHolder<FuncReturn> returnHolder;
+        FuncReturn funcReturn;
         Name name;
-        ImmutableArray<TypeVarDeclSymbol> typeParams;
-        IHolder<ImmutableArray<FuncParameter>> parametersHolder;
+        ImmutableArray<Name> typeParams;
+        ImmutableArray<FuncParameter> parameters;
 
-        LambdaDeclSymbolContainerComponent lambdaDeclContainerComponent;
-
-        public void AddLambda(LambdaDeclSymbol lambdaDecl)
-            => lambdaDeclContainerComponent.AddLambda(lambdaDecl);
+        InitializeState initState;
 
         public StructMemberFuncDeclSymbol(
-            IHolder<StructDeclSymbol> outerHolder, 
-            AccessModifier accessModifier, 
-            bool bStatic, 
-            IHolder<FuncReturn> returnHolder,
+            StructDeclSymbol outer, 
+            Accessor accessModifier,             
+            bool bStatic,            
             Name name,
-            ImmutableArray<TypeVarDeclSymbol> typeParams,
-            IHolder<ImmutableArray<FuncParameter>> paramsHolder,
-            ImmutableArray<LambdaDeclSymbol> lambdaDecls)
+            ImmutableArray<Name> typeParams)
         {
-            this.outerHolder = outerHolder;
-            this.accessModifier = accessModifier;
-            this.bStatic = bStatic;
-            this.returnHolder = returnHolder;
+            this.outer = outer;
+            this.accessModifier = accessModifier;            
+            this.bStatic = bStatic;            
             this.name = name;
             this.typeParams = typeParams;
-            this.parametersHolder = paramsHolder;
-            this.lambdaDeclContainerComponent = new LambdaDeclSymbolContainerComponent(lambdaDecls);
+
+            this.initState = InitializeState.BeforeInitFuncReturnAndParams;
+        }
+
+        public void InitFuncReturnAndParams(FuncReturn @return, ImmutableArray<FuncParameter> parameters)
+        {
+            Debug.Assert(initState == InitializeState.BeforeInitFuncReturnAndParams);
+
+            this.funcReturn = @return;
+            this.parameters = parameters;
+
+            initState = InitializeState.AfterInitFuncReturnAndParams;
         }
 
         public int GetParameterCount()
         {
-            return parametersHolder.GetValue().Length;
+            Debug.Assert(InitializeState.BeforeInitFuncReturnAndParams < initState);
+            return parameters.Length;
         }
 
         public FuncParameter GetParameter(int index)
         {
-            return parametersHolder.GetValue()[index];
+            Debug.Assert(InitializeState.BeforeInitFuncReturnAndParams < initState);
+            return parameters[index];
         }
 
         public DeclSymbolNodeName GetNodeName()
         {
-            return new DeclSymbolNodeName(name, typeParams.Length, parametersHolder.GetValue().MakeFuncParamIds());
+            Debug.Assert(InitializeState.BeforeInitFuncReturnAndParams < initState);
+            return new DeclSymbolNodeName(name, typeParams.Length, parameters.MakeFuncParamIds());
         }
         
         public IEnumerable<IDeclSymbolNode> GetMemberDeclNodes()
         {
-            return typeParams.AsEnumerable();
+            return Enumerable.Empty<IDeclSymbolNode>();
         }
         
         public IDeclSymbolNode? GetOuterDeclNode()
         {
-            return outerHolder.GetValue();
+            return outer;
         }
 
         public int GetTypeParamCount()
@@ -86,10 +99,11 @@ namespace Citron.Symbol
 
         public FuncReturn GetReturn()
         {
-            return returnHolder.GetValue();
+            Debug.Assert(InitializeState.BeforeInitFuncReturnAndParams < initState);
+            return funcReturn;
         }
 
-        public AccessModifier GetAccessModifier()
+        public Accessor GetAccessor()
         {
             return accessModifier;
         }

@@ -379,7 +379,7 @@ namespace Citron.Analysis
             return builder.MoveToImmutable();
         }
 
-        ClassDeclSymbol BuildClass(IHolder<IDeclSymbolNode> outerHolder, AccessModifier accessModifier, ClassDecl classDecl)
+        ClassDeclSymbol BuildClass(IHolder<IDeclSymbolNode> outerHolder, Accessor accessModifier, ClassDecl classDecl)
         {
             var holder = new Holder<ClassDeclSymbol>();
 
@@ -523,7 +523,7 @@ namespace Citron.Analysis
             return builder.MoveToImmutable();
         }
 
-        StructDeclSymbol BuildStruct(IHolder<IDeclSymbolNode> outerHolder, AccessModifier accessModifier, StructDecl structDecl)
+        StructDeclSymbol BuildStruct(IHolder<IDeclSymbolNode> outerHolder, Accessor accessModifier, StructDecl structDecl)
         {
             var holder = new Holder<StructDeclSymbol>();
 
@@ -607,7 +607,7 @@ namespace Citron.Analysis
             return enumElem;
         }
 
-        EnumDeclSymbol BuildEnum(IHolder<IDeclSymbolNode> outerHolder, AccessModifier accessModifier, EnumDecl decl)
+        EnumDeclSymbol BuildEnum(IHolder<IDeclSymbolNode> outerHolder, Accessor accessModifier, EnumDecl decl)
         {
             var enumHolder = new Holder<EnumDeclSymbol>();
 
@@ -624,7 +624,7 @@ namespace Citron.Analysis
             return @enum;
         }
 
-        ITypeDeclSymbol BuildType(AccessModifier accessModifier, IHolder<IDeclSymbolNode> outerHolder, TypeDecl typeDecl)
+        ITypeDeclSymbol BuildType(Accessor accessModifier, IHolder<IDeclSymbolNode> outerHolder, TypeDecl typeDecl)
         {
             switch(typeDecl)
             {

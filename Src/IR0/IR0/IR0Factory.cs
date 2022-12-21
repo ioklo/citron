@@ -47,7 +47,7 @@ namespace Citron.IR0
             var moduleDeclHolder = new Holder<ModuleDeclSymbol>();
             var topLevelFuncDecl = new GlobalFuncDeclSymbol(
                 moduleDeclHolder, 
-                AccessModifier.Public, 
+                Accessor.Public, 
                 new Holder<FuncReturn>(new FuncReturn(false, intType)), Name.TopLevel, typeParams: default,
                 new Holder<ImmutableArray<FuncParameter>>(default), true, lambdaDecls: default);
 

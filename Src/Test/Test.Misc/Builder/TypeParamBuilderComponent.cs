@@ -9,23 +9,23 @@ namespace Citron.Test.Misc
     {
         TBuilder builder;
         IHolder<IDeclSymbolNode> outerHolder;
-        ImmutableArray<TypeVarDeclSymbol>.Builder typeParamsBuilder;
+        ImmutableArray<Name>.Builder typeParamsBuilder;
 
         public TypeParamBuilderComponent(TBuilder builder, IHolder<IDeclSymbolNode> outerHolder)
         {
             this.builder = builder;
             this.outerHolder = outerHolder;
-            this.typeParamsBuilder = ImmutableArray.CreateBuilder<TypeVarDeclSymbol>();
+            this.typeParamsBuilder = ImmutableArray.CreateBuilder<Name>();
         }
 
-        public TBuilder TypeParam(string name, out TypeVarDeclSymbol typeVarDecl)
+        public TBuilder TypeParam(string name, out Name typeVarDecl)
         {
-            typeVarDecl = new TypeVarDeclSymbol(outerHolder, new Name.Normal(name));
+            typeVarDecl = new Name.Normal(name);
             typeParamsBuilder.Add(typeVarDecl);
             return builder;
         }
 
-        public ImmutableArray<TypeVarDeclSymbol> MakeTypeParams()
+        public ImmutableArray<Name> MakeTypeParams()
         {
             return typeParamsBuilder.ToImmutable();
         }

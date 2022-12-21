@@ -11,57 +11,79 @@ using Pretune;
 namespace Citron.Symbol
 {
     [ImplementIEquatable]
-    public partial class StructDeclSymbol : ITypeDeclSymbol
+    public partial class StructDeclSymbol : ITypeDeclSymbol, ITypeDeclContainable
     {
-        IHolder<IDeclSymbolNode> outerHolder;
-        AccessModifier accessModifier;
+        enum InitializeState
+        {   
+            BeforeInitBaseTypes,            
+            AfterInitBaseTypes
+        }
+
+        IDeclSymbolNode outer;
+        Accessor accessor;
 
         Name name;
-        ImmutableArray<TypeVarDeclSymbol> typeParams;
-        IHolder<StructSymbol?> baseStructHolder;
-        ImmutableArray<ITypeDeclSymbol> memberTypesExceptTypeVars;
-        ImmutableArray<StructMemberFuncDeclSymbol> funcDecls;        
-        ImmutableArray<StructMemberVarDeclSymbol> varDecls;
+        ImmutableArray<Name> typeParams;
 
-        IHolder<ImmutableArray<StructConstructorDeclSymbol>> constructorsHolder;
-        IHolder<StructConstructorDeclSymbol?> trivialConstructorHolder;
+        StructSymbol? baseStruct;
+        ImmutableArray<InterfaceSymbol> interfaces;
 
-        TypeDict typeDict;
-        FuncDict<StructMemberFuncDeclSymbol> funcDict;
+        List<StructMemberVarDeclSymbol> memberVars;
+        List<StructConstructorDeclSymbol> constructors;
+        StructConstructorDeclSymbol? trivialConstructor;
 
-        public StructDeclSymbol(
-            IHolder<IDeclSymbolNode> outerHolder,
-            AccessModifier accessModifier,
-            Name name, ImmutableArray<TypeVarDeclSymbol> typeParams,
-            IHolder<StructSymbol?> baseStructHolder,
-            ImmutableArray<ITypeDeclSymbol> memberTypesExceptTypeVars,
-            ImmutableArray<StructMemberFuncDeclSymbol> memberFuncs,            
-            ImmutableArray<StructMemberVarDeclSymbol> memberVars,
-            IHolder<ImmutableArray<StructConstructorDeclSymbol>> constructorsHolder,
-            IHolder<StructConstructorDeclSymbol?> trivialConstructorHolder)
+        TypeDeclSymbolComponent typeComp;
+        FuncDeclSymbolComponent<StructMemberFuncDeclSymbol> funcComp;
+
+        InitializeState initState;
+
+        public StructDeclSymbol(IDeclSymbolNode outer, Accessor accessor, Name name, ImmutableArray<Name> typeParams)
         {
-            this.outerHolder = outerHolder;
-            this.accessModifier = accessModifier;
+            this.outer = outer;
+            this.accessor = accessor;
             this.name = name;
             this.typeParams = typeParams;
-            this.baseStructHolder = baseStructHolder;
-            this.memberTypesExceptTypeVars = memberTypesExceptTypeVars;
-            this.funcDecls = memberFuncs;            
-            this.varDecls = memberVars;
-            this.constructorsHolder = constructorsHolder;
-            this.trivialConstructorHolder = trivialConstructorHolder;
 
-            this.typeDict = TypeDict.Build(typeParams, memberTypesExceptTypeVars);
-            this.funcDict = FuncDict.Build(memberFuncs);
+            this.memberVars = new List<StructMemberVarDeclSymbol>();
+            this.constructors = new List<StructConstructorDeclSymbol>();
+
+            this.typeComp = TypeDeclSymbolComponent.Make();
+            this.funcComp = FuncDeclSymbolComponent.Make<StructMemberFuncDeclSymbol>();
+
+            this.initState = InitializeState.BeforeInitBaseTypes;
+        }
+
+        public void InitBaseTypes(StructSymbol? baseStruct, ImmutableArray<InterfaceSymbol> interfaces)
+        {
+            Debug.Assert(initState == InitializeState.BeforeInitBaseTypes);
+            this.baseStruct = baseStruct;
+            this.interfaces = interfaces;
+            this.initState = InitializeState.AfterInitBaseTypes;
+        }
+
+        public void AddMemberVar(StructMemberVarDeclSymbol memberVar)
+        {
+            Debug.Assert(this == memberVar.GetOuterDeclNode());
+            memberVars.Add(memberVar);
+        }
+        
+        public void AddConstructor(StructConstructorDeclSymbol constructor)
+        {
+            Debug.Assert(this == constructor.GetOuterDeclNode());
+
+            constructors.Add(constructor);
+
+            if (constructor.IsTrivial())
+            {
+                Debug.Assert(trivialConstructor == null);
+                this.trivialConstructor = constructor;
+            }
         }
 
         // include type parameters
-        public ImmutableArray<ITypeDeclSymbol> GetMemberTypes()
+        public IEnumerable<ITypeDeclSymbol> GetMemberTypes()
         {
-            var builder = ImmutableArray.CreateBuilder<ITypeDeclSymbol>(typeParams.Length + memberTypesExceptTypeVars.Length);
-            builder.AddRange(typeParams.AsEnumerable());
-            builder.AddRange(memberTypesExceptTypeVars.AsEnumerable());
-            return builder.MoveToImmutable();
+            return typeComp.GetEnumerable();
         }
 
         public Name GetName()
@@ -69,39 +91,19 @@ namespace Citron.Symbol
             return name;
         }
 
-        public ImmutableArray<StructMemberFuncDeclSymbol> GetMemberFuncs()
+        public IEnumerable<StructMemberFuncDeclSymbol> GetFuncs()
         {
-            return funcDecls;
+            return funcComp.GetEnumerable();
         }
 
         public StructConstructorDeclSymbol? GetTrivialConstructor()
         {
-            return trivialConstructorHolder.GetValue();
+            return trivialConstructor;
         }
 
         public StructSymbol? GetBaseStruct()
         {
-            return baseStructHolder.GetValue();
-        }
-
-        public ImmutableArray<StructConstructorDeclSymbol> GetConstructors()
-        {
-            return constructorsHolder.GetValue();
-        }
-
-        public StructMemberFuncDeclSymbol? GetFunc(Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
-        {
-            return funcDict.Get(new DeclSymbolNodeName(name, typeParamCount, paramIds));
-        }
-
-        public ImmutableArray<StructMemberFuncDeclSymbol> GetFuncs(Name name, int minTypeParamCount)
-        {
-            return funcDict.Get(name, minTypeParamCount);
-        }
-
-        public ITypeDeclSymbol? GetType(Name name, int typeParamCount)
-        {
-            return typeDict.Get(new DeclSymbolNodeName(name, typeParamCount, default));
+            return baseStruct;
         }
         
         public int GetTypeParamCount()
@@ -116,12 +118,12 @@ namespace Citron.Symbol
 
         public int GetMemberVarCount()
         {
-            return varDecls.Length;
+            return memberVars.Count;
         }
 
         public StructMemberVarDeclSymbol GetMemberVar(int index)
         {
-            return varDecls[index];
+            return memberVars[index];
         }
 
         public void Apply(ITypeDeclSymbolVisitor visitor)
@@ -131,14 +133,14 @@ namespace Citron.Symbol
 
         public IDeclSymbolNode? GetOuterDeclNode()
         {
-            return outerHolder.GetValue();
+            return outer;
         }
         
         public IEnumerable<IDeclSymbolNode> GetMemberDeclNodes()
         {
-            return typeDict.GetEnumerable().OfType<IDeclSymbolNode>()
-                .Concat(funcDict.GetEnumerable())
-                .Concat(varDecls.AsEnumerable());
+            return typeComp.GetEnumerable().OfType<IDeclSymbolNode>()
+                .Concat(funcComp.GetEnumerable())
+                .Concat(memberVars);
         }
 
         public void Apply(IDeclSymbolNodeVisitor visitor)
@@ -148,17 +150,32 @@ namespace Citron.Symbol
 
         public int GetConstructorCount()
         {
-            return constructorsHolder.GetValue().Length;
+            return constructors.Count;
         }
 
         public StructConstructorDeclSymbol GetConstructor(int index)
         {
-            return constructorsHolder.GetValue()[index];
+            return constructors[index];
         }
 
-        public AccessModifier GetAccessModifier()
+        public Accessor GetAccessor()
         {
-            return accessModifier;
+            return accessor;
         }
+
+        public ITypeDeclSymbol? GetType(Name name, int typeParamCount)
+            => typeComp.GetType(name, typeParamCount);
+
+        public void AddType(ITypeDeclSymbol typeDecl)
+            => typeComp.AddType(typeDecl);
+
+        public StructMemberFuncDeclSymbol? GetFunc(Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
+            => funcComp.GetFunc(name, typeParamCount, paramIds);
+
+        public IEnumerable<StructMemberFuncDeclSymbol> GetFuncs(Name name, int minTypeParamCount)
+            => funcComp.GetFuncs(name, minTypeParamCount);
+
+        public void AddFunc(StructMemberFuncDeclSymbol memberFunc)
+            => funcComp.AddFunc(memberFunc);
     }
 }

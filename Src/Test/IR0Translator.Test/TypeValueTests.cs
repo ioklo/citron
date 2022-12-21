@@ -89,10 +89,10 @@ namespace Citron.IR0Translator.Test
                     new M.GlobalType(moduleName, M.NamespacePath.Root, new M.Name.Normal("G"), Arr<M.TypeId>(new M.TypeVarType(0, "T"))),
                     interfaces: default,
                     memberTypes: default,
-                    Arr(new M.FuncInfo(M.AccessModifier.Public, new M.Name.Normal("F"), false, false, true, Arr("V"), new M.TypeVarTypeId(0, "T"),                         
+                    Arr(new M.FuncInfo(M.Accessor.Public, new M.Name.Normal("F"), false, false, true, Arr("V"), new M.TypeVarTypeId(0, "T"),                         
                         Arr(new M.Param(M.ParamKind.Default, new M.TypeVarTypeId(2, "V"), new M.Name.Normal("v")))
                     )),
-                    Arr(new M.MemberVarInfo(M.AccessModifier.Public, false, new M.GlobalType(moduleName, M.NamespacePath.Root, new M.Name.Normal("X"), Arr<M.TypeId>(new M.TypeVarTypeId(1, "U"))), new M.Name.Normal("v"))),
+                    Arr(new M.MemberVarInfo(M.Accessor.Public, false, new M.GlobalType(moduleName, M.NamespacePath.Root, new M.Name.Normal("X"), Arr<M.TypeId>(new M.TypeVarTypeId(1, "U"))), new M.Name.Normal("v"))),
                     default
                 )
             ), default, default, default);

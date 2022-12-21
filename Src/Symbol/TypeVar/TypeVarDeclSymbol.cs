@@ -10,43 +10,43 @@ using Pretune;
 
 namespace Citron.Symbol
 {
-    [AutoConstructor, ImplementIEquatable]
-    public partial class TypeVarDeclSymbol : ITypeDeclSymbol, IDeclSymbolNode
-    {
-        IHolder<IDeclSymbolNode> outerHolder; // 타입일 수도, 함수일 수도
-        Name name;
+    //[AutoConstructor, ImplementIEquatable]
+    //public partial class TypeVarDeclSymbol : ITypeDeclSymbol, IDeclSymbolNode
+    //{
+    //    IDeclSymbolNode outer; // 타입일 수도, 함수일 수도
+    //    Name name;
 
-        IDeclSymbolNode? IDeclSymbolNode.GetOuterDeclNode() => GetOuterDeclNode();
-        DeclSymbolNodeName IDeclSymbolNode.GetNodeName() => GetNodeName();
+    //    IDeclSymbolNode? IDeclSymbolNode.GetOuterDeclNode() => GetOuterDeclNode();
+    //    DeclSymbolNodeName IDeclSymbolNode.GetNodeName() => GetNodeName();
 
-        void ITypeDeclSymbol.Apply(ITypeDeclSymbolVisitor visitor)
-        {
-            visitor.VisitTypeVar(this);
-        }
+    //    void ITypeDeclSymbol.Apply(ITypeDeclSymbolVisitor visitor)
+    //    {
+    //        visitor.VisitTypeVar(this);
+    //    }
 
-        void IDeclSymbolNode.Apply(IDeclSymbolNodeVisitor visitor)
-        {
-            visitor.VisitTypeVar(this);
-        }
+    //    void IDeclSymbolNode.Apply(IDeclSymbolNodeVisitor visitor)
+    //    {
+    //        visitor.VisitTypeVar(this);
+    //    }
 
-        AccessModifier IDeclSymbolNode.GetAccessModifier()
-        {
-            return AccessModifier.Public;
-        }
+    //    Accessor IDeclSymbolNode.GetAccessor()
+    //    {
+    //        return Accessor.Public;
+    //    }
 
-        IEnumerable<IDeclSymbolNode> IDeclSymbolNode.GetMemberDeclNodes()
-        {
-            return Enumerable.Empty<IDeclSymbolNode>();
-        }
+    //    IEnumerable<IDeclSymbolNode> IDeclSymbolNode.GetMemberDeclNodes()
+    //    {
+    //        return Enumerable.Empty<IDeclSymbolNode>();
+    //    }
 
-        public DeclSymbolNodeName GetNodeName()
-        {
-            return new DeclSymbolNodeName(name, 0, default);
-        }
+    //    public DeclSymbolNodeName GetNodeName()
+    //    {
+    //        return new DeclSymbolNodeName(name, 0, default);
+    //    }
 
-        public IDeclSymbolNode? GetOuterDeclNode()
-        {
-            return outerHolder.GetValue();
-        }
-    }
+    //    public IDeclSymbolNode? GetOuterDeclNode()
+    //    {
+    //        return outer;
+    //    }
+    //}
 }

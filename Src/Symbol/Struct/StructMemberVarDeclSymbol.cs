@@ -6,22 +6,44 @@ using Citron.Infra;
 using Pretune;
 
 using Citron.Module;
+using System.Diagnostics;
 
 namespace Citron.Symbol
-{
-    [AutoConstructor]
+{   
     public partial class StructMemberVarDeclSymbol : IDeclSymbolNode
     {
-        IHolder<StructDeclSymbol> outer;
+        enum InitializeState
+        {
+            BeforeSettingDeclType,
+            Done,
+        }
 
-        AccessModifier accessModifier;
+        StructDeclSymbol outer;
+        Accessor accessor;
         bool bStatic;
-        IHolder<ITypeSymbol> declTypeHolder;
+        ITypeSymbol? declType;
         Name name;
+
+        InitializeState initState;
+
+        public StructMemberVarDeclSymbol(StructDeclSymbol outer, Accessor accessor, bool bStatic, Name name)
+        {
+            this.outer = outer;
+            this.accessor = accessor;
+            this.bStatic = bStatic;
+            this.name = name;
+            this.initState = InitializeState.BeforeSettingDeclType;
+        }
+
+        public void SetDeclType(ITypeSymbol declType)
+        {
+            Debug.Assert(initState == InitializeState.BeforeSettingDeclType);
+            this.declType = declType;
+        }
 
         public IDeclSymbolNode? GetOuterDeclNode()
         {
-            return outer.GetValue();
+            return outer;
         }
         
         public IEnumerable<IDeclSymbolNode> GetMemberDeclNodes()
@@ -41,7 +63,8 @@ namespace Citron.Symbol
 
         public ITypeSymbol GetDeclType()
         {
-            return declTypeHolder.GetValue();
+            Debug.Assert(initState == InitializeState.Done);
+            return declType!;
         }
 
         public void Apply(IDeclSymbolNodeVisitor visitor)
@@ -54,9 +77,9 @@ namespace Citron.Symbol
             return bStatic;
         }
 
-        public AccessModifier GetAccessModifier()
+        public Accessor GetAccessor()
         {
-            return accessModifier;
+            return accessor;
         }
     }
 }

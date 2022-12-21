@@ -12,10 +12,10 @@ namespace Citron.Test.Misc
         TBuilder builder;
         SymbolFactory factory;
         IHolder<IDeclSymbolNode> outerHolder;
-        AccessModifier defaultAccessModifier;
+        Accessor defaultAccessModifier;
         ImmutableArray<ITypeDeclSymbol>.Builder typeDeclSymbols;
 
-        public TypeBuilderComponent(TBuilder builder, SymbolFactory factory, IHolder<IDeclSymbolNode> outerHolder, AccessModifier defaultAccessModifier)
+        public TypeBuilderComponent(TBuilder builder, SymbolFactory factory, IHolder<IDeclSymbolNode> outerHolder, Accessor defaultAccessModifier)
         {
             this.builder = builder;
             this.factory = factory;
@@ -83,7 +83,7 @@ namespace Citron.Test.Misc
             return builder;
         }
         
-        public StructDeclBuilder<TBuilder> BeginStruct(AccessModifier accessModifier, string name)
+        public StructDeclBuilder<TBuilder> BeginStruct(Accessor accessModifier, string name)
         {
             return new StructDeclBuilder<TBuilder>(builder, factory, typeDeclSymbols, outerHolder, accessModifier, name);
         }

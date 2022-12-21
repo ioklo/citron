@@ -13,6 +13,12 @@ namespace Citron.Infra
         T? one;           // 한개까지는 여기에 저장한다
         List<T>? rests;   // 여러개일 경우 one을 포함해서 여기에 저장한다
 
+        public void Clear()
+        {
+            one = default;
+            rests?.Clear();
+        }
+
         public void Add(T item)
         {
             if (rests != null)
@@ -45,6 +51,24 @@ namespace Citron.Infra
 
             Debug.Assert(one == null && rests == null);
             return UniqueQueryResults<T>.NotFound;
+        }
+
+        public int GetCount()
+        {
+            if (one != null && rests != null)
+                return rests.Count + 1;
+            else if (one != null)
+                return 1;
+            else
+                return 0;
+        }
+        
+        public T GetAt(int i)
+        {
+            if (i == 0)
+                return one!;
+            else
+                return rests![i - 1];
         }
     }
 }

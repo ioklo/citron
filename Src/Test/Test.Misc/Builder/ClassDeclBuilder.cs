@@ -9,7 +9,7 @@ namespace Citron.Test.Misc
 {
     public class ClassDeclBuilder<TOuterBuilder>
     {
-        internal delegate ClassDeclSymbol OnFinish(ImmutableArray<TypeVarDeclSymbol> typeParams, ImmutableArray<ClassMemberFuncDeclSymbol> memberFuncDecls);
+        internal delegate ClassDeclSymbol OnFinish(ImmutableArray<Name> typeParams, ImmutableArray<ClassMemberFuncDeclSymbol> memberFuncDecls);
 
         TOuterBuilder outerBuilder;
         OnFinish onFinish;
@@ -29,7 +29,7 @@ namespace Citron.Test.Misc
             this.typeParamComponent = new TypeParamBuilderComponent<ClassDeclBuilder<TOuterBuilder>>(this, classDeclHolder);
         }
 
-        public ClassDeclBuilder<TOuterBuilder> TypeParam(string name, out TypeVarDeclSymbol typeVarDecl)
+        public ClassDeclBuilder<TOuterBuilder> TypeParam(string name, out Name typeVarDecl)
             => typeParamComponent.TypeParam(name, out typeVarDecl);
 
         public TOuterBuilder EndClass(out ClassDeclSymbol classDecl)
@@ -41,7 +41,7 @@ namespace Citron.Test.Misc
 
         public ClassDeclBuilder<TOuterBuilder> StaticMemberFunc(ITypeSymbol retType, string name, ITypeSymbol paramType, string paramName, out ClassMemberFuncDeclSymbol funcDecl)
         {
-            funcDecl = new ClassMemberFuncDeclSymbol(classDeclHolder, AccessModifier.Public,
+            funcDecl = new ClassMemberFuncDeclSymbol(classDeclHolder, Accessor.Public,
                 new Holder<FuncReturn>(new FuncReturn(false, retType)),
                 new Name.Normal(name),
                 typeParams: default,

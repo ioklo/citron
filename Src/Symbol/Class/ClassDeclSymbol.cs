@@ -16,63 +16,63 @@ namespace Citron.Symbol
     // outer = new StructDecl(innerClass);
 
     [ImplementIEquatable]
-    public partial class ClassDeclSymbol : ITypeDeclSymbol
+    public partial class ClassDeclSymbol : ITypeDeclSymbol, ITypeDeclContainable
     {   
-        IHolder<IDeclSymbolNode> outerHolder;
-        AccessModifier accessModifier;
+        enum InitializeState
+        {
+            BeforeInitBaseTypes,
+            AfterInitBaseTypes,
+        }
+
+        IDeclSymbolNode outer;
+        Accessor accessModifier;
         
         Name name;        
-        ImmutableArray<TypeVarDeclSymbol> typeParams;
-        IHolder<ImmutableArray<InterfaceSymbol>> interfacesHolder;
-
-        ImmutableArray<ITypeDeclSymbol> memberTypesExceptTypeVars;
-
-        ImmutableArray<ClassMemberFuncDeclSymbol> memberFuncs;
-        IHolder<ImmutableArray<ClassConstructorDeclSymbol>> constructorsHolder; // 추가적으로 생성되는 것들 때문에 이렇게 했는데 약간 크게 잡은 경향이 있다
-        ImmutableArray<ClassMemberVarDeclSymbol> memberVars;
-
-        // Class선언 시점 typeEnv를 적용한 baseClass
-        IHolder<ClassSymbol?> baseClassHolder;        
-        IHolder<ClassConstructorDeclSymbol?> trivialConstructorHolder;
-
-        [ExcludeComparison]
-        TypeDict typeDict;
-
-        [ExcludeComparison]
-        FuncDict<ClassMemberFuncDeclSymbol> funcDict;
+        ImmutableArray<Name> typeParams;
         
-        public ClassDeclSymbol(
-            IHolder<IDeclSymbolNode> outerHolder,
-            AccessModifier accessModifier,
-            Name name, ImmutableArray<TypeVarDeclSymbol> typeParams,
-            IHolder<ClassSymbol?> baseClassHolder,
-            IHolder<ImmutableArray<InterfaceSymbol>> interfacesHolder,
-            ImmutableArray<ITypeDeclSymbol> memberTypesExceptTypeVars,
-            ImmutableArray<ClassMemberFuncDeclSymbol> memberFuncs,
-            ImmutableArray<ClassMemberVarDeclSymbol> memberVars,
-            IHolder<ImmutableArray<ClassConstructorDeclSymbol>> constructorDeclsHolder,
-            IHolder<ClassConstructorDeclSymbol?> trivialConstructorHolder)
+        ClassSymbol? baseClass; // Class선언 시점 typeEnv를 적용한 baseClass
+        ImmutableArray<InterfaceSymbol> interfaces;
+        
+        List<ClassMemberVarDeclSymbol> memberVars;
+
+        List<ClassConstructorDeclSymbol> constructors;
+        ClassConstructorDeclSymbol? trivialConstructor;
+        
+        TypeDeclSymbolComponent typeComp;
+        FuncDeclSymbolComponent<ClassMemberFuncDeclSymbol> funcComp;
+        InitializeState initState;
+
+        public ClassDeclSymbol(IDeclSymbolNode outer, Accessor accessModifier, Name name, ImmutableArray<Name> typeParams)
         {
-            this.outerHolder = outerHolder;
+            this.outer = outer;
             this.accessModifier = accessModifier;
             this.name = name;
+
+            this.memberVars = new List<ClassMemberVarDeclSymbol>();
+            this.constructors = new List<ClassConstructorDeclSymbol>();
+
             this.typeParams = typeParams;
-            this.baseClassHolder = baseClassHolder;
-            this.interfacesHolder = interfacesHolder;
-            this.memberTypesExceptTypeVars = memberTypesExceptTypeVars;
-            this.memberFuncs = memberFuncs;
-            this.memberVars = memberVars;
 
-            this.constructorsHolder = constructorDeclsHolder;
-            this.trivialConstructorHolder = trivialConstructorHolder;
+            this.typeComp = TypeDeclSymbolComponent.Make();
+            this.funcComp = FuncDeclSymbolComponent.Make<ClassMemberFuncDeclSymbol>();
 
-            this.typeDict = TypeDict.Build(typeParams, memberTypesExceptTypeVars);
-            this.funcDict = FuncDict.Build(memberFuncs);
+            this.initState = InitializeState.BeforeInitBaseTypes;
         }
+
+        public void InitBaseTypes(ClassSymbol? baseClass, ImmutableArray<InterfaceSymbol> interfaces)
+        {
+            Debug.Assert(initState == InitializeState.BeforeInitBaseTypes);
+
+            this.baseClass = baseClass;
+            this.interfaces = interfaces;
+            this.initState = InitializeState.AfterInitBaseTypes;
+        }
+        
+        
 
         public ClassConstructorDeclSymbol? GetDefaultConstructorDecl()
         {
-            foreach (var decl in constructorsHolder.GetValue())
+            foreach (var decl in constructors)
             {
                 if (decl.GetParameterCount() == 0)
                     return decl;
@@ -88,47 +88,36 @@ namespace Citron.Symbol
 
         public ClassConstructorDeclSymbol? GetTrivialConstructor()
         {
-            return trivialConstructorHolder.GetValue();
+            return trivialConstructor;
         }        
 
         // Info자체에는 environment가 없으므로, typeEnv가 있어야
         public ClassSymbol? GetBaseClass()
-        {            
-            return baseClassHolder.GetValue();
-        }        
-
-        public ClassMemberFuncDeclSymbol? GetMemberFunc(Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
         {
-            return funcDict.Get(new DeclSymbolNodeName(name, typeParamCount, paramIds));
-        }
-
-        public ImmutableArray<ClassMemberFuncDeclSymbol> GetFuncs(Name name, int minTypeParamCount)
-        {
-            return funcDict.Get(name, minTypeParamCount);
-        }
-
-        public ImmutableArray<ClassMemberFuncDeclSymbol> GetMemberFuncs()
-        {
-            return memberFuncs;
+            Debug.Assert(InitializeState.BeforeInitBaseTypes < initState);
+            return baseClass;
         }
 
         // include type parameters
         public ImmutableArray<ITypeDeclSymbol> GetMemberTypes()
         {
-            var builder = ImmutableArray.CreateBuilder<ITypeDeclSymbol>(typeParams.Length + memberTypesExceptTypeVars.Length);
-            builder.AddRange(typeParams.AsEnumerable());
-            builder.AddRange(memberTypesExceptTypeVars.AsEnumerable());
-            return builder.MoveToImmutable();
-        }
+            return typeComp.GetEnumerable().ToImmutableArray();
+        }        
 
         public int GetMemberVarCount()
         {
-            return memberVars.Length;
+            return memberVars.Count;
         }
 
         public ClassMemberVarDeclSymbol GetMemberVar(int index)
         {
             return memberVars[index];
+        }
+
+        public void AddMemberVar(ClassMemberVarDeclSymbol declSymbol)
+        {
+            Debug.Assert(this == declSymbol.GetOuterDeclNode());
+            memberVars.Add(declSymbol);
         }
 
         public Name GetName()
@@ -148,14 +137,14 @@ namespace Citron.Symbol
 
         public IDeclSymbolNode? GetOuterDeclNode()
         {
-            return outerHolder.GetValue();
+            return outer;
         }
 
         public IEnumerable<IDeclSymbolNode> GetMemberDeclNodes()
         {
-            return typeDict.GetEnumerable().OfType<IDeclSymbolNode>()
-                .Concat(memberFuncs.AsEnumerable())
-                .Concat(memberVars.AsEnumerable());
+            return typeComp.GetEnumerable().OfType<IDeclSymbolNode>()
+                .Concat(funcComp.GetEnumerable())
+                .Concat(memberVars);
         }
        
         public void Apply(IDeclSymbolNodeVisitor visitor)
@@ -174,19 +163,47 @@ namespace Citron.Symbol
             return null;
         }
 
-        public AccessModifier GetAccessModifier()
+        public Accessor GetAccessor()
         {
             return accessModifier;
         }
 
         public int GetConstructorCount()
         {
-            return constructorsHolder.GetValue().Length;
+            return constructors.Count;
         }
 
         public ClassConstructorDeclSymbol GetConstructor(int index)
         {
-            return constructorsHolder.GetValue()[index];
+            return constructors[index];
         }
+
+        public void AddConstructor(ClassConstructorDeclSymbol constructor)
+        {
+            Debug.Assert(this == constructor.GetOuterDeclNode());
+
+            constructors.Add(constructor);
+
+            if (constructor.IsTrivial())
+            {
+                Debug.Assert(trivialConstructor == null);
+                this.trivialConstructor = constructor;
+            }
+        }
+
+        public void AddType(ITypeDeclSymbol typeDecl)
+            => typeComp.AddType(typeDecl);
+
+        public void AddFunc(ClassMemberFuncDeclSymbol declSymbol)
+            => funcComp.AddFunc(declSymbol);
+
+        public ClassMemberFuncDeclSymbol? GetFunc(Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
+            => funcComp.GetFunc(name, typeParamCount, paramIds);
+
+        public IEnumerable<ClassMemberFuncDeclSymbol> GetFuncs()
+            => funcComp.GetFuncs();
+
+        public IEnumerable<ClassMemberFuncDeclSymbol> GetFuncs(Name name, int minTypeParamCount)
+            => funcComp.GetFuncs(name, minTypeParamCount);
     }
 }

@@ -6,7 +6,7 @@ using System.Diagnostics;
 namespace Citron.Symbol
 {
     // utility class for {ClassDeclSymbol, StructDeclSymbol} QueryMember_Type
-    class SymbolQueryResultBuilder : ITypeDeclSymbolVisitor
+    public class SymbolQueryResultBuilder : ITypeDeclSymbolVisitor
     {
         ISymbolNode outer;
         SymbolFactory symbolFactory;
@@ -65,12 +65,6 @@ namespace Citron.Symbol
             //Debug.Assert(outerFunc != null);
 
             //result = new SymbolQueryResult.Lambda(symbolFactory.MakeLambda(outerFunc, lambdaDecl));
-        }
-
-        public void VisitTypeVar(TypeVarDeclSymbol typeVarDecl)
-        {
-            var typeVar = symbolFactory.MakeTypeVar(typeVarDecl);
-            result = new SymbolQueryResult.TypeVar(typeVar);
         }
     }
 }

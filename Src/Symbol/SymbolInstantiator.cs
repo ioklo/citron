@@ -34,12 +34,29 @@ namespace Citron.Symbol
             Debug.Assert(typeSymbolResult != null);
             return typeSymbolResult;
         }
+
+        public static ISymbolNode InstantiateOpen(SymbolFactory factory, ISymbolNode? outerSymbol, IDeclSymbolNode declSymbol)
+        {
+            int baseTypeParamCount = outerSymbol?.GetTotalTypeParamCount() ?? 0;
+
+            int typeParamCount = declSymbol.GetTypeParamCount();
+            var typeArgsBuilder = ImmutableArray.CreateBuilder<ITypeSymbol>(typeParamCount);
+            for (int i = 0; i < typeParamCount; i++)
+            {   
+                var typeVar = factory.MakeTypeVar(baseTypeParamCount + i);
+                typeArgsBuilder.Add(typeVar);
+            }
+            var typeArgs = typeArgsBuilder.MoveToImmutable();
+
+            return Instantiate(factory, outerSymbol, declSymbol, typeArgs);
+        }
         
-        public static ISymbolNode? Instantiate(SymbolFactory factory, ISymbolNode? outer, IDeclSymbolNode decl, ImmutableArray<ITypeSymbol> typeArgs)
+        public static ISymbolNode Instantiate(SymbolFactory factory, ISymbolNode? outer, IDeclSymbolNode decl, ImmutableArray<ITypeSymbol> typeArgs)
         {
             var instantiator = new SymbolInstantiator(factory, outer, typeArgs);
             decl.Apply(instantiator);
 
+            Debug.Assert(instantiator.result != null);
             return instantiator.result;
         }
 
@@ -111,13 +128,6 @@ namespace Citron.Symbol
         {
             Debug.Assert(outer != null);
             result = factory.MakeInterface(outer, decl, typeArgs);
-        }
-
-        public void VisitTypeVar(TypeVarDeclSymbol decl)
-        {
-            Debug.Assert(outer == null);
-            Debug.Assert(typeArgs.IsEmpty);
-            result = factory.MakeTypeVar(decl);
         }
 
         public void VisitLambda(LambdaDeclSymbol decl)

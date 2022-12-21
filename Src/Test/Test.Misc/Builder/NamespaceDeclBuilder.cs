@@ -27,7 +27,7 @@ namespace Citron.Test.Misc
 
             this.namespaceDeclHolder = new Holder<NamespaceDeclSymbol>();
             this.namespaceComponent = new NamespaceBuilderComponent<NamespaceDeclBuilder<TOuterBuilder>>(factory, this, namespaceDeclHolder);
-            this.globalTypeComponent = new TypeBuilderComponent<NamespaceDeclBuilder<TOuterBuilder>>(this, factory, namespaceDeclHolder, AccessModifier.Private);
+            this.globalTypeComponent = new TypeBuilderComponent<NamespaceDeclBuilder<TOuterBuilder>>(this, factory, namespaceDeclHolder, Accessor.Private);
             this.globalFuncComponent = new GlobalFuncBuilderComponent<NamespaceDeclBuilder<TOuterBuilder>>(factory, this, namespaceDeclHolder);
         }
 

@@ -43,7 +43,7 @@ namespace Citron.Symbol
     // => 순환참조때문에 누적 Index를 사용하는 TypeVarSymbolId로 다시 롤백한다
     // 'MyModule.MyClass<X, Y>.MyStruct<T, U, X>.Func<T>(T, int).T' path에 Func<T>와 T가 순환 참조된다
     // => TypeVarSymbolId(5)로 참조하게 한다
-    public record TypeVarSymbolId(int Index) : SymbolId; 
+    public record TypeVarSymbolId(int Index) : SymbolId;
 
     public record NullableSymbolId(SymbolId InnerTypeId) : SymbolId;
 

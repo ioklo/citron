@@ -7,16 +7,20 @@ using Citron.Collections;
 using Citron.Module;
 
 namespace Citron.Symbol
-{
-    public class ModuleDeclSymbol : ITopLevelDeclSymbolNode
+{   
+    public class ModuleDeclSymbol : ITopLevelDeclSymbolNode, ITopLevelDeclContainable
     {
         Name moduleName;
-        TopLevelDeclDict dict;
+        bool bReference;
 
-        public ModuleDeclSymbol(Name moduleName, ImmutableArray<NamespaceDeclSymbol> namespaces, ImmutableArray<ITypeDeclSymbol> types, ImmutableArray<GlobalFuncDeclSymbol> funcs)
+        TopLevelDeclSymbolComponent topLevelComp;
+
+        public ModuleDeclSymbol(Name moduleName, bool bReference)
         {
             this.moduleName = moduleName;
-            this.dict = new TopLevelDeclDict(namespaces, types, funcs);
+            this.bReference = bReference;
+
+            this.topLevelComp = TopLevelDeclSymbolComponent.Make();
         }
 
         public Name GetName()
@@ -29,34 +33,9 @@ namespace Citron.Symbol
             return new DeclSymbolNodeName(moduleName, 0, default);
         }
 
-        public ImmutableArray<GlobalFuncDeclSymbol> GetFuncs(Name name, int minTypeParamCount)
-        {
-            return dict.GetFuncs(name, minTypeParamCount);
-        }
-        
-        public ITypeDeclSymbol? GetType(Name name, int typeParamCount)
-        {
-            return dict.GetType(name, typeParamCount);
-        }
-
-        public GlobalFuncDeclSymbol? GetFunc(Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
-        {
-            return dict.GetFunc(name, typeParamCount, paramIds);
-        }
-
-        public NamespaceDeclSymbol? GetNamespace(Name name)
-        {
-            return null;
-        }
-
         public IDeclSymbolNode? GetOuterDeclNode()
         {
             return null;
-        }
-        
-        public IEnumerable<IDeclSymbolNode> GetMemberDeclNodes()
-        {
-            return dict.GetMemberDeclNodes();
         }
 
         public void Apply(IDeclSymbolNodeVisitor visitor)
@@ -64,9 +43,38 @@ namespace Citron.Symbol
             visitor.VisitModule(this);
         }
 
-        public AccessModifier GetAccessModifier()
+        public Accessor GetAccessor()
         {
-            return AccessModifier.Public;
+            return Accessor.Public;
         }
+
+        public bool IsReference()
+        {
+            return bReference;
+        }
+
+        public NamespaceDeclSymbol? GetNamespace(Name name)
+            => topLevelComp.GetNamespace(name);
+
+        public ITypeDeclSymbol? GetType(Name name, int typeParamCount)
+            => topLevelComp.GetType(name, typeParamCount);
+
+        public GlobalFuncDeclSymbol? GetFunc(Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
+            => topLevelComp.GetFunc(name, typeParamCount, paramIds);
+
+        public IEnumerable<GlobalFuncDeclSymbol> GetFuncs(Name name, int minTypeParamCount)
+            => topLevelComp.GetFuncs(name, minTypeParamCount);
+
+        public IEnumerable<IDeclSymbolNode> GetMemberDeclNodes()
+            => topLevelComp.GetMemberDeclNodes();
+
+        public void AddType(ITypeDeclSymbol type)
+            => topLevelComp.AddType(type);
+
+        public void AddFunc(GlobalFuncDeclSymbol func)
+            => topLevelComp.AddFunc(func);
+
+        public void AddNamespace(NamespaceDeclSymbol ns)
+            => topLevelComp.AddNamespace(ns);
     }
 }

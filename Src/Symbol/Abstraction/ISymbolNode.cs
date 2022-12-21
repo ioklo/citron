@@ -1,6 +1,7 @@
 ﻿using Citron.Collections;
 using System;
 using System.Diagnostics;
+using System.Security.Cryptography.X509Certificates;
 
 namespace Citron.Symbol
 {
@@ -34,7 +35,16 @@ namespace Citron.Symbol
 
             return userDecl.CanAccess(targetDecl);
         }
-        
+
+        // declSymbol을 가지고 type var를 그대로 인자에 넣는 symbol을 생성한다
+        public static ISymbolNode MakeOpenSymbol(this IDeclSymbolNode declSymbol, SymbolFactory factory)
+        {
+            var outerDeclSymbol = declSymbol.GetOuterDeclNode();
+            var outerSymbol = (outerDeclSymbol == null) ? null : MakeOpenSymbol(outerDeclSymbol, factory);
+
+            return SymbolInstantiator.InstantiateOpen(factory, outerSymbol, declSymbol);
+        }
+
         public static SymbolId GetSymbolId(this ISymbolNode symbol)
         {
             var outer = symbol.GetOuter();

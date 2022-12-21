@@ -66,9 +66,9 @@ namespace Citron.Symbol
             return memberVars[index];
         }
 
-        public AccessModifier GetAccessModifier()
+        public Accessor GetAccessor()
         {
-            return AccessModifier.Public;
+            return Accessor.Public;
         }
 
         public FuncReturn GetReturn()
