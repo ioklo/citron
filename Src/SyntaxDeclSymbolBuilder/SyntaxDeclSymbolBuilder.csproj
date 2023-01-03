@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Citron.Analysis</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Pretune" Version="0.8.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Infra\Infra.csproj" />
+    <ProjectReference Include="..\Module\Module.csproj" />
+    <ProjectReference Include="..\Symbol\Symbol.csproj" />
+    <ProjectReference Include="..\Syntax\Syntax.csproj" />
+  </ItemGroup>
+
+</Project>

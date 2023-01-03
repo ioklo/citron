@@ -1,7 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
     <RootNamespace>Citron.Analysis</RootNamespace>
   </PropertyGroup>
 
@@ -17,7 +16,6 @@
     <ProjectReference Include="..\IR0\IR0.csproj" />
     <ProjectReference Include="..\Log\Log.csproj" />
     <ProjectReference Include="..\Module\Module.csproj" />
-    <ProjectReference Include="..\SymbolId\SymbolId.csproj" />
     <ProjectReference Include="..\Symbol\Symbol.csproj" />
     <ProjectReference Include="..\Syntax\Syntax.csproj" />
   </ItemGroup>

@@ -13,11 +13,11 @@ namespace Citron.Symbol
     {
         SymbolFactory factory;        
         ISymbolNode? outer;
-        ImmutableArray<ITypeSymbol> typeArgs;
+        ImmutableArray<IType> typeArgs;
 
         ISymbolNode? result;
 
-        SymbolInstantiator(SymbolFactory factory, ISymbolNode? outer, ImmutableArray<ITypeSymbol> typeArgs)
+        SymbolInstantiator(SymbolFactory factory, ISymbolNode? outer, ImmutableArray<IType> typeArgs)
         {
             this.factory = factory;
             this.outer = outer;
@@ -25,7 +25,7 @@ namespace Citron.Symbol
             this.result = null;
         }
 
-        public static ITypeSymbol Instantiate(SymbolFactory factory, ISymbolNode outer, ITypeDeclSymbol decl, ImmutableArray<ITypeSymbol> typeArgs)
+        public static ITypeSymbol Instantiate(SymbolFactory factory, ISymbolNode outer, ITypeDeclSymbol decl, ImmutableArray<IType> typeArgs)
         {
             var instantiator = new SymbolInstantiator(factory, outer, typeArgs);
             decl.Apply(instantiator);
@@ -40,10 +40,10 @@ namespace Citron.Symbol
             int baseTypeParamCount = outerSymbol?.GetTotalTypeParamCount() ?? 0;
 
             int typeParamCount = declSymbol.GetTypeParamCount();
-            var typeArgsBuilder = ImmutableArray.CreateBuilder<ITypeSymbol>(typeParamCount);
+            var typeArgsBuilder = ImmutableArray.CreateBuilder<IType>(typeParamCount);
             for (int i = 0; i < typeParamCount; i++)
             {   
-                var typeVar = factory.MakeTypeVar(baseTypeParamCount + i);
+                var typeVar = new TypeVarType(baseTypeParamCount + i);
                 typeArgsBuilder.Add(typeVar);
             }
             var typeArgs = typeArgsBuilder.MoveToImmutable();
@@ -51,7 +51,7 @@ namespace Citron.Symbol
             return Instantiate(factory, outerSymbol, declSymbol, typeArgs);
         }
         
-        public static ISymbolNode Instantiate(SymbolFactory factory, ISymbolNode? outer, IDeclSymbolNode decl, ImmutableArray<ITypeSymbol> typeArgs)
+        public static ISymbolNode Instantiate(SymbolFactory factory, ISymbolNode? outer, IDeclSymbolNode decl, ImmutableArray<IType> typeArgs)
         {
             var instantiator = new SymbolInstantiator(factory, outer, typeArgs);
             decl.Apply(instantiator);
@@ -129,24 +129,7 @@ namespace Citron.Symbol
             Debug.Assert(outer != null);
             result = factory.MakeInterface(outer, decl, typeArgs);
         }
-
-        public void VisitLambda(LambdaDeclSymbol decl)
-        {
-            Debug.Assert(outer != null);
-            Debug.Assert(typeArgs.IsEmpty);
-
-            result = factory.MakeLambda(outer, decl);
-        }
-
-        public void VisitLambdaMemberVar(LambdaMemberVarDeclSymbol decl)
-        {
-            var lambdaOuter = outer as LambdaSymbol;
-            Debug.Assert(lambdaOuter != null);
-            Debug.Assert(typeArgs.IsEmpty);
-
-            result = factory.MakeLambdaMemberVar(lambdaOuter, decl);
-        }
-
+        
         public void VisitModule(ModuleDeclSymbol decl)
         {
             Debug.Assert(outer == null);

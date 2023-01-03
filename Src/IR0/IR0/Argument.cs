@@ -1,9 +1,9 @@
 ﻿namespace Citron.IR0
 {
-    public abstract record Argument
+    public abstract record class Argument
     {
-        public record Normal(Exp Exp) : Argument;
-        public record Params(Exp Exp, int ElemCount) : Argument;
-        public record Ref(Loc Loc) : Argument;
+        public record class Normal(Exp Exp) : Argument;
+        public record class Params(Exp Exp, int ElemCount) : Argument;
+        public record class Ref(Loc Loc) : Argument;
     }
 }

@@ -1,13 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
-
     <IsPackable>false</IsPackable>
-
     <RootNamespace>Citron.TextAnalysis.Test</RootNamespace>
-
-    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

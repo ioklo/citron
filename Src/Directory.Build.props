@@ -1,6 +1,7 @@
 <Project>
   <PropertyGroup>    
     <DisableTransitiveProjectReferences>true</DisableTransitiveProjectReferences>
+    <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 

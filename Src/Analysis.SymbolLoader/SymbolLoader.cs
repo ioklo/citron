@@ -3,13 +3,50 @@ using System.Diagnostics;
 
 using Citron.Infra;
 using Citron.Collections;
+using Citron.Symbol;
+
 using Pretune;
 
-using Citron.Module;
-using Citron.Symbol;
+using M = Citron.Module;
+
+using static Citron.Symbol.FuncParamTypeId;
 
 namespace Citron.Analysis
 {
+    [AutoConstructor]
+    public partial class TypeLoader
+    {
+        SymbolLoader symbolLoader;
+
+        public IType Load(TypeId id)
+        {
+            switch (id)
+            {
+                case SymbolId symbolId:
+                    symbolLoader.Load(symbolId);
+
+                case VarTypeId:
+                    return new VarType();
+
+                case VoidTypeId voidTypeId:
+                    return new VoidType();
+
+                case NullableTypeId nullableId:
+                    throw new NotImplementedException(); // NullableSymbol
+
+                // class C<T> { class D<U> { "여기를 분석할 때" } }
+                // 분석중인 Decl환경에서 C<T>.D<U>
+                // TypeVarSymbolId는 index만 갖고 있다 (1이면 U이다)
+                // 그럼 지금 위치 (C<T>.D<U>)를 넘겨주던가
+                // [T, U] 리스트를 넘겨주던가 해야한다
+                case TypeVarTypeId typeVarId: // 3이러면 어떻게 아는가
+                    return new TypeVarType(typeVarId.Index);
+
+                default: 
+            }
+        }
+    }
+
     // SymbolId => Symbol
     [AutoConstructor]
     public partial class SymbolLoader
@@ -60,23 +97,7 @@ namespace Citron.Analysis
 
                     throw new NotImplementedException(); // 에러 처리
 
-                case VarSymbolId:
-                    return factory.MakeVar();
-
-                case NullableSymbolId nullableId:
-                    throw new NotImplementedException(); // NullableSymbol
-
-                case VoidSymbolId:
-                    return factory.MakeVoid();
-
-                // class C<T> { class D<U> { "여기를 분석할 때" } }
-                // 분석중인 Decl환경에서 C<T>.D<U>
-                // TypeVarSymbolId는 index만 갖고 있다 (1이면 U이다)
-                // 그럼 지금 위치 (C<T>.D<U>)를 넘겨주던가
-                // [T, U] 리스트를 넘겨주던가 해야한다
-                case TypeVarSymbolId typeVarId: // 3이러면 어떻게 아는가
-                    throw new NotImplementedException();                    
-
+                
                 default:
                     throw new UnreachableCodeException();
             }

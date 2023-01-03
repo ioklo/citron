@@ -9,10 +9,10 @@ namespace Citron.Analysis
     {
         SymbolLoader loader;
 
-        public ITypeSymbol? GetSymbol(S.TypeExp typeExp)
+        public IType? GetSymbol(S.TypeExp typeExp)
         {
             var typeExpInfo = typeExp.GetTypeExpInfo();
-            var symbolId = typeExpInfo.GetSymbolId();
+            var typeId = typeExpInfo.GetTypeId();
             return loader.Load(symbolId) as ITypeSymbol;
         }
     }

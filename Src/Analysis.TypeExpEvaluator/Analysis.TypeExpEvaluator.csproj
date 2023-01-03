@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,7 +11,6 @@
     <ProjectReference Include="..\Infra\Infra.csproj" />
     <ProjectReference Include="..\Log\Log.csproj" />
     <ProjectReference Include="..\Module\Module.csproj" />
-    <ProjectReference Include="..\SymbolId\SymbolId.csproj" />
     <ProjectReference Include="..\Symbol\Symbol.csproj" />
     <ProjectReference Include="..\Syntax\Syntax.csproj" />
   </ItemGroup>

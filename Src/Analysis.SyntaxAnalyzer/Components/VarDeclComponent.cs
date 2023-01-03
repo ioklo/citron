@@ -12,6 +12,7 @@ using R = Citron.IR0;
 using Citron.Infra;
 using Citron.Analysis;
 using Citron.Module;
+using Citron.Symbol;
 
 namespace Citron.Analysis
 {   
@@ -51,7 +52,7 @@ namespace Citron.Analysis
             OnCompleted();
         }
 
-        Result MakeRefVarDeclElementAndTypeCheck(string varName, S.Exp exp, S.ISyntaxNode nodeForErrorReport, ITypeSymbol declType)
+        Result MakeRefVarDeclElementAndTypeCheck(string varName, S.Exp exp, S.ISyntaxNode nodeForErrorReport, IType declType)
         {
             var result = MakeRefVarDeclElement(varName, exp, nodeForErrorReport);
 
@@ -80,7 +81,7 @@ namespace Citron.Analysis
             }
         }
 
-        Result AnalyzeVarDeclElement(S.VarDeclElement elem, bool bRefDeclType, ITypeSymbol declType)
+        Result AnalyzeVarDeclElement(S.VarDeclElement elem, bool bRefDeclType, IType declType)
         {
             if (elem.Initializer == null)
             {
@@ -93,7 +94,7 @@ namespace Citron.Analysis
                     globalContext.AddFatalError(A0106_VarDecl_RefDeclNeedInitializer, elem);
 
                 // var x;7 체크
-                if (declType is VarSymbol)
+                if (declType is VarType)
                     globalContext.AddFatalError(A0101_VarDecl_CantInferVarType, elem);
 
                 return new Result(declType, new R.VarDeclElement.NormalDefault(declType, elem.VarName));
@@ -101,7 +102,7 @@ namespace Citron.Analysis
             else
             {
                 // var 처리
-                if (declType is VarSymbol)
+                if (declType is VarType)
                 {
                     // ref var는 에러
                     if (bRefDeclType)

@@ -10,19 +10,19 @@ using Citron.Symbol;
 
 namespace Citron.IR0
 {   
-    public abstract record Stmt : INode
+    public abstract record class Stmt : INode
     {
     }
 
     public record CommandStmt(ImmutableArray<StringExp> Commands) : Stmt;    
 
     // 글로벌 변수 선언
-    public record GlobalVarDeclStmt(ImmutableArray<VarDeclElement> Elems) : Stmt;
-    public record LocalVarDeclStmt(LocalVarDecl VarDecl) : Stmt;
-    public record IfStmt(Exp Cond, Stmt Body, Stmt? ElseBody) : Stmt;
-    public record IfTestClassStmt(Loc Target, ClassSymbol Class, Name VarName, Stmt Body, Stmt? ElseBody) : Stmt;
-    public record IfTestEnumElemStmt(Loc Target, EnumElemSymbol EnumElem, string? VarName, Stmt Body, Stmt? ElseBody) : Stmt;
-    public record ForStmt(ForStmtInitializer? Initializer, Exp? CondExp, Exp? ContinueExp, Stmt Body) : Stmt;
+    public record class GlobalVarDeclStmt(ImmutableArray<VarDeclElement> Elems) : Stmt;
+    public record class LocalVarDeclStmt(LocalVarDecl VarDecl) : Stmt;
+    public record class IfStmt(Exp Cond, Stmt Body, Stmt? ElseBody) : Stmt;
+    public record class IfTestClassStmt(Loc Target, ClassSymbol Class, Name VarName, Stmt Body, Stmt? ElseBody) : Stmt;
+    public record class IfTestEnumElemStmt(Loc Target, EnumElemSymbol EnumElem, string? VarName, Stmt Body, Stmt? ElseBody) : Stmt;
+    public record class ForStmt(ForStmtInitializer? Initializer, Exp? CondExp, Exp? ContinueExp, Stmt Body) : Stmt;
     // singleton
     public record ContinueStmt : Stmt
     {
@@ -31,48 +31,48 @@ namespace Citron.IR0
     }
 
     // singleton
-    public record BreakStmt : Stmt
+    public record class BreakStmt : Stmt
     {
         public static readonly BreakStmt Instance = new BreakStmt();
         BreakStmt() { }        
     }
 
-    public abstract record ReturnInfo
+    public abstract record class ReturnInfo
     {
-        public record Ref(Loc Loc) : ReturnInfo;
-        public record Expression(Exp Exp) : ReturnInfo;
-        public record None : ReturnInfo
+        public record class Ref(Loc Loc) : ReturnInfo;
+        public record class Expression(Exp Exp) : ReturnInfo;
+        public record class None : ReturnInfo
         {
             public static readonly None Instance = new None();
             None() { }
         }
     }
     
-    public record ReturnStmt(ReturnInfo Info): Stmt;    
-    public record BlockStmt(ImmutableArray<Stmt> Stmts) : Stmt;    
-    public record BlankStmt : Stmt;
-    public record ExpStmt(Exp Exp) : Stmt;
-    public record TaskStmt(LambdaSymbol Lambda, ImmutableArray<Argument> CaptureArgs, ImmutableArray<Stmt> Body) : Stmt;
-    public record AwaitStmt(Stmt Body) : Stmt;
+    public record class ReturnStmt(ReturnInfo Info): Stmt;    
+    public record class BlockStmt(ImmutableArray<Stmt> Stmts) : Stmt;    
+    public record class BlankStmt : Stmt;
+    public record class ExpStmt(Exp Exp) : Stmt;
+    public record class TaskStmt(LambdaSymbol Lambda, ImmutableArray<Argument> CaptureArgs, ImmutableArray<Stmt> Body) : Stmt;
+    public record class AwaitStmt(Stmt Body) : Stmt;
     
-    public record AsyncStmt(LambdaSymbol Lambda, ImmutableArray<Argument> CaptureArgs, ImmutableArray<Stmt> Body) : Stmt;
+    public record class AsyncStmt(LambdaSymbol Lambda, ImmutableArray<Argument> CaptureArgs, ImmutableArray<Stmt> Body) : Stmt;
     
-    public record ForeachStmt(ITypeSymbol ElemType, string ElemName, Loc Iterator, Stmt Body) : Stmt;
-    public record YieldStmt(Exp Value) : Stmt;
+    public record class ForeachStmt(ITypeSymbol ElemType, string ElemName, Loc Iterator, Stmt Body) : Stmt;
+    public record class YieldStmt(Exp Value) : Stmt;
 
     // Constructor 내에서 상위 Constructor 호출시 사용
     public record CallClassConstructorStmt(ClassConstructorSymbol Constructor, ImmutableArray<Argument> Args) : Stmt;
     public record CallStructConstructorStmt(StructConstructorSymbol Constructor, ImmutableArray<Argument> Args) : Stmt;
 
-    public abstract record DirectiveStmt : Stmt
+    public abstract record class DirectiveStmt : Stmt
     {
         // init은 지원하지 않기로,
-        // public record Init(ImmutableArray<Loc> Locs) : DirectiveStmt;        
-        public record Null(Loc Loc) : DirectiveStmt;
-        public record NotNull(Loc Loc) : DirectiveStmt;
+        // public record class Init(ImmutableArray<Loc> Locs) : DirectiveStmt;        
+        public record class Null(Loc Loc) : DirectiveStmt;
+        public record class NotNull(Loc Loc) : DirectiveStmt;
 
-        public record StaticNull(Loc Loc) : DirectiveStmt;   // 컴파일러 스태틱 체크
-        public record StaticNotNull(Loc Loc) : DirectiveStmt;
-        public record StaticUnknownNull(Loc Loc) : DirectiveStmt;
+        public record class StaticNull(Loc Loc) : DirectiveStmt;   // 컴파일러 스태틱 체크
+        public record class StaticNotNull(Loc Loc) : DirectiveStmt;
+        public record class StaticUnknownNull(Loc Loc) : DirectiveStmt;
     }    
 }

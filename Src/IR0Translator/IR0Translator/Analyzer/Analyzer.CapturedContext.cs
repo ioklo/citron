@@ -89,7 +89,7 @@ namespace Citron.IR0Translator
                 return false; // 아직 sequence lambda 기능이 없으므로
             }
 
-            public ImmutableArray<(ITypeSymbol DeclType, M.Name VarName)> GetCapturedLocalVars()
+            public ImmutableArray<(IType DeclType, M.Name VarName)> GetCapturedLocalVars()
             {
                 return localCaptures.Select(localCapture => (localCapture.Value, (M.Name)new M.Name.Normal(localCapture.Key))).ToImmutableArray();
             }

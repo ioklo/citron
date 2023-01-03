@@ -11,7 +11,7 @@ namespace Citron.Symbol
     public partial struct FuncParameter
     {
         public FuncParameterKind Kind { get; }
-        public ITypeSymbol Type { get; }
+        public IType Type { get; }
         public Name Name { get; }        
 
         public FuncParameter Apply(TypeEnv typeEnv)
@@ -22,20 +22,6 @@ namespace Citron.Symbol
     }
 
     public static class FuncParameterExtensions
-    {
-        public static ImmutableArray<FuncParamId> MakeFuncParamIds(this ImmutableArray<FuncParameter> funcParams)
-        {
-            var builder = ImmutableArray.CreateBuilder<FuncParamId>(funcParams.Length);
-
-            foreach (var funcParam in funcParams)
-            {
-                var kind = funcParam.Kind;
-                var typeId = funcParam.Type.GetSymbolId();
-
-                builder.Add(new FuncParamId(kind, typeId));
-            }
-
-            return builder.MoveToImmutable();
-        }
+    {   
     }
 }

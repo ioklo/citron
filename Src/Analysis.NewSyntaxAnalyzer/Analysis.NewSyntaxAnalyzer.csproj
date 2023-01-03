@@ -1,7 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
     <AssemblyName>Analysis.NewSyntaxAnalyzer</AssemblyName>
     <RootNamespace>Citron.Analysis</RootNamespace>
   </PropertyGroup>

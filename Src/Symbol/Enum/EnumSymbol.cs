@@ -13,11 +13,11 @@ namespace Citron.Symbol
 
         ISymbolNode outer;
         EnumDeclSymbol decl;
-        ImmutableArray<ITypeSymbol> typeArgs;
+        ImmutableArray<IType> typeArgs;
 
         TypeEnv typeEnv;
 
-        internal EnumSymbol(SymbolFactory factory, ISymbolNode outer, EnumDeclSymbol decl, ImmutableArray<ITypeSymbol> typeArgs)
+        internal EnumSymbol(SymbolFactory factory, ISymbolNode outer, EnumDeclSymbol decl, ImmutableArray<IType> typeArgs)
         {
             this.factory = factory;
             this.outer = outer;
@@ -58,7 +58,7 @@ namespace Citron.Symbol
             return factory.MakeEnumElem(this, elemDecl);
         }
 
-        public ITypeSymbol? GetMemberType(Name memberName, ImmutableArray<ITypeSymbol> typeArgs) 
+        IType? ITypeSymbol.GetMemberType(Name memberName, ImmutableArray<IType> typeArgs) 
         {
             // shortcut
             if (typeArgs.Length != 0)
@@ -67,7 +67,7 @@ namespace Citron.Symbol
             var elemDecl = decl.GetElem(memberName);
             if (elemDecl == null) return null;
 
-            return factory.MakeEnumElem(this, elemDecl);
+            return ((ITypeSymbol)factory.MakeEnumElem(this, elemDecl)).MakeType();
         }
         
         IDeclSymbolNode ISymbolNode.GetDeclSymbolNode() => decl;
@@ -89,7 +89,7 @@ namespace Citron.Symbol
             return typeEnv;
         }
 
-        public ITypeSymbol GetTypeArg(int index)
+        public IType GetTypeArg(int index)
         {
             return typeArgs[index];
         }
@@ -97,6 +97,11 @@ namespace Citron.Symbol
         public void Apply(ITypeSymbolVisitor visitor)
         {
             visitor.VisitEnum(this);
+        }
+
+        IType ITypeSymbol.MakeType()
+        {
+            return new EnumType(this);
         }
 
         public int GetElemCount()

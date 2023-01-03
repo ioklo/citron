@@ -12,34 +12,35 @@ using R = Citron.IR0;
 using Citron.Infra;
 using static Citron.Analysis.SyntaxAnalysisErrorCode;
 using Citron.Module;
+using Citron.Symbol;
 
 namespace Citron.Analysis
 {
     // 어떤 Exp에서 타입 정보 등을 알아냅니다
     
     // entry1의 result        
-    abstract record FuncMatchIndexResult
+    abstract record class FuncMatchIndexResult
     {
-        public record MultipleCandidates : FuncMatchIndexResult
+        public record class MultipleCandidates : FuncMatchIndexResult
         {
             public static readonly MultipleCandidates Instance = new MultipleCandidates();
             private MultipleCandidates() { }
         }
 
-        public record NotFound : FuncMatchIndexResult
+        public record class NotFound : FuncMatchIndexResult
         {
             public static readonly NotFound Instance = new NotFound();
             private NotFound() { }
         }
             
-        public record Success(int Index, ImmutableArray<ITypeSymbol> TypeArgs, ImmutableArray<R.Argument> Args) : FuncMatchIndexResult;
+        public record class Success(int Index, ImmutableArray<IType> TypeArgs, ImmutableArray<R.Argument> Args) : FuncMatchIndexResult;
     }
 
     // entry2의 result
     [AutoConstructor]
     partial struct FuncMatchResult
     {
-        public ImmutableArray<ITypeSymbol> TypeArgs { get; }
+        public ImmutableArray<IType> TypeArgs { get; }
         public ImmutableArray<R.Argument> Args { get; }
     }
 
@@ -63,7 +64,7 @@ namespace Citron.Analysis
             public bool bMatch { get; }
             public bool bExactMatch { get; } // TypeInference를 사용하지 않은 경우                
             public ImmutableArray<R.Argument> Args { get; }
-            public ImmutableArray<ITypeSymbol> TypeArgs { get; }
+            public ImmutableArray<IType> TypeArgs { get; }
         }
 
         class FuncMatcherFatalException : Exception
@@ -71,7 +72,7 @@ namespace Citron.Analysis
         }
 
         ImmutableArray<FuncParameter> paramInfos;
-        ImmutableArray<ITypeSymbol> typeArgs;
+        ImmutableArray<IType> typeArgs;
         ImmutableArray<FuncMatcherArgument> expandedArgs;
         TypeResolver typeResolver;
 
@@ -92,7 +93,7 @@ namespace Citron.Analysis
             TypeEnv outerTypeEnv, 
             ImmutableArray<TFuncDeclSymbol> funcDecls,
             ImmutableArray<S.Argument> sargs, 
-            ImmutableArray<ITypeSymbol> typeArgs)
+            ImmutableArray<IType> typeArgs)
             where TFuncDeclSymbol : IFuncDeclSymbol
         {
             // 여러 함수 중에서 인자가 맞는것을 선택해야 한다
@@ -171,7 +172,7 @@ namespace Citron.Analysis
             TypeEnv outerTypeEnv,
             ImmutableArray<FuncParameter> paramTypes,
             int? variadicParamIndex,
-            ImmutableArray<ITypeSymbol> typeArgs,
+            ImmutableArray<IType> typeArgs,
             ImmutableArray<S.Argument> sargs)
         {
             var result = MatchCallableCore(globalContext, bodyContext, localContext, outerTypeEnv, paramTypes, variadicParamIndex, typeArgs, sargs);
@@ -181,7 +182,7 @@ namespace Citron.Analysis
                 return null;
         }
 
-        FuncMatcher(ImmutableArray<FuncParameter> paramInfos, ImmutableArray<ITypeSymbol> typeArgs, ImmutableArray<FuncMatcherArgument> expandedArgs, TypeResolver typeResolver, GlobalContext globalContext, TypeEnv outerTypeEnv)
+        FuncMatcher(ImmutableArray<FuncParameter> paramInfos, ImmutableArray<IType> typeArgs, ImmutableArray<FuncMatcherArgument> expandedArgs, TypeResolver typeResolver, GlobalContext globalContext, TypeEnv outerTypeEnv)
         {
             this.paramInfos = paramInfos;
             this.typeArgs = typeArgs;
@@ -218,7 +219,7 @@ namespace Citron.Analysis
             TypeEnv outerTypeEnv,
             ImmutableArray<FuncParameter> paramTypes,
             int? variadicParamIndex,
-            ImmutableArray<ITypeSymbol> typeArgs,
+            ImmutableArray<IType> typeArgs,
             ImmutableArray<S.Argument> sargs) // nothrow
         {
             try

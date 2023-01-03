@@ -1,4 +1,5 @@
 ﻿using Citron.Collections;
+using Citron.Module;
 using System;
 using System.Diagnostics;
 using System.Security.Cryptography.X509Certificates;
@@ -10,11 +11,11 @@ namespace Citron.Symbol
     {
         // 순회
         ISymbolNode? GetOuter();
-        IDeclSymbolNode? GetDeclSymbolNode();
+        IDeclSymbolNode GetDeclSymbolNode();
         
         TypeEnv GetTypeEnv();
         ISymbolNode Apply(TypeEnv typeEnv);        
-        ITypeSymbol GetTypeArg(int i);
+        IType GetTypeArg(int i);
     }
 
     public static class SymbolNodeExtensions
@@ -22,8 +23,6 @@ namespace Citron.Symbol
         public static int GetTotalTypeParamCount(this ISymbolNode symbol)
         {
             var decl = symbol.GetDeclSymbolNode();
-            if (decl == null) return 0;
-
             return decl.GetTotalTypeParamCount();
         }
 
@@ -31,7 +30,6 @@ namespace Citron.Symbol
         {
             var targetDecl = target.GetDeclSymbolNode();
             var userDecl = user.GetDeclSymbolNode();
-            Debug.Assert(targetDecl != null && userDecl != null);
 
             return userDecl.CanAccess(targetDecl);
         }
@@ -45,52 +43,34 @@ namespace Citron.Symbol
             return SymbolInstantiator.InstantiateOpen(factory, outerSymbol, declSymbol);
         }
 
+        // TODO: 
         public static SymbolId GetSymbolId(this ISymbolNode symbol)
         {
             var outer = symbol.GetOuter();
             if (outer != null)
             {
                 var outerId = outer.GetSymbolId();
+                var decl = symbol.GetDeclSymbolNode();
+                var declName = decl.GetNodeName();
 
-                if (outerId is ModuleSymbolId outerModuleId)
+                int typeParamCount = decl.GetTypeParamCount();
+                var typeArgIdsBuilder = ImmutableArray.CreateBuilder<TypeId>(typeParamCount);
+                for (int i = 0; i < typeParamCount; i++)
                 {
-                    var decl = symbol.GetDeclSymbolNode();
-                    Debug.Assert(decl != null); // ModuleSymbolId이기 때문에 무조건 있다
-
-                    var declName = decl.GetNodeName();
-
-                    int typeParamCount = decl.GetTypeParamCount();
-                    var typeArgIdsBuilder = ImmutableArray.CreateBuilder<SymbolId>(typeParamCount);
-                    for (int i = 0; i < typeParamCount; i++)
-                    {
-                        var typeArgId = symbol.GetTypeArg(i);
-                        typeArgIdsBuilder.Add(typeArgId.GetSymbolId());
-                    }
-
-                    return outerModuleId.Child(declName.Name, typeArgIdsBuilder.MoveToImmutable(), declName.ParamIds);
+                    var typeArg = symbol.GetTypeArg(i);
+                    typeArgIdsBuilder.Add(typeArg.GetTypeId());
                 }
-                else
-                {
-                    throw new NotImplementedException(); // 에러 처리
-                }
+
+                return outerId.Child(declName.Name, typeArgIdsBuilder.MoveToImmutable(), declName.ParamIds);
             }
             else
             {
-                // 루트 노드는 몇 안된다
-                switch(symbol)
-                {   
-                    case ModuleSymbol module:
-                        var moduleDecl = module.GetDeclSymbolNode();
-                        {
-                            return new ModuleSymbolId(moduleDecl.GetNodeName().Name, null);
-                        }
+                Debug.Assert(symbol is ModuleSymbol);
+                var declSymbol = symbol.GetDeclSymbolNode();
+                var nodeName = declSymbol.GetNodeName();
 
-                    // case NullableSymbol: return new NullableSymbolId();
-
-                    default:
-                        throw new NotImplementedException();
-                }
-
+                Debug.Assert(nodeName.TypeParamCount == 0 && nodeName.ParamIds.Length == 0);
+                return new SymbolId(nodeName.Name, null);
             }
         }
     }

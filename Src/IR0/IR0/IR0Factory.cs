@@ -411,22 +411,6 @@ namespace Citron.IR0
             return elems.Select(e => new FuncParameter(FuncParameterKind.Default, e.Type, new Name.Normal(e.Name))).ToImmutableArray();
         }
 
-        public IHolder<ImmutableArray<FuncParameter>> FuncParamHolder()
-        {
-            return new Holder<ImmutableArray<FuncParameter>>(default);
-        }
-
-        public IHolder<ImmutableArray<FuncParameter>> FuncParamHolder(params (ITypeSymbol Type, string Name)[] elems)
-        {
-            return new Holder<ImmutableArray<FuncParameter>>(elems.Select(e => new FuncParameter(FuncParameterKind.Default, e.Type, new Name.Normal(e.Name))).ToImmutableArray());
-        }
-
-        public IHolder<ImmutableArray<FuncParameter>> FuncParamHolder(params FuncParameter[] funcParams)
-        {
-            return new Holder<ImmutableArray<FuncParameter>>(funcParams.ToImmutableArray());
-        }
-
-
         public ImmutableArray<Argument> Args(params Exp[] exps)
         {
             return exps.Select(e => (Argument)new Argument.Normal(e)).ToImmutableArray();
@@ -467,11 +451,6 @@ namespace Citron.IR0
             return new FuncParameter(FuncParameterKind.Ref, type, new Name.Normal(name));
         }
 
-        public IHolder<FuncReturn> FuncRetHolder(ITypeSymbol type)
-        {
-            return new Holder<FuncReturn>(new FuncReturn(false, type));
-        }
-
         public FuncReturn FuncRet(ITypeSymbol type)
         {
             return new FuncReturn(false, type);
@@ -487,10 +466,10 @@ namespace Citron.IR0
             return new Argument.Normal(exp);
         }
 
-        public LambdaExp Lambda(LambdaSymbol lambda, params Argument[] args)
-        {
-            return new LambdaExp(lambda, args.ToImmutableArray());
-        }
+        //public LambdaExp Lambda(LambdaSymbol lambda, params Argument[] args)
+        //{
+        //    return new LambdaExp(lambda, args.ToImmutableArray());
+        //}
 
         public ListExp List(ITypeSymbol itemType, params Exp[] exps)
         {

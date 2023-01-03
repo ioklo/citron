@@ -8,25 +8,33 @@ using System.Diagnostics;
 
 namespace Citron.Syntax
 {
-    public abstract record TypeExp : ISyntaxNode
+    public abstract record class TypeExp : ISyntaxNode
     {
-        TypeExpInfo? info;
-
-        public void SetTypeExpInfo(TypeExpInfo info)
+        enum InitializeState
         {
-            this.info = info;
+            BeforeInitType,
+            AfterInitType
         }
 
-        public TypeExpInfo GetTypeExpInfo()
-        {
-            if (info == null)
-                throw new NullReferenceException();
+        object? type; // IType, 하위 dependency이기 때문에, object 레퍼런스로 가리키다가 캐스팅한다
+        InitializeState initState;
 
-            return info;
+        public void InitType(object type)
+        {
+            Debug.Assert(initState == InitializeState.BeforeInitType);
+            this.type = type;
+
+            this.initState = InitializeState.AfterInitType;
+        }
+
+        public new object GetType()
+        {
+            Debug.Assert(InitializeState.BeforeInitType < initState);
+            return type!;
         }
     }
 
-    public record IdTypeExp(string Name, ImmutableArray<TypeExp> TypeArgs) : TypeExp;
-    public record MemberTypeExp(TypeExp Parent, string MemberName, ImmutableArray<TypeExp> TypeArgs) : TypeExp;
-    public record NullableTypeExp(TypeExp InnerTypeExp) : TypeExp;
+    public record class IdTypeExp(string Name, ImmutableArray<TypeExp> TypeArgs) : TypeExp;
+    public record class MemberTypeExp(TypeExp Parent, string MemberName, ImmutableArray<TypeExp> TypeArgs) : TypeExp;
+    public record class NullableTypeExp(TypeExp InnerTypeExp) : TypeExp;
 }

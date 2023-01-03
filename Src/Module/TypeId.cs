@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace Citron.Module
 {
-    public abstract record TypeDeclId;
+    public abstract record class TypeDeclId;
 
-    public record RootTypeDeclId(Name Module, NamespacePath? Namespace, TypeName Name) : TypeDeclId;
-    public record MemberTypeDeclId(TypeDeclId Outer, TypeName Name) : TypeDeclId;
+    public record class RootTypeDeclId(Name Module, NamespacePath? Namespace, TypeName Name) : TypeDeclId;
+    public record class MemberTypeDeclId(TypeDeclId Outer, TypeName Name) : TypeDeclId;
 }

@@ -5,46 +5,46 @@ using System;
 namespace Citron.Symbol
 {
     // Error/NotFound/Value
-    public abstract record SymbolQueryResult
+    public abstract record class SymbolQueryResult
     {   
-        public record Error : SymbolQueryResult
+        public record class Error : SymbolQueryResult
         {
-            public record VarWithTypeArg : Error
+            public record class VarWithTypeArg : Error
             {
                 internal VarWithTypeArg() { }
             }
 
-            public record MultipleCandidates : Error
+            public record class MultipleCandidates : Error
             {
                 internal MultipleCandidates() { }
             }
         }
 
-        public record NotFound : SymbolQueryResult
+        public record class NotFound : SymbolQueryResult
         {   
             internal NotFound() { }
         }
 
         // 검색으로 나올 수 있는 종류들
-        public abstract record Valid : SymbolQueryResult;
+        public abstract record class Valid : SymbolQueryResult;
         
-        public record GlobalFuncs(ImmutableArray<DeclAndConstructor<GlobalFuncDeclSymbol, GlobalFuncSymbol>> Infos) : Valid;
+        public record class GlobalFuncs(ImmutableArray<DeclAndConstructor<GlobalFuncDeclSymbol, GlobalFuncSymbol>> Infos) : Valid;
 
-        public record Class(Func<ImmutableArray<ITypeSymbol>, ClassSymbol> ClassConstructor) : Valid;
+        public record Class(Func<ImmutableArray<IType>, ClassSymbol> ClassConstructor) : Valid;
         public record ClassMemberFuncs(ImmutableArray<DeclAndConstructor<ClassMemberFuncDeclSymbol, ClassMemberFuncSymbol>> Infos) : Valid;
         public record ClassMemberVar(ClassMemberVarSymbol Var) : Valid;
 
-        public record Struct(Func<ImmutableArray<ITypeSymbol>, StructSymbol> StructConstructor) : Valid;        
-        public record StructMemberFuncs(ImmutableArray<DeclAndConstructor<StructMemberFuncDeclSymbol, StructMemberFuncSymbol>> Infos) : Valid;
-        public record StructMemberVar(StructMemberVarSymbol Var) : Valid;
+        public record class Struct(Func<ImmutableArray<IType>, StructSymbol> StructConstructor) : Valid;        
+        public record class StructMemberFuncs(ImmutableArray<DeclAndConstructor<StructMemberFuncDeclSymbol, StructMemberFuncSymbol>> Infos) : Valid;
+        public record class StructMemberVar(StructMemberVarSymbol Var) : Valid;
 
-        public record Enum(Func<ImmutableArray<ITypeSymbol>, EnumSymbol> EnumConstructor) : Valid;
-        public record EnumElem(EnumElemSymbol Symbol) : Valid;
-        public record EnumElemMemberVar(EnumElemMemberVarSymbol Symbol) : Valid;
-        public record TupleMemberVar(TupleMemberVarSymbol Symbol) : Valid;
+        public record class Enum(Func<ImmutableArray<IType>, EnumSymbol> EnumConstructor) : Valid;
+        public record class EnumElem(EnumElemSymbol Symbol) : Valid;
+        public record class EnumElemMemberVar(EnumElemMemberVarSymbol Symbol) : Valid;
 
-        public record LambdaMemberVar(LambdaMemberVarSymbol Symbol) : Valid;
-        public record TypeVar(TypeVarSymbol Symbol) : Valid;
+        // 어떻게 쓰일지 몰라서, 실제로 만들때 채워넣는다
+        // public record class TupleMemberVar : Valid; 
+        // public record class TypeVar : Valid;
     }
 
     public static class SymbolQueryResults

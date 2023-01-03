@@ -62,14 +62,14 @@ namespace Citron.Test.IntegrateTest
         }
     }
 
-    public abstract record TestData
+    public abstract record class TestData
     {
         public abstract string? GetCode();
         public abstract R.Script? GetRScript();
         public abstract Task TestAsync();
     }
 
-    public record ParseTranslateTestData(string Code, S.Script SScript, R.Script RScript) : TestData
+    public record class ParseTranslateTestData(string Code, S.Script SScript, R.Script RScript) : TestData
     {
         public override string? GetCode()
         {
@@ -87,7 +87,7 @@ namespace Citron.Test.IntegrateTest
         }
     }
 
-    public record ParseTranslateWithErrorTestData : TestData
+    public record class ParseTranslateWithErrorTestData : TestData
     {
         string code;
         S.Script sscript;
@@ -123,7 +123,7 @@ namespace Citron.Test.IntegrateTest
         }
     }
 
-    public record ParseTranslateEvalTestData(string Code, S.Script SScript, R.Script RScript, string Result) : TestData
+    public record class ParseTranslateEvalTestData(string Code, S.Script SScript, R.Script RScript, string Result) : TestData
     {
         public override string? GetCode()
         {
@@ -141,7 +141,7 @@ namespace Citron.Test.IntegrateTest
         }
     }
 
-    public record EvalTestData(string Code, string Result) : TestData
+    public record class EvalTestData(string Code, string Result) : TestData
     {
         public override string? GetCode()
         {
@@ -159,7 +159,7 @@ namespace Citron.Test.IntegrateTest
         }
     }
 
-    public record EvalWithErrorTestData(string Code, SyntaxAnalysisErrorCode ErrorCode) : TestData
+    public record class EvalWithErrorTestData(string Code, SyntaxAnalysisErrorCode ErrorCode) : TestData
     {
         public override string? GetCode()
         {

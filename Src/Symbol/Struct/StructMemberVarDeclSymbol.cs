@@ -11,35 +11,33 @@ using System.Diagnostics;
 namespace Citron.Symbol
 {   
     public partial class StructMemberVarDeclSymbol : IDeclSymbolNode
-    {
-        enum InitializeState
-        {
-            BeforeSettingDeclType,
-            Done,
-        }
-
+    {   
         StructDeclSymbol outer;
         Accessor accessor;
         bool bStatic;
-        ITypeSymbol? declType;
+        IType declType;
         Name name;
 
-        InitializeState initState;
-
-        public StructMemberVarDeclSymbol(StructDeclSymbol outer, Accessor accessor, bool bStatic, Name name)
+        public StructMemberVarDeclSymbol(StructDeclSymbol outer, Accessor accessor, bool bStatic, IType declType, Name name)
         {
             this.outer = outer;
             this.accessor = accessor;
             this.bStatic = bStatic;
+            this.declType = declType;
             this.name = name;
-            this.initState = InitializeState.BeforeSettingDeclType;
         }
 
-        public void SetDeclType(ITypeSymbol declType)
+        int IDeclSymbolNode.GetTypeParamCount()
         {
-            Debug.Assert(initState == InitializeState.BeforeSettingDeclType);
-            this.declType = declType;
+            return 0;
         }
+
+        Name IDeclSymbolNode.GetTypeParam(int i)
+        {
+            throw new RuntimeFatalException();
+        }
+
+        
 
         public IDeclSymbolNode? GetOuterDeclNode()
         {
@@ -61,10 +59,9 @@ namespace Citron.Symbol
             return new DeclSymbolNodeName(name, 0, default);
         }
 
-        public ITypeSymbol GetDeclType()
-        {
-            Debug.Assert(initState == InitializeState.Done);
-            return declType!;
+        public IType GetDeclType()
+        {   
+            return declType;
         }
 
         public void Apply(IDeclSymbolNodeVisitor visitor)

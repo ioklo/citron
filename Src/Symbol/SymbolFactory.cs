@@ -34,7 +34,7 @@ namespace Citron.Symbol
             return new NamespaceSymbol(this, outer, decl);
         }
 
-        public GlobalFuncSymbol MakeGlobalFunc(ITopLevelSymbolNode outer, GlobalFuncDeclSymbol decl, ImmutableArray<ITypeSymbol> typeArgs)
+        public GlobalFuncSymbol MakeGlobalFunc(ITopLevelSymbolNode outer, GlobalFuncDeclSymbol decl, ImmutableArray<IType> typeArgs)
         {
             Debug.Assert(outer.GetDeclSymbolNode() == decl.GetOuterDeclNode());
             Debug.Assert(decl.GetTypeParamCount() == typeArgs.Length);
@@ -46,7 +46,7 @@ namespace Citron.Symbol
 
         #region Class
 
-        public ClassSymbol MakeClass(ISymbolNode outer, ClassDeclSymbol decl, ImmutableArray<ITypeSymbol> typeArgs)
+        public ClassSymbol MakeClass(ISymbolNode outer, ClassDeclSymbol decl, ImmutableArray<IType> typeArgs)
         {
             Debug.Assert(outer.GetDeclSymbolNode() == decl.GetOuterDeclNode());
             Debug.Assert(decl.GetTypeParamCount() == typeArgs.Length);
@@ -66,7 +66,7 @@ namespace Citron.Symbol
             return new ClassMemberVarSymbol(this, @class, decl);
         }
 
-        public ClassMemberFuncSymbol MakeClassMemberFunc(ClassSymbol outer, ClassMemberFuncDeclSymbol decl, ImmutableArray<ITypeSymbol> typeArgs)
+        public ClassMemberFuncSymbol MakeClassMemberFunc(ClassSymbol outer, ClassMemberFuncDeclSymbol decl, ImmutableArray<IType> typeArgs)
         {
             Debug.Assert(outer.GetDeclSymbolNode() == decl.GetOuterDeclNode());
             Debug.Assert(decl.GetTypeParamCount() == typeArgs.Length);
@@ -76,21 +76,9 @@ namespace Citron.Symbol
 
         #endregion
 
-        #region Tuple
-        public TupleSymbol MakeTuple(ImmutableArray<TupleMemberVarSymbol> memberVars)
-        {
-            return new TupleSymbol(this, memberVars);
-        }
-
-        public TupleMemberVarSymbol MakeTupleMemberVar(IHolder<TupleSymbol> outerHolder, ITypeSymbol declType, string? name, int index)
-        {
-            return new TupleMemberVarSymbol(this, outerHolder, declType, name, index);
-        }
-        #endregion
-
         #region Interface
 
-        public InterfaceSymbol MakeInterface(ISymbolNode outer, InterfaceDeclSymbol decl, ImmutableArray<ITypeSymbol> typeArgs)
+        public InterfaceSymbol MakeInterface(ISymbolNode outer, InterfaceDeclSymbol decl, ImmutableArray<IType> typeArgs)
         {
             Debug.Assert(outer.GetDeclSymbolNode() == decl.GetOuterDeclNode());
             Debug.Assert(decl.GetTypeParamCount() == typeArgs.Length);
@@ -102,7 +90,7 @@ namespace Citron.Symbol
 
         #region Struct
 
-        public StructSymbol MakeStruct(ISymbolNode outer, StructDeclSymbol decl, ImmutableArray<ITypeSymbol> typeArgs)
+        public StructSymbol MakeStruct(ISymbolNode outer, StructDeclSymbol decl, ImmutableArray<IType> typeArgs)
         {
             Debug.Assert(outer.GetDeclSymbolNode() == decl.GetOuterDeclNode());
             Debug.Assert(decl.GetTypeParamCount() == typeArgs.Length);
@@ -117,7 +105,7 @@ namespace Citron.Symbol
             return new StructConstructorSymbol(this, @struct, decl);
         }
 
-        public StructMemberFuncSymbol MakeStructMemberFunc(StructSymbol @struct, StructMemberFuncDeclSymbol decl, ImmutableArray<ITypeSymbol> typeArgs)
+        public StructMemberFuncSymbol MakeStructMemberFunc(StructSymbol @struct, StructMemberFuncDeclSymbol decl, ImmutableArray<IType> typeArgs)
         {
             Debug.Assert(@struct.GetDeclSymbolNode() == decl.GetOuterDeclNode());
             Debug.Assert(decl.GetTypeParamCount() == typeArgs.Length);
@@ -135,7 +123,7 @@ namespace Citron.Symbol
 
         #region Enum
 
-        public EnumSymbol MakeEnum(ISymbolNode outer, EnumDeclSymbol decl, ImmutableArray<ITypeSymbol> typeArgs)
+        public EnumSymbol MakeEnum(ISymbolNode outer, EnumDeclSymbol decl, ImmutableArray<IType> typeArgs)
         {
             Debug.Assert(outer.GetDeclSymbolNode() == decl.GetOuterDeclNode());
             Debug.Assert(decl.GetTypeParamCount() == typeArgs.Length);
@@ -154,50 +142,6 @@ namespace Citron.Symbol
         {
             Debug.Assert(enumElem.GetDeclSymbolNode() == decl.GetOuterDeclNode());
             return new EnumElemMemberVarSymbol(this, enumElem, decl);
-        }
-
-        #endregion
-
-        #region Lambda
-
-        public LambdaSymbol MakeLambda(ISymbolNode outer, LambdaDeclSymbol decl)
-        {
-            Debug.Assert(outer.GetDeclSymbolNode() == decl.GetOuterDeclNode());
-            return new LambdaSymbol(this, outer, decl);
-        }
-
-        public LambdaMemberVarSymbol MakeLambdaMemberVar(LambdaSymbol outer, LambdaMemberVarDeclSymbol decl)
-        {
-            Debug.Assert(outer.GetDeclSymbolNode() == decl.GetOuterDeclNode());
-            return new LambdaMemberVarSymbol(this, outer, decl);
-        }
-        #endregion
-
-        #region TypeVar
-        public TypeVarSymbol MakeTypeVar(int index)
-        {
-            // outer가 확정이 안되었을 수 있어서 assert를 시킬 수 없다
-            // Debug.Assert(outer.GetDeclSymbolNode() == decl.GetOuterDeclNode());
-            return new TypeVarSymbol(index);
-        }
-
-        #endregion
-
-        #region Special
-
-        public VarSymbol MakeVar()
-        {
-            return new VarSymbol();
-        }
-
-        public VoidSymbol MakeVoid()
-        {
-            return new VoidSymbol();
-        }
-
-        public NullableSymbol MakeNullable(ITypeSymbol innerType)
-        {
-            return new NullableSymbol(this, innerType);
         }
 
         #endregion

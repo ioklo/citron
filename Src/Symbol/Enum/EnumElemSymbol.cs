@@ -91,7 +91,7 @@ namespace Citron.Symbol
             return outer.GetTypeEnv();
         }
 
-        public ITypeSymbol GetTypeArg(int index)
+        public IType GetTypeArg(int index)
         {
             throw new RuntimeFatalException();
         }
@@ -112,9 +112,21 @@ namespace Citron.Symbol
             visitor.VisitEnumElem(this);
         }
 
+        IType ITypeSymbol.MakeType()
+        {
+            return new EnumElemType(this);
+        }
+
+        IType? ITypeSymbol.GetMemberType(Name memberName, ImmutableArray<IType> typeArgs)
+        {
+            return null;
+        }
+
         ITypeSymbol ITypeSymbol.Apply(TypeEnv typeEnv) => Apply(typeEnv);
         IDeclSymbolNode ISymbolNode.GetDeclSymbolNode() => GetDeclSymbolNode();
         ISymbolNode ISymbolNode.Apply(TypeEnv typeEnv) => Apply(typeEnv);
         ISymbolNode? ISymbolNode.GetOuter() => GetOuter();
+
+        
     }
 }

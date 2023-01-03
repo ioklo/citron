@@ -4,6 +4,7 @@ using Citron.Collections;
 using System.Diagnostics;
 
 using Citron.Module;
+using System.Runtime.CompilerServices;
 
 namespace Citron.Symbol
 {    
@@ -12,20 +13,20 @@ namespace Citron.Symbol
     // 실행중에는 runtime type env
     public struct TypeEnv
     {
-        ImmutableArray<ITypeSymbol> data;
+        ImmutableArray<IType> data;
         public static TypeEnv Empty = new TypeEnv(default);
         
-        internal TypeEnv(ImmutableArray<ITypeSymbol> data)
+        internal TypeEnv(ImmutableArray<IType> data)
         {
             this.data = data;
         }
 
-        public ITypeSymbol GetValue(int index)
+        public IType GetValue(int index)
         {
             return data[index];
         }
 
-        public TypeEnv AddTypeArgs(ImmutableArray<ITypeSymbol> typeArgs)
+        public TypeEnv AddTypeArgs(ImmutableArray<IType> typeArgs)
         {
             return new TypeEnv(data.AddRange(typeArgs));
         }

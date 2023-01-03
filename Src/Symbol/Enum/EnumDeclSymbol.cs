@@ -66,7 +66,12 @@ namespace Citron.Symbol
         {
             return typeParams.Length;
         }
-        
+
+        public Name GetTypeParam(int i)
+        {
+            return typeParams[i];
+        }
+
         public DeclSymbolNodeName GetNodeName()
         {
             return new DeclSymbolNodeName(name, typeParams.Length, default);

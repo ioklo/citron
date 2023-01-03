@@ -7,5 +7,5 @@ using System.Threading.Tasks;
 namespace Citron.Module
 {
     // 타입 이름
-    public record TypeName(Name Name, int TypeParamCount);
+    public record class TypeName(Name Name, int TypeParamCount);
 }

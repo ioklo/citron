@@ -351,7 +351,7 @@ namespace Citron.Analysis
 
         (TFuncSymbol Func, ImmutableArray<R.Argument> Args) InternalMatchFunc<TFuncDeclSymbol, TFuncSymbol>(
             ImmutableArray<DeclAndConstructor<TFuncDeclSymbol, TFuncSymbol>> declAndConstructors,
-            ImmutableArray<ITypeSymbol> typeArgsForMatch,
+            ImmutableArray<IType> typeArgsForMatch,
             ImmutableArray<S.Argument> sargs, S.ISyntaxNode nodeForErrorReport)
             where TFuncDeclSymbol : IFuncDeclSymbol
         {

@@ -6,7 +6,7 @@ namespace Citron.Symbol
     public partial struct FuncReturn
     {
         public bool IsRef { get; }
-        public ITypeSymbol Type { get; }
+        public IType Type { get; }
 
         public FuncReturn Apply(TypeEnv typeEnv)
         {

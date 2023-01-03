@@ -1,8 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
-    <Nullable>enable</Nullable>
     <RootNamespace>Citron</RootNamespace>
   </PropertyGroup>
 
@@ -14,8 +12,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Infra\Infra.csproj" />
     <ProjectReference Include="..\Module\Module.csproj" />
-    <ProjectReference Include="..\SymbolId\SymbolId.csproj" />
-    <ProjectReference Include="..\Symbol\Symbol.csproj" />
   </ItemGroup>
 
 </Project>

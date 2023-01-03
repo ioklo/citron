@@ -42,6 +42,16 @@ namespace Citron.Symbol
             this.initState = InitializeState.AfterInitMemberVars;
         }
 
+        int IDeclSymbolNode.GetTypeParamCount()
+        {
+            return 0;
+        }
+
+        Name IDeclSymbolNode.GetTypeParam(int i)
+        {
+            throw new RuntimeFatalException();
+        }
+
         public int GetMemberVarCount()
         {
             Debug.Assert(InitializeState.BeforeInitMemberVars < initState);

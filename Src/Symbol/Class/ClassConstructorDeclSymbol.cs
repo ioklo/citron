@@ -23,6 +23,16 @@ namespace Citron.Symbol
             this.bTrivial = bTrivial;
         }
 
+        int IDeclSymbolNode.GetTypeParamCount()
+        {
+            return 0;
+        }
+
+        Name IDeclSymbolNode.GetTypeParam(int i)
+        {
+            throw new RuntimeFatalException();
+        }
+
         public Accessor GetAccessor()
         {
             return accessModifier;

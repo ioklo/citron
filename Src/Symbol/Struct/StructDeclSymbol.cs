@@ -25,8 +25,8 @@ namespace Citron.Symbol
         Name name;
         ImmutableArray<Name> typeParams;
 
-        StructSymbol? baseStruct;
-        ImmutableArray<InterfaceSymbol> interfaces;
+        StructType? baseStruct;
+        ImmutableArray<InterfaceType> interfaces;
 
         List<StructMemberVarDeclSymbol> memberVars;
         List<StructConstructorDeclSymbol> constructors;
@@ -53,12 +53,22 @@ namespace Citron.Symbol
             this.initState = InitializeState.BeforeInitBaseTypes;
         }
 
-        public void InitBaseTypes(StructSymbol? baseStruct, ImmutableArray<InterfaceSymbol> interfaces)
+        public void InitBaseTypes(StructType? baseStruct, ImmutableArray<InterfaceType> interfaces)
         {
             Debug.Assert(initState == InitializeState.BeforeInitBaseTypes);
             this.baseStruct = baseStruct;
             this.interfaces = interfaces;
             this.initState = InitializeState.AfterInitBaseTypes;
+        }
+
+        int IDeclSymbolNode.GetTypeParamCount()
+        {
+            return typeParams.Length;
+        }
+
+        Name IDeclSymbolNode.GetTypeParam(int i)
+        {
+            return typeParams[i];
         }
 
         public void AddMemberVar(StructMemberVarDeclSymbol memberVar)
@@ -101,7 +111,7 @@ namespace Citron.Symbol
             return trivialConstructor;
         }
 
-        public StructSymbol? GetBaseStruct()
+        public StructType? GetBaseStruct()
         {
             return baseStruct;
         }

@@ -47,7 +47,7 @@ namespace Citron.Symbol
         //    return (name, null);
         //}
 
-        public ITypeSymbol GetTypeArg(int index)
+        public IType GetTypeArg(int index)
         {
             throw new RuntimeFatalException();
         }

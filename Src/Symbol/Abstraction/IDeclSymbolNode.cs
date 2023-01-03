@@ -8,7 +8,7 @@ using System.Diagnostics;
 
 namespace Citron.Symbol
 {
-    public record DeclSymbolNodeName(Name Name, int TypeParamCount, ImmutableArray<FuncParamId> ParamIds);
+    public record class DeclSymbolNodeName(Name Name, int TypeParamCount, ImmutableArray<FuncParamId> ParamIds);
 
     // DeclSymbol 간에 참조할 수 있는 인터페이스 확장에는 닫혀있다 
     public interface IDeclSymbolNode
@@ -18,6 +18,7 @@ namespace Citron.Symbol
         DeclSymbolNodeName GetNodeName();
         IEnumerable<IDeclSymbolNode> GetMemberDeclNodes();
 
+        int GetTypeParamCount();
         Name GetTypeParam(int i);
         void Apply(IDeclSymbolNodeVisitor visitor);
     }
@@ -29,13 +30,7 @@ namespace Citron.Symbol
     }    
 
     public static class IDeclSymbolNodeExtensions
-    {
-        public static int GetTypeParamCount(this IDeclSymbolNode node)
-        {
-            var nodeName = node.GetNodeName();
-            return nodeName.TypeParamCount;
-        }
-
+    {   
         public static ModuleDeclSymbol GetModule(this IDeclSymbolNode node)
         {
             while(true) // 괜히 걱정, 언젠가는 최상위 outerNode를 만날 것이다

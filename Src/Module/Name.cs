@@ -5,9 +5,9 @@ using System.Diagnostics;
 namespace Citron.Module
 {
     // Name algebraic data type 
-    public abstract record Name
+    public abstract record class Name
     {
-        public record Singleton(string DebugText) : Name;
+        public record class Singleton(string DebugText) : Name;
 
         public static readonly Singleton IndexerGet = new Singleton("IndexerGet");
         public static readonly Singleton IndexerSet = new Singleton("IndexerSet");
@@ -21,8 +21,8 @@ namespace Citron.Module
         // for TopLevelStmt
         public static readonly Name TopLevel = new Singleton("TopLevel");
 
-        public record Anonymous(int Index) : Name;
+        public record class Anonymous(int Index) : Name;
         public record ConstructorParam(int Index) : Name;
-        public record Normal(string Text) : Name;
+        public record class Normal(string Text) : Name;
     }
 }

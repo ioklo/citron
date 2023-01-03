@@ -20,7 +20,7 @@ namespace Citron.Symbol
 
         // F_int_int
         GlobalFuncDeclSymbol decl;
-        ImmutableArray<ITypeSymbol> typeArgs;
+        ImmutableArray<IType> typeArgs;
 
         TypeEnv typeEnv;
 
@@ -28,7 +28,7 @@ namespace Citron.Symbol
         IFuncSymbol IFuncSymbol.Apply(TypeEnv typeEnv) => Apply(typeEnv);
         IDeclSymbolNode ISymbolNode.GetDeclSymbolNode() => GetDeclSymbolNode();
 
-        internal GlobalFuncSymbol(SymbolFactory factory, ITopLevelSymbolNode outer, GlobalFuncDeclSymbol funcDecl, ImmutableArray<ITypeSymbol> typeArgs)
+        internal GlobalFuncSymbol(SymbolFactory factory, ITopLevelSymbolNode outer, GlobalFuncDeclSymbol funcDecl, ImmutableArray<IType> typeArgs)
         {
             this.factory = factory;
             this.outer = outer;
@@ -82,7 +82,7 @@ namespace Citron.Symbol
             return typeEnv;
         }
 
-        public ITypeSymbol GetTypeArg(int index)
+        public IType GetTypeArg(int index)
         {
             return typeArgs[index];
         }

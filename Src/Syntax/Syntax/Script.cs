@@ -8,5 +8,5 @@ using Pretune;
 namespace Citron.Syntax
 {   
     // 가장 외곽
-    public record Script(ImmutableArray<ScriptElement> Elements) : ISyntaxNode;
+    public record class Script(ImmutableArray<ScriptElement> Elements) : ISyntaxNode;
 }

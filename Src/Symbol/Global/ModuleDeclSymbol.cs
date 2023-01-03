@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Citron.Collections;
+using Citron.Infra;
 using Citron.Module;
 
 namespace Citron.Symbol
@@ -21,6 +22,16 @@ namespace Citron.Symbol
             this.bReference = bReference;
 
             this.topLevelComp = TopLevelDeclSymbolComponent.Make();
+        }
+
+        int IDeclSymbolNode.GetTypeParamCount()
+        {
+            return 0;
+        }
+
+        Name IDeclSymbolNode.GetTypeParam(int i)
+        {
+            throw new RuntimeFatalException();
         }
 
         public Name GetName()

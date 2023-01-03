@@ -14,10 +14,10 @@ namespace Citron.Symbol
         SymbolFactory factory;
         ISymbolNode outer;
         InterfaceDeclSymbol decl;
-        ImmutableArray<ITypeSymbol> typeArgs;
+        ImmutableArray<IType> typeArgs;
         TypeEnv typeEnv;        
 
-        internal InterfaceSymbol(SymbolFactory factory, ISymbolNode outer, InterfaceDeclSymbol decl, ImmutableArray<ITypeSymbol> typeArgs)
+        internal InterfaceSymbol(SymbolFactory factory, ISymbolNode outer, InterfaceDeclSymbol decl, ImmutableArray<IType> typeArgs)
         {
             this.factory = factory;
             this.outer = outer;
@@ -43,12 +43,17 @@ namespace Citron.Symbol
             return decl;
         }
 
+        public IType? GetMemberType(Name memberName, ImmutableArray<IType> typeArgs)
+        {
+            throw new NotImplementedException();
+        }
+
         public ISymbolNode? GetOuter()
         {
             return outer;
         }
 
-        public ITypeSymbol GetTypeArg(int index)
+        public IType GetTypeArg(int index)
         {
             return typeArgs[index];
         }
@@ -56,6 +61,11 @@ namespace Citron.Symbol
         public TypeEnv GetTypeEnv()
         {
             return typeEnv;
+        }
+
+        public IType MakeType()
+        {
+            return new InterfaceType(this);
         }
 
         public SymbolQueryResult QueryMember(Name name, int typeParamCount)

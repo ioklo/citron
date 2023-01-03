@@ -1,4 +1,4 @@
 ﻿namespace Citron.Module
 {
-    public record NamespacePath(NamespacePath? Outer, Name Name);
+    public record class NamespacePath(NamespacePath? Outer, Name Name);
 }

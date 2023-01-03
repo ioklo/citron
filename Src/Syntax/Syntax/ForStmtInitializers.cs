@@ -1,6 +1,6 @@
 ﻿namespace Citron.Syntax
 {
-    public abstract record ForStmtInitializer : ISyntaxNode{ }
-    public record ExpForStmtInitializer(Exp Exp) : ForStmtInitializer;
-    public record VarDeclForStmtInitializer(VarDecl VarDecl) : ForStmtInitializer;
+    public abstract record class ForStmtInitializer : ISyntaxNode{ }
+    public record class ExpForStmtInitializer(Exp Exp) : ForStmtInitializer;
+    public record class VarDeclForStmtInitializer(VarDecl VarDecl) : ForStmtInitializer;
 }

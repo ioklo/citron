@@ -55,16 +55,5 @@ namespace Citron.Symbol
         {
             throw new NotImplementedException();
         }
-
-        public void VisitLambda(LambdaDeclSymbol lambdaDecl)
-        {            
-            // 람다를 QueryResult로 줄 수 없다
-            throw new UnreachableCodeException();
-
-            //var outerFunc = outer as IFuncSymbol;
-            //Debug.Assert(outerFunc != null);
-
-            //result = new SymbolQueryResult.Lambda(symbolFactory.MakeLambda(outerFunc, lambdaDecl));
-        }
     }
 }

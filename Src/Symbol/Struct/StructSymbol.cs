@@ -16,11 +16,11 @@ namespace Citron.Symbol
         ISymbolNode outer;
 
         StructDeclSymbol decl;
-        ImmutableArray<ITypeSymbol> typeArgs;
+        ImmutableArray<IType> typeArgs;
 
         TypeEnv typeEnv;
 
-        internal StructSymbol(SymbolFactory symbolFactory, ISymbolNode outer, StructDeclSymbol structDecl, ImmutableArray<ITypeSymbol> typeArgs)
+        internal StructSymbol(SymbolFactory symbolFactory, ISymbolNode outer, StructDeclSymbol structDecl, ImmutableArray<IType> typeArgs)
         {
             this.symbolFactory = symbolFactory;
             this.outer = outer;
@@ -144,7 +144,7 @@ namespace Citron.Symbol
             throw new UnreachableCodeException();
         }
 
-        public StructSymbol? GetBaseType()
+        public StructType? GetBaseType()
         {
             var baseType = decl.GetBaseStruct();
             if (baseType == null) return null;
@@ -182,7 +182,7 @@ namespace Citron.Symbol
             return results[0];
         }
 
-        public ITypeSymbol? GetMemberType(Name memberName, ImmutableArray<ITypeSymbol> typeArgs)
+        public IType? GetMemberType(Name memberName, ImmutableArray<IType> typeArgs)
         {
             // TODO: caching
             foreach (var memberType in decl.GetMemberTypes())
@@ -190,7 +190,7 @@ namespace Citron.Symbol
                 var typeName = memberType.GetNodeName();
 
                 if (memberName.Equals(typeName.Name) && typeName.TypeParamCount == typeArgs.Length)
-                    return SymbolInstantiator.Instantiate(symbolFactory, this, memberType, typeArgs);
+                    return SymbolInstantiator.Instantiate(symbolFactory, this, memberType, typeArgs).MakeType();
             }
 
             return null;
@@ -204,6 +204,11 @@ namespace Citron.Symbol
             var appliedTypeArgs = ImmutableArray.CreateRange(typeArgs, typeArg => typeArg.Apply(typeEnv));
 
             return symbolFactory.MakeStruct(appliedOuter, decl, appliedTypeArgs);
+        }
+
+        IType ITypeSymbol.MakeType()
+        {
+            return new StructType(this);
         }
 
         public StructConstructorSymbol? GetTrivialConstructor()
@@ -234,7 +239,7 @@ namespace Citron.Symbol
             return decl;
         }
 
-        public ITypeSymbol GetTypeArg(int index)
+        public IType GetTypeArg(int index)
         {
             return typeArgs[index];
         }

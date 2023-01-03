@@ -1,0 +1,155 @@
+﻿using Citron.Collections;
+using Citron.Infra;
+using Citron.Module;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading.Tasks;
+
+using Name = Citron.Module.Name;
+
+namespace Citron.Symbol
+{
+    public interface IType
+    {
+        IType Apply(TypeEnv typeEnv);
+        TypeId GetTypeId();
+        FuncParamTypeId MakeFuncParamTypeId();
+        IType? GetMemberType(Name name, ImmutableArray<IType> typeArgs); // 이름에 해당하는 멤버타입을 가져온다
+
+        void Visit<TVisitor>(ref TVisitor visitor)
+            where TVisitor : struct, ITypeVisitor;
+    }
+
+    public abstract record class TypeImpl : IType
+    {
+        public abstract IType Apply(TypeEnv typeEnv);
+        public abstract TypeId GetTypeId();
+        public abstract FuncParamTypeId MakeFuncParamTypeId();
+        public abstract IType? GetMemberType(Name name, ImmutableArray<IType> typeArgs);
+        public abstract void Visit<TVisitor>(ref TVisitor visitor)
+            where TVisitor : struct, ITypeVisitor;
+    }
+
+    public abstract record class SymbolType : TypeImpl
+    {
+        protected abstract ITypeSymbol GetTypeSymbol();
+
+        public sealed override TypeId GetTypeId() => GetTypeSymbol().GetSymbolId();
+        public sealed override FuncParamTypeId MakeFuncParamTypeId() => new FuncParamTypeId.Symbol(GetTypeSymbol().GetSymbolId());
+        public sealed override IType? GetMemberType(Name name, ImmutableArray<IType> typeArgs) => GetTypeSymbol().GetMemberType(name, typeArgs);
+    }
+
+    public record class EnumElemType(EnumElemSymbol Symbol) : SymbolType
+    {
+        protected override ITypeSymbol GetTypeSymbol() => Symbol;
+        public override EnumElemType Apply(TypeEnv typeEnv) => new EnumElemType(Symbol.Apply(typeEnv));
+        public override void Visit<TVisitor>(ref TVisitor visitor) => visitor.VisitEnumElem(this);
+    }
+
+    public record class EnumType(EnumSymbol Symbol) : SymbolType
+    {
+        protected override ITypeSymbol GetTypeSymbol() => Symbol;
+        public override EnumType Apply(TypeEnv typeEnv) => new EnumType(Symbol.Apply(typeEnv));        
+        public override void Visit<TVisitor>(ref TVisitor visitor) => visitor.VisitEnum(this);
+    }
+
+    public record class ClassType(ClassSymbol Symbol) : SymbolType
+    {
+        protected override ITypeSymbol GetTypeSymbol() => Symbol;
+        public override ClassType Apply(TypeEnv typeEnv) => new ClassType(Symbol.Apply(typeEnv));
+        public override void Visit<TVisitor>(ref TVisitor visitor) => visitor.VisitClass(this);
+    }
+
+    public record class InterfaceType(InterfaceSymbol Symbol) : SymbolType
+    {
+        protected override ITypeSymbol GetTypeSymbol() => Symbol;
+        public override InterfaceType Apply(TypeEnv typeEnv) => new InterfaceType(Symbol.Apply(typeEnv));
+        public override void Visit<TVisitor>(ref TVisitor visitor) => visitor.VisitInterface(this);
+    }
+
+    public record class StructType(StructSymbol Symbol) : SymbolType
+    {
+        protected override ITypeSymbol GetTypeSymbol() => Symbol;
+        public override StructType Apply(TypeEnv typeEnv) => new StructType(Symbol.Apply(typeEnv));
+        public override void Visit<TVisitor>(ref TVisitor visitor) => visitor.VisitStruct(this);
+    }
+
+    public record class NullableType(IType InnerType) : TypeImpl
+    {
+        public override NullableType Apply(TypeEnv typeEnv) => new NullableType(InnerType.Apply(typeEnv));
+        public override TypeId GetTypeId() => new NullableTypeId(InnerType.GetTypeId());
+        public override FuncParamTypeId MakeFuncParamTypeId() => new FuncParamTypeId.Nullable(InnerType.MakeFuncParamTypeId());
+        public override IType? GetMemberType(Name name, ImmutableArray<IType> typeArgs) => null;
+
+        public override void Visit<TVisitor>(ref TVisitor visitor) => visitor.VisitNullable(this);
+    }
+
+    public record class TypeVarType(int Index) : TypeImpl
+    {
+        public override IType Apply(TypeEnv typeEnv) => typeEnv.GetValue(Index);
+        public override TypeId GetTypeId() => new TypeVarTypeId(Index);
+        public override FuncParamTypeId MakeFuncParamTypeId() => new FuncParamTypeId.TypeVar(Index);
+        public override IType? GetMemberType(Name name, ImmutableArray<IType> typeArgs) => null;
+        public override void Visit<TVisitor>(ref TVisitor visitor) => visitor.VisitTypeVar(this);
+    }
+
+    public record class VoidType: TypeImpl
+    {
+        public override VoidType Apply(TypeEnv typeEnv) => new VoidType();
+        public override TypeId GetTypeId() => new VoidTypeId();
+        public override FuncParamTypeId MakeFuncParamTypeId() => new FuncParamTypeId.Void();
+        public override IType? GetMemberType(Name name, ImmutableArray<IType> typeArgs) => null;
+        public override void Visit<TVisitor>(ref TVisitor visitor) => visitor.VisitVoid(this);
+    }
+
+    public record class LambdaType : TypeImpl
+    {
+        public override IType Apply(TypeEnv typeEnv) => throw new NotImplementedException();
+        public override TypeId GetTypeId() => new LambdaTypeId();
+        public override FuncParamTypeId MakeFuncParamTypeId() => throw new NotImplementedException(); // 람다 타입은 함수 이름으로 사용할 수 없습니다 에러 작성
+        public override IType? GetMemberType(Name name, ImmutableArray<IType> typeArgs) => null;
+        public override void Visit<TVisitor>(ref TVisitor visitor) => visitor.VisitLambda(this);
+    }
+
+    public record class TupleType(ImmutableArray<(IType Type, Name Name)> MemberVars) : TypeImpl
+    {
+        public override IType Apply(TypeEnv typeEnv)
+        {
+            var builder = ImmutableArray.CreateBuilder<(IType, Name)>(MemberVars.Length);
+            foreach (var memberVar in MemberVars)
+                builder.Add((memberVar.Type.Apply(typeEnv), memberVar.Name));
+            return new TupleType(builder.MoveToImmutable());
+        }
+
+        public override TypeId GetTypeId()
+        {
+            var builder = ImmutableArray.CreateBuilder<(TypeId, Name)>(MemberVars.Length);
+            foreach (var memberVar in MemberVars)
+                builder.Add((memberVar.Type.GetTypeId(), memberVar.Name));
+            return new TupleTypeId(builder.MoveToImmutable());
+        }
+
+        public override FuncParamTypeId MakeFuncParamTypeId()
+        {
+            var builder = ImmutableArray.CreateBuilder<FuncParamTypeId>(MemberVars.Length);
+            foreach (var memberVar in MemberVars)
+                builder.Add(memberVar.Type.MakeFuncParamTypeId());
+            return new FuncParamTypeId.Tuple(builder.MoveToImmutable());
+        }
+
+        public override IType? GetMemberType(Name name, ImmutableArray<IType> typeArgs) => null;
+        public override void Visit<TVisitor>(ref TVisitor visitor) => visitor.VisitTuple(this);
+    }
+
+    public record class VarType : TypeImpl
+    {
+        public override IType Apply(TypeEnv typeEnv) => new VarType();
+        public override TypeId GetTypeId() => new VarTypeId();
+        public override FuncParamTypeId MakeFuncParamTypeId() => throw new NotImplementedException(); // var는 함수 이름으로 사용할 수 없습니다 에러 작성
+        public override IType? GetMemberType(Name name, ImmutableArray<IType> typeArgs) => null;
+        public override void Visit<TVisitor>(ref TVisitor visitor) => visitor.VisitVar(this);
+    }
+}

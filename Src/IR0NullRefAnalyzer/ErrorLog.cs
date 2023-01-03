@@ -2,8 +2,8 @@
 
 namespace Citron.IR0Analyzer.NullRefAnalysis
 {
-    public abstract record ErrorLog(string Message) : ILog;
+    public abstract record class ErrorLog(string Message) : ILog;
 
     // IR0Analyzer
-    public record R0101_StaticNotNullDirective_LocationIsNull() : ErrorLog("");
+    public record class R0101_StaticNotNullDirective_LocationIsNull() : ErrorLog("");
 }

@@ -1,11 +1,11 @@
 ﻿namespace Citron.Syntax
 {
-    public abstract record NamespaceElement : ISyntaxNode
+    public abstract record class NamespaceElement : ISyntaxNode
     {
         internal NamespaceElement() { }
     }
 
-    public record GlobalFuncDeclNamespaceElement(GlobalFuncDecl FuncDecl) : NamespaceElement;
-    public record NamespaceDeclNamespaceElement(NamespaceDecl NamespaceDecl) : NamespaceElement;
-    public record TypeDeclNamespaceElement(TypeDecl TypeDecl) : NamespaceElement;
+    public record class GlobalFuncDeclNamespaceElement(GlobalFuncDecl FuncDecl) : NamespaceElement;
+    public record class NamespaceDeclNamespaceElement(NamespaceDecl NamespaceDecl) : NamespaceElement;
+    public record class TypeDeclNamespaceElement(TypeDecl TypeDecl) : NamespaceElement;
 }

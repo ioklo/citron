@@ -14,17 +14,33 @@ namespace Citron.Symbol
     [AutoConstructor]
     public partial class InterfaceDeclSymbol : ITypeDeclSymbol
     {
-        IHolder<IDeclSymbolNode> outerHolder;
+        IDeclSymbolNode outer;
         Accessor accessModifier;
 
         Name name;
-        ImmutableArray<string> typeParams;
+        ImmutableArray<Name> typeParams;
+
+        public int GetTypeParamCount()
+        {
+            return typeParams.Length;
+        }
+
+        public Name GetTypeParam(int i)
+        {
+            return typeParams[i];
+        }
+
+        int IDeclSymbolNode.GetTypeParamCount()
+            => GetTypeParamCount();
+
+        Name IDeclSymbolNode.GetTypeParam(int i)
+            => GetTypeParam(i);
 
         public void Apply(ITypeDeclSymbolVisitor visitor)
         {
             visitor.VisitInterface(this);
         }
-        
+
         public IEnumerable<IDeclSymbolNode> GetMemberDeclNodes()
         {
             // TODO: 아직 없는 것이다
@@ -38,7 +54,7 @@ namespace Citron.Symbol
 
         public IDeclSymbolNode? GetOuterDeclNode()
         {
-            return outerHolder.GetValue();
+            return outer;
         }
 
         public Name GetName()

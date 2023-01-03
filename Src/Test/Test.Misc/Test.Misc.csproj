@@ -1,8 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
-    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -11,10 +9,13 @@
     <ProjectReference Include="..\..\IR0\IR0.csproj" />
     <ProjectReference Include="..\..\Log\Log.csproj" />
     <ProjectReference Include="..\..\Module\Module.csproj" />
-    <ProjectReference Include="..\..\SymbolId\SymbolId.csproj" />
     <ProjectReference Include="..\..\Symbol\Symbol.csproj" />
     <ProjectReference Include="..\..\Syntax\Syntax.csproj" />
 	<ProjectReference Include="..\TestMiscSourceGenerator\TestMiscSourceGenerator.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Builder\" />
   </ItemGroup>
 
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">

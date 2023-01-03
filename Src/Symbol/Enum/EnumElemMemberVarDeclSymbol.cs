@@ -18,7 +18,7 @@ namespace Citron.Symbol
         }
 
         EnumElemDeclSymbol outer;
-        ITypeSymbol? declType;
+        IType? declType;
         Name name;
 
         InitializeState initState;
@@ -31,7 +31,17 @@ namespace Citron.Symbol
             this.initState = InitializeState.BeforeInitDeclType;
         }
 
-        public void InitDeclType(ITypeSymbol declType)
+        int IDeclSymbolNode.GetTypeParamCount()
+        {
+            return 0;
+        }
+
+        Name IDeclSymbolNode.GetTypeParam(int i)
+        {
+            throw new RuntimeFatalException();
+        }
+
+        public void InitDeclType(IType declType)
         {
             Debug.Assert(InitializeState.BeforeInitDeclType == initState);
             this.declType = declType;
@@ -41,6 +51,11 @@ namespace Citron.Symbol
         public Name GetName()
         {
             return name;
+        }
+
+        public Name GetTypeParam(int i)
+        {
+            throw new RuntimeFatalException();
         }
 
         public DeclSymbolNodeName GetNodeName()
@@ -58,7 +73,7 @@ namespace Citron.Symbol
             return outer;
         }
 
-        public ITypeSymbol GetDeclType()
+        public IType GetDeclType()
         {
             Debug.Assert(InitializeState.BeforeInitDeclType < initState);            
             return declType!;

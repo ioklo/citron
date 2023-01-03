@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Citron.Syntax
 {
-    public abstract record StringExpElement : ISyntaxNode;    
-    public record TextStringExpElement(string Text) : StringExpElement;    
-    public record ExpStringExpElement(Exp Exp) : StringExpElement;
+    public abstract record class StringExpElement : ISyntaxNode;    
+    public record class TextStringExpElement(string Text) : StringExpElement;    
+    public record class ExpStringExpElement(Exp Exp) : StringExpElement;
 }

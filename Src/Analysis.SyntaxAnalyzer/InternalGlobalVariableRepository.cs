@@ -7,10 +7,11 @@ using System.Text;
 using System.Threading.Tasks;
 
 using M = Citron.Module;
+using Citron.Symbol;
 
 namespace Citron.Analysis
 {
-    record InternalGlobalVarInfo(bool IsRef, ITypeSymbol TypeSymbol, Name Name);
+    record class InternalGlobalVarInfo(bool IsRef, IType Type, Name Name);
     
     class InternalGlobalVariableRepository : IMutable<InternalGlobalVariableRepository>
     {
@@ -42,9 +43,9 @@ namespace Citron.Analysis
             return internalGlobalVarInfos.GetValueOrDefault(name);
         }
 
-        public void AddInternalGlobalVariable(bool bRef, ITypeSymbol typeValue, string name)
+        public void AddInternalGlobalVariable(bool bRef, IType typeValue, string name)
         {
-            var globalVarInfo = new InternalGlobalVarInfo(bRef, typeValue, name);
+            var globalVarInfo = new InternalGlobalVarInfo(bRef, typeValue, new Name.Normal(name));
             internalGlobalVarInfos = internalGlobalVarInfos.Add(name, globalVarInfo);
         }
 

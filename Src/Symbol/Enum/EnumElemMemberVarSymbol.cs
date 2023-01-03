@@ -40,7 +40,7 @@ namespace Citron.Symbol
             return outer;
         }
 
-        public ITypeSymbol GetTypeArg(int index)
+        public IType GetTypeArg(int index)
         {
             throw new RuntimeFatalException();
         }
@@ -50,7 +50,7 @@ namespace Citron.Symbol
             return outer.GetTypeEnv();
         }
 
-        public ITypeSymbol GetDeclType()
+        public IType GetDeclType()
         {
             var declType = GetDeclType();
             var typeEnv = GetTypeEnv();

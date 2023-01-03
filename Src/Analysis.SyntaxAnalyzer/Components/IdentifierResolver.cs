@@ -17,7 +17,7 @@ namespace Citron.Analysis
     partial struct IdExpIdentifierResolver
     {
         string idName;
-        ImmutableArray<ITypeSymbol> typeArgs;
+        ImmutableArray<IType> typeArgs;
         ResolveHint hint;
 
         GlobalContext globalContext;
@@ -25,7 +25,7 @@ namespace Citron.Analysis
         LocalContext localContext;
 
         public static IdentifierResult Resolve(
-            string idName, ImmutableArray<ITypeSymbol> typeArgs, ResolveHint hint,
+            string idName, ImmutableArray<IType> typeArgs, ResolveHint hint,
             GlobalContext globalContext,
             BodyContext bodyContext,
             LocalContext localContext)

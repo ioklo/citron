@@ -55,7 +55,7 @@ namespace Citron.Symbol
             return factory.MakeClassConstructor(appliedOuter, decl);
         }        
 
-        public ITypeSymbol GetTypeArg(int index)
+        public IType GetTypeArg(int index)
         {
             throw new RuntimeFatalException();
         }

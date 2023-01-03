@@ -11,15 +11,15 @@ using System.Diagnostics.Contracts;
 
 namespace Citron.Module
 {
-    public record ModuleDecl(Name Name, NamespaceDecl Root);
-    public record NamespaceDecl(Name Name, ImmutableArray<NamespaceDecl> Namespaces, ImmutableArray<GlobalTypeDecl> Types, ImmutableArray<GlobalFuncDecl> Funcs);
+    public record class ModuleDecl(Name Name, NamespaceDecl Root);
+    public record class NamespaceDecl(Name Name, ImmutableArray<NamespaceDecl> Namespaces, ImmutableArray<GlobalTypeDecl> Types, ImmutableArray<GlobalFuncDecl> Funcs);
 
     // 
-    public abstract record TypeDecl;
+    public abstract record class TypeDecl;
 
     // Global
-    public record GlobalTypeDecl(Accessor AccessModifier, TypeDecl TypeDecl);
-    public record GlobalFuncDecl(Accessor AccessModifier, Name Name, bool IsRefReturn, TypeId RetType, ImmutableArray<string> TypeParams, ImmutableArray<Param> Parameters);
+    public record class GlobalTypeDecl(Accessor AccessModifier, TypeDecl TypeDecl);
+    public record class GlobalFuncDecl(Accessor AccessModifier, Name Name, bool IsRefReturn, TypeId RetType, ImmutableArray<string> TypeParams, ImmutableArray<Param> Parameters);
 
     // Class     
     public record ClassDecl(Name Name, ImmutableArray<string> TypeParams, TypeId? BaseType, ImmutableArray<TypeId> Interfaces, ImmutableArray<ClassMemberTypeDecl> MemberTypes, ImmutableArray<ClassConstructorDecl> Constructors, ImmutableArray<ClassMemberFuncDecl> MemberFuncs, ImmutableArray<ClassMemberVarDecl> MemberVars) : TypeDecl;
@@ -29,14 +29,14 @@ namespace Citron.Module
     public record ClassMemberVarDecl(Accessor AccessModifier, bool IsStatic, TypeId Type, Name Name);
 
     // Struct
-    public record StructDecl(Name Name, ImmutableArray<string> TypeParams, TypeId? BaseType, ImmutableArray<TypeId> Interfaces, ImmutableArray<StructMemberTypeDecl> MemberTypes, ImmutableArray<StructConstructorDecl> Constructors, ImmutableArray<StructMemberFuncDecl> MemberFuncs, ImmutableArray<StructMemberVarDecl> MemberVars) : TypeDecl;
-    public record StructMemberTypeDecl(Accessor AccessModifier, TypeDecl TypeDecl);
-    public record StructConstructorDecl(Accessor AccessModifier, ImmutableArray<Param> Parameters, bool IsTrivial);
-    public record StructMemberFuncDecl(Accessor AccessModifier, Name Name, bool IsRefReturn, bool IsStatic, ImmutableArray<string> TypeParams, TypeId RetType, ImmutableArray<Param> Parameters);
-    public record StructMemberVarDecl(Accessor AccessModifier, bool IsStatic, TypeId Type, Name Name);
+    public record class StructDecl(Name Name, ImmutableArray<string> TypeParams, TypeId? BaseType, ImmutableArray<TypeId> Interfaces, ImmutableArray<StructMemberTypeDecl> MemberTypes, ImmutableArray<StructConstructorDecl> Constructors, ImmutableArray<StructMemberFuncDecl> MemberFuncs, ImmutableArray<StructMemberVarDecl> MemberVars) : TypeDecl;
+    public record class StructMemberTypeDecl(Accessor AccessModifier, TypeDecl TypeDecl);
+    public record class StructConstructorDecl(Accessor AccessModifier, ImmutableArray<Param> Parameters, bool IsTrivial);
+    public record class StructMemberFuncDecl(Accessor AccessModifier, Name Name, bool IsRefReturn, bool IsStatic, ImmutableArray<string> TypeParams, TypeId RetType, ImmutableArray<Param> Parameters);
+    public record class StructMemberVarDecl(Accessor AccessModifier, bool IsStatic, TypeId Type, Name Name);
 
     // Enum
-    public record EnumDecl(Name Name, ImmutableArray<string> TypeParams, ImmutableArray<EnumElemDecl> ElemDecls) : TypeDecl;
-    public record EnumElemDecl(Name Name, ImmutableArray<EnumElemMemberVarDecl> MemberVars); // Type이지만, ModuleDecl에서는 TypeDecl로 보지 않는다 (TypeDecl 이름이 문제다)
-    public record EnumElemMemberVarDecl(TypeId DeclType, Name Name);
+    public record class EnumDecl(Name Name, ImmutableArray<string> TypeParams, ImmutableArray<EnumElemDecl> ElemDecls) : TypeDecl;
+    public record class EnumElemDecl(Name Name, ImmutableArray<EnumElemMemberVarDecl> MemberVars); // Type이지만, ModuleDecl에서는 TypeDecl로 보지 않는다 (TypeDecl 이름이 문제다)
+    public record class EnumElemMemberVarDecl(TypeId DeclType, Name Name);
 }

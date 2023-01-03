@@ -23,6 +23,16 @@ namespace Citron.Symbol
             this.topLevelComp = TopLevelDeclSymbolComponent.Make();
         }
 
+        int IDeclSymbolNode.GetTypeParamCount()
+        {
+            return 0;
+        }
+
+        Name IDeclSymbolNode.GetTypeParam(int i)
+        {
+            throw new RuntimeFatalException();
+        }
+
         public IDeclSymbolNode? GetOuterDeclNode()
         {   
             return outer;

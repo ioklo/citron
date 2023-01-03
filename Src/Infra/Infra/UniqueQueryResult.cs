@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 
 namespace Citron.Infra
 {
-    public abstract partial record UniqueQueryResult<T>
+    public abstract partial record class UniqueQueryResult<T>
     {
         // switch에서는 이렇게 쓰면 되고
-        public record NotFound : UniqueQueryResult<T>;
-        public record MultipleError : UniqueQueryResult<T>;
-        public record Found(T Value) : UniqueQueryResult<T>;
+        public record class NotFound : UniqueQueryResult<T>;
+        public record class MultipleError : UniqueQueryResult<T>;
+        public record class Found(T Value) : UniqueQueryResult<T>;
     }
     
     // values, constructors

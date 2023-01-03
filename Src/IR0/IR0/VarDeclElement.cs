@@ -8,10 +8,10 @@ using System.Threading.Tasks;
 
 namespace Citron.IR0
 {
-    public abstract record VarDeclElement
+    public abstract record class VarDeclElement
     {
-        public record Normal(ITypeSymbol Type, string Name, Exp InitExp) : VarDeclElement;
-        public record NormalDefault(ITypeSymbol Type, string Name) : VarDeclElement;
-        public record Ref(string Name, Loc Loc) : VarDeclElement;
+        public record class Normal(ITypeSymbol Type, string Name, Exp InitExp) : VarDeclElement;
+        public record class NormalDefault(ITypeSymbol Type, string Name) : VarDeclElement;
+        public record class Ref(string Name, Loc Loc) : VarDeclElement;
     }
 }

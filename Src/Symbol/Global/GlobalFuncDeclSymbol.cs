@@ -57,6 +57,22 @@ namespace Citron.Symbol
             this.initState = InitializeState.AfterInitFuncReturnAndParams;
         }
 
+        public int GetTypeParamCount()
+        {
+            return typeParams.Length;
+        }
+
+        public Name GetTypeParam(int i)
+        {
+            return typeParams[i];
+        }
+
+        int IDeclSymbolNode.GetTypeParamCount()
+            => GetTypeParamCount();
+
+        Name IDeclSymbolNode.GetTypeParam(int i)
+            => GetTypeParam(i);
+        
         public Accessor GetAccessor()
         {
             return accessModifier;

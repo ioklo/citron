@@ -22,7 +22,7 @@ namespace Citron.Analysis
     class GlobalContext : IMutable<GlobalContext>
     {
         SymbolLoader symbolLoader;
-        TypeSymbolInfoService typeSymbolInfoService;
+        TypeSymbolInfoService typeInfoService;
         SymbolFactory symbolFactory;
 
         InternalBinaryOperatorQueryService internalBinOpQueryService;
@@ -38,7 +38,7 @@ namespace Citron.Analysis
 
         static GlobalContext()
         {
-            voidId = new VoidSymbolId();
+            voidId = new VoidTypeId();
 
             boolDeclId = new DeclSymbolId(new Name.Normal("System.Runtime"), null).Child(new Name.Normal("System")).Child(new Name.Normal("Boolean"));
             boolId = new ModuleSymbolId(new Name.Normal("System.Runtime"), null).Child(new Name.Normal("System")).Child(new Name.Normal("Boolean"));
@@ -56,7 +56,7 @@ namespace Citron.Analysis
         public GlobalContext(SymbolLoader symbolLoader, TypeSymbolInfoService typeSymbolInfoService, SymbolFactory symbolFactory, ILogger logger)
         {
             this.symbolLoader = symbolLoader;
-            this.typeSymbolInfoService = typeSymbolInfoService;
+            this.typeInfoService = typeSymbolInfoService;
             this.symbolFactory = symbolFactory;
 
             this.internalBinOpQueryService = new InternalBinaryOperatorQueryService(GetBoolType(), GetIntType(), GetStringType());
@@ -133,22 +133,22 @@ namespace Citron.Analysis
             throw new AnalyzerFatalException();
         }
             
-        public ITypeSymbol GetVoidType()
+        public IType GetVoidType()
         {
             return (ITypeSymbol)symbolLoader.Load(new VoidSymbolId());
         }            
 
-        public ITypeSymbol GetBoolType()
+        public IType GetBoolType()
         {   
             return (ITypeSymbol)symbolLoader.Load(boolId);                    
         }
             
-        public ITypeSymbol GetIntType()
+        public IType GetIntType()
         {
             return (ITypeSymbol)symbolLoader.Load(boolId);
         }
             
-        public ITypeSymbol GetStringType()
+        public IType GetStringType()
         {
             return (ITypeSymbol)symbolLoader.Load(stringId);
         }
@@ -166,7 +166,7 @@ namespace Citron.Analysis
             return (ITypeSymbol)symbolLoader.Load(listId);
         }
             
-        public void AddInternalGlobalVarInfo(bool bRef, ITypeSymbol typeValue, string name)
+        public void AddInternalGlobalVarInfo(bool bRef, IType typeValue, string name)
         {
             internalGlobalVarRepo.AddInternalGlobalVariable(bRef, typeValue, name);
         }
@@ -212,9 +212,9 @@ namespace Citron.Analysis
         //    return true;
         //}
 
-        public ITypeSymbol GetSymbolByTypeExp(S.TypeExp typeExp)
+        public IType GetSymbolByTypeExp(S.TypeExp typeExp)
         {
-            var symbol = typeSymbolInfoService.GetSymbol(typeExp);
+            var symbol = typeInfoService.GetSymbol(typeExp);
             Debug.Assert(symbol != null);
             return symbol;
         }

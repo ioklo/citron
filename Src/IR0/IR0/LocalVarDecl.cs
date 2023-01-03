@@ -5,5 +5,5 @@ using Citron.Collections;
 
 namespace Citron.IR0
 {
-    public record LocalVarDecl(ImmutableArray<VarDeclElement> Elems);
+    public record class LocalVarDecl(ImmutableArray<VarDeclElement> Elems);
 }

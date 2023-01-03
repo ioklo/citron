@@ -45,12 +45,12 @@ namespace Citron.Symbol
             return typeEnv;
         }
 
-        public ITypeSymbol GetTypeArg(int index)
+        public IType GetTypeArg(int index)
         {
             throw new RuntimeFatalException();
         }
 
-        public ITypeSymbol GetDeclType()
+        public IType GetDeclType()
         {
             var declType = decl.GetDeclType();
             var typeEnv = GetTypeEnv();

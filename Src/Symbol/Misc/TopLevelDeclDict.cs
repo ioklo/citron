@@ -37,7 +37,7 @@ namespace Citron.Symbol
             => funcComp.GetFuncs(name, minTypeParamCount);
 
         public GlobalFuncDeclSymbol? GetFunc(Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
-            => funcComp.GetFunc(new DeclSymbolNodeName(name, typeParamCount, paramIds));
+            => funcComp.GetFunc(name, typeParamCount, paramIds);
 
         public void AddFunc(GlobalFuncDeclSymbol decl)
             => funcComp.AddFunc(decl);

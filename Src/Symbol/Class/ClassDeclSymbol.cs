@@ -30,8 +30,8 @@ namespace Citron.Symbol
         Name name;        
         ImmutableArray<Name> typeParams;
         
-        ClassSymbol? baseClass; // Class선언 시점 typeEnv를 적용한 baseClass
-        ImmutableArray<InterfaceSymbol> interfaces;
+        ClassType? baseClass; // Class선언 시점 typeEnv를 적용한 baseClass
+        ImmutableArray<InterfaceType> interfaces;
         
         List<ClassMemberVarDeclSymbol> memberVars;
 
@@ -59,7 +59,7 @@ namespace Citron.Symbol
             this.initState = InitializeState.BeforeInitBaseTypes;
         }
 
-        public void InitBaseTypes(ClassSymbol? baseClass, ImmutableArray<InterfaceSymbol> interfaces)
+        public void InitBaseTypes(ClassType? baseClass, ImmutableArray<InterfaceType> interfaces)
         {
             Debug.Assert(initState == InitializeState.BeforeInitBaseTypes);
 
@@ -67,8 +67,16 @@ namespace Citron.Symbol
             this.interfaces = interfaces;
             this.initState = InitializeState.AfterInitBaseTypes;
         }
-        
-        
+
+        int IDeclSymbolNode.GetTypeParamCount()
+        {
+            return typeParams.Length;
+        }
+
+        Name IDeclSymbolNode.GetTypeParam(int i)
+        {
+            return typeParams[i];
+        }
 
         public ClassConstructorDeclSymbol? GetDefaultConstructorDecl()
         {
@@ -92,7 +100,7 @@ namespace Citron.Symbol
         }        
 
         // Info자체에는 environment가 없으므로, typeEnv가 있어야
-        public ClassSymbol? GetBaseClass()
+        public ClassType? GetBaseClass()
         {
             Debug.Assert(InitializeState.BeforeInitBaseTypes < initState);
             return baseClass;
@@ -200,10 +208,10 @@ namespace Citron.Symbol
         public ClassMemberFuncDeclSymbol? GetFunc(Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
             => funcComp.GetFunc(name, typeParamCount, paramIds);
 
-        public IEnumerable<ClassMemberFuncDeclSymbol> GetFuncs()
+        public IEnumerable<ClassMemberFuncDeclSymbol> GetMemberFuncs()
             => funcComp.GetFuncs();
 
-        public IEnumerable<ClassMemberFuncDeclSymbol> GetFuncs(Name name, int minTypeParamCount)
+        public IEnumerable<ClassMemberFuncDeclSymbol> GetMemberFuncs(Name name, int minTypeParamCount)
             => funcComp.GetFuncs(name, minTypeParamCount);
     }
 }

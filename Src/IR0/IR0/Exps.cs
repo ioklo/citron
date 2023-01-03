@@ -11,14 +11,14 @@ using Citron.Symbol;
 
 namespace Citron.IR0
 {
-    public abstract record Exp : INode
+    public abstract record class Exp : INode
     {
         internal Exp() { }
         public abstract ITypeSymbol GetTypeSymbol();
     }
 
     // Location의 Value를 resultValue에 복사한다
-    public record LoadExp(Loc Loc, ITypeSymbol Type) : Exp
+    public record class LoadExp(Loc Loc, ITypeSymbol Type) : Exp
     {
         public override ITypeSymbol GetTypeSymbol()
         {
@@ -27,7 +27,7 @@ namespace Citron.IR0
     }
 
     // "dskfjslkf $abc "
-    public record StringExp(ImmutableArray<StringExpElement> Elements, ITypeSymbol StringSymbol) : Exp
+    public record class StringExp(ImmutableArray<StringExpElement> Elements, ITypeSymbol StringSymbol) : Exp
     {
         public override ITypeSymbol GetTypeSymbol()
         {
@@ -36,7 +36,7 @@ namespace Citron.IR0
     }
 
     // 1    
-    public record IntLiteralExp(int Value, ITypeSymbol IntSymbol) : Exp
+    public record class IntLiteralExp(int Value, ITypeSymbol IntSymbol) : Exp
     {
         public override ITypeSymbol GetTypeSymbol()
         {
@@ -45,7 +45,7 @@ namespace Citron.IR0
     }
 
     // false
-    public record BoolLiteralExp(bool Value, ITypeSymbol BoolSymbol) : Exp
+    public record class BoolLiteralExp(bool Value, ITypeSymbol BoolSymbol) : Exp
     {
         public override ITypeSymbol GetTypeSymbol()
         {
@@ -54,7 +54,7 @@ namespace Citron.IR0
     }
     
     // TODO: 'New' 단어는 힙할당에만 쓰도록 하자
-    public record NewNullableExp(Exp? ValueExp, ITypeSymbol TypeSymbol) : Exp
+    public record class NewNullableExp(Exp? ValueExp, ITypeSymbol TypeSymbol) : Exp
     {
         public override ITypeSymbol GetTypeSymbol()
         {
@@ -125,7 +125,7 @@ namespace Citron.IR0
     }
 
     // a = b
-    public record AssignExp(Loc Dest, Exp Src) : Exp
+    public record class AssignExp(Loc Dest, Exp Src) : Exp
     {
         public override ITypeSymbol GetTypeSymbol()
         {
@@ -179,7 +179,7 @@ namespace Citron.IR0
     // var l = () => { return x; }; // lambda type
     // 
     // Lambda(lambda_type_0, x); // with captured variable
-    public record LambdaExp(LambdaSymbol Lambda, ImmutableArray<Argument> Args) : Exp
+    public record class LambdaExp(LambdaSymbol Lambda, ImmutableArray<Argument> Args) : Exp
     {
         public override ITypeSymbol GetTypeSymbol()
         {
@@ -188,7 +188,7 @@ namespace Citron.IR0
     }
 
     // [1, 2, 3]    
-    public record ListExp(ImmutableArray<Exp> Elems, ITypeSymbol ListType) : Exp
+    public record class ListExp(ImmutableArray<Exp> Elems, ITypeSymbol ListType) : Exp
     {   
         public override ITypeSymbol GetTypeSymbol()
         {
@@ -196,7 +196,7 @@ namespace Citron.IR0
         }
     }
 
-    public record ListIteratorExp(Loc ListLoc, ITypeSymbol IteratorType) : Exp
+    public record class ListIteratorExp(Loc ListLoc, ITypeSymbol IteratorType) : Exp
     {
         public override ITypeSymbol GetTypeSymbol()
         {
@@ -205,7 +205,7 @@ namespace Citron.IR0
     }
 
     // enum construction, E.First or E.Second(2, 3)    
-    public record NewEnumElemExp(EnumElemSymbol EnumElem, ImmutableArray<Argument> Args) : Exp
+    public record class NewEnumElemExp(EnumElemSymbol EnumElem, ImmutableArray<Argument> Args) : Exp
     {
         public override ITypeSymbol GetTypeSymbol()
         {
@@ -214,7 +214,7 @@ namespace Citron.IR0
     }
 
     // new S(2, 3, 4);
-    public record NewStructExp(StructConstructorSymbol Constructor, ImmutableArray<Argument> Args) : Exp
+    public record class NewStructExp(StructConstructorSymbol Constructor, ImmutableArray<Argument> Args) : Exp
     {
         public override ITypeSymbol GetTypeSymbol()
         {
@@ -223,7 +223,7 @@ namespace Citron.IR0
     }
 
     // new C(2, 3, 4);    
-    public record NewClassExp(ClassConstructorSymbol Constructor, ImmutableArray<Argument> Args) : Exp
+    public record class NewClassExp(ClassConstructorSymbol Constructor, ImmutableArray<Argument> Args) : Exp
     {
         public override ITypeSymbol GetTypeSymbol()
         {

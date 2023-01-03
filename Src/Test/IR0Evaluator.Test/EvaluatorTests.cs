@@ -701,7 +701,7 @@ namespace Citron.Test
         public async Task ReturnStmt_ExitsFuncImmediately()
         {
             // 1. make decl
-            var moduleDecl = new ModuleDeclBuilder(factory, moduleName)
+            var moduleDecl = new ModuleDeclBuilder(factory, moduleName, bReference: false)
                 .GlobalFunc(voidType, "F", out var fFuncDecl)
                 .Make();
 
@@ -1172,7 +1172,7 @@ namespace Citron.Test
             //@$j
 
             var moduleDecl = new ModuleDeclBuilder(factory, moduleName)
-                .GlobalFunc(r.FuncRetHolder(voidType), "F", r.FuncParamHolder(r.RefParam(intType, "i")), out var fFuncDecl)
+                .GlobalFunc(voidType, "F", Arr(r.RefParam(intType, "i")), out var fFuncDecl)
                 .Make();
 
             var module = factory.MakeModule(moduleDecl);
@@ -1204,7 +1204,7 @@ namespace Citron.Test
 
             // decl
             var moduleDecl = new ModuleDeclBuilder(factory, moduleName)
-                .GlobalFunc(r.FuncRetHolder(voidType), "G", r.FuncParamHolder(), out var gFuncDecl)
+                .GlobalFunc(voidType, "G", out var gFuncDecl)
                 .Make();
 
             var module = factory.MakeModule(moduleDecl);
@@ -1259,8 +1259,8 @@ namespace Citron.Test
             // TestFunc(Print(1), Print(2), Print(3));
 
             var moduleDecl = new ModuleDeclBuilder(factory, moduleName)
-                .GlobalFunc(r.FuncRetHolder(intType), "Print", r.FuncParamHolder((intType, "x")), out var printFuncDecl)
-                .GlobalFunc(r.FuncRetHolder(voidType), "TestFunc", r.FuncParamHolder((intType, "i"), (intType, "j"), (intType, "k")), out var testFuncFuncDecl)
+                .GlobalFunc(intType, "Print", intType, "x", out var printFuncDecl)
+                .GlobalFunc(voidType, "TestFunc", r.FuncParam((intType, "i"), (intType, "j"), (intType, "k")), out var testFuncFuncDecl)
                 .Make();
 
             var module = factory.MakeModule(moduleDecl);
@@ -1507,7 +1507,7 @@ namespace Citron.Test
             //    }
             //}
            
-            //record TypeItemContainer(Type type) : IItemContainer
+            //record class TypeItemContainer(Type type) : IItemContainer
             //{
             //    public IItemContainer GetContainer(Name name, ParamHash paramHash)
             //    {
@@ -1563,7 +1563,7 @@ namespace Citron.Test
             //    }
             //}
 
-            //record NamespaceItemContainer(Assembly assembly, string namespaceName) : IItemContainer
+            //record class NamespaceItemContainer(Assembly assembly, string namespaceName) : IItemContainer
             //{
             //    public IItemContainer GetContainer(Name name_name, ParamHash paramHash)
             //    {
@@ -1584,7 +1584,7 @@ namespace Citron.Test
             //    }
             //}
 
-            //record AssemblyItemContainer(Assembly assembly) : IItemContainer
+            //record class AssemblyItemContainer(Assembly assembly) : IItemContainer
             //{
             //    // namespace 구분이 없어서, type이 있는지 보고 없으면 네임스페이스로
             //    public IItemContainer GetContainer(Name name_name, ParamHash paramHash)
@@ -1771,12 +1771,12 @@ namespace Citron.Test
             //
             // MakeLambda()(Print(1), Print(2), Print(3))
 
-            var makeLambdaFuncRetHolder= new Holder<FuncReturn>();
+            var makeLambdaFuncRetHolder = new Holder<FuncReturn>();
 
             // make module
             var moduleDecl = new ModuleDeclBuilder(factory, moduleName)
-                .GlobalFunc(r.FuncRetHolder(intType), "Print", r.FuncParamHolder((intType, "x")), out var printFuncDecl)
-                .BeginGlobalFunc(makeLambdaFuncRetHolder, new Name.Normal("MakeLambda"), r.FuncParamHolder())
+                .GlobalFunc(r.FuncRet(intType), "Print", r.FuncParam((intType, "x")), out var printFuncDecl)
+                .BeginGlobalFunc(Accessor.Public, new Name.Normal("MakeLambda"))
                     .Lambda(r.FuncRet(stringType), r.FuncParam((intType, "i"), (intType, "j"), (intType, "k")), out var lambdaDecl0)
                 .EndGlobalFunc(out var makeLambdaFuncDecl)
                 .Make();

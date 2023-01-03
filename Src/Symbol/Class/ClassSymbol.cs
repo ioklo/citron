@@ -18,11 +18,11 @@ namespace Citron.Symbol
         SymbolFactory factory;
         ISymbolNode outer;
         ClassDeclSymbol decl;
-        ImmutableArray<ITypeSymbol> typeArgs;
+        ImmutableArray<IType> typeArgs;
 
         TypeEnv typeEnv;
 
-        internal ClassSymbol(SymbolFactory factory, ISymbolNode outer, ClassDeclSymbol decl, ImmutableArray<ITypeSymbol> typeArgs)
+        internal ClassSymbol(SymbolFactory factory, ISymbolNode outer, ClassDeclSymbol decl, ImmutableArray<IType> typeArgs)
         {
             this.factory = factory;
             this.outer = outer;
@@ -42,7 +42,7 @@ namespace Citron.Symbol
         // class X<T> { class Y<U> : Z<T>.B<T> }
         // X<int>.Y<bool> c; // c의 classTypeValue { [int, bool], X<>.Y<> }
         // baseof(c) //  classTypeValue { [int, int], Z<>.B<> } <- 여기에
-        public ClassSymbol? GetBaseClass() 
+        public ClassType? GetBaseClass() 
         {
             // 지금 속한 클래스의 타입 환경에 종속된 ClassSymbol를 돌려준다
             // X<T>.C<U> : B<U, T> => ClassSymbol(B, [TV(1), TV(0)])
@@ -55,14 +55,14 @@ namespace Citron.Symbol
         }
 
         // except itself
-        public bool IsBaseOf(ClassSymbol derivedType)
+        public bool IsBaseOf(ClassType derivedType)
         {
-            ClassSymbol? curBaseType = derivedType.GetBaseClass();
+            ClassType? curBaseType = derivedType.Symbol.GetBaseClass();
 
             while(curBaseType != null)
             {
                 if (Equals(curBaseType)) return true;
-                curBaseType = curBaseType.GetBaseClass();
+                curBaseType = curBaseType.Symbol.GetBaseClass();
             }
 
             return false;
@@ -234,7 +234,7 @@ namespace Citron.Symbol
                 if (baseTypeValue == null)
                     return SymbolQueryResults.NotFound;
 
-                return baseTypeValue.QueryMember(memberName, typeParamCount);
+                return baseTypeValue.Symbol.QueryMember(memberName, typeParamCount);
             }
             else
             {
@@ -242,7 +242,7 @@ namespace Citron.Symbol
             }
         }
 
-        public ITypeSymbol? GetMemberType(Name memberName, ImmutableArray<ITypeSymbol> typeArgs)
+        public IType? GetMemberType(Name memberName, ImmutableArray<IType> typeArgs)
         {
             // TODO: caching
             foreach (var memberTypeDecl in decl.GetMemberTypes())
@@ -251,7 +251,7 @@ namespace Citron.Symbol
 
                 if (typeName.Name.Equals(memberName) && typeName.TypeParamCount == typeArgs.Length)
                 {
-                    return SymbolInstantiator.Instantiate(factory, this, memberTypeDecl, typeArgs);
+                    return SymbolInstantiator.Instantiate(factory, this, memberTypeDecl, typeArgs).MakeType();
                 }
             }
 
@@ -268,7 +268,7 @@ namespace Citron.Symbol
             return decl;
         }
 
-        public ITypeSymbol GetTypeArg(int index)
+        public IType GetTypeArg(int index)
         {
             return typeArgs[index];
         }
@@ -277,6 +277,11 @@ namespace Citron.Symbol
         ISymbolNode ISymbolNode.Apply(TypeEnv typeEnv) => Apply(typeEnv);
         ITypeSymbol ITypeSymbol.Apply(TypeEnv typeEnv) => Apply(typeEnv);        
         ITypeDeclSymbol ITypeSymbol.GetDeclSymbolNode() => decl;
+
+        IType ITypeSymbol.MakeType()
+        {
+            return new ClassType(this);
+        }
 
         public void Apply(ITypeSymbolVisitor visitor)
         {

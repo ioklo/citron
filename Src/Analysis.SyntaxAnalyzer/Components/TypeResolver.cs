@@ -16,8 +16,8 @@ namespace Citron.Analysis
     // do nothing
     class NullTypeResolver : TypeResolver
     {
-        ImmutableArray<ITypeSymbol> typeArgs;
-        public NullTypeResolver(ImmutableArray<ITypeSymbol> typeArgs) { this.typeArgs = typeArgs; }
+        ImmutableArray<IType> typeArgs;
+        public NullTypeResolver(ImmutableArray<IType> typeArgs) { this.typeArgs = typeArgs; }
 
         public override void AddConstraint(ITypeSymbol x, ITypeSymbol y) { }
         public override ImmutableArray<ITypeSymbol> Resolve() => typeArgs;
