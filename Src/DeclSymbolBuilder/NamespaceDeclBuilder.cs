@@ -18,7 +18,7 @@ namespace Citron.Test
         // 자식 네임스페이스
         NamespaceBuilderComponent<NamespaceDeclBuilder<TOuterBuilder>> namespaceComponent;
         TypeBuilderComponent<NamespaceDeclBuilder<TOuterBuilder>> globalTypeComponent;
-        GlobalFuncBuilderComponent<NamespaceDeclBuilder<TOuterBuilder>> globalFuncComponent;
+        GlobalFuncBuilderComponent<NamespaceDeclBuilder<TOuterBuilder>, NamespaceDeclSymbol> globalFuncComponent;
 
         internal NamespaceDeclBuilder(SymbolFactory factory, TOuterBuilder outerBuilder, OnFinish onFinish)
         {
@@ -27,7 +27,7 @@ namespace Citron.Test
 
             this.namespaceComponent = new NamespaceBuilderComponent<NamespaceDeclBuilder<TOuterBuilder>>(factory, this, namespaceDecl);
             this.globalTypeComponent = new TypeBuilderComponent<NamespaceDeclBuilder<TOuterBuilder>>(this, factory, namespaceDecl, Accessor.Private);
-            this.globalFuncComponent = new GlobalFuncBuilderComponent<NamespaceDeclBuilder<TOuterBuilder>>(factory, this, namespaceDecl);
+            this.globalFuncComponent = new GlobalFuncBuilderComponent<NamespaceDeclBuilder<TOuterBuilder>, NamespaceDeclSymbol>(this, namespaceDecl);
         }
 
         public NamespaceDeclBuilder<NamespaceDeclBuilder<TOuterBuilder>> BeginNamespace(string name)
@@ -41,17 +41,13 @@ namespace Citron.Test
             => globalTypeComponent.Class(name, out decl);
 
         public NamespaceDeclBuilder<TOuterBuilder> Struct(string name, out StructDeclSymbol decl)
-            => globalTypeComponent.Struct(name, out decl);        
+            => globalTypeComponent.Struct(name, out decl);
 
-        public NamespaceDeclBuilder<TOuterBuilder> GlobalFunc(ITypeSymbol retType, string funcName, out GlobalFuncDeclSymbol globalFuncDecl)
-            => globalFuncComponent.GlobalFunc(retType, funcName, out globalFuncDecl);
+        public NamespaceDeclBuilder<TOuterBuilder> GlobalFunc(Accessor accessor, FuncReturn funcReturn, string funcName, ImmutableArray<Name> typeParams, ImmutableArray<FuncParameter> funcParams)
+            => globalFuncComponent.GlobalFunc(accessor, funcReturn, funcName, typeParams, funcParams);
 
-        public NamespaceDeclBuilder<TOuterBuilder> GlobalFunc(ITypeSymbol retType, string funcName, ITypeSymbol paramType, string paramName, out GlobalFuncDeclSymbol globalFuncDecl)
-            => globalFuncComponent.GlobalFunc(retType, funcName, paramType, paramName, out globalFuncDecl);
-
-        public NamespaceDeclBuilder<TOuterBuilder> GlobalFunc(IHolder<FuncReturn> funcReturnHolder, string funcName,
-            IHolder<ImmutableArray<FuncParameter>> funcParametersHolder, out GlobalFuncDeclSymbol globalFuncDecl)
-            => globalFuncComponent.GlobalFunc(funcReturnHolder, funcName, funcParametersHolder, out globalFuncDecl);        
+        public NamespaceDeclBuilder<TOuterBuilder> GlobalFunc(Accessor accessor, string funcName, ImmutableArray<Name> typeParams, GlobalFuncBuilderComponent<NamespaceDeclBuilder<TOuterBuilder>, NamespaceDeclSymbol>.PostSkeletonPhaseTask task)
+            => globalFuncComponent.GlobalFunc(accessor, funcName, typeParams, task);
 
         // NOTICE: not relevant BeginNamespace above
         public TOuterBuilder EndNamespace(out NamespaceDeclSymbol namespaceDecl)

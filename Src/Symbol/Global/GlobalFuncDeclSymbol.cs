@@ -27,22 +27,18 @@ namespace Citron.Symbol
 
         ImmutableArray<Name> typeParams;
         ImmutableArray<FuncParameter> parameters;
-        
-        bool bInternal;
 
         InitializeState initState;
 
         public GlobalFuncDeclSymbol(
             ITopLevelDeclSymbolNode outer, Accessor accessModifier, 
             Name name,
-            ImmutableArray<Name> typeParams,
-            bool bInternal)
+            ImmutableArray<Name> typeParams)
         {
             this.outer = outer;
             this.accessModifier = accessModifier;
             this.name = name;
             this.typeParams = typeParams; 
-            this.bInternal = bInternal;
 
             this.initState = InitializeState.BeforeInitFuncReturnAndParams;
         }
@@ -100,11 +96,6 @@ namespace Citron.Symbol
         {
             Debug.Assert(InitializeState.AfterInitFuncReturnAndParams < initState);
             return @return;
-        }
-        
-        public bool IsInternal()
-        {
-            return bInternal;
         }
 
         public IDeclSymbolNode? GetOuterDeclNode()

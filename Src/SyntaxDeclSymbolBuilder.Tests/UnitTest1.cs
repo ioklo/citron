@@ -8,8 +8,9 @@ using M = Citron.Module;
 using static Citron.Infra.Misc;
 using static Citron.Syntax.SyntaxFactory;
 using Xunit;
-using Citron.Test;
+
 using Citron.Analysis;
+using System.Diagnostics;
 
 namespace Citron;
 
@@ -20,12 +21,13 @@ public class UnitTest1
     // public M.TypeId IntMType { get => new M.GlobalType("System.Runtime", new M.NamespacePath("System"), NormalName("Int32"), default); }
 
     SymbolFactory factory;
+
     ModuleDeclSymbol runtimeModuleDecl;
     StructType boolType, intType;
     ClassType stringType;
     VoidType voidType;
 
-    M.Name.Normal NormalName(string text)
+    M.Name NormalName(string text)
     {
         return new M.Name.Normal(text);
     }
@@ -34,16 +36,21 @@ public class UnitTest1
     {
         factory = new SymbolFactory();
 
-        runtimeModuleDecl = new ModuleDeclBuilder(factory, NormalName("System.Runtime"), bReference: false)
-            .BeginNamespace("System")
-                .Struct("Boolean", out var boolDecl)
-                .Struct("Int32", out var intDecl)
-                .Class("String", out var stringDecl)
-                .BeginClass("List")
-                    .TypeParam("TItem", out var _)
-                .EndClass(out var listTypeDecl)
-            .EndNamespace(out var systemNSDecl)
-            .Make();
+        runtimeModuleDecl = new ModuleDeclSymbol(NormalName("System.Runtime"), bReference: true);
+        var systemNSDecl = new NamespaceDeclSymbol(runtimeModuleDecl, NormalName("System"));
+        runtimeModuleDecl.AddNamespace(systemNSDecl);
+
+        var boolDecl = new StructDeclSymbol(systemNSDecl, M.Accessor.Public, NormalName("Boolean"), typeParams: default);
+        systemNSDecl.AddType(boolDecl);
+
+        var intDecl = new StructDeclSymbol(systemNSDecl, M.Accessor.Public, NormalName("Int32"), typeParams: default);
+        systemNSDecl.AddType(intDecl);
+
+        var stringDecl = new ClassDeclSymbol(systemNSDecl, M.Accessor.Public, NormalName("String"), typeParams: default);
+        systemNSDecl.AddType(stringDecl);
+
+        var listDecl = new ClassDeclSymbol(systemNSDecl, M.Accessor.Public, NormalName("List"), Arr<M.Name>(NormalName("TItem")));
+        systemNSDecl.AddType(listDecl);
 
         var runtimeModule = factory.MakeModule(runtimeModuleDecl);
         var systemNS = factory.MakeNamespace(runtimeModule, systemNSDecl);
@@ -90,32 +97,21 @@ public class UnitTest1
         )));
 
         var moduleName = NormalName("TestModule");
-        var result = Build(moduleName, script);
-        Assert.NotNull(result);
-        Debug.Assert(result != null);
+        var moduleDecl = Build(moduleName, script);
+        Assert.NotNull(moduleDecl);
+        Debug.Assert(moduleDecl != null);
 
-        // var paramTypes = new M.ParamTypes(Arr(new M.ParamKindAndType(M.ParamKind.Ref, new M.TypeVarTypeId(0, "T"))));
-        var paramIds = Arr(new FuncParamId(M.FuncParameterKind.Ref, new TypeVarSymbolId(0)));
-        var path = new DeclSymbolPath(null, NormalName("Func"), 1, paramIds);
+        // expected
+        var expectedModuleDecl = new ModuleDeclSymbol(moduleName, bReference: false);
+        var funcDecl = new GlobalFuncDeclSymbol(expectedModuleDecl, M.Accessor.Private, NormalName("Func"), Arr(NormalName("T")));
+        expectedModuleDecl.AddFunc(funcDecl);
 
-        var resultDecl = result.GetDeclSymbol(path) as GlobalFuncDeclSymbol;
-        Debug.Assert(resultDecl != null);
-
-        // declSymbol을 얻어낼 수 있는 방법
-        var _ = new ModuleDeclBuilder(factory, moduleName, bReference: false)
-            .BeginGlobalFunc(M.Accessor.Private, NormalName("Func"), bInternal: true)
-                .TypeParam("T", out var typeVarDecl)
-                .FuncReturnHolder(out var funcRetHolder)
-                .FuncParametersHolder(paramIds, out var funcParamsHolder)
-            .EndGlobalFunc(out var globalFuncDecl)
-            .Make();
-
-        var typeVar = factory.MakeTypeVar(typeVarDecl);
-
-        funcRetHolder.SetValue(new FuncReturn(isRef: false, typeVar));
-        funcParamsHolder.SetValue(Arr(new FuncParameter(M.FuncParameterKind.Ref, typeVar, NormalName("t"))));
-
-        Assert.Equal(globalFuncDecl, resultDecl);
+        var typeVar = new TypeVarType(0);
+        funcDecl.InitFuncReturnAndParams(
+            new FuncReturn(isRef: false, typeVar),
+            Arr(new FuncParameter(M.FuncParameterKind.Ref, typeVar, NormalName("t"))));
+        
+        Assert.Equal(expectedModuleDecl, moduleDecl);
     }
 
     [Fact]
@@ -137,43 +133,25 @@ public class UnitTest1
             Arr<S.Stmt>()
         )));
 
-        var result = Build(NormalName("TestModule"), script);
+        var resultModuleDecl = Build(NormalName("TestModule"), script);
 
-        var paramIds = Arr(
-            new FuncParamId(M.FuncParameterKind.Default, SymbolId.Int),
-            new FuncParamId(M.FuncParameterKind.Params, new TypeVarSymbolId(1)),
-            new FuncParamId(M.FuncParameterKind.Ref, new TypeVarSymbolId(0))
+        var expectedModuleDecl = new ModuleDeclSymbol(NormalName("TestModule"), bReference: false);
+        var funcDecl = new GlobalFuncDeclSymbol(expectedModuleDecl, M.Accessor.Private, NormalName("Func"), Arr(NormalName("T"), NormalName("U")));
+        expectedModuleDecl.AddFunc(funcDecl);
+
+        var t = new TypeVarType(0);
+        var u = new TypeVarType(1);
+
+        funcDecl.InitFuncReturnAndParams(
+            new FuncReturn(isRef: false, voidType),
+            Arr(
+                new FuncParameter(M.FuncParameterKind.Default, intType, NormalName("x")),
+                new FuncParameter(M.FuncParameterKind.Params, u, NormalName("y")),
+                new FuncParameter(M.FuncParameterKind.Ref, t, NormalName("z"))
+            )
         );
-
-        var path = new DeclSymbolPath(
-            null,
-            NormalName("Func"), 2,
-            paramIds
-        );
-
-        var resultDecl = result.GetDeclSymbol(path) as GlobalFuncDeclSymbol;
-        Debug.Assert(resultDecl != null);
-
-        // expected 만들기
-        var _ = new ModuleDeclBuilder(factory, NormalName("TestModule"), bReference: false)
-            .BeginGlobalFunc(M.Accessor.Private, NormalName("Func"), true)
-                .TypeParam("T", out var tDecl)
-                .TypeParam("U", out var uDecl)
-                .FuncReturn(isRef: false, voidType)
-                .FuncParametersHolder(paramIds, out var paramsHolder)
-            .EndGlobalFunc(out var expectedGlobalFuncDecl)
-            .Make();
-
-        var t = factory.MakeTypeVar(tDecl);
-        var u = factory.MakeTypeVar(uDecl);
-
-        paramsHolder.SetValue(Arr(
-            new FuncParameter(M.FuncParameterKind.Default, intType, NormalName("x")),
-            new FuncParameter(M.FuncParameterKind.Params, u, NormalName("y")),
-            new FuncParameter(M.FuncParameterKind.Ref, t, NormalName("z"))
-        ));
-
-        Assert.Equal(expectedGlobalFuncDecl, resultDecl);
+        
+        Assert.Equal(expectedModuleDecl, resultModuleDecl);
     }
 
     // public struct S<T> : B<int>
@@ -225,81 +203,66 @@ public class UnitTest1
         );
 
         var moduleName = NormalName("TestModule");
-        var result = Build(moduleName, script);
+        var resultModuleDecl = Build(moduleName, script);
 
-        var s_intId = new ModuleSymbolId(moduleName, new SymbolPath(null, NormalName("S"), Arr(SymbolId.Int)));
-        var uId = new TypeVarSymbolId(2);
+        var expectedModuleDecl = new ModuleDeclSymbol(moduleName, bReference: false);
+        var sDecl = new StructDeclSymbol(expectedModuleDecl, M.Accessor.Public, NormalName("S"), Arr(NormalName("T")));
+        expectedModuleDecl.AddType(sDecl);        
 
-        var funcParamIds = Arr(
-            new FuncParamId(M.FuncParameterKind.Default, s_intId),
-            new FuncParamId(M.FuncParameterKind.Default, uId)
+        var sFuncDecl = new StructMemberFuncDeclSymbol(sDecl, M.Accessor.Private, bStatic: false, NormalName("Func"), Arr(NormalName("T"), NormalName("U")));
+        sDecl.AddFunc(sFuncDecl);
+
+        var sFuncXDecl = new StructMemberVarDeclSymbol(sDecl, M.Accessor.Protected, bStatic: false, intType, NormalName("x"));
+        sDecl.AddMemberVar(sFuncXDecl);
+
+        var sFuncYDecl = new StructMemberVarDeclSymbol(sDecl, M.Accessor.Protected, bStatic: false, intType, NormalName("y"));
+        sDecl.AddMemberVar(sFuncYDecl);
+
+        var sFuncConstructorDecl = new StructConstructorDeclSymbol(
+            sDecl,
+            M.Accessor.Public,
+            Arr(
+                new FuncParameter(M.FuncParameterKind.Default, intType, NormalName("x")),
+                new FuncParameter(M.FuncParameterKind.Default, intType, NormalName("y"))
+            ),
+            bTrivial: true
+        );
+        sDecl.AddConstructor(sFuncConstructorDecl);
+
+        var bDecl = new StructDeclSymbol(expectedModuleDecl, M.Accessor.Private, NormalName("B"), Arr(NormalName("T")));
+        expectedModuleDecl.AddType(bDecl);
+
+        var sFuncT = new TypeVarType(0);
+        var sFuncU = new TypeVarType(1);
+
+        var module = factory.MakeModule(expectedModuleDecl);
+        var s_Int = new StructType(factory.MakeStruct(module, sDecl, Arr<IType>(intType)));
+
+        sFuncDecl.InitFuncReturnAndParams(
+            new FuncReturn(isRef: false, sFuncT),
+            Arr(
+                new FuncParameter(M.FuncParameterKind.Default, s_Int, NormalName("s")),
+                new FuncParameter(M.FuncParameterKind.Default, sFuncU, NormalName("u"))
+            )
         );
 
-        // var trivialConstructor = new InternalModuleConstructorInfo(M.Accessor.Public, Arr(new M.Param(M.ParamKind.Default, IntMType, NormalName("x")), new M.Param(M.ParamKind.Default, IntMType, NormalName("y"))));
+        var b_Int = new StructType(factory.MakeStruct(module, bDecl, Arr<IType>(intType)));
+        sDecl.InitBaseTypes(b_Int, interfaces: default);
 
-        var expected = new ModuleDeclBuilder(factory, moduleName, bReference: false)
-            .BeginStruct(M.Accessor.Public, "S")
-                .TypeParam("T", out var _)
-                .BaseHolder(out var baseHolder) // B<int>
-
-                // private static T Func<T, U>(S<int> s, U u) { }
-                .BeginFunc(M.Accessor.Private, bStatic: false, NormalName("Func"))
-                    .TypeParam("T", out var typeVarFuncTDecl)
-                    .TypeParam("U", out var typeVarFuncUDecl)
-                    .FuncReturnHolder(out var funcRetHolder)
-                    .FuncParametersHolder(funcParamIds, out var funcParamsHolder)
-                .EndFunc(out var _)
-                .Var(M.Accessor.Protected, bStatic: false, intType.ToHolder(), NormalName("x"))
-                .Var(M.Accessor.Protected, bStatic: false, intType.ToHolder(), NormalName("y"))
-                .BeginConstructor(M.Accessor.Public, bTrivial: true)
-                    .FuncParameter(M.FuncParameterKind.Default, intType, NormalName("x"))
-                    .FuncParameter(M.FuncParameterKind.Default, intType, NormalName("y"))
-                .EndConstructor(out var _)
-            .EndStruct(out var expectedSDecl)
-            .BeginStruct(M.Accessor.Private, "B")
-                .TypeParam("T", out var _)
-            .EndStruct(out var expectedBDecl)
-            .Make();
-
-        var expectedModule = factory.MakeModule(expected);
-        var expectedB_int = factory.MakeStruct(expectedModule, expectedBDecl, Arr<ITypeSymbol>(intType));
-        baseHolder.SetValue(expectedB_int);
-
-        var expectedS_int = factory.MakeStruct(expectedModule, expectedSDecl, Arr<ITypeSymbol>(intType));
-
-        var typeVarFuncT = factory.MakeTypeVar(typeVarFuncTDecl);
-        var typeVarFuncU = factory.MakeTypeVar(typeVarFuncUDecl);
-        funcRetHolder.SetValue(new FuncReturn(isRef: false, typeVarFuncT));
-        funcParamsHolder.SetValue(Arr(
-            new FuncParameter(M.FuncParameterKind.Default, expectedS_int, NormalName("s")),
-            new FuncParameter(M.FuncParameterKind.Default, typeVarFuncU, NormalName("u"))
-        ));
-
-        // TODO: expected에 trivialConstructor를 강제로 꽂을 방법이 없어서 equals체크를 하면 실패한다
-        //       1:1로 비교하면 되는데, 그건 그거대로 고통스럽다
-
-        Assert.Equal(expected, result);
+        Assert.Equal(expectedModuleDecl, resultModuleDecl);
     }
 
     // From TypeEvaluator tests
     [Fact]
     public void EvaluateType_TopLevelStmt_WorksProperly()
     {
-        TypeExp intTypeExp;
+        S.TypeExp intTypeExp;
 
         var script = SScript(SVarDeclStmt(intTypeExp = SIntTypeExp(), "x"));
+        var _ = Build(NormalName("TestModule"), script);
 
-        Evaluate(script);
-
-        var info = intTypeExp.GetTypeExpInfo();
-
-        // 겉보기만 제대로 되면 된다
-        Assert.Equal(TypeExpInfoKind.Struct, info.GetKind());
-        Assert.Equal(
-            new ModuleSymbolId(new Name.Normal("System.Runtime"), new SymbolPath(new SymbolPath(null, new Name.Normal("System")), new Name.Normal("Int32"))),
-            info.GetSymbolId()
-        );
-        Assert.Equal(intTypeExp, info.GetTypeExp());
+        var resultType = intTypeExp.GetType() as IType;
+        Assert.Equal(intType, resultType);        
     }
 
     // 중첩된 TypeExp는 가장 최상위에만 Info를 붙인다
@@ -309,22 +272,21 @@ public class UnitTest1
     public void EvaluateType_CompositionOfTypeExp_OnlyWholeTypeExpAddedToDictionary()
     {
         var innerTypeExp = SIdTypeExp("X", SIntTypeExp());
-        var typeExp = new MemberTypeExp(innerTypeExp, "Y", Arr<TypeExp>());
+        var typeExp = new S.MemberTypeExp(innerTypeExp, "Y", Arr<S.TypeExp>());
 
         var script = SScript(
-            new TypeDeclScriptElement(new StructDecl(
-                AccessModifier.Public, "X", Arr(new TypeParam("T")), Arr<TypeExp>(), Arr<StructMemberDecl>(
-                    new StructMemberTypeDecl(new StructDecl(
-                        AccessModifier.Public, "Y", Arr<TypeParam>(), Arr<TypeExp>(), Arr<StructMemberDecl>()
+            new S.TypeDeclScriptElement(new S.StructDecl(
+                S.AccessModifier.Public, "X", Arr(new S.TypeParam("T")), Arr<S.TypeExp>(), Arr<S.StructMemberDecl>(
+                    new S.StructMemberTypeDecl(new S.StructDecl(
+                        S.AccessModifier.Public, "Y", Arr<S.TypeParam>(), Arr<S.TypeExp>(), Arr<S.StructMemberDecl>()
                     ))
                 )
             )),
-            new StmtScriptElement(new VarDeclStmt(new VarDecl(
-                false, typeExp, Arr(new VarDeclElement("x", null)))))
+            new S.StmtScriptElement(new S.VarDeclStmt(new S.VarDecl(
+                false, typeExp, Arr(new S.VarDeclElement("x", null)))))
         );
 
-        Evaluate(script);
-
+        Build(NormalName("TestModule"), script);
         Assert.ThrowsAny<Exception>(() => innerTypeExp.GetType());
     }
 }

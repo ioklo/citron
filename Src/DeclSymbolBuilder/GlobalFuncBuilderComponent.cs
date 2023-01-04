@@ -1,108 +1,67 @@
-﻿using Citron.Collections;
+﻿using System;
+using System.Collections.Generic;
+
+using Citron.Collections;
 using Citron.Module;
-using Citron.Infra;
-using System;
-using static Citron.Infra.Misc;
 using Citron.Symbol;
 
 namespace Citron.Test
 {
-    internal class GlobalFuncBuilderComponent<TBuilder, TOuterDeclSymbol>
+    public class GlobalFuncBuilderComponent<TBuilder, TOuterDeclSymbol>
         where TOuterDeclSymbol : ITopLevelDeclSymbolNode, ITopLevelDeclContainable
     {
-        SymbolFactory factory;
-        TBuilder builder;
-        TOuterDeclSymbol outer;
-
-        public GlobalFuncBuilderComponent(SymbolFactory factory, TBuilder builder, TOuterDeclSymbol outer)
+        public struct PostSkeletonPhaseContext
         {
-            this.factory = factory;
-            this.builder = builder;
-            this.outer = outer;
         }
 
-        // 모든 인자
-        public TBuilder GlobalFunc(FuncReturn funcReturn, string funcName, ImmutableArray<FuncParameter> funcParams, out GlobalFuncDeclSymbol globalFuncDecl)
-        {
-            globalFuncDecl = new GlobalFuncDeclSymbol(
-                outer, Accessor.Public, new Name.Normal(funcName), typeParams: default, bInternal: true
-            );
+        public delegate (FuncReturn, ImmutableArray<FuncParameter>) PostSkeletonPhaseTask(PostSkeletonPhaseContext context);
+        
+        TBuilder builder;
+        TOuterDeclSymbol outer;
+        List<(GlobalFuncDeclSymbol DeclSymbol, PostSkeletonPhaseTask Task)> postSkeletonPhaseTaskInfos;
 
+        public GlobalFuncBuilderComponent(TBuilder builder, TOuterDeclSymbol outer)
+        {
+            this.builder = builder;
+            this.outer = outer;
+
+            this.postSkeletonPhaseTaskInfos = new List<(GlobalFuncDeclSymbol, PostSkeletonPhaseTask)>();
+        }
+
+        // 업데이트
+        public void DoPostSkeletonPhase()
+        {
+            var context = new PostSkeletonPhaseContext();
+
+            foreach (var (declSymbol, task) in postSkeletonPhaseTaskInfos)
+            {
+                var (funcRet, funcParams) = task.Invoke(context);
+                declSymbol.InitFuncReturnAndParams(funcRet, funcParams);
+            }
+        }
+
+        // 기본, 모든 인자 (리턴타입이나 인자타입으로 int void등 이미 reference 가능한 타입일 경우 이용 가능하다)
+        public TBuilder GlobalFunc(Accessor accessor, FuncReturn funcReturn, string funcName, ImmutableArray<Name> typeParams, ImmutableArray<FuncParameter> funcParams)
+        {
+            var globalFuncDecl = new GlobalFuncDeclSymbol(
+                outer, accessor, new Name.Normal(funcName), typeParams: typeParams);
             outer.AddFunc(globalFuncDecl);
 
             globalFuncDecl.InitFuncReturnAndParams(funcReturn, funcParams);
-
             return builder;
         }
 
-        // 인자 없음
-        public TBuilder GlobalFunc(ITypeSymbol retType, string funcName, out GlobalFuncDeclSymbol globalFuncDecl)
+        // 기본, 함수 인자와 파라미터는 task에서 수행한다
+        public TBuilder GlobalFunc(Accessor accessor, string funcName, ImmutableArray<Name> typeParams, PostSkeletonPhaseTask task)
         {
-            globalFuncDecl = new GlobalFuncDeclSymbol(
-                outer, Accessor.Public, new Name.Normal(funcName), typeParams: default, bInternal: true
-            );
+            var globalFuncDecl = new GlobalFuncDeclSymbol(
+                outer, accessor, new Name.Normal(funcName), typeParams: typeParams);
             outer.AddFunc(globalFuncDecl);
 
-            globalFuncDecl.InitFuncReturnAndParams(new FuncReturn(false, retType), parameters: default);
-            
+            postSkeletonPhaseTaskInfos.Add((globalFuncDecl, task));
             return builder;
         }
 
-        // 리턴 타입, 인자 1개짜리
-        public TBuilder GlobalFunc(ITypeSymbol retType, string funcName, ITypeSymbol paramType, string paramName, out GlobalFuncDeclSymbol globalFuncDecl)
-        {
-            globalFuncDecl = new GlobalFuncDeclSymbol(
-                outer, Accessor.Public,
-                new Name.Normal(funcName), 
-                typeParams: default,
-                bInternal: true
-            );
-            outer.AddFunc(globalFuncDecl);
-
-            globalFuncDecl.InitFuncReturnAndParams(
-                new FuncReturn(false, retType),
-                Arr<FuncParameter>(new FuncParameter(FuncParameterKind.Default, paramType, new Name.Normal(paramName)))
-            );
-
-            return builder;
-        }
-
-        // 인자를 추후에 설정하는
-        // InitFuncReturnAndParams가 안불린 상태로 리턴한다
-        public TBuilder GlobalFunc(string funcName, out GlobalFuncDeclSymbol globalFuncDecl)
-        {
-            globalFuncDecl = new GlobalFuncDeclSymbol(
-                outer, Accessor.Public,
-                new Name.Normal(funcName), 
-                typeParams: default, 
-                bInternal: true
-            );
-
-            outer.AddFunc(globalFuncDecl);
-            return builder;
-        }
-        
-        public GlobalFuncDeclBuilder<TBuilder> BeginGlobalFunc(Accessor accessModifier, Name funcName, bool bInternal)
-        {
-            return new GlobalFuncDeclBuilder<TBuilder>(factory, builder, outer, accessModifier, funcName, bInternal);
-
-            //{
-            //    var globalFuncDecl = new GlobalFuncDeclSymbol(outerHolder, accessModifier, returnHolder, funcName, typeParams, parametersHolder, bInternal, lambdaDecls);
-            //    globalFuncDeclsBuilder.Add(globalFuncDecl);
-            //    return globalFuncDecl;
-            //});
-        }
-
-        public bool HasTopLevel()
-        {
-            foreach (var decl in globalFuncDeclsBuilder.AsEnumerable())
-            {
-                var nodeName = decl.GetNodeName();
-                if (nodeName.Name.Equals(Name.TopLevel))
-                    return true;
-            }
-
-            return false;
-        }
+        // GlobalFunc의 다른 인자는 나중에 필요시 진행한다
     }
 }

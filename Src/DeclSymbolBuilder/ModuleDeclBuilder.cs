@@ -26,7 +26,7 @@ namespace Citron.Test
             moduleDeclSymbol = new ModuleDeclSymbol(moduleName, bReference);
             this.namespaceComponent = new NamespaceBuilderComponent<ModuleDeclBuilder>(factory, this, moduleDeclSymbol);
             this.globalTypeComponent = new TypeBuilderComponent<ModuleDeclBuilder>(this, factory, moduleDeclSymbol, Accessor.Private);
-            this.globalFuncComponent = new GlobalFuncBuilderComponent<ModuleDeclBuilder, ModuleDeclSymbol>(factory, this, moduleDeclSymbol);
+            this.globalFuncComponent = new GlobalFuncBuilderComponent<ModuleDeclBuilder, ModuleDeclSymbol>(this, moduleDeclSymbol);
         }
 
         // redirects namespace component
@@ -40,36 +40,20 @@ namespace Citron.Test
         public StructDeclBuilder<ModuleDeclBuilder> BeginStruct(Accessor accessModifier, string name)
             => globalTypeComponent.BeginStruct(accessModifier, name);
 
-        // 모든 인자가 있는 버전
-        public ModuleDeclBuilder GlobalFunc(FuncReturn funcReturn, string funcName, ImmutableArray<FuncParameter> funcParams, out GlobalFuncDeclSymbol globalFuncDecl)
-            => globalFuncComponent.GlobalFunc(funcReturn, funcName, funcParams, out globalFuncDecl);
+        public ModuleDeclBuilder GlobalFunc(Accessor accessor, FuncReturn funcReturn, string funcName, ImmutableArray<Name> typeParams, ImmutableArray<FuncParameter> funcParams)
+            => globalFuncComponent.GlobalFunc(accessor, funcReturn, funcName, typeParams, funcParams);
 
-        // 인자 없는
-        public ModuleDeclBuilder GlobalFunc(ITypeSymbol retType, string funcName, out GlobalFuncDeclSymbol globalFuncDecl)
-            => globalFuncComponent.GlobalFunc(retType, funcName, out globalFuncDecl);
-
-        // 인자 1개
-        public ModuleDeclBuilder GlobalFunc(ITypeSymbol retType, string funcName, ITypeSymbol paramType, string paramName, out GlobalFuncDeclSymbol globalFuncDecl)
-            => globalFuncComponent.GlobalFunc(retType, funcName, paramType, paramName, out globalFuncDecl);
-
-        // 인자를 추후에 설정해야 하는 버전, 실수하기 쉬울것 같다
-        public ModuleDeclBuilder GlobalFunc(string funcName, out GlobalFuncDeclSymbol globalFuncDecl)
-            => globalFuncComponent.GlobalFunc(funcName, out globalFuncDecl);
-
-        public GlobalFuncDeclBuilder<ModuleDeclBuilder, ModuleDeclSymbol> BeginGlobalFunc(Accessor accessModifier, Name funcName, bool bInternal)
-            => globalFuncComponent.BeginGlobalFunc(accessModifier, funcName, bInternal);
-
-        public GlobalFuncDeclBuilder<ModuleDeclBuilder, ModuleDeclSymbol> BeginTopLevelFunc()
-        {
-            return globalFuncComponent.BeginGlobalFunc(Accessor.Public, Name.TopLevel, true)
-                .FuncReturn(false, factory.MakeVoid());
-        }
-
+        public ModuleDeclBuilder GlobalFunc(Accessor accessor, string funcName, ImmutableArray<Name> typeParams, GlobalFuncBuilderComponent<ModuleDeclBuilder, ModuleDeclSymbol>.PostSkeletonPhaseTask task)
+            => globalFuncComponent.GlobalFunc(accessor, funcName, typeParams, task);
+        
         public ModuleDeclSymbol Make()
         {
+            namespaceComponent.DoPostSkeletonPhase();
+            globalFuncComponent.DoPostSkeletonPhase();
+
             // 없다면 넣기
-            if (!globalFuncComponent.HasTopLevel())
-                this.BeginTopLevelFunc().EndGlobalFunc(out var _);
+            // if (!globalFuncComponent.HasTopLevel())
+            //    this.BeginTopLevelFunc().EndGlobalFunc(out var _);
 
             return moduleDeclSymbol;
 

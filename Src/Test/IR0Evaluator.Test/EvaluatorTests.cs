@@ -1769,6 +1769,9 @@ namespace Citron.Test
             //     return (int i, int j, int k) => @"TestFunc";
             // }
             //
+            // 이러면 첫번째 phase에 타입을 정확하게 확정할 수 없다;
+            // some func<int, int, int, string> MakeLambda() { return (int i, int j, int k) => @"TestFunc"; }
+            //
             // MakeLambda()(Print(1), Print(2), Print(3))
 
             var makeLambdaFuncRetHolder = new Holder<FuncReturn>();

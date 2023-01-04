@@ -56,12 +56,13 @@ namespace Citron.Analysis
                     node,
                     accessor,
                     new M.Name.Normal(syntax.Name),
-                    typeParams,                    
-                    bInternal: true);
-                node.AddFunc(declSymbol);
+                    typeParams);
 
                 var (funcRet, funcParams) = context.MakeFuncReturnAndParams(declSymbol, syntax.IsRefReturn, syntax.RetType, syntax.Parameters);
                 declSymbol.InitFuncReturnAndParams(funcRet, funcParams);
+
+                // must after initFuncReturnAndParams
+                node.AddFunc(declSymbol);
             });
         }
 
