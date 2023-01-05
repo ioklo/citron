@@ -8,7 +8,7 @@ using System.Diagnostics;
 
 namespace Citron.Symbol
 {
-    public partial class EnumDeclSymbol : ITypeDeclSymbol
+    public class EnumDeclSymbol : ITypeDeclSymbol, ICyclicEqualityComparableClass<EnumDeclSymbol>
     {
         enum InitializeState
         {
@@ -115,6 +115,38 @@ namespace Citron.Symbol
         {
             Debug.Assert(InitializeState.BeforeInitEnumElems < initState);
             return elems[index];
+        }
+
+        bool ICyclicEqualityComparableClass<IDeclSymbolNode>.CyclicEquals(IDeclSymbolNode other, ref CyclicEqualityCompareContext context)
+            => other is EnumDeclSymbol otherDeclSymbol && CyclicEquals(otherDeclSymbol, ref context);
+
+        bool ICyclicEqualityComparableClass<ITypeDeclSymbol>.CyclicEquals(ITypeDeclSymbol other, ref CyclicEqualityCompareContext context)
+            => other is EnumDeclSymbol otherDeclSymbol && CyclicEquals(otherDeclSymbol, ref context);
+
+        bool ICyclicEqualityComparableClass<EnumDeclSymbol>.CyclicEquals(EnumDeclSymbol other, ref CyclicEqualityCompareContext context)
+            => CyclicEquals(other, ref context);
+
+        bool CyclicEquals(EnumDeclSymbol other, ref CyclicEqualityCompareContext context)
+        {
+            if (!context.CompareClass(outer, other.outer))
+                return false;
+
+            if (!accessor.Equals(other.accessor))
+                return false;
+
+            if (!name.Equals(other.name))
+                return false;
+
+            if (!typeParams.Equals(other.typeParams))
+                return false;
+
+            if (!elems.CyclicEqualsClassItem(ref other.elems, ref context))
+                return false;
+
+            if (!initState.Equals(other.initState))
+                return false;
+
+            return true;
         }
     }
 }

@@ -7,7 +7,7 @@ using Citron.Module;
 
 namespace Citron.Symbol
 {
-    public class StructConstructorDeclSymbol : IFuncDeclSymbol
+    public class StructConstructorDeclSymbol : IFuncDeclSymbol, ICyclicEqualityComparableClass<StructConstructorDeclSymbol>
     {
         StructDeclSymbol outer;
         Accessor accessModifier;
@@ -80,6 +80,29 @@ namespace Citron.Symbol
         public void Apply(IDeclSymbolNodeVisitor visitor)
         {
             visitor.VisitStructConstructor(this);
+        }
+
+        bool ICyclicEqualityComparableClass<IDeclSymbolNode>.CyclicEquals(IDeclSymbolNode other, ref CyclicEqualityCompareContext context)
+            => other is StructConstructorDeclSymbol otherDeclSymbol && CyclicEquals(otherDeclSymbol, ref context);
+
+        bool ICyclicEqualityComparableClass<StructConstructorDeclSymbol>.CyclicEquals(StructConstructorDeclSymbol other, ref CyclicEqualityCompareContext context)
+            => CyclicEquals(other, ref context);
+
+        bool CyclicEquals(StructConstructorDeclSymbol other, ref CyclicEqualityCompareContext context)
+        {
+            if (!context.CompareClass(outer, other.outer))
+                return false;
+
+            if (!accessModifier.Equals(other.accessModifier))
+                return false;
+
+            if (!parameters.CyclicEqualsStructItem(ref other.parameters, ref context))
+                return false;
+
+            if (!bTrivial.Equals(other.bTrivial))
+                return false;
+
+            return true;
         }
     }
 }

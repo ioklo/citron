@@ -1,13 +1,12 @@
 ﻿using System;
 using Citron.Collections;
-
+using Citron.Infra;
 using Citron.Module;
 using Pretune;
 
 namespace Citron.Symbol
-{
-    [ImplementIEquatable]
-    public partial class EnumSymbol : ITypeSymbol
+{   
+    public class EnumSymbol : ITypeSymbol, ICyclicEqualityComparableClass<EnumSymbol>
     {
         SymbolFactory factory;
 
@@ -113,6 +112,29 @@ namespace Citron.Symbol
         {
             var elemDecl = decl.GetElement(index);
             return factory.MakeEnumElem(this, elemDecl);
+        }
+
+        bool ICyclicEqualityComparableClass<ISymbolNode>.CyclicEquals(ISymbolNode other, ref CyclicEqualityCompareContext context)
+            => other is EnumSymbol otherSymbol && CyclicEquals(otherSymbol, ref context);
+
+        bool ICyclicEqualityComparableClass<ITypeSymbol>.CyclicEquals(ITypeSymbol other, ref CyclicEqualityCompareContext context)
+            => other is EnumSymbol otherSymbol && CyclicEquals(otherSymbol, ref context);
+
+        bool ICyclicEqualityComparableClass<EnumSymbol>.CyclicEquals(EnumSymbol other, ref CyclicEqualityCompareContext context)
+            => CyclicEquals(other, ref context);
+
+        bool CyclicEquals(EnumSymbol other, ref CyclicEqualityCompareContext context)
+        {
+            if (!context.CompareClass(outer, other.outer))
+                return false;
+
+            if (!context.CompareClass(decl, other.decl))
+                return false;
+
+            if (!typeArgs.CyclicEqualsClassItem(ref typeArgs, ref context))
+                return false;
+
+            return true;
         }
     }
 }

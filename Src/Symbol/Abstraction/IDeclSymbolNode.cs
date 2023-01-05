@@ -11,7 +11,7 @@ namespace Citron.Symbol
     public record class DeclSymbolNodeName(Name Name, int TypeParamCount, ImmutableArray<FuncParamId> ParamIds);
 
     // DeclSymbol 간에 참조할 수 있는 인터페이스 확장에는 닫혀있다 
-    public interface IDeclSymbolNode
+    public interface IDeclSymbolNode : ICyclicEqualityComparableClass<IDeclSymbolNode>
     {
         Accessor GetAccessor();
         IDeclSymbolNode? GetOuterDeclNode(); // 최상위 계층에는 Outer가 없다

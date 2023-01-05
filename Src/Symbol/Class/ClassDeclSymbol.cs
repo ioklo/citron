@@ -14,9 +14,11 @@ namespace Citron.Symbol
     // StructDel? outer = null;
     // var innerClass = new ClassDeclSymbol(() => outer!, ....);
     // outer = new StructDecl(innerClass);
-
-    [ImplementIEquatable]
-    public partial class ClassDeclSymbol : ITypeDeclSymbol, ITypeDeclContainable
+    
+    public class ClassDeclSymbol 
+        : ITypeDeclSymbol
+        , ITypeDeclContainable
+        , ICyclicEqualityComparableClass<ClassDeclSymbol>
     {   
         enum InitializeState
         {
@@ -213,5 +215,55 @@ namespace Citron.Symbol
 
         public IEnumerable<ClassMemberFuncDeclSymbol> GetMemberFuncs(Name name, int minTypeParamCount)
             => funcComp.GetFuncs(name, minTypeParamCount);
+
+        bool ICyclicEqualityComparableClass<ClassDeclSymbol>.CyclicEquals(ClassDeclSymbol other, ref CyclicEqualityCompareContext context)
+            => CyclicEquals(other, ref context);
+
+        bool ICyclicEqualityComparableClass<ITypeDeclSymbol>.CyclicEquals(ITypeDeclSymbol other, ref CyclicEqualityCompareContext context)
+            => other is ClassDeclSymbol otherDeclSymbol && CyclicEquals(otherDeclSymbol, ref context);
+
+        bool ICyclicEqualityComparableClass<IDeclSymbolNode>.CyclicEquals(IDeclSymbolNode other, ref CyclicEqualityCompareContext context)
+            => other is ClassDeclSymbol otherDeclSymbol && CyclicEquals(otherDeclSymbol, ref context);
+
+        bool CyclicEquals(ClassDeclSymbol other, ref CyclicEqualityCompareContext context)
+        {
+            if (!context.CompareClass(outer, other.outer))
+                return false;
+
+            if (!accessModifier.Equals(other.accessModifier))
+                return false;
+
+            if (!name.Equals(other.name))
+                return false;
+
+            if (!typeParams.Equals(other.typeParams))
+                return false;
+
+            if (!context.CompareClass(baseClass, other.baseClass))
+                return false;
+
+            if (!interfaces.CyclicEqualsClassItem(ref other.interfaces, ref context))
+                return false;
+
+            if (!memberVars.CyclicEqualsClassItem(other.memberVars, ref context))
+                return false;
+
+            if (!constructors.CyclicEqualsClassItem(other.constructors, ref context))
+                return false;
+
+            if (!context.CompareClass(trivialConstructor, other.trivialConstructor))
+                return false;
+
+            if (!typeComp.CyclicEquals(ref other.typeComp, ref context))
+                return false;
+
+            if (!funcComp.CyclicEquals(ref other.funcComp, ref context))
+                return false;
+
+            if (!initState.Equals(other.initState))
+                return false;
+
+            return true;
+        }
     }
 }

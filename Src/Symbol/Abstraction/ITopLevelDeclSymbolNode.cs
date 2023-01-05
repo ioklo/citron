@@ -1,9 +1,10 @@
-﻿using Citron.Symbol;
+﻿using Citron.Infra;
+using Citron.Symbol;
 
 namespace Citron.Symbol
 {
     // module, namespace
-    public interface ITopLevelDeclSymbolNode : IDeclSymbolNode
+    public interface ITopLevelDeclSymbolNode : IDeclSymbolNode, ICyclicEqualityComparableClass<ITopLevelDeclSymbolNode>
     {   
     }
     

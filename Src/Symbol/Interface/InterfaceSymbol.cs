@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Citron.Collections;
-
+using Citron.Infra;
 using Citron.Module;
 
 namespace Citron.Symbol
 {
-    public class InterfaceSymbol : ITypeSymbol
+    public class InterfaceSymbol : ITypeSymbol, ICyclicEqualityComparableClass<InterfaceSymbol>
     {
         SymbolFactory factory;
         ISymbolNode outer;
@@ -76,5 +76,28 @@ namespace Citron.Symbol
         ISymbolNode ISymbolNode.Apply(TypeEnv typeEnv) => Apply(typeEnv);
         ITypeSymbol ITypeSymbol.Apply(TypeEnv typeEnv) => Apply(typeEnv);
         IDeclSymbolNode ISymbolNode.GetDeclSymbolNode() => decl;
+
+        bool ICyclicEqualityComparableClass<ISymbolNode>.CyclicEquals(ISymbolNode other, ref CyclicEqualityCompareContext context)
+            => other is InterfaceSymbol otherSymbol && CyclicEquals(otherSymbol, ref context);
+
+        bool ICyclicEqualityComparableClass<ITypeSymbol>.CyclicEquals(ITypeSymbol other, ref CyclicEqualityCompareContext context)
+            => other is InterfaceSymbol otherSymbol && CyclicEquals(otherSymbol, ref context);
+
+        bool ICyclicEqualityComparableClass<InterfaceSymbol>.CyclicEquals(InterfaceSymbol other, ref CyclicEqualityCompareContext context)
+            => CyclicEquals(other, ref context);
+
+        bool CyclicEquals(InterfaceSymbol other, ref CyclicEqualityCompareContext context)
+        {
+            if (!context.CompareClass(outer, other.outer))
+                return false;
+
+            if (!context.CompareClass(decl, other.decl))
+                return false;
+
+            if (!typeArgs.CyclicEqualsClassItem(ref typeArgs, ref context))
+                return false;
+
+            return true;
+        }
     }
 }

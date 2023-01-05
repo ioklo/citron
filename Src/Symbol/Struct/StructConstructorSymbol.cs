@@ -6,7 +6,7 @@ using Citron.Module;
 
 namespace Citron.Symbol
 {
-    public class StructConstructorSymbol : IFuncSymbol
+    public class StructConstructorSymbol : IFuncSymbol, ICyclicEqualityComparableClass<StructConstructorSymbol>
     {
         SymbolFactory factory;
         StructSymbol outer;
@@ -67,6 +67,23 @@ namespace Citron.Symbol
         {
             return outer;
         }
+
+        bool ICyclicEqualityComparableClass<ISymbolNode>.CyclicEquals(ISymbolNode other, ref CyclicEqualityCompareContext context)
+            => other is StructConstructorSymbol otherSymbol && CyclicEquals(otherSymbol, ref context);
+
+        bool ICyclicEqualityComparableClass<StructConstructorSymbol>.CyclicEquals(StructConstructorSymbol other, ref CyclicEqualityCompareContext context)
+            => CyclicEquals(other, ref context);
         
+
+        bool CyclicEquals(StructConstructorSymbol other, ref CyclicEqualityCompareContext context)
+        {
+            if (!context.CompareClass(outer, other.outer))
+                return false;
+
+            if (!context.CompareClass(decl, other.decl))
+                return false;
+
+            return true;
+        }
     }
 }

@@ -9,7 +9,10 @@ using System.Threading.Tasks;
 
 namespace Citron.Symbol
 {
-    public class NamespaceDeclSymbol : ITopLevelDeclSymbolNode, ITopLevelDeclContainable
+    public class NamespaceDeclSymbol 
+        : ITopLevelDeclSymbolNode
+        , ITopLevelDeclContainable
+        , ICyclicEqualityComparableClass<NamespaceDeclSymbol>
     {
         ITopLevelDeclSymbolNode outer;
         Name name;
@@ -78,5 +81,30 @@ namespace Citron.Symbol
 
         public void AddFunc(GlobalFuncDeclSymbol funcDeclSymbol)
             => topLevelComp.AddFunc(funcDeclSymbol);
+
+        bool ICyclicEqualityComparableClass<ITopLevelDeclSymbolNode>.CyclicEquals(ITopLevelDeclSymbolNode other, ref CyclicEqualityCompareContext context)
+            => other is NamespaceDeclSymbol nsDeclSymbolOther && CyclicEquals(nsDeclSymbolOther, ref context);
+
+        bool ICyclicEqualityComparableClass<IDeclSymbolNode>.CyclicEquals(IDeclSymbolNode other, ref CyclicEqualityCompareContext context)
+            => other is NamespaceDeclSymbol nsDeclSymbolOther && CyclicEquals(nsDeclSymbolOther, ref context);
+
+        bool ICyclicEqualityComparableClass<NamespaceDeclSymbol>.CyclicEquals(NamespaceDeclSymbol other, ref CyclicEqualityCompareContext context)
+            => CyclicEquals(other, ref context);
+        
+        bool CyclicEquals(NamespaceDeclSymbol other, ref CyclicEqualityCompareContext context)
+        {
+            if (!context.CompareClass(outer, other.outer))
+                return false;
+
+            if (name.Equals(other.name))
+                return false;
+
+            if (topLevelComp.CyclicEquals(ref other.topLevelComp, ref context))
+                return false;
+
+            return true;
+        }
+
+        
     }
 }

@@ -1,17 +1,25 @@
-﻿using Pretune;
+﻿using Citron.Infra;
+using Pretune;
 
 namespace Citron.Symbol
-{   
-    [AutoConstructor]
-    public partial struct FuncReturn
+{       
+    public record struct FuncReturn(bool IsRef, IType Type) : ICyclicEqualityComparableStruct<FuncReturn>
     {
-        public bool IsRef { get; }
-        public IType Type { get; }
-
         public FuncReturn Apply(TypeEnv typeEnv)
         {
             var appliedType = Type.Apply(typeEnv);
             return new FuncReturn(IsRef, appliedType);
+        }
+
+        bool ICyclicEqualityComparableStruct<FuncReturn>.CyclicEquals(ref FuncReturn other, ref CyclicEqualityCompareContext context)
+        {
+            if (!IsRef.Equals(other.IsRef))
+                return false;
+
+            if (!context.CompareClass(Type, other.Type))
+                return false;
+
+            return true;
         }
     }
 }

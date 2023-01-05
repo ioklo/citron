@@ -27,14 +27,22 @@ namespace Citron.Analysis
             this.postBuildConstructorTasks = new List<PostBuildConstructorTask>();
         }
 
+        public IType MakeType(S.TypeExp typeExp, IDeclSymbolNode curNode, IDeclSymbolNode startNodeForSearchInAllModules)
+        {
+            return new TypeMakerByTypeExp(modules, factory, curNode, startNodeForSearchInAllModules).MakeType(typeExp);
+        }
+
         public IType MakeType(S.TypeExp typeExp, IDeclSymbolNode curNode)
         {
-            return new TypeMakerByTypeExp(modules, factory, curNode).MakeType(typeExp);
+            return new TypeMakerByTypeExp(modules, factory, curNode, curNode).MakeType(typeExp);
         }
 
         public (FuncReturn, ImmutableArray<FuncParameter> Param) MakeFuncReturnAndParams(IDeclSymbolNode curNode, bool bRefReturn, S.TypeExp retTypeSyntax, ImmutableArray<S.FuncParam> paramSyntaxes)
         {
-            var retType = MakeType(retTypeSyntax, curNode);
+            var outerNode = curNode.GetOuterDeclNode()!;
+
+            // 지금은 중첩 함수가 없으므로 바로 윗 단계부터 찾도록 한다
+            var retType = MakeType(retTypeSyntax, curNode, outerNode);
             var ret = new FuncReturn(bRefReturn, retType);
 
             var paramsBuilder = ImmutableArray.CreateBuilder<FuncParameter>(paramSyntaxes.Length);
@@ -48,7 +56,7 @@ namespace Citron.Analysis
                     _ => throw new UnreachableCodeException()
                 };
 
-                var paramTypeSymbol = MakeType(paramSyntax.Type, curNode);
+                var paramTypeSymbol = MakeType(paramSyntax.Type, curNode, outerNode);
                 var param = new FuncParameter(paramKind, paramTypeSymbol, new M.Name.Normal(paramSyntax.Name));
                 paramsBuilder.Add(param);
             }

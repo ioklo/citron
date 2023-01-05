@@ -4,13 +4,14 @@ using System.Collections.Generic;
 using Citron.Module;
 using System.Linq;
 using System;
+using Citron.Infra;
 
 namespace Citron.Symbol
 {
     public static class FuncDeclSymbolComponent
     {
         public static FuncDeclSymbolComponent<TFuncDeclSymbol> Make<TFuncDeclSymbol>()
-            where TFuncDeclSymbol : IDeclSymbolNode
+            where TFuncDeclSymbol : class, IDeclSymbolNode, ICyclicEqualityComparableClass<TFuncDeclSymbol>
         {
             var funcDict = new FuncDeclSymbolComponent<TFuncDeclSymbol>();
             funcDict.map = new Dictionary<DeclSymbolNodeName, TFuncDeclSymbol>();
@@ -18,10 +19,9 @@ namespace Citron.Symbol
             return funcDict;
         }
     }
-
-    [ExcludeComparison]
-    public partial struct FuncDeclSymbolComponent<TFuncDeclSymbol>
-        where TFuncDeclSymbol : IDeclSymbolNode
+    
+    public struct FuncDeclSymbolComponent<TFuncDeclSymbol> : ICyclicEqualityComparableStruct<FuncDeclSymbolComponent<TFuncDeclSymbol>>
+        where TFuncDeclSymbol : class, IDeclSymbolNode, ICyclicEqualityComparableClass<TFuncDeclSymbol>
     {
         internal Dictionary<Name, List<TFuncDeclSymbol>> nameMap;
         internal Dictionary<DeclSymbolNodeName, TFuncDeclSymbol> map;
@@ -68,6 +68,14 @@ namespace Citron.Symbol
         public IEnumerable<TFuncDeclSymbol> GetFuncs()
         {
             return map.Values;
+        }
+
+        bool ICyclicEqualityComparableStruct<FuncDeclSymbolComponent<TFuncDeclSymbol>>.CyclicEquals(ref FuncDeclSymbolComponent<TFuncDeclSymbol> other, ref CyclicEqualityCompareContext context)
+        {
+            if (!map.CyclicEqualsClassValue(other.map, ref context))
+                return false;
+
+            return true;
         }
     }
 }

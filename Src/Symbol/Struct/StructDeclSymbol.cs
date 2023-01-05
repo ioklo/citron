@@ -9,9 +9,8 @@ using Citron.Infra;
 using Pretune;
 
 namespace Citron.Symbol
-{
-    [ImplementIEquatable]
-    public partial class StructDeclSymbol : ITypeDeclSymbol, ITypeDeclContainable
+{   
+    public class StructDeclSymbol : ITypeDeclSymbol, ITypeDeclContainable, ICyclicEqualityComparableClass<StructDeclSymbol>
     {
         enum InitializeState
         {   
@@ -187,5 +186,57 @@ namespace Citron.Symbol
 
         public void AddFunc(StructMemberFuncDeclSymbol memberFunc)
             => funcComp.AddFunc(memberFunc);
+
+        bool ICyclicEqualityComparableClass<IDeclSymbolNode>.CyclicEquals(IDeclSymbolNode other, ref CyclicEqualityCompareContext context)
+            => other is StructDeclSymbol otherDeclSymbol && CyclicEquals(otherDeclSymbol, ref context);
+
+        bool ICyclicEqualityComparableClass<ITypeDeclSymbol>.CyclicEquals(ITypeDeclSymbol other, ref CyclicEqualityCompareContext context)
+            => other is StructDeclSymbol otherDeclSymbol && CyclicEquals(otherDeclSymbol, ref context);
+
+        bool ICyclicEqualityComparableClass<StructDeclSymbol>.CyclicEquals(StructDeclSymbol other, ref CyclicEqualityCompareContext context)
+            => CyclicEquals(other, ref context);        
+
+        bool CyclicEquals(StructDeclSymbol other, ref CyclicEqualityCompareContext context)
+        {
+            if (!context.CompareClass(outer, other.outer))
+                return false;
+
+            if (!accessor.Equals(other.accessor))
+                return false;
+
+            if (!name.Equals(other.name))
+                return false;
+
+            if (!typeParams.Equals(other.typeParams))
+                return false;
+
+            if (!context.CompareClass(baseStruct, other.baseStruct))
+                return false;
+
+            if (!interfaces.CyclicEqualsClassItem(ref other.interfaces, ref context))
+                return false;
+
+            if (!memberVars.CyclicEqualsClassItem(other.memberVars, ref context))
+                return false;
+
+            if (!constructors.CyclicEqualsClassItem(other.constructors, ref context))
+                return false;
+
+            if (!context.CompareClass(trivialConstructor, other.trivialConstructor))
+                return false;
+
+            if (!typeComp.CyclicEquals(ref other.typeComp, ref context))
+                return false;
+
+            if (!funcComp.CyclicEquals(ref other.funcComp, ref context))
+                return false;
+
+            if (!initState.Equals(other.initState))
+                return false;
+
+            return true;
+        }
+
+
     }
 }

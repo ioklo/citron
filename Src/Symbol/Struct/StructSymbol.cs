@@ -8,9 +8,8 @@ using Pretune;
 using System.Diagnostics;
 
 namespace Citron.Symbol
-{
-    [ImplementIEquatable]
-    public partial class StructSymbol : ITypeSymbol
+{   
+    public class StructSymbol : ITypeSymbol, ICyclicEqualityComparableClass<StructSymbol>
     {
         SymbolFactory symbolFactory;
         ISymbolNode outer;
@@ -45,14 +44,12 @@ namespace Citron.Symbol
                 }
             }
 
-            var result = candidates.GetSingle();
-            if (result != null)
-                return result;
-
-            if (candidates.HasMultiple)
+            var result = candidates.GetUniqueResult();
+            if (result.IsFound(out var sqr))
+                return sqr;
+            else if (result.IsMultipleError())
                 return SymbolQueryResults.Error.MultipleCandidates;
-
-            if (candidates.IsEmpty)
+            else if (result.IsNotFound())
                 return SymbolQueryResults.NotFound;
 
             throw new UnreachableCodeException();
@@ -125,20 +122,20 @@ namespace Citron.Symbol
             }
             
 
-            var result = candidates.GetSingle();
-            if (result != null)
+            var result = candidates.GetUniqueResult();
+            if (result.IsFound(out var structMemberVar))
             {
                 // 변수를 찾았는데 타입 아규먼트가 있다면 에러
                 if (typeParamCount != 0)
                     return SymbolQueryResults.Error.VarWithTypeArg;
 
-                return result;
+                return structMemberVar;
             }
 
-            if (candidates.HasMultiple)
+            else if (result.IsMultipleError())
                 return SymbolQueryResults.Error.MultipleCandidates;
 
-            if (candidates.IsEmpty)
+            else if (result.IsNotFound())
                 return SymbolQueryResults.NotFound;
 
             throw new UnreachableCodeException();
@@ -263,6 +260,29 @@ namespace Citron.Symbol
         public StructDeclSymbol GetDecl()
         {
             return decl;
+        }
+
+        bool ICyclicEqualityComparableClass<ISymbolNode>.CyclicEquals(ISymbolNode other, ref CyclicEqualityCompareContext context)
+            => other is StructSymbol otherSymbol && CyclicEquals(otherSymbol, ref context);
+
+        bool ICyclicEqualityComparableClass<ITypeSymbol>.CyclicEquals(ITypeSymbol other, ref CyclicEqualityCompareContext context)
+            => other is StructSymbol otherSymbol && CyclicEquals(otherSymbol, ref context);
+
+        bool ICyclicEqualityComparableClass<StructSymbol>.CyclicEquals(StructSymbol other, ref CyclicEqualityCompareContext context)
+            => CyclicEquals(other, ref context);
+
+        bool CyclicEquals(StructSymbol other, ref CyclicEqualityCompareContext context)
+        {
+            if (!context.CompareClass(outer, other.outer))
+                return false;
+
+            if (!context.CompareClass(decl, other.decl))
+                return false;
+
+            if (!typeArgs.CyclicEqualsClassItem(ref typeArgs, ref context))
+                return false;
+
+            return true;
         }
     }
 }

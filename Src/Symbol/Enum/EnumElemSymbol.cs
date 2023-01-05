@@ -9,7 +9,7 @@ using Citron.Infra;
 namespace Citron.Symbol
 {
     // S.First, S.Second(int i, short s)    
-    public partial class EnumElemSymbol : ITypeSymbol
+    public class EnumElemSymbol : ITypeSymbol, ICyclicEqualityComparableClass<EnumElemSymbol>
     {
         SymbolFactory factory;
         EnumSymbol outer;
@@ -127,6 +127,24 @@ namespace Citron.Symbol
         ISymbolNode ISymbolNode.Apply(TypeEnv typeEnv) => Apply(typeEnv);
         ISymbolNode? ISymbolNode.GetOuter() => GetOuter();
 
-        
+        bool ICyclicEqualityComparableClass<ISymbolNode>.CyclicEquals(ISymbolNode other, ref CyclicEqualityCompareContext context)
+            => other is EnumElemSymbol otherSymbol && CyclicEquals(otherSymbol, ref context);
+
+        bool ICyclicEqualityComparableClass<ITypeSymbol>.CyclicEquals(ITypeSymbol other, ref CyclicEqualityCompareContext context)
+            => other is EnumElemSymbol otherSymbol && CyclicEquals(otherSymbol, ref context);
+
+        bool ICyclicEqualityComparableClass<EnumElemSymbol>.CyclicEquals(EnumElemSymbol other, ref CyclicEqualityCompareContext context)
+            => CyclicEquals(other, ref context);
+
+        bool CyclicEquals(EnumElemSymbol other, ref CyclicEqualityCompareContext context)
+        {
+            if (!context.CompareClass(outer, other.outer))
+                return false;
+
+            if (!context.CompareClass(decl, other.decl))
+                return false;
+
+            return true;
+        }
     }
 }

@@ -1,9 +1,10 @@
-﻿using Citron.Module;
+﻿using Citron.Infra;
+using Citron.Module;
 
 namespace Citron.Symbol
 {
     // module, namespace
-    public interface ITopLevelSymbolNode : ISymbolNode
+    public interface ITopLevelSymbolNode : ISymbolNode, ICyclicEqualityComparableClass<ITopLevelSymbolNode>
     {
         new ITopLevelSymbolNode Apply(TypeEnv typeEnv);
         // (Name Module, NamespacePath? NamespacePath) GetRootPath();

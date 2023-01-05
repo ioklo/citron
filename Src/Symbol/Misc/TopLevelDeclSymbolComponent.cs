@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Citron.Collections;
-
+using Citron.Infra;
 using Citron.Module;
+using Pretune;
 
 namespace Citron.Symbol
 {
     // ModuleDecl, NamespaceDecl에서 쓰이는 로직
-    struct TopLevelDeclSymbolComponent
+    struct TopLevelDeclSymbolComponent : ICyclicEqualityComparableStruct<TopLevelDeclSymbolComponent>
     {
         List<NamespaceDeclSymbol> namespaceDecls;
         Dictionary<Name, NamespaceDeclSymbol> namespaceDict;
@@ -59,6 +60,20 @@ namespace Citron.Symbol
                 .Concat<IDeclSymbolNode>(namespaceDecls)
                 .Concat(typeComp.GetEnumerable())
                 .Concat(funcComp.GetEnumerable());
+        }
+
+        bool ICyclicEqualityComparableStruct<TopLevelDeclSymbolComponent>.CyclicEquals(ref TopLevelDeclSymbolComponent other, ref CyclicEqualityCompareContext context)
+        {
+            if (!namespaceDecls.CyclicEqualsClassItem(other.namespaceDecls, ref context))
+                return false;
+
+            if (!typeComp.CyclicEquals(ref other.typeComp, ref context))
+                return false;
+
+            if (!funcComp.CyclicEquals(ref other.funcComp, ref context))
+                return false;
+
+            return true;
         }
     }
 }

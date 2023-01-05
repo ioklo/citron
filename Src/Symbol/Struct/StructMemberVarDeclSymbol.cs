@@ -10,7 +10,7 @@ using System.Diagnostics;
 
 namespace Citron.Symbol
 {   
-    public partial class StructMemberVarDeclSymbol : IDeclSymbolNode
+    public class StructMemberVarDeclSymbol : IDeclSymbolNode, ICyclicEqualityComparableClass<StructMemberVarDeclSymbol>
     {   
         StructDeclSymbol outer;
         Accessor accessor;
@@ -36,8 +36,6 @@ namespace Citron.Symbol
         {
             throw new RuntimeFatalException();
         }
-
-        
 
         public IDeclSymbolNode? GetOuterDeclNode()
         {
@@ -77,6 +75,32 @@ namespace Citron.Symbol
         public Accessor GetAccessor()
         {
             return accessor;
+        }
+
+        bool ICyclicEqualityComparableClass<IDeclSymbolNode>.CyclicEquals(IDeclSymbolNode other, ref CyclicEqualityCompareContext context)
+            => other is StructMemberVarDeclSymbol otherDeclSymbol && CyclicEquals(otherDeclSymbol, ref context);
+
+        bool ICyclicEqualityComparableClass<StructMemberVarDeclSymbol>.CyclicEquals(StructMemberVarDeclSymbol other, ref CyclicEqualityCompareContext context)
+            => CyclicEquals(other, ref context);
+
+        bool CyclicEquals(StructMemberVarDeclSymbol other, ref CyclicEqualityCompareContext context)
+        {
+            if (!context.CompareClass(outer, other.outer))
+                return false;
+
+            if (!accessor.Equals(other.accessor))
+                return false;
+
+            if (!bStatic.Equals(other.bStatic))
+                return false;
+
+            if (!context.CompareClass(declType, other.declType))
+                return false;
+
+            if (!name.Equals(other.name))
+                return false;
+
+            return true;
         }
     }
 }

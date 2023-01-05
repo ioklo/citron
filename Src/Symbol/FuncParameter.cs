@@ -7,21 +7,26 @@ using Citron.Module;
 namespace Citron.Symbol
 {
     // value
-    [AutoConstructor]
-    public partial struct FuncParameter
+    public record struct FuncParameter(FuncParameterKind Kind, IType Type, Name Name) : ICyclicEqualityComparableStruct<FuncParameter>
     {
-        public FuncParameterKind Kind { get; }
-        public IType Type { get; }
-        public Name Name { get; }        
-
         public FuncParameter Apply(TypeEnv typeEnv)
         {
             var appliedType = Type.Apply(typeEnv);
             return new FuncParameter(Kind, appliedType, Name);
         }
-    }
 
-    public static class FuncParameterExtensions
-    {   
+        bool ICyclicEqualityComparableStruct<FuncParameter>.CyclicEquals(ref FuncParameter other, ref CyclicEqualityCompareContext context)
+        {
+            if (!Kind.Equals(other.Kind)) 
+                return false;
+
+            if (!context.CompareClass(Type, other.Type)) 
+                return false;
+
+            if (!Name.Equals(Name)) 
+                return false;
+
+            return true;
+        }
     }
 }

@@ -6,10 +6,14 @@ using System.Threading.Tasks;
 using Citron.Collections;
 using Citron.Infra;
 using Citron.Module;
+using Pretune;
 
 namespace Citron.Symbol
 {   
-    public class ModuleDeclSymbol : ITopLevelDeclSymbolNode, ITopLevelDeclContainable
+    public class ModuleDeclSymbol 
+        : ITopLevelDeclSymbolNode
+        , ITopLevelDeclContainable
+        , ICyclicEqualityComparableClass<ModuleDeclSymbol>
     {
         Name moduleName;
         bool bReference;
@@ -87,5 +91,30 @@ namespace Citron.Symbol
 
         public void AddNamespace(NamespaceDeclSymbol ns)
             => topLevelComp.AddNamespace(ns);
+
+        bool ICyclicEqualityComparableClass<ITopLevelDeclSymbolNode>.CyclicEquals(ITopLevelDeclSymbolNode other, ref CyclicEqualityCompareContext context)
+            => other is ModuleDeclSymbol otherDeclSymbol && CyclicEquals(otherDeclSymbol, ref context);
+
+        bool ICyclicEqualityComparableClass<IDeclSymbolNode>.CyclicEquals(IDeclSymbolNode other, ref CyclicEqualityCompareContext context)
+            => other is ModuleDeclSymbol otherDeclSymbol && CyclicEquals(otherDeclSymbol, ref context);
+
+        bool ICyclicEqualityComparableClass<ModuleDeclSymbol>.CyclicEquals(ModuleDeclSymbol other, ref CyclicEqualityCompareContext context)
+            => CyclicEquals(other, ref context);
+
+        bool CyclicEquals(ModuleDeclSymbol other, ref CyclicEqualityCompareContext context)
+        {
+            if (!moduleName.Equals(other.moduleName))
+                return false;
+
+            if (!bReference.Equals(other.bReference))
+                return false;
+
+            if (!topLevelComp.CyclicEquals(ref other.topLevelComp, ref context))
+                return false;
+
+            return true;
+        }
+
+        
     }
 }

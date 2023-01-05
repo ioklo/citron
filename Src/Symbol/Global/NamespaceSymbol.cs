@@ -11,7 +11,7 @@ using Citron.Infra;
 namespace Citron.Symbol
 {
     [AutoConstructor]
-    public partial class NamespaceSymbol : ITopLevelSymbolNode
+    public partial class NamespaceSymbol : ITopLevelSymbolNode, ICyclicEqualityComparableClass<NamespaceSymbol>
     {
         SymbolFactory factory;
         ITopLevelSymbolNode outer;
@@ -77,6 +77,26 @@ namespace Citron.Symbol
                 return new SymbolQueryResult.GlobalFuncs(builder.ToImmutable());
 
             return SymbolQueryResults.NotFound;
+        }
+
+        bool ICyclicEqualityComparableClass<ISymbolNode>.CyclicEquals(ISymbolNode other, ref CyclicEqualityCompareContext context)
+            => other is NamespaceSymbol otherSymbol && CyclicEquals(otherSymbol, ref context);
+
+        bool ICyclicEqualityComparableClass<ITopLevelSymbolNode>.CyclicEquals(ITopLevelSymbolNode other, ref CyclicEqualityCompareContext context)
+            => other is NamespaceSymbol otherSymbol && CyclicEquals(otherSymbol, ref context);
+
+        bool ICyclicEqualityComparableClass<NamespaceSymbol>.CyclicEquals(NamespaceSymbol other, ref CyclicEqualityCompareContext context)
+            => CyclicEquals(other, ref context);
+
+        bool CyclicEquals(NamespaceSymbol other, ref CyclicEqualityCompareContext context)
+        {
+            if (!context.CompareClass(outer, other.outer))
+                return false;
+
+            if (!context.CompareClass(decl, other.decl))
+                return false;
+
+            return true;
         }
     }
 }

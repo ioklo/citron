@@ -9,7 +9,7 @@ using System.Diagnostics;
 
 namespace Citron.Symbol
 {
-    public class EnumElemMemberVarDeclSymbol : IDeclSymbolNode
+    public class EnumElemMemberVarDeclSymbol : IDeclSymbolNode, ICyclicEqualityComparableClass<EnumElemMemberVarDeclSymbol>
     {
         enum InitializeState
         {
@@ -75,10 +75,10 @@ namespace Citron.Symbol
 
         public IType GetDeclType()
         {
-            Debug.Assert(InitializeState.BeforeInitDeclType < initState);            
+            Debug.Assert(InitializeState.BeforeInitDeclType < initState);
             return declType!;
         }
-        
+
         public void Apply(IDeclSymbolNodeVisitor visitor)
         {
             visitor.VisitEnumElemMemberVar(this);
@@ -87,6 +87,29 @@ namespace Citron.Symbol
         public Accessor GetAccessor()
         {
             return Accessor.Public;
+        }
+
+        bool ICyclicEqualityComparableClass<IDeclSymbolNode>.CyclicEquals(IDeclSymbolNode other, ref CyclicEqualityCompareContext context)
+            => other is EnumElemMemberVarDeclSymbol otherDeclSymbol && CyclicEquals(otherDeclSymbol, ref context);
+
+        bool ICyclicEqualityComparableClass<EnumElemMemberVarDeclSymbol>.CyclicEquals(EnumElemMemberVarDeclSymbol other, ref CyclicEqualityCompareContext context)
+            => CyclicEquals(other, ref context);
+
+        bool CyclicEquals(EnumElemMemberVarDeclSymbol other, ref CyclicEqualityCompareContext context)
+        {
+            if (!context.CompareClass(outer, other.outer))
+                return false;
+
+            if (!context.CompareClass(declType, other.declType))
+                return false;
+
+            if (!name.Equals(other.name))
+                return false;
+
+            if (!initState.Equals(other.initState))
+                return false;
+
+            return true;
         }
     }
 }

@@ -13,7 +13,7 @@ namespace Citron.Symbol
     // X<int>.Y<short>.F_T_int_int<S>
 
     // F<>
-    public class GlobalFuncSymbol : IFuncSymbol
+    public class GlobalFuncSymbol : IFuncSymbol, ICyclicEqualityComparableClass<GlobalFuncSymbol>
     {
         SymbolFactory factory;
         ITopLevelSymbolNode outer;
@@ -90,6 +90,26 @@ namespace Citron.Symbol
         public ITypeSymbol? GetOuterType()
         {
             return null;
+        }
+
+        bool ICyclicEqualityComparableClass<ISymbolNode>.CyclicEquals(ISymbolNode other, ref CyclicEqualityCompareContext context)
+            => other is GlobalFuncSymbol otherSymbol && CyclicEquals(otherSymbol, ref context);
+
+        bool ICyclicEqualityComparableClass<GlobalFuncSymbol>.CyclicEquals(GlobalFuncSymbol other, ref CyclicEqualityCompareContext context)
+            => CyclicEquals(other, ref context);
+
+        bool CyclicEquals(GlobalFuncSymbol other, ref CyclicEqualityCompareContext context)
+        {
+            if (!context.CompareClass(outer, other.outer))
+                return false;
+
+            if (!context.CompareClass(decl, other.decl))
+                return false;
+
+            if (typeArgs.CyclicEqualsClassItem(ref typeArgs, ref context))
+                return false;
+
+            return true;
         }
     }
 }

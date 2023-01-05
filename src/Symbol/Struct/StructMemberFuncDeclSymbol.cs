@@ -9,7 +9,7 @@ using System.Diagnostics;
 
 namespace Citron.Symbol
 {
-    public class StructMemberFuncDeclSymbol : IFuncDeclSymbol
+    public class StructMemberFuncDeclSymbol : IFuncDeclSymbol, ICyclicEqualityComparableClass<StructMemberFuncDeclSymbol>
     {
         enum InitializeState
         {
@@ -117,6 +117,41 @@ namespace Citron.Symbol
         public Accessor GetAccessor()
         {
             return accessModifier;
+        }
+
+        bool ICyclicEqualityComparableClass<IDeclSymbolNode>.CyclicEquals(IDeclSymbolNode other, ref CyclicEqualityCompareContext context)
+            => other is StructMemberFuncDeclSymbol otherDeclSymbol && CyclicEquals(otherDeclSymbol, ref context);
+
+        bool ICyclicEqualityComparableClass<StructMemberFuncDeclSymbol>.CyclicEquals(StructMemberFuncDeclSymbol other, ref CyclicEqualityCompareContext context)
+            => CyclicEquals(other, ref context);        
+
+        bool CyclicEquals(StructMemberFuncDeclSymbol other, ref CyclicEqualityCompareContext context)
+        {
+            if (!context.CompareClass(outer, other.outer))
+                return false;
+
+            if (!accessModifier.Equals(other.accessModifier))
+                return false;
+
+            if (!bStatic.Equals(other.bStatic))
+                return false;
+
+            if (!funcReturn.CyclicEquals(ref other.funcReturn, ref context))
+                return false;
+
+            if (!name.Equals(other.name))
+                return false;
+
+            if (!typeParams.Equals(other.typeParams))
+                return false;
+
+            if (!parameters.CyclicEqualsStructItem(ref other.parameters, ref context))
+                return false;
+
+            if (!initState.Equals(other.initState))
+                return false;
+
+            return true;
         }
     }
 }

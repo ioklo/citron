@@ -9,8 +9,7 @@ using System.Diagnostics;
 
 namespace Citron.Symbol
 {
-    [ImplementIEquatable]
-    public partial class GlobalFuncDeclSymbol : IFuncDeclSymbol
+    public class GlobalFuncDeclSymbol : IFuncDeclSymbol, ICyclicEqualityComparableClass<GlobalFuncDeclSymbol>
     {
         enum InitializeState
         {
@@ -76,7 +75,7 @@ namespace Citron.Symbol
 
         public DeclSymbolNodeName GetNodeName()
         {
-            Debug.Assert(InitializeState.AfterInitFuncReturnAndParams < initState);
+            Debug.Assert(InitializeState.BeforeInitFuncReturnAndParams < initState);
             return new DeclSymbolNodeName(name, typeParams.Length, parameters.MakeFuncParamIds());
         }
         
@@ -112,5 +111,37 @@ namespace Citron.Symbol
         {
             visitor.VisitGlobalFunc(this);
         }
+
+        bool ICyclicEqualityComparableClass<IDeclSymbolNode>.CyclicEquals(IDeclSymbolNode other, ref CyclicEqualityCompareContext context)
+            => other is GlobalFuncDeclSymbol otherDeclSymbol && CyclicEquals(otherDeclSymbol, ref context);
+
+        bool ICyclicEqualityComparableClass<GlobalFuncDeclSymbol>.CyclicEquals(GlobalFuncDeclSymbol other, ref CyclicEqualityCompareContext context)
+            => CyclicEquals(other, ref context);
+
+        bool CyclicEquals(GlobalFuncDeclSymbol other, ref CyclicEqualityCompareContext context)
+        {
+            if (!context.CompareClass(outer, other.outer))
+                return false;
+
+            if (!accessModifier.Equals(other.accessModifier))
+                return false;
+
+            if (!@return.CyclicEquals(ref other.@return, ref context))
+                return false;
+
+            if (!name.Equals(other.name))
+                return false;
+
+            if (!typeParams.Equals(other.typeParams))
+                return false;
+
+            if (!parameters.CyclicEqualsStructItem(ref other.parameters, ref context))
+                return false;
+
+            if (!initState.Equals(other.initState))
+                return false;
+
+            return true;
+        }        
     }
 }

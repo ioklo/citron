@@ -12,7 +12,7 @@ using Name = Citron.Module.Name;
 
 namespace Citron.Symbol
 {
-    public interface IType
+    public interface IType : ICyclicEqualityComparableClass<IType>
     {
         IType Apply(TypeEnv typeEnv);
         TypeId GetTypeId();
@@ -31,6 +31,8 @@ namespace Citron.Symbol
         public abstract IType? GetMemberType(Name name, ImmutableArray<IType> typeArgs);
         public abstract void Visit<TVisitor>(ref TVisitor visitor)
             where TVisitor : struct, ITypeVisitor;
+
+        public abstract bool CyclicEquals(IType other, ref CyclicEqualityCompareContext context);
     }
 
     public abstract record class SymbolType : TypeImpl
@@ -40,6 +42,11 @@ namespace Citron.Symbol
         public sealed override TypeId GetTypeId() => GetTypeSymbol().GetSymbolId();
         public sealed override FuncParamTypeId MakeFuncParamTypeId() => new FuncParamTypeId.Symbol(GetTypeSymbol().GetSymbolId());
         public sealed override IType? GetMemberType(Name name, ImmutableArray<IType> typeArgs) => GetTypeSymbol().GetMemberType(name, typeArgs);
+
+        public sealed override bool CyclicEquals(IType other, ref CyclicEqualityCompareContext context)
+        {
+            return other is SymbolType otherSymbolType && GetTypeSymbol().CyclicEquals(otherSymbolType.GetTypeSymbol(), ref context);
+        }
     }
 
     public record class EnumElemType(EnumElemSymbol Symbol) : SymbolType
@@ -56,25 +63,34 @@ namespace Citron.Symbol
         public override void Visit<TVisitor>(ref TVisitor visitor) => visitor.VisitEnum(this);
     }
 
-    public record class ClassType(ClassSymbol Symbol) : SymbolType
+    public record class ClassType(ClassSymbol Symbol) : SymbolType, ICyclicEqualityComparableClass<ClassType>
     {
         protected override ITypeSymbol GetTypeSymbol() => Symbol;
         public override ClassType Apply(TypeEnv typeEnv) => new ClassType(Symbol.Apply(typeEnv));
         public override void Visit<TVisitor>(ref TVisitor visitor) => visitor.VisitClass(this);
+
+        bool ICyclicEqualityComparableClass<ClassType>.CyclicEquals(ClassType other, ref CyclicEqualityCompareContext context)
+            => base.CyclicEquals(other, ref context);
     }
 
-    public record class InterfaceType(InterfaceSymbol Symbol) : SymbolType
+    public record class InterfaceType(InterfaceSymbol Symbol) : SymbolType, ICyclicEqualityComparableClass<InterfaceType>
     {
         protected override ITypeSymbol GetTypeSymbol() => Symbol;
         public override InterfaceType Apply(TypeEnv typeEnv) => new InterfaceType(Symbol.Apply(typeEnv));
         public override void Visit<TVisitor>(ref TVisitor visitor) => visitor.VisitInterface(this);
+
+        bool ICyclicEqualityComparableClass<InterfaceType>.CyclicEquals(InterfaceType other, ref CyclicEqualityCompareContext context)
+            => base.CyclicEquals(other, ref context);
     }
 
-    public record class StructType(StructSymbol Symbol) : SymbolType
+    public record class StructType(StructSymbol Symbol) : SymbolType, ICyclicEqualityComparableClass<StructType>
     {
         protected override ITypeSymbol GetTypeSymbol() => Symbol;
         public override StructType Apply(TypeEnv typeEnv) => new StructType(Symbol.Apply(typeEnv));
         public override void Visit<TVisitor>(ref TVisitor visitor) => visitor.VisitStruct(this);
+
+        bool ICyclicEqualityComparableClass<StructType>.CyclicEquals(StructType other, ref CyclicEqualityCompareContext context)
+            => base.CyclicEquals(other, ref context);
     }
 
     public record class NullableType(IType InnerType) : TypeImpl
@@ -85,6 +101,17 @@ namespace Citron.Symbol
         public override IType? GetMemberType(Name name, ImmutableArray<IType> typeArgs) => null;
 
         public override void Visit<TVisitor>(ref TVisitor visitor) => visitor.VisitNullable(this);
+
+        public sealed override bool CyclicEquals(IType other, ref CyclicEqualityCompareContext context)
+            => other is NullableType otherType && CyclicEquals(otherType, ref context);
+
+        bool CyclicEquals(NullableType other, ref CyclicEqualityCompareContext context)
+        {
+            if (!context.CompareClass(InnerType, other.InnerType))
+                return false;
+
+            return true;
+        }
     }
 
     public record class TypeVarType(int Index) : TypeImpl
@@ -94,6 +121,17 @@ namespace Citron.Symbol
         public override FuncParamTypeId MakeFuncParamTypeId() => new FuncParamTypeId.TypeVar(Index);
         public override IType? GetMemberType(Name name, ImmutableArray<IType> typeArgs) => null;
         public override void Visit<TVisitor>(ref TVisitor visitor) => visitor.VisitTypeVar(this);
+
+        public sealed override bool CyclicEquals(IType other, ref CyclicEqualityCompareContext context)
+            => other is TypeVarType otherType && CyclicEquals(otherType, ref context);
+
+        bool CyclicEquals(TypeVarType other, ref CyclicEqualityCompareContext context)
+        {
+            if (!Index.Equals(other.Index))
+                return false;
+
+            return true;
+        }
     }
 
     public record class VoidType: TypeImpl
@@ -103,6 +141,9 @@ namespace Citron.Symbol
         public override FuncParamTypeId MakeFuncParamTypeId() => new FuncParamTypeId.Void();
         public override IType? GetMemberType(Name name, ImmutableArray<IType> typeArgs) => null;
         public override void Visit<TVisitor>(ref TVisitor visitor) => visitor.VisitVoid(this);
+
+        public sealed override bool CyclicEquals(IType other, ref CyclicEqualityCompareContext context)
+            => true;
     }
 
     public record class LambdaType : TypeImpl
@@ -112,6 +153,9 @@ namespace Citron.Symbol
         public override FuncParamTypeId MakeFuncParamTypeId() => throw new NotImplementedException(); // 람다 타입은 함수 이름으로 사용할 수 없습니다 에러 작성
         public override IType? GetMemberType(Name name, ImmutableArray<IType> typeArgs) => null;
         public override void Visit<TVisitor>(ref TVisitor visitor) => visitor.VisitLambda(this);
+
+        public sealed override bool CyclicEquals(IType other, ref CyclicEqualityCompareContext context)
+            => throw new NotImplementedException();
     }
 
     public record class TupleType(ImmutableArray<(IType Type, Name Name)> MemberVars) : TypeImpl
@@ -142,6 +186,31 @@ namespace Citron.Symbol
 
         public override IType? GetMemberType(Name name, ImmutableArray<IType> typeArgs) => null;
         public override void Visit<TVisitor>(ref TVisitor visitor) => visitor.VisitTuple(this);
+
+        public sealed override bool CyclicEquals(IType other, ref CyclicEqualityCompareContext context)
+            => other is TupleType otherType && CyclicEquals(otherType, ref context);
+
+        bool CyclicEquals(TupleType other, ref CyclicEqualityCompareContext context)
+        {
+            int memberVarCount = MemberVars.Length;
+            int otherMemberVarCount = other.MemberVars.Length;
+
+            if (memberVarCount == 0 && otherMemberVarCount == 0) return true;
+            if (memberVarCount == 0 || otherMemberVarCount == 0) return false;
+
+            if (memberVarCount != otherMemberVarCount) return false;
+            
+            for (int i = 0; i < memberVarCount; i++)
+            {
+                if (!context.CompareClass(MemberVars[i].Type, other.MemberVars[i].Type))
+                    return false;
+
+                if (!MemberVars[i].Name.Equals(other.MemberVars[i].Name))
+                    return false;
+            }
+
+            return true;
+        }
     }
 
     public record class VarType : TypeImpl
@@ -151,5 +220,7 @@ namespace Citron.Symbol
         public override FuncParamTypeId MakeFuncParamTypeId() => throw new NotImplementedException(); // var는 함수 이름으로 사용할 수 없습니다 에러 작성
         public override IType? GetMemberType(Name name, ImmutableArray<IType> typeArgs) => null;
         public override void Visit<TVisitor>(ref TVisitor visitor) => visitor.VisitVar(this);
+        public sealed override bool CyclicEquals(IType other, ref CyclicEqualityCompareContext context)
+            => true;
     }
 }

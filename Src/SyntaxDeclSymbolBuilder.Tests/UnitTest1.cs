@@ -108,7 +108,7 @@ public class UnitTest1
 
         var typeVar = new TypeVarType(0);
         funcDecl.InitFuncReturnAndParams(
-            new FuncReturn(isRef: false, typeVar),
+            new FuncReturn(IsRef: false, typeVar),
             Arr(new FuncParameter(M.FuncParameterKind.Ref, typeVar, NormalName("t"))));
         
         Assert.Equal(expectedModuleDecl, moduleDecl);
@@ -137,21 +137,22 @@ public class UnitTest1
 
         var expectedModuleDecl = new ModuleDeclSymbol(NormalName("TestModule"), bReference: false);
         var funcDecl = new GlobalFuncDeclSymbol(expectedModuleDecl, M.Accessor.Private, NormalName("Func"), Arr(NormalName("T"), NormalName("U")));
-        expectedModuleDecl.AddFunc(funcDecl);
 
         var t = new TypeVarType(0);
         var u = new TypeVarType(1);
 
         funcDecl.InitFuncReturnAndParams(
-            new FuncReturn(isRef: false, voidType),
+            new FuncReturn(IsRef: false, voidType),
             Arr(
                 new FuncParameter(M.FuncParameterKind.Default, intType, NormalName("x")),
                 new FuncParameter(M.FuncParameterKind.Params, u, NormalName("y")),
                 new FuncParameter(M.FuncParameterKind.Ref, t, NormalName("z"))
             )
         );
-        
-        Assert.Equal(expectedModuleDecl, resultModuleDecl);
+        expectedModuleDecl.AddFunc(funcDecl);
+
+        var context = new CyclicEqualityCompareContext();
+        Assert.True(context.CompareClass(expectedModuleDecl, resultModuleDecl));
     }
 
     // public struct S<T> : B<int>
@@ -239,7 +240,7 @@ public class UnitTest1
         var s_Int = new StructType(factory.MakeStruct(module, sDecl, Arr<IType>(intType)));
 
         sFuncDecl.InitFuncReturnAndParams(
-            new FuncReturn(isRef: false, sFuncT),
+            new FuncReturn(IsRef: false, sFuncT),
             Arr(
                 new FuncParameter(M.FuncParameterKind.Default, s_Int, NormalName("s")),
                 new FuncParameter(M.FuncParameterKind.Default, sFuncU, NormalName("u"))

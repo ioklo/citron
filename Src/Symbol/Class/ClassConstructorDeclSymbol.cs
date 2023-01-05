@@ -8,17 +8,17 @@ using Citron.Module;
 
 namespace Citron.Symbol
 {
-    public record ClassConstructorDeclSymbol : IFuncDeclSymbol
+    public record ClassConstructorDeclSymbol : IFuncDeclSymbol, ICyclicEqualityComparableClass<ClassConstructorDeclSymbol>
     {
         ClassDeclSymbol outer;
-        Accessor accessModifier;
+        Accessor accessor;
         ImmutableArray<FuncParameter> parameters;
         bool bTrivial;
 
-        public ClassConstructorDeclSymbol(ClassDeclSymbol outer, Accessor accessModifier, ImmutableArray<FuncParameter> parameters, bool bTrivial)
+        public ClassConstructorDeclSymbol(ClassDeclSymbol outer, Accessor accessor, ImmutableArray<FuncParameter> parameters, bool bTrivial)
         {
             this.outer = outer;
-            this.accessModifier = accessModifier;
+            this.accessor = accessor;
             this.parameters = parameters;
             this.bTrivial = bTrivial;
         }
@@ -35,7 +35,7 @@ namespace Citron.Symbol
 
         public Accessor GetAccessor()
         {
-            return accessModifier;
+            return accessor;
         }
 
         public int GetParameterCount()
@@ -72,5 +72,31 @@ namespace Citron.Symbol
         {
             return bTrivial;
         }
+
+        bool CyclicEquals(ClassConstructorDeclSymbol other, ref CyclicEqualityCompareContext context)
+        {
+            // 레퍼런스는 이렇게
+            if (!context.CompareClass(outer, other.outer))
+                return false;
+
+            if (!accessor.Equals(other.accessor))
+                return false;
+
+            // struct는 이렇게
+            if (!parameters.CyclicEqualsStructItem(ref other.parameters, ref context))
+                return false;
+
+            if (!bTrivial.Equals(other.bTrivial))
+                return false;
+
+            return true;
+        }
+
+        bool ICyclicEqualityComparableClass<ClassConstructorDeclSymbol>.CyclicEquals(ClassConstructorDeclSymbol other, ref CyclicEqualityCompareContext context)
+            => CyclicEquals(other, ref context);
+
+        bool ICyclicEqualityComparableClass<IDeclSymbolNode>.CyclicEquals(IDeclSymbolNode other, ref CyclicEqualityCompareContext context)
+            => other is ClassConstructorDeclSymbol otherDeclSymbol && CyclicEquals(otherDeclSymbol, ref context);
+        
     }
 }

@@ -9,55 +9,59 @@ namespace Citron.Infra
 {
     // 주의: T가 struct일 경우 T?가 Nullable<T>를 의미하지 않기 때문에, Candidate<MyStruct?>처럼 ?를 사용해 줘야 제대로 동작한다
     public struct Candidates<T>
-    {   
+    {
+        bool bOneAssigned;
         T? one;           // 한개까지는 여기에 저장한다
         List<T>? rests;   // 여러개일 경우 one을 포함해서 여기에 저장한다
 
         public void Clear()
         {
+            bOneAssigned = false;
             one = default;
             rests?.Clear();
         }
 
         public void Add(T item)
         {
-            if (rests != null)
-                rests.Add(item);
-
-            else if (one != null)
+            if (!bOneAssigned)
             {
-                // rests 만들기
-                rests = new List<T>() { one, item };
-                one = default;
+                one = item;
+                bOneAssigned = true;
+            }
+            else if (rests != null)
+            {
+                rests.Add(item);
             }
             else
             {
-                one = item;
+                rests = new List<T>() { item };
             }
         }
 
-        // 순서.. Single을 얻어보고, null이면 Empty냐 Multiple이냐 알아본다
-        public T? GetSingle() { return one; }
-        public bool IsEmpty { get => one == null && rests == null; }
-        public bool HasMultiple { get => rests != null; }
-
-        public UniqueQueryResult<T> GetResult()
+        public UniqueQueryResult<T> GetUniqueResult()
         {
-            if (one != null)            
-                return UniqueQueryResults<T>.Found(one);
+            if (!bOneAssigned)
+                return UniqueQueryResult<T>.NotFound();
 
-            if (rests != null)
-                return UniqueQueryResults<T>.MultipleError;
+            if (rests == null || rests.Count() == 0)
+            {
+                Debug.Assert(one != null);
+                return UniqueQueryResult<T>.Found(one);
+            }
 
-            Debug.Assert(one == null && rests == null);
-            return UniqueQueryResults<T>.NotFound;
+            return UniqueQueryResult<T>.MultipleError();
+        }
+
+        public bool ContainsItem()
+        {
+            return bOneAssigned;
         }
 
         public int GetCount()
         {
-            if (one != null && rests != null)
+            if (rests != null && rests.Count () != 0)
                 return rests.Count + 1;
-            else if (one != null)
+            else if (bOneAssigned)
                 return 1;
             else
                 return 0;

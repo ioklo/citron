@@ -1,4 +1,5 @@
 ﻿using Citron.Collections;
+using Citron.Infra;
 using Citron.Module;
 using System;
 using System.Diagnostics;
@@ -7,7 +8,7 @@ using System.Security.Cryptography.X509Certificates;
 namespace Citron.Symbol
 {
     // 자식으로 가는 줄기는 없다
-    public interface ISymbolNode
+    public interface ISymbolNode : ICyclicEqualityComparableClass<ISymbolNode>
     {
         // 순회
         ISymbolNode? GetOuter();

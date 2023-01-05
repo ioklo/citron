@@ -4,7 +4,7 @@ using System;
 
 namespace Citron.Symbol
 {    
-    public class ClassMemberVarSymbol : ISymbolNode
+    public class ClassMemberVarSymbol : ISymbolNode, ICyclicEqualityComparableClass<ClassMemberVarSymbol>
     {
         SymbolFactory factory;
         ClassSymbol outer;
@@ -61,6 +61,23 @@ namespace Citron.Symbol
         public bool IsStatic()
         {
             return decl.IsStatic();
+        }
+
+        bool ICyclicEqualityComparableClass<ISymbolNode>.CyclicEquals(ISymbolNode other, ref CyclicEqualityCompareContext context)
+            => other is ClassMemberVarSymbol otherSymbol && CyclicEquals(otherSymbol, ref context);
+
+        bool ICyclicEqualityComparableClass<ClassMemberVarSymbol>.CyclicEquals(ClassMemberVarSymbol other, ref CyclicEqualityCompareContext context)
+            => CyclicEquals(other, ref context);
+
+        bool CyclicEquals(ClassMemberVarSymbol other, ref CyclicEqualityCompareContext context)
+        {
+            if (!context.CompareClass(outer, other.outer))
+                return false;
+
+            if (!context.CompareClass(decl, other.decl))
+                return false;
+
+            return true;
         }
     }
 }

@@ -12,7 +12,7 @@ using Citron.Module;
 
 namespace Citron.Symbol
 {
-    public class ModuleSymbol : ITopLevelSymbolNode
+    public class ModuleSymbol : ITopLevelSymbolNode, ICyclicEqualityComparableClass<ModuleSymbol>
     {
         SymbolFactory factory;
         ModuleDeclSymbol decl;
@@ -81,6 +81,23 @@ namespace Citron.Symbol
                 return new SymbolQueryResult.GlobalFuncs(builder.ToImmutable());
 
             return SymbolQueryResults.NotFound;
+        }
+
+        bool ICyclicEqualityComparableClass<ISymbolNode>.CyclicEquals(ISymbolNode other, ref CyclicEqualityCompareContext context)
+            => other is ModuleSymbol otherSymbol && CyclicEquals(otherSymbol, ref context);
+
+        bool ICyclicEqualityComparableClass<ITopLevelSymbolNode>.CyclicEquals(ITopLevelSymbolNode other, ref CyclicEqualityCompareContext context)
+            => other is ModuleSymbol otherSymbol && CyclicEquals(otherSymbol, ref context);
+
+        bool ICyclicEqualityComparableClass<ModuleSymbol>.CyclicEquals(ModuleSymbol other, ref CyclicEqualityCompareContext context)
+            => CyclicEquals(other, ref context);
+
+        bool CyclicEquals(ModuleSymbol other, ref CyclicEqualityCompareContext context)
+        {
+            if (!context.CompareClass(decl, other.decl))
+                return false;
+
+            return true;
         }
     }
 }

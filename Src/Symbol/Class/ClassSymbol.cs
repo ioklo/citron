@@ -11,9 +11,7 @@ using System.Diagnostics;
 
 namespace Citron.Symbol
 {
-    // value
-    [ImplementIEquatable]
-    public partial class ClassSymbol : ITypeSymbol
+    public class ClassSymbol : ITypeSymbol, ICyclicEqualityComparableClass<ClassSymbol>
     {
         SymbolFactory factory;
         ISymbolNode outer;
@@ -110,14 +108,12 @@ namespace Citron.Symbol
                 }
             }
 
-            var result = candidates.GetSingle();
-            if (result != null)
-                return result;
-
-            if (candidates.HasMultiple)
+            var result = candidates.GetUniqueResult();
+            if (result.IsFound(out var sqr))
+                return sqr;
+            else if (result.IsMultipleError())
                 return SymbolQueryResults.Error.MultipleCandidates;
-
-            if (candidates.IsEmpty)
+            else if (result.IsNotFound())
                 return SymbolQueryResults.NotFound;
 
             throw new UnreachableCodeException();
@@ -175,20 +171,18 @@ namespace Citron.Symbol
                 }
             }
 
-            var result = candidates.GetSingle();
-            if (result != null)
+            var result = candidates.GetUniqueResult();
+            if (result.IsFound(out var classMemberVar))
             {
                 // 변수를 찾았는데 타입 아규먼트가 있다면 에러
                 if (typeParamCount != 0)
                     return SymbolQueryResults.Error.VarWithTypeArg;
 
-                return new SymbolQueryResult.ClassMemberVar(result);
+                return new SymbolQueryResult.ClassMemberVar(classMemberVar);
             }
-
-            if (candidates.HasMultiple)
+            else if (result.IsMultipleError())
                 return SymbolQueryResults.Error.MultipleCandidates;
-
-            if (candidates.IsEmpty)
+            else if (result.IsNotFound())
                 return SymbolQueryResults.NotFound;
 
             throw new UnreachableCodeException();
@@ -310,6 +304,31 @@ namespace Citron.Symbol
         public ClassDeclSymbol GetDecl()
         {
             return decl;
-        }        
+        }
+
+        bool ICyclicEqualityComparableClass<ITypeSymbol>.CyclicEquals(ITypeSymbol other, ref CyclicEqualityCompareContext context)
+        {
+            throw new NotImplementedException();
+        }
+
+        bool ICyclicEqualityComparableClass<ClassSymbol>.CyclicEquals(ClassSymbol other, ref CyclicEqualityCompareContext context)
+            => CyclicEquals(other, ref context);
+
+        bool ICyclicEqualityComparableClass<ISymbolNode>.CyclicEquals(ISymbolNode other, ref CyclicEqualityCompareContext context)
+            => other is ClassSymbol otherSymbol && CyclicEquals(otherSymbol, ref context);
+
+        bool CyclicEquals(ClassSymbol other, ref CyclicEqualityCompareContext context)
+        {
+            if (!context.CompareClass(outer, other.outer))
+                return false;
+
+            if (!context.CompareClass(decl, other.decl))
+                return false;
+
+            if (!typeArgs.CyclicEqualsClassItem(ref typeArgs, ref context))
+                return false;
+
+            return true;
+        }
     }
 }

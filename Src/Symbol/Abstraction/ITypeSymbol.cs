@@ -1,10 +1,11 @@
 ﻿using Citron.Collections;
+using Citron.Infra;
 using Citron.Module;
 using System.Diagnostics;
 
 namespace Citron.Symbol
 {
-    public interface ITypeSymbol : ISymbolNode
+    public interface ITypeSymbol : ISymbolNode, ICyclicEqualityComparableClass<ITypeSymbol>
     {
         new ITypeSymbol Apply(TypeEnv typeEnv);
         new ITypeDeclSymbol GetDeclSymbolNode();

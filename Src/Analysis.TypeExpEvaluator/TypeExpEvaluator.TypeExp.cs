@@ -153,7 +153,7 @@ namespace Citron.Analysis
                     candidates.Add(new ModuleSymbolTypeExpInfo(typeId, declSymbol, typeExp));
                 }
 
-                var result = candidates.GetResult();
+                var result = candidates.GetUniqueResult();
                 switch(result)
                 {
                     case UniqueQueryResult<TypeExpInfo>.Found:

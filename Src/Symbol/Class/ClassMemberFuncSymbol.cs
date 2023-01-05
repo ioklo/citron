@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace Citron.Symbol
 {
     // X<int>.Y<short>.F_T_int_int<S>
-    public class ClassMemberFuncSymbol : IFuncSymbol
+    public class ClassMemberFuncSymbol : IFuncSymbol, ICyclicEqualityComparableClass<ClassMemberFuncSymbol>
     {
         SymbolFactory factory;
 
@@ -92,5 +92,28 @@ namespace Citron.Symbol
         {
             return outer;
         }
+
+        bool ICyclicEqualityComparableClass<ISymbolNode>.CyclicEquals(ISymbolNode other, ref CyclicEqualityCompareContext context)
+            => other is ClassMemberFuncSymbol otherSymbol && CyclicEquals(otherSymbol, ref context);
+
+        bool ICyclicEqualityComparableClass<ClassMemberFuncSymbol>.CyclicEquals(ClassMemberFuncSymbol other, ref CyclicEqualityCompareContext context)
+            => CyclicEquals(other, ref context);
+
+        bool CyclicEquals(ClassMemberFuncSymbol other, ref CyclicEqualityCompareContext context)
+        {
+            if (!context.CompareClass(outer, other.outer))
+                return false;
+
+            if (!context.CompareClass(decl, other.decl))
+                return false;
+
+            if (!typeArgs.CyclicEqualsClassItem(ref other.typeArgs, ref context))
+                return false;
+
+            return true;
+        }
+
+
+        
     }
 }
