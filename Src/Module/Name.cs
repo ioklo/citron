@@ -22,7 +22,7 @@ namespace Citron.Module
         public static readonly Name TopLevel = new Singleton("TopLevel");
 
         public record class Anonymous(int Index) : Name;
-        public record ConstructorParam(int Index) : Name;
+        public record ConstructorParam(int Index, string Text) : Name; // trivial constructor에서 base로 가는 parameter
         public record class Normal(string Text) : Name;
     }
 }

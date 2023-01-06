@@ -80,7 +80,7 @@ partial class BuildingFuncDeclPhaseContext
                         if (typeParam.Equals(idName))
                         {
                             int baseTypeParamIndex = curOuterNode.GetOuterDeclNode()?.GetTotalTypeParamCount() ?? 0;
-                            var typeVarType = new TypeVarType(baseTypeParamIndex + i);
+                            var typeVarType = new TypeVarType(baseTypeParamIndex + i, typeParam);
                             candidates.Add(Item.Make(typeVarType));
                             break; // 같은 이름이 있을수 없으므로 바로 종료
                         }

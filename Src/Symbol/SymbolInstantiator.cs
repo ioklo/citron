@@ -43,7 +43,7 @@ namespace Citron.Symbol
             var typeArgsBuilder = ImmutableArray.CreateBuilder<IType>(typeParamCount);
             for (int i = 0; i < typeParamCount; i++)
             {   
-                var typeVar = new TypeVarType(baseTypeParamCount + i);
+                var typeVar = new TypeVarType(baseTypeParamCount + i, declSymbol.GetTypeParam(i));
                 typeArgsBuilder.Add(typeVar);
             }
             var typeArgs = typeArgsBuilder.MoveToImmutable();

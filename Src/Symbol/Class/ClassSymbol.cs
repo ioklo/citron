@@ -307,15 +307,13 @@ namespace Citron.Symbol
         }
 
         bool ICyclicEqualityComparableClass<ITypeSymbol>.CyclicEquals(ITypeSymbol other, ref CyclicEqualityCompareContext context)
-        {
-            throw new NotImplementedException();
-        }
-
-        bool ICyclicEqualityComparableClass<ClassSymbol>.CyclicEquals(ClassSymbol other, ref CyclicEqualityCompareContext context)
-            => CyclicEquals(other, ref context);
+            => other is ClassSymbol otherSymbol && CyclicEquals(otherSymbol, ref context);
 
         bool ICyclicEqualityComparableClass<ISymbolNode>.CyclicEquals(ISymbolNode other, ref CyclicEqualityCompareContext context)
             => other is ClassSymbol otherSymbol && CyclicEquals(otherSymbol, ref context);
+
+        bool ICyclicEqualityComparableClass<ClassSymbol>.CyclicEquals(ClassSymbol other, ref CyclicEqualityCompareContext context)
+            => CyclicEquals(other, ref context);
 
         bool CyclicEquals(ClassSymbol other, ref CyclicEqualityCompareContext context)
         {

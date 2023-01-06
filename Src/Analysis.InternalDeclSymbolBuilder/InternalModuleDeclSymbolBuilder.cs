@@ -424,10 +424,23 @@ namespace Citron.Analysis
                 for (int i = 0; i < baseConstructor.GetParameterCount(); i++)
                 {
                     var baseParam = baseConstructor.GetParameter(i);
+                    var paramName = BuilderMisc.MakeBaseConstructorParamName(i, baseParam.Name);
 
                     // 이름 보정, base로 가는 파라미터들은 다 이름이 ConstructorParam이다.
-                    var newBaseParam = new FuncParameter(baseParam.Kind, baseParam.Type, new M.Name.ConstructorParam(i));
-                    builder.Add(newBaseParam);
+                    if (baseParam.Name is M.Name.ConstructorParam specialParam)
+                    {
+                        var newBaseParam = new FuncParameter(baseParam.Kind, baseParam.Type, new M.Name.ConstructorParam(i, specialParam.Text));
+                        builder.Add(newBaseParam);
+                    }
+                    else if (baseParam.Name is M.Name.Normal normalParam)
+                    {
+                        var newBaseParam = new FuncParameter(baseParam.Kind, baseParam.Type, new M.Name.ConstructorParam(i, normalParam.Text));
+                        builder.Add(newBaseParam);
+                    }
+                    else
+                    {
+                        throw new RuntimeFatalException();
+                    }
                 }
             }
 
@@ -616,9 +629,22 @@ namespace Citron.Analysis
                 {
                     var baseParam = baseConstructor.GetParameter(i);
 
-                    // 이름 보정, base로 가는 파라미터들은 다 이름이 ConstructorParam이다.
-                    var newBaseParam = new FuncParameter(baseParam.Kind, baseParam.Type, new M.Name.ConstructorParam(i));
-                    builder.Add(newBaseParam);
+                    if (baseParam.Name is M.Name.ConstructorParam specialName)
+                    {
+                        // 이름 보정, base로 가는 파라미터들은 다 이름이 ConstructorParam이다.
+                        var newBaseParam = new FuncParameter(baseParam.Kind, baseParam.Type, new M.Name.ConstructorParam(i, specialName.Text));
+                        builder.Add(newBaseParam);
+                    }
+                    else if (baseParam.Name is M.Name.Normal normalName)
+                    {
+                        // 이름 보정, base로 가는 파라미터들은 다 이름이 ConstructorParam이다.
+                        var newBaseParam = new FuncParameter(baseParam.Kind, baseParam.Type, new M.Name.ConstructorParam(i, normalName.Text));
+                        builder.Add(newBaseParam);
+                    }
+                    else
+                    {
+                        throw new RuntimeFatalException();
+                    }
                 }
             }
 

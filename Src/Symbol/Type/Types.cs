@@ -114,7 +114,7 @@ namespace Citron.Symbol
         }
     }
 
-    public record class TypeVarType(int Index) : TypeImpl
+    public record class TypeVarType(int Index, Name Name) : TypeImpl
     {
         public override IType Apply(TypeEnv typeEnv) => typeEnv.GetValue(Index);
         public override TypeId GetTypeId() => new TypeVarTypeId(Index);
@@ -128,6 +128,9 @@ namespace Citron.Symbol
         bool CyclicEquals(TypeVarType other, ref CyclicEqualityCompareContext context)
         {
             if (!Index.Equals(other.Index))
+                return false;
+
+            if (!Name.Equals(other.Name))
                 return false;
 
             return true;

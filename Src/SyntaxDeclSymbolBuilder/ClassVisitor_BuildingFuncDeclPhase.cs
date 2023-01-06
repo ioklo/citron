@@ -116,9 +116,10 @@ namespace Citron.Analysis
                 for (int i = 0; i < baseConstructor.GetParameterCount(); i++)
                 {
                     var baseParam = baseConstructor.GetParameter(i);
+                    var paramName = BuilderMisc.MakeBaseConstructorParamName(i, baseParam.Name);
 
                     // 이름 보정, base로 가는 파라미터들은 다 이름이 ConstructorParam이다.
-                    var newBaseParam = new FuncParameter(baseParam.Kind, baseParam.Type, new M.Name.ConstructorParam(i));
+                    var newBaseParam = new FuncParameter(baseParam.Kind, baseParam.Type, paramName);
                     builder.Add(newBaseParam);
                 }
             }

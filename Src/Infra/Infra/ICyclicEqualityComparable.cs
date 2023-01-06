@@ -21,7 +21,7 @@ namespace Citron.Infra
 
     public struct CyclicEqualityCompareContext
     {
-        HashSet<(object, object)> visited; // 같다면 visited에 넣고, 추후에도 같다고 이야기를 한다
+        HashSet<(object, object)> visited; // 비교하려는 대상을 visited에 넣고, 추후에 같다고 이야기를 한다 (preventing reenterancy)
 
         public CyclicEqualityCompareContext()
         {
@@ -39,6 +39,7 @@ namespace Citron.Infra
             if (visited.Contains((x, y)))
                 return true;
 
+            // 없었다면 바로 추가
             visited.Add((x, y));
 
             if (CyclicEqualityComparer.CyclicEquals(x, y, ref this))

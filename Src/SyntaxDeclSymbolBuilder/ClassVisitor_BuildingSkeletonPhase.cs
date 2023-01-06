@@ -36,7 +36,7 @@ namespace Citron.Analysis
                 switch (member)
                 {
                     case S.ClassMemberTypeDecl typeMember:
-                        TypeVisitor_BuildingSkeletonPhase.VisitTypeDecl(typeMember.TypeDecl, context, node, BuilderMisc.MakeClassMemberAccessor);
+                        TypeVisitor_BuildingSkeletonPhase.VisitTypeDecl(typeMember.TypeDecl, context, declSymbol, BuilderMisc.MakeClassMemberAccessor);
                         break;
                 }
             }

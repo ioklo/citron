@@ -37,10 +37,11 @@ namespace Citron.Analysis
             var typeParams = BuilderMisc.VisitTypeParams(syntax.TypeParams);
             var declSymbol = new StructMemberFuncDeclSymbol(
                 structDeclSymbol, accessor, syntax.IsStatic, new M.Name.Normal(syntax.Name), typeParams);
-            structDeclSymbol.AddFunc(declSymbol);
 
             var (funcReturn, funcParams)= context.MakeFuncReturnAndParams(declSymbol, syntax.IsRefReturn, syntax.RetType, syntax.Parameters);
             declSymbol.InitFuncReturnAndParams(funcReturn, funcParams);
+
+            structDeclSymbol.AddFunc(declSymbol);
         }
 
         void VisitStructConstructorDecl(S.StructConstructorDecl syntax)
@@ -83,7 +84,7 @@ namespace Citron.Analysis
                 
                 if (baseType is StructType structBaseType)
                 {
-                    if (uniqueBaseType == null)
+                    if (uniqueBaseType != null)
                         throw new NotImplementedException(); // 두개 이상의 struct를 상속받았다면
 
                     uniqueBaseType = structBaseType;
@@ -197,9 +198,10 @@ namespace Citron.Analysis
                 for (int i = 0; i < baseConstructor.GetParameterCount(); i++)
                 {
                     var baseParam = baseConstructor.GetParameter(i);
+                    var paramName = BuilderMisc.MakeBaseConstructorParamName(i, baseParam.Name);
 
                     // 이름 보정, base로 가는 파라미터들은 다 이름이 ConstructorParam이다.
-                    var newBaseParam = new FuncParameter(baseParam.Kind, baseParam.Type, new M.Name.ConstructorParam(i));
+                    var newBaseParam = new FuncParameter(baseParam.Kind, baseParam.Type, paramName);
                     builder.Add(newBaseParam);
                 }
             }

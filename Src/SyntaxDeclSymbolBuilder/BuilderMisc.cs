@@ -81,5 +81,20 @@ namespace Citron.Analysis
             };
         }
 
+        public static M.Name.ConstructorParam MakeBaseConstructorParamName(int index, M.Name baseParamName)
+        {
+            if (baseParamName is M.Name.ConstructorParam specialName)
+            {
+                return new M.Name.ConstructorParam(index, specialName.Text);
+            }
+            else if (baseParamName is M.Name.Normal normalName)
+            {
+                return new M.Name.ConstructorParam(index, normalName.Text);
+            }
+            else
+            {
+                throw new RuntimeFatalException();
+            }
+        }
     }
 }
