@@ -66,7 +66,7 @@ public class UnitTest1
         var referenceModules = Arr(runtimeModuleDecl);
 
         // var logger = new TestLogger(true);
-        return SyntaxDeclSymbolBuilder.Build(moduleName, Arr(script), referenceModules, factory);
+        return SyntaxIR0Translator.Build(moduleName, Arr(script), referenceModules, factory);
     }
 
     [Fact]

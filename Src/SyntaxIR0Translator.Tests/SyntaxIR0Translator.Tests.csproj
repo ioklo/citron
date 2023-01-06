@@ -1,7 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
@@ -23,7 +26,7 @@
     <ProjectReference Include="..\Log\Log.csproj" />
     <ProjectReference Include="..\Module\Module.csproj" />
     <ProjectReference Include="..\Symbol\Symbol.csproj" />
-    <ProjectReference Include="..\SyntaxDeclSymbolBuilder\SyntaxDeclSymbolBuilder.csproj" />
+    <ProjectReference Include="..\SyntaxIR0Translator\SyntaxIR0Translator.csproj" />
     <ProjectReference Include="..\Syntax\Syntax.csproj" />
   </ItemGroup>
 

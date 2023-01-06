@@ -9,7 +9,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Analysis.InternalDeclSymbolBuilder\Analysis.InternalDeclSymbolBuilder.csproj" />
     <ProjectReference Include="..\Analysis.SymbolLoader\Analysis.SymbolLoader.csproj" />
     <ProjectReference Include="..\Analysis.TypeExpEvaluator\Analysis.TypeExpEvaluator.csproj" />
     <ProjectReference Include="..\Infra\Infra.csproj" />

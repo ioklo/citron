@@ -15,7 +15,7 @@ using System.Collections.Generic;
 namespace Citron.Analysis
 {
     // Syntax로부터 ModuleDeclSymbol을 만든다
-    public struct SyntaxDeclSymbolBuilder
+    public struct SyntaxIR0Translator
     {
         public static ModuleDeclSymbol Build(M.Name moduleName, ImmutableArray<S.Script> scripts, ImmutableArray<ModuleDeclSymbol> refModuleDecls, SymbolFactory factory)
         {
