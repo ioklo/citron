@@ -51,7 +51,7 @@ namespace Citron.Symbol
             return new DeclSymbolNodeName(name, 0, default);
         }
 
-        public void Apply(IDeclSymbolNodeVisitor visitor)
+        public void Accept(IDeclSymbolNodeVisitor visitor)
         {
             visitor.VisitNamespace(this);
         }

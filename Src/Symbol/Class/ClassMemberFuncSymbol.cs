@@ -96,6 +96,9 @@ namespace Citron.Symbol
         bool ICyclicEqualityComparableClass<ISymbolNode>.CyclicEquals(ISymbolNode other, ref CyclicEqualityCompareContext context)
             => other is ClassMemberFuncSymbol otherSymbol && CyclicEquals(otherSymbol, ref context);
 
+        bool ICyclicEqualityComparableClass<IFuncSymbol>.CyclicEquals(IFuncSymbol other, ref CyclicEqualityCompareContext context)
+            => other is ClassMemberFuncSymbol otherSymbol && CyclicEquals(otherSymbol, ref context);
+
         bool ICyclicEqualityComparableClass<ClassMemberFuncSymbol>.CyclicEquals(ClassMemberFuncSymbol other, ref CyclicEqualityCompareContext context)
             => CyclicEquals(other, ref context);
 
@@ -112,7 +115,6 @@ namespace Citron.Symbol
 
             return true;
         }
-
 
         
     }

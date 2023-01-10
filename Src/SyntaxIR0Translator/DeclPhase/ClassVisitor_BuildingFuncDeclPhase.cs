@@ -10,7 +10,7 @@ using System.Diagnostics;
 
 namespace Citron.Analysis
 {
-    class ClassVisitor_BuildingFuncDeclPhase
+    struct ClassVisitor_BuildingFuncDeclPhase
     {
         ClassDeclSymbol declSymbol;
         BuildingFuncDeclPhaseContext context;
@@ -203,6 +203,7 @@ namespace Citron.Analysis
                 }
             }
 
+            var capturedDeclSymbol = this.declSymbol;
             context.RegisterTaskAfterBuildingConstructorDeclSymbols(uniqueBaseClass?.Symbol.GetDecl(), declSymbol, () =>
             {
                 var baseTrivialConstructor = uniqueBaseClass?.Symbol.GetTrivialConstructor();
@@ -214,10 +215,10 @@ namespace Citron.Analysis
                 if (baseTrivialConstructor != null || uniqueBaseClass == null)
                 {
                     // 같은 인자의 생성자가 없으면 Trivial을 만든다
-                    if (GetClassConstructorHasSameParamWithTrivial(baseTrivialConstructor, declSymbol) == null)
+                    if (GetClassConstructorHasSameParamWithTrivial(baseTrivialConstructor, capturedDeclSymbol) == null)
                     {
-                        trivialConstructor = MakeClassTrivialConstructorDecl(declSymbol, baseTrivialConstructor);
-                        declSymbol.AddConstructor(trivialConstructor);
+                        trivialConstructor = MakeClassTrivialConstructorDecl(capturedDeclSymbol, baseTrivialConstructor);
+                        capturedDeclSymbol.AddConstructor(trivialConstructor);
                     }
                 }
             });

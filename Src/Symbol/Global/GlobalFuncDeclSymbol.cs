@@ -27,6 +27,8 @@ namespace Citron.Symbol
         ImmutableArray<Name> typeParams;
         ImmutableArray<FuncParameter> parameters;
 
+        LambdaDeclSymbolComponent<GlobalFuncDeclSymbol> lambdaComponent;
+
         InitializeState initState;
 
         public GlobalFuncDeclSymbol(
@@ -37,8 +39,9 @@ namespace Citron.Symbol
             this.outer = outer;
             this.accessModifier = accessModifier;
             this.name = name;
-            this.typeParams = typeParams; 
+            this.typeParams = typeParams;
 
+            this.lambdaComponent = new LambdaDeclSymbolComponent<GlobalFuncDeclSymbol>(this);
             this.initState = InitializeState.BeforeInitFuncReturnAndParams;
         }
 
@@ -51,6 +54,12 @@ namespace Citron.Symbol
 
             this.initState = InitializeState.AfterInitFuncReturnAndParams;
         }
+
+        public IEnumerable<LambdaDeclSymbol> GetLambdas()
+            => lambdaComponent.GetLambdas();
+
+        public void AddLambda(LambdaDeclSymbol lambdaDecl)
+            => lambdaComponent.AddLambda(lambdaDecl);
 
         public int GetTypeParamCount()
         {
@@ -107,12 +116,15 @@ namespace Citron.Symbol
             return typeParams.AsEnumerable().OfType<IDeclSymbolNode>();
         }        
 
-        public void Apply(IDeclSymbolNodeVisitor visitor)
+        public void Accept(IDeclSymbolNodeVisitor visitor)
         {
             visitor.VisitGlobalFunc(this);
         }
 
         bool ICyclicEqualityComparableClass<IDeclSymbolNode>.CyclicEquals(IDeclSymbolNode other, ref CyclicEqualityCompareContext context)
+            => other is GlobalFuncDeclSymbol otherDeclSymbol && CyclicEquals(otherDeclSymbol, ref context);
+
+        bool ICyclicEqualityComparableClass<IFuncDeclSymbol>.CyclicEquals(IFuncDeclSymbol other, ref CyclicEqualityCompareContext context)
             => other is GlobalFuncDeclSymbol otherDeclSymbol && CyclicEquals(otherDeclSymbol, ref context);
 
         bool ICyclicEqualityComparableClass<GlobalFuncDeclSymbol>.CyclicEquals(GlobalFuncDeclSymbol other, ref CyclicEqualityCompareContext context)

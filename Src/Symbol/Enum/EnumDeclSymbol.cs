@@ -77,7 +77,7 @@ namespace Citron.Symbol
             return new DeclSymbolNodeName(name, typeParams.Length, default);
         }
 
-        public void Apply(ITypeDeclSymbolVisitor visitor)
+        public void Accept(ITypeDeclSymbolVisitor visitor)
         {
             visitor.VisitEnum(this);
         }
@@ -95,7 +95,7 @@ namespace Citron.Symbol
                 .Concat(elemsDict.Values);
         }
 
-        public void Apply(IDeclSymbolNodeVisitor visitor)
+        public void Accept(IDeclSymbolNodeVisitor visitor)
         {
             visitor.VisitEnum(this);
         }

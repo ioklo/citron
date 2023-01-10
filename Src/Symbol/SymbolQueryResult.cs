@@ -42,6 +42,9 @@ namespace Citron.Symbol
         public record class EnumElem(EnumElemSymbol Symbol) : Valid;
         public record class EnumElemMemberVar(EnumElemMemberVarSymbol Symbol) : Valid;
 
+        public record class Lambda(LambdaSymbol Symbol) : Valid;
+        public record class LambdaMemberVar(LambdaMemberVarSymbol Symbol) : Valid;
+
         // 어떻게 쓰일지 몰라서, 실제로 만들때 채워넣는다
         // public record class TupleMemberVar : Valid; 
         // public record class TypeVar : Valid;

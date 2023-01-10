@@ -14,51 +14,51 @@ namespace Citron.IR0
     public abstract record class Exp : INode
     {
         internal Exp() { }
-        public abstract ITypeSymbol GetTypeSymbol();
+        public abstract IType GetExpType();
     }
 
     // Location의 Value를 resultValue에 복사한다
-    public record class LoadExp(Loc Loc, ITypeSymbol Type) : Exp
+    public record class LoadExp(Loc Loc, IType Type) : Exp
     {
-        public override ITypeSymbol GetTypeSymbol()
+        public override IType GetExpType()
         {
             return Type;
         }
     }
 
     // "dskfjslkf $abc "
-    public record class StringExp(ImmutableArray<StringExpElement> Elements, ITypeSymbol StringSymbol) : Exp
+    public record class StringExp(ImmutableArray<StringExpElement> Elements, IType StringType) : Exp
     {
-        public override ITypeSymbol GetTypeSymbol()
+        public override IType GetExpType()
         {
-            return StringSymbol;
+            return StringType;
         }
     }
 
     // 1    
-    public record class IntLiteralExp(int Value, ITypeSymbol IntSymbol) : Exp
+    public record class IntLiteralExp(int Value, IType IntType) : Exp
     {
-        public override ITypeSymbol GetTypeSymbol()
+        public override IType GetExpType()
         {
-            return IntSymbol;
+            return IntType;
         }
     }
 
     // false
-    public record class BoolLiteralExp(bool Value, ITypeSymbol BoolSymbol) : Exp
+    public record class BoolLiteralExp(bool Value, IType BoolType) : Exp
     {
-        public override ITypeSymbol GetTypeSymbol()
+        public override IType GetExpType()
         {
-            return BoolSymbol;
+            return BoolType;
         }
     }
     
     // TODO: 'New' 단어는 힙할당에만 쓰도록 하자
-    public record class NewNullableExp(Exp? ValueExp, ITypeSymbol TypeSymbol) : Exp
+    public record class NewNullableExp(Exp? ValueExp, IType Type) : Exp
     {
-        public override ITypeSymbol GetTypeSymbol()
+        public override IType GetExpType()
         {
-            return TypeSymbol;
+            return Type;
         }
     }
 
@@ -100,25 +100,25 @@ namespace Citron.IR0
         Equal_String_String_Bool
     }
 
-    public record CallInternalUnaryOperatorExp(InternalUnaryOperator Operator, Exp Operand, ITypeSymbol Type) : Exp
+    public record CallInternalUnaryOperatorExp(InternalUnaryOperator Operator, Exp Operand, IType Type) : Exp
     {
-        public override ITypeSymbol GetTypeSymbol()
+        public override IType GetExpType()
         {
             return Type;
         }
     }
 
-    public record CallInternalUnaryAssignOperatorExp(InternalUnaryAssignOperator Operator, Loc Operand, ITypeSymbol Type) : Exp
+    public record CallInternalUnaryAssignOperatorExp(InternalUnaryAssignOperator Operator, Loc Operand, IType Type) : Exp
     {
-        public override ITypeSymbol GetTypeSymbol()
+        public override IType GetExpType()
         {
             return Type;
         }
     }
 
-    public record CallInternalBinaryOperatorExp(InternalBinaryOperator Operator, Exp Operand0, Exp Operand1, ITypeSymbol Type) : Exp
+    public record CallInternalBinaryOperatorExp(InternalBinaryOperator Operator, Exp Operand0, Exp Operand1, IType Type) : Exp
     {
-        public override ITypeSymbol GetTypeSymbol()
+        public override IType GetExpType()
         {
             return Type;
         }
@@ -127,16 +127,16 @@ namespace Citron.IR0
     // a = b
     public record class AssignExp(Loc Dest, Exp Src) : Exp
     {
-        public override ITypeSymbol GetTypeSymbol()
+        public override IType GetExpType()
         {
-            return Src.GetTypeSymbol();
+            return Src.GetExpType();
         }
     }
 
     // F();
     public record CallGlobalFuncExp(GlobalFuncSymbol Func, ImmutableArray<Argument> Args) : Exp
     {
-        public override ITypeSymbol GetTypeSymbol()
+        public override IType GetExpType()
         {
             return Func.GetReturn().Type;
         }
@@ -145,7 +145,7 @@ namespace Citron.IR0
     // c.F();
     public record CallClassMemberFuncExp(ClassMemberFuncSymbol ClassMemberFunc, Loc? Instance, ImmutableArray<Argument> Args) : Exp
     {
-        public override ITypeSymbol GetTypeSymbol()
+        public override IType GetExpType()
         {
             return ClassMemberFunc.GetReturn().Type;
         }
@@ -154,7 +154,7 @@ namespace Citron.IR0
     // s.F();
     public record CallStructMemberFuncExp(StructMemberFuncSymbol StructMemberFunc, Loc? Instance, ImmutableArray<Argument> Args) : Exp
     {
-        public override ITypeSymbol GetTypeSymbol()
+        public override IType GetExpType()
         {
             return StructMemberFunc.GetReturn().Type;
         }
@@ -169,7 +169,7 @@ namespace Citron.IR0
     // Callable은 (() => {}) ()때문에 Loc이어야 한다
     public record CallValueExp(LambdaSymbol Lambda, Loc Callable, ImmutableArray<Argument> Args) : Exp
     {
-        public override ITypeSymbol GetTypeSymbol()
+        public override IType GetExpType()
         {
             return Lambda.GetReturn().Type;
         }
@@ -181,24 +181,24 @@ namespace Citron.IR0
     // Lambda(lambda_type_0, x); // with captured variable
     public record class LambdaExp(LambdaSymbol Lambda, ImmutableArray<Argument> Args) : Exp
     {
-        public override ITypeSymbol GetTypeSymbol()
+        public override IType GetExpType()
         {
-            return Lambda;
+            return ((ITypeSymbol)Lambda).MakeType();
         }
     }
 
     // [1, 2, 3]    
-    public record class ListExp(ImmutableArray<Exp> Elems, ITypeSymbol ListType) : Exp
+    public record class ListExp(ImmutableArray<Exp> Elems, IType ListType) : Exp
     {   
-        public override ITypeSymbol GetTypeSymbol()
+        public override IType GetExpType()
         {
             return ListType;
         }
     }
 
-    public record class ListIteratorExp(Loc ListLoc, ITypeSymbol IteratorType) : Exp
+    public record class ListIteratorExp(Loc ListLoc, IType IteratorType) : Exp
     {
-        public override ITypeSymbol GetTypeSymbol()
+        public override IType GetExpType()
         {
             return IteratorType;
         }
@@ -207,45 +207,45 @@ namespace Citron.IR0
     // enum construction, E.First or E.Second(2, 3)    
     public record class NewEnumElemExp(EnumElemSymbol EnumElem, ImmutableArray<Argument> Args) : Exp
     {
-        public override ITypeSymbol GetTypeSymbol()
+        public override IType GetExpType()
         {
-            return EnumElem;
+            return ((ITypeSymbol)EnumElem).MakeType();
         }
     }
 
     // new S(2, 3, 4);
     public record class NewStructExp(StructConstructorSymbol Constructor, ImmutableArray<Argument> Args) : Exp
     {
-        public override ITypeSymbol GetTypeSymbol()
+        public override IType GetExpType()
         {
-            return Constructor.GetOuter();
+            return ((ITypeSymbol)Constructor.GetOuter()).MakeType();
         }
     }
 
     // new C(2, 3, 4);    
     public record class NewClassExp(ClassConstructorSymbol Constructor, ImmutableArray<Argument> Args) : Exp
     {
-        public override ITypeSymbol GetTypeSymbol()
+        public override IType GetExpType()
         {
-            return Constructor.GetOuter();
+            return ((ITypeSymbol)Constructor.GetOuter()).MakeType();
         }
     }
 
     // 컨테이너를 enumElem -> enum으로
     public record CastEnumElemToEnumExp(Exp Src, EnumElemSymbol EnumElem) : Exp
     {
-        public override ITypeSymbol GetTypeSymbol()
+        public override IType GetExpType()
         {
-            return EnumElem;
+            return ((ITypeSymbol)EnumElem).MakeType();
         }
     }
 
     // ClassStaticCast    
     public record CastClassExp(Exp Src, ClassSymbol Class) : Exp
     {
-        public override ITypeSymbol GetTypeSymbol()
+        public override IType GetExpType()
         {
-            return Class;
+            return ((ITypeSymbol)Class).MakeType();
         }
     }
 }

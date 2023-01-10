@@ -36,11 +36,11 @@ namespace Citron.Test.Misc
                 return;
             }
 
-            var type = o.GetType();
+            var type = o.GetExpType();
             if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(ImmutableArray<>))
                 DumpImmutableArray(o, indent);
             else if (o is Enum e)
-                writer.Write("{0}.{1}", e.GetType().Name, e);
+                writer.Write("{0}.{1}", e.GetExpType().Name, e);
             else if (o is int i)
                 writer.Write(i);
             else if (o is bool b)
@@ -66,14 +66,14 @@ namespace Citron.Test.Misc
         void DumpImmutableArray(object o, string indent)
         {
             // ImmutableArray라면 
-            var array = o.GetType().GetField("array", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(o) as IList;
+            var array = o.GetExpType().GetField("array", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(o) as IList;
             if (array == null)
             {
                 writer.Write("[]");
                 return;
             }
 
-            bool isDefault = (bool)array.GetType().GetProperty("IsDefault")!.GetValue(array)!;
+            bool isDefault = (bool)array.GetExpType().GetProperty("IsDefault")!.GetValue(array)!;
 
             // System.Collections.Immutable.ImmutableArray<>.Empty.Is
             if (isDefault || array.Count == 0)
@@ -107,7 +107,7 @@ namespace Citron.Test.Misc
             }
             visited.Add(o);
 
-            var type = o.GetType();
+            var type = o.GetExpType();
             writer.WriteLine("{");
             writer.Write($"{indent}    $type: \"{type.Name}\"");
 

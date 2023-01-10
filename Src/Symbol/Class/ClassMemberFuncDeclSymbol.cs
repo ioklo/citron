@@ -107,12 +107,15 @@ namespace Citron.Symbol
             return Enumerable.Empty<IDeclSymbolNode>();
         }
 
-        public void Apply(IDeclSymbolNodeVisitor visitor)
+        public void Accept(IDeclSymbolNodeVisitor visitor)
         {
             visitor.VisitClassMemberFunc(this);
         }
 
         bool ICyclicEqualityComparableClass<IDeclSymbolNode>.CyclicEquals(IDeclSymbolNode other, ref CyclicEqualityCompareContext context)
+            => other is ClassMemberFuncDeclSymbol otherDeclSymbol && CyclicEquals(otherDeclSymbol, ref context);
+
+        bool ICyclicEqualityComparableClass<IFuncDeclSymbol>.CyclicEquals(IFuncDeclSymbol other, ref CyclicEqualityCompareContext context)
             => other is ClassMemberFuncDeclSymbol otherDeclSymbol && CyclicEquals(otherDeclSymbol, ref context);
 
         bool ICyclicEqualityComparableClass<ClassMemberFuncDeclSymbol>.CyclicEquals(ClassMemberFuncDeclSymbol other, ref CyclicEqualityCompareContext context)

@@ -120,6 +120,7 @@ namespace Citron.Symbol
         }
 
         #endregion
+        
 
         #region Enum
 
@@ -142,6 +143,21 @@ namespace Citron.Symbol
         {
             Debug.Assert(enumElem.GetDeclSymbolNode() == decl.GetOuterDeclNode());
             return new EnumElemMemberVarSymbol(this, enumElem, decl);
+        }
+
+        #endregion
+
+        #region Lambda
+        public LambdaSymbol MakeLambda(IFuncSymbol outer, LambdaDeclSymbol declSymbol)
+        {
+            Debug.Assert(outer.GetDeclSymbolNode() == declSymbol.GetOuterDeclNode());
+            return new LambdaSymbol(this, outer, declSymbol);
+        }
+
+        public LambdaMemberVarSymbol MakeLambdaMemberVar(LambdaSymbol outer, LambdaMemberVarDeclSymbol declSymbol)
+        {
+            Debug.Assert(outer.GetDeclSymbolNode() == declSymbol.GetOuterDeclNode());
+            return new LambdaMemberVarSymbol(this, outer, declSymbol);
         }
 
         #endregion

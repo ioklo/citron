@@ -62,7 +62,7 @@ namespace Citron.Symbol
             return declType;
         }
 
-        public void Apply(IDeclSymbolNodeVisitor visitor)
+        public void Accept(IDeclSymbolNodeVisitor visitor)
         {
             visitor.VisitStructMemberVar(this);
         }

@@ -20,7 +20,7 @@ namespace Citron.Symbol
 
         int GetTypeParamCount();
         Name GetTypeParam(int i);
-        void Apply(IDeclSymbolNodeVisitor visitor);
+        void Accept(IDeclSymbolNodeVisitor visitor);
     }
     
     // TypeDecl을 소유할 수 있는

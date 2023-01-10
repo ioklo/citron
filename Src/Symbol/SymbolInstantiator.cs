@@ -28,7 +28,7 @@ namespace Citron.Symbol
         public static ITypeSymbol Instantiate(SymbolFactory factory, ISymbolNode outer, ITypeDeclSymbol decl, ImmutableArray<IType> typeArgs)
         {
             var instantiator = new SymbolInstantiator(factory, outer, typeArgs);
-            decl.Apply(instantiator);
+            decl.Accept(instantiator);
 
             var typeSymbolResult = instantiator.result as ITypeSymbol;
             Debug.Assert(typeSymbolResult != null);
@@ -54,7 +54,7 @@ namespace Citron.Symbol
         public static ISymbolNode Instantiate(SymbolFactory factory, ISymbolNode? outer, IDeclSymbolNode decl, ImmutableArray<IType> typeArgs)
         {
             var instantiator = new SymbolInstantiator(factory, outer, typeArgs);
-            decl.Apply(instantiator);
+            decl.Accept(instantiator);
 
             Debug.Assert(instantiator.result != null);
             return instantiator.result;
@@ -177,6 +177,24 @@ namespace Citron.Symbol
             Debug.Assert(typeArgs.IsEmpty);
 
             result = factory.MakeStructMemberVar(@struct, decl);
+        }
+
+        public void VisitLambda(LambdaDeclSymbol declSymbol)
+        {
+            var outerFunc = outer as IFuncSymbol;
+            Debug.Assert(outerFunc != null);
+            Debug.Assert(typeArgs.IsEmpty);
+
+            result = factory.MakeLambda(outerFunc, declSymbol);
+        }
+
+        public void VisitLambdaMemberVar(LambdaMemberVarDeclSymbol declSymbol)
+        {
+            var outerLambda = outer as LambdaSymbol;
+            Debug.Assert(outerLambda != null);
+            Debug.Assert(typeArgs.IsEmpty);
+
+            result = factory.MakeLambdaMemberVar(outerLambda, declSymbol);
         }
     }
 }

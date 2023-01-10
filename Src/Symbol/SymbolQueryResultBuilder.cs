@@ -22,7 +22,7 @@ namespace Citron.Symbol
         public static SymbolQueryResult Build(ITypeDeclSymbol decl, ISymbolNode outer, SymbolFactory symbolFactory)
         {
             var builder = new SymbolQueryResultBuilder(outer, symbolFactory);
-            decl.Apply(builder);
+            decl.Accept(builder);
 
             Debug.Assert(builder.result != null);
             return builder.result;
@@ -54,6 +54,22 @@ namespace Citron.Symbol
         public void VisitInterface(InterfaceDeclSymbol interfaceDecl)
         {
             throw new NotImplementedException();
+        }
+
+        public void VisitLambda(LambdaDeclSymbol declSymbol)
+        {
+            var outerFunc = outer as IFuncSymbol;
+            Debug.Assert(outerFunc != null);
+
+            result = new SymbolQueryResult.Lambda(symbolFactory.MakeLambda(outerFunc, declSymbol));
+        }
+
+        public void VisitLambdaMemberVar(LambdaMemberVarDeclSymbol declSymbol)
+        {
+            var outerLambda = outer as LambdaSymbol;
+            Debug.Assert(outerLambda != null);
+
+            result = new SymbolQueryResult.LambdaMemberVar(symbolFactory.MakeLambdaMemberVar(outerLambda, declSymbol));
         }
     }
 }

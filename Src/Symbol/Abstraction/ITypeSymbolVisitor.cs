@@ -7,5 +7,6 @@
         void VisitEnum(EnumSymbol symbol);
         void VisitInterface(InterfaceSymbol symbol);
         void VisitStruct(StructSymbol symbol);
+        void VisitLambda(LambdaSymbol symbol);
     }
 }

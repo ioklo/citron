@@ -16,7 +16,7 @@ namespace Citron.Symbol
     // => 순환참조때문에 누적 Index를 사용하는 TypeVarSymbolId로 다시 롤백한다
     // 'MyModule.MyClass<X, Y>.MyStruct<T, U, X>.Func<T>(T, int).T' path에 Func<T>와 T가 순환 참조된다
     // => TypeVarSymbolId(5)로 참조하게 한다
-    public record class TypeVarTypeId(int Index) : TypeId;
+    public record class TypeVarTypeId(int Index, Name Name) : TypeId;
 
     public record class NullableTypeId(TypeId InnerTypeId) : TypeId;
 
@@ -31,8 +31,8 @@ namespace Citron.Symbol
     public static class TypeIds
     {
         public readonly static VoidTypeId Void = new VoidTypeId();
-        public readonly static SymbolId Bool = new SymbolId(new Name.Normal("System.Runtime"), null).Child(new Name.Normal("System")).Child(new Name.Normal("Boolean"));
-        public readonly static SymbolId Int = new SymbolId(new Name.Normal("System.Runtime"), null).Child(new Name.Normal("System")).Child(new Name.Normal("Int32"));
-        public readonly static SymbolId String = new SymbolId(new Name.Normal("System.Runtime"), null).Child(new Name.Normal("System")).Child(new Name.Normal("String"));
+        public readonly static TypeId Bool = new SymbolId(new Name.Normal("System.Runtime"), null).Child(new Name.Normal("System")).Child(new Name.Normal("Boolean"));
+        public readonly static TypeId Int = new SymbolId(new Name.Normal("System.Runtime"), null).Child(new Name.Normal("System")).Child(new Name.Normal("Int32"));
+        public readonly static TypeId String = new SymbolId(new Name.Normal("System.Runtime"), null).Child(new Name.Normal("System")).Child(new Name.Normal("String"));
     }
 }

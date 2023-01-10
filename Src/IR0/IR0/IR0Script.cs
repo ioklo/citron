@@ -11,18 +11,7 @@ using Citron.Symbol;
 
 namespace Citron.IR0
 {
-    // DeclSymbolId -> Stmt
-    [AutoConstructor]
-    public partial struct StmtBody
-    {
-        public DeclSymbolPath Path { get; }
-        public ImmutableArray<Stmt> Stmts { get; }
-    }
-
-    [AutoConstructor, ImplementIEquatable]
-    public partial class Script
-    {
-        public ModuleDeclSymbol ModuleDeclSymbol { get; }
-        public ImmutableArray<StmtBody> StmtBodies { get; }
-    }
+    // DeclSymbol -> Stmt
+    public record struct StmtBody(IDeclSymbolNode declSymbol, ImmutableArray<Stmt> Stmts);
+    public record class Script(ModuleDeclSymbol ModuleDeclSymbol,  ImmutableArray<StmtBody> StmtBodies);
 }

@@ -2,6 +2,7 @@
 using Citron.Infra;
 using System;
 using System.Collections.Generic;
+using Citron.Symbol;
 
 namespace Citron
 {
@@ -20,7 +21,7 @@ namespace Citron
 
         public IModuleDriver GetModuleDriver(SymbolId id)
         {
-            if (id is ModuleSymbolId moduleSymbolId)
+            if (id is SymbolId moduleSymbolId)
             {
                 // module -> moduleDriver 정보가 있어야 한다
                 return moduleDriverSelector[moduleSymbolId.ModuleName];

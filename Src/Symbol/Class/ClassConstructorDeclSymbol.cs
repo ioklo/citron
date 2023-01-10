@@ -63,7 +63,7 @@ namespace Citron.Symbol
             return Enumerable.Empty<IDeclSymbolNode>();
         }
 
-        public void Apply(IDeclSymbolNodeVisitor visitor)
+        public void Accept(IDeclSymbolNodeVisitor visitor)
         {
             visitor.VisitClassConstructor(this);
         }
@@ -97,6 +97,8 @@ namespace Citron.Symbol
 
         bool ICyclicEqualityComparableClass<IDeclSymbolNode>.CyclicEquals(IDeclSymbolNode other, ref CyclicEqualityCompareContext context)
             => other is ClassConstructorDeclSymbol otherDeclSymbol && CyclicEquals(otherDeclSymbol, ref context);
-        
+
+        bool ICyclicEqualityComparableClass<IFuncDeclSymbol>.CyclicEquals(IFuncDeclSymbol other, ref CyclicEqualityCompareContext context)
+            => other is ClassConstructorDeclSymbol otherDeclSymbol && CyclicEquals(otherDeclSymbol, ref context);
     }
 }

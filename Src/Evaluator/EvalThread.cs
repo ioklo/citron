@@ -1,5 +1,5 @@
-﻿using System;
-using Citron.Module;
+﻿using Citron.Symbol;
+using System;
 
 namespace Citron
 {
@@ -44,7 +44,7 @@ namespace Citron
             //}
         }
 
-        public TValue StackAlloc<TValue>(SymbolId typeId)
+        public TValue StackAlloc<TValue>(TypeId typeId)
             where TValue : Value
         {
             return evaluator.AllocValue<TValue>(typeId);

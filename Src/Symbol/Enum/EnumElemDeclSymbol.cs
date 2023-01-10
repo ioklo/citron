@@ -89,12 +89,12 @@ namespace Citron.Symbol
             return memberVarDecls.AsEnumerable();
         }
 
-        public void Apply(ITypeDeclSymbolVisitor visitor)
+        public void Accept(ITypeDeclSymbolVisitor visitor)
         {
             visitor.VisitEnumElem(this);
         }
 
-        public void Apply(IDeclSymbolNodeVisitor visitor)
+        public void Accept(IDeclSymbolNodeVisitor visitor)
         {
             visitor.VisitEnumElem(this);
         }

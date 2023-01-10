@@ -18,12 +18,12 @@ namespace Citron.Analysis
     {
         SymbolLoader symbolLoader;
 
-        public IType Load(TypeId id)
+        public IType Load(TypeId id, TypeEnv typeEnv)
         {
             switch (id)
             {
                 case SymbolId symbolId:
-                    symbolLoader.Load(symbolId);
+                    return ((ITypeSymbol)symbolLoader.Load(symbolId)).MakeType();
 
                 case VarTypeId:
                     return new VarType();
@@ -40,9 +40,10 @@ namespace Citron.Analysis
                 // 그럼 지금 위치 (C<T>.D<U>)를 넘겨주던가
                 // [T, U] 리스트를 넘겨주던가 해야한다
                 case TypeVarTypeId typeVarId: // 3이러면 어떻게 아는가
-                    return new TypeVarType(typeVarId.Index);
+                    return new TypeVarType(typeVarId.Index, typeVarId.Name);
 
-                default: 
+                default:
+                    throw new UnreachableCodeException();
             }
         }
     }
@@ -90,10 +91,10 @@ namespace Citron.Analysis
         {
             switch (id)
             {
-                case ModuleSymbolId moduleId:
+                case SymbolId symbolId:
                     foreach (var moduleDecl in moduleDecls)
-                        if (moduleDecl.GetName().Equals(moduleId.ModuleName))
-                            return LoadPath(moduleDecl, moduleId.Path);
+                        if (moduleDecl.GetName().Equals(symbolId.ModuleName))
+                            return LoadPath(moduleDecl, symbolId.Path);
 
                     throw new NotImplementedException(); // 에러 처리
 
@@ -103,7 +104,7 @@ namespace Citron.Analysis
             }
         }
 
-        public SymbolQueryResult Query(SymbolPath? outerPath, Name name, int typeParamCount)
+        public SymbolQueryResult Query(SymbolPath? outerPath, M.Name name, int typeParamCount)
         {
             var candidates = new Candidates<SymbolQueryResult>();
 
@@ -127,14 +128,13 @@ namespace Citron.Analysis
                 }
             }
 
-            var result = candidates.GetSingle();
-            if (result != null)
-                return result;
+            var result = candidates.GetUniqueResult();
 
-            if (candidates.IsEmpty)
+            if (result.IsFound(out var value))
+                return value;
+            else if (result.IsNotFound())
                 return SymbolQueryResults.NotFound;
-
-            if (candidates.HasMultiple)
+            else if (result.IsMultipleError())
                 return SymbolQueryResults.Error.MultipleCandidates;
 
             throw new UnreachableCodeException();

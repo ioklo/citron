@@ -22,7 +22,7 @@ namespace Citron.Runtime.Dotnet
 
         public override Value GetMemberValue(Name varName)
         {
-            var fieldInfo = obj.GetType().GetField(varName.Text!);
+            var fieldInfo = obj.GetExpType().GetField(varName.Text!);
             return new DotnetValue(fieldInfo.GetValue(obj));
         }
     }

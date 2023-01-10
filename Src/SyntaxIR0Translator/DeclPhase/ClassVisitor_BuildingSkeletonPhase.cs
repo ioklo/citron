@@ -9,7 +9,7 @@ using S = Citron.Syntax;
 
 namespace Citron.Analysis
 {
-    class ClassVisitor_BuildingSkeletonPhase<TDeclSymbolNode> 
+    struct ClassVisitor_BuildingSkeletonPhase<TDeclSymbolNode> 
         where TDeclSymbolNode : IDeclSymbolNode, ITypeDeclContainable
     {
         BuildingSkeletonPhaseContext context;

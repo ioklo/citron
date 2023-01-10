@@ -1,5 +1,6 @@
 ﻿using Citron.Collections;
 using Citron.Module;
+using Citron.Symbol;
 using System;
 using System.Threading.Tasks;
 
@@ -8,7 +9,7 @@ namespace Citron
     public interface IModuleDriver
     {
         // ImmutableArray<(M.Name ModuleName, IItemContainer Container)> GetRootContainers();        
-        Value Alloc(SymbolId type);
+        Value Alloc(TypeId type);
 
         ValueTask ExecuteGlobalFuncAsync(SymbolId globalFunc, ImmutableArray<Value> args, Value retValue);
 

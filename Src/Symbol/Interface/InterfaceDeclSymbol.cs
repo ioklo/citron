@@ -36,7 +36,7 @@ namespace Citron.Symbol
         Name IDeclSymbolNode.GetTypeParam(int i)
             => GetTypeParam(i);
 
-        public void Apply(ITypeDeclSymbolVisitor visitor)
+        public void Accept(ITypeDeclSymbolVisitor visitor)
         {
             visitor.VisitInterface(this);
         }
@@ -62,7 +62,7 @@ namespace Citron.Symbol
             return name;
         }
 
-        public void Apply(IDeclSymbolNodeVisitor visitor)
+        public void Accept(IDeclSymbolNodeVisitor visitor)
         {
             visitor.VisitInterface(this);
         }

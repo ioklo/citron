@@ -62,6 +62,8 @@ namespace Citron.Analysis
 
             funcDeclPhaseContext.DoRegisteredTasks();
 
+            
+
             return moduleDecl;
         }
     }

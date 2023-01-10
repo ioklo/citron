@@ -9,6 +9,7 @@ using Citron.Collections;
 using Citron.Infra;
 using System.Runtime.InteropServices;
 using System.Diagnostics.CodeAnalysis;
+using Citron.Symbol;
 
 namespace Citron
 {
@@ -19,7 +20,7 @@ namespace Citron
         [AllowNull]
         ModuleDriverContext driverContext;
 
-        public static async ValueTask<int> EvalAsync(ImmutableArray<Action<ModuleDriverContext>> moduleDriverInitializers, ModuleSymbolId entry)
+        public static async ValueTask<int> EvalAsync(ImmutableArray<Action<ModuleDriverContext>> moduleDriverInitializers, SymbolId entry)
         {
             var evaluator = new Evaluator();
             evaluator.driverContext = new ModuleDriverContext(evaluator);
@@ -30,7 +31,7 @@ namespace Citron
             }            
 
             var mainThread = new EvalThread(evaluator);
-            var ret = mainThread.StackAlloc<IntValue>(ModuleSymbolId.Int);
+            var ret = mainThread.StackAlloc<IntValue>(TypeIds.Int);
 
             // TODO: static인거 확인하고, 인자 없는거 확인하고, int리턴하는지 확인하고
             await evaluator.ExecuteGlobalFuncAsync(entry, default, ret);
@@ -138,7 +139,7 @@ namespace Citron
             driver.ExecuteClassConstructor(constructorId, thisValue, args);
         }
 
-        public TValue AllocValue<TValue>(SymbolId typeId)
+        public TValue AllocValue<TValue>(TypeId typeId)
             where TValue : Value
         {
             return (TValue)AllocValue(typeId);

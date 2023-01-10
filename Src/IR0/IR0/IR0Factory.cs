@@ -16,12 +16,12 @@ namespace Citron.IR0
 {
     public class IR0Factory
     {
-        public delegate ITypeSymbol ListTypeConstructor(ITypeSymbol itemType);
+        public delegate IType ListTypeConstructor(IType itemType);
 
-        ITypeSymbol boolType, intType, stringType;
+        IType boolType, intType, stringType;
         ListTypeConstructor listTypeConstructor;
 
-        public IR0Factory(ITypeSymbol boolType, ITypeSymbol intType, ITypeSymbol stringType, ListTypeConstructor listTypeConstructor)
+        public IR0Factory(IType boolType, IType intType, IType stringType, ListTypeConstructor listTypeConstructor)
         {
             this.boolType = boolType;
             this.intType = intType;
@@ -29,9 +29,9 @@ namespace Citron.IR0
             this.listTypeConstructor = listTypeConstructor;
         }
 
-        public StmtBody StmtBody(DeclSymbolPath path, ImmutableArray<Stmt> body)
+        public StmtBody StmtBody(IDeclSymbolNode symbol, ImmutableArray<Stmt> body)
         {
-            return new StmtBody(path, body);
+            return new StmtBody(symbol, body);
         }
 
         #region Script
@@ -44,18 +44,17 @@ namespace Citron.IR0
         // only have top level stmts
         public Script Script(Name moduleName, ImmutableArray<Stmt> topLevelStmts)
         {
-            var moduleDeclHolder = new Holder<ModuleDeclSymbol>();
-            var topLevelFuncDecl = new GlobalFuncDeclSymbol(
-                moduleDeclHolder, 
-                Accessor.Public, 
-                new Holder<FuncReturn>(new FuncReturn(false, intType)), Name.TopLevel, typeParams: default,
-                new Holder<ImmutableArray<FuncParameter>>(default), true, lambdaDecls: default);
+            var moduleDecl = new ModuleDeclSymbol(moduleName, bReference: false);
 
-            var moduleDecl = new ModuleDeclSymbol(moduleName, default, default, Arr(topLevelFuncDecl));
-            moduleDeclHolder.SetValue(moduleDecl);
-            var stmtBodies = Arr(new StmtBody(new DeclSymbolPath(null, Name.TopLevel), topLevelStmts));
+            var topLevelFuncDecl = new GlobalFuncDeclSymbol(moduleDecl,
+                Accessor.Public, Name.TopLevel, typeParams: default);
+
+            topLevelFuncDecl.InitFuncReturnAndParams(
+                new FuncReturn(false, intType), default);
+
+            moduleDecl.AddFunc(topLevelFuncDecl);
             
-
+            var stmtBodies = Arr(new StmtBody(topLevelFuncDecl, topLevelStmts));
             return new Script(moduleDecl, stmtBodies);
         }
 
@@ -356,17 +355,17 @@ namespace Citron.IR0
 
         #region LoadExp
 
-        public LoadExp LoadLocalVar(string name, ITypeSymbol varType)
+        public LoadExp LoadLocalVar(string name, IType varType)
         {
             return new LoadExp(new LocalVarLoc(new Name.Normal(name)), varType);
         }
 
-        public LoadExp LoadGlobalVar(string name, ITypeSymbol varType)
+        public LoadExp LoadGlobalVar(string name, IType varType)
         {
             return new LoadExp(new GlobalVarLoc(new Name.Normal(name)), varType);
         }
 
-        public LoadExp Load(Loc loc, ITypeSymbol typeSymbol)
+        public LoadExp Load(Loc loc, IType typeSymbol)
         {
             return new LoadExp(loc, typeSymbol);
         }
@@ -406,7 +405,7 @@ namespace Citron.IR0
 
         #region Else        
 
-        public ImmutableArray<FuncParameter> FuncParam(params (ITypeSymbol Type, string Name)[] elems)
+        public ImmutableArray<FuncParameter> FuncParam(params (IType Type, string Name)[] elems)
         {
             return elems.Select(e => new FuncParameter(FuncParameterKind.Default, e.Type, new Name.Normal(e.Name))).ToImmutableArray();
         }
@@ -416,9 +415,9 @@ namespace Citron.IR0
             return exps.Select(e => (Argument)new Argument.Normal(e)).ToImmutableArray();
         }
 
-        public ModuleSymbolId Module(string moduleName)
+        public SymbolId Module(string moduleName)
         {
-            return new ModuleSymbolId(new Name.Normal(moduleName), null);
+            return new SymbolId(new Name.Normal(moduleName), null);
         }
 
         public TextStringExpElement TextElem(string text)
@@ -446,12 +445,12 @@ namespace Citron.IR0
             return new AwaitStmt(new BlockStmt(stmts.ToImmutableArray()));
         }
 
-        public FuncParameter RefParam(ITypeSymbol type, string name)
+        public FuncParameter RefParam(IType type, string name)
         {
             return new FuncParameter(FuncParameterKind.Ref, type, new Name.Normal(name));
         }
 
-        public FuncReturn FuncRet(ITypeSymbol type)
+        public FuncReturn FuncRet(IType type)
         {
             return new FuncReturn(false, type);
         }
@@ -471,7 +470,7 @@ namespace Citron.IR0
         //    return new LambdaExp(lambda, args.ToImmutableArray());
         //}
 
-        public ListExp List(ITypeSymbol itemType, params Exp[] exps)
+        public ListExp List(IType itemType, params Exp[] exps)
         {
             var listType = listTypeConstructor.Invoke(itemType);
             return new ListExp(exps.ToImmutableArray(), listType);

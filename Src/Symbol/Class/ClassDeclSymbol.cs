@@ -135,7 +135,7 @@ namespace Citron.Symbol
             return name;
         }
         
-        public void Apply(ITypeDeclSymbolVisitor visitor)
+        public void Accept(ITypeDeclSymbolVisitor visitor)
         {
             visitor.VisitClass(this);
         }
@@ -157,7 +157,7 @@ namespace Citron.Symbol
                 .Concat(memberVars);
         }
        
-        public void Apply(IDeclSymbolNodeVisitor visitor)
+        public void Accept(IDeclSymbolNodeVisitor visitor)
         {
             visitor.VisitClass(this);
         }

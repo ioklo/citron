@@ -44,7 +44,6 @@ namespace Citron.Analysis
         public void VisitGlobalFuncDecl(S.GlobalFuncDecl syntax)
         {
             // 이름을 만드려면 인자의 타입이 확정되어야 되서, 다음 단계에서 해야 한다
-
             var node = this.node;
             context.RegisterTaskAfterBuildingAllTypeDeclSymbols(context =>
             {   
@@ -63,6 +62,12 @@ namespace Citron.Analysis
 
                 // must after initFuncReturnAndParams
                 node.AddFunc(declSymbol);
+
+                //context.RegisterTaskTranslatingBodyPhase(context =>
+                //{
+                //    var visitor = new FuncBodyVisitor();
+                    
+                //});
             });
         }
 

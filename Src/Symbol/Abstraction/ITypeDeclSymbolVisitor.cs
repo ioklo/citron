@@ -2,10 +2,15 @@
 {
     public interface ITypeDeclSymbolVisitor
     {
-        void VisitClass(ClassDeclSymbol classDecl);
-        void VisitStruct(StructDeclSymbol structDecl);
-        void VisitEnum(EnumDeclSymbol enumDecl);
-        void VisitEnumElem(EnumElemDeclSymbol enumElemDecl);        
-        void VisitInterface(InterfaceDeclSymbol interfaceDecl);
+        void VisitClass(ClassDeclSymbol declSymbol);
+        void VisitStruct(StructDeclSymbol declSymbol);
+        void VisitEnum(EnumDeclSymbol declSymbol);
+        void VisitEnumElem(EnumElemDeclSymbol declSymbol);        
+        void VisitInterface(InterfaceDeclSymbol declSymbol);
+
+        void VisitLambda(LambdaDeclSymbol declSymbol);
+        void VisitLambdaMemberVar(LambdaMemberVarDeclSymbol declSymbol);
+
+
     }
 }

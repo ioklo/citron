@@ -22,7 +22,7 @@
             where TVisitor : struct, ITypeVisitor
         {
             var typeImpl = (TypeImpl)type; // 강제 캐스팅
-            typeImpl.Visit(ref visitor);
+            typeImpl.Accept(ref visitor);
         }
     }
 }
