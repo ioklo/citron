@@ -111,7 +111,7 @@ static class ExpResults
 
         void ISymbolNodeVisitor.VisitClassMemberFunc(ClassMemberFuncSymbol symbol)
         {
-            throw new NotImplementedException();
+            result = new ExpResult.ClassMemberFuncs(Arr(new DeclAndConstructor())
         }
 
         void ISymbolNodeVisitor.VisitClassMemberVar(ClassMemberVarSymbol symbol)
