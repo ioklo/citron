@@ -196,5 +196,14 @@ namespace Citron.Symbol
 
             result = factory.MakeLambdaMemberVar(outerLambda, declSymbol);
         }
+
+        public void VisitGlobalVar(GlobalVarDeclSymbol declSymbol)
+        {
+            var outerTopLevel = outer as ITopLevelSymbolNode;
+            Debug.Assert(outerTopLevel != null);
+            Debug.Assert(typeArgs.IsEmpty);
+
+            result = factory.MakeGlobalVar(outerTopLevel, declSymbol);
+        }
     }
 }

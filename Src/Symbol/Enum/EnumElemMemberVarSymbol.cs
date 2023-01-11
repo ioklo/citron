@@ -1,5 +1,4 @@
 ﻿using Citron.Collections;
-using Citron.Module;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -74,6 +73,12 @@ namespace Citron.Symbol
                 return false;
 
             return true;
+        }
+
+        public void Accept<TVisitor>(ref TVisitor visitor)
+            where TVisitor : struct, ISymbolNodeVisitor
+        {
+            visitor.VisitEnumElemMemberVar(this);
         }
     }
 }

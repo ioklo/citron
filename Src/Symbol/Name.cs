@@ -2,7 +2,7 @@
 using System;
 using System.Diagnostics;
 
-namespace Citron.Module
+namespace Citron.Symbol
 {
     // Name algebraic data type 
     public abstract record class Name

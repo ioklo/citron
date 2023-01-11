@@ -2,7 +2,6 @@
 using Citron.Infra;
 using Pretune;
 using System;
-using Citron.Module;
 
 namespace Citron.Symbol
 {

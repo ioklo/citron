@@ -5,7 +5,6 @@ using Citron.Infra;
 using Citron.Symbol;
 
 using S = Citron.Syntax;
-using M = Citron.Module;
 using System.Diagnostics;
 
 namespace Citron.Analysis
@@ -26,7 +25,7 @@ namespace Citron.Analysis
             var accessModifier = BuilderMisc.MakeClassMemberAccessor(syntax.AccessModifier);
             var typeParams = BuilderMisc.VisitTypeParams(syntax.TypeParams);
 
-            var func = new ClassMemberFuncDeclSymbol(declSymbol, accessModifier, new M.Name.Normal(syntax.Name), typeParams, syntax.IsStatic);
+            var func = new ClassMemberFuncDeclSymbol(declSymbol, accessModifier, new Name.Normal(syntax.Name), typeParams, syntax.IsStatic);
             declSymbol.AddFunc(func);
 
             var (funcReturn, funcParams) = context.MakeFuncReturnAndParams(func, syntax.IsRefReturn, syntax.RetType, syntax.Parameters);
@@ -42,7 +41,7 @@ namespace Citron.Analysis
                 var declType = context.MakeType(syntax.VarType, declSymbol);
 
                 // TODO: bStatic 지원
-                var varDecl = new ClassMemberVarDeclSymbol(declSymbol, accessModifier, bStatic: false, declType, new M.Name.Normal(name));
+                var varDecl = new ClassMemberVarDeclSymbol(declSymbol, accessModifier, bStatic: false, declType, new Name.Normal(name));
                 declSymbol.AddMemberVar(varDecl);
             }
         }
@@ -78,8 +77,8 @@ namespace Citron.Analysis
                 if (!baseParameter.Equals(parameter)) return false;
 
                 // 추가 조건, normal로만 자동으로 생성한다
-                if (baseParameter.Kind != M.FuncParameterKind.Default ||
-                    parameter.Kind != M.FuncParameterKind.Default) return false;
+                if (baseParameter.Kind != FuncParameterKind.Default ||
+                    parameter.Kind != FuncParameterKind.Default) return false;
             }
 
             // baseParam을 제외한 뒷부분이 memberVarType과 맞는지 봐야 한다
@@ -92,7 +91,7 @@ namespace Citron.Analysis
                 if (!parameter.Type.Equals(memberVarType)) return false;
 
                 // 기본으로만 자동으로 생성한다
-                if (parameter.Kind != M.FuncParameterKind.Default) return false;
+                if (parameter.Kind != FuncParameterKind.Default) return false;
             }
 
             return true;
@@ -130,12 +129,12 @@ namespace Citron.Analysis
                 var type = memberVar.GetDeclType();
                 var name = memberVar.GetName();
 
-                var param = new FuncParameter(M.FuncParameterKind.Default, type, name);
+                var param = new FuncParameter(FuncParameterKind.Default, type, name);
                 builder.Add(param);
             }
 
             // trivial constructor를 만듭니다
-            return new ClassConstructorDeclSymbol(outer, M.Accessor.Public, builder.MoveToImmutable(), bTrivial: true);
+            return new ClassConstructorDeclSymbol(outer, Accessor.Public, builder.MoveToImmutable(), bTrivial: true);
         }
 
         static ClassConstructorDeclSymbol? GetClassConstructorHasSameParamWithTrivial(

@@ -2,7 +2,6 @@
 using Citron.Infra;
 using System;
 using System.Collections.Generic;
-using Citron.Module;
 using System.Linq;
 using System.Diagnostics;
 

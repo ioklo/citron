@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Citron.Collections;
 using Citron.Infra;
 using Pretune;
-using Citron.Module;
 
 namespace Citron.Symbol
 {
@@ -138,6 +137,12 @@ namespace Citron.Symbol
                 return false;
 
             return true;
+        }
+
+        public void Accept<TVisitor>(ref TVisitor visitor)
+            where TVisitor : struct, ISymbolNodeVisitor
+        {
+            visitor.VisitLambda(this);
         }
 
         //public LambdaSymbol(RItemFactory ritemFactory, R.Path.Nested lambda, ITypeSymbol ret, ImmutableArray<ParamInfo> parameters)

@@ -5,7 +5,6 @@ using Citron.Infra;
 using Citron.Symbol;
 
 using S = Citron.Syntax;
-using M = Citron.Module;
 using Pretune;
 using Citron.Collections;
 using System.Diagnostics;
@@ -17,7 +16,7 @@ namespace Citron.Analysis
         public static void VisitTypeDecl<TDeclSymbolNode>(
             S.TypeDecl typeDecl, BuildingSkeletonPhaseContext context,
             TDeclSymbolNode node,
-            Func<S.AccessModifier?, M.Accessor> accessorMaker)
+            Func<S.AccessModifier?, Accessor> accessorMaker)
             where TDeclSymbolNode : IDeclSymbolNode, ITypeDeclContainable
         {
             switch (typeDecl)

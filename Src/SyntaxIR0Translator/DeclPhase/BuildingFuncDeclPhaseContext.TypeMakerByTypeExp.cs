@@ -5,7 +5,6 @@ using Citron.Infra;
 using Citron.Symbol;
 
 using S = Citron.Syntax;
-using M = Citron.Module;
 using System.Collections.Generic;
 using Citron.Collections;
 
@@ -63,7 +62,7 @@ partial class BuildingFuncDeclPhaseContext
             // 함수같은 경우, 이름이 완성되지 않은 경우, 모듈에서 찾을 수 없고, 실제로 다른 모듈에 같은 이름의 함수가 있는것도 이상하므로, 가능할 때만 찾도록 한다
             bool bCanSearchInAllModules = false;
 
-            var idName = new M.Name.Normal(idTypeExp.Name);
+            var idName = new Name.Normal(idTypeExp.Name);
             var candidates = new Candidates<Item>();
             while (curOuterNode != null)
             {
@@ -143,7 +142,7 @@ partial class BuildingFuncDeclPhaseContext
             var typeArgs = MakeTypeArgs(memberTypeExp.TypeArgs);
 
             // NOTICE: Heap 사용
-            var nodeName = new DeclSymbolNodeName(new M.Name.Normal(memberTypeExp.MemberName), memberTypeExp.TypeArgs.Length, default);
+            var nodeName = new DeclSymbolNodeName(new Name.Normal(memberTypeExp.MemberName), memberTypeExp.TypeArgs.Length, default);
             var candidates = new Candidates<Item>();
             for (int i = 0; i < count; i++)
             {
@@ -198,13 +197,13 @@ partial class BuildingFuncDeclPhaseContext
         }
 
         // System.*
-        IType? GetRuntimeType(M.Name name, int typeParamCount)
+        IType? GetRuntimeType(Name name, int typeParamCount)
         {
             foreach(var moduleDecl in modules)
             {
-                if (moduleDecl.GetName().Equals(new M.Name.Normal("System.Runtime")))
+                if (moduleDecl.GetName().Equals(new Name.Normal("System.Runtime")))
                 {
-                    var nsDecl = moduleDecl.GetNamespace(new M.Name.Normal("System"));
+                    var nsDecl = moduleDecl.GetNamespace(new Name.Normal("System"));
                     if (nsDecl == null) return null;
 
                     var typeDecl = nsDecl.GetType(name, typeParamCount);
@@ -232,7 +231,7 @@ partial class BuildingFuncDeclPhaseContext
                 // bool
                 if (idTypeExp.Name == "bool" && idTypeExp.TypeArgs.Length == 0)
                 {
-                    var intType = GetRuntimeType(new M.Name.Normal("Bool"), 0);
+                    var intType = GetRuntimeType(new Name.Normal("Bool"), 0);
                     if (intType == null)
                         throw new NotImplementedException();
 
@@ -242,7 +241,7 @@ partial class BuildingFuncDeclPhaseContext
                 // int
                 if (idTypeExp.Name == "int" && idTypeExp.TypeArgs.Length == 0)
                 {
-                    var intType = GetRuntimeType(new M.Name.Normal("Int32"), 0);
+                    var intType = GetRuntimeType(new Name.Normal("Int32"), 0);
                     if (intType == null)
                         throw new NotImplementedException();
 
@@ -253,7 +252,7 @@ partial class BuildingFuncDeclPhaseContext
                 // string
                 if (idTypeExp.Name == "string" && idTypeExp.TypeArgs.Length == 0)
                 {
-                    var intType = GetRuntimeType(new M.Name.Normal("String"), 0);
+                    var intType = GetRuntimeType(new Name.Normal("String"), 0);
                     if (intType == null)
                         throw new NotImplementedException();
 

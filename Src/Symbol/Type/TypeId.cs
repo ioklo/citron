@@ -1,8 +1,6 @@
 ﻿using Citron.Collections;
 using Citron.Infra;
 
-using Name = Citron.Module.Name;
-
 namespace Citron.Symbol
 {
     public abstract record class TypeId;

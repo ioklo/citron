@@ -8,8 +8,6 @@ using Citron.Collections;
 using Citron.Infra;
 using Pretune;
 
-using Citron.Module;
-
 namespace Citron.Symbol
 {
     public class ModuleSymbol : ITopLevelSymbolNode, ICyclicEqualityComparableClass<ModuleSymbol>
@@ -98,6 +96,12 @@ namespace Citron.Symbol
                 return false;
 
             return true;
+        }
+
+        public void Accept<TVisitor>(ref TVisitor visitor)
+            where TVisitor : struct, ISymbolNodeVisitor
+        {
+            visitor.VisitModule(this);
         }
     }
 }

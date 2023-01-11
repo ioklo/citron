@@ -7,7 +7,6 @@ using Citron.Collections;
 using Citron.Symbol;
 
 using S = Citron.Syntax;
-using M = Citron.Module;
 
 using static Citron.Infra.Misc;
 using System.Collections.Generic;
@@ -17,7 +16,7 @@ namespace Citron.Analysis
     // Syntax로부터 ModuleDeclSymbol을 만든다
     public struct SyntaxIR0Translator
     {
-        public static ModuleDeclSymbol Build(M.Name moduleName, ImmutableArray<S.Script> scripts, ImmutableArray<ModuleDeclSymbol> refModuleDecls, SymbolFactory factory)
+        public static ModuleDeclSymbol Build(Name moduleName, ImmutableArray<S.Script> scripts, ImmutableArray<ModuleDeclSymbol> refModuleDecls, SymbolFactory factory)
         {
             var moduleDecl = new ModuleDeclSymbol(moduleName, bReference: false);
 
@@ -43,8 +42,8 @@ namespace Citron.Analysis
                             topLevelVisitor.VisitNamespaceDecl(namespaceDeclElem.NamespaceDecl);
                             break;
 
-                        case S.StmtScriptElement:
-                            // 그냥 통과
+                        case S.StmtScriptElement stmtElem:
+                            topLevelVisitor.VisitStmt(stmtElem.Stmt);
                             break;
 
                         default:

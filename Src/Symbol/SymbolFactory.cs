@@ -42,6 +42,13 @@ namespace Citron.Symbol
             return new GlobalFuncSymbol(this, outer, decl, typeArgs);
         }
 
+        public GlobalVarSymbol MakeGlobalVar(ITopLevelSymbolNode outer, GlobalVarDeclSymbol declSymbol)
+        {
+            Debug.Assert(outer.GetDeclSymbolNode() == ((IDeclSymbolNode)declSymbol).GetOuterDeclNode());
+
+            return new GlobalVarSymbol(this, outer, declSymbol);
+        }
+
         #endregion
 
         #region Class

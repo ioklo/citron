@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 
 using static Citron.Infra.Misc;
 using System.Diagnostics.CodeAnalysis;
-using Citron.Module;
 using Citron.Infra;
 using Citron.Symbol;
 

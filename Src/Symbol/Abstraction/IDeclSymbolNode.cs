@@ -1,7 +1,6 @@
 ﻿using Citron.Collections;
 using Citron.Infra;
 using System;
-using Citron.Module;
 using static Citron.Symbol.DeclSymbolIdExtensions;
 using System.Collections.Generic;
 using System.Diagnostics;

@@ -1,5 +1,4 @@
-﻿using Citron.Module;
-using Pretune;
+﻿using Pretune;
 using System;
 using System.Collections.Generic;
 using Citron.Collections;
@@ -16,9 +15,13 @@ namespace Citron.IR0
 
     public record CommandStmt(ImmutableArray<StringExp> Commands) : Stmt;    
 
-    // 글로벌 변수 선언
-    public record class GlobalVarDeclStmt(ImmutableArray<VarDeclElement> Elems) : Stmt;
-    public record class LocalVarDeclStmt(LocalVarDecl VarDecl) : Stmt;
+    // 글로벌 변수는 ModuleDeclSymbol에 이미 존재하므로, 그것을 초기화하는 구문으로 시작한다
+    public record class InitGlobalVar(GlobalVarDeclSymbol declSymbol, Exp InitExp) : Stmt;
+
+    // 로컬 변수는 
+    public record class LocalVarDeclStmt(IType Type, string Name, Exp InitExp) : Stmt;    // var x = 0;
+    public record class LocalRefVarDeclStmt(string Name, Loc Loc); // ref int x = y;
+
     public record class IfStmt(Exp Cond, Stmt Body, Stmt? ElseBody) : Stmt;
     public record class IfTestClassStmt(Loc Target, ClassSymbol Class, Name VarName, Stmt Body, Stmt? ElseBody) : Stmt;
     public record class IfTestEnumElemStmt(Loc Target, EnumElemSymbol EnumElem, string? VarName, Stmt Body, Stmt? ElseBody) : Stmt;

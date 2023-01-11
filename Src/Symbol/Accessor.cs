@@ -1,4 +1,4 @@
-﻿namespace Citron.Module
+﻿namespace Citron.Symbol
 {
     public enum Accessor
     {

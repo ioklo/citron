@@ -6,7 +6,6 @@ using System.Linq;
 using System.Text;
 
 using Citron.Collections;
-using Citron.Module;
 using Citron.Symbol;
 
 namespace Citron.IR0

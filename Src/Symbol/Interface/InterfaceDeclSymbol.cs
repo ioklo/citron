@@ -7,7 +7,6 @@ using Citron.Collections;
 using Citron.Infra;
 using Pretune;
 
-using Citron.Module;
 
 namespace Citron.Symbol
 {

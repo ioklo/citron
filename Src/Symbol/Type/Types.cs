@@ -1,14 +1,11 @@
 ﻿using Citron.Collections;
 using Citron.Infra;
-using Citron.Module;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
-
-using Name = Citron.Module.Name;
 
 namespace Citron.Symbol
 {
@@ -18,6 +15,7 @@ namespace Citron.Symbol
         TypeId GetTypeId();
         FuncParamTypeId MakeFuncParamTypeId();
         IType? GetMemberType(Name name, ImmutableArray<IType> typeArgs); // 이름에 해당하는 멤버타입을 가져온다
+        SymbolQueryResult QueryMember(string idName, int typeArgCount);
 
         void Accept<TVisitor>(ref TVisitor visitor)
             where TVisitor : struct, ITypeVisitor;
@@ -33,6 +31,7 @@ namespace Citron.Symbol
             where TVisitor : struct, ITypeVisitor;
 
         public abstract bool CyclicEquals(IType other, ref CyclicEqualityCompareContext context);
+        public abstract SymbolQueryResult QueryMember(string idName, int typeArgCount);
     }
 
     public abstract record class SymbolType : TypeImpl
@@ -46,6 +45,11 @@ namespace Citron.Symbol
         public sealed override bool CyclicEquals(IType other, ref CyclicEqualityCompareContext context)
         {
             return other is SymbolType otherSymbolType && GetTypeSymbol().CyclicEquals(otherSymbolType.GetTypeSymbol(), ref context);
+        }
+
+        public sealed override SymbolQueryResult QueryMember(string idName, int typeArgCount)
+        {
+            return GetTypeSymbol().QueryMember(new Name.Normal(idName), typeArgCount);
         }
     }
 
@@ -103,7 +107,6 @@ namespace Citron.Symbol
             => base.CyclicEquals(other, ref context);
     }
 
-
     public record class NullableType(IType InnerType) : TypeImpl
     {
         public override NullableType Apply(TypeEnv typeEnv) => new NullableType(InnerType.Apply(typeEnv));
@@ -122,6 +125,11 @@ namespace Citron.Symbol
                 return false;
 
             return true;
+        }
+
+        public override SymbolQueryResult QueryMember(string idName, int typeArgCount)
+        {
+            return SymbolQueryResults.NotFound;
         }
     }
 
@@ -146,6 +154,11 @@ namespace Citron.Symbol
 
             return true;
         }
+
+        public override SymbolQueryResult QueryMember(string idName, int typeArgCount)
+        {
+            return SymbolQueryResults.NotFound;
+        }
     }
 
     public record class VoidType: TypeImpl
@@ -158,6 +171,11 @@ namespace Citron.Symbol
 
         public sealed override bool CyclicEquals(IType other, ref CyclicEqualityCompareContext context)
             => true;
+
+        public override SymbolQueryResult QueryMember(string idName, int typeArgCount)
+        {
+            return SymbolQueryResults.NotFound;
+        }
     }
 
     public record class TupleType(ImmutableArray<(IType Type, Name Name)> MemberVars) : TypeImpl
@@ -213,6 +231,15 @@ namespace Citron.Symbol
 
             return true;
         }
+
+        public override SymbolQueryResult QueryMember(string idName, int typeArgCount)
+        {
+            foreach (var memberVar in MemberVars)
+                if (memberVar.Name.Equals(new Name.Normal(idName)))
+                    return new SymbolQueryResult.TupleMemberVar();
+
+            return SymbolQueryResults.NotFound;
+        }
     }
 
     public record class VarType : TypeImpl
@@ -224,5 +251,10 @@ namespace Citron.Symbol
         public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitVar(this);
         public sealed override bool CyclicEquals(IType other, ref CyclicEqualityCompareContext context)
             => true;
+
+        public override SymbolQueryResult QueryMember(string idName, int typeArgCount)
+        {
+            return SymbolQueryResults.NotFound;
+        }
     }
 }

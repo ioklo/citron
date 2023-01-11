@@ -5,7 +5,9 @@
         void VisitModule(ModuleDeclSymbol moduleDeclSymbol);
         void VisitNamespace(NamespaceDeclSymbol namespaceDeclSymbol);
 
-        void VisitGlobalFunc(GlobalFuncDeclSymbol globalFuncDeclSymbol);        
+        void VisitGlobalFunc(GlobalFuncDeclSymbol globalFuncDeclSymbol);
+        void VisitGlobalVar(GlobalVarDeclSymbol declSymbol);
+
         void VisitStruct(StructDeclSymbol structDeclSymbol);
         void VisitStructConstructor(StructConstructorDeclSymbol structConstructorDeclSymbol);
         void VisitStructMemberFunc(StructMemberFuncDeclSymbol structMemberFuncDeclSymbol);

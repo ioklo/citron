@@ -3,7 +3,6 @@
 using Citron.Symbol;
 
 using S = Citron.Syntax;
-using M = Citron.Module;
 using Citron.Collections;
 
 namespace Citron.Analysis
@@ -13,12 +12,12 @@ namespace Citron.Analysis
     {
         BuildingSkeletonPhaseContext context;
         TDeclSymbolNode node;
-        Func<S.AccessModifier?, M.Accessor> accessorMaker;
+        Func<S.AccessModifier?, Accessor> accessorMaker;
 
         public EnumVisitor_BuildingSkeletonPhase(
             BuildingSkeletonPhaseContext context,
             TDeclSymbolNode node,
-            Func<S.AccessModifier?, M.Accessor> accessorMaker)
+            Func<S.AccessModifier?, Accessor> accessorMaker)
         {
             this.context = context;
             this.node = node;
@@ -30,7 +29,7 @@ namespace Citron.Analysis
             var accessor = accessorMaker.Invoke(syntax.AccessModifier);
             var typeParams = BuilderMisc.VisitTypeParams(syntax.TypeParams);
 
-            var symbol = new EnumDeclSymbol(node, accessor, new M.Name.Normal(syntax.Name), typeParams);
+            var symbol = new EnumDeclSymbol(node, accessor, new Name.Normal(syntax.Name), typeParams);
             node.AddType(symbol);
 
             var elemsBuilder = ImmutableArray.CreateBuilder<EnumElemDeclSymbol>(syntax.Elems.Length);
@@ -43,7 +42,7 @@ namespace Citron.Analysis
 
         void VisitEnumElemDecl(S.EnumElemDecl syntax, EnumDeclSymbol outer, ImmutableArray<EnumElemDeclSymbol>.Builder declsBuilder)
         {
-            var enumElem = new EnumElemDeclSymbol(outer, new M.Name.Normal(syntax.Name));
+            var enumElem = new EnumElemDeclSymbol(outer, new Name.Normal(syntax.Name));
             declsBuilder.Add(enumElem);
 
             var memberVarsBuilder = ImmutableArray.CreateBuilder<EnumElemMemberVarDeclSymbol>(syntax.MemberVars.Length);
@@ -56,7 +55,7 @@ namespace Citron.Analysis
 
         void VisitEnumElemMemberVarDecl(S.EnumElemMemberVarDecl syntax, EnumElemDeclSymbol outer, ImmutableArray<EnumElemMemberVarDeclSymbol>.Builder builder)
         {
-            var memberVarDecl = new EnumElemMemberVarDeclSymbol(outer, new M.Name.Normal(syntax.Name));
+            var memberVarDecl = new EnumElemMemberVarDeclSymbol(outer, new Name.Normal(syntax.Name));
             builder.Add(memberVarDecl);
 
             context.RegisterTaskAfterBuildingAllTypeDeclSymbols(context =>

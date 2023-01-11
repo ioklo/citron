@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 using Citron.Infra;
 
-using Citron.Module;
 
 namespace Citron.Symbol
 {

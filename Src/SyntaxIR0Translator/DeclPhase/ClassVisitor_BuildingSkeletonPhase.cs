@@ -4,7 +4,6 @@ using Citron.Collections;
 using Citron.Infra;
 using Citron.Symbol;
 
-using M = Citron.Module;
 using S = Citron.Syntax;
 
 namespace Citron.Analysis
@@ -14,9 +13,9 @@ namespace Citron.Analysis
     {
         BuildingSkeletonPhaseContext context;
         TDeclSymbolNode node;
-        Func<S.AccessModifier?, M.Accessor> accessorMaker;
+        Func<S.AccessModifier?, Accessor> accessorMaker;
 
-        public ClassVisitor_BuildingSkeletonPhase(BuildingSkeletonPhaseContext context, TDeclSymbolNode node, Func<S.AccessModifier?, M.Accessor> accessorMaker)
+        public ClassVisitor_BuildingSkeletonPhase(BuildingSkeletonPhaseContext context, TDeclSymbolNode node, Func<S.AccessModifier?, Accessor> accessorMaker)
         {
             this.context = context;
             this.node = node;
@@ -28,7 +27,7 @@ namespace Citron.Analysis
             var accessor = accessorMaker.Invoke(syntax.AccessModifier);
             var typeParams = BuilderMisc.VisitTypeParams(syntax.TypeParams);
 
-            var declSymbol = new ClassDeclSymbol(node, accessor, new M.Name.Normal(syntax.Name), typeParams);
+            var declSymbol = new ClassDeclSymbol(node, accessor, new Name.Normal(syntax.Name), typeParams);
             node.AddType(declSymbol);
             
             foreach (var member in syntax.MemberDecls)

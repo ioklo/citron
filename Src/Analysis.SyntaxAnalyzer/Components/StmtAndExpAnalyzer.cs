@@ -29,19 +29,6 @@ namespace Citron.Analysis
             this.localContext = localContext;
         }
 
-        ImmutableArray<ITypeSymbol> GetTypeValues(ImmutableArray<S.TypeExp> typeExps)
-        {
-            var builder = ImmutableArray.CreateBuilder<ITypeSymbol>(typeExps.Length);
-
-            foreach (var typeExp in typeExps)
-            {
-                var typeValue = globalContext.GetSymbolByTypeExp(typeExp);
-                builder.Add(typeValue);
-            }
-
-            return builder.MoveToImmutable();
-        }
-
         StmtAndExpAnalyzer NewAnalyzer()
         {
             var newLocalContext = localContext.NewLocalContext();

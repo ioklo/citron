@@ -6,7 +6,6 @@ using Citron.Infra;
 
 using Pretune;
 
-using Citron.Module;
 using System.Diagnostics;
 
 namespace Citron.Symbol
@@ -278,6 +277,12 @@ namespace Citron.Symbol
         }
 
         public void Apply(ITypeSymbolVisitor visitor)
+        {
+            visitor.VisitClass(this);
+        }
+
+        public void Accept<TVisitor>(ref TVisitor visitor)
+            where TVisitor : struct, ISymbolNodeVisitor
         {
             visitor.VisitClass(this);
         }

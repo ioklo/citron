@@ -1,6 +1,5 @@
 ﻿using Pretune;
 using Citron.Collections;
-using Citron.Module;
 using Citron.Infra;
 
 namespace Citron.Symbol
@@ -60,6 +59,12 @@ namespace Citron.Symbol
         bool ICyclicEqualityComparableClass<ISymbolNode>.CyclicEquals(ISymbolNode other, ref CyclicEqualityCompareContext context)
         {
             throw new System.NotImplementedException();
+        }
+
+        public void Accept<TVisitor>(ref TVisitor visitor)
+            where TVisitor : struct, ISymbolNodeVisitor
+        {
+            visitor.VisitLambdaMemberVarSymbol(this);
         }
     }
 }

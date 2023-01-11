@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Citron.Infra;
 using Citron.Collections;
 
-using Citron.Module;
 using Pretune;
 using System.Diagnostics;
 
@@ -283,6 +282,12 @@ namespace Citron.Symbol
                 return false;
 
             return true;
+        }
+
+        public void Accept<TVisitor>(ref TVisitor visitor)
+            where TVisitor : struct, ISymbolNodeVisitor
+        {
+            visitor.VisitStruct(this);
         }
     }
 }

@@ -2,7 +2,6 @@
 using Citron.Infra;
 using System;
 using System.Diagnostics;
-using Citron.Module;
 
 namespace Citron.Symbol
 {
@@ -104,6 +103,12 @@ namespace Citron.Symbol
                 return false;
 
             return true;
+        }
+
+        public void Accept<TVisitor>(ref TVisitor visitor)
+            where TVisitor : struct, ISymbolNodeVisitor
+        {
+            visitor.VisitStructMemberFunc(this);
         }
     }
 }

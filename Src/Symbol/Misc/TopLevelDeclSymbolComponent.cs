@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Linq;
 using Citron.Collections;
 using Citron.Infra;
-using Citron.Module;
 using Pretune;
 
 namespace Citron.Symbol

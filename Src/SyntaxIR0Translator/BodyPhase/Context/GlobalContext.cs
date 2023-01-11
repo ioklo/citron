@@ -1,32 +1,30 @@
-﻿using System;
+﻿using Citron.Infra;
+using Citron.Symbol;
+using Citron.Syntax;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Text;
-
-using Citron.Module;
-using Citron.Log;
-using Citron.Symbol;
-using Citron.Collections;
-using Citron.Infra;
-
 using S = Citron.Syntax;
-using R = Citron.IR0;
-
-using static Citron.Infra.Misc;
 
 namespace Citron.Analysis
-{    
-    // Analyzer는 backtracking이 없어서, MutableContext를 쓴다 => TODO: 함수 인자 계산할때 backtracking이 생긴다
-    class GlobalContext : IMutable<GlobalContext>
+{
+    class GlobalContext
     {
+        
+        [DoesNotReturn]
+        public void AddFatalError(SyntaxAnalysisErrorCode code, S.ISyntaxNode node)
+        {
+            logger.Add(new SyntaxAnalysisErrorLog(code, node, code.ToString()));
+            throw new AnalyzerFatalException();
+        }
+
         SymbolLoader symbolLoader;
         TypeSymbolInfoService typeInfoService;
         SymbolFactory symbolFactory;
 
         InternalBinaryOperatorQueryService internalBinOpQueryService;
-        
+
         ILogger logger;
         InternalGlobalVariableRepository internalGlobalVarRepo;
 
@@ -60,7 +58,7 @@ namespace Citron.Analysis
             this.symbolFactory = symbolFactory;
 
             this.internalBinOpQueryService = new InternalBinaryOperatorQueryService(GetBoolType(), GetIntType(), GetStringType());
-                
+
             this.logger = logger;
             this.internalGlobalVarRepo = new InternalGlobalVariableRepository();
         }
@@ -76,7 +74,7 @@ namespace Citron.Analysis
             // 1. typeArgIds만들기
             var typeVarPaths = new List<SymbolPath>(); // 나중에 outer를 넣기 위해 저장
             var typeArgIdsBuilder = ImmutableArray.CreateBuilder<SymbolId>();
-            for(int i = 0; i < typeParams.Length; i++)
+            for (int i = 0; i < typeParams.Length; i++)
             {
                 // outer를 일단 null로 지정한다
                 var typeVarPath = new SymbolPath(null, new Name.Normal(typeParams[i]));
@@ -90,7 +88,7 @@ namespace Citron.Analysis
             var symbolId = outerId.Child(new Name.Normal(name), typeArgIds, paramIds);
 
             // 3. 다시 채워넣기, NOTICE: typeVarPath가 ref type이라서 가능하다
-            foreach(var typeVarPath in typeVarPaths)
+            foreach (var typeVarPath in typeVarPaths)
                 typeVarPath.Outer = symbolId.Path;
 
             return symbolLoader.Load(symbolId) as TSymbol;
@@ -132,22 +130,22 @@ namespace Citron.Analysis
             logger.Add(new SyntaxAnalysisErrorLog(code, node, code.ToString()));
             throw new AnalyzerFatalException();
         }
-            
+
         public IType GetVoidType()
         {
             return (ITypeSymbol)symbolLoader.Load(new VoidSymbolId());
-        }            
+        }
 
         public IType GetBoolType()
-        {   
-            return (ITypeSymbol)symbolLoader.Load(boolId);                    
+        {
+            return (ITypeSymbol)symbolLoader.Load(boolId);
         }
-            
+
         public IType GetIntType()
         {
             return (ITypeSymbol)symbolLoader.Load(intId);
         }
-            
+
         public IType GetStringType()
         {
             return (ITypeSymbol)symbolLoader.Load(stringId);
@@ -165,7 +163,7 @@ namespace Citron.Analysis
 
             return (ITypeSymbol)symbolLoader.Load(listId);
         }
-            
+
         public void AddInternalGlobalVarInfo(bool bRef, IType typeValue, string name)
         {
             internalGlobalVarRepo.AddInternalGlobalVariable(bRef, typeValue, name);
@@ -186,7 +184,7 @@ namespace Citron.Analysis
         {
             var declId = type.GetDeclSymbolId();
             return intDeclId.Equals(declId);
-        }            
+        }
 
         public bool IsStringType(ITypeSymbol type)
         {
@@ -227,7 +225,7 @@ namespace Citron.Analysis
         public bool DoesInternalGlobalVarNameExist(string name)
         {
             return internalGlobalVarRepo.HasVariable(name);
-        }            
+        }
 
         //public SeqTypeValue GetSeqTypeValue(R.Path.Nested seq, ITypeSymbol yieldType)
         //{
@@ -238,7 +236,7 @@ namespace Citron.Analysis
         public SymbolQueryResult QuerySymbol(SymbolPath? outerPath, Name name, int typeParamCount)
         {
             return symbolLoader.Query(outerPath, name, typeParamCount);
-        } 
+        }
 
         public ImmutableArray<InternalBinaryOperatorInfo> GetBinaryOpInfos(S.BinaryOpKind kind)
         {
@@ -249,7 +247,7 @@ namespace Citron.Analysis
         {
             throw new NotImplementedException();
             // return symbolLoader.Load(.MakeTupleType(elems);
-        }            
+        }
 
         public R.Exp? TryCastExp_Exp(R.Exp exp, ITypeSymbol expectedType) // nothrow
         {
@@ -293,7 +291,7 @@ namespace Citron.Analysis
                 // TODO: interface
                 // if (expectType is InterfaceTypeValue )
             }
-            
+
             // TODO: 3. C -> Nullable<C>, C -> B -> Nullable<B> 허용
             //if (IsNullableType(expectedType, out var expectedInnerType))
             //{
@@ -325,5 +323,4 @@ namespace Citron.Analysis
             throw new NotImplementedException();
         }
     }
-    
 }

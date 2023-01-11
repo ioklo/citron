@@ -5,7 +5,6 @@ using Citron.Collections;
 using Citron.Infra;
 using Pretune;
 
-using Citron.Module;
 using System.Diagnostics;
 
 namespace Citron.Symbol

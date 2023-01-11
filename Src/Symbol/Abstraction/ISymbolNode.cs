@@ -1,6 +1,5 @@
 ﻿using Citron.Collections;
 using Citron.Infra;
-using Citron.Module;
 using System;
 using System.Diagnostics;
 using System.Security.Cryptography.X509Certificates;
@@ -17,6 +16,9 @@ namespace Citron.Symbol
         TypeEnv GetTypeEnv();
         ISymbolNode Apply(TypeEnv typeEnv);        
         IType GetTypeArg(int i);
+
+        void Accept<TVisitor>(ref TVisitor visitor)
+            where TVisitor : struct, ISymbolNodeVisitor;
     }
 
     public static class SymbolNodeExtensions

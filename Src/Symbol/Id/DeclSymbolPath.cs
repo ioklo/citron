@@ -7,7 +7,6 @@ using System.Linq;
 using Citron.Infra;
 
 using System.Diagnostics.CodeAnalysis;
-using Citron.Module;
 
 namespace Citron.Symbol
 {

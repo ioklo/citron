@@ -24,7 +24,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Infra\Infra.csproj" />
     <ProjectReference Include="..\Log\Log.csproj" />
-    <ProjectReference Include="..\Module\Module.csproj" />
     <ProjectReference Include="..\Symbol\Symbol.csproj" />
     <ProjectReference Include="..\SyntaxIR0Translator\SyntaxIR0Translator.csproj" />
     <ProjectReference Include="..\Syntax\Syntax.csproj" />

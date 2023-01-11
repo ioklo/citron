@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using Citron.Collections;
 using Pretune;
-using Citron.Module;
 using Citron.Infra;
 
 namespace Citron.Symbol

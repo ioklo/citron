@@ -7,7 +7,6 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Citron.Collections;
-using Citron.Module;
 
 namespace Citron.Symbol
 {

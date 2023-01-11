@@ -1,5 +1,4 @@
 ﻿using Citron.Collections;
-using Citron.Module;
 using Pretune;
 
 namespace Citron.Symbol

@@ -8,7 +8,7 @@ namespace Citron.Symbol
     {
         SymbolFactory factory;
         ClassSymbol outer;
-        ClassMemberVarDeclSymbol decl;        
+        ClassMemberVarDeclSymbol decl;
         TypeEnv typeEnv;
 
         // for return type covariance
@@ -78,6 +78,12 @@ namespace Citron.Symbol
                 return false;
 
             return true;
+        }
+
+        public void Accept<TVisitor>(ref TVisitor visitor)
+            where TVisitor : struct, ISymbolNodeVisitor
+        {
+            visitor.VisitClassMemberVar(this);
         }
     }
 }

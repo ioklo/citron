@@ -13,10 +13,8 @@ using Citron.Infra;
 using Citron.Collections;
 using Citron.IR0;
 using Citron.Test.Misc;
-using Citron.Module;
 
 using static Citron.Infra.Misc;
-using Citron.Analysis;
 
 namespace Citron.Test
 {

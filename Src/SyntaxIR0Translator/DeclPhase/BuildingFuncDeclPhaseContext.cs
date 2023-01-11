@@ -6,7 +6,6 @@ using Citron.Collections;
 using Citron.Symbol;
 
 using S = Citron.Syntax;
-using M = Citron.Module;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -50,14 +49,14 @@ namespace Citron.Analysis
             {   
                 var paramKind = paramSyntax.Kind switch
                 {
-                    S.FuncParamKind.Normal => M.FuncParameterKind.Default,
-                    S.FuncParamKind.Params => M.FuncParameterKind.Params,
-                    S.FuncParamKind.Ref => M.FuncParameterKind.Ref,
+                    S.FuncParamKind.Normal => FuncParameterKind.Default,
+                    S.FuncParamKind.Params => FuncParameterKind.Params,
+                    S.FuncParamKind.Ref => FuncParameterKind.Ref,
                     _ => throw new UnreachableCodeException()
                 };
 
                 var paramTypeSymbol = MakeType(paramSyntax.Type, curNode, outerNode);
-                var param = new FuncParameter(paramKind, paramTypeSymbol, new M.Name.Normal(paramSyntax.Name));
+                var param = new FuncParameter(paramKind, paramTypeSymbol, new Name.Normal(paramSyntax.Name));
                 paramsBuilder.Add(param);
             }
 

@@ -1,7 +1,6 @@
 ﻿using Citron.Collections;
 using System.Diagnostics;
 
-using Citron.Module;
 using Pretune;
 using System;
 using Citron.Infra;
@@ -145,6 +144,12 @@ namespace Citron.Symbol
                 return false;
 
             return true;
+        }
+
+        public void Accept<TVisitor>(ref TVisitor visitor)
+            where TVisitor : struct, ISymbolNodeVisitor
+        {
+            visitor.VisitEnumElem(this);
         }
     }
 }

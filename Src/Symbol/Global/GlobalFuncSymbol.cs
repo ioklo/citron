@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
-using Citron.Module;
 using Citron.Infra;
 using Citron.Collections;
 
@@ -113,6 +112,12 @@ namespace Citron.Symbol
                 return false;
 
             return true;
+        }
+
+        public void Accept<TVisitor>(ref TVisitor visitor)
+            where TVisitor : struct, ISymbolNodeVisitor
+        {
+            visitor.VisitGlobalFunc(this);
         }
     }
 }

@@ -1,6 +1,5 @@
 ﻿using Citron.Collections;
 using Citron.Infra;
-using Citron.Module;
 using System.Diagnostics;
 
 namespace Citron.Symbol

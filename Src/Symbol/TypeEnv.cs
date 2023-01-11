@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Citron.Collections;
 using System.Diagnostics;
 
-using Citron.Module;
 using System.Runtime.CompilerServices;
 
 namespace Citron.Symbol

@@ -4,7 +4,6 @@ using Citron.Infra;
 using Citron.Symbol;
 
 using S = Citron.Syntax;
-using M = Citron.Module;
 using System.Diagnostics;
 using System.Collections.Generic;
 
@@ -15,12 +14,12 @@ namespace Citron.Analysis
     {
         BuildingSkeletonPhaseContext context;
         TDeclSymbolNode node;
-        Func<S.AccessModifier?, M.Accessor> accessorMaker;
+        Func<S.AccessModifier?, Accessor> accessorMaker;
 
         public StructVisitor_BuildingSkeletonPhase(
             BuildingSkeletonPhaseContext context,
             TDeclSymbolNode node,
-            Func<S.AccessModifier?, M.Accessor> accessorMaker)
+            Func<S.AccessModifier?, Accessor> accessorMaker)
         {
             this.context = context;
             this.node = node;
@@ -32,7 +31,7 @@ namespace Citron.Analysis
             var accessor = accessorMaker.Invoke(syntax.AccessModifier);
             var typeParams = BuilderMisc.VisitTypeParams(syntax.TypeParams);
 
-            var declSymbol = new StructDeclSymbol(node, accessor, new M.Name.Normal(syntax.Name), typeParams);
+            var declSymbol = new StructDeclSymbol(node, accessor, new Name.Normal(syntax.Name), typeParams);
             node.AddType(declSymbol);
 
             // 할수 있는데까지 다 해본다

@@ -4,7 +4,6 @@ using Citron.Collections;
 using Citron.Symbol;
 
 using S = Citron.Syntax;
-using M = Citron.Module;
 
 namespace Citron.Analysis
 {   
@@ -54,7 +53,7 @@ namespace Citron.Analysis
                 var declSymbol = new GlobalFuncDeclSymbol(
                     node,
                     accessor,
-                    new M.Name.Normal(syntax.Name),
+                    new Name.Normal(syntax.Name),
                     typeParams);
 
                 var (funcRet, funcParams) = context.MakeFuncReturnAndParams(declSymbol, syntax.IsRefReturn, syntax.RetType, syntax.Parameters);
@@ -79,7 +78,7 @@ namespace Citron.Analysis
             void VisitElem<TNode>(int index, TNode curNode)
                 where TNode : ITopLevelDeclSymbolNode, ITopLevelDeclContainable
             {
-                var namespaceName = new M.Name.Normal(decl.Names[index]);
+                var namespaceName = new Name.Normal(decl.Names[index]);
                 var declNode = curNode.GetMemberDeclNode(new DeclSymbolNodeName(namespaceName, 0, default));
 
                 NamespaceDeclSymbol? namespaceDecl = null;

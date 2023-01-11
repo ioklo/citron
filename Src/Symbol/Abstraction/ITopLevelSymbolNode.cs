@@ -1,5 +1,4 @@
 ﻿using Citron.Infra;
-using Citron.Module;
 
 namespace Citron.Symbol
 {

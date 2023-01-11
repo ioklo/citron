@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <AssemblyName>Citron.Analysis</AssemblyName>
+    <RootNamespace>Citron.Analysis</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Infra\Infra.csproj" />
-    <ProjectReference Include="..\Module\Module.csproj" />
+    <ProjectReference Include="..\IR0\IR0.csproj" />
     <ProjectReference Include="..\Symbol\Symbol.csproj" />
     <ProjectReference Include="..\Syntax\Syntax.csproj" />
   </ItemGroup>

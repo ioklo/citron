@@ -1,5 +1,4 @@
 ﻿using Citron.Collections;
-using Citron.Module;
 using Citron.Infra;
 using System;
 using System.Collections.Generic;
