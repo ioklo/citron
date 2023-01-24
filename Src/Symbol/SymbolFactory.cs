@@ -1,5 +1,6 @@
 ﻿using Citron.Collections;
 using Citron.Infra;
+using Pretune;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -10,6 +11,7 @@ using System.Threading.Tasks;
 namespace Citron.Symbol
 {
     // DeclSymbolFactory는 따로 만들자
+    [ExcludeComparison]
     public class SymbolFactory
     {
         // Decl류는 한개만 존재하고, Class (instance)류는 매번 생성한다.

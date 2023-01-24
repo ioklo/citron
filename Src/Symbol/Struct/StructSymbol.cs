@@ -7,8 +7,9 @@ using Pretune;
 using System.Diagnostics;
 
 namespace Citron.Symbol
-{   
-    public class StructSymbol : ITypeSymbol, ICyclicEqualityComparableClass<StructSymbol>
+{
+    [ImplementIEquatable]
+    public partial class StructSymbol : ITypeSymbol, ICyclicEqualityComparableClass<StructSymbol>
     {
         SymbolFactory symbolFactory;
         ISymbolNode outer;

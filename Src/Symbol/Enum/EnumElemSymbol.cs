@@ -8,7 +8,8 @@ using Citron.Infra;
 namespace Citron.Symbol
 {
     // S.First, S.Second(int i, short s)    
-    public class EnumElemSymbol : ITypeSymbol, ICyclicEqualityComparableClass<EnumElemSymbol>
+    [ImplementIEquatable]
+    public partial class EnumElemSymbol : ITypeSymbol, ICyclicEqualityComparableClass<EnumElemSymbol>
     {
         SymbolFactory factory;
         EnumSymbol outer;

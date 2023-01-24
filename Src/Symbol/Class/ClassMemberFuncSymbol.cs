@@ -1,5 +1,6 @@
 ﻿using Citron.Collections;
 using Citron.Infra;
+using Pretune;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -10,7 +11,8 @@ using System.Threading.Tasks;
 namespace Citron.Symbol
 {
     // X<int>.Y<short>.F_T_int_int<S>
-    public class ClassMemberFuncSymbol : IFuncSymbol, ICyclicEqualityComparableClass<ClassMemberFuncSymbol>
+    [ImplementIEquatable]
+    public partial class ClassMemberFuncSymbol : IFuncSymbol, ICyclicEqualityComparableClass<ClassMemberFuncSymbol>
     {
         SymbolFactory factory;
 

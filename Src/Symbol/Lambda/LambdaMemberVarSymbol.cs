@@ -4,7 +4,7 @@ using Citron.Infra;
 
 namespace Citron.Symbol
 {
-    [AutoConstructor]
+    [AutoConstructor, ImplementIEquatable]
     public partial class LambdaMemberVarSymbol : ISymbolNode
     {
         SymbolFactory factory;

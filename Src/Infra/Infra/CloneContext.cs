@@ -8,11 +8,10 @@ namespace Citron.Infra
     {
         Dictionary<object, object> clonedInstances;
 
-        public static CloneContext Make()
+        // default constructor
+        public CloneContext()
         {
-            var result = new CloneContext();
-            result.clonedInstances = new Dictionary<object, object>();
-            return result;
+            this.clonedInstances = new Dictionary<object, object>();
         }
 
         public T GetClone<T>(T instance)

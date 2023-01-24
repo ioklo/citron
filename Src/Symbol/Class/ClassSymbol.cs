@@ -10,7 +10,8 @@ using System.Diagnostics;
 
 namespace Citron.Symbol
 {
-    public class ClassSymbol : ITypeSymbol, ICyclicEqualityComparableClass<ClassSymbol>
+    [ImplementIEquatable]
+    public partial class ClassSymbol : ITypeSymbol, ICyclicEqualityComparableClass<ClassSymbol>
     {
         SymbolFactory factory;
         ISymbolNode outer;
@@ -52,9 +53,9 @@ namespace Citron.Symbol
         }
 
         // except itself
-        public bool IsBaseOf(ClassType derivedType)
+        public bool IsBaseOf(ClassSymbol derivedClass)
         {
-            ClassType? curBaseType = derivedType.Symbol.GetBaseClass();
+            ClassType? curBaseType = derivedClass.GetBaseClass();
 
             while(curBaseType != null)
             {
@@ -198,23 +199,23 @@ namespace Citron.Symbol
             return decl.GetConstructorCount();
         }
 
-        public SymbolQueryResult QueryMember(Name memberName, int typeParamCount)
+        public SymbolQueryResult QueryMember(Name memberName, int explicitTypeArgsCount)
         {   
             // TODO: caching
             var results = new List<SymbolQueryResult.Valid>();
 
             // error, notfound, found
-            var typeResult = QueryMember_Type(memberName, typeParamCount);
+            var typeResult = QueryMember_Type(memberName, explicitTypeArgsCount);
             if (typeResult is SymbolQueryResult.Error) return typeResult;
             if (typeResult is SymbolQueryResult.Valid typeMemberResult) results.Add(typeMemberResult);
 
             // error, notfound, found
-            var funcResult = QueryMember_Func(memberName, typeParamCount);
+            var funcResult = QueryMember_Func(memberName, explicitTypeArgsCount);
             if (funcResult is SymbolQueryResult.Error) return funcResult;
             if (funcResult is SymbolQueryResult.Valid funcMemberResult) results.Add(funcMemberResult);
 
             // error, notfound, found
-            var varResult = QueryMember_Var(memberName, typeParamCount);
+            var varResult = QueryMember_Var(memberName, explicitTypeArgsCount);
             if (varResult is SymbolQueryResult.Error) return varResult;
             if (varResult is SymbolQueryResult.Valid varMemberResult) results.Add(varMemberResult);
 
@@ -227,7 +228,7 @@ namespace Citron.Symbol
                 if (baseTypeValue == null)
                     return SymbolQueryResults.NotFound;
 
-                return baseTypeValue.Symbol.QueryMember(memberName, typeParamCount);
+                return baseTypeValue.Symbol.QueryMember(memberName, explicitTypeArgsCount);
             }
             else
             {

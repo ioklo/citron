@@ -1,8 +1,10 @@
 ﻿using Citron.Infra;
+using Pretune;
 
 namespace Citron.Symbol
 {
-    public class GlobalVarSymbol : ITopLevelSymbolNode, ICyclicEqualityComparableClass<GlobalVarSymbol>
+    [ImplementIEquatable]
+    public partial class GlobalVarSymbol : ITopLevelSymbolNode, ICyclicEqualityComparableClass<GlobalVarSymbol>
     {
         SymbolFactory factory;
         ITopLevelSymbolNode outer;
@@ -63,11 +65,6 @@ namespace Citron.Symbol
         TypeEnv ISymbolNode.GetTypeEnv()
         {
             return outer?.GetTypeEnv() ?? TypeEnv.Empty;
-        }
-
-        SymbolQueryResult ITopLevelSymbolNode.QueryMember(Name memberName, int typeParamCount)
-        {
-            return SymbolQueryResults.NotFound;
         }
 
         public void Accept<TVisitor>(ref TVisitor visitor)

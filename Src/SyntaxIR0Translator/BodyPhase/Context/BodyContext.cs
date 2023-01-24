@@ -6,7 +6,8 @@ using System.Diagnostics;
 namespace Citron.Analysis
 {
     class BodyContext
-    {        
+    {
+        IDeclSymbolNode declSymbol;
         IType? thisType;
 
         // 리턴값이 설정 되어 있으면 true, 아직 모르면(lambda) false
@@ -14,22 +15,19 @@ namespace Citron.Analysis
         FuncReturn? funcReturn; // bSetReturn이 true일 경우만 유효, constructor일 경우 null
 
         bool bSeqFunc;
-        BodyContextLambdaComponent lambdaComponent;
 
-        public BodyContext(bool bSeqFunc, IType? outerType, IType? thisType BodyContextLambdaComponent lambdaComponent)
+        public BodyContext(bool bSeqFunc, IType? outerType, IType? thisType)
         {
             this.bSetReturn = false;
             this.funcReturn = null;
             this.bSeqFunc = bSeqFunc;
-            this.lambdaComponent = lambdaComponent;
         }
 
-        public BodyContext(FuncReturn funcReturn, bool bSeqFunc, BodyContextLambdaComponet lambdaComponent)
+        public BodyContext(FuncReturn funcReturn, bool bSeqFunc)
         {
             this.bSetReturn = true;
             this.funcReturn = funcReturn;
             this.bSeqFunc = bSeqFunc;
-            this.lambdaComponent = lambdaComponent;
         }
 
         // 리턴값 관련 함수
@@ -47,7 +45,7 @@ namespace Citron.Analysis
             return funcReturn;
         }
 
-        public void SetReturn(bool bRef, ITypeSymbol retType)
+        public void SetReturn(bool bRef, IType retType)
         {
             Debug.Assert(bSetReturn); // IsSetReturn을 먼저 보고 호출            
 
@@ -80,6 +78,11 @@ namespace Citron.Analysis
         public IFuncDeclSymbol GetFuncDeclSymbol()
         {
             throw new NotImplementedException();
+        }
+
+        public bool CanAccess(ISymbolNode node)
+        {
+            return declSymbol.CanAccess(node.GetDeclSymbolNode());
         }
     }
 }

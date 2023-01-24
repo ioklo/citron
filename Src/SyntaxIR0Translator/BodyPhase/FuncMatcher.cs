@@ -11,7 +11,6 @@ using S = Citron.Syntax;
 using R = Citron.IR0;
 using Citron.Infra;
 using static Citron.Analysis.SyntaxAnalysisErrorCode;
-using Citron.Module;
 using Citron.Symbol;
 
 namespace Citron.Analysis
@@ -36,47 +35,21 @@ namespace Citron.Analysis
         public record class Success(int Index, ImmutableArray<IType> TypeArgs, ImmutableArray<R.Argument> Args) : FuncMatchIndexResult;
     }
 
-    // entry2의 result
-    [AutoConstructor]
-    partial struct FuncMatchResult
-    {
-        public ImmutableArray<IType> TypeArgs { get; }
-        public ImmutableArray<R.Argument> Args { get; }
-    }
+    // entry2의 result    
+    record struct FuncMatchResult(ImmutableArray<IType> TypeArgs, ImmutableArray<R.Argument> Args);
 
-    partial struct FuncMatcher
-    {
-        [AutoConstructor]
-        partial struct MatchedFunc
-        {
-            public MatchCallableResult Result { get; }
-            public int Index { get; }
-            public GlobalContext GlobalContext { get; }
-            public BodyContext BodyContext { get; }
-            public LocalContext LocalContext { get; }
-        }
-            
-        [AutoConstructor]
-        partial struct MatchCallableResult
-        {
-            public static readonly MatchCallableResult Invalid = new MatchCallableResult();
-
-            public bool bMatch { get; }
-            public bool bExactMatch { get; } // TypeInference를 사용하지 않은 경우                
-            public ImmutableArray<R.Argument> Args { get; }
-            public ImmutableArray<IType> TypeArgs { get; }
-        }
-
-        class FuncMatcherFatalException : Exception
-        {
-        }
+    struct FuncMatcher
+    {        
+        record struct MatchedFunc(MatchCallableResult Result, int Index, ScopeContext Context);
+        // bExactMatch: TypeInference를 사용하지 않은 경우
+        record struct MatchCallableResult(bool bMatch, bool bExactMatch, ImmutableArray<R.Argument> Args, ImmutableArray<IType> TypeArgs);
+        class FuncMatcherFatalException : Exception { }
 
         ImmutableArray<FuncParameter> paramInfos;
         ImmutableArray<IType> typeArgs;
         ImmutableArray<FuncMatcherArgument> expandedArgs;
         TypeResolver typeResolver;
 
-        GlobalContext globalContext;
         TypeEnv outerTypeEnv;
 
         public interface IHaveParameters
@@ -87,9 +60,7 @@ namespace Citron.Analysis
 
         // entry 1
         public static FuncMatchIndexResult MatchIndex<TFuncDeclSymbol>(
-            GlobalContext globalContext,
-            BodyContext bodyContext,
-            LocalContext localContext,
+            ScopeContext scopeContext,
             TypeEnv outerTypeEnv, 
             ImmutableArray<TFuncDeclSymbol> funcDecls,
             ImmutableArray<S.Argument> sargs, 
@@ -97,29 +68,26 @@ namespace Citron.Analysis
             where TFuncDeclSymbol : IFuncDeclSymbol
         {
             // 여러 함수 중에서 인자가 맞는것을 선택해야 한다
-            var exactCandidates = new Candidates<MatchedFunc?>();
-            var restCandidates = new Candidates<MatchedFunc?>();
+            var exactCandidates = new Candidates<MatchedFunc>();
+            var restCandidates = new Candidates<MatchedFunc>();
 
             // Type inference
             for(int i = 0; i < funcDecls.Length; i++)
             {
                 var funcDecl = funcDecls[i];
 
-                var cloneContext = CloneContext.Make();
-                var clonedGlobalContext = cloneContext.GetClone(globalContext);
-                var clonedBodyContext = cloneContext.GetClone(bodyContext);
-                var clonedLocalContext = cloneContext.GetClone(localContext);
+                var cloneContext = new CloneContext();
+                var clonedScopeContext = cloneContext.GetClone(scopeContext);
 
                 var paramTypes = ImmutableArray.CreateRange(funcDecl.GetParameterCount, index => funcDecl.GetParameter(index));
                 var variadicParamIndex = GetVariadicParamIndex(funcDecl);
 
-                var matchResult = MatchCallableCore(clonedGlobalContext, clonedBodyContext, clonedLocalContext, outerTypeEnv, paramTypes, variadicParamIndex, typeArgs, sargs);
+                var matchResult = MatchCallableCore(clonedScopeContext, outerTypeEnv, paramTypes, variadicParamIndex, typeArgs, sargs);
+                if (matchResult == null) continue;
 
-                if (!matchResult.bMatch) continue;
+                var matchedCandidate = new MatchedFunc(matchResult.Value, i, clonedScopeContext);
 
-                var matchedCandidate = new MatchedFunc(matchResult, i, clonedGlobalContext, clonedBodyContext, clonedLocalContext);
-
-                if (matchResult.bExactMatch)
+                if (matchResult.Value.bExactMatch)
                     exactCandidates.Add(matchedCandidate); // context만 저장하게 수정
                 else
                     restCandidates.Add(matchedCandidate);
@@ -127,68 +95,58 @@ namespace Citron.Analysis
 
             // 매칭 된 것으로
             MatchedFunc matchedFunc;
-            var exactMatch = exactCandidates.GetSingle();
-            if (exactMatch != null)
+            var exactMatchResult = exactCandidates.GetUniqueResult();
+            if (!exactMatchResult.IsFound(out matchedFunc))
             {
-                matchedFunc = exactMatch.Value;
-            }
-            else if (exactCandidates.HasMultiple)
-            {
-                return FuncMatchIndexResult.MultipleCandidates.Instance;
-            }
-            else // empty
-            {
-                Debug.Assert(exactCandidates.IsEmpty);
-
-                var restMatch = restCandidates.GetSingle();
-                if (restMatch != null)
-                {
-                    matchedFunc = restMatch.Value;
-                }
-                else if (restCandidates.HasMultiple)
+                if (exactMatchResult.IsMultipleError())
                 {
                     return FuncMatchIndexResult.MultipleCandidates.Instance;
                 }
-                else // empty
+                else if (exactMatchResult.IsNotFound()) // empty
                 {
-                    return FuncMatchIndexResult.NotFound.Instance;
+                    var restMatchResult = restCandidates.GetUniqueResult();
+                    if (!restMatchResult.IsFound(out matchedFunc))
+                    {
+                        if (restMatchResult.IsMultipleError()) return FuncMatchIndexResult.MultipleCandidates.Instance;
+                        else if (restMatchResult.IsNotFound()) return FuncMatchIndexResult.NotFound.Instance;
+                        else throw new UnreachableCodeException();
+                    }
+                }
+                else
+                {
+                    throw new UnreachableCodeException();
                 }
             }
 
             // 확정된 context로 업데이트
             var updateContext = UpdateContext.Make();
-            updateContext.Update(globalContext, matchedFunc.GlobalContext);
-            updateContext.Update(bodyContext, matchedFunc.BodyContext);
-            updateContext.Update(localContext, matchedFunc.LocalContext);
+            updateContext.Update(scopeContext, matchedFunc.Context);
 
             return new FuncMatchIndexResult.Success(matchedFunc.Index, matchedFunc.Result.TypeArgs, matchedFunc.Result.Args);
         }
 
         // entry 2
         public static FuncMatchResult? Match(
-            GlobalContext globalContext,
-            BodyContext bodyContext,
-            LocalContext localContext,
+            ScopeContext scopeContext,
             TypeEnv outerTypeEnv,
             ImmutableArray<FuncParameter> paramTypes,
             int? variadicParamIndex,
             ImmutableArray<IType> typeArgs,
             ImmutableArray<S.Argument> sargs)
         {
-            var result = MatchCallableCore(globalContext, bodyContext, localContext, outerTypeEnv, paramTypes, variadicParamIndex, typeArgs, sargs);
-            if (result.bMatch)
-                return new FuncMatchResult(result.TypeArgs, result.Args);
+            var result = MatchCallableCore(scopeContext, outerTypeEnv, paramTypes, variadicParamIndex, typeArgs, sargs);
+            if (result != null)
+                return new FuncMatchResult(result.Value.TypeArgs, result.Value.Args);
             else
                 return null;
         }
 
-        FuncMatcher(ImmutableArray<FuncParameter> paramInfos, ImmutableArray<IType> typeArgs, ImmutableArray<FuncMatcherArgument> expandedArgs, TypeResolver typeResolver, GlobalContext globalContext, TypeEnv outerTypeEnv)
+        FuncMatcher(ImmutableArray<FuncParameter> paramInfos, ImmutableArray<IType> typeArgs, ImmutableArray<FuncMatcherArgument> expandedArgs, TypeResolver typeResolver, TypeEnv outerTypeEnv)
         {
             this.paramInfos = paramInfos;
             this.typeArgs = typeArgs;
             this.expandedArgs = expandedArgs;
             this.typeResolver = typeResolver;
-            this.globalContext = globalContext;
             this.outerTypeEnv = outerTypeEnv;
         }
             
@@ -212,10 +170,8 @@ namespace Citron.Analysis
             return variadicParamsIndex;
         }
 
-        static MatchCallableResult MatchCallableCore(
-            GlobalContext globalContext,
-            BodyContext bodyContext,
-            LocalContext localContext,
+        static MatchCallableResult? MatchCallableCore(
+            ScopeContext scopeContext,
             TypeEnv outerTypeEnv,
             ImmutableArray<FuncParameter> paramTypes,
             int? variadicParamIndex,
@@ -225,10 +181,10 @@ namespace Citron.Analysis
             try
             {
                 // 1. 아규먼트에서 params를 확장시킨다 (params에는 타입힌트를 적용하지 않고 먼저 평가한다)
-                var expandedArgs = ExpandArguments(globalContext, bodyContext, localContext, sargs);
-                var typeResolver = new NullTypeResolver(typeArgs);
+                var expandedArgs = ExpandArguments(scopeContext, sargs);
+                var typeResolver = new NullTypeResolver(typeArgs); // 일단 이걸로
 
-                var inst = new FuncMatcher(paramTypes, typeArgs, expandedArgs, typeResolver, globalContext, outerTypeEnv);
+                var inst = new FuncMatcher(paramTypes, typeArgs, expandedArgs, typeResolver, outerTypeEnv);
 
                 // 2. funcInfo에서 params 앞부분과 뒷부분으로 나누어서 인자 체크를 한다
                 if (variadicParamIndex != null)
@@ -238,7 +194,7 @@ namespace Citron.Analysis
             }
             catch (FuncMatcherFatalException)
             {
-                return MatchCallableResult.Invalid;
+                return null;
             }
         }
 
@@ -247,21 +203,19 @@ namespace Citron.Analysis
         {
             // preanalyze할수도 있고, 여기서 시작할수도 있다
             public abstract void DoAnalyze(FuncParameter? expectType); // throws FuncMatchFatalException
-            public abstract ITypeSymbol GetTypeValue();
+            public abstract IType GetArgType();
             public abstract R.Argument? GetRArgument();
 
             // 기본 아규먼트 
             public class Normal : FuncMatcherArgument
             {
-                StmtAndExpAnalyzer analyzer;
-                GlobalContext globalContext;
+                ScopeContext context;
                 S.Exp sexp;
                 R.Exp? exp;
 
-                public Normal(GlobalContext globalContext, BodyContext bodyContext, LocalContext localContext, S.Exp sexp)
+                public Normal(ScopeContext context, S.Exp sexp)
                 {
-                    this.analyzer = new StmtAndExpAnalyzer(globalContext, bodyContext, localContext);
-                    this.globalContext = globalContext;
+                    this.context = context;
                     this.sexp = sexp;
                     this.exp = null;
                 }
@@ -279,9 +233,9 @@ namespace Citron.Analysis
                         }
                         else
                         {
-                            var hint = ResolveHint.Make(paramInfo.Value.Type);
-                            var argResult = analyzer.AnalyzeExp_Exp(sexp, hint);
-                            exp = globalContext.TryCastExp_Exp(argResult, paramInfo.Value.Type);
+                            var hint = paramInfo.Value.Type;
+                            var argResult = ExpVisitor.TranslateAsExp(sexp, context, hint);
+                            exp = BodyMisc.TryCastExp_Exp(argResult, paramInfo.Value.Type);
 
                             if (exp == null)
                                 throw new FuncMatcherFatalException();
@@ -289,14 +243,14 @@ namespace Citron.Analysis
                     }
                     else // none, EnumConstructor
                     {
-                        exp = analyzer.AnalyzeExp_Exp(sexp, ResolveHint.None);
+                        exp = ExpVisitor.TranslateAsExp(sexp, context, hintType: null);
                     }
                 }
 
-                public override ITypeSymbol GetTypeValue()
+                public override IType GetArgType()
                 {
                     Debug.Assert(exp != null);
-                    return exp.GetTypeSymbol();
+                    return exp.GetExpType();
                 }
 
                 public override R.Argument? GetRArgument()
@@ -311,9 +265,9 @@ namespace Citron.Analysis
             {
                 R.Exp exp;
                 int paramCount;
-                ITypeSymbol type;
+                IType type;
 
-                public ParamsHead(R.Exp exp, int paramCount, ITypeSymbol type)
+                public ParamsHead(R.Exp exp, int paramCount, IType type)
                 {
                     this.exp = exp;
                     this.paramCount = paramCount;
@@ -330,7 +284,7 @@ namespace Citron.Analysis
                     }
                 }
 
-                public override ITypeSymbol GetTypeValue()
+                public override IType GetArgType()
                 {
                     return type;
                 }
@@ -343,9 +297,9 @@ namespace Citron.Analysis
 
             public class ParamsRest : FuncMatcherArgument
             {
-                ITypeSymbol type;
+                IType type;
 
-                public ParamsRest(ITypeSymbol type)
+                public ParamsRest(IType type)
                 {
                     this.type = type;
                 }
@@ -360,7 +314,7 @@ namespace Citron.Analysis
                     }
                 }
 
-                public override ITypeSymbol GetTypeValue()
+                public override IType GetArgType()
                 {
                     return type;
                 }
@@ -373,14 +327,15 @@ namespace Citron.Analysis
 
             public class Ref : FuncMatcherArgument
             {
-                StmtAndExpAnalyzer analyzer;
+                ScopeContext context;
                 S.Exp exp;
-                ExpResult.Loc? locResult;
+                (R.Loc Loc, IType Type)? locResult;
 
-                public Ref(GlobalContext globalContext, BodyContext bodyContext, LocalContext localContext, S.Exp exp)
+                public Ref(ScopeContext context, S.Exp exp)
                 {
-                    this.analyzer = new StmtAndExpAnalyzer(globalContext, bodyContext, localContext);
+                    this.context = context;
                     this.exp = exp;
+                    this.locResult = null;
                 }
 
                 public override void DoAnalyze(FuncParameter? paramInfo) // throws FuncMatcherFatalException
@@ -393,42 +348,36 @@ namespace Citron.Analysis
                             throw new FuncMatcherFatalException();
 
                         // 2. void F(ref int i)
-                        var argResult = analyzer.AnalyzeExp(exp, ResolveHint.None);
+                        var argResult = ExpVisitor.TranslateAsLoc(exp, context, hintType: null, bWrapExpAsLoc: false);
+                        if (argResult == null)
+                            throw new FuncMatcherFatalException();
 
-                        switch (argResult)
-                        {
-                            case ExpResult.Loc locResult:
-                                this.locResult = locResult;
-                                break;
-
-                            default:
-                                throw new FuncMatcherFatalException();
-                        }
+                        this.locResult = argResult.Value;
                     }
                 }
 
-                public override ITypeSymbol GetTypeValue()
+                public override IType GetArgType()
                 {
                     Debug.Assert(locResult != null);
-                    return locResult.TypeSymbol;
+                    return locResult.Value.Type;
                 }
 
                 public override R.Argument? GetRArgument()
                 {
                     Debug.Assert(locResult != null);
-                    return new R.Argument.Ref(locResult.Result);
+                    return new R.Argument.Ref(locResult.Value.Loc);
                 }
             }
         }
 
-        static ImmutableArray<FuncMatcherArgument> ExpandArguments(GlobalContext globalContext, BodyContext bodyContext, LocalContext localContext, ImmutableArray<S.Argument> sargs) // throws FuncMatcherFatalException
+        static ImmutableArray<FuncMatcherArgument> ExpandArguments(ScopeContext context, ImmutableArray<S.Argument> sargs) // throws FuncMatcherFatalException
         {
             var args = ImmutableArray.CreateBuilder<FuncMatcherArgument>();
             foreach (var sarg in sargs)
             {
                 if (sarg is S.Argument.Normal sNormalArg)
                 {
-                    args.Add(new FuncMatcherArgument.Normal(globalContext, bodyContext, localContext, sNormalArg.Exp));
+                    args.Add(new FuncMatcherArgument.Normal(context, sNormalArg.Exp));
                 }
                 else if (sarg is S.Argument.Params sParamsArg)
                 {
@@ -436,32 +385,32 @@ namespace Citron.Analysis
                     R.Exp exp;
                     try
                     {
-                        exp = StmtAndExpAnalyzer.AnalyzeExp_Exp(globalContext, bodyContext, localContext, sParamsArg.Exp, ResolveHint.None);
+                        exp = ExpVisitor.TranslateAsExp(sParamsArg.Exp, context, hintType: null);
                     }
                     catch (AnalyzerFatalException)
                     {
                         throw new FuncMatcherFatalException();
                     }
 
-                    var expType = exp.GetTypeSymbol();
+                    var expType = exp.GetExpType();
 
-                    if (expType is TupleSymbol tupleExpType)
+                    if (expType is TupleType tupleExpType)
                     {
-                        int memberVarCount = tupleExpType.GetMemberVarCount();
+                        int memberVarCount = tupleExpType.MemberVars.Length;
 
                         // head
-                        if (0 < memberVarCount )
+                        if (0 < memberVarCount)
                         {
-                            var memberVar = tupleExpType.GetMemberVar(0);
-                            var arg = new FuncMatcherArgument.ParamsHead(exp, memberVarCount, memberVar.GetDeclType());
+                            var memberVar = tupleExpType.MemberVars[0];
+                            var arg = new FuncMatcherArgument.ParamsHead(exp, memberVarCount, memberVar.Type);
                             args.Add(arg);
                         }
 
                         // rest
                         for(int i = 1; i < memberVarCount; i++)
                         {
-                            var memberVar = tupleExpType.GetMemberVar(i);
-                            args.Add(new FuncMatcherArgument.ParamsRest(memberVar.GetDeclType()));
+                            var memberVar = tupleExpType.MemberVars[i];
+                            args.Add(new FuncMatcherArgument.ParamsRest(memberVar.Type));
                         }
                     }
                     else
@@ -471,7 +420,7 @@ namespace Citron.Analysis
                 }
                 else if (sarg is S.Argument.Ref sRefArg)
                 {
-                    args.Add(new FuncMatcherArgument.Ref(globalContext, bodyContext, localContext, sRefArg.Exp));
+                    args.Add(new FuncMatcherArgument.Ref(context, sRefArg.Exp));
                 }
             }
 
@@ -548,7 +497,7 @@ namespace Citron.Analysis
                 MatchArgument(paramType, arg);
 
                 // MatchArgument마다 Constraint추가
-                typeResolver.AddConstraint(paramType.Type, arg.GetTypeValue());
+                typeResolver.AddConstraint(paramType.Type, arg.GetArgType());
             }
         }
 
@@ -557,9 +506,9 @@ namespace Citron.Analysis
             var paramInfo = paramInfos[paramIndex];
             Debug.Assert(paramInfo.Kind == FuncParameterKind.Params);
 
-            if (paramInfo.Type is TupleSymbol tupleParamType)
+            if (paramInfo.Type is TupleType tupleParamType)
             {
-                int paramsCount = tupleParamType.GetMemberVarCount();
+                int paramsCount = tupleParamType.MemberVars.Length;
 
                 if (paramsCount != argsEnd - argsBegin)
                 {
@@ -569,31 +518,33 @@ namespace Citron.Analysis
 
                 for (int i = 0; i < paramsCount; i++)
                 {
-                    var memberVar = tupleParamType.GetMemberVar(i);
-                    var tupleElemType = memberVar.GetDeclType();
+                    var memberVar = tupleParamType.MemberVars[i];
+                    var tupleElemType = memberVar.Type;
                     var arg = expandedArgs[argsBegin + i];
 
-                    MatchArgument(new FuncParameter(FuncParameterKind.Default, tupleElemType, new Name.Normal(memberVar.GetName())), arg);
+                    MatchArgument(new FuncParameter(FuncParameterKind.Default, tupleElemType, memberVar.Name), arg);
 
                     // MatchArgument마다 Constraint추가
-                    typeResolver.AddConstraint(tupleElemType, arg.GetTypeValue());
+                    typeResolver.AddConstraint(tupleElemType, arg.GetArgType());
                 }
             }
             else // params T <=> (1, 2, "hi")
             {
                 var argsLength = argsEnd - argsBegin;
-                var elemBuilder = ImmutableArray.CreateBuilder<(ITypeSymbol Type, string? Name)>(argsLength);
+                var elemBuilder = ImmutableArray.CreateBuilder<(IType Type, Name Name)>(argsLength);
 
                 for (int i = 0; i < argsLength; i++)
                 {
                     var arg = expandedArgs[i];
                     MatchArgument_UnknownParamType(arg);
 
-                    var argType = arg.GetTypeValue();
-                    elemBuilder.Add((argType, null)); // unnamed tuple element
+                    var argType = arg.GetArgType();
+                    var name = new Name.Normal($"Item{i}");
+
+                    elemBuilder.Add((argType, name)); // unnamed tuple element
                 }
 
-                var argTupleType = globalContext.GetTupleType(elemBuilder.MoveToImmutable());
+                var argTupleType = new TupleType(elemBuilder.MoveToImmutable());
 
                 // Constraint 추가
                 typeResolver.AddConstraint(paramInfo.Type, argTupleType);
@@ -634,24 +585,4 @@ namespace Citron.Analysis
         }
         #endregion
     }
-
-    // 참고자료
-    //StmtAndExpAnalyzer CloneAnalyzer()
-    //{
-    //    var cloneContext = CloneContext.Make();
-    //    var clonedGlobalContext = cloneContext.GetClone(globalContext);
-    //    var clonedCallableContext = cloneContext.GetClone(callableContext);
-    //    var clonedLocalContext = cloneContext.GetClone(localContext);
-
-    //    return new StmtAndExpAnalyzer(clonedGlobalContext, clonedCallableContext, clonedLocalContext);
-    //}
-
-    //void UpdateAnalyzer(GlobalContext srcGlobalContext, FuncContext srcFuncContext, LocalContext srcLocalContext)
-    //{
-    //    var updateContext = UpdateContext.Make();
-
-    //    updateContext.Update(globalContext, srcGlobalContext);
-    //    updateContext.Update(callableContext, srcCallableContext);
-    //    updateContext.Update(localContext, srcLocalContext);
-    //}
 }

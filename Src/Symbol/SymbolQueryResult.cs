@@ -52,11 +52,13 @@ namespace Citron.Symbol
 
     public static class SymbolQueryResults
     {
-        public static SymbolQueryResult.NotFound NotFound = new SymbolQueryResult.NotFound();
+        public readonly static SymbolQueryResult.NotFound NotFound = new SymbolQueryResult.NotFound();
         public static class Error
         {
-            public static SymbolQueryResult.Error.VarWithTypeArg VarWithTypeArg = new SymbolQueryResult.Error.VarWithTypeArg();
-            public static SymbolQueryResult.Error.MultipleCandidates MultipleCandidates = new SymbolQueryResult.Error.MultipleCandidates();
+            public readonly static SymbolQueryResult.Error.VarWithTypeArg VarWithTypeArg = new SymbolQueryResult.Error.VarWithTypeArg();
+
+            // 여러 함수들을 돌려주는 것은 이 에러가 아니다. 타입 - 함수 이런식으로 겹치는 경우를 말한다
+            public readonly static SymbolQueryResult.Error.MultipleCandidates MultipleCandidates = new SymbolQueryResult.Error.MultipleCandidates();
         }
     }
 }

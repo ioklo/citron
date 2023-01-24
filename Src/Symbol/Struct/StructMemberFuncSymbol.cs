@@ -1,17 +1,19 @@
 ﻿using Citron.Collections;
 using Citron.Infra;
+using Pretune;
 using System;
 using System.Diagnostics;
 
 namespace Citron.Symbol
 {
-    public class StructMemberFuncSymbol : IFuncSymbol, ICyclicEqualityComparableClass<StructMemberFuncSymbol>
+    [ImplementIEquatable]
+    public partial class StructMemberFuncSymbol : IFuncSymbol, ICyclicEqualityComparableClass<StructMemberFuncSymbol>
     {
         SymbolFactory factory;
         StructSymbol outer;
         StructMemberFuncDeclSymbol decl;
         ImmutableArray<IType> typeArgs;
-        TypeEnv typeEnv;
+        TypeEnv typeEnv; 
 
         IFuncSymbol IFuncSymbol.Apply(TypeEnv typeEnv) => Apply(typeEnv);
         ISymbolNode ISymbolNode.Apply(TypeEnv typeEnv) => Apply(typeEnv);

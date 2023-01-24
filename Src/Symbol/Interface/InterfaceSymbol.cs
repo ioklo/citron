@@ -5,10 +5,12 @@ using System.Text;
 using System.Threading.Tasks;
 using Citron.Collections;
 using Citron.Infra;
+using Pretune;
 
 namespace Citron.Symbol
 {
-    public class InterfaceSymbol : ITypeSymbol, ICyclicEqualityComparableClass<InterfaceSymbol>
+    [ImplementIEquatable]
+    public partial class InterfaceSymbol : ITypeSymbol, ICyclicEqualityComparableClass<InterfaceSymbol>
     {
         SymbolFactory factory;
         ISymbolNode outer;

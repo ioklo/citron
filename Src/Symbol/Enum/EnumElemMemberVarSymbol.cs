@@ -5,10 +5,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Citron.Infra;
+using Pretune;
 
 namespace Citron.Symbol
 {
-    public class EnumElemMemberVarSymbol : ISymbolNode, ICyclicEqualityComparableClass<EnumElemMemberVarSymbol>
+    [ImplementIEquatable]
+    public partial class EnumElemMemberVarSymbol : ISymbolNode, ICyclicEqualityComparableClass<EnumElemMemberVarSymbol>
     {
         SymbolFactory factory;
         EnumElemSymbol outer;

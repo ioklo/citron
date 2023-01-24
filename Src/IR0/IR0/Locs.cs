@@ -8,8 +8,10 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Citron.IR0
-{   
-    public abstract record class Loc : INode;
+{
+    public abstract record class Loc : INode
+    {   
+    }
 
     // 임시 value를 만들어서 Exp를 실행해서 대입해주는 역할, ExpInfo 대신 쓴다    
     public record class TempLoc(Exp Exp) : Loc;

@@ -11,8 +11,8 @@ namespace Citron.Symbol
         void Apply(ITypeSymbolVisitor visitor);
 
         IType MakeType();
-        SymbolQueryResult QueryMember(Name memberName, int typeParamCount);
         IType? GetMemberType(Name memberName, ImmutableArray<IType> typeArgs);
+        SymbolQueryResult QueryMember(Name memberName, int explicitTypeArgCount);
     }
 
     public static class TypeSymbolExtensions

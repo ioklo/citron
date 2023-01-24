@@ -82,21 +82,22 @@ namespace Citron.IR0
         // skip initializer
         public ForStmt For(Exp? condExp, Exp? contExp, Stmt body)
         {
-            return new ForStmt(null, condExp, contExp, body);
+            return new ForStmt(InitStmts: default, condExp, contExp, body);
         }
 
         // with local item var decl
-        public ForStmt For(ITypeSymbol itemType, string itemName, Exp itemInit, Exp? cond, Exp? cont, Stmt body)
+        public ForStmt For(IType itemType, string itemName, Exp itemInit, Exp? cond, Exp? cont, Stmt body)
         {
             return new ForStmt(
-                new VarDeclForStmtInitializer(new LocalVarDecl(Arr<VarDeclElement>(new VarDeclElement.Normal(itemType, itemName, itemInit)))),
+                Arr<Stmt>(new LocalVarDeclStmt(itemType, itemName, itemInit)),
                 cond, cont, body
             );
         }
 
         public ForStmt For(Exp init, Exp? cond, Exp? cont, Stmt body)
         {
-            return new ForStmt(new ExpForStmtInitializer(init), cond, cont, body);
+            return new ForStmt(
+                Arr<Stmt>(new ExpStmt(init)), cond, cont, body);
         }
 
         #endregion
@@ -189,29 +190,12 @@ namespace Citron.IR0
             return new ExpStmt(new CallValueExp(lambda, loc, args.ToImmutableArray()));
         }
 
-        #endregion        
-
-        #region GlobalVarDeclStmt
-        public GlobalVarDeclStmt GlobalVarDecl(ITypeSymbol type, string name, Exp? initExp = null)
-        {
-            if (initExp == null)
-                return new GlobalVarDeclStmt(Arr<VarDeclElement>(new VarDeclElement.NormalDefault(type, name)));
-
-            else
-                return new GlobalVarDeclStmt(Arr<VarDeclElement>(new VarDeclElement.Normal(type, name, initExp)));
-        }
-
-        public GlobalVarDeclStmt GlobalRefVarDecl(string name, Loc loc)
-        {
-            return new GlobalVarDeclStmt(Arr<VarDeclElement>(new VarDeclElement.Ref(name, loc)));
-        }
-
         #endregion
 
         #region LocalVarDeclStmt
-        public LocalVarDeclStmt LocalVarDecl(ITypeSymbol type, string name, Exp initExp)
+        public LocalVarDeclStmt LocalVarDecl(IType type, string name, Exp initExp)
         {
-            return new LocalVarDeclStmt(new LocalVarDecl(Arr<VarDeclElement>(new VarDeclElement.Normal(type, name, initExp))));
+            return new LocalVarDeclStmt(type, name, initExp);
         }
         #endregion
 
@@ -441,7 +425,7 @@ namespace Citron.IR0
 
         public AwaitStmt Await(params Stmt[] stmts)
         {
-            return new AwaitStmt(new BlockStmt(stmts.ToImmutableArray()));
+            return new AwaitStmt(stmts.ToImmutableArray());
         }
 
         public FuncParameter RefParam(IType type, string name)

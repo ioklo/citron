@@ -4,8 +4,9 @@ using Citron.Infra;
 using Pretune;
 
 namespace Citron.Symbol
-{   
-    public class EnumSymbol : ITypeSymbol, ICyclicEqualityComparableClass<EnumSymbol>
+{
+    [ImplementIEquatable]
+    public partial class EnumSymbol : ITypeSymbol, ICyclicEqualityComparableClass<EnumSymbol>
     {
         SymbolFactory factory;
 

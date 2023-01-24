@@ -9,23 +9,19 @@ using Citron.Symbol;
 
 namespace Citron.IR0
 {   
-    public abstract record class Stmt : INode
-    {
-    }
+    public abstract record class Stmt : INode;
 
     public record CommandStmt(ImmutableArray<StringExp> Commands) : Stmt;    
 
-    // 글로벌 변수는 ModuleDeclSymbol에 이미 존재하므로, 그것을 초기화하는 구문으로 시작한다
-    public record class InitGlobalVar(GlobalVarDeclSymbol declSymbol, Exp InitExp) : Stmt;
-
     // 로컬 변수는 
     public record class LocalVarDeclStmt(IType Type, string Name, Exp InitExp) : Stmt;    // var x = 0;
-    public record class LocalRefVarDeclStmt(string Name, Loc Loc); // ref int x = y;
+    public record class LocalRefVarDeclStmt(string Name, Loc Loc) : Stmt; // ref int x = y;
 
     public record class IfStmt(Exp Cond, Stmt Body, Stmt? ElseBody) : Stmt;
     public record class IfTestClassStmt(Loc Target, ClassSymbol Class, Name VarName, Stmt Body, Stmt? ElseBody) : Stmt;
     public record class IfTestEnumElemStmt(Loc Target, EnumElemSymbol EnumElem, string? VarName, Stmt Body, Stmt? ElseBody) : Stmt;
-    public record class ForStmt(ForStmtInitializer? Initializer, Exp? CondExp, Exp? ContinueExp, Stmt Body) : Stmt;
+    public record class ForStmt(ImmutableArray<Stmt> InitStmts, Exp? CondExp, Exp? ContinueExp, Stmt Body) : Stmt;
+
     // singleton
     public record ContinueStmt : Stmt
     {
@@ -52,15 +48,15 @@ namespace Citron.IR0
     }
     
     public record class ReturnStmt(ReturnInfo Info): Stmt;    
-    public record class BlockStmt(ImmutableArray<Stmt> Stmts) : Stmt;    
+    public record class BlockStmt(ImmutableArray<Stmt> Stmts) : Stmt;
     public record class BlankStmt : Stmt;
     public record class ExpStmt(Exp Exp) : Stmt;
     public record class TaskStmt(LambdaSymbol Lambda, ImmutableArray<Argument> CaptureArgs, ImmutableArray<Stmt> Body) : Stmt;
-    public record class AwaitStmt(Stmt Body) : Stmt;
+    public record class AwaitStmt(ImmutableArray<Stmt> Body) : Stmt;
     
     public record class AsyncStmt(LambdaSymbol Lambda, ImmutableArray<Argument> CaptureArgs, ImmutableArray<Stmt> Body) : Stmt;
     
-    public record class ForeachStmt(ITypeSymbol ElemType, string ElemName, Loc Iterator, Stmt Body) : Stmt;
+    public record class ForeachStmt(IType ItemType, string ElemName, Loc Iterator, ImmutableArray<Stmt> Body) : Stmt;
     public record class YieldStmt(Exp Value) : Stmt;
 
     // Constructor 내에서 상위 Constructor 호출시 사용

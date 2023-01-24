@@ -1,12 +1,17 @@
 ﻿using Citron.Collections;
 using Citron.Infra;
+using Pretune;
 using System;
+using System.Collections.Generic;
 
 namespace Citron.Symbol
 {
-    public class ClassConstructorSymbol : IFuncSymbol, ICyclicEqualityComparableClass<ClassConstructorSymbol>
+    [ImplementIEquatable]
+    public partial class ClassConstructorSymbol : IFuncSymbol, ICyclicEqualityComparableClass<ClassConstructorSymbol>
     {
+        [ExcludeComparison]
         SymbolFactory factory;
+
         ClassSymbol outer;
         ClassConstructorDeclSymbol decl;
 

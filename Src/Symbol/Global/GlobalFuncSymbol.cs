@@ -6,13 +6,15 @@ using System.Text;
 
 using Citron.Infra;
 using Citron.Collections;
+using Pretune;
 
 namespace Citron.Symbol
 {
     // X<int>.Y<short>.F_T_int_int<S>
 
     // F<>
-    public class GlobalFuncSymbol : IFuncSymbol, ICyclicEqualityComparableClass<GlobalFuncSymbol>
+    [ImplementIEquatable]
+    public partial class GlobalFuncSymbol : IFuncSymbol, ICyclicEqualityComparableClass<GlobalFuncSymbol>
     {
         SymbolFactory factory;
         ITopLevelSymbolNode outer;

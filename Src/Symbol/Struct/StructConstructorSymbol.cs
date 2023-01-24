@@ -1,11 +1,13 @@
 ﻿using Citron.Collections;
 using Citron.Infra;
+using Pretune;
 using System;
 using System.Diagnostics;
 
 namespace Citron.Symbol
 {
-    public class StructConstructorSymbol : IFuncSymbol, ICyclicEqualityComparableClass<StructConstructorSymbol>
+    [ImplementIEquatable]
+    public partial class StructConstructorSymbol : IFuncSymbol, ICyclicEqualityComparableClass<StructConstructorSymbol>
     {
         SymbolFactory factory;
         StructSymbol outer;
@@ -60,7 +62,7 @@ namespace Citron.Symbol
             var typeEnv = GetTypeEnv();
 
             return parameter.Apply(typeEnv);
-        }        
+        }
 
         public ITypeSymbol? GetOuterType()
         {
@@ -75,7 +77,6 @@ namespace Citron.Symbol
 
         bool ICyclicEqualityComparableClass<StructConstructorSymbol>.CyclicEquals(StructConstructorSymbol other, ref CyclicEqualityCompareContext context)
             => CyclicEquals(other, ref context);
-
 
         bool CyclicEquals(StructConstructorSymbol other, ref CyclicEqualityCompareContext context)
         {
@@ -93,7 +94,5 @@ namespace Citron.Symbol
         {
             visitor.VisitStructConstructor(this);
         }
-
-
     }
 }

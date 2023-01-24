@@ -7,7 +7,7 @@ using Pretune;
 namespace Citron.Symbol
 {
     // ArgTypeValues => RetValueTypes
-    [AutoConstructor]
+    [AutoConstructor, ImplementIEquatable]
     public partial class LambdaSymbol : ITypeSymbol, IFuncSymbol, ICyclicEqualityComparableClass<LambdaSymbol>
     {
         SymbolFactory factory;

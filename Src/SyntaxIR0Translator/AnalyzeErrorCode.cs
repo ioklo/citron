@@ -100,6 +100,7 @@ namespace Citron.Analysis
         A2009_ResolveIdentifier_EnumElemCantHaveMember,
         A2010_ResolveIdentifier_ThisIsNotInTheContext,   // 
         A2011_ResolveIdentifier_TryAccessingPrivateMember,
+        A2012_ResolveIdentifier_TypeVarCantHaveMember,
 
         // funcMatcher 자체에서 에러를 내지 않고, 각각 노드 처리기에서 에러를 생성하도록 한다
         //A2101_FuncMatcher_MultipleCandidates, 

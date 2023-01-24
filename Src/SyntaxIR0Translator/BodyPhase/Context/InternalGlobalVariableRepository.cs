@@ -1,12 +1,10 @@
 ﻿using Citron.Collections;
-using Citron.Module;
 using Citron.Infra;
 using System;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using M = Citron.Module;
 using Citron.Symbol;
 
 namespace Citron.Analysis

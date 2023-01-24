@@ -8,21 +8,21 @@ using S = Citron.Syntax;
 using R = Citron.IR0;
 using System;
 using Citron.Infra;
-using Citron.Analysis;
+using Citron.Symbol;
 
 namespace Citron.Analysis
 {
     struct InternalBinaryOperatorInfo
     {
-        public ITypeSymbol OperandType0 { get; }
-        public ITypeSymbol OperandType1 { get; }
-        public ITypeSymbol ResultType { get; }
+        public IType OperandType0 { get; }
+        public IType OperandType1 { get; }
+        public IType ResultType { get; }
         public R.InternalBinaryOperator IR0Operator { get; }
 
         public InternalBinaryOperatorInfo(
-            ITypeSymbol operandType0,
-            ITypeSymbol operandType1,
-            ITypeSymbol resultType,
+            IType operandType0,
+            IType operandType1,
+            IType resultType,
             R.InternalBinaryOperator ir0Operator)
         {
             OperandType0 = operandType0;
@@ -36,9 +36,9 @@ namespace Citron.Analysis
     {
         Dictionary<S.BinaryOpKind, ImmutableArray<InternalBinaryOperatorInfo>> infos;
 
-        public InternalBinaryOperatorQueryService(ITypeSymbol boolType, ITypeSymbol intType, ITypeSymbol stringType)
+        public InternalBinaryOperatorQueryService(IType boolType, IType intType, IType stringType)
         {
-            infos = new Dictionary<S.BinaryOpKind, ImmutableArray<InternalBinaryOperatorInfo>>();                
+            infos = new Dictionary<S.BinaryOpKind, ImmutableArray<InternalBinaryOperatorInfo>>();
 
             infos = new Dictionary<S.BinaryOpKind, ImmutableArray<InternalBinaryOperatorInfo>>()
             {

@@ -15,7 +15,7 @@ namespace Citron.Symbol
         TypeId GetTypeId();
         FuncParamTypeId MakeFuncParamTypeId();
         IType? GetMemberType(Name name, ImmutableArray<IType> typeArgs); // 이름에 해당하는 멤버타입을 가져온다
-        SymbolQueryResult QueryMember(string idName, int typeArgCount);
+        SymbolQueryResult QueryMember(Name name, int explicitTypeArgCount);
 
         void Accept<TVisitor>(ref TVisitor visitor)
             where TVisitor : struct, ITypeVisitor;
@@ -30,8 +30,9 @@ namespace Citron.Symbol
         public abstract void Accept<TVisitor>(ref TVisitor visitor)
             where TVisitor : struct, ITypeVisitor;
 
+        // 내부의 값들이 다 같은지 확인
         public abstract bool CyclicEquals(IType other, ref CyclicEqualityCompareContext context);
-        public abstract SymbolQueryResult QueryMember(string idName, int typeArgCount);
+        public abstract SymbolQueryResult QueryMember(Name name, int explicitTypeArgCount);
     }
 
     public abstract record class SymbolType : TypeImpl
@@ -47,9 +48,9 @@ namespace Citron.Symbol
             return other is SymbolType otherSymbolType && GetTypeSymbol().CyclicEquals(otherSymbolType.GetTypeSymbol(), ref context);
         }
 
-        public sealed override SymbolQueryResult QueryMember(string idName, int typeArgCount)
+        public sealed override SymbolQueryResult QueryMember(Name name, int typeArgCount)
         {
-            return GetTypeSymbol().QueryMember(new Name.Normal(idName), typeArgCount);
+            return GetTypeSymbol().QueryMember(name, typeArgCount);
         }
     }
 
@@ -127,7 +128,7 @@ namespace Citron.Symbol
             return true;
         }
 
-        public override SymbolQueryResult QueryMember(string idName, int typeArgCount)
+        public override SymbolQueryResult QueryMember(Name name, int explicitTypeArgCount)
         {
             return SymbolQueryResults.NotFound;
         }
@@ -155,7 +156,7 @@ namespace Citron.Symbol
             return true;
         }
 
-        public override SymbolQueryResult QueryMember(string idName, int typeArgCount)
+        public override SymbolQueryResult QueryMember(Name name, int typeArgCount)
         {
             return SymbolQueryResults.NotFound;
         }
@@ -172,7 +173,7 @@ namespace Citron.Symbol
         public sealed override bool CyclicEquals(IType other, ref CyclicEqualityCompareContext context)
             => true;
 
-        public override SymbolQueryResult QueryMember(string idName, int typeArgCount)
+        public override SymbolQueryResult QueryMember(Name name, int typeArgCount)
         {
             return SymbolQueryResults.NotFound;
         }
@@ -232,10 +233,10 @@ namespace Citron.Symbol
             return true;
         }
 
-        public override SymbolQueryResult QueryMember(string idName, int typeArgCount)
+        public override SymbolQueryResult QueryMember(Name name, int typeArgCount)
         {
             foreach (var memberVar in MemberVars)
-                if (memberVar.Name.Equals(new Name.Normal(idName)))
+                if (memberVar.Name.Equals(name))
                     return new SymbolQueryResult.TupleMemberVar();
 
             return SymbolQueryResults.NotFound;
@@ -252,7 +253,7 @@ namespace Citron.Symbol
         public sealed override bool CyclicEquals(IType other, ref CyclicEqualityCompareContext context)
             => true;
 
-        public override SymbolQueryResult QueryMember(string idName, int typeArgCount)
+        public override SymbolQueryResult QueryMember(Name name, int typeArgCount)
         {
             return SymbolQueryResults.NotFound;
         }

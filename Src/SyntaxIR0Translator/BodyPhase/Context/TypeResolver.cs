@@ -1,4 +1,5 @@
 ﻿using Citron.Collections;
+using Citron.Symbol;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,8 +10,8 @@ namespace Citron.Analysis
 {    
     abstract class TypeResolver
     {
-        public abstract void AddConstraint(ITypeSymbol x, ITypeSymbol y);
-        public abstract ImmutableArray<ITypeSymbol> Resolve();
+        public abstract void AddConstraint(IType x, IType y);
+        public abstract ImmutableArray<IType > Resolve();
     }
 
     // do nothing
@@ -19,7 +20,7 @@ namespace Citron.Analysis
         ImmutableArray<IType> typeArgs;
         public NullTypeResolver(ImmutableArray<IType> typeArgs) { this.typeArgs = typeArgs; }
 
-        public override void AddConstraint(ITypeSymbol x, ITypeSymbol y) { }
-        public override ImmutableArray<ITypeSymbol> Resolve() => typeArgs;
+        public override void AddConstraint(IType x, IType y) { }
+        public override ImmutableArray<IType> Resolve() => typeArgs;
     }    
 }

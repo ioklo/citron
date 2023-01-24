@@ -9,7 +9,7 @@ using Citron.Infra;
 
 namespace Citron.Symbol
 {
-    [AutoConstructor]
+    [AutoConstructor, ImplementIEquatable]
     public partial class NamespaceSymbol : ITopLevelSymbolNode, ICyclicEqualityComparableClass<NamespaceSymbol>
     {
         SymbolFactory factory;

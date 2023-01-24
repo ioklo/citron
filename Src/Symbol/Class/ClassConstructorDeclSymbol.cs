@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace Citron.Symbol
 {
-    public record ClassConstructorDeclSymbol : IFuncDeclSymbol, ICyclicEqualityComparableClass<ClassConstructorDeclSymbol>
+    public class ClassConstructorDeclSymbol : IFuncDeclSymbol, ICyclicEqualityComparableClass<ClassConstructorDeclSymbol>
     {
         ClassDeclSymbol outer;
         Accessor accessor;

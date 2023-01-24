@@ -13,23 +13,30 @@ abstract record class ExpResult
 {
     // 카테고리
     public record class Valid : ExpResult;
-    internal record class NotFound : ExpResult;
-    internal record class Error(string Text) : ExpResult;
-    
+    public record class NotFound : ExpResult
+    {
+        internal NotFound() { }
+    }
+
+    public record class Error : ExpResult
+    { 
+        public string Text { get; init; }
+        internal Error(string text) { this.Text = text; }
+    }
 
     #region TopLevel
     public record class Namespace : Valid;
     public record class GlobalVar(bool IsRef, IType Type, Name VarName) : Valid;
 
     // TypeArgsForMatch: partial
-    public record class GlobalFuncs(SymbolQueryResult.GlobalFuncs QueryResult, ImmutableArray<IType> TypeArgsForMatch) : Valid;
+    public record class GlobalFuncs(ImmutableArray<DeclAndConstructor<GlobalFuncDeclSymbol, GlobalFuncSymbol>> Infos, ImmutableArray<IType> TypeArgsForMatch) : Valid;
     #endregion
 
     #region Body
     public record class TypeVar(TypeVarType Type) : Valid;
     public record class ThisVar(IType Type) : Valid;
     public record class LocalVar(bool IsRef, IType Type, Name Name) : Valid;
-    public record class LambdaMemberVar(Func<LambdaMemberVarSymbol> SymbolConstructor) : Valid;
+    public record class LambdaMemberVar(LambdaMemberVarSymbol MemberVar) : Valid;
     #endregion
 
     #region Class
@@ -61,11 +68,12 @@ abstract record class ExpResult
     #region Enum
     public record class Enum(EnumSymbol Symbol) : Valid;
     public record class EnumElem(EnumElemSymbol Symbol) : Valid;
+    public record class EnumElemMemberVar(EnumElemMemberVarSymbol Symbol, R.Loc Instance) : Valid; // e.x
     #endregion
 
-    // 변역되는 경우
-    // public record class Exp(R.Exp Result) : ExpResult;
-    // public record class Loc(R.Loc Result, ITypeSymbol TypeSymbol) : ExpResult;
+    // 기타의 경우
+    public record class IR0Exp(R.Exp Exp) : ExpResult;
+    public record class IR0Loc(R.Loc Loc, IType Type) : ExpResult;
 }
 
 static class ExpResults
@@ -93,105 +101,5 @@ static class ExpResults
         }
 
         throw new UnreachableCodeException();
-    }
-
-    struct ExpResultMaker : ISymbolNodeVisitor
-    {
-        ExpResult result;
-
-        void ISymbolNodeVisitor.VisitClass(ClassSymbol symbol)
-        {
-            result = new ExpResult.Class(symbol);
-        }
-
-        void ISymbolNodeVisitor.VisitClassConstructor(ClassConstructorSymbol symbol)
-        {
-            throw new RuntimeFatalException();
-        }
-
-        void ISymbolNodeVisitor.VisitClassMemberFunc(ClassMemberFuncSymbol symbol)
-        {
-            result = new ExpResult.ClassMemberFuncs(Arr(new DeclAndConstructor())
-        }
-
-        void ISymbolNodeVisitor.VisitClassMemberVar(ClassMemberVarSymbol symbol)
-        {
-            throw new NotImplementedException();
-        }
-
-        void ISymbolNodeVisitor.VisitEnum(EnumSymbol symbol)
-        {
-            throw new NotImplementedException();
-        }
-
-        void ISymbolNodeVisitor.VisitEnumElem(EnumElemSymbol symbol)
-        {
-            throw new NotImplementedException();
-        }
-
-        void ISymbolNodeVisitor.VisitEnumElemMemberVar(EnumElemMemberVarSymbol symbol)
-        {
-            throw new NotImplementedException();
-        }
-
-        void ISymbolNodeVisitor.VisitGlobalFunc(GlobalFuncSymbol symbol)
-        {
-            throw new NotImplementedException();
-        }
-
-        void ISymbolNodeVisitor.VisitGlobalVar(GlobalVarSymbol symbol)
-        {
-            throw new NotImplementedException();
-        }
-
-        void ISymbolNodeVisitor.VisitInterface(InterfaceSymbol symbol)
-        {
-            throw new NotImplementedException();
-        }
-
-        void ISymbolNodeVisitor.VisitLambda(LambdaSymbol symbol)
-        {
-            throw new NotImplementedException();
-        }
-
-        void ISymbolNodeVisitor.VisitLambdaMemberVarSymbol(LambdaMemberVarSymbol symbol)
-        {
-            throw new NotImplementedException();
-        }
-
-        void ISymbolNodeVisitor.VisitModule(ModuleSymbol symbol)
-        {
-            throw new NotImplementedException();
-        }
-
-        void ISymbolNodeVisitor.VisitNamespace(NamespaceSymbol symbol)
-        {
-            throw new NotImplementedException();
-        }
-
-        void ISymbolNodeVisitor.VisitStruct(StructSymbol symbol)
-        {
-            throw new NotImplementedException();
-        }
-
-        void ISymbolNodeVisitor.VisitStructConstructor(StructConstructorSymbol symbol)
-        {
-            throw new NotImplementedException();
-        }
-
-        void ISymbolNodeVisitor.VisitStructMemberFunc(StructMemberFuncSymbol symbol)
-        {
-            throw new NotImplementedException();
-        }
-
-        void ISymbolNodeVisitor.VisitStructMemberVar(StructMemberVarSymbol symbol)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-    public static ExpResult MakeExpResult(this ISymbolNode node)
-    { 
-
     }
 }

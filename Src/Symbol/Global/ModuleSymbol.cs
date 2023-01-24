@@ -10,7 +10,8 @@ using Pretune;
 
 namespace Citron.Symbol
 {
-    public class ModuleSymbol : ITopLevelSymbolNode, ICyclicEqualityComparableClass<ModuleSymbol>
+    [ImplementIEquatable]
+    public partial class ModuleSymbol : ITopLevelSymbolNode, ICyclicEqualityComparableClass<ModuleSymbol>
     {
         SymbolFactory factory;
         ModuleDeclSymbol decl;
