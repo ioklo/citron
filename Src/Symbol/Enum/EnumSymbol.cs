@@ -35,7 +35,7 @@ namespace Citron.Symbol
         }
 
         //
-        public SymbolQueryResult QueryMember(Name memberName, int typeParamCount) 
+        SymbolQueryResult ISymbolNode.QueryMember(Name memberName, int typeParamCount) 
         {
             // shortcut
             if (typeParamCount != 0)

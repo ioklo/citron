@@ -31,10 +31,10 @@ namespace Citron.Analysis
             return new InternalGlobalVariableRepository(this, context);
         }        
 
-        public void Update(InternalGlobalVariableRepository src, UpdateContext updateContext)
-        {
-            this.internalGlobalVarInfos = src.internalGlobalVarInfos;            
-        }
+        //public void Update(InternalGlobalVariableRepository src, UpdateContext updateContext)
+        //{
+        //    this.internalGlobalVarInfos = src.internalGlobalVarInfos;            
+        //}
 
         public InternalGlobalVarInfo? GetVariable(string name)
         {

@@ -119,7 +119,7 @@ namespace Citron.Symbol
             throw new UnreachableCodeException();
         }
 
-        SymbolQueryResult QueryMember_Func(Name memberName, int typeParamCount)
+        SymbolQueryResult QueryMember_Funcs(Name memberName, int typeParamCount)
         {
             var builder = ImmutableArray.CreateBuilder<DeclAndConstructor<ClassMemberFuncDeclSymbol, ClassMemberFuncSymbol>>();
 
@@ -199,7 +199,7 @@ namespace Citron.Symbol
             return decl.GetConstructorCount();
         }
 
-        public SymbolQueryResult QueryMember(Name memberName, int explicitTypeArgsCount)
+        SymbolQueryResult ISymbolNode.QueryMember(Name memberName, int explicitTypeArgsCount)
         {   
             // TODO: caching
             var results = new List<SymbolQueryResult.Valid>();
@@ -210,7 +210,7 @@ namespace Citron.Symbol
             if (typeResult is SymbolQueryResult.Valid typeMemberResult) results.Add(typeMemberResult);
 
             // error, notfound, found
-            var funcResult = QueryMember_Func(memberName, explicitTypeArgsCount);
+            var funcResult = QueryMember_Funcs(memberName, explicitTypeArgsCount);
             if (funcResult is SymbolQueryResult.Error) return funcResult;
             if (funcResult is SymbolQueryResult.Valid funcMemberResult) results.Add(funcMemberResult);
 
@@ -228,7 +228,7 @@ namespace Citron.Symbol
                 if (baseTypeValue == null)
                     return SymbolQueryResults.NotFound;
 
-                return baseTypeValue.Symbol.QueryMember(memberName, explicitTypeArgsCount);
+                return ((ISymbolNode)baseTypeValue.Symbol).QueryMember(memberName, explicitTypeArgsCount);
             }
             else
             {

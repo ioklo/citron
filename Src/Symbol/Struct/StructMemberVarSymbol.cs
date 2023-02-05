@@ -21,6 +21,11 @@ namespace Citron.Symbol
             this.decl = decl;
         }
 
+        SymbolQueryResult ISymbolNode.QueryMember(Name name, int explicitTypeArgCount)
+        {
+            return SymbolQueryResults.NotFound;
+        }
+
         public StructMemberVarSymbol Apply(TypeEnv typeEnv)
         {
             var appliedOuter = outer.Apply(typeEnv);

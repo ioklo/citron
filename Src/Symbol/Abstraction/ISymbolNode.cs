@@ -19,6 +19,8 @@ namespace Citron.Symbol
 
         void Accept<TVisitor>(ref TVisitor visitor)
             where TVisitor : struct, ISymbolNodeVisitor;
+
+        SymbolQueryResult QueryMember(Name name, int explicitTypeArgCount);
     }
 
     public static class SymbolNodeExtensions

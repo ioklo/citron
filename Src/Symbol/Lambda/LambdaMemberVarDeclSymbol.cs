@@ -3,16 +3,23 @@ using Citron.Infra;
 using Pretune;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace Citron.Symbol
-{
-    [AutoConstructor]
-    public partial class LambdaMemberVarDeclSymbol : IDeclSymbolNode, ICyclicEqualityComparableClass<LambdaMemberVarDeclSymbol>
-    {
+{   
+    public class LambdaMemberVarDeclSymbol : IDeclSymbolNode, ICyclicEqualityComparableClass<LambdaMemberVarDeclSymbol>
+    {   
         LambdaDeclSymbol outer;
         IType type;
         Name name;
+
+        public LambdaMemberVarDeclSymbol(LambdaDeclSymbol outer, IType type, Name name)
+        {
+            this.outer = outer;
+            this.type = type;
+            this.name = name;
+        }
 
         public Name GetName()
         {
@@ -44,7 +51,12 @@ namespace Citron.Symbol
             return Accessor.Private; // 
         }
 
-        public void Accept(IDeclSymbolNodeVisitor visitor)
+        void IDeclSymbolNode.Accept<TDeclSymbolNodeVisitor>(TDeclSymbolNodeVisitor visitor)
+        {
+            visitor.VisitLambdaMemberVar(this);
+        }
+
+        void IDeclSymbolNode.Accept<TDeclSymbolNodeVisitor>(ref TDeclSymbolNodeVisitor visitor)
         {
             visitor.VisitLambdaMemberVar(this);
         }

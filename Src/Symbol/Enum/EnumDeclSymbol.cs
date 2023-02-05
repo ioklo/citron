@@ -94,7 +94,12 @@ namespace Citron.Symbol
                 .Concat(elemsDict.Values);
         }
 
-        public void Accept(IDeclSymbolNodeVisitor visitor)
+        void IDeclSymbolNode.Accept<TDeclSymbolNodeVisitor>(TDeclSymbolNodeVisitor visitor)
+        {
+            visitor.VisitEnum(this);
+        }
+
+        void IDeclSymbolNode.Accept<TDeclSymbolNodeVisitor>(ref TDeclSymbolNodeVisitor visitor)
         {
             visitor.VisitEnum(this);
         }

@@ -65,7 +65,11 @@ namespace Citron.Analysis
             // 람다 관련 정보는 여기서 수집한다
 
             FuncReturn? ret = (retType == null) ? null : new FuncReturn(IsRef: false, retType);
-            var newContext = context.MakeNestedBodyContext(ret, bSeqFunc: false); // 중첩된 bodyContext를 만들고, 새 scopeContext도 만든다
+            var parameters = MakeParameters();
+
+            // Lambda를 만들고 context 인스턴스 안에 저장한다
+            // DeclSymbol tree로의 Commit은 함수 백트래킹이 다 끝났을 때 (그냥 Translation이 끝났을때 해도 될거 같다)
+            var (newContext, lambda) = context.MakeLambdaBodyContext(ret, parameters); // 중첩된 bodyContext를 만들고, 새 scopeContext도 만든다
 
             // 람다 파라미터(int p)를 지역 변수로 추가한다
             foreach (var paramSyntax in paramSyntaxes)
@@ -75,27 +79,16 @@ namespace Citron.Analysis
                     context.AddFatalError(A9901_NotSupported_LambdaParameterInference, nodeForErrorReport);
 
                 var paramType = context.MakeType(paramSyntax.Type);
-                context.AddLocalVarInfo(paramSyntax.ParamKind == S.FuncParamKind.Ref, paramType, new Name.Normal(paramSyntax.Name));
+                newContext.AddLocalVarInfo(paramSyntax.ParamKind == S.FuncParamKind.Ref, paramType, new Name.Normal(paramSyntax.Name));
             }
 
             var newStmtVisitor = new StmtVisitor(newContext);
             newStmtVisitor.VisitBody(bodySyntaxes);
 
             var body = newContext.MakeStmts();
-            var outer = newContext.GetFuncDeclSymbol();
-            var name = newContext.AllocLambdaName();
-            var retFinal = newContext.GetReturn();
-
-            if (retFinal == null)
-                throw new NotImplementedException();
-
-            var parameters = MakeParameters();
-
-            // 파라미터 만들기
-            var memberVarDeclSymbols = newContext.GetLambdaMemberVarDeclSymbols();
-            var lambdaDeclSymbol = new LambdaDeclSymbol(outer, name, retFinal.Value, parameters, memberVarDeclSymbols);
-
-            context.StageLambdaDeclSymbol(lambdaDeclSymbol); // Commit은 함수 백트래킹이 다 끝났을 때 (그냥 Translation이 끝났을때 해도 될거 같다)
+            var args = newContext.MakeLambdaArgs();
+            
+            return (lambda, args, body);
         }
     }
 }

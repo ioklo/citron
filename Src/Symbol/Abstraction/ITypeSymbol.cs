@@ -12,7 +12,6 @@ namespace Citron.Symbol
 
         IType MakeType();
         IType? GetMemberType(Name memberName, ImmutableArray<IType> typeArgs);
-        SymbolQueryResult QueryMember(Name memberName, int explicitTypeArgCount);
     }
 
     public static class TypeSymbolExtensions

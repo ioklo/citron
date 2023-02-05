@@ -61,7 +61,12 @@ namespace Citron.Symbol
             return name;
         }
 
-        public void Accept(IDeclSymbolNodeVisitor visitor)
+        void IDeclSymbolNode.Accept<TDeclSymbolNodeVisitor>(TDeclSymbolNodeVisitor visitor)
+        {
+            visitor.VisitInterface(this);
+        }
+
+        void IDeclSymbolNode.Accept<TDeclSymbolNodeVisitor>(ref TDeclSymbolNodeVisitor visitor)
         {
             visitor.VisitInterface(this);
         }

@@ -30,6 +30,11 @@ namespace Citron.Symbol
             this.typeEnv = outerTypeEnv.AddTypeArgs(typeArgs);
         }
 
+        SymbolQueryResult ISymbolNode.QueryMember(Name name, int explicitTypeArgCount)
+        {
+            return SymbolQueryResults.NotFound;
+        }
+
         public int GetParameterCount()
         {
             return decl.GetParameterCount();

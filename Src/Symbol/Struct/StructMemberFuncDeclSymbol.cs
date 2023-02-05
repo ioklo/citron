@@ -25,6 +25,7 @@ namespace Citron.Symbol
         ImmutableArray<Name> typeParams;
         ImmutableArray<FuncParameter> parameters;
 
+        LambdaDeclSymbolComponent<StructMemberFuncDeclSymbol> lambdaComponent;
         InitializeState initState;
 
         public StructMemberFuncDeclSymbol(
@@ -40,6 +41,7 @@ namespace Citron.Symbol
             this.name = name;
             this.typeParams = typeParams;
 
+            this.lambdaComponent = new LambdaDeclSymbolComponent<StructMemberFuncDeclSymbol>();
             this.initState = InitializeState.BeforeInitFuncReturnAndParams;
         }
 
@@ -52,6 +54,9 @@ namespace Citron.Symbol
 
             initState = InitializeState.AfterInitFuncReturnAndParams;
         }
+
+        void IFuncDeclSymbol.AddLambda(LambdaDeclSymbol declSymbol)
+            => lambdaComponent.AddLambda(declSymbol);
 
         int IDeclSymbolNode.GetTypeParamCount()
         {
@@ -100,9 +105,14 @@ namespace Citron.Symbol
         public bool IsStatic()
         {
             return bStatic;
-        }        
+        }
 
-        public void Accept(IDeclSymbolNodeVisitor visitor)
+        void IDeclSymbolNode.Accept<TDeclSymbolNodeVisitor>(TDeclSymbolNodeVisitor visitor)
+        {
+            visitor.VisitStructMemberFunc(this);
+        }
+
+        void IDeclSymbolNode.Accept<TDeclSymbolNodeVisitor>(ref TDeclSymbolNodeVisitor visitor)
         {
             visitor.VisitStructMemberFunc(this);
         }
@@ -148,6 +158,9 @@ namespace Citron.Symbol
                 return false;
 
             if (!parameters.CyclicEqualsStructItem(ref other.parameters, ref context))
+                return false;
+
+            if (!lambdaComponent.CyclicEquals(ref lambdaComponent, ref context))
                 return false;
 
             if (!initState.Equals(other.initState))

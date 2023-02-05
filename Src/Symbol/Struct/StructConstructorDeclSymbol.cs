@@ -13,6 +13,8 @@ namespace Citron.Symbol
         ImmutableArray<FuncParameter> parameters;
         bool bTrivial;
 
+        LambdaDeclSymbolComponent<StructConstructorDeclSymbol> lambdaComponent;
+
         // 분석중에 추가되는 LambdaDeclSymbol, 분석이 backtracking 될 수 있기 때문에 롤백할수 있어야 한다
         // 새 객체를 만드는 방식으로 바꾸지는 않아야 한다, 참조하는 곳이 많다
 
@@ -29,6 +31,8 @@ namespace Citron.Symbol
             this.accessModifier = accessModifier;
             this.parameters = parameters;
             this.bTrivial = bTrivial;
+
+            this.lambdaComponent = new LambdaDeclSymbolComponent<StructConstructorDeclSymbol>();
         }
 
         int IDeclSymbolNode.GetTypeParamCount()
@@ -76,7 +80,12 @@ namespace Citron.Symbol
             return bTrivial;
         }
 
-        public void Accept(IDeclSymbolNodeVisitor visitor)
+        void IDeclSymbolNode.Accept<TDeclSymbolNodeVisitor>(TDeclSymbolNodeVisitor visitor)
+        {
+            visitor.VisitStructConstructor(this);
+        }
+
+        void IDeclSymbolNode.Accept<TDeclSymbolNodeVisitor>(ref TDeclSymbolNodeVisitor visitor)
         {
             visitor.VisitStructConstructor(this);
         }
@@ -104,9 +113,15 @@ namespace Citron.Symbol
             if (!bTrivial.Equals(other.bTrivial))
                 return false;
 
+            if (!lambdaComponent.CyclicEquals(ref lambdaComponent, ref context))
+                return false;
+
             return true;
         }
 
-        
+        void IFuncDeclSymbol.AddLambda(LambdaDeclSymbol declSymbol)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

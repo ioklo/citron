@@ -1,5 +1,4 @@
 ﻿using Citron.Log;
-using Citron.Syntax;
 using System;
 using System.Collections.Generic;
 using S = Citron.Syntax;
@@ -21,7 +20,7 @@ namespace Citron.Analysis
         {
             return obj is SyntaxAnalysisErrorLog log &&
                    Code == log.Code &&
-                   EqualityComparer<ISyntaxNode>.Default.Equals(Node, log.Node);
+                   EqualityComparer<S.ISyntaxNode>.Default.Equals(Node, log.Node);
                    // Message == log.Message; 메세지 비교 무시
         }
 

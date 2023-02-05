@@ -150,7 +150,7 @@ namespace Citron.Symbol
             return baseType.Apply(typeEnv);
         }
 
-        public SymbolQueryResult QueryMember(Name memberName, int typeParamCount)
+        SymbolQueryResult ISymbolNode.QueryMember(Name memberName, int typeParamCount)
         {
             // TODO: caching
             var results = new List<SymbolQueryResult.Valid>();

@@ -8,6 +8,7 @@ using Citron.Collections;
 using Citron.Symbol;
 using S = Citron.Syntax;
 using R = Citron.IR0;
+using Citron.Infra;
 
 namespace Citron.Analysis
 {
@@ -83,6 +84,55 @@ namespace Citron.Analysis
             //}
 
             return null;
+        }
+
+        public static ExpResult MakeExpResult(this SymbolQueryResult result, ImmutableArray<IType> typeArgs)
+        {
+            switch (result)
+            {
+                case SymbolQueryResult.Error errorResult:
+                    return errorResult.ToErrorIdentifierResult();
+
+                case SymbolQueryResult.NotFound:
+                    return ExpResults.NotFound;
+
+                // 여기서부터 case ItemQueryResult.Valid 
+                #region Class
+                case SymbolQueryResult.Class classResult:
+                    return new ExpResult.Class(classResult.ClassConstructor.Invoke(typeArgs));
+
+                case SymbolQueryResult.ClassMemberFuncs classMemberFuncsResult:
+                    return new ExpResult.ClassMemberFuncs(classMemberFuncsResult.Infos, typeArgs, false, null);
+
+                case SymbolQueryResult.ClassMemberVar classMemberVarResult:
+                    return new ExpResult.ClassMemberVar(classMemberVarResult.Var, false, null);
+                #endregion
+
+                #region Struct
+                case SymbolQueryResult.Struct structResult:
+                    return new ExpResult.Struct(structResult.StructConstructor.Invoke(typeArgs));
+
+                case SymbolQueryResult.StructMemberFuncs structMemberFuncsResult:
+                    return new ExpResult.StructMemberFuncs(structMemberFuncsResult.Infos, typeArgs, false, null);
+
+                case SymbolQueryResult.StructMemberVar structMemberVarResult:
+                    return new ExpResult.StructMemberVar(structMemberVarResult.Var, false, null);
+                #endregion
+
+                #region Enum
+                case SymbolQueryResult.Enum enumResult:
+                    return new ExpResult.Enum(enumResult.EnumConstructor.Invoke(typeArgs));
+
+                case SymbolQueryResult.EnumElem:
+                    throw new NotImplementedException();  // TODO: 무슨 뜻인지 확실히 해야 한다
+                #endregion
+
+                case SymbolQueryResult.LambdaMemberVar lambdaMemberVarResult:
+                    return new ExpResult.LambdaMemberVar(() => lambdaMemberVarResult.Symbol);
+
+                default:
+                    throw new UnreachableCodeException();
+            }
         }
     }
 }

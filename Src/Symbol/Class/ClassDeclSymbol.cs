@@ -155,8 +155,13 @@ namespace Citron.Symbol
                 .Concat(funcComp.GetEnumerable())
                 .Concat(memberVars);
         }
-       
-        public void Accept(IDeclSymbolNodeVisitor visitor)
+
+        void IDeclSymbolNode.Accept<TDeclSymbolNodeVisitor>(TDeclSymbolNodeVisitor visitor)
+        {
+            visitor.VisitClass(this);
+        }
+
+        void IDeclSymbolNode.Accept<TDeclSymbolNodeVisitor>(ref TDeclSymbolNodeVisitor visitor)
         {
             visitor.VisitClass(this);
         }

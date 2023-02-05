@@ -19,7 +19,12 @@ namespace Citron.Symbol
 
         int GetTypeParamCount();
         Name GetTypeParam(int i);
-        void Accept(IDeclSymbolNodeVisitor visitor);
+
+        void Accept<TDeclSymbolNodeVisitor>(TDeclSymbolNodeVisitor visitor)
+            where TDeclSymbolNodeVisitor : class, IDeclSymbolNodeVisitor;
+
+        void Accept<TDeclSymbolNodeVisitor>(ref TDeclSymbolNodeVisitor visitor)
+            where TDeclSymbolNodeVisitor : struct, IDeclSymbolNodeVisitor;
     }
     
     // TypeDecl을 소유할 수 있는
@@ -96,8 +101,10 @@ namespace Citron.Symbol
         }
 
         // tree traversal, 못찾으면 null, declPath가 relative path여도 가능하다
-        public static IDeclSymbolNode? GetDeclSymbol(this IDeclSymbolNode node, DeclSymbolPath declPath)
+        public static IDeclSymbolNode? GetDeclSymbol(this IDeclSymbolNode node, DeclSymbolPath? declPath)
         {
+            if (declPath == null) return node;
+
             var nodeName = new DeclSymbolNodeName(declPath.Name, declPath.TypeParamCount, declPath.ParamIds);
 
             if (declPath.Outer != null)

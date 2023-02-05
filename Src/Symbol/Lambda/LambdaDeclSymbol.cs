@@ -16,24 +16,23 @@ namespace Citron.Symbol
         ImmutableArray<FuncParameter> parameters;
 
         // 가지고 있어야 할 멤버 변수들, type, name, ref 여부
-        ImmutableArray<LambdaMemberVarDeclSymbol> memberVars;
+        List<LambdaMemberVarDeclSymbol> memberVars;
 
         // Lambda가 Lambda를 갖고 있을 때,
-        LambdaDeclSymbolComponent<LambdaDeclSymbol> lambdaComponent;        
+        LambdaDeclSymbolComponent<LambdaDeclSymbol> lambdaComponent;
 
         public LambdaDeclSymbol(
             IFuncDeclSymbol outer,
             Name name,
             FuncReturn @return,
-            ImmutableArray<FuncParameter> parameters,            
-            ImmutableArray<LambdaMemberVarDeclSymbol> memberVars)
+            ImmutableArray<FuncParameter> parameters)
         {
             this.outer = outer;
             this.name = name;
             this.@return = @return;
             this.parameters = parameters;
-            this.memberVars = memberVars;
 
+            this.memberVars = new List<LambdaMemberVarDeclSymbol>();
             this.lambdaComponent = new LambdaDeclSymbolComponent<LambdaDeclSymbol>();
         }
 
@@ -45,7 +44,7 @@ namespace Citron.Symbol
 
         public IEnumerable<IDeclSymbolNode> GetMemberDeclNodes()
         {
-            return memberVars.AsEnumerable();
+            return memberVars;
         }
 
         public DeclSymbolNodeName GetNodeName()
@@ -60,7 +59,7 @@ namespace Citron.Symbol
 
         public int GetMemberVarCount()
         {
-            return memberVars.Length;
+            return memberVars.Count;
         }
 
         public LambdaMemberVarDeclSymbol GetMemberVar(int index)
@@ -88,7 +87,12 @@ namespace Citron.Symbol
             return parameters[index];
         }
 
-        public void Accept(IDeclSymbolNodeVisitor visitor)
+        void IDeclSymbolNode.Accept<TDeclSymbolNodeVisitor>(TDeclSymbolNodeVisitor visitor)
+        {
+            visitor.VisitLambda(this);
+        }
+
+        void IDeclSymbolNode.Accept<TDeclSymbolNodeVisitor>(ref TDeclSymbolNodeVisitor visitor)
         {
             visitor.VisitLambda(this);
         }
@@ -134,10 +138,10 @@ namespace Citron.Symbol
             if (!parameters.CyclicEqualsStructItem(ref other.parameters, ref context))
                 return false;
 
-            if (!memberVars.CyclicEqualsClassItem(ref other.memberVars, ref context))
+            if (!memberVars.CyclicEqualsClassItem(other.memberVars, ref context))
                 return false;
 
-            if (lambdaComponent.CyclicEquals(ref lambdaComponent, ref context))
+            if (!lambdaComponent.CyclicEquals(ref lambdaComponent, ref context))
                 return false;
 
             return true;

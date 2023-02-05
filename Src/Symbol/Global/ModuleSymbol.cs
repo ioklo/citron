@@ -56,7 +56,7 @@ namespace Citron.Symbol
             return TypeEnv.Empty;
         }
 
-        public SymbolQueryResult QueryMember(Name memberName, int typeParamCount)
+        SymbolQueryResult ISymbolNode.QueryMember(Name memberName, int typeParamCount)
         {
             // NOTICE: 타입, 함수 간의 이름 충돌이 일어나지 않는다고 가정한다, ClassSymbol, StructSymbol도 마찬가지.
             // 타입, 함수순으로 검색하고 검색결과가 나오면 바로 리턴한다

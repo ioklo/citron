@@ -95,5 +95,10 @@ namespace Citron.Symbol
         {
             visitor.VisitClassConstructor(this);
         }
+
+        SymbolQueryResult ISymbolNode.QueryMember(Name name, int explicitTypeArgCount)
+        {
+            return SymbolQueryResults.NotFound;
+        }
     }
 }

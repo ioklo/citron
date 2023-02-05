@@ -17,7 +17,12 @@ namespace Citron.Symbol
             this.name = name;
         }
 
-        void IDeclSymbolNode.Accept(IDeclSymbolNodeVisitor visitor)
+        void IDeclSymbolNode.Accept<TDeclSymbolNodeVisitor>(TDeclSymbolNodeVisitor visitor)
+        {
+            visitor.VisitGlobalVar(this);
+        }
+
+        void IDeclSymbolNode.Accept<TDeclSymbolNodeVisitor>(ref TDeclSymbolNodeVisitor visitor)
         {
             visitor.VisitGlobalVar(this);
         }

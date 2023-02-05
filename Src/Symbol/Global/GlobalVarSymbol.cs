@@ -17,6 +17,11 @@ namespace Citron.Symbol
             this.declSymbol = declSymbol;
         }
 
+        SymbolQueryResult ISymbolNode.QueryMember(Name name, int explicitTypeArgCount)
+        {
+            return SymbolQueryResults.NotFound;
+        }
+
         GlobalVarSymbol Apply(TypeEnv typeEnv)
         {
             var appliedOuter = outer.Apply(typeEnv);

@@ -75,7 +75,7 @@ namespace Citron.Symbol
             visitor.VisitLambda(this);
         }
 
-        public SymbolQueryResult QueryMember(Name memberName, int typeParamCount)
+        SymbolQueryResult ISymbolNode.QueryMember(Name memberName, int typeParamCount)
         {
             int memberVarCount = decl.GetMemberVarCount();
 

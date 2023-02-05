@@ -57,7 +57,7 @@ namespace Citron.Symbol
         public IEnumerable<LambdaDeclSymbol> GetLambdas()
             => lambdaComponent.GetLambdas();
 
-        public void AddLambda(LambdaDeclSymbol lambdaDecl)
+        void IFuncDeclSymbol.AddLambda(LambdaDeclSymbol lambdaDecl)
             => lambdaComponent.AddLambda(lambdaDecl);
 
         public int GetTypeParamCount()
@@ -113,9 +113,14 @@ namespace Citron.Symbol
         public IEnumerable<IDeclSymbolNode> GetMemberDeclNodes()
         {
             return typeParams.AsEnumerable().OfType<IDeclSymbolNode>();
-        }        
+        }
 
-        public void Accept(IDeclSymbolNodeVisitor visitor)
+        void IDeclSymbolNode.Accept<TDeclSymbolNodeVisitor>(TDeclSymbolNodeVisitor visitor)
+        {
+            visitor.VisitGlobalFunc(this);
+        }
+
+        void IDeclSymbolNode.Accept<TDeclSymbolNodeVisitor>(ref TDeclSymbolNodeVisitor visitor)
         {
             visitor.VisitGlobalFunc(this);
         }
@@ -147,6 +152,9 @@ namespace Citron.Symbol
                 return false;
 
             if (!parameters.CyclicEqualsStructItem(ref other.parameters, ref context))
+                return false;
+
+            if (!lambdaComponent.CyclicEquals(ref lambdaComponent, ref context))
                 return false;
 
             if (!initState.Equals(other.initState))

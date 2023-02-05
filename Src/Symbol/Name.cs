@@ -16,7 +16,6 @@ namespace Citron.Symbol
         public static readonly Singleton OpDec = new Singleton("OpDec");
 
         public static readonly Name Nullable = new Singleton("Nullable");
-        public static readonly Name CapturedThis = new Singleton("CapturedThis");
 
         // for TopLevelStmt
         public static readonly Name TopLevel = new Singleton("TopLevel");

@@ -25,6 +25,8 @@ namespace Citron.Symbol
         ImmutableArray<FuncParameter> parameters;        
         bool bStatic;
 
+        LambdaDeclSymbolComponent<ClassMemberFuncDeclSymbol> lambdaComponent;
+
         InitializeState initState;
 
         public ClassMemberFuncDeclSymbol(
@@ -40,6 +42,7 @@ namespace Citron.Symbol
             this.typeParams = typeParams;
             this.bStatic = bStatic;
 
+            this.lambdaComponent = new LambdaDeclSymbolComponent<ClassMemberFuncDeclSymbol>(this);
             this.initState = InitializeState.BeforeInitFuncReturnAndParams;
         }
 
@@ -106,10 +109,18 @@ namespace Citron.Symbol
             return Enumerable.Empty<IDeclSymbolNode>();
         }
 
-        public void Accept(IDeclSymbolNodeVisitor visitor)
+        void IDeclSymbolNode.Accept<TDeclSymbolNodeVisitor>(TDeclSymbolNodeVisitor visitor)
         {
             visitor.VisitClassMemberFunc(this);
         }
+
+        void IDeclSymbolNode.Accept<TDeclSymbolNodeVisitor>(ref TDeclSymbolNodeVisitor visitor)
+        {
+            visitor.VisitClassMemberFunc(this);
+        }
+
+        void IFuncDeclSymbol.AddLambda(LambdaDeclSymbol declSymbol)
+            => lambdaComponent.AddLambda(declSymbol);
 
         bool ICyclicEqualityComparableClass<IDeclSymbolNode>.CyclicEquals(IDeclSymbolNode other, ref CyclicEqualityCompareContext context)
             => other is ClassMemberFuncDeclSymbol otherDeclSymbol && CyclicEquals(otherDeclSymbol, ref context);
@@ -140,10 +151,13 @@ namespace Citron.Symbol
             if (!parameters.CyclicEqualsStructItem(ref other.parameters, ref context))
                 return false;
 
-            if (bStatic.Equals(other.bStatic))
+            if (!bStatic.Equals(other.bStatic))
                 return false;
 
-            if (initState.Equals(other.initState))
+            if (!lambdaComponent.CyclicEquals(ref other.lambdaComponent, ref context))
+                return false;
+
+            if (!initState.Equals(other.initState))
                 return false;
 
             return true;

@@ -53,7 +53,7 @@ namespace Citron.Symbol
             return builder.MoveToImmutable();
         }
 
-        public SymbolQueryResult QueryMember(Name memberName, int typeParamCount)
+        SymbolQueryResult ISymbolNode.QueryMember(Name memberName, int typeParamCount)
         {
             if (typeParamCount != 0) return SymbolQueryResults.NotFound;
 
