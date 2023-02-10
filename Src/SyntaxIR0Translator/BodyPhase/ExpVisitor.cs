@@ -1,13 +1,13 @@
-﻿using Citron.Symbol;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using Citron.Infra;
+using Citron.Collections;
+using Citron.Symbol;
+
 using R = Citron.IR0;
 using S = Citron.Syntax;
 using static Citron.Analysis.SyntaxAnalysisErrorCode;
-using Citron.Infra;
-using Citron.Collections;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using Citron.Syntax;
 
 namespace Citron.Analysis;
 
@@ -27,7 +27,12 @@ struct ExpVisitor
     {
         var visitor = new ExpVisitor(context, hintType);
         var result = visitor.VisitExp(exp);
-        return result.MakeIR0Exp();
+
+        var rexp = result.MakeIR0Exp();
+        if (rexp == null)
+            throw new NotImplementedException(); // exp로 변환하기가 실패했습니다.
+
+        return rexp;
     }
 
     public static (R.Loc Loc, IType Type)? TranslateAsLoc(S.Exp exp, ScopeContext context, IType? hintType, bool bWrapExpAsLoc)
@@ -104,7 +109,7 @@ struct ExpVisitor
             var intType = context.GetIntType();
 
             // int type 검사, exact match
-            if (!context.IsIntType(type))
+            if (!type.Equals(context.GetIntType()))
                 context.AddFatalError(A0601_UnaryAssignOp_IntTypeIsAllowedOnly, operand);
 
             return new ExpResult.IR0Exp(new R.CallInternalUnaryAssignOperatorExp(op, loc, intType));
@@ -125,7 +130,7 @@ struct ExpVisitor
             case S.UnaryOpKind.LogicalNot:
                 {
                     // exact match
-                    if (!context.IsBoolType(operandExp.GetExpType()))
+                    if (!context.GetBoolType().Equals(operandExp.GetExpType()))
                         context.AddFatalError(A0701_UnaryOp_LogicalNotOperatorIsAppliedToBoolTypeOperandOnly, unaryOpExp.Operand);
 
                     return new ExpResult.IR0Exp(new R.CallInternalUnaryOperatorExp(
@@ -137,7 +142,7 @@ struct ExpVisitor
 
             case S.UnaryOpKind.Minus:
                 {
-                    if (!context.IsIntType(operandExp.GetExpType()))
+                    if (!context.GetIntType().Equals(operandExp.GetExpType()))
                         context.AddFatalError(A0702_UnaryOp_UnaryMinusOperatorIsAppliedToIntTypeOperandOnly, unaryOpExp.Operand);
 
                     return new ExpResult.IR0Exp(new R.CallInternalUnaryOperatorExp(
@@ -512,7 +517,7 @@ struct ExpVisitor
 
             case ExpResult.EnumElemMemberVar enumElemMemberVarResult:
                 {
-                    var locResult = MakeIR0Loc(enumElemMemberVarResult, bWrapExpAsLoc: false);
+                    var locResult = enumElemMemberVarResult.MakeIR0Loc(bWrapExpAsLoc: false);
                     Debug.Assert(locResult != null);
                     return VisitCallExpExpCallable(locResult.Value.Loc, locResult.Value.Type, exp.Args, exp);
                 }
@@ -542,8 +547,13 @@ struct ExpVisitor
         // TODO: 리턴 타입과 인자타입은 타입 힌트를 반영해야 한다
         IType? retType = null;
 
-        var (lambda, args, _) = VisitLambda(retType, exp.Params, exp.Body, exp);
-        return new ExpResult.IR0Exp(new R.LambdaExp(lambda, args));
+        var visitor = new LambdaVisitor(retType, exp.Params, exp.Body, context, nodeForErrorReport: exp);
+        var (lambdaSymbol, args, body) = visitor.Visit();
+        var lambdaDeclSymbol = lambdaSymbol.GetDeclSymbolNode() as LambdaDeclSymbol;
+        Debug.Assert(lambdaDeclSymbol != null);
+
+        context.AddBody(lambdaDeclSymbol, body);
+        return new ExpResult.IR0Exp(new R.LambdaExp(lambdaSymbol, args));
     }
 
     ExpResult VisitIndexerExp(S.IndexerExp exp)
@@ -891,7 +901,7 @@ struct ExpVisitor
             case ExpResult.IR0Exp:
             case ExpResult.IR0Loc:
                 {
-                    var parentLocResult = MakeIR0Loc(parentResult, bWrapExpAsLoc: true);
+                    var parentLocResult = parentResult.MakeIR0Loc(bWrapExpAsLoc: true);
                     // loc으로 변환 가능했다면
                     if (parentLocResult == null)
                         throw new UnreachableCodeException();
@@ -1013,7 +1023,7 @@ struct ExpVisitor
             var expType = exp.GetExpType();
 
             // 캐스팅이 필요하다면 
-            if (context.IsIntType(expType))
+            if (expType.Equals(context.GetIntType()))
             {
                 return new R.ExpStringExpElement(
                     new R.CallInternalUnaryOperatorExp(
@@ -1023,7 +1033,7 @@ struct ExpVisitor
                     )
                 );
             }
-            else if (context.IsBoolType(expType))
+            else if (expType.Equals(context.GetBoolType()))
             {
                 return new R.ExpStringExpElement(
                         new R.CallInternalUnaryOperatorExp(
@@ -1033,7 +1043,7 @@ struct ExpVisitor
                     )
                 );
             }
-            else if (context.IsStringType(expType))
+            else if (expType.Equals(context.GetStringType()))
             {
                 return new R.ExpStringExpElement(exp);
             }
@@ -1061,7 +1071,7 @@ struct ExpVisitor
         throw new UnreachableCodeException();
     }
 
-    public static R.Exp? TranslateAsCastExp(Exp exp, ScopeContext context, IType hintType, IType targetType)
+    public static R.Exp? TranslateAsCastExp(S.Exp exp, ScopeContext context, IType hintType, IType targetType)
     {
         throw new NotImplementedException();
     }

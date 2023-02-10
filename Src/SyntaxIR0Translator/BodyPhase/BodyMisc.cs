@@ -128,7 +128,7 @@ namespace Citron.Analysis
                 #endregion
 
                 case SymbolQueryResult.LambdaMemberVar lambdaMemberVarResult:
-                    return new ExpResult.LambdaMemberVar(() => lambdaMemberVarResult.Symbol);
+                    return new ExpResult.LambdaMemberVar(lambdaMemberVarResult.Symbol);
 
                 default:
                     throw new UnreachableCodeException();

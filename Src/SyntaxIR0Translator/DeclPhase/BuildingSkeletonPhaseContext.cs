@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Citron.Syntax;
 
 namespace Citron.Analysis
 {
@@ -17,7 +18,7 @@ namespace Citron.Analysis
         {
             tasks.Add(task);
         }
-
+        
         public void DoRegisteredTasks(BuildingFuncDeclPhaseContext context)
         {
             foreach(var task in tasks)

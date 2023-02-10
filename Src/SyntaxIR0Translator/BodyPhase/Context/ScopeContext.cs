@@ -37,10 +37,15 @@ partial class ScopeContext : IMutable<ScopeContext>
         var bodyContext = cloneContext.GetClone(this.bodyContext);
         var parentContext = (this.parentContext != null) ? cloneContext.GetClone(this.parentContext) : null;
 
-        var localVarInfos = this.localVarInfos; // immutable dictionary라서 그냥 대입해도 된다
         var bLoop = this.bLoop;
+        var localVarInfos = this.localVarInfos; // immutable dictionary라서 그냥 대입해도 된다
 
         return new ScopeContext(globalContext, bodyContext, parentContext, bLoop, localVarInfos);
+    }
+
+    void IMutable<ScopeContext>.Update(ScopeContext src, UpdateContext context)
+    {
+        throw new NotImplementedException();
     }
 
     public ScopeContext(GlobalContext globalContext, BodyContext bodyContext, ScopeContext? parentContext, bool bLoop)
@@ -85,14 +90,6 @@ partial class ScopeContext : IMutable<ScopeContext>
     public void AddLocalVarInfo(bool bRef, IType type, Name name)
     {
         localVarInfos = localVarInfos.SetItem(name, new LocalVarInfo(bRef, type, name));
-    }
-
-    public void SetLocalVarType(string name, ITypeSymbol typeValue)
-    {
-        var normalName = new Name.Normal(name);
-
-        var value = localVarInfos[normalName];
-        localVarInfos = localVarInfos.SetItem(normalName, value.UpdateTypeValue(typeValue));
     }
 
     public LocalVarInfo? GetLocalVarInfo(Name varName)

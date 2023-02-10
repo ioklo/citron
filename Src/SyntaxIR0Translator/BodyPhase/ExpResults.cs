@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using Citron.Collections;
 using Citron.Infra;
 using Citron.Symbol;
@@ -104,7 +105,7 @@ static class ExpResults
     }
 
     // ExpResult를 R.Exp로 바꾸는 작업
-    public static R.Exp MakeIR0Exp(this ExpResult result)
+    public static R.Exp? MakeIR0Exp(this ExpResult result) // wrap exp는 기본적으로 true
     {
         Debug.Assert(result is not ExpResult.NotFound);
         Debug.Assert(result is not ExpResult.Error);
@@ -112,101 +113,96 @@ static class ExpResults
         // 후처리, 지금 해야하나
         switch (result)
         {
+            #region Global
+            case ExpResult.Namespace:
+                return null;
 
+            case ExpResult.GlobalVar globalVar:
+                return new R.LoadExp(new R.GlobalVarLoc(globalVar.VarName), globalVar.Type);
 
-            // 실제 this인 경우만 해당된다. 람다에서 참조한 this는 LambdaMemberVar로 들어온다
-            case ExpResult.ThisVar thisVarResult:
-                return new ExpResult.IR0Loc(new R.ThisLoc(), thisVarResult.Type);
+            case ExpResult.GlobalFuncs:
+                throw new NotImplementedException();
+            #endregion
 
-            case IdentifierResult.LocalVar localVarResult:
+            #region Body
+            case ExpResult.TypeVar typeVar:
+                return null;
+
+            case ExpResult.ThisVar thisVar:
+                return new R.LoadExp(new R.ThisLoc(), thisVar.Type);
+
+            case ExpResult.LocalVar localVar:
+                return new R.LoadExp(new R.LocalVarLoc(localVar.Name), localVar.Type);
+
+            case ExpResult.LambdaMemberVar lambdaMemberVar:
+                return new R.LoadExp(new R.LambdaMemberVarLoc(lambdaMemberVar.MemberVar), lambdaMemberVar.MemberVar.GetDeclType());
+            #endregion
+
+            #region Class
+            case ExpResult.Class:
+                return null;
+
+            case ExpResult.ClassMemberFuncs:
+                throw new NotImplementedException();
+
+            case ExpResult.ClassMemberVar classMemberVar:
+                if (classMemberVar.HasExplicitInstance) // c.x, C.x 둘다 해당
                 {
-                    R.Loc loc = new R.LocalVarLoc(localVarResult.VarName);
+                    return new R.LoadExp(new R.ClassMemberLoc(classMemberVar.ExplicitInstance, classMemberVar.Symbol), classMemberVar.Symbol.GetDeclType());
+                }
+                else // x, x (static) 둘다 해당
+                {
+                    var instanceLoc = classMemberVar.Symbol.IsStatic() ? null : new R.ThisLoc();
+                    return new R.LoadExp(new R.ClassMemberLoc(instanceLoc, classMemberVar.Symbol), classMemberVar.Symbol.GetDeclType());
+                }
+            #endregion Class
 
-                    if (localVarResult.IsRef)
-                        loc = new R.DerefLocLoc(loc);
+            #region Struct
 
-                    return new ExpResult.Loc(loc, localVarResult.TypeSymbol);
+            case ExpResult.Struct:
+                return null;
+
+            case ExpResult.StructMemberFuncs:
+                throw new NotImplementedException();
+
+            case ExpResult.StructMemberVar structMemberVar:
+                if (structMemberVar.HasExplicitInstance) // c.x, C.x 둘다 해당
+                {
+                    return new R.LoadExp(new R.StructMemberLoc(structMemberVar.ExplicitInstance, structMemberVar.Symbol), structMemberVar.Symbol.GetDeclType());
+                }
+                else // x, x (static) 둘다 해당
+                {
+                    var instanceLoc = structMemberVar.Symbol.IsStatic() ? null : new R.ThisLoc();
+                    return new R.LoadExp(new R.StructMemberLoc(instanceLoc, structMemberVar.Symbol), structMemberVar.Symbol.GetDeclType());
                 }
 
-            // 캡쳐 되었습니다
-            case IdentifierResult.LambdaMemberVar lambdaMemberVarResult:
-                return new ExpResult.Loc(new R.LambdaMemberVarLoc(lambdaMemberVarResult.Symbol), lambdaMemberVarResult.Symbol.GetDeclType());
+            #endregion
 
-            case IdentifierResult.GlobalVar globalVarResult:
-                {
-                    R.Loc loc = new R.GlobalVarLoc(globalVarResult.VarName);
+            #region Enum
+            case ExpResult.Enum:
+                return null;
 
-                    if (globalVarResult.IsRef)
-                        loc = new R.DerefLocLoc(loc);
+            case ExpResult.EnumElem enumElem: // First (E.First)
+                if (enumElem.Symbol.IsStandalone())
+                    return new R.NewEnumElemExp(enumElem.Symbol, default);
+                else
+                    throw new NotImplementedException();
 
-                    return new ExpResult.Loc(loc, globalVarResult.TypeSymbol);
-                }
+            case ExpResult.EnumElemMemberVar enumElemMemberVar:
+                return new R.LoadExp(new R.EnumElemMemberLoc(enumElemMemberVar.Instance, enumElemMemberVar.Symbol), enumElemMemberVar.Symbol.GetDeclType());
 
-            case IdentifierResult.GlobalFuncs globalFuncsResult:
-                return new ExpResult.GlobalFuncs(globalFuncsResult.QueryResult, globalFuncsResult.TypeArgsForMatch);
+            #endregion
 
-            // 'C'
-            case IdentifierResult.Class classResult:
-                return new ExpResult.Class(classResult.Symbol);
 
-            // 'F' (inside class context C)
-            case IdentifierResult.ClassMemberFuncs classMemberFuncsResult:
-                {
-                    // this.F(); 혹은 C.F();
-                    return new ExpResult.ClassMemberFuncs(classMemberFuncsResult.QueryResult, classMemberFuncsResult.TypeArgsForMatch, HasExplicitInstance: false, null);
-                }
+            case ExpResult.IR0Exp exp:
+                return exp.Exp;
 
-            // 'x' (inside class context C)
-            case IdentifierResult.ClassMemberVar classMemberVarResult: // 람다라면 내부에서 this capture되었을
-                {
-                    var classMemberVar = classMemberVarResult.Symbol;
+            case ExpResult.IR0Loc loc:
+                return new R.LoadExp(loc.Loc, loc.Type);
 
-                    // this.x, 람다인 경우 캡쳐가 필요하다
-                    if (!classMemberVar.IsStatic())
-                    {
-                        var thisLoc = bodyContext.MakeThisLoc(); // lambda 내부라면 CapturedThis멤버, 일반 함수라면 this 가져오기
-                        return new ExpResult.Loc(new R.ClassMemberLoc(thisLoc, classMemberVar), classMemberVar.GetDeclType());
-                    }
-                    else // C.x
-                    {
-                        return new ExpResult.Loc(new R.ClassMemberLoc(null, classMemberVar), classMemberVar.GetDeclType());
-                    }
-                }
-
-            // 'S'
-            case IdentifierResult.Struct structResult:
-                return new ExpResult.Struct(structResult.Symbol);
-
-            // 'F' (inside struct context S)
-            case IdentifierResult.StructMemberFuncs structMemberFuncsResult:
-                return new ExpResult.StructMemberFuncs(structMemberFuncsResult.QueryResult, structMemberFuncsResult.TypeArgsForMatch, HasExplicitInstance: false, null);
-
-            // 'x' (inside struct context S)
-            case IdentifierResult.StructMemberVar structMemberVarResult:
-                {
-                    var structMemberVar = structMemberVarResult.Symbol;
-
-                    if (!structMemberVar.IsStatic())
-                    {
-                        var thisLoc = bodyContext.MakeThisLoc();
-                        return new ExpResult.Loc(new R.StructMemberLoc(thisLoc, structMemberVar), structMemberVar.GetDeclType());
-                    }
-                    else // S.x
-                    {
-                        return new ExpResult.Loc(new R.StructMemberLoc(null, structMemberVar), structMemberVar.GetDeclType());
-                    }
-                }
-
-            // 'E'
-            case IdentifierResult.Enum enumResult:
-                return new ExpResult.Enum(enumResult.Symbol);
-
-            // 'First' (with type hint enum E)
-            case IdentifierResult.EnumElem enumElemResult:
-                return new ExpResult.EnumElem(enumElemResult.EnumElemSymbol);
+            default:
+                throw new UnreachableCodeException();
         }
-
-        throw new UnreachableCodeException();
     }
 
     // ExpResult를 R.Loc으로 바꾸는 작업
@@ -292,6 +288,9 @@ static class ExpResults
 
             // First
             case ExpResult.EnumElem: return null;
+
+            // 
+            case ExpResult.EnumElemMemberVar: return null;
             #endregion
 
             case ExpResult.IR0Exp rexp:

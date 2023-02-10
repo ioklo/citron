@@ -84,7 +84,17 @@ namespace Citron
         public ValueTask<ParseResult<Stmt>> ParseStmtAsync(ParserContext context)
         {
             return stmtParser.ParseStmtAsync(context);
-        }       
+        }
+
+        public ValueTask<ParseResult<EmbeddableStmt>> ParseEmbeddableStmtAsync(ParserContext context)
+        {
+            return stmtParser.ParseEmbeddableStmtAsync(context);
+        }
+
+        public ValueTask<ParseResult<ImmutableArray<Stmt>>> ParseBodyAsync(ParserContext context)
+        {
+            return stmtParser.ParseBodyAsync(context);
+        }
 
         public async ValueTask<ParseResult<ImmutableArray<TypeExp>>> ParseTypeArgs(ParserContext context)
         {
@@ -207,27 +217,7 @@ namespace Citron
 
             return new ParseResult<ImmutableArray<FuncParam>>(paramsBuilder.ToImmutable(), context);
         }
-
-        public async ValueTask<ParseResult<ImmutableArray<Stmt>>> ParseFuncBodyAsync(ParserContext context)
-        {
-            if (!Accept<LBraceToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
-                return ParseResult<ImmutableArray<Stmt>>.Invalid;
-
-            var stmtsBuilder = ImmutableArray.CreateBuilder<Stmt>();
-            while (!Accept<RBraceToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
-            {
-                if (Parse(await ParseStmtAsync(context), ref context, out var stmt))
-                {
-                    stmtsBuilder.Add(stmt!);
-                    continue;
-                }
-
-                return ParseResult<ImmutableArray<Stmt>>.Invalid;
-            }
-
-            return new ParseResult<ImmutableArray<Stmt>>(stmtsBuilder.ToImmutable(), context);
-        }
-
+        
         internal async ValueTask<ParseResult<GlobalFuncDecl>> ParseGlobalFuncDeclAsync(ParserContext context)
         {
             static ParseResult<GlobalFuncDecl> Invalid() => ParseResult<GlobalFuncDecl>.Invalid;
@@ -251,7 +241,7 @@ namespace Citron
             if (!Parse(await ParseFuncDeclParamsAsync(context), ref context, out var paramInfo))
                 return Invalid();
 
-            if (!Parse(await ParseFuncBodyAsync(context), ref context, out var body))
+            if (!Parse(await ParseBodyAsync(context), ref context, out var body))
                 return Invalid();
 
             var globalFuncDecl = new GlobalFuncDecl(
@@ -447,7 +437,7 @@ namespace Citron
                 return Invalid();
 
             // ex) { ... }
-            if (!Parse(await ParseFuncBodyAsync(context), ref context, out var body))
+            if (!Parse(await ParseBodyAsync(context), ref context, out var body))
                 return Invalid();
 
             var funcDeclElem = new StructMemberFuncDecl(
@@ -473,7 +463,7 @@ namespace Citron
                 return Invalid();
 
             // ex) { ... }
-            if (!Parse(await ParseFuncBodyAsync(context), ref context, out var body))
+            if (!Parse(await ParseBodyAsync(context), ref context, out var body))
                 return Invalid();
 
             var constructorDeclElem = new StructConstructorDecl(accessModifier, name.Value, paramInfo, body);
@@ -587,7 +577,7 @@ namespace Citron
                 return Invalid();
 
             // ex) { ... }
-            if (!Parse(await ParseFuncBodyAsync(context), ref context, out var body))
+            if (!Parse(await ParseBodyAsync(context), ref context, out var body))
                 return Invalid();
 
             var funcDeclElem = new ClassMemberFuncDecl(accessModifier, bStatic, bSequence, bRefReturn, retType, funcName.Value, typeParams, paramInfo, body);
@@ -635,7 +625,7 @@ namespace Citron
             }
 
             // ex) { ... }
-            if (!Parse(await ParseFuncBodyAsync(context), ref context, out var body))
+            if (!Parse(await ParseBodyAsync(context), ref context, out var body))
                 return Invalid();
 
             var constructorDecl = new ClassConstructorDecl(accessModifier, name.Value, paramInfo, baseArgs, body);

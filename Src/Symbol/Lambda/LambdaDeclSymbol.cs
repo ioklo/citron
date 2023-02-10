@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Citron.Collections;
 using Citron.Infra;
 using Pretune;
@@ -8,6 +9,12 @@ namespace Citron.Symbol
 {   
     public class LambdaDeclSymbol : ITypeDeclSymbol, IFuncDeclSymbol, ICyclicEqualityComparableClass<LambdaDeclSymbol>
     {
+        enum InitializeState
+        {
+            BeforeInitReturn,
+            AfterInitFuncReturn
+        }
+
         IFuncDeclSymbol outer;
         Name name;
 
@@ -21,19 +28,29 @@ namespace Citron.Symbol
         // Lambda가 Lambda를 갖고 있을 때,
         LambdaDeclSymbolComponent<LambdaDeclSymbol> lambdaComponent;
 
+        InitializeState initState;
+
         public LambdaDeclSymbol(
             IFuncDeclSymbol outer,
             Name name,
-            FuncReturn @return,
             ImmutableArray<FuncParameter> parameters)
         {
             this.outer = outer;
             this.name = name;
-            this.@return = @return;
             this.parameters = parameters;
 
             this.memberVars = new List<LambdaMemberVarDeclSymbol>();
             this.lambdaComponent = new LambdaDeclSymbolComponent<LambdaDeclSymbol>();
+
+            this.initState = InitializeState.BeforeInitReturn;
+        }
+
+        public void InitReturn(FuncReturn @return)
+        {
+            Debug.Assert(initState == InitializeState.BeforeInitReturn);
+            this.@return = @return;
+
+            initState = InitializeState.AfterInitFuncReturn;
         }
 
         public IEnumerable<LambdaDeclSymbol> GetLambdas()
@@ -74,6 +91,7 @@ namespace Citron.Symbol
 
         public FuncReturn GetReturn()
         {
+            Debug.Assert(InitializeState.BeforeInitReturn < initState);
             return @return;
         }
 
@@ -142,6 +160,9 @@ namespace Citron.Symbol
                 return false;
 
             if (!lambdaComponent.CyclicEquals(ref lambdaComponent, ref context))
+                return false;
+
+            if (!initState.Equals(other.initState))
                 return false;
 
             return true;

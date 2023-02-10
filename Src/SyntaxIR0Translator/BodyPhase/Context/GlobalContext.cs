@@ -9,6 +9,7 @@ using Citron.Collections;
 using Citron.Log;
 
 using S = Citron.Syntax;
+using R = Citron.IR0;
 
 namespace Citron.Analysis;
 
@@ -20,39 +21,52 @@ partial class GlobalContext : IMutable<GlobalContext>
     ILogger logger;
 
     // instances    
-    InternalBinaryOperatorQueryService internalBinOpQueryService;
-    InternalGlobalVariableRepository internalGlobalVarRepo;
+    ImmutableArray<R.StmtBody> bodies;
+    RuntimeTypeComponent runtimeTypeComponent;
+    InternalBinaryOperatorQueryService internalBinOpQueryService;    
 
     public GlobalContext(SymbolFactory symbolFactory, ImmutableArray<ModuleDeclSymbol> moduleDeclSymbols, ILogger logger)
     {
         this.symbolFactory = symbolFactory;
         this.moduleDeclSymbols = moduleDeclSymbols;        
 
-        this.logger = logger;        
+        this.logger = logger;
+        this.bodies = default;
 
+        this.runtimeTypeComponent = new RuntimeTypeComponent();
         this.internalBinOpQueryService = new InternalBinaryOperatorQueryService(GetBoolType(), GetIntType(), GetStringType());
-        this.internalGlobalVarRepo = new InternalGlobalVariableRepository();
     }
 
-    GlobalContext(SymbolFactory factory, ImmutableArray<ModuleDeclSymbol> moduleDeclSymbols, ILogger logger, InternalBinaryOperatorQueryService internalBinOpQueryService, InternalGlobalVariableRepository internalGlobalVarRepo)
+    // memberwise
+    GlobalContext(SymbolFactory factory, ImmutableArray<ModuleDeclSymbol> moduleDeclSymbols, ILogger logger, ImmutableArray<R.StmtBody> bodies, RuntimeTypeComponent rtcomp, InternalBinaryOperatorQueryService internalBinOpQueryService)
     {
         this.symbolFactory = factory;
         this.moduleDeclSymbols = moduleDeclSymbols;
+
         this.logger = logger;
+        this.bodies = bodies;
+
+        this.runtimeTypeComponent = rtcomp;
         this.internalBinOpQueryService = internalBinOpQueryService;
-        this.internalGlobalVarRepo = internalGlobalVarRepo;
     }
 
     GlobalContext IMutable<GlobalContext>.Clone(CloneContext cloneContext)
+    {   
+        var clonedLogger = cloneContext.GetClone(this.logger);
+
+        return new GlobalContext(
+            this.symbolFactory, 
+            this.moduleDeclSymbols, 
+            clonedLogger,
+            this.bodies, 
+            this.runtimeTypeComponent, 
+            this.internalBinOpQueryService
+        );
+    }
+
+    void IMutable<GlobalContext>.Update(GlobalContext src, UpdateContext context)
     {
-        var symbolFactory = this.symbolFactory;
-        var moduleDeclSymbols = this.moduleDeclSymbols;
-        var logger = cloneContext.GetClone(this.logger);
-
-        var internalBinOpQueryService = this.internalBinOpQueryService;        
-        var internalGlobalVarRepo = cloneContext.GetClone(this.internalGlobalVarRepo);
-
-        return new GlobalContext(symbolFactory, moduleDeclSymbols, logger, internalBinOpQueryService, internalGlobalVarRepo);
+        throw new NotImplementedException();
     }
 
     // typeParams를 치환하지 않고 그대로 만든다
@@ -98,63 +112,7 @@ partial class GlobalContext : IMutable<GlobalContext>
         throw new AnalyzerFatalException();
     }
 
-    public IType GetVoidType()
-    {
-        return new VoidType();
-    }
-
-    public IType GetBoolType()
-    {
-        return (ITypeSymbol)symbolLoader.Load(boolId);
-    }
-
-    public IType GetIntType()
-    {
-        return (ITypeSymbol)symbolLoader.Load(intId);
-    }
-
-    public IType GetStringType()
-    {
-        return (ITypeSymbol)symbolLoader.Load(stringId);
-    }
-
-    public IType GetListIterType(IType? itemType)
-    {
-        throw new NotImplementedException();
-    }
-
-    public IType GetListType(IType elemType)
-    {
-        var typeArgs = Arr(elemType.GetSymbolId());
-        var listId = new ModuleSymbolId(new Name.Normal("System.Runtime"), null).Child(new Name.Normal("System")).Child(new Name.Normal("List"), typeArgs);
-
-        return (ITypeSymbol)symbolLoader.Load(listId);
-    }
-
-    public void AddInternalGlobalVarInfo(bool bRef, IType typeValue, string name)
-    {
-        internalGlobalVarRepo.AddInternalGlobalVariable(bRef, typeValue, name);
-    }
-
-    public bool IsVoidType(IType type)
-    {
-        return voidId.Equals(type.GetTypeId());
-    }
-
-    public bool IsBoolType(IType type)
-    {   
-        return boolId.Equals(type.GetTypeId());
-    }
-
-    public bool IsIntType(IType type)
-    {
-        return intId.Equals(type.GetTypeId());
-    }
-
-    public bool IsStringType(IType type)
-    {
-        return stringId.Equals(type.GetTypeId());
-    }
+   
 
     //public bool IsNullableType(ITypeSymbol type, [NotNullWhen(returnValue: true)] out ITypeSymbol? innerType)
     //{
@@ -174,33 +132,10 @@ partial class GlobalContext : IMutable<GlobalContext>
     //    return true;
     //}
 
-    public IType MakeType(S.TypeExp typeExp)
-    {
-        var symbol = typeInfoService.GetSymbol(typeExp);
-        Debug.Assert(symbol != null);
-        return symbol;
-    }
-
-    public InternalGlobalVarInfo? GetInternalGlobalVarInfo(string idName)
-    {
-        return internalGlobalVarRepo.GetVariable(idName);
-    }
-
-    public bool DoesInternalGlobalVarNameExist(string name)
-    {
-        return internalGlobalVarRepo.HasVariable(name);
-    }
-
     //public SeqTypeValue GetSeqTypeValue(R.Path.Nested seq, ITypeSymbol yieldType)
     //{
     //    return itemValueFactory.MakeSeqType(seq, yieldType);
     //}
-
-    // outerDeclPath 밑의 (name, typeParamCount)로 가능한 것들을 돌려준다
-    public SymbolQueryResult QuerySymbol(SymbolPath? outerPath, Name name, int typeParamCount)
-    {
-        return symbolLoader.Query(outerPath, name, typeParamCount);
-    }
 
     public ImmutableArray<InternalBinaryOperatorInfo> GetBinaryOpInfos(S.BinaryOpKind kind)
     {
@@ -215,10 +150,22 @@ partial class GlobalContext : IMutable<GlobalContext>
     public bool IsSeqType(IType type, [NotNullWhen(returnValue: true)] out IType? itemType)
     {
         throw new NotImplementedException();
-    }
+    } 
 
     public bool IsListType(IType type, [NotNullWhen(returnValue: true)] out IType? itemType)
     {
         throw new NotImplementedException();
+    }
+
+    public ScopeContext MakeNewScopeContext(IFuncDeclSymbol symbol, bool bSeqFunc, FuncReturn funcReturn)
+    {
+        var newBodyContext = new BodyContext(moduleDeclSymbols, symbolFactory, outerScopeContext: null, symbol, bSeqFunc, bSetReturn: true, funcReturn);
+        return new ScopeContext(this, newBodyContext, parentContext: null, bLoop: false);
+    }
+
+    public void AddBody(IFuncDeclSymbol symbol, ImmutableArray<R.Stmt> body)
+    {
+        var rbody = new R.StmtBody(symbol, body);
+        bodies = bodies.Add(rbody);
     }
 }

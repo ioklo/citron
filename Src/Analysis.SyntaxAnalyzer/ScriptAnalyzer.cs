@@ -103,7 +103,6 @@ namespace Citron.Analysis
                     topLevelStmtsBuilder.Add(stmtResult.Stmt);
                 }   
             }
-            
 
             stmtBodiesBuilder.Add(new R.StmtBody(new DeclSymbolPath(null, Name.TopLevel), topLevelStmtsBuilder.ToImmutable()));
         }

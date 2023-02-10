@@ -7,6 +7,7 @@ using Citron.Syntax;
 using static Citron.ParserMisc;
 using System.Collections.Generic;
 using Citron.Collections;
+using System.ComponentModel;
 
 namespace Citron
 {
@@ -49,13 +50,13 @@ namespace Citron
                     return Invalid();
 
                 // right assoc, conflict는 별다른 처리를 하지 않고 지나가면 될 것 같다
-                if (!Parse(await ParseStmtAsync(context), ref context, out var body))
+                if (!Parse(await ParseEmbeddableStmtAsync(context), ref context, out var body))
                     return Invalid();
 
-                Stmt? elseBody = null;
+                EmbeddableStmt? elseBody = null;
                 if (Accept<ElseToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                 {
-                    if (!Parse(await ParseStmtAsync(context), ref context, out elseBody))
+                    if (!Parse(await ParseEmbeddableStmtAsync(context), ref context, out elseBody))
                         return Invalid();
                 }
 
@@ -67,13 +68,13 @@ namespace Citron
                     return Invalid();
 
                 // right assoc, conflict는 별다른 처리를 하지 않고 지나가면 될 것 같다
-                if (!Parse(await ParseStmtAsync(context), ref context, out var body))
+                if (!Parse(await ParseEmbeddableStmtAsync(context), ref context, out var body))
                     return Invalid();
 
-                Stmt? elseBody = null;
+                EmbeddableStmt? elseBody = null;
                 if (Accept<ElseToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                 {
-                    if (!Parse(await ParseStmtAsync(context), ref context, out elseBody))
+                    if (!Parse(await ParseEmbeddableStmtAsync(context), ref context, out elseBody))
                         return Invalid();
                 }
 
@@ -169,7 +170,7 @@ namespace Citron
             if (!Accept<RParenToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                 return Fatal();
 
-            if (!Parse(await ParseStmtAsync(context), ref context, out var bodyStmt))
+            if (!Parse(await ParseEmbeddableStmtAsync(context), ref context, out var bodyStmt))
                 return Fatal();
 
             return new ParseResult<ForStmt>(new ForStmt(initializer, cond, cont, bodyStmt!), context);
@@ -273,10 +274,10 @@ namespace Citron
             if (!Accept<TaskToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                 return ParseResult<TaskStmt>.Invalid;
             
-            if (!Parse(await parser.ParseStmtAsync(context), ref context, out var stmt))
+            if (!Parse(await parser.ParseBodyAsync(context), ref context, out var body))
                 return ParseResult<TaskStmt>.Invalid; 
 
-            return new ParseResult<TaskStmt>(new TaskStmt(stmt!), context);
+            return new ParseResult<TaskStmt>(new TaskStmt(body), context);
         }
 
         async ValueTask<ParseResult<AwaitStmt>> ParseAwaitStmtAsync(ParserContext context)
@@ -284,10 +285,10 @@ namespace Citron
             if (!Accept<AwaitToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                 return ParseResult<AwaitStmt>.Invalid;
 
-            if (!Parse(await parser.ParseStmtAsync(context), ref context, out var stmt))
+            if (!Parse(await parser.ParseBodyAsync(context), ref context, out var body))
                 return ParseResult<AwaitStmt>.Invalid;
 
-            return new ParseResult<AwaitStmt>(new AwaitStmt(stmt!), context);
+            return new ParseResult<AwaitStmt>(new AwaitStmt(body), context);
         }
 
         async ValueTask<ParseResult<AsyncStmt>> ParseAsyncStmtAsync(ParserContext context)
@@ -295,10 +296,10 @@ namespace Citron
             if (!Accept<AsyncToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                 return ParseResult<AsyncStmt>.Invalid;
 
-            if (!Parse(await parser.ParseStmtAsync(context), ref context, out var stmt))
+            if (!Parse(await parser.ParseBodyAsync(context), ref context, out var body))
                 return ParseResult<AsyncStmt>.Invalid;
 
-            return new ParseResult<AsyncStmt>(new AsyncStmt(stmt!), context);
+            return new ParseResult<AsyncStmt>(new AsyncStmt(body), context);
         }
 
         async ValueTask<ParseResult<YieldStmt>> ParseYieldStmtAsync(ParserContext context)
@@ -394,10 +395,10 @@ namespace Citron
                 return ParseResult<ForeachStmt>.Invalid;
 
             // stmt
-            if (!Parse(await parser.ParseStmtAsync(context), ref context, out var body))
+            if (!Parse(await parser.ParseEmbeddableStmtAsync(context), ref context, out var stmt))
                 return ParseResult<ForeachStmt>.Invalid;
 
-            return new ParseResult<ForeachStmt>(new ForeachStmt(bRef, typeExp!, varNameToken!.Value, obj!, body!), context);
+            return new ParseResult<ForeachStmt>(new ForeachStmt(bRef, typeExp!, varNameToken!.Value, obj!, stmt), context);
         }        
 
         // 
@@ -477,6 +478,59 @@ namespace Citron
                 return ParseResult<DirectiveStmt>.Invalid;
 
             return new ParseResult<DirectiveStmt>(new DirectiveStmt(idToken.Value, argsBuilder.ToImmutable()), context);
+        }
+
+        // if (...) 'x;' // 단일이냐
+        // if (...) '{ }' // 묶음이냐
+        public async ValueTask<ParseResult<EmbeddableStmt>> ParseEmbeddableStmtAsync(ParserContext context)
+        {
+            // { 가 없다면, Embeddable.Single
+            if (!Accept<LBraceToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
+            {
+                if (Parse(await ParseStmtAsync(context), ref context, out var stmt))
+                {
+                    // block stmt는 제외되서 들어올 것이다
+                    Debug.Assert(stmt is not BlockStmt);
+                    return new ParseResult<EmbeddableStmt>(new EmbeddableStmt.Single(stmt), context);
+                }
+
+                return ParseResult<EmbeddableStmt>.Invalid;
+            }
+            else // 있다면 Embeddable.Multiple
+            {
+                var stmtsBuilder = ImmutableArray.CreateBuilder<Stmt>();
+
+                // } 가 나올때까지
+                while(!Accept<RBraceToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
+                {
+                    if (Parse(await ParseStmtAsync(context), ref context, out var stmt))
+                        stmtsBuilder.Add(stmt);                    
+                    else
+                        return ParseResult<EmbeddableStmt>.Invalid;
+                }
+
+                return new ParseResult<EmbeddableStmt>(new EmbeddableStmt.Multiple(stmtsBuilder.ToImmutable()), context);
+            }
+        }
+
+        public async ValueTask<ParseResult<ImmutableArray<Stmt>>> ParseBodyAsync(ParserContext context)
+        {
+            if (!Accept<LBraceToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
+                return ParseResult<ImmutableArray<Stmt>>.Invalid;
+
+            var stmtsBuilder = ImmutableArray.CreateBuilder<Stmt>();
+            while (!Accept<RBraceToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
+            {
+                if (Parse(await ParseStmtAsync(context), ref context, out var stmt))
+                {
+                    stmtsBuilder.Add(stmt!);
+                    continue;
+                }
+
+                return ParseResult<ImmutableArray<Stmt>>.Invalid;
+            }
+
+            return new ParseResult<ImmutableArray<Stmt>>(stmtsBuilder.ToImmutable(), context);
         }
 
         public async ValueTask<ParseResult<Stmt>> ParseStmtAsync(ParserContext context)

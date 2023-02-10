@@ -414,8 +414,8 @@ namespace Citron
             ImmutableArray<Stmt> body;
             if (Peek<LBraceToken>(await lexer.LexNormalModeAsync(context.LexerContext, true)))
             {
-                // FuncBody 파싱을 그대로 쓴다
-                if (!Parse(await parser.ParseFuncBodyAsync(context), ref context, out var stmtBody))
+                // Body 파싱을 그대로 쓴다
+                if (!Parse(await parser.ParseBodyAsync(context), ref context, out var stmtBody))
                     return Invalid();
 
                 body = stmtBody;

@@ -15,11 +15,13 @@ partial class ScopeContext
     public IFuncDeclSymbol GetFuncDeclSymbol() => bodyContext.GetFuncDeclSymbol();
     internal IFuncDeclSymbol GetOutermostFuncDeclSymbol() => bodyContext.GetOutermostFuncDeclSymbol();
 
-    public bool CanAccess(ISymbolNode node) => bodyContext.CanAccess(node);
-    public bool IsSetReturn() => bodyContext.IsSetReturn();
+    public bool CanAccess(ISymbolNode node) => bodyContext.CanAccess(node);    
     public bool IsSeqFunc() => bodyContext.IsSeqFunc();
+
+    public bool IsSetReturn() => bodyContext.IsSetReturn();
     public FuncReturn? GetReturn() => bodyContext.GetReturn();
     public void SetReturn(bool bRef, IType retType) => bodyContext.SetReturn(bRef, retType);
     public ImmutableArray<R.Argument> MakeLambdaArgs() => bodyContext.MakeLambdaArgs();
-    
+
+    public IType MakeType(TypeExp typeExp) => bodyContext.MakeType(typeExp);
 } 

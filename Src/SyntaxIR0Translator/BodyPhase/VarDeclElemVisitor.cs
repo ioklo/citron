@@ -30,6 +30,9 @@ partial struct StmtVisitor
                 if (declType is not VarType) // int x = ...;
                 {
                     var initExp = ExpVisitor.TranslateAsCastExp(initExpSyntax, context, hintType: declType, targetType: declType);
+                    if (initExp == null)
+                        throw new NotImplementedException(); // 캐스팅이 실패했습니다.
+
                     context.AddStmt(new R.LocalVarDeclStmt(declType, syntax.VarName, initExp));
                     context.AddLocalVarInfo(false, declType, new Name.Normal(syntax.VarName));
                 }

@@ -7,8 +7,6 @@ using Citron.Symbol;
 
 using Pretune;
 
-using M = Citron.Module;
-
 using static Citron.Symbol.FuncParamTypeId;
 
 namespace Citron.Analysis

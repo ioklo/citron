@@ -285,7 +285,7 @@ partial struct StmtVisitor
                 var funcReturn = context.GetReturn();
 
                 // 생성자거나, void 함수가 아니라면 에러
-                if (funcReturn != null && !context.IsVoidType(funcReturn.Value.Type))
+                if (funcReturn != null && !funcReturn.Value.Type.Equals(context.GetVoidType()))
                 {
                     context.AddFatalError(A1201_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType, returnStmt);
                 }

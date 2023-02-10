@@ -15,12 +15,14 @@ class BodyContext : IMutable<BodyContext>
 
     ImmutableArray<ModuleDeclSymbol> moduleDeclSymbols;
     SymbolFactory symbolFactory;
-
-    BodyContext? outerBodyContext;    // 람다라면, 람다 상위 bodyContext
+    
     ScopeContext? outerScopeContext;  // 람다라면, 람다를 선언한 Scope
     IFuncDeclSymbol funcDeclSymbol;   // decl space
-
+    
     bool bSeqFunc;
+
+    bool bSetReturn;
+    FuncReturn? funcReturn;
 
     // 람다 관련
     ImmutableArray<LambdaDeclSymbol> lambdas;
@@ -30,12 +32,13 @@ class BodyContext : IMutable<BodyContext>
     ImmutableArray<R.Argument> lambdaMemberVarInitArgs; 
 
     public BodyContext(ImmutableArray<ModuleDeclSymbol> moduleDeclSymbols, SymbolFactory symbolFactory, 
-        BodyContext? outerBodyContext, ScopeContext? outerScopeContext, IFuncDeclSymbol funcDeclSymbol, bool bSeqFunc)
+        ScopeContext? outerScopeContext, IFuncDeclSymbol funcDeclSymbol, bool bSeqFunc, bool bSetReturn, FuncReturn? funcReturn)
     {
+        Debug.Assert(!bSetReturn && funcReturn == null);
+
         this.moduleDeclSymbols = moduleDeclSymbols;
         this.symbolFactory = symbolFactory;
-
-        this.outerBodyContext = outerBodyContext;
+        
         this.outerScopeContext = outerScopeContext;
         this.funcDeclSymbol = funcDeclSymbol;
         this.bSeqFunc = bSeqFunc;
@@ -48,6 +51,11 @@ class BodyContext : IMutable<BodyContext>
     }
 
     BodyContext IMutable<BodyContext>.Clone(CloneContext context)
+    {
+        throw new NotImplementedException();
+    }
+
+    void IMutable<BodyContext>.Update(BodyContext src, UpdateContext context)
     {
         throw new NotImplementedException();
     }
@@ -213,6 +221,8 @@ class BodyContext : IMutable<BodyContext>
                     case ExpResult.LocalVar localResult:
                         {
                             var initExp = localResult.MakeIR0Exp();
+                            Debug.Assert(initExp != null);
+
                             var initArg = new R.Argument.Normal(initExp);
                             var symbol = bodyContext.StageLambdaMemberVar(localResult.Type, localResult.Name, initArg);
                             return new ExpResult.LambdaMemberVar(symbol);
@@ -221,6 +231,8 @@ class BodyContext : IMutable<BodyContext>
                     case ExpResult.LambdaMemberVar lambdaMemberResult:
                         {
                             var initExp = lambdaMemberResult.MakeIR0Exp();
+                            Debug.Assert(initExp != null);
+
                             var initArg = new R.Argument.Normal(initExp);
                             var symbol = bodyContext.StageLambdaMemberVar(lambdaMemberResult.MemberVar.GetDeclType(), lambdaMemberResult.MemberVar.GetName(), initArg);
                             return new ExpResult.LambdaMemberVar(symbol);
@@ -231,8 +243,11 @@ class BodyContext : IMutable<BodyContext>
                             // TODO: 워닝, struct의 this는 복사가 일어납니다. 원본과 다를 수 있습니다. ref this로 명시적으로 지정해주세요(?)
                             if (thisResult.Type is StructType)
                                 throw new NotImplementedException();
-                            
-                            var initArg = new R.Argument.Normal(thisResult.MakeIR0Exp());
+
+                            var initExp = thisResult.MakeIR0Exp();
+                            Debug.Assert(initExp != null);
+
+                            var initArg = new R.Argument.Normal(initExp);
                             var symbol = bodyContext.StageLambdaMemberVar(thisResult.Type, thisName, initArg);
                             return new ExpResult.LambdaMemberVar(symbol);
                         }
@@ -289,17 +304,19 @@ class BodyContext : IMutable<BodyContext>
         return (LambdaMemberVarSymbol)memberVarDeclSymbol.MakeOpenSymbol(symbolFactory);
     }
     
-    // 인자로 들어온 ret는 null이면 아직 모른다는 뜻 (constructor라는 뜻이 아님)
+    // 여기서 인자로 들어온 ret는 null이면 아직 모른다는 뜻 (constructor라는 뜻이 아님)
     public (BodyContext, LambdaSymbol) MakeLambdaBodyContext(ScopeContext outerScopeContext, FuncReturn? ret, ImmutableArray<FuncParameter> parameters)
     {
-        var lambda = new LambdaDeclSymbol(funcDeclSymbol, new Name.Anonymous(lambdas.Length), ret, parameters);
+        var lambda = new LambdaDeclSymbol(funcDeclSymbol, new Name.Anonymous(lambdas.Length), parameters);
         lambdas = lambdas.Add(lambda); // staging
 
-        var bodyContext = new BodyContext(moduleDeclSymbols, symbolFactory, this, outerScopeContext, lambda, bSeqFunc: false);
+        BodyContext newBodyContext = (ret != null) 
+            ? new BodyContext(moduleDeclSymbols, symbolFactory, outerScopeContext, lambda, bSeqFunc: false, bSetReturn: false, funcReturn: ret.Value)
+            : new BodyContext(moduleDeclSymbols, symbolFactory, outerScopeContext, lambda, bSeqFunc: false, bSetReturn: false, funcReturn: null);
 
         var lambdaSymbol = lambda.MakeOpenSymbol(symbolFactory) as LambdaSymbol;
         Debug.Assert(lambdaSymbol != null);
-        return (bodyContext, lambdaSymbol);
+        return (newBodyContext, lambdaSymbol);
     }
 
     public void CommitLambdasToDeclSymbolTree()
@@ -313,5 +330,24 @@ class BodyContext : IMutable<BodyContext>
     public ImmutableArray<R.Argument> MakeLambdaArgs()
     {
         return lambdaMemberVarInitArgs;
+    }
+
+    // 리턴값 관련 
+    public bool IsSetReturn()
+    {
+        return bSetReturn;
+    }
+
+    // constructor라면 null
+    public FuncReturn? GetReturn()
+    {
+        Debug.Assert(bSetReturn);
+        return funcReturn;
+    }
+
+    public void SetReturn(bool bRef, IType retType)
+    {
+        bSetReturn = true;
+        funcReturn = new FuncReturn(bRef, retType);
     }
 }

@@ -1,6 +1,6 @@
 ﻿using System;
-using Citron.Collections;
 
+using Citron.Collections;
 using Citron.Symbol;
 
 using S = Citron.Syntax;
@@ -62,11 +62,11 @@ namespace Citron.Analysis
                 // must after initFuncReturnAndParams
                 node.AddFunc(declSymbol);
 
-                //context.RegisterTaskTranslatingBodyPhase(context =>
-                //{
-                //    var visitor = new FuncBodyVisitor();
-                    
-                //});
+                context.RegisterTaskTranslatingBodyPhase(context =>
+                {
+                    var visitor = new FuncBodyVisitor();
+                    visitor.VisitGlobalFuncDecl(declSymbol, syntax);
+                });
             });
         }
 

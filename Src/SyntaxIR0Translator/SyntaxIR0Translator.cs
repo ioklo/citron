@@ -42,6 +42,7 @@ namespace Citron.Analysis
                             topLevelVisitor.VisitNamespaceDecl(namespaceDeclElem.NamespaceDecl);
                             break;
 
+                        // GlobalVariable은 Body분석때 수행한다.
                         case S.StmtScriptElement stmtElem:
                             topLevelVisitor.VisitStmt(stmtElem.Stmt);
                             break;
@@ -60,9 +61,6 @@ namespace Citron.Analysis
             skeletonPhaseContext.DoRegisteredTasks(funcDeclPhaseContext);
 
             funcDeclPhaseContext.DoRegisteredTasks();
-
-            
-
             return moduleDecl;
         }
     }

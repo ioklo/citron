@@ -41,7 +41,6 @@ static class IDeclSymbolNodeCanSearchInAllModulesExtension
         void IDeclSymbolNodeVisitor.VisitLambda(LambdaDeclSymbol declSymbol) { result = false; }
         void IDeclSymbolNodeVisitor.VisitLambdaMemberVar(LambdaMemberVarDeclSymbol declSymbol) { result = false; }        
     }
-        
 
     public static bool CanSearchInAllModules(this IDeclSymbolNode node)
     {
@@ -59,22 +58,27 @@ static class IDeclSymbolNodeCanSearchInAllModulesExtension
 // X<Y>.Y => X<X<T>.Y>.Y  // 그거랑 별개로 인자로 들어온 것들은 적용을 시켜야 한다   
 record struct TypeMakerByTypeExp(IEnumerable<ModuleDeclSymbol> modules, SymbolFactory factory, IDeclSymbolNode node)
 {
-    // 타입일 수도 있고, Module / Namespace 심볼일 수도 있다
+    // Module, Namespace, Type중 하나이다. 나머지는 해당 안됨
     struct Item
     {
+        // 아래 셋 중에 하나이다
+        public ModuleSymbol? Module { get; init; }
+        public NamespaceSymbol? Namespace { get; init; }
         public IType? Type { get; init; }
-        public ISymbolNode? Symbol { get; init; }
 
-        public static Item Make(IType type) => new Item() { Type = type };
-        public static Item Make(ISymbolNode? symbol)
+        public static Item Make(IType type)
         {
-            if (symbol is ITypeSymbol typeSymbol)
+            return new Item() { Type = type };
+        }
+
+        public static Item? Make(ISymbolNode? symbol)
+        {
+            switch(symbol)
             {
-                return new Item() { Type = typeSymbol.MakeType() };
-            }
-            else
-            {
-                return new Item() { Symbol = symbol };
+                case ModuleSymbol moduleSymbol: return new Item() { Module = moduleSymbol };
+                case NamespaceSymbol namespaceSymbol: return new Item() { Namespace = namespaceSymbol };
+                case ITypeSymbol typeSymbol: return new Item() { Type = typeSymbol.MakeType() };
+                default: return null;
             }
         }
     }
@@ -149,7 +153,9 @@ record struct TypeMakerByTypeExp(IEnumerable<ModuleDeclSymbol> modules, SymbolFa
                         var symbol = SymbolInstantiator.Instantiate(factory, outerSymbol, declSymbol, typeArgs);
                         var candidate = Item.Make(symbol);
 
-                        candidates.Add(candidate);
+                        // Module, Namespace, Type에 해당이 되지 않으면 스킵
+                        if (candidate != null)
+                            candidates.Add(candidate.Value);
                     }
                 }
             }
@@ -187,27 +193,35 @@ record struct TypeMakerByTypeExp(IEnumerable<ModuleDeclSymbol> modules, SymbolFa
                 if (memberType != null)
                     candidates.Add(Item.Make(memberType));
             }
-            else if (outerItem.Symbol != null)
+            else
             {
+                ISymbolNode outerSymbol;
+
+                if (outerItem.Module != null)
+                    outerSymbol = outerItem.Module;
+                else if (outerItem.Namespace != null)
+                    outerSymbol = outerItem.Namespace;
+                else
+                    throw new UnreachableCodeException();
+
                 // class X<T> { class Y<U> { class Z { X<bool>.Y<int> } }
 
                 // outerItem은 X<bool> 
 
                 // outerDeclSymbol은 X<>
-                var outerDeclSymbol = outerItem.Symbol.GetDeclSymbolNode();
+                var outerDeclSymbol = outerSymbol.GetDeclSymbolNode();
 
                 // memberDeclSymbol은 X<>.Y
                 var memberDeclSymbol = outerDeclSymbol.GetMemberDeclNode(nodeName);
                 if (memberDeclSymbol != null)
                 {
                     // symbol은 X<bool>.Y<int>
-                    var symbol = SymbolInstantiator.Instantiate(factory, outerItem.Symbol, memberDeclSymbol, typeArgs);
-                    candidates.Add(Item.Make(symbol));
+                    var symbol = SymbolInstantiator.Instantiate(factory, outerSymbol, memberDeclSymbol, typeArgs);
+                    var item = Item.Make(symbol);
+
+                    if (item != null)
+                        candidates.Add(item.Value);
                 }
-            }
-            else
-            {
-                throw new UnreachableCodeException();
             }
         }
 
