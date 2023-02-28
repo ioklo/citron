@@ -115,11 +115,6 @@ namespace Citron.Symbol
             return typeParams.AsEnumerable().OfType<IDeclSymbolNode>();
         }
 
-        void IDeclSymbolNode.Accept<TDeclSymbolNodeVisitor>(TDeclSymbolNodeVisitor visitor)
-        {
-            visitor.VisitGlobalFunc(this);
-        }
-
         void IDeclSymbolNode.Accept<TDeclSymbolNodeVisitor>(ref TDeclSymbolNodeVisitor visitor)
         {
             visitor.VisitGlobalFunc(this);

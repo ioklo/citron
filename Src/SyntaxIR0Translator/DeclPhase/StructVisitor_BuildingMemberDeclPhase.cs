@@ -41,6 +41,12 @@ namespace Citron.Analysis
             declSymbol.InitFuncReturnAndParams(funcReturn, funcParams);
 
             structDeclSymbol.AddFunc(declSymbol);
+
+            context.AddBuildingBodyPhaseTask(context =>
+            {
+                var visitor = new StructVisitor_BuildingBodyPhase(context);
+                visitor.VisitStructMemberFuncDecl(syntax.Body, declSymbol, bSeqFunc: syntax.IsSequence);
+            });
         }
 
         void VisitStructConstructorDecl(S.StructConstructorDecl syntax)
@@ -53,6 +59,12 @@ namespace Citron.Analysis
             // TODO: 타이프 쳐서 만들어진 constructor는 'trivial' 표시를 하기 전까지는 trivial로 인식하지 않는다 (하위 타입의 trivial constructor가 이 constructor를 참조하지 않는다)
             var declSymbol = new StructConstructorDeclSymbol(structDeclSymbol, accessModifier, parameters, bTrivial: false);
             structDeclSymbol.AddConstructor(declSymbol);
+
+            context.AddBuildingBodyPhaseTask(context =>
+            {
+                var visitor = new StructVisitor_BuildingBodyPhase(context);
+                visitor.VisitStructConstructorDecl(syntax.Body, declSymbol);
+            });
         }
 
         public void VisitStructDecl(S.StructDecl syntax)

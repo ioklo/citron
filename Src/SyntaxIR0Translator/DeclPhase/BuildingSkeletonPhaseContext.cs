@@ -9,23 +9,16 @@ namespace Citron.Analysis
     // 1. BuildingSkeletonPhase
     class BuildingSkeletonPhaseContext
     {
-        List<Action<BuildingMemberDeclPhaseContext>> buildingMemberDeclPhaseTasks;
-        List<Action<BuildingTopLevelStmtPhaseContext>> buildingTopLevelStmtPhaseTasks;
+        List<Action<BuildingMemberDeclPhaseContext>> buildingMemberDeclPhaseTasks;        
 
         public BuildingSkeletonPhaseContext()
         {
             buildingMemberDeclPhaseTasks = new List<Action<BuildingMemberDeclPhaseContext>>();
-            buildingTopLevelStmtPhaseTasks = new List<Action<BuildingTopLevelStmtPhaseContext>>();
         }
 
         public void AddBuildingMemberDeclPhaseTask(Action<BuildingMemberDeclPhaseContext> task)
         {
             buildingMemberDeclPhaseTasks.Add(task);
-        }
-
-        public void AddBuildingTopLevelStmtPhaseTask(Action<BuildingTopLevelStmtPhaseContext> task)
-        {
-            buildingTopLevelStmtPhaseTasks.Add(task);
         }
         
         public void BuildMemberDecl(BuildingMemberDeclPhaseContext context)
@@ -34,12 +27,6 @@ namespace Citron.Analysis
             {
                 task.Invoke(context);
             }
-        }
-
-        public void BuildTopLevelStmt(BuildingTopLevelStmtPhaseContext context)
-        {
-            foreach (var task in buildingTopLevelStmtPhaseTasks)
-                task.Invoke(context);
         }
     }
 }

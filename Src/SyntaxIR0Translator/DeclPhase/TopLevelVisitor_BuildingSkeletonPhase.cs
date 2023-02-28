@@ -59,12 +59,12 @@ namespace Citron.Analysis
                 var (funcRet, funcParams) = context.MakeFuncReturnAndParams(declSymbol, syntax.IsRefReturn, syntax.RetType, syntax.Parameters);
                 declSymbol.InitFuncReturnAndParams(funcRet, funcParams);
 
-                // must after initFuncReturnAndParams
+                // NOTICE: MUST add after initFuncReturnAndParams
                 node.AddFunc(declSymbol);
 
                 context.AddBuildingBodyPhaseTask(context =>
                 {
-                    var visitor = new FuncBodyVisitor();
+                    var visitor = new TopLevelVisitor_BuildingBodyPhase();
                     visitor.VisitGlobalFuncDecl(syntax.Body, declSymbol, bSeqFunc: syntax.IsSequence);
                 });
             });
@@ -112,14 +112,6 @@ namespace Citron.Analysis
             // 가장 마지막 네임스페이스 (NS3)를 얻어서 하위 처리를 해야한다
             VisitElem(0, node);
         }        
-
-        public void VisitStmt(S.Stmt stmt)
-        {
-            context.AddBuildingTopLevelStmtPhaseTask(context => {
-                var visitor = new StmtVisitor_TopLevel(context.GetScopeContext());
-                stmt.Accept(ref visitor);
-            });
-        }
         
         public void VisitTypeDecl(S.TypeDecl decl)
         {

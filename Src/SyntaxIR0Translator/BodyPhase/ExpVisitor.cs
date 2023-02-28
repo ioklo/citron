@@ -891,7 +891,6 @@ struct ExpVisitor
                 throw new UnreachableCodeException();
 
             // location으로 변환해야 할 것들
-            case ExpResult.GlobalVar: // "g".id
             case ExpResult.ThisVar: // "this".id
             case ExpResult.LocalVar:// "l".id
             case ExpResult.LambdaMemberVar:// "x".id 

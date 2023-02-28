@@ -343,11 +343,6 @@ namespace Citron.IR0
             return new LoadExp(new LocalVarLoc(new Name.Normal(name)), varType);
         }
 
-        public LoadExp LoadGlobalVar(string name, IType varType)
-        {
-            return new LoadExp(new GlobalVarLoc(new Name.Normal(name)), varType);
-        }
-
         public LoadExp Load(Loc loc, IType typeSymbol)
         {
             return new LoadExp(loc, typeSymbol);
@@ -367,11 +362,6 @@ namespace Citron.IR0
         public LocalVarLoc LocalVar(string name)
         {
             return new LocalVarLoc(new Name.Normal(name));
-        }
-
-        public Loc GlobalVar(string name)
-        {
-            return new GlobalVarLoc(new Name.Normal(name));
         }
 
         public Loc Deref(Loc loc)

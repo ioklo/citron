@@ -20,9 +20,6 @@ namespace Citron.Symbol
         int GetTypeParamCount();
         Name GetTypeParam(int i);
 
-        void Accept<TDeclSymbolNodeVisitor>(TDeclSymbolNodeVisitor visitor)
-            where TDeclSymbolNodeVisitor : class, IDeclSymbolNodeVisitor;
-
         void Accept<TDeclSymbolNodeVisitor>(ref TDeclSymbolNodeVisitor visitor)
             where TDeclSymbolNodeVisitor : struct, IDeclSymbolNodeVisitor;
     }

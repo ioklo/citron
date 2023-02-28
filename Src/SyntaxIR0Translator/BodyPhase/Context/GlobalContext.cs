@@ -157,7 +157,8 @@ partial class GlobalContext : IMutable<GlobalContext>
         throw new NotImplementedException();
     }
 
-    public ScopeContext MakeNewScopeContext(IFuncDeclSymbol symbol, bool bSeqFunc, FuncReturn funcReturn)
+    // funcReturn이 null이면 constructor란 뜻이다
+    public ScopeContext MakeNewScopeContext(IFuncDeclSymbol symbol, bool bSeqFunc, FuncReturn? funcReturn)
     {
         var newBodyContext = new BodyContext(moduleDeclSymbols, symbolFactory, outerScopeContext: null, symbol, bSeqFunc, bSetReturn: true, funcReturn);
         return new ScopeContext(this, newBodyContext, parentContext: null, bLoop: false);
@@ -167,5 +168,10 @@ partial class GlobalContext : IMutable<GlobalContext>
     {
         var rbody = new R.StmtBody(symbol, body);
         bodies = bodies.Add(rbody);
+    }
+
+    public ImmutableArray<R.StmtBody> GetBodies()
+    {
+        return bodies;
     }
 }

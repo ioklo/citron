@@ -20,7 +20,6 @@ static class IDeclSymbolNodeCanSearchInAllModulesExtension
         void IDeclSymbolNodeVisitor.VisitModule(ModuleDeclSymbol declSymbol) { result = true; }
         void IDeclSymbolNodeVisitor.VisitNamespace(NamespaceDeclSymbol declSymbol) { result = true; }
         void IDeclSymbolNodeVisitor.VisitGlobalFunc(GlobalFuncDeclSymbol declSymbol) { result = false; }
-        void IDeclSymbolNodeVisitor.VisitGlobalVar(GlobalVarDeclSymbol declSymbol) { result = false; }
 
         void IDeclSymbolNodeVisitor.VisitClass(ClassDeclSymbol declSymbol) { result = false; }
         void IDeclSymbolNodeVisitor.VisitClassConstructor(ClassConstructorDeclSymbol declSymbol) { result = false; }

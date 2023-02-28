@@ -38,7 +38,21 @@ namespace Citron.Syntax
 
         public static Script SScript(params Stmt[] stmts)
         {
-            return new Script(stmts.Select(stmt => (ScriptElement)new StmtScriptElement(stmt)).ToImmutableArray());
+            // void Main()
+            // {
+            //     stmts...
+            // }
+            return new Script(Arr<ScriptElement>(
+                new GlobalFuncDeclScriptElement(
+                    new GlobalFuncDecl(
+                        null,
+                        isSequence: false,
+                        isRefReturn: false,
+                        new IdTypeExp("void", default), "Main",
+                        typeParams: default, parameters: default, stmts.ToImmutableArray()
+                    )
+                )
+            ));
         }
 
         public static Script SScript(params ScriptElement[] elems)

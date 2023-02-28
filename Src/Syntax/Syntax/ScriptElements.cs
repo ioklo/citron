@@ -10,7 +10,6 @@ namespace Citron.Syntax
     }
 
     public record class NamespaceDeclScriptElement(NamespaceDecl NamespaceDecl): ScriptElement;    
-    public record class GlobalFuncDeclScriptElement(GlobalFuncDecl FuncDecl) : ScriptElement;    
-    public record class StmtScriptElement(Stmt Stmt) : ScriptElement;
+    public record class GlobalFuncDeclScriptElement(GlobalFuncDecl FuncDecl) : ScriptElement;
     public record class TypeDeclScriptElement(TypeDecl TypeDecl) : ScriptElement;
 }

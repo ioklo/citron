@@ -30,6 +30,12 @@ namespace Citron.Analysis
 
             var (funcReturn, funcParams) = context.MakeFuncReturnAndParams(func, syntax.IsRefReturn, syntax.RetType, syntax.Parameters);
             func.InitFuncReturnAndParams(funcReturn, funcParams);
+            
+            context.AddBuildingBodyPhaseTask(context =>
+            {
+                var visitor = new ClassVisitor_BuilindBodyPhase(context);
+                visitor.VisitClassFuncDecl(syntax.Body, func, syntax.IsSequence);
+            });
         }
 
         void VisitClassMemberVarDecl(S.ClassMemberVarDecl syntax)
@@ -56,6 +62,12 @@ namespace Citron.Analysis
             // TODO: syntax에 trivial 마킹하면 검사하고 trivial로 만든다
             var constructorDeclSymbol = new ClassConstructorDeclSymbol(declSymbol, accessor, parameters, bTrivial: false);
             declSymbol.AddConstructor(constructorDeclSymbol);
+
+            context.AddBuildingBodyPhaseTask(context =>
+            {
+                var visitor = new ClassVisitor_BuilindBodyPhase(context);
+                visitor.VisitClassConstructorDecl(syntax.Body, constructorDeclSymbol);
+            });
         }
 
         static bool IsMatchClassTrivialConstructorParameters(ClassConstructorSymbol? baseConstructor, ClassDeclSymbol classDeclSymbol, ClassConstructorDeclSymbol constructorDecl)
@@ -202,7 +214,7 @@ namespace Citron.Analysis
                 }
             }
 
-            var capturedDeclSymbol = this.declSymbol;
+            var thisDeclSymbol = this.declSymbol;
             context.AddBuildingTrivialConstructorPhaseTask(uniqueBaseClass?.Symbol.GetDecl(), declSymbol, () =>
             {
                 var baseTrivialConstructor = uniqueBaseClass?.Symbol.GetTrivialConstructor();
@@ -214,10 +226,10 @@ namespace Citron.Analysis
                 if (baseTrivialConstructor != null || uniqueBaseClass == null)
                 {
                     // 같은 인자의 생성자가 없으면 Trivial을 만든다
-                    if (GetClassConstructorHasSameParamWithTrivial(baseTrivialConstructor, capturedDeclSymbol) == null)
+                    if (GetClassConstructorHasSameParamWithTrivial(baseTrivialConstructor, thisDeclSymbol) == null)
                     {
-                        trivialConstructor = MakeClassTrivialConstructorDecl(capturedDeclSymbol, baseTrivialConstructor);
-                        capturedDeclSymbol.AddConstructor(trivialConstructor);
+                        trivialConstructor = MakeClassTrivialConstructorDecl(thisDeclSymbol, baseTrivialConstructor);
+                        thisDeclSymbol.AddConstructor(trivialConstructor);
                     }
                 }
             });

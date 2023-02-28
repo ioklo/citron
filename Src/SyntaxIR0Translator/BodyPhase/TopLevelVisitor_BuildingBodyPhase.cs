@@ -11,18 +11,18 @@ using R = Citron.IR0;
 
 namespace Citron.Analysis;
 
-struct FuncBodyVisitor
+struct TopLevelVisitor_BuildingBodyPhase
 {
-    GlobalContext globalContext;
+    BuildingBodyPhaseContext context;
 
-    public FuncBodyVisitor(GlobalContext globalContext)
+    public TopLevelVisitor_BuildingBodyPhase(BuildingBodyPhaseContext context)
     {
-        this.globalContext = globalContext;
+        this.context = context;
     }
 
     public void VisitGlobalFuncDecl(ImmutableArray<Stmt> body, GlobalFuncDeclSymbol symbol, bool bSeqFunc)
     {
-        var scopeContext = globalContext.MakeNewScopeContext(symbol, bSeqFunc: bSeqFunc , symbol.GetReturn());
+        var scopeContext = context.MakeNewScopeContext(symbol, bSeqFunc: bSeqFunc, symbol.GetReturn());
 
         // 파라미터를 로컬로 추가
         int paramCount = symbol.GetParameterCount();
@@ -35,10 +35,10 @@ struct FuncBodyVisitor
 
         var stmtVisitor = new StmtVisitor(scopeContext);
 
-        // TODO: Body가 실제로 리턴을 제대로 하는지 확인해야 한다
+        // TODO: Body가 실제로 리턴을 제대로 하는지 확인해야 한다 => 분석기에서 해야 한다. 여기서는 Translation만 한다
         stmtVisitor.VisitBody(body);
 
         var rstmts = scopeContext.MakeStmts();
-        globalContext.AddBody(symbol, rstmts);
+        context.AddBody(symbol, rstmts);
     }
 }

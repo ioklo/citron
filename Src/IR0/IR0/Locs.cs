@@ -15,9 +15,7 @@ namespace Citron.IR0
 
     // 임시 value를 만들어서 Exp를 실행해서 대입해주는 역할, ExpInfo 대신 쓴다    
     public record class TempLoc(Exp Exp) : Loc;
-    public record class GlobalVarLoc(Name Name) : Loc;
-
-    public record class LocalVarLoc(Name Name) : Loc;    
+    public record class LocalVarLoc(Name Name) : Loc;
 
     // only this member allowed, so no need this
     public record class LambdaMemberVarLoc(LambdaMemberVarSymbol MemberVar) : Loc;

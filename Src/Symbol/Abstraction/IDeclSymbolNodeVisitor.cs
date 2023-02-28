@@ -6,7 +6,6 @@
         void VisitNamespace(NamespaceDeclSymbol declSymbol);
 
         void VisitGlobalFunc(GlobalFuncDeclSymbol declSymbol);
-        void VisitGlobalVar(GlobalVarDeclSymbol declSymbol);
 
         void VisitStruct(StructDeclSymbol declSymbol);
         void VisitStructConstructor(StructConstructorDeclSymbol declSymbol);

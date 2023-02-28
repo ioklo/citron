@@ -27,7 +27,6 @@ abstract record class ExpResult
 
     #region TopLevel
     public record class Namespace : Valid;
-    public record class GlobalVar(bool IsRef, IType Type, Name VarName) : Valid;
 
     // TypeArgsForMatch: partial
     public record class GlobalFuncs(ImmutableArray<DeclAndConstructor<GlobalFuncDeclSymbol, GlobalFuncSymbol>> Infos, ImmutableArray<IType> TypeArgsForMatch) : Valid;
@@ -116,9 +115,6 @@ static class ExpResults
             #region Global
             case ExpResult.Namespace:
                 return null;
-
-            case ExpResult.GlobalVar globalVar:
-                return new R.LoadExp(new R.GlobalVarLoc(globalVar.VarName), globalVar.Type);
 
             case ExpResult.GlobalFuncs:
                 throw new NotImplementedException();
@@ -216,15 +212,6 @@ static class ExpResults
             // Valid
             #region TopLevel
             case ExpResult.Namespace: return null;
-            case ExpResult.GlobalVar globalVarResult: // ref i; 처리는 어떻게 하는건가?
-                {
-                    R.Loc loc = new R.GlobalVarLoc(globalVarResult.VarName);
-                    if (globalVarResult.IsRef)
-                        loc = new R.DerefLocLoc(loc);
-
-                    return (loc, globalVarResult.Type);
-                }
-
             case ExpResult.GlobalFuncs: return null;
 
             #endregion

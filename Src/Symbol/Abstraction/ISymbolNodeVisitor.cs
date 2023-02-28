@@ -5,7 +5,6 @@
         void VisitModule(ModuleSymbol symbol);
         void VisitNamespace(NamespaceSymbol symbol);
         void VisitGlobalFunc(GlobalFuncSymbol symbol);
-        void VisitGlobalVar(GlobalVarSymbol symbol);
 
         void VisitClass(ClassSymbol symbol);
         void VisitClassConstructor(ClassConstructorSymbol symbol);

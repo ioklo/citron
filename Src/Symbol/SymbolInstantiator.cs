@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Citron.Symbol
 {
-    public class SymbolInstantiator : IDeclSymbolNodeVisitor, ITypeDeclSymbolVisitor
+    public struct SymbolInstantiator : IDeclSymbolNodeVisitor, ITypeDeclSymbolVisitor
     {
         SymbolFactory factory;        
         ISymbolNode? outer;
@@ -54,7 +54,7 @@ namespace Citron.Symbol
         public static ISymbolNode Instantiate(SymbolFactory factory, ISymbolNode? outer, IDeclSymbolNode decl, ImmutableArray<IType> typeArgs)
         {
             var instantiator = new SymbolInstantiator(factory, outer, typeArgs);
-            decl.Accept(instantiator);
+            decl.Accept(ref instantiator);
 
             Debug.Assert(instantiator.result != null);
             return instantiator.result;
@@ -195,15 +195,6 @@ namespace Citron.Symbol
             Debug.Assert(typeArgs.IsEmpty);
 
             result = factory.MakeLambdaMemberVar(outerLambda, declSymbol);
-        }
-
-        public void VisitGlobalVar(GlobalVarDeclSymbol declSymbol)
-        {
-            var outerTopLevel = outer as ITopLevelSymbolNode;
-            Debug.Assert(outerTopLevel != null);
-            Debug.Assert(typeArgs.IsEmpty);
-
-            result = factory.MakeGlobalVar(outerTopLevel, declSymbol);
         }
     }
 }

@@ -77,12 +77,7 @@ namespace Citron.Symbol
             Debug.Assert(InitializeState.BeforeInitDeclType < initState);
             return declType!;
         }
-
-        void IDeclSymbolNode.Accept<TDeclSymbolNodeVisitor>(TDeclSymbolNodeVisitor visitor)
-        {
-            visitor.VisitEnumElemMemberVar(this);
-        }
-
+        
         void IDeclSymbolNode.Accept<TDeclSymbolNodeVisitor>(ref TDeclSymbolNodeVisitor visitor)
         {
             visitor.VisitEnumElemMemberVar(this);

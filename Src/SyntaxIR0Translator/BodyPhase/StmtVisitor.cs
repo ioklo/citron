@@ -12,13 +12,26 @@ using static Citron.Analysis.SyntaxAnalysisErrorCode;
 
 namespace Citron.Analysis;
 
-partial struct CoreStmtVisitor
+partial struct StmtVisitor : S.IStmtVisitor
 {
     ScopeContext context;
 
-    public CoreStmtVisitor(ScopeContext context)
+    public StmtVisitor(ScopeContext context)
     {
         this.context = context;
+    }
+
+    public void VisitVarDecl(S.VarDeclStmt stmt)
+    {
+        // int a;
+        // var x = 
+        var varDecl = stmt.VarDecl;
+        var declType = context.MakeType(varDecl.Type);
+
+        var visitor = new VarDeclElemVisitor(varDecl.IsRef, declType, context);
+
+        foreach (var elemSyntax in varDecl.Elems)
+            visitor.VisitElem(elemSyntax);
     }
 
     // CommandStmt에 있는 expStringElement를 분석한다
@@ -59,7 +72,7 @@ partial struct CoreStmtVisitor
             if (ifTestStmt.VarName != null)
                 bodyContext.AddLocalVarInfo(true, enumElemType, new Name.Normal(ifTestStmt.VarName));
 
-            var bodyStmtVisitor = new StmtVisitor_Normal(bodyContext);
+            var bodyStmtVisitor = new StmtVisitor(bodyContext);
             bodyStmtVisitor.VisitEmbeddable(ifTestStmt.Body);
             var bodyStmt = bodyContext.MakeSingleStmt();
 
@@ -67,7 +80,7 @@ partial struct CoreStmtVisitor
             if (ifTestStmt.ElseBody != null)
             {
                 var elseContext = context.MakeNestedScopeContext();
-                var elseStmtVisitor = new StmtVisitor_Normal(elseContext);
+                var elseStmtVisitor = new StmtVisitor(elseContext);
                 elseStmtVisitor.VisitEmbeddable(ifTestStmt.ElseBody);
                 elseStmt = elseContext.MakeSingleStmt();
             }
@@ -119,7 +132,7 @@ partial struct CoreStmtVisitor
             context.AddFatalError(A1001_IfStmt_ConditionShouldBeBool, ifStmt.Cond);
 
         var bodyContext = context.MakeNestedScopeContext();
-        var bodyVisitor = new StmtVisitor_Normal(bodyContext);
+        var bodyVisitor = new StmtVisitor(bodyContext);
         bodyVisitor.VisitEmbeddable(ifStmt.Body);
         var bodyStmt = bodyContext.MakeSingleStmt();
 
@@ -127,7 +140,7 @@ partial struct CoreStmtVisitor
         if (ifStmt.ElseBody != null)
         {
             var elseContext = context.MakeNestedScopeContext();
-            var elseVisitor = new StmtVisitor_Normal(elseContext);
+            var elseVisitor = new StmtVisitor(elseContext);
             elseVisitor.VisitEmbeddable(ifStmt.ElseBody);
             elseStmt = elseContext.MakeSingleStmt();
         }
@@ -135,7 +148,33 @@ partial struct CoreStmtVisitor
         var stmt = new R.IfStmt(condExp, bodyStmt, elseStmt);
         context.AddStmt(stmt);
     }
-    
+
+    public void VisitForStmtInitializer(S.ForStmtInitializer forInit)
+    {
+        switch (forInit)
+        {
+            case S.VarDeclForStmtInitializer varDeclInit:
+                {
+                    var declType = context.MakeType(varDeclInit.VarDecl.Type);
+                    var visitor = new VarDeclElemVisitor(varDeclInit.VarDecl.IsRef, declType, context);
+
+                    foreach (var elem in varDeclInit.VarDecl.Elems)
+                        visitor.VisitElem(elem);
+                    break;
+                }
+
+            case S.ExpForStmtInitializer expInit:
+                {
+                    var exp = TranslateAsTopLevelExp(expInit.Exp, hintType: null, A1102_ForStmt_ExpInitializerShouldBeAssignOrCall);
+                    context.AddStmt(new R.ExpStmt(exp));
+                    break;
+                }
+
+            default:
+                throw new NotImplementedException();
+        }
+    }
+
     public void VisitFor(S.ForStmt forStmt)
     {
         // for(
@@ -147,7 +186,7 @@ partial struct CoreStmtVisitor
         // }
 
         var forStmtContext = context.MakeNestedScopeContext();
-        var initVisitor = new StmtVisitor_Normal(forStmtContext);
+        var initVisitor = new StmtVisitor(forStmtContext);
 
         ImmutableArray<R.Stmt> initStmts = default;
         if (forStmt.Initializer != null)
@@ -171,7 +210,7 @@ partial struct CoreStmtVisitor
             continueExp = initVisitor.TranslateAsTopLevelExp(forStmt.ContinueExp, hintType: null, A1103_ForStmt_ContinueExpShouldBeAssignOrCall);
 
         var bodyContext = context.MakeLoopNestedScopeContext();
-        var bodyVisitor = new StmtVisitor_Normal(bodyContext);
+        var bodyVisitor = new StmtVisitor(bodyContext);
 
         bodyVisitor.VisitEmbeddable(forStmt.Body);
         var bodyStmt = bodyContext.MakeSingleStmt();
@@ -304,7 +343,7 @@ partial struct CoreStmtVisitor
     {
         AnalyzerFatalException? fatalException = null;
         ScopeContext blockContext = context.MakeNestedScopeContext();
-        var blockVisitor = new StmtVisitor_Normal(blockContext);
+        var blockVisitor = new StmtVisitor(blockContext);
 
         foreach (var stmt in blockStmt.Stmts)
         {
@@ -347,7 +386,7 @@ partial struct CoreStmtVisitor
     public void VisitAwait(S.AwaitStmt awaitStmt)
     {
         var newContext = context.MakeNestedScopeContext();
-        var newVisitor = new StmtVisitor_Normal(newContext);
+        var newVisitor = new StmtVisitor(newContext);
         newVisitor.VisitBody(awaitStmt.Body);
 
         context.AddStmt(new R.AwaitStmt(newContext.MakeStmts()));
@@ -404,7 +443,7 @@ partial struct CoreStmtVisitor
             // 루프 컨텍스트에 로컬을 하나 추가하고
             bodyContext.AddLocalVarInfo(false, itemType, new Name.Normal(foreachStmt.VarName));
 
-            var bodyVisitor = new StmtVisitor_Normal(bodyContext);
+            var bodyVisitor = new StmtVisitor(bodyContext);
             // 본문 분석
             bodyVisitor.VisitEmbeddable(foreachStmt.Body);
 
@@ -452,7 +491,7 @@ partial struct CoreStmtVisitor
                 bodyContext.AddLocalVarInfo(false, itemType, new Name.Normal(foreachStmt.VarName));
 
                 // 본문 분석
-                var bodyVisitor = new StmtVisitor_Normal(bodyContext);
+                var bodyVisitor = new StmtVisitor(bodyContext);
                 bodyVisitor.VisitEmbeddable(foreachStmt.Body);
                 var stmts = bodyContext.MakeStmts();
 
@@ -529,6 +568,38 @@ partial struct CoreStmtVisitor
     //        default: throw new UnreachableCodeException();
     //    }
     //}
+
+    public void VisitBody(ImmutableArray<S.Stmt> body)
+    {
+        foreach (var stmt in body)
+        {
+            stmt.Accept(ref this);
+        }
+    }
+
+    public void VisitEmbeddable(S.EmbeddableStmt embedStmt)
+    {
+        // if (...) 'stmt'
+        // if (...) '{ stmt... }' 를 받는다
+        switch (embedStmt)
+        {
+            case S.EmbeddableStmt.Single single:
+                // TODO: VarDecl은 등장하면 에러를 내도록 한다
+                // 지금은 그냥 패스
+                single.Stmt.Accept(ref this);
+                return;
+
+            case S.EmbeddableStmt.Multiple multiple:
+                foreach (var stmt in multiple.Stmts)
+                    stmt.Accept(ref this);
+                return;
+
+            default:
+                throw new NotImplementedException();
+        }
+    }
+
+    
 
     bool IsTopLevelExp(R.Exp exp)
     {

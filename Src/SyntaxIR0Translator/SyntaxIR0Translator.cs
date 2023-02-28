@@ -7,6 +7,7 @@ using Citron.Collections;
 using Citron.Symbol;
 
 using S = Citron.Syntax;
+using R = Citron.IR0;
 
 using static Citron.Infra.Misc;
 using System.Collections.Generic;
@@ -17,7 +18,7 @@ namespace Citron.Analysis
     // Syntax로부터 ModuleDeclSymbol을 만든다
     public struct SyntaxIR0Translator
     {
-        public static ModuleDeclSymbol Build(Name moduleName, ImmutableArray<S.Script> scripts, ImmutableArray<ModuleDeclSymbol> refModuleDecls, SymbolFactory factory, ILogger logger)
+        public static (ModuleDeclSymbol, ImmutableArray<R.StmtBody>) Build(Name moduleName, ImmutableArray<S.Script> scripts, ImmutableArray<ModuleDeclSymbol> refModuleDecls, SymbolFactory factory, ILogger logger)
         {
             var moduleDecl = new ModuleDeclSymbol(moduleName, bReference: false);
 
@@ -43,11 +44,6 @@ namespace Citron.Analysis
                             topLevelVisitor.VisitNamespaceDecl(namespaceDeclElem.NamespaceDecl);
                             break;
 
-                        // GlobalVariable은 Body분석때 수행한다.
-                        case S.StmtScriptElement stmtElem:
-                            topLevelVisitor.VisitStmt(stmtElem.Stmt);
-                            break;
-
                         default:
                             throw new UnreachableCodeException();
                     }
@@ -66,17 +62,14 @@ namespace Citron.Analysis
             // 3. BuildingTrivialConstructorPhase
             buildingMemberDeclPhaseContext.BuildTrivialConstructor();
 
-            // 4. BuildingTopLevelStmtPhase
+            // 4. BuildingBodyPhase
             var globalContext = new GlobalContext(factory, moduleDecls, logger);
-
-            var buildingTopLevelStmtPhaseContext = new BuildingTopLevelStmtPhaseContext(globalContext);
-            skeletonPhaseContext.BuildTopLevelStmt(buildingTopLevelStmtPhaseContext);
-
-            // 5. BuildingBodyPhase
             var buildingBodyPhaseContext = new BuildingBodyPhaseContext(globalContext);
             buildingMemberDeclPhaseContext.BuildBody(buildingBodyPhaseContext);
 
-            return moduleDecl;
+            var body = globalContext.GetBodies();
+
+            return (moduleDecl, body);
         }
     }
 }

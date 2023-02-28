@@ -65,12 +65,7 @@ namespace Citron.Symbol
         {
             return Enumerable.Empty<IDeclSymbolNode>();
         }
-
-        void IDeclSymbolNode.Accept<TDeclSymbolNodeVisitor>(TDeclSymbolNodeVisitor visitor)
-        {
-            visitor.VisitClassConstructor(this);
-        }
-
+        
         void IDeclSymbolNode.Accept<TDeclSymbolNodeVisitor>(ref TDeclSymbolNodeVisitor visitor)
         {
             visitor.VisitClassConstructor(this);
