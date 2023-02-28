@@ -59,15 +59,6 @@ namespace Citron.Test.Misc
             }
         }
 
-        public void Write_LocalVarDecl(Citron.IR0.LocalVarDecl? @localVarDecl)
-        {
-            if (@localVarDecl == null) { itw.Write("null"); return; }
-
-            itw.Write("new Citron.IR0.LocalVarDecl(");
-            this.Write_ImmutableArray(Write_VarDeclElement, "Citron.IR0.VarDeclElement", @localVarDecl.Elems);
-            itw.Write(")");
-        }
-
         public void Write_Argument(Citron.IR0.Argument? @argument)
         {
             if (@argument == null) { itw.Write("null"); return; }
@@ -111,66 +102,6 @@ namespace Citron.Test.Misc
 
             itw.Write("new Citron.IR0.Argument.Ref(");
             this.Write_Loc(@ref.Loc);
-            itw.Write(")");
-        }
-
-        public void Write_VarDeclElement(Citron.IR0.VarDeclElement? @varDeclElement)
-        {
-            if (@varDeclElement == null) { itw.Write("null"); return; }
-
-            switch(@varDeclElement)
-            {
-                case Citron.IR0.VarDeclElement.Normal @normal: Write_VarDeclElement_Normal(@normal); break;
-                case Citron.IR0.VarDeclElement.NormalDefault @normalDefault: Write_VarDeclElement_NormalDefault(@normalDefault); break;
-                case Citron.IR0.VarDeclElement.Ref @ref: Write_VarDeclElement_Ref(@ref); break;
-                default: throw new Citron.Infra.UnreachableCodeException();
-            }
-        }
-
-        public void Write_VarDeclElement_Normal(Citron.IR0.VarDeclElement.Normal? @normal)
-        {
-            if (@normal == null) { itw.Write("null"); return; }
-
-            var itw1 = itw.Push();
-            var writer1 = new IR0Writer(itw1);
-            itw1.WriteLine();
-
-            itw.Write("new Citron.IR0.VarDeclElement.Normal(");
-            writer1.Write_ISymbolNode(@normal.Type);
-            itw1.WriteLine(",");
-            writer1.Write_String(@normal.Name);
-            itw1.WriteLine(",");
-            writer1.Write_Exp(@normal.InitExp);
-            itw.Write(")");
-        }
-
-        public void Write_VarDeclElement_NormalDefault(Citron.IR0.VarDeclElement.NormalDefault? @normalDefault)
-        {
-            if (@normalDefault == null) { itw.Write("null"); return; }
-
-            var itw1 = itw.Push();
-            var writer1 = new IR0Writer(itw1);
-            itw1.WriteLine();
-
-            itw.Write("new Citron.IR0.VarDeclElement.NormalDefault(");
-            writer1.Write_ISymbolNode(@normalDefault.Type);
-            itw1.WriteLine(",");
-            writer1.Write_String(@normalDefault.Name);
-            itw.Write(")");
-        }
-
-        public void Write_VarDeclElement_Ref(Citron.IR0.VarDeclElement.Ref? @ref)
-        {
-            if (@ref == null) { itw.Write("null"); return; }
-
-            var itw1 = itw.Push();
-            var writer1 = new IR0Writer(itw1);
-            itw1.WriteLine();
-
-            itw.Write("new Citron.IR0.VarDeclElement.Ref(");
-            writer1.Write_String(@ref.Name);
-            itw1.WriteLine(",");
-            writer1.Write_Loc(@ref.Loc);
             itw.Write(")");
         }
 
@@ -242,100 +173,100 @@ namespace Citron.Test.Misc
             itw.Write(")");
         }
 
-        public void Write_Name(Citron.Module.Name? @name)
+        public void Write_Name(Citron.Symbol.Name? @name)
         {
             if (@name == null) { itw.Write("null"); return; }
 
-            if (@name == Citron.Module.Name.IndexerGet)
+            if (@name == Citron.Symbol.Name.IndexerGet)
             {
-                itw.Write("Citron.Module.Name.IndexerGet");
+                itw.Write("Citron.Symbol.Name.IndexerGet");
                 return;
             }
 
-            if (@name == Citron.Module.Name.IndexerSet)
+            if (@name == Citron.Symbol.Name.IndexerSet)
             {
-                itw.Write("Citron.Module.Name.IndexerSet");
+                itw.Write("Citron.Symbol.Name.IndexerSet");
                 return;
             }
 
-            if (@name == Citron.Module.Name.Constructor)
+            if (@name == Citron.Symbol.Name.Constructor)
             {
-                itw.Write("Citron.Module.Name.Constructor");
+                itw.Write("Citron.Symbol.Name.Constructor");
                 return;
             }
 
-            if (@name == Citron.Module.Name.OpInc)
+            if (@name == Citron.Symbol.Name.OpInc)
             {
-                itw.Write("Citron.Module.Name.OpInc");
+                itw.Write("Citron.Symbol.Name.OpInc");
                 return;
             }
 
-            if (@name == Citron.Module.Name.OpDec)
+            if (@name == Citron.Symbol.Name.OpDec)
             {
-                itw.Write("Citron.Module.Name.OpDec");
+                itw.Write("Citron.Symbol.Name.OpDec");
                 return;
             }
 
-            if (@name == Citron.Module.Name.Nullable)
+            if (@name == Citron.Symbol.Name.Nullable)
             {
-                itw.Write("Citron.Module.Name.Nullable");
+                itw.Write("Citron.Symbol.Name.Nullable");
                 return;
             }
 
-            if (@name == Citron.Module.Name.CapturedThis)
+            if (@name == Citron.Symbol.Name.TopLevel)
             {
-                itw.Write("Citron.Module.Name.CapturedThis");
-                return;
-            }
-
-            if (@name == Citron.Module.Name.TopLevel)
-            {
-                itw.Write("Citron.Module.Name.TopLevel");
+                itw.Write("Citron.Symbol.Name.TopLevel");
                 return;
             }
 
             switch(@name)
             {
-                case Citron.Module.Name.Singleton @singleton: Write_Name_Singleton(@singleton); break;
-                case Citron.Module.Name.Anonymous @anonymous: Write_Name_Anonymous(@anonymous); break;
-                case Citron.Module.Name.ConstructorParam @constructorParam: Write_Name_ConstructorParam(@constructorParam); break;
-                case Citron.Module.Name.Normal @normal: Write_Name_Normal(@normal); break;
+                case Citron.Symbol.Name.Singleton @singleton: Write_Name_Singleton(@singleton); break;
+                case Citron.Symbol.Name.Anonymous @anonymous: Write_Name_Anonymous(@anonymous); break;
+                case Citron.Symbol.Name.ConstructorParam @constructorParam: Write_Name_ConstructorParam(@constructorParam); break;
+                case Citron.Symbol.Name.Normal @normal: Write_Name_Normal(@normal); break;
                 default: throw new Citron.Infra.UnreachableCodeException();
             }
         }
 
-        public void Write_Name_Singleton(Citron.Module.Name.Singleton? @singleton)
+        public void Write_Name_Singleton(Citron.Symbol.Name.Singleton? @singleton)
         {
             if (@singleton == null) { itw.Write("null"); return; }
 
-            itw.Write("new Citron.Module.Name.Singleton(");
+            itw.Write("new Citron.Symbol.Name.Singleton(");
             this.Write_String(@singleton.DebugText);
             itw.Write(")");
         }
 
-        public void Write_Name_Anonymous(Citron.Module.Name.Anonymous? @anonymous)
+        public void Write_Name_Anonymous(Citron.Symbol.Name.Anonymous? @anonymous)
         {
             if (@anonymous == null) { itw.Write("null"); return; }
 
-            itw.Write("new Citron.Module.Name.Anonymous(");
+            itw.Write("new Citron.Symbol.Name.Anonymous(");
             this.Write_Int32(@anonymous.Index);
             itw.Write(")");
         }
 
-        public void Write_Name_ConstructorParam(Citron.Module.Name.ConstructorParam? @constructorParam)
+        public void Write_Name_ConstructorParam(Citron.Symbol.Name.ConstructorParam? @constructorParam)
         {
             if (@constructorParam == null) { itw.Write("null"); return; }
 
-            itw.Write("new Citron.Module.Name.ConstructorParam(");
-            this.Write_Int32(@constructorParam.Index);
+            var itw1 = itw.Push();
+            var writer1 = new IR0Writer(itw1);
+            itw1.WriteLine();
+
+            itw.Write("new Citron.Symbol.Name.ConstructorParam(");
+            writer1.Write_Int32(@constructorParam.Index);
+            itw1.WriteLine(",");
+            writer1.Write_String(@constructorParam.Text);
             itw.Write(")");
         }
 
-        public void Write_Name_Normal(Citron.Module.Name.Normal? @normal)
+        public void Write_Name_Normal(Citron.Symbol.Name.Normal? @normal)
         {
             if (@normal == null) { itw.Write("null"); return; }
 
-            itw.Write("new Citron.Module.Name.Normal(");
+            itw.Write("new Citron.Symbol.Name.Normal(");
             this.Write_String(@normal.Text);
             itw.Write(")");
         }
@@ -347,7 +278,6 @@ namespace Citron.Test.Misc
             switch(@loc)
             {
                 case Citron.IR0.TempLoc @tempLoc: Write_TempLoc(@tempLoc); break;
-                case Citron.IR0.GlobalVarLoc @globalVarLoc: Write_GlobalVarLoc(@globalVarLoc); break;
                 case Citron.IR0.LocalVarLoc @localVarLoc: Write_LocalVarLoc(@localVarLoc); break;
                 case Citron.IR0.LambdaMemberVarLoc @lambdaMemberVarLoc: Write_LambdaMemberVarLoc(@lambdaMemberVarLoc); break;
                 case Citron.IR0.ListIndexerLoc @listIndexerLoc: Write_ListIndexerLoc(@listIndexerLoc); break;
@@ -368,15 +298,6 @@ namespace Citron.Test.Misc
 
             itw.Write("new Citron.IR0.TempLoc(");
             this.Write_Exp(@tempLoc.Exp);
-            itw.Write(")");
-        }
-
-        public void Write_GlobalVarLoc(Citron.IR0.GlobalVarLoc? @globalVarLoc)
-        {
-            if (@globalVarLoc == null) { itw.Write("null"); return; }
-
-            itw.Write("new Citron.IR0.GlobalVarLoc(");
-            this.Write_Name(@globalVarLoc.Name);
             itw.Write(")");
         }
 
@@ -534,7 +455,7 @@ namespace Citron.Test.Misc
             itw.Write("new Citron.IR0.LoadExp(");
             writer1.Write_Loc(@loadExp.Loc);
             itw1.WriteLine(",");
-            writer1.Write_ISymbolNode(@loadExp.Type);
+            writer1.Write_IType(@loadExp.Type);
             itw.Write(")");
         }
 
@@ -549,7 +470,7 @@ namespace Citron.Test.Misc
             itw.Write("new Citron.IR0.StringExp(");
             writer1.Write_ImmutableArray(Write_StringExpElement, "Citron.IR0.StringExpElement", @stringExp.Elements);
             itw1.WriteLine(",");
-            writer1.Write_ISymbolNode(@stringExp.StringSymbol);
+            writer1.Write_IType(@stringExp.StringType);
             itw.Write(")");
         }
 
@@ -564,7 +485,7 @@ namespace Citron.Test.Misc
             itw.Write("new Citron.IR0.IntLiteralExp(");
             writer1.Write_Int32(@intLiteralExp.Value);
             itw1.WriteLine(",");
-            writer1.Write_ISymbolNode(@intLiteralExp.IntSymbol);
+            writer1.Write_IType(@intLiteralExp.IntType);
             itw.Write(")");
         }
 
@@ -579,7 +500,7 @@ namespace Citron.Test.Misc
             itw.Write("new Citron.IR0.BoolLiteralExp(");
             writer1.Write_Boolean(@boolLiteralExp.Value);
             itw1.WriteLine(",");
-            writer1.Write_ISymbolNode(@boolLiteralExp.BoolSymbol);
+            writer1.Write_IType(@boolLiteralExp.BoolType);
             itw.Write(")");
         }
 
@@ -594,7 +515,7 @@ namespace Citron.Test.Misc
             itw.Write("new Citron.IR0.NewNullableExp(");
             writer1.Write_Exp(@newNullableExp.ValueExp);
             itw1.WriteLine(",");
-            writer1.Write_ISymbolNode(@newNullableExp.TypeSymbol);
+            writer1.Write_IType(@newNullableExp.Type);
             itw.Write(")");
         }
 
@@ -611,7 +532,7 @@ namespace Citron.Test.Misc
             itw1.WriteLine(",");
             writer1.Write_Exp(@callInternalUnaryOperatorExp.Operand);
             itw1.WriteLine(",");
-            writer1.Write_ISymbolNode(@callInternalUnaryOperatorExp.Type);
+            writer1.Write_IType(@callInternalUnaryOperatorExp.Type);
             itw.Write(")");
         }
 
@@ -628,7 +549,7 @@ namespace Citron.Test.Misc
             itw1.WriteLine(",");
             writer1.Write_Loc(@callInternalUnaryAssignOperatorExp.Operand);
             itw1.WriteLine(",");
-            writer1.Write_ISymbolNode(@callInternalUnaryAssignOperatorExp.Type);
+            writer1.Write_IType(@callInternalUnaryAssignOperatorExp.Type);
             itw.Write(")");
         }
 
@@ -647,7 +568,7 @@ namespace Citron.Test.Misc
             itw1.WriteLine(",");
             writer1.Write_Exp(@callInternalBinaryOperatorExp.Operand1);
             itw1.WriteLine(",");
-            writer1.Write_ISymbolNode(@callInternalBinaryOperatorExp.Type);
+            writer1.Write_IType(@callInternalBinaryOperatorExp.Type);
             itw.Write(")");
         }
 
@@ -758,7 +679,7 @@ namespace Citron.Test.Misc
             itw.Write("new Citron.IR0.ListExp(");
             writer1.Write_ImmutableArray(Write_Exp, "Citron.IR0.Exp", @listExp.Elems);
             itw1.WriteLine(",");
-            writer1.Write_ISymbolNode(@listExp.ListType);
+            writer1.Write_IType(@listExp.ListType);
             itw.Write(")");
         }
 
@@ -773,7 +694,7 @@ namespace Citron.Test.Misc
             itw.Write("new Citron.IR0.ListIteratorExp(");
             writer1.Write_Loc(@listIteratorExp.ListLoc);
             itw1.WriteLine(",");
-            writer1.Write_ISymbolNode(@listIteratorExp.IteratorType);
+            writer1.Write_IType(@listIteratorExp.IteratorType);
             itw.Write(")");
         }
 
@@ -859,8 +780,8 @@ namespace Citron.Test.Misc
             switch(@stmt)
             {
                 case Citron.IR0.CommandStmt @commandStmt: Write_CommandStmt(@commandStmt); break;
-                case Citron.IR0.GlobalVarDeclStmt @globalVarDeclStmt: Write_GlobalVarDeclStmt(@globalVarDeclStmt); break;
                 case Citron.IR0.LocalVarDeclStmt @localVarDeclStmt: Write_LocalVarDeclStmt(@localVarDeclStmt); break;
+                case Citron.IR0.LocalRefVarDeclStmt @localRefVarDeclStmt: Write_LocalRefVarDeclStmt(@localRefVarDeclStmt); break;
                 case Citron.IR0.IfStmt @ifStmt: Write_IfStmt(@ifStmt); break;
                 case Citron.IR0.IfTestClassStmt @ifTestClassStmt: Write_IfTestClassStmt(@ifTestClassStmt); break;
                 case Citron.IR0.IfTestEnumElemStmt @ifTestEnumElemStmt: Write_IfTestEnumElemStmt(@ifTestEnumElemStmt); break;
@@ -892,21 +813,35 @@ namespace Citron.Test.Misc
             itw.Write(")");
         }
 
-        public void Write_GlobalVarDeclStmt(Citron.IR0.GlobalVarDeclStmt? @globalVarDeclStmt)
-        {
-            if (@globalVarDeclStmt == null) { itw.Write("null"); return; }
-
-            itw.Write("new Citron.IR0.GlobalVarDeclStmt(");
-            this.Write_ImmutableArray(Write_VarDeclElement, "Citron.IR0.VarDeclElement", @globalVarDeclStmt.Elems);
-            itw.Write(")");
-        }
-
         public void Write_LocalVarDeclStmt(Citron.IR0.LocalVarDeclStmt? @localVarDeclStmt)
         {
             if (@localVarDeclStmt == null) { itw.Write("null"); return; }
 
+            var itw1 = itw.Push();
+            var writer1 = new IR0Writer(itw1);
+            itw1.WriteLine();
+
             itw.Write("new Citron.IR0.LocalVarDeclStmt(");
-            this.Write_LocalVarDecl(@localVarDeclStmt.VarDecl);
+            writer1.Write_IType(@localVarDeclStmt.Type);
+            itw1.WriteLine(",");
+            writer1.Write_String(@localVarDeclStmt.Name);
+            itw1.WriteLine(",");
+            writer1.Write_Exp(@localVarDeclStmt.InitExp);
+            itw.Write(")");
+        }
+
+        public void Write_LocalRefVarDeclStmt(Citron.IR0.LocalRefVarDeclStmt? @localRefVarDeclStmt)
+        {
+            if (@localRefVarDeclStmt == null) { itw.Write("null"); return; }
+
+            var itw1 = itw.Push();
+            var writer1 = new IR0Writer(itw1);
+            itw1.WriteLine();
+
+            itw.Write("new Citron.IR0.LocalRefVarDeclStmt(");
+            writer1.Write_String(@localRefVarDeclStmt.Name);
+            itw1.WriteLine(",");
+            writer1.Write_Loc(@localRefVarDeclStmt.Loc);
             itw.Write(")");
         }
 
@@ -921,9 +856,9 @@ namespace Citron.Test.Misc
             itw.Write("new Citron.IR0.IfStmt(");
             writer1.Write_Exp(@ifStmt.Cond);
             itw1.WriteLine(",");
-            writer1.Write_Stmt(@ifStmt.Body);
+            writer1.Write_ImmutableArray(Write_Stmt, "Citron.IR0.Stmt", @ifStmt.Body);
             itw1.WriteLine(",");
-            writer1.Write_Stmt(@ifStmt.ElseBody);
+            writer1.Write_ImmutableArray(Write_Stmt, "Citron.IR0.Stmt", @ifStmt.ElseBody);
             itw.Write(")");
         }
 
@@ -942,9 +877,9 @@ namespace Citron.Test.Misc
             itw1.WriteLine(",");
             writer1.Write_Name(@ifTestClassStmt.VarName);
             itw1.WriteLine(",");
-            writer1.Write_Stmt(@ifTestClassStmt.Body);
+            writer1.Write_ImmutableArray(Write_Stmt, "Citron.IR0.Stmt", @ifTestClassStmt.Body);
             itw1.WriteLine(",");
-            writer1.Write_Stmt(@ifTestClassStmt.ElseBody);
+            writer1.Write_ImmutableArray(Write_Stmt, "Citron.IR0.Stmt", @ifTestClassStmt.ElseBody);
             itw.Write(")");
         }
 
@@ -963,9 +898,9 @@ namespace Citron.Test.Misc
             itw1.WriteLine(",");
             writer1.Write_String(@ifTestEnumElemStmt.VarName);
             itw1.WriteLine(",");
-            writer1.Write_Stmt(@ifTestEnumElemStmt.Body);
+            writer1.Write_ImmutableArray(Write_Stmt, "Citron.IR0.Stmt", @ifTestEnumElemStmt.Body);
             itw1.WriteLine(",");
-            writer1.Write_Stmt(@ifTestEnumElemStmt.ElseBody);
+            writer1.Write_ImmutableArray(Write_Stmt, "Citron.IR0.Stmt", @ifTestEnumElemStmt.ElseBody);
             itw.Write(")");
         }
 
@@ -978,13 +913,13 @@ namespace Citron.Test.Misc
             itw1.WriteLine();
 
             itw.Write("new Citron.IR0.ForStmt(");
-            writer1.Write_ForStmtInitializer(@forStmt.Initializer);
+            writer1.Write_ImmutableArray(Write_Stmt, "Citron.IR0.Stmt", @forStmt.InitStmts);
             itw1.WriteLine(",");
             writer1.Write_Exp(@forStmt.CondExp);
             itw1.WriteLine(",");
             writer1.Write_Exp(@forStmt.ContinueExp);
             itw1.WriteLine(",");
-            writer1.Write_Stmt(@forStmt.Body);
+            writer1.Write_ImmutableArray(Write_Stmt, "Citron.IR0.Stmt", @forStmt.Body);
             itw.Write(")");
         }
 
@@ -1058,7 +993,7 @@ namespace Citron.Test.Misc
             if (@awaitStmt == null) { itw.Write("null"); return; }
 
             itw.Write("new Citron.IR0.AwaitStmt(");
-            this.Write_Stmt(@awaitStmt.Body);
+            this.Write_ImmutableArray(Write_Stmt, "Citron.IR0.Stmt", @awaitStmt.Body);
             itw.Write(")");
         }
 
@@ -1088,13 +1023,13 @@ namespace Citron.Test.Misc
             itw1.WriteLine();
 
             itw.Write("new Citron.IR0.ForeachStmt(");
-            writer1.Write_ISymbolNode(@foreachStmt.ElemType);
+            writer1.Write_IType(@foreachStmt.ItemType);
             itw1.WriteLine(",");
             writer1.Write_String(@foreachStmt.ElemName);
             itw1.WriteLine(",");
             writer1.Write_Loc(@foreachStmt.Iterator);
             itw1.WriteLine(",");
-            writer1.Write_Stmt(@foreachStmt.Body);
+            writer1.Write_ImmutableArray(Write_Stmt, "Citron.IR0.Stmt", @foreachStmt.Body);
             itw.Write(")");
         }
 
@@ -1147,34 +1082,14 @@ namespace Citron.Test.Misc
             }
         }
 
-        public void Write_ForStmtInitializer(Citron.IR0.ForStmtInitializer? @forStmtInitializer)
+        public void Write_IType(Citron.Symbol.IType? @iType)
         {
-            if (@forStmtInitializer == null) { itw.Write("null"); return; }
+            if (@iType == null) { itw.Write("null"); return; }
 
-            switch(@forStmtInitializer)
+            switch(@iType)
             {
-                case Citron.IR0.ExpForStmtInitializer @expForStmtInitializer: Write_ExpForStmtInitializer(@expForStmtInitializer); break;
-                case Citron.IR0.VarDeclForStmtInitializer @varDeclForStmtInitializer: Write_VarDeclForStmtInitializer(@varDeclForStmtInitializer); break;
                 default: throw new Citron.Infra.UnreachableCodeException();
             }
-        }
-
-        public void Write_ExpForStmtInitializer(Citron.IR0.ExpForStmtInitializer? @expForStmtInitializer)
-        {
-            if (@expForStmtInitializer == null) { itw.Write("null"); return; }
-
-            itw.Write("new Citron.IR0.ExpForStmtInitializer(");
-            this.Write_Exp(@expForStmtInitializer.Exp);
-            itw.Write(")");
-        }
-
-        public void Write_VarDeclForStmtInitializer(Citron.IR0.VarDeclForStmtInitializer? @varDeclForStmtInitializer)
-        {
-            if (@varDeclForStmtInitializer == null) { itw.Write("null"); return; }
-
-            itw.Write("new Citron.IR0.VarDeclForStmtInitializer(");
-            this.Write_LocalVarDecl(@varDeclForStmtInitializer.VarDecl);
-            itw.Write(")");
         }
     }
 }

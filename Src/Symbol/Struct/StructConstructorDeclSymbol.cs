@@ -32,7 +32,7 @@ namespace Citron.Symbol
             this.parameters = parameters;
             this.bTrivial = bTrivial;
 
-            this.lambdaComponent = new LambdaDeclSymbolComponent<StructConstructorDeclSymbol>();
+            this.lambdaComponent = new LambdaDeclSymbolComponent<StructConstructorDeclSymbol>(this);
         }
 
         int IDeclSymbolNode.GetTypeParamCount()
@@ -80,7 +80,7 @@ namespace Citron.Symbol
             return bTrivial;
         }
 
-        void IDeclSymbolNode.Accept<TDeclSymbolNodeVisitor>(ref TDeclSymbolNodeVisitor visitor)
+        void IDeclSymbolNode.AcceptDeclSymbolVisitor<TDeclSymbolNodeVisitor>(ref TDeclSymbolNodeVisitor visitor)
         {
             visitor.VisitStructConstructor(this);
         }

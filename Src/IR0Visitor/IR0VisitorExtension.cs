@@ -16,7 +16,6 @@ namespace Citron.IR0Visitor
             switch (stmt)
             {
                 case R.CommandStmt commandStmt: visitor.VisitCommandStmt(commandStmt); break;
-                case R.GlobalVarDeclStmt globalVarDeclStmt: visitor.VisitGlobalVarDeclStmt(globalVarDeclStmt); break;
                 case R.LocalVarDeclStmt localVarDeclStmt: visitor.VisitLocalVarDeclStmt(localVarDeclStmt); break;
                 case R.IfStmt ifStmt: visitor.VisitIfStmt(ifStmt); break;
                 case R.IfTestClassStmt ifTestClassStmt: visitor.VisitIfTestClassStmt(ifTestClassStmt); break;
@@ -44,7 +43,6 @@ namespace Citron.IR0Visitor
             switch (stmt)
             {
                 case R.CommandStmt commandStmt: visitor.VisitCommandStmt(commandStmt); break;
-                case R.GlobalVarDeclStmt globalVarDeclStmt: visitor.VisitGlobalVarDeclStmt(globalVarDeclStmt); break;
                 case R.LocalVarDeclStmt localVarDeclStmt: visitor.VisitLocalVarDeclStmt(localVarDeclStmt); break;
                 case R.IfStmt ifStmt: visitor.VisitIfStmt(ifStmt); break;
                 case R.IfTestClassStmt ifTestClassStmt: visitor.VisitIfTestClassStmt(ifTestClassStmt); break;
@@ -166,7 +164,6 @@ namespace Citron.IR0Visitor
             switch (loc)
             {
                 case R.TempLoc tempLoc: visitor.VisitTempLoc(tempLoc); break;
-                case R.GlobalVarLoc globalVarLoc: visitor.VisitGlobalVarLoc(globalVarLoc); break;
                 case R.LocalVarLoc localVarLoc: visitor.VisitLocalVarLoc(localVarLoc); break;
                 case R.LambdaMemberVarLoc capturedVarLoc: visitor.VisitLambdaMemberVarLoc(capturedVarLoc); break;
                 case R.ListIndexerLoc listIndexerLoc: visitor.VisitListIndexerLoc(listIndexerLoc); break;
@@ -186,7 +183,6 @@ namespace Citron.IR0Visitor
             switch (loc)
             {
                 case R.TempLoc tempLoc: return visitor.VisitTempLoc(tempLoc);
-                case R.GlobalVarLoc globalVarLoc: return visitor.VisitGlobalVarLoc(globalVarLoc);
                 case R.LocalVarLoc localVarLoc: return visitor.VisitLocalVarLoc(localVarLoc);
                 case R.LambdaMemberVarLoc lambdaMemberVarLoc: return visitor.VisitLambdaMemberVarLoc(lambdaMemberVarLoc);
                 case R.ListIndexerLoc listIndexerLoc: return visitor.VisitListIndexerLoc(listIndexerLoc);

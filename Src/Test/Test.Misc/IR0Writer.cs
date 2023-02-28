@@ -9,7 +9,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using M = Citron.Module;
 using R = Citron.IR0;
 
 namespace Citron.Test.Misc

@@ -134,7 +134,7 @@ namespace Citron.Symbol
             return memberVars[index];
         }
 
-        public void Accept(ITypeDeclSymbolVisitor visitor)
+        void ITypeDeclSymbol.AcceptTypeDeclSymbolVisitor<TTypeDeclSymbolVisitor>(ref TTypeDeclSymbolVisitor visitor)
         {
             visitor.VisitStruct(this);
         }
@@ -151,7 +151,7 @@ namespace Citron.Symbol
                 .Concat(memberVars);
         }
 
-        void IDeclSymbolNode.Accept<TDeclSymbolNodeVisitor>(ref TDeclSymbolNodeVisitor visitor)
+        void IDeclSymbolNode.AcceptDeclSymbolVisitor<TDeclSymbolNodeVisitor>(ref TDeclSymbolNodeVisitor visitor)
         {
             visitor.VisitStruct(this);
         }

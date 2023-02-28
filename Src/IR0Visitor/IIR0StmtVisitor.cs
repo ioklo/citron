@@ -6,7 +6,6 @@ namespace Citron.IR0Visitor
     public interface IIR0StmtVisitor
     {
         void VisitCommandStmt(R.CommandStmt commandStmt);
-        void VisitGlobalVarDeclStmt(R.GlobalVarDeclStmt globalVarDeclStmt);
         void VisitLocalVarDeclStmt(R.LocalVarDeclStmt localVarDeclStmt);
         void VisitIfStmt(R.IfStmt ifStmt);
         void VisitIfTestClassStmt(R.IfTestClassStmt ifTestClassStmt);

@@ -805,9 +805,7 @@ namespace Citron
             
             if (Parse(await ParseGlobalFuncDeclAsync(context), ref context, out var funcDecl))
                 return new ParseResult<ScriptElement>(new GlobalFuncDeclScriptElement(funcDecl), context);
-
-            if (Parse(await stmtParser.ParseStmtAsync(context), ref context, out var stmt))
-                return new ParseResult<ScriptElement>(new StmtScriptElement(stmt), context);
+            
 
             return ParseResult<ScriptElement>.Invalid;
         }

@@ -6,7 +6,7 @@ using System.Diagnostics;
 namespace Citron.Symbol
 {
     // utility class for {ClassDeclSymbol, StructDeclSymbol} QueryMember_Type
-    public class SymbolQueryResultBuilder : ITypeDeclSymbolVisitor
+    public struct SymbolQueryResultBuilder : ITypeDeclSymbolVisitor
     {
         ISymbolNode outer;
         SymbolFactory symbolFactory;
@@ -22,7 +22,7 @@ namespace Citron.Symbol
         public static SymbolQueryResult Build(ITypeDeclSymbol decl, ISymbolNode outer, SymbolFactory symbolFactory)
         {
             var builder = new SymbolQueryResultBuilder(outer, symbolFactory);
-            decl.Accept(builder);
+            decl.AcceptTypeDeclSymbolVisitor(ref builder);
 
             Debug.Assert(builder.result != null);
             return builder.result;
@@ -30,17 +30,23 @@ namespace Citron.Symbol
 
         public void VisitClass(ClassDeclSymbol classDecl)
         {
-            result = new SymbolQueryResult.Class(typeArgs => symbolFactory.MakeClass(outer, classDecl, typeArgs));
+            var thisOuter = outer;
+            var thisSymbolFactory = symbolFactory;
+            result = new SymbolQueryResult.Class(typeArgs => thisSymbolFactory.MakeClass(thisOuter, classDecl, typeArgs));
         }
 
         public void VisitStruct(StructDeclSymbol structDecl)
         {
-            result = new SymbolQueryResult.Struct(typeArgs => symbolFactory.MakeStruct(outer, structDecl, typeArgs));
+            var thisOuter = outer;
+            var thisSymbolFactory = symbolFactory;
+            result = new SymbolQueryResult.Struct(typeArgs => thisSymbolFactory.MakeStruct(thisOuter, structDecl, typeArgs));
         }
 
         public void VisitEnum(EnumDeclSymbol enumDecl)
         {
-            result = new SymbolQueryResult.Enum(typeArgs => symbolFactory.MakeEnum(outer, enumDecl, typeArgs));
+            var thisOuter = outer;
+            var thisSymbolFactory = symbolFactory;
+            result = new SymbolQueryResult.Enum(typeArgs => thisSymbolFactory.MakeEnum(thisOuter, enumDecl, typeArgs));
         }
 
         public void VisitEnumElem(EnumElemDeclSymbol enumElemDecl)

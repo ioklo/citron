@@ -14,7 +14,7 @@ namespace Citron.Analysis
     partial class BuildingMemberDeclPhaseContext
     {
         record struct BuildingTrivialConstructorPhaseTask(ITypeDeclSymbol? Prerequisite, ITypeDeclSymbol This, Action Action);
-        
+
         ImmutableArray<ModuleDeclSymbol> modules;
         SymbolFactory factory;
         List<BuildingTrivialConstructorPhaseTask> buildingTrivialConstructorPhaseTasks;
@@ -25,8 +25,8 @@ namespace Citron.Analysis
         {
             this.modules = modules;
             this.factory = factory;
-            this.buildingTrivialConstructorPhaseTasks = new List<BuildingTrivialConstructorPhaseTask>();
-            this.buildingBodyPhaseTasks = new List<Action<BuildingBodyPhaseContext>>();
+            buildingTrivialConstructorPhaseTasks = new List<BuildingTrivialConstructorPhaseTask>();
+            buildingBodyPhaseTasks = new List<Action<BuildingBodyPhaseContext>>();
         }
 
         public IType MakeType(S.TypeExp typeExp, IDeclSymbolNode curNode)
@@ -44,7 +44,7 @@ namespace Citron.Analysis
 
             var paramsBuilder = ImmutableArray.CreateBuilder<FuncParameter>(paramSyntaxes.Length);
             foreach (var paramSyntax in paramSyntaxes)
-            {   
+            {
                 var paramKind = paramSyntax.Kind switch
                 {
                     S.FuncParamKind.Normal => FuncParameterKind.Default,
@@ -75,7 +75,7 @@ namespace Citron.Analysis
         public void BuildTrivialConstructor()
         {
             bool IsFromReferenceModule(ITypeDeclSymbol declSymbol)
-            {   
+            {
                 var module = declSymbol.GetModule();
                 return module.IsReference();
             }
@@ -84,13 +84,13 @@ namespace Citron.Analysis
             var visited = new HashSet<ITypeDeclSymbol>();
 
             int? removedTasks = null;
-            while(removedTasks == null || removedTasks.Value != 0)
+            while (removedTasks == null || removedTasks.Value != 0)
             {
                 removedTasks = buildingTrivialConstructorPhaseTasks.RemoveAll(task =>
                 {
                     // 선행 declSymbol이 null또는 레퍼런스라면
-                    if (task.Prerequisite == null || 
-                        IsFromReferenceModule(task.Prerequisite) || 
+                    if (task.Prerequisite == null ||
+                        IsFromReferenceModule(task.Prerequisite) ||
                         visited.Contains(task.Prerequisite))
                     {
                         task.Action.Invoke();
@@ -105,7 +105,7 @@ namespace Citron.Analysis
 
         public void BuildBody(BuildingBodyPhaseContext context)
         {
-            foreach(var task in buildingBodyPhaseTasks)
+            foreach (var task in buildingBodyPhaseTasks)
             {
                 task.Invoke(context);
             }

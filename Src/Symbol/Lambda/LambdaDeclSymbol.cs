@@ -40,7 +40,7 @@ namespace Citron.Symbol
             this.parameters = parameters;
 
             this.memberVars = new List<LambdaMemberVarDeclSymbol>();
-            this.lambdaComponent = new LambdaDeclSymbolComponent<LambdaDeclSymbol>();
+            this.lambdaComponent = new LambdaDeclSymbolComponent<LambdaDeclSymbol>(this);
 
             this.initState = InitializeState.BeforeInitReturn;
         }
@@ -105,12 +105,12 @@ namespace Citron.Symbol
             return parameters[index];
         }
 
-        void IDeclSymbolNode.Accept<TDeclSymbolNodeVisitor>(ref TDeclSymbolNodeVisitor visitor)
+        void IDeclSymbolNode.AcceptDeclSymbolVisitor<TDeclSymbolNodeVisitor>(ref TDeclSymbolNodeVisitor visitor)
         {
             visitor.VisitLambda(this);
         }
 
-        public void Accept(ITypeDeclSymbolVisitor visitor)
+        void ITypeDeclSymbol.AcceptTypeDeclSymbolVisitor<TTypeDeclSymbolVisitor>(ref TTypeDeclSymbolVisitor visitor)
         {
             visitor.VisitLambda(this);
         }

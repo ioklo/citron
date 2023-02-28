@@ -19,6 +19,7 @@ partial class ScopeContext : IMutable<ScopeContext>
 
     bool bLoop;    
     ImmutableDictionary<Name, LocalVarInfo> localVarInfos;
+    ImmutableArray<R.Stmt> rstmts;
 
     // private
     ScopeContext(GlobalContext globalContext, BodyContext bodyContext, ScopeContext? parentContext, bool bLoop, ImmutableDictionary<Name, LocalVarInfo> localVarInfos)
@@ -61,7 +62,7 @@ partial class ScopeContext : IMutable<ScopeContext>
 
     public void AddStmt(R.Stmt stmt)
     {
-        throw new NotImplementedException();
+        rstmts = rstmts.Add(stmt);
     }
 
     public void SetFlowEndsCompletely()
@@ -113,16 +114,10 @@ partial class ScopeContext : IMutable<ScopeContext>
         return bLoop;
     }
 
-    // 현재까지 모인 Stmts들을 Block 또는 단일 Stmt로 만들고 리턴한다
-    public R.Stmt MakeSingleStmt()
-    {
-        throw new NotImplementedException();
-    }
-
     // 현재까지 모인 Stmts들을 ImmutableArray로 리턴한다
     public ImmutableArray<R.Stmt> MakeStmts()
     {
-        throw new NotImplementedException();
+        return rstmts;
     }
 
     public ExpResult ResolveIdentifier(Name name, ImmutableArray<IType> typeArgs)

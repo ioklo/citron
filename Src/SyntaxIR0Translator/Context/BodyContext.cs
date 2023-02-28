@@ -34,7 +34,7 @@ class BodyContext : IMutable<BodyContext>
     public BodyContext(ImmutableArray<ModuleDeclSymbol> moduleDeclSymbols, SymbolFactory symbolFactory, 
         ScopeContext? outerScopeContext, IFuncDeclSymbol funcDeclSymbol, bool bSeqFunc, bool bSetReturn, FuncReturn? funcReturn)
     {
-        Debug.Assert(!bSetReturn && funcReturn == null);
+        Debug.Assert(!(!bSetReturn && funcReturn == null));
 
         this.moduleDeclSymbols = moduleDeclSymbols;
         this.symbolFactory = symbolFactory;

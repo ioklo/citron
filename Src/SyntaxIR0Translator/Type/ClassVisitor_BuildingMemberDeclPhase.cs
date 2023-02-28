@@ -30,7 +30,7 @@ namespace Citron.Analysis
 
             var (funcReturn, funcParams) = context.MakeFuncReturnAndParams(func, syntax.IsRefReturn, syntax.RetType, syntax.Parameters);
             func.InitFuncReturnAndParams(funcReturn, funcParams);
-            
+
             context.AddBuildingBodyPhaseTask(context =>
             {
                 var visitor = new ClassVisitor_BuilindBodyPhase(context);
@@ -43,7 +43,7 @@ namespace Citron.Analysis
             foreach (var name in syntax.VarNames)
             {
                 var accessModifier = BuilderMisc.MakeClassMemberAccessor(syntax.AccessModifier);
-                
+
                 var declType = context.MakeType(syntax.VarType, declSymbol);
 
                 // TODO: bStatic 지원
@@ -58,7 +58,7 @@ namespace Citron.Analysis
 
             // Constructor는 Type Parameter가 없으므로 파라미터를 만들 때, 상위(class) declSymbol을 넘긴다
             var parameters = BuilderMisc.MakeParameters(declSymbol, context, syntax.Parameters);
-            
+
             // TODO: syntax에 trivial 마킹하면 검사하고 trivial로 만든다
             var constructorDeclSymbol = new ClassConstructorDeclSymbol(declSymbol, accessor, parameters, bTrivial: false);
             declSymbol.AddConstructor(constructorDeclSymbol);
@@ -135,7 +135,7 @@ namespace Citron.Analysis
                 }
             }
 
-            for(int i = 0; i < memberVarCount; i++)            
+            for (int i = 0; i < memberVarCount; i++)
             {
                 var memberVar = outer.GetMemberVar(i);
                 var type = memberVar.GetDeclType();
@@ -156,10 +156,10 @@ namespace Citron.Analysis
             // 생성자 중, 파라미터가 같은 것이 있는지 확인
             int count = classDeclSymbol.GetConstructorCount();
 
-            for(int i = 0; i < count; i++)
+            for (int i = 0; i < count; i++)
             {
                 var constructor = classDeclSymbol.GetConstructor(i);
-            
+
                 if (IsMatchClassTrivialConstructorParameters(baseConstructor, classDeclSymbol, constructor))
                     return constructor;
             }
@@ -195,14 +195,14 @@ namespace Citron.Analysis
 
             declSymbol.InitBaseTypes(uniqueBaseClass, interfacesBuilder.ToImmutable());
 
-            foreach(var memberDecl in syntax.MemberDecls)
+            foreach (var memberDecl in syntax.MemberDecls)
             {
-                switch(memberDecl)
+                switch (memberDecl)
                 {
-                    case S.ClassMemberFuncDecl funcMember:                        
+                    case S.ClassMemberFuncDecl funcMember:
                         VisitClassMemberFuncDecl(funcMember);
                         break;
-                        
+
 
                     case S.ClassMemberVarDecl varMember:
                         VisitClassMemberVarDecl(varMember);
@@ -214,7 +214,7 @@ namespace Citron.Analysis
                 }
             }
 
-            var thisDeclSymbol = this.declSymbol;
+            var thisDeclSymbol = declSymbol;
             context.AddBuildingTrivialConstructorPhaseTask(uniqueBaseClass?.Symbol.GetDecl(), declSymbol, () =>
             {
                 var baseTrivialConstructor = uniqueBaseClass?.Symbol.GetTrivialConstructor();

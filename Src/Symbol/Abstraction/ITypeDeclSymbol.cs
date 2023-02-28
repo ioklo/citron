@@ -6,6 +6,7 @@ namespace Citron.Symbol
 {
     public interface ITypeDeclSymbol : IDeclSymbolNode, ICyclicEqualityComparableClass<ITypeDeclSymbol>
     {
-        void Accept(ITypeDeclSymbolVisitor visitor);
+        void AcceptTypeDeclSymbolVisitor<TTypeDeclSymbolVisitor>(ref TTypeDeclSymbolVisitor visitor)
+            where TTypeDeclSymbolVisitor : struct, ITypeDeclSymbolVisitor;
     }
 }

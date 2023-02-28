@@ -9,7 +9,7 @@ namespace Citron.Analysis
     // 1. BuildingSkeletonPhase
     class BuildingSkeletonPhaseContext
     {
-        List<Action<BuildingMemberDeclPhaseContext>> buildingMemberDeclPhaseTasks;        
+        List<Action<BuildingMemberDeclPhaseContext>> buildingMemberDeclPhaseTasks;
 
         public BuildingSkeletonPhaseContext()
         {
@@ -20,7 +20,7 @@ namespace Citron.Analysis
         {
             buildingMemberDeclPhaseTasks.Add(task);
         }
-        
+
         public void BuildMemberDecl(BuildingMemberDeclPhaseContext context)
         {
             foreach (var task in buildingMemberDeclPhaseTasks)

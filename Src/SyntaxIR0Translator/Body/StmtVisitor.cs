@@ -74,18 +74,18 @@ partial struct StmtVisitor : S.IStmtVisitor
 
             var bodyStmtVisitor = new StmtVisitor(bodyContext);
             bodyStmtVisitor.VisitEmbeddable(ifTestStmt.Body);
-            var bodyStmt = bodyContext.MakeSingleStmt();
+            var bodyStmts = bodyContext.MakeStmts();
 
-            R.Stmt? elseStmt = null;
+            ImmutableArray<R.Stmt> elseStmts = default;
             if (ifTestStmt.ElseBody != null)
             {
                 var elseContext = context.MakeNestedScopeContext();
                 var elseStmtVisitor = new StmtVisitor(elseContext);
                 elseStmtVisitor.VisitEmbeddable(ifTestStmt.ElseBody);
-                elseStmt = elseContext.MakeSingleStmt();
+                elseStmts = elseContext.MakeStmts();
             }
 
-            var stmt = new R.IfTestEnumElemStmt(targetLoc, enumElemType.Symbol, ifTestStmt.VarName, bodyStmt, elseStmt);
+            var stmt = new R.IfTestEnumElemStmt(targetLoc, enumElemType.Symbol, ifTestStmt.VarName, bodyStmts, elseStmts);
             context.AddStmt(stmt);
         }
         else
@@ -134,18 +134,18 @@ partial struct StmtVisitor : S.IStmtVisitor
         var bodyContext = context.MakeNestedScopeContext();
         var bodyVisitor = new StmtVisitor(bodyContext);
         bodyVisitor.VisitEmbeddable(ifStmt.Body);
-        var bodyStmt = bodyContext.MakeSingleStmt();
+        var bodyStmts = bodyContext.MakeStmts();
 
-        R.Stmt? elseStmt = null;
+        ImmutableArray<R.Stmt> elseStmts = default;
         if (ifStmt.ElseBody != null)
         {
             var elseContext = context.MakeNestedScopeContext();
             var elseVisitor = new StmtVisitor(elseContext);
             elseVisitor.VisitEmbeddable(ifStmt.ElseBody);
-            elseStmt = elseContext.MakeSingleStmt();
+            elseStmts = elseContext.MakeStmts();
         }
 
-        var stmt = new R.IfStmt(condExp, bodyStmt, elseStmt);
+        var stmt = new R.IfStmt(condExp, bodyStmts, elseStmts);
         context.AddStmt(stmt);
     }
 
@@ -213,9 +213,9 @@ partial struct StmtVisitor : S.IStmtVisitor
         var bodyVisitor = new StmtVisitor(bodyContext);
 
         bodyVisitor.VisitEmbeddable(forStmt.Body);
-        var bodyStmt = bodyContext.MakeSingleStmt();
+        var bodyStmts = bodyContext.MakeStmts();
 
-        context.AddStmt(new R.ForStmt(initStmts, condExp, continueExp, bodyStmt));
+        context.AddStmt(new R.ForStmt(initStmts, condExp, continueExp, bodyStmts));
     }
 
     public void VisitContinue(S.ContinueStmt continueStmt)

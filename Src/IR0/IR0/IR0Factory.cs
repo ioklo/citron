@@ -71,7 +71,7 @@ namespace Citron.IR0
         #endregion
 
         #region IfStmt
-        public IfStmt If(Exp cond, Stmt body, Stmt? elseBody = null)
+        public IfStmt If(Exp cond, ImmutableArray<Stmt> body, ImmutableArray<Stmt> elseBody = default)
         {
             return new IfStmt(cond, body, elseBody);
         }
@@ -80,13 +80,13 @@ namespace Citron.IR0
         #region ForStmt
 
         // skip initializer
-        public ForStmt For(Exp? condExp, Exp? contExp, Stmt body)
+        public ForStmt For(Exp? condExp, Exp? contExp, ImmutableArray<Stmt> body)
         {
             return new ForStmt(InitStmts: default, condExp, contExp, body);
         }
 
         // with local item var decl
-        public ForStmt For(IType itemType, string itemName, Exp itemInit, Exp? cond, Exp? cont, Stmt body)
+        public ForStmt For(IType itemType, string itemName, Exp itemInit, Exp? cond, Exp? cont, ImmutableArray<Stmt> body)
         {
             return new ForStmt(
                 Arr<Stmt>(new LocalVarDeclStmt(itemType, itemName, itemInit)),
@@ -94,7 +94,7 @@ namespace Citron.IR0
             );
         }
 
-        public ForStmt For(Exp init, Exp? cond, Exp? cont, Stmt body)
+        public ForStmt For(Exp init, Exp? cond, Exp? cont, ImmutableArray<Stmt> body)
         {
             return new ForStmt(
                 Arr<Stmt>(new ExpStmt(init)), cond, cont, body);

@@ -17,10 +17,10 @@ namespace Citron.IR0
     public record class LocalVarDeclStmt(IType Type, string Name, Exp InitExp) : Stmt;    // var x = 0;
     public record class LocalRefVarDeclStmt(string Name, Loc Loc) : Stmt; // ref int x = y;
 
-    public record class IfStmt(Exp Cond, Stmt Body, Stmt? ElseBody) : Stmt;
-    public record class IfTestClassStmt(Loc Target, ClassSymbol Class, Name VarName, Stmt Body, Stmt? ElseBody) : Stmt;
-    public record class IfTestEnumElemStmt(Loc Target, EnumElemSymbol EnumElem, string? VarName, Stmt Body, Stmt? ElseBody) : Stmt;
-    public record class ForStmt(ImmutableArray<Stmt> InitStmts, Exp? CondExp, Exp? ContinueExp, Stmt Body) : Stmt;
+    public record class IfStmt(Exp Cond, ImmutableArray<Stmt> Body, ImmutableArray<Stmt> ElseBody) : Stmt;
+    public record class IfTestClassStmt(Loc Target, ClassSymbol Class, Name VarName, ImmutableArray<Stmt> Body, ImmutableArray<Stmt> ElseBody) : Stmt;
+    public record class IfTestEnumElemStmt(Loc Target, EnumElemSymbol EnumElem, string? VarName, ImmutableArray<Stmt> Body, ImmutableArray<Stmt> ElseBody) : Stmt;
+    public record class ForStmt(ImmutableArray<Stmt> InitStmts, Exp? CondExp, Exp? ContinueExp, ImmutableArray<Stmt> Body) : Stmt;
 
     // singleton
     public record ContinueStmt : Stmt

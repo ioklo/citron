@@ -8,7 +8,7 @@ using S = Citron.Syntax;
 
 namespace Citron.Analysis
 {
-    struct ClassVisitor_BuildingSkeletonPhase<TDeclSymbolNode> 
+    struct ClassVisitor_BuildingSkeletonPhase<TDeclSymbolNode>
         where TDeclSymbolNode : IDeclSymbolNode, ITypeDeclContainable
     {
         BuildingSkeletonPhaseContext context;
@@ -29,7 +29,7 @@ namespace Citron.Analysis
 
             var declSymbol = new ClassDeclSymbol(node, accessor, new Name.Normal(syntax.Name), typeParams);
             node.AddType(declSymbol);
-            
+
             foreach (var member in syntax.MemberDecls)
             {
                 switch (member)

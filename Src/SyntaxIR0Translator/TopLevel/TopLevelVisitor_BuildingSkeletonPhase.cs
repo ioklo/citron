@@ -1,12 +1,11 @@
 ﻿using System;
-
 using Citron.Collections;
 using Citron.Symbol;
 
 using S = Citron.Syntax;
 
 namespace Citron.Analysis
-{   
+{
     struct TopLevelVisitor_BuildingSkeletonPhase<TDeclSymbolNode>
         where TDeclSymbolNode : ITopLevelDeclSymbolNode, ITopLevelDeclContainable
     {
@@ -18,7 +17,7 @@ namespace Citron.Analysis
             this.context = context;
             this.node = node;
         }
-        
+
         void VisitNamespaceElements(ImmutableArray<S.NamespaceElement> elems)
         {
             foreach (var elem in elems)
@@ -45,7 +44,7 @@ namespace Citron.Analysis
             // 이름을 만드려면 인자의 타입이 확정되어야 되서, 다음 단계에서 해야 한다
             var node = this.node;
             context.AddBuildingMemberDeclPhaseTask(context =>
-            {   
+            {
                 var accessor = BuilderMisc.MakeGlobalMemberAccessor(syntax.AccessModifier);
                 var typeParams = BuilderMisc.VisitTypeParams(syntax.TypeParams);
 
@@ -64,7 +63,7 @@ namespace Citron.Analysis
 
                 context.AddBuildingBodyPhaseTask(context =>
                 {
-                    var visitor = new TopLevelVisitor_BuildingBodyPhase();
+                    var visitor = new TopLevelVisitor_BuildingBodyPhase(context);
                     visitor.VisitGlobalFuncDecl(syntax.Body, declSymbol, bSeqFunc: syntax.IsSequence);
                 });
             });
@@ -111,8 +110,8 @@ namespace Citron.Analysis
             // 리턴은 가장 최상위 네임스페이스(NS1)
             // 가장 마지막 네임스페이스 (NS3)를 얻어서 하위 처리를 해야한다
             VisitElem(0, node);
-        }        
-        
+        }
+
         public void VisitTypeDecl(S.TypeDecl decl)
         {
             TypeVisitor_BuildingSkeletonPhase.VisitTypeDecl(decl, context, node, BuilderMisc.MakeGlobalMemberAccessor);

@@ -89,19 +89,19 @@ namespace Citron.Symbol
         
         public int GetParameterCount()
         {
-            Debug.Assert(InitializeState.AfterInitFuncReturnAndParams < initState);
+            Debug.Assert(InitializeState.BeforeInitFuncReturnAndParams < initState);
             return parameters.Length;
         }
 
         public FuncParameter GetParameter(int index)
         {
-            Debug.Assert(InitializeState.AfterInitFuncReturnAndParams < initState);
+            Debug.Assert(InitializeState.BeforeInitFuncReturnAndParams < initState);
             return parameters[index];
         }
 
         public FuncReturn GetReturn()
         {
-            Debug.Assert(InitializeState.AfterInitFuncReturnAndParams < initState);
+            Debug.Assert(InitializeState.BeforeInitFuncReturnAndParams < initState);
             return @return;
         }
 
@@ -115,7 +115,7 @@ namespace Citron.Symbol
             return typeParams.AsEnumerable().OfType<IDeclSymbolNode>();
         }
 
-        void IDeclSymbolNode.Accept<TDeclSymbolNodeVisitor>(ref TDeclSymbolNodeVisitor visitor)
+        void IDeclSymbolNode.AcceptDeclSymbolVisitor<TDeclSymbolNodeVisitor>(ref TDeclSymbolNodeVisitor visitor)
         {
             visitor.VisitGlobalFunc(this);
         }

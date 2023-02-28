@@ -44,7 +44,7 @@ static class IDeclSymbolNodeCanSearchInAllModulesExtension
     public static bool CanSearchInAllModules(this IDeclSymbolNode node)
     {
         var visitor = new CanSearchInAllModulesVisitor();
-        node.Accept(ref visitor);
+        node.AcceptDeclSymbolVisitor(ref visitor);
         return visitor.result;
     }
 }
@@ -156,6 +156,18 @@ record struct TypeMakerByTypeExp(IEnumerable<ModuleDeclSymbol> modules, SymbolFa
                         if (candidate != null)
                             candidates.Add(candidate.Value);
                     }
+                }                
+            }
+            else
+            {
+                var declSymbol = curOuterNode.GetDeclSymbol(new DeclSymbolPath(null, idName, idTypeExp.TypeArgs.Length));
+                if (declSymbol != null)
+                {
+                    var symbol = declSymbol.MakeOpenSymbol(factory);
+
+                    var candidate = Item.Make(symbol);
+                    if (candidate != null)
+                        candidates.Add(candidate.Value);
                 }
             }
 

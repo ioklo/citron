@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Citron.Symbol
 {
-    public struct SymbolInstantiator : IDeclSymbolNodeVisitor, ITypeDeclSymbolVisitor
+    public struct SymbolInstantiator : IDeclSymbolNodeVisitor
     {
         SymbolFactory factory;        
         ISymbolNode? outer;
@@ -28,7 +28,7 @@ namespace Citron.Symbol
         public static ITypeSymbol Instantiate(SymbolFactory factory, ISymbolNode outer, ITypeDeclSymbol decl, ImmutableArray<IType> typeArgs)
         {
             var instantiator = new SymbolInstantiator(factory, outer, typeArgs);
-            decl.Accept(instantiator);
+            decl.AcceptDeclSymbolVisitor(ref instantiator);
 
             var typeSymbolResult = instantiator.result as ITypeSymbol;
             Debug.Assert(typeSymbolResult != null);
@@ -54,7 +54,7 @@ namespace Citron.Symbol
         public static ISymbolNode Instantiate(SymbolFactory factory, ISymbolNode? outer, IDeclSymbolNode decl, ImmutableArray<IType> typeArgs)
         {
             var instantiator = new SymbolInstantiator(factory, outer, typeArgs);
-            decl.Accept(ref instantiator);
+            decl.AcceptDeclSymbolVisitor(ref instantiator);
 
             Debug.Assert(instantiator.result != null);
             return instantiator.result;

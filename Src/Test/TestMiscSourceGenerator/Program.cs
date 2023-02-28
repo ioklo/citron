@@ -376,20 +376,17 @@ namespace TestMiscSourceGenerator
             types.Add(typeof(Citron.IR0.InternalBinaryOperator));
             types.Add(typeof(Citron.IR0.InternalUnaryOperator));
             types.Add(typeof(Citron.IR0.InternalUnaryAssignOperator));
-            types.Add(typeof(Citron.IR0.LocalVarDecl));
-
 
             AddWithDerivedInSameAssembly(types, typeof(Citron.IR0.Argument));
-            AddWithDerivedInSameAssembly(types, typeof(Citron.IR0.VarDeclElement));
             AddWithDerivedInSameAssembly(types, typeof(Citron.IR0.ReturnInfo));
 
             AddWithDerivedInSameAssembly(types, typeof(Citron.IR0.StringExpElement));
-            AddWithDerivedInSameAssembly(types, typeof(Citron.Module.Name));
+            AddWithDerivedInSameAssembly(types, typeof(Citron.Symbol.Name));
             AddWithDerivedInSameAssembly(types, typeof(Citron.IR0.Loc));
             AddWithDerivedInSameAssembly(types, typeof(Citron.IR0.Exp));
             AddWithDerivedInSameAssembly(types, typeof(Citron.IR0.Stmt));
-            AddWithDerivedInSameAssembly(types, typeof(Citron.IR0.ForStmtInitializer));
-            
+            AddWithDerivedInSameAssembly(types, typeof(Citron.Symbol.IType));
+
             var program = new Program(types.ToArray());
 
             var filePath = Path.Combine(args[0], "IR0Writer.g.cs");

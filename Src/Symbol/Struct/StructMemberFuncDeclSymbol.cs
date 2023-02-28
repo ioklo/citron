@@ -41,7 +41,7 @@ namespace Citron.Symbol
             this.name = name;
             this.typeParams = typeParams;
 
-            this.lambdaComponent = new LambdaDeclSymbolComponent<StructMemberFuncDeclSymbol>();
+            this.lambdaComponent = new LambdaDeclSymbolComponent<StructMemberFuncDeclSymbol>(this);
             this.initState = InitializeState.BeforeInitFuncReturnAndParams;
         }
 
@@ -107,7 +107,7 @@ namespace Citron.Symbol
             return bStatic;
         }
 
-        void IDeclSymbolNode.Accept<TDeclSymbolNodeVisitor>(ref TDeclSymbolNodeVisitor visitor)
+        void IDeclSymbolNode.AcceptDeclSymbolVisitor<TDeclSymbolNodeVisitor>(ref TDeclSymbolNodeVisitor visitor)
         {
             visitor.VisitStructMemberFunc(this);
         }
