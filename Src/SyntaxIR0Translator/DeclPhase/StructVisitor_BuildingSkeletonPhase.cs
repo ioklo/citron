@@ -45,9 +45,9 @@ namespace Citron.Analysis
                 }
             }
 
-            context.RegisterTaskAfterBuildingAllTypeDeclSymbols(context2 => {
+            context.AddBuildingMemberDeclPhaseTask(context2 => {
                 // 멤버함수와, 멤버변수, 명시적 Constructor만들기
-                var visitor = new StructVisitor_BuildingFuncDeclPhase(declSymbol, context2);
+                var visitor = new StructVisitor_BuildingMemberDeclPhase(declSymbol, context2);
                 visitor.VisitStructDecl(syntax);
             });
         }

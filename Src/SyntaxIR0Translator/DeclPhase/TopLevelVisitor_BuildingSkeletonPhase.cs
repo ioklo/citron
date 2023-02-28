@@ -44,7 +44,7 @@ namespace Citron.Analysis
         {
             // 이름을 만드려면 인자의 타입이 확정되어야 되서, 다음 단계에서 해야 한다
             var node = this.node;
-            context.RegisterTaskAfterBuildingAllTypeDeclSymbols(context =>
+            context.AddBuildingMemberDeclPhaseTask(context =>
             {   
                 var accessor = BuilderMisc.MakeGlobalMemberAccessor(syntax.AccessModifier);
                 var typeParams = BuilderMisc.VisitTypeParams(syntax.TypeParams);
@@ -62,10 +62,10 @@ namespace Citron.Analysis
                 // must after initFuncReturnAndParams
                 node.AddFunc(declSymbol);
 
-                context.RegisterTaskTranslatingBodyPhase(context =>
+                context.AddBuildingBodyPhaseTask(context =>
                 {
                     var visitor = new FuncBodyVisitor();
-                    visitor.VisitGlobalFuncDecl(declSymbol, syntax);
+                    visitor.VisitGlobalFuncDecl(syntax.Body, declSymbol, bSeqFunc: syntax.IsSequence);
                 });
             });
         }
@@ -112,6 +112,14 @@ namespace Citron.Analysis
             // 가장 마지막 네임스페이스 (NS3)를 얻어서 하위 처리를 해야한다
             VisitElem(0, node);
         }        
+
+        public void VisitStmt(S.Stmt stmt)
+        {
+            context.AddBuildingTopLevelStmtPhaseTask(context => {
+                var visitor = new StmtVisitor_TopLevel(context.GetScopeContext());
+                stmt.Accept(ref visitor);
+            });
+        }
         
         public void VisitTypeDecl(S.TypeDecl decl)
         {

@@ -58,7 +58,7 @@ namespace Citron.Analysis
             var memberVarDecl = new EnumElemMemberVarDeclSymbol(outer, new Name.Normal(syntax.Name));
             builder.Add(memberVarDecl);
 
-            context.RegisterTaskAfterBuildingAllTypeDeclSymbols(context =>
+            context.AddBuildingMemberDeclPhaseTask(context =>
             {
                 var declType = context.MakeType(syntax.Type, outer);
                 memberVarDecl.InitDeclType(declType);

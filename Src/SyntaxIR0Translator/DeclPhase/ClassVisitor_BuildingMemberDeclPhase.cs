@@ -9,12 +9,12 @@ using System.Diagnostics;
 
 namespace Citron.Analysis
 {
-    struct ClassVisitor_BuildingFuncDeclPhase
+    struct ClassVisitor_BuildingMemberDeclPhase
     {
         ClassDeclSymbol declSymbol;
-        BuildingFuncDeclPhaseContext context;
+        BuildingMemberDeclPhaseContext context;
 
-        public ClassVisitor_BuildingFuncDeclPhase(ClassDeclSymbol declSymbol, BuildingFuncDeclPhaseContext context)
+        public ClassVisitor_BuildingMemberDeclPhase(ClassDeclSymbol declSymbol, BuildingMemberDeclPhaseContext context)
         {
             this.declSymbol = declSymbol;
             this.context = context;
@@ -203,7 +203,7 @@ namespace Citron.Analysis
             }
 
             var capturedDeclSymbol = this.declSymbol;
-            context.RegisterTaskAfterBuildingConstructorDeclSymbols(uniqueBaseClass?.Symbol.GetDecl(), declSymbol, () =>
+            context.AddBuildingTrivialConstructorPhaseTask(uniqueBaseClass?.Symbol.GetDecl(), declSymbol, () =>
             {
                 var baseTrivialConstructor = uniqueBaseClass?.Symbol.GetTrivialConstructor();
                 ClassConstructorDeclSymbol? trivialConstructor = null;

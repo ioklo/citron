@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 
 namespace Citron.Syntax
 {
-
     [AutoConstructor, ImplementIEquatable]
     public partial class ClassDecl : TypeDecl
     {

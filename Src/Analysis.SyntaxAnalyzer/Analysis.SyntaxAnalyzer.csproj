@@ -1,11 +1,11 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <RootNamespace>Citron.Analysis</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Pretune" Version="0.8.4" />
+    <PackageReference Include="Pretune" Version="0.8.5" />
   </ItemGroup>
 
   <ItemGroup>

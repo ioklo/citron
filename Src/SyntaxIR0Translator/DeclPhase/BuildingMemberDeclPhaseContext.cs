@@ -11,24 +11,27 @@ using System.Diagnostics;
 
 namespace Citron.Analysis
 {
-    partial class BuildingFuncDeclPhaseContext
+    partial class BuildingMemberDeclPhaseContext
     {
-        record struct PostBuildConstructorTask(ITypeDeclSymbol? Prerequisite, ITypeDeclSymbol This, Action Action);
+        record struct BuildingTrivialConstructorPhaseTask(ITypeDeclSymbol? Prerequisite, ITypeDeclSymbol This, Action Action);
         
-        List<ModuleDeclSymbol> modules;
+        ImmutableArray<ModuleDeclSymbol> modules;
         SymbolFactory factory;
-        List<PostBuildConstructorTask> postBuildConstructorTasks;
+        List<BuildingTrivialConstructorPhaseTask> buildingTrivialConstructorPhaseTasks;
+        List<Action<BuildingBodyPhaseContext>> buildingBodyPhaseTasks;
 
-        public BuildingFuncDeclPhaseContext(List<ModuleDeclSymbol> modules, SymbolFactory factory)
+
+        public BuildingMemberDeclPhaseContext(ImmutableArray<ModuleDeclSymbol> modules, SymbolFactory factory)
         {
             this.modules = modules;
             this.factory = factory;
-            this.postBuildConstructorTasks = new List<PostBuildConstructorTask>();
+            this.buildingTrivialConstructorPhaseTasks = new List<BuildingTrivialConstructorPhaseTask>();
+            this.buildingBodyPhaseTasks = new List<Action<BuildingBodyPhaseContext>>();
         }
 
         public IType MakeType(S.TypeExp typeExp, IDeclSymbolNode curNode)
         {
-            return new TypeMakerByTypeExp(modules, factory, curNode).MakeType(typeExp);
+            return new TypeMakerByTypeExp(modules.AsEnumerable(), factory, curNode).MakeType(typeExp);
         }
 
         public (FuncReturn, ImmutableArray<FuncParameter> Param) MakeFuncReturnAndParams(IDeclSymbolNode curNode, bool bRefReturn, S.TypeExp retTypeSyntax, ImmutableArray<S.FuncParam> paramSyntaxes)
@@ -59,12 +62,17 @@ namespace Citron.Analysis
         }
 
         // declSymbol의 Constructor를 만들고 나서 해당 task를 수행한다
-        public void RegisterTaskAfterBuildingConstructorDeclSymbols(ITypeDeclSymbol? prerequisite, ITypeDeclSymbol @this, Action task)
+        public void AddBuildingTrivialConstructorPhaseTask(ITypeDeclSymbol? prerequisite, ITypeDeclSymbol @this, Action task)
         {
-            postBuildConstructorTasks.Add(new PostBuildConstructorTask(prerequisite, @this, task));
+            buildingTrivialConstructorPhaseTasks.Add(new BuildingTrivialConstructorPhaseTask(prerequisite, @this, task));
         }
 
-        public void DoRegisteredTasks()
+        public void AddBuildingBodyPhaseTask(Action<BuildingBodyPhaseContext> task)
+        {
+            buildingBodyPhaseTasks.Add(task);
+        }
+
+        public void BuildTrivialConstructor()
         {
             bool IsFromReferenceModule(ITypeDeclSymbol declSymbol)
             {   
@@ -78,7 +86,7 @@ namespace Citron.Analysis
             int? removedTasks = null;
             while(removedTasks == null || removedTasks.Value != 0)
             {
-                removedTasks = postBuildConstructorTasks.RemoveAll(task =>
+                removedTasks = buildingTrivialConstructorPhaseTasks.RemoveAll(task =>
                 {
                     // 선행 declSymbol이 null또는 레퍼런스라면
                     if (task.Prerequisite == null || 
@@ -92,6 +100,14 @@ namespace Citron.Analysis
 
                     return false;
                 });
+            }
+        }
+
+        public void BuildBody(BuildingBodyPhaseContext context)
+        {
+            foreach(var task in buildingBodyPhaseTasks)
+            {
+                task.Invoke(context);
             }
         }
     }

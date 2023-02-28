@@ -40,9 +40,9 @@ namespace Citron.Analysis
                 }
             }
 
-            context.RegisterTaskAfterBuildingAllTypeDeclSymbols(context2 =>
+            context.AddBuildingMemberDeclPhaseTask(context2 =>
             {
-                var visitor = new ClassVisitor_BuildingFuncDeclPhase(declSymbol, context2);
+                var visitor = new ClassVisitor_BuildingMemberDeclPhase(declSymbol, context2);
                 visitor.VisitClassDecl(syntax);
             });
         }

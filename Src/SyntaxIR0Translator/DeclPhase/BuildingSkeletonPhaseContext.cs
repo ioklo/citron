@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using Citron.Collections;
+using Citron.Symbol;
 using Citron.Syntax;
 
 namespace Citron.Analysis
@@ -7,24 +9,37 @@ namespace Citron.Analysis
     // 1. BuildingSkeletonPhase
     class BuildingSkeletonPhaseContext
     {
-        List<Action<BuildingFuncDeclPhaseContext>> tasks;
+        List<Action<BuildingMemberDeclPhaseContext>> buildingMemberDeclPhaseTasks;
+        List<Action<BuildingTopLevelStmtPhaseContext>> buildingTopLevelStmtPhaseTasks;
 
         public BuildingSkeletonPhaseContext()
         {
-            tasks = new List<Action<BuildingFuncDeclPhaseContext>>();
+            buildingMemberDeclPhaseTasks = new List<Action<BuildingMemberDeclPhaseContext>>();
+            buildingTopLevelStmtPhaseTasks = new List<Action<BuildingTopLevelStmtPhaseContext>>();
         }
 
-        public void RegisterTaskAfterBuildingAllTypeDeclSymbols(Action<BuildingFuncDeclPhaseContext> task)
+        public void AddBuildingMemberDeclPhaseTask(Action<BuildingMemberDeclPhaseContext> task)
         {
-            tasks.Add(task);
+            buildingMemberDeclPhaseTasks.Add(task);
+        }
+
+        public void AddBuildingTopLevelStmtPhaseTask(Action<BuildingTopLevelStmtPhaseContext> task)
+        {
+            buildingTopLevelStmtPhaseTasks.Add(task);
         }
         
-        public void DoRegisteredTasks(BuildingFuncDeclPhaseContext context)
+        public void BuildMemberDecl(BuildingMemberDeclPhaseContext context)
         {
-            foreach(var task in tasks)
+            foreach (var task in buildingMemberDeclPhaseTasks)
             {
                 task.Invoke(context);
             }
+        }
+
+        public void BuildTopLevelStmt(BuildingTopLevelStmtPhaseContext context)
+        {
+            foreach (var task in buildingTopLevelStmtPhaseTasks)
+                task.Invoke(context);
         }
     }
 }

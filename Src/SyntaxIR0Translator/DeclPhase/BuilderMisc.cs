@@ -24,7 +24,7 @@ namespace Citron.Analysis
             return typeVarDeclsBuilder.MoveToImmutable();
         }
 
-        public static ImmutableArray<FuncParameter> MakeParameters(IDeclSymbolNode curNode, BuildingFuncDeclPhaseContext context, ImmutableArray<S.FuncParam> sparams)
+        public static ImmutableArray<FuncParameter> MakeParameters(IDeclSymbolNode curNode, BuildingMemberDeclPhaseContext context, ImmutableArray<S.FuncParam> sparams)
         {
             var builder = ImmutableArray.CreateBuilder<FuncParameter>(sparams.Length);
             foreach (var sparam in sparams)

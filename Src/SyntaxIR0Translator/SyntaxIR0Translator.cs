@@ -10,13 +10,14 @@ using S = Citron.Syntax;
 
 using static Citron.Infra.Misc;
 using System.Collections.Generic;
+using Citron.Log;
 
 namespace Citron.Analysis
 {
     // Syntax로부터 ModuleDeclSymbol을 만든다
     public struct SyntaxIR0Translator
     {
-        public static ModuleDeclSymbol Build(Name moduleName, ImmutableArray<S.Script> scripts, ImmutableArray<ModuleDeclSymbol> refModuleDecls, SymbolFactory factory)
+        public static ModuleDeclSymbol Build(Name moduleName, ImmutableArray<S.Script> scripts, ImmutableArray<ModuleDeclSymbol> refModuleDecls, SymbolFactory factory, ILogger logger)
         {
             var moduleDecl = new ModuleDeclSymbol(moduleName, bReference: false);
 
@@ -53,14 +54,28 @@ namespace Citron.Analysis
                 }
             }
 
-            var modules = new List<ModuleDeclSymbol>(refModuleDecls.Length + 1);
-            modules.Add(moduleDecl);
-            modules.AddRange(refModuleDecls.AsEnumerable());
+            var modulesBuilder = ImmutableArray.CreateBuilder<ModuleDeclSymbol>(refModuleDecls.Length + 1);
+            modulesBuilder.Add(moduleDecl);
+            modulesBuilder.AddRange(refModuleDecls.AsEnumerable());
+            var moduleDecls = modulesBuilder.MoveToImmutable();
 
-            var funcDeclPhaseContext = new BuildingFuncDeclPhaseContext(modules, factory);
-            skeletonPhaseContext.DoRegisteredTasks(funcDeclPhaseContext);
+            // 2. BuildingMemberDeclPhase
+            var buildingMemberDeclPhaseContext = new BuildingMemberDeclPhaseContext(moduleDecls, factory);
+            skeletonPhaseContext.BuildMemberDecl(buildingMemberDeclPhaseContext);
 
-            funcDeclPhaseContext.DoRegisteredTasks();
+            // 3. BuildingTrivialConstructorPhase
+            buildingMemberDeclPhaseContext.BuildTrivialConstructor();
+
+            // 4. BuildingTopLevelStmtPhase
+            var globalContext = new GlobalContext(factory, moduleDecls, logger);
+
+            var buildingTopLevelStmtPhaseContext = new BuildingTopLevelStmtPhaseContext(globalContext);
+            skeletonPhaseContext.BuildTopLevelStmt(buildingTopLevelStmtPhaseContext);
+
+            // 5. BuildingBodyPhase
+            var buildingBodyPhaseContext = new BuildingBodyPhaseContext(globalContext);
+            buildingMemberDeclPhaseContext.BuildBody(buildingBodyPhaseContext);
+
             return moduleDecl;
         }
     }

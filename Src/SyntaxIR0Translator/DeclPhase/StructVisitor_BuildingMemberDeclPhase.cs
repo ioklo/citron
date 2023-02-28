@@ -12,10 +12,10 @@ using Pretune;
 namespace Citron.Analysis
 {
     [AutoConstructor]
-    partial struct StructVisitor_BuildingFuncDeclPhase
+    partial struct StructVisitor_BuildingMemberDeclPhase
     {
         StructDeclSymbol structDeclSymbol;
-        BuildingFuncDeclPhaseContext context;        
+        BuildingMemberDeclPhaseContext context;        
 
         void VisitStructMemberVarDecl(S.StructMemberVarDecl syntax)
         {
@@ -103,7 +103,7 @@ namespace Citron.Analysis
 
             // 다음은 constructor 빌드 단계
             var structDeclSymbol = this.structDeclSymbol;
-            context.RegisterTaskAfterBuildingConstructorDeclSymbols(uniqueBaseType?.Symbol.GetDecl(), structDeclSymbol, () =>
+            context.AddBuildingTrivialConstructorPhaseTask(uniqueBaseType?.Symbol.GetDecl(), structDeclSymbol, () =>
             {
                 var baseTrivialConstructor = uniqueBaseType?.Symbol.GetTrivialConstructor();                
 
