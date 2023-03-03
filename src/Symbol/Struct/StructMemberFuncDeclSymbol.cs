@@ -18,7 +18,7 @@ namespace Citron.Symbol
 
         StructDeclSymbol outer;
 
-        Accessor accessModifier;
+        Accessor accessor;
         bool bStatic;
         FuncReturn funcReturn;
         Name name;
@@ -36,7 +36,7 @@ namespace Citron.Symbol
             ImmutableArray<Name> typeParams)
         {
             this.outer = outer;
-            this.accessModifier = accessModifier;            
+            this.accessor = accessModifier;            
             this.bStatic = bStatic;            
             this.name = name;
             this.typeParams = typeParams;
@@ -120,7 +120,7 @@ namespace Citron.Symbol
 
         public Accessor GetAccessor()
         {
-            return accessModifier;
+            return accessor;
         }
 
         bool ICyclicEqualityComparableClass<IDeclSymbolNode>.CyclicEquals(IDeclSymbolNode other, ref CyclicEqualityCompareContext context)
@@ -137,7 +137,7 @@ namespace Citron.Symbol
             if (!context.CompareClass(outer, other.outer))
                 return false;
 
-            if (!accessModifier.Equals(other.accessModifier))
+            if (!accessor.Equals(other.accessor))
                 return false;
 
             if (!bStatic.Equals(other.bStatic))
@@ -162,6 +162,19 @@ namespace Citron.Symbol
                 return false;
 
             return true;
+        }
+
+        void ISerializable.DoSerialize(ref SerializeContext context)
+        {
+            context.SerializeRef(nameof(outer), outer);
+            context.SerializeString(nameof(accessor), accessor.ToString());
+            context.SerializeBool(nameof(bStatic), bStatic);
+            context.SerializeValueRef(nameof(funcReturn), ref funcReturn);
+            context.SerializeRef(nameof(name), name);
+            context.SerializeRefArray(nameof(typeParams), typeParams);
+            context.SerializeValueArray(nameof(parameters), parameters);
+            context.SerializeValue(nameof(lambdaComponent), lambdaComponent);
+            context.SerializeString(nameof(initState), initState.ToString());
         }
     }
 }

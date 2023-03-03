@@ -147,5 +147,15 @@ namespace Citron.Symbol
 
             return true;
         }
+
+        void ISerializable.DoSerialize(ref SerializeContext context)
+        {
+            context.SerializeRef(nameof(outer), outer);
+            context.SerializeString(nameof(accessor), accessor.ToString());
+            context.SerializeRef(nameof(name), name);
+            context.SerializeRefArray(nameof(typeParams), typeParams);
+            context.SerializeRefArray(nameof(elems), elems);
+            context.SerializeString(nameof(initState), initState.ToString());
+        }
     }
 }

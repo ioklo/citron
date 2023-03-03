@@ -1,27 +1,59 @@
-﻿using Pretune;
+﻿using Citron.Infra;
+using Pretune;
 using System;
 using System.Diagnostics;
 
 namespace Citron.Symbol
 {
-    // Name algebraic data type 
-    public abstract record class Name
+    public abstract partial record class Name : ISerializable
     {
-        public record class Singleton(string DebugText) : Name;
+        public abstract void DoSerialize(ref SerializeContext context);
+    }
 
-        public static readonly Singleton IndexerGet = new Singleton("IndexerGet");
-        public static readonly Singleton IndexerSet = new Singleton("IndexerSet");
-        public static readonly Singleton Constructor = new Singleton("Constructor");
-        public static readonly Singleton OpInc = new Singleton("OpInc");
-        public static readonly Singleton OpDec = new Singleton("OpDec");
+    // Name algebraic data type 
+    public abstract partial record class Name
+    {
+        public record class Singleton(string DebugText) : Name
+        {
+            public override void DoSerialize(ref SerializeContext context)
+            {
+                context.SerializeString(nameof(DebugText), DebugText);
+            }
+        }
 
-        public static readonly Name Nullable = new Singleton("Nullable");
+        public record class Anonymous(int Index) : Name
+        {
+            public override void DoSerialize(ref SerializeContext context)
+            {
+                context.SerializeInt(nameof(Index), Index);
+            }
+        }
 
-        // for TopLevelStmt
-        public static readonly Name TopLevel = new Singleton("TopLevel");
+        public record ConstructorParam(int Index, string Text) : Name // trivial constructor에서 base로 가는 parameter
+        {
+            public override void DoSerialize(ref SerializeContext context)
+            {
+                context.SerializeInt(nameof(Index), Index);
+                context.SerializeString(nameof(Text), Text);
+            }
+        }
 
-        public record class Anonymous(int Index) : Name;
-        public record ConstructorParam(int Index, string Text) : Name; // trivial constructor에서 base로 가는 parameter
-        public record class Normal(string Text) : Name;
+        public record class Normal(string Text) : Name
+        {
+            public override void DoSerialize(ref SerializeContext context)
+            {
+                context.SerializeString(nameof(Text), Text);
+            }
+        }
+    }
+
+    public static class Names
+    {
+        public static readonly Name IndexerGet = new Name.Singleton("IndexerGet");
+        public static readonly Name IndexerSet = new Name.Singleton("IndexerSet");
+        public static readonly Name Constructor = new Name.Singleton("Constructor");
+        public static readonly Name OpInc = new Name.Singleton("OpInc");
+        public static readonly Name OpDec = new Name.Singleton("OpDec");
+        public static readonly Name Nullable = new Name.Singleton("Nullable");
     }
 }

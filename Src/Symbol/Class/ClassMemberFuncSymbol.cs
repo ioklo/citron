@@ -123,10 +123,17 @@ namespace Citron.Symbol
             return true;
         }
 
+        void ISerializable.DoSerialize(ref SerializeContext context)
+        {
+            context.SerializeRef(nameof(outer), outer);
+            context.SerializeRef(nameof(decl), decl);
+            context.SerializeRefArray(nameof(typeArgs), typeArgs);
+        }
+
         public void Accept<TVisitor>(ref TVisitor visitor)
                     where TVisitor : struct, ISymbolNodeVisitor
         {
             visitor.VisitClassMemberFunc(this);
-        }
+        }        
     }
 }

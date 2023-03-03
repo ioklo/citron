@@ -19,7 +19,9 @@ namespace Citron.Symbol
         }
     }
     
-    public struct FuncDeclSymbolComponent<TFuncDeclSymbol> : ICyclicEqualityComparableStruct<FuncDeclSymbolComponent<TFuncDeclSymbol>>
+    public struct FuncDeclSymbolComponent<TFuncDeclSymbol> 
+        : ICyclicEqualityComparableStruct<FuncDeclSymbolComponent<TFuncDeclSymbol>>
+        , ISerializable
         where TFuncDeclSymbol : class, IDeclSymbolNode, ICyclicEqualityComparableClass<TFuncDeclSymbol>
     {
         internal Dictionary<Name, List<TFuncDeclSymbol>> nameMap;
@@ -75,6 +77,11 @@ namespace Citron.Symbol
                 return false;
 
             return true;
+        }
+
+        void ISerializable.DoSerialize(ref SerializeContext context)
+        {
+            context.SerializeDictRefKeyRefValue(nameof(map), map);
         }
     }
 }

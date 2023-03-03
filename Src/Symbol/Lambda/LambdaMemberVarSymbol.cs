@@ -66,10 +66,17 @@ namespace Citron.Symbol
             throw new System.NotImplementedException();
         }
 
+        void ISerializable.DoSerialize(ref SerializeContext context)
+        {
+            context.SerializeRef(nameof(outer), outer);
+            context.SerializeRef(nameof(decl), decl);
+        }
+
         public void Accept<TVisitor>(ref TVisitor visitor)
             where TVisitor : struct, ISymbolNodeVisitor
         {
             visitor.VisitLambdaMemberVarSymbol(this);
         }
+
     }
 }

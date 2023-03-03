@@ -9,7 +9,7 @@ using Pretune;
 namespace Citron.Symbol
 {
     // ModuleDecl, NamespaceDecl에서 쓰이는 로직
-    struct TopLevelDeclSymbolComponent : ICyclicEqualityComparableStruct<TopLevelDeclSymbolComponent>
+    struct TopLevelDeclSymbolComponent : ICyclicEqualityComparableStruct<TopLevelDeclSymbolComponent>, ISerializable
     {
         List<NamespaceDeclSymbol> namespaceDecls;
         Dictionary<Name, NamespaceDeclSymbol> namespaceDict;
@@ -73,6 +73,13 @@ namespace Citron.Symbol
                 return false;
 
             return true;
+        }
+
+        void ISerializable.DoSerialize(ref SerializeContext context)
+        {
+            context.SerializeRefList(nameof(namespaceDecls), namespaceDecls);
+            context.SerializeValueRef(nameof(typeComp), ref typeComp);
+            context.SerializeValueRef(nameof(funcComp), ref funcComp);
         }
     }
 }

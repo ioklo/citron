@@ -7,7 +7,7 @@ using System.Security.Cryptography.X509Certificates;
 namespace Citron.Symbol
 {
     // 자식으로 가는 줄기는 없다
-    public interface ISymbolNode : ICyclicEqualityComparableClass<ISymbolNode>
+    public interface ISymbolNode : ICyclicEqualityComparableClass<ISymbolNode>, ISerializable
     {
         // 순회
         ISymbolNode? GetOuter();
@@ -46,6 +46,14 @@ namespace Citron.Symbol
             var outerSymbol = (outerDeclSymbol == null) ? null : MakeOpenSymbol(outerDeclSymbol, factory);
 
             return SymbolInstantiator.InstantiateOpen(factory, outerSymbol, declSymbol);
+        }
+
+        public static ITypeSymbol MakeOpenSymbol(this ITypeDeclSymbol typeDSymbol, SymbolFactory factory)
+        {
+            var outerDeclSymbol = typeDSymbol.GetOuterDeclNode();
+            var outerSymbol = (outerDeclSymbol == null) ? null : MakeOpenSymbol(outerDeclSymbol, factory);
+
+            return (ITypeSymbol)SymbolInstantiator.InstantiateOpen(factory, outerSymbol, typeDSymbol);
         }
 
         // TODO: 

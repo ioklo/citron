@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Citron.Symbol
 {
-    public interface IType : ICyclicEqualityComparableClass<IType>
+    public interface IType : ICyclicEqualityComparableClass<IType>, ISerializable
     {
         IType Apply(TypeEnv typeEnv);
         TypeId GetTypeId();
@@ -32,6 +32,7 @@ namespace Citron.Symbol
 
         // 내부의 값들이 다 같은지 확인
         public abstract bool CyclicEquals(IType other, ref CyclicEqualityCompareContext context);
+        public abstract void DoSerialize(ref SerializeContext context);
         public abstract SymbolQueryResult QueryMember(Name name, int explicitTypeArgCount);
     }
 
@@ -46,6 +47,11 @@ namespace Citron.Symbol
         public sealed override bool CyclicEquals(IType other, ref CyclicEqualityCompareContext context)
         {
             return other is SymbolType otherSymbolType && GetTypeSymbol().CyclicEquals(otherSymbolType.GetTypeSymbol(), ref context);
+        }
+
+        public sealed override void DoSerialize(ref SerializeContext context)
+        {
+            context.SerializeRef(nameof(Symbol), GetTypeSymbol());
         }
 
         public sealed override SymbolQueryResult QueryMember(Name name, int typeArgCount)
@@ -128,6 +134,11 @@ namespace Citron.Symbol
             return true;
         }
 
+        public override void DoSerialize(ref SerializeContext context)
+        {
+            context.SerializeRef(nameof(InnerType), InnerType);
+        }
+
         public override SymbolQueryResult QueryMember(Name name, int explicitTypeArgCount)
         {
             return SymbolQueryResults.NotFound;
@@ -156,6 +167,12 @@ namespace Citron.Symbol
             return true;
         }
 
+        public override void DoSerialize(ref SerializeContext context)
+        {
+            context.SerializeInt(nameof(Index), Index);
+            context.SerializeRef(nameof(Name), Name);
+        }
+
         public override SymbolQueryResult QueryMember(Name name, int typeArgCount)
         {
             return SymbolQueryResults.NotFound;
@@ -173,27 +190,40 @@ namespace Citron.Symbol
         public sealed override bool CyclicEquals(IType other, ref CyclicEqualityCompareContext context)
             => true;
 
+        public override void DoSerialize(ref SerializeContext context)
+        {
+        }
+
         public override SymbolQueryResult QueryMember(Name name, int typeArgCount)
         {
             return SymbolQueryResults.NotFound;
         }
     }
 
-    public record class TupleType(ImmutableArray<(IType Type, Name Name)> MemberVars) : TypeImpl
+    public record struct TupleMemberVar(IType Type, Name Name) : ISerializable
+    {
+        public void DoSerialize(ref SerializeContext context)
+        {
+            context.SerializeRef(nameof(Type), Type);
+            context.SerializeRef(nameof(Name), Name);
+        }
+    }
+
+    public record class TupleType(ImmutableArray<TupleMemberVar> MemberVars) : TypeImpl
     {
         public override IType Apply(TypeEnv typeEnv)
         {
-            var builder = ImmutableArray.CreateBuilder<(IType, Name)>(MemberVars.Length);
+            var builder = ImmutableArray.CreateBuilder<TupleMemberVar>(MemberVars.Length);
             foreach (var memberVar in MemberVars)
-                builder.Add((memberVar.Type.Apply(typeEnv), memberVar.Name));
+                builder.Add(new TupleMemberVar(memberVar.Type.Apply(typeEnv), memberVar.Name));
             return new TupleType(builder.MoveToImmutable());
         }
 
         public override TypeId GetTypeId()
         {
-            var builder = ImmutableArray.CreateBuilder<(TypeId, Name)>(MemberVars.Length);
+            var builder = ImmutableArray.CreateBuilder<TupleMemberVarId>(MemberVars.Length);
             foreach (var memberVar in MemberVars)
-                builder.Add((memberVar.Type.GetTypeId(), memberVar.Name));
+                builder.Add(new TupleMemberVarId(memberVar.Type.GetTypeId(), memberVar.Name));
             return new TupleTypeId(builder.MoveToImmutable());
         }
 
@@ -233,6 +263,11 @@ namespace Citron.Symbol
             return true;
         }
 
+        public override void DoSerialize(ref SerializeContext context)
+        {
+            context.SerializeValueArray(nameof(MemberVars), MemberVars);
+        }
+
         public override SymbolQueryResult QueryMember(Name name, int typeArgCount)
         {
             foreach (var memberVar in MemberVars)
@@ -252,6 +287,10 @@ namespace Citron.Symbol
         public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitVar(this);
         public sealed override bool CyclicEquals(IType other, ref CyclicEqualityCompareContext context)
             => true;
+
+        public override void DoSerialize(ref SerializeContext context)
+        {
+        }
 
         public override SymbolQueryResult QueryMember(Name name, int typeArgCount)
         {

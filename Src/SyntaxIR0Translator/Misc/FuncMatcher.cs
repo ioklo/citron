@@ -531,7 +531,7 @@ namespace Citron.Analysis
             else // params T <=> (1, 2, "hi")
             {
                 var argsLength = argsEnd - argsBegin;
-                var elemBuilder = ImmutableArray.CreateBuilder<(IType Type, Name Name)>(argsLength);
+                var elemBuilder = ImmutableArray.CreateBuilder<TupleMemberVar>(argsLength);
 
                 for (int i = 0; i < argsLength; i++)
                 {
@@ -541,7 +541,7 @@ namespace Citron.Analysis
                     var argType = arg.GetArgType();
                     var name = new Name.Normal($"Item{i}");
 
-                    elemBuilder.Add((argType, name)); // unnamed tuple element
+                    elemBuilder.Add(new TupleMemberVar(argType, name)); // unnamed tuple element
                 }
 
                 var argTupleType = new TupleType(elemBuilder.MoveToImmutable());

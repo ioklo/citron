@@ -85,5 +85,12 @@ namespace Citron.Symbol
 
             return true;
         }
+
+        void ISerializable.DoSerialize(ref SerializeContext context)
+        {
+            context.SerializeRef(nameof(outer), outer);
+            context.SerializeRef(nameof(type), type);
+            context.SerializeRef(nameof(name), name);
+        }
     }
 }

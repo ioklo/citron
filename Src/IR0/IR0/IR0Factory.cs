@@ -40,20 +40,20 @@ namespace Citron.IR0
             return new Script(moduleDecl, rstmtBodies);
         }
 
-        // only have top level stmts
-        public Script Script(Name moduleName, ImmutableArray<Stmt> topLevelStmts)
+        // int main()
+        public Script Script(Name moduleName, ImmutableArray<Stmt> stmts)
         {
             var moduleDecl = new ModuleDeclSymbol(moduleName, bReference: false);
 
-            var topLevelFuncDecl = new GlobalFuncDeclSymbol(moduleDecl,
-                Accessor.Public, Name.TopLevel, typeParams: default);
+            var entryFuncDecl = new GlobalFuncDeclSymbol(moduleDecl,
+                Accessor.Public, new Name.Normal("Main"), typeParams: default);
 
-            topLevelFuncDecl.InitFuncReturnAndParams(
+            entryFuncDecl.InitFuncReturnAndParams(
                 new FuncReturn(false, intType), default);
 
-            moduleDecl.AddFunc(topLevelFuncDecl);
+            moduleDecl.AddFunc(entryFuncDecl);
             
-            var stmtBodies = Arr(new StmtBody(topLevelFuncDecl, topLevelStmts));
+            var stmtBodies = Arr(new StmtBody(entryFuncDecl, stmts));
             return new Script(moduleDecl, stmtBodies);
         }
 

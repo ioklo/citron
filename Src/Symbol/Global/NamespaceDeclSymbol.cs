@@ -12,6 +12,7 @@ namespace Citron.Symbol
         : ITopLevelDeclSymbolNode
         , ITopLevelDeclContainable
         , ICyclicEqualityComparableClass<NamespaceDeclSymbol>
+        , ISerializable
     {
         ITopLevelDeclSymbolNode outer;
         Name name;
@@ -104,6 +105,11 @@ namespace Citron.Symbol
             return true;
         }
 
-        
+        public void DoSerialize(ref SerializeContext context)
+        {
+            context.SerializeRef(nameof(outer), outer);
+            context.SerializeRef(nameof(name), name);
+            context.SerializeValueRef(nameof(topLevelComp), ref topLevelComp);
+        }
     }
 }

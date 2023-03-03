@@ -23,11 +23,11 @@ namespace Citron.Analysis
             {
                 case M.Name.Normal normalName: return new R.Name.Normal(normalName.Text);
 
-                case M.Name.Singleton when name == M.Name.IndexerGet: return new R.Name.IndexerGet();
-                case M.Name.Singleton when name == M.Name.IndexerSet: return new R.Name.IndexerSet();
-                case M.Name.Singleton when name == M.Name.OpInc: return new R.Name.OpInc();
-                case M.Name.Singleton when name == M.Name.OpDec: return new R.Name.OpDec();
-                case M.Name.Singleton when name == M.Name.Constructor: return new R.Name.OpDec();
+                case M.Name.Singleton when name == M.Names.IndexerGet: return new R.Name.IndexerGet();
+                case M.Name.Singleton when name == M.Names.IndexerSet: return new R.Name.IndexerSet();
+                case M.Name.Singleton when name == M.Names.OpInc: return new R.Name.OpInc();
+                case M.Name.Singleton when name == M.Names.OpDec: return new R.Name.OpDec();
+                case M.Name.Singleton when name == M.Names.Constructor: return new R.Name.OpDec();
 
                 case M.Name.ConstructorParam cp: return new R.Name.ConstructorParam(cp.Index);
                 case M.Name.Anonymous anonymous: return new R.Name.Anonymous(anonymous.Index);

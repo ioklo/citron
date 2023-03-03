@@ -3,7 +3,7 @@ using Pretune;
 
 namespace Citron.Symbol
 {       
-    public record struct FuncReturn(bool IsRef, IType Type) : ICyclicEqualityComparableStruct<FuncReturn>
+    public record struct FuncReturn(bool IsRef, IType Type) : ICyclicEqualityComparableStruct<FuncReturn>, ISerializable
     {
         public FuncReturn Apply(TypeEnv typeEnv)
         {
@@ -20,6 +20,12 @@ namespace Citron.Symbol
                 return false;
 
             return true;
+        }
+
+        void ISerializable.DoSerialize(ref SerializeContext context)
+        {
+            context.SerializeBool(nameof(IsRef), IsRef);
+            context.SerializeRef(nameof(Type), Type);
         }
     }
 }

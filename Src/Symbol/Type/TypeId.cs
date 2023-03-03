@@ -3,7 +3,10 @@ using Citron.Infra;
 
 namespace Citron.Symbol
 {
-    public abstract record class TypeId;
+    public abstract record class TypeId : ISerializable
+    {
+        public abstract void DoSerialize(ref SerializeContext context);
+    }
 
 
     // MyModule.MyClass<X, Y>.MyStruct<T, U, X>.T => 2 (Index는 누적)
@@ -14,17 +17,60 @@ namespace Citron.Symbol
     // => 순환참조때문에 누적 Index를 사용하는 TypeVarSymbolId로 다시 롤백한다
     // 'MyModule.MyClass<X, Y>.MyStruct<T, U, X>.Func<T>(T, int).T' path에 Func<T>와 T가 순환 참조된다
     // => TypeVarSymbolId(5)로 참조하게 한다
-    public record class TypeVarTypeId(int Index, Name Name) : TypeId;
+    public record class TypeVarTypeId(int Index, Name Name) : TypeId
+    {
+        public override void DoSerialize(ref SerializeContext context)
+        {
+            context.SerializeInt(nameof(Index), Index);
+            context.SerializeRef(nameof(Name), Name);
+        }
+    }
 
-    public record class NullableTypeId(TypeId InnerTypeId) : TypeId;
+    public record class NullableTypeId(TypeId InnerTypeId) : TypeId
+    {   
+        public override void DoSerialize(ref SerializeContext context)
+        {
+            context.SerializeRef(nameof(InnerTypeId), InnerTypeId);
+        }    
+    }
 
-    public record class VoidTypeId : TypeId;
+    public record class VoidTypeId : TypeId
+    {
+        public override void DoSerialize(ref SerializeContext context)
+        {
+        }
+    }
 
-    public record class TupleTypeId(ImmutableArray<(TypeId TypeId, Name Name)> MemberVarIds) : TypeId;
+    public record struct TupleMemberVarId(TypeId TypeId, Name Name) : ISerializable
+    {
+        public void DoSerialize(ref SerializeContext context)
+        {
+            context.SerializeRef(nameof(TypeId), TypeId);
+            context.SerializeRef(nameof(Name), Name);
+        }
+    }
 
-    public record class VarTypeId : TypeId;
+    public record class TupleTypeId(ImmutableArray<TupleMemberVarId> MemberVarIds) : TypeId
+    {
+        public override void DoSerialize(ref SerializeContext context)
+        {
+            context.SerializeValueArray(nameof(MemberVarIds), MemberVarIds);
+        }
+    }
 
-    public record class LambdaTypeId : TypeId;
+    public record class VarTypeId : TypeId
+    {
+        public override void DoSerialize(ref SerializeContext context)
+        {
+        }
+    }
+
+    public record class LambdaTypeId : TypeId
+    {
+        public override void DoSerialize(ref SerializeContext context)
+        {
+        }
+    }
 
     public static class TypeIds
     {

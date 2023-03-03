@@ -13,6 +13,7 @@ namespace Citron.Symbol
         : ITopLevelDeclSymbolNode
         , ITopLevelDeclContainable
         , ICyclicEqualityComparableClass<ModuleDeclSymbol>
+        , ISerializable
     {
         Name moduleName;
         bool bReference;
@@ -114,6 +115,11 @@ namespace Citron.Symbol
             return true;
         }
 
-        
+        void ISerializable.DoSerialize(ref SerializeContext context)
+        {
+            context.SerializeRef(nameof(moduleName), moduleName);
+            context.SerializeBool(nameof(bReference), bReference);
+            context.SerializeValueRef(nameof(topLevelComp), ref topLevelComp);
+        }
     }
 }

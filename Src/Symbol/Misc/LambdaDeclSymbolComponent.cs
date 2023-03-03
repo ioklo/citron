@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace Citron.Symbol
 {
-    public struct LambdaDeclSymbolComponent<TOuterDeclSymbol> : ICyclicEqualityComparableStruct<LambdaDeclSymbolComponent<TOuterDeclSymbol>>
+    public struct LambdaDeclSymbolComponent<TOuterDeclSymbol> : ICyclicEqualityComparableStruct<LambdaDeclSymbolComponent<TOuterDeclSymbol>>, ISerializable
         where TOuterDeclSymbol : class, IFuncDeclSymbol, ICyclicEqualityComparableClass<TOuterDeclSymbol>
     {
         TOuterDeclSymbol outer;
@@ -38,6 +38,12 @@ namespace Citron.Symbol
                 return false;
 
             return true;
+        }
+
+        void ISerializable.DoSerialize(ref SerializeContext context)
+        {
+            context.SerializeRef(nameof(outer), outer);
+            context.SerializeRefList(nameof(lambdaDecls), lambdaDecls);
         }
     }
 }

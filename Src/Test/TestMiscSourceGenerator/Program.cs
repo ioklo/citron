@@ -148,9 +148,9 @@ namespace TestMiscSourceGenerator
             // void Write_Name(Citron.Module.Name name)
             // {
             //     // static 처리
-            //     if (name == Citron.Module.Name.IndexerGet)
+            //     if (name == Citron.Module.Names.IndexerGet)
             //     {
-            //         writer.Write("Citron.Module.Name.IndexerGet");
+            //         writer.Write("Citron.Module.Names.IndexerGet");
             //         return;
             //     }
             //     

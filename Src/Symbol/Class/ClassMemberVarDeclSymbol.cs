@@ -10,7 +10,7 @@ namespace Citron.Symbol
     public class ClassMemberVarDeclSymbol : IDeclSymbolNode, ICyclicEqualityComparableClass<ClassMemberVarDeclSymbol>
     {
         ClassDeclSymbol outer;
-        Accessor accessModifier;
+        Accessor accessor;
         bool bStatic;
         IType declType;
         Name name;
@@ -19,7 +19,7 @@ namespace Citron.Symbol
         public ClassMemberVarDeclSymbol(ClassDeclSymbol outer, Accessor accessModifier, bool bStatic, IType declType, Name name)
         {
             this.outer = outer;
-            this.accessModifier = accessModifier;
+            this.accessor = accessModifier;
             this.bStatic = bStatic;
             this.declType = declType;
             this.name = name;
@@ -72,7 +72,7 @@ namespace Citron.Symbol
 
         public Accessor GetAccessor()
         {
-            return accessModifier;
+            return accessor;
         }
 
         bool ICyclicEqualityComparableClass<IDeclSymbolNode>.CyclicEquals(IDeclSymbolNode other, ref CyclicEqualityCompareContext context)
@@ -86,7 +86,7 @@ namespace Citron.Symbol
             if (!context.CompareClass(outer, other.outer))
                 return false;
 
-            if (!accessModifier.Equals(other.accessModifier))
+            if (!accessor.Equals(other.accessor))
                 return false;
 
             if (!bStatic.Equals(bStatic))
@@ -99,6 +99,15 @@ namespace Citron.Symbol
                 return false;
 
             return true;
+        }
+
+        void ISerializable.DoSerialize(ref SerializeContext context)
+        {
+            context.SerializeRef(nameof(outer), outer);
+            context.SerializeString(nameof(accessor), accessor.ToString());
+            context.SerializeBool(nameof(outer), bStatic);
+            context.SerializeRef(nameof(declType), declType);
+            context.SerializeRef(nameof(name), name);
         }
     }
 }

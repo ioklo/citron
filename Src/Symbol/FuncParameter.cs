@@ -6,7 +6,7 @@ using System;
 namespace Citron.Symbol
 {
     // value
-    public record struct FuncParameter(FuncParameterKind Kind, IType Type, Name Name) : ICyclicEqualityComparableStruct<FuncParameter>
+    public record struct FuncParameter(FuncParameterKind Kind, IType Type, Name Name) : ICyclicEqualityComparableStruct<FuncParameter>, ISerializable
     {
         public FuncParameter Apply(TypeEnv typeEnv)
         {
@@ -26,6 +26,13 @@ namespace Citron.Symbol
                 return false;
 
             return true;
+        }
+
+        void ISerializable.DoSerialize(ref SerializeContext context)
+        {
+            context.SerializeString(nameof(Kind), Kind.ToString());
+            context.SerializeRef(nameof(Type), Type);
+            context.SerializeRef(nameof(Name), Name);
         }
     }
 }

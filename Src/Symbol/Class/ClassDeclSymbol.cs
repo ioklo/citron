@@ -26,7 +26,7 @@ namespace Citron.Symbol
         }
 
         IDeclSymbolNode outer;
-        Accessor accessModifier;
+        Accessor accessor;
         
         Name name;        
         ImmutableArray<Name> typeParams;
@@ -46,7 +46,7 @@ namespace Citron.Symbol
         public ClassDeclSymbol(IDeclSymbolNode outer, Accessor accessModifier, Name name, ImmutableArray<Name> typeParams)
         {
             this.outer = outer;
-            this.accessModifier = accessModifier;
+            this.accessor = accessModifier;
             this.name = name;
 
             this.memberVars = new List<ClassMemberVarDeclSymbol>();
@@ -174,7 +174,7 @@ namespace Citron.Symbol
 
         public Accessor GetAccessor()
         {
-            return accessModifier;
+            return accessor;
         }
 
         public int GetConstructorCount()
@@ -229,7 +229,7 @@ namespace Citron.Symbol
             if (!context.CompareClass(outer, other.outer))
                 return false;
 
-            if (!accessModifier.Equals(other.accessModifier))
+            if (!accessor.Equals(other.accessor))
                 return false;
 
             if (!name.Equals(other.name))
@@ -263,6 +263,22 @@ namespace Citron.Symbol
                 return false;
 
             return true;
+        }
+
+        void ISerializable.DoSerialize(ref SerializeContext context)
+        {
+            context.SerializeRef(nameof(outer), outer);
+            context.SerializeString(nameof(accessor), accessor.ToString());
+            context.SerializeRef(nameof(name), name);
+            context.SerializeRefArray(nameof(typeParams), typeParams);
+            context.SerializeRef(nameof(baseClass), baseClass);
+            context.SerializeRefArray(nameof(interfaces), interfaces);
+            context.SerializeRefList(nameof(memberVars), memberVars);
+            context.SerializeRefList(nameof(constructors), constructors);
+            context.SerializeRef(nameof(trivialConstructor), trivialConstructor);
+            context.SerializeValueRef(nameof(typeComp), ref typeComp);
+            context.SerializeValueRef(nameof(funcComp), ref funcComp);
+            context.SerializeString(nameof(initState), initState.ToString());
         }
     }
 }

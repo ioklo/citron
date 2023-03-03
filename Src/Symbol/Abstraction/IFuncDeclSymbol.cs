@@ -2,7 +2,7 @@
 
 namespace Citron.Symbol
 {
-    public interface IFuncDeclSymbol : IDeclSymbolNode, ICyclicEqualityComparableClass<IFuncDeclSymbol>
+    public interface IFuncDeclSymbol : IDeclSymbolNode, ICyclicEqualityComparableClass<IFuncDeclSymbol>, ISerializable
     {
         void AddLambda(LambdaDeclSymbol declSymbol);
 

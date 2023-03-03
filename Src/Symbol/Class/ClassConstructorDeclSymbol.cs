@@ -58,7 +58,7 @@ namespace Citron.Symbol
 
         public DeclSymbolNodeName GetNodeName()
         {
-            return new DeclSymbolNodeName(Name.Constructor, 0, parameters.MakeFuncParamIds());
+            return new DeclSymbolNodeName(Names.Constructor, 0, parameters.MakeFuncParamIds());
         }
         
         public IEnumerable<IDeclSymbolNode> GetMemberDeclNodes()
@@ -96,6 +96,15 @@ namespace Citron.Symbol
                 return false;
 
             return true;
+        }
+
+        void ISerializable.DoSerialize(ref SerializeContext context)
+        {
+            context.SerializeRef(nameof(outer), outer);
+            context.SerializeString(nameof(accessor), accessor.ToString());
+            context.SerializeValueArray(nameof(parameters), parameters);
+            context.SerializeBool(nameof(bTrivial), bTrivial);
+            context.SerializeValueRef(nameof(lambdaComponent), ref lambdaComponent);
         }
 
         bool ICyclicEqualityComparableClass<ClassConstructorDeclSymbol>.CyclicEquals(ClassConstructorDeclSymbol other, ref CyclicEqualityCompareContext context)

@@ -4,16 +4,18 @@ using Citron.Collections;
 
 using S = Citron.Syntax;
 
-using static Citron.Infra.Misc;
-using static Citron.Syntax.SyntaxFactory;
 using Xunit;
 
-using Citron.Analysis;
 using System.Diagnostics;
 using Citron.IR0;
 using Citron.Test.Misc;
 
-namespace Citron;
+using static Citron.Infra.Misc;
+using static Citron.Syntax.SyntaxFactory;
+using static Citron.Test.SyntaxIR0TranslatorMisc;
+using Citron.Analysis;
+
+namespace Citron.Test;
 
 public class UnitTest1
 {
@@ -28,11 +30,7 @@ public class UnitTest1
     ClassType stringType;
     VoidType voidType;
 
-    Name NormalName(string text)
-    {
-        return new Name.Normal(text);
-    }
-
+    
     public UnitTest1()
     {
         factory = new SymbolFactory();
@@ -62,7 +60,7 @@ public class UnitTest1
         voidType = new VoidType();
     }
 
-    (ModuleDeclSymbol, ImmutableArray<StmtBody>) Build(Name moduleName, S.Script script)
+    Script Build(Name moduleName, S.Script script)
     {
         var referenceModules = Arr(runtimeModuleDecl);
 

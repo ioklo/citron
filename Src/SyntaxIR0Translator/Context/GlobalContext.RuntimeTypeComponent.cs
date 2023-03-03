@@ -36,7 +36,7 @@ partial class GlobalContext
         IType intType;
         IType stringType;
 
-        RuntimeTypeComponent(SymbolFactory factory, ImmutableArray<ModuleDeclSymbol> moduleDecls)
+        public RuntimeTypeComponent(SymbolFactory factory, ImmutableArray<ModuleDeclSymbol> moduleDecls)
         {
             var loader = new TypeLoader(new SymbolLoader(factory, moduleDecls));
 

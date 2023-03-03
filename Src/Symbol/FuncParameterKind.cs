@@ -1,9 +1,8 @@
-﻿namespace Citron.Symbol
+﻿namespace Citron.Symbol;
+
+public enum FuncParameterKind
 {
-    public enum FuncParameterKind
-    {
-        Default,
-        Params,
-        Ref,        
-    }
+    Default,
+    Params,
+    Ref,        
 }

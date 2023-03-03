@@ -139,11 +139,19 @@ namespace Citron.Symbol
             return true;
         }
 
+        void ISerializable.DoSerialize(ref SerializeContext context)
+        {
+            context.SerializeRef(nameof(outer), outer);
+            context.SerializeRef(nameof(decl), decl);
+        }
+
         public void Accept<TVisitor>(ref TVisitor visitor)
             where TVisitor : struct, ISymbolNodeVisitor
         {
             visitor.VisitLambda(this);
         }
+
+        
 
         //public LambdaSymbol(RItemFactory ritemFactory, R.Path.Nested lambda, ITypeSymbol ret, ImmutableArray<ParamInfo> parameters)
         //{

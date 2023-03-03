@@ -33,7 +33,7 @@ partial class GlobalContext : IMutable<GlobalContext>
         this.logger = logger;
         this.bodies = default;
 
-        this.runtimeTypeComponent = new RuntimeTypeComponent();
+        this.runtimeTypeComponent = new RuntimeTypeComponent(symbolFactory, moduleDeclSymbols);
         this.internalBinOpQueryService = new InternalBinaryOperatorQueryService(GetBoolType(), GetIntType(), GetStringType());
     }
 

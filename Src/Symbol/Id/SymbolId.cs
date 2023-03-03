@@ -7,11 +7,19 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Citron.Collections;
+using Citron.Infra;
 
 namespace Citron.Symbol
 {
     // 'ModuleSymbol' Id
-    public record class SymbolId(Name ModuleName, SymbolPath? Path) : TypeId;
+    public record class SymbolId(Name ModuleName, SymbolPath? Path) : TypeId
+    {
+        public override void DoSerialize(ref SerializeContext context)
+        {
+            context.SerializeRef(nameof(ModuleName), ModuleName);
+            context.SerializeRef(nameof(Path), Path);
+        }
+    }
 
     public static class SymbolIdExtensions
     {

@@ -1,9 +1,10 @@
 ﻿using Citron.Collections;
+using Citron.Infra;
 using Pretune;
 
 namespace Citron.Symbol
 {    
-    public record class SymbolPath
+    public record class SymbolPath : ISerializable
     {
         public SymbolPath? Outer { get; set; } // 오픈한 이유는
         public Name Name { get; }
@@ -16,6 +17,14 @@ namespace Citron.Symbol
             Name = name;
             TypeArgs = typeArgs;
             ParamIds = paramIds;
+        }
+
+        void ISerializable.DoSerialize(ref SerializeContext context)
+        {
+            context.SerializeRef(nameof(Outer), Outer);
+            context.SerializeRef(nameof(Name), Name);
+            context.SerializeRefArray(nameof(TypeArgs), TypeArgs);
+            context.SerializeValueArray(nameof(ParamIds), ParamIds);
         }
     }
 

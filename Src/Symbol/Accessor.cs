@@ -1,9 +1,9 @@
-﻿namespace Citron.Symbol
+﻿namespace Citron.Symbol;
+
+public enum Accessor
 {
-    public enum Accessor
-    {
-        Public,
-        Protected,
-        Private
-    }
+    Public,
+    Protected,
+    Private
 }
+

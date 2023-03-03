@@ -14,7 +14,7 @@ namespace Citron.Symbol
     public partial class InterfaceDeclSymbol : ITypeDeclSymbol, ICyclicEqualityComparableClass<InterfaceDeclSymbol>
     {
         IDeclSymbolNode outer;
-        Accessor accessModifier;
+        Accessor accessor;
 
         Name name;
         ImmutableArray<Name> typeParams;
@@ -68,7 +68,7 @@ namespace Citron.Symbol
 
         public Accessor GetAccessor()
         {
-            return accessModifier;
+            return accessor;
         }
 
         bool ICyclicEqualityComparableClass<IDeclSymbolNode>.CyclicEquals(IDeclSymbolNode other, ref CyclicEqualityCompareContext context)
@@ -85,7 +85,7 @@ namespace Citron.Symbol
             if (!context.CompareClass(outer, other.outer))
                 return false;
 
-            if (!accessModifier.Equals(other.accessModifier))
+            if (!accessor.Equals(other.accessor))
                 return false;
 
             if (!name.Equals(other.name))
@@ -95,6 +95,14 @@ namespace Citron.Symbol
                 return false;
 
             return true;
+        }
+
+        void ISerializable.DoSerialize(ref SerializeContext context)
+        {
+            context.SerializeRef(nameof(outer), outer);
+            context.SerializeString(nameof(accessor), accessor.ToString());
+            context.SerializeRef(nameof(name), name);
+            context.SerializeRefArray(nameof(typeParams), typeParams);
         }
     }
 }

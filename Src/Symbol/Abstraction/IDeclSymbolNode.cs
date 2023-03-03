@@ -7,10 +7,18 @@ using System.Diagnostics;
 
 namespace Citron.Symbol
 {
-    public record class DeclSymbolNodeName(Name Name, int TypeParamCount, ImmutableArray<FuncParamId> ParamIds);
+    public record class DeclSymbolNodeName(Name Name, int TypeParamCount, ImmutableArray<FuncParamId> ParamIds) : ISerializable
+    {
+        void ISerializable.DoSerialize(ref SerializeContext context)
+        {
+            context.SerializeRef(nameof(Name), Name);
+            context.SerializeInt(nameof(TypeParamCount), TypeParamCount);
+            context.SerializeValueArray(nameof(ParamIds), ParamIds);
+        }
+    }
 
     // DeclSymbol 간에 참조할 수 있는 인터페이스 확장에는 닫혀있다 
-    public interface IDeclSymbolNode : ICyclicEqualityComparableClass<IDeclSymbolNode>
+    public interface IDeclSymbolNode : ICyclicEqualityComparableClass<IDeclSymbolNode>, ISerializable
     {
         Accessor GetAccessor();
         IDeclSymbolNode? GetOuterDeclNode(); // 최상위 계층에는 Outer가 없다

@@ -5,7 +5,7 @@ using Citron.Infra;
 
 namespace Citron.Symbol
 {   
-    public struct TypeDeclSymbolComponent : ICyclicEqualityComparableStruct<TypeDeclSymbolComponent>
+    public struct TypeDeclSymbolComponent : ICyclicEqualityComparableStruct<TypeDeclSymbolComponent>, ISerializable
     {        
         Dictionary<DeclSymbolNodeName, ITypeDeclSymbol> typeDict;
 
@@ -37,6 +37,11 @@ namespace Citron.Symbol
                 return false;
 
             return true;
+        }
+
+        void ISerializable.DoSerialize(ref SerializeContext context)
+        {
+            context.SerializeDictRefKeyRefValue(nameof(typeDict), typeDict);
         }
     }
 }

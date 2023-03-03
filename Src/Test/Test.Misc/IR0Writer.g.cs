@@ -177,48 +177,6 @@ namespace Citron.Test.Misc
         {
             if (@name == null) { itw.Write("null"); return; }
 
-            if (@name == Citron.Symbol.Name.IndexerGet)
-            {
-                itw.Write("Citron.Symbol.Name.IndexerGet");
-                return;
-            }
-
-            if (@name == Citron.Symbol.Name.IndexerSet)
-            {
-                itw.Write("Citron.Symbol.Name.IndexerSet");
-                return;
-            }
-
-            if (@name == Citron.Symbol.Name.Constructor)
-            {
-                itw.Write("Citron.Symbol.Name.Constructor");
-                return;
-            }
-
-            if (@name == Citron.Symbol.Name.OpInc)
-            {
-                itw.Write("Citron.Symbol.Name.OpInc");
-                return;
-            }
-
-            if (@name == Citron.Symbol.Name.OpDec)
-            {
-                itw.Write("Citron.Symbol.Name.OpDec");
-                return;
-            }
-
-            if (@name == Citron.Symbol.Name.Nullable)
-            {
-                itw.Write("Citron.Symbol.Name.Nullable");
-                return;
-            }
-
-            if (@name == Citron.Symbol.Name.TopLevel)
-            {
-                itw.Write("Citron.Symbol.Name.TopLevel");
-                return;
-            }
-
             switch(@name)
             {
                 case Citron.Symbol.Name.Singleton @singleton: Write_Name_Singleton(@singleton); break;

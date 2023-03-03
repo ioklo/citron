@@ -9,7 +9,7 @@ namespace Citron.Symbol
     public class StructConstructorDeclSymbol : IFuncDeclSymbol, ICyclicEqualityComparableClass<StructConstructorDeclSymbol>
     {
         StructDeclSymbol outer;
-        Accessor accessModifier;
+        Accessor accessor;
         ImmutableArray<FuncParameter> parameters;
         bool bTrivial;
 
@@ -28,7 +28,7 @@ namespace Citron.Symbol
         public StructConstructorDeclSymbol(StructDeclSymbol outer, Accessor accessModifier, ImmutableArray<FuncParameter> parameters, bool bTrivial)
         {
             this.outer = outer;
-            this.accessModifier = accessModifier;
+            this.accessor = accessModifier;
             this.parameters = parameters;
             this.bTrivial = bTrivial;
 
@@ -52,7 +52,7 @@ namespace Citron.Symbol
 
         public DeclSymbolNodeName GetNodeName()
         {
-            return new DeclSymbolNodeName(Name.Constructor, 0, parameters.MakeFuncParamIds());
+            return new DeclSymbolNodeName(Names.Constructor, 0, parameters.MakeFuncParamIds());
         }
 
         public IEnumerable<IDeclSymbolNode> GetMemberDeclNodes()
@@ -72,7 +72,7 @@ namespace Citron.Symbol
 
         public Accessor GetAccessor()
         {
-            return accessModifier;
+            return accessor;
         }
 
         public bool IsTrivial()
@@ -99,7 +99,7 @@ namespace Citron.Symbol
             if (!context.CompareClass(outer, other.outer))
                 return false;
 
-            if (!accessModifier.Equals(other.accessModifier))
+            if (!accessor.Equals(other.accessor))
                 return false;
 
             if (!parameters.CyclicEqualsStructItem(ref other.parameters, ref context))
@@ -117,6 +117,15 @@ namespace Citron.Symbol
         void IFuncDeclSymbol.AddLambda(LambdaDeclSymbol declSymbol)
         {
             throw new NotImplementedException();
+        }
+
+        void ISerializable.DoSerialize(ref SerializeContext context)
+        {
+            context.SerializeRef(nameof(outer), outer);
+            context.SerializeString(nameof(accessor), accessor.ToString());
+            context.SerializeValueArray(nameof(parameters), parameters);
+            context.SerializeBool(nameof(bTrivial), bTrivial);
+            context.SerializeValue(nameof(lambdaComponent), lambdaComponent);
         }
     }
 }

@@ -18,7 +18,7 @@ namespace Citron.Analysis
     // Syntax로부터 ModuleDeclSymbol을 만든다
     public struct SyntaxIR0Translator
     {
-        public static (ModuleDeclSymbol, ImmutableArray<R.StmtBody>) Build(Name moduleName, ImmutableArray<S.Script> scripts, ImmutableArray<ModuleDeclSymbol> refModuleDecls, SymbolFactory factory, ILogger logger)
+        public static R.Script Build(Name moduleName, ImmutableArray<S.Script> scripts, ImmutableArray<ModuleDeclSymbol> refModuleDecls, SymbolFactory factory, ILogger logger)
         {
             var moduleDecl = new ModuleDeclSymbol(moduleName, bReference: false);
 
@@ -69,7 +69,7 @@ namespace Citron.Analysis
 
             var body = globalContext.GetBodies();
 
-            return (moduleDecl, body);
+            return new R.Script(moduleDecl, body);
         }
     }
 }

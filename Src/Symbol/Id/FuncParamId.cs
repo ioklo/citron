@@ -1,22 +1,61 @@
 ﻿using Pretune;
 using Citron.Collections;
+using Citron.Infra;
+using System;
 
 namespace Citron.Symbol
 {
-    [AutoConstructor]
-    public partial struct FuncParamId
+    public record struct FuncParamId(FuncParameterKind Kind, FuncParamTypeId TypeId) : ISerializable
     {
-        public FuncParameterKind Kind { get; }
-        public FuncParamTypeId TypeId { get; }
+        void ISerializable.DoSerialize(ref SerializeContext context)
+        {
+            context.SerializeString(nameof(Kind), Kind.ToString());
+            context.SerializeRef(nameof(TypeId), TypeId);
+        }
     }
 
-    public abstract record class FuncParamTypeId
+    public abstract record class FuncParamTypeId : ISerializable
     {
-        public record Symbol(SymbolId Id) : FuncParamTypeId;
-        public record Tuple(ImmutableArray<FuncParamTypeId> MemberTypeIds) : FuncParamTypeId;
-        public record Nullable(FuncParamTypeId InnerTypeId) : FuncParamTypeId;
-        public record Void() : FuncParamTypeId;
-        public record TypeVar(int index) : FuncParamTypeId;
+        public abstract void DoSerialize(ref SerializeContext context);
+
+        public record Symbol(SymbolId Id) : FuncParamTypeId
+        {
+            public override void DoSerialize(ref SerializeContext context)
+            {
+                context.SerializeRef(nameof(Id), Id);
+            }
+        }
+
+        public record Tuple(ImmutableArray<FuncParamTypeId> MemberTypeIds) : FuncParamTypeId
+        {
+            public override void DoSerialize(ref SerializeContext context)
+            {
+                context.SerializeRefArray(nameof(MemberTypeIds), MemberTypeIds);
+            }
+        }
+
+        public record Nullable(FuncParamTypeId InnerTypeId) : FuncParamTypeId
+        {
+            public override void DoSerialize(ref SerializeContext context)
+            {
+                context.SerializeRef(nameof(InnerTypeId), InnerTypeId);
+            }
+        }
+
+        public record Void : FuncParamTypeId
+        {
+            public override void DoSerialize(ref SerializeContext context)
+            {
+            }
+        }
+
+        public record TypeVar(int Index) : FuncParamTypeId
+        {
+            public override void DoSerialize(ref SerializeContext context)
+            {
+                context.SerializeInt(nameof(Index), Index);
+            }
+        }
     }
 
     public static class FuncParamIdExtensions

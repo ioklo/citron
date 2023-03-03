@@ -8,7 +8,7 @@ using System.Diagnostics;
 
 namespace Citron.Symbol
 {
-    public class GlobalFuncDeclSymbol : IFuncDeclSymbol, ICyclicEqualityComparableClass<GlobalFuncDeclSymbol>
+    public class GlobalFuncDeclSymbol : IFuncDeclSymbol, ICyclicEqualityComparableClass<GlobalFuncDeclSymbol>, ISerializable
     {
         enum InitializeState
         {
@@ -19,7 +19,7 @@ namespace Citron.Symbol
         // module or namespace
         ITopLevelDeclSymbolNode outer;
 
-        Accessor accessModifier;
+        Accessor accessor;
         FuncReturn @return;
         Name name;
 
@@ -36,7 +36,7 @@ namespace Citron.Symbol
             ImmutableArray<Name> typeParams)
         {
             this.outer = outer;
-            this.accessModifier = accessModifier;
+            this.accessor = accessModifier;
             this.name = name;
             this.typeParams = typeParams;
 
@@ -78,7 +78,7 @@ namespace Citron.Symbol
         
         public Accessor GetAccessor()
         {
-            return accessModifier;
+            return accessor;
         }
 
         public DeclSymbolNodeName GetNodeName()
@@ -134,7 +134,7 @@ namespace Citron.Symbol
             if (!context.CompareClass(outer, other.outer))
                 return false;
 
-            if (!accessModifier.Equals(other.accessModifier))
+            if (!accessor.Equals(other.accessor))
                 return false;
 
             if (!@return.CyclicEquals(ref other.@return, ref context))
@@ -156,6 +156,18 @@ namespace Citron.Symbol
                 return false;
 
             return true;
-        }        
+        }
+
+        void ISerializable.DoSerialize(ref SerializeContext context)
+        {
+            context.SerializeRef(nameof(outer), outer);
+            context.SerializeString(nameof(accessor), accessor.ToString());
+            context.SerializeValueRef(nameof(@return), ref @return);
+            context.SerializeRef(nameof(name), name);
+            context.SerializeRefArray(nameof(typeParams), typeParams);
+            context.SerializeValueArray(nameof(parameters), parameters);
+            context.SerializeValueRef(nameof(lambdaComponent), ref lambdaComponent);
+            context.SerializeString(nameof(initState), initState.ToString());
+        }
     }
 }
