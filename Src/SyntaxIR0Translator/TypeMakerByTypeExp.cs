@@ -293,11 +293,11 @@ record struct TypeMakerByTypeExp(IEnumerable<ModuleDeclSymbol> modules, SymbolFa
             // bool
             if (idTypeExp.Name == "bool" && idTypeExp.TypeArgs.Length == 0)
             {
-                var intType = GetRuntimeType(new Name.Normal("Bool"), 0);
-                if (intType == null)
+                var boolType = GetRuntimeType(new Name.Normal("Bool"), 0);
+                if (boolType == null)
                     throw new NotImplementedException();
 
-                return intType;
+                return boolType;
             }
 
             // int

@@ -10,9 +10,11 @@ using Citron.Log;
 
 using S = Citron.Syntax;
 using R = Citron.IR0;
+using Pretune;
 
 namespace Citron.Analysis;
 
+[AutoConstructor]
 partial class GlobalContext : IMutable<GlobalContext>
 {   
     SymbolFactory symbolFactory;
@@ -37,19 +39,6 @@ partial class GlobalContext : IMutable<GlobalContext>
         this.internalBinOpQueryService = new InternalBinaryOperatorQueryService(GetBoolType(), GetIntType(), GetStringType());
     }
 
-    // memberwise
-    GlobalContext(SymbolFactory factory, ImmutableArray<ModuleDeclSymbol> moduleDeclSymbols, ILogger logger, ImmutableArray<R.StmtBody> bodies, RuntimeTypeComponent rtcomp, InternalBinaryOperatorQueryService internalBinOpQueryService)
-    {
-        this.symbolFactory = factory;
-        this.moduleDeclSymbols = moduleDeclSymbols;
-
-        this.logger = logger;
-        this.bodies = bodies;
-
-        this.runtimeTypeComponent = rtcomp;
-        this.internalBinOpQueryService = internalBinOpQueryService;
-    }
-
     GlobalContext IMutable<GlobalContext>.Clone(CloneContext cloneContext)
     {   
         var clonedLogger = cloneContext.GetClone(this.logger);
@@ -66,7 +55,14 @@ partial class GlobalContext : IMutable<GlobalContext>
 
     void IMutable<GlobalContext>.Update(GlobalContext src, UpdateContext context)
     {
-        throw new NotImplementedException();
+        Debug.Assert(symbolFactory == src.symbolFactory);
+        Debug.Assert(moduleDeclSymbols.Equals(src.moduleDeclSymbols));
+
+        context.Update(logger, src.logger);
+
+        bodies = src.bodies;
+        runtimeTypeComponent = src.runtimeTypeComponent;
+        internalBinOpQueryService = src.internalBinOpQueryService;
     }
 
     // typeParams를 치환하지 않고 그대로 만든다

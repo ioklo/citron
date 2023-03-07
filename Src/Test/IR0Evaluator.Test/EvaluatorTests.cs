@@ -71,7 +71,7 @@ namespace Citron.Test
 
             var runtimeModuleDecl = new ModuleDeclBuilder(this.factory, new Name.Normal("System.Runtime"))
                 .BeginNamespace("System")
-                    .Struct("Boolean", out var boolDecl)
+                    .Struct("Bool", out var boolDecl)
                     .Struct("Int32", out var intDecl)
                     .Class("String", typeParams: default, out var stringDecl)
                     .Class("List", Arr("TItem"), out listTypeDecl)

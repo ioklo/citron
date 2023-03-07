@@ -39,7 +39,7 @@ public class UnitTest1
         var systemNSDecl = new NamespaceDeclSymbol(runtimeModuleDecl, NormalName("System"));
         runtimeModuleDecl.AddNamespace(systemNSDecl);
 
-        var boolDecl = new StructDeclSymbol(systemNSDecl, Accessor.Public, NormalName("Boolean"), typeParams: default);
+        var boolDecl = new StructDeclSymbol(systemNSDecl, Accessor.Public, NormalName("Bool"), typeParams: default);
         systemNSDecl.AddType(boolDecl);
 
         var intDecl = new StructDeclSymbol(systemNSDecl, Accessor.Public, NormalName("Int32"), typeParams: default);

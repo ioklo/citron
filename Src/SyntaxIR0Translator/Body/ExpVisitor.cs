@@ -28,6 +28,14 @@ struct ExpVisitor
         var visitor = new ExpVisitor(context, hintType);
         var result = visitor.VisitExp(exp);
 
+        if (result is ExpResult.NotFound)
+            context.AddFatalError(A2007_ResolveIdentifier_NotFound, exp);
+        else if (result is ExpResult.Error errorResult)
+            visitor.HandleExpErrorResult(errorResult, exp);
+
+        Debug.Assert(result is not ExpResult.NotFound);
+        Debug.Assert(result is not ExpResult.Error);
+
         var rexp = result.MakeIR0Exp();
         if (rexp == null)
             throw new NotImplementedException(); // exp로 변환하기가 실패했습니다.
@@ -102,7 +110,7 @@ struct ExpVisitor
     // int만 지원한다
     ExpResult VisitIntUnaryAssignExp(S.Exp operand, R.InternalUnaryAssignOperator op)
     {
-        var result = ExpVisitor.TranslateAsLoc(operand, context, hintType: null, bWrapExpAsLoc: true);
+        var result = ExpVisitor.TranslateAsLoc(operand, context, hintType: null, bWrapExpAsLoc: false);
         if (result != null)
         {
             var (loc, type) = result.Value;
@@ -190,6 +198,7 @@ struct ExpVisitor
                     throw new UnreachableCodeException();
 
                 case R.TempLoc:
+                    context.AddFatalError(A0803_BinaryOp_LeftOperandIsNotAssignable, exp.Operand0);
                     throw new UnreachableCodeException();
             }
             
@@ -287,7 +296,7 @@ struct ExpVisitor
     // CallExp분석에서 Callable이 GlobalMemberFuncs인 경우 처리
     ExpResult VisitCallExpGlobalFuncsCallable(ExpResult.GlobalFuncs funcs, ImmutableArray<S.Argument> sargs, S.ISyntaxNode nodeForErrorReport)
     {
-        var (func, args) = InternalMatchFunc(funcs.Infos, funcs.TypeArgsForMatch, sargs, nodeForErrorReport);
+        var (func, args) = InternalMatchFunc(funcs.Infos, funcs.ParitalTypeArgs, sargs, nodeForErrorReport);
 
         if (!context.CanAccess(func))
             context.AddFatalError(A2011_ResolveIdentifier_TryAccessingPrivateMember, nodeForErrorReport);
@@ -488,6 +497,8 @@ struct ExpVisitor
 
         var callableResult = ExpVisitor.VisitExp(exp.Callable, context, hintType: null);
 
+        
+
         // TODO: 함수 이름을 먼저 찾고, 타입 힌트에 따라서 Exp를 맞춰봐야 한다
         // 함수 이름을 먼저 찾는가
         // Argument 타입을 먼저 알아내야 하는가
@@ -495,6 +506,14 @@ struct ExpVisitor
 
         switch (callableResult)
         {
+            case ExpResult.NotFound:
+                context.AddFatalError(A0906_CallExp_NotFound, exp.Callable);
+                break;
+
+            case ExpResult.Error errorResult:
+                HandleExpErrorResult(errorResult, exp.Callable);
+                break;
+
             case ExpResult.Namespace:
                 context.AddFatalError(A0902_CallExp_CallableExpressionIsNotCallable, exp.Callable);
                 break;
@@ -548,11 +567,7 @@ struct ExpVisitor
         IType? retType = null;
 
         var visitor = new LambdaVisitor(retType, exp.Params, exp.Body, context, nodeForErrorReport: exp);
-        var (lambdaSymbol, args, body) = visitor.Visit();
-        var lambdaDeclSymbol = lambdaSymbol.GetDeclSymbolNode() as LambdaDeclSymbol;
-        Debug.Assert(lambdaDeclSymbol != null);
-
-        context.AddBody(lambdaDeclSymbol, body);
+        var (lambdaSymbol, args) = visitor.Visit();
         return new ExpResult.IR0Exp(new R.LambdaExp(lambdaSymbol, args));
     }
 
@@ -834,7 +849,7 @@ struct ExpVisitor
             { ExpResults.CantGetThis, A2010_ResolveIdentifier_ThisIsNotInTheContext }
         };
 
-    void HandleErrorIdentifierResult(S.ISyntaxNode nodeForErrorReport, ExpResult.Error errorResult)
+    void HandleExpErrorResult(ExpResult.Error errorResult, S.ISyntaxNode nodeForErrorReport)
     {
         var code = errorMap[errorResult];
         context.AddFatalError(code, nodeForErrorReport);
@@ -866,7 +881,7 @@ struct ExpVisitor
                 throw new UnreachableCodeException();
 
             case ExpResult.Error errorResult:
-                HandleErrorIdentifierResult(memberExp.Parent, errorResult);
+                HandleExpErrorResult(errorResult, memberExp.Parent);
                 throw new UnreachableCodeException();
             
             // "ns".id

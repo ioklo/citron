@@ -30,9 +30,9 @@ namespace Citron.Symbol
         
         public record class GlobalFuncs(ImmutableArray<DeclAndConstructor<GlobalFuncDeclSymbol, GlobalFuncSymbol>> Infos) : Valid;
 
-        public record Class(Func<ImmutableArray<IType>, ClassSymbol> ClassConstructor) : Valid;
-        public record ClassMemberFuncs(ImmutableArray<DeclAndConstructor<ClassMemberFuncDeclSymbol, ClassMemberFuncSymbol>> Infos) : Valid;
-        public record ClassMemberVar(ClassMemberVarSymbol Var) : Valid;
+        public record class Class(Func<ImmutableArray<IType>, ClassSymbol> ClassConstructor) : Valid;
+        public record class ClassMemberFuncs(ImmutableArray<DeclAndConstructor<ClassMemberFuncDeclSymbol, ClassMemberFuncSymbol>> Infos) : Valid;
+        public record class ClassMemberVar(ClassMemberVarSymbol Var) : Valid;
 
         public record class Struct(Func<ImmutableArray<IType>, StructSymbol> StructConstructor) : Valid;        
         public record class StructMemberFuncs(ImmutableArray<DeclAndConstructor<StructMemberFuncDeclSymbol, StructMemberFuncSymbol>> Infos) : Valid;

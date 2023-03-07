@@ -7,7 +7,7 @@ namespace Citron.Analysis;
 
 partial class GlobalContext
 {
-    partial struct RuntimeTypeComponent
+    public partial struct RuntimeTypeComponent
     {
         static SymbolId systemNSId; // 
         static SymbolId boolId, intId, stringId;
@@ -18,7 +18,7 @@ partial class GlobalContext
         {
             systemNSId = new SymbolId(new Name.Normal("System.Runtime"), null).Child(new Name.Normal("System"));
 
-            boolId = systemNSId.Child(new Name.Normal("Boolean"));
+            boolId = systemNSId.Child(new Name.Normal("Bool"));
             intId = systemNSId.Child(new Name.Normal("Int32"));
             stringId = systemNSId.Child(new Name.Normal("String"));
 
@@ -38,7 +38,7 @@ partial class GlobalContext
 
         public RuntimeTypeComponent(SymbolFactory factory, ImmutableArray<ModuleDeclSymbol> moduleDecls)
         {
-            var loader = new TypeLoader(new SymbolLoader(factory, moduleDecls));
+            this.loader = new TypeLoader(new SymbolLoader(factory, moduleDecls));
 
             this.voidType = new VoidType();
             this.boolType = loader.Load(boolId);

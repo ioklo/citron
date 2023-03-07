@@ -173,7 +173,7 @@ namespace Citron.Analysis
 
         public static S.TypeExpInfo Bool(S.TypeExp typeExp)
         {
-            return new NoMemberTypeExpInfo(S.TypeExpInfoKind.Struct, new ModuleSymbolId(runtimeModule, systemPath.Child(new M.Name.Normal("Boolean"))), typeExp);
+            return new NoMemberTypeExpInfo(S.TypeExpInfoKind.Struct, new ModuleSymbolId(runtimeModule, systemPath.Child(new M.Name.Normal("Bool"))), typeExp);
         }
 
         public static S.TypeExpInfo Int(S.TypeExp typeExp)

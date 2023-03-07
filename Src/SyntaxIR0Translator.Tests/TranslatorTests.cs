@@ -48,7 +48,7 @@ namespace Citron.Test
 
             IType MakeBoolType()
             {
-                var boolD = new StructDeclSymbol(systemNSD, Accessor.Public, NormalName("Boolean"), typeParams: default);
+                var boolD = new StructDeclSymbol(systemNSD, Accessor.Public, NormalName("Bool"), typeParams: default);
                 boolD.InitBaseTypes(baseStruct: null, interfaces: default);
                 systemNSD.AddType(boolD);
 
@@ -248,19 +248,19 @@ namespace Citron.Test
             VerifyError(errors, A0103_VarDecl_LocalVarNameShouldBeUniqueWithinScope, element);
         }
 
-        [Fact]
-        public void VarDeclStmt_ChecksLocalDeclHasInitializer()
-        {
-            S.VarDeclElement elem;
-            var syntaxScript = SScript(
-                new S.VarDeclStmt(new S.VarDecl(false, SIntTypeExp(), Arr(
-                    elem = new S.VarDeclElement("x", null)
-                )))
-            );
+        //[Fact]
+        //public void VarDeclStmt_ChecksLocalDeclHasInitializer()
+        //{
+        //    S.VarDeclElement elem;
+        //    var syntaxScript = SScript(
+        //        new S.VarDeclStmt(new S.VarDecl(false, SIntTypeExp(), Arr(
+        //            elem = new S.VarDeclElement("x", null)
+        //        )))
+        //    );
 
-            var errors = TranslateWithErrors(syntaxScript);
-            VerifyError(errors, A0111_VarDecl_LocalVarDeclNeedInitializer, elem);
-        }
+        //    var errors = TranslateWithErrors(syntaxScript);
+        //    VerifyError(errors, A0111_VarDecl_LocalVarDeclNeedInitializer, elem);
+        //}
 
         #region If
 
@@ -813,6 +813,12 @@ namespace Citron.Test
         [Fact]
         public void AwaitStmt_ChecksLocalVariableScope()
         {
+            // await 
+            // {
+            //     var x = "Hello"
+            // }
+            // @$x
+
             S.Exp exp;
 
             var syntaxScript = SScript(

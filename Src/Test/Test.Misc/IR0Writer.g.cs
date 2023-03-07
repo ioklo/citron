@@ -941,8 +941,6 @@ namespace Citron.Test.Misc
             writer1.Write_ISymbolNode(@taskStmt.Lambda);
             itw1.WriteLine(",");
             writer1.Write_ImmutableArray(Write_Argument, "Citron.IR0.Argument", @taskStmt.CaptureArgs);
-            itw1.WriteLine(",");
-            writer1.Write_ImmutableArray(Write_Stmt, "Citron.IR0.Stmt", @taskStmt.Body);
             itw.Write(")");
         }
 
@@ -967,8 +965,6 @@ namespace Citron.Test.Misc
             writer1.Write_ISymbolNode(@asyncStmt.Lambda);
             itw1.WriteLine(",");
             writer1.Write_ImmutableArray(Write_Argument, "Citron.IR0.Argument", @asyncStmt.CaptureArgs);
-            itw1.WriteLine(",");
-            writer1.Write_ImmutableArray(Write_Stmt, "Citron.IR0.Stmt", @asyncStmt.Body);
             itw.Write(")");
         }
 

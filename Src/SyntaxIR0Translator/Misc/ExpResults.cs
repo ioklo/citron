@@ -29,7 +29,7 @@ abstract record class ExpResult
     public record class Namespace : Valid;
 
     // TypeArgsForMatch: partial
-    public record class GlobalFuncs(ImmutableArray<DeclAndConstructor<GlobalFuncDeclSymbol, GlobalFuncSymbol>> Infos, ImmutableArray<IType> TypeArgsForMatch) : Valid;
+    public record class GlobalFuncs(ImmutableArray<DeclAndConstructor<GlobalFuncDeclSymbol, GlobalFuncSymbol>> Infos, ImmutableArray<IType> ParitalTypeArgs) : Valid;
     #endregion
 
     #region Body

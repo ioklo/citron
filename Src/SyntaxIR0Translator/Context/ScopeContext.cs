@@ -1,6 +1,7 @@
 ﻿using Citron.Collections;
 using Citron.Infra;
 using Citron.Symbol;
+using Pretune;
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -10,6 +11,7 @@ using S = Citron.Syntax;
 
 namespace Citron.Analysis;
 
+[AutoConstructor]
 partial class ScopeContext : IMutable<ScopeContext>
 {
     // 멤버 변수가 변경되면, IMutable.Clone을 변경해줘야 한다
@@ -22,42 +24,38 @@ partial class ScopeContext : IMutable<ScopeContext>
     ImmutableArray<R.Stmt> rstmts;
 
     // private
-    ScopeContext(GlobalContext globalContext, BodyContext bodyContext, ScopeContext? parentContext, bool bLoop, ImmutableDictionary<Name, LocalVarInfo> localVarInfos)
-    {
-        this.globalContext = globalContext;
-        this.bodyContext = bodyContext;
-        this.parentContext = parentContext;
-
-        this.bLoop = bLoop;
-        this.localVarInfos = localVarInfos;
-    }
-
     ScopeContext IMutable<ScopeContext>.Clone(CloneContext cloneContext)
     {
-        var globalContext = cloneContext.GetClone(this.globalContext);
-        var bodyContext = cloneContext.GetClone(this.bodyContext);
-        var parentContext = (this.parentContext != null) ? cloneContext.GetClone(this.parentContext) : null;
+        var newGlobalContext = cloneContext.GetClone(globalContext);
+        var newBodyContext = cloneContext.GetClone(bodyContext);
+        var newParentContext = (parentContext != null) ? cloneContext.GetClone(parentContext) : null;
 
-        var bLoop = this.bLoop;
-        var localVarInfos = this.localVarInfos; // immutable dictionary라서 그냥 대입해도 된다
-
-        return new ScopeContext(globalContext, bodyContext, parentContext, bLoop, localVarInfos);
+        return new ScopeContext(newGlobalContext, newBodyContext, newParentContext, bLoop, localVarInfos, rstmts);
     }
 
     void IMutable<ScopeContext>.Update(ScopeContext src, UpdateContext context)
     {
-        throw new NotImplementedException();
+        context.Update(globalContext, src.globalContext);
+        context.Update(bodyContext, src.bodyContext);
+
+        if (parentContext != null)
+        {
+            Debug.Assert(src.parentContext != null);
+            context.Update(parentContext, src.parentContext);
+        }
+        else
+        {
+            Debug.Assert(src.parentContext == null);
+        }
+
+        bLoop = src.bLoop;
+        localVarInfos = src.localVarInfos;
+        rstmts = src.rstmts;
     }
 
     public ScopeContext(GlobalContext globalContext, BodyContext bodyContext, ScopeContext? parentContext, bool bLoop)
-    {
-        this.globalContext = globalContext;
-        this.bodyContext = bodyContext;
-        this.parentContext = parentContext;
-
-        this.bLoop = bLoop;        
-
-        this.localVarInfos = ImmutableDictionary<Name, LocalVarInfo>.Empty;
+        : this(globalContext, bodyContext, parentContext, bLoop, ImmutableDictionary<Name, LocalVarInfo>.Empty, default)
+    {   
     }
 
     public void AddStmt(R.Stmt stmt)

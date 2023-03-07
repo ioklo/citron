@@ -54,7 +54,7 @@ namespace Citron.Analysis
         }
 
         // retType이 null이면 아직 안정해졌다는 뜻이다
-        public (LambdaSymbol LambdaSymbol, ImmutableArray<R.Argument> Args, ImmutableArray<R.Stmt> Body) Visit()
+        public (LambdaSymbol Lambda, ImmutableArray<R.Argument> Args) Visit()
         {
             // 람다를 분석합니다
             // [int x = x](int p) => { return 3; }
@@ -86,9 +86,10 @@ namespace Citron.Analysis
             newStmtVisitor.VisitBody(bodySyntaxes);
 
             var body = newContext.MakeStmts();
+            context.AddBody(lambda.GetDeclSymbol(), body);
+
             var args = newContext.MakeLambdaArgs();
-            
-            return (lambda, args, body);
+            return (lambda, args);
         }
     }
 }

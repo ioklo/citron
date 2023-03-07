@@ -96,6 +96,9 @@ namespace Citron.Analysis
                 case SymbolQueryResult.NotFound:
                     return ExpResults.NotFound;
 
+                case SymbolQueryResult.GlobalFuncs globalFuncsResult:
+                    return new ExpResult.GlobalFuncs(globalFuncsResult.Infos, typeArgs);
+
                 // 여기서부터 case ItemQueryResult.Valid 
                 #region Class
                 case SymbolQueryResult.Class classResult:
@@ -126,6 +129,9 @@ namespace Citron.Analysis
                 case SymbolQueryResult.EnumElem:
                     throw new NotImplementedException();  // TODO: 무슨 뜻인지 확실히 해야 한다
                 #endregion
+
+                case SymbolQueryResult.Lambda:
+                    throw new UnreachableCodeException();
 
                 case SymbolQueryResult.LambdaMemberVar lambdaMemberVarResult:
                     return new ExpResult.LambdaMemberVar(lambdaMemberVarResult.Symbol);

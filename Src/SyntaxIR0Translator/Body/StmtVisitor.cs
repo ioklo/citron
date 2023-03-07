@@ -378,9 +378,9 @@ partial struct StmtVisitor : S.IStmtVisitor
     public void VisitTask(S.TaskStmt taskStmt)
     {
         var visitor = new LambdaVisitor(context.GetVoidType(), paramSyntaxes: default, taskStmt.Body, context, taskStmt);
-        var (lambda, args, body) = visitor.Visit();
-
-        context.AddStmt(new R.TaskStmt(lambda, args, body));
+        var (lambda, args) = visitor.Visit();
+        
+        context.AddStmt(new R.TaskStmt(lambda, args));
     }
 
     public void VisitAwait(S.AwaitStmt awaitStmt)
@@ -395,8 +395,8 @@ partial struct StmtVisitor : S.IStmtVisitor
     public void VisitAsync(S.AsyncStmt asyncStmt)
     {
         var visitor = new LambdaVisitor(context.GetVoidType(), default, asyncStmt.Body, context, asyncStmt);
-        var(lambda, args, body) = visitor.Visit();
-        context.AddStmt(new R.AsyncStmt(lambda, args, body));
+        var(lambda, args) = visitor.Visit();
+        context.AddStmt(new R.AsyncStmt(lambda, args));
     }
 
     public void VisitForeach(S.ForeachStmt foreachStmt)

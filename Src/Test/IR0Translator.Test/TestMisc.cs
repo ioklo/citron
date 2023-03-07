@@ -31,7 +31,7 @@ namespace Citron.IR0Translator.Test
         public static readonly M.NamespacePath System = new M.NamespacePath(null, new M.Name.Normal("System"));
 
         public static readonly M.TypeId Int = new M.RootTypeId(System_Runtime, System, new M.Name.Normal("Int32"), default);
-        public static readonly M.TypeId Bool = new M.RootTypeId(System_Runtime, System, new M.Name.Normal("Boolean"), default);
+        public static readonly M.TypeId Bool = new M.RootTypeId(System_Runtime, System, new M.Name.Normal("Bool"), default);
         public static readonly M.TypeId String = new M.RootTypeId(System_Runtime, System, new M.Name.Normal("String"), default);
     }
 }

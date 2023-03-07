@@ -18,8 +18,8 @@ namespace Citron.Infra
         {
             if (!updated.Contains(dest))
             {
-                dest.Update(src, this);
                 updated.Add(dest);
+                dest.Update(src, this);
             }
         }
     }

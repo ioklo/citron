@@ -39,7 +39,15 @@ public partial struct SymbolLoader
             if (decl == null)
                 throw new NotImplementedException(); // 에러 처리
 
-            var instance = SymbolInstantiator.Instantiate(factory, outer, decl, default);
+            var typeLoader = new TypeLoader(this); // 복사해서 쓴다
+            var typeArgsBuilder = ImmutableArray.CreateBuilder<IType>(path.TypeArgs.Length);
+            foreach (var typeArgId in path.TypeArgs)
+            {
+                var typeArg = typeLoader.Load(typeArgId);
+                typeArgsBuilder.Add(typeArg);
+            }
+
+            var instance = SymbolInstantiator.Instantiate(factory, outer, decl, typeArgsBuilder.MoveToImmutable());
 
             if (instance == null)
                 throw new NotImplementedException(); // 에러 처리

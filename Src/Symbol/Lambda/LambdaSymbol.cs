@@ -151,7 +151,11 @@ namespace Citron.Symbol
             visitor.VisitLambda(this);
         }
 
-        
+        public LambdaDeclSymbol GetDeclSymbol()
+        {
+            return decl;
+        }
+
 
         //public LambdaSymbol(RItemFactory ritemFactory, R.Path.Nested lambda, ITypeSymbol ret, ImmutableArray<ParamInfo> parameters)
         //{

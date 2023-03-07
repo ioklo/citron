@@ -15,7 +15,7 @@ namespace Citron.IR0Translator
         static ModuleDecl Create()
         {
             var intType = new GlobalTypeDecl(Accessor.Public, new StructDecl(new Name.Normal("Int32"), default, null, default, default, default, default, default));
-            var boolType = new GlobalTypeDecl(Accessor.Public, new StructDecl(new Name.Normal("Boolean"), default, null, default, default, default, default, default));
+            var boolType = new GlobalTypeDecl(Accessor.Public, new StructDecl(new Name.Normal("Bool"), default, null, default, default, default, default, default));
             var stringType = new GlobalTypeDecl(Accessor.Public, new StructDecl(new Name.Normal("String"), default, null, default, default, default, default, default));
             var types = Arr(intType, boolType, stringType);
             
