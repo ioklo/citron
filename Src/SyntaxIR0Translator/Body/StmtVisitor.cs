@@ -223,7 +223,7 @@ partial struct StmtVisitor : S.IStmtVisitor
         if (!context.IsInLoop())
             context.AddFatalError(A1501_ContinueStmt_ShouldUsedInLoop, continueStmt);
 
-        context.AddStmt(R.ContinueStmt.Instance);
+        context.AddStmt(new R.ContinueStmt());
     }
 
     public void VisitBreak(S.BreakStmt breakStmt)
@@ -231,7 +231,7 @@ partial struct StmtVisitor : S.IStmtVisitor
         if (!context.IsInLoop())
             context.AddFatalError(A1601_BreakStmt_ShouldUsedInLoop, breakStmt);
 
-        context.AddStmt(R.BreakStmt.Instance);
+        context.AddStmt(new R.BreakStmt());
     }
 
     public void VisitReturn(S.ReturnStmt returnStmt)
@@ -242,7 +242,7 @@ partial struct StmtVisitor : S.IStmtVisitor
             if (returnStmt.Info != null)
                 context.AddFatalError(A1202_ReturnStmt_SeqFuncShouldReturnVoid, returnStmt);
 
-            context.AddStmt(new R.ReturnStmt(R.ReturnInfo.None.Instance));
+            context.AddStmt(new R.ReturnStmt(new R.ReturnInfo.None()));
             return;
         }
 
@@ -266,7 +266,7 @@ partial struct StmtVisitor : S.IStmtVisitor
                 context.SetReturn(false, context.GetVoidType());
             }
 
-            context.AddStmt(new R.ReturnStmt(R.ReturnInfo.None.Instance));
+            context.AddStmt(new R.ReturnStmt(new R.ReturnInfo.None()));
         }
         else if (returnStmt.Info.Value.IsRef) // return ref i; 또는  () => ref i;
         {

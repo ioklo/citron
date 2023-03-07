@@ -14,7 +14,7 @@ namespace Citron.IR0
     public record CommandStmt(ImmutableArray<StringExp> Commands) : Stmt;    
 
     // 로컬 변수는 
-    public record class LocalVarDeclStmt(IType Type, string Name, Exp InitExp) : Stmt;    // var x = 0;
+    public record class LocalVarDeclStmt(IType Type, string Name, Exp? InitExp) : Stmt;    // var x = 0;
     public record class LocalRefVarDeclStmt(string Name, Loc Loc) : Stmt; // ref int x = y;
 
     public record class IfStmt(Exp Cond, ImmutableArray<Stmt> Body, ImmutableArray<Stmt> ElseBody) : Stmt;
@@ -22,28 +22,16 @@ namespace Citron.IR0
     public record class IfTestEnumElemStmt(Loc Target, EnumElemSymbol EnumElem, string? VarName, ImmutableArray<Stmt> Body, ImmutableArray<Stmt> ElseBody) : Stmt;
     public record class ForStmt(ImmutableArray<Stmt> InitStmts, Exp? CondExp, Exp? ContinueExp, ImmutableArray<Stmt> Body) : Stmt;
 
-    // singleton
-    public record ContinueStmt : Stmt
-    {
-        public static readonly ContinueStmt Instance = new ContinueStmt();
-        ContinueStmt() { }        
-    }
-
-    // singleton
-    public record class BreakStmt : Stmt
-    {
-        public static readonly BreakStmt Instance = new BreakStmt();
-        BreakStmt() { }        
-    }
+    
+    public record class ContinueStmt() : Stmt;
+    public record class BreakStmt() : Stmt;
 
     public abstract record class ReturnInfo
     {
         public record class Ref(Loc Loc) : ReturnInfo;
         public record class Expression(Exp Exp) : ReturnInfo;
         public record class None : ReturnInfo
-        {
-            public static readonly None Instance = new None();
-            None() { }
+        {   
         }
     }
     
@@ -51,10 +39,10 @@ namespace Citron.IR0
     public record class BlockStmt(ImmutableArray<Stmt> Stmts) : Stmt;
     public record class BlankStmt : Stmt;
     public record class ExpStmt(Exp Exp) : Stmt;
-    public record class TaskStmt(LambdaSymbol Lambda, ImmutableArray<Argument> CaptureArgs, ImmutableArray<Stmt> Body) : Stmt;
+    public record class TaskStmt(LambdaSymbol Lambda, ImmutableArray<Argument> CaptureArgs) : Stmt;
     public record class AwaitStmt(ImmutableArray<Stmt> Body) : Stmt;
     
-    public record class AsyncStmt(LambdaSymbol Lambda, ImmutableArray<Argument> CaptureArgs, ImmutableArray<Stmt> Body) : Stmt;
+    public record class AsyncStmt(LambdaSymbol Lambda, ImmutableArray<Argument> CaptureArgs) : Stmt;
     
     public record class ForeachStmt(IType ItemType, string ElemName, Loc Iterator, ImmutableArray<Stmt> Body) : Stmt;
     public record class YieldStmt(Exp Value) : Stmt;

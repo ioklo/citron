@@ -105,6 +105,12 @@ namespace Citron.Symbol
             return parameters[index];
         }
 
+        public void AddMemberVar(LambdaMemberVarDeclSymbol memberVar)
+        {
+            Debug.Assert(memberVar.GetOuterDeclNode() == this);
+            memberVars.Add(memberVar);
+        }
+
         void IDeclSymbolNode.AcceptDeclSymbolVisitor<TDeclSymbolNodeVisitor>(ref TDeclSymbolNodeVisitor visitor)
         {
             visitor.VisitLambda(this);

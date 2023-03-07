@@ -31,12 +31,12 @@ namespace Citron.Symbol
         InitializeState initState;
 
         public GlobalFuncDeclSymbol(
-            ITopLevelDeclSymbolNode outer, Accessor accessModifier, 
+            ITopLevelDeclSymbolNode outer, Accessor accessor, 
             Name name,
             ImmutableArray<Name> typeParams)
         {
             this.outer = outer;
-            this.accessor = accessModifier;
+            this.accessor = accessor;
             this.name = name;
             this.typeParams = typeParams;
 

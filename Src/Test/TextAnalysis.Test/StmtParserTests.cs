@@ -163,7 +163,7 @@ for (f(); g; h + g) ;
                 new ExpForStmtInitializer(new CallExp(SId("f"), default)),
                 SId("g"),
                 new BinaryOpExp(BinaryOpKind.Add, SId("h"), SId("g")),
-                BlankStmt.Instance);
+                new BlankStmt());
 
             Assert.Equal(expected, result.Elem);
         }
@@ -183,7 +183,7 @@ for (f(); g; h + g) ;
             (var parser, var context) = await PrepareAsync(@"break;");
             var breakResult = await parser.ParseBreakStmtAsync(context);
 
-            Assert.Equal(BreakStmt.Instance, breakResult.Elem);
+            Assert.Equal(new BreakStmt(), breakResult.Elem);
         }
 
         [Fact]
@@ -194,8 +194,8 @@ for (f(); g; h + g) ;
 
             var expected = SBlock(
                 SBlock(),
-                SBlock(BlankStmt.Instance),
-                BlankStmt.Instance);
+                SBlock(new BlankStmt()),
+                new BlankStmt());
 
             Assert.Equal(expected, blockResult.Elem);
         }
@@ -206,7 +206,7 @@ for (f(); g; h + g) ;
             (var parser, var context) = await PrepareAsync("  ;  ");
             var blankResult = await parser.ParseBlankStmtAsync(context);
 
-            Assert.Equal(BlankStmt.Instance, blankResult.Elem);
+            Assert.Equal(new BlankStmt(), blankResult.Elem);
         }
 
         [Fact]

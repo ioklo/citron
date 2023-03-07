@@ -544,7 +544,7 @@ namespace Citron.Test
                     r.AssignExp(r.LocalVar("x"), r.Bool(false)),
                     r.Block(
                         r.PrintString("Once"),
-                        ContinueStmt.Instance,
+                        new ContinueStmt(),
                         r.PrintString("Wrong")
                     )
                 ),
@@ -578,7 +578,7 @@ namespace Citron.Test
                     r.AssignExp(r.LocalVar("x"), r.Bool(false)),
                     r.Block(
                         r.PrintString("Once"),
-                        BreakStmt.Instance,
+                        r.Break(),
                         r.PrintString("Wrong")
                     )
                 ),
@@ -644,7 +644,7 @@ namespace Citron.Test
                             r.CallInternalUnaryAssign(InternalUnaryAssignOperator.PostfixInc_Int_Int, r.LocalVar("j")),
                             r.Block(
                                 r.PrintInt(r.LocalVar("j")),
-                                ContinueStmt.Instance,
+                                new ContinueStmt(),
                                 r.PrintInt(r.LocalVar("Wrong"))
                             )
                         )
@@ -676,7 +676,7 @@ namespace Citron.Test
                             r.CallInternalUnaryAssign(InternalUnaryAssignOperator.PostfixInc_Int_Int, r.LocalVar("j")),
                             r.Block(
                                 r.PrintInt(r.LocalVar("j")),
-                                BreakStmt.Instance,
+                                r.Break(),
                                 r.PrintInt(r.LocalVar("Wrong"))
                             )
                         )

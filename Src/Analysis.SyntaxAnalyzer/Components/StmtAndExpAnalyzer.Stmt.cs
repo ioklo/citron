@@ -341,7 +341,7 @@ namespace Citron.Analysis
             if (!localContext.IsInLoop())
                 globalContext.AddFatalError(A1501_ContinueStmt_ShouldUsedInLoop, continueStmt);
 
-            return new StmtResult(R.ContinueStmt.Instance, bFlowEndCompletely: false);
+            return new StmtResult(new R.ContinueStmt(), bFlowEndCompletely: false);
         }
 
         StmtResult AnalyzeBreakStmt(S.BreakStmt breakStmt)
@@ -351,7 +351,7 @@ namespace Citron.Analysis
                 globalContext.AddFatalError(A1601_BreakStmt_ShouldUsedInLoop, breakStmt);
             }
 
-            return new StmtResult(R.BreakStmt.Instance, bFlowEndCompletely: false);
+            return new StmtResult(new R.BreakStmt(), bFlowEndCompletely: false);
         }
 
         StmtResult AnalyzeReturnStmt(S.ReturnStmt returnStmt)

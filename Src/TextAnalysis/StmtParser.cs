@@ -187,7 +187,7 @@ namespace Citron
             if (!Accept<SemiColonToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                 return ParseResult<ContinueStmt>.Invalid;
 
-            return new ParseResult<ContinueStmt>(ContinueStmt.Instance, context);
+            return new ParseResult<ContinueStmt>(new ContinueStmt(), context);
         }
 
         internal async ValueTask<ParseResult<BreakStmt>> ParseBreakStmtAsync(ParserContext context)
@@ -198,7 +198,7 @@ namespace Citron
             if (!Accept<SemiColonToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                 return ParseResult<BreakStmt>.Invalid;
 
-            return new ParseResult<BreakStmt>(BreakStmt.Instance, context);
+            return new ParseResult<BreakStmt>(new BreakStmt(), context);
         }
 
         internal async ValueTask<ParseResult<ReturnStmt>> ParseReturnStmtAsync(ParserContext context)
@@ -254,7 +254,7 @@ namespace Citron
             if (!Accept<SemiColonToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                 return ParseResult<BlankStmt>.Invalid;
 
-            return new ParseResult<BlankStmt>(BlankStmt.Instance, context);
+            return new ParseResult<BlankStmt>(new BlankStmt(), context);
         }
 
         // TODO: Assign, Call만 가능하게 해야 한다

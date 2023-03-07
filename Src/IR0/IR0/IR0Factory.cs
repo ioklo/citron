@@ -16,37 +16,50 @@ namespace Citron.IR0
     public class IR0Factory
     {
         public delegate IType ListTypeConstructor(IType itemType);
+        public delegate IType ListIterTypeConstructor(IType itemType);
 
-        IType boolType, intType, stringType;
+        Name moduleName;
+        IType voidType, boolType, intType, stringType;
         ListTypeConstructor listTypeConstructor;
+        ListIterTypeConstructor listIterTypeConstructor;
 
-        public IR0Factory(IType boolType, IType intType, IType stringType, ListTypeConstructor listTypeConstructor)
+        public IR0Factory(Name moduleName, IType voidType, IType boolType, IType intType, IType stringType, 
+            ListTypeConstructor listTypeConstructor,
+            ListIterTypeConstructor listIterTypeConstructor)
         {
+            this.moduleName = moduleName;
+            this.voidType = voidType;
             this.boolType = boolType;
             this.intType = intType;
             this.stringType = stringType;
             this.listTypeConstructor = listTypeConstructor;
+            this.listIterTypeConstructor = listIterTypeConstructor;
         }
 
-        public StmtBody StmtBody(IDeclSymbolNode symbol, ImmutableArray<Stmt> body)
+        public StmtBody StmtBody(IFuncDeclSymbol symbol, params Stmt[] body)
         {
-            return new StmtBody(symbol, body);
+            return new StmtBody(symbol, body.ToImmutableArray());
         }
 
         #region Script
 
-        public Script Script(ModuleDeclSymbol moduleDecl, ImmutableArray<StmtBody> rstmtBodies)
+        public Script Script(ModuleDeclSymbol moduleDecl, params StmtBody[] rstmtBodies)
         {   
-            return new Script(moduleDecl, rstmtBodies);
+            return new Script(moduleDecl, rstmtBodies.ToImmutableArray());
+        }
+
+        public Script Script(params Stmt[] stmts)
+        {
+            return Script(stmts.ToImmutableArray());
         }
 
         // int main()
-        public Script Script(Name moduleName, ImmutableArray<Stmt> stmts)
+        public Script Script(ImmutableArray<Stmt> stmts)
         {
             var moduleDecl = new ModuleDeclSymbol(moduleName, bReference: false);
 
             var entryFuncDecl = new GlobalFuncDeclSymbol(moduleDecl,
-                Accessor.Public, new Name.Normal("Main"), typeParams: default);
+                Accessor.Private, new Name.Normal("Main"), typeParams: default);
 
             entryFuncDecl.InitFuncReturnAndParams(
                 new FuncReturn(false, intType), default);
@@ -71,26 +84,31 @@ namespace Citron.IR0
         #endregion
 
         #region IfStmt
-        public IfStmt If(Exp cond, ImmutableArray<Stmt> body, ImmutableArray<Stmt> elseBody = default)
+        public IfStmt If(Exp cond, ImmutableArray<Stmt> body, ImmutableArray<Stmt> elseBody)
         {
             return new IfStmt(cond, body, elseBody);
+        }
+
+        public IfStmt If(Exp cond, params Stmt[] body)
+        {
+            return new IfStmt(cond, body.ToImmutableArray(), ElseBody: default);
         }
         #endregion
 
         #region ForStmt
 
         // skip initializer
-        public ForStmt For(Exp? condExp, Exp? contExp, ImmutableArray<Stmt> body)
+        public ForStmt For(Exp? cond, Exp? cont, params Stmt[] body)
         {
-            return new ForStmt(InitStmts: default, condExp, contExp, body);
+            return new ForStmt(InitStmts: default, cond, cont, body.ToImmutableArray());
         }
 
         // with local item var decl
-        public ForStmt For(IType itemType, string itemName, Exp itemInit, Exp? cond, Exp? cont, ImmutableArray<Stmt> body)
+        public ForStmt For(IType itemType, string itemName, Exp itemInit, Exp? cond, Exp? cont, params Stmt[] body)
         {
             return new ForStmt(
                 Arr<Stmt>(new LocalVarDeclStmt(itemType, itemName, itemInit)),
-                cond, cont, body
+                cond, cont, body.ToImmutableArray()
             );
         }
 
@@ -100,6 +118,18 @@ namespace Citron.IR0
                 Arr<Stmt>(new ExpStmt(init)), cond, cont, body);
         }
 
+        #endregion
+
+        #region Foreach
+        public ForeachStmt Foreach(IType itemType, string elemName, Loc iterLoc, params Stmt[] body)
+        {
+            return new ForeachStmt(itemType, elemName, iterLoc, body.ToImmutableArray());
+        }
+
+        public ForeachStmt Foreach(IType itemType, string elemName, Exp iterExp, params Stmt[] body)
+        {
+            return new ForeachStmt(itemType, elemName, new TempLoc(iterExp), body.ToImmutableArray());
+        }
         #endregion
 
         #region BlockStmt
@@ -193,10 +223,16 @@ namespace Citron.IR0
         #endregion
 
         #region LocalVarDeclStmt
-        public LocalVarDeclStmt LocalVarDecl(IType type, string name, Exp initExp)
+        public LocalVarDeclStmt LocalVarDecl(IType type, string name, Exp? initExp)
         {
             return new LocalVarDeclStmt(type, name, initExp);
         }
+
+        public LocalRefVarDeclStmt LocalRefVarDecl(string name, Loc initLoc)
+        {
+            return new LocalRefVarDeclStmt(name, initLoc);
+        }
+
         #endregion
 
         #region BlankStmt
@@ -263,6 +299,17 @@ namespace Citron.IR0
 
         #endregion
 
+        #region Continue
+        public Stmt Continue() 
+        {
+            return new ContinueStmt();
+        }
+        #endregion
+
+        #region Break
+        public Stmt Break() { return new BreakStmt(); }
+        #endregion
+
         #region ReturnStmt
         public ReturnStmt Return(Exp retValue)
         {
@@ -271,7 +318,7 @@ namespace Citron.IR0
 
         public ReturnStmt Return()
         {
-            return new ReturnStmt(ReturnInfo.None.Instance);
+            return new ReturnStmt(new ReturnInfo.None());
         }
 
         public ReturnStmt ReturnRef(Loc loc)
@@ -282,21 +329,21 @@ namespace Citron.IR0
         #endregion
 
         #region TaskStmt
-        public TaskStmt Task(LambdaSymbol lambda, ImmutableArray<Stmt> body)
+        public TaskStmt Task(LambdaSymbol lambda)
         {
-            return new TaskStmt(lambda, default, body);
+            return new TaskStmt(lambda, default);
         }
 
-        public TaskStmt Task(LambdaSymbol lambda, ImmutableArray<Argument> args, ImmutableArray<Stmt> body)
+        public TaskStmt Task(LambdaSymbol lambda, ImmutableArray<Argument> args)
         {
-            return new TaskStmt(lambda, args, body);
+            return new TaskStmt(lambda, args);
         }
         #endregion
 
         #region AsyncStmt
-        public AsyncStmt Async(LambdaSymbol lambda, ImmutableArray<Argument> args, ImmutableArray<Stmt> body)
+        public AsyncStmt Async(LambdaSymbol lambda, ImmutableArray<Argument> args)
         {
-            return new AsyncStmt(lambda, args, body);
+            return new AsyncStmt(lambda, args);
         }
 
         #endregion
@@ -376,9 +423,47 @@ namespace Citron.IR0
 
         #endregion
 
+        #region Type
+        public IType VoidType()
+        {
+            return voidType;
+        }
+
+        public IType BoolType()
+        {
+            return boolType;
+        }
+
+        public IType IntType()
+        {
+            return intType;
+        }
+
+        public IType StringType()
+        {
+            return stringType;
+        }
+
+        public IType ListType(IType itemType)
+        {
+            return listTypeConstructor.Invoke(itemType);
+        }
+
+        public IType ListIterType(IType itemType)
+        {
+            return listIterTypeConstructor.Invoke(itemType);
+        }
+
+        #endregion
+
         #region Else        
 
-        public ImmutableArray<FuncParameter> FuncParam(params (IType Type, string Name)[] elems)
+        public FuncParameter FuncParamRef(IType type, string name)
+        {
+            return new FuncParameter(FuncParameterKind.Ref, type, new Name.Normal(name));
+        }
+
+        public ImmutableArray<FuncParameter> FuncParams(params (IType Type, string Name)[] elems)
         {
             return elems.Select(e => new FuncParameter(FuncParameterKind.Default, e.Type, new Name.Normal(e.Name))).ToImmutableArray();
         }
@@ -454,6 +539,20 @@ namespace Citron.IR0
             return new ListIndexerLoc(list, index);
         }
 
+        // empty
+        public ListIteratorExp EmptyListIter(IType itemType)
+        {
+            return new ListIteratorExp(
+                new TempLoc(new ListExp(Elems: default, itemType)),
+                ListIterType(itemType)
+            );
+        }
+
+        public YieldStmt Yield(Exp exp)
+        {
+            return new YieldStmt(exp);
+        }
+        
         #endregion
 
 

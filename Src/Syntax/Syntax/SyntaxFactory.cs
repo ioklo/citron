@@ -21,6 +21,11 @@ namespace Citron.Syntax
             return new VarDecl(true, typeExp, Arr(new VarDeclElement(name, new VarDeclElemInitializer(true, initExp))));
         }
 
+        public static EmbeddableStmt SEmbeddableBlankStmt()
+        {
+            return new EmbeddableStmt.Single(new BlankStmt());
+        }
+
         public static VarDecl SVarDecl(TypeExp typeExp, string name, Exp? initExp = null)
         {
             return new VarDecl(false, typeExp, Arr(new VarDeclElement(name, initExp == null ? null : new VarDeclElemInitializer(false, initExp))));
@@ -38,7 +43,7 @@ namespace Citron.Syntax
 
         public static Script SScript(params Stmt[] stmts)
         {
-            // void Main()
+            // int Main()
             // {
             //     stmts...
             // }
@@ -48,7 +53,7 @@ namespace Citron.Syntax
                         null,
                         isSequence: false,
                         isRefReturn: false,
-                        new IdTypeExp("void", default), "Main",
+                        new IdTypeExp("int", default), "Main",
                         typeParams: default, parameters: default, stmts.ToImmutableArray()
                     )
                 )
@@ -103,6 +108,20 @@ namespace Citron.Syntax
         public static CommandStmt SCommand(Exp exp)
         {
             return new CommandStmt(Arr(new StringExp(Arr<StringExpElement>(new ExpStringExpElement(exp)))));
+        }
+
+        public static ImmutableArray<Stmt> SBody(params Stmt[] stmts)
+        {
+            return Arr(stmts);
+        }
+
+        public static GlobalFuncDeclScriptElement SMain(params Stmt[] body)
+        {
+            return new GlobalFuncDeclScriptElement(new GlobalFuncDecl(
+                accessModifier: null, isSequence: false,
+                isRefReturn: false, SIntTypeExp(), "Main", typeParams: default, parameters: default,
+                body.ToImmutableArray()
+            ));
         }
     }
 }

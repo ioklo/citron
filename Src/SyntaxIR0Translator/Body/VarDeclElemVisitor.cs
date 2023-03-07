@@ -108,7 +108,11 @@ struct VarDeclElemVisitor
             if (declType is not VarType)
             {
                 // TODO: local이라면 initializer가 꼭 있어야 합니다 => wrong, default constructor가 있으면 된다
-                throw new NotImplementedException();
+                // => wrong 나중에라도 construct를 할 수 있으면 된다
+
+                context.AddStmt(new R.LocalVarDeclStmt(declType, syntax.VarName, InitExp: null));
+                context.AddLocalVarInfo(false, declType, new Name.Normal(syntax.VarName));
+                
                 // context.AddFatalError(A0111_VarDecl_LocalVarDeclNeedInitializer, syntax);
             }
             else
@@ -123,7 +127,7 @@ struct VarDeclElemVisitor
 
         // default constructor 호출
         // context.AddStmt(new R.LocalVarDeclStmt(declType, elem.VarName, ))
-        throw new NotImplementedException();
+        // throw new NotImplementedException();
     }
 
     public void VisitElem(S.VarDeclElement syntax)

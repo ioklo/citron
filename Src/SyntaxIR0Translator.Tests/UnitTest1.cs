@@ -65,7 +65,9 @@ public class UnitTest1
         var referenceModules = Arr(runtimeModuleDecl);
 
         var logger = new TestLogger(true);
-        return SyntaxIR0Translator.Build(moduleName, Arr(script), referenceModules, factory, logger);
+        var result = SyntaxIR0Translator.Build(moduleName, Arr(script), referenceModules, factory, logger);
+        Assert.NotNull(result);
+        return result;
     }
 
     //[Fact]
@@ -96,7 +98,7 @@ public class UnitTest1
         )));
 
         var moduleName = NormalName("TestModule");
-        var (moduleDecl, _) = Build(moduleName, script);
+        var(moduleDecl, _) = Build(moduleName, script);
 
         // expected
         var expectedModuleDecl = new ModuleDeclSymbol(moduleName, bReference: false);

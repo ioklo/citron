@@ -36,7 +36,7 @@ namespace Citron.Infra
 
             if (object.ReferenceEquals(x, y)) return true;
 
-            if (visited.Contains((x, y)))
+            if (visited.Contains((x, y)) || visited.Contains((y, x)))
                 return true;
 
             // 없었다면 바로 추가

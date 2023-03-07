@@ -112,8 +112,6 @@ partial class GlobalContext : IMutable<GlobalContext>
         throw new AnalyzerFatalException();
     }
 
-   
-
     //public bool IsNullableType(ITypeSymbol type, [NotNullWhen(returnValue: true)] out ITypeSymbol? innerType)
     //{
     //    var declType = type.GetDeclSymbolNode();

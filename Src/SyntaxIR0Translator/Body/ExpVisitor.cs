@@ -1072,6 +1072,13 @@ struct ExpVisitor
 
     public static R.Exp? TranslateAsCastExp(S.Exp exp, ScopeContext context, IType hintType, IType targetType)
     {
-        throw new NotImplementedException();
+        var visitor = new ExpVisitor(context, hintType);
+        var result = visitor.VisitExp(exp);
+
+        var rexp = result.MakeIR0Exp();
+        if (rexp == null)
+            throw new NotImplementedException(); // exp로 변환하기가 실패했습니다.
+
+        return visitor.CastExp_Exp(rexp, targetType, nodeForErrorReport: exp);
     }
 }

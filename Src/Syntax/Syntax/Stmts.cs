@@ -52,16 +52,12 @@ namespace Citron.Syntax
     }
 
     public record ContinueStmt : Stmt
-    {
-        public static readonly ContinueStmt Instance = new ContinueStmt();
-        ContinueStmt() { }
+    {   
         public override void Accept<TStmtVisitor>(ref TStmtVisitor visitor) => visitor.VisitContinue(this);
     }
 
     public record class BreakStmt : Stmt
-    {
-        public static readonly BreakStmt Instance = new BreakStmt();
-        BreakStmt() { }
+    {   
         public override void Accept<TStmtVisitor>(ref TStmtVisitor visitor) => visitor.VisitBreak(this);
     }
 
@@ -84,9 +80,7 @@ namespace Citron.Syntax
     }
     
     public record class BlankStmt : Stmt
-    {
-        public static readonly BlankStmt Instance = new BlankStmt();
-        BlankStmt() { }
+    {        
         public override void Accept<TStmtVisitor>(ref TStmtVisitor visitor) => visitor.VisitBlank(this);
     }
 
