@@ -29,13 +29,17 @@ namespace Citron.TextAnalysis.Test
         {
             var lexer = new Lexer();
             var parser = new Parser(lexer);
-            var context = await MakeContextAsync("@ls -al");
+            var context = await MakeContextAsync(
+@"void Main() 
+{ 
+    @ls -al
+}");
             var script = await parser.ParseScriptAsync(context);
 
             var expected = SScript(
-                new StmtScriptElement(new CommandStmt(Arr(
+                new CommandStmt(Arr(
                     new StringExp(Arr<StringExpElement>(new TextStringExpElement("ls -al")))
-                )))
+                ))
             );
 
             Assert.Equal(expected, script.Elem);
@@ -212,42 +216,48 @@ public struct S<T> : B, I
             var lexer = new Lexer();
             var parser = new Parser(lexer);
             var context = await MakeContextAsync(@"
-int sum = 0;
-
-for (int i = 0; i < 5; i++)
+void Main()
 {
-    if (i % 2 == 0)
-        sum = sum + i;
-    else @{ 
-        echo hi 
-    }
-}
+    int sum = 0;
 
-@echo $sum Completed!
+    for (int i = 0; i < 5; i++)
+    {
+        if (i % 2 == 0)
+            sum = sum + i;
+        else @{ 
+            echo hi 
+        }
+    }
+
+    @echo $sum Completed!
+}
 
 ");
             var script = await parser.ParseScriptAsync(context);
 
             var expected = SScript(
-                new StmtScriptElement(SVarDeclStmt(SIdTypeExp("int"), "sum", new IntLiteralExp(0))),
-                new StmtScriptElement(new ForStmt(
+                SVarDeclStmt(SIdTypeExp("int"), "sum", new IntLiteralExp(0)),
+                new ForStmt(
                     new VarDeclForStmtInitializer(SVarDecl(SIdTypeExp("int"), "i", new IntLiteralExp(0))),
                     new BinaryOpExp(BinaryOpKind.LessThan, SId("i"), new IntLiteralExp(5)),
                     new UnaryOpExp(UnaryOpKind.PostfixInc, SId("i")),
-                    SBlock(
+                    new EmbeddableStmt.Multiple(Arr<Stmt>(
                         new IfStmt(
-                                new BinaryOpExp(BinaryOpKind.Equal,
-                                    new BinaryOpExp(BinaryOpKind.Modulo, SId("i"), new IntLiteralExp(2)),
-                                    new IntLiteralExp(0)),
-                                new ExpStmt(
-                                    new BinaryOpExp(BinaryOpKind.Assign,
-                                        SId("sum"),
-                                        new BinaryOpExp(BinaryOpKind.Add, SId("sum"), SId("i")))),
-                                new CommandStmt(Arr(SString("        echo hi "))))))),
-                new StmtScriptElement(new CommandStmt(Arr(new StringExp(Arr<StringExpElement>(
+                            new BinaryOpExp(BinaryOpKind.Equal,
+                                new BinaryOpExp(BinaryOpKind.Modulo, SId("i"), new IntLiteralExp(2)),
+                                new IntLiteralExp(0)),
+                            new EmbeddableStmt.Single(new ExpStmt(
+                                new BinaryOpExp(BinaryOpKind.Assign,
+                                    SId("sum"),
+                                    new BinaryOpExp(BinaryOpKind.Add, SId("sum"), SId("i"))))),
+                            new EmbeddableStmt.Single(new CommandStmt(Arr(SString("            echo hi "))))
+                        )
+                    ))
+                ),
+                new CommandStmt(Arr(new StringExp(Arr<StringExpElement>(
                     new TextStringExpElement("echo "),
                     new ExpStringExpElement(SId("sum")),
-                    new TextStringExpElement(" Completed!")))))));
+                    new TextStringExpElement(" Completed!"))))));
                     
             Assert.Equal(expected, script.Elem);
         }

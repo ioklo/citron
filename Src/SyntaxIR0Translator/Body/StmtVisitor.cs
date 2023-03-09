@@ -544,31 +544,6 @@ partial struct StmtVisitor : S.IStmtVisitor
         }
     }
 
-    //public void VisitStmt(S.Stmt stmt)
-    //{
-    //    switch (stmt)
-    //    {
-    //        case S.VarDeclStmt varDeclStmt: VisitVarDeclStmt(varDeclStmt); return;
-    //        case S.CommandStmt cmdStmt: VisitCommandStmt(cmdStmt); return;
-    //        case S.IfStmt ifStmt: VisitIfStmt(ifStmt); return;
-    //        case S.IfTestStmt ifTestStmt: VisitIfTestStmt(ifTestStmt); return;
-    //        case S.ForStmt forStmt: VisitForStmt(forStmt); return;
-    //        case S.ContinueStmt continueStmt: VisitContinueStmt(continueStmt); return;
-    //        case S.BreakStmt breakStmt: VisitBreakStmt(breakStmt); return;
-    //        case S.ReturnStmt returnStmt: VisitReturnStmt(returnStmt); return;
-    //        case S.BlockStmt blockStmt: VisitBlockStmt(blockStmt); return;
-    //        case S.BlankStmt blankStmt: VisitBlankStmt(); return;
-    //        case S.ExpStmt expStmt: VisitExpStmt(expStmt); return;
-    //        case S.TaskStmt taskStmt: VisitTaskStmt(taskStmt); return;
-    //        case S.AwaitStmt awaitStmt: VisitAwaitStmt(awaitStmt); return;
-    //        case S.AsyncStmt asyncStmt: VisitAsyncStmt(asyncStmt); return;
-    //        case S.ForeachStmt foreachStmt: VisitForeachStmt(foreachStmt); return;
-    //        case S.YieldStmt yieldStmt: VisitYieldStmt(yieldStmt); return;
-    //        case S.DirectiveStmt directiveStmt: VisitDirectiveStmt(directiveStmt); return;
-    //        default: throw new UnreachableCodeException();
-    //    }
-    //}
-
     public void VisitBody(ImmutableArray<S.Stmt> body)
     {
         foreach (var stmt in body)

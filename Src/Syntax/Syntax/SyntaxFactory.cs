@@ -43,7 +43,7 @@ namespace Citron.Syntax
 
         public static Script SScript(params Stmt[] stmts)
         {
-            // int Main()
+            // void Main()
             // {
             //     stmts...
             // }
@@ -53,7 +53,7 @@ namespace Citron.Syntax
                         null,
                         isSequence: false,
                         isRefReturn: false,
-                        new IdTypeExp("int", default), "Main",
+                        new IdTypeExp("void", default), "Main",
                         typeParams: default, parameters: default, stmts.ToImmutableArray()
                     )
                 )

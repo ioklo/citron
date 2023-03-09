@@ -33,10 +33,7 @@ namespace Citron.Analysis
 
             // 같으면 그대로 리턴
             if (expectedType.Equals(expType))
-                return exp;
-
-            // TODO: TypeValue에 TryCast를 각각 넣기
-            // expectType.TryCast(exp); // expResult를 넣는것도 이상하다.. 그건 그때가서
+                return exp;            
 
             // 1. enumElem -> enum
             if (expType is EnumElemSymbol enumElem)

@@ -53,21 +53,21 @@ namespace Citron.IR0
             return Script(stmts.ToImmutableArray());
         }
 
-        // int main()
+        // void main()
         public Script Script(ImmutableArray<Stmt> stmts)
         {
-            var moduleDecl = new ModuleDeclSymbol(moduleName, bReference: false);
+            var moduleD = new ModuleDeclSymbol(moduleName, bReference: false);
 
-            var entryFuncDecl = new GlobalFuncDeclSymbol(moduleDecl,
+            var entryD = new GlobalFuncDeclSymbol(moduleD,
                 Accessor.Private, new Name.Normal("Main"), typeParams: default);
 
-            entryFuncDecl.InitFuncReturnAndParams(
-                new FuncReturn(false, intType), default);
+            entryD.InitFuncReturnAndParams(
+                new FuncReturn(false, voidType), default);
 
-            moduleDecl.AddFunc(entryFuncDecl);
+            moduleD.AddFunc(entryD);
             
-            var stmtBodies = Arr(new StmtBody(entryFuncDecl, stmts));
-            return new Script(moduleDecl, stmtBodies);
+            var stmtBodies = Arr(new StmtBody(entryD, stmts));
+            return new Script(moduleD, stmtBodies);
         }
 
         #endregion

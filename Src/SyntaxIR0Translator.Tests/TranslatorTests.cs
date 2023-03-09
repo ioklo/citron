@@ -543,9 +543,35 @@ namespace Citron.Test
         [Fact]
         public void ReturnStmt_TranslatesTrivially()
         {
-            var syntaxScript = SScript(new S.ReturnStmt(new S.ReturnValueInfo(false, SInt(2))));
+            var syntaxScript = new S.Script(Arr<S.ScriptElement>(
+                new S.GlobalFuncDeclScriptElement(
+                    new S.GlobalFuncDecl(
+                        null,
+                        isSequence: false,
+                        isRefReturn: false,
+                        new S.IdTypeExp("int", default), "Main",
+                        typeParams: default, parameters: default, 
+                        SBody(
+                            new S.ReturnStmt(new S.ReturnValueInfo(false, SInt(2)))
+                        )
+                    )
+                )
+            ));
+            
             var script = Translate(syntaxScript);
-            var expected = r.Script(r.Return(r.Int(2)));
+
+            var moduleD = new ModuleDeclSymbol(moduleName, bReference: false);
+
+            var entryD = new GlobalFuncDeclSymbol(moduleD,
+                Accessor.Private, new Name.Normal("Main"), typeParams: default);
+
+            entryD.InitFuncReturnAndParams(
+                new FuncReturn(false, r.IntType()), default);
+
+            moduleD.AddFunc(entryD);
+
+            var entryBody = r.StmtBody(entryD, r.Return(r.Int(2)));
+            var expected = r.Script(moduleD, entryBody);
 
             AssertEquals(expected, script);
         }

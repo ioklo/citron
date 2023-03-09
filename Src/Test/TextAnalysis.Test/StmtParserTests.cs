@@ -103,11 +103,11 @@ xxx
             var ifStmt = await parser.ParseIfStmtAsync(context);
 
             var expected = new IfStmt(SId("b"),
-                SBlock(),
-                new IfStmt(
+                new EmbeddableStmt.Multiple(default),
+                new EmbeddableStmt.Single(new IfStmt(
                     SId("c"),
-                    SBlock(),
-                    SBlock()));
+                    new EmbeddableStmt.Multiple(default),
+                    new EmbeddableStmt.Multiple(default))));
 
             Assert.Equal(expected, ifStmt.Elem);
         }
@@ -122,11 +122,13 @@ xxx
             var expected = new IfTestStmt(SId("b"),
                 SIdTypeExp("T"), 
                 null,
-                SBlock(),
-                new IfStmt(
+                new EmbeddableStmt.Multiple(default),
+                new EmbeddableStmt.Single(new IfStmt(
                     SId("c"),
-                    SBlock(),
-                    SBlock()));
+                    new EmbeddableStmt.Multiple(default),
+                    new EmbeddableStmt.Multiple(default)
+                ))
+            );
 
             Assert.Equal(expected, ifStmt.Elem);
         }
@@ -141,11 +143,11 @@ xxx
             var expected = new IfTestStmt(SId("b"),
                 SIdTypeExp("T"),
                 "t",
-                SBlock(),
-                new IfStmt(
+                new EmbeddableStmt.Multiple(default),
+                new EmbeddableStmt.Single(new IfStmt(
                     SId("c"),
-                    SBlock(),
-                    SBlock()));
+                    new EmbeddableStmt.Multiple(default),
+                    new EmbeddableStmt.Multiple(default))));
 
             Assert.Equal(expected, ifStmt.Elem);
         }
@@ -163,7 +165,7 @@ for (f(); g; h + g) ;
                 new ExpForStmtInitializer(new CallExp(SId("f"), default)),
                 SId("g"),
                 new BinaryOpExp(BinaryOpKind.Add, SId("h"), SId("g")),
-                new BlankStmt());
+                SEmbeddableBlankStmt());
 
             Assert.Equal(expected, result.Elem);
         }
@@ -174,7 +176,7 @@ for (f(); g; h + g) ;
             (var parser, var context) = await PrepareAsync(@"continue;");
             var continueResult = await parser.ParseContinueStmtAsync(context);
 
-            Assert.Equal(ContinueStmt.Instance, continueResult.Elem);
+            Assert.Equal(new ContinueStmt(), continueResult.Elem);
         }
 
         [Fact]
@@ -231,7 +233,7 @@ for (f(); g; h + g) ;
             var (parser, context) = await PrepareAsync("foreach( var x in l ) { } ");
             var stmtResult = await parser.ParseForeachStmtAsync(context);
 
-            var expected = new ForeachStmt(false, SIdTypeExp("var"), "x", SId("l"), SBlock());
+            var expected = new ForeachStmt(false, SIdTypeExp("var"), "x", SId("l"), new EmbeddableStmt.Multiple(default));
 
             Assert.Equal(expected, stmtResult.Elem);
         }
