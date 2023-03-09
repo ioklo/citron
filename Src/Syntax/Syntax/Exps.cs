@@ -11,11 +11,7 @@ namespace Citron.Syntax
     public abstract record class Exp : ISyntaxNode;
 
     // 
-    public record class IdentifierExp(string Value, ImmutableArray<TypeExp> TypeArgs) : Exp
-    {   
-        public object? Identifier { get; set; } // Identifier class, 하위 dependency라서 void*로 저장했다가 캐스팅 한다
-    }
-
+    public record class IdentifierExp(string Value, ImmutableArray<TypeExp> TypeArgs) : Exp;
     public record class StringExp(ImmutableArray<StringExpElement> Elements) : Exp;    
     public record class IntLiteralExp(int Value) : Exp;
     public record class BoolLiteralExp(bool Value) : Exp;
@@ -36,10 +32,7 @@ namespace Citron.Syntax
     
     // a[b]
     public record class IndexerExp(Exp Object, Exp Index) : Exp;    
-    public record class MemberExp(Exp Parent, string MemberName, ImmutableArray<TypeExp> MemberTypeArgs) : Exp
-    {
-        public object? Identifier { get; set; }
-    }
+    public record class MemberExp(Exp Parent, string MemberName, ImmutableArray<TypeExp> MemberTypeArgs) : Exp;
     public record class ListExp(TypeExp? ElemType, ImmutableArray<Exp> Elems) : Exp;
 
     // new Type(2, 3, 4);

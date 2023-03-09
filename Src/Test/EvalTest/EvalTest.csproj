@@ -20,7 +20,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Infra\Infra.csproj" />
     <ProjectReference Include="..\..\IR0Evaluator\IR0Evaluator.csproj" />
-    <ProjectReference Include="..\..\IR0Translator\IR0Translator.csproj" />
     <ProjectReference Include="..\..\IR0\IR0.csproj" />
     <ProjectReference Include="..\..\Log\Log.csproj" />
     <ProjectReference Include="..\..\Syntax\Syntax.csproj" />
