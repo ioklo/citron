@@ -1,5 +1,4 @@
-﻿using Citron.Module;
-
+﻿
 namespace Citron.Runtime
 {
     public interface IGlobalVarRepo

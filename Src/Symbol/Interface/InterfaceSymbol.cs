@@ -34,11 +34,6 @@ namespace Citron.Symbol
             return factory.MakeInterface(appliedOuter, decl, appliedTypeArgs);
         }
 
-        public void Apply(ITypeSymbolVisitor visitor)
-        {
-            visitor.VisitInterface(this);
-        }
-
         public ITypeDeclSymbol GetDeclSymbolNode()
         {
             return decl;
@@ -108,8 +103,12 @@ namespace Citron.Symbol
             context.SerializeRefArray(nameof(typeArgs), typeArgs);
         }
 
-        public void Accept<TVisitor>(ref TVisitor visitor)
-            where TVisitor : struct, ISymbolNodeVisitor
+        void ISymbolNode.Accept<TVisitor>(ref TVisitor visitor)
+        {
+            visitor.VisitInterface(this);
+        }
+
+        void ITypeSymbol.Accept<TTypeSymbolVisitor>(ref TTypeSymbolVisitor visitor)
         {
             visitor.VisitInterface(this);
         }

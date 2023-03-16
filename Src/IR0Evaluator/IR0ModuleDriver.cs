@@ -1,14 +1,11 @@
-﻿using Citron.Analysis;
-using Citron.Collections;
-using Citron.Module;
-using Citron.Infra;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+
+using Citron.Collections;
+using Citron.Infra;
+using Citron.Symbol;
 
 namespace Citron
 {
@@ -44,9 +41,10 @@ namespace Citron
             return evaluator.EvalBodySkipYieldAsync(body);
         }
 
-        class TypeAllocator : ITypeSymbolVisitor
+        // 이 모듈에 해당하는 타입만 할당한다
+        struct TypeAllocator : ITypeSymbolVisitor
         {
-            Evaluator evaluator;            
+            Evaluator evaluator;
 
             [AllowNull]
             internal Value result;
@@ -56,36 +54,35 @@ namespace Citron
                 this.evaluator = evaluator;
             }
 
-            public void VisitClass(ClassSymbol symbol)
+            void ITypeSymbolVisitor.VisitClass(ClassSymbol symbol)
             {
                 result = new ClassValue();
             }
 
-            public void VisitStruct(StructSymbol structSymbol)
+            void ITypeSymbolVisitor.VisitStruct(StructSymbol symbol)
             {
-                int varCount = structSymbol.GetMemberVarCount();
+                int varCount = symbol.GetMemberVarCount();
                 var values = ImmutableArray.CreateBuilder<Value>(varCount);
                 
                 for (int i = 0; i < varCount; i++)
                 {
-                    var memberVar = structSymbol.GetMemberVar(i);
-                    var memberValue = evaluator.AllocValue(memberVar.GetDeclType().GetSymbolId());
+                    var memberVar = symbol.GetMemberVar(i);
+                    var memberValue = evaluator.AllocValue(memberVar.GetDeclType().GetTypeId());
                     values.Add(memberValue);
                 }
 
                 result = new StructValue(values.MoveToImmutable());
             }
 
-            public void VisitEnum(EnumSymbol symbol)
+            void ITypeSymbolVisitor.VisitEnum(EnumSymbol symbol)
             {
-                EnumElemValue ElemAllocator(SymbolId id_symbol)
-                {
-                    var id = id_symbol as ModuleSymbolId;
-                    Debug.Assert(id != null);
-                    Debug.Assert(id.GetOuter().Equals(symbol.GetSymbolId()));
-                    Debug.Assert(id.Path != null);
+                var thisEvaluator = evaluator;
+                EnumElemValue ElemAllocator(SymbolId symbolId)
+                {   
+                    Debug.Assert(symbolId.GetOuter().Equals(symbol.GetSymbolId()));
+                    Debug.Assert(symbolId.Path != null);
 
-                    var elem = symbol.GetElement(((Name.Normal)id.Path.Name).Text);
+                    var elem = symbol.GetElement(((Name.Normal)symbolId.Path.Name).Text);
                     Debug.Assert(elem != null);
 
                     var memberVarCount = elem.GetMemberVarCount();
@@ -93,7 +90,7 @@ namespace Citron
                     for (int i = 0; i < memberVarCount; i++)
                     {
                         var memberVar = elem.GetMemberVar(i);
-                        var memberValue = evaluator.AllocValue(memberVar.GetDeclType().GetSymbolId());
+                        var memberValue = thisEvaluator.AllocValue(memberVar.GetDeclType().GetTypeId());
                         builder.Add(memberValue);
                     }
 
@@ -103,7 +100,7 @@ namespace Citron
                 result = new EnumValue(ElemAllocator, null);
             }
 
-            public void VisitEnumElem(EnumElemSymbol symbol)
+            void ITypeSymbolVisitor.VisitEnumElem(EnumElemSymbol symbol)
             {
                 var memberVarCount = symbol.GetMemberVarCount();
                 var builder = ImmutableArray.CreateBuilder<Value>(memberVarCount);
@@ -111,46 +108,30 @@ namespace Citron
                 for(int i = 0; i < memberVarCount; i++)
                 {
                     var memberVar = symbol.GetMemberVar(i);
-                    var value = evaluator.AllocValue(memberVar.GetDeclType().GetSymbolId());
+                    var value = evaluator.AllocValue(memberVar.GetDeclType().GetTypeId());
                     builder.Add(value);
                 }
                 
                 result = new EnumElemValue(builder.MoveToImmutable());
             }
 
-            public void VisitInterface(InterfaceSymbol symbol)
+            void ITypeSymbolVisitor.VisitInterface(InterfaceSymbol symbol)
             {
                 throw new NotImplementedException();
             }
-
-            // 최상위 타입들은 여기서 allocation하지 않는다.
-            public void VisitNullable(NullableSymbol symbol)
-            {
-                throw new UnreachableCodeException();
-            }
-
-            public void VisitTuple(TupleSymbol symbol)
-            {
-                throw new UnreachableCodeException();
-            }
-
-            public void VisitVoid(VoidSymbol symbol)
-            {
-                throw new UnreachableCodeException();
-            }
-
-            public void VisitLambda(LambdaSymbol lambdaSymbol)
+            
+            void ITypeSymbolVisitor.VisitLambda(LambdaSymbol symbol)
             {
                 var builder = ImmutableDictionary.CreateBuilder<Name, Value>();
 
-                int memberVarCount = lambdaSymbol.GetMemberVarCount();
+                int memberVarCount = symbol.GetMemberVarCount();
                 for (int i = 0; i < memberVarCount; i++)
                 {
-                    var memberVar = lambdaSymbol.GetMemberVar(i);
+                    var memberVar = symbol.GetMemberVar(i);
                     var memberName = memberVar.GetName();
 
                     var memberDeclType = memberVar.GetDeclType();
-                    var memberValue = evaluator.AllocValue(memberDeclType.GetSymbolId());
+                    var memberValue = evaluator.AllocValue(memberDeclType.GetTypeId());
 
                     builder.Add(memberName, memberValue);
                     result = new LambdaValue(builder.ToImmutable());
@@ -165,13 +146,13 @@ namespace Citron
             driverContext.AddDriver(driver);
             driverContext.AddModule(moduleName, driver);
         }
-
-        public Value AllocValue(SymbolId typeId)
+        
+        public Value AllocValue(SymbolId symbolId)
         {            
-            var typeSymbol = globalContext.LoadSymbol<ITypeSymbol>(typeId);
+            var typeSymbol = globalContext.LoadSymbol<ITypeSymbol>(symbolId);
 
             var allocator = new TypeAllocator(evaluator);
-            typeSymbol.Apply(allocator);
+            typeSymbol.Accept(ref allocator);
             return allocator.result;
         }
 
@@ -182,7 +163,7 @@ namespace Citron
             // base 
             var baseClass = classSymbol.GetBaseClass();
             if (baseClass != null)
-                evaluator.InitializeClassInstance(baseClass.GetSymbolId(), builder);
+                evaluator.InitializeClassInstance(baseClass.Symbol.GetSymbolId(), builder);
 
             // 멤버 개수만큼
             var memberVarCount = classSymbol.GetMemberVarCount();
@@ -191,7 +172,7 @@ namespace Citron
                 var memberVar = classSymbol.GetMemberVar(i);
                 var declType = memberVar.GetDeclType();
 
-                var memberValue = evaluator.AllocValue(declType.GetSymbolId());
+                var memberValue = evaluator.AllocValue(declType.GetTypeId());
                 builder.Add(memberValue);
             }
         }
@@ -205,7 +186,7 @@ namespace Citron
             var baseClass = classSymbol.GetBaseClass();
             int baseCount = 0;
             if (baseClass != null)
-                baseCount = evaluator.GetTotalClassMemberVarCount(baseClass.GetSymbolId());
+                baseCount = evaluator.GetTotalClassMemberVarCount(baseClass.Symbol.GetSymbolId());
 
             return baseCount + classSymbol.GetMemberVarCount();
         }
@@ -221,7 +202,7 @@ namespace Citron
             var baseClass = @class.GetBaseClass();
             int baseIndex = 0;
             if (baseClass != null)
-                baseIndex = evaluator.GetTotalClassMemberVarCount(baseClass.GetSymbolId());
+                baseIndex = evaluator.GetTotalClassMemberVarCount(baseClass.Symbol.GetSymbolId());
 
             int memberVarCount = @class.GetMemberVarCount();
             for (int i = 0; i < memberVarCount; i++)
@@ -295,7 +276,7 @@ namespace Citron
         SymbolId? IModuleDriver.GetBaseClass(SymbolId baseClass)
         {
             var @class = globalContext.LoadSymbol<ClassSymbol>(baseClass);
-            return @class.GetBaseClass()?.GetSymbolId();
+            return @class.GetBaseClass()?.Symbol?.GetSymbolId();
         }
 
         int IModuleDriver.GetStructMemberVarIndex(SymbolId memberVar)

@@ -8,7 +8,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Citron.Test.Misc
+namespace Citron.Test
 {
     public struct Dumper
     {

@@ -314,6 +314,28 @@ namespace Citron.IR0
 
         public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitCallValue(this);
     }
+
+    // 이름은 'Func'인데 func<>를 뜻한다
+    public record CallFuncRefExp(Loc Callable, ImmutableArray<Argument> Args, FuncType FuncType) : Exp
+    {
+        public override IType GetExpType()
+        {
+            return FuncType.GetReturnType();
+        }
+
+        public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitCallFuncRef(this);
+    }
+
+    // lambda(value)를 func<>(interface)로 변환한다
+    public record CastFuncRefExp(Loc LambdaSrc, FuncType FuncType) : Exp
+    {
+        public override IType GetExpType()
+        {
+            return FuncType;
+        }
+
+        public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitCastFuncRef(this);
+    }
     #endregion
 
     //public record CallSeqFuncExp(Path.Nested SeqFunc , Loc? Instance, ImmutableArray<Argument> Args): Exp

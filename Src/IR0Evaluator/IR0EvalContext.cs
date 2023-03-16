@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Citron.Analysis;
 using Citron.Collections;
-using Citron.Module;
+using Citron.Symbol;
 using R = Citron.IR0;
 using Void = Citron.Infra.Void;
 
@@ -86,7 +85,7 @@ namespace Citron
         public ClassInstance AllocClassInstance(ClassSymbol classSymbol)
         {
             var classId = classSymbol.GetSymbolId();
-            var appliedClassId = typeContext.Apply(classId);
+            var appliedClassId = typeContext.ApplySymbol(classId);
             
             return evaluator.AllocClassInstance(appliedClassId);
         }
@@ -96,35 +95,35 @@ namespace Citron
             return evaluator.AllocRefValue();
         }
 
-        public TValue AllocValue<TValue>(SymbolId typeId)
+        public TValue AllocValue<TValue>(TypeId typeId)
             where TValue : Value
         {
             var appliedTypeId = typeContext.Apply(typeId);
             return evaluator.AllocValue<TValue>(appliedTypeId);
         }
 
-        public Value AllocValue(SymbolId typeId)
+        public Value AllocValue(TypeId typeId)
         {
             return AllocValue<Value>(typeId);
         }
 
-        public Value AllocValue(ITypeSymbol type)
+        public Value AllocValue(IType type)
         {
-            var typeId = type.GetSymbolId();
+            var typeId = type.GetTypeId();
             return AllocValue<Value>(typeId);
         }
 
         public ValueTask ExecuteGlobalFuncAsync(GlobalFuncSymbol globalFunc, ImmutableArray<Value> args, Value retValue)
         {
             var globalFuncId = globalFunc.GetSymbolId();
-            var appliedGlobalFuncId = typeContext.Apply(globalFuncId);
+            var appliedGlobalFuncId = typeContext.ApplySymbol(globalFuncId);
             return evaluator.ExecuteGlobalFuncAsync(appliedGlobalFuncId, args, retValue);
         }
 
         public void ExecuteClassConstructor(ClassConstructorSymbol constructor, ClassValue thisValue, ImmutableArray<Value> args)
         {
             var constructorId = constructor.GetSymbolId();
-            var appliedConstructorId = typeContext.Apply(constructorId);
+            var appliedConstructorId = typeContext.ApplySymbol(constructorId);
 
             evaluator.ExecuteClassConstructor(appliedConstructorId, thisValue, args);
         }
@@ -132,7 +131,7 @@ namespace Citron
         public void ExecuteStructConstructor(StructConstructorSymbol constructor, StructValue thisValue, ImmutableArray<Value> args)
         {
             var constructorId = constructor.GetSymbolId();
-            var appliedConstructorId = typeContext.Apply(constructorId);
+            var appliedConstructorId = typeContext.ApplySymbol(constructorId);
 
             evaluator.ExecuteStructConstructor(appliedConstructorId, thisValue, args);
         }
@@ -140,7 +139,7 @@ namespace Citron
         public ValueTask ExecuteClassMemberFuncAsync(ClassMemberFuncSymbol classMemberFunc, Value? thisValue, ImmutableArray<Value> args, Value result)
         {
             var funcId = classMemberFunc.GetSymbolId();
-            var appliedFuncId = typeContext.Apply(funcId);
+            var appliedFuncId = typeContext.ApplySymbol(funcId);
 
             return evaluator.ExecuteClassMemberFuncAsync(appliedFuncId, thisValue, args, result);
         }
@@ -148,7 +147,7 @@ namespace Citron
         public ValueTask ExecuteStructMemberFuncAsync(StructMemberFuncSymbol structMemberFunc, Value? thisValue, ImmutableArray<Value> args, Value result)
         {
             var funcId = structMemberFunc.GetSymbolId();
-            var appliedFuncId = typeContext.Apply(funcId);
+            var appliedFuncId = typeContext.ApplySymbol(funcId);
 
             return evaluator.ExecuteStructMemberFuncAsync(appliedFuncId, thisValue, args, result);
         }
@@ -165,7 +164,7 @@ namespace Citron
             var targetId = value.GetActualType();
 
             var classId = @class.GetSymbolId();
-            var appliedClassId = typeContext.Apply(classId);
+            var appliedClassId = typeContext.ApplySymbol(classId);
 
             return evaluator.IsDerivedClassOf(targetId, appliedClassId);
         }
@@ -173,7 +172,7 @@ namespace Citron
         public bool IsEnumElem(EnumValue value, EnumElemSymbol enumElem)
         {
             var enumElemId = enumElem.GetSymbolId();
-            var appliedEnumElemId = typeContext.Apply(enumElemId);
+            var appliedEnumElemId = typeContext.ApplySymbol(enumElemId);
 
             return evaluator.IsEnumElem(value, appliedEnumElemId);
         }

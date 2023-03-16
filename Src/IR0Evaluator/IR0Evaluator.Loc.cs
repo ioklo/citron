@@ -1,7 +1,6 @@
-﻿using Citron.Analysis;
-using Citron.Collections;
-using Citron.Module;
+﻿using Citron.Collections;
 using Citron.Infra;
+using Citron.Symbol;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,7 +15,7 @@ namespace Citron
     {
         async ValueTask<Value> EvalTempLocAsync(R.TempLoc loc)
         {
-            var type = loc.Exp.GetTypeSymbol();
+            var type = loc.Exp.GetExpType();
 
             var result = evalContext.AllocValue(type);
             await EvalExpAsync(loc.Exp, result);
@@ -27,7 +26,7 @@ namespace Citron
         {
             var listValue = (ListValue)await EvalLocAsync(loc.List);
 
-            var indexValue = evalContext.AllocValue<IntValue>(SymbolId.Int);
+            var indexValue = evalContext.AllocValue<IntValue>(TypeIds.Int);
             await EvalExpAsync(loc.Index, indexValue);
 
             var list = listValue.GetList();
@@ -40,9 +39,6 @@ namespace Citron
             {
                 case R.TempLoc tempLoc:
                     return await EvalTempLocAsync(tempLoc);
-
-                case R.GlobalVarLoc globalVarLoc:
-                    return globalContext.GetGlobalValue(globalVarLoc.Name);
 
                 case R.LocalVarLoc localVarLoc:
                     return localContext.GetLocalValue(localVarLoc.Name);

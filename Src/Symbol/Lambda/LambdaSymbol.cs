@@ -69,12 +69,7 @@ namespace Citron.Symbol
         {
             return decl.GetParameterCount();
         }
-
-        public void Apply(ITypeSymbolVisitor visitor)
-        {
-            visitor.VisitLambda(this);
-        }
-
+        
         SymbolQueryResult ISymbolNode.QueryMember(Name memberName, int typeParamCount)
         {
             int memberVarCount = decl.GetMemberVarCount();
@@ -145,8 +140,12 @@ namespace Citron.Symbol
             context.SerializeRef(nameof(decl), decl);
         }
 
-        public void Accept<TVisitor>(ref TVisitor visitor)
-            where TVisitor : struct, ISymbolNodeVisitor
+        void ISymbolNode.Accept<TVisitor>(ref TVisitor visitor)
+        {
+            visitor.VisitLambda(this);
+        }
+
+        void ITypeSymbol.Accept<TTypeSymbolVisitor>(ref TTypeSymbolVisitor visitor)
         {
             visitor.VisitLambda(this);
         }

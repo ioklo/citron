@@ -10,8 +10,7 @@ using Citron.Infra;
 
 using Void = Citron.Infra.Void;
 using R = Citron.IR0;
-using Citron.Analysis;
-using Citron.Module;
+using Citron.Symbol;
 
 namespace Citron
 {
@@ -31,7 +30,7 @@ namespace Citron
         // TODO: CommandProvider가 Parser도 제공해야 할 것 같다
         async ValueTask EvalCommandStmtAsync(R.CommandStmt stmt)
         {
-            var tempStr = evalContext.AllocValue<StringValue>(SymbolId.String);
+            var tempStr = evalContext.AllocValue<StringValue>(TypeIds.String);
 
             foreach (var command in stmt.Commands)
             {
@@ -42,106 +41,55 @@ namespace Citron
             }
         }
 
-        async ValueTask EvalGlobalVarDeclStmtAsync(R.GlobalVarDeclStmt stmt)
+        async ValueTask EvalLocalVarDeclStmtAsync(R.LocalVarDeclStmt stmt)
         {
-            foreach (var elem in stmt.Elems)
-            {
-                switch(elem)
-                {
-                    case R.VarDeclElement.Normal normalElem:
-                        {
-                            var value = evalContext.AllocValue(normalElem.Type);
+            var value = evalContext.AllocValue(stmt.Type);
 
-                            await EvalExpAsync(normalElem.InitExp, value);
+            if (stmt.InitExp != null)
+                await EvalExpAsync(stmt.InitExp, value);
 
-                            // 순서 주의, InitExp먼저 실행
-                            // TODO: 테스트로 만들기
-                            globalContext.AddGlobalVar(normalElem.Name, value);
-                            break;
-                        }
+            // 없으면 언젠가 할 것이다
 
-                    case R.VarDeclElement.Ref refElem:
-                        {
-                            var refValue = evalContext.AllocRefValue();
-                            var target = await EvalLocAsync(refElem.Loc);
-                            refValue.SetTarget(target);
-
-                            globalContext.AddGlobalVar(refElem.Name, refValue);
-                            break;
-                        }
-
-                    default:
-                        throw new UnreachableCodeException();
-                }
-            }
+            // 순서 주의, TODO: 테스트로 만들기
+            localContext.AddLocalVar(new Name.Normal(stmt.Name), value);
         }
 
-        async ValueTask EvalLocalVarDeclAsync(R.LocalVarDecl localVarDecl)
+        async ValueTask EvalLocalRefVarDeclStmtAsync(R.LocalRefVarDeclStmt stmt)
         {
-            foreach (var elem in localVarDecl.Elems)
-            {
-                switch (elem)
-                {
-                    case R.VarDeclElement.Normal normalElem:
-                        {
-                            var value = evalContext.AllocValue(normalElem.Type);
+            var refValue = evalContext.AllocRefValue();
+            var target = await EvalLocAsync(stmt.Loc);
+            refValue.SetTarget(target);
 
-                            await EvalExpAsync(normalElem.InitExp, value);
-
-                            // 순서 주의, TODO: 테스트로 만들기
-                            localContext.AddLocalVar(new Name.Normal(normalElem.Name), value);
-                            break;
-                        }
-
-                    case R.VarDeclElement.Ref refElem:
-                        {
-                            var refValue = evalContext.AllocRefValue();
-                            var target = await EvalLocAsync(refElem.Loc);
-                            refValue.SetTarget(target);
-
-                            // 순서 주의, TODO: 테스트로 만들기
-                            localContext.AddLocalVar(new Name.Normal(refElem.Name), refValue);
-                            break;
-                        }
-
-                    default:
-                        throw new UnreachableCodeException();
-                }
-            }
-        }
-
-
-        ValueTask EvalLocalVarDeclStmtAsync(R.LocalVarDeclStmt stmt)
-        {
-            return EvalLocalVarDeclAsync(stmt.VarDecl);
+            // 순서 주의, TODO: 테스트로 만들기
+            localContext.AddLocalVar(new Name.Normal(stmt.Name), refValue);
         }
             
         async IAsyncEnumerable<Void> EvalIfStmtAsync(R.IfStmt stmt)
         {
-            var condValue = evalContext.AllocValue<BoolValue>(SymbolId.Bool);
+            var condValue = evalContext.AllocValue<BoolValue>(TypeIds.Bool);
             await EvalExpAsync(stmt.Cond, condValue);
 
             if (condValue.GetBool())
             {
-                await foreach (var _ in EvalStmtAsync(stmt.Body))
+                await foreach (var _ in EvalBodyAsync(stmt.Body))
                     yield return Void.Instance;
             }
             else
             {
-                if (stmt.ElseBody != null)
-                    await foreach (var _ in EvalStmtAsync(stmt.ElseBody))
+                if (stmt.ElseBody.Length != 0)
+                    await foreach (var _ in EvalBodyAsync(stmt.ElseBody))
                         yield return Void.Instance;
             }
         }
 
-        async IAsyncEnumerable<Void> EvalWithNewEnumVarAsync(EnumValue targetValue, string varName, R.Stmt stmt)
+        async IAsyncEnumerable<Void> EvalWithNewEnumVarAsync(EnumValue targetValue, string varName, ImmutableArray<R.Stmt> body)
         {
             var refValue = evalContext.AllocRefValue();
             refValue.SetTarget(targetValue.GetElemValue());
 
             localContext.AddLocalVar(new Name.Normal(varName), refValue); // 레퍼런스로 등록
 
-            await foreach (var _ in EvalStmtAsync(stmt))
+            await foreach (var _ in EvalBodyAsync(body))
                 yield return Void.Instance;
         }
 
@@ -170,14 +118,14 @@ namespace Citron
                 }
                 else
                 {    
-                    await foreach (var _ in EvalStmtAsync(stmt.Body))
+                    await foreach (var _ in EvalBodyAsync(stmt.Body))
                         yield return Void.Instance;
                 }
             }
             else
             {
-                if (stmt.ElseBody != null)
-                    await foreach (var _ in EvalStmtAsync(stmt.ElseBody))
+                if (stmt.ElseBody.Length != 0)
+                    await foreach (var _ in EvalBodyAsync(stmt.ElseBody))
                         yield return Void.Instance;
             }
         }
@@ -198,13 +146,13 @@ namespace Citron
 
             if (bTestPassed)
             {
-                await foreach (var _ in EvalStmtAsync(stmt.Body))
+                await foreach (var _ in EvalBodyAsync(stmt.Body))
                     yield return Void.Instance;
             }
             else
             {
-                if (stmt.ElseBody != null)
-                    await foreach (var _ in EvalStmtAsync(stmt.ElseBody))
+                if (stmt.ElseBody.Length != 0)
+                    await foreach (var _ in EvalBodyAsync(stmt.ElseBody))
                         yield return Void.Instance;
             }
         }
@@ -212,35 +160,24 @@ namespace Citron
         async IAsyncEnumerable<Void> EvalForStmtCoreAsync(R.ForStmt forStmt)
         {
             // continue를 실행시키기 위한 공간은 미리 할당받는다
-            if (forStmt.Initializer != null)
+            if (forStmt.InitStmts.Length != 0)
             {
-                switch (forStmt.Initializer)
-                {
-                    case R.VarDeclForStmtInitializer varDeclInitializer:
-                        await EvalLocalVarDeclAsync(varDeclInitializer.VarDecl);
-                        break;
-
-                    case R.ExpForStmtInitializer expInitializer:
-                        await EvalExpAsync(expInitializer.Exp, EmptyValue.Instance);
-                        break;
-
-                    default:
-                        throw new NotImplementedException();
-                }
+                await foreach (var _ in EvalBodyAsync(forStmt.InitStmts))
+                    yield return Void.Instance;                
             }
 
             while (true)
             {
                 if (forStmt.CondExp != null)
                 {
-                    var condValue = evalContext.AllocValue<BoolValue>(SymbolId.Bool);
+                    var condValue = evalContext.AllocValue<BoolValue>(TypeIds.Bool);
                     await EvalExpAsync(forStmt.CondExp, condValue);
 
                     if (!condValue.GetBool())
                         break;
                 }
 
-                await foreach (var value in EvalStmtAsync(forStmt.Body))
+                await foreach (var _ in EvalBodyAsync(forStmt.Body))
                     yield return Void.Instance;
 
                 var flowControl = evalContext.GetFlowControl();
@@ -354,11 +291,14 @@ namespace Citron
             var newLocalContext = new IR0LocalContext(default, default);
             var newEvaluator = new IR0Evaluator(globalContext, newEvalContext, newLocalContext);
 
+            var thisGlobalContext = globalContext;
+
             // 스레드풀에서 실행
             var task = Task.Run(async () =>
             {
-                foreach (var stmt in taskStmt.Body)
-                    await newEvaluator.EvalStmtSkipYieldAsync(stmt);
+                var body = thisGlobalContext.GetBodyStmt(taskStmt.Lambda.GetSymbolId());
+
+                await newEvaluator.EvalBodySkipYieldAsync(body);
             });
 
             localContext.AddTask(task);
@@ -369,7 +309,7 @@ namespace Citron
             var newLocalContext = localContext.NewTaskLocalContext();
             var newStmtEvaluator = new IR0Evaluator(globalContext, evalContext, newLocalContext);
                 
-            await foreach (var _ in newStmtEvaluator.EvalStmtAsync(stmt.Body))
+            await foreach (var _ in newStmtEvaluator.EvalBodyAsync(stmt.Body))
                 yield return Void.Instance;
 
             await newLocalContext.WaitAllAsync();
@@ -392,23 +332,20 @@ namespace Citron
             var taskCompletionSource = new TaskCompletionSource();
             localContext.AddTask(taskCompletionSource.Task);
 
-            foreach (var stmt in asyncStmt.Body)
-            {
-                await newEvaluator.EvalStmtSkipYieldAsync(stmt);
-            }
-
+            var body = globalContext.GetBodyStmt(asyncStmt.Lambda.GetSymbolId());
+            await newEvaluator.EvalBodySkipYieldAsync(body);
             taskCompletionSource.SetResult();
         }
 
         async IAsyncEnumerable<Void> EvalForeachStmtCoreAsync(R.ForeachStmt stmt)
         {
             var iteratorLoc = (SeqValue)await EvalLocAsync(stmt.Iterator);
-            var elemValue = evalContext.AllocValue(stmt.ElemType);
+            var elemValue = evalContext.AllocValue(stmt.ItemType);
 
             localContext.AddLocalVar(new Name.Normal(stmt.ElemName), elemValue);
             while (await iteratorLoc.NextAsync(elemValue))
             {
-                await foreach (var _ in EvalStmtAsync(stmt.Body))
+                await foreach (var _ in EvalBodyAsync(stmt.Body))
                 {
                     yield return Void.Instance;
                 }
@@ -418,7 +355,7 @@ namespace Citron
                 if (flowControl == IR0EvalFlowControl.Break)
                 {
                     evalContext.SetFlowControl(IR0EvalFlowControl.None);
-                    break;
+                    break; 
                 }
                 else if (flowControl == IR0EvalFlowControl.Continue)
                 {
@@ -458,10 +395,7 @@ namespace Citron
             switch (stmt)
             {
                 case R.CommandStmt cmdStmt:
-                    return Empty(EvalCommandStmtAsync(cmdStmt));                        
-
-                case R.GlobalVarDeclStmt gVarDecl:
-                    return Empty(EvalGlobalVarDeclStmtAsync(gVarDecl));
+                    return Empty(EvalCommandStmtAsync(cmdStmt));
 
                 case R.LocalVarDeclStmt localVarDeclStmt:
                     return Empty(EvalLocalVarDeclStmtAsync(localVarDeclStmt));
@@ -515,6 +449,18 @@ namespace Citron
 
                 default:
                     throw new UnreachableCodeException();
+            }
+        }
+
+        public async IAsyncEnumerable<Void> EvalBodyAsync(ImmutableArray<R.Stmt> body)
+        {
+            foreach(var stmt in body)
+            {
+                await foreach (var _ in EvalStmtAsync(stmt))
+                    yield return Void.Instance;
+
+                if (evalContext.GetFlowControl() == IR0EvalFlowControl.Return)
+                    break;
             }
         }
 

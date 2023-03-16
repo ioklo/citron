@@ -8,11 +8,11 @@ using Xunit;
 
 using System.Diagnostics;
 using Citron.IR0;
-using Citron.Test.Misc;
 
 using static Citron.Infra.Misc;
 using static Citron.Syntax.SyntaxFactory;
 using static Citron.Test.SyntaxIR0TranslatorMisc;
+using static Citron.Test.Misc;
 using Citron.Analysis;
 
 namespace Citron.Test;

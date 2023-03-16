@@ -275,15 +275,14 @@ namespace Citron.Symbol
         IType ITypeSymbol.MakeType()
         {
             return new ClassType(this);
-        }
+        }        
 
-        public void Apply(ITypeSymbolVisitor visitor)
+        void ISymbolNode.Accept<TVisitor>(ref TVisitor visitor)
         {
             visitor.VisitClass(this);
         }
 
-        public void Accept<TVisitor>(ref TVisitor visitor)
-            where TVisitor : struct, ISymbolNodeVisitor
+        void ITypeSymbol.Accept<TTypeSymbolVisitor>(ref TTypeSymbolVisitor visitor)
         {
             visitor.VisitClass(this);
         }

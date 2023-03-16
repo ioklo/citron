@@ -12,11 +12,11 @@ using Citron.Infra;
 namespace Citron.IR0
 {
     // DeclSymbol -> Stmt
-    public record struct StmtBody(IDeclSymbolNode declSymbol, ImmutableArray<Stmt> Stmts) : ICyclicEqualityComparableStruct<StmtBody>
+    public record struct StmtBody(IDeclSymbolNode DSymbol, ImmutableArray<Stmt> Stmts) : ICyclicEqualityComparableStruct<StmtBody>
     {
         bool ICyclicEqualityComparableStruct<StmtBody>.CyclicEquals(ref StmtBody other, ref CyclicEqualityCompareContext context)
         {
-            if (!context.CompareClass(declSymbol, other.declSymbol))
+            if (!context.CompareClass(DSymbol, other.DSymbol))
                 return false;
 
             if (!Stmts.Equals(other.Stmts))

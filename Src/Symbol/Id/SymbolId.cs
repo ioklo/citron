@@ -35,28 +35,6 @@ namespace Citron.Symbol
             return new SymbolId(id.ModuleName, id.Path.Child(name, typeArgs, paramIds));
         }
 
-        public static bool IsList(this SymbolId symbolId, [NotNullWhen(returnValue: true)]out TypeId? itemId)
-        {
-            var declSymbolId = symbolId.GetDeclSymbolId();
-            if (declSymbolId.Equals(DeclSymbolId.List))
-            {
-                Debug.Assert(symbolId.Path != null);
-
-                itemId = symbolId.Path.TypeArgs[0];
-                return true;
-            }            
-
-            itemId = null;
-            return false;
-        }
-
-        // ISeq 타입인지
-        public static bool IsSeq(this SymbolId symbolId)
-        {
-            var declSymbolId = symbolId.GetDeclSymbolId();
-            return declSymbolId.Equals(DeclSymbolId.Seq);
-        }
-
         // list의 anonymous 타입은 기각, seq<T>인지 확인해야 한다
         //public static bool IsListIter(this SymbolId symbolId)
         //{

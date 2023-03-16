@@ -53,7 +53,7 @@ namespace Citron.IR0
             return Script(stmts.ToImmutableArray());
         }
 
-        // void main()
+        // void Main(), int 리턴이 필요하면 직접 제작한다
         public Script Script(ImmutableArray<Stmt> stmts)
         {
             var moduleD = new ModuleDeclSymbol(moduleName, bReference: false);
@@ -112,10 +112,15 @@ namespace Citron.IR0
             );
         }
 
-        public ForStmt For(Exp init, Exp? cond, Exp? cont, ImmutableArray<Stmt> body)
+        public ForStmt For(Exp init, Exp? cond, Exp? cont, params Stmt[] body)
         {
             return new ForStmt(
-                Arr<Stmt>(new ExpStmt(init)), cond, cont, body);
+                Arr<Stmt>(new ExpStmt(init)), cond, cont, body.ToImmutableArray());
+        }
+
+        public ForStmt For(ImmutableArray<Stmt> initStmts, Exp? cond, Exp? cont, params Stmt[] body)
+        {
+            return new ForStmt(initStmts, cond, cont, body.ToImmutableArray());
         }
 
         #endregion
@@ -334,14 +339,14 @@ namespace Citron.IR0
             return new TaskStmt(lambda, default);
         }
 
-        public TaskStmt Task(LambdaSymbol lambda, ImmutableArray<Argument> args)
+        public TaskStmt Task(LambdaSymbol lambda, params Argument[] args)
         {
-            return new TaskStmt(lambda, args);
+            return new TaskStmt(lambda, args.ToImmutableArray());
         }
         #endregion
 
         #region AsyncStmt
-        public AsyncStmt Async(LambdaSymbol lambda, ImmutableArray<Argument> args)
+        public AsyncStmt Async(LambdaSymbol lambda, params Argument[] args)
         {
             return new AsyncStmt(lambda, args);
         }
@@ -414,7 +419,7 @@ namespace Citron.IR0
         public Loc Deref(Loc loc)
         {
             return new DerefLocLoc(loc);
-        }
+        }        
 
         public TempLoc TempLoc(Exp e)
         {
@@ -523,10 +528,10 @@ namespace Citron.IR0
             return new Argument.Normal(exp);
         }
 
-        //public LambdaExp Lambda(LambdaSymbol lambda, params Argument[] args)
-        //{
-        //    return new LambdaExp(lambda, args.ToImmutableArray());
-        //}
+        public LambdaExp Lambda(LambdaSymbol lambda, params Argument[] args)
+        {
+            return new LambdaExp(lambda, args.ToImmutableArray());
+        }
 
         public ListExp List(IType itemType, params Exp[] exps)
         {
@@ -552,7 +557,7 @@ namespace Citron.IR0
         {
             return new YieldStmt(exp);
         }
-        
+
         #endregion
 
 

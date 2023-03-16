@@ -1,5 +1,4 @@
-﻿using Citron.Module;
-using Citron.Infra;
+﻿using Citron.Infra;
 using System;
 using System.Collections.Generic;
 using Citron.Symbol;
@@ -21,11 +20,8 @@ namespace Citron
 
         public IModuleDriver GetModuleDriver(SymbolId id)
         {
-            if (id is SymbolId moduleSymbolId)
-            {
-                // module -> moduleDriver 정보가 있어야 한다
-                return moduleDriverSelector[moduleSymbolId.ModuleName];
-            }
+            // module -> moduleDriver 정보가 있어야 한다
+            return moduleDriverSelector[id.ModuleName];            
 
             throw new RuntimeFatalException();
         }

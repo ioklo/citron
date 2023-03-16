@@ -1,9 +1,9 @@
-﻿using Citron.Analysis;
-using Citron.Collections;
-using Citron.Module;
+﻿using Citron.Collections;
 using Citron.Infra;
 using Citron.IR0;
+using Citron.Symbol;
 using System;
+using System.Diagnostics;
 
 namespace Citron
 {
@@ -18,7 +18,12 @@ namespace Citron
         {
             var bodiesBuilder = ImmutableDictionary.CreateBuilder<DeclSymbolPath, ImmutableArray<Stmt>>();
             foreach (var stmtBody in script.StmtBodies)
-                bodiesBuilder.Add(stmtBody.Path, stmtBody.Stmts);
+            {
+                var path = stmtBody.DSymbol.GetDeclSymbolId().Path;
+                Debug.Assert(path != null);
+
+                bodiesBuilder.Add(path, stmtBody.Stmts);
+            }
 
             var bodies = bodiesBuilder.ToImmutable();
 

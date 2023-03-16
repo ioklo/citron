@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Pretune;
 
 using System.Diagnostics;
-using Citron.Module;
+using Citron.Symbol;
 
 namespace Citron
 {

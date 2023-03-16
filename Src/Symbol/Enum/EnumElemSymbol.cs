@@ -152,11 +152,16 @@ namespace Citron.Symbol
             context.SerializeRef(nameof(outer), outer);
             context.SerializeRef(nameof(decl), decl);
         }
-
-        public void Accept<TVisitor>(ref TVisitor visitor)
-            where TVisitor : struct, ISymbolNodeVisitor
+        
+        void ISymbolNode.Accept<TVisitor>(ref TVisitor visitor)
         {
             visitor.VisitEnumElem(this);
         }
+
+        void ITypeSymbol.Accept<TTypeSymbolVisitor>(ref TTypeSymbolVisitor visitor)
+        {
+            visitor.VisitEnumElem(this);
+        }
+
     }
 }

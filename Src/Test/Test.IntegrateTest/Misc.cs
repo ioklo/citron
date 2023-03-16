@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Citron.Test.Misc;
 
 using S = Citron.Syntax;
 using R = Citron.IR0;

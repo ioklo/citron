@@ -11,6 +11,7 @@ namespace Citron.Symbol
 {
     public interface IType : ICyclicEqualityComparableClass<IType>, ISerializable
     {
+        IType GetTypeArg(int index);
         IType Apply(TypeEnv typeEnv);
         TypeId GetTypeId();
         FuncParamTypeId MakeFuncParamTypeId();
@@ -23,6 +24,10 @@ namespace Citron.Symbol
 
     public abstract record class TypeImpl : IType
     {
+        public virtual IType GetTypeArg(int index)
+        {
+            throw new RuntimeFatalException(); // TypeArg를 불러올 일이 없어야 한다
+        }
         public abstract IType Apply(TypeEnv typeEnv);
         public abstract TypeId GetTypeId();
         public abstract FuncParamTypeId MakeFuncParamTypeId();
@@ -40,6 +45,7 @@ namespace Citron.Symbol
     {
         protected abstract ITypeSymbol GetTypeSymbol();
 
+        public sealed override IType GetTypeArg(int index) => GetTypeSymbol().GetTypeArg(index);
         public sealed override TypeId GetTypeId() => GetTypeSymbol().GetSymbolId();
         public sealed override FuncParamTypeId MakeFuncParamTypeId() => new FuncParamTypeId.Symbol(GetTypeSymbol().GetSymbolId());
         public sealed override IType? GetMemberType(Name name, ImmutableArray<IType> typeArgs) => GetTypeSymbol().GetMemberType(name, typeArgs);
@@ -115,7 +121,7 @@ namespace Citron.Symbol
     }
 
     public record class NullableType(IType InnerType) : TypeImpl
-    {
+    {   
         public override NullableType Apply(TypeEnv typeEnv) => new NullableType(InnerType.Apply(typeEnv));
         public override TypeId GetTypeId() => new NullableTypeId(InnerType.GetTypeId());
         public override FuncParamTypeId MakeFuncParamTypeId() => new FuncParamTypeId.Nullable(InnerType.MakeFuncParamTypeId());
@@ -146,7 +152,7 @@ namespace Citron.Symbol
     }
 
     public record class TypeVarType(int Index, Name Name) : TypeImpl
-    {
+    {   
         public override IType Apply(TypeEnv typeEnv) => typeEnv.GetValue(Index);
         public override TypeId GetTypeId() => new TypeVarTypeId(Index, Name);
         public override FuncParamTypeId MakeFuncParamTypeId() => new FuncParamTypeId.TypeVar(Index);
@@ -200,38 +206,90 @@ namespace Citron.Symbol
         }
     }
 
-    public record struct TupleMemberVar(IType Type, Name Name) : ISerializable
+    public record struct TupleMemberVar : ISerializable, ICyclicEqualityComparableStruct<TupleMemberVar>
     {
+        IType declType;
+        Name name;
+
+        public TupleMemberVar(IType declType, Name name)
+        {
+            this.declType = declType;
+            this.name = name;
+        }
+
+        public IType GetDeclType()
+        {
+            return declType;
+        }
+
+        public Name GetName()
+        {
+            return name;
+        }
+
+        public TupleMemberVar Apply(TypeEnv typeEnv)
+        {
+            return new TupleMemberVar(declType.Apply(typeEnv), name);
+        }
+
         public void DoSerialize(ref SerializeContext context)
         {
-            context.SerializeRef(nameof(Type), Type);
-            context.SerializeRef(nameof(Name), Name);
+            context.SerializeRef(nameof(declType), declType);
+            context.SerializeRef(nameof(name), name);
+        }
+
+        bool ICyclicEqualityComparableStruct<TupleMemberVar>.CyclicEquals(ref TupleMemberVar other, ref CyclicEqualityCompareContext context)
+        {
+            if (!context.CompareClass(this.GetDeclType(), other.declType))
+                return false;
+
+            if (!name.Equals(other.name))
+                return false;
+
+            return true;
         }
     }
 
-    public record class TupleType(ImmutableArray<TupleMemberVar> MemberVars) : TypeImpl
+    public record class TupleType : TypeImpl
     {
+        ImmutableArray<TupleMemberVar> memberVars;
+
+        public TupleType(ImmutableArray<TupleMemberVar> memberVars)
+        {
+            this.memberVars = memberVars;
+        }
+
+        public int GetMemberVarCount()
+        {
+            return memberVars.Length;
+        }
+
+        public TupleMemberVar GetMemberVar(int index)
+        {
+            return memberVars[index];
+        }
+
         public override IType Apply(TypeEnv typeEnv)
         {
-            var builder = ImmutableArray.CreateBuilder<TupleMemberVar>(MemberVars.Length);
-            foreach (var memberVar in MemberVars)
-                builder.Add(new TupleMemberVar(memberVar.Type.Apply(typeEnv), memberVar.Name));
+            var builder = ImmutableArray.CreateBuilder<TupleMemberVar>(memberVars.Length);
+            foreach (var memberVar in memberVars)
+                builder.Add(memberVar.Apply(typeEnv));
             return new TupleType(builder.MoveToImmutable());
         }
 
         public override TypeId GetTypeId()
         {
-            var builder = ImmutableArray.CreateBuilder<TupleMemberVarId>(MemberVars.Length);
-            foreach (var memberVar in MemberVars)
-                builder.Add(new TupleMemberVarId(memberVar.Type.GetTypeId(), memberVar.Name));
+            var builder = ImmutableArray.CreateBuilder<TupleMemberVarId>(memberVars.Length);
+            foreach (var memberVar in memberVars)
+                builder.Add(new TupleMemberVarId(memberVar.GetDeclType().GetTypeId(), memberVar.GetName()));
             return new TupleTypeId(builder.MoveToImmutable());
         }
 
         public override FuncParamTypeId MakeFuncParamTypeId()
         {
-            var builder = ImmutableArray.CreateBuilder<FuncParamTypeId>(MemberVars.Length);
-            foreach (var memberVar in MemberVars)
-                builder.Add(memberVar.Type.MakeFuncParamTypeId());
+            var builder = ImmutableArray.CreateBuilder<FuncParamTypeId>(memberVars.Length);
+            foreach (var memberVar in memberVars)
+                builder.Add(memberVar.GetDeclType().MakeFuncParamTypeId());
             return new FuncParamTypeId.Tuple(builder.MoveToImmutable());
         }
 
@@ -243,35 +301,18 @@ namespace Citron.Symbol
 
         bool CyclicEquals(TupleType other, ref CyclicEqualityCompareContext context)
         {
-            int memberVarCount = MemberVars.Length;
-            int otherMemberVarCount = other.MemberVars.Length;
-
-            if (memberVarCount == 0 && otherMemberVarCount == 0) return true;
-            if (memberVarCount == 0 || otherMemberVarCount == 0) return false;
-
-            if (memberVarCount != otherMemberVarCount) return false;
-            
-            for (int i = 0; i < memberVarCount; i++)
-            {
-                if (!context.CompareClass(MemberVars[i].Type, other.MemberVars[i].Type))
-                    return false;
-
-                if (!MemberVars[i].Name.Equals(other.MemberVars[i].Name))
-                    return false;
-            }
-
-            return true;
+            return memberVars.CyclicEqualsStructItem(ref other.memberVars, ref context);
         }
 
         public override void DoSerialize(ref SerializeContext context)
         {
-            context.SerializeValueArray(nameof(MemberVars), MemberVars);
+            context.SerializeValueArray(nameof(memberVars), memberVars);
         }
 
         public override SymbolQueryResult QueryMember(Name name, int typeArgCount)
         {
-            foreach (var memberVar in MemberVars)
-                if (memberVar.Name.Equals(name))
+            foreach (var memberVar in memberVars)
+                if (memberVar.GetName().Equals(name))
                     return new SymbolQueryResult.TupleMemberVar();
 
             return SymbolQueryResults.NotFound;

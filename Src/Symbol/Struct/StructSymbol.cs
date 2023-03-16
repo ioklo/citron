@@ -241,11 +241,6 @@ namespace Citron.Symbol
             return typeArgs[index];
         }
 
-        public void Apply(ITypeSymbolVisitor visitor)
-        {
-            visitor.VisitStruct(this);
-        }
-
         public int GetConstructorCount()
         {
             return decl.GetConstructorCount();
@@ -292,8 +287,12 @@ namespace Citron.Symbol
             context.SerializeRefArray(nameof(typeArgs), typeArgs);
         }
 
-        public void Accept<TVisitor>(ref TVisitor visitor)
-            where TVisitor : struct, ISymbolNodeVisitor
+        void ISymbolNode.Accept<TVisitor>(ref TVisitor visitor)
+        {
+            visitor.VisitStruct(this);
+        }
+
+        void ITypeSymbol.Accept<TTypeSymbolVisitor>(ref TTypeSymbolVisitor visitor)
         {
             visitor.VisitStruct(this);
         }

@@ -93,11 +93,6 @@ namespace Citron.Symbol
             return typeArgs[index];
         }
 
-        public void Apply(ITypeSymbolVisitor visitor)
-        {
-            visitor.VisitEnum(this);
-        }
-
         IType ITypeSymbol.MakeType()
         {
             return new EnumType(this);
@@ -144,8 +139,12 @@ namespace Citron.Symbol
             context.SerializeRefArray(nameof(typeArgs), typeArgs);
         }
 
-        public void Accept<TVisitor>(ref TVisitor visitor)
-            where TVisitor : struct, ISymbolNodeVisitor
+        void ISymbolNode.Accept<TVisitor>(ref TVisitor visitor)
+        {
+            visitor.VisitEnum(this);
+        }
+
+        void ITypeSymbol.Accept<TTypeSymbolVisitor>(ref TTypeSymbolVisitor visitor)
         {
             visitor.VisitEnum(this);
         }

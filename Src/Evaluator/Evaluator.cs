@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Citron.Module;
 
 using Citron.Collections;
 using Citron.Infra;
@@ -152,22 +151,22 @@ namespace Citron
 
         // 로컬을 만든다 스코프가 끝나면 제거한다
         // TODO: 인자로 stack을 받는다 public Value AllocValue(EvalStack stack, SymbolId typeId)
-        public Value AllocValue(SymbolId typeId)
+        public Value AllocValue(TypeId typeId)
         {
             // 임시. 원래는 로딩된 runtime에서 해줘야 한다
-            if (typeId.Equals(SymbolId.Bool))
+            if (typeId.Equals(TypeIds.Bool))
             {
                 return new BoolValue();
             }
-            else if (typeId.Equals(SymbolId.Int))
+            else if (typeId.Equals(TypeIds.Int))
             {
                 return new IntValue();
             }
-            else if (typeId.Equals(SymbolId.String))
+            else if (typeId.Equals(TypeIds.String))
             {
                 return new StringValue();
             }
-            else if (typeId.Equals(SymbolId.Void))
+            else if (typeId.Equals(TypeIds.Void))
             {
                 return VoidValue.Instance;
             }
@@ -182,25 +181,25 @@ namespace Citron
 
             switch(typeId)
             {
-                case ModuleSymbolId moduleTypeId:
+                case SymbolId symbolId:
                     {
                         // 드라이버에서 처리
-                        var driver = driverContext.GetModuleDriver(moduleTypeId);
-                        return driver.Alloc(moduleTypeId);
+                        var driver = driverContext.GetModuleDriver(symbolId);
+                        return driver.Alloc(symbolId);
                     }
 
                 // int? => Nullable<int>
                 // int?? => Nullable<Nullable<int>>
                 // C? => C
                 // C?? => Nullable<C>
-                case NullableSymbolId nullableTypeId:
+                case NullableTypeId:
                     // TODO: 임시: 원래는 runtime 모듈에서 생성해야 한다
                     throw new NotImplementedException();
 
-                case VoidSymbolId:
+                case VoidTypeId:
                     return VoidValue.Instance;
                 
-                case TupleSymbolId tupleTypeId:
+                case TupleTypeId tupleTypeId:
                     {
                         // TODO: 임시 implementation, 추후 TupleValue제거
                         // (int a, C c) => tuple<int, C>로 runtime 모듈에서 생성해야 한다
@@ -214,8 +213,8 @@ namespace Citron
                         return new TupleValue(values.MoveToImmutable());
                     }                                        
 
-                case TypeVarSymbolId:
-                case VarSymbolId:
+                case TypeVarTypeId:
+                case VarTypeId:
                     throw new NotImplementedException(); // 에러 처리
 
                 default:

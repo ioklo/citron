@@ -337,7 +337,7 @@ namespace TestMiscSourceGenerator
 
             writer.WriteLine("#nullable enable");
             writer.WriteLine();
-            writer.WriteLine("namespace Citron.Test.Misc");
+            writer.WriteLine("namespace Citron.Test");
             writer.WriteLine("{");
 
             var writer1 = writer.Push();

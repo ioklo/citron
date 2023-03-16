@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Citron.Test.Misc
+namespace Citron.Test
 {
     public class TestNeedToBeWrittenException : Exception { }
 }

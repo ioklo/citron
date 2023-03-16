@@ -9,7 +9,9 @@ using System.Threading.Tasks;
 
 namespace Citron.Symbol
 {
-    public record class DeclSymbolId(Name ModuleName, DeclSymbolPath? Path)
+    public record class DeclSymbolId(Name ModuleName, DeclSymbolPath? Path);
+
+    public static class DeclSymbolIds
     {
         public readonly static DeclSymbolId List = new DeclSymbolId(new Name.Normal("System.Runtime"), null).Child(new Name.Normal("System")).Child(new Name.Normal("List"), 1);
         public readonly static DeclSymbolId Seq = new DeclSymbolId(new Name.Normal("System.Runtime"), null).Child(new Name.Normal("System")).Child(new Name.Normal("ISeq"), 1);
@@ -17,6 +19,7 @@ namespace Citron.Symbol
         // NullableSymbol과 헷갈릴수 있어서 다른 이름이 필요할 것 같다
         // public readonly static DeclSymbolId Nullable = new DeclSymbolId(new Name.Normal("System.Runtime"), null).Child(new Name.Normal("System")).Child(new Name.Normal("Nullable"), 1);
     }
+
 
     public static class DeclSymbolIdExtensions
     {

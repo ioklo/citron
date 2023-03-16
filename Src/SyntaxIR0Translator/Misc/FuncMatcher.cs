@@ -396,21 +396,21 @@ namespace Citron.Analysis
 
                     if (expType is TupleType tupleExpType)
                     {
-                        int memberVarCount = tupleExpType.MemberVars.Length;
+                        int memberVarCount = tupleExpType.GetMemberVarCount();
 
                         // head
                         if (0 < memberVarCount)
                         {
-                            var memberVar = tupleExpType.MemberVars[0];
-                            var arg = new FuncMatcherArgument.ParamsHead(exp, memberVarCount, memberVar.Type);
+                            var memberVar = tupleExpType.GetMemberVar(0);
+                            var arg = new FuncMatcherArgument.ParamsHead(exp, memberVarCount, memberVar.GetDeclType());
                             args.Add(arg);
                         }
 
                         // rest
                         for(int i = 1; i < memberVarCount; i++)
                         {
-                            var memberVar = tupleExpType.MemberVars[i];
-                            args.Add(new FuncMatcherArgument.ParamsRest(memberVar.Type));
+                            var memberVar = tupleExpType.GetMemberVar(i);
+                            args.Add(new FuncMatcherArgument.ParamsRest(memberVar.GetDeclType()));
                         }
                     }
                     else
@@ -508,7 +508,7 @@ namespace Citron.Analysis
 
             if (paramInfo.Type is TupleType tupleParamType)
             {
-                int paramsCount = tupleParamType.MemberVars.Length;
+                int paramsCount = tupleParamType.GetMemberVarCount();
 
                 if (paramsCount != argsEnd - argsBegin)
                 {
@@ -518,11 +518,11 @@ namespace Citron.Analysis
 
                 for (int i = 0; i < paramsCount; i++)
                 {
-                    var memberVar = tupleParamType.MemberVars[i];
-                    var tupleElemType = memberVar.Type;
+                    var memberVar = tupleParamType.GetMemberVar(i);
+                    var tupleElemType = memberVar.GetDeclType();
                     var arg = expandedArgs[argsBegin + i];
 
-                    MatchArgument(new FuncParameter(FuncParameterKind.Default, tupleElemType, memberVar.Name), arg);
+                    MatchArgument(new FuncParameter(FuncParameterKind.Default, tupleElemType, memberVar.GetName()), arg);
 
                     // MatchArgument마다 Constraint추가
                     typeResolver.AddConstraint(tupleElemType, arg.GetArgType());

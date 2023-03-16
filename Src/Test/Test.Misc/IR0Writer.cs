@@ -1,6 +1,5 @@
 ﻿using Citron.Collections;
 using Citron.Infra;
-using Citron.IR0Visitor;
 using Citron.Symbol;
 using System;
 using System.Collections.Generic;
@@ -11,7 +10,7 @@ using System.Threading.Tasks;
 
 using R = Citron.IR0;
 
-namespace Citron.Test.Misc
+namespace Citron.Test
 {
     //public partial class IR0Writer
     //{

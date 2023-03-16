@@ -1,5 +1,7 @@
 ﻿using Citron.Collections;
 using Citron.Infra;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Citron.Symbol
 {
@@ -78,5 +80,40 @@ namespace Citron.Symbol
         public readonly static TypeId Bool = new SymbolId(new Name.Normal("System.Runtime"), null).Child(new Name.Normal("System")).Child(new Name.Normal("Bool"));
         public readonly static TypeId Int = new SymbolId(new Name.Normal("System.Runtime"), null).Child(new Name.Normal("System")).Child(new Name.Normal("Int32"));
         public readonly static TypeId String = new SymbolId(new Name.Normal("System.Runtime"), null).Child(new Name.Normal("System")).Child(new Name.Normal("String"));
+    }
+
+    public static class TypeIdExtensions
+    {
+        public static bool IsList(this TypeId typeId, [NotNullWhen(returnValue: true)] out TypeId? itemId)
+        {
+            var symbolId = typeId as SymbolId;
+            if (symbolId == null)
+            {
+                itemId = null;
+                return false;
+            }
+
+            var declSymbolId = symbolId.GetDeclSymbolId();
+            if (declSymbolId.Equals(DeclSymbolIds.List))
+            {
+                Debug.Assert(symbolId.Path != null);
+
+                itemId = symbolId.Path.TypeArgs[0];
+                return true;
+            }
+
+            itemId = null;
+            return false;
+        }
+
+        // ISeq 타입인지
+        public static bool IsSeq(this TypeId typeId)
+        {
+            var symbolId = typeId as SymbolId;
+            if (symbolId == null) return false;
+
+            var declSymbolId = symbolId.GetDeclSymbolId();
+            return declSymbolId.Equals(DeclSymbolIds.Seq);
+        }
     }
 }

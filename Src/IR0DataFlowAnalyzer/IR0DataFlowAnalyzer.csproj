@@ -6,7 +6,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Infra\Infra.csproj" />
-    <ProjectReference Include="..\IR0Visitor\IR0Visitor.csproj" />
     <ProjectReference Include="..\IR0\IR0.csproj" />
   </ItemGroup>
 

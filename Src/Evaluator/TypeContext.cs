@@ -2,24 +2,29 @@
 
 using Citron.Collections;
 using Citron.Infra;
-using Citron.Module;
+using Citron.Symbol;
 
 namespace Citron
 {
-    // TODO: IR0Evaluator로 옮긴다
+    // 현재 실행하고 있는 도중의 타입 environment
+    // body-space에서 존재, 
+    // 최종적으로 TypeVar가 모두 치환되는 형태여야 한다
+    // call할때 만들어질 것 같다(call할 대상의 SymbolId와, 타입인자로 확정)
+    // 
+    // TODO: IR0Evaluator로 옮긴다? => IR0한정 타입일 수도 있으므로?
     public class TypeContext
     {
         // index -> type
-        ImmutableArray<SymbolId> env;
+        ImmutableArray<TypeId> env;
 
         public static readonly TypeContext Empty = new TypeContext(default);
 
-        TypeContext(ImmutableArray<SymbolId> env)
+        TypeContext(ImmutableArray<TypeId> env)
         {
             this.env = env;
         }
 
-        static void InnerMake(SymbolPath? path, ImmutableArray<SymbolId>.Builder builder)
+        static void InnerMake(SymbolPath? path, ImmutableArray<TypeId>.Builder builder)
         {
             if (path == null) return;
 
@@ -31,7 +36,7 @@ namespace Citron
 
         public static TypeContext Make(SymbolPath? path)
         {
-            var builder = ImmutableArray.CreateBuilder<SymbolId>();
+            var builder = ImmutableArray.CreateBuilder<TypeId>();
             InnerMake(path, builder);
             return new TypeContext(builder.ToImmutable());
         }
@@ -39,21 +44,18 @@ namespace Citron
         // G<List<T>>, T => int
         // Make((G<>, [(List<>, [T])]), [T => int])
         // => [(List<>, [int])]
-        public static TypeContext Make(SymbolId symbolId, TypeContext typeContext)
+        public static TypeContext Make(TypeId typeId, TypeContext typeContext)
         {
-            return Make(typeContext.Apply(symbolId));
+            return Make(typeContext.Apply(typeId));
         }
 
         // Module.System.NS1.NS2.Type<int, bool>.Type2<short>.Func<string>
-        public static TypeContext Make(SymbolId symbolId)
+        public static TypeContext Make(TypeId typeId)
         {
-            if (symbolId is ModuleSymbolId moduleSymbolId)
+            switch(typeId)
             {
-                return Make(moduleSymbolId.Path);
-            }
-            else
-            {
-                throw new NotImplementedException();
+                case SymbolId symbolId: return Make(symbolId.Path);
+                default: throw new NotImplementedException();
             }
         }
 
@@ -62,57 +64,55 @@ namespace Citron
             if (path == null) return null;
 
             var appliedOuter = ApplySymbolPath(path.Outer);
-            var appliedTypeArgs = ImmutableArray.CreateRange(path.TypeArgs, typeArg => Apply(typeArg));
+            var appliedTypeArgs = ImmutableArray.CreateRange<TypeId, TypeId>(path.TypeArgs, typeArg => Apply(typeArg));
             return new SymbolPath(appliedOuter, path.Name, appliedTypeArgs, path.ParamIds);
         }
 
-        ModuleSymbolId ApplyModuleSymbolId(ModuleSymbolId moduleSymbolId)
+        public SymbolId ApplySymbol(SymbolId symbolId)
         {
-            var appliedPath = ApplySymbolPath(moduleSymbolId.Path);
-            return new ModuleSymbolId(moduleSymbolId.ModuleName, appliedPath);
+            var appliedPath = ApplySymbolPath(symbolId.Path);
+            return new SymbolId(symbolId.ModuleName, appliedPath);
         }
 
-        NullableSymbolId ApplyNullableSymbolId(NullableSymbolId nullableSymbolId)
+        NullableTypeId ApplyNullable(NullableTypeId id)
         {
-            var appliedInnerType = Apply(nullableSymbolId.InnerTypeId);
-            return new NullableSymbolId(appliedInnerType);
+            var appliedId = Apply(id.InnerTypeId);
+            return new NullableTypeId(appliedId);
         }
 
-        SymbolId ApplyTypeVarSymbolId(TypeVarSymbolId typeVarSymbolId)
+        TypeId ApplyTypeVar(TypeVarTypeId id)
         {
-            return env[typeVarSymbolId.Index];
+            return env[id.Index];
         }
 
-        TupleSymbolId ApplyTupleSymbolId(TupleSymbolId tupleSymbolId)
+        TupleTypeId ApplyTuple(TupleTypeId id)
         {
-            var appliedMemberVarIds = ImmutableArray.CreateRange(tupleSymbolId.MemberVarIds, 
-                memberVarId => (Apply(memberVarId.TypeId), memberVarId.Name));
+            var appliedIds = ImmutableArray.CreateRange(id.MemberVarIds, 
+                memberVarId => new TupleMemberVarId(Apply(memberVarId.TypeId), memberVarId.Name));
 
-            return new TupleSymbolId(appliedMemberVarIds);
+            return new TupleTypeId(appliedIds);
         }
 
-        public ModuleSymbolId Apply(ModuleSymbolId moduleSymbolId) => ApplyModuleSymbolId(moduleSymbolId);
-
-        public SymbolId Apply(SymbolId symbolId)
+        public TypeId Apply(TypeId typeId)
         {
-            switch(symbolId)
+            switch(typeId)
             {
-                case ModuleSymbolId moduleSymbolId:
-                    return ApplyModuleSymbolId(moduleSymbolId);
+                case SymbolId symbolId:
+                    return ApplySymbol(symbolId);
 
-                case TypeVarSymbolId typeVarSymbolId:
-                    return ApplyTypeVarSymbolId(typeVarSymbolId);
+                case TypeVarTypeId typeVarId:
+                    return ApplyTypeVar(typeVarId);
 
-                case NullableSymbolId nullableSymbolId:
-                    return ApplyNullableSymbolId(nullableSymbolId);
+                case NullableTypeId nullableId:
+                    return ApplyNullable(nullableId);
 
-                case VoidSymbolId:
-                    return symbolId;
+                case VoidTypeId voidId:
+                    return voidId;
 
-                case TupleSymbolId tupleSymbolId:
-                    return ApplyTupleSymbolId(tupleSymbolId);
+                case TupleTypeId tupleId:
+                    return ApplyTuple(tupleId);
 
-                case VarSymbolId:
+                case VarTypeId:
                 default:
                     throw new UnreachableCodeException();
             }

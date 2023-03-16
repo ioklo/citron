@@ -10,8 +10,7 @@ using Citron.Infra;
 using Citron.Collections;
 
 using R = Citron.IR0;
-using Citron.Module;
-using Citron.Analysis;
+using Citron.Symbol;
 
 namespace Citron
 {
@@ -47,7 +46,7 @@ namespace Citron
 
                     case R.ExpStringExpElement expElem:
                         {
-                            var strValue = evalContext.AllocValue<StringValue>(ModuleSymbolId.String);
+                            var strValue = evalContext.AllocValue<StringValue>(TypeIds.String);
                             await EvalExpAsync(expElem.Exp, strValue);
                             sb.Append(strValue.GetString());
                             break;
@@ -95,7 +94,7 @@ namespace Citron
                 if (param.Kind == FuncParameterKind.Params)
                 {
                     // TODO: 꼭 tuple이 아닐수도 있다
-                    var tupleType = (TupleSymbol)param.Type;
+                    var tupleType = (TupleType)param.Type;
                     int memberVarCount = tupleType.GetMemberVarCount();
                     
                     for(int j = 0; j < memberVarCount; j++)
@@ -162,7 +161,7 @@ namespace Citron
                 if (param.Kind == FuncParameterKind.Params)
                 {
                     // TODO: 꼭 tuple이 아닐수도 있다
-                    var tupleType = (TupleSymbolId)param.Type;
+                    var tupleType = (TupleTypeId)param.Type;
                     var tupleElems = ImmutableArray.Create(argValues, argValueIndex, tupleType.MemberVarIds.Length);
 
                     var tupleValue = new TupleValue(tupleElems);

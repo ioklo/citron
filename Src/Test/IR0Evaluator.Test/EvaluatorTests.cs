@@ -12,9 +12,10 @@ using Xunit;
 using Citron.Infra;
 using Citron.Collections;
 using Citron.IR0;
-using Citron.Test.Misc;
+using Citron.Symbol;
 
 using static Citron.Infra.Misc;
+using static Citron.Test.Misc;
 
 namespace Citron.Test
 {
@@ -53,45 +54,40 @@ namespace Citron.Test
             }
         }
 
-        Name moduleName = new Name.Normal("TestModule");
+        Name moduleName;
         SymbolFactory factory;
         IR0Factory r;
-
-        ModuleSymbol runtimeModule;
-        NamespaceSymbol systemNS;
-        StructSymbol boolType, intType;
-        ClassSymbol stringType;
-        VoidSymbol voidType;
-        ClassDeclSymbol listTypeDecl;
+        ModuleDeclSymbol runtimeModuleD;
         
         public EvaluatorTests()
         {
-            // [System.Runtime] System.Int32
-            this.factory = new SymbolFactory();
-
-            var runtimeModuleDecl = new ModuleDeclBuilder(this.factory, new Name.Normal("System.Runtime"))
-                .BeginNamespace("System")
-                    .Struct("Bool", out var boolDecl)
-                    .Struct("Int32", out var intDecl)
-                    .Class("String", typeParams: default, out var stringDecl)
-                    .Class("List", Arr("TItem"), out listTypeDecl)
-                .EndNamespace(out var systemNSDecl)
-                .Make();
-
-            this.runtimeModule = factory.MakeModule(runtimeModuleDecl);
-            this.systemNS = factory.MakeNamespace(runtimeModule, systemNSDecl);
-
-            this.boolType = factory.MakeStruct(systemNS, boolDecl, default);
-            this.intType = factory.MakeStruct(systemNS, intDecl, default);
-            this.stringType = factory.MakeClass(systemNS, stringDecl, default);
-            this.voidType = factory.MakeVoid();
-
-            this.r = new IR0Factory(boolType, intType, stringType, MakeListSymbol);
-        }       
+            (moduleName, factory, r, runtimeModuleD) = TestPreparations.Prepare();
+        }
         
-        ITypeSymbol MakeListSymbol(ITypeSymbol itemType)
+        StmtBody AddGlobalFunc(ModuleDeclSymbol moduleD, IType retType, string name, params Stmt[] stmts)
         {
-            return factory.MakeClass(systemNS, listTypeDecl, Arr(itemType));
+            var funcD = new GlobalFuncDeclSymbol(moduleD, Accessor.Private, NormalName(name), typeParams: default);
+            funcD.InitFuncReturnAndParams(r.FuncRet(retType), parameters: default);
+            moduleD.AddFunc(funcD);
+
+            return r.StmtBody(funcD, stmts);
+        }
+
+        StmtBody AddGlobalFunc(ModuleDeclSymbol moduleD, IType retType, string name, ImmutableArray<(IType Type, string Name)> parameters, params Stmt[] stmts)
+        {
+            var funcD = new GlobalFuncDeclSymbol(moduleD, Accessor.Private, NormalName(name), typeParams: default);
+
+            var parametersBuilder = ImmutableArray.CreateBuilder<FuncParameter>(parameters.Length);
+            foreach(var param in parameters)
+            {
+                var parameter = new FuncParameter(FuncParameterKind.Default, param.Type, NormalName(param.Name));
+                parametersBuilder.Add(parameter);
+            }
+
+            funcD.InitFuncReturnAndParams(r.FuncRet(retType), parametersBuilder.MoveToImmutable());
+            moduleD.AddFunc(funcD);
+
+            return r.StmtBody(funcD, stmts);
         }
 
         CommandStmt Sleep(int i)
@@ -120,13 +116,9 @@ namespace Citron.Test
         }
 
         // TopLevelStmt
-        async Task<string> EvalAsync(ImmutableArray<Stmt> topLevelStmts)
-        {
-            var moduleDecl = new ModuleDeclBuilder(factory, moduleName).Make();
-            var script = new ScriptBuilder(moduleDecl)
-                .AddTopLevel(topLevelStmts)
-                .Make();
-            
+        async Task<string> EvalAsync(ImmutableArray<Stmt> mainBody)
+        {   
+            var script = r.Script(mainBody);
             var (output, _) = await EvalAsyncWithRetValue(default, script);
             return output;
         }
@@ -170,8 +162,8 @@ namespace Citron.Test
                 IR0ModuleDriver.Init(driverContext, evaluator, globalContext, script.ModuleDeclSymbol.GetName());
             });
 
-            // entry는 TopLevel
-            var entry = new ModuleSymbolId(moduleName, new SymbolPath(null, Name.TopLevel));
+            // entry는 void Main()
+            var entry = new SymbolId(moduleName, new SymbolPath(null, NormalName("Main")));
 
             var retValue = await Evaluator.EvalAsync(moduleDriverInitializers, entry);
             return (commandProvider.GetOutput(), retValue);
@@ -207,61 +199,14 @@ namespace Citron.Test
         [Fact]
         public async Task CommandStmt_WorksProperly()
         {
-            var topLevelStmts = Arr<Stmt>(r.Command(r.String("Hello World")));
-            var output = await EvalAsync(topLevelStmts);
+            var mainBody = Arr<Stmt>(r.Command(r.String("Hello World")));
+            var output = await EvalAsync(mainBody);
 
             Assert.Equal("Hello World", output);
         }
 
         // Stmt
-        // GlobalVarDeclStmt
-        [Fact]
-        public async Task GlobalVariableStmt_DeclProperly()
-        {   
-            var topLevelStmts = Arr<Stmt>
-            (
-                r.GlobalVarDecl(intType, "x", r.Int(3)),
-                r.PrintInt(r.GlobalVar("x"))
-            );
-
-            var output = await EvalAsync(topLevelStmts);
-            Assert.Equal("3", output);
-        }
-
         
-        // void TestFunc()
-        // {
-        //     @$x
-        // }
-        // 
-        // string x = "Hello";
-        // TestFunc();
-        [Fact]
-        public async Task GlobalVariableExp_GetGlobalValueInFunc()
-        {
-            // 1. decl 
-            var moduleDecl = new ModuleDeclBuilder(factory, moduleName)
-                .GlobalFunc(voidType, "TestFunc", out var testFuncDecl)
-                .Make();
-
-            // 2. body 
-            var module = factory.MakeModule(moduleDecl);
-            var testFunc = factory.MakeGlobalFunc(module, testFuncDecl, default);
-
-            var script = new ScriptBuilder(moduleDecl)
-                .Add(testFuncDecl,
-                    r.PrintString(r.GlobalVar("x"))
-                )
-                .AddTopLevel(
-                    r.GlobalVarDecl(stringType, "x", r.String("Hello")),
-                    r.Call(testFunc)
-                )
-                .Make();
-            
-            var output = await EvalAsync(script);
-            Assert.Equal("Hello", output);
-        }
-
         // TODO: sequence를 살리면 다시 살린다
         // SeqCall
         // seq int F(int x, int y) { yield x * 2; yield y + 3; } // struct anonymous_sequence_#1
@@ -279,7 +224,7 @@ namespace Citron.Test
         {
             throw new PrerequisiteRequiredException(Prerequisite.Sequence);        
         //    // Sequence
-        //    var seqFunc = new SequenceFuncDecl(default, new Name.Normal("F"), false, intType, default, Arr(new Param(ParamKind.Default, intType, new Name.Normal("x")), new Param(ParamKind.Default, intType, new Name.Normal("y"))), r.Block(
+        //    var seqFunc = new SequenceFuncDecl(default, new Name.Normal("F"), false, r.IntType(), default, Arr(new Param(ParamKind.Default, r.IntType(), new Name.Normal("x")), new Param(ParamKind.Default, r.IntType(), new Name.Normal("y"))), r.Block(
 
         //        new YieldStmt(
         //            r.CallInternalBinary(InternalBinaryOperator.Multiply_Int_Int_Int,
@@ -291,13 +236,13 @@ namespace Citron.Test
         //                new LoadExp(r.LocalVar("y")),
         //                r.Int(3)))));
 
-        //    var funcF = RootPath("F", Arr(intType, intType), default);
+        //    var funcF = RootPath("F", Arr(r.IntType(), r.IntType()), default);
         //    var seqTypeF = funcF;
 
         //    var stmts = Arr<Stmt>
         //    (
         //        new ForeachStmt(
-        //            intType,
+        //            r.IntType(),
         //            "e",
         //            new TempLoc(
         //                new CallSeqFuncExp(
@@ -321,84 +266,36 @@ namespace Citron.Test
         //    Assert.Equal("25", output);
         }
 
-        // (local) int x = 23; // syntax로는 만들 수 없다
-        // {
-        //     string x = "Hello";
-        //     @$x
-        // }
-        // @$x
+        #region LocalVarDeclStmt        
         [Fact]
         public async Task LocalVarDeclStmt_OverlapsParentScope()
         {
-            var topLevelStmts = Arr<Stmt>(
+            // int x = 23;
+            // {
+            //     string x = "Hello";
+            //     @$x
+            // }
+            // @$x
 
-                r.LocalVarDecl(intType, "x", r.Int(23)),
+            var mainBody = Arr<Stmt>(
+
+                r.LocalVarDecl(r.IntType(), "x", r.Int(23)),
 
                 r.Block(
-                    r.LocalVarDecl(stringType, "x", r.String("Hello")),
+                    r.LocalVarDecl(r.StringType(), "x", r.String("Hello")),
                     r.PrintString(r.LocalVar("x"))
                 ),
 
                 r.PrintInt(r.LocalVar("x"))
             );
 
-            var output = await EvalAsync(topLevelStmts);
+            var output = await EvalAsync(mainBody);
             Assert.Equal("Hello23", output);
         }
 
-        // int x = 23; // decl global var x
-        // {
-        //     string x = "Hello"; // decl local var x
-        //     @$x
-        // }
-        // @$x
-        [Fact]
-        public async Task LocalVarDeclStmt_OverlapsGlobalVar()
-        {
-            var topLevelStmts = Arr<Stmt>
-            (
-                r.GlobalVarDecl(intType, "x", r.Int(23)),
+        #endregion LocalVarDeclStmt
 
-                r.Block(
-                    r.LocalVarDecl(stringType, "x", r.String("Hello")),
-                    r.PrintString(r.LocalVar("x"))
-                ),
-
-                r.PrintInt(r.GlobalVar("x"))
-            );
-
-            var output = await EvalAsync(topLevelStmts);
-            Assert.Equal("Hello23", output);
-        }
-
-        // 
-        [Fact]
-        public async Task GlobalRefVarDeclStmt_RefDeclAndRefExp_WorksProperly()
-        {
-            // int i = 3;
-            // ref int x = ref i;
-            // x = 4 + x;
-            // @$i
-            var topLevelStmts = Arr<Stmt>(
-                r.GlobalVarDecl(intType, "i", r.Int(3)),
-                r.GlobalRefVarDecl("x", r.GlobalVar("i")), // type이 빠진다
-                r.Assign(
-                    r.Deref(r.GlobalVar("x")), 
-                    r.CallInternalBinary(
-                        InternalBinaryOperator.Add_Int_Int_Int, 
-                        r.Int(4),
-                        r.Load(r.Deref(r.GlobalVar("x")), intType)
-                    )
-                ),
-
-                r.PrintInt(r.GlobalVar("i")) 
-            );
-
-            var output = await EvalAsync(topLevelStmts);
-            Assert.Equal("7", output);
-        }
-
-        // If
+        #region IfStmt        
         [Fact]
         public async Task IfStmt_SelectThenBranchWhenConditionTrue()
         {
@@ -419,7 +316,9 @@ namespace Citron.Test
             Assert.Equal("False", output);
         }
 
-        // IfTestEnum
+        #endregion If
+
+        #region IfTestEnum
         [Fact]
         public Task IfTestEnumStmt_SelectThenBranchWhenTestPassed()
         {
@@ -432,6 +331,9 @@ namespace Citron.Test
             throw new PrerequisiteRequiredException(Prerequisite.IfTestEnumStmt);            
         }
 
+        #endregion IfTestEnum
+
+        #region IfTestClass
         [Fact]
         public Task IfTestClassStmt_SelectThenBranchWhenTestPassed()
         {
@@ -444,17 +346,21 @@ namespace Citron.Test
             throw new PrerequisiteRequiredException(Prerequisite.IfTestClassStmt);
         }
 
+        #endregion IfTestClass
+
+        #region For
+
         // var decl for initializer, 
         [Fact]
         public async Task VarDeclForStmtInitializer_DeclaresLocalVariable()
         {
             var stmts = Arr<Stmt> (
 
-                r.LocalVarDecl(intType, "x", r.Int(34)),
+                r.LocalVarDecl(r.IntType(), "x", r.Int(34)),
 
                 r.For(
-                    intType, "x", r.Int(0),
-                    r.CallInternalBinary(InternalBinaryOperator.Equal_Int_Int_Bool, r.LoadLocalVar("x", intType), r.Int(0)),
+                    r.IntType(), "x", r.Int(0),
+                    r.CallInternalBinary(InternalBinaryOperator.Equal_Int_Int_Bool, r.LoadLocalVar("x", r.IntType()), r.Int(0)),
                     r.AssignExp(r.LocalVar("x"), r.Int(1)),
                     r.PrintInt(r.LocalVar("x"))),
 
@@ -468,17 +374,23 @@ namespace Citron.Test
         [Fact]
         public async Task ExpForStmtInitializer_EvaluateAtStart()
         {
+            // int x = 34
+            // @$x
+            // for(x = 12; x == 12; x = 1)
+            //     @$x
+
             var stmts = Arr<Stmt> (
 
-                r.LocalVarDecl(intType, "x", r.Int(34)),
+                r.LocalVarDecl(r.IntType(), "x", r.Int(34)),
 
                 r.PrintInt(r.LocalVar("x")),
 
                 r.For(
-                    r.AssignExp(r.LocalVar("x"), r.Int(12)),
-                    r.CallInternalBinary(InternalBinaryOperator.Equal_Int_Int_Bool, r.LoadLocalVar("x", intType), r.Int(12)),
+                    Arr<Stmt>(r.Assign(r.LocalVar("x"), r.Int(12))),
+                    r.CallInternalBinary(InternalBinaryOperator.Equal_Int_Int_Bool, r.LoadLocalVar("x", r.IntType()), r.Int(12)),
                     r.AssignExp(r.LocalVar("x"), r.Int(1)),
-                    r.PrintInt(r.LocalVar("x"))),
+                    r.PrintInt(r.LocalVar("x"))
+                ),
 
                 r.PrintInt(r.LocalVar("x"))
             );
@@ -509,10 +421,10 @@ namespace Citron.Test
         {
             var stmts = Arr<Stmt> (
 
-                r.LocalVarDecl(boolType, "x", r.Bool(true)),
+                r.LocalVarDecl(r.BoolType(), "x", r.Bool(true)),
 
                 r.For(
-                    r.LoadLocalVar("x", boolType),
+                    r.LoadLocalVar("x", r.BoolType()),
                     r.AssignExp(r.LocalVar("x"), r.Bool(false)),
                     r.PrintString("Once")),
 
@@ -537,10 +449,10 @@ namespace Citron.Test
 
             var stmts = Arr<Stmt> (
 
-                r.LocalVarDecl(boolType, "x", r.Bool(true)),
+                r.LocalVarDecl(r.BoolType(), "x", r.Bool(true)),
 
                 r.For(
-                    r.LoadLocalVar("x", boolType),
+                    r.LoadLocalVar("x", r.BoolType()),
                     r.AssignExp(r.LocalVar("x"), r.Bool(false)),
                     r.Block(
                         r.PrintString("Once"),
@@ -571,10 +483,10 @@ namespace Citron.Test
 
             var stmts = Arr<Stmt> (
 
-                r.LocalVarDecl(boolType, "x", r.Bool(true)),
+                r.LocalVarDecl(r.BoolType(), "x", r.Bool(true)),
 
                 r.For(
-                    r.LoadLocalVar("x", boolType),
+                    r.LoadLocalVar("x", r.BoolType()),
                     r.AssignExp(r.LocalVar("x"), r.Bool(false)),
                     r.Block(
                         r.PrintString("Once"),
@@ -602,10 +514,10 @@ namespace Citron.Test
             //     @Wrong
             // }
             // @Wrong
-            var topLevelStmts = Arr<Stmt>(
-                r.LocalVarDecl(boolType, "x", r.Bool(true)),
+            var mainBody = Arr<Stmt>(
+                r.LocalVarDecl(r.BoolType(), "x", r.Bool(true)),
                 r.For(
-                    r.LoadLocalVar("x", boolType),
+                    r.LoadLocalVar("x", r.BoolType()),
                     r.AssignExp(r.LocalVar("x"), r.Bool(false)),
                     r.Block(
                         r.PrintString("Once"),
@@ -617,12 +529,16 @@ namespace Citron.Test
                 r.PrintString("Wrong")
             );
 
-            var script = r.Script(moduleName, topLevelStmts);
+            var script = r.Script(mainBody);
 
             var (output, result) = await EvalAsyncWithRetValue(default, script);
             Assert.Equal("Once", output);
             Assert.Equal(2, result);
         }
+
+        #endregion ForStmt
+
+        #region Continue
 
         [Fact]
         public async Task ContinueStmt_ContinuesInnerMostLoopStmt()
@@ -630,8 +546,8 @@ namespace Citron.Test
             var stmts = Arr<Stmt> (
 
                 r.For(
-                    intType, "i", r.Int(0),
-                    r.CallInternalBinary(InternalBinaryOperator.LessThan_Int_Int_Bool, r.LoadLocalVar("i", intType), r.Int(2)),
+                    r.IntType(), "i", r.Int(0),
+                    r.CallInternalBinary(InternalBinaryOperator.LessThan_Int_Int_Bool, r.LoadLocalVar("i", r.IntType()), r.Int(2)),
                     r.CallInternalUnaryAssign(InternalUnaryAssignOperator.PostfixInc_Int_Int, r.LocalVar("i")),
 
                     r.Block(
@@ -639,8 +555,8 @@ namespace Citron.Test
                         r.PrintInt(r.LocalVar("i")),
 
                         r.For(
-                            intType, "j", r.Int(0),
-                            r.CallInternalBinary(InternalBinaryOperator.LessThan_Int_Int_Bool, r.LoadLocalVar("j", intType), r.Int(2)),
+                            r.IntType(), "j", r.Int(0),
+                            r.CallInternalBinary(InternalBinaryOperator.LessThan_Int_Int_Bool, r.LoadLocalVar("j", r.IntType()), r.Int(2)),
                             r.CallInternalUnaryAssign(InternalUnaryAssignOperator.PostfixInc_Int_Int, r.LocalVar("j")),
                             r.Block(
                                 r.PrintInt(r.LocalVar("j")),
@@ -656,14 +572,18 @@ namespace Citron.Test
             Assert.Equal("001101", output);
         }
 
+        #endregion Continue
+
+        #region Break
+
         [Fact]
         public async Task BreakStmt_ExitsInnerMostLoopStmt()
         {
             var stmts = Arr<Stmt> (
 
                 r.For(
-                    intType, "i", r.Int(0),
-                    r.CallInternalBinary(InternalBinaryOperator.LessThan_Int_Int_Bool, r.LoadLocalVar("i", intType), r.Int(2)),
+                    r.IntType(), "i", r.Int(0),
+                    r.CallInternalBinary(InternalBinaryOperator.LessThan_Int_Int_Bool, r.LoadLocalVar("i", r.IntType()), r.Int(2)),
                     r.CallInternalUnaryAssign(InternalUnaryAssignOperator.PostfixInc_Int_Int, r.LocalVar("i")),
 
                     r.Block(
@@ -671,8 +591,8 @@ namespace Citron.Test
                         r.PrintInt(r.LocalVar("i")),
 
                         r.For(
-                            intType, "j", r.Int(0),
-                            r.CallInternalBinary(InternalBinaryOperator.LessThan_Int_Int_Bool, r.LoadLocalVar("j", intType), r.Int(2)),
+                            r.IntType(), "j", r.Int(0),
+                            r.CallInternalBinary(InternalBinaryOperator.LessThan_Int_Int_Bool, r.LoadLocalVar("j", r.IntType()), r.Int(2)),
                             r.CallInternalUnaryAssign(InternalUnaryAssignOperator.PostfixInc_Int_Int, r.LocalVar("j")),
                             r.Block(
                                 r.PrintInt(r.LocalVar("j")),
@@ -688,49 +608,53 @@ namespace Citron.Test
             Assert.Equal("0010", output);
         }
 
-        // void F()
-        // {
-        //     return;
-        //     @Wrong
-        // }
-        // F();
-        // @Completed
+        #endregion Break
+
+        #region Return        
         [Fact]
         public async Task ReturnStmt_ExitsFuncImmediately()
         {
-            // 1. make decl
-            var moduleDecl = new ModuleDeclBuilder(factory, moduleName, bReference: false)
-                .GlobalFunc(voidType, "F", out var fFuncDecl)
-                .Make();
+            // void F()
+            // {
+            //     return;
+            //     @Wrong
+            // }
+            // F();
+            // @Completed
 
-            // 2. make body
-            var module = factory.MakeModule(moduleDecl);
-            var fFunc = factory.MakeGlobalFunc(module, fFuncDecl, default);
+            var moduleD = new ModuleDeclSymbol(moduleName, bReference: false);
 
-            var script = new ScriptBuilder(moduleDecl)
-                .Add(fFuncDecl,
-                    r.Return(),
-                    r.PrintString("Wrong")
-                )
-                .AddTopLevel(
-                    r.Call(fFunc),
-                    r.PrintString("Completed")
-                )
-                .Make();
+            var fD = new GlobalFuncDeclSymbol(moduleD, Accessor.Private, NormalName("F"), typeParams: default);
+            fD.InitFuncReturnAndParams(new FuncReturn(false, r.VoidType()), parameters: default);
+            moduleD.AddFunc(fD);
+            var f = (GlobalFuncSymbol)fD.MakeOpenSymbol(factory); // for calling
+            
+            var fBody = r.StmtBody(fD,
+                r.Return(),
+                r.PrintString("Wrong")
+            );
 
+            var mainBody = AddGlobalFunc(moduleD, r.VoidType(), "Main",
+                r.Call(f),
+                r.PrintString("Completed")
+            );            
+            var script = r.Script(moduleD, fBody, mainBody);
+            
             var output = await EvalAsync(script);
             Assert.Equal("Completed", output);
         }
 
         [Fact]
-        public async Task ReturnStmt_ReturnProperlyInTopLevel()
+        public async Task ReturnStmt_ReturnProperlyInMain()
         {
             // return 34;
-            var topLevelStmts = Arr<Stmt>(
+
+            var moduleD = new ModuleDeclSymbol(moduleName, bReference: false);
+            var mainBody = AddGlobalFunc(moduleD, r.IntType(), "Main",
                 r.Return(r.Int(34))
             );
 
-            var script = r.Script(moduleName, topLevelStmts);
+            var script = r.Script(moduleD, mainBody);
             var (_, retValue) = await EvalAsyncWithRetValue(default, script);
 
             Assert.Equal(34, retValue);
@@ -747,27 +671,27 @@ namespace Citron.Test
             // F();
 
             // 1. decl
-            var moduleDecl = new ModuleDeclBuilder(factory, moduleName)
-                .GlobalFunc(voidType, "F", out var fFuncDecl)
-                .Make();
+            var moduleD = new ModuleDeclSymbol(moduleName, bReference: false);
 
-            // 2. script            
-            var module = factory.MakeModule(moduleDecl);
-            var fFunc = factory.MakeGlobalFunc(module, fFuncDecl, default);
+            var fBody = AddGlobalFunc(moduleD, r.VoidType(), "F",
+                r.Return(r.Int(77)),
+                r.PrintString("Wrong")
+            );
 
-            var script = new ScriptBuilder(moduleDecl)
-                .Add(fFuncDecl,
-                    r.Return(r.Int(77)),
-                    r.PrintString("Wrong")
-                )
-                .AddTopLevel(
-                    r.PrintInt(r.CallExp(fFunc))
-                )
-                .Make();
+            var f = (GlobalFuncSymbol)fBody.DSymbol.MakeOpenSymbol(factory);
 
+            var mainBody = AddGlobalFunc(moduleD, r.VoidType(), "Main",
+                r.PrintInt(r.CallExp(f))
+            );
+
+            var script = r.Script(moduleD, fBody, mainBody);
             var output = await EvalAsync(script);
             Assert.Equal("77", output);
         }
+
+        #endregion Return
+
+        #region Block
 
         // BlockStmt에서 LocalVar 범위 테스트는 LocalVarDeclStmt_OverlapsParentScope에서 처리함
         [Fact]
@@ -784,12 +708,16 @@ namespace Citron.Test
             Assert.Equal("1234", output);
         }
 
+        #endregion Block
+
+        #region ExpStmt
+
         // BlankStmt do nothing.. nothing을 테스트하기는 힘들다
         [Fact]
         public async Task ExpStmt_EvalInnerExp()
         {
             var stmts = Arr<Stmt> (
-                r.LocalVarDecl(intType, "x", r.Int(0)),
+                r.LocalVarDecl(r.IntType(), "x", r.Int(0)),
                 r.Assign(r.LocalVar("x"), r.Int(3)),
                 r.PrintInt(r.LocalVar("x"))
             );
@@ -797,6 +725,10 @@ namespace Citron.Test
             var output = await EvalAsync(stmts);
             Assert.Equal("3", output);
         }
+
+        #endregion ExpStmt
+
+        #region Task
 
         // Task Await
         [Fact]
@@ -819,35 +751,41 @@ namespace Citron.Test
             Stmt PrintNumbersStmt(int count)
             {
                 return r.For(
-                    intType, "i", r.Int(0),
-                    r.CallInternalBinary(InternalBinaryOperator.LessThan_Int_Int_Bool, r.LoadLocalVar("i", intType), r.Int(count)),
+                    r.IntType(), "i", r.Int(0),
+                    r.CallInternalBinary(InternalBinaryOperator.LessThan_Int_Int_Bool, r.LoadLocalVar("i", r.IntType()), r.Int(count)),
                     r.CallInternalUnaryAssign(InternalUnaryAssignOperator.PostfixInc_Int_Int, r.LocalVar("i")),
                     r.PrintInt(r.LocalVar("i"))
                 );
             }
 
+            // decl and body
+            var moduleD = new ModuleDeclSymbol(moduleName, bReference: false);
+            var mainD = new GlobalFuncDeclSymbol(moduleD, Accessor.Private, NormalName("Main"), typeParams: default);
+            mainD.InitFuncReturnAndParams(new FuncReturn(false, r.VoidType()), parameters: default);
+            moduleD.AddFunc(mainD);
+
+            var lambdaD0 = new LambdaDeclSymbol(mainD, new Name.Anonymous(0), parameters: default);
+            lambdaD0.InitReturn(new FuncReturn(false, r.VoidType()));
+            ((IFuncDeclSymbol)mainD).AddLambda(lambdaD0);
+            var lambda0 = (LambdaSymbol)lambdaD0.MakeOpenSymbol(factory);
+
+            var lambdaD1 = new LambdaDeclSymbol(mainD, new Name.Anonymous(1), parameters: default);
+            lambdaD0.InitReturn(new FuncReturn(false, r.VoidType()));
+            ((IFuncDeclSymbol)mainD).AddLambda(lambdaD1);
+            var lambda1 = (LambdaSymbol)lambdaD1.MakeOpenSymbol(factory);
+
             // decl
-            var moduleDecl = new ModuleDeclBuilder(factory, moduleName)
-                .BeginTopLevelFunc()
-                    .Lambda(out var lambdaDecl0)
-                    .Lambda(out var lambdaDecl1)
-                .EndTopLevelFunc(out var topLevelFuncDecl)
-                .Make();
+            var lambdaBody0 = r.StmtBody(lambdaD0, PrintNumbersStmt(5));
+            var lambdaBody1 = r.StmtBody(lambdaD1, PrintNumbersStmt(5));
 
-            var module = factory.MakeModule(moduleDecl);
-            var topLevelFunc = factory.MakeGlobalFunc(module, topLevelFuncDecl, default);
-            var lambda0 = factory.MakeLambda(topLevelFunc, lambdaDecl0);
-            var lambda1 = factory.MakeLambda(topLevelFunc, lambdaDecl1);
-
-            // script
-            var script = new ScriptBuilder(moduleDecl)
-                .AddTopLevel(
-                    r.Await(                    
-                        r.Task(lambda0, Arr<Stmt>(PrintNumbersStmt(5))),
-                        r.Task(lambda1, Arr<Stmt>(PrintNumbersStmt(5)))
-                    )
+            var mainBody = r.StmtBody(mainD,
+                r.Await(
+                    r.Task(lambda0),
+                    r.Task(lambda1)
                 )
-                .Make();
+            );
+
+            var script = r.Script(moduleD, lambdaBody0, lambdaBody1, mainBody);
 
             var output = await EvalAsync(script);
 
@@ -876,62 +814,68 @@ namespace Citron.Test
         [Fact]
         public async Task TaskStmt_CapturesLocalVariable()
         {
-            // int count = 5;
+            // var count = box 5; // box int& count = box 5;
             // await 
             // {
             //     task 
             //     {
             //          for(int i = 0; i < count; i++) i++;
             //     }
+            //     count = 4;
             //     task 
             //     {
             //          for(int i = 0; i < count; i++) i++;
             //     }
             // }
 
-            // for(int i = 0; i < count; i++) i++;
+            // for(int i = 0; i < *labmda.count; i++) i++;
             Stmt PrintNumbersStmt(LambdaMemberVarSymbol memberVar)
             {
                 return r.For(
-                    intType, "i", r.Int(0),
-                    r.CallInternalBinary(InternalBinaryOperator.LessThan_Int_Int_Bool, r.LoadLocalVar("i", intType), r.LoadLambdaMember(memberVar)),
+                    r.IntType(), "i", r.Int(0),
+                    r.CallInternalBinary(InternalBinaryOperator.LessThan_Int_Int_Bool, r.LoadLocalVar("i", r.IntType()), r.Load(r.Deref(r.LoadLambdaMember(memberVar)), r.IntType())),
                     r.CallInternalUnaryAssign(InternalUnaryAssignOperator.PostfixInc_Int_Int, r.LocalVar("i")),
                     r.PrintInt(r.LocalVar("i"))
                 );
             }
 
-            // [count] { for(int i = 0; i < count; i++) i++; }
-            var moduleDecl = new ModuleDeclBuilder(factory, moduleName)            
-                .BeginTopLevelFunc()
-                    .BeginLambda()
-                        .MemberVar(intType, "count", out var lambdaMemberVarDecl0)
-                    .EndLambda(out var lambdaDecl0)
-                    .BeginLambda()
-                        .MemberVar(intType, "count", out var lambdaMemberVarDecl1)
-                    .EndLambda(out var lambdaDecl1)
-                .EndTopLevelFunc(out var topLevelFuncDecl)
-                .Make();
-            
-            // make lambda
-            var module = factory.MakeModule(moduleDecl);
-            var topLevelFunc = factory.MakeGlobalFunc(module, topLevelFuncDecl, default);
-            var lambda0 = factory.MakeLambda(topLevelFunc, lambdaDecl0);
-            var lambdaMemberVar0 = factory.MakeLambdaMemberVar(lambda0, lambdaMemberVarDecl0);
+            // decl and body
+            var moduleD = new ModuleDeclSymbol(moduleName, bReference: false);
+            var mainD = new GlobalFuncDeclSymbol(moduleD, Accessor.Private, NormalName("Main"), typeParams: default);
+            mainD.InitFuncReturnAndParams(new FuncReturn(false, r.VoidType()), parameters: default);
+            moduleD.AddFunc(mainD);
 
-            var lambda1 = factory.MakeLambda(topLevelFunc, lambdaDecl1);
-            var lambdaMemberVar1 = factory.MakeLambdaMemberVar(lambda1, lambdaMemberVarDecl1);
+            var lambdaD0 = new LambdaDeclSymbol(mainD, new Name.Anonymous(0), parameters: default);
+            lambdaD0.InitReturn(new FuncReturn(false, r.VoidType()));
+            ((IFuncDeclSymbol)mainD).AddLambda(lambdaD0);
+            var lambdaCountD0 = new LambdaMemberVarDeclSymbol(lambdaD0, r.BoxRefType(r.IntType()), NormalName("count"));
+            lambdaD0.AddMemberVar(lambdaCountD0);
+            var lambda0 = (LambdaSymbol)lambdaD0.MakeOpenSymbol(factory);
+            var lambdaCount0 = factory.MakeLambdaMemberVar(lambda0, lambdaCountD0);
 
-            var script = new ScriptBuilder(moduleDecl)
-                .AddTopLevel(
-                    r.LocalVarDecl(intType, "count", r.Int(5)),
-                    r.Await(
-                        r.Task(lambda0, r.Args(r.LoadLocalVar("count", intType)), Arr<Stmt>(PrintNumbersStmt(lambdaMemberVar0))),
-                        r.Assign(r.LocalVar("count"), r.Int(4)),
-                        r.Task(lambda1, r.Args(r.LoadLocalVar("count", intType)), Arr<Stmt>(PrintNumbersStmt(lambdaMemberVar1)))
-                    )
+            var lambdaD1 = new LambdaDeclSymbol(mainD, new Name.Anonymous(1), parameters: default);
+            lambdaD0.InitReturn(new FuncReturn(false, r.VoidType()));
+            ((IFuncDeclSymbol)mainD).AddLambda(lambdaD1);            
+            var lambdaCountD1 = new LambdaMemberVarDeclSymbol(lambdaD1, r.BoxRefType(r.IntType()), NormalName("count"));
+            lambdaD1.AddMemberVar(lambdaCountD1);
+            var lambda1 = (LambdaSymbol)lambdaD1.MakeOpenSymbol(factory);
+            var lambdaCount1 = factory.MakeLambdaMemberVar(lambda1, lambdaCountD1);
+
+            // decl
+            var lambdaBody0 = r.StmtBody(lambdaD0, PrintNumbersStmt(lambdaCount0));
+            var lambdaBody1 = r.StmtBody(lambdaD1, PrintNumbersStmt(lambdaCount1));
+
+            var mainBody = r.StmtBody(mainD,
+                r.LocalVarDecl(r.BoxRefType(r.IntType()), "count", r.Box(r.Int(5))), // box int& count = box 5
+
+                r.Await(
+                    r.Task(lambda0, r.Arg(r.LoadLocalVar("count", r.BoxRefType(r.IntType())))),
+                    r.Assign(r.Deref(r.LocalVar("count")), r.Int(4)), // *count = 4;
+                    r.Task(lambda1, r.Arg(r.LoadLocalVar("count", r.BoxRefType(r.IntType()))))
                 )
-                .Make();
+            );
 
+            var script = r.Script(moduleD, lambdaBody0, lambdaBody1, mainBody);
             var output = await EvalAsync(script);
 
             // 01234 01234 두개가 그냥 섞여 있을 것이다.
@@ -954,6 +898,10 @@ namespace Citron.Test
 
             Assert.True((cur0 == '5' && cur1 == '4') || (cur0 == '4' && cur1 == '5'));
         }
+
+        #endregion Task
+
+        #region Async
 
         // Async Await
         [Fact]
@@ -982,8 +930,8 @@ namespace Citron.Test
             Stmt PrintNumbersStmt(int count)
             {
                 return r.For(
-                    intType, "i", r.Int(0),
-                    r.CallInternalBinary(InternalBinaryOperator.LessThan_Int_Int_Bool, r.LoadLocalVar("i", intType), r.Int(count)),
+                    r.IntType(), "i", r.Int(0),
+                    r.CallInternalBinary(InternalBinaryOperator.LessThan_Int_Int_Bool, r.LoadLocalVar("i", r.IntType()), r.Int(count)),
                     r.CallInternalUnaryAssign(InternalUnaryAssignOperator.PostfixInc_Int_Int, r.LocalVar("i")),
                     r.Block(
                         r.PrintInt(r.LocalVar("i")),
@@ -991,53 +939,66 @@ namespace Citron.Test
                     )
                 );
             }
+            
+            // decl and body
+            var moduleD = new ModuleDeclSymbol(moduleName, bReference: false);
+            var mainD = new GlobalFuncDeclSymbol(moduleD, Accessor.Private, NormalName("Main"), typeParams: default);
+            mainD.InitFuncReturnAndParams(new FuncReturn(false, r.VoidType()), parameters: default);
+            moduleD.AddFunc(mainD);
 
-            var moduleDecl = new ModuleDeclBuilder(factory, moduleName)
-                .BeginTopLevelFunc()
-                    .Lambda(out var lambdaDecl0)
-                    .Lambda(out var lambdaDecl1)
-                .EndTopLevelFunc(out var topLevelFuncDecl)
-                .Make();
+            var lambdaD0 = new LambdaDeclSymbol(mainD, new Name.Anonymous(0), parameters: default);
+            lambdaD0.InitReturn(new FuncReturn(false, r.VoidType()));
+            ((IFuncDeclSymbol)mainD).AddLambda(lambdaD0);
+            var lambda0 = (LambdaSymbol)lambdaD0.MakeOpenSymbol(factory);
 
-            var module = factory.MakeModule(moduleDecl);
-            var topLevelFunc = factory.MakeGlobalFunc(module, topLevelFuncDecl, default);
-            var lambda0 = factory.MakeLambda(topLevelFunc, lambdaDecl0);
-            var lambda1 = factory.MakeLambda(topLevelFunc, lambdaDecl1);
+            var lambdaD1 = new LambdaDeclSymbol(mainD, new Name.Anonymous(1), parameters: default);
+            lambdaD0.InitReturn(new FuncReturn(false, r.VoidType()));
+            ((IFuncDeclSymbol)mainD).AddLambda(lambdaD1);
+            var lambda1 = (LambdaSymbol)lambdaD1.MakeOpenSymbol(factory);
 
-            var script = new ScriptBuilder(moduleDecl).AddTopLevel(
+            // decl
+            var lambdaBody0 = r.StmtBody(lambdaD0, PrintNumbersStmt(5));
+            var lambdaBody1 = r.StmtBody(lambdaD1, PrintNumbersStmt(5));
+
+            var mainBody = r.StmtBody(mainD,
                 r.Await(
-                    r.Async(lambda0, default, Arr<Stmt>(PrintNumbersStmt(5))),
-                    r.Async(lambda1, default, Arr<Stmt>(PrintNumbersStmt(5)))
+                    r.Async(lambda0),
+                    r.Async(lambda1)
                 )
-            )
-            .Make();
+            );
+
+            var script = r.Script(moduleD, lambdaBody0, lambdaBody1, mainBody);
 
             var output = await EvalAsync(script);
             Assert.Equal("0011223344", output);
         }
 
-        // seq int F0() { ... }
-        // seq int F1() { ... }
+        #endregion Async
+
+        #region Yield        
         [Fact]
         public Task YieldStmt_GenerateElementForInnerMostForeachStmt()
         {
+            // seq int F0() { ... }
+            // seq int F1() { ... }
+
             throw new PrerequisiteRequiredException(Prerequisite.Sequence);
 
             //var seqFunc0 = RootPath("F0");
             //var seqFunc1 = RootPath("F1");
 
-            //var seqFuncDecl0 = new SequenceFuncDecl(default, new Name.Normal("F0"), false, intType, default, default,
+            //var seqFuncDecl0 = new SequenceFuncDecl(default, new Name.Normal("F0"), false, r.IntType(), default, default,
             //    new ForeachStmt(
-            //        intType, "elem", 
+            //        r.IntType(), "elem", 
             //        new TempLoc(new CallSeqFuncExp(seqFunc1, null, default), seqFunc1),
             //        r.Block(
             //            r.PrintInt(r.LocalVar("elem")),
-            //            new YieldStmt(r.LoadLocalVar("elem", intType))
+            //            new YieldStmt(r.LoadLocalVar("elem", r.IntType()))
             //        )
             //    )
             //);
 
-            //var seqFuncDecl1 = new SequenceFuncDecl(default, new Name.Normal("F1"), false, intType, default, default,
+            //var seqFuncDecl1 = new SequenceFuncDecl(default, new Name.Normal("F1"), false, r.IntType(), default, default,
             //    r.Block(
             //        new YieldStmt(r.Int(34)),
             //        new YieldStmt(r.Int(56))
@@ -1045,7 +1006,7 @@ namespace Citron.Test
             //);
 
             //var stmts = Arr<Stmt>(
-            //    new ForeachStmt(intType, "x", new TempLoc(new CallSeqFuncExp(seqFunc0, null, default), seqFunc0),
+            //    new ForeachStmt(r.IntType(), "x", new TempLoc(new CallSeqFuncExp(seqFunc0, null, default), seqFunc0),
             //        r.PrintInt(r.LocalVar("x")))
             //);
 
@@ -1054,11 +1015,27 @@ namespace Citron.Test
             //Assert.Equal("34345656", output);
         }
 
+        #endregion Yield
+
+        #region Static
+
         [Fact]
         public Task StaticMemberExp_GetStaticMemberValue()
         {
             throw new PrerequisiteRequiredException(Prerequisite.Static);
         }
+
+        // NewStruct
+        [Fact]
+        public Task NewStructExp_MakesStructValue()
+        {
+            throw new PrerequisiteRequiredException(Prerequisite.Struct);
+        }
+
+        #endregion static
+
+
+        #region Struct
 
         [Fact]
         public Task StructMemberExp_GetStructMemberValue()
@@ -1066,18 +1043,44 @@ namespace Citron.Test
             throw new PrerequisiteRequiredException(Prerequisite.Struct);
         }
 
+        #endregion Struct
+
+        #region Class
+
         [Fact]
         public Task ClassMemberExp_GetClassMemberValue()
         {
             throw new PrerequisiteRequiredException(Prerequisite.Class);
         }
 
+        // NewClass
+        [Fact]
+        public Task NewClassExp_MakesClassValue()
+        {
+            throw new PrerequisiteRequiredException(Prerequisite.Class);
+        }
+
+        #endregion Class
+
+        #region Enum
+
         [Fact]
         public Task EnumMemberExp_GetEnumMemberValue()
         {
             throw new PrerequisiteRequiredException(Prerequisite.Enum);
         }
-        
+
+        // NewEnum
+        [Fact]
+        public Task NewEnumExp_MakesEnumValue()
+        {
+            throw new PrerequisiteRequiredException(Prerequisite.Enum);
+        }
+
+        #endregion Enum
+
+        #region Literal
+
         [Fact]
         public async Task BoolLiteralExp_MakesBoolValue()
         {
@@ -1109,6 +1112,9 @@ namespace Citron.Test
         [Fact]
         public async Task StringExp_ConcatStringsUsingTextStringExpElements()
         {
+            // syntax로 표현 불가능
+            // @Hello ${}World
+
             var stmts = Arr<Stmt>(
                 r.PrintString(r.String(
                     r.TextElem("Hello "),
@@ -1122,14 +1128,17 @@ namespace Citron.Test
 
         [Fact]
         public async Task StringExp_ConcatStringsUsingStringExpElements()
-        {
+        {   
+            // string x = "New ";
+            // @Hello $xWorld
+
             var stmts = Arr<Stmt>
             (
-                r.LocalVarDecl(stringType, "x", r.String("New ")),
+                r.LocalVarDecl(r.StringType(), "x", r.String("New ")),
 
                 r.PrintString(r.String(
                     r.TextElem("Hello "),
-                    r.ExpElem(r.LoadLocalVar("x", stringType)),
+                    r.ExpElem(r.LoadLocalVar("x", r.StringType())),
                     r.TextElem("World")
                 ))
             );
@@ -1138,13 +1147,17 @@ namespace Citron.Test
             Assert.Equal("Hello New World", output);
         }
 
+        #endregion Literal
+
+        #region Assign
+
         [Fact]
         public async Task AssignExp_ReturnsValue()
         {
             var stmts = Arr<Stmt>
             (
-                r.LocalVarDecl(intType, "x", r.Int(3)),
-                r.LocalVarDecl(intType, "y", r.Int(4)),
+                r.LocalVarDecl(r.IntType(), "x", r.Int(3)),
+                r.LocalVarDecl(r.IntType(), "y", r.Int(4)),
 
                 // y = x = 10;
                 r.Assign(r.LocalVar("y"), new AssignExp(r.LocalVar("x"), r.Int(10))),
@@ -1157,10 +1170,14 @@ namespace Citron.Test
             Assert.Equal("1010", output);
         }
 
+        #endregion Assign
+
+        #region Call
+
         [Fact]
         public async Task CallFuncExp_CallByRef_WorksProperly()
         {
-            //void F(ref int i)
+            //void F(int& i) // local ref 
             //{
             //    i = 7;
             //}
@@ -1169,58 +1186,55 @@ namespace Citron.Test
             //F(ref j);
             //@$j
 
-            var moduleDecl = new ModuleDeclBuilder(factory, moduleName)
-                .GlobalFunc(voidType, "F", Arr(r.RefParam(intType, "i")), out var fFuncDecl)
-                .Make();
+            var moduleD = new ModuleDeclSymbol(moduleName, bReference: false);
+            var fBody = AddGlobalFunc(moduleD, r.VoidType(), "F", Arr((r.LocalRefType(r.IntType()), "i")),
+                r.Assign(r.Deref(r.LocalVar("i")), r.Int(7))
+            );
+            var f = (GlobalFuncSymbol)fBody.DSymbol.MakeOpenSymbol(factory);
 
-            var module = factory.MakeModule(moduleDecl);
-            var fFunc = factory.MakeGlobalFunc(module, fFuncDecl, default);
+            var mainBody = AddGlobalFunc(moduleD, r.VoidType(), "Main",
+                r.LocalVarDecl(r.IntType(), "j", r.Int(3)),
+                r.Call(f, r.RefArg(r.LocalVar("j"))),
+                r.PrintInt(r.LocalVar("j"))
+            );
 
-            var script = new ScriptBuilder(moduleDecl)
-                .Add(fFuncDecl,
-                    r.Assign(new DerefLocLoc(r.LocalVar("i")), r.Int(7))
-                )
-                .AddTopLevel(
-                    r.GlobalVarDecl(intType, "j", r.Int(3)),
-                    r.Call(fFunc, r.RefArg(r.GlobalVar("j"))),
-                    r.PrintInt(r.GlobalVar("j"))
-                )
-                .Make();
+            var script = r.Script(moduleD, fBody, mainBody);
 
             var output = await EvalAsync(script);
             Assert.Equal("7", output);
         }
 
-        [Fact]
-        public async Task CallFuncExp_ReturnGlobalRef_WorksProperly()
-        {
-            // int x = 3;
-            // ref int G() { return ref x; }
-            // var i = ref G();
-            // i = 4;
-            // @$x            
+        // GlobalVar가 사라져서 삭제
+        //[Fact]
+        //public async Task CallFuncExp_ReturnGlobalRef_WorksProperly()
+        //{
+        //    // int x = 3;
+        //    // ref int G() { return ref x; }
+        //    // var i = ref G();
+        //    // i = 4;
+        //    // @$x
 
-            // decl
-            var moduleDecl = new ModuleDeclBuilder(factory, moduleName)
-                .GlobalFunc(voidType, "G", out var gFuncDecl)
-                .Make();
+        //    // decl
+        //    var moduleDecl = new ModuleDeclBuilder(factory, moduleName)
+        //        .GlobalFunc(voidType, "G", out var gFuncDecl)
+        //        .Make();
 
-            var module = factory.MakeModule(moduleDecl);
-            var gFunc = factory.MakeGlobalFunc(module, gFuncDecl, default);
+        //    var module = factory.MakeModule(moduleDecl);
+        //    var gFunc = factory.MakeGlobalFunc(module, gFuncDecl, default);
 
-            var script = new ScriptBuilder(moduleDecl)
-                .Add(gFuncDecl, r.ReturnRef(r.GlobalVar("x")))
-                .AddTopLevel(
-                    r.GlobalVarDecl(intType, "x", r.Int(3)),
-                    r.GlobalRefVarDecl("i", new DerefExpLoc(r.CallExp(gFunc))), // var i = ref G();
-                    r.Assign(new DerefLocLoc(r.GlobalVar("i")), r.Int(4)),      // i = deref(i)
-                    r.PrintInt(r.GlobalVar("x"))
-                )
-                .Make();
+        //    var script = new ScriptBuilder(moduleDecl)
+        //        .Add(gFuncDecl, r.ReturnRef(r.GlobalVar("x")))
+        //        .AddTopLevel(
+        //            r.GlobalVarDecl(r.IntType(), "x", r.Int(3)),
+        //            r.GlobalRefVarDecl("i", new DerefExpLoc(r.CallExp(gFunc))), // var i = ref G();
+        //            r.Assign(new DerefLocLoc(r.GlobalVar("i")), r.Int(4)),      // i = deref(i)
+        //            r.PrintInt(r.GlobalVar("x"))
+        //        )
+        //        .Make();
             
-            var output = await EvalAsync(script);
-            Assert.Equal("4", output);
-        }
+        //    var output = await EvalAsync(script);
+        //    Assert.Equal("4", output);
+        //}
 
         [Fact]
         public Task CallFuncExp_EvaluatesInstanceExpAtStart()
@@ -1256,32 +1270,28 @@ namespace Citron.Test
             //
             // TestFunc(Print(1), Print(2), Print(3));
 
-            var moduleDecl = new ModuleDeclBuilder(factory, moduleName)
-                .GlobalFunc(intType, "Print", intType, "x", out var printFuncDecl)
-                .GlobalFunc(voidType, "TestFunc", r.FuncParam((intType, "i"), (intType, "j"), (intType, "k")), out var testFuncFuncDecl)
-                .Make();
+            var moduleD = new ModuleDeclSymbol(moduleName, bReference: false);
+            var printBody = AddGlobalFunc(moduleD, r.IntType(), "Print", Arr((r.IntType(), "x")),
+                r.PrintInt(r.LocalVar("x")),
+                r.Return(r.LoadLocalVar("x", r.IntType()))
+            );
+            var testFuncBody = AddGlobalFunc(moduleD, r.VoidType(), "TestFunc", Arr((r.IntType(), "i"), (r.IntType(), "j"), (r.IntType(), "k")),
+                r.PrintString("TestFunc")
+            );
 
-            var module = factory.MakeModule(moduleDecl);
-            var printFunc = factory.MakeGlobalFunc(module, printFuncDecl, default);
-            var testFuncFunc = factory.MakeGlobalFunc(module, testFuncFuncDecl, default);
+            var print = (GlobalFuncSymbol)printBody.DSymbol.MakeOpenSymbol(factory);
+            var testFunc = (GlobalFuncSymbol)testFuncBody.DSymbol.MakeOpenSymbol(factory);
 
             Argument MakeArg(int v)
             {
-                return r.Arg(r.CallExp(printFunc, r.Arg(r.Int(v))));
+                return r.Arg(r.CallExp(print, r.Arg(r.Int(v))));
             }
 
-            var script = new ScriptBuilder(moduleDecl)
-                .Add(printFuncDecl,
-                    r.PrintInt(r.LocalVar("x")),
-                    r.Return(r.LoadLocalVar("x", intType))
-                )
-                .Add(testFuncFuncDecl,
-                    r.PrintString("TestFunc")
-                )
-                .AddTopLevel(
-                    r.Call(testFuncFunc, MakeArg(1), MakeArg(2), MakeArg(3))
-                )
-                .Make();
+            var mainBody = AddGlobalFunc(moduleD, r.VoidType(), "Main",
+                 r.Call(testFunc, MakeArg(1), MakeArg(2), MakeArg(3))
+            );
+
+            var script = r.Script(moduleD, printBody, testFuncBody, mainBody);
 
             var output = await EvalAsync(script);
             Assert.Equal("123TestFunc", output);
@@ -1291,37 +1301,32 @@ namespace Citron.Test
         public async Task CallFuncExp_ReturnsValueProperly()
         {
             // string F() { return "hello world"; }
+            // @${F()}
 
-            var moduleDecl = new ModuleDeclBuilder(factory, moduleName)
-                .GlobalFunc(stringType, "F", out var fFuncDecl)
-                .Make();
+            var moduleD = new ModuleDeclSymbol(moduleName, bReference: false);
+            var fBody = AddGlobalFunc(moduleD, r.StringType(), "F", r.Return(r.String("hello world")));
+            var f = (GlobalFuncSymbol)fBody.DSymbol.MakeOpenSymbol(factory);
 
-            var module = factory.MakeModule(moduleDecl);
-            var fFunc = factory.MakeGlobalFunc(module, fFuncDecl, default);
+            var mainBody = AddGlobalFunc(moduleD, r.VoidType(), "Main",
+                r.PrintString(r.CallExp(f))
+            );
 
-            var script = new ScriptBuilder(moduleDecl)
-                .Add(fFuncDecl, r.Return(r.String("hello world")))
-                .AddTopLevel(
-                    r.PrintString(r.CallExp(fFunc))
-                )
-                .Make();
+            var script = r.Script(moduleD, fBody, mainBody);
 
             var output = await EvalAsync(script);
             Assert.Equal("hello world", output);
         }
         
         class TestDriver : IModuleDriver
-        {
-            Name moduleName;
+        {            
             TestCommandProvider cmdProvider;
 
-            public TestDriver(Name moduleName, TestCommandProvider cmdProvider) 
+            public TestDriver(TestCommandProvider cmdProvider) 
             {
-                this.moduleName = moduleName;
                 this.cmdProvider = cmdProvider;
             }
 
-            public ValueTask ExecuteGlobalFuncAsync(SymbolId globalFuncId, ImmutableArray<Value> args, Value retValue)
+            ValueTask IModuleDriver.ExecuteGlobalFuncAsync(SymbolId globalFuncId, ImmutableArray<Value> args, Value retValue)
             {
                 cmdProvider.Append("Hello World");
                 return ValueTask.CompletedTask;
@@ -1340,11 +1345,6 @@ namespace Citron.Test
             }
 
             ValueTask IModuleDriver.ExecuteClassMemberFuncAsync(SymbolId memberFunc, Value? thisValue, ImmutableArray<Value> args, Value retValue)
-            {
-                throw new NotImplementedException();
-            }
-
-            ValueTask IModuleDriver.ExecuteGlobalFuncAsync(SymbolId globalFunc, ImmutableArray<Value> args, Value retValue)
             {
                 throw new NotImplementedException();
             }
@@ -1412,30 +1412,20 @@ namespace Citron.Test
 
             // 외부 모듈 작성
             var testExternalModuleName = new Name.Normal("TestExternalModule");
-            var testDriver = new TestDriver(testExternalModuleName, commandProvider);
+            var testDriver = new TestDriver(commandProvider);
             var moduleInitializer = Arr<Action<ModuleDriverContext>>(
                 context =>
                 {
-                    context.AddDriver(new TestDriver(testExternalModuleName, commandProvider));
+                    context.AddDriver(new TestDriver(commandProvider));
                 }
             );
 
             // F();
+            var testExternalModuleD = new ModuleDeclSymbol(testExternalModuleName, bReference: true);
+            var testExternalModuleFD = new GlobalFuncDeclSymbol(testExternalModuleD, Accessor.Public, NormalName("F"), typeParams: default);
+            var testExternalModuleF = (GlobalFuncSymbol)testExternalModuleFD.MakeOpenSymbol(factory);
 
-            // 외부 모듈에 대한 decl symbol 작성
-            var externalModuleDecl = new ModuleDeclBuilder(factory, testExternalModuleName)
-                .GlobalFunc(voidType, "F", out var fFuncDecl)
-                .Make();
-
-            var externalModule = factory.MakeModule(externalModuleDecl);
-            var fFunc = factory.MakeGlobalFunc(externalModule, fFuncDecl, default);
-
-            // internal module
-            var moduleDecl = new ModuleDeclBuilder(factory, moduleName).Make();
-            var script = new ScriptBuilder(moduleDecl)
-                .AddTopLevel(r.Call(fFunc))
-                .Make();            
-
+            var script = r.Script(r.Call(testExternalModuleF));
             var (output, _) = await EvalAsyncWithRetValue(commandProvider, moduleInitializer, script);
 
             Assert.Equal("Hello World", output);
@@ -1691,28 +1681,25 @@ namespace Citron.Test
                 driverContext.AddDriver(driver);
                 driverContext.AddModule(new Name.Normal("System.Console"), driver);
             }
-            
-            // System.Console.Write("Hello World");
-            var testExternalModuleDecl = new ModuleDeclBuilder(factory, testExternalModuleName)
-                .BeginNamespace("System")
-                    .BeginClass("Console")
-                        .StaticMemberFunc(voidType, "Write", stringType, "arg", out var writeDecl)
-                    .EndClass(out var consoleDecl)
-                .EndNamespace(out var systemNSDecl)
-                .Make();
 
-            var testExternalModule = factory.MakeModule(testExternalModuleDecl);
-            var systemNS = factory.MakeNamespace(testExternalModule, systemNSDecl);
-            var console = factory.MakeClass(systemNS, consoleDecl, default);
-            var write = factory.MakeClassMemberFunc(console, writeDecl, default);
+            var testExternalModuleD = new ModuleDeclSymbol(testExternalModuleName, bReference: true);
 
-            var moduleDecl = new ModuleDeclBuilder(factory, moduleName).Make();
+            var systemD = new NamespaceDeclSymbol(testExternalModuleD, NormalName("System"));
+            testExternalModuleD.AddNamespace(systemD);
 
-            var script = new ScriptBuilder(moduleDecl)
-                .AddTopLevel(
-                    r.Call(write, null, r.Arg(r.String("Hello World")))
-                )
-                .Make();
+            var consoleD = new ClassDeclSymbol(systemD, Accessor.Public, NormalName("Console"), typeParams: default);
+            consoleD.InitBaseTypes(baseClass: null, interfaces: default);
+            systemD.AddType(consoleD);
+
+            var writeD = new ClassMemberFuncDeclSymbol(consoleD, Accessor.Public, NormalName("Write"), typeParams: default, bStatic: true);
+            writeD.InitFuncReturnAndParams(new FuncReturn(false, r.VoidType()), Arr(new FuncParameter(FuncParameterKind.Default, r.StringType(), NormalName("arg"))));
+            consoleD.AddFunc(writeD);
+
+            var write = (ClassMemberFuncSymbol)writeD.MakeOpenSymbol(factory);
+
+            var script = r.Script(
+                r.Call(write, null, r.Arg(r.String("Hello World")))
+            );
 
             using (var writer = new System.IO.StringWriter())
             {
@@ -1762,59 +1749,57 @@ namespace Citron.Test
             //     return x;
             // }
             // 
-            // ??? MakeLambda() // ??? 안써도 되는?
+            // func<string, int, int, int> MakeLambda()  // FuncType
             // {
-            //     return (int i, int j, int k) => @"TestFunc";
-            // }
-            //
-            // 이러면 첫번째 phase에 타입을 정확하게 확정할 수 없다;
-            // some func<int, int, int, string> MakeLambda() { return (int i, int j, int k) => @"TestFunc"; }
+            //     // capture된 변수가 없으므로, optimization때 singleton(static)으로 작성하고 heap 할당을 하지 않는다
+            //     return (int i, int j, int k) => @"TestFunc"; 
+            // }            
             //
             // MakeLambda()(Print(1), Print(2), Print(3))
 
-            var makeLambdaFuncRetHolder = new Holder<FuncReturn>();
+            var moduleD = new ModuleDeclSymbol(moduleName, bReference: false);
+            var printBody = AddGlobalFunc(moduleD, r.IntType(), "Print", Arr((r.IntType(), "x")),
+                r.PrintInt(new LocalVarLoc(new Name.Normal("x"))),
+                r.Return(r.LoadLocalVar("x", r.IntType()))
+            );
 
-            // make module
-            var moduleDecl = new ModuleDeclBuilder(factory, moduleName)
-                .GlobalFunc(r.FuncRet(intType), "Print", r.FuncParam((intType, "x")), out var printFuncDecl)
-                .BeginGlobalFunc(Accessor.Public, new Name.Normal("MakeLambda"))
-                    .Lambda(r.FuncRet(stringType), r.FuncParam((intType, "i"), (intType, "j"), (intType, "k")), out var lambdaDecl0)
-                .EndGlobalFunc(out var makeLambdaFuncDecl)
-                .Make();
+            var makeLambdaD = new GlobalFuncDeclSymbol(moduleD, Accessor.Private, NormalName("MakeLambda"), typeParams: default);
+            makeLambdaD.InitFuncReturnAndParams(new FuncReturn(IsRef: false, r.FuncType(r.StringType(), r.IntType(), r.IntType(), r.IntType())), parameters: default);
+            moduleD.AddFunc(makeLambdaD);
 
-            // script body
-            var module = factory.MakeModule(moduleDecl);
-            var printFunc = factory.MakeGlobalFunc(module, printFuncDecl, default);
-            var makeLambdaFunc = factory.MakeGlobalFunc(module, makeLambdaFuncDecl, default);
-            var lambda0 = factory.MakeLambda(makeLambdaFunc, lambdaDecl0);
+            var lambdaD = new LambdaDeclSymbol(makeLambdaD, new Name.Anonymous(0), r.FuncParams((r.IntType(), "i"), (r.IntType(), "j"), (r.IntType(), "k")));
+            lambdaD.InitReturn(new FuncReturn(IsRef: false, r.StringType()));
+            ((IFuncDeclSymbol)makeLambdaD).AddLambda(lambdaD);
 
-            // 문법상으로 적기는 힘들거 같다
-            makeLambdaFuncRetHolder.SetValue(new FuncReturn(false, lambda0));
+            var lambda = (LambdaSymbol)lambdaD.MakeOpenSymbol(factory);
 
-            var script = new ScriptBuilder(moduleDecl)
-                .Add(printFuncDecl,
-                    r.PrintInt(new LocalVarLoc(new Name.Normal("x"))),
-                    r.Return(r.LoadLocalVar("x", intType))
+            var makeLambdaBody = r.StmtBody(makeLambdaD,
+                r.PrintString("MakeLambda"),
+                r.Return(new CastFuncRefExp(new BoxExp(new LambdaExp(lambda, Args: default)), r.FuncType(r.StringType(), r.IntType(), r.IntType(), r.IntType()))) // TODO: interface cast
+            );            
+
+            var lambdaBody = r.StmtBody(lambdaD, r.PrintString("TestFunc"));
+
+            var makeLambda = (GlobalFuncSymbol)makeLambdaBody.DSymbol.MakeOpenSymbol(factory);
+            var print = (GlobalFuncSymbol)printBody.DSymbol.MakeOpenSymbol(factory);
+
+            var mainBody = AddGlobalFunc(moduleD, r.VoidType(), "Main",
+                r.Call(lambda, r.TempLoc(r.CallExp(makeLambda)),
+                    r.Arg(r.CallExp(print, r.Arg(r.Int(1)))),
+                    r.Arg(r.CallExp(print, r.Arg(r.Int(2)))),
+                    r.Arg(r.CallExp(print, r.Arg(r.Int(3))))
                 )
-                .Add(makeLambdaFuncDecl,
-                    r.PrintString("MakeLambda"),
-                    r.Return(new LambdaExp(lambda0, Args: default))
-                )
-                .Add(lambdaDecl0,
-                    r.PrintString("TestFunc")
-                )
-                .AddTopLevel(
-                    r.Call(lambda0, r.TempLoc(r.CallExp(makeLambdaFunc)),
-                        r.Arg(r.CallExp(printFunc, r.Arg(r.Int(1)))),
-                        r.Arg(r.CallExp(printFunc, r.Arg(r.Int(2)))),
-                        r.Arg(r.CallExp(printFunc, r.Arg(r.Int(3))))
-                    )
-                )
-                .Make();
+            );
+
+            var script = r.Script(moduleD, printBody, makeLambdaBody, lambdaBody, mainBody);
 
             var output = await EvalAsync(script);
             Assert.Equal("MakeLambda123TestFunc", output);
         }
+
+        #endregion Call
+
+        #region Lambda
 
         // Lambda
         [Fact]
@@ -1827,42 +1812,44 @@ namespace Citron.Test
         [Fact]
         public async Task LambdaExp_CapturesLocalVariablesWithCopying()
         {
-            // module decl
-            var moduleDecl = new ModuleDeclBuilder(factory, moduleName)
-                .BeginTopLevelFunc()
-                    .BeginLambda(r.FuncRet(intType), default)
-                        .MemberVar(intType, "x", out var lambdaMemberVarDecl0)
-                    .EndLambda(out var lambdaDecl0)
-                .EndTopLevelFunc(out var topLevelFuncDecl)
-                .Make();
+            // int x = 3;
+            // var func = [x] () => @$x; // [int x = x] () => x;
+            // x = 34;
+            // func();
 
-            var module = factory.MakeModule(moduleDecl);
-            var topLevelFunc = factory.MakeGlobalFunc(module, topLevelFuncDecl, default);
-            var lambda0 = factory.MakeLambda(topLevelFunc, lambdaDecl0);
-            var lambdaMemberVar0 = factory.MakeLambdaMemberVar(lambda0, lambdaMemberVarDecl0);
-            
-            var script = new ScriptBuilder(moduleDecl)
-                .Add(lambdaDecl0,
-                    // [x] () => @"$x";
-                    r.PrintInt(r.LoadLambdaMember(lambdaMemberVar0))
-                )
-                .AddTopLevel(
-                    // int x = 3;
-                    // var func = () => x; // [int x = x] () => x;
-                    // x = 34;
-                    // func();
+            var moduleD = new ModuleDeclSymbol(moduleName, bReference: false);
+            var mainD = new GlobalFuncDeclSymbol(moduleD, Accessor.Private, NormalName("Main"), typeParams: default);
+            mainD.InitFuncReturnAndParams(new FuncReturn(IsRef: false, r.VoidType()), parameters: default);
+            moduleD.AddFunc(mainD);
 
-                    r.LocalVarDecl(intType, "x", r.Int(3)),
-                    r.LocalVarDecl(lambda0, "func", r.Lambda(lambda0, r.Arg(r.LoadLocalVar("x", intType)))),
+            var lambdaD = new LambdaDeclSymbol(mainD, new Name.Anonymous(0), parameters: default);
+            lambdaD.InitReturn(new FuncReturn(IsRef: false, r.IntType()));
+            ((IFuncDeclSymbol)mainD).AddLambda(lambdaD);
 
-                    r.Assign(r.LocalVar("x"), r.Int(34)),
-                    r.Call(lambda0, r.LocalVar("func"))
-                )
-                .Make();
+            var lambdaMemberVarD = new LambdaMemberVarDeclSymbol(lambdaD, r.IntType(), NormalName("x"));
+            lambdaD.AddMemberVar(lambdaMemberVarD);
 
+            var lambdaMemberVar = (LambdaMemberVarSymbol)lambdaMemberVarD.MakeOpenSymbol(factory);
+            var lambdaBody = r.StmtBody(lambdaD,
+                r.PrintInt(r.LoadLambdaMember(lambdaMemberVar))
+            );
+
+            var lambda = (LambdaSymbol)lambdaD.MakeOpenSymbol(factory);
+            var mainBody = r.StmtBody(mainD,
+                r.LocalVarDecl(r.IntType(), "x", r.Int(3)),
+                r.LocalVarDecl(new LambdaType(lambda), "func", r.Lambda(lambda, r.Arg(r.LoadLocalVar("x", r.IntType())))),
+                r.Assign(r.LocalVar("x"), r.Int(34)),
+                r.Call(lambda, r.LocalVar("func"))
+            );
+
+            var script = r.Script(moduleD, mainBody, lambdaBody);
             var output = await EvalAsync(script);
             Assert.Equal("3", output);
         }
+
+        #endregion Lambda
+
+        #region List
 
         // ListIndexerExp
         [Fact]
@@ -1871,16 +1858,10 @@ namespace Citron.Test
             // var list = [34, 56];
             // @${list[1]}
 
-            var moduleDecl = new ModuleDeclBuilder(factory, moduleName).Make();
-
-            var intListType = MakeListSymbol(intType);
-
-            var script = new ScriptBuilder(moduleDecl)
-                .AddTopLevel(
-                    r.LocalVarDecl(intListType, "list", r.List(intType, r.Int(34), r.Int(56))),
-                    r.PrintInt(r.ListIndexer(r.LocalVar("list"), r.Int(1)))
-                )
-                .Make();
+            var script = r.Script(
+                r.LocalVarDecl(r.ListType(r.IntType()), "list", r.List(r.IntType(), r.Int(34), r.Int(56))),
+                r.PrintInt(r.ListIndexer(r.LocalVar("list"), r.Int(1)))
+            );
             
             var output = await EvalAsync(script);
             Assert.Equal("56", output);
@@ -1898,53 +1879,28 @@ namespace Citron.Test
 
             // var l = [Print(34), Print(56)];
 
-            var moduleDecl = new ModuleDeclBuilder(factory, moduleName)
-                .GlobalFunc(intType, "Print", intType, "x", out var printFuncDecl)
-                .Make();
+            var moduleD = new ModuleDeclSymbol(moduleName, bReference: false);
+            var printBody = AddGlobalFunc(moduleD, r.IntType(), "Print", Arr((r.IntType(), "x")),
+                r.PrintInt(r.LocalVar("x")),
+                r.Return(r.LoadLocalVar("x", r.IntType()))
+            );
 
-            var module = factory.MakeModule(moduleDecl);
-            var printFunc = factory.MakeGlobalFunc(module, printFuncDecl, default);
-            var intListType = MakeListSymbol(intType);
+            var printFunc = (GlobalFuncSymbol)printBody.DSymbol.MakeOpenSymbol(factory);
 
-            var script = new ScriptBuilder(moduleDecl)
-                .Add(printFuncDecl,
-                    r.PrintInt(r.LocalVar("x")),
-                    r.Return(r.LoadLocalVar("x", intType))
-                )
-                .AddTopLevel(
-                    r.GlobalVarDecl(intListType, "l",
-                        r.List(intType,
-                            r.CallExp(printFunc, r.Arg(r.Int(34))),
-                            r.CallExp(printFunc, r.Arg(r.Int(56)))
-                        )
+            var mainBody = AddGlobalFunc(moduleD, r.VoidType(), "Main",
+                r.LocalVarDecl(r.ListType(r.IntType()), "l",
+                    r.List(r.IntType(),
+                        r.CallExp(printFunc, r.Arg(r.Int(34))),
+                        r.CallExp(printFunc, r.Arg(r.Int(56)))
                     )
                 )
-                .Make();
-            
+            );
+
+            var script = r.Script(moduleD, printBody, mainBody);
             var output = await EvalAsync(script);
             Assert.Equal("3456", output);
         }
 
-        // NewEnum
-        [Fact]
-        public Task NewEnumExp_MakesEnumValue()
-        {
-            throw new PrerequisiteRequiredException(Prerequisite.Enum);
-        }
-
-
-        // NewStruct
-        [Fact]
-        public Task NewStructExp_MakesStructValue()
-        {
-            throw new PrerequisiteRequiredException(Prerequisite.Struct);
-        }
-
-        // NewClass
-        [Fact]
-        public Task NewClassExp_MakesClassValue()
-        {
-            throw new PrerequisiteRequiredException(Prerequisite.Class);
-        }
+        #endregion List
     }
 }

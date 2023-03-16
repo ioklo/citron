@@ -7,7 +7,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Infra\Infra.csproj" />
     <ProjectReference Include="..\IR0DataFlowAnalyzer\IR0DataFlowAnalyzer.csproj" />
-    <ProjectReference Include="..\IR0Visitor\IR0Visitor.csproj" />
     <ProjectReference Include="..\IR0\IR0.csproj" />
     <ProjectReference Include="..\Log\Log.csproj" />
   </ItemGroup>

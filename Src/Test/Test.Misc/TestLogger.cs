@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
-namespace Citron.Test.Misc
+namespace Citron.Test
 {
 
     // 본체는 Mutable

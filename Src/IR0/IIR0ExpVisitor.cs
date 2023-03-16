@@ -42,4 +42,6 @@ public interface IIR0ExpVisitor
     // Lambda
     void VisitLambda(LambdaExp lambdaExp);
     void VisitCallValue(CallValueExp callValueExp);
+    void VisitCallFuncRef(CallFuncRefExp callFuncExp);
+    void VisitCastFuncRef(CastFuncRefExp exp);
 }

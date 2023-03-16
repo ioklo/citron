@@ -1,5 +1,4 @@
-﻿using Citron.Module;
-using System;
+﻿using System;
 using System.Reflection;
 
 namespace Citron.Runtime.Dotnet

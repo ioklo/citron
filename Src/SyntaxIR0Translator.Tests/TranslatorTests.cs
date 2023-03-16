@@ -5,10 +5,10 @@ using System.Linq;
 using System.Diagnostics;
 
 using Citron.Infra;
-using Citron.Test.Misc;
 using Citron.Symbol;
-using Citron.Test;
 using Citron.Analysis;
+using Citron.Collections;
+using Citron.Log;
 
 using Xunit;
 
@@ -16,12 +16,11 @@ using S = Citron.Syntax;
 using R = Citron.IR0;
 
 using static Citron.Syntax.SyntaxFactory;
-using static Citron.Test.SyntaxIR0TranslatorMisc;
 using static Citron.Infra.Misc;
 using static Citron.Analysis.SyntaxAnalysisErrorCode;
-using Citron.Collections;
 
-using Citron.Log;
+using static Citron.Test.Misc;
+using static Citron.Test.SyntaxIR0TranslatorMisc;
 
 namespace Citron.Test
 {
@@ -34,71 +33,7 @@ namespace Citron.Test
 
         public TranslatorTests()
         {
-            moduleName = NormalName("TestModule");
-            factory = new SymbolFactory();
-
-            // runtime module
-            var runtimeModuleD = new ModuleDeclSymbol(NormalName("System.Runtime"), bReference: true);
-            var runtimeModuleSymbol = factory.MakeModule(runtimeModuleD);
-
-            // system namespace
-            var systemNSD = new NamespaceDeclSymbol(runtimeModuleD, NormalName("System"));
-            runtimeModuleD.AddNamespace(systemNSD);            
-            var systemNSSymbol = factory.MakeNamespace(runtimeModuleSymbol, systemNSD);
-
-            IType MakeBoolType()
-            {
-                var boolD = new StructDeclSymbol(systemNSD, Accessor.Public, NormalName("Bool"), typeParams: default);
-                boolD.InitBaseTypes(baseStruct: null, interfaces: default);
-                systemNSD.AddType(boolD);
-
-                ITypeSymbol boolSymbol = factory.MakeStruct(systemNSSymbol, boolD, typeArgs: default);
-                return boolSymbol.MakeType();
-            }
-            var boolType = MakeBoolType();
-
-            IType MakeIntType()
-            {
-                var intD = new StructDeclSymbol(systemNSD, Accessor.Public, NormalName("Int32"), typeParams: default);
-                intD.InitBaseTypes(baseStruct: null, interfaces: default);
-                systemNSD.AddType(intD);
-                ITypeSymbol intSymbol = factory.MakeStruct(systemNSSymbol, intD, typeArgs: default);
-                return intSymbol.MakeType();
-            }
-            var intType = MakeIntType();
-
-            IType MakeStringType()
-            {
-                var stringD = new ClassDeclSymbol(systemNSD, Accessor.Public, NormalName("String"), typeParams: default);
-                stringD.InitBaseTypes(baseClass: null, interfaces: default);
-                systemNSD.AddType(stringD);
-                ITypeSymbol stringSymbol = factory.MakeClass(systemNSSymbol, stringD, typeArgs: default);
-                return stringSymbol.MakeType();
-            }
-            var stringType = MakeStringType();
-
-            (R.IR0Factory.ListTypeConstructor, R.IR0Factory.ListIterTypeConstructor) MakeListTypeConstructor()
-            {
-                var listD = new ClassDeclSymbol(systemNSD, Accessor.Public, NormalName("List"), Arr(NormalName("TItem")));
-                listD.InitBaseTypes(baseClass: null, interfaces: default); // 일단;
-                systemNSD.AddType(listD);
-
-                var listIterD = new ClassDeclSymbol(listD, Accessor.Public, NormalName("Iterator"), typeParams: default);
-                listIterD.InitBaseTypes(baseClass: null, interfaces: default);
-                listD.AddType(listIterD);
-
-                return (itemType =>
-                {
-                    return ((ITypeSymbol)factory.MakeClass(systemNSSymbol, listD, Arr(itemType))).MakeType();
-                }, itemType =>
-                {
-                    var listSymbol = ((ITypeSymbol)factory.MakeClass(systemNSSymbol, listD, Arr(itemType)));
-                    return ((ITypeSymbol)factory.MakeClass(listSymbol, listIterD, default)).MakeType();
-                });
-            }
-            var (listTypeConstructor, listIterTypeConstructor) = MakeListTypeConstructor();
-
-            r = new R.IR0Factory(moduleName, new VoidType(), boolType, intType, stringType, listTypeConstructor, listIterTypeConstructor);
+            (moduleName, factory, r, var runtimeModuleD) = TestPreparations.Prepare();
             refModuleDecls = Arr(runtimeModuleD);
         }
 

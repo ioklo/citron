@@ -10,7 +10,6 @@ using Xunit;
 
 using static Citron.Infra.Misc;
 using static Citron.Syntax.SyntaxFactory;
-using Citron.Test.Misc;
 
 namespace Citron.TextAnalysis.Test
 {

@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Citron.Collections;
 using Citron.Infra;
-using Citron.Module;
-using Citron.Analysis;
 using System.Diagnostics;
 using Citron.IR0;
+using Citron.Symbol;
 
 namespace Citron
 {
@@ -16,7 +15,6 @@ namespace Citron
         IR0Loader loader;
         Name internalModuleName;
         IIR0CommandProvider commandProvider;
-        Dictionary<Name, Value> globalVars;
 
         public IR0GlobalContext(Evaluator evaluator, IR0Loader loader, Name internalModuleName, IIR0CommandProvider commandProvider)
         {
@@ -24,24 +22,17 @@ namespace Citron
             this.loader = loader;
             this.internalModuleName = internalModuleName;
             this.commandProvider = commandProvider;
-            this.globalVars = new Dictionary<Name, Value>();
         }
         
         public TSymbol LoadSymbol<TSymbol>(SymbolId symbolId)
             where TSymbol : class, ISymbolNode
-        {
-            var moduleSymbolId = symbolId as ModuleSymbolId;
-            Debug.Assert(moduleSymbolId != null);
-            Debug.Assert(moduleSymbolId.Path != null);
+        {   
+            Debug.Assert(symbolId != null);
+            Debug.Assert(symbolId.Path != null);
 
-            return loader.LoadSymbol<TSymbol>(moduleSymbolId.Path);
+            return loader.LoadSymbol<TSymbol>(symbolId.Path);
         }
-
-        public Value GetGlobalValue(Name name)
-        {
-            return globalVars[name];
-        }
-
+        
         public IR0EvalContext NewEvalContext(TypeContext typeContext, Value? thisValue, Value retValue)
         {   
             return new IR0EvalContext(evaluator, typeContext, IR0EvalFlowControl.None, thisValue, retValue);
@@ -50,11 +41,6 @@ namespace Citron
         public IR0EvalContext NewEvalContext()
         {
             return new IR0EvalContext(evaluator, TypeContext.Empty, IR0EvalFlowControl.None, null, VoidValue.Instance);
-        }
-
-        public void AddGlobalVar(string name, Value value)
-        {
-            globalVars.Add(new Name.Normal(name), value);
         }
 
         public Value GetStructStaticMemberValue(SymbolId memberVarId)
@@ -88,11 +74,8 @@ namespace Citron
         }
 
         public ImmutableArray<Stmt> GetBodyStmt(SymbolId symbolId)
-        {
-            var moduleSymbolId = symbolId as ModuleSymbolId;
-            Debug.Assert(moduleSymbolId != null);
-
-            var declSymbolId = moduleSymbolId.GetDeclSymbolId();
+        {   
+            var declSymbolId = symbolId.GetDeclSymbolId();
             Debug.Assert(declSymbolId.ModuleName.Equals(internalModuleName));
             Debug.Assert(declSymbolId.Path != null);
 
@@ -105,14 +88,14 @@ namespace Citron
         }
 
         // symbol의 사용범위.. IR0에 
-        public ITypeSymbol? GetListItemType(ITypeSymbol listType)
+        public IType? GetListItemType(IType listType)
         {
-            var listTypeId = listType.GetSymbolId() as ModuleSymbolId;
-            Debug.Assert(listTypeId != null);
-            if (listTypeId.IsList(out var _))
+            if (listType.GetTypeId().IsList(out var _))
                 return listType.GetTypeArg(0);
 
             return null;
         }
+
+        
     }
 }
