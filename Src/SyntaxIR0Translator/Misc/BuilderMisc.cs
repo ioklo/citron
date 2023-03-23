@@ -36,7 +36,6 @@ namespace Citron.Analysis
                 {
                     S.FuncParamKind.Normal => FuncParameterKind.Default,
                     S.FuncParamKind.Params => FuncParameterKind.Params,
-                    S.FuncParamKind.Ref => FuncParameterKind.Ref,
                     _ => throw new UnreachableCodeException()
                 };
 

@@ -89,12 +89,11 @@ public class UnitTest1
         var script = SScript(new S.GlobalFuncDeclScriptElement(new S.GlobalFuncDecl(
             null,
             isSequence: false,
-            isRefReturn: true,
-            retType: new S.IdTypeExp("T", default),
+            retType: new S.RefTypeExp(new S.IdTypeExp("T", default)),
             name: "Func",
             typeParams: Arr(new S.TypeParam("T")),
-            parameters: Arr(new S.FuncParam(S.FuncParamKind.Ref, new S.IdTypeExp("T", default), "t")),
-            body: Arr<S.Stmt>(new S.ReturnStmt(new S.ReturnValueInfo(true, new S.IdentifierExp("t", default))))
+            parameters: Arr(new S.FuncParam(S.FuncParamKind.Normal, new S.RefTypeExp(new S.IdTypeExp("T", default)), "t")),
+            body: Arr<S.Stmt>(new S.ReturnStmt(new S.ReturnValueInfo(new S.RefExp(new S.IdentifierExp("t", default)))))
         )));
 
         var moduleName = NormalName("TestModule");
@@ -106,8 +105,8 @@ public class UnitTest1
 
         var typeVar = new TypeVarType(0, NormalName("T"));
         funcDecl.InitFuncReturnAndParams(
-            new FuncReturn(IsRef: true, typeVar),
-            Arr(new FuncParameter(FuncParameterKind.Ref, typeVar, NormalName("t"))));
+            new FuncReturn(new LocalRefType(typeVar)),
+            Arr(new FuncParameter(FuncParameterKind.Default, new LocalRefType(typeVar), NormalName("t"))));
 
         expectedModuleDecl.AddFunc(funcDecl);
 
@@ -122,14 +121,13 @@ public class UnitTest1
         var script = SScript(new S.GlobalFuncDeclScriptElement(new S.GlobalFuncDecl(
             null,
             isSequence: false,
-            isRefReturn: false,
             SVoidTypeExp(),
             "Func",
             Arr(new S.TypeParam("T"), new S.TypeParam("U")),
             Arr(
                 new S.FuncParam(S.FuncParamKind.Normal, SIntTypeExp(), "x"),
                 new S.FuncParam(S.FuncParamKind.Params, new S.IdTypeExp("U", default), "y"),
-                new S.FuncParam(S.FuncParamKind.Ref, new S.IdTypeExp("T", default), "z")
+                new S.FuncParam(S.FuncParamKind.Normal, new S.RefTypeExp(new S.IdTypeExp("T", default)), "z")
             ),
             Arr<S.Stmt>()
         )));
@@ -143,11 +141,11 @@ public class UnitTest1
         var u = new TypeVarType(1, NormalName("U"));
 
         funcDecl.InitFuncReturnAndParams(
-            new FuncReturn(IsRef: false, voidType),
+            new FuncReturn(voidType),
             Arr(
                 new FuncParameter(FuncParameterKind.Default, intType, NormalName("x")),
                 new FuncParameter(FuncParameterKind.Params, u, NormalName("y")),
-                new FuncParameter(FuncParameterKind.Ref, t, NormalName("z"))
+                new FuncParameter(FuncParameterKind.Default, new LocalRefType(t), NormalName("z"))
             )
         );
         expectedModuleDecl.AddFunc(funcDecl);
@@ -176,7 +174,6 @@ public class UnitTest1
                         S.AccessModifier.Private,
                         IsStatic: true,
                         IsSequence: false,
-                        IsRefReturn: false,
                         new S.IdTypeExp("T", default),
                         "Func",
                         Arr(new S.TypeParam("T"), new S.TypeParam("U")),
@@ -244,7 +241,7 @@ public class UnitTest1
         var s_Int = new StructType(factory.MakeStruct(module, sDecl, Arr<IType>(intType)));
 
         sFuncDecl.InitFuncReturnAndParams(
-            new FuncReturn(IsRef: false, sFuncT),
+            new FuncReturn(sFuncT),
             Arr(
                 new FuncParameter(FuncParameterKind.Default, s_Int, NormalName("s")),
                 new FuncParameter(FuncParameterKind.Default, sFuncU, NormalName("u"))

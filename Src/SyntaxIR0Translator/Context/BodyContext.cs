@@ -380,9 +380,9 @@ partial class BodyContext : IMutable<BodyContext>
         return funcReturn;
     }
 
-    public void SetReturn(bool bRef, IType retType)
+    public void SetReturn(IType retType)
     {
         bSetReturn = true;
-        funcReturn = new FuncReturn(bRef, retType);
+        funcReturn = new FuncReturn(retType);
     }
 }

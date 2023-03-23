@@ -29,8 +29,7 @@ struct TopLevelVisitor_BuildingBodyPhase
         for(int i = 0; i < paramCount; i++)
         {
             var parameter = symbol.GetParameter(i);
-            var bRef = (parameter.Kind == FuncParameterKind.Ref);
-            scopeContext.AddLocalVarInfo(bRef, parameter.Type, parameter.Name);
+            scopeContext.AddLocalVarInfo(parameter.Type, parameter.Name);
         }
 
         var stmtVisitor = new StmtVisitor(scopeContext);

@@ -14,8 +14,8 @@ namespace Citron.IR0
     {
         internal Exp() { }
         public abstract IType GetExpType();
-        public abstract void Accept<TVisitor>(ref TVisitor visitor)
-            where TVisitor : struct, IIR0ExpVisitor;
+        public abstract TResult Accept<TVisitor, TResult>(ref TVisitor visitor)
+            where TVisitor : struct, IIR0ExpVisitor<TResult>;
     }
 
     #region Storage
@@ -28,7 +28,7 @@ namespace Citron.IR0
             return Type;
         }
 
-        public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitLoad(this);        
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitLoad(this);        
     }
 
     // a = b
@@ -39,7 +39,7 @@ namespace Citron.IR0
             return Src.GetExpType();
         }
 
-        public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitAssign(this);
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitAssign(this);
     }
 
     #endregion
@@ -53,7 +53,7 @@ namespace Citron.IR0
         {
             return BoolType;
         }
-        public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitBoolLiteral(this);
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitBoolLiteral(this);
     }
 
     // 1    
@@ -63,7 +63,7 @@ namespace Citron.IR0
         {
             return IntType;
         }
-        public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitIntLiteral(this);
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitIntLiteral(this);
     }
 
     // "dskfjslkf $abc "
@@ -74,7 +74,7 @@ namespace Citron.IR0
             return StringType;
         }
 
-        public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitString(this);
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitString(this);
     }
     #endregion Literal
 
@@ -88,7 +88,7 @@ namespace Citron.IR0
             return ListType;
         }
 
-        public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitList(this);
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitList(this);
     }
 
     public record class ListIteratorExp(Loc ListLoc, IType IteratorType) : Exp
@@ -98,7 +98,7 @@ namespace Citron.IR0
             return IteratorType;
         }
 
-        public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitListIterator(this);
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitListIterator(this);
     }
 
     #endregion List
@@ -150,7 +150,7 @@ namespace Citron.IR0
             return Type;
         }
 
-        public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitCallInternalUnaryOperator(this);
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitCallInternalUnaryOperator(this);
     }
 
     public record CallInternalUnaryAssignOperatorExp(InternalUnaryAssignOperator Operator, Loc Operand, IType Type) : Exp
@@ -160,7 +160,7 @@ namespace Citron.IR0
             return Type;        
         }
 
-        public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitCallInternalUnaryAssignOperator(this);
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitCallInternalUnaryAssignOperator(this);
     }
 
     public record CallInternalBinaryOperatorExp(InternalBinaryOperator Operator, Exp Operand0, Exp Operand1, IType Type) : Exp
@@ -170,7 +170,7 @@ namespace Citron.IR0
             return Type;
         }
 
-        public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitCallInternalBinaryOperator(this);
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitCallInternalBinaryOperator(this);
     }
 
     #endregion Call Internal
@@ -184,7 +184,7 @@ namespace Citron.IR0
             return Func.GetReturn().Type;
         }
 
-        public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitCallGlobalFunc(this);
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitCallGlobalFunc(this);
     }
     #endregion Global
 
@@ -197,7 +197,7 @@ namespace Citron.IR0
             return ((ITypeSymbol)Constructor.GetOuter()).MakeType();
         }
 
-        public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitNewClass(this);
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitNewClass(this);
     }
 
     // c.F();
@@ -208,7 +208,7 @@ namespace Citron.IR0
             return ClassMemberFunc.GetReturn().Type;
         }
 
-        public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitCallClassMemberFunc(this);
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitCallClassMemberFunc(this);
     }
 
     // ClassStaticCast    
@@ -219,7 +219,7 @@ namespace Citron.IR0
             return ((ITypeSymbol)Class).MakeType();
         }
 
-        public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitCastClass(this);
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitCastClass(this);
     }
 
     #endregion Class
@@ -233,7 +233,7 @@ namespace Citron.IR0
             return ((ITypeSymbol)Constructor.GetOuter()).MakeType();
         }
 
-        public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitNewStruct(this);
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitNewStruct(this);
     }
 
     // s.F();
@@ -244,7 +244,7 @@ namespace Citron.IR0
             return StructMemberFunc.GetReturn().Type;
         }
 
-        public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitCallStructMemberFunc(this);
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitCallStructMemberFunc(this);
     }
     #endregion Struct
 
@@ -257,7 +257,7 @@ namespace Citron.IR0
             return ((ITypeSymbol)EnumElem).MakeType();
         }
 
-        public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitNewEnumElem(this);
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitNewEnumElem(this);
     }
 
     // 컨테이너를 enumElem -> enum으로
@@ -268,7 +268,7 @@ namespace Citron.IR0
             return ((ITypeSymbol)EnumElem).MakeType();
         }
 
-        public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitCastEnumElemToEnum(this);
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitCastEnumElemToEnum(this);
     }
     #endregion Enum
 
@@ -282,7 +282,7 @@ namespace Citron.IR0
             return Type;
         }
 
-        public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitNewNullable(this);
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitNewNullable(this);
     }
 
     #endregion Nullable
@@ -300,42 +300,81 @@ namespace Citron.IR0
             return ((ITypeSymbol)Lambda).MakeType();
         }
 
-        public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitLambda(this);
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitLambda(this);
     }
 
     // f(2, 3)    
     // Callable은 (() => {}) ()때문에 Loc이어야 한다
-    public record CallValueExp(LambdaSymbol Lambda, Loc Callable, ImmutableArray<Argument> Args) : Exp
+    public record class CallValueExp(LambdaSymbol Lambda, Loc Callable, ImmutableArray<Argument> Args) : Exp
     {
         public override IType GetExpType()
         {
             return Lambda.GetReturn().Type;
         }
 
-        public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitCallValue(this);
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitCallValue(this);
     }
 
     // 이름은 'Func'인데 func<>를 뜻한다
-    public record CallFuncRefExp(Loc Callable, ImmutableArray<Argument> Args, FuncType FuncType) : Exp
+    public record class CallFuncRefExp(Loc Callable, ImmutableArray<Argument> Args, FuncType FuncType) : Exp
     {
         public override IType GetExpType()
         {
             return FuncType.GetReturnType();
         }
 
-        public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitCallFuncRef(this);
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitCallFuncRef(this);
     }
-
-    // lambda(value)를 func<>(interface)로 변환한다
-    public record CastFuncRefExp(Loc LambdaSrc, FuncType FuncType) : Exp
+    
+    // boxed lambda를 func<>(box)로 변환한다
+    public record class CastBoxLambdaToFuncRefExp(Exp BoxLambdaSrc, FuncType FuncType) : Exp
     {
         public override IType GetExpType()
         {
             return FuncType;
         }
 
-        public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitCastFuncRef(this);
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.CastBoxLambdaToFuncRef(this);
     }
+    #endregion
+
+    #region Ref
+
+    // value로부터 box ref 생성
+    // box 3
+    public record class BoxExp(Exp Exp) : Exp
+    {
+        public override IType GetExpType()
+        {
+            return new BoxRefType(Exp.GetExpType());
+        }
+
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitBox(this);
+    }
+    
+    // &i, 대입하려는 대상에 따라서 Box인지 Ref인지 결정한다
+    // int& = i; // localRef(local(i))
+    public record class LocalRefExp(Loc InnerLoc, IType InnerLocType) : Exp
+    {
+        public override IType GetExpType()
+        {
+            return new LocalRefType(InnerLocType);
+        }
+
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitLocalRef(this);
+    }
+
+    // box int& = &i;
+    public record class BoxRefExp(Loc Loc, IType LocType) : Exp
+    {
+        public override IType GetExpType()
+        {
+            return new BoxRefType(LocType);
+        }
+
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitBoxRef(this);
+    }
+
     #endregion
 
     //public record CallSeqFuncExp(Path.Nested SeqFunc , Loc? Instance, ImmutableArray<Argument> Args): Exp

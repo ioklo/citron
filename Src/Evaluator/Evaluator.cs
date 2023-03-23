@@ -144,82 +144,114 @@ namespace Citron
             return (TValue)AllocValue(typeId);
         }
 
-        public RefValue AllocRefValue()
+        struct Allocator : ITypeIdVisitor<Value>
         {
-            return new RefValue();
+            [AllowNull]
+            ModuleDriverContext driverContext;
+
+            public Allocator(ModuleDriverContext driverContext)
+            {
+                this.driverContext = driverContext;
+            }
+
+            Value ITypeIdVisitor<Value>.VisitBoxRef(BoxRefTypeId typeId)
+            {
+                throw new NotImplementedException();
+            }
+
+            Value ITypeIdVisitor<Value>.VisitFunc(FuncTypeId typeId)
+            {
+                throw new NotImplementedException();
+            }
+
+            Value ITypeIdVisitor<Value>.VisitLambda(LambdaTypeId typeId)
+            {
+                throw new NotImplementedException();
+            }
+
+            Value ITypeIdVisitor<Value>.VisitLocalRef(LocalRefTypeId typeId)
+            {
+                return new LocalRefValue();
+            }
+
+            // int? => Nullable<int>
+            // int?? => Nullable<Nullable<int>>
+            // C? => C
+            // C?? => Nullable<C>
+            Value ITypeIdVisitor<Value>.VisitNullable(NullableTypeId typeId)
+            {
+                // TODO: 임시: 원래는 runtime 모듈에서 생성해야 한다
+                throw new NotImplementedException();
+            }
+
+            Value ITypeIdVisitor<Value>.VisitSymbol(SymbolId typeId)
+            {
+                if (typeId.Equals(TypeIds.Bool))
+                {
+                    return new BoolValue();
+                }
+                else if (typeId.Equals(TypeIds.Int))
+                {
+                    return new IntValue();
+                }
+                else if (typeId.Equals(TypeIds.String))
+                {
+                    return new StringValue();
+                }
+                else if (typeId.Equals(TypeIds.Void))
+                {
+                    return VoidValue.Instance;
+                }
+                else if (typeId.IsList(out var _))
+                {
+                    return new ListValue();
+                }
+                else if (typeId.IsSeq())
+                {
+                    return new SeqValue();
+                }
+
+                // 이외에는 드라이버에서 처리
+                var driver = driverContext.GetModuleDriver(typeId);
+                return driver.Alloc(typeId);
+            }
+
+            Value ITypeIdVisitor<Value>.VisitTuple(TupleTypeId typeId)
+            {
+                // TODO: 임시 implementation, 추후 TupleValue제거
+                // (int a, C c) => tuple<int, C>로 runtime 모듈에서 생성해야 한다
+                var values = ImmutableArray.CreateBuilder<Value>(typeId.MemberVarIds.Length);
+                foreach (var memberVarId in typeId.MemberVarIds)
+                {
+                    var value = memberVarId.TypeId.Accept<Allocator, Value>(ref this); // this에 저장할 것이 없기 때문에 바로 호출
+                    values.Add(value);
+                }
+
+                return new TupleValue(values.MoveToImmutable());
+            }
+
+            Value ITypeIdVisitor<Value>.VisitTypeVar(TypeVarTypeId typeId)
+            {
+                throw new NotImplementedException();
+            }
+
+            Value ITypeIdVisitor<Value>.VisitVar(VarTypeId typeId)
+            {
+                throw new NotImplementedException();
+            }
+
+            Value ITypeIdVisitor<Value>.VisitVoid(VoidTypeId typeId)
+            {
+                return VoidValue.Instance;
+            }
         }
 
         // 로컬을 만든다 스코프가 끝나면 제거한다
         // TODO: 인자로 stack을 받는다 public Value AllocValue(EvalStack stack, SymbolId typeId)
         public Value AllocValue(TypeId typeId)
         {
-            // 임시. 원래는 로딩된 runtime에서 해줘야 한다
-            if (typeId.Equals(TypeIds.Bool))
-            {
-                return new BoolValue();
-            }
-            else if (typeId.Equals(TypeIds.Int))
-            {
-                return new IntValue();
-            }
-            else if (typeId.Equals(TypeIds.String))
-            {
-                return new StringValue();
-            }
-            else if (typeId.Equals(TypeIds.Void))
-            {
-                return VoidValue.Instance;
-            }
-            else if (typeId.IsList(out var _))
-            {
-                return new ListValue();
-            }
-            else if (typeId.IsSeq())
-            {
-                return new SeqValue();
-            }
-
-            switch(typeId)
-            {
-                case SymbolId symbolId:
-                    {
-                        // 드라이버에서 처리
-                        var driver = driverContext.GetModuleDriver(symbolId);
-                        return driver.Alloc(symbolId);
-                    }
-
-                // int? => Nullable<int>
-                // int?? => Nullable<Nullable<int>>
-                // C? => C
-                // C?? => Nullable<C>
-                case NullableTypeId:
-                    // TODO: 임시: 원래는 runtime 모듈에서 생성해야 한다
-                    throw new NotImplementedException();
-
-                case VoidTypeId:
-                    return VoidValue.Instance;
-                
-                case TupleTypeId tupleTypeId:
-                    {
-                        // TODO: 임시 implementation, 추후 TupleValue제거
-                        // (int a, C c) => tuple<int, C>로 runtime 모듈에서 생성해야 한다
-                        var values = ImmutableArray.CreateBuilder<Value>(tupleTypeId.MemberVarIds.Length);
-                        foreach(var memberVarId in tupleTypeId.MemberVarIds)
-                        {
-                            var value = AllocValue(memberVarId.TypeId);
-                            values.Add(value);
-                        }
-
-                        return new TupleValue(values.MoveToImmutable());
-                    }                                        
-
-                case TypeVarTypeId:
-                case VarTypeId:
-                    throw new NotImplementedException(); // 에러 처리
-
-                default:
-                    throw new UnreachableCodeException();
-            }
+            var allocator = new Allocator();
+            return typeId.Accept<Allocator, Value>(ref allocator);
         }
 
         public void InitializeClassInstance(SymbolId classId, ImmutableArray<Value>.Builder builder)

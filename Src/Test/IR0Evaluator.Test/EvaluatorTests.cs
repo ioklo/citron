@@ -625,7 +625,7 @@ namespace Citron.Test
             var moduleD = new ModuleDeclSymbol(moduleName, bReference: false);
 
             var fD = new GlobalFuncDeclSymbol(moduleD, Accessor.Private, NormalName("F"), typeParams: default);
-            fD.InitFuncReturnAndParams(new FuncReturn(false, r.VoidType()), parameters: default);
+            fD.InitFuncReturnAndParams(new FuncReturn(r.VoidType()), parameters: default);
             moduleD.AddFunc(fD);
             var f = (GlobalFuncSymbol)fD.MakeOpenSymbol(factory); // for calling
             
@@ -761,16 +761,16 @@ namespace Citron.Test
             // decl and body
             var moduleD = new ModuleDeclSymbol(moduleName, bReference: false);
             var mainD = new GlobalFuncDeclSymbol(moduleD, Accessor.Private, NormalName("Main"), typeParams: default);
-            mainD.InitFuncReturnAndParams(new FuncReturn(false, r.VoidType()), parameters: default);
+            mainD.InitFuncReturnAndParams(new FuncReturn(r.VoidType()), parameters: default);
             moduleD.AddFunc(mainD);
 
             var lambdaD0 = new LambdaDeclSymbol(mainD, new Name.Anonymous(0), parameters: default);
-            lambdaD0.InitReturn(new FuncReturn(false, r.VoidType()));
+            lambdaD0.InitReturn(new FuncReturn(r.VoidType()));
             ((IFuncDeclSymbol)mainD).AddLambda(lambdaD0);
             var lambda0 = (LambdaSymbol)lambdaD0.MakeOpenSymbol(factory);
 
             var lambdaD1 = new LambdaDeclSymbol(mainD, new Name.Anonymous(1), parameters: default);
-            lambdaD0.InitReturn(new FuncReturn(false, r.VoidType()));
+            lambdaD0.InitReturn(new FuncReturn(r.VoidType()));
             ((IFuncDeclSymbol)mainD).AddLambda(lambdaD1);
             var lambda1 = (LambdaSymbol)lambdaD1.MakeOpenSymbol(factory);
 
@@ -810,11 +810,12 @@ namespace Citron.Test
             Assert.True(cur0 == '5' && cur1 == '5');
         }
 
-        // Task Await
+        
+        // Task Await        
         [Fact]
-        public async Task TaskStmt_CapturesLocalVariable()
+        public Task TaskStmt_CapturesLocalVariable()
         {
-            // var count = box 5; // box int& count = box 5;
+            // box var& count = box 5;
             // await 
             // {
             //     task 
@@ -828,75 +829,80 @@ namespace Citron.Test
             //     }
             // }
 
-            // for(int i = 0; i < *labmda.count; i++) i++;
-            Stmt PrintNumbersStmt(LambdaMemberVarSymbol memberVar)
-            {
-                return r.For(
-                    r.IntType(), "i", r.Int(0),
-                    r.CallInternalBinary(InternalBinaryOperator.LessThan_Int_Int_Bool, r.LoadLocalVar("i", r.IntType()), r.Load(r.Deref(r.LoadLambdaMember(memberVar)), r.IntType())),
-                    r.CallInternalUnaryAssign(InternalUnaryAssignOperator.PostfixInc_Int_Int, r.LocalVar("i")),
-                    r.PrintInt(r.LocalVar("i"))
-                );
-            }
+            // box deref가 구현되면 살린다
+            throw new PrerequisiteRequiredException(Prerequisite.BoxRef);
 
-            // decl and body
-            var moduleD = new ModuleDeclSymbol(moduleName, bReference: false);
-            var mainD = new GlobalFuncDeclSymbol(moduleD, Accessor.Private, NormalName("Main"), typeParams: default);
-            mainD.InitFuncReturnAndParams(new FuncReturn(false, r.VoidType()), parameters: default);
-            moduleD.AddFunc(mainD);
+            //// for(int i = 0; i < *labmda.count; i++) i++;
+            //Stmt PrintNumbersStmt(LambdaMemberVarSymbol memberVar)
+            //{
+                
 
-            var lambdaD0 = new LambdaDeclSymbol(mainD, new Name.Anonymous(0), parameters: default);
-            lambdaD0.InitReturn(new FuncReturn(false, r.VoidType()));
-            ((IFuncDeclSymbol)mainD).AddLambda(lambdaD0);
-            var lambdaCountD0 = new LambdaMemberVarDeclSymbol(lambdaD0, r.BoxRefType(r.IntType()), NormalName("count"));
-            lambdaD0.AddMemberVar(lambdaCountD0);
-            var lambda0 = (LambdaSymbol)lambdaD0.MakeOpenSymbol(factory);
-            var lambdaCount0 = factory.MakeLambdaMemberVar(lambda0, lambdaCountD0);
+            //    return r.For(
+            //        r.IntType(), "i", r.Int(0),
+            //        r.CallInternalBinary(InternalBinaryOperator.LessThan_Int_Int_Bool, r.LoadLocalVar("i", r.IntType()), r.Load(r.BoxDeref(r.Load(r.LambdaMember(memberVar), r.BoxRefType()), r.IntType())),
+            //        r.CallInternalUnaryAssign(InternalUnaryAssignOperator.PostfixInc_Int_Int, r.LocalVar("i")),
+            //        r.PrintInt(r.LocalVar("i"))
+            //    );
+            //}
 
-            var lambdaD1 = new LambdaDeclSymbol(mainD, new Name.Anonymous(1), parameters: default);
-            lambdaD0.InitReturn(new FuncReturn(false, r.VoidType()));
-            ((IFuncDeclSymbol)mainD).AddLambda(lambdaD1);            
-            var lambdaCountD1 = new LambdaMemberVarDeclSymbol(lambdaD1, r.BoxRefType(r.IntType()), NormalName("count"));
-            lambdaD1.AddMemberVar(lambdaCountD1);
-            var lambda1 = (LambdaSymbol)lambdaD1.MakeOpenSymbol(factory);
-            var lambdaCount1 = factory.MakeLambdaMemberVar(lambda1, lambdaCountD1);
+            //// decl and body
+            //var moduleD = new ModuleDeclSymbol(moduleName, bReference: false);
+            //var mainD = new GlobalFuncDeclSymbol(moduleD, Accessor.Private, NormalName("Main"), typeParams: default);
+            //mainD.InitFuncReturnAndParams(new FuncReturn(r.VoidType()), parameters: default);
+            //moduleD.AddFunc(mainD);
 
-            // decl
-            var lambdaBody0 = r.StmtBody(lambdaD0, PrintNumbersStmt(lambdaCount0));
-            var lambdaBody1 = r.StmtBody(lambdaD1, PrintNumbersStmt(lambdaCount1));
+            //var lambdaD0 = new LambdaDeclSymbol(mainD, new Name.Anonymous(0), parameters: default);
+            //lambdaD0.InitReturn(new FuncReturn(r.VoidType()));
+            //((IFuncDeclSymbol)mainD).AddLambda(lambdaD0);
+            //var lambdaCountD0 = new LambdaMemberVarDeclSymbol(lambdaD0, r.BoxRefType(r.IntType()), NormalName("count"));
+            //lambdaD0.AddMemberVar(lambdaCountD0);
+            //var lambda0 = (LambdaSymbol)lambdaD0.MakeOpenSymbol(factory);
+            //var lambdaCount0 = factory.MakeLambdaMemberVar(lambda0, lambdaCountD0);
 
-            var mainBody = r.StmtBody(mainD,
-                r.LocalVarDecl(r.BoxRefType(r.IntType()), "count", r.Box(r.Int(5))), // box int& count = box 5
+            //var lambdaD1 = new LambdaDeclSymbol(mainD, new Name.Anonymous(1), parameters: default);
+            //lambdaD0.InitReturn(new FuncReturn(r.VoidType()));
+            //((IFuncDeclSymbol)mainD).AddLambda(lambdaD1);
+            //var lambdaCountD1 = new LambdaMemberVarDeclSymbol(lambdaD1, r.BoxRefType(r.IntType()), NormalName("count"));
+            //lambdaD1.AddMemberVar(lambdaCountD1);
+            //var lambda1 = (LambdaSymbol)lambdaD1.MakeOpenSymbol(factory);
+            //var lambdaCount1 = factory.MakeLambdaMemberVar(lambda1, lambdaCountD1);
 
-                r.Await(
-                    r.Task(lambda0, r.Arg(r.LoadLocalVar("count", r.BoxRefType(r.IntType())))),
-                    r.Assign(r.Deref(r.LocalVar("count")), r.Int(4)), // *count = 4;
-                    r.Task(lambda1, r.Arg(r.LoadLocalVar("count", r.BoxRefType(r.IntType()))))
-                )
-            );
+            //// decl
+            //var lambdaBody0 = r.StmtBody(lambdaD0, PrintNumbersStmt(lambdaCount0));
+            //var lambdaBody1 = r.StmtBody(lambdaD1, PrintNumbersStmt(lambdaCount1));
 
-            var script = r.Script(moduleD, lambdaBody0, lambdaBody1, mainBody);
-            var output = await EvalAsync(script);
+            //var mainBody = r.StmtBody(mainD,
+            //    r.LocalVarDecl(r.BoxRefType(r.IntType()), "count", r.Box(r.Int(5))), // box int& count = box 5
 
-            // 01234 01234 두개가 그냥 섞여 있을 것이다.
+            //    r.Await(
+            //        r.Task(lambda0, r.Arg(r.LoadLocalVar("count", r.BoxRefType(r.IntType())))),
+            //        r.Assign(r.Deref(r.LocalVar("count")), r.Int(4)), // *count = 4;
+            //        r.Task(lambda1, r.Arg(r.LoadLocalVar("count", r.BoxRefType(r.IntType()))))
+            //    )
+            //);
 
-            char cur0 = '0';
-            char cur1 = '0';
+            //var script = r.Script(moduleD, lambdaBody0, lambdaBody1, mainBody);
+            //var output = await EvalAsync(script);
 
-            foreach (var c in output)
-            {
-                if (c == cur0)
-                    cur0++;
-                else if (c == cur1)
-                    cur1++;
-                else
-                {
-                    Assert.True(false, "순서가 맞지 않습니다");
-                    break;
-                }
-            }
+            //// 01234 01234 두개가 그냥 섞여 있을 것이다.
 
-            Assert.True((cur0 == '5' && cur1 == '4') || (cur0 == '4' && cur1 == '5'));
+            //char cur0 = '0';
+            //char cur1 = '0';
+
+            //foreach (var c in output)
+            //{
+            //    if (c == cur0)
+            //        cur0++;
+            //    else if (c == cur1)
+            //        cur1++;
+            //    else
+            //    {
+            //        Assert.True(false, "순서가 맞지 않습니다");
+            //        break;
+            //    }
+            //}
+
+            //Assert.True((cur0 == '5' && cur1 == '4') || (cur0 == '4' && cur1 == '5'));
         }
 
         #endregion Task
@@ -943,16 +949,16 @@ namespace Citron.Test
             // decl and body
             var moduleD = new ModuleDeclSymbol(moduleName, bReference: false);
             var mainD = new GlobalFuncDeclSymbol(moduleD, Accessor.Private, NormalName("Main"), typeParams: default);
-            mainD.InitFuncReturnAndParams(new FuncReturn(false, r.VoidType()), parameters: default);
+            mainD.InitFuncReturnAndParams(new FuncReturn(r.VoidType()), parameters: default);
             moduleD.AddFunc(mainD);
 
             var lambdaD0 = new LambdaDeclSymbol(mainD, new Name.Anonymous(0), parameters: default);
-            lambdaD0.InitReturn(new FuncReturn(false, r.VoidType()));
+            lambdaD0.InitReturn(new FuncReturn(r.VoidType()));
             ((IFuncDeclSymbol)mainD).AddLambda(lambdaD0);
             var lambda0 = (LambdaSymbol)lambdaD0.MakeOpenSymbol(factory);
 
             var lambdaD1 = new LambdaDeclSymbol(mainD, new Name.Anonymous(1), parameters: default);
-            lambdaD0.InitReturn(new FuncReturn(false, r.VoidType()));
+            lambdaD0.InitReturn(new FuncReturn(r.VoidType()));
             ((IFuncDeclSymbol)mainD).AddLambda(lambdaD1);
             var lambda1 = (LambdaSymbol)lambdaD1.MakeOpenSymbol(factory);
 
@@ -1188,13 +1194,13 @@ namespace Citron.Test
 
             var moduleD = new ModuleDeclSymbol(moduleName, bReference: false);
             var fBody = AddGlobalFunc(moduleD, r.VoidType(), "F", Arr((r.LocalRefType(r.IntType()), "i")),
-                r.Assign(r.Deref(r.LocalVar("i")), r.Int(7))
+                r.Assign(r.LocalDeref(r.LocalVar("i")), r.Int(7))
             );
             var f = (GlobalFuncSymbol)fBody.DSymbol.MakeOpenSymbol(factory);
 
             var mainBody = AddGlobalFunc(moduleD, r.VoidType(), "Main",
                 r.LocalVarDecl(r.IntType(), "j", r.Int(3)),
-                r.Call(f, r.RefArg(r.LocalVar("j"))),
+                r.Call(f, r.Arg(r.LocalRef(r.LocalVar("j"), r.IntType()))),
                 r.PrintInt(r.LocalVar("j"))
             );
 
@@ -1209,8 +1215,8 @@ namespace Citron.Test
         //public async Task CallFuncExp_ReturnGlobalRef_WorksProperly()
         //{
         //    // int x = 3;
-        //    // ref int G() { return ref x; }
-        //    // var i = ref G();
+        //    // int& G() { return x; } // return
+        //    // var& i = G();
         //    // i = 4;
         //    // @$x
 
@@ -1222,7 +1228,7 @@ namespace Citron.Test
         //    var module = factory.MakeModule(moduleDecl);
         //    var gFunc = factory.MakeGlobalFunc(module, gFuncDecl, default);
 
-        //    var script = new ScriptBuilder(moduleDecl)
+        //    var script = neDerefExpw ScriptBuilder(moduleDecl)
         //        .Add(gFuncDecl, r.ReturnRef(r.GlobalVar("x")))
         //        .AddTopLevel(
         //            r.GlobalVarDecl(r.IntType(), "x", r.Int(3)),
@@ -1231,7 +1237,7 @@ namespace Citron.Test
         //            r.PrintInt(r.GlobalVar("x"))
         //        )
         //        .Make();
-            
+
         //    var output = await EvalAsync(script);
         //    Assert.Equal("4", output);
         //}
@@ -1692,7 +1698,7 @@ namespace Citron.Test
             systemD.AddType(consoleD);
 
             var writeD = new ClassMemberFuncDeclSymbol(consoleD, Accessor.Public, NormalName("Write"), typeParams: default, bStatic: true);
-            writeD.InitFuncReturnAndParams(new FuncReturn(false, r.VoidType()), Arr(new FuncParameter(FuncParameterKind.Default, r.StringType(), NormalName("arg"))));
+            writeD.InitFuncReturnAndParams(new FuncReturn(r.VoidType()), Arr(new FuncParameter(FuncParameterKind.Default, r.StringType(), NormalName("arg"))));
             consoleD.AddFunc(writeD);
 
             var write = (ClassMemberFuncSymbol)writeD.MakeOpenSymbol(factory);
@@ -1764,18 +1770,18 @@ namespace Citron.Test
             );
 
             var makeLambdaD = new GlobalFuncDeclSymbol(moduleD, Accessor.Private, NormalName("MakeLambda"), typeParams: default);
-            makeLambdaD.InitFuncReturnAndParams(new FuncReturn(IsRef: false, r.FuncType(r.StringType(), r.IntType(), r.IntType(), r.IntType())), parameters: default);
+            makeLambdaD.InitFuncReturnAndParams(new FuncReturn(r.FuncType(r.StringType(), r.IntType(), r.IntType(), r.IntType())), parameters: default);
             moduleD.AddFunc(makeLambdaD);
 
             var lambdaD = new LambdaDeclSymbol(makeLambdaD, new Name.Anonymous(0), r.FuncParams((r.IntType(), "i"), (r.IntType(), "j"), (r.IntType(), "k")));
-            lambdaD.InitReturn(new FuncReturn(IsRef: false, r.StringType()));
+            lambdaD.InitReturn(new FuncReturn(r.StringType()));
             ((IFuncDeclSymbol)makeLambdaD).AddLambda(lambdaD);
 
             var lambda = (LambdaSymbol)lambdaD.MakeOpenSymbol(factory);
 
             var makeLambdaBody = r.StmtBody(makeLambdaD,
                 r.PrintString("MakeLambda"),
-                r.Return(new CastFuncRefExp(new BoxExp(new LambdaExp(lambda, Args: default)), r.FuncType(r.StringType(), r.IntType(), r.IntType(), r.IntType()))) // TODO: interface cast
+                r.Return(new CastBoxLambdaToFuncRefExp(new BoxExp(new LambdaExp(lambda, Args: default)), r.FuncType(r.StringType(), r.IntType(), r.IntType(), r.IntType()))) // TODO: interface cast
             );            
 
             var lambdaBody = r.StmtBody(lambdaD, r.PrintString("TestFunc"));
@@ -1819,11 +1825,11 @@ namespace Citron.Test
 
             var moduleD = new ModuleDeclSymbol(moduleName, bReference: false);
             var mainD = new GlobalFuncDeclSymbol(moduleD, Accessor.Private, NormalName("Main"), typeParams: default);
-            mainD.InitFuncReturnAndParams(new FuncReturn(IsRef: false, r.VoidType()), parameters: default);
+            mainD.InitFuncReturnAndParams(new FuncReturn(r.VoidType()), parameters: default);
             moduleD.AddFunc(mainD);
 
             var lambdaD = new LambdaDeclSymbol(mainD, new Name.Anonymous(0), parameters: default);
-            lambdaD.InitReturn(new FuncReturn(IsRef: false, r.IntType()));
+            lambdaD.InitReturn(new FuncReturn(r.IntType()));
             ((IFuncDeclSymbol)mainD).AddLambda(lambdaD);
 
             var lambdaMemberVarD = new LambdaMemberVarDeclSymbol(lambdaD, r.IntType(), NormalName("x"));
@@ -1902,5 +1908,26 @@ namespace Citron.Test
         }
 
         #endregion List
+
+        #region LocalRef
+        [Fact]
+        public async Task LocalRef_MakeLocalRefFromLocalVariable()
+        {
+            // var i = 0;
+            // var& x = i;
+            // x = 3;
+            // @$i // 3
+            var script = r.Script(
+                r.LocalVarDecl(r.IntType(), "i", r.Int(0)),
+                r.LocalVarDecl(r.LocalRefType(r.IntType()), "x", r.LocalRef(r.LocalVar("i"), r.IntType())),
+                r.Assign(r.LocalDeref(r.LocalVar("x")), r.Int(3)),
+                r.PrintInt(r.LoadLocalVar("i", r.IntType()))
+            );
+
+            var output = await EvalAsync(script);
+            Assert.Equal("3", output);
+        }
+
+        #endregion LocalRef
     }
 }

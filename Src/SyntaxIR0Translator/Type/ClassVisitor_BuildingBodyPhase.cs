@@ -20,8 +20,7 @@ partial struct ClassVisitor_BuilindBodyPhase
         for (int i = 0; i < paramCount; i++)
         {
             var parameter = symbol.GetParameter(i);
-            var bRef = (parameter.Kind == FuncParameterKind.Ref);
-            scopeContext.AddLocalVarInfo(bRef, parameter.Type, parameter.Name);
+            scopeContext.AddLocalVarInfo(parameter.Type, parameter.Name);
         }
 
         var stmtVisitor = new StmtVisitor(scopeContext);
@@ -39,9 +38,8 @@ partial struct ClassVisitor_BuilindBodyPhase
         int paramCount = symbol.GetParameterCount();
         for (int i = 0; i < paramCount; i++)
         {
-            var parameter = symbol.GetParameter(i);
-            var bRef = (parameter.Kind == FuncParameterKind.Ref);
-            scopeContext.AddLocalVarInfo(bRef, parameter.Type, parameter.Name);
+            var parameter = symbol.GetParameter(i);            
+            scopeContext.AddLocalVarInfo(parameter.Type, parameter.Name);
         }
 
         var stmtVisitor = new StmtVisitor(scopeContext);

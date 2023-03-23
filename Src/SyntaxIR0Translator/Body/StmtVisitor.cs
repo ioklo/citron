@@ -28,7 +28,7 @@ partial struct StmtVisitor : S.IStmtVisitor
         var varDecl = stmt.VarDecl;
         var declType = context.MakeType(varDecl.Type);
 
-        var visitor = new VarDeclElemVisitor(varDecl.IsRef, declType, context);
+        var visitor = new VarDeclElemVisitor(declType, context);
 
         foreach (var elemSyntax in varDecl.Elems)
             visitor.VisitElem(elemSyntax);
@@ -70,7 +70,7 @@ partial struct StmtVisitor : S.IStmtVisitor
 
             var bodyContext = context.MakeNestedScopeContext();
             if (ifTestStmt.VarName != null)
-                bodyContext.AddLocalVarInfo(true, enumElemType, new Name.Normal(ifTestStmt.VarName));
+                bodyContext.AddLocalVarInfo(enumElemType, new Name.Normal(ifTestStmt.VarName));
 
             var bodyStmtVisitor = new StmtVisitor(bodyContext);
             bodyStmtVisitor.VisitEmbeddable(ifTestStmt.Body);
@@ -156,7 +156,7 @@ partial struct StmtVisitor : S.IStmtVisitor
             case S.VarDeclForStmtInitializer varDeclInit:
                 {
                     var declType = context.MakeType(varDeclInit.VarDecl.Type);
-                    var visitor = new VarDeclElemVisitor(varDeclInit.VarDecl.IsRef, declType, context);
+                    var visitor = new VarDeclElemVisitor(declType, context);
 
                     foreach (var elem in varDeclInit.VarDecl.Elems)
                         visitor.VisitElem(elem);
@@ -263,46 +263,47 @@ partial struct StmtVisitor : S.IStmtVisitor
             else
             {
                 // 처음으로 보이는 return; 으로 이 함수는 void 리턴을 확정 한다.
-                context.SetReturn(false, context.GetVoidType());
+                context.SetReturn(context.GetVoidType());
             }
 
             context.AddStmt(new R.ReturnStmt(new R.ReturnInfo.None()));
         }
-        else if (returnStmt.Info.Value.IsRef) // return ref i; 또는  () => ref i;
-        {
-            if (!context.IsSetReturn())
-            {
-                // 아직 리턴타입이 안정해졌다면, 힌트타입 없이 분석
-                var returnResult = ExpVisitor.TranslateAsLoc(returnStmt.Info.Value.Value, context, hintType: null, bWrapExpAsLoc: false);
-                if (returnResult == null)
-                    context.AddFatalError(A1203_ReturnStmt_RefTargetIsNotLocation, returnStmt.Info.Value.Value);
+        // DELETE ME: ref가 exp로 편입되면서, 따로 처리할 필요가 없어졌다
+        //else if (returnStmt.Info.Value.IsRef) // return ref i; 또는  () => ref i;, 
+        //{
+        //    if (!context.IsSetReturn())
+        //    {
+        //        // 아직 리턴타입이 안정해졌다면, 힌트타입 없이 분석
+        //        var returnResult = ExpVisitor.TranslateAsLoc(returnStmt.Info.Value.Value, context, hintType: null, bWrapExpAsLoc: false);
+        //        if (returnResult == null)
+        //            context.AddFatalError(A1203_ReturnStmt_RefTargetIsNotLocation, returnStmt.Info.Value.Value);
 
-                var (returnLoc, returnType) = returnResult.Value;
-                context.SetReturn(true, returnType);
-                context.AddStmt(new R.ReturnStmt(new R.ReturnInfo.Ref(returnLoc)));
-            }
-            else
-            {   
-                var funcReturn = context.GetReturn();
+        //        var (returnLoc, returnType) = returnResult.Value;
+        //        context.SetReturn(true, returnType);
+        //        context.AddStmt(new R.ReturnStmt(new R.ReturnInfo.Ref(returnLoc)));
+        //    }
+        //    else
+        //    {   
+        //        var funcReturn = context.GetReturn();
 
-                if (funcReturn == null || !funcReturn.Value.IsRef)
-                    context.AddFatalError(A1201_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType, returnStmt);
+        //        if (funcReturn == null || !funcReturn.Value.IsRef)
+        //            context.AddFatalError(A1201_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType, returnStmt);
 
-                // ref return은 힌트를 쓰지 않는다
-                var returnResult = ExpVisitor.TranslateAsLoc(returnStmt.Info.Value.Value, context, hintType: null, bWrapExpAsLoc: false);
-                if (returnResult == null)
-                    context.AddFatalError(A1203_ReturnStmt_RefTargetIsNotLocation, returnStmt.Info.Value.Value);
+        //        // ref return은 힌트를 쓰지 않는다
+        //        var returnResult = ExpVisitor.TranslateAsLoc(returnStmt.Info.Value.Value, context, hintType: null, bWrapExpAsLoc: false);
+        //        if (returnResult == null)
+        //            context.AddFatalError(A1203_ReturnStmt_RefTargetIsNotLocation, returnStmt.Info.Value.Value);
 
-                var (returnLoc, returnType) = returnResult.Value;
+        //        var (returnLoc, returnType) = returnResult.Value;
 
-                // 현재 함수 시그니처랑 맞춰서 같은지 확인한다
-                // ExactMatch여야 한다
-                if (!returnType.Equals(funcReturn.Value))
-                    context.AddFatalError(A1201_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType, returnStmt);
+        //        // 현재 함수 시그니처랑 맞춰서 같은지 확인한다
+        //        // ExactMatch여야 한다
+        //        if (!returnType.Equals(funcReturn.Value))
+        //            context.AddFatalError(A1201_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType, returnStmt);
 
-                context.AddStmt(new R.ReturnStmt(new R.ReturnInfo.Ref(returnLoc)));
-            }
-        }
+        //        context.AddStmt(new R.ReturnStmt(new R.ReturnInfo.Ref(returnLoc)));
+        //    }
+        //}
         else // 일반적인 리턴 값일 경우
         {
             // 아직 리턴값이 정해지지 않은 경우
@@ -312,7 +313,7 @@ partial struct StmtVisitor : S.IStmtVisitor
                 var retValueExp = ExpVisitor.TranslateAsExp(returnStmt.Info.Value.Value, context, hintType: null);
 
                 // 리턴값이 안 적혀 있었으므로 적는다
-                context.SetReturn(false, retValueExp.GetExpType());
+                context.SetReturn(retValueExp.GetExpType());
                 context.AddStmt(new R.ReturnStmt(new R.ReturnInfo.Expression(retValueExp)));
             }
             else
@@ -322,10 +323,6 @@ partial struct StmtVisitor : S.IStmtVisitor
                 // 생성자였다면
                 if (funcReturn == null)
                     throw new NotImplementedException(); // 에러 처리
-
-                // TODO: ref 고려
-                if (funcReturn.Value.IsRef)
-                    throw new NotImplementedException();
 
                 // 리턴타입을 힌트로 사용한다
                 // 현재 함수 시그니처랑 맞춰서 같은지 확인한다
@@ -441,7 +438,7 @@ partial struct StmtVisitor : S.IStmtVisitor
                 throw new NotImplementedException();
 
             // 루프 컨텍스트에 로컬을 하나 추가하고
-            bodyContext.AddLocalVarInfo(false, itemType, new Name.Normal(foreachStmt.VarName));
+            bodyContext.AddLocalVarInfo(itemType, new Name.Normal(foreachStmt.VarName));
 
             var bodyVisitor = new StmtVisitor(bodyContext);
             // 본문 분석
@@ -488,7 +485,7 @@ partial struct StmtVisitor : S.IStmtVisitor
                     throw new NotImplementedException();
 
                 // 루프 컨텍스트에 로컬을 하나 추가하고
-                bodyContext.AddLocalVarInfo(false, itemType, new Name.Normal(foreachStmt.VarName));
+                bodyContext.AddLocalVarInfo(itemType, new Name.Normal(foreachStmt.VarName));
 
                 // 본문 분석
                 var bodyVisitor = new StmtVisitor(bodyContext);

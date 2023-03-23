@@ -35,7 +35,7 @@ abstract record class ExpResult
     #region Body
     public record class TypeVar(TypeVarType Type) : Valid;
     public record class ThisVar(IType Type) : Valid;
-    public record class LocalVar(bool IsRef, IType Type, Name Name) : Valid;
+    public record class LocalVar(IType Type, Name Name) : Valid;
     public record class LambdaMemberVar(LambdaMemberVarSymbol MemberVar) : Valid;
     #endregion
 

@@ -103,7 +103,6 @@ namespace NS1
                     Arr<NamespaceElement>(new GlobalFuncDeclNamespaceElement(new GlobalFuncDecl(
                             null,
                             isSequence: false, 
-                            isRefReturn: false,
                             SVoidTypeExp(),
                             "F",
                             typeParams: default,
@@ -184,7 +183,6 @@ public struct S<T> : B, I
                         null,
                         IsStatic: true,
                         IsSequence: false,
-                        IsRefReturn: false,
                         SIdTypeExp("void"),
                         "Func",
                         Arr(new TypeParam("X")),
@@ -196,7 +194,6 @@ public struct S<T> : B, I
                         AccessModifier.Private,
                         IsStatic: false,
                         IsSequence: true,
-                        IsRefReturn: false,
                         SIdTypeExp("int"),
                         "F2",
                         Arr(new TypeParam("T")),

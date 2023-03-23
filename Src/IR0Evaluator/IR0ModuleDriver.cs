@@ -34,11 +34,13 @@ namespace Citron
                 builder.Add(globalFuncSymbol.GetParameter(i).Name, args[i]);
 
             var typeContext = TypeContext.Make(globalFunc);
-            var evalContext = globalContext.NewEvalContext(typeContext, thisValue: null, retValue);
+            var bodyContext = globalContext.NewBodyContext(typeContext, thisValue: null, retValue);
             var localContext = new IR0LocalContext(builder.ToImmutable(), default);
 
-            var evaluator = new IR0Evaluator(globalContext, evalContext, localContext);
-            return evaluator.EvalBodySkipYieldAsync(body);
+            var context = new IR0EvalContext(globalContext, bodyContext, localContext);
+            var stmtEvaluator = new IR0StmtEvaluator(context);
+
+            return stmtEvaluator.EvalBodySkipYieldAsync(body);
         }
 
         // 이 모듈에 해당하는 타입만 할당한다
@@ -220,7 +222,7 @@ namespace Citron
         ValueTask IModuleDriver.ExecuteGlobalFuncAsync(SymbolId globalFuncId, ImmutableArray<Value> args, Value retValue)
         {
             var typeContext = TypeContext.Make(globalFuncId);
-            var evalContext = globalContext.NewEvalContext(typeContext, null, retValue);
+            var evalContext = globalContext.NewBodyContext(typeContext, null, retValue);
             var globalFunc = globalContext.LoadSymbol<GlobalFuncSymbol>(globalFuncId);
 
             var paramCount = globalFunc.GetParameterCount();
@@ -233,15 +235,17 @@ namespace Citron
             var localContext = new IR0LocalContext(builder.ToImmutable(), default);
             var body = globalContext.GetBodyStmt(globalFuncId);
 
-            var evaluator = new IR0Evaluator(globalContext, evalContext, localContext);
-            return evaluator.EvalBodySkipYieldAsync(body);
+            var context = new IR0EvalContext(globalContext, evalContext, localContext);
+            var stmtEvaluator = new IR0StmtEvaluator(context);
+
+            return stmtEvaluator.EvalBodySkipYieldAsync(body);
         }
 
         ValueTask IModuleDriver.ExecuteClassConstructor(SymbolId constructor, ClassValue thisValue, ImmutableArray<Value> args)
         {
             var typeContext = TypeContext.Make(constructor);
 
-            var evalContext = globalContext.NewEvalContext(typeContext, thisValue, VoidValue.Instance);
+            var evalContext = globalContext.NewBodyContext(typeContext, thisValue, VoidValue.Instance);
             var constructorSymbol = globalContext.LoadSymbol<ClassConstructorSymbol>(constructor);
 
             var paramCount = constructorSymbol.GetParameterCount();
@@ -254,8 +258,10 @@ namespace Citron
             var localContext = new IR0LocalContext(builder.ToImmutable(), default);
             var body = globalContext.GetBodyStmt(constructor);
 
-            var evaluator = new IR0Evaluator(globalContext, evalContext, localContext);
-            return evaluator.EvalBodySkipYieldAsync(body);
+            var context = new IR0EvalContext(globalContext, evalContext, localContext);
+            var stmtEvaluator = new IR0StmtEvaluator(context);
+
+            return stmtEvaluator.EvalBodySkipYieldAsync(body);
         }
 
         ValueTask IModuleDriver.ExecuteClassMemberFuncAsync(SymbolId memberFunc, Value? thisValue, ImmutableArray<Value> args, Value retValue)

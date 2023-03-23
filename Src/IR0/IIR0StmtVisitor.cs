@@ -1,27 +1,26 @@
 ﻿namespace Citron.IR0;
 
 // algebraic data type별로 visitor가 하나씩 생긴다
-public interface IIR0StmtVisitor
+public interface IIR0StmtVisitor<TResult>
 {
-    void VisitCommand(CommandStmt stmt);
-    void VisitLocalVarDecl(LocalVarDeclStmt stmt);
-    void VisitLocalRefVarDecl(LocalRefVarDeclStmt localRefVarDeclStmt);
-    void VisitIf(IfStmt stmt);
-    void VisitIfTestClass(IfTestClassStmt stmt);
-    void VisitIfTestEnumElem(IfTestEnumElemStmt stmt);
-    void VisitFor(ForStmt stmt);
-    void VisitContinue(ContinueStmt stmt);
-    void VisitBreak(BreakStmt stmt);
-    void VisitReturn(ReturnStmt stmt);
-    void VisitBlock(BlockStmt stmt);
-    void VisitBlank(BlankStmt stmt);
-    void VisitExp(ExpStmt stmt);
-    void VisitTask(TaskStmt stmt);
-    void VisitAwait(AwaitStmt stmt);
-    void VisitAsync(AsyncStmt stmt);
-    void VisitForeach(ForeachStmt stmt);
-    void VisitYield(YieldStmt stmt);
-    void VisitCallClassConstructor(CallClassConstructorStmt stmt);
-    void VisitCallStructConstructor(CallStructConstructorStmt stmt);
-    void VisitDirective(DirectiveStmt stmt);
+    TResult VisitCommand(CommandStmt stmt);
+    TResult VisitLocalVarDecl(LocalVarDeclStmt stmt);
+    TResult VisitIf(IfStmt stmt);
+    TResult VisitIfTestClass(IfTestClassStmt stmt);
+    TResult VisitIfTestEnumElem(IfTestEnumElemStmt stmt);
+    TResult VisitFor(ForStmt stmt);
+    TResult VisitContinue(ContinueStmt stmt);
+    TResult VisitBreak(BreakStmt stmt);
+    TResult VisitReturn(ReturnStmt stmt);
+    TResult VisitBlock(BlockStmt stmt);
+    TResult VisitBlank(BlankStmt stmt);
+    TResult VisitExp(ExpStmt stmt);
+    TResult VisitTask(TaskStmt stmt);
+    TResult VisitAwait(AwaitStmt stmt);
+    TResult VisitAsync(AsyncStmt stmt);
+    TResult VisitForeach(ForeachStmt stmt);
+    TResult VisitYield(YieldStmt stmt);
+    TResult VisitCallClassConstructor(CallClassConstructorStmt stmt);
+    TResult VisitCallStructConstructor(CallStructConstructorStmt stmt);
+    TResult VisitDirective(DirectiveStmt stmt);
 }

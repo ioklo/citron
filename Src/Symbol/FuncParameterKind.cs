@@ -4,5 +4,4 @@ public enum FuncParameterKind
 {
     Default,
     Params,
-    Ref,        
 }

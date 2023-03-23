@@ -523,7 +523,7 @@ var i = s.F(2);
 
                     new S.StructMemberVarDecl(null, SIntTypeExp(), Arr("x")),
                     new S.StructMemberFuncDecl(null, false, false, false, SIntTypeExp(), "F", default, Arr(new S.FuncParam(S.FuncParamKind.Normal, SIntTypeExp(), "y")), SBlock(
-                        new S.ReturnStmt(new S.ReturnValueInfo(false, new S.BinaryOpExp(S.BinaryOpKind.Add, SId("x"), SId("y"))))
+                        new S.ReturnStmt(new S.ReturnValueInfo(new S.BinaryOpExp(S.BinaryOpKind.Add, SId("x"), SId("y"))))
                     ))
                 ))),
 

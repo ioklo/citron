@@ -28,7 +28,7 @@ namespace Citron.Analysis
             var func = new ClassMemberFuncDeclSymbol(declSymbol, accessModifier, new Name.Normal(syntax.Name), typeParams, syntax.IsStatic);
             declSymbol.AddFunc(func);
 
-            var (funcReturn, funcParams) = context.MakeFuncReturnAndParams(func, syntax.IsRefReturn, syntax.RetType, syntax.Parameters);
+            var (funcReturn, funcParams) = context.MakeFuncReturnAndParams(func, syntax.RetType, syntax.Parameters);
             func.InitFuncReturnAndParams(funcReturn, funcParams);
 
             context.AddBuildingBodyPhaseTask(context =>

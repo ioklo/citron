@@ -1,180 +1,91 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
-using Citron.Collections;
+﻿using Citron.Collections;
+using Citron.IR0;
 using Citron.Symbol;
-using R = Citron.IR0;
-using Void = Citron.Infra.Void;
+using System;
+using System.Threading.Tasks;
+using System.Threading.Tasks.Sources;
 
 namespace Citron
 {
-    // 함수 실행단위
-    public partial class IR0EvalContext
+    partial class IR0EvalContext
     {
-        Evaluator evaluator;
+        IR0GlobalContext globalContext;
+        IR0BodyContext bodyContext;
+        IR0LocalContext localContext;
 
-        TypeContext typeContext;
-        IR0EvalFlowControl flowControl;
-        Value? thisValue;
-        Value retValue;
-        Value? yieldValue;
-
-        public IR0EvalContext(Evaluator evaluator, Value retValue)
+        public IR0EvalContext(IR0GlobalContext globalContext, IR0BodyContext bodyContext, IR0LocalContext localContext)
         {
-            this.evaluator = evaluator;
-            this.typeContext = TypeContext.Empty;
-            this.flowControl = IR0EvalFlowControl.None;
-            this.thisValue = null;
-            this.retValue = retValue;
+            this.globalContext = globalContext;
+            this.bodyContext = bodyContext;
+            this.localContext = localContext;
         }
 
-        public IR0EvalContext(
-            Evaluator evaluator,
-            TypeContext typeContext,
-            IR0EvalFlowControl flowControl,
-            Value? thisValue,
-            Value retValue)
+        public IR0EvalContext NewLambdaContext(LambdaValue lambdaValue, Value result, ImmutableDictionary<Name, Value> localVars)
         {
-            this.evaluator = evaluator;
-            this.typeContext = typeContext;
-            this.flowControl = flowControl;
-            this.thisValue = thisValue;
-            this.retValue = retValue;
+            var newBodyContext = bodyContext.NewLambdaContext(lambdaValue, result);
+            var newLocalContext = new IR0LocalContext(localVars, tasks: default);
+
+            return new IR0EvalContext(globalContext, newBodyContext, newLocalContext);
         }
 
-        public bool IsFlowControl(IR0EvalFlowControl testValue)
+        public IR0EvalContext NewScopeContext()
         {
-            return flowControl == testValue;
+            var newLocalContext = new IR0LocalContext(localContext);
+            return new IR0EvalContext(globalContext, bodyContext, newLocalContext);
         }
 
-        public IR0EvalFlowControl GetFlowControl()
+        public IR0EvalContext NewTaskLocalContext()
         {
-            return flowControl;
-        }
-
-        public void SetFlowControl(IR0EvalFlowControl newFlowControl)
-        {
-            flowControl = newFlowControl;
-        }
-
-        public Value GetRetValue()
-        {
-            return retValue!;
-        }
-
-        // struct 이면 refValue, boxed struct 이면 boxValue, class 이면 ClassValue
-        public Value GetThisValue()
-        {
-            Debug.Assert(thisValue != null);
-            return thisValue;
+            var newLocalContext = localContext.NewTaskLocalContext();
+            return new IR0EvalContext(globalContext, bodyContext, newLocalContext);
         }
         
-        public void SetYieldValue(Value value)
-        {
-            yieldValue = value;
-        }
+        #region GlobalContext
+        public Value GetStructStaticMemberValue(SymbolId symbolId) => globalContext.GetStructStaticMemberValue(symbolId);
+        public Value GetStructMemberValue(StructValue structValue, SymbolId symbolId) => globalContext.GetStructMemberValue(structValue, symbolId);
+        public Value GetClassStaticMemberValue(SymbolId symbolId) => globalContext.GetClassStaticMemberValue(symbolId);
+        public Value GetClassMemberValue(ClassValue classValue, SymbolId symbolId) => globalContext.GetClassMemberValue(classValue, symbolId);
+        public Value GetEnumElemMemberValue(EnumElemValue enumElemValue, SymbolId symbolId) => globalContext.GetEnumElemMemberValue(enumElemValue, symbolId);
+        public IType? GetListItemType(IType listType) => globalContext.GetListItemType(listType);
+        public ImmutableArray<Stmt> GetBodyStmt(SymbolId symbolId) => globalContext.GetBodyStmt(symbolId);
+        public Task ExecuteCommandAsync(string cmdText) => globalContext.ExecuteCommandAsync(cmdText);
+        #endregion GlobalContext
 
-        public Value GetYieldValue()
-        {
-            return yieldValue!;
-        }
+        #region BodyContext
+        public Value AllocValue(IType type) => bodyContext.AllocValue(type);
+        public TValue AllocValue<TValue>(TypeId typeId) where TValue : Value => bodyContext.AllocValue<TValue>(typeId);
+        public Value GetThisValue() => bodyContext.GetThisValue();
 
-        // typeContext와 연관이 있으므로 GlobalContext가 아니라 EvalContext에서 수행한다
-        public ClassInstance AllocClassInstance(ClassSymbol classSymbol)
-        {
-            var classId = classSymbol.GetSymbolId();
-            var appliedClassId = typeContext.ApplySymbol(classId);
-            
-            return evaluator.AllocClassInstance(appliedClassId);
-        }
-
-        public RefValue AllocRefValue()
-        {
-            return evaluator.AllocRefValue();
-        }
-
-        public TValue AllocValue<TValue>(TypeId typeId)
-            where TValue : Value
-        {
-            var appliedTypeId = typeContext.Apply(typeId);
-            return evaluator.AllocValue<TValue>(appliedTypeId);
-        }
-
-        public Value AllocValue(TypeId typeId)
-        {
-            return AllocValue<Value>(typeId);
-        }
-
-        public Value AllocValue(IType type)
-        {
-            var typeId = type.GetTypeId();
-            return AllocValue<Value>(typeId);
-        }
-
-        public ValueTask ExecuteGlobalFuncAsync(GlobalFuncSymbol globalFunc, ImmutableArray<Value> args, Value retValue)
-        {
-            var globalFuncId = globalFunc.GetSymbolId();
-            var appliedGlobalFuncId = typeContext.ApplySymbol(globalFuncId);
-            return evaluator.ExecuteGlobalFuncAsync(appliedGlobalFuncId, args, retValue);
-        }
+        // typeContext때문에 global이 아니라 bodyContext에서 수행해야 한다
+        public ValueTask ExecuteGlobalFuncAsync(GlobalFuncSymbol func, ImmutableArray<Value> args, Value result) => bodyContext.ExecuteGlobalFuncAsync(func, args, result);
 
         public void ExecuteClassConstructor(ClassConstructorSymbol constructor, ClassValue thisValue, ImmutableArray<Value> args)
-        {
-            var constructorId = constructor.GetSymbolId();
-            var appliedConstructorId = typeContext.ApplySymbol(constructorId);
-
-            evaluator.ExecuteClassConstructor(appliedConstructorId, thisValue, args);
-        }
+            => bodyContext.ExecuteClassConstructor(constructor, thisValue, args);
+        public ValueTask ExecuteClassMemberFuncAsync(ClassMemberFuncSymbol classMemberFunc, Value? thisValue, ImmutableArray<Value> args, Value result)
+            => bodyContext.ExecuteClassMemberFuncAsync(classMemberFunc, thisValue, args, result);
+        public ClassInstance AllocClassInstance(ClassSymbol classSymbol) 
+            => bodyContext.AllocClassInstance(classSymbol);
 
         public void ExecuteStructConstructor(StructConstructorSymbol constructor, StructValue thisValue, ImmutableArray<Value> args)
-        {
-            var constructorId = constructor.GetSymbolId();
-            var appliedConstructorId = typeContext.ApplySymbol(constructorId);
-
-            evaluator.ExecuteStructConstructor(appliedConstructorId, thisValue, args);
-        }
-
-        public ValueTask ExecuteClassMemberFuncAsync(ClassMemberFuncSymbol classMemberFunc, Value? thisValue, ImmutableArray<Value> args, Value result)
-        {
-            var funcId = classMemberFunc.GetSymbolId();
-            var appliedFuncId = typeContext.ApplySymbol(funcId);
-
-            return evaluator.ExecuteClassMemberFuncAsync(appliedFuncId, thisValue, args, result);
-        }
-
+            => bodyContext.ExecuteStructConstructor(constructor, thisValue, args);
         public ValueTask ExecuteStructMemberFuncAsync(StructMemberFuncSymbol structMemberFunc, Value? thisValue, ImmutableArray<Value> args, Value result)
-        {
-            var funcId = structMemberFunc.GetSymbolId();
-            var appliedFuncId = typeContext.ApplySymbol(funcId);
-
-            return evaluator.ExecuteStructMemberFuncAsync(appliedFuncId, thisValue, args, result);
-        }
-
-        public IR0EvalContext NewLambdaContext(LambdaValue lambdaValue, Value result)
-        {
-            return new IR0EvalContext(evaluator, typeContext, IR0EvalFlowControl.None, lambdaValue, result);
-        }
+            => bodyContext.ExecuteStructMemberFuncAsync(structMemberFunc, thisValue, args, result);
         
-        // value는 TypeContext없는 실제 타입을 가지고 있고,
-        // class는 TypeContext를 반영해야 한다
-        public bool IsDerivedClassOf(ClassValue value, ClassSymbol @class)
-        {
-            var targetId = value.GetActualType();
+        public IR0EvalFlowControl GetFlowControl() => bodyContext.GetFlowControl();
+        public void SetFlowControl(IR0EvalFlowControl newFlowControl) => bodyContext.SetFlowControl(newFlowControl);
+        public Value GetRetValue() => bodyContext.GetRetValue();
+        public Value GetYieldValue() => bodyContext.GetYieldValue();
 
-            var classId = @class.GetSymbolId();
-            var appliedClassId = typeContext.ApplySymbol(classId);
+        public bool IsEnumElem(EnumValue value, EnumElemSymbol enumElem) => bodyContext.IsEnumElem(value, enumElem);
+        public bool IsDerivedClassOf(ClassValue value, ClassSymbol @class) => bodyContext.IsDerivedClassOf(value, @class);
+        #endregion BodyContext
 
-            return evaluator.IsDerivedClassOf(targetId, appliedClassId);
-        }
+        #region LocalContext
+        public Value GetLocalValue(Name name) => localContext.GetLocalValue(name);
+        public void AddLocalVar(Name name, Value value) => localContext.AddLocalVar(name, value);
 
-        public bool IsEnumElem(EnumValue value, EnumElemSymbol enumElem)
-        {
-            var enumElemId = enumElem.GetSymbolId();
-            var appliedEnumElemId = typeContext.ApplySymbol(enumElemId);
-
-            return evaluator.IsEnumElem(value, appliedEnumElemId);
-        }
+        public void AddTask(Task task) => localContext.AddTask(task);
+        public Task WaitAllAsync() => localContext.WaitAllAsync();
+        #endregion LocalContext
     }
 }

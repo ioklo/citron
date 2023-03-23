@@ -37,7 +37,7 @@ namespace Citron.Analysis
             var declSymbol = new StructMemberFuncDeclSymbol(
                 structDeclSymbol, accessor, syntax.IsStatic, new Name.Normal(syntax.Name), typeParams);
 
-            var (funcReturn, funcParams)= context.MakeFuncReturnAndParams(declSymbol, syntax.IsRefReturn, syntax.RetType, syntax.Parameters);
+            var (funcReturn, funcParams)= context.MakeFuncReturnAndParams(declSymbol, syntax.RetType, syntax.Parameters);
             declSymbol.InitFuncReturnAndParams(funcReturn, funcParams);
 
             structDeclSymbol.AddFunc(declSymbol);

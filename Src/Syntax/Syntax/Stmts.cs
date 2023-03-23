@@ -64,7 +64,6 @@ namespace Citron.Syntax
     [AutoConstructor, ImplementIEquatable]
     public partial struct ReturnValueInfo
     {
-        public bool IsRef { get; }
         public Exp Value { get; }
     }
 

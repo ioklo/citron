@@ -8,7 +8,6 @@ namespace Citron.Syntax
     {
         Normal,
         Params,
-        Ref,
     }
 
     // int a, out int&a

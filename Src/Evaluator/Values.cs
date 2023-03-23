@@ -95,19 +95,19 @@ namespace Citron
         {
             throw new NotImplementedException();
         }
-    }
+    }    
 
-    // ref T
-    public class RefValue : Value
+    // T&
+    public class LocalRefValue : Value
     {
         Value? value;
 
-        public RefValue()
+        public LocalRefValue()
         {
             value = null;
         }
 
-        public RefValue(Value value)
+        public LocalRefValue(Value value)
         {
             this.value = value;
         }
@@ -115,7 +115,7 @@ namespace Citron
         public override void SetValue(Value srcValue)
         {
             // shallow copy
-            this.value = ((RefValue)srcValue).value;
+            this.value = ((LocalRefValue)srcValue).value;
         }
 
         public void SetTarget(Value value)
@@ -126,6 +126,18 @@ namespace Citron
         public Value GetTarget()
         {
             return value!;
+        }
+    }
+
+    // box T&
+    public class BoxRefValue : Value
+    {
+        // Instance holder;
+        Value? value;
+
+        public override void SetValue(Value value)
+        {
+            throw new NotImplementedException();
         }
     }
 

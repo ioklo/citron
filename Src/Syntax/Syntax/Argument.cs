@@ -7,6 +7,5 @@ namespace Citron.Syntax
     {
         public record class Normal(Exp Exp) : Argument;
         public record class Params(Exp Exp) : Argument;
-        public record class Ref(Exp Exp) : Argument;
     }
 }

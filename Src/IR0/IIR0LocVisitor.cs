@@ -2,17 +2,16 @@
 
 namespace Citron.IR0;
 
-public interface IIR0LocVisitor
+public interface IIR0LocVisitor<TResult>
 {
-    void VisitTemp(TempLoc loc);
-    void VisitLocalVar(LocalVarLoc loc);
-    void VisitLambdaMemberVar(LambdaMemberVarLoc loc);
-    void VisitListIndexer(ListIndexerLoc loc);        
-    void VisitStructMember(StructMemberLoc loc);
-    void VisitClassMember(ClassMemberLoc loc);
-    void VisitEnumElemMember(EnumElemMemberLoc loc);
-    void VisitThis(ThisLoc loc);
-    void VisitDerefLoc(DerefLocLoc loc);
-    void VisitDerefExp(DerefExpLoc loc);
-    void VisitNullableValue(NullableValueLoc loc);
+    TResult VisitTemp(TempLoc loc);
+    TResult VisitLocalVar(LocalVarLoc loc);
+    TResult VisitLambdaMemberVar(LambdaMemberVarLoc loc);
+    TResult VisitListIndexer(ListIndexerLoc loc);        
+    TResult VisitStructMember(StructMemberLoc loc);
+    TResult VisitClassMember(ClassMemberLoc loc);
+    TResult VisitEnumElemMember(EnumElemMemberLoc loc);
+    TResult VisitThis(ThisLoc loc);
+    TResult VisitLocalDeref(LocalDeref loc);
+    TResult VisitNullableValue(NullableValueLoc loc);
 }

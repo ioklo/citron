@@ -5,7 +5,7 @@ using R = Citron.IR0;
 
 namespace Citron.IR0Analyzer.NullRefAnalysis
 {
-    struct LocAnalyzer : IIR0LocVisitorWithRet<AbstractValue>
+    struct LocAnalyzer : IIR0LocVisitor<AbstractValue>
     {
         GlobalContext globalContext;
         LocalContext context;
@@ -53,14 +53,7 @@ namespace Citron.IR0Analyzer.NullRefAnalysis
 
             throw new NotImplementedException();
         }
-
-        public AbstractValue VisitDerefExpLoc(R.DerefExpLoc loc)
-        {
-            // 일단 ref는 생각하지 않기로
-            // 간단하게 하고 싶었는데 너무 복잡해지고 있다
-            throw new NotImplementedException();
-        }
-
+        
         public AbstractValue VisitDerefLocLoc(R.DerefLocLoc loc)
         {
             throw new NotImplementedException();

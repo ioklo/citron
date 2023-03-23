@@ -321,7 +321,8 @@ namespace TestMiscSourceGenerator
         {
             foreach (var type in baseType.Assembly.GetTypes())
             {
-                if (baseType.Equals(type.BaseType))
+                // if (baseType.Equals(type.BaseType))
+                if (type.IsAssignableTo(baseType))
                     yield return type;
             }
         }

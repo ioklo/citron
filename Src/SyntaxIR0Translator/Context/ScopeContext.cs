@@ -86,9 +86,9 @@ partial class ScopeContext : IMutable<ScopeContext>
         return (newScopeContext, lambda);
     }
 
-    public void AddLocalVarInfo(bool bRef, IType type, Name name)
+    public void AddLocalVarInfo(IType type, Name name)
     {
-        localVarInfos = localVarInfos.SetItem(name, new LocalVarInfo(bRef, type, name));
+        localVarInfos = localVarInfos.SetItem(name, new LocalVarInfo(type, name));
     }
 
     public LocalVarInfo? GetLocalVarInfo(Name varName)
@@ -122,7 +122,7 @@ partial class ScopeContext : IMutable<ScopeContext>
     {
         // scope context는 local을 검색한다
         if (localVarInfos.TryGetValue(name, out var info))
-            return new ExpResult.LocalVar(info.IsRef, info.Type, name);
+            return new ExpResult.LocalVar(info.Type, name);
 
         if (parentContext != null)
             return parentContext.ResolveIdentifier(name, typeArgs);

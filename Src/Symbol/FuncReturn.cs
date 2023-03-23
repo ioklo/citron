@@ -2,20 +2,30 @@
 using Pretune;
 
 namespace Citron.Symbol
-{       
-    public record struct FuncReturn(bool IsRef, IType Type) : ICyclicEqualityComparableStruct<FuncReturn>, ISerializable
+{
+    public record struct FuncReturnId(TypeId TypeId) : ISerializable
+    {   
+        void ISerializable.DoSerialize(ref SerializeContext context)
+        {
+            context.SerializeRef(nameof(TypeId), TypeId);
+        }
+    }
+
+    public record struct FuncReturn(IType Type) : ICyclicEqualityComparableStruct<FuncReturn>, ISerializable
     {
+        public FuncReturnId GetId()
+        {
+            return new FuncReturnId(Type.GetTypeId());
+        }
+
         public FuncReturn Apply(TypeEnv typeEnv)
         {
             var appliedType = Type.Apply(typeEnv);
-            return new FuncReturn(IsRef, appliedType);
+            return new FuncReturn(appliedType);
         }
 
         bool ICyclicEqualityComparableStruct<FuncReturn>.CyclicEquals(ref FuncReturn other, ref CyclicEqualityCompareContext context)
-        {
-            if (!IsRef.Equals(other.IsRef))
-                return false;
-
+        {   
             if (!context.CompareClass(Type, other.Type))
                 return false;
 
@@ -23,8 +33,7 @@ namespace Citron.Symbol
         }
 
         void ISerializable.DoSerialize(ref SerializeContext context)
-        {
-            context.SerializeBool(nameof(IsRef), IsRef);
+        {   
             context.SerializeRef(nameof(Type), Type);
         }
     }

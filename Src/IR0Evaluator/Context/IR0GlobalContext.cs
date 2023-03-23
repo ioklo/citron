@@ -33,14 +33,14 @@ namespace Citron
             return loader.LoadSymbol<TSymbol>(symbolId.Path);
         }
         
-        public IR0EvalContext NewEvalContext(TypeContext typeContext, Value? thisValue, Value retValue)
+        public IR0BodyContext NewBodyContext(TypeContext typeContext, Value? thisValue, Value retValue)
         {   
-            return new IR0EvalContext(evaluator, typeContext, IR0EvalFlowControl.None, thisValue, retValue);
+            return new IR0BodyContext(evaluator, typeContext, IR0EvalFlowControl.None, thisValue, retValue);
         }
 
-        public IR0EvalContext NewEvalContext()
+        public IR0BodyContext NewBodyContext()
         {
-            return new IR0EvalContext(evaluator, TypeContext.Empty, IR0EvalFlowControl.None, null, VoidValue.Instance);
+            return new IR0BodyContext(evaluator, TypeContext.Empty, IR0EvalFlowControl.None, null, VoidValue.Instance);
         }
 
         public Value GetStructStaticMemberValue(SymbolId memberVarId)

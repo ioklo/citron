@@ -16,7 +16,6 @@ namespace Citron
     {
         // index -> type
         ImmutableArray<TypeId> env;
-
         public static readonly TypeContext Empty = new TypeContext(default);
 
         TypeContext(ImmutableArray<TypeId> env)
@@ -48,7 +47,7 @@ namespace Citron
         {
             return Make(typeContext.Apply(typeId));
         }
-
+        
         // Module.System.NS1.NS2.Type<int, bool>.Type2<short>.Func<string>
         public static TypeContext Make(TypeId typeId)
         {
@@ -59,62 +58,105 @@ namespace Citron
             }
         }
 
-        SymbolPath? ApplySymbolPath(SymbolPath? path)
+        public TypeId Apply(TypeId typeId)
         {
-            if (path == null) return null;
-
-            var appliedOuter = ApplySymbolPath(path.Outer);
-            var appliedTypeArgs = ImmutableArray.CreateRange<TypeId, TypeId>(path.TypeArgs, typeArg => Apply(typeArg));
-            return new SymbolPath(appliedOuter, path.Name, appliedTypeArgs, path.ParamIds);
+            var applier = new Applier(env);
+            return typeId.Accept<Applier, TypeId>(ref applier);
         }
 
         public SymbolId ApplySymbol(SymbolId symbolId)
         {
-            var appliedPath = ApplySymbolPath(symbolId.Path);
-            return new SymbolId(symbolId.ModuleName, appliedPath);
+            return new Applier(env).ApplySymbol(symbolId);
         }
 
-        NullableTypeId ApplyNullable(NullableTypeId id)
+        struct Applier : ITypeIdVisitor<TypeId>
         {
-            var appliedId = Apply(id.InnerTypeId);
-            return new NullableTypeId(appliedId);
-        }
+            ImmutableArray<TypeId> env;
 
-        TypeId ApplyTypeVar(TypeVarTypeId id)
-        {
-            return env[id.Index];
-        }
-
-        TupleTypeId ApplyTuple(TupleTypeId id)
-        {
-            var appliedIds = ImmutableArray.CreateRange(id.MemberVarIds, 
-                memberVarId => new TupleMemberVarId(Apply(memberVarId.TypeId), memberVarId.Name));
-
-            return new TupleTypeId(appliedIds);
-        }
-
-        public TypeId Apply(TypeId typeId)
-        {
-            switch(typeId)
+            public Applier(ImmutableArray<TypeId> env)
             {
-                case SymbolId symbolId:
-                    return ApplySymbol(symbolId);
+                this.env = env;
+            }
 
-                case TypeVarTypeId typeVarId:
-                    return ApplyTypeVar(typeVarId);
+            public SymbolId ApplySymbol(SymbolId typeId)
+            {
+                var appliedPath = ApplySymbolPath(typeId.Path);
+                return new SymbolId(typeId.ModuleName, appliedPath);
+            }
 
-                case NullableTypeId nullableId:
-                    return ApplyNullable(nullableId);
+            SymbolPath? ApplySymbolPath(SymbolPath? path)
+            {
+                if (path == null) return null;
 
-                case VoidTypeId voidId:
-                    return voidId;
+                var appliedOuter = ApplySymbolPath(path.Outer);
 
-                case TupleTypeId tupleId:
-                    return ApplyTuple(tupleId);
+                var builder = ImmutableArray.CreateBuilder<TypeId>(path.TypeArgs.Length);
+                foreach(var typeArg in path.TypeArgs)
+                {
+                    var appliedTypeArg = typeArg.Accept<Applier, TypeId>(ref this); // 뭘 저장안하니까 그냥 쓰자
+                    builder.Add(appliedTypeArg);
+                }
 
-                case VarTypeId:
-                default:
-                    throw new UnreachableCodeException();
+                var appliedTypeArgs = builder.MoveToImmutable();
+                return new SymbolPath(appliedOuter, path.Name, appliedTypeArgs, path.ParamIds);
+            }
+
+            TypeId ITypeIdVisitor<TypeId>.VisitBoxRef(BoxRefTypeId typeId)
+            {
+                return new BoxRefTypeId(typeId.InnerTypeId.Accept<Applier, TypeId>(ref this));
+            }
+
+            TypeId ITypeIdVisitor<TypeId>.VisitFunc(FuncTypeId typeId)
+            {
+                throw new NotImplementedException();
+            }
+
+            TypeId ITypeIdVisitor<TypeId>.VisitLambda(LambdaTypeId typeId)
+            {
+                throw new NotImplementedException();
+            }
+
+            TypeId ITypeIdVisitor<TypeId>.VisitLocalRef(LocalRefTypeId typeId)
+            {
+                return new LocalRefTypeId(typeId.InnerTypeId.Accept<Applier, TypeId>(ref this));
+            }
+
+            TypeId ITypeIdVisitor<TypeId>.VisitNullable(NullableTypeId typeId)
+            {
+                var appliedId = typeId.InnerTypeId.Accept<Applier, TypeId>(ref this);
+                return new NullableTypeId(appliedId);
+            }
+
+            TypeId ITypeIdVisitor<TypeId>.VisitSymbol(SymbolId typeId)
+            {
+                return ApplySymbol(typeId);
+            }
+
+            TypeId ITypeIdVisitor<TypeId>.VisitTuple(TupleTypeId typeId)
+            {
+                var builder = ImmutableArray.CreateBuilder<TupleMemberVarId>(typeId.MemberVarIds.Length);
+                foreach (var memberVarId in typeId.MemberVarIds)
+                {
+                    var appliedMemberVarId = new TupleMemberVarId(memberVarId.TypeId.Accept<Applier, TypeId>(ref this), memberVarId.Name);
+                    builder.Add(appliedMemberVarId);
+                }
+
+                return new TupleTypeId(builder.MoveToImmutable());
+            }
+
+            TypeId ITypeIdVisitor<TypeId>.VisitTypeVar(TypeVarTypeId typeId)
+            {
+                return env[typeId.Index];
+            }
+
+            TypeId ITypeIdVisitor<TypeId>.VisitVar(VarTypeId typeId)
+            {
+                throw new RuntimeFatalException();
+            }
+
+            TypeId ITypeIdVisitor<TypeId>.VisitVoid(VoidTypeId typeId)
+            {
+                return typeId;
             }
         }
     }

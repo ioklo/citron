@@ -9,7 +9,6 @@ namespace Citron.Syntax
     {
         public AccessModifier? AccessModifier { get; }
         public bool IsSequence { get; } // seq 함수인가        
-        public bool IsRefReturn { get; }
         public TypeExp RetType { get; }
         public string Name { get; }
         public ImmutableArray<TypeParam> TypeParams { get; }

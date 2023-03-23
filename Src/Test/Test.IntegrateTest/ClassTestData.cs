@@ -470,7 +470,7 @@ var i = c.F(2);
 
                     new S.ClassMemberVarDecl(null, SIntTypeExp(), Arr("x")),
                     new S.ClassMemberFuncDecl(S.AccessModifier.Public, false, false, false, SIntTypeExp(), "F", default, Arr(new S.FuncParam(S.FuncParamKind.Normal, SIntTypeExp(), "y")), SBlock(
-                        new S.ReturnStmt(new S.ReturnValueInfo(false, new S.BinaryOpExp(S.BinaryOpKind.Add, SId("x"), SId("y"))))
+                        new S.ReturnStmt(new S.ReturnValueInfo(new S.BinaryOpExp(S.BinaryOpKind.Add, SId("x"), SId("y"))))
                     ))
                 ))),
 

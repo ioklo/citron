@@ -14,6 +14,10 @@
         void VisitLambda(LambdaType type);
         void VisitTuple(TupleType type);
         void VisitVar(VarType type);
+
+        void VisitFunc(FuncType type);
+        void VisitBoxRef(BoxRefType type);
+        void VisitLocalRef(LocalRefType type);
     }
 
     public static class TypeVisitorExtensions

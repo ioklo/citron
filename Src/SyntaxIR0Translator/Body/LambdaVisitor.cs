@@ -37,7 +37,6 @@ namespace Citron.Analysis
                 {
                     S.FuncParamKind.Normal => FuncParameterKind.Default,
                     S.FuncParamKind.Params => FuncParameterKind.Params,
-                    S.FuncParamKind.Ref => FuncParameterKind.Ref,
                     _ => throw new UnreachableCodeException()
                 };
 
@@ -64,7 +63,7 @@ namespace Citron.Analysis
 
             // 람다 관련 정보는 여기서 수집한다
 
-            FuncReturn? ret = (retType == null) ? null : new FuncReturn(IsRef: false, retType);
+            FuncReturn? ret = (retType == null) ? null : new FuncReturn(retType);
             var parameters = MakeParameters();
 
             // Lambda를 만들고 context 인스턴스 안에 저장한다
@@ -79,7 +78,7 @@ namespace Citron.Analysis
                     context.AddFatalError(A9901_NotSupported_LambdaParameterInference, nodeForErrorReport);
 
                 var paramType = context.MakeType(paramSyntax.Type);
-                newContext.AddLocalVarInfo(paramSyntax.ParamKind == S.FuncParamKind.Ref, paramType, new Name.Normal(paramSyntax.Name));
+                newContext.AddLocalVarInfo(paramType, new Name.Normal(paramSyntax.Name));
             }
 
             var newStmtVisitor = new StmtVisitor(newContext);

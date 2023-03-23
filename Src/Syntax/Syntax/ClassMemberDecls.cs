@@ -10,7 +10,6 @@ namespace Citron.Syntax
         AccessModifier? AccessModifier,
         bool IsStatic,
         bool IsSequence, // seq 함수인가
-        bool IsRefReturn,
         TypeExp RetType,
         string Name,
         ImmutableArray<TypeParam> TypeParams,

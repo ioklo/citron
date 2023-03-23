@@ -62,7 +62,7 @@ namespace Citron.IR0
                 Accessor.Private, new Name.Normal("Main"), typeParams: default);
 
             entryD.InitFuncReturnAndParams(
-                new FuncReturn(false, voidType), default);
+                new FuncReturn(voidType), default);
 
             moduleD.AddFunc(entryD);
             
@@ -233,11 +233,6 @@ namespace Citron.IR0
             return new LocalVarDeclStmt(type, name, initExp);
         }
 
-        public LocalRefVarDeclStmt LocalRefVarDecl(string name, Loc initLoc)
-        {
-            return new LocalRefVarDeclStmt(name, initLoc);
-        }
-
         #endregion
 
         #region BlankStmt
@@ -325,12 +320,7 @@ namespace Citron.IR0
         {
             return new ReturnStmt(new ReturnInfo.None());
         }
-
-        public ReturnStmt ReturnRef(Loc loc)
-        {
-            return new ReturnStmt(new ReturnInfo.Ref(loc));
-        }
-
+        
         #endregion
 
         #region TaskStmt
@@ -348,7 +338,7 @@ namespace Citron.IR0
         #region AsyncStmt
         public AsyncStmt Async(LambdaSymbol lambda, params Argument[] args)
         {
-            return new AsyncStmt(lambda, args);
+            return new AsyncStmt(lambda, args.ToImmutableArray());
         }
 
         #endregion
@@ -416,11 +406,16 @@ namespace Citron.IR0
             return new LocalVarLoc(new Name.Normal(name));
         }
 
-        public Loc Deref(Loc loc)
+        public LambdaMemberVarLoc LambdaMember(LambdaMemberVarSymbol symbol)
         {
-            return new DerefLocLoc(loc);
-        }        
+            return new LambdaMemberVarLoc(symbol);
+        }
 
+        public Loc LocalDeref(Loc innerLoc)
+        {
+            return new LocalDeref(innerLoc);
+        }
+        
         public TempLoc TempLoc(Exp e)
         {
             return new TempLoc(e);
@@ -461,13 +456,8 @@ namespace Citron.IR0
 
         #endregion
 
-        #region Else        
-
-        public FuncParameter FuncParamRef(IType type, string name)
-        {
-            return new FuncParameter(FuncParameterKind.Ref, type, new Name.Normal(name));
-        }
-
+        #region Else
+        
         public ImmutableArray<FuncParameter> FuncParams(params (IType Type, string Name)[] elems)
         {
             return elems.Select(e => new FuncParameter(FuncParameterKind.Default, e.Type, new Name.Normal(e.Name))).ToImmutableArray();
@@ -507,20 +497,10 @@ namespace Citron.IR0
         {
             return new AwaitStmt(stmts.ToImmutableArray());
         }
-
-        public FuncParameter RefParam(IType type, string name)
-        {
-            return new FuncParameter(FuncParameterKind.Ref, type, new Name.Normal(name));
-        }
-
+        
         public FuncReturn FuncRet(IType type)
         {
-            return new FuncReturn(false, type);
-        }
-
-        public Argument RefArg(Loc loc)
-        {
-            return new Argument.Ref(loc);
+            return new FuncReturn(type);
         }
 
         public Argument Arg(Exp exp)
@@ -556,6 +536,40 @@ namespace Citron.IR0
         public YieldStmt Yield(Exp exp)
         {
             return new YieldStmt(exp);
+        }
+
+        public IType BoxRefType(IType type)
+        {
+            return new BoxRefType(type);
+        }
+
+        public IType LocalRefType(IType type)
+        {
+            return new LocalRefType(type);
+        }
+
+        public Exp Box(Exp exp)
+        {
+            return new BoxExp(exp);
+        }
+
+        public FuncType FuncType(IType retType, params IType[] paramTypes)
+        {
+            var paramsBuilder = ImmutableArray.CreateBuilder<FuncParameter>(paramTypes.Length);
+
+            int i = 0;
+            foreach (var paramType in paramTypes)
+            {
+                var name = new Name.Anonymous(i); // 이름은 임의로 짓는다
+                paramsBuilder.Add(new FuncParameter(FuncParameterKind.Default, paramType, name));
+            }
+
+            return new FuncType(new FuncReturn(retType), paramsBuilder.MoveToImmutable());
+        }
+
+        public Exp LocalRef(Loc loc, IType locType)
+        {
+            return new LocalRefExp(loc, locType);
         }
 
         #endregion

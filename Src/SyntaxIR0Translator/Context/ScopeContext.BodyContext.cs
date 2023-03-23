@@ -20,7 +20,7 @@ partial class ScopeContext
 
     public bool IsSetReturn() => bodyContext.IsSetReturn();
     public FuncReturn? GetReturn() => bodyContext.GetReturn();
-    public void SetReturn(bool bRef, IType retType) => bodyContext.SetReturn(bRef, retType);
+    public void SetReturn(IType retType) => bodyContext.SetReturn(retType);
     public ImmutableArray<R.Argument> MakeLambdaArgs() => bodyContext.MakeLambdaArgs();
 
     public IType MakeType(TypeExp typeExp) => bodyContext.MakeType(typeExp);

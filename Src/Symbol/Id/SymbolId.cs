@@ -19,6 +19,8 @@ namespace Citron.Symbol
             context.SerializeRef(nameof(ModuleName), ModuleName);
             context.SerializeRef(nameof(Path), Path);
         }
+
+        public override TResult Accept<TTypeIdVisitor, TResult>(ref TTypeIdVisitor visitor) => visitor.VisitSymbol(this);
     }
 
     public static class SymbolIdExtensions

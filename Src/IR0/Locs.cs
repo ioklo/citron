@@ -11,68 +11,67 @@ namespace Citron.IR0
 {
     public abstract record class Loc : INode
     {
-        public abstract void Accept<TVisitor>(ref TVisitor visitor)
-            where TVisitor : struct, IIR0LocVisitor;
+        public abstract TResult Accept<TVisitor, TResult>(ref TVisitor visitor)
+            where TVisitor : struct, IIR0LocVisitor<TResult>;
     }
 
     // 임시 value를 만들어서 Exp를 실행해서 대입해주는 역할, ExpInfo 대신 쓴다    
     public record class TempLoc(Exp Exp) : Loc
     {
-        public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitTemp(this);
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitTemp(this);
     }
 
     public record class LocalVarLoc(Name Name) : Loc
     {
-        public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitLocalVar(this);
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitLocalVar(this);
     }
 
     // only this member allowed, so no need this
     public record class LambdaMemberVarLoc(LambdaMemberVarSymbol MemberVar) : Loc
     {
-        public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitLambdaMemberVar(this);
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitLambdaMemberVar(this);
     }
 
     // l[b], l is list    
     public record class ListIndexerLoc(Loc List, Exp Index) : Loc
     {
-        public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitListIndexer(this);
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitListIndexer(this);
     }
 
     // Instance가 null이면 static
     public record class StructMemberLoc(Loc? Instance, StructMemberVarSymbol MemberVar) : Loc
     {
-        public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitStructMember(this);
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitStructMember(this);
     }
 
     public record class ClassMemberLoc(Loc? Instance, ClassMemberVarSymbol MemberVar) : Loc
     {
-        public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitClassMember(this);
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitClassMember(this);
     }
 
     public record class EnumElemMemberLoc(Loc Instance, EnumElemMemberVarSymbol MemberVar) : Loc
     {
-        public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitEnumElemMember(this);
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitEnumElemMember(this);
     }
 
     public record class ThisLoc() : Loc
     {
-        public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitThis(this);
-    }
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitThis(this);
+    }    
     
-    // 두가지 버전
-    public record class DerefLocLoc(Loc Loc) : Loc
+    public record class LocalDeref(Loc InnerLoc) : Loc
     {
-        public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitDerefLoc(this);
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitLocalDeref(this);
     }
 
-    public record class DerefExpLoc(Exp Exp) : Loc
-    {
-        public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitDerefExp(this);
-    }
+    //public record class BoxDerefLoc(Loc Loc) : Loc
+    //{
+
+    //}
 
     // nullable value에서 value를 가져온다
     public record class NullableValueLoc(Loc Loc) : Loc
     {
-        public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitNullableValue(this);
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitNullableValue(this);
     }
 }

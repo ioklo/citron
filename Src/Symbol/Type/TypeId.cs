@@ -2,12 +2,29 @@
 using Citron.Infra;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Formats;
 
 namespace Citron.Symbol
 {
+    public interface ITypeIdVisitor<TResult>
+    {
+        TResult VisitTypeVar(TypeVarTypeId typeId);
+        TResult VisitNullable(NullableTypeId typeId);
+        TResult VisitVoid(VoidTypeId typeId);
+        TResult VisitTuple(TupleTypeId typeId);
+        TResult VisitVar(VarTypeId typeId);
+        TResult VisitFunc(FuncTypeId typeId);
+        TResult VisitLambda(LambdaTypeId typeId);
+        TResult VisitBoxRef(BoxRefTypeId typeId);
+        TResult VisitLocalRef(LocalRefTypeId typeId);
+        TResult VisitSymbol(SymbolId typeId);
+    }
+
     public abstract record class TypeId : ISerializable
     {
         public abstract void DoSerialize(ref SerializeContext context);
+        public abstract TResult Accept<TTypeIdVisitor, TResult>(ref TTypeIdVisitor visitor)
+            where TTypeIdVisitor : ITypeIdVisitor<TResult>;
     }
 
 
@@ -26,6 +43,8 @@ namespace Citron.Symbol
             context.SerializeInt(nameof(Index), Index);
             context.SerializeRef(nameof(Name), Name);
         }
+
+        public override TResult Accept<TTypeIdVisitor, TResult>(ref TTypeIdVisitor visitor) => visitor.VisitTypeVar(this);
     }
 
     public record class NullableTypeId(TypeId InnerTypeId) : TypeId
@@ -33,7 +52,9 @@ namespace Citron.Symbol
         public override void DoSerialize(ref SerializeContext context)
         {
             context.SerializeRef(nameof(InnerTypeId), InnerTypeId);
-        }    
+        }
+
+        public override TResult Accept<TTypeIdVisitor, TResult>(ref TTypeIdVisitor visitor) => visitor.VisitNullable(this);
     }
 
     public record class VoidTypeId : TypeId
@@ -41,6 +62,8 @@ namespace Citron.Symbol
         public override void DoSerialize(ref SerializeContext context)
         {
         }
+
+        public override TResult Accept<TTypeIdVisitor, TResult>(ref TTypeIdVisitor visitor) => visitor.VisitVoid(this);
     }
 
     public record struct TupleMemberVarId(TypeId TypeId, Name Name) : ISerializable
@@ -58,6 +81,8 @@ namespace Citron.Symbol
         {
             context.SerializeValueArray(nameof(MemberVarIds), MemberVarIds);
         }
+
+        public override TResult Accept<TTypeIdVisitor, TResult>(ref TTypeIdVisitor visitor) => visitor.VisitTuple(this);
     }
 
     public record class VarTypeId : TypeId
@@ -65,6 +90,19 @@ namespace Citron.Symbol
         public override void DoSerialize(ref SerializeContext context)
         {
         }
+
+        public override TResult Accept<TTypeIdVisitor, TResult>(ref TTypeIdVisitor visitor) => visitor.VisitVar(this);
+    }
+
+    public record class FuncTypeId(FuncReturnId RetId, ImmutableArray<FuncParameterId> ParamIds) : TypeId
+    {
+        public override void DoSerialize(ref SerializeContext context)
+        {
+            context.SerializeValue(nameof(RetId), RetId);
+            context.SerializeValueArray(nameof(ParamIds), ParamIds);
+        }
+
+        public override TResult Accept<TTypeIdVisitor, TResult>(ref TTypeIdVisitor visitor) => visitor.VisitFunc(this);
     }
 
     public record class LambdaTypeId : TypeId
@@ -72,6 +110,28 @@ namespace Citron.Symbol
         public override void DoSerialize(ref SerializeContext context)
         {
         }
+
+        public override TResult Accept<TTypeIdVisitor, TResult>(ref TTypeIdVisitor visitor) => visitor.VisitLambda(this);
+    }
+
+    public record class BoxRefTypeId(TypeId InnerTypeId) : TypeId
+    {
+        public override void DoSerialize(ref SerializeContext context)
+        {
+            context.SerializeRef(nameof(InnerTypeId), InnerTypeId);
+        }
+
+        public override TResult Accept<TTypeIdVisitor, TResult>(ref TTypeIdVisitor visitor) => visitor.VisitBoxRef(this);
+    }
+
+    public record class LocalRefTypeId(TypeId InnerTypeId) : TypeId
+    {
+        public override void DoSerialize(ref SerializeContext context)
+        {
+            context.SerializeRef(nameof(InnerTypeId), InnerTypeId);
+        }
+
+        public override TResult Accept<TTypeIdVisitor, TResult>(ref TTypeIdVisitor visitor) => visitor.VisitLocalRef(this);
     }
 
     public static class TypeIds

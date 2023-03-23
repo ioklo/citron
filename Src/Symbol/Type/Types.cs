@@ -14,7 +14,6 @@ namespace Citron.Symbol
         IType GetTypeArg(int index);
         IType Apply(TypeEnv typeEnv);
         TypeId GetTypeId();
-        FuncParamTypeId MakeFuncParamTypeId();
         IType? GetMemberType(Name name, ImmutableArray<IType> typeArgs); // 이름에 해당하는 멤버타입을 가져온다
         SymbolQueryResult QueryMember(Name name, int explicitTypeArgCount);
 
@@ -30,7 +29,6 @@ namespace Citron.Symbol
         }
         public abstract IType Apply(TypeEnv typeEnv);
         public abstract TypeId GetTypeId();
-        public abstract FuncParamTypeId MakeFuncParamTypeId();
         public abstract IType? GetMemberType(Name name, ImmutableArray<IType> typeArgs);
         public abstract void Accept<TVisitor>(ref TVisitor visitor)
             where TVisitor : struct, ITypeVisitor;
@@ -47,7 +45,6 @@ namespace Citron.Symbol
 
         public sealed override IType GetTypeArg(int index) => GetTypeSymbol().GetTypeArg(index);
         public sealed override TypeId GetTypeId() => GetTypeSymbol().GetSymbolId();
-        public sealed override FuncParamTypeId MakeFuncParamTypeId() => new FuncParamTypeId.Symbol(GetTypeSymbol().GetSymbolId());
         public sealed override IType? GetMemberType(Name name, ImmutableArray<IType> typeArgs) => GetTypeSymbol().GetMemberType(name, typeArgs);
 
         public sealed override bool CyclicEquals(IType other, ref CyclicEqualityCompareContext context)
@@ -124,7 +121,6 @@ namespace Citron.Symbol
     {   
         public override NullableType Apply(TypeEnv typeEnv) => new NullableType(InnerType.Apply(typeEnv));
         public override TypeId GetTypeId() => new NullableTypeId(InnerType.GetTypeId());
-        public override FuncParamTypeId MakeFuncParamTypeId() => new FuncParamTypeId.Nullable(InnerType.MakeFuncParamTypeId());
         public override IType? GetMemberType(Name name, ImmutableArray<IType> typeArgs) => null;
 
         public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitNullable(this);
@@ -155,7 +151,6 @@ namespace Citron.Symbol
     {   
         public override IType Apply(TypeEnv typeEnv) => typeEnv.GetValue(Index);
         public override TypeId GetTypeId() => new TypeVarTypeId(Index, Name);
-        public override FuncParamTypeId MakeFuncParamTypeId() => new FuncParamTypeId.TypeVar(Index);
         public override IType? GetMemberType(Name name, ImmutableArray<IType> typeArgs) => null;
         public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitTypeVar(this);
 
@@ -189,7 +184,6 @@ namespace Citron.Symbol
     {
         public override VoidType Apply(TypeEnv typeEnv) => new VoidType();
         public override TypeId GetTypeId() => new VoidTypeId();
-        public override FuncParamTypeId MakeFuncParamTypeId() => new FuncParamTypeId.Void();
         public override IType? GetMemberType(Name name, ImmutableArray<IType> typeArgs) => null;
         public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitVoid(this);
 
@@ -284,15 +278,7 @@ namespace Citron.Symbol
                 builder.Add(new TupleMemberVarId(memberVar.GetDeclType().GetTypeId(), memberVar.GetName()));
             return new TupleTypeId(builder.MoveToImmutable());
         }
-
-        public override FuncParamTypeId MakeFuncParamTypeId()
-        {
-            var builder = ImmutableArray.CreateBuilder<FuncParamTypeId>(memberVars.Length);
-            foreach (var memberVar in memberVars)
-                builder.Add(memberVar.GetDeclType().MakeFuncParamTypeId());
-            return new FuncParamTypeId.Tuple(builder.MoveToImmutable());
-        }
-
+        
         public override IType? GetMemberType(Name name, ImmutableArray<IType> typeArgs) => null;
         public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitTuple(this);
 
@@ -319,11 +305,77 @@ namespace Citron.Symbol
         }
     }
 
+    // c#의 delegate처럼 함수 매개변수의 프로퍼티를 다 보존한다
+    public record class FuncType : TypeImpl
+    {
+        FuncReturn funcRet;
+        ImmutableArray<FuncParameter> parameters;
+
+        public FuncType(FuncReturn funcRet, ImmutableArray<FuncParameter> parameters)
+        {
+            this.funcRet = funcRet;
+            this.parameters = parameters;
+        }
+
+        public override IType Apply(TypeEnv typeEnv)
+        {
+            var appliedReturn = funcRet.Apply(typeEnv);
+            var appliedParametersBuilder = ImmutableArray.CreateBuilder<FuncParameter>(parameters.Length);
+            foreach (var parameter in parameters)
+            {
+                var appliedParameter = parameter.Apply(typeEnv);
+                appliedParametersBuilder.Add(appliedParameter);
+            }
+
+            return new FuncType(appliedReturn, appliedParametersBuilder.MoveToImmutable());
+        }
+
+        public override TypeId GetTypeId()
+        {
+            var builder = ImmutableArray.CreateBuilder<FuncParameterId>(parameters.Length);
+            foreach (var parameter in parameters)
+                builder.Add(parameter.GetId());
+
+            return new FuncTypeId(funcRet.GetId(), builder.MoveToImmutable());
+        }
+
+        public override IType? GetMemberType(Name name, ImmutableArray<IType> typeArgs) => null;
+        public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitFunc(this);
+        public sealed override bool CyclicEquals(IType other, ref CyclicEqualityCompareContext context)
+            => other is FuncType otherType && CyclicEquals(otherType, ref context);
+
+        bool CyclicEquals(FuncType other, ref CyclicEqualityCompareContext context)
+        {            
+            if (!funcRet.CyclicEquals(ref other.funcRet, ref context))
+                return false;
+
+            if (!parameters.CyclicEqualsStructItem(ref parameters, ref context))
+                return false;
+
+            return true;
+        }   
+
+        public override void DoSerialize(ref SerializeContext context)
+        {
+            context.SerializeValue(nameof(funcRet), funcRet);
+            context.SerializeValueArray(nameof(parameters), parameters);
+        }
+
+        public override SymbolQueryResult QueryMember(Name name, int typeArgCount)
+        {
+            return SymbolQueryResults.NotFound;
+        }
+
+        public IType GetReturnType()
+        {
+            return funcRet.Type;
+        }
+    }
+
     public record class VarType : TypeImpl
     {
         public override IType Apply(TypeEnv typeEnv) => new VarType();
         public override TypeId GetTypeId() => new VarTypeId();
-        public override FuncParamTypeId MakeFuncParamTypeId() => throw new NotImplementedException(); // var는 함수 이름으로 사용할 수 없습니다 에러 작성
         public override IType? GetMemberType(Name name, ImmutableArray<IType> typeArgs) => null;
         public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitVar(this);
         public sealed override bool CyclicEquals(IType other, ref CyclicEqualityCompareContext context)
@@ -331,6 +383,104 @@ namespace Citron.Symbol
 
         public override void DoSerialize(ref SerializeContext context)
         {
+        }
+
+        public override SymbolQueryResult QueryMember(Name name, int typeArgCount)
+        {
+            return SymbolQueryResults.NotFound;
+        }
+    }
+
+    // box int&
+    public record BoxRefType : TypeImpl
+    {
+        IType targetType;
+
+        public BoxRefType(IType targetType)
+        {
+            this.targetType = targetType;
+        }
+
+        public override IType Apply(TypeEnv typeEnv)
+        {
+            var appliedTargetType = targetType.Apply(typeEnv);
+            return new BoxRefType(appliedTargetType);
+        }
+
+        public override TypeId GetTypeId()
+        {
+            return new BoxRefTypeId(targetType.GetTypeId());
+        }
+
+        public override IType? GetMemberType(Name name, ImmutableArray<IType> typeArgs)
+        {
+            return null;
+        }
+
+        public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitBoxRef(this);
+        public sealed override bool CyclicEquals(IType other, ref CyclicEqualityCompareContext context)
+            => other is BoxRefType otherType && CyclicEquals(otherType, ref context);
+
+        bool CyclicEquals(BoxRefType other, ref CyclicEqualityCompareContext context)
+        {
+            if (!context.CompareClass(targetType, other.targetType))
+                return false;
+
+            return true;
+        }   
+
+        public override void DoSerialize(ref SerializeContext context)
+        {
+            context.SerializeRef(nameof(targetType), targetType);
+        }
+
+        public override SymbolQueryResult QueryMember(Name name, int typeArgCount)
+        {
+            return SymbolQueryResults.NotFound;
+        }
+    }
+
+    // int&
+    public record LocalRefType : TypeImpl
+    {
+        IType targetType;
+
+        public LocalRefType(IType targetType)
+        {
+            this.targetType = targetType;
+        }
+
+        public override IType Apply(TypeEnv typeEnv)
+        {
+            var appliedTargetType = targetType.Apply(typeEnv);
+            return new LocalRefType(appliedTargetType);
+        }
+
+        public override TypeId GetTypeId()
+        {
+            return new LocalRefTypeId(targetType.GetTypeId());
+        }
+
+        public override IType? GetMemberType(Name name, ImmutableArray<IType> typeArgs)
+        {
+            return null;
+        }
+
+        public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitLocalRef(this);
+        public sealed override bool CyclicEquals(IType other, ref CyclicEqualityCompareContext context)
+            => other is LocalRefType otherType && CyclicEquals(otherType, ref context);
+
+        bool CyclicEquals(LocalRefType other, ref CyclicEqualityCompareContext context)
+        {
+            if (!context.CompareClass(targetType, other.targetType))
+                return false;
+
+            return true;
+        }
+
+        public override void DoSerialize(ref SerializeContext context)
+        {
+            context.SerializeRef(nameof(targetType), targetType);
         }
 
         public override SymbolQueryResult QueryMember(Name name, int typeArgCount)

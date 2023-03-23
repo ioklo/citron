@@ -1,47 +1,52 @@
 ﻿namespace Citron.IR0;
 
-public interface IIR0ExpVisitor
+public interface IIR0ExpVisitor<TResult>
 {
     // Storage
-    void VisitLoad(LoadExp loadExp);
-    void VisitAssign(AssignExp assignExp);
+    TResult VisitLoad(LoadExp exp);
+    TResult VisitAssign(AssignExp exp);
 
     // Literal
-    void VisitBoolLiteral(BoolLiteralExp boolExp);
-    void VisitIntLiteral(IntLiteralExp intExp);
-    void VisitString(StringExp stringExp);
+    TResult VisitBoolLiteral(BoolLiteralExp exp);
+    TResult VisitIntLiteral(IntLiteralExp exp);
+    TResult VisitString(StringExp exp);
 
     // List
-    void VisitList(ListExp listExp);
-    void VisitListIterator(ListIteratorExp listIterExp);
+    TResult VisitList(ListExp exp);
+    TResult VisitListIterator(ListIteratorExp exp);
 
     // Call Internal
-    void VisitCallInternalUnaryOperator(CallInternalUnaryOperatorExp ciuoExp);
-    void VisitCallInternalUnaryAssignOperator(CallInternalUnaryAssignOperatorExp ciuaoExp);
-    void VisitCallInternalBinaryOperator(CallInternalBinaryOperatorExp ciboExp);
+    TResult VisitCallInternalUnaryOperator(CallInternalUnaryOperatorExp exp);
+    TResult VisitCallInternalUnaryAssignOperator(CallInternalUnaryAssignOperatorExp exp);
+    TResult VisitCallInternalBinaryOperator(CallInternalBinaryOperatorExp exp);
 
     // Global
-    void VisitCallGlobalFunc(CallGlobalFuncExp callFuncExp);    
+    TResult VisitCallGlobalFunc(CallGlobalFuncExp exp);    
 
     // Class
-    void VisitNewClass(NewClassExp newClassExp);
-    void VisitCallClassMemberFunc(CallClassMemberFuncExp callFuncExp);
-    void VisitCastClass(CastClassExp castClassExp);
+    TResult VisitNewClass(NewClassExp exp);
+    TResult VisitCallClassMemberFunc(CallClassMemberFuncExp exp);
+    TResult VisitCastClass(CastClassExp exp);
 
     // Struct
-    void VisitNewStruct(NewStructExp newStructExp);
-    void VisitCallStructMemberFunc(CallStructMemberFuncExp callFuncExp);
+    TResult VisitNewStruct(NewStructExp exp);
+    TResult VisitCallStructMemberFunc(CallStructMemberFuncExp exp);
 
     // Enum
-    void VisitNewEnumElem(NewEnumElemExp enumExp);
-    void VisitCastEnumElemToEnum(CastEnumElemToEnumExp castEnumElemToEnumExp);
+    TResult VisitNewEnumElem(NewEnumElemExp exp);
+    TResult VisitCastEnumElemToEnum(CastEnumElemToEnumExp exp);
 
     // Nullable
-    void VisitNewNullable(NewNullableExp newNullableExp);
+    TResult VisitNewNullable(NewNullableExp exp);
 
     // Lambda
-    void VisitLambda(LambdaExp lambdaExp);
-    void VisitCallValue(CallValueExp callValueExp);
-    void VisitCallFuncRef(CallFuncRefExp callFuncExp);
-    void VisitCastFuncRef(CastFuncRefExp exp);
+    TResult VisitLambda(LambdaExp exp);
+    TResult VisitCallValue(CallValueExp exp);
+    TResult VisitCallFuncRef(CallFuncRefExp exp);
+    TResult CastBoxLambdaToFuncRef(CastBoxLambdaToFuncRefExp exp);
+    
+    TResult VisitBox(BoxExp exp);
+
+    TResult VisitLocalRef(LocalRefExp exp);
+    TResult VisitBoxRef(BoxRefExp exp);
 }

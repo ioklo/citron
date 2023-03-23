@@ -12,4 +12,5 @@ namespace Citron.Syntax
     public record class IdTypeExp(string Name, ImmutableArray<TypeExp> TypeArgs) : TypeExp;
     public record class MemberTypeExp(TypeExp Parent, string MemberName, ImmutableArray<TypeExp> TypeArgs) : TypeExp;
     public record class NullableTypeExp(TypeExp InnerTypeExp) : TypeExp;
+    public record class RefTypeExp(TypeExp InnerTypeExp) : TypeExp;
 }

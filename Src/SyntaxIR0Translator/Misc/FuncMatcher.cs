@@ -224,22 +224,12 @@ namespace Citron.Analysis
                 {
                     if (paramInfo != null)
                     {
-                        // ref 파라미터를 원했는데, ref가 안달려 나온 경우, box타입이면 가능하다
-                        if (paramInfo.Value.Kind == FuncParameterKind.Ref)
-                        {
-                            // void F(ref int i) {...}
-                            // F(box 3); // 가능
-                            throw new NotImplementedException();
-                        }
-                        else
-                        {
-                            var hint = paramInfo.Value.Type;
-                            var argResult = ExpVisitor.TranslateAsExp(sexp, context, hint);
-                            exp = BodyMisc.TryCastExp_Exp(argResult, paramInfo.Value.Type);
+                        var hint = paramInfo.Value.Type;
+                        var argResult = ExpVisitor.TranslateAsExp(sexp, context, hint);
+                        exp = BodyMisc.TryCastExp_Exp(argResult, paramInfo.Value.Type);
 
-                            if (exp == null)
-                                throw new FuncMatcherFatalException();
-                        }
+                        if (exp == null)
+                            throw new FuncMatcherFatalException();
                     }
                     else // none, EnumConstructor
                     {
@@ -324,50 +314,6 @@ namespace Citron.Analysis
                     return null;
                 }
             }
-
-            public class Ref : FuncMatcherArgument
-            {
-                ScopeContext context;
-                S.Exp exp;
-                (R.Loc Loc, IType Type)? locResult;
-
-                public Ref(ScopeContext context, S.Exp exp)
-                {
-                    this.context = context;
-                    this.exp = exp;
-                    this.locResult = null;
-                }
-
-                public override void DoAnalyze(FuncParameter? paramInfo) // throws FuncMatcherFatalException
-                {
-                    if (paramInfo != null)
-                    {
-                        // 1. void F(int i) { ... } 파라미터에 ref가 안 붙은 경우, 매칭을 하지 않는다
-                        // F(ref j);
-                        if (paramInfo.Value.Kind != FuncParameterKind.Ref)
-                            throw new FuncMatcherFatalException();
-
-                        // 2. void F(ref int i)
-                        var argResult = ExpVisitor.TranslateAsLoc(exp, context, hintType: null, bWrapExpAsLoc: false);
-                        if (argResult == null)
-                            throw new FuncMatcherFatalException();
-
-                        this.locResult = argResult.Value;
-                    }
-                }
-
-                public override IType GetArgType()
-                {
-                    Debug.Assert(locResult != null);
-                    return locResult.Value.Type;
-                }
-
-                public override R.Argument? GetRArgument()
-                {
-                    Debug.Assert(locResult != null);
-                    return new R.Argument.Ref(locResult.Value.Loc);
-                }
-            }
         }
 
         static ImmutableArray<FuncMatcherArgument> ExpandArguments(ScopeContext context, ImmutableArray<S.Argument> sargs) // throws FuncMatcherFatalException
@@ -417,10 +363,6 @@ namespace Citron.Analysis
                     {
                         throw new FuncMatcherFatalException();
                     }
-                }
-                else if (sarg is S.Argument.Ref sRefArg)
-                {
-                    args.Add(new FuncMatcherArgument.Ref(context, sRefArg.Exp));
                 }
             }
 

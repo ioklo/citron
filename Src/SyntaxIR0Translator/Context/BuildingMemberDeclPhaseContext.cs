@@ -34,13 +34,13 @@ namespace Citron.Analysis
             return new TypeMakerByTypeExp(modules.AsEnumerable(), factory, curNode).MakeType(typeExp);
         }
 
-        public (FuncReturn, ImmutableArray<FuncParameter> Param) MakeFuncReturnAndParams(IDeclSymbolNode curNode, bool bRefReturn, S.TypeExp retTypeSyntax, ImmutableArray<S.FuncParam> paramSyntaxes)
+        public (FuncReturn, ImmutableArray<FuncParameter> Param) MakeFuncReturnAndParams(IDeclSymbolNode curNode, S.TypeExp retTypeSyntax, ImmutableArray<S.FuncParam> paramSyntaxes)
         {
             var outerNode = curNode.GetOuterDeclNode()!;
 
             // 지금은 중첩 함수가 없으므로 바로 윗 단계부터 찾도록 한다
             var retType = MakeType(retTypeSyntax, curNode);
-            var ret = new FuncReturn(bRefReturn, retType);
+            var ret = new FuncReturn(retType);
 
             var paramsBuilder = ImmutableArray.CreateBuilder<FuncParameter>(paramSyntaxes.Length);
             foreach (var paramSyntax in paramSyntaxes)
@@ -49,7 +49,6 @@ namespace Citron.Analysis
                 {
                     S.FuncParamKind.Normal => FuncParameterKind.Default,
                     S.FuncParamKind.Params => FuncParameterKind.Params,
-                    S.FuncParamKind.Ref => FuncParameterKind.Ref,
                     _ => throw new UnreachableCodeException()
                 };
 
