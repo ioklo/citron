@@ -8,34 +8,37 @@ using Citron.Collections;
 using S = Citron.Syntax;
 using R = Citron.IR0;
 
+using IStmtVisitor = Citron.Syntax.IStmtVisitor<Citron.Collections.ImmutableArray<Citron.IR0.Stmt>>;
+
+using static Citron.Infra.Misc;
 using static Citron.Analysis.SyntaxAnalysisErrorCode;
 
 namespace Citron.Analysis;
 
-partial struct StmtVisitor : S.IStmtVisitor
+partial struct StmtVisitor : IStmtVisitor
 {
     ScopeContext context;
+
+    ImmutableArray<R.Stmt> Stmts(R.Stmt stmt)
+    {
+        return Arr<R.Stmt>(stmt);
+    }
 
     public StmtVisitor(ScopeContext context)
     {
         this.context = context;
     }
 
-    public void VisitVarDecl(S.VarDeclStmt stmt)
+    ImmutableArray<R.Stmt> IStmtVisitor.VisitVarDecl(S.VarDeclStmt stmt)
     {
         // int a;
         // var x = 
-        var varDecl = stmt.VarDecl;
-        var declType = context.MakeType(varDecl.Type);
 
-        var visitor = new VarDeclElemVisitor(declType, context);
-
-        foreach (var elemSyntax in varDecl.Elems)
-            visitor.VisitElem(elemSyntax);
+        return VarDeclVisitor.Visit(stmt.VarDecl, context);
     }
 
     // CommandStmt에 있는 expStringElement를 분석한다
-    public void VisitCommand(S.CommandStmt cmdStmt)
+    ImmutableArray<R.Stmt> IStmtVisitor.VisitCommand(S.CommandStmt cmdStmt)
     {
         var builder = ImmutableArray.CreateBuilder<R.StringExp>();        
         foreach (var cmd in cmdStmt.Commands)
@@ -44,10 +47,10 @@ partial struct StmtVisitor : S.IStmtVisitor
             builder.Add((R.StringExp)exp);
         }
 
-        context.AddStmt(new R.CommandStmt(builder.ToImmutable()));
+        return Stmts(new R.CommandStmt(builder.ToImmutable()));
     }
     
-    public void VisitIfTest(S.IfTestStmt ifTestStmt)
+    ImmutableArray<R.Stmt> IStmtVisitor.VisitIfTest(S.IfTestStmt ifTestStmt)
     {
         // if (e is Type varName) body 
         // if (var varName = e as Type) body // 변수 선언은 var로 시작해야 하지 않을까
@@ -122,7 +125,7 @@ partial struct StmtVisitor : S.IStmtVisitor
         //}
     }
 
-    public void VisitIf(S.IfStmt ifStmt)
+    ImmutableArray<R.Stmt> IStmtVisitor.VisitIf(S.IfStmt ifStmt)
     {
         // 순회
         var condExp = ExpVisitor.TranslateAsExp(ifStmt.Cond, context, context.GetBoolType());
@@ -149,17 +152,13 @@ partial struct StmtVisitor : S.IStmtVisitor
         context.AddStmt(stmt);
     }
 
-    public void VisitForStmtInitializer(S.ForStmtInitializer forInit)
+    ImmutableArray<R.Stmt> IStmtVisitor.VisitForStmtInitializer(S.ForStmtInitializer forInit)
     {
         switch (forInit)
         {
             case S.VarDeclForStmtInitializer varDeclInit:
                 {
-                    var declType = context.MakeType(varDeclInit.VarDecl.Type);
-                    var visitor = new VarDeclElemVisitor(declType, context);
-
-                    foreach (var elem in varDeclInit.VarDecl.Elems)
-                        visitor.VisitElem(elem);
+                    VarDeclVisitor.Visit(varDeclInit.VarDecl, context);
                     break;
                 }
 
@@ -175,7 +174,7 @@ partial struct StmtVisitor : S.IStmtVisitor
         }
     }
 
-    public void VisitFor(S.ForStmt forStmt)
+    ImmutableArray<R.Stmt> IStmtVisitor.VisitFor(S.ForStmt forStmt)
     {
         // for(
         //     int i = 0; <- forStmtContext 
@@ -218,7 +217,7 @@ partial struct StmtVisitor : S.IStmtVisitor
         context.AddStmt(new R.ForStmt(initStmts, condExp, continueExp, bodyStmts));
     }
 
-    public void VisitContinue(S.ContinueStmt continueStmt)
+    ImmutableArray<R.Stmt> IStmtVisitor.VisitContinue(S.ContinueStmt continueStmt)
     {
         if (!context.IsInLoop())
             context.AddFatalError(A1501_ContinueStmt_ShouldUsedInLoop, continueStmt);
@@ -226,7 +225,7 @@ partial struct StmtVisitor : S.IStmtVisitor
         context.AddStmt(new R.ContinueStmt());
     }
 
-    public void VisitBreak(S.BreakStmt breakStmt)
+    ImmutableArray<R.Stmt> IStmtVisitor.VisitBreak(S.BreakStmt breakStmt)
     {
         if (!context.IsInLoop())
             context.AddFatalError(A1601_BreakStmt_ShouldUsedInLoop, breakStmt);
@@ -234,7 +233,7 @@ partial struct StmtVisitor : S.IStmtVisitor
         context.AddStmt(new R.BreakStmt());
     }
 
-    public void VisitReturn(S.ReturnStmt returnStmt)
+    ImmutableArray<R.Stmt> IStmtVisitor.VisitReturn(S.ReturnStmt returnStmt)
     {
         // seq 함수는 여기서 모두 처리 
         if (context.IsSeqFunc())
@@ -336,7 +335,7 @@ partial struct StmtVisitor : S.IStmtVisitor
     }
 
     // { }
-    public void VisitBlock(S.BlockStmt blockStmt)
+    ImmutableArray<R.Stmt> IStmtVisitor.VisitBlock(S.BlockStmt blockStmt)
     {
         AnalyzerFatalException? fatalException = null;
         ScopeContext blockContext = context.MakeNestedScopeContext();
@@ -361,18 +360,18 @@ partial struct StmtVisitor : S.IStmtVisitor
         context.AddStmt(new R.BlockStmt(stmts));
     }
 
-    public void VisitBlank(S.BlankStmt stmt)
+    ImmutableArray<R.Stmt> IStmtVisitor.VisitBlank(S.BlankStmt stmt)
     {
         context.AddStmt(new R.BlankStmt());
     }
 
-    public void VisitExp(S.ExpStmt expStmt)
+    ImmutableArray<R.Stmt> IStmtVisitor.VisitExp(S.ExpStmt expStmt)
     {
         var exp = TranslateAsTopLevelExp(expStmt.Exp, hintType: null, A1301_ExpStmt_ExpressionShouldBeAssignOrCall);
         context.AddStmt(new R.ExpStmt(exp));
     }
 
-    public void VisitTask(S.TaskStmt taskStmt)
+    ImmutableArray<R.Stmt> IStmtVisitor.VisitTask(S.TaskStmt taskStmt)
     {
         var visitor = new LambdaVisitor(context.GetVoidType(), paramSyntaxes: default, taskStmt.Body, context, taskStmt);
         var (lambda, args) = visitor.Visit();
@@ -380,7 +379,7 @@ partial struct StmtVisitor : S.IStmtVisitor
         context.AddStmt(new R.TaskStmt(lambda, args));
     }
 
-    public void VisitAwait(S.AwaitStmt awaitStmt)
+    ImmutableArray<R.Stmt> IStmtVisitor.VisitAwait(S.AwaitStmt awaitStmt)
     {
         var newContext = context.MakeNestedScopeContext();
         var newVisitor = new StmtVisitor(newContext);
@@ -389,14 +388,14 @@ partial struct StmtVisitor : S.IStmtVisitor
         context.AddStmt(new R.AwaitStmt(newContext.MakeStmts()));
     }
 
-    public void VisitAsync(S.AsyncStmt asyncStmt)
+    ImmutableArray<R.Stmt> IStmtVisitor.VisitAsync(S.AsyncStmt asyncStmt)
     {
         var visitor = new LambdaVisitor(context.GetVoidType(), default, asyncStmt.Body, context, asyncStmt);
         var(lambda, args) = visitor.Visit();
         context.AddStmt(new R.AsyncStmt(lambda, args));
     }
 
-    public void VisitForeach(S.ForeachStmt foreachStmt)
+    ImmutableArray<R.Stmt> IStmtVisitor.VisitForeach(S.ForeachStmt foreachStmt)
     {
         // SYNTAX: foreach(var elemVarName in iterator) body
         // IR0: foreach(type elemVarName in iteratorLoc)
@@ -502,7 +501,7 @@ partial struct StmtVisitor : S.IStmtVisitor
     }
 
     // TODO: ref 처리?
-    public void VisitYield(S.YieldStmt yieldStmt)
+    ImmutableArray<R.Stmt> IStmtVisitor.VisitYield(S.YieldStmt yieldStmt)
     {
         if (!context.IsSeqFunc())
             context.AddFatalError(A1401_YieldStmt_YieldShouldBeInSeqFunc, yieldStmt);
@@ -519,7 +518,7 @@ partial struct StmtVisitor : S.IStmtVisitor
         context.AddStmt(new R.YieldStmt(retValueExp));
     }
 
-    public void VisitDirective(S.DirectiveStmt directiveStmt)
+    ImmutableArray<R.Stmt> IStmtVisitor.VisitDirective(S.DirectiveStmt directiveStmt)
     {
         switch (directiveStmt.Name)
         {
@@ -541,7 +540,7 @@ partial struct StmtVisitor : S.IStmtVisitor
         }
     }
 
-    public void VisitBody(ImmutableArray<S.Stmt> body)
+    ImmutableArray<R.Stmt> IStmtVisitor.VisitBody(ImmutableArray<S.Stmt> body)
     {
         foreach (var stmt in body)
         {
@@ -549,7 +548,7 @@ partial struct StmtVisitor : S.IStmtVisitor
         }
     }
 
-    public void VisitEmbeddable(S.EmbeddableStmt embedStmt)
+    ImmutableArray<R.Stmt> IStmtVisitor.VisitEmbeddable(S.EmbeddableStmt embedStmt)
     {
         // if (...) 'stmt'
         // if (...) '{ stmt... }' 를 받는다

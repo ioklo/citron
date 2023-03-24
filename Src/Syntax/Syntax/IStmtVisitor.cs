@@ -1,26 +1,26 @@
 ﻿namespace Citron.Syntax
 {
-    public interface IStmtVisitor
+    public interface IStmtVisitor<TResult>
     {
-        void VisitCommand(CommandStmt stmt);
-        void VisitVarDecl(VarDeclStmt stmt);
-        void VisitIf(IfStmt stmt);
-        void VisitIfTest(IfTestStmt stmt);
-        void VisitFor(ForStmt stmt);
+        TResult VisitCommand(CommandStmt stmt);
+        TResult VisitVarDecl(VarDeclStmt stmt);
+        TResult VisitIf(IfStmt stmt);
+        TResult VisitIfTest(IfTestStmt stmt);
+        TResult VisitFor(ForStmt stmt);
 
-        void VisitContinue(ContinueStmt stmt);
-        void VisitBreak(BreakStmt stmt);
-        void VisitReturn(ReturnStmt stmt);
-        void VisitBlock(BlockStmt stmt);
-        void VisitBlank(BlankStmt stmt);
-        void VisitExp(ExpStmt stmt);
+        TResult VisitContinue(ContinueStmt stmt);
+        TResult VisitBreak(BreakStmt stmt);
+        TResult VisitReturn(ReturnStmt stmt);
+        TResult VisitBlock(BlockStmt stmt);
+        TResult VisitBlank(BlankStmt stmt);
+        TResult VisitExp(ExpStmt stmt);
 
-        void VisitTask(TaskStmt stmt);
-        void VisitAwait(AwaitStmt stmt);
-        void VisitAsync(AsyncStmt stmt);
-        void VisitForeach(ForeachStmt stmt);
-        void VisitYield(YieldStmt stmt);
+        TResult VisitTask(TaskStmt stmt);
+        TResult VisitAwait(AwaitStmt stmt);
+        TResult VisitAsync(AsyncStmt stmt);
+        TResult VisitForeach(ForeachStmt stmt);
+        TResult VisitYield(YieldStmt stmt);
         
-        void VisitDirective(DirectiveStmt stmt);
+        TResult VisitDirective(DirectiveStmt stmt);
     }
 }

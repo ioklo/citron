@@ -443,22 +443,23 @@ namespace Citron.Symbol
     // int&
     public record LocalRefType : TypeImpl
     {
-        IType targetType;
+        IType innerType;
+        public IType InnerType => innerType;
 
-        public LocalRefType(IType targetType)
+        public LocalRefType(IType innerType)
         {
-            this.targetType = targetType;
+            this.innerType = innerType;
         }
 
         public override IType Apply(TypeEnv typeEnv)
         {
-            var appliedTargetType = targetType.Apply(typeEnv);
+            var appliedTargetType = innerType.Apply(typeEnv);
             return new LocalRefType(appliedTargetType);
         }
 
         public override TypeId GetTypeId()
         {
-            return new LocalRefTypeId(targetType.GetTypeId());
+            return new LocalRefTypeId(innerType.GetTypeId());
         }
 
         public override IType? GetMemberType(Name name, ImmutableArray<IType> typeArgs)
@@ -472,7 +473,7 @@ namespace Citron.Symbol
 
         bool CyclicEquals(LocalRefType other, ref CyclicEqualityCompareContext context)
         {
-            if (!context.CompareClass(targetType, other.targetType))
+            if (!context.CompareClass(innerType, other.innerType))
                 return false;
 
             return true;
@@ -480,7 +481,7 @@ namespace Citron.Symbol
 
         public override void DoSerialize(ref SerializeContext context)
         {
-            context.SerializeRef(nameof(targetType), targetType);
+            context.SerializeRef(nameof(innerType), innerType);
         }
 
         public override SymbolQueryResult QueryMember(Name name, int typeArgCount)

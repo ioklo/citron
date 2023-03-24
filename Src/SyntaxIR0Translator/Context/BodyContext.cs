@@ -117,7 +117,7 @@ partial class BodyContext : IMutable<BodyContext>
 
     public IType MakeType(TypeExp typeExp)
     {   
-        return new TypeMakerByTypeExp(moduleDeclSymbols.AsEnumerable(), symbolFactory, funcDeclSymbol).MakeType(typeExp);
+        return TypeMakerByTypeExp.MakeType(moduleDeclSymbols.AsEnumerable(), symbolFactory, funcDeclSymbol, typeExp);
     }
 
     record struct IdentifierResolver(Name name, ImmutableArray<IType> typeArgs, BodyContext bodyContext)

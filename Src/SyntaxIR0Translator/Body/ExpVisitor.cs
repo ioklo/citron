@@ -8,7 +8,7 @@ using Citron.Symbol;
 using R = Citron.IR0;
 using S = Citron.Syntax;
 using static Citron.Analysis.SyntaxAnalysisErrorCode;
-using IExpVisitor = Citron.Syntax.IExpVisitor;
+using IExpVisitor = Citron.Syntax.IExpVisitor<Citron.Analysis.ExpResult>;
 
 namespace Citron.Analysis;
 
@@ -16,7 +16,6 @@ partial struct ExpVisitor : IExpVisitor
 {
     IType? hintType;
     ScopeContext context;
-    ExpResult? result;
 
     ExpVisitor(ScopeContext context, IType? hintType)
     {
@@ -28,9 +27,7 @@ partial struct ExpVisitor : IExpVisitor
     public static R.Exp TranslateAsExp(S.Exp exp, ScopeContext context, IType? hintType)
     {
         var visitor = new ExpVisitor(context, hintType);
-        exp.Accept(ref visitor);
-        Debug.Assert(visitor.result != null);
-        var result = visitor.result;
+        var result = exp.Accept<ExpVisitor, ExpResult>(ref visitor);
 
         if (result is ExpResult.NotFound)
             context.AddFatalError(A2007_ResolveIdentifier_NotFound, exp);
@@ -50,29 +47,27 @@ partial struct ExpVisitor : IExpVisitor
     public static (R.Loc Loc, IType Type)? TranslateAsLoc(S.Exp exp, ScopeContext context, IType? hintType, bool bWrapExpAsLoc)
     {
         var visitor = new ExpVisitor(context, hintType);        
-        exp.Accept(ref visitor);
-        Debug.Assert(visitor.result != null);
+        var result = exp.Accept<ExpVisitor, ExpResult>(ref visitor);
 
-        return visitor.result.MakeIR0Loc(bWrapExpAsLoc);
+        return result.MakeIR0Loc(bWrapExpAsLoc);
     }
 
     // x
-    void IExpVisitor.VisitIdentifier(S.IdentifierExp exp)
+    ExpResult IExpVisitor.VisitIdentifier(S.IdentifierExp exp)
     {
         var typeArgs = BodyMisc.MakeTypeArgs(exp.TypeArgs, context);
-        result = context.ResolveIdentifier(new Name.Normal(exp.Value), typeArgs);
+        return context.ResolveIdentifier(new Name.Normal(exp.Value), typeArgs);
     }
 
     // 'null'
-    void IExpVisitor.VisitNullLiteral(S.NullLiteralExp exp)
+    ExpResult IExpVisitor.VisitNullLiteral(S.NullLiteralExp exp)
     {
         if (hintType != null)
         {
             // int? i = null;
             if (hintType is NullableType nullableHintType)
             {
-                result = new ExpResult.IR0Exp(new R.NewNullableExp(null, nullableHintType));
-                return;
+                return new ExpResult.IR0Exp(new R.NewNullableExp(null, nullableHintType));
             }
         }
 
@@ -80,17 +75,17 @@ partial struct ExpVisitor : IExpVisitor
         throw new UnreachableCodeException();
     }
 
-    void IExpVisitor.VisitBoolLiteral(S.BoolLiteralExp exp)
+    ExpResult IExpVisitor.VisitBoolLiteral(S.BoolLiteralExp exp)
     {
-        result = new ExpResult.IR0Exp(new R.BoolLiteralExp(exp.Value, context.GetBoolType()));
+        return new ExpResult.IR0Exp(new R.BoolLiteralExp(exp.Value, context.GetBoolType()));
     }
 
-    void IExpVisitor.VisitIntLiteral(S.IntLiteralExp exp)
+    ExpResult IExpVisitor.VisitIntLiteral(S.IntLiteralExp exp)
     {
-        result = new ExpResult.IR0Exp(new R.IntLiteralExp(exp.Value, context.GetIntType()));
+        return new ExpResult.IR0Exp(new R.IntLiteralExp(exp.Value, context.GetIntType()));
     }
     
-    void IExpVisitor.VisitString(S.StringExp exp)
+    ExpResult IExpVisitor.VisitString(S.StringExp exp)
     {
         var bFatal = false;
 
@@ -111,11 +106,11 @@ partial struct ExpVisitor : IExpVisitor
         if (bFatal)
             throw new AnalyzerFatalException();
 
-        result = new ExpResult.IR0Exp(new R.StringExp(builder.ToImmutable(), context.GetStringType()));
+        return new ExpResult.IR0Exp(new R.StringExp(builder.ToImmutable(), context.GetStringType()));
     }
 
     // int만 지원한다
-    void VisitIntUnaryAssignExp(S.Exp operand, R.InternalUnaryAssignOperator op)
+    ExpResult VisitIntUnaryAssignExp(S.Exp operand, R.InternalUnaryAssignOperator op)
     {
         var locResult = ExpVisitor.TranslateAsLoc(operand, context, hintType: null, bWrapExpAsLoc: false);
         if (locResult != null)
@@ -127,7 +122,7 @@ partial struct ExpVisitor : IExpVisitor
             if (!type.Equals(context.GetIntType()))
                 context.AddFatalError(A0601_UnaryAssignOp_IntTypeIsAllowedOnly, operand);
 
-            result = new ExpResult.IR0Exp(new R.CallInternalUnaryAssignOperatorExp(op, loc, intType));
+            return new ExpResult.IR0Exp(new R.CallInternalUnaryAssignOperatorExp(op, loc, intType));
         }
         else
         {
@@ -136,7 +131,7 @@ partial struct ExpVisitor : IExpVisitor
         }
     }
 
-    void IExpVisitor.VisitUnaryOp(S.UnaryOpExp exp)
+    ExpResult IExpVisitor.VisitUnaryOp(S.UnaryOpExp exp)
     {
         var operandExp = ExpVisitor.TranslateAsExp(exp.Operand, context, null);
 
@@ -148,12 +143,11 @@ partial struct ExpVisitor : IExpVisitor
                     if (!context.GetBoolType().Equals(operandExp.GetExpType()))
                         context.AddFatalError(A0701_UnaryOp_LogicalNotOperatorIsAppliedToBoolTypeOperandOnly, exp.Operand);
 
-                    result = new ExpResult.IR0Exp(new R.CallInternalUnaryOperatorExp(
+                    return new ExpResult.IR0Exp(new R.CallInternalUnaryOperatorExp(
                         R.InternalUnaryOperator.LogicalNot_Bool_Bool,
                         operandExp,
                         context.GetBoolType()
                     ));
-                    return;
                 }
 
             case S.UnaryOpKind.Minus:
@@ -161,35 +155,30 @@ partial struct ExpVisitor : IExpVisitor
                     if (!context.GetIntType().Equals(operandExp.GetExpType()))
                         context.AddFatalError(A0702_UnaryOp_UnaryMinusOperatorIsAppliedToIntTypeOperandOnly, exp.Operand);
 
-                    result = new ExpResult.IR0Exp(new R.CallInternalUnaryOperatorExp(
+                    return new ExpResult.IR0Exp(new R.CallInternalUnaryOperatorExp(
                         R.InternalUnaryOperator.UnaryMinus_Int_Int,
                         operandExp, context.GetIntType()
                     ));
-                    return;
                 }
 
             case S.UnaryOpKind.PostfixInc: // e.m++ 등
-                VisitIntUnaryAssignExp(exp.Operand, R.InternalUnaryAssignOperator.PostfixInc_Int_Int);
-                return;
+                return VisitIntUnaryAssignExp(exp.Operand, R.InternalUnaryAssignOperator.PostfixInc_Int_Int);
 
             case S.UnaryOpKind.PostfixDec:
-                VisitIntUnaryAssignExp(exp.Operand, R.InternalUnaryAssignOperator.PostfixDec_Int_Int);
-                return;
+                return VisitIntUnaryAssignExp(exp.Operand, R.InternalUnaryAssignOperator.PostfixDec_Int_Int);
 
             case S.UnaryOpKind.PrefixInc:
-                VisitIntUnaryAssignExp(exp.Operand, R.InternalUnaryAssignOperator.PrefixInc_Int_Int);
-                return;
+                return VisitIntUnaryAssignExp(exp.Operand, R.InternalUnaryAssignOperator.PrefixInc_Int_Int);                
 
             case S.UnaryOpKind.PrefixDec:
-                VisitIntUnaryAssignExp(exp.Operand, R.InternalUnaryAssignOperator.PrefixDec_Int_Int);
-                return;
+                return VisitIntUnaryAssignExp(exp.Operand, R.InternalUnaryAssignOperator.PrefixDec_Int_Int);
 
             default:
                 throw new UnreachableCodeException();
         }
     }
 
-    void VisitAssignBinaryOpExp(S.BinaryOpExp exp)
+    ExpResult VisitAssignBinaryOpExp(S.BinaryOpExp exp)
     {
         // syntax 에서는 exp로 보이지만, R로 변환할 경우 Location 명령이어야 한다
         var loc0  = ExpVisitor.TranslateAsLoc(exp.Operand0, context, hintType: null, bWrapExpAsLoc: true);
@@ -204,21 +193,21 @@ partial struct ExpVisitor : IExpVisitor
                 // int x = 0; var l = () { x = 3; }, TODO: 이거 가능하도록
                 case R.LambdaMemberVarLoc:
                     context.AddFatalError(A0803_BinaryOp_LeftOperandIsNotAssignable, exp.Operand0);
-                    throw new UnreachableCodeException();
+                    break;
 
                 case R.ThisLoc:          // this = x;
                     context.AddFatalError(A0803_BinaryOp_LeftOperandIsNotAssignable, exp.Operand0);
-                    throw new UnreachableCodeException();
+                    break;
 
                 case R.TempLoc:
                     context.AddFatalError(A0803_BinaryOp_LeftOperandIsNotAssignable, exp.Operand0);
-                    throw new UnreachableCodeException();
+                    break;
             }
             
             var srcExp = ExpVisitor.TranslateAsExp(exp.Operand1, context, destType);
             var wrappedSrcExp = CastExp_Exp(srcExp, destType, exp);
 
-            result = new ExpResult.IR0Exp(new R.AssignExp(destLoc, wrappedSrcExp));
+            return new ExpResult.IR0Exp(new R.AssignExp(destLoc, wrappedSrcExp));
         }
         else
         {
@@ -227,13 +216,12 @@ partial struct ExpVisitor : IExpVisitor
         }
     }
 
-    void IExpVisitor.VisitBinaryOp(S.BinaryOpExp exp)
+    ExpResult IExpVisitor.VisitBinaryOp(S.BinaryOpExp exp)
     {
         // 1. Assign 먼저 처리
         if (exp.Kind == S.BinaryOpKind.Assign)
         {
-            VisitAssignBinaryOpExp(exp);
-            return;
+            return VisitAssignBinaryOpExp(exp);
         }
 
         var operandExp0 = ExpVisitor.TranslateAsExp(exp.Operand0, context, hintType: null);
@@ -252,8 +240,7 @@ partial struct ExpVisitor : IExpVisitor
                 if (castExp0 != null && castExp1 != null)
                 {
                     var equalExp = new R.CallInternalBinaryOperatorExp(info.IR0Operator, castExp0, castExp1, context.GetBoolType());
-                    result = new ExpResult.IR0Exp(new R.CallInternalUnaryOperatorExp(R.InternalUnaryOperator.LogicalNot_Bool_Bool, equalExp, info.ResultType));
-                    return;
+                    return new ExpResult.IR0Exp(new R.CallInternalUnaryOperatorExp(R.InternalUnaryOperator.LogicalNot_Bool_Bool, equalExp, info.ResultType));
                 }
             }
         }
@@ -268,8 +255,7 @@ partial struct ExpVisitor : IExpVisitor
             // NOTICE: 우선순위별로 정렬되어 있기 때문에 먼저 매칭되는 것을 선택한다
             if (castExp0 != null && castExp1 != null)
             {
-                result = new ExpResult.IR0Exp(new R.CallInternalBinaryOperatorExp(info.IR0Operator, castExp0, castExp1, info.ResultType));
-                return;
+                return new ExpResult.IR0Exp(new R.CallInternalBinaryOperatorExp(info.IR0Operator, castExp0, castExp1, info.ResultType));
             }
         }
 
@@ -310,18 +296,18 @@ partial struct ExpVisitor : IExpVisitor
     }
 
     // CallExp분석에서 Callable이 GlobalMemberFuncs인 경우 처리
-    void VisitCallExpGlobalFuncsCallable(ExpResult.GlobalFuncs funcs, ImmutableArray<S.Argument> sargs, S.ISyntaxNode nodeForErrorReport)
+    ExpResult VisitCallExpGlobalFuncsCallable(ExpResult.GlobalFuncs funcs, ImmutableArray<S.Argument> sargs, S.ISyntaxNode nodeForErrorReport)
     {
         var (func, args) = InternalMatchFunc(funcs.Infos, funcs.ParitalTypeArgs, sargs, nodeForErrorReport);
 
         if (!context.CanAccess(func))
             context.AddFatalError(A2011_ResolveIdentifier_TryAccessingPrivateMember, nodeForErrorReport);
 
-        result = new ExpResult.IR0Exp(new R.CallGlobalFuncExp(func, args));
+        return new ExpResult.IR0Exp(new R.CallGlobalFuncExp(func, args));
     }
 
     // CallExp분석에서 Callable이 ClassMemberFuncs인 경우 처리
-    void VisitCallExpClassMemberFuncsCallable(ExpResult.ClassMemberFuncs funcs, ImmutableArray<S.Argument> sargs, S.ISyntaxNode nodeForErrorReport)
+    ExpResult VisitCallExpClassMemberFuncsCallable(ExpResult.ClassMemberFuncs funcs, ImmutableArray<S.Argument> sargs, S.ISyntaxNode nodeForErrorReport)
     {
         var (func, args) = InternalMatchFunc(funcs.Infos, funcs.ParitalTypeArgs, sargs, nodeForErrorReport);
 
@@ -338,17 +324,17 @@ partial struct ExpVisitor : IExpVisitor
             if (!func.IsStatic() && funcs.ExplicitInstance == null)
                 context.AddFatalError(A2005_ResolveIdentifier_CantGetInstanceMemberThroughType, nodeForErrorReport);
 
-            result = new ExpResult.IR0Exp(new R.CallClassMemberFuncExp(func, funcs.ExplicitInstance, args));
+            return new ExpResult.IR0Exp(new R.CallClassMemberFuncExp(func, funcs.ExplicitInstance, args));
         }
         else // F 로 인스턴스를 명시적으로 정하지 않았다면 
         {
             if (func.IsStatic()) // 정적함수이면 인스턴스에 null
             {
-                result = new ExpResult.IR0Exp(new R.CallClassMemberFuncExp(func, null, args));
+                return new ExpResult.IR0Exp(new R.CallClassMemberFuncExp(func, null, args));
             }
             else // 인스턴스 함수이면 인스턴스에 this가 들어간다 B.F 로 접근할 경우 어떻게 하나
             {   
-                result = new ExpResult.IR0Exp(new R.CallClassMemberFuncExp(func, new R.ThisLoc(), args));
+                return new ExpResult.IR0Exp(new R.CallClassMemberFuncExp(func, new R.ThisLoc(), args));
             }
         }
 
@@ -365,7 +351,7 @@ partial struct ExpVisitor : IExpVisitor
     }
 
     // CallExp분석에서 Callable이 StructMemberFuncs인 경우 처리
-    void VisitCallExpStructMemberFuncsCallable(ExpResult.StructMemberFuncs funcs, ImmutableArray<S.Argument> sargs, S.ISyntaxNode nodeForErrorReport)
+    ExpResult VisitCallExpStructMemberFuncsCallable(ExpResult.StructMemberFuncs funcs, ImmutableArray<S.Argument> sargs, S.ISyntaxNode nodeForErrorReport)
     {
         var (func, args) = InternalMatchFunc(funcs.Infos, funcs.ParitalTypeArgs, sargs, nodeForErrorReport);
 
@@ -383,18 +369,18 @@ partial struct ExpVisitor : IExpVisitor
             if (!func.IsStatic() && funcs.ExplicitInstance == null)
                 context.AddFatalError(A2005_ResolveIdentifier_CantGetInstanceMemberThroughType, nodeForErrorReport);
 
-            result = new ExpResult.IR0Exp(new R.CallStructMemberFuncExp(func, funcs.ExplicitInstance, args));
+            return new ExpResult.IR0Exp(new R.CallStructMemberFuncExp(func, funcs.ExplicitInstance, args));
         }
         else
         {
             if (func.IsStatic()) // 정적함수이면 인스턴스에 null
             {
-                result = new ExpResult.IR0Exp(new R.CallStructMemberFuncExp(func, null, args));
+                return new ExpResult.IR0Exp(new R.CallStructMemberFuncExp(func, null, args));
             }
             else // 인스턴스 함수이면 인스턴스에 this가 들어간다 B.F 로 접근할 경우 어떻게 하나
             {
                 var thisLoc = new R.ThisLoc();
-                result = new ExpResult.IR0Exp(new R.CallStructMemberFuncExp(func, thisLoc, args));
+                return new ExpResult.IR0Exp(new R.CallStructMemberFuncExp(func, thisLoc, args));
             }
         }
 
@@ -411,7 +397,7 @@ partial struct ExpVisitor : IExpVisitor
     }
 
     // CallExp 분석에서 Callable이 Exp인 경우 처리
-    void VisitCallExpExpCallable(R.Loc callableLoc, IType callable, ImmutableArray<S.Argument> sargs, S.CallExp nodeForErrorReport)
+    ExpResult VisitCallExpExpCallable(R.Loc callableLoc, IType callable, ImmutableArray<S.Argument> sargs, S.CallExp nodeForErrorReport)
     {
         // TODO: Lambda말고 func<>도 있다
         var lambdaType = callable as LambdaType;
@@ -436,7 +422,7 @@ partial struct ExpVisitor : IExpVisitor
 
         if (match != null)
         {
-            result = new ExpResult.IR0Exp(new R.CallValueExp(lambdaSymbol, callableLoc, match.Value.Args));
+            return new ExpResult.IR0Exp(new R.CallValueExp(lambdaSymbol, callableLoc, match.Value.Args));
         }
         else
         {
@@ -445,7 +431,7 @@ partial struct ExpVisitor : IExpVisitor
         }
     }
 
-    void VisitCallExpEnumElemCallable(EnumElemSymbol enumElem, ImmutableArray<S.Argument> sargs, S.ISyntaxNode nodeForErrorReport)
+    ExpResult VisitCallExpEnumElemCallable(EnumElemSymbol enumElem, ImmutableArray<S.Argument> sargs, S.ISyntaxNode nodeForErrorReport)
     {
         if (enumElem.IsStandalone())
             context.AddFatalError(A0902_CallExp_CallableExpressionIsNotCallable, nodeForErrorReport);
@@ -460,7 +446,7 @@ partial struct ExpVisitor : IExpVisitor
 
         if (matchResult != null)
         {
-            result = new ExpResult.IR0Exp(new R.NewEnumElemExp(enumElem, matchResult.Value.Args));
+            return new ExpResult.IR0Exp(new R.NewEnumElemExp(enumElem, matchResult.Value.Args));
         }
         else
         {
@@ -469,7 +455,7 @@ partial struct ExpVisitor : IExpVisitor
         }
     }
 
-    void VisitCallExpStructCallable(StructSymbol structCallable, ImmutableArray<S.Argument> sargs, S.CallExp nodeForErrorReport)
+    ExpResult VisitCallExpStructCallable(StructSymbol structCallable, ImmutableArray<S.Argument> sargs, S.CallExp nodeForErrorReport)
     {
         // NOTICE: 생성자 검색 (AnalyzeNewExp 부분과 비슷)
         var structDecl = structCallable.GetDecl();
@@ -498,17 +484,13 @@ partial struct ExpVisitor : IExpVisitor
                 if (!context.CanAccess(constructor))
                     context.AddFatalError(A2011_ResolveIdentifier_TryAccessingPrivateMember, nodeForErrorReport);
 
-                result = new ExpResult.IR0Exp(new R.NewStructExp(constructor, successResult.Args));
-                break;
-
-            default:
-                throw new UnreachableCodeException();
+                return new ExpResult.IR0Exp(new R.NewStructExp(constructor, successResult.Args));                
         }
 
-        
+        throw new UnreachableCodeException();
     }
 
-    void IExpVisitor.VisitCall(S.CallExp exp)
+    ExpResult IExpVisitor.VisitCall(S.CallExp exp)
     {
         // 여기서 분석해야 할 것은 
         // 1. 해당 Exp가 함수인지, 변수인지, 함수라면 FuncId를 넣어준다
@@ -542,8 +524,7 @@ partial struct ExpVisitor : IExpVisitor
 
             // callable이 타입으로 계산되면 Struct과 EnumElem의 경우 생성자 호출을 한다
             case ExpResult.Struct structResult:
-                VisitCallExpStructCallable(structResult.Symbol, exp.Args, exp);
-                break;
+                return VisitCallExpStructCallable(structResult.Symbol, exp.Args, exp);
 
             case ExpResult.Enum:
                 context.AddFatalError(A0902_CallExp_CallableExpressionIsNotCallable, exp.Callable);
@@ -551,54 +532,46 @@ partial struct ExpVisitor : IExpVisitor
 
             // callable이 타입으로 계산되면 Struct과 EnumElem의 경우 생성자 호출을 한다
             case ExpResult.EnumElem enumElemResult:
-                VisitCallExpEnumElemCallable(enumElemResult.Symbol, exp.Args, exp);
-                break;
+                return VisitCallExpEnumElemCallable(enumElemResult.Symbol, exp.Args, exp);
 
             case ExpResult.EnumElemMemberVar enumElemMemberVarResult:
                 {
                     var locResult = enumElemMemberVarResult.MakeIR0Loc(bWrapExpAsLoc: false);
                     Debug.Assert(locResult != null);
-                    VisitCallExpExpCallable(locResult.Value.Loc, locResult.Value.Type, exp.Args, exp);
-                    break;
+                    return VisitCallExpExpCallable(locResult.Value.Loc, locResult.Value.Type, exp.Args, exp);
                 }
 
             case ExpResult.GlobalFuncs globalFuncsResult:
-                VisitCallExpGlobalFuncsCallable(globalFuncsResult, exp.Args, exp);
-                break;
+                return VisitCallExpGlobalFuncsCallable(globalFuncsResult, exp.Args, exp);
 
             case ExpResult.ClassMemberFuncs classMemberfuncsResult:
-                VisitCallExpClassMemberFuncsCallable(classMemberfuncsResult, exp.Args, exp);
-                break;
+                return VisitCallExpClassMemberFuncsCallable(classMemberfuncsResult, exp.Args, exp);                
 
             case ExpResult.StructMemberFuncs structMemberFuncsResult:
-                VisitCallExpStructMemberFuncsCallable(structMemberFuncsResult, exp.Args, exp);
-                break;
+                return VisitCallExpStructMemberFuncsCallable(structMemberFuncsResult, exp.Args, exp);                
 
             case ExpResult.IR0Exp expResult:
                 var tempLoc = new R.TempLoc(expResult.Exp);
-                VisitCallExpExpCallable(tempLoc, expResult.Exp.GetExpType(), exp.Args, exp);
-                break;
+                return VisitCallExpExpCallable(tempLoc, expResult.Exp.GetExpType(), exp.Args, exp);
 
             case ExpResult.IR0Loc locResult:
-                VisitCallExpExpCallable(locResult.Loc, locResult.Type, exp.Args, exp);
-                break;
-
-            default:
-                throw new UnreachableCodeException();
+                return VisitCallExpExpCallable(locResult.Loc, locResult.Type, exp.Args, exp);
         }
+
+        throw new UnreachableCodeException();
     }
 
-    void IExpVisitor.VisitLambda(S.LambdaExp exp)
+    ExpResult IExpVisitor.VisitLambda(S.LambdaExp exp)
     {
         // TODO: 리턴 타입과 인자타입은 타입 힌트를 반영해야 한다
         IType? retType = null;
 
         var visitor = new LambdaVisitor(retType, exp.Params, exp.Body, context, nodeForErrorReport: exp);
         var (lambdaSymbol, args) = visitor.Visit();
-        result = new ExpResult.IR0Exp(new R.LambdaExp(lambdaSymbol, args));
+        return new ExpResult.IR0Exp(new R.LambdaExp(lambdaSymbol, args));
     }
 
-    void IExpVisitor.VisitIndexer(S.IndexerExp exp)
+    ExpResult IExpVisitor.VisitIndexer(S.IndexerExp exp)
     {
         var objResult = TranslateAsLoc(exp.Object, context, hintType: null, bWrapExpAsLoc: true);
         if (objResult == null)
@@ -615,7 +588,7 @@ partial struct ExpVisitor : IExpVisitor
         // 리스트 타입의 경우,
         if (context.IsListType(objResult.Value.Type, out var itemType))
         {
-            result = new ExpResult.IR0Loc(new R.ListIndexerLoc(objResult.Value.Loc, castIndexResult), itemType);
+            return new ExpResult.IR0Loc(new R.ListIndexerLoc(objResult.Value.Loc, castIndexResult), itemType);
         }
         else
         {
@@ -660,19 +633,18 @@ partial struct ExpVisitor : IExpVisitor
         {
             case SymbolQueryResult.Error.MultipleCandidates:
                 context.AddFatalError(A2001_ResolveIdentifier_MultipleCandidatesForIdentifier, nodeForErrorReport);
-                throw new UnreachableCodeException();
+                break;
 
             case SymbolQueryResult.Error.VarWithTypeArg:
                 context.AddFatalError(A2002_ResolveIdentifier_VarWithTypeArg, nodeForErrorReport);
-                throw new UnreachableCodeException();
-
-            default:
-                throw new UnreachableCodeException();
+                break;
         }
+
+        throw new UnreachableCodeException();
     }
 
     // exp.x
-    void VisitMemberExpLocParent(S.MemberExp memberExp, R.Loc parentLoc, IType instanceType)
+    ExpResult VisitMemberExpLocParent(S.MemberExp memberExp, R.Loc parentLoc, IType instanceType)
     {
         var typeArgs = BodyMisc.MakeTypeArgs(memberExp.MemberTypeArgs, context);
         var memberResult = instanceType.QueryMember(new Name.Normal(memberExp.MemberName), typeArgs.Length);
@@ -697,8 +669,7 @@ partial struct ExpVisitor : IExpVisitor
 
             // exp.F
             case SymbolQueryResult.ClassMemberFuncs classMemberFuncsResult:
-                result = new ExpResult.ClassMemberFuncs(classMemberFuncsResult.Infos, typeArgs, HasExplicitInstance: true, parentLoc);
-                break;
+                return new ExpResult.ClassMemberFuncs(classMemberFuncsResult.Infos, typeArgs, HasExplicitInstance: true, parentLoc);
 
             // exp.x
             case SymbolQueryResult.ClassMemberVar classMemberVarResult:
@@ -713,8 +684,7 @@ partial struct ExpVisitor : IExpVisitor
                     if (!context.CanAccess(symbol))
                         context.AddFatalError(A2011_ResolveIdentifier_TryAccessingPrivateMember, memberExp);
 
-                    result = new ExpResult.IR0Loc(new R.ClassMemberLoc(parentLoc, symbol), symbol.GetDeclType());
-                    break;
+                    return new ExpResult.IR0Loc(new R.ClassMemberLoc(parentLoc, symbol), symbol.GetDeclType());
                 }
 
             // exp.S
@@ -724,8 +694,7 @@ partial struct ExpVisitor : IExpVisitor
 
             // exp.F
             case SymbolQueryResult.StructMemberFuncs structMemberFuncsResult:
-                result = new ExpResult.StructMemberFuncs(structMemberFuncsResult.Infos, typeArgs, HasExplicitInstance: true, parentLoc);
-                break;
+                return new ExpResult.StructMemberFuncs(structMemberFuncsResult.Infos, typeArgs, HasExplicitInstance: true, parentLoc);
 
             // exp.x
             case SymbolQueryResult.StructMemberVar structMemberVarResult:
@@ -740,8 +709,7 @@ partial struct ExpVisitor : IExpVisitor
                     if (!context.CanAccess(symbol))
                         context.AddFatalError(A2011_ResolveIdentifier_TryAccessingPrivateMember, memberExp);
 
-                    result = new ExpResult.IR0Loc(new R.StructMemberLoc(parentLoc, symbol), symbol.GetDeclType());
-                    break;
+                    return new ExpResult.IR0Loc(new R.StructMemberLoc(parentLoc, symbol), symbol.GetDeclType());
                 }
 
             // exp.E
@@ -758,16 +726,14 @@ partial struct ExpVisitor : IExpVisitor
             // E.Second exp;
             // exp.f
             case SymbolQueryResult.EnumElemMemberVar enumElemMemberVarResult:
-                result = new ExpResult.IR0Loc(new R.EnumElemMemberLoc(parentLoc, enumElemMemberVarResult.Symbol), enumElemMemberVarResult.Symbol.GetDeclType());
-                break;
+                return new ExpResult.IR0Loc(new R.EnumElemMemberLoc(parentLoc, enumElemMemberVarResult.Symbol), enumElemMemberVarResult.Symbol.GetDeclType());
+        }
 
-            default:
-                throw new UnreachableCodeException();
-        }        
+        throw new UnreachableCodeException();
     }
 
     // T.x
-    void VisitMemberExpTypeParent(S.MemberExp nodeForErrorReport, ITypeSymbol parentType, string memberName, ImmutableArray<S.TypeExp> stypeArgs)
+    ExpResult VisitMemberExpTypeParent(S.MemberExp nodeForErrorReport, ITypeSymbol parentType, string memberName, ImmutableArray<S.TypeExp> stypeArgs)
     {
         var member = parentType.QueryMember(new Name.Normal(memberName), stypeArgs.Length);
 
@@ -791,16 +757,14 @@ partial struct ExpVisitor : IExpVisitor
                     if (!context.CanAccess(classSymbol))
                         context.AddFatalError(A2011_ResolveIdentifier_TryAccessingPrivateMember, nodeForErrorReport);
 
-                    result = new ExpResult.Class(classSymbol);
-                    break;
+                    return new ExpResult.Class(classSymbol);
                 }
 
             // T.F
             case SymbolQueryResult.ClassMemberFuncs classMemberFuncsResult:
                 {
                     var typeArgs = BodyMisc.MakeTypeArgs(stypeArgs, context);
-                    result = new ExpResult.ClassMemberFuncs(classMemberFuncsResult.Infos, typeArgs, HasExplicitInstance: true, null);
-                    break;
+                    return new ExpResult.ClassMemberFuncs(classMemberFuncsResult.Infos, typeArgs, HasExplicitInstance: true, null);
                 }
 
             // T.x
@@ -814,8 +778,7 @@ partial struct ExpVisitor : IExpVisitor
                     if (!context.CanAccess(symbol))
                         context.AddFatalError(A2011_ResolveIdentifier_TryAccessingPrivateMember, nodeForErrorReport);
 
-                    result = new ExpResult.IR0Loc(new R.ClassMemberLoc(null, symbol), symbol.GetDeclType());
-                    break;
+                    return new ExpResult.IR0Loc(new R.ClassMemberLoc(null, symbol), symbol.GetDeclType());
                 }
 
             // T.S
@@ -828,16 +791,14 @@ partial struct ExpVisitor : IExpVisitor
                     if (!context.CanAccess(structSymbol))
                         context.AddFatalError(A2011_ResolveIdentifier_TryAccessingPrivateMember, nodeForErrorReport);
 
-                    result = new ExpResult.Struct(structSymbol);
-                    break;
+                    return new ExpResult.Struct(structSymbol);
                 }
 
             // T.F
             case SymbolQueryResult.StructMemberFuncs structMemberFuncsResult:
                 {
                     var typeArgs = BodyMisc.MakeTypeArgs(stypeArgs, context);
-                    result = new ExpResult.StructMemberFuncs(structMemberFuncsResult.Infos, typeArgs, HasExplicitInstance: true, ExplicitInstance: null);
-                    break;
+                    return new ExpResult.StructMemberFuncs(structMemberFuncsResult.Infos, typeArgs, HasExplicitInstance: true, ExplicitInstance: null);
                 }
 
             // T.x
@@ -851,8 +812,7 @@ partial struct ExpVisitor : IExpVisitor
                     if (!context.CanAccess(symbol))
                         context.AddFatalError(A2011_ResolveIdentifier_TryAccessingPrivateMember, nodeForErrorReport);
 
-                    result = new ExpResult.IR0Loc(new R.StructMemberLoc(null, symbol), symbol.GetDeclType());
-                    break;
+                    return new ExpResult.IR0Loc(new R.StructMemberLoc(null, symbol), symbol.GetDeclType());
                 }
 
             // T.E
@@ -865,20 +825,15 @@ partial struct ExpVisitor : IExpVisitor
                     if (!context.CanAccess(enumSymbol))
                         context.AddFatalError(A2011_ResolveIdentifier_TryAccessingPrivateMember, nodeForErrorReport);
 
-                    result = new ExpResult.Enum(enumSymbol);
-                    break;
+                    return new ExpResult.Enum(enumSymbol);
                 }
 
             // E.First
             case SymbolQueryResult.EnumElem enumElemResult:
-                result = new ExpResult.EnumElem(enumElemResult.Symbol);
-                break;
-
-            default:
-                throw new UnreachableCodeException();
+                return new ExpResult.EnumElem(enumElemResult.Symbol);
         }
 
-        Debug.Assert(result != null);
+        throw new UnreachableCodeException();
     }
 
     static Dictionary<ExpResult, SyntaxAnalysisErrorCode> errorMap = new Dictionary<ExpResult, SyntaxAnalysisErrorCode>
@@ -900,7 +855,7 @@ partial struct ExpVisitor : IExpVisitor
 
     // exp를 돌려주는 버전
     // parent."x"<>
-    void IExpVisitor.VisitMember(S.MemberExp memberExp)
+    ExpResult IExpVisitor.VisitMember(S.MemberExp memberExp)
     {
         var parentResult = ExpVisitor.VisitExp(memberExp.Parent, context, hintType: null);
 
@@ -909,16 +864,13 @@ partial struct ExpVisitor : IExpVisitor
         {
             // VisitMemberTypeParent를 호출하는 경우,
             case ExpResult.Class classResult:
-                VisitMemberExpTypeParent(memberExp, classResult.Symbol, memberExp.MemberName, memberExp.MemberTypeArgs);
-                break;
+                return VisitMemberExpTypeParent(memberExp, classResult.Symbol, memberExp.MemberName, memberExp.MemberTypeArgs);
 
             case ExpResult.Struct structResult:
-                VisitMemberExpTypeParent(memberExp, structResult.Symbol, memberExp.MemberName, memberExp.MemberTypeArgs);
-                break;
+                return VisitMemberExpTypeParent(memberExp, structResult.Symbol, memberExp.MemberName, memberExp.MemberTypeArgs);
 
             case ExpResult.Enum enumResult:
-                VisitMemberExpTypeParent(memberExp, enumResult.Symbol, memberExp.MemberName, memberExp.MemberTypeArgs);
-                break;
+                return VisitMemberExpTypeParent(memberExp, enumResult.Symbol, memberExp.MemberName, memberExp.MemberTypeArgs);
 
             // 에러
             case ExpResult.NotFound:
@@ -943,12 +895,12 @@ partial struct ExpVisitor : IExpVisitor
             case ExpResult.ClassMemberFuncs:
             case ExpResult.StructMemberFuncs:            
                 context.AddFatalError(A2006_ResolveIdentifier_FuncCantHaveMember, memberExp);
-                throw new UnreachableCodeException();
+                break;
 
             // 'Second.x'
             case ExpResult.EnumElem:
                 context.AddFatalError(A2009_ResolveIdentifier_EnumElemCantHaveMember, memberExp);
-                throw new UnreachableCodeException();
+                break;
 
             // location으로 변환해야 할 것들
             case ExpResult.ThisVar: // "this".id
@@ -964,22 +916,16 @@ partial struct ExpVisitor : IExpVisitor
                     // loc으로 변환 가능했다면
                     if (parentLocResult == null)
                         throw new UnreachableCodeException();
-                    {
-                        var (parentLoc, parentType) = parentLocResult.Value;
-                        VisitMemberExpLocParent(memberExp, parentLoc, parentType);
-                    }
-
-                    break;
+                    
+                    var (parentLoc, parentType) = parentLocResult.Value;
+                    return VisitMemberExpLocParent(memberExp, parentLoc, parentType);
                 }
-
-            default:
-                throw new UnreachableCodeException();
         }
 
-        Debug.Assert(result != null);
+        throw new UnreachableCodeException();
     }
 
-    void IExpVisitor.VisitList(S.ListExp exp)
+    ExpResult IExpVisitor.VisitList(S.ListExp exp)
     {
         var builder = ImmutableArray.CreateBuilder<R.Exp>(exp.Elems.Length);
 
@@ -1008,13 +954,13 @@ partial struct ExpVisitor : IExpVisitor
         if (curElemType == null)        
             context.AddFatalError(A1701_ListExp_CantInferElementTypeWithEmptyElement, exp);
 
-        result = new ExpResult.IR0Exp(
+        return new ExpResult.IR0Exp(
             new R.ListExp(builder.MoveToImmutable(), context.GetListType(curElemType))
         );
     }
 
     // 'new C(...)'
-    void IExpVisitor.VisitNew(S.NewExp exp)
+    ExpResult IExpVisitor.VisitNew(S.NewExp exp)
     {
         var classSymbol = context.MakeType(exp.Type) as ClassSymbol;
         if (classSymbol == null)
@@ -1043,23 +989,16 @@ partial struct ExpVisitor : IExpVisitor
                 if (!context.CanAccess(constructor))
                     context.AddFatalError(A2011_ResolveIdentifier_TryAccessingPrivateMember, exp);
 
-                result = new ExpResult.IR0Exp(new R.NewClassExp(constructor, successResult.Args));
-                break;
-
-            default:
-                throw new UnreachableCodeException();
+                return new ExpResult.IR0Exp(new R.NewClassExp(constructor, successResult.Args));
         }
 
-        Debug.Assert(result != null);
+        throw new UnreachableCodeException();
     }
 
     public static ExpResult VisitExp(S.Exp exp, ScopeContext context, IType? hintType)
     {
         var visitor = new ExpVisitor(context, hintType);
-        exp.Accept(ref visitor);
-
-        Debug.Assert(visitor.result != null);
-        return visitor.result;
+        return exp.Accept<ExpVisitor, ExpResult>(ref visitor);
     }
     
     R.StringExpElement VisitStringExpElement(S.StringExpElement elem)
@@ -1123,10 +1062,7 @@ partial struct ExpVisitor : IExpVisitor
     public static R.Exp? TranslateAsCastExp(S.Exp exp, ScopeContext context, IType hintType, IType targetType)
     {
         var visitor = new ExpVisitor(context, hintType);
-        exp.Accept(ref visitor);
-        Debug.Assert(visitor.result != null);
-        var result = visitor.result;
-
+        var result = exp.Accept<ExpVisitor, ExpResult>(ref visitor);
         var rexp = result.MakeIR0Exp();
         if (rexp == null)
             throw new NotImplementedException(); // exp로 변환하기가 실패했습니다.
@@ -1134,26 +1070,27 @@ partial struct ExpVisitor : IExpVisitor
         return visitor.CastExp_Exp(rexp, targetType, nodeForErrorReport: exp);
     }
 
-    // &i를 뭐로 번역할 것인가
-    // &c.x // box ref
-    // &s.x // local ref
-    // &e.x <- 금지, 런타임에 레이아웃이 바뀔 수 있다 (추후 ref-able enum을 쓰면(레이아웃이 겹치지 않는) 되도록 허용할 수 있다)
-    void IExpVisitor.VisitRef(S.RefExp exp)
-    {
-        // &a.b.c.d.e, 일단 innerExp를 memberLoc으로 변경하고, 다시 순회한다
-        var innerResult = ExpVisitor.TranslateAsLoc(exp.InnerExp, context, hintType: null, bWrapExpAsLoc: false);
-        if (innerResult == null) 
-            throw new NotImplementedException(); // 에러 처리
+    //// &i를 뭐로 번역할 것인가
+    //// &c.x // box ref
+    //// &s.x // local ref
+    //// &e.x <- 금지, 런타임에 레이아웃이 바뀔 수 있다 (추후 ref-able enum을 쓰면(레이아웃이 겹치지 않는) 되도록 허용할 수 있다)
+    //ExpResult IExpVisitor.VisitRef(S.RefExp exp)
+    //{
+    //    // &a.b.c.d.e, 일단 innerExp를 memberLoc으로 변경하고, 다시 순회한다
+    //    //var innerResult = ExpVisitor.TranslateAsLoc(exp.InnerExp, context, hintType: null, bWrapExpAsLoc: false);
+    //    //if (innerResult == null) 
+    //    //    throw new NotImplementedException(); // 에러 처리
 
-        var (innerLoc, innerType) = innerResult.Value;
+    //    //var (innerLoc, innerType) = innerResult.Value;
 
-        var refExpBuilder = new BoxRefExpBuilder();
-        innerLoc.Accept(ref refExpBuilder);
-        refExpBuilder.exp
+    //    //var refExpBuilder = new BoxRefExpBuilder();
+    //    //innerLoc.Accept(ref refExpBuilder);
+    //    //refExpBuilder.exp
 
-    }
+    //    throw new NotImplementedException();
+    //}
 
-    void IExpVisitor.VisitBox(S.BoxExp exp)
+    ExpResult IExpVisitor.VisitBox(S.BoxExp exp)
     {
         throw new NotImplementedException();
     }

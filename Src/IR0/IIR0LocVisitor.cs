@@ -12,6 +12,6 @@ public interface IIR0LocVisitor<TResult>
     TResult VisitClassMember(ClassMemberLoc loc);
     TResult VisitEnumElemMember(EnumElemMemberLoc loc);
     TResult VisitThis(ThisLoc loc);
-    TResult VisitLocalDeref(LocalDeref loc);
+    TResult VisitLocalDeref(LocalDerefLoc loc);
     TResult VisitNullableValue(NullableValueLoc loc);
 }

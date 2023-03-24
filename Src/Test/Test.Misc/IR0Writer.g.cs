@@ -223,7 +223,7 @@ namespace Citron.Test
                 case Citron.IR0.ClassMemberLoc @classMemberLoc: Write_ClassMemberLoc(@classMemberLoc); break;
                 case Citron.IR0.EnumElemMemberLoc @enumElemMemberLoc: Write_EnumElemMemberLoc(@enumElemMemberLoc); break;
                 case Citron.IR0.ThisLoc @thisLoc: Write_ThisLoc(@thisLoc); break;
-                case Citron.IR0.LocalDeref @localDeref: Write_LocalDeref(@localDeref); break;
+                case Citron.IR0.LocalDerefLoc @localDerefLoc: Write_LocalDerefLoc(@localDerefLoc); break;
                 case Citron.IR0.NullableValueLoc @nullableValueLoc: Write_NullableValueLoc(@nullableValueLoc); break;
                 default: throw new Citron.Infra.UnreachableCodeException();
             }
@@ -323,12 +323,12 @@ namespace Citron.Test
             itw.Write("new Citron.IR0.ThisLoc();");
         }
 
-        public void Write_LocalDeref(Citron.IR0.LocalDeref? @localDeref)
+        public void Write_LocalDerefLoc(Citron.IR0.LocalDerefLoc? @localDerefLoc)
         {
-            if (@localDeref == null) { itw.Write("null"); return; }
+            if (@localDerefLoc == null) { itw.Write("null"); return; }
 
-            itw.Write("new Citron.IR0.LocalDeref(");
-            this.Write_Loc(@localDeref.InnerLoc);
+            itw.Write("new Citron.IR0.LocalDerefLoc(");
+            this.Write_Loc(@localDerefLoc.InnerLoc);
             itw.Write(")");
         }
 

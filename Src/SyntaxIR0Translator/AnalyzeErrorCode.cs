@@ -14,9 +14,10 @@ namespace Citron.Analysis
         A0103_VarDecl_LocalVarNameShouldBeUniqueWithinScope,
         A0104_VarDecl_GlobalVariableNameShouldBeUnique,
         // A0105_VarDecl_CantUseEnumElementAsDeclType,
-        // A0106_VarDecl_RefDeclNeedInitializer,
-        A0110_VarDecl_RefInitializerUsedOnNonRefVarDecl,
+        A0106_VarDecl_RefDeclNeedInitializer,
+        // A0110_VarDecl_RefInitializerUsedOnNonRefVarDecl,
         A0111_VarDecl_LocalVarDeclNeedInitializer,
+        A0112_VarDecl_RefDeclNeedLocationInitializer,
 
         A0201_Capturer_ReferencingLocalVariableIsNotAllowed,
 

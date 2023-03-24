@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
@@ -154,6 +155,46 @@ namespace Citron.Infra
             return true;
         }
 
+        //public static bool CyclicEqualsCyclicStructKeyAndClassValue<TKey, TValue>(this Dictionary<TKey, TValue> x, Dictionary<TKey, TValue> y, ref CyclicEqualityCompareContext context)
+        //    where TKey : struct, ICyclicEqualityComparableStruct<TKey>
+        //    where TValue : class, ICyclicEqualityComparableClass<TValue>
+        //{
+        //    int countX = x.Count;
+        //    int countY = y.Count;
+
+        //    if (countX == 0 && countY == 0) return true;
+        //    if (countX == 0 || countY == 0) return false;
+
+        //    if (countX != countY) return false;
+
+        //    // x에서 쓰인 키와 y에서 쓰인 키가 Equals를 충족하지 않는다
+        //    foreach (var (keyX, valueX) in x)
+        //    {
+        //        // keyY를 수동으로 찾아본다 O(n)
+        //        TKey? matchedKeyY = null;
+        //        foreach (var keyY in y.Keys)
+        //        {
+        //            var savedKeyY = keyY;
+        //            if (keyX.CyclicEquals(ref savedKeyY, ref context))
+        //            {
+        //                matchedKeyY = keyY;
+        //                break;
+        //            }
+        //        }
+
+        //        // 키를 못찾았으면 같지 않다
+        //        if (matchedKeyY == null) return false;
+
+        //        if (!y.TryGetValue(matchedKeyY.Value, out var valueY))
+        //            return false;
+
+        //        if (!context.CompareClass(valueX, valueY))
+        //            return false;
+        //    }
+
+        //    return true;
+        //}
+
         public static bool CyclicEqualsClassValue<TKey, TValue>(this Dictionary<TKey, TValue> x, Dictionary<TKey, TValue> y, ref CyclicEqualityCompareContext context)
             where TKey : notnull
             where TValue : class, ICyclicEqualityComparableClass<TValue>
@@ -166,8 +207,9 @@ namespace Citron.Infra
 
             if (countX != countY) return false;
 
+            // x에서 쓰인 키와 y에서 쓰인 키가 Equals를 충족한다고 본다
             foreach(var (key, valueX) in x)
-            {
+            {   
                 if (!y.TryGetValue(key, out var valueY))
                     return false;
 

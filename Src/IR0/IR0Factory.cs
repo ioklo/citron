@@ -413,7 +413,7 @@ namespace Citron.IR0
 
         public Loc LocalDeref(Loc innerLoc)
         {
-            return new LocalDeref(innerLoc);
+            return new LocalDerefLoc(innerLoc);
         }
         
         public TempLoc TempLoc(Exp e)

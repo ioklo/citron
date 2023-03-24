@@ -85,7 +85,7 @@ public class UnitTest1
     [Fact]
     public void Build_FuncDecl_RefTypes()
     {
-        // ref T Func<T>(ref T t) { return ref t; }
+        // T& Func<T>(T& t) { return t; }
         var script = SScript(new S.GlobalFuncDeclScriptElement(new S.GlobalFuncDecl(
             null,
             isSequence: false,
@@ -93,7 +93,7 @@ public class UnitTest1
             name: "Func",
             typeParams: Arr(new S.TypeParam("T")),
             parameters: Arr(new S.FuncParam(S.FuncParamKind.Normal, new S.RefTypeExp(new S.IdTypeExp("T", default)), "t")),
-            body: Arr<S.Stmt>(new S.ReturnStmt(new S.ReturnValueInfo(new S.RefExp(new S.IdentifierExp("t", default)))))
+            body: Arr<S.Stmt>(new S.ReturnStmt(new S.ReturnValueInfo(new S.IdentifierExp("t", default))))
         )));
 
         var moduleName = NormalName("TestModule");
@@ -117,7 +117,7 @@ public class UnitTest1
     [Fact]
     public void Build_FuncDecl_ModuleInfoHasFuncInfo()
     {
-        // void Func<T, U>(int x, params U y, ref T z)
+        // void Func<T, U>(int x, params U y, T& z)
         var script = SScript(new S.GlobalFuncDeclScriptElement(new S.GlobalFuncDecl(
             null,
             isSequence: false,

@@ -59,7 +59,7 @@ namespace Citron.IR0
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitThis(this);
     }    
     
-    public record class LocalDeref(Loc InnerLoc) : Loc
+    public record class LocalDerefLoc(Loc InnerLoc) : Loc
     {
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitLocalDeref(this);
     }

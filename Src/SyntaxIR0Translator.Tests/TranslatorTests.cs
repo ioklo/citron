@@ -99,6 +99,8 @@ namespace Citron.Test
         [Fact]
         public void VarDeclStmt_TranslatesIntoLocalVariableInMain()
         {
+            // int x = 1;
+
             var syntaxScript = SScript(SVarDeclStmt(SIntTypeExp(), "x", SInt(1)));
             var script = Translate(syntaxScript);
 
@@ -112,6 +114,8 @@ namespace Citron.Test
         [Fact]
         public void VarDeclStmt_TranslatesIntoLocalVarDeclInFuncScope()
         {
+            // void Func() { int x = 1; }
+
             var syntaxScript = SScript(
                 new S.GlobalFuncDeclScriptElement(new S.GlobalFuncDecl(accessModifier: null, isSequence: false, SVoidTypeExp(), "Func", default, default,
                     SBody(
@@ -693,7 +697,7 @@ namespace Citron.Test
             // task { x = 3; } // x가 복사해서 들어가는데 캐치가 안됨
 
             // 이렇게 해야 함
-            // 'perm' int x; // x는 scope를 벗어나서도 사용할 수 있는 변수다
+            // box var& x = box 0; // x는 scope를 벗어나서도 사용할 수 있는 변수다
             // task { x = 3; }
             
             S.Exp exp;
@@ -708,7 +712,10 @@ namespace Citron.Test
             );
 
             var errors = TranslateWithErrors(syntaxScript);
+
+            // 에러, x는 로컬이라 
             VerifyError(errors, A0803_BinaryOp_LeftOperandIsNotAssignable, exp);
+            
         }
 
         [Fact]
@@ -1270,31 +1277,31 @@ namespace Citron.Test
         [Fact]
         void BinaryOpExp_AssigningToRefVar_TranslatesDerefBothSides()
         {
-            // int x = 3;
-            // var i = ref x;
-            // i = 7 + i;
+            // int i = 3;
+            // int& x = i;
+            // x = 7 + x;
 
             var syntaxScript = SScript(
-                SVarDeclStmt(SIntTypeExp(), "x", SInt(3)),
-                new S.VarDeclStmt(new S.VarDecl(SVarTypeExp(), Arr(new S.VarDeclElement("i", new S.RefExp(SId("x")))))),
+                SVarDeclStmt(SIntTypeExp(), "i", SInt(3)),
+                new S.VarDeclStmt(new S.VarDecl(SLocalRefTypeExp(SIntTypeExp()), Arr(new S.VarDeclElement("x", SId("i"))))),
                 new S.ExpStmt(new S.BinaryOpExp(
                     S.BinaryOpKind.Assign,
-                    SId("i"),
-                    new S.BinaryOpExp(S.BinaryOpKind.Add, SInt(7), SId("i"))
+                    SId("x"),
+                    new S.BinaryOpExp(S.BinaryOpKind.Add, SInt(7), SId("x"))
                 ))
             );
 
-            var script = Translate(syntaxScript);
+            var script = Translate(syntaxScript); 
 
-            // int x = 3;
-            // ref int i = x;
-            // deref(i) = 7 + deref(i); // 사용할때마다 deref를 해야 한다
+            // int i = 3;
+            // int& x = i;
+            // deref(x) = 7 + deref(x); // 사용할때마다 deref를 해야 한다
             var expected = r.Script(
-                r.LocalVarDecl(r.IntType(), "x", r.Int(3)),
-                r.LocalVarDecl(r.LocalRefType(r.IntType()), "i", r.LocalRef(r.LocalVar("x"), r.IntType())),
+                r.LocalVarDecl(r.IntType(), "i", r.Int(3)),
+                r.LocalVarDecl(r.LocalRefType(r.IntType()), "x", r.LocalRef(r.LocalVar("i"), r.IntType())),
                 r.Assign(
-                    r.Deref(r.LocalVar("i")),
-                    r.CallInternalBinary(R.InternalBinaryOperator.Add_Int_Int_Int, r.Int(7), r.Load(r.Deref(r.LocalVar("i")), r.IntType()))
+                    r.LocalDeref(r.LocalVar("x")),
+                    r.CallInternalBinary(R.InternalBinaryOperator.Add_Int_Int_Int, r.Int(7), r.Load(r.LocalDeref(r.LocalVar("x")), r.IntType()))
                 )
             );
 
@@ -1507,7 +1514,7 @@ namespace Citron.Test
         [Fact]
         void CallExp_RefArgumentTrivial_WorksProperly()
         {
-            //void F(ref int i) 
+            //void F(int& i) 
             //{
             //    i = 4;
             //}
@@ -1518,13 +1525,13 @@ namespace Citron.Test
             var syntaxScript = SScript(
                 new S.GlobalFuncDeclScriptElement(new S.GlobalFuncDecl(
                     accessModifier: null, isSequence: false, SVoidTypeExp(), "F", typeParams: default,
-                    Arr(new S.FuncParam(S.FuncParamKind.Normal, SRefTypeExp(SIntTypeExp()), "i")),
+                    Arr(new S.FuncParam(S.FuncParamKind.Normal, SLocalRefTypeExp(SIntTypeExp()), "i")),
                     SBody(new S.ExpStmt(new S.BinaryOpExp(S.BinaryOpKind.Assign, SId("i"), SInt(4))))
                 )),
                 
                 SMain(
                     SVarDeclStmt(SIntTypeExp(), "j", SInt(3)),
-                    new S.ExpStmt(new S.CallExp(SId("F"), Arr<S.Argument>(new S.Argument.Normal(new S.RefExp(SId("j"))))))
+                    new S.ExpStmt(new S.CallExp(SId("F"), Arr<S.Argument>(new S.Argument.Normal(IsRef: true, SId("j")))))
                 )
             );
 
@@ -1536,7 +1543,7 @@ namespace Citron.Test
             fD.InitFuncReturnAndParams(r.FuncRet(r.VoidType()), r.FuncParams((r.IntType(), "i")));
             moduleD.AddFunc(fD);
             var fBody = r.StmtBody(fD,
-                r.Assign(r.Deref(r.LocalVar("i")), r.Int(4))
+                r.Assign(r.LocalDeref(r.LocalVar("i")), r.Int(4))
             );
 
             var f = (GlobalFuncSymbol)fD.MakeOpenSymbol(factory);
@@ -1569,7 +1576,7 @@ namespace Citron.Test
                 )),
 
                 SMain(
-                    new S.ExpStmt(new S.CallExp(SId("Func", SIntTypeExp()), Arr<S.Argument>(new S.Argument.Normal(SInt(3)))))
+                    new S.ExpStmt(new S.CallExp(SId("Func", SIntTypeExp()), Arr<S.Argument>(new S.Argument.Normal(IsRef: false, SInt(3)))))
                 )
             );
 
@@ -1609,7 +1616,7 @@ namespace Citron.Test
                 )),
 
                 SMain(
-                    new S.ExpStmt(new S.CallExp(SId("Func"), Arr<S.Argument>(new S.Argument.Normal(SInt(3)))))
+                    new S.ExpStmt(new S.CallExp(SId("Func"), Arr<S.Argument>(new S.Argument.Normal(IsRef: false, SInt(3)))))
                 )
             );
 
@@ -1885,21 +1892,30 @@ namespace Citron.Test
 
         #endregion UninitializeVariable
 
-        //[Fact]
-        //public void ModuleDeclSymbol_Serialize()
-        //{
-        //    var syntaxCmdStmt = SCommand(
-        //        SString(
-        //            new S.TextStringExpElement("Hello "),
-        //            new S.ExpStringExpElement(SString("World"))));
+        #region LocalRef
+        [Fact]
+        void LocalRef_Init_TranslatesIntoLocalRefExp()
+        {
+            // int i = 0;
+            // int& x = i;
 
-        //    var syntaxScript = SScript(syntaxCmdStmt);
+            var scriptSyntax = SScript(
+                SVarDeclStmt(SIntTypeExp(), "i", SInt(0)),
+                SVarDeclStmt(SLocalRefTypeExp(SIntTypeExp()), "x", SId("i"))
+            );
 
-        //    var script = Translate(syntaxScript);
+            var actual = Translate(scriptSyntax);
 
-        //    var serializeContext = new SerializeContext();
-        //    var text = SerializeContext.Serialize(script.ModuleDeclSymbol);
-        //}
+            var expected = r.Script(
+                r.LocalVarDecl(r.IntType(), "i", r.Int(0)),
+                r.LocalVarDecl(r.LocalRefType(r.IntType()), "x", r.LocalRef(r.LocalVar("i"), r.IntType()))
+            );
+
+            AssertEquals(expected, actual);
+        }
+
+
+        #endregion LocalRef
 
 
     }

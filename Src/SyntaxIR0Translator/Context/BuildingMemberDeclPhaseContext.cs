@@ -31,13 +31,11 @@ namespace Citron.Analysis
 
         public IType MakeType(S.TypeExp typeExp, IDeclSymbolNode curNode)
         {
-            return new TypeMakerByTypeExp(modules.AsEnumerable(), factory, curNode).MakeType(typeExp);
+            return TypeMakerByTypeExp.MakeType(modules.AsEnumerable(), factory, curNode, typeExp);
         }
 
         public (FuncReturn, ImmutableArray<FuncParameter> Param) MakeFuncReturnAndParams(IDeclSymbolNode curNode, S.TypeExp retTypeSyntax, ImmutableArray<S.FuncParam> paramSyntaxes)
         {
-            var outerNode = curNode.GetOuterDeclNode()!;
-
             // 지금은 중첩 함수가 없으므로 바로 윗 단계부터 찾도록 한다
             var retType = MakeType(retTypeSyntax, curNode);
             var ret = new FuncReturn(retType);

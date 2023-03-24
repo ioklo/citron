@@ -8,9 +8,37 @@ using System.Diagnostics;
 
 namespace Citron.Syntax
 {
-    public abstract record class TypeExp : ISyntaxNode;
-    public record class IdTypeExp(string Name, ImmutableArray<TypeExp> TypeArgs) : TypeExp;
-    public record class MemberTypeExp(TypeExp Parent, string MemberName, ImmutableArray<TypeExp> TypeArgs) : TypeExp;
-    public record class NullableTypeExp(TypeExp InnerTypeExp) : TypeExp;
-    public record class RefTypeExp(TypeExp InnerTypeExp) : TypeExp;
+    public abstract record class TypeExp : ISyntaxNode
+    {
+        public abstract TResult Accept<TVisitor, TResult>(ref TVisitor visitor)
+            where TVisitor : struct, ITypeExpVisitor<TResult>;
+    }
+
+    public record class IdTypeExp(string Name, ImmutableArray<TypeExp> TypeArgs) : TypeExp
+    {
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitId(this);        
+    }
+
+    public record class MemberTypeExp(TypeExp Parent, string MemberName, ImmutableArray<TypeExp> TypeArgs) : TypeExp
+    {
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitMember(this);
+    }
+
+    public record class NullableTypeExp(TypeExp InnerTypeExp) : TypeExp
+    {
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitNullable(this);
+    }
+
+    public record class RefTypeExp(TypeExp InnerTypeExp) : TypeExp
+    {
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitRef(this);
+    }
+
+    public interface ITypeExpVisitor<TResult>
+    {
+        TResult VisitId(IdTypeExp typeExp);
+        TResult VisitMember(MemberTypeExp typeExp);
+        TResult VisitNullable(NullableTypeExp typeExp);
+        TResult VisitRef(RefTypeExp typeExp);
+    }
 }

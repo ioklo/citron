@@ -65,12 +65,13 @@ namespace Citron.Syntax
         public static IdentifierExp SId(string name) => new IdentifierExp(name, default);
         public static IdentifierExp SId(string name, params TypeExp[] typeArgs) => new IdentifierExp(name, Arr(typeArgs));
 
+        public static TypeExp SLocalRefVarTypeExp() => new RefTypeExp(new IdTypeExp("var", default));
         public static TypeExp SVarTypeExp() => new IdTypeExp("var", default);
         public static TypeExp SIntTypeExp() => new IdTypeExp("int", default);
         public static TypeExp SBoolTypeExp() => new IdTypeExp("bool", default);
         public static TypeExp SVoidTypeExp() => new IdTypeExp("void", default);
         public static TypeExp SStringTypeExp() => new IdTypeExp("string", default);
-        public static TypeExp SRefTypeExp(TypeExp innerTypeExp) => new RefTypeExp(innerTypeExp);
+        public static TypeExp SLocalRefTypeExp(TypeExp innerTypeExp) => new RefTypeExp(innerTypeExp);
 
         public static IdTypeExp SIdTypeExp(string name, params TypeExp[] typeArgs) => new IdTypeExp(name, Arr(typeArgs));
 
@@ -91,7 +92,7 @@ namespace Citron.Syntax
         {
             var builder = ImmutableArray.CreateBuilder<Argument>(exps.Length);
             foreach (var exp in exps)
-                builder.Add(new Argument.Normal(exp));
+                builder.Add(new Argument.Normal(IsRef: false, exp));
             return builder.MoveToImmutable();
         }
 
