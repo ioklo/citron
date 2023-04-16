@@ -35,9 +35,7 @@ struct TopLevelVisitor_BuildingBodyPhase
         var stmtVisitor = new StmtVisitor(scopeContext);
 
         // TODO: Body가 실제로 리턴을 제대로 하는지 확인해야 한다 => 분석기에서 해야 한다. 여기서는 Translation만 한다
-        stmtVisitor.VisitBody(body);
-
-        var rstmts = scopeContext.MakeStmts();
-        context.AddBody(symbol, rstmts);
+        var bodyStmts = stmtVisitor.VisitBody(body);
+        context.AddBody(symbol, bodyStmts);
     }
 }

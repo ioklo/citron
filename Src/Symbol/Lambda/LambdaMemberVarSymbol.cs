@@ -13,9 +13,9 @@ namespace Citron.Symbol
 
         ISymbolNode ISymbolNode.Apply(TypeEnv typeEnv) => Apply(typeEnv);
 
-        SymbolQueryResult ISymbolNode.QueryMember(Name name, int explicitTypeArgCount)
+        SymbolQueryResult? ISymbolNode.QueryMember(Name name, int explicitTypeArgCount)
         {
-            return SymbolQueryResults.NotFound;
+            return null;
         }
 
         public LambdaMemberVarSymbol Apply(TypeEnv typeEnv)

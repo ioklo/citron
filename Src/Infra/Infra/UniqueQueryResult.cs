@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Citron.Collections;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -20,15 +21,29 @@ namespace Citron.Infra
 
         State state;
         T? value;
+        ImmutableArray<T> multipleCandidatesErrorValue;
 
-        UniqueQueryResult(State state, T? value)
+        UniqueQueryResult(State state, T? value, ImmutableArray<T> multipleCandidatesErrorValue)
         {
             this.state = state;
             this.value = value;
+            this.multipleCandidatesErrorValue = multipleCandidatesErrorValue;
         }
 
         public bool IsNotFound() { return state == State.NotFound; }
-        public bool IsMultipleError() { return state == State.MultipleError; }
+        public bool IsMultipleError(out ImmutableArray<T> candidates) 
+        {
+            if (state == State.MultipleError)
+            {
+                candidates = this.multipleCandidatesErrorValue;
+                return true;
+            }
+            else
+            {
+                candidates = default;
+                return false;
+            }
+        }
         
         public bool IsFound([NotNullWhen(returnValue: true)] out T? value)
         {
@@ -46,8 +61,8 @@ namespace Citron.Infra
         }
 
         // constructor
-        public static UniqueQueryResult<T> NotFound() { return new UniqueQueryResult<T>(State.NotFound, default); }
-        public static UniqueQueryResult<T> MultipleError() { return new UniqueQueryResult<T>(State.MultipleError, default); }
-        public static UniqueQueryResult<T> Found(T t) { return new UniqueQueryResult<T>(UniqueQueryResult<T>.State.Found, t); }
+        public static UniqueQueryResult<T> NotFound() { return new UniqueQueryResult<T>(State.NotFound, default, default); }
+        public static UniqueQueryResult<T> MultipleError(ImmutableArray<T> candidates) { return new UniqueQueryResult<T>(State.MultipleError, default, candidates); }
+        public static UniqueQueryResult<T> Found(T t) { return new UniqueQueryResult<T>(UniqueQueryResult<T>.State.Found, t, default); }
     }
 }

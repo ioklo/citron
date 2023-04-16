@@ -4,6 +4,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Collections;
+using Citron.Collections;
 
 namespace Citron.Infra
 {
@@ -49,7 +51,12 @@ namespace Citron.Infra
                 return UniqueQueryResult<T>.Found(one);
             }
 
-            return UniqueQueryResult<T>.MultipleError();
+            var count = GetCount();
+            var builder = ImmutableArray.CreateBuilder<T>(count);
+            for (int i = 0; i < count; i++)
+                builder.Add(GetAt(i));
+
+            return UniqueQueryResult<T>.MultipleError(builder.MoveToImmutable());
         }
 
         public bool ContainsItem()

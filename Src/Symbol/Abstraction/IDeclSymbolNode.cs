@@ -82,7 +82,7 @@ namespace Citron.Symbol
                         return user.IsDescendantOf(targetOuter);
                     }
 
-                default: throw new UnreachableCodeException();
+                default: throw new UnreachableException();
             }
         }
 
@@ -140,7 +140,7 @@ namespace Citron.Symbol
             }
             else
             {
-                throw new UnreachableCodeException();
+                throw new UnreachableException();
             }
         }
     }

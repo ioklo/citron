@@ -61,6 +61,9 @@ namespace Citron.Symbol
             return Accessor.Public; // TODO: private으로 지정할 수 있을까
         }
 
+        public NamespaceDeclSymbol? GetNamespace(Name name)
+            => topLevelComp.GetNamespace(name);
+
         public ITypeDeclSymbol? GetType(Name name, int typeParamCount)
            => topLevelComp.GetType(name, typeParamCount);
 

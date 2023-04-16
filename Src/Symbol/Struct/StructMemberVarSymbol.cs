@@ -13,6 +13,7 @@ namespace Citron.Symbol
         StructMemberVarDeclSymbol decl;
 
         ISymbolNode ISymbolNode.Apply(TypeEnv typeEnv) => Apply(typeEnv);
+        ISymbolNode? ISymbolNode.GetOuter() => GetOuter();
 
         internal StructMemberVarSymbol(SymbolFactory factory, StructSymbol outer, StructMemberVarDeclSymbol decl)
         {
@@ -21,9 +22,9 @@ namespace Citron.Symbol
             this.decl = decl;
         }
 
-        SymbolQueryResult ISymbolNode.QueryMember(Name name, int explicitTypeArgCount)
+        SymbolQueryResult? ISymbolNode.QueryMember(Name name, int explicitTypeArgCount)
         {
-            return SymbolQueryResults.NotFound;
+            return null;
         }
 
         public StructMemberVarSymbol Apply(TypeEnv typeEnv)
@@ -32,7 +33,7 @@ namespace Citron.Symbol
             return factory.MakeStructMemberVar(appliedOuter, decl);
         }
 
-        public ISymbolNode? GetOuter()
+        public StructSymbol GetOuter()
         {
             return outer;
         }

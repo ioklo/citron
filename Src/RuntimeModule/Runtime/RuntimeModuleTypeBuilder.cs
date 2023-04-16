@@ -43,7 +43,7 @@ namespace Citron.Runtime
             else if (buildInfo is RuntimeModuleTypeBuildInfo.Struct structBuildInfo)
                 moduleBuilder.AddStructType(outerTypeId, typeId, structBuildInfo.GetTypeParams(), structBuildInfo.GetBaseTypeValue(), memberTypeIds, memberFuncIds, memberVarIds, structBuildInfo.GetDefaultValueFactory());
             else
-                throw new UnreachableCodeException();
+                throw new UnreachableException();
         }
 
         public void AddMemberFunc(

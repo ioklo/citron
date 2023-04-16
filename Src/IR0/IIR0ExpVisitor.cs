@@ -48,5 +48,7 @@ public interface IIR0ExpVisitor<TResult>
     TResult VisitBox(BoxExp exp);
 
     TResult VisitLocalRef(LocalRefExp exp);
-    TResult VisitBoxRef(BoxRefExp exp);
+
+    TResult VisitClassMemberVarBoxRefExp(ClassMemberVarBoxRefExp exp);
+    TResult VisitStructMemberVarBoxRefExp(StructMemberVarBoxRefExp exp);
 }

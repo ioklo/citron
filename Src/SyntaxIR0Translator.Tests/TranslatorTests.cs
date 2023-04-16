@@ -1914,6 +1914,29 @@ namespace Citron.Test
             AssertEquals(expected, actual);
         }
 
+        [Fact]
+        void LocalRef_Init_TranslatesIntoLocalRefExp()
+        {
+            
+
+            // int i = 0;
+            // int& x = i;
+
+            var scriptSyntax = SScript(
+                SVarDeclStmt(SIntTypeExp(), "i", SInt(0)),
+                SVarDeclStmt(SLocalRefTypeExp(SIntTypeExp()), "x", SId("i"))
+            );
+
+            var actual = Translate(scriptSyntax);
+
+            var expected = r.Script(
+                r.LocalVarDecl(r.IntType(), "i", r.Int(0)),
+                r.LocalVarDecl(r.LocalRefType(r.IntType()), "x", r.LocalRef(r.LocalVar("i"), r.IntType()))
+            );
+
+            AssertEquals(expected, actual);
+        }
+
 
         #endregion LocalRef
 

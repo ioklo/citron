@@ -56,10 +56,17 @@ namespace Citron.Symbol
             return TypeEnv.Empty;
         }
 
-        SymbolQueryResult ISymbolNode.QueryMember(Name memberName, int typeParamCount)
+        SymbolQueryResult? ISymbolNode.QueryMember(Name memberName, int typeParamCount)
         {
-            // NOTICE: 타입, 함수 간의 이름 충돌이 일어나지 않는다고 가정한다, ClassSymbol, StructSymbol도 마찬가지.
-            // 타입, 함수순으로 검색하고 검색결과가 나오면 바로 리턴한다
+            // NOTICE: 네임스페이스, 타입, 함수 간의 이름 충돌이 일어나지 않는다고 가정한다, ClassSymbol, StructSymbol도 마찬가지.
+            // 네임스페이스, 타입, 함수순으로 검색하고 검색결과가 나오면 바로 리턴한다
+            if (typeParamCount == 0)
+            {
+                var nsDSymbol = decl.GetNamespace(memberName);
+                if (nsDSymbol != null)                
+                    return new SymbolQueryResult.Namespace(factory.MakeNamespace(this, nsDSymbol));
+            }
+            
             var memberTypeDecl = decl.GetType(memberName, typeParamCount);
             if (memberTypeDecl != null)
                 return SymbolQueryResultBuilder.Build(memberTypeDecl, this, factory);
@@ -79,7 +86,7 @@ namespace Citron.Symbol
             if (builder.Count != 0)
                 return new SymbolQueryResult.GlobalFuncs(builder.ToImmutable());
 
-            return SymbolQueryResults.NotFound;
+            return null;
         }
 
         bool ICyclicEqualityComparableClass<ISymbolNode>.CyclicEquals(ISymbolNode other, ref CyclicEqualityCompareContext context)

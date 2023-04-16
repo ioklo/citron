@@ -37,7 +37,7 @@ public partial struct TypeLoader
                 return new TypeVarType(typeVarId.Index, typeVarId.Name);
 
             default:
-                throw new UnreachableCodeException();
+                throw new UnreachableException();
         }
     }
 }

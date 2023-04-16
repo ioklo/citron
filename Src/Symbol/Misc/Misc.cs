@@ -46,7 +46,7 @@ namespace Citron.Symbol
         //            return null;
 
         //        default:
-        //            throw new UnreachableCodeException();
+        //            throw new UnreachableException();
         //    }
         //}
 
@@ -123,7 +123,7 @@ namespace Citron.Symbol
         //            break;
 
         //        default:
-        //            throw new UnreachableCodeException();
+        //            throw new UnreachableException();
         //    }
         //}
     }

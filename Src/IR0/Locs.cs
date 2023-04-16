@@ -64,10 +64,10 @@ namespace Citron.IR0
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitLocalDeref(this);
     }
 
-    //public record class BoxDerefLoc(Loc Loc) : Loc
-    //{
-
-    //}
+    public record class BoxDerefLoc(Loc InnerLoc) : Loc
+    {
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitBoxDeref(this);
+    }
 
     // nullable value에서 value를 가져온다
     public record class NullableValueLoc(Loc Loc) : Loc

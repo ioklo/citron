@@ -4,15 +4,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Citron.Infra;
 using Citron.Collections;
 using Citron.Symbol;
+
 using S = Citron.Syntax;
 using R = Citron.IR0;
-using Citron.Infra;
+
+using static Citron.Analysis.SyntaxAnalysisErrorCode;
 
 namespace Citron.Analysis
 {
-    internal static class BodyMisc
+    static class BodyMisc
     {
         public static ImmutableArray<IType> MakeTypeArgs(ImmutableArray<S.TypeExp> typeArgsSyntax, ScopeContext context)
         {
@@ -83,58 +86,101 @@ namespace Citron.Analysis
             return null;
         }
 
-        public static ExpResult MakeExpResult(this SymbolQueryResult result, ImmutableArray<IType> typeArgs)
+        // 값의 겉보기 타입을 변경한다
+        public static R.Exp CastExp_Exp(R.Exp exp, IType expectedType, S.ISyntaxNode nodeForErrorReport, ScopeContext context) // throws AnalyzeFatalException
         {
-            switch (result)
+            var result = BodyMisc.TryCastExp_Exp(exp, expectedType);
+            if (result != null) return result;
+
+            context.AddFatalError(A2201_Cast_Failed, nodeForErrorReport);
+            throw new UnreachableException();
+        }
+
+        public struct SymbolQueryResultExpResultTranslator : ISymbolQueryResultVisitor<ExpResult>
+        {
+            ImmutableArray<IType> typeArgs;
+
+            public static ExpResult Translate(SymbolQueryResult result, ImmutableArray<IType> typeArgs)
             {
-                case SymbolQueryResult.Error errorResult:
-                    return errorResult.ToErrorIdentifierResult();
+                var builder = new SymbolQueryResultExpResultTranslator() { typeArgs = typeArgs };
+                return result.Accept<SymbolQueryResultExpResultTranslator, ExpResult>(ref builder);
+            }
 
-                case SymbolQueryResult.NotFound:
-                    return ExpResults.NotFound;
+            ExpResult ISymbolQueryResultVisitor<ExpResult>.VisitNotFound(SymbolQueryResult.NotFound result)
+            {
+                return ExpResults.NotFound;
+            }
 
-                case SymbolQueryResult.GlobalFuncs globalFuncsResult:
-                    return new ExpResult.GlobalFuncs(globalFuncsResult.Infos, typeArgs);
+            ExpResult ISymbolQueryResultVisitor<ExpResult>.VisitMultipleCandidatesError(SymbolQueryResult.MultipleCandidatesError result)
+            {
+                return ExpResults.MultipleCandiates;
+            }
 
-                // 여기서부터 case ItemQueryResult.Valid 
-                #region Class
-                case SymbolQueryResult.Class classResult:
-                    return new ExpResult.Class(classResult.ClassConstructor.Invoke(typeArgs));
+            ExpResult ISymbolQueryResultVisitor<ExpResult>.VisitNamespace(SymbolQueryResult.Namespace result)
+            {
+                return new ExpResult.Namespace(result.Symbol);
+            }
 
-                case SymbolQueryResult.ClassMemberFuncs classMemberFuncsResult:
-                    return new ExpResult.ClassMemberFuncs(classMemberFuncsResult.Infos, typeArgs, false, null);
+            ExpResult ISymbolQueryResultVisitor<ExpResult>.VisitGlobalFuncs(SymbolQueryResult.GlobalFuncs result)
+            {
+                return new ExpResult.GlobalFuncs(result.Infos, typeArgs);
+            }
 
-                case SymbolQueryResult.ClassMemberVar classMemberVarResult:
-                    return new ExpResult.ClassMemberVar(classMemberVarResult.Var, false, null);
-                #endregion
+            ExpResult ISymbolQueryResultVisitor<ExpResult>.VisitClass(SymbolQueryResult.Class result)
+            {
+                return new ExpResult.Class(result.ClassConstructor.Invoke(typeArgs));
+            }
 
-                #region Struct
-                case SymbolQueryResult.Struct structResult:
-                    return new ExpResult.Struct(structResult.StructConstructor.Invoke(typeArgs));
+            ExpResult ISymbolQueryResultVisitor<ExpResult>.VisitClassMemberFuncs(SymbolQueryResult.ClassMemberFuncs result)
+            {
+                return new ExpResult.ClassMemberFuncs(result.Infos, typeArgs, HasExplicitInstance: false, null);
+            }
 
-                case SymbolQueryResult.StructMemberFuncs structMemberFuncsResult:
-                    return new ExpResult.StructMemberFuncs(structMemberFuncsResult.Infos, typeArgs, false, null);
+            ExpResult ISymbolQueryResultVisitor<ExpResult>.VisitClassMemberVar(SymbolQueryResult.ClassMemberVar result)
+            {
+                return new ExpResult.ClassMemberVar(result.Symbol, HasExplicitInstance: false, null);
+            }
 
-                case SymbolQueryResult.StructMemberVar structMemberVarResult:
-                    return new ExpResult.StructMemberVar(structMemberVarResult.Var, false, null);
-                #endregion
+            ExpResult ISymbolQueryResultVisitor<ExpResult>.VisitStruct(SymbolQueryResult.Struct result)
+            {
+                return new ExpResult.Struct(result.StructConstructor.Invoke(typeArgs));
+            }
 
-                #region Enum
-                case SymbolQueryResult.Enum enumResult:
-                    return new ExpResult.Enum(enumResult.EnumConstructor.Invoke(typeArgs));
+            ExpResult ISymbolQueryResultVisitor<ExpResult>.VisitStructMemberFuncs(SymbolQueryResult.StructMemberFuncs result)
+            {
+                return new ExpResult.StructMemberFuncs(result.Infos, typeArgs, HasExplicitInstance: false, null);
+            }
 
-                case SymbolQueryResult.EnumElem:
-                    throw new NotImplementedException();  // TODO: 무슨 뜻인지 확실히 해야 한다
-                #endregion
+            ExpResult ISymbolQueryResultVisitor<ExpResult>.VisitStructMemberVar(SymbolQueryResult.StructMemberVar result)
+            {
+                return new ExpResult.StructMemberVar(result.Symbol, HasExplicitInstance: false, null);
+            }
 
-                case SymbolQueryResult.Lambda:
-                    throw new UnreachableCodeException();
+            ExpResult ISymbolQueryResultVisitor<ExpResult>.VisitEnum(SymbolQueryResult.Enum result)
+            {
+                return new ExpResult.Enum(result.EnumConstructor.Invoke(typeArgs));
+            }
 
-                case SymbolQueryResult.LambdaMemberVar lambdaMemberVarResult:
-                    return new ExpResult.LambdaMemberVar(lambdaMemberVarResult.Symbol);
+            ExpResult ISymbolQueryResultVisitor<ExpResult>.VisitEnumElem(SymbolQueryResult.EnumElem result)
+            {
+                return new ExpResult.EnumElem(result.Symbol);
+            }
 
-                default:
-                    throw new UnreachableCodeException();
+            ExpResult ISymbolQueryResultVisitor<ExpResult>.VisitEnumElemMemberVar(SymbolQueryResult.EnumElemMemberVar result)
+            {
+                // EnumElem에 대하여 멤버 함수를 만들 수 없으므로, Identifier로는 지칭할 수 없다
+                throw new RuntimeFatalException();
+            }
+
+            ExpResult ISymbolQueryResultVisitor<ExpResult>.VisitLambdaMemberVar(SymbolQueryResult.LambdaMemberVar result)
+            {
+                return new ExpResult.LambdaMemberVar(result.Symbol);
+            }
+
+            ExpResult ISymbolQueryResultVisitor<ExpResult>.VisitTupleMemberVar(SymbolQueryResult.TupleMemberVar result)
+            {
+                // Tuple에 대하여 멤버 함수를 만들 수 없으므로, Identifier로는 지칭할 수 없다
+                throw new RuntimeFatalException();
             }
         }
     }

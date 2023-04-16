@@ -20,8 +20,7 @@ partial class ScopeContext : IMutable<ScopeContext>
     ScopeContext? parentContext;
 
     bool bLoop;    
-    ImmutableDictionary<Name, LocalVarInfo> localVarInfos;
-    ImmutableArray<R.Stmt> rstmts;
+    ImmutableDictionary<Name, LocalVarInfo> localVarInfos;    
 
     // private
     ScopeContext IMutable<ScopeContext>.Clone(CloneContext cloneContext)
@@ -30,7 +29,7 @@ partial class ScopeContext : IMutable<ScopeContext>
         var newBodyContext = cloneContext.GetClone(bodyContext);
         var newParentContext = (parentContext != null) ? cloneContext.GetClone(parentContext) : null;
 
-        return new ScopeContext(newGlobalContext, newBodyContext, newParentContext, bLoop, localVarInfos, rstmts);
+        return new ScopeContext(newGlobalContext, newBodyContext, newParentContext, bLoop, localVarInfos);
     }
 
     void IMutable<ScopeContext>.Update(ScopeContext src, UpdateContext context)
@@ -50,17 +49,11 @@ partial class ScopeContext : IMutable<ScopeContext>
 
         bLoop = src.bLoop;
         localVarInfos = src.localVarInfos;
-        rstmts = src.rstmts;
     }
 
     public ScopeContext(GlobalContext globalContext, BodyContext bodyContext, ScopeContext? parentContext, bool bLoop)
-        : this(globalContext, bodyContext, parentContext, bLoop, ImmutableDictionary<Name, LocalVarInfo>.Empty, default)
+        : this(globalContext, bodyContext, parentContext, bLoop, ImmutableDictionary<Name, LocalVarInfo>.Empty)
     {   
-    }
-
-    public void AddStmt(R.Stmt stmt)
-    {
-        rstmts = rstmts.Add(stmt);
     }
 
     public void SetFlowEndsCompletely()
@@ -112,21 +105,16 @@ partial class ScopeContext : IMutable<ScopeContext>
         return bLoop;
     }
 
-    // 현재까지 모인 Stmts들을 ImmutableArray로 리턴한다
-    public ImmutableArray<R.Stmt> MakeStmts()
-    {
-        return rstmts;
-    }
-
-    public ExpResult ResolveIdentifier(Name name, ImmutableArray<IType> typeArgs)
-    {
+    // 간소화
+    public IntermediateExp? ResolveIdentifier(Name name, ImmutableArray<IType> typeArgs) // throws IdentifierResolverMultipleCandidatesException
+    {   
         // scope context는 local을 검색한다
         if (localVarInfos.TryGetValue(name, out var info))
-            return new ExpResult.LocalVar(info.Type, name);
+            return new IntermediateExp.LocalVar(info.Type, name);
 
         if (parentContext != null)
             return parentContext.ResolveIdentifier(name, typeArgs);
-        else
+        else        
             // body에서 검색
             return bodyContext.ResolveIdentifier(name, typeArgs);
     }

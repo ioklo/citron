@@ -70,25 +70,25 @@ namespace Citron.Symbol
             return decl.GetParameterCount();
         }
         
-        SymbolQueryResult ISymbolNode.QueryMember(Name memberName, int typeParamCount)
+        SymbolQueryResult? ISymbolNode.QueryMember(Name memberName, int typeParamCount)
         {
-            int memberVarCount = decl.GetMemberVarCount();
-
-            for(int i = 0; i < memberVarCount; i++)
+            if (typeParamCount == 0)
             {
-                var memberVar = decl.GetMemberVar(i);
+                int memberVarCount = decl.GetMemberVarCount();
 
-                if (memberVar.GetName().Equals(memberName))
+                for (int i = 0; i < memberVarCount; i++)
                 {
-                    if (typeParamCount != 0)
-                        return SymbolQueryResults.Error.VarWithTypeArg;
+                    var memberVar = decl.GetMemberVar(i);
 
-                    var memberVarSymbol = factory.MakeLambdaMemberVar(this, memberVar);
-                    return new SymbolQueryResult.LambdaMemberVar(memberVarSymbol);
+                    if (memberVar.GetName().Equals(memberName))
+                    {
+                        var memberVarSymbol = factory.MakeLambdaMemberVar(this, memberVar);
+                        return new SymbolQueryResult.LambdaMemberVar(memberVarSymbol);
+                    }
                 }
             }
 
-            return SymbolQueryResults.NotFound;
+            return null;
         }
 
         public ITypeSymbol? GetOuterType()

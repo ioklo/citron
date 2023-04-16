@@ -206,7 +206,7 @@ namespace Citron.IR0Analyzer.NullRefAnalysis
                     break;
             }
 
-            throw new UnreachableCodeException();
+            throw new UnreachableException();
         }
 
         void IIR0StmtVisitor.VisitTaskStmt(R.TaskStmt taskStmt)

@@ -16,33 +16,34 @@ using Citron.Symbol;
 namespace Citron.Analysis
 {
     // 어떤 Exp에서 타입 정보 등을 알아냅니다
-    
+
+    record struct MatchedFunc(MatchCallableResult Result, int Index, ScopeContext Context);
+    // bExactMatch: TypeInference를 사용하지 않은 경우
+    record struct MatchCallableResult(bool bMatch, bool bExactMatch, ImmutableArray<R.Argument> Args, ImmutableArray<IType> TypeArgs);
+
     // entry1의 result        
     abstract record class FuncMatchIndexResult
     {
-        public record class MultipleCandidates : FuncMatchIndexResult
-        {
-            public static readonly MultipleCandidates Instance = new MultipleCandidates();
-            private MultipleCandidates() { }
-        }
+        public record class MultipleCandidates(ImmutableArray<MatchedFunc> MatchedFuncs) : FuncMatchIndexResult;
 
         public record class NotFound : FuncMatchIndexResult
-        {
-            public static readonly NotFound Instance = new NotFound();
-            private NotFound() { }
+        {   
+            internal NotFound() { }
         }
             
         public record class Success(int Index, ImmutableArray<IType> TypeArgs, ImmutableArray<R.Argument> Args) : FuncMatchIndexResult;
+    }
+
+    static class FuncMatchIndexResults
+    {
+        public static FuncMatchIndexResult.NotFound NotFound = new FuncMatchIndexResult.NotFound();
     }
 
     // entry2의 result    
     record struct FuncMatchResult(ImmutableArray<IType> TypeArgs, ImmutableArray<R.Argument> Args);
 
     struct FuncMatcher
-    {        
-        record struct MatchedFunc(MatchCallableResult Result, int Index, ScopeContext Context);
-        // bExactMatch: TypeInference를 사용하지 않은 경우
-        record struct MatchCallableResult(bool bMatch, bool bExactMatch, ImmutableArray<R.Argument> Args, ImmutableArray<IType> TypeArgs);
+    {   
         class FuncMatcherFatalException : Exception { }
 
         ImmutableArray<FuncParameter> paramInfos;
@@ -98,23 +99,23 @@ namespace Citron.Analysis
             var exactMatchResult = exactCandidates.GetUniqueResult();
             if (!exactMatchResult.IsFound(out matchedFunc))
             {
-                if (exactMatchResult.IsMultipleError())
+                if (exactMatchResult.IsMultipleError(out var matchedFuncs))
                 {
-                    return FuncMatchIndexResult.MultipleCandidates.Instance;
+                    return new FuncMatchIndexResult.MultipleCandidates(matchedFuncs);
                 }
                 else if (exactMatchResult.IsNotFound()) // empty
                 {
                     var restMatchResult = restCandidates.GetUniqueResult();
                     if (!restMatchResult.IsFound(out matchedFunc))
                     {
-                        if (restMatchResult.IsMultipleError()) return FuncMatchIndexResult.MultipleCandidates.Instance;
-                        else if (restMatchResult.IsNotFound()) return FuncMatchIndexResult.NotFound.Instance;
-                        else throw new UnreachableCodeException();
+                        if (restMatchResult.IsMultipleError(out matchedFuncs)) return new FuncMatchIndexResult.MultipleCandidates(matchedFuncs);
+                        else if (restMatchResult.IsNotFound()) return FuncMatchIndexResults.NotFound;
+                        else throw new UnreachableException();
                     }
                 }
                 else
                 {
-                    throw new UnreachableCodeException();
+                    throw new UnreachableException();
                 }
             }
 
@@ -225,15 +226,15 @@ namespace Citron.Analysis
                     if (paramInfo != null)
                     {
                         var hint = paramInfo.Value.Type;
-                        var argResult = ExpVisitor.TranslateAsExp(sexp, context, hint);
-                        exp = BodyMisc.TryCastExp_Exp(argResult, paramInfo.Value.Type);
+                        var rargExp = ExpIR0ExpTranslator.Translate(sexp, context, hint);
+                        exp = BodyMisc.TryCastExp_Exp(rargExp, paramInfo.Value.Type);
 
                         if (exp == null)
                             throw new FuncMatcherFatalException();
                     }
                     else // none, EnumConstructor
                     {
-                        exp = ExpVisitor.TranslateAsExp(sexp, context, hintType: null);
+                        exp = ExpIR0ExpTranslator.Translate(sexp, context, hintType: null);
                     }
                 }
 
@@ -331,7 +332,7 @@ namespace Citron.Analysis
                     R.Exp exp;
                     try
                     {
-                        exp = ExpVisitor.TranslateAsExp(sParamsArg.Exp, context, hintType: null);
+                        exp = ExpIR0ExpTranslator.Translate(sParamsArg.Exp, context, hintType: null);
                     }
                     catch (AnalyzerFatalException)
                     {

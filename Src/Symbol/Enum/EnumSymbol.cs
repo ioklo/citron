@@ -35,14 +35,14 @@ namespace Citron.Symbol
         }
 
         //
-        SymbolQueryResult ISymbolNode.QueryMember(Name memberName, int typeParamCount) 
+        SymbolQueryResult? ISymbolNode.QueryMember(Name memberName, int typeParamCount) 
         {
             // shortcut
             if (typeParamCount != 0)
-                return SymbolQueryResults.NotFound;
+                return null;
 
             var elemDecl = decl.GetElem(memberName);
-            if (elemDecl == null) return SymbolQueryResults.NotFound;
+            if (elemDecl == null) return null;
 
             var elem = factory.MakeEnumElem(this, elemDecl);
 

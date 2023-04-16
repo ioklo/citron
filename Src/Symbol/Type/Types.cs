@@ -15,7 +15,7 @@ namespace Citron.Symbol
         IType Apply(TypeEnv typeEnv);
         TypeId GetTypeId();
         IType? GetMemberType(Name name, ImmutableArray<IType> typeArgs); // 이름에 해당하는 멤버타입을 가져온다
-        SymbolQueryResult QueryMember(Name name, int explicitTypeArgCount);
+        SymbolQueryResult? QueryMember(Name name, int explicitTypeArgCount);
 
         void Accept<TVisitor>(ref TVisitor visitor)
             where TVisitor : struct, ITypeVisitor;
@@ -36,7 +36,7 @@ namespace Citron.Symbol
         // 내부의 값들이 다 같은지 확인
         public abstract bool CyclicEquals(IType other, ref CyclicEqualityCompareContext context);
         public abstract void DoSerialize(ref SerializeContext context);
-        public abstract SymbolQueryResult QueryMember(Name name, int explicitTypeArgCount);
+        public abstract SymbolQueryResult? QueryMember(Name name, int explicitTypeArgCount);
     }
 
     public abstract record class SymbolType : TypeImpl
@@ -57,7 +57,7 @@ namespace Citron.Symbol
             context.SerializeRef(nameof(Symbol), GetTypeSymbol());
         }
 
-        public sealed override SymbolQueryResult QueryMember(Name name, int typeArgCount)
+        public sealed override SymbolQueryResult? QueryMember(Name name, int typeArgCount)
         {
             return GetTypeSymbol().QueryMember(name, typeArgCount);
         }
@@ -141,9 +141,9 @@ namespace Citron.Symbol
             context.SerializeRef(nameof(InnerType), InnerType);
         }
 
-        public override SymbolQueryResult QueryMember(Name name, int explicitTypeArgCount)
+        public override SymbolQueryResult? QueryMember(Name name, int explicitTypeArgCount)
         {
-            return SymbolQueryResults.NotFound;
+            return null;
         }
     }
 
@@ -174,9 +174,9 @@ namespace Citron.Symbol
             context.SerializeRef(nameof(Name), Name);
         }
 
-        public override SymbolQueryResult QueryMember(Name name, int typeArgCount)
+        public override SymbolQueryResult? QueryMember(Name name, int typeArgCount)
         {
-            return SymbolQueryResults.NotFound;
+            return null;
         }
     }
 
@@ -194,9 +194,9 @@ namespace Citron.Symbol
         {
         }
 
-        public override SymbolQueryResult QueryMember(Name name, int typeArgCount)
+        public override SymbolQueryResult? QueryMember(Name name, int typeArgCount)
         {
-            return SymbolQueryResults.NotFound;
+            return null;
         }
     }
 
@@ -295,13 +295,13 @@ namespace Citron.Symbol
             context.SerializeValueArray(nameof(memberVars), memberVars);
         }
 
-        public override SymbolQueryResult QueryMember(Name name, int typeArgCount)
+        public override SymbolQueryResult? QueryMember(Name name, int typeArgCount)
         {
             foreach (var memberVar in memberVars)
                 if (memberVar.GetName().Equals(name))
                     return new SymbolQueryResult.TupleMemberVar();
 
-            return SymbolQueryResults.NotFound;
+            return null;
         }
     }
 
@@ -361,9 +361,9 @@ namespace Citron.Symbol
             context.SerializeValueArray(nameof(parameters), parameters);
         }
 
-        public override SymbolQueryResult QueryMember(Name name, int typeArgCount)
+        public override SymbolQueryResult? QueryMember(Name name, int typeArgCount)
         {
-            return SymbolQueryResults.NotFound;
+            return null;
         }
 
         public IType GetReturnType()
@@ -385,31 +385,32 @@ namespace Citron.Symbol
         {
         }
 
-        public override SymbolQueryResult QueryMember(Name name, int typeArgCount)
+        public override SymbolQueryResult? QueryMember(Name name, int typeArgCount)
         {
-            return SymbolQueryResults.NotFound;
+            return null;
         }
     }
 
     // box int&
     public record BoxRefType : TypeImpl
     {
-        IType targetType;
+        IType innerType;
+        public IType InnerType => innerType;
 
-        public BoxRefType(IType targetType)
+        public BoxRefType(IType innerType)
         {
-            this.targetType = targetType;
+            this.innerType = innerType;
         }
 
         public override IType Apply(TypeEnv typeEnv)
         {
-            var appliedTargetType = targetType.Apply(typeEnv);
+            var appliedTargetType = innerType.Apply(typeEnv);
             return new BoxRefType(appliedTargetType);
         }
 
         public override TypeId GetTypeId()
         {
-            return new BoxRefTypeId(targetType.GetTypeId());
+            return new BoxRefTypeId(innerType.GetTypeId());
         }
 
         public override IType? GetMemberType(Name name, ImmutableArray<IType> typeArgs)
@@ -423,7 +424,7 @@ namespace Citron.Symbol
 
         bool CyclicEquals(BoxRefType other, ref CyclicEqualityCompareContext context)
         {
-            if (!context.CompareClass(targetType, other.targetType))
+            if (!context.CompareClass(innerType, other.innerType))
                 return false;
 
             return true;
@@ -431,12 +432,12 @@ namespace Citron.Symbol
 
         public override void DoSerialize(ref SerializeContext context)
         {
-            context.SerializeRef(nameof(targetType), targetType);
+            context.SerializeRef(nameof(innerType), innerType);
         }
 
-        public override SymbolQueryResult QueryMember(Name name, int typeArgCount)
+        public override SymbolQueryResult? QueryMember(Name name, int typeArgCount)
         {
-            return SymbolQueryResults.NotFound;
+            return null;
         }
     }
 
@@ -484,9 +485,9 @@ namespace Citron.Symbol
             context.SerializeRef(nameof(innerType), innerType);
         }
 
-        public override SymbolQueryResult QueryMember(Name name, int typeArgCount)
+        public override SymbolQueryResult? QueryMember(Name name, int typeArgCount)
         {
-            return SymbolQueryResults.NotFound;
+            return null;
         }
     }
 }

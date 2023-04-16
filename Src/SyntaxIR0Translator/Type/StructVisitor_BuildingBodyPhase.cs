@@ -23,10 +23,9 @@ partial struct StructVisitor_BuildingBodyPhase
         }
 
         var stmtVisitor = new StmtVisitor(scopeContext);
-        stmtVisitor.VisitBody(body);
-
-        var rstmts = scopeContext.MakeStmts();
-        context.AddBody(symbol, rstmts);
+        var bodyStmts = stmtVisitor.VisitBody(body);
+        
+        context.AddBody(symbol, bodyStmts);
     }
 
     public void VisitStructConstructorDecl(ImmutableArray<Stmt> body, StructConstructorDeclSymbol symbol)
@@ -42,9 +41,8 @@ partial struct StructVisitor_BuildingBodyPhase
         }
 
         var stmtVisitor = new StmtVisitor(scopeContext);
-        stmtVisitor.VisitBody(body);
-
-        var rstmts = scopeContext.MakeStmts();
-        context.AddBody(symbol, rstmts);
+        var bodyStmts = stmtVisitor.VisitBody(body);
+        
+        context.AddBody(symbol, bodyStmts);
     }
 }

@@ -388,7 +388,7 @@ namespace Citron.Test
     //            case M.FuncParameterKind.Default: itw.Write("M.FuncParameterKind.Normal"); break;
     //            case M.FuncParameterKind.Params: itw.Write("M.FuncParameterKind.Params"); break;
     //            case M.FuncParameterKind.Ref: itw.Write("M.FuncParameterKindRef"); break;
-    //            default: throw new UnreachableCodeException();
+    //            default: throw new UnreachableException();
     //        }
     //    }
 
@@ -425,7 +425,7 @@ namespace Citron.Test
     //            case R.Path.Root root: WriteNew("R.Path.Root", root.ModuleName); break;
     //            case R.Path.Nested nested: WriteNew("R.Path.Nested", nested.Outer, nested.Name, nested.ParamHash, nested.TypeArgs); break;
 
-    //            default: throw new UnreachableCodeException();
+    //            default: throw new UnreachableException();
     //        }
     //    }
 
@@ -502,7 +502,7 @@ namespace Citron.Test
     //        {
     //            case R.ExpForStmtInitializer expInit: WriteExpForStmtInitializer(expInit); break;
     //            case R.VarDeclForStmtInitializer varDeclInit: WriteVarDeclForStmtInitializer(varDeclInit); break;
-    //            default: throw new UnreachableCodeException();
+    //            default: throw new UnreachableException();
     //        }
     //    }
 
@@ -534,7 +534,7 @@ namespace Citron.Test
     //            case R.VarDeclElement.Normal normalElem: WriteNormalVarDeclElement(normalElem); break;
     //            case R.VarDeclElement.NormalDefault normalDefaultElem: WriteNormalDefaultVarDeclElement(normalDefaultElem); break;
     //            case R.VarDeclElement.Ref refElem: WriteRefVarDeclElement(refElem); break;
-    //            default: throw new UnreachableCodeException();
+    //            default: throw new UnreachableException();
     //        }
     //    }
 
@@ -560,7 +560,7 @@ namespace Citron.Test
     //            case R.ReturnInfo.Ref refInfo: WriteRefReturnInfo(refInfo); break;
     //            case R.ReturnInfo.Expression expInfo: WriteExpReturnInfo(expInfo); break;
     //            case R.ReturnInfo.None noneInfo: WriteNoneReturnInfo(noneInfo); break;
-    //            default: throw new UnreachableCodeException();
+    //            default: throw new UnreachableException();
     //        }
     //    }
 
@@ -585,7 +585,7 @@ namespace Citron.Test
     //            case R.Argument.Normal normalArg: WriteNormalArgument(normalArg); break;
     //            case R.Argument.Params paramsArg: WriteParamsArgument(paramsArg); break;
     //            case R.Argument.Ref refArg: WriteRefArgument(refArg); break;
-    //            default: throw new UnreachableCodeException();
+    //            default: throw new UnreachableException();
     //        }
     //    }
 
@@ -610,7 +610,7 @@ namespace Citron.Test
     //            case R.InternalBinaryOperator.Equal_Int_Int_Bool: itw.Write("R.InternalBinaryOperator.Equal_Int_Int_Bool"); break;
     //            case R.InternalBinaryOperator.Equal_Bool_Bool_Bool: itw.Write("R.InternalBinaryOperator.Equal_Bool_Bool_Bool"); break;
     //            case R.InternalBinaryOperator.Equal_String_String_Bool: itw.Write("R.InternalBinaryOperator.Equal_String_String_Bool"); break;
-    //            default: throw new UnreachableCodeException();
+    //            default: throw new UnreachableException();
     //        }
     //    }
 
@@ -622,7 +622,7 @@ namespace Citron.Test
     //            case R.InternalUnaryAssignOperator.PrefixDec_Int_Int: itw.Write("R.InternalUnaryAssignOperator.PrefixDec_Int_Int"); break;
     //            case R.InternalUnaryAssignOperator.PostfixInc_Int_Int: itw.Write("R.InternalUnaryAssignOperator.PostfixInc_Int_Int"); break;
     //            case R.InternalUnaryAssignOperator.PostfixDec_Int_Int: itw.Write("R.InternalUnaryAssignOperator.PostfixDec_Int_Int"); break;
-    //            default: throw new UnreachableCodeException();
+    //            default: throw new UnreachableException();
     //        }
     //    }
 
@@ -634,7 +634,7 @@ namespace Citron.Test
     //            case R.InternalUnaryOperator.UnaryMinus_Int_Int: itw.Write("R.InternalUnaryOperator.UnaryMinus_Int_Int"); break;
     //            case R.InternalUnaryOperator.ToString_Bool_String: itw.Write("R.InternalUnaryOperator.ToString_Bool_String"); break;
     //            case R.InternalUnaryOperator.ToString_Int_String: itw.Write("R.InternalUnaryOperator.ToString_Int_String"); break;
-    //            default: throw new UnreachableCodeException();
+    //            default: throw new UnreachableException();
     //        }
     //    }
 
@@ -654,7 +654,7 @@ namespace Citron.Test
     //        {
     //            case R.ExpStringExpElement expElem: WriteExpStringExpElement(expElem); break;
     //            case R.TextStringExpElement textElem: WriteTextStringExpElement(textElem); break;
-    //            default: throw new UnreachableCodeException();
+    //            default: throw new UnreachableException();
     //        }
     //    }
 
@@ -863,7 +863,7 @@ namespace Citron.Test
     //            case ImmutableArray<int> ints: WriteArray(WriteInt, null, ints); break;
 
     //            default:
-    //                throw new UnreachableCodeException();
+    //                throw new UnreachableException();
     //        }
     //    }
 

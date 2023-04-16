@@ -144,7 +144,7 @@ static class TypeMakerByTypeExp
             else if (result.IsMultipleError())
                 throw new NotImplementedException(); // 모호합니다
             else
-                throw new UnreachableCodeException();
+                throw new UnreachableException();
         }
 
         ImmutableArray<IType> MakeTypeArgs(ImmutableArray<TypeExp> typeExps)
@@ -306,7 +306,7 @@ static class TypeMakerByTypeExp
                     else if (outerItem.Namespace != null)
                         outerSymbol = outerItem.Namespace;
                     else
-                        throw new UnreachableCodeException();
+                        throw new UnreachableException();
 
                     // class X<T> { class Y<U> { class Z { X<bool>.Y<int> } }
 

@@ -32,21 +32,27 @@ struct VarDeclVisitor
 }
 
 struct VarDeclElemVisitor
-{    
+{
     IType declType;
     ScopeContext context;
+    ImmutableArray<R.Stmt>.Builder builder;
 
-    public static void Visit(IType declType, ScopeContext context, ImmutableArray<S.VarDeclElement> elems)
+    public static ImmutableArray<R.Stmt> Visit(IType declType, ScopeContext context, ImmutableArray<S.VarDeclElement> elems)
     {
-        var visitor = new VarDeclElemVisitor(declType, context);
+        var builder = ImmutableArray.CreateBuilder<R.Stmt>();
+
+        var visitor = new VarDeclElemVisitor(declType, context, builder);
         foreach (var elem in elems)
             visitor.VisitElem(elem);
+
+        return builder.ToImmutable();
     }
 
-    VarDeclElemVisitor(IType declType, ScopeContext context)
+    VarDeclElemVisitor(IType declType, ScopeContext context, ImmutableArray<R.Stmt>.Builder builder)
     {   
         this.declType = declType;
         this.context = context;
+        this.builder = builder;
     }
 
     void HandleVarDeclType(S.VarDeclElement syntax)
@@ -54,13 +60,13 @@ struct VarDeclElemVisitor
         if (syntax.InitExp == null)
         {
             context.AddFatalError(A0111_VarDecl_LocalVarDeclNeedInitializer, syntax);
-            throw new UnreachableCodeException();
+            throw new UnreachableException();
         }
 
-        var initExp = ExpVisitor.TranslateAsExp(syntax.InitExp, context, hintType: null);
+        var initExp = ExpIR0ExpTranslator.Translate(syntax.InitExp, context, hintType: null);
         var initExpType = initExp.GetExpType();
 
-        context.AddStmt(new R.LocalVarDeclStmt(initExpType, syntax.VarName, initExp));
+        builder.Add(new R.LocalVarDeclStmt(initExpType, syntax.VarName, initExp));
         context.AddLocalVarInfo(initExpType, new Name.Normal(syntax.VarName));
     }
 
@@ -69,14 +75,16 @@ struct VarDeclElemVisitor
         if (syntax.InitExp == null)
         {
             context.AddFatalError(A0111_VarDecl_LocalVarDeclNeedInitializer, syntax);
-            throw new UnreachableCodeException();
+            throw new UnreachableException();
         }
 
-        var initExp = ExpVisitor.TranslateAsCastExp(syntax.InitExp, context, hintType: declType, targetType: declType);
-        if (initExp == null)
+        var initExp = ExpIR0ExpTranslator.Translate(syntax.InitExp, context, declType);
+        var castInitExp = BodyMisc.TryCastExp_Exp(initExp, declType);
+        
+        if (castInitExp == null)
             throw new NotImplementedException(); // 캐스팅이 실패했습니다.
 
-        context.AddStmt(new R.LocalVarDeclStmt(declType, syntax.VarName, initExp));
+        builder.Add(new R.LocalVarDeclStmt(declType, syntax.VarName, initExp));
         context.AddLocalVarInfo(declType, new Name.Normal(syntax.VarName));
     }
 
@@ -97,36 +105,41 @@ struct VarDeclElemVisitor
 }
 
 struct LocalRefVarDeclElemVisitor
-{
+{    
     LocalRefType declType;
     ScopeContext context;
+    ImmutableArray<R.Stmt>.Builder builder;
 
-    public static void Visit(LocalRefType declType, ScopeContext context, ImmutableArray<S.VarDeclElement> elems)
+    public static ImmutableArray<R.Stmt> Visit(LocalRefType declType, ScopeContext context, ImmutableArray<S.VarDeclElement> elems)
     {
-        var visitor = new LocalRefVarDeclElemVisitor(declType, context);
+        var builder = ImmutableArray.CreateBuilder<R.Stmt>();
+        var visitor = new LocalRefVarDeclElemVisitor(declType, context, builder);
         foreach (var elem in elems)
             visitor.VisitElem(elem);
+
+        return builder.ToImmutable();
     }
 
-    LocalRefVarDeclElemVisitor(LocalRefType declType, ScopeContext context)
+    LocalRefVarDeclElemVisitor(LocalRefType declType, ScopeContext context, ImmutableArray<R.Stmt>.Builder builder)
     {
         this.declType = declType;
         this.context = context;
+        this.builder = builder;
     }
 
     void HandleVarDeclType(string varName, S.Exp initExpSyntax)
     {
         // box ref가 나와도 local ref로 바꿔준다
-        var initExp = RefExpVisitor.TranslateAsLocalRef(initExpSyntax, context, hintInnerType: null); // throws FatalErrorException
+        var initExp = LocalRefExpVisitor.TranslateAsLocalRef(initExpSyntax, context, innerHintType: null); // throws FatalErrorException
 
         var initExpType = initExp.GetExpType();
-        context.AddStmt(new R.LocalVarDeclStmt(initExpType, varName, initExp));
+        builder.Add(new R.LocalVarDeclStmt(initExpType, varName, initExp));
         context.AddLocalVarInfo(initExpType, new Name.Normal(varName));
     }
 
     void HandleExplicitDeclType(string varName, S.Exp initExpSyntax)
     {   
-        var initExp = RefExpVisitor.TranslateAsLocalRef(initExpSyntax, context, declType.InnerType); // throws FatalErrorException
+        var initExp = LocalRefExpVisitor.TranslateAsLocalRef(initExpSyntax, context, declType.InnerType); // throws FatalErrorException
 
         var initExpType = initExp.GetExpType();
         
@@ -134,7 +147,7 @@ struct LocalRefVarDeclElemVisitor
         if (!compareContext.CompareClass(declType, initExpType))        
             context.AddFatalError(A0102_VarDecl_MismatchBetweenRefDeclTypeAndRefInitType, initExpSyntax);
 
-        context.AddStmt(new R.LocalVarDeclStmt(declType, varName, initExp));
+        builder.Add(new R.LocalVarDeclStmt(declType, varName, initExp));
         context.AddLocalVarInfo(declType, new Name.Normal(varName));
     }
 

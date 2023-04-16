@@ -9,8 +9,31 @@ using System.Threading.Tasks;
 
 namespace Citron.Symbol
 {
-    class SymbolMisc
+    public static class SymbolMisc
     {
+        public static SymbolQueryResult? MakeSymbolQueryResult(this Candidates<SymbolQueryResult> candidates)
+        {
+            int count = candidates.GetCount();
+
+            if (count == 0)
+                return null;
+
+            else if (count == 1)
+                return candidates.GetAt(0);
+
+            else
+            {
+                var builder = ImmutableArray.CreateBuilder<SymbolQueryResult>(count);
+                for (int i = 0; i < count; i++)
+                {
+                    var candidate = candidates.GetAt(i);
+                    builder.Add(candidate);
+                }
+
+                return new SymbolQueryResult.MultipleCandidatesError(builder.MoveToImmutable());
+            }
+        }
+
         // 안쓰이는 것 같아서 주석처리했다
         //public static ClassConstructorDeclSymbol? GetConstructorHasSameParamWithTrivial(
         //    ClassConstructorSymbol? baseConstructor,

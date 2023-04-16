@@ -152,7 +152,7 @@ namespace Citron.IR0
                 InternalUnaryOperator.UnaryMinus_Int_Int => intType,
                 InternalUnaryOperator.ToString_Bool_String => stringType,
                 InternalUnaryOperator.ToString_Int_String => stringType,
-                _ => throw new UnreachableCodeException()
+                _ => throw new UnreachableException()
             };
             
             return new CallInternalUnaryOperatorExp(op, exp, type);
@@ -179,7 +179,7 @@ namespace Citron.IR0
                 InternalBinaryOperator.Equal_Int_Int_Bool => boolType,
                 InternalBinaryOperator.Equal_Bool_Bool_Bool => boolType,
                 InternalBinaryOperator.Equal_String_String_Bool => boolType,
-                _ => throw new UnreachableCodeException()
+                _ => throw new UnreachableException()
             };
 
             return new CallInternalBinaryOperatorExp(op, operand0, operand1, type);
@@ -194,7 +194,7 @@ namespace Citron.IR0
                 InternalUnaryAssignOperator.PostfixInc_Int_Int => intType,
                 InternalUnaryAssignOperator.PostfixDec_Int_Int => intType,
 
-                _ => throw new UnreachableCodeException()
+                _ => throw new UnreachableException()
             };
 
 

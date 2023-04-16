@@ -80,7 +80,7 @@ namespace Citron.IR0Analyzer.NullRefAnalysis
                     break;
 
                 default:
-                    throw new UnreachableCodeException();
+                    throw new UnreachableException();
             }            
         }
 
@@ -96,7 +96,7 @@ namespace Citron.IR0Analyzer.NullRefAnalysis
                     break;
 
                 default:
-                    throw new UnreachableCodeException();
+                    throw new UnreachableException();
             }
         }
 
@@ -113,7 +113,7 @@ namespace Citron.IR0Analyzer.NullRefAnalysis
                     break;
 
                 default:
-                    throw new UnreachableCodeException();
+                    throw new UnreachableException();
             }
         }
 

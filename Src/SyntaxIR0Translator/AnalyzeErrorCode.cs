@@ -53,6 +53,7 @@ namespace Citron.Analysis
         A0905_CallExp_NoMatchedStructConstructorFound, // TODO: A2602_NewExp_NoConstructorFound 랑 겹침
         A0906_CallExp_NotFound,
         A0907_CallExp_MultipleMatchedStructConstructors,
+        A0908_CallExp_InstanceIsNotLocation,
 
         // A1001_IfStmt_TestTargetShouldBeLocalVariable,
         // A1002_IfStmt_TestTargetIdentifierNotFound,
@@ -93,11 +94,17 @@ namespace Citron.Analysis
         A2005_ResolveIdentifier_CantGetInstanceMemberThroughType,
         A2006_ResolveIdentifier_FuncCantHaveMember,
         A2007_ResolveIdentifier_NotFound,
+
         A2008_ResolveIdentifier_CantUseTypeAsExpression, // Type으로 Resolve는 되지만, 값으로 변경하려고 시도하다가 에러 var x = X.Y;
+
         A2009_ResolveIdentifier_EnumElemCantHaveMember,
         A2010_ResolveIdentifier_ThisIsNotInTheContext,   // 
         A2011_ResolveIdentifier_TryAccessingPrivateMember,
         A2012_ResolveIdentifier_TypeVarCantHaveMember,
+
+        A2013_ResolveIdentifier_CantUseNamespaceAsExpression, // 네임스페이스를 exp로 쓸 수 없습니다        
+        A2014_ResolveIdentifier_MultipleCandidatesForMember,
+        A2015_ResolveIdentifier_ExpressionIsNotLocation,
 
         // funcMatcher 자체에서 에러를 내지 않고, 각각 노드 처리기에서 에러를 생성하도록 한다
         //A2101_FuncMatcher_MultipleCandidates, 
@@ -130,6 +137,14 @@ namespace Citron.Analysis
         A2802_StaticNotNullDirective_ArgumentMustBeLocation,
 
         A2901_BodyShouldReturn, // 리턴 타입이 있는 본문에 리턴이 없다
+
+        A3001_LocalRef_ExpressionIsNotLocation,
+        A3002_LocalRef_ReturnTypeShouldBeLocalRef,
+        A3003_LocalRef_MemberParentIsNotLocation,
+        A3004_LocalRef_EnumIsNotReferrable,
+        A3005_LocalRef_ListItemIsNotReferrable,
+        A3006_LocalRef_ExpressionTypeShouldBeLocalRef,
+
 
         A9901_NotSupported_LambdaParameterInference,
         A9902_NotSupported_LambdaReturnTypeInference,

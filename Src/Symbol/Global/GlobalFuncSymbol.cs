@@ -40,9 +40,9 @@ namespace Citron.Symbol
             this.typeEnv = outerTypeEnv.AddTypeArgs(typeArgs);
         }
 
-        SymbolQueryResult ISymbolNode.QueryMember(Name name, int explicitTypeArgCount)
+        SymbolQueryResult? ISymbolNode.QueryMember(Name name, int explicitTypeArgCount)
         {
-            return SymbolQueryResults.NotFound;
+            return null;
         }
 
         public bool IsInstanceFunc()

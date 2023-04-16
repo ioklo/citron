@@ -25,9 +25,9 @@ namespace Citron.Symbol
             this.decl = decl;
         }
 
-        SymbolQueryResult ISymbolNode.QueryMember(Name name, int explicitTypeArgCount)
+        SymbolQueryResult? ISymbolNode.QueryMember(Name name, int explicitTypeArgCount)
         {
-            return SymbolQueryResults.NotFound;
+            return null;
         }
 
         public EnumElemMemberVarSymbol Apply(TypeEnv typeEnv)

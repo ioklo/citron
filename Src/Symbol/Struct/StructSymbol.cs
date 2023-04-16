@@ -30,7 +30,7 @@ namespace Citron.Symbol
             this.typeEnv = outerTypeEnv.AddTypeArgs(typeArgs);
         }
 
-        SymbolQueryResult QueryMember_Type(Name memberName, int typeParamCount)
+        SymbolQueryResult? QueryMember_Type(Name memberName, int typeParamCount)
         {
             var candidates = new Candidates<SymbolQueryResult>();
             var nodeName = new DeclSymbolNodeName(memberName, typeParamCount, default);
@@ -44,15 +44,7 @@ namespace Citron.Symbol
                 }
             }
 
-            var result = candidates.GetUniqueResult();
-            if (result.IsFound(out var sqr))
-                return sqr;
-            else if (result.IsMultipleError())
-                return SymbolQueryResults.Error.MultipleCandidates;
-            else if (result.IsNotFound())
-                return SymbolQueryResults.NotFound;
-
-            throw new UnreachableCodeException();
+            return candidates.MakeSymbolQueryResult();
         }
 
         public int GetMemberVarCount()
@@ -62,16 +54,22 @@ namespace Citron.Symbol
 
         public StructMemberVarSymbol GetMemberVar(int index)
         {
-            var memberVarDecl = decl.GetMemberVar(index);
-            return symbolFactory.MakeStructMemberVar(this, memberVarDecl);
+            var memberVarDSymbol = decl.GetMemberVar(index);
+            return symbolFactory.MakeStructMemberVar(this, memberVarDSymbol);
         }
 
-        SymbolQueryResult QueryMember_Func(Name memberName, int typeParamCount)
+        public StructMemberVarSymbol? GetMemberVar(Name name)
+        {
+            var memberVarDSymbol = decl.GetMemberVar(name);
+            if (memberVarDSymbol == null) return null;
+
+            return symbolFactory.MakeStructMemberVar(this, memberVarDSymbol);
+        }
+
+        SymbolQueryResult? QueryMember_Func(Name memberName, int typeParamCount)
         {
             var funcsBuilder = ImmutableArray.CreateBuilder<DeclAndConstructor<StructMemberFuncDeclSymbol, StructMemberFuncSymbol>>();
-
-            bool bHaveInstance = false;
-            bool bHaveStatic = false;
+            
             foreach (var memberFuncDecl in decl.GetFuncs())
             {
                 var funcName = memberFuncDecl.GetNodeName();
@@ -79,11 +77,6 @@ namespace Citron.Symbol
                 if (memberName.Equals(funcName.Name) &&
                     typeParamCount <= funcName.TypeParamCount)
                 {
-                    bool bStaticFunc = memberFuncDecl.IsStatic();
-
-                    bHaveInstance |= !bStaticFunc;
-                    bHaveStatic |= bStaticFunc;
-
                     var dac = new DeclAndConstructor<StructMemberFuncDeclSymbol, StructMemberFuncSymbol>(
                         memberFuncDecl, 
                         typeArgs => symbolFactory.MakeStructMemberFunc(this, memberFuncDecl, typeArgs)
@@ -95,19 +88,15 @@ namespace Citron.Symbol
 
             // 여러개 있을 수 있기때문에 MultipleCandidates를 리턴하지 않는다
             if (funcsBuilder.Count == 0)
-                return SymbolQueryResults.NotFound;
-
-            // 둘다 가지고 있으면 안된다
-            if (bHaveInstance && bHaveStatic)
-                return SymbolQueryResults.Error.MultipleCandidates;
+                return null;
 
             return new SymbolQueryResult.StructMemberFuncs(funcsBuilder.ToImmutable());
             // new NestedItemValueOuter(this), funcsBuilder.ToImmutable(), bHaveInstance);
         }
 
-        SymbolQueryResult QueryMember_Var(Name memberName, int typeParamCount)
+        SymbolQueryResult? QueryMember_Var(Name memberName, int typeParamCount)
         {
-            var candidates = new Candidates<SymbolQueryResult.StructMemberVar>();
+            var candidates = new Candidates<SymbolQueryResult>();
 
             int memberVarCount = decl.GetMemberVarCount();            
 
@@ -120,25 +109,8 @@ namespace Citron.Symbol
                     candidates.Add(new SymbolQueryResult.StructMemberVar(symbolFactory.MakeStructMemberVar(this, memberVar)));
                 }
             }
-            
 
-            var result = candidates.GetUniqueResult();
-            if (result.IsFound(out var structMemberVar))
-            {
-                // 변수를 찾았는데 타입 아규먼트가 있다면 에러
-                if (typeParamCount != 0)
-                    return SymbolQueryResults.Error.VarWithTypeArg;
-
-                return structMemberVar;
-            }
-
-            else if (result.IsMultipleError())
-                return SymbolQueryResults.Error.MultipleCandidates;
-
-            else if (result.IsNotFound())
-                return SymbolQueryResults.NotFound;
-
-            throw new UnreachableCodeException();
+            return candidates.MakeSymbolQueryResult();
         }
 
         public StructType? GetBaseType()
@@ -150,31 +122,34 @@ namespace Citron.Symbol
             return baseType.Apply(typeEnv);
         }
 
-        SymbolQueryResult ISymbolNode.QueryMember(Name memberName, int typeParamCount)
+        SymbolQueryResult? ISymbolNode.QueryMember(Name memberName, int typeParamCount)
         {
             // TODO: caching
-            var results = new List<SymbolQueryResult.Valid>();
+            var results = ImmutableArray.CreateBuilder<SymbolQueryResult>();
 
             // error, notfound, found
             var typeResult = QueryMember_Type(memberName, typeParamCount);
-            if (typeResult is SymbolQueryResult.Error) return typeResult;
-            if (typeResult is SymbolQueryResult.Valid typeMemberResult) results.Add(typeMemberResult);
+            if (typeResult is SymbolQueryResult.MultipleCandidatesError) return typeResult;
+            if (typeResult != null) results.Add(typeResult);
 
             // error, notfound, found
             var funcResult = QueryMember_Func(memberName, typeParamCount);
-            if (funcResult is SymbolQueryResult.Error) return funcResult;
-            if (funcResult is SymbolQueryResult.Valid funcMemberResult) results.Add(funcMemberResult);
+            if (funcResult is SymbolQueryResult.MultipleCandidatesError) return funcResult;
+            if (funcResult != null) results.Add(funcResult);
 
             // error, notfound, found
-            var varResult = QueryMember_Var(memberName, typeParamCount);
-            if (varResult is SymbolQueryResult.Error) return varResult;
-            if (varResult is SymbolQueryResult.Valid varMemberResult) results.Add(varMemberResult);
+            if (typeParamCount == 0)
+            {
+                var varResult = QueryMember_Var(memberName, typeParamCount);
+                if (varResult is SymbolQueryResult.MultipleCandidatesError) return varResult;
+                if (varResult != null) results.Add(varResult);
+            }
 
             if (1 < results.Count)
-                return SymbolQueryResults.Error.MultipleCandidates;
+                return new SymbolQueryResult.MultipleCandidatesError(results.ToImmutable());
 
             if (results.Count == 0)
-                return SymbolQueryResults.NotFound;
+                return null;
 
             return results[0];
         }

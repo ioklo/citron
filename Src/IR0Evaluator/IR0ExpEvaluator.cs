@@ -52,7 +52,7 @@ namespace Citron
                         }
 
                     default:
-                        throw new UnreachableCodeException();
+                        throw new UnreachableException();
                 }
             }
 
@@ -101,7 +101,7 @@ namespace Citron
                 }
                 else
                 {
-                    throw new UnreachableCodeException();
+                    throw new UnreachableException();
                 }
             }
 
@@ -423,7 +423,7 @@ namespace Citron
                 case InternalUnaryOperator.ToString_Bool_String: return Operator_ToString_Bool_String(exp.Operand, (StringValue)result);
                 case InternalUnaryOperator.ToString_Int_String: return Operator_ToString_Int_String(exp.Operand, (StringValue)result);
 
-                default: throw new UnreachableCodeException();
+                default: throw new UnreachableException();
             }
         }
 
@@ -477,7 +477,7 @@ namespace Citron
                 case InternalBinaryOperator.Equal_Int_Int_Bool: return Operator_Equal_Int_Int_Bool(exp.Operand0, exp.Operand1, (BoolValue)result);
                 case InternalBinaryOperator.Equal_Bool_Bool_Bool: return Operator_Equal_Bool_Bool_Bool(exp.Operand0, exp.Operand1, (BoolValue)result);
                 case InternalBinaryOperator.Equal_String_String_Bool: return Operator_Equal_String_String_Bool(exp.Operand0, exp.Operand1, (BoolValue)result);
-                default: throw new UnreachableCodeException();
+                default: throw new UnreachableException();
             }
         }
 

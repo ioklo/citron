@@ -452,7 +452,7 @@ namespace Citron.IR1.Runtime
                 case Command.ExternalGetMemberRef exGetMemberRefCmd: RunExternalGetMemberRef(exGetMemberRefCmd, context); break;
 
                 default:
-                    throw new UnreachableCodeException();
+                    throw new UnreachableException();
             }
         }
     }

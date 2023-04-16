@@ -69,7 +69,7 @@ public partial struct SymbolLoader
 
             
             default:
-                throw new UnreachableCodeException();
+                throw new UnreachableException();
         }
     }
 
@@ -81,31 +81,28 @@ public partial struct SymbolLoader
         foreach (var moduleDecl in moduleDecls)
         {
             var symbol = LoadPath(moduleDecl, outerPath); // 실패할 경우
-            if (symbol is ITypeSymbol typeSymbol)
-            {
-                var queryResult = typeSymbol.QueryMember(name, typeParamCount);
-                if (queryResult is SymbolQueryResult.Error)
-                    return queryResult; // 즉시 종료
+            
+            var queryResult = symbol.QueryMember(name, typeParamCount);
+            if (queryResult is SymbolQueryResult.MultipleCandidatesError)
+                return queryResult; // 즉시 종료
 
-                if (queryResult is SymbolQueryResult.Valid)
-                {
-                    candidates.Add(queryResult);
-                    continue;
-                }
+            if (queryResult is SymbolQueryResult.NotFound)
+                continue;
 
-                Debug.Assert(queryResult is SymbolQueryResult.NotFound);
-            }
+            candidates.Add(queryResult);
         }
 
-        var result = candidates.GetUniqueResult();
+        int count = candidates.GetCount();
+        if (count == 0) return SymbolQueryResults.NotFound;
+        else if (count == 1) return candidates.GetAt(0);
+        else
+        {
+            Debug.Assert(1 < count);
+            var builder = ImmutableArray.CreateBuilder<SymbolQueryResult>(count);
+            for (int i = 0; i < count; i++)
+                builder.Add(candidates.GetAt(i));
 
-        if (result.IsFound(out var value))
-            return value;
-        else if (result.IsNotFound())
-            return SymbolQueryResults.NotFound;
-        else if (result.IsMultipleError())
-            return SymbolQueryResults.Error.MultipleCandidates;
-
-        throw new UnreachableCodeException();
+            return new SymbolQueryResult.MultipleCandidatesError(builder.MoveToImmutable());
+        }
     }
 }

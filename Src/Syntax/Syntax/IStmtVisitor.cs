@@ -2,6 +2,8 @@
 {
     public interface IStmtVisitor<TResult>
     {
+        TResult VisitEmbeddable(EmbeddableStmt stmt);
+
         TResult VisitCommand(CommandStmt stmt);
         TResult VisitVarDecl(VarDeclStmt stmt);
         TResult VisitIf(IfStmt stmt);

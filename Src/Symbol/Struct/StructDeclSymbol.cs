@@ -134,6 +134,17 @@ namespace Citron.Symbol
             return memberVars[index];
         }
 
+        public StructMemberVarDeclSymbol? GetMemberVar(Name name)
+        {
+            foreach(var memberVar in memberVars)
+            {
+                if (memberVar.GetName().Equals(name))
+                    return memberVar;
+            }
+
+            return null;
+        }
+
         void ITypeDeclSymbol.AcceptTypeDeclSymbolVisitor<TTypeDeclSymbolVisitor>(ref TTypeDeclSymbolVisitor visitor)
         {
             visitor.VisitStruct(this);

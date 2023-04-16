@@ -7,6 +7,7 @@ using Citron.Syntax;
 using R = Citron.IR0;
 using static Citron.Analysis.BodyMisc;
 using Pretune;
+using System.Runtime.Serialization;
 
 namespace Citron.Analysis;
 
@@ -122,7 +123,7 @@ partial class BodyContext : IMutable<BodyContext>
 
     record struct IdentifierResolver(Name name, ImmutableArray<IType> typeArgs, BodyContext bodyContext)
     {   
-        Candidates<ExpResult> candidates = new Candidates<ExpResult>();
+        Candidates<IntermediateExp> candidates = new Candidates<IntermediateExp>();
 
         void TryQueryMember(IDeclSymbolNode curOuterNode)
         {
@@ -151,20 +152,27 @@ partial class BodyContext : IMutable<BodyContext>
                 var outerSymbol = outerDeclSymbol.MakeOpenSymbol(bodyContext.symbolFactory);
                 var symbolQueryResult = outerSymbol.QueryMember(name, typeArgs.Length);
 
-                if (symbolQueryResult is SymbolQueryResult.Valid)
+                if (symbolQueryResult == null) 
+                    continue;
+
+                else if (symbolQueryResult is SymbolQueryResult.MultipleCandidatesError multipleCandidatesError) // 에러가 났으면 무시하지 말고 리턴
                 {
-                    var candidate = symbolQueryResult.MakeExpResult(typeArgs);
-                    candidates.Add(candidate);
+                    var builder = ImmutableArray.CreateBuilder<ExpResult>(multipleCandidatesError.Results.Length);
+                    foreach (var result in multipleCandidatesError.Results)
+                    {
+                        var expResult = SymbolQueryResultExpResultTranslator.Translate(result, typeArgs); // NOTICE: 여기서 exception이 발생할 수 있다
+                        builder.Add(expResult);
+                    }
+
+                    throw new IdentifierResolverMultipleCandidatesException(builder.MoveToImmutable());
                 }
-                else if (symbolQueryResult is SymbolQueryResult.NotFound) continue;
-                else if (symbolQueryResult is SymbolQueryResult.Error) // 에러가 났으면 무시하지 말고 리턴
+                else // 에러가 없는 경우
                 {
                     candidates.Clear();
-                    candidates.Add(symbolQueryResult.MakeExpResult(typeArgs));
+                    var candidate = SymbolQueryResultExpResultTranslator.Translate(symbolQueryResult, typeArgs);
+                    candidates.Add(candidate);
                     return;
                 }
-                else
-                    throw new UnreachableCodeException();
             }
         }
 
@@ -191,7 +199,7 @@ partial class BodyContext : IMutable<BodyContext>
             }
         }
 
-        static ExpResult.TypeVar? QueryTypeVar(Name name, IDeclSymbolNode curOuterNode)
+        static IntermediateExp? QueryTypeVar(Name name, IDeclSymbolNode curOuterNode)
         {
             int typeParamCount = curOuterNode.GetTypeParamCount();
             for (int i = 0; i < typeParamCount; i++)
@@ -201,7 +209,7 @@ partial class BodyContext : IMutable<BodyContext>
                 {
                     int baseTypeParamIndex = curOuterNode.GetOuterDeclNode()?.GetTotalTypeParamCount() ?? 0;
                     var typeVarType = new TypeVarType(baseTypeParamIndex + i, typeParam);
-                    return new ExpResult.TypeVar(typeVarType);
+                    return new IntermediateExp.TypeVar(typeVarType);
                     // 같은 이름이 있을수 없으므로 바로 종료
                 }
             }
@@ -231,20 +239,28 @@ partial class BodyContext : IMutable<BodyContext>
             }
         }
 
-        public ExpResult Resolve()
+        // 즉시 체인을 빠져나갈땐 exception, 찾지 못해서 다음으로 제어를 넘길땐 null리턴
+        // ExpResult.NotFound를 쓰지 않는다
+        public IntermediateExp? Resolve() 
         {   
             TryQueryThis(name, typeArgs);
             TryQueryLambdaMemberVar(name, typeArgs.Length);
             TryQueryTypeVar(name, bodyContext.funcDeclSymbol);
 
-            var uniqueResult = candidates.GetUniqueResult();
-            if (uniqueResult.IsFound(out var expResult))
-                return expResult;
-            else if (uniqueResult.IsMultipleError())
-                return ExpResults.MultipleCandiates;
-            else
-                Debug.Assert(uniqueResult.IsNotFound()); // not found인 경우 계속 진행
+            int count = candidates.GetCount();
+            if (count == 1) return candidates.GetAt(0);
+            if (1 < count)
+            {
+                var builder = ImmutableArray.CreateBuilder<ExpResult>(count);
+                for (int i = 0; i < count; i++)
+                    builder.Add(candidates.GetAt(i));
 
+                throw new IdentifierResolverMultipleCandidatesException(builder.MoveToImmutable());
+            }
+
+            // 못찾았으면 아래로 계속 진행
+            Debug.Assert(count == 0);
+            
             // 2. outerScopeContext가 있으면 거기에서, 아니라면 bodyContext의 outer를 찾아본다
             if (bodyContext.outerScopeContext != null)
             {
@@ -256,7 +272,7 @@ partial class BodyContext : IMutable<BodyContext>
                 {
                     case ExpResult.LocalVar localResult:
                         {
-                            var initExp = localResult.MakeIR0Exp();
+                            var initExp = new R.LoadExp(new R.LocalVarLoc(localResult.Name), localResult.Type);
                             Debug.Assert(initExp != null);
 
                             var initArg = new R.Argument.Normal(initExp);
@@ -266,11 +282,11 @@ partial class BodyContext : IMutable<BodyContext>
 
                     case ExpResult.LambdaMemberVar lambdaMemberResult:
                         {
-                            var initExp = lambdaMemberResult.MakeIR0Exp();
+                            var initExp = new R.LoadExp(new R.LambdaMemberVarLoc(lambdaMemberResult.Symbol), lambdaMemberResult.Symbol.GetDeclType());
                             Debug.Assert(initExp != null);
 
                             var initArg = new R.Argument.Normal(initExp);
-                            var symbol = bodyContext.StageLambdaMemberVar(lambdaMemberResult.MemberVar.GetDeclType(), lambdaMemberResult.MemberVar.GetName(), initArg);
+                            var symbol = bodyContext.StageLambdaMemberVar(lambdaMemberResult.Symbol.GetDeclType(), lambdaMemberResult.Symbol.GetName(), initArg);
                             return new ExpResult.LambdaMemberVar(symbol);
                         }
 
@@ -280,7 +296,7 @@ partial class BodyContext : IMutable<BodyContext>
                             if (thisResult.Type is StructType)
                                 throw new NotImplementedException();
 
-                            var initExp = thisResult.MakeIR0Exp();
+                            var initExp = new R.LoadExp(new R.ThisLoc(), thisResult.Type);
                             Debug.Assert(initExp != null);
 
                             var initArg = new R.Argument.Normal(initExp);
@@ -300,25 +316,31 @@ partial class BodyContext : IMutable<BodyContext>
             {
                 TryQueryMember(curOuterNode);
 
-                uniqueResult = candidates.GetUniqueResult();
-                if (uniqueResult.IsFound(out expResult))
-                    return expResult;
-                else if (uniqueResult.IsMultipleError())
-                    return ExpResults.MultipleCandiates;
+                count = candidates.GetCount();
+                if (count == 1) return candidates.GetAt(0);
+                else if (1 < count)
+                {
+                    var builder = ImmutableArray.CreateBuilder<ExpResult>(count);
+                    for (int i = 0; i < count; i++)
+                        builder.Add(candidates.GetAt(i));
+
+                    throw new IdentifierResolverMultipleCandidatesException(builder.MoveToImmutable());
+                }
 
                 // not found인 경우 계속 진행
-                Debug.Assert(uniqueResult.IsNotFound());
+                Debug.Assert(count == 0);
+
                 curOuterNode = curOuterNode.GetOuterDeclNode()!;
                 candidates.Clear(); // 재사용
             }
 
-            return ExpResults.NotFound;
+            return null;
         }
     }
 
 
     // 람다일 수도 있고, 함수일 수도 있다
-    public ExpResult ResolveIdentifier(Name name, ImmutableArray<IType> typeArgs)
+    public IntermediateExp? ResolveIdentifier(Name name, ImmutableArray<IType> typeArgs)
     {
         // 0. 인자 먼저 (ScopeContext에서 이미 검색했으니 스킵)
         // 1. 함수(람다 등) 멤버변수
@@ -384,5 +406,14 @@ partial class BodyContext : IMutable<BodyContext>
     {
         bSetReturn = true;
         funcReturn = new FuncReturn(retType);
+    }
+}
+
+class IdentifierResolverMultipleCandidatesException : Exception
+{
+    public ImmutableArray<ExpResult> Candidates { get; }
+    public IdentifierResolverMultipleCandidatesException(ImmutableArray<ExpResult> candidates)
+    {
+        Candidates = candidates;
     }
 }

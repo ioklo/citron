@@ -6,6 +6,7 @@ using R = Citron.IR0;
 using static Citron.Analysis.SyntaxAnalysisErrorCode;
 using System;
 using Citron.Infra;
+using System.Diagnostics;
 
 namespace Citron.Analysis
 {
@@ -37,7 +38,7 @@ namespace Citron.Analysis
                 {
                     S.FuncParamKind.Normal => FuncParameterKind.Default,
                     S.FuncParamKind.Params => FuncParameterKind.Params,
-                    _ => throw new UnreachableCodeException()
+                    _ => throw new UnreachableException()
                 };
 
                 // 파라미터에 Type이 명시되어있지 않으면 hintType기반으로 inference 해야 한다.
@@ -82,10 +83,9 @@ namespace Citron.Analysis
             }
 
             var newStmtVisitor = new StmtVisitor(newContext);
-            newStmtVisitor.VisitBody(bodySyntaxes);
-
-            var body = newContext.MakeStmts();
-            context.AddBody(lambda.GetDeclSymbol(), body);
+            var bodyStmts = newStmtVisitor.VisitBody(bodySyntaxes);
+            
+            context.AddBody(lambda.GetDeclSymbol(), bodyStmts);
 
             var args = newContext.MakeLambdaArgs();
             return (lambda, args);

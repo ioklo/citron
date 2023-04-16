@@ -364,15 +364,25 @@ namespace Citron.IR0
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitLocalRef(this);
     }
 
-    // box int& = &i;
-    public record class BoxRefExp(Loc Loc, IType LocType) : Exp
+    public record class StructMemberVarBoxRefExp(Exp RefExp, StructMemberVarSymbol MemberVar) : Exp
     {
         public override IType GetExpType()
         {
-            return new BoxRefType(LocType);
+            return new BoxRefType(MemberVar.GetDeclType());
         }
 
-        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitBoxRef(this);
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitStructMemberVarBoxRefExp(this);
+    }
+
+    // box int& = c.x;
+    public record class ClassMemberVarBoxRefExp(Loc Instance, ClassMemberVarSymbol MemberVar) : Exp
+    {
+        public override IType GetExpType()
+        {
+            return new BoxRefType(MemberVar.GetDeclType());
+        }
+
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitClassMemberVarBoxRefExp(this);
     }
 
     #endregion

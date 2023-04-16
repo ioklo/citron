@@ -47,7 +47,7 @@ namespace Citron.Analysis
                                 break;
 
                             default:
-                                throw new UnreachableCodeException();
+                                throw new UnreachableException();
                         }
                     }
                 }

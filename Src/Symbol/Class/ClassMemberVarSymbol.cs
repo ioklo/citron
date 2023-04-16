@@ -27,9 +27,9 @@ namespace Citron.Symbol
             typeEnv = outer.GetTypeEnv();
         }
 
-        SymbolQueryResult ISymbolNode.QueryMember(Name name, int explicitTypeArgCount)
+        SymbolQueryResult? ISymbolNode.QueryMember(Name name, int explicitTypeArgCount)
         {
-            return SymbolQueryResults.NotFound;
+            return null;
         }
 
         public ClassMemberVarSymbol Apply(TypeEnv typeEnv)

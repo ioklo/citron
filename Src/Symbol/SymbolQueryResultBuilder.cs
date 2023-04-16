@@ -64,10 +64,13 @@ namespace Citron.Symbol
 
         public void VisitLambda(LambdaDeclSymbol declSymbol)
         {
-            var outerFunc = outer as IFuncSymbol;
-            Debug.Assert(outerFunc != null);
+            // SymbolQuery로는 Lambda가 나올 수 없다
+            throw new RuntimeFatalException();
 
-            result = new SymbolQueryResult.Lambda(symbolFactory.MakeLambda(outerFunc, declSymbol));
+            //var outerFunc = outer as IFuncSymbol;
+            //Debug.Assert(outerFunc != null);
+
+            //result = new SymbolQueryResult.Lambda(symbolFactory.MakeLambda(outerFunc, declSymbol));
         }
 
         public void VisitLambdaMemberVar(LambdaMemberVarDeclSymbol declSymbol)
