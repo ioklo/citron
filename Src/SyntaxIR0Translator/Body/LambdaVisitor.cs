@@ -76,7 +76,10 @@ namespace Citron.Analysis
             {
                 // TODO: 파라미터 타입은 타입 힌트를 반영해야 한다, ex) func<void, int, int> f = (x, y) => { } 일때, x, y는 int
                 if (paramSyntax.Type == null)
+                {
                     context.AddFatalError(A9901_NotSupported_LambdaParameterInference, nodeForErrorReport);
+                    return Error();
+                }
 
                 var paramType = context.MakeType(paramSyntax.Type);
                 newContext.AddLocalVarInfo(paramType, new Name.Normal(paramSyntax.Name));

@@ -364,6 +364,17 @@ namespace Citron.IR0
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitLocalRef(this);
     }
 
+    public record class CastBoxRefToLocalRefExp(Exp BoxRefExp, LocalRefType Type) : Exp
+    {
+        public override IType GetExpType()
+        {
+            return Type;
+        }
+
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitCastBoxRefToLocalRef(this);
+
+    }
+
     public record class StructMemberVarBoxRefExp(Exp RefExp, StructMemberVarSymbol MemberVar) : Exp
     {
         public override IType GetExpType()

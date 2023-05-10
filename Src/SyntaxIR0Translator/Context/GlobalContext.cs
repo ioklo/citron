@@ -100,12 +100,10 @@ partial class GlobalContext : IMutable<GlobalContext>
     {
         logger.Add(new SyntaxAnalysisErrorLog(code, node, code.ToString()));
     }
-
-    [DoesNotReturn]
+    
     public void AddFatalError(SyntaxAnalysisErrorCode code, S.ISyntaxNode node)
     {
         logger.Add(new SyntaxAnalysisErrorLog(code, node, code.ToString()));
-        throw new AnalyzerFatalException();
     }
 
     //public bool IsNullableType(ITypeSymbol type, [NotNullWhen(returnValue: true)] out ITypeSymbol? innerType)

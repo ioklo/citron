@@ -8,113 +8,120 @@ using static Citron.Analysis.SyntaxAnalysisErrorCode;
 namespace Citron.Analysis;
 
 // outermost로 변경
-// IntermediateExp -> ResolvedExp
-struct IntermediateExpResolvedExpTranslator : IIntermediateExpVisitor<ResolvedExp>
+// IntermediateExp -> TranslationResult<ResolvedExp>
+struct IntermediateExpResolvedExpTranslator : IIntermediateExpVisitor<TranslationResult<ResolvedExp>>
 {
     ScopeContext context;
     S.ISyntaxNode nodeForErrorReport;
 
-    public static ResolvedExp Translate(IntermediateExp imExp, ScopeContext context, S.ISyntaxNode nodeForErrorReport)
+    public static TranslationResult<ResolvedExp> Translate(IntermediateExp imExp, ScopeContext context, S.ISyntaxNode nodeForErrorReport)
     {
         var translator = new IntermediateExpResolvedExpTranslator { context = context, nodeForErrorReport = nodeForErrorReport };
-        return imExp.Accept<IntermediateExpResolvedExpTranslator, ResolvedExp>(ref translator);
+        return imExp.Accept<IntermediateExpResolvedExpTranslator, TranslationResult<ResolvedExp>>(ref translator);
     }
 
-    ResolvedExp Fatal(SyntaxAnalysisErrorCode code)
+    TranslationResult<ResolvedExp> Valid(ResolvedExp exp)
+    {
+        return TranslationResult.Valid(exp);
+    }
+    
+
+    // 내부 에러
+    TranslationResult<ResolvedExp> Fatal(SyntaxAnalysisErrorCode code)
     {
         context.AddFatalError(code, nodeForErrorReport);
-        throw new UnreachableException();
+        return TranslationResult.Error<ResolvedExp>();
     }
 
-    ResolvedExp IIntermediateExpVisitor<ResolvedExp>.VisitClass(IntermediateExp.Class exp)
+    TranslationResult<ResolvedExp> IIntermediateExpVisitor<TranslationResult<ResolvedExp>>.VisitClass(IntermediateExp.Class exp)
     {
         return Fatal(A2008_ResolveIdentifier_CantUseTypeAsExpression);
     }
 
-    ResolvedExp IIntermediateExpVisitor<ResolvedExp>.VisitClassMemberFuncs(IntermediateExp.ClassMemberFuncs exp)
+    TranslationResult<ResolvedExp> IIntermediateExpVisitor<TranslationResult<ResolvedExp>>.VisitClassMemberFuncs(IntermediateExp.ClassMemberFuncs exp)
     {
         // funcs가 한개이면, lambda (boxed lambda)로 변환할 수 있다.
         throw new NotImplementedException();
     }
 
-    ResolvedExp IIntermediateExpVisitor<ResolvedExp>.VisitClassMemberVar(IntermediateExp.ClassMemberVar exp)
+    TranslationResult<ResolvedExp> IIntermediateExpVisitor<TranslationResult<ResolvedExp>>.VisitClassMemberVar(IntermediateExp.ClassMemberVar exp)
     {
-        return new ResolvedExp.ClassMemberVar(exp.Symbol, exp.HasExplicitInstance, exp.ExplicitInstance);
+        return Valid(new ResolvedExp.ClassMemberVar(exp.Symbol, exp.HasExplicitInstance, exp.ExplicitInstance));
     }
 
-    ResolvedExp IIntermediateExpVisitor<ResolvedExp>.VisitEnum(IntermediateExp.Enum exp)
+    TranslationResult<ResolvedExp> IIntermediateExpVisitor<TranslationResult<ResolvedExp>>.VisitEnum(IntermediateExp.Enum exp)
     {
         return Fatal(A2008_ResolveIdentifier_CantUseTypeAsExpression);
     }
 
-    ResolvedExp IIntermediateExpVisitor<ResolvedExp>.VisitEnumElem(IntermediateExp.EnumElem exp)
+    TranslationResult<ResolvedExp> IIntermediateExpVisitor<TranslationResult<ResolvedExp>>.VisitEnumElem(IntermediateExp.EnumElem exp)
     {
         // standalone이면 값으로 처리한다
         if (exp.Symbol.IsStandalone())
-            return new ResolvedExp.IR0Exp(new R.NewEnumElemExp(exp.Symbol, default));
+            return Valid(new ResolvedExp.IR0Exp(new R.NewEnumElemExp(exp.Symbol, default)));
 
         // lambda (boxed lambda)로 변환할 수 있다.
         throw new NotImplementedException();
     }
 
-    ResolvedExp IIntermediateExpVisitor<ResolvedExp>.VisitEnumElemMemberVar(IntermediateExp.EnumElemMemberVar exp)
+    TranslationResult<ResolvedExp> IIntermediateExpVisitor<TranslationResult<ResolvedExp>>.VisitEnumElemMemberVar(IntermediateExp.EnumElemMemberVar exp)
     {
-        return new ResolvedExp.EnumElemMemberVar(exp.Symbol, exp.Instance);
+        return Valid(new ResolvedExp.EnumElemMemberVar(exp.Symbol, exp.Instance));
     }
 
-    ResolvedExp IIntermediateExpVisitor<ResolvedExp>.VisitGlobalFuncs(IntermediateExp.GlobalFuncs exp)
+    TranslationResult<ResolvedExp> IIntermediateExpVisitor<TranslationResult<ResolvedExp>>.VisitGlobalFuncs(IntermediateExp.GlobalFuncs exp)
     {
         // funcs가 한개이면, lambda (boxed lambda)로 변환할 수 있다.
         throw new NotImplementedException();
     }
 
-    ResolvedExp IIntermediateExpVisitor<ResolvedExp>.VisitIR0Exp(IntermediateExp.IR0Exp exp)
+    TranslationResult<ResolvedExp> IIntermediateExpVisitor<TranslationResult<ResolvedExp>>.VisitIR0Exp(IntermediateExp.IR0Exp exp)
     {
-        return new ResolvedExp.IR0Exp(exp.Exp);
+        return Valid(new ResolvedExp.IR0Exp(exp.Exp));
     }
 
-    ResolvedExp IIntermediateExpVisitor<ResolvedExp>.VisitLambdaMemberVar(IntermediateExp.LambdaMemberVar exp)
+    TranslationResult<ResolvedExp> IIntermediateExpVisitor<TranslationResult<ResolvedExp>>.VisitLambdaMemberVar(IntermediateExp.LambdaMemberVar exp)
     {
-        return new ResolvedExp.LambdaMemberVar(exp.Symbol);
+        return Valid(new ResolvedExp.LambdaMemberVar(exp.Symbol));
     }
 
-    ResolvedExp IIntermediateExpVisitor<ResolvedExp>.VisitListIndexer(IntermediateExp.ListIndexer exp)
+    TranslationResult<ResolvedExp> IIntermediateExpVisitor<TranslationResult<ResolvedExp>>.VisitListIndexer(IntermediateExp.ListIndexer exp)
     {
-        return new ResolvedExp.ListIndexer(exp.Instance, exp.Index, exp.ItemType);
+        return Valid(new ResolvedExp.ListIndexer(exp.Instance, exp.Index, exp.ItemType));
     }
 
-    ResolvedExp IIntermediateExpVisitor<ResolvedExp>.VisitLocalVar(IntermediateExp.LocalVar exp)
+    TranslationResult<ResolvedExp> IIntermediateExpVisitor<TranslationResult<ResolvedExp>>.VisitLocalVar(IntermediateExp.LocalVar exp)
     {
-        return new ResolvedExp.LocalVar(exp.Type, exp.Name);
+        return Valid(new ResolvedExp.LocalVar(exp.Type, exp.Name));
     }
 
-    ResolvedExp IIntermediateExpVisitor<ResolvedExp>.VisitNamespace(IntermediateExp.Namespace exp)
+    TranslationResult<ResolvedExp> IIntermediateExpVisitor<TranslationResult<ResolvedExp>>.VisitNamespace(IntermediateExp.Namespace exp)
     {
         return Fatal(A2013_ResolveIdentifier_CantUseNamespaceAsExpression);
     }
 
-    ResolvedExp IIntermediateExpVisitor<ResolvedExp>.VisitStruct(IntermediateExp.Struct exp)
+    TranslationResult<ResolvedExp> IIntermediateExpVisitor<TranslationResult<ResolvedExp>>.VisitStruct(IntermediateExp.Struct exp)
     {
         return Fatal(A2008_ResolveIdentifier_CantUseTypeAsExpression);
     }
 
-    ResolvedExp IIntermediateExpVisitor<ResolvedExp>.VisitStructMemberFuncs(IntermediateExp.StructMemberFuncs exp)
+    TranslationResult<ResolvedExp> IIntermediateExpVisitor<TranslationResult<ResolvedExp>>.VisitStructMemberFuncs(IntermediateExp.StructMemberFuncs exp)
     {
         // funcs가 한개이면, lambda (boxed lambda)로 변환할 수 있다.
         throw new NotImplementedException();
     }
 
-    ResolvedExp IIntermediateExpVisitor<ResolvedExp>.VisitStructMemberVar(IntermediateExp.StructMemberVar exp)
+    TranslationResult<ResolvedExp> IIntermediateExpVisitor<TranslationResult<ResolvedExp>>.VisitStructMemberVar(IntermediateExp.StructMemberVar exp)
     {
-        return new ResolvedExp.StructMemberVar(exp.Symbol, exp.HasExplicitInstance, exp.ExplicitInstance);
+        return Valid(new ResolvedExp.StructMemberVar(exp.Symbol, exp.HasExplicitInstance, exp.ExplicitInstance));
     }
 
-    ResolvedExp IIntermediateExpVisitor<ResolvedExp>.VisitThis(IntermediateExp.ThisVar exp)
+    TranslationResult<ResolvedExp> IIntermediateExpVisitor<TranslationResult<ResolvedExp>>.VisitThis(IntermediateExp.ThisVar exp)
     {
-        return new ResolvedExp.ThisVar(exp.Type);
+        return Valid(new ResolvedExp.ThisVar(exp.Type));
     }
 
-    ResolvedExp IIntermediateExpVisitor<ResolvedExp>.VisitTypeVar(IntermediateExp.TypeVar exp)
+    TranslationResult<ResolvedExp> IIntermediateExpVisitor<TranslationResult<ResolvedExp>>.VisitTypeVar(IntermediateExp.TypeVar exp)
     {
         return Fatal(A2008_ResolveIdentifier_CantUseTypeAsExpression);
     }

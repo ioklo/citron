@@ -144,6 +144,8 @@ namespace Citron.Analysis
         A3004_LocalRef_EnumIsNotReferrable,
         A3005_LocalRef_ListItemIsNotReferrable,
         A3006_LocalRef_ExpressionTypeShouldBeLocalRef,
+        A3007_LocalRef_CantMakeLocalRefWithTemporalBoxRef,
+        A3008_LocalRef_CantMakeLocalRefWithTemporalLocation,
 
 
         A9901_NotSupported_LambdaParameterInference,

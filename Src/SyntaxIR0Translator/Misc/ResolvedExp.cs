@@ -1,4 +1,4 @@
-﻿using Citron.Symbol;
+﻿ using Citron.Symbol;
 using R = Citron.IR0;
 
 namespace Citron.Analysis;
@@ -47,6 +47,18 @@ abstract record class ResolvedExp
     {
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitListIndexer(this);
         public override IType GetExpType() { return ItemType; }
+    }
+
+    public record class LocalDeref(ResolvedExp InnerExp, IType Type) : ResolvedExp
+    {
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitLocalDeref(this);
+        public override IType GetExpType() { return Type; }
+    }
+
+    public record class BoxDeref(ResolvedExp InnerExp, IType Type) : ResolvedExp
+    {
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitBoxDeref(this);
+        public override IType GetExpType() { return Type; }
     }
 
     // 기타의 경우

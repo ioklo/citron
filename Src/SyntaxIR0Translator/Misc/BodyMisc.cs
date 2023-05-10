@@ -93,7 +93,7 @@ namespace Citron.Analysis
             if (result != null) return result;
 
             context.AddFatalError(A2201_Cast_Failed, nodeForErrorReport);
-            throw new UnreachableException();
+            return Error();
         }
 
         public struct SymbolQueryResultExpResultTranslator : ISymbolQueryResultVisitor<ExpResult>

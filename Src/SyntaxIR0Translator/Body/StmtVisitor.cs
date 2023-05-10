@@ -43,7 +43,7 @@ partial struct StmtVisitor : IStmtVisitor
         var builder = ImmutableArray.CreateBuilder<R.StringExp>();        
         foreach (var cmd in cmdStmt.Commands)
         {
-            var exp = CoreExpIR0ExpTranslator.Translate(cmd, context, hintType: null);
+            var exp = ExpIR0ExpTranslator.Translate(cmd, context, hintType: null, bDerefIfTypeIsRef: true);
             builder.Add((R.StringExp)exp);
         }
 
@@ -69,7 +69,10 @@ partial struct StmtVisitor : IStmtVisitor
 
             // exact match
             if (!targetType.Equals(enumType))
+            {
                 context.AddFatalError(A2301_IfTestStmt_CantDowncast, ifTestStmt.Exp);
+                return Error();
+            }
 
             var bodyContext = context.MakeNestedScopeContext();
             if (ifTestStmt.VarName != null)
@@ -119,7 +122,7 @@ partial struct StmtVisitor : IStmtVisitor
         //else
         //{
         //    context.AddFatalError(A1001_IfStmt_TestTargetShouldBeLocalVariable, ifStmt.Cond);
-        //    throw new UnreachableException();
+        //    return Error();
         //}
     }
 
@@ -130,7 +133,10 @@ partial struct StmtVisitor : IStmtVisitor
         condExp = BodyMisc.TryCastExp_Exp(condExp, context.GetBoolType());
 
         if (condExp == null)
+        {
             context.AddFatalError(A1001_IfStmt_ConditionShouldBeBool, ifStmt.Cond);
+            return Error();
+        }
 
         var bodyContext = context.MakeNestedScopeContext();
         var bodyVisitor = new StmtVisitor(bodyContext);
@@ -193,7 +199,10 @@ partial struct StmtVisitor : IStmtVisitor
             condExp = BodyMisc.TryCastExp_Exp(rawCondExp, boolType);
 
             if (condExp == null)
+            {
                 context.AddFatalError(A1101_ForStmt_ConditionShouldBeBool, forStmt.CondExp);
+                return Error();
+            }
         }
 
         R.Exp? continueExp = null;
@@ -211,7 +220,10 @@ partial struct StmtVisitor : IStmtVisitor
     ImmutableArray<R.Stmt> IStmtVisitor.VisitContinue(S.ContinueStmt continueStmt)
     {
         if (!context.IsInLoop())
+        {
             context.AddFatalError(A1501_ContinueStmt_ShouldUsedInLoop, continueStmt);
+            return Errro();
+        }
 
         return Stmts(new R.ContinueStmt());
     }
@@ -219,7 +231,10 @@ partial struct StmtVisitor : IStmtVisitor
     ImmutableArray<R.Stmt> IStmtVisitor.VisitBreak(S.BreakStmt breakStmt)
     {
         if (!context.IsInLoop())
+        {
             context.AddFatalError(A1601_BreakStmt_ShouldUsedInLoop, breakStmt);
+            return Error();
+        }
 
         return Stmts(new R.BreakStmt());
     }
@@ -230,7 +245,10 @@ partial struct StmtVisitor : IStmtVisitor
         if (context.IsSeqFunc())
         {
             if (returnStmt.Info != null)
+            {
                 context.AddFatalError(A1202_ReturnStmt_SeqFuncShouldReturnVoid, returnStmt);
+                return Error();
+            }
 
             return Stmts(new R.ReturnStmt(new R.ReturnInfo.None()));
         }
@@ -247,6 +265,7 @@ partial struct StmtVisitor : IStmtVisitor
                 if (funcReturn != null && !funcReturn.Value.Type.Equals(context.GetVoidType()))
                 {
                     context.AddFatalError(A1201_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType, returnStmt);
+                    return Error();
                 }
             }
             else
@@ -321,7 +340,10 @@ partial struct StmtVisitor : IStmtVisitor
 
                 // 캐스트 실패시
                 if (castRetValueExp == null)
+                {
                     context.AddFatalError(A1201_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType, returnStmt);
+                    return Error();
+                }
                 
                 return Stmts(new R.ReturnStmt(new R.ReturnInfo.Expression(castRetValueExp)));
             }
@@ -497,7 +519,10 @@ partial struct StmtVisitor : IStmtVisitor
     ImmutableArray<R.Stmt> IStmtVisitor.VisitYield(S.YieldStmt yieldStmt)
     {
         if (!context.IsSeqFunc())
+        {
             context.AddFatalError(A1401_YieldStmt_YieldShouldBeInSeqFunc, yieldStmt);
+            return Error();
+        }
 
         // yield에서는 retType이 명시되는 경우만 있을 것이다
         var callableReturn = context.GetReturn();
@@ -516,11 +541,17 @@ partial struct StmtVisitor : IStmtVisitor
         {
             case "static_notnull":
                 if (directiveStmt.Args.Length != 1)
+                {
                     context.AddFatalError(A2801_StaticNotNullDirective_ShouldHaveOneArgument, directiveStmt);
+                    return Error();
+                }
 
                 var argResult = ExpResolvedExpTranslator.TranslateAsLoc(directiveStmt.Args[0], context, hintType: null, bWrapExpAsLoc: false);
                 if (argResult == null)
+                {
                     context.AddFatalError(A2802_StaticNotNullDirective_ArgumentMustBeLocation, directiveStmt);
+                    return Error();
+                }
 
                 var (argLoc, _) = argResult.Value;
 
@@ -596,7 +627,10 @@ partial struct StmtVisitor : IStmtVisitor
         var exp = ExpResolvedExpTranslator.TranslateAsExp(expSyntax, context, hintType);
 
         if (!IsTopLevelExp(exp))
+        {
             context.AddFatalError(code, expSyntax);
+            return Error();
+        }
 
         return exp;
     }

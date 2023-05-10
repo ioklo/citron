@@ -8,98 +8,108 @@ using R = Citron.IR0;
 namespace Citron.Analysis;
 
 // S.Exp -> R.Exp
-struct ExpIR0ExpTranslator : S.IExpVisitor<R.Exp>
+struct ExpIR0ExpTranslator : S.IExpVisitor<TranslationResult<R.Exp>>
 {
     ScopeContext context;
     IType? hintType;
+    bool bDerefIfTypeIsRef;
     S.ISyntaxNode nodeForErrorReport;
-
-    CoreExpIR0ExpTranslator coreExpTranslator;
     
     // ExpResult상위 레이어에 있는게 맞는거 같기도 하다
-    public static R.Exp Translate(S.Exp exp, ScopeContext context, IType? hintType)
+    public static TranslationResult<R.Exp> Translate(S.Exp exp, ScopeContext context, IType? hintType, bool bDerefIfTypeIsRef)
     {
         var visitor = new ExpIR0ExpTranslator { 
-            context = context, hintType = hintType, nodeForErrorReport = exp,
-            coreExpTranslator = new CoreExpIR0ExpTranslator(hintType, context)
+            context = context, 
+            hintType = hintType,
+            bDerefIfTypeIsRef = bDerefIfTypeIsRef, 
+            nodeForErrorReport = exp
         };
-        return exp.Accept<ExpIR0ExpTranslator, R.Exp>(ref visitor);
+
+        return exp.Accept<ExpIR0ExpTranslator, TranslationResult<R.Exp>>(ref visitor);
     }
 
     // S.Exp -> IntermediateExp -> ResolvedExp -> R.Exp
-    R.Exp HandleDefault(S.Exp exp)
+    TranslationResult<R.Exp> HandleDefault(S.Exp exp)
     {   
-        var reExp = ExpResolvedExpTranslator.Translate(exp, context, hintType);
-        return ResolvedExpIR0ExpTranslator.Translate(reExp);
+        var reExpResult = ExpResolvedExpTranslator.Translate(exp, context, hintType);
+        if (!reExpResult.IsValid(out var reExp))
+            return TranslationResult.Error<R.Exp>();
+
+        return ResolvedExpIR0ExpTranslator.Translate(reExp, context, bDerefIfTypeIsRef, nodeForErrorReport);
     }
 
-    R.Exp S.IExpVisitor<R.Exp>.VisitBinaryOp(S.BinaryOpExp exp)
+    TranslationResult<R.Exp> Valid(R.Exp exp)
     {
-        return coreExpTranslator.TranslateBinaryOp(exp);
+        return TranslationResult.Valid(exp);
     }
 
-    R.Exp S.IExpVisitor<R.Exp>.VisitBoolLiteral(S.BoolLiteralExp exp)
+    TranslationResult<R.Exp> S.IExpVisitor<TranslationResult<R.Exp>>.VisitBinaryOp(S.BinaryOpExp exp)
     {
-        return coreExpTranslator.TranslateBoolLiteral(exp);
+        return new CoreExpIR0ExpTranslator(hintType, context).TranslateBinaryOp(exp);
     }
 
-    R.Exp S.IExpVisitor<R.Exp>.VisitBox(S.BoxExp exp)
+    TranslationResult<R.Exp> S.IExpVisitor<TranslationResult<R.Exp>>.VisitBoolLiteral(S.BoolLiteralExp exp)
+    {
+        return Valid(new CoreExpIR0ExpTranslator(hintType, context).TranslateBoolLiteral(exp));
+    }
+
+    TranslationResult<R.Exp> S.IExpVisitor<TranslationResult<R.Exp>>.VisitBox(S.BoxExp exp)
     {
         throw new NotImplementedException();
     }
 
-    R.Exp S.IExpVisitor<R.Exp>.VisitCall(S.CallExp exp)
+    TranslationResult<R.Exp> S.IExpVisitor<TranslationResult<R.Exp>>.VisitCall(S.CallExp exp)
     {
-        return coreExpTranslator.TranslateCall(exp);
+        return new CoreExpIR0ExpTranslator(hintType, context).TranslateCall(exp);
     }
     
-    R.Exp S.IExpVisitor<R.Exp>.VisitIdentifier(S.IdentifierExp exp)
+    TranslationResult<R.Exp> S.IExpVisitor<TranslationResult<R.Exp>>.VisitIdentifier(S.IdentifierExp exp)
     {
         return HandleDefault(exp);
     }
 
-    R.Exp S.IExpVisitor<R.Exp>.VisitIndexer(S.IndexerExp exp)
+    TranslationResult<R.Exp> S.IExpVisitor<TranslationResult<R.Exp>>.VisitIndexer(S.IndexerExp exp)
     {
         return HandleDefault(exp);
     }
 
-    R.Exp S.IExpVisitor<R.Exp>.VisitIntLiteral(S.IntLiteralExp exp)
+    TranslationResult<R.Exp> S.IExpVisitor<TranslationResult<R.Exp>>.VisitIntLiteral(S.IntLiteralExp exp)
     {
-        return coreExpTranslator.TranslateIntLiteral(exp);
+        return Valid(new CoreExpIR0ExpTranslator(hintType, context).TranslateIntLiteral(exp));
     }
 
-    R.Exp S.IExpVisitor<R.Exp>.VisitLambda(S.LambdaExp exp)
+    TranslationResult<R.Exp> S.IExpVisitor<TranslationResult<R.Exp>>.VisitLambda(S.LambdaExp exp)
     {
-        return coreExpTranslator.TranslateLambda(exp);
+        return Valid(new CoreExpIR0ExpTranslator(hintType, context).TranslateLambda(exp));
     }
 
-    R.Exp S.IExpVisitor<R.Exp>.VisitList(S.ListExp exp)
+    TranslationResult<R.Exp> S.IExpVisitor<TranslationResult<R.Exp>>.VisitList(S.ListExp exp)
     {
-        return coreExpTranslator.TranslateList(exp);
+        return new CoreExpIR0ExpTranslator(hintType, context).TranslateList(exp);
     }
 
-    R.Exp S.IExpVisitor<R.Exp>.VisitMember(S.MemberExp exp)
+    TranslationResult<R.Exp> S.IExpVisitor<TranslationResult<R.Exp>>.VisitMember(S.MemberExp exp)
     {
         return HandleDefault(exp);
     }
 
-    R.Exp S.IExpVisitor<R.Exp>.VisitNew(S.NewExp exp)
+    TranslationResult<R.Exp> S.IExpVisitor<TranslationResult<R.Exp>>.VisitNew(S.NewExp exp)
     {
-        return coreExpTranslator.TranslateNew(exp);
+        return new CoreExpIR0ExpTranslator(hintType, context).TranslateNew(exp);
     }
 
-    R.Exp S.IExpVisitor<R.Exp>.VisitNullLiteral(S.NullLiteralExp exp)
+    TranslationResult<R.Exp> S.IExpVisitor<TranslationResult<R.Exp>>.VisitNullLiteral(S.NullLiteralExp exp)
     {
-        return coreExpTranslator.TranslateNullLiteral(exp);
+        return new CoreExpIR0ExpTranslator(hintType, context).TranslateNullLiteral(exp);
     }
 
-    R.Exp S.IExpVisitor<R.Exp>.VisitString(S.StringExp exp)
+    TranslationResult<R.Exp> S.IExpVisitor<TranslationResult<R.Exp>>.VisitString(S.StringExp exp)
     {
-        return coreExpTranslator.TranslateString(exp);
+        return new CoreExpIR0ExpTranslator(hintType, context).TranslateString(exp);
     }
 
-    R.Exp S.IExpVisitor<R.Exp>.VisitUnaryOp(S.UnaryOpExp exp)
+    TranslationResult<R.Exp> S.IExpVisitor<TranslationResult<R.Exp>>.VisitUnaryOp(S.UnaryOpExp exp)
     {
-        return coreExpTranslator.TranslateUnaryOp(exp);
+        return new CoreExpIR0ExpTranslator(hintType, context).TranslateUnaryOp(exp);
     }
 }

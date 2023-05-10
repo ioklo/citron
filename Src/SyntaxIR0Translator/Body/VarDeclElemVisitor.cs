@@ -60,7 +60,7 @@ struct VarDeclElemVisitor
         if (syntax.InitExp == null)
         {
             context.AddFatalError(A0111_VarDecl_LocalVarDeclNeedInitializer, syntax);
-            throw new UnreachableException();
+            return Error();
         }
 
         var initExp = ExpIR0ExpTranslator.Translate(syntax.InitExp, context, hintType: null);
@@ -75,7 +75,7 @@ struct VarDeclElemVisitor
         if (syntax.InitExp == null)
         {
             context.AddFatalError(A0111_VarDecl_LocalVarDeclNeedInitializer, syntax);
-            throw new UnreachableException();
+            return Error();
         }
 
         var initExp = ExpIR0ExpTranslator.Translate(syntax.InitExp, context, declType);
@@ -91,7 +91,10 @@ struct VarDeclElemVisitor
     void VisitElem(S.VarDeclElement syntax)
     {
         if (context.DoesLocalVarNameExistInScope(syntax.VarName))
+        {
             context.AddFatalError(A0103_VarDecl_LocalVarNameShouldBeUniqueWithinScope, syntax);
+            return Error();
+        }
 
         if (declType is VarType)
         {
@@ -130,7 +133,7 @@ struct LocalRefVarDeclElemVisitor
     void HandleVarDeclType(string varName, S.Exp initExpSyntax)
     {
         // box ref가 나와도 local ref로 바꿔준다
-        var initExp = LocalRefExpVisitor.TranslateAsLocalRef(initExpSyntax, context, innerHintType: null); // throws FatalErrorException
+        var initExp = ExpIR0LocalRefTranslator.Translate(initExpSyntax, context, innerHintType: null); // throws FatalErrorException
 
         var initExpType = initExp.GetExpType();
         builder.Add(new R.LocalVarDeclStmt(initExpType, varName, initExp));
@@ -139,13 +142,16 @@ struct LocalRefVarDeclElemVisitor
 
     void HandleExplicitDeclType(string varName, S.Exp initExpSyntax)
     {   
-        var initExp = LocalRefExpVisitor.TranslateAsLocalRef(initExpSyntax, context, declType.InnerType); // throws FatalErrorException
+        var initExp = ExpIR0LocalRefTranslator.Translate(initExpSyntax, context, declType.InnerType); // throws FatalErrorException
 
         var initExpType = initExp.GetExpType();
         
         var compareContext = new CyclicEqualityCompareContext();
-        if (!compareContext.CompareClass(declType, initExpType))        
+        if (!compareContext.CompareClass(declType, initExpType))
+        {
             context.AddFatalError(A0102_VarDecl_MismatchBetweenRefDeclTypeAndRefInitType, initExpSyntax);
+            return Error();
+        }
 
         builder.Add(new R.LocalVarDeclStmt(declType, varName, initExp));
         context.AddLocalVarInfo(declType, new Name.Normal(varName));
@@ -154,11 +160,17 @@ struct LocalRefVarDeclElemVisitor
     void VisitElem(S.VarDeclElement syntax)
     {
         if (context.DoesLocalVarNameExistInScope(syntax.VarName))
+        {
             context.AddFatalError(A0103_VarDecl_LocalVarNameShouldBeUniqueWithinScope, syntax);
+            return Error();
+        }
 
         // 공통 처리
         if (syntax.InitExp == null)
+        {
             context.AddFatalError(A0106_VarDecl_RefDeclNeedInitializer, syntax);
+            return Error();
+        }
 
         if (declType.InnerType is VarType)
         {

@@ -9,7 +9,6 @@ namespace Citron.Analysis;
 // GlobalContext redirection
 partial class ScopeContext
 {   
-    [DoesNotReturn]
     public void AddFatalError(SyntaxAnalysisErrorCode code, S.ISyntaxNode node) => globalContext.AddFatalError(code, node);
     public void AddError(SyntaxAnalysisErrorCode code, S.ISyntaxNode node) => globalContext.AddError(code, node);
 

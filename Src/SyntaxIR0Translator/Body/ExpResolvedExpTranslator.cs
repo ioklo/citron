@@ -5,10 +5,11 @@ using Citron.Infra;
 using Citron.Collections;
 using Citron.Symbol;
 
+using static Citron.Analysis.SyntaxAnalysisErrorCode;
+
 using R = Citron.IR0;
 using S = Citron.Syntax;
-using static Citron.Analysis.SyntaxAnalysisErrorCode;
-using IExpVisitor = Citron.Syntax.IExpVisitor<Citron.Analysis.ResolvedExp>;
+using IExpVisitor = Citron.Syntax.IExpVisitor<Citron.Analysis.TranslationResult<Citron.Analysis.ResolvedExp>>;
 
 namespace Citron.Analysis;
 
@@ -18,17 +19,14 @@ struct ExpResolvedExpTranslator : IExpVisitor
     IType? hintType;
     ScopeContext context;
 
-    CoreExpIR0ExpTranslator coreExpTranslator;
-
-    public static ResolvedExp Translate(S.Exp exp, ScopeContext context, IType? hintType)
+    public static TranslationResult<ResolvedExp> Translate(S.Exp exp, ScopeContext context, IType? hintType)
     {
         var visitor = new ExpResolvedExpTranslator
         {
             context = context,
-            hintType = hintType,
-            coreExpTranslator = new CoreExpIR0ExpTranslator(hintType, context)
+            hintType = hintType
         };
-        return exp.Accept<ExpResolvedExpTranslator, ResolvedExp>(ref visitor);
+        return exp.Accept<ExpResolvedExpTranslator, TranslationResult<ResolvedExp>>(ref visitor);
     }
 
     public ExpResolvedExpTranslator(ScopeContext context, IType? hintType)
@@ -37,98 +35,113 @@ struct ExpResolvedExpTranslator : IExpVisitor
         this.hintType = hintType;
     }
 
-    ResolvedExp HandleDefault(S.Exp exp)
+    TranslationResult<ResolvedExp> HandleDefault(S.Exp exp)
     {
-        var imExp = ExpIntermediateExpTranslator.Translate(exp, context, hintType);
+        var imExpResult = ExpIntermediateExpTranslator.Translate(exp, context, hintType);
+        if (!imExpResult.IsValid(out var imExp))
+            return Error();
+
         return IntermediateExpResolvedExpTranslator.Translate(imExp, context, exp);
     }
+
+    TranslationResult<ResolvedExp> Error()
+    {
+        return TranslationResult.Error<ResolvedExp>();
+    }
+
+    TranslationResult<ResolvedExp> HandleExp(R.Exp exp)
+    {
+        return TranslationResult.Valid<ResolvedExp>(new ResolvedExp.IR0Exp(exp));
+    }
+
+    TranslationResult<ResolvedExp> HandleExpTranslationResult(TranslationResult<R.Exp> expResult)
+    {
+        if (!expResult.IsValid(out var exp))
+            return Error();
+
+        return HandleExp(exp);
+    }
     
-    ResolvedExp IExpVisitor.VisitIdentifier(S.IdentifierExp exp)
+    TranslationResult<ResolvedExp> IExpVisitor.VisitIdentifier(S.IdentifierExp exp)
     {
         return HandleDefault(exp);
     }
 
+    TranslationResult<ResolvedExp> Valid(ResolvedExp reExp)
+    {
+        return TranslationResult.Valid(reExp);
+    }
+
     // 'null'
-    ResolvedExp IExpVisitor.VisitNullLiteral(S.NullLiteralExp exp)
-    {
-        var rexp = coreExpTranslator.TranslateNullLiteral(exp);
-        return new ResolvedExp.IR0Exp(rexp);
+    TranslationResult<ResolvedExp> IExpVisitor.VisitNullLiteral(S.NullLiteralExp exp)
+    {   
+        return HandleExpTranslationResult(new CoreExpIR0ExpTranslator(hintType, context).TranslateNullLiteral(exp));
     }
 
-    ResolvedExp IExpVisitor.VisitBoolLiteral(S.BoolLiteralExp exp)
-    {
-        var rexp = coreExpTranslator.TranslateBoolLiteral(exp);
-        return new ResolvedExp.IR0Exp(rexp);
+    TranslationResult<ResolvedExp> IExpVisitor.VisitBoolLiteral(S.BoolLiteralExp exp)
+    {   
+        return HandleExp(new CoreExpIR0ExpTranslator(hintType, context).TranslateBoolLiteral(exp));
     }
 
-    ResolvedExp IExpVisitor.VisitIntLiteral(S.IntLiteralExp exp)
+    TranslationResult<ResolvedExp> IExpVisitor.VisitIntLiteral(S.IntLiteralExp exp)
     {
-        var rexp = coreExpTranslator.TranslateIntLiteral(exp);
-        return new ResolvedExp.IR0Exp(rexp);
+        return HandleExp(new CoreExpIR0ExpTranslator(hintType, context).TranslateIntLiteral(exp));
     }
 
-    ResolvedExp IExpVisitor.VisitString(S.StringExp exp)
+    TranslationResult<ResolvedExp> IExpVisitor.VisitString(S.StringExp exp)
     {
-        var rexp = coreExpTranslator.TranslateString(exp);
-        return new ResolvedExp.IR0Exp(rexp);
+        return HandleExpTranslationResult(new CoreExpIR0ExpTranslator(hintType, context).TranslateString(exp));
     }
 
     // int만 지원한다
-
-    ResolvedExp IExpVisitor.VisitUnaryOp(S.UnaryOpExp exp)
+    TranslationResult<ResolvedExp> IExpVisitor.VisitUnaryOp(S.UnaryOpExp exp)
     {
-        var rexp = coreExpTranslator.TranslateUnaryOp(exp);
-        return new ResolvedExp.IR0Exp(rexp);
+        return HandleExpTranslationResult(new CoreExpIR0ExpTranslator(hintType, context).TranslateUnaryOp(exp));
     }
 
-    ResolvedExp IExpVisitor.VisitBinaryOp(S.BinaryOpExp exp)
+    TranslationResult<ResolvedExp> IExpVisitor.VisitBinaryOp(S.BinaryOpExp exp)
     {
-        var rexp = coreExpTranslator.TranslateBinaryOp(exp);
-        return new ResolvedExp.IR0Exp(rexp);
+        return HandleExpTranslationResult(new CoreExpIR0ExpTranslator(hintType, context).TranslateBinaryOp(exp));
     }
 
-    ResolvedExp IExpVisitor.VisitCall(S.CallExp exp)
+    TranslationResult<ResolvedExp> IExpVisitor.VisitCall(S.CallExp exp)
     {
-        var rexp = coreExpTranslator.TranslateCall(exp);
-        return new ResolvedExp.IR0Exp(rexp);
+        return HandleExpTranslationResult(new CoreExpIR0ExpTranslator(hintType, context).TranslateCall(exp));
     }
 
-    ResolvedExp IExpVisitor.VisitLambda(S.LambdaExp exp)
+    TranslationResult<ResolvedExp> IExpVisitor.VisitLambda(S.LambdaExp exp)
     {
-        var rexp = coreExpTranslator.TranslateLambda(exp);
-        return new ResolvedExp.IR0Exp(rexp);
+        return HandleExp(new CoreExpIR0ExpTranslator(hintType, context).TranslateLambda(exp));
     }
 
-    ResolvedExp IExpVisitor.VisitIndexer(S.IndexerExp exp)
+    TranslationResult<ResolvedExp> IExpVisitor.VisitIndexer(S.IndexerExp exp)
     {
         return HandleDefault(exp);
     }
 
     // exp를 돌려주는 버전
     // parent."x"<>
-    ResolvedExp IExpVisitor.VisitMember(S.MemberExp exp)
+    TranslationResult<ResolvedExp> IExpVisitor.VisitMember(S.MemberExp exp)
     {
         return HandleDefault(exp);
     }
 
-    ResolvedExp IExpVisitor.VisitList(S.ListExp exp)
+    TranslationResult<ResolvedExp> IExpVisitor.VisitList(S.ListExp exp)
     {
-        var rexp = coreExpTranslator.TranslateList(exp);
-        return new ResolvedExp.IR0Exp(rexp);
+        return HandleExpTranslationResult(new CoreExpIR0ExpTranslator(hintType, context).TranslateList(exp));
     }
 
     // 'new C(...)'
-    ResolvedExp IExpVisitor.VisitNew(S.NewExp exp)
+    TranslationResult<ResolvedExp> IExpVisitor.VisitNew(S.NewExp exp)
     {
-        var rexp = coreExpTranslator.TranslateNew(exp);
-        return new ResolvedExp.IR0Exp(rexp);
+        return HandleExpTranslationResult(new CoreExpIR0ExpTranslator(hintType, context).TranslateNew(exp));
     }
 
     //// &i를 뭐로 번역할 것인가
     //// &c.x // box ref
     //// &s.x // local ref
     //// &e.x <- 금지, 런타임에 레이아웃이 바뀔 수 있다 (추후 ref-able enum을 쓰면(레이아웃이 겹치지 않는) 되도록 허용할 수 있다)
-    //ResolvedExp IExpVisitor.VisitRef(S.RefExp exp)
+    //TranslationResult<ResolvedExp> IExpVisitor.VisitRef(S.RefExp exp)
     //{
     //    // &a.b.c.d.e, 일단 innerExp를 memberLoc으로 변경하고, 다시 순회한다
     //    //var innerResult = ExpVisitor.TranslateAsLoc(exp.InnerExp, context, hintType: null, bWrapExpAsLoc: false);
@@ -144,7 +157,7 @@ struct ExpResolvedExpTranslator : IExpVisitor
     //    throw new NotImplementedException();
     //}
 
-    ResolvedExp IExpVisitor.VisitBox(S.BoxExp exp)
+    TranslationResult<ResolvedExp> IExpVisitor.VisitBox(S.BoxExp exp)
     {
         throw new NotImplementedException();
     }

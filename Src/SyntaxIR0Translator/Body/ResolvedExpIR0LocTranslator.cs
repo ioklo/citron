@@ -10,70 +10,112 @@ using System.Diagnostics;
 
 namespace Citron.Analysis;
 
-record struct LocAndType(R.Loc Loc, IType Type);
+record struct IR0LocResult(R.Loc Loc, IType LocType);
 
-partial struct ResolvedExpIR0LocTranslator : IResolvedExpVisitor<R.Loc>
+// nothrow
+struct ResolvedExpIR0LocTranslator : IResolvedExpVisitor<TranslationResult<IR0LocResult>>
 {   
     ScopeContext context;    
     bool bWrapExpAsLoc;
+    bool bDerefIfTypeIsRef;
     S.ISyntaxNode nodeForErrorReport;
-    CoreResolvedExpIR0LocTranslator coreTranslator;
+    SyntaxAnalysisErrorCode notLocationErrorCode;
 
-    public static R.Loc Translate(ResolvedExp reExp, ScopeContext context, bool bWrapExpAsLoc, S.ISyntaxNode nodeForErrorReport)
+    public static TranslationResult<IR0LocResult> Translate(
+        ResolvedExp reExp, 
+        ScopeContext context, 
+        bool bWrapExpAsLoc, 
+        bool bDerefIfTypeIsRef, 
+        S.ISyntaxNode nodeForErrorReport,
+        SyntaxAnalysisErrorCode notLocationErrorCode) // default는 A2015_ResolveIdentifier_ExpressionIsNotLocation
     {
-        var translator = new ResolvedExpIR0LocTranslator { 
-            context = context, 
+        var translator = new ResolvedExpIR0LocTranslator {
+            context = context,
             bWrapExpAsLoc = bWrapExpAsLoc,
+            bDerefIfTypeIsRef = bDerefIfTypeIsRef,
             nodeForErrorReport = nodeForErrorReport,
-            coreTranslator = new CoreResolvedExpIR0LocTranslator(context, nodeForErrorReport),
+            notLocationErrorCode = notLocationErrorCode
         };
-        return reExp.Accept<ResolvedExpIR0LocTranslator, R.Loc>(ref translator);
-    }    
-    
-    R.Loc IResolvedExpVisitor<R.Loc>.VisitThis(ResolvedExp.ThisVar reExp)
-    {
-        return coreTranslator.TranslateThis(reExp);
+        return reExp.Accept<ResolvedExpIR0LocTranslator, TranslationResult<IR0LocResult>>(ref translator);
     }
 
-    R.Loc IResolvedExpVisitor<R.Loc>.VisitLocalVar(ResolvedExp.LocalVar reExp)
+    TranslationResult<IR0LocResult> HandleLoc(R.Loc loc, IType type)
     {
-        return coreTranslator.TranslateLocalVar(reExp);
+        if (bDerefIfTypeIsRef)
+        {
+            if (type is LocalRefType localRefType)
+                return TranslationResult.Valid(new IR0LocResult(new R.LocalDerefLoc(loc), localRefType.InnerType));
+            else if (type is BoxRefType boxRefType)
+                return TranslationResult.Valid(new IR0LocResult(new R.BoxDerefLoc(loc), boxRefType.InnerType));
+        }
+
+        return TranslationResult.Valid(new IR0LocResult(loc, type));
     }
 
-    R.Loc IResolvedExpVisitor<R.Loc>.VisitLambdaMemberVar(ResolvedExp.LambdaMemberVar reExp)
+    TranslationResult<IR0LocResult> HandleLocTranslationResult(TranslationResult<R.Loc> result, IType type)
     {
-        return coreTranslator.TranslateLambdaMemberVar(reExp);
-    }
-    
-    R.Loc IResolvedExpVisitor<R.Loc>.VisitClassMemberVar(ResolvedExp.ClassMemberVar reExp)
-    {
-        return coreTranslator.TranslateClassMemberVar(reExp);
-    }
-    
-    R.Loc IResolvedExpVisitor<R.Loc>.VisitStructMemberVar(ResolvedExp.StructMemberVar reExp)
-    {
-        return coreTranslator.TranslateStructMemberVar(reExp);
-    }
-    
-    R.Loc IResolvedExpVisitor<R.Loc>.VisitEnumElemMemberVar(ResolvedExp.EnumElemMemberVar reExp)
-    {
-        return coreTranslator.TranslateEnumElemMemberVar(reExp);
+        if (!result.IsValid(out var loc))
+            return TranslationResult.Error<IR0LocResult>();
+
+        return HandleLoc(loc, type);
     }
 
-    R.Loc IResolvedExpVisitor<R.Loc>.VisitIR0Exp(ResolvedExp.IR0Exp reExp)
+    TranslationResult<IR0LocResult> IResolvedExpVisitor<TranslationResult<IR0LocResult>>.VisitThis(ResolvedExp.ThisVar reExp)
+    {     
+        return HandleLoc(new CoreResolvedExpIR0LocTranslator(context, nodeForErrorReport).TranslateThis(reExp), reExp.GetExpType());
+    }
+
+    TranslationResult<IR0LocResult> IResolvedExpVisitor<TranslationResult<IR0LocResult>>.VisitLocalVar(ResolvedExp.LocalVar reExp)
+    {
+        return HandleLoc(new CoreResolvedExpIR0LocTranslator(context, nodeForErrorReport).TranslateLocalVar(reExp), reExp.GetExpType());
+    }
+
+    TranslationResult<IR0LocResult> IResolvedExpVisitor<TranslationResult<IR0LocResult>>.VisitLambdaMemberVar(ResolvedExp.LambdaMemberVar reExp)
+    {   
+        return HandleLoc(new CoreResolvedExpIR0LocTranslator(context, nodeForErrorReport).TranslateLambdaMemberVar(reExp), reExp.GetExpType());
+    }
+    
+    TranslationResult<IR0LocResult> IResolvedExpVisitor<TranslationResult<IR0LocResult>>.VisitClassMemberVar(ResolvedExp.ClassMemberVar reExp)
+    {
+        return HandleLocTranslationResult(new CoreResolvedExpIR0LocTranslator(context, nodeForErrorReport).TranslateClassMemberVar(reExp), reExp.GetExpType());
+    }
+    
+    TranslationResult<IR0LocResult> IResolvedExpVisitor<TranslationResult<IR0LocResult>>.VisitStructMemberVar(ResolvedExp.StructMemberVar reExp)
+    {
+        return HandleLocTranslationResult(new CoreResolvedExpIR0LocTranslator(context, nodeForErrorReport).TranslateStructMemberVar(reExp), reExp.GetExpType());
+    }
+    
+    TranslationResult<IR0LocResult> IResolvedExpVisitor<TranslationResult<IR0LocResult>>.VisitEnumElemMemberVar(ResolvedExp.EnumElemMemberVar reExp)
+    {
+        return HandleLocTranslationResult(new CoreResolvedExpIR0LocTranslator(context, nodeForErrorReport).TranslateEnumElemMemberVar(reExp), reExp.GetExpType());
+    }
+
+    TranslationResult<IR0LocResult> IResolvedExpVisitor<TranslationResult<IR0LocResult>>.VisitIR0Exp(ResolvedExp.IR0Exp reExp)
     {
         if (bWrapExpAsLoc)
-            return new R.TempLoc(reExp.Exp);
+        {
+            return HandleLoc(new R.TempLoc(reExp.Exp), reExp.GetExpType());
+        }
         else
         {
-            context.AddFatalError(A2015_ResolveIdentifier_ExpressionIsNotLocation, nodeForErrorReport);
-            throw new UnreachableException();
+            context.AddFatalError(notLocationErrorCode, nodeForErrorReport);
+            return TranslationResult.Error<IR0LocResult>();
         }
     }
 
-    R.Loc IResolvedExpVisitor<R.Loc>.VisitListIndexer(ResolvedExp.ListIndexer reExp)
+    TranslationResult<IR0LocResult> IResolvedExpVisitor<TranslationResult<IR0LocResult>>.VisitListIndexer(ResolvedExp.ListIndexer reExp)
     {
-        return coreTranslator.TranslateListIndexer(reExp); 
+        return HandleLoc(new CoreResolvedExpIR0LocTranslator(context, nodeForErrorReport).TranslateListIndexer(reExp), reExp.GetExpType()); 
+    }
+     
+    TranslationResult<IR0LocResult> IResolvedExpVisitor<TranslationResult<IR0LocResult>>.VisitLocalDeref(ResolvedExp.LocalDeref reExp)
+    {
+        return HandleLocTranslationResult(new CoreResolvedExpIR0LocTranslator(context, nodeForErrorReport).TranslateLocalDeref(reExp), reExp.GetExpType());
+    }
+
+    TranslationResult<IR0LocResult> IResolvedExpVisitor<TranslationResult<IR0LocResult>>.VisitBoxDeref(ResolvedExp.BoxDeref reExp)
+    {
+        return HandleLocTranslationResult(new CoreResolvedExpIR0LocTranslator(context, nodeForErrorReport).TranslateBoxDeref(reExp), reExp.GetExpType());
     }
 }
 

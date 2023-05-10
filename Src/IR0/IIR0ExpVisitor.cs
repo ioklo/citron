@@ -46,9 +46,10 @@ public interface IIR0ExpVisitor<TResult>
     TResult CastBoxLambdaToFuncRef(CastBoxLambdaToFuncRefExp exp);
     
     TResult VisitBox(BoxExp exp);
-
     TResult VisitLocalRef(LocalRefExp exp);
+    TResult VisitCastBoxRefToLocalRef(CastBoxRefToLocalRefExp castBoxRefToLocalRefExp);
 
     TResult VisitClassMemberVarBoxRefExp(ClassMemberVarBoxRefExp exp);
     TResult VisitStructMemberVarBoxRefExp(StructMemberVarBoxRefExp exp);
+    
 }

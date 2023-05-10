@@ -12,6 +12,10 @@ interface IResolvedExpVisitor<TResult>
     TResult VisitStructMemberVar(ResolvedExp.StructMemberVar exp);
     TResult VisitEnumElemMemberVar(ResolvedExp.EnumElemMemberVar exp);
     TResult VisitListIndexer(ResolvedExp.ListIndexer exp);
+
+    TResult VisitLocalDeref(ResolvedExp.LocalDeref exp);
+    TResult VisitBoxDeref(ResolvedExp.BoxDeref exp);
+
     TResult VisitIR0Exp(ResolvedExp.IR0Exp exp);
 }
 
