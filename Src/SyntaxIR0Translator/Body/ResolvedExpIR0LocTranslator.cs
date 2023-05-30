@@ -10,8 +10,6 @@ using System.Diagnostics;
 
 namespace Citron.Analysis;
 
-record struct IR0LocResult(R.Loc Loc, IType LocType);
-
 // nothrow
 struct ResolvedExpIR0LocTranslator : IResolvedExpVisitor<TranslationResult<IR0LocResult>>
 {   
@@ -105,17 +103,7 @@ struct ResolvedExpIR0LocTranslator : IResolvedExpVisitor<TranslationResult<IR0Lo
 
     TranslationResult<IR0LocResult> IResolvedExpVisitor<TranslationResult<IR0LocResult>>.VisitListIndexer(ResolvedExp.ListIndexer reExp)
     {
-        return HandleLoc(new CoreResolvedExpIR0LocTranslator(context, nodeForErrorReport).TranslateListIndexer(reExp), reExp.GetExpType()); 
-    }
-     
-    TranslationResult<IR0LocResult> IResolvedExpVisitor<TranslationResult<IR0LocResult>>.VisitLocalDeref(ResolvedExp.LocalDeref reExp)
-    {
-        return HandleLocTranslationResult(new CoreResolvedExpIR0LocTranslator(context, nodeForErrorReport).TranslateLocalDeref(reExp), reExp.GetExpType());
-    }
-
-    TranslationResult<IR0LocResult> IResolvedExpVisitor<TranslationResult<IR0LocResult>>.VisitBoxDeref(ResolvedExp.BoxDeref reExp)
-    {
-        return HandleLocTranslationResult(new CoreResolvedExpIR0LocTranslator(context, nodeForErrorReport).TranslateBoxDeref(reExp), reExp.GetExpType());
+        return HandleLocTranslationResult(new CoreResolvedExpIR0LocTranslator(context, nodeForErrorReport).TranslateListIndexer(reExp), reExp.GetExpType()); 
     }
 }
 

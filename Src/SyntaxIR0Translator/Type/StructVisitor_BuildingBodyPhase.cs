@@ -5,12 +5,9 @@ using Pretune;
 
 namespace Citron.Analysis;
 
-[AutoConstructor]
-partial struct StructVisitor_BuildingBodyPhase
+struct StructVisitor_BuildingBodyPhase
 {
-    BuildingBodyPhaseContext context;
-
-    public void VisitStructMemberFuncDecl(ImmutableArray<Stmt> body, StructMemberFuncDeclSymbol symbol, bool bSeqFunc)
+    public static bool VisitStructMemberFuncDecl(ImmutableArray<Stmt> body, BuildingBodyPhaseContext context, StructMemberFuncDeclSymbol symbol, bool bSeqFunc)
     {
         var scopeContext = context.MakeNewScopeContext(symbol, bSeqFunc: bSeqFunc, symbol.GetReturn());
 
@@ -21,14 +18,16 @@ partial struct StructVisitor_BuildingBodyPhase
             var parameter = symbol.GetParameter(i);
             scopeContext.AddLocalVarInfo(parameter.Type, parameter.Name);
         }
-
-        var stmtVisitor = new StmtVisitor(scopeContext);
-        var bodyStmts = stmtVisitor.VisitBody(body);
+        
+        var bodyStmtsResult = StmtVisitor.TranslateBody(body, scopeContext);
+        if (!bodyStmtsResult.IsValid(out var bodyStmts))
+            return false;
         
         context.AddBody(symbol, bodyStmts);
+        return true;
     }
 
-    public void VisitStructConstructorDecl(ImmutableArray<Stmt> body, StructConstructorDeclSymbol symbol)
+    public static bool VisitStructConstructorDecl(ImmutableArray<Stmt> body, BuildingBodyPhaseContext context, StructConstructorDeclSymbol symbol)
     {
         var scopeContext = context.MakeNewScopeContext(symbol, bSeqFunc: false, funcReturn: null);
 
@@ -39,10 +38,12 @@ partial struct StructVisitor_BuildingBodyPhase
             var parameter = symbol.GetParameter(i);
             scopeContext.AddLocalVarInfo(parameter.Type, parameter.Name);
         }
-
-        var stmtVisitor = new StmtVisitor(scopeContext);
-        var bodyStmts = stmtVisitor.VisitBody(body);
+        
+        var bodyStmtsResult = StmtVisitor.TranslateBody(body, scopeContext);
+        if (!bodyStmtsResult.IsValid(out var bodyStmts))
+            return false;
         
         context.AddBody(symbol, bodyStmts);
+        return true;
     }
 }

@@ -147,6 +147,9 @@ namespace Citron.Analysis
         A3007_LocalRef_CantMakeLocalRefWithTemporalBoxRef,
         A3008_LocalRef_CantMakeLocalRefWithTemporalLocation,
 
+        A3101_BoxRef_CantMakeBoxRefWithLocalRef,
+        A3102_BoxRef_InstanceIsNotLocation,
+        A3103_BoxRef_CantMakeBoxRefWithLocal,
 
         A9901_NotSupported_LambdaParameterInference,
         A9902_NotSupported_LambdaReturnTypeInference,

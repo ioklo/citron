@@ -14,34 +14,40 @@ namespace Citron.Analysis;
 
 // MemberParent And Id Binder
 // (IntermediateExp, name, typeArgs) -> IntermediateExp
-struct MemberParentAndIdBinder : IIntermediateExpVisitor<IntermediateExp>
+struct MemberParentAndIdBinder : IIntermediateExpVisitor<TranslationResult<IntermediateExp>>
 {
     Name name;
     ImmutableArray<IType> typeArgs;
     ScopeContext context;
     S.ISyntaxNode nodeForErrorReport;
 
-    public static IntermediateExp Bind(IntermediateExp parentExp, Name name, ImmutableArray<IType> typeArgs, ScopeContext context, S.ISyntaxNode nodeForErrorReport)
+    public static TranslationResult<IntermediateExp> Bind(IntermediateExp parentExp, Name name, ImmutableArray<IType> typeArgs, ScopeContext context, S.ISyntaxNode nodeForErrorReport)
     {   
         var binder = new MemberParentAndIdBinder { name = name, typeArgs = typeArgs, context = context, nodeForErrorReport = nodeForErrorReport };
-        return parentExp.Accept<MemberParentAndIdBinder, IntermediateExp>(ref binder);
+        return parentExp.Accept<MemberParentAndIdBinder, TranslationResult<IntermediateExp>>(ref binder);
     }
 
-    record struct StaticParentVisitor(ImmutableArray<IType> typeArgs, ScopeContext context, S.ISyntaxNode nodeForErrorReport) : ISymbolQueryResultVisitor<IntermediateExp>
+    static TranslationResult<IntermediateExp> Valid(IntermediateExp imExp)
     {
-        IntermediateExp Fatal(SyntaxAnalysisErrorCode code)
+        return TranslationResult.Valid<IntermediateExp>(imExp);
+    }
+
+    record struct StaticParentVisitor(ImmutableArray<IType> typeArgs, ScopeContext context, S.ISyntaxNode nodeForErrorReport) 
+        : ISymbolQueryResultVisitor<TranslationResult<IntermediateExp>>
+    {
+        TranslationResult<IntermediateExp> Fatal(SyntaxAnalysisErrorCode code)
         {
             context.AddFatalError(code, nodeForErrorReport);
             return Error();
         }
         
-        IntermediateExp ISymbolQueryResultVisitor<IntermediateExp>.VisitMultipleCandidatesError(SymbolQueryResult.MultipleCandidatesError result)
+        TranslationResult<IntermediateExp> ISymbolQueryResultVisitor<TranslationResult<IntermediateExp>>.VisitMultipleCandidatesError(SymbolQueryResult.MultipleCandidatesError result)
         {
             return Fatal(A2014_ResolveIdentifier_MultipleCandidatesForMember);
         }
 
         // T.S
-        IntermediateExp ISymbolQueryResultVisitor<IntermediateExp>.VisitStruct(SymbolQueryResult.Struct result)
+        TranslationResult<IntermediateExp> ISymbolQueryResultVisitor<TranslationResult<IntermediateExp>>.VisitStruct(SymbolQueryResult.Struct result)
         {
             var structSymbol = result.StructConstructor.Invoke(typeArgs);
 
@@ -49,17 +55,17 @@ struct MemberParentAndIdBinder : IIntermediateExpVisitor<IntermediateExp>
             if (!context.CanAccess(structSymbol))
                 return Fatal(A2011_ResolveIdentifier_TryAccessingPrivateMember);
 
-            return new IntermediateExp.Struct(structSymbol);
+            return Valid(new IntermediateExp.Struct(structSymbol));
         }
 
         // S.F
-        IntermediateExp ISymbolQueryResultVisitor<IntermediateExp>.VisitStructMemberFuncs(SymbolQueryResult.StructMemberFuncs result)
+        TranslationResult<IntermediateExp> ISymbolQueryResultVisitor<TranslationResult<IntermediateExp>>.VisitStructMemberFuncs(SymbolQueryResult.StructMemberFuncs result)
         {
-            return new IntermediateExp.StructMemberFuncs(result.Infos, typeArgs, HasExplicitInstance: true, ExplicitInstance: null);
+            return Valid(new IntermediateExp.StructMemberFuncs(result.Infos, typeArgs, HasExplicitInstance: true, ExplicitInstance: null));
         }
 
         // S.x
-        IntermediateExp ISymbolQueryResultVisitor<IntermediateExp>.VisitStructMemberVar(SymbolQueryResult.StructMemberVar result)
+        TranslationResult<IntermediateExp> ISymbolQueryResultVisitor<TranslationResult<IntermediateExp>>.VisitStructMemberVar(SymbolQueryResult.StructMemberVar result)
         {
             var symbol = result.Symbol;
 
@@ -69,11 +75,11 @@ struct MemberParentAndIdBinder : IIntermediateExpVisitor<IntermediateExp>
             if (!context.CanAccess(symbol))
                 return Fatal(A2011_ResolveIdentifier_TryAccessingPrivateMember);
 
-            return new IntermediateExp.StructMemberVar(symbol, HasExplicitInstance: true, ExplicitInstance: null);
+            return Valid(new IntermediateExp.StructMemberVar(symbol, HasExplicitInstance: true, ExplicitInstance: null));
         }
 
         // T.C
-        IntermediateExp ISymbolQueryResultVisitor<IntermediateExp>.VisitClass(SymbolQueryResult.Class result)
+        TranslationResult<IntermediateExp> ISymbolQueryResultVisitor<TranslationResult<IntermediateExp>>.VisitClass(SymbolQueryResult.Class result)
         {
             var classSymbol = result.ClassConstructor.Invoke(typeArgs);
 
@@ -81,17 +87,17 @@ struct MemberParentAndIdBinder : IIntermediateExpVisitor<IntermediateExp>
             if (!context.CanAccess(classSymbol))
                 return Fatal(A2011_ResolveIdentifier_TryAccessingPrivateMember);
 
-            return new IntermediateExp.Class(classSymbol);
+            return Valid(new IntermediateExp.Class(classSymbol));
         }
 
         // C.F
-        IntermediateExp ISymbolQueryResultVisitor<IntermediateExp>.VisitClassMemberFuncs(SymbolQueryResult.ClassMemberFuncs result)
+        TranslationResult<IntermediateExp> ISymbolQueryResultVisitor<TranslationResult<IntermediateExp>>.VisitClassMemberFuncs(SymbolQueryResult.ClassMemberFuncs result)
         {
-            return new IntermediateExp.ClassMemberFuncs(result.Infos, typeArgs, HasExplicitInstance: true, null);
+            return Valid(new IntermediateExp.ClassMemberFuncs(result.Infos, typeArgs, HasExplicitInstance: true, null));
         }
 
         // C.x
-        IntermediateExp ISymbolQueryResultVisitor<IntermediateExp>.VisitClassMemberVar(SymbolQueryResult.ClassMemberVar result)
+        TranslationResult<IntermediateExp> ISymbolQueryResultVisitor<TranslationResult<IntermediateExp>>.VisitClassMemberVar(SymbolQueryResult.ClassMemberVar result)
         {
             var symbol = result.Symbol;
 
@@ -101,11 +107,11 @@ struct MemberParentAndIdBinder : IIntermediateExpVisitor<IntermediateExp>
             if (!context.CanAccess(symbol))
                 return Fatal(A2011_ResolveIdentifier_TryAccessingPrivateMember);
 
-            return new IntermediateExp.ClassMemberVar(symbol, HasExplicitInstance: true, ExplicitInstance: null);
+            return Valid(new IntermediateExp.ClassMemberVar(symbol, HasExplicitInstance: true, ExplicitInstance: null));
         }
 
         // T.E
-        IntermediateExp ISymbolQueryResultVisitor<IntermediateExp>.VisitEnum(SymbolQueryResult.Enum result)
+        TranslationResult<IntermediateExp> ISymbolQueryResultVisitor<TranslationResult<IntermediateExp>>.VisitEnum(SymbolQueryResult.Enum result)
         {
             var enumSymbol = result.EnumConstructor.Invoke(typeArgs);
 
@@ -113,73 +119,73 @@ struct MemberParentAndIdBinder : IIntermediateExpVisitor<IntermediateExp>
             if (!context.CanAccess(enumSymbol))
                 return Fatal(A2011_ResolveIdentifier_TryAccessingPrivateMember);
 
-            return new IntermediateExp.Enum(enumSymbol);
+            return Valid(new IntermediateExp.Enum(enumSymbol));
         }
 
         // E.First
-        IntermediateExp ISymbolQueryResultVisitor<IntermediateExp>.VisitEnumElem(SymbolQueryResult.EnumElem result)
+        TranslationResult<IntermediateExp> ISymbolQueryResultVisitor<TranslationResult<IntermediateExp>>.VisitEnumElem(SymbolQueryResult.EnumElem result)
         {
-            return new IntermediateExp.EnumElem(result.Symbol);
+            return Valid(new IntermediateExp.EnumElem(result.Symbol));
         }            
         
         // 표현 불가능
-        IntermediateExp ISymbolQueryResultVisitor<IntermediateExp>.VisitEnumElemMemberVar(SymbolQueryResult.EnumElemMemberVar result)
+        TranslationResult<IntermediateExp> ISymbolQueryResultVisitor<TranslationResult<IntermediateExp>>.VisitEnumElemMemberVar(SymbolQueryResult.EnumElemMemberVar result)
         {
             throw new RuntimeFatalException();
         }
 
         // NS.F
-        IntermediateExp ISymbolQueryResultVisitor<IntermediateExp>.VisitGlobalFuncs(SymbolQueryResult.GlobalFuncs result)
+        TranslationResult<IntermediateExp> ISymbolQueryResultVisitor<TranslationResult<IntermediateExp>>.VisitGlobalFuncs(SymbolQueryResult.GlobalFuncs result)
         {
-            return new IntermediateExp.GlobalFuncs(result.Infos, typeArgs);
+            return Valid(new IntermediateExp.GlobalFuncs(result.Infos, typeArgs));
         }
 
         // 표현 불가능
-        IntermediateExp ISymbolQueryResultVisitor<IntermediateExp>.VisitLambdaMemberVar(SymbolQueryResult.LambdaMemberVar result)
+        TranslationResult<IntermediateExp> ISymbolQueryResultVisitor<TranslationResult<IntermediateExp>>.VisitLambdaMemberVar(SymbolQueryResult.LambdaMemberVar result)
         {
             throw new RuntimeFatalException();
         }
 
         // NS.'NS'
-        IntermediateExp ISymbolQueryResultVisitor<IntermediateExp>.VisitNamespace(SymbolQueryResult.Namespace result)
+        TranslationResult<IntermediateExp> ISymbolQueryResultVisitor<TranslationResult<IntermediateExp>>.VisitNamespace(SymbolQueryResult.Namespace result)
         {
-            return new IntermediateExp.Namespace(result.Symbol);
+            return Valid(new IntermediateExp.Namespace(result.Symbol));
         }
 
         // 표현 불가능
-        IntermediateExp ISymbolQueryResultVisitor<IntermediateExp>.VisitTupleMemberVar(SymbolQueryResult.TupleMemberVar result)
+        TranslationResult<IntermediateExp> ISymbolQueryResultVisitor<TranslationResult<IntermediateExp>>.VisitTupleMemberVar(SymbolQueryResult.TupleMemberVar result)
         {
             throw new RuntimeFatalException();
         }
     }
 
-    record struct InstanceParentVisitor(ResolvedExp instanceReExp, ImmutableArray<IType> typeArgs, ScopeContext context, S.ISyntaxNode nodeForErrorReport) : ISymbolQueryResultVisitor<IntermediateExp>
+    record struct InstanceParentVisitor(ResolvedInstanceExp instanceReInExp, ImmutableArray<IType> typeArgs, ScopeContext context, S.ISyntaxNode nodeForErrorReport) : ISymbolQueryResultVisitor<TranslationResult<IntermediateExp>>
     {
-        IntermediateExp Fatal(SyntaxAnalysisErrorCode code)
+        TranslationResult<IntermediateExp> Fatal(SyntaxAnalysisErrorCode code)
         {
             context.AddFatalError(code, nodeForErrorReport);
             return Error();
         }
         
-        IntermediateExp ISymbolQueryResultVisitor<IntermediateExp>.VisitMultipleCandidatesError(SymbolQueryResult.MultipleCandidatesError result)
+        TranslationResult<IntermediateExp> ISymbolQueryResultVisitor<TranslationResult<IntermediateExp>>.VisitMultipleCandidatesError(SymbolQueryResult.MultipleCandidatesError result)
         {
             return Fatal(A2014_ResolveIdentifier_MultipleCandidatesForMember);
         }
 
         // exp.C
-        IntermediateExp ISymbolQueryResultVisitor<IntermediateExp>.VisitClass(SymbolQueryResult.Class result)
+        TranslationResult<IntermediateExp> ISymbolQueryResultVisitor<TranslationResult<IntermediateExp>>.VisitClass(SymbolQueryResult.Class result)
         {   
             return Fatal(A2004_ResolveIdentifier_CantGetTypeMemberThroughInstance);
         }
 
         // exp.F
-        IntermediateExp ISymbolQueryResultVisitor<IntermediateExp>.VisitClassMemberFuncs(SymbolQueryResult.ClassMemberFuncs result)
+        TranslationResult<IntermediateExp> ISymbolQueryResultVisitor<TranslationResult<IntermediateExp>>.VisitClassMemberFuncs(SymbolQueryResult.ClassMemberFuncs result)
         {
-            return new IntermediateExp.ClassMemberFuncs(result.Infos, typeArgs, HasExplicitInstance: true, instanceReExp);
+            return Valid(new IntermediateExp.ClassMemberFuncs(result.Infos, typeArgs, HasExplicitInstance: true, instanceReInExp));
         }
 
         // exp.x
-        IntermediateExp ISymbolQueryResultVisitor<IntermediateExp>.VisitClassMemberVar(SymbolQueryResult.ClassMemberVar result)
+        TranslationResult<IntermediateExp> ISymbolQueryResultVisitor<TranslationResult<IntermediateExp>>.VisitClassMemberVar(SymbolQueryResult.ClassMemberVar result)
         {
             var symbol = result.Symbol;
 
@@ -191,59 +197,59 @@ struct MemberParentAndIdBinder : IIntermediateExpVisitor<IntermediateExp>
             if (!context.CanAccess(symbol))
                 return Fatal(A2011_ResolveIdentifier_TryAccessingPrivateMember);
 
-            return new IntermediateExp.ClassMemberVar(symbol, true, instanceReExp);
+            return Valid(new IntermediateExp.ClassMemberVar(symbol, true, instanceReInExp));
         }
 
         // exp.E
-        IntermediateExp ISymbolQueryResultVisitor<IntermediateExp>.VisitEnum(SymbolQueryResult.Enum result)
+        TranslationResult<IntermediateExp> ISymbolQueryResultVisitor<TranslationResult<IntermediateExp>>.VisitEnum(SymbolQueryResult.Enum result)
         {
             return Fatal(A2004_ResolveIdentifier_CantGetTypeMemberThroughInstance);
         }
 
         // exp.First
-        IntermediateExp ISymbolQueryResultVisitor<IntermediateExp>.VisitEnumElem(SymbolQueryResult.EnumElem result)
+        TranslationResult<IntermediateExp> ISymbolQueryResultVisitor<TranslationResult<IntermediateExp>>.VisitEnumElem(SymbolQueryResult.EnumElem result)
         {
             return Fatal(A2004_ResolveIdentifier_CantGetTypeMemberThroughInstance);
         }
         
         // exp.firstX
-        IntermediateExp ISymbolQueryResultVisitor<IntermediateExp>.VisitEnumElemMemberVar(SymbolQueryResult.EnumElemMemberVar result)
+        TranslationResult<IntermediateExp> ISymbolQueryResultVisitor<TranslationResult<IntermediateExp>>.VisitEnumElemMemberVar(SymbolQueryResult.EnumElemMemberVar result)
         {
-            return new IntermediateExp.EnumElemMemberVar(result.Symbol, instanceReExp);
+            return Valid(new IntermediateExp.EnumElemMemberVar(result.Symbol, instanceReInExp));
         }
 
         // 표현 불가
-        IntermediateExp ISymbolQueryResultVisitor<IntermediateExp>.VisitGlobalFuncs(SymbolQueryResult.GlobalFuncs result)
+        TranslationResult<IntermediateExp> ISymbolQueryResultVisitor<TranslationResult<IntermediateExp>>.VisitGlobalFuncs(SymbolQueryResult.GlobalFuncs result)
         {
             throw new RuntimeFatalException();
         }
 
         // 표현 불가
-        IntermediateExp ISymbolQueryResultVisitor<IntermediateExp>.VisitLambdaMemberVar(SymbolQueryResult.LambdaMemberVar result)
+        TranslationResult<IntermediateExp> ISymbolQueryResultVisitor<TranslationResult<IntermediateExp>>.VisitLambdaMemberVar(SymbolQueryResult.LambdaMemberVar result)
         {
             throw new RuntimeFatalException(); 
         }
 
         // 표현 불가
-        IntermediateExp ISymbolQueryResultVisitor<IntermediateExp>.VisitNamespace(SymbolQueryResult.Namespace result)
+        TranslationResult<IntermediateExp> ISymbolQueryResultVisitor<TranslationResult<IntermediateExp>>.VisitNamespace(SymbolQueryResult.Namespace result)
         {
             throw new RuntimeFatalException(); 
         }
 
         // exp.S
-        IntermediateExp ISymbolQueryResultVisitor<IntermediateExp>.VisitStruct(SymbolQueryResult.Struct result)
+        TranslationResult<IntermediateExp> ISymbolQueryResultVisitor<TranslationResult<IntermediateExp>>.VisitStruct(SymbolQueryResult.Struct result)
         {
             return Fatal(A2004_ResolveIdentifier_CantGetTypeMemberThroughInstance);
         }
 
         // exp.F
-        IntermediateExp ISymbolQueryResultVisitor<IntermediateExp>.VisitStructMemberFuncs(SymbolQueryResult.StructMemberFuncs result)
+        TranslationResult<IntermediateExp> ISymbolQueryResultVisitor<TranslationResult<IntermediateExp>>.VisitStructMemberFuncs(SymbolQueryResult.StructMemberFuncs result)
         {
-            return new IntermediateExp.StructMemberFuncs(result.Infos, typeArgs, HasExplicitInstance: true, instanceReExp);
+            return Valid(new IntermediateExp.StructMemberFuncs(result.Infos, typeArgs, HasExplicitInstance: true, instanceReInExp));
         }
 
         // exp.x
-        IntermediateExp ISymbolQueryResultVisitor<IntermediateExp>.VisitStructMemberVar(SymbolQueryResult.StructMemberVar result)
+        TranslationResult<IntermediateExp> ISymbolQueryResultVisitor<TranslationResult<IntermediateExp>>.VisitStructMemberVar(SymbolQueryResult.StructMemberVar result)
         {
             var symbol = result.Symbol;
 
@@ -255,139 +261,136 @@ struct MemberParentAndIdBinder : IIntermediateExpVisitor<IntermediateExp>
             if (!context.CanAccess(symbol))
                 return Fatal(A2011_ResolveIdentifier_TryAccessingPrivateMember);
 
-            return new IntermediateExp.StructMemberVar(symbol, HasExplicitInstance: true, instanceReExp);
+            return Valid(new IntermediateExp.StructMemberVar(symbol, HasExplicitInstance: true, instanceReInExp));
         }
 
-        IntermediateExp ISymbolQueryResultVisitor<IntermediateExp>.VisitTupleMemberVar(SymbolQueryResult.TupleMemberVar result)
+        TranslationResult<IntermediateExp> ISymbolQueryResultVisitor<TranslationResult<IntermediateExp>>.VisitTupleMemberVar(SymbolQueryResult.TupleMemberVar result)
         {
             throw new NotImplementedException();
         }
     }
 
     // T.x
-    IntermediateExp VisitStaticParent(ISymbolNode parentSymbol)
+    TranslationResult<IntermediateExp> VisitStaticParent(ISymbolNode parentSymbol)
     {
         var memberResult = parentSymbol.QueryMember(name, typeArgs.Length);
         if (memberResult == null)
             return Fatal(A2007_ResolveIdentifier_NotFound);
 
         var visitor = new StaticParentVisitor(typeArgs, context, nodeForErrorReport);
-        return memberResult.Accept<StaticParentVisitor, IntermediateExp>(ref visitor);
+        return memberResult.Accept<StaticParentVisitor, TranslationResult<IntermediateExp>>(ref visitor);
     }
     
     // exp.x
-    IntermediateExp VisitInstanceParent(IntermediateExp instImExp, IType instType)
+    TranslationResult<IntermediateExp> VisitInstanceParent(IntermediateExp instImExp, IType instType)
     {
-        var instReExp = IntermediateExpResolvedExpTranslator.Translate(instImExp, context, nodeForErrorReport);
+        var instReExpResult = IntermediateExpResolvedExpTranslator.Translate(instImExp, context, nodeForErrorReport);
+        if (!instReExpResult.IsValid(out var instReExp))
+            return Error();
 
-        // instReExp, instType 보정
-        if (instType is LocalRefType localRefInstType)
-        {
-            instReExp = new ResolvedExp.LocalDeref(instReExp, localRefInstType.InnerType);
-            instType = localRefInstType.InnerType;
-        }
-        else if (instType is BoxRefType boxRefInstType)
-        {
-            instReExp = new ResolvedExp.BoxDeref(instReExp, boxRefInstType.InnerType);
-            instType = boxRefInstType.InnerType;
-        }
+        var instReInExp = ResolvedInstanceExp.Make(instReExp);
+        var instReInExpType = instReInExp.GetExpType();
 
-        var memberResult = instType.QueryMember(name, typeArgs.Length);
+        var memberResult = instReInExpType.QueryMember(name, typeArgs.Length);
         if (memberResult == null)
             return Fatal(A2007_ResolveIdentifier_NotFound);
 
-        var visitor = new InstanceParentVisitor(instReExp, typeArgs, context, nodeForErrorReport);
-
-        return memberResult.Accept<InstanceParentVisitor, IntermediateExp>(ref visitor);
+        var visitor = new InstanceParentVisitor(instReInExp, typeArgs, context, nodeForErrorReport);
+        return memberResult.Accept<InstanceParentVisitor, TranslationResult<IntermediateExp>>(ref visitor);
     }
 
-    IntermediateExp Fatal(SyntaxAnalysisErrorCode code)
+    static TranslationResult<IntermediateExp> Error()
+    {
+        return TranslationResult.Error<IntermediateExp>();
+    }
+
+    TranslationResult<IntermediateExp> Fatal(SyntaxAnalysisErrorCode code)
     {
         context.AddFatalError(code, nodeForErrorReport);
         return Error();
     }
     
-    IntermediateExp IIntermediateExpVisitor<IntermediateExp>.VisitNamespace(IntermediateExp.Namespace result)
+    TranslationResult<IntermediateExp> IIntermediateExpVisitor<TranslationResult<IntermediateExp>>.VisitNamespace(IntermediateExp.Namespace result)
     {
         return VisitStaticParent(result.Symbol);
     }
 
-    IntermediateExp IIntermediateExpVisitor<IntermediateExp>.VisitGlobalFuncs(IntermediateExp.GlobalFuncs result)
+    TranslationResult<IntermediateExp> IIntermediateExpVisitor<TranslationResult<IntermediateExp>>.VisitGlobalFuncs(IntermediateExp.GlobalFuncs result)
     {
         return Fatal(A2006_ResolveIdentifier_FuncCantHaveMember);
     }
 
-    IntermediateExp IIntermediateExpVisitor<IntermediateExp>.VisitClass(IntermediateExp.Class result)
+    TranslationResult<IntermediateExp> IIntermediateExpVisitor<TranslationResult<IntermediateExp>>.VisitClass(IntermediateExp.Class result)
     {
         return VisitStaticParent(result.Symbol);
     }
 
-    IntermediateExp IIntermediateExpVisitor<IntermediateExp>.VisitClassMemberFuncs(IntermediateExp.ClassMemberFuncs result)
+    TranslationResult<IntermediateExp> IIntermediateExpVisitor<TranslationResult<IntermediateExp>>.VisitClassMemberFuncs(IntermediateExp.ClassMemberFuncs result)
     {
         return Fatal(A2006_ResolveIdentifier_FuncCantHaveMember);
     }
 
-    IntermediateExp IIntermediateExpVisitor<IntermediateExp>.VisitClassMemberVar(IntermediateExp.ClassMemberVar result)
+    TranslationResult<IntermediateExp> IIntermediateExpVisitor<TranslationResult<IntermediateExp>>.VisitClassMemberVar(IntermediateExp.ClassMemberVar result)
     {
         return VisitInstanceParent(result, result.Symbol.GetDeclType());
     }
 
-    IntermediateExp IIntermediateExpVisitor<IntermediateExp>.VisitEnum(IntermediateExp.Enum result)
+    TranslationResult<IntermediateExp> IIntermediateExpVisitor<TranslationResult<IntermediateExp>>.VisitEnum(IntermediateExp.Enum result)
     {
         return VisitStaticParent(result.Symbol);
     }
 
-    IntermediateExp IIntermediateExpVisitor<IntermediateExp>.VisitEnumElem(IntermediateExp.EnumElem result)
+    TranslationResult<IntermediateExp> IIntermediateExpVisitor<TranslationResult<IntermediateExp>>.VisitEnumElem(IntermediateExp.EnumElem result)
     {
         return Fatal(A2009_ResolveIdentifier_EnumElemCantHaveMember);
     }
 
-    IntermediateExp IIntermediateExpVisitor<IntermediateExp>.VisitEnumElemMemberVar(IntermediateExp.EnumElemMemberVar result)
+    TranslationResult<IntermediateExp> IIntermediateExpVisitor<TranslationResult<IntermediateExp>>.VisitEnumElemMemberVar(IntermediateExp.EnumElemMemberVar result)
     {
         return VisitInstanceParent(result, result.Symbol.GetDeclType());
     }
 
-    IntermediateExp IIntermediateExpVisitor<IntermediateExp>.VisitIR0Exp(IntermediateExp.IR0Exp result)
+    TranslationResult<IntermediateExp> IIntermediateExpVisitor<TranslationResult<IntermediateExp>>.VisitIR0Exp(IntermediateExp.IR0Exp result)
     {
         return VisitInstanceParent(result, result.Exp.GetExpType());
     }
     
-    IntermediateExp IIntermediateExpVisitor<IntermediateExp>.VisitLambdaMemberVar(IntermediateExp.LambdaMemberVar result)
+    TranslationResult<IntermediateExp> IIntermediateExpVisitor<TranslationResult<IntermediateExp>>.VisitLambdaMemberVar(IntermediateExp.LambdaMemberVar result)
     {
         return VisitInstanceParent(result, result.Symbol.GetDeclType());
     }
 
-    IntermediateExp IIntermediateExpVisitor<IntermediateExp>.VisitLocalVar(IntermediateExp.LocalVar result)
+    TranslationResult<IntermediateExp> IIntermediateExpVisitor<TranslationResult<IntermediateExp>>.VisitLocalVar(IntermediateExp.LocalVar result)
     {
         return VisitInstanceParent(result, result.Type);
     }
 
-    IntermediateExp IIntermediateExpVisitor<IntermediateExp>.VisitStruct(IntermediateExp.Struct result)
+    TranslationResult<IntermediateExp> IIntermediateExpVisitor<TranslationResult<IntermediateExp>>.VisitStruct(IntermediateExp.Struct result)
     {
         return VisitStaticParent(result.Symbol);
     }
 
-    IntermediateExp IIntermediateExpVisitor<IntermediateExp>.VisitStructMemberFuncs(IntermediateExp.StructMemberFuncs result)
+    TranslationResult<IntermediateExp> IIntermediateExpVisitor<TranslationResult<IntermediateExp>>.VisitStructMemberFuncs(IntermediateExp.StructMemberFuncs result)
     {
         return Fatal(A2006_ResolveIdentifier_FuncCantHaveMember);
     }
 
-    IntermediateExp IIntermediateExpVisitor<IntermediateExp>.VisitStructMemberVar(IntermediateExp.StructMemberVar result)
+    TranslationResult<IntermediateExp> IIntermediateExpVisitor<TranslationResult<IntermediateExp>>.VisitStructMemberVar(IntermediateExp.StructMemberVar result)
     {
         return VisitInstanceParent(result, result.Symbol.GetDeclType());
     }
 
-    IntermediateExp IIntermediateExpVisitor<IntermediateExp>.VisitThis(IntermediateExp.ThisVar result)
+    TranslationResult<IntermediateExp> IIntermediateExpVisitor<TranslationResult<IntermediateExp>>.VisitThis(IntermediateExp.ThisVar result)
     {
         return VisitInstanceParent(result, result.Type);
     }
 
-    IntermediateExp IIntermediateExpVisitor<IntermediateExp>.VisitTypeVar(IntermediateExp.TypeVar result)
+    TranslationResult<IntermediateExp> IIntermediateExpVisitor<TranslationResult<IntermediateExp>>.VisitTypeVar(IntermediateExp.TypeVar result)
     {
         return Fatal(A2012_ResolveIdentifier_TypeVarCantHaveMember);
     }
 
-    IntermediateExp IIntermediateExpVisitor<IntermediateExp>.VisitListIndexer(IntermediateExp.ListIndexer exp)
+    TranslationResult<IntermediateExp> IIntermediateExpVisitor<TranslationResult<IntermediateExp>>.VisitListIndexer(IntermediateExp.ListIndexer exp)
     {
         throw new NotImplementedException();
     }

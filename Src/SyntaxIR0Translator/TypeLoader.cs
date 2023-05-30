@@ -1,5 +1,5 @@
 ﻿using System;
-
+using System.Diagnostics;
 using Citron.Infra;
 using Citron.Symbol;
 

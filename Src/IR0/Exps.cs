@@ -385,6 +385,17 @@ namespace Citron.IR0
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitStructMemberVarBoxRefExp(this);
     }
 
+    // 그냥 location을 holder없이 box ref로 만들어 준다
+    public record class StaticBoxRefExp(Loc Loc, IType Type) : Exp
+    {
+        public override IType GetExpType()
+        {
+            return Type; // LocType이 아니라 최종타입
+        }
+
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitStaticBoxRef(this);
+    }
+
     // box int& = c.x;
     public record class ClassMemberVarBoxRefExp(Loc Instance, ClassMemberVarSymbol MemberVar) : Exp
     {

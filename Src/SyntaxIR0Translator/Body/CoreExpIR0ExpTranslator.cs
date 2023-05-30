@@ -112,7 +112,16 @@ struct CoreExpIR0ExpTranslator
         throw new UnreachableException();
     }
 
-    public TranslationResult<R.Exp> TranslateString(S.StringExp exp)
+    public TranslationResult<R.Exp> TranslateString_Exp(S.StringExp exp)
+    {
+        var result = TranslateString_StringExp(exp);
+        if (!result.IsValid(out var rexp))
+            return Error();
+
+        return Valid(rexp);
+    }
+
+    public TranslationResult<R.StringExp> TranslateString_StringExp(S.StringExp exp)
     {
         var bFatal = false;
 
@@ -131,9 +140,9 @@ struct CoreExpIR0ExpTranslator
         }
 
         if (bFatal)
-            return Error();
+            return TranslationResult.Error<R.StringExp>();
 
-        return Valid(new R.StringExp(builder.ToImmutable(), context.GetStringType()));
+        return TranslationResult.Valid(new R.StringExp(builder.ToImmutable(), context.GetStringType()));
     }
 
     // int만 지원한다
@@ -143,7 +152,7 @@ struct CoreExpIR0ExpTranslator
         // F()++; (x)
         // var& x = i; x++; (o)
         // throws NotLocationException
-        var operandResult = ExpIR0LocTranslator.Translate(operand, context, hintType: null, bWrapExpAsLoc: false, bDerefIfTypeIsRef: false, A0602_UnaryAssignOp_AssignableExpressionIsAllowedOnly);
+        var operandResult = ExpIR0LocTranslator.Translate(operand, context, hintType: null, bWrapExpAsLoc: false, bDerefIfTypeIsRef: true, A0602_UnaryAssignOp_AssignableExpressionIsAllowedOnly);
         if (!operandResult.IsValid(out var operandLocResult))
             return Error();
 
@@ -218,7 +227,7 @@ struct CoreExpIR0ExpTranslator
     TranslationResult<R.Exp> VisitAssignBinaryOpExp(S.BinaryOpExp exp)
     {
         // syntax 에서는 exp로 보이지만, R로 변환할 경우 Location 명령이어야 한다
-        var destResult = ExpIR0LocTranslator.Translate(exp.Operand0, context, hintType: null, bWrapExpAsLoc: true, bDerefIfTypeIsRef: true, A0803_BinaryOp_LeftOperandIsNotAssignable);
+        var destResult = ExpIR0LocTranslator.Translate(exp.Operand0, context, hintType: null, bWrapExpAsLoc: false, bDerefIfTypeIsRef: true, A0803_BinaryOp_LeftOperandIsNotAssignable);
         if (!destResult.IsValid(out var destLocResult))
             return Error();
        
@@ -243,7 +252,10 @@ struct CoreExpIR0ExpTranslator
         if (!srcExpResult.IsValid(out var srcExp))
             return Error();
 
-        var wrappedSrcExp = BodyMisc.CastExp_Exp(srcExp, destLocResult.LocType, exp, context);
+        var wrappedSrcExpResult = BodyMisc.CastExp_Exp(srcExp, destLocResult.LocType, exp, context);
+        if (!wrappedSrcExpResult.IsValid(out var wrappedSrcExp))
+            return Error();
+
         return Valid(new R.AssignExp(destLocResult.Loc, wrappedSrcExp));
     }
 
@@ -300,14 +312,16 @@ struct CoreExpIR0ExpTranslator
         return Error();
     }
 
-    public R.Exp TranslateLambda(S.LambdaExp exp)
+    public TranslationResult<R.Exp> TranslateLambda(S.LambdaExp expSyntax)
     {
         // TODO: 리턴 타입과 인자타입은 타입 힌트를 반영해야 한다
         IType? retType = null;
 
-        var visitor = new LambdaVisitor(retType, exp.Params, exp.Body, context, nodeForErrorReport: exp);
-        var (lambdaSymbol, args) = visitor.Visit();
-        return new R.LambdaExp(lambdaSymbol, args);
+        var lambdaInfoResult = LambdaVisitor.Translate(retType, expSyntax.Params, expSyntax.Body, context, nodeForErrorReport: expSyntax);
+        if (!lambdaInfoResult.IsValid(out var lambdaInfo))
+            return Error();
+        
+        return Valid(new R.LambdaExp(lambdaInfo.Lambda, lambdaInfo.Args));
     }
 
     public TranslationResult<R.Exp> TranslateList(S.ListExp exp)
@@ -392,7 +406,10 @@ struct CoreExpIR0ExpTranslator
 
     public TranslationResult<R.Exp> TranslateCall(S.CallExp exp)
     {
-        var callable = ExpIntermediateExpTranslator.Translate(exp.Callable, context, hintType);
+        var callableResult = ExpIntermediateExpTranslator.Translate(exp.Callable, context, hintType);
+        if (!callableResult.IsValid(out var callable))
+            return Error();
+
         return CallableAndArgsBinder.Bind(callable, exp.Args, context, exp, exp.Callable);
     }
 }

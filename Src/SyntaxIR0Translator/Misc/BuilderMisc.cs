@@ -6,6 +6,7 @@ using Citron.Collections;
 using Citron.Symbol;
 
 using S = Citron.Syntax;
+using System.Diagnostics;
 
 namespace Citron.Analysis
 {
@@ -36,7 +37,7 @@ namespace Citron.Analysis
                 {
                     S.FuncParamKind.Normal => FuncParameterKind.Default,
                     S.FuncParamKind.Params => FuncParameterKind.Params,
-                    _ => throw new UnreachableCodeException()
+                    _ => throw new UnreachableException()
                 };
 
                 builder.Add(new FuncParameter(paramKind, type, new Name.Normal(sparam.Name)));
@@ -53,7 +54,7 @@ namespace Citron.Analysis
                 S.AccessModifier.Public => Accessor.Public,
                 S.AccessModifier.Private => throw new NotImplementedException(), // 에러처리
                 S.AccessModifier.Protected => throw new NotImplementedException(),
-                _ => throw new UnreachableCodeException()
+                _ => throw new UnreachableException()
             };
         }
 
@@ -75,7 +76,7 @@ namespace Citron.Analysis
                 S.AccessModifier.Private => Accessor.Private,
                 S.AccessModifier.Public => throw new NotImplementedException(), // 에러처리
                 S.AccessModifier.Protected => throw new NotImplementedException(), // 에러처리
-                _ => throw new UnreachableCodeException()
+                _ => throw new UnreachableException()
             };
         }
 

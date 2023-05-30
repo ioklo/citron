@@ -63,8 +63,7 @@ namespace Citron.Analysis
 
                 context.AddBuildingBodyPhaseTask(context =>
                 {
-                    var visitor = new TopLevelVisitor_BuildingBodyPhase(context);
-                    visitor.VisitGlobalFuncDecl(syntax.Body, declSymbol, bSeqFunc: syntax.IsSequence);
+                    return TopLevelVisitor_BuildingBodyPhase.VisitGlobalFuncDecl(syntax.Body, context, declSymbol, bSeqFunc: syntax.IsSequence);
                 });
             });
         }

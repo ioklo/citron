@@ -81,8 +81,8 @@ partial struct ExpIR0LocTranslator : IExpVisitor
 
     LocTranslationResult IExpVisitor.VisitBinaryOp(S.BinaryOpExp exp)
     {
-        var rexp = new CoreExpIR0ExpTranslator(hintType, context).TranslateBinaryOp(exp);
-        return HandleExpTranslationResult(rexp);
+        var rexpResult = new CoreExpIR0ExpTranslator(hintType, context).TranslateBinaryOp(exp);
+        return HandleExpTranslationResult(rexpResult);
     }
 
     LocTranslationResult IExpVisitor.VisitBoolLiteral(S.BoolLiteralExp exp)
@@ -98,8 +98,8 @@ partial struct ExpIR0LocTranslator : IExpVisitor
 
     LocTranslationResult IExpVisitor.VisitCall(S.CallExp exp)
     {
-        var rexp = new CoreExpIR0ExpTranslator(hintType, context).TranslateCall(exp);
-        return HandleExpTranslationResult(rexp);
+        var rexpResult = new CoreExpIR0ExpTranslator(hintType, context).TranslateCall(exp);
+        return HandleExpTranslationResult(rexpResult);
     }
 
     LocTranslationResult IExpVisitor.VisitIdentifier(S.IdentifierExp exp)
@@ -120,14 +120,14 @@ partial struct ExpIR0LocTranslator : IExpVisitor
 
     LocTranslationResult IExpVisitor.VisitLambda(S.LambdaExp exp)
     {
-        var rexp = new CoreExpIR0ExpTranslator(hintType, context).TranslateLambda(exp);
-        return HandleExp(rexp);
+        var rexpResult = new CoreExpIR0ExpTranslator(hintType, context).TranslateLambda(exp);
+        return HandleExpTranslationResult(rexpResult);
     }
 
     LocTranslationResult IExpVisitor.VisitList(S.ListExp exp)
     {
-        var rexp = new CoreExpIR0ExpTranslator(hintType, context).TranslateList(exp);
-        return HandleExpTranslationResult(rexp);
+        var rexpResult = new CoreExpIR0ExpTranslator(hintType, context).TranslateList(exp);
+        return HandleExpTranslationResult(rexpResult);
     }
 
     LocTranslationResult IExpVisitor.VisitMember(S.MemberExp exp)
@@ -137,25 +137,25 @@ partial struct ExpIR0LocTranslator : IExpVisitor
 
     LocTranslationResult IExpVisitor.VisitNew(S.NewExp exp)
     {
-        var rexp = new CoreExpIR0ExpTranslator(hintType, context).TranslateNew(exp);
-        return HandleExpTranslationResult(rexp);
+        var rexpResult = new CoreExpIR0ExpTranslator(hintType, context).TranslateNew(exp);
+        return HandleExpTranslationResult(rexpResult);
     }
 
     LocTranslationResult IExpVisitor.VisitNullLiteral(S.NullLiteralExp exp)
     {
-        var rexp = new CoreExpIR0ExpTranslator(hintType, context).TranslateNullLiteral(exp);
-        return HandleExpTranslationResult(rexp);
+        var rexpResult = new CoreExpIR0ExpTranslator(hintType, context).TranslateNullLiteral(exp);
+        return HandleExpTranslationResult(rexpResult);
     }
 
     LocTranslationResult IExpVisitor.VisitString(S.StringExp exp)
     {
-        var rexp = new CoreExpIR0ExpTranslator(hintType, context).TranslateString(exp);
-        return HandleExpTranslationResult(rexp);
+        var rexpResult = new CoreExpIR0ExpTranslator(hintType, context).TranslateString_Exp(exp);
+        return HandleExpTranslationResult(rexpResult);
     }
 
     LocTranslationResult IExpVisitor.VisitUnaryOp(S.UnaryOpExp exp)
     {
-        var rexp = new CoreExpIR0ExpTranslator(hintType, context).TranslateUnaryOp(exp);
-        return HandleExpTranslationResult(rexp);
+        var rexpResult = new CoreExpIR0ExpTranslator(hintType, context).TranslateUnaryOp(exp);
+        return HandleExpTranslationResult(rexpResult);
     }
 }

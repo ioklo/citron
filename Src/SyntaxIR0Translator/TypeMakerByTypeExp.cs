@@ -5,6 +5,7 @@ using Citron.Infra;
 using Citron.Symbol;
 using Citron.Collections;
 using Citron.Syntax;
+using System.Diagnostics;
 
 namespace Citron.Analysis;
 
@@ -141,7 +142,7 @@ static class TypeMakerByTypeExp
             }
             else if (result.IsNotFound())
                 throw new NotImplementedException(); // 없습니다
-            else if (result.IsMultipleError())
+            else if (result.IsMultipleError(out _))
                 throw new NotImplementedException(); // 모호합니다
             else
                 throw new UnreachableException();

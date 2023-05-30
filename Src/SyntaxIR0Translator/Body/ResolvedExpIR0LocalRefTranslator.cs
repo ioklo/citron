@@ -131,8 +131,8 @@ struct ResolvedExpIR0LocalRefTranslator : IResolvedExpVisitor<TranslationResult<
     TranslationResult<Exp> IResolvedExpVisitor<TranslationResult<Exp>>.VisitListIndexer(ResolvedExp.ListIndexer reExp)
     {
         var translator = new CoreResolvedExpIR0LocTranslator(context, nodeForErrorReport);
-        var loc = translator.TranslateListIndexer(reExp); // Load없이 바로
-        return HandleLoc(loc, reExp.GetExpType());
+        var locResult = translator.TranslateListIndexer(reExp); // Load없이 바로
+        return HandleLocTranslationResult(locResult, reExp.GetExpType());
     }
 
     TranslationResult<Exp> IResolvedExpVisitor<TranslationResult<Exp>>.VisitLocalVar(ResolvedExp.LocalVar reExp)
@@ -154,25 +154,5 @@ struct ResolvedExpIR0LocalRefTranslator : IResolvedExpVisitor<TranslationResult<
         var translator = new CoreResolvedExpIR0LocTranslator(context, nodeForErrorReport);
         var loc = translator.TranslateThis(reExp); // Load없이 바로
         return HandleLoc(loc, reExp.GetExpType());
-    }
-
-    // LocalRef와 LocalDeref가 만나면??
-    TranslationResult<Exp> IResolvedExpVisitor<TranslationResult<Exp>>.VisitLocalDeref(ResolvedExp.LocalDeref reExp)
-    {
-        // 들어올 일이 없어야 할거 같다. MemberParent로만 사용한다.
-        throw new UnreachableException();
-
-        //var translator = new CoreResolvedExpIR0LocTranslator(context, nodeForErrorReport);
-        //var loc = translator.TranslateLocalDeref(reExp); // Load없이 바로
-        //return HandleLoc(loc, reExp.GetExpType());
-    }
-
-    TranslationResult<Exp> IResolvedExpVisitor<TranslationResult<Exp>>.VisitBoxDeref(ResolvedExp.BoxDeref reExp)
-    {
-        // 들어올 일이 없어야 할거 같다. MemberParent로만 사용한다.
-        throw new UnreachableException();
-        //var translator = new CoreResolvedExpIR0LocTranslator(context, nodeForErrorReport);
-        //var loc = translator.TranslateBoxDeref(reExp); // Load없이 바로
-        //return HandleLoc(loc, reExp.GetExpType());
     }
 }

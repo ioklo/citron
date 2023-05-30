@@ -190,13 +190,11 @@ struct CallableAndArgsBinder : IIntermediateExpVisitor<TranslationResult<R.Exp>>
             R.Loc? instance = null;
 
             if (funcs.ExplicitInstance != null)
-            {
-                // bDerefIfTypeIsRef: false, ExplicitInstance는 이미 Deref된 상태일 것이기 때문에 Deref처리를 따로 하지 않는다
-                var instResult = ResolvedExpIR0LocTranslator.Translate(
+            {   
+                var instResult = ResolvedInstanceExpIR0LocTranslator.Translate(
                     funcs.ExplicitInstance, 
                     context, 
-                    bWrapExpAsLoc: true, 
-                    bDerefIfTypeIsRef: false, 
+                    bWrapExpAsLoc: true,
                     nodeForCallableErrorReport, 
                     A2015_ResolveIdentifier_ExpressionIsNotLocation);
 
@@ -256,13 +254,11 @@ struct CallableAndArgsBinder : IIntermediateExpVisitor<TranslationResult<R.Exp>>
 
             R.Loc? instance = null;
             if (funcs.ExplicitInstance != null)
-            {
-                // bDerefIfTypeIsRef: false, ExplicitInstance는 이미 Deref된 상태일 것이기 때문에 Deref처리를 따로 하지 않는다
-                var instResult = ResolvedExpIR0LocTranslator.Translate(
+            {   
+                var instResult = ResolvedInstanceExpIR0LocTranslator.Translate(
                     funcs.ExplicitInstance, 
                     context, 
                     bWrapExpAsLoc: true, 
-                    bDerefIfTypeIsRef: false, 
                     nodeForCallableErrorReport,
                     A2015_ResolveIdentifier_ExpressionIsNotLocation);
 

@@ -28,6 +28,11 @@ struct ExpIR0ExpTranslator : S.IExpVisitor<TranslationResult<R.Exp>>
         return exp.Accept<ExpIR0ExpTranslator, TranslationResult<R.Exp>>(ref visitor);
     }
 
+    public static TranslationResult<R.StringExp> TranslateString(S.StringExp exp, ScopeContext context, IType? hintType)
+    {
+        return new CoreExpIR0ExpTranslator(hintType, context).TranslateString_StringExp(exp);
+    }
+
     // S.Exp -> IntermediateExp -> ResolvedExp -> R.Exp
     TranslationResult<R.Exp> HandleDefault(S.Exp exp)
     {   
@@ -80,7 +85,7 @@ struct ExpIR0ExpTranslator : S.IExpVisitor<TranslationResult<R.Exp>>
 
     TranslationResult<R.Exp> S.IExpVisitor<TranslationResult<R.Exp>>.VisitLambda(S.LambdaExp exp)
     {
-        return Valid(new CoreExpIR0ExpTranslator(hintType, context).TranslateLambda(exp));
+        return new CoreExpIR0ExpTranslator(hintType, context).TranslateLambda(exp);
     }
 
     TranslationResult<R.Exp> S.IExpVisitor<TranslationResult<R.Exp>>.VisitList(S.ListExp exp)
@@ -105,7 +110,7 @@ struct ExpIR0ExpTranslator : S.IExpVisitor<TranslationResult<R.Exp>>
 
     TranslationResult<R.Exp> S.IExpVisitor<TranslationResult<R.Exp>>.VisitString(S.StringExp exp)
     {
-        return new CoreExpIR0ExpTranslator(hintType, context).TranslateString(exp);
+        return new CoreExpIR0ExpTranslator(hintType, context).TranslateString_Exp(exp);
     }
 
     TranslationResult<R.Exp> S.IExpVisitor<TranslationResult<R.Exp>>.VisitUnaryOp(S.UnaryOpExp exp)

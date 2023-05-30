@@ -73,7 +73,7 @@ public partial struct SymbolLoader
         }
     }
 
-    public SymbolQueryResult Query(SymbolPath? outerPath, Name name, int typeParamCount)
+    public SymbolQueryResult? Query(SymbolPath? outerPath, Name name, int typeParamCount)
     {
         var candidates = new Candidates<SymbolQueryResult>();
 
@@ -83,17 +83,16 @@ public partial struct SymbolLoader
             var symbol = LoadPath(moduleDecl, outerPath); // 실패할 경우
             
             var queryResult = symbol.QueryMember(name, typeParamCount);
+            if (queryResult == null) continue;
+
             if (queryResult is SymbolQueryResult.MultipleCandidatesError)
                 return queryResult; // 즉시 종료
-
-            if (queryResult is SymbolQueryResult.NotFound)
-                continue;
-
+            
             candidates.Add(queryResult);
         }
 
         int count = candidates.GetCount();
-        if (count == 0) return SymbolQueryResults.NotFound;
+        if (count == 0) return null;
         else if (count == 1) return candidates.GetAt(0);
         else
         {

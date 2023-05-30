@@ -89,7 +89,7 @@ struct ExpIntermediateExpTranslator : IExpVisitor<TranslationResult<Intermediate
 
     TranslationResult<IntermediateExp> IExpVisitor<TranslationResult<IntermediateExp>>.VisitString(StringExp exp)
     {
-        return HandleExpResult(new CoreExpIR0ExpTranslator(hintType, context).TranslateString(exp));
+        return HandleExpResult(new CoreExpIR0ExpTranslator(hintType, context).TranslateString_Exp(exp));
     }
     
     TranslationResult<IntermediateExp> IExpVisitor<TranslationResult<IntermediateExp>>.VisitUnaryOp(UnaryOpExp exp)
@@ -109,28 +109,32 @@ struct ExpIntermediateExpTranslator : IExpVisitor<TranslationResult<Intermediate
 
     TranslationResult<IntermediateExp> IExpVisitor<TranslationResult<IntermediateExp>>.VisitLambda(LambdaExp exp)
     {
-        return HandleExp(new CoreExpIR0ExpTranslator(hintType, context).TranslateLambda(exp));
+        return HandleExpResult(new CoreExpIR0ExpTranslator(hintType, context).TranslateLambda(exp));
     }
 
     TranslationResult<IntermediateExp> IExpVisitor<TranslationResult<IntermediateExp>>.VisitIndexer(IndexerExp exp)
     {
-        var objResult = ExpIR0LocTranslator.Translate(exp.Object, context, hintType: null, bWrapExpAsLoc: true, bDerefIfTypeIsRef: true, A2015_ResolveIdentifier_ExpressionIsNotLocation);
-        if (!objResult.IsValid(out var objLocResult))
+        var objReExpResult = ExpResolvedExpTranslator.Translate(exp.Object, context, hintType: null);
+        if (!objReExpResult.IsValid(out var objReExp))
             return Error();
+
+        var objReInExp = ResolvedInstanceExp.Make(objReExp);
 
         var indexResult = ExpIR0ExpTranslator.Translate(exp.Index, context, hintType: null, bDerefIfTypeIsRef: true);
         if (!indexResult.IsValid(out var index))
             return Error();
 
         var castIndexResult = BodyMisc.CastExp_Exp(index, context.GetIntType(), exp.Index, context);
+        if (!castIndexResult.IsValid(out var castIndex))
+            return Error();
 
         // TODO: custom indexer를 만들수 있으면 좋은가
         // var memberResult = objResult.TypeSymbol.QueryMember(new M.Name(M.SpecialName.IndexerGet, null), 0);
 
         // 리스트 타입의 경우,
-        if (context.IsListType(objLocResult.LocType, out var itemType))
+        if (context.IsListType(objReInExp.GetExpType(), out var itemType))
         {
-            return Valid(new IntermediateExp.ListIndexer(objLocResult.Loc, castIndexResult, itemType));
+            return Valid(new IntermediateExp.ListIndexer(objReInExp, castIndex, itemType));
         }
         else
         {
@@ -179,7 +183,7 @@ struct ExpIntermediateExpTranslator : IExpVisitor<TranslationResult<Intermediate
         var name = new Name.Normal(exp.MemberName);
         var typeArgs = BodyMisc.MakeTypeArgs(exp.MemberTypeArgs, context);
 
-        return Valid(MemberParentAndIdBinder.Bind(parentImExp, name, typeArgs, context, exp));
+        return MemberParentAndIdBinder.Bind(parentImExp, name, typeArgs, context, exp);
     }
 
     TranslationResult<IntermediateExp> IExpVisitor<TranslationResult<IntermediateExp>>.VisitList(ListExp exp)

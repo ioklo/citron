@@ -90,7 +90,7 @@ struct ExpResolvedExpTranslator : IExpVisitor
 
     TranslationResult<ResolvedExp> IExpVisitor.VisitString(S.StringExp exp)
     {
-        return HandleExpTranslationResult(new CoreExpIR0ExpTranslator(hintType, context).TranslateString(exp));
+        return HandleExpTranslationResult(new CoreExpIR0ExpTranslator(hintType, context).TranslateString_Exp(exp));
     }
 
     // int만 지원한다
@@ -111,7 +111,7 @@ struct ExpResolvedExpTranslator : IExpVisitor
 
     TranslationResult<ResolvedExp> IExpVisitor.VisitLambda(S.LambdaExp exp)
     {
-        return HandleExp(new CoreExpIR0ExpTranslator(hintType, context).TranslateLambda(exp));
+        return HandleExpTranslationResult(new CoreExpIR0ExpTranslator(hintType, context).TranslateLambda(exp));
     }
 
     TranslationResult<ResolvedExp> IExpVisitor.VisitIndexer(S.IndexerExp exp)

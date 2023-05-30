@@ -1,4 +1,4 @@
-﻿ using Citron.Symbol;
+﻿using Citron.Symbol;
 using R = Citron.IR0;
 
 namespace Citron.Analysis;
@@ -25,43 +25,31 @@ abstract record class ResolvedExp
         public override IType GetExpType() { return Symbol.GetDeclType(); }
     }
 
-    public record class ClassMemberVar(ClassMemberVarSymbol Symbol, bool HasExplicitInstance, ResolvedExp? ExplicitInstance) : ResolvedExp
+    public record class ClassMemberVar(ClassMemberVarSymbol Symbol, bool HasExplicitInstance, ResolvedInstanceExp? ExplicitInstance) : ResolvedExp
     {
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitClassMemberVar(this);
         public override IType GetExpType() { return Symbol.GetDeclType(); }
     }
 
-    public record class StructMemberVar(StructMemberVarSymbol Symbol, bool HasExplicitInstance, ResolvedExp? ExplicitInstance) : ResolvedExp
+    public record class StructMemberVar(StructMemberVarSymbol Symbol, bool HasExplicitInstance, ResolvedInstanceExp? ExplicitInstance) : ResolvedExp
     {
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitStructMemberVar(this);
         public override IType GetExpType() { return Symbol.GetDeclType(); }
     }
     
-    public record class EnumElemMemberVar(EnumElemMemberVarSymbol Symbol, ResolvedExp Instance) : ResolvedExp
+    public record class EnumElemMemberVar(EnumElemMemberVarSymbol Symbol, ResolvedInstanceExp Instance) : ResolvedExp
     {
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitEnumElemMemberVar(this);
         public override IType GetExpType() { return Symbol.GetDeclType(); }
     }
 
-    public record class ListIndexer(R.Loc Instance, R.Exp Index, IType ItemType) : ResolvedExp
+    public record class ListIndexer(ResolvedInstanceExp Instance, R.Exp Index, IType ItemType) : ResolvedExp
     {
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitListIndexer(this);
         public override IType GetExpType() { return ItemType; }
     }
 
-    public record class LocalDeref(ResolvedExp InnerExp, IType Type) : ResolvedExp
-    {
-        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitLocalDeref(this);
-        public override IType GetExpType() { return Type; }
-    }
-
-    public record class BoxDeref(ResolvedExp InnerExp, IType Type) : ResolvedExp
-    {
-        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitBoxDeref(this);
-        public override IType GetExpType() { return Type; }
-    }
-
-    // 기타의 경우
+    // 기타의 경우, Value
     public record class IR0Exp(R.Exp Exp) : ResolvedExp
     {
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitIR0Exp(this);

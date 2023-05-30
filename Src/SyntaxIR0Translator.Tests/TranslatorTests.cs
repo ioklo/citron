@@ -1914,32 +1914,38 @@ namespace Citron.Test
             AssertEquals(expected, actual);
         }
 
-        [Fact]
-        void LocalRef_Init_TranslatesIntoLocalRefExp()
-        {
-            
-
-            // int i = 0;
-            // int& x = i;
-
-            var scriptSyntax = SScript(
-                SVarDeclStmt(SIntTypeExp(), "i", SInt(0)),
-                SVarDeclStmt(SLocalRefTypeExp(SIntTypeExp()), "x", SId("i"))
-            );
-
-            var actual = Translate(scriptSyntax);
-
-            var expected = r.Script(
-                r.LocalVarDecl(r.IntType(), "i", r.Int(0)),
-                r.LocalVarDecl(r.LocalRefType(r.IntType()), "x", r.LocalRef(r.LocalVar("i"), r.IntType()))
-            );
-
-            AssertEquals(expected, actual);
-        }
-
 
         #endregion LocalRef
 
+        #region BoxRef
 
+        // 1-1. 클래스 멤버 변수 loc 직접 사용, 가능
+        // var c = new C(); 
+        // box var& x = c.a; // c자리에 F()가 와도 TempLoc이므로 포함된다         
+
+        // 1-2. 클래스 멤버 변수 local 참조, 가능
+        // var c = new C();
+        // var& pc = c;
+        // box var& x = pc.a;
+
+        // 1-3. 클래스 멤버 변수 box 참조, 가능
+        // var c = new C();
+        // box var& pc = c;
+        // box var& x = pc.a;        
+
+        // 2-1. struct 멤버 loc 직접 사용, 에러
+        // var s = S();
+        // box var& x = s.a; // 에러
+        
+        // 2-2, struct 멤버 변수 local 참조, 에러
+        // var s = S();
+        // var& ps = s;
+        // box var& x = ps.a;
+
+        // 2-3. struct 멤버 변수 box 참조, 가능
+        // box var& ps = box S();
+        // box var& x = ps.a; 
+
+        #endregion BoxRef
     }
 }

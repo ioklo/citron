@@ -12,6 +12,7 @@ using S = Citron.Syntax;
 using R = Citron.IR0;
 
 using static Citron.Analysis.SyntaxAnalysisErrorCode;
+using System.Diagnostics;
 
 namespace Citron.Analysis
 {
@@ -87,97 +88,92 @@ namespace Citron.Analysis
         }
 
         // 값의 겉보기 타입을 변경한다
-        public static R.Exp CastExp_Exp(R.Exp exp, IType expectedType, S.ISyntaxNode nodeForErrorReport, ScopeContext context) // throws AnalyzeFatalException
+        public static TranslationResult<R.Exp> CastExp_Exp(R.Exp exp, IType expectedType, S.ISyntaxNode nodeForErrorReport, ScopeContext context)
         {
             var result = BodyMisc.TryCastExp_Exp(exp, expectedType);
-            if (result != null) return result;
+            if (result != null) return TranslationResult.Valid(result);
 
             context.AddFatalError(A2201_Cast_Failed, nodeForErrorReport);
-            return Error();
+            return TranslationResult.Error<R.Exp>();
         }
 
-        public struct SymbolQueryResultExpResultTranslator : ISymbolQueryResultVisitor<ExpResult>
+        public struct SymbolQueryResultExpResultTranslator : ISymbolQueryResultVisitor<IntermediateExp>
         {
             ImmutableArray<IType> typeArgs;
 
-            public static ExpResult Translate(SymbolQueryResult result, ImmutableArray<IType> typeArgs)
+            public static IntermediateExp Translate(SymbolQueryResult result, ImmutableArray<IType> typeArgs)
             {
                 var builder = new SymbolQueryResultExpResultTranslator() { typeArgs = typeArgs };
-                return result.Accept<SymbolQueryResultExpResultTranslator, ExpResult>(ref builder);
+                return result.Accept<SymbolQueryResultExpResultTranslator, IntermediateExp>(ref builder);
             }
 
-            ExpResult ISymbolQueryResultVisitor<ExpResult>.VisitNotFound(SymbolQueryResult.NotFound result)
+            IntermediateExp ISymbolQueryResultVisitor<IntermediateExp>.VisitMultipleCandidatesError(SymbolQueryResult.MultipleCandidatesError result)
             {
-                return ExpResults.NotFound;
+                throw new UnreachableException();
             }
 
-            ExpResult ISymbolQueryResultVisitor<ExpResult>.VisitMultipleCandidatesError(SymbolQueryResult.MultipleCandidatesError result)
+            IntermediateExp ISymbolQueryResultVisitor<IntermediateExp>.VisitNamespace(SymbolQueryResult.Namespace result)
             {
-                return ExpResults.MultipleCandiates;
+                return new IntermediateExp.Namespace(result.Symbol);
             }
 
-            ExpResult ISymbolQueryResultVisitor<ExpResult>.VisitNamespace(SymbolQueryResult.Namespace result)
+            IntermediateExp ISymbolQueryResultVisitor<IntermediateExp>.VisitGlobalFuncs(SymbolQueryResult.GlobalFuncs result)
             {
-                return new ExpResult.Namespace(result.Symbol);
+                return new IntermediateExp.GlobalFuncs(result.Infos, typeArgs);
             }
 
-            ExpResult ISymbolQueryResultVisitor<ExpResult>.VisitGlobalFuncs(SymbolQueryResult.GlobalFuncs result)
+            IntermediateExp ISymbolQueryResultVisitor<IntermediateExp>.VisitClass(SymbolQueryResult.Class result)
             {
-                return new ExpResult.GlobalFuncs(result.Infos, typeArgs);
+                return new IntermediateExp.Class(result.ClassConstructor.Invoke(typeArgs));
             }
 
-            ExpResult ISymbolQueryResultVisitor<ExpResult>.VisitClass(SymbolQueryResult.Class result)
+            IntermediateExp ISymbolQueryResultVisitor<IntermediateExp>.VisitClassMemberFuncs(SymbolQueryResult.ClassMemberFuncs result)
             {
-                return new ExpResult.Class(result.ClassConstructor.Invoke(typeArgs));
+                return new IntermediateExp.ClassMemberFuncs(result.Infos, typeArgs, HasExplicitInstance: false, null);
             }
 
-            ExpResult ISymbolQueryResultVisitor<ExpResult>.VisitClassMemberFuncs(SymbolQueryResult.ClassMemberFuncs result)
+            IntermediateExp ISymbolQueryResultVisitor<IntermediateExp>.VisitClassMemberVar(SymbolQueryResult.ClassMemberVar result)
             {
-                return new ExpResult.ClassMemberFuncs(result.Infos, typeArgs, HasExplicitInstance: false, null);
+                return new IntermediateExp.ClassMemberVar(result.Symbol, HasExplicitInstance: false, null);
             }
 
-            ExpResult ISymbolQueryResultVisitor<ExpResult>.VisitClassMemberVar(SymbolQueryResult.ClassMemberVar result)
+            IntermediateExp ISymbolQueryResultVisitor<IntermediateExp>.VisitStruct(SymbolQueryResult.Struct result)
             {
-                return new ExpResult.ClassMemberVar(result.Symbol, HasExplicitInstance: false, null);
+                return new IntermediateExp.Struct(result.StructConstructor.Invoke(typeArgs));
             }
 
-            ExpResult ISymbolQueryResultVisitor<ExpResult>.VisitStruct(SymbolQueryResult.Struct result)
+            IntermediateExp ISymbolQueryResultVisitor<IntermediateExp>.VisitStructMemberFuncs(SymbolQueryResult.StructMemberFuncs result)
             {
-                return new ExpResult.Struct(result.StructConstructor.Invoke(typeArgs));
+                return new IntermediateExp.StructMemberFuncs(result.Infos, typeArgs, HasExplicitInstance: false, null);
             }
 
-            ExpResult ISymbolQueryResultVisitor<ExpResult>.VisitStructMemberFuncs(SymbolQueryResult.StructMemberFuncs result)
+            IntermediateExp ISymbolQueryResultVisitor<IntermediateExp>.VisitStructMemberVar(SymbolQueryResult.StructMemberVar result)
             {
-                return new ExpResult.StructMemberFuncs(result.Infos, typeArgs, HasExplicitInstance: false, null);
+                return new IntermediateExp.StructMemberVar(result.Symbol, HasExplicitInstance: false, null);
             }
 
-            ExpResult ISymbolQueryResultVisitor<ExpResult>.VisitStructMemberVar(SymbolQueryResult.StructMemberVar result)
+            IntermediateExp ISymbolQueryResultVisitor<IntermediateExp>.VisitEnum(SymbolQueryResult.Enum result)
             {
-                return new ExpResult.StructMemberVar(result.Symbol, HasExplicitInstance: false, null);
+                return new IntermediateExp.Enum(result.EnumConstructor.Invoke(typeArgs));
             }
 
-            ExpResult ISymbolQueryResultVisitor<ExpResult>.VisitEnum(SymbolQueryResult.Enum result)
+            IntermediateExp ISymbolQueryResultVisitor<IntermediateExp>.VisitEnumElem(SymbolQueryResult.EnumElem result)
             {
-                return new ExpResult.Enum(result.EnumConstructor.Invoke(typeArgs));
+                return new IntermediateExp.EnumElem(result.Symbol);
             }
 
-            ExpResult ISymbolQueryResultVisitor<ExpResult>.VisitEnumElem(SymbolQueryResult.EnumElem result)
-            {
-                return new ExpResult.EnumElem(result.Symbol);
-            }
-
-            ExpResult ISymbolQueryResultVisitor<ExpResult>.VisitEnumElemMemberVar(SymbolQueryResult.EnumElemMemberVar result)
+            IntermediateExp ISymbolQueryResultVisitor<IntermediateExp>.VisitEnumElemMemberVar(SymbolQueryResult.EnumElemMemberVar result)
             {
                 // EnumElem에 대하여 멤버 함수를 만들 수 없으므로, Identifier로는 지칭할 수 없다
                 throw new RuntimeFatalException();
             }
 
-            ExpResult ISymbolQueryResultVisitor<ExpResult>.VisitLambdaMemberVar(SymbolQueryResult.LambdaMemberVar result)
+            IntermediateExp ISymbolQueryResultVisitor<IntermediateExp>.VisitLambdaMemberVar(SymbolQueryResult.LambdaMemberVar result)
             {
-                return new ExpResult.LambdaMemberVar(result.Symbol);
+                return new IntermediateExp.LambdaMemberVar(result.Symbol);
             }
 
-            ExpResult ISymbolQueryResultVisitor<ExpResult>.VisitTupleMemberVar(SymbolQueryResult.TupleMemberVar result)
+            IntermediateExp ISymbolQueryResultVisitor<IntermediateExp>.VisitTupleMemberVar(SymbolQueryResult.TupleMemberVar result)
             {
                 // Tuple에 대하여 멤버 함수를 만들 수 없으므로, Identifier로는 지칭할 수 없다
                 throw new RuntimeFatalException();

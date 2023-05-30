@@ -8,7 +8,7 @@ using Citron.Collections;
 using S = Citron.Syntax;
 using R = Citron.IR0;
 
-using IStmtVisitor = Citron.Syntax.IStmtVisitor<Citron.Collections.ImmutableArray<Citron.IR0.Stmt>>;
+using IStmtVisitor = Citron.Syntax.IStmtVisitor<Citron.Analysis.TranslationResult<Citron.Collections.ImmutableArray<Citron.IR0.Stmt>>>;
 
 using static Citron.Infra.Misc;
 using static Citron.Analysis.SyntaxAnalysisErrorCode;
@@ -19,17 +19,63 @@ partial struct StmtVisitor : IStmtVisitor
 {
     ScopeContext context;
 
-    ImmutableArray<R.Stmt> Stmts(R.Stmt stmt)
+    static TranslationResult<ImmutableArray<R.Stmt>> Stmts(R.Stmt stmt)
     {
-        return Arr<R.Stmt>(stmt);
+        return TranslationResult.Valid(Arr(stmt));
     }
 
-    public StmtVisitor(ScopeContext context)
+    static TranslationResult<ImmutableArray<R.Stmt>> Valid(ImmutableArray<R.Stmt> stmts)
     {
-        this.context = context;
+        return TranslationResult.Valid(stmts);
     }
 
-    ImmutableArray<R.Stmt> IStmtVisitor.VisitVarDecl(S.VarDeclStmt stmt)
+    static TranslationResult<ImmutableArray<R.Stmt>> Error()
+    {
+        return TranslationResult.Error<ImmutableArray<R.Stmt>>();
+    }
+
+    public static TranslationResult<ImmutableArray<R.Stmt>> Translate(S.Stmt stmt, ScopeContext context)
+    {
+        var translator = new StmtVisitor { context = context };
+        return stmt.Accept<StmtVisitor, TranslationResult<ImmutableArray<R.Stmt>>>(ref translator);
+    }
+
+    public static TranslationResult<ImmutableArray<R.Stmt>> TranslateBody(ImmutableArray<S.Stmt> body, ScopeContext context)
+    {
+        var translator = new StmtVisitor { context = context };
+        return translator.VisitBody(body);
+    }
+
+    public static TranslationResult<ImmutableArray<R.Stmt>> TranslateEmbeddable(S.EmbeddableStmt stmt, ScopeContext context)
+    {
+        var translator = new StmtVisitor { context = context };
+        return translator.VisitEmbeddable(stmt);
+    }
+
+    public static TranslationResult<ImmutableArray<R.Stmt>> TranslateForStmtInitializer(S.ForStmtInitializer forInit, ScopeContext context)
+    {
+        var translator = new StmtVisitor { context = context };
+        return translator.VisitForStmtInitializer(forInit);
+    }
+
+    public static TranslationResult<R.Exp> TranslateAsTopLevelExp(S.Exp expSyntax, ScopeContext context, IType? hintType, SyntaxAnalysisErrorCode code)
+    {
+        TranslationResult<R.Exp> Error() => TranslationResult.Error<R.Exp>();
+
+        var expResult = ExpIR0ExpTranslator.Translate(expSyntax, context, hintType, bDerefIfTypeIsRef: false);
+        if (!expResult.IsValid(out var exp))
+            return Error();
+
+        if (!IsTopLevelExp(exp))
+        {
+            context.AddFatalError(code, expSyntax);
+            return Error();
+        }
+
+        return TranslationResult.Valid(exp);
+    }
+
+    TranslationResult<ImmutableArray<R.Stmt>> IStmtVisitor.VisitVarDecl(S.VarDeclStmt stmt)
     {
         // int a;
         // var x = 
@@ -38,29 +84,32 @@ partial struct StmtVisitor : IStmtVisitor
     }
 
     // CommandStmt에 있는 expStringElement를 분석한다
-    ImmutableArray<R.Stmt> IStmtVisitor.VisitCommand(S.CommandStmt cmdStmt)
+    TranslationResult<ImmutableArray<R.Stmt>> IStmtVisitor.VisitCommand(S.CommandStmt cmdStmt)
     {
         var builder = ImmutableArray.CreateBuilder<R.StringExp>();        
         foreach (var cmd in cmdStmt.Commands)
         {
-            var exp = ExpIR0ExpTranslator.Translate(cmd, context, hintType: null, bDerefIfTypeIsRef: true);
-            builder.Add((R.StringExp)exp);
+            var expResult = ExpIR0ExpTranslator.TranslateString(cmd, context, hintType: null);
+            if (!expResult.IsValid(out var exp))
+                return Error();
+
+            builder.Add(exp);
         }
 
         return Stmts(new R.CommandStmt(builder.ToImmutable()));
     }
     
-    ImmutableArray<R.Stmt> IStmtVisitor.VisitIfTest(S.IfTestStmt ifTestStmt)
+    TranslationResult<ImmutableArray<R.Stmt>> IStmtVisitor.VisitIfTest(S.IfTestStmt ifTestStmt)
     {
         // if (e is Type varName) body 
         // if (var varName = e as Type) body // 변수 선언은 var로 시작해야 하지 않을까
         // IfTestStmt -> IfTestClassStmt, IfTestEnumElemStmt
 
-        var targetResult = ExpResolvedExpTranslator.TranslateAsLoc(ifTestStmt.Exp, context, hintType: null, bWrapExpAsLoc: true);
-        if (targetResult == null)
-            throw new NotImplementedException();
+        var targetResult = ExpIR0LocTranslator.Translate(ifTestStmt.Exp, context, hintType: null, bWrapExpAsLoc: true, bDerefIfTypeIsRef: true, A2015_ResolveIdentifier_ExpressionIsNotLocation);
+        if (!targetResult.IsValid(out var target))
+            return Error();
 
-        var (targetLoc, targetType) = targetResult.Value;
+        var (targetLoc, targetType) = target;
         var testType = context.MakeType(ifTestStmt.TestType);
 
         if (testType is EnumElemType enumElemType)
@@ -77,16 +126,18 @@ partial struct StmtVisitor : IStmtVisitor
             var bodyContext = context.MakeNestedScopeContext();
             if (ifTestStmt.VarName != null)
                 bodyContext.AddLocalVarInfo(enumElemType, new Name.Normal(ifTestStmt.VarName));
-
-            var bodyStmtVisitor = new StmtVisitor(bodyContext);
-            var bodyStmts = bodyStmtVisitor.VisitEmbeddable(ifTestStmt.Body);
+            
+            var bodyStmtsResult = StmtVisitor.TranslateEmbeddable(ifTestStmt.Body, bodyContext);
+            if (!bodyStmtsResult.IsValid(out var bodyStmts))
+                return Error();
 
             ImmutableArray<R.Stmt> elseStmts = default;
             if (ifTestStmt.ElseBody != null)
             {
                 var elseContext = context.MakeNestedScopeContext();
-                var elseStmtVisitor = new StmtVisitor(elseContext);
-                elseStmts = elseStmtVisitor.VisitEmbeddable(ifTestStmt.ElseBody);
+                var elseStmtsResult = StmtVisitor.TranslateEmbeddable(ifTestStmt.ElseBody, elseContext);
+                if (!elseStmtsResult.IsValid(out elseStmts))
+                    return Error();
             }
 
             var stmt = new R.IfTestEnumElemStmt(targetLoc, enumElemType.Symbol, ifTestStmt.VarName, bodyStmts, elseStmts);
@@ -126,10 +177,13 @@ partial struct StmtVisitor : IStmtVisitor
         //}
     }
 
-    ImmutableArray<R.Stmt> IStmtVisitor.VisitIf(S.IfStmt ifStmt)
+    TranslationResult<ImmutableArray<R.Stmt>> IStmtVisitor.VisitIf(S.IfStmt ifStmt)
     {
         // 순회
-        var condExp = ExpResolvedExpTranslator.TranslateAsExp(ifStmt.Cond, context, context.GetBoolType());
+        var condExpResult = ExpIR0ExpTranslator.Translate(ifStmt.Cond, context, context.GetBoolType(), bDerefIfTypeIsRef: true);
+        if (!condExpResult.IsValid(out var condExp))
+            return Error();
+
         condExp = BodyMisc.TryCastExp_Exp(condExp, context.GetBoolType());
 
         if (condExp == null)
@@ -139,22 +193,24 @@ partial struct StmtVisitor : IStmtVisitor
         }
 
         var bodyContext = context.MakeNestedScopeContext();
-        var bodyVisitor = new StmtVisitor(bodyContext);
-        var bodyStmts = bodyVisitor.VisitEmbeddable(ifStmt.Body);
+        var bodyStmtsResult = StmtVisitor.TranslateEmbeddable(ifStmt.Body, bodyContext);
+        if (!bodyStmtsResult.IsValid(out var bodyStmts))
+            return Error();
 
         ImmutableArray<R.Stmt> elseStmts = default;
         if (ifStmt.ElseBody != null)
         {
             var elseContext = context.MakeNestedScopeContext();
-            var elseVisitor = new StmtVisitor(elseContext);
-            elseStmts = elseVisitor.VisitEmbeddable(ifStmt.ElseBody);
+            var elseStmtsResult = StmtVisitor.TranslateEmbeddable(ifStmt.ElseBody, elseContext);
+            if (!elseStmtsResult.IsValid(out elseStmts))
+                return Error();
         }
 
         var stmt = new R.IfStmt(condExp, bodyStmts, elseStmts);
         return Stmts(stmt);
     }
 
-    ImmutableArray<R.Stmt> VisitForStmtInitializer(S.ForStmtInitializer forInit)
+    TranslationResult<ImmutableArray<R.Stmt>> VisitForStmtInitializer(S.ForStmtInitializer forInit)
     {
         switch (forInit)
         {
@@ -163,7 +219,10 @@ partial struct StmtVisitor : IStmtVisitor
 
             case S.ExpForStmtInitializer expInit:
                 {
-                    var exp = TranslateAsTopLevelExp(expInit.Exp, hintType: null, A1102_ForStmt_ExpInitializerShouldBeAssignOrCall);
+                    var expResult = StmtVisitor.TranslateAsTopLevelExp(expInit.Exp, context, hintType: null, A1102_ForStmt_ExpInitializerShouldBeAssignOrCall);
+                    if (!expResult.IsValid(out var exp))
+                        return Error();
+
                     return Stmts(new R.ExpStmt(exp));
                 }
 
@@ -172,7 +231,7 @@ partial struct StmtVisitor : IStmtVisitor
         }
     }
 
-    ImmutableArray<R.Stmt> IStmtVisitor.VisitFor(S.ForStmt forStmt)
+    TranslationResult<ImmutableArray<R.Stmt>> IStmtVisitor.VisitFor(S.ForStmt forStmt)
     {
         // for(
         //     int i = 0; <- forStmtContext 
@@ -183,19 +242,23 @@ partial struct StmtVisitor : IStmtVisitor
         // }
 
         var forStmtContext = context.MakeNestedScopeContext();
-        var initVisitor = new StmtVisitor(forStmtContext);
 
         ImmutableArray<R.Stmt> initStmts = default;
         if (forStmt.Initializer != null)
         {
-            initStmts = initVisitor.VisitForStmtInitializer(forStmt.Initializer);
+            var initStmtsResult = StmtVisitor.TranslateForStmtInitializer(forStmt.Initializer, forStmtContext);
+            if (!initStmtsResult.IsValid(out initStmts))
+                return Error();
         }
 
         R.Exp? condExp = null;
         if (forStmt.CondExp != null)
         {
             var boolType = forStmtContext.GetBoolType();
-            var rawCondExp = ExpIR0ExpTranslator.Translate(forStmt.CondExp, forStmtContext, boolType);
+            var rawCondExpResult = ExpIR0ExpTranslator.Translate(forStmt.CondExp, forStmtContext, boolType, bDerefIfTypeIsRef: true);
+            if (!rawCondExpResult.IsValid(out var rawCondExp))
+                return Error();
+
             condExp = BodyMisc.TryCastExp_Exp(rawCondExp, boolType);
 
             if (condExp == null)
@@ -207,28 +270,33 @@ partial struct StmtVisitor : IStmtVisitor
 
         R.Exp? continueExp = null;
         if (forStmt.ContinueExp != null)
-            continueExp = initVisitor.TranslateAsTopLevelExp(forStmt.ContinueExp, hintType: null, A1103_ForStmt_ContinueExpShouldBeAssignOrCall);
+        {
+            var continueExpResult = StmtVisitor.TranslateAsTopLevelExp(forStmt.ContinueExp, forStmtContext, hintType: null, A1103_ForStmt_ContinueExpShouldBeAssignOrCall);
+            if (!continueExpResult.IsValid(out continueExp))
+                return Error();
+        }
 
-        var bodyContext = context.MakeLoopNestedScopeContext();
-        var bodyVisitor = new StmtVisitor(bodyContext);
+        var bodyContext = context.MakeLoopNestedScopeContext();        
 
-        var bodyStmts = bodyVisitor.VisitEmbeddable(forStmt.Body);
+        var bodyStmtsResult = StmtVisitor.TranslateEmbeddable(forStmt.Body, bodyContext);
+        if (!bodyStmtsResult.IsValid(out var bodyStmts))
+            return Error();
 
         return Stmts(new R.ForStmt(initStmts, condExp, continueExp, bodyStmts));
     }
 
-    ImmutableArray<R.Stmt> IStmtVisitor.VisitContinue(S.ContinueStmt continueStmt)
+    TranslationResult<ImmutableArray<R.Stmt>> IStmtVisitor.VisitContinue(S.ContinueStmt continueStmt)
     {
         if (!context.IsInLoop())
         {
             context.AddFatalError(A1501_ContinueStmt_ShouldUsedInLoop, continueStmt);
-            return Errro();
+            return Error();
         }
 
         return Stmts(new R.ContinueStmt());
     }
 
-    ImmutableArray<R.Stmt> IStmtVisitor.VisitBreak(S.BreakStmt breakStmt)
+    TranslationResult<ImmutableArray<R.Stmt>> IStmtVisitor.VisitBreak(S.BreakStmt breakStmt)
     {
         if (!context.IsInLoop())
         {
@@ -239,7 +307,7 @@ partial struct StmtVisitor : IStmtVisitor
         return Stmts(new R.BreakStmt());
     }
 
-    ImmutableArray<R.Stmt> IStmtVisitor.VisitReturn(S.ReturnStmt returnStmt)
+    TranslationResult<ImmutableArray<R.Stmt>> IStmtVisitor.VisitReturn(S.ReturnStmt returnStmt)
     {
         // seq 함수는 여기서 모두 처리 
         if (context.IsSeqFunc())
@@ -318,7 +386,9 @@ partial struct StmtVisitor : IStmtVisitor
             if (!context.IsSetReturn())
             {
                 // 힌트타입 없이 분석
-                var retValueExp = ExpResolvedExpTranslator.TranslateAsExp(returnStmt.Info.Value.Value, context, hintType: null);
+                var retValueExpResult = ExpIR0ExpTranslator.Translate(returnStmt.Info.Value.Value, context, hintType: null, bDerefIfTypeIsRef: true);
+                if (!retValueExpResult.IsValid(out var retValueExp))
+                    return Error();
 
                 // 리턴값이 안 적혀 있었으므로 적는다
                 context.SetReturn(retValueExp.GetExpType());
@@ -335,7 +405,10 @@ partial struct StmtVisitor : IStmtVisitor
                 // 리턴타입을 힌트로 사용한다
                 // 현재 함수 시그니처랑 맞춰서 같은지 확인한다
 
-                var retValueExp = ExpIR0ExpTranslator.Translate(returnStmt.Info.Value.Value, context, funcReturn.Value.Type);
+                var retValueExpResult = ExpIR0ExpTranslator.Translate(returnStmt.Info.Value.Value, context, funcReturn.Value.Type, bDerefIfTypeIsRef: true);
+                if (!retValueExpResult.IsValid(out var retValueExp))
+                    return Error();
+
                 var castRetValueExp = BodyMisc.TryCastExp_Exp(retValueExp, funcReturn.Value.Type);
 
                 // 캐스트 실패시
@@ -351,77 +424,81 @@ partial struct StmtVisitor : IStmtVisitor
     }
 
     // { }
-    ImmutableArray<R.Stmt> IStmtVisitor.VisitBlock(S.BlockStmt blockStmt)
+    TranslationResult<ImmutableArray<R.Stmt>> IStmtVisitor.VisitBlock(S.BlockStmt blockStmt)
     {
-        AnalyzerFatalException? fatalException = null;
+        bool bFatal = false;
         ScopeContext blockContext = context.MakeNestedScopeContext();
-        var blockVisitor = new StmtVisitor(blockContext);
 
         var builder = ImmutableArray.CreateBuilder<R.Stmt>();
-
         foreach (var stmt in blockStmt.Stmts)
-        {
-            try
+        {   
+            var innerStmtsResult = StmtVisitor.Translate(stmt, blockContext);
+            if (!innerStmtsResult.IsValid(out var innerStmts))
             {
-                var innerStmt = stmt.Accept<StmtVisitor, ImmutableArray<R.Stmt>>(ref blockVisitor);
-                builder.AddRange(innerStmt.AsEnumerable());
+                bFatal = true;
+                continue; // 중간에 에러가 발생해도, 로그를 수집하기 위해서 일단 계속 진행한다
             }
-            catch (AnalyzerFatalException e) // 중간에 에러가 발생해도, 로그를 수집하기 위해서 일단 계속 진행한다
-            {
-                fatalException = e;
-            }
+
+            builder.AddRange(innerStmts.AsEnumerable());
         }
 
-        if (fatalException != null)
-            throw fatalException;
+        if (bFatal)
+            return Error();
         
         return Stmts(new R.BlockStmt(builder.ToImmutable()));
     }
 
-    ImmutableArray<R.Stmt> IStmtVisitor.VisitBlank(S.BlankStmt stmt)
+    TranslationResult<ImmutableArray<R.Stmt>> IStmtVisitor.VisitBlank(S.BlankStmt stmt)
     {
         return Stmts(new R.BlankStmt());
     }
 
-    ImmutableArray<R.Stmt> IStmtVisitor.VisitExp(S.ExpStmt expStmt)
+    TranslationResult<ImmutableArray<R.Stmt>> IStmtVisitor.VisitExp(S.ExpStmt expStmt)
     {
-        var exp = TranslateAsTopLevelExp(expStmt.Exp, hintType: null, A1301_ExpStmt_ExpressionShouldBeAssignOrCall);
+        var expResult = StmtVisitor.TranslateAsTopLevelExp(expStmt.Exp, context, hintType: null, A1301_ExpStmt_ExpressionShouldBeAssignOrCall);
+        if (!expResult.IsValid(out var exp))
+            return Error();
+
         return Stmts(new R.ExpStmt(exp));
     }
 
-    ImmutableArray<R.Stmt> IStmtVisitor.VisitTask(S.TaskStmt taskStmt)
+    TranslationResult<ImmutableArray<R.Stmt>> IStmtVisitor.VisitTask(S.TaskStmt taskStmt)
     {
-        var visitor = new LambdaVisitor(context.GetVoidType(), paramSyntaxes: default, taskStmt.Body, context, taskStmt);
-        var (lambda, args) = visitor.Visit();
+        var lambdaInfoResult = LambdaVisitor.Translate(context.GetVoidType(), paramSyntaxes: default, taskStmt.Body, context, taskStmt);
+        if (!lambdaInfoResult.IsValid(out var lambdaInfo))
+            return Error();
         
-        return Stmts(new R.TaskStmt(lambda, args));
+        return Stmts(new R.TaskStmt(lambdaInfo.Lambda, lambdaInfo.Args));
     }
 
-    ImmutableArray<R.Stmt> IStmtVisitor.VisitAwait(S.AwaitStmt awaitStmt)
+    TranslationResult<ImmutableArray<R.Stmt>> IStmtVisitor.VisitAwait(S.AwaitStmt awaitStmt)
     {
-        var newContext = context.MakeNestedScopeContext();
-        var newVisitor = new StmtVisitor(newContext);
-        var stmts = newVisitor.VisitBody(awaitStmt.Body);
+        var newContext = context.MakeNestedScopeContext();        
+        var stmtsResult = StmtVisitor.TranslateBody(awaitStmt.Body, newContext);
+        if (!stmtsResult.IsValid(out var stmts))
+            return Error();
 
         return Stmts(new R.AwaitStmt(stmts));
     }
 
-    ImmutableArray<R.Stmt> IStmtVisitor.VisitAsync(S.AsyncStmt asyncStmt)
+    TranslationResult<ImmutableArray<R.Stmt>> IStmtVisitor.VisitAsync(S.AsyncStmt asyncStmt)
     {
-        var visitor = new LambdaVisitor(context.GetVoidType(), default, asyncStmt.Body, context, asyncStmt);
-        var(lambda, args) = visitor.Visit();
-        return Stmts(new R.AsyncStmt(lambda, args));
+        var lambdaInfoResult = LambdaVisitor.Translate(context.GetVoidType(), default, asyncStmt.Body, context, asyncStmt);
+        if (!lambdaInfoResult.IsValid(out var lambdaInfo))
+            return Error();
+        
+        return Stmts(new R.AsyncStmt(lambdaInfo.Lambda, lambdaInfo.Args));
     }
 
-    ImmutableArray<R.Stmt> IStmtVisitor.VisitForeach(S.ForeachStmt foreachStmt)
+    TranslationResult<ImmutableArray<R.Stmt>> IStmtVisitor.VisitForeach(S.ForeachStmt foreachStmt)
     {
         // SYNTAX: foreach(var elemVarName in iterator) body
         // IR0: foreach(type elemVarName in iteratorLoc)
-        var iterResult = ExpResolvedExpTranslator.TranslateAsLoc(foreachStmt.Iterator, context, hintType: null, bWrapExpAsLoc: true);
-        if (iterResult == null)
-            throw new NotImplementedException(); // iterator가 location으로 나오지 않습니다
+        var iterResult = ExpIR0LocTranslator.Translate(foreachStmt.Iterator, context, hintType: null, bWrapExpAsLoc: true, bDerefIfTypeIsRef: true, A2015_ResolveIdentifier_ExpressionIsNotLocation);
+        if (!iterResult.IsValid(out var iter))
+            return Error();
 
-        var (iterLoc, iterType) = iterResult.Value;
+        var (iterLoc, iterType) = iter;
 
         // 먼저, iteratorResult가 anonymous_seq타입인지 확인한다
         if (context.IsSeqType(iterType, out var seqItemType)) // seq<>
@@ -456,10 +533,12 @@ partial struct StmtVisitor : IStmtVisitor
 
             // 루프 컨텍스트에 로컬을 하나 추가하고
             bodyContext.AddLocalVarInfo(itemType, new Name.Normal(foreachStmt.VarName));
-
-            var bodyVisitor = new StmtVisitor(bodyContext);
+            
             // 본문 분석
-            var bodyStmts = bodyVisitor.VisitEmbeddable(foreachStmt.Body);
+            var bodyStmtsResult = StmtVisitor.TranslateEmbeddable(foreachStmt.Body, bodyContext);
+            if (!bodyStmtsResult.IsValid(out var bodyStmts))
+                return Error();
+
             return Stmts(new R.ForeachStmt(itemType, foreachStmt.VarName, iterLoc, bodyStmts));
         }
         else
@@ -502,9 +581,10 @@ partial struct StmtVisitor : IStmtVisitor
                 // 루프 컨텍스트에 로컬을 하나 추가하고
                 bodyContext.AddLocalVarInfo(itemType, new Name.Normal(foreachStmt.VarName));
 
-                // 본문 분석
-                var bodyVisitor = new StmtVisitor(bodyContext);
-                var bodyStmts = bodyVisitor.VisitEmbeddable(foreachStmt.Body);
+                // 본문 분석                
+                var bodyStmtsResult = StmtVisitor.TranslateEmbeddable(foreachStmt.Body, bodyContext);
+                if (!bodyStmtsResult.IsValid(out var bodyStmts))
+                    return Error();
 
                 return Stmts(new R.ForeachStmt(itemType, foreachStmt.VarName, listIterator, bodyStmts));
             }
@@ -516,7 +596,7 @@ partial struct StmtVisitor : IStmtVisitor
     }
 
     // TODO: ref 처리?
-    ImmutableArray<R.Stmt> IStmtVisitor.VisitYield(S.YieldStmt yieldStmt)
+    TranslationResult<ImmutableArray<R.Stmt>> IStmtVisitor.VisitYield(S.YieldStmt yieldStmt)
     {
         if (!context.IsSeqFunc())
         {
@@ -529,13 +609,18 @@ partial struct StmtVisitor : IStmtVisitor
         Debug.Assert(callableReturn != null);
 
         // NOTICE: 리턴 타입을 힌트로 넣었다
-        var retValueExp = ExpIR0ExpTranslator.Translate(yieldStmt.Value, context, callableReturn.Value.Type);
-        var castRetValueExp = BodyMisc.CastExp_Exp(retValueExp, callableReturn.Value.Type, yieldStmt.Value, context); // 캐스트 실패시 exception발생
+        var retValueExpResult = ExpIR0ExpTranslator.Translate(yieldStmt.Value, context, callableReturn.Value.Type, bDerefIfTypeIsRef: true);
+        if (!retValueExpResult.IsValid(out var retValueExp))
+            return Error();
+
+        var castRetValueExpResult = BodyMisc.CastExp_Exp(retValueExp, callableReturn.Value.Type, yieldStmt.Value, context); // 캐스트 실패시 exception발생
+        if (!castRetValueExpResult.IsValid(out var castRetValueExp))
+            return Error();
         
         return Stmts(new R.YieldStmt(castRetValueExp));
     }
 
-    ImmutableArray<R.Stmt> IStmtVisitor.VisitDirective(S.DirectiveStmt directiveStmt)
+    TranslationResult<ImmutableArray<R.Stmt>> IStmtVisitor.VisitDirective(S.DirectiveStmt directiveStmt)
     {
         switch (directiveStmt.Name)
         {
@@ -546,36 +631,34 @@ partial struct StmtVisitor : IStmtVisitor
                     return Error();
                 }
 
-                var argResult = ExpResolvedExpTranslator.TranslateAsLoc(directiveStmt.Args[0], context, hintType: null, bWrapExpAsLoc: false);
-                if (argResult == null)
-                {
-                    context.AddFatalError(A2802_StaticNotNullDirective_ArgumentMustBeLocation, directiveStmt);
+                var argInfoResult = ExpIR0LocTranslator.Translate(directiveStmt.Args[0], context, hintType: null, bWrapExpAsLoc: false, bDerefIfTypeIsRef: true, A2802_StaticNotNullDirective_ArgumentMustBeLocation);
+                if (!argInfoResult.IsValid(out var argInfo))
                     return Error();
-                }
 
-                var (argLoc, _) = argResult.Value;
-
-                return Stmts(new R.DirectiveStmt.StaticNotNull(argLoc));
+                return Stmts(new R.DirectiveStmt.StaticNotNull(argInfo.Loc));
 
             default:
                 throw new NotImplementedException(); // 인식할 수 없는 directive입니다
         }
     }
 
-    public ImmutableArray<R.Stmt> VisitBody(ImmutableArray<S.Stmt> body)
+    TranslationResult<ImmutableArray<R.Stmt>> VisitBody(ImmutableArray<S.Stmt> body)
     {
         var builder = ImmutableArray.CreateBuilder<R.Stmt>();
 
         foreach (var stmt in body)
         {
-            var innerStmts = stmt.Accept<StmtVisitor, ImmutableArray<R.Stmt>>(ref this);
+            var innerStmtsResult = StmtVisitor.Translate(stmt, context);
+            if (!innerStmtsResult.IsValid(out var innerStmts))
+                return Error();
+
             builder.AddRange(innerStmts.AsEnumerable());
         }
 
-        return builder.ToImmutable();
+        return Valid(builder.ToImmutable());
     }
 
-    public ImmutableArray<R.Stmt> VisitEmbeddable(S.EmbeddableStmt embedStmt)
+    TranslationResult<ImmutableArray<R.Stmt>> VisitEmbeddable(S.EmbeddableStmt embedStmt)
     {
         // if (...) 'stmt'
         // if (...) '{ stmt... }' 를 받는다
@@ -584,7 +667,7 @@ partial struct StmtVisitor : IStmtVisitor
             case S.EmbeddableStmt.Single single:
                 // TODO: VarDecl은 등장하면 에러를 내도록 한다
                 // 지금은 그냥 패스
-                return single.Stmt.Accept<StmtVisitor, ImmutableArray<R.Stmt>>(ref this);
+                return StmtVisitor.Translate(single.Stmt, context);
 
             case S.EmbeddableStmt.Multiple multiple:
 
@@ -592,20 +675,26 @@ partial struct StmtVisitor : IStmtVisitor
 
                 foreach (var stmt in multiple.Stmts)
                 {
-                    var rstmts = stmt.Accept<StmtVisitor, ImmutableArray<R.Stmt>>(ref this);
-                    builder.AddRange(rstmts.AsEnumerable());
+                    var stmtsResult = StmtVisitor.Translate(stmt, context);
+                    if (!stmtsResult.IsValid(out var stmts))
+                        return Error();
+
+                    builder.AddRange(stmts.AsEnumerable());
                 }
 
-                return builder.ToImmutable();
+                return Valid(builder.ToImmutable());
 
             default:
                 throw new NotImplementedException();
         }
     }
 
-    
+    TranslationResult<ImmutableArray<R.Stmt>> IStmtVisitor.VisitEmbeddable(S.EmbeddableStmt stmt)
+    {
+        throw new NotImplementedException();
+    }
 
-    bool IsTopLevelExp(R.Exp exp)
+    static bool IsTopLevelExp(R.Exp exp)
     {
         switch (exp)
         {
@@ -620,18 +709,5 @@ partial struct StmtVisitor : IStmtVisitor
             default:
                 return false;
         }
-    }
-
-    public R.Exp TranslateAsTopLevelExp(S.Exp expSyntax, IType? hintType, SyntaxAnalysisErrorCode code)
-    {
-        var exp = ExpResolvedExpTranslator.TranslateAsExp(expSyntax, context, hintType);
-
-        if (!IsTopLevelExp(exp))
-        {
-            context.AddFatalError(code, expSyntax);
-            return Error();
-        }
-
-        return exp;
     }
 }

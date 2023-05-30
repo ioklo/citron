@@ -157,7 +157,7 @@ partial class BodyContext : IMutable<BodyContext>
 
                 else if (symbolQueryResult is SymbolQueryResult.MultipleCandidatesError multipleCandidatesError) // 에러가 났으면 무시하지 말고 리턴
                 {
-                    var builder = ImmutableArray.CreateBuilder<ExpResult>(multipleCandidatesError.Results.Length);
+                    var builder = ImmutableArray.CreateBuilder<IntermediateExp>(multipleCandidatesError.Results.Length);
                     foreach (var result in multipleCandidatesError.Results)
                     {
                         var expResult = SymbolQueryResultExpResultTranslator.Translate(result, typeArgs); // NOTICE: 여기서 exception이 발생할 수 있다
@@ -194,7 +194,7 @@ partial class BodyContext : IMutable<BodyContext>
                 {
                     var memberVarSymbol = memberVar.MakeOpenSymbol(bodyContext.symbolFactory) as LambdaMemberVarSymbol;
                     Debug.Assert(memberVarSymbol != null);
-                    candidates.Add(new ExpResult.LambdaMemberVar(memberVarSymbol));
+                    candidates.Add(new IntermediateExp.LambdaMemberVar(memberVarSymbol));
                 }
             }
         }
@@ -255,7 +255,7 @@ partial class BodyContext : IMutable<BodyContext>
             if (count == 1) return candidates.GetAt(0);
             if (1 < count)
             {
-                var builder = ImmutableArray.CreateBuilder<ExpResult>(count);
+                var builder = ImmutableArray.CreateBuilder<IntermediateExp>(count);
                 for (int i = 0; i < count; i++)
                     builder.Add(candidates.GetAt(i));
 
@@ -274,27 +274,27 @@ partial class BodyContext : IMutable<BodyContext>
                 // 로컬과 람다 멤버, this만 감싸는 대상이다
                 switch (result)
                 {
-                    case ExpResult.LocalVar localResult:
+                    case IntermediateExp.LocalVar localResult:
                         {
                             var initExp = new R.LoadExp(new R.LocalVarLoc(localResult.Name), localResult.Type);
                             Debug.Assert(initExp != null);
 
                             var initArg = new R.Argument.Normal(initExp);
                             var symbol = bodyContext.StageLambdaMemberVar(localResult.Type, localResult.Name, initArg);
-                            return new ExpResult.LambdaMemberVar(symbol);
+                            return new IntermediateExp.LambdaMemberVar(symbol);
                         }
 
-                    case ExpResult.LambdaMemberVar lambdaMemberResult:
+                    case IntermediateExp.LambdaMemberVar lambdaMemberResult:
                         {
                             var initExp = new R.LoadExp(new R.LambdaMemberVarLoc(lambdaMemberResult.Symbol), lambdaMemberResult.Symbol.GetDeclType());
                             Debug.Assert(initExp != null);
 
                             var initArg = new R.Argument.Normal(initExp);
                             var symbol = bodyContext.StageLambdaMemberVar(lambdaMemberResult.Symbol.GetDeclType(), lambdaMemberResult.Symbol.GetName(), initArg);
-                            return new ExpResult.LambdaMemberVar(symbol);
+                            return new IntermediateExp.LambdaMemberVar(symbol);
                         }
 
-                    case ExpResult.ThisVar thisResult:
+                    case IntermediateExp.ThisVar thisResult:
                         {
                             // TODO: 워닝, struct의 this는 복사가 일어납니다. 원본과 다를 수 있습니다. ref this로 명시적으로 지정해주세요(?)
                             if (thisResult.Type is StructType)
@@ -305,7 +305,7 @@ partial class BodyContext : IMutable<BodyContext>
 
                             var initArg = new R.Argument.Normal(initExp);
                             var symbol = bodyContext.StageLambdaMemberVar(thisResult.Type, thisName, initArg);
-                            return new ExpResult.LambdaMemberVar(symbol);
+                            return new IntermediateExp.LambdaMemberVar(symbol);
                         }
 
                     // 나머지는 그대로 리턴
@@ -324,7 +324,7 @@ partial class BodyContext : IMutable<BodyContext>
                 if (count == 1) return candidates.GetAt(0);
                 else if (1 < count)
                 {
-                    var builder = ImmutableArray.CreateBuilder<ExpResult>(count);
+                    var builder = ImmutableArray.CreateBuilder<IntermediateExp>(count);
                     for (int i = 0; i < count; i++)
                         builder.Add(candidates.GetAt(i));
 
@@ -415,8 +415,8 @@ partial class BodyContext : IMutable<BodyContext>
 
 class IdentifierResolverMultipleCandidatesException : Exception
 {
-    public ImmutableArray<ExpResult> Candidates { get; }
-    public IdentifierResolverMultipleCandidatesException(ImmutableArray<ExpResult> candidates)
+    public ImmutableArray<IntermediateExp> Candidates { get; }
+    public IdentifierResolverMultipleCandidatesException(ImmutableArray<IntermediateExp> candidates)
     {
         Candidates = candidates;
     }

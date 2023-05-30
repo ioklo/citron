@@ -13,14 +13,7 @@ namespace Citron.Analysis;
 
 struct TopLevelVisitor_BuildingBodyPhase
 {
-    BuildingBodyPhaseContext context;
-
-    public TopLevelVisitor_BuildingBodyPhase(BuildingBodyPhaseContext context)
-    {
-        this.context = context;
-    }
-
-    public void VisitGlobalFuncDecl(ImmutableArray<Stmt> body, GlobalFuncDeclSymbol symbol, bool bSeqFunc)
+    public static bool VisitGlobalFuncDecl(ImmutableArray<Stmt> body, BuildingBodyPhaseContext context, GlobalFuncDeclSymbol symbol, bool bSeqFunc)
     {
         var scopeContext = context.MakeNewScopeContext(symbol, bSeqFunc: bSeqFunc, symbol.GetReturn());
 
@@ -32,10 +25,12 @@ struct TopLevelVisitor_BuildingBodyPhase
             scopeContext.AddLocalVarInfo(parameter.Type, parameter.Name);
         }
 
-        var stmtVisitor = new StmtVisitor(scopeContext);
-
         // TODO: Body가 실제로 리턴을 제대로 하는지 확인해야 한다 => 분석기에서 해야 한다. 여기서는 Translation만 한다
-        var bodyStmts = stmtVisitor.VisitBody(body);
+        var bodyStmtsResult = StmtVisitor.TranslateBody(body, scopeContext);
+        if (!bodyStmtsResult.IsValid(out var bodyStmts))
+            return false;
+
         context.AddBody(symbol, bodyStmts);
+        return true;
     }
 }

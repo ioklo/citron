@@ -33,8 +33,7 @@ namespace Citron.Analysis
 
             context.AddBuildingBodyPhaseTask(context =>
             {
-                var visitor = new ClassVisitor_BuilindBodyPhase(context);
-                visitor.VisitClassFuncDecl(syntax.Body, func, syntax.IsSequence);
+                return ClassVisitor_BuildingBodyPhase.VisitClassFuncDecl(syntax.Body, context, func, syntax.IsSequence);
             });
         }
 
@@ -64,9 +63,8 @@ namespace Citron.Analysis
             declSymbol.AddConstructor(constructorDeclSymbol);
 
             context.AddBuildingBodyPhaseTask(context =>
-            {
-                var visitor = new ClassVisitor_BuilindBodyPhase(context);
-                visitor.VisitClassConstructorDecl(syntax.Body, constructorDeclSymbol);
+            {   
+                return ClassVisitor_BuildingBodyPhase.VisitClassConstructorDecl(syntax.Body, context, constructorDeclSymbol);
             });
         }
 

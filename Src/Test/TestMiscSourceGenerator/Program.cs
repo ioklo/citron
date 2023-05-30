@@ -125,7 +125,7 @@ namespace TestMiscSourceGenerator
                 writer2.WriteLine($"case {nameForType}.{enumName}: itw.Write(\"{nameForType}.{enumName}\"); break;");
             }
 
-            writer2.WriteLine($"default: throw new Citron.Infra.UnreachableCodeException();");
+            writer2.WriteLine($"default: throw new System.Diagnostics.UnreachableException();");
 
             writer1.WriteLine($"}}");
             writer.WriteLine($"}}");
@@ -136,7 +136,7 @@ namespace TestMiscSourceGenerator
             //    {
             //        case R.InternalBinaryOperator.Multiply_Int_Int_Int: itw.Write("R.InternalBinaryOperator.Multiply_Int_Int_Int"); break;
             //        ...
-            //        default: throw new Citron.Infra.UnreachableCodeException();
+            //        default: throw new System.Diagnostics.UnreachableException();
             //    }
             //}
 
@@ -199,7 +199,7 @@ namespace TestMiscSourceGenerator
                 writer2.WriteLine($"case {derivedNameForType} {derivedNameForVariable}: Write_{derivedNameForMethod}({derivedNameForVariable}); break;");
             }
 
-            writer2.WriteLine($"default: throw new Citron.Infra.UnreachableCodeException();");
+            writer2.WriteLine($"default: throw new System.Diagnostics.UnreachableException();");
             writer1.WriteLine("}");
             writer.WriteLine("}");
         }

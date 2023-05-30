@@ -38,7 +38,7 @@ abstract record IntermediateExp
     public record ClassMemberFuncs(
         ImmutableArray<DeclAndConstructor<ClassMemberFuncDeclSymbol, ClassMemberFuncSymbol>> Infos,
         ImmutableArray<IType> ParitalTypeArgs,
-        bool HasExplicitInstance, ResolvedExp? ExplicitInstance) : IntermediateExp
+        bool HasExplicitInstance, ResolvedInstanceExp? ExplicitInstance) : IntermediateExp
     {
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitClassMemberFuncs(this);
     }
@@ -51,7 +51,7 @@ abstract record IntermediateExp
     public record class StructMemberFuncs(
         ImmutableArray<DeclAndConstructor<StructMemberFuncDeclSymbol, StructMemberFuncSymbol>> Infos,
         ImmutableArray<IType> ParitalTypeArgs,
-        bool HasExplicitInstance, ResolvedExp? ExplicitInstance) : IntermediateExp
+        bool HasExplicitInstance, ResolvedInstanceExp? ExplicitInstance) : IntermediateExp
     {
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitStructMemberFuncs(this);
     }
@@ -80,34 +80,24 @@ abstract record IntermediateExp
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitLambdaMemberVar(this);
     }
 
-    public record class ClassMemberVar(ClassMemberVarSymbol Symbol, bool HasExplicitInstance, ResolvedExp? ExplicitInstance) : IntermediateExp
+    public record class ClassMemberVar(ClassMemberVarSymbol Symbol, bool HasExplicitInstance, ResolvedInstanceExp? ExplicitInstance) : IntermediateExp
     {
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitClassMemberVar(this);
     }
-    public record class StructMemberVar(StructMemberVarSymbol Symbol, bool HasExplicitInstance, ResolvedExp? ExplicitInstance) : IntermediateExp
+    public record class StructMemberVar(StructMemberVarSymbol Symbol, bool HasExplicitInstance, ResolvedInstanceExp? ExplicitInstance) : IntermediateExp
     {
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitStructMemberVar(this);
     }
 
-    public record class EnumElemMemberVar(EnumElemMemberVarSymbol Symbol, ResolvedExp Instance) : IntermediateExp
+    public record class EnumElemMemberVar(EnumElemMemberVarSymbol Symbol, ResolvedInstanceExp Instance) : IntermediateExp
     {
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitEnumElemMemberVar(this);
     }
 
-    public record class ListIndexer(R.Loc Instance, R.Exp Index, IType ItemType) : IntermediateExp
+    public record class ListIndexer(ResolvedInstanceExp Instance, R.Exp Index, IType ItemType) : IntermediateExp
     {
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitListIndexer(this);
     }
-
-    //public record class LocalDeref(ResolvedExp InnerExp, IType Type) : IntermediateExp
-    //{
-    //    public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitLocalDeref(this);
-    //}
-
-    //public record class BoxDeref(ResolvedExp InnerExp, IType Type) : IntermediateExp
-    //{
-    //    public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitBoxDeref(this);
-    //}
 
     // 기타의 경우
     public record class IR0Exp(R.Exp Exp) : IntermediateExp

@@ -14,12 +14,12 @@ struct CoreResolvedExpIR0LocTranslator
     ScopeContext context;
     ISyntaxNode nodeForErrorReport;
 
-    TranslationResult<Loc> Valid(Loc loc)
+    static TranslationResult<Loc> Valid(Loc loc)
     {
-        return TranslationResult.Valid<Loc>(loc);
+        return TranslationResult.Valid(loc);
     }
 
-    TranslationResult<Loc> Error()
+    static TranslationResult<Loc> Error()
     {
         return TranslationResult.Error<Loc>();
     }
@@ -41,9 +41,8 @@ struct CoreResolvedExpIR0LocTranslator
         {
             Loc? instance = null;
             if (reExp.ExplicitInstance != null)
-            {
-                // bDerefIfTypeIsRef: false, ExplicitInstance는 이미 Deref된 상태일 것이기 때문에 Deref처리를 따로 하지 않는다
-                var instResult = ResolvedExpIR0LocTranslator.Translate(reExp.ExplicitInstance, context, bWrapExpAsLoc: true, bDerefIfTypeIsRef: false, nodeForErrorReport, A2015_ResolveIdentifier_ExpressionIsNotLocation);
+            {   
+                var instResult = ResolvedInstanceExpIR0LocTranslator.Translate(reExp.ExplicitInstance, context, bWrapExpAsLoc: true, nodeForErrorReport, A2015_ResolveIdentifier_ExpressionIsNotLocation);
                 if (!instResult.IsValid(out var inst))
                     return Error();
 
@@ -76,9 +75,8 @@ struct CoreResolvedExpIR0LocTranslator
             Loc? instance = null;
 
             if (reExp.ExplicitInstance != null)
-            {
-                // bDerefIfTypeIsRef: false, ExplicitInstance는 이미 Deref된 상태일 것이기 때문에 Deref처리를 따로 하지 않는다
-                var instanceResult = ResolvedExpIR0LocTranslator.Translate(reExp.ExplicitInstance, context, bWrapExpAsLoc: true, bDerefIfTypeIsRef: false, nodeForErrorReport, A2015_ResolveIdentifier_ExpressionIsNotLocation);
+            {   
+                var instanceResult = ResolvedInstanceExpIR0LocTranslator.Translate(reExp.ExplicitInstance, context, bWrapExpAsLoc: true, nodeForErrorReport, A2015_ResolveIdentifier_ExpressionIsNotLocation);
                 if (!instanceResult.IsValid(out var inst))
                     return Error();
 
@@ -95,38 +93,22 @@ struct CoreResolvedExpIR0LocTranslator
     }
 
     public TranslationResult<Loc> TranslateEnumElemMemberVar(ResolvedExp.EnumElemMemberVar reExp)
-    {
-        // bDerefIfTypeIsRef: false, ExplicitInstance는 이미 Deref된 상태일 것이기 때문에 Deref처리를 따로 하지 않는다
-        var instResult = ResolvedExpIR0LocTranslator.Translate(reExp.Instance, context, bWrapExpAsLoc: true, bDerefIfTypeIsRef: false, nodeForErrorReport, A2015_ResolveIdentifier_ExpressionIsNotLocation);
+    {   
+        var instResult = ResolvedInstanceExpIR0LocTranslator.Translate(reExp.Instance, context, bWrapExpAsLoc: true, nodeForErrorReport, A2015_ResolveIdentifier_ExpressionIsNotLocation);
         if (!instResult.IsValid(out var inst))
             return Error();
 
         return Valid(new EnumElemMemberLoc(inst.Loc, reExp.Symbol));
     }
 
-    public Loc TranslateListIndexer(ResolvedExp.ListIndexer reExp)
+    public TranslationResult<Loc> TranslateListIndexer(ResolvedExp.ListIndexer reExp)
     {
-        return new ListIndexerLoc(reExp.Instance, reExp.Index);
-    }
-
-    public TranslationResult<Loc> TranslateLocalDeref(ResolvedExp.LocalDeref reExp)
-    {
-        // bDerefIfTypeIsRef: false, innerLoc까지 deref를 해줄필요는 없다
-        var innerResult = ResolvedExpIR0LocTranslator.Translate(reExp.InnerExp, context, bWrapExpAsLoc: false, bDerefIfTypeIsRef: false, nodeForErrorReport, A2015_ResolveIdentifier_ExpressionIsNotLocation);
-        if (!innerResult.IsValid(out var inner))
+        var instanceResult = ResolvedInstanceExpIR0LocTranslator.Translate(reExp.Instance, context, bWrapExpAsLoc: true, nodeForErrorReport, A2015_ResolveIdentifier_ExpressionIsNotLocation);
+        if (!instanceResult.IsValid(out var instance))
             return Error();
 
-        return Valid(new LocalDerefLoc(inner.Loc));
+        return Valid(new ListIndexerLoc(instance.Loc, reExp.Index));
     }
 
-    public TranslationResult<Loc> TranslateBoxDeref(ResolvedExp.BoxDeref reExp)
-    {
-        // bDerefIfTypeIsRef: false, innerLoc까지 deref를 해줄필요는 없다
-        var innerResult = ResolvedExpIR0LocTranslator.Translate(reExp.InnerExp, context, bWrapExpAsLoc: false, bDerefIfTypeIsRef: false, nodeForErrorReport, A2015_ResolveIdentifier_ExpressionIsNotLocation);
-        if (!innerResult.IsValid(out var inner))
-            return Error();
-
-        return Valid(new BoxDerefLoc(inner.Loc));
-    }
 }
 

@@ -18,7 +18,7 @@ namespace Citron.Analysis
         ImmutableArray<ModuleDeclSymbol> modules;
         SymbolFactory factory;
         List<BuildingTrivialConstructorPhaseTask> buildingTrivialConstructorPhaseTasks;
-        List<Action<BuildingBodyPhaseContext>> buildingBodyPhaseTasks;
+        List<Func<BuildingBodyPhaseContext, bool>> buildingBodyPhaseTasks;
 
 
         public BuildingMemberDeclPhaseContext(ImmutableArray<ModuleDeclSymbol> modules, SymbolFactory factory)
@@ -26,7 +26,7 @@ namespace Citron.Analysis
             this.modules = modules;
             this.factory = factory;
             buildingTrivialConstructorPhaseTasks = new List<BuildingTrivialConstructorPhaseTask>();
-            buildingBodyPhaseTasks = new List<Action<BuildingBodyPhaseContext>>();
+            buildingBodyPhaseTasks = new List<Func<BuildingBodyPhaseContext, bool>>();
         }
 
         public IType MakeType(S.TypeExp typeExp, IDeclSymbolNode curNode)
@@ -47,7 +47,7 @@ namespace Citron.Analysis
                 {
                     S.FuncParamKind.Normal => FuncParameterKind.Default,
                     S.FuncParamKind.Params => FuncParameterKind.Params,
-                    _ => throw new UnreachableCodeException()
+                    _ => throw new UnreachableException()
                 };
 
                 var paramTypeSymbol = MakeType(paramSyntax.Type, curNode);
@@ -64,7 +64,7 @@ namespace Citron.Analysis
             buildingTrivialConstructorPhaseTasks.Add(new BuildingTrivialConstructorPhaseTask(prerequisite, @this, task));
         }
 
-        public void AddBuildingBodyPhaseTask(Action<BuildingBodyPhaseContext> task)
+        public void AddBuildingBodyPhaseTask(Func<BuildingBodyPhaseContext, bool> task)
         {
             buildingBodyPhaseTasks.Add(task);
         }
@@ -100,12 +100,15 @@ namespace Citron.Analysis
             }
         }
 
-        public void BuildBody(BuildingBodyPhaseContext context)
+        public bool BuildBody(BuildingBodyPhaseContext context)
         {
             foreach (var task in buildingBodyPhaseTasks)
             {
-                task.Invoke(context);
+                if (!task.Invoke(context))
+                    return false;
             }
+
+            return true;
         }
     }
 }

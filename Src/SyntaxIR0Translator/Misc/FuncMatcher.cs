@@ -13,519 +13,456 @@ using Citron.Infra;
 using static Citron.Analysis.SyntaxAnalysisErrorCode;
 using Citron.Symbol;
 
-namespace Citron.Analysis
+namespace Citron.Analysis;
+
+// 어떤 Exp에서 타입 정보 등을 알아냅니다
+
+record struct MatchedFunc(MatchCallableResult Result, int Index, ScopeContext Context);
+// bExactMatch: TypeInference를 사용하지 않은 경우
+record struct MatchCallableResult(bool bMatch, bool bExactMatch, ImmutableArray<R.Argument> Args, ImmutableArray<IType> TypeArgs);
+
+// entry1의 result        
+abstract record class FuncMatchIndexResult
 {
-    // 어떤 Exp에서 타입 정보 등을 알아냅니다
+    public record class MultipleCandidates(ImmutableArray<MatchedFunc> MatchedFuncs) : FuncMatchIndexResult;
 
-    record struct MatchedFunc(MatchCallableResult Result, int Index, ScopeContext Context);
-    // bExactMatch: TypeInference를 사용하지 않은 경우
-    record struct MatchCallableResult(bool bMatch, bool bExactMatch, ImmutableArray<R.Argument> Args, ImmutableArray<IType> TypeArgs);
-
-    // entry1의 result        
-    abstract record class FuncMatchIndexResult
-    {
-        public record class MultipleCandidates(ImmutableArray<MatchedFunc> MatchedFuncs) : FuncMatchIndexResult;
-
-        public record class NotFound : FuncMatchIndexResult
-        {   
-            internal NotFound() { }
-        }
-            
-        public record class Success(int Index, ImmutableArray<IType> TypeArgs, ImmutableArray<R.Argument> Args) : FuncMatchIndexResult;
-    }
-
-    static class FuncMatchIndexResults
-    {
-        public static FuncMatchIndexResult.NotFound NotFound = new FuncMatchIndexResult.NotFound();
-    }
-
-    // entry2의 result    
-    record struct FuncMatchResult(ImmutableArray<IType> TypeArgs, ImmutableArray<R.Argument> Args);
-
-    struct FuncMatcher
+    public record class NotFound : FuncMatchIndexResult
     {   
-        class FuncMatcherFatalException : Exception { }
+        internal NotFound() { }
+    }
+        
+    public record class Success(int Index, ImmutableArray<IType> TypeArgs, ImmutableArray<R.Argument> Args) : FuncMatchIndexResult;
+}
 
-        ImmutableArray<FuncParameter> paramInfos;
-        ImmutableArray<IType> typeArgs;
-        ImmutableArray<FuncMatcherArgument> expandedArgs;
-        TypeResolver typeResolver;
+static class FuncMatchIndexResults
+{
+    public static FuncMatchIndexResult.NotFound NotFound = new FuncMatchIndexResult.NotFound();
+}
 
-        TypeEnv outerTypeEnv;
+// entry2의 result    
+record struct FuncMatchResult(ImmutableArray<IType> TypeArgs, ImmutableArray<R.Argument> Args);
 
-        public interface IHaveParameters
+struct FuncMatcher
+{   
+    ImmutableArray<FuncParameter> paramInfos;
+    ImmutableArray<IType> typeArgs;
+    ImmutableArray<FuncMatcherArgument> expandedArgs;
+    TypeResolver typeResolver;
+
+    TypeEnv outerTypeEnv;
+
+    // entry 1
+    public static FuncMatchIndexResult MatchIndex<TFuncDeclSymbol>(
+        ScopeContext scopeContext,
+        TypeEnv outerTypeEnv, 
+        ImmutableArray<TFuncDeclSymbol> funcDecls,
+        ImmutableArray<S.Argument> sargs, 
+        ImmutableArray<IType> typeArgs)
+        where TFuncDeclSymbol : IFuncDeclSymbol
+    {
+        // 여러 함수 중에서 인자가 맞는것을 선택해야 한다
+        var exactCandidates = new Candidates<MatchedFunc>();
+        var restCandidates = new Candidates<MatchedFunc>();
+
+        // Type inference
+        for(int i = 0; i < funcDecls.Length; i++)
         {
-            int GetParameterCount();
-            FuncParameter GetParameter(int index);
-        }            
+            var funcDecl = funcDecls[i];
 
-        // entry 1
-        public static FuncMatchIndexResult MatchIndex<TFuncDeclSymbol>(
-            ScopeContext scopeContext,
-            TypeEnv outerTypeEnv, 
-            ImmutableArray<TFuncDeclSymbol> funcDecls,
-            ImmutableArray<S.Argument> sargs, 
-            ImmutableArray<IType> typeArgs)
-            where TFuncDeclSymbol : IFuncDeclSymbol
-        {
-            // 여러 함수 중에서 인자가 맞는것을 선택해야 한다
-            var exactCandidates = new Candidates<MatchedFunc>();
-            var restCandidates = new Candidates<MatchedFunc>();
+            var cloneContext = new CloneContext();
+            var clonedScopeContext = cloneContext.GetClone(scopeContext);
 
-            // Type inference
-            for(int i = 0; i < funcDecls.Length; i++)
-            {
-                var funcDecl = funcDecls[i];
+            var paramTypes = ImmutableArray.CreateRange(funcDecl.GetParameterCount, index => funcDecl.GetParameter(index));
+            var variadicParamIndex = GetVariadicParamIndex(funcDecl);
 
-                var cloneContext = new CloneContext();
-                var clonedScopeContext = cloneContext.GetClone(scopeContext);
+            var matchResult = MatchCallableCore(clonedScopeContext, outerTypeEnv, paramTypes, variadicParamIndex, typeArgs, sargs);
+            if (matchResult == null) continue;
 
-                var paramTypes = ImmutableArray.CreateRange(funcDecl.GetParameterCount, index => funcDecl.GetParameter(index));
-                var variadicParamIndex = GetVariadicParamIndex(funcDecl);
+            var matchedCandidate = new MatchedFunc(matchResult.Value, i, clonedScopeContext);
 
-                var matchResult = MatchCallableCore(clonedScopeContext, outerTypeEnv, paramTypes, variadicParamIndex, typeArgs, sargs);
-                if (matchResult == null) continue;
-
-                var matchedCandidate = new MatchedFunc(matchResult.Value, i, clonedScopeContext);
-
-                if (matchResult.Value.bExactMatch)
-                    exactCandidates.Add(matchedCandidate); // context만 저장하게 수정
-                else
-                    restCandidates.Add(matchedCandidate);
-            }
-
-            // 매칭 된 것으로
-            MatchedFunc matchedFunc;
-            var exactMatchResult = exactCandidates.GetUniqueResult();
-            if (!exactMatchResult.IsFound(out matchedFunc))
-            {
-                if (exactMatchResult.IsMultipleError(out var matchedFuncs))
-                {
-                    return new FuncMatchIndexResult.MultipleCandidates(matchedFuncs);
-                }
-                else if (exactMatchResult.IsNotFound()) // empty
-                {
-                    var restMatchResult = restCandidates.GetUniqueResult();
-                    if (!restMatchResult.IsFound(out matchedFunc))
-                    {
-                        if (restMatchResult.IsMultipleError(out matchedFuncs)) return new FuncMatchIndexResult.MultipleCandidates(matchedFuncs);
-                        else if (restMatchResult.IsNotFound()) return FuncMatchIndexResults.NotFound;
-                        else throw new UnreachableException();
-                    }
-                }
-                else
-                {
-                    throw new UnreachableException();
-                }
-            }
-
-            // 확정된 context로 업데이트
-            var updateContext = UpdateContext.Make();
-            updateContext.Update(scopeContext, matchedFunc.Context);
-
-            return new FuncMatchIndexResult.Success(matchedFunc.Index, matchedFunc.Result.TypeArgs, matchedFunc.Result.Args);
-        }
-
-        // entry 2
-        public static FuncMatchResult? Match(
-            ScopeContext scopeContext,
-            TypeEnv outerTypeEnv,
-            ImmutableArray<FuncParameter> paramTypes,
-            int? variadicParamIndex,
-            ImmutableArray<IType> typeArgs,
-            ImmutableArray<S.Argument> sargs)
-        {
-            var result = MatchCallableCore(scopeContext, outerTypeEnv, paramTypes, variadicParamIndex, typeArgs, sargs);
-            if (result != null)
-                return new FuncMatchResult(result.Value.TypeArgs, result.Value.Args);
+            if (matchResult.Value.bExactMatch)
+                exactCandidates.Add(matchedCandidate); // context만 저장하게 수정
             else
-                return null;
+                restCandidates.Add(matchedCandidate);
         }
 
-        FuncMatcher(ImmutableArray<FuncParameter> paramInfos, ImmutableArray<IType> typeArgs, ImmutableArray<FuncMatcherArgument> expandedArgs, TypeResolver typeResolver, TypeEnv outerTypeEnv)
+        // 매칭 된 것으로
+        MatchedFunc matchedFunc;
+        var exactMatchResult = exactCandidates.GetUniqueResult();
+        if (!exactMatchResult.IsFound(out matchedFunc))
         {
-            this.paramInfos = paramInfos;
-            this.typeArgs = typeArgs;
-            this.expandedArgs = expandedArgs;
-            this.typeResolver = typeResolver;
-            this.outerTypeEnv = outerTypeEnv;
-        }
-            
-        // Match에서만 쓰인다
-        static int? GetVariadicParamIndex(IFuncDeclSymbol funcDecl)
-        {
-            int? variadicParamsIndex = null;
-            int paramCount = funcDecl.GetParameterCount();
-
-            for(int i = 0; i < paramCount; i++)
+            if (exactMatchResult.IsMultipleError(out var matchedFuncs))
             {
-                var param = funcDecl.GetParameter(i);
-
-                if (param.Kind == FuncParameterKind.Params)
+                return new FuncMatchIndexResult.MultipleCandidates(matchedFuncs);
+            }
+            else if (exactMatchResult.IsNotFound()) // empty
+            {
+                var restMatchResult = restCandidates.GetUniqueResult();
+                if (!restMatchResult.IsFound(out matchedFunc))
                 {
-                    Debug.Assert(variadicParamsIndex == null);
-                    variadicParamsIndex = i;
+                    if (restMatchResult.IsMultipleError(out matchedFuncs)) return new FuncMatchIndexResult.MultipleCandidates(matchedFuncs);
+                    else if (restMatchResult.IsNotFound()) return FuncMatchIndexResults.NotFound;
+                    else throw new UnreachableException();
                 }
             }
-
-            return variadicParamsIndex;
+            else
+            {
+                throw new UnreachableException();
+            }
         }
 
-        static MatchCallableResult? MatchCallableCore(
-            ScopeContext scopeContext,
-            TypeEnv outerTypeEnv,
-            ImmutableArray<FuncParameter> paramTypes,
-            int? variadicParamIndex,
-            ImmutableArray<IType> typeArgs,
-            ImmutableArray<S.Argument> sargs) // nothrow
+        // 확정된 context로 업데이트
+        var updateContext = UpdateContext.Make();
+        updateContext.Update(scopeContext, matchedFunc.Context);
+
+        return new FuncMatchIndexResult.Success(matchedFunc.Index, matchedFunc.Result.TypeArgs, matchedFunc.Result.Args);
+    }
+
+    // entry 2
+    public static FuncMatchResult? Match(
+        ScopeContext scopeContext,
+        TypeEnv outerTypeEnv,
+        ImmutableArray<FuncParameter> paramTypes,
+        int? variadicParamIndex,
+        ImmutableArray<IType> typeArgs,
+        ImmutableArray<S.Argument> sargs)
+    {
+        var result = MatchCallableCore(scopeContext, outerTypeEnv, paramTypes, variadicParamIndex, typeArgs, sargs);
+        if (result != null)
+            return new FuncMatchResult(result.Value.TypeArgs, result.Value.Args);
+        else
+            return null;
+    }
+
+    FuncMatcher(ImmutableArray<FuncParameter> paramInfos, ImmutableArray<IType> typeArgs, ImmutableArray<FuncMatcherArgument> expandedArgs, TypeResolver typeResolver, TypeEnv outerTypeEnv)
+    {
+        this.paramInfos = paramInfos;
+        this.typeArgs = typeArgs;
+        this.expandedArgs = expandedArgs;
+        this.typeResolver = typeResolver;
+        this.outerTypeEnv = outerTypeEnv;
+    }
+        
+    // Match에서만 쓰인다
+    static int? GetVariadicParamIndex(IFuncDeclSymbol funcDecl)
+    {
+        int? variadicParamsIndex = null;
+        int paramCount = funcDecl.GetParameterCount();
+
+        for(int i = 0; i < paramCount; i++)
         {
-            try
+            var param = funcDecl.GetParameter(i);
+
+            if (param.Kind == FuncParameterKind.Params)
             {
-                // 1. 아규먼트에서 params를 확장시킨다 (params에는 타입힌트를 적용하지 않고 먼저 평가한다)
-                var expandedArgs = ExpandArguments(scopeContext, sargs);
-                var typeResolver = new NullTypeResolver(typeArgs); // 일단 이걸로
+                Debug.Assert(variadicParamsIndex == null);
+                variadicParamsIndex = i;
+            }
+        }
 
-                var inst = new FuncMatcher(paramTypes, typeArgs, expandedArgs, typeResolver, outerTypeEnv);
+        return variadicParamsIndex;
+    }
 
-                // 2. funcInfo에서 params 앞부분과 뒷부분으로 나누어서 인자 체크를 한다
-                if (variadicParamIndex != null)
-                    return inst.MatchFuncWithParams(variadicParamIndex.Value);
+    static MatchCallableResult? MatchCallableCore(
+        ScopeContext scopeContext,
+        TypeEnv outerTypeEnv,
+        ImmutableArray<FuncParameter> paramTypes,
+        int? variadicParamIndex,
+        ImmutableArray<IType> typeArgs,
+        ImmutableArray<S.Argument> sargs) // nothrow
+    {   
+        // 1. 아규먼트에서 params를 확장시킨다 (params에는 타입힌트를 적용하지 않고 먼저 평가한다)
+        var expandedArgs = ExpandArguments(scopeContext, sargs);
+        var typeResolver = new NullTypeResolver(typeArgs); // 일단 이걸로
+
+        var inst = new FuncMatcher(paramTypes, typeArgs, expandedArgs, typeResolver, outerTypeEnv);
+
+        // 2. funcInfo에서 params 앞부분과 뒷부분으로 나누어서 인자 체크를 한다
+        if (variadicParamIndex != null)
+            return inst.MatchFuncWithParams(variadicParamIndex.Value);
+        else
+            return inst.MatchFuncWithoutParams();
+    }
+
+    // params를 확장한 Argument
+    abstract record class FuncMatcherArgument
+    {
+        // 기본 아규먼트 
+        public record class Normal(ScopeContext context, S.Exp sexp) : FuncMatcherArgument;
+
+        // Params가 확장된 아규먼트
+        public record class ParamsHead(R.Exp exp, int paramCount, IType type) : FuncMatcherArgument;
+        public record class ParamsRest(IType type) : FuncMatcherArgument;
+    }
+
+    static TranslationResult<ImmutableArray<FuncMatcherArgument>> ExpandArguments(ScopeContext context, ImmutableArray<S.Argument> sargs)
+    {
+        var args = ImmutableArray.CreateBuilder<FuncMatcherArgument>();
+        foreach (var sarg in sargs)
+        {
+            if (sarg is S.Argument.Normal sNormalArg)      // F(1)
+            {
+                args.Add(new FuncMatcherArgument.Normal(context, sNormalArg.Exp));
+            }
+            else if (sarg is S.Argument.Params sParamsArg) // F(..., params x, ...)
+            {
+                // expanded argument는 먼저 타입을 알아내야 한다                
+                var expResult = ExpIR0ExpTranslator.Translate(sParamsArg.Exp, context, hintType: null, bDerefIfTypeIsRef: true);
+                if (!expResult.IsValid(out var exp))
+                    return TranslationResult.Error<ImmutableArray<FuncMatcherArgument>>();
+
+                var expType = exp.GetExpType();
+
+                if (expType is TupleType tupleExpType)
+                {
+                    int memberVarCount = tupleExpType.GetMemberVarCount();
+
+                    // head
+                    if (0 < memberVarCount)
+                    {
+                        var memberVar = tupleExpType.GetMemberVar(0);
+                        var arg = new FuncMatcherArgument.ParamsHead(exp, memberVarCount, memberVar.GetDeclType());
+                        args.Add(arg);
+                    }
+
+                    // rest
+                    for(int i = 1; i < memberVarCount; i++)
+                    {
+                        var memberVar = tupleExpType.GetMemberVar(i);
+                        args.Add(new FuncMatcherArgument.ParamsRest(memberVar.GetDeclType()));
+                    }
+                }
                 else
-                    return inst.MatchFuncWithoutParams();
-            }
-            catch (FuncMatcherFatalException)
-            {
-                return null;
-            }
-        }
-
-        // params를 확장한 Argument
-        abstract class FuncMatcherArgument
-        {
-            // preanalyze할수도 있고, 여기서 시작할수도 있다
-            public abstract void DoAnalyze(FuncParameter? expectType); // throws FuncMatchFatalException
-            public abstract IType GetArgType();
-            public abstract R.Argument? GetRArgument();
-
-            // 기본 아규먼트 
-            public class Normal : FuncMatcherArgument
-            {
-                ScopeContext context;
-                S.Exp sexp;
-                R.Exp? exp;
-
-                public Normal(ScopeContext context, S.Exp sexp)
                 {
-                    this.context = context;
-                    this.sexp = sexp;
-                    this.exp = null;
-                }
-
-                public override void DoAnalyze(FuncParameter? paramInfo) // throws FuncMatcherFatalException
-                {
-                    if (paramInfo != null)
-                    {
-                        var hint = paramInfo.Value.Type;
-                        var rargExp = ExpIR0ExpTranslator.Translate(sexp, context, hint);
-                        exp = BodyMisc.TryCastExp_Exp(rargExp, paramInfo.Value.Type);
-
-                        if (exp == null)
-                            throw new FuncMatcherFatalException();
-                    }
-                    else // none, EnumConstructor
-                    {
-                        exp = ExpIR0ExpTranslator.Translate(sexp, context, hintType: null);
-                    }
-                }
-
-                public override IType GetArgType()
-                {
-                    Debug.Assert(exp != null);
-                    return exp.GetExpType();
-                }
-
-                public override R.Argument? GetRArgument()
-                {
-                    Debug.Assert(exp != null);
-                    return new R.Argument.Normal(exp);
-                }
-            }
-
-            // Params가 확장된 아규먼트
-            public class ParamsHead : FuncMatcherArgument
-            {
-                R.Exp exp;
-                int paramCount;
-                IType type;
-
-                public ParamsHead(R.Exp exp, int paramCount, IType type)
-                {
-                    this.exp = exp;
-                    this.paramCount = paramCount;
-                    this.type = type;
-                }
-
-                public override void DoAnalyze(FuncParameter? paramInfo) // throws FuncMatcherFatalException
-                {
-                    if (paramInfo != null)
-                    {
-                        // exact match
-                        if (!paramInfo.Value.Type.Equals(type))
-                            throw new FuncMatcherFatalException();
-                    }
-                }
-
-                public override IType GetArgType()
-                {
-                    return type;
-                }
-
-                public override R.Argument? GetRArgument()
-                {
-                    return new R.Argument.Params(exp, paramCount);
-                }
-            }
-
-            public class ParamsRest : FuncMatcherArgument
-            {
-                IType type;
-
-                public ParamsRest(IType type)
-                {
-                    this.type = type;
-                }
-
-                public override void DoAnalyze(FuncParameter? paramInfo)
-                {
-                    if (paramInfo != null)
-                    {
-                        // exact match
-                        if (!paramInfo.Value.Type.Equals(type))
-                            throw new FuncMatcherFatalException();
-                    }
-                }
-
-                public override IType GetArgType()
-                {
-                    return type;
-                }
-
-                public override R.Argument? GetRArgument()
-                {
-                    return null;
+                    return TranslationResult.Error<ImmutableArray<FuncMatcherArgument>>();
                 }
             }
         }
 
-        static ImmutableArray<FuncMatcherArgument> ExpandArguments(ScopeContext context, ImmutableArray<S.Argument> sargs) // throws FuncMatcherFatalException
+        return TranslationResult.Valid(args.ToImmutable());
+    }
+
+    MatchCallableResult? MatchFuncWithoutParams()
+    {
+        // 길이가 다르면 에러
+        if (paramInfos.Length != expandedArgs.Length)
+            return null;
+
+        // 전부
+        var rargsBuilder = ImmutableArray.CreateBuilder<R.Argument>();
+        MatchPartialArguments(0, paramInfos.Length, 0, expandedArgs.Length, rargsBuilder);
+
+        var resolvedTypeArgs = typeResolver.Resolve();
+
+        // 뭐가 exact인가: typeParam에 해당하는 typeArgs를 다 적어서 Resolve가 안 필요한 경우 (0개도 포함)
+        var bExactMatch = paramInfos.Length == typeArgs.Length;
+        var rargs = // MakeRArgs();
+
+        return new MatchCallableResult(bMatch: true, bExactMatch, rargs, resolvedTypeArgs);
+    }
+
+    MatchCallableResult? MatchFuncWithParams(int variadicParamIndex)
+    {
+        //                v
+        // param(4) : 0 1 2 3
+        // args(6)  : 0 1 2 3 4 5                    
+        // wargs(2) : 0 1
+
+        // front(Params,Args) : [0, v) 
+        // backParams         : [v + 1 ~ parameters.Length)
+        // backArgs           : [args.Length - (parameters.Length - v - 1), args.Length)
+        // front.end <= backArgs.begin 이어야만 한다
+
+        int v = variadicParamIndex;
+        int argsEnd = expandedArgs.Length;
+        int paramsEnd = paramInfos.Length;
+
+        int backArgsBegin = argsEnd - (paramsEnd - v - 1);
+
+        if (backArgsBegin < v)
+            return null; // 매치가 안된게 에러는 아니므로 그냥 리턴
+
+        // 앞부분
+        if (!MatchPartialArguments(0, v, 0, v))
+            return null;
+
+        // 중간 params 부분
+        if (!MatchParamsArguments(v, v, backArgsBegin))
+            return null;
+
+        // 뒷부분
+        if (!MatchPartialArguments(v + 1, paramsEnd, backArgsBegin, argsEnd))
+            return null;
+
+        // typeargs 만들기
+        var resolvedTypeArgs = typeResolver.Resolve();
+        var bExactMatch = paramInfos.Length == typeArgs.Length;
+        var rargs = MakeRArgs();
+
+        return new MatchCallableResult(true, bExactMatch, rargs, resolvedTypeArgs);
+    }
+
+    #region Layer1                
+    bool MatchPartialArguments(int paramsBegin, int paramsEnd, int argsBegin, int argsEnd, ImmutableArray<R.Argument>.Builder rargsBuilder) // throws FuncMatcherFatalException
+    {
+        Debug.Assert(paramsEnd - paramsBegin == argsEnd - argsBegin);
+        int paramsCount = paramsEnd - paramsBegin;
+
+        for (int i = 0; i < paramsCount; i++)
         {
-            var args = ImmutableArray.CreateBuilder<FuncMatcherArgument>();
-            foreach (var sarg in sargs)
-            {
-                if (sarg is S.Argument.Normal sNormalArg)
-                {
-                    args.Add(new FuncMatcherArgument.Normal(context, sNormalArg.Exp));
-                }
-                else if (sarg is S.Argument.Params sParamsArg)
-                {
-                    // expanded argument는 먼저 타입을 알아내야 한다
-                    R.Exp exp;
-                    try
-                    {
-                        exp = ExpIR0ExpTranslator.Translate(sParamsArg.Exp, context, hintType: null);
-                    }
-                    catch (AnalyzerFatalException)
-                    {
-                        throw new FuncMatcherFatalException();
-                    }
+            var paramType = paramInfos[paramsBegin + i];
+            var arg = expandedArgs[argsBegin + i];
 
-                    var expType = exp.GetExpType();
+            if (!MatchArgument(paramType, arg, rargsBuilder, typeResolver))
+                return false;
 
-                    if (expType is TupleType tupleExpType)
-                    {
-                        int memberVarCount = tupleExpType.GetMemberVarCount();
-
-                        // head
-                        if (0 < memberVarCount)
-                        {
-                            var memberVar = tupleExpType.GetMemberVar(0);
-                            var arg = new FuncMatcherArgument.ParamsHead(exp, memberVarCount, memberVar.GetDeclType());
-                            args.Add(arg);
-                        }
-
-                        // rest
-                        for(int i = 1; i < memberVarCount; i++)
-                        {
-                            var memberVar = tupleExpType.GetMemberVar(i);
-                            args.Add(new FuncMatcherArgument.ParamsRest(memberVar.GetDeclType()));
-                        }
-                    }
-                    else
-                    {
-                        throw new FuncMatcherFatalException();
-                    }
-                }
-            }
-
-            return args.ToImmutable();
+            // MatchArgument마다 Constraint추가
+            // typeResolver.AddConstraint(paramType.Type, arg.GetArgType());
         }
 
-        MatchCallableResult MatchFuncWithoutParams()
+        return true;
+    }
+
+    bool MatchParamsArguments(int paramIndex, int argsBegin, int argsEnd, ImmutableArray<R.Argument>.Builder rargsBuilder, TypeResolver typeResolver)
+    {
+        var paramInfo = paramInfos[paramIndex];
+        Debug.Assert(paramInfo.Kind == FuncParameterKind.Params);
+
+        if (paramInfo.Type is TupleType tupleParamType)
         {
-            // 길이가 다르면 에러
-            if (paramInfos.Length != expandedArgs.Length)
-                throw new FuncMatcherFatalException();
+            int paramsCount = tupleParamType.GetMemberVarCount();
 
-            // 전부
-            MatchPartialArguments(0, paramInfos.Length, 0, expandedArgs.Length);
-
-            var resolvedTypeArgs = typeResolver.Resolve();
-
-            // 뭐가 exact인가: typeParam에 해당하는 typeArgs를 다 적어서 Resolve가 안 필요한 경우 (0개도 포함)
-            var bExactMatch = paramInfos.Length == typeArgs.Length;
-            var rargs = MakeRArgs();
-
-            return new MatchCallableResult(bMatch: true, bExactMatch, rargs, resolvedTypeArgs);
-        }
-
-        MatchCallableResult MatchFuncWithParams(int variadicParamIndex)
-        {
-            //                v
-            // param(4) : 0 1 2 3
-            // args(6)  : 0 1 2 3 4 5                    
-            // wargs(2) : 0 1
-
-            // front(Params,Args) : [0, v) 
-            // backParams         : [v + 1 ~ parameters.Length)
-            // backArgs           : [args.Length - (parameters.Length - v - 1), args.Length)
-            // front.end <= backArgs.begin 이어야만 한다
-
-            int v = variadicParamIndex;
-            int argsEnd = expandedArgs.Length;
-            int paramsEnd = paramInfos.Length;
-
-            int backArgsBegin = argsEnd - (paramsEnd - v - 1);
-
-            if (backArgsBegin < v)
-                throw new FuncMatcherFatalException();
-
-            // 앞부분
-            MatchPartialArguments(0, v, 0, v);
-
-            // 중간 params 부분
-            MatchParamsArguments(v, v, backArgsBegin);
-
-            // 뒷부분
-            MatchPartialArguments(v + 1, paramsEnd, backArgsBegin, argsEnd);
-
-            // typeargs 만들기
-            var resolvedTypeArgs = typeResolver.Resolve();
-            var bExactMatch = paramInfos.Length == typeArgs.Length;
-            var rargs = MakeRArgs();
-
-            return new MatchCallableResult(true, bExactMatch, rargs, resolvedTypeArgs);
-        }
-
-        #region Layer1                
-        void MatchPartialArguments(int paramsBegin, int paramsEnd, int argsBegin, int argsEnd) // throws FuncMatcherFatalException
-        {
-            Debug.Assert(paramsEnd - paramsBegin == argsEnd - argsBegin);
-            int paramsCount = paramsEnd - paramsBegin;
+            if (paramsCount != argsEnd - argsBegin)
+                return false;
 
             for (int i = 0; i < paramsCount; i++)
             {
-                var paramType = paramInfos[paramsBegin + i];
+                var memberVar = tupleParamType.GetMemberVar(i);
+                var tupleElemType = memberVar.GetDeclType();
                 var arg = expandedArgs[argsBegin + i];
 
-                MatchArgument(paramType, arg);
-
-                // MatchArgument마다 Constraint추가
-                typeResolver.AddConstraint(paramType.Type, arg.GetArgType());
+                if (!MatchArgument(new FuncParameter(FuncParameterKind.Default, tupleElemType, memberVar.GetName()), arg, rargsBuilder, typeResolver))
+                    return false;
             }
         }
-
-        void MatchParamsArguments(int paramIndex, int argsBegin, int argsEnd) // throws FuncMatcherFatalException
+        else // params T <=> (1, 2, "hi")
         {
-            var paramInfo = paramInfos[paramIndex];
-            Debug.Assert(paramInfo.Kind == FuncParameterKind.Params);
+            var argsLength = argsEnd - argsBegin;
+            var elemBuilder = ImmutableArray.CreateBuilder<TupleMemberVar>(argsLength);
 
-            if (paramInfo.Type is TupleType tupleParamType)
+            for (int i = 0; i < argsLength; i++)
             {
-                int paramsCount = tupleParamType.GetMemberVarCount();
-
-                if (paramsCount != argsEnd - argsBegin)
-                {
-                    throw new NotImplementedException(); // TODO: 에러 처리
-                    // throw new FuncMatcherFatalException();
-                }
-
-                for (int i = 0; i < paramsCount; i++)
-                {
-                    var memberVar = tupleParamType.GetMemberVar(i);
-                    var tupleElemType = memberVar.GetDeclType();
-                    var arg = expandedArgs[argsBegin + i];
-
-                    MatchArgument(new FuncParameter(FuncParameterKind.Default, tupleElemType, memberVar.GetName()), arg);
-
-                    // MatchArgument마다 Constraint추가
-                    typeResolver.AddConstraint(tupleElemType, arg.GetArgType());
-                }
-            }
-            else // params T <=> (1, 2, "hi")
-            {
-                var argsLength = argsEnd - argsBegin;
-                var elemBuilder = ImmutableArray.CreateBuilder<TupleMemberVar>(argsLength);
-
-                for (int i = 0; i < argsLength; i++)
-                {
-                    var arg = expandedArgs[i];
-                    MatchArgument_UnknownParamType(arg);
-
-                    var argType = arg.GetArgType();
-                    var name = new Name.Normal($"Item{i}");
-
-                    elemBuilder.Add(new TupleMemberVar(argType, name)); // unnamed tuple element
-                }
-
-                var argTupleType = new TupleType(elemBuilder.MoveToImmutable());
-
-                // Constraint 추가
-                typeResolver.AddConstraint(paramInfo.Type, argTupleType);
-            }
-        }
-
-        // Layer 1
-        ImmutableArray<R.Argument> MakeRArgs()
-        {
-            var builder = ImmutableArray.CreateBuilder<R.Argument>();
-
-            foreach (var arg in expandedArgs)
-            {
-                var rarg = arg.GetRArgument();
-                if (rarg == null) continue;
-
-                builder.Add(rarg);
+                var arg = expandedArgs[i];
+                if (!MatchArgument_UnknownParamType(arg, elemBuilder, rargsBuilder, typeResolver))
+                    return false;
             }
 
-            return builder.ToImmutable();
+            var argTupleType = new TupleType(elemBuilder.MoveToImmutable());
+
+            // Constraint 추가
+            typeResolver.AddConstraint(paramInfo.Type, argTupleType);
         }
-
-        #endregion
-
-        #region Layer 2
-
-        // Layer 2
-        void MatchArgument(FuncParameter param, FuncMatcherArgument arg) // throws FuncMatcherFatalException
-        {
-            var appliedParam = param.Apply(outerTypeEnv); // 아직 함수 부분의 TypeEnv가 확정되지 않았으므로, outer까지만 적용하고 나머지는 funcInfo의 TypeVar로 채워넣는다
-            arg.DoAnalyze(appliedParam); // Argument 종류에 따라서 달라진다
-        }
-
-        // Layer 2
-        void MatchArgument_UnknownParamType(FuncMatcherArgument arg)
-        {
-            arg.DoAnalyze(null);
-        }
-        #endregion
     }
+
+    // Layer 1
+    ImmutableArray<R.Argument> MakeRArgs()
+    {
+        var builder = ImmutableArray.CreateBuilder<R.Argument>();
+
+        foreach (var arg in expandedArgs)
+        {
+            var rarg = arg.GetRArgument();
+            if (rarg == null) continue;
+
+            builder.Add(rarg);
+        }
+
+        return builder.ToImmutable();
+    }
+
+    #endregion
+
+    #region Layer 2
+
+    // Layer 2
+    bool MatchArgument(FuncParameter param, FuncMatcherArgument arg, ImmutableArray<R.Argument>.Builder rargsBuilder, TypeResolver typeResolver) // throws FuncMatcherFatalException
+    {
+        var appliedParam = param.Apply(outerTypeEnv); // 아직 함수 부분의 TypeEnv가 확정되지 않았으므로, outer까지만 적용하고 나머지는 funcInfo의 TypeVar로 채워넣는다
+        // return arg.DoAnalyze(appliedParam, rargsBuilder, typeResolver); // Argument 종류에 따라서 달라진다
+
+        switch (arg)
+        {
+            case FuncMatcherArgument.Normal normalArg:
+                {
+                    var hintType = appliedParam.Type;
+                    var rargExpResult = ExpIR0ExpTranslator.Translate(normalArg.sexp, normalArg.context, hintType, bDerefIfTypeIsRef: true);
+                    if (!rargExpResult.IsValid(out var rargExp))
+                        return false;
+
+                    var expResult = BodyMisc.CastExp_Exp(rargExp, appliedParam.Type, normalArg.sexp, normalArg.context);
+
+                    if (!expResult.IsValid(out var exp))
+                        return false;
+
+                    rargsBuilder.Add(new R.Argument.Normal(exp));
+                    typeResolver.AddConstraint(appliedParam.Type, exp.GetExpType());
+
+                    return true;
+                }
+
+            case FuncMatcherArgument.ParamsHead paramHeadArg:                
+                {
+                    // exact match
+                    if (!appliedParam.Type.Equals(paramHeadArg.type))
+                    {                        
+                        return false; // 매칭 실패
+                    }
+
+                    rargsBuilder.Add(new R.Argument.Params(paramHeadArg.exp, paramHeadArg.paramCount));
+                    typeResolver.AddConstraint(appliedParam.Type, paramHeadArg.type);
+                    return true;
+                }
+
+            case FuncMatcherArgument.ParamsRest paramRestArg:
+                {
+                    // exact match
+                    if (!appliedParam.Type.Equals(paramRestArg.type))
+                        return false; // 매칭 실패
+
+                    // rargsBuilder.Add(new R.Argument.Params(exp, paramCount)); 스킵
+                    typeResolver.AddConstraint(appliedParam.Type, paramRestArg.type);
+                    return true;
+                }
+        }
+    }
+
+    // Layer 2
+    bool MatchArgument_UnknownParamType(FuncMatcherArgument arg, ImmutableArray<R.Argument>.Builder rargsBuilder, TypeResolver typeResolver)
+    {
+        switch(arg)
+        {
+            case FuncMatcherArgument.Normal normalArg:
+            {
+                var expResult = ExpIR0ExpTranslator.Translate(normalArg.sexp, normalArg.context, hintType: null, bDerefIfTypeIsRef: true);
+                if (!expResult.IsValid(out var exp))
+                    return false;
+
+                rargsBuilder.Add(new R.Argument.Normal(exp));
+                return true;
+            }
+
+            case FuncMatcherArgument.ParamsHead paramHeadArg:
+                throw new NotImplementedException(); // 에러?
+
+            case FuncMatcherArgument.ParamsRest paramRestArg:
+                throw new NotImplementedException(); // 에러?
+        }
+
+        var argType = arg.GetArgType();
+        var name = new Name.Normal($"Item{i}");
+
+        elemBuilder.Add(new TupleMemberVar(argType, name)); // unnamed tuple element
+        return true;
+    }
+    #endregion
 }
