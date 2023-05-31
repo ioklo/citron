@@ -176,8 +176,6 @@ namespace Citron
 
             if (Accept<ParamsToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                 kind = FuncParamKind.Params;
-            else if (Accept<RefToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
-                kind = FuncParamKind.Ref;
             else
                 kind = FuncParamKind.Normal;
 
@@ -230,8 +228,6 @@ namespace Citron
             // seq
             bool bSequence = Accept<SeqToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context);
 
-            bool bRefReturn = Accept<RefToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context);
-
             if (!Parse(await ParseTypeExpAsync(context), ref context, out var retType))
                 return Invalid();
 
@@ -247,7 +243,6 @@ namespace Citron
             var globalFuncDecl = new GlobalFuncDecl(
                 null, // TODO: 일단 null
                 bSequence,
-                bRefReturn,
                 retType,
                 funcName.Value,
                 default,
@@ -418,7 +413,6 @@ namespace Citron
 
             bool bStatic = Accept<StaticToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context);
             bool bSequence = Accept<SeqToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context);
-            bool bRefReturn = Accept<RefToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context);
 
             // ex) void
             if (!Parse(await ParseTypeExpAsync(context), ref context, out var retType))
@@ -441,7 +435,7 @@ namespace Citron
                 return Invalid();
 
             var funcDeclElem = new StructMemberFuncDecl(
-                accessModifier, bStatic, bSequence, bRefReturn, retType, funcName.Value, typeParams, paramInfo, body
+                accessModifier, bStatic, bSequence, retType, funcName.Value, typeParams, paramInfo, body
             );
 
             return new ParseResult<StructMemberFuncDecl>(funcDeclElem, context);
@@ -558,7 +552,6 @@ namespace Citron
 
             bool bStatic = Accept<StaticToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context);
             bool bSequence = Accept<SeqToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context);
-            bool bRefReturn = Accept<RefToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context);
 
             // ex) void
             if (!Parse(await ParseTypeExpAsync(context), ref context, out var retType))
@@ -580,7 +573,7 @@ namespace Citron
             if (!Parse(await ParseBodyAsync(context), ref context, out var body))
                 return Invalid();
 
-            var funcDeclElem = new ClassMemberFuncDecl(accessModifier, bStatic, bSequence, bRefReturn, retType, funcName.Value, typeParams, paramInfo, body);
+            var funcDeclElem = new ClassMemberFuncDecl(accessModifier, bStatic, bSequence, retType, funcName.Value, typeParams, paramInfo, body);
 
             return new ParseResult<ClassMemberFuncDecl>(funcDeclElem, context);
         }

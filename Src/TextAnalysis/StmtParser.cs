@@ -98,24 +98,19 @@ namespace Citron
                 if (!Accept<IdentifierToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context, out var varIdResult))
                     return Invalid();
 
-                VarDeclElemInitializer? initializer = null;
+                Exp? initExp = null;
                 if (Accept<EqualToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                 {
-                    // ref가 나올 수 있다
-                    bool bRefExp = Accept<RefToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context);                    
-
                     // TODO: ;나 ,가 나올때까지라는걸 명시해주면 좋겠다
-                    if (!Parse(await parser.ParseExpAsync(context), ref context, out var initExp))
+                    if (!Parse(await parser.ParseExpAsync(context), ref context, out initExp))
                         return Invalid();
-
-                    initializer = new VarDeclElemInitializer(bRefExp, initExp);
                 }
 
-                elemsBuilder.Add(new VarDeclElement(varIdResult!.Value, initializer));
+                elemsBuilder.Add(new VarDeclElement(varIdResult!.Value, initExp));
 
             } while (Accept<CommaToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context)); // ,가 나오면 계속한다
 
-            return new ParseResult<VarDecl>(new VarDecl(bRef, varType!, elemsBuilder.ToImmutable()), context);
+            return new ParseResult<VarDecl>(new VarDecl(varType!, elemsBuilder.ToImmutable()), context);
 
             static ParseResult<VarDecl> Invalid() => ParseResult<VarDecl>.Invalid;
         }

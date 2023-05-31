@@ -5,7 +5,7 @@ using Citron.Collections;
 using System.Diagnostics;
 using System.Linq;
 using System.Xml.XPath;
-using Pretune;
+using System.Data;
 
 namespace Citron.Syntax
 {
@@ -60,12 +60,8 @@ namespace Citron.Syntax
     {   
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitBreak(this);
     }
-
-    [AutoConstructor, ImplementIEquatable]
-    public partial struct ReturnValueInfo
-    {
-        public Exp Value { get; }
-    }
+    
+    public record struct ReturnValueInfo(bool IsRef, Exp Value);
 
     public record class ReturnStmt(ReturnValueInfo? Info) : Stmt
     {

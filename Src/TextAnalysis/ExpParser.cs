@@ -132,14 +132,14 @@ namespace Citron
                 if (!Parse(await ParseExpAsync(context), ref context, out var exp))
                     return ParseResult<Argument>.Invalid;
 
-                return new ParseResult<Argument>(new Argument.Ref(exp), context);
+                return new ParseResult<Argument>(new Argument.Normal(IsRef: true, exp), context);
             }
             else
             {
                 if (!Parse(await ParseExpAsync(context), ref context, out var exp))
                     return ParseResult<Argument>.Invalid;
 
-                return new ParseResult<Argument>(new Argument.Normal(exp), context);
+                return new ParseResult<Argument>(new Argument.Normal(IsRef: false, exp), context);
             }
         }
 
@@ -386,11 +386,8 @@ namespace Citron
                         if (!Accept<CommaToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                             return Invalid();
 
-                    FuncParamKind paramKind;
-                    if (Accept<RefToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
-                        paramKind = FuncParamKind.Ref;
-                    else
-                        paramKind = FuncParamKind.Normal;
+                    // 람다는 params를 지원하지 않는다
+                    FuncParamKind paramKind = FuncParamKind.Normal;
 
                     // id id or id
                     if (!Accept<IdentifierToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context, out var firstIdToken))
