@@ -16,11 +16,12 @@ namespace Citron.Syntax
     public record class StructMemberFuncDecl(
         AccessModifier? AccessModifier,
         bool IsStatic,
-        bool IsSequence, // seq 함수인가        
+        bool IsSequence, // seq 함수인가  
         TypeExp RetType,
         string Name,
         ImmutableArray<TypeParam> TypeParams,
         ImmutableArray<FuncParam> Parameters,
+        bool IsVariadic,
         ImmutableArray<Stmt> Body
     ) : StructMemberDecl;
     public record class StructMemberVarDecl(AccessModifier? AccessModifier, TypeExp VarType, ImmutableArray<string> VarNames) : StructMemberDecl;
@@ -29,5 +30,6 @@ namespace Citron.Syntax
         AccessModifier? AccessModifier,
         string Name,
         ImmutableArray<FuncParam> Parameters,
+        bool IsVariadic,
         ImmutableArray<Stmt> Body) : StructMemberDecl;
 }

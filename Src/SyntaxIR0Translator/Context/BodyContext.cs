@@ -32,7 +32,7 @@ partial class BodyContext : IMutable<BodyContext>
 
     // 아래 둘은 크기가 같다
     ImmutableArray<LambdaMemberVarDeclSymbol> lambdaMemberVars;
-    ImmutableArray<R.Argument> lambdaMemberVarInitArgs; 
+    ImmutableArray<R.Exp> lambdaMemberVarInitArgs; 
 
     public BodyContext(ImmutableArray<ModuleDeclSymbol> moduleDeclSymbols, SymbolFactory symbolFactory, 
         ScopeContext? outerScopeContext, IFuncDeclSymbol funcDeclSymbol, bool bSeqFunc, bool bSetReturn, FuncReturn? funcReturn)
@@ -279,8 +279,7 @@ partial class BodyContext : IMutable<BodyContext>
                             var initExp = new R.LoadExp(new R.LocalVarLoc(localResult.Name), localResult.Type);
                             Debug.Assert(initExp != null);
 
-                            var initArg = new R.Argument.Normal(initExp);
-                            var symbol = bodyContext.StageLambdaMemberVar(localResult.Type, localResult.Name, initArg);
+                            var symbol = bodyContext.StageLambdaMemberVar(localResult.Type, localResult.Name, initExp);
                             return new IntermediateExp.LambdaMemberVar(symbol);
                         }
 
@@ -288,9 +287,8 @@ partial class BodyContext : IMutable<BodyContext>
                         {
                             var initExp = new R.LoadExp(new R.LambdaMemberVarLoc(lambdaMemberResult.Symbol), lambdaMemberResult.Symbol.GetDeclType());
                             Debug.Assert(initExp != null);
-
-                            var initArg = new R.Argument.Normal(initExp);
-                            var symbol = bodyContext.StageLambdaMemberVar(lambdaMemberResult.Symbol.GetDeclType(), lambdaMemberResult.Symbol.GetName(), initArg);
+                            
+                            var symbol = bodyContext.StageLambdaMemberVar(lambdaMemberResult.Symbol.GetDeclType(), lambdaMemberResult.Symbol.GetName(), initExp);
                             return new IntermediateExp.LambdaMemberVar(symbol);
                         }
 
@@ -302,9 +300,8 @@ partial class BodyContext : IMutable<BodyContext>
 
                             var initExp = new R.LoadExp(new R.ThisLoc(), thisResult.Type);
                             Debug.Assert(initExp != null);
-
-                            var initArg = new R.Argument.Normal(initExp);
-                            var symbol = bodyContext.StageLambdaMemberVar(thisResult.Type, thisName, initArg);
+                            
+                            var symbol = bodyContext.StageLambdaMemberVar(thisResult.Type, thisName, initExp);
                             return new IntermediateExp.LambdaMemberVar(symbol);
                         }
 
@@ -354,14 +351,14 @@ partial class BodyContext : IMutable<BodyContext>
         return new IdentifierResolver(name, typeArgs, this).Resolve();
     }    
     
-    public LambdaMemberVarSymbol StageLambdaMemberVar(IType type, Name name, R.Argument initArg)
+    public LambdaMemberVarSymbol StageLambdaMemberVar(IType type, Name name, R.Exp initExp)
     {
         var lambdaDeclSymbol = funcDeclSymbol as LambdaDeclSymbol;
         Debug.Assert(lambdaDeclSymbol != null);
 
         var memberVarDeclSymbol = new LambdaMemberVarDeclSymbol(lambdaDeclSymbol, type, name);
         lambdaMemberVars = lambdaMemberVars.Add(memberVarDeclSymbol);
-        lambdaMemberVarInitArgs = lambdaMemberVarInitArgs.Add(initArg);
+        lambdaMemberVarInitArgs = lambdaMemberVarInitArgs.Add(initExp);
 
         return (LambdaMemberVarSymbol)memberVarDeclSymbol.MakeOpenSymbol(symbolFactory);
     }
@@ -388,7 +385,7 @@ partial class BodyContext : IMutable<BodyContext>
         lambdaDs = default;
     }
 
-    public ImmutableArray<R.Argument> MakeLambdaArgs()
+    public ImmutableArray<R.Exp> MakeLambdaArgs()
     {
         return lambdaMemberVarInitArgs;
     }

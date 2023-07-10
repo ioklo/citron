@@ -182,7 +182,7 @@ var c = new C(3);
                     new R.NewClassExp(
                         RRoot("TestModule").Child("C"),
                         new R.ParamHash(0, Arr(new R.ParamHashEntry(R.ParamKind.Default, R.Path.Int))),
-                        Arr<R.Argument>(new R.Argument.Normal(RInt(3)))
+                        Arr<R.Exp>(RInt(3))
                     )
                 )
             );
@@ -247,7 +247,7 @@ var c = new C(3);
                     new R.NewClassExp(
                         CPath(),
                         new R.ParamHash(0, Arr(new R.ParamHashEntry(R.ParamKind.Default, R.Path.Int))),
-                        Arr<R.Argument>(new R.Argument.Normal(RInt(3)))
+                        Arr<R.Exp>(RInt(3))
                     )
                 ),
 
@@ -309,7 +309,7 @@ var c = new C(3);         // but can do this
                     new R.NewClassExp(
                         RRoot(ModuleName).Child("C"),
                         new R.ParamHash(0, Arr(new R.ParamHashEntry(R.ParamKind.Default, R.Path.Int))),
-                        Arr<R.Argument>(new R.Argument.Normal(RInt(3)))
+                        Arr<R.Exp>(RInt(3))
                     )
                 ),
 
@@ -372,7 +372,7 @@ c.x = 3;
                     new R.NewClassExp(
                         RRoot(ModuleName).Child("C"),
                         new R.ParamHash(0, Arr(new R.ParamHashEntry(R.ParamKind.Default, R.Path.Int))),
-                        Arr<R.Argument>(new R.Argument.Normal(RInt(2)))
+                        Arr<R.Exp>(RInt(2))
                     )
                 ),
 
@@ -519,7 +519,7 @@ var i = c.F(2);
                     new R.NewClassExp(
                         CPath(),
                         new R.ParamHash(0, Arr(new R.ParamHashEntry(R.ParamKind.Default, R.Path.Int))),
-                        Arr<R.Argument>(new R.Argument.Normal(RInt(3)))
+                        Arr<R.Exp>(RInt(3))
                     )
                 ),
 
@@ -531,7 +531,7 @@ var i = c.F(2);
                     new R.CallFuncExp(
                         CPath().Child("F", R.Path.Int),
                         new R.GlobalVarLoc("c"),
-                        Arr<R.Argument>(new R.Argument.Normal(RInt(2)))
+                        Arr<R.Exp>(RInt(2))
                     )
                 ),
 

@@ -200,7 +200,7 @@ var s = S(3);
                             new R.ParamHash(0, Arr(new R.ParamHashEntry(R.ParamKind.Default, R.Path.Int))),
                             default
                         ),
-                        Arr<R.Argument>(new R.Argument.Normal(RInt(3)))
+                        Arr<R.Exp>(RInt(3))
                     )
                 )
             );
@@ -272,7 +272,7 @@ var s = S(3);
                             new R.ParamHash(0, Arr(new R.ParamHashEntry(R.ParamKind.Default, R.Path.Int))),
                             default
                         ),
-                        Arr<R.Argument>(new R.Argument.Normal(RInt(3)))
+                        Arr<R.Exp>(RInt(3))
                     )
                 ),
 
@@ -347,7 +347,7 @@ var s = S(3);       // but can do this
                             new R.ParamHash(0, Arr(new R.ParamHashEntry(R.ParamKind.Default, R.Path.Int))),
                             default
                         ),
-                        Arr<R.Argument>(new R.Argument.Normal(RInt(3)))
+                        Arr<R.Exp>(RInt(3))
                     )
                 ),
 
@@ -425,7 +425,7 @@ s.x = 3;
                             new R.ParamHash(0, Arr(new R.ParamHashEntry(R.ParamKind.Default, R.Path.Int))),
                             default
                         ),
-                        Arr<R.Argument>(new R.Argument.Normal(RInt(2)))
+                        Arr<R.Exp>(RInt(2))
                     )
                 ),
 
@@ -575,7 +575,7 @@ var i = s.F(2);
                     "s",
                     new R.NewStructExp(
                         SPath().Child(R.Name.Constructor.Instance, R.Path.Int),
-                        Arr<R.Argument>(new R.Argument.Normal(RInt(3)))
+                        Arr<R.Exp>(RInt(3))
                     )
                 ),
 
@@ -587,7 +587,7 @@ var i = s.F(2);
                     new R.CallFuncExp(
                         SPath().Child("F", R.Path.Int),
                         new R.GlobalVarLoc("s"),
-                        Arr<R.Argument>(new R.Argument.Normal(RInt(2)))
+                        Arr<R.Exp>(RInt(2))
                     )
                 ),
 

@@ -49,26 +49,26 @@ namespace Citron.TextAnalysis.Test
         {
             var lexer = new Lexer();
             var parser = new Parser(lexer);
-            var context = await MakeContextAsync("void Func(int x, params string y, int z) { int a = 0; }");
+            var context = await MakeContextAsync("void Func(int x, string y, params int z) { int a = 0; }");
             var funcDecl = await parser.ParseGlobalFuncDeclAsync(context);
 
             var expected = new GlobalFuncDecl(
                 null,
-                false,
-                false,
+                isSequence: false,
                 SIdTypeExp("void"),
                 "Func", default,
                 Arr(
-                    new FuncParam(FuncParamKind.Normal, SIdTypeExp("int"), "x"),
-                    new FuncParam(FuncParamKind.Params, SIdTypeExp("string"), "y"),
-                    new FuncParam(FuncParamKind.Normal, SIdTypeExp("int"), "z")
-                ),
+                    new FuncParam(SIdTypeExp("int"), "x"),
+                    new FuncParam(SIdTypeExp("string"), "y"),
+                    new FuncParam(SIdTypeExp("int"), "z")
+                ), 
+                isVariadic: true,
                 Arr<Stmt>(
                     new VarDeclStmt(
-                        new VarDecl(false, 
+                        new VarDecl(
                             SIdTypeExp("int"), 
                             Arr(
-                                new VarDeclElement("a", new VarDeclElemInitializer(false, new IntLiteralExp(0)))
+                                new VarDeclElement("a", new IntLiteralExp(0))
                             )
                         )
                     )
@@ -107,6 +107,7 @@ namespace NS1
                             "F",
                             typeParams: default,
                             parameters: default,
+                            isVariadic: false,
                             body: default
                     )))
                 )))
@@ -186,7 +187,8 @@ public struct S<T> : B, I
                         SIdTypeExp("void"),
                         "Func",
                         Arr(new TypeParam("X")),
-                        Arr(new FuncParam(FuncParamKind.Normal, SIdTypeExp("string"), "s")),
+                        Arr(new FuncParam(SIdTypeExp("string"), "s")),
+                        IsVariadic: false,
                         Arr<Stmt>()
                     ),
 
@@ -197,7 +199,8 @@ public struct S<T> : B, I
                         SIdTypeExp("int"),
                         "F2",
                         Arr(new TypeParam("T")),
-                        default,
+                        Parameters: default,
+                        IsVariadic: false,
                         Arr<Stmt>(new YieldStmt(new IntLiteralExp(4)))
                     )
                 )

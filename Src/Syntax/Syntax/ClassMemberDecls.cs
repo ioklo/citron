@@ -14,6 +14,7 @@ namespace Citron.Syntax
         string Name,
         ImmutableArray<TypeParam> TypeParams,
         ImmutableArray<FuncParam> Parameters,
+        bool IsVariadic,
         ImmutableArray<Stmt> Body
     ) : ClassMemberDecl;
     
@@ -21,6 +22,7 @@ namespace Citron.Syntax
         AccessModifier? AccessModifier, 
         string Name, 
         ImmutableArray<FuncParam> Parameters, 
+        bool IsVariadic,
         ImmutableArray<Argument>? BaseArgs,
         ImmutableArray<Stmt> Body) : ClassMemberDecl;
 

@@ -43,7 +43,7 @@ namespace Citron.Syntax
                         null,
                         isSequence: false,
                         new IdTypeExp("void", default), "Main",
-                        typeParams: default, parameters: default, stmts.ToImmutableArray()
+                        typeParams: default, parameters: default, isVariadic: false, stmts.ToImmutableArray()
                     )
                 )
             ));
@@ -65,13 +65,15 @@ namespace Citron.Syntax
         public static IdentifierExp SId(string name) => new IdentifierExp(name, default);
         public static IdentifierExp SId(string name, params TypeExp[] typeArgs) => new IdentifierExp(name, Arr(typeArgs));
 
-        public static TypeExp SLocalRefVarTypeExp() => new RefTypeExp(new IdTypeExp("var", default));
+        public static TypeExp SLocalRefVarTypeExp() => new LocalRefTypeExp(new IdTypeExp("var", default));
         public static TypeExp SVarTypeExp() => new IdTypeExp("var", default);
         public static TypeExp SIntTypeExp() => new IdTypeExp("int", default);
         public static TypeExp SBoolTypeExp() => new IdTypeExp("bool", default);
         public static TypeExp SVoidTypeExp() => new IdTypeExp("void", default);
         public static TypeExp SStringTypeExp() => new IdTypeExp("string", default);
-        public static TypeExp SLocalRefTypeExp(TypeExp innerTypeExp) => new RefTypeExp(innerTypeExp);
+        public static TypeExp SLocalRefTypeExp(TypeExp innerTypeExp) => new LocalRefTypeExp(innerTypeExp);
+        public static TypeExp SBoxRefTypeExp(TypeExp innerTypeExp) => new BoxRefTypeExp(innerTypeExp);
+        public static TypeExp SNullableTypeExp(TypeExp innerTypeExp) => new NullableTypeExp(innerTypeExp);
 
         public static IdTypeExp SIdTypeExp(string name, params TypeExp[] typeArgs) => new IdTypeExp(name, Arr(typeArgs));
 
@@ -84,7 +86,7 @@ namespace Citron.Syntax
         {
             var builder = ImmutableArray.CreateBuilder<FuncParam>(ps.Length);
             foreach (var p in ps)
-                builder.Add(new FuncParam(FuncParamKind.Normal, p.ParamType, p.ParamName));
+                builder.Add(new FuncParam(p.ParamType, p.ParamName));
             return builder.MoveToImmutable();
         }
 
@@ -110,7 +112,7 @@ namespace Citron.Syntax
         {
             return new GlobalFuncDeclScriptElement(new GlobalFuncDecl(
                 accessModifier: null, isSequence: false,
-                SIntTypeExp(), "Main", typeParams: default, parameters: default,
+                SIntTypeExp(), "Main", typeParams: default, parameters: default, isVariadic: false,
                 body.ToImmutableArray()
             ));
         }

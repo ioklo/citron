@@ -361,7 +361,7 @@ static class TypeMakerByTypeExp
         }
 
         // int&
-        Candidates<Item> ITypeExpVisitor<Candidates<Item>>.VisitRef(RefTypeExp typeExp)
+        Candidates<Item> ITypeExpVisitor<Candidates<Item>>.VisitRef(LocalRefTypeExp typeExp)
         {
             var type = MakeType(typeExp.InnerTypeExp);
 

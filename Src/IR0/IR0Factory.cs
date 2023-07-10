@@ -463,9 +463,9 @@ namespace Citron.IR0
             return elems.Select(e => new FuncParameter(FuncParameterKind.Default, e.Type, new Name.Normal(e.Name))).ToImmutableArray();
         }
 
-        public ImmutableArray<Argument> Args(params Exp[] exps)
+        public ImmutableArray<Exp> Args(params Exp[] exps)
         {
-            return exps.Select(e => (Argument)new Argument.Normal(e)).ToImmutableArray();
+            return exps.ToImmutableArray();
         }
 
         public SymbolId Module(string moduleName)
@@ -503,9 +503,9 @@ namespace Citron.IR0
             return new FuncReturn(type);
         }
 
-        public Argument Arg(Exp exp)
+        public Exp Arg(Exp exp)
         {
-            return new Argument.Normal(exp);
+            return exp;
         }
 
         public LambdaExp Lambda(LambdaSymbol lambda, params Argument[] args)

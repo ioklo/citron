@@ -83,14 +83,40 @@ xxx
         }
 
         [Fact]
-        public async Task TestParseRefVarDeclStmtAsync()
+        public async Task TestParseLocalRefVarDeclStmtAsync()
         {
-            // ref int p;
-            (var parser, var context) = await PrepareAsync("ref int p;");
+            // int& p;
+            (var parser, var context) = await PrepareAsync("int& p;");
 
             var varDeclStmt = await parser.ParseVarDeclStmtAsync(context);
 
-            var expected = new VarDeclStmt(new VarDecl(true, SIdTypeExp("int"), Arr(new VarDeclElement("p", null))));
+            var expected = new VarDeclStmt(new VarDecl(SLocalRefTypeExp(SIdTypeExp("int")), Arr(new VarDeclElement("p", null))));
+
+            Assert.Equal(expected, varDeclStmt.Elem);
+        }
+
+        [Fact]
+        public async Task TestParseBoxRefVarDeclStmtAsync()
+        {
+            // box int& p;
+            (var parser, var context) = await PrepareAsync("box int& p;");
+
+            var varDeclStmt = await parser.ParseVarDeclStmtAsync(context);
+
+            var expected = new VarDeclStmt(new VarDecl(SBoxRefTypeExp(SIdTypeExp("int")), Arr(new VarDeclElement("p", null))));
+
+            Assert.Equal(expected, varDeclStmt.Elem);
+        }
+
+        [Fact]
+        public async Task TestParseNullableVarDeclStmtAsync()
+        {
+            // int? p;
+            (var parser, var context) = await PrepareAsync("int? p;");
+
+            var varDeclStmt = await parser.ParseVarDeclStmtAsync(context);
+
+            var expected = new VarDeclStmt(new VarDecl(SNullableTypeExp(SIdTypeExp("int")), Arr(new VarDeclElement("p", null))));
 
             Assert.Equal(expected, varDeclStmt.Elem);
         }
@@ -221,7 +247,7 @@ for (f(); g; h + g) ;
                 SId("a"),
                 new BinaryOpExp(BinaryOpKind.Multiply,
                     SId("b"),
-                    new CallExp(SId("c"), Arr<Argument>(new Argument.Normal(new IntLiteralExp(1)))))));
+                    new CallExp(SId("c"), Arr<Argument>(new Argument.Normal(IsRef: false, new IntLiteralExp(1)))))));
                 
 
             Assert.Equal(expected, expResult.Elem);

@@ -13,9 +13,9 @@ namespace Citron.Analysis
     struct LambdaVisitor
     {
         // retType이 null이면 아직 안정해졌다는 뜻이다
-        public static TranslationResult<(LambdaSymbol Lambda, ImmutableArray<R.Argument> Args)> Translate(IType? retType, ImmutableArray<S.LambdaExpParam> paramSyntaxes, ImmutableArray<S.Stmt> bodySyntaxes, ScopeContext context, S.ISyntaxNode nodeForErrorReport)
+        public static TranslationResult<(LambdaSymbol Lambda, ImmutableArray<R.Exp> Args)> Translate(IType? retType, ImmutableArray<S.LambdaExpParam> paramSyntaxes, ImmutableArray<S.Stmt> bodySyntaxes, ScopeContext context, S.ISyntaxNode nodeForErrorReport)
         {
-            TranslationResult<(LambdaSymbol, ImmutableArray<R.Argument>)> Error() => TranslationResult.Error<(LambdaSymbol, ImmutableArray<R.Argument>)>();
+            TranslationResult<(LambdaSymbol, ImmutableArray<R.Exp>)> Error() => TranslationResult.Error<(LambdaSymbol, ImmutableArray<R.Exp>)>();
 
             // 람다를 분석합니다
             // [int x = x](int p) => { return 3; }
@@ -53,7 +53,7 @@ namespace Citron.Analysis
             context.AddBody(lambda.GetDeclSymbol(), bodyStmts);
 
             var args = newContext.MakeLambdaArgs();
-            return TranslationResult.Valid<(LambdaSymbol, ImmutableArray<R.Argument>)>((lambda, args));
+            return TranslationResult.Valid<(LambdaSymbol, ImmutableArray<R.Exp>)>((lambda, args));
         }
 
         static ImmutableArray<FuncParameter> MakeParameters(ImmutableArray<S.LambdaExpParam> paramSyntaxes, ScopeContext context)

@@ -401,7 +401,7 @@ struct CallableAndArgsBinder : IIntermediateExpVisitor<TranslationResult<R.Exp>>
         throw new UnreachableException();
     }
 
-    TranslationResult<(TFuncSymbol Func, ImmutableArray<R.Argument> Args)> InternalMatchFunc<TFuncDeclSymbol, TFuncSymbol>(
+    TranslationResult<(TFuncSymbol Func, ImmutableArray<R.Exp> Args)> InternalMatchFunc<TFuncDeclSymbol, TFuncSymbol>(
         ImmutableArray<DeclAndConstructor<TFuncDeclSymbol, TFuncSymbol>> declAndConstructors,
         ImmutableArray<IType> typeArgsForMatch)
         where TFuncDeclSymbol : IFuncDeclSymbol
@@ -416,15 +416,15 @@ struct CallableAndArgsBinder : IIntermediateExpVisitor<TranslationResult<R.Exp>>
         {
             case FuncMatchIndexResult.MultipleCandidates:
                 context.AddFatalError(A0901_CallExp_MultipleCandidates, nodeForCallableErrorReport);
-                return TranslationResult.Error<(TFuncSymbol, ImmutableArray<R.Argument>)>();
+                return TranslationResult.Error<(TFuncSymbol, ImmutableArray<R.Exp>)>();
 
             case FuncMatchIndexResult.NotFound:
                 context.AddFatalError(A0906_CallExp_NotFound, nodeForCallableErrorReport);
-                return TranslationResult.Error<(TFuncSymbol, ImmutableArray<R.Argument>)>();
+                return TranslationResult.Error<(TFuncSymbol, ImmutableArray<R.Exp>)>();
 
             case FuncMatchIndexResult.Success successResult:
                 var func = declAndConstructors[successResult.Index].MakeSymbol(successResult.TypeArgs);
-                return TranslationResult.Valid<(TFuncSymbol, ImmutableArray<R.Argument>)>((func, successResult.Args));
+                return TranslationResult.Valid<(TFuncSymbol, ImmutableArray<R.Exp>)>((func, successResult.Args));
 
             default:
                 throw new UnreachableException();

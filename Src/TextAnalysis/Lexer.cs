@@ -112,6 +112,7 @@ namespace Citron
             { "class", ClassToken.Instance },
             { "is", IsToken.Instance },
             { "ref", RefToken.Instance },
+            { "box", BoxToken.Instance },
             { "null", NullToken.Instance },
             { "public", PublicToken.Instance },
             { "protected", ProtectedToken.Instance },
@@ -154,6 +155,7 @@ namespace Citron
             ("!", () => ExclToken.Instance),
             (".", () => DotToken.Instance),
             ("?", () => QuestionToken.Instance),
+            ("&", () => AmpersandToken.Instance),
 
             (":", () => ColonToken.Instance),
             ("`", () => BacktickToken.Instance)

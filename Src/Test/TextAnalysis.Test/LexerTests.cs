@@ -48,10 +48,10 @@ namespace Citron.TextAnalysis.Test
         {
             var lexer = new Lexer();
             var context = await MakeContextAsync(
-                "if else for continue break exec task params return async await foreach in yield seq enum struct class is ref null public protected private static " + 
+                "if else for continue break exec task params return async await foreach in yield seq enum struct class is ref box null public protected private static " + 
                 "new namespace " +
                 "++ -- <= >= => == != " +
-                "@ < > ; , = { } ( ) [ ] + - * / % ! . ? : `");
+                "@ < > ; , = { } ( ) [ ] + - * / % ! . ? & : `");
 
             var tokens = await ProcessNormalAsync(lexer, context);
             var expectedTokens = new Token[]
@@ -76,6 +76,7 @@ namespace Citron.TextAnalysis.Test
                 ClassToken.Instance,
                 IsToken.Instance,
                 RefToken.Instance,
+                BoxToken.Instance,
                 NullToken.Instance,
 
                 PublicToken.Instance,
@@ -115,6 +116,7 @@ namespace Citron.TextAnalysis.Test
                 ExclToken.Instance,
                 DotToken.Instance,
                 QuestionToken.Instance,
+                AmpersandToken.Instance,
 
                 ColonToken.Instance,
                 BacktickToken.Instance,

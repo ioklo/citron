@@ -89,10 +89,10 @@ public class UnitTest1
         var script = SScript(new S.GlobalFuncDeclScriptElement(new S.GlobalFuncDecl(
             null,
             isSequence: false,
-            retType: new S.RefTypeExp(new S.IdTypeExp("T", default)),
+            retType: new S.LocalRefTypeExp(new S.IdTypeExp("T", default)),
             name: "Func",
             typeParams: Arr(new S.TypeParam("T")),
-            parameters: Arr(new S.FuncParam(S.FuncParamKind.Normal, new S.RefTypeExp(new S.IdTypeExp("T", default)), "t")),
+            parameters: Arr(new S.FuncParam(S.FuncParamKind.Normal, new S.LocalRefTypeExp(new S.IdTypeExp("T", default)), "t")),
             body: Arr<S.Stmt>(new S.ReturnStmt(new S.ReturnValueInfo(new S.IdentifierExp("t", default))))
         )));
 
@@ -127,7 +127,7 @@ public class UnitTest1
             Arr(
                 new S.FuncParam(S.FuncParamKind.Normal, SIntTypeExp(), "x"),
                 new S.FuncParam(S.FuncParamKind.Params, new S.IdTypeExp("U", default), "y"),
-                new S.FuncParam(S.FuncParamKind.Normal, new S.RefTypeExp(new S.IdTypeExp("T", default)), "z")
+                new S.FuncParam(S.FuncParamKind.Normal, new S.LocalRefTypeExp(new S.IdTypeExp("T", default)), "z")
             ),
             Arr<S.Stmt>()
         )));

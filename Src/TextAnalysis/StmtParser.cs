@@ -86,9 +86,6 @@ namespace Citron
 
         internal async ValueTask<ParseResult<VarDecl>> ParseVarDeclAsync(ParserContext context)
         {
-            // optional ref
-            bool bRef = Accept<RefToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context);
-
             if (!Parse(await parser.ParseTypeExpAsync(context), ref context, out var varType))
                 return Invalid();
 

@@ -38,7 +38,9 @@ namespace Citron.LexicalAnalysis
     public class PercentToken : Token { public static readonly PercentToken Instance = new PercentToken(); private PercentToken() { } } // %    
     public class ExclToken : Token { public static readonly ExclToken Instance = new ExclToken(); private ExclToken() { } } // !    
     public class DotToken : Token { public static readonly DotToken Instance = new DotToken(); private DotToken() { } } // .
-    public class QuestionToken : Token { public static readonly QuestionToken Instance = new QuestionToken(); private QuestionToken() { } } // .
+    public class QuestionToken : Token { public static readonly QuestionToken Instance = new QuestionToken(); private QuestionToken() { } } // ?
+    public class AmpersandToken : Token { public static readonly AmpersandToken Instance = new AmpersandToken(); private AmpersandToken() { } } // ?
+
     
     public class IfToken : Token { public static readonly IfToken Instance = new IfToken(); private IfToken() { } }
     public class ElseToken : Token { public static readonly ElseToken Instance = new ElseToken(); private ElseToken() { } }
@@ -59,6 +61,7 @@ namespace Citron.LexicalAnalysis
     public class ClassToken : Token { public static readonly ClassToken Instance = new ClassToken(); private ClassToken() { } }
     public class IsToken : Token { public static readonly IsToken Instance = new IsToken(); private IsToken() { } }
     public class RefToken : Token { public static readonly RefToken Instance = new RefToken(); private RefToken() { } }
+    public class BoxToken : Token { public static readonly BoxToken Instance = new BoxToken(); private BoxToken() { } }
     public class NullToken : Token { public static readonly NullToken Instance = new NullToken(); private NullToken() { } }
 
     public class PublicToken : Token { public static readonly PublicToken Instance = new PublicToken(); private PublicToken() { } }

@@ -128,6 +128,7 @@ namespace Citron
             return new ParseResult<TypeExp>(new IdTypeExp(idToken.Value, typeArgs), context);
         }
 
+        // 지금은 멤버변수를 맡는다
         async ValueTask<ParseResult<TypeExp>> ParsePrimaryTypeExpAsync(ParserContext context)
         {
             if (!Parse(await ParseTypeIdExpAsync(context), ref context, out var typeIdExp))
@@ -139,24 +140,13 @@ namespace Citron
                 var lexResult = await lexer.LexNormalModeAsync(context.LexerContext, true);
 
                 // . id <..., ...>
-                if (Accept<DotToken>(lexResult, ref context))
-                {
-                    if (!Accept<IdentifierToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context, out var memberName))
-                        return ParseResult<TypeExp>.Invalid;
+                if (!Accept<DotToken>(lexResult, ref context)) break;
+                
+                if (!Accept<IdentifierToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context, out var memberName))
+                    return ParseResult<TypeExp>.Invalid;
 
-                    // TODO: typeApp(T.S<>) 처리도 추가
-                    exp = new MemberTypeExp(exp, memberName.Value, default);
-                    continue;
-                }
-
-                // ?
-                else if (Accept<QuestionToken>(lexResult, ref context))
-                {
-                    exp = new NullableTypeExp(exp);
-                    continue;
-                }
-
-                break;
+                // TODO: typeApp(T.S<>) 처리도 추가
+                exp = new MemberTypeExp(exp, memberName.Value, default);
             }
 
             return new ParseResult<TypeExp>(exp, context);
@@ -164,36 +154,76 @@ namespace Citron
 
         public async ValueTask<ParseResult<TypeExp>> ParseTypeExpAsync(ParserContext context)
         {
-            return await ParsePrimaryTypeExpAsync(context);
+            ParseResult<TypeExp> Invalid () => ParseResult<TypeExp>.Invalid;
+
+            // TypeExp = PrimaryTypeExp 
+            //         | PrimaryTypeExp &
+            //         | box PrimaryTypeExp &
+            //         | PrimaryTypeExp ?
+
+            // 1. box로 시작하면
+            if (Accept<BoxToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
+            {
+                if (!Parse(await ParsePrimaryTypeExpAsync(context), ref context, out var primaryTypeExp))
+                    return Invalid();
+
+                if (!Accept<AmpersandToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
+                    return Invalid();
+
+                return new ParseResult<TypeExp>(new BoxRefTypeExp(primaryTypeExp), context);
+            }
+            else
+            {
+                if (!Parse(await ParsePrimaryTypeExpAsync(context), ref context, out var primaryTypeExp))
+                    return Invalid();
+
+                var lexResult = await lexer.LexNormalModeAsync(context.LexerContext, true);
+
+                // 뒤에 &가 오면
+                if (Accept<AmpersandToken>(lexResult, ref context))
+                {
+                    return new ParseResult<TypeExp>(new LocalRefTypeExp(primaryTypeExp), context);
+                }   
+                else if (Accept<QuestionToken>(lexResult, ref context))
+                {
+                    return new ParseResult<TypeExp>(new NullableTypeExp(primaryTypeExp), context);
+                }
+                else
+                {
+                    return new ParseResult<TypeExp>(primaryTypeExp, context);
+                }
+            }
         }
 
         // int t
         // ref int t
         // params T t
-        async ValueTask<ParseResult<FuncParam>> ParseFuncDeclParamAsync(ParserContext context)
+        async ValueTask<ParseResult<(FuncParam Param, bool IsVariadic)>> ParseFuncDeclParamAsync(ParserContext context)
         {
-            FuncParamKind kind;
+            bool bVariadic;
 
             if (Accept<ParamsToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
-                kind = FuncParamKind.Params;
+                bVariadic = true;
             else
-                kind = FuncParamKind.Normal;
+                bVariadic = false;
 
             var typeExpResult = await ParseTypeExpAsync(context);
             if (!typeExpResult.HasValue)
-                return ParseResult<FuncParam>.Invalid;
+                return ParseResult<(FuncParam Param, bool bVariadic)>.Invalid;
 
             context = typeExpResult.Context;
 
             if (!Accept<IdentifierToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context, out var name))
-                return ParseResult<FuncParam>.Invalid;
+                return ParseResult<(FuncParam Param, bool bVariadic)>.Invalid;
 
-            return new ParseResult<FuncParam>(new FuncParam(kind, typeExpResult.Elem, name.Value), context);
+            return new ParseResult<(FuncParam Param, bool bVariadic)>((new FuncParam(typeExpResult.Elem, name.Value), bVariadic), context);
         }
 
-        async ValueTask<ParseResult<ImmutableArray<FuncParam>>> ParseFuncDeclParamsAsync(ParserContext context)
+        async ValueTask<ParseResult<(ImmutableArray<FuncParam> Params, bool IsVariadic)>> ParseFuncDeclParamsAsync(ParserContext context)
         {
-            ParseResult<ImmutableArray<FuncParam>> Invalid() => ParseResult<ImmutableArray<FuncParam>>.Invalid;
+            ParseResult<(ImmutableArray<FuncParam>, bool)> Invalid() => ParseResult<(ImmutableArray<FuncParam>, bool)>.Invalid;
+
+            bool bVariadic = false;
 
             if (!Accept<LParenToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                 return Invalid();
@@ -205,15 +235,27 @@ namespace Citron
                     if (!Accept<CommaToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                         return Invalid();
 
-                var funcDeclParam = await ParseFuncDeclParamAsync(context);
-                if (!funcDeclParam.HasValue)
+                var funcDeclParamResult = await ParseFuncDeclParamAsync(context);
+                if (!funcDeclParamResult.HasValue)
                     return Invalid();
 
-                paramsBuilder.Add(funcDeclParam.Elem);
-                context = funcDeclParam.Context;
+                var funcDeclParam = funcDeclParamResult.Elem;
+
+                if (funcDeclParam.IsVariadic)
+                {
+                    if (!bVariadic) bVariadic = true;
+                    else
+                    {   
+                        // TODO: 에러, params는 마지막에 한번만 있어야 합니다
+                        return Invalid();
+                    }
+                }   
+
+                paramsBuilder.Add(funcDeclParam.Param);
+                context = funcDeclParamResult.Context;
             }
 
-            return new ParseResult<ImmutableArray<FuncParam>>(paramsBuilder.ToImmutable(), context);
+            return new ParseResult<(ImmutableArray<FuncParam>, bool)>((paramsBuilder.ToImmutable(), bVariadic), context);
         }
         
         internal async ValueTask<ParseResult<GlobalFuncDecl>> ParseGlobalFuncDeclAsync(ParserContext context)
@@ -246,7 +288,8 @@ namespace Citron
                 retType,
                 funcName.Value,
                 default,
-                paramInfo,
+                paramInfo.Params,
+                paramInfo.IsVariadic,
                 body
             );
 
@@ -435,7 +478,7 @@ namespace Citron
                 return Invalid();
 
             var funcDeclElem = new StructMemberFuncDecl(
-                accessModifier, bStatic, bSequence, retType, funcName.Value, typeParams, paramInfo, body
+                accessModifier, bStatic, bSequence, retType, funcName.Value, typeParams, paramInfo.Params, paramInfo.IsVariadic, body
             );
 
             return new ParseResult<StructMemberFuncDecl>(funcDeclElem, context);
@@ -460,7 +503,7 @@ namespace Citron
             if (!Parse(await ParseBodyAsync(context), ref context, out var body))
                 return Invalid();
 
-            var constructorDeclElem = new StructConstructorDecl(accessModifier, name.Value, paramInfo, body);
+            var constructorDeclElem = new StructConstructorDecl(accessModifier, name.Value, paramInfo.Params, paramInfo.IsVariadic, body);
 
             return new ParseResult<StructConstructorDecl>(constructorDeclElem, context);
         }
@@ -573,7 +616,7 @@ namespace Citron
             if (!Parse(await ParseBodyAsync(context), ref context, out var body))
                 return Invalid();
 
-            var funcDeclElem = new ClassMemberFuncDecl(accessModifier, bStatic, bSequence, retType, funcName.Value, typeParams, paramInfo, body);
+            var funcDeclElem = new ClassMemberFuncDecl(accessModifier, bStatic, bSequence, retType, funcName.Value, typeParams, paramInfo.Params, paramInfo.IsVariadic, body);
 
             return new ParseResult<ClassMemberFuncDecl>(funcDeclElem, context);
         }
@@ -621,7 +664,7 @@ namespace Citron
             if (!Parse(await ParseBodyAsync(context), ref context, out var body))
                 return Invalid();
 
-            var constructorDecl = new ClassConstructorDecl(accessModifier, name.Value, paramInfo, baseArgs, body);
+            var constructorDecl = new ClassConstructorDecl(accessModifier, name.Value, paramInfo.Params, paramInfo.IsVariadic, baseArgs, body);
 
             return new ParseResult<ClassConstructorDecl>(constructorDecl, context);
         }

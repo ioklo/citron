@@ -31,6 +31,7 @@ namespace Citron.Analysis
 
         A0401_Parameter_MismatchBetweenParamCountAndArgCount,
         // A0402_Parameter_MismatchBetweenParamTypeAndArgType, => FuncMatcher..로 변경
+        A0402_Parameter_ParamsArgumentShouldBeTuple,
 
         // A0501_IdExp_VariableNotFound,
         // A0502_IdExp_CantUseTypeAsExpression,
@@ -150,6 +151,8 @@ namespace Citron.Analysis
         A3101_BoxRef_CantMakeBoxRefWithLocalRef,
         A3102_BoxRef_InstanceIsNotLocation,
         A3103_BoxRef_CantMakeBoxRefWithLocal,
+
+
 
         A9901_NotSupported_LambdaParameterInference,
         A9902_NotSupported_LambdaReturnTypeInference,
