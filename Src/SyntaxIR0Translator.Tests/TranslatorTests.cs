@@ -1525,7 +1525,7 @@ namespace Citron.Test
             var syntaxScript = SScript(
                 new S.GlobalFuncDeclScriptElement(new S.GlobalFuncDecl(
                     accessModifier: null, isSequence: false, SVoidTypeExp(), "F", typeParams: default,
-                    Arr(new S.FuncParam(S.FuncParamKind.Normal, SLocalRefTypeExp(SIntTypeExp()), "i")),
+                    Arr(new S.FuncParam(HasParams: false, SLocalRefTypeExp(SIntTypeExp()), "i")),
                     SBody(new S.ExpStmt(new S.BinaryOpExp(S.BinaryOpKind.Assign, SId("i"), SInt(4))))
                 )),
                 
@@ -1571,7 +1571,7 @@ namespace Citron.Test
             var syntaxScript = SScript(
                 new S.GlobalFuncDeclScriptElement(new S.GlobalFuncDecl(
                     accessModifier: null, isSequence: false, SIntTypeExp(), "Func", Arr(new S.TypeParam("T")),
-                    Arr(new S.FuncParam(S.FuncParamKind.Normal, SIntTypeExp(), "x")),
+                    Arr(new S.FuncParam(HasParams: false, SIntTypeExp(), "x")),
                     SBody(new S.ReturnStmt(new S.ReturnValueInfo(SId("x"))))
                 )),
 
@@ -1611,7 +1611,7 @@ namespace Citron.Test
             var syntaxScript = SScript(
                 new S.GlobalFuncDeclScriptElement(new S.GlobalFuncDecl(
                     accessModifier: null, isSequence: false, SIntTypeExp(), "Func", typeParams: default,
-                    Arr(new S.FuncParam(S.FuncParamKind.Normal, SIntTypeExp(), "x")),
+                    Arr(new S.FuncParam(HasParams: false, SIntTypeExp(), "x")),
                     SBody(new S.ReturnStmt(new S.ReturnValueInfo(SId("x"))))
                 )),
 

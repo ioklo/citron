@@ -199,16 +199,9 @@ namespace Citron
                 return ParseResult<ReturnStmt>.Invalid;
 
             ReturnValueInfo? returnValue = null;            
-            if (Accept<RefToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
+            if (Parse(await parser.ParseExpAsync(context), ref context, out var returnExp))
             {
-                if (!Parse(await parser.ParseExpAsync(context), ref context, out var refReturnExp))
-                    return ParseResult<ReturnStmt>.Invalid;
-
-                returnValue = new ReturnValueInfo(true, refReturnExp);
-            }
-            else if (Parse(await parser.ParseExpAsync(context), ref context, out var returnExp))
-            {
-                returnValue = new ReturnValueInfo(false, returnExp);
+                returnValue = new ReturnValueInfo(returnExp);
             }
             else
             {

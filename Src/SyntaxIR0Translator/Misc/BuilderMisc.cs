@@ -33,14 +33,7 @@ namespace Citron.Analysis
                 var type = context.MakeType(sparam.Type, curNode);
                 if (type == null) throw new NotImplementedException(); // 에러 처리
 
-                var paramKind = sparam.Kind switch
-                {
-                    S.FuncParamKind.Normal => FuncParameterKind.Default,
-                    S.FuncParamKind.Params => FuncParameterKind.Params,
-                    _ => throw new UnreachableException()
-                };
-
-                builder.Add(new FuncParameter(paramKind, type, new Name.Normal(sparam.Name)));
+                builder.Add(new FuncParameter(type, new Name.Normal(sparam.Name)));
             }
 
             return builder.MoveToImmutable();

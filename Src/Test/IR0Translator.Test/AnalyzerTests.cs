@@ -10,7 +10,6 @@ namespace Citron.IR0Translator.Test
 {
     public class AnalyzerTests
     {
-
         //[Fact]
         //void TestAnalyzeIntLiteralExp()
         //{

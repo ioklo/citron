@@ -15,7 +15,7 @@ namespace Citron.IR0
             where TVisitor : struct, IIR0LocVisitor<TResult>;
     }
 
-    // 임시 value를 만들어서 Exp를 실행해서 대입해주는 역할, ExpInfo 대신 쓴다    
+    // 임시 값을 만들어서 Exp를 실행해서 대입해주는 역할
     public record class TempLoc(Exp Exp) : Loc
     {
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitTemp(this);
@@ -57,13 +57,15 @@ namespace Citron.IR0
     public record class ThisLoc() : Loc
     {
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitThis(this);
-    }    
+    }
     
+    // dereference pointer
     public record class LocalDerefLoc(Loc InnerLoc) : Loc
     {
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitLocalDeref(this);
     }
 
+    // dereference box pointer
     public record class BoxDerefLoc(Loc InnerLoc) : Loc
     {
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitBoxDeref(this);

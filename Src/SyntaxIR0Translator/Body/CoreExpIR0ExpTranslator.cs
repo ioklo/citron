@@ -374,34 +374,34 @@ struct CoreExpIR0ExpTranslator
 
         // NOTICE: 생성자 검색 (AnalyzeCallExpTypeCallable 부분과 비슷)                
         var classDecl = classSymbol.GetDecl();
-        var constructorDecls = ImmutableArray.CreateRange(classDecl.GetConstructorCount, classDecl.GetConstructor);
 
-        var funcMatchResult = FuncMatcher.MatchIndex(context, classSymbol.GetTypeEnv(), constructorDecls, exp.Args, default);
+        var candidates = FuncsMatcherExtensions.MakeCandidates(classDecl.GetConstructorCount(), classDecl.GetConstructor);
+        var matchResultEntries = FuncsMatcher.Match(context, classSymbol.GetTypeEnv(), candidates, exp.Args, partialTypeArgs: default);
 
-        switch (funcMatchResult)
+        var matchCount = matchResultEntries.Length;
+        if (matchCount == 1)
         {
-            case FuncMatchIndexResult.MultipleCandidates:
-                context.AddFatalError(A2603_NewExp_MultipleMatchedClassConstructors, exp);
+            var matchResultEntry = matchResultEntries[0];
+            var constructor = classSymbol.GetConstructor(matchResultEntry.Index);
+
+            if (!context.CanAccess(constructor))
+            {
+                context.AddFatalError(A2011_ResolveIdentifier_TryAccessingPrivateMember, exp);
                 return Error();
+            }
 
-            case FuncMatchIndexResult.NotFound:
-                context.AddFatalError(A2602_NewExp_NoMatchedClassConstructor, exp);
-                return Error();
-
-            case FuncMatchIndexResult.Success successResult:
-
-                var constructor = classSymbol.GetConstructor(successResult.Index);
-
-                if (!context.CanAccess(constructor))
-                {
-                    context.AddFatalError(A2011_ResolveIdentifier_TryAccessingPrivateMember, exp);
-                    return Error();
-                }
-
-                return Valid(new R.NewClassExp(constructor, successResult.Args));
+            return Valid(new R.NewClassExp(constructor, matchResultEntry.Args));
         }
-
-        throw new UnreachableException();
+        else if (matchCount == 0)
+        {
+            context.AddFatalError(A2602_NewExp_NoMatchedClassConstructor, exp);
+            return Error();
+        }
+        else
+        {
+            context.AddFatalError(A2603_NewExp_MultipleMatchedClassConstructors, exp);
+            return Error();
+        }
     }
 
     public TranslationResult<R.Exp> TranslateCall(S.CallExp exp)

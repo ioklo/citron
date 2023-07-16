@@ -61,7 +61,7 @@ namespace Citron.Syntax
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitBreak(this);
     }
     
-    public record struct ReturnValueInfo(bool IsRef, Exp Value);
+    public record struct ReturnValueInfo(Exp Value);
 
     public record class ReturnStmt(ReturnValueInfo? Info) : Stmt
     {

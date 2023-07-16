@@ -416,13 +416,11 @@ namespace Citron
             }
             else
             {
-                // ref exp
-                bool bRef = Accept<RefToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context);
-
+                // exp
                 if (!Parse(await parser.ParseExpAsync(context), ref context, out var expBody))
                     return Invalid();
 
-                body = ImmutableArray<Stmt>.Empty.Add(new ReturnStmt(new ReturnValueInfo(bRef, expBody)));
+                body = ImmutableArray<Stmt>.Empty.Add(new ReturnStmt(new ReturnValueInfo(expBody)));
             }
 
             return new ExpParseResult(new LambdaExp(paramsBuilder.ToImmutable(), body), context);

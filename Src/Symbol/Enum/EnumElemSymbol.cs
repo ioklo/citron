@@ -47,7 +47,7 @@ namespace Citron.Symbol
                 
                 var appliedDeclType = declType.Apply(typeEnv);
 
-                builder.Add(new FuncParameter(FuncParameterKind.Default, appliedDeclType, decl.GetName())); // TODO: EnumElemFields에 ref를 지원할지
+                builder.Add(new FuncParameter(appliedDeclType, decl.GetName())); // TODO: EnumElemFields에 ref를 지원할지
             }
 
             return builder.MoveToImmutable();

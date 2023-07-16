@@ -13,9 +13,9 @@ namespace Citron.Analysis
     struct LambdaVisitor
     {
         // retType이 null이면 아직 안정해졌다는 뜻이다
-        public static TranslationResult<(LambdaSymbol Lambda, ImmutableArray<R.Exp> Args)> Translate(IType? retType, ImmutableArray<S.LambdaExpParam> paramSyntaxes, ImmutableArray<S.Stmt> bodySyntaxes, ScopeContext context, S.ISyntaxNode nodeForErrorReport)
+        public static TranslationResult<(LambdaSymbol Lambda, ImmutableArray<R.Argument> Args)> Translate(IType? retType, ImmutableArray<S.LambdaExpParam> paramSyntaxes, ImmutableArray<S.Stmt> bodySyntaxes, ScopeContext context, S.ISyntaxNode nodeForErrorReport)
         {
-            TranslationResult<(LambdaSymbol, ImmutableArray<R.Exp>)> Error() => TranslationResult.Error<(LambdaSymbol, ImmutableArray<R.Exp>)>();
+            TranslationResult<(LambdaSymbol, ImmutableArray<R.Argument>)> Error() => TranslationResult.Error<(LambdaSymbol, ImmutableArray<R.Argument>)>();
 
             // 람다를 분석합니다
             // [int x = x](int p) => { return 3; }
@@ -53,27 +53,20 @@ namespace Citron.Analysis
             context.AddBody(lambda.GetDeclSymbol(), bodyStmts);
 
             var args = newContext.MakeLambdaArgs();
-            return TranslationResult.Valid<(LambdaSymbol, ImmutableArray<R.Exp>)>((lambda, args));
+            return TranslationResult.Valid<(LambdaSymbol, ImmutableArray<R.Argument>)>((lambda, args));
         }
 
         static ImmutableArray<FuncParameter> MakeParameters(ImmutableArray<S.LambdaExpParam> paramSyntaxes, ScopeContext context)
         {
             var paramsBuilder = ImmutableArray.CreateBuilder<FuncParameter>(paramSyntaxes.Length);
             foreach (var paramSyntax in paramSyntaxes)
-            {
-                var paramKind = paramSyntax.ParamKind switch
-                {
-                    S.FuncParamKind.Normal => FuncParameterKind.Default,
-                    S.FuncParamKind.Params => FuncParameterKind.Params,
-                    _ => throw new UnreachableException()
-                };
-
+            {   
                 // 파라미터에 Type이 명시되어있지 않으면 hintType기반으로 inference 해야 한다.
                 if (paramSyntax.Type == null)
                     throw new NotImplementedException();
 
                 var paramTypeSymbol = context.MakeType(paramSyntax.Type);
-                var param = new FuncParameter(paramKind, paramTypeSymbol, new Name.Normal(paramSyntax.Name));
+                var param = new FuncParameter(paramTypeSymbol, new Name.Normal(paramSyntax.Name));
                 paramsBuilder.Add(param);
             }
 

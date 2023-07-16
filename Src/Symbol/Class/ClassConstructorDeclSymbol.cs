@@ -118,5 +118,10 @@ namespace Citron.Symbol
 
         void IFuncDeclSymbol.AddLambda(LambdaDeclSymbol declSymbol)
             => lambdaComponent.AddLambda(declSymbol);
+
+        bool IFuncDeclSymbol.IsLastParameterVariadic()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

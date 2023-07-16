@@ -75,33 +75,39 @@ namespace Citron
             // argument들을 할당할 공간을 만든다
             var argValuesBuilder = ImmutableArray.CreateBuilder<Value>();
 
-            // 파라미터를 보고 만든다. params 파라미터라면 
-            int parameterCount = funcSymbol.GetParameterCount();
-            for(int i = 0; i < parameterCount; i++)
+            var funcDS = funcSymbol.GetDeclSymbolNode();
+
+            // funcDS;
+            int normalParamCount = funcSymbol.GetParameterCount();
+            bool bLastParamVariadic = funcDS.IsLastParameterVariadic();
+
+            if (bLastParamVariadic)
+            {
+                Debug.Assert(0 < normalParamCount);
+                normalParamCount -= 1;
+            }
+
+            // 파라미터를 보고 만든다. params 파라미터라면             
+            for(int i = 0; i < normalParamCount; i++)
             {
                 var param = funcSymbol.GetParameter(i);
+                var argValue = context.AllocValue(param.Type);
+                argValuesBuilder.Add(argValue);
+            }
 
-                if (param.Kind == FuncParameterKind.Params)
+            if (bLastParamVariadic)
+            {
+                var param = funcSymbol.GetParameter(normalParamCount);
+
+                // TODO: [8] 꼭 tuple이 아닐수도 있다
+                var tupleType = (TupleType)param.Type;
+                int memberVarCount = tupleType.GetMemberVarCount();
+
+                for (int j = 0; j < memberVarCount; j++)
                 {
-                    // TODO: 꼭 tuple이 아닐수도 있다
-                    var tupleType = (TupleType)param.Type;
-                    int memberVarCount = tupleType.GetMemberVarCount();
-                    
-                    for(int j = 0; j < memberVarCount; j++)
-                    {
-                        var memberVar = tupleType.GetMemberVar(j);
-                        var argValue = context.AllocValue(memberVar.GetDeclType());
-                        argValuesBuilder.Add(argValue);
-                    }
-                }
-                else if (param.Kind == FuncParameterKind.Default)
-                {
-                    var argValue = context.AllocValue(param.Type);
+                    var memberVar = tupleType.GetMemberVar(j);
+                    var argValue = context.AllocValue(memberVar.GetDeclType());
                     argValuesBuilder.Add(argValue);
-                }
-                else
-                {
-                    throw new UnreachableException();
                 }
             }
 
@@ -127,39 +133,23 @@ namespace Citron
                         await EvalAsync(paramsArg.Exp, context, tupleValue);
                         argValueIndex += paramsArg.ElemCount;
                         break;
-
-                    //case Argument.Ref refArg:
-                    //    var value = await EvalLocAsync(refArg.Loc);
-                    //    var refValue = (RefValue)argValues[argValueIndex];
-                    //    refValue.SetTarget(value);
-                    //    argValueIndex++;
-                    //    break;
                 }
             }
 
             // param 단위로 다시 묶어야지
-            argValueIndex = 0;
-            for(int i = 0; i < parameterCount; i++)
-            {
-                var param = funcSymbol.GetParameter(i);
+            for(int i = 0; i < normalParamCount; i++)
+                argsBuilder.Add(argValues[i]);
 
-                if (param.Kind == FuncParameterKind.Params)
-                {
-                    // TODO: 꼭 tuple이 아닐수도 있다
-                    var tupleType = (TupleTypeId)param.Type;
-                    var tupleElems = ImmutableArray.Create(argValues, argValueIndex, tupleType.MemberVarIds.Length);
+            if (bLastParamVariadic)
+            {   
+                var param = funcSymbol.GetParameter(normalParamCount);
 
-                    var tupleValue = new TupleValue(tupleElems);
-                    argsBuilder.Add(tupleValue);
+                // TODO: [8] 꼭 tuple이 아닐수도 있다
+                var tupleType = (TupleType)param.Type;
+                var tupleElems = ImmutableArray.Create(argValues, normalParamCount, tupleType.GetMemberVarCount());
 
-                    argValueIndex += tupleType.MemberVarIds.Length;
-                }
-                else
-                {
-                    argsBuilder.Add(argValues[argValueIndex]);
-
-                    argValueIndex++;
-                }
+                var tupleValue = new TupleValue(tupleElems);
+                argsBuilder.Add(tupleValue);
             }
 
             return argsBuilder.ToImmutable();
@@ -636,11 +626,24 @@ namespace Citron
             ((LocalRefValue)result).SetTarget(value);
         }
 
-        ValueTask IIR0ExpVisitor<ValueTask>.VisitBoxRef(BoxRefExp exp)
+        ValueTask IIR0ExpVisitor<ValueTask>.VisitCastBoxRefToLocalRef(CastBoxRefToLocalRefExp castBoxRefToLocalRefExp)
         {
             throw new NotImplementedException();
         }
 
-        
+        ValueTask IIR0ExpVisitor<ValueTask>.VisitStaticBoxRef(StaticBoxRefExp exp)
+        {
+            throw new NotImplementedException();
+        }
+
+        ValueTask IIR0ExpVisitor<ValueTask>.VisitClassMemberVarBoxRefExp(ClassMemberVarBoxRefExp exp)
+        {
+            throw new NotImplementedException();
+        }
+
+        ValueTask IIR0ExpVisitor<ValueTask>.VisitStructMemberVarBoxRefExp(StructMemberVarBoxRefExp exp)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

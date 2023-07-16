@@ -85,14 +85,15 @@ public class UnitTest1
     [Fact]
     public void Build_FuncDecl_RefTypes()
     {
-        // T& Func<T>(T& t) { return t; }
+        // T& Func<T>(T& t) { return ref t; }
+        // 조만간 T* Func<T>(T* t) { return t; } 로 변경을 
         var script = SScript(new S.GlobalFuncDeclScriptElement(new S.GlobalFuncDecl(
-            null,
+            accessModifier: null,
             isSequence: false,
             retType: new S.LocalRefTypeExp(new S.IdTypeExp("T", default)),
             name: "Func",
             typeParams: Arr(new S.TypeParam("T")),
-            parameters: Arr(new S.FuncParam(S.FuncParamKind.Normal, new S.LocalRefTypeExp(new S.IdTypeExp("T", default)), "t")),
+            parameters: Arr(new S.FuncParam(HasParams: false, new S.LocalRefTypeExp(new S.IdTypeExp("T", default)), "t")),
             body: Arr<S.Stmt>(new S.ReturnStmt(new S.ReturnValueInfo(new S.IdentifierExp("t", default))))
         )));
 
@@ -106,7 +107,7 @@ public class UnitTest1
         var typeVar = new TypeVarType(0, NormalName("T"));
         funcDecl.InitFuncReturnAndParams(
             new FuncReturn(new LocalRefType(typeVar)),
-            Arr(new FuncParameter(FuncParameterKind.Default, new LocalRefType(typeVar), NormalName("t"))));
+            Arr(new FuncParameter(new LocalRefType(typeVar), NormalName("t"))));
 
         expectedModuleDecl.AddFunc(funcDecl);
 
@@ -117,7 +118,7 @@ public class UnitTest1
     [Fact]
     public void Build_FuncDecl_ModuleInfoHasFuncInfo()
     {
-        // void Func<T, U>(int x, params U y, T& z)
+        // void Func<T, U>(int x, T& y, params U z)
         var script = SScript(new S.GlobalFuncDeclScriptElement(new S.GlobalFuncDecl(
             null,
             isSequence: false,
@@ -125,9 +126,9 @@ public class UnitTest1
             "Func",
             Arr(new S.TypeParam("T"), new S.TypeParam("U")),
             Arr(
-                new S.FuncParam(S.FuncParamKind.Normal, SIntTypeExp(), "x"),
-                new S.FuncParam(S.FuncParamKind.Params, new S.IdTypeExp("U", default), "y"),
-                new S.FuncParam(S.FuncParamKind.Normal, new S.LocalRefTypeExp(new S.IdTypeExp("T", default)), "z")
+                new S.FuncParam(HasParams: false, SIntTypeExp(), "x"),                
+                new S.FuncParam(HasParams: false, new S.LocalRefTypeExp(new S.IdTypeExp("T", default)), "y"),
+                new S.FuncParam(HasParams: true, new S.IdTypeExp("U", default), "z")
             ),
             Arr<S.Stmt>()
         )));
@@ -143,9 +144,9 @@ public class UnitTest1
         funcDecl.InitFuncReturnAndParams(
             new FuncReturn(voidType),
             Arr(
-                new FuncParameter(FuncParameterKind.Default, intType, NormalName("x")),
-                new FuncParameter(FuncParameterKind.Params, u, NormalName("y")),
-                new FuncParameter(FuncParameterKind.Default, new LocalRefType(t), NormalName("z"))
+                new FuncParameter(intType, NormalName("x")),
+                new FuncParameter(new LocalRefType(t), NormalName("z")),
+                new FuncParameter(u, NormalName("y"))
             )
         );
         expectedModuleDecl.AddFunc(funcDecl);
@@ -178,10 +179,10 @@ public class UnitTest1
                         "Func",
                         Arr(new S.TypeParam("T"), new S.TypeParam("U")),
                         Arr(
-                            new S.FuncParam(S.FuncParamKind.Normal, SIdTypeExp("S", SIntTypeExp()), "s"),
-                            new S.FuncParam(S.FuncParamKind.Normal, SIdTypeExp("U"), "u")
+                            new S.FuncParam(HasParams: false, SIdTypeExp("S", SIntTypeExp()), "s"),
+                            new S.FuncParam(HasParams: false, SIdTypeExp("U"), "u")
                         ),
-                        default
+                        Body: default
                     ),
 
                     new S.StructMemberVarDecl(
@@ -220,8 +221,8 @@ public class UnitTest1
             sDecl,
             Accessor.Public,
             Arr(
-                new FuncParameter(FuncParameterKind.Default, intType, NormalName("x")),
-                new FuncParameter(FuncParameterKind.Default, intType, NormalName("y"))
+                new FuncParameter(intType, NormalName("x")),
+                new FuncParameter(intType, NormalName("y"))
             ),
             bTrivial: true
         );
@@ -243,8 +244,8 @@ public class UnitTest1
         sFuncDecl.InitFuncReturnAndParams(
             new FuncReturn(sFuncT),
             Arr(
-                new FuncParameter(FuncParameterKind.Default, s_Int, NormalName("s")),
-                new FuncParameter(FuncParameterKind.Default, sFuncU, NormalName("u"))
+                new FuncParameter(s_Int, NormalName("s")),
+                new FuncParameter(sFuncU, NormalName("u"))
             )
         );
 
@@ -286,7 +287,7 @@ public class UnitTest1
         xyDecl.InitBaseTypes(null, interfaces: default);
         xDecl.AddType(xyDecl);
 
-        var xyConstructorDecl = new ClassConstructorDeclSymbol(xyDecl, Accessor.Public, Arr(new FuncParameter(FuncParameterKind.Default, new TypeVarType(0, NormalName("T")), NormalName("t"))), bTrivial: true);
+        var xyConstructorDecl = new ClassConstructorDeclSymbol(xyDecl, Accessor.Public, Arr(new FuncParameter(new TypeVarType(0, NormalName("T")), NormalName("t"))), bTrivial: true);
         xyDecl.AddConstructor(xyConstructorDecl);
 
         var xytDecl = new ClassMemberVarDeclSymbol(xyDecl, Accessor.Private, bStatic: false, new TypeVarType(0, NormalName("T")), NormalName("t"));
@@ -350,7 +351,7 @@ public class UnitTest1
         var xytDecl = new ClassMemberVarDeclSymbol(xyDecl, Accessor.Private, bStatic: false, new ClassType(x_x_Tyy), NormalName("t"));
         xyDecl.AddMemberVar(xytDecl);
 
-        var xyConstructorDecl = new ClassConstructorDeclSymbol(xyDecl, Accessor.Public, Arr(new FuncParameter(FuncParameterKind.Default, new ClassType(x_x_Tyy), NormalName("t"))), bTrivial: true);
+        var xyConstructorDecl = new ClassConstructorDeclSymbol(xyDecl, Accessor.Public, Arr(new FuncParameter(new ClassType(x_x_Tyy), NormalName("t"))), bTrivial: true);
         xyDecl.AddConstructor(xyConstructorDecl);
 
         var context = new CyclicEqualityCompareContext();

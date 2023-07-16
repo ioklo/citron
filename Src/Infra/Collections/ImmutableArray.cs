@@ -21,10 +21,8 @@ namespace Citron.Collections
             return new ImmutableArray<T>.Builder(System.Collections.Immutable.ImmutableArray.CreateBuilder<T>(length));
         }
 
-        public static ImmutableArray<TElem> CreateRange<TElem>(Func<int> getCount, Func<int, TElem> getElem)
+        public static ImmutableArray<TElem> CreateRange<TElem>(int count, Func<int, TElem> getElem)
         {
-            int count = getCount.Invoke();
-
             var builder = CreateBuilder<TElem>(count);
             for (int i = 0; i < count; i++)
             {

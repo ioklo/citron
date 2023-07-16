@@ -1,4 +1,6 @@
-﻿namespace Citron.IR0;
+﻿using System.Threading.Tasks;
+
+namespace Citron.IR0;
 
 public interface IIR0ExpVisitor<TResult>
 {
@@ -42,16 +44,4 @@ public interface IIR0ExpVisitor<TResult>
     // Lambda
     TResult VisitLambda(LambdaExp exp);
     TResult VisitCallValue(CallValueExp exp);
-    TResult VisitCallFuncRef(CallFuncRefExp exp);
-    TResult CastBoxLambdaToFuncRef(CastBoxLambdaToFuncRefExp exp);    
-    
-    TResult VisitLocalRef(LocalRefExp exp);
-    TResult VisitCastBoxRefToLocalRef(CastBoxRefToLocalRefExp castBoxRefToLocalRefExp);
-
-    // boxref
-    TResult VisitBox(BoxExp exp);                   // value를 boxing
-    TResult VisitStaticBoxRef(StaticBoxRefExp exp); // 기존 static 위치를 boxing
-    TResult VisitClassMemberVarBoxRefExp(ClassMemberVarBoxRefExp exp);
-    TResult VisitStructMemberVarBoxRefExp(StructMemberVarBoxRefExp exp);
-    
 }

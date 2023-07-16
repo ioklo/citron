@@ -95,52 +95,8 @@ namespace Citron
         {
             throw new NotImplementedException();
         }
-    }    
-
-    // T&
-    public class LocalRefValue : Value
-    {
-        Value? value;
-
-        public LocalRefValue()
-        {
-            value = null;
-        }
-
-        public LocalRefValue(Value value)
-        {
-            this.value = value;
-        }
-
-        public override void SetValue(Value srcValue)
-        {
-            // shallow copy
-            this.value = ((LocalRefValue)srcValue).value;
-        }
-
-        public void SetTarget(Value value)
-        {
-            this.value = value;
-        }
-
-        public Value GetTarget()
-        {
-            return value!;
-        }
     }
-
-    // box T&
-    public class BoxRefValue : Value
-    {
-        // Instance holder;
-        Value? value;
-
-        public override void SetValue(Value value)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
+    
     public class StructValue : Value
     {
         ImmutableArray<Value> values;        

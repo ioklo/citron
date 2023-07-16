@@ -43,7 +43,7 @@ namespace Citron.Syntax
                         null,
                         isSequence: false,
                         new IdTypeExp("void", default), "Main",
-                        typeParams: default, parameters: default, isVariadic: false, stmts.ToImmutableArray()
+                        typeParams: default, parameters: default, stmts.ToImmutableArray()
                     )
                 )
             ));
@@ -86,7 +86,7 @@ namespace Citron.Syntax
         {
             var builder = ImmutableArray.CreateBuilder<FuncParam>(ps.Length);
             foreach (var p in ps)
-                builder.Add(new FuncParam(p.ParamType, p.ParamName));
+                builder.Add(new FuncParam(HasParams: false, p.ParamType, p.ParamName));
             return builder.MoveToImmutable();
         }
 
@@ -112,7 +112,7 @@ namespace Citron.Syntax
         {
             return new GlobalFuncDeclScriptElement(new GlobalFuncDecl(
                 accessModifier: null, isSequence: false,
-                SIntTypeExp(), "Main", typeParams: default, parameters: default, isVariadic: false,
+                SIntTypeExp(), "Main", typeParams: default, parameters: default,
                 body.ToImmutableArray()
             ));
         }

@@ -331,9 +331,9 @@ struct CallableAndArgsBinder : IIntermediateExpVisitor<TranslationResult<R.Exp>>
         var outerTypeEnv = outer != null ? outer.GetTypeEnv() : TypeEnv.Empty;
 
         // TODO: 메모리를 덜 먹는 방법으로
-        var parameters = ImmutableArray.CreateRange(lambdaSymbol.GetParameterCount, lambdaSymbol.GetParameter);
+        var parameters = ImmutableArray.CreateRange(lambdaSymbol.GetParameterCount(), lambdaSymbol.GetParameter);
 
-        var match = FuncMatcher.Match(context, outerTypeEnv, parameters, variadicParamIndex: null, typeArgs: default, argSyntaxes);
+        var match = FuncMatcher.Match(context, outerTypeEnv, parameters, bVariadic: false, partialTypeArgs: default, argSyntaxes, new NullTypeResolver(typeArgs: default));
 
         if (match != null)
         {
@@ -356,7 +356,7 @@ struct CallableAndArgsBinder : IIntermediateExpVisitor<TranslationResult<R.Exp>>
         // args는 params를 지원 할 수 있음
         // TODO: MatchFunc에 OuterTypeEnv를 넣는 것이 나은지, fieldParamTypes에 미리 적용해서 넣는 것이 나은지
         // paramTypes으로 typeValues를 건네 줄것이면 적용해서 넣는게 나을 것 같은데, TypeResolver 동작때문에 어떻게 될지 몰라서 일단 여기서는 적용하고 TypeEnv.None을 넘겨준다
-        var matchResult = FuncMatcher.Match(context, TypeEnv.Empty, fieldParamTypes, null, default, argSyntaxes);
+        var matchResult = FuncMatcher.Match(context, TypeEnv.Empty, fieldParamTypes, bVariadic: false, partialTypeArgs: default, argSyntaxes, new NullTypeResolver(typeArgs: default));
 
         if (matchResult != null)
         {
@@ -373,63 +373,97 @@ struct CallableAndArgsBinder : IIntermediateExpVisitor<TranslationResult<R.Exp>>
         // NOTICE: 생성자 검색 (AnalyzeNewExp 부분과 비슷)
         var structDecl = structCallable.GetDecl();
 
-        var constructorDecls = ImmutableArray.CreateRange(structDecl.GetConstructorCount, structDecl.GetConstructor);
+        var candidates = FuncsMatcherExtensions.MakeCandidates(structDecl.GetConstructorCount(), structDecl.GetConstructor);
+        var matchResultEntries = FuncsMatcher.Match(context, structCallable.GetTypeEnv(), candidates, argSyntaxes, partialTypeArgs: default);
 
-        var matchResult = FuncMatcher.MatchIndex(context, structCallable.GetTypeEnv(), constructorDecls, argSyntaxes, default);
-
-        switch (matchResult)
+        var matchCount = matchResultEntries.Length;
+        if (matchCount == 1)
         {
-            case FuncMatchIndexResult.MultipleCandidates:
-                return FatalCallable(A0907_CallExp_MultipleMatchedStructConstructors);
+            var matchResultEntry = matchResultEntries[0];            
 
-            case FuncMatchIndexResult.NotFound:
-                return FatalCallable(A0905_CallExp_NoMatchedStructConstructorFound);
+            // 지금은 constructor가 typeArgs를 받지 않아서 structCallable에서 곧바로 가져올 수 있지만,
+            // TypeArgs가 추가된다면 Constructor도 Instantiate 해야 하고, StructSymbol.GetConstructor를 제거해야한다                        
+            // var constructorDecl = structDecl.GetConstructor(successResult.Index)
+            // SymbolInstantiator.Instantiate(factory, structCallable, constructorDecl, successResult.TypeArgs);
+            var constructor = structCallable.GetConstructor(matchResultEntry.Index);
 
-            case FuncMatchIndexResult.Success successResult:
-                // 지금은 constructor가 typeArgs를 받지 않아서 structCallable에서 곧바로 가져올 수 있지만,
-                // TypeArgs가 추가된다면 Constructor도 Instantiate 해야 하고, StructSymbol.GetConstructor를 제거해야한다                        
-                // var constructorDecl = structDecl.GetConstructor(successResult.Index)
-                // SymbolInstantiator.Instantiate(factory, structCallable, constructorDecl, successResult.TypeArgs);
-                var constructor = structCallable.GetConstructor(successResult.Index);
+            if (!context.CanAccess(constructor))
+                return FatalCallable(A2011_ResolveIdentifier_TryAccessingPrivateMember);
 
-                if (!context.CanAccess(constructor))
-                    return FatalCallable(A2011_ResolveIdentifier_TryAccessingPrivateMember);
-
-                return Valid(new R.NewStructExp(constructor, successResult.Args));
+            return Valid(new R.NewStructExp(constructor, matchResultEntry.Args));
+        }            
+        else if (matchCount == 0)
+        {
+            return FatalCallable(A0905_CallExp_NoMatchedStructConstructorFound);
         }
-
-        throw new UnreachableException();
+        else
+        {
+            return FatalCallable(A0907_CallExp_MultipleMatchedStructConstructors);
+        }
     }
 
-    TranslationResult<(TFuncSymbol Func, ImmutableArray<R.Exp> Args)> InternalMatchFunc<TFuncDeclSymbol, TFuncSymbol>(
+
+    ImmutableArray<FuncsMatcher.Candidate> MakeCandidates<TFuncSymbol, TFuncDeclSymbol>(ImmutableArray<DeclAndConstructor<TFuncDeclSymbol, TFuncSymbol>> declAndConstructors)
+            where TFuncDeclSymbol : IFuncDeclSymbol
+    {
+        // TODO: 메모리 소비 제거
+
+        int candidateCount = declAndConstructors.Length;
+        var candidatesBuilder = ImmutableArray.CreateBuilder<FuncsMatcher.Candidate>(candidateCount);
+        for (int i = 0; i < candidateCount; i++)
+        {
+            var decl = declAndConstructors[i].GetDecl();
+
+            int paramCount = decl.GetParameterCount();
+            var parametersBuilder = ImmutableArray.CreateBuilder<FuncParameter>(paramCount);
+
+            for (int j = 0; j < paramCount; j++)
+            {
+                var parameter = decl.GetParameter(j);
+                parametersBuilder.Add(parameter);
+            }
+
+            var candidate = new FuncsMatcher.Candidate(decl.IsLastParameterVariadic(), parametersBuilder.MoveToImmutable());
+            candidatesBuilder.Add(candidate);
+        }
+
+        return candidatesBuilder.MoveToImmutable();
+    }
+
+
+
+    TranslationResult<(TFuncSymbol Func, ImmutableArray<R.Argument> Args)> InternalMatchFunc<TFuncDeclSymbol, TFuncSymbol>(
         ImmutableArray<DeclAndConstructor<TFuncDeclSymbol, TFuncSymbol>> declAndConstructors,
         ImmutableArray<IType> typeArgsForMatch)
         where TFuncDeclSymbol : IFuncDeclSymbol
     {
-        // TODO: 메모리 소비 제거
-        var decls = ImmutableArray.CreateRange(declAndConstructors, declAndConstructor => declAndConstructor.GetDecl());
+        TranslationResult<(TFuncSymbol, ImmutableArray<R.Argument>)> Error()
+        {
+            return TranslationResult.Error<(TFuncSymbol, ImmutableArray<R.Argument>)>();
+        }
+
+        var candidates = MakeCandidates(declAndConstructors);
 
         // outer가 없으므로 outerTypeEnv는 None이다
-        var result = FuncMatcher.MatchIndex(context, TypeEnv.Empty, decls, argSyntaxes, typeArgsForMatch);
+        var matches = FuncsMatcher.Match(context, TypeEnv.Empty, candidates, argSyntaxes, typeArgsForMatch);
+        var matchCount = matches.Length;
 
-        switch (result)
+        if (matchCount == 1)
         {
-            case FuncMatchIndexResult.MultipleCandidates:
-                context.AddFatalError(A0901_CallExp_MultipleCandidates, nodeForCallableErrorReport);
-                return TranslationResult.Error<(TFuncSymbol, ImmutableArray<R.Exp>)>();
+            var (index, typeArgs, rargs) = matches[0];
 
-            case FuncMatchIndexResult.NotFound:
-                context.AddFatalError(A0906_CallExp_NotFound, nodeForCallableErrorReport);
-                return TranslationResult.Error<(TFuncSymbol, ImmutableArray<R.Exp>)>();
-
-            case FuncMatchIndexResult.Success successResult:
-                var func = declAndConstructors[successResult.Index].MakeSymbol(successResult.TypeArgs);
-                return TranslationResult.Valid<(TFuncSymbol, ImmutableArray<R.Exp>)>((func, successResult.Args));
-
-            default:
-                throw new UnreachableException();
+            var func = declAndConstructors[index].MakeSymbol(typeArgs);
+            return TranslationResult.Valid((func, rargs));
+        }
+        else if (matchCount == 0)
+        {
+            context.AddFatalError(A0906_CallExp_NotFound, nodeForCallableErrorReport);
+            return Error();
+        }
+        else
+        {
+            context.AddFatalError(A0901_CallExp_MultipleCandidates, nodeForCallableErrorReport);
+            return Error();
         }
     }
-
-    
 }

@@ -83,7 +83,7 @@ struct S
                 new S.TypeDeclScriptElement(new S.StructDecl(null, "S", Arr<string>(), Arr<S.TypeExp>(), Arr<S.StructMemberDecl>(
                     // new S.StructMemberVarDecl(null, SIntTypeExp(), Arr<string>("x")),
 
-                    new S.StructConstructorDecl(null, "S", Arr<S.FuncParam>(new S.FuncParam(S.FuncParamKind.Normal, SIntTypeExp(), "x")), SBlock(
+                    new S.StructConstructorDecl(null, "S", Arr<S.FuncParam>(new S.FuncParam(HasParams: false, SIntTypeExp(), "x")), SBlock(
                     // new S.ExpStmt(new S.BinaryOpExp(S.BinaryOpKind.Assign, new S.MemberExp(SId("this"), "x", default), SId("x")))
                     ))
                 )))
@@ -154,7 +154,7 @@ var s = S(3);
             var sscript = SScript(
                 new S.TypeDeclScriptElement(new S.StructDecl(null, "S", Arr<string>(), Arr<S.TypeExp>(), Arr<S.StructMemberDecl>(
 
-                    new S.StructConstructorDecl(null, "S", Arr<S.FuncParam>(new S.FuncParam(S.FuncParamKind.Normal, SIntTypeExp(), "x")), SBlock(
+                    new S.StructConstructorDecl(null, "S", Arr<S.FuncParam>(new S.FuncParam(HasParams: false, SIntTypeExp(), "x")), SBlock(
                         new S.CommandStmt(Arr(new S.StringExp(Arr<S.StringExpElement>(new S.ExpStringExpElement(SId("x"))))))
                     ))
                 ))),
@@ -223,7 +223,7 @@ var s = S(3);
 
                     new S.StructMemberVarDecl(null, SIntTypeExp(), Arr("x")),
 
-                    new S.StructConstructorDecl(null, "S", Arr<S.FuncParam>(new S.FuncParam(S.FuncParamKind.Normal, SIntTypeExp(), "x")), SBlock(
+                    new S.StructConstructorDecl(null, "S", Arr<S.FuncParam>(new S.FuncParam(HasParams: false, SIntTypeExp(), "x")), SBlock(
                         new S.ExpStmt(new S.BinaryOpExp(S.BinaryOpKind.Assign, new S.MemberExp(SId("this"), "x", default), SId("x")))
                     ))
                 ))),
@@ -522,7 +522,7 @@ var i = s.F(2);
                 new S.TypeDeclScriptElement(new S.StructDecl(null, "S", Arr<string>(), Arr<S.TypeExp>(), Arr<S.StructMemberDecl>(
 
                     new S.StructMemberVarDecl(null, SIntTypeExp(), Arr("x")),
-                    new S.StructMemberFuncDecl(null, false, false, false, SIntTypeExp(), "F", default, Arr(new S.FuncParam(S.FuncParamKind.Normal, SIntTypeExp(), "y")), SBlock(
+                    new S.StructMemberFuncDecl(null, false, false, false, SIntTypeExp(), "F", default, Arr(new S.FuncParam(HasParams: false, SIntTypeExp(), "y")), SBlock(
                         new S.ReturnStmt(new S.ReturnValueInfo(new S.BinaryOpExp(S.BinaryOpKind.Add, SId("x"), SId("y"))))
                     ))
                 ))),

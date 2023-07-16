@@ -22,7 +22,7 @@ namespace Citron.Symbol
         FuncReturn funcReturn;
         Name name;
         ImmutableArray<Name> typeParams;
-        ImmutableArray<FuncParameter> parameters;        
+        ImmutableArray<FuncParameter> parameters;
         bool bStatic;
 
         LambdaDeclSymbolComponent<ClassMemberFuncDeclSymbol> lambdaComponent;
@@ -169,6 +169,11 @@ namespace Citron.Symbol
             context.SerializeBool(nameof(bStatic), bStatic);
             context.SerializeValueRef(nameof(lambdaComponent), ref lambdaComponent);
             context.SerializeString(nameof(initState), initState.ToString());
+        }
+
+        bool IFuncDeclSymbol.IsLastParameterVariadic()
+        {
+            throw new NotImplementedException();
         }
     }
 }

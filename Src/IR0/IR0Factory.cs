@@ -460,12 +460,12 @@ namespace Citron.IR0
         
         public ImmutableArray<FuncParameter> FuncParams(params (IType Type, string Name)[] elems)
         {
-            return elems.Select(e => new FuncParameter(FuncParameterKind.Default, e.Type, new Name.Normal(e.Name))).ToImmutableArray();
+            return elems.Select(e => new FuncParameter(e.Type, new Name.Normal(e.Name))).ToImmutableArray();
         }
 
-        public ImmutableArray<Exp> Args(params Exp[] exps)
+        public ImmutableArray<Argument> Args(params Exp[] exps)
         {
-            return exps.ToImmutableArray();
+            return exps.Select(e => (Argument)new Argument.Normal(e)).ToImmutableArray();
         }
 
         public SymbolId Module(string moduleName)
@@ -503,9 +503,9 @@ namespace Citron.IR0
             return new FuncReturn(type);
         }
 
-        public Exp Arg(Exp exp)
+        public Argument Arg(Exp exp)
         {
-            return exp;
+            return new Argument.Normal(exp);
         }
 
         public LambdaExp Lambda(LambdaSymbol lambda, params Argument[] args)
@@ -538,11 +538,6 @@ namespace Citron.IR0
             return new YieldStmt(exp);
         }
 
-        public IType BoxRefType(IType type)
-        {
-            return new BoxRefType(type);
-        }
-
         public IType LocalRefType(IType type)
         {
             return new LocalRefType(type);
@@ -561,7 +556,7 @@ namespace Citron.IR0
             foreach (var paramType in paramTypes)
             {
                 var name = new Name.Anonymous(i); // 이름은 임의로 짓는다
-                paramsBuilder.Add(new FuncParameter(FuncParameterKind.Default, paramType, name));
+                paramsBuilder.Add(new FuncParameter(paramType, name));
             }
 
             return new FuncType(new FuncReturn(retType), paramsBuilder.MoveToImmutable());

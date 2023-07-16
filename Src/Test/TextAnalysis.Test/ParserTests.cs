@@ -58,11 +58,10 @@ namespace Citron.TextAnalysis.Test
                 SIdTypeExp("void"),
                 "Func", default,
                 Arr(
-                    new FuncParam(SIdTypeExp("int"), "x"),
-                    new FuncParam(SIdTypeExp("string"), "y"),
-                    new FuncParam(SIdTypeExp("int"), "z")
+                    new FuncParam(HasParams: false, SIdTypeExp("int"), "x"),
+                    new FuncParam(HasParams: false, SIdTypeExp("string"), "y"),
+                    new FuncParam(HasParams: false, SIdTypeExp("int"), "z")
                 ), 
-                isVariadic: true,
                 Arr<Stmt>(
                     new VarDeclStmt(
                         new VarDecl(
@@ -107,7 +106,6 @@ namespace NS1
                             "F",
                             typeParams: default,
                             parameters: default,
-                            isVariadic: false,
                             body: default
                     )))
                 )))
@@ -187,8 +185,7 @@ public struct S<T> : B, I
                         SIdTypeExp("void"),
                         "Func",
                         Arr(new TypeParam("X")),
-                        Arr(new FuncParam(SIdTypeExp("string"), "s")),
-                        IsVariadic: false,
+                        Arr(new FuncParam(HasParams: false, SIdTypeExp("string"), "s")),
                         Arr<Stmt>()
                     ),
 
@@ -200,7 +197,6 @@ public struct S<T> : B, I
                         "F2",
                         Arr(new TypeParam("T")),
                         Parameters: default,
-                        IsVariadic: false,
                         Arr<Stmt>(new YieldStmt(new IntLiteralExp(4)))
                     )
                 )

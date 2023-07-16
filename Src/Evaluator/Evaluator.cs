@@ -154,11 +154,6 @@ namespace Citron
                 this.driverContext = driverContext;
             }
 
-            Value ITypeIdVisitor<Value>.VisitBoxRef(BoxRefTypeId typeId)
-            {
-                throw new NotImplementedException();
-            }
-
             Value ITypeIdVisitor<Value>.VisitFunc(FuncTypeId typeId)
             {
                 throw new NotImplementedException();

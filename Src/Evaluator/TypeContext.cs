@@ -100,12 +100,7 @@ namespace Citron
                 var appliedTypeArgs = builder.MoveToImmutable();
                 return new SymbolPath(appliedOuter, path.Name, appliedTypeArgs, path.ParamIds);
             }
-
-            TypeId ITypeIdVisitor<TypeId>.VisitBoxRef(BoxRefTypeId typeId)
-            {
-                return new BoxRefTypeId(typeId.InnerTypeId.Accept<Applier, TypeId>(ref this));
-            }
-
+            
             TypeId ITypeIdVisitor<TypeId>.VisitFunc(FuncTypeId typeId)
             {
                 throw new NotImplementedException();
@@ -115,12 +110,7 @@ namespace Citron
             {
                 throw new NotImplementedException();
             }
-
-            TypeId ITypeIdVisitor<TypeId>.VisitLocalRef(LocalRefTypeId typeId)
-            {
-                return new LocalRefTypeId(typeId.InnerTypeId.Accept<Applier, TypeId>(ref this));
-            }
-
+            
             TypeId ITypeIdVisitor<TypeId>.VisitNullable(NullableTypeId typeId)
             {
                 var appliedId = typeId.InnerTypeId.Accept<Applier, TypeId>(ref this);

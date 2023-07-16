@@ -6,12 +6,23 @@ using static Citron.Infra.Misc;
 
 using static Citron.IR0.IR0Factory;
 using static Citron.IR0Translator.SyntaxAnalysisErrorCode;
+using Citron.Symbol;
+using static Citron.Test.Misc;
 
 namespace Citron.Test.IntegrateTest
 {
     class ClassTestData : IntegrateTestData<ClassTestData>
     {
-        static string ModuleName = "TestModule";
+        static Name ModuleName = new Name.Normal("TestModule");
+        static R.IR0Factory r;
+        static SymbolFactory symbolFactory;
+
+        static ClassTestData()
+        {
+            var preparations = TestPreparations.Prepare();
+            r = preparations.IR0Factory;
+            symbolFactory = preparations.SymbolFactory;
+        }
 
         // UnitOfWorkName_ScenarioName_ExpectedBehavior
         static TestData Make_Declaration_DeclareMemberVar_TranslateProperly()
@@ -30,39 +41,36 @@ class C
                 )))
             );
 
-            var rscript = RScript(ModuleName, 
-                Arr<R.TypeDecl>(new R.ClassDecl(R.AccessModifier.Private, "C", default, null, default, 
-                    Arr(new R.ClassConstructorDecl(
-                        R.AccessModifier.Public,
-                        default,
-                        RNormalParams((R.Path.Int, "x"), (R.Path.Int, "y"), (R.Path.String, "s")),
-                        null,
-                        RBlock(
-                            new R.ExpStmt(new R.AssignExp(
-                                new R.ClassMemberLoc(new R.ThisLoc(), RRoot(ModuleName).Child("C").Child("x")),
-                                new R.LoadExp(RLocalVarLoc("x"))
-                            )),
-                            new R.ExpStmt(new R.AssignExp(
-                                new R.ClassMemberLoc(new R.ThisLoc(), RRoot(ModuleName).Child("C").Child("y")),
-                                new R.LoadExp(RLocalVarLoc("y"))
-                            )),
-                            new R.ExpStmt(new R.AssignExp(
-                                new R.ClassMemberLoc(new R.ThisLoc(), RRoot(ModuleName).Child("C").Child("s")),
-                                new R.LoadExp(RLocalVarLoc("s"))
-                            ))
-                        )
-                    )),
+            var moduleDS = new ModuleDeclSymbol(ModuleName, bReference: false);
+            var cDS = new ClassDeclSymbol(moduleDS, Accessor.Private, NormalName("C"), typeParams: default);
 
-                    default,
+            var cXDS = new ClassMemberVarDeclSymbol(cDS, Accessor.Private, bStatic: false, r.IntType(), NormalName("x"));
+            cDS.AddMemberVar(cXDS);
 
-                    Arr(
-                        new R.ClassMemberVarDecl(R.AccessModifier.Private, R.Path.Int, Arr("x", "y")),
-                        new R.ClassMemberVarDecl(R.AccessModifier.Public, R.Path.String, Arr("s"))
-                    )
-                )),
+            var cYDS = new ClassMemberVarDeclSymbol(cDS, Accessor.Private, bStatic: false, r.IntType(), NormalName("y"));
+            cDS.AddMemberVar(cYDS);
 
-                default, default
-            );
+            var cSDS = new ClassMemberVarDeclSymbol(cDS, Accessor.Public, bStatic: false, r.StringType(), NormalName("s"));
+            cDS.AddMemberVar(cSDS);
+
+            var cConstructorDS = new ClassConstructorDeclSymbol(cDS, Accessor.Public,
+                Arr(
+                    new FuncParameter(FuncParameterKind.Default, r.IntType(), NormalName("x")),
+                    new FuncParameter(FuncParameterKind.Default, r.IntType(), NormalName("y")),
+                    new FuncParameter(FuncParameterKind.Default, r.IntType(), NormalName("s"))
+                ),
+                bTrivial: true);
+            cDS.AddConstructor(cConstructorDS);
+            
+            var cXS = (ClassMemberVarSymbol)cXDS.MakeOpenSymbol(symbolFactory);
+            var cYS = (ClassMemberVarSymbol)cYDS.MakeOpenSymbol(symbolFactory);
+            var cSS = (ClassMemberVarSymbol)cSDS.MakeOpenSymbol(symbolFactory);
+
+            var rscript = r.Script(moduleDS, new R.StmtBody(cConstructorDS, Arr<R.Stmt>(
+                r.Assign(new R.ClassMemberLoc(new R.ThisLoc(), cXS), r.Load(r.LocalVar("x"), r.IntType())),
+                r.Assign(new R.ClassMemberLoc(new R.ThisLoc(), cYS), r.Load(r.LocalVar("y"), r.IntType())),
+                r.Assign(new R.ClassMemberLoc(new R.ThisLoc(), cSS), r.Load(r.LocalVar("s"), r.StringType()))
+            )));
 
             return new ParseTranslateTestData(code, sscript, rscript);
         }
@@ -142,7 +150,7 @@ var c = new C(3);
             var sscript = SScript(
                 new S.TypeDeclScriptElement(new S.ClassDecl(null, "C", Arr<string>(), Arr<S.TypeExp>(), Arr<S.ClassMemberDecl>(
 
-                    new S.ClassConstructorDecl(S.AccessModifier.Public, "C", Arr<S.FuncParam>(new S.FuncParam(S.FuncParamKind.Normal, SIntTypeExp(), "x")), null, SBlock(
+                    new S.ClassConstructorDecl(S.AccessModifier.Public, "C", Arr<S.FuncParam>(new S.FuncParam(HasParams: false, SIntTypeExp(), "x")), null, SBlock(
                         new S.CommandStmt(Arr(new S.StringExp(Arr<S.StringExpElement>(new S.ExpStringExpElement(SId("x"))))))
                     ))
                 ))),
@@ -182,7 +190,7 @@ var c = new C(3);
                     new R.NewClassExp(
                         RRoot("TestModule").Child("C"),
                         new R.ParamHash(0, Arr(new R.ParamHashEntry(R.ParamKind.Default, R.Path.Int))),
-                        Arr<R.Exp>(RInt(3))
+                        (RInt(3))
                     )
                 )
             );
@@ -469,7 +477,7 @@ var i = c.F(2);
                 new S.TypeDeclScriptElement(new S.ClassDecl(null, "C", Arr<string>(), Arr<S.TypeExp>(), Arr<S.ClassMemberDecl>(
 
                     new S.ClassMemberVarDecl(null, SIntTypeExp(), Arr("x")),
-                    new S.ClassMemberFuncDecl(S.AccessModifier.Public, false, false, false, SIntTypeExp(), "F", default, Arr(new S.FuncParam(S.FuncParamKind.Normal, SIntTypeExp(), "y")), SBlock(
+                    new S.ClassMemberFuncDecl(S.AccessModifier.Public, false, false, false, SIntTypeExp(), "F", default, Arr(new S.FuncParam(HasParams: false, SIntTypeExp(), "y")), SBlock(
                         new S.ReturnStmt(new S.ReturnValueInfo(new S.BinaryOpExp(S.BinaryOpKind.Add, SId("x"), SId("y"))))
                     ))
                 ))),
@@ -638,7 +646,7 @@ var c = new C(2, 3);
                 new S.TypeDeclScriptElement(
                     new S.ClassDecl(null, "B", default, default, Arr<S.ClassMemberDecl>(
                         new S.ClassMemberVarDecl(S.AccessModifier.Public, SIntTypeExp(), Arr("x")),
-                        new S.ClassConstructorDecl(S.AccessModifier.Public, "B", Arr(new S.FuncParam(S.FuncParamKind.Normal, SIntTypeExp(), "x")), null, SBlock(
+                        new S.ClassConstructorDecl(S.AccessModifier.Public, "B", Arr(new S.FuncParam(HasParams: false, SIntTypeExp(), "x")), null, SBlock(
                             SAssignStmt(SId("this").Member("x"), SId("x"))
                         ))
                     ))

@@ -8,5 +8,7 @@ namespace Citron.Symbol
 
         int GetParameterCount();
         FuncParameter GetParameter(int index);
+
+        bool IsLastParameterVariadic();
     }
 }

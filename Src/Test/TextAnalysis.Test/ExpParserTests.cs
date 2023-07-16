@@ -132,13 +132,12 @@ namespace Citron.TextAnalysis.Test
                     Arr(new LambdaExpParam(null, "b")),
                     Arr<Stmt>(new ReturnStmt(
                         new ReturnValueInfo(
-                            false,
                             new LambdaExp(
                                 Arr(
                                     new LambdaExpParam(null, "c"),
                                     new LambdaExpParam(new IdTypeExp("int", default), "d")
                                 ),
-                                Arr<Stmt>(new ReturnStmt(new ReturnValueInfo(false, SId("e"))))
+                                Arr<Stmt>(new ReturnStmt(new ReturnValueInfo(SId("e"))))
                             )
                         )
                     ))

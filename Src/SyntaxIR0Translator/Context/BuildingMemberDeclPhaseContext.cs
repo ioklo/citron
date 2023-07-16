@@ -34,6 +34,7 @@ namespace Citron.Analysis
             return TypeMakerByTypeExp.MakeType(modules.AsEnumerable(), factory, curNode, typeExp);
         }
 
+        // TODO: [0] bVariadic 처리를 해야 한다
         public (FuncReturn, ImmutableArray<FuncParameter> Param) MakeFuncReturnAndParams(IDeclSymbolNode curNode, S.TypeExp retTypeSyntax, ImmutableArray<S.FuncParam> paramSyntaxes)
         {
             // 지금은 중첩 함수가 없으므로 바로 윗 단계부터 찾도록 한다
@@ -43,15 +44,8 @@ namespace Citron.Analysis
             var paramsBuilder = ImmutableArray.CreateBuilder<FuncParameter>(paramSyntaxes.Length);
             foreach (var paramSyntax in paramSyntaxes)
             {
-                var paramKind = paramSyntax.Kind switch
-                {
-                    S.FuncParamKind.Normal => FuncParameterKind.Default,
-                    S.FuncParamKind.Params => FuncParameterKind.Params,
-                    _ => throw new UnreachableException()
-                };
-
                 var paramTypeSymbol = MakeType(paramSyntax.Type, curNode);
-                var param = new FuncParameter(paramKind, paramTypeSymbol, new Name.Normal(paramSyntax.Name));
+                var param = new FuncParameter(paramTypeSymbol, new Name.Normal(paramSyntax.Name));
                 paramsBuilder.Add(param);
             }
 

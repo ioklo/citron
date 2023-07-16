@@ -169,5 +169,10 @@ namespace Citron.Symbol
             context.SerializeValueRef(nameof(lambdaComponent), ref lambdaComponent);
             context.SerializeString(nameof(initState), initState.ToString());
         }
+
+        bool IFuncDeclSymbol.IsLastParameterVariadic()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

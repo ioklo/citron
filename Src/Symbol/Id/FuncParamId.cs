@@ -5,11 +5,10 @@ using System;
 
 namespace Citron.Symbol
 {
-    public record struct FuncParamId(FuncParameterKind Kind, TypeId TypeId) : ISerializable
+    public record struct FuncParamId(TypeId TypeId) : ISerializable
     {
         void ISerializable.DoSerialize(ref SerializeContext context)
-        {
-            context.SerializeString(nameof(Kind), Kind.ToString());
+        {   
             context.SerializeRef(nameof(TypeId), TypeId);
         }
     }
@@ -21,11 +20,10 @@ namespace Citron.Symbol
             var builder = ImmutableArray.CreateBuilder<FuncParamId>(funcParams.Length);
 
             foreach (var funcParam in funcParams)
-            {
-                var kind = funcParam.Kind;
+            {                
                 var typeId = funcParam.Type.GetTypeId();
 
-                builder.Add(new FuncParamId(kind, typeId));
+                builder.Add(new FuncParamId(typeId));
             }
 
             return builder.MoveToImmutable();

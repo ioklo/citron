@@ -359,9 +359,8 @@ static class TypeMakerByTypeExp
                 throw new NotImplementedException(); // 타입이 아닙니다
             }
         }
-
-        // int&
-        Candidates<Item> ITypeExpVisitor<Candidates<Item>>.VisitRef(LocalRefTypeExp typeExp)
+        
+        Candidates<Item> ITypeExpVisitor<Candidates<Item>>.VisitLocalRef(LocalRefTypeExp typeExp)
         {
             var type = MakeType(typeExp.InnerTypeExp);
 
@@ -369,6 +368,11 @@ static class TypeMakerByTypeExp
             candidates.Add(Item.Make(new LocalRefType(type)));
 
             return candidates;
+        }
+
+        Candidates<Item> ITypeExpVisitor<Candidates<Item>>.VisitBoxRef(BoxRefTypeExp typeExp)
+        {
+            throw new NotImplementedException();
         }
     }    
 

@@ -13,7 +13,6 @@ namespace Citron.Syntax
         public string Name { get; }
         public ImmutableArray<TypeParam> TypeParams { get; }
         public ImmutableArray<FuncParam> Parameters { get; }
-        public bool IsVariadic { get; }
         public ImmutableArray<Stmt> Body { get; }
     }
 }

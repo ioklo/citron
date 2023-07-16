@@ -95,5 +95,10 @@ namespace Citron
         {
             throw new NotImplementedException();
         }
+
+        ValueTask<Value> IIR0LocVisitor<ValueTask<Value>>.VisitBoxDeref(BoxDerefLoc loc)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

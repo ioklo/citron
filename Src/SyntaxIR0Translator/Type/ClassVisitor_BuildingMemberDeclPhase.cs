@@ -58,7 +58,7 @@ namespace Citron.Analysis
             // Constructor는 Type Parameter가 없으므로 파라미터를 만들 때, 상위(class) declSymbol을 넘긴다
             var parameters = BuilderMisc.MakeParameters(declSymbol, context, syntax.Parameters);
 
-            // TODO: syntax에 trivial 마킹하면 검사하고 trivial로 만든다
+            // TODO: [1] syntax에 trivial 마킹하면 검사하고 trivial로 만든다
             var constructorDeclSymbol = new ClassConstructorDeclSymbol(declSymbol, accessor, parameters, bTrivial: false);
             declSymbol.AddConstructor(constructorDeclSymbol);
 
@@ -85,10 +85,6 @@ namespace Citron.Analysis
                 var parameter = constructorDecl.GetParameter(i);
 
                 if (!baseParameter.Equals(parameter)) return false;
-
-                // 추가 조건, normal로만 자동으로 생성한다
-                if (baseParameter.Kind != FuncParameterKind.Default ||
-                    parameter.Kind != FuncParameterKind.Default) return false;
             }
 
             // baseParam을 제외한 뒷부분이 memberVarType과 맞는지 봐야 한다
@@ -99,9 +95,6 @@ namespace Citron.Analysis
 
                 // 타입을 비교해서 같지 않다면 제외
                 if (!parameter.Type.Equals(memberVarType)) return false;
-
-                // 기본으로만 자동으로 생성한다
-                if (parameter.Kind != FuncParameterKind.Default) return false;
             }
 
             return true;
@@ -128,7 +121,7 @@ namespace Citron.Analysis
                     var paramName = BuilderMisc.MakeBaseConstructorParamName(i, baseParam.Name);
 
                     // 이름 보정, base로 가는 파라미터들은 다 이름이 ConstructorParam이다.
-                    var newBaseParam = new FuncParameter(baseParam.Kind, baseParam.Type, paramName);
+                    var newBaseParam = new FuncParameter(baseParam.Type, paramName);
                     builder.Add(newBaseParam);
                 }
             }
@@ -139,7 +132,7 @@ namespace Citron.Analysis
                 var type = memberVar.GetDeclType();
                 var name = memberVar.GetName();
 
-                var param = new FuncParameter(FuncParameterKind.Default, type, name);
+                var param = new FuncParameter(type, name);
                 builder.Add(param);
             }
 
