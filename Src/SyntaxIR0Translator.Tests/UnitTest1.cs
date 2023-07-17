@@ -85,15 +85,14 @@ public class UnitTest1
     [Fact]
     public void Build_FuncDecl_RefTypes()
     {
-        // T& Func<T>(T& t) { return ref t; }
-        // 조만간 T* Func<T>(T* t) { return t; } 로 변경을 
+        // T* Func<T>(T* t) { return t; }
         var script = SScript(new S.GlobalFuncDeclScriptElement(new S.GlobalFuncDecl(
             accessModifier: null,
             isSequence: false,
-            retType: new S.LocalRefTypeExp(new S.IdTypeExp("T", default)),
+            retType: SLocalPtrTypeExp(new S.IdTypeExp("T", default)),
             name: "Func",
             typeParams: Arr(new S.TypeParam("T")),
-            parameters: Arr(new S.FuncParam(HasParams: false, new S.LocalRefTypeExp(new S.IdTypeExp("T", default)), "t")),
+            parameters: Arr(new S.FuncParam(HasParams: false, SLocalPtrTypeExp(new S.IdTypeExp("T", default)), "t")),
             body: Arr<S.Stmt>(new S.ReturnStmt(new S.ReturnValueInfo(new S.IdentifierExp("t", default))))
         )));
 
@@ -103,11 +102,10 @@ public class UnitTest1
         // expected
         var expectedModuleDecl = new ModuleDeclSymbol(moduleName, bReference: false);
         var funcDecl = new GlobalFuncDeclSymbol(expectedModuleDecl, Accessor.Private, NormalName("Func"), Arr(NormalName("T")));
-
-        var typeVar = new TypeVarType(0, NormalName("T"));
+        
         funcDecl.InitFuncReturnAndParams(
-            new FuncReturn(new LocalRefType(typeVar)),
-            Arr(new FuncParameter(new LocalRefType(typeVar), NormalName("t"))));
+            new FuncReturn(new LocalPtrType(new TypeVarType(0, NormalName("T")))),
+            Arr(new FuncParameter(new LocalPtrType(new TypeVarType(0, NormalName("T"))), NormalName("t"))));
 
         expectedModuleDecl.AddFunc(funcDecl);
 
@@ -118,7 +116,7 @@ public class UnitTest1
     [Fact]
     public void Build_FuncDecl_ModuleInfoHasFuncInfo()
     {
-        // void Func<T, U>(int x, T& y, params U z)
+        // void Func<T, U>(int x, T* y, params U z)
         var script = SScript(new S.GlobalFuncDeclScriptElement(new S.GlobalFuncDecl(
             null,
             isSequence: false,
@@ -127,7 +125,7 @@ public class UnitTest1
             Arr(new S.TypeParam("T"), new S.TypeParam("U")),
             Arr(
                 new S.FuncParam(HasParams: false, SIntTypeExp(), "x"),                
-                new S.FuncParam(HasParams: false, new S.LocalRefTypeExp(new S.IdTypeExp("T", default)), "y"),
+                new S.FuncParam(HasParams: false, new S.LocalPtrTypeExp(new S.IdTypeExp("T", default)), "y"),
                 new S.FuncParam(HasParams: true, new S.IdTypeExp("U", default), "z")
             ),
             Arr<S.Stmt>()
@@ -145,7 +143,7 @@ public class UnitTest1
             new FuncReturn(voidType),
             Arr(
                 new FuncParameter(intType, NormalName("x")),
-                new FuncParameter(new LocalRefType(t), NormalName("z")),
+                new FuncParameter(new LocalPtrType(t), NormalName("z")),
                 new FuncParameter(u, NormalName("y"))
             )
         );

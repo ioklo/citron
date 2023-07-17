@@ -136,27 +136,7 @@ struct ExpResolvedExpTranslator : IExpVisitor
     {
         return HandleExpTranslationResult(new CoreExpIR0ExpTranslator(hintType, context).TranslateNew(exp));
     }
-
-    //// &i를 뭐로 번역할 것인가
-    //// &c.x // box ref
-    //// &s.x // local ref
-    //// &e.x <- 금지, 런타임에 레이아웃이 바뀔 수 있다 (추후 ref-able enum을 쓰면(레이아웃이 겹치지 않는) 되도록 허용할 수 있다)
-    //TranslationResult<ResolvedExp> IExpVisitor.VisitRef(S.RefExp exp)
-    //{
-    //    // &a.b.c.d.e, 일단 innerExp를 memberLoc으로 변경하고, 다시 순회한다
-    //    //var innerResult = ExpVisitor.TranslateAsLoc(exp.InnerExp, context, hintType: null, bWrapExpAsLoc: false);
-    //    //if (innerResult == null) 
-    //    //    throw new NotImplementedException(); // 에러 처리
-
-    //    //var (innerLoc, innerType) = innerResult.Value;
-
-    //    //var refExpBuilder = new BoxRefExpBuilder();
-    //    //innerLoc.Accept(ref refExpBuilder);
-    //    //refExpBuilder.exp
-
-    //    throw new NotImplementedException();
-    //}
-
+    
     TranslationResult<ResolvedExp> IExpVisitor.VisitBox(S.BoxExp exp)
     {
         throw new NotImplementedException();

@@ -392,7 +392,7 @@ namespace Citron.Test
         {
             var syntaxScript = SScript(
                 new S.ForStmt(null, null, null, new S.EmbeddableStmt.Single(new S.ContinueStmt())),
-                new S.ForeachStmt(false, SIntTypeExp(), "x", new S.ListExp(SIntTypeExp(), default), new S.EmbeddableStmt.Single(new S.ContinueStmt()))
+                new S.ForeachStmt(SIntTypeExp(), "x", new S.ListExp(SIntTypeExp(), default), new S.EmbeddableStmt.Single(new S.ContinueStmt()))
             );
 
             var script = Translate(syntaxScript);
@@ -427,10 +427,10 @@ namespace Citron.Test
         public void BreakStmt_WithinNestedForAndForeachLoopTranslatesTrivially()
         {
             // for(;;;) 
-            //     foreach(int x in <int>[]) break;
+            //     foreach(int x in [int]()) break;
             var syntaxScript = SScript(
                 new S.ForStmt(null, null, null, new S.EmbeddableStmt.Single(
-                    new S.ForeachStmt(IsRef: false, SIntTypeExp(), "x", new S.ListExp(SIntTypeExp(), default), new S.EmbeddableStmt.Single(new S.BreakStmt()))
+                    new S.ForeachStmt(SIntTypeExp(), "x", new S.ListExp(SIntTypeExp(), default), new S.EmbeddableStmt.Single(new S.BreakStmt()))
                 ))
             );
 
@@ -873,7 +873,7 @@ namespace Citron.Test
         public void ForeachStmt_TranslatesTrivially()
         {
             // foreach(int x in list<int>());
-            var scriptSyntax = SScript(new S.ForeachStmt(false, SIntTypeExp(), "x", new S.ListExp(SIntTypeExp(), default), SEmbeddableBlankStmt()));
+            var scriptSyntax = SScript(new S.ForeachStmt(SIntTypeExp(), "x", new S.ListExp(SIntTypeExp(), default), SEmbeddableBlankStmt()));
 
             var script = Translate(scriptSyntax);
 
@@ -888,7 +888,7 @@ namespace Citron.Test
         public void ForeachStmt_ChecksIteratorIsListOrEnumerable()
         {
             S.Exp iterator;
-            var scriptSyntax = SScript(new S.ForeachStmt(false, SIntTypeExp(), "x", iterator = SInt(3), SEmbeddableBlankStmt()));
+            var scriptSyntax = SScript(new S.ForeachStmt(SIntTypeExp(), "x", iterator = SInt(3), SEmbeddableBlankStmt()));
 
             var errors = TranslateWithErrors(scriptSyntax);
 
@@ -906,7 +906,7 @@ namespace Citron.Test
         public void ForeachStmt_ChecksElemTypeIsAssignableFromIteratorElemType()
         {
             S.ForeachStmt foreachStmt;
-            var scriptSyntax = SScript(foreachStmt = new S.ForeachStmt(false, SStringTypeExp(), "x", new S.ListExp(SIntTypeExp(), default), SEmbeddableBlankStmt()));
+            var scriptSyntax = SScript(foreachStmt = new S.ForeachStmt(SStringTypeExp(), "x", new S.ListExp(SIntTypeExp(), default), SEmbeddableBlankStmt()));
 
             var errors = TranslateWithErrors(scriptSyntax);
 
@@ -1275,15 +1275,15 @@ namespace Citron.Test
         }
 
         [Fact]
-        void BinaryOpExp_AssigningToRefVar_TranslatesDerefBothSides()
+        void BinaryOpExp_AssigningToPtrVar_TranslatesDerefBothSides()
         {
             // int i = 3;
-            // int& x = i;
-            // x = 7 + x;
+            // int* x = &i;
+            // *x = 7 + *x;
 
             var syntaxScript = SScript(
                 SVarDeclStmt(SIntTypeExp(), "i", SInt(3)),
-                new S.VarDeclStmt(new S.VarDecl(SLocalRefTypeExp(SIntTypeExp()), Arr(new S.VarDeclElement("x", SId("i"))))),
+                new S.VarDeclStmt(new S.VarDecl(SLocalPtrTypeExp(SIntTypeExp()), Arr(new S.VarDeclElement("x", SRefExp(SId("i")))))),
                 new S.ExpStmt(new S.BinaryOpExp(
                     S.BinaryOpKind.Assign,
                     SId("x"),
@@ -1292,13 +1292,10 @@ namespace Citron.Test
             );
 
             var script = Translate(syntaxScript); 
-
-            // int i = 3;
-            // int& x = i;
-            // deref(x) = 7 + deref(x); // 사용할때마다 deref를 해야 한다
+            
             var expected = r.Script(
                 r.LocalVarDecl(r.IntType(), "i", r.Int(3)),
-                r.LocalVarDecl(r.LocalRefType(r.IntType()), "x", r.LocalRef(r.LocalVar("i"), r.IntType())),
+                r.LocalVarDecl(r.LocalPtrType(r.IntType()), "x", r.LocalRef(r.LocalVar("i"), r.IntType())),
                 r.Assign(
                     r.LocalDeref(r.LocalVar("x")),
                     r.CallInternalBinary(R.InternalBinaryOperator.Add_Int_Int_Int, r.Int(7), r.Load(r.LocalDeref(r.LocalVar("x")), r.IntType()))
@@ -1514,24 +1511,24 @@ namespace Citron.Test
         [Fact]
         void CallExp_RefArgumentTrivial_WorksProperly()
         {
-            //void F(int& i) 
+            //void F(int* i) 
             //{
-            //    i = 4;
+            //    *i = 4;
             //}
 
             //int j = 3;
-            //F(ref j);
+            //F(&j);
 
             var syntaxScript = SScript(
                 new S.GlobalFuncDeclScriptElement(new S.GlobalFuncDecl(
                     accessModifier: null, isSequence: false, SVoidTypeExp(), "F", typeParams: default,
-                    Arr(new S.FuncParam(HasParams: false, SLocalRefTypeExp(SIntTypeExp()), "i")),
+                    Arr(new S.FuncParam(HasParams: false, SLocalPtrTypeExp(SIntTypeExp()), "i")),
                     SBody(new S.ExpStmt(new S.BinaryOpExp(S.BinaryOpKind.Assign, SId("i"), SInt(4))))
                 )),
                 
                 SMain(
                     SVarDeclStmt(SIntTypeExp(), "j", SInt(3)),
-                    new S.ExpStmt(new S.CallExp(SId("F"), Arr<S.Argument>(new S.Argument.Normal(IsRef: true, SId("j")))))
+                    new S.ExpStmt(new S.CallExp(SId("F"), Arr<S.Argument>(new S.Argument.Normal(SRefExp(SId("j"))))))
                 )
             );
 
@@ -1576,7 +1573,7 @@ namespace Citron.Test
                 )),
 
                 SMain(
-                    new S.ExpStmt(new S.CallExp(SId("Func", SIntTypeExp()), Arr<S.Argument>(new S.Argument.Normal(IsRef: false, SInt(3)))))
+                    new S.ExpStmt(new S.CallExp(SId("Func", SIntTypeExp()), Arr<S.Argument>(new S.Argument.Normal(SInt(3)))))
                 )
             );
 
@@ -1616,7 +1613,7 @@ namespace Citron.Test
                 )),
 
                 SMain(
-                    new S.ExpStmt(new S.CallExp(SId("Func"), Arr<S.Argument>(new S.Argument.Normal(IsRef: false, SInt(3)))))
+                    new S.ExpStmt(new S.CallExp(SId("Func"), Arr<S.Argument>(new S.Argument.Normal(SInt(3)))))
                 )
             );
 
@@ -1891,61 +1888,5 @@ namespace Citron.Test
         }
 
         #endregion UninitializeVariable
-
-        #region LocalRef
-        [Fact]
-        void LocalRef_Init_TranslatesIntoLocalRefExp()
-        {
-            // int i = 0;
-            // int& x = i;
-
-            var scriptSyntax = SScript(
-                SVarDeclStmt(SIntTypeExp(), "i", SInt(0)),
-                SVarDeclStmt(SLocalRefTypeExp(SIntTypeExp()), "x", SId("i"))
-            );
-
-            var actual = Translate(scriptSyntax);
-
-            var expected = r.Script(
-                r.LocalVarDecl(r.IntType(), "i", r.Int(0)),
-                r.LocalVarDecl(r.LocalRefType(r.IntType()), "x", r.LocalRef(r.LocalVar("i"), r.IntType()))
-            );
-
-            AssertEquals(expected, actual);
-        }
-
-
-        #endregion LocalRef
-
-        #region BoxRef
-
-        // 1-1. 클래스 멤버 변수 loc 직접 사용, 가능
-        // var c = new C(); 
-        // box var& x = c.a; // c자리에 F()가 와도 TempLoc이므로 포함된다         
-
-        // 1-2. 클래스 멤버 변수 local 참조, 가능
-        // var c = new C();
-        // var& pc = c;
-        // box var& x = pc.a;
-
-        // 1-3. 클래스 멤버 변수 box 참조, 가능
-        // var c = new C();
-        // box var& pc = c;
-        // box var& x = pc.a;        
-
-        // 2-1. struct 멤버 loc 직접 사용, 에러
-        // var s = S();
-        // box var& x = s.a; // 에러
-        
-        // 2-2, struct 멤버 변수 local 참조, 에러
-        // var s = S();
-        // var& ps = s;
-        // box var& x = ps.a;
-
-        // 2-3. struct 멤버 변수 box 참조, 가능
-        // box var& ps = box S();
-        // box var& x = ps.a; 
-
-        #endregion BoxRef
     }
 }

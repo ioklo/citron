@@ -18,17 +18,15 @@ partial struct ExpIR0LocTranslator : IExpVisitor
     ScopeContext context;
     IType? hintType;
     bool bWrapExpAsLoc;
-    bool bDerefIfTypeIsRef;
     S.ISyntaxNode nodeForErrorReport;
     SyntaxAnalysisErrorCode notLocationErrorCode;
 
-    public static LocTranslationResult Translate(S.Exp exp, ScopeContext context, IType? hintType, bool bWrapExpAsLoc, bool bDerefIfTypeIsRef, SyntaxAnalysisErrorCode notLocationErrorCode)
+    public static LocTranslationResult Translate(S.Exp exp, ScopeContext context, IType? hintType, bool bWrapExpAsLoc, SyntaxAnalysisErrorCode notLocationErrorCode)
     {
         var translator = new ExpIR0LocTranslator { 
             context = context, 
             hintType = hintType, 
             bWrapExpAsLoc = bWrapExpAsLoc,
-            bDerefIfTypeIsRef = bDerefIfTypeIsRef,
             nodeForErrorReport = exp,
             notLocationErrorCode = notLocationErrorCode
         };
@@ -42,7 +40,7 @@ partial struct ExpIR0LocTranslator : IExpVisitor
         if (!reExpResult.IsValid(out var reExp))
             return TranslationResult.Error<IR0LocResult>();
 
-        return ResolvedExpIR0LocTranslator.Translate(reExp, context, bWrapExpAsLoc, bDerefIfTypeIsRef, exp, A2015_ResolveIdentifier_ExpressionIsNotLocation);
+        return ResolvedExpIR0LocTranslator.Translate(reExp, context, bWrapExpAsLoc, exp, A2015_ResolveIdentifier_ExpressionIsNotLocation);
     }
 
     // fast track
@@ -50,17 +48,8 @@ partial struct ExpIR0LocTranslator : IExpVisitor
     {
         var expType = exp.GetExpType();
 
-        // bDerefIfTypeIsRef 보다 먼저 bWrapExpAsLoc을 적용시킨다
         if (bWrapExpAsLoc)
         {
-            if (bDerefIfTypeIsRef)
-            {
-                if (expType is LocalRefType localRefType)
-                    return TranslationResult.Valid(new IR0LocResult(new R.LocalDerefLoc(new R.TempLoc(exp)), localRefType.InnerType));
-                else if (expType is BoxRefType boxRefType)
-                    return TranslationResult.Valid(new IR0LocResult(new R.BoxDerefLoc(new R.TempLoc(exp)), boxRefType.InnerType));
-            }
-
             return TranslationResult.Valid(new IR0LocResult(new R.TempLoc(exp), expType));
         }
         else

@@ -12,16 +12,14 @@ struct ExpIR0ExpTranslator : S.IExpVisitor<TranslationResult<R.Exp>>
 {
     ScopeContext context;
     IType? hintType;
-    bool bDerefIfTypeIsRef;
     S.ISyntaxNode nodeForErrorReport;
     
     // ExpResult상위 레이어에 있는게 맞는거 같기도 하다
-    public static TranslationResult<R.Exp> Translate(S.Exp exp, ScopeContext context, IType? hintType, bool bDerefIfTypeIsRef)
+    public static TranslationResult<R.Exp> Translate(S.Exp exp, ScopeContext context, IType? hintType)
     {
         var visitor = new ExpIR0ExpTranslator { 
             context = context, 
             hintType = hintType,
-            bDerefIfTypeIsRef = bDerefIfTypeIsRef, 
             nodeForErrorReport = exp
         };
 
@@ -40,7 +38,7 @@ struct ExpIR0ExpTranslator : S.IExpVisitor<TranslationResult<R.Exp>>
         if (!reExpResult.IsValid(out var reExp))
             return TranslationResult.Error<R.Exp>();
 
-        return ResolvedExpIR0ExpTranslator.Translate(reExp, context, bDerefIfTypeIsRef, nodeForErrorReport);
+        return ResolvedExpIR0ExpTranslator.Translate(reExp, context, nodeForErrorReport);
     }
 
     TranslationResult<R.Exp> Valid(R.Exp exp)

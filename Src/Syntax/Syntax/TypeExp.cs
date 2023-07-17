@@ -29,22 +29,22 @@ namespace Citron.Syntax
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitNullable(this);
     }
 
-    public record class LocalRefTypeExp(TypeExp InnerTypeExp) : TypeExp
+    public record class LocalPtrTypeExp(TypeExp InnerTypeExp) : TypeExp
     {
-        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitLocalRef(this);
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitLocalPtr(this);
     }
 
-    public record class BoxRefTypeExp(TypeExp InnerTypeExp) : TypeExp
+    public record class BoxPtrTypeExp(TypeExp InnerTypeExp) : TypeExp
     {
-        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitBoxRef(this);
-    }
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitBoxPtr(this);
+    }    
 
     public interface ITypeExpVisitor<TResult>
     {
         TResult VisitId(IdTypeExp typeExp);
         TResult VisitMember(MemberTypeExp typeExp);
         TResult VisitNullable(NullableTypeExp typeExp);
-        TResult VisitLocalRef(LocalRefTypeExp typeExp);
-        TResult VisitBoxRef(BoxRefTypeExp typeExp);
+        TResult VisitLocalPtr(LocalPtrTypeExp typeExp);
+        TResult VisitBoxPtr(BoxPtrTypeExp typeExp);
     }
 }

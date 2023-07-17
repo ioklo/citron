@@ -60,7 +60,7 @@ namespace Citron.TextAnalysis.Test
                 Arr(
                     new FuncParam(HasParams: false, SIdTypeExp("int"), "x"),
                     new FuncParam(HasParams: false, SIdTypeExp("string"), "y"),
-                    new FuncParam(HasParams: false, SIdTypeExp("int"), "z")
+                    new FuncParam(HasParams: true, SIdTypeExp("int"), "z")
                 ), 
                 Arr<Stmt>(
                     new VarDeclStmt(

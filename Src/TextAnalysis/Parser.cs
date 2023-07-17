@@ -157,8 +157,8 @@ namespace Citron
             ParseResult<TypeExp> Invalid () => ParseResult<TypeExp>.Invalid;
 
             // TypeExp = PrimaryTypeExp 
-            //         | PrimaryTypeExp &
-            //         | box PrimaryTypeExp &
+            //         | PrimaryTypeExp *
+            //         | box PrimaryTypeExp *
             //         | PrimaryTypeExp ?
 
             // 1. box로 시작하면
@@ -167,10 +167,10 @@ namespace Citron
                 if (!Parse(await ParsePrimaryTypeExpAsync(context), ref context, out var primaryTypeExp))
                     return Invalid();
 
-                if (!Accept<AmpersandToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
+                if (!Accept<StarToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
                     return Invalid();
 
-                return new ParseResult<TypeExp>(new BoxRefTypeExp(primaryTypeExp), context);
+                return new ParseResult<TypeExp>(new BoxPtrTypeExp(primaryTypeExp), context);
             }
             else
             {
@@ -179,10 +179,10 @@ namespace Citron
 
                 var lexResult = await lexer.LexNormalModeAsync(context.LexerContext, true);
 
-                // 뒤에 &가 오면
-                if (Accept<AmpersandToken>(lexResult, ref context))
+                // 뒤에 *가 오면
+                if (Accept<StarToken>(lexResult, ref context))
                 {
-                    return new ParseResult<TypeExp>(new LocalRefTypeExp(primaryTypeExp), context);
+                    return new ParseResult<TypeExp>(new LocalPtrTypeExp(primaryTypeExp), context);
                 }   
                 else if (Accept<QuestionToken>(lexResult, ref context))
                 {

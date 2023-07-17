@@ -15,6 +15,10 @@ namespace Citron.Symbol
         TResult VisitVar(VarTypeId typeId);
         TResult VisitFunc(FuncTypeId typeId);
         TResult VisitLambda(LambdaTypeId typeId);
+
+        TResult VisitLocalPtr(LocalPtrTypeId typeId);
+        TResult VisitBoxPtr(BoxPtrTypeId typeId);
+
         TResult VisitSymbol(SymbolId typeId);
     }
 
@@ -111,7 +115,27 @@ namespace Citron.Symbol
 
         public override TResult Accept<TTypeIdVisitor, TResult>(ref TTypeIdVisitor visitor) => visitor.VisitLambda(this);
     }
-    
+
+    public record class LocalPtrTypeId(TypeId InnerTypeId) : TypeId
+    {
+        public override void DoSerialize(ref SerializeContext context)
+        {
+            context.SerializeRef(nameof(InnerTypeId), InnerTypeId);
+        }
+
+        public override TResult Accept<TTypeIdVisitor, TResult>(ref TTypeIdVisitor visitor) => visitor.VisitLocalPtr(this);
+    }
+
+    public record class BoxPtrTypeId(TypeId InnerTypeId) : TypeId
+    {
+        public override void DoSerialize(ref SerializeContext context)
+        {
+            context.SerializeRef(nameof(InnerTypeId), InnerTypeId);
+        }
+
+        public override TResult Accept<TTypeIdVisitor, TResult>(ref TTypeIdVisitor visitor) => visitor.VisitBoxPtr(this);
+    }
+
     public static class TypeIds
     {
         public readonly static VoidTypeId Void = new VoidTypeId();

@@ -604,46 +604,5 @@ namespace Citron
             var stmtEvaluator = new IR0StmtEvaluator(newContext);
             await stmtEvaluator.EvalBodySkipYieldAsync(body);
         }
-
-        ValueTask IIR0ExpVisitor<ValueTask>.VisitCallFuncRef(CallFuncRefExp exp)
-        {
-            throw new NotImplementedException();
-        }
-
-        ValueTask IIR0ExpVisitor<ValueTask>.CastBoxLambdaToFuncRef(CastBoxLambdaToFuncRefExp exp)
-        {
-            throw new NotImplementedException();
-        }
-
-        ValueTask IIR0ExpVisitor<ValueTask>.VisitBox(BoxExp exp)
-        {
-            throw new NotImplementedException();
-        }
-
-        async ValueTask IIR0ExpVisitor<ValueTask>.VisitLocalRef(LocalRefExp exp)
-        {
-            var value = await IR0LocEvaluator.EvalAsync(exp.InnerLoc, context);
-            ((LocalRefValue)result).SetTarget(value);
-        }
-
-        ValueTask IIR0ExpVisitor<ValueTask>.VisitCastBoxRefToLocalRef(CastBoxRefToLocalRefExp castBoxRefToLocalRefExp)
-        {
-            throw new NotImplementedException();
-        }
-
-        ValueTask IIR0ExpVisitor<ValueTask>.VisitStaticBoxRef(StaticBoxRefExp exp)
-        {
-            throw new NotImplementedException();
-        }
-
-        ValueTask IIR0ExpVisitor<ValueTask>.VisitClassMemberVarBoxRefExp(ClassMemberVarBoxRefExp exp)
-        {
-            throw new NotImplementedException();
-        }
-
-        ValueTask IIR0ExpVisitor<ValueTask>.VisitStructMemberVarBoxRefExp(StructMemberVarBoxRefExp exp)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

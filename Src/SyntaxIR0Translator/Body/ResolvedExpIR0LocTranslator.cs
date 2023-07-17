@@ -15,7 +15,6 @@ struct ResolvedExpIR0LocTranslator : IResolvedExpVisitor<TranslationResult<IR0Lo
 {   
     ScopeContext context;    
     bool bWrapExpAsLoc;
-    bool bDerefIfTypeIsRef;
     S.ISyntaxNode nodeForErrorReport;
     SyntaxAnalysisErrorCode notLocationErrorCode;
 
@@ -23,14 +22,12 @@ struct ResolvedExpIR0LocTranslator : IResolvedExpVisitor<TranslationResult<IR0Lo
         ResolvedExp reExp, 
         ScopeContext context, 
         bool bWrapExpAsLoc, 
-        bool bDerefIfTypeIsRef, 
         S.ISyntaxNode nodeForErrorReport,
         SyntaxAnalysisErrorCode notLocationErrorCode) // default는 A2015_ResolveIdentifier_ExpressionIsNotLocation
     {
         var translator = new ResolvedExpIR0LocTranslator {
             context = context,
             bWrapExpAsLoc = bWrapExpAsLoc,
-            bDerefIfTypeIsRef = bDerefIfTypeIsRef,
             nodeForErrorReport = nodeForErrorReport,
             notLocationErrorCode = notLocationErrorCode
         };
@@ -38,15 +35,7 @@ struct ResolvedExpIR0LocTranslator : IResolvedExpVisitor<TranslationResult<IR0Lo
     }
 
     TranslationResult<IR0LocResult> HandleLoc(R.Loc loc, IType type)
-    {
-        if (bDerefIfTypeIsRef)
-        {
-            if (type is LocalRefType localRefType)
-                return TranslationResult.Valid(new IR0LocResult(new R.LocalDerefLoc(loc), localRefType.InnerType));
-            else if (type is BoxRefType boxRefType)
-                return TranslationResult.Valid(new IR0LocResult(new R.BoxDerefLoc(loc), boxRefType.InnerType));
-        }
-
+    {   
         return TranslationResult.Valid(new IR0LocResult(loc, type));
     }
 

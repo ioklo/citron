@@ -163,13 +163,8 @@ namespace Citron
             {
                 throw new NotImplementedException();
             }
-
-            Value ITypeIdVisitor<Value>.VisitLocalRef(LocalRefTypeId typeId)
-            {
-                return new LocalRefValue();
-            }
-
-            // int? => Nullable<int>
+            
+            // int? => Nullable<int> 
             // int?? => Nullable<Nullable<int>>
             // C? => C
             // C?? => Nullable<C>

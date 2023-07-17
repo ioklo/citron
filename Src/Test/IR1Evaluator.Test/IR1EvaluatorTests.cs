@@ -43,7 +43,7 @@ namespace Citron.IR1.Runtime
 
             public ValueTask TraceString(Value? retValue, params Value[] values)
             {
-                var strValue = (StringValue)((LocalRefValue)values[0]).GetTarget();
+                var strValue = (StringValue)((LocalPtrValue)values[0]).GetTarget();
 
                 var text = strValue.GetString();
                 lock (sb) 

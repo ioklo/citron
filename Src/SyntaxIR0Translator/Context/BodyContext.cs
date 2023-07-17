@@ -217,7 +217,6 @@ partial class BodyContext : IMutable<BodyContext>
             return null;
         }
 
-
         void TryQueryThis(Name name, ImmutableArray<IType> typeArgs)
         {
             // this검색, local변수 this를 만들게 되면 그것보다 뒤에 있다
@@ -233,7 +232,7 @@ partial class BodyContext : IMutable<BodyContext>
 
                     case StructDeclSymbol structDeclSymbol:
                         var structType = ((ITypeSymbol)structDeclSymbol).MakeType();
-                        var structRefType = new LocalRefType(structType); // S&
+                        var structRefType = new LocalPtrType(structType); // S*
                         candidates.Add(new IntermediateExp.ThisVar(structRefType));
                         break;
 

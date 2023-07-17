@@ -62,7 +62,7 @@ partial struct StmtVisitor : IStmtVisitor
     {
         TranslationResult<R.Exp> Error() => TranslationResult.Error<R.Exp>();
 
-        var expResult = ExpIR0ExpTranslator.Translate(expSyntax, context, hintType, bDerefIfTypeIsRef: false);
+        var expResult = ExpIR0ExpTranslator.Translate(expSyntax, context, hintType);
         if (!expResult.IsValid(out var exp))
             return Error();
 
@@ -105,7 +105,7 @@ partial struct StmtVisitor : IStmtVisitor
         // if (var varName = e as Type) body // 변수 선언은 var로 시작해야 하지 않을까
         // IfTestStmt -> IfTestClassStmt, IfTestEnumElemStmt
 
-        var targetResult = ExpIR0LocTranslator.Translate(ifTestStmt.Exp, context, hintType: null, bWrapExpAsLoc: true, bDerefIfTypeIsRef: true, A2015_ResolveIdentifier_ExpressionIsNotLocation);
+        var targetResult = ExpIR0LocTranslator.Translate(ifTestStmt.Exp, context, hintType: null, bWrapExpAsLoc: true, A2015_ResolveIdentifier_ExpressionIsNotLocation);
         if (!targetResult.IsValid(out var target))
             return Error();
 
@@ -180,7 +180,7 @@ partial struct StmtVisitor : IStmtVisitor
     TranslationResult<ImmutableArray<R.Stmt>> IStmtVisitor.VisitIf(S.IfStmt ifStmt)
     {
         // 순회
-        var condExpResult = ExpIR0ExpTranslator.Translate(ifStmt.Cond, context, context.GetBoolType(), bDerefIfTypeIsRef: true);
+        var condExpResult = ExpIR0ExpTranslator.Translate(ifStmt.Cond, context, context.GetBoolType());
         if (!condExpResult.IsValid(out var condExp))
             return Error();
 
@@ -255,7 +255,7 @@ partial struct StmtVisitor : IStmtVisitor
         if (forStmt.CondExp != null)
         {
             var boolType = forStmtContext.GetBoolType();
-            var rawCondExpResult = ExpIR0ExpTranslator.Translate(forStmt.CondExp, forStmtContext, boolType, bDerefIfTypeIsRef: true);
+            var rawCondExpResult = ExpIR0ExpTranslator.Translate(forStmt.CondExp, forStmtContext, boolType);
             if (!rawCondExpResult.IsValid(out var rawCondExp))
                 return Error();
 
@@ -386,7 +386,7 @@ partial struct StmtVisitor : IStmtVisitor
             if (!context.IsSetReturn())
             {
                 // 힌트타입 없이 분석
-                var retValueExpResult = ExpIR0ExpTranslator.Translate(returnStmt.Info.Value.Value, context, hintType: null, bDerefIfTypeIsRef: true);
+                var retValueExpResult = ExpIR0ExpTranslator.Translate(returnStmt.Info.Value.Value, context, hintType: null);
                 if (!retValueExpResult.IsValid(out var retValueExp))
                     return Error();
 
@@ -405,7 +405,7 @@ partial struct StmtVisitor : IStmtVisitor
                 // 리턴타입을 힌트로 사용한다
                 // 현재 함수 시그니처랑 맞춰서 같은지 확인한다
 
-                var retValueExpResult = ExpIR0ExpTranslator.Translate(returnStmt.Info.Value.Value, context, funcReturn.Value.Type, bDerefIfTypeIsRef: true);
+                var retValueExpResult = ExpIR0ExpTranslator.Translate(returnStmt.Info.Value.Value, context, funcReturn.Value.Type);
                 if (!retValueExpResult.IsValid(out var retValueExp))
                     return Error();
 
@@ -494,7 +494,7 @@ partial struct StmtVisitor : IStmtVisitor
     {
         // SYNTAX: foreach(var elemVarName in iterator) body
         // IR0: foreach(type elemVarName in iteratorLoc)
-        var iterResult = ExpIR0LocTranslator.Translate(foreachStmt.Iterator, context, hintType: null, bWrapExpAsLoc: true, bDerefIfTypeIsRef: true, A2015_ResolveIdentifier_ExpressionIsNotLocation);
+        var iterResult = ExpIR0LocTranslator.Translate(foreachStmt.Iterator, context, hintType: null, bWrapExpAsLoc: true, A2015_ResolveIdentifier_ExpressionIsNotLocation);
         if (!iterResult.IsValid(out var iter))
             return Error();
 
@@ -526,10 +526,6 @@ partial struct StmtVisitor : IStmtVisitor
 
             // 루프 컨텍스트를 하나 열고
             var bodyContext = context.MakeLoopNestedScopeContext();
-
-            // TODO: ref foreach
-            if (foreachStmt.IsRef)
-                throw new NotImplementedException();
 
             // 루프 컨텍스트에 로컬을 하나 추가하고
             bodyContext.AddLocalVarInfo(itemType, new Name.Normal(foreachStmt.VarName));
@@ -574,10 +570,6 @@ partial struct StmtVisitor : IStmtVisitor
                 // 루프 컨텍스트를 하나 열고
                 var bodyContext = context.MakeLoopNestedScopeContext();
 
-                // TODO: ref foreach
-                if (foreachStmt.IsRef)
-                    throw new NotImplementedException();
-
                 // 루프 컨텍스트에 로컬을 하나 추가하고
                 bodyContext.AddLocalVarInfo(itemType, new Name.Normal(foreachStmt.VarName));
 
@@ -609,7 +601,7 @@ partial struct StmtVisitor : IStmtVisitor
         Debug.Assert(callableReturn != null);
 
         // NOTICE: 리턴 타입을 힌트로 넣었다
-        var retValueExpResult = ExpIR0ExpTranslator.Translate(yieldStmt.Value, context, callableReturn.Value.Type, bDerefIfTypeIsRef: true);
+        var retValueExpResult = ExpIR0ExpTranslator.Translate(yieldStmt.Value, context, callableReturn.Value.Type);
         if (!retValueExpResult.IsValid(out var retValueExp))
             return Error();
 
@@ -631,7 +623,7 @@ partial struct StmtVisitor : IStmtVisitor
                     return Error();
                 }
 
-                var argInfoResult = ExpIR0LocTranslator.Translate(directiveStmt.Args[0], context, hintType: null, bWrapExpAsLoc: false, bDerefIfTypeIsRef: true, A2802_StaticNotNullDirective_ArgumentMustBeLocation);
+                var argInfoResult = ExpIR0LocTranslator.Translate(directiveStmt.Args[0], context, hintType: null, bWrapExpAsLoc: false, A2802_StaticNotNullDirective_ArgumentMustBeLocation);
                 if (!argInfoResult.IsValid(out var argInfo))
                     return Error();
 

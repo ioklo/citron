@@ -127,19 +127,12 @@ namespace Citron
 
                 return new ParseResult<Argument>(new Argument.Params(exp), context);
             }
-            else if (Accept<RefToken>(await lexer.LexNormalModeAsync(context.LexerContext, true), ref context))
-            {
-                if (!Parse(await ParseExpAsync(context), ref context, out var exp))
-                    return ParseResult<Argument>.Invalid;
-
-                return new ParseResult<Argument>(new Argument.Normal(IsRef: true, exp), context);
-            }
             else
             {
                 if (!Parse(await ParseExpAsync(context), ref context, out var exp))
                     return ParseResult<Argument>.Invalid;
 
-                return new ParseResult<Argument>(new Argument.Normal(IsRef: false, exp), context);
+                return new ParseResult<Argument>(new Argument.Normal(exp), context);
             }
         }
 

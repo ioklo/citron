@@ -815,22 +815,22 @@ namespace Citron.Test
         [Fact]
         public Task TaskStmt_CapturesLocalVariable()
         {
-            // box var& count = box 5;
+            // box var* count = box 5;
             // await 
             // {
             //     task 
             //     {
-            //          for(int i = 0; i < count; i++) i++;
+            //          for(int i = 0; i < *count; i++) i++;
             //     }
             //     count = 4;
             //     task 
             //     {
-            //          for(int i = 0; i < count; i++) i++;
+            //          for(int i = 0; i < *count; i++) i++;
             //     }
             // }
 
             // box deref가 구현되면 살린다
-            throw new PrerequisiteRequiredException(Prerequisite.BoxRef);
+            throw new PrerequisiteRequiredException(Prerequisite.BoxPtr);
 
             //// for(int i = 0; i < *labmda.count; i++) i++;
             //Stmt PrintNumbersStmt(LambdaMemberVarSymbol memberVar)
@@ -1183,17 +1183,17 @@ namespace Citron.Test
         [Fact]
         public async Task CallFuncExp_CallByRef_WorksProperly()
         {
-            //void F(int& i) // local ref 
+            //void F(int* i) // local ptr
             //{
-            //    i = 7;
+            //    *i = 7;
             //}
 
             //int j = 3;
-            //F(ref j);
+            //F(&j);
             //@$j
 
             var moduleD = new ModuleDeclSymbol(moduleName, bReference: false);
-            var fBody = AddGlobalFunc(moduleD, r.VoidType(), "F", Arr((r.LocalRefType(r.IntType()), "i")),
+            var fBody = AddGlobalFunc(moduleD, r.VoidType(), "F", Arr((r.LocalPtrType(r.IntType()), "i")),
                 r.Assign(r.LocalDeref(r.LocalVar("i")), r.Int(7))
             );
             var f = (GlobalFuncSymbol)fBody.DSymbol.MakeOpenSymbol(factory);
@@ -1909,17 +1909,17 @@ namespace Citron.Test
 
         #endregion List
 
-        #region LocalRef
+        #region LocalPtr
         [Fact]
-        public async Task LocalRef_MakeLocalRefFromLocalVariable()
+        public async Task LocalPtr_MakeLocalPtrFromLocalVariable()
         {
             // var i = 0;
-            // var& x = i;
-            // x = 3;
+            // var* x = &i;
+            // *x = 3;
             // @$i // 3
             var script = r.Script(
                 r.LocalVarDecl(r.IntType(), "i", r.Int(0)),
-                r.LocalVarDecl(r.LocalRefType(r.IntType()), "x", r.LocalRef(r.LocalVar("i"), r.IntType())),
+                r.LocalVarDecl(r.LocalPtrType(r.IntType()), "x", r.LocalRef(r.LocalVar("i"), r.IntType())),
                 r.Assign(r.LocalDeref(r.LocalVar("x")), r.Int(3)),
                 r.PrintInt(r.LoadLocalVar("i", r.IntType()))
             );
@@ -1928,6 +1928,6 @@ namespace Citron.Test
             Assert.Equal("3", output);
         }
 
-        #endregion LocalRef
+        #endregion LocalPtr
     }
 }

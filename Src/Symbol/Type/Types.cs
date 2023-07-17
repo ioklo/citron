@@ -390,4 +390,72 @@ namespace Citron.Symbol
             return null;
         }
     }
+
+    public record class LocalPtrType(IType InnerType) : TypeImpl
+    {
+        public override IType Apply(TypeEnv typeEnv)
+        {
+            var appliedInnerType = InnerType.Apply(typeEnv);
+            return new LocalPtrType(appliedInnerType);
+        }
+
+        public override TypeId GetTypeId() => new LocalPtrTypeId(InnerType.GetTypeId());
+        public override IType? GetMemberType(Name name, ImmutableArray<IType> typeArgs) => null;
+        public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitLocalPtr(this);
+
+        public override void DoSerialize(ref SerializeContext context)
+        {
+            context.SerializeRef(nameof(InnerType), InnerType);
+        }
+
+        public sealed override bool CyclicEquals(IType other, ref CyclicEqualityCompareContext context)
+            => other is LocalPtrType otherType && CyclicEquals(otherType, ref context);
+
+        bool CyclicEquals(LocalPtrType other, ref CyclicEqualityCompareContext context)
+        {
+            if (!InnerType.CyclicEquals(other.InnerType, ref context))
+                return false;
+
+            return true;
+        }
+
+        public override SymbolQueryResult? QueryMember(Name name, int typeArgCount)
+        {
+            return null;
+        }
+    }
+
+    public record class BoxPtrType(IType InnerType) : TypeImpl
+    {
+        public override IType Apply(TypeEnv typeEnv)
+        {
+            var appliedInnerType = InnerType.Apply(typeEnv);
+            return new BoxPtrType(appliedInnerType);
+        }
+
+        public override TypeId GetTypeId() => new LocalPtrTypeId(InnerType.GetTypeId());
+        public override IType? GetMemberType(Name name, ImmutableArray<IType> typeArgs) => null;
+        public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitBoxPtr(this);
+
+        public override void DoSerialize(ref SerializeContext context)
+        {
+            context.SerializeRef(nameof(InnerType), InnerType);
+        }
+
+        public sealed override bool CyclicEquals(IType other, ref CyclicEqualityCompareContext context)
+            => other is BoxPtrType otherType && CyclicEquals(otherType, ref context);
+
+        bool CyclicEquals(BoxPtrType other, ref CyclicEqualityCompareContext context)
+        {
+            if (!InnerType.CyclicEquals(other.InnerType, ref context))
+                return false;
+
+            return true;
+        }
+
+        public override SymbolQueryResult? QueryMember(Name name, int typeArgCount)
+        {
+            return null;
+        }
+    }
 }

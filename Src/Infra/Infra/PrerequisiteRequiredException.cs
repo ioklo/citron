@@ -6,6 +6,7 @@ namespace Citron.Infra
 {
     public enum Prerequisite
     {
+        BoxPtr,
         Class,
         Struct,
 

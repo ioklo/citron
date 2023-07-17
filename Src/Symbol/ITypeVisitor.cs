@@ -16,8 +16,8 @@
         void VisitVar(VarType type);
 
         void VisitFunc(FuncType type);
-        void VisitBoxRef(BoxRefType type);
-        void VisitLocalRef(LocalRefType type);
+        void VisitLocalPtr(LocalPtrType type);
+        void VisitBoxPtr(BoxPtrType type);
     }
 
     public static class TypeVisitorExtensions

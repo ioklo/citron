@@ -139,21 +139,6 @@ namespace Citron.Analysis
 
         A2901_BodyShouldReturn, // 리턴 타입이 있는 본문에 리턴이 없다
 
-        A3001_LocalRef_ExpressionIsNotLocation,
-        A3002_LocalRef_ReturnTypeShouldBeLocalRef,
-        A3003_LocalRef_MemberParentIsNotLocation,
-        A3004_LocalRef_EnumIsNotReferrable,
-        A3005_LocalRef_ListItemIsNotReferrable,
-        A3006_LocalRef_ExpressionTypeShouldBeLocalRef,
-        A3007_LocalRef_CantMakeLocalRefWithTemporalBoxRef,
-        A3008_LocalRef_CantMakeLocalRefWithTemporalLocation,
-
-        A3101_BoxRef_CantMakeBoxRefWithLocalRef,
-        A3102_BoxRef_InstanceIsNotLocation,
-        A3103_BoxRef_CantMakeBoxRefWithLocal,
-
-
-
         A9901_NotSupported_LambdaParameterInference,
         A9902_NotSupported_LambdaReturnTypeInference,
     }

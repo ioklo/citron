@@ -109,7 +109,7 @@ namespace Citron.TextAnalysis.Test
                     BinaryOpKind.Modulo,
                     new CallExp(
                         new UnaryOpExp(UnaryOpKind.PostfixInc, SId("c")), 
-                        Arr<Argument>(new Argument.Normal(IsRef: false, SId("e")), new Argument.Normal(IsRef: false, SId("f")))
+                        Arr<Argument>(new Argument.Normal(SId("e")), new Argument.Normal(SId("f")))
                     ),
                     SId("d")
                 )
@@ -166,7 +166,7 @@ namespace Citron.TextAnalysis.Test
                                 new IdTypeExp("list", Arr<TypeExp>(new IdTypeExp("int", default)))
                             )
                         ),
-                        Arr<Argument>(new Argument.Normal(IsRef: false, new IntLiteralExp(1)), new Argument.Normal(IsRef: false, SString("str")))
+                        Arr<Argument>(new Argument.Normal(new IntLiteralExp(1)), new Argument.Normal(SString("str")))
                     ),
                     "d",
                     default
@@ -203,9 +203,9 @@ namespace Citron.TextAnalysis.Test
             var expected = new NewExp(
                 new IdTypeExp("MyType", Arr<TypeExp>(new IdTypeExp("X", default))),
                 Arr<Argument>(
-                    new Argument.Normal(IsRef: false, new IntLiteralExp(2)),
-                    new Argument.Normal(IsRef: false, new BoolLiteralExp(false)),
-                    new Argument.Normal(IsRef: false, SString("string"))
+                    new Argument.Normal(new IntLiteralExp(2)),
+                    new Argument.Normal(new BoolLiteralExp(false)),
+                    new Argument.Normal(SString("string"))
                 ));
 
             Assert.Equal(expected, expResult.Elem);

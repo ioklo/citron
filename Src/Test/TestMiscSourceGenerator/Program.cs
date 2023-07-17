@@ -390,13 +390,28 @@ namespace TestMiscSourceGenerator
 
             var program = new Program(types.ToArray());
 
-            var filePath = Path.Combine(args[0], "IR0Writer.g.cs");
-            using (var writer = new StreamWriter(filePath))
-            {
-                var itw = new IndentedTextWriter(writer);
+            var stringWriter = new StringWriter();
+            var itw = new IndentedTextWriter(stringWriter);
+            program.Print(itw);
+            var contents = stringWriter.ToString();
 
-                program.Print(itw);
+            var filePath = Path.Combine(args[0], "IR0Writer.g.cs");
+            if (File.Exists(filePath))
+            {
+                var oldContents = File.ReadAllText(filePath);
+                if (oldContents != contents)
+                    File.WriteAllText(filePath, contents);
             }
+            else
+            {
+                File.WriteAllText(filePath, contents);
+            }
+
+            //using (var writer = new StreamWriter(filePath))
+            //{
+            //    var itw = new IndentedTextWriter(writer);
+            //    program.Print(itw);
+            //}
 
             return 0;
         }

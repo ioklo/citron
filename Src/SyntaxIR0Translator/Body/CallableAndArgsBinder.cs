@@ -306,7 +306,6 @@ struct CallableAndArgsBinder : IIntermediateExpVisitor<TranslationResult<R.Exp>>
             reExp, 
             context, 
             bWrapExpAsLoc: true, 
-            bDerefIfTypeIsRef: true, 
             nodeForCallableErrorReport,
             A0902_CallExp_CallableExpressionIsNotCallable);
 

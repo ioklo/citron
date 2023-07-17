@@ -83,27 +83,27 @@ xxx
         }
 
         [Fact]
-        public async Task TestParseLocalRefVarDeclStmtAsync()
+        public async Task TestParseLocalPtrVarDeclStmtAsync()
         {
-            // int& p;
-            (var parser, var context) = await PrepareAsync("int& p;");
+            // int* p;
+            (var parser, var context) = await PrepareAsync("int* p;");
 
             var varDeclStmt = await parser.ParseVarDeclStmtAsync(context);
 
-            var expected = new VarDeclStmt(new VarDecl(SLocalRefTypeExp(SIdTypeExp("int")), Arr(new VarDeclElement("p", null))));
+            var expected = new VarDeclStmt(new VarDecl(SLocalPtrTypeExp(SIdTypeExp("int")), Arr(new VarDeclElement("p", null))));
 
             Assert.Equal(expected, varDeclStmt.Elem);
         }
 
         [Fact]
-        public async Task TestParseBoxRefVarDeclStmtAsync()
+        public async Task TestParseBoxPtrVarDeclStmtAsync()
         {
-            // box int& p;
-            (var parser, var context) = await PrepareAsync("box int& p;");
+            // box int* p;
+            (var parser, var context) = await PrepareAsync("box int* p;");
 
             var varDeclStmt = await parser.ParseVarDeclStmtAsync(context);
 
-            var expected = new VarDeclStmt(new VarDecl(SBoxRefTypeExp(SIdTypeExp("int")), Arr(new VarDeclElement("p", null))));
+            var expected = new VarDeclStmt(new VarDecl(SBoxPtrTypeExp(SIdTypeExp("int")), Arr(new VarDeclElement("p", null))));
 
             Assert.Equal(expected, varDeclStmt.Elem);
         }
@@ -247,7 +247,7 @@ for (f(); g; h + g) ;
                 SId("a"),
                 new BinaryOpExp(BinaryOpKind.Multiply,
                     SId("b"),
-                    new CallExp(SId("c"), Arr<Argument>(new Argument.Normal(IsRef: false, new IntLiteralExp(1)))))));
+                    new CallExp(SId("c"), Arr<Argument>(new Argument.Normal(new IntLiteralExp(1)))))));
                 
 
             Assert.Equal(expected, expResult.Elem);
@@ -259,7 +259,7 @@ for (f(); g; h + g) ;
             var (parser, context) = await PrepareAsync("foreach( var x in l ) { } ");
             var stmtResult = await parser.ParseForeachStmtAsync(context);
 
-            var expected = new ForeachStmt(false, SIdTypeExp("var"), "x", SId("l"), new EmbeddableStmt.Multiple(default));
+            var expected = new ForeachStmt(SIdTypeExp("var"), "x", SId("l"), new EmbeddableStmt.Multiple(default));
 
             Assert.Equal(expected, stmtResult.Elem);
         }

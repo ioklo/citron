@@ -397,6 +397,11 @@ namespace Citron.IR0
 
         #endregion
 
+        public Exp LocalRef(Loc loc, IType locType)
+        {
+            return new LocalRefExp(loc, locType);
+        }
+        
         #endregion
 
         #region Loc
@@ -410,7 +415,7 @@ namespace Citron.IR0
         {
             return new LambdaMemberVarLoc(symbol);
         }
-
+        
         public Loc LocalDeref(Loc innerLoc)
         {
             return new LocalDerefLoc(innerLoc);
@@ -537,17 +542,7 @@ namespace Citron.IR0
         {
             return new YieldStmt(exp);
         }
-
-        public IType LocalRefType(IType type)
-        {
-            return new LocalRefType(type);
-        }
-
-        public Exp Box(Exp exp)
-        {
-            return new BoxExp(exp);
-        }
-
+        
         public FuncType FuncType(IType retType, params IType[] paramTypes)
         {
             var paramsBuilder = ImmutableArray.CreateBuilder<FuncParameter>(paramTypes.Length);
@@ -562,14 +557,17 @@ namespace Citron.IR0
             return new FuncType(new FuncReturn(retType), paramsBuilder.MoveToImmutable());
         }
 
-        public Exp LocalRef(Loc loc, IType locType)
+        public LocalPtrType LocalPtrType(IType innerType)
         {
-            return new LocalRefExp(loc, locType);
+            return new LocalPtrType(innerType);
+        }
+
+        public BoxPtrType BoxPtrType(IType innerType)
+        {
+            return new BoxPtrType(innerType);
         }
 
         #endregion
-
-
     }
 
     public static class IR0Extensions

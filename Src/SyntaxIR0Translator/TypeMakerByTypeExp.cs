@@ -359,18 +359,18 @@ static class TypeMakerByTypeExp
                 throw new NotImplementedException(); // 타입이 아닙니다
             }
         }
-        
-        Candidates<Item> ITypeExpVisitor<Candidates<Item>>.VisitLocalRef(LocalRefTypeExp typeExp)
+
+        Candidates<Item> ITypeExpVisitor<Candidates<Item>>.VisitLocalPtr(LocalPtrTypeExp typeExp)
         {
             var type = MakeType(typeExp.InnerTypeExp);
 
             var candidates = new Candidates<Item>();
-            candidates.Add(Item.Make(new LocalRefType(type)));
+            candidates.Add(Item.Make(new LocalPtrType(type)));
 
             return candidates;
         }
 
-        Candidates<Item> ITypeExpVisitor<Candidates<Item>>.VisitBoxRef(BoxRefTypeExp typeExp)
+        Candidates<Item> ITypeExpVisitor<Candidates<Item>>.VisitBoxPtr(BoxPtrTypeExp typeExp)
         {
             throw new NotImplementedException();
         }

@@ -66,7 +66,7 @@ struct CoreExpIR0ExpTranslator
 
         if (elem is S.ExpStringExpElement expElem)
         {
-            var result = ExpIR0ExpTranslator.Translate(expElem.Exp, context, hintType: null, bDerefIfTypeIsRef: true);
+            var result = ExpIR0ExpTranslator.Translate(expElem.Exp, context, hintType: null);
             if (!result.IsValid(out var exp))
                 return TranslationResult.Error<R.StringExpElement>();
             
@@ -152,7 +152,7 @@ struct CoreExpIR0ExpTranslator
         // F()++; (x)
         // var& x = i; x++; (o)
         // throws NotLocationException
-        var operandResult = ExpIR0LocTranslator.Translate(operand, context, hintType: null, bWrapExpAsLoc: false, bDerefIfTypeIsRef: true, A0602_UnaryAssignOp_AssignableExpressionIsAllowedOnly);
+        var operandResult = ExpIR0LocTranslator.Translate(operand, context, hintType: null, bWrapExpAsLoc: false, A0602_UnaryAssignOp_AssignableExpressionIsAllowedOnly);
         if (!operandResult.IsValid(out var operandLocResult))
             return Error();
 
@@ -171,7 +171,7 @@ struct CoreExpIR0ExpTranslator
 
     public TranslationResult<R.Exp> TranslateUnaryOp(S.UnaryOpExp exp)
     {
-        var operandExpResult = ExpIR0ExpTranslator.Translate(exp.Operand, context, hintType: null, bDerefIfTypeIsRef: true);
+        var operandExpResult = ExpIR0ExpTranslator.Translate(exp.Operand, context, hintType: null);
         if (!operandExpResult.IsValid(out var operandExp))
             return Error();
 
@@ -227,7 +227,7 @@ struct CoreExpIR0ExpTranslator
     TranslationResult<R.Exp> VisitAssignBinaryOpExp(S.BinaryOpExp exp)
     {
         // syntax 에서는 exp로 보이지만, R로 변환할 경우 Location 명령이어야 한다
-        var destResult = ExpIR0LocTranslator.Translate(exp.Operand0, context, hintType: null, bWrapExpAsLoc: false, bDerefIfTypeIsRef: true, A0803_BinaryOp_LeftOperandIsNotAssignable);
+        var destResult = ExpIR0LocTranslator.Translate(exp.Operand0, context, hintType: null, bWrapExpAsLoc: false, A0803_BinaryOp_LeftOperandIsNotAssignable);
         if (!destResult.IsValid(out var destLocResult))
             return Error();
        
@@ -248,7 +248,7 @@ struct CoreExpIR0ExpTranslator
                 return Error();
         }
 
-        var srcExpResult = ExpIR0ExpTranslator.Translate(exp.Operand1, context, destLocResult.LocType, bDerefIfTypeIsRef: true);
+        var srcExpResult = ExpIR0ExpTranslator.Translate(exp.Operand1, context, destLocResult.LocType);
         if (!srcExpResult.IsValid(out var srcExp))
             return Error();
 
@@ -267,11 +267,11 @@ struct CoreExpIR0ExpTranslator
             return VisitAssignBinaryOpExp(exp);
         }
 
-        var operandExpResult0 = ExpIR0ExpTranslator.Translate(exp.Operand0, context, hintType: null, bDerefIfTypeIsRef: true);
+        var operandExpResult0 = ExpIR0ExpTranslator.Translate(exp.Operand0, context, hintType: null);
         if (!operandExpResult0.IsValid(out var operandExp0))
             return Error();
 
-        var operandExpResult1 = ExpIR0ExpTranslator.Translate(exp.Operand1, context, hintType: null, bDerefIfTypeIsRef: true);
+        var operandExpResult1 = ExpIR0ExpTranslator.Translate(exp.Operand1, context, hintType: null);
         if (!operandExpResult1.IsValid(out var operandExp1))
             return Error();
 
@@ -333,7 +333,7 @@ struct CoreExpIR0ExpTranslator
 
         foreach (var elem in exp.Elems)
         {
-            var elemExpResult = ExpIR0ExpTranslator.Translate(elem, context, hintType: null, bDerefIfTypeIsRef: true);
+            var elemExpResult = ExpIR0ExpTranslator.Translate(elem, context, hintType: null);
             if (!elemExpResult.IsValid(out var elemExp))
                 return Error();
 

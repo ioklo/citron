@@ -99,7 +99,7 @@ namespace Citron.Syntax
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitAsync(this);
     }
 
-    public record class ForeachStmt(bool IsRef, TypeExp Type, string VarName, Exp Iterator, EmbeddableStmt Body) : Stmt
+    public record class ForeachStmt(TypeExp Type, string VarName, Exp Iterator, EmbeddableStmt Body) : Stmt
     {
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitForeach(this);
     }
