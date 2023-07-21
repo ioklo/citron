@@ -15,25 +15,24 @@ namespace Citron.TextAnalysis.Test
 {
     public class ParserTests
     {
-        async ValueTask<ParserContext> MakeContextAsync(string input)
+        ParserContext MakeContext(string input)
         {
             var buffer = new Buffer(new StringReader(input));
-            var bufferPos = await buffer.MakePosition().NextAsync();
+            var bufferPos = buffer.MakePosition().Next();
             var lexerContext = LexerContext.Make(bufferPos);
             return ParserContext.Make(lexerContext);
         }
 
         [Fact]
-        public async Task TestParseSimpleScriptAsync()
+        public void TestParseSimpleScriptAsync()
         {
-            var lexer = new Lexer();
-            var parser = new Parser(lexer);
-            var context = await MakeContextAsync(
+            var lexer = new Lexer();            
+            var context = MakeContext(
 @"void Main() 
 { 
     @ls -al
 }");
-            var script = await parser.ParseScriptAsync(context);
+            ScriptParser.Parse(lexer, context, out var script);
 
             var expected = SScript(
                 new CommandStmt(Arr(
@@ -41,18 +40,17 @@ namespace Citron.TextAnalysis.Test
                 ))
             );
 
-            Assert.Equal(expected, script.Elem);
+            Assert.Equal(expected, script);
         }
 
         [Fact]
-        public async Task TestParseFuncDeclAsync()
+        public void TestParseFuncDeclAsync()
         {
             var lexer = new Lexer();
-            var parser = new Parser(lexer);
-            var context = await MakeContextAsync("void Func(int x, string y, params int z) { int a = 0; }");
-            var funcDecl = await parser.ParseGlobalFuncDeclAsync(context);
+            var context = MakeContext("void Func(int x, string y, params int z) { int a = 0; }");
+            ScriptParser.Parse(lexer, context, out var script);
 
-            var expected = new GlobalFuncDecl(
+            var expected = SScript(new GlobalFuncDeclScriptElement(new GlobalFuncDecl(
                 null,
                 isSequence: false,
                 SIdTypeExp("void"),
@@ -72,17 +70,16 @@ namespace Citron.TextAnalysis.Test
                         )
                     )
                 )
-            );
+            )));
 
-            Assert.Equal(expected, funcDecl.Elem);
+            Assert.Equal(expected, script);
         }
 
         [Fact]
-        public async Task TestParseNamespaceDeclAsync()
+        public void TestParseNamespaceDeclAsync()
         {
             var lexer = new Lexer();
-            var parser = new Parser(lexer);
-            var context = await MakeContextAsync(@"
+            var context = MakeContext(@"
 namespace NS1
 {
     namespace NS2.NS3
@@ -93,7 +90,7 @@ namespace NS1
         }
     }
 }");
-            var script = await parser.ParseScriptAsync(context);
+            ScriptParser.Parse(lexer, context, out var script);
 
             var expected = new Script(Arr<ScriptElement>(new NamespaceDeclScriptElement(new NamespaceDecl(
                 Arr("NS1"),
@@ -111,42 +108,40 @@ namespace NS1
                 )))
             ))));
 
-            Assert.Equal(expected, script.Elem);
+            Assert.Equal(expected, script);
         }
 
         [Fact]
-        public async Task TestParseEnumDeclAsync()
+        public void TestParseEnumDeclAsync()
         {
             var lexer = new Lexer();
-            var parser = new Parser(lexer);
-            var context = await MakeContextAsync(@"
+            var context = MakeContext(@"
 enum X
 {
     First,
     Second (int i),
     Third
 }");
-            var enumDecl = await parser.ParseEnumDeclAsync(context);
+            ScriptParser.Parse(lexer, context, out var script);
 
-            var expected = new EnumDecl(null, "X",
+            var expected = SScript(new TypeDeclScriptElement(new EnumDecl(null, "X",
                 default,
                 Arr(
                     new EnumElemDecl("First", default),
                     new EnumElemDecl("Second", Arr(new EnumElemMemberVarDecl(SIdTypeExp("int"), "i"))),
                     new EnumElemDecl("Third", default)
                 )
-            );
+            )));
 
-            Assert.Equal(expected, enumDecl.Elem);
+            Assert.Equal(expected, script);
         }
         
 
         [Fact]
-        public async Task TestParseStructDeclAsync()
+        public void TestParseStructDeclAsync()
         {
             var lexer = new Lexer();
-            var parser = new Parser(lexer);
-            var context = await MakeContextAsync(@"
+            var context = MakeContext(@"
 public struct S<T> : B, I
 {
     int x1;
@@ -160,9 +155,9 @@ public struct S<T> : B, I
     private seq int F2<T>() { yield 4; }
 }
 ");
-            var structDecl = await parser.ParseStructDeclAsync(context);
+            ScriptParser.Parse(lexer, context, out var script);
 
-            var expected = new StructDecl(AccessModifier.Public, "S",
+            var expected = SScript(new TypeDeclScriptElement(new StructDecl(AccessModifier.Public, "S",
                 Arr(new TypeParam("T")),
 
                 Arr<TypeExp>( SIdTypeExp("B"), SIdTypeExp("I") ),
@@ -200,17 +195,28 @@ public struct S<T> : B, I
                         Arr<Stmt>(new YieldStmt(new IntLiteralExp(4)))
                     )
                 )
-            );
+            )));
             
-            Assert.Equal(expected, structDecl.Elem);
+            Assert.Equal(expected, script);
         }
 
         [Fact]
-        public async Task TestParseComplexScriptAsync()
+        public void TestParseLocalPtrTypeExp()
         {
             var lexer = new Lexer();
-            var parser = new Parser(lexer);
-            var context = await MakeContextAsync(@"
+            var context = MakeContext(@"int**");
+            TypeExpParser.Parse(lexer, context, out var typeExp);
+
+            var expected = SLocalPtrTypeExp(SLocalPtrTypeExp(SIdTypeExp("int")));
+
+            Assert.Equal(expected, typeExp);
+        }
+
+        [Fact]
+        public void TestParseComplexScriptAsync()
+        {
+            var lexer = new Lexer();
+            var context = MakeContext(@"
 void Main()
 {
     int sum = 0;
@@ -228,7 +234,7 @@ void Main()
 }
 
 ");
-            var script = await parser.ParseScriptAsync(context);
+            ScriptParser.Parse(lexer, context, out var script);
 
             var expected = SScript(
                 SVarDeclStmt(SIdTypeExp("int"), "sum", new IntLiteralExp(0)),
@@ -254,7 +260,7 @@ void Main()
                     new ExpStringExpElement(SId("sum")),
                     new TextStringExpElement(" Completed!"))))));
                     
-            Assert.Equal(expected, script.Elem);
+            Assert.Equal(expected, script);
         }
     }
 }

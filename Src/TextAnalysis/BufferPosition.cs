@@ -33,9 +33,9 @@ namespace Citron
             return code != '\r' && code != '\n';
         }
 
-        public async ValueTask<BufferPosition> NextAsync()
+        public BufferPosition Next()
         {
-            var result = await buffer.NextAsync(nextPos);            
+            var result = buffer.Next(nextPos);
             return new BufferPosition(buffer, result.NextPos, result.Code);
         }
 

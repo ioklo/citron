@@ -10,19 +10,19 @@ namespace Citron.TextAnalysis.Test
 {   
     public class CommandLexerTests
     {
-        async ValueTask<LexerContext> MakeContextAsync(string text)
+        LexerContext MakeContext(string text)
         {
             var buffer = new Buffer(new StringReader(text));
-            return LexerContext.Make(await buffer.MakePosition().NextAsync());
+            return LexerContext.Make(buffer.MakePosition().Next());
         }
 
-        async ValueTask<IEnumerable<Token>> ProcessAsync(Lexer lexer, LexerContext context)
+        IEnumerable<Token> Process(Lexer lexer, LexerContext context)
         {
             var result = new List<Token>();
 
             while(!context.Pos.IsReachEnd())
             {
-                var lexResult = await lexer.LexCommandModeAsync(context);
+                var lexResult = lexer.LexCommandMode(context);
                 if (!lexResult.HasValue) break;
 
                 context = lexResult.Context;
@@ -32,11 +32,11 @@ namespace Citron.TextAnalysis.Test
             return result;
         }
 
-        async ValueTask<LexerContext> RepeatLexNormalAsync(List<Token> tokens, Lexer lexer, LexerContext context, bool bSkipNewLine, int repeatCount)
+        LexerContext RepeatLexNormal(List<Token> tokens, Lexer lexer, LexerContext context, bool bSkipNewLine, int repeatCount)
         {
             for (int i = 0; i < repeatCount; i++)
             {
-                var result = await lexer.LexNormalModeAsync(context, bSkipNewLine);
+                var result = lexer.LexNormalMode(context, bSkipNewLine);
                 tokens.Add(result.Token); // ps
                 context = result.Context;
             }
@@ -44,11 +44,11 @@ namespace Citron.TextAnalysis.Test
             return context;
         }
 
-        async ValueTask<LexerContext> RepeatLexCommandAsync(List<Token> tokens, Lexer lexer, LexerContext context, int repeatCount)
+        LexerContext RepeatLexCommand(List<Token> tokens, Lexer lexer, LexerContext context, int repeatCount)
         {
             for (int i = 0; i < repeatCount; i++)
             {
-                var result = await lexer.LexCommandModeAsync(context);
+                var result = lexer.LexCommandMode(context);
                 tokens.Add(result.Token); // ps
                 context = result.Context;
             }
@@ -58,16 +58,16 @@ namespace Citron.TextAnalysis.Test
             
 
         [Fact]
-        public async Task TestLexerProcessStringExpInCommandMode()
+        public void TestLexerProcessStringExpInCommandMode()
         {
             var lexer = new Lexer();
-            var context = await MakeContextAsync("  p$$s${ ccc } \"ddd $e  \r\n }");
+            var context = MakeContext("  p$$s${ ccc } \"ddd $e  \r\n }");
 
             var tokens = new List<Token>();
 
-            context = await RepeatLexCommandAsync(tokens, lexer, context, 2);
-            context = await RepeatLexNormalAsync(tokens, lexer, context, false, 2);
-            context = await RepeatLexCommandAsync(tokens, lexer, context, 6);
+            context = RepeatLexCommand(tokens, lexer, context, 2);
+            context = RepeatLexNormal(tokens, lexer, context, false, 2);
+            context = RepeatLexCommand(tokens, lexer, context, 6);
             
             var expectedTokens = new Token[]
             {
@@ -87,12 +87,12 @@ namespace Citron.TextAnalysis.Test
         }
 
         [Fact]
-        public async Task TestCommandModeLexCommandsAsync()
+        public void TestCommandModeLexCommands()
         {
             var lexer = new Lexer();
-            var context = await MakeContextAsync("ls -al");
+            var context = MakeContext("ls -al");
 
-            var result = await ProcessAsync(lexer, context);
+            var result = Process(lexer, context);
 
             var expectedTokens = new Token[]
             {
@@ -103,17 +103,17 @@ namespace Citron.TextAnalysis.Test
         }
 
         [Fact]
-        public async Task TestLexMultilinesAsync()
+        public void TestLexMultilines()
         {
             var lexer = new Lexer();
-            var context = await MakeContextAsync(@"
+            var context = MakeContext(@"
 hello world \n
 
     hello    
 
 }");
             var tokens = new List<Token>();
-            await RepeatLexCommandAsync(tokens, lexer, context, 6);
+            RepeatLexCommand(tokens, lexer, context, 6);
 
             var expected = new List<Token>
             {
@@ -127,12 +127,12 @@ hello world \n
         }
 
         [Fact]
-        public async Task TestCommandModeLexCommandsWithLineSeparatorAsync()
+        public void TestCommandModeLexCommandsWithLineSeparator()
         {
             var lexer = new Lexer();
-            var context = await MakeContextAsync("ls -al\r\nbb");
+            var context = MakeContext("ls -al\r\nbb");
 
-            var result = await ProcessAsync(lexer, context);
+            var result = Process(lexer, context);
 
             var expectedTokens = new Token[]
             {

@@ -14,25 +14,23 @@ namespace Citron.TextAnalysis.Test
 {
     public class StmtParserTests
     {
-        async ValueTask<(StmtParser, ParserContext)> PrepareAsync(string input)
+        (Lexer, ParserContext) Prepare(string input)
         {
             var lexer = new Lexer();
-            var parser = new Parser(lexer);
-
             var buffer = new Buffer(new StringReader(input));
-            var bufferPos = await buffer.MakePosition().NextAsync();
+            var bufferPos = buffer.MakePosition().Next();
             var lexerContext = LexerContext.Make(bufferPos);
             var context = ParserContext.Make(lexerContext);
 
-            return (parser.stmtParser, context);
+            return (lexer, context);
         }
 
         [Fact]
-        public async Task TestParseInlineCommandStmtAsync()
+        public void TestParseInlineCommandStmtAsync()
         {
-            (var parser, var context) = await PrepareAsync("@echo ${a}bbb  ");
+            var (lexer, context) = Prepare("@echo ${a}bbb  ");
             
-            var cmdStmt = await parser.ParseCommandStmtAsync(context);
+            StmtParser.Parse(lexer, context, out var cmdStmt);
 
             var expected = new CommandStmt(Arr(
                 new StringExp(Arr<StringExpElement>(
@@ -42,11 +40,11 @@ namespace Citron.TextAnalysis.Test
                 ))
             ));
 
-            Assert.Equal(expected, cmdStmt.Elem);
+            Assert.Equal(expected, cmdStmt);
         }
 
         [Fact]
-        public async Task TestParseBlockCommandStmtAsync()
+        public void TestParseBlockCommandStmtAsync()
         {
             var input = @"
 @{ 
@@ -54,9 +52,9 @@ namespace Citron.TextAnalysis.Test
 xxx
 }
 ";          
-            (var parser, var context) = await PrepareAsync(input);
+            var (lexer, context) = Prepare(input);
 
-            var cmdStmt = await parser.ParseCommandStmtAsync(context);
+            StmtParser.Parse(lexer, context, out var stmt);
 
             var expected = new CommandStmt(Arr(
                 new StringExp(Arr<StringExpElement>(
@@ -67,66 +65,66 @@ xxx
                 SString("xxx")
             ));
 
-            Assert.Equal(expected, cmdStmt.Elem);
+            Assert.Equal(expected, stmt);
         }
 
         [Fact]
-        public async Task TestParseVarDeclStmtAsync()
+        public void TestParseVarDeclStmtAsync()
         {
-            (var parser, var context) = await PrepareAsync("string a = \"hello\";");
+            var (lexer, context) = Prepare("string a = \"hello\";");
             
-            var varDeclStmt = await parser.ParseVarDeclStmtAsync(context);
+            StmtParser.Parse(lexer, context, out var stmt);
 
             var expected = SVarDeclStmt(SIdTypeExp("string"), "a", SString("hello"));
 
-            Assert.Equal<Stmt>(expected, varDeclStmt.Elem);
+            Assert.Equal(expected, stmt);
         }
 
         [Fact]
-        public async Task TestParseLocalPtrVarDeclStmtAsync()
+        public void TestParseLocalPtrVarDeclStmtAsync()
         {
             // int* p;
-            (var parser, var context) = await PrepareAsync("int* p;");
+            var (lexer, context) = Prepare("int* p;");
 
-            var varDeclStmt = await parser.ParseVarDeclStmtAsync(context);
+            StmtParser.Parse(lexer, context, out var stmt);
 
             var expected = new VarDeclStmt(new VarDecl(SLocalPtrTypeExp(SIdTypeExp("int")), Arr(new VarDeclElement("p", null))));
 
-            Assert.Equal(expected, varDeclStmt.Elem);
+            Assert.Equal(expected, stmt);
         }
 
         [Fact]
-        public async Task TestParseBoxPtrVarDeclStmtAsync()
+        public void TestParseBoxPtrVarDeclStmtAsync()
         {
             // box int* p;
-            (var parser, var context) = await PrepareAsync("box int* p;");
+            var (lexer, context) = Prepare("box int* p;");
 
-            var varDeclStmt = await parser.ParseVarDeclStmtAsync(context);
+            StmtParser.Parse(lexer, context, out var stmt);
 
             var expected = new VarDeclStmt(new VarDecl(SBoxPtrTypeExp(SIdTypeExp("int")), Arr(new VarDeclElement("p", null))));
 
-            Assert.Equal(expected, varDeclStmt.Elem);
+            Assert.Equal(expected, stmt);
         }
 
         [Fact]
-        public async Task TestParseNullableVarDeclStmtAsync()
+        public void TestParseNullableVarDeclStmtAsync()
         {
             // int? p;
-            (var parser, var context) = await PrepareAsync("int? p;");
+            var (lexer, context) = Prepare("int? p;");
 
-            var varDeclStmt = await parser.ParseVarDeclStmtAsync(context);
+            StmtParser.Parse(lexer, context, out var stmt);
 
             var expected = new VarDeclStmt(new VarDecl(SNullableTypeExp(SIdTypeExp("int")), Arr(new VarDeclElement("p", null))));
 
-            Assert.Equal(expected, varDeclStmt.Elem);
+            Assert.Equal(expected, stmt);
         }
 
         [Fact]
-        public async Task TestParseIfStmtAsync()
+        public void TestParseIfStmtAsync()
         {
-            (var parser, var context) = await PrepareAsync("if (b) {} else if (c) {} else {}");
+            var (lexer, context) = Prepare("if (b) {} else if (c) {} else {}");
             
-            var ifStmt = await parser.ParseIfStmtAsync(context);
+            StmtParser.Parse(lexer, context, out var stmt);
 
             var expected = new IfStmt(SId("b"),
                 new EmbeddableStmt.Multiple(default),
@@ -135,15 +133,15 @@ xxx
                     new EmbeddableStmt.Multiple(default),
                     new EmbeddableStmt.Multiple(default))));
 
-            Assert.Equal(expected, ifStmt.Elem);
+            Assert.Equal(expected, stmt);
         }
 
         [Fact]
-        public async Task TestParseIfTestStmtWithoutVarNameAsync()
+        public void TestParseIfTestStmtWithoutVarNameAsync()
         {
-            (var parser, var context) = await PrepareAsync("if (b is T) {} else if (c) {} else {}");
+            var (lexer, context) = Prepare("if (b is T) {} else if (c) {} else {}");
 
-            var ifStmt = await parser.ParseIfStmtAsync(context);
+            StmtParser.Parse(lexer, context, out var stmt);
 
             var expected = new IfTestStmt(SId("b"),
                 SIdTypeExp("T"), 
@@ -156,15 +154,15 @@ xxx
                 ))
             );
 
-            Assert.Equal(expected, ifStmt.Elem);
+            Assert.Equal(expected, stmt);
         }
 
         [Fact]
-        public async Task TestParseIfTestStmtWithVarNameAsync()
+        public void TestParseIfTestStmtWithVarNameAsync()
         {
-            (var parser, var context) = await PrepareAsync("if (b is T t) {} else if (c) {} else {}");
+            var (lexer, context) = Prepare("if (b is T t) {} else if (c) {} else {}");
 
-            var ifStmt = await parser.ParseIfStmtAsync(context);
+            StmtParser.Parse(lexer, context, out var stmt);
 
             var expected = new IfTestStmt(SId("b"),
                 SIdTypeExp("T"),
@@ -175,17 +173,17 @@ xxx
                     new EmbeddableStmt.Multiple(default),
                     new EmbeddableStmt.Multiple(default))));
 
-            Assert.Equal(expected, ifStmt.Elem);
+            Assert.Equal(expected, stmt);
         }
 
         [Fact]
-        public async Task TestParseForStmtAsync()
+        public void TestParseForStmtAsync()
         {
-            (var parser, var context) = await PrepareAsync(@"
+            var (lexer, context) = Prepare(@"
 for (f(); g; h + g) ;
 ");
 
-            var result = await parser.ParseForStmtAsync(context);
+            StmtParser.Parse(lexer, context, out var stmt);
 
             var expected = new ForStmt(
                 new ExpForStmtInitializer(new CallExp(SId("f"), default)),
@@ -193,55 +191,55 @@ for (f(); g; h + g) ;
                 new BinaryOpExp(BinaryOpKind.Add, SId("h"), SId("g")),
                 SEmbeddableBlankStmt());
 
-            Assert.Equal(expected, result.Elem);
+            Assert.Equal(expected, stmt);
         }
 
         [Fact]
-        public async Task TestParseContinueStmtAsync()
+        public void TestParseContinueStmtAsync()
         {
-            (var parser, var context) = await PrepareAsync(@"continue;");
-            var continueResult = await parser.ParseContinueStmtAsync(context);
+            var (lexer, context) = Prepare(@"continue;");
+            StmtParser.Parse(lexer, context, out var stmt);
 
-            Assert.Equal(new ContinueStmt(), continueResult.Elem);
+            Assert.Equal(new ContinueStmt(), stmt);
         }
 
         [Fact]
-        public async Task TestParseBreakStmtAsync()
+        public void TestParseBreakStmtAsync()
         {
-            (var parser, var context) = await PrepareAsync(@"break;");
-            var breakResult = await parser.ParseBreakStmtAsync(context);
+            var (lexer, context) = Prepare(@"break;");
+            StmtParser.Parse(lexer, context, out var stmt);
 
-            Assert.Equal(new BreakStmt(), breakResult.Elem);
+            Assert.Equal(new BreakStmt(), stmt);
         }
 
         [Fact]
-        public async Task TestParseBlockStmtAsync()
+        public void TestParseBlockStmtAsync()
         {
-            (var parser, var context) = await PrepareAsync(@"{ { } { ; } ; }");
-            var blockResult = await parser.ParseBlockStmtAsync(context);
+            var (lexer, context) = Prepare(@"{ { } { ; } ; }");
+            StmtParser.Parse(lexer, context, out var stmt);
 
             var expected = SBlock(
                 SBlock(),
                 SBlock(new BlankStmt()),
                 new BlankStmt());
 
-            Assert.Equal(expected, blockResult.Elem);
+            Assert.Equal(expected, stmt);
         }
 
         [Fact]
-        public async Task TestParseBlankStmtAsync()
+        public void TestParseBlankStmtAsync()
         {
-            (var parser, var context) = await PrepareAsync("  ;  ");
-            var blankResult = await parser.ParseBlankStmtAsync(context);
+            var (lexer, context) = Prepare("  ;  ");
+            StmtParser.Parse(lexer, context, out var stmt);
 
-            Assert.Equal(new BlankStmt(), blankResult.Elem);
+            Assert.Equal(new BlankStmt(), stmt);
         }
 
         [Fact]
-        public async Task TestParseExpStmtAsync()
+        public void TestParseExpStmtAsync()
         {
-            (var parser, var context) = await PrepareAsync("a = b * c(1);");
-            var expResult = await parser.ParseExpStmtAsync(context);
+            var (lexer, context) = Prepare("a = b * c(1);");
+            StmtParser.Parse(lexer, context, out var stmt);
 
             var expected = new ExpStmt(new BinaryOpExp(BinaryOpKind.Assign,
                 SId("a"),
@@ -250,29 +248,29 @@ for (f(); g; h + g) ;
                     new CallExp(SId("c"), Arr<Argument>(new Argument.Normal(new IntLiteralExp(1)))))));
                 
 
-            Assert.Equal(expected, expResult.Elem);
+            Assert.Equal(expected, stmt);
         }
 
         [Fact]
-        public async Task TestParseForeachStmtAsync()
+        public void TestParseForeachStmtAsync()
         {
-            var (parser, context) = await PrepareAsync("foreach( var x in l ) { } ");
-            var stmtResult = await parser.ParseForeachStmtAsync(context);
+            var (lexer, context) = Prepare("foreach( var x in l ) { } ");
+            StmtParser.Parse(lexer, context, out var stmt);
 
             var expected = new ForeachStmt(SIdTypeExp("var"), "x", SId("l"), new EmbeddableStmt.Multiple(default));
 
-            Assert.Equal(expected, stmtResult.Elem);
+            Assert.Equal(expected, stmt);
         }
 
         [Fact]
-        public async Task TestParseDirectiveStmtAsync()
+        public void TestParseDirectiveStmtAsync()
         {
-            var (parser, context) = await PrepareAsync("`notnull(a);");
-            var stmtResult = await parser.ParseStmtAsync(context);
+            var (lexer, context) = Prepare("`notnull(a);");
+            StmtParser.Parse(lexer, context, out var stmt);
 
             var expected = new DirectiveStmt("notnull", Arr<Exp>(SId("a")));
 
-            Assert.Equal(expected, stmtResult.Elem);
+            Assert.Equal(expected, stmt);
         }
     }
 }

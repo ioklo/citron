@@ -14,46 +14,43 @@ namespace Citron.TextAnalysis.Test
 {
     public class ExpParserTests
     {
-        async ValueTask<(ExpParser, ParserContext)> PrepareAsync(string input)
+        (Lexer, ParserContext) Prepare(string input)
         {
             var lexer = new Lexer();
-            var parser = new Parser(lexer);
             var buffer = new Buffer(new StringReader(input));
-            var bufferPos = await buffer.MakePosition().NextAsync();
+            var bufferPos = buffer.MakePosition().Next();
             var lexerContext = LexerContext.Make(bufferPos);
             var parserContext = ParserContext.Make(lexerContext);
 
-            return (parser.expParser, parserContext);
+            return (lexer, parserContext);
         }
 
         [Fact]
-        public async Task TestParseIdentifierExpAsync()
+        public void TestParseIdentifierExp()
         {
-            (var expParser, var context) = await PrepareAsync("x");
+            var (lexer, context) = Prepare("x");
 
-            var expResult = await expParser.ParseExpAsync(context);
-
-            Assert.Equal(SId("x"), expResult.Elem);
+            ExpParser.Parse(lexer, context, out var exp);
+            Assert.Equal(SId("x"), exp);
         }
 
         [Fact]
-        public async Task TestParseIdentifierExpWithTypeArgsAsync()
+        public void TestParseIdentifierExpWithTypeArgs()
         {
             // x<T> vs (x < T) > 
-            (var expParser, var context) = await PrepareAsync("x<T>");
+            var (lexer, context) = Prepare("x<T>");
+            ExpParser.Parse(lexer, context, out var exp);
 
-            var expResult = await expParser.ParseExpAsync(context);
-
-            Assert.Equal(new IdentifierExp("x", Arr<TypeExp>(new IdTypeExp("T", default))), expResult.Elem);
+            Assert.Equal(new IdentifierExp("x", Arr<TypeExp>(new IdTypeExp("T", default))), exp);
         }
 
         [Fact]
-        public async Task TestParseStringExpAsync()
+        public void TestParseStringExp()
         {
             var input = "\"aaa bbb ${\"xxx ${ddd}\"} ddd\"";
-            (var expParser, var context) = await PrepareAsync(input);
+            var (lexer, context) = Prepare(input);
 
-            var expResult = await expParser.ParseExpAsync(context);
+            ExpParser.Parse(lexer, context, out var exp);
 
             var expected = new StringExp(Arr<StringExpElement>(
                 new TextStringExpElement("aaa bbb "),
@@ -64,44 +61,44 @@ namespace Citron.TextAnalysis.Test
                 new TextStringExpElement(" ddd")
             ));
 
-            Assert.Equal(expected, expResult.Elem);
+            Assert.Equal(expected, exp);
         }
 
         [Theory]
         [InlineData("true", true)]
         [InlineData("false", false)]
-        public async Task TestParseBoolAsync(string input, bool bExpectedResult)
+        public void TestParseBool(string input, bool bExpectedResult)
         {   
-            (var expParser, var context) = await PrepareAsync(input); 
+            var (lexer, context) = Prepare(input); 
             
-            var expResult = await expParser.ParseExpAsync(context);
+            ExpParser.Parse(lexer, context, out var exp);
 
             var expected = new BoolLiteralExp(bExpectedResult);
 
-            Assert.Equal(expected, expResult.Elem);
+            Assert.Equal(expected, exp);
         }
 
         [Fact]
-        public async Task TestParseIntAsync()
+        public void TestParseInt()
         {
             var input = "1234";
 
-            (var expParser, var context) = await PrepareAsync(input);
+            var (lexer, context) = Prepare(input);
 
-            var expResult = await expParser.ParseExpAsync(context);
+            ExpParser.Parse(lexer, context, out var exp);
 
             var expected = new IntLiteralExp(1234);
 
-            Assert.Equal(expected, expResult.Elem);
+            Assert.Equal(expected, exp);
         }
 
         [Fact]
-        public async Task TestParsePrimaryExpAsync()
+        public void TestParsePrimaryExp()
         {
             var input = "(c++(e, f) % d)++";
-            (var expParser, var context) = await PrepareAsync(input);
+            var (lexer, context) = Prepare(input);
 
-            var expResult = await expParser.ParsePrimaryExpAsync(context);
+            ExpParser.Parse(lexer, context, out var exp);
 
             var expected = new UnaryOpExp(
                 UnaryOpKind.PostfixInc,
@@ -115,16 +112,16 @@ namespace Citron.TextAnalysis.Test
                 )
             );
 
-            Assert.Equal(expected, expResult.Elem);
+            Assert.Equal(expected, exp);
         }        
 
         [Fact]
-        public async Task TestParseLambdaExpAsync()
+        public void TestParseLambdaExp()
         {
             var input = "a = b => (c, int d) => e";
-            (var expParser, var context) = await PrepareAsync(input);
+            var (lexer, context) = Prepare(input);
 
-            var expResult = await expParser.ParseExpAsync(context);
+            ExpParser.Parse(lexer, context, out var exp);
 
             var expected = new BinaryOpExp(BinaryOpKind.Assign,
                 SId("a"),
@@ -144,16 +141,16 @@ namespace Citron.TextAnalysis.Test
                 )
             );
 
-            Assert.Equal(expected, expResult.Elem);
+            Assert.Equal(expected, exp);
         }
 
         [Fact]
-        public async Task TestParseComplexMemberExpAsync()
+        public void TestParseComplexMemberExp()
         {
             var input = "a.b.c<int, list<int>>(1, \"str\").d";
-            (var expParser, var context) = await PrepareAsync(input);
+            var (lexer, context) = Prepare(input);
 
-            var expResult = await expParser.ParseExpAsync(context);
+            ExpParser.Parse(lexer, context, out var exp);
 
             var expected =
                 new MemberExp(
@@ -172,16 +169,16 @@ namespace Citron.TextAnalysis.Test
                     default
                 );
 
-            Assert.Equal(expected, expResult.Elem);
+            Assert.Equal(expected, exp);
         }
 
         [Fact]
-        public async Task TestParseListExpAsync()
+        public void TestParseListExp()
         {
             var input = "[ 1, 2, 3 ]";
-            (var expParser, var context) = await PrepareAsync(input);
+            var (lexer, context) = Prepare(input);
 
-            var expResult = await expParser.ParseExpAsync(context);
+            ExpParser.Parse(lexer, context, out var exp);
 
             var expected = new ListExp(null, Arr<Exp>(                
                 new IntLiteralExp(1),
@@ -189,16 +186,16 @@ namespace Citron.TextAnalysis.Test
                 new IntLiteralExp(3)
             ));
                 
-            Assert.Equal(expected, expResult.Elem);
+            Assert.Equal(expected, exp);
         }
 
         [Fact]
-        public async Task TestParseNewExpAsync()
+        public void TestParseNewExp()
         {
             var input = "new MyType<X>(2, false, \"string\")";
-            (var expParser, var context) = await PrepareAsync(input);
+            var (lexer, context) = Prepare(input);
 
-            var expResult = await expParser.ParseExpAsync(context);
+            ExpParser.Parse(lexer, context, out var exp);
 
             var expected = new NewExp(
                 new IdTypeExp("MyType", Arr<TypeExp>(new IdTypeExp("X", default))),
@@ -208,16 +205,16 @@ namespace Citron.TextAnalysis.Test
                     new Argument.Normal(SString("string"))
                 ));
 
-            Assert.Equal(expected, expResult.Elem);
+            Assert.Equal(expected, exp);
         }
         
         [Fact]
-        public async Task TestParseComplexExpAsync()
+        public void TestParseComplexExp()
         {
             var input = "a = b = !!(c % d)++ * e + f - g / h % i == 3 != false";
-            (var expParser, var context) = await PrepareAsync(input);
+            var (lexer, context) = Prepare(input);
             
-            var expResult = await expParser.ParseExpAsync(context);
+            ExpParser.Parse(lexer, context, out var exp);
 
             var expected = new BinaryOpExp(BinaryOpKind.Assign,
                 SId("a"),
@@ -244,7 +241,7 @@ namespace Citron.TextAnalysis.Test
                             new IntLiteralExp(3)),
                         new BoolLiteralExp(false))));
 
-            Assert.Equal(expected, expResult.Elem);
+            Assert.Equal(expected, exp);
         }
     }
 }

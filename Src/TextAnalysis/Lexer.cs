@@ -61,27 +61,27 @@ namespace Citron
                 category == UnicodeCategory.DecimalDigitNumber;
         }
 
-        public async ValueTask<LexResult> LexStringModeAsync(LexerContext context)
+        public LexResult LexStringMode(LexerContext context)
         {   
-            var textResult = await LexStringModeTextAsync(context);
+            var textResult = LexStringModeText(context);
             if (textResult.HasValue)
                 return textResult;
 
             if (context.Pos.Equals('"'))
                 return new LexResult(
                     DoubleQuoteToken.Instance,
-                    context.UpdatePos(await context.Pos.NextAsync()));
+                    context.UpdatePos(context.Pos.Next()));
 
             if (context.Pos.Equals('$'))
             {
-                var nextPos = await context.Pos.NextAsync();                
+                var nextPos = context.Pos.Next();
 
                 if (nextPos.Equals('{'))
                     return new LexResult(
                         DollarLBraceToken.Instance,
-                        context.UpdatePos(await nextPos.NextAsync()));
+                        context.UpdatePos(nextPos.Next()));
 
-                var idResult = await LexIdentifierAsync(context.UpdatePos(nextPos), false);
+                var idResult = LexIdentifier(context.UpdatePos(nextPos), false);
                 if (idResult.HasValue)
                     return idResult;
             }            
@@ -161,10 +161,10 @@ namespace Citron
             ("`", () => BacktickToken.Instance)
         };
 
-        public async ValueTask<LexResult> LexNormalModeAsync(LexerContext context, bool bSkipNewLine)
+        public LexResult LexNormalMode(LexerContext context, bool bSkipNewLine)
         {
             // 스킵처리
-            var wsResult = await LexWhitespaceAsync(context, bSkipNewLine);
+            var wsResult = LexWhitespace(context, bSkipNewLine);
             if (wsResult.HasValue)
                 context = wsResult.Context;
 
@@ -173,22 +173,22 @@ namespace Citron
                 return new LexResult(EndOfFileToken.Instance, context);
 
             // 줄바꿈 문자
-            var newLineResult = await LexNewLineAsync(context);
+            var newLineResult = LexNewLine(context);
             if(newLineResult.HasValue)
                 return new LexResult(newLineResult.Token, newLineResult.Context);
 
             // 여러개 먼저
-            var intResult = await LexIntAsync(context);
+            var intResult = LexInt(context);
             if (intResult.HasValue)
                 return new LexResult(intResult.Token, intResult.Context);
 
-            var boolResult = await LexBoolAsync(context);
+            var boolResult = LexBool(context);
             if (boolResult.HasValue)
                 return new LexResult(boolResult.Token, boolResult.Context);
 
             foreach (var info in infos)
             {
-                var consumeResult = await ConsumeAsync(info.Text, context.Pos);
+                var consumeResult = Consume(info.Text, context.Pos);
                 if (consumeResult.HasValue)
                     return new LexResult(info.Constructor(), context.UpdatePos(consumeResult.Value));
             }
@@ -196,45 +196,45 @@ namespace Citron
             if (context.Pos.Equals('"'))
                 return new LexResult(
                     DoubleQuoteToken.Instance, 
-                    context.UpdatePos(await context.Pos.NextAsync()));
+                    context.UpdatePos(context.Pos.Next()));
 
-            var keywordResult = await LexKeywordAsync(context);
+            var keywordResult = LexKeyword(context);
             if (keywordResult.HasValue)
                 return new LexResult(keywordResult.Token, keywordResult.Context);
 
 
             // Identifier 시도
-            var idResult = await LexIdentifierAsync(context, true);
+            var idResult = LexIdentifier(context, true);
             if (idResult.HasValue)
                 return new LexResult(idResult.Token, idResult.Context);
 
             return LexResult.Invalid;
         }
 
-        public async ValueTask<LexResult> LexCommandModeAsync(LexerContext context)
+        public LexResult LexCommandMode(LexerContext context)
         {   
-            var newLineResult = await LexNewLineAsync(context);
+            var newLineResult = LexNewLine(context);
             if (newLineResult.HasValue)
                 return new LexResult(NewLineToken.Instance, newLineResult.Context);
 
             // TODO: \} 처리
             if (context.Pos.Equals('}'))
-                return new LexResult(RBraceToken.Instance, context.UpdatePos(await context.Pos.NextAsync()));
+                return new LexResult(RBraceToken.Instance, context.UpdatePos(context.Pos.Next()));
             
             if (context.Pos.Equals('$'))
             {                
-                var nextDollarPos = await context.Pos.NextAsync();
+                var nextDollarPos = context.Pos.Next();
 
                 if (nextDollarPos.Equals('{'))
                 {
                     return new LexResult(
                         DollarLBraceToken.Instance,
-                        context.UpdatePos(await nextDollarPos.NextAsync()));
+                        context.UpdatePos(nextDollarPos.Next()));
                 }
 
                 if (!nextDollarPos.Equals('$'))
                 {
-                    var idResult = await LexIdentifierAsync(context.UpdatePos(nextDollarPos), false);
+                    var idResult = LexIdentifier(context.UpdatePos(nextDollarPos), false);
                     if (idResult.HasValue)
                         return idResult;
                 }
@@ -257,11 +257,11 @@ namespace Citron
                 
                 if (context.Pos.Equals('$'))
                 {
-                    var nextDollarPos = await context.Pos.NextAsync();
+                    var nextDollarPos = context.Pos.Next();
                     if (nextDollarPos.Equals('$'))
                     {
                         sb.Append('$');
-                        context = context.UpdatePos(await nextDollarPos.NextAsync());
+                        context = context.UpdatePos(nextDollarPos.Next());
                         continue;
                     }
 
@@ -269,7 +269,7 @@ namespace Citron
                 }
 
                 context.Pos.AppendTo(sb);
-                context = context.UpdatePos(await context.Pos.NextAsync());
+                context = context.UpdatePos(context.Pos.Next());
             }
 
             if (0 < sb.Length)
@@ -278,7 +278,7 @@ namespace Citron
             return LexResult.Invalid;
         }
 
-        async ValueTask<LexResult> LexKeywordAsync(LexerContext context)
+        LexResult LexKeyword(LexerContext context)
         {
             var sb = new StringBuilder();
             BufferPosition curPos = context.Pos;
@@ -286,7 +286,7 @@ namespace Citron
             while (IsIdentifierLetter(curPos))
             {
                 curPos.AppendTo(sb);
-                curPos = await curPos.NextAsync();
+                curPos = curPos.Next();
             }
 
             if (sb.Length == 0)
@@ -298,19 +298,19 @@ namespace Citron
             return LexResult.Invalid;
         }
 
-        async ValueTask<LexResult> LexIdentifierAsync(LexerContext context, bool bAllowRawMark)
+        LexResult LexIdentifier(LexerContext context, bool bAllowRawMark)
         {
             var sb = new StringBuilder();
             BufferPosition curPos = context.Pos;
 
             if (bAllowRawMark && curPos.Equals('@'))
             {
-                curPos = await curPos.NextAsync();
+                curPos = curPos.Next();
             }
             else if (IsIdentifierStartLetter(curPos))
             {
                 curPos.AppendTo(sb);
-                curPos = await curPos.NextAsync();
+                curPos = curPos.Next();
             }
             else
             {
@@ -320,7 +320,7 @@ namespace Citron
             while (IsIdentifierLetter(curPos))
             {   
                 curPos.AppendTo(sb);
-                curPos = await curPos.NextAsync();
+                curPos = curPos.Next();
             }
 
             if (sb.Length == 0)
@@ -329,33 +329,33 @@ namespace Citron
             return new LexResult(new IdentifierToken(sb.ToString()), context.UpdatePos(curPos));
         }
 
-        async ValueTask<BufferPosition?> ConsumeAsync(string text, BufferPosition pos)
+        BufferPosition? Consume(string text, BufferPosition pos)
         {
             foreach (var c in text)
             {
                 if (!pos.Equals(c))
                     return null;
 
-                pos = await pos.NextAsync();
+                pos = pos.Next();
             }
 
             return pos;
         }
 
-        async ValueTask<LexResult> LexBoolAsync(LexerContext context)
+        LexResult LexBool(LexerContext context)
         {
-            var trueResult = await ConsumeAsync("true", context.Pos);
+            var trueResult = Consume("true", context.Pos);
             if (trueResult.HasValue)
                 return new LexResult(new BoolToken(true), context.UpdatePos(trueResult.Value));
 
-            var falseResult = await ConsumeAsync("false", context.Pos);
+            var falseResult = Consume("false", context.Pos);
             if (falseResult.HasValue)
                 return new LexResult(new BoolToken(false), context.UpdatePos(falseResult.Value));
 
             return LexResult.Invalid;
         }
 
-        internal async ValueTask<LexResult> LexIntAsync(LexerContext context)
+        internal LexResult LexInt(LexerContext context)
         {
             var sb = new StringBuilder();
             BufferPosition curPos = context.Pos;
@@ -363,7 +363,7 @@ namespace Citron
             while (curPos.GetUnicodeCategory() == UnicodeCategory.DecimalDigitNumber)
             {   
                 curPos.AppendTo(sb);
-                curPos = await curPos.NextAsync();
+                curPos = curPos.Next();
             }
 
             if (sb.Length == 0)
@@ -372,7 +372,7 @@ namespace Citron
             return new LexResult(new IntToken(int.Parse(sb.ToString())), context.UpdatePos(curPos));
         }
 
-        async ValueTask<LexResult> LexStringModeTextAsync(LexerContext context)
+        LexResult LexStringModeText(LexerContext context)
         {
             var sb = new StringBuilder();
             var curPos = context.Pos;
@@ -383,24 +383,24 @@ namespace Citron
 
                 if (curPos.Equals('"')) // "두개 처리
                 {
-                    var secondPos = await curPos.NextAsync();
+                    var secondPos = curPos.Next();
                     if (!secondPos.Equals('"')) break;
 
                     sb.Append('"');
-                    curPos = await secondPos.NextAsync();
+                    curPos = secondPos.Next();
                 }
                 else if (curPos.Equals('$')) // $ 처리
                 {
-                    var secondPos = await curPos.NextAsync();
+                    var secondPos = curPos.Next();
                     if (!secondPos.Equals('$')) break;
                     
                     sb.Append('$');
-                    curPos = await secondPos.NextAsync();
+                    curPos = secondPos.Next();
                 }
                 else
                 {
                     curPos.AppendTo(sb);
-                    curPos = await curPos.NextAsync();
+                    curPos = curPos.Next();
                 }
             }
 
@@ -410,7 +410,7 @@ namespace Citron
             return new LexResult(new TextToken(sb.ToString()), context.UpdatePos(curPos));
         }
         
-        internal async ValueTask<LexResult> LexWhitespaceAsync(LexerContext context, bool bIncludeNewLine)
+        internal LexResult LexWhitespace(LexerContext context, bool bIncludeNewLine)
         {
             LexResult? nextLineModeFailedResult = null;
 
@@ -420,15 +420,15 @@ namespace Citron
                 if (context.Pos.Equals('\\'))
                 {
                     nextLineModeFailedResult = bUpdated ? new LexResult(WhitespaceToken.Instance, context) : LexResult.Invalid;
-                    context = context.UpdatePos(await context.Pos.NextAsync());
+                    context = context.UpdatePos(context.Pos.Next());
                     continue;
                 }
 
                 // 코멘트 처리
-                var commentBeginPos = await ConsumeAsync("//", context.Pos);
+                var commentBeginPos = Consume("//", context.Pos);
 
                 if (!commentBeginPos.HasValue)
-                    commentBeginPos = await ConsumeAsync("#", context.Pos);
+                    commentBeginPos = Consume("#", context.Pos);
 
                 if (commentBeginPos.HasValue)
                 {
@@ -436,7 +436,7 @@ namespace Citron
 
                     while (!context.Pos.IsReachEnd() && !context.Pos.Equals('\r') && !context.Pos.Equals('\n'))
                     {
-                        context = context.UpdatePos(await context.Pos.NextAsync());
+                        context = context.UpdatePos(context.Pos.Next());
                         bUpdated = true;
                     }
                     continue;
@@ -444,21 +444,21 @@ namespace Citron
 
                 if (context.Pos.IsWhiteSpace())
                 {
-                    context = context.UpdatePos(await context.Pos.NextAsync());
+                    context = context.UpdatePos(context.Pos.Next());
                     bUpdated = true;
                     continue;
                 }
 
                 if (bIncludeNewLine && (context.Pos.Equals('\r') || context.Pos.Equals('\n')))
                 {
-                    context = context.UpdatePos(await context.Pos.NextAsync());
+                    context = context.UpdatePos(context.Pos.Next());
                     bUpdated = true;
                     continue;
                 }
 
                 if (nextLineModeFailedResult.HasValue)
                 {
-                    var rnPos = await ConsumeAsync("\r\n", context.Pos);
+                    var rnPos = Consume("\r\n", context.Pos);
                     if (rnPos.HasValue)
                     {
                         nextLineModeFailedResult = null;
@@ -469,7 +469,7 @@ namespace Citron
                     else if (context.Pos.Equals('\r') || context.Pos.Equals('\n'))
                     {
                         nextLineModeFailedResult = null;
-                        context = context.UpdatePos(await context.Pos.NextAsync());
+                        context = context.UpdatePos(context.Pos.Next());
                         bUpdated = true;
                         continue;
                     }
@@ -486,12 +486,12 @@ namespace Citron
             return bUpdated ? new LexResult(WhitespaceToken.Instance, context) : LexResult.Invalid;
         }
 
-        internal async ValueTask<LexResult> LexNewLineAsync(LexerContext context)
+        internal LexResult LexNewLine(LexerContext context)
         {
             bool bUpdated = false;
             while (context.Pos.Equals('\r') || context.Pos.Equals('\n'))
             {
-                context = context.UpdatePos(await context.Pos.NextAsync());
+                context = context.UpdatePos(context.Pos.Next());
                 bUpdated = true;
             }
 

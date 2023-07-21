@@ -3,26 +3,25 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Citron.TextAnalysis.Test
 {
     public class LexerTests
     {
-        async ValueTask<LexerContext> MakeContextAsync(string text)
+        LexerContext MakeContext(string text)
         {
             var buffer = new Buffer(new StringReader(text));
-            return LexerContext.Make(await buffer.MakePosition().NextAsync()); // TODO: Position 관련 동작 재 수정
+            return LexerContext.Make(buffer.MakePosition().Next()); // TODO: Position 관련 동작 재 수정
         }
 
-        async ValueTask<IEnumerable<Token>> ProcessInnerAsync(Func<LexerContext, ValueTask<LexResult>> lexAction, LexerContext context)
+        IEnumerable<Token> ProcessInner(Func<LexerContext, LexResult> lexAction, LexerContext context)
         {
             var result = new List<Token>();
 
             while (true)
             {
-                var lexResult = await lexAction(context);
+                var lexResult = lexAction.Invoke(context);
                 if (!lexResult.HasValue || lexResult.Token is EndOfFileToken) break;
 
                 context = lexResult.Context;
@@ -33,27 +32,27 @@ namespace Citron.TextAnalysis.Test
             return result;
         }
 
-        ValueTask<IEnumerable<Token>> ProcessNormalAsync(Lexer lexer, LexerContext context)
+        IEnumerable<Token> ProcessNormal(Lexer lexer, LexerContext context)
         {
-            return ProcessInnerAsync(context => lexer.LexNormalModeAsync(context, false), context);
+            return ProcessInner(context => lexer.LexNormalMode(context, false), context);
         }
 
-        ValueTask<IEnumerable<Token>> ProcessStringAsync(Lexer lexer, LexerContext context)
+        IEnumerable<Token> ProcessString(Lexer lexer, LexerContext context)
         {
-            return ProcessInnerAsync(context => lexer.LexStringModeAsync(context), context);
+            return ProcessInner(context => lexer.LexStringMode(context), context);
         }
 
         [Fact]
-        public async Task TestLexSymbols()
+        public void TestLexSymbols()
         {
             var lexer = new Lexer();
-            var context = await MakeContextAsync(
+            var context = MakeContext(
                 "if else for continue break exec task params return async await foreach in yield seq enum struct class is ref box null public protected private static " + 
                 "new namespace " +
                 "++ -- <= >= => == != " +
                 "@ < > ; , = { } ( ) [ ] + - * / % ! . ? & : `");
 
-            var tokens = await ProcessNormalAsync(lexer, context);
+            var tokens = ProcessNormal(lexer, context);
             var expectedTokens = new Token[]
             {
                 IfToken.Instance,
@@ -126,12 +125,12 @@ namespace Citron.TextAnalysis.Test
         }
 
         [Fact]
-        public async Task TestLexKeywords()
+        public void TestLexKeywords()
         {
             var lexer = new Lexer();
-            var context = await MakeContextAsync("true false");
+            var context = MakeContext("true false");
 
-            var tokens = await ProcessNormalAsync(lexer, context);
+            var tokens = ProcessNormal(lexer, context);
             var expectedTokens = new Token[]
             {
                 new BoolToken(true),
@@ -142,23 +141,23 @@ namespace Citron.TextAnalysis.Test
         }
 
         [Fact]
-        public async Task TestLexSimpleIdentifier()
+        public void TestLexSimpleIdentifier()
         {
             var lexer = new Lexer();
-            var token = await lexer.LexNormalModeAsync(await MakeContextAsync("x"), false);
+            var token = lexer.LexNormalMode(MakeContext("x"), false);
 
             Assert.True(token.HasValue);
             Assert.Equal(new IdentifierToken("x"), token.Token, TokenEqualityComparer.Instance);
         }
 
         [Fact]
-        public async Task TestLexNormalString()
+        public void TestLexNormalString()
         {
-            var context = await MakeContextAsync("  \"aaa bbb \"  ");
+            var context = MakeContext("  \"aaa bbb \"  ");
             var lexer = new Lexer();
-            var result0 = await lexer.LexNormalModeAsync(context, false);
-            var result1 = await lexer.LexStringModeAsync(result0.Context);
-            var result2 = await lexer.LexStringModeAsync(result1.Context);
+            var result0 = lexer.LexNormalMode(context, false);
+            var result1 = lexer.LexStringMode(result0.Context);
+            var result2 = lexer.LexStringMode(result1.Context);
 
             Assert.Equal(DoubleQuoteToken.Instance, result0.Token, TokenEqualityComparer.Instance);
             Assert.Equal(new TextToken("aaa bbb "), result1.Token, TokenEqualityComparer.Instance);
@@ -167,12 +166,12 @@ namespace Citron.TextAnalysis.Test
 
         // stringMode
         [Fact]
-        public async Task TestLexDoubleQuoteString()
+        public void TestLexDoubleQuoteString()
         {
             var lexer = new Lexer();
-            var context = await MakeContextAsync("\"\"");
+            var context = MakeContext("\"\"");
 
-            var tokenResult = await lexer.LexStringModeAsync(context);
+            var tokenResult = lexer.LexStringMode(context);
 
             var expectedToken = new TextToken("\"");
 
@@ -180,34 +179,34 @@ namespace Citron.TextAnalysis.Test
         }
 
         [Fact]
-        public async Task TestLexDollarString()
+        public void TestLexDollarString()
         {
             var lexer = new Lexer();
-            var context = await MakeContextAsync("$$");
+            var context = MakeContext("$$");
 
-            var tokenResult = await lexer.LexStringModeAsync(context);
+            var tokenResult = lexer.LexStringMode(context);
             var expectedToken = new TextToken("$");
             Assert.Equal(expectedToken, tokenResult.Token, TokenEqualityComparer.Instance);
         }
 
         [Fact]
-        public async Task TestLexSimpleEscapedString2()
+        public void TestLexSimpleEscapedString2()
         {
             var lexer = new Lexer();
-            var context = await MakeContextAsync("$ccc");
+            var context = MakeContext("$ccc");
 
-            var tokenResult = await lexer.LexStringModeAsync(context);
+            var tokenResult = lexer.LexStringMode(context);
             var expectedToken = new IdentifierToken("ccc");
             Assert.Equal(expectedToken, tokenResult.Token, TokenEqualityComparer.Instance);
         }
 
         [Fact]
-        public async Task TestLexSimpleEscapedString()
+        public void TestLexSimpleEscapedString()
         {
             var lexer = new Lexer();
-            var context = await MakeContextAsync("aaa bbb $ccc ddd");
+            var context = MakeContext("aaa bbb $ccc ddd");
 
-            var tokens = await ProcessStringAsync(lexer, context);
+            var tokens = ProcessString(lexer, context);
 
             var expectedTokens = new Token[]
             {
@@ -220,25 +219,25 @@ namespace Citron.TextAnalysis.Test
         }
 
         [Fact]
-        public async Task TestLexEscapedString()
+        public void TestLexEscapedString()
         {
             var lexer = new Lexer();
-            var context = await MakeContextAsync("aaa bbb ${ccc} ddd"); // TODO: "aaa bbb ${ ccc \r\n } ddd" 는 에러
+            var context = MakeContext("aaa bbb ${ccc} ddd"); // TODO: "aaa bbb ${ ccc \r\n } ddd" 는 에러
 
             var tokens = new List<Token>();
-            var result = await lexer.LexStringModeAsync(context);
+            var result = lexer.LexStringMode(context);
             tokens.Add(result.Token);
 
-            result = await lexer.LexStringModeAsync(result.Context);
+            result = lexer.LexStringMode(result.Context);
             tokens.Add(result.Token);
 
-            result = await lexer.LexNormalModeAsync(result.Context, false);
+            result = lexer.LexNormalMode(result.Context, false);
             tokens.Add(result.Token);
 
-            result = await lexer.LexNormalModeAsync(result.Context, false);
+            result = lexer.LexNormalMode(result.Context, false);
             tokens.Add(result.Token);
 
-            result = await lexer.LexStringModeAsync(result.Context);
+            result = lexer.LexStringMode(result.Context);
             tokens.Add(result.Token);
 
             var expectedTokens = new Token[]
@@ -254,46 +253,46 @@ namespace Citron.TextAnalysis.Test
         }
 
         [Fact]
-        public async Task TestLexComplexString()
+        public void TestLexComplexString()
         {
             var lexer = new Lexer();
-            var context = await MakeContextAsync("\"aaa bbb ${\"xxx ${ddd}\"} ddd\"");
+            var context = MakeContext("\"aaa bbb ${\"xxx ${ddd}\"} ddd\"");
 
             var tokens = new List<Token>();
-            var result = await lexer.LexNormalModeAsync(context, false);
+            var result = lexer.LexNormalMode(context, false);
             tokens.Add(result.Token); // "
 
-            result = await lexer.LexStringModeAsync(result.Context);
+            result = lexer.LexStringMode(result.Context);
             tokens.Add(result.Token); // aaa bbb
 
-            result = await lexer.LexStringModeAsync(result.Context);
+            result = lexer.LexStringMode(result.Context);
             tokens.Add(result.Token); // ${
 
-            result = await lexer.LexNormalModeAsync(result.Context, false);
+            result = lexer.LexNormalMode(result.Context, false);
             tokens.Add(result.Token); // "
 
-            result = await lexer.LexStringModeAsync(result.Context);
+            result = lexer.LexStringMode(result.Context);
             tokens.Add(result.Token); // xxx 
 
-            result = await lexer.LexStringModeAsync(result.Context);
+            result = lexer.LexStringMode(result.Context);
             tokens.Add(result.Token); // ${
 
-            result = await lexer.LexNormalModeAsync(result.Context, false);
+            result = lexer.LexNormalMode(result.Context, false);
             tokens.Add(result.Token); // ddd
 
-            result = await lexer.LexNormalModeAsync(result.Context, false);
+            result = lexer.LexNormalMode(result.Context, false);
             tokens.Add(result.Token); // }
 
-            result = await lexer.LexStringModeAsync(result.Context);
+            result = lexer.LexStringMode(result.Context);
             tokens.Add(result.Token); // "
 
-            result = await lexer.LexNormalModeAsync(result.Context, false);
+            result = lexer.LexNormalMode(result.Context, false);
             tokens.Add(result.Token); // }
 
-            result = await lexer.LexStringModeAsync(result.Context);
+            result = lexer.LexStringMode(result.Context);
             tokens.Add(result.Token); // ddd 
 
-            result = await lexer.LexStringModeAsync(result.Context);
+            result = lexer.LexStringMode(result.Context);
             tokens.Add(result.Token); // "
 
             var expectedTokens = new Token[]
@@ -318,44 +317,44 @@ namespace Citron.TextAnalysis.Test
         }
 
         [Fact]
-        public async Task TestLexInt()
+        public void TestLexInt()
         {
             var lexer = new Lexer();
-            var context = await MakeContextAsync("1234"); // 나머지는 지원 안함
+            var context = MakeContext("1234"); // 나머지는 지원 안함
 
-            var result = await lexer.LexNormalModeAsync(context, false);
+            var result = lexer.LexNormalMode(context, false);
             var expectedToken = new IntToken(1234);
 
             Assert.Equal(expectedToken, result.Token, TokenEqualityComparer.Instance);
         }
 
         [Fact]
-        public async Task TestLexComment()
+        public void TestLexComment()
         {
             var lexer = new Lexer();
-            var context = await MakeContextAsync("  // e s \r\n// \r// \n1234"); // 나머지는 지원 안함
+            var context = MakeContext("  // e s \r\n// \r// \n1234"); // 나머지는 지원 안함
 
             var tokens = new List<Token>();
 
-            var result = await lexer.LexWhitespaceAsync(context, false);
+            var result = lexer.LexWhitespace(context, false);
             tokens.Add(result.Token);
 
-            result = await lexer.LexNewLineAsync(result.Context);
+            result = lexer.LexNewLine(result.Context);
             tokens.Add(result.Token);
 
-            result = await lexer.LexWhitespaceAsync(result.Context, false);
+            result = lexer.LexWhitespace(result.Context, false);
             tokens.Add(result.Token);
 
-            result = await lexer.LexNewLineAsync(result.Context);
+            result = lexer.LexNewLine(result.Context);
             tokens.Add(result.Token);
 
-            result = await lexer.LexWhitespaceAsync(result.Context, false);
+            result = lexer.LexWhitespace(result.Context, false);
             tokens.Add(result.Token);
 
-            result = await lexer.LexNewLineAsync(result.Context);
+            result = lexer.LexNewLine(result.Context);
             tokens.Add(result.Token);
 
-            result = await lexer.LexIntAsync(result.Context);
+            result = lexer.LexInt(result.Context);
             tokens.Add(result.Token);
 
             var expectedTokens = new Token[] {
@@ -372,20 +371,20 @@ namespace Citron.TextAnalysis.Test
         }
 
         [Fact]
-        public async Task TestLexNextLine()
+        public void TestLexNextLine()
         {
             var lexer = new Lexer();
-            var context = await MakeContextAsync("1234 \\ // comment \r\n 55"); // 나머지는 지원 안함
+            var context = MakeContext("1234 \\ // comment \r\n 55"); // 나머지는 지원 안함
 
             var tokens = new List<Token>();
 
-            var result = await lexer.LexIntAsync(context);
+            var result = lexer.LexInt(context);
             tokens.Add(result.Token);
 
-            result = await lexer.LexWhitespaceAsync(result.Context, false);
+            result = lexer.LexWhitespace(result.Context, false);
             tokens.Add(result.Token);
 
-            result = await lexer.LexIntAsync(result.Context);
+            result = lexer.LexInt(result.Context);
             tokens.Add(result.Token);
 
             var expectedTokens = new Token[] {
