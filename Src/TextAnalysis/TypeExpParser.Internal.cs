@@ -10,16 +10,24 @@ partial struct TypeExpParser
     Lexer lexer;
     ParserContext context;
 
-    public static bool Parse(Lexer lexer, ParserContext context, [NotNullWhen(returnValue: true)] out TypeExp? outTypeExp)
+    public static bool Parse(Lexer lexer, ref ParserContext context, [NotNullWhen(returnValue: true)] out TypeExp? outTypeExp)
     {
         var parser = new TypeExpParser { lexer = lexer, context = context };
-        return parser.ParseTypeExp0(out outTypeExp);
+        if (!parser.ParseTypeExp0(out outTypeExp))        
+            return false;
+
+        context = parser.context;
+        return true;
     }
 
-    public static bool ParseTypeArgs(Lexer lexer, ParserContext context, [NotNullWhen(returnValue: true)] out ImmutableArray<TypeExp>? typeArgs)
+    public static bool ParseTypeArgs(Lexer lexer, ref ParserContext context, [NotNullWhen(returnValue: true)] out ImmutableArray<TypeExp>? typeArgs)
     {
         var parser = new TypeExpParser { lexer = lexer, context = context };
-        return parser.ParseTypeArgs(out typeArgs);
+        if (!parser.ParseTypeArgs(out typeArgs))
+            return false;
+
+        context = parser.context;
+        return true;
     }
 
     bool Accept<TToken>([NotNullWhen(true)] out TToken? token) where TToken : Token
@@ -51,10 +59,16 @@ partial struct TypeExpParser
         {
             if (0 < typeArgsBuilder.Count)
                 if (!Accept<CommaToken>(out _))
-                    throw new ParseFatalException();
+                {
+                    outTypeArgs = null;
+                    return false;
+                }
 
             if (!ParseTypeExp0(out var typeArg))
-                throw new ParseFatalException();
+            {
+                outTypeArgs = null;
+                return false;
+            }
 
             typeArgsBuilder.Add(typeArg);
         }

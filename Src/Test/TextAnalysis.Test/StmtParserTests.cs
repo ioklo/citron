@@ -30,7 +30,7 @@ namespace Citron.TextAnalysis.Test
         {
             var (lexer, context) = Prepare("@echo ${a}bbb  ");
             
-            StmtParser.Parse(lexer, context, out var cmdStmt);
+            StmtParser.Parse(lexer, ref context, out var cmdStmt);
 
             var expected = new CommandStmt(Arr(
                 new StringExp(Arr<StringExpElement>(
@@ -54,7 +54,7 @@ xxx
 ";          
             var (lexer, context) = Prepare(input);
 
-            StmtParser.Parse(lexer, context, out var stmt);
+            StmtParser.Parse(lexer, ref context, out var stmt);
 
             var expected = new CommandStmt(Arr(
                 new StringExp(Arr<StringExpElement>(
@@ -73,7 +73,7 @@ xxx
         {
             var (lexer, context) = Prepare("string a = \"hello\";");
             
-            StmtParser.Parse(lexer, context, out var stmt);
+            StmtParser.Parse(lexer, ref context, out var stmt);
 
             var expected = SVarDeclStmt(SIdTypeExp("string"), "a", SString("hello"));
 
@@ -86,7 +86,7 @@ xxx
             // int* p;
             var (lexer, context) = Prepare("int* p;");
 
-            StmtParser.Parse(lexer, context, out var stmt);
+            StmtParser.Parse(lexer, ref context, out var stmt);
 
             var expected = new VarDeclStmt(new VarDecl(SLocalPtrTypeExp(SIdTypeExp("int")), Arr(new VarDeclElement("p", null))));
 
@@ -99,7 +99,7 @@ xxx
             // box int* p;
             var (lexer, context) = Prepare("box int* p;");
 
-            StmtParser.Parse(lexer, context, out var stmt);
+            StmtParser.Parse(lexer, ref context, out var stmt);
 
             var expected = new VarDeclStmt(new VarDecl(SBoxPtrTypeExp(SIdTypeExp("int")), Arr(new VarDeclElement("p", null))));
 
@@ -112,7 +112,7 @@ xxx
             // int? p;
             var (lexer, context) = Prepare("int? p;");
 
-            StmtParser.Parse(lexer, context, out var stmt);
+            StmtParser.Parse(lexer, ref context, out var stmt);
 
             var expected = new VarDeclStmt(new VarDecl(SNullableTypeExp(SIdTypeExp("int")), Arr(new VarDeclElement("p", null))));
 
@@ -124,7 +124,7 @@ xxx
         {
             var (lexer, context) = Prepare("if (b) {} else if (c) {} else {}");
             
-            StmtParser.Parse(lexer, context, out var stmt);
+            StmtParser.Parse(lexer, ref context, out var stmt);
 
             var expected = new IfStmt(SId("b"),
                 new EmbeddableStmt.Multiple(default),
@@ -141,7 +141,7 @@ xxx
         {
             var (lexer, context) = Prepare("if (b is T) {} else if (c) {} else {}");
 
-            StmtParser.Parse(lexer, context, out var stmt);
+            StmtParser.Parse(lexer, ref context, out var stmt);
 
             var expected = new IfTestStmt(SId("b"),
                 SIdTypeExp("T"), 
@@ -162,7 +162,7 @@ xxx
         {
             var (lexer, context) = Prepare("if (b is T t) {} else if (c) {} else {}");
 
-            StmtParser.Parse(lexer, context, out var stmt);
+            StmtParser.Parse(lexer, ref context, out var stmt);
 
             var expected = new IfTestStmt(SId("b"),
                 SIdTypeExp("T"),
@@ -183,7 +183,7 @@ xxx
 for (f(); g; h + g) ;
 ");
 
-            StmtParser.Parse(lexer, context, out var stmt);
+            StmtParser.Parse(lexer, ref context, out var stmt);
 
             var expected = new ForStmt(
                 new ExpForStmtInitializer(new CallExp(SId("f"), default)),
@@ -198,7 +198,7 @@ for (f(); g; h + g) ;
         public void TestParseContinueStmtAsync()
         {
             var (lexer, context) = Prepare(@"continue;");
-            StmtParser.Parse(lexer, context, out var stmt);
+            StmtParser.Parse(lexer, ref context, out var stmt);
 
             Assert.Equal(new ContinueStmt(), stmt);
         }
@@ -207,7 +207,7 @@ for (f(); g; h + g) ;
         public void TestParseBreakStmtAsync()
         {
             var (lexer, context) = Prepare(@"break;");
-            StmtParser.Parse(lexer, context, out var stmt);
+            StmtParser.Parse(lexer, ref context, out var stmt);
 
             Assert.Equal(new BreakStmt(), stmt);
         }
@@ -216,7 +216,7 @@ for (f(); g; h + g) ;
         public void TestParseBlockStmtAsync()
         {
             var (lexer, context) = Prepare(@"{ { } { ; } ; }");
-            StmtParser.Parse(lexer, context, out var stmt);
+            StmtParser.Parse(lexer, ref context, out var stmt);
 
             var expected = SBlock(
                 SBlock(),
@@ -230,7 +230,7 @@ for (f(); g; h + g) ;
         public void TestParseBlankStmtAsync()
         {
             var (lexer, context) = Prepare("  ;  ");
-            StmtParser.Parse(lexer, context, out var stmt);
+            StmtParser.Parse(lexer, ref context, out var stmt);
 
             Assert.Equal(new BlankStmt(), stmt);
         }
@@ -239,7 +239,7 @@ for (f(); g; h + g) ;
         public void TestParseExpStmtAsync()
         {
             var (lexer, context) = Prepare("a = b * c(1);");
-            StmtParser.Parse(lexer, context, out var stmt);
+            StmtParser.Parse(lexer, ref context, out var stmt);
 
             var expected = new ExpStmt(new BinaryOpExp(BinaryOpKind.Assign,
                 SId("a"),
@@ -255,7 +255,7 @@ for (f(); g; h + g) ;
         public void TestParseForeachStmtAsync()
         {
             var (lexer, context) = Prepare("foreach( var x in l ) { } ");
-            StmtParser.Parse(lexer, context, out var stmt);
+            StmtParser.Parse(lexer, ref context, out var stmt);
 
             var expected = new ForeachStmt(SIdTypeExp("var"), "x", SId("l"), new EmbeddableStmt.Multiple(default));
 
@@ -266,7 +266,7 @@ for (f(); g; h + g) ;
         public void TestParseDirectiveStmtAsync()
         {
             var (lexer, context) = Prepare("`notnull(a);");
-            StmtParser.Parse(lexer, context, out var stmt);
+            StmtParser.Parse(lexer, ref context, out var stmt);
 
             var expected = new DirectiveStmt("notnull", Arr<Exp>(SId("a")));
 

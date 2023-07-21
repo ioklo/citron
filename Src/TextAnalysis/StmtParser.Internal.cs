@@ -16,16 +16,24 @@ partial struct StmtParser
     Lexer lexer;
     ParserContext context;
 
-    public static bool Parse(Lexer lexer, ParserContext context, [NotNullWhen(returnValue: true)] out Stmt? outStmt)
+    public static bool Parse(Lexer lexer, ref ParserContext context, [NotNullWhen(returnValue: true)] out Stmt? outStmt)
     {
         var parser = new StmtParser { lexer = lexer, context = context };
-        return parser.ParseStmt(out outStmt);
+        if (!parser.ParseStmt(out outStmt))
+            return false;
+
+        context = parser.context;
+        return true;
     }
 
-    public static bool ParseBody(Lexer lexer, ParserContext context, [NotNullWhen(returnValue: true)] out ImmutableArray<Stmt>? outBody)
+    public static bool ParseBody(Lexer lexer, ref ParserContext context, [NotNullWhen(returnValue: true)] out ImmutableArray<Stmt>? outBody)
     {
         var parser = new StmtParser { lexer = lexer, context = context };
-        return parser.ParseBody(out outBody);
+        if (!parser.ParseBody(out outBody))
+            return false;
+
+        context = parser.context;
+        return true;
     }
 
     bool Accept<TToken>([NotNullWhen(returnValue: true)] out TToken? token) where TToken : Token
@@ -71,7 +79,7 @@ partial struct StmtParser
             return false;
         }
 
-        if (!ExpParser.Parse(lexer, context, out var cond))
+        if (!ExpParser.Parse(lexer, ref context, out var cond))
         {
             outStmt = null;
             return false;
@@ -79,7 +87,7 @@ partial struct StmtParser
         
         if (Accept<IsToken>(out _))
         {
-            if (!TypeExpParser.Parse(lexer, context, out var testType))
+            if (!TypeExpParser.Parse(lexer, ref context, out var testType))
             {
                 outStmt = null;
                 return false;
@@ -146,7 +154,7 @@ partial struct StmtParser
 
     bool InternalParseVarDecl([NotNullWhen(returnValue: true)] out VarDecl? outVarDecl)
     {
-        if (!TypeExpParser.Parse(lexer, context, out var varType))
+        if (!TypeExpParser.Parse(lexer, ref context, out var varType))
         {
             outVarDecl = null;
             return false;
@@ -165,7 +173,7 @@ partial struct StmtParser
             if (Accept<EqualToken>(out _))
             {
                 // TODO: ;나 ,가 나올때까지라는걸 명시해주면 좋겠다
-                if (!ExpParser.Parse(lexer, context, out initExp))
+                if (!ExpParser.Parse(lexer, ref context, out initExp))
                 {
                     outVarDecl = null;
                     return false;
@@ -209,7 +217,7 @@ partial struct StmtParser
         }
 
 
-        if (ExpParser.Parse(lexer, context, out var exp))
+        if (ExpParser.Parse(lexer, ref context, out var exp))
         {
             outInit = new ExpForStmtInitializer(exp!);
             return true;
@@ -239,13 +247,13 @@ partial struct StmtParser
             return Fatal();
 
         // TODO: 이 CondExp의 끝은 ';' 이다            
-        ExpParser.Parse(lexer, context, out var cond);
+        ExpParser.Parse(lexer, ref context, out var cond);
 
         if (!Accept<SemiColonToken>(out _))
             return Fatal();
 
         // TODO: 이 CondExp의 끝은 ')' 이다            
-        ExpParser.Parse(lexer, context, out var cont);
+        ExpParser.Parse(lexer, ref context, out var cont);
         
         if (!Accept<RParenToken>(out _))
             return Fatal();
@@ -302,7 +310,7 @@ partial struct StmtParser
         }
 
         ReturnValueInfo? returnValue = null;            
-        if (ExpParser.Parse(lexer, context, out var returnExp))
+        if (ExpParser.Parse(lexer, ref context, out var returnExp))
         {
             returnValue = new ReturnValueInfo(returnExp);
         }
@@ -361,7 +369,7 @@ partial struct StmtParser
     // TODO: Assign, Call만 가능하게 해야 한다
     bool InternalParseExpStmt([NotNullWhen(returnValue: true)] out ExpStmt? outStmt)
     {
-        if (!ExpParser.Parse(lexer, context, out var exp))
+        if (!ExpParser.Parse(lexer, ref context, out var exp))
         {
             outStmt = null;
             return false;
@@ -439,7 +447,7 @@ partial struct StmtParser
             return false;
         }
 
-        if (!ExpParser.Parse(lexer, context, out var yieldValue))
+        if (!ExpParser.Parse(lexer, ref context, out var yieldValue))
         {
             outStmt = null;
             return false;
@@ -472,7 +480,7 @@ partial struct StmtParser
             if (Accept<DollarLBraceToken>(lexer.LexCommandMode(context.LexerContext), out _))
             {
                 // TODO: EndInnerExpToken 일때 빠져나와야 한다는 표시를 해줘야 한다
-                if (!ExpParser.Parse(lexer, context, out var exp))
+                if (!ExpParser.Parse(lexer, ref context, out var exp))
                 {
                     outExp = null;
                     return false;
@@ -527,7 +535,7 @@ partial struct StmtParser
         }
 
         // var 
-        if (!TypeExpParser.Parse(lexer, context, out var typeExp))
+        if (!TypeExpParser.Parse(lexer, ref context, out var typeExp))
         {
             outStmt = null;
             return false;
@@ -548,7 +556,7 @@ partial struct StmtParser
         }
 
         // obj
-        if (!ExpParser.Parse(lexer, context, out var obj))
+        if (!ExpParser.Parse(lexer, ref context, out var obj))
         {
             outStmt = null;
             return false;
@@ -660,7 +668,7 @@ partial struct StmtParser
                     return false;
                 }
 
-            if (!ExpParser.Parse(lexer, context, out var arg))
+            if (!ExpParser.Parse(lexer, ref context, out var arg))
             {
                 outStmt = null;
                 return false;

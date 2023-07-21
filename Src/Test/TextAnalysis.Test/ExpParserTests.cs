@@ -30,7 +30,7 @@ namespace Citron.TextAnalysis.Test
         {
             var (lexer, context) = Prepare("x");
 
-            ExpParser.Parse(lexer, context, out var exp);
+            ExpParser.Parse(lexer, ref context, out var exp);
             Assert.Equal(SId("x"), exp);
         }
 
@@ -39,7 +39,7 @@ namespace Citron.TextAnalysis.Test
         {
             // x<T> vs (x < T) > 
             var (lexer, context) = Prepare("x<T>");
-            ExpParser.Parse(lexer, context, out var exp);
+            ExpParser.Parse(lexer, ref context, out var exp);
 
             Assert.Equal(new IdentifierExp("x", Arr<TypeExp>(new IdTypeExp("T", default))), exp);
         }
@@ -50,7 +50,7 @@ namespace Citron.TextAnalysis.Test
             var input = "\"aaa bbb ${\"xxx ${ddd}\"} ddd\"";
             var (lexer, context) = Prepare(input);
 
-            ExpParser.Parse(lexer, context, out var exp);
+            ExpParser.Parse(lexer, ref context, out var exp);
 
             var expected = new StringExp(Arr<StringExpElement>(
                 new TextStringExpElement("aaa bbb "),
@@ -71,7 +71,7 @@ namespace Citron.TextAnalysis.Test
         {   
             var (lexer, context) = Prepare(input); 
             
-            ExpParser.Parse(lexer, context, out var exp);
+            ExpParser.Parse(lexer, ref context, out var exp);
 
             var expected = new BoolLiteralExp(bExpectedResult);
 
@@ -85,7 +85,7 @@ namespace Citron.TextAnalysis.Test
 
             var (lexer, context) = Prepare(input);
 
-            ExpParser.Parse(lexer, context, out var exp);
+            ExpParser.Parse(lexer, ref context, out var exp);
 
             var expected = new IntLiteralExp(1234);
 
@@ -98,7 +98,7 @@ namespace Citron.TextAnalysis.Test
             var input = "(c++(e, f) % d)++";
             var (lexer, context) = Prepare(input);
 
-            ExpParser.Parse(lexer, context, out var exp);
+            ExpParser.Parse(lexer, ref context, out var exp);
 
             var expected = new UnaryOpExp(
                 UnaryOpKind.PostfixInc,
@@ -121,7 +121,7 @@ namespace Citron.TextAnalysis.Test
             var input = "a = b => (c, int d) => e";
             var (lexer, context) = Prepare(input);
 
-            ExpParser.Parse(lexer, context, out var exp);
+            ExpParser.Parse(lexer, ref context, out var exp);
 
             var expected = new BinaryOpExp(BinaryOpKind.Assign,
                 SId("a"),
@@ -150,7 +150,7 @@ namespace Citron.TextAnalysis.Test
             var input = "a.b.c<int, list<int>>(1, \"str\").d";
             var (lexer, context) = Prepare(input);
 
-            ExpParser.Parse(lexer, context, out var exp);
+            ExpParser.Parse(lexer, ref context, out var exp);
 
             var expected =
                 new MemberExp(
@@ -178,7 +178,7 @@ namespace Citron.TextAnalysis.Test
             var input = "[ 1, 2, 3 ]";
             var (lexer, context) = Prepare(input);
 
-            ExpParser.Parse(lexer, context, out var exp);
+            ExpParser.Parse(lexer, ref context, out var exp);
 
             var expected = new ListExp(null, Arr<Exp>(                
                 new IntLiteralExp(1),
@@ -195,7 +195,7 @@ namespace Citron.TextAnalysis.Test
             var input = "new MyType<X>(2, false, \"string\")";
             var (lexer, context) = Prepare(input);
 
-            ExpParser.Parse(lexer, context, out var exp);
+            ExpParser.Parse(lexer, ref context, out var exp);
 
             var expected = new NewExp(
                 new IdTypeExp("MyType", Arr<TypeExp>(new IdTypeExp("X", default))),
@@ -214,7 +214,7 @@ namespace Citron.TextAnalysis.Test
             var input = "a = b = !!(c % d)++ * e + f - g / h % i == 3 != false";
             var (lexer, context) = Prepare(input);
             
-            ExpParser.Parse(lexer, context, out var exp);
+            ExpParser.Parse(lexer, ref context, out var exp);
 
             var expected = new BinaryOpExp(BinaryOpKind.Assign,
                 SId("a"),

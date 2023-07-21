@@ -14,16 +14,24 @@ partial struct ExpParser
     Lexer lexer;
     ParserContext context;
 
-    public static bool Parse(Lexer lexer, ParserContext context, [NotNullWhen(returnValue: true)] out Exp? outExp)
+    public static bool Parse(Lexer lexer, ref ParserContext context, [NotNullWhen(returnValue: true)] out Exp? outExp)
     {
         var parser = new ExpParser { lexer = lexer, context = context };
-        return parser.ParseExp(out outExp);
+        if (!parser.ParseExp(out outExp))
+            return false;
+
+        context = parser.context;
+        return true;
     }
 
-    public static bool ParseCallArgs(Lexer lexer, ParserContext context, [NotNullWhen(returnValue: true)] out ImmutableArray<Argument>? outArgs)
+    public static bool ParseCallArgs(Lexer lexer, ref ParserContext context, [NotNullWhen(returnValue: true)] out ImmutableArray<Argument>? outArgs)
     {
         var parser = new ExpParser { lexer = lexer, context = context };
-        return parser.ParseCallArgs(out outArgs);
+        if (!parser.ParseCallArgs(out outArgs))
+            return false;
+
+        context = parser.context;
+        return true;
     }
 
     bool Accept<TToken>([NotNullWhen(true)] out TToken? token) where TToken : Token
@@ -280,7 +288,7 @@ partial struct ExpParser
                 }
 
                 // <                    
-                if (TypeExpParser.ParseTypeArgs(lexer, context, out var typeArgs))
+                if (TypeExpParser.ParseTypeArgs(lexer, ref context, out var typeArgs))
                     exp = new MemberExp(exp, idToken.Value, typeArgs.Value);
                 else
                     exp = new MemberExp(exp, idToken.Value, MemberTypeArgs: default);
@@ -504,7 +512,7 @@ partial struct ExpParser
         if (Peek<LBraceToken>())
         {
             // Body 파싱을 그대로 쓴다
-            if (!StmtParser.ParseBody(lexer, context, out var stmtBody))
+            if (!StmtParser.ParseBody(lexer, ref context, out var stmtBody))
             {
                 outExp = null;
                 return false;
@@ -538,7 +546,7 @@ partial struct ExpParser
             return false;
         }
 
-        if (!TypeExpParser.Parse(lexer, context, out var type))
+        if (!TypeExpParser.Parse(lexer, ref context, out var type))
         {
             outExp = null;
             return false;
@@ -708,7 +716,7 @@ partial struct ExpParser
 
         // 실패해도 괜찮다                    
         ImmutableArray<TypeExp> typeArgs = default;
-        if (TypeExpParser.ParseTypeArgs(lexer, context, out var typeArgsResult))
+        if (TypeExpParser.ParseTypeArgs(lexer, ref context, out var typeArgsResult))
             typeArgs = typeArgsResult.Value;
 
         outExp = new IdentifierExp(idToken.Value, typeArgs);

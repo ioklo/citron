@@ -38,14 +38,18 @@ namespace Citron
         Lexer lexer;
         ParserContext context;
 
-        public static bool Parse(Lexer lexer, ParserContext context, [NotNullWhen(returnValue: true)] out Script? outScript)
+        public static bool Parse(Lexer lexer, ref ParserContext context, [NotNullWhen(returnValue: true)] out Script? outScript)
         {
             //var buffer = new Buffer(new StringReader(input));
             //var pos = buffer.MakePosition().Next();
             //var context = ParserContext.Make(LexerContext.Make(pos));
 
             var parser = new ScriptParser() { lexer = lexer, context = context };
-            return parser.ParseScript(out outScript);
+            if (!parser.ParseScript(out outScript))
+                return false;
+
+            context = parser.context;
+            return true;
         }
 
         bool Accept<TToken>([NotNullWhen(returnValue: true)] out TToken? token) where TToken : Token
@@ -78,7 +82,7 @@ namespace Citron
             // params
             bool hasParams = Accept<ParamsToken>(out _);
 
-            if (!TypeExpParser.Parse(lexer, context, out var typeExp))
+            if (!TypeExpParser.Parse(lexer, ref context, out var typeExp))
             { 
                 outFuncParam = null;
                 return false;
@@ -134,7 +138,7 @@ namespace Citron
             // seq
             bool bSequence = Accept<SeqToken>(out _);
 
-            if (!TypeExpParser.Parse(lexer, context, out var retType))
+            if (!TypeExpParser.Parse(lexer, ref context, out var retType))
             {
                 outDecl = null;
                 return false;
@@ -152,7 +156,7 @@ namespace Citron
                 return false;
             }
 
-            if (!StmtParser.ParseBody(lexer, context, out var body))
+            if (!StmtParser.ParseBody(lexer, ref context, out var body))
             {
                 outDecl = null;
                 return false;
@@ -229,12 +233,7 @@ namespace Citron
         bool InternalParseEnumDecl([NotNullWhen(returnValue: true)] out EnumDecl? outDecl)
         {
             // public enum E<T1, T2> { a , b () } 
-
-            if (!ParseAccessModifier(out var accessModifier))
-            {
-                outDecl = null;
-                return false;
-            }
+            ParseAccessModifier(out var accessModifier);
 
             if (!Accept<EnumToken>(out _))
             {
@@ -288,7 +287,7 @@ namespace Citron
                                 return false;
                             }
 
-                        if (!TypeExpParser.Parse(lexer, context, out var typeExp))
+                        if (!TypeExpParser.Parse(lexer, ref context, out var typeExp))
                         {
                             outDecl = null;
                             return false;
@@ -349,14 +348,10 @@ namespace Citron
 
         bool InternalParseStructMemberVarDecl([NotNullWhen(returnValue: true)] out StructMemberVarDecl? outDecl)
         {
-            if (!ParseAccessModifier(out var accessModifier))
-            {
-                outDecl = null;
-                return false;
-            }
+            ParseAccessModifier(out var accessModifier);
 
             // ex) int
-            if (!TypeExpParser.Parse(lexer, context, out var varType))
+            if (!TypeExpParser.Parse(lexer, ref context, out var varType))
             {
                 outDecl = null;
                 return false;
@@ -396,17 +391,13 @@ namespace Citron
 
         bool InternalParseStructMemberFuncDecl([NotNullWhen(returnValue: true)] out StructMemberFuncDecl? outDecl)
         {
-            if (!ParseAccessModifier(out var accessModifier))
-            {
-                outDecl = null;
-                return false;
-            }
+            ParseAccessModifier(out var accessModifier);
 
             bool bStatic = Accept<StaticToken>(out _);
             bool bSequence = Accept<SeqToken>(out _);
 
             // ex) void
-            if (!TypeExpParser.Parse(lexer, context, out var retType))
+            if (!TypeExpParser.Parse(lexer, ref context, out var retType))
             {
                 outDecl = null;
                 return false;
@@ -434,7 +425,7 @@ namespace Citron
             }
 
             // ex) { ... }
-            if (!StmtParser.ParseBody(lexer, context, out var body))
+            if (!StmtParser.ParseBody(lexer, ref context, out var body))
             {
                 outDecl = null;
                 return false;
@@ -449,12 +440,8 @@ namespace Citron
 
         bool InternalParseStructConstructorDecl([NotNullWhen(returnValue: true)] out StructConstructorDecl? outDecl)
         {
-            if (!ParseAccessModifier(out var accessModifier))
-            {
-                outDecl = null;
-                return false;
-            }
-
+            ParseAccessModifier(out var accessModifier);
+            
             // ex) F
             if (!Accept<IdentifierToken>(out var name))
             {
@@ -470,7 +457,7 @@ namespace Citron
             }
 
             // ex) { ... }
-            if (!StmtParser.ParseBody(lexer, context, out var body))
+            if (!StmtParser.ParseBody(lexer, ref context, out var body))
             {
                 outDecl = null;
                 return false;
@@ -514,11 +501,7 @@ namespace Citron
         bool InternalParseStructDecl([NotNullWhen(returnValue: true)] out StructDecl? outDecl)
         {
             // AccessModifier, 텍스트에는 없을 수 있다
-            if (!ParseAccessModifier(out var accessModifier))
-            {
-                outDecl = null;
-                return false;
-            }
+            ParseAccessModifier(out var accessModifier);            
 
             if (!Accept<StructToken>(out _))
             {
@@ -542,7 +525,7 @@ namespace Citron
             var baseTypesBuilder = ImmutableArray.CreateBuilder<TypeExp>();
             if (Accept<ColonToken>(out _))
             {
-                if (!TypeExpParser.Parse(lexer, context, out var baseType0))
+                if (!TypeExpParser.Parse(lexer, ref context, out var baseType0))
                 {
                     outDecl = null;
                     return false;
@@ -552,7 +535,7 @@ namespace Citron
 
                 while (Accept<CommaToken>(out _))
                 {
-                    if (!TypeExpParser.Parse(lexer, context, out var baseType))
+                    if (!TypeExpParser.Parse(lexer, ref context, out var baseType))
                     {
                         outDecl = null;
                         return false;
@@ -601,17 +584,13 @@ namespace Citron
 
         bool InternalParseClassMemberFuncDecl([NotNullWhen(returnValue: true)] out ClassMemberFuncDecl? outDecl)
         {
-            if (!ParseAccessModifier(out var accessModifier))
-            {
-                outDecl = null;
-                return false;
-            }
-
+            ParseAccessModifier(out var accessModifier);
+            
             bool bStatic = Accept<StaticToken>(out _);
             bool bSequence = Accept<SeqToken>(out _);
 
             // ex) void
-            if (!TypeExpParser.Parse(lexer, context, out var retType))
+            if (!TypeExpParser.Parse(lexer, ref context, out var retType))
             {
                 outDecl = null;
                 return false;
@@ -639,7 +618,7 @@ namespace Citron
             }
 
             // ex) { ... }
-            if (!StmtParser.ParseBody(lexer, context, out var body))
+            if (!StmtParser.ParseBody(lexer, ref context, out var body))
             {
                 outDecl = null;
                 return false;
@@ -651,12 +630,8 @@ namespace Citron
 
         bool InternalParseClassConstructorDecl([NotNullWhen(returnValue: true)] out ClassConstructorDecl? outDecl)
         {
-            if (!ParseAccessModifier(out var accessModifier))
-            {
-                outDecl = null;
-                return false;
-            }
-
+            ParseAccessModifier(out var accessModifier);
+            
             // ex) F
             if (!Accept<IdentifierToken>(out var name))
             {
@@ -679,7 +654,7 @@ namespace Citron
                 {
                     if (expectedToBeBase.Value == "base")
                     {
-                        if (!ExpParser.ParseCallArgs(lexer, context, out var args))
+                        if (!ExpParser.ParseCallArgs(lexer, ref context, out var args))
                         {
                             outDecl = null;
                             return false;
@@ -701,7 +676,7 @@ namespace Citron
             }
 
             // ex) { ... }
-            if (!StmtParser.ParseBody(lexer, context, out var body))
+            if (!StmtParser.ParseBody(lexer, ref context, out var body))
             {
                 outDecl = null;
                 return false;
@@ -713,14 +688,10 @@ namespace Citron
 
         bool InternalParseClassMemberVarDecl([NotNullWhen(returnValue: true)] out ClassMemberVarDecl? outDecl)
         {
-            if (!ParseAccessModifier(out var accessModifier))
-            {
-                outDecl = null;
-                return false;
-            }
-
+            ParseAccessModifier(out var accessModifier);
+            
             // ex) int
-            if (!TypeExpParser.Parse(lexer, context, out var varType))
+            if (!TypeExpParser.Parse(lexer, ref context, out var varType))
             {
                 outDecl = null;
                 return false;
@@ -791,12 +762,8 @@ namespace Citron
         bool InternalParseClassDecl([NotNullWhen(returnValue: true)] out ClassDecl? outDecl)
         {
             // AccessModifier, 텍스트에는 없을 수 있다
-            if (!ParseAccessModifier(out var accessModifier))
-            {
-                outDecl = null;
-                return false;
-            }
-
+            ParseAccessModifier(out var accessModifier);
+            
             // class
             if (!Accept<ClassToken>(out _))
             {
@@ -822,7 +789,7 @@ namespace Citron
             var baseTypesBuilder = ImmutableArray.CreateBuilder<TypeExp>();
             if (Accept<ColonToken>(out _))
             {
-                if (!TypeExpParser.Parse(lexer, context, out var baseType0))
+                if (!TypeExpParser.Parse(lexer, ref context, out var baseType0))
                 {
                     outDecl = null;
                     return false;
@@ -832,7 +799,7 @@ namespace Citron
 
                 while (Accept<CommaToken>(out _))
                 {
-                    if (!TypeExpParser.Parse(lexer, context, out var baseType))
+                    if (!TypeExpParser.Parse(lexer, ref context, out var baseType))
                     {
                         outDecl = null;
                         return false;

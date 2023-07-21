@@ -32,7 +32,7 @@ namespace Citron.TextAnalysis.Test
 { 
     @ls -al
 }");
-            ScriptParser.Parse(lexer, context, out var script);
+            ScriptParser.Parse(lexer, ref context, out var script);
 
             var expected = SScript(
                 new CommandStmt(Arr(
@@ -48,7 +48,7 @@ namespace Citron.TextAnalysis.Test
         {
             var lexer = new Lexer();
             var context = MakeContext("void Func(int x, string y, params int z) { int a = 0; }");
-            ScriptParser.Parse(lexer, context, out var script);
+            ScriptParser.Parse(lexer, ref context, out var script);
 
             var expected = SScript(new GlobalFuncDeclScriptElement(new GlobalFuncDecl(
                 null,
@@ -90,7 +90,7 @@ namespace NS1
         }
     }
 }");
-            ScriptParser.Parse(lexer, context, out var script);
+            ScriptParser.Parse(lexer, ref context, out var script);
 
             var expected = new Script(Arr<ScriptElement>(new NamespaceDeclScriptElement(new NamespaceDecl(
                 Arr("NS1"),
@@ -122,7 +122,7 @@ enum X
     Second (int i),
     Third
 }");
-            ScriptParser.Parse(lexer, context, out var script);
+            ScriptParser.Parse(lexer, ref context, out var script);
 
             var expected = SScript(new TypeDeclScriptElement(new EnumDecl(null, "X",
                 default,
@@ -155,7 +155,7 @@ public struct S<T> : B, I
     private seq int F2<T>() { yield 4; }
 }
 ");
-            ScriptParser.Parse(lexer, context, out var script);
+            ScriptParser.Parse(lexer, ref context, out var script);
 
             var expected = SScript(new TypeDeclScriptElement(new StructDecl(AccessModifier.Public, "S",
                 Arr(new TypeParam("T")),
@@ -205,7 +205,7 @@ public struct S<T> : B, I
         {
             var lexer = new Lexer();
             var context = MakeContext(@"int**");
-            TypeExpParser.Parse(lexer, context, out var typeExp);
+            TypeExpParser.Parse(lexer, ref context, out var typeExp);
 
             var expected = SLocalPtrTypeExp(SLocalPtrTypeExp(SIdTypeExp("int")));
 
@@ -234,7 +234,7 @@ void Main()
 }
 
 ");
-            ScriptParser.Parse(lexer, context, out var script);
+            ScriptParser.Parse(lexer, ref context, out var script);
 
             var expected = SScript(
                 SVarDeclStmt(SIdTypeExp("int"), "sum", new IntLiteralExp(0)),
