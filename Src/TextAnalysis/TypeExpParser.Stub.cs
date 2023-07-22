@@ -1,8 +1,21 @@
-﻿using Citron.Collections;
+﻿namespace Citron; 
+
+using Citron.Collections;
 using Citron.Syntax;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Citron;
+// TYPE_EXP0  = TYPE_EXP1 TYPE_EXP0'
+// TYPE_EXP0' = ? TYPE_EXP0' | e
+
+// TYPE_EXP1  = box TYPE_EXP2 * TYPE_EXP1'
+//            | TYPE_EXP2 TYPE_EXP1'
+// TYPE_EXP1' = * TYPE_EXP1'
+//            | e
+
+// TYPE_EXP2  = ID TYPE_EXP2'
+//            | ( TYPE_EXP0 ) 
+// TYPE_EXP2' = . ID TYPE_EXP2'
+//            | e
 
 partial struct TypeExpParser 
 {
@@ -21,11 +34,11 @@ partial struct TypeExpParser
         }
     }
 
-    bool ParseTypeIdExp([NotNullWhen(returnValue: true)] out TypeExp? outTypeExp)
+    bool ParseIdTypeExp([NotNullWhen(returnValue: true)] out TypeExp? outTypeExp)
     {
         var prevContext = context;
 
-        if (!InternalParseTypeIdExp(out outTypeExp))
+        if (!InternalParseIdTypeExp(out outTypeExp))
         {
             context = prevContext;
             return false;
@@ -36,12 +49,11 @@ partial struct TypeExpParser
         }
     }
 
-    // 최상위
-    bool ParseTypeExp0([NotNullWhen(returnValue: true)] out TypeExp? outTypeExp)
+    bool ParseNullableTypeExp([NotNullWhen(returnValue: true)] out TypeExp? outTypeExp)
     {
         var prevContext = context;
 
-        if (!InternalParseTypeExp0(out outTypeExp))
+        if (!InternalParseNullableTypeExp(out outTypeExp))
         {
             context = prevContext;
             return false;
@@ -52,12 +64,13 @@ partial struct TypeExpParser
         }
     }
 
-    // 첫번째, box와 *****
-    bool ParseTypeExp1([NotNullWhen(returnValue: true)] out TypeExp? outTypeExp)
+
+    // box T*
+    bool ParseBoxPtrTypeExp([NotNullWhen(returnValue: true)] out TypeExp? outTypeExp)
     {
         var prevContext = context;
 
-        if (!InternalParseTypeExp1(out outTypeExp))
+        if (!InternalParseBoxPtrTypeExp(out outTypeExp))
         {
             context = prevContext;
             return false;
@@ -68,11 +81,66 @@ partial struct TypeExpParser
         }
     }
 
-    bool ParseTypeExp2([NotNullWhen(returnValue: true)] out TypeExp? outTypeExp)
+    // T*
+    bool ParseLocalPtrTypeExp([NotNullWhen(returnValue: true)] out TypeExp? outTypeExp)
     {
         var prevContext = context;
 
-        if (!InternalParseTypeExp2(out outTypeExp))
+        if (!InternalParseLocalPtrTypeExp(out outTypeExp))
+        {
+            context = prevContext;
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+    }
+
+    // (T)
+    bool ParseParenTypeExp([NotNullWhen(returnValue: true)] out TypeExp? outTypeExp)
+    {
+        var prevContext = context;
+
+        if (!InternalParseParenTypeExp(out outTypeExp))
+        {
+            context = prevContext;
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+    }
+
+    // ID...
+    bool ParseIdChainTypeExp([NotNullWhen(returnValue: true)] out TypeExp? outTypeExp)
+    {
+        var prevContext = context;
+
+        if (!InternalParseIdChainTypeExp(out outTypeExp))
+        {
+            context = prevContext;
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+    }
+
+    // func<>
+    // bool ParseFuncTypeExp([NotNullWhen(returnValue: true)] out TypeExp? outTypeExp);
+
+    // tuple
+    // bool ParseTupleTypeExp([NotNullWhen(returnValue: true)] out TypeExp? outTypeExp);
+
+    // 
+    bool ParseTypeExp([NotNullWhen(returnValue: true)] out TypeExp? outTypeExp)
+    {
+        var prevContext = context;
+
+        if (!InternalParseTypeExp(out outTypeExp))
         {
             context = prevContext;
             return false;

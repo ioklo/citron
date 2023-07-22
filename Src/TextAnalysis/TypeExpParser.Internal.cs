@@ -13,7 +13,7 @@ partial struct TypeExpParser
     public static bool Parse(Lexer lexer, ref ParserContext context, [NotNullWhen(returnValue: true)] out TypeExp? outTypeExp)
     {
         var parser = new TypeExpParser { lexer = lexer, context = context };
-        if (!parser.ParseTypeExp0(out outTypeExp))        
+        if (!parser.ParseTypeExp(out outTypeExp))        
             return false;
 
         context = parser.context;
@@ -64,7 +64,7 @@ partial struct TypeExpParser
                     return false;
                 }
 
-            if (!ParseTypeExp0(out var typeArg))
+            if (!ParseTypeExp(out var typeArg))
             {
                 outTypeArgs = null;
                 return false;
@@ -77,7 +77,7 @@ partial struct TypeExpParser
         return true;
     }
 
-    bool InternalParseTypeIdExp([NotNullWhen(returnValue: true)] out TypeExp? outTypeExp)
+    bool InternalParseIdTypeExp([NotNullWhen(returnValue: true)] out TypeExp? outTypeExp)
     {
         if (!Accept<IdentifierToken>(out var idToken))
         {
@@ -92,114 +92,153 @@ partial struct TypeExpParser
 
         return true;
     }
-    
-    // 최상위
-    bool InternalParseTypeExp0([NotNullWhen(returnValue: true)] out TypeExp? outTypeExp)
+
+    // T?
+    bool InternalParseNullableTypeExp([NotNullWhen(returnValue: true)] out TypeExp? outTypeExp)
     {
-        if (!ParseTypeExp1(out var typeExp))
+        TypeExp? typeExp;
+        if (!ParseBoxPtrTypeExp(out typeExp) &&
+            !ParseLocalPtrTypeExp(out typeExp) &&
+            !ParseParenTypeExp(out typeExp) &&
+            !ParseIdChainTypeExp(out typeExp))
         {
             outTypeExp = null;
             return false;
         }
 
-        // ?를 만났으면
-        if (Accept<QuestionToken>(out _))
+        if (!Accept<QuestionToken>(out _))
         {
-            outTypeExp = new NullableTypeExp(typeExp);
-            return true;
+            outTypeExp = null;
+            return false;
         }
-        else
-        {
-            outTypeExp = typeExp;
-            return true;
-        }
+
+        outTypeExp = new NullableTypeExp(typeExp);
+        return true;
     }
-    
-    // 첫번째, box와 *****
-    bool InternalParseTypeExp1([NotNullWhen(returnValue: true)] out TypeExp? outTypeExp)
+
+    // box T*
+    bool InternalParseBoxPtrTypeExp([NotNullWhen(returnValue: true)] out TypeExp? outTypeExp)
     {
-        TypeExp curTypeExp;
+        if (!Accept<BoxToken>(out _))
+        {
+            outTypeExp = null;
+            return false;
+        }
+
+        TypeExp? typeExp;
+        if (!ParseParenTypeExp(out typeExp) &&
+            !ParseIdChainTypeExp(out typeExp))
+        {
+            outTypeExp = null;
+            return false;
+        }
+
+        if (!Accept<StarToken>(out _))
+        {
+            outTypeExp = null;
+            return false;
+        }
         
-        // 
-        if (Accept<BoxToken>(out _))
-        {
-            if (!ParseTypeExp2(out var typeExp2))
-            {
-                outTypeExp = null;
-                return false;
-            }
-
-            if (!Accept<StarToken>(out _))
-            {
-                outTypeExp = null;
-                return false;
-            }
-
-            curTypeExp = new BoxPtrTypeExp(typeExp2);            
-        }
-        else if (ParseTypeExp2(out var typeExp2))
-        {
-            curTypeExp = typeExp2;
-        }
-        else
-        {
-            outTypeExp = null;
-            return false;
-        }
-
-        while (Accept<StarToken>(out _))
-        {
-            curTypeExp = new LocalPtrTypeExp(curTypeExp);
-        }
-
-        outTypeExp = curTypeExp;
+        outTypeExp = new BoxPtrTypeExp(typeExp);
         return true;
     }
 
-    bool InternalParseTypeExp2([NotNullWhen(returnValue: true)] out TypeExp? outTypeExp)
+    // T*
+    bool InternalParseLocalPtrTypeExp([NotNullWhen(returnValue: true)] out TypeExp? outTypeExp)
     {
-        TypeExp curTypeExp;
-        if (ParseTypeIdExp( out var typeIdExp))
-        {
-            curTypeExp = typeIdExp;
-        }
-        else if (Accept<LParenToken>(out _))
-        {
-            if (!ParseTypeExp0(out var typeExp))
-            {
-                outTypeExp = null;
-                return false;
-            }
+        // avoid left recursion
 
-            if (!Accept<RParenToken>(out _))
-            {
-                outTypeExp = null;
-                return false;
-            }
-
-            curTypeExp = typeExp;
-        }
-        else
+        TypeExp? typeExp;
+        if (!ParseParenTypeExp(out typeExp) &&
+            !ParseIdChainTypeExp(out typeExp))
         {
             outTypeExp = null;
             return false;
         }
 
-        // .
-        while (Accept<DotToken>(out _))
+        // 적어도 한개는 있어야 한다
+        if (!Accept<StarToken>(out _))
         {
-            // ID
-            if (!Accept<IdentifierToken>(out var memberName))
-            {
-                outTypeExp = null;
-                return false;
-            }
-
-            // TODO: typeApp(T.S<>) 처리도 추가
-            curTypeExp = new MemberTypeExp(curTypeExp, memberName.Value, default);
+            outTypeExp = null;
+            return false;
         }
 
-        outTypeExp = curTypeExp;
+        typeExp = new LocalPtrTypeExp(typeExp);
+
+        while(Accept<StarToken>(out _))        
+            typeExp = new LocalPtrTypeExp(typeExp);
+
+        outTypeExp = typeExp;
         return true;
+    }
+
+    // (T)
+    bool InternalParseParenTypeExp([NotNullWhen(returnValue: true)] out TypeExp? outTypeExp)
+    {
+        if (!Accept<LParenToken>(out _))
+        {
+            outTypeExp = null;
+            return false;
+        }
+
+        if (!ParseNullableTypeExp(out outTypeExp) &&
+            !ParseBoxPtrTypeExp(out outTypeExp) &&
+            !ParseLocalPtrTypeExp(out outTypeExp))
+        {
+            outTypeExp = null;
+            return false;
+        }
+
+        if (!Accept<RParenToken>(out _))
+        {
+            outTypeExp = null;
+            return false;
+        }
+
+        return true;
+    }
+
+    // ID...
+    bool InternalParseIdChainTypeExp([NotNullWhen(returnValue: true)] out TypeExp? outTypeExp)
+    {
+        if (ParseIdTypeExp(out var typeIdExp))
+        {
+            var curTypeExp = typeIdExp;
+
+            // .
+            while (Accept<DotToken>(out _))
+            {
+                // ID
+                if (!Accept<IdentifierToken>(out var memberName))
+                {
+                    outTypeExp = null;
+                    return false;
+                }
+
+                // TODO: typeApp(T.S<>) 처리도 추가
+                curTypeExp = new MemberTypeExp(curTypeExp, memberName.Value, default);
+            }
+
+            outTypeExp = curTypeExp;
+            return true;
+        }
+
+        outTypeExp = null;
+        return false;
+    }
+
+    // func<>
+    // bool InternalParseFuncTypeExp([NotNullWhen(returnValue: true)] out TypeExp? outTypeExp);
+
+    // tuple
+    // bool InternalParseTupleTypeExp([NotNullWhen(returnValue: true)] out TypeExp? outTypeExp);
+
+    // 
+    bool InternalParseTypeExp([NotNullWhen(returnValue: true)] out TypeExp? outTypeExp)
+    {
+        return ParseNullableTypeExp(out outTypeExp) ||
+            ParseBoxPtrTypeExp(out outTypeExp) ||
+            ParseLocalPtrTypeExp(out outTypeExp) ||
+            ParseIdChainTypeExp(out outTypeExp);
     }
 }

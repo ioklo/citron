@@ -354,7 +354,7 @@ partial struct StmtParser
         return true;
     }
 
-    bool InternalParseBlankStmt([NotNullWhen(returnValue: true)] out BlankStmt outStmt)
+    bool InternalParseBlankStmt([NotNullWhen(returnValue: true)] out BlankStmt? outStmt)
     {
         if (!Accept<SemiColonToken>(out _))
         {

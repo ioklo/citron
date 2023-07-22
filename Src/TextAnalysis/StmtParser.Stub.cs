@@ -142,7 +142,7 @@ partial struct StmtParser
         }
     }
 
-    bool ParseBlankStmt([NotNullWhen(returnValue: true)] out BlankStmt outStmt)
+    bool ParseBlankStmt([NotNullWhen(returnValue: true)] out BlankStmt? outStmt)
     {
         var prevContext = context;
 

@@ -1,4 +1,6 @@
-﻿using Citron.LexicalAnalysis;
+﻿namespace Citron;
+
+using Citron.LexicalAnalysis;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -6,142 +8,135 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Citron.TextAnalysis.Test
-{   
-    public class CommandLexerTests
+using static Citron.TextAnalysisTestMisc;
+
+public class CommandLexerTests
+{
+    IEnumerable<Token> Process(Lexer lexer, LexerContext context)
     {
-        LexerContext MakeContext(string text)
+        var result = new List<Token>();
+
+        while(!context.Pos.IsReachEnd())
         {
-            var buffer = new Buffer(new StringReader(text));
-            return LexerContext.Make(buffer.MakePosition().Next());
+            var lexResult = lexer.LexCommandMode(context);
+            if (!lexResult.HasValue) break;
+
+            context = lexResult.Context;
+            result.Add(lexResult.Token);
         }
 
-        IEnumerable<Token> Process(Lexer lexer, LexerContext context)
+        return result;
+    }
+
+    LexerContext RepeatLexNormal(List<Token> tokens, Lexer lexer, LexerContext context, bool bSkipNewLine, int repeatCount)
+    {
+        for (int i = 0; i < repeatCount; i++)
         {
-            var result = new List<Token>();
-
-            while(!context.Pos.IsReachEnd())
-            {
-                var lexResult = lexer.LexCommandMode(context);
-                if (!lexResult.HasValue) break;
-
-                context = lexResult.Context;
-                result.Add(lexResult.Token);
-            }
-
-            return result;
+            var result = lexer.LexNormalMode(context, bSkipNewLine);
+            tokens.Add(result.Token); // ps
+            context = result.Context;
         }
 
-        LexerContext RepeatLexNormal(List<Token> tokens, Lexer lexer, LexerContext context, bool bSkipNewLine, int repeatCount)
-        {
-            for (int i = 0; i < repeatCount; i++)
-            {
-                var result = lexer.LexNormalMode(context, bSkipNewLine);
-                tokens.Add(result.Token); // ps
-                context = result.Context;
-            }
+        return context;
+    }
 
-            return context;
+    LexerContext RepeatLexCommand(List<Token> tokens, Lexer lexer, LexerContext context, int repeatCount)
+    {
+        for (int i = 0; i < repeatCount; i++)
+        {
+            var result = lexer.LexCommandMode(context);
+            tokens.Add(result.Token); // ps
+            context = result.Context;
         }
 
-        LexerContext RepeatLexCommand(List<Token> tokens, Lexer lexer, LexerContext context, int repeatCount)
-        {
-            for (int i = 0; i < repeatCount; i++)
-            {
-                var result = lexer.LexCommandMode(context);
-                tokens.Add(result.Token); // ps
-                context = result.Context;
-            }
-
-            return context;
-        }
+        return context;
+    }
             
 
-        [Fact]
-        public void TestLexerProcessStringExpInCommandMode()
-        {
-            var lexer = new Lexer();
-            var context = MakeContext("  p$$s${ ccc } \"ddd $e  \r\n }");
+    [Fact]
+    public void TestLexerProcessStringExpInCommandMode()
+    {
+        var lexer = new Lexer();
+        var context = MakeLexerContext("  p$$s${ ccc } \"ddd $e  \r\n }");
 
-            var tokens = new List<Token>();
+        var tokens = new List<Token>();
 
-            context = RepeatLexCommand(tokens, lexer, context, 2);
-            context = RepeatLexNormal(tokens, lexer, context, false, 2);
-            context = RepeatLexCommand(tokens, lexer, context, 6);
+        context = RepeatLexCommand(tokens, lexer, context, 2);
+        context = RepeatLexNormal(tokens, lexer, context, false, 2);
+        context = RepeatLexCommand(tokens, lexer, context, 6);
             
-            var expectedTokens = new Token[]
-            {
-                new TextToken("  p$s"),
-                DollarLBraceToken.Instance,
-                new IdentifierToken("ccc"),
-                RBraceToken.Instance,
-                new TextToken(" \"ddd "),
-                new IdentifierToken("e"),
-                new TextToken("  "),
-                NewLineToken.Instance,
-                new TextToken(" "),
-                RBraceToken.Instance,
-            };
-
-            Assert.Equal(expectedTokens, tokens, TokenEqualityComparer.Instance);
-        }
-
-        [Fact]
-        public void TestCommandModeLexCommands()
+        var expectedTokens = new Token[]
         {
-            var lexer = new Lexer();
-            var context = MakeContext("ls -al");
+            new TextToken("  p$s"),
+            DollarLBraceToken.Instance,
+            new IdentifierToken("ccc"),
+            RBraceToken.Instance,
+            new TextToken(" \"ddd "),
+            new IdentifierToken("e"),
+            new TextToken("  "),
+            NewLineToken.Instance,
+            new TextToken(" "),
+            RBraceToken.Instance,
+        };
 
-            var result = Process(lexer, context);
+        Assert.Equal(expectedTokens, tokens, TokenEqualityComparer.Instance);
+    }
 
-            var expectedTokens = new Token[]
-            {
-                new TextToken("ls -al")
-            };
+    [Fact]
+    public void TestCommandModeLexCommands()
+    {
+        var lexer = new Lexer();
+        var context = MakeLexerContext("ls -al");
 
-            Assert.Equal(expectedTokens, result, TokenEqualityComparer.Instance);
-        }
+        var result = Process(lexer, context);
 
-        [Fact]
-        public void TestLexMultilines()
+        var expectedTokens = new Token[]
         {
-            var lexer = new Lexer();
-            var context = MakeContext(@"
+            new TextToken("ls -al")
+        };
+
+        Assert.Equal(expectedTokens, result, TokenEqualityComparer.Instance);
+    }
+
+    [Fact]
+    public void TestLexMultilines()
+    {
+        var lexer = new Lexer();
+        var context = MakeLexerContext(@"
 hello world \n
 
     hello    
 
 }");
-            var tokens = new List<Token>();
-            RepeatLexCommand(tokens, lexer, context, 6);
+        var tokens = new List<Token>();
+        RepeatLexCommand(tokens, lexer, context, 6);
 
-            var expected = new List<Token>
-            {
-                NewLineToken.Instance,
-                new TextToken("hello world \\n"), NewLineToken.Instance, // skip multi newlines
-                new TextToken("    hello    "), NewLineToken.Instance,                
-                RBraceToken.Instance
-            };
-
-            Assert.Equal(expected, tokens, TokenEqualityComparer.Instance);
-        }
-
-        [Fact]
-        public void TestCommandModeLexCommandsWithLineSeparator()
+        var expected = new List<Token>
         {
-            var lexer = new Lexer();
-            var context = MakeContext("ls -al\r\nbb");
+            NewLineToken.Instance,
+            new TextToken("hello world \\n"), NewLineToken.Instance, // skip multi newlines
+            new TextToken("    hello    "), NewLineToken.Instance,                
+            RBraceToken.Instance
+        };
 
-            var result = Process(lexer, context);
+        Assert.Equal(expected, tokens, TokenEqualityComparer.Instance);
+    }
 
-            var expectedTokens = new Token[]
-            {
-                new TextToken("ls -al"),
-                NewLineToken.Instance,
-                new TextToken("bb"),
-            };
+    [Fact]
+    public void TestCommandModeLexCommandsWithLineSeparator()
+    {
+        var lexer = new Lexer();
+        var context = MakeLexerContext("ls -al\r\nbb");
 
-            Assert.Equal(expectedTokens, result, TokenEqualityComparer.Instance);
-        }
+        var result = Process(lexer, context);
+
+        var expectedTokens = new Token[]
+        {
+            new TextToken("ls -al"),
+            NewLineToken.Instance,
+            new TextToken("bb"),
+        };
+
+        Assert.Equal(expectedTokens, result, TokenEqualityComparer.Instance);
     }
 }

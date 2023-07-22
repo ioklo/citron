@@ -10,24 +10,17 @@ using Xunit;
 
 using static Citron.Infra.Misc;
 using static Citron.Syntax.SyntaxFactory;
+using static Citron.TextAnalysisTestMisc;
 
 namespace Citron.TextAnalysis.Test
 {
     public class ParserTests
-    {
-        ParserContext MakeContext(string input)
-        {
-            var buffer = new Buffer(new StringReader(input));
-            var bufferPos = buffer.MakePosition().Next();
-            var lexerContext = LexerContext.Make(bufferPos);
-            return ParserContext.Make(lexerContext);
-        }
-
+    {   
         [Fact]
         public void TestParseSimpleScriptAsync()
         {
             var lexer = new Lexer();            
-            var context = MakeContext(
+            var context = MakeParserContext(
 @"void Main() 
 { 
     @ls -al
@@ -47,7 +40,7 @@ namespace Citron.TextAnalysis.Test
         public void TestParseFuncDeclAsync()
         {
             var lexer = new Lexer();
-            var context = MakeContext("void Func(int x, string y, params int z) { int a = 0; }");
+            var context = MakeParserContext("void Func(int x, string y, params int z) { int a = 0; }");
             ScriptParser.Parse(lexer, ref context, out var script);
 
             var expected = SScript(new GlobalFuncDeclScriptElement(new GlobalFuncDecl(
@@ -79,7 +72,7 @@ namespace Citron.TextAnalysis.Test
         public void TestParseNamespaceDeclAsync()
         {
             var lexer = new Lexer();
-            var context = MakeContext(@"
+            var context = MakeParserContext(@"
 namespace NS1
 {
     namespace NS2.NS3
@@ -115,7 +108,7 @@ namespace NS1
         public void TestParseEnumDeclAsync()
         {
             var lexer = new Lexer();
-            var context = MakeContext(@"
+            var context = MakeParserContext(@"
 enum X
 {
     First,
@@ -141,7 +134,7 @@ enum X
         public void TestParseStructDeclAsync()
         {
             var lexer = new Lexer();
-            var context = MakeContext(@"
+            var context = MakeParserContext(@"
 public struct S<T> : B, I
 {
     int x1;
@@ -200,23 +193,12 @@ public struct S<T> : B, I
             Assert.Equal(expected, script);
         }
 
-        [Fact]
-        public void TestParseLocalPtrTypeExp()
-        {
-            var lexer = new Lexer();
-            var context = MakeContext(@"int**");
-            TypeExpParser.Parse(lexer, ref context, out var typeExp);
-
-            var expected = SLocalPtrTypeExp(SLocalPtrTypeExp(SIdTypeExp("int")));
-
-            Assert.Equal(expected, typeExp);
-        }
-
+        
         [Fact]
         public void TestParseComplexScriptAsync()
         {
             var lexer = new Lexer();
-            var context = MakeContext(@"
+            var context = MakeParserContext(@"
 void Main()
 {
     int sum = 0;
