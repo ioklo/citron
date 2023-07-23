@@ -73,6 +73,7 @@ namespace Citron.Syntax
         public static TypeExp SNullableTypeExp(TypeExp innerTypeExp) => new NullableTypeExp(innerTypeExp);
 
         public static IdTypeExp SIdTypeExp(string name, params TypeExp[] typeArgs) => new IdTypeExp(name, Arr(typeArgs));
+        public static MemberTypeExp Member(this TypeExp parent, string name, params TypeExp[] typeArgs) => new MemberTypeExp(parent, name, Arr(typeArgs));
         public static LocalPtrTypeExp SLocalPtrTypeExp(TypeExp innerTypeExp) => new LocalPtrTypeExp(innerTypeExp);
         public static BoxPtrTypeExp SBoxPtrTypeExp(TypeExp innerTypeExp) => new BoxPtrTypeExp(innerTypeExp);
 

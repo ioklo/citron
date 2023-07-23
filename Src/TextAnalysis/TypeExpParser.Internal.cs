@@ -215,8 +215,8 @@ partial struct TypeExpParser
                     return false;
                 }
 
-                // TODO: typeApp(T.S<>) 처리도 추가
-                curTypeExp = new MemberTypeExp(curTypeExp, memberName.Value, default);
+                ParseTypeArgs(out var typeArgs);
+                curTypeExp = new MemberTypeExp(curTypeExp, memberName.Value, typeArgs.GetValueOrDefault());
             }
 
             outTypeExp = curTypeExp;

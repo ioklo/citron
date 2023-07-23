@@ -181,6 +181,7 @@ Global
 		{6DB28C78-BE21-48ED-B0B2-196857BC16DB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6DB28C78-BE21-48ED-B0B2-196857BC16DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6DB28C78-BE21-48ED-B0B2-196857BC16DB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6DB28C78-BE21-48ED-B0B2-196857BC16DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AF31D5A0-E2A2-4293-A204-74CFC77D3A84}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{AF31D5A0-E2A2-4293-A204-74CFC77D3A84}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AF31D5A0-E2A2-4293-A204-74CFC77D3A84}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -232,5 +233,14 @@ Global
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {36419831-5C03-4845-9F0B-52FBB4EC43A6}
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		Policies = $0
+		$0.DotNetNamingPolicy = $1
+		$0.TextStylePolicy = $2
+		$2.inheritsSet = null
+		$2.scope = text/x-csharp
+		$0.CSharpFormattingPolicy = $3
+		$3.scope = text/x-csharp
 	EndGlobalSection
 EndGlobal
