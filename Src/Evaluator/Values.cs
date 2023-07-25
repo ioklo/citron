@@ -335,4 +335,19 @@ namespace Citron
             throw new NotImplementedException();
         }
     }
+    
+    public class BoxPtrValue : Value
+    {
+        Value? target;
+
+        public void SetTarget(Value target)
+        {
+            this.target = target;
+        }
+
+        public override void SetValue(Value value)
+        {
+            this.target = ((BoxPtrValue)value).target;
+        }
+    }
 }

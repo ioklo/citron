@@ -1,7 +1,10 @@
 ﻿using System.Diagnostics;
 using Citron.Symbol;
+
 using R = Citron.IR0;
 using ISyntaxNode = Citron.Syntax.ISyntaxNode;
+
+using static Citron.Analysis.SyntaxAnalysisErrorCode;
 
 namespace Citron.Analysis
 {
@@ -75,6 +78,19 @@ namespace Citron.Analysis
         {
             var loc = new CoreResolvedExpIR0LocTranslator(context, nodeForErrorReport).TranslateThis(reExp);
             return HandleLoc(loc, reExp.Type);
+        }
+
+        TranslationResult<R.Exp> IResolvedExpVisitor<TranslationResult<R.Exp>>.VisitLocalDeref(ResolvedExp.LocalDeref reExp)
+        {
+            var loc = new CoreResolvedExpIR0LocTranslator(context, nodeForErrorReport).TranslateLocalDeref(reExp);
+            return HandleLocTranslationResult(loc, reExp.GetExpType());
+        }
+
+        // *x
+        TranslationResult<R.Exp> IResolvedExpVisitor<TranslationResult<R.Exp>>.VisitBoxDeref(ResolvedExp.BoxDeref reExp)
+        {
+            var loc = new CoreResolvedExpIR0LocTranslator(context, nodeForErrorReport).TranslateBoxDeref(reExp);
+            return HandleLocTranslationResult(loc, reExp.GetExpType());
         }
     }
 }

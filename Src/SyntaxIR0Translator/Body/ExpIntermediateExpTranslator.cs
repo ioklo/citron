@@ -94,7 +94,27 @@ struct ExpIntermediateExpTranslator : IExpVisitor<TranslationResult<Intermediate
     
     TranslationResult<IntermediateExp> IExpVisitor<TranslationResult<IntermediateExp>>.VisitUnaryOp(UnaryOpExp exp)
     {
-        return HandleExpResult(new CoreExpIR0ExpTranslator(hintType, context).TranslateUnaryOp(exp));
+        // *d
+        if (exp.Kind == UnaryOpKind.Deref)
+        {
+            var targetResult = ExpResolvedExpTranslator.Translate(exp.Operand, context, hintType: null);
+            if (!targetResult.IsValid(out var target))
+                return Error();
+
+            var targetType = target.GetExpType();
+            if (targetType is BoxPtrType)
+                return Valid(new IntermediateExp.BoxDeref(target));
+
+            if (targetType is LocalPtrType)
+                return Valid(new IntermediateExp.LocalDeref(target));
+
+            // 에러를 내야 할 것 같다
+            throw new NotImplementedException();
+        }
+        else
+        {
+            return HandleExpResult(new CoreExpIR0ExpTranslator(hintType, context).TranslateUnaryOp(exp));
+        }
     }
     
     TranslationResult<IntermediateExp> IExpVisitor<TranslationResult<IntermediateExp>>.VisitBinaryOp(BinaryOpExp exp)
@@ -199,6 +219,6 @@ struct ExpIntermediateExpTranslator : IExpVisitor<TranslationResult<Intermediate
 
     TranslationResult<IntermediateExp> IExpVisitor<TranslationResult<IntermediateExp>>.VisitBox(BoxExp exp)
     {
-        throw new NotImplementedException();
+        return HandleExpResult(new CoreExpIR0ExpTranslator(hintType, context).TranslateBox(exp));
     }
 }

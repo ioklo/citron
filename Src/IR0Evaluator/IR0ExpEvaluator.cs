@@ -357,6 +357,14 @@ namespace Citron
             result.SetValue(destValue);
         }
 
+        async ValueTask IIR0ExpVisitor<ValueTask>.VisitBoxExp(BoxExp boxExp)
+        {
+            var value = context.AllocValue(boxExp.InnerExp.GetExpType());
+            await EvalAsync(boxExp.InnerExp, context, value);
+
+            ((BoxPtrValue)result).SetTarget(value);
+        }
+
         ValueTask IIR0ExpVisitor<ValueTask>.VisitBoolLiteral(BoolLiteralExp exp)
         {
             ((BoolValue)result).SetBool(exp.Value);

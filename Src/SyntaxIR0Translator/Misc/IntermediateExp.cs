@@ -99,6 +99,16 @@ abstract record IntermediateExp
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitListIndexer(this);
     }
 
+    public record class LocalDeref(ResolvedExp Target) : IntermediateExp
+    {
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitLocalDeref(this);
+    }
+
+    public record class BoxDeref(ResolvedExp Target) : IntermediateExp
+    {
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitBoxDeref(this);
+    }
+
     // 기타의 경우
     public record class IR0Exp(R.Exp Exp) : IntermediateExp
     {

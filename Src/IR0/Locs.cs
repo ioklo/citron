@@ -58,15 +58,15 @@ namespace Citron.IR0
     {
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitThis(this);
     }
-    
+
     // dereference pointer, *
-    public record class LocalDerefLoc(Loc InnerLoc) : Loc
+    public record class LocalDerefLoc(Exp InnerExp) : Loc
     {
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitLocalDeref(this);
     }
 
     // dereference box pointer, *
-    public record class BoxDerefLoc(Loc InnerLoc) : Loc
+    public record class BoxDerefLoc(Exp InnerExp) : Loc
     {
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitBoxDeref(this);
     }

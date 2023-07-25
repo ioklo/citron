@@ -110,6 +110,18 @@ namespace Citron
             {
                 throw new NotImplementedException();
             }
+
+            TypeId ITypeIdVisitor<TypeId>.VisitLocalPtr(LocalPtrTypeId typeId)
+            {
+                var appliedId = typeId.InnerTypeId.Accept<Applier, TypeId>(ref this);
+                return new LocalPtrTypeId(appliedId);
+            }
+
+            TypeId ITypeIdVisitor<TypeId>.VisitBoxPtr(BoxPtrTypeId typeId)
+            {
+                var appliedId = typeId.InnerTypeId.Accept<Applier, TypeId>(ref this);
+                return new BoxPtrTypeId(appliedId);
+            }
             
             TypeId ITypeIdVisitor<TypeId>.VisitNullable(NullableTypeId typeId)
             {

@@ -282,7 +282,7 @@ struct MemberParentAndIdBinder : IIntermediateExpVisitor<TranslationResult<Inter
     }
     
     // exp.x
-    TranslationResult<IntermediateExp> VisitInstanceParent(IntermediateExp instImExp, IType instType)
+    TranslationResult<IntermediateExp> VisitInstanceParent(IntermediateExp instImExp)
     {
         var instReExpResult = IntermediateExpResolvedExpTranslator.Translate(instImExp, context, nodeForErrorReport);
         if (!instReExpResult.IsValid(out var instReExp))
@@ -332,7 +332,7 @@ struct MemberParentAndIdBinder : IIntermediateExpVisitor<TranslationResult<Inter
 
     TranslationResult<IntermediateExp> IIntermediateExpVisitor<TranslationResult<IntermediateExp>>.VisitClassMemberVar(IntermediateExp.ClassMemberVar result)
     {
-        return VisitInstanceParent(result, result.Symbol.GetDeclType());
+        return VisitInstanceParent(result);
     }
 
     TranslationResult<IntermediateExp> IIntermediateExpVisitor<TranslationResult<IntermediateExp>>.VisitEnum(IntermediateExp.Enum result)
@@ -347,22 +347,22 @@ struct MemberParentAndIdBinder : IIntermediateExpVisitor<TranslationResult<Inter
 
     TranslationResult<IntermediateExp> IIntermediateExpVisitor<TranslationResult<IntermediateExp>>.VisitEnumElemMemberVar(IntermediateExp.EnumElemMemberVar result)
     {
-        return VisitInstanceParent(result, result.Symbol.GetDeclType());
+        return VisitInstanceParent(result);
     }
 
     TranslationResult<IntermediateExp> IIntermediateExpVisitor<TranslationResult<IntermediateExp>>.VisitIR0Exp(IntermediateExp.IR0Exp result)
     {
-        return VisitInstanceParent(result, result.Exp.GetExpType());
+        return VisitInstanceParent(result);
     }
     
     TranslationResult<IntermediateExp> IIntermediateExpVisitor<TranslationResult<IntermediateExp>>.VisitLambdaMemberVar(IntermediateExp.LambdaMemberVar result)
     {
-        return VisitInstanceParent(result, result.Symbol.GetDeclType());
+        return VisitInstanceParent(result);
     }
 
     TranslationResult<IntermediateExp> IIntermediateExpVisitor<TranslationResult<IntermediateExp>>.VisitLocalVar(IntermediateExp.LocalVar result)
     {
-        return VisitInstanceParent(result, result.Type);
+        return VisitInstanceParent(result);
     }
 
     TranslationResult<IntermediateExp> IIntermediateExpVisitor<TranslationResult<IntermediateExp>>.VisitStruct(IntermediateExp.Struct result)
@@ -377,12 +377,12 @@ struct MemberParentAndIdBinder : IIntermediateExpVisitor<TranslationResult<Inter
 
     TranslationResult<IntermediateExp> IIntermediateExpVisitor<TranslationResult<IntermediateExp>>.VisitStructMemberVar(IntermediateExp.StructMemberVar result)
     {
-        return VisitInstanceParent(result, result.Symbol.GetDeclType());
+        return VisitInstanceParent(result);
     }
 
     TranslationResult<IntermediateExp> IIntermediateExpVisitor<TranslationResult<IntermediateExp>>.VisitThis(IntermediateExp.ThisVar result)
     {
-        return VisitInstanceParent(result, result.Type);
+        return VisitInstanceParent(result);
     }
 
     TranslationResult<IntermediateExp> IIntermediateExpVisitor<TranslationResult<IntermediateExp>>.VisitTypeVar(IntermediateExp.TypeVar result)
@@ -393,5 +393,15 @@ struct MemberParentAndIdBinder : IIntermediateExpVisitor<TranslationResult<Inter
     TranslationResult<IntermediateExp> IIntermediateExpVisitor<TranslationResult<IntermediateExp>>.VisitListIndexer(IntermediateExp.ListIndexer exp)
     {
         throw new NotImplementedException();
+    }
+
+    TranslationResult<IntermediateExp> IIntermediateExpVisitor<TranslationResult<IntermediateExp>>.VisitLocalDeref(IntermediateExp.LocalDeref exp)
+    {
+        return VisitInstanceParent(exp);
+    }
+
+    TranslationResult<IntermediateExp> IIntermediateExpVisitor<TranslationResult<IntermediateExp>>.VisitBoxDeref(IntermediateExp.BoxDeref exp)
+    {
+        return VisitInstanceParent(exp);
     }
 }

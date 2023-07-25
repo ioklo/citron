@@ -329,7 +329,7 @@ namespace Citron.Test
             if (@localDerefLoc == null) { itw.Write("null"); return; }
 
             itw.Write("new Citron.IR0.LocalDerefLoc(");
-            this.Write_Loc(@localDerefLoc.InnerLoc);
+            this.Write_Exp(@localDerefLoc.InnerExp);
             itw.Write(")");
         }
 
@@ -338,7 +338,7 @@ namespace Citron.Test
             if (@boxDerefLoc == null) { itw.Write("null"); return; }
 
             itw.Write("new Citron.IR0.BoxDerefLoc(");
-            this.Write_Loc(@boxDerefLoc.InnerLoc);
+            this.Write_Exp(@boxDerefLoc.InnerExp);
             itw.Write(")");
         }
 
@@ -359,6 +359,7 @@ namespace Citron.Test
             {
                 case Citron.IR0.LoadExp @loadExp: Write_LoadExp(@loadExp); break;
                 case Citron.IR0.AssignExp @assignExp: Write_AssignExp(@assignExp); break;
+                case Citron.IR0.BoxExp @boxExp: Write_BoxExp(@boxExp); break;
                 case Citron.IR0.BoolLiteralExp @boolLiteralExp: Write_BoolLiteralExp(@boolLiteralExp); break;
                 case Citron.IR0.IntLiteralExp @intLiteralExp: Write_IntLiteralExp(@intLiteralExp); break;
                 case Citron.IR0.StringExp @stringExp: Write_StringExp(@stringExp); break;
@@ -409,6 +410,15 @@ namespace Citron.Test
             writer1.Write_Loc(@assignExp.Dest);
             itw1.WriteLine(",");
             writer1.Write_Exp(@assignExp.Src);
+            itw.Write(")");
+        }
+
+        public void Write_BoxExp(Citron.IR0.BoxExp? @boxExp)
+        {
+            if (@boxExp == null) { itw.Write("null"); return; }
+
+            itw.Write("new Citron.IR0.BoxExp(");
+            this.Write_Exp(@boxExp.InnerExp);
             itw.Write(")");
         }
 

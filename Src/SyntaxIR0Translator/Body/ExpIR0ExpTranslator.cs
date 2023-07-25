@@ -56,11 +56,6 @@ struct ExpIR0ExpTranslator : S.IExpVisitor<TranslationResult<R.Exp>>
         return Valid(new CoreExpIR0ExpTranslator(hintType, context).TranslateBoolLiteral(exp));
     }
 
-    TranslationResult<R.Exp> S.IExpVisitor<TranslationResult<R.Exp>>.VisitBox(S.BoxExp exp)
-    {
-        throw new NotImplementedException();
-    }
-
     TranslationResult<R.Exp> S.IExpVisitor<TranslationResult<R.Exp>>.VisitCall(S.CallExp exp)
     {
         return new CoreExpIR0ExpTranslator(hintType, context).TranslateCall(exp);
@@ -101,6 +96,11 @@ struct ExpIR0ExpTranslator : S.IExpVisitor<TranslationResult<R.Exp>>
         return new CoreExpIR0ExpTranslator(hintType, context).TranslateNew(exp);
     }
 
+    TranslationResult<R.Exp> S.IExpVisitor<TranslationResult<R.Exp>>.VisitBox(S.BoxExp exp)
+    {
+        return new CoreExpIR0ExpTranslator(hintType, context).TranslateBox(exp);
+    }
+
     TranslationResult<R.Exp> S.IExpVisitor<TranslationResult<R.Exp>>.VisitNullLiteral(S.NullLiteralExp exp)
     {
         return new CoreExpIR0ExpTranslator(hintType, context).TranslateNullLiteral(exp);
@@ -113,6 +113,13 @@ struct ExpIR0ExpTranslator : S.IExpVisitor<TranslationResult<R.Exp>>
 
     TranslationResult<R.Exp> S.IExpVisitor<TranslationResult<R.Exp>>.VisitUnaryOp(S.UnaryOpExp exp)
     {
-        return new CoreExpIR0ExpTranslator(hintType, context).TranslateUnaryOp(exp);
+        if (exp.Kind == S.UnaryOpKind.Deref)
+        {
+            return HandleDefault(exp);
+        }
+        else
+        {
+            return new CoreExpIR0ExpTranslator(hintType, context).TranslateUnaryOp(exp);
+        }
     }
 }

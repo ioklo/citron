@@ -7,7 +7,7 @@ public interface IIR0ExpVisitor<TResult>
     // Storage
     TResult VisitLoad(LoadExp exp);
     TResult VisitAssign(AssignExp exp);
-    TResult VisitLocalRef(LocalRefExp exp);
+    TResult VisitBoxExp(BoxExp boxExp);
 
     // Literal
     TResult VisitBoolLiteral(BoolLiteralExp exp);

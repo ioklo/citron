@@ -5,7 +5,7 @@
         PostfixInc, PostfixDec,
 
         Minus, LogicalNot, PrefixInc, PrefixDec,
-
-        Ref, Deref, // &, *
+        
+        Ref, Deref, // &, *, local인지 box인지는 분석을 통해서 알아내게 된다
     }
 }

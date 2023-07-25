@@ -125,4 +125,14 @@ struct IntermediateExpResolvedExpTranslator : IIntermediateExpVisitor<Translatio
     {
         return Fatal(A2008_ResolveIdentifier_CantUseTypeAsExpression);
     }
+
+    TranslationResult<ResolvedExp> IIntermediateExpVisitor<TranslationResult<ResolvedExp>>.VisitLocalDeref(IntermediateExp.LocalDeref exp)
+    {
+        return Valid(new ResolvedExp.LocalDeref(exp.Target));
+    }
+
+    TranslationResult<ResolvedExp> IIntermediateExpVisitor<TranslationResult<ResolvedExp>>.VisitBoxDeref(IntermediateExp.BoxDeref exp)
+    {
+        return Valid(new ResolvedExp.BoxDeref(exp.Target));
+    }
 }

@@ -43,6 +43,18 @@ abstract record class ResolvedExp
         public override IType GetExpType() { return Symbol.GetDeclType(); }
     }
 
+    public record class LocalDeref(ResolvedExp Target) : ResolvedExp
+    {
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitLocalDeref(this);
+        public override IType GetExpType() { return Target.GetExpType(); }
+    }
+
+    public record class BoxDeref(ResolvedExp Target) : ResolvedExp
+    {
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitBoxDeref(this);
+        public override IType GetExpType() { return Target.GetExpType(); }
+    }
+
     public record class ListIndexer(ResolvedInstanceExp Instance, R.Exp Index, IType ItemType) : ResolvedExp
     {
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitListIndexer(this);

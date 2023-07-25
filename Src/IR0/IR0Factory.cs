@@ -395,14 +395,9 @@ namespace Citron.IR0
             return new LoadExp(new LambdaMemberVarLoc(memberVar), memberVar.GetDeclType());
         }
 
-        #endregion
-
-        public Exp LocalRef(Loc loc, IType locType)
-        {
-            return new LocalRefExp(loc, locType);
-        }
+        #endregion LoadExp
         
-        #endregion
+        #endregion Exp
 
         #region Loc
 
@@ -416,10 +411,10 @@ namespace Citron.IR0
             return new LambdaMemberVarLoc(symbol);
         }
         
-        public Loc LocalDeref(Loc innerLoc)
-        {
-            return new LocalDerefLoc(innerLoc);
-        }
+        //public Loc LocalDeref(Loc innerLoc)
+        //{
+        //    return new LocalDerefLoc(innerLoc);
+        //}
         
         public TempLoc TempLoc(Exp e)
         {
@@ -565,6 +560,11 @@ namespace Citron.IR0
         public BoxPtrType BoxPtrType(IType innerType)
         {
             return new BoxPtrType(innerType);
+        }
+
+        public Loc LocalDeref(Exp exp)
+        {
+            return new LocalDerefLoc(exp);
         }
 
         #endregion

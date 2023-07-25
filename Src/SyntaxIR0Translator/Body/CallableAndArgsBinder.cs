@@ -401,6 +401,16 @@ struct CallableAndArgsBinder : IIntermediateExpVisitor<TranslationResult<R.Exp>>
         }
     }
 
+    TranslationResult<R.Exp> IIntermediateExpVisitor<TranslationResult<R.Exp>>.VisitLocalDeref(IntermediateExp.LocalDeref imExp)
+    {
+        return HandleLoc(imExp);
+    }
+
+    TranslationResult<R.Exp> IIntermediateExpVisitor<TranslationResult<R.Exp>>.VisitBoxDeref(IntermediateExp.BoxDeref imExp)
+    {
+        return HandleLoc(imExp);
+    }
+
 
     ImmutableArray<FuncsMatcher.Candidate> MakeCandidates<TFuncSymbol, TFuncDeclSymbol>(ImmutableArray<DeclAndConstructor<TFuncDeclSymbol, TFuncSymbol>> declAndConstructors)
             where TFuncDeclSymbol : IFuncDeclSymbol
@@ -465,4 +475,6 @@ struct CallableAndArgsBinder : IIntermediateExpVisitor<TranslationResult<R.Exp>>
             return Error();
         }
     }
+
+    
 }

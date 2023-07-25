@@ -1280,7 +1280,6 @@ namespace Citron.Test
             // int i = 3;
             // int* x = &i;
             // *x = 7 + *x;
-
             var syntaxScript = SScript(
                 SVarDeclStmt(SIntTypeExp(), "i", SInt(3)),
                 new S.VarDeclStmt(new S.VarDecl(SLocalPtrTypeExp(SIntTypeExp()), Arr(new S.VarDeclElement("x", SRefExp(SId("i")))))),
@@ -1297,8 +1296,8 @@ namespace Citron.Test
                 r.LocalVarDecl(r.IntType(), "i", r.Int(3)),
                 r.LocalVarDecl(r.LocalPtrType(r.IntType()), "x", r.LocalRef(r.LocalVar("i"), r.IntType())),
                 r.Assign(
-                    r.LocalDeref(r.LocalVar("x")),
-                    r.CallInternalBinary(R.InternalBinaryOperator.Add_Int_Int_Int, r.Int(7), r.Load(r.LocalDeref(r.LocalVar("x")), r.IntType()))
+                    r.LocalDeref(r.LoadLocalVar("x", r.LocalPtrType(r.IntType()))),
+                    r.CallInternalBinary(R.InternalBinaryOperator.Add_Int_Int_Int, r.Int(7), r.Load(r.LocalDeref(r.LoadLocalVar("x", r.LocalPtrType(r.IntType()))), r.IntType()))
                 )
             );
 

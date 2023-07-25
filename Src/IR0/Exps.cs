@@ -42,17 +42,16 @@ namespace Citron.IR0
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitAssign(this);
     }
 
-    // &x
-    public record class LocalRefExp(Loc Target, IType TargetType) : Exp
+    // box 3
+    public record class BoxExp(Exp InnerExp) : Exp
     {
         public override IType GetExpType()
         {
-            return new LocalPtrType(TargetType);
+            return new BoxPtrType(InnerExp.GetExpType());
         }
 
-        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitLocalRef(this);
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitBoxExp(this);
     }
-
     #endregion
 
     #region Literal

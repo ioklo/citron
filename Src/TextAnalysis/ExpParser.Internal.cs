@@ -107,7 +107,8 @@ partial struct ExpParser
         }
     }
 
-    bool InternalHandleUnaryMinusWithIntLiteral(UnaryOpKind kind, Exp exp, [NotNullWhen(returnValue: true)] out Exp? outExp)
+    // unary -가 int literal과 있을 때는 int literal로 합친다
+    bool HandleUnaryMinusWithIntLiteral(UnaryOpKind kind, Exp exp, [NotNullWhen(returnValue: true)] out Exp? outExp)
     {
         if (kind == UnaryOpKind.Minus && exp is IntLiteralExp intLiteralExp)
         {
@@ -122,6 +123,9 @@ partial struct ExpParser
     #region Single
     bool InternalParseSingleExp([NotNullWhen(returnValue: true)] out Exp? outExp)
     {
+        if (ParseBoxExp(out outExp))
+            return true;
+
         if (ParseNewExp(out outExp))        
             return true;
 
@@ -317,6 +321,7 @@ partial struct ExpParser
         (ExclToken.Instance, UnaryOpKind.LogicalNot),
         (PlusPlusToken.Instance, UnaryOpKind.PrefixInc),
         (MinusMinusToken.Instance, UnaryOpKind.PrefixDec),
+        (StarToken.Instance, UnaryOpKind.Deref)
     };
 
     bool InternalParseUnaryExp([NotNullWhen(returnValue: true)] out Exp? outExp)
@@ -346,7 +351,8 @@ partial struct ExpParser
                 outExp = null;
                 return false;
             }
-
+            
+            // '-' '3'은 '-3'
             if (HandleUnaryMinusWithIntLiteral(opKind.Value, exp, out var handledExp))
             {
                 outExp = handledExp;
@@ -536,6 +542,48 @@ partial struct ExpParser
         return true;
     }
     #endregion
+
+    // box exp
+    bool InternalParseBoxExp([NotNullWhen(returnValue: true)] out Exp? outExp)
+    {
+        // <BOX> <EXP>
+        if (!Accept<BoxToken>(out _))
+        {
+            outExp = null;
+            return false;
+        }
+
+        if (!ParseExp(out var innerExp))
+        {
+            outExp = null;
+            return false;
+        }
+
+        outExp = new BoxExp(innerExp);
+        return true;
+    }
+
+    // *exp
+    bool InternalParseDerefExp([NotNullWhen(returnValue: true)] out Exp? outExp)
+    {
+        // <BOX> <EXP>
+        if (!Accept<BoxToken>(out _))
+        {
+            outExp = null;
+            return false;
+        }
+
+        if (!ParseExp(out var innerExp))
+        {
+            outExp = null;
+            return false;
+        }
+
+        outExp = new BoxExp(innerExp);
+        return true;
+    }
+
+
 
     bool InternalParseNewExp([NotNullWhen(returnValue: true)] out Exp? outExp)
     {

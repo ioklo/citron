@@ -372,7 +372,12 @@ static class TypeMakerByTypeExp
 
         Candidates<Item> ITypeExpVisitor<Candidates<Item>>.VisitBoxPtr(BoxPtrTypeExp typeExp)
         {
-            throw new NotImplementedException();
+            var type = MakeType(typeExp.InnerTypeExp);
+
+            var candidates = new Candidates<Item>();
+            candidates.Add(Item.Make(new BoxPtrType(type)));
+
+            return candidates;
         }
     }    
 

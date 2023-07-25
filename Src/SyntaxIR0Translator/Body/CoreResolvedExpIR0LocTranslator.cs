@@ -110,5 +110,24 @@ struct CoreResolvedExpIR0LocTranslator
         return Valid(new ListIndexerLoc(instance.Loc, reExp.Index));
     }
 
+    public TranslationResult<Loc> TranslateLocalDeref(ResolvedExp.LocalDeref reExp)
+    {
+        // *x, *G()
+        var targetResult = ResolvedExpIR0ExpTranslator.Translate(reExp.Target, context, nodeForErrorReport);
+        if (!targetResult.IsValid(out var target))
+            return Error();
+
+        return Valid(new LocalDerefLoc(target));
+    }
+
+    public TranslationResult<Loc> TranslateBoxDeref(ResolvedExp.BoxDeref reExp)
+    {
+        // *x, *G()
+        var targetResult = ResolvedExpIR0ExpTranslator.Translate(reExp.Target, context, nodeForErrorReport);
+        if (!targetResult.IsValid(out var target))
+            return Error();
+
+        return Valid(new BoxDerefLoc(target));
+    }
 }
 

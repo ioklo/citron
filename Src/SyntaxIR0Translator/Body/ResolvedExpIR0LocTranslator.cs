@@ -77,6 +77,16 @@ struct ResolvedExpIR0LocTranslator : IResolvedExpVisitor<TranslationResult<IR0Lo
         return HandleLocTranslationResult(new CoreResolvedExpIR0LocTranslator(context, nodeForErrorReport).TranslateEnumElemMemberVar(reExp), reExp.GetExpType());
     }
 
+    TranslationResult<IR0LocResult> IResolvedExpVisitor<TranslationResult<IR0LocResult>>.VisitLocalDeref(ResolvedExp.LocalDeref reExp)
+    {
+        return HandleLocTranslationResult(new CoreResolvedExpIR0LocTranslator(context, nodeForErrorReport).TranslateLocalDeref(reExp), reExp.GetExpType());
+    }
+
+    TranslationResult<IR0LocResult> IResolvedExpVisitor<TranslationResult<IR0LocResult>>.VisitBoxDeref(ResolvedExp.BoxDeref reExp)
+    {
+        return HandleLocTranslationResult(new CoreResolvedExpIR0LocTranslator(context, nodeForErrorReport).TranslateBoxDeref(reExp), reExp.GetExpType());
+    }
+
     TranslationResult<IR0LocResult> IResolvedExpVisitor<TranslationResult<IR0LocResult>>.VisitIR0Exp(ResolvedExp.IR0Exp reExp)
     {
         if (bWrapExpAsLoc)

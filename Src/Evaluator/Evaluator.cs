@@ -163,7 +163,18 @@ namespace Citron
             {
                 throw new NotImplementedException();
             }
-            
+
+            Value ITypeIdVisitor<Value>.VisitLocalPtr(LocalPtrTypeId typeId)
+            {
+                throw new NotImplementedException();
+                // return new LocalPtrValue();
+            }
+
+            Value ITypeIdVisitor<Value>.VisitBoxPtr(BoxPtrTypeId typeId)
+            {
+                return new BoxPtrValue();
+            }
+
             // int? => Nullable<int> 
             // int?? => Nullable<Nullable<int>>
             // C? => C

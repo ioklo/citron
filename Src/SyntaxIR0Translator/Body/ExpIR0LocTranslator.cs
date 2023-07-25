@@ -80,11 +80,6 @@ partial struct ExpIR0LocTranslator : IExpVisitor
         return HandleExp(rexp);
     }
 
-    LocTranslationResult IExpVisitor.VisitBox(S.BoxExp exp)
-    {
-        throw new NotImplementedException();
-    }
-
     LocTranslationResult IExpVisitor.VisitCall(S.CallExp exp)
     {
         var rexpResult = new CoreExpIR0ExpTranslator(hintType, context).TranslateCall(exp);
@@ -130,6 +125,12 @@ partial struct ExpIR0LocTranslator : IExpVisitor
         return HandleExpTranslationResult(rexpResult);
     }
 
+    LocTranslationResult IExpVisitor.VisitBox(S.BoxExp exp)
+    {
+        var rexpResult = new CoreExpIR0ExpTranslator(hintType, context).TranslateBox(exp);
+        return HandleExpTranslationResult(rexpResult);
+    }
+
     LocTranslationResult IExpVisitor.VisitNullLiteral(S.NullLiteralExp exp)
     {
         var rexpResult = new CoreExpIR0ExpTranslator(hintType, context).TranslateNullLiteral(exp);
@@ -144,7 +145,15 @@ partial struct ExpIR0LocTranslator : IExpVisitor
 
     LocTranslationResult IExpVisitor.VisitUnaryOp(S.UnaryOpExp exp)
     {
-        var rexpResult = new CoreExpIR0ExpTranslator(hintType, context).TranslateUnaryOp(exp);
-        return HandleExpTranslationResult(rexpResult);
+        // Deref는 loc으로 변경되어야 한다
+        if (exp.Kind == S.UnaryOpKind.Deref)
+        {
+            return HandleDefault(exp);
+        }
+        else
+        {
+            var rexpResult = new CoreExpIR0ExpTranslator(hintType, context).TranslateUnaryOp(exp);
+            return HandleExpTranslationResult(rexpResult);
+        }
     }
 }

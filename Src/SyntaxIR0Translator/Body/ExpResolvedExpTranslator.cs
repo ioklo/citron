@@ -96,7 +96,14 @@ struct ExpResolvedExpTranslator : IExpVisitor
     // int만 지원한다
     TranslationResult<ResolvedExp> IExpVisitor.VisitUnaryOp(S.UnaryOpExp exp)
     {
-        return HandleExpTranslationResult(new CoreExpIR0ExpTranslator(hintType, context).TranslateUnaryOp(exp));
+        if (exp.Kind == S.UnaryOpKind.Deref)
+        {
+            return HandleDefault(exp);
+        }
+        else
+        {
+            return HandleExpTranslationResult(new CoreExpIR0ExpTranslator(hintType, context).TranslateUnaryOp(exp));
+        }
     }
 
     TranslationResult<ResolvedExp> IExpVisitor.VisitBinaryOp(S.BinaryOpExp exp)
@@ -139,6 +146,6 @@ struct ExpResolvedExpTranslator : IExpVisitor
     
     TranslationResult<ResolvedExp> IExpVisitor.VisitBox(S.BoxExp exp)
     {
-        throw new NotImplementedException();
+        return HandleExpTranslationResult(new CoreExpIR0ExpTranslator(hintType, context).TranslateBox(exp));
     }
 }

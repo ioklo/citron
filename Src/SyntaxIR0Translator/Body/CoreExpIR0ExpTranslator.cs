@@ -171,6 +171,8 @@ struct CoreExpIR0ExpTranslator
 
     public TranslationResult<R.Exp> TranslateUnaryOp(S.UnaryOpExp exp)
     {
+        Debug.Assert(exp.Kind != S.UnaryOpKind.Deref);
+
         var operandExpResult = ExpIR0ExpTranslator.Translate(exp.Operand, context, hintType: null);
         if (!operandExpResult.IsValid(out var operandExp))
             return Error();
@@ -411,5 +413,17 @@ struct CoreExpIR0ExpTranslator
             return Error();
 
         return CallableAndArgsBinder.Bind(callable, exp.Args, context, exp, exp.Callable);
+    }
+
+    public TranslationResult<R.Exp> TranslateBox(S.BoxExp exp)
+    {
+        // hintType전수
+        var innerHintType = (hintType as BoxPtrType)?.InnerType;
+
+        var innerExpResult = ExpIR0ExpTranslator.Translate(exp, context, innerHintType);
+        if (!innerExpResult.IsValid(out var innerExp))
+            return Error();
+
+        return Valid(new R.BoxExp(innerExp));
     }
 }

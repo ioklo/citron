@@ -25,22 +25,6 @@ partial struct ExpParser
 		}
 	}
 
-
-	bool HandleUnaryMinusWithIntLiteral(UnaryOpKind kind, Exp exp, [NotNullWhen(returnValue: true)] out Exp? outExp)
-	{
-		var prevContext = context;
-
-		if (!InternalHandleUnaryMinusWithIntLiteral(kind, exp, out outExp))
-		{
-			context = prevContext;
-			return false;
-		}
-		else
-		{
-			return true;
-		}
-	}
-
 	#region Single
 	bool ParseSingleExp([NotNullWhen(returnValue: true)] out Exp? outExp)
 	{
@@ -225,10 +209,25 @@ partial struct ExpParser
 			return true;
 		}
 	}
-	#endregion
+    #endregion
 
-	// redirection
-	bool ParseExp([NotNullWhen(returnValue: true)] out Exp? outExp) => ParseAssignExp(out outExp);
+    bool ParseBoxExp([NotNullWhen(returnValue: true)] out Exp? outExp)
+    {
+        var prevContext = context;
+
+        if (!InternalParseBoxExp(out outExp))
+        {
+            context = prevContext;
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+    }
+
+    // redirection
+    bool ParseExp([NotNullWhen(returnValue: true)] out Exp? outExp) => ParseAssignExp(out outExp);
 	
 	bool ParseNewExp([NotNullWhen(returnValue: true)] out Exp? outExp)
 	{
