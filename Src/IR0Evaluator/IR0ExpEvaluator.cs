@@ -612,5 +612,15 @@ namespace Citron
             var stmtEvaluator = new IR0StmtEvaluator(newContext);
             await stmtEvaluator.EvalBodySkipYieldAsync(body);
         }
+
+        ValueTask IIR0ExpVisitor<ValueTask>.VisitLocalRef(LocalRefExp exp)
+        {
+            throw new NotImplementedException();
+        }
+
+        ValueTask IIR0ExpVisitor<ValueTask>.CastBoxedLambdaToFunc(CastBoxedLambdaToFuncExp castBoxedLambdaToFuncExp)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

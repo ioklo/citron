@@ -420,7 +420,7 @@ struct CoreExpIR0ExpTranslator
         // hintType전수
         var innerHintType = (hintType as BoxPtrType)?.InnerType;
 
-        var innerExpResult = ExpIR0ExpTranslator.Translate(exp, context, innerHintType);
+        var innerExpResult = ExpIR0ExpTranslator.Translate(exp.InnerExp, context, innerHintType);
         if (!innerExpResult.IsValid(out var innerExp))
             return Error();
 

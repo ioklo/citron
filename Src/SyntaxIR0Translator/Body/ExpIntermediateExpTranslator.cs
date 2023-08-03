@@ -138,8 +138,6 @@ struct ExpIntermediateExpTranslator : IExpVisitor<TranslationResult<Intermediate
         if (!objReExpResult.IsValid(out var objReExp))
             return Error();
 
-        var objReInExp = ResolvedInstanceExp.Make(objReExp);
-
         var indexResult = ExpIR0ExpTranslator.Translate(exp.Index, context, hintType: null);
         if (!indexResult.IsValid(out var index))
             return Error();
@@ -152,9 +150,9 @@ struct ExpIntermediateExpTranslator : IExpVisitor<TranslationResult<Intermediate
         // var memberResult = objResult.TypeSymbol.QueryMember(new M.Name(M.SpecialName.IndexerGet, null), 0);
 
         // 리스트 타입의 경우,
-        if (context.IsListType(objReInExp.GetExpType(), out var itemType))
+        if (context.IsListType(objReExp.GetExpType(), out var itemType))
         {
-            return Valid(new IntermediateExp.ListIndexer(objReInExp, castIndex, itemType));
+            return Valid(new IntermediateExp.ListIndexer(objReExp, castIndex, itemType));
         }
         else
         {

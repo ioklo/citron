@@ -23,7 +23,7 @@ namespace Citron.IR0
         ListTypeConstructor listTypeConstructor;
         ListIterTypeConstructor listIterTypeConstructor;
 
-        public IR0Factory(Name moduleName, IType voidType, IType boolType, IType intType, IType stringType, 
+        public IR0Factory(Name moduleName, IType voidType, IType boolType, IType intType, IType stringType,
             ListTypeConstructor listTypeConstructor,
             ListIterTypeConstructor listIterTypeConstructor)
         {
@@ -44,7 +44,7 @@ namespace Citron.IR0
         #region Script
 
         public Script Script(ModuleDeclSymbol moduleDecl, params StmtBody[] rstmtBodies)
-        {   
+        {
             return new Script(moduleDecl, rstmtBodies.ToImmutableArray());
         }
 
@@ -65,7 +65,7 @@ namespace Citron.IR0
                 new FuncReturn(voidType), default);
 
             moduleD.AddFunc(entryD);
-            
+
             var stmtBodies = Arr(new StmtBody(entryD, stmts));
             return new Script(moduleD, stmtBodies);
         }
@@ -77,7 +77,7 @@ namespace Citron.IR0
         #region CommandStmt
 
         public CommandStmt Command(params StringExp[] cmds)
-        { 
+        {
             return new CommandStmt(Arr(cmds));
         }
 
@@ -154,7 +154,7 @@ namespace Citron.IR0
                 InternalUnaryOperator.ToString_Int_String => stringType,
                 _ => throw new UnreachableException()
             };
-            
+
             return new CallInternalUnaryOperatorExp(op, exp, type);
         }
 
@@ -208,7 +208,7 @@ namespace Citron.IR0
         public ExpStmt Assign(Loc dest, Exp src)
         {
             return new ExpStmt(new AssignExp(dest, src));
-        }        
+        }
 
         public ExpStmt Call(GlobalFuncSymbol globalFunc, params Argument[] args)
         {
@@ -300,7 +300,7 @@ namespace Citron.IR0
         #endregion
 
         #region Continue
-        public Stmt Continue() 
+        public Stmt Continue()
         {
             return new ContinueStmt();
         }
@@ -320,7 +320,7 @@ namespace Citron.IR0
         {
             return new ReturnStmt(new ReturnInfo.None());
         }
-        
+
         #endregion
 
         #region TaskStmt
@@ -354,7 +354,7 @@ namespace Citron.IR0
         }
 
         public StringExp String(string v)
-        { 
+        {
             return new StringExp(Arr<StringExpElement>(new TextStringExpElement(v)), stringType);
         }
 
@@ -396,7 +396,7 @@ namespace Citron.IR0
         }
 
         #endregion LoadExp
-        
+
         #endregion Exp
 
         #region Loc
@@ -410,11 +410,6 @@ namespace Citron.IR0
         {
             return new LambdaMemberVarLoc(symbol);
         }
-        
-        //public Loc LocalDeref(Loc innerLoc)
-        //{
-        //    return new LocalDerefLoc(innerLoc);
-        //}
         
         public TempLoc TempLoc(Exp e)
         {
@@ -457,7 +452,7 @@ namespace Citron.IR0
         #endregion
 
         #region Else
-        
+
         public ImmutableArray<FuncParameter> FuncParams(params (IType Type, string Name)[] elems)
         {
             return elems.Select(e => new FuncParameter(e.Type, new Name.Normal(e.Name))).ToImmutableArray();
@@ -497,7 +492,7 @@ namespace Citron.IR0
         {
             return new AwaitStmt(stmts.ToImmutableArray());
         }
-        
+
         public FuncReturn FuncRet(IType type)
         {
             return new FuncReturn(type);
@@ -537,7 +532,7 @@ namespace Citron.IR0
         {
             return new YieldStmt(exp);
         }
-        
+
         public FuncType FuncType(IType retType, params IType[] paramTypes)
         {
             var paramsBuilder = ImmutableArray.CreateBuilder<FuncParameter>(paramTypes.Length);
@@ -562,9 +557,24 @@ namespace Citron.IR0
             return new BoxPtrType(innerType);
         }
 
+        public Exp LocalRef(Loc loc, IType locType)
+        {
+            return new LocalRefExp(loc, locType);
+        }
+
         public Loc LocalDeref(Exp exp)
         {
             return new LocalDerefLoc(exp);
+        }
+
+        public Loc BoxDeref(Exp exp)
+        {
+            return new BoxDerefLoc(exp);
+        }
+
+        public Exp Box(Exp innerExp)
+        {
+            return new BoxExp(innerExp);
         }
 
         #endregion

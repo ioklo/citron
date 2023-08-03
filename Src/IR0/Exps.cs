@@ -52,7 +52,33 @@ namespace Citron.IR0
 
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitBoxExp(this);
     }
+
+    // &i
+    public record class LocalRefExp(Loc InnerLoc, IType InnerLocType) : Exp
+    {
+        public override IType GetExpType()
+        {
+            return new LocalPtrType(InnerLocType);
+        }
+
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitLocalRef(this);
+    }
+
     #endregion
+
+    #region Interface
+    
+    public record class CastBoxedLambdaToFuncExp(Exp Exp, FuncType FuncType) : Exp
+    {
+        public override IType GetExpType()
+        {
+            return FuncType;
+        }
+
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.CastBoxedLambdaToFunc(this);
+    }
+
+    #endregion Interface
 
     #region Literal
 

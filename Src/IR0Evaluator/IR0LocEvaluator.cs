@@ -84,7 +84,20 @@ namespace Citron
         {
             return new ValueTask<Value>(context.GetThisValue());
         }
-        
+
+        ValueTask<Value> IIR0LocVisitor<ValueTask<Value>>.VisitLocalDeref(LocalDerefLoc loc)
+        {
+            throw new NotImplementedException();
+        }
+
+        // *x 
+        async ValueTask<Value> IIR0LocVisitor<ValueTask<Value>>.VisitBoxDeref(BoxDerefLoc loc)
+        {
+            var value = context.AllocValue<BoxPtrValue>(loc.InnerExp.GetExpType().GetTypeId()); // box T*
+            await IR0ExpEvaluator.EvalAsync(loc.InnerExp, context, value);
+            return value.GetTarget();
+        }
+
         ValueTask<Value> IIR0LocVisitor<ValueTask<Value>>.VisitNullableValue(NullableValueLoc loc)
         {
             throw new NotImplementedException();

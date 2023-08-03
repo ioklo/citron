@@ -191,7 +191,7 @@ struct CallableAndArgsBinder : IIntermediateExpVisitor<TranslationResult<R.Exp>>
 
             if (funcs.ExplicitInstance != null)
             {   
-                var instResult = ResolvedInstanceExpIR0LocTranslator.Translate(
+                var instResult = ResolvedExpIR0LocTranslator.Translate(
                     funcs.ExplicitInstance, 
                     context, 
                     bWrapExpAsLoc: true,
@@ -255,7 +255,7 @@ struct CallableAndArgsBinder : IIntermediateExpVisitor<TranslationResult<R.Exp>>
             R.Loc? instance = null;
             if (funcs.ExplicitInstance != null)
             {   
-                var instResult = ResolvedInstanceExpIR0LocTranslator.Translate(
+                var instResult = ResolvedExpIR0LocTranslator.Translate(
                     funcs.ExplicitInstance, 
                     context, 
                     bWrapExpAsLoc: true, 

@@ -340,6 +340,11 @@ namespace Citron
     {
         Value? target;
 
+        public Value GetTarget()
+        {
+            return this.target!;
+        }
+
         public void SetTarget(Value target)
         {
             this.target = target;

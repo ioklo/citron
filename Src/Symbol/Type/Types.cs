@@ -433,7 +433,7 @@ namespace Citron.Symbol
             return new BoxPtrType(appliedInnerType);
         }
 
-        public override TypeId GetTypeId() => new LocalPtrTypeId(InnerType.GetTypeId());
+        public override TypeId GetTypeId() => new BoxPtrTypeId(InnerType.GetTypeId());
         public override IType? GetMemberType(Name name, ImmutableArray<IType> typeArgs) => null;
         public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitBoxPtr(this);
 

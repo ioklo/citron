@@ -7,7 +7,8 @@ public interface IIR0ExpVisitor<TResult>
     // Storage
     TResult VisitLoad(LoadExp exp);
     TResult VisitAssign(AssignExp exp);
-    TResult VisitBoxExp(BoxExp boxExp);
+    TResult VisitBoxExp(BoxExp exp);
+    TResult VisitLocalRef(LocalRefExp exp);
 
     // Literal
     TResult VisitBoolLiteral(BoolLiteralExp exp);
@@ -45,5 +46,7 @@ public interface IIR0ExpVisitor<TResult>
     // Lambda
     TResult VisitLambda(LambdaExp exp);
     TResult VisitCallValue(CallValueExp exp);
-    
+
+    // Func
+    TResult CastBoxedLambdaToFunc(CastBoxedLambdaToFuncExp castBoxedLambdaToFuncExp);
 }

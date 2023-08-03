@@ -697,8 +697,8 @@ namespace Citron.Test
             // task { x = 3; } // x가 복사해서 들어가는데 캐치가 안됨
 
             // 이렇게 해야 함
-            // box var& x = box 0; // x는 scope를 벗어나서도 사용할 수 있는 변수다
-            // task { x = 3; }
+            // box var* x = box 0; // x는 scope를 벗어나서도 사용할 수 있는 변수다
+            // task { *x = 3; }
             
             S.Exp exp;
 
@@ -1275,7 +1275,34 @@ namespace Citron.Test
         }
 
         [Fact]
-        void BinaryOpExp_AssigningToPtrVar_TranslatesDerefBothSides()
+        void BinaryOpExp_UsingDerefOnBoxPtrVar_TranslateToBoxDeref()
+        {
+            // box int* i = box 3;            
+            // *x = 7 + *x;
+            var syntaxScript = SScript(
+                new S.VarDeclStmt(new S.VarDecl(SBoxPtrTypeExp(SIntTypeExp()), Arr(new S.VarDeclElement("x", new S.BoxExp(SInt(3)))))),
+                new S.ExpStmt(new S.BinaryOpExp(
+                    S.BinaryOpKind.Assign,
+                    SDerefExp(SId("x")),
+                    new S.BinaryOpExp(S.BinaryOpKind.Add, SInt(7), SDerefExp(SId("x")))
+                ))
+            );
+
+            var script = Translate(syntaxScript);
+
+            var expected = r.Script(
+                r.LocalVarDecl(r.BoxPtrType(r.IntType()), "x", r.Box(r.Int(3))),
+                r.Assign(
+                    r.BoxDeref(r.LoadLocalVar("x", r.BoxPtrType(r.IntType()))),
+                    r.CallInternalBinary(R.InternalBinaryOperator.Add_Int_Int_Int, r.Int(7), r.Load(r.BoxDeref(r.LoadLocalVar("x", r.BoxPtrType(r.IntType()))), r.IntType()))
+                )
+            );
+
+            AssertEquals(expected, script);
+        }
+
+        [Fact]
+        void BinaryOpExp_UsingDerefOnLocalPtrVar_TranslateToLocalDeref()
         {
             // int i = 3;
             // int* x = &i;
@@ -1285,8 +1312,8 @@ namespace Citron.Test
                 new S.VarDeclStmt(new S.VarDecl(SLocalPtrTypeExp(SIntTypeExp()), Arr(new S.VarDeclElement("x", SRefExp(SId("i")))))),
                 new S.ExpStmt(new S.BinaryOpExp(
                     S.BinaryOpKind.Assign,
-                    SId("x"),
-                    new S.BinaryOpExp(S.BinaryOpKind.Add, SInt(7), SId("x"))
+                    SDerefExp(SId("x")),
+                    new S.BinaryOpExp(S.BinaryOpKind.Add, SInt(7), SDerefExp(SId("x")))
                 ))
             );
 
@@ -1539,7 +1566,7 @@ namespace Citron.Test
             fD.InitFuncReturnAndParams(r.FuncRet(r.VoidType()), r.FuncParams((r.IntType(), "i")));
             moduleD.AddFunc(fD);
             var fBody = r.StmtBody(fD,
-                r.Assign(r.LocalDeref(r.LocalVar("i")), r.Int(4))
+                r.Assign(r.LocalDeref(r.LoadLocalVar("i", r.LocalPtrType(r.IntType()))), r.Int(4))
             );
 
             var f = (GlobalFuncSymbol)fD.MakeOpenSymbol(factory);

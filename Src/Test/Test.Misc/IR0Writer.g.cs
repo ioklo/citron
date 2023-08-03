@@ -360,6 +360,8 @@ namespace Citron.Test
                 case Citron.IR0.LoadExp @loadExp: Write_LoadExp(@loadExp); break;
                 case Citron.IR0.AssignExp @assignExp: Write_AssignExp(@assignExp); break;
                 case Citron.IR0.BoxExp @boxExp: Write_BoxExp(@boxExp); break;
+                case Citron.IR0.LocalRefExp @localRefExp: Write_LocalRefExp(@localRefExp); break;
+                case Citron.IR0.CastBoxedLambdaToFuncExp @castBoxedLambdaToFuncExp: Write_CastBoxedLambdaToFuncExp(@castBoxedLambdaToFuncExp); break;
                 case Citron.IR0.BoolLiteralExp @boolLiteralExp: Write_BoolLiteralExp(@boolLiteralExp); break;
                 case Citron.IR0.IntLiteralExp @intLiteralExp: Write_IntLiteralExp(@intLiteralExp); break;
                 case Citron.IR0.StringExp @stringExp: Write_StringExp(@stringExp); break;
@@ -419,6 +421,36 @@ namespace Citron.Test
 
             itw.Write("new Citron.IR0.BoxExp(");
             this.Write_Exp(@boxExp.InnerExp);
+            itw.Write(")");
+        }
+
+        public void Write_LocalRefExp(Citron.IR0.LocalRefExp? @localRefExp)
+        {
+            if (@localRefExp == null) { itw.Write("null"); return; }
+
+            var itw1 = itw.Push();
+            var writer1 = new IR0Writer(itw1);
+            itw1.WriteLine();
+
+            itw.Write("new Citron.IR0.LocalRefExp(");
+            writer1.Write_Loc(@localRefExp.InnerLoc);
+            itw1.WriteLine(",");
+            writer1.Write_IType(@localRefExp.InnerLocType);
+            itw.Write(")");
+        }
+
+        public void Write_CastBoxedLambdaToFuncExp(Citron.IR0.CastBoxedLambdaToFuncExp? @castBoxedLambdaToFuncExp)
+        {
+            if (@castBoxedLambdaToFuncExp == null) { itw.Write("null"); return; }
+
+            var itw1 = itw.Push();
+            var writer1 = new IR0Writer(itw1);
+            itw1.WriteLine();
+
+            itw.Write("new Citron.IR0.CastBoxedLambdaToFuncExp(");
+            writer1.Write_Exp(@castBoxedLambdaToFuncExp.Exp);
+            itw1.WriteLine(",");
+            writer1.Write_FuncType(@castBoxedLambdaToFuncExp.FuncType);
             itw.Write(")");
         }
 

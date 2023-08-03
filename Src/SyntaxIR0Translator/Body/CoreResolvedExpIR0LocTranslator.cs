@@ -42,7 +42,7 @@ struct CoreResolvedExpIR0LocTranslator
             Loc? instance = null;
             if (reExp.ExplicitInstance != null)
             {   
-                var instResult = ResolvedInstanceExpIR0LocTranslator.Translate(reExp.ExplicitInstance, context, bWrapExpAsLoc: true, nodeForErrorReport, A2015_ResolveIdentifier_ExpressionIsNotLocation);
+                var instResult = ResolvedExpIR0LocTranslator.Translate(reExp.ExplicitInstance, context, bWrapExpAsLoc: true, nodeForErrorReport, A2015_ResolveIdentifier_ExpressionIsNotLocation);
                 if (!instResult.IsValid(out var inst))
                     return Error();
 
@@ -76,7 +76,7 @@ struct CoreResolvedExpIR0LocTranslator
 
             if (reExp.ExplicitInstance != null)
             {   
-                var instanceResult = ResolvedInstanceExpIR0LocTranslator.Translate(reExp.ExplicitInstance, context, bWrapExpAsLoc: true, nodeForErrorReport, A2015_ResolveIdentifier_ExpressionIsNotLocation);
+                var instanceResult = ResolvedExpIR0LocTranslator.Translate(reExp.ExplicitInstance, context, bWrapExpAsLoc: true, nodeForErrorReport, A2015_ResolveIdentifier_ExpressionIsNotLocation);
                 if (!instanceResult.IsValid(out var inst))
                     return Error();
 
@@ -94,7 +94,7 @@ struct CoreResolvedExpIR0LocTranslator
 
     public TranslationResult<Loc> TranslateEnumElemMemberVar(ResolvedExp.EnumElemMemberVar reExp)
     {   
-        var instResult = ResolvedInstanceExpIR0LocTranslator.Translate(reExp.Instance, context, bWrapExpAsLoc: true, nodeForErrorReport, A2015_ResolveIdentifier_ExpressionIsNotLocation);
+        var instResult = ResolvedExpIR0LocTranslator.Translate(reExp.Instance, context, bWrapExpAsLoc: true, nodeForErrorReport, A2015_ResolveIdentifier_ExpressionIsNotLocation);
         if (!instResult.IsValid(out var inst))
             return Error();
 
@@ -103,7 +103,7 @@ struct CoreResolvedExpIR0LocTranslator
 
     public TranslationResult<Loc> TranslateListIndexer(ResolvedExp.ListIndexer reExp)
     {
-        var instanceResult = ResolvedInstanceExpIR0LocTranslator.Translate(reExp.Instance, context, bWrapExpAsLoc: true, nodeForErrorReport, A2015_ResolveIdentifier_ExpressionIsNotLocation);
+        var instanceResult = ResolvedExpIR0LocTranslator.Translate(reExp.Instance, context, bWrapExpAsLoc: true, nodeForErrorReport, A2015_ResolveIdentifier_ExpressionIsNotLocation);
         if (!instanceResult.IsValid(out var instance))
             return Error();
 

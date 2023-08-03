@@ -159,7 +159,7 @@ struct MemberParentAndIdBinder : IIntermediateExpVisitor<TranslationResult<Inter
         }
     }
 
-    record struct InstanceParentVisitor(ResolvedInstanceExp instanceReInExp, ImmutableArray<IType> typeArgs, ScopeContext context, S.ISyntaxNode nodeForErrorReport) : ISymbolQueryResultVisitor<TranslationResult<IntermediateExp>>
+    record struct InstanceParentVisitor(ResolvedExp instanceReExp, ImmutableArray<IType> typeArgs, ScopeContext context, S.ISyntaxNode nodeForErrorReport) : ISymbolQueryResultVisitor<TranslationResult<IntermediateExp>>
     {
         TranslationResult<IntermediateExp> Fatal(SyntaxAnalysisErrorCode code)
         {
@@ -181,7 +181,7 @@ struct MemberParentAndIdBinder : IIntermediateExpVisitor<TranslationResult<Inter
         // exp.F
         TranslationResult<IntermediateExp> ISymbolQueryResultVisitor<TranslationResult<IntermediateExp>>.VisitClassMemberFuncs(SymbolQueryResult.ClassMemberFuncs result)
         {
-            return Valid(new IntermediateExp.ClassMemberFuncs(result.Infos, typeArgs, HasExplicitInstance: true, instanceReInExp));
+            return Valid(new IntermediateExp.ClassMemberFuncs(result.Infos, typeArgs, HasExplicitInstance: true, instanceReExp));
         }
 
         // exp.x
@@ -197,7 +197,7 @@ struct MemberParentAndIdBinder : IIntermediateExpVisitor<TranslationResult<Inter
             if (!context.CanAccess(symbol))
                 return Fatal(A2011_ResolveIdentifier_TryAccessingPrivateMember);
 
-            return Valid(new IntermediateExp.ClassMemberVar(symbol, true, instanceReInExp));
+            return Valid(new IntermediateExp.ClassMemberVar(symbol, true, instanceReExp));
         }
 
         // exp.E
@@ -215,7 +215,7 @@ struct MemberParentAndIdBinder : IIntermediateExpVisitor<TranslationResult<Inter
         // exp.firstX
         TranslationResult<IntermediateExp> ISymbolQueryResultVisitor<TranslationResult<IntermediateExp>>.VisitEnumElemMemberVar(SymbolQueryResult.EnumElemMemberVar result)
         {
-            return Valid(new IntermediateExp.EnumElemMemberVar(result.Symbol, instanceReInExp));
+            return Valid(new IntermediateExp.EnumElemMemberVar(result.Symbol, instanceReExp));
         }
 
         // 표현 불가
@@ -245,7 +245,7 @@ struct MemberParentAndIdBinder : IIntermediateExpVisitor<TranslationResult<Inter
         // exp.F
         TranslationResult<IntermediateExp> ISymbolQueryResultVisitor<TranslationResult<IntermediateExp>>.VisitStructMemberFuncs(SymbolQueryResult.StructMemberFuncs result)
         {
-            return Valid(new IntermediateExp.StructMemberFuncs(result.Infos, typeArgs, HasExplicitInstance: true, instanceReInExp));
+            return Valid(new IntermediateExp.StructMemberFuncs(result.Infos, typeArgs, HasExplicitInstance: true, instanceReExp));
         }
 
         // exp.x
@@ -261,7 +261,7 @@ struct MemberParentAndIdBinder : IIntermediateExpVisitor<TranslationResult<Inter
             if (!context.CanAccess(symbol))
                 return Fatal(A2011_ResolveIdentifier_TryAccessingPrivateMember);
 
-            return Valid(new IntermediateExp.StructMemberVar(symbol, HasExplicitInstance: true, instanceReInExp));
+            return Valid(new IntermediateExp.StructMemberVar(symbol, HasExplicitInstance: true, instanceReExp));
         }
 
         TranslationResult<IntermediateExp> ISymbolQueryResultVisitor<TranslationResult<IntermediateExp>>.VisitTupleMemberVar(SymbolQueryResult.TupleMemberVar result)
@@ -287,15 +287,14 @@ struct MemberParentAndIdBinder : IIntermediateExpVisitor<TranslationResult<Inter
         var instReExpResult = IntermediateExpResolvedExpTranslator.Translate(instImExp, context, nodeForErrorReport);
         if (!instReExpResult.IsValid(out var instReExp))
             return Error();
+        
+        var instReExpType = instReExp.GetExpType();
 
-        var instReInExp = ResolvedInstanceExp.Make(instReExp);
-        var instReInExpType = instReInExp.GetExpType();
-
-        var memberResult = instReInExpType.QueryMember(name, typeArgs.Length);
+        var memberResult = instReExpType.QueryMember(name, typeArgs.Length);
         if (memberResult == null)
             return Fatal(A2007_ResolveIdentifier_NotFound);
 
-        var visitor = new InstanceParentVisitor(instReInExp, typeArgs, context, nodeForErrorReport);
+        var visitor = new InstanceParentVisitor(instReExp, typeArgs, context, nodeForErrorReport);
         return memberResult.Accept<InstanceParentVisitor, TranslationResult<IntermediateExp>>(ref visitor);
     }
 

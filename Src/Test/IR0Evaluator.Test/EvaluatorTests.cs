@@ -80,7 +80,7 @@ namespace Citron.Test
             var parametersBuilder = ImmutableArray.CreateBuilder<FuncParameter>(parameters.Length);
             foreach(var param in parameters)
             {
-                var parameter = new FuncParameter(FuncParameterKind.Default, param.Type, NormalName(param.Name));
+                var parameter = new FuncParameter(param.Type, NormalName(param.Name));
                 parametersBuilder.Add(parameter);
             }
 
@@ -1193,8 +1193,8 @@ namespace Citron.Test
             //@$j
 
             var moduleD = new ModuleDeclSymbol(moduleName, bReference: false);
-            var fBody = AddGlobalFunc(moduleD, r.VoidType(), "F", Arr((r.LocalPtrType(r.IntType()), "i")),
-                r.Assign(r.LocalDeref(r.LocalVar("i")), r.Int(7))
+            var fBody = AddGlobalFunc(moduleD, r.VoidType(), "F", Arr(((IType)r.LocalPtrType(r.IntType()), "i")),
+                r.Assign(r.LocalDeref(r.LoadLocalVar("i", r.LocalPtrType(r.IntType()))), r.Int(7))
             );
             var f = (GlobalFuncSymbol)fBody.DSymbol.MakeOpenSymbol(factory);
 
@@ -1698,7 +1698,7 @@ namespace Citron.Test
             systemD.AddType(consoleD);
 
             var writeD = new ClassMemberFuncDeclSymbol(consoleD, Accessor.Public, NormalName("Write"), typeParams: default, bStatic: true);
-            writeD.InitFuncReturnAndParams(new FuncReturn(r.VoidType()), Arr(new FuncParameter(FuncParameterKind.Default, r.StringType(), NormalName("arg"))));
+            writeD.InitFuncReturnAndParams(new FuncReturn(r.VoidType()), Arr(new FuncParameter(r.StringType(), NormalName("arg"))));
             consoleD.AddFunc(writeD);
 
             var write = (ClassMemberFuncSymbol)writeD.MakeOpenSymbol(factory);
@@ -1757,8 +1757,8 @@ namespace Citron.Test
             // 
             // func<string, int, int, int> MakeLambda()  // FuncType
             // {
-            //     // capture된 변수가 없으므로, optimization때 singleton(static)으로 작성하고 heap 할당을 하지 않는다
-            //     return (int i, int j, int k) => @"TestFunc"; 
+            //     // TODO: [9] 람다에 capture하는 변수가 없다면, 앞에 static을 붙여서 heap 할당을 하지 않게 만들 수 있게 한다.
+            //     return box (int i, int j, int k) => @"TestFunc"; 
             // }            
             //
             // MakeLambda()(Print(1), Print(2), Print(3))
@@ -1781,7 +1781,7 @@ namespace Citron.Test
 
             var makeLambdaBody = r.StmtBody(makeLambdaD,
                 r.PrintString("MakeLambda"),
-                r.Return(new CastBoxLambdaToFuncRefExp(new BoxExp(new LambdaExp(lambda, Args: default)), r.FuncType(r.StringType(), r.IntType(), r.IntType(), r.IntType()))) // TODO: interface cast
+                r.Return(new CastBoxedLambdaToFuncExp(new BoxExp(new LambdaExp(lambda, Args: default)), r.FuncType(r.StringType(), r.IntType(), r.IntType(), r.IntType()))) // TODO: interface cast
             );            
 
             var lambdaBody = r.StmtBody(lambdaD, r.PrintString("TestFunc"));
@@ -1920,7 +1920,7 @@ namespace Citron.Test
             var script = r.Script(
                 r.LocalVarDecl(r.IntType(), "i", r.Int(0)),
                 r.LocalVarDecl(r.LocalPtrType(r.IntType()), "x", r.LocalRef(r.LocalVar("i"), r.IntType())),
-                r.Assign(r.LocalDeref(r.LocalVar("x")), r.Int(3)),
+                r.Assign(r.LocalDeref(r.LoadLocalVar("x", r.LocalPtrType(r.IntType()))), r.Int(3)),
                 r.PrintInt(r.LoadLocalVar("i", r.IntType()))
             );
 
@@ -1929,5 +1929,26 @@ namespace Citron.Test
         }
 
         #endregion LocalPtr
+
+        #region BoxPtr
+        // box 기본
+        // 생성 1
+        [Fact]
+        public async Task BoxPtr_MakeBoxPtrFromValueAndDereference()
+        {
+            // box var* x = box 3;
+            // @${*x}
+
+            var script = r.Script(
+                r.LocalVarDecl(r.BoxPtrType(r.IntType()), "x", r.Box(r.Int(3))),
+                r.PrintInt(r.Load(r.BoxDeref(r.LoadLocalVar("x", r.BoxPtrType(r.IntType()))), r.IntType()))
+            );
+
+            var output = await EvalAsync(script);
+            Assert.Equal("3", output);
+        }
+
+
+        #endregion BoxPtr
     }
 }
