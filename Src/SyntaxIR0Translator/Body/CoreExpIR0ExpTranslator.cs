@@ -169,9 +169,19 @@ struct CoreExpIR0ExpTranslator
         return Valid(new R.CallInternalUnaryAssignOperatorExp(op, operandLocResult.Loc, intType));
     }
 
-    public TranslationResult<R.Exp> TranslateUnaryOp(S.UnaryOpExp exp)
+    public TranslationResult<R.Exp> TranslateUnaryOpExceptDeref(S.UnaryOpExp exp)
     {
         Debug.Assert(exp.Kind != S.UnaryOpKind.Deref);
+
+        // ref 처리
+        if (exp.Kind == S.UnaryOpKind.Ref)
+        {
+            var refExpResult = RefExpIR0ExpTranslator.Translate(exp.Operand, context);
+            if (!refExpResult.IsValid(out var refExp))
+                return Error();
+
+            return Valid(refExp);
+        }
 
         var operandExpResult = ExpIR0ExpTranslator.Translate(exp.Operand, context, hintType: null);
         if (!operandExpResult.IsValid(out var operandExp))

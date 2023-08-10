@@ -15,8 +15,8 @@ struct ExpIntermediateExpTranslator : IExpVisitor<TranslationResult<Intermediate
 
     public static TranslationResult<IntermediateExp> Translate(Exp exp, ScopeContext context, IType? hintType)
     {
-        var visitor = new ExpIntermediateExpTranslator { 
-            hintType = hintType, 
+        var visitor = new ExpIntermediateExpTranslator {
+            hintType = hintType,
             context = context
         };
 
@@ -113,7 +113,7 @@ struct ExpIntermediateExpTranslator : IExpVisitor<TranslationResult<Intermediate
         }
         else
         {
-            return HandleExpResult(new CoreExpIR0ExpTranslator(hintType, context).TranslateUnaryOp(exp));
+            return HandleExpResult(new CoreExpIR0ExpTranslator(hintType, context).TranslateUnaryOpExceptDeref(exp));
         }
     }
     
@@ -201,7 +201,7 @@ struct ExpIntermediateExpTranslator : IExpVisitor<TranslationResult<Intermediate
         var name = new Name.Normal(exp.MemberName);
         var typeArgs = BodyMisc.MakeTypeArgs(exp.MemberTypeArgs, context);
 
-        return MemberParentAndIdBinder.Bind(parentImExp, name, typeArgs, context, exp);
+        return IntermediateExpMemberBinder.Bind(parentImExp, name, typeArgs, context, exp);
     }
 
     TranslationResult<IntermediateExp> IExpVisitor<TranslationResult<IntermediateExp>>.VisitList(ListExp exp)

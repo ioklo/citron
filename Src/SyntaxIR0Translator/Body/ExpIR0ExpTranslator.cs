@@ -119,7 +119,7 @@ struct ExpIR0ExpTranslator : S.IExpVisitor<TranslationResult<R.Exp>>
         }
         else
         {
-            return new CoreExpIR0ExpTranslator(hintType, context).TranslateUnaryOp(exp);
+            return new CoreExpIR0ExpTranslator(hintType, context).TranslateUnaryOpExceptDeref(exp);
         }
     }
 }

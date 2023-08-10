@@ -1,32 +1,32 @@
 ﻿namespace Citron.Symbol
 {
-    public interface ITypeVisitor
+    public interface ITypeVisitor<TResult>
     {
-        void VisitEnumElem(EnumElemType type);
-        void VisitEnum(EnumType type);
-        void VisitClass(ClassType type);
-        void VisitStruct(StructType type);
-        void VisitInterface(InterfaceType type);
+        TResult VisitEnumElem(EnumElemType type);
+        TResult VisitEnum(EnumType type);
+        TResult VisitClass(ClassType type);
+        TResult VisitStruct(StructType type);
+        TResult VisitInterface(InterfaceType type);
 
-        void VisitNullable(NullableType type);
-        void VisitTypeVar(TypeVarType type);
-        void VisitVoid(VoidType type);
-        void VisitLambda(LambdaType type);
-        void VisitTuple(TupleType type);
-        void VisitVar(VarType type);
+        TResult VisitNullable(NullableType type);
+        TResult VisitTypeVar(TypeVarType type);
+        TResult VisitVoid(VoidType type);
+        TResult VisitLambda(LambdaType type);
+        TResult VisitTuple(TupleType type);
+        TResult VisitVar(VarType type);
 
-        void VisitFunc(FuncType type);
-        void VisitLocalPtr(LocalPtrType type);
-        void VisitBoxPtr(BoxPtrType type);
+        TResult VisitFunc(FuncType type);
+        TResult VisitLocalPtr(LocalPtrType type);
+        TResult VisitBoxPtr(BoxPtrType type);
     }
 
     public static class TypeVisitorExtensions
     {
-        public static void Accept<TVisitor>(this IType type, ref TVisitor visitor)
-            where TVisitor : struct, ITypeVisitor
+        public static void Accept<TVisitor, TResult>(this IType type, ref TVisitor visitor)
+            where TVisitor : struct, ITypeVisitor<TResult>
         {
             var typeImpl = (TypeImpl)type; // 강제 캐스팅
-            typeImpl.Accept(ref visitor);
+            typeImpl.Accept<TVisitor, TResult>(ref visitor);
         }
     }
 }

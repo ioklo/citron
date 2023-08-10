@@ -101,11 +101,18 @@ namespace Citron.Analysis
         A2009_ResolveIdentifier_EnumElemCantHaveMember,
         A2010_ResolveIdentifier_ThisIsNotInTheContext,   // 
         A2011_ResolveIdentifier_TryAccessingPrivateMember,
-        A2012_ResolveIdentifier_TypeVarCantHaveMember,
+
+        // A2012_ResolveIdentifier_TypeVarCantHaveMember, -> interface를 지키면 멤버가 있을 수 있다
+        A2013_ResolveIdentifier_EnumInstanceCantHaveMember,
 
         A2013_ResolveIdentifier_CantUseNamespaceAsExpression, // 네임스페이스를 exp로 쓸 수 없습니다        
         A2014_ResolveIdentifier_MultipleCandidatesForMember,
         A2015_ResolveIdentifier_ExpressionIsNotLocation,
+
+        A2016_ResolveIdentifier_LambdaInstanceCantHaveMember,
+        A2017_ResolveIdentifier_LocalPtrCantHaveMember,
+        A2018_ResolveIdentifier_BoxPtrCantHaveMember,
+        A2019_ResolveIdentifier_FuncInstanceCantHaveMember,
 
         // funcMatcher 자체에서 에러를 내지 않고, 각각 노드 처리기에서 에러를 생성하도록 한다
         //A2101_FuncMatcher_MultipleCandidates, 
@@ -140,6 +147,9 @@ namespace Citron.Analysis
         A2901_BodyShouldReturn, // 리턴 타입이 있는 본문에 리턴이 없다
 
         A3001_Reference_CantMakeReference,
+        A3002_Reference_CantReferenceTempValue,
+        A3003_Reference_UselessDereferenceReferencedValue,
+        A3004_Reference_CantReferenceThis,
 
         A9901_NotSupported_LambdaParameterInference,
         A9902_NotSupported_LambdaReturnTypeInference,

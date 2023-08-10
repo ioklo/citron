@@ -6,6 +6,7 @@ using Pretune;
 using ISyntaxNode = Citron.Syntax.ISyntaxNode;
 using static Citron.Analysis.SyntaxAnalysisErrorCode;
 using System.ComponentModel;
+using Citron.Symbol;
 
 namespace Citron.Analysis;
 
@@ -87,7 +88,8 @@ struct CoreResolvedExpIR0LocTranslator
         }
         else // x, x (static) 둘다 해당
         {
-            var instanceLoc = reExp.Symbol.IsStatic() ? null : new ThisLoc();
+            // TODO: [10] box 함수 내부이면, local ptr대신 box ptr로 변경해야 한다
+            var instanceLoc = reExp.Symbol.IsStatic() ? null : new LocalDerefLoc(new LoadExp(new ThisLoc(), new LocalPtrType(new StructType(reExp.Symbol.GetOuter()))));
             return Valid(new StructMemberLoc(instanceLoc, reExp.Symbol));
         }
     }

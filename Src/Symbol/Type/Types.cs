@@ -17,8 +17,8 @@ namespace Citron.Symbol
         IType? GetMemberType(Name name, ImmutableArray<IType> typeArgs); // 이름에 해당하는 멤버타입을 가져온다
         SymbolQueryResult? QueryMember(Name name, int explicitTypeArgCount);
 
-        void Accept<TVisitor>(ref TVisitor visitor)
-            where TVisitor : struct, ITypeVisitor;
+        TResult Accept<TVisitor, TResult>(ref TVisitor visitor)
+            where TVisitor : struct, ITypeVisitor<TResult>;
     }
 
     public abstract record class TypeImpl : IType
@@ -30,8 +30,8 @@ namespace Citron.Symbol
         public abstract IType Apply(TypeEnv typeEnv);
         public abstract TypeId GetTypeId();
         public abstract IType? GetMemberType(Name name, ImmutableArray<IType> typeArgs);
-        public abstract void Accept<TVisitor>(ref TVisitor visitor)
-            where TVisitor : struct, ITypeVisitor;
+        public abstract TResult Accept<TVisitor, TResult>(ref TVisitor visitor)
+            where TVisitor : struct, ITypeVisitor<TResult>;
 
         // 내부의 값들이 다 같은지 확인
         public abstract bool CyclicEquals(IType other, ref CyclicEqualityCompareContext context);
@@ -67,21 +67,21 @@ namespace Citron.Symbol
     {
         protected override ITypeSymbol GetTypeSymbol() => Symbol;
         public override EnumElemType Apply(TypeEnv typeEnv) => new EnumElemType(Symbol.Apply(typeEnv));
-        public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitEnumElem(this);
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitEnumElem(this);
     }
 
     public record class EnumType(EnumSymbol Symbol) : SymbolType
     {
         protected override ITypeSymbol GetTypeSymbol() => Symbol;
         public override EnumType Apply(TypeEnv typeEnv) => new EnumType(Symbol.Apply(typeEnv));        
-        public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitEnum(this);
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitEnum(this);
     }
 
     public record class ClassType(ClassSymbol Symbol) : SymbolType, ICyclicEqualityComparableClass<ClassType>
     {
         protected override ITypeSymbol GetTypeSymbol() => Symbol;
         public override ClassType Apply(TypeEnv typeEnv) => new ClassType(Symbol.Apply(typeEnv));
-        public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitClass(this);
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitClass(this);
 
         bool ICyclicEqualityComparableClass<ClassType>.CyclicEquals(ClassType other, ref CyclicEqualityCompareContext context)
             => base.CyclicEquals(other, ref context);
@@ -91,7 +91,7 @@ namespace Citron.Symbol
     {
         protected override ITypeSymbol GetTypeSymbol() => Symbol;
         public override InterfaceType Apply(TypeEnv typeEnv) => new InterfaceType(Symbol.Apply(typeEnv));
-        public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitInterface(this);
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitInterface(this);
 
         bool ICyclicEqualityComparableClass<InterfaceType>.CyclicEquals(InterfaceType other, ref CyclicEqualityCompareContext context)
             => base.CyclicEquals(other, ref context);
@@ -101,7 +101,7 @@ namespace Citron.Symbol
     {
         protected override ITypeSymbol GetTypeSymbol() => Symbol;
         public override StructType Apply(TypeEnv typeEnv) => new StructType(Symbol.Apply(typeEnv));
-        public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitStruct(this);
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitStruct(this);
 
         bool ICyclicEqualityComparableClass<StructType>.CyclicEquals(StructType other, ref CyclicEqualityCompareContext context)
             => base.CyclicEquals(other, ref context);
@@ -111,7 +111,7 @@ namespace Citron.Symbol
     {
         protected override ITypeSymbol GetTypeSymbol() => Symbol;
         public override LambdaType Apply(TypeEnv typeEnv) => new LambdaType(Symbol.Apply(typeEnv));
-        public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitLambda(this);
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitLambda(this);
 
         bool ICyclicEqualityComparableClass<LambdaType>.CyclicEquals(LambdaType other, ref CyclicEqualityCompareContext context)
             => base.CyclicEquals(other, ref context);
@@ -123,7 +123,7 @@ namespace Citron.Symbol
         public override TypeId GetTypeId() => new NullableTypeId(InnerType.GetTypeId());
         public override IType? GetMemberType(Name name, ImmutableArray<IType> typeArgs) => null;
 
-        public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitNullable(this);
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitNullable(this);
 
         public sealed override bool CyclicEquals(IType other, ref CyclicEqualityCompareContext context)
             => other is NullableType otherType && CyclicEquals(otherType, ref context);
@@ -152,7 +152,7 @@ namespace Citron.Symbol
         public override IType Apply(TypeEnv typeEnv) => typeEnv.GetValue(Index);
         public override TypeId GetTypeId() => new TypeVarTypeId(Index, Name);
         public override IType? GetMemberType(Name name, ImmutableArray<IType> typeArgs) => null;
-        public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitTypeVar(this);
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitTypeVar(this);
 
         public sealed override bool CyclicEquals(IType other, ref CyclicEqualityCompareContext context)
             => other is TypeVarType otherType && CyclicEquals(otherType, ref context);
@@ -185,7 +185,7 @@ namespace Citron.Symbol
         public override VoidType Apply(TypeEnv typeEnv) => new VoidType();
         public override TypeId GetTypeId() => new VoidTypeId();
         public override IType? GetMemberType(Name name, ImmutableArray<IType> typeArgs) => null;
-        public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitVoid(this);
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitVoid(this);
 
         public sealed override bool CyclicEquals(IType other, ref CyclicEqualityCompareContext context)
             => true;
@@ -280,7 +280,7 @@ namespace Citron.Symbol
         }
         
         public override IType? GetMemberType(Name name, ImmutableArray<IType> typeArgs) => null;
-        public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitTuple(this);
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitTuple(this);
 
         public sealed override bool CyclicEquals(IType other, ref CyclicEqualityCompareContext context)
             => other is TupleType otherType && CyclicEquals(otherType, ref context);
@@ -340,7 +340,7 @@ namespace Citron.Symbol
         }
 
         public override IType? GetMemberType(Name name, ImmutableArray<IType> typeArgs) => null;
-        public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitFunc(this);
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitFunc(this);
         public sealed override bool CyclicEquals(IType other, ref CyclicEqualityCompareContext context)
             => other is FuncType otherType && CyclicEquals(otherType, ref context);
 
@@ -377,7 +377,7 @@ namespace Citron.Symbol
         public override IType Apply(TypeEnv typeEnv) => new VarType();
         public override TypeId GetTypeId() => new VarTypeId();
         public override IType? GetMemberType(Name name, ImmutableArray<IType> typeArgs) => null;
-        public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitVar(this);
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitVar(this);
         public sealed override bool CyclicEquals(IType other, ref CyclicEqualityCompareContext context)
             => true;
 
@@ -401,7 +401,7 @@ namespace Citron.Symbol
 
         public override TypeId GetTypeId() => new LocalPtrTypeId(InnerType.GetTypeId());
         public override IType? GetMemberType(Name name, ImmutableArray<IType> typeArgs) => null;
-        public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitLocalPtr(this);
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitLocalPtr(this);
 
         public override void DoSerialize(ref SerializeContext context)
         {
@@ -435,7 +435,7 @@ namespace Citron.Symbol
 
         public override TypeId GetTypeId() => new BoxPtrTypeId(InnerType.GetTypeId());
         public override IType? GetMemberType(Name name, ImmutableArray<IType> typeArgs) => null;
-        public override void Accept<TVisitor>(ref TVisitor visitor) => visitor.VisitBoxPtr(this);
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitBoxPtr(this);
 
         public override void DoSerialize(ref SerializeContext context)
         {

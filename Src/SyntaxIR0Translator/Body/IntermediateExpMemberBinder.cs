@@ -14,7 +14,7 @@ namespace Citron.Analysis;
 
 // MemberParent And Id Binder
 // (IntermediateExp, name, typeArgs) -> IntermediateExp
-struct MemberParentAndIdBinder : IIntermediateExpVisitor<TranslationResult<IntermediateExp>>
+struct IntermediateExpMemberBinder : IIntermediateExpVisitor<TranslationResult<IntermediateExp>>
 {
     Name name;
     ImmutableArray<IType> typeArgs;
@@ -23,8 +23,8 @@ struct MemberParentAndIdBinder : IIntermediateExpVisitor<TranslationResult<Inter
 
     public static TranslationResult<IntermediateExp> Bind(IntermediateExp parentExp, Name name, ImmutableArray<IType> typeArgs, ScopeContext context, S.ISyntaxNode nodeForErrorReport)
     {   
-        var binder = new MemberParentAndIdBinder { name = name, typeArgs = typeArgs, context = context, nodeForErrorReport = nodeForErrorReport };
-        return parentExp.Accept<MemberParentAndIdBinder, TranslationResult<IntermediateExp>>(ref binder);
+        var binder = new IntermediateExpMemberBinder { name = name, typeArgs = typeArgs, context = context, nodeForErrorReport = nodeForErrorReport };
+        return parentExp.Accept<IntermediateExpMemberBinder, TranslationResult<IntermediateExp>>(ref binder);
     }
 
     static TranslationResult<IntermediateExp> Valid(IntermediateExp imExp)
@@ -341,7 +341,7 @@ struct MemberParentAndIdBinder : IIntermediateExpVisitor<TranslationResult<Inter
 
     TranslationResult<IntermediateExp> IIntermediateExpVisitor<TranslationResult<IntermediateExp>>.VisitEnumElem(IntermediateExp.EnumElem result)
     {
-        return Fatal(A2009_ResolveIdentifier_EnumElemCantHaveMember);
+        return Fatal(A2009_ResolveIdentifier_EnumElemCantHaveMember); // ?
     }
 
     TranslationResult<IntermediateExp> IIntermediateExpVisitor<TranslationResult<IntermediateExp>>.VisitEnumElemMemberVar(IntermediateExp.EnumElemMemberVar result)
@@ -386,7 +386,7 @@ struct MemberParentAndIdBinder : IIntermediateExpVisitor<TranslationResult<Inter
 
     TranslationResult<IntermediateExp> IIntermediateExpVisitor<TranslationResult<IntermediateExp>>.VisitTypeVar(IntermediateExp.TypeVar result)
     {
-        return Fatal(A2012_ResolveIdentifier_TypeVarCantHaveMember);
+        throw new NotImplementedException();
     }
 
     TranslationResult<IntermediateExp> IIntermediateExpVisitor<TranslationResult<IntermediateExp>>.VisitListIndexer(IntermediateExp.ListIndexer exp)

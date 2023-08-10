@@ -16,4 +16,10 @@
     <ProjectReference Include="..\Syntax\Syntax.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Remove="Ref\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Ref\" />
+  </ItemGroup>
 </Project>

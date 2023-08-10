@@ -98,6 +98,19 @@ namespace Citron.Symbol
             return decl.GetMemberVarCount();
         }
 
+        public EnumElemMemberVarSymbol? GetMemberVar(Name name)
+        {
+            int count = 0;
+            for(int i = 0; i < count; i++)
+            {
+                var memberVarDecl = decl.GetMemberVar(i);
+                if (memberVarDecl.GetName().Equals(name))
+                    return factory.MakeEnumElemMemberVar(this, memberVarDecl);
+            }
+
+            return null;
+        }
+
         public EnumElemMemberVarSymbol GetMemberVar(int i)
         {
             var memberVarDecl = decl.GetMemberVar(i);

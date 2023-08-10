@@ -152,7 +152,7 @@ partial struct ExpIR0LocTranslator : IExpVisitor
         }
         else
         {
-            var rexpResult = new CoreExpIR0ExpTranslator(hintType, context).TranslateUnaryOp(exp);
+            var rexpResult = new CoreExpIR0ExpTranslator(hintType, context).TranslateUnaryOpExceptDeref(exp);
             return HandleExpTranslationResult(rexpResult);
         }
     }

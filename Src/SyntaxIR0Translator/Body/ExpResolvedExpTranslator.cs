@@ -102,7 +102,7 @@ struct ExpResolvedExpTranslator : IExpVisitor
         }
         else
         {
-            return HandleExpTranslationResult(new CoreExpIR0ExpTranslator(hintType, context).TranslateUnaryOp(exp));
+            return HandleExpTranslationResult(new CoreExpIR0ExpTranslator(hintType, context).TranslateUnaryOpExceptDeref(exp));
         }
     }
 
