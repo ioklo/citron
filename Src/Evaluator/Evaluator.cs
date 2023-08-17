@@ -36,8 +36,7 @@ namespace Citron
             await evaluator.ExecuteGlobalFuncAsync(entry, default, ret);
 
             return ret.GetInt();
-        }       
-        
+        }
 
         public Value GetClassStaticMemberValue(SymbolId memberVarId)
         {
@@ -69,7 +68,7 @@ namespace Citron
             await driver.ExecuteGlobalFuncAsync(globalFuncId, args, retValue);
         }
 
-        public void ExecuteStructConstructor(SymbolId constructorId, StructValue thisValue, ImmutableArray<Value> args)
+        public void ExecuteStructConstructor(SymbolId constructorId, LocalPtrValue thisValue, ImmutableArray<Value> args)
         {
             // module이름으로 driver선택
             var driver = driverContext.GetModuleDriver(constructorId);
@@ -166,8 +165,7 @@ namespace Citron
 
             Value ITypeIdVisitor<Value>.VisitLocalPtr(LocalPtrTypeId typeId)
             {
-                throw new NotImplementedException();
-                // return new LocalPtrValue();
+                return new LocalPtrValue();
             }
 
             Value ITypeIdVisitor<Value>.VisitBoxPtr(BoxPtrTypeId typeId)
@@ -251,7 +249,7 @@ namespace Citron
         // TODO: 인자로 stack을 받는다 public Value AllocValue(EvalStack stack, SymbolId typeId)
         public Value AllocValue(TypeId typeId)
         {
-            var allocator = new Allocator();
+            var allocator = new Allocator(driverContext);
             return typeId.Accept<Allocator, Value>(ref allocator);
         }
 
@@ -267,7 +265,7 @@ namespace Citron
             var memberVars = ImmutableArray.CreateBuilder<Value>();
             InitializeClassInstance(classId, memberVars);
 
-            return new ClassInstance(classId, memberVars.MoveToImmutable());
+            return new ClassInstance(classId, memberVars.ToImmutable());
         }
 
         public Value GetStructStaticMemberValue(SymbolId memberVarId)
@@ -281,6 +279,13 @@ namespace Citron
             var driver = driverContext.GetModuleDriver(memberVarId);
             var index = driver.GetStructMemberVarIndex(memberVarId);
             return structValue.GetMemberValue(index);
+        }
+
+        public int GetTotalStructMemberVarCount(SymbolId structId)
+        {
+            // module이름으로 driver선택
+            var driver = driverContext.GetModuleDriver(structId);
+            return driver.GetTotalStructMemberVarCount(structId);
         }
     }
 }

@@ -360,6 +360,10 @@ namespace Citron.Test
                 case Citron.IR0.LoadExp @loadExp: Write_LoadExp(@loadExp); break;
                 case Citron.IR0.AssignExp @assignExp: Write_AssignExp(@assignExp); break;
                 case Citron.IR0.BoxExp @boxExp: Write_BoxExp(@boxExp); break;
+                case Citron.IR0.StaticBoxRefExp @staticBoxRefExp: Write_StaticBoxRefExp(@staticBoxRefExp); break;
+                case Citron.IR0.ClassMemberBoxRefExp @classMemberBoxRefExp: Write_ClassMemberBoxRefExp(@classMemberBoxRefExp); break;
+                case Citron.IR0.StructIndirectMemberBoxRefExp @structIndirectMemberBoxRefExp: Write_StructIndirectMemberBoxRefExp(@structIndirectMemberBoxRefExp); break;
+                case Citron.IR0.StructMemberBoxRefExp @structMemberBoxRefExp: Write_StructMemberBoxRefExp(@structMemberBoxRefExp); break;
                 case Citron.IR0.LocalRefExp @localRefExp: Write_LocalRefExp(@localRefExp); break;
                 case Citron.IR0.CastBoxedLambdaToFuncExp @castBoxedLambdaToFuncExp: Write_CastBoxedLambdaToFuncExp(@castBoxedLambdaToFuncExp); break;
                 case Citron.IR0.BoolLiteralExp @boolLiteralExp: Write_BoolLiteralExp(@boolLiteralExp); break;
@@ -421,6 +425,66 @@ namespace Citron.Test
 
             itw.Write("new Citron.IR0.BoxExp(");
             this.Write_Exp(@boxExp.InnerExp);
+            itw.Write(")");
+        }
+
+        public void Write_StaticBoxRefExp(Citron.IR0.StaticBoxRefExp? @staticBoxRefExp)
+        {
+            if (@staticBoxRefExp == null) { itw.Write("null"); return; }
+
+            var itw1 = itw.Push();
+            var writer1 = new IR0Writer(itw1);
+            itw1.WriteLine();
+
+            itw.Write("new Citron.IR0.StaticBoxRefExp(");
+            writer1.Write_Loc(@staticBoxRefExp.Loc);
+            itw1.WriteLine(",");
+            writer1.Write_IType(@staticBoxRefExp.LocType);
+            itw.Write(")");
+        }
+
+        public void Write_ClassMemberBoxRefExp(Citron.IR0.ClassMemberBoxRefExp? @classMemberBoxRefExp)
+        {
+            if (@classMemberBoxRefExp == null) { itw.Write("null"); return; }
+
+            var itw1 = itw.Push();
+            var writer1 = new IR0Writer(itw1);
+            itw1.WriteLine();
+
+            itw.Write("new Citron.IR0.ClassMemberBoxRefExp(");
+            writer1.Write_Loc(@classMemberBoxRefExp.holderLoc);
+            itw1.WriteLine(",");
+            writer1.Write_ISymbolNode(@classMemberBoxRefExp.Symbol);
+            itw.Write(")");
+        }
+
+        public void Write_StructIndirectMemberBoxRefExp(Citron.IR0.StructIndirectMemberBoxRefExp? @structIndirectMemberBoxRefExp)
+        {
+            if (@structIndirectMemberBoxRefExp == null) { itw.Write("null"); return; }
+
+            var itw1 = itw.Push();
+            var writer1 = new IR0Writer(itw1);
+            itw1.WriteLine();
+
+            itw.Write("new Citron.IR0.StructIndirectMemberBoxRefExp(");
+            writer1.Write_Exp(@structIndirectMemberBoxRefExp.holderExp);
+            itw1.WriteLine(",");
+            writer1.Write_ISymbolNode(@structIndirectMemberBoxRefExp.Symbol);
+            itw.Write(")");
+        }
+
+        public void Write_StructMemberBoxRefExp(Citron.IR0.StructMemberBoxRefExp? @structMemberBoxRefExp)
+        {
+            if (@structMemberBoxRefExp == null) { itw.Write("null"); return; }
+
+            var itw1 = itw.Push();
+            var writer1 = new IR0Writer(itw1);
+            itw1.WriteLine();
+
+            itw.Write("new Citron.IR0.StructMemberBoxRefExp(");
+            writer1.Write_Exp(@structMemberBoxRefExp.Parent);
+            itw1.WriteLine(",");
+            writer1.Write_ISymbolNode(@structMemberBoxRefExp.Symbol);
             itw.Write(")");
         }
 

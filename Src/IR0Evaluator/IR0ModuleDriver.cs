@@ -274,9 +274,27 @@ namespace Citron
             throw new NotImplementedException();
         }
 
-        ValueTask IModuleDriver.ExecuteStructConstructor(SymbolId constructor, StructValue thisValue, ImmutableArray<Value> args)
+        ValueTask IModuleDriver.ExecuteStructConstructor(SymbolId constructor, LocalPtrValue thisValue, ImmutableArray<Value> args)
         {
-            throw new NotImplementedException();
+            var typeContext = TypeContext.Make(constructor);
+
+            var evalContext = globalContext.NewBodyContext(typeContext, thisValue, VoidValue.Instance);
+            var constructorSymbol = globalContext.LoadSymbol<StructConstructorSymbol>(constructor);
+
+            var paramCount = constructorSymbol.GetParameterCount();
+            Debug.Assert(paramCount == args.Length);
+
+            var builder = ImmutableDictionary.CreateBuilder<Name, Value>();
+            for (int i = 0; i < paramCount; i++)
+                builder.Add(constructorSymbol.GetParameter(i).Name, args[i]);
+
+            var localContext = new IR0LocalContext(builder.ToImmutable(), default);
+            var body = globalContext.GetBodyStmt(constructor);
+
+            var context = new IR0EvalContext(globalContext, evalContext, localContext);
+            var stmtEvaluator = new IR0StmtEvaluator(context);
+
+            return stmtEvaluator.EvalBodySkipYieldAsync(body);
         }
 
         SymbolId? IModuleDriver.GetBaseClass(SymbolId baseClass)
@@ -285,9 +303,28 @@ namespace Citron
             return @class.GetBaseClass()?.Symbol?.GetSymbolId();
         }
 
-        int IModuleDriver.GetStructMemberVarIndex(SymbolId memberVar)
+        int IModuleDriver.GetStructMemberVarIndex(SymbolId memberVarId)
         {
-            throw new NotImplementedException();
+            var memberVar = globalContext.LoadSymbol<StructMemberVarSymbol>(memberVarId);
+            Debug.Assert(memberVar != null);
+
+            var @struct = memberVar.GetOuter();
+
+            // base 
+            var baseStructType = @struct.GetBaseStructType();
+            int baseIndex = 0;
+            if (baseStructType != null)
+                baseIndex = evaluator.GetTotalStructMemberVarCount(baseStructType.Symbol.GetSymbolId());
+
+            int memberVarCount = @struct.GetMemberVarCount();
+            for (int i = 0; i < memberVarCount; i++)
+            {
+                var curMemberVar = @struct.GetMemberVar(i);
+                if (curMemberVar.Equals(memberVar))
+                    return baseIndex + i;
+            }
+
+            throw new RuntimeFatalException();
         }
 
         Value IModuleDriver.GetClassStaticMemberValue(SymbolId memberVarId)
@@ -303,6 +340,20 @@ namespace Citron
         int IModuleDriver.GetEnumElemMemberVarIndex(SymbolId memberVarId)
         {
             throw new NotImplementedException();
+        }
+
+        int IModuleDriver.GetTotalStructMemberVarCount(SymbolId structId)
+        {
+            var structSymbol = globalContext.LoadSymbol<StructSymbol>(structId);
+            Debug.Assert(structSymbol != null);
+
+            // base 
+            var baseStructType = structSymbol.GetBaseStructType();
+            int baseCount = 0;
+            if (baseStructType != null)
+                baseCount = evaluator.GetTotalStructMemberVarCount(baseStructType.Symbol.GetSymbolId());
+
+            return baseCount + structSymbol.GetMemberVarCount();
         }
     }
 }

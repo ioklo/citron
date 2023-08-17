@@ -123,7 +123,7 @@ namespace Citron
             evaluator.ExecuteClassConstructor(appliedConstructorId, thisValue, args);
         }
 
-        public void ExecuteStructConstructor(StructConstructorSymbol constructor, StructValue thisValue, ImmutableArray<Value> args)
+        public void ExecuteStructConstructor(StructConstructorSymbol constructor, LocalPtrValue thisValue, ImmutableArray<Value> args)
         {
             var constructorId = constructor.GetSymbolId();
             var appliedConstructorId = typeContext.ApplySymbol(constructorId);

@@ -23,10 +23,11 @@ namespace Citron
 
         // struct services
         ValueTask ExecuteStructMemberFuncAsync(SymbolId memberFunc, Value? thisValue, ImmutableArray<Value> args, Value retValue);
-        ValueTask ExecuteStructConstructor(SymbolId constructor, StructValue thisValue, ImmutableArray<Value> args);
+        ValueTask ExecuteStructConstructor(SymbolId constructor, LocalPtrValue thisValue, ImmutableArray<Value> args);
         int GetStructMemberVarIndex(SymbolId memberVar);
         Value GetStructStaticMemberValue(SymbolId memberVar);
 
         int GetEnumElemMemberVarIndex(SymbolId memberVar);
+        int GetTotalStructMemberVarCount(SymbolId structId);
     }
 }

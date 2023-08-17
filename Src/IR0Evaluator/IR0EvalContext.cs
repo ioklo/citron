@@ -66,7 +66,7 @@ namespace Citron
         public ClassInstance AllocClassInstance(ClassSymbol classSymbol) 
             => bodyContext.AllocClassInstance(classSymbol);
 
-        public void ExecuteStructConstructor(StructConstructorSymbol constructor, StructValue thisValue, ImmutableArray<Value> args)
+        public void ExecuteStructConstructor(StructConstructorSymbol constructor, LocalPtrValue thisValue, ImmutableArray<Value> args)
             => bodyContext.ExecuteStructConstructor(constructor, thisValue, args);
         public ValueTask ExecuteStructMemberFuncAsync(StructMemberFuncSymbol structMemberFunc, Value? thisValue, ImmutableArray<Value> args, Value result)
             => bodyContext.ExecuteStructMemberFuncAsync(structMemberFunc, thisValue, args, result);

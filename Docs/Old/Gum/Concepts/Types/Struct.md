@@ -20,7 +20,7 @@ public struct S<T...> : B, I...
 # 생성
 
 ```csharp
-var s1 = new S<int>(1, 2); // S<int> type, scoped
+var s1 = S<int>(1, 2); // S<int> type, scoped
 var s2 = box S<int>(3, 4); // S<int>* type, garbage collectable
 ```
 
@@ -88,10 +88,10 @@ if (b4 is S<int>*) // downcast, b2 is now S& for read, B& for write, for a while
 }
 
 // interface casting, gc reference
-S* s5 = box S<int>(2, 3);
+box S* s5 = box S<int>(2, 3);
 I i5 = s5;
 
 // Object casting, gc reference
-S* s6 = box S<int>(2, 3);
+box S* s6 = box S<int>(2, 3);
 Object o6 = s6;
 ```

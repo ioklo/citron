@@ -115,6 +115,13 @@ abstract record IntermediateRefExp
     {
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitStaticRef(this);
     }
+
+    public interface IBoxRefVisitor<TResult>
+    {
+        TResult VisitClassMember(BoxRef.ClassMember boxRef);
+        TResult VisitStructIndirectMember(BoxRef.StructIndirectMember boxRef);
+        TResult VisitStructMember(BoxRef.StructMember boxRef);
+    }
     
     public abstract record class BoxRef : IntermediateRefExp
     {
@@ -122,6 +129,9 @@ abstract record IntermediateRefExp
         public abstract IType GetTargetType();
         public abstract Loc MakeLoc();
 
+        public abstract TResult AcceptBoxRef<TVisitor, TResult>(ref TVisitor visitor)
+            where TVisitor : struct, IBoxRefVisitor<TResult>;
+        
         // 홀더가 C로 시작하는 경우
         public record class ClassMember(Loc Loc, ClassMemberVarSymbol Symbol) : BoxRef
         {
@@ -134,6 +144,8 @@ abstract record IntermediateRefExp
             {
                 return new ClassMemberLoc(Loc, Symbol);
             }
+
+            public override TResult AcceptBoxRef<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitClassMember(this);
         }
 
         // 홀더가 box* T로 시작하는 경우
@@ -149,6 +161,8 @@ abstract record IntermediateRefExp
             {
                 return new StructMemberLoc(new BoxDerefLoc(Exp), Symbol);
             }
+
+            public override TResult AcceptBoxRef<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitStructIndirectMember(this);
         }
 
         public record class StructMember(BoxRef Parent, StructMemberVarSymbol Symbol) : BoxRef
@@ -163,6 +177,8 @@ abstract record IntermediateRefExp
                 var parentLoc = Parent.MakeLoc();
                 return new StructMemberLoc(parentLoc, Symbol);
             }
+
+            public override TResult AcceptBoxRef<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitStructMember(this);
         }
     }
     

@@ -222,7 +222,8 @@ public class UnitTest1
                 new FuncParameter(intType, NormalName("x")),
                 new FuncParameter(intType, NormalName("y"))
             ),
-            bTrivial: true
+            bTrivial: true,
+            bLastParameterVariadic: false
         );
         sDecl.AddConstructor(sConstructorDecl);
 
@@ -230,7 +231,7 @@ public class UnitTest1
         bDecl.InitBaseTypes(null, interfaces: default);
         expectedModuleDecl.AddType(bDecl);
 
-        var bConstructorDecl = new StructConstructorDeclSymbol(bDecl, Accessor.Public, parameters: default, bTrivial: true);
+        var bConstructorDecl = new StructConstructorDeclSymbol(bDecl, Accessor.Public, parameters: default, bTrivial: true, bLastParameterVariadic: false);
         bDecl.AddConstructor(bConstructorDecl);
 
         var sFuncT = new TypeVarType(1, NormalName("T"));
@@ -259,7 +260,7 @@ public class UnitTest1
     [Fact]
     public void EvaluateType_TypeVarTypeExpInDeclSpace_MakeOpenSymbol()
     {
-        // class X<T> { class Y { T t; } } // tÀÇ Å¸ÀÔÀº
+        // class X<T> { class Y { T t; } } // tï¿½ï¿½ Å¸ï¿½ï¿½ï¿½ï¿½
         var syntax = SScript(new S.TypeDeclScriptElement(new S.ClassDecl(null, "X", Arr(new S.TypeParam("T")), baseTypes: default,
             Arr<S.ClassMemberDecl>(
                 new S.ClassMemberTypeDecl(new S.ClassDecl(null, "Y", typeParams: default, baseTypes: default,
@@ -278,14 +279,14 @@ public class UnitTest1
         xDecl.InitBaseTypes(null, interfaces: default);
         expectedDeclSymbol.AddType(xDecl);
 
-        var xConstructorDecl = new ClassConstructorDeclSymbol(xDecl, Accessor.Public, parameters: default, bTrivial: true);
+        var xConstructorDecl = new ClassConstructorDeclSymbol(xDecl, Accessor.Public, parameters: default, bTrivial: true, bLastParameterVariadic: false);
         xDecl.AddConstructor(xConstructorDecl);
 
         var xyDecl = new ClassDeclSymbol(xDecl, Accessor.Private, NormalName("Y"), typeParams: default);
         xyDecl.InitBaseTypes(null, interfaces: default);
         xDecl.AddType(xyDecl);
 
-        var xyConstructorDecl = new ClassConstructorDeclSymbol(xyDecl, Accessor.Public, Arr(new FuncParameter(new TypeVarType(0, NormalName("T")), NormalName("t"))), bTrivial: true);
+        var xyConstructorDecl = new ClassConstructorDeclSymbol(xyDecl, Accessor.Public, Arr(new FuncParameter(new TypeVarType(0, NormalName("T")), NormalName("t"))), bTrivial: true, bLastParameterVariadic: false);
         xyDecl.AddConstructor(xyConstructorDecl);
 
         var xytDecl = new ClassMemberVarDeclSymbol(xyDecl, Accessor.Private, bStatic: false, new TypeVarType(0, NormalName("T")), NormalName("t"));
@@ -295,11 +296,11 @@ public class UnitTest1
         Assert.True(context.CompareClass(expectedDeclSymbol, resultDeclSymbol));
     }
 
-    // X<Y>.Y => X<X<T>.Y>.Y  // ±×°Å¶û º°°³·Î ÀÎÀÚ·Î µé¾î¿Â °ÍµéÀº Àû¿ëÀ» ½ÃÄÑ¾ß ÇÑ´Ù   
+    // X<Y>.Y => X<X<T>.Y>.Y  // ï¿½×°Å¶ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ú·ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Íµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ñ¾ï¿½ ï¿½Ñ´ï¿½   
     [Fact]
     public void EvaluateType_InstantiatedTypeExpInDeclSpace_MakeOpenSymbol()
     {
-        // class X<T> { class Y { X<Y>.Y t; } } // tÀÇ Å¸ÀÔÀº X<X<T>.Y>.Y
+        // class X<T> { class Y { X<Y>.Y t; } } // tï¿½ï¿½ Å¸ï¿½ï¿½ï¿½ï¿½ X<X<T>.Y>.Y
         var syntax = SScript(new S.TypeDeclScriptElement(new S.ClassDecl(null, "X", Arr(new S.TypeParam("T")), baseTypes: default,
             Arr<S.ClassMemberDecl>(
                 new S.ClassMemberTypeDecl(new S.ClassDecl(null, "Y", typeParams: default, baseTypes: default,
@@ -324,7 +325,7 @@ public class UnitTest1
         xDecl.InitBaseTypes(null, interfaces: default);
         expectedDeclSymbol.AddType(xDecl);
 
-        var xConstructorDecl = new ClassConstructorDeclSymbol(xDecl, Accessor.Public, parameters: default, bTrivial: true);
+        var xConstructorDecl = new ClassConstructorDeclSymbol(xDecl, Accessor.Public, parameters: default, bTrivial: true, bLastParameterVariadic: false);
         xDecl.AddConstructor(xConstructorDecl);
 
         var xyDecl = new ClassDeclSymbol(xDecl, Accessor.Private, NormalName("Y"), typeParams: default);
@@ -349,7 +350,7 @@ public class UnitTest1
         var xytDecl = new ClassMemberVarDeclSymbol(xyDecl, Accessor.Private, bStatic: false, new ClassType(x_x_Tyy), NormalName("t"));
         xyDecl.AddMemberVar(xytDecl);
 
-        var xyConstructorDecl = new ClassConstructorDeclSymbol(xyDecl, Accessor.Public, Arr(new FuncParameter(new ClassType(x_x_Tyy), NormalName("t"))), bTrivial: true);
+        var xyConstructorDecl = new ClassConstructorDeclSymbol(xyDecl, Accessor.Public, Arr(new FuncParameter(new ClassType(x_x_Tyy), NormalName("t"))), bTrivial: true, bLastParameterVariadic: false);
         xyDecl.AddConstructor(xyConstructorDecl);
 
         var context = new CyclicEqualityCompareContext();

@@ -53,6 +53,46 @@ namespace Citron.IR0
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitBoxExp(this);
     }
 
+    public record class StaticBoxRefExp(Loc Loc, IType LocType) : Exp
+    {
+        public override IType GetExpType()
+        {
+            return new BoxPtrType(LocType);
+        }
+
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitStaticBoxRef(this);
+    }
+
+    public record class ClassMemberBoxRefExp(Loc holderLoc, ClassMemberVarSymbol Symbol) : Exp
+    {
+        public override IType GetExpType()
+        {
+            return new BoxPtrType(Symbol.GetDeclType());
+        }
+
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitClassMemberBoxRef(this);
+    }
+
+    public record class StructIndirectMemberBoxRefExp(Exp holderExp, StructMemberVarSymbol Symbol) : Exp
+    {
+        public override IType GetExpType()
+        {
+            return new BoxPtrType(Symbol.GetDeclType());
+        }
+
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitStructIndirectMemberBoxRef(this);
+    }
+
+    public record class StructMemberBoxRefExp(Exp Parent, StructMemberVarSymbol Symbol) : Exp
+    {
+        public override IType GetExpType()
+        {
+            return new BoxPtrType(Symbol.GetDeclType());
+        }
+
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitStructMemberBoxRef(this);
+    }
+
     // &i
     public record class LocalRefExp(Loc InnerLoc, IType InnerLocType) : Exp
     {

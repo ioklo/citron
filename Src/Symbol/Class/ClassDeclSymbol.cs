@@ -152,6 +152,7 @@ namespace Citron.Symbol
         public IEnumerable<IDeclSymbolNode> GetMemberDeclNodes()
         {
             return typeComp.GetEnumerable().OfType<IDeclSymbolNode>()
+                .Concat(constructors)
                 .Concat(funcComp.GetEnumerable())
                 .Concat(memberVars);
         }

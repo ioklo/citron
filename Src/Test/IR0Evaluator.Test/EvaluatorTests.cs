@@ -1355,7 +1355,7 @@ namespace Citron.Test
                 throw new NotImplementedException();
             }
 
-            ValueTask IModuleDriver.ExecuteStructConstructor(SymbolId constructor, StructValue thisValue, ImmutableArray<Value> args)
+            ValueTask IModuleDriver.ExecuteStructConstructor(SymbolId constructor, LocalPtrValue thisValue, ImmutableArray<Value> args)
             {
                 throw new NotImplementedException();
             }
@@ -1401,6 +1401,11 @@ namespace Citron.Test
             }
 
             void IModuleDriver.InitializeClassInstance(SymbolId @class, ImmutableArray<Value>.Builder builder)
+            {
+                throw new NotImplementedException();
+            }
+
+            int IModuleDriver.GetTotalStructMemberVarCount(SymbolId structId)
             {
                 throw new NotImplementedException();
             }
@@ -1654,7 +1659,7 @@ namespace Citron.Test
                 throw new NotImplementedException();
             }
 
-            ValueTask IModuleDriver.ExecuteStructConstructor(SymbolId constructor, StructValue thisValue, ImmutableArray<Value> args)
+            ValueTask IModuleDriver.ExecuteStructConstructor(SymbolId constructor, LocalPtrValue thisValue, ImmutableArray<Value> args)
             {
                 throw new NotImplementedException();
             }
@@ -1670,6 +1675,11 @@ namespace Citron.Test
             }
 
             int IModuleDriver.GetEnumElemMemberVarIndex(SymbolId memberVar)
+            {
+                throw new NotImplementedException();
+            }
+
+            int IModuleDriver.GetTotalStructMemberVarCount(SymbolId structId)
             {
                 throw new NotImplementedException();
             }
@@ -1948,6 +1958,93 @@ namespace Citron.Test
             Assert.Equal("3", output);
         }
 
+        [Fact]
+        public async Task BoxPtr_MakeBoxPtrFromClassInstanceAndDereference()
+        {
+            // class C { int a; }
+            // var c = new C();
+            // box int* x = &c.a;
+            // *x = 3;
+            // print(c.a);
+
+            var moduleDS = new ModuleDeclSymbol(moduleName, bReference: false);
+            var cDS = new ClassDeclSymbol(moduleDS, Accessor.Public, NormalName("C"), typeParams: default);
+            cDS.InitBaseTypes(baseClass: null, interfaces: default);
+            moduleDS.AddType(cDS);
+
+            var caDS = new ClassMemberVarDeclSymbol(cDS, Accessor.Public, bStatic: false, r.IntType(), NormalName("a"));
+            cDS.AddMemberVar(caDS);
+
+            var cconstructorDS = new ClassConstructorDeclSymbol(cDS, Accessor.Public, parameters: default, bTrivial: false, bLastParameterVariadic: false);
+            cDS.AddConstructor(cconstructorDS);
+            
+            var cS = (ClassSymbol)cDS.MakeOpenSymbol(factory);
+            var cconstructorS = (ClassConstructorSymbol)cconstructorDS.MakeOpenSymbol(factory);
+            var caS = (ClassMemberVarSymbol)caDS.MakeOpenSymbol(factory);
+
+
+            var boxIntPtr = r.BoxPtrType(r.IntType());
+
+            var mainBody = AddGlobalFunc(moduleDS, r.VoidType(), "Main",
+                r.LocalVarDecl(new ClassType(cS), "c", new NewClassExp(cconstructorS, Args: default)),
+                r.LocalVarDecl(boxIntPtr, "x", new ClassMemberBoxRefExp(r.LocalVar("c"), caS)),
+                r.Assign(r.BoxDeref(new LoadExp(r.LocalVar("x"), boxIntPtr)), r.Int(3)),
+                r.PrintInt(new ClassMemberLoc(r.LocalVar("c"), caS))
+            );
+
+            var cconstructorBody = r.StmtBody(cconstructorDS,
+                r.Assign(new ClassMemberLoc(new ThisLoc(), caS), r.Int(1))
+            );
+
+            var script = r.Script(moduleDS, cconstructorBody, mainBody);
+
+            var output = await EvalAsync(script);
+            Assert.Equal("3", output);
+        }
+
+        [Fact]
+        public async Task BoxPtr_MakeBoxPtrFromBoxedStructMemberVarAndDereference()
+        {
+            // struct S { int a; }
+            // box S* pS = box S();
+            // box int* x = &(*pS).a;
+            // *x = 3;
+            // print((*pS).a);
+
+            var moduleDS = new ModuleDeclSymbol(moduleName, bReference: false);
+            var sDS = new StructDeclSymbol(moduleDS, Accessor.Public, NormalName("S"), typeParams: default);
+            sDS.InitBaseTypes(baseStruct: null, interfaces: default);
+            moduleDS.AddType(sDS);
+
+            var saDS = new StructMemberVarDeclSymbol(sDS, Accessor.Public, bStatic: false, r.IntType(), NormalName("a"));
+            sDS.AddMemberVar(saDS);
+
+            var sconstructorDS = new StructConstructorDeclSymbol(sDS, Accessor.Public, parameters: default, bTrivial: false, bLastParameterVariadic: false);
+            sDS.AddConstructor(sconstructorDS);
+
+            var sS = (StructSymbol)sDS.MakeOpenSymbol(factory);
+            var sconstructorS = (StructConstructorSymbol)sconstructorDS.MakeOpenSymbol(factory);
+            var saS = (StructMemberVarSymbol)saDS.MakeOpenSymbol(factory);
+
+            var boxSPtr = r.BoxPtrType(new StructType(sS));
+            var boxIntPtr = r.BoxPtrType(r.IntType());
+
+            var mainBody = AddGlobalFunc(moduleDS, r.VoidType(), "Main",
+                r.LocalVarDecl(boxSPtr, "pS", new BoxExp(new NewStructExp(sconstructorS, Args: default))),
+                r.LocalVarDecl(boxIntPtr, "x", new StructIndirectMemberBoxRefExp(r.LoadLocalVar("pS", boxSPtr), saS)),
+                r.Assign(r.BoxDeref(new LoadExp(r.LocalVar("x"), boxIntPtr)), r.Int(3)),
+                r.PrintInt(new StructMemberLoc(r.BoxDeref(r.LoadLocalVar("pS", boxSPtr)), saS))
+            );
+
+            var sconstructorBody = r.StmtBody(sconstructorDS,
+                r.Assign(new StructMemberLoc(new LocalDerefLoc(r.Load(new ThisLoc(), boxSPtr)), saS), r.Int(1))
+            );
+
+            var script = r.Script(moduleDS, sconstructorBody, mainBody);
+
+            var output = await EvalAsync(script);
+            Assert.Equal("3", output);
+        }
 
         #endregion BoxPtr
     }

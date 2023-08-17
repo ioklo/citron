@@ -338,11 +338,18 @@ namespace Citron
     
     public class BoxPtrValue : Value
     {
+        Value? holder;
         Value? target;
 
         public Value GetTarget()
         {
             return this.target!;
+        }
+        
+        public void Set(Value? holder, Value target)
+        {
+            this.holder = holder;
+            this.target = target;
         }
 
         public void SetTarget(Value target)
@@ -353,6 +360,26 @@ namespace Citron
         public override void SetValue(Value value)
         {
             this.target = ((BoxPtrValue)value).target;
+        }
+    }
+
+    public class LocalPtrValue : Value
+    {
+        Value? target;
+
+        public Value GetTarget()
+        {
+            return target!;
+        }
+
+        public void SetTarget(Value target)
+        {
+            this.target = target;
+        }
+
+        public override void SetValue(Value value)
+        {
+            this.target = ((LocalPtrValue)value).target;
         }
     }
 }

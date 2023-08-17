@@ -109,7 +109,7 @@ namespace Citron.Symbol
             return trivialConstructor;
         }
 
-        public StructType? GetBaseStruct()
+        public StructType? GetBaseStructType()
         {
             return baseStruct;
         }
@@ -158,6 +158,7 @@ namespace Citron.Symbol
         public IEnumerable<IDeclSymbolNode> GetMemberDeclNodes()
         {
             return typeComp.GetEnumerable().OfType<IDeclSymbolNode>()
+                .Concat(constructors)
                 .Concat(funcComp.GetEnumerable())
                 .Concat(memberVars);
         }

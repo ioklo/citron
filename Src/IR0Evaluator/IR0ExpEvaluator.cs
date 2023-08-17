@@ -362,7 +362,46 @@ namespace Citron
             var value = context.AllocValue(boxExp.InnerExp.GetExpType());
             await EvalAsync(boxExp.InnerExp, context, value);
 
+            ((BoxPtrValue)result).Set(value, value);
+        }
+
+        async ValueTask IIR0ExpVisitor<ValueTask>.VisitStaticBoxRef(StaticBoxRefExp exp)
+        {
+            var value = await IR0LocEvaluator.EvalAsync(exp.Loc, context);
+            ((BoxPtrValue)result).Set(null, value);
+        }
+
+        async ValueTask IIR0ExpVisitor<ValueTask>.VisitClassMemberBoxRef(ClassMemberBoxRefExp exp)
+        {
+            var holder = await IR0LocEvaluator.EvalAsync(exp.holderLoc, context);
+            var value = context.GetClassMemberValue((ClassValue)holder, exp.Symbol.GetSymbolId());
+
+            ((BoxPtrValue)result).Set(holder, value);
+        }
+
+        // &(*pS).a = > (ps, S.a)
+        async ValueTask IIR0ExpVisitor<ValueTask>.VisitStructIndirectMemberBoxRef(StructIndirectMemberBoxRefExp exp)
+        {
+            var holder = context.AllocValue<BoxPtrValue>(exp.holderExp.GetExpType().GetTypeId());
+            await IR0ExpEvaluator.EvalAsync(exp.holderExp, context, holder);
+
+            var value = context.GetStructMemberValue((StructValue)holder.GetTarget(), exp.Symbol.GetSymbolId());
+            ((BoxPtrValue)result).Set(holder, value);
+        }
+        
+        async ValueTask IIR0ExpVisitor<ValueTask>.VisitStructMemberBoxRef(StructMemberBoxRefExp exp)
+        {
+            var parent = context.AllocValue<BoxPtrValue>(exp.Parent.GetExpType().GetTypeId());
+            await IR0ExpEvaluator.EvalAsync(exp.Parent, context, parent);
+
+            var value = context.GetStructMemberValue((StructValue)parent.GetTarget(), exp.Symbol.GetSymbolId());
             ((BoxPtrValue)result).SetTarget(value);
+        }
+
+        async ValueTask IIR0ExpVisitor<ValueTask>.VisitLocalRef(LocalRefExp exp)
+        {
+            var target = await IR0LocEvaluator.EvalAsync(exp.InnerLoc, context);
+            ((LocalPtrValue)result).SetTarget(target);
         }
 
         ValueTask IIR0ExpVisitor<ValueTask>.VisitBoolLiteral(BoolLiteralExp exp)
@@ -530,7 +569,9 @@ namespace Citron
         async ValueTask IIR0ExpVisitor<ValueTask>.VisitNewStruct(NewStructExp exp)
         {
             // 할당은 result에서 미리 하고, 여기서는 Constructor만 호출해준다
-            StructValue thisValue = (StructValue)result;
+            var thisValue = context.AllocValue<LocalPtrValue>(new LocalPtrTypeId(new StructType(exp.Constructor.GetOuter()).GetTypeId()));
+            thisValue.SetTarget(result);
+
             var args = await EvalArgumentsAsync(exp.Constructor, exp.Args);
             context.ExecuteStructConstructor(exp.Constructor, thisValue, args);
         }
@@ -613,14 +654,11 @@ namespace Citron
             await stmtEvaluator.EvalBodySkipYieldAsync(body);
         }
 
-        ValueTask IIR0ExpVisitor<ValueTask>.VisitLocalRef(LocalRefExp exp)
-        {
-            throw new NotImplementedException();
-        }
-
         ValueTask IIR0ExpVisitor<ValueTask>.CastBoxedLambdaToFunc(CastBoxedLambdaToFuncExp castBoxedLambdaToFuncExp)
         {
             throw new NotImplementedException();
         }
+
+        
     }
 }

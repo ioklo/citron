@@ -12,6 +12,7 @@ namespace Citron.Symbol
         Accessor accessor;
         ImmutableArray<FuncParameter> parameters;
         bool bTrivial;
+        bool bLastParameterVariadic;
 
         LambdaDeclSymbolComponent<StructConstructorDeclSymbol> lambdaComponent;
 
@@ -25,12 +26,13 @@ namespace Citron.Symbol
         //     G(e => e, 2); // 인자에 맞는 함수를 검색하면서 e => e가 두번 평가된다
         // }
 
-        public StructConstructorDeclSymbol(StructDeclSymbol outer, Accessor accessModifier, ImmutableArray<FuncParameter> parameters, bool bTrivial)
+        public StructConstructorDeclSymbol(StructDeclSymbol outer, Accessor accessModifier, ImmutableArray<FuncParameter> parameters, bool bTrivial, bool bLastParameterVariadic)
         {
             this.outer = outer;
             this.accessor = accessModifier;
             this.parameters = parameters;
             this.bTrivial = bTrivial;
+            this.bLastParameterVariadic = bLastParameterVariadic;
 
             this.lambdaComponent = new LambdaDeclSymbolComponent<StructConstructorDeclSymbol>(this);
         }
@@ -130,7 +132,7 @@ namespace Citron.Symbol
 
         bool IFuncDeclSymbol.IsLastParameterVariadic()
         {
-            throw new NotImplementedException();
+            return bLastParameterVariadic;
         }
     }
 }

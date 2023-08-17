@@ -13,15 +13,17 @@ namespace Citron.Symbol
         Accessor accessor;
         ImmutableArray<FuncParameter> parameters;
         bool bTrivial;
+        bool bLastParameterVariadic;
 
         LambdaDeclSymbolComponent<ClassConstructorDeclSymbol> lambdaComponent;
 
-        public ClassConstructorDeclSymbol(ClassDeclSymbol outer, Accessor accessor, ImmutableArray<FuncParameter> parameters, bool bTrivial)
+        public ClassConstructorDeclSymbol(ClassDeclSymbol outer, Accessor accessor, ImmutableArray<FuncParameter> parameters, bool bTrivial, bool bLastParameterVariadic)
         {
             this.outer = outer;
             this.accessor = accessor;
             this.parameters = parameters;
             this.bTrivial = bTrivial;
+            this.bLastParameterVariadic = bLastParameterVariadic;
 
             this.lambdaComponent = new LambdaDeclSymbolComponent<ClassConstructorDeclSymbol>(this);
         }
@@ -121,7 +123,7 @@ namespace Citron.Symbol
 
         bool IFuncDeclSymbol.IsLastParameterVariadic()
         {
-            throw new NotImplementedException();
+            return bLastParameterVariadic;
         }
     }
 }

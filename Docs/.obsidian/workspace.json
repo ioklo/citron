@@ -4,38 +4,40 @@
     "type": "split",
     "children": [
       {
-        "id": "a6d4bdbb4b82949b",
+        "id": "30579d70cde406d3",
         "type": "tabs",
-        "dimension": 51.84705119896305,
         "children": [
           {
-            "id": "9b69189b0b7f961a",
-            "type": "leaf",
-            "state": {
-              "type": "graph",
-              "state": {}
-            },
-            "group": "5129c0090c25eeac"
-          }
-        ]
-      },
-      {
-        "id": "ec4e6ecfa85639be",
-        "type": "tabs",
-        "dimension": 48.15294880103695,
-        "children": [
-          {
-            "id": "cb93e2b5a393707e",
+            "id": "ef83f746338d1180",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Gum/Deprecated/launch with statement.md",
-                "mode": "preview",
-                "source": false
+                "file": "Old/Gum/Concepts/Values.md",
+                "mode": "source",
+                "source": true
               }
             },
-            "group": "5129c0090c25eeac"
+            "group": "f9af217dd202405f"
+          }
+        ]
+      },
+      {
+        "id": "933af69c2ffd6fbf",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "10f8cd96939c658f",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Old/Gum/Concepts/Values.md",
+                "mode": "preview",
+                "source": true
+              }
+            },
+            "group": "f9af217dd202405f"
           }
         ]
       }
@@ -103,6 +105,7 @@
             "state": {
               "type": "backlink",
               "state": {
+                "file": "Old/Gum/Concepts/Values.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -119,6 +122,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
+                "file": "Old/Gum/Concepts/Values.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -140,7 +144,9 @@
             "type": "leaf",
             "state": {
               "type": "outline",
-              "state": {}
+              "state": {
+                "file": "Old/Gum/Concepts/Values.md"
+              }
             }
           }
         ]
@@ -160,21 +166,32 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "9b69189b0b7f961a",
+  "active": "ef83f746338d1180",
   "lastOpenFiles": [
-    "Gum/Deprecated/launch with statement.md",
-    "Gum/Concepts/Types/Reference based nullable.md",
-    "Gum/Concepts/Types/Lambda, Function(Boxed Lambda).md",
-    "Gum/Concepts/Types/Interface.md",
-    "Gum/Concepts/Types/Enum.md",
-    "Gum/Concepts/Types/Class.md",
-    "Gum.md",
-    "Gum/Deprecated.md",
-    "Gum/Concepts.md",
-    "Gum/Concepts/Functions.md",
-    "Gum/Concepts/Identifiers.md",
-    "Gum/Concepts/Variables/Local_Variables.md",
-    "Gum/Concepts/Variables/Global_Variables.md",
-    "Gum/Concepts/Identifiers/Identifier_Search_Order.md"
+    "작성방식.md",
+    "Citron.md",
+    "2023-08-16.md",
+    "Untitled.canvas",
+    "Old/Gum.md",
+    "Old",
+    "Old/Gum/Concepts/Types/Tuple.md",
+    "Old/Gum/Concepts/Types/Tuple/Using tuples as function arguments.md",
+    "Old/Gum/Concepts/Types/Struct.md",
+    "Old/Gum/Concepts/Identifiers/Type_Search_Order.md",
+    "Old/Gum/Concepts/Identifiers/Namespace.md",
+    "Old/Gum/Concepts/Identifiers/Identifier_Search_Order.md",
+    "Old/Gum/Concepts.md",
+    "Old/Gum/Concepts/Identifiers/Accessibility.md",
+    "Old/Gum/Deprecated/launch with statement.md",
+    "Old/Gum/Concepts/Types/Reference based nullable.md",
+    "Old/Gum/Concepts/Types/Lambda, Function(Boxed Lambda).md",
+    "Old/Gum/Concepts/Types/Interface.md",
+    "Old/Gum/Concepts/Types/Enum.md",
+    "Old/Gum/Concepts/Types/Class.md",
+    "Old/Gum/Deprecated.md",
+    "Old/Gum/Concepts/Functions.md",
+    "Old/Gum/Concepts/Identifiers.md",
+    "Old/Gum/Concepts/Variables/Local_Variables.md",
+    "Old/Gum/Concepts/Variables/Global_Variables.md"
   ]
 }

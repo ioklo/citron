@@ -72,11 +72,36 @@ struct IntermediateRefExpIR0ExpTranslator : IIntermediateRefExpVisitor<Translati
         throw new NotImplementedException();
     }
 
+    record struct BoxRefVisitor : IntermediateRefExp.IBoxRefVisitor<Exp>
+    {
+        // &c.x
+        Exp IntermediateRefExp.IBoxRefVisitor<Exp>.VisitClassMember(IntermediateRefExp.BoxRef.ClassMember boxRef)
+        {
+            return new ClassMemberBoxRefExp(boxRef.Loc, boxRef.Symbol);
+        }
+
+        // &(*pS).x
+        Exp IntermediateRefExp.IBoxRefVisitor<Exp>.VisitStructIndirectMember(IntermediateRefExp.BoxRef.StructIndirectMember boxRef)
+        {
+            return new StructIndirectMemberBoxRefExp(boxRef.Exp, boxRef.Symbol);
+        }
+
+        // &c.x.a
+        // &(box S()).x.y
+        Exp IntermediateRefExp.IBoxRefVisitor<Exp>.VisitStructMember(IntermediateRefExp.BoxRef.StructMember boxRef)
+        {
+            var parentVisitor = new BoxRefVisitor();
+            var parentExp = boxRef.Parent.AcceptBoxRef<BoxRefVisitor, Exp>(ref parentVisitor);
+
+            return new StructMemberBoxRefExp(parentExp, boxRef.Symbol);
+        }
+    }
+
     // &c.x
     TranslationResult<Exp> IIntermediateRefExpVisitor<TranslationResult<Exp>>.VisitBoxRef(IntermediateRefExp.BoxRef imRefExp)
     {
-        // box ref는 
-        throw new NotImplementedException();
+        var visitor = new BoxRefVisitor();
+        return Valid(imRefExp.AcceptBoxRef<BoxRefVisitor, Exp>(ref visitor));
     }
 
     // 가장 쉬운 &s.x

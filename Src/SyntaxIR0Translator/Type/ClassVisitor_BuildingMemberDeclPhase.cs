@@ -59,7 +59,7 @@ namespace Citron.Analysis
             var parameters = BuilderMisc.MakeParameters(declSymbol, context, syntax.Parameters);
 
             // TODO: [1] syntax에 trivial 마킹하면 검사하고 trivial로 만든다
-            var constructorDeclSymbol = new ClassConstructorDeclSymbol(declSymbol, accessor, parameters, bTrivial: false);
+            var constructorDeclSymbol = new ClassConstructorDeclSymbol(declSymbol, accessor, parameters, bTrivial: false, bLastParameterVariadic: false);
             declSymbol.AddConstructor(constructorDeclSymbol);
 
             context.AddBuildingBodyPhaseTask(context =>
@@ -137,7 +137,7 @@ namespace Citron.Analysis
             }
 
             // trivial constructor를 만듭니다
-            return new ClassConstructorDeclSymbol(outer, Accessor.Public, builder.MoveToImmutable(), bTrivial: true);
+            return new ClassConstructorDeclSymbol(outer, Accessor.Public, builder.MoveToImmutable(), bTrivial: true, bLastParameterVariadic: false);
         }
 
         static ClassConstructorDeclSymbol? GetClassConstructorHasSameParamWithTrivial(
