@@ -4,42 +4,59 @@
     "type": "split",
     "children": [
       {
-        "id": "30579d70cde406d3",
+        "id": "cdc46f4cffd220c1",
         "type": "tabs",
         "children": [
           {
-            "id": "ef83f746338d1180",
+            "id": "d6fca49c2babd1dc",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Old/Gum/Concepts/Values.md",
+                "file": "A table of contents.md",
                 "mode": "source",
-                "source": true
+                "source": false
               }
-            },
-            "group": "f9af217dd202405f"
-          }
-        ]
-      },
-      {
-        "id": "933af69c2ffd6fbf",
-        "type": "tabs",
-        "children": [
+            }
+          },
           {
-            "id": "10f8cd96939c658f",
+            "id": "8835343319501f61",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Old/Gum/Concepts/Values.md",
-                "mode": "preview",
-                "source": true
+                "file": "Pointer.md",
+                "mode": "source",
+                "source": false
               }
-            },
-            "group": "f9af217dd202405f"
+            }
+          },
+          {
+            "id": "e2aea41d2d91226c",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Macro.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "88a0c334a74f4ef7",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "DeclSymbol, Identifier Resolution.md",
+                "mode": "source",
+                "source": false
+              }
+            }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -105,7 +122,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Old/Gum/Concepts/Values.md",
+                "file": "Pointer.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -122,7 +139,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Old/Gum/Concepts/Values.md",
+                "file": "Pointer.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -145,7 +162,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Old/Gum/Concepts/Values.md"
+                "file": "Pointer.md"
               }
             }
           }
@@ -166,32 +183,35 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "ef83f746338d1180",
+  "active": "8835343319501f61",
   "lastOpenFiles": [
-    "작성방식.md",
-    "Citron.md",
-    "2023-08-16.md",
-    "Untitled.canvas",
-    "Old/Gum.md",
-    "Old",
-    "Old/Gum/Concepts/Types/Tuple.md",
-    "Old/Gum/Concepts/Types/Tuple/Using tuples as function arguments.md",
+    "A table of contents.md",
+    "Pointer.md",
+    "Function.md",
     "Old/Gum/Concepts/Types/Struct.md",
-    "Old/Gum/Concepts/Identifiers/Type_Search_Order.md",
-    "Old/Gum/Concepts/Identifiers/Namespace.md",
-    "Old/Gum/Concepts/Identifiers/Identifier_Search_Order.md",
-    "Old/Gum/Concepts.md",
-    "Old/Gum/Concepts/Identifiers/Accessibility.md",
-    "Old/Gum/Deprecated/launch with statement.md",
     "Old/Gum/Concepts/Types/Reference based nullable.md",
-    "Old/Gum/Concepts/Types/Lambda, Function(Boxed Lambda).md",
+    "Old/Gum/Concepts/Types/Scoped Value Reference.md",
+    "Old/Gum/Concepts/Types/Universal Value Reference.md",
+    "Enum.md",
+    "Generics.md",
+    "Analysis.md",
+    "DeclSymbol, Identifier Resolution.md",
+    "Value, Location, Expression.md",
+    "Type.md",
+    "Program.md",
+    "Command.md",
+    "Builtin Types and Values.md",
+    "Old/Gum/Concepts/Types/Tuple.md",
+    "Macro.md",
+    "Old/Gum.md",
+    "Module, ModuleDriver.md",
+    "Old/Gum/Concepts/Identifiers/Namespace.md",
     "Old/Gum/Concepts/Types/Interface.md",
-    "Old/Gum/Concepts/Types/Enum.md",
     "Old/Gum/Concepts/Types/Class.md",
-    "Old/Gum/Deprecated.md",
-    "Old/Gum/Concepts/Functions.md",
-    "Old/Gum/Concepts/Identifiers.md",
-    "Old/Gum/Concepts/Variables/Local_Variables.md",
-    "Old/Gum/Concepts/Variables/Global_Variables.md"
+    "Exception.md",
+    "Task.md",
+    "Sequence.md",
+    "Untitled.canvas",
+    "Old"
   ]
 }

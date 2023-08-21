@@ -11,10 +11,11 @@
     "open-with-default-app": true
   },
   "alwaysUpdateLinks": true,
-  "promptDelete": false,
+  "promptDelete": true,
   "useTab": false,
   "enabledPlugins": [
     "cm-show-whitespace-obsidian"
   ],
-  "livePreview": false
+  "livePreview": true,
+  "useMarkdownLinks": true
 }
