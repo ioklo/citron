@@ -1,3 +1,0 @@
-# List
-
-Class Type Value

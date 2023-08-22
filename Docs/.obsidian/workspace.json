@@ -8,24 +8,24 @@
         "type": "tabs",
         "children": [
           {
-            "id": "d6fca49c2babd1dc",
+            "id": "d15d3a84104dbd1e",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "A table of contents.md",
+                "file": "Lambda.md",
                 "mode": "source",
                 "source": false
               }
             }
           },
           {
-            "id": "8835343319501f61",
+            "id": "1c89c9006bd3c184",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Pointer.md",
+                "file": "Type.md",
                 "mode": "source",
                 "source": false
               }
@@ -49,14 +49,13 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "DeclSymbol, Identifier Resolution.md",
+                "file": "DeclSymbol.md",
                 "mode": "source",
                 "source": false
               }
             }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "vertical"
@@ -85,7 +84,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "",
+                "query": "inline",
                 "matchingCase": false,
                 "explainSearch": false,
                 "collapseAll": false,
@@ -122,7 +121,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Pointer.md",
+                "file": "Lambda.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -139,7 +138,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Pointer.md",
+                "file": "Lambda.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -162,7 +161,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Pointer.md"
+                "file": "Lambda.md"
               }
             }
           }
@@ -183,35 +182,35 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "8835343319501f61",
+  "active": "d15d3a84104dbd1e",
   "lastOpenFiles": [
     "A table of contents.md",
-    "Pointer.md",
-    "Function.md",
-    "Old/Gum/Concepts/Types/Struct.md",
-    "Old/Gum/Concepts/Types/Reference based nullable.md",
-    "Old/Gum/Concepts/Types/Scoped Value Reference.md",
-    "Old/Gum/Concepts/Types/Universal Value Reference.md",
-    "Enum.md",
-    "Generics.md",
-    "Analysis.md",
-    "DeclSymbol, Identifier Resolution.md",
-    "Value, Location, Expression.md",
     "Type.md",
-    "Program.md",
-    "Command.md",
-    "Builtin Types and Values.md",
-    "Old/Gum/Concepts/Types/Tuple.md",
-    "Macro.md",
-    "Old/Gum.md",
-    "Module, ModuleDriver.md",
-    "Old/Gum/Concepts/Identifiers/Namespace.md",
-    "Old/Gum/Concepts/Types/Interface.md",
-    "Old/Gum/Concepts/Types/Class.md",
-    "Exception.md",
-    "Task.md",
+    "Local Pointer.md",
+    "Pointer.md",
     "Sequence.md",
+    "Program.md",
+    "void.md",
+    "Function.md",
+    "Tuple.md",
+    "Type Identifier Resolution.md",
+    "Expression.md",
+    "Using tuples as function arguments.md",
+    "Accessibility.md",
+    "Identifier Resolution.md",
+    "Inline Block.md",
+    "Command.md",
+    "DeclSymbol.md",
+    "never.md",
+    "Namespace.md",
     "Untitled.canvas",
+    "Macro.md",
+    "Lambda.md",
+    "2023-08-22.md",
+    "Module, ModuleDriver.md",
+    "Old/Gum/Concepts.md",
+    "Old/Gum/Concepts/Types/Lambda, Function(Boxed Lambda).md",
+    "Old/Gum/Concepts/Functions.md",
     "Old"
   ]
 }

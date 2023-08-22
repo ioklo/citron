@@ -76,6 +76,5 @@ namespace N1 {
 }
 ```
 
-## 관련 정보
-[[Type_Search_Order]]
-
+# 관련 정보
+[Type Identifier Resolution](Type%20Identifier%20Resolution.md)
