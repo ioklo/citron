@@ -10,6 +10,7 @@
 *.userosscache
 *.sln.docstates
 .DS_Store
+Src/Test/EvalTest/Input/Generated/
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs

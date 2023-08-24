@@ -1,4 +1,6 @@
 # General
+
+
 
 ```csharp
 // 네임스페이스 정의
@@ -11,9 +13,6 @@ namespace MyNamespace
 
     // 프로그램 내부에서만 쓰는 (전역) 함수 정의
     void F<T>(int x) { }
-
-    // 탑레벨 절(Statement), 다른 프로그램에서 이 프로그램을 로드하면 실행되는 부분이다
-    @echo "Hello World";
 }
 ```
 

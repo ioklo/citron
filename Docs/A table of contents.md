@@ -9,12 +9,12 @@
      - argument
      - type argument
  - Decl Space
- - Heap
  - Asynchronous Tasks
 # Evaluation
 - [Expression](Expression.md)
     - Value
     - Location
+- [Local Variable](Local%20Variable.md)
 - Branch
 - Loop
 - [Assignment](Assignment.md)
@@ -29,9 +29,9 @@
 # Type of Value
 - [Type](Type.md)
 - [Generics](Generics.md)
-
-- Local Pointer
-- Box Pointer
+- [Pointer](Pointer.md)
+    - [Local Pointer](Pointer.md#local-pointer)
+    - [Box Pointer](Pointer.md#box-pointer)
 - [Pointer](Pointer.md)
 - [Tuple](Tuple.md)
 - [Struct](Struct.md)
@@ -43,7 +43,7 @@
 - [never](never.md)
 # Module and Symbols
 - [Namespace](Namespace.md)
-- [Module, ModuleDriver](Module,%20ModuleDriver.md)
+- [Module](Module.md)
 - [Accessibility](Accessibility.md)
 - [DeclSymbol](DeclSymbol.md)
 - [Identifier Resolution](Identifier%20Resolution.md)

@@ -2,13 +2,18 @@
 사용자 정의 타입이나 함수에 타입을 인자로 넘겨줄 수 있습니다. 사용자는 상황에 따라 타입을 대입해서, 타입이 다르지만 로직은 비슷한 코드를 재사용할 수 있게 됩니다.
 
 Symbol type, member functions, global functions 에 타입 매개변수를 정의할 수 있습니다.
+%%Test(Generics_General, 3)%%
 ```
 struct A<T>
 {
     T t;
 }
 
-var a = A<int>(3); 
+void Main()
+{
+    var a = A<int>(3);
+    @$a.t
+}
 ```
 
 # Nested Type Parameters
