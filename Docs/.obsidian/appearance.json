@@ -1,4 +1,6 @@
 {
   "theme": "moonstone",
-  "accentColor": ""
+  "accentColor": "",
+  "showViewHeader": true,
+  "nativeMenus": false
 }
