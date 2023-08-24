@@ -1,3 +1,0 @@
-# Integer
-
-Struct Type Value

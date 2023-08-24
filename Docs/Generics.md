@@ -2,19 +2,24 @@
 사용자 정의 타입이나 함수에 타입을 인자로 넘겨줄 수 있습니다. 사용자는 상황에 따라 타입을 대입해서, 타입이 다르지만 로직은 비슷한 코드를 재사용할 수 있게 됩니다.
 
 Symbol type, member functions, global functions 에 타입 매개변수를 정의할 수 있습니다.
+%%Test(Generics_General, 3)%%
 ```
 struct A<T>
 {
     T t;
 }
 
-var a = A<int>(3); 
+void Main()
+{
+    var a = A<int>(3);
+    @$a.t
+}
 ```
 
 # Nested Type Parameters
 
 Symbol의 outer에 type parameter가 있다면, Symbol도 그 type parameter를 쓸 수 있습니다. symbol의 outer개념은 class나 struct의 base와 다른 개념입니다. base의 type parameter는 항상 instantiated 되기때문에 존재하지 않습니다.
-
+%%Test(Generics_NestedTypeParameters, )%%
 ```
 class C<T>
 {
@@ -25,10 +30,15 @@ class C<T>
     }
 }
 
-var s = C<int>.S<string>(3, "hi");
+void Main()
+{
+    // 컴파일만 되도 성공
+    var s = C<int>.S<string>(3, "hi");
+}
 ```
 
 같은 이름의 파라미터인 경우 가장 마지막에 선언된 정의가 이전 정의를 가립니다. 가린다고 해서 이전 타입 파라미터가 쓸모 없어지는 것은 아닙니다.
+%%Test(Generics_HideTypeParameter, 3)%%
 ```
 class C<T>
 {
@@ -40,7 +50,11 @@ class C<T>
     }
 }
 
-var s = C<int>.S<bool>(false); // bool이 사용됩니다.
+void Main()
+{
+    // 컴파일만 되도 성공
+    var s = C<int>.S<bool>(false); // bool이 사용됩니다.
+}
 
 ```
 

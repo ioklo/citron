@@ -4,11 +4,11 @@
     "type": "split",
     "children": [
       {
-        "id": "a6d4bdbb4b82949b",
+        "id": "cdc46f4cffd220c1",
         "type": "tabs",
         "children": [
           {
-            "id": "9b69189b0b7f961a",
+            "id": "d15d3a84104dbd1e",
             "type": "leaf",
             "state": {
               "type": "markdown",
@@ -18,8 +18,57 @@
                 "source": false
               }
             }
+          },
+          {
+            "id": "0a2af51bb2b9a581",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Generics.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "1c89c9006bd3c184",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Type.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "e2aea41d2d91226c",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Macro.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "88a0c334a74f4ef7",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "DeclSymbol.md",
+                "mode": "source",
+                "source": false
+              }
+            }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -48,7 +97,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "",
+                "query": "inline",
                 "matchingCase": false,
                 "explainSearch": false,
                 "collapseAll": false,
@@ -85,7 +134,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "A table of contents.md",
+                "file": "Generics.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -102,7 +151,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "A table of contents.md",
+                "file": "Generics.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -125,7 +174,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "A table of contents.md"
+                "file": "Generics.md"
               }
             }
           }
@@ -146,43 +195,35 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "9b69189b0b7f961a",
+  "active": "0a2af51bb2b9a581",
   "lastOpenFiles": [
-    "Old/Gum/Concepts/Values/Built-in_Values/String.md",
-    "Old/Gum/Concepts/Values/Built-in_Values/Nullable.md",
-    "Old/Gum/Concepts/Values/Built-in_Values/List.md",
-    "Old/Gum/Concepts/Values/Built-in_Values/Integer.md",
-    "Old/Gum/Concepts/Values/Built-in_Values/Boolean.md",
-    "Old/Gum/Concepts/Types/Tuple/Using tuples as function arguments.md",
-    "Old/Gum/Concepts/Variables/Local_Variables.md",
-    "Old/Gum/Concepts/Variables/Global_Variables.md",
-    "Old/Gum/Concepts/Values/Storage.md",
-    "Old/Gum/Concepts/Values/Built-in_Values.md",
-    "Old/Gum/Concepts/Values/Built-in_Values",
-    "Old/Gum/Concepts/Types/Void.md",
-    "Old/Gum/Concepts/Types/Type Expression.md",
-    "Old/Gum/Concepts/Types/Tuple.md",
-    "Old/Gum/Concepts/Types/Tuple",
-    "Old/Gum/Concepts/Types/Struct.md",
-    "Old/Gum/Concepts/Types/Lambda, Function(Boxed Lambda).md",
-    "Old/Gum/Concepts/Types/Interface.md",
-    "Old/Gum/Concepts/Types/Class.md",
-    "Old/Gum/Concepts/Identifiers/Type_Search_Order.md",
-    "Old/Gum/Concepts/Identifiers/Scope.md",
-    "Old/Gum/Concepts/Identifiers/Namespace.md",
-    "Old/Gum/Concepts/Identifiers/Identifier_Search_Order.md",
-    "Old/Gum/Concepts/Identifiers/Accessibility.md",
-    "Old/Gum/Deprecated/launch with statement.md",
-    "Old/Gum/Concepts/Variables.md",
-    "Old/Gum/Concepts/Variables",
-    "Old/Gum/Concepts/Values.md",
-    "Old/Gum/Concepts/Values",
-    "Old/Gum/Concepts/Types.md",
-    "Old/Gum/Concepts/Types",
-    "Old/Gum/Concepts/Identifiers",
-    "Old/Gum/Deprecated",
-    "Old/Gum/Concepts",
-    "Old/Gum",
+    "Program.md",
+    "A table of contents.md",
+    "Pointer.md",
+    "Local Pointer.md",
+    "Function.md",
+    "Expression.md",
+    "Namespace.md",
+    "Task.md",
+    "DeclSymbol.md",
+    "Assignment.md",
+    "Builtin Types and Values.md",
+    "Analysis.md",
+    "never.md",
+    "Module.md",
+    "Inline Block.md",
+    "Local Variable.md",
+    "Exception.md",
+    "void.md",
+    "Identifier Resolution.md",
+    "Type.md",
+    "Accessibility.md",
+    "Lambda.md",
+    "Sequence.md",
+    "Tuple.md",
+    "Type Identifier Resolution.md",
+    "Using tuples as function arguments.md",
+    "Untitled.canvas",
     "Old"
   ]
 }

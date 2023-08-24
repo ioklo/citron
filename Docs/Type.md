@@ -48,6 +48,7 @@
 
 ```
 
+
 # Type Alias
 type alias를 사용해서 type expression에 이름을 줄 수 있습니다.
 type alias는 Symbol Directory안에 만들어지며, 모듈참조를 통해 접근이 가능합니다

@@ -11,6 +11,7 @@ Program = Module Declaration * Function Bodies * Entry Id * [Loading External Mo
 ## Basic form
 
 `Hello World!`를 출력하는 가장 기본적인 형태입니다.
+%%Test(Program_Basic, Hello World!)%%
 ```
 void Main()
 {

@@ -1,3 +1,0 @@
-# String
-
-Class Type Value

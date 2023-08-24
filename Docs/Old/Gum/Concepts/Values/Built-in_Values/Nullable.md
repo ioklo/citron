@@ -1,3 +1,0 @@
-# Nullable
-
-Enum Type Value
