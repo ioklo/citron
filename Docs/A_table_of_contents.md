@@ -14,7 +14,7 @@
 - [Expression](Expression.md)
     - Value
     - Location
-- [Local Variable](Local%20Variable.md)
+- [Local_Variable](Local_Variable.md)
 - Branch
 - Loop
 - [Assignment](Assignment.md)
@@ -24,7 +24,7 @@
 - [Task](Task.md)
 - [Command](Command.md)
 - [Exception](Exception.md)
-- [Inline Block](Inline%20Block.md)
+- [Inline_Block](Inline_Block.md)
 
 # Type of Value
 - [Type](Type.md)
@@ -46,9 +46,9 @@
 - [Module](Module.md)
 - [Accessibility](Accessibility.md)
 - [DeclSymbol](DeclSymbol.md)
-- [Identifier Resolution](Identifier%20Resolution.md)
-- [Type Identifier Resolution](Type%20Identifier%20Resolution.md)
+- [Identifier_Resolution](Identifier_Resolution.md)
+- [Type_Identifier_Resolution](Type_Identifier_Resolution.md)
 # Misc
 - [Analysis](Analysis.md)
-- [Builtin Types and Values](Builtin%20Types%20and%20Values.md)
+- [Builtin_Types_and_Values](Builtin_Types_and_Values.md)
 - [Macro](Macro.md)

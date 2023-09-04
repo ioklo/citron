@@ -108,6 +108,23 @@ void Main()
     var* x = &a, y = 3; // 에러
 }
 ```
+
+%%TEST(Decl, 21)%%
+```cs
+void Func()
+{
+    int x = 2;
+    @$x
+}
+
+void Main()
+{
+    int x = 1;
+    Func();
+    @$x
+}
+```
+
 # Temp Variable
 복잡한 expression을 계산하기 위해서는 최종 결과 하나로는 부족할 수 있습니다. sub expression이 value로 평가되고 어딘가에 잠시 저장되어야 할 때, 컴파일러는 이름없는 temp variable을 스택에 만들어서 그 곳에 값을 저장합니다.
 

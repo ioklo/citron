@@ -19,4 +19,5 @@
   "livePreview": true,
   "useMarkdownLinks": true,
   "showInlineTitle": true
+  "readableLineLength": false
 }

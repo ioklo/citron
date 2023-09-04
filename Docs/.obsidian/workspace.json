@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "A table of contents.md",
+                "file": "A_table_of_contents.md",
                 "mode": "source",
                 "source": false
               }
@@ -25,7 +25,55 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Generics.md",
+                "file": "Expression.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "fea28584ba9c77fe",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Builtin_Types_and_Values.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "01042355d39f7da1",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Integer.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "e108bbb6ce95a9ff",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "String.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "4dc80163722ea127",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Identifier_Resolution.md",
                 "mode": "source",
                 "source": false
               }
@@ -68,7 +116,7 @@
             }
           }
         ],
-        "currentTab": 1
+        "currentTab": 5
       }
     ],
     "direction": "vertical"
@@ -97,7 +145,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "inline",
+                "query": "",
                 "matchingCase": false,
                 "explainSearch": false,
                 "collapseAll": false,
@@ -134,7 +182,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Generics.md",
+                "file": "Identifier_Resolution.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -151,7 +199,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Generics.md",
+                "file": "Identifier_Resolution.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -174,7 +222,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Generics.md"
+                "file": "Identifier_Resolution.md"
               }
             }
           }
@@ -195,34 +243,34 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "0a2af51bb2b9a581",
+  "active": "4dc80163722ea127",
   "lastOpenFiles": [
+    "Local_Variable.md",
+    "Boolean.md",
+    "Builtin_Types_and_Values.md",
+    "Integer.md",
+    "String.md",
+    "Struct.md",
+    "Identifier_Resolution.md",
+    "Function.md",
+    "Expression_Binary_Op.md",
+    "Interface.md",
+    "Value_Type.md",
+    "Expression.md",
+    "Accessibility.md",
+    "A_table_of_contents.md",
+    "never.md",
+    "Analysis.md",
+    "Inline_Block.md",
+    "Type_Identifier_Resolution.md",
+    "Generics.md",
+    "Command.md",
+    "Assignment.md",
+    "Task.md",
+    "Enum.md",
     "Program.md",
-    "A table of contents.md",
     "Pointer.md",
     "Local Pointer.md",
-    "Function.md",
-    "Expression.md",
-    "Namespace.md",
-    "Task.md",
-    "DeclSymbol.md",
-    "Assignment.md",
-    "Builtin Types and Values.md",
-    "Analysis.md",
-    "never.md",
-    "Module.md",
-    "Inline Block.md",
-    "Local Variable.md",
-    "Exception.md",
-    "void.md",
-    "Identifier Resolution.md",
-    "Type.md",
-    "Accessibility.md",
-    "Lambda.md",
-    "Sequence.md",
-    "Tuple.md",
-    "Type Identifier Resolution.md",
-    "Using tuples as function arguments.md",
     "Untitled.canvas",
     "Old"
   ]
