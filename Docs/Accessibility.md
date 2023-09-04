@@ -6,7 +6,6 @@
 자식을 가질 수 있는 심볼들은 심볼의 종류별로 자식의 기본 접근성이 있습니다. `module`은  `private`, `struct`는 `public`, `class`는 `private`을 자식들의 기본 접근성으로 설정합니다. 이 동작을 바꾸고 싶으면 자식 노드 정의에 Access Modifier를 써서 접근성을 변경합니다. 앞에 붙인 Access Modifier가 기본 접근성이어서 의미가 없는 modifier라면 컴파일 도중에 에러가 납니다.
 
 
-
 # 타입 단위 접근성 설정
 
 {`class`, `struct`, `enum`, `interface` 등} 타입 정의 시, 멤버 {타입, 함수, 변수} 정의 앞에 { `public`, `private`, `protected`등 } 키워드를 붙이면, 타입 단위 접근성을 설정할 수 있습니다. 

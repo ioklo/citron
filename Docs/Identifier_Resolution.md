@@ -76,5 +76,10 @@ namespace N1 {
 }
 ```
 
+// 그래서 가능한 케이스
+[Local_Variable]
+[Lambda_Member_Variable]
+
+
 # 관련 정보
-[Type Identifier Resolution](Type%20Identifier%20Resolution.md)
+[Type_Identifier_Resolution](Type_Identifier_Resolution.md)
