@@ -13,9 +13,13 @@ class ExtractTestsFromDocs
 
     static Regex regex = new Regex(@$"(({notTestAnnotation})|({todoAnnotation})|({testAnnotation}))?```(\w+)?\s+(?<TestCode>([^`]+|`[^`]|``[^`])*)```");
 
+    static HashSet<string> prevExtractedTestCodes = new HashSet<string>();
+
     static void HandleFile(string file, string outputDirPath)
     {
         string text = File.ReadAllText(file);
+
+        string mdFileName = Path.GetFileNameWithoutExtension(file);
         
         int totalCount = 0;
         int handledCount = 0;
@@ -46,8 +50,22 @@ class ExtractTestsFromDocs
                         Directory.CreateDirectory(outputDirPath);
 
                     var testCode = match.Groups["TestCode"].Value;
-                    var testCodePath = Path.Combine(outputDirPath, $"{testName}.ct");
-                    File.WriteAllText(testCodePath, testCode);
+                    var fileName = $"{mdFileName}_{testName}.ct";
+                    var testCodePath = Path.Combine(outputDirPath, fileName);
+
+                    // TODO: 디렉토리까지도 포함
+                    prevExtractedTestCodes.Remove(fileName);
+
+                    if (File.Exists(testCodePath))
+                    {
+                        var prevTestCode = File.ReadAllText(testCodePath);
+                        if (prevTestCode != testCode)
+                            File.WriteAllText(testCodePath, testCode);
+                    }
+                    else
+                    {
+                        File.WriteAllText(testCodePath, testCode);
+                    }
                 }
             }
 
@@ -65,10 +83,29 @@ class ExtractTestsFromDocs
 
         Console.WriteLine(testCodePath);
 
+        foreach(var prevExtractedTestCode in Directory.GetFiles(testCodePath, "*.ct", SearchOption.TopDirectoryOnly))
+        {
+            var relPath = Path.GetRelativePath(testCodePath, prevExtractedTestCode);
+            prevExtractedTestCodes.Add(relPath);
+        }
+
         foreach (var file in Directory.GetFiles(docsPath, "*.md", SearchOption.AllDirectories))
         {
             HandleFile(file, testCodePath);
         }
+
+        if (prevExtractedTestCodes.Count != 0)
+        {   
+            foreach (var prevExtractedTestCode in prevExtractedTestCodes)
+            {
+                if (prevExtractedTestCode.Length != 0 && !prevExtractedTestCode.Contains("*") && prevExtractedTestCode != "\\")
+                {
+                    Console.WriteLine($"deleting useless test codes {prevExtractedTestCode}");
+                    File.Delete(Path.Combine(testCodePath, prevExtractedTestCode));
+                }
+            }
+        }
+
     }
 }
 

@@ -2,7 +2,7 @@
 Discriminated Union, Algebraic Data Type
 기존 C/C++의 enum과 비슷하지만, 멤버변수와 함께 넣을 수 있습니다.
 
-%%TEST(Enum_Complex, 1300)%%
+%%TEST(Complex, 1300)%%
 ```csharp
 // 선언
 enum Coord2D<T>
@@ -34,7 +34,7 @@ void Main()
 enum case는 멤버변수가 없는 standalone 형식, 멤버변수가 있는 형식 두가지 형식이 있습니다. 두 형식 모두 생성시 enum case 타입이 아닌 부모 enum타입으로 생성합니다. var를 이용한 local variable선언시 에도 variable의 타입은 부모 enum 타입입니다. 이렇게 해야 다른 case를 대입하기 수월합니다. enum case타입을 직접 쓰는 경우는 패턴매칭 등에서 각각의 멤버변수에 접근해야 할 때 입니다.
 
 standalone을 생성할땐 괄호 없이 그냥 써주면 됩니다.
-%%TEST(Enum_ConstructStandalone, )%%
+%%TEST(ConstructStandalone, )%%
 ```
 enum E { First }
 
@@ -46,7 +46,7 @@ void Main()
 ```
 
 멤버변수가 있는 타입은 함수처럼 인자를 주어서 생성합니다.
-%%TEST(Enum_ConstructWIthArgument, 2)%%
+%%TEST(ConstructWIthArgument, 2)%%
 ```
 enum E { Second(int x) }
 
@@ -57,7 +57,7 @@ void Main()
 ```
 
 # Generics
-%%TEST(Enum_Generics, Hi)%%
+%%TEST(Generics, Hi)%%
 ```
 enum Option<T>
 {
@@ -78,7 +78,7 @@ if (s is Option<string>.Some some)
 ## if test
 `if (<exp> is <enum_case> <variable>?) { ... } ` 형식을 사용해서 패턴 매칭을 할 수 있습니다. `optional variable`은 테스트가 성공했을때 할당할 지역 변수입니다. 지역변수를 할당하지 않도록 생략 가능합니다
 
-%%TEST(Enum_IfTest, true)%%
+%%TEST(IfTest, true)%%
 ```
 enum E { First, Second(int x) }
 
@@ -112,7 +112,7 @@ case <enum_case> <optional_var_name>:
 
 로컬변수가 만들어지는 경우 모두 값을 복사 하게 됩니다.
 
-%%TEST(Enum_SwitchTest, 2)%%
+%%TEST(SwitchTest, 2)%%
 ```
 enum E { First, Second(int x, bool y), Third(string s) }
 void Main()
@@ -200,7 +200,7 @@ Animal3 animal32 = Mammal.Cat(2); // 생성 후, conversion
 expression의 타입이 enum타입인 것을 미리 알 수 있을 때, Enum의 case 중 하나를 사용하려고 하는 경우, Enum명을 생략하고 .부터 시작할 수 있습니다.
 
 로컬변수 초기화, 대입의 값 부분, 함수 인자, 함수 리턴에서 사용할 수 있습니다
-%%TEST(Enum_TypeHint, )%%
+%%TEST(TypeHint, )%%
 ```
 enum E 
 {

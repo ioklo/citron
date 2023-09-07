@@ -22,7 +22,7 @@ void Main()
 bool형 간에는 두 값이 같은지 비교할 수 있습니다.
 - (bool, bool) -> bool: { == }
 
-%%TEST(Bool, false true true true false false true false true true false)%%
+%%TEST(BinOp, false true true true false false true false true true false)%%
 ```
 void Main()
 {

@@ -73,7 +73,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Identifier_Resolution.md",
+                "file": "A_table_of_contents.md",
                 "mode": "source",
                 "source": false
               }
@@ -182,7 +182,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Identifier_Resolution.md",
+                "file": "A_table_of_contents.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -199,7 +199,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Identifier_Resolution.md",
+                "file": "A_table_of_contents.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -222,7 +222,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Identifier_Resolution.md"
+                "file": "A_table_of_contents.md"
               }
             }
           }
@@ -245,20 +245,21 @@
   },
   "active": "4dc80163722ea127",
   "lastOpenFiles": [
-    "Local_Variable.md",
+    "Expression.md",
+    "A_table_of_contents.md",
+    "Accessibility.md",
+    "Enum.md",
     "Boolean.md",
     "Builtin_Types_and_Values.md",
+    "Identifier_Resolution.md",
+    "Local_Variable.md",
     "Integer.md",
     "String.md",
     "Struct.md",
-    "Identifier_Resolution.md",
     "Function.md",
     "Expression_Binary_Op.md",
     "Interface.md",
     "Value_Type.md",
-    "Expression.md",
-    "Accessibility.md",
-    "A_table_of_contents.md",
     "never.md",
     "Analysis.md",
     "Inline_Block.md",
@@ -267,7 +268,6 @@
     "Command.md",
     "Assignment.md",
     "Task.md",
-    "Enum.md",
     "Program.md",
     "Pointer.md",
     "Local Pointer.md",
