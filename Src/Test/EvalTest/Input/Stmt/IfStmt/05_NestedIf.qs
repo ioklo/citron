@@ -1,5 +1,10 @@
-// 
+// completed
 
-if (false)
-    if (true) {}
-    else @wrong
+void Main()
+{
+    if (false)
+        if (true) {}
+        else @wrong
+
+    @completed
+}

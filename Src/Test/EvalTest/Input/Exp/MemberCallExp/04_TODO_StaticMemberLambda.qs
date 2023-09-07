@@ -2,14 +2,18 @@
 
 class C
 {
-    public static (int => void) F;
+    public static func<int, void> F;
 }
 
-C.F = i => {
-    @$i
-});
+void Main()
+{
+    C.F = i => {
+        @$i
+    };
 
-C.F(2);
 
-var c = new C();
-c.F(3);
+    C.F(2);
+
+    var c = new C();
+    c.F(3);
+}

@@ -1,7 +1,9 @@
 ﻿// true false false true
 
-bool t = true;
-bool f = false;
+void Main()
+{
+    bool t = true;
+    bool f = false;
 
-@$t ${!t} $f ${!f}
-
+    @$t ${!t} $f ${!f}
+}

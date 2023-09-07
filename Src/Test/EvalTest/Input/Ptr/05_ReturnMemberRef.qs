@@ -3,15 +3,15 @@ struct S
 {
     int x;
 
-    ref int GetX()
+    int* GetX()
     {
-        return ref x;
+        return &x; // this의 라이프 타임
     }
 }
 
 var s = S(3);
-var x = GetX();
+var* x = GetX();
 
-x = 4;
+*x = 4;
 
 @${s.x}

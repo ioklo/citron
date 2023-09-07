@@ -8,10 +8,13 @@ class C
     }
 }
 
-var f = C.F;
+void Main()
+{
+    var f = C.F;
 
-var c = new C();
-var f2 = c.F;
+    var c = new C();
+    var f2 = c.F;
 
-f(2);
-f2(3);
+    f(2);
+    f2(3);
+}

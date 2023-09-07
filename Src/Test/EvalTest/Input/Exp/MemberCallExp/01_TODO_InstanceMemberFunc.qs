@@ -15,5 +15,8 @@ class X
     public X(int x) { this.x = x; }
 }
 
-X x = new X(2);
-x.F(4);
+void Main()
+{
+    X x = new X(2);
+    x.F(4);
+}

@@ -5,6 +5,8 @@ void Func()
     @hi
 }
 
-func<void> f = Func;
-
-f();
+void Main()
+{
+    func<void> f = Func;
+    f();
+}

@@ -9,7 +9,10 @@ seq int F()
     }
 }
 
-foreach(var e in F())
+void Main()
 {
-    @$e
+    foreach(var e in F())
+    {
+        @$e
+    }
 }

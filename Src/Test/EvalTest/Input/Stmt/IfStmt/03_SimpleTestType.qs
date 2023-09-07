@@ -1,7 +1,10 @@
 // succeed
 
-var s2 = "hi";
-if (s2 is string)
+void Main()
 {
-    @succeed
+    var s2 = "hi";
+    if (s2 is string)
+    {
+        @succeed
+    }
 }

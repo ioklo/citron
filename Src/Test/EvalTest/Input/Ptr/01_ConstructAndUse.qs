@@ -1,6 +1,9 @@
 ﻿// 3
 
-int s = 3;
-var i = ref s; // i: ref int
+void Main()
+{
+    int s = 3;
+    var* i = &s;
 
-@{$i} // 이후에 i는 int로 보여야 한다
+    @{${*i}}
+}

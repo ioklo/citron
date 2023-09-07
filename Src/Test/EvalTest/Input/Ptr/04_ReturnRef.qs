@@ -1,11 +1,12 @@
 ﻿// 4
 
-ref int F(ref int i)
+int* F(int* i)
 {
-    return ref i; // 
+    return i; // 
 }
 
 int x = 3;
-var y = F(ref x);
-y = 4;
+var* y = F(&x);
+*y = 4;
+
 @$y

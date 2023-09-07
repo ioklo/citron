@@ -1,8 +1,11 @@
 // start
 
-@start
+int Main()
+{
+    @start
 
-// exitcode가 1이다
-return 1;
+    // exitcode가 1이다
+    return 1;
 
-@wrong
+    @wrong
+}

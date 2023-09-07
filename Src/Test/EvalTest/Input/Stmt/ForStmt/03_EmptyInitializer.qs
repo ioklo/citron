@@ -1,6 +1,9 @@
 // 01234
 
-int i = 0;
+void Main()
+{
+    int i = 0;
 
-for(; i < 5; i++)
-    @$i
+    for(; i < 5; i++)
+        @$i
+}

@@ -1,9 +1,12 @@
 ﻿// $Error
 
+void Main()
 {
-    int x = 3;
-    var l = () => x; // l은 local-ref-contained(x)
-    var p = l;       // p는 local-ref-contained(x), 전파
+    int i = 3;
+    int* x = &i;
 
-    var s = box p;   // 에러, p는 local-ref-contained(x)
+    var l = () => *x; // l은 local-ptr-contained
+    var p = l;        // p는 local-ptr-contained, 전파
+
+    var s = box p;   // 에러, p는 local을 갖고 있으므로 boxing 불가
 }

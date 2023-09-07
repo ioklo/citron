@@ -1,9 +1,12 @@
 // 123end
 
-for (int i = 1; i < 6; i++)
+void Main()
 {
-    @$i
-    if (i % 3 == 0) break;
-}
+    for (int i = 1; i < 6; i++)
+    {
+        @$i
+        if (i % 3 == 0) break;
+    }
 
-@end
+    @end
+}

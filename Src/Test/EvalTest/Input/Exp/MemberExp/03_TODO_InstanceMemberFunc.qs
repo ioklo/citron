@@ -15,8 +15,9 @@ class C
     }
 }
 
-var c = new C(2);
-
-var f = c.F;
-
-f();
+void Main()
+{
+    var c = new C(2);
+    var f = c.F;
+    f();
+}

@@ -1,5 +1,5 @@
 ﻿// $Error
 
-int i;
-ref S p = ref i; // uninitialized도 트래킹 해야 하나
-@{$p} // 에러, uninitialized
+int i;       // uninitialized
+int* p = &i; // 에러, uninitialized는 포인터로 가리킬 수 없습니다
+@{$p} 

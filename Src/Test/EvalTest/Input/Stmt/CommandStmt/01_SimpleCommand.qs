@@ -1,3 +1,6 @@
 // hi
 
-@hi
+void Main()
+{
+    @hi
+}

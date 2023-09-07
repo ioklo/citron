@@ -2,9 +2,9 @@
 {
     int x;
 
-    ref int F()
+    int* F()
     {
-        return ref x;
+        return &x;
     }
 }
 

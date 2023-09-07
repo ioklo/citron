@@ -8,5 +8,8 @@ seq int Func()
     return;
 }
 
-foreach(var i in Func())
-    @$i
+void Main()
+{
+    foreach(var i in Func())
+        @$i
+}

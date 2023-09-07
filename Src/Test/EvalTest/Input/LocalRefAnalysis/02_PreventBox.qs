@@ -10,5 +10,8 @@ struct S
     }
 }
 
-S s = S(3);
-seq<int> sq = box s.F(); // 에러, box 불가
+void Main()
+{
+    S s = S(3);
+    seq<int> sq = box s.F(); // 에러, box 불가
+}

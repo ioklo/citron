@@ -9,4 +9,7 @@ seq string F()
     @1
 }
 
-foreach(var i in F());
+void Main()
+{
+    foreach(var i in F());
+}

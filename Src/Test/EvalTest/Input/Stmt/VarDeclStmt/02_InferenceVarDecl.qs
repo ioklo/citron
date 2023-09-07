@@ -5,12 +5,14 @@ int MakeInt()
     return 3;
 }
 
-var i = MakeInt();
-var s = "hello";
-var b = false;
-var l = [1, 2, 3, 4];
+void Main()
+{
+    var i = MakeInt();
+    var s = "hello";
+    var b = false;
+    var l = [1, 2, 3, 4];
 
-var le = l[2];
+    var le = l[2];
 
-@$i $s $b $le
-
+    @$i $s $b $le
+}

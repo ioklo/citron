@@ -5,5 +5,8 @@ string F(int i, string j)
     return "$i $j";
 }
 
-var p = F(2, "hello");
-@$p
+void Main()
+{
+   var p = F(2, "hello");
+    @$p
+}

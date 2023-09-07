@@ -9,4 +9,7 @@ void F()
     @wrong
 }
 
-F();
+void Main()
+{
+    F();
+}

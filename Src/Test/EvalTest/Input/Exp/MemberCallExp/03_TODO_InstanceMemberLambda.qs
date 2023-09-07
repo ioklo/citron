@@ -2,16 +2,19 @@
 
 class C
 {
-    public (int => void) F;
+    public func<int, void> F;
 
-    public C((int => void) F)
+    public C(func<int, void> F)
     {
         this.F = F;
     }
 }
 
-C c = new C(i => {
-    @$i
-});
+void Main()
+{
+    C c = new C(i => {
+        @$i
+    });
 
-c.F(2);
+    c.F(2);
+}

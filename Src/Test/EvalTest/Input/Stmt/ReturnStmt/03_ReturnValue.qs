@@ -9,4 +9,7 @@ int F(int i)
     @wrong
 }
 
-@${F(3)}
+void Main()
+{
+    @${F(3)}
+}

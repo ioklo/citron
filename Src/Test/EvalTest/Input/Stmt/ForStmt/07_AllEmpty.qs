@@ -1,9 +1,12 @@
 // 01234
 
-int i = 0;
-for(;;)
+void Main()
 {
-    if (5 <= i) break;
-    @$i
-    i++;
+    int i = 0;
+    for(;;)
+    {
+        if (5 <= i) break;
+        @$i
+        i++;
+    }
 }

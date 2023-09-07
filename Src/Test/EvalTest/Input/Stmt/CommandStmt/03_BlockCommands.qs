@@ -1,16 +1,19 @@
-//     <- no ignore 4 blanks    hello world    good
+//         <- no ignore 8 blanks    hello world        good
 
-// plain, ignore blank lines, trailing blanks
-@{
+void Main()
+{
+    // plain, ignore blank lines, trailing blanks
+    @{
 
-    <- no ignore 4 blanks
-    
-    hello world
+        <- no ignore 8 blanks
+        
+        hello world
 
-}
+    }
 
-// with other statements
-if (true)
-@{
-    good
+    // with other statements
+    if (true)
+    @{
+        good
+    }
 }

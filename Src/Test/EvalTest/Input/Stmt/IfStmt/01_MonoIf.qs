@@ -1,8 +1,11 @@
 // good
 
-if (1 < 2) @good
+void Main()
+{
+    if (1 < 2) @good
 
-if (1 > 2)
-{ 
-    @bad
+    if (1 > 2)
+    { 
+        @bad
+    }
 }
