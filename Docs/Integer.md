@@ -16,12 +16,23 @@ void Main()
 }
 ```
 
+# 정수형 간에 미리 정의된 단항 연산, 대입 연산
+%%TEST(UnaryOperation, -3 3 -3 -2 -2 -3)%%
+```cs
+void Main()
+{
+    int i = -3;
+    @$i ${-i}
+    @ ${i++} ${i--} ${++i} ${--i}
+}
+```
+
 # 정수형 간에 미리 정의된 이항 연산
 정수형끼리는 덧셈, 뺄셈, 곱셈, 나눗셈, 나머지 연산을 할 수 있습니다. 정수형끼리 비교도 가능합니다.
 - (int, int) -> int: { +, -, \*, /, % }
 - (int, int) -> bool: { <, >, <=, >=, == }
 
-%%TEST(Int, -3 4 4 false true true -4 -6 -26 2 3 true false true true false false true false true true)%%
+%%TEST(BinaryOperation, -3 4 4 false true true -4 -6 -26 2 3 true false true true false false true false true true)%%
 ```cs
 void Main()
 {

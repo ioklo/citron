@@ -5,15 +5,18 @@
 심볼 경로 필요 없이 `bool` 이라고 쓰면 됩니다. 실제 타입은 `System.Boolean`입니다
 
 # Value
-`true`, `false` 두가지 값만 존재합니다. struct type이지만 생성자를 써서 만들지 않고, 내장된 literal을 사용해서 생성합니다.
 
-%%TEST(Literal, true false)%%
+
+# bool형을 인자로 받는 미리 정의된 단항 연산
+- bool -> bool: {!}
+%%TEST(UnaryOperation, true false false true)%%
 ```
 void Main()
 {
     bool t = true;
     bool f = false;
-    @$t $f
+
+    @$t ${!t} $f ${!f}
 }
 ```
 
@@ -37,3 +40,6 @@ void Main()
     @ ${false != false} ${false != true} ${true != false} ${true != true}
 }
 ```
+
+# Reference
+[Bool_Literal_Expression](Bool_Literal_Expression.md)

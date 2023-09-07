@@ -21,4 +21,4 @@ void Main()
 
 이 프로그램은 Main전역함수에 대한 정의와 본문을 가지고 있습니다. `EntryId`는 별도로 정하지 않았기 때문에 `Main`이 됩니다. 외부 모듈 로딩 정보로 런타임 라이브러리 모듈을 로딩정보를 갖고 있습니다.
 
-본문의 `@`는 command statement입니다. 따로 command provider를 정하지 않았기 때문에 기본적인 `echo` 역할을 합니다. 자세한 사항은 [[Command]] 에서 다룹니다. 
+본문의 `@`는 command statement입니다. 따로 command provider를 정하지 않았기 때문에 기본적인 `echo` 역할을 합니다. 자세한 사항은 [[Command_Statement]] 에서 다룹니다. 

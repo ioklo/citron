@@ -1,5 +1,14 @@
 # General
 
+%%TODO%%
+```
+// Hello
+
+void Main()
+{
+    TestModule.StaticFunc("Hello");
+}
+```
 
 
 ```csharp

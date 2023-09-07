@@ -1,6 +1,0 @@
-// hi
-
-void Main()
-{
-    @hi
-}

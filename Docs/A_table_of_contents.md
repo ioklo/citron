@@ -11,20 +11,20 @@
  - Decl Space
  - Asynchronous Tasks
 # Evaluation
-- [Expression](Expression.md)
+- [Expressions](Expressions.md)
     - Value
     - Location
-- [Local_Variable](Local_Variable.md)
+- [Local_Variable_Declaration_Statement](Local_Variable_Declaration_Statement.md)
 - Branch
 - Loop
 - [Assignment](Assignment.md)
 - [Function](Function.md)
-- [Lambda](Lambda.md)
+- [Lambda_Expression](Lambda_Expression.md)
 - [Sequence](Sequence.md)
 - [Task](Task.md)
-- [Command](Command.md)
+- [Command_Statement](Command_Statement.md)
 - [Exception](Exception.md)
-- [Inline_Block](Inline_Block.md)
+- [Inline_Block_Expression](Inline_Block_Expression.md)
 
 # Type of Value
 - [Type](Type.md)
