@@ -1,4 +1,5 @@
 {
   "alwaysUpdateLinks": true,
-  "livePreview": false
+  "livePreview": false,
+  "readableLineLength": false
 }

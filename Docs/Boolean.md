@@ -42,4 +42,4 @@ void Main()
 ```
 
 # Reference
-[Bool_Literal_Expression](Bool_Literal_Expression.md)
+[Boolean_Literal_Expression](Boolean_Literal_Expression.md)
