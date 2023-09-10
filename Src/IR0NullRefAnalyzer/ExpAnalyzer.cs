@@ -122,7 +122,7 @@ namespace Citron.IR0Analyzer.NullRefAnalysis
             value.SetNotNull();
         }
 
-        public void VisitCallValueExp(R.CallValueExp callValueExp, AbstractValue value)
+        public void VisitCallValueExp(R.CallLambdaExp callValueExp, AbstractValue value)
         {
             value.SetUnknown();
         }

@@ -42,7 +42,7 @@ struct CoreExpIR0ExpTranslator
             // int? i = null;
             if (hintType is NullableType nullableHintType)
             {
-                return Valid(new R.NewNullableExp(null, nullableHintType));
+                return Valid(new R.NullableNullLiteralExp(nullableHintType));
             }
         }
 

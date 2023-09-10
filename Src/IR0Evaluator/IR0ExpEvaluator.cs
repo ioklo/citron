@@ -604,8 +604,13 @@ namespace Citron
             // E e = (E)E.First;
             var enumResult = (EnumValue)result;
 
-            enumResult.SetEnumElemId(exp.EnumElem.GetSymbolId());
+            enumResult.SetEnumElemId(exp.Symbol.GetSymbolId());
             await EvalAsync(exp.Src, context, enumResult.GetElemValue());
+        }
+
+        ValueTask IIR0ExpVisitor<ValueTask>.VisitNullableNullLiteral(NullableNullLiteralExp exp)
+        {
+            throw new NotImplementedException();
         }
 
         ValueTask IIR0ExpVisitor<ValueTask>.VisitNewNullable(NewNullableExp exp)
@@ -620,7 +625,7 @@ namespace Citron
         }
 
         // CallValue라기 보다 CallLambda (func<>는 invoke인터페이스 함수 호출로 미리 변경된다)
-        async ValueTask IIR0ExpVisitor<ValueTask>.VisitCallValue(CallValueExp exp)
+        async ValueTask IIR0ExpVisitor<ValueTask>.VisitCallValue(CallLambdaExp exp)
         {
             var lambda = exp.Lambda;
 
@@ -654,11 +659,14 @@ namespace Citron
             await stmtEvaluator.EvalBodySkipYieldAsync(body);
         }
 
-        ValueTask IIR0ExpVisitor<ValueTask>.CastBoxedLambdaToFunc(CastBoxedLambdaToFuncExp castBoxedLambdaToFuncExp)
+        ValueTask IIR0ExpVisitor<ValueTask>.CastBoxedLambdaToFunc(CastBoxedLambdaToFuncExp exp)
         {
             throw new NotImplementedException();
         }
 
-        
+        ValueTask IIR0ExpVisitor<ValueTask>.VisitInlineBlock(InlineBlockExp exp)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

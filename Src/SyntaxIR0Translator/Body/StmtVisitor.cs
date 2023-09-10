@@ -695,7 +695,7 @@ partial struct StmtVisitor : IStmtVisitor
             case R.CallGlobalFuncExp:
             case R.CallClassMemberFuncExp:
             case R.CallStructMemberFuncExp:
-            case R.CallValueExp:
+            case R.CallLambdaExp:
                 return true;
 
             default:
