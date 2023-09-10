@@ -1,6 +1,6 @@
 Expression은 값을 계산합니다. 
-Expression은 계산된 값을 저장할 위치를 명령어에 가지고 있지 않습니다.
-Expression은 런타임에 실행환경이 가리키는 Result에 계산된 값을 저장합니다.
+Expression은 계산된 값을 저장할 위치를 갖고 있지 않습니다.
+Expression은 런타임에 실행환경이 가리키는 result에 계산된 값을 저장합니다.
 
 [Load_Expression](Load_Expression.md)
 [Assign_Expression](Assign_Expression.md)
@@ -17,8 +17,8 @@ Expression은 런타임에 실행환경이 가리키는 Result에 계산된 값�
 [List_Expression](List_Expression.md)
 [List_Iterator_Expression](List_Iterator_Expression.md)
 [Call_Global_Function_Expression](Call_Global_Function_Expression.md)
-[New_Class_Expression](New_Class_Expression.md)
 
+[New_Class_Expression](New_Class_Expression.md)
 [Call_Class_Member_Function_Expression](Call_Class_Member_Function_Expression.md)
 [Cast_Class_Expression](Cast_Class_Expression.md)
 
@@ -29,6 +29,8 @@ Expression은 런타임에 실행환경이 가리키는 Result에 계산된 값�
 [Cast_Enum_Element_To_Enum_Expression](Cast_Enum_Element_To_Enum_Expression.md)
 
 [New_Nullable_Expression](New_Nullable_Expression.md)
+[Nullable_Null_Literal_Expression](Nullable_Null_Literal_Expression.md)
+
 [Lambda_Expression](Lambda_Expression.md)
 [Call_Lambda_Expression](Call_Lambda_Expression.md)
 [Inline_Block_Expression](Inline_Block_Expression.md)
@@ -36,8 +38,6 @@ Expression은 런타임에 실행환경이 가리키는 Result에 계산된 값�
 [Call_Internal_Unary_Operator_Expression](Call_Internal_Unary_Operator_Expression.md)
 [Call_Internal_Unary_Assign_Operator_Expression](Call_Internal_Unary_Assign_Operator_Expression.md)
 [Call_Internal_Binary_Operator_Expression](Call_Internal_Binary_Operator_Expression.md)
-
-
 
 # Value
 value는 데이터입니다. value는 type으로 대표됩니다. 같은 type의 value는 value를 저장하기 위해 필요한 메모리의 크기가 같습니다. value는 자체로 저장될 위치를 갖고 있지 않습니다. value를 만들어내는 expression이 쓰이는 위치에 따라 value이 저장되는 행동이 결정됩니다.

@@ -336,7 +336,7 @@ struct CallableAndArgsBinder : IIntermediateExpVisitor<TranslationResult<R.Exp>>
 
         if (match != null)
         {
-            return Valid(new R.CallValueExp(lambdaSymbol, callableLoc, match.Value.Args));
+            return Valid(new R.CallLambdaExp(lambdaSymbol, callableLoc, match.Value.Args));
         }
         else
         {

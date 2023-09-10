@@ -222,7 +222,7 @@ namespace Citron.IR0
 
         public ExpStmt Call(LambdaSymbol lambda, Loc loc, params Argument[] args)
         {
-            return new ExpStmt(new CallValueExp(lambda, loc, args.ToImmutableArray()));
+            return new ExpStmt(new CallLambdaExp(lambda, loc, args.ToImmutableArray()));
         }
 
         #endregion

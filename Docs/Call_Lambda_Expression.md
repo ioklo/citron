@@ -1,3 +1,13 @@
+%%NOTTEST%%
+```
+<exp>(<argument>, ...) // exp가 lambda value로 계산될 때
+```
+
+%%NOTTEST%%
+```
+CallLambdaExp(LambdaSymbol symbol, Loc callable, [Argument] args)
+```
+
 %%TEST(General, 1 3 true)%%
 ```cs
 void Main()
@@ -50,3 +60,8 @@ void Main()
     C.F(2);
 }
 ```
+
+# Reference
+[Lambda](Lambda.md)
+[Locations](Locations.md)
+[Argument](Argument.md)

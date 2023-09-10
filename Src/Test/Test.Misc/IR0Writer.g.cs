@@ -382,9 +382,11 @@ namespace Citron.Test
                 case Citron.IR0.CallStructMemberFuncExp @callStructMemberFuncExp: Write_CallStructMemberFuncExp(@callStructMemberFuncExp); break;
                 case Citron.IR0.NewEnumElemExp @newEnumElemExp: Write_NewEnumElemExp(@newEnumElemExp); break;
                 case Citron.IR0.CastEnumElemToEnumExp @castEnumElemToEnumExp: Write_CastEnumElemToEnumExp(@castEnumElemToEnumExp); break;
+                case Citron.IR0.NullableNullLiteralExp @nullableNullLiteralExp: Write_NullableNullLiteralExp(@nullableNullLiteralExp); break;
                 case Citron.IR0.NewNullableExp @newNullableExp: Write_NewNullableExp(@newNullableExp); break;
                 case Citron.IR0.LambdaExp @lambdaExp: Write_LambdaExp(@lambdaExp); break;
-                case Citron.IR0.CallValueExp @callValueExp: Write_CallValueExp(@callValueExp); break;
+                case Citron.IR0.CallLambdaExp @callLambdaExp: Write_CallLambdaExp(@callLambdaExp); break;
+                case Citron.IR0.InlineBlockExp @inlineBlockExp: Write_InlineBlockExp(@inlineBlockExp); break;
                 default: throw new System.Diagnostics.UnreachableException();
             }
         }
@@ -766,7 +768,16 @@ namespace Citron.Test
             itw.Write("new Citron.IR0.CastEnumElemToEnumExp(");
             writer1.Write_Exp(@castEnumElemToEnumExp.Src);
             itw1.WriteLine(",");
-            writer1.Write_ISymbolNode(@castEnumElemToEnumExp.EnumElem);
+            writer1.Write_ISymbolNode(@castEnumElemToEnumExp.Symbol);
+            itw.Write(")");
+        }
+
+        public void Write_NullableNullLiteralExp(Citron.IR0.NullableNullLiteralExp? @nullableNullLiteralExp)
+        {
+            if (@nullableNullLiteralExp == null) { itw.Write("null"); return; }
+
+            itw.Write("new Citron.IR0.NullableNullLiteralExp(");
+            this.Write_IType(@nullableNullLiteralExp.innerType);
             itw.Write(")");
         }
 
@@ -774,14 +785,8 @@ namespace Citron.Test
         {
             if (@newNullableExp == null) { itw.Write("null"); return; }
 
-            var itw1 = itw.Push();
-            var writer1 = new IR0Writer(itw1);
-            itw1.WriteLine();
-
             itw.Write("new Citron.IR0.NewNullableExp(");
-            writer1.Write_Exp(@newNullableExp.ValueExp);
-            itw1.WriteLine(",");
-            writer1.Write_IType(@newNullableExp.Type);
+            this.Write_Exp(@newNullableExp.InnerExp);
             itw.Write(")");
         }
 
@@ -800,20 +805,35 @@ namespace Citron.Test
             itw.Write(")");
         }
 
-        public void Write_CallValueExp(Citron.IR0.CallValueExp? @callValueExp)
+        public void Write_CallLambdaExp(Citron.IR0.CallLambdaExp? @callLambdaExp)
         {
-            if (@callValueExp == null) { itw.Write("null"); return; }
+            if (@callLambdaExp == null) { itw.Write("null"); return; }
 
             var itw1 = itw.Push();
             var writer1 = new IR0Writer(itw1);
             itw1.WriteLine();
 
-            itw.Write("new Citron.IR0.CallValueExp(");
-            writer1.Write_ISymbolNode(@callValueExp.Lambda);
+            itw.Write("new Citron.IR0.CallLambdaExp(");
+            writer1.Write_ISymbolNode(@callLambdaExp.Lambda);
             itw1.WriteLine(",");
-            writer1.Write_Loc(@callValueExp.Callable);
+            writer1.Write_Loc(@callLambdaExp.Callable);
             itw1.WriteLine(",");
-            writer1.Write_ImmutableArray(Write_Argument, "Citron.IR0.Argument", @callValueExp.Args);
+            writer1.Write_ImmutableArray(Write_Argument, "Citron.IR0.Argument", @callLambdaExp.Args);
+            itw.Write(")");
+        }
+
+        public void Write_InlineBlockExp(Citron.IR0.InlineBlockExp? @inlineBlockExp)
+        {
+            if (@inlineBlockExp == null) { itw.Write("null"); return; }
+
+            var itw1 = itw.Push();
+            var writer1 = new IR0Writer(itw1);
+            itw1.WriteLine();
+
+            itw.Write("new Citron.IR0.InlineBlockExp(");
+            writer1.Write_ImmutableArray(Write_Stmt, "Citron.IR0.Stmt", @inlineBlockExp.Stmts);
+            itw1.WriteLine(",");
+            writer1.Write_IType(@inlineBlockExp.ReturnType);
             itw.Write(")");
         }
 

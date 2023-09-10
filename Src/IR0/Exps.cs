@@ -337,11 +337,11 @@ namespace Citron.IR0
     }
 
     // 컨테이너를 enumElem -> enum으로
-    public record CastEnumElemToEnumExp(Exp Src, EnumElemSymbol EnumElem) : Exp
+    public record CastEnumElemToEnumExp(Exp Src, EnumSymbol Symbol) : Exp
     {
         public override IType GetExpType()
         {
-            return ((ITypeSymbol)EnumElem).MakeType();
+            return new EnumType(Symbol);
         }
 
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitCastEnumElemToEnum(this);
@@ -349,13 +349,21 @@ namespace Citron.IR0
     #endregion Enum
 
     #region Nullable
-
-    // TODO: 'New' 단어는 힙할당에만 쓰도록 하자
-    public record class NewNullableExp(Exp? ValueExp, IType Type) : Exp
+    public record class NullableNullLiteralExp(IType innerType) : Exp
     {
         public override IType GetExpType()
         {
-            return Type;
+            return new NullableType(innerType);
+        }
+
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitNullableNullLiteral(this);
+    }
+
+    public record class NewNullableExp(Exp InnerExp) : Exp
+    {
+        public override IType GetExpType()
+        {
+            return new NullableType(InnerExp.GetExpType());
         }
 
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitNewNullable(this);
@@ -381,7 +389,7 @@ namespace Citron.IR0
 
     // f(2, 3)    
     // Callable은 (() => {}) ()때문에 Loc이어야 한다
-    public record class CallValueExp(LambdaSymbol Lambda, Loc Callable, ImmutableArray<Argument> Args) : Exp
+    public record class CallLambdaExp(LambdaSymbol Lambda, Loc Callable, ImmutableArray<Argument> Args) : Exp
     {
         public override IType GetExpType()
         {
@@ -392,4 +400,14 @@ namespace Citron.IR0
     }
 
     #endregion
+
+    public record class InlineBlockExp(ImmutableArray<Stmt> Stmts, IType ReturnType) : Exp
+    {
+        public override IType GetExpType()
+        {
+            return ReturnType;
+        }
+
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitInlineBlock(this);
+    }
 }

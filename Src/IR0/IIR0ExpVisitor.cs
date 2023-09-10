@@ -50,12 +50,15 @@ public interface IIR0ExpVisitor<TResult>
 
     // Nullable
     TResult VisitNewNullable(NewNullableExp exp);
+    TResult VisitNullableNullLiteral(NullableNullLiteralExp exp);
 
     // Lambda
     TResult VisitLambda(LambdaExp exp);
-    TResult VisitCallValue(CallValueExp exp);
+    TResult VisitCallValue(CallLambdaExp exp);
 
     // Func
-    TResult CastBoxedLambdaToFunc(CastBoxedLambdaToFuncExp castBoxedLambdaToFuncExp);
-    
+    TResult CastBoxedLambdaToFunc(CastBoxedLambdaToFuncExp exp);
+
+    // InlineBlock
+    TResult VisitInlineBlock(InlineBlockExp exp);
 }

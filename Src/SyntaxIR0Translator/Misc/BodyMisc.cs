@@ -42,11 +42,11 @@ namespace Citron.Analysis
             // 1. enumElem -> enum
             if (expType is EnumElemSymbol enumElem)
             {
-                if (expectedType is EnumSymbol expectEnumType)
+                if (expectedType is EnumSymbol expectEnum)
                 {
                     if (expectedType.Equals(enumElem.GetOuter()))
                     {
-                        return new R.CastEnumElemToEnumExp(exp, enumElem);
+                        return new R.CastEnumElemToEnumExp(exp, expectEnum);
                     }
                 }
 
