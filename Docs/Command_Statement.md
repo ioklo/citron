@@ -1,4 +1,14 @@
-StringExp
+%%NOTTEST%%
+```
+@<string-body>[\r\n]+ // 한줄짜리
+@{<string-body>}      // 범위 (여러 줄 가능)
+```
+string의 따옴표 안쪽과 같이 취급합니다. 
+
+%%NOTTEST%%
+```
+CommandStmt([StringExp] stringExps)
+```
 
 %%TEST(Basic, hi)%%
 ```cs
@@ -40,3 +50,6 @@ void Main()
     }
 }
 ```
+
+# Reference
+[String_Expression](String_Expression.md)

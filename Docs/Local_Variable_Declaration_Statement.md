@@ -1,5 +1,3 @@
-IType, Exp
-
 # General
 현재 stack frame위의 위치를 가리키고 있는 variable을 local variable이라고 합니다.
 
@@ -8,25 +6,28 @@ IType, Exp
 
 %%NOTTEST%%
 ```
-<LOCALVARDECL> = <TYPEEXP> <VARLIST> ';'
+<local-vardecl> = <type-exp> <var-item>, ... ;
 
-<VARLIST> = <VARITEM>
-          | <VARITEM> ',' <VARLIST>
-
-<VARITEM> = <ID>               // uninitialized
-          | <ID> '=' <EXP>     // with initiailization
+<var-item> = <id>             // uninitialized
+           | <id> = <exp>     // with initiailization
 
 ```
 Type Expression관련은 [TypeExpression](Type.md) 을 참조하세요. 
 
-%%TEST(Basic, 0)%%
+%%NOTTEST%%
 ```
+LocalVarDeclStmt(Type type, string name, Exp? initExp)
+```
+
+%%TEST(Basic, 0)%%
+```cs
 void Main()
 {
     int x = 0;
     @$x
 }
 ```
+
 ## 초기화 구문 생략
 초기화 구문은 생략 가능합니다. 다만 모든 경로에서 대입이 일어나기 전까지는 사용이 불가능합니다 자세한 사항은 uninitialized value analysis 부분을 참조하세요
 
@@ -96,30 +97,34 @@ void Main()
 실수를 방지하기 위해 최종 타입이 local pointer, box pointer, nullable인 타입은 var 단독으로 사용해서 유추할 수 없습니다. 대신 `var*`, `box var*`, `var?` 를 사용합니다
 
 %%TEST(VarWithPointerForPointerValue, )%%
-```
+```cs
 void Main()
 {
     var i = 3;
     var* x = &i;
     box var* y = box 3;
-    var? optI = (int?)null;
+
+	int? i = null;
+    var? optI = i;
 }
 ```
 
 %%TEST(VarWithoutPointerSignForPointerValue, $Error)%%
-```
+```cs
 void Main()
 {
     var i = 3;
     var x = &i; // 에러
     var y = box 3; // 에러
-    var optI = (int?)null; // 에러
+
+	int? i = 3;
+    var optI = i; // 에러
 }
 ```
 
 여러 변수를 `var`타입으로 선언하면, 각각 타입을 유추하게 됩니다.
 %%TEST(MultipleVarItemsInferSeparately, 1 hello 1 false 0 2)%%
-```
+```cs
 void Main()
 {
     int a = 0, x;
@@ -134,7 +139,7 @@ void Main()
 
 local pointer나 box pointer와 함께 var를 쓴 경우, 여러 변수들은 각각 local pointer나 box pointer로 유추하게 됩니다.
 %%TEST(VarWithPointerInferenceSeparately, 0 hi)%%
-```
+```cs
 void Main()
 {
     int a = 0
@@ -145,7 +150,7 @@ void Main()
 ```
 
 %%TEST(VarWithPointerForValue, $Error)%%
-```
+```cs
 void Main()
 {
     int a = 0;
@@ -174,3 +179,7 @@ int t3 = H();
 int x = t2 + t3;
 ```
 마지막 부분은 `x`에 직접 대입할 것이므로 temp variable이 따로 필요하지 않습니다
+
+# Reference
+[Types](Types.md)
+[Expressions](Expressions.md)

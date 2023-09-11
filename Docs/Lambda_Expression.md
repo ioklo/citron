@@ -1,5 +1,24 @@
 함수 본문 공간에서 만들어지는 실행 가능한 값입니다.
 
+%%NOTTEST%%
+```
+<lambda-param> = <type-id> <id> 
+               | <id>
+
+<lambda-body> = { <stmt> ... }
+              | <exp>
+
+
+<type-id>? (<lambda-param>, ...) => <lambda-body>
+<exp> // 함수의 경우
+```
+
+%%NOTTEST%%
+```
+LambdaExp(LambdaSymbol symbol, [Argument] args)
+```
+args는 캡쳐할 변수
+
 %%TEST(Basic, hi)%%
 ```cs
 void Main() 
@@ -30,7 +49,7 @@ void Main()
 변수의 초기화 구문(또는 호출인자)에 함수 이름만 쓰면 람다로 만들어집니다. 
 
 %%TEST(GlobalFunctionAsLambda, hi)%%
-```
+```cs
 void Func()
 {
     @hi
@@ -195,6 +214,5 @@ func<int, int> f = x => x + 2;
 ```
 
 
-
-
-
+# Reference
+[Lambda](Lambda.md)

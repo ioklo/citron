@@ -1,5 +1,5 @@
 %%TEST(ReturnLocalPointer, 4)%%
-```
+```cs
 int* F(int* i)
 {
     return i;
@@ -13,7 +13,7 @@ var* y = F(&x);
 ```
 
 %%TEST(StructThisLifeTime, 4)%%
-```
+```cs
 // 05 
 struct S
 {
@@ -33,7 +33,7 @@ var* x = s.GetX();
 ```
 
 %%TEST(CantReferenceEnumElemMemberVaraible, $Error)%%
-```
+```cs
 // $Error
 enum E
 {
