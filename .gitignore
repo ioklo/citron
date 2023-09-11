@@ -11,6 +11,7 @@
 *.sln.docstates
 .DS_Store
 Src/Test/EvalTest/Input/Generated/
+Docs/.obsidian/
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
