@@ -401,6 +401,8 @@ namespace Citron.IR0
 
     #endregion
 
+    #region Inline
+
     public record class InlineBlockExp(ImmutableArray<Stmt> Stmts, IType ReturnType) : Exp
     {
         public override IType GetExpType()
@@ -410,4 +412,109 @@ namespace Citron.IR0
 
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitInlineBlock(this);
     }
+
+    #endregion Inline
+
+    #region TypeTest
+    public record class ClassIsClassExp(Exp Exp, ClassSymbol Symbol, IType BoolType) : Exp
+    {
+        public override IType GetExpType()
+        {
+            return BoolType;
+        }
+
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitClassIsClassExp(this);
+    }
+
+    public record class ClassAsClassExp(Exp Exp, ClassSymbol Symbol) : Exp
+    {
+        public override IType GetExpType()
+        {
+            return new ClassType(Symbol);
+        }
+
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitClassAsClassExp(this);
+    }
+
+    public record class ClassIsInterfaceExp(Exp Exp, InterfaceSymbol Symbol, IType BoolType) : Exp
+    {
+        public override IType GetExpType()
+        {
+            return BoolType;
+        }
+
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitClassIsInterfaceExp(this);
+    }
+
+    public record class ClassAsInterfaceExp(Exp Exp, InterfaceSymbol Symbol) : Exp
+    {
+        public override IType GetExpType()
+        {
+            return new InterfaceType(Symbol);
+        }
+
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitClassAsInterfaceExp(this);
+    }
+
+    public record class InterfaceIsClassExp(Exp Exp, ClassSymbol Symbol, IType BoolType) : Exp
+    {
+        public override IType GetExpType()
+        {
+            return BoolType;
+        }
+
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitInterfaceIsClassExp(this);
+    }
+
+    public record class InterfaceAsClassExp(Exp Exp, ClassSymbol Symbol) : Exp
+    {
+        public override IType GetExpType()
+        {
+            return new ClassType(Symbol);
+        }
+
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitInterfaceAsClassExp(this);
+    }
+
+    public record class InterfaceIsInterfaceExp(Exp Exp, InterfaceSymbol Symbol, IType BoolType) : Exp
+    {
+        public override IType GetExpType()
+        {
+            return BoolType;
+        }
+
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitInterfaceIsInterfaceExp(this);
+    }
+
+    public record class InterfaceAsInterfaceExp(Exp Exp, InterfaceSymbol Symbol) : Exp
+    {
+        public override IType GetExpType()
+        {
+            return new InterfaceType(Symbol);
+        }
+
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitInterfaceAsInterfaceExp(this);
+    }
+
+    public record class EnumIsEnumElemExp(Exp Exp, EnumElemSymbol Symbol, IType BoolType) : Exp
+    {
+        public override IType GetExpType()
+        {
+            return BoolType;
+        }
+
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitEnumIsEnumElemExp(this);
+    }
+
+    public record class EnumAsEnumElemExp(Exp Exp, EnumElemSymbol Symbol) : Exp
+    {
+        public override IType GetExpType()
+        {
+            return new NullableType(new EnumElemType(Symbol));
+        }
+
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitEnumAsEnumElemExp(this);
+    }
+
+    #endregion TypeTest
 }

@@ -61,4 +61,21 @@ public interface IIR0ExpVisitor<TResult>
 
     // InlineBlock
     TResult VisitInlineBlock(InlineBlockExp exp);
+
+    // Test
+    TResult VisitClassIsClassExp(ClassIsClassExp exp);
+    TResult VisitClassAsClassExp(ClassAsClassExp exp);
+
+    TResult VisitClassIsInterfaceExp(ClassIsInterfaceExp exp);
+    TResult VisitClassAsInterfaceExp(ClassAsInterfaceExp exp);
+
+    TResult VisitInterfaceIsClassExp(InterfaceIsClassExp exp);
+    TResult VisitInterfaceAsClassExp(InterfaceAsClassExp exp);
+
+    TResult VisitInterfaceIsInterfaceExp(InterfaceIsInterfaceExp exp);
+    TResult VisitInterfaceAsInterfaceExp(InterfaceAsInterfaceExp exp);
+
+    TResult VisitEnumIsEnumElemExp(EnumIsEnumElemExp exp);
+    TResult VisitEnumAsEnumElemExp(EnumAsEnumElemExp exp);
+    
 }

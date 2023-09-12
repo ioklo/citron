@@ -140,7 +140,7 @@ partial struct StmtVisitor : IStmtVisitor
                     return Error();
             }
 
-            var stmt = new R.IfTestEnumElemStmt(targetLoc, enumElemType.Symbol, ifTestStmt.VarName, bodyStmts, elseStmts);
+            var stmt = new R.IfNullableValueTestStmt(targetLoc, enumElemType.Symbol, ifTestStmt.VarName, bodyStmts, elseStmts);
             return Stmts(stmt);
         }
         else

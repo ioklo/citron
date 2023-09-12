@@ -1,12 +1,13 @@
+nullable reference가 가능한 타입에 대해서 dynamic cast를 수행하고, 성공시 본문을 수행합니다
+
 %%NOTTEST%%
 ```
-if (<exp> is <class-id>) <embeddable-stmt> else <embeddable-stmt>
-if (<class-id> <name> = <exp>) <embeddable-stmt> else <embeddable-stmt>
+if (<type-exp> <name> = <exp>) <embeddable-stmt> else <embeddable-stmt>
 ```
 
 %%NOTTEST%%
 ```
-IfTestClassStmt(Loc target, ClassSymbol symbol, Name? varName, [Stmt] body, [Stmt] elseBody)
+IfNullableRefTestStmt(Type refType, Name varName, Exp castExp, [Stmt] body, [Stmt] elseBody)
 ```
 
 %%TEST(Basic, succeed)%%
@@ -24,6 +25,7 @@ void Main()
 }
 ```
 
+%%TODO is로 옮길 것%%
 %%TEST(CantTestValueType, $Error)%%
 ```cs
 class C {}
@@ -45,7 +47,7 @@ void Main()
 {
 	var c = new C();
 
-	if (D d = c);
+	if (D d = c); // 미리 잡을 수 있는 경우는 최대한 잡습니다
 }
 ```
 

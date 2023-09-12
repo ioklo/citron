@@ -11,6 +11,7 @@ Expression은 런타임에 실행환경이 가리키는 result에 계산된 값�
 [Struct_Member_Box_Reference_Expression](Struct_Member_Box_Reference_Expression.md)
 [Local_Variable_Reference_Expression](Local_Variable_Reference_Expression.md)
 [Cast_Boxed_Lambda_To_Func_Expression](Cast_Boxed_Lambda_To_Func_Expression.md)
+
 [Boolean_Literal_Expression](Boolean_Literal_Expression.md)
 [Integer_Literal_Expression](Integer_Literal_Expression.md) 
 [String_Expression](String_Expression.md)
@@ -21,6 +22,21 @@ Expression은 런타임에 실행환경이 가리키는 result에 계산된 값�
 [New_Class_Expression](New_Class_Expression.md)
 [Call_Class_Member_Function_Expression](Call_Class_Member_Function_Expression.md)
 [Cast_Class_Expression](Cast_Class_Expression.md)
+
+[Class_Is_ClassExp](Class_Is_ClassExp.md)
+[Class_As_ClassExp](Class_As_ClassExp.md)
+
+[Class_Is_InterfaceExp](Class_Is_InterfaceExp.md)
+[ClassAsInterfaceExp](ClassAsInterfaceExp.md)
+
+[InterfaceIsClassExp](InterfaceIsClassExp.md)
+[InterfaceAsClassExp](InterfaceAsClassExp.md)
+
+[InterfaceIsInterfaceExp](InterfaceIsInterfaceExp.md)
+[InterfaceAsInterfaceExp](InterfaceAsInterfaceExp.md)
+
+[EnumIsEnumElemExp](EnumIsEnumElemExp.md)
+[EnumAsEnumElemExp](EnumAsEnumElemExp.md)
 
 [New_Struct_Expression](New_Struct_Expression.md)
 [Call_Struct_Member_Function_Expression](Call_Struct_Member_Function_Expression.md)

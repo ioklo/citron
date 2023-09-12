@@ -30,15 +30,15 @@ namespace Citron.IR0
     {
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitIf(this);
     }
-
-    public record class IfTestClassStmt(Loc Target, ClassSymbol Class, Name VarName, ImmutableArray<Stmt> Body, ImmutableArray<Stmt> ElseBody) : Stmt
+    
+    public record class IfNullableRefTestStmt(IType RefType, Name VarName, Exp AsExp, ImmutableArray<Stmt> Body, ImmutableArray<Stmt> ElseBody) : Stmt
     {
-        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitIfTestClass(this);
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitIfNullableRefTestStmt(this);
     }
 
-    public record class IfTestEnumElemStmt(Loc Target, EnumElemSymbol EnumElem, string? VarName, ImmutableArray<Stmt> Body, ImmutableArray<Stmt> ElseBody) : Stmt
+    public record class IfNullableValueTestStmt(IType Type, Name VarName, Exp AsExp, ImmutableArray<Stmt> Body, ImmutableArray<Stmt> ElseBody) : Stmt
     {
-        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitIfTestEnumElem(this);
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitIfNullableValueTestStmt(this);
     }
 
     public record class ForStmt(ImmutableArray<Stmt> InitStmts, Exp? CondExp, Exp? ContinueExp, ImmutableArray<Stmt> Body) : Stmt

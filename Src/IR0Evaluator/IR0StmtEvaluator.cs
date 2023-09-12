@@ -239,7 +239,7 @@ namespace Citron
             }
         }
 
-        async IAsyncEnumerable<bool> IIR0StmtVisitor<IAsyncEnumerable<bool>>.VisitIfTestClass(IfTestClassStmt stmt)
+        async IAsyncEnumerable<bool> IIR0StmtVisitor<IAsyncEnumerable<bool>>.VisitIfTestClass(IfNullableRefTestStmt stmt)
         {
             // class B {}, class C<X> : B { }, class D<X> : C<X> { } 의 경우
             // void Func<T>() {
@@ -266,7 +266,7 @@ namespace Citron
             }
         }
 
-        async IAsyncEnumerable<bool> IIR0StmtVisitor<IAsyncEnumerable<bool>>.VisitIfTestEnumElem(IfTestEnumElemStmt stmt)
+        async IAsyncEnumerable<bool> IIR0StmtVisitor<IAsyncEnumerable<bool>>.VisitIfTestEnumElem(IfNullableValueTestStmt stmt)
         {
             var targetValue = await IR0LocEvaluator.EvalAsync(stmt.Target, context) as EnumValue;
             if (targetValue == null)

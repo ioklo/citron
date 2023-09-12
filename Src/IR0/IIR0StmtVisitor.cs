@@ -6,8 +6,8 @@ public interface IIR0StmtVisitor<TResult>
     TResult VisitCommand(CommandStmt stmt);
     TResult VisitLocalVarDecl(LocalVarDeclStmt stmt);
     TResult VisitIf(IfStmt stmt);
-    TResult VisitIfTestClass(IfTestClassStmt stmt);
-    TResult VisitIfTestEnumElem(IfTestEnumElemStmt stmt);
+    TResult VisitIfNullableRefTestStmt(IfNullableRefTestStmt stmt);
+    TResult VisitIfNullableValueTestStmt(IfNullableValueTestStmt stmt);
     TResult VisitFor(ForStmt stmt);
     TResult VisitContinue(ContinueStmt stmt);
     TResult VisitBreak(BreakStmt stmt);

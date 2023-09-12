@@ -846,8 +846,8 @@ namespace Citron.Test
                 case Citron.IR0.CommandStmt @commandStmt: Write_CommandStmt(@commandStmt); break;
                 case Citron.IR0.LocalVarDeclStmt @localVarDeclStmt: Write_LocalVarDeclStmt(@localVarDeclStmt); break;
                 case Citron.IR0.IfStmt @ifStmt: Write_IfStmt(@ifStmt); break;
-                case Citron.IR0.IfTestClassStmt @ifTestClassStmt: Write_IfTestClassStmt(@ifTestClassStmt); break;
-                case Citron.IR0.IfTestEnumElemStmt @ifTestEnumElemStmt: Write_IfTestEnumElemStmt(@ifTestEnumElemStmt); break;
+                case Citron.IR0.IfNullableRefTestStmt @ifTestClassStmt: Write_IfTestClassStmt(@ifTestClassStmt); break;
+                case Citron.IR0.IfNullableValueTestStmt @ifTestEnumElemStmt: Write_IfTestEnumElemStmt(@ifTestEnumElemStmt); break;
                 case Citron.IR0.ForStmt @forStmt: Write_ForStmt(@forStmt); break;
                 case Citron.IR0.ContinueStmt @continueStmt: Write_ContinueStmt(@continueStmt); break;
                 case Citron.IR0.BreakStmt @breakStmt: Write_BreakStmt(@breakStmt); break;
@@ -910,7 +910,7 @@ namespace Citron.Test
             itw.Write(")");
         }
 
-        public void Write_IfTestClassStmt(Citron.IR0.IfTestClassStmt? @ifTestClassStmt)
+        public void Write_IfTestClassStmt(Citron.IR0.IfNullableRefTestStmt? @ifTestClassStmt)
         {
             if (@ifTestClassStmt == null) { itw.Write("null"); return; }
 
@@ -931,7 +931,7 @@ namespace Citron.Test
             itw.Write(")");
         }
 
-        public void Write_IfTestEnumElemStmt(Citron.IR0.IfTestEnumElemStmt? @ifTestEnumElemStmt)
+        public void Write_IfTestEnumElemStmt(Citron.IR0.IfNullableValueTestStmt? @ifTestEnumElemStmt)
         {
             if (@ifTestEnumElemStmt == null) { itw.Write("null"); return; }
 

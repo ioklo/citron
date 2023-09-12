@@ -11,7 +11,12 @@
 *.sln.docstates
 .DS_Store
 Src/Test/EvalTest/Input/Generated/
+<<<<<<< Updated upstream
 .obsidian/
+=======
+Docs/.obsidian/
+
+>>>>>>> Stashed changes
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs

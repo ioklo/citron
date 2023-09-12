@@ -15,8 +15,8 @@ namespace Citron.IR0Analyzer
         void VisitGlobalVarDeclStmt(R.GlobalVarDeclStmt globalVarDeclStmt);
         void VisitLocalVarDeclStmt(R.LocalVarDeclStmt localVarDeclStmt);
         void VisitIfStmt(R.IfStmt ifStmt);
-        void VisitIfTestClassStmt(R.IfTestClassStmt ifTestClassStmt);
-        void VisitIfTestEnumElemStmt(R.IfTestEnumElemStmt ifTestEnumElemStmt);
+        void VisitIfTestClassStmt(R.IfNullableRefTestStmt ifTestClassStmt);
+        void VisitIfTestEnumElemStmt(R.IfNullableValueTestStmt ifTestEnumElemStmt);
         void VisitForStmt(R.ForStmt forStmt);
         void VisitContinueStmt(R.ContinueStmt continueStmt);
         void VisitBreakStmt(R.BreakStmt breakStmt);

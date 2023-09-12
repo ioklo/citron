@@ -179,12 +179,12 @@ namespace Citron.IR0Analyzer.NullRefAnalysis
             }
         }
 
-        void IIR0StmtVisitor.VisitIfTestClassStmt(R.IfTestClassStmt ifTestClassStmt)
+        void IIR0StmtVisitor.VisitIfTestClassStmt(R.IfNullableRefTestStmt ifTestClassStmt)
         {
             throw new NotImplementedException();
         }
 
-        void IIR0StmtVisitor.VisitIfTestEnumElemStmt(R.IfTestEnumElemStmt ifTestEnumElemStmt)
+        void IIR0StmtVisitor.VisitIfTestEnumElemStmt(R.IfNullableValueTestStmt ifTestEnumElemStmt)
         {
             throw new NotImplementedException();
         }
