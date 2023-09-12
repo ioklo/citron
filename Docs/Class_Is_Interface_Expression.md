@@ -1,6 +1,6 @@
 %%NOTTEST%%
 ```
-<exp> is <interface-id>
+<exp> is <interface-type-exp>
 ```
 
 %%NOTTEST%%

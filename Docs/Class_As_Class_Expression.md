@@ -1,6 +1,6 @@
 %%NOTTEST%%
 ```
-<exp> as <class-id>
+<exp> as <class-type-exp>
 ```
 
 %%NOTTEST%%

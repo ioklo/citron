@@ -23,11 +23,11 @@ Expression은 런타임에 실행환경이 가리키는 result에 계산된 값�
 [Call_Class_Member_Function_Expression](Call_Class_Member_Function_Expression.md)
 [Cast_Class_Expression](Cast_Class_Expression.md)
 
-[Class_Is_ClassExp](Class_Is_ClassExp.md)
-[Class_As_ClassExp](Class_As_ClassExp.md)
+[Class_Is_Class_Expression](Class_Is_Class_Expression.md)
+[Class_As_Class_Expression](Class_As_Class_Expression.md)
 
-[Class_Is_InterfaceExp](Class_Is_InterfaceExp.md)
-[ClassAsInterfaceExp](ClassAsInterfaceExp.md)
+[Class_Is_Interface_Expression](Class_Is_Interface_Expression.md)
+[Class_As_Interface_Expression](Class_As_Interface_Expression.md)
 
 [InterfaceIsClassExp](InterfaceIsClassExp.md)
 [InterfaceAsClassExp](InterfaceAsClassExp.md)
