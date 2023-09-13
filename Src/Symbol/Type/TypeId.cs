@@ -19,7 +19,7 @@ namespace Citron.Symbol
         TResult VisitLocalPtr(LocalPtrTypeId typeId);
         TResult VisitBoxPtr(BoxPtrTypeId typeId);
 
-        TResult VisitSymbol(SymbolId typeId);
+        TResult VisitSymbol(SymbolTypeId typeId);
     }
 
     public abstract record class TypeId : ISerializable
@@ -105,6 +105,16 @@ namespace Citron.Symbol
         }
 
         public override TResult Accept<TTypeIdVisitor, TResult>(ref TTypeIdVisitor visitor) => visitor.VisitFunc(this);
+    }
+
+    public record class SymbolTypeId(SymbolId SymbolId) : TypeId
+    {
+        public override TResult Accept<TTypeIdVisitor, TResult>(ref TTypeIdVisitor visitor) => visitor.VisitSymbol(this);
+
+        public override void DoSerialize(ref SerializeContext context)
+        {
+            context.SerializeRef(nameof(SymbolId), SymbolId);
+        }
     }
 
     public record class LambdaTypeId : TypeId

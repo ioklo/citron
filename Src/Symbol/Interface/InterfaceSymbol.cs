@@ -64,11 +64,12 @@ namespace Citron.Symbol
             return new InterfaceType(this);
         }
 
-        SymbolQueryResult? ISymbolNode.QueryMember(Name name, int typeParamCount)
+        public SymbolQueryResult? QueryMember(Name name, int typeParamCount)
         {
             return null;
         }
 
+        SymbolQueryResult? ISymbolNode.QueryMember(Name name, int typeParamCount) => QueryMember(name, typeParamCount);
         ISymbolNode ISymbolNode.Apply(TypeEnv typeEnv) => Apply(typeEnv);
         ITypeSymbol ITypeSymbol.Apply(TypeEnv typeEnv) => Apply(typeEnv);
         IDeclSymbolNode ISymbolNode.GetDeclSymbolNode() => decl;

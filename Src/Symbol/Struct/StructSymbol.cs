@@ -123,6 +123,9 @@ namespace Citron.Symbol
         }
 
         SymbolQueryResult? ISymbolNode.QueryMember(Name memberName, int typeParamCount)
+            => QueryMember(memberName, typeParamCount);
+
+        public SymbolQueryResult? QueryMember(Name memberName, int typeParamCount)
         {
             // TODO: caching
             var results = ImmutableArray.CreateBuilder<SymbolQueryResult>();

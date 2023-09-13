@@ -454,11 +454,11 @@ namespace Citron.IR0
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitClassIsInterfaceExp(this);
     }
 
-    public record class ClassAsInterfaceExp(Exp Exp, InterfaceSymbol Symbol) : Exp
+    public record class ClassAsInterfaceExp(Exp Exp, InterfaceType InterfaceType) : Exp
     {
         public override IType GetExpType(IBuiltInTypeProvider provider)
         {
-            return new InterfaceType(Symbol);
+            return InterfaceType;
         }
 
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitClassAsInterfaceExp(this);

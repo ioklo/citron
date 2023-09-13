@@ -12,15 +12,13 @@ using Citron.Infra;
 namespace Citron.Symbol
 {
     // 'ModuleSymbol' Id
-    public record class SymbolId(Name ModuleName, SymbolPath? Path) : TypeId
+    public record class SymbolId(Name ModuleName, SymbolPath? Path) : ISerializable
     {
-        public override void DoSerialize(ref SerializeContext context)
+        void ISerializable.DoSerialize(ref SerializeContext context)
         {
             context.SerializeRef(nameof(ModuleName), ModuleName);
             context.SerializeRef(nameof(Path), Path);
         }
-
-        public override TResult Accept<TTypeIdVisitor, TResult>(ref TTypeIdVisitor visitor) => visitor.VisitSymbol(this);
     }
 
     public static class SymbolIdExtensions

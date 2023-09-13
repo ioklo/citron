@@ -69,8 +69,11 @@ namespace Citron.Symbol
         {
             return decl.GetParameterCount();
         }
-        
+
         SymbolQueryResult? ISymbolNode.QueryMember(Name memberName, int typeParamCount)
+            => QueryMember(memberName, typeParamCount);
+
+        public SymbolQueryResult? QueryMember(Name memberName, int typeParamCount)
         {
             if (typeParamCount == 0)
             {
@@ -102,11 +105,16 @@ namespace Citron.Symbol
         }
 
         IType? ITypeSymbol.GetMemberType(Name memberName, ImmutableArray<IType> typeArgs)
+            => GetMemberType(memberName, typeArgs);
+
+        public IType? GetMemberType(Name memberName, ImmutableArray<IType> typeArgs)
         {
             return null;
         }
 
-        IType ISymbolNode.GetTypeArg(int i)
+        IType ISymbolNode.GetTypeArg(int i) => GetTypeArg(i);
+
+        public IType GetTypeArg(int i)
         {
             throw new RuntimeFatalException();
         }
