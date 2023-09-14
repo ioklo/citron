@@ -1,4 +1,4 @@
-using System;
+Ôªøusing System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -89,7 +89,7 @@ namespace Citron
             return LexResult.Invalid;
         }
 
-        // ≈∞øˆµÂ √≥∏Æ
+        // ÌÇ§ÏõåÎìú Ï≤òÎ¶¨
         private static Dictionary<string, Token> keywordInfos = new Dictionary<string, Token>()
         {
             { "foreach", ForeachToken.Instance },
@@ -164,21 +164,21 @@ namespace Citron
 
         public LexResult LexNormalMode(LexerContext context, bool bSkipNewLine)
         {
-            // Ω∫≈µ√≥∏Æ
+            // Ïä§ÌÇµÏ≤òÎ¶¨
             var wsResult = LexWhitespace(context, bSkipNewLine);
             if (wsResult.HasValue)
                 context = wsResult.Context;
 
-            // ≥° √≥∏Æ
+            // ÎÅù Ï≤òÎ¶¨
             if (context.Pos.IsReachEnd())
                 return new LexResult(EndOfFileToken.Instance, context);
 
-            // ¡ŸπŸ≤ﬁ πÆ¿⁄
+            // Ï§ÑÎ∞îÍøà Î¨∏Ïûê
             var newLineResult = LexNewLine(context);
             if(newLineResult.HasValue)
                 return new LexResult(newLineResult.Token, newLineResult.Context);
 
-            // ø©∑Ø∞≥ ∏’¿˙
+            // Ïó¨Îü¨Í∞ú Î®ºÏ†Ä
             var intResult = LexInt(context);
             if (intResult.HasValue)
                 return new LexResult(intResult.Token, intResult.Context);
@@ -204,7 +204,7 @@ namespace Citron
                 return new LexResult(keywordResult.Token, keywordResult.Context);
 
 
-            // Identifier Ω√µµ
+            // Identifier ÏãúÎèÑ
             var idResult = LexIdentifier(context, true);
             if (idResult.HasValue)
                 return new LexResult(idResult.Token, idResult.Context);
@@ -218,7 +218,7 @@ namespace Citron
             if (newLineResult.HasValue)
                 return new LexResult(NewLineToken.Instance, newLineResult.Context);
 
-            // TODO: \} √≥∏Æ
+            // TODO: \} Ï≤òÎ¶¨
             if (context.Pos.Equals('}'))
                 return new LexResult(RBraceToken.Instance, context.UpdatePos(context.Pos.Next()));
             
@@ -243,16 +243,16 @@ namespace Citron
 
             var sb = new StringBuilder();
 
-            // ≥™∏”¡ˆ¥¬ text∏µÂ
+            // ÎÇòÎ®∏ÏßÄÎäî textÎ™®Îìú
             while(true)
             {
-                // ≥° µµ¥ﬁ
+                // ÎÅù ÎèÑÎã¨
                 if (context.Pos.IsReachEnd()) break;
                 
-                // NewLineπÆ¿⁄
+                // NewLineÎ¨∏Ïûê
                 if (context.Pos.Equals('\r') || context.Pos.Equals('\n')) break;
 
-                // TODO: \} √≥∏Æ
+                // TODO: \} Ï≤òÎ¶¨
                 if (context.Pos.Equals('}'))
                     break;
                 
@@ -377,12 +377,12 @@ namespace Citron
         {
             var sb = new StringBuilder();
             var curPos = context.Pos;
-            while (true) // ¡∂Ω…
+            while (true) // Ï°∞Ïã¨
             {
                 if (curPos.IsReachEnd())
                     break;
 
-                if (curPos.Equals('"')) // "µŒ∞≥ √≥∏Æ
+                if (curPos.Equals('"')) // "ÎëêÍ∞ú Ï≤òÎ¶¨
                 {
                     var secondPos = curPos.Next();
                     if (!secondPos.Equals('"')) break;
@@ -390,7 +390,7 @@ namespace Citron
                     sb.Append('"');
                     curPos = secondPos.Next();
                 }
-                else if (curPos.Equals('$')) // $ √≥∏Æ
+                else if (curPos.Equals('$')) // $ Ï≤òÎ¶¨
                 {
                     var secondPos = curPos.Next();
                     if (!secondPos.Equals('$')) break;
@@ -425,7 +425,7 @@ namespace Citron
                     continue;
                 }
 
-                // ƒ⁄∏‡∆Æ √≥∏Æ
+                // ÏΩîÎ©òÌä∏ Ï≤òÎ¶¨
                 var commentBeginPos = Consume("//", context.Pos);
 
                 if (!commentBeginPos.HasValue)
@@ -476,7 +476,7 @@ namespace Citron
                     }
                     else
                     {
-                        // \ ¿Ã¿¸¿ª ∏Æ≈œ«—¥Ÿ
+                        // \ Ïù¥Ï†ÑÏùÑ Î¶¨ÌÑ¥ÌïúÎã§
                         return nextLineModeFailedResult.Value;
                     }
                 }

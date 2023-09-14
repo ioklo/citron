@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
@@ -73,7 +73,7 @@ partial struct StmtParser
             return false;
         }
 
-        // right assoc, conflict´Â º°´Ù¸¥ Ã³¸®¸¦ ÇÏÁö ¾Ê°í Áö³ª°¡¸é µÉ °Í °°´Ù
+        // right assoc, conflictëŠ” ë³„ë‹¤ë¥¸ ì²˜ë¦¬ë¥¼ í•˜ì§€ ì•Šê³  ì§€ë‚˜ê°€ë©´ ë  ê²ƒ ê°™ë‹¤
         if (!ParseEmbeddableStmt(out var body))
         {
             outStmt = null;
@@ -113,11 +113,11 @@ partial struct StmtParser
             return false;
         }
 
-        // typeExp varName = exp²ÃÀÎÁö ¸ÕÀú È®ÀÎ
+        // typeExp varName = expê¼´ì¸ì§€ ë¨¼ì € í™•ì¸
         if (ParseIfTestFragment(out outStmt))        
             return true;
 
-        // ¾Æ´Ï¶ó¸é
+        // ì•„ë‹ˆë¼ë©´
         if (!ExpParser.Parse(lexer, ref context, out var cond))
         {
             outStmt = null;
@@ -130,7 +130,7 @@ partial struct StmtParser
             return false;
         }
 
-        // right assoc, conflict´Â º°´Ù¸¥ Ã³¸®¸¦ ÇÏÁö ¾Ê°í Áö³ª°¡¸é µÉ °Í °°´Ù
+        // right assoc, conflictëŠ” ë³„ë‹¤ë¥¸ ì²˜ë¦¬ë¥¼ í•˜ì§€ ì•Šê³  ì§€ë‚˜ê°€ë©´ ë  ê²ƒ ê°™ë‹¤
         if (!ParseEmbeddableStmt(out var body))
         {
             outStmt = null;
@@ -171,7 +171,7 @@ partial struct StmtParser
             Exp? initExp = null;
             if (Accept<EqualToken>(out _))
             {
-                // TODO: ;³ª ,°¡ ³ª¿Ã¶§±îÁö¶ó´Â°É ¸í½ÃÇØÁÖ¸é ÁÁ°Ú´Ù
+                // TODO: ;ë‚˜ ,ê°€ ë‚˜ì˜¬ë•Œê¹Œì§€ë¼ëŠ”ê±¸ ëª…ì‹œí•´ì£¼ë©´ ì¢‹ê² ë‹¤
                 if (!ExpParser.Parse(lexer, ref context, out initExp))
                 {
                     outVarDecl = null;
@@ -181,7 +181,7 @@ partial struct StmtParser
 
             elemsBuilder.Add(new VarDeclElement(varIdResult!.Value, initExp));
 
-        } while (Accept<CommaToken>(out _)); // ,°¡ ³ª¿À¸é °è¼ÓÇÑ´Ù
+        } while (Accept<CommaToken>(out _)); // ,ê°€ ë‚˜ì˜¤ë©´ ê³„ì†í•œë‹¤
 
         outVarDecl = new VarDecl(varType!, elemsBuilder.ToImmutable());
         return true;
@@ -197,7 +197,7 @@ partial struct StmtParser
         }
 
         if (!context.LexerContext.Pos.IsReachEnd() &&
-            !Accept<SemiColonToken>(out _)) // ;À¸·Î ¸¶¹«¸®
+            !Accept<SemiColonToken>(out _)) // ;ìœ¼ë¡œ ë§ˆë¬´ë¦¬
         {
             outStmt = null;
             return false;
@@ -239,19 +239,19 @@ partial struct StmtParser
         if (!Accept<LParenToken>(out _))
             return Fatal();
 
-        // TODO: ÀÌ InitializerÀÇ ³¡Àº ';' ÀÌ´Ù
+        // TODO: ì´ Initializerì˜ ëì€ ';' ì´ë‹¤
         ParseForStmtInitializer(out var initializer);
 
         if (!Accept<SemiColonToken>(out _))
             return Fatal();
 
-        // TODO: ÀÌ CondExpÀÇ ³¡Àº ';' ÀÌ´Ù            
+        // TODO: ì´ CondExpì˜ ëì€ ';' ì´ë‹¤            
         ExpParser.Parse(lexer, ref context, out var cond);
 
         if (!Accept<SemiColonToken>(out _))
             return Fatal();
 
-        // TODO: ÀÌ CondExpÀÇ ³¡Àº ')' ÀÌ´Ù            
+        // TODO: ì´ CondExpì˜ ëì€ ')' ì´ë‹¤            
         ExpParser.Parse(lexer, ref context, out var cont);
         
         if (!Accept<RParenToken>(out _))
@@ -365,7 +365,7 @@ partial struct StmtParser
         return true;
     }
 
-    // TODO: Assign, Call¸¸ °¡´ÉÇÏ°Ô ÇØ¾ß ÇÑ´Ù
+    // TODO: Assign, Callë§Œ ê°€ëŠ¥í•˜ê²Œ í•´ì•¼ í•œë‹¤
     bool InternalParseExpStmt([NotNullWhen(returnValue: true)] out ExpStmt? outStmt)
     {
         if (!ExpParser.Parse(lexer, ref context, out var exp))
@@ -466,7 +466,7 @@ partial struct StmtParser
     {
         var elemsBuilder = ImmutableArray.CreateBuilder<StringExpElement>();
 
-        // »õ ÁÙÀÌ°Å³ª ³¡¿¡ ´Ù´Ù¸£¸é Á¾·á
+        // ìƒˆ ì¤„ì´ê±°ë‚˜ ëì— ë‹¤ë‹¤ë¥´ë©´ ì¢…ë£Œ
         while (!context.LexerContext.Pos.IsReachEnd())
         {
             if (bStopRBrace && Peek<RBraceToken>(lexer.LexCommandMode(context.LexerContext)))
@@ -475,10 +475,10 @@ partial struct StmtParser
             if (Accept<NewLineToken>(lexer.LexCommandMode(context.LexerContext), out _))
                 break;
 
-            // ${ ÀÌ ³ª¿À¸é 
+            // ${ ì´ ë‚˜ì˜¤ë©´ 
             if (Accept<DollarLBraceToken>(lexer.LexCommandMode(context.LexerContext), out _))
             {
-                // TODO: EndInnerExpToken ÀÏ¶§ ºüÁ®³ª¿Í¾ß ÇÑ´Ù´Â Ç¥½Ã¸¦ ÇØÁà¾ß ÇÑ´Ù
+                // TODO: EndInnerExpToken ì¼ë•Œ ë¹ ì ¸ë‚˜ì™€ì•¼ í•œë‹¤ëŠ” í‘œì‹œë¥¼ í•´ì¤˜ì•¼ í•œë‹¤
                 if (!ExpParser.Parse(lexer, ref context, out var exp))
                 {
                     outExp = null;
@@ -495,7 +495,7 @@ partial struct StmtParser
                 continue;
             }
 
-            // aa$b => $b ÀÌ¾ß±â
+            // aa$b => $b ì´ì•¼ê¸°
             if (Accept<IdentifierToken>(lexer.LexCommandMode(context.LexerContext), out var idToken))
             {
                 elemsBuilder.Add(new ExpStringExpElement(new IdentifierExp(idToken!.Value, default)));
@@ -582,7 +582,7 @@ partial struct StmtParser
     // 
     bool InternalParseCommandStmt([NotNullWhen(returnValue: true)] out CommandStmt? outStmt)
     {
-        // exec, @·Î ½ÃÀÛÇÑ´Ù
+        // exec, @ë¡œ ì‹œì‘í•œë‹¤
         if (!Accept<ExecToken>(out _))
         {
             outStmt = null;
@@ -591,10 +591,10 @@ partial struct StmtParser
 
         // TODO: optional ()
 
-        // {·Î ½ÃÀÛÇÑ´Ù¸é MultiCommand, } °¡ ³ª¿À¸é ³¡³­´Ù
+        // {ë¡œ ì‹œì‘í•œë‹¤ë©´ MultiCommand, } ê°€ ë‚˜ì˜¤ë©´ ëë‚œë‹¤
         if (Accept<LBraceToken>(out _))
         {
-            // »õÁÙÀÌ°Å³ª ³¡¿¡ ´Ù´Ù¸£°Å³ª }°¡ ³ª¿À¸é Á¾·á, 
+            // ìƒˆì¤„ì´ê±°ë‚˜ ëì— ë‹¤ë‹¤ë¥´ê±°ë‚˜ }ê°€ ë‚˜ì˜¤ë©´ ì¢…ë£Œ, 
             var cmdsBuilder = ImmutableArray.CreateBuilder<StringExp>();
             while (true)
             {
@@ -603,7 +603,7 @@ partial struct StmtParser
 
                 if (ParseSingleCommand(true, out var singleCommand))
                 {
-                    // singleCommand Skip Á¶°Ç
+                    // singleCommand Skip ì¡°ê±´
                     if (singleCommand!.Elements.Length == 0)
                         continue;
 
@@ -623,7 +623,7 @@ partial struct StmtParser
             outStmt = new CommandStmt(cmdsBuilder.ToImmutable());
             return true;
         }
-        else // ½Ì±Û Ä¿¸Çµå, ¿£ÅÍ°¡ ³ª¿À¸é ³¡³­´Ù
+        else // ì‹±ê¸€ ì»¤ë§¨ë“œ, ì—”í„°ê°€ ë‚˜ì˜¤ë©´ ëë‚œë‹¤
         {
             if (ParseSingleCommand(false, out var singleCommand) && 0 < singleCommand!.Elements.Length)
             {
@@ -686,16 +686,16 @@ partial struct StmtParser
         return true;
     }
 
-    // if (...) 'x;' // ´ÜÀÏÀÌ³Ä
-    // if (...) '{ }' // ¹­À½ÀÌ³Ä
+    // if (...) 'x;' // ë‹¨ì¼ì´ëƒ
+    // if (...) '{ }' // ë¬¶ìŒì´ëƒ
     bool InternalParseEmbeddableStmt([NotNullWhen(returnValue: true)] out EmbeddableStmt? outStmt)
     {
-        // { °¡ ¾ø´Ù¸é, Embeddable.Single
+        // { ê°€ ì—†ë‹¤ë©´, Embeddable.Single
         if (!Accept<LBraceToken>(out _))
         {
             if (ParseStmt(out var stmt))
             {
-                // block stmt´Â Á¦¿ÜµÇ¼­ µé¾î¿Ã °ÍÀÌ´Ù
+                // block stmtëŠ” ì œì™¸ë˜ì„œ ë“¤ì–´ì˜¬ ê²ƒì´ë‹¤
                 Debug.Assert(stmt is not BlockStmt);
                 outStmt = new EmbeddableStmt.Single(stmt);
                 return true;
@@ -704,11 +704,11 @@ partial struct StmtParser
             outStmt = null;
             return false;
         }
-        else // ÀÖ´Ù¸é Embeddable.Multiple
+        else // ìˆë‹¤ë©´ Embeddable.Multiple
         {
             var stmtsBuilder = ImmutableArray.CreateBuilder<Stmt>();
 
-            // } °¡ ³ª¿Ã¶§±îÁö
+            // } ê°€ ë‚˜ì˜¬ë•Œê¹Œì§€
             while(!Accept<RBraceToken>(out _))
             {
                 if (ParseStmt(out var stmt))
