@@ -30,7 +30,7 @@ public struct TupleMemberVar : ISerializable, ICyclicEqualityComparableStruct<Tu
         return new TupleMemberVar(declType.Apply(typeEnv), name);
     }
 
-    public void DoSerialize(ref SerializeContext context)
+    void ISerializable.DoSerialize(ref SerializeContext context)
     {
         context.SerializeRef(nameof(declType), declType);
         context.SerializeRef(nameof(name), name);
@@ -53,11 +53,6 @@ public partial class TupleType : IType, ICyclicEqualityComparableClass<TupleType
 {
     ImmutableArray<TupleMemberVar> memberVars;
 
-    public TupleType(ImmutableArray<TupleMemberVar> memberVars)
-    {
-        this.memberVars = memberVars;
-    }
-
     public int GetMemberVarCount()
     {
         return memberVars.Length;
@@ -68,7 +63,7 @@ public partial class TupleType : IType, ICyclicEqualityComparableClass<TupleType
         return memberVars[index];
     }
 
-    public override IType Apply(TypeEnv typeEnv)
+    public TupleType Apply(TypeEnv typeEnv)
     {
         var builder = ImmutableArray.CreateBuilder<TupleMemberVar>(memberVars.Length);
         foreach (var memberVar in memberVars)
@@ -76,36 +71,45 @@ public partial class TupleType : IType, ICyclicEqualityComparableClass<TupleType
         return new TupleType(builder.MoveToImmutable());
     }
 
-    public override TypeId GetTypeId()
+    public TupleTypeId GetTypeId()
     {
         var builder = ImmutableArray.CreateBuilder<TupleMemberVarId>(memberVars.Length);
         foreach (var memberVar in memberVars)
             builder.Add(new TupleMemberVarId(memberVar.GetDeclType().GetTypeId(), memberVar.GetName()));
         return new TupleTypeId(builder.MoveToImmutable());
-    }
-    
-    public override IType? GetMemberType(Name name, ImmutableArray<IType> typeArgs) => null;
-    public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitTuple(this);
+    }   
 
-    public sealed override bool CyclicEquals(IType other, ref CyclicEqualityCompareContext context)
-        => other is TupleType otherType && CyclicEquals(otherType, ref context);
-
-    bool CyclicEquals(TupleType other, ref CyclicEqualityCompareContext context)
+    public bool CyclicEquals(TupleType other, ref CyclicEqualityCompareContext context)
     {
         return memberVars.CyclicEqualsStructItem(ref other.memberVars, ref context);
     }
-
-    public override void DoSerialize(ref SerializeContext context)
+    
+    public SymbolQueryResult? QueryMember(Name name, int explicitTypeArgCount)
     {
-        context.SerializeValueArray(nameof(memberVars), memberVars);
-    }
+        if (explicitTypeArgCount != 0) return null;
 
-    public override SymbolQueryResult? QueryMember(Name name, int typeArgCount)
-    {
         foreach (var memberVar in memberVars)
             if (memberVar.GetName().Equals(name))
                 return new SymbolQueryResult.TupleMemberVar();
 
         return null;
+    }
+
+    IType IType.GetTypeArg(int index) => throw new RuntimeFatalException();
+    IType IType.Apply(TypeEnv typeEnv) => Apply(typeEnv);
+    TypeId IType.GetTypeId() => GetTypeId();
+    IType? IType.GetMemberType(Name name, ImmutableArray<IType> typeArgs) => null;
+    SymbolQueryResult? IType.QueryMember(Name name, int explicitTypeArgCount) => QueryMember(name, explicitTypeArgCount);
+    TResult IType.Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitTuple(this);
+
+    bool ICyclicEqualityComparableClass<TupleType>.CyclicEquals(TupleType other, ref CyclicEqualityCompareContext context)
+        => CyclicEquals(other, ref context);
+
+    bool ICyclicEqualityComparableClass<IType>.CyclicEquals(IType other, ref CyclicEqualityCompareContext context)
+        => other is TupleType otherType && CyclicEquals(otherType, ref context);
+
+    void ISerializable.DoSerialize(ref SerializeContext context)
+    {
+        context.SerializeValueArray(nameof(memberVars), memberVars);
     }
 }

@@ -183,7 +183,7 @@ namespace Citron
                 throw new NotImplementedException();
             }
 
-            Value ITypeIdVisitor<Value>.VisitSymbol(SymbolId typeId)
+            Value ITypeIdVisitor<Value>.VisitSymbol(SymbolTypeId typeId)
             {
                 if (typeId.Equals(TypeIds.Bool))
                 {
@@ -211,8 +211,8 @@ namespace Citron
                 }
 
                 // 이외에는 드라이버에서 처리
-                var driver = driverContext.GetModuleDriver(typeId);
-                return driver.Alloc(typeId);
+                var driver = driverContext.GetModuleDriver(typeId.SymbolId);
+                return driver.Alloc(typeId.SymbolId);
             }
 
             Value ITypeIdVisitor<Value>.VisitTuple(TupleTypeId typeId)
@@ -233,12 +233,7 @@ namespace Citron
             {
                 throw new NotImplementedException();
             }
-
-            Value ITypeIdVisitor<Value>.VisitVar(VarTypeId typeId)
-            {
-                throw new NotImplementedException();
-            }
-
+            
             Value ITypeIdVisitor<Value>.VisitVoid(VoidTypeId typeId)
             {
                 return VoidValue.Instance;

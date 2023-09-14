@@ -287,8 +287,8 @@ struct IntermediateExpMemberBinder : IIntermediateExpVisitor<TranslationResult<I
         var instReExpResult = IntermediateExpResolvedExpTranslator.Translate(instImExp, context, nodeForErrorReport);
         if (!instReExpResult.IsValid(out var instReExp))
             return Error();
-        
-        var instReExpType = instReExp.GetExpType();
+
+        var instReExpType = context.GetExpType(instReExp);
 
         var memberResult = instReExpType.QueryMember(name, typeArgs.Length);
         if (memberResult == null)

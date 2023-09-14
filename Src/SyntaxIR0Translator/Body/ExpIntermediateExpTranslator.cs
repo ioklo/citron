@@ -101,7 +101,7 @@ struct ExpIntermediateExpTranslator : IExpVisitor<TranslationResult<Intermediate
             if (!targetResult.IsValid(out var target))
                 return Error();
 
-            var targetType = target.GetExpType();
+            var targetType = context.GetExpType(target);
             if (targetType is BoxPtrType)
                 return Valid(new IntermediateExp.BoxDeref(target));
 
@@ -150,7 +150,7 @@ struct ExpIntermediateExpTranslator : IExpVisitor<TranslationResult<Intermediate
         // var memberResult = objResult.TypeSymbol.QueryMember(new M.Name(M.SpecialName.IndexerGet, null), 0);
 
         // 리스트 타입의 경우,
-        if (context.IsListType(objReExp.GetExpType(), out var itemType))
+        if (context.IsListType(context.GetExpType(objReExp), out var itemType))
         {
             return Valid(new IntermediateExp.ListIndexer(objReExp, castIndex, itemType));
         }
@@ -218,5 +218,15 @@ struct ExpIntermediateExpTranslator : IExpVisitor<TranslationResult<Intermediate
     TranslationResult<IntermediateExp> IExpVisitor<TranslationResult<IntermediateExp>>.VisitBox(BoxExp exp)
     {
         return HandleExpResult(new CoreExpIR0ExpTranslator(hintType, context).TranslateBox(exp));
+    }
+
+    TranslationResult<IntermediateExp> IExpVisitor<TranslationResult<IntermediateExp>>.VisitIs(IsExp exp)
+    {
+        return HandleExpResult(new CoreExpIR0ExpTranslator(hintType, context).TranslateIs(exp));
+    }
+
+    TranslationResult<IntermediateExp> IExpVisitor<TranslationResult<IntermediateExp>>.VisitAs(AsExp exp)
+    {
+        return HandleExpResult(new CoreExpIR0ExpTranslator(hintType, context).TranslateAs(exp));
     }
 }

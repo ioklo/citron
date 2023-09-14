@@ -220,9 +220,9 @@ namespace Citron.IR0
             return new ExpStmt(new CallClassMemberFuncExp(classMemberFunc, instance, args.ToImmutableArray()));
         }
 
-        public ExpStmt Call(LambdaSymbol lambda, Loc loc, params Argument[] args)
+        public ExpStmt Call(LambdaType lambdaType, Loc loc, params Argument[] args)
         {
-            return new ExpStmt(new CallLambdaExp(lambda, loc, args.ToImmutableArray()));
+            return new ExpStmt(new CallLambdaExp(lambdaType, loc, args.ToImmutableArray()));
         }
 
         #endregion
@@ -350,12 +350,12 @@ namespace Citron.IR0
         #region StringExp
         public StringExp String(params StringExpElement[] elems)
         {
-            return new StringExp(Arr(elems), stringType);
+            return new StringExp(Arr(elems));
         }
 
         public StringExp String(string v)
         {
-            return new StringExp(Arr<StringExpElement>(new TextStringExpElement(v)), stringType);
+            return new StringExp(Arr<StringExpElement>(new TextStringExpElement(v)));
         }
 
         #endregion
@@ -364,7 +364,7 @@ namespace Citron.IR0
 
         public IntLiteralExp Int(int v)
         {
-            return new IntLiteralExp(v, intType);
+            return new IntLiteralExp(v);
         }
 
         #endregion
@@ -373,7 +373,7 @@ namespace Citron.IR0
 
         public BoolLiteralExp Bool(bool v)
         {
-            return new BoolLiteralExp(v, boolType);
+            return new BoolLiteralExp(v);
         }
 
         #endregion

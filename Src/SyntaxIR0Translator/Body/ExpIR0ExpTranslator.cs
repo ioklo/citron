@@ -101,6 +101,16 @@ struct ExpIR0ExpTranslator : S.IExpVisitor<TranslationResult<R.Exp>>
         return new CoreExpIR0ExpTranslator(hintType, context).TranslateBox(exp);
     }
 
+    TranslationResult<R.Exp> S.IExpVisitor<TranslationResult<R.Exp>>.VisitIs(S.IsExp exp)
+    {
+        return new CoreExpIR0ExpTranslator(hintType, context).TranslateIs(exp);
+    }
+
+    TranslationResult<R.Exp> S.IExpVisitor<TranslationResult<R.Exp>>.VisitAs(S.AsExp exp)
+    {
+        return new CoreExpIR0ExpTranslator(hintType, context).TranslateAs(exp);
+    }
+
     TranslationResult<R.Exp> S.IExpVisitor<TranslationResult<R.Exp>>.VisitNullLiteral(S.NullLiteralExp exp)
     {
         return new CoreExpIR0ExpTranslator(hintType, context).TranslateNullLiteral(exp);

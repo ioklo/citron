@@ -60,12 +60,46 @@ partial struct StmtParser
         return lexResult.HasValue && lexResult.Token is TToken;
     }
 
+    // typeExp id = exp)
+    bool InternalParseIfTestFragment([NotNullWhen(returnValue: true)] out Stmt? outStmt)
+    {
+        if (!TypeExpParser.Parse(lexer, ref context, out var testTypeExp) ||
+            !Accept<IdentifierToken>(out var varName) ||
+            !Accept<EqualToken>(out _) ||
+            !ExpParser.Parse(lexer, ref context, out var exp) ||
+            !Accept<RParenToken>(out _))
+        {
+            outStmt = null;
+            return false;
+        }
+
+        // right assoc, conflict는 별다른 처리를 하지 않고 지나가면 될 것 같다
+        if (!ParseEmbeddableStmt(out var body))
+        {
+            outStmt = null;
+            return false;
+        }
+
+        EmbeddableStmt? elseBody = null;
+        if (Accept<ElseToken>(out _))
+        {
+            if (!ParseEmbeddableStmt(out elseBody))
+            {
+                outStmt = null;
+                return false;
+            }
+        }
+
+        outStmt = new IfTestStmt(testTypeExp, varName.Value, exp, body, elseBody);
+        return true;
+    }
+
     bool InternalParseIfStmt([NotNullWhen(returnValue: true)] out Stmt? outStmt)
     {
         // if (exp) stmt => If(exp, stmt, null)
         // if (exp) stmt0 else stmt1 => If(exp, stmt0, stmt1)
         // if (exp0) if (exp1) stmt1 else stmt2 => If(exp0, If(exp1, stmt1, stmt2))
-        // if (exp is typeExp) => IfTestStmt
+        // if (typeExp name = exp) => IfTestStmt(TypeExp, name, exp)
 
         if (!Accept<IfToken>(out _))
         {
@@ -79,77 +113,42 @@ partial struct StmtParser
             return false;
         }
 
+        // typeExp varName = exp꼴인지 먼저 확인
+        if (ParseIfTestFragment(out outStmt))        
+            return true;
+
+        // 아니라면
         if (!ExpParser.Parse(lexer, ref context, out var cond))
         {
             outStmt = null;
             return false;
         }
         
-        if (Accept<IsToken>(out _))
+        if (!Accept<RParenToken>(out _))
         {
-            if (!TypeExpParser.Parse(lexer, ref context, out var testType))
-            {
-                outStmt = null;
-                return false;
-            }
-
-            // optional                 
-            Accept<IdentifierToken>(out var varName);
-
-            if (!Accept<RParenToken>(out _))
-            {
-                outStmt = null;
-                return false;
-            }
-
-            // right assoc, conflict는 별다른 처리를 하지 않고 지나가면 될 것 같다
-            if (!ParseEmbeddableStmt(out var body))
-            {
-                outStmt = null;
-                return false;
-            }
-
-            EmbeddableStmt? elseBody = null;
-            if (Accept<ElseToken>(out _))
-            {
-                if (!ParseEmbeddableStmt(out elseBody))
-                {
-                    outStmt = null;
-                    return false;
-                }
-            }
-
-            outStmt = new IfTestStmt(cond, testType, varName?.Value, body, elseBody);
-            return true;
+            outStmt = null;
+            return false;
         }
-        else
+
+        // right assoc, conflict는 별다른 처리를 하지 않고 지나가면 될 것 같다
+        if (!ParseEmbeddableStmt(out var body))
         {
-            if (!Accept<RParenToken>(out _))
-            {
-                outStmt = null;
-                return false;
-            }
-
-            // right assoc, conflict는 별다른 처리를 하지 않고 지나가면 될 것 같다
-            if (!ParseEmbeddableStmt(out var body))
-            {
-                outStmt = null;
-                return false;
-            }
-
-            EmbeddableStmt? elseBody = null;
-            if (Accept<ElseToken>(out _))
-            {
-                if (!ParseEmbeddableStmt(out elseBody))
-                { 
-                    outStmt = null; 
-                    return false;
-                }
-            }
-
-            outStmt = new IfStmt(cond!, body, elseBody);
-            return true;
+            outStmt = null;
+            return false;
         }
+
+        EmbeddableStmt? elseBody = null;
+        if (Accept<ElseToken>(out _))
+        {
+            if (!ParseEmbeddableStmt(out elseBody))
+            { 
+                outStmt = null; 
+                return false;
+            }
+        }
+
+        outStmt = new IfStmt(cond!, body, elseBody);
+        return true;
     }
 
     bool InternalParseVarDecl([NotNullWhen(returnValue: true)] out VarDecl? outVarDecl)

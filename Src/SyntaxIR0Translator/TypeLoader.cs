@@ -16,13 +16,10 @@ public partial struct TypeLoader
     {
         switch (id)
         {
-            case SymbolId symbolId:
-                return ((ITypeSymbol)symbolLoader.Load(symbolId)).MakeType();
+            case SymbolTypeId symbolTypeId:
+                return ((ITypeSymbol)symbolLoader.Load(symbolTypeId.SymbolId)).MakeType();
 
-            case VarTypeId:
-                return new VarType();
-
-            case VoidTypeId voidTypeId:
+            case VoidTypeId:
                 return new VoidType();
 
             case NullableTypeId nullableId:

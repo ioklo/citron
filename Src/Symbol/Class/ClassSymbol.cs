@@ -61,7 +61,7 @@ namespace Citron.Symbol
             while(curBaseType != null)
             {
                 if (Equals(curBaseType)) return true;
-                curBaseType = curBaseType.Symbol.GetBaseClass();
+                curBaseType = curBaseType.GetBaseClass();
             }
 
             return false;
@@ -198,11 +198,11 @@ namespace Citron.Symbol
 
             if (results.Count == 0)
             {
-                var baseTypeValue = GetBaseClass();
-                if (baseTypeValue == null)
+                var baseClassType = GetBaseClass();
+                if (baseClassType == null)
                     return null;
 
-                return ((ISymbolNode)baseTypeValue.Symbol).QueryMember(memberName, explicitTypeArgsCount);
+                return baseClassType.QueryMember(memberName, explicitTypeArgsCount);
             }
             else
             {

@@ -12,7 +12,6 @@ namespace Citron.Symbol
         TResult VisitNullable(NullableTypeId typeId);
         TResult VisitVoid(VoidTypeId typeId);
         TResult VisitTuple(TupleTypeId typeId);
-        TResult VisitVar(VarTypeId typeId);
         TResult VisitFunc(FuncTypeId typeId);
         TResult VisitLambda(LambdaTypeId typeId);
 
@@ -70,7 +69,7 @@ namespace Citron.Symbol
 
     public record struct TupleMemberVarId(TypeId TypeId, Name Name) : ISerializable
     {
-        public void DoSerialize(ref SerializeContext context)
+        void ISerializable.DoSerialize(ref SerializeContext context)
         {
             context.SerializeRef(nameof(TypeId), TypeId);
             context.SerializeRef(nameof(Name), Name);
@@ -86,16 +85,7 @@ namespace Citron.Symbol
 
         public override TResult Accept<TTypeIdVisitor, TResult>(ref TTypeIdVisitor visitor) => visitor.VisitTuple(this);
     }
-
-    public record class VarTypeId : TypeId
-    {
-        public override void DoSerialize(ref SerializeContext context)
-        {
-        }
-
-        public override TResult Accept<TTypeIdVisitor, TResult>(ref TTypeIdVisitor visitor) => visitor.VisitVar(this);
-    }
-
+    
     public record class FuncTypeId(FuncReturnId RetId, ImmutableArray<FuncParameterId> ParamIds) : TypeId
     {
         public override void DoSerialize(ref SerializeContext context)
@@ -149,16 +139,16 @@ namespace Citron.Symbol
     public static class TypeIds
     {
         public readonly static VoidTypeId Void = new VoidTypeId();
-        public readonly static TypeId Bool = new SymbolId(new Name.Normal("System.Runtime"), null).Child(new Name.Normal("System")).Child(new Name.Normal("Bool"));
-        public readonly static TypeId Int = new SymbolId(new Name.Normal("System.Runtime"), null).Child(new Name.Normal("System")).Child(new Name.Normal("Int32"));
-        public readonly static TypeId String = new SymbolId(new Name.Normal("System.Runtime"), null).Child(new Name.Normal("System")).Child(new Name.Normal("String"));
+        public readonly static TypeId Bool = new SymbolTypeId(SymbolIds.Bool);
+        public readonly static TypeId Int = new SymbolTypeId(SymbolIds.Int);
+        public readonly static TypeId String = new SymbolTypeId(SymbolIds.String);
     }
-
+    
     public static class TypeIdExtensions
     {
         public static bool IsList(this TypeId typeId, [NotNullWhen(returnValue: true)] out TypeId? itemId)
         {
-            var symbolId = typeId as SymbolId;
+            var symbolId = (typeId as SymbolTypeId)?.SymbolId;
             if (symbolId == null)
             {
                 itemId = null;
@@ -181,7 +171,7 @@ namespace Citron.Symbol
         // ISeq 타입인지
         public static bool IsSeq(this TypeId typeId)
         {
-            var symbolId = typeId as SymbolId;
+            var symbolId = (typeId as SymbolTypeId)?.SymbolId;
             if (symbolId == null) return false;
 
             var declSymbolId = symbolId.GetDeclSymbolId();

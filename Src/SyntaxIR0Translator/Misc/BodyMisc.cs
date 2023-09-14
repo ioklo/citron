@@ -13,6 +13,7 @@ using R = Citron.IR0;
 
 using static Citron.Analysis.SyntaxAnalysisErrorCode;
 using System.Diagnostics;
+using Citron.Syntax;
 
 namespace Citron.Analysis
 {
@@ -31,12 +32,12 @@ namespace Citron.Analysis
             return builder.MoveToImmutable();
         }
 
-        public static R.Exp? TryCastExp_Exp(R.Exp exp, IType expectedType) // nothrow
+        public static R.Exp? TryCastExp_Exp(R.Exp exp, IType expectedType, ScopeContext context) // nothrow
         {
-            var expType = exp.GetExpType();
+            var expType = context.GetExpType(exp);
 
             // 같으면 그대로 리턴
-            if (expectedType.Equals(expType))
+            if (TypeEquals(expectedType, expType))
                 return exp;            
 
             // 1. enumElem -> enum
@@ -87,14 +88,63 @@ namespace Citron.Analysis
             return null;
         }
 
+        public static bool TypeEquals(IType type0, IType type1)
+        {
+            var typeId0 = type0.GetTypeId();
+            var typeId1 = type1.GetTypeId();
+
+            return typeId0.Equals(typeId1);
+        }
+
         // 값의 겉보기 타입을 변경한다
         public static TranslationResult<R.Exp> CastExp_Exp(R.Exp exp, IType expectedType, S.ISyntaxNode nodeForErrorReport, ScopeContext context)
         {
-            var result = BodyMisc.TryCastExp_Exp(exp, expectedType);
+            var result = BodyMisc.TryCastExp_Exp(exp, expectedType, context);
             if (result != null) return TranslationResult.Valid(result);
 
             context.AddFatalError(A2201_Cast_Failed, nodeForErrorReport);
             return TranslationResult.Error<R.Exp>();
+        }
+
+        public static TranslationResult<R.Exp> MakeAsExp(IType targetType, IType testType, R.Exp targetExp)
+        {
+            TranslationResult<R.Exp> Valid(R.Exp exp) => TranslationResult.Valid(exp);
+
+            // 5가지 케이스로 나뉜다
+            if (testType is ClassType testClassType)
+            {
+                if (targetType is ClassType)
+                    return Valid(new R.ClassAsClassExp(targetExp, testClassType));
+                else if (targetType is InterfaceType)
+                    return Valid(new R.InterfaceAsClassExp(targetExp, testClassType));
+                else
+                    throw new NotImplementedException(); // 에러 처리
+            }
+            else if (testType is InterfaceType testInterfaceType)
+            {
+                if (targetType is ClassType)
+                    return Valid(new R.ClassAsInterfaceExp(targetExp, testInterfaceType));
+                else if (targetType is InterfaceType)
+                    return Valid(new R.InterfaceAsInterfaceExp(targetExp, testInterfaceType));
+                else
+                    throw new NotImplementedException(); // 에러 처리
+            }
+            else if (testType is EnumElemType testEnumElemType)
+            {
+                if (targetType is EnumType)
+                    return Valid(new R.EnumAsEnumElemExp(targetExp, testEnumElemType));
+                else
+                    throw new NotImplementedException(); // 에러 처리
+            }
+            else
+                throw new NotImplementedException(); // 에러 처리
+        }
+
+        public static bool IsVarType(TypeExp typeExp)
+        {
+            return typeExp is IdTypeExp idTypeExp && 
+                idTypeExp.Name == "var" && 
+                idTypeExp.TypeArgs.Length == 0;
         }
 
         public struct SymbolQueryResultExpResultTranslator : ISymbolQueryResultVisitor<IntermediateExp>

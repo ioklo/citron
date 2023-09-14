@@ -1,4 +1,7 @@
-﻿[*.cs]
+﻿[*]
+end_of_line = crlf
+
+[*.cs]
 
 # HAA0302: Display class allocation to capture closure
 dotnet_diagnostic.HAA0302.severity = silent

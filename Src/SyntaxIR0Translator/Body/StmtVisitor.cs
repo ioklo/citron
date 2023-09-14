@@ -101,80 +101,43 @@ partial struct StmtVisitor : IStmtVisitor
     
     TranslationResult<ImmutableArray<R.Stmt>> IStmtVisitor.VisitIfTest(S.IfTestStmt ifTestStmt)
     {
-        // if (e is Type varName) body 
-        // if (var varName = e as Type) body // 변수 선언은 var로 시작해야 하지 않을까
-        // IfTestStmt -> IfTestClassStmt, IfTestEnumElemStmt
+        var varName = new Name.Normal(ifTestStmt.VarName);
 
-        var targetResult = ExpIR0LocTranslator.Translate(ifTestStmt.Exp, context, hintType: null, bWrapExpAsLoc: true, A2015_ResolveIdentifier_ExpressionIsNotLocation);
-        if (!targetResult.IsValid(out var target))
+        // if (Type varName = e) body 
+        var testType = context.MakeType(ifTestStmt.TestTypeExp);
+
+        var targetExpResult = ExpIR0ExpTranslator.Translate(ifTestStmt.Exp, context, hintType: null);
+        if (!targetExpResult.IsValid(out var targetExp))
             return Error();
 
-        var (targetLoc, targetType) = target;
-        var testType = context.MakeType(ifTestStmt.TestType);
+        var targetType = context.GetExpType(targetExp);
 
-        if (testType is EnumElemType enumElemType)
+        var bodyContext = context.MakeNestedScopeContext();
+        bodyContext.AddLocalVarInfo(testType, varName);
+
+        var bodyStmtsResult = StmtVisitor.TranslateEmbeddable(ifTestStmt.Body, bodyContext);
+        if (!bodyStmtsResult.IsValid(out var bodyStmts))
+            return Error();
+
+        ImmutableArray<R.Stmt> elseStmts = default;
+        if (ifTestStmt.ElseBody != null)
         {
-            var enumType = ((ITypeSymbol)enumElemType.Symbol.GetOuter()).MakeType();
-
-            // exact match
-            if (!targetType.Equals(enumType))
-            {
-                context.AddFatalError(A2301_IfTestStmt_CantDowncast, ifTestStmt.Exp);
+            var elseContext = context.MakeNestedScopeContext();
+            var elseStmtsResult = StmtVisitor.TranslateEmbeddable(ifTestStmt.ElseBody, elseContext);
+            if (!elseStmtsResult.IsValid(out elseStmts))
                 return Error();
-            }
-
-            var bodyContext = context.MakeNestedScopeContext();
-            if (ifTestStmt.VarName != null)
-                bodyContext.AddLocalVarInfo(enumElemType, new Name.Normal(ifTestStmt.VarName));
-            
-            var bodyStmtsResult = StmtVisitor.TranslateEmbeddable(ifTestStmt.Body, bodyContext);
-            if (!bodyStmtsResult.IsValid(out var bodyStmts))
-                return Error();
-
-            ImmutableArray<R.Stmt> elseStmts = default;
-            if (ifTestStmt.ElseBody != null)
-            {
-                var elseContext = context.MakeNestedScopeContext();
-                var elseStmtsResult = StmtVisitor.TranslateEmbeddable(ifTestStmt.ElseBody, elseContext);
-                if (!elseStmtsResult.IsValid(out elseStmts))
-                    return Error();
-            }
-
-            var stmt = new R.IfNullableValueTestStmt(targetLoc, enumElemType.Symbol, ifTestStmt.VarName, bodyStmts, elseStmts);
-            return Stmts(stmt);
         }
+
+        var asExpResult = BodyMisc.MakeAsExp(targetType, testType, targetExp);
+        if (!asExpResult.IsValid(out var asExp))
+            return Error();
+
+        if (testType is ClassType || testType is InterfaceType)
+            return Stmts(new R.IfNullableRefTestStmt(testType, varName, asExp, bodyStmts, elseStmts));
+        else if (testType is EnumType)
+            return Stmts(new R.IfNullableValueTestStmt(testType, varName, asExp, bodyStmts, elseStmts));
         else
-        {
-            throw new NotImplementedException();
-        }
-
-        // TODO: if (exp is Type v) 구문 추가
-        // var condResult = AnalyzeExp(ifStmt.Cond, ResolveHint.None);
-
-        //if (idResult is locResult && locResult.Result is R.LocalVarLoc)
-        //{
-        //    var testTypeValue = context.GetTypeValueByTypeExp(ifStmt.TestType!);
-        //    throw new NotImplementedException();
-
-        //    //if (testTypeValue is EnumElemTypeValue enumElem)
-        //    //{
-        //    //    return AnalyzeIfTestEnumStmt(varIdInfo, cond, ifStmt.Body, ifStmt.ElseBody, condTypeValue, enumElem, out outStmt);                
-        //    //}
-        //    //else if (testTypeValue is NormalTypeValue normal)
-        //    //{
-        //    //    return AnalyzeIfTestClassStmt(varIdInfo, cond, ifStmt.Body, ifStmt.ElseBody, condTypeValue, testTypeValue, out outStmt);
-        //    //}
-        //    //else
-        //    //{
-        //    //    context.AddError(A1003_IfStmt_TestTypeShouldBeEnumOrClass, testTypeExp, "if (exp is Test) 구문은 Test부분이 타입이거나 enum값이어야 합니다");
-        //    //    return false;
-        //    //}
-        //}
-        //else
-        //{
-        //    context.AddFatalError(A1001_IfStmt_TestTargetShouldBeLocalVariable, ifStmt.Cond);
-        //    return Error();
-        //}
+            throw new NotImplementedException(); // 에러
     }
 
     TranslationResult<ImmutableArray<R.Stmt>> IStmtVisitor.VisitIf(S.IfStmt ifStmt)
@@ -184,7 +147,7 @@ partial struct StmtVisitor : IStmtVisitor
         if (!condExpResult.IsValid(out var condExp))
             return Error();
 
-        condExp = BodyMisc.TryCastExp_Exp(condExp, context.GetBoolType());
+        condExp = BodyMisc.TryCastExp_Exp(condExp, context.GetBoolType(), context);
 
         if (condExp == null)
         {
@@ -259,7 +222,7 @@ partial struct StmtVisitor : IStmtVisitor
             if (!rawCondExpResult.IsValid(out var rawCondExp))
                 return Error();
 
-            condExp = BodyMisc.TryCastExp_Exp(rawCondExp, boolType);
+            condExp = BodyMisc.TryCastExp_Exp(rawCondExp, boolType, context);
 
             if (condExp == null)
             {
@@ -391,7 +354,7 @@ partial struct StmtVisitor : IStmtVisitor
                     return Error();
 
                 // 리턴값이 안 적혀 있었으므로 적는다
-                context.SetReturn(retValueExp.GetExpType());
+                context.SetReturn(context.GetExpType(retValueExp));
                 return Stmts(new R.ReturnStmt(new R.ReturnInfo.Expression(retValueExp)));
             }
             else
@@ -409,7 +372,7 @@ partial struct StmtVisitor : IStmtVisitor
                 if (!retValueExpResult.IsValid(out var retValueExp))
                     return Error();
 
-                var castRetValueExp = BodyMisc.TryCastExp_Exp(retValueExp, funcReturn.Value.Type);
+                var castRetValueExp = BodyMisc.TryCastExp_Exp(retValueExp, funcReturn.Value.Type, context);
 
                 // 캐스트 실패시
                 if (castRetValueExp == null)
@@ -503,14 +466,16 @@ partial struct StmtVisitor : IStmtVisitor
         // 먼저, iteratorResult가 anonymous_seq타입인지 확인한다
         if (context.IsSeqType(iterType, out var seqItemType)) // seq<>
         {
-            var itemType = context.MakeType(foreachStmt.Type);
+            IType itemType;
 
-            if (itemType is VarType) // var type처리
+            if (BodyMisc.IsVarType(foreachStmt.Type))
             {
                 itemType = seqItemType;
             }
             else
-            {
+            { 
+                itemType = context.MakeType(foreachStmt.Type);
+            
                 // 완전히 같은지 체크
                 if (itemType.Equals(seqItemType))
                 {
@@ -544,14 +509,16 @@ partial struct StmtVisitor : IStmtVisitor
             // foreach(var i in [1, 2, 3, 4]) => foreach(var i in [1, 2, 3, 4].GetEnumerator())
             if (context.IsListType(iterType, out var listItemType))
             {
-                var itemType = context.MakeType(foreachStmt.Type);
+                IType itemType;
 
-                if (itemType is VarType) // var type처리
+                if (BodyMisc.IsVarType(foreachStmt.Type))
                 {
                     itemType = listItemType;
                 }
                 else
-                {
+                { 
+                    itemType = context.MakeType(foreachStmt.Type);
+                
                     // 완전히 같은지 체크
                     if (itemType.Equals(listItemType))
                     {

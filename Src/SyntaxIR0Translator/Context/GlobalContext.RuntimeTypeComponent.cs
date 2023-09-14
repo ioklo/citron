@@ -10,17 +10,12 @@ partial class GlobalContext
     public partial struct RuntimeTypeComponent
     {
         static SymbolId systemNSId; // 
-        static SymbolId boolId, intId, stringId;
 
         static DeclSymbolId nullableDeclId, listDeclId;
 
         static RuntimeTypeComponent()
         {
             systemNSId = new SymbolId(new Name.Normal("System.Runtime"), null).Child(new Name.Normal("System"));
-
-            boolId = systemNSId.Child(new Name.Normal("Bool"));
-            intId = systemNSId.Child(new Name.Normal("Int32"));
-            stringId = systemNSId.Child(new Name.Normal("String"));
 
             listDeclId = new DeclSymbolId(new Name.Normal("System.Runtime"), null).Child(new Name.Normal("System")).Child(new Name.Normal("List"), 1);
             nullableDeclId = new DeclSymbolId(new Name.Normal("System.Runtime"), null).Child(new Name.Normal("System")).Child(new Name.Normal("Nullable"), 1);
@@ -41,9 +36,9 @@ partial class GlobalContext
             this.loader = new TypeLoader(new SymbolLoader(factory, moduleDecls));
 
             this.voidType = new VoidType();
-            this.boolType = loader.Load(boolId);
-            this.intType = loader.Load(intId);
-            this.stringType = loader.Load(stringId);
+            this.boolType = loader.Load(TypeIds.Bool);
+            this.intType = loader.Load(TypeIds.Int);
+            this.stringType = loader.Load(TypeIds.String);
         }
 
         public IType GetVoidType()
@@ -75,7 +70,7 @@ partial class GlobalContext
         {
             var typeArgs = Arr(itemType.GetTypeId());
             var listId = systemNSId.Child(new Name.Normal("List"), typeArgs);
-            return loader.Load(listId);
+            return loader.Load(new SymbolTypeId(listId));
         }
     }
 

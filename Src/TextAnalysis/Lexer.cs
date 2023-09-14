@@ -111,6 +111,7 @@ namespace Citron
             { "struct", StructToken.Instance },
             { "class", ClassToken.Instance },
             { "is", IsToken.Instance },
+            { "as", AsToken.Instance },
             { "ref", RefToken.Instance },
             { "box", BoxToken.Instance },
             { "null", NullToken.Instance },

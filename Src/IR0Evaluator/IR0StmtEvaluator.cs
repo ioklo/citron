@@ -243,8 +243,8 @@ namespace Citron
         {
             // class B {}, class C<X> : B { }, class D<X> : C<X> { } 의 경우
             // void Func<T>() {
-            //     B b = new D<int>();  // b의 겉보기 타입 B, 실제 타입 D<int>
-            //     if (b is C<T>) ...   // b의 실제타입 D<int>는 C<T>인가?
+            //     B b = new D<int>();   // b의 겉보기 타입 B, 실제 타입 D<int>
+            //     if (C<T> c = b) ...   // b의 실제타입 D<int>는 C<T>인가?
             // }
 
             var targetValue = (ClassValue)await IR0LocEvaluator.EvalAsync(stmt.Target, context);

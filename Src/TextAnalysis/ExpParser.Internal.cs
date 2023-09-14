@@ -403,7 +403,8 @@ partial struct ExpParser
     }
     #endregion
 
-    #region Test, LeftAssoc
+    #region TestAndTypeTest, LeftAssoc
+
     static (Token Token, BinaryOpKind OpKind)[] testInfos = new (Token Token, BinaryOpKind OpKind)[]
     {
         (GreaterThanEqualToken.Instance, BinaryOpKind.GreaterThanOrEqual),
@@ -412,12 +413,76 @@ partial struct ExpParser
         (GreaterThanToken.Instance, BinaryOpKind.GreaterThan),
     };
 
-    bool InternalParseTestExp([NotNullWhen(returnValue: true)] out Exp? outExp)
+    bool InternalParseTestAndTypeTestExp([NotNullWhen(returnValue: true)] out Exp? outExp)
     {
-        return ParseLeftAssocBinaryOpExp(
-            (ref ExpParser parser, [NotNullWhen(returnValue: true)] out Exp? outExp) => parser.ParseAdditiveExp(out outExp), 
-            testInfos, 
-            out outExp);
+        bool ParseBaseExp(ref ExpParser parser, [NotNullWhen(returnValue: true)] out Exp? outExp) => parser.ParseAdditiveExp(out outExp);
+        
+        if (!ParseBaseExp(ref this, out var exp0))
+        {
+            outExp = null;
+            return false;
+        }
+
+        while (true)
+        {
+            bool bHandled = false;
+
+            var lexResult = lexer.LexNormalMode(context.LexerContext, true);
+            if (!lexResult.HasValue) break;
+            
+            // search binary
+            foreach (var info in testInfos)
+            {
+                if (info.Token == lexResult.Token)
+                {   
+                    context = context.Update(lexResult.Context);
+
+                    if (!ParseBaseExp(ref this, out var exp1))
+                    {
+                        outExp = null;
+                        return false;
+                    }
+
+                    // Fold
+                    exp0 = new BinaryOpExp(info.OpKind, exp0, exp1);
+                    bHandled = true;
+                    break;
+                }
+            }
+
+            if (bHandled) continue;
+
+            if (lexResult.Token is IsToken)
+            {
+                context = context.Update(lexResult.Context);
+                if (!TypeExpParser.Parse(lexer, ref context, out var typeExp))
+                {
+                    outExp = null;
+                    return false;
+                }
+
+                exp0 = new IsExp(exp0, typeExp);
+                continue;
+            }
+
+            if (lexResult.Token is AsToken)
+            {
+                context = context.Update(lexResult.Context);
+                if (!TypeExpParser.Parse(lexer, ref context, out var typeExp))
+                {
+                    outExp = null;
+                    return false;
+                }
+
+                exp0 = new AsExp(exp0, typeExp);
+                continue;
+            }
+
+            break;
+        }
+
+        outExp = exp0;
+        return true;
     }
     #endregion
 
@@ -431,7 +496,7 @@ partial struct ExpParser
     bool InternalParseEqualityExp([NotNullWhen(returnValue: true)] out Exp? outExp)
     {
         return ParseLeftAssocBinaryOpExp(
-            (ref ExpParser parser, [NotNullWhen(returnValue: true)] out Exp? outExp) => parser.ParseTestExp(out outExp), 
+            (ref ExpParser parser, [NotNullWhen(returnValue: true)] out Exp? outExp) => parser.ParseTestAndTypeTestExp(out outExp), 
             equalityInfos, 
             out outExp);
     }
@@ -750,7 +815,7 @@ partial struct ExpParser
             builder.Add(elem);
         }
 
-        outExp = new ListExp(null, builder.ToImmutable());
+        outExp = new ListExp(builder.ToImmutable());
         return true;
     }
 

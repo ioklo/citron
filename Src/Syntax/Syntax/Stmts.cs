@@ -41,7 +41,8 @@ namespace Citron.Syntax
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitIf(this);
     }
 
-    public record class IfTestStmt(Exp Exp, TypeExp TestType, string? VarName, EmbeddableStmt Body, EmbeddableStmt? ElseBody) : Stmt
+    // if (testType varName = exp
+    public record class IfTestStmt(TypeExp TestTypeExp, string VarName, Exp Exp, EmbeddableStmt Body, EmbeddableStmt? ElseBody) : Stmt
     {
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitIfTest(this);
     }

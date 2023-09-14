@@ -137,15 +137,13 @@ xxx
     }
 
     [Fact]
-    public void TestParseIfTestStmtWithoutVarNameAsync()
+    public void TestParseIfIsExpCondStmt()
     {
         var (lexer, context) = Prepare("if (b is T) {} else if (c) {} else {}");
 
         StmtParser.Parse(lexer, ref context, out var stmt);
 
-        var expected = new IfTestStmt(SId("b"),
-            SIdTypeExp("T"), 
-            null,
+        var expected = new IfStmt(new IsExp(SId("b"), SIdTypeExp("T")),
             new EmbeddableStmt.Multiple(default),
             new EmbeddableStmt.Single(new IfStmt(
                 SId("c"),
@@ -160,13 +158,11 @@ xxx
     [Fact]
     public void TestParseIfTestStmtWithVarNameAsync()
     {
-        var (lexer, context) = Prepare("if (b is T t) {} else if (c) {} else {}");
+        var (lexer, context) = Prepare("if (T t = b) {} else if (c) {} else {}");
 
         StmtParser.Parse(lexer, ref context, out var stmt);
 
-        var expected = new IfTestStmt(SId("b"),
-            SIdTypeExp("T"),
-            "t",
+        var expected = new IfTestStmt(SIdTypeExp("T"), "t", SId("b"),
             new EmbeddableStmt.Multiple(default),
             new EmbeddableStmt.Single(new IfStmt(
                 SId("c"),

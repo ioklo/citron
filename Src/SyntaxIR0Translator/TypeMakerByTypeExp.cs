@@ -88,10 +88,6 @@ static class TypeMakerByTypeExp
             // 키워드
             if (typeExp is IdTypeExp idTypeExp)
             {
-                // var
-                if (idTypeExp.Name == "var" && idTypeExp.TypeArgs.Length == 0)
-                    return new VarType();
-
                 // void
                 if (idTypeExp.Name == "void" && idTypeExp.TypeArgs.Length == 0)
                     return new VoidType();

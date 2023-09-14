@@ -78,7 +78,7 @@ public record class MemberExp(Exp Parent, string MemberName, ImmutableArray<Type
     public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitMember(this);
 }
 
-public record class ListExp(TypeExp? ElemType, ImmutableArray<Exp> Elems) : Exp
+public record class ListExp(ImmutableArray<Exp> Elems) : Exp
 {
     public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitList(this);
 }
@@ -93,6 +93,18 @@ public record class NewExp(TypeExp Type, ImmutableArray<Argument> Args) : Exp
 public record class BoxExp(Exp InnerExp) : Exp
 {
     public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitBox(this);
+}
+
+// x is T
+public record class IsExp(Exp Exp, TypeExp Type) : Exp
+{
+    public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitIs(this);
+}
+
+// x as T
+public record class AsExp(Exp Exp, TypeExp Type) : Exp
+{
+    public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitAs(this);
 }
 
 public interface IExpVisitor<TResult>
@@ -111,4 +123,6 @@ public interface IExpVisitor<TResult>
     TResult VisitList(ListExp exp);
     TResult VisitNew(NewExp exp);
     TResult VisitBox(BoxExp exp);
+    TResult VisitIs(IsExp exp);
+    TResult VisitAs(AsExp exp);
 }

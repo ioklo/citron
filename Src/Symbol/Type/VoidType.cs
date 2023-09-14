@@ -7,20 +7,31 @@ namespace Citron.Symbol;
 [AutoConstructor]
 public partial class VoidType: IType, ICyclicEqualityComparableClass<VoidType>
 {
-    public override VoidType Apply(TypeEnv typeEnv) => new VoidType();
-    public override TypeId GetTypeId() => new VoidTypeId();
-    public override IType? GetMemberType(Name name, ImmutableArray<IType> typeArgs) => null;
-    public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitVoid(this);
-
-    public sealed override bool CyclicEquals(IType other, ref CyclicEqualityCompareContext context)
-        => true;
-
-    public override void DoSerialize(ref SerializeContext context)
+    public VoidTypeId GetTypeId()
     {
+        return new VoidTypeId();
     }
 
-    public override SymbolQueryResult? QueryMember(Name name, int typeArgCount)
+    public bool CyclicEquals(VoidType other, ref CyclicEqualityCompareContext context)
     {
-        return null;
+        return true;
+    }
+    
+    IType IType.GetTypeArg(int index) => throw new RuntimeFatalException();
+    IType IType.Apply(TypeEnv typeEnv) => this;
+    TypeId IType.GetTypeId() => new VoidTypeId();
+    IType? IType.GetMemberType(Name name, ImmutableArray<IType> typeArgs) => null;
+    SymbolQueryResult? IType.QueryMember(Name name, int explicitTypeArgCount) => null;
+    TResult IType.Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitVoid(this);
+
+    bool ICyclicEqualityComparableClass<IType>.CyclicEquals(IType other, ref CyclicEqualityCompareContext context)
+        => other is VoidType otherType && CyclicEquals(otherType, ref context);
+
+    bool ICyclicEqualityComparableClass<VoidType>.CyclicEquals(VoidType other, ref CyclicEqualityCompareContext context)
+        => CyclicEquals(other, ref context);
+
+    void ISerializable.DoSerialize(ref SerializeContext context)
+    {
+        // do nothing
     }
 }

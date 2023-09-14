@@ -6,6 +6,21 @@ namespace Citron;
 
 partial struct StmtParser
 {
+    bool ParseIfTestFragment([NotNullWhen(returnValue: true)] out Stmt? outStmt)
+    {
+        var prevContext = context;
+
+        if (!InternalParseIfTestFragment(out outStmt))
+        {
+            context = prevContext;
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+    }
+
     bool ParseIfStmt([NotNullWhen(returnValue: true)] out Stmt? outStmt)
     {
         var prevContext = context;

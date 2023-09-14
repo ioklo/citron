@@ -206,9 +206,9 @@ namespace Citron.Analysis
             }
 
             var thisDeclSymbol = declSymbol;
-            context.AddBuildingTrivialConstructorPhaseTask(uniqueBaseClass?.Symbol.GetDecl(), declSymbol, () =>
+            context.AddBuildingTrivialConstructorPhaseTask(uniqueBaseClass?.GetDecl(), declSymbol, () =>
             {
-                var baseTrivialConstructor = uniqueBaseClass?.Symbol.GetTrivialConstructor();
+                var baseTrivialConstructor = uniqueBaseClass?.GetTrivialConstructor();
                 ClassConstructorDeclSymbol? trivialConstructor = null;
 
                 // baseStruct가 있고, TrivialConstructor가 없는 경우 => 안 만들고 진행

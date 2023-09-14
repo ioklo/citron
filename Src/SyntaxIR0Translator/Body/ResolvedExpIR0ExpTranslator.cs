@@ -36,7 +36,7 @@ namespace Citron.Analysis
         TranslationResult<R.Exp> IResolvedExpVisitor<TranslationResult<R.Exp>>.VisitClassMemberVar(ResolvedExp.ClassMemberVar reExp)
         {
             var locResult = new CoreResolvedExpIR0LocTranslator(context, nodeForErrorReport).TranslateClassMemberVar(reExp);
-            return HandleLocTranslationResult(locResult, reExp.GetExpType());
+            return HandleLocTranslationResult(locResult, context.GetExpType(reExp));
         }
 
         TranslationResult<R.Exp> IResolvedExpVisitor<TranslationResult<R.Exp>>.VisitEnumElemMemberVar(ResolvedExp.EnumElemMemberVar reExp)
@@ -83,14 +83,14 @@ namespace Citron.Analysis
         TranslationResult<R.Exp> IResolvedExpVisitor<TranslationResult<R.Exp>>.VisitLocalDeref(ResolvedExp.LocalDeref reExp)
         {
             var loc = new CoreResolvedExpIR0LocTranslator(context, nodeForErrorReport).TranslateLocalDeref(reExp);
-            return HandleLocTranslationResult(loc, reExp.GetExpType());
+            return HandleLocTranslationResult(loc, context.GetExpType(reExp));
         }
 
         // *x
         TranslationResult<R.Exp> IResolvedExpVisitor<TranslationResult<R.Exp>>.VisitBoxDeref(ResolvedExp.BoxDeref reExp)
         {
             var loc = new CoreResolvedExpIR0LocTranslator(context, nodeForErrorReport).TranslateBoxDeref(reExp);
-            return HandleLocTranslationResult(loc, reExp.GetExpType());
+            return HandleLocTranslationResult(loc, context.GetExpType(reExp));
         }
     }
 }

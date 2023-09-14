@@ -321,22 +321,20 @@ struct CallableAndArgsBinder : IIntermediateExpVisitor<TranslationResult<R.Exp>>
             return FatalCallable(A0902_CallExp_CallableExpressionIsNotCallable);
         }
 
-        var lambdaSymbol = lambdaType.Symbol;
-
         // 일단 lambda파라미터는 params를 지원하지 않는 것으로
         // args는 params를 지원 할 수 있음
 
-        var outer = lambdaType.Symbol.GetOuter();
-        var outerTypeEnv = outer != null ? outer.GetTypeEnv() : TypeEnv.Empty;
+        var outer = lambdaType.GetOuter();
+        var outerTypeEnv = outer.GetTypeEnv();
 
         // TODO: 메모리를 덜 먹는 방법으로
-        var parameters = ImmutableArray.CreateRange(lambdaSymbol.GetParameterCount(), lambdaSymbol.GetParameter);
+        var parameters = ImmutableArray.CreateRange(lambdaType.GetParameterCount(), lambdaType.GetParameter);
 
         var match = FuncMatcher.Match(context, outerTypeEnv, parameters, bVariadic: false, partialTypeArgs: default, argSyntaxes, new NullTypeResolver(typeArgs: default));
 
         if (match != null)
         {
-            return Valid(new R.CallLambdaExp(lambdaSymbol, callableLoc, match.Value.Args));
+            return Valid(new R.CallLambdaExp(lambdaType, callableLoc, match.Value.Args));
         }
         else
         {

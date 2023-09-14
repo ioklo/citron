@@ -1,6 +1,7 @@
 ﻿using Citron.Collections;
 using Citron.Infra;
 using Pretune;
+using System;
 
 namespace Citron.Symbol;
 
@@ -9,18 +10,23 @@ public partial class LocalPtrType : IType, ICyclicEqualityComparableClass<LocalP
 {
     IType innerType;
 
-    LocalPtrType Apply(TypeEnv typeEnv)
+    public LocalPtrType Apply(TypeEnv typeEnv)
     {
         var appliedInnerType = innerType.Apply(typeEnv);
         return new LocalPtrType(appliedInnerType);
     }
 
-    bool CyclicEquals(LocalPtrType other, ref CyclicEqualityCompareContext context)
+    public bool CyclicEquals(LocalPtrType other, ref CyclicEqualityCompareContext context)
     {
         if (!context.CompareClass(innerType, other.innerType))
             return false;
 
         return true;
+    }
+
+    public IType GetInnerType()
+    {
+        return innerType;
     }
 
     IType IType.Apply(TypeEnv typeEnv) => Apply(typeEnv);

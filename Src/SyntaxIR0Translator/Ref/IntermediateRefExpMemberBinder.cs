@@ -1,5 +1,4 @@
-﻿using System.Xml.Linq;
-using Citron.Collections;
+﻿using Citron.Collections;
 using Citron.Infra;
 using Citron.Symbol;
 using Citron.IR0;
@@ -194,7 +193,8 @@ struct IntermediateRefExpMemberBinder : IIntermediateRefExpVisitor<TranslationRe
 
         TranslationResult<IntermediateRefExp> ITypeVisitor<TranslationResult<IntermediateRefExp>>.VisitClass(ClassType type)
         {
-            var memberVar = type.Symbol.GetMemberVar(name);
+            var memberVar = type.GetMemberVar(name);
+
             if (memberVar == null)
                 return Fatal(A2007_ResolveIdentifier_NotFound);
 
@@ -214,7 +214,7 @@ struct IntermediateRefExpMemberBinder : IIntermediateRefExpVisitor<TranslationRe
         // e.x (E.Second.x)
         TranslationResult<IntermediateRefExp> ITypeVisitor<TranslationResult<IntermediateRefExp>>.VisitEnumElem(EnumElemType type)
         {
-            var memberVar = type.Symbol.GetMemberVar(name);
+            var memberVar = type.GetMemberVar(name);
             if (memberVar == null)
                 return Fatal(A2007_ResolveIdentifier_NotFound);
 
@@ -257,7 +257,7 @@ struct IntermediateRefExpMemberBinder : IIntermediateRefExpVisitor<TranslationRe
         // &C.s.id
         TranslationResult<IntermediateRefExp> ITypeVisitor<TranslationResult<IntermediateRefExp>>.VisitStruct(StructType type)
         {
-            var memberVar = type.Symbol.GetMemberVar(name);
+            var memberVar = type.GetMemberVar(name);
 
             if (memberVar == null)
                 return Fatal(A2007_ResolveIdentifier_NotFound);
@@ -291,11 +291,6 @@ struct IntermediateRefExpMemberBinder : IIntermediateRefExpVisitor<TranslationRe
             throw new NotImplementedException();
         }
 
-        TranslationResult<IntermediateRefExp> ITypeVisitor<TranslationResult<IntermediateRefExp>>.VisitVar(VarType type)
-        {
-            throw new RuntimeFatalException();
-        }
-
         TranslationResult<IntermediateRefExp> ITypeVisitor<TranslationResult<IntermediateRefExp>>.VisitVoid(VoidType type)
         {
             // void인 멤버가 나올 수 없으므로
@@ -327,7 +322,7 @@ struct IntermediateRefExpMemberBinder : IIntermediateRefExpVisitor<TranslationRe
         // &c.c.x
         TranslationResult<IntermediateRefExp> ITypeVisitor<TranslationResult<IntermediateRefExp>>.VisitClass(ClassType type)
         {
-            var memberVar = type.Symbol.GetMemberVar(name);
+            var memberVar = type.GetMemberVar(name);
             if (memberVar == null)
                 return Fatal(A2007_ResolveIdentifier_NotFound);
 
@@ -383,7 +378,7 @@ struct IntermediateRefExpMemberBinder : IIntermediateRefExpVisitor<TranslationRe
         // &c.s.x
         TranslationResult<IntermediateRefExp> ITypeVisitor<TranslationResult<IntermediateRefExp>>.VisitStruct(StructType type)
         {
-            var memberVar = type.Symbol.GetMemberVar(name);
+            var memberVar = type.GetMemberVar(name);
             if (memberVar == null)
                 return Fatal(A2007_ResolveIdentifier_NotFound);
 
@@ -403,11 +398,6 @@ struct IntermediateRefExpMemberBinder : IIntermediateRefExpVisitor<TranslationRe
         TranslationResult<IntermediateRefExp> ITypeVisitor<TranslationResult<IntermediateRefExp>>.VisitTypeVar(TypeVarType type)
         {
             throw new NotImplementedException();
-        }
-
-        TranslationResult<IntermediateRefExp> ITypeVisitor<TranslationResult<IntermediateRefExp>>.VisitVar(VarType type)
-        {
-            throw new RuntimeFatalException();
         }
 
         // &c.v
@@ -441,7 +431,7 @@ struct IntermediateRefExpMemberBinder : IIntermediateRefExpVisitor<TranslationRe
         // &s.c.x
         TranslationResult<IntermediateRefExp> ITypeVisitor<TranslationResult<IntermediateRefExp>>.VisitClass(ClassType type)
         {
-            var memberVar = type.Symbol.GetMemberVar(name);
+            var memberVar = type.GetMemberVar(name);
             if (memberVar == null)
                 return Fatal(A2007_ResolveIdentifier_NotFound);
 
@@ -460,7 +450,7 @@ struct IntermediateRefExpMemberBinder : IIntermediateRefExpVisitor<TranslationRe
         // &s.e.x
         TranslationResult<IntermediateRefExp> ITypeVisitor<TranslationResult<IntermediateRefExp>>.VisitEnumElem(EnumElemType type)
         {
-            var memberVar = type.Symbol.GetMemberVar(name);
+            var memberVar = type.GetMemberVar(name);
             if (memberVar == null)
                 return Fatal(A2007_ResolveIdentifier_NotFound);
 
@@ -503,7 +493,7 @@ struct IntermediateRefExpMemberBinder : IIntermediateRefExpVisitor<TranslationRe
         // &s.s.x
         TranslationResult<IntermediateRefExp> ITypeVisitor<TranslationResult<IntermediateRefExp>>.VisitStruct(StructType type)
         {
-            var memberVar = type.Symbol.GetMemberVar(name);
+            var memberVar = type.GetMemberVar(name);
             if (memberVar == null)
                 return Fatal(A2007_ResolveIdentifier_NotFound);
 
@@ -523,11 +513,6 @@ struct IntermediateRefExpMemberBinder : IIntermediateRefExpVisitor<TranslationRe
         TranslationResult<IntermediateRefExp> ITypeVisitor<TranslationResult<IntermediateRefExp>>.VisitTypeVar(TypeVarType type)
         {
             throw new NotImplementedException();
-        }
-
-        TranslationResult<IntermediateRefExp> ITypeVisitor<TranslationResult<IntermediateRefExp>>.VisitVar(VarType type)
-        {
-            throw new RuntimeFatalException();
         }
         
         TranslationResult<IntermediateRefExp> ITypeVisitor<TranslationResult<IntermediateRefExp>>.VisitVoid(VoidType type)
@@ -615,7 +600,7 @@ struct IntermediateRefExpMemberBinder : IIntermediateRefExpVisitor<TranslationRe
         // &(*pS).x
         TranslationResult<IntermediateRefExp> ITypeVisitor<TranslationResult<IntermediateRefExp>>.VisitStruct(StructType type)
         {
-            var memberVar = type.Symbol.GetMemberVar(name);
+            var memberVar = type.GetMemberVar(name);
             if (memberVar == null)
                 return Fatal(A2007_ResolveIdentifier_NotFound);
 
@@ -636,11 +621,6 @@ struct IntermediateRefExpMemberBinder : IIntermediateRefExpVisitor<TranslationRe
         {
             throw new NotImplementedException();
         }
-
-        TranslationResult<IntermediateRefExp> ITypeVisitor<TranslationResult<IntermediateRefExp>>.VisitVar(VarType type)
-        {
-            throw new RuntimeFatalException();
-        }
         
         TranslationResult<IntermediateRefExp> ITypeVisitor<TranslationResult<IntermediateRefExp>>.VisitVoid(VoidType type)
         {
@@ -652,7 +632,9 @@ struct IntermediateRefExpMemberBinder : IIntermediateRefExpVisitor<TranslationRe
     TranslationResult<IntermediateRefExp> IIntermediateRefExpVisitor<TranslationResult<IntermediateRefExp>>.VisitDerefedBoxValue(IntermediateRefExp.DerefedBoxValue imRefExp)
     {
         var visitor = new BoxValueTypeVisitor(imRefExp, name, typeArgs, context, nodeForErrorReport);
-        return imRefExp.InnerExp.GetExpType().Accept<BoxValueTypeVisitor, TranslationResult<IntermediateRefExp>>(ref visitor);
+        var innerExpType = context.GetExpType(imRefExp.InnerExp);
+
+        return innerExpType.Accept<BoxValueTypeVisitor, TranslationResult<IntermediateRefExp>>(ref visitor);
     }
 
     // exp.id
@@ -681,7 +663,7 @@ struct IntermediateRefExpMemberBinder : IIntermediateRefExpVisitor<TranslationRe
             if (typeArgs.Length != 0)
                 return Fatal(A2002_ResolveIdentifier_VarWithTypeArg);
 
-            var memberVar = type.Symbol.GetMemberVar(name);
+            var memberVar = type.GetMemberVar(name);
             if (memberVar == null)
                 return Fatal(A2007_ResolveIdentifier_NotFound);
             
@@ -747,12 +729,7 @@ struct IntermediateRefExpMemberBinder : IIntermediateRefExpVisitor<TranslationRe
             // TypeVar는 멤버함수를 가질 수 없다
             throw new RuntimeFatalException();
         }
-
-        TranslationResult<IntermediateRefExp> ITypeVisitor<TranslationResult<IntermediateRefExp>>.VisitVar(VarType type)
-        {
-            throw new RuntimeFatalException();
-        }
-
+        
         TranslationResult<IntermediateRefExp> ITypeVisitor<TranslationResult<IntermediateRefExp>>.VisitVoid(VoidType type)
         {
             // void는 멤버함수를 가질 수 없다

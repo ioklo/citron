@@ -108,7 +108,7 @@ namespace Citron.Symbol
             return true;
         }
 
-        public void DoSerialize(ref SerializeContext context)
+        void ISerializable.DoSerialize(ref SerializeContext context)
         {
             context.SerializeRef(nameof(outer), outer);
             context.SerializeRef(nameof(name), name);

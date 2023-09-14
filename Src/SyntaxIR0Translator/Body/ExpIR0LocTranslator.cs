@@ -46,7 +46,7 @@ partial struct ExpIR0LocTranslator : IExpVisitor
     // fast track
     LocTranslationResult HandleExp(R.Exp exp)
     {
-        var expType = exp.GetExpType();
+        var expType = context.GetExpType(exp);
 
         if (bWrapExpAsLoc)
         {
@@ -128,6 +128,18 @@ partial struct ExpIR0LocTranslator : IExpVisitor
     LocTranslationResult IExpVisitor.VisitBox(S.BoxExp exp)
     {
         var rexpResult = new CoreExpIR0ExpTranslator(hintType, context).TranslateBox(exp);
+        return HandleExpTranslationResult(rexpResult);
+    }
+
+    LocTranslationResult IExpVisitor.VisitIs(S.IsExp exp)
+    {
+        var rexpResult = new CoreExpIR0ExpTranslator(hintType, context).TranslateIs(exp);
+        return HandleExpTranslationResult(rexpResult);
+    }
+
+    LocTranslationResult IExpVisitor.VisitAs(S.AsExp exp)
+    {
+        var rexpResult = new CoreExpIR0ExpTranslator(hintType, context).TranslateAs(exp);
         return HandleExpTranslationResult(rexpResult);
     }
 

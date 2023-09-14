@@ -114,9 +114,10 @@ namespace Citron.Analysis
 
             // 다음은 constructor 빌드 단계
             var structDeclSymbol = this.structDeclSymbol;
-            context.AddBuildingTrivialConstructorPhaseTask(uniqueBaseType?.Symbol.GetDecl(), structDeclSymbol, () =>
+
+            context.AddBuildingTrivialConstructorPhaseTask(uniqueBaseType?.GetDeclSymbol(), structDeclSymbol, () =>
             {
-                var baseTrivialConstructor = uniqueBaseType?.Symbol.GetTrivialConstructor();                
+                var baseTrivialConstructor = uniqueBaseType?.GetTrivialConstructor();
 
                 // baseStruct가 있고, TrivialConstructor가 없는 경우 => 안 만들고 진행
                 // baseStruct가 있고, TrivialConstructor가 있는 경우 => 진행

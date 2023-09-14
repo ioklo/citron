@@ -148,4 +148,14 @@ struct ExpResolvedExpTranslator : IExpVisitor
     {
         return HandleExpTranslationResult(new CoreExpIR0ExpTranslator(hintType, context).TranslateBox(exp));
     }
+
+    TranslationResult<ResolvedExp> IExpVisitor.VisitIs(S.IsExp exp)
+    {
+        return HandleExpTranslationResult(new CoreExpIR0ExpTranslator(hintType, context).TranslateIs(exp));
+    }
+
+    TranslationResult<ResolvedExp> IExpVisitor.VisitAs(S.AsExp exp)
+    {
+        return HandleExpTranslationResult(new CoreExpIR0ExpTranslator(hintType, context).TranslateAs(exp));
+    }
 }

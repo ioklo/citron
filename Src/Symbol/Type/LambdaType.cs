@@ -1,6 +1,7 @@
 ﻿using Citron.Collections;
 using Citron.Infra;
 using Pretune;
+using System;
 
 namespace Citron.Symbol;
 
@@ -20,6 +21,26 @@ public partial class LambdaType : IType, ICyclicEqualityComparableClass<LambdaTy
             return false;
 
         return true;
+    }
+
+    public ISymbolNode GetOuter()
+    {
+        return symbol.GetOuter();
+    }
+
+    public int GetParameterCount()
+    {
+        return symbol.GetParameterCount();
+    }
+
+    public FuncParameter GetParameter(int index)
+    {
+        return symbol.GetParameter(index);
+    }
+
+    public FuncReturn GetReturn()
+    {
+        return symbol.GetReturn();
     }
 
     TResult IType.Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitLambda(this);
@@ -43,4 +64,6 @@ public partial class LambdaType : IType, ICyclicEqualityComparableClass<LambdaTy
 
     bool ICyclicEqualityComparableClass<LambdaType>.CyclicEquals(LambdaType other, ref CyclicEqualityCompareContext context)
         => CyclicEquals(other, ref context);
+
+    
 }

@@ -9,13 +9,18 @@ public partial class BoxPtrType : IType, ICyclicEqualityComparableClass<BoxPtrTy
 {
     IType innerType;
 
-    BoxPtrType Apply(TypeEnv typeEnv)
+    public IType GetInnerType()
+    {
+        return innerType;
+    }
+
+    public BoxPtrType Apply(TypeEnv typeEnv)
     {
         var appliedInnerType = innerType.Apply(typeEnv);
         return new BoxPtrType(appliedInnerType);
     }
 
-    bool CyclicEquals(BoxPtrType other, ref CyclicEqualityCompareContext context)
+    public bool CyclicEquals(BoxPtrType other, ref CyclicEqualityCompareContext context)
     {
         if (!context.CompareClass(innerType, other.innerType))
             return false;

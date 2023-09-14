@@ -52,12 +52,12 @@ struct CoreExpIR0ExpTranslator
 
     public R.Exp TranslateBoolLiteral(S.BoolLiteralExp exp)
     {
-        return new R.BoolLiteralExp(exp.Value, context.GetBoolType());
+        return new R.BoolLiteralExp(exp.Value);
     }
 
     public R.Exp TranslateIntLiteral(S.IntLiteralExp exp)
     {
-        return new R.IntLiteralExp(exp.Value, context.GetIntType());
+        return new R.IntLiteralExp(exp.Value);
     }
 
     TranslationResult<R.StringExpElement> VisitStringExpElement(S.StringExpElement elem)
@@ -69,8 +69,8 @@ struct CoreExpIR0ExpTranslator
             var result = ExpIR0ExpTranslator.Translate(expElem.Exp, context, hintType: null);
             if (!result.IsValid(out var exp))
                 return TranslationResult.Error<R.StringExpElement>();
-            
-            var expType = exp.GetExpType();
+
+            var expType = context.GetExpType(exp);
 
             // 캐스팅이 필요하다면 
             if (expType.Equals(context.GetIntType()))
@@ -142,7 +142,7 @@ struct CoreExpIR0ExpTranslator
         if (bFatal)
             return TranslationResult.Error<R.StringExp>();
 
-        return TranslationResult.Valid(new R.StringExp(builder.ToImmutable(), context.GetStringType()));
+        return TranslationResult.Valid(new R.StringExp(builder.ToImmutable()));
     }
 
     // int만 지원한다
@@ -191,8 +191,10 @@ struct CoreExpIR0ExpTranslator
         {
             case S.UnaryOpKind.LogicalNot:
                 {
+                    var operandExpType = context.GetExpType(operandExp);
+
                     // exact match
-                    if (!context.GetBoolType().Equals(operandExp.GetExpType()))
+                    if (!context.GetBoolType().Equals(operandExpType))
                     {
                         context.AddFatalError(A0701_UnaryOp_LogicalNotOperatorIsAppliedToBoolTypeOperandOnly, exp.Operand);
                         return Error();
@@ -207,7 +209,9 @@ struct CoreExpIR0ExpTranslator
 
             case S.UnaryOpKind.Minus:
                 {
-                    if (!context.GetIntType().Equals(operandExp.GetExpType()))
+                    var operandExpType = context.GetExpType(operandExp);
+
+                    if (!context.GetIntType().Equals(operandExpType))
                     {
                         context.AddFatalError(A0702_UnaryOp_UnaryMinusOperatorIsAppliedToIntTypeOperandOnly, exp.Operand);
                         return Error();
@@ -293,8 +297,8 @@ struct CoreExpIR0ExpTranslator
             var equalInfos = context.GetBinaryOpInfos(S.BinaryOpKind.Equal);
             foreach (var info in equalInfos)
             {
-                var castExp0 = BodyMisc.TryCastExp_Exp(operandExp0, info.OperandType0);
-                var castExp1 = BodyMisc.TryCastExp_Exp(operandExp1, info.OperandType1);
+                var castExp0 = BodyMisc.TryCastExp_Exp(operandExp0, info.OperandType0, context);
+                var castExp1 = BodyMisc.TryCastExp_Exp(operandExp1, info.OperandType1, context);
 
                 // NOTICE: 우선순위별로 정렬되어 있기 때문에 먼저 매칭되는 것을 선택한다
                 if (castExp0 != null && castExp1 != null)
@@ -309,8 +313,8 @@ struct CoreExpIR0ExpTranslator
         var matchedInfos = context.GetBinaryOpInfos(exp.Kind);
         foreach (var info in matchedInfos)
         {
-            var castExp0 = BodyMisc.TryCastExp_Exp(operandExp0, info.OperandType0);
-            var castExp1 = BodyMisc.TryCastExp_Exp(operandExp1, info.OperandType1);
+            var castExp0 = BodyMisc.TryCastExp_Exp(operandExp0, info.OperandType0, context);
+            var castExp1 = BodyMisc.TryCastExp_Exp(operandExp1, info.OperandType1, context);
 
             // NOTICE: 우선순위별로 정렬되어 있기 때문에 먼저 매칭되는 것을 선택한다
             if (castExp0 != null && castExp1 != null)
@@ -341,7 +345,7 @@ struct CoreExpIR0ExpTranslator
         var builder = ImmutableArray.CreateBuilder<R.Exp>(exp.Elems.Length);
 
         // TODO: 타입 힌트도 이용해야 할 것 같다
-        IType? curElemType = (exp.ElemType != null) ? context.MakeType(exp.ElemType) : null;
+        IType? curElemType = null;
 
         foreach (var elem in exp.Elems)
         {
@@ -349,7 +353,7 @@ struct CoreExpIR0ExpTranslator
             if (!elemExpResult.IsValid(out var elemExp))
                 return Error();
 
-            var elemExpType = elemExp.GetExpType();
+            var elemExpType = context.GetExpType(elemExp);
             builder.Add(elemExp);
 
             if (curElemType == null)
@@ -428,12 +432,63 @@ struct CoreExpIR0ExpTranslator
     public TranslationResult<R.Exp> TranslateBox(S.BoxExp exp)
     {
         // hintType전수
-        var innerHintType = (hintType as BoxPtrType)?.InnerType;
+        var innerHintType = (hintType as BoxPtrType)?.GetInnerType();
 
         var innerExpResult = ExpIR0ExpTranslator.Translate(exp.InnerExp, context, innerHintType);
         if (!innerExpResult.IsValid(out var innerExp))
             return Error();
 
         return Valid(new R.BoxExp(innerExp));
+    }
+
+    public TranslationResult<R.Exp> TranslateIs(S.IsExp exp)
+    {
+        var targetExpResult = ExpIR0ExpTranslator.Translate(exp.Exp, context, hintType: null);
+        if (!targetExpResult.IsValid(out var targetExp))
+            return Error();
+
+        var targetType = context.GetExpType(targetExp);
+        var testType = context.MakeType(exp.Type);
+
+        // 5가지 케이스로 나뉜다
+        if (testType is ClassType testClassType)
+        {
+            if (targetType is ClassType)
+                return Valid(new R.ClassIsClassExp(targetExp, testClassType));
+            else if (targetType is InterfaceType)
+                return Valid(new R.InterfaceIsClassExp(targetExp, testClassType));
+            else
+                throw new NotImplementedException(); // 에러 처리
+        }
+        else if (testType is InterfaceType testInterfaceType)
+        {
+            if (targetType is ClassType)
+                return Valid(new R.ClassIsInterfaceExp(targetExp, testInterfaceType));
+            else if (targetType is InterfaceType)
+                return Valid(new R.InterfaceIsInterfaceExp(targetExp, testInterfaceType));
+            else
+                throw new NotImplementedException(); // 에러 처리
+        }
+        else if (testType is EnumElemType testEnumElemType)
+        {
+            if (targetType is EnumType)
+                return Valid(new R.EnumIsEnumElemExp(targetExp, testEnumElemType));
+            else
+                throw new NotImplementedException(); // 에러 처리
+        }
+        else
+            throw new NotImplementedException(); // 에러 처리
+    }
+
+    public TranslationResult<R.Exp> TranslateAs(S.AsExp exp)
+    {
+        var targetExpResult = ExpIR0ExpTranslator.Translate(exp.Exp, context, hintType: null);
+        if (!targetExpResult.IsValid(out var targetExp))
+            return Error();
+
+        var targetType = context.GetExpType(targetExp);
+        var testType = context.MakeType(exp.Type);
+
+        return BodyMisc.MakeAsExp(targetType, testType, targetExp);
     }
 }

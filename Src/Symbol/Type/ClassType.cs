@@ -1,6 +1,7 @@
 ﻿using Citron.Collections;
 using Citron.Infra;
 using Pretune;
+using System;
 
 namespace Citron.Symbol;
 
@@ -9,12 +10,37 @@ public partial class ClassType : IType, ICyclicEqualityComparableClass<ClassType
 {
     ClassSymbol symbol;
 
-    ClassType Apply(TypeEnv typeEnv)
+    public ClassType Apply(TypeEnv typeEnv)
     {
         return new ClassType(symbol.Apply(typeEnv));
     }
 
-    bool CyclicEquals(ClassType other, ref CyclicEqualityCompareContext context)
+    public ClassDeclSymbol GetDecl()
+    {
+        return symbol.GetDecl();
+    }
+
+    public ClassType? GetBaseClass()
+    {
+        return symbol.GetBaseClass();
+    }
+
+    public SymbolQueryResult? QueryMember(Name memberName, int explicitTypeArgsCount)
+    {
+        return symbol.QueryMember(memberName, explicitTypeArgsCount);
+    }
+
+    public ClassMemberVarSymbol? GetMemberVar(Name name)
+    {
+        return symbol.GetMemberVar(name);
+    }
+
+    public ClassConstructorSymbol? GetTrivialConstructor()
+    {
+        return symbol.GetTrivialConstructor();
+    }
+
+    public bool CyclicEquals(ClassType other, ref CyclicEqualityCompareContext context)
     {
         if (!context.CompareClass(symbol, other.symbol))
             return false;
@@ -40,4 +66,6 @@ public partial class ClassType : IType, ICyclicEqualityComparableClass<ClassType
     {
         context.SerializeRef(nameof(symbol), symbol);
     }
+
+    
 }

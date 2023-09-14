@@ -9,7 +9,7 @@ using Citron.Symbol;
 
 namespace Citron
 {
-    public class IR0GlobalContext
+    public class IR0GlobalContext : IBuiltInTypeProvider
     {
         Evaluator evaluator;
         IR0Loader loader;
@@ -96,6 +96,18 @@ namespace Citron
             return null;
         }
 
-        
+        IType IBuiltInTypeProvider.GetBoolType()
+        {   
+        }
+
+        IType IBuiltInTypeProvider.GetIntType()
+        {
+            throw new NotImplementedException();
+        }
+
+        IType IBuiltInTypeProvider.GetStringType()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

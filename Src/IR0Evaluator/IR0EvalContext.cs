@@ -87,5 +87,10 @@ namespace Citron
         public void AddTask(Task task) => localContext.AddTask(task);
         public Task WaitAllAsync() => localContext.WaitAllAsync();
         #endregion LocalContext
+
+        public IBuiltInTypeProvider GetIBuiltInTypeProvider()
+        {
+            return globalContext;
+        }
     }
 }

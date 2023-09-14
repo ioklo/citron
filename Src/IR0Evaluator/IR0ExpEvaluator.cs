@@ -359,7 +359,7 @@ namespace Citron
 
         async ValueTask IIR0ExpVisitor<ValueTask>.VisitBoxExp(BoxExp boxExp)
         {
-            var value = context.AllocValue(boxExp.InnerExp.GetExpType());
+            var value = context.AllocValue(boxExp.InnerExp.GetExpType(context));
             await EvalAsync(boxExp.InnerExp, context, value);
 
             ((BoxPtrValue)result).Set(value, value);

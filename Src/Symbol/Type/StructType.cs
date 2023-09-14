@@ -1,6 +1,7 @@
 ﻿using Citron.Collections;
 using Citron.Infra;
 using Pretune;
+using System;
 
 namespace Citron.Symbol;
 
@@ -9,17 +10,32 @@ public partial class StructType : IType, ICyclicEqualityComparableClass<StructTy
 {
     StructSymbol symbol;
 
-    StructType Apply(TypeEnv typeEnv)
+    public StructType Apply(TypeEnv typeEnv)
     {
         return new StructType(symbol.Apply(typeEnv));
     }
 
-    bool CyclicEquals(StructType other, ref CyclicEqualityCompareContext context)
+    public bool CyclicEquals(StructType other, ref CyclicEqualityCompareContext context)
     {
         if (!context.CompareClass(symbol, other.symbol))
             return false;
 
         return true;
+    }
+
+    public StructDeclSymbol GetDeclSymbol()
+    {
+        return symbol.GetDecl();
+    }
+
+    public StructConstructorSymbol? GetTrivialConstructor()
+    {
+        return symbol.GetTrivialConstructor();
+    }
+
+    public StructMemberVarSymbol? GetMemberVar(Name name)
+    {
+        return symbol.GetMemberVar(name);
     }
 
     IType IType.GetTypeArg(int index) => symbol.GetTypeArg(index);
@@ -40,4 +56,6 @@ public partial class StructType : IType, ICyclicEqualityComparableClass<StructTy
     {
         context.SerializeRef(nameof(symbol), symbol);
     }
+
+    
 }

@@ -140,14 +140,14 @@ partial struct ExpParser
 			return true;
 		}
 	}
-	#endregion
+    #endregion
 
-	#region Test, LeftAssoc
-	bool ParseTestExp([NotNullWhen(returnValue: true)] out Exp? outExp)
+    #region Test, LeftAssoc
+    bool ParseTestAndTypeTestExp([NotNullWhen(returnValue: true)] out Exp? outExp)
 	{
 		var prevContext = context;
 
-		if (!InternalParseTestExp(out outExp))
+		if (!InternalParseTestAndTypeTestExp(out outExp))
 		{
 			context = prevContext;
 			return false;

@@ -1,6 +1,7 @@
 ﻿using Citron.Collections;
 using Citron.Infra;
 using Pretune;
+using System;
 
 namespace Citron.Symbol;
 
@@ -9,12 +10,12 @@ public partial class EnumElemType : IType, ICyclicEqualityComparableClass<EnumEl
 {
     EnumElemSymbol symbol;
 
-    EnumElemType Apply(TypeEnv typeEnv)
+    public EnumElemType Apply(TypeEnv typeEnv)
     {
         return new EnumElemType(symbol.Apply(typeEnv));
     }
 
-    bool CyclicEquals(EnumElemType other, ref CyclicEqualityCompareContext context)
+    public bool CyclicEquals(EnumElemType other, ref CyclicEqualityCompareContext context)
     {
         if (!context.CompareClass(symbol, other.symbol))
             return false;
@@ -22,10 +23,21 @@ public partial class EnumElemType : IType, ICyclicEqualityComparableClass<EnumEl
         return true;
     }
 
+    public EnumType GetEnumType()
+    {
+        var enumSymbol = symbol.GetOuter();
+        return new EnumType(enumSymbol);
+    }
+
+    public EnumElemMemberVarSymbol? GetMemberVar(Name name)
+    {
+        return symbol.GetMemberVar(name);
+    }
+
     TResult IType.Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitEnumElem(this);
     IType IType.GetTypeArg(int index) => symbol.GetTypeArg(index);
     IType IType.Apply(TypeEnv typeEnv) => Apply(typeEnv);
-    TypeId IType.GetTypeId() => symbol.GetSymbolId();
+    TypeId IType.GetTypeId() => new SymbolTypeId(symbol.GetSymbolId());
     IType? IType.GetMemberType(Name name, ImmutableArray<IType> typeArgs)
         => ((ITypeSymbol)symbol).GetMemberType(name, typeArgs);
 
@@ -42,4 +54,6 @@ public partial class EnumElemType : IType, ICyclicEqualityComparableClass<EnumEl
     {
         context.SerializeRef(nameof(symbol), symbol);
     }
+
+    
 }

@@ -60,8 +60,9 @@ namespace Citron.LexicalAnalysis
     public class StructToken : Token { public static readonly StructToken Instance = new StructToken(); private StructToken() { } }
     public class ClassToken : Token { public static readonly ClassToken Instance = new ClassToken(); private ClassToken() { } }
     public class IsToken : Token { public static readonly IsToken Instance = new IsToken(); private IsToken() { } }
+    public class AsToken : Token { public static readonly AsToken Instance = new AsToken(); private AsToken() { } }
 
-    public class RefToken : Token { public static readonly RefToken Instance = new RefToken(); private RefToken() { } }
+public class RefToken : Token { public static readonly RefToken Instance = new RefToken(); private RefToken() { } }
     public class BoxToken : Token { public static readonly BoxToken Instance = new BoxToken(); private BoxToken() { } }
     public class NullToken : Token { public static readonly NullToken Instance = new NullToken(); private NullToken() { } }
 

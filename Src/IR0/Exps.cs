@@ -397,7 +397,7 @@ namespace Citron.IR0
 
     // f(2, 3)    
     // Callable은 (() => {}) ()때문에 Loc이어야 한다
-    public record class CallLambdaExp(LambdaSymbol Lambda, Loc Callable, ImmutableArray<Argument> Args) : Exp
+    public record class CallLambdaExp(LambdaType Lambda, Loc Callable, ImmutableArray<Argument> Args) : Exp
     {
         public override IType GetExpType(IBuiltInTypeProvider provider)
         {
@@ -424,7 +424,7 @@ namespace Citron.IR0
     #endregion Inline
 
     #region TypeTest
-    public record class ClassIsClassExp(Exp Exp, ClassSymbol Symbol) : Exp
+    public record class ClassIsClassExp(Exp Exp, ClassType ClassType) : Exp
     {
         public override IType GetExpType(IBuiltInTypeProvider provider)
         {
@@ -434,17 +434,17 @@ namespace Citron.IR0
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitClassIsClassExp(this);
     }
 
-    public record class ClassAsClassExp(Exp Exp, ClassSymbol Symbol) : Exp
+    public record class ClassAsClassExp(Exp Exp, ClassType ClassType) : Exp
     {
         public override IType GetExpType(IBuiltInTypeProvider provider)
         {
-            return new ClassType(Symbol);
+            return ClassType;
         }
 
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitClassAsClassExp(this);
     }
 
-    public record class ClassIsInterfaceExp(Exp Exp, InterfaceSymbol Symbol) : Exp
+    public record class ClassIsInterfaceExp(Exp Exp, InterfaceType InterfaceType) : Exp
     {
         public override IType GetExpType(IBuiltInTypeProvider provider)
         {
@@ -464,7 +464,7 @@ namespace Citron.IR0
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitClassAsInterfaceExp(this);
     }
 
-    public record class InterfaceIsClassExp(Exp Exp, ClassSymbol Symbol) : Exp
+    public record class InterfaceIsClassExp(Exp Exp, ClassType ClassType) : Exp
     {
         public override IType GetExpType(IBuiltInTypeProvider provider)
         {
@@ -474,17 +474,17 @@ namespace Citron.IR0
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitInterfaceIsClassExp(this);
     }
 
-    public record class InterfaceAsClassExp(Exp Exp, ClassSymbol Symbol) : Exp
+    public record class InterfaceAsClassExp(Exp Exp, ClassType ClassType) : Exp
     {
         public override IType GetExpType(IBuiltInTypeProvider provider)
         {
-            return new ClassType(Symbol);
+            return ClassType;
         }
 
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitInterfaceAsClassExp(this);
     }
 
-    public record class InterfaceIsInterfaceExp(Exp Exp, InterfaceSymbol Symbol) : Exp
+    public record class InterfaceIsInterfaceExp(Exp Exp, InterfaceType InterfaceType) : Exp
     {
         public override IType GetExpType(IBuiltInTypeProvider provider)
         {
@@ -494,17 +494,17 @@ namespace Citron.IR0
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitInterfaceIsInterfaceExp(this);
     }
 
-    public record class InterfaceAsInterfaceExp(Exp Exp, InterfaceSymbol Symbol) : Exp
+    public record class InterfaceAsInterfaceExp(Exp Exp, InterfaceType InterfaceType) : Exp
     {
         public override IType GetExpType(IBuiltInTypeProvider provider)
         {
-            return new InterfaceType(Symbol);
+            return InterfaceType;
         }
 
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitInterfaceAsInterfaceExp(this);
     }
 
-    public record class EnumIsEnumElemExp(Exp Exp, EnumElemSymbol Symbol) : Exp
+    public record class EnumIsEnumElemExp(Exp Exp, EnumElemType EnumElemType) : Exp
     {
         public override IType GetExpType(IBuiltInTypeProvider provider)
         {
@@ -514,11 +514,11 @@ namespace Citron.IR0
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitEnumIsEnumElemExp(this);
     }
 
-    public record class EnumAsEnumElemExp(Exp Exp, EnumElemSymbol Symbol) : Exp
+    public record class EnumAsEnumElemExp(Exp Exp, EnumElemType EnumElemType) : Exp
     {
         public override IType GetExpType(IBuiltInTypeProvider provider)
         {
-            return new NullableType(new EnumElemType(Symbol));
+            return new NullableType(EnumElemType);
         }
 
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitEnumAsEnumElemExp(this);

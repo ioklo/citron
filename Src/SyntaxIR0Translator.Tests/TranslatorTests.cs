@@ -392,7 +392,7 @@ namespace Citron.Test
         {
             var syntaxScript = SScript(
                 new S.ForStmt(null, null, null, new S.EmbeddableStmt.Single(new S.ContinueStmt())),
-                new S.ForeachStmt(SIntTypeExp(), "x", new S.ListExp(SIntTypeExp(), default), new S.EmbeddableStmt.Single(new S.ContinueStmt()))
+                new S.ForeachStmt(SIntTypeExp(), "x", new S.ListExp(Elems: default), new S.EmbeddableStmt.Single(new S.ContinueStmt()))
             );
 
             var script = Translate(syntaxScript);
@@ -430,7 +430,7 @@ namespace Citron.Test
             //     foreach(int x in [int]()) break;
             var syntaxScript = SScript(
                 new S.ForStmt(null, null, null, new S.EmbeddableStmt.Single(
-                    new S.ForeachStmt(SIntTypeExp(), "x", new S.ListExp(SIntTypeExp(), default), new S.EmbeddableStmt.Single(new S.BreakStmt()))
+                    new S.ForeachStmt(SIntTypeExp(), "x", new S.ListExp(Elems: default), new S.EmbeddableStmt.Single(new S.BreakStmt()))
                 ))
             );
 
@@ -873,7 +873,7 @@ namespace Citron.Test
         public void ForeachStmt_TranslatesTrivially()
         {
             // foreach(int x in list<int>());
-            var scriptSyntax = SScript(new S.ForeachStmt(SIntTypeExp(), "x", new S.ListExp(SIntTypeExp(), default), SEmbeddableBlankStmt()));
+            var scriptSyntax = SScript(new S.ForeachStmt(SIntTypeExp(), "x", new S.ListExp(Elems: default), SEmbeddableBlankStmt()));
 
             var script = Translate(scriptSyntax);
 
@@ -906,7 +906,7 @@ namespace Citron.Test
         public void ForeachStmt_ChecksElemTypeIsAssignableFromIteratorElemType()
         {
             S.ForeachStmt foreachStmt;
-            var scriptSyntax = SScript(foreachStmt = new S.ForeachStmt(SStringTypeExp(), "x", new S.ListExp(SIntTypeExp(), default), SEmbeddableBlankStmt()));
+            var scriptSyntax = SScript(foreachStmt = new S.ForeachStmt(SStringTypeExp(), "x", new S.ListExp(Elems: default), SEmbeddableBlankStmt()));
 
             var errors = TranslateWithErrors(scriptSyntax);
 

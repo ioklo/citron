@@ -21,6 +21,13 @@ namespace Citron.Symbol
         }
     }
 
+    public static class SymbolIds
+    {
+        public static SymbolId Bool = new SymbolId(new Name.Normal("System.Runtime"), null).Child(new Name.Normal("System")).Child(new Name.Normal("Bool"));
+        public static SymbolId Int = new SymbolId(new Name.Normal("System.Runtime"), null).Child(new Name.Normal("System")).Child(new Name.Normal("Int32"));
+        public static SymbolId String = new SymbolId(new Name.Normal("System.Runtime"), null).Child(new Name.Normal("System")).Child(new Name.Normal("String"));
+    }
+
     public static class SymbolIdExtensions
     {
         public static SymbolId GetOuter(this SymbolId id)

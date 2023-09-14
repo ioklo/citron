@@ -53,7 +53,7 @@ namespace Citron
         {
             switch(typeId)
             {
-                case SymbolId symbolId: return Make(symbolId.Path);
+                case SymbolTypeId symbolTypeId: return Make(symbolTypeId.SymbolId.Path);
                 default: throw new NotImplementedException();
             }
         }
@@ -64,7 +64,7 @@ namespace Citron
             return typeId.Accept<Applier, TypeId>(ref applier);
         }
 
-        public SymbolId ApplySymbol(SymbolId symbolId)
+        public SymbolTypeId ApplySymbol(SymbolId symbolId)
         {
             return new Applier(env).ApplySymbol(symbolId);
         }
@@ -78,10 +78,10 @@ namespace Citron
                 this.env = env;
             }
 
-            public SymbolId ApplySymbol(SymbolId typeId)
+            public SymbolTypeId ApplySymbol(SymbolId typeId)
             {
                 var appliedPath = ApplySymbolPath(typeId.Path);
-                return new SymbolId(typeId.ModuleName, appliedPath);
+                return new SymbolTypeId(new SymbolId(typeId.ModuleName, appliedPath));
             }
 
             SymbolPath? ApplySymbolPath(SymbolPath? path)
@@ -129,9 +129,9 @@ namespace Citron
                 return new NullableTypeId(appliedId);
             }
 
-            TypeId ITypeIdVisitor<TypeId>.VisitSymbol(SymbolId typeId)
+            TypeId ITypeIdVisitor<TypeId>.VisitSymbol(SymbolTypeId typeId)
             {
-                return ApplySymbol(typeId);
+                return ApplySymbol(typeId.SymbolId);
             }
 
             TypeId ITypeIdVisitor<TypeId>.VisitTuple(TupleTypeId typeId)
@@ -149,11 +149,6 @@ namespace Citron
             TypeId ITypeIdVisitor<TypeId>.VisitTypeVar(TypeVarTypeId typeId)
             {
                 return env[typeId.Index];
-            }
-
-            TypeId ITypeIdVisitor<TypeId>.VisitVar(VarTypeId typeId)
-            {
-                throw new RuntimeFatalException();
             }
 
             TypeId ITypeIdVisitor<TypeId>.VisitVoid(VoidTypeId typeId)

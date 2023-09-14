@@ -15,22 +15,28 @@ struct VarDeclVisitor
 {
     public static TranslationResult<ImmutableArray<R.Stmt>> Visit(S.VarDecl decl, ScopeContext context)
     {
-        var declType = context.MakeType(decl.Type);
+        IType? declType;
+
+        if (BodyMisc.IsVarType(decl.Type))
+            declType = null;
+        else
+            declType = context.MakeType(decl.Type);
+
         return VarDeclElemVisitor.Visit(declType, context, decl.Elems);
     }
 }
 
 struct VarDeclElemVisitor
 {
-    IType declType;
+    IType? declType; // type or null(var)
     ScopeContext context;
     ImmutableArray<R.Stmt>.Builder builder;
 
-    public static TranslationResult<ImmutableArray<R.Stmt>> Visit(IType declType, ScopeContext context, ImmutableArray<S.VarDeclElement> elems)
+    public static TranslationResult<ImmutableArray<R.Stmt>> Visit(IType? declType, ScopeContext context, ImmutableArray<S.VarDeclElement> elems)
     {
         var builder = ImmutableArray.CreateBuilder<R.Stmt>();
 
-        var visitor = new VarDeclElemVisitor(declType, context, builder);
+        var visitor = new VarDeclElemVisitor { declType = declType, context = context, builder = builder };
         foreach (var elem in elems)
         {
             if (!visitor.VisitElem(elem))
@@ -39,13 +45,6 @@ struct VarDeclElemVisitor
 
         return TranslationResult.Valid(builder.ToImmutable());
     }
-
-    VarDeclElemVisitor(IType declType, ScopeContext context, ImmutableArray<R.Stmt>.Builder builder)
-    {   
-        this.declType = declType;
-        this.context = context;
-        this.builder = builder;
-    }    
 
     bool HandleVarDeclType(S.VarDeclElement syntax)
     {
@@ -59,7 +58,7 @@ struct VarDeclElemVisitor
         if (!initExpResult.IsValid(out var initExp))
             return false;
 
-        var initExpType = initExp.GetExpType();
+        var initExpType = context.GetExpType(initExp);
 
         builder.Add(new R.LocalVarDeclStmt(initExpType, syntax.VarName, initExp));
         context.AddLocalVarInfo(initExpType, new Name.Normal(syntax.VarName));
@@ -69,6 +68,8 @@ struct VarDeclElemVisitor
 
     bool HandleExplicitDeclType(S.VarDeclElement syntax)
     {
+        Debug.Assert(declType != null);
+
         if (syntax.InitExp == null)
         {
             context.AddFatalError(A0111_VarDecl_LocalVarDeclNeedInitializer, syntax);
@@ -79,7 +80,7 @@ struct VarDeclElemVisitor
         if (!initExpResult.IsValid(out var initExp))
             return false;
 
-        var castInitExp = BodyMisc.TryCastExp_Exp(initExp, declType);
+        var castInitExp = BodyMisc.TryCastExp_Exp(initExp, declType, context);
         
         if (castInitExp == null)
             throw new NotImplementedException(); // 캐스팅이 실패했습니다.
@@ -98,7 +99,7 @@ struct VarDeclElemVisitor
             return true;
         }
 
-        if (declType is VarType)
+        if (declType == null)
         {
             return HandleVarDeclType(syntax);
         }

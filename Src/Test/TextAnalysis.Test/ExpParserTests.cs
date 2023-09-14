@@ -93,6 +93,37 @@ public class ExpParserTests
     }
 
     [Fact]
+    public void TestParseTestAndTypeTestExp() // left associative
+    {
+        var input = "e + 1 is X<int> < d + 1 is T"; // (((e + 1) is X<int>) < (d + 1)) is T
+        var (lexer, context) = Prepare(input);
+
+        ExpParser.Parse(lexer, ref context, out var exp);
+
+        var expected = new IsExp(
+            new BinaryOpExp(
+                BinaryOpKind.LessThan,
+                new IsExp(
+                    new BinaryOpExp(
+                        BinaryOpKind.Add,
+                        new IdentifierExp("e", default),
+                        new IntLiteralExp(1)
+                    ),
+                    SIdTypeExp("X", SIdTypeExp("int"))
+                ),
+                new BinaryOpExp(
+                    BinaryOpKind.Add,
+                    new IdentifierExp("d", default),
+                    new IntLiteralExp(1)
+                )
+            ),
+            SIdTypeExp("T")
+        );
+
+        Assert.Equal(expected, exp);
+    }
+
+    [Fact]
     public void TestParsePrimaryExp()
     {
         var input = "(c++(e, f) % d)++";
@@ -180,7 +211,7 @@ public class ExpParserTests
 
         ExpParser.Parse(lexer, ref context, out var exp);
 
-        var expected = new ListExp(null, Arr<Exp>(                
+        var expected = new ListExp(Arr<Exp>(                
             new IntLiteralExp(1),
             new IntLiteralExp(2),
             new IntLiteralExp(3)

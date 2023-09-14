@@ -163,5 +163,15 @@ struct RefExpIntermediateRefExpTranslator : S.IExpVisitor<TranslationResult<Inte
     {
         return HandleValue(exp);
     }
+
+    TranslationResult<IntermediateRefExp> S.IExpVisitor<TranslationResult<IntermediateRefExp>>.VisitIs(S.IsExp exp)
+    {
+        return HandleValue(exp);
+    }
+
+    TranslationResult<IntermediateRefExp> S.IExpVisitor<TranslationResult<IntermediateRefExp>>.VisitAs(S.AsExp exp)
+    {
+        return HandleValue(exp);
+    }
 }
 
