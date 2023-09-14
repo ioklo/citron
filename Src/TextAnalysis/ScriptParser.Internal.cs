@@ -52,6 +52,23 @@ namespace Citron
             return true;
         }
 
+        bool Accept(SingleToken token)
+        {
+            var lexResult = lexer.LexNormalMode(context.LexerContext, true);
+            return Accept(token, lexResult);
+        }
+
+        bool Accept(SingleToken token, LexResult lexResult)
+        {
+            if (lexResult.HasValue && lexResult.Token == token)
+            {
+                context = context.Update(lexResult.Context);
+                return true;
+            }
+
+            return false;
+        }
+
         bool Accept<TToken>([NotNullWhen(returnValue: true)] out TToken? token) where TToken : Token
         {
             var lexResult = lexer.LexNormalMode(context.LexerContext, true);
@@ -70,9 +87,6 @@ namespace Citron
             token = null;
             return false;
         }
-        
-       
-
 
         // int t
         // ref int t
@@ -80,7 +94,7 @@ namespace Citron
         bool InternalParseFuncDeclParam([NotNullWhen(returnValue: true)] out FuncParam? outFuncParam)
         {
             // params
-            bool hasParams = Accept<ParamsToken>(out _);
+            bool hasParams = Accept(Tokens.Params);
 
             if (!TypeExpParser.Parse(lexer, ref context, out var typeExp))
             { 
@@ -99,17 +113,17 @@ namespace Citron
         }
         bool InternalParseFuncDeclParams([NotNullWhen(returnValue: true)] out ImmutableArray<FuncParam>? outFuncParams)
         {
-            if (!Accept<LParenToken>(out _))
+            if (!Accept(Tokens.LParen))
             {
                 outFuncParams = null;
                 return false;
             }
 
             var paramsBuilder = ImmutableArray.CreateBuilder<FuncParam>();
-            while (!Accept<RParenToken>(out _))
+            while (!Accept(Tokens.RParen))
             {
                 if (paramsBuilder.Count != 0)
-                    if (!Accept<CommaToken>(out _))
+                    if (!Accept(Tokens.Comma))
                     {
                         outFuncParams = null;
                         return false;
@@ -136,7 +150,7 @@ namespace Citron
             // <RBRACE>            
 
             // seq
-            bool bSequence = Accept<SeqToken>(out _);
+            bool bSequence = Accept(Tokens.Seq);
 
             if (!TypeExpParser.Parse(lexer, ref context, out var retType))
             {
@@ -180,12 +194,12 @@ namespace Citron
         {
             // typeParams
             var typeParamsBuilder = ImmutableArray.CreateBuilder<TypeParam>();
-            if (Accept<LessThanToken>(out _))
+            if (Accept(Tokens.LessThan))
             {
-                while (!Accept<GreaterThanToken>(out _))
+                while (!Accept(Tokens.GreaterThan))
                 {
                     if (0 < typeParamsBuilder.Count)
-                        if (!Accept<CommaToken>(out _))
+                        if (!Accept(Tokens.Comma))
                         {
                             outTypeParams = null;
                             return false;
@@ -235,7 +249,7 @@ namespace Citron
             // public enum E<T1, T2> { a , b () } 
             ParseAccessModifier(out var accessModifier);
 
-            if (!Accept<EnumToken>(out _))
+            if (!Accept(Tokens.Enum))
             {
                 outDecl = null;
                 return false;
@@ -253,17 +267,17 @@ namespace Citron
                 return false;
             }
 
-            if (!Accept<LBraceToken>(out _))
+            if (!Accept(Tokens.LBrace))
             {
                 outDecl = null;
                 return false;
             }
 
             var elemsBuilder = ImmutableArray.CreateBuilder<EnumElemDecl>();
-            while (!Accept<RBraceToken>(out _))
+            while (!Accept(Tokens.RBrace))
             {
                 if (0 < elemsBuilder.Count)
-                    if (!Accept<CommaToken>(out _))
+                    if (!Accept(Tokens.Comma))
                     {
                         outDecl = null;
                         return false;
@@ -276,12 +290,12 @@ namespace Citron
                 }
 
                 var paramsBuilder = ImmutableArray.CreateBuilder<EnumElemMemberVarDecl>();
-                if (Accept<LParenToken>(out _))
+                if (Accept(Tokens.LParen))
                 {
-                    while (!Accept<RParenToken>(out _))
+                    while (!Accept(Tokens.RParen))
                     {
                         if (0 < paramsBuilder.Count)
-                            if (!Accept<CommaToken>(out _))
+                            if (!Accept(Tokens.Comma))
                             {
                                 outDecl = null;
                                 return false;
@@ -312,19 +326,19 @@ namespace Citron
 
         bool InternalParseAccessModifier([NotNullWhen(returnValue: true)] out AccessModifier? outModifier)
         {
-            if (Accept<ProtectedToken>(out _))
+            if (Accept(Tokens.Protected))
             {
                 outModifier = AccessModifier.Protected;
                 return true;
             }
 
-            if (Accept<PrivateToken>(out _))
+            if (Accept(Tokens.Private))
             {
                 outModifier = AccessModifier.Private;
                 return true;
             }
 
-            if (Accept<PublicToken>(out _))
+            if (Accept(Tokens.Public))
             {
                 outModifier = AccessModifier.Public;
                 return true;
@@ -367,7 +381,7 @@ namespace Citron
 
             varNamesBuilder.Add(varNameToken0.Value);
 
-            while (Accept<CommaToken>(out _))
+            while (Accept(Tokens.Comma))
             {
                 if (!Accept<IdentifierToken>(out var varNameToken))
                 {
@@ -379,7 +393,7 @@ namespace Citron
             }
 
             // ;
-            if (!Accept<SemiColonToken>(out _))
+            if (!Accept(Tokens.SemiColon))
             {
                 outDecl = null;
                 return false;
@@ -393,8 +407,8 @@ namespace Citron
         {
             ParseAccessModifier(out var accessModifier);
 
-            bool bStatic = Accept<StaticToken>(out _);
-            bool bSequence = Accept<SeqToken>(out _);
+            bool bStatic = Accept(Tokens.Static);
+            bool bSequence = Accept(Tokens.Seq);
 
             // ex) void
             if (!TypeExpParser.Parse(lexer, ref context, out var retType))
@@ -503,7 +517,7 @@ namespace Citron
             // AccessModifier, 텍스트에는 없을 수 있다
             ParseAccessModifier(out var accessModifier);            
 
-            if (!Accept<StructToken>(out _))
+            if (!Accept(Tokens.Struct))
             {
                 outDecl = null;
                 return false;
@@ -523,7 +537,7 @@ namespace Citron
 
             // 상속 부분 : B, I, ...
             var baseTypesBuilder = ImmutableArray.CreateBuilder<TypeExp>();
-            if (Accept<ColonToken>(out _))
+            if (Accept(Tokens.Colon))
             {
                 if (!TypeExpParser.Parse(lexer, ref context, out var baseType0))
                 {
@@ -533,7 +547,7 @@ namespace Citron
 
                 baseTypesBuilder.Add(baseType0);
 
-                while (Accept<CommaToken>(out _))
+                while (Accept(Tokens.Comma))
                 {
                     if (!TypeExpParser.Parse(lexer, ref context, out var baseType))
                     {
@@ -548,14 +562,14 @@ namespace Citron
             var elemsBuilder = ImmutableArray.CreateBuilder<StructMemberDecl>();
 
             // {
-            if (!Accept<LBraceToken>(out _))
+            if (!Accept(Tokens.LBrace))
             {
                 outDecl = null;
                 return false;
             }
 
             // } 나올때까지
-            while(!Accept<RBraceToken>(out _))
+            while(!Accept(Tokens.RBrace))
             {
                 if (!ParseStructMemberDecl(out var elem))
                 {
@@ -586,8 +600,8 @@ namespace Citron
         {
             ParseAccessModifier(out var accessModifier);
             
-            bool bStatic = Accept<StaticToken>(out _);
-            bool bSequence = Accept<SeqToken>(out _);
+            bool bStatic = Accept(Tokens.Static);
+            bool bSequence = Accept(Tokens.Seq);
 
             // ex) void
             if (!TypeExpParser.Parse(lexer, ref context, out var retType))
@@ -648,7 +662,7 @@ namespace Citron
 
             // : base()
             ImmutableArray<Argument>? baseArgs = null;
-            if (Accept<ColonToken>(out _))
+            if (Accept(Tokens.Colon))
             {
                 if (Accept<IdentifierToken>(out var expectedToBeBase))
                 {
@@ -707,7 +721,7 @@ namespace Citron
 
             varNamesBuilder.Add(varNameToken0.Value);
 
-            while (Accept<CommaToken>(out _))
+            while (Accept(Tokens.Comma))
             {
                 if (!Accept<IdentifierToken>(out var varNameToken))
                 {
@@ -719,7 +733,7 @@ namespace Citron
             }
 
             // ;
-            if (!Accept<SemiColonToken>(out _))
+            if (!Accept(Tokens.SemiColon))
             {
                 outDecl = null;
                 return false;
@@ -765,7 +779,7 @@ namespace Citron
             ParseAccessModifier(out var accessModifier);
             
             // class
-            if (!Accept<ClassToken>(out _))
+            if (!Accept(Tokens.Class))
             {
                 outDecl = null;
                 return false;
@@ -787,7 +801,7 @@ namespace Citron
 
             // 상속 부분 : B, I, ...
             var baseTypesBuilder = ImmutableArray.CreateBuilder<TypeExp>();
-            if (Accept<ColonToken>(out _))
+            if (Accept(Tokens.Colon))
             {
                 if (!TypeExpParser.Parse(lexer, ref context, out var baseType0))
                 {
@@ -797,7 +811,7 @@ namespace Citron
 
                 baseTypesBuilder.Add(baseType0);
 
-                while (Accept<CommaToken>(out _))
+                while (Accept(Tokens.Comma))
                 {
                     if (!TypeExpParser.Parse(lexer, ref context, out var baseType))
                     {
@@ -812,14 +826,14 @@ namespace Citron
             var membersBuilder = ImmutableArray.CreateBuilder<ClassMemberDecl>();
 
             // {
-            if (!Accept<LBraceToken>(out _))
+            if (!Accept(Tokens.LBrace))
             {
                 outDecl = null;
                 return false;
             }
 
             // } 나올때까지
-            while (!Accept<RBraceToken>(out _))
+            while (!Accept(Tokens.RBrace))
             {
                 if (!ParseClassMemberDecl(out var elem))
                 {
@@ -863,7 +877,7 @@ namespace Citron
             // <NAMESPACE> <NAME>(.<NAME> ...) <LBRACE>  ... <RBRACE>
 
             // namespace
-            if (!Accept<NamespaceToken>(out _))
+            if (!Accept(Tokens.Namespace))
             {
                 outDecl = null;
                 return false;
@@ -882,7 +896,7 @@ namespace Citron
             nsNamesBuilder.Add(nsName.Value);
             
             // . optional
-            while (Accept<DotToken>(out _))
+            while (Accept(Tokens.Dot))
             {
                 // ex) NS
                 if (!Accept(out nsName))
@@ -895,7 +909,7 @@ namespace Citron
             }
 
             // {
-            if (!Accept<LBraceToken>(out _))
+            if (!Accept(Tokens.LBrace))
             {
                 outDecl = null;
                 return false;
@@ -903,7 +917,7 @@ namespace Citron
 
             var elemsBuilder = ImmutableArray.CreateBuilder<NamespaceElement>();
             // } 가 나올때까지
-            while (!Accept<RBraceToken>(out _))
+            while (!Accept(Tokens.RBrace))
             {
                 if (!ParseNamespaceElement(out var elem))
                 {
@@ -946,7 +960,7 @@ namespace Citron
         {
             var builder = ImmutableArray.CreateBuilder<ScriptElement>();
 
-            while (!Accept<EndOfFileToken>(out _))
+            while (!Accept(Tokens.EndOfFile))
             {
                 if (!ParseScriptElement(out var scriptElem))
                 {

@@ -18,7 +18,7 @@ public class LexerTests
         while (true)
         {
             var lexResult = lexAction.Invoke(context);
-            if (!lexResult.HasValue || lexResult.Token is EndOfFileToken) break;
+            if (!lexResult.HasValue || lexResult.Token == Tokens.EndOfFile) break;
 
             context = lexResult.Context;
 
@@ -43,79 +43,79 @@ public class LexerTests
     {
         var lexer = new Lexer();
         var context = MakeLexerContext(
-            "if else for continue break exec task params return async await foreach in yield seq enum struct class is as ref box null public protected private static " + 
+            "if else for continue break task params return async await foreach in yield seq enum struct class is as ref box null public protected private static " + 
             "new namespace " +
-            "++ -- <= >= => == != " +
+            "++ -- <= >= => == != ->" +
             "@ < > ; , = { } ( ) [ ] + - * / % ! . ? & : `");
 
         var tokens = ProcessNormal(lexer, context);
         var expectedTokens = new Token[]
         {
-            IfToken.Instance,
-            ElseToken.Instance,
-            ForToken.Instance,
-            ContinueToken.Instance,
-            BreakToken.Instance,
-            ExecToken.Instance,
-            TaskToken.Instance,
-            ParamsToken.Instance,
-            ReturnToken.Instance,
-            AsyncToken.Instance,
-            AwaitToken.Instance,
-            ForeachToken.Instance,
-            InToken.Instance,
-            YieldToken.Instance,
-            SeqToken.Instance,
-            EnumToken.Instance,
-            StructToken.Instance,
-            ClassToken.Instance,
-            IsToken.Instance,
-            AsToken.Instance,
-            RefToken.Instance,
-            BoxToken.Instance,
-            NullToken.Instance,
+            Tokens.If,
+            Tokens.Else,
+            Tokens.For,
+            Tokens.Continue,
+            Tokens.Break,
+            Tokens.Task,
+            Tokens.Params,
+            Tokens.Return,
+            Tokens.Async,
+            Tokens.Await,
+            Tokens.Foreach,
+            Tokens.In,
+            Tokens.Yield,
+            Tokens.Seq,
+            Tokens.Enum,
+            Tokens.Struct,
+            Tokens.Class,
+            Tokens.Is,
+            Tokens.As,
+            Tokens.Ref,
+            Tokens.Box,
+            Tokens.Null,
 
-            PublicToken.Instance,
-            ProtectedToken.Instance,
-            PrivateToken.Instance,
-            StaticToken.Instance,
+            Tokens.Public,
+            Tokens.Protected,
+            Tokens.Private,
+            Tokens.Static,
 
-            NewToken.Instance,
-            NamespaceToken.Instance,
+            Tokens.New,
+            Tokens.Namespace,
 
-            PlusPlusToken.Instance,
-            MinusMinusToken.Instance,
-            LessThanEqualToken.Instance,
-            GreaterThanEqualToken.Instance,
-            EqualGreaterThanToken.Instance,
-            EqualEqualToken.Instance,
-            ExclEqualToken.Instance,
+            Tokens.PlusPlus,
+            Tokens.MinusMinus,
+            Tokens.LessThanEqual,
+            Tokens.GreaterThanEqual,
+            Tokens.EqualGreaterThan,
+            Tokens.EqualEqual,
+            Tokens.ExclEqual,
+            Tokens.MinusGreaterThan,
 
-            ExecToken.Instance,
-            LessThanToken.Instance,
-            GreaterThanToken.Instance,
-            SemiColonToken.Instance,
-            CommaToken.Instance,
-            EqualToken.Instance,
-            LBraceToken.Instance,
-            RBraceToken.Instance,
-            LParenToken.Instance,
-            RParenToken.Instance,
-            LBracketToken.Instance,
-            RBracketToken.Instance,
+            Tokens.At,
+            Tokens.LessThan,
+            Tokens.GreaterThan,
+            Tokens.SemiColon,
+            Tokens.Comma,
+            Tokens.Equal,
+            Tokens.LBrace,
+            Tokens.RBrace,
+            Tokens.LParen,
+            Tokens.RParen,
+            Tokens.LBracket,
+            Tokens.RBracket,
 
-            PlusToken.Instance,
-            MinusToken.Instance,
-            StarToken.Instance,
-            SlashToken.Instance,
-            PercentToken.Instance,
-            ExclToken.Instance,
-            DotToken.Instance,
-            QuestionToken.Instance,
-            AmpersandToken.Instance,
+            Tokens.Plus,
+            Tokens.Minus,
+            Tokens.Star,
+            Tokens.Slash,
+            Tokens.Percent,
+            Tokens.Excl,
+            Tokens.Dot,
+            Tokens.Question,
+            Tokens.Ampersand,
 
-            ColonToken.Instance,
-            BacktickToken.Instance,
+            Tokens.Colon,
+            Tokens.Backtick,
         };
 
         Assert.Equal(expectedTokens, tokens, TokenEqualityComparer.Instance);
@@ -156,9 +156,9 @@ public class LexerTests
         var result1 = lexer.LexStringMode(result0.Context);
         var result2 = lexer.LexStringMode(result1.Context);
 
-        Assert.Equal(DoubleQuoteToken.Instance, result0.Token, TokenEqualityComparer.Instance);
+        Assert.Equal(Tokens.DoubleQuote, result0.Token, TokenEqualityComparer.Instance);
         Assert.Equal(new TextToken("aaa bbb "), result1.Token, TokenEqualityComparer.Instance);
-        Assert.Equal(DoubleQuoteToken.Instance, result2.Token, TokenEqualityComparer.Instance);
+        Assert.Equal(Tokens.DoubleQuote, result2.Token, TokenEqualityComparer.Instance);
     }
 
     // stringMode
@@ -240,9 +240,9 @@ public class LexerTests
         var expectedTokens = new Token[]
         {
             new TextToken("aaa bbb "),
-            DollarLBraceToken.Instance,
+            Tokens.DollarLBrace,
             new IdentifierToken("ccc"),
-            RBraceToken.Instance,
+            Tokens.RBrace,
             new TextToken(" ddd"),
         };
 
@@ -294,20 +294,20 @@ public class LexerTests
 
         var expectedTokens = new Token[]
         {
-            DoubleQuoteToken.Instance,
+            Tokens.DoubleQuote,
             new TextToken("aaa bbb "),
-            DollarLBraceToken.Instance,
+            Tokens.DollarLBrace,
 
-            DoubleQuoteToken.Instance,
+            Tokens.DoubleQuote,
 
             new TextToken("xxx "),
-            DollarLBraceToken.Instance,
+            Tokens.DollarLBrace,
             new IdentifierToken("ddd"),
-            RBraceToken.Instance,
-            DoubleQuoteToken.Instance,
-            RBraceToken.Instance,
+            Tokens.RBrace,
+            Tokens.DoubleQuote,
+            Tokens.RBrace,
             new TextToken(" ddd"),
-            DoubleQuoteToken.Instance,
+            Tokens.DoubleQuote,
         };
 
         Assert.Equal(expectedTokens, tokens, TokenEqualityComparer.Instance);
@@ -355,12 +355,12 @@ public class LexerTests
         tokens.Add(result.Token);
 
         var expectedTokens = new Token[] {
-            WhitespaceToken.Instance,
-            NewLineToken.Instance,
-            WhitespaceToken.Instance,
-            NewLineToken.Instance,
-            WhitespaceToken.Instance,
-            NewLineToken.Instance,
+            Tokens.Whitespace,
+            Tokens.NewLine,
+            Tokens.Whitespace,
+            Tokens.NewLine,
+            Tokens.Whitespace,
+            Tokens.NewLine,
             new IntToken(1234)
         };
 
@@ -386,7 +386,7 @@ public class LexerTests
 
         var expectedTokens = new Token[] {
             new IntToken(1234),
-            WhitespaceToken.Instance,                
+            Tokens.Whitespace,                
             new IntToken(55)
         };
 

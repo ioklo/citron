@@ -64,7 +64,7 @@ namespace Citron
             return typeId.Accept<Applier, TypeId>(ref applier);
         }
 
-        public SymbolTypeId ApplySymbol(SymbolId symbolId)
+        public SymbolId ApplySymbol(SymbolId symbolId)
         {
             return new Applier(env).ApplySymbol(symbolId);
         }
@@ -78,10 +78,10 @@ namespace Citron
                 this.env = env;
             }
 
-            public SymbolTypeId ApplySymbol(SymbolId typeId)
+            public SymbolId ApplySymbol(SymbolId typeId)
             {
                 var appliedPath = ApplySymbolPath(typeId.Path);
-                return new SymbolTypeId(new SymbolId(typeId.ModuleName, appliedPath));
+                return new SymbolId(typeId.ModuleName, appliedPath);
             }
 
             SymbolPath? ApplySymbolPath(SymbolPath? path)
@@ -131,7 +131,7 @@ namespace Citron
 
             TypeId ITypeIdVisitor<TypeId>.VisitSymbol(SymbolTypeId typeId)
             {
-                return ApplySymbol(typeId.SymbolId);
+                return new SymbolTypeId(ApplySymbol(typeId.SymbolId));
             }
 
             TypeId ITypeIdVisitor<TypeId>.VisitTuple(TupleTypeId typeId)

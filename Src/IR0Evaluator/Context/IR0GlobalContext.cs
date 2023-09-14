@@ -97,7 +97,8 @@ namespace Citron
         }
 
         IType IBuiltInTypeProvider.GetBoolType()
-        {   
+        {
+            
         }
 
         IType IBuiltInTypeProvider.GetIntType()

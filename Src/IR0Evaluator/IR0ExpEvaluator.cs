@@ -379,7 +379,7 @@ namespace Citron
             ((BoxPtrValue)result).Set(holder, value);
         }
 
-        // &(*pS).a = > (ps, S.a)
+        // &(*pS).a => (ps, S.a)
         async ValueTask IIR0ExpVisitor<ValueTask>.VisitStructIndirectMemberBoxRef(StructIndirectMemberBoxRefExp exp)
         {
             var holder = context.AllocValue<BoxPtrValue>(exp.holderExp.GetExpType().GetTypeId());
@@ -665,6 +665,56 @@ namespace Citron
         }
 
         ValueTask IIR0ExpVisitor<ValueTask>.VisitInlineBlock(InlineBlockExp exp)
+        {
+            throw new NotImplementedException();
+        }
+
+        ValueTask IIR0ExpVisitor<ValueTask>.VisitClassIsClassExp(ClassIsClassExp exp)
+        {
+            throw new NotImplementedException();
+        }
+
+        ValueTask IIR0ExpVisitor<ValueTask>.VisitClassAsClassExp(ClassAsClassExp exp)
+        {
+            throw new NotImplementedException();
+        }
+
+        ValueTask IIR0ExpVisitor<ValueTask>.VisitClassIsInterfaceExp(ClassIsInterfaceExp exp)
+        {
+            throw new NotImplementedException();
+        }
+
+        ValueTask IIR0ExpVisitor<ValueTask>.VisitClassAsInterfaceExp(ClassAsInterfaceExp exp)
+        {
+            throw new NotImplementedException();
+        }
+
+        ValueTask IIR0ExpVisitor<ValueTask>.VisitInterfaceIsClassExp(InterfaceIsClassExp exp)
+        {
+            throw new NotImplementedException();
+        }
+
+        ValueTask IIR0ExpVisitor<ValueTask>.VisitInterfaceAsClassExp(InterfaceAsClassExp exp)
+        {
+            throw new NotImplementedException();
+        }
+
+        ValueTask IIR0ExpVisitor<ValueTask>.VisitInterfaceIsInterfaceExp(InterfaceIsInterfaceExp exp)
+        {
+            throw new NotImplementedException();
+        }
+
+        ValueTask IIR0ExpVisitor<ValueTask>.VisitInterfaceAsInterfaceExp(InterfaceAsInterfaceExp exp)
+        {
+            throw new NotImplementedException();
+        }
+
+        ValueTask IIR0ExpVisitor<ValueTask>.VisitEnumIsEnumElemExp(EnumIsEnumElemExp exp)
+        {
+            throw new NotImplementedException();
+        }
+
+        ValueTask IIR0ExpVisitor<ValueTask>.VisitEnumAsEnumElemExp(EnumAsEnumElemExp exp)
         {
             throw new NotImplementedException();
         }

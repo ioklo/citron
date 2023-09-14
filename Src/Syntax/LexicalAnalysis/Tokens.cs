@@ -7,81 +7,93 @@ namespace Citron.LexicalAnalysis
 {
     public abstract class Token
     {
-    }    
+    }
 
-    public class EqualEqualToken : Token { public static readonly EqualEqualToken Instance = new EqualEqualToken(); private EqualEqualToken() { } } // ==
-    public class ExclEqualToken : Token { public static readonly ExclEqualToken Instance = new ExclEqualToken(); private ExclEqualToken() { } } // !=
+    public class SingleToken : Token
+    {
+        string debugText;
+        public SingleToken(string debugText) { this.debugText = debugText; }
+    }
 
-    public class PlusPlusToken : Token { public static readonly PlusPlusToken Instance = new PlusPlusToken(); private PlusPlusToken() { } } // ++
-    public class MinusMinusToken : Token { public static readonly MinusMinusToken Instance = new MinusMinusToken(); private MinusMinusToken() { } } // --
-    public class LessThanEqualToken : Token { public static readonly LessThanEqualToken Instance = new LessThanEqualToken(); private LessThanEqualToken() { } } // <=
-    public class GreaterThanEqualToken : Token { public static readonly GreaterThanEqualToken Instance = new GreaterThanEqualToken(); private GreaterThanEqualToken() { } } // >=    
-    public class EqualGreaterThanToken : Token { public static readonly EqualGreaterThanToken Instance = new EqualGreaterThanToken(); private EqualGreaterThanToken() { } } // =>
+    public static class Tokens
+    {
+        public static readonly SingleToken EqualEqual = new SingleToken("==");
+        public static readonly SingleToken ExclEqual = new SingleToken("!="); // !=
 
-    public class LessThanToken : Token { public static readonly LessThanToken Instance = new LessThanToken(); private LessThanToken() { } } // <
-    public class GreaterThanToken : Token { public static readonly GreaterThanToken Instance = new GreaterThanToken(); private GreaterThanToken() { } } // >
+        public static readonly SingleToken PlusPlus = new SingleToken("++"); // ++
+        public static readonly SingleToken MinusMinus = new SingleToken("--"); // --
+        public static readonly SingleToken LessThanEqual = new SingleToken("<="); // <=
+        public static readonly SingleToken GreaterThanEqual = new SingleToken(">="); // >=    
+        public static readonly SingleToken EqualGreaterThan = new SingleToken("=>"); // =>
+        public static readonly SingleToken MinusGreaterThan = new SingleToken("->"); // ->
 
-    public class EqualToken : Token { public static readonly EqualToken Instance = new EqualToken(); private EqualToken() { } } // =
-    public class CommaToken : Token { public static readonly CommaToken Instance = new CommaToken(); private CommaToken() { } } // ,
-    public class SemiColonToken : Token { public static readonly SemiColonToken Instance = new SemiColonToken(); private SemiColonToken() { } } // ;   
-    public class LBraceToken : Token { public static readonly LBraceToken Instance = new LBraceToken(); private LBraceToken() { } } // {
-    public class RBraceToken : Token { public static readonly RBraceToken Instance = new RBraceToken(); private RBraceToken() { } } // }
-    public class LParenToken : Token { public static readonly LParenToken Instance = new LParenToken(); private LParenToken() { } } // (
-    public class RParenToken : Token { public static readonly RParenToken Instance = new RParenToken(); private RParenToken() { } } // )
-    public class LBracketToken : Token { public static readonly LBracketToken Instance = new LBracketToken(); private LBracketToken() { } } // [
-    public class RBracketToken : Token { public static readonly RBracketToken Instance = new RBracketToken(); private RBracketToken() { } } // ]
-    
-    public class PlusToken : Token { public static readonly PlusToken Instance = new PlusToken(); private PlusToken() { } } // +
-    public class MinusToken : Token { public static readonly MinusToken Instance = new MinusToken(); private MinusToken() { } } // -
-    public class StarToken : Token { public static readonly StarToken Instance = new StarToken(); private StarToken() { } } // *   
-    public class SlashToken : Token { public static readonly SlashToken Instance = new SlashToken(); private SlashToken() { } } // /    
-    public class PercentToken : Token { public static readonly PercentToken Instance = new PercentToken(); private PercentToken() { } } // %    
-    public class ExclToken : Token { public static readonly ExclToken Instance = new ExclToken(); private ExclToken() { } } // !    
-    public class DotToken : Token { public static readonly DotToken Instance = new DotToken(); private DotToken() { } } // .
-    public class QuestionToken : Token { public static readonly QuestionToken Instance = new QuestionToken(); private QuestionToken() { } } // ?
-    public class AmpersandToken : Token { public static readonly AmpersandToken Instance = new AmpersandToken(); private AmpersandToken() { } } // ?
+        public static readonly SingleToken LessThan = new SingleToken("<"); // <
+        public static readonly SingleToken GreaterThan = new SingleToken(">"); // >
 
-    
-    public class IfToken : Token { public static readonly IfToken Instance = new IfToken(); private IfToken() { } }
-    public class ElseToken : Token { public static readonly ElseToken Instance = new ElseToken(); private ElseToken() { } }
-    public class ForToken : Token { public static readonly ForToken Instance = new ForToken(); private ForToken() { } }
-    public class ContinueToken : Token { public static readonly ContinueToken Instance = new ContinueToken(); private ContinueToken() { } }
-    public class BreakToken : Token { public static readonly BreakToken Instance = new BreakToken(); private BreakToken() { } }    
-    public class TaskToken : Token { public static readonly TaskToken Instance = new TaskToken(); private TaskToken() { } }
-    public class ParamsToken : Token { public static readonly ParamsToken Instance = new ParamsToken(); private ParamsToken() { } }
-    public class ReturnToken : Token { public static readonly ReturnToken Instance = new ReturnToken(); private ReturnToken() { } }
-    public class AsyncToken : Token { public static readonly AsyncToken Instance = new AsyncToken(); private AsyncToken() { } }
-    public class AwaitToken : Token { public static readonly AwaitToken Instance = new AwaitToken(); private AwaitToken() { } }
-    public class ForeachToken : Token { public static readonly ForeachToken Instance = new ForeachToken(); private ForeachToken() { } }
-    public class InToken : Token { public static readonly InToken Instance = new InToken(); private InToken() { } }
-    public class YieldToken : Token { public static readonly YieldToken Instance = new YieldToken(); private YieldToken() { } }
-    public class SeqToken : Token { public static readonly SeqToken Instance = new SeqToken(); private SeqToken() { } }
-    public class EnumToken : Token { public static readonly EnumToken Instance = new EnumToken(); private EnumToken() { } }
-    public class StructToken : Token { public static readonly StructToken Instance = new StructToken(); private StructToken() { } }
-    public class ClassToken : Token { public static readonly ClassToken Instance = new ClassToken(); private ClassToken() { } }
-    public class IsToken : Token { public static readonly IsToken Instance = new IsToken(); private IsToken() { } }
-    public class AsToken : Token { public static readonly AsToken Instance = new AsToken(); private AsToken() { } }
+        public static readonly SingleToken Equal = new SingleToken("="); // =
+        public static readonly SingleToken Comma = new SingleToken(","); // ,
+        public static readonly SingleToken SemiColon = new SingleToken(";"); // ;   
+        public static readonly SingleToken LBrace = new SingleToken("{"); // {
+        public static readonly SingleToken RBrace = new SingleToken("}"); // }
+        public static readonly SingleToken LParen = new SingleToken("("); // (
+        public static readonly SingleToken RParen = new SingleToken(")"); // )
+        public static readonly SingleToken LBracket = new SingleToken("["); // [
+        public static readonly SingleToken RBracket = new SingleToken("]"); // ]
 
-public class RefToken : Token { public static readonly RefToken Instance = new RefToken(); private RefToken() { } }
-    public class BoxToken : Token { public static readonly BoxToken Instance = new BoxToken(); private BoxToken() { } }
-    public class NullToken : Token { public static readonly NullToken Instance = new NullToken(); private NullToken() { } }
+        public static readonly SingleToken Plus = new SingleToken("+"); // +
+        public static readonly SingleToken Minus = new SingleToken("-"); // -
+        public static readonly SingleToken Star = new SingleToken("*"); // *   
+        public static readonly SingleToken Slash = new SingleToken("/"); // /    
+        public static readonly SingleToken Percent = new SingleToken("%"); // %    
+        public static readonly SingleToken Excl = new SingleToken("!"); // !    
+        public static readonly SingleToken Dot = new SingleToken("."); // .
+        public static readonly SingleToken Question = new SingleToken("?"); // ?
+        public static readonly SingleToken Ampersand = new SingleToken("&"); // &
 
-    public class PublicToken : Token { public static readonly PublicToken Instance = new PublicToken(); private PublicToken() { } }
-    public class ProtectedToken : Token { public static readonly ProtectedToken Instance = new ProtectedToken(); private ProtectedToken() { } }
-    public class PrivateToken : Token { public static readonly PrivateToken Instance = new PrivateToken(); private PrivateToken() { } }
-    public class StaticToken : Token { public static readonly StaticToken Instance = new StaticToken(); private StaticToken() { } }
-    public class NewToken : Token { public static readonly NewToken Instance = new NewToken(); private NewToken() { } }
-    public class NamespaceToken : Token { public static readonly NamespaceToken Instance = new NamespaceToken(); private NamespaceToken() { } }
+        public static readonly SingleToken If = new SingleToken("if");
+        public static readonly SingleToken Else = new SingleToken("else");
+        public static readonly SingleToken For = new SingleToken("for");
+        public static readonly SingleToken Continue = new SingleToken("continue");
+        public static readonly SingleToken Break = new SingleToken("break");
+        public static readonly SingleToken Task = new SingleToken("task");
+        public static readonly SingleToken Params = new SingleToken("params");
+        public static readonly SingleToken Return = new SingleToken("return");
+        public static readonly SingleToken Async = new SingleToken("async");
+        public static readonly SingleToken Await = new SingleToken("await");
+        public static readonly SingleToken Foreach = new SingleToken("foreach");
+        public static readonly SingleToken In = new SingleToken("in");
+        public static readonly SingleToken Yield = new SingleToken("yield");
+        public static readonly SingleToken Seq = new SingleToken("seq");
+        public static readonly SingleToken Enum = new SingleToken("enum");
+        public static readonly SingleToken Struct = new SingleToken("struct");
+        public static readonly SingleToken Class = new SingleToken("class");
+        public static readonly SingleToken Is = new SingleToken("is");
+        public static readonly SingleToken As = new SingleToken("as");
 
-    public class ColonToken : Token { public static readonly ColonToken Instance = new ColonToken(); private ColonToken() { } }
-    public class BacktickToken : Token { public static readonly BacktickToken Instance = new BacktickToken(); private BacktickToken() { } }
+        public static readonly SingleToken Ref = new SingleToken("ref");
+        public static readonly SingleToken Box = new SingleToken("box");
+        public static readonly SingleToken Null = new SingleToken("null");
 
-    public class WhitespaceToken : Token { public static readonly WhitespaceToken Instance = new WhitespaceToken(); private WhitespaceToken() { } } // \s
-    public class NewLineToken : Token { public static readonly NewLineToken Instance = new NewLineToken(); private NewLineToken() { } }     // \r \n \r\n
+        public static readonly SingleToken Public = new SingleToken("public");
+        public static readonly SingleToken Protected = new SingleToken("protected");
+        public static readonly SingleToken Private = new SingleToken("private");
+        public static readonly SingleToken Static = new SingleToken("static");
+        public static readonly SingleToken New = new SingleToken("new");
+        public static readonly SingleToken Namespace = new SingleToken("namespace");
 
-    public class DoubleQuoteToken : Token { public static readonly DoubleQuoteToken Instance = new DoubleQuoteToken(); private DoubleQuoteToken() { } } // "
-    public class DollarLBraceToken : Token { public static readonly DollarLBraceToken Instance = new DollarLBraceToken(); private DollarLBraceToken() { } }
-    public class EndOfFileToken : Token { public static readonly EndOfFileToken Instance = new EndOfFileToken(); private EndOfFileToken() { } }
+        public static readonly SingleToken Colon = new SingleToken(":");
+        public static readonly SingleToken Backtick = new SingleToken("`");
+
+        public static readonly SingleToken Whitespace = new SingleToken("<whitespace>"); // \s
+        public static readonly SingleToken NewLine = new SingleToken("<newline>");     // \r \n \r\n
+
+        public static readonly SingleToken DoubleQuote = new SingleToken("\""); // "
+        public static readonly SingleToken DollarLBrace = new SingleToken("${");
+        public static readonly SingleToken EndOfFile = new SingleToken("<eof>");
+
+        // TODO: QuickSC Token으로 내리기
+        public static readonly SingleToken At = new SingleToken("@");
+    }
 
     // digit
     public class IntToken : Token
@@ -108,6 +120,5 @@ public class RefToken : Token { public static readonly RefToken Instance = new R
         public IdentifierToken(string value) { Value = value; }
     }
 
-    // TODO: QuickSC Token으로 내리기
-    public class ExecToken : Token { public static readonly ExecToken Instance = new ExecToken(); private ExecToken() { } }
+    
 }

@@ -69,7 +69,7 @@ namespace Citron
 
             if (context.Pos.Equals('"'))
                 return new LexResult(
-                    DoubleQuoteToken.Instance,
+                    Tokens.DoubleQuote,
                     context.UpdatePos(context.Pos.Next()));
 
             if (context.Pos.Equals('$'))
@@ -78,7 +78,7 @@ namespace Citron
 
                 if (nextPos.Equals('{'))
                     return new LexResult(
-                        DollarLBraceToken.Instance,
+                        Tokens.DollarLBrace,
                         context.UpdatePos(nextPos.Next()));
 
                 var idResult = LexIdentifier(context.UpdatePos(nextPos), false);
@@ -92,74 +92,74 @@ namespace Citron
         // 키워드 처리
         private static Dictionary<string, Token> keywordInfos = new Dictionary<string, Token>()
         {
-            { "foreach", ForeachToken.Instance },
-            { "if", IfToken.Instance },
-            { "else", ElseToken.Instance },
-            { "for", ForToken.Instance },
-            { "continue", ContinueToken.Instance },
-            { "break", BreakToken.Instance },
-            { "exec", ExecToken.Instance },
-            { "task", TaskToken.Instance },
-            { "params", ParamsToken.Instance },
-            { "return", ReturnToken.Instance },
-            { "async", AsyncToken.Instance },
-            { "await", AwaitToken.Instance },
-            { "in", InToken.Instance },
-            { "yield", YieldToken.Instance },
-            { "seq", SeqToken.Instance },
-            { "enum", EnumToken.Instance },
-            { "struct", StructToken.Instance },
-            { "class", ClassToken.Instance },
-            { "is", IsToken.Instance },
-            { "as", AsToken.Instance },
-            { "ref", RefToken.Instance },
-            { "box", BoxToken.Instance },
-            { "null", NullToken.Instance },
-            { "public", PublicToken.Instance },
-            { "protected", ProtectedToken.Instance },
-            { "private", PrivateToken.Instance },
-            { "static", StaticToken.Instance },
-            { "new", NewToken.Instance },
-            { "namespace", NamespaceToken.Instance },
+            { "foreach", Tokens.Foreach },
+            { "if", Tokens.If },
+            { "else", Tokens.Else },
+            { "for", Tokens.For },
+            { "continue", Tokens.Continue },
+            { "break", Tokens.Break },
+            { "task", Tokens.Task },
+            { "params", Tokens.Params },
+            { "return", Tokens.Return },
+            { "async", Tokens.Async },
+            { "await", Tokens.Await },
+            { "in", Tokens.In },
+            { "yield", Tokens.Yield },
+            { "seq", Tokens.Seq },
+            { "enum", Tokens.Enum },
+            { "struct", Tokens.Struct },
+            { "class", Tokens.Class },
+            { "is", Tokens.Is },
+            { "as", Tokens.As },
+            { "ref", Tokens.Ref },
+            { "box", Tokens.Box },
+            { "null", Tokens.Null },
+            { "public", Tokens.Public },
+            { "protected", Tokens.Protected },
+            { "private", Tokens.Private },
+            { "static", Tokens.Static },
+            { "new", Tokens.New },
+            { "namespace", Tokens.Namespace },
         };
 
         private static (string Text, Func<Token> Constructor)[] infos = new (string Text, Func<Token> Constructor)[]
         {   
-            ("++", () => PlusPlusToken.Instance),
-            ("--", () => MinusMinusToken.Instance),
-            ("<=", () => LessThanEqualToken.Instance),
-            (">=", () => GreaterThanEqualToken.Instance),
-            ("=>", () => EqualGreaterThanToken.Instance),
-            ("==", () => EqualEqualToken.Instance),
-            ("!=", () => ExclEqualToken.Instance),
+            ("++", () => Tokens.PlusPlus),
+            ("--", () => Tokens.MinusMinus),
+            ("<=", () => Tokens.LessThanEqual),
+            (">=", () => Tokens.GreaterThanEqual),
+            ("=>", () => Tokens.EqualGreaterThan),
+            ("==", () => Tokens.EqualEqual),
+            ("!=", () => Tokens.ExclEqual),
+            ("->", () => Tokens.MinusGreaterThan),
 
 
-            ("@", () => ExecToken.Instance),
-            ("<", () => LessThanToken.Instance),
-            (">", () => GreaterThanToken.Instance),
-            (";", () => SemiColonToken.Instance),
-            (",", () => CommaToken.Instance),
-            ("=", () => EqualToken.Instance),
-            ("{", () => LBraceToken.Instance),
-            ("}", () => RBraceToken.Instance),
-            ("(", () => LParenToken.Instance),
-            (")", () => RParenToken.Instance),
-            ("[", () => LBracketToken.Instance),
-            ("]", () => RBracketToken.Instance),
+            ("@", () => Tokens.At),
+            ("<", () => Tokens.LessThan),
+            (">", () => Tokens.GreaterThan),
+            (";", () => Tokens.SemiColon),
+            (",", () => Tokens.Comma),
+            ("=", () => Tokens.Equal),
+            ("{", () => Tokens.LBrace),
+            ("}", () => Tokens.RBrace),
+            ("(", () => Tokens.LParen),
+            (")", () => Tokens.RParen),
+            ("[", () => Tokens.LBracket),
+            ("]", () => Tokens.RBracket),
 
 
-            ("+", () => PlusToken.Instance),
-            ("-", () => MinusToken.Instance),
-            ("*", () => StarToken.Instance),
-            ("/", () => SlashToken.Instance),
-            ("%", () => PercentToken.Instance),
-            ("!", () => ExclToken.Instance),
-            (".", () => DotToken.Instance),
-            ("?", () => QuestionToken.Instance),
-            ("&", () => AmpersandToken.Instance),
+            ("+", () => Tokens.Plus),
+            ("-", () => Tokens.Minus),
+            ("*", () => Tokens.Star),
+            ("/", () => Tokens.Slash),
+            ("%", () => Tokens.Percent),
+            ("!", () => Tokens.Excl),
+            (".", () => Tokens.Dot),
+            ("?", () => Tokens.Question),
+            ("&", () => Tokens.Ampersand),
 
-            (":", () => ColonToken.Instance),
-            ("`", () => BacktickToken.Instance)
+            (":", () => Tokens.Colon),
+            ("`", () => Tokens.Backtick)
         };
 
         public LexResult LexNormalMode(LexerContext context, bool bSkipNewLine)
@@ -171,7 +171,7 @@ namespace Citron
 
             // 끝 처리
             if (context.Pos.IsReachEnd())
-                return new LexResult(EndOfFileToken.Instance, context);
+                return new LexResult(Tokens.EndOfFile, context);
 
             // 줄바꿈 문자
             var newLineResult = LexNewLine(context);
@@ -196,7 +196,7 @@ namespace Citron
 
             if (context.Pos.Equals('"'))
                 return new LexResult(
-                    DoubleQuoteToken.Instance, 
+                    Tokens.DoubleQuote, 
                     context.UpdatePos(context.Pos.Next()));
 
             var keywordResult = LexKeyword(context);
@@ -216,11 +216,11 @@ namespace Citron
         {   
             var newLineResult = LexNewLine(context);
             if (newLineResult.HasValue)
-                return new LexResult(NewLineToken.Instance, newLineResult.Context);
+                return new LexResult(Tokens.NewLine, newLineResult.Context);
 
             // TODO: \} 처리
             if (context.Pos.Equals('}'))
-                return new LexResult(RBraceToken.Instance, context.UpdatePos(context.Pos.Next()));
+                return new LexResult(Tokens.RBrace, context.UpdatePos(context.Pos.Next()));
             
             if (context.Pos.Equals('$'))
             {                
@@ -229,7 +229,7 @@ namespace Citron
                 if (nextDollarPos.Equals('{'))
                 {
                     return new LexResult(
-                        DollarLBraceToken.Instance,
+                        Tokens.DollarLBrace,
                         context.UpdatePos(nextDollarPos.Next()));
                 }
 
@@ -420,7 +420,7 @@ namespace Citron
             {
                 if (context.Pos.Equals('\\'))
                 {
-                    nextLineModeFailedResult = bUpdated ? new LexResult(WhitespaceToken.Instance, context) : LexResult.Invalid;
+                    nextLineModeFailedResult = bUpdated ? new LexResult(Tokens.Whitespace, context) : LexResult.Invalid;
                     context = context.UpdatePos(context.Pos.Next());
                     continue;
                 }
@@ -484,7 +484,7 @@ namespace Citron
                 break;
             }
 
-            return bUpdated ? new LexResult(WhitespaceToken.Instance, context) : LexResult.Invalid;
+            return bUpdated ? new LexResult(Tokens.Whitespace, context) : LexResult.Invalid;
         }
 
         internal LexResult LexNewLine(LexerContext context)
@@ -496,7 +496,7 @@ namespace Citron
                 bUpdated = true;
             }
 
-            return bUpdated ? new LexResult(NewLineToken.Instance, context) : LexResult.Invalid;
+            return bUpdated ? new LexResult(Tokens.NewLine, context) : LexResult.Invalid;
         }
     }
 }

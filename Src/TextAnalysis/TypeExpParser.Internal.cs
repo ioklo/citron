@@ -30,6 +30,23 @@ partial struct TypeExpParser
         return true;
     }
 
+    bool Accept(SingleToken token)
+    {
+        var lexResult = lexer.LexNormalMode(context.LexerContext, true);
+        return Accept(token, lexResult);
+    }
+
+    bool Accept(SingleToken token, LexResult lexResult)
+    {
+        if (lexResult.HasValue && lexResult.Token == token)
+        {
+            context = context.Update(lexResult.Context);
+            return true;
+        }
+
+        return false;
+    }
+
     bool Accept<TToken>([NotNullWhen(true)] out TToken? token) where TToken : Token
     {
         var lexResult = lexer.LexNormalMode(context.LexerContext, true);
@@ -49,16 +66,16 @@ partial struct TypeExpParser
     {
         var typeArgsBuilder = ImmutableArray.CreateBuilder<TypeExp>();
 
-        if (!Accept<LessThanToken>(out _))
+        if (!Accept(Tokens.LessThan))
         {
             outTypeArgs = null;
             return false;
         }
 
-        while (!Accept<GreaterThanToken>(out _))
+        while (!Accept(Tokens.GreaterThan))
         {
             if (0 < typeArgsBuilder.Count)
-                if (!Accept<CommaToken>(out _))
+                if (!Accept(Tokens.Comma))
                 {
                     outTypeArgs = null;
                     return false;
@@ -106,7 +123,7 @@ partial struct TypeExpParser
             return false;
         }
 
-        if (!Accept<QuestionToken>(out _))
+        if (!Accept(Tokens.Question))
         {
             outTypeExp = null;
             return false;
@@ -119,7 +136,7 @@ partial struct TypeExpParser
     // box T*
     bool InternalParseBoxPtrTypeExp([NotNullWhen(returnValue: true)] out TypeExp? outTypeExp)
     {
-        if (!Accept<BoxToken>(out _))
+        if (!Accept(Tokens.Box))
         {
             outTypeExp = null;
             return false;
@@ -133,7 +150,7 @@ partial struct TypeExpParser
             return false;
         }
 
-        if (!Accept<StarToken>(out _))
+        if (!Accept(Tokens.Star))
         {
             outTypeExp = null;
             return false;
@@ -157,7 +174,7 @@ partial struct TypeExpParser
         }
 
         // 적어도 한개는 있어야 한다
-        if (!Accept<StarToken>(out _))
+        if (!Accept(Tokens.Star))
         {
             outTypeExp = null;
             return false;
@@ -165,7 +182,7 @@ partial struct TypeExpParser
 
         typeExp = new LocalPtrTypeExp(typeExp);
 
-        while(Accept<StarToken>(out _))        
+        while(Accept(Tokens.Star))        
             typeExp = new LocalPtrTypeExp(typeExp);
 
         outTypeExp = typeExp;
@@ -175,7 +192,7 @@ partial struct TypeExpParser
     // (T)
     bool InternalParseParenTypeExp([NotNullWhen(returnValue: true)] out TypeExp? outTypeExp)
     {
-        if (!Accept<LParenToken>(out _))
+        if (!Accept(Tokens.LParen))
         {
             outTypeExp = null;
             return false;
@@ -189,7 +206,7 @@ partial struct TypeExpParser
             return false;
         }
 
-        if (!Accept<RParenToken>(out _))
+        if (!Accept(Tokens.RParen))
         {
             outTypeExp = null;
             return false;
@@ -206,7 +223,7 @@ partial struct TypeExpParser
             var curTypeExp = typeIdExp;
 
             // .
-            while (Accept<DotToken>(out _))
+            while (Accept(Tokens.Dot))
             {
                 // ID
                 if (!Accept<IdentifierToken>(out var memberName))

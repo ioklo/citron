@@ -68,15 +68,15 @@ public class CommandLexerTests
         var expectedTokens = new Token[]
         {
             new TextToken("  p$s"),
-            DollarLBraceToken.Instance,
+            Tokens.DollarLBrace,
             new IdentifierToken("ccc"),
-            RBraceToken.Instance,
+            Tokens.RBrace,
             new TextToken(" \"ddd "),
             new IdentifierToken("e"),
             new TextToken("  "),
-            NewLineToken.Instance,
+            Tokens.NewLine,
             new TextToken(" "),
-            RBraceToken.Instance,
+            Tokens.RBrace,
         };
 
         Assert.Equal(expectedTokens, tokens, TokenEqualityComparer.Instance);
@@ -113,10 +113,10 @@ hello world \n
 
         var expected = new List<Token>
         {
-            NewLineToken.Instance,
-            new TextToken("hello world \\n"), NewLineToken.Instance, // skip multi newlines
-            new TextToken("    hello    "), NewLineToken.Instance,                
-            RBraceToken.Instance
+            Tokens.NewLine,
+            new TextToken("hello world \\n"), Tokens.NewLine, // skip multi newlines
+            new TextToken("    hello    "), Tokens.NewLine,                
+            Tokens.RBrace
         };
 
         Assert.Equal(expected, tokens, TokenEqualityComparer.Instance);
@@ -133,7 +133,7 @@ hello world \n
         var expectedTokens = new Token[]
         {
             new TextToken("ls -al"),
-            NewLineToken.Instance,
+            Tokens.NewLine,
             new TextToken("bb"),
         };
 

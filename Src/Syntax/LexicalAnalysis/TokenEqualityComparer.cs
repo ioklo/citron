@@ -18,6 +18,9 @@ namespace Citron.LexicalAnalysis
                 case (null, null):
                     return true;
 
+                case (SingleToken singleTokenX, SingleToken singleTokenY):
+                    return singleTokenX == singleTokenY;
+
                 case (IntToken intTokenX, IntToken intTokenY):
                     return intTokenX.Value == intTokenY.Value;
 

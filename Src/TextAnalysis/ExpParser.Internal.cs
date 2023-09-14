@@ -34,6 +34,23 @@ partial struct ExpParser
         return true;
     }
 
+    bool Accept(SingleToken token)
+    {
+        var lexResult = lexer.LexNormalMode(context.LexerContext, true);
+        return Accept(token, lexResult);
+    }
+
+    bool Accept(SingleToken token, LexResult lexResult)
+    {
+        if (lexResult.HasValue && lexResult.Token == token)
+        {
+            context = context.Update(lexResult.Context);
+            return true;
+        }
+
+        return false;
+    }
+
     bool Accept<TToken>([NotNullWhen(true)] out TToken? token) where TToken : Token
     {
         var lexResult = lexer.LexNormalMode(context.LexerContext, true);
@@ -52,11 +69,11 @@ partial struct ExpParser
         token = null;
         return false;
     }
-    
-    bool Peek<TToken>() where TToken : Token
+
+    bool Peek(SingleToken token)
     {
         var lexResult = lexer.LexNormalMode(context.LexerContext, true);
-        return lexResult.HasValue && lexResult.Token is TToken;
+        return lexResult.HasValue && lexResult.Token == token;
     }
 
     delegate bool ParseBaseExpDelegate(ref ExpParser parser, [NotNullWhen(returnValue: true)] out Exp? outExp);
@@ -167,7 +184,7 @@ partial struct ExpParser
     bool InternalParseArgument([NotNullWhen(returnValue: true)] out Argument? outArg)
     {
         // params, ref
-        if (Accept<ParamsToken>(out _))
+        if (Accept(Tokens.Params))
         {
             if (!ParseExp(out var exp))
             {
@@ -193,17 +210,17 @@ partial struct ExpParser
 
     bool InternalParseCallArgs([NotNullWhen(returnValue: true)] out ImmutableArray<Argument>? outArgs)
     {
-        if (!Accept<LParenToken>(out _))
+        if (!Accept(Tokens.LParen))
         {
             outArgs = null;
             return false;
         }
 
         var builder = ImmutableArray.CreateBuilder<Argument>();
-        while (!Accept<RParenToken>(out _))
+        while (!Accept(Tokens.RParen))
         {
             if (0 < builder.Count)
-                if (!Accept<CommaToken>(out _))
+                if (!Accept(Tokens.Comma))
                 {
                     outArgs = null;
                     return false;
@@ -224,8 +241,8 @@ partial struct ExpParser
 
     static (Token Token, UnaryOpKind OpKind)[] primaryInfos = new (Token Token, UnaryOpKind OpKind)[]
     {
-        (PlusPlusToken.Instance, UnaryOpKind.PostfixInc),
-        (MinusMinusToken.Instance, UnaryOpKind.PostfixDec),
+        (Tokens.PlusPlus, UnaryOpKind.PostfixInc),
+        (Tokens.MinusMinus, UnaryOpKind.PostfixDec),
     };
 
     // postfix
@@ -264,7 +281,7 @@ partial struct ExpParser
             }
 
             // [ ... ]
-            if (Accept<LBracketToken>(lexResult, out _))
+            if (Accept(Tokens.LBracket, lexResult))
             {
                 if (!ParseExp(out var index))
                 {
@@ -272,7 +289,7 @@ partial struct ExpParser
                     return false;
                 }
 
-                if (!Accept<RBracketToken>(out _))
+                if (!Accept(Tokens.RBracket))
                 {
                     outExp = null;
                     return false;
@@ -283,7 +300,7 @@ partial struct ExpParser
             }
 
             // . id < >
-            if (Accept<DotToken>(lexResult, out _))
+            if (Accept(Tokens.Dot, lexResult))
             {
                 if (!Accept<IdentifierToken>(out var idToken))
                 {
@@ -317,11 +334,11 @@ partial struct ExpParser
     #region Unary, Prefix Inc/Dec
     static (Token Token, UnaryOpKind OpKind)[] unaryInfos = new (Token Token, UnaryOpKind OpKind)[]
     {
-        (MinusToken.Instance, UnaryOpKind.Minus),
-        (ExclToken.Instance, UnaryOpKind.LogicalNot),
-        (PlusPlusToken.Instance, UnaryOpKind.PrefixInc),
-        (MinusMinusToken.Instance, UnaryOpKind.PrefixDec),
-        (StarToken.Instance, UnaryOpKind.Deref)
+        (Tokens.Minus, UnaryOpKind.Minus),
+        (Tokens.Excl, UnaryOpKind.LogicalNot),
+        (Tokens.PlusPlus, UnaryOpKind.PrefixInc),
+        (Tokens.MinusMinus, UnaryOpKind.PrefixDec),
+        (Tokens.Star, UnaryOpKind.Deref)
     };
 
     bool InternalParseUnaryExp([NotNullWhen(returnValue: true)] out Exp? outExp)
@@ -372,9 +389,9 @@ partial struct ExpParser
     #region Multiplicative, LeftAssoc
     static (Token Token, BinaryOpKind OpKind)[] multiplicativeInfos = new (Token Token, BinaryOpKind OpKind)[]
     {
-        (StarToken.Instance, BinaryOpKind.Multiply),
-        (SlashToken.Instance, BinaryOpKind.Divide),
-        (PercentToken.Instance, BinaryOpKind.Modulo),
+        (Tokens.Star, BinaryOpKind.Multiply),
+        (Tokens.Slash, BinaryOpKind.Divide),
+        (Tokens.Percent, BinaryOpKind.Modulo),
     };
 
     bool InternalParseMultiplicativeExp([NotNullWhen(returnValue: true)] out Exp? outExp)
@@ -390,8 +407,8 @@ partial struct ExpParser
     #region Additive, LeftAssoc
     static (Token Token, BinaryOpKind OpKind)[] additiveInfos = new (Token Token, BinaryOpKind OpKind)[]
     {
-        (PlusToken.Instance, BinaryOpKind.Add),
-        (MinusToken.Instance, BinaryOpKind.Subtract),
+        (Tokens.Plus, BinaryOpKind.Add),
+        (Tokens.Minus, BinaryOpKind.Subtract),
     };
 
     bool InternalParseAdditiveExp([NotNullWhen(returnValue: true)] out Exp? outExp)
@@ -407,10 +424,10 @@ partial struct ExpParser
 
     static (Token Token, BinaryOpKind OpKind)[] testInfos = new (Token Token, BinaryOpKind OpKind)[]
     {
-        (GreaterThanEqualToken.Instance, BinaryOpKind.GreaterThanOrEqual),
-        (LessThanEqualToken.Instance, BinaryOpKind.LessThanOrEqual),
-        (LessThanToken.Instance, BinaryOpKind.LessThan),
-        (GreaterThanToken.Instance, BinaryOpKind.GreaterThan),
+        (Tokens.GreaterThanEqual, BinaryOpKind.GreaterThanOrEqual),
+        (Tokens.LessThanEqual, BinaryOpKind.LessThanOrEqual),
+        (Tokens.LessThan, BinaryOpKind.LessThan),
+        (Tokens.GreaterThan, BinaryOpKind.GreaterThan),
     };
 
     bool InternalParseTestAndTypeTestExp([NotNullWhen(returnValue: true)] out Exp? outExp)
@@ -452,7 +469,7 @@ partial struct ExpParser
 
             if (bHandled) continue;
 
-            if (lexResult.Token is IsToken)
+            if (lexResult.Token == Tokens.Is)
             {
                 context = context.Update(lexResult.Context);
                 if (!TypeExpParser.Parse(lexer, ref context, out var typeExp))
@@ -465,7 +482,7 @@ partial struct ExpParser
                 continue;
             }
 
-            if (lexResult.Token is AsToken)
+            if (lexResult.Token == Tokens.As)
             {
                 context = context.Update(lexResult.Context);
                 if (!TypeExpParser.Parse(lexer, ref context, out var typeExp))
@@ -489,8 +506,8 @@ partial struct ExpParser
     #region Equality, Left Assoc
     static (Token Token, BinaryOpKind OpKind)[] equalityInfos = new (Token Token, BinaryOpKind OpKind)[]
     {
-        (EqualEqualToken.Instance, BinaryOpKind.Equal),
-        (ExclEqualToken.Instance, BinaryOpKind.NotEqual),
+        (Tokens.EqualEqual, BinaryOpKind.Equal),
+        (Tokens.ExclEqual, BinaryOpKind.NotEqual),
     };
 
     bool InternalParseEqualityExp([NotNullWhen(returnValue: true)] out Exp? outExp)
@@ -514,7 +531,7 @@ partial struct ExpParser
             return false;
         }
 
-        if (!Accept<EqualToken>(out _))
+        if (!Accept(Tokens.Equal))
         {
             outExp = exp0;
             return true;
@@ -545,12 +562,12 @@ partial struct ExpParser
         {
             paramsBuilder.Add(new LambdaExpParam(null, idToken.Value));
         }
-        else if (Accept<LParenToken>(out _))
+        else if (Accept(Tokens.LParen))
         {
-            while (!Accept<RParenToken>(out _))
+            while (!Accept(Tokens.RParen))
             {
                 if (0 < paramsBuilder.Count)
-                    if (!Accept<CommaToken>(out _))
+                    if (!Accept(Tokens.Comma))
                     {
                         outExp = null;
                         return false;
@@ -571,7 +588,7 @@ partial struct ExpParser
         }
 
         // =>
-        if (!Accept<EqualGreaterThanToken>(out _))
+        if (!Accept(Tokens.EqualGreaterThan))
         {
             outExp = null;
             return false;
@@ -580,7 +597,7 @@ partial struct ExpParser
         // exp => return exp;
         // { ... }
         ImmutableArray<Stmt> body;
-        if (Peek<LBraceToken>())
+        if (Peek(Tokens.LBrace))
         {
             // Body 파싱을 그대로 쓴다
             if (!StmtParser.ParseBody(lexer, ref context, out var stmtBody))
@@ -612,7 +629,7 @@ partial struct ExpParser
     bool InternalParseBoxExp([NotNullWhen(returnValue: true)] out Exp? outExp)
     {
         // <BOX> <EXP>
-        if (!Accept<BoxToken>(out _))
+        if (!Accept(Tokens.Box))
         {
             outExp = null;
             return false;
@@ -632,7 +649,7 @@ partial struct ExpParser
     bool InternalParseDerefExp([NotNullWhen(returnValue: true)] out Exp? outExp)
     {
         // <BOX> <EXP>
-        if (!Accept<BoxToken>(out _))
+        if (!Accept(Tokens.Box))
         {
             outExp = null;
             return false;
@@ -653,7 +670,7 @@ partial struct ExpParser
     bool InternalParseNewExp([NotNullWhen(returnValue: true)] out Exp? outExp)
     {
         // <NEW> <TYPEEXP> <LPAREN> CallArgs <RPAREN>
-        if (!Accept<NewToken>(out _))
+        if (!Accept(Tokens.New))
         {
             outExp = null;
             return false;
@@ -677,7 +694,7 @@ partial struct ExpParser
 
     bool InternalParseParenExp([NotNullWhen(returnValue: true)] out Exp? outExp)
     {
-        if (!Accept<LParenToken>(out _))
+        if (!Accept(Tokens.LParen))
         {
             outExp = null;
             return false;
@@ -689,7 +706,7 @@ partial struct ExpParser
             return false;
         }
 
-        if (!Accept<RParenToken>(out _))
+        if (!Accept(Tokens.RParen))
         {
             outExp = null;
             return false;
@@ -701,7 +718,7 @@ partial struct ExpParser
 
     bool InternalParseNullLiteralExp([NotNullWhen(returnValue: true)] out Exp? outExp)
     {
-        if (Accept<NullToken>(out _))
+        if (Accept(Tokens.Null))
         {
             outExp = NullLiteralExp.Instance;
             return true;
@@ -738,14 +755,14 @@ partial struct ExpParser
     // 스트링 파싱
     bool InternalParseStringExp([NotNullWhen(returnValue: true)] out StringExp? outStrExp)
     {
-        if (!Accept<DoubleQuoteToken>(out _))
+        if (!Accept(Tokens.DoubleQuote))
         {
             outStrExp = null;
             return false;
         }
 
         var builder = ImmutableArray.CreateBuilder<StringExpElement>();
-        while (!Accept<DoubleQuoteToken>(lexer.LexStringMode(context.LexerContext), out _))
+        while (!Accept(Tokens.DoubleQuote, lexer.LexStringMode(context.LexerContext)))
         {
             if (Accept<TextToken>(lexer.LexStringMode(context.LexerContext), out var textToken))
             {
@@ -760,7 +777,7 @@ partial struct ExpParser
             }
 
             // ${
-            if (Accept<DollarLBraceToken>(lexer.LexStringMode(context.LexerContext), out _))
+            if (Accept(Tokens.DollarLBrace, lexer.LexStringMode(context.LexerContext)))
             {
                 // TODO: EndInnerExpToken 일때 빠져나와야 한다는 표시를 해줘야 한다
                 if (!ParseExp(out var exp))
@@ -769,7 +786,7 @@ partial struct ExpParser
                     return false;
                 }
 
-                if (!Accept<RBraceToken>(out _))
+                if (!Accept(Tokens.RBrace))
                 {
                     outStrExp = null;
                     return false;
@@ -790,17 +807,17 @@ partial struct ExpParser
 
     bool InternalParseListExp([NotNullWhen(returnValue: true)] out Exp? outExp)
     {
-        if (!Accept<LBracketToken>(out _))
+        if (!Accept(Tokens.LBracket))
         {
             outExp = null;
             return false;
         }
 
         var builder = ImmutableArray.CreateBuilder<Exp>();
-        while (!Accept<RBracketToken>(out _))
+        while (!Accept(Tokens.RBracket))
         {
             if (0 < builder.Count)
-                if (!Accept<CommaToken>(out _))
+                if (!Accept(Tokens.Comma))
                 {
                     outExp = null;
                     return false;

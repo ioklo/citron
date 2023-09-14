@@ -36,6 +36,23 @@ partial struct StmtParser
         return true;
     }
 
+    bool Accept(SingleToken token)
+    {
+        var lexResult = lexer.LexNormalMode(context.LexerContext, true);
+        return Accept(token, lexResult);
+    }
+
+    bool Accept(SingleToken token, LexResult lexResult)
+    {
+        if (lexResult.HasValue && lexResult.Token == token)
+        {
+            context = context.Update(lexResult.Context);
+            return true;
+        }
+
+        return false;
+    }
+
     bool Accept<TToken>([NotNullWhen(returnValue: true)] out TToken? token) where TToken : Token
     {
         var lexResult = lexer.LexNormalMode(context.LexerContext, true);
@@ -55,9 +72,9 @@ partial struct StmtParser
         return false;
     }
 
-    bool Peek<TToken>(LexResult lexResult) where TToken : Token
+    bool Peek(SingleToken token, LexResult lexResult)
     {
-        return lexResult.HasValue && lexResult.Token is TToken;
+        return lexResult.HasValue && lexResult.Token == token;
     }
 
     // typeExp id = exp)
@@ -65,9 +82,9 @@ partial struct StmtParser
     {
         if (!TypeExpParser.Parse(lexer, ref context, out var testTypeExp) ||
             !Accept<IdentifierToken>(out var varName) ||
-            !Accept<EqualToken>(out _) ||
+            !Accept(Tokens.Equal) ||
             !ExpParser.Parse(lexer, ref context, out var exp) ||
-            !Accept<RParenToken>(out _))
+            !Accept(Tokens.RParen))
         {
             outStmt = null;
             return false;
@@ -81,7 +98,7 @@ partial struct StmtParser
         }
 
         EmbeddableStmt? elseBody = null;
-        if (Accept<ElseToken>(out _))
+        if (Accept(Tokens.Else))
         {
             if (!ParseEmbeddableStmt(out elseBody))
             {
@@ -101,13 +118,13 @@ partial struct StmtParser
         // if (exp0) if (exp1) stmt1 else stmt2 => If(exp0, If(exp1, stmt1, stmt2))
         // if (typeExp name = exp) => IfTestStmt(TypeExp, name, exp)
 
-        if (!Accept<IfToken>(out _))
+        if (!Accept(Tokens.If))
         {
             outStmt = null;
             return false;
         }
 
-        if (!Accept<LParenToken>(out _))
+        if (!Accept(Tokens.LParen))
         {
             outStmt = null;
             return false;
@@ -124,7 +141,7 @@ partial struct StmtParser
             return false;
         }
         
-        if (!Accept<RParenToken>(out _))
+        if (!Accept(Tokens.RParen))
         {
             outStmt = null;
             return false;
@@ -138,7 +155,7 @@ partial struct StmtParser
         }
 
         EmbeddableStmt? elseBody = null;
-        if (Accept<ElseToken>(out _))
+        if (Accept(Tokens.Else))
         {
             if (!ParseEmbeddableStmt(out elseBody))
             { 
@@ -169,7 +186,7 @@ partial struct StmtParser
             }
 
             Exp? initExp = null;
-            if (Accept<EqualToken>(out _))
+            if (Accept(Tokens.Equal))
             {
                 // TODO: ;나 ,가 나올때까지라는걸 명시해주면 좋겠다
                 if (!ExpParser.Parse(lexer, ref context, out initExp))
@@ -181,7 +198,7 @@ partial struct StmtParser
 
             elemsBuilder.Add(new VarDeclElement(varIdResult!.Value, initExp));
 
-        } while (Accept<CommaToken>(out _)); // ,가 나오면 계속한다
+        } while (Accept(Tokens.Comma)); // ,가 나오면 계속한다
 
         outVarDecl = new VarDecl(varType!, elemsBuilder.ToImmutable());
         return true;
@@ -197,7 +214,7 @@ partial struct StmtParser
         }
 
         if (!context.LexerContext.Pos.IsReachEnd() &&
-            !Accept<SemiColonToken>(out _)) // ;으로 마무리
+            !Accept(Tokens.SemiColon)) // ;으로 마무리
         {
             outStmt = null;
             return false;
@@ -230,31 +247,31 @@ partial struct StmtParser
     {
         static bool Fatal() => throw new ParseFatalException();
 
-        if (!Accept<ForToken>(out _))
+        if (!Accept(Tokens.For))
         {
             outStmt = null;
             return false;
         }
 
-        if (!Accept<LParenToken>(out _))
+        if (!Accept(Tokens.LParen))
             return Fatal();
 
         // TODO: 이 Initializer의 끝은 ';' 이다
         ParseForStmtInitializer(out var initializer);
 
-        if (!Accept<SemiColonToken>(out _))
+        if (!Accept(Tokens.SemiColon))
             return Fatal();
 
         // TODO: 이 CondExp의 끝은 ';' 이다            
         ExpParser.Parse(lexer, ref context, out var cond);
 
-        if (!Accept<SemiColonToken>(out _))
+        if (!Accept(Tokens.SemiColon))
             return Fatal();
 
         // TODO: 이 CondExp의 끝은 ')' 이다            
         ExpParser.Parse(lexer, ref context, out var cont);
         
-        if (!Accept<RParenToken>(out _))
+        if (!Accept(Tokens.RParen))
             return Fatal();
 
         if (!ParseEmbeddableStmt(out var bodyStmt))
@@ -266,13 +283,13 @@ partial struct StmtParser
 
     bool InternalParseContinueStmt([NotNullWhen(returnValue: true)] out ContinueStmt? outStmt)
     {
-        if (!Accept<ContinueToken>(out _))
+        if (!Accept(Tokens.Continue))
         {
             outStmt = null;
             return false;
         }
 
-        if (!Accept<SemiColonToken>(out _))
+        if (!Accept(Tokens.SemiColon))
         {
             outStmt = null;
             return false;
@@ -284,13 +301,13 @@ partial struct StmtParser
 
     bool InternalParseBreakStmt([NotNullWhen(returnValue: true)] out BreakStmt? outStmt)
     {
-        if (!Accept<BreakToken>(out _))
+        if (!Accept(Tokens.Break))
         {
             outStmt = null;
             return false;
         }
 
-        if (!Accept<SemiColonToken>(out _))
+        if (!Accept(Tokens.SemiColon))
         {
             outStmt = null;
             return false;
@@ -302,7 +319,7 @@ partial struct StmtParser
 
     bool InternalParseReturnStmt([NotNullWhen(returnValue: true)] out ReturnStmt? outStmt)
     {
-        if (!Accept<ReturnToken>(out _))
+        if (!Accept(Tokens.Return))
         {
             outStmt = null;
             return false;
@@ -318,7 +335,7 @@ partial struct StmtParser
             returnValue = null;
         }
 
-        if (!Accept<SemiColonToken>(out _))
+        if (!Accept(Tokens.SemiColon))
         {
             outStmt = null;
             return false;
@@ -330,14 +347,14 @@ partial struct StmtParser
 
     bool InternalParseBlockStmt([NotNullWhen(returnValue: true)] out BlockStmt? outStmt)
     {
-        if (!Accept<LBraceToken>(out _))
+        if (!Accept(Tokens.LBrace))
         {
             outStmt = null;
             return false;
         }
 
         var stmtsBuilder = ImmutableArray.CreateBuilder<Stmt>();
-        while (!Accept<RBraceToken>(out _))
+        while (!Accept(Tokens.RBrace))
         {
             if (ParseStmt(out var stmt))
             {
@@ -355,7 +372,7 @@ partial struct StmtParser
 
     bool InternalParseBlankStmt([NotNullWhen(returnValue: true)] out BlankStmt? outStmt)
     {
-        if (!Accept<SemiColonToken>(out _))
+        if (!Accept(Tokens.SemiColon))
         {
             outStmt = null;
             return false;
@@ -374,7 +391,7 @@ partial struct StmtParser
             return false;
         }
 
-        if (!Accept<SemiColonToken>(out _))
+        if (!Accept(Tokens.SemiColon))
         {
             outStmt = null;
             return false;
@@ -386,7 +403,7 @@ partial struct StmtParser
 
     bool InternalParseTaskStmt([NotNullWhen(returnValue: true)] out TaskStmt? outStmt)
     {
-        if (!Accept<TaskToken>(out _))
+        if (!Accept(Tokens.Task))
         {
             outStmt = null;
             return false;
@@ -404,7 +421,7 @@ partial struct StmtParser
 
     bool InternalParseAwaitStmt([NotNullWhen(returnValue: true)] out AwaitStmt? outStmt)
     {
-        if (!Accept<AwaitToken>(out _))
+        if (!Accept(Tokens.Await))
         {
             outStmt = null;
             return false;
@@ -422,7 +439,7 @@ partial struct StmtParser
 
     bool InternalParseAsyncStmt([NotNullWhen(returnValue: true)] out AsyncStmt? outStmt)
     {
-        if (!Accept<AsyncToken>(out _))
+        if (!Accept(Tokens.Async))
         {
             outStmt = null;
             return false;
@@ -440,7 +457,7 @@ partial struct StmtParser
 
     bool InternalParseYieldStmt([NotNullWhen(returnValue: true)] out YieldStmt? outStmt)
     {
-        if (!Accept<YieldToken>(out _))
+        if (!Accept(Tokens.Yield))
         {
             outStmt = null;
             return false;
@@ -452,7 +469,7 @@ partial struct StmtParser
             return false;
         }
 
-        if (!Accept<SemiColonToken>(out _))
+        if (!Accept(Tokens.SemiColon))
         {
             outStmt = null;
             return false;
@@ -469,14 +486,14 @@ partial struct StmtParser
         // 새 줄이거나 끝에 다다르면 종료
         while (!context.LexerContext.Pos.IsReachEnd())
         {
-            if (bStopRBrace && Peek<RBraceToken>(lexer.LexCommandMode(context.LexerContext)))
+            if (bStopRBrace && Peek(Tokens.RBrace, lexer.LexCommandMode(context.LexerContext)))
                 break;
 
-            if (Accept<NewLineToken>(lexer.LexCommandMode(context.LexerContext), out _))
+            if (Accept(Tokens.NewLine, lexer.LexCommandMode(context.LexerContext)))
                 break;
 
             // ${ 이 나오면 
-            if (Accept<DollarLBraceToken>(lexer.LexCommandMode(context.LexerContext), out _))
+            if (Accept(Tokens.DollarLBrace, lexer.LexCommandMode(context.LexerContext)))
             {
                 // TODO: EndInnerExpToken 일때 빠져나와야 한다는 표시를 해줘야 한다
                 if (!ExpParser.Parse(lexer, ref context, out var exp))
@@ -485,7 +502,7 @@ partial struct StmtParser
                     return false;
                 }
 
-                if (!Accept<RBraceToken>(out _))
+                if (!Accept(Tokens.RBrace))
                 {
                     outExp = null;
                     return false;
@@ -520,14 +537,14 @@ partial struct StmtParser
     bool InternalParseForeachStmt([NotNullWhen(returnValue: true)] out ForeachStmt? outStmt)
     {
         // foreach
-        if (!Accept<ForeachToken>(out _))
+        if (!Accept(Tokens.Foreach))
         {
             outStmt = null;
             return false;
         }
 
         // (
-        if (!Accept<LParenToken>(out _))
+        if (!Accept(Tokens.LParen))
         {
             outStmt = null;
             return false;
@@ -548,7 +565,7 @@ partial struct StmtParser
         }
 
         // in
-        if (!Accept<InToken>(out _))
+        if (!Accept(Tokens.In))
         {
             outStmt = null;
             return false;
@@ -562,7 +579,7 @@ partial struct StmtParser
         }
 
         // )
-        if (!Accept<RParenToken>(out _))
+        if (!Accept(Tokens.RParen))
         {
             outStmt = null;
             return false;
@@ -582,8 +599,8 @@ partial struct StmtParser
     // 
     bool InternalParseCommandStmt([NotNullWhen(returnValue: true)] out CommandStmt? outStmt)
     {
-        // exec, @로 시작한다
-        if (!Accept<ExecToken>(out _))
+        // @로 시작한다
+        if (!Accept(Tokens.At))
         {
             outStmt = null;
             return false;
@@ -592,13 +609,13 @@ partial struct StmtParser
         // TODO: optional ()
 
         // {로 시작한다면 MultiCommand, } 가 나오면 끝난다
-        if (Accept<LBraceToken>(out _))
+        if (Accept(Tokens.LBrace))
         {
             // 새줄이거나 끝에 다다르거나 }가 나오면 종료, 
             var cmdsBuilder = ImmutableArray.CreateBuilder<StringExp>();
             while (true)
             {
-                if (Accept<RBraceToken>(lexer.LexCommandMode(context.LexerContext), out _))
+                if (Accept(Tokens.RBrace, lexer.LexCommandMode(context.LexerContext)))
                     break;
 
                 if (ParseSingleCommand(true, out var singleCommand))
@@ -639,7 +656,7 @@ partial struct StmtParser
     bool InternalParseDirectiveStmt([NotNullWhen(returnValue: true)] out DirectiveStmt? outStmt)
     {
         // ` <id> ( exp... );
-        if (!Accept<BacktickToken>(out _))
+        if (!Accept(Tokens.Backtick))
         {
             outStmt = null;
             return false;
@@ -651,17 +668,17 @@ partial struct StmtParser
             return false;
         }
 
-        if (!Accept<LParenToken>(out _))
+        if (!Accept(Tokens.LParen))
         {
             outStmt = null;
             return false;
         }
 
         var argsBuilder = ImmutableArray.CreateBuilder<Exp>();
-        while(!Accept<RParenToken>(out _))
+        while(!Accept(Tokens.RParen))
         {
             if (0 < argsBuilder.Count)
-                if (!Accept<CommaToken>(out _))
+                if (!Accept(Tokens.Comma))
                 {
                     outStmt = null;
                     return false;
@@ -676,7 +693,7 @@ partial struct StmtParser
             argsBuilder.Add(arg);
         }
 
-        if (!Accept<SemiColonToken>(out _))
+        if (!Accept(Tokens.SemiColon))
         {
             outStmt = null;
             return false;
@@ -691,7 +708,7 @@ partial struct StmtParser
     bool InternalParseEmbeddableStmt([NotNullWhen(returnValue: true)] out EmbeddableStmt? outStmt)
     {
         // { 가 없다면, Embeddable.Single
-        if (!Accept<LBraceToken>(out _))
+        if (!Accept(Tokens.LBrace))
         {
             if (ParseStmt(out var stmt))
             {
@@ -709,7 +726,7 @@ partial struct StmtParser
             var stmtsBuilder = ImmutableArray.CreateBuilder<Stmt>();
 
             // } 가 나올때까지
-            while(!Accept<RBraceToken>(out _))
+            while(!Accept(Tokens.RBrace))
             {
                 if (ParseStmt(out var stmt))
                     stmtsBuilder.Add(stmt);
@@ -727,14 +744,14 @@ partial struct StmtParser
 
     bool InternalParseBody([NotNullWhen(returnValue: true)] out ImmutableArray<Stmt>? outBody)
     {
-        if (!Accept<LBraceToken>(out _))
+        if (!Accept(Tokens.LBrace))
         {
             outBody = null;
             return false;
         }
 
         var stmtsBuilder = ImmutableArray.CreateBuilder<Stmt>();
-        while (!Accept<RBraceToken>(out _))
+        while (!Accept(Tokens.RBrace))
         {
             if (ParseStmt(out var stmt))
             {

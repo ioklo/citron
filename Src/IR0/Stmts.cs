@@ -33,12 +33,12 @@ namespace Citron.IR0
     
     public record class IfNullableRefTestStmt(IType RefType, Name VarName, Exp AsExp, ImmutableArray<Stmt> Body, ImmutableArray<Stmt> ElseBody) : Stmt
     {
-        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitIfNullableRefTestStmt(this);
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitIfNullableRefTest(this);
     }
 
     public record class IfNullableValueTestStmt(IType Type, Name VarName, Exp AsExp, ImmutableArray<Stmt> Body, ImmutableArray<Stmt> ElseBody) : Stmt
     {
-        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitIfNullableValueTestStmt(this);
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitIfNullableValueTest(this);
     }
 
     public record class ForStmt(ImmutableArray<Stmt> InitStmts, Exp? CondExp, Exp? ContinueExp, ImmutableArray<Stmt> Body) : Stmt
