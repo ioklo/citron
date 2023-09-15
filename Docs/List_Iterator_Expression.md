@@ -6,7 +6,7 @@ ListIterExp(Loc list)
 ```
 
 %%TEST(Basic, 123)%%
-```
+```cs
 var l = [1, 2, 3]
 foreach(var i in l) // ListIterExp(LocalVarLoc("l"))
 {

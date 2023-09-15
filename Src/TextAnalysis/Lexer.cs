@@ -133,7 +133,6 @@ namespace Citron
             ("!=", () => Tokens.ExclEqual),
             ("->", () => Tokens.MinusGreaterThan),
 
-
             ("@", () => Tokens.At),
             ("<", () => Tokens.LessThan),
             (">", () => Tokens.GreaterThan),
