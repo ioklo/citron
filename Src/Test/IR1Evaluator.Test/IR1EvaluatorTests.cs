@@ -1,4 +1,4 @@
-using Citron.IR1;
+﻿using Citron.IR1;
 using System;
 using System.Collections.Generic;
 using Xunit;
@@ -117,8 +117,7 @@ namespace Citron.IR1.Runtime
 
             return sb.ToString();
         }
-
-        // ���� �⺻������ ExCall Trace�� �����ϴ��� �׽�Ʈ
+        
         // Func([0]String)
         // {
         //     [0] MakeString "Hello World"
@@ -151,9 +150,7 @@ namespace Citron.IR1.Runtime
             // verify 
             Assert.Equal("Hello World3False", result);
         }
-
-
-        // Continue�� ������ ��, Scope������ �� ������
+        
         // 
         // Func([0]Bool, [1]String, [2]String)
         // {
@@ -591,8 +588,7 @@ namespace Citron.IR1.Runtime
             var main = new Func(mainId, mainRegs, mainBody);
 
             var result = await EvaluateAsync(mainId, f0, main);
-
-            // �� ���� �ϳ�
+            
             Assert.True(result == "Finish Task1Finish Task2End" ||
                 result == "Finish Task2Finish Task1End" );
         }
@@ -715,10 +711,6 @@ namespace Citron.IR1.Runtime
         }
 
         // GetMemberRef
-        // 1. �ڱ� ��⿡�� MemberIndex�� Ȯ������ ���� ���� ����.. Translation������ Ȯ���� �ȵȻ��·� ���ɾ �ۼ��� ���� �ִ�
-        // 2. IR1�� �ۼ��� �ٸ� ��⿡�� MemberIndex�� Ȯ������ �ʾ��� ���� �ִ�
-        // 3. IR1�� �ۼ����� ���� �ٸ� ����� ExternalGetMemberRef�� ����Ѵ�
-        // 4. IR1�� �ۼ��� �ٸ� ��� ������ ExternalGetMemberRef�� ����ؾ� �ϴ°� �ƴѰ� => �ƴѰ� ����. Value�� ���ϴ� ����� �ٸ���..������� ���ɾ ������ �Ѵ�
         // Types 
         //     0, { "T", { (intId, "x"), ("y"), ("z") } }
         //     1, { "S", { 
@@ -726,13 +718,9 @@ namespace Citron.IR1.Runtime
         // MemberVars
         //     0, { TypeId "S", "x" }
         //     1, { TypeId "S", "y" }
-        // 
-        // �ε��� 
-        // CompAllocInfos // �̰� �ε��� �����ؾ� �ڴ�
+        //         
+        // CompAllocInfos
         //     0, { IntId, StringId, RefId }
-        // 
-        // 
-
 
         // ExternalGetMemberRef
     }

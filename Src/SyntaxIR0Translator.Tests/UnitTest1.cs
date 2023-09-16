@@ -1,4 +1,4 @@
-using Citron.Infra;
+﻿using Citron.Infra;
 using Citron.Symbol;
 using Citron.Collections;
 
@@ -260,7 +260,7 @@ public class UnitTest1
     [Fact]
     public void EvaluateType_TypeVarTypeExpInDeclSpace_MakeOpenSymbol()
     {
-        // class X<T> { class Y { T t; } } // t�� Ÿ����
+        // class X<T> { class Y { T t; } } // t의 타입은
         var syntax = SScript(new S.TypeDeclScriptElement(new S.ClassDecl(null, "X", Arr(new S.TypeParam("T")), baseTypes: default,
             Arr<S.ClassMemberDecl>(
                 new S.ClassMemberTypeDecl(new S.ClassDecl(null, "Y", typeParams: default, baseTypes: default,
@@ -296,11 +296,11 @@ public class UnitTest1
         Assert.True(context.CompareClass(expectedDeclSymbol, resultDeclSymbol));
     }
 
-    // X<Y>.Y => X<X<T>.Y>.Y  // �װŶ� ������ ���ڷ� ���� �͵��� ������ ���Ѿ� �Ѵ�   
+    // X<Y>.Y => X<X<T>.Y>.Y  // 그거랑 별개로 인자로 들어온 것들은 적용을 시켜야 한다   
     [Fact]
     public void EvaluateType_InstantiatedTypeExpInDeclSpace_MakeOpenSymbol()
     {
-        // class X<T> { class Y { X<Y>.Y t; } } // t�� Ÿ���� X<X<T>.Y>.Y
+        // class X<T> { class Y { X<Y>.Y t; } } // t의 타입은 X<X<T>.Y>.Y
         var syntax = SScript(new S.TypeDeclScriptElement(new S.ClassDecl(null, "X", Arr(new S.TypeParam("T")), baseTypes: default,
             Arr<S.ClassMemberDecl>(
                 new S.ClassMemberTypeDecl(new S.ClassDecl(null, "Y", typeParams: default, baseTypes: default,

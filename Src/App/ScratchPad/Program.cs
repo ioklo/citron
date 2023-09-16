@@ -1,4 +1,4 @@
-using Citron;
+ï»¿using Citron;
 using Citron.Infra;
 using Citron.IR0Evaluator;
 using Citron.IR0Translator;
@@ -123,7 +123,7 @@ namespace ScratchPad
             var scriptResult = await parser.ParseScriptAsync(parserContext);
             if (!scriptResult.HasValue)
             {
-                await WriteAsync("¿¡·¯ (ÆÄ½Ì ½ÇÆĞ)\n");
+                await WriteAsync("ì—ëŸ¬ (íŒŒì‹± ì‹¤íŒ¨)\n");
                 return false;
             }
 
@@ -131,14 +131,14 @@ namespace ScratchPad
             var rscript = Translator.Translate("TestModule", default, scriptResult.Elem, testLogger);
             if (rscript == null)
             {
-                await WriteAsync("¿¡·¯ (ÄÄÆÄÀÏ ½ÇÆĞ)\n");
+                await WriteAsync("ì—ëŸ¬ (ì»´íŒŒì¼ ì‹¤íŒ¨)\n");
                 await WriteAsync(testLogger.GetMessages());
                 return false;
             }
 
             var commandProvider = new DemoCommandProvider();
             var retValue = await Evaluator.EvalAsync(default, commandProvider, rscript);
-            await WriteAsync($"\n¸®ÅÏ °ª: {retValue}");
+            await WriteAsync($"\në¦¬í„´ ê°’: {retValue}");
 
             return true;
         }
