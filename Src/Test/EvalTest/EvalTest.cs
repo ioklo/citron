@@ -1,8 +1,6 @@
 ﻿using Citron;
 using Citron.Infra;
-using Citron.IR0Evaluator;
-using Citron.IR0Translator;
-
+using Citron.Test;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -71,22 +69,21 @@ namespace EvalTest
             }
 
             var lexer = new Lexer();
-            var parser = new Parser(lexer);
-
             var buffer = new Citron.Buffer(new StringReader(text));
-            var bufferPos = await buffer.MakePosition().NextAsync();
+            var bufferPos = buffer.MakePosition().Next();
             var lexerContext = LexerContext.Make(bufferPos);
             var parserContext = ParserContext.Make(lexerContext);
 
-            var scriptResult = await parser.ParseScriptAsync(parserContext);
-            Assert.True(scriptResult.HasValue, "parsing failed");
+            bool succeeded = ScriptParser.Parse(lexer, ref parserContext, out var script);
+            Assert.True(succeeded, "parsing failed");
+            Debug.Assert(script != null);
 
             var logger = new TestLogger(false);
             var commandProvider = new TestCmdProvider();
 
             try
             {
-                var rscript = Translator.Translate("TestModule", default, scriptResult.Elem, logger);
+                var rscript = SyntaxIR0Translator.Translate("TestModule", default, scriptResult.Elem, logger);
                 MyAssert.Assert(rscript != null);
 
                 var retValue = await Evaluator.EvalAsync(default, commandProvider, rscript); // retValue는 지금 쓰지 않는다
