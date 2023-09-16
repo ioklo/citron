@@ -2,7 +2,7 @@
 using Citron.Infra;
 using Citron.IR0Evaluator;
 using Citron.IR0Translator;
-
+using Citron.Test;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -15,6 +15,10 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
+using Citron.Analysis;
+using Citron.Symbol;
+
+using static Citron.Infra.Misc;
 
 namespace EvalTest
 {
@@ -44,6 +48,70 @@ namespace EvalTest
             sb.Append(cmdText);
         }
     }
+
+    // code -> IR0 -> 
+    public struct IR0EvaluationTester
+    {
+        static Name NormalName(string text) => new Name.Normal(text);
+
+        static ModuleDeclSymbol MakeRuntimeModuleDS()
+        {   
+            var runtimeModuleDecl = new ModuleDeclSymbol(NormalName("System.Runtime"), bReference: true);
+            var systemNSDecl = new NamespaceDeclSymbol(runtimeModuleDecl, NormalName("System"));
+            runtimeModuleDecl.AddNamespace(systemNSDecl);
+
+            var boolDecl = new StructDeclSymbol(systemNSDecl, Accessor.Public, NormalName("Bool"), typeParams: default);
+            systemNSDecl.AddType(boolDecl);
+
+            var intDecl = new StructDeclSymbol(systemNSDecl, Accessor.Public, NormalName("Int32"), typeParams: default);
+            systemNSDecl.AddType(intDecl);
+
+            var stringDecl = new ClassDeclSymbol(systemNSDecl, Accessor.Public, NormalName("String"), typeParams: default);
+            systemNSDecl.AddType(stringDecl);
+
+            var listDecl = new ClassDeclSymbol(systemNSDecl, Accessor.Public, NormalName("List"), Arr<Name>(NormalName("TItem")));
+            systemNSDecl.AddType(listDecl);
+
+            return runtimeModuleDecl;
+        }
+
+        // 실행이 잘 끝나는 테스트
+        public static async ValueTask Test(string text, string expected)
+        {
+            var lexer = new Lexer();
+
+            var buffer = new Citron.Buffer(new StringReader(text));
+            var bufferPos = buffer.MakePosition().Next();
+            var lexerContext = LexerContext.Make(bufferPos);
+            var parserContext = ParserContext.Make(lexerContext);
+
+            bool succeeded = ScriptParser.Parse(lexer, ref parserContext, out var script);
+            Assert.True(succeeded);
+            Debug.Assert(script != null);
+
+            var logger = new TestLogger(false);
+            var commandProvider = new TestCmdProvider();
+
+            try
+            {
+                var runtimeModuleDS = MakeRuntimeModuleDS();
+                var symbolFactory = new SymbolFactory();
+
+                var rscript = SyntaxIR0Translator.Build(new Name.Normal("TestModule"), Arr(script), Arr(runtimeModuleDS), symbolFactory, logger);
+                MyAssert.Assert(rscript != null);
+
+                var retValue = await IR0Evaluator.EvalAsync(default, commandProvider, rscript); // retValue는 지금 쓰지 않는다
+            }
+            catch (Exception)
+            {
+                Assert.True(logger.HasError, "실행은 중간에 멈췄는데 에러로그가 남지 않았습니다");
+            }
+
+            Assert.False(logger.HasError, logger.GetMessages());
+            Assert.Equal(expected, commandProvider.Output);
+        }
+
+    }
     
     public class EvalTest
     {
@@ -71,22 +139,21 @@ namespace EvalTest
             }
 
             var lexer = new Lexer();
-            var parser = new Parser(lexer);
 
             var buffer = new Citron.Buffer(new StringReader(text));
-            var bufferPos = await buffer.MakePosition().NextAsync();
+            var bufferPos = buffer.MakePosition().Next();
             var lexerContext = LexerContext.Make(bufferPos);
             var parserContext = ParserContext.Make(lexerContext);
 
-            var scriptResult = await parser.ParseScriptAsync(parserContext);
-            Assert.True(scriptResult.HasValue, "parsing failed");
+            bool succeeded = ScriptParser.Parse(lexer, ref parserContext, out var script);
+            Assert.True(succeeded);
 
             var logger = new TestLogger(false);
             var commandProvider = new TestCmdProvider();
 
             try
             {
-                var rscript = Translator.Translate("TestModule", default, scriptResult.Elem, logger);
+                var rscript = SyntaxIR0Translator.Build(new Name.Normal("TestModule"), Arr(script), refModuleDecls: default, scriptResult.Elem, logger);
                 MyAssert.Assert(rscript != null);
 
                 var retValue = await Evaluator.EvalAsync(default, commandProvider, rscript); // retValue는 지금 쓰지 않는다

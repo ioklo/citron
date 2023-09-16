@@ -1,4 +1,4 @@
-using Citron.IR0;
+ï»¿using Citron.IR0;
 using Citron.Runtime;
 using System;
 using System.Collections.Generic;
@@ -30,7 +30,7 @@ namespace Citron.Runtime
 
             //// List<int>.Add
             //var listAddFuncId = listTypeId.Append("Add", 0);
-            //var listAddFuncTypeArgList = TypeArgumentList.Make(new[] { intTypeValue }, new TypeValue[] { }); // Ã¹¹øÂ°´Â List, µÎ¹øÂ°´Â Add¿¡ ´ëÇÑ typeArgs
+            //var listAddFuncTypeArgList = TypeArgumentList.Make(new[] { intTypeValue }, new TypeValue[] { }); // ì²«ë²ˆì§¸ëŠ” List, ë‘ë²ˆì§¸ëŠ” Addì— ëŒ€í•œ typeArgs
             //var funcInst = domainService.GetFuncInst(new FuncValue(listAddFuncId, listAddFuncTypeArgList));
             
 
@@ -55,12 +55,12 @@ namespace Citron.Runtime
             ////// List<T>.Add
             ////// (List<>.Add), (T(List) => int)
 
-            ////// ´©°¡ TypeValue¸¦ TypeInst·Î ¸¸µé¾îÁÖ³ª.. DomainService
+            ////// ëˆ„ê°€ TypeValueë¥¼ TypeInstë¡œ ë§Œë“¤ì–´ì£¼ë‚˜.. DomainService
             ////var typeInstEnv = domainService.MakeTypeInstEnv(listIntAddFuncValue);
 
             ////var funcInst = domainService.GetFuncInst(listIntAddFuncValue) as QsNativeFuncInst;
 
-            //// FuncValue¸¦ ¸¸µé¾î º¸ÀÚ 
+            //// FuncValueë¥¼ ë§Œë“¤ì–´ ë³´ì 
         }
     }
 }

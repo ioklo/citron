@@ -1,4 +1,4 @@
-namespace Citron;
+﻿namespace Citron;
 
 using Citron.Syntax;
 using System;

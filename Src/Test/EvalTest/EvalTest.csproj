@@ -22,6 +22,8 @@
     <ProjectReference Include="..\..\IR0Evaluator\IR0Evaluator.csproj" />
     <ProjectReference Include="..\..\IR0\IR0.csproj" />
     <ProjectReference Include="..\..\Log\Log.csproj" />
+    <ProjectReference Include="..\..\Symbol\Symbol.csproj" />
+    <ProjectReference Include="..\..\SyntaxIR0Translator\SyntaxIR0Translator.csproj" />
     <ProjectReference Include="..\..\Syntax\Syntax.csproj" />
     <ProjectReference Include="..\..\TextAnalysis\TextAnalysis.csproj" />
     <ProjectReference Include="..\Test.Misc\Test.Misc.csproj" />
