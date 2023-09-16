@@ -14,15 +14,15 @@ public partial class ClassType : IType, ICyclicEqualityComparableClass<ClassType
     {
         return new ClassType(symbol.Apply(typeEnv));
     }
-
-    public ClassDeclSymbol GetDecl()
+    
+    public ClassSymbol GetSymbol()
     {
-        return symbol.GetDecl();
+        return symbol;
     }
 
-    public ClassType? GetBaseClass()
+    public ClassDeclSymbol GetDeclSymbol()
     {
-        return symbol.GetBaseClass();
+        return symbol.GetDecl();
     }
 
     public SymbolQueryResult? QueryMember(Name memberName, int explicitTypeArgsCount)

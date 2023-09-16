@@ -105,7 +105,7 @@ namespace Citron.Test
 
         Loc IntLoc(int i)
         {
-            return new TempLoc(r.Int(i));
+            return new TempLoc(r.Int(i), r.IntType());
         }
 
         // with script
@@ -1791,7 +1791,7 @@ namespace Citron.Test
 
             var makeLambdaBody = r.StmtBody(makeLambdaD,
                 r.PrintString("MakeLambda"),
-                r.Return(new CastBoxedLambdaToFuncExp(new BoxExp(new LambdaExp(lambda, Args: default)), r.FuncType(r.StringType(), r.IntType(), r.IntType(), r.IntType()))) // TODO: interface cast
+                r.Return(new CastBoxedLambdaToFuncExp(new BoxExp(new LambdaExp(lambda, Args: default), new LambdaType(lambda)), r.FuncType(r.StringType(), r.IntType(), r.IntType(), r.IntType()))) // TODO: interface cast
             );            
 
             var lambdaBody = r.StmtBody(lambdaD, r.PrintString("TestFunc"));
@@ -1800,7 +1800,7 @@ namespace Citron.Test
             var print = (GlobalFuncSymbol)printBody.DSymbol.MakeOpenSymbol(factory);
 
             var mainBody = AddGlobalFunc(moduleD, r.VoidType(), "Main",
-                r.Call(lambda, r.TempLoc(r.CallExp(makeLambda)),
+                r.Call(lambda, r.TempLoc(r.CallExp(makeLambda), new LambdaType(lambda)),
                     r.Arg(r.CallExp(print, r.Arg(r.Int(1)))),
                     r.Arg(r.CallExp(print, r.Arg(r.Int(2)))),
                     r.Arg(r.CallExp(print, r.Arg(r.Int(3))))
@@ -1876,7 +1876,7 @@ namespace Citron.Test
 
             var script = r.Script(
                 r.LocalVarDecl(r.ListType(r.IntType()), "list", r.List(r.IntType(), r.Int(34), r.Int(56))),
-                r.PrintInt(r.ListIndexer(r.LocalVar("list"), r.Int(1)))
+                r.PrintInt(r.ListIndexer(r.LocalVar("list"), r.TempLoc(r.Int(1), r.IntType())))
             );
             
             var output = await EvalAsync(script);
@@ -1950,8 +1950,8 @@ namespace Citron.Test
             // @${*x}
 
             var script = r.Script(
-                r.LocalVarDecl(r.BoxPtrType(r.IntType()), "x", r.Box(r.Int(3))),
-                r.PrintInt(r.Load(r.BoxDeref(r.LoadLocalVar("x", r.BoxPtrType(r.IntType()))), r.IntType()))
+                r.LocalVarDecl(r.BoxPtrType(r.IntType()), "x", r.Box(r.Int(3), r.IntType())),
+                r.PrintInt(r.Load(r.BoxDeref(r.LocalVar("x")), r.IntType()))
             );
 
             var output = await EvalAsync(script);
@@ -1988,7 +1988,7 @@ namespace Citron.Test
             var mainBody = AddGlobalFunc(moduleDS, r.VoidType(), "Main",
                 r.LocalVarDecl(new ClassType(cS), "c", new NewClassExp(cconstructorS, Args: default)),
                 r.LocalVarDecl(boxIntPtr, "x", new ClassMemberBoxRefExp(r.LocalVar("c"), caS)),
-                r.Assign(r.BoxDeref(new LoadExp(r.LocalVar("x"), boxIntPtr)), r.Int(3)),
+                r.Assign(r.BoxDeref(r.LocalVar("x")), r.Int(3)),
                 r.PrintInt(new ClassMemberLoc(r.LocalVar("c"), caS))
             );
 
@@ -2030,10 +2030,10 @@ namespace Citron.Test
             var boxIntPtr = r.BoxPtrType(r.IntType());
 
             var mainBody = AddGlobalFunc(moduleDS, r.VoidType(), "Main",
-                r.LocalVarDecl(boxSPtr, "pS", new BoxExp(new NewStructExp(sconstructorS, Args: default))),
-                r.LocalVarDecl(boxIntPtr, "x", new StructIndirectMemberBoxRefExp(r.LoadLocalVar("pS", boxSPtr), saS)),
-                r.Assign(r.BoxDeref(new LoadExp(r.LocalVar("x"), boxIntPtr)), r.Int(3)),
-                r.PrintInt(new StructMemberLoc(r.BoxDeref(r.LoadLocalVar("pS", boxSPtr)), saS))
+                r.LocalVarDecl(boxSPtr, "pS", new BoxExp(new NewStructExp(sconstructorS, Args: default), new StructType(sS))),
+                r.LocalVarDecl(boxIntPtr, "x", new StructIndirectMemberBoxRefExp(r.LocalVar("pS"), saS)),
+                r.Assign(r.BoxDeref(r.LocalVar("x")), r.Int(3)),
+                r.PrintInt(new StructMemberLoc(r.BoxDeref(r.LocalVar("pS")), saS))
             );
 
             var sconstructorBody = r.StmtBody(sconstructorDS,

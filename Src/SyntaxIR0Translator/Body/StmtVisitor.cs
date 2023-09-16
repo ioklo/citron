@@ -58,21 +58,21 @@ partial struct StmtVisitor : IStmtVisitor
         return translator.VisitForStmtInitializer(forInit);
     }
 
-    public static TranslationResult<R.Exp> TranslateAsTopLevelExp(S.Exp expSyntax, ScopeContext context, IType? hintType, SyntaxAnalysisErrorCode code)
+    public static TranslationResult<IR0ExpResult> TranslateAsTopLevelExp(S.Exp expSyntax, ScopeContext context, IType? hintType, SyntaxAnalysisErrorCode code)
     {
-        TranslationResult<R.Exp> Error() => TranslationResult.Error<R.Exp>();
+        TranslationResult<IR0ExpResult> Error() => TranslationResult.Error<IR0ExpResult>();
 
-        var expResult = ExpIR0ExpTranslator.Translate(expSyntax, context, hintType);
-        if (!expResult.IsValid(out var exp))
+        var result = ExpIR0ExpTranslator.Translate(expSyntax, context, hintType);
+        if (!result.IsValid(out var expResult))
             return Error();
 
-        if (!IsTopLevelExp(exp))
+        if (!IsTopLevelExp(expResult.Exp))
         {
             context.AddFatalError(code, expSyntax);
             return Error();
         }
 
-        return TranslationResult.Valid(exp);
+        return TranslationResult.Valid(expResult);
     }
 
     TranslationResult<ImmutableArray<R.Stmt>> IStmtVisitor.VisitVarDecl(S.VarDeclStmt stmt)
@@ -106,11 +106,11 @@ partial struct StmtVisitor : IStmtVisitor
         // if (Type varName = e) body 
         var testType = context.MakeType(ifTestStmt.TestTypeExp);
 
-        var targetExpResult = ExpIR0ExpTranslator.Translate(ifTestStmt.Exp, context, hintType: null);
-        if (!targetExpResult.IsValid(out var targetExp))
+        var targetResult = ExpIR0ExpTranslator.Translate(ifTestStmt.Exp, context, hintType: null);
+        if (!targetResult.IsValid(out var targetExpResult))
             return Error();
 
-        var targetType = context.GetExpType(targetExp);
+        var (targetExp, targetType) = targetExpResult;
 
         var bodyContext = context.MakeNestedScopeContext();
         bodyContext.AddLocalVarInfo(testType, varName);
@@ -128,14 +128,14 @@ partial struct StmtVisitor : IStmtVisitor
                 return Error();
         }
 
-        var asExpResult = BodyMisc.MakeAsExp(targetType, testType, targetExp);
-        if (!asExpResult.IsValid(out var asExp))
+        var result = BodyMisc.MakeAsExp(targetType, testType, targetExp);
+        if (!result.IsValid(out var asExpResult))
             return Error();
 
         if (testType is ClassType || testType is InterfaceType)
-            return Stmts(new R.IfNullableRefTestStmt(testType, varName, asExp, bodyStmts, elseStmts));
+            return Stmts(new R.IfNullableRefTestStmt(testType, varName, asExpResult.Exp, bodyStmts, elseStmts));
         else if (testType is EnumType)
-            return Stmts(new R.IfNullableValueTestStmt(testType, varName, asExp, bodyStmts, elseStmts));
+            return Stmts(new R.IfNullableValueTestStmt(testType, varName, asExpResult.Exp, bodyStmts, elseStmts));
         else
             throw new NotImplementedException(); // 에러
     }
@@ -143,11 +143,11 @@ partial struct StmtVisitor : IStmtVisitor
     TranslationResult<ImmutableArray<R.Stmt>> IStmtVisitor.VisitIf(S.IfStmt ifStmt)
     {
         // 순회
-        var condExpResult = ExpIR0ExpTranslator.Translate(ifStmt.Cond, context, context.GetBoolType());
-        if (!condExpResult.IsValid(out var condExp))
+        var condResult = ExpIR0ExpTranslator.Translate(ifStmt.Cond, context, context.GetBoolType());
+        if (!condResult.IsValid(out var condExpResult))
             return Error();
 
-        condExp = BodyMisc.TryCastExp_Exp(condExp, context.GetBoolType(), context);
+        var condExp = BodyMisc.TryCastExp_Exp(condExpResult.Exp, condExpResult.ExpType, context.GetBoolType(), context);
 
         if (condExp == null)
         {
@@ -182,11 +182,11 @@ partial struct StmtVisitor : IStmtVisitor
 
             case S.ExpForStmtInitializer expInit:
                 {
-                    var expResult = StmtVisitor.TranslateAsTopLevelExp(expInit.Exp, context, hintType: null, A1102_ForStmt_ExpInitializerShouldBeAssignOrCall);
-                    if (!expResult.IsValid(out var exp))
+                    var initResult = StmtVisitor.TranslateAsTopLevelExp(expInit.Exp, context, hintType: null, A1102_ForStmt_ExpInitializerShouldBeAssignOrCall);
+                    if (!initResult.IsValid(out var initExpResult))
                         return Error();
 
-                    return Stmts(new R.ExpStmt(exp));
+                    return Stmts(new R.ExpStmt(initExpResult.Exp));
                 }
 
             default:
@@ -218,11 +218,11 @@ partial struct StmtVisitor : IStmtVisitor
         if (forStmt.CondExp != null)
         {
             var boolType = forStmtContext.GetBoolType();
-            var rawCondExpResult = ExpIR0ExpTranslator.Translate(forStmt.CondExp, forStmtContext, boolType);
-            if (!rawCondExpResult.IsValid(out var rawCondExp))
+            var rawCondResult = ExpIR0ExpTranslator.Translate(forStmt.CondExp, forStmtContext, boolType);
+            if (!rawCondResult.IsValid(out var rawCondExpResult))
                 return Error();
 
-            condExp = BodyMisc.TryCastExp_Exp(rawCondExp, boolType, context);
+            condExp = BodyMisc.TryCastExp_Exp(rawCondExpResult.Exp, rawCondExpResult.ExpType, boolType, context);
 
             if (condExp == null)
             {
@@ -234,9 +234,11 @@ partial struct StmtVisitor : IStmtVisitor
         R.Exp? continueExp = null;
         if (forStmt.ContinueExp != null)
         {
-            var continueExpResult = StmtVisitor.TranslateAsTopLevelExp(forStmt.ContinueExp, forStmtContext, hintType: null, A1103_ForStmt_ContinueExpShouldBeAssignOrCall);
-            if (!continueExpResult.IsValid(out continueExp))
+            var continueResult = StmtVisitor.TranslateAsTopLevelExp(forStmt.ContinueExp, forStmtContext, hintType: null, A1103_ForStmt_ContinueExpShouldBeAssignOrCall);
+            if (!continueResult.IsValid(out var continueExpResult))
                 return Error();
+
+            continueExp = continueExpResult.Exp;
         }
 
         var bodyContext = context.MakeLoopNestedScopeContext();        
@@ -349,13 +351,13 @@ partial struct StmtVisitor : IStmtVisitor
             if (!context.IsSetReturn())
             {
                 // 힌트타입 없이 분석
-                var retValueExpResult = ExpIR0ExpTranslator.Translate(returnStmt.Info.Value.Value, context, hintType: null);
-                if (!retValueExpResult.IsValid(out var retValueExp))
+                var retValueResult = ExpIR0ExpTranslator.Translate(returnStmt.Info.Value.Value, context, hintType: null);
+                if (!retValueResult.IsValid(out var retValueExpResult))
                     return Error();
 
                 // 리턴값이 안 적혀 있었으므로 적는다
-                context.SetReturn(context.GetExpType(retValueExp));
-                return Stmts(new R.ReturnStmt(new R.ReturnInfo.Expression(retValueExp)));
+                context.SetReturn(retValueExpResult.ExpType);
+                return Stmts(new R.ReturnStmt(new R.ReturnInfo.Expression(retValueExpResult.Exp)));
             }
             else
             {
@@ -368,11 +370,11 @@ partial struct StmtVisitor : IStmtVisitor
                 // 리턴타입을 힌트로 사용한다
                 // 현재 함수 시그니처랑 맞춰서 같은지 확인한다
 
-                var retValueExpResult = ExpIR0ExpTranslator.Translate(returnStmt.Info.Value.Value, context, funcReturn.Value.Type);
-                if (!retValueExpResult.IsValid(out var retValueExp))
+                var retValueResult = ExpIR0ExpTranslator.Translate(returnStmt.Info.Value.Value, context, funcReturn.Value.Type);
+                if (!retValueResult.IsValid(out var retValueExpResult))
                     return Error();
 
-                var castRetValueExp = BodyMisc.TryCastExp_Exp(retValueExp, funcReturn.Value.Type, context);
+                var castRetValueExp = BodyMisc.TryCastExp_Exp(retValueExpResult.Exp, retValueExpResult.ExpType, funcReturn.Value.Type, context);
 
                 // 캐스트 실패시
                 if (castRetValueExp == null)
@@ -418,11 +420,11 @@ partial struct StmtVisitor : IStmtVisitor
 
     TranslationResult<ImmutableArray<R.Stmt>> IStmtVisitor.VisitExp(S.ExpStmt expStmt)
     {
-        var expResult = StmtVisitor.TranslateAsTopLevelExp(expStmt.Exp, context, hintType: null, A1301_ExpStmt_ExpressionShouldBeAssignOrCall);
-        if (!expResult.IsValid(out var exp))
+        var result = StmtVisitor.TranslateAsTopLevelExp(expStmt.Exp, context, hintType: null, A1301_ExpStmt_ExpressionShouldBeAssignOrCall);
+        if (!result.IsValid(out var expResult))
             return Error();
 
-        return Stmts(new R.ExpStmt(exp));
+        return Stmts(new R.ExpStmt(expResult.Exp));
     }
 
     TranslationResult<ImmutableArray<R.Stmt>> IStmtVisitor.VisitTask(S.TaskStmt taskStmt)
@@ -532,7 +534,8 @@ partial struct StmtVisitor : IStmtVisitor
                     }
                 }
 
-                var listIterator = new R.TempLoc(new R.ListIteratorExp(iterLoc, context.GetListIterType(listItemType)));
+                var listIterType = context.GetListIterType(listItemType);
+                var listIteratorLoc = new R.TempLoc(new R.ListIteratorExp(iterLoc, listIterType), listIterType);
 
                 // 루프 컨텍스트를 하나 열고
                 var bodyContext = context.MakeLoopNestedScopeContext();
@@ -545,7 +548,7 @@ partial struct StmtVisitor : IStmtVisitor
                 if (!bodyStmtsResult.IsValid(out var bodyStmts))
                     return Error();
 
-                return Stmts(new R.ForeachStmt(itemType, foreachStmt.VarName, listIterator, bodyStmts));
+                return Stmts(new R.ForeachStmt(itemType, foreachStmt.VarName, listIteratorLoc, bodyStmts));
             }
             else
             {
@@ -568,11 +571,11 @@ partial struct StmtVisitor : IStmtVisitor
         Debug.Assert(callableReturn != null);
 
         // NOTICE: 리턴 타입을 힌트로 넣었다
-        var retValueExpResult = ExpIR0ExpTranslator.Translate(yieldStmt.Value, context, callableReturn.Value.Type);
-        if (!retValueExpResult.IsValid(out var retValueExp))
+        var retValueResult = ExpIR0ExpTranslator.Translate(yieldStmt.Value, context, callableReturn.Value.Type);
+        if (!retValueResult.IsValid(out var retValueExpResult))
             return Error();
 
-        var castRetValueExpResult = BodyMisc.CastExp_Exp(retValueExp, callableReturn.Value.Type, yieldStmt.Value, context); // 캐스트 실패시 exception발생
+        var castRetValueExpResult = BodyMisc.CastExp_Exp(retValueExpResult.Exp, retValueExpResult.ExpType, callableReturn.Value.Type, yieldStmt.Value, context); // 캐스트 실패시 exception발생
         if (!castRetValueExpResult.IsValid(out var castRetValueExp))
             return Error();
         

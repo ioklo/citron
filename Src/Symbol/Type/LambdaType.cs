@@ -10,17 +10,24 @@ public partial class LambdaType : IType, ICyclicEqualityComparableClass<LambdaTy
 {
     LambdaSymbol symbol;
 
-    LambdaType Apply(TypeEnv typeEnv)
+    public LambdaSymbol GetSymbol() { return symbol; }
+
+    public LambdaType Apply(TypeEnv typeEnv)
     {
         return new LambdaType(symbol.Apply(typeEnv));
     }
 
-    bool CyclicEquals(LambdaType other, ref CyclicEqualityCompareContext context)
+    public bool CyclicEquals(LambdaType other, ref CyclicEqualityCompareContext context)
     {
         if (!context.CompareClass(symbol, other.symbol))
             return false;
 
         return true;
+    }
+
+    public SymbolId GetSymbolId()
+    {
+        return symbol.GetSymbolId();
     }
 
     public ISymbolNode GetOuter()

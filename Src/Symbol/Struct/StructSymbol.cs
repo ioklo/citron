@@ -113,9 +113,9 @@ namespace Citron.Symbol
             return candidates.MakeSymbolQueryResult();
         }
 
-        public StructType? GetBaseStructType()
+        public StructSymbol? GetBaseStruct()
         {
-            var baseType = decl.GetBaseStructType();
+            var baseType = decl.GetBaseStructSymbol();
             if (baseType == null) return null;
 
             var typeEnv = GetTypeEnv();

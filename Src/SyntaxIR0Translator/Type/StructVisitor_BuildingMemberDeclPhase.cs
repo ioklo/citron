@@ -86,7 +86,7 @@ namespace Citron.Analysis
                 }
             }
 
-            StructType? uniqueBaseType = null; // 없다면 null일수도 있다. init으로는 넘겨줘야 한다
+            StructSymbol? uniqueBaseStruct = null; // 없다면 null일수도 있다. init으로는 넘겨줘야 한다
             var interfaceTypesBuilder = ImmutableArray.CreateBuilder<InterfaceType>();
             foreach(var baseTypeSyntax in syntax.BaseTypes)
             {
@@ -94,10 +94,10 @@ namespace Citron.Analysis
                 
                 if (baseType is StructType structBaseType)
                 {
-                    if (uniqueBaseType != null)
+                    if (uniqueBaseStruct != null)
                         throw new NotImplementedException(); // 두개 이상의 struct를 상속받았다면
 
-                    uniqueBaseType = structBaseType;
+                    uniqueBaseStruct = structBaseType.GetSymbol();
                 }
                 else if (baseType is InterfaceType interfaceBaseType)
                 {
@@ -110,19 +110,19 @@ namespace Citron.Analysis
                 }
             }
 
-            this.structDeclSymbol.InitBaseTypes(uniqueBaseType, interfaceTypesBuilder.ToImmutable());
+            this.structDeclSymbol.InitBaseTypes(uniqueBaseStruct, interfaceTypesBuilder.ToImmutable());
 
             // 다음은 constructor 빌드 단계
             var structDeclSymbol = this.structDeclSymbol;
 
-            context.AddBuildingTrivialConstructorPhaseTask(uniqueBaseType?.GetDeclSymbol(), structDeclSymbol, () =>
+            context.AddBuildingTrivialConstructorPhaseTask(uniqueBaseStruct?.GetDecl(), structDeclSymbol, () =>
             {
-                var baseTrivialConstructor = uniqueBaseType?.GetTrivialConstructor();
+                var baseTrivialConstructor = uniqueBaseStruct?.GetTrivialConstructor();
 
                 // baseStruct가 있고, TrivialConstructor가 없는 경우 => 안 만들고 진행
                 // baseStruct가 있고, TrivialConstructor가 있는 경우 => 진행
                 // baseStruct가 없는 경우 => 없이 만들고 진행 
-                if (baseTrivialConstructor != null || uniqueBaseType == null)
+                if (baseTrivialConstructor != null || uniqueBaseStruct == null)
                 {
                     // 같은 인자의 생성자가 없으면 Trivial을 만든다
                     if (GetStructConstructorHasSameParamWithTrivial(baseTrivialConstructor, structDeclSymbol) == null)

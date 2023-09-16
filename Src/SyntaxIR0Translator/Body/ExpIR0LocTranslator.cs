@@ -44,13 +44,11 @@ partial struct ExpIR0LocTranslator : IExpVisitor
     }
 
     // fast track
-    LocTranslationResult HandleExp(R.Exp exp)
+    LocTranslationResult HandleExp(IR0ExpResult expResult)
     {
-        var expType = context.GetExpType(exp);
-
         if (bWrapExpAsLoc)
         {
-            return TranslationResult.Valid(new IR0LocResult(new R.TempLoc(exp), expType));
+            return TranslationResult.Valid(new IR0LocResult(new R.TempLoc(expResult.Exp, expResult.ExpType), expResult.ExpType));
         }
         else
         {
@@ -60,12 +58,12 @@ partial struct ExpIR0LocTranslator : IExpVisitor
     }
 
     // fast track
-    LocTranslationResult HandleExpTranslationResult(TranslationResult<R.Exp> expResult)
+    LocTranslationResult HandleExpTranslationResult(TranslationResult<IR0ExpResult> result)
     {
-        if (!expResult.IsValid(out var exp))
+        if (!result.IsValid(out var expResult))
             return TranslationResult.Error<IR0LocResult>();
 
-        return HandleExp(exp);
+        return HandleExp(expResult);
     }
 
     LocTranslationResult IExpVisitor.VisitBinaryOp(S.BinaryOpExp exp)

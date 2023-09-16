@@ -19,9 +19,6 @@ partial class ScopeContext
     public IType GetListType(IType itemType) => globalContext.GetListType(itemType);
     public IType GetListIterType(IType itemType) => globalContext.GetListIterType(itemType);
 
-    public IType GetExpType(R.Exp exp) => globalContext.GetExpType(exp);
-    public IType GetExpType(ResolvedExp reExp) => globalContext.GetExpType(reExp);
-
     public bool IsListType(IType type, [NotNullWhen(returnValue: true)] out IType? itemType) => globalContext.IsListType(type, out itemType);
     public bool IsSeqType(IType type, [NotNullWhen(returnValue: true)] out IType? itemType) => globalContext.IsSeqType(type, out itemType);
 

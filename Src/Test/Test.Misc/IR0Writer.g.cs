@@ -149,7 +149,7 @@ namespace Citron.Test
             if (@expStringExpElement == null) { itw.Write("null"); return; }
 
             itw.Write("new Citron.IR0.ExpStringExpElement(");
-            this.Write_Exp(@expStringExpElement.Exp);
+            this.Write_Loc(@expStringExpElement.Loc);
             itw.Write(")");
         }
 
@@ -234,8 +234,14 @@ namespace Citron.Test
         {
             if (@tempLoc == null) { itw.Write("null"); return; }
 
+            var itw1 = itw.Push();
+            var writer1 = new IR0Writer(itw1);
+            itw1.WriteLine();
+
             itw.Write("new Citron.IR0.TempLoc(");
-            this.Write_Exp(@tempLoc.Exp);
+            writer1.Write_Exp(@tempLoc.Exp);
+            itw1.WriteLine(",");
+            writer1.Write_IType(@tempLoc.Type);
             itw.Write(")");
         }
 
@@ -268,7 +274,7 @@ namespace Citron.Test
             itw.Write("new Citron.IR0.ListIndexerLoc(");
             writer1.Write_Loc(@listIndexerLoc.List);
             itw1.WriteLine(",");
-            writer1.Write_Exp(@listIndexerLoc.Index);
+            writer1.Write_Loc(@listIndexerLoc.Index);
             itw.Write(")");
         }
 
@@ -338,7 +344,7 @@ namespace Citron.Test
             if (@boxDerefLoc == null) { itw.Write("null"); return; }
 
             itw.Write("new Citron.IR0.BoxDerefLoc(");
-            this.Write_Exp(@boxDerefLoc.InnerExp);
+            this.Write_Loc(@boxDerefLoc.InnerLoc);
             itw.Write(")");
         }
 
@@ -435,8 +441,14 @@ namespace Citron.Test
         {
             if (@boxExp == null) { itw.Write("null"); return; }
 
+            var itw1 = itw.Push();
+            var writer1 = new IR0Writer(itw1);
+            itw1.WriteLine();
+
             itw.Write("new Citron.IR0.BoxExp(");
-            this.Write_Exp(@boxExp.InnerExp);
+            writer1.Write_Exp(@boxExp.InnerExp);
+            itw1.WriteLine(",");
+            writer1.Write_IType(@boxExp.InnerType);
             itw.Write(")");
         }
 
@@ -479,7 +491,7 @@ namespace Citron.Test
             itw1.WriteLine();
 
             itw.Write("new Citron.IR0.StructIndirectMemberBoxRefExp(");
-            writer1.Write_Exp(@structIndirectMemberBoxRefExp.holderExp);
+            writer1.Write_Loc(@structIndirectMemberBoxRefExp.Holder);
             itw1.WriteLine(",");
             writer1.Write_ISymbolNode(@structIndirectMemberBoxRefExp.Symbol);
             itw.Write(")");
@@ -494,7 +506,7 @@ namespace Citron.Test
             itw1.WriteLine();
 
             itw.Write("new Citron.IR0.StructMemberBoxRefExp(");
-            writer1.Write_Exp(@structMemberBoxRefExp.Parent);
+            writer1.Write_Loc(@structMemberBoxRefExp.Parent);
             itw1.WriteLine(",");
             writer1.Write_ISymbolNode(@structMemberBoxRefExp.Symbol);
             itw.Write(")");
@@ -568,7 +580,7 @@ namespace Citron.Test
             itw.Write("new Citron.IR0.ListExp(");
             writer1.Write_ImmutableArray(Write_Exp, "Citron.IR0.Exp", @listExp.Elems);
             itw1.WriteLine(",");
-            writer1.Write_IType(@listExp.ListType);
+            writer1.Write_IType(@listExp.ItemType);
             itw.Write(")");
         }
 
@@ -599,8 +611,6 @@ namespace Citron.Test
             writer1.Write_InternalUnaryOperator(@callInternalUnaryOperatorExp.Operator);
             itw1.WriteLine(",");
             writer1.Write_Exp(@callInternalUnaryOperatorExp.Operand);
-            itw1.WriteLine(",");
-            writer1.Write_IType(@callInternalUnaryOperatorExp.Type);
             itw.Write(")");
         }
 
@@ -616,8 +626,6 @@ namespace Citron.Test
             writer1.Write_InternalUnaryAssignOperator(@callInternalUnaryAssignOperatorExp.Operator);
             itw1.WriteLine(",");
             writer1.Write_Loc(@callInternalUnaryAssignOperatorExp.Operand);
-            itw1.WriteLine(",");
-            writer1.Write_IType(@callInternalUnaryAssignOperatorExp.Type);
             itw.Write(")");
         }
 
@@ -635,8 +643,6 @@ namespace Citron.Test
             writer1.Write_Exp(@callInternalBinaryOperatorExp.Operand0);
             itw1.WriteLine(",");
             writer1.Write_Exp(@callInternalBinaryOperatorExp.Operand1);
-            itw1.WriteLine(",");
-            writer1.Write_IType(@callInternalBinaryOperatorExp.Type);
             itw.Write(")");
         }
 
@@ -806,7 +812,7 @@ namespace Citron.Test
             itw1.WriteLine();
 
             itw.Write("new Citron.IR0.CallLambdaExp(");
-            writer1.Write_LambdaType(@callLambdaExp.Lambda);
+            writer1.Write_ISymbolNode(@callLambdaExp.Lambda);
             itw1.WriteLine(",");
             writer1.Write_Loc(@callLambdaExp.Callable);
             itw1.WriteLine(",");

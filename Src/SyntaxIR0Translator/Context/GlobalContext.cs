@@ -15,7 +15,7 @@ using Pretune;
 namespace Citron.Analysis;
 
 [AutoConstructor]
-partial class GlobalContext : IMutable<GlobalContext>, R.IBuiltInTypeProvider
+partial class GlobalContext : IMutable<GlobalContext>
 {   
     SymbolFactory symbolFactory;
     ImmutableArray<ModuleDeclSymbol> moduleDeclSymbols;
@@ -105,17 +105,7 @@ partial class GlobalContext : IMutable<GlobalContext>, R.IBuiltInTypeProvider
     {
         logger.Add(new SyntaxAnalysisErrorLog(code, node, code.ToString()));
     }
-
-    public IType GetExpType(R.Exp exp)
-    {
-        return exp.GetExpType(this);
-    }
-
-    public IType GetExpType(ResolvedExp exp)
-    {
-        return exp.GetExpType(this);
-    }
-
+    
     //public bool IsNullableType(ITypeSymbol type, [NotNullWhen(returnValue: true)] out ITypeSymbol? innerType)
     //{
     //    var declType = type.GetDeclSymbolNode();
@@ -176,8 +166,4 @@ partial class GlobalContext : IMutable<GlobalContext>, R.IBuiltInTypeProvider
     {
         return bodies;
     }
-
-    IType R.IBuiltInTypeProvider.GetBoolType() => GetBoolType();
-    IType R.IBuiltInTypeProvider.GetIntType() => GetIntType();
-    IType R.IBuiltInTypeProvider.GetStringType() => GetStringType();
 }

@@ -150,7 +150,7 @@ abstract record IntermediateRefExp
 
         // 홀더가 box* T로 시작하는 경우
         // (*pS).x => Exp는 pS를 말한다
-        public record class StructIndirectMember(Exp Exp, StructMemberVarSymbol Symbol) : BoxRef
+        public record class StructIndirectMember(Loc Loc, StructMemberVarSymbol Symbol) : BoxRef
         {
             public override IType GetTargetType()
             {
@@ -159,7 +159,7 @@ abstract record IntermediateRefExp
 
             public override Loc MakeLoc()
             {
-                return new StructMemberLoc(new BoxDerefLoc(Exp), Symbol);
+                return new StructMemberLoc(new BoxDerefLoc(Loc), Symbol);
             }
 
             public override TResult AcceptBoxRef<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitStructIndirectMember(this);
@@ -188,7 +188,7 @@ abstract record IntermediateRefExp
     }
 
     // Value로 나오는 경우
-    public record class LocalValue(Exp Exp) : IntermediateRefExp
+    public record class LocalValue(IR0ExpResult ExpResult) : IntermediateRefExp
     {
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitLocalValue(this);
     }
@@ -198,7 +198,7 @@ abstract record IntermediateRefExp
     // box var* x = &(*pS).a; // x is box ptr (pS, ..)
 
     // *pS <- BoxValue, box S
-    public record class DerefedBoxValue(Exp InnerExp) : IntermediateRefExp
+    public record class DerefedBoxValue(Loc InnerLoc, IType InnerType) : IntermediateRefExp
     {
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitDerefedBoxValue(this);
     }

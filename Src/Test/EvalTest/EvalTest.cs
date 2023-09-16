@@ -1,7 +1,5 @@
 ﻿using Citron;
 using Citron.Infra;
-using Citron.IR0Evaluator;
-using Citron.IR0Translator;
 using Citron.Test;
 using System;
 using System.Collections;

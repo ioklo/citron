@@ -22,18 +22,18 @@ namespace Citron
         }
 
         // globalFuncId는 이미 Apply된 상태
-        public ValueTask ExecuteGlobalFuncAsync(SymbolId globalFunc, ImmutableArray<Value> args, Value retValue)
+        public ValueTask ExecuteGlobalFuncAsync(SymbolId globalFuncId, ImmutableArray<Value> args, Value retValue)
         {
             // 심볼만 얻어서는.. Body도 얻어와야 한다
-            var globalFuncSymbol = globalContext.LoadSymbol<GlobalFuncSymbol>(globalFunc);
-            var body = globalContext.GetBodyStmt(globalFunc);
+            var globalFuncSymbol = globalContext.LoadSymbol<GlobalFuncSymbol>(globalFuncId);
+            var body = globalContext.GetBodyStmt(globalFuncId);
 
             var builder = ImmutableDictionary.CreateBuilder<Name, Value>();
 
             for (int i = 0; i < args.Length; i++)
                 builder.Add(globalFuncSymbol.GetParameter(i).Name, args[i]);
 
-            var typeContext = TypeContext.Make(globalFunc);
+            var typeContext = TypeContext.Make(globalFuncId.Path);
             var bodyContext = globalContext.NewBodyContext(typeContext, thisValue: null, retValue);
             var localContext = new IR0LocalContext(builder.ToImmutable(), default);
 
@@ -165,7 +165,7 @@ namespace Citron
             // base 
             var baseClass = classSymbol.GetBaseClass();
             if (baseClass != null)
-                evaluator.InitializeClassInstance(baseClass.Symbol.GetSymbolId(), builder);
+                evaluator.InitializeClassInstance(baseClass.GetSymbolId(), builder);
 
             // 멤버 개수만큼
             var memberVarCount = classSymbol.GetMemberVarCount();
@@ -188,7 +188,7 @@ namespace Citron
             var baseClass = classSymbol.GetBaseClass();
             int baseCount = 0;
             if (baseClass != null)
-                baseCount = evaluator.GetTotalClassMemberVarCount(baseClass.Symbol.GetSymbolId());
+                baseCount = evaluator.GetTotalClassMemberVarCount(baseClass.GetSymbolId());
 
             return baseCount + classSymbol.GetMemberVarCount();
         }
@@ -204,7 +204,7 @@ namespace Citron
             var baseClass = @class.GetBaseClass();
             int baseIndex = 0;
             if (baseClass != null)
-                baseIndex = evaluator.GetTotalClassMemberVarCount(baseClass.Symbol.GetSymbolId());
+                baseIndex = evaluator.GetTotalClassMemberVarCount(baseClass.GetSymbolId());
 
             int memberVarCount = @class.GetMemberVarCount();
             for (int i = 0; i < memberVarCount; i++)
@@ -221,7 +221,7 @@ namespace Citron
 
         ValueTask IModuleDriver.ExecuteGlobalFuncAsync(SymbolId globalFuncId, ImmutableArray<Value> args, Value retValue)
         {
-            var typeContext = TypeContext.Make(globalFuncId);
+            var typeContext = TypeContext.Make(globalFuncId.Path);
             var evalContext = globalContext.NewBodyContext(typeContext, null, retValue);
             var globalFunc = globalContext.LoadSymbol<GlobalFuncSymbol>(globalFuncId);
 
@@ -243,7 +243,7 @@ namespace Citron
 
         ValueTask IModuleDriver.ExecuteClassConstructor(SymbolId constructor, ClassValue thisValue, ImmutableArray<Value> args)
         {
-            var typeContext = TypeContext.Make(constructor);
+            var typeContext = TypeContext.Make(constructor.Path);
 
             var evalContext = globalContext.NewBodyContext(typeContext, thisValue, VoidValue.Instance);
             var constructorSymbol = globalContext.LoadSymbol<ClassConstructorSymbol>(constructor);
@@ -276,7 +276,7 @@ namespace Citron
 
         ValueTask IModuleDriver.ExecuteStructConstructor(SymbolId constructor, LocalPtrValue thisValue, ImmutableArray<Value> args)
         {
-            var typeContext = TypeContext.Make(constructor);
+            var typeContext = TypeContext.Make(constructor.Path);
 
             var evalContext = globalContext.NewBodyContext(typeContext, thisValue, VoidValue.Instance);
             var constructorSymbol = globalContext.LoadSymbol<StructConstructorSymbol>(constructor);
@@ -300,7 +300,7 @@ namespace Citron
         SymbolId? IModuleDriver.GetBaseClass(SymbolId baseClass)
         {
             var @class = globalContext.LoadSymbol<ClassSymbol>(baseClass);
-            return @class.GetBaseClass()?.Symbol?.GetSymbolId();
+            return @class.GetBaseClass()?.GetSymbolId();
         }
 
         int IModuleDriver.GetStructMemberVarIndex(SymbolId memberVarId)
@@ -311,10 +311,10 @@ namespace Citron
             var @struct = memberVar.GetOuter();
 
             // base 
-            var baseStructType = @struct.GetBaseStructType();
+            var baseStruct = @struct.GetBaseStruct();
             int baseIndex = 0;
-            if (baseStructType != null)
-                baseIndex = evaluator.GetTotalStructMemberVarCount(baseStructType.Symbol.GetSymbolId());
+            if (baseStruct != null)
+                baseIndex = evaluator.GetTotalStructMemberVarCount(baseStruct.GetSymbolId());
 
             int memberVarCount = @struct.GetMemberVarCount();
             for (int i = 0; i < memberVarCount; i++)
@@ -348,10 +348,10 @@ namespace Citron
             Debug.Assert(structSymbol != null);
 
             // base 
-            var baseStructType = structSymbol.GetBaseStructType();
+            var baseStruct = structSymbol.GetBaseStruct();
             int baseCount = 0;
-            if (baseStructType != null)
-                baseCount = evaluator.GetTotalStructMemberVarCount(baseStructType.Symbol.GetSymbolId());
+            if (baseStruct != null)
+                baseCount = evaluator.GetTotalStructMemberVarCount(baseStruct.GetSymbolId());
 
             return baseCount + structSymbol.GetMemberVarCount();
         }

@@ -18,6 +18,6 @@ namespace Citron.IR0
     [AutoConstructor, ImplementIEquatable]
     public partial class ExpStringExpElement : StringExpElement
     {
-        public Exp Exp { get; }
+        public Loc Loc { get; }
     }
 }

@@ -4,6 +4,7 @@ using S = Citron.Syntax;
 using R = Citron.IR0;
 
 using static Citron.Analysis.SyntaxAnalysisErrorCode;
+using Citron.Symbol;
 
 namespace Citron.Analysis;
 
@@ -58,7 +59,7 @@ struct IntermediateExpResolvedExpTranslator : IIntermediateExpVisitor<Translatio
     {
         // standalone이면 값으로 처리한다
         if (exp.Symbol.IsStandalone())
-            return Valid(new ResolvedExp.IR0Exp(new R.NewEnumElemExp(exp.Symbol, default)));
+            return Valid(new ResolvedExp.IR0Exp(new IR0ExpResult(new R.NewEnumElemExp(exp.Symbol, default), new EnumElemType(exp.Symbol))));
 
         // lambda (boxed lambda)로 변환할 수 있다.
         throw new NotImplementedException();
@@ -77,7 +78,7 @@ struct IntermediateExpResolvedExpTranslator : IIntermediateExpVisitor<Translatio
 
     TranslationResult<ResolvedExp> IIntermediateExpVisitor<TranslationResult<ResolvedExp>>.VisitIR0Exp(IntermediateExp.IR0Exp exp)
     {
-        return Valid(new ResolvedExp.IR0Exp(exp.Exp));
+        return Valid(new ResolvedExp.IR0Exp(exp.ExpResult));
     }
 
     TranslationResult<ResolvedExp> IIntermediateExpVisitor<TranslationResult<ResolvedExp>>.VisitLambdaMemberVar(IntermediateExp.LambdaMemberVar exp)

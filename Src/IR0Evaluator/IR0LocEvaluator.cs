@@ -27,9 +27,7 @@ namespace Citron
 
         async ValueTask<Value> IIR0LocVisitor<ValueTask<Value>>.VisitTemp(TempLoc loc)
         {
-            var type = loc.Exp.GetExpType();
-
-            var result = context.AllocValue(type);
+            var result = context.AllocValue(loc.Type);
             await IR0ExpEvaluator.EvalAsync(loc.Exp, context, result);
             return result;
         }
@@ -48,9 +46,7 @@ namespace Citron
         async ValueTask<Value> IIR0LocVisitor<ValueTask<Value>>.VisitListIndexer(ListIndexerLoc loc)
         {
             var listValue = (ListValue)await EvalAsync(loc.List, context);
-
-            var indexValue = context.AllocValue<IntValue>(TypeIds.Int);
-            await IR0ExpEvaluator.EvalAsync(loc.Index, context, indexValue);
+            var indexValue = (IntValue)await IR0LocEvaluator.EvalAsync(loc.Index, context);
 
             var list = listValue.GetList();
             return list[indexValue.GetInt()];
@@ -93,9 +89,8 @@ namespace Citron
         // *x 
         async ValueTask<Value> IIR0LocVisitor<ValueTask<Value>>.VisitBoxDeref(BoxDerefLoc loc)
         {
-            var value = context.AllocValue<BoxPtrValue>(loc.InnerExp.GetExpType().GetTypeId()); // box T*
-            await IR0ExpEvaluator.EvalAsync(loc.InnerExp, context, value);
-            return value.GetTarget();
+            var value = (BoxPtrValue)await IR0LocEvaluator.EvalAsync(loc.InnerLoc, context);
+            return value.GetTarget()!;
         }
 
         ValueTask<Value> IIR0LocVisitor<ValueTask<Value>>.VisitNullableValue(NullableValueLoc loc)

@@ -54,11 +54,11 @@ struct VarDeclElemVisitor
             return false;
         }
         
-        var initExpResult = ExpIR0ExpTranslator.Translate(syntax.InitExp, context, hintType: null);
-        if (!initExpResult.IsValid(out var initExp))
+        var initResult = ExpIR0ExpTranslator.Translate(syntax.InitExp, context, hintType: null);
+        if (!initResult.IsValid(out var initExpResult))
             return false;
 
-        var initExpType = context.GetExpType(initExp);
+        var (initExp, initExpType) = initExpResult;
 
         builder.Add(new R.LocalVarDeclStmt(initExpType, syntax.VarName, initExp));
         context.AddLocalVarInfo(initExpType, new Name.Normal(syntax.VarName));
@@ -76,16 +76,16 @@ struct VarDeclElemVisitor
             return false;
         }
 
-        var initExpResult = ExpIR0ExpTranslator.Translate(syntax.InitExp, context, declType);
-        if (!initExpResult.IsValid(out var initExp))
+        var initResult = ExpIR0ExpTranslator.Translate(syntax.InitExp, context, declType);
+        if (!initResult.IsValid(out var initExpResult))
             return false;
 
-        var castInitExp = BodyMisc.TryCastExp_Exp(initExp, declType, context);
+        var castInitExp = BodyMisc.TryCastExp_Exp(initExpResult.Exp, initExpResult.ExpType, declType, context);
         
         if (castInitExp == null)
             throw new NotImplementedException(); // 캐스팅이 실패했습니다.
 
-        builder.Add(new R.LocalVarDeclStmt(declType, syntax.VarName, initExp));
+        builder.Add(new R.LocalVarDeclStmt(declType, syntax.VarName, castInitExp));
         context.AddLocalVarInfo(declType, new Name.Normal(syntax.VarName));
 
         return true;

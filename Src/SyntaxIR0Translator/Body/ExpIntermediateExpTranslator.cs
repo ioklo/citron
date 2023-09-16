@@ -33,17 +33,17 @@ struct ExpIntermediateExpTranslator : IExpVisitor<TranslationResult<Intermediate
         return TranslationResult.Valid(exp);
     }
 
-    TranslationResult<IntermediateExp> HandleExp(R.Exp exp)
+    TranslationResult<IntermediateExp> HandleExp(IR0ExpResult expResult)
     {
-        return TranslationResult.Valid<IntermediateExp>(new IntermediateExp.IR0Exp(exp));
+        return TranslationResult.Valid<IntermediateExp>(new IntermediateExp.IR0Exp(expResult));
     }
 
-    TranslationResult<IntermediateExp> HandleExpResult(TranslationResult<R.Exp> expResult)
+    TranslationResult<IntermediateExp> HandleExpResult(TranslationResult<IR0ExpResult> result)
     {
-        if (!expResult.IsValid(out var exp))
+        if (!result.IsValid(out var expResult))
             return TranslationResult.Error<IntermediateExp>();
 
-        return HandleExp(exp);
+        return HandleExp(expResult);
     }
 
     // x
@@ -101,7 +101,7 @@ struct ExpIntermediateExpTranslator : IExpVisitor<TranslationResult<Intermediate
             if (!targetResult.IsValid(out var target))
                 return Error();
 
-            var targetType = context.GetExpType(target);
+            var targetType = target.GetExpType();
             if (targetType is BoxPtrType)
                 return Valid(new IntermediateExp.BoxDeref(target));
 
@@ -138,21 +138,40 @@ struct ExpIntermediateExpTranslator : IExpVisitor<TranslationResult<Intermediate
         if (!objReExpResult.IsValid(out var objReExp))
             return Error();
 
-        var indexResult = ExpIR0ExpTranslator.Translate(exp.Index, context, hintType: null);
-        if (!indexResult.IsValid(out var index))
+        var indexReExpResult = ExpResolvedExpTranslator.Translate(exp.Index, context, hintType: null);
+        if (!indexReExpResult.IsValid(out var indexReExp))
             return Error();
 
-        var castIndexResult = BodyMisc.CastExp_Exp(index, context.GetIntType(), exp.Index, context);
-        if (!castIndexResult.IsValid(out var castIndex))
-            return Error();
+        R.Loc indexLoc;
+        if (!BodyMisc.TypeEquals(indexReExp.GetExpType(), context.GetIntType()))
+        {
+            var indexResult = ResolvedExpIR0ExpTranslator.Translate(indexReExp, context, exp.Index);
+            if (!indexResult.IsValid(out var indexExpResult))
+                return Error();
+
+            var castIndexResult = BodyMisc.CastExp_Exp(indexExpResult.Exp, indexExpResult.ExpType, context.GetIntType(), exp.Index, context);
+            if (!castIndexResult.IsValid(out var castIndex))
+                return Error();
+
+            indexLoc = new R.TempLoc(castIndex, context.GetIntType());
+        }
+        else
+        {
+            var indexResult = ResolvedExpIR0LocTranslator.Translate(indexReExp, context, bWrapExpAsLoc: true, exp.Index, A2015_ResolveIdentifier_ExpressionIsNotLocation);
+            if (!indexResult.IsValid(out var indexLocResult))
+                return Error();
+
+            indexLoc = indexLocResult.Loc;
+        }
+        
 
         // TODO: custom indexer를 만들수 있으면 좋은가
         // var memberResult = objResult.TypeSymbol.QueryMember(new M.Name(M.SpecialName.IndexerGet, null), 0);
 
         // 리스트 타입의 경우,
-        if (context.IsListType(context.GetExpType(objReExp), out var itemType))
+        if (context.IsListType(objReExp.GetExpType(), out var itemType))
         {
-            return Valid(new IntermediateExp.ListIndexer(objReExp, castIndex, itemType));
+            return Valid(new IntermediateExp.ListIndexer(objReExp, indexLoc, itemType));
         }
         else
         {

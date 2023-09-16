@@ -116,20 +116,20 @@ struct CoreResolvedExpIR0LocTranslator
     {
         // *x, *G()
         var targetResult = ResolvedExpIR0ExpTranslator.Translate(reExp.Target, context, nodeForErrorReport);
-        if (!targetResult.IsValid(out var target))
+        if (!targetResult.IsValid(out var targetExpResult))
             return Error();
 
-        return Valid(new LocalDerefLoc(target));
+        return Valid(new LocalDerefLoc(targetExpResult.Exp));
     }
 
     public TranslationResult<Loc> TranslateBoxDeref(ResolvedExp.BoxDeref reExp)
     {
         // *x, *G()
-        var targetResult = ResolvedExpIR0ExpTranslator.Translate(reExp.Target, context, nodeForErrorReport);
-        if (!targetResult.IsValid(out var target))
+        var targetResult = ResolvedExpIR0LocTranslator.Translate(reExp.Target, context, bWrapExpAsLoc: true, nodeForErrorReport, A2015_ResolveIdentifier_ExpressionIsNotLocation);
+        if (!targetResult.IsValid(out var targetLocResult))
             return Error();
 
-        return Valid(new BoxDerefLoc(target));
+        return Valid(new BoxDerefLoc(targetLocResult.Loc));
     }
 }
 

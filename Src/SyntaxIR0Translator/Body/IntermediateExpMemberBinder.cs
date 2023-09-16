@@ -288,7 +288,7 @@ struct IntermediateExpMemberBinder : IIntermediateExpVisitor<TranslationResult<I
         if (!instReExpResult.IsValid(out var instReExp))
             return Error();
 
-        var instReExpType = context.GetExpType(instReExp);
+        var instReExpType = instReExp.GetExpType();
 
         var memberResult = instReExpType.QueryMember(name, typeArgs.Length);
         if (memberResult == null)

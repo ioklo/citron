@@ -45,8 +45,7 @@ namespace Citron
 
                     case ExpStringExpElement expElem:
                         {
-                            var strValue = context.AllocValue<StringValue>(TypeIds.String);
-                            await EvalAsync(expElem.Exp, context, strValue);
+                            var strValue = (StringValue)await IR0LocEvaluator.EvalAsync(expElem.Loc, context);
                             sb.Append(strValue.GetString());
                             break;
                         }
@@ -359,16 +358,16 @@ namespace Citron
 
         async ValueTask IIR0ExpVisitor<ValueTask>.VisitBoxExp(BoxExp boxExp)
         {
-            var value = context.AllocValue(boxExp.InnerExp.GetExpType(context));
+            var value = context.AllocValue(boxExp.InnerType);
             await EvalAsync(boxExp.InnerExp, context, value);
 
-            ((BoxPtrValue)result).Set(value, value);
+            ((BoxPtrValue)result).SetHolderAndTarget(value, value);
         }
 
         async ValueTask IIR0ExpVisitor<ValueTask>.VisitStaticBoxRef(StaticBoxRefExp exp)
         {
             var value = await IR0LocEvaluator.EvalAsync(exp.Loc, context);
-            ((BoxPtrValue)result).Set(null, value);
+            ((BoxPtrValue)result).SetHolderAndTarget(null, value);
         }
 
         async ValueTask IIR0ExpVisitor<ValueTask>.VisitClassMemberBoxRef(ClassMemberBoxRefExp exp)
@@ -376,25 +375,21 @@ namespace Citron
             var holder = await IR0LocEvaluator.EvalAsync(exp.holderLoc, context);
             var value = context.GetClassMemberValue((ClassValue)holder, exp.Symbol.GetSymbolId());
 
-            ((BoxPtrValue)result).Set(holder, value);
+            ((BoxPtrValue)result).SetHolderAndTarget(holder, value);
         }
 
         // &(*pS).a => (ps, S.a)
         async ValueTask IIR0ExpVisitor<ValueTask>.VisitStructIndirectMemberBoxRef(StructIndirectMemberBoxRefExp exp)
         {
-            var holder = context.AllocValue<BoxPtrValue>(exp.holderExp.GetExpType().GetTypeId());
-            await IR0ExpEvaluator.EvalAsync(exp.holderExp, context, holder);
-
-            var value = context.GetStructMemberValue((StructValue)holder.GetTarget(), exp.Symbol.GetSymbolId());
-            ((BoxPtrValue)result).Set(holder, value);
+            var holder = (BoxPtrValue)await IR0LocEvaluator.EvalAsync(exp.Holder, context);
+            var value = context.GetStructMemberValue((StructValue)holder.GetTarget()!, exp.Symbol.GetSymbolId());
+            ((BoxPtrValue)result).SetHolderAndTarget(holder, value);
         }
         
         async ValueTask IIR0ExpVisitor<ValueTask>.VisitStructMemberBoxRef(StructMemberBoxRefExp exp)
         {
-            var parent = context.AllocValue<BoxPtrValue>(exp.Parent.GetExpType().GetTypeId());
-            await IR0ExpEvaluator.EvalAsync(exp.Parent, context, parent);
-
-            var value = context.GetStructMemberValue((StructValue)parent.GetTarget(), exp.Symbol.GetSymbolId());
+            var parent = (BoxPtrValue)await IR0LocEvaluator.EvalAsync(exp.Parent, context);
+            var value = context.GetStructMemberValue((StructValue)parent.GetTarget()!, exp.Symbol.GetSymbolId());
             ((BoxPtrValue)result).SetTarget(value);
         }
 
@@ -424,10 +419,8 @@ namespace Citron
         async ValueTask IIR0ExpVisitor<ValueTask>.VisitList(ListExp exp)
         {
             var list = new List<Value>(exp.Elems.Length);
-            var itemType = context.GetListItemType(exp.ListType);
-            if (itemType == null)
-                throw new RuntimeFatalException();
-
+            var itemType = exp.ItemType;
+            
             foreach (var elemExp in exp.Elems)
             {
                 var elemValue = context.AllocValue(itemType);

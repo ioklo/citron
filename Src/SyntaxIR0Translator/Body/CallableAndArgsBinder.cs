@@ -15,8 +15,8 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Citron.Analysis;
 
-// (IntermediateExp, Args) -> TranslationResult<R.Exp>
-struct CallableAndArgsBinder : IIntermediateExpVisitor<TranslationResult<R.Exp>>
+// (IntermediateExp, Args) -> TranslationResult<IR0ExpResult>
+struct CallableAndArgsBinder : IIntermediateExpVisitor<TranslationResult<IR0ExpResult>>
 {   
     ImmutableArray<S.Argument> argSyntaxes;
     ScopeContext context;
@@ -24,7 +24,7 @@ struct CallableAndArgsBinder : IIntermediateExpVisitor<TranslationResult<R.Exp>>
     S.ISyntaxNode nodeForCallExpErrorReport;
     S.ISyntaxNode nodeForCallableErrorReport;
 
-    public static TranslationResult<R.Exp> Bind(IntermediateExp callable, ImmutableArray<S.Argument> argSyntaxes, ScopeContext context, S.ISyntaxNode nodeForCallExpErrorReport, S.ISyntaxNode nodeForCallableErrorReport)
+    public static TranslationResult<IR0ExpResult> Bind(IntermediateExp callable, ImmutableArray<S.Argument> argSyntaxes, ScopeContext context, S.ISyntaxNode nodeForCallExpErrorReport, S.ISyntaxNode nodeForCallableErrorReport)
     {
         // 여기서 분석해야 할 것은 
         // 1. 해당 Exp가 함수인지, 변수인지, 함수라면 FuncId를 넣어준다
@@ -37,121 +37,121 @@ struct CallableAndArgsBinder : IIntermediateExpVisitor<TranslationResult<R.Exp>>
         // F(First); F(E.First); 가 되게 하려면 이름으로 먼저 찾고, 인자타입을 맞춰봐야 한다
 
         var binder = new CallableAndArgsBinder() { argSyntaxes = argSyntaxes, context = context, nodeForCallableErrorReport = nodeForCallableErrorReport, nodeForCallExpErrorReport = nodeForCallExpErrorReport };
-        return callable.Accept<CallableAndArgsBinder, TranslationResult<R.Exp>>(ref binder);
+        return callable.Accept<CallableAndArgsBinder, TranslationResult<IR0ExpResult>>(ref binder);
     }
     
-    TranslationResult<R.Exp> FatalCallable(SyntaxAnalysisErrorCode code)
+    TranslationResult<IR0ExpResult> FatalCallable(SyntaxAnalysisErrorCode code)
     {
         context.AddFatalError(code, nodeForCallableErrorReport);
-        return TranslationResult.Error<R.Exp>();
+        return TranslationResult.Error<IR0ExpResult>();
     }
 
-    TranslationResult<R.Exp> FatalCallExp(SyntaxAnalysisErrorCode code)
+    TranslationResult<IR0ExpResult> FatalCallExp(SyntaxAnalysisErrorCode code)
     {
         context.AddFatalError(code, nodeForCallExpErrorReport);
-        return TranslationResult.Error<R.Exp>();
+        return TranslationResult.Error<IR0ExpResult>();
     }
 
-    TranslationResult<R.Exp> IIntermediateExpVisitor<TranslationResult<R.Exp>>.VisitClass(IntermediateExp.Class imExp)
+    TranslationResult<IR0ExpResult> IIntermediateExpVisitor<TranslationResult<IR0ExpResult>>.VisitClass(IntermediateExp.Class imExp)
     {
         return FatalCallable(A0902_CallExp_CallableExpressionIsNotCallable);
     }
 
-    TranslationResult<R.Exp> IIntermediateExpVisitor<TranslationResult<R.Exp>>.VisitClassMemberFuncs(IntermediateExp.ClassMemberFuncs imExp)
+    TranslationResult<IR0ExpResult> IIntermediateExpVisitor<TranslationResult<IR0ExpResult>>.VisitClassMemberFuncs(IntermediateExp.ClassMemberFuncs imExp)
     {
         return VisitClassMemberFuncs(imExp);
     }
 
-    TranslationResult<R.Exp> IIntermediateExpVisitor<TranslationResult<R.Exp>>.VisitClassMemberVar(IntermediateExp.ClassMemberVar imExp)
+    TranslationResult<IR0ExpResult> IIntermediateExpVisitor<TranslationResult<IR0ExpResult>>.VisitClassMemberVar(IntermediateExp.ClassMemberVar imExp)
     {
         return HandleLoc(imExp);
     }
 
-    TranslationResult<R.Exp> IIntermediateExpVisitor<TranslationResult<R.Exp>>.VisitEnum(IntermediateExp.Enum imExp)
+    TranslationResult<IR0ExpResult> IIntermediateExpVisitor<TranslationResult<IR0ExpResult>>.VisitEnum(IntermediateExp.Enum imExp)
     {
         return FatalCallable(A0902_CallExp_CallableExpressionIsNotCallable);
     }
 
-    TranslationResult<R.Exp> IIntermediateExpVisitor<TranslationResult<R.Exp>>.VisitEnumElem(IntermediateExp.EnumElem imExp)
+    TranslationResult<IR0ExpResult> IIntermediateExpVisitor<TranslationResult<IR0ExpResult>>.VisitEnumElem(IntermediateExp.EnumElem imExp)
     {
         // callable이 타입으로 계산되면 Struct과 EnumElem의 경우 생성자 호출을 한다
         return VisitEnumElem(imExp.Symbol);
     }
 
-    TranslationResult<R.Exp> IIntermediateExpVisitor<TranslationResult<R.Exp>>.VisitEnumElemMemberVar(IntermediateExp.EnumElemMemberVar imExp)
+    TranslationResult<IR0ExpResult> IIntermediateExpVisitor<TranslationResult<IR0ExpResult>>.VisitEnumElemMemberVar(IntermediateExp.EnumElemMemberVar imExp)
     {
         return HandleLoc(imExp);
     }
     
-    TranslationResult<R.Exp> IIntermediateExpVisitor<TranslationResult<R.Exp>>.VisitGlobalFuncs(IntermediateExp.GlobalFuncs imExp)
+    TranslationResult<IR0ExpResult> IIntermediateExpVisitor<TranslationResult<IR0ExpResult>>.VisitGlobalFuncs(IntermediateExp.GlobalFuncs imExp)
     {
         return VisitGlobalFuncs(imExp);
     }
 
-    TranslationResult<R.Exp> IIntermediateExpVisitor<TranslationResult<R.Exp>>.VisitIR0Exp(IntermediateExp.IR0Exp imExp)
+    TranslationResult<IR0ExpResult> IIntermediateExpVisitor<TranslationResult<IR0ExpResult>>.VisitIR0Exp(IntermediateExp.IR0Exp imExp)
     {
         return HandleLoc(imExp);
     }
     
-    TranslationResult<R.Exp> IIntermediateExpVisitor<TranslationResult<R.Exp>>.VisitLambdaMemberVar(IntermediateExp.LambdaMemberVar imExp)
+    TranslationResult<IR0ExpResult> IIntermediateExpVisitor<TranslationResult<IR0ExpResult>>.VisitLambdaMemberVar(IntermediateExp.LambdaMemberVar imExp)
     {
         return HandleLoc(imExp);
     }
 
-    TranslationResult<R.Exp> IIntermediateExpVisitor<TranslationResult<R.Exp>>.VisitLocalVar(IntermediateExp.LocalVar imExp)
+    TranslationResult<IR0ExpResult> IIntermediateExpVisitor<TranslationResult<IR0ExpResult>>.VisitLocalVar(IntermediateExp.LocalVar imExp)
     {
         return HandleLoc(imExp);
     }
 
-    TranslationResult<R.Exp> IIntermediateExpVisitor<TranslationResult<R.Exp>>.VisitNamespace(IntermediateExp.Namespace imExp)
+    TranslationResult<IR0ExpResult> IIntermediateExpVisitor<TranslationResult<IR0ExpResult>>.VisitNamespace(IntermediateExp.Namespace imExp)
     {
         return FatalCallable(A0902_CallExp_CallableExpressionIsNotCallable);
     }
     
-    TranslationResult<R.Exp> IIntermediateExpVisitor<TranslationResult<R.Exp>>.VisitStruct(IntermediateExp.Struct imExp)
+    TranslationResult<IR0ExpResult> IIntermediateExpVisitor<TranslationResult<IR0ExpResult>>.VisitStruct(IntermediateExp.Struct imExp)
     {
         // callable이 타입으로 계산되면 Struct과 EnumElem의 경우 생성자 호출을 한다
         return VisitStruct(imExp.Symbol);
     }
 
-    TranslationResult<R.Exp> IIntermediateExpVisitor<TranslationResult<R.Exp>>.VisitStructMemberFuncs(IntermediateExp.StructMemberFuncs imExp)
+    TranslationResult<IR0ExpResult> IIntermediateExpVisitor<TranslationResult<IR0ExpResult>>.VisitStructMemberFuncs(IntermediateExp.StructMemberFuncs imExp)
     {
         return VisitStructMemberFuncs(imExp);
     }
 
-    TranslationResult<R.Exp> IIntermediateExpVisitor<TranslationResult<R.Exp>>.VisitStructMemberVar(IntermediateExp.StructMemberVar imExp)
+    TranslationResult<IR0ExpResult> IIntermediateExpVisitor<TranslationResult<IR0ExpResult>>.VisitStructMemberVar(IntermediateExp.StructMemberVar imExp)
     {
         return HandleLoc(imExp);
     }
 
-    TranslationResult<R.Exp> IIntermediateExpVisitor<TranslationResult<R.Exp>>.VisitThis(IntermediateExp.ThisVar imExp)
+    TranslationResult<IR0ExpResult> IIntermediateExpVisitor<TranslationResult<IR0ExpResult>>.VisitThis(IntermediateExp.ThisVar imExp)
     {
         return FatalCallable(A0902_CallExp_CallableExpressionIsNotCallable);
     }
 
-    TranslationResult<R.Exp> IIntermediateExpVisitor<TranslationResult<R.Exp>>.VisitTypeVar(IntermediateExp.TypeVar imExp)
+    TranslationResult<IR0ExpResult> IIntermediateExpVisitor<TranslationResult<IR0ExpResult>>.VisitTypeVar(IntermediateExp.TypeVar imExp)
     {
         return FatalCallable(A0902_CallExp_CallableExpressionIsNotCallable);
     }
 
     // l[0]
-    TranslationResult<R.Exp> IIntermediateExpVisitor<TranslationResult<R.Exp>>.VisitListIndexer(IntermediateExp.ListIndexer imExp)
+    TranslationResult<IR0ExpResult> IIntermediateExpVisitor<TranslationResult<IR0ExpResult>>.VisitListIndexer(IntermediateExp.ListIndexer imExp)
     {
         return HandleLoc(imExp);
     }
 
-    TranslationResult<R.Exp> Error()
+    TranslationResult<IR0ExpResult> Error()
     {
-        return TranslationResult.Error<R.Exp>();
+        return TranslationResult.Error<IR0ExpResult>();
     }
 
-    TranslationResult<R.Exp> Valid(R.Exp exp)
+    TranslationResult<IR0ExpResult> Valid(IR0ExpResult expResult)
     {
-        return TranslationResult.Valid(exp);
+        return TranslationResult.Valid(expResult);
     }
 
     // CallExp분석에서 Callable이 GlobalMemberFuncs인 경우 처리
-    TranslationResult<R.Exp> VisitGlobalFuncs(IntermediateExp.GlobalFuncs funcs)
+    TranslationResult<IR0ExpResult> VisitGlobalFuncs(IntermediateExp.GlobalFuncs funcs)
     {
         var matchResult = InternalMatchFunc(funcs.Infos, funcs.ParitalTypeArgs);
         if (!matchResult.IsValid(out var match))
@@ -162,11 +162,11 @@ struct CallableAndArgsBinder : IIntermediateExpVisitor<TranslationResult<R.Exp>>
         if (!context.CanAccess(func))
             return FatalCallable(A2011_ResolveIdentifier_TryAccessingPrivateMember);
 
-        return Valid(new R.CallGlobalFuncExp(func, args));
+        return Valid(new IR0ExpResult(new R.CallGlobalFuncExp(func, args), func.GetReturn().Type));
     }
 
     // CallExp분석에서 Callable이 ClassMemberFuncs인 경우 처리
-    TranslationResult<R.Exp> VisitClassMemberFuncs(IntermediateExp.ClassMemberFuncs funcs)
+    TranslationResult<IR0ExpResult> VisitClassMemberFuncs(IntermediateExp.ClassMemberFuncs funcs)
     {
         var matchResult = InternalMatchFunc(funcs.Infos, funcs.ParitalTypeArgs);
         if (!matchResult.IsValid(out var match))
@@ -204,17 +204,17 @@ struct CallableAndArgsBinder : IIntermediateExpVisitor<TranslationResult<R.Exp>>
                 instance = inst.Loc;
             }
 
-            return Valid(new R.CallClassMemberFuncExp(func, instance, args));
+            return Valid(new IR0ExpResult(new R.CallClassMemberFuncExp(func, instance, args), func.GetReturn().Type));
         }
         else // F 로 인스턴스를 명시적으로 정하지 않았다면 
         {
             if (func.IsStatic()) // 정적함수이면 인스턴스에 null
             {
-                return Valid(new R.CallClassMemberFuncExp(func, null, args));
+                return Valid(new IR0ExpResult(new R.CallClassMemberFuncExp(func, null, args), func.GetReturn().Type));
             }
             else // 인스턴스 함수이면 인스턴스에 this가 들어간다 B.F 로 접근할 경우 어떻게 하나
             {
-                return Valid(new R.CallClassMemberFuncExp(func, new R.ThisLoc(), args));
+                return Valid(new IR0ExpResult(new R.CallClassMemberFuncExp(func, new R.ThisLoc(), args), func.GetReturn().Type));
             }
         }
 
@@ -231,7 +231,7 @@ struct CallableAndArgsBinder : IIntermediateExpVisitor<TranslationResult<R.Exp>>
     }
 
     // CallExp분석에서 Callable이 StructMemberFuncs인 경우 처리
-    TranslationResult<R.Exp> VisitStructMemberFuncs(IntermediateExp.StructMemberFuncs funcs)
+    TranslationResult<IR0ExpResult> VisitStructMemberFuncs(IntermediateExp.StructMemberFuncs funcs)
     {
         var matchResult = InternalMatchFunc(funcs.Infos, funcs.ParitalTypeArgs);
         if (!matchResult.IsValid(out var match))
@@ -268,18 +268,18 @@ struct CallableAndArgsBinder : IIntermediateExpVisitor<TranslationResult<R.Exp>>
                 instance = inst.Loc;
             }
 
-            return Valid(new R.CallStructMemberFuncExp(func, instance, args));
+            return Valid(new IR0ExpResult(new R.CallStructMemberFuncExp(func, instance, args), func.GetReturn().Type));
         }
         else
         {
             if (func.IsStatic()) // 정적함수이면 인스턴스에 null
             {
-                return Valid(new R.CallStructMemberFuncExp(func, null, args));
+                return Valid(new IR0ExpResult(new R.CallStructMemberFuncExp(func, null, args), func.GetReturn().Type));
             }
             else // 인스턴스 함수이면 인스턴스에 this가 들어간다 B.F 로 접근할 경우 어떻게 하나
             {
                 var thisLoc = new R.ThisLoc();
-                return Valid(new R.CallStructMemberFuncExp(func, thisLoc, args));
+                return Valid(new IR0ExpResult(new R.CallStructMemberFuncExp(func, thisLoc, args), func.GetReturn().Type));
             }
         }
 
@@ -296,7 +296,7 @@ struct CallableAndArgsBinder : IIntermediateExpVisitor<TranslationResult<R.Exp>>
     }
 
     // CallExp 분석에서 Callable이 Lambda, func<>로 계산되는 경우
-    TranslationResult<R.Exp> HandleLoc(IntermediateExp imExp)
+    TranslationResult<IR0ExpResult> HandleLoc(IntermediateExp imExp)
     {   
         var reExpResult = IntermediateExpResolvedExpTranslator.Translate(imExp, context, nodeForCallableErrorReport);
         if (!reExpResult.IsValid(out var reExp))
@@ -334,7 +334,7 @@ struct CallableAndArgsBinder : IIntermediateExpVisitor<TranslationResult<R.Exp>>
 
         if (match != null)
         {
-            return Valid(new R.CallLambdaExp(lambdaType, callableLoc, match.Value.Args));
+            return Valid(new IR0ExpResult(new R.CallLambdaExp(lambdaType.GetSymbol(), callableLoc, match.Value.Args), lambdaType.GetReturn().Type));
         }
         else
         {
@@ -342,7 +342,7 @@ struct CallableAndArgsBinder : IIntermediateExpVisitor<TranslationResult<R.Exp>>
         }
     }
 
-    TranslationResult<R.Exp> VisitEnumElem(EnumElemSymbol enumElem)
+    TranslationResult<IR0ExpResult> VisitEnumElem(EnumElemSymbol enumElem)
     {
         if (enumElem.IsStandalone())
             return FatalCallable(A0902_CallExp_CallableExpressionIsNotCallable);
@@ -357,7 +357,7 @@ struct CallableAndArgsBinder : IIntermediateExpVisitor<TranslationResult<R.Exp>>
 
         if (matchResult != null)
         {
-            return Valid(new R.NewEnumElemExp(enumElem, matchResult.Value.Args));
+            return Valid(new IR0ExpResult(new R.NewEnumElemExp(enumElem, matchResult.Value.Args), new EnumElemType(enumElem)));
         }
         else
         {
@@ -365,7 +365,7 @@ struct CallableAndArgsBinder : IIntermediateExpVisitor<TranslationResult<R.Exp>>
         }
     }
 
-    TranslationResult<R.Exp> VisitStruct(StructSymbol structCallable)
+    TranslationResult<IR0ExpResult> VisitStruct(StructSymbol structCallable)
     {
         // NOTICE: 생성자 검색 (AnalyzeNewExp 부분과 비슷)
         var structDecl = structCallable.GetDecl();
@@ -387,7 +387,7 @@ struct CallableAndArgsBinder : IIntermediateExpVisitor<TranslationResult<R.Exp>>
             if (!context.CanAccess(constructor))
                 return FatalCallable(A2011_ResolveIdentifier_TryAccessingPrivateMember);
 
-            return Valid(new R.NewStructExp(constructor, matchResultEntry.Args));
+            return Valid(new IR0ExpResult(new R.NewStructExp(constructor, matchResultEntry.Args), new StructType(structCallable)));
         }            
         else if (matchCount == 0)
         {
@@ -399,12 +399,12 @@ struct CallableAndArgsBinder : IIntermediateExpVisitor<TranslationResult<R.Exp>>
         }
     }
 
-    TranslationResult<R.Exp> IIntermediateExpVisitor<TranslationResult<R.Exp>>.VisitLocalDeref(IntermediateExp.LocalDeref imExp)
+    TranslationResult<IR0ExpResult> IIntermediateExpVisitor<TranslationResult<IR0ExpResult>>.VisitLocalDeref(IntermediateExp.LocalDeref imExp)
     {
         return HandleLoc(imExp);
     }
 
-    TranslationResult<R.Exp> IIntermediateExpVisitor<TranslationResult<R.Exp>>.VisitBoxDeref(IntermediateExp.BoxDeref imExp)
+    TranslationResult<IR0ExpResult> IIntermediateExpVisitor<TranslationResult<IR0ExpResult>>.VisitBoxDeref(IntermediateExp.BoxDeref imExp)
     {
         return HandleLoc(imExp);
     }

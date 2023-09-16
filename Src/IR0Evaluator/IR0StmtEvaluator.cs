@@ -228,14 +228,20 @@ namespace Citron
 
             if (condValue.GetBool())
             {
-                await foreach (var _ in EvalBodyAsync(stmt.Body))
+                var newContext = context.NewScopeContext();
+                var newEvaluator = new IR0StmtEvaluator(newContext);
+                await foreach (var _ in newEvaluator.EvalBodyAsync(stmt.Body))
                     yield return true;
             }
             else
             {
                 if (stmt.ElseBody.Length != 0)
-                    await foreach (var _ in EvalBodyAsync(stmt.ElseBody))
+                {
+                    var newContext = context.NewScopeContext();
+                    var newEvaluator = new IR0StmtEvaluator(newContext);
+                    await foreach (var _ in newEvaluator.EvalBodyAsync(stmt.ElseBody))
                         yield return true;
+                }
             }
         }
 
@@ -244,57 +250,57 @@ namespace Citron
             // class B {}, class C<X> : B { }, class D<X> : C<X> { } 의 경우
             // void Func<T>() {
             //     B b = new D<int>();   // b의 겉보기 타입 B, 실제 타입 D<int>
-            //     if (C<T> c = b) ...   // b의 실제타입 D<int>는 C<T>인가?
+            //     if (C<T> c = b) ...   
             // }
 
-            var targetValue = (ClassValue)await IR0LocEvaluator.EvalAsync(stmt.Target, context);
+            var result = context.AllocValue(stmt.RefType);
+            await IR0ExpEvaluator.EvalAsync(stmt.AsExp, context, result);
 
-            // evalContext 상에서 둘이 같은지 비교해야 한다
-            // E |- targetType is stmt.Class
-            var bTestPassed = context.IsDerivedClassOf(targetValue, stmt.Class);
-
-            if (bTestPassed)
+            // result가 null인지 확인
+            if (!((IRefValue)result).IsNull())
             {
-                await foreach (var _ in EvalBodyAsync(stmt.Body))
+                var newContext = context.NewScopeContext();
+                newContext.AddLocalVar(stmt.VarName, result);
+
+                var newEvaluator = new IR0StmtEvaluator(newContext);
+                await foreach (var _ in newEvaluator.EvalBodyAsync(stmt.Body))
                     yield return true;
             }
             else
             {
                 if (stmt.ElseBody.Length != 0)
-                    await foreach (var _ in EvalBodyAsync(stmt.ElseBody))
+                {
+                    var newContext = context.NewScopeContext();
+                    var newEvaluator = new IR0StmtEvaluator(newContext);
+                    await foreach (var _ in newEvaluator.EvalBodyAsync(stmt.ElseBody))
                         yield return true;
+                }
             }
         }
 
         async IAsyncEnumerable<bool> IIR0StmtVisitor<IAsyncEnumerable<bool>>.VisitIfNullableValueTest(IfNullableValueTestStmt stmt)
         {
-            var targetValue = await IR0LocEvaluator.EvalAsync(stmt.Target, context) as EnumValue;
-            if (targetValue == null)
-                throw new RuntimeFatalException();
+            // Nullable로 만든다
+            var nullableResult = context.AllocValue<NullableValue>(new NullableTypeId(stmt.Type.GetTypeId()));
+            await IR0ExpEvaluator.EvalAsync(stmt.AsExp, context, nullableResult);
 
-            var bTestPassed = context.IsEnumElem(targetValue, stmt.EnumElem);
+            var newContext = context.NewScopeContext();
+            var newEvaluator = new IR0StmtEvaluator(newContext);
 
-            if (bTestPassed)
+            if (nullableResult.HasValue())
             {
-                if (stmt.VarName != null)
-                {
-                    var newContext = context.NewScopeContext();
-                    var newStmtEvaluator = new IR0StmtEvaluator(newContext);
-
-                    await foreach (var _ in newStmtEvaluator.EvalWithNewEnumVarAsync(targetValue, stmt.VarName, stmt.Body))
-                        yield return true;
-                }
-                else
-                {
-                    await foreach (var _ in EvalBodyAsync(stmt.Body))
-                        yield return true;
-                }
+                // innervalue에 바인딩
+                newContext.AddLocalVar(stmt.VarName, nullableResult.GetInnerValue()!);
+                await foreach (var _ in newEvaluator.EvalBodyAsync(stmt.Body))
+                    yield return true;
             }
             else
             {
                 if (stmt.ElseBody.Length != 0)
-                    await foreach (var _ in EvalBodyAsync(stmt.ElseBody))
+                {
+                    await foreach (var _ in newEvaluator.EvalBodyAsync(stmt.ElseBody))
                         yield return true;
+                }
             }
         }
 
@@ -358,7 +364,7 @@ namespace Citron
         async IAsyncEnumerable<bool> IIR0StmtVisitor<IAsyncEnumerable<bool>>.VisitTask(TaskStmt stmt)
         {
             // 공간 할당
-            var lambdaValue = context.AllocValue<LambdaValue>(stmt.Lambda.GetSymbolId());
+            var lambdaValue = context.AllocValue<LambdaValue>(new SymbolTypeId(stmt.Lambda.GetSymbolId()));
 
             // 캡쳐
             await IR0ExpEvaluator.EvalCaptureArgs(stmt.Lambda, lambdaValue, stmt.CaptureArgs, context);
@@ -392,7 +398,7 @@ namespace Citron
         async IAsyncEnumerable<bool> IIR0StmtVisitor<IAsyncEnumerable<bool>>.VisitAsync(AsyncStmt stmt)
         {
             // 공간 할당
-            var lambdaValue = context.AllocValue<LambdaValue>(stmt.Lambda.GetSymbolId());
+            var lambdaValue = context.AllocValue<LambdaValue>(new SymbolTypeId(stmt.Lambda.GetSymbolId()));
 
             // 캡쳐
             await IR0ExpEvaluator.EvalCaptureArgs(stmt.Lambda, lambdaValue, stmt.CaptureArgs, context);

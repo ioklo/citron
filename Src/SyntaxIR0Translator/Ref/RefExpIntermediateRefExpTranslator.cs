@@ -38,11 +38,11 @@ struct RefExpIntermediateRefExpTranslator : S.IExpVisitor<TranslationResult<Inte
 
     TranslationResult<IntermediateRefExp> HandleValue(S.Exp exp)
     {
-        var rexpResult = ExpIR0ExpTranslator.Translate(exp, context, hintType: null);
-        if (!rexpResult.IsValid(out var rexp))
+        var result = ExpIR0ExpTranslator.Translate(exp, context, hintType: null);
+        if (!result.IsValid(out var expResult))
             return Error();
 
-        return Valid(new IntermediateRefExp.LocalValue(rexp));
+        return Valid(new IntermediateRefExp.LocalValue(expResult));
     }
     
     TranslationResult<IntermediateRefExp> S.IExpVisitor<TranslationResult<IntermediateRefExp>>.VisitIdentifier(S.IdentifierExp exp)
@@ -100,11 +100,11 @@ struct RefExpIntermediateRefExpTranslator : S.IExpVisitor<TranslationResult<Inte
         }
         else if (exp.Kind == S.UnaryOpKind.Deref) // *pS
         {
-            var rexpResult = ExpIR0ExpTranslator.Translate(exp.Operand, context, hintType: null);
-            if (!rexpResult.IsValid(out var rexp))
+            var operandResult = ExpIR0LocTranslator.Translate(exp.Operand, context, hintType: null, bWrapExpAsLoc: true, A2015_ResolveIdentifier_ExpressionIsNotLocation);
+            if (!operandResult.IsValid(out var operandLocResult))
                 return Error();
 
-            return Valid(new IntermediateRefExp.DerefedBoxValue(rexp));
+            return Valid(new IntermediateRefExp.DerefedBoxValue(operandLocResult.Loc, operandLocResult.LocType));
         }
         else
         {

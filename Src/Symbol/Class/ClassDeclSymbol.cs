@@ -31,7 +31,7 @@ namespace Citron.Symbol
         Name name;        
         ImmutableArray<Name> typeParams;
         
-        ClassType? baseClass; // Class선언 시점 typeEnv를 적용한 baseClass
+        ClassSymbol? baseClass; // Class선언 시점 typeEnv를 적용한 baseClass
         ImmutableArray<InterfaceType> interfaces;
         
         List<ClassMemberVarDeclSymbol> memberVars;
@@ -60,7 +60,7 @@ namespace Citron.Symbol
             this.initState = InitializeState.BeforeInitBaseTypes;
         }
 
-        public void InitBaseTypes(ClassType? baseClass, ImmutableArray<InterfaceType> interfaces)
+        public void InitBaseTypes(ClassSymbol? baseClass, ImmutableArray<InterfaceType> interfaces)
         {
             Debug.Assert(initState == InitializeState.BeforeInitBaseTypes);
 
@@ -101,7 +101,7 @@ namespace Citron.Symbol
         }        
 
         // Info자체에는 environment가 없으므로, typeEnv가 있어야
-        public ClassType? GetBaseClass()
+        public ClassSymbol? GetBaseClass()
         {
             Debug.Assert(InitializeState.BeforeInitBaseTypes < initState);
             return baseClass;

@@ -7,6 +7,7 @@ using Pretune;
 
 using System.Diagnostics;
 using Citron.Symbol;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Citron
 {
@@ -120,7 +121,7 @@ namespace Citron
         {
             return values[index];
         }
-    }    
+    }
 
     // vanilla implemenation    
     [AutoConstructor]
@@ -139,8 +140,14 @@ namespace Citron
             return values[index];
         }
     }
-    
-    public class ClassValue : Value
+
+    public interface IRefValue
+    {
+        bool IsNull();
+    }
+
+    [AutoConstructor]
+    public partial class ClassValue : Value, IRefValue
     {   
         ClassInstance? instance;
 
@@ -148,15 +155,15 @@ namespace Citron
         {
             instance = null;
         }
-
-        public ClassValue(ClassInstance instance)
+        
+        public void SetInstance(ClassInstance instance)
         {
             this.instance = instance;
         }
 
-        public void SetInstance(ClassInstance instance)
+        bool IRefValue.IsNull()
         {
-            this.instance = instance;
+            return this.instance == null;
         }
 
         public ClassInstance GetInstance()
@@ -173,6 +180,28 @@ namespace Citron
         public SymbolId GetActualType()
         {
             return instance!.GetActualType();
+        }
+    }
+
+
+    public class NullableValue : Value
+    {
+        bool hasValue;
+        Value? innerValue;
+
+        public NullableValue()
+        {
+            hasValue = false;
+            innerValue = null;
+        }
+
+        public bool HasValue() { return hasValue; }
+        public Value? GetInnerValue() { return innerValue; }
+
+        public override void SetValue(Value value)
+        {
+            hasValue = ((NullableValue)value).hasValue;
+            innerValue = ((NullableValue)value).innerValue;
         }
     }
 
@@ -336,30 +365,43 @@ namespace Citron
         }
     }
     
-    public class BoxPtrValue : Value
+    public partial class BoxPtrValue : Value
     {
         Value? holder;
         Value? target;
 
-        public Value GetTarget()
+        public BoxPtrValue()
         {
-            return this.target!;
+            holder = null;
+            target = null;
         }
-        
-        public void Set(Value? holder, Value target)
+
+        public Value? GetHolder()
+        {
+            return this.holder;
+        }
+
+        public Value? GetTarget()
+        {
+            return this.target;
+        }
+
+        public void SetHolderAndTarget(Value? holder, Value? target)
         {
             this.holder = holder;
             this.target = target;
         }
 
-        public void SetTarget(Value target)
+        public void SetTarget(Value? target)
         {
             this.target = target;
         }
 
         public override void SetValue(Value value)
         {
-            this.target = ((BoxPtrValue)value).target;
+            var value_boxPtrType = (BoxPtrValue)value;
+            this.holder = value_boxPtrType.holder;
+            this.target = value_boxPtrType.target;
         }
     }
 

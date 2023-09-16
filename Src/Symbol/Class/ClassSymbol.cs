@@ -41,22 +41,22 @@ namespace Citron.Symbol
         // class X<T> { class Y<U> : Z<T>.B<T> }
         // X<int>.Y<bool> c; // c의 classTypeValue { [int, bool], X<>.Y<> }
         // baseof(c) //  classTypeValue { [int, int], Z<>.B<> } <- 여기에
-        public ClassType? GetBaseClass() 
+        public ClassSymbol? GetBaseClass() 
         {
             // 지금 속한 클래스의 타입 환경에 종속된 ClassSymbol를 돌려준다
             // X<T>.C<U> : B<U, T> => ClassSymbol(B, [TV(1), TV(0)])
-            var baseClassTypeValue = decl.GetBaseClass();
-            if (baseClassTypeValue == null) return null;
+            var baseClass = decl.GetBaseClass();
+            if (baseClass == null) return null;
 
             // ClassSymbol가 X<int>.C<TV(4)>라면 TV(0)을 int로, TV(1)을 TV(4)로 치환한다
             // TV(4)는 x<int>.C<TV(4)>를 선언한 환경이다
-            return baseClassTypeValue.Apply(typeEnv);
+            return baseClass.Apply(typeEnv);
         }
 
         // except itself
         public bool IsBaseOf(ClassSymbol derivedClass)
         {
-            ClassType? curBaseType = derivedClass.GetBaseClass();
+            ClassSymbol? curBaseType = derivedClass.GetBaseClass();
 
             while(curBaseType != null)
             {
@@ -198,11 +198,11 @@ namespace Citron.Symbol
 
             if (results.Count == 0)
             {
-                var baseClassType = GetBaseClass();
-                if (baseClassType == null)
+                var baseClass = GetBaseClass();
+                if (baseClass == null)
                     return null;
 
-                return baseClassType.QueryMember(memberName, explicitTypeArgsCount);
+                return baseClass.QueryMember(memberName, explicitTypeArgsCount);
             }
             else
             {

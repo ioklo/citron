@@ -32,10 +32,8 @@ namespace Citron.Analysis
             return builder.MoveToImmutable();
         }
 
-        public static R.Exp? TryCastExp_Exp(R.Exp exp, IType expectedType, ScopeContext context) // nothrow
+        public static R.Exp? TryCastExp_Exp(R.Exp exp, IType expType, IType expectedType, ScopeContext context) // nothrow
         {
-            var expType = context.GetExpType(exp);
-
             // 같으면 그대로 리턴
             if (TypeEquals(expectedType, expType))
                 return exp;            
@@ -97,42 +95,42 @@ namespace Citron.Analysis
         }
 
         // 값의 겉보기 타입을 변경한다
-        public static TranslationResult<R.Exp> CastExp_Exp(R.Exp exp, IType expectedType, S.ISyntaxNode nodeForErrorReport, ScopeContext context)
+        public static TranslationResult<R.Exp> CastExp_Exp(R.Exp exp, IType expType, IType expectedType, S.ISyntaxNode nodeForErrorReport, ScopeContext context)
         {
-            var result = BodyMisc.TryCastExp_Exp(exp, expectedType, context);
+            var result = BodyMisc.TryCastExp_Exp(exp, expType, expectedType, context);
             if (result != null) return TranslationResult.Valid(result);
 
             context.AddFatalError(A2201_Cast_Failed, nodeForErrorReport);
             return TranslationResult.Error<R.Exp>();
         }
 
-        public static TranslationResult<R.Exp> MakeAsExp(IType targetType, IType testType, R.Exp targetExp)
+        public static TranslationResult<IR0ExpResult> MakeAsExp(IType targetType, IType testType, R.Exp targetExp)
         {
-            TranslationResult<R.Exp> Valid(R.Exp exp) => TranslationResult.Valid(exp);
+            TranslationResult<IR0ExpResult> Valid(IR0ExpResult exp) => TranslationResult.Valid(exp);
 
             // 5가지 케이스로 나뉜다
             if (testType is ClassType testClassType)
             {
                 if (targetType is ClassType)
-                    return Valid(new R.ClassAsClassExp(targetExp, testClassType));
+                    return Valid(new IR0ExpResult(new R.ClassAsClassExp(targetExp, testClassType), testClassType));
                 else if (targetType is InterfaceType)
-                    return Valid(new R.InterfaceAsClassExp(targetExp, testClassType));
+                    return Valid(new IR0ExpResult(new R.InterfaceAsClassExp(targetExp, testClassType), testClassType));
                 else
                     throw new NotImplementedException(); // 에러 처리
             }
             else if (testType is InterfaceType testInterfaceType)
             {
                 if (targetType is ClassType)
-                    return Valid(new R.ClassAsInterfaceExp(targetExp, testInterfaceType));
+                    return Valid(new IR0ExpResult(new R.ClassAsInterfaceExp(targetExp, testInterfaceType), testInterfaceType));
                 else if (targetType is InterfaceType)
-                    return Valid(new R.InterfaceAsInterfaceExp(targetExp, testInterfaceType));
+                    return Valid(new IR0ExpResult(new R.InterfaceAsInterfaceExp(targetExp, testInterfaceType), testInterfaceType));
                 else
                     throw new NotImplementedException(); // 에러 처리
             }
             else if (testType is EnumElemType testEnumElemType)
             {
                 if (targetType is EnumType)
-                    return Valid(new R.EnumAsEnumElemExp(targetExp, testEnumElemType));
+                    return Valid(new IR0ExpResult(new R.EnumAsEnumElemExp(targetExp, testEnumElemType), new NullableType(testEnumElemType)));
                 else
                     throw new NotImplementedException(); // 에러 처리
             }

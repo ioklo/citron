@@ -16,7 +16,7 @@ namespace Citron.IR0
     }
 
     // 임시 값을 만들어서 Exp를 실행해서 대입해주는 역할
-    public record class TempLoc(Exp Exp) : Loc
+    public record class TempLoc(Exp Exp, IType Type) : Loc
     {
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitTemp(this);
     }
@@ -33,7 +33,7 @@ namespace Citron.IR0
     }
 
     // l[b], l is list    
-    public record class ListIndexerLoc(Loc List, Exp Index) : Loc
+    public record class ListIndexerLoc(Loc List, Loc Index) : Loc
     {
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitListIndexer(this);
     }
@@ -66,7 +66,7 @@ namespace Citron.IR0
     }
 
     // dereference box pointer, *
-    public record class BoxDerefLoc(Exp InnerExp) : Loc
+    public record class BoxDerefLoc(Loc InnerLoc) : Loc
     {
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitBoxDeref(this);
     }

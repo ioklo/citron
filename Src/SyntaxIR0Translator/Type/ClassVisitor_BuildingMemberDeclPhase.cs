@@ -184,7 +184,7 @@ namespace Citron.Analysis
                 }
             }
 
-            declSymbol.InitBaseTypes(uniqueBaseClass, interfacesBuilder.ToImmutable());
+            declSymbol.InitBaseTypes(uniqueBaseClass?.GetSymbol(), interfacesBuilder.ToImmutable());
 
             foreach (var memberDecl in syntax.MemberDecls)
             {
@@ -206,7 +206,7 @@ namespace Citron.Analysis
             }
 
             var thisDeclSymbol = declSymbol;
-            context.AddBuildingTrivialConstructorPhaseTask(uniqueBaseClass?.GetDecl(), declSymbol, () =>
+            context.AddBuildingTrivialConstructorPhaseTask(uniqueBaseClass?.GetDeclSymbol(), declSymbol, () =>
             {
                 var baseTrivialConstructor = uniqueBaseClass?.GetTrivialConstructor();
                 ClassConstructorDeclSymbol? trivialConstructor = null;

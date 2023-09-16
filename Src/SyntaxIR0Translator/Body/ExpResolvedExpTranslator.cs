@@ -49,17 +49,17 @@ struct ExpResolvedExpTranslator : IExpVisitor
         return TranslationResult.Error<ResolvedExp>();
     }
 
-    TranslationResult<ResolvedExp> HandleExp(R.Exp exp)
+    TranslationResult<ResolvedExp> HandleExp(IR0ExpResult expResult)
     {
-        return TranslationResult.Valid<ResolvedExp>(new ResolvedExp.IR0Exp(exp));
+        return TranslationResult.Valid<ResolvedExp>(new ResolvedExp.IR0Exp(expResult));
     }
 
-    TranslationResult<ResolvedExp> HandleExpTranslationResult(TranslationResult<R.Exp> expResult)
+    TranslationResult<ResolvedExp> HandleExpTranslationResult(TranslationResult<IR0ExpResult> result)
     {
-        if (!expResult.IsValid(out var exp))
+        if (!result.IsValid(out var expResult))
             return Error();
 
-        return HandleExp(exp);
+        return HandleExp(expResult);
     }
     
     TranslationResult<ResolvedExp> IExpVisitor.VisitIdentifier(S.IdentifierExp exp)

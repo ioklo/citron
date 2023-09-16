@@ -94,7 +94,7 @@ abstract record IntermediateExp
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitEnumElemMemberVar(this);
     }
 
-    public record class ListIndexer(ResolvedExp Instance, R.Exp Index, IType ItemType) : IntermediateExp
+    public record class ListIndexer(ResolvedExp Instance, R.Loc Index, IType ItemType) : IntermediateExp
     {
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitListIndexer(this);
     }
@@ -110,7 +110,7 @@ abstract record IntermediateExp
     }
 
     // 기타의 경우
-    public record class IR0Exp(R.Exp Exp) : IntermediateExp
+    public record class IR0Exp(IR0ExpResult ExpResult) : IntermediateExp
     {
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitIR0Exp(this);
     }

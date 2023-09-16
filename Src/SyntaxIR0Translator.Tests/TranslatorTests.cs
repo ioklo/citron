@@ -1291,10 +1291,10 @@ namespace Citron.Test
             var script = Translate(syntaxScript);
 
             var expected = r.Script(
-                r.LocalVarDecl(r.BoxPtrType(r.IntType()), "x", r.Box(r.Int(3))),
+                r.LocalVarDecl(r.BoxPtrType(r.IntType()), "x", r.Box(r.Int(3), r.IntType())),
                 r.Assign(
-                    r.BoxDeref(r.LoadLocalVar("x", r.BoxPtrType(r.IntType()))),
-                    r.CallInternalBinary(R.InternalBinaryOperator.Add_Int_Int_Int, r.Int(7), r.Load(r.BoxDeref(r.LoadLocalVar("x", r.BoxPtrType(r.IntType()))), r.IntType()))
+                    r.BoxDeref(r.LocalVar("x")),
+                    r.CallInternalBinary(R.InternalBinaryOperator.Add_Int_Int_Int, r.Int(7), r.Load(r.BoxDeref(r.LocalVar("x")), r.IntType()))
                 )
             );
 

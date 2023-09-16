@@ -10,17 +10,9 @@ using Citron.Symbol;
 
 namespace Citron.IR0
 {
-    public interface IBuiltInTypeProvider
-    {
-        IType GetBoolType();
-        IType GetIntType();
-        IType GetStringType();
-    }
-
     public abstract record class Exp : INode
     {
         internal Exp() { }
-        public abstract IType GetExpType(IBuiltInTypeProvider provider);
         public abstract TResult Accept<TVisitor, TResult>(ref TVisitor visitor)
             where TVisitor : struct, IIR0ExpVisitor<TResult>;
     }
@@ -30,84 +22,44 @@ namespace Citron.IR0
     // Location의 Value를 resultValue에 복사한다
     public record class LoadExp(Loc Loc, IType Type) : Exp
     {
-        public override IType GetExpType(IBuiltInTypeProvider provider)
-        {
-            return Type;
-        }
-
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitLoad(this);        
     }
 
     // a = b
     public record class AssignExp(Loc Dest, Exp Src) : Exp
     {
-        public override IType GetExpType(IBuiltInTypeProvider provider)
-        {
-            return Src.GetExpType(provider);
-        }
-
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitAssign(this);
     }
 
     // box 3
-    public record class BoxExp(Exp InnerExp) : Exp
+    public record class BoxExp(Exp InnerExp, IType InnerType) : Exp
     {
-        public override IType GetExpType(IBuiltInTypeProvider provider)
-        {
-            return new BoxPtrType(InnerExp.GetExpType(provider));
-        }
-
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitBoxExp(this);
     }
 
     public record class StaticBoxRefExp(Loc Loc, IType LocType) : Exp
     {
-        public override IType GetExpType(IBuiltInTypeProvider provider)
-        {
-            return new BoxPtrType(LocType);
-        }
-
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitStaticBoxRef(this);
     }
 
     public record class ClassMemberBoxRefExp(Loc holderLoc, ClassMemberVarSymbol Symbol) : Exp
     {
-        public override IType GetExpType(IBuiltInTypeProvider provider)
-        {
-            return new BoxPtrType(Symbol.GetDeclType());
-        }
-
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitClassMemberBoxRef(this);
     }
 
-    public record class StructIndirectMemberBoxRefExp(Exp holderExp, StructMemberVarSymbol Symbol) : Exp
+    public record class StructIndirectMemberBoxRefExp(Loc Holder, StructMemberVarSymbol Symbol) : Exp
     {
-        public override IType GetExpType(IBuiltInTypeProvider provider)
-        {
-            return new BoxPtrType(Symbol.GetDeclType());
-        }
-
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitStructIndirectMemberBoxRef(this);
     }
 
-    public record class StructMemberBoxRefExp(Exp Parent, StructMemberVarSymbol Symbol) : Exp
+    public record class StructMemberBoxRefExp(Loc Parent, StructMemberVarSymbol Symbol) : Exp
     {
-        public override IType GetExpType(IBuiltInTypeProvider provider)
-        {
-            return new BoxPtrType(Symbol.GetDeclType());
-        }
-
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitStructMemberBoxRef(this);
     }
 
     // &i
     public record class LocalRefExp(Loc InnerLoc, IType InnerLocType) : Exp
     {
-        public override IType GetExpType(IBuiltInTypeProvider provider)
-        {
-            return new LocalPtrType(InnerLocType);
-        }
-
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitLocalRef(this);
     }
 
@@ -118,11 +70,6 @@ namespace Citron.IR0
     // 이거 BoxedStructAsInterface
     public record class CastBoxedLambdaToFuncExp(Exp Exp, FuncType FuncType) : Exp
     {
-        public override IType GetExpType(IBuiltInTypeProvider provider)
-        {
-            return FuncType;
-        }
-
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.CastBoxedLambdaToFunc(this);
     }
 
@@ -133,31 +80,18 @@ namespace Citron.IR0
     // false
     public record class BoolLiteralExp(bool Value) : Exp
     {
-        public override IType GetExpType(IBuiltInTypeProvider provider)
-        {
-            return provider.GetBoolType();
-        }
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitBoolLiteral(this);
     }
 
     // 1    
     public record class IntLiteralExp(int Value) : Exp
     {
-        public override IType GetExpType(IBuiltInTypeProvider provider)
-        {
-            return provider.GetIntType();
-        }
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitIntLiteral(this);
     }
 
     // "dskfjslkf $abc "
     public record class StringExp(ImmutableArray<StringExpElement> Elements) : Exp
     {
-        public override IType GetExpType(IBuiltInTypeProvider provider)
-        {
-            return provider.GetStringType();
-        }
-
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitString(this);
     }
     #endregion Literal
@@ -165,23 +99,13 @@ namespace Citron.IR0
     #region List
 
     // [1, 2, 3]    
-    public record class ListExp(ImmutableArray<Exp> Elems, IType ListType) : Exp
+    public record class ListExp(ImmutableArray<Exp> Elems, IType ItemType) : Exp
     {
-        public override IType GetExpType(IBuiltInTypeProvider provider)
-        {
-            return ListType;
-        }
-
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitList(this);
     }
 
     public record class ListIteratorExp(Loc ListLoc, IType IteratorType) : Exp
     {
-        public override IType GetExpType(IBuiltInTypeProvider provider)
-        {
-            return IteratorType;
-        }
-
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitListIterator(this);
     }
 
@@ -227,33 +151,18 @@ namespace Citron.IR0
         Equal_String_String_Bool
     }
 
-    public record CallInternalUnaryOperatorExp(InternalUnaryOperator Operator, Exp Operand, IType Type) : Exp
+    public record CallInternalUnaryOperatorExp(InternalUnaryOperator Operator, Exp Operand) : Exp
     {
-        public override IType GetExpType(IBuiltInTypeProvider provider)
-        {
-            return Type;
-        }
-
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitCallInternalUnaryOperator(this);
     }
 
-    public record CallInternalUnaryAssignOperatorExp(InternalUnaryAssignOperator Operator, Loc Operand, IType Type) : Exp
+    public record CallInternalUnaryAssignOperatorExp(InternalUnaryAssignOperator Operator, Loc Operand) : Exp
     {
-        public override IType GetExpType(IBuiltInTypeProvider provider)
-        {
-            return Type;        
-        }
-
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitCallInternalUnaryAssignOperator(this);
     }
 
-    public record CallInternalBinaryOperatorExp(InternalBinaryOperator Operator, Exp Operand0, Exp Operand1, IType Type) : Exp
+    public record CallInternalBinaryOperatorExp(InternalBinaryOperator Operator, Exp Operand0, Exp Operand1) : Exp
     {
-        public override IType GetExpType(IBuiltInTypeProvider provider)
-        {
-            return Type;
-        }
-
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitCallInternalBinaryOperator(this);
     }
 
@@ -263,11 +172,6 @@ namespace Citron.IR0
     // F();
     public record CallGlobalFuncExp(GlobalFuncSymbol Func, ImmutableArray<Argument> Args) : Exp
     {
-        public override IType GetExpType(IBuiltInTypeProvider provider)
-        {
-            return Func.GetReturn().Type;
-        }
-
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitCallGlobalFunc(this);
     }
     #endregion Global
@@ -276,33 +180,18 @@ namespace Citron.IR0
     // new C(2, 3, 4);    
     public record class NewClassExp(ClassConstructorSymbol Constructor, ImmutableArray<Argument> Args) : Exp
     {
-        public override IType GetExpType(IBuiltInTypeProvider provider)
-        {
-            return ((ITypeSymbol)Constructor.GetOuter()).MakeType();
-        }
-
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitNewClass(this);
     }
 
     // c.F();
     public record CallClassMemberFuncExp(ClassMemberFuncSymbol ClassMemberFunc, Loc? Instance, ImmutableArray<Argument> Args) : Exp
     {
-        public override IType GetExpType(IBuiltInTypeProvider provider)
-        {
-            return ClassMemberFunc.GetReturn().Type;
-        }
-
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitCallClassMemberFunc(this);
     }
 
     // ClassStaticCast    
     public record CastClassExp(Exp Src, ClassSymbol Class) : Exp
     {
-        public override IType GetExpType(IBuiltInTypeProvider provider)
-        {
-            return ((ITypeSymbol)Class).MakeType();
-        }
-
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitCastClass(this);
     }
 
@@ -312,22 +201,12 @@ namespace Citron.IR0
     // new S(2, 3, 4);
     public record class NewStructExp(StructConstructorSymbol Constructor, ImmutableArray<Argument> Args) : Exp
     {
-        public override IType GetExpType(IBuiltInTypeProvider provider)
-        {
-            return ((ITypeSymbol)Constructor.GetOuter()).MakeType();
-        }
-
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitNewStruct(this);
     }
 
     // s.F();
     public record CallStructMemberFuncExp(StructMemberFuncSymbol StructMemberFunc, Loc? Instance, ImmutableArray<Argument> Args) : Exp
     {
-        public override IType GetExpType(IBuiltInTypeProvider provider)
-        {
-            return StructMemberFunc.GetReturn().Type;
-        }
-
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitCallStructMemberFunc(this);
     }
     #endregion Struct
@@ -336,22 +215,12 @@ namespace Citron.IR0
     // enum construction, E.First or E.Second(2, 3)    
     public record class NewEnumElemExp(EnumElemSymbol EnumElem, ImmutableArray<Argument> Args) : Exp
     {
-        public override IType GetExpType(IBuiltInTypeProvider provider)
-        {
-            return ((ITypeSymbol)EnumElem).MakeType();
-        }
-
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitNewEnumElem(this);
     }
 
     // 컨테이너를 enumElem -> enum으로
     public record CastEnumElemToEnumExp(Exp Src, EnumSymbol Symbol) : Exp
     {
-        public override IType GetExpType(IBuiltInTypeProvider provider)
-        {
-            return new EnumType(Symbol);
-        }
-
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitCastEnumElemToEnum(this);
     }
     #endregion Enum
@@ -359,21 +228,11 @@ namespace Citron.IR0
     #region Nullable
     public record class NullableNullLiteralExp(IType innerType) : Exp
     {
-        public override IType GetExpType(IBuiltInTypeProvider provider)
-        {
-            return new NullableType(innerType);
-        }
-
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitNullableNullLiteral(this);
     }
 
     public record class NewNullableExp(Exp InnerExp) : Exp
     {
-        public override IType GetExpType(IBuiltInTypeProvider provider)
-        {
-            return new NullableType(InnerExp.GetExpType(provider));
-        }
-
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitNewNullable(this);
     }
 
@@ -387,23 +246,13 @@ namespace Citron.IR0
     // Lambda(lambda_type_0, x); // with captured variable
     public record class LambdaExp(LambdaSymbol Lambda, ImmutableArray<Argument> Args) : Exp
     {
-        public override IType GetExpType(IBuiltInTypeProvider provider)
-        {
-            return ((ITypeSymbol)Lambda).MakeType();
-        }
-
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitLambda(this);
     }
 
     // f(2, 3)    
     // Callable은 (() => {}) ()때문에 Loc이어야 한다
-    public record class CallLambdaExp(LambdaType Lambda, Loc Callable, ImmutableArray<Argument> Args) : Exp
+    public record class CallLambdaExp(LambdaSymbol Lambda, Loc Callable, ImmutableArray<Argument> Args) : Exp
     {
-        public override IType GetExpType(IBuiltInTypeProvider provider)
-        {
-            return Lambda.GetReturn().Type;
-        }
-
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitCallValue(this);
     }
 
@@ -413,11 +262,6 @@ namespace Citron.IR0
 
     public record class InlineBlockExp(ImmutableArray<Stmt> Stmts, IType ReturnType) : Exp
     {
-        public override IType GetExpType(IBuiltInTypeProvider provider)
-        {
-            return ReturnType;
-        }
-
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitInlineBlock(this);
     }
 
@@ -426,101 +270,51 @@ namespace Citron.IR0
     #region TypeTest
     public record class ClassIsClassExp(Exp Exp, ClassType ClassType) : Exp
     {
-        public override IType GetExpType(IBuiltInTypeProvider provider)
-        {
-            return provider.GetBoolType();
-        }
-
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitClassIsClassExp(this);
     }
 
     public record class ClassAsClassExp(Exp Exp, ClassType ClassType) : Exp
     {
-        public override IType GetExpType(IBuiltInTypeProvider provider)
-        {
-            return ClassType;
-        }
-
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitClassAsClassExp(this);
     }
 
     public record class ClassIsInterfaceExp(Exp Exp, InterfaceType InterfaceType) : Exp
     {
-        public override IType GetExpType(IBuiltInTypeProvider provider)
-        {
-            return provider.GetBoolType();
-        }
-
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitClassIsInterfaceExp(this);
     }
 
     public record class ClassAsInterfaceExp(Exp Exp, InterfaceType InterfaceType) : Exp
     {
-        public override IType GetExpType(IBuiltInTypeProvider provider)
-        {
-            return InterfaceType;
-        }
-
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitClassAsInterfaceExp(this);
     }
 
     public record class InterfaceIsClassExp(Exp Exp, ClassType ClassType) : Exp
     {
-        public override IType GetExpType(IBuiltInTypeProvider provider)
-        {
-            return provider.GetBoolType();
-        }
-
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitInterfaceIsClassExp(this);
     }
 
     public record class InterfaceAsClassExp(Exp Exp, ClassType ClassType) : Exp
     {
-        public override IType GetExpType(IBuiltInTypeProvider provider)
-        {
-            return ClassType;
-        }
-
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitInterfaceAsClassExp(this);
     }
 
     public record class InterfaceIsInterfaceExp(Exp Exp, InterfaceType InterfaceType) : Exp
     {
-        public override IType GetExpType(IBuiltInTypeProvider provider)
-        {
-            return provider.GetBoolType();
-        }
-
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitInterfaceIsInterfaceExp(this);
     }
 
     public record class InterfaceAsInterfaceExp(Exp Exp, InterfaceType InterfaceType) : Exp
     {
-        public override IType GetExpType(IBuiltInTypeProvider provider)
-        {
-            return InterfaceType;
-        }
-
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitInterfaceAsInterfaceExp(this);
     }
 
     public record class EnumIsEnumElemExp(Exp Exp, EnumElemType EnumElemType) : Exp
     {
-        public override IType GetExpType(IBuiltInTypeProvider provider)
-        {
-            return provider.GetBoolType();
-        }
-
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitEnumIsEnumElemExp(this);
     }
 
     public record class EnumAsEnumElemExp(Exp Exp, EnumElemType EnumElemType) : Exp
     {
-        public override IType GetExpType(IBuiltInTypeProvider provider)
-        {
-            return new NullableType(EnumElemType);
-        }
-
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitEnumAsEnumElemExp(this);
     }
 

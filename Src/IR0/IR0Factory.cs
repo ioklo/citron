@@ -131,9 +131,9 @@ namespace Citron.IR0
             return new ForeachStmt(itemType, elemName, iterLoc, body.ToImmutableArray());
         }
 
-        public ForeachStmt Foreach(IType itemType, string elemName, Exp iterExp, params Stmt[] body)
+        public ForeachStmt Foreach(IType itemType, string elemName, Exp iterExp, IType iterType, params Stmt[] body)
         {
-            return new ForeachStmt(itemType, elemName, new TempLoc(iterExp), body.ToImmutableArray());
+            return new ForeachStmt(itemType, elemName, new TempLoc(iterExp, iterType), body.ToImmutableArray());
         }
         #endregion
 
@@ -155,7 +155,7 @@ namespace Citron.IR0
                 _ => throw new UnreachableException()
             };
 
-            return new CallInternalUnaryOperatorExp(op, exp, type);
+            return new CallInternalUnaryOperatorExp(op, exp);
         }
 
         public Exp CallInternalBinary(InternalBinaryOperator op, Exp operand0, Exp operand1)
@@ -182,7 +182,7 @@ namespace Citron.IR0
                 _ => throw new UnreachableException()
             };
 
-            return new CallInternalBinaryOperatorExp(op, operand0, operand1, type);
+            return new CallInternalBinaryOperatorExp(op, operand0, operand1);
         }
 
         public Exp CallInternalUnaryAssign(InternalUnaryAssignOperator op, Loc operand)
@@ -198,7 +198,7 @@ namespace Citron.IR0
             };
 
 
-            return new CallInternalUnaryAssignOperatorExp(op, operand, type);
+            return new CallInternalUnaryAssignOperatorExp(op, operand);
         }
 
         #endregion
@@ -220,9 +220,9 @@ namespace Citron.IR0
             return new ExpStmt(new CallClassMemberFuncExp(classMemberFunc, instance, args.ToImmutableArray()));
         }
 
-        public ExpStmt Call(LambdaType lambdaType, Loc loc, params Argument[] args)
+        public ExpStmt Call(LambdaSymbol lambdaSymbol, Loc loc, params Argument[] args)
         {
-            return new ExpStmt(new CallLambdaExp(lambdaType, loc, args.ToImmutableArray()));
+            return new ExpStmt(new CallLambdaExp(lambdaSymbol, loc, args.ToImmutableArray()));
         }
 
         #endregion
@@ -252,9 +252,11 @@ namespace Citron.IR0
         public CommandStmt PrintBool(Exp exp)
         {
             return Command(String(new ExpStringExpElement(
-                new CallInternalUnaryOperatorExp(
-                    InternalUnaryOperator.ToString_Bool_String,
-                    exp,
+                new TempLoc(
+                    new CallInternalUnaryOperatorExp(
+                        InternalUnaryOperator.ToString_Bool_String,
+                        exp
+                    ),
                     stringType
                 )
             )));
@@ -263,9 +265,11 @@ namespace Citron.IR0
         public CommandStmt PrintInt(Loc loc)
         {
             return Command(String(new ExpStringExpElement(
-                new CallInternalUnaryOperatorExp(
-                    InternalUnaryOperator.ToString_Int_String,
-                    new LoadExp(loc, intType),
+                new TempLoc(
+                    new CallInternalUnaryOperatorExp(
+                        InternalUnaryOperator.ToString_Int_String,
+                        new LoadExp(loc, intType)
+                    ),
                     stringType
                 )
             )));
@@ -274,9 +278,11 @@ namespace Citron.IR0
         public CommandStmt PrintInt(Exp varExp)
         {
             return Command(String(new ExpStringExpElement(
-                new CallInternalUnaryOperatorExp(
-                    InternalUnaryOperator.ToString_Int_String,
-                    varExp,
+                new TempLoc(
+                    new CallInternalUnaryOperatorExp(
+                        InternalUnaryOperator.ToString_Int_String,
+                        varExp
+                    ),
                     stringType
                 )
             )));
@@ -284,12 +290,12 @@ namespace Citron.IR0
 
         public CommandStmt PrintString(Loc loc)
         {
-            return Command(String(new ExpStringExpElement(new LoadExp(loc, stringType))));
+            return Command(String(new ExpStringExpElement(loc)));
         }
 
         public CommandStmt PrintString(Exp exp)
         {
-            return Command(String(new ExpStringExpElement(exp)));
+            return Command(String(new ExpStringExpElement(new TempLoc(exp, stringType))));
         }
 
         public CommandStmt PrintString(string text)
@@ -411,9 +417,9 @@ namespace Citron.IR0
             return new LambdaMemberVarLoc(symbol);
         }
         
-        public TempLoc TempLoc(Exp e)
+        public TempLoc TempLoc(Exp e, IType type)
         {
-            return new TempLoc(e);
+            return new TempLoc(e, type);
         }
 
         #endregion
@@ -475,7 +481,12 @@ namespace Citron.IR0
 
         public ExpStringExpElement ExpElem(Exp exp)
         {
-            return new ExpStringExpElement(exp);
+            return new ExpStringExpElement(new TempLoc(exp, stringType));
+        }
+
+        public ExpStringExpElement ExpElem(Loc loc)
+        {
+            return new ExpStringExpElement(loc);
         }
 
         public Exp AssignExp(Loc dest, Exp src)
@@ -514,17 +525,23 @@ namespace Citron.IR0
             return new ListExp(exps.ToImmutableArray(), listType);
         }
 
-        public ListIndexerLoc ListIndexer(LocalVarLoc list, Exp index)
+        public ListIndexerLoc ListIndexer(LocalVarLoc list, Loc index)
         {
             return new ListIndexerLoc(list, index);
         }
 
         // empty
-        public ListIteratorExp EmptyListIter(IType itemType)
+        public Loc EmptyListIter(IType itemType)
         {
-            return new ListIteratorExp(
-                new TempLoc(new ListExp(Elems: default, itemType)),
-                ListIterType(itemType)
+            var listType = listTypeConstructor.Invoke(itemType);
+            var listIterType = ListIterType(itemType);
+
+            return new TempLoc(
+                new ListIteratorExp(
+                    new TempLoc(new ListExp(Elems: default, itemType), listType),
+                    listIterType
+                ),
+                listIterType
             );
         }
 
@@ -567,14 +584,14 @@ namespace Citron.IR0
             return new LocalDerefLoc(exp);
         }
 
-        public Loc BoxDeref(Exp exp)
+        public Loc BoxDeref(Loc loc)
         {
-            return new BoxDerefLoc(exp);
+            return new BoxDerefLoc(loc);
         }
 
-        public Exp Box(Exp innerExp)
+        public Exp Box(Exp innerExp, IType innerType)
         {
-            return new BoxExp(innerExp);
+            return new BoxExp(innerExp, innerType);
         }
 
         #endregion

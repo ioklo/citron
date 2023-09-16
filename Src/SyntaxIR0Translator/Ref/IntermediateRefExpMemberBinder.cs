@@ -607,7 +607,7 @@ struct IntermediateRefExpMemberBinder : IIntermediateRefExpVisitor<TranslationRe
             if (typeArgs.Length != 0)
                 return Fatal(A2002_ResolveIdentifier_VarWithTypeArg);
             
-            return Valid(new IntermediateRefExp.BoxRef.StructIndirectMember(parent.InnerExp, memberVar));
+            return Valid(new IntermediateRefExp.BoxRef.StructIndirectMember(parent.InnerLoc, memberVar));
         }
 
         // &(*pT).x
@@ -632,9 +632,7 @@ struct IntermediateRefExpMemberBinder : IIntermediateRefExpVisitor<TranslationRe
     TranslationResult<IntermediateRefExp> IIntermediateRefExpVisitor<TranslationResult<IntermediateRefExp>>.VisitDerefedBoxValue(IntermediateRefExp.DerefedBoxValue imRefExp)
     {
         var visitor = new BoxValueTypeVisitor(imRefExp, name, typeArgs, context, nodeForErrorReport);
-        var innerExpType = context.GetExpType(imRefExp.InnerExp);
-
-        return innerExpType.Accept<BoxValueTypeVisitor, TranslationResult<IntermediateRefExp>>(ref visitor);
+        return imRefExp.InnerType.Accept<BoxValueTypeVisitor, TranslationResult<IntermediateRefExp>>(ref visitor);
     }
 
     // exp.id
