@@ -1,0 +1,1 @@
+dotnet run --project $PSScriptRoot\..\Src\Tools\ExtractTestsFromDocs\ExtractTestsFromDocs.csproj ..\Docs ..\Src\Test\EvalTest
