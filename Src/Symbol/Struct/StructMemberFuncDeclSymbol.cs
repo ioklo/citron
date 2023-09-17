@@ -25,6 +25,7 @@ namespace Citron.Symbol
         ImmutableArray<Name> typeParams;
         ImmutableArray<FuncParameter> parameters;
 
+        CommonFuncDeclSymbolComponent commonComponent;
         LambdaDeclSymbolComponent<StructMemberFuncDeclSymbol> lambdaComponent;
         InitializeState initState;
 
@@ -41,16 +42,18 @@ namespace Citron.Symbol
             this.name = name;
             this.typeParams = typeParams;
 
+            this.commonComponent = new CommonFuncDeclSymbolComponent();
             this.lambdaComponent = new LambdaDeclSymbolComponent<StructMemberFuncDeclSymbol>(this);
             this.initState = InitializeState.BeforeInitFuncReturnAndParams;
         }
 
-        public void InitFuncReturnAndParams(FuncReturn @return, ImmutableArray<FuncParameter> parameters)
+        public void InitFuncReturnAndParams(FuncReturn @return, ImmutableArray<FuncParameter> parameters, bool bLastParamVariadic)
         {
             Debug.Assert(initState == InitializeState.BeforeInitFuncReturnAndParams);
 
             this.funcReturn = @return;
             this.parameters = parameters;
+            this.commonComponent.InitLastParameterVariadic(bLastParamVariadic);
 
             initState = InitializeState.AfterInitFuncReturnAndParams;
         }
@@ -155,6 +158,9 @@ namespace Citron.Symbol
             if (!parameters.CyclicEqualsStructItem(ref other.parameters, ref context))
                 return false;
 
+            if (!context.CompareStructRef(ref commonComponent, ref other.commonComponent))
+                return false;
+
             if (!lambdaComponent.CyclicEquals(ref lambdaComponent, ref context))
                 return false;
 
@@ -173,7 +179,8 @@ namespace Citron.Symbol
             context.SerializeRef(nameof(name), name);
             context.SerializeRefArray(nameof(typeParams), typeParams);
             context.SerializeValueArray(nameof(parameters), parameters);
-            context.SerializeValue(nameof(lambdaComponent), lambdaComponent);
+            context.SerializeValueRef(nameof(commonComponent), ref commonComponent);
+            context.SerializeValueRef(nameof(lambdaComponent), ref lambdaComponent);
             context.SerializeString(nameof(initState), initState.ToString());
         }
 

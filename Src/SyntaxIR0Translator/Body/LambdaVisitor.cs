@@ -26,11 +26,11 @@ namespace Citron.Analysis
             // 람다 관련 정보는 여기서 수집한다
 
             FuncReturn? ret = (retType == null) ? null : new FuncReturn(retType);
-            var parameters = MakeParameters(paramSyntaxes, context);
+            var (parameters, bLastParamVariadic) = MakeParameters(paramSyntaxes, context);
 
             // Lambda를 만들고 context 인스턴스 안에 저장한다
             // DeclSymbol tree로의 Commit은 함수 백트래킹이 다 끝났을 때 (그냥 Translation이 끝났을때 해도 될거 같다)
-            var (newContext, lambda) = context.MakeLambdaBodyContext(ret, parameters); // 중첩된 bodyContext를 만들고, 새 scopeContext도 만든다
+            var (newContext, lambda) = context.MakeLambdaBodyContext(ret, parameters, bLastParamVariadic); // 중첩된 bodyContext를 만들고, 새 scopeContext도 만든다
 
             // 람다 파라미터(int p)를 지역 변수로 추가한다
             foreach (var paramSyntax in paramSyntaxes)
@@ -56,11 +56,15 @@ namespace Citron.Analysis
             return TranslationResult.Valid<(LambdaSymbol, ImmutableArray<R.Argument>)>((lambda, args));
         }
 
-        static ImmutableArray<FuncParameter> MakeParameters(ImmutableArray<S.LambdaExpParam> paramSyntaxes, ScopeContext context)
+        static (ImmutableArray<FuncParameter> Params, bool bLastParamVariadic) MakeParameters(ImmutableArray<S.LambdaExpParam> paramSyntaxes, ScopeContext context)
         {
-            var paramsBuilder = ImmutableArray.CreateBuilder<FuncParameter>(paramSyntaxes.Length);
-            foreach (var paramSyntax in paramSyntaxes)
-            {   
+            bool bLastParamVariadic = false;
+            int paramSyntaxesCount = paramSyntaxes.Length;
+            var paramsBuilder = ImmutableArray.CreateBuilder<FuncParameter>(paramSyntaxesCount);
+            for(int i = 0; i < paramSyntaxesCount; i++)            
+            {
+                var paramSyntax = paramSyntaxes[i];
+
                 // 파라미터에 Type이 명시되어있지 않으면 hintType기반으로 inference 해야 한다.
                 if (paramSyntax.Type == null)
                     throw new NotImplementedException();
@@ -68,9 +72,21 @@ namespace Citron.Analysis
                 var paramTypeSymbol = context.MakeType(paramSyntax.Type);
                 var param = new FuncParameter(paramTypeSymbol, new Name.Normal(paramSyntax.Name));
                 paramsBuilder.Add(param);
+
+                if (paramSyntax.HasParams)
+                {
+                    if (i == paramSyntaxesCount - 1)
+                    {
+                        bLastParamVariadic = true;
+                    }
+                    else
+                    {
+                        throw new NotImplementedException(); // 에러 처리. bVariadic은 마지막에 있어야 합니다
+                    }
+                }
             }
 
-            return paramsBuilder.MoveToImmutable();
+            return (paramsBuilder.MoveToImmutable(), bLastParamVariadic);
         }
     }
 }

@@ -71,9 +71,9 @@ partial class ScopeContext : IMutable<ScopeContext>
         return new ScopeContext(globalContext, bodyContext, this, bLoop: true);
     }
 
-    public (ScopeContext, LambdaSymbol) MakeLambdaBodyContext(FuncReturn? ret, ImmutableArray<FuncParameter> parameters)
+    public (ScopeContext, LambdaSymbol) MakeLambdaBodyContext(FuncReturn? ret, ImmutableArray<FuncParameter> parameters, bool bLastParamVariadic)
     {
-        var (newBodyContext, lambda) = bodyContext.MakeLambdaBodyContext(this, ret, parameters);
+        var (newBodyContext, lambda) = bodyContext.MakeLambdaBodyContext(this, ret, parameters, bLastParamVariadic);
         var newScopeContext = new ScopeContext(globalContext, newBodyContext, null, false);
 
         return (newScopeContext, lambda);

@@ -35,21 +35,39 @@ namespace Citron.Analysis
         }
 
         // TODO: [0] bVariadic 처리를 해야 한다
-        public (FuncReturn, ImmutableArray<FuncParameter> Param) MakeFuncReturnAndParams(IDeclSymbolNode curNode, S.TypeExp retTypeSyntax, ImmutableArray<S.FuncParam> paramSyntaxes)
+        public (FuncReturn Ret, ImmutableArray<FuncParameter> Params, bool bLastParamVariadic) MakeFuncReturnAndParams(IDeclSymbolNode curNode, S.TypeExp retTypeSyntax, ImmutableArray<S.FuncParam> paramSyntaxes)
         {
             // 지금은 중첩 함수가 없으므로 바로 윗 단계부터 찾도록 한다
             var retType = MakeType(retTypeSyntax, curNode);
             var ret = new FuncReturn(retType);
 
-            var paramsBuilder = ImmutableArray.CreateBuilder<FuncParameter>(paramSyntaxes.Length);
-            foreach (var paramSyntax in paramSyntaxes)
+            bool bLastParamVariadic = false;
+
+            int paramSyntaxesCount = paramSyntaxes.Length;
+            var paramsBuilder = ImmutableArray.CreateBuilder<FuncParameter>(paramSyntaxesCount);
+
+            for(int i = 0; i < paramSyntaxesCount; i++)
             {
+                var paramSyntax = paramSyntaxes[i];
+
                 var paramTypeSymbol = MakeType(paramSyntax.Type, curNode);
                 var param = new FuncParameter(paramTypeSymbol, new Name.Normal(paramSyntax.Name));
                 paramsBuilder.Add(param);
+
+                if (paramSyntax.HasParams)
+                {
+                    if (i == paramSyntaxesCount - 1)
+                    {
+                        bLastParamVariadic = true;
+                    }
+                    else
+                    {
+                        throw new NotImplementedException(); // 에러 처리. bVariadic은 마지막에 있어야 합니다
+                    }
+                }
             }
 
-            return (ret, paramsBuilder.MoveToImmutable());
+            return (ret, paramsBuilder.MoveToImmutable(), bLastParamVariadic);
         }
 
         // declSymbol의 Constructor를 만들고 나서 해당 task를 수행한다

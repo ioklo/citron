@@ -560,7 +560,7 @@ partial struct ExpParser
         // a
         if (Accept<IdentifierToken>(out var idToken))
         {
-            paramsBuilder.Add(new LambdaExpParam(null, idToken.Value));
+            paramsBuilder.Add(new LambdaExpParam(null, idToken.Value, HasParams: false));
         }
         else if (Accept(Tokens.LParen))
         {
@@ -573,6 +573,9 @@ partial struct ExpParser
                         return false;
                     }
 
+
+                bool bHasParams = Accept(Tokens.Params);
+
                 // id id or id
                 if (!Accept<IdentifierToken>(out var firstIdToken))
                 {
@@ -581,9 +584,9 @@ partial struct ExpParser
                 }
 
                 if (!Accept<IdentifierToken>(out var secondIdToken))
-                    paramsBuilder.Add(new LambdaExpParam(null, firstIdToken.Value));
+                    paramsBuilder.Add(new LambdaExpParam(null, firstIdToken.Value, bHasParams));
                 else
-                    paramsBuilder.Add(new LambdaExpParam(new IdTypeExp(firstIdToken.Value, default), secondIdToken.Value));
+                    paramsBuilder.Add(new LambdaExpParam(new IdTypeExp(firstIdToken.Value, default), secondIdToken.Value, bHasParams));
             }
         }
 

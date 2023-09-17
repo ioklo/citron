@@ -57,7 +57,7 @@ namespace Citron.Test
             var moduleD = new ModuleDeclSymbol(moduleName, bReference: false);
 
             var funcD = new GlobalFuncDeclSymbol(moduleD, Accessor.Private, NormalName("Main"), typeParams: default);
-            funcD.InitFuncReturnAndParams(r.FuncRet(r.IntType()), parameters: default);
+            funcD.InitFuncReturnAndParams(r.FuncRet(r.IntType()), parameters: default, bLastParamVariadic: false);
             moduleD.AddFunc(funcD);
 
             return (moduleD, funcD);
@@ -66,7 +66,7 @@ namespace Citron.Test
         R.StmtBody NewMain(ModuleDeclSymbol moduleD, params R.Stmt[] stmts)
         {
             var funcD = new GlobalFuncDeclSymbol(moduleD, Accessor.Private, NormalName("Main"), typeParams: default);
-            funcD.InitFuncReturnAndParams(r.FuncRet(r.IntType()), parameters: default);
+            funcD.InitFuncReturnAndParams(r.FuncRet(r.IntType()), parameters: default, bLastParamVariadic: false);
             moduleD.AddFunc(funcD);
 
             return r.StmtBody(funcD, stmts);
@@ -129,7 +129,7 @@ namespace Citron.Test
             var moduleD = new ModuleDeclSymbol(moduleName, bReference: false);
 
             var globalFuncD = new GlobalFuncDeclSymbol(moduleD, Accessor.Private, NormalName("Func"), typeParams: default);
-            globalFuncD.InitFuncReturnAndParams(r.FuncRet(r.VoidType()), parameters: default);
+            globalFuncD.InitFuncReturnAndParams(r.FuncRet(r.VoidType()), parameters: default, bLastParamVariadic: false);
             moduleD.AddFunc(globalFuncD);
 
             var globalFuncBody = r.StmtBody(globalFuncD,
@@ -504,7 +504,7 @@ namespace Citron.Test
                 Accessor.Private, new Name.Normal("Main"), typeParams: default);
 
             entryD.InitFuncReturnAndParams(
-                new FuncReturn(r.IntType()), default);
+                new FuncReturn(r.IntType()), default, bLastParamVariadic: false);
 
             moduleD.AddFunc(entryD);
 
@@ -528,7 +528,7 @@ namespace Citron.Test
 
             var moduleD = new ModuleDeclSymbol(moduleName, bReference: false);
             var funcD = new GlobalFuncDeclSymbol(moduleD, Accessor.Private, NormalName("Func"), typeParams: default);
-            funcD.InitFuncReturnAndParams(new FuncReturn(r.IntType()), parameters: default);
+            funcD.InitFuncReturnAndParams(new FuncReturn(r.IntType()), parameters: default, bLastParamVariadic: false);
             moduleD.AddFunc(funcD);
 
             var funcBody = r.StmtBody(funcD,
@@ -734,7 +734,7 @@ namespace Citron.Test
 
             var (moduleD, funcD) = NewMain();
 
-            var lambdaD = new LambdaDeclSymbol(funcD, new Name.Anonymous(0), parameters: default);
+            var lambdaD = new LambdaDeclSymbol(funcD, new Name.Anonymous(0), parameters: default, bLastParamVariadic: false);
             ((IFuncDeclSymbol)funcD).AddLambda(lambdaD);
 
             var lambdaMemberVarD = new LambdaMemberVarDeclSymbol(lambdaD, r.IntType(), NormalName("x"));
@@ -840,7 +840,7 @@ namespace Citron.Test
             var script = Translate(syntaxScript);
 
             var (moduleD, mainD) = NewMain();
-            var lambdaD = new LambdaDeclSymbol(mainD, new Name.Anonymous(0), parameters: default);
+            var lambdaD = new LambdaDeclSymbol(mainD, new Name.Anonymous(0), parameters: default, bLastParamVariadic: false);
             ((IFuncDeclSymbol)mainD).AddLambda(lambdaD);
 
             var xD = new LambdaMemberVarDeclSymbol(lambdaD, r.IntType(), NormalName("x"));
@@ -935,7 +935,7 @@ namespace Citron.Test
             var moduleD = new ModuleDeclSymbol(moduleName, bReference: false);
 
             var funcD = new GlobalFuncDeclSymbol(moduleD, Accessor.Private, NormalName("Func"), typeParams: default);
-            funcD.InitFuncReturnAndParams(r.FuncRet(r.IntType()), parameters: default);
+            funcD.InitFuncReturnAndParams(r.FuncRet(r.IntType()), parameters: default, bLastParamVariadic: false);
             moduleD.AddFunc(funcD);
 
             var funcBody = r.StmtBody(funcD,
@@ -1563,7 +1563,7 @@ namespace Citron.Test
             var moduleD = new ModuleDeclSymbol(moduleName, bReference: false);
 
             var fD = new GlobalFuncDeclSymbol(moduleD, Accessor.Private, NormalName("F"), typeParams: default);
-            fD.InitFuncReturnAndParams(r.FuncRet(r.VoidType()), r.FuncParams((r.IntType(), "i")));
+            fD.InitFuncReturnAndParams(r.FuncRet(r.VoidType()), r.FuncParams((r.IntType(), "i")), bLastParamVariadic: false);
             moduleD.AddFunc(fD);
             var fBody = r.StmtBody(fD,
                 r.Assign(r.LocalDeref(r.LoadLocalVar("i", r.LocalPtrType(r.IntType()))), r.Int(4))
@@ -1608,7 +1608,7 @@ namespace Citron.Test
             var moduleD = new ModuleDeclSymbol(moduleName, bReference: false);
 
             var funcD = new GlobalFuncDeclSymbol(moduleD, Accessor.Private, NormalName("Func"), Arr(NormalName("T")));
-            funcD.InitFuncReturnAndParams(r.FuncRet(r.IntType()), r.FuncParams((r.IntType(), "x")));
+            funcD.InitFuncReturnAndParams(r.FuncRet(r.IntType()), r.FuncParams((r.IntType(), "x")), bLastParamVariadic: false);
             moduleD.AddFunc(funcD);
             var funcBody = r.StmtBody(funcD, 
                 r.Return(r.LoadLocalVar("x", r.IntType()))
@@ -1648,7 +1648,7 @@ namespace Citron.Test
             var moduleD = new ModuleDeclSymbol(moduleName, bReference: false);
 
             var funcD = new GlobalFuncDeclSymbol(moduleD, Accessor.Private, NormalName("Func"), typeParams: default);
-            funcD.InitFuncReturnAndParams(r.FuncRet(r.IntType()), r.FuncParams((r.IntType(), "x")));
+            funcD.InitFuncReturnAndParams(r.FuncRet(r.IntType()), r.FuncParams((r.IntType(), "x")), bLastParamVariadic: false);
             moduleD.AddFunc(funcD);
 
             var funcBody = r.StmtBody(funcD,

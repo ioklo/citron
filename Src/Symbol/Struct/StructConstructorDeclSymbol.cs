@@ -12,8 +12,8 @@ namespace Citron.Symbol
         Accessor accessor;
         ImmutableArray<FuncParameter> parameters;
         bool bTrivial;
-        bool bLastParameterVariadic;
 
+        CommonFuncDeclSymbolComponent commonComponent;
         LambdaDeclSymbolComponent<StructConstructorDeclSymbol> lambdaComponent;
 
         // 분석중에 추가되는 LambdaDeclSymbol, 분석이 backtracking 될 수 있기 때문에 롤백할수 있어야 한다
@@ -26,14 +26,14 @@ namespace Citron.Symbol
         //     G(e => e, 2); // 인자에 맞는 함수를 검색하면서 e => e가 두번 평가된다
         // }
 
-        public StructConstructorDeclSymbol(StructDeclSymbol outer, Accessor accessModifier, ImmutableArray<FuncParameter> parameters, bool bTrivial, bool bLastParameterVariadic)
+        public StructConstructorDeclSymbol(StructDeclSymbol outer, Accessor accessModifier, ImmutableArray<FuncParameter> parameters, bool bTrivial, bool bLastParamVariadic)
         {
             this.outer = outer;
             this.accessor = accessModifier;
             this.parameters = parameters;
             this.bTrivial = bTrivial;
-            this.bLastParameterVariadic = bLastParameterVariadic;
 
+            this.commonComponent = new CommonFuncDeclSymbolComponent(bLastParamVariadic);
             this.lambdaComponent = new LambdaDeclSymbolComponent<StructConstructorDeclSymbol>(this);
         }
 
@@ -110,29 +110,27 @@ namespace Citron.Symbol
             if (!bTrivial.Equals(other.bTrivial))
                 return false;
 
-            if (!lambdaComponent.CyclicEquals(ref lambdaComponent, ref context))
+            if (!context.CompareStructRef(ref commonComponent, ref other.commonComponent))
+                return false;
+
+            if (!context.CompareStructRef(ref lambdaComponent, ref other.lambdaComponent))
                 return false;
 
             return true;
         }
 
-        void IFuncDeclSymbol.AddLambda(LambdaDeclSymbol declSymbol)
-        {
-            throw new NotImplementedException();
-        }
-
+        void IFuncDeclSymbol.AddLambda(LambdaDeclSymbol declSymbol) => lambdaComponent.AddLambda(declSymbol);
+        
         void ISerializable.DoSerialize(ref SerializeContext context)
         {
             context.SerializeRef(nameof(outer), outer);
             context.SerializeString(nameof(accessor), accessor.ToString());
             context.SerializeValueArray(nameof(parameters), parameters);
             context.SerializeBool(nameof(bTrivial), bTrivial);
-            context.SerializeValue(nameof(lambdaComponent), lambdaComponent);
+            context.SerializeValueRef(nameof(commonComponent), ref commonComponent);
+            context.SerializeValueRef(nameof(lambdaComponent), ref lambdaComponent);
         }
 
-        bool IFuncDeclSymbol.IsLastParameterVariadic()
-        {
-            return bLastParameterVariadic;
-        }
+        bool IFuncDeclSymbol.IsLastParameterVariadic() => commonComponent.IsLastParameterVariadic();
     }
 }

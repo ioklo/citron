@@ -83,7 +83,7 @@ public class UnitTest1
     //}
 
     [Fact]
-    public void Build_FuncDecl_RefTypes()
+    public void Build_FuncDecl_PtrTypes()
     {
         // T* Func<T>(T* t) { return t; }
         var script = SScript(new S.GlobalFuncDeclScriptElement(new S.GlobalFuncDecl(
@@ -105,7 +105,8 @@ public class UnitTest1
         
         funcDecl.InitFuncReturnAndParams(
             new FuncReturn(new LocalPtrType(new TypeVarType(0, NormalName("T")))),
-            Arr(new FuncParameter(new LocalPtrType(new TypeVarType(0, NormalName("T"))), NormalName("t"))));
+            Arr(new FuncParameter(new LocalPtrType(new TypeVarType(0, NormalName("T"))), NormalName("t"))), 
+            bLastParamVariadic: false);
 
         expectedModuleDecl.AddFunc(funcDecl);
 
@@ -145,7 +146,8 @@ public class UnitTest1
                 new FuncParameter(intType, NormalName("x")),
                 new FuncParameter(new LocalPtrType(t), NormalName("z")),
                 new FuncParameter(u, NormalName("y"))
-            )
+            ), 
+            bLastParamVariadic: true
         );
         expectedModuleDecl.AddFunc(funcDecl);
 
@@ -223,7 +225,7 @@ public class UnitTest1
                 new FuncParameter(intType, NormalName("y"))
             ),
             bTrivial: true,
-            bLastParameterVariadic: false
+            bLastParamVariadic: false
         );
         sDecl.AddConstructor(sConstructorDecl);
 
@@ -231,7 +233,7 @@ public class UnitTest1
         bDecl.InitBaseTypes(null, interfaces: default);
         expectedModuleDecl.AddType(bDecl);
 
-        var bConstructorDecl = new StructConstructorDeclSymbol(bDecl, Accessor.Public, parameters: default, bTrivial: true, bLastParameterVariadic: false);
+        var bConstructorDecl = new StructConstructorDeclSymbol(bDecl, Accessor.Public, parameters: default, bTrivial: true, bLastParamVariadic: false);
         bDecl.AddConstructor(bConstructorDecl);
 
         var sFuncT = new TypeVarType(1, NormalName("T"));
@@ -245,7 +247,8 @@ public class UnitTest1
             Arr(
                 new FuncParameter(s_Int, NormalName("s")),
                 new FuncParameter(sFuncU, NormalName("u"))
-            )
+            ),
+            bLastParamVariadic: false
         );
 
         sDecl.AddFunc(sFuncDecl);
@@ -279,14 +282,14 @@ public class UnitTest1
         xDecl.InitBaseTypes(null, interfaces: default);
         expectedDeclSymbol.AddType(xDecl);
 
-        var xConstructorDecl = new ClassConstructorDeclSymbol(xDecl, Accessor.Public, parameters: default, bTrivial: true, bLastParameterVariadic: false);
+        var xConstructorDecl = new ClassConstructorDeclSymbol(xDecl, Accessor.Public, parameters: default, bTrivial: true, bLastParamVariadic: false);
         xDecl.AddConstructor(xConstructorDecl);
 
         var xyDecl = new ClassDeclSymbol(xDecl, Accessor.Private, NormalName("Y"), typeParams: default);
         xyDecl.InitBaseTypes(null, interfaces: default);
         xDecl.AddType(xyDecl);
 
-        var xyConstructorDecl = new ClassConstructorDeclSymbol(xyDecl, Accessor.Public, Arr(new FuncParameter(new TypeVarType(0, NormalName("T")), NormalName("t"))), bTrivial: true, bLastParameterVariadic: false);
+        var xyConstructorDecl = new ClassConstructorDeclSymbol(xyDecl, Accessor.Public, Arr(new FuncParameter(new TypeVarType(0, NormalName("T")), NormalName("t"))), bTrivial: true, bLastParamVariadic: false);
         xyDecl.AddConstructor(xyConstructorDecl);
 
         var xytDecl = new ClassMemberVarDeclSymbol(xyDecl, Accessor.Private, bStatic: false, new TypeVarType(0, NormalName("T")), NormalName("t"));
@@ -325,7 +328,7 @@ public class UnitTest1
         xDecl.InitBaseTypes(null, interfaces: default);
         expectedDeclSymbol.AddType(xDecl);
 
-        var xConstructorDecl = new ClassConstructorDeclSymbol(xDecl, Accessor.Public, parameters: default, bTrivial: true, bLastParameterVariadic: false);
+        var xConstructorDecl = new ClassConstructorDeclSymbol(xDecl, Accessor.Public, parameters: default, bTrivial: true, bLastParamVariadic: false);
         xDecl.AddConstructor(xConstructorDecl);
 
         var xyDecl = new ClassDeclSymbol(xDecl, Accessor.Private, NormalName("Y"), typeParams: default);
@@ -350,7 +353,7 @@ public class UnitTest1
         var xytDecl = new ClassMemberVarDeclSymbol(xyDecl, Accessor.Private, bStatic: false, new ClassType(x_x_Tyy), NormalName("t"));
         xyDecl.AddMemberVar(xytDecl);
 
-        var xyConstructorDecl = new ClassConstructorDeclSymbol(xyDecl, Accessor.Public, Arr(new FuncParameter(new ClassType(x_x_Tyy), NormalName("t"))), bTrivial: true, bLastParameterVariadic: false);
+        var xyConstructorDecl = new ClassConstructorDeclSymbol(xyDecl, Accessor.Public, Arr(new FuncParameter(new ClassType(x_x_Tyy), NormalName("t"))), bTrivial: true, bLastParamVariadic: false);
         xyDecl.AddConstructor(xyConstructorDecl);
 
         var context = new CyclicEqualityCompareContext();

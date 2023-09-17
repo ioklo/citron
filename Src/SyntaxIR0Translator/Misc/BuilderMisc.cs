@@ -25,18 +25,37 @@ namespace Citron.Analysis
             return typeVarDeclsBuilder.MoveToImmutable();
         }
 
-        public static ImmutableArray<FuncParameter> MakeParameters(IDeclSymbolNode curNode, BuildingMemberDeclPhaseContext context, ImmutableArray<S.FuncParam> sparams)
+        public static (ImmutableArray<FuncParameter> Params, bool bLastParamVariadic) MakeParameters(IDeclSymbolNode curNode, BuildingMemberDeclPhaseContext context, ImmutableArray<S.FuncParam> sparams)
         {
-            var builder = ImmutableArray.CreateBuilder<FuncParameter>(sparams.Length);
-            foreach (var sparam in sparams)
+            bool bLastParamVariadic = false;
+
+            int paramsCount = sparams.Length;
+            var builder = ImmutableArray.CreateBuilder<FuncParameter>(paramsCount);
+
+            for(int i = 0; i < paramsCount; i++)            
             {
+                var sparam = sparams[i];
+
                 var type = context.MakeType(sparam.Type, curNode);
                 if (type == null) throw new NotImplementedException(); // 에러 처리
+
+                if (sparam.HasParams)
+                {
+                    if (i == paramsCount - 1)
+                    {
+                        bLastParamVariadic = true;
+                    }
+                    else
+                    {
+                        throw new NotImplementedException(); // 에러 처리, params는 마지막 파라미터에만 사용할 수 있습니다
+                    }
+
+                }
 
                 builder.Add(new FuncParameter(type, new Name.Normal(sparam.Name)));
             }
 
-            return builder.MoveToImmutable();
+            return (builder.MoveToImmutable(), bLastParamVariadic);
         }
 
         public static Accessor MakeGlobalMemberAccessor(S.AccessModifier? modifier)

@@ -55,8 +55,8 @@ namespace Citron.Analysis
                     new Name.Normal(syntax.Name),
                     typeParams);
 
-                var (funcRet, funcParams) = context.MakeFuncReturnAndParams(declSymbol, syntax.RetType, syntax.Parameters);
-                declSymbol.InitFuncReturnAndParams(funcRet, funcParams);
+                var (funcRet, funcParams, bLastParamVariadic) = context.MakeFuncReturnAndParams(declSymbol, syntax.RetType, syntax.Parameters);
+                declSymbol.InitFuncReturnAndParams(funcRet, funcParams, bLastParamVariadic);
 
                 // NOTICE: MUST add after initFuncReturnAndParams
                 node.AddFunc(declSymbol);

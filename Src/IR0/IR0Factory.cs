@@ -61,8 +61,7 @@ namespace Citron.IR0
             var entryD = new GlobalFuncDeclSymbol(moduleD,
                 Accessor.Private, new Name.Normal("Main"), typeParams: default);
 
-            entryD.InitFuncReturnAndParams(
-                new FuncReturn(voidType), default);
+            entryD.InitFuncReturnAndParams(new FuncReturn(voidType), parameters: default, bLastParamVariadic: false);
 
             moduleD.AddFunc(entryD);
 

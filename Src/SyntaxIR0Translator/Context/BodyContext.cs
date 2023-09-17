@@ -366,9 +366,9 @@ partial class BodyContext : IMutable<BodyContext>
     }
     
     // 여기서 인자로 들어온 ret는 null이면 아직 모른다는 뜻 (constructor라는 뜻이 아님)
-    public (BodyContext, LambdaSymbol) MakeLambdaBodyContext(ScopeContext outerScopeContext, FuncReturn? ret, ImmutableArray<FuncParameter> parameters)
+    public (BodyContext, LambdaSymbol) MakeLambdaBodyContext(ScopeContext outerScopeContext, FuncReturn? ret, ImmutableArray<FuncParameter> parameters, bool bLastParamVariadic)
     {
-        var lambdaD = new LambdaDeclSymbol(funcDeclSymbol, new Name.Anonymous(lambdaDs.Length), parameters);
+        var lambdaD = new LambdaDeclSymbol(funcDeclSymbol, new Name.Anonymous(lambdaDs.Length), parameters, bLastParamVariadic);
         lambdaDs = lambdaDs.Add(lambdaD); // staging
 
         BodyContext newBodyContext = (ret != null) 

@@ -37,8 +37,8 @@ namespace Citron.Analysis
             var declSymbol = new StructMemberFuncDeclSymbol(
                 structDeclSymbol, accessor, syntax.IsStatic, new Name.Normal(syntax.Name), typeParams);
 
-            var (funcReturn, funcParams)= context.MakeFuncReturnAndParams(declSymbol, syntax.RetType, syntax.Parameters);
-            declSymbol.InitFuncReturnAndParams(funcReturn, funcParams);
+            var (funcReturn, funcParams, bLastParamVariadic) = context.MakeFuncReturnAndParams(declSymbol, syntax.RetType, syntax.Parameters);
+            declSymbol.InitFuncReturnAndParams(funcReturn, funcParams, bLastParamVariadic);
 
             structDeclSymbol.AddFunc(declSymbol);
 
@@ -53,11 +53,11 @@ namespace Citron.Analysis
             var accessModifier = BuilderMisc.MakeStructMemberAccessor(syntax.AccessModifier);
 
             // Constructor는 Type Parameter가 없으므로 파라미터를 만들 때, 상위(struct) declSymbol을 넘긴다
-            var parameters = BuilderMisc.MakeParameters(structDeclSymbol, context, syntax.Parameters);
+            var (parameters, bLastParamVariadic) = BuilderMisc.MakeParameters(structDeclSymbol, context, syntax.Parameters);
 
             // TODO: 타이프 쳐서 만들어진 constructor는 'trivial' 표시를 하기 전까지는 trivial로 인식하지 않는다
             // 그리고 컴파일러가 trivial 조건을 체크해서 에러를 낼 수도 있다 (하위 타입의 trivial constructor가 이 constructor를 참조하지 않는다)
-            var declSymbol = new StructConstructorDeclSymbol(structDeclSymbol, accessModifier, parameters, bTrivial: false, bLastParameterVariadic: false);
+            var declSymbol = new StructConstructorDeclSymbol(structDeclSymbol, accessModifier, parameters, bTrivial: false, bLastParamVariadic);
             structDeclSymbol.AddConstructor(declSymbol);
 
             context.AddBuildingBodyPhaseTask(context =>
@@ -221,7 +221,7 @@ namespace Citron.Analysis
             }
 
             // trivial constructor를 만듭니다
-            return new StructConstructorDeclSymbol(declSymbol, Accessor.Public, builder.MoveToImmutable(), bTrivial: true, bLastParameterVariadic: false);
+            return new StructConstructorDeclSymbol(declSymbol, Accessor.Public, builder.MoveToImmutable(), bTrivial: true, bLastParamVariadic: false);
         }
     }
 }

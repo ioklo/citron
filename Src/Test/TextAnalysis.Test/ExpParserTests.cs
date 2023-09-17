@@ -157,13 +157,13 @@ public class ExpParserTests
         var expected = new BinaryOpExp(BinaryOpKind.Assign,
             SId("a"),
             new LambdaExp(
-                Arr(new LambdaExpParam(null, "b")),
+                Arr(new LambdaExpParam(null, "b", HasParams: false)),
                 Arr<Stmt>(new ReturnStmt(
                     new ReturnValueInfo(
                         new LambdaExp(
                             Arr(
-                                new LambdaExpParam(null, "c"),
-                                new LambdaExpParam(new IdTypeExp("int", default), "d")
+                                new LambdaExpParam(null, "c", HasParams: false),
+                                new LambdaExpParam(new IdTypeExp("int", default), "d", HasParams: false)
                             ),
                             Arr<Stmt>(new ReturnStmt(new ReturnValueInfo(SId("e"))))
                         )

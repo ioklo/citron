@@ -28,8 +28,8 @@ namespace Citron.Analysis
             var func = new ClassMemberFuncDeclSymbol(declSymbol, accessModifier, new Name.Normal(syntax.Name), typeParams, syntax.IsStatic);
             declSymbol.AddFunc(func);
 
-            var (funcReturn, funcParams) = context.MakeFuncReturnAndParams(func, syntax.RetType, syntax.Parameters);
-            func.InitFuncReturnAndParams(funcReturn, funcParams);
+            var (funcReturn, funcParams, bLastParamVariadic) = context.MakeFuncReturnAndParams(func, syntax.RetType, syntax.Parameters);
+            func.InitFuncReturnAndParams(funcReturn, funcParams, bLastParamVariadic);
 
             context.AddBuildingBodyPhaseTask(context =>
             {
@@ -56,10 +56,10 @@ namespace Citron.Analysis
             var accessor = BuilderMisc.MakeClassMemberAccessor(syntax.AccessModifier);
 
             // Constructor는 Type Parameter가 없으므로 파라미터를 만들 때, 상위(class) declSymbol을 넘긴다
-            var parameters = BuilderMisc.MakeParameters(declSymbol, context, syntax.Parameters);
+            var (parameters, bLastParamVariadic) = BuilderMisc.MakeParameters(declSymbol, context, syntax.Parameters);
 
             // TODO: [1] syntax에 trivial 마킹하면 검사하고 trivial로 만든다
-            var constructorDeclSymbol = new ClassConstructorDeclSymbol(declSymbol, accessor, parameters, bTrivial: false, bLastParameterVariadic: false);
+            var constructorDeclSymbol = new ClassConstructorDeclSymbol(declSymbol, accessor, parameters, bTrivial: false, bLastParamVariadic);
             declSymbol.AddConstructor(constructorDeclSymbol);
 
             context.AddBuildingBodyPhaseTask(context =>
@@ -137,7 +137,7 @@ namespace Citron.Analysis
             }
 
             // trivial constructor를 만듭니다
-            return new ClassConstructorDeclSymbol(outer, Accessor.Public, builder.MoveToImmutable(), bTrivial: true, bLastParameterVariadic: false);
+            return new ClassConstructorDeclSymbol(outer, Accessor.Public, builder.MoveToImmutable(), bTrivial: true, bLastParamVariadic: false);
         }
 
         static ClassConstructorDeclSymbol? GetClassConstructorHasSameParamWithTrivial(

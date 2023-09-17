@@ -25,6 +25,8 @@ namespace Citron.Symbol
         // 가지고 있어야 할 멤버 변수들, type, name, ref 여부
         List<LambdaMemberVarDeclSymbol> memberVars;
 
+        CommonFuncDeclSymbolComponent commonComponent;
+
         // Lambda가 Lambda를 갖고 있을 때,
         LambdaDeclSymbolComponent<LambdaDeclSymbol> lambdaComponent;
 
@@ -33,13 +35,16 @@ namespace Citron.Symbol
         public LambdaDeclSymbol(
             IFuncDeclSymbol outer,
             Name name,
-            ImmutableArray<FuncParameter> parameters)
+            ImmutableArray<FuncParameter> parameters,
+            bool bLastParamVariadic)
         {
             this.outer = outer;
             this.name = name;
             this.parameters = parameters;
 
             this.memberVars = new List<LambdaMemberVarDeclSymbol>();
+
+            this.commonComponent = new CommonFuncDeclSymbolComponent(bLastParamVariadic);
             this.lambdaComponent = new LambdaDeclSymbolComponent<LambdaDeclSymbol>(this);
 
             this.initState = InitializeState.BeforeInitReturn;
@@ -160,7 +165,10 @@ namespace Citron.Symbol
             if (!memberVars.CyclicEqualsClassItem(other.memberVars, ref context))
                 return false;
 
-            if (!lambdaComponent.CyclicEquals(ref lambdaComponent, ref context))
+            if (!context.CompareStructRef(ref commonComponent, ref other.commonComponent))
+                return false;
+
+            if (!context.CompareStructRef(ref lambdaComponent, ref other.lambdaComponent))
                 return false;
 
             if (!initState.Equals(other.initState))
@@ -176,13 +184,11 @@ namespace Citron.Symbol
             context.SerializeValueRef(nameof(@return), ref @return);
             context.SerializeValueArray(nameof(parameters), parameters);
             context.SerializeRefList(nameof(memberVars), memberVars);
+            context.SerializeValueRef(nameof(commonComponent), ref commonComponent);
             context.SerializeValueRef(nameof(lambdaComponent), ref lambdaComponent);
             context.SerializeString(nameof(initState), initState.ToString());
         }
 
-        bool IFuncDeclSymbol.IsLastParameterVariadic()
-        {
-            throw new NotImplementedException();
-        }
+        bool IFuncDeclSymbol.IsLastParameterVariadic() => commonComponent.IsLastParameterVariadic();
     }
 }

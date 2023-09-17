@@ -52,6 +52,12 @@ namespace Citron.Infra
                 return false;
             }
         }
+
+        public bool CompareStructRef<T>(ref T x, ref T y)
+            where T : struct, ICyclicEqualityComparableStruct<T>
+        {
+            return x.CyclicEquals(ref y, ref this);
+        }
     }
 
     public static class CyclicEqualityComparer

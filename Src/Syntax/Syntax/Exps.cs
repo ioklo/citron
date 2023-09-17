@@ -60,7 +60,7 @@ public record class CallExp(Exp Callable, ImmutableArray<Argument> Args) : Exp
     public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitCall(this);
 }
 
-public partial record struct LambdaExpParam(TypeExp? Type, string Name);
+public partial record struct LambdaExpParam(TypeExp? Type, string Name, bool HasParams);
 
 public record class LambdaExp(ImmutableArray<LambdaExpParam> Params, ImmutableArray<Stmt> Body) : Exp
 {
