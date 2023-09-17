@@ -39,13 +39,13 @@ namespace Citron.Analysis
                 return exp;            
 
             // 1. enumElem -> enum
-            if (expType is EnumElemSymbol enumElem)
+            if (expType is EnumElemType enumElemType)
             {
-                if (expectedType is EnumSymbol expectEnum)
+                if (expectedType is EnumType expectedEnumType)
                 {
-                    if (expectedType.Equals(enumElem.GetOuter()))
+                    if (TypeEquals(expectedEnumType, enumElemType.GetEnumType()))
                     {
-                        return new R.CastEnumElemToEnumExp(exp, expectEnum);
+                        return new R.CastEnumElemToEnumExp(exp, expectedEnumType.GetSymbol());
                     }
                 }
 
@@ -92,6 +92,11 @@ namespace Citron.Analysis
             var typeId1 = type1.GetTypeId();
 
             return typeId0.Equals(typeId1);
+        }
+
+        public static bool FuncParameterEquals(FuncParameter x, FuncParameter y)
+        {
+            return TypeEquals(x.Type, y.Type) && x.Name.Equals(y);
         }
 
         // 값의 겉보기 타입을 변경한다
@@ -144,6 +149,8 @@ namespace Citron.Analysis
                 idTypeExp.Name == "var" && 
                 idTypeExp.TypeArgs.Length == 0;
         }
+
+        
 
         public struct SymbolQueryResultExpResultTranslator : ISymbolQueryResultVisitor<IntermediateExp>
         {

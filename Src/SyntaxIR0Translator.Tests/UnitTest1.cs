@@ -65,7 +65,7 @@ public class UnitTest1
         var referenceModules = Arr(runtimeModuleDecl);
 
         var logger = new TestLogger(true);
-        var result = SyntaxIR0Translator.Build(moduleName, Arr(script), referenceModules, factory, logger);
+        var result = SyntaxIR0Translator.Translate(moduleName, Arr(script), referenceModules, factory, logger);
         Assert.NotNull(result);
         return result;
     }
@@ -250,7 +250,7 @@ public class UnitTest1
 
         sDecl.AddFunc(sFuncDecl);
 
-        var b_Int = new StructType(factory.MakeStruct(module, bDecl, Arr<IType>(intType)));
+        var b_Int = factory.MakeStruct(module, bDecl, Arr<IType>(intType));
         sDecl.InitBaseTypes(b_Int, interfaces: default);
 
         var context = new CyclicEqualityCompareContext();

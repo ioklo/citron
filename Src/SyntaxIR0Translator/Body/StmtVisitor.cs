@@ -295,7 +295,7 @@ partial struct StmtVisitor : IStmtVisitor
                 var funcReturn = context.GetReturn();
 
                 // 생성자거나, void 함수가 아니라면 에러
-                if (funcReturn != null && !funcReturn.Value.Type.Equals(context.GetVoidType()))
+                if (funcReturn != null && !BodyMisc.TypeEquals(funcReturn.Value.Type, context.GetVoidType()))
                 {
                     context.AddFatalError(A1201_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType, returnStmt);
                     return Error();
@@ -339,7 +339,7 @@ partial struct StmtVisitor : IStmtVisitor
 
         //        // 현재 함수 시그니처랑 맞춰서 같은지 확인한다
         //        // ExactMatch여야 한다
-        //        if (!returnType.Equals(funcReturn.Value))
+        //        if (!BodyMisc.TypeEquals(returnType, funcReturn.Value))
         //            context.AddFatalError(A1201_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType, returnStmt);
 
         //        context.AddStmt(new R.ReturnStmt(new R.ReturnInfo.Ref(returnLoc)));
@@ -479,7 +479,7 @@ partial struct StmtVisitor : IStmtVisitor
                 itemType = context.MakeType(foreachStmt.Type);
             
                 // 완전히 같은지 체크
-                if (itemType.Equals(seqItemType))
+                if (BodyMisc.TypeEquals(itemType, seqItemType))
                 {
                     // relemType = elemType.MakeRPath();
                 }
@@ -522,7 +522,7 @@ partial struct StmtVisitor : IStmtVisitor
                     itemType = context.MakeType(foreachStmt.Type);
                 
                     // 완전히 같은지 체크
-                    if (itemType.Equals(listItemType))
+                    if (BodyMisc.TypeEquals(itemType, listItemType))
                     {
                         // relemType = elemType.MakeRPath();
                     }

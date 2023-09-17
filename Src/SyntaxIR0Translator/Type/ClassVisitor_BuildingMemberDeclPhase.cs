@@ -94,7 +94,7 @@ namespace Citron.Analysis
                 var parameter = constructorDecl.GetParameter(i + baseParamCount);
 
                 // 타입을 비교해서 같지 않다면 제외
-                if (!parameter.Type.Equals(memberVarType)) return false;
+                if (!BodyMisc.TypeEquals(parameter.Type, memberVarType)) return false;
             }
 
             return true;

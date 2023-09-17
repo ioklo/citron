@@ -41,13 +41,13 @@ namespace Citron.Test
         {
             var testLogger = new TestLogger(raiseAssertFailed);
             var factory = new SymbolFactory();
-            return SyntaxIR0Translator.Build(moduleName, Arr(syntaxScript), refModuleDecls, factory, testLogger);
+            return SyntaxIR0Translator.Translate(moduleName, Arr(syntaxScript), refModuleDecls, factory, testLogger);
         }
 
         List<ILog> TranslateWithErrors(S.Script syntaxScript, bool raiseAssertionFail = false)
         {
             var testLogger = new TestLogger(raiseAssertionFail);
-            var _ = SyntaxIR0Translator.Build(moduleName, Arr(syntaxScript), refModuleDecls, factory, testLogger);
+            var _ = SyntaxIR0Translator.Translate(moduleName, Arr(syntaxScript), refModuleDecls, factory, testLogger);
 
             return testLogger.Logs;
         }

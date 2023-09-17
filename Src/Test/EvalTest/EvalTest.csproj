@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Evaluator\Evaluator.csproj" />
     <ProjectReference Include="..\..\Infra\Infra.csproj" />
     <ProjectReference Include="..\..\IR0Evaluator\IR0Evaluator.csproj" />
     <ProjectReference Include="..\..\IR0\IR0.csproj" />

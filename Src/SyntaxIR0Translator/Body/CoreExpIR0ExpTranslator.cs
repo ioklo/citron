@@ -169,7 +169,7 @@ struct CoreExpIR0ExpTranslator
         var intType = context.GetIntType();
 
         // int type 검사, exact match
-        if (!expType.Equals(context.GetIntType()))
+        if (!BodyMisc.TypeEquals(expType, context.GetIntType()))
         {
             context.AddFatalError(A0601_UnaryAssignOp_IntTypeIsAllowedOnly, operand);
             return Error();
@@ -201,7 +201,7 @@ struct CoreExpIR0ExpTranslator
             case S.UnaryOpKind.LogicalNot:
                 {
                     // exact match
-                    if (!context.GetBoolType().Equals(operandExpResult.ExpType))
+                    if (!BodyMisc.TypeEquals(context.GetBoolType(), operandExpResult.ExpType))
                     {
                         context.AddFatalError(A0701_UnaryOp_LogicalNotOperatorIsAppliedToBoolTypeOperandOnly, exp.Operand);
                         return Error();
@@ -218,7 +218,7 @@ struct CoreExpIR0ExpTranslator
 
             case S.UnaryOpKind.Minus:
                 {
-                    if (!context.GetIntType().Equals(operandExpResult.ExpType))
+                    if (!BodyMisc.TypeEquals(context.GetIntType(), operandExpResult.ExpType))
                     {
                         context.AddFatalError(A0702_UnaryOp_UnaryMinusOperatorIsAppliedToIntTypeOperandOnly, exp.Operand);
                         return Error();

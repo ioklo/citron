@@ -2,6 +2,7 @@
 using Citron.Infra;
 using Citron.Symbol;
 using Pretune;
+using System;
 
 namespace Citron.Symbol;
 
@@ -10,12 +11,17 @@ public partial class EnumType : IType, ICyclicEqualityComparableClass<EnumType>
 {
     EnumSymbol symbol;
 
-    EnumType Apply(TypeEnv typeEnv)
+    public EnumSymbol GetSymbol()
+    {
+        return symbol;
+    }
+
+    public EnumType Apply(TypeEnv typeEnv)
     {
         return new EnumType(symbol.Apply(typeEnv));
     }
 
-    bool CyclicEquals(EnumType other, ref CyclicEqualityCompareContext context)
+    public bool CyclicEquals(EnumType other, ref CyclicEqualityCompareContext context)
     {
         if (!context.CompareClass(symbol, other.symbol))
             return false;
@@ -44,4 +50,6 @@ public partial class EnumType : IType, ICyclicEqualityComparableClass<EnumType>
 
     bool ICyclicEqualityComparableClass<EnumType>.CyclicEquals(EnumType other, ref CyclicEqualityCompareContext context)
         => CyclicEquals(other, ref context);
+
+    
 }
