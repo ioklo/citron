@@ -241,7 +241,7 @@ partial struct StmtVisitor : IStmtVisitor
             continueExp = continueExpResult.Exp;
         }
 
-        var bodyContext = context.MakeLoopNestedScopeContext();        
+        var bodyContext = forStmtContext.MakeLoopNestedScopeContext();        
 
         var bodyStmtsResult = StmtVisitor.TranslateEmbeddable(forStmt.Body, bodyContext);
         if (!bodyStmtsResult.IsValid(out var bodyStmts))

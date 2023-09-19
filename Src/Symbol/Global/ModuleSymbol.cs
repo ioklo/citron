@@ -71,15 +71,10 @@ namespace Citron.Symbol
             if (memberTypeDecl != null)
                 return SymbolQueryResultBuilder.Build(memberTypeDecl, this, factory);
 
-            var builder = ImmutableArray.CreateBuilder<DeclAndConstructor<GlobalFuncDeclSymbol, GlobalFuncSymbol>>();
+            var builder = ImmutableArray.CreateBuilder<(ISymbolNode, GlobalFuncDeclSymbol)>();
             foreach (var memberFunc in decl.GetFuncs(memberName, typeParamCount))
             {
-                var dac = new DeclAndConstructor<GlobalFuncDeclSymbol, GlobalFuncSymbol>(
-                    memberFunc,
-                    typeArgs => factory.MakeGlobalFunc(this, memberFunc, typeArgs)
-                );
-
-                builder.Add(dac);
+                builder.Add((this, memberFunc));
             }
 
             // 여러개 있을 수 있기때문에 MultipleCandidates를 리턴하지 않는다

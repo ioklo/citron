@@ -24,4 +24,5 @@ partial class ScopeContext
 
     public ImmutableArray<InternalBinaryOperatorInfo> GetBinaryOpInfos(S.BinaryOpKind kind) => globalContext.GetBinaryOpInfos(kind);
     public void AddBody(IFuncDeclSymbol symbol, ImmutableArray<R.Stmt> body) => globalContext.AddBody(symbol, body);
+    public ISymbolNode InstantiateSymbol(ISymbolNode outer, IDeclSymbolNode decl, ImmutableArray<IType> typeArgs) => globalContext.InstantiateSymbol(outer, decl, typeArgs);
 }

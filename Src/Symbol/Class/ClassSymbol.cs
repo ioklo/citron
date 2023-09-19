@@ -114,7 +114,7 @@ namespace Citron.Symbol
 
         SymbolQueryResult? QueryMember_Funcs(Name memberName, int typeParamCount)
         {
-            var builder = ImmutableArray.CreateBuilder<DeclAndConstructor<ClassMemberFuncDeclSymbol, ClassMemberFuncSymbol>>();
+            var builder = ImmutableArray.CreateBuilder<(ISymbolNode, ClassMemberFuncDeclSymbol)>();
 
             foreach (var memberFunc in decl.GetMemberFuncs())
             {
@@ -123,12 +123,7 @@ namespace Citron.Symbol
                 if (funcName.Name.Equals(memberName) &&
                     typeParamCount <= funcName.TypeParamCount)
                 {
-                    var dac = new DeclAndConstructor<ClassMemberFuncDeclSymbol, ClassMemberFuncSymbol>(
-                        memberFunc,
-                        typeArgs => factory.MakeClassMemberFunc(this, memberFunc, typeArgs)
-                    );
-
-                    builder.Add(dac);
+                    builder.Add((this, memberFunc));
                 }
             }
 

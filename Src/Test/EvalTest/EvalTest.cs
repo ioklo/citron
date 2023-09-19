@@ -67,7 +67,7 @@ namespace EvalTest
             Assert.True(succeeded);
             Debug.Assert(script != null);
 
-            var logger = new TestLogger(false);
+            var logger = new TestLogger(raiseAssertionFail: true);
             var commandProvider = new TestCmdProvider();
             var (moduleName, symbolFactory, r, runtimeModuleDS) = TestPreparations.Prepare();
             

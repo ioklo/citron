@@ -70,22 +70,24 @@ struct VarDeclElemVisitor
     {
         Debug.Assert(declType != null);
 
-        if (syntax.InitExp == null)
+        R.Exp? initExp;
+        if (syntax.InitExp != null)
         {
-            context.AddFatalError(A0111_VarDecl_LocalVarDeclNeedInitializer, syntax);
-            return false;
+            var initResult = ExpIR0ExpTranslator.Translate(syntax.InitExp, context, declType);
+            if (!initResult.IsValid(out var initExpResult))
+                return false;
+
+            initExp = BodyMisc.TryCastExp_Exp(initExpResult.Exp, initExpResult.ExpType, declType, context);
+
+            if (initExp == null)
+                throw new NotImplementedException(); // 캐스팅이 실패했습니다.
+        }
+        else
+        {
+            initExp = null;
         }
 
-        var initResult = ExpIR0ExpTranslator.Translate(syntax.InitExp, context, declType);
-        if (!initResult.IsValid(out var initExpResult))
-            return false;
-
-        var castInitExp = BodyMisc.TryCastExp_Exp(initExpResult.Exp, initExpResult.ExpType, declType, context);
-        
-        if (castInitExp == null)
-            throw new NotImplementedException(); // 캐스팅이 실패했습니다.
-
-        builder.Add(new R.LocalVarDeclStmt(declType, syntax.VarName, castInitExp));
+        builder.Add(new R.LocalVarDeclStmt(declType, syntax.VarName, initExp));
         context.AddLocalVarInfo(declType, new Name.Normal(syntax.VarName));
 
         return true;

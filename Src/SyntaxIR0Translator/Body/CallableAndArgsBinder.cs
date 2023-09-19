@@ -153,7 +153,9 @@ struct CallableAndArgsBinder : IIntermediateExpVisitor<TranslationResult<IR0ExpR
     // CallExp분석에서 Callable이 GlobalMemberFuncs인 경우 처리
     TranslationResult<IR0ExpResult> VisitGlobalFuncs(IntermediateExp.GlobalFuncs funcs)
     {
-        var matchResult = InternalMatchFunc(funcs.Infos, funcs.ParitalTypeArgs);
+
+
+        var matchResult = InternalMatchFunc(funcs);
         if (!matchResult.IsValid(out var match))
             return Error();
 
@@ -168,7 +170,7 @@ struct CallableAndArgsBinder : IIntermediateExpVisitor<TranslationResult<IR0ExpR
     // CallExp분석에서 Callable이 ClassMemberFuncs인 경우 처리
     TranslationResult<IR0ExpResult> VisitClassMemberFuncs(IntermediateExp.ClassMemberFuncs funcs)
     {
-        var matchResult = InternalMatchFunc(funcs.Infos, funcs.ParitalTypeArgs);
+        var matchResult = InternalMatchFunc(funcs);
         if (!matchResult.IsValid(out var match))
             return Error();
         var (func, args) = match;
@@ -233,7 +235,7 @@ struct CallableAndArgsBinder : IIntermediateExpVisitor<TranslationResult<IR0ExpR
     // CallExp분석에서 Callable이 StructMemberFuncs인 경우 처리
     TranslationResult<IR0ExpResult> VisitStructMemberFuncs(IntermediateExp.StructMemberFuncs funcs)
     {
-        var matchResult = InternalMatchFunc(funcs.Infos, funcs.ParitalTypeArgs);
+        var matchResult = InternalMatchFunc(funcs);
         if (!matchResult.IsValid(out var match))
             return Error();
         var (func, args) = match;
@@ -371,7 +373,7 @@ struct CallableAndArgsBinder : IIntermediateExpVisitor<TranslationResult<IR0ExpR
         var structDecl = structCallable.GetDecl();
 
         var candidates = FuncsMatcherExtensions.MakeCandidates(structDecl.GetConstructorCount(), structDecl.GetConstructor);
-        var matchResultEntries = FuncsMatcher.Match(context, structCallable.GetTypeEnv(), candidates, argSyntaxes, partialTypeArgs: default);
+        var matchResultEntries = FuncsMatcher.Match(structCallable.GetTypeEnv(),  candidates, partialTypeArgs: default, argSyntaxes, context);
 
         var matchCount = matchResultEntries.Length;
         if (matchCount == 1)
@@ -410,16 +412,17 @@ struct CallableAndArgsBinder : IIntermediateExpVisitor<TranslationResult<IR0ExpR
     }
 
 
-    ImmutableArray<FuncsMatcher.Candidate> MakeCandidates<TFuncSymbol, TFuncDeclSymbol>(ImmutableArray<DeclAndConstructor<TFuncDeclSymbol, TFuncSymbol>> declAndConstructors)
-            where TFuncDeclSymbol : IFuncDeclSymbol
+    ImmutableArray<FuncsMatcher.Candidate> MakeCandidates<TFuncDeclSymbol, TFuncSymbol>(IntermediateExp.IFuncs<TFuncDeclSymbol, TFuncSymbol> funcs)
+        where TFuncDeclSymbol : IFuncDeclSymbol
+        where TFuncSymbol : IFuncSymbol
     {
         // TODO: 메모리 소비 제거
 
-        int candidateCount = declAndConstructors.Length;
+        int candidateCount = funcs.GetCount();
         var candidatesBuilder = ImmutableArray.CreateBuilder<FuncsMatcher.Candidate>(candidateCount);
         for (int i = 0; i < candidateCount; i++)
         {
-            var decl = declAndConstructors[i].GetDecl();
+            var decl = funcs.GetDecl(i);
 
             int paramCount = decl.GetParameterCount();
             var parametersBuilder = ImmutableArray.CreateBuilder<FuncParameter>(paramCount);
@@ -430,36 +433,34 @@ struct CallableAndArgsBinder : IIntermediateExpVisitor<TranslationResult<IR0ExpR
                 parametersBuilder.Add(parameter);
             }
 
-            var candidate = new FuncsMatcher.Candidate(decl.IsLastParameterVariadic(), parametersBuilder.MoveToImmutable());
+            var candidate = new FuncsMatcher.Candidate(parametersBuilder.MoveToImmutable(), decl.IsLastParameterVariadic());
             candidatesBuilder.Add(candidate);
         }
 
         return candidatesBuilder.MoveToImmutable();
     }
 
-
-
     TranslationResult<(TFuncSymbol Func, ImmutableArray<R.Argument> Args)> InternalMatchFunc<TFuncDeclSymbol, TFuncSymbol>(
-        ImmutableArray<DeclAndConstructor<TFuncDeclSymbol, TFuncSymbol>> declAndConstructors,
-        ImmutableArray<IType> typeArgsForMatch)
+        IntermediateExp.IFuncs<TFuncDeclSymbol, TFuncSymbol> funcs)
         where TFuncDeclSymbol : IFuncDeclSymbol
+        where TFuncSymbol : IFuncSymbol
     {
         TranslationResult<(TFuncSymbol, ImmutableArray<R.Argument>)> Error()
         {
             return TranslationResult.Error<(TFuncSymbol, ImmutableArray<R.Argument>)>();
         }
 
-        var candidates = MakeCandidates(declAndConstructors);
+        var candidates = MakeCandidates(funcs);
 
         // outer가 없으므로 outerTypeEnv는 None이다
-        var matches = FuncsMatcher.Match(context, TypeEnv.Empty, candidates, argSyntaxes, typeArgsForMatch);
+        var matches = FuncsMatcher.Match(TypeEnv.Empty, candidates, funcs.GetPartialTypeArgs(), argSyntaxes, context);
         var matchCount = matches.Length;
 
         if (matchCount == 1)
         {
             var (index, typeArgs, rargs) = matches[0];
 
-            var func = declAndConstructors[index].MakeSymbol(typeArgs);
+            var func = funcs.MakeSymbol(index, typeArgs, context);
             return TranslationResult.Valid((func, rargs));
         }
         else if (matchCount == 0)

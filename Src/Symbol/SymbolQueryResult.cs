@@ -45,7 +45,7 @@ namespace Citron.Symbol
             public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitNamespace(this);
         }
 
-        public record class GlobalFuncs(ImmutableArray<DeclAndConstructor<GlobalFuncDeclSymbol, GlobalFuncSymbol>> Infos) : SymbolQueryResult
+        public record class GlobalFuncs(ImmutableArray<(ISymbolNode Outer, GlobalFuncDeclSymbol DeclSymbol)> OuterAndDeclSymbols) : SymbolQueryResult
         {
             public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitGlobalFuncs(this);
         }
@@ -55,7 +55,7 @@ namespace Citron.Symbol
             public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitClass(this);
         }
 
-        public record class ClassMemberFuncs(ImmutableArray<DeclAndConstructor<ClassMemberFuncDeclSymbol, ClassMemberFuncSymbol>> Infos) : SymbolQueryResult
+        public record class ClassMemberFuncs(ImmutableArray<(ISymbolNode Outer, ClassMemberFuncDeclSymbol DeclSymbol)> OuterAndDeclSymbols) : SymbolQueryResult
         {
             public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitClassMemberFuncs(this);
         }
@@ -70,7 +70,7 @@ namespace Citron.Symbol
             public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitStruct(this);
         }
 
-        public record class StructMemberFuncs(ImmutableArray<DeclAndConstructor<StructMemberFuncDeclSymbol, StructMemberFuncSymbol>> Infos) : SymbolQueryResult
+        public record class StructMemberFuncs(ImmutableArray<(ISymbolNode Outer, StructMemberFuncDeclSymbol DeclSymbol)> OuterAndDeclSymbols) : SymbolQueryResult
         {
             public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitStructMemberFuncs(this);
         }

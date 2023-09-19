@@ -10,14 +10,16 @@ namespace Citron.Analysis;
 struct FuncsMatcher
 {
     public record struct MatchResultEntry(int Index, ImmutableArray<IType> TypeArgs, ImmutableArray<R.Argument> Args);
-    public record struct Candidate(bool bVariadic, ImmutableArray<FuncParameter> Parameters);
+    public record struct Candidate(ImmutableArray<FuncParameter> Parameters, bool bLastParamVariadic);
 
+    // F<int, short>(arg0, arg1) 을 지칭할때
+    // candidate가 F(int x, bool b), F<Y>(T, Y y)
     public static ImmutableArray<MatchResultEntry> Match(
-        ScopeContext context,
-        TypeEnv outerTypeEnv,
-        ImmutableArray<Candidate> candidates, 
-        ImmutableArray<S.Argument> argSyntaxes, 
-        ImmutableArray<IType> partialTypeArgs)
+        TypeEnv outerTypeEnv,                   //
+        ImmutableArray<Candidate> candidates,   // 
+        ImmutableArray<IType> partialTypeArgs,  // <int, short>
+        ImmutableArray<S.Argument> argSyntaxes, // arg0, arg1
+        ScopeContext context)
     {
         throw new NotImplementedException();
     }
@@ -39,7 +41,7 @@ static class FuncsMatcherExtensions
             for (int j = 0; j < parameterCount; j++)
                 parametersBuilder.Add(ds.GetParameter(j));
 
-            var c = new FuncsMatcher.Candidate(ds.IsLastParameterVariadic(), parametersBuilder.MoveToImmutable());
+            var c = new FuncsMatcher.Candidate(parametersBuilder.MoveToImmutable(), ds.IsLastParameterVariadic());
             builder.Add(c);
         }
 

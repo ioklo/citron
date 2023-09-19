@@ -34,7 +34,7 @@ abstract record class IdentifierResult
     }
 
     // TypeArgsForMatch: partial
-    public record class GlobalFuncs(ImmutableArray<DeclAndConstructor<GlobalFuncDeclSymbol, GlobalFuncSymbol>> Infos, ImmutableArray<IType> ParitalTypeArgs) : IdentifierResult
+    public record class GlobalFuncs(ImmutableArray<(ISymbolNode Outer, GlobalFuncDeclSymbol DeclSymbol)> OuterAndDeclSymbols, ImmutableArray<IType> ParitalTypeArgs) : IdentifierResult
     {
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitGlobalFuncs(this);
     }
@@ -46,7 +46,7 @@ abstract record class IdentifierResult
     }
 
     public record ThisClassMemberFuncs(
-        ImmutableArray<DeclAndConstructor<ClassMemberFuncDeclSymbol, ClassMemberFuncSymbol>> Infos,
+        ImmutableArray<(ISymbolNode Outer, ClassMemberFuncDeclSymbol DeclSymbol)> OuterAndDeclSymbols,
         ImmutableArray<IType> ParitalTypeArgs) : IdentifierResult
     {
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitThisClassMemberFuncs(this);
@@ -66,7 +66,7 @@ abstract record class IdentifierResult
     }
 
     public record class ThisStructMemberFuncs(
-        ImmutableArray<DeclAndConstructor<StructMemberFuncDeclSymbol, StructMemberFuncSymbol>> Infos,
+        ImmutableArray<(ISymbolNode Outer, StructMemberFuncDeclSymbol DeclSymbol)> OuterAndDeclSymbols,
         ImmutableArray<IType> ParitalTypeArgs) : IdentifierResult
     {
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitThisStructMemberFuncs(this);

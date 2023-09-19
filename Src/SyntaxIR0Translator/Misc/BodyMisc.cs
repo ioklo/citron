@@ -174,7 +174,7 @@ namespace Citron.Analysis
 
             IntermediateExp ISymbolQueryResultVisitor<IntermediateExp>.VisitGlobalFuncs(SymbolQueryResult.GlobalFuncs result)
             {
-                return new IntermediateExp.GlobalFuncs(result.Infos, typeArgs);
+                return new IntermediateExp.GlobalFuncs(result.OuterAndDeclSymbols, typeArgs);
             }
 
             IntermediateExp ISymbolQueryResultVisitor<IntermediateExp>.VisitClass(SymbolQueryResult.Class result)
@@ -184,12 +184,12 @@ namespace Citron.Analysis
 
             IntermediateExp ISymbolQueryResultVisitor<IntermediateExp>.VisitClassMemberFuncs(SymbolQueryResult.ClassMemberFuncs result)
             {
-                return new IntermediateExp.ClassMemberFuncs(result.Infos, typeArgs, HasExplicitInstance: false, null);
+                return new IntermediateExp.ClassMemberFuncs(result.OuterAndDeclSymbols, typeArgs, hasExplicitInstance: false, null);
             }
 
             IntermediateExp ISymbolQueryResultVisitor<IntermediateExp>.VisitClassMemberVar(SymbolQueryResult.ClassMemberVar result)
             {
-                return new IntermediateExp.ClassMemberVar(result.Symbol, HasExplicitInstance: false, null);
+                return new IntermediateExp.ClassMemberVar(result.Symbol, hasExplicitInstance: false, null);
             }
 
             IntermediateExp ISymbolQueryResultVisitor<IntermediateExp>.VisitStruct(SymbolQueryResult.Struct result)
@@ -199,12 +199,12 @@ namespace Citron.Analysis
 
             IntermediateExp ISymbolQueryResultVisitor<IntermediateExp>.VisitStructMemberFuncs(SymbolQueryResult.StructMemberFuncs result)
             {
-                return new IntermediateExp.StructMemberFuncs(result.Infos, typeArgs, HasExplicitInstance: false, null);
+                return new IntermediateExp.StructMemberFuncs(result.OuterAndDeclSymbols, typeArgs, hasExplicitInstance: false, null);
             }
 
             IntermediateExp ISymbolQueryResultVisitor<IntermediateExp>.VisitStructMemberVar(SymbolQueryResult.StructMemberVar result)
             {
-                return new IntermediateExp.StructMemberVar(result.Symbol, HasExplicitInstance: false, null);
+                return new IntermediateExp.StructMemberVar(result.Symbol, hasExplicitInstance: false, null);
             }
 
             IntermediateExp ISymbolQueryResultVisitor<IntermediateExp>.VisitEnum(SymbolQueryResult.Enum result)

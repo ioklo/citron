@@ -166,4 +166,9 @@ partial class GlobalContext : IMutable<GlobalContext>
     {
         return bodies;
     }
+
+    public ISymbolNode InstantiateSymbol(ISymbolNode outer, IDeclSymbolNode decl, ImmutableArray<IType> typeArgs)
+    {
+        return SymbolInstantiator.Instantiate(symbolFactory, outer, decl, typeArgs);
+    }
 }

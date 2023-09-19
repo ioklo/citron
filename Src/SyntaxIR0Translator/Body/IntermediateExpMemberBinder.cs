@@ -61,7 +61,7 @@ struct IntermediateExpMemberBinder : IIntermediateExpVisitor<TranslationResult<I
         // S.F
         TranslationResult<IntermediateExp> ISymbolQueryResultVisitor<TranslationResult<IntermediateExp>>.VisitStructMemberFuncs(SymbolQueryResult.StructMemberFuncs result)
         {
-            return Valid(new IntermediateExp.StructMemberFuncs(result.Infos, typeArgs, HasExplicitInstance: true, ExplicitInstance: null));
+            return Valid(new IntermediateExp.StructMemberFuncs(result.OuterAndDeclSymbols, typeArgs, hasExplicitInstance: true, explicitInstance: null));
         }
 
         // S.x
@@ -75,7 +75,7 @@ struct IntermediateExpMemberBinder : IIntermediateExpVisitor<TranslationResult<I
             if (!context.CanAccess(symbol))
                 return Fatal(A2011_ResolveIdentifier_TryAccessingPrivateMember);
 
-            return Valid(new IntermediateExp.StructMemberVar(symbol, HasExplicitInstance: true, ExplicitInstance: null));
+            return Valid(new IntermediateExp.StructMemberVar(symbol, hasExplicitInstance: true, explicitInstance: null));
         }
 
         // T.C
@@ -93,7 +93,7 @@ struct IntermediateExpMemberBinder : IIntermediateExpVisitor<TranslationResult<I
         // C.F
         TranslationResult<IntermediateExp> ISymbolQueryResultVisitor<TranslationResult<IntermediateExp>>.VisitClassMemberFuncs(SymbolQueryResult.ClassMemberFuncs result)
         {
-            return Valid(new IntermediateExp.ClassMemberFuncs(result.Infos, typeArgs, HasExplicitInstance: true, null));
+            return Valid(new IntermediateExp.ClassMemberFuncs(result.OuterAndDeclSymbols, typeArgs, hasExplicitInstance: true, null));
         }
 
         // C.x
@@ -107,7 +107,7 @@ struct IntermediateExpMemberBinder : IIntermediateExpVisitor<TranslationResult<I
             if (!context.CanAccess(symbol))
                 return Fatal(A2011_ResolveIdentifier_TryAccessingPrivateMember);
 
-            return Valid(new IntermediateExp.ClassMemberVar(symbol, HasExplicitInstance: true, ExplicitInstance: null));
+            return Valid(new IntermediateExp.ClassMemberVar(symbol, hasExplicitInstance: true, explicitInstance: null));
         }
 
         // T.E
@@ -137,7 +137,7 @@ struct IntermediateExpMemberBinder : IIntermediateExpVisitor<TranslationResult<I
         // NS.F
         TranslationResult<IntermediateExp> ISymbolQueryResultVisitor<TranslationResult<IntermediateExp>>.VisitGlobalFuncs(SymbolQueryResult.GlobalFuncs result)
         {
-            return Valid(new IntermediateExp.GlobalFuncs(result.Infos, typeArgs));
+            return Valid(new IntermediateExp.GlobalFuncs(result.OuterAndDeclSymbols, typeArgs));
         }
 
         // 표현 불가능
@@ -181,7 +181,7 @@ struct IntermediateExpMemberBinder : IIntermediateExpVisitor<TranslationResult<I
         // exp.F
         TranslationResult<IntermediateExp> ISymbolQueryResultVisitor<TranslationResult<IntermediateExp>>.VisitClassMemberFuncs(SymbolQueryResult.ClassMemberFuncs result)
         {
-            return Valid(new IntermediateExp.ClassMemberFuncs(result.Infos, typeArgs, HasExplicitInstance: true, instanceReExp));
+            return Valid(new IntermediateExp.ClassMemberFuncs(result.OuterAndDeclSymbols, typeArgs, hasExplicitInstance: true, instanceReExp));
         }
 
         // exp.x
@@ -245,7 +245,7 @@ struct IntermediateExpMemberBinder : IIntermediateExpVisitor<TranslationResult<I
         // exp.F
         TranslationResult<IntermediateExp> ISymbolQueryResultVisitor<TranslationResult<IntermediateExp>>.VisitStructMemberFuncs(SymbolQueryResult.StructMemberFuncs result)
         {
-            return Valid(new IntermediateExp.StructMemberFuncs(result.Infos, typeArgs, HasExplicitInstance: true, instanceReExp));
+            return Valid(new IntermediateExp.StructMemberFuncs(result.OuterAndDeclSymbols, typeArgs, hasExplicitInstance: true, instanceReExp));
         }
 
         // exp.x
@@ -261,7 +261,7 @@ struct IntermediateExpMemberBinder : IIntermediateExpVisitor<TranslationResult<I
             if (!context.CanAccess(symbol))
                 return Fatal(A2011_ResolveIdentifier_TryAccessingPrivateMember);
 
-            return Valid(new IntermediateExp.StructMemberVar(symbol, HasExplicitInstance: true, instanceReExp));
+            return Valid(new IntermediateExp.StructMemberVar(symbol, hasExplicitInstance: true, instanceReExp));
         }
 
         TranslationResult<IntermediateExp> ISymbolQueryResultVisitor<TranslationResult<IntermediateExp>>.VisitTupleMemberVar(SymbolQueryResult.TupleMemberVar result)
