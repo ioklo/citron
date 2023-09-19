@@ -13,17 +13,6 @@ abstract partial class IntermediateExp
     public abstract TResult Accept<TVisitor, TResult>(ref TVisitor visitor)
         where TVisitor : struct, IIntermediateExpVisitor<TResult>;
 
-    public interface IFuncs<TFuncDeclSymbol, TFuncSymbol>
-        where TFuncDeclSymbol : IFuncDeclSymbol
-        where TFuncSymbol : IFuncSymbol
-    {
-        int GetCount();
-        TFuncDeclSymbol GetDecl(int i);
-
-        ImmutableArray<IType> GetPartialTypeArgs();
-        TFuncSymbol MakeSymbol(int i, ImmutableArray<IType> typeArgs, ScopeContext context);
-    }
-
     [AutoConstructor]
     public partial class Namespace : IntermediateExp
     {
@@ -44,6 +33,7 @@ abstract partial class IntermediateExp
 
         int IFuncs<GlobalFuncDeclSymbol, GlobalFuncSymbol>.GetCount() => component.GetCount();
         GlobalFuncDeclSymbol IFuncs<GlobalFuncDeclSymbol, GlobalFuncSymbol>.GetDecl(int i) => component.GetDecl(i);
+        TypeEnv IFuncs<GlobalFuncDeclSymbol, GlobalFuncSymbol>.GetOuterTypeEnv(int i) => component.GetOuterTypeEnv(i);
         GlobalFuncSymbol IFuncs<GlobalFuncDeclSymbol, GlobalFuncSymbol>.MakeSymbol(int i, ImmutableArray<IType> typeArgs, ScopeContext context) => component.MakeSymbol(i, typeArgs, context);
         ImmutableArray<IType> IFuncs<GlobalFuncDeclSymbol, GlobalFuncSymbol>.GetPartialTypeArgs() => component.GetPartialTypeArgs();
         
@@ -92,9 +82,11 @@ abstract partial class IntermediateExp
 
         int IFuncs<ClassMemberFuncDeclSymbol, ClassMemberFuncSymbol>.GetCount() => component.GetCount();
         ClassMemberFuncDeclSymbol IFuncs<ClassMemberFuncDeclSymbol, ClassMemberFuncSymbol>.GetDecl(int i) => component.GetDecl(i);
+        TypeEnv IFuncs<ClassMemberFuncDeclSymbol, ClassMemberFuncSymbol>.GetOuterTypeEnv(int i) => component.GetOuterTypeEnv(i);
         ImmutableArray<IType> IFuncs<ClassMemberFuncDeclSymbol, ClassMemberFuncSymbol>.GetPartialTypeArgs() => component.GetPartialTypeArgs();
         ClassMemberFuncSymbol IFuncs<ClassMemberFuncDeclSymbol, ClassMemberFuncSymbol>.MakeSymbol(int i, ImmutableArray<IType> typeArgs, ScopeContext context)
             => component.MakeSymbol(i, typeArgs, context);
+        
     }
 
     [AutoConstructor]
@@ -127,6 +119,7 @@ abstract partial class IntermediateExp
 
         int IFuncs<StructMemberFuncDeclSymbol, StructMemberFuncSymbol>.GetCount() => component.GetCount();
         StructMemberFuncDeclSymbol IFuncs<StructMemberFuncDeclSymbol, StructMemberFuncSymbol>.GetDecl(int i) => component.GetDecl(i);
+        TypeEnv IFuncs<StructMemberFuncDeclSymbol, StructMemberFuncSymbol>.GetOuterTypeEnv(int i) => component.GetOuterTypeEnv(i);
         ImmutableArray<IType> IFuncs<StructMemberFuncDeclSymbol, StructMemberFuncSymbol>.GetPartialTypeArgs() => component.GetPartialTypeArgs();
         StructMemberFuncSymbol IFuncs<StructMemberFuncDeclSymbol, StructMemberFuncSymbol>.MakeSymbol(int i, ImmutableArray<IType> typeArgs, ScopeContext context)
             => component.MakeSymbol(i, typeArgs, context);

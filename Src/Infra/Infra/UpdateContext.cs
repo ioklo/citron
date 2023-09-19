@@ -6,11 +6,9 @@ namespace Citron.Infra
     {
         HashSet<object> updated;
 
-        public static UpdateContext Make()
+        public UpdateContext()
         {
-            var result = new UpdateContext();
-            result.updated = new HashSet<object>();
-            return result;
+            this.updated = new HashSet<object>();
         }
 
         public void Update<T>(T dest, T src)

@@ -411,37 +411,18 @@ struct CoreExpIR0ExpTranslator
             context.AddFatalError(A2601_NewExp_TypeIsNotClass, exp.Type);
             return Error();
         }
-
-        // NOTICE: 생성자 검색 (AnalyzeCallExpTypeCallable 부분과 비슷)                
+        
         var classDecl = classSymbol.GetDecl();
+        
+        var candidates = FuncCandidates.Make<ClassConstructorDeclSymbol, ClassConstructorSymbol>(
+            classSymbol, classDecl.GetConstructorCount(), classDecl.GetConstructor, partialTypeArgs: default); // TODO: 일단은 constructor의 typeArgs는 없는 것으로
 
-        var candidates = FuncsMatcherExtensions.MakeCandidates(classDecl.GetConstructorCount(), classDecl.GetConstructor);
-        var matchResultEntries = FuncsMatcher.Match(classSymbol.GetTypeEnv(), candidates, partialTypeArgs: default, exp.Args, context);
+        var matchResult = FuncsMatcher.Match(candidates, exp.Args, context);
+        if (matchResult == null)
+            throw new NotImplementedException(); // 매치에 실패했습니다.
 
-        var matchCount = matchResultEntries.Length;
-        if (matchCount == 1)
-        {
-            var matchResultEntry = matchResultEntries[0];
-            var constructor = classSymbol.GetConstructor(matchResultEntry.Index);
-
-            if (!context.CanAccess(constructor))
-            {
-                context.AddFatalError(A2011_ResolveIdentifier_TryAccessingPrivateMember, exp);
-                return Error();
-            }
-
-            return Valid(new IR0ExpResult(new R.NewClassExp(constructor, matchResultEntry.Args), new ClassType(classSymbol)));
-        }
-        else if (matchCount == 0)
-        {
-            context.AddFatalError(A2602_NewExp_NoMatchedClassConstructor, exp);
-            return Error();
-        }
-        else
-        {
-            context.AddFatalError(A2603_NewExp_MultipleMatchedClassConstructors, exp);
-            return Error();
-        }
+        var (constructor, args) = matchResult.Value;
+        return Valid(new IR0ExpResult(new R.NewClassExp(constructor, args), new ClassType(classSymbol)));
     }
 
     public TranslationResult<IR0ExpResult> TranslateCall(S.CallExp exp)

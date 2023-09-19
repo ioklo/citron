@@ -25,10 +25,5 @@ namespace Citron.Infra
 
             return (T)clonedInstance;
         }
-
-        public static object Make(Dictionary<object, object> dictionaries)
-        {
-            throw new NotImplementedException();
-        }
     }
 }
