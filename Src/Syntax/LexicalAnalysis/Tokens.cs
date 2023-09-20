@@ -72,6 +72,7 @@ namespace Citron.LexicalAnalysis
 
         public static readonly SingleToken Ref = new SingleToken("ref");
         public static readonly SingleToken Box = new SingleToken("box");
+        public static readonly SingleToken Local = new SingleToken("local");
         public static readonly SingleToken Null = new SingleToken("null");
 
         public static readonly SingleToken Public = new SingleToken("public");

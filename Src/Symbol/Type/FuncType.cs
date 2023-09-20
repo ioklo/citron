@@ -8,6 +8,7 @@ namespace Citron.Symbol;
 [AutoConstructor]
 public partial class FuncType : IInterfaceType, ICyclicEqualityComparableClass<FuncType>
 {
+    bool bLocal;
     FuncReturn funcRet;
     ImmutableArray<FuncParameter> parameters;
 
@@ -21,7 +22,7 @@ public partial class FuncType : IInterfaceType, ICyclicEqualityComparableClass<F
             appliedParametersBuilder.Add(appliedParameter);
         }
 
-        return new FuncType(appliedReturn, appliedParametersBuilder.MoveToImmutable());
+        return new FuncType(bLocal, appliedReturn, appliedParametersBuilder.MoveToImmutable());
     }
 
     FuncTypeId GetTypeId()
@@ -30,7 +31,7 @@ public partial class FuncType : IInterfaceType, ICyclicEqualityComparableClass<F
         foreach (var parameter in parameters)
             builder.Add(parameter.GetId());
 
-        return new FuncTypeId(funcRet.GetId(), builder.MoveToImmutable());
+        return new FuncTypeId(bLocal, funcRet.GetId(), builder.MoveToImmutable());
     }
     
     bool CyclicEquals(FuncType other, ref CyclicEqualityCompareContext context)
@@ -49,10 +50,8 @@ public partial class FuncType : IInterfaceType, ICyclicEqualityComparableClass<F
         return funcRet.Type;
     }
 
-    IType IType.GetTypeArg(int index) => throw new RuntimeFatalException();
     IType IType.Apply(TypeEnv typeEnv) => Apply(typeEnv);
     TypeId IType.GetTypeId() => GetTypeId();
-    IType? IType.GetMemberType(Name name, ImmutableArray<IType> typeArgs) => null;
     SymbolQueryResult? IType.QueryMember(Name name, int explicitTypeArgCount) => null;
     TResult IType.Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitFunc(this);
 
@@ -70,4 +69,6 @@ public partial class FuncType : IInterfaceType, ICyclicEqualityComparableClass<F
 
     bool ICyclicEqualityComparableClass<FuncType>.CyclicEquals(FuncType other, ref CyclicEqualityCompareContext context)
         => CyclicEquals(other, ref context);
+
+    bool IInterfaceType.IsLocal() => bLocal;
 }

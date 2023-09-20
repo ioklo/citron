@@ -4,19 +4,6 @@ using Citron.Collections;
 using Citron.Syntax;
 using System.Diagnostics.CodeAnalysis;
 
-// TYPE_EXP0  = TYPE_EXP1 TYPE_EXP0'
-// TYPE_EXP0' = ? TYPE_EXP0' | e
-
-// TYPE_EXP1  = box TYPE_EXP2 * TYPE_EXP1'
-//            | TYPE_EXP2 TYPE_EXP1'
-// TYPE_EXP1' = * TYPE_EXP1'
-//            | e
-
-// TYPE_EXP2  = ID TYPE_EXP2'
-//            | ( TYPE_EXP0 ) 
-// TYPE_EXP2' = . ID TYPE_EXP2'
-//            | e
-
 partial struct TypeExpParser 
 {
     bool ParseTypeArgs([NotNullWhen(returnValue: true)] out ImmutableArray<TypeExp>? outTypeArgs)
@@ -134,6 +121,22 @@ partial struct TypeExpParser
 
     // tuple
     // bool ParseTupleTypeExp([NotNullWhen(returnValue: true)] out TypeExp? outTypeExp);
+
+    // local modifier
+    bool ParseLocalTypeExp([NotNullWhen(returnValue: true)] out TypeExp? outTypeExp)
+    {
+        var prevContext = context;
+
+        if (!InternalParseLocalTypeExp(out outTypeExp))
+        {
+            context = prevContext;
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+    }
 
     // 
     bool ParseTypeExp([NotNullWhen(returnValue: true)] out TypeExp? outTypeExp)

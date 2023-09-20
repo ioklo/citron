@@ -466,7 +466,7 @@ partial struct StmtVisitor : IStmtVisitor
         var (iterLoc, iterType) = iter;
 
         // 먼저, iteratorResult가 anonymous_seq타입인지 확인한다
-        if (context.IsSeqType(iterType, out var seqItemType)) // seq<>
+        if (context.HasSeqConstraint(iterType, out var seqItemType)) // seq<>
         {
             IType itemType;
 

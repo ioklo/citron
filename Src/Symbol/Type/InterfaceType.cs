@@ -8,11 +8,12 @@ namespace Citron.Symbol;
 [AutoConstructor]
 public partial class InterfaceType : IInterfaceType, ICyclicEqualityComparableClass<InterfaceType>
 {
+    bool bLocal;
     InterfaceSymbol symbol;
 
     public InterfaceType Apply(TypeEnv typeEnv)
     {
-        return new InterfaceType(symbol.Apply(typeEnv));
+        return new InterfaceType(bLocal, symbol.Apply(typeEnv));
     }
 
     bool CyclicEquals(InterfaceType other, ref CyclicEqualityCompareContext context)
@@ -32,13 +33,9 @@ public partial class InterfaceType : IInterfaceType, ICyclicEqualityComparableCl
     bool ICyclicEqualityComparableClass<IType>.CyclicEquals(IType other, ref CyclicEqualityCompareContext context)
         => other is InterfaceType otherType && CyclicEquals(otherType, ref context);
 
-    IType IType.GetTypeArg(int index) => symbol.GetTypeArg(index);
     IType IType.Apply(TypeEnv typeEnv) => Apply(typeEnv);
 
-    TypeId IType.GetTypeId() => new SymbolTypeId(symbol.GetSymbolId());
-
-    IType? IType.GetMemberType(Name name, ImmutableArray<IType> typeArgs)
-        => symbol.GetMemberType(name, typeArgs);
+    TypeId IType.GetTypeId() => new SymbolTypeId(bLocal, symbol.GetSymbolId());
 
     SymbolQueryResult? IType.QueryMember(Name name, int explicitTypeArgCount)
         => symbol.QueryMember(name, explicitTypeArgCount);
@@ -50,4 +47,7 @@ public partial class InterfaceType : IInterfaceType, ICyclicEqualityComparableCl
     {
         context.SerializeRef(nameof(symbol), symbol);
     }
+
+    bool IInterfaceType.IsLocal() => bLocal;
 }
+    

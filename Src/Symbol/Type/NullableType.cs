@@ -24,9 +24,7 @@ public partial class NullableType : IType, ICyclicEqualityComparableClass<Nullab
     }
 
     IType IType.Apply(TypeEnv typeEnv) => Apply(typeEnv);
-    IType IType.GetTypeArg(int index) => throw new RuntimeFatalException();
     TypeId IType.GetTypeId() => new NullableTypeId(innerType.GetTypeId());
-    IType? IType.GetMemberType(Name name, ImmutableArray<IType> typeArgs) => null;
     SymbolQueryResult? IType.QueryMember(Name name, int explicitTypeArgCount) => null;
     TResult IType.Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitNullable(this);
 

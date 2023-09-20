@@ -139,10 +139,19 @@ partial class GlobalContext : IMutable<GlobalContext>
         return symbolFactory.MakeLambda(outer, decl);
     }
 
-    public bool IsSeqType(IType type, [NotNullWhen(returnValue: true)] out IType? itemType)
+    // seq type
+    public bool HasSeqConstraint(IType type, [NotNullWhen(returnValue: true)] out IType? outItemType)
     {
-        throw new NotImplementedException();
-    } 
+        // type 자체는
+        if (type is SeqType seqType)
+        {
+            outItemType = seqType.GetItemType();
+            return true;
+        }
+
+        outItemType = null;
+        return false;
+    }
 
     public bool IsListType(IType type, [NotNullWhen(returnValue: true)] out IType? itemType)
     {

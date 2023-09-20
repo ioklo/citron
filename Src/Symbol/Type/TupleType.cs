@@ -95,10 +95,8 @@ public partial class TupleType : IType, ICyclicEqualityComparableClass<TupleType
         return null;
     }
 
-    IType IType.GetTypeArg(int index) => throw new RuntimeFatalException();
     IType IType.Apply(TypeEnv typeEnv) => Apply(typeEnv);
     TypeId IType.GetTypeId() => GetTypeId();
-    IType? IType.GetMemberType(Name name, ImmutableArray<IType> typeArgs) => null;
     SymbolQueryResult? IType.QueryMember(Name name, int explicitTypeArgCount) => QueryMember(name, explicitTypeArgCount);
     TResult IType.Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitTuple(this);
 

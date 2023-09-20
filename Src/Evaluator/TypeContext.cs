@@ -131,7 +131,7 @@ namespace Citron
 
             TypeId ITypeIdVisitor<TypeId>.VisitSymbol(SymbolTypeId typeId)
             {
-                return new SymbolTypeId(ApplySymbol(typeId.SymbolId));
+                return new SymbolTypeId(typeId.IsLocal, ApplySymbol(typeId.SymbolId));
             }
 
             TypeId ITypeIdVisitor<TypeId>.VisitTuple(TupleTypeId typeId)

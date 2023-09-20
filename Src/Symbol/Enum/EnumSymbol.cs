@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using Citron.Collections;
 using Citron.Infra;
 using Pretune;
@@ -57,7 +58,7 @@ namespace Citron.Symbol
             return factory.MakeEnumElem(this, elemDecl);
         }
 
-        IType? ITypeSymbol.GetMemberType(Name memberName, ImmutableArray<IType> typeArgs) 
+        ITypeSymbol? ITypeSymbol.GetMemberType(Name memberName, ImmutableArray<IType> typeArgs) 
         {
             // shortcut
             if (typeArgs.Length != 0)
@@ -66,7 +67,7 @@ namespace Citron.Symbol
             var elemDecl = decl.GetElem(memberName);
             if (elemDecl == null) return null;
 
-            return ((ITypeSymbol)factory.MakeEnumElem(this, elemDecl)).MakeType();
+            return (ITypeSymbol)factory.MakeEnumElem(this, elemDecl);
         }
         
         IDeclSymbolNode ISymbolNode.GetDeclSymbolNode() => decl;
@@ -93,8 +94,9 @@ namespace Citron.Symbol
             return typeArgs[index];
         }
 
-        IType ITypeSymbol.MakeType()
+        IType ITypeSymbol.MakeType(bool bLocalInterface)
         {
+            Debug.Assert(!bLocalInterface);
             return new EnumType(this);
         }
 

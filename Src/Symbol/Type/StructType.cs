@@ -17,7 +17,7 @@ public partial class StructType : IType, ICyclicEqualityComparableClass<StructTy
 
     public SymbolTypeId GetTypeId()
     {
-        return new SymbolTypeId(symbol.GetSymbolId());
+        return new SymbolTypeId(IsLocal: false, symbol.GetSymbolId());
     }
 
     public StructSymbol GetSymbol()
@@ -48,10 +48,8 @@ public partial class StructType : IType, ICyclicEqualityComparableClass<StructTy
         return symbol.GetMemberVar(name);
     }
 
-    IType IType.GetTypeArg(int index) => symbol.GetTypeArg(index);
     IType IType.Apply(TypeEnv typeEnv) => Apply(typeEnv);
     TypeId IType.GetTypeId() => GetTypeId();
-    IType? IType.GetMemberType(Name name, ImmutableArray<IType> typeArgs) => symbol.GetMemberType(name, typeArgs);
     SymbolQueryResult? IType.QueryMember(Name name, int explicitTypeArgCount) => symbol.QueryMember(name, explicitTypeArgCount);
 
     TResult IType.Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitStruct(this);

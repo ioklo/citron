@@ -43,7 +43,7 @@ public class LexerTests
     {
         var lexer = new Lexer();
         var context = MakeLexerContext(
-            "if else for continue break task params return async await foreach in yield seq enum struct class is as ref box null public protected private static " + 
+            "if else for continue break task params return async await foreach in yield seq enum struct class is as ref box local null public protected private static " + 
             "new namespace " +
             "++ -- <= >= => == != ->" +
             "@ < > ; , = { } ( ) [ ] + - * / % ! . ? & : `");
@@ -72,6 +72,7 @@ public class LexerTests
             Tokens.As,
             Tokens.Ref,
             Tokens.Box,
+            Tokens.Local,
             Tokens.Null,
 
             Tokens.Public,

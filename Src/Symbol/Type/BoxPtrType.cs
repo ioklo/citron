@@ -29,9 +29,7 @@ public partial class BoxPtrType : IType, ICyclicEqualityComparableClass<BoxPtrTy
     }
 
     IType IType.Apply(TypeEnv typeEnv) => Apply(typeEnv);
-    IType IType.GetTypeArg(int index) => throw new RuntimeFatalException();
     TypeId IType.GetTypeId() => new BoxPtrTypeId(innerType.GetTypeId());
-    IType? IType.GetMemberType(Name name, ImmutableArray<IType> typeArgs) => null;
     SymbolQueryResult? IType.QueryMember(Name name, int explicitTypeArgCount) => null;
     TResult IType.Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitBoxPtr(this);
 

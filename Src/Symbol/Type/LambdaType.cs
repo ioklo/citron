@@ -51,12 +51,9 @@ public partial class LambdaType : IType, ICyclicEqualityComparableClass<LambdaTy
     }
 
     TResult IType.Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitLambda(this);
-    IType IType.GetTypeArg(int index) => symbol.GetTypeArg(index);
     IType IType.Apply(TypeEnv typeEnv) => Apply(typeEnv);
 
-    TypeId IType.GetTypeId() => new SymbolTypeId(symbol.GetSymbolId());
-    IType? IType.GetMemberType(Name name, ImmutableArray<IType> typeArgs)
-        => symbol.GetMemberType(name, typeArgs);
+    TypeId IType.GetTypeId() => new SymbolTypeId(IsLocal: false, symbol.GetSymbolId());
 
     SymbolQueryResult? IType.QueryMember(Name name, int explicitTypeArgCount)
         => symbol.QueryMember(name, explicitTypeArgCount);

@@ -86,7 +86,7 @@ namespace Citron.Symbol
         public override TResult Accept<TTypeIdVisitor, TResult>(ref TTypeIdVisitor visitor) => visitor.VisitTuple(this);
     }
     
-    public record class FuncTypeId(FuncReturnId RetId, ImmutableArray<FuncParameterId> ParamIds) : TypeId
+    public record class FuncTypeId(bool bLocal, FuncReturnId RetId, ImmutableArray<FuncParameterId> ParamIds) : TypeId
     {
         public override void DoSerialize(ref SerializeContext context)
         {
@@ -97,7 +97,7 @@ namespace Citron.Symbol
         public override TResult Accept<TTypeIdVisitor, TResult>(ref TTypeIdVisitor visitor) => visitor.VisitFunc(this);
     }
 
-    public record class SymbolTypeId(SymbolId SymbolId) : TypeId
+    public record class SymbolTypeId(bool IsLocal, SymbolId SymbolId) : TypeId
     {
         public override TResult Accept<TTypeIdVisitor, TResult>(ref TTypeIdVisitor visitor) => visitor.VisitSymbol(this);
 
@@ -135,13 +135,13 @@ namespace Citron.Symbol
 
         public override TResult Accept<TTypeIdVisitor, TResult>(ref TTypeIdVisitor visitor) => visitor.VisitBoxPtr(this);
     }
-
+    
     public static class TypeIds
     {
         public readonly static VoidTypeId Void = new VoidTypeId();
-        public readonly static TypeId Bool = new SymbolTypeId(SymbolIds.Bool);
-        public readonly static TypeId Int = new SymbolTypeId(SymbolIds.Int);
-        public readonly static TypeId String = new SymbolTypeId(SymbolIds.String);
+        public readonly static TypeId Bool = new SymbolTypeId(IsLocal: false, SymbolIds.Bool);
+        public readonly static TypeId Int = new SymbolTypeId(IsLocal: false, SymbolIds.Int);
+        public readonly static TypeId String = new SymbolTypeId(IsLocal: false, SymbolIds.String);
     }
     
     public static class TypeIdExtensions

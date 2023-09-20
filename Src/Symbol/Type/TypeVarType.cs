@@ -31,10 +31,8 @@ public partial class TypeVarType : IType, ICyclicEqualityComparableClass<TypeVar
         return true;
     }
 
-    IType IType.GetTypeArg(int index) => throw new RuntimeFatalException();
     IType IType.Apply(TypeEnv typeEnv) => Apply(typeEnv);
     TypeId IType.GetTypeId() => GetTypeId();
-    IType? IType.GetMemberType(Name name, ImmutableArray<IType> typeArgs) => null;
     SymbolQueryResult? IType.QueryMember(Name name, int explicitTypeArgCount) => null;
     TResult IType.Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitTypeVar(this);
 

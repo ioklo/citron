@@ -113,6 +113,7 @@ namespace Citron
             { "as", Tokens.As },
             { "ref", Tokens.Ref },
             { "box", Tokens.Box },
+            { "local", Tokens.Local },
             { "null", Tokens.Null },
             { "public", Tokens.Public },
             { "protected", Tokens.Protected },

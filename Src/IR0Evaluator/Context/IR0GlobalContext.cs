@@ -90,8 +90,11 @@ namespace Citron
         // symbol의 사용범위.. IR0에 
         public IType? GetListItemType(IType listType)
         {
+            // list는 class type 이던가
             if (listType.GetTypeId().IsList(out var _))
-                return listType.GetTypeArg(0);
+            {
+                return ((ClassType)listType).GetSymbol().GetTypeArg(0);
+            }
 
             return null;
         }

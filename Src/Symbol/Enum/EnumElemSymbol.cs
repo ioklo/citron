@@ -122,12 +122,13 @@ namespace Citron.Symbol
             visitor.VisitEnumElem(this);
         }
 
-        IType ITypeSymbol.MakeType()
+        IType ITypeSymbol.MakeType(bool bLocalInterface)
         {
+            Debug.Assert(!bLocalInterface);
             return new EnumElemType(this);
         }
 
-        IType? ITypeSymbol.GetMemberType(Name memberName, ImmutableArray<IType> typeArgs)
+        ITypeSymbol? ITypeSymbol.GetMemberType(Name memberName, ImmutableArray<IType> typeArgs)
         {
             return null;
         }

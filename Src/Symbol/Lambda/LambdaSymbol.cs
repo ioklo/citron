@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Citron.Collections;
 using Citron.Infra;
 using Pretune;
@@ -99,15 +100,16 @@ namespace Citron.Symbol
             return outer as ITypeSymbol;
         }
 
-        IType ITypeSymbol.MakeType()
+        IType ITypeSymbol.MakeType(bool bLocalInterface)
         {
+            Debug.Assert(!bLocalInterface);
             return new LambdaType(this);
         }
 
-        IType? ITypeSymbol.GetMemberType(Name memberName, ImmutableArray<IType> typeArgs)
+        ITypeSymbol? ITypeSymbol.GetMemberType(Name memberName, ImmutableArray<IType> typeArgs)
             => GetMemberType(memberName, typeArgs);
 
-        public IType? GetMemberType(Name memberName, ImmutableArray<IType> typeArgs)
+        public ITypeSymbol? GetMemberType(Name memberName, ImmutableArray<IType> typeArgs)
         {
             return null;
         }

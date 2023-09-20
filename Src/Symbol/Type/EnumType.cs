@@ -30,12 +30,9 @@ public partial class EnumType : IType, ICyclicEqualityComparableClass<EnumType>
     }
 
     TResult IType.Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitEnum(this);
-    IType IType.GetTypeArg(int index) => symbol.GetTypeArg(index);
     IType IType.Apply(TypeEnv typeEnv) => Apply(typeEnv);
 
-    TypeId IType.GetTypeId() => new SymbolTypeId(symbol.GetSymbolId());
-    IType? IType.GetMemberType(Name name, ImmutableArray<IType> typeArgs)
-        => ((ITypeSymbol)symbol).GetMemberType(name, typeArgs);
+    TypeId IType.GetTypeId() => new SymbolTypeId(IsLocal: false, symbol.GetSymbolId());
 
     SymbolQueryResult? IType.QueryMember(Name name, int explicitTypeArgCount)
         => ((ITypeSymbol)symbol).QueryMember(name, explicitTypeArgCount);

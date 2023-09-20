@@ -549,7 +549,7 @@ namespace Citron.IR0
             return new YieldStmt(exp);
         }
 
-        public FuncType FuncType(IType retType, params IType[] paramTypes)
+        public FuncType FuncType(bool bLocal, IType retType, params IType[] paramTypes)
         {
             var paramsBuilder = ImmutableArray.CreateBuilder<FuncParameter>(paramTypes.Length);
 
@@ -560,7 +560,7 @@ namespace Citron.IR0
                 paramsBuilder.Add(new FuncParameter(paramType, name));
             }
 
-            return new FuncType(new FuncReturn(retType), paramsBuilder.MoveToImmutable());
+            return new FuncType(bLocal, new FuncReturn(retType), paramsBuilder.MoveToImmutable());
         }
 
         public LocalPtrType LocalPtrType(IType innerType)

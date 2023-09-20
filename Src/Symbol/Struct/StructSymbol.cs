@@ -152,7 +152,7 @@ namespace Citron.Symbol
             return results[0];
         }
 
-        public IType? GetMemberType(Name memberName, ImmutableArray<IType> typeArgs)
+        ITypeSymbol? ITypeSymbol.GetMemberType(Name memberName, ImmutableArray<IType> typeArgs)
         {
             // TODO: caching
             foreach (var memberType in decl.GetMemberTypes())
@@ -160,7 +160,7 @@ namespace Citron.Symbol
                 var typeName = memberType.GetNodeName();
 
                 if (memberName.Equals(typeName.Name) && typeName.TypeParamCount == typeArgs.Length)
-                    return SymbolInstantiator.Instantiate(symbolFactory, this, memberType, typeArgs).MakeType();
+                    return SymbolInstantiator.Instantiate(symbolFactory, this, memberType, typeArgs);
             }
 
             return null;
@@ -176,7 +176,7 @@ namespace Citron.Symbol
             return symbolFactory.MakeStruct(appliedOuter, decl, appliedTypeArgs);
         }
 
-        IType ITypeSymbol.MakeType()
+        IType ITypeSymbol.MakeType(bool bLocalInterface)
         {
             return new StructType(this);
         }

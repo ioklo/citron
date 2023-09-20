@@ -39,6 +39,12 @@ namespace Citron.Syntax
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitBoxPtr(this);
     }    
 
+    // local I, innerTypeExp가 interface인지는 여기서 확인하지 않는다
+    public record class LocalTypeExp(TypeExp InnerTypeExp) : TypeExp
+    {
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitLocal(this);
+    }
+
     public interface ITypeExpVisitor<TResult>
     {
         TResult VisitId(IdTypeExp typeExp);
@@ -46,5 +52,6 @@ namespace Citron.Syntax
         TResult VisitNullable(NullableTypeExp typeExp);
         TResult VisitLocalPtr(LocalPtrTypeExp typeExp);
         TResult VisitBoxPtr(BoxPtrTypeExp typeExp);
+        TResult VisitLocal(LocalTypeExp typeExp);
     }
 }

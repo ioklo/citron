@@ -39,7 +39,7 @@ namespace Citron.Symbol
             return decl;
         }
 
-        public IType? GetMemberType(Name memberName, ImmutableArray<IType> typeArgs)
+        ITypeSymbol? ITypeSymbol.GetMemberType(Name memberName, ImmutableArray<IType> typeArgs)
         {
             throw new NotImplementedException();
         }
@@ -59,10 +59,12 @@ namespace Citron.Symbol
             return typeEnv;
         }
 
-        public IType MakeType()
+        public IType MakeType(bool bLocalInterface)
         {
-            return new InterfaceType(this);
+            return new InterfaceType(bLocalInterface, this);
         }
+
+        IType ITypeSymbol.MakeType(bool bLocalInterface) => MakeType(bLocalInterface);
 
         public SymbolQueryResult? QueryMember(Name name, int typeParamCount)
         {

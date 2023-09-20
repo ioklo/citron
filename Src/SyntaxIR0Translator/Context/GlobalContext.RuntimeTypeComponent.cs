@@ -70,7 +70,7 @@ partial class GlobalContext
         {
             var typeArgs = Arr(itemType.GetTypeId());
             var listId = systemNSId.Child(new Name.Normal("List"), typeArgs);
-            return loader.Load(new SymbolTypeId(listId));
+            return loader.Load(new SymbolTypeId(IsLocal: false, listId));
         }
     }
 

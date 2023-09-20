@@ -17,10 +17,8 @@ public partial class VoidType: IType, ICyclicEqualityComparableClass<VoidType>
         return true;
     }
     
-    IType IType.GetTypeArg(int index) => throw new RuntimeFatalException();
     IType IType.Apply(TypeEnv typeEnv) => this;
     TypeId IType.GetTypeId() => new VoidTypeId();
-    IType? IType.GetMemberType(Name name, ImmutableArray<IType> typeArgs) => null;
     SymbolQueryResult? IType.QueryMember(Name name, int explicitTypeArgCount) => null;
     TResult IType.Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitVoid(this);
 

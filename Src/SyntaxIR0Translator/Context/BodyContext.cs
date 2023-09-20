@@ -226,12 +226,12 @@ partial class BodyContext : IMutable<BodyContext>
                 switch (funcOuter)
                 {
                     case ClassDeclSymbol classDeclSymbol:
-                        var classType = ((ITypeSymbol)classDeclSymbol).MakeType();                        
+                        var classType = ((ITypeSymbol)classDeclSymbol).MakeType(bLocalInterface: false);                        
                         candidates.Add(new IntermediateExp.ThisVar(classType)); // C
                         break;
 
                     case StructDeclSymbol structDeclSymbol:
-                        var structType = ((ITypeSymbol)structDeclSymbol).MakeType();
+                        var structType = ((ITypeSymbol)structDeclSymbol).MakeType(bLocalInterface: false);
                         var structRefType = new LocalPtrType(structType); // S*
                         candidates.Add(new IntermediateExp.ThisVar(structRefType));
                         break;

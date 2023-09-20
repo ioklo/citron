@@ -48,10 +48,8 @@ public partial class ClassType : IType, ICyclicEqualityComparableClass<ClassType
         return true;
     }
     
-    IType IType.GetTypeArg(int index) => symbol.GetTypeArg(index);
     IType IType.Apply(TypeEnv typeEnv) => Apply(typeEnv);
-    TypeId IType.GetTypeId() => new SymbolTypeId(symbol.GetSymbolId());
-    IType? IType.GetMemberType(Name name, ImmutableArray<IType> typeArgs) => symbol.GetMemberType(name, typeArgs);
+    TypeId IType.GetTypeId() => new SymbolTypeId(IsLocal: false, symbol.GetSymbolId());
     SymbolQueryResult? IType.QueryMember(Name name, int explicitTypeArgCount) => symbol.QueryMember(name, explicitTypeArgCount);
     
     TResult IType.Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitClass(this);

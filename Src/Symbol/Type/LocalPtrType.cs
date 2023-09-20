@@ -30,9 +30,7 @@ public partial class LocalPtrType : IType, ICyclicEqualityComparableClass<LocalP
     }
 
     IType IType.Apply(TypeEnv typeEnv) => Apply(typeEnv);
-    IType IType.GetTypeArg(int index) => throw new RuntimeFatalException();
     TypeId IType.GetTypeId() => new LocalPtrTypeId(innerType.GetTypeId());
-    IType? IType.GetMemberType(Name name, ImmutableArray<IType> typeArgs) => null;
     SymbolQueryResult? IType.QueryMember(Name name, int explicitTypeArgCount) => null;
     TResult IType.Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitLocalPtr(this);
 

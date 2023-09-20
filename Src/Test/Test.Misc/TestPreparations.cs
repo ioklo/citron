@@ -29,7 +29,7 @@ public record struct TestPreparations(Name ModuleName, SymbolFactory SymbolFacto
             systemNSD.AddType(boolD);
 
             ITypeSymbol boolSymbol = factory.MakeStruct(systemNSSymbol, boolD, typeArgs: default);
-            return boolSymbol.MakeType();
+            return boolSymbol.MakeType(bLocalInterface: false);
         }
         var boolType = MakeBoolType();
 
@@ -39,7 +39,7 @@ public record struct TestPreparations(Name ModuleName, SymbolFactory SymbolFacto
             intD.InitBaseTypes(baseStruct: null, interfaces: default);
             systemNSD.AddType(intD);
             ITypeSymbol intSymbol = factory.MakeStruct(systemNSSymbol, intD, typeArgs: default);
-            return intSymbol.MakeType();
+            return intSymbol.MakeType(bLocalInterface: false);
         }
         var intType = MakeIntType();
 
@@ -49,7 +49,7 @@ public record struct TestPreparations(Name ModuleName, SymbolFactory SymbolFacto
             stringD.InitBaseTypes(baseClass: null, interfaces: default);
             systemNSD.AddType(stringD);
             ITypeSymbol stringSymbol = factory.MakeClass(systemNSSymbol, stringD, typeArgs: default);
-            return stringSymbol.MakeType();
+            return stringSymbol.MakeType(bLocalInterface: false);
         }
         var stringType = MakeStringType();
 
@@ -65,11 +65,11 @@ public record struct TestPreparations(Name ModuleName, SymbolFactory SymbolFacto
 
             return (itemType =>
             {
-                return ((ITypeSymbol)factory.MakeClass(systemNSSymbol, listD, Arr(itemType))).MakeType();
+                return ((ITypeSymbol)factory.MakeClass(systemNSSymbol, listD, Arr(itemType))).MakeType(bLocalInterface: false);
             }, itemType =>
             {
                 var listSymbol = ((ITypeSymbol)factory.MakeClass(systemNSSymbol, listD, Arr(itemType)));
-                return ((ITypeSymbol)factory.MakeClass(listSymbol, listIterD, default)).MakeType();
+                return ((ITypeSymbol)factory.MakeClass(listSymbol, listIterD, default)).MakeType(bLocalInterface: false);
             }
             );
         }

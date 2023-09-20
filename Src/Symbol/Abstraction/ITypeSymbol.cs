@@ -11,8 +11,8 @@ namespace Citron.Symbol
         new void Accept<TTypeSymbolVisitor>(ref TTypeSymbolVisitor visitor)
             where TTypeSymbolVisitor : ITypeSymbolVisitor;
 
-        IType MakeType();
-        IType? GetMemberType(Name memberName, ImmutableArray<IType> typeArgs);
+        IType MakeType(bool bLocalInterface);
+        ITypeSymbol? GetMemberType(Name memberName, ImmutableArray<IType> typeArgs);
     }
 
     public static class TypeSymbolExtensions

@@ -55,39 +55,38 @@ static class IDeclSymbolNodeCanSearchInAllModulesExtension
 // Y => X<T>.Y // decl space의 typevar가 그대로 살아있다
 // X<Y>.Y => X<X<T>.Y>.Y  // 그거랑 별개로 인자로 들어온 것들은 적용을 시켜야 한다   
 static class TypeMakerByTypeExp
-{
-    // Module, Namespace, Type중 하나이다. 나머지는 해당 안됨
+{   
+    // 심볼이거나, 인라인 타입이거나(nullable, box ptr, local ptr)
     struct Item
-    {
-        // 아래 셋 중에 하나이다
-        public ModuleSymbol? Module { get; init; }
-        public NamespaceSymbol? Namespace { get; init; }
+    {   
+        public ISymbolNode? Symbol { get; init; }
         public IType? Type { get; init; }
 
-        public static Item Make(IType type)
+        public static Item MakeTypeItem(IType type)
         {
             return new Item() { Type = type };
         }
 
-        public static Item? Make(ISymbolNode? symbol)
+        public static Item? MakeSymbolItem(ISymbolNode? symbol)
         {
-            switch(symbol)
-            {
-                case ModuleSymbol moduleSymbol: return new Item() { Module = moduleSymbol };
-                case NamespaceSymbol namespaceSymbol: return new Item() { Namespace = namespaceSymbol };
-                case ITypeSymbol typeSymbol: return new Item() { Type = typeSymbol.MakeType() };
-                default: return null;
-            }
+            return new Item() { Symbol = symbol };
         }
     }
 
     record struct ItemGetter(IEnumerable<ModuleDeclSymbol> modules, SymbolFactory factory, IDeclSymbolNode node) : ITypeExpVisitor<Candidates<Item>>
     {
-        public IType MakeType(TypeExp typeExp)
+        // 최상단
+        public IType MakeType(TypeExp typeExp, bool bLocalInterface)
         {
             // 키워드
             if (typeExp is IdTypeExp idTypeExp)
             {
+                if (bLocalInterface)
+                {
+                    // TODO: [11] TypeExp에서 local은 인터페이스에서만 쓸수 있다고 에러를 낸다
+                    throw new NotImplementedException();
+                }
+
                 // void
                 if (idTypeExp.Name == "void" && idTypeExp.TypeArgs.Length == 0)
                     return new VoidType();
@@ -95,7 +94,7 @@ static class TypeMakerByTypeExp
                 // bool
                 if (idTypeExp.Name == "bool" && idTypeExp.TypeArgs.Length == 0)
                 {
-                    var boolType = GetRuntimeType(new Name.Normal("Bool"), 0);
+                    var boolType = GetRuntimeType(new Name.Normal("Bool"), 0, bLocalInterface: false);
                     if (boolType == null)
                         throw new NotImplementedException();
 
@@ -105,7 +104,7 @@ static class TypeMakerByTypeExp
                 // int
                 if (idTypeExp.Name == "int" && idTypeExp.TypeArgs.Length == 0)
                 {
-                    var intType = GetRuntimeType(new Name.Normal("Int32"), 0);
+                    var intType = GetRuntimeType(new Name.Normal("Int32"), 0, bLocalInterface: false);
                     if (intType == null)
                         throw new NotImplementedException();
 
@@ -116,7 +115,7 @@ static class TypeMakerByTypeExp
                 // string
                 if (idTypeExp.Name == "string" && idTypeExp.TypeArgs.Length == 0)
                 {
-                    var intType = GetRuntimeType(new Name.Normal("String"), 0);
+                    var intType = GetRuntimeType(new Name.Normal("String"), 0, bLocalInterface: false);
                     if (intType == null)
                         throw new NotImplementedException();
 
@@ -124,14 +123,23 @@ static class TypeMakerByTypeExp
                 }
             }
 
-
             // 네임스페이스는 모듈을 넘어서도 공유되기 때문에, 검색때는 Module을 제외한 path만 사용한다
             var candidates = GetItems(typeExp);
             var result = candidates.GetUniqueResult();
 
             if (result.IsFound(out var value))
             {
-                if (value.Type != null)
+                if (value.Symbol is ITypeSymbol typeSymbol)
+                {
+                    if (bLocalInterface && typeSymbol is not InterfaceSymbol)
+                    {
+                        // TODO: [11] TypeExp에서 local은 인터페이스에서만 쓸수 있다고 에러를 낸다
+                        throw new NotImplementedException();
+                    }
+
+                    return typeSymbol.MakeType(bLocalInterface);
+                }
+                else if (value.Type != null)
                     return value.Type;
                 else
                     throw new NotImplementedException(); // 타입이 아닙니다
@@ -150,7 +158,7 @@ static class TypeMakerByTypeExp
             var typeArgsBuilder = ImmutableArray.CreateBuilder<IType>(typeExps.Length);
             foreach (var typeExp in typeExps)
             {
-                var typeArg = MakeType(typeExp);
+                var typeArg = MakeType(typeExp, bLocalInterface: false);
                 typeArgsBuilder.Add(typeArg);
             }
             return typeArgsBuilder.MoveToImmutable();
@@ -162,7 +170,7 @@ static class TypeMakerByTypeExp
         }
 
         // System.*
-        IType? GetRuntimeType(Name name, int typeParamCount)
+        IType? GetRuntimeType(Name name, int typeParamCount, bool bLocalInterface)
         {
             foreach (var moduleDecl in modules)
             {
@@ -174,10 +182,10 @@ static class TypeMakerByTypeExp
                     var typeDecl = nsDecl.GetType(name, typeParamCount);
                     if (typeDecl == null) return null;
 
-                    var typeSymbol = typeDecl.MakeOpenSymbol(factory) as ITypeSymbol;
+                    var typeSymbol = typeDecl.MakeOpenSymbol(factory);
                     if (typeSymbol == null) return null;
 
-                    return typeSymbol.MakeType();
+                    return typeSymbol.MakeType(bLocalInterface);
                 }
             }
 
@@ -209,7 +217,7 @@ static class TypeMakerByTypeExp
                         {
                             int baseTypeParamIndex = curOuterNode.GetOuterDeclNode()?.GetTotalTypeParamCount() ?? 0;
                             var typeVarType = new TypeVarType(baseTypeParamIndex + i, typeParam);
-                            candidates.Add(Item.Make(typeVarType));
+                            candidates.Add(Item.MakeTypeItem(typeVarType));
                             break; // 같은 이름이 있을수 없으므로 바로 종료
                         }
                     }
@@ -240,7 +248,7 @@ static class TypeMakerByTypeExp
 
                             // symbol은 X<T>.Y<int>
                             var symbol = SymbolInstantiator.Instantiate(factory, outerSymbol, declSymbol, typeArgs);
-                            var candidate = Item.Make(symbol);
+                            var candidate = Item.MakeSymbolItem(symbol);
 
                             // Module, Namespace, Type에 해당이 되지 않으면 스킵
                             if (candidate != null)
@@ -255,7 +263,7 @@ static class TypeMakerByTypeExp
                     {
                         var symbol = declSymbol.MakeOpenSymbol(factory);
 
-                        var candidate = Item.Make(symbol);
+                        var candidate = Item.MakeSymbolItem(symbol);
                         if (candidate != null)
                             candidates.Add(candidate.Value);
                     }
@@ -288,23 +296,19 @@ static class TypeMakerByTypeExp
             {
                 var outerItem = outerItems.GetAt(i);
 
-                if (outerItem.Type != null)
+                if (outerItem.Type != null) // 심볼이 아닌 Type
                 {
-                    var memberType = outerItem.Type.GetMemberType(nodeName.Name, typeArgs);
-                    if (memberType != null)
-                        candidates.Add(Item.Make(memberType));
+                    // 현재 인라인 타입은 멤버 타입이 없다. 에러
+                    throw new NotImplementedException();
+
+                    //var memberType = outerItem.Type.GetMemberType(nodeName.Name, typeArgs);
+                    //if (memberType != null)
+                    //    candidates.Add(Item.MakeTypeItem(memberType));
                 }
-                else
+                else if (outerItem.Symbol != null)
                 {
-                    ISymbolNode outerSymbol;
-
-                    if (outerItem.Module != null)
-                        outerSymbol = outerItem.Module;
-                    else if (outerItem.Namespace != null)
-                        outerSymbol = outerItem.Namespace;
-                    else
-                        throw new UnreachableException();
-
+                    var outerSymbol = outerItem.Symbol;
+                    
                     // class X<T> { class Y<U> { class Z { X<bool>.Y<int> } }
 
                     // outerItem은 X<bool> 
@@ -318,7 +322,7 @@ static class TypeMakerByTypeExp
                     {
                         // symbol은 X<bool>.Y<int>
                         var symbol = SymbolInstantiator.Instantiate(factory, outerSymbol, memberDeclSymbol, typeArgs);
-                        var item = Item.Make(symbol);
+                        var item = Item.MakeSymbolItem(symbol);
 
                         if (item != null)
                             candidates.Add(item.Value);
@@ -342,7 +346,7 @@ static class TypeMakerByTypeExp
                     var type = new NullableType(item.Type);
 
                     candidates.Clear();
-                    candidates.Add(Item.Make(type));
+                    candidates.Add(Item.MakeTypeItem(type));
                     return candidates;
                 }
                 else
@@ -358,20 +362,30 @@ static class TypeMakerByTypeExp
 
         Candidates<Item> ITypeExpVisitor<Candidates<Item>>.VisitLocalPtr(LocalPtrTypeExp typeExp)
         {
-            var type = MakeType(typeExp.InnerTypeExp);
+            var type = MakeType(typeExp.InnerTypeExp, bLocalInterface: false);
 
             var candidates = new Candidates<Item>();
-            candidates.Add(Item.Make(new LocalPtrType(type)));
+            candidates.Add(Item.MakeTypeItem(new LocalPtrType(type)));
 
             return candidates;
         }
 
         Candidates<Item> ITypeExpVisitor<Candidates<Item>>.VisitBoxPtr(BoxPtrTypeExp typeExp)
         {
-            var type = MakeType(typeExp.InnerTypeExp);
+            var type = MakeType(typeExp.InnerTypeExp, bLocalInterface: false);
 
             var candidates = new Candidates<Item>();
-            candidates.Add(Item.Make(new BoxPtrType(type)));
+            candidates.Add(Item.MakeTypeItem(new BoxPtrType(type)));
+
+            return candidates;
+        }
+
+        Candidates<Item> ITypeExpVisitor<Candidates<Item>>.VisitLocal(LocalTypeExp typeExp)
+        {
+            // local 검사
+            var type = MakeType(typeExp.InnerTypeExp, bLocalInterface: true); // 여기서 bLocalInterface 플래그를 올린다
+            var candidates = new Candidates<Item>();
+            candidates.Add(Item.MakeTypeItem(new BoxPtrType(type)));
 
             return candidates;
         }
@@ -380,6 +394,6 @@ static class TypeMakerByTypeExp
     public static IType MakeType(IEnumerable<ModuleDeclSymbol> modules, SymbolFactory factory, IDeclSymbolNode node, TypeExp typeExp)
     {
         var getter = new ItemGetter(modules, factory, node);
-        return getter.MakeType(typeExp);
+        return getter.MakeType(typeExp, bLocalInterface: false); // bLocalInterface의 초기값은 false, typeExp 중에 LocalTypeExp가 있으면 순회중에 켜진다
     }
 }

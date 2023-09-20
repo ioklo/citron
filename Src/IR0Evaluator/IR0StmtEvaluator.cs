@@ -364,7 +364,7 @@ namespace Citron
         async IAsyncEnumerable<bool> IIR0StmtVisitor<IAsyncEnumerable<bool>>.VisitTask(TaskStmt stmt)
         {
             // 공간 할당
-            var lambdaValue = context.AllocValue<LambdaValue>(new SymbolTypeId(stmt.Lambda.GetSymbolId()));
+            var lambdaValue = context.AllocValue<LambdaValue>(new SymbolTypeId(IsLocal: false, stmt.Lambda.GetSymbolId()));
 
             // 캡쳐
             await IR0ExpEvaluator.EvalCaptureArgs(stmt.Lambda, lambdaValue, stmt.CaptureArgs, context);
@@ -398,7 +398,7 @@ namespace Citron
         async IAsyncEnumerable<bool> IIR0StmtVisitor<IAsyncEnumerable<bool>>.VisitAsync(AsyncStmt stmt)
         {
             // 공간 할당
-            var lambdaValue = context.AllocValue<LambdaValue>(new SymbolTypeId(stmt.Lambda.GetSymbolId()));
+            var lambdaValue = context.AllocValue<LambdaValue>(new SymbolTypeId(IsLocal: false, stmt.Lambda.GetSymbolId()));
 
             // 캡쳐
             await IR0ExpEvaluator.EvalCaptureArgs(stmt.Lambda, lambdaValue, stmt.CaptureArgs, context);

@@ -200,7 +200,8 @@ partial struct TypeExpParser
 
         if (!ParseNullableTypeExp(out outTypeExp) &&
             !ParseBoxPtrTypeExp(out outTypeExp) &&
-            !ParseLocalPtrTypeExp(out outTypeExp))
+            !ParseLocalPtrTypeExp(out outTypeExp) && 
+            !ParseLocalTypeExp(out outTypeExp))
         {
             outTypeExp = null;
             return false;
@@ -250,12 +251,32 @@ partial struct TypeExpParser
     // tuple
     // bool InternalParseTupleTypeExp([NotNullWhen(returnValue: true)] out TypeExp? outTypeExp);
 
+    // local I i;
+    bool InternalParseLocalTypeExp([NotNullWhen(returnValue: true)] out TypeExp? outTypeExp)
+    {
+        if (!Accept(Tokens.Local))
+        {
+            outTypeExp = null;
+            return false;
+        }
+
+        if (!ParseIdChainTypeExp(out var innerTypeExp)) // && !ParseFuncTypeExp(out outTypeExp)
+        {
+            outTypeExp = null;
+            return false;
+        }
+
+        outTypeExp = new LocalTypeExp(innerTypeExp);
+        return true;
+    }
+
     // 
     bool InternalParseTypeExp([NotNullWhen(returnValue: true)] out TypeExp? outTypeExp)
     {
         return ParseNullableTypeExp(out outTypeExp) ||
             ParseBoxPtrTypeExp(out outTypeExp) ||
             ParseLocalPtrTypeExp(out outTypeExp) ||
-            ParseIdChainTypeExp(out outTypeExp);
+            ParseIdChainTypeExp(out outTypeExp) ||
+            ParseLocalTypeExp(out outTypeExp);
     }
 }

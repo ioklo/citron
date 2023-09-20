@@ -17,7 +17,7 @@ public partial struct TypeLoader
         switch (id)
         {
             case SymbolTypeId symbolTypeId:
-                return ((ITypeSymbol)symbolLoader.Load(symbolTypeId.SymbolId)).MakeType();
+                return ((ITypeSymbol)symbolLoader.Load(symbolTypeId.SymbolId)).MakeType(bLocalInterface: false);
 
             case VoidTypeId:
                 return new VoidType();
