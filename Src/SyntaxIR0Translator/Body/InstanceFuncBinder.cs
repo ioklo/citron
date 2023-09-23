@@ -5,11 +5,14 @@ using Citron.IR0;
 
 namespace Citron.Analysis;
 
+using Result = TranslationResult<IR0ExpResult>;
+using ITV = ITypeVisitor<TranslationResult<IR0ExpResult>>;
+using ISQRV = ISymbolQueryResultVisitor<TranslationResult<IR0ExpResult>>;
+using SQR = SymbolQueryResult;
+
 // 소스코드에서 마치 x.'Func(a, b)' 한거 같은 효과? 그럼 그냥 CallBinder를 쓰지?
 // TODO: [12] Extension 함수 검색
-struct InstanceFuncBinder
-    : ITypeVisitor<TranslationResult<IR0ExpResult>>
-    , ISymbolQueryResultVisitor<TranslationResult<IR0ExpResult>>
+struct InstanceFuncBinder : ITV, ISQRV
 {
     IDeclSymbolNode curNode;
     Loc instance;
@@ -17,36 +20,36 @@ struct InstanceFuncBinder
     ImmutableArray<IType> explicitTypeArgs;
     ImmutableArray<Argument> args;
 
-    public static TranslationResult<IR0ExpResult> Bind(IDeclSymbolNode curNode, Loc instance, IType instanceType, Name name, ImmutableArray<IType> explicitTypeArgs, ImmutableArray<Argument> args)
+    public static Result Bind(IDeclSymbolNode curNode, Loc instance, IType instanceType, Name name, ImmutableArray<IType> explicitTypeArgs, ImmutableArray<Argument> args)
     {
         var member = instanceType.QueryMember(name, explicitTypeArgs.Length);
         if (member == null) return Error();
 
         var binder = new InstanceFuncBinder { curNode = curNode, instance = instance, explicitTypeArgs = explicitTypeArgs, args = args };
-        return member.Accept<InstanceFuncBinder, TranslationResult<IR0ExpResult>>(ref binder);
+        return member.Accept<InstanceFuncBinder, Result>(ref binder);
         
-        return instanceType.Accept<InstanceFuncBinder, TranslationResult<IR0ExpResult>>(ref binder);
+        return instanceType.Accept<InstanceFuncBinder, Result>(ref binder);
     }
 
-    static TranslationResult<IR0ExpResult> Error() { return TranslationResult.Error<IR0ExpResult>(); }
-    static TranslationResult<IR0ExpResult> Valid(IR0ExpResult exp) { return TranslationResult.Valid(exp); }
+    static Result Error() { return TranslationResult.Error<IR0ExpResult>(); }
+    static Result Valid(IR0ExpResult exp) { return TranslationResult.Valid(exp); }
 
-    TranslationResult<IR0ExpResult> HandleError() { throw new NotImplementedException(); }
+    Result HandleError() { throw new NotImplementedException(); }
 
     // TODO: [12] 아래 모든 타입들은 extension이 있으면 사용가능하게 된다
-    TranslationResult<IR0ExpResult> ITypeVisitor<TranslationResult<IR0ExpResult>>.VisitBoxPtr(BoxPtrType type) => HandleError();
-    TranslationResult<IR0ExpResult> ITypeVisitor<TranslationResult<IR0ExpResult>>.VisitEnum(EnumType type) => HandleError();
-    TranslationResult<IR0ExpResult> ITypeVisitor<TranslationResult<IR0ExpResult>>.VisitEnumElem(EnumElemType type) => HandleError();
-    TranslationResult<IR0ExpResult> ITypeVisitor<TranslationResult<IR0ExpResult>>.VisitLambda(LambdaType type) => HandleError();
-    TranslationResult<IR0ExpResult> ITypeVisitor<TranslationResult<IR0ExpResult>>.VisitLocalPtr(LocalPtrType type) => HandleError();
-    TranslationResult<IR0ExpResult> ITypeVisitor<TranslationResult<IR0ExpResult>>.VisitTuple(TupleType type) => HandleError();
-    TranslationResult<IR0ExpResult> ITypeVisitor<TranslationResult<IR0ExpResult>>.VisitVoid(VoidType type) => HandleError();
-    TranslationResult<IR0ExpResult> ITypeVisitor<TranslationResult<IR0ExpResult>>.VisitFunc(FuncType type) => HandleError();
-    TranslationResult<IR0ExpResult> ITypeVisitor<TranslationResult<IR0ExpResult>>.VisitNullable(NullableType type) => HandleError();
+    Result ITV.VisitBoxPtr(BoxPtrType type) => HandleError();
+    Result ITV.VisitEnum(EnumType type) => HandleError();
+    Result ITV.VisitEnumElem(EnumElemType type) => HandleError();
+    Result ITV.VisitLambda(LambdaType type) => HandleError();
+    Result ITV.VisitLocalPtr(LocalPtrType type) => HandleError();
+    Result ITV.VisitTuple(TupleType type) => HandleError();
+    Result ITV.VisitVoid(VoidType type) => HandleError();
+    Result ITV.VisitFunc(FuncType type) => HandleError();
+    Result ITV.VisitNullable(NullableType type) => HandleError();
 
-    TranslationResult<IR0ExpResult> ITypeVisitor<TranslationResult<IR0ExpResult>>.VisitTypeVar(TypeVarType type) => throw new NotImplementedException();
+    Result ITV.VisitTypeVar(TypeVarType type) => throw new NotImplementedException();
 
-    TranslationResult<IR0ExpResult> ITypeVisitor<TranslationResult<IR0ExpResult>>.VisitClass(ClassType type)
+    Result ITV.VisitClass(ClassType type)
     {
         // x.GetEnumerator() 호출
         var classMemberFunc = type.GetMemberFunc(name, typeArgs, paramIds);
@@ -66,13 +69,13 @@ struct InstanceFuncBinder
         return Valid(new IR0ExpResult(new CallClassMemberFuncExp(classMemberFunc, instance, args), classMemberFunc.GetReturn().Type));
     }
 
-    TranslationResult<IR0ExpResult> ITypeVisitor<TranslationResult<IR0ExpResult>>.VisitInterface(InterfaceType type)
+    Result ITV.VisitInterface(InterfaceType type)
     {
         // TODO: [13] interface 구현
         throw new NotImplementedException();
     }
         
-    TranslationResult<IR0ExpResult> ITypeVisitor<TranslationResult<IR0ExpResult>>.VisitStruct(StructType type)
+    Result ITV.VisitStruct(StructType type)
     {
         var structMemberFunc = type.GetMemberFunc(name, typeArgs: default, paramIds: default);
         if (structMemberFunc == null)
@@ -90,5 +93,56 @@ struct InstanceFuncBinder
 
         return Valid(new IR0ExpResult(new CallStructMemberFuncExp(structMemberFunc, instance, args), structMemberFunc.GetReturn().Type));
     }
+
+    Result ISQRV.VisitMultipleCandidatesError(SQR.MultipleCandidatesError result) => HandleError();
+    Result ISQRV.VisitNamespace(SQR.Namespace result) => HandleError();
+    Result ISQRV.VisitGlobalFuncs(SQR.GlobalFuncs result) => HandleError();
+    Result ISQRV.VisitClass(SQR.Class result) => HandleError();
+
+    Result ISQRV.VisitClassMemberFuncs(SQR.ClassMemberFuncs result)
+    {
         
+    }
+
+    Result ISQRV.VisitClassMemberVar(SQR.ClassMemberVar result) => HandleError();
+
+    Result ISQRV.VisitStruct(SQR.Struct result)
+    {
+        throw new NotImplementedException();
+    }
+
+    Result ISQRV.VisitStructMemberFuncs(SQR.StructMemberFuncs result)
+    {
+        throw new NotImplementedException();
+    }
+
+    Result ISQRV.VisitStructMemberVar(SQR.StructMemberVar result)
+    {
+        throw new NotImplementedException();
+    }
+
+    Result ISQRV.VisitEnum(SQR.Enum result)
+    {
+        throw new NotImplementedException();
+    }
+
+    Result ISQRV.VisitEnumElem(SQR.EnumElem result)
+    {
+        throw new NotImplementedException();
+    }
+
+    Result ISQRV.VisitEnumElemMemberVar(SQR.EnumElemMemberVar result)
+    {
+        throw new NotImplementedException();
+    }
+
+    Result ISQRV.VisitLambdaMemberVar(SQR.LambdaMemberVar result)
+    {
+        throw new NotImplementedException();
+    }
+
+    Result ISQRV.VisitTupleMemberVar(SQR.TupleMemberVar result)
+    {
+        throw new NotImplementedException();
+    }
 }

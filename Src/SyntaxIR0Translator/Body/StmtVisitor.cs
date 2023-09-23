@@ -528,11 +528,19 @@ struct StmtVisitor : IStmtVisitor
             if (bExactMatch) 
             {
                 var arg = new Argument.Normal(new LocalRefExp(new LocalVarLoc(itemVarName)));
-                return TranslationResult.Valid<(R.Exp, bool)>((new CallStructMemberFuncExp(funcS, enumerator, Arr<Argument>(arg)), bNeedCast: false));
+                var nextExp = new CallStructMemberFuncExp(funcS, enumerator, Arr<Argument>(arg));
+
+                return TranslationResult.Valid<(R.Exp, bool)>(nextExp, bNeedCast: false));
             }
             else
             {
-                
+                // casting
+                var rawItemVarName = context.MakeAnonymousName();
+                var arg = new Argument.Normal(new LocalRefExp(new LocalVarLoc(rawItemVarName)));
+                var nextExp = new CallStructMemberFuncExp(funcS, enumerator, Arr<Argument>(arg));
+
+                var rawItemVar = new R.LoadExp(new LocalVarLoc(rawItemVarName), itemTypeFromSignature);
+                var castExp = BodyMisc.TryCastExp_Exp(rawItemVar, itemTypeFromSignature, itemType, context);
 
             }
         }
@@ -565,7 +573,6 @@ struct StmtVisitor : IStmtVisitor
 
         // 거기서 또 bool Next(out T* c)하는 것이 중요
         // Next의 첫번째 인자 타입으로 부터 타입 T를 알아내야 한다
-
 
         // var
         if (BodyMisc.IsVarType(foreachStmt.Type))
