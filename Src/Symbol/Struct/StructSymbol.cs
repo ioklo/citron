@@ -66,6 +66,14 @@ namespace Citron.Symbol
             return symbolFactory.MakeStructMemberVar(this, memberVarDSymbol);
         }
 
+        public StructMemberFuncSymbol? GetMemberFunc(Name name, ImmutableArray<IType> typeArgs, ImmutableArray<FuncParamId> paramIds)
+        {
+            var memberFuncDS = decl.GetFunc(name, typeArgs.Length, paramIds);
+            if (memberFuncDS == null) return null;
+
+            return symbolFactory.MakeStructMemberFunc(this, memberFuncDS, typeArgs);
+        }
+
         SymbolQueryResult? QueryMember_Func(Name memberName, int typeParamCount)
         {
             var funcsBuilder = ImmutableArray.CreateBuilder<(ISymbolNode, StructMemberFuncDeclSymbol)>();

@@ -58,7 +58,7 @@ namespace Citron.IR0
     }
 
     // &i
-    public record class LocalRefExp(Loc InnerLoc, IType InnerLocType) : Exp
+    public record class LocalRefExp(Loc InnerLoc) : Exp
     {
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitLocalRef(this);
     }

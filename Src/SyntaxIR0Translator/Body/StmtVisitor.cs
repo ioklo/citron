@@ -4,6 +4,7 @@ using System;
 using Citron.Infra;
 using Citron.Symbol;
 using Citron.Collections;
+using Citron.IR0;
 
 using S = Citron.Syntax;
 using R = Citron.IR0;
@@ -12,10 +13,11 @@ using IStmtVisitor = Citron.Syntax.IStmtVisitor<Citron.Analysis.TranslationResul
 
 using static Citron.Infra.Misc;
 using static Citron.Analysis.SyntaxAnalysisErrorCode;
+using Pretune;
 
 namespace Citron.Analysis;
 
-partial struct StmtVisitor : IStmtVisitor
+struct StmtVisitor : IStmtVisitor
 {
     ScopeContext context;
 
@@ -455,15 +457,159 @@ partial struct StmtVisitor : IStmtVisitor
         return Stmts(new R.AsyncStmt(lambdaInfo.Lambda, lambdaInfo.Args));
     }
 
+    static Name NextName = new Name.Normal("Next");
+
+    TranslationResult<(TFuncSymbol FuncSymbol, IType ItemType, bool bExactMatch)> GetNextFunc<TSymbol, TFuncSymbol>(TSymbol typeSymbol, IType itemTypeFromSyntax)
+        where TSymbol : ITypeSymbol
+        where TFuncSymbol : IFuncSymbol
+    {
+        var candidates = new Candidates<(TFuncSymbol, IType, bool bExactMatch)>();
+
+        var typeDS = typeSymbol.GetDeclSymbolNode();
+
+        foreach (var funcDS in typeDS.GetFuncs())
+        {
+            if (!funcDS.GetNodeName().Equals(NextName)) continue;
+            if (funcDS.GetParameterCount() != 1) continue;
+
+            // 리턴 타입은 bool
+            var ret = funcDS.GetReturn();
+            Debug.Assert(ret.HasValue);
+
+            if (!BodyMisc.TypeEquals(ret.Value.Type, context.GetBoolType())) continue;
+
+            // 인자는 out T*꼴이어야 한다
+            var param = funcDS.GetParameter(0);
+            if (!param.bOut) continue;
+            if (param.Type is not LocalPtrType localPtrParamType) continue;
+
+            var itemTypeFromSignature = localPtrParamType.GetInnerType();
+
+            // type resolver가 없어서
+            if (funcDS.GetTypeParamCount() != 0)
+            {
+                // TODO: [16] TypeResolver적용
+                throw new NotImplementedException();
+            }
+            
+            // TODO: [16] TypeResolver적용
+            var funcSymbol = (TFuncSymbol)context.InstantiateSymbol(typeSymbol, funcDS, typeArgs: default);
+
+            if (BodyMisc.TypeEquals(itemTypeFromSignature, itemTypeFromSyntax))
+            {
+                return TranslationResult.Valid((funcSymbol, itemTypeFromSignature, bExactMatch: true));
+            }
+            else
+            {
+                candidates.Add((funcSymbol, itemTypeFromSignature, bExactMatch: false));
+            }
+        }
+
+        if (candidates.GetCount() == 1)
+            return TranslationResult.Valid(candidates.GetAt(0));
+        else
+        {
+            // TODO: [17] NextFunc
+            return TranslationResult.Error<(TFuncSymbol, IType, bool)>();
+        }
+    }
+
+    TranslationResult<(R.Exp, bool bNeedCast)> GetNextExpExplicitItemType(Loc enumerator, IType enumeratorType, IType itemType, Name itemVarName)
+    {
+        if (enumeratorType is StructType structEnumeratorType)
+        {
+            var result = GetNextFunc<StructSymbol, StructMemberFuncSymbol>(structEnumeratorType.GetSymbol(), itemType);
+            if (!result.IsValid(out var validResult))
+                return TranslationResult.Error<R.Exp>();
+
+            var (funcS, itemTypeFromSignature, bExactMatch) = validResult;
+
+            // 여기서 casting 여부가 결정된다 
+            if (bExactMatch) 
+            {
+                var arg = new Argument.Normal(new LocalRefExp(new LocalVarLoc(itemVarName)));
+                return TranslationResult.Valid<(R.Exp, bool)>((new CallStructMemberFuncExp(funcS, enumerator, Arr<Argument>(arg)), bNeedCast: false));
+            }
+            else
+            {
+                
+
+            }
+        }
+    }
+
     TranslationResult<ImmutableArray<R.Stmt>> IStmtVisitor.VisitForeach(S.ForeachStmt foreachStmt)
     {
-        // SYNTAX: foreach(var elemVarName in iterator) body
-        // IR0: foreach(type elemVarName in iteratorLoc)
-        var iterResult = ExpIR0LocTranslator.Translate(foreachStmt.Iterator, context, hintType: null, bWrapExpAsLoc: true, A2015_ResolveIdentifier_ExpressionIsNotLocation);
-        if (!iterResult.IsValid(out var iter))
+        // 그냥 이름을 enumerable로 한다
+
+        // SYNTAX: foreach(var elemVarName in enumerable) body
+        // IR0: foreach(type elemVarName)
+        var enumerableResult = ExpIR0LocTranslator.Translate(foreachStmt.Enumerable, context, hintType: null, bWrapExpAsLoc: true, A2015_ResolveIdentifier_ExpressionIsNotLocation);
+        if (!enumerableResult.IsValid(out var enumerableLocResult))
             return Error();
 
-        var (iterLoc, iterType) = iter;
+        var (enumerableLoc, enumerableType) = enumerableLocResult;
+        var itemVarName = new Name.Normal(foreachStmt.VarName);
+
+        // GetEnumerator() 함수만 있으면 된다
+        // 1. class인데 GetEnumerator()가 있거나
+        // 2. struct인데 GetEnumerator()가 있거나
+        // 3. interface IEnumerable<T>로 변환
+
+        var enumeratorResult = InstanceFuncBinder.Bind(context.GetFuncDeclSymbol(), enumerableLoc, enumerableType, new Name.Normal("GetEnumerator"), typeArgs: default, paramIds: default, args: default);
+        if (!enumeratorResult.IsValid(out var enumeratorExpResult))
+        {
+            // TODO: [15] foreach 에러 처리
+            throw new NotImplementedException();
+        }
+
+        // 거기서 또 bool Next(out T* c)하는 것이 중요
+        // Next의 첫번째 인자 타입으로 부터 타입 T를 알아내야 한다
+
+
+        // var
+        if (BodyMisc.IsVarType(foreachStmt.Type))
+        {
+            itemType = enumeratorExpResult.ExpType;
+
+            var anonymousEnumeratorName = context.NewAnonymousName();
+            
+            var bind = InstanceFuncBinder.Bind(
+                context.GetFuncDeclSymbol(),
+                new LocalVarLoc(anonymousEnumeratorName),
+                enumeratorExpResult.ExpType,
+                new Name.Normal("Next"),
+                typeArgs: default,
+                Arr(new Argument.Normal(new LocalRefExp(new LocalVarLoc(itemVarName))))
+            );
+
+        }
+        else // 
+        {
+            var itemType = context.MakeType(foreachStmt.Type);
+
+            // $e, item
+            var enumeratorLocalVar = new LocalVarLoc(context.NewAnonymousName());
+            var itemLocalVar = new LocalVarLoc(itemVarName);
+            var argument = new Argument.Normal(new R.LocalRefExp(itemLocalVar));
+
+            var nextExpResult = GetNextExpExplicitItemType(enumeratorLocalVar, enumeratorExpResult.ExpType, itemType, argument);
+            if (!nextExpResult.IsValid(out var nextExp))
+                return Error();
+
+                // 루프 컨텍스트를 하나 열고
+            var bodyContext = context.MakeLoopNestedScopeContext();
+
+            // 루프 컨텍스트에 로컬을 하나 추가하고 (enumerator는 추가해야 할까)
+            bodyContext.AddLocalVarInfo(itemType, itemVarName);
+
+            // 본문 분석
+            var bodyStmtsResult = StmtVisitor.TranslateEmbeddable(foreachStmt.Body, bodyContext);
+            if (!bodyStmtsResult.IsValid(out var bodyStmts))
+                return Error();
+
+            return Stmts(new R.ForeachStmt(enumeratorExpResult.Exp, itemType, itemVarName, nextExp, bodyStmts));
+        }
 
         // 먼저, iteratorResult가 anonymous_seq타입인지 확인한다
         if (context.HasSeqConstraint(iterType, out var seqItemType)) // seq<>

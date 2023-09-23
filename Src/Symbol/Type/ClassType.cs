@@ -30,6 +30,11 @@ public partial class ClassType : IType, ICyclicEqualityComparableClass<ClassType
         return symbol.QueryMember(memberName, explicitTypeArgsCount);
     }
 
+    public ClassMemberFuncSymbol? GetMemberFunc(Name name, ImmutableArray<IType> typeArgs, ImmutableArray<FuncParamId> paramIds)
+    {
+        return symbol.GetMemberFunc(name, typeArgs, paramIds);
+    }
+
     public ClassMemberVarSymbol? GetMemberVar(Name name)
     {
         return symbol.GetMemberVar(name);

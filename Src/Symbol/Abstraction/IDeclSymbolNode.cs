@@ -36,7 +36,14 @@ namespace Citron.Symbol
     public interface ITypeDeclContainable
     {
         void AddType(ITypeDeclSymbol declSymbol);
-    }    
+    }
+
+    public interface IFuncDeclContainable<TFuncDeclSymbol>
+        where TFuncDeclSymbol : class, IFuncDeclSymbol
+    {
+        TFuncDeclSymbol? GetFunc(Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds);
+        IEnumerable<TFuncDeclSymbol> GetFuncs();
+    }
 
     public static class IDeclSymbolNodeExtensions
     {   

@@ -48,6 +48,11 @@ public partial class StructType : IType, ICyclicEqualityComparableClass<StructTy
         return symbol.GetMemberVar(name);
     }
 
+    public StructMemberFuncSymbol? GetMemberFunc(Name name, ImmutableArray<IType> typeArgs, ImmutableArray<FuncParamId> paramIds)
+    {
+        return symbol.GetMemberFunc(name, typeArgs, paramIds);
+    }
+
     IType IType.Apply(TypeEnv typeEnv) => Apply(typeEnv);
     TypeId IType.GetTypeId() => GetTypeId();
     SymbolQueryResult? IType.QueryMember(Name name, int explicitTypeArgCount) => symbol.QueryMember(name, explicitTypeArgCount);

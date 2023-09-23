@@ -1780,7 +1780,7 @@ namespace Citron.Test
             );
 
             var makeLambdaD = new GlobalFuncDeclSymbol(moduleD, Accessor.Private, NormalName("MakeLambda"), typeParams: default);
-            makeLambdaD.InitFuncReturnAndParams(new FuncReturn(r.FuncType(r.StringType(), r.IntType(), r.IntType(), r.IntType())), parameters: default, bLastParamVariadic: false);
+            makeLambdaD.InitFuncReturnAndParams(new FuncReturn(r.FuncType(bLocal: false, r.StringType(), r.IntType(), r.IntType(), r.IntType())), parameters: default, bLastParamVariadic: false);
             moduleD.AddFunc(makeLambdaD);
 
             var lambdaD = new LambdaDeclSymbol(makeLambdaD, new Name.Anonymous(0), r.FuncParams((r.IntType(), "i"), (r.IntType(), "j"), (r.IntType(), "k")), bLastParamVariadic: false);
@@ -1791,7 +1791,7 @@ namespace Citron.Test
 
             var makeLambdaBody = r.StmtBody(makeLambdaD,
                 r.PrintString("MakeLambda"),
-                r.Return(new CastBoxedLambdaToFuncExp(new BoxExp(new LambdaExp(lambda, Args: default), new LambdaType(lambda)), r.FuncType(r.StringType(), r.IntType(), r.IntType(), r.IntType()))) // TODO: interface cast
+                r.Return(new CastBoxedLambdaToFuncExp(new BoxExp(new LambdaExp(lambda, Args: default), new LambdaType(lambda)), r.FuncType(bLocal: false, r.StringType(), r.IntType(), r.IntType(), r.IntType()))) // TODO: interface cast
             );            
 
             var lambdaBody = r.StmtBody(lambdaD, r.PrintString("TestFunc"));

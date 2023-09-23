@@ -71,7 +71,6 @@ namespace Citron.Symbol
             return typeParams[i];
         }
 
-
         public int GetParameterCount()
         {
             Debug.Assert(InitializeState.BeforeInitFuncReturnAndParams < initState);

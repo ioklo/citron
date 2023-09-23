@@ -9,7 +9,11 @@ using Pretune;
 
 namespace Citron.Symbol
 {   
-    public class StructDeclSymbol : ITypeDeclSymbol, ITypeDeclContainable, ICyclicEqualityComparableClass<StructDeclSymbol>
+    public class StructDeclSymbol
+        : ITypeDeclSymbol
+        , ITypeDeclContainable
+        , IFuncDeclContainable<StructMemberFuncDeclSymbol>
+        , ICyclicEqualityComparableClass<StructDeclSymbol>
     {
         enum InitializeState
         {   
@@ -197,6 +201,9 @@ namespace Citron.Symbol
 
         public void AddFunc(StructMemberFuncDeclSymbol memberFunc)
             => funcComp.AddFunc(memberFunc);
+
+        StructMemberFuncDeclSymbol? IFuncDeclContainable<StructMemberFuncDeclSymbol>.GetFunc(Name name, int typeParamCount, ImmutableArray<FuncParamId> paramIds)
+            => funcComp.GetFunc(name, typeParamCount, paramIds);
 
         bool ICyclicEqualityComparableClass<IDeclSymbolNode>.CyclicEquals(IDeclSymbolNode other, ref CyclicEqualityCompareContext context)
             => other is StructDeclSymbol otherDeclSymbol && CyclicEquals(otherDeclSymbol, ref context);

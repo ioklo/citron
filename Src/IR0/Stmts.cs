@@ -97,7 +97,7 @@ namespace Citron.IR0
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitAsync(this);
     }
     
-    public record class ForeachStmt(IType ItemType, string ElemName, Loc Iterator, ImmutableArray<Stmt> Body) : Stmt
+    public record class ForeachStmt(Exp EnumeratorGetter, IType ItemType, Name VarName, Exp NextExp, ImmutableArray<Stmt> Body) : Stmt
     {
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitForeach(this);
     }

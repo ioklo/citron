@@ -258,6 +258,14 @@ namespace Citron.Symbol
             visitor.VisitClass(this);
         }
 
+        public ClassMemberFuncSymbol? GetMemberFunc(Name name, ImmutableArray<IType> typeArgs, ImmutableArray<FuncParamId> paramIds)
+        {
+            var funcDecl = decl.GetFunc(name, typeArgs.Length, paramIds);
+            if (funcDecl == null) return null;
+
+            return new ClassMemberFuncSymbol(factory, this, funcDecl, typeArgs);
+        }
+
         public ClassMemberVarSymbol? GetMemberVar(Name name)
         {
             var memberVarDecl = decl.GetMemberVar(name);

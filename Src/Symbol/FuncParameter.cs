@@ -14,7 +14,7 @@ namespace Citron.Symbol
     }
 
     // value
-    public record struct FuncParameter(IType Type, Name Name) : ICyclicEqualityComparableStruct<FuncParameter>, ISerializable
+    public record struct FuncParameter(bool bOut, IType Type, Name Name) : ICyclicEqualityComparableStruct<FuncParameter>, ISerializable
     {
         public FuncParameterId GetId()
         {
@@ -24,7 +24,7 @@ namespace Citron.Symbol
         public FuncParameter Apply(TypeEnv typeEnv)
         {
             var appliedType = Type.Apply(typeEnv);
-            return new FuncParameter(appliedType, Name);
+            return new FuncParameter(bOut, appliedType, Name);
         }
 
         bool ICyclicEqualityComparableStruct<FuncParameter>.CyclicEquals(ref FuncParameter other, ref CyclicEqualityCompareContext context)
