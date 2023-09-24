@@ -82,10 +82,8 @@ namespace Citron.Symbol
             return bTrivial;
         }
 
-        void IDeclSymbolNode.AcceptDeclSymbolVisitor<TDeclSymbolNodeVisitor>(ref TDeclSymbolNodeVisitor visitor)
-        {
-            visitor.VisitStructConstructor(this);
-        }
+        TResult IDeclSymbolNode.Accept<TDeclSymbolNodeVisitor, TResult>(ref TDeclSymbolNodeVisitor visitor)
+            => visitor.VisitStructConstructor(this);
 
         bool ICyclicEqualityComparableClass<IDeclSymbolNode>.CyclicEquals(IDeclSymbolNode other, ref CyclicEqualityCompareContext context)
             => other is StructConstructorDeclSymbol otherDeclSymbol && CyclicEquals(otherDeclSymbol, ref context);
@@ -132,5 +130,10 @@ namespace Citron.Symbol
         }
 
         bool IFuncDeclSymbol.IsLastParameterVariadic() => commonComponent.IsLastParameterVariadic();
+
+        FuncReturn? IFuncDeclSymbol.GetReturn()
+        {
+            return null;
+        }
     }
 }

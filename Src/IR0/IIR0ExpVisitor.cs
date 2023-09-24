@@ -2,7 +2,7 @@
 
 namespace Citron.IR0;
 
-public interface IIR0ExpVisitor<TResult>
+public interface IIR0ExpVisitor<out TResult>
 {
     // Storage
     TResult VisitLoad(LoadExp exp);

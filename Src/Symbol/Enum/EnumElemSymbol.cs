@@ -47,7 +47,7 @@ namespace Citron.Symbol
                 
                 var appliedDeclType = declType.Apply(typeEnv);
 
-                builder.Add(new FuncParameter(appliedDeclType, decl.GetName())); // TODO: EnumElemFields에 ref를 지원할지
+                builder.Add(new FuncParameter(bOut: false, appliedDeclType, decl.GetName())); // TODO: EnumElemFields에 ref를 지원할지
             }
 
             return builder.MoveToImmutable();
@@ -116,12 +116,7 @@ namespace Citron.Symbol
             var memberVarDecl = decl.GetMemberVar(i);
             return factory.MakeEnumElemMemberVar(this, memberVarDecl);
         }
-
-        public void Apply(ITypeSymbolVisitor visitor)
-        {
-            visitor.VisitEnumElem(this);
-        }
-
+        
         IType ITypeSymbol.MakeType(bool bLocalInterface)
         {
             Debug.Assert(!bLocalInterface);
@@ -164,15 +159,10 @@ namespace Citron.Symbol
             context.SerializeRef(nameof(decl), decl);
         }
         
-        void ISymbolNode.Accept<TVisitor>(ref TVisitor visitor)
-        {
-            visitor.VisitEnumElem(this);
-        }
+        TResult ISymbolNode.Accept<TVisitor, TResult>(ref TVisitor visitor)
+            => visitor.VisitEnumElem(this);
 
-        void ITypeSymbol.Accept<TTypeSymbolVisitor>(ref TTypeSymbolVisitor visitor)
-        {
-            visitor.VisitEnumElem(this);
-        }
-
+        TResult ITypeSymbol.Accept<TTypeSymbolVisitor, TResult>(ref TTypeSymbolVisitor visitor)
+            => visitor.VisitEnumElem(this);
     }
 }

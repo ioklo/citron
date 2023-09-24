@@ -1,16 +1,14 @@
 ﻿namespace Citron.Symbol
 {
-    public interface ITypeDeclSymbolVisitor
+    public interface ITypeDeclSymbolVisitor<out TResult>
     {
-        void VisitClass(ClassDeclSymbol declSymbol);
-        void VisitStruct(StructDeclSymbol declSymbol);
-        void VisitEnum(EnumDeclSymbol declSymbol);
-        void VisitEnumElem(EnumElemDeclSymbol declSymbol);        
-        void VisitInterface(InterfaceDeclSymbol declSymbol);
+        TResult VisitClass(ClassDeclSymbol declSymbol);
+        TResult VisitStruct(StructDeclSymbol declSymbol);
+        TResult VisitEnum(EnumDeclSymbol declSymbol);
+        TResult VisitEnumElem(EnumElemDeclSymbol declSymbol);        
+        TResult VisitInterface(InterfaceDeclSymbol declSymbol);
 
-        void VisitLambda(LambdaDeclSymbol declSymbol);
-        void VisitLambdaMemberVar(LambdaMemberVarDeclSymbol declSymbol);
-
-
+        TResult VisitLambda(LambdaDeclSymbol declSymbol);
+        TResult VisitLambdaMemberVar(LambdaMemberVarDeclSymbol declSymbol);
     }
 }

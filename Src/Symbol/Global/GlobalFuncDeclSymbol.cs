@@ -118,10 +118,8 @@ public class GlobalFuncDeclSymbol : IFuncDeclSymbol, ICyclicEqualityComparableCl
         return typeParams.AsEnumerable().OfType<IDeclSymbolNode>();
     }
 
-    void IDeclSymbolNode.AcceptDeclSymbolVisitor<TDeclSymbolNodeVisitor>(ref TDeclSymbolNodeVisitor visitor)
-    {
-        visitor.VisitGlobalFunc(this);
-    }
+    TResult IDeclSymbolNode.Accept<TDeclSymbolNodeVisitor, TResult>(ref TDeclSymbolNodeVisitor visitor)
+        => visitor.VisitGlobalFunc(this);
 
     bool ICyclicEqualityComparableClass<IDeclSymbolNode>.CyclicEquals(IDeclSymbolNode other, ref CyclicEqualityCompareContext context)
         => other is GlobalFuncDeclSymbol otherDeclSymbol && CyclicEquals(otherDeclSymbol, ref context);
@@ -178,4 +176,5 @@ public class GlobalFuncDeclSymbol : IFuncDeclSymbol, ICyclicEqualityComparableCl
     }
 
     bool IFuncDeclSymbol.IsLastParameterVariadic() => commonComponent.IsLastParameterVariadic();
+    FuncReturn? IFuncDeclSymbol.GetReturn() => GetReturn();
 }

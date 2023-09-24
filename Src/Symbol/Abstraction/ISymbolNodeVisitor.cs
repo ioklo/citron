@@ -1,28 +1,28 @@
 ﻿namespace Citron.Symbol
 {
-    public interface ISymbolNodeVisitor
+    public interface ISymbolNodeVisitor<out TResult>
     {
-        void VisitModule(ModuleSymbol symbol);
-        void VisitNamespace(NamespaceSymbol symbol);
-        void VisitGlobalFunc(GlobalFuncSymbol symbol);
+        TResult VisitModule(ModuleSymbol symbol);
+        TResult VisitNamespace(NamespaceSymbol symbol);
+        TResult VisitGlobalFunc(GlobalFuncSymbol symbol);
 
-        void VisitClass(ClassSymbol symbol);
-        void VisitClassConstructor(ClassConstructorSymbol symbol);
-        void VisitClassMemberFunc(ClassMemberFuncSymbol symbol);
-        void VisitClassMemberVar(ClassMemberVarSymbol symbol);
+        TResult VisitClass(ClassSymbol symbol);
+        TResult VisitClassConstructor(ClassConstructorSymbol symbol);
+        TResult VisitClassMemberFunc(ClassMemberFuncSymbol symbol);
+        TResult VisitClassMemberVar(ClassMemberVarSymbol symbol);
 
-        void VisitStruct(StructSymbol symbol);
-        void VisitStructConstructor(StructConstructorSymbol symbol);
-        void VisitStructMemberFunc(StructMemberFuncSymbol symbol);
-        void VisitStructMemberVar(StructMemberVarSymbol symbol);
+        TResult VisitStruct(StructSymbol symbol);
+        TResult VisitStructConstructor(StructConstructorSymbol symbol);
+        TResult VisitStructMemberFunc(StructMemberFuncSymbol symbol);
+        TResult VisitStructMemberVar(StructMemberVarSymbol symbol);
 
-        void VisitEnum(EnumSymbol symbol);
-        void VisitEnumElem(EnumElemSymbol symbol);
-        void VisitEnumElemMemberVar(EnumElemMemberVarSymbol symbol);
+        TResult VisitEnum(EnumSymbol symbol);
+        TResult VisitEnumElem(EnumElemSymbol symbol);
+        TResult VisitEnumElemMemberVar(EnumElemMemberVarSymbol symbol);
 
-        void VisitLambda(LambdaSymbol symbol);
-        void VisitLambdaMemberVarSymbol(LambdaMemberVarSymbol symbol);
+        TResult VisitLambda(LambdaSymbol symbol);
+        TResult VisitLambdaMemberVar(LambdaMemberVarSymbol symbol);
 
-        void VisitInterface(InterfaceSymbol symbol);
+        TResult VisitInterface(InterfaceSymbol symbol);
     }
 }

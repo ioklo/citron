@@ -55,5 +55,9 @@ namespace Citron.Symbol
         public static readonly Name OpInc = new Name.Singleton("OpInc");
         public static readonly Name OpDec = new Name.Singleton("OpDec");
         public static readonly Name Nullable = new Name.Singleton("Nullable");
+
+        // using in foreach
+        public static readonly Name Enumerator = new Name.Singleton("enumerator");
+        public static readonly Name RawItem = new Name.Singleton("rawItem");
     }
 }

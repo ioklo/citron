@@ -1,6 +1,6 @@
 ﻿namespace Citron.Syntax
 {
-    public interface IStmtVisitor<TResult>
+    public interface IStmtVisitor<out TResult>
     {
         TResult VisitEmbeddable(EmbeddableStmt stmt);
 

@@ -1,28 +1,28 @@
 ﻿namespace Citron.Symbol
 {
-    public interface IDeclSymbolNodeVisitor
+    public interface IDeclSymbolNodeVisitor<TResult>
     {
-        void VisitModule(ModuleDeclSymbol declSymbol);
-        void VisitNamespace(NamespaceDeclSymbol declSymbol);
+        TResult VisitModule(ModuleDeclSymbol declSymbol);
+        TResult VisitNamespace(NamespaceDeclSymbol declSymbol);
 
-        void VisitGlobalFunc(GlobalFuncDeclSymbol declSymbol);
+        TResult VisitGlobalFunc(GlobalFuncDeclSymbol declSymbol);
 
-        void VisitStruct(StructDeclSymbol declSymbol);
-        void VisitStructConstructor(StructConstructorDeclSymbol declSymbol);
-        void VisitStructMemberFunc(StructMemberFuncDeclSymbol declSymbol);
-        void VisitStructMemberVar(StructMemberVarDeclSymbol declSymbol);        
-        void VisitClass(ClassDeclSymbol declSymbol);
-        void VisitClassConstructor(ClassConstructorDeclSymbol declSymbol);        
-        void VisitClassMemberFunc(ClassMemberFuncDeclSymbol declSymbol);
-        void VisitClassMemberVar(ClassMemberVarDeclSymbol declSymbol);
+        TResult VisitStruct(StructDeclSymbol declSymbol);
+        TResult VisitStructConstructor(StructConstructorDeclSymbol declSymbol);
+        TResult VisitStructMemberFunc(StructMemberFuncDeclSymbol declSymbol);
+        TResult VisitStructMemberVar(StructMemberVarDeclSymbol declSymbol);        
+        TResult VisitClass(ClassDeclSymbol declSymbol);
+        TResult VisitClassConstructor(ClassConstructorDeclSymbol declSymbol);        
+        TResult VisitClassMemberFunc(ClassMemberFuncDeclSymbol declSymbol);
+        TResult VisitClassMemberVar(ClassMemberVarDeclSymbol declSymbol);
 
-        void VisitEnum(EnumDeclSymbol declSymbol);
-        void VisitEnumElem(EnumElemDeclSymbol declSymbol);
-        void VisitEnumElemMemberVar(EnumElemMemberVarDeclSymbol declSymbol);
+        TResult VisitEnum(EnumDeclSymbol declSymbol);
+        TResult VisitEnumElem(EnumElemDeclSymbol declSymbol);
+        TResult VisitEnumElemMemberVar(EnumElemMemberVarDeclSymbol declSymbol);
         
-        void VisitLambda(LambdaDeclSymbol declSymbol);
-        void VisitLambdaMemberVar(LambdaMemberVarDeclSymbol declSymbol);
+        TResult VisitLambda(LambdaDeclSymbol declSymbol);
+        TResult VisitLambdaMemberVar(LambdaMemberVarDeclSymbol declSymbol);
 
-        void VisitInterface(InterfaceDeclSymbol declSymbol);
+        TResult VisitInterface(InterfaceDeclSymbol declSymbol);
     }
 }

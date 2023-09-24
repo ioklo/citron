@@ -248,14 +248,14 @@ namespace Citron.Symbol
             return new ClassType(this);
         }        
 
-        void ISymbolNode.Accept<TVisitor>(ref TVisitor visitor)
+        TResult ISymbolNode.Accept<TVisitor, TResult>(ref TVisitor visitor)
         {
-            visitor.VisitClass(this);
+            return visitor.VisitClass(this);
         }
 
-        void ITypeSymbol.Accept<TTypeSymbolVisitor>(ref TTypeSymbolVisitor visitor)
+        TResult ITypeSymbol.Accept<TTypeSymbolVisitor, TResult>(ref TTypeSymbolVisitor visitor)
         {
-            visitor.VisitClass(this);
+            return visitor.VisitClass(this);
         }
 
         public ClassMemberFuncSymbol? GetMemberFunc(Name name, ImmutableArray<IType> typeArgs, ImmutableArray<FuncParamId> paramIds)

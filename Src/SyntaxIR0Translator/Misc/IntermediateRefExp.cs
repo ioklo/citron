@@ -4,7 +4,7 @@ using Citron.Symbol;
 
 namespace Citron.Analysis;
 
-interface IIntermediateRefExpVisitor<TResult>
+interface IIntermediateRefExpVisitor<out TResult>
 {
     // statics
     TResult VisitNamespace(IntermediateRefExp.Namespace imRefExp);
@@ -116,7 +116,7 @@ abstract record IntermediateRefExp
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitStaticRef(this);
     }
 
-    public interface IBoxRefVisitor<TResult>
+    public interface IBoxRefVisitor<out TResult>
     {
         TResult VisitClassMember(BoxRef.ClassMember boxRef);
         TResult VisitStructIndirectMember(BoxRef.StructIndirectMember boxRef);

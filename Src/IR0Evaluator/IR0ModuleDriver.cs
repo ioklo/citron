@@ -44,24 +44,21 @@ namespace Citron
         }
 
         // 이 모듈에 해당하는 타입만 할당한다
-        struct TypeAllocator : ITypeSymbolVisitor
+        struct TypeAllocator : ITypeSymbolVisitor<Value>
         {
             Evaluator evaluator;
-
-            [AllowNull]
-            internal Value result;
-
+            
             public TypeAllocator(Evaluator evaluator)
             {
                 this.evaluator = evaluator;
             }
 
-            void ITypeSymbolVisitor.VisitClass(ClassSymbol symbol)
+            Value ITypeSymbolVisitor<Value>.VisitClass(ClassSymbol symbol)
             {
-                result = new ClassValue();
+                return new ClassValue();
             }
 
-            void ITypeSymbolVisitor.VisitStruct(StructSymbol symbol)
+            Value ITypeSymbolVisitor<Value>.VisitStruct(StructSymbol symbol)
             {
                 int varCount = symbol.GetMemberVarCount();
                 var values = ImmutableArray.CreateBuilder<Value>(varCount);
@@ -73,10 +70,10 @@ namespace Citron
                     values.Add(memberValue);
                 }
 
-                result = new StructValue(values.MoveToImmutable());
+                return new StructValue(values.MoveToImmutable());
             }
 
-            void ITypeSymbolVisitor.VisitEnum(EnumSymbol symbol)
+            Value ITypeSymbolVisitor<Value>.VisitEnum(EnumSymbol symbol)
             {
                 var thisEvaluator = evaluator;
                 EnumElemValue ElemAllocator(SymbolId symbolId)
@@ -99,10 +96,10 @@ namespace Citron
                     return new EnumElemValue(builder.MoveToImmutable());
                 }
 
-                result = new EnumValue(ElemAllocator, null);
+                return new EnumValue(ElemAllocator, null);
             }
 
-            void ITypeSymbolVisitor.VisitEnumElem(EnumElemSymbol symbol)
+            Value ITypeSymbolVisitor<Value>.VisitEnumElem(EnumElemSymbol symbol)
             {
                 var memberVarCount = symbol.GetMemberVarCount();
                 var builder = ImmutableArray.CreateBuilder<Value>(memberVarCount);
@@ -114,15 +111,15 @@ namespace Citron
                     builder.Add(value);
                 }
                 
-                result = new EnumElemValue(builder.MoveToImmutable());
+                return new EnumElemValue(builder.MoveToImmutable());
             }
 
-            void ITypeSymbolVisitor.VisitInterface(InterfaceSymbol symbol)
+            Value ITypeSymbolVisitor<Value>.VisitInterface(InterfaceSymbol symbol)
             {
                 throw new NotImplementedException();
             }
             
-            void ITypeSymbolVisitor.VisitLambda(LambdaSymbol symbol)
+            Value ITypeSymbolVisitor<Value>.VisitLambda(LambdaSymbol symbol)
             {
                 var builder = ImmutableDictionary.CreateBuilder<Name, Value>();
 
@@ -136,8 +133,9 @@ namespace Citron
                     var memberValue = evaluator.AllocValue(memberDeclType.GetTypeId());
 
                     builder.Add(memberName, memberValue);
-                    result = new LambdaValue(builder.ToImmutable());
                 }
+
+                return new LambdaValue(builder.ToImmutable());
             }
         }
 
@@ -154,8 +152,7 @@ namespace Citron
             var typeSymbol = globalContext.LoadSymbol<ITypeSymbol>(symbolId);
 
             var allocator = new TypeAllocator(evaluator);
-            typeSymbol.Accept(ref allocator);
-            return allocator.result;
+            return typeSymbol.Accept<TypeAllocator, Value>(ref allocator);
         }
 
         public void InitializeClassInstance(SymbolId classId, ImmutableArray<Value>.Builder builder)

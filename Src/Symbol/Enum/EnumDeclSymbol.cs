@@ -76,10 +76,8 @@ namespace Citron.Symbol
             return new DeclSymbolNodeName(name, typeParams.Length, default);
         }
 
-        void ITypeDeclSymbol.AcceptTypeDeclSymbolVisitor<TTypeDeclSymbolVisitor>(ref TTypeDeclSymbolVisitor visitor)
-        {
-            visitor.VisitEnum(this);
-        }
+        TResult ITypeDeclSymbol.Accept<TTypeDeclSymbolVisitor, TResult>(ref TTypeDeclSymbolVisitor visitor)
+            => visitor.VisitEnum(this);
 
         public IDeclSymbolNode? GetOuterDeclNode()
         {
@@ -94,10 +92,8 @@ namespace Citron.Symbol
                 .Concat(elemsDict.Values);
         }
 
-        void IDeclSymbolNode.AcceptDeclSymbolVisitor<TDeclSymbolNodeVisitor>(ref TDeclSymbolNodeVisitor visitor)
-        {
-            visitor.VisitEnum(this);
-        }
+        TResult IDeclSymbolNode.Accept<TDeclSymbolNodeVisitor, TResult>(ref TDeclSymbolNodeVisitor visitor)
+            => visitor.VisitEnum(this);
 
         public Accessor GetAccessor()
         {
@@ -156,6 +152,11 @@ namespace Citron.Symbol
             context.SerializeRefArray(nameof(typeParams), typeParams);
             context.SerializeRefArray(nameof(elems), elems);
             context.SerializeString(nameof(initState), initState.ToString());
+        }
+
+        IEnumerable<IFuncDeclSymbol> ITypeDeclSymbol.GetFuncs()
+        {
+            return Enumerable.Empty<IFuncDeclSymbol>();
         }
     }
 }

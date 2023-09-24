@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Citron.Collections;
 using Citron.Infra;
 using Pretune;
@@ -116,15 +117,11 @@ namespace Citron.Symbol
             memberVars.Add(memberVar);
         }
 
-        void IDeclSymbolNode.AcceptDeclSymbolVisitor<TDeclSymbolNodeVisitor>(ref TDeclSymbolNodeVisitor visitor)
-        {
-            visitor.VisitLambda(this);
-        }
+        TResult IDeclSymbolNode.Accept<TDeclSymbolNodeVisitor, TResult>(ref TDeclSymbolNodeVisitor visitor)
+            => visitor.VisitLambda(this);
 
-        void ITypeDeclSymbol.AcceptTypeDeclSymbolVisitor<TTypeDeclSymbolVisitor>(ref TTypeDeclSymbolVisitor visitor)
-        {
-            visitor.VisitLambda(this);
-        }
+        TResult ITypeDeclSymbol.Accept<TTypeDeclSymbolVisitor, TResult>(ref TTypeDeclSymbolVisitor visitor)
+            => visitor.VisitLambda(this);
 
         int IDeclSymbolNode.GetTypeParamCount()
         {
@@ -190,5 +187,12 @@ namespace Citron.Symbol
         }
 
         bool IFuncDeclSymbol.IsLastParameterVariadic() => commonComponent.IsLastParameterVariadic();
+
+        IEnumerable<IFuncDeclSymbol> ITypeDeclSymbol.GetFuncs()
+        {
+            return Enumerable.Empty<IFuncDeclSymbol>();
+        }
+
+        FuncReturn? IFuncDeclSymbol.GetReturn() => GetReturn();
     }
 }

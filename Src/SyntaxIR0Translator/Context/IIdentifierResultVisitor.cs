@@ -1,6 +1,6 @@
 ﻿namespace Citron.Analysis;
 
-interface IIdentifierResultVisitor<TResult>
+interface IIdentifierResultVisitor<out TResult>
 {
     TResult VisitNamespace(IdentifierResult.Namespace result);
     TResult VisitLocalVar(IdentifierResult.LocalVar result);

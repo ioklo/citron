@@ -4,7 +4,7 @@ using System;
 
 namespace Citron.Symbol
 {
-    public interface ISymbolQueryResultVisitor<TResult>
+    public interface ISymbolQueryResultVisitor<out TResult>
     {   
         TResult VisitMultipleCandidatesError(SymbolQueryResult.MultipleCandidatesError result);
 

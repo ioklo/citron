@@ -141,14 +141,10 @@ namespace Citron.Symbol
             context.SerializeRefArray(nameof(typeArgs), typeArgs);
         }
 
-        void ISymbolNode.Accept<TVisitor>(ref TVisitor visitor)
-        {
-            visitor.VisitEnum(this);
-        }
+        TResult ISymbolNode.Accept<TVisitor, TResult>(ref TVisitor visitor)
+            => visitor.VisitEnum(this);
 
-        void ITypeSymbol.Accept<TTypeSymbolVisitor>(ref TTypeSymbolVisitor visitor)
-        {
-            visitor.VisitEnum(this);
-        }
+        TResult ITypeSymbol.Accept<TTypeSymbolVisitor, TResult>(ref TTypeSymbolVisitor visitor)
+            => visitor.VisitEnum(this);
     }
 }

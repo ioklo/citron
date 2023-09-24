@@ -51,10 +51,8 @@ namespace Citron.Symbol
             return Accessor.Private; // 
         }
 
-        void IDeclSymbolNode.AcceptDeclSymbolVisitor<TDeclSymbolNodeVisitor>(ref TDeclSymbolNodeVisitor visitor)
-        {
-            visitor.VisitLambdaMemberVar(this);
-        }
+        TResult IDeclSymbolNode.Accept<TDeclSymbolNodeVisitor, TResult>(ref TDeclSymbolNodeVisitor visitor)
+            => visitor.VisitLambdaMemberVar(this);
 
         int IDeclSymbolNode.GetTypeParamCount()
         {

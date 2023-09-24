@@ -94,10 +94,7 @@ namespace Citron.Symbol
             context.SerializeRef(nameof(decl), decl);
         }
 
-        public void Accept<TVisitor>(ref TVisitor visitor)
-            where TVisitor : struct, ISymbolNodeVisitor
-        {
-            visitor.VisitStructMemberVar(this);
-        }
+        TResult ISymbolNode.Accept<TVisitor, TResult>(ref TVisitor visitor)
+            => visitor.VisitStructMemberVar(this);
     }
 }

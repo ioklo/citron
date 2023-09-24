@@ -1,6 +1,6 @@
 ﻿namespace Citron.Symbol
 {
-    public interface ITypeVisitor<TResult>
+    public interface ITypeVisitor<out TResult>
     {
         TResult VisitEnumElem(EnumElemType type);
         TResult VisitEnum(EnumType type);

@@ -149,10 +149,10 @@ namespace Citron.Symbol
             return null;
         }
 
-        void ITypeDeclSymbol.AcceptTypeDeclSymbolVisitor<TTypeDeclSymbolVisitor>(ref TTypeDeclSymbolVisitor visitor)
-        {
-            visitor.VisitStruct(this);
-        }
+        TResult ITypeDeclSymbol.Accept<TTypeDeclSymbolVisitor, TResult>(ref TTypeDeclSymbolVisitor visitor)
+            => visitor.VisitStruct(this);
+
+        IEnumerable<IFuncDeclSymbol> ITypeDeclSymbol.GetFuncs() => GetFuncs();
 
         public IDeclSymbolNode? GetOuterDeclNode()
         {
@@ -167,10 +167,8 @@ namespace Citron.Symbol
                 .Concat(memberVars);
         }
 
-        void IDeclSymbolNode.AcceptDeclSymbolVisitor<TDeclSymbolNodeVisitor>(ref TDeclSymbolNodeVisitor visitor)
-        {
-            visitor.VisitStruct(this);
-        }
+        TResult IDeclSymbolNode.Accept<TDeclSymbolNodeVisitor, TResult>(ref TDeclSymbolNodeVisitor visitor)
+            => visitor.VisitStruct(this);
 
         public int GetConstructorCount()
         {
@@ -271,6 +269,6 @@ namespace Citron.Symbol
             context.SerializeString(nameof(initState), initState.ToString());
         }
 
-
+        
     }
 }

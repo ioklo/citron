@@ -28,8 +28,8 @@ namespace Citron.Symbol
         int GetTypeParamCount();
         Name GetTypeParam(int i);
 
-        void AcceptDeclSymbolVisitor<TDeclSymbolNodeVisitor>(ref TDeclSymbolNodeVisitor visitor)
-            where TDeclSymbolNodeVisitor : struct, IDeclSymbolNodeVisitor;
+        TResult Accept<TDeclSymbolNodeVisitor, TResult>(ref TDeclSymbolNodeVisitor visitor)
+            where TDeclSymbolNodeVisitor : struct, IDeclSymbolNodeVisitor<TResult>;
     }
     
     // TypeDecl을 소유할 수 있는

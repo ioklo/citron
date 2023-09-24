@@ -109,10 +109,8 @@ namespace Citron.Symbol
             return bStatic;
         }
 
-        void IDeclSymbolNode.AcceptDeclSymbolVisitor<TDeclSymbolNodeVisitor>(ref TDeclSymbolNodeVisitor visitor)
-        {
-            visitor.VisitStructMemberFunc(this);
-        }
+        TResult IDeclSymbolNode.Accept<TDeclSymbolNodeVisitor, TResult>(ref TDeclSymbolNodeVisitor visitor)
+            => visitor.VisitStructMemberFunc(this);
 
         public FuncReturn GetReturn()
         {
@@ -183,9 +181,8 @@ namespace Citron.Symbol
             context.SerializeString(nameof(initState), initState.ToString());
         }
 
-        bool IFuncDeclSymbol.IsLastParameterVariadic()
-        {
-            throw new NotImplementedException();
-        }
+        bool IFuncDeclSymbol.IsLastParameterVariadic() => commonComponent.IsLastParameterVariadic();
+        FuncReturn? IFuncDeclSymbol.GetReturn() => GetReturn();
+        
     }
 }

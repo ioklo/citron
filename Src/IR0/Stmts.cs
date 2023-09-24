@@ -102,6 +102,11 @@ namespace Citron.IR0
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitForeach(this);
     }
 
+    public record class ForeachCastStmt(Exp EnumeratorGetter, IType ItemType, Name VarName, IType RawItemType, Exp NextExp, Exp CastExp, ImmutableArray<Stmt> Body) : Stmt
+    {
+        public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitForeachCast(this);
+    }
+
     public record class YieldStmt(Exp Value) : Stmt
     {
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitYield(this);

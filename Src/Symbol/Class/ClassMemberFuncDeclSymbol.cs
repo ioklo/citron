@@ -112,10 +112,8 @@ namespace Citron.Symbol
             return Enumerable.Empty<IDeclSymbolNode>();
         }
 
-        void IDeclSymbolNode.AcceptDeclSymbolVisitor<TDeclSymbolNodeVisitor>(ref TDeclSymbolNodeVisitor visitor)
-        {
-            visitor.VisitClassMemberFunc(this);
-        }
+        TResult IDeclSymbolNode.Accept<TDeclSymbolNodeVisitor, TResult>(ref TDeclSymbolNodeVisitor visitor)
+            => visitor.VisitClassMemberFunc(this);
 
         void IFuncDeclSymbol.AddLambda(LambdaDeclSymbol declSymbol)
             => lambdaComponent.AddLambda(declSymbol);
@@ -179,5 +177,6 @@ namespace Citron.Symbol
         }
 
         bool IFuncDeclSymbol.IsLastParameterVariadic() => commonComponent.IsLastParameterVariadic();
+        FuncReturn? IFuncDeclSymbol.GetReturn() => GetReturn();
     }
 }

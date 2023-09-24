@@ -8,8 +8,8 @@ namespace Citron.Symbol
     {
         new ITypeSymbol Apply(TypeEnv typeEnv);
         new ITypeDeclSymbol GetDeclSymbolNode();
-        new void Accept<TTypeSymbolVisitor>(ref TTypeSymbolVisitor visitor)
-            where TTypeSymbolVisitor : ITypeSymbolVisitor;
+        new TResult Accept<TTypeSymbolVisitor, TResult>(ref TTypeSymbolVisitor visitor)
+            where TTypeSymbolVisitor : struct, ITypeSymbolVisitor<TResult>;
 
         IType MakeType(bool bLocalInterface);
         ITypeSymbol? GetMemberType(Name memberName, ImmutableArray<IType> typeArgs);

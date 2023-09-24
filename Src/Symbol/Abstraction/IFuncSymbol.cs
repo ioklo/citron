@@ -11,5 +11,20 @@ namespace Citron.Symbol
 
         int GetParameterCount();
         FuncParameter GetParameter(int index);
+
+        new TResult Accept<TFuncSymbolVisitor, TResult>(ref TFuncSymbolVisitor visitor)
+            where TFuncSymbolVisitor : struct, IFuncSymbolVisitor<TResult>;
+    }
+
+    public interface IFuncSymbolVisitor<out TResult>
+    {
+        TResult VisitClassConstructor(ClassConstructorSymbol symbol);
+        TResult VisitClassMemberFunc(ClassMemberFuncSymbol symbol);
+        
+        TResult VisitStructConstructor(StructConstructorSymbol symbol);
+        TResult VisitStructMemberFunc(StructMemberFuncSymbol symbol);
+
+        TResult VisitLambda(LambdaSymbol symbol);
+        TResult VisitGlobalFunc(GlobalFuncSymbol symbol);
     }
 }

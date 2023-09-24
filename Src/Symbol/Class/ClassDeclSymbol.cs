@@ -134,10 +134,8 @@ namespace Citron.Symbol
             return name;
         }
         
-        void ITypeDeclSymbol.AcceptTypeDeclSymbolVisitor<TTypeDeclSymbolVisitor>(ref TTypeDeclSymbolVisitor visitor)
-        {
-            visitor.VisitClass(this);
-        }
+        TResult ITypeDeclSymbol.Accept<TTypeDeclSymbolVisitor, TResult>(ref TTypeDeclSymbolVisitor visitor)
+            => visitor.VisitClass(this);
 
         public DeclSymbolNodeName GetNodeName()
         {
@@ -157,10 +155,8 @@ namespace Citron.Symbol
                 .Concat(memberVars);
         }
 
-        void IDeclSymbolNode.AcceptDeclSymbolVisitor<TDeclSymbolNodeVisitor>(ref TDeclSymbolNodeVisitor visitor)
-        {
-            visitor.VisitClass(this);
-        }
+        TResult IDeclSymbolNode.Accept<TDeclSymbolNodeVisitor, TResult>(ref TDeclSymbolNodeVisitor visitor)
+            => visitor.VisitClass(this);
 
         public ClassMemberVarDeclSymbol? GetMemberVar(Name name)
         {
@@ -280,6 +276,11 @@ namespace Citron.Symbol
             context.SerializeValueRef(nameof(typeComp), ref typeComp);
             context.SerializeValueRef(nameof(funcComp), ref funcComp);
             context.SerializeString(nameof(initState), initState.ToString());
+        }
+
+        IEnumerable<IFuncDeclSymbol> ITypeDeclSymbol.GetFuncs()
+        {
+            return GetMemberFuncs();
         }
     }
 }

@@ -9,30 +9,23 @@ using System.Threading.Tasks;
 
 namespace Citron.Symbol
 {
-    public struct SymbolInstantiator : IDeclSymbolNodeVisitor
+    public struct SymbolInstantiator : IDeclSymbolNodeVisitor<ISymbolNode>
     {
         SymbolFactory factory;        
         ISymbolNode? outer;
         ImmutableArray<IType> typeArgs;
-
-        ISymbolNode? result;
 
         SymbolInstantiator(SymbolFactory factory, ISymbolNode? outer, ImmutableArray<IType> typeArgs)
         {
             this.factory = factory;
             this.outer = outer;
             this.typeArgs = typeArgs;
-            this.result = null;
         }
 
         public static ITypeSymbol Instantiate(SymbolFactory factory, ISymbolNode outer, ITypeDeclSymbol decl, ImmutableArray<IType> typeArgs)
         {
             var instantiator = new SymbolInstantiator(factory, outer, typeArgs);
-            decl.AcceptDeclSymbolVisitor(ref instantiator);
-
-            var typeSymbolResult = instantiator.result as ITypeSymbol;
-            Debug.Assert(typeSymbolResult != null);
-            return typeSymbolResult;
+            return (ITypeSymbol)((IDeclSymbolNode)decl).Accept<SymbolInstantiator, ISymbolNode>(ref instantiator);
         }
 
         public static ISymbolNode InstantiateOpen(SymbolFactory factory, ISymbolNode? outerSymbol, IDeclSymbolNode declSymbol)
@@ -54,147 +47,144 @@ namespace Citron.Symbol
         public static ISymbolNode Instantiate(SymbolFactory factory, ISymbolNode? outer, IDeclSymbolNode decl, ImmutableArray<IType> typeArgs)
         {
             var instantiator = new SymbolInstantiator(factory, outer, typeArgs);
-            decl.AcceptDeclSymbolVisitor(ref instantiator);
-
-            Debug.Assert(instantiator.result != null);
-            return instantiator.result;
+            return decl.Accept<SymbolInstantiator, ISymbolNode>(ref instantiator);
         }
 
-        public void VisitClass(ClassDeclSymbol decl)
+        ISymbolNode IDeclSymbolNodeVisitor<ISymbolNode>.VisitClass(ClassDeclSymbol decl)
         {
             Debug.Assert(outer != null);
-            result = factory.MakeClass(outer, decl, typeArgs);
+            return factory.MakeClass(outer, decl, typeArgs);
         }
 
-        public void VisitClassConstructor(ClassConstructorDeclSymbol decl)
+        ISymbolNode IDeclSymbolNodeVisitor<ISymbolNode>.VisitClassConstructor(ClassConstructorDeclSymbol decl)
         {
             var @class = outer as ClassSymbol;
             Debug.Assert(@class != null);
             Debug.Assert(typeArgs.IsEmpty);
 
-            result = factory.MakeClassConstructor(@class, decl);
+            return factory.MakeClassConstructor(@class, decl);
         }
 
-        public void VisitClassMemberFunc(ClassMemberFuncDeclSymbol decl)
+        ISymbolNode IDeclSymbolNodeVisitor<ISymbolNode>.VisitClassMemberFunc(ClassMemberFuncDeclSymbol decl)
         {
             var @class = outer as ClassSymbol;
             Debug.Assert(@class != null);
 
-            result = factory.MakeClassMemberFunc(@class, decl, typeArgs);
+            return factory.MakeClassMemberFunc(@class, decl, typeArgs);
         }
 
-        public void VisitClassMemberVar(ClassMemberVarDeclSymbol decl)
+        ISymbolNode IDeclSymbolNodeVisitor<ISymbolNode>.VisitClassMemberVar(ClassMemberVarDeclSymbol decl)
         {
             var @class = outer as ClassSymbol;
             Debug.Assert(@class != null);
             Debug.Assert(typeArgs.IsEmpty);
 
-            result = factory.MakeClassMemberVar(@class, decl);
+            return factory.MakeClassMemberVar(@class, decl);
         }
 
-        public void VisitEnum(EnumDeclSymbol decl)
+        ISymbolNode IDeclSymbolNodeVisitor<ISymbolNode>.VisitEnum(EnumDeclSymbol decl)
         {
             Debug.Assert(outer != null);
-            result = factory.MakeEnum(outer, decl, typeArgs);
+            return factory.MakeEnum(outer, decl, typeArgs);
         }
 
-        public void VisitEnumElem(EnumElemDeclSymbol decl)
+        ISymbolNode IDeclSymbolNodeVisitor<ISymbolNode>.VisitEnumElem(EnumElemDeclSymbol decl)
         {
             var @enum = outer as EnumSymbol;
             Debug.Assert(@enum != null);
             Debug.Assert(typeArgs.IsEmpty);
 
-            result = factory.MakeEnumElem(@enum, decl);
+            return factory.MakeEnumElem(@enum, decl);
         }
 
-        public void VisitEnumElemMemberVar(EnumElemMemberVarDeclSymbol decl)
+        ISymbolNode IDeclSymbolNodeVisitor<ISymbolNode>.VisitEnumElemMemberVar(EnumElemMemberVarDeclSymbol decl)
         {
             var enumElem = outer as EnumElemSymbol;
             Debug.Assert(enumElem != null);
             Debug.Assert(typeArgs.IsEmpty);
 
-            result = factory.MakeEnumElemMemberVar(enumElem, decl);
+            return factory.MakeEnumElemMemberVar(enumElem, decl);
         }
 
-        public void VisitGlobalFunc(GlobalFuncDeclSymbol decl)
+        ISymbolNode IDeclSymbolNodeVisitor<ISymbolNode>.VisitGlobalFunc(GlobalFuncDeclSymbol decl)
         {
             var topLevelOuter = outer as ITopLevelSymbolNode;
             Debug.Assert(topLevelOuter != null);
 
-            result = factory.MakeGlobalFunc(topLevelOuter, decl, typeArgs);
+            return factory.MakeGlobalFunc(topLevelOuter, decl, typeArgs);
         }
 
-        public void VisitInterface(InterfaceDeclSymbol decl)
+        ISymbolNode IDeclSymbolNodeVisitor<ISymbolNode>.VisitInterface(InterfaceDeclSymbol decl)
         {
             Debug.Assert(outer != null);
-            result = factory.MakeInterface(outer, decl, typeArgs);
+            return factory.MakeInterface(outer, decl, typeArgs);
         }
         
-        public void VisitModule(ModuleDeclSymbol decl)
+        ISymbolNode IDeclSymbolNodeVisitor<ISymbolNode>.VisitModule(ModuleDeclSymbol decl)
         {
             Debug.Assert(outer == null);
             Debug.Assert(typeArgs.IsEmpty);
 
-            result = factory.MakeModule(decl);
+            return factory.MakeModule(decl);
         }
 
-        public void VisitNamespace(NamespaceDeclSymbol decl)
+        ISymbolNode IDeclSymbolNodeVisitor<ISymbolNode>.VisitNamespace(NamespaceDeclSymbol decl)
         {
             var topLevelOuter = outer as ITopLevelSymbolNode;
             Debug.Assert(topLevelOuter != null);
             Debug.Assert(typeArgs.IsEmpty);
 
-            result = factory.MakeNamespace(topLevelOuter, decl);
+            return factory.MakeNamespace(topLevelOuter, decl);
         }
 
-        public void VisitStruct(StructDeclSymbol decl)
+        ISymbolNode IDeclSymbolNodeVisitor<ISymbolNode>.VisitStruct(StructDeclSymbol decl)
         {
             Debug.Assert(outer != null);
-            result = factory.MakeStruct(outer, decl, typeArgs);
+            return factory.MakeStruct(outer, decl, typeArgs);
         }
 
-        public void VisitStructConstructor(StructConstructorDeclSymbol decl)
+        ISymbolNode IDeclSymbolNodeVisitor<ISymbolNode>.VisitStructConstructor(StructConstructorDeclSymbol decl)
         {
             var @struct = outer as StructSymbol;
             Debug.Assert(@struct != null);
             Debug.Assert(typeArgs.IsEmpty);
 
-            result = factory.MakeStructConstructor(@struct, decl);
+            return factory.MakeStructConstructor(@struct, decl);
         }
 
-        public void VisitStructMemberFunc(StructMemberFuncDeclSymbol decl)
+        ISymbolNode IDeclSymbolNodeVisitor<ISymbolNode>.VisitStructMemberFunc(StructMemberFuncDeclSymbol decl)
         {
             var @struct = outer as StructSymbol;
             Debug.Assert(@struct != null);
 
-            result = factory.MakeStructMemberFunc(@struct, decl, typeArgs);
+            return factory.MakeStructMemberFunc(@struct, decl, typeArgs);
         }
 
-        public void VisitStructMemberVar(StructMemberVarDeclSymbol decl)
+        ISymbolNode IDeclSymbolNodeVisitor<ISymbolNode>.VisitStructMemberVar(StructMemberVarDeclSymbol decl)
         {
             var @struct = outer as StructSymbol;
             Debug.Assert(@struct != null);
             Debug.Assert(typeArgs.IsEmpty);
 
-            result = factory.MakeStructMemberVar(@struct, decl);
+            return factory.MakeStructMemberVar(@struct, decl);
         }
 
-        public void VisitLambda(LambdaDeclSymbol declSymbol)
+        ISymbolNode IDeclSymbolNodeVisitor<ISymbolNode>.VisitLambda(LambdaDeclSymbol declSymbol)
         {
             var outerFunc = outer as IFuncSymbol;
             Debug.Assert(outerFunc != null);
             Debug.Assert(typeArgs.IsEmpty);
 
-            result = factory.MakeLambda(outerFunc, declSymbol);
+            return factory.MakeLambda(outerFunc, declSymbol);
         }
 
-        public void VisitLambdaMemberVar(LambdaMemberVarDeclSymbol declSymbol)
+        ISymbolNode IDeclSymbolNodeVisitor<ISymbolNode>.VisitLambdaMemberVar(LambdaMemberVarDeclSymbol declSymbol)
         {
             var outerLambda = outer as LambdaSymbol;
             Debug.Assert(outerLambda != null);
             Debug.Assert(typeArgs.IsEmpty);
 
-            result = factory.MakeLambdaMemberVar(outerLambda, declSymbol);
+            return factory.MakeLambdaMemberVar(outerLambda, declSymbol);
         }
     }
 }

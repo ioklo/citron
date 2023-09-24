@@ -95,16 +95,16 @@ namespace Citron.Symbol
             context.SerializeRef(nameof(outer), outer);
             context.SerializeRef(nameof(decl), decl);
         }
-
-        public void Accept<TVisitor>(ref TVisitor visitor)
-            where TVisitor : struct, ISymbolNodeVisitor
-        {
-            visitor.VisitClassConstructor(this);
-        }
-
+        
         SymbolQueryResult? ISymbolNode.QueryMember(Name name, int explicitTypeArgCount)
         {
             return null;
         }
+
+        TResult IFuncSymbol.Accept<TFuncSymbolVisitor, TResult>(ref TFuncSymbolVisitor visitor)
+            => visitor.VisitClassConstructor(this);
+
+        TResult ISymbolNode.Accept<TVisitor, TResult>(ref TVisitor visitor)
+            => visitor.VisitClassConstructor(this);
     }
 }

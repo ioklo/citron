@@ -1,12 +1,12 @@
 ﻿namespace Citron.Symbol
 {
-    public interface ITypeSymbolVisitor
+    public interface ITypeSymbolVisitor<out TResult>
     {
-        void VisitEnumElem(EnumElemSymbol symbol);
-        void VisitClass(ClassSymbol symbol);
-        void VisitEnum(EnumSymbol symbol);
-        void VisitInterface(InterfaceSymbol symbol);
-        void VisitStruct(StructSymbol symbol);
-        void VisitLambda(LambdaSymbol symbol);
+        TResult VisitEnumElem(EnumElemSymbol symbol);
+        TResult VisitClass(ClassSymbol symbol);
+        TResult VisitEnum(EnumSymbol symbol);
+        TResult VisitInterface(InterfaceSymbol symbol);
+        TResult VisitStruct(StructSymbol symbol);
+        TResult VisitLambda(LambdaSymbol symbol);
     }
 }

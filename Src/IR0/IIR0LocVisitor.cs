@@ -2,7 +2,7 @@
 
 namespace Citron.IR0;
 
-public interface IIR0LocVisitor<TResult>
+public interface IIR0LocVisitor<out TResult>
 {
     TResult VisitTemp(TempLoc loc);
     TResult VisitLocalVar(LocalVarLoc loc);

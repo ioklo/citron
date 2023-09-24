@@ -6,7 +6,7 @@ using System.Formats;
 
 namespace Citron.Symbol
 {
-    public interface ITypeIdVisitor<TResult>
+    public interface ITypeIdVisitor<out TResult>
     {
         TResult VisitTypeVar(TypeVarTypeId typeId);
         TResult VisitNullable(NullableTypeId typeId);

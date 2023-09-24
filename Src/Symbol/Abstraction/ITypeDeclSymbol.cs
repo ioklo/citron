@@ -9,7 +9,7 @@ namespace Citron.Symbol
     {
         IEnumerable<IFuncDeclSymbol> GetFuncs();
 
-        void AcceptTypeDeclSymbolVisitor<TTypeDeclSymbolVisitor>(ref TTypeDeclSymbolVisitor visitor)
-            where TTypeDeclSymbolVisitor : struct, ITypeDeclSymbolVisitor;
+        new TResult Accept<TTypeDeclSymbolVisitor, TResult>(ref TTypeDeclSymbolVisitor visitor)
+            where TTypeDeclSymbolVisitor : struct, ITypeDeclSymbolVisitor<TResult>;
     }
 }

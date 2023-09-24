@@ -35,10 +35,8 @@ namespace Citron.Symbol
         Name IDeclSymbolNode.GetTypeParam(int i)
             => GetTypeParam(i);
 
-        void ITypeDeclSymbol.AcceptTypeDeclSymbolVisitor<TTypeDeclSymbolVisitor>(ref TTypeDeclSymbolVisitor visitor)
-        {
-            visitor.VisitInterface(this);
-        }
+        TResult ITypeDeclSymbol.Accept<TTypeDeclSymbolVisitor, TResult>(ref TTypeDeclSymbolVisitor visitor)
+            => visitor.VisitInterface(this);
 
         public IEnumerable<IDeclSymbolNode> GetMemberDeclNodes()
         {
@@ -61,10 +59,8 @@ namespace Citron.Symbol
             return name;
         }
 
-        void IDeclSymbolNode.AcceptDeclSymbolVisitor<TDeclSymbolNodeVisitor>(ref TDeclSymbolNodeVisitor visitor)
-        {
-            visitor.VisitInterface(this);
-        }
+        TResult IDeclSymbolNode.Accept<TDeclSymbolNodeVisitor, TResult>(ref TDeclSymbolNodeVisitor visitor)
+            => visitor.VisitInterface(this);
 
         public Accessor GetAccessor()
         {
@@ -103,6 +99,12 @@ namespace Citron.Symbol
             context.SerializeString(nameof(accessor), accessor.ToString());
             context.SerializeRef(nameof(name), name);
             context.SerializeRefArray(nameof(typeParams), typeParams);
+        }
+
+        IEnumerable<IFuncDeclSymbol> ITypeDeclSymbol.GetFuncs()
+        {
+            // TODO: 아직 없는 것이다
+            return Enumerable.Empty<IFuncDeclSymbol>();
         }
     }
 }

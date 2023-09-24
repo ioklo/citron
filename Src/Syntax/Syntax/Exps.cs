@@ -107,7 +107,7 @@ public record class AsExp(Exp Exp, TypeExp Type) : Exp
     public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitAs(this);
 }
 
-public interface IExpVisitor<TResult>
+public interface IExpVisitor<out TResult>
 {
     TResult VisitIdentifier(IdentifierExp exp);
     TResult VisitString(StringExp exp);

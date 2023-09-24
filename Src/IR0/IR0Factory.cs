@@ -125,14 +125,9 @@ namespace Citron.IR0
         #endregion
 
         #region Foreach
-        public ForeachStmt Foreach(IType itemType, string elemName, Loc iterLoc, params Stmt[] body)
+        public ForeachStmt Foreach(Exp enumeratorGetter, IType itemType, string varName, Exp nextExp, params Stmt[] body)
         {
-            return new ForeachStmt(itemType, elemName, iterLoc, body.ToImmutableArray());
-        }
-
-        public ForeachStmt Foreach(IType itemType, string elemName, Exp iterExp, IType iterType, params Stmt[] body)
-        {
-            return new ForeachStmt(itemType, elemName, new TempLoc(iterExp, iterType), body.ToImmutableArray());
+            return new ForeachStmt(enumeratorGetter, itemType, new Name.Normal(varName), nextExp, body.ToImmutableArray());
         }
         #endregion
 
@@ -460,7 +455,7 @@ namespace Citron.IR0
 
         public ImmutableArray<FuncParameter> FuncParams(params (IType Type, string Name)[] elems)
         {
-            return elems.Select(e => new FuncParameter(e.Type, new Name.Normal(e.Name))).ToImmutableArray();
+            return elems.Select(e => new FuncParameter(bOut: false, e.Type, new Name.Normal(e.Name))).ToImmutableArray();
         }
 
         public ImmutableArray<Argument> Args(params Exp[] exps)
@@ -549,6 +544,7 @@ namespace Citron.IR0
             return new YieldStmt(exp);
         }
 
+        // 파라미터에 out표시가 없는 FuncType
         public FuncType FuncType(bool bLocal, IType retType, params IType[] paramTypes)
         {
             var paramsBuilder = ImmutableArray.CreateBuilder<FuncParameter>(paramTypes.Length);
@@ -557,7 +553,7 @@ namespace Citron.IR0
             foreach (var paramType in paramTypes)
             {
                 var name = new Name.Anonymous(i); // 이름은 임의로 짓는다
-                paramsBuilder.Add(new FuncParameter(paramType, name));
+                paramsBuilder.Add(new FuncParameter(bOut: false, paramType, name));
             }
 
             return new FuncType(bLocal, new FuncReturn(retType), paramsBuilder.MoveToImmutable());
@@ -573,9 +569,9 @@ namespace Citron.IR0
             return new BoxPtrType(innerType);
         }
 
-        public Exp LocalRef(Loc loc, IType locType)
+        public Exp LocalRef(Loc loc)
         {
-            return new LocalRefExp(loc, locType);
+            return new LocalRefExp(loc);
         }
 
         public Loc LocalDeref(Exp exp)

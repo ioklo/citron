@@ -130,10 +130,10 @@ namespace Citron.Symbol
             context.SerializeRefArray(nameof(typeArgs), typeArgs);
         }
 
-        public void Accept<TVisitor>(ref TVisitor visitor)
-                    where TVisitor : struct, ISymbolNodeVisitor
-        {
-            visitor.VisitClassMemberFunc(this);
-        }        
+        TResult IFuncSymbol.Accept<TFuncSymbolVisitor, TResult>(ref TFuncSymbolVisitor visitor)
+            => visitor.VisitClassMemberFunc(this);
+
+        TResult ISymbolNode.Accept<TVisitor, TResult>(ref TVisitor visitor)
+            => visitor.VisitClassMemberFunc(this);
     }
 }

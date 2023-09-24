@@ -516,14 +516,8 @@ namespace Citron.Test
         {
             if (@localRefExp == null) { itw.Write("null"); return; }
 
-            var itw1 = itw.Push();
-            var writer1 = new IR0Writer(itw1);
-            itw1.WriteLine();
-
             itw.Write("new Citron.IR0.LocalRefExp(");
-            writer1.Write_Loc(@localRefExp.InnerLoc);
-            itw1.WriteLine(",");
-            writer1.Write_IType(@localRefExp.InnerLocType);
+            this.Write_Loc(@localRefExp.InnerLoc);
             itw.Write(")");
         }
 
@@ -1007,6 +1001,7 @@ namespace Citron.Test
                 case Citron.IR0.AwaitStmt @awaitStmt: Write_AwaitStmt(@awaitStmt); break;
                 case Citron.IR0.AsyncStmt @asyncStmt: Write_AsyncStmt(@asyncStmt); break;
                 case Citron.IR0.ForeachStmt @foreachStmt: Write_ForeachStmt(@foreachStmt); break;
+                case Citron.IR0.ForeachCastStmt @foreachCastStmt: Write_ForeachCastStmt(@foreachCastStmt); break;
                 case Citron.IR0.YieldStmt @yieldStmt: Write_YieldStmt(@yieldStmt); break;
                 case Citron.IR0.CallClassConstructorStmt @callClassConstructorStmt: Write_CallClassConstructorStmt(@callClassConstructorStmt); break;
                 case Citron.IR0.CallStructConstructorStmt @callStructConstructorStmt: Write_CallStructConstructorStmt(@callStructConstructorStmt); break;
@@ -1215,13 +1210,40 @@ namespace Citron.Test
             itw1.WriteLine();
 
             itw.Write("new Citron.IR0.ForeachStmt(");
+            writer1.Write_Exp(@foreachStmt.EnumeratorGetter);
+            itw1.WriteLine(",");
             writer1.Write_IType(@foreachStmt.ItemType);
             itw1.WriteLine(",");
-            writer1.Write_String(@foreachStmt.ElemName);
+            writer1.Write_Name(@foreachStmt.VarName);
             itw1.WriteLine(",");
-            writer1.Write_Loc(@foreachStmt.Iterator);
+            writer1.Write_Exp(@foreachStmt.NextExp);
             itw1.WriteLine(",");
             writer1.Write_ImmutableArray(Write_Stmt, "Citron.IR0.Stmt", @foreachStmt.Body);
+            itw.Write(")");
+        }
+
+        public void Write_ForeachCastStmt(Citron.IR0.ForeachCastStmt? @foreachCastStmt)
+        {
+            if (@foreachCastStmt == null) { itw.Write("null"); return; }
+
+            var itw1 = itw.Push();
+            var writer1 = new IR0Writer(itw1);
+            itw1.WriteLine();
+
+            itw.Write("new Citron.IR0.ForeachCastStmt(");
+            writer1.Write_Exp(@foreachCastStmt.EnumeratorGetter);
+            itw1.WriteLine(",");
+            writer1.Write_IType(@foreachCastStmt.ItemType);
+            itw1.WriteLine(",");
+            writer1.Write_Name(@foreachCastStmt.VarName);
+            itw1.WriteLine(",");
+            writer1.Write_IType(@foreachCastStmt.RawItemType);
+            itw1.WriteLine(",");
+            writer1.Write_Exp(@foreachCastStmt.NextExp);
+            itw1.WriteLine(",");
+            writer1.Write_Exp(@foreachCastStmt.CastExp);
+            itw1.WriteLine(",");
+            writer1.Write_ImmutableArray(Write_Stmt, "Citron.IR0.Stmt", @foreachCastStmt.Body);
             itw.Write(")");
         }
 

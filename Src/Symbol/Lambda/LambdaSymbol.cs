@@ -22,6 +22,8 @@ namespace Citron.Symbol
 
         IFuncSymbol IFuncSymbol.Apply(TypeEnv typeEnv) => Apply(typeEnv);
         IFuncDeclSymbol IFuncSymbol.GetDeclSymbolNode() => decl;
+        TResult IFuncSymbol.Accept<TFuncSymbolVisitor, TResult>(ref TFuncSymbolVisitor visitor)
+            => visitor.VisitLambda(this);
 
         public IDeclSymbolNode? GetDeclSymbolNode()
         {
@@ -150,15 +152,11 @@ namespace Citron.Symbol
             context.SerializeRef(nameof(decl), decl);
         }
 
-        void ISymbolNode.Accept<TVisitor>(ref TVisitor visitor)
-        {
-            visitor.VisitLambda(this);
-        }
+        TResult ISymbolNode.Accept<TVisitor, TResult>(ref TVisitor visitor)
+            => visitor.VisitLambda(this);
 
-        void ITypeSymbol.Accept<TTypeSymbolVisitor>(ref TTypeSymbolVisitor visitor)
-        {
-            visitor.VisitLambda(this);
-        }
+        TResult ITypeSymbol.Accept<TTypeSymbolVisitor, TResult>(ref TTypeSymbolVisitor visitor)
+            => visitor.VisitLambda(this);
 
         public LambdaDeclSymbol GetDeclSymbol()
         {

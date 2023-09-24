@@ -45,7 +45,7 @@ namespace Citron.Syntax
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitLocal(this);
     }
 
-    public interface ITypeExpVisitor<TResult>
+    public interface ITypeExpVisitor<out TResult>
     {
         TResult VisitId(IdTypeExp typeExp);
         TResult VisitMember(MemberTypeExp typeExp);

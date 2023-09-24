@@ -3,6 +3,7 @@ using Citron.Symbol;
 
 using R = Citron.IR0;
 using Citron.Collections;
+using System;
 
 namespace Citron.Analysis;
 
@@ -24,4 +25,9 @@ partial class ScopeContext
     public ImmutableArray<R.Argument> MakeLambdaArgs() => bodyContext.MakeLambdaArgs();
 
     public IType MakeType(TypeExp typeExp) => bodyContext.MakeType(typeExp);
+
+    public Name NewAnonymousName()
+    {
+        throw new NotImplementedException();
+    }
 } 

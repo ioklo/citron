@@ -12,39 +12,38 @@ namespace Citron.Analysis;
 static class IDeclSymbolNodeCanSearchInAllModulesExtension
 {
     // extension을 고려해야 하나
-    struct CanSearchInAllModulesVisitor : IDeclSymbolNodeVisitor
+    struct CanSearchInAllModulesVisitor : IDeclSymbolNodeVisitor<bool>
     {
         public bool result;
 
-        void IDeclSymbolNodeVisitor.VisitModule(ModuleDeclSymbol declSymbol) { result = true; }
-        void IDeclSymbolNodeVisitor.VisitNamespace(NamespaceDeclSymbol declSymbol) { result = true; }
-        void IDeclSymbolNodeVisitor.VisitGlobalFunc(GlobalFuncDeclSymbol declSymbol) { result = false; }
+        bool IDeclSymbolNodeVisitor<bool>.VisitModule(ModuleDeclSymbol declSymbol) { return true; }
+        bool IDeclSymbolNodeVisitor<bool>.VisitNamespace(NamespaceDeclSymbol declSymbol) { return true; }
+        bool IDeclSymbolNodeVisitor<bool>.VisitGlobalFunc(GlobalFuncDeclSymbol declSymbol) { return false; }
 
-        void IDeclSymbolNodeVisitor.VisitClass(ClassDeclSymbol declSymbol) { result = false; }
-        void IDeclSymbolNodeVisitor.VisitClassConstructor(ClassConstructorDeclSymbol declSymbol) { result = false; }
-        void IDeclSymbolNodeVisitor.VisitClassMemberFunc(ClassMemberFuncDeclSymbol declSymbol) { result = false; }
-        void IDeclSymbolNodeVisitor.VisitClassMemberVar(ClassMemberVarDeclSymbol declSymbol) { result = false; }
+        bool IDeclSymbolNodeVisitor<bool>.VisitClass(ClassDeclSymbol declSymbol) { return false; }
+        bool IDeclSymbolNodeVisitor<bool>.VisitClassConstructor(ClassConstructorDeclSymbol declSymbol) { return false; }
+        bool IDeclSymbolNodeVisitor<bool>.VisitClassMemberFunc(ClassMemberFuncDeclSymbol declSymbol) { return false; }
+        bool IDeclSymbolNodeVisitor<bool>.VisitClassMemberVar(ClassMemberVarDeclSymbol declSymbol) { return false; }
 
-        void IDeclSymbolNodeVisitor.VisitStruct(StructDeclSymbol declSymbol) { result = false; }
-        void IDeclSymbolNodeVisitor.VisitStructConstructor(StructConstructorDeclSymbol declSymbol) { result = false; }
-        void IDeclSymbolNodeVisitor.VisitStructMemberFunc(StructMemberFuncDeclSymbol declSymbol) { result = false; }
-        void IDeclSymbolNodeVisitor.VisitStructMemberVar(StructMemberVarDeclSymbol declSymbol) { result = false; }
+        bool IDeclSymbolNodeVisitor<bool>.VisitStruct(StructDeclSymbol declSymbol) { return false; }
+        bool IDeclSymbolNodeVisitor<bool>.VisitStructConstructor(StructConstructorDeclSymbol declSymbol) { return false; }
+        bool IDeclSymbolNodeVisitor<bool>.VisitStructMemberFunc(StructMemberFuncDeclSymbol declSymbol) { return false; }
+        bool IDeclSymbolNodeVisitor<bool>.VisitStructMemberVar(StructMemberVarDeclSymbol declSymbol) { return false; }
 
-        void IDeclSymbolNodeVisitor.VisitEnum(EnumDeclSymbol declSymbol) { result = false; }
-        void IDeclSymbolNodeVisitor.VisitEnumElem(EnumElemDeclSymbol declSymbol) { result = false; }
-        void IDeclSymbolNodeVisitor.VisitEnumElemMemberVar(EnumElemMemberVarDeclSymbol declSymbol) { result = false; }
+        bool IDeclSymbolNodeVisitor<bool>.VisitEnum(EnumDeclSymbol declSymbol) { return false; }
+        bool IDeclSymbolNodeVisitor<bool>.VisitEnumElem(EnumElemDeclSymbol declSymbol) { return false; }
+        bool IDeclSymbolNodeVisitor<bool>.VisitEnumElemMemberVar(EnumElemMemberVarDeclSymbol declSymbol) { return false; }
 
-        void IDeclSymbolNodeVisitor.VisitInterface(InterfaceDeclSymbol declSymbol) { result = false; }
+        bool IDeclSymbolNodeVisitor<bool>.VisitInterface(InterfaceDeclSymbol declSymbol) { return false; }
 
-        void IDeclSymbolNodeVisitor.VisitLambda(LambdaDeclSymbol declSymbol) { result = false; }
-        void IDeclSymbolNodeVisitor.VisitLambdaMemberVar(LambdaMemberVarDeclSymbol declSymbol) { result = false; }        
+        bool IDeclSymbolNodeVisitor<bool>.VisitLambda(LambdaDeclSymbol declSymbol) { return false; }
+        bool IDeclSymbolNodeVisitor<bool>.VisitLambdaMemberVar(LambdaMemberVarDeclSymbol declSymbol) { return false; }        
     }
 
     public static bool CanSearchInAllModules(this IDeclSymbolNode node)
     {
         var visitor = new CanSearchInAllModulesVisitor();
-        node.AcceptDeclSymbolVisitor(ref visitor);
-        return visitor.result;
+        return node.Accept<CanSearchInAllModulesVisitor, bool>(ref visitor);
     }
 }
 

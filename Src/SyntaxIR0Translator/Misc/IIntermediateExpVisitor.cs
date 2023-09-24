@@ -1,6 +1,6 @@
 ﻿namespace Citron.Analysis;
 
-interface IIntermediateExpVisitor<TResult>
+interface IIntermediateExpVisitor<out TResult>
 {
     TResult VisitNamespace(IntermediateExp.Namespace exp);
     TResult VisitGlobalFuncs(IntermediateExp.GlobalFuncs exp);

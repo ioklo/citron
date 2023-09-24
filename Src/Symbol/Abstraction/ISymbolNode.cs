@@ -17,8 +17,8 @@ namespace Citron.Symbol
         ISymbolNode Apply(TypeEnv typeEnv);        
         IType GetTypeArg(int i);
 
-        void Accept<TVisitor>(ref TVisitor visitor)
-            where TVisitor : struct, ISymbolNodeVisitor;
+        TResult Accept<TVisitor, TResult>(ref TVisitor visitor)
+            where TVisitor : struct, ISymbolNodeVisitor<TResult>;
 
         SymbolQueryResult? QueryMember(Name name, int explicitTypeArgCount);
     }

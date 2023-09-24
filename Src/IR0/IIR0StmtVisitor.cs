@@ -1,7 +1,7 @@
 ﻿namespace Citron.IR0;
 
 // algebraic data type별로 visitor가 하나씩 생긴다
-public interface IIR0StmtVisitor<TResult>
+public interface IIR0StmtVisitor<out TResult>
 {
     TResult VisitCommand(CommandStmt stmt);
     TResult VisitLocalVarDecl(LocalVarDeclStmt stmt);
@@ -19,6 +19,7 @@ public interface IIR0StmtVisitor<TResult>
     TResult VisitAwait(AwaitStmt stmt);
     TResult VisitAsync(AsyncStmt stmt);
     TResult VisitForeach(ForeachStmt stmt);
+    TResult VisitForeachCast(ForeachCastStmt stmt);
     TResult VisitYield(YieldStmt stmt);
     TResult VisitCallClassConstructor(CallClassConstructorStmt stmt);
     TResult VisitCallStructConstructor(CallStructConstructorStmt stmt);
