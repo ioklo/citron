@@ -103,6 +103,7 @@ namespace Citron.Symbol
 
         TResult IFuncSymbol.Accept<TFuncSymbolVisitor, TResult>(ref TFuncSymbolVisitor visitor)
             => visitor.VisitClassConstructor(this);
+        FuncReturn? IFuncSymbol.GetReturn() => null;
 
         TResult ISymbolNode.Accept<TVisitor, TResult>(ref TVisitor visitor)
             => visitor.VisitClassConstructor(this);

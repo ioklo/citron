@@ -1,49 +1,54 @@
 ﻿using System;
 using Citron.Symbol;
 using Citron.Collections;
-using R = Citron.IR0;
+using Citron.IR0;
+using Pretune;
 
 namespace Citron.Analysis;
 
-struct InstanceFuncBinder : IFuncSymbolVisitor<R.Exp>
+using Result = TranslationResult<IR0ExpResult>;
+using ITV = ITypeVisitor<TranslationResult<IR0ExpResult>>;
+using ISQRV = ISymbolQueryResultVisitor<TranslationResult<IR0ExpResult>>;
+using SQR = SymbolQueryResult;
+
+struct InstanceFuncSymbolBinder : IFuncSymbolVisitor<Exp>
 {
-    R.Loc instance;
-    ImmutableArray<R.Argument> args;
+    Loc instance;
+    ImmutableArray<Argument> args;
 
-    public static R.Exp Bind(IFuncSymbol funcS, R.Loc instance, ImmutableArray<R.Argument> args)
+    public static Exp Bind(IFuncSymbol funcS, Loc instance, ImmutableArray<Argument> args)
     {
-        var binder = new InstanceFuncBinder { instance = instance, args = args };
-        return funcS.Accept<InstanceFuncBinder, R.Exp>(ref binder);
+        var binder = new InstanceFuncSymbolBinder { instance = instance, args = args };
+        return funcS.Accept<InstanceFuncSymbolBinder, Exp>(ref binder);
     }
 
-    R.Exp IFuncSymbolVisitor<R.Exp>.VisitClassConstructor(ClassConstructorSymbol symbol)
+    Exp IFuncSymbolVisitor<Exp>.VisitClassConstructor(ClassConstructorSymbol symbol)
     {
         throw new NotImplementedException();
     }
 
-    R.Exp IFuncSymbolVisitor<R.Exp>.VisitClassMemberFunc(ClassMemberFuncSymbol symbol)
+    Exp IFuncSymbolVisitor<Exp>.VisitClassMemberFunc(ClassMemberFuncSymbol symbol)
     {
-        return new R.CallClassMemberFuncExp(symbol, instance, args);
+        return new CallClassMemberFuncExp(symbol, instance, args);
     }
 
-    R.Exp IFuncSymbolVisitor<R.Exp>.VisitGlobalFunc(GlobalFuncSymbol symbol)
+    Exp IFuncSymbolVisitor<Exp>.VisitGlobalFunc(GlobalFuncSymbol symbol)
     {
         throw new NotImplementedException();
     }
 
-    R.Exp IFuncSymbolVisitor<R.Exp>.VisitLambda(LambdaSymbol symbol)
+    Exp IFuncSymbolVisitor<Exp>.VisitLambda(LambdaSymbol symbol)
     {
         throw new NotImplementedException();
     }
 
-    R.Exp IFuncSymbolVisitor<R.Exp>.VisitStructConstructor(StructConstructorSymbol symbol)
+    Exp IFuncSymbolVisitor<Exp>.VisitStructConstructor(StructConstructorSymbol symbol)
     {
         throw new NotImplementedException();
     }
 
-    R.Exp IFuncSymbolVisitor<R.Exp>.VisitStructMemberFunc(StructMemberFuncSymbol symbol)
+    Exp IFuncSymbolVisitor<Exp>.VisitStructMemberFunc(StructMemberFuncSymbol symbol)
     {
-        return new R.CallStructMemberFuncExp(symbol, instance, args);
+        return new CallStructMemberFuncExp(symbol, instance, args);
     }
 }
-

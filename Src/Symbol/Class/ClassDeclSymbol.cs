@@ -277,10 +277,5 @@ namespace Citron.Symbol
             context.SerializeValueRef(nameof(funcComp), ref funcComp);
             context.SerializeString(nameof(initState), initState.ToString());
         }
-
-        IEnumerable<IFuncDeclSymbol> ITypeDeclSymbol.GetFuncs()
-        {
-            return GetMemberFuncs();
-        }
     }
 }

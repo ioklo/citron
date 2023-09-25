@@ -52,7 +52,7 @@ namespace Citron.Analysis
 
                 }
 
-                builder.Add(new FuncParameter(type, new Name.Normal(sparam.Name)));
+                builder.Add(new FuncParameter(sparam.HasOut, type, new Name.Normal(sparam.Name)));
             }
 
             return (builder.MoveToImmutable(), bLastParamVariadic);

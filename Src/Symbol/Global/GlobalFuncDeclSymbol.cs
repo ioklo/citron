@@ -177,4 +177,6 @@ public class GlobalFuncDeclSymbol : IFuncDeclSymbol, ICyclicEqualityComparableCl
 
     bool IFuncDeclSymbol.IsLastParameterVariadic() => commonComponent.IsLastParameterVariadic();
     FuncReturn? IFuncDeclSymbol.GetReturn() => GetReturn();
+
+    bool IFuncDeclSymbol.IsStatic() => true;
 }

@@ -253,4 +253,89 @@ static class BodyMisc
         if (!curNode.CanAccess(func)) return null;
         return func;
     }
+
+
+    struct ASFuncsSQRVisitor : ISymbolQueryResultVisitor<IEnumerable<(ISymbolNode, IFuncDeclSymbol)>>
+    {
+        static IEnumerable<(ISymbolNode, IFuncDeclSymbol)> Empty() => Enumerable.Empty<(ISymbolNode, IFuncDeclSymbol)>();
+
+        IEnumerable<(ISymbolNode, IFuncDeclSymbol)> ISymbolQueryResultVisitor<IEnumerable<(ISymbolNode, IFuncDeclSymbol)>>.VisitMultipleCandidatesError(SymbolQueryResult.MultipleCandidatesError result)
+        {
+            return Empty();
+        }
+
+        IEnumerable<(ISymbolNode, IFuncDeclSymbol)> ISymbolQueryResultVisitor<IEnumerable<(ISymbolNode, IFuncDeclSymbol)>>.VisitNamespace(SymbolQueryResult.Namespace result)
+        {
+            return Empty();
+        }
+
+        IEnumerable<(ISymbolNode, IFuncDeclSymbol)> ISymbolQueryResultVisitor<IEnumerable<(ISymbolNode, IFuncDeclSymbol)>>.VisitGlobalFuncs(SymbolQueryResult.GlobalFuncs result)
+        {
+            foreach (var (outer, declSymbol) in result.OuterAndDeclSymbols)
+                yield return (outer, declSymbol);
+        }
+
+        IEnumerable<(ISymbolNode, IFuncDeclSymbol)> ISymbolQueryResultVisitor<IEnumerable<(ISymbolNode, IFuncDeclSymbol)>>.VisitClass(SymbolQueryResult.Class result)
+        {
+            return Empty();
+        }
+
+        IEnumerable<(ISymbolNode, IFuncDeclSymbol)> ISymbolQueryResultVisitor<IEnumerable<(ISymbolNode, IFuncDeclSymbol)>>.VisitClassMemberFuncs(SymbolQueryResult.ClassMemberFuncs result)
+        {
+            foreach (var (outer, declSymbol) in result.OuterAndDeclSymbols)
+                yield return (outer, declSymbol);
+        }
+
+        IEnumerable<(ISymbolNode, IFuncDeclSymbol)> ISymbolQueryResultVisitor<IEnumerable<(ISymbolNode, IFuncDeclSymbol)>>.VisitClassMemberVar(SymbolQueryResult.ClassMemberVar result)
+        {
+            return Empty();
+        }
+
+        IEnumerable<(ISymbolNode, IFuncDeclSymbol)> ISymbolQueryResultVisitor<IEnumerable<(ISymbolNode, IFuncDeclSymbol)>>.VisitStruct(SymbolQueryResult.Struct result)
+        {
+            return Empty();
+        }
+
+        IEnumerable<(ISymbolNode, IFuncDeclSymbol)> ISymbolQueryResultVisitor<IEnumerable<(ISymbolNode, IFuncDeclSymbol)>>.VisitStructMemberFuncs(SymbolQueryResult.StructMemberFuncs result)
+        {
+            foreach (var (outer, declSymbol) in result.OuterAndDeclSymbols)
+                yield return (outer, declSymbol);
+        }
+
+        IEnumerable<(ISymbolNode, IFuncDeclSymbol)> ISymbolQueryResultVisitor<IEnumerable<(ISymbolNode, IFuncDeclSymbol)>>.VisitStructMemberVar(SymbolQueryResult.StructMemberVar result)
+        {
+            return Empty();
+        }
+
+        IEnumerable<(ISymbolNode, IFuncDeclSymbol)> ISymbolQueryResultVisitor<IEnumerable<(ISymbolNode, IFuncDeclSymbol)>>.VisitEnum(SymbolQueryResult.Enum result)
+        {
+            return Empty();
+        }
+
+        IEnumerable<(ISymbolNode, IFuncDeclSymbol)> ISymbolQueryResultVisitor<IEnumerable<(ISymbolNode, IFuncDeclSymbol)>>.VisitEnumElem(SymbolQueryResult.EnumElem result)
+        {
+            return Empty();
+        }
+
+        IEnumerable<(ISymbolNode, IFuncDeclSymbol)> ISymbolQueryResultVisitor<IEnumerable<(ISymbolNode, IFuncDeclSymbol)>>.VisitEnumElemMemberVar(SymbolQueryResult.EnumElemMemberVar result)
+        {
+            return Empty();
+        }
+
+        IEnumerable<(ISymbolNode, IFuncDeclSymbol)> ISymbolQueryResultVisitor<IEnumerable<(ISymbolNode, IFuncDeclSymbol)>>.VisitLambdaMemberVar(SymbolQueryResult.LambdaMemberVar result)
+        {
+            return Empty();
+        }
+
+        IEnumerable<(ISymbolNode, IFuncDeclSymbol)> ISymbolQueryResultVisitor<IEnumerable<(ISymbolNode, IFuncDeclSymbol)>>.VisitTupleMemberVar(SymbolQueryResult.TupleMemberVar result)
+        {
+            return Empty();
+        }
+    }
+
+    public static IEnumerable<(ISymbolNode Outer, IFuncDeclSymbol DeclSymbol)> AsOuterAndDeclSymbols(this SymbolQueryResult sqr)
+    {
+        var visitor = new ASFuncsSQRVisitor();
+        return sqr.Accept<ASFuncsSQRVisitor, IEnumerable<(ISymbolNode, IFuncDeclSymbol)>>(ref visitor);
+    }
 }

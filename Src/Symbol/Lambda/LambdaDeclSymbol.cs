@@ -188,11 +188,8 @@ namespace Citron.Symbol
 
         bool IFuncDeclSymbol.IsLastParameterVariadic() => commonComponent.IsLastParameterVariadic();
 
-        IEnumerable<IFuncDeclSymbol> ITypeDeclSymbol.GetFuncs()
-        {
-            return Enumerable.Empty<IFuncDeclSymbol>();
-        }
-
         FuncReturn? IFuncDeclSymbol.GetReturn() => GetReturn();
+
+        bool IFuncDeclSymbol.IsStatic() => false;
     }
 }

@@ -57,6 +57,7 @@ namespace Citron.LexicalAnalysis
         public static readonly SingleToken Break = new SingleToken("break");
         public static readonly SingleToken Task = new SingleToken("task");
         public static readonly SingleToken Params = new SingleToken("params");
+        public static readonly SingleToken Out = new SingleToken("out");
         public static readonly SingleToken Return = new SingleToken("return");
         public static readonly SingleToken Async = new SingleToken("async");
         public static readonly SingleToken Await = new SingleToken("await");

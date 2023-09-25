@@ -97,12 +97,12 @@ namespace Citron.IR0
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitAsync(this);
     }
     
-    public record class ForeachStmt(Exp EnumeratorGetter, IType ItemType, Name VarName, Exp NextExp, ImmutableArray<Stmt> Body) : Stmt
+    public record class ForeachStmt(IType EnumeratorType, Exp EnumeratorExp, IType ItemType, Name VarName, Exp NextExp, ImmutableArray<Stmt> Body) : Stmt
     {
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitForeach(this);
     }
 
-    public record class ForeachCastStmt(Exp EnumeratorGetter, IType ItemType, Name VarName, IType RawItemType, Exp NextExp, Exp CastExp, ImmutableArray<Stmt> Body) : Stmt
+    public record class ForeachCastStmt(IType EnumeratorType, Exp EnumeratorExp, IType ItemType, Name VarName, IType RawItemType, Exp NextExp, Exp CastExp, ImmutableArray<Stmt> Body) : Stmt
     {
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitForeachCast(this);
     }

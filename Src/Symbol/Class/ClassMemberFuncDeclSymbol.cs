@@ -58,7 +58,11 @@ namespace Citron.Symbol
 
             initState = InitializeState.AfterInitFuncReturnAndParams;
         }
-        
+
+        #region commonComponent
+        public bool IsLastParameterVariadic() => commonComponent.IsLastParameterVariadic();
+        #endregion commonComponent
+
         public Accessor GetAccessor()
         {
             return accessor;
@@ -115,8 +119,11 @@ namespace Citron.Symbol
         TResult IDeclSymbolNode.Accept<TDeclSymbolNodeVisitor, TResult>(ref TDeclSymbolNodeVisitor visitor)
             => visitor.VisitClassMemberFunc(this);
 
-        void IFuncDeclSymbol.AddLambda(LambdaDeclSymbol declSymbol)
-            => lambdaComponent.AddLambda(declSymbol);
+        #region IFuncDeclSymbol
+        void IFuncDeclSymbol.AddLambda(LambdaDeclSymbol declSymbol) => lambdaComponent.AddLambda(declSymbol);
+        bool IFuncDeclSymbol.IsLastParameterVariadic() => IsLastParameterVariadic();
+        FuncReturn? IFuncDeclSymbol.GetReturn() => GetReturn();
+        #endregion
 
         bool ICyclicEqualityComparableClass<IDeclSymbolNode>.CyclicEquals(IDeclSymbolNode other, ref CyclicEqualityCompareContext context)
             => other is ClassMemberFuncDeclSymbol otherDeclSymbol && CyclicEquals(otherDeclSymbol, ref context);
@@ -175,8 +182,5 @@ namespace Citron.Symbol
             context.SerializeValueRef(nameof(lambdaComponent), ref lambdaComponent);
             context.SerializeString(nameof(initState), initState.ToString());
         }
-
-        bool IFuncDeclSymbol.IsLastParameterVariadic() => commonComponent.IsLastParameterVariadic();
-        FuncReturn? IFuncDeclSymbol.GetReturn() => GetReturn();
     }
 }

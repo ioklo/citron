@@ -91,9 +91,9 @@ namespace EvalTest
                 var entry = new SymbolId(moduleName, new SymbolPath(null, NormalName("Main")));
                 var retValue = await Evaluator.EvalAsync(moduleDriverInitializers, entry); // retValue는 지금 쓰지 않는다
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                Assert.True(logger.HasError, "실행은 중간에 멈췄는데 에러로그가 남지 않았습니다");
+                Assert.True(logger.HasError, $"실행은 중간에 멈췄는데 에러로그가 남지 않았습니다 {e}");
             }
 
             Assert.False(logger.HasError, logger.GetMessages());

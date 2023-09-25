@@ -151,9 +151,7 @@ namespace Citron.Symbol
 
         TResult ITypeDeclSymbol.Accept<TTypeDeclSymbolVisitor, TResult>(ref TTypeDeclSymbolVisitor visitor)
             => visitor.VisitStruct(this);
-
-        IEnumerable<IFuncDeclSymbol> ITypeDeclSymbol.GetFuncs() => GetFuncs();
-
+        
         public IDeclSymbolNode? GetOuterDeclNode()
         {
             return outer;

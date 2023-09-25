@@ -125,9 +125,9 @@ namespace Citron.IR0
         #endregion
 
         #region Foreach
-        public ForeachStmt Foreach(Exp enumeratorGetter, IType itemType, string varName, Exp nextExp, params Stmt[] body)
+        public ForeachStmt Foreach(IType enumeratorType, Exp enumeratorExp, IType itemType, string varName, Exp nextExp, params Stmt[] body)
         {
-            return new ForeachStmt(enumeratorGetter, itemType, new Name.Normal(varName), nextExp, body.ToImmutableArray());
+            return new ForeachStmt(enumeratorType, enumeratorExp, itemType, new Name.Normal(varName), nextExp, body.ToImmutableArray());
         }
         #endregion
 

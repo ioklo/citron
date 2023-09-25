@@ -51,7 +51,7 @@ namespace Citron.Analysis
                 var paramSyntax = paramSyntaxes[i];
 
                 var paramTypeSymbol = MakeType(paramSyntax.Type, curNode);
-                var param = new FuncParameter(paramTypeSymbol, new Name.Normal(paramSyntax.Name));
+                var param = new FuncParameter(paramSyntax.HasOut, paramTypeSymbol, new Name.Normal(paramSyntax.Name));
                 paramsBuilder.Add(param);
 
                 if (paramSyntax.HasParams)

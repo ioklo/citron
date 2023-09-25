@@ -9,6 +9,7 @@ using System.Linq;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using Microsoft.VisualBasic;
+using Citron.Infra;
 
 namespace Citron
 {
@@ -93,8 +94,9 @@ namespace Citron
         // params T t
         bool InternalParseFuncDeclParam([NotNullWhen(returnValue: true)] out FuncParam? outFuncParam)
         {
-            // params
-            bool hasParams = Accept(Tokens.Params);
+            var (bOut, bParams) = ParserMisc.AcceptParseOutAndParams(lexer, ref context);
+
+
 
             if (!TypeExpParser.Parse(lexer, ref context, out var typeExp))
             { 
@@ -108,7 +110,7 @@ namespace Citron
                 return false;
             }
 
-            outFuncParam = new FuncParam(HasParams: hasParams, typeExp, name.Value);
+            outFuncParam = new FuncParam(HasOut: bOut, HasParams: bParams, typeExp, name.Value);
             return true;
         }
         bool InternalParseFuncDeclParams([NotNullWhen(returnValue: true)] out ImmutableArray<FuncParam>? outFuncParams)

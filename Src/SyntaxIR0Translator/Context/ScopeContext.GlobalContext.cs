@@ -20,7 +20,6 @@ partial class ScopeContext
     public IType GetListIterType(IType itemType) => globalContext.GetListIterType(itemType);
 
     public bool IsListType(IType type, [NotNullWhen(returnValue: true)] out IType? itemType) => globalContext.IsListType(type, out itemType);
-    public bool IsSeqType(IType type, [NotNullWhen(returnValue: true)] out IType? itemType) => globalContext.IsSeqType(type, out itemType);
 
     public ImmutableArray<InternalBinaryOperatorInfo> GetBinaryOpInfos(S.BinaryOpKind kind) => globalContext.GetBinaryOpInfos(kind);
     public void AddBody(IFuncDeclSymbol symbol, ImmutableArray<R.Stmt> body) => globalContext.AddBody(symbol, body);

@@ -79,7 +79,7 @@ partial struct ExpParser
     delegate bool ParseBaseExpDelegate(ref ExpParser parser, [NotNullWhen(returnValue: true)] out Exp? outExp);
 
     bool InternalParseLeftAssocBinaryOpExp(
-        ParseBaseExpDelegate parseBaseExp, 
+        ParseBaseExpDelegate parseBaseExp,
         (Token Token, BinaryOpKind OpKind)[] infos,
         [NotNullWhen(returnValue: true)] out Exp? outExp)
     {
@@ -143,7 +143,7 @@ partial struct ExpParser
         if (ParseBoxExp(out outExp))
             return true;
 
-        if (ParseNewExp(out outExp))        
+        if (ParseNewExp(out outExp))
             return true;
 
         if (ParseLambdaExp(out outExp))
@@ -368,7 +368,7 @@ partial struct ExpParser
                 outExp = null;
                 return false;
             }
-            
+
             // '-' '3'은 '-3'
             if (HandleUnaryMinusWithIntLiteral(opKind.Value, exp, out var handledExp))
             {
@@ -397,8 +397,8 @@ partial struct ExpParser
     bool InternalParseMultiplicativeExp([NotNullWhen(returnValue: true)] out Exp? outExp)
     {
         return ParseLeftAssocBinaryOpExp(
-            (ref ExpParser parser, [NotNullWhen(returnValue: true)] out Exp? outExp) => parser.ParseUnaryExp(out outExp), 
-            multiplicativeInfos, 
+            (ref ExpParser parser, [NotNullWhen(returnValue: true)] out Exp? outExp) => parser.ParseUnaryExp(out outExp),
+            multiplicativeInfos,
             out outExp);
     }
     #endregion
@@ -414,9 +414,9 @@ partial struct ExpParser
     bool InternalParseAdditiveExp([NotNullWhen(returnValue: true)] out Exp? outExp)
     {
         return ParseLeftAssocBinaryOpExp(
-            (ref ExpParser parser, [NotNullWhen(returnValue: true)] out Exp? outExp) => parser.ParseMultiplicativeExp(out outExp), 
+            (ref ExpParser parser, [NotNullWhen(returnValue: true)] out Exp? outExp) => parser.ParseMultiplicativeExp(out outExp),
             additiveInfos,
-            out outExp) ;
+            out outExp);
     }
     #endregion
 
@@ -433,7 +433,7 @@ partial struct ExpParser
     bool InternalParseTestAndTypeTestExp([NotNullWhen(returnValue: true)] out Exp? outExp)
     {
         bool ParseBaseExp(ref ExpParser parser, [NotNullWhen(returnValue: true)] out Exp? outExp) => parser.ParseAdditiveExp(out outExp);
-        
+
         if (!ParseBaseExp(ref this, out var exp0))
         {
             outExp = null;
@@ -446,12 +446,12 @@ partial struct ExpParser
 
             var lexResult = lexer.LexNormalMode(context.LexerContext, true);
             if (!lexResult.HasValue) break;
-            
+
             // search binary
             foreach (var info in testInfos)
             {
                 if (info.Token == lexResult.Token)
-                {   
+                {
                     context = context.Update(lexResult.Context);
 
                     if (!ParseBaseExp(ref this, out var exp1))
@@ -513,8 +513,8 @@ partial struct ExpParser
     bool InternalParseEqualityExp([NotNullWhen(returnValue: true)] out Exp? outExp)
     {
         return ParseLeftAssocBinaryOpExp(
-            (ref ExpParser parser, [NotNullWhen(returnValue: true)] out Exp? outExp) => parser.ParseTestAndTypeTestExp(out outExp), 
-            equalityInfos, 
+            (ref ExpParser parser, [NotNullWhen(returnValue: true)] out Exp? outExp) => parser.ParseTestAndTypeTestExp(out outExp),
+            equalityInfos,
             out outExp);
     }
     #endregion
@@ -548,7 +548,7 @@ partial struct ExpParser
     }
 
     #endregion
-
+    
     #region LambdaExpression, Right Assoc
     bool InternalParseLambdaExp([NotNullWhen(returnValue: true)] out Exp? outExp)
     {
@@ -556,13 +556,11 @@ partial struct ExpParser
 
         // (), (a, b)            
         // (int a)
-        // (ref int a, int b) => ...
+        // (out int* a, int b) => ...
         // a
-        if (Accept<IdentifierToken>(out var idToken))
-        {
-            paramsBuilder.Add(new LambdaExpParam(null, idToken.Value, HasParams: false));
-        }
-        else if (Accept(Tokens.LParen))
+        // out a
+        // params a
+        if (Accept(Tokens.LParen))
         {
             while (!Accept(Tokens.RParen))
             {
@@ -574,7 +572,7 @@ partial struct ExpParser
                     }
 
 
-                bool bHasParams = Accept(Tokens.Params);
+                var (bOut, bParams) = ParserMisc.AcceptParseOutAndParams(lexer, ref context);
 
                 // id id or id
                 if (!Accept<IdentifierToken>(out var firstIdToken))
@@ -584,9 +582,19 @@ partial struct ExpParser
                 }
 
                 if (!Accept<IdentifierToken>(out var secondIdToken))
-                    paramsBuilder.Add(new LambdaExpParam(null, firstIdToken.Value, bHasParams));
+                    paramsBuilder.Add(new LambdaExpParam(null, firstIdToken.Value, HasOut: bOut, HasParams: bParams));
                 else
-                    paramsBuilder.Add(new LambdaExpParam(new IdTypeExp(firstIdToken.Value, default), secondIdToken.Value, bHasParams));
+                    paramsBuilder.Add(new LambdaExpParam(new IdTypeExp(firstIdToken.Value, default), secondIdToken.Value, HasOut: bOut, HasParams: bParams));
+            }
+        }
+        else
+        {
+            // out과 params는 동시에 쓸 수 없다
+            var (bOut, bParams) = ParserMisc.AcceptParseOutAndParams(lexer, ref context);
+
+            if (Accept<IdentifierToken>(out var idToken))
+            {
+                paramsBuilder.Add(new LambdaExpParam(null, idToken.Value, HasOut: bOut, HasParams: bParams));
             }
         }
 

@@ -111,7 +111,7 @@ struct IntermediateRefExpIR0ExpTranslator : IIntermediateRefExpVisitor<Translati
     // 가장 쉬운 &s.x
     TranslationResult<IR0ExpResult> IIntermediateRefExpVisitor<TranslationResult<IR0ExpResult>>.VisitLocalRef(IntermediateRefExp.LocalRef imRefExp)
     {
-        return Valid(new IR0ExpResult(new LocalRefExp(imRefExp.Loc, imRefExp.LocType), new LocalPtrType(imRefExp.LocType)));
+        return Valid(new IR0ExpResult(new LocalRefExp(imRefExp.Loc), new LocalPtrType(imRefExp.LocType)));
     }
 
     // &G()

@@ -153,10 +153,5 @@ namespace Citron.Symbol
             context.SerializeRefArray(nameof(elems), elems);
             context.SerializeString(nameof(initState), initState.ToString());
         }
-
-        IEnumerable<IFuncDeclSymbol> ITypeDeclSymbol.GetFuncs()
-        {
-            return Enumerable.Empty<IFuncDeclSymbol>();
-        }
     }
 }

@@ -12,6 +12,8 @@ namespace Citron.Symbol
         int GetParameterCount();
         FuncParameter GetParameter(int index);
 
+        FuncReturn? GetReturn();
+
         new TResult Accept<TFuncSymbolVisitor, TResult>(ref TFuncSymbolVisitor visitor)
             where TFuncSymbolVisitor : struct, IFuncSymbolVisitor<TResult>;
     }

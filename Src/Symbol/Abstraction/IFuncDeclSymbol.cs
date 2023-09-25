@@ -12,5 +12,6 @@ namespace Citron.Symbol
         FuncReturn? GetReturn();
 
         bool IsLastParameterVariadic();
+        bool IsStatic();
     }
 }

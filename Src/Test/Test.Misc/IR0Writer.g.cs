@@ -1210,7 +1210,9 @@ namespace Citron.Test
             itw1.WriteLine();
 
             itw.Write("new Citron.IR0.ForeachStmt(");
-            writer1.Write_Exp(@foreachStmt.EnumeratorGetter);
+            writer1.Write_IType(@foreachStmt.EnumeratorType);
+            itw1.WriteLine(",");
+            writer1.Write_Exp(@foreachStmt.EnumeratorExp);
             itw1.WriteLine(",");
             writer1.Write_IType(@foreachStmt.ItemType);
             itw1.WriteLine(",");
@@ -1231,7 +1233,9 @@ namespace Citron.Test
             itw1.WriteLine();
 
             itw.Write("new Citron.IR0.ForeachCastStmt(");
-            writer1.Write_Exp(@foreachCastStmt.EnumeratorGetter);
+            writer1.Write_IType(@foreachCastStmt.EnumeratorType);
+            itw1.WriteLine(",");
+            writer1.Write_Exp(@foreachCastStmt.EnumeratorExp);
             itw1.WriteLine(",");
             writer1.Write_IType(@foreachCastStmt.ItemType);
             itw1.WriteLine(",");

@@ -86,7 +86,7 @@ namespace Citron.Syntax
         {
             var builder = ImmutableArray.CreateBuilder<FuncParam>(ps.Length);
             foreach (var p in ps)
-                builder.Add(new FuncParam(HasParams: false, p.ParamType, p.ParamName));
+                builder.Add(new FuncParam(HasOut: false, HasParams: false, p.ParamType, p.ParamName));
             return builder.MoveToImmutable();
         }
 

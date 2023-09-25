@@ -14,8 +14,6 @@ static class IDeclSymbolNodeCanSearchInAllModulesExtension
     // extension을 고려해야 하나
     struct CanSearchInAllModulesVisitor : IDeclSymbolNodeVisitor<bool>
     {
-        public bool result;
-
         bool IDeclSymbolNodeVisitor<bool>.VisitModule(ModuleDeclSymbol declSymbol) { return true; }
         bool IDeclSymbolNodeVisitor<bool>.VisitNamespace(NamespaceDeclSymbol declSymbol) { return true; }
         bool IDeclSymbolNodeVisitor<bool>.VisitGlobalFunc(GlobalFuncDeclSymbol declSymbol) { return false; }

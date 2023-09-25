@@ -131,5 +131,10 @@ namespace Citron.Symbol
         {
             return null;
         }
+
+        bool IFuncDeclSymbol.IsStatic()
+        {
+            return false;
+        }
     }
 }

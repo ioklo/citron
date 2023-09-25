@@ -135,5 +135,8 @@ namespace Citron.Symbol
 
         TResult ISymbolNode.Accept<TVisitor, TResult>(ref TVisitor visitor)
             => visitor.VisitClassMemberFunc(this);
+
+        FuncReturn? IFuncSymbol.GetReturn() => GetReturn();
+        
     }
 }

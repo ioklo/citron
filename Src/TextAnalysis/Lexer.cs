@@ -100,6 +100,7 @@ namespace Citron
             { "break", Tokens.Break },
             { "task", Tokens.Task },
             { "params", Tokens.Params },
+            { "out", Tokens.Out },
             { "return", Tokens.Return },
             { "async", Tokens.Async },
             { "await", Tokens.Await },

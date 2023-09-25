@@ -70,7 +70,7 @@ namespace Citron.Analysis
                     throw new NotImplementedException();
 
                 var paramTypeSymbol = context.MakeType(paramSyntax.Type);
-                var param = new FuncParameter(paramTypeSymbol, new Name.Normal(paramSyntax.Name));
+                var param = new FuncParameter(bOut: paramSyntax.HasOut, paramTypeSymbol, new Name.Normal(paramSyntax.Name));
                 paramsBuilder.Add(param);
 
                 if (paramSyntax.HasParams)

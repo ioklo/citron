@@ -125,12 +125,27 @@ namespace Citron
         
         async IAsyncEnumerable<bool> EvalForeachStmtCoreAsync(ForeachStmt stmt)
         {
-            var iteratorLoc = (SeqValue)await IR0LocEvaluator.EvalAsync(stmt.Iterator, context);
-            var elemValue = context.AllocValue(stmt.ItemType);
+            // 1. enumerator값을 할당한다
+            var enumeratorValue = context.AllocValue(stmt.EnumeratorType);
 
-            context.AddLocalVar(new Name.Normal(stmt.ElemName), elemValue);
-            while (await iteratorLoc.NextAsync(elemValue))
+            // 2. enumeratorValue에 enumerator를 대입한다
+            await IR0ExpEvaluator.EvalAsync(stmt.EnumeratorExp, context, enumeratorValue);
+
+            // 3. itemValue를 할당한다
+            var itemValue = context.AllocValue(stmt.ItemType);
+            context.AddLocalVar(stmt.VarName, itemValue);
+
+            // 4. condValue를 할당한다
+            var condValue = context.AllocValue<BoolValue>(TypeIds.Bool);
+
+            while (true)
             {
+                // 5. Next를 실행한다
+                await IR0ExpEvaluator.EvalAsync(stmt.NextExp, context, condValue);
+
+                // 가져오기에 실패했으면 종료
+                if (!condValue.GetBool()) continue;
+
                 await foreach (var _ in EvalBodyAsync(stmt.Body))
                 {
                     yield return true;
@@ -425,6 +440,11 @@ namespace Citron
             var newStmtEvaluator = new IR0StmtEvaluator(newContext);
 
             return newStmtEvaluator.EvalForeachStmtCoreAsync(stmt);
+        }
+
+        IAsyncEnumerable<bool> IIR0StmtVisitor<IAsyncEnumerable<bool>>.VisitForeachCast(ForeachCastStmt stmt)
+        {
+            throw new NotImplementedException();
         }
 
         async IAsyncEnumerable<bool> IIR0StmtVisitor<IAsyncEnumerable<bool>>.VisitYield(YieldStmt stmt)

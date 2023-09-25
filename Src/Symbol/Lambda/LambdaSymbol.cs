@@ -163,6 +163,7 @@ namespace Citron.Symbol
             return decl;
         }
 
+        FuncReturn? IFuncSymbol.GetReturn() => GetReturn();
 
         //public LambdaSymbol(RItemFactory ritemFactory, R.Path.Nested lambda, ITypeSymbol ret, ImmutableArray<ParamInfo> parameters)
         //{

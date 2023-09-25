@@ -101,10 +101,6 @@ namespace Citron.Symbol
             context.SerializeRefArray(nameof(typeParams), typeParams);
         }
 
-        IEnumerable<IFuncDeclSymbol> ITypeDeclSymbol.GetFuncs()
-        {
-            // TODO: 아직 없는 것이다
-            return Enumerable.Empty<IFuncDeclSymbol>();
-        }
+        
     }
 }

@@ -124,5 +124,7 @@ namespace Citron.Symbol
 
         TResult IFuncSymbol.Accept<TFuncSymbolVisitor, TResult>(ref TFuncSymbolVisitor visitor)
             => visitor.VisitStructMemberFunc(this);
+
+        FuncReturn? IFuncSymbol.GetReturn() => GetReturn();
     }
 }
