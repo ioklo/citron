@@ -127,6 +127,7 @@ namespace Citron
         {
             // 1. enumerator값을 할당한다
             var enumeratorValue = context.AllocValue(stmt.EnumeratorType);
+            context.AddLocalVar(Names.Enumerator, enumeratorValue);
 
             // 2. enumeratorValue에 enumerator를 대입한다
             await IR0ExpEvaluator.EvalAsync(stmt.EnumeratorExp, context, enumeratorValue);
@@ -144,7 +145,7 @@ namespace Citron
                 await IR0ExpEvaluator.EvalAsync(stmt.NextExp, context, condValue);
 
                 // 가져오기에 실패했으면 종료
-                if (!condValue.GetBool()) continue;
+                if (!condValue.GetBool()) break;
 
                 await foreach (var _ in EvalBodyAsync(stmt.Body))
                 {

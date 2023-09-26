@@ -136,8 +136,8 @@ public class ExpParserTests
             new BinaryOpExp(
                 BinaryOpKind.Modulo,
                 new CallExp(
-                    new UnaryOpExp(UnaryOpKind.PostfixInc, SId("c")), 
-                    Arr<Argument>(new Argument.Normal(SId("e")), new Argument.Normal(SId("f")))
+                    new UnaryOpExp(UnaryOpKind.PostfixInc, SId("c")),
+                    SNormalArgs(SId("e"), SId("f"))
                 ),
                 SId("d")
             )
@@ -157,13 +157,13 @@ public class ExpParserTests
         var expected = new BinaryOpExp(BinaryOpKind.Assign,
             SId("a"),
             new LambdaExp(
-                Arr(new LambdaExpParam(null, "b", HasParams: false)),
+                Arr(new LambdaExpParam(null, "b", HasOut: false, HasParams: false)),
                 Arr<Stmt>(new ReturnStmt(
                     new ReturnValueInfo(
                         new LambdaExp(
                             Arr(
-                                new LambdaExpParam(null, "c", HasParams: false),
-                                new LambdaExpParam(new IdTypeExp("int", default), "d", HasParams: false)
+                                new LambdaExpParam(null, "c", HasOut: false, HasParams: false),
+                                new LambdaExpParam(new IdTypeExp("int", default), "d", HasOut: false, HasParams: false)
                             ),
                             Arr<Stmt>(new ReturnStmt(new ReturnValueInfo(SId("e"))))
                         )
@@ -171,6 +171,20 @@ public class ExpParserTests
                 ))
             )
         );
+
+        Assert.Equal(expected, exp);
+    }
+
+    [Fact]
+    public void TestParseIndirectMemberExp()
+    {
+        var input = "a->b<int>";
+        var (lexer, context) = Prepare(input);
+
+        ExpParser.Parse(lexer, ref context, out var exp);
+
+        // (*a).b<int>
+        var expected = new MemberExp(new UnaryOpExp(UnaryOpKind.Deref, SId("a")), "b", Arr<TypeExp>(SIdTypeExp("int")));
 
         Assert.Equal(expected, exp);
     }
@@ -194,7 +208,7 @@ public class ExpParserTests
                             new IdTypeExp("list", Arr<TypeExp>(new IdTypeExp("int", default)))
                         )
                     ),
-                    Arr<Argument>(new Argument.Normal(new IntLiteralExp(1)), new Argument.Normal(SString("str")))
+                    SNormalArgs(new IntLiteralExp(1), SString("str"))
                 ),
                 "d",
                 default
@@ -230,10 +244,10 @@ public class ExpParserTests
 
         var expected = new NewExp(
             new IdTypeExp("MyType", Arr<TypeExp>(new IdTypeExp("X", default))),
-            Arr<Argument>(
-                new Argument.Normal(new IntLiteralExp(2)),
-                new Argument.Normal(new BoolLiteralExp(false)),
-                new Argument.Normal(SString("string"))
+            SNormalArgs(
+                new IntLiteralExp(2),
+                new BoolLiteralExp(false),
+                SString("string")
             ));
 
         Assert.Equal(expected, exp);

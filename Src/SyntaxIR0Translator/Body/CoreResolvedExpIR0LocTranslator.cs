@@ -89,7 +89,7 @@ struct CoreResolvedExpIR0LocTranslator
         else // x, x (static) 둘다 해당
         {
             // TODO: [10] box 함수 내부이면, local ptr대신 box ptr로 변경해야 한다
-            var instanceLoc = reExp.Symbol.IsStatic() ? null : new LocalDerefLoc(new LoadExp(new ThisLoc(), new LocalPtrType(new StructType(reExp.Symbol.GetOuter()))));
+            var instanceLoc = reExp.Symbol.IsStatic() ? null : new LocalDerefLoc(new ThisLoc());
             return Valid(new StructMemberLoc(instanceLoc, reExp.Symbol));
         }
     }
@@ -115,11 +115,11 @@ struct CoreResolvedExpIR0LocTranslator
     public TranslationResult<Loc> TranslateLocalDeref(ResolvedExp.LocalDeref reExp)
     {
         // *x, *G()
-        var targetResult = ResolvedExpIR0ExpTranslator.Translate(reExp.Target, context, nodeForErrorReport);
+        var targetResult = ResolvedExpIR0LocTranslator.Translate(reExp.Target, context, bWrapExpAsLoc: true, nodeForErrorReport, A2015_ResolveIdentifier_ExpressionIsNotLocation);
         if (!targetResult.IsValid(out var targetExpResult))
             return Error();
 
-        return Valid(new LocalDerefLoc(targetExpResult.Exp));
+        return Valid(new LocalDerefLoc(targetExpResult.Loc));
     }
 
     public TranslationResult<Loc> TranslateBoxDeref(ResolvedExp.BoxDeref reExp)

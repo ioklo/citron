@@ -266,9 +266,27 @@ namespace Citron
             throw new NotImplementedException();
         }
 
-        ValueTask IModuleDriver.ExecuteStructMemberFuncAsync(SymbolId memberFunc, Value? thisValue, ImmutableArray<Value> args, Value retValue)
+        ValueTask IModuleDriver.ExecuteStructMemberFuncAsync(SymbolId memberFuncId, Value? thisValue, ImmutableArray<Value> args, Value retValue)
         {
-            throw new NotImplementedException();
+            var typeContext = TypeContext.Make(memberFuncId.Path);
+
+            var evalContext = globalContext.NewBodyContext(typeContext, thisValue, retValue);
+            var memberFuncSymbol = globalContext.LoadSymbol<StructMemberFuncSymbol>(memberFuncId);
+
+            var paramCount = memberFuncSymbol.GetParameterCount();
+            Debug.Assert(paramCount == args.Length);
+
+            var builder = ImmutableDictionary.CreateBuilder<Name, Value>();
+            for (int i = 0; i < paramCount; i++)
+                builder.Add(memberFuncSymbol.GetParameter(i).Name, args[i]);
+
+            var localContext = new IR0LocalContext(builder.ToImmutable(), default);
+            var body = globalContext.GetBodyStmt(memberFuncId);
+
+            var context = new IR0EvalContext(globalContext, evalContext, localContext);
+            var stmtEvaluator = new IR0StmtEvaluator(context);
+
+            return stmtEvaluator.EvalBodySkipYieldAsync(body);
         }
 
         ValueTask IModuleDriver.ExecuteStructConstructor(SymbolId constructor, LocalPtrValue thisValue, ImmutableArray<Value> args)

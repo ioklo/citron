@@ -81,9 +81,11 @@ namespace Citron
             return new ValueTask<Value>(context.GetThisValue());
         }
 
-        ValueTask<Value> IIR0LocVisitor<ValueTask<Value>>.VisitLocalDeref(LocalDerefLoc loc)
+        // *x
+        async ValueTask<Value> IIR0LocVisitor<ValueTask<Value>>.VisitLocalDeref(LocalDerefLoc loc)
         {
-            throw new NotImplementedException();
+            var innerValue = (LocalPtrValue)await EvalAsync(loc.InnerLoc, context);
+            return innerValue.GetTarget();
         }
 
         // *x 

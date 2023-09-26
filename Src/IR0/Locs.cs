@@ -60,7 +60,7 @@ namespace Citron.IR0
     }
 
     // dereference pointer, *
-    public record class LocalDerefLoc(Exp InnerExp) : Loc
+    public record class LocalDerefLoc(Loc InnerLoc) : Loc
     {
         public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitLocalDeref(this);
     }

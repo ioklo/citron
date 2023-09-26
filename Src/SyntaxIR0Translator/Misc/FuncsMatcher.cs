@@ -14,35 +14,29 @@ namespace Citron.Analysis;
 partial struct FuncsMatcher
 {   
     record struct MatchParamArgResult(bool IsExactMatch, R.Argument Argument);
-    static MatchParamArgResult? MatchParamArg(IType paramType, S.Argument sarg, ScopeContext context)
+    static MatchParamArgResult? MatchParamArg(bool bOutParam, IType paramType, S.Argument sarg, ScopeContext context)
     {
-        switch (sarg)
+        if (bOutParam != sarg.bOut)
+            return null;
+
+        if (sarg.bParams)
+            throw new NotImplementedException();
+            
+        var argResult = ExpIR0ExpTranslator.Translate(sarg.Exp, context, paramType);
+        if (!argResult.IsValid(out var argExpResult))
+            return null;
+
+        if (BodyMisc.TypeEquals(paramType, argExpResult.ExpType))
         {
-            case S.Argument.Normal snormalArg:
-                {
-                    var argResult = ExpIR0ExpTranslator.Translate(snormalArg.Exp, context, paramType);
-                    if (!argResult.IsValid(out var argExpResult))
-                        return null;
+            // exact
+            return new MatchParamArgResult(IsExactMatch: true, new R.Argument.Normal(argExpResult.Exp));
+        }
+        else
+        {
+            var castExp = BodyMisc.TryCastExp_Exp(argExpResult.Exp, argExpResult.ExpType, paramType, context);
+            if (castExp == null) return null;
 
-                    if (BodyMisc.TypeEquals(paramType, argExpResult.ExpType))
-                    {
-                        // exact
-                        return new MatchParamArgResult(IsExactMatch: true, new R.Argument.Normal(argExpResult.Exp));
-                    }
-                    else
-                    {
-                        var castExp = BodyMisc.TryCastExp_Exp(argExpResult.Exp, argExpResult.ExpType, paramType, context);
-                        if (castExp == null) return null;
-
-                        return new MatchParamArgResult(IsExactMatch: false, new R.Argument.Normal(castExp));
-                    }
-                }
-
-            case S.Argument.Params:
-                throw new NotImplementedException();
-
-            default:
-                throw new UnreachableException();
+            return new MatchParamArgResult(IsExactMatch: false, new R.Argument.Normal(castExp));
         }
     }
     
@@ -77,7 +71,7 @@ partial struct FuncsMatcher
 
                 var paramType = param.Type.Apply(typeEnv);
 
-                var matchParamArgResult = MatchParamArg(paramType, sarg, context);
+                var matchParamArgResult = MatchParamArg(param.bOut, paramType, sarg, context);
                 if (matchParamArgResult == null)
                     return null;
 

@@ -59,10 +59,10 @@ partial struct StmtVisitor
                 if (declSymbol.GetParameterCount() != 0) continue;
 
                 // 따라서 Type Parameter도 없어야 한다
-                if (declSymbol.GetTypeParamCount() == 0) continue;
+                if (declSymbol.GetTypeParamCount() != 0) continue;
 
                 // instance함수여야 한다
-                if (!declSymbol.IsStatic()) continue;
+                if (declSymbol.IsStatic()) continue;
 
                 candidates.Add((outer, declSymbol));
             }
@@ -266,7 +266,7 @@ partial struct StmtVisitor
                 var (nextExp, itemVarType) = nextExpItemVarType;
 
                 var bodyResult = MakeBody(itemVarType);
-                if (bodyResult.IsValid(out var body)) return Error();
+                if (!bodyResult.IsValid(out var body)) return Error();
 
                 return Stmts(new ForeachStmt(enumeratorType, enumeratorExp, itemVarType, itemVarName, nextExp, body));
             }

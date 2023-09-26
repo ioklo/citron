@@ -21,6 +21,51 @@ public class Tests_Foreach_Statement
     }
 
     [Fact]
+    public Task Test_WithManualEnumerable()
+    {
+        var input = @"struct EnumerableX
+{
+	EnumeratorX GetEnumerator()
+	{
+		return EnumeratorX();
+	}
+}
+
+struct EnumeratorX
+{
+	int i;
+	int count;
+	
+	EnumeratorX()
+	{
+		this->i = 0;
+		this->count = 5;
+	}
+
+	bool Next(out int* x)
+	{
+		if (i == count) return false;
+	
+		*x = i;
+		i++;
+		return true;
+	}
+}
+
+void Main()
+{
+	foreach(var i in EnumerableX())
+	{
+		@$i
+	}
+}
+";
+        var expected = @"01234";
+
+        return IR0EvaluationTester.TestAsync(input, expected).AsTask();
+    }
+
+    [Fact]
     public Task Test_WithSeqFunc()
     {
         var input = @"void Main()

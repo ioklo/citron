@@ -92,7 +92,7 @@ public class UnitTest1
             retType: SLocalPtrTypeExp(new S.IdTypeExp("T", default)),
             name: "Func",
             typeParams: Arr(new S.TypeParam("T")),
-            parameters: Arr(new S.FuncParam(HasParams: false, SLocalPtrTypeExp(new S.IdTypeExp("T", default)), "t")),
+            parameters: Arr(new S.FuncParam(HasOut: false, HasParams: false, SLocalPtrTypeExp(new S.IdTypeExp("T", default)), "t")),
             body: Arr<S.Stmt>(new S.ReturnStmt(new S.ReturnValueInfo(new S.IdentifierExp("t", default))))
         )));
 
@@ -105,7 +105,7 @@ public class UnitTest1
         
         funcDecl.InitFuncReturnAndParams(
             new FuncReturn(new LocalPtrType(new TypeVarType(0, NormalName("T")))),
-            Arr(new FuncParameter(new LocalPtrType(new TypeVarType(0, NormalName("T"))), NormalName("t"))), 
+            Arr(new FuncParameter(bOut: false, new LocalPtrType(new TypeVarType(0, NormalName("T"))), NormalName("t"))), 
             bLastParamVariadic: false);
 
         expectedModuleDecl.AddFunc(funcDecl);

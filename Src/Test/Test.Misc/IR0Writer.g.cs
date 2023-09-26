@@ -335,7 +335,7 @@ namespace Citron.Test
             if (@localDerefLoc == null) { itw.Write("null"); return; }
 
             itw.Write("new Citron.IR0.LocalDerefLoc(");
-            this.Write_Exp(@localDerefLoc.InnerExp);
+            this.Write_Loc(@localDerefLoc.InnerLoc);
             itw.Write(")");
         }
 

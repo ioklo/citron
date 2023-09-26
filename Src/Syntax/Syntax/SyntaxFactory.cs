@@ -94,7 +94,7 @@ namespace Citron.Syntax
         {
             var builder = ImmutableArray.CreateBuilder<Argument>(exps.Length);
             foreach (var exp in exps)
-                builder.Add(new Argument.Normal(exp));
+                builder.Add(new Argument(bOut: false, bParams: false, exp));
             return builder.MoveToImmutable();
         }
 

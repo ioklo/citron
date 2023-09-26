@@ -574,9 +574,9 @@ namespace Citron.IR0
             return new LocalRefExp(loc);
         }
 
-        public Loc LocalDeref(Exp exp)
+        public Loc LocalDeref(Loc loc)
         {
-            return new LocalDerefLoc(exp);
+            return new LocalDerefLoc(loc);
         }
 
         public Loc BoxDeref(Loc loc)

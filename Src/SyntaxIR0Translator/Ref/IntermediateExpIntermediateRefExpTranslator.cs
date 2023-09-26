@@ -102,7 +102,7 @@ struct IntermediateExpIntermediateRefExpTranslator : IIntermediateExpVisitor<Int
         {
             // this의 타입이 S*이다.
             // TODO: [10] box함수이면 this를 box로 판단해야 한다
-            var derefThisLoc = new LocalDerefLoc(new LoadExp(new ThisLoc(), new LocalPtrType(new StructType(exp.Symbol.GetOuter()))));
+            var derefThisLoc = new LocalDerefLoc(new ThisLoc());
             return new IntermediateRefExp.LocalRef(new StructMemberLoc(derefThisLoc, exp.Symbol), exp.Symbol.GetDeclType());
         }
     }

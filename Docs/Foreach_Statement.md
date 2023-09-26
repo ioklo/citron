@@ -7,6 +7,46 @@ void Main()
 }
 ```
 
+%%TEST(WithManualEnumerable, 01234)%%
+```
+struct EnumerableX
+{
+	EnumeratorX GetEnumerator()
+	{
+		return EnumeratorX();
+	}
+}
+
+struct EnumeratorX
+{
+	int i;
+	int count;
+	
+	EnumeratorX()
+	{
+		this->i = 0;
+		this->count = 5;
+	}
+
+	bool Next(out int* x)
+	{
+		if (i == count) return false;
+	
+		*x = i;
+		i++;
+		return true;
+	}
+}
+
+void Main()
+{
+	foreach(var i in EnumerableX())
+	{
+		@$i
+	}
+}
+```
+
 %%TEST(WithSeqFunc,  HelloWorld)%%
 ```cs
 void Main()

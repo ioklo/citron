@@ -1537,18 +1537,18 @@ namespace Citron.Test
         [Fact]
         void CallExp_RefArgumentTrivial_WorksProperly()
         {
-            //void F(int* i) 
+            //void F(out int* i) 
             //{
             //    *i = 4;
             //}
 
             //int j = 3;
-            //F(&j);
+            //F(out &j);
 
             var syntaxScript = SScript(
                 new S.GlobalFuncDeclScriptElement(new S.GlobalFuncDecl(
                     accessModifier: null, isSequence: false, SVoidTypeExp(), "F", typeParams: default,
-                    Arr(new S.FuncParam(HasParams: false, SLocalPtrTypeExp(SIntTypeExp()), "i")),
+                    Arr(new S.FuncParam(HasOut: true, HasParams: false, SLocalPtrTypeExp(SIntTypeExp()), "i")),
                     SBody(new S.ExpStmt(new S.BinaryOpExp(S.BinaryOpKind.Assign, SId("i"), SInt(4))))
                 )),
                 

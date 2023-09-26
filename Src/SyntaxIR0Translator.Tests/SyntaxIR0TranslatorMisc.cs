@@ -14,9 +14,9 @@ namespace Citron.Test;
 
 static class SyntaxIR0TranslatorMisc
 {
-    public static IType? MakeOpenType(this ITypeDeclSymbol typeDSymbol, SymbolFactory factory)
+    public static IType? MakeOpenType(this ITypeDeclSymbol typeDSymbol, bool bLocalInterface, SymbolFactory factory)
     {
-        return typeDSymbol.MakeOpenSymbol(factory).MakeType();
+        return typeDSymbol.MakeOpenSymbol(factory).MakeType(bLocalInterface);
     }
 
     public static void AssertEquals<TClass>(TClass? expected, TClass? actual)

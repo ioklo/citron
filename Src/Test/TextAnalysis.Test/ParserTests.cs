@@ -49,9 +49,9 @@ public class ParserTests
             SIdTypeExp("void"),
             "Func", default,
             Arr(
-                new FuncParam(HasParams: false, SIdTypeExp("int"), "x"),
-                new FuncParam(HasParams: false, SIdTypeExp("string"), "y"),
-                new FuncParam(HasParams: true, SIdTypeExp("int"), "z")
+                new FuncParam(HasOut: false, HasParams: false, SIdTypeExp("int"), "x"),
+                new FuncParam(HasOut: false, HasParams: false, SIdTypeExp("string"), "y"),
+                new FuncParam(HasOut: false, HasParams: true, SIdTypeExp("int"), "z")
             ), 
             Arr<Stmt>(
                 new VarDeclStmt(
@@ -173,7 +173,7 @@ public struct S<T> : B, I
                     SIdTypeExp("void"),
                     "Func",
                     Arr(new TypeParam("X")),
-                    Arr(new FuncParam(HasParams: false, SIdTypeExp("string"), "s")),
+                    Arr(new FuncParam(HasOut: false, HasParams: false, SIdTypeExp("string"), "s")),
                     Arr<Stmt>()
                 ),
 

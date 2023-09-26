@@ -241,7 +241,7 @@ for (f(); g; h + g) ;
             SId("a"),
             new BinaryOpExp(BinaryOpKind.Multiply,
                 SId("b"),
-                new CallExp(SId("c"), Arr<Argument>(new Argument.Normal(new IntLiteralExp(1)))))));
+                new CallExp(SId("c"), SNormalArgs(new IntLiteralExp(1))))));
             
 
         Assert.Equal(expected, stmt);

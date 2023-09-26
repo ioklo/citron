@@ -183,29 +183,16 @@ partial struct ExpParser
 
     bool InternalParseArgument([NotNullWhen(returnValue: true)] out Argument? outArg)
     {
-        // params, ref
-        if (Accept(Tokens.Params))
-        {
-            if (!ParseExp(out var exp))
-            {
-                outArg = null;
-                return false;
-            }
+        var (bOut, bParams) = ParserMisc.AcceptParseOutAndParams(lexer, ref context);
 
-            outArg = new Argument.Params(exp);
-            return true;
-        }
-        else
+        if (!ParseExp(out var exp))
         {
-            if (!ParseExp(out var exp))
-            {
-                outArg = null;
-                return false;
-            }
-
-            outArg = new Argument.Normal(exp);
-            return true;
+            outArg = null;
+            return false;
         }
+
+        outArg = new Argument(bOut, bParams, exp);
+        return true;
     }
 
     bool InternalParseCallArgs([NotNullWhen(returnValue: true)] out ImmutableArray<Argument>? outArgs)
@@ -313,6 +300,23 @@ partial struct ExpParser
                     exp = new MemberExp(exp, idToken.Value, typeArgs.Value);
                 else
                     exp = new MemberExp(exp, idToken.Value, MemberTypeArgs: default);
+                continue;
+            }
+
+            // exp -> id < > => (*exp).id
+            if (Accept(Tokens.MinusGreaterThan, lexResult))
+            {
+                if (!Accept<IdentifierToken>(out var idToken))
+                {
+                    outExp = null;
+                    return false;
+                }
+
+                // <
+                if (TypeExpParser.ParseTypeArgs(lexer, ref context, out var typeArgs))
+                    exp = new MemberExp(new UnaryOpExp(UnaryOpKind.Deref, exp), idToken.Value, typeArgs.Value);
+                else
+                    exp = new MemberExp(new UnaryOpExp(UnaryOpKind.Deref, exp), idToken.Value, MemberTypeArgs: default);
                 continue;
             }
 

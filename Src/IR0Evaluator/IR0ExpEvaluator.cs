@@ -571,10 +571,16 @@ namespace Citron
 
         async ValueTask IIR0ExpVisitor<ValueTask>.VisitCallStructMemberFunc(CallStructMemberFuncExp exp)
         {
+            // Value thisValue = context.AllocValue<LocalPtrValue>(new LocalPtrTypeId(new SymbolTypeId(IsLocal: false, exp.StructMemberFunc.GetOuterType().GetSymbolId())));
+            LocalPtrValue? thisValue;
+
             // 함수는 this call이지만 instance가 없는 경우는 없다.
-            Value? thisValue;
             if (exp.Instance != null)
-                thisValue = await IR0LocEvaluator.EvalAsync(exp.Instance, context);
+            {
+                thisValue = new LocalPtrValue();
+                var innerThisValue = await IR0LocEvaluator.EvalAsync(exp.Instance, context);
+                thisValue.SetTarget(innerThisValue);
+            }
             else
                 thisValue = null;
 

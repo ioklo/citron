@@ -1,1 +1,1 @@
-dotnet run --project $PSScriptRoot\..\Src\Tools\ExtractTestsFromDocs\ExtractTestsFromDocs.csproj $PSScriptRoot\..\Docs $PSScriptRoot\..\Src\Test\EvalTest\Generated
+dotnet run --project $PSScriptRoot/../Src/Tools/ExtractTestsFromDocs/ExtractTestsFromDocs.csproj $PSScriptRoot/../Docs $PSScriptRoot/../Src/Test/EvalTest/Generated

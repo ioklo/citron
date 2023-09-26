@@ -80,7 +80,7 @@ namespace Citron.Test
             var parametersBuilder = ImmutableArray.CreateBuilder<FuncParameter>(parameters.Length);
             foreach(var param in parameters)
             {
-                var parameter = new FuncParameter(param.Type, NormalName(param.Name));
+                var parameter = new FuncParameter(bOut: false, param.Type, NormalName(param.Name));
                 parametersBuilder.Add(parameter);
             }
 
@@ -1194,13 +1194,13 @@ namespace Citron.Test
 
             var moduleD = new ModuleDeclSymbol(moduleName, bReference: false);
             var fBody = AddGlobalFunc(moduleD, r.VoidType(), "F", Arr(((IType)r.LocalPtrType(r.IntType()), "i")),
-                r.Assign(r.LocalDeref(r.LoadLocalVar("i", r.LocalPtrType(r.IntType()))), r.Int(7))
+                r.Assign(r.LocalDeref(r.LocalVar("i")), r.Int(7))
             );
             var f = (GlobalFuncSymbol)fBody.DSymbol.MakeOpenSymbol(factory);
 
             var mainBody = AddGlobalFunc(moduleD, r.VoidType(), "Main",
                 r.LocalVarDecl(r.IntType(), "j", r.Int(3)),
-                r.Call(f, r.Arg(r.LocalRef(r.LocalVar("j"), r.IntType()))),
+                r.Call(f, r.Arg(r.LocalRef(r.LocalVar("j")))),
                 r.PrintInt(r.LocalVar("j"))
             );
 
@@ -1708,7 +1708,7 @@ namespace Citron.Test
             systemD.AddType(consoleD);
 
             var writeD = new ClassMemberFuncDeclSymbol(consoleD, Accessor.Public, NormalName("Write"), typeParams: default, bStatic: true);
-            writeD.InitFuncReturnAndParams(new FuncReturn(r.VoidType()), Arr(new FuncParameter(r.StringType(), NormalName("arg"))), bLastParamVariadic: false);
+            writeD.InitFuncReturnAndParams(new FuncReturn(r.VoidType()), Arr(new FuncParameter(bOut: false, r.StringType(), NormalName("arg"))), bLastParamVariadic: false);
             consoleD.AddFunc(writeD);
 
             var write = (ClassMemberFuncSymbol)writeD.MakeOpenSymbol(factory);
@@ -1929,8 +1929,8 @@ namespace Citron.Test
             // @$i // 3
             var script = r.Script(
                 r.LocalVarDecl(r.IntType(), "i", r.Int(0)),
-                r.LocalVarDecl(r.LocalPtrType(r.IntType()), "x", r.LocalRef(r.LocalVar("i"), r.IntType())),
-                r.Assign(r.LocalDeref(r.LoadLocalVar("x", r.LocalPtrType(r.IntType()))), r.Int(3)),
+                r.LocalVarDecl(r.LocalPtrType(r.IntType()), "x", r.LocalRef(r.LocalVar("i"))),
+                r.Assign(r.LocalDeref(r.LocalVar("x")), r.Int(3)),
                 r.PrintInt(r.LoadLocalVar("i", r.IntType()))
             );
 
@@ -2037,7 +2037,7 @@ namespace Citron.Test
             );
 
             var sconstructorBody = r.StmtBody(sconstructorDS,
-                r.Assign(new StructMemberLoc(new LocalDerefLoc(r.Load(new ThisLoc(), boxSPtr)), saS), r.Int(1))
+                r.Assign(new StructMemberLoc(new LocalDerefLoc(new ThisLoc()), saS), r.Int(1))
             );
 
             var script = r.Script(moduleDS, sconstructorBody, mainBody);

@@ -24,6 +24,9 @@ class ExtractTestsFromDocs
 
     static void WriteFileIfChanged(string path, string text)
     {
+        // 정규화
+        text = text.ReplaceLineEndings("\r\n");
+
         if (File.Exists(path))
         {
             var prevText = File.ReadAllText(path);
@@ -88,7 +91,7 @@ class ExtractTestsFromDocs
         // 1. crlf로 통일
         // 2. text에서 "가 나오면 모두 ""로 바꾼다
 
-        return "@\"" + text.Replace("\"", "\"\"").ReplaceLineEndings() + "\"";
+        return "@\"" + text.Replace("\"", "\"\"") + "\"";
     }
 
     void MakeTestCSs(string testProjGenPath, IReadOnlyList<MDFileInfo> fileInfos)
