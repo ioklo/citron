@@ -1,17 +1,17 @@
 %%NOTTEST%%
 ```
 "text"
-"with \"double quote\""
+"with ""double quote"""
 "using variable $x or dollar literal $$"
 "using expression ${ "hello" }"
 ```
 
-두 따옴표 사이에 표현할 문자를 넣으면 됩니다. 따옴표를 표현하고 싶으면 \\\" 라고 쓰면 됩니다
+두 따옴표 사이에 표현할 문자를 넣으면 됩니다. 따옴표를 표현하고 싶으면 "" 라고 쓰면 됩니다
 %%TEST(Literal, hello")%%
 ```cs
 void Main()
 {
-    string x = "hello\"";
+    string x = "hello""";
     @$x
 }
 ```

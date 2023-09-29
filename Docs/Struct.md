@@ -1,27 +1,26 @@
 
-%%TEST(Basic, 2 4 10 2)%%
-```cs
 
-public struct B<T> 
+
+%%TEST(Complex, 2 3 6 1)%%
+```cs
+public struct B
 {
-    protected T a;
-    protected T GetA() { return a; }
+    int a;
 }
 
-struct S<T> : B<T>
+struct S : B
 {
     int x; // default public
-    protected int y;
-    private int z;
+    private int y;
 
     int Sum() // default public
     {
-        return GetA() + x + y + z;
+        return a + x + y;
     }
 
-    int GetZ() 
+    int GetY() 
     {
-        return z;
+        return y;
     }
 }
 
@@ -29,17 +28,17 @@ void Main()
 {	
 	// 일단 다 적고 나중에 분리
 	
-	var s1 = new S<int>(1, 2, 3, 4); // a, x, y, z
+	var s1 = new S<int>(1, 2, 3); // a, x, y
 	@${s1.x}
-	@ ${s1.GetZ()}
+	@ ${s1.GetY()}
 	@ ${s1.Sum()}
 	
 	S s2 = s1;                // 복사 생성, 오버라이드 불가능
 	
 	// 고급, box, boxed 타입 S*
-	box var* s3 = box S(1, 2, 3, 4);
+	box var* s3 = box S(1, 2, 3);
 	
-	@${*s3.x}
+	@${*s3.a}
 	s2 = *s3;
 }
 

@@ -11,7 +11,7 @@ public class Tests_String_Expression
     {
         var input = @"void Main()
 {
-    string x = ""hello\"""";
+    string x = ""hello"""""";
     @$x
 }
 ";

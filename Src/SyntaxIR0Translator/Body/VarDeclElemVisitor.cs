@@ -17,12 +17,18 @@ struct VarDeclVisitor
     {
         IType? declType;
 
+        // var
+        // box var*
+        // var*
+
+        var (bNormal, bBoxPtr, bLocalPtr) = BodyMisc.GetVarInfo();
+
         if (BodyMisc.IsVarType(decl.Type))
             declType = null;
         else
             declType = context.MakeType(decl.Type);
 
-        return VarDeclElemVisitor.Visit(declType, context, decl.Elems);
+        return VarDeclElemVisitor.Visit(bBoxPtr, bLocalPtr, declType, context, decl.Elems);
     }
 }
 

@@ -97,7 +97,7 @@ namespace Citron.Symbol
             // new NestedItemValueOuter(this), funcsBuilder.ToImmutable(), bHaveInstance);
         }
 
-        SymbolQueryResult? QueryMember_Var(Name memberName, int typeParamCount)
+        SymbolQueryResult? QueryMember_Var(Name memberName)
         {
             var candidates = new Candidates<SymbolQueryResult>();
 
@@ -113,7 +113,16 @@ namespace Citron.Symbol
                 }
             }
 
-            return candidates.MakeSymbolQueryResult();
+            if (candidates.ContainsItem())            
+                return candidates.MakeSymbolQueryResult();
+            else
+            {
+                var baseStruct = GetBaseStruct();
+                if (baseStruct != null)
+                    return baseStruct.QueryMember_Var(memberName);
+
+                return null;
+            }
         }
 
         public StructSymbol? GetBaseStruct()
@@ -146,7 +155,7 @@ namespace Citron.Symbol
             // error, notfound, found
             if (typeParamCount == 0)
             {
-                var varResult = QueryMember_Var(memberName, typeParamCount);
+                var varResult = QueryMember_Var(memberName);
                 if (varResult is SymbolQueryResult.MultipleCandidatesError) return varResult;
                 if (varResult != null) results.Add(varResult);
             }
