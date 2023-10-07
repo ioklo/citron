@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Citron</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Symbol\Symbol.csproj">
+      <PrivateAssets></PrivateAssets>
+    </ProjectReference>
+    <ProjectReference Include="..\Infra\Infra.csproj">
+      <PrivateAssets></PrivateAssets>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="IR2\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="IR2\" />
+  </ItemGroup>
+</Project>
