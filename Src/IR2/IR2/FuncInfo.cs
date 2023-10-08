@@ -13,4 +13,3 @@ public struct FuncInfo
     // Basic blocks
     ImmutableArray<BasicBlock> basicBlocks;
 }
-

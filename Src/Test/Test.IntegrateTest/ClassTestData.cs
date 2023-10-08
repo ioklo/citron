@@ -5,7 +5,7 @@ using static Citron.Syntax.SyntaxFactory;
 using static Citron.Infra.Misc;
 
 using static Citron.IR0.IR0Factory;
-using static Citron.IR0Translator.SyntaxAnalysisErrorCode;
+using static Citron.Analysis.SyntaxAnalysisErrorCode;
 using Citron.Symbol;
 using static Citron.Test.Misc;
 
@@ -55,9 +55,9 @@ class C
 
             var cConstructorDS = new ClassConstructorDeclSymbol(cDS, Accessor.Public,
                 Arr(
-                    new FuncParameter(FuncParameterKind.Default, r.IntType(), NormalName("x")),
-                    new FuncParameter(FuncParameterKind.Default, r.IntType(), NormalName("y")),
-                    new FuncParameter(FuncParameterKind.Default, r.IntType(), NormalName("s"))
+                    new FuncParameter(bOut: false, r.IntType(), NormalName("x")),
+                    new FuncParameter(bOut: false, r.IntType(), NormalName("y")),
+                    new FuncParameter(bOut: false, r.IntType(), NormalName("s"))
                 ),
                 bTrivial: true);
             cDS.AddConstructor(cConstructorDS);

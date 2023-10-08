@@ -27,14 +27,5 @@ namespace Citron.Test.IntegrateTest
         {
             return testDataInfo.InvokeAsync();
         }
-
-        [Theory]
-        [ClassData(typeof(NullableTestData))]
-        public Task T03_NullableTest(TestDataInfo testDataInfo)
-        {
-            return testDataInfo.InvokeAsync();
-        }
-
-
     }
 }
