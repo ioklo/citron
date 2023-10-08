@@ -121,6 +121,72 @@ partial class BodyContext : IMutable<BodyContext>
         return TypeMakerByTypeExp.MakeType(moduleDeclSymbols.AsEnumerable(), symbolFactory, funcDeclSymbol, typeExp);
     }
 
+    [AutoConstructor]
+    partial struct DeclTypeVisitor : ITypeExpVisitor<DeclTypeInfo>
+    {
+        BodyContext context;
+
+        DeclTypeInfo Normal(TypeExp typeExp)
+        {
+            var type = context.MakeType(typeExp);
+            return new DeclTypeInfo(DeclTypeInfoKind.Normal, type);
+        }
+
+        DeclTypeInfo ITypeExpVisitor<DeclTypeInfo>.VisitBoxPtr(BoxPtrTypeExp typeExp)
+        {
+            if (IsVarType(typeExp.InnerTypeExp))
+                return new DeclTypeInfo(DeclTypeInfoKind.BoxPtrVar, type: null);
+
+            return Normal(typeExp);
+        }
+
+        DeclTypeInfo ITypeExpVisitor<DeclTypeInfo>.VisitId(IdTypeExp typeExp)
+        {
+            if (IsVarType(typeExp))
+                return new DeclTypeInfo(DeclTypeInfoKind.PlainVar, type: null);
+
+            return Normal(typeExp);
+        }
+
+        // local var i = ...
+        DeclTypeInfo ITypeExpVisitor<DeclTypeInfo>.VisitLocal(LocalTypeExp typeExp)
+        {
+            if (IsVarType(typeExp.InnerTypeExp))
+                return new DeclTypeInfo(DeclTypeInfoKind.LocalInterfaceVar, type: null);
+
+            return Normal(typeExp);
+        }
+
+        DeclTypeInfo ITypeExpVisitor<DeclTypeInfo>.VisitLocalPtr(LocalPtrTypeExp typeExp)
+        {
+            if (IsVarType(typeExp.InnerTypeExp))
+                return new DeclTypeInfo(DeclTypeInfoKind.LocalPtrVar, type: null);
+
+            return Normal(typeExp);
+        }
+
+        DeclTypeInfo ITypeExpVisitor<DeclTypeInfo>.VisitMember(MemberTypeExp typeExp)
+        {
+            return Normal(typeExp);
+        }
+
+        // var? 
+        DeclTypeInfo ITypeExpVisitor<DeclTypeInfo>.VisitNullable(NullableTypeExp typeExp)
+        {
+            if (IsVarType(typeExp.InnerTypeExp))
+                return new DeclTypeInfo(DeclTypeInfoKind.NullableVar, type: null);
+
+            return Normal(typeExp);
+        }
+    }
+
+    // 
+    public DeclTypeInfo GetDeclTypeInfo(TypeExp typeExp)
+    {
+        var visitor = new DeclTypeVisitor(this);
+        return typeExp.Accept<DeclTypeVisitor, DeclTypeInfo>(ref visitor);
+    }
+
     record struct IdentifierResolver(Name name, ImmutableArray<IType> typeArgs, BodyContext bodyContext)
     {   
         Candidates<IntermediateExp> candidates = new Candidates<IntermediateExp>();

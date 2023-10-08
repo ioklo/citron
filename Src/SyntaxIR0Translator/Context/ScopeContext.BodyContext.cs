@@ -26,6 +26,9 @@ partial class ScopeContext
 
     public IType MakeType(TypeExp typeExp) => bodyContext.MakeType(typeExp);
 
+    // var를 포함하는 declaration 정보
+    public DeclTypeInfo GetDeclTypeInfo(TypeExp typeExp) => bodyContext.GetDeclTypeInfo(typeExp);
+
     public Name NewAnonymousName()
     {
         throw new NotImplementedException();

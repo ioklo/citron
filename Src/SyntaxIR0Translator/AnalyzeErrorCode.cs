@@ -19,6 +19,19 @@ namespace Citron.Analysis
         A0111_VarDecl_LocalVarDeclNeedInitializer,
         A0112_VarDecl_RefDeclNeedLocationInitializer,
 
+        A0113_VarDecl_UsingLocalVarInsteadOfVarWhenInitExpIsLocalInterface,
+        A0114_VarDecl_UsingBoxPtrVarInsteadOfVarWhenInitExpIsBoxPtr,
+        A0115_VarDecl_UsingLocalPtrVarInsteadOfVarWhenInitExpIsLocalPtr,
+        A0116_VarDecl_UsingNullableVarInsteadOfVarWhenInitExpIsNullablePtr,
+
+        A0117_VarDecl_UsingLocalVarAsDeclTypeButInitExpIsNotLocalInterface,
+        A0118_VarDecl_UsingBoxPtrVarAsDeclTypeButInitExpIsNotBoxPtr,
+        A0119_VarDecl_UsingLocalPtrVarAsDeclTypeButInitExpIsNotLocalPtr,
+        A0120_VarDecl_UsingNullableVarAsDeclTypeButInitExpIsNotNullable,
+
+        A0121_VarDecl_InitExpTypeMismatch,
+
+
         A0201_Capturer_ReferencingLocalVariableIsNotAllowed,
 
         // A0301_MemberExp_InstanceTypeIsNotNormalType,
