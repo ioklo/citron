@@ -1,13 +1,13 @@
 // TestConsole.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
-
+#include "pch.h"
 #include <iostream>
-
-import Citron.Syntax;
+#include "Syntax/AccessModifier.h"
 
 int main()
 {
-    X::MyFunc();
+
+    
     std::cout << "Hello World!\n";
 }
 

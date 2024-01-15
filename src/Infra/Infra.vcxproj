@@ -18,61 +18,11 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\include\Syntax\AccessModifier.h" />
-    <ClInclude Include="..\..\include\Syntax\Argument.h" />
-    <ClInclude Include="..\..\include\Syntax\BinaryOpKind.h" />
-    <ClInclude Include="..\..\include\Syntax\ClassDecl.h" />
-    <ClInclude Include="..\..\include\Syntax\ClassMemberDecls.h" />
-    <ClInclude Include="..\..\include\Syntax\EmbeddableStmts.h" />
-    <ClInclude Include="..\..\include\Syntax\EnumDecl.h" />
-    <ClInclude Include="..\..\include\Syntax\Exps.h" />
-    <ClInclude Include="..\..\include\Syntax\ForStmtInitializers.h" />
-    <ClInclude Include="..\..\include\Syntax\FuncParam.h" />
-    <ClInclude Include="..\..\include\Syntax\GlobalFuncDecl.h" />
-    <ClInclude Include="..\..\include\Syntax\NamespaceDecl.h" />
-    <ClInclude Include="..\..\include\Syntax\NamespaceElements.h" />
-    <ClInclude Include="..\..\include\Syntax\Script.h" />
-    <ClInclude Include="..\..\include\Syntax\ScriptElements.h" />
-    <ClInclude Include="..\..\include\Syntax\Stmts.h" />
-    <ClInclude Include="..\..\include\Syntax\StringExpElements.h" />
-    <ClInclude Include="..\..\include\Syntax\StructDecl.h" />
-    <ClInclude Include="..\..\include\Syntax\StructMemberDecls.h" />
-    <ClInclude Include="..\..\include\Syntax\SyntaxConfig.h" />
-    <ClInclude Include="..\..\include\Syntax\SyntaxMacros.h" />
-    <ClInclude Include="..\..\include\Syntax\Token.h" />
-    <ClInclude Include="..\..\include\Syntax\TypeDecl.h" />
-    <ClInclude Include="..\..\include\Syntax\TypeExps.h" />
-    <ClInclude Include="..\..\include\Syntax\TypeParam.h" />
-    <ClInclude Include="..\..\include\Syntax\UnaryOpKind.h" />
-    <ClInclude Include="..\..\include\Syntax\VarDecl.h" />
-    <ClInclude Include="pch.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="ClassMemberDecls.cpp" />
-    <ClCompile Include="EmbeddableStmts.cpp" />
-    <ClCompile Include="exports.cpp" />
-    <ClCompile Include="Exps.cpp" />
-    <ClCompile Include="NamespaceDecl.cpp" />
-    <ClCompile Include="pch.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="Stmts.cpp" />
-    <ClCompile Include="StructMemberDecls.cpp" />
-    <ClCompile Include="Token.cpp" />
-    <ClCompile Include="TypeExps.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Infra\Infra.vcxproj">
-      <Project>{8e2a32db-279b-4c5c-96c0-bbede676efbf}</Project>
-    </ProjectReference>
-  </ItemGroup>
   <PropertyGroup Label="Globals">
-    <VCProjectVersion>16.0</VCProjectVersion>
+    <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{74d0511c-d9ae-44b9-9741-007e3b012565}</ProjectGuid>
-    <RootNamespace>Syntax</RootNamespace>
+    <ProjectGuid>{8e2a32db-279b-4c5c-96c0-bbede676efbf}</ProjectGuid>
+    <RootNamespace>Infra</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -124,13 +74,14 @@
     <Import Project="..\Common.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;SYNTAX_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;INFRA_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -144,8 +95,10 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;SYNTAX_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;INFRA_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -159,8 +112,10 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;SYNTAX_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;INFRA_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -174,8 +129,10 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;SYNTAX_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;INFRA_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -185,6 +142,20 @@
       <EnableUAC>false</EnableUAC>
     </Link>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\include\Infra\Indirect.h" />
+    <ClInclude Include="..\..\include\Infra\InfraConfig.h" />
+    <ClInclude Include="pch.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="exports.cpp" />
+    <ClCompile Include="pch.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
