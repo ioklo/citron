@@ -18,61 +18,11 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\include\Syntax\AccessModifierSyntax.h" />
-    <ClInclude Include="..\..\include\Syntax\ArgumentSyntax.h" />
-    <ClInclude Include="..\..\include\Syntax\BinaryOpKindSyntax.h" />
-    <ClInclude Include="..\..\include\Syntax\ClassDeclSyntax.h" />
-    <ClInclude Include="..\..\include\Syntax\ClassMemberDeclSyntaxes.h" />
-    <ClInclude Include="..\..\include\Syntax\EmbeddableStmtSyntaxes.h" />
-    <ClInclude Include="..\..\include\Syntax\EnumDeclSyntax.h" />
-    <ClInclude Include="..\..\include\Syntax\ExpSyntaxes.h" />
-    <ClInclude Include="..\..\include\Syntax\ForStmtInitializerSyntaxes.h" />
-    <ClInclude Include="..\..\include\Syntax\FuncParamSyntax.h" />
-    <ClInclude Include="..\..\include\Syntax\GlobalFuncDeclSyntax.h" />
-    <ClInclude Include="..\..\include\Syntax\NamespaceDeclSyntax.h" />
-    <ClInclude Include="..\..\include\Syntax\NamespaceElementSyntaxes.h" />
-    <ClInclude Include="..\..\include\Syntax\ScriptSyntax.h" />
-    <ClInclude Include="..\..\include\Syntax\ScriptElementSyntaxes.h" />
-    <ClInclude Include="..\..\include\Syntax\StmtSyntaxes.h" />
-    <ClInclude Include="..\..\include\Syntax\StringExpElementSyntaxes.h" />
-    <ClInclude Include="..\..\include\Syntax\StructDeclSyntax.h" />
-    <ClInclude Include="..\..\include\Syntax\StructMemberDeclSyntaxes.h" />
-    <ClInclude Include="..\..\include\Syntax\SyntaxConfig.h" />
-    <ClInclude Include="..\..\include\Syntax\SyntaxMacros.h" />
-    <ClInclude Include="..\..\include\Syntax\Tokens.h" />
-    <ClInclude Include="..\..\include\Syntax\TypeDeclSyntax.h" />
-    <ClInclude Include="..\..\include\Syntax\TypeExpSyntaxes.h" />
-    <ClInclude Include="..\..\include\Syntax\TypeParamSyntax.h" />
-    <ClInclude Include="..\..\include\Syntax\UnaryOpKindSyntax.h" />
-    <ClInclude Include="..\..\include\Syntax\VarDeclSyntax.h" />
-    <ClInclude Include="pch.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="ClassMemberDeclSyntaxes.cpp" />
-    <ClCompile Include="EmbeddableStmtSyntaxes.cpp" />
-    <ClCompile Include="exports.cpp" />
-    <ClCompile Include="ExpSyntaxes.cpp" />
-    <ClCompile Include="NamespaceDeclSyntax.cpp" />
-    <ClCompile Include="pch.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="StmtSyntaxes.cpp" />
-    <ClCompile Include="StructMemberDeclSyntaxes.cpp" />
-    <ClCompile Include="Tokens.cpp" />
-    <ClCompile Include="TypeExpSyntaxes.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Infra\Infra.vcxproj">
-      <Project>{8e2a32db-279b-4c5c-96c0-bbede676efbf}</Project>
-    </ProjectReference>
-  </ItemGroup>
   <PropertyGroup Label="Globals">
-    <VCProjectVersion>16.0</VCProjectVersion>
+    <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{74d0511c-d9ae-44b9-9741-007e3b012565}</ProjectGuid>
-    <RootNamespace>Syntax</RootNamespace>
+    <ProjectGuid>{4ba9ba67-fc96-41bd-9938-3d61d05f89ee}</ProjectGuid>
+    <RootNamespace>TextAnalysis</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -124,13 +74,14 @@
     <Import Project="..\Common.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;SYNTAX_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;TEXTANALYSIS_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -144,8 +95,10 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;SYNTAX_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;TEXTANALYSIS_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -159,8 +112,10 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;SYNTAX_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;TEXTANALYSIS_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -174,8 +129,10 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;SYNTAX_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;TEXTANALYSIS_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -185,6 +142,38 @@
       <EnableUAC>false</EnableUAC>
     </Link>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="Buffer.h" />
+    <ClInclude Include="BufferPosition.h" />
+    <ClInclude Include="ExpParser.h" />
+    <ClInclude Include="Lexer.h" />
+    <ClInclude Include="ParserMisc.h" />
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="ScriptParser.h" />
+    <ClInclude Include="StmtParser.h" />
+    <ClInclude Include="TypeExpParser.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Buffer.cpp" />
+    <ClCompile Include="BufferPosition.cpp" />
+    <ClCompile Include="ExpParser.cpp" />
+    <ClCompile Include="Lexer.cpp" />
+    <ClCompile Include="ParserMisc.cpp" />
+    <ClCompile Include="pch.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="ScriptParser.cpp" />
+    <ClCompile Include="StmtParser.cpp" />
+    <ClCompile Include="TypeExpParser.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Syntax\Syntax.vcxproj">
+      <Project>{74d0511c-d9ae-44b9-9741-007e3b012565}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

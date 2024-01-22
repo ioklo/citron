@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Misc">
+      <UniqueIdentifier>{2eef9cf6-64c0-41fb-8e4e-7a7c4108902b}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="pch.cpp">
+      <Filter>Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="Buffer.cpp" />
+    <ClCompile Include="BufferPosition.cpp" />
+    <ClCompile Include="Lexer.cpp" />
+    <ClCompile Include="ExpParser.cpp" />
+    <ClCompile Include="TypeExpParser.cpp" />
+    <ClCompile Include="ParserMisc.cpp" />
+    <ClCompile Include="StmtParser.cpp" />
+    <ClCompile Include="ScriptParser.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="pch.h">
+      <Filter>Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="Buffer.h" />
+    <ClInclude Include="BufferPosition.h" />
+    <ClInclude Include="Lexer.h" />
+    <ClInclude Include="ExpParser.h" />
+    <ClInclude Include="ParserMisc.h" />
+    <ClInclude Include="TypeExpParser.h" />
+    <ClInclude Include="StmtParser.h" />
+    <ClInclude Include="ScriptParser.h" />
+  </ItemGroup>
+</Project>
