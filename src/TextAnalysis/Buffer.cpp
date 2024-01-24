@@ -1,8 +1,8 @@
 #include "pch.h"
-#include "Buffer.h"
+#include <TextAnalysis/Buffer.h>
 
 #include <cassert>
-#include "BufferPosition.h"
+#include <TextAnalysis/BufferPosition.h>
 
 using namespace std;
 using namespace icu;

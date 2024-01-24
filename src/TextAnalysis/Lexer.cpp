@@ -1,11 +1,11 @@
 #include "pch.h"
-#include "Lexer.h"
+#include <TextAnalysis/Lexer.h>
 
 #include <sstream>
 #include <vector>
 #include <unordered_map>
 
-#include "Syntax/Tokens.h"
+#include <Syntax/Tokens.h>
 #include <cassert>
 
 using namespace std;
@@ -109,7 +109,7 @@ public:
     BufferIterator& operator=(BufferIterator&& other)
     {
         pos = std::move(other.pos);
-        validPos = other.validPos;
+        validPos = get_if<ValidBufferPosition>(&this->pos);
         return *this;
     }
 
@@ -331,15 +331,17 @@ optional<LexResult> Lexer::LexCommandMode()
 
     if (i.Equals(U'$'))
     {
-        if (!i.Next()) return nullopt;
-        if (i.IsReachedEnd()) return nullopt; // $로 열어놓고 끝에 도달하면, 에러
+        BufferIterator j = i;
 
-        if (i.Equals('{'))
-            return ResultNextPos(DollarLBraceToken(), i);
+        if (!j.Next()) return nullopt;
+        if (j.IsReachedEnd()) return nullopt; // $로 열어놓고 끝에 도달하면, 에러
 
-        if (!i.Equals('$'))
+        if (j.Equals('{'))
+            return ResultNextPos(DollarLBraceToken(), j);
+
+        if (!j.Equals('$'))
         {
-            if (auto oIdResult = i.MakeLexer().LexIdentifier(false))
+            if (auto oIdResult = j.MakeLexer().LexIdentifier(false))
                 return *oIdResult;
         }
     }
@@ -358,13 +360,16 @@ optional<LexResult> Lexer::LexCommandMode()
 
         if (i.Equals('$'))
         {
-            if (!i.Next()) return nullopt;
-            if (i.IsReachedEnd()) return nullopt; // $로 열어놓고 끝에 도달하면, 에러
+            BufferIterator j = i;
 
-            if (i.Equals(U'$'))
+            if (!j.Next()) return nullopt;
+            if (j.IsReachedEnd()) return nullopt; // $로 열어놓고 끝에 도달하면, 에러
+
+            if (j.Equals(U'$'))
             {
                 codePoints += U'$';
 
+                i = std::move(j);
                 if (!i.Next()) return nullopt;
                 continue;
             }

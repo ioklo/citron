@@ -1,13 +1,13 @@
 #include "pch.h"
 #include "ExpParser.h"
 
-#include "Syntax/ExpSyntaxes.h"
-#include "Syntax/StmtSyntaxes.h"
-#include "Syntax/Tokens.h"
-#include "Syntax/ArgumentSyntax.h"
-#include "Syntax/StringExpElementSyntaxes.h"
+#include <Syntax/ExpSyntaxes.h>
+#include <Syntax/StmtSyntaxes.h>
+#include <Syntax/Tokens.h>
+#include <Syntax/ArgumentSyntax.h>
+#include <Syntax/StringExpElementSyntaxes.h>
 
-#include "Lexer.h"
+#include <TextAnalysis/Lexer.h>
 #include "TypeExpParser.h"
 
 #include "ParserMisc.h"

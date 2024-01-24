@@ -4,9 +4,9 @@
 #include <optional>
 #include <algorithm>
 
-#include "Syntax/StmtSyntaxes.h"
-#include "Syntax/StringExpElementSyntaxes.h"
-#include "Syntax/ExpSyntaxes.h"
+#include <Syntax/StmtSyntaxes.h>
+#include <Syntax/StringExpElementSyntaxes.h>
+#include <Syntax/ExpSyntaxes.h>
 
 #include "TypeExpParser.h"
 #include "ExpParser.h"

@@ -51,7 +51,6 @@
   <ItemGroup>
     <ClCompile Include="ClassMemberDeclSyntaxes.cpp" />
     <ClCompile Include="EmbeddableStmtSyntaxes.cpp" />
-    <ClCompile Include="exports.cpp" />
     <ClCompile Include="ExpSyntaxes.cpp" />
     <ClCompile Include="NamespaceDeclSyntax.cpp" />
     <ClCompile Include="pch.cpp">

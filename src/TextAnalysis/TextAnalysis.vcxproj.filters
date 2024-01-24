@@ -4,6 +4,9 @@
     <Filter Include="Misc">
       <UniqueIdentifier>{2eef9cf6-64c0-41fb-8e4e-7a7c4108902b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Public Headers">
+      <UniqueIdentifier>{dae2cde2-be55-4af7-8c30-85ad959299bb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -22,13 +25,24 @@
     <ClInclude Include="pch.h">
       <Filter>Misc</Filter>
     </ClInclude>
-    <ClInclude Include="Buffer.h" />
-    <ClInclude Include="BufferPosition.h" />
-    <ClInclude Include="Lexer.h" />
     <ClInclude Include="ExpParser.h" />
     <ClInclude Include="ParserMisc.h" />
     <ClInclude Include="TypeExpParser.h" />
     <ClInclude Include="StmtParser.h" />
-    <ClInclude Include="ScriptParser.h" />
+    <ClInclude Include="..\..\include\TextAnalysis\TextAnalysisConfig.h">
+      <Filter>Public Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\TextAnalysis\ScriptParser.h">
+      <Filter>Public Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\TextAnalysis\BufferPosition.h">
+      <Filter>Public Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\TextAnalysis\Lexer.h">
+      <Filter>Public Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\TextAnalysis\Buffer.h">
+      <Filter>Public Headers</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

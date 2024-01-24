@@ -7,7 +7,7 @@
 #pragma once
 
 #define SYNTAX_EXPORT
-#include "Syntax/SyntaxConfig.h"
+#include <Syntax/SyntaxConfig.h>
 
 #include <string>
 #include <variant>

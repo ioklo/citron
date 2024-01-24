@@ -1,6 +1,6 @@
 #include "pch.h"
-#include "Syntax/NamespaceDeclSyntax.h"
-#include "Syntax/NamespaceElementSyntaxes.h"
+#include <Syntax/NamespaceDeclSyntax.h>
+#include <Syntax/NamespaceElementSyntaxes.h>
 
 using namespace std;
 

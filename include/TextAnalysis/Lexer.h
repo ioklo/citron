@@ -1,7 +1,8 @@
 #pragma once
+#include "TextAnalysisConfig.h"
 
-#include "Syntax/Tokens.h"
-#include "BufferPosition.h"
+#include <Syntax/Tokens.h>
+#include <TextAnalysis/BufferPosition.h>
 
 namespace Citron
 {
@@ -14,7 +15,7 @@ class Lexer
     BufferPosition pos;
 
 public:
-    Lexer(BufferPosition pos);
+    TEXT_ANALYSIS_API Lexer(BufferPosition pos);
 
 public: // LexStringMode
     std::optional<LexResult> LexStringMode();
@@ -22,15 +23,15 @@ private:
     std::optional<LexResult> LexStringModeText();
 
 public: // LexNormalMode
-    std::optional<LexResult> LexNormalMode(bool bSkipNewLine);
+    TEXT_ANALYSIS_API std::optional<LexResult> LexNormalMode(bool bSkipNewLine);
 
 private:
     std::optional<LexResult> LexNormalModeAfterSkipWhitespace();
 
 public: // LexCommandMode
-    std::optional<LexResult> LexCommandMode();
+    TEXT_ANALYSIS_API std::optional<LexResult> LexCommandMode();
 
-    bool IsReachedEnd();
+    TEXT_ANALYSIS_API bool IsReachedEnd();
 
 private:
     std::optional<LexResult> LexIdentifier(bool bAllowRawMark);

@@ -4,98 +4,94 @@
     <Filter Include="Public Headers">
       <UniqueIdentifier>{982771e9-39c7-46db-80e7-4fbd23c74573}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Public Headers\Syntax">
-      <UniqueIdentifier>{ba2f1c71-a917-4f12-abc9-d2baa8704394}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="..\..\include\Syntax\AccessModifierSyntax.h">
-      <Filter>Public Headers\Syntax</Filter>
+      <Filter>Public Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\Syntax\ArgumentSyntax.h">
-      <Filter>Public Headers\Syntax</Filter>
+      <Filter>Public Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\Syntax\BinaryOpKindSyntax.h">
-      <Filter>Public Headers\Syntax</Filter>
+      <Filter>Public Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\Syntax\ClassDeclSyntax.h">
-      <Filter>Public Headers\Syntax</Filter>
+      <Filter>Public Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\Syntax\ClassMemberDeclSyntaxes.h">
-      <Filter>Public Headers\Syntax</Filter>
+      <Filter>Public Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\Syntax\EmbeddableStmtSyntaxes.h">
-      <Filter>Public Headers\Syntax</Filter>
+      <Filter>Public Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\Syntax\EnumDeclSyntax.h">
-      <Filter>Public Headers\Syntax</Filter>
+      <Filter>Public Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\Syntax\ExpSyntaxes.h">
-      <Filter>Public Headers\Syntax</Filter>
+      <Filter>Public Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\Syntax\ForStmtInitializerSyntaxes.h">
-      <Filter>Public Headers\Syntax</Filter>
+      <Filter>Public Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\Syntax\FuncParamSyntax.h">
-      <Filter>Public Headers\Syntax</Filter>
+      <Filter>Public Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\Syntax\GlobalFuncDeclSyntax.h">
-      <Filter>Public Headers\Syntax</Filter>
+      <Filter>Public Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\Syntax\NamespaceDeclSyntax.h">
-      <Filter>Public Headers\Syntax</Filter>
+      <Filter>Public Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\Syntax\NamespaceElementSyntaxes.h">
-      <Filter>Public Headers\Syntax</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\Syntax\ScriptSyntax.h">
-      <Filter>Public Headers\Syntax</Filter>
+      <Filter>Public Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\Syntax\ScriptElementSyntaxes.h">
-      <Filter>Public Headers\Syntax</Filter>
+      <Filter>Public Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\Syntax\ScriptSyntax.h">
+      <Filter>Public Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\Syntax\StmtSyntaxes.h">
-      <Filter>Public Headers\Syntax</Filter>
+      <Filter>Public Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\Syntax\StringExpElementSyntaxes.h">
-      <Filter>Public Headers\Syntax</Filter>
+      <Filter>Public Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\Syntax\StructDeclSyntax.h">
-      <Filter>Public Headers\Syntax</Filter>
+      <Filter>Public Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\Syntax\StructMemberDeclSyntaxes.h">
-      <Filter>Public Headers\Syntax</Filter>
+      <Filter>Public Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\Syntax\SyntaxConfig.h">
-      <Filter>Public Headers\Syntax</Filter>
+      <Filter>Public Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\Syntax\SyntaxMacros.h">
-      <Filter>Public Headers\Syntax</Filter>
+      <Filter>Public Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\Syntax\Tokens.h">
-      <Filter>Public Headers\Syntax</Filter>
+      <Filter>Public Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\Syntax\TypeDeclSyntax.h">
-      <Filter>Public Headers\Syntax</Filter>
+      <Filter>Public Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\Syntax\TypeExpSyntaxes.h">
-      <Filter>Public Headers\Syntax</Filter>
+      <Filter>Public Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\Syntax\TypeParamSyntax.h">
-      <Filter>Public Headers\Syntax</Filter>
+      <Filter>Public Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\Syntax\UnaryOpKindSyntax.h">
-      <Filter>Public Headers\Syntax</Filter>
+      <Filter>Public Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\Syntax\VarDeclSyntax.h">
-      <Filter>Public Headers\Syntax</Filter>
+      <Filter>Public Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="Tokens.cpp" />
-    <ClCompile Include="exports.cpp" />
     <ClCompile Include="TypeExpSyntaxes.cpp" />
     <ClCompile Include="ExpSyntaxes.cpp" />
     <ClCompile Include="StmtSyntaxes.cpp" />

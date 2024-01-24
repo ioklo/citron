@@ -1,8 +1,8 @@
 #pragma once
 
 #include <optional>
-#include "Lexer.h"
-#include "Syntax/Tokens.h"
+#include <TextAnalysis/Lexer.h>
+#include <Syntax/Tokens.h>
 
 namespace Citron {
 

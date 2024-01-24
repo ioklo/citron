@@ -1,8 +1,8 @@
 #include "pch.h"
-#include "Syntax/ExpSyntaxes.h"
-#include "Syntax/ArgumentSyntax.h"
-#include "Syntax/StringExpElementSyntaxes.h"
-#include "Syntax/StmtSyntaxes.h"
+#include <Syntax/ExpSyntaxes.h>
+#include <Syntax/ArgumentSyntax.h>
+#include <Syntax/StringExpElementSyntaxes.h>
+#include <Syntax/StmtSyntaxes.h>
 
 using namespace std;
 

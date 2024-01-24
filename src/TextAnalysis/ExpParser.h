@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Syntax/ExpSyntaxes.h"
-#include "Syntax/ArgumentSyntax.h"
+#include <Syntax/ExpSyntaxes.h>
+#include <Syntax/ArgumentSyntax.h>
 
 #include <optional>
 #include <vector>

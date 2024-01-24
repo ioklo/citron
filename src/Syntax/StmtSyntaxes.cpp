@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "Syntax/StmtSyntaxes.h"
+#include <Syntax/StmtSyntaxes.h>
 
 using namespace std;
 

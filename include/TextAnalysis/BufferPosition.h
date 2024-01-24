@@ -1,4 +1,5 @@
 #pragma once
+#include "TextAnalysisConfig.h"
 
 #include <memory>
 #include <variant>
@@ -28,7 +29,7 @@ class ValidBufferPosition
     int curIndex;
 
 public:    
-    ValidBufferPosition(std::weak_ptr<Buffer> weakBuffer, char32_t codePoint, int curIndex);
+    TEXT_ANALYSIS_API ValidBufferPosition(std::weak_ptr<Buffer> weakBuffer, char32_t codePoint, int curIndex);
     
     bool Equals(char32_t codePoint)
     {

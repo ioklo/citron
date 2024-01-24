@@ -4,10 +4,10 @@
 #include <optional>
 #include <vector>
 
-#include "Syntax/TypeExpSyntaxes.h"
-#include "Syntax/Tokens.h"
+#include <Syntax/TypeExpSyntaxes.h>
+#include <Syntax/Tokens.h>
 
-#include "Lexer.h"
+#include <TextAnalysis/Lexer.h>
 #include "ParserMisc.h"
 
 using namespace std;

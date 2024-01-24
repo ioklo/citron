@@ -2,7 +2,7 @@
 //
 #include "pch.h"
 #include <iostream>
-#include "Syntax/AccessModifierSyntax.h"
+#include <Syntax/AccessModifierSyntax.h>
 
 int main()
 {

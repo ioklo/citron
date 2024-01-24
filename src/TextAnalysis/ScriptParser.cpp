@@ -1,13 +1,13 @@
 #include "pch.h"
-#include "ScriptParser.h"
+#include <TextAnalysis/ScriptParser.h>
 
 #include <optional>
 
-#include "Syntax/FuncParamSyntax.h"
-#include "Syntax/GlobalFuncDeclSyntax.h"
-#include "Syntax/TypeDeclSyntax.h"
+#include <Syntax/FuncParamSyntax.h>
+#include <Syntax/GlobalFuncDeclSyntax.h>
+#include <Syntax/TypeDeclSyntax.h>
 
-#include "Lexer.h"
+#include <TextAnalysis/Lexer.h>
 #include "TypeExpParser.h"
 #include "ParserMisc.h"
 #include "StmtParser.h"

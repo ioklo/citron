@@ -1,9 +1,9 @@
 #include "pch.h"
-#include "Syntax/EmbeddableStmtSyntaxes.h"
+#include <Syntax/EmbeddableStmtSyntaxes.h>
 
 #include <memory>
-#include "Syntax/StmtSyntaxes.h"
-#include "Syntax/SyntaxMacros.h"
+#include <Syntax/StmtSyntaxes.h>
+#include <Syntax/SyntaxMacros.h>
 
 using namespace std;
 

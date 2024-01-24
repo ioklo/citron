@@ -143,13 +143,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Buffer.h" />
-    <ClInclude Include="BufferPosition.h" />
+    <ClInclude Include="..\..\include\TextAnalysis\Buffer.h" />
+    <ClInclude Include="..\..\include\TextAnalysis\BufferPosition.h" />
+    <ClInclude Include="..\..\include\TextAnalysis\Lexer.h" />
+    <ClInclude Include="..\..\include\TextAnalysis\ScriptParser.h" />
+    <ClInclude Include="..\..\include\TextAnalysis\TextAnalysisConfig.h" />
     <ClInclude Include="ExpParser.h" />
-    <ClInclude Include="Lexer.h" />
     <ClInclude Include="ParserMisc.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="ScriptParser.h" />
     <ClInclude Include="StmtParser.h" />
     <ClInclude Include="TypeExpParser.h" />
   </ItemGroup>

@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "Syntax/Tokens.h"
+#include <Syntax/Tokens.h>
 
 
 

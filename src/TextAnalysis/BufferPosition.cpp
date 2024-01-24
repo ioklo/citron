@@ -1,7 +1,7 @@
 #include "pch.h"
-#include "BufferPosition.h"
 
-#include "Buffer.h"
+#include <TextAnalysis/BufferPosition.h>
+#include <TextAnalysis/Buffer.h>
 
 using namespace std;
 

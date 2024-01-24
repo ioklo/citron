@@ -1,6 +1,6 @@
 #include "pch.h"
-#include "Syntax/StructMemberDeclSyntaxes.h"
-#include "Syntax/TypeDeclSyntax.h"
+#include <Syntax/StructMemberDeclSyntaxes.h>
+#include <Syntax/TypeDeclSyntax.h>
 
 namespace Citron {
 

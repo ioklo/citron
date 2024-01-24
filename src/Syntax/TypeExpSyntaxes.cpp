@@ -1,9 +1,9 @@
 #include "pch.h"
-#include "Syntax/TypeExpSyntaxes.h"
+#include <Syntax/TypeExpSyntaxes.h>
 
 #include <utility> // std::move
 
-#include "Syntax/SyntaxMacros.h"
+#include <Syntax/SyntaxMacros.h>
 
 using namespace std;
 

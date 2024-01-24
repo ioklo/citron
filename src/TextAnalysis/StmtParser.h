@@ -2,7 +2,7 @@
 
 #include <optional>
 #include <vector>
-#include "Syntax/StmtSyntaxes.h"
+#include <Syntax/StmtSyntaxes.h>
 
 namespace Citron {
 

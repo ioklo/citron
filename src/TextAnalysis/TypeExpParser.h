@@ -2,7 +2,7 @@
 
 #include <optional>
 #include <vector>
-#include "Syntax/TypeExpSyntaxes.h"
+#include <Syntax/TypeExpSyntaxes.h>
 
 namespace Citron {
 

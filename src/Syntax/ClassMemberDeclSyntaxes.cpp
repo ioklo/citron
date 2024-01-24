@@ -1,11 +1,11 @@
 #include "pch.h"
-#include "Syntax/ClassMemberDeclSyntaxes.h"
+#include <Syntax/ClassMemberDeclSyntaxes.h>
 
 #include <utility>
 #include <memory>
 
-#include "Syntax/TypeDeclSyntax.h"
-#include "Syntax/SyntaxMacros.h"
+#include <Syntax/TypeDeclSyntax.h>
+#include <Syntax/SyntaxMacros.h>
 
 namespace Citron {
 
