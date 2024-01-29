@@ -5,6 +5,7 @@
 #include <variant>
 #include <vector>
 #include <memory>
+#include <Infra/Json.h>
 
 #include "SyntaxMacros.h"
 
@@ -45,6 +46,8 @@ public:
     DECLARE_DEFAULTS(SingleEmbeddableStmtSyntax);
 
     SYNTAX_API StmtSyntax& GetStmt();
+
+    SYNTAX_API JsonItem ToJson();
 };
 
 class BlockEmbeddableStmtSyntax
@@ -56,8 +59,11 @@ public:
     DECLARE_DEFAULTS(BlockEmbeddableStmtSyntax)
 
     std::vector<StmtSyntax>& GetStmts() { return stmts; }
+
+    SYNTAX_API JsonItem ToJson();
 };
 
 using EmbeddableStmtSyntax = std::variant<SingleEmbeddableStmtSyntax, BlockEmbeddableStmtSyntax>;
+SYNTAX_API JsonItem ToJson(EmbeddableStmtSyntax& syntax);
 
 } // namespace Citron

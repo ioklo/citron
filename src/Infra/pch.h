@@ -1,2 +1,3 @@
 #pragma once
-#include "Infra/InfraConfig.h"
+
+#define INFRA_EXPORT

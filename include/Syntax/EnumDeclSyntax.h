@@ -3,6 +3,8 @@
 #include <vector>
 #include <string>
 #include <optional>
+#include <Infra/Json.h>
+
 #include "AccessModifierSyntax.h"
 #include "TypeExpSyntaxes.h"
 #include "TypeParamSyntax.h"
@@ -20,6 +22,8 @@ public:
 
     TypeExpSyntax& GetType() { return type; }
     std::u32string& GetName() { return name; }
+
+    SYNTAX_API JsonItem ToJson();
 };
 
 class EnumElemDeclSyntax
@@ -33,6 +37,8 @@ public:
 
     std::u32string& GetName() { return name; }
     std::vector<EnumElemMemberVarDeclSyntax>& GetMemberVars() { return memberVars; }
+
+    SYNTAX_API JsonItem ToJson();
 };
     
 class EnumDeclSyntax
@@ -59,6 +65,8 @@ public:
     std::u32string& GetName() { return name; }
     std::vector<TypeParamSyntax>& GetTypeParams() { return typeParams; }
     std::vector<EnumElemDeclSyntax>& GetElems() { return elems; }
+
+    SYNTAX_API JsonItem ToJson();
 };
 
 } // namespace Citron

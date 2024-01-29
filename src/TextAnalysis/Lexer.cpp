@@ -239,20 +239,26 @@ optional<LexResult> Lexer::LexStringModeText()
     {
         if (i.Equals(U'"')) // "두개 처리
         {
-            if (!i.Next()) return nullopt;
-            if (!i.Equals(U'"')) break;
+            BufferIterator j = i;
+
+            if (!j.Next()) return nullopt;
+            if (!j.Equals(U'"')) break;
 
             codePoints += U'"';
 
+            i = std::move(j);
             if (!i.Next()) return nullopt;
         }
         else if (i.Equals(U'$')) // $ 처리
         {
-            if (!i.Next()) return nullopt;
-            if (!i.Equals(U'$')) break;
+            BufferIterator j = i;
+
+            if (!j.Next()) return nullopt;
+            if (!j.Equals(U'$')) break;
 
             codePoints += U'$';
 
+            i = std::move(j);
             if (!i.Next()) return nullopt;
         }
         else

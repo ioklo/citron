@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 
+#include <Infra/Json.h>
 #include "AccessModifierSyntax.h"
 #include "TypeParamSyntax.h"
 #include "TypeExpSyntaxes.h"
@@ -41,6 +42,8 @@ public:
     std::vector<TypeParamSyntax>& GetTypeParams() { return typeParams; }
     std::vector<TypeExpSyntax>& GetBaseTypes() { return baseTypes; }
     std::vector<ClassMemberDeclSyntax>& GetMemberDecls() { return memberDecls; }
+
+    SYNTAX_API JsonItem ToJson();
 };
 
 }

@@ -5,6 +5,8 @@
 #include <TextAnalysis/BufferPosition.h>
 #include <TextAnalysis/Lexer.h>
 
+#include "TestMisc.h"
+
 using namespace std;
 using namespace Citron;
 
@@ -32,13 +34,6 @@ void RepeatLexNormal(vector<Token>* tokens, Lexer* lexer, bool bSkipNewLine, int
     }
 }
 
-std::tuple<shared_ptr<Buffer>, Lexer> Make(u32string str)
-{
-    auto buffer = make_shared<Buffer>(str);
-    BufferPosition pos = buffer->MakeStartPosition();
-    return { std::move(buffer), Lexer(pos) };
-}
-
 vector<Token> Process(Lexer lexer)
 {
     vector<Token> tokens;
@@ -55,10 +50,8 @@ vector<Token> Process(Lexer lexer)
 }
 
 TEST(CommandLexer, ProcessStringExpInCommandMode)
-{
-    auto buffer = make_shared<Buffer>(U"  p$$s${ ccc } \"ddd $e  \r\n }");
-    BufferPosition pos = buffer->MakeStartPosition();
-    Lexer lexer(pos);
+{   
+    auto [buffer, lexer] = Prepare(U"  p$$s${ ccc } \"ddd $e  \r\n }"s);
 
     vector<Token> tokens;
 
@@ -84,7 +77,7 @@ TEST(CommandLexer, ProcessStringExpInCommandMode)
 
 TEST(CommandLexer, LexCommands)
 {
-    auto [buffer, lexer] = Make(U"ls -al");
+    auto [buffer, lexer] = Prepare(U"ls -al");
     auto tokens = Process(lexer);
 
     vector<Token> expectedTokens = {
@@ -96,12 +89,12 @@ TEST(CommandLexer, LexCommands)
 
 TEST(CommandLexer, LexMultiLines)
 {
-    auto [buffer, lexer] = Make(UR"---(
+    auto [buffer, lexer] = Prepare(UR"---(
 hello world \n
 
     hello    
 
-})---");
+})---"s);
 
     vector<Token> tokens;
     RepeatLexCommand(&tokens, &lexer, 6);
@@ -118,7 +111,7 @@ hello world \n
 
 TEST(CommandLexer, LexCommandsWithLineSeparator)
 {
-    auto [buffer, lexer] = Make(U"ls -al\r\nbb");
+    auto [buffer, lexer] = Prepare(U"ls -al\r\nbb"s);
     auto tokens = Process(lexer);
 
     vector<Token> expected = {

@@ -1,6 +1,7 @@
 #pragma once
 #include "SyntaxConfig.h"
 
+#include <Infra/Json.h>
 #include "StructMemberDeclSyntaxes.h"
 
 namespace Citron {
@@ -34,7 +35,7 @@ public:
     std::vector<TypeExpSyntax>& GetBaseTypes() { return baseTypes; }
     std::vector<StructMemberDeclSyntax>& MemberDecls() { return memberDecls; }
 
-    
+    SYNTAX_API JsonItem ToJson();
 };
 
 } // namespace Citron

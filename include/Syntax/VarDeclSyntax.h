@@ -10,16 +10,27 @@
 namespace Citron {
 
 // var a = ref i; 도 있어서 refVarDecl, VarDecl나누지 말고 하나에서 다 처리한다
-struct VarDeclElementSyntax
+struct VarDeclSyntaxElement
 {
-    std::u32string VarName;
-    std::optional<ExpSyntax> InitExp;
+    std::u32string varName;
+    std::optional<ExpSyntax> initExp;
 };
+
+BEGIN_IMPLEMENT_JSON_STRUCT_INLINE(VarDeclSyntaxElement, syntax)
+    IMPLEMENT_JSON_MEMBER_DIRECT(syntax, varName)
+    IMPLEMENT_JSON_MEMBER_DIRECT(syntax, initExp)
+END_IMPLEMENT_JSON_STRUCT_INLINE()
 
 struct VarDeclSyntax
 {
-    TypeExpSyntax Type;
-    std::vector<VarDeclElementSyntax> Elems;
+    TypeExpSyntax type;
+    std::vector<VarDeclSyntaxElement> elems;
 };
+
+BEGIN_IMPLEMENT_JSON_STRUCT_INLINE(VarDeclSyntax, syntax)
+    IMPLEMENT_JSON_MEMBER_DIRECT(syntax, type)
+    IMPLEMENT_JSON_MEMBER_DIRECT(syntax, elems)
+END_IMPLEMENT_JSON_STRUCT_INLINE()
+
 
 } // namespace Citron

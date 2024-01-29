@@ -1,4 +1,5 @@
 #pragma once
+#include "TextAnalysisConfig.h"
 
 #include <Syntax/ExpSyntaxes.h>
 #include <Syntax/ArgumentSyntax.h>
@@ -10,7 +11,7 @@ namespace Citron {
 
 class Lexer;
 
-std::optional<ExpSyntax> ParseExp(Lexer* lexer);
+TEXT_ANALYSIS_API std::optional<ExpSyntax> ParseExp(Lexer* lexer);
 
 // 1. Assignment, Right Assoc
 std::optional<ExpSyntax> ParseAssignExp(Lexer* lexer);

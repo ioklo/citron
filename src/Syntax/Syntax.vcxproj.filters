@@ -13,7 +13,7 @@
     <ClInclude Include="..\..\include\Syntax\ArgumentSyntax.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Syntax\BinaryOpKindSyntax.h">
+    <ClInclude Include="..\..\include\Syntax\BinaryOpSyntaxKind.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\Syntax\ClassDeclSyntax.h">
@@ -43,10 +43,10 @@
     <ClInclude Include="..\..\include\Syntax\NamespaceDeclSyntax.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Syntax\NamespaceElementSyntaxes.h">
+    <ClInclude Include="..\..\include\Syntax\NamespaceSyntaxElements.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Syntax\ScriptElementSyntaxes.h">
+    <ClInclude Include="..\..\include\Syntax\ScriptSyntaxElements.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\Syntax\ScriptSyntax.h">
@@ -55,7 +55,7 @@
     <ClInclude Include="..\..\include\Syntax\StmtSyntaxes.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Syntax\StringExpElementSyntaxes.h">
+    <ClInclude Include="..\..\include\Syntax\StringExpSyntaxElements.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\Syntax\StructDeclSyntax.h">
@@ -82,7 +82,7 @@
     <ClInclude Include="..\..\include\Syntax\TypeParamSyntax.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Syntax\UnaryOpKindSyntax.h">
+    <ClInclude Include="..\..\include\Syntax\UnaryOpSyntaxKind.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\Syntax\VarDeclSyntax.h">
@@ -99,5 +99,8 @@
     <ClCompile Include="EmbeddableStmtSyntaxes.cpp" />
     <ClCompile Include="NamespaceDeclSyntax.cpp" />
     <ClCompile Include="StructMemberDeclSyntaxes.cpp" />
+    <ClCompile Include="ClassDeclSyntax.cpp" />
+    <ClCompile Include="EnumDeclSyntax.cpp" />
+    <ClCompile Include="StructDeclSyntax.cpp" />
   </ItemGroup>
 </Project>

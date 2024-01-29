@@ -1,21 +1,24 @@
 #pragma once
 #include "SyntaxConfig.h"
 #include <vector>
+#include <Infra/Json.h>
 
-#include "ScriptElementSyntaxes.h"
+#include "ScriptSyntaxElements.h"
 
 namespace Citron {
 
 // 가장 외곽
 class ScriptSyntax
 {
-    std::vector<ScriptElementSyntax> elems;
+    std::vector<ScriptSyntaxElement> elems;
 
 public:
-    ScriptSyntax(std::vector<ScriptElementSyntax> elems)
+    ScriptSyntax(std::vector<ScriptSyntaxElement> elems)
         : elems(elems) { }
 
-    std::vector<ScriptElementSyntax>& GetElements() { return elems; }
+    std::vector<ScriptSyntaxElement>& GetElements() { return elems; }
+
+    SYNTAX_API JsonItem ToJson();
 };
 
 } // namespace Citron

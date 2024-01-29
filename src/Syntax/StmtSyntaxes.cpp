@@ -12,6 +12,14 @@ CommandStmtSyntax::CommandStmtSyntax(vector<StringExpSyntax> commands)
 
 IMPLEMENT_DEFAULTS_DEFAULT(CommandStmtSyntax)
 
+BEGIN_IMPLEMENT_JSON_CLASS(CommandStmtSyntax)
+    IMPLEMENT_JSON_MEMBER(commands)
+END_IMPLEMENT_JSON_CLASS()
+
+BEGIN_IMPLEMENT_JSON_CLASS(VarDeclStmtSyntax)
+    IMPLEMENT_JSON_MEMBER(varDecl)
+END_IMPLEMENT_JSON_CLASS()
+
 struct IfStmtSyntax::Impl
 {
     ExpSyntax cond;
@@ -40,6 +48,12 @@ optional<EmbeddableStmtSyntax>& IfStmtSyntax::GetElseBody()
 {
     return impl->elseBody;
 }
+
+BEGIN_IMPLEMENT_JSON_CLASS(IfStmtSyntax)
+    IMPLEMENT_JSON_MEMBER_INDIRECT(impl, cond)
+    IMPLEMENT_JSON_MEMBER_INDIRECT(impl, body)
+    IMPLEMENT_JSON_MEMBER_INDIRECT(impl, elseBody)
+END_IMPLEMENT_JSON_CLASS()
 
 struct IfTestStmtSyntax::Impl 
 {
@@ -82,6 +96,14 @@ optional<EmbeddableStmtSyntax>& IfTestStmtSyntax::GetElseBody()
     return impl->elseBody;
 }
 
+BEGIN_IMPLEMENT_JSON_CLASS(IfTestStmtSyntax)
+    IMPLEMENT_JSON_MEMBER_INDIRECT(impl, testTypeExp)
+    IMPLEMENT_JSON_MEMBER_INDIRECT(impl, varName)
+    IMPLEMENT_JSON_MEMBER_INDIRECT(impl, exp)
+    IMPLEMENT_JSON_MEMBER_INDIRECT(impl, body)
+    IMPLEMENT_JSON_MEMBER_INDIRECT(impl, elseBody)
+END_IMPLEMENT_JSON_CLASS()
+
 struct ForStmtSyntax::Impl
 {
     optional<ForStmtInitializerSyntax> initializer;
@@ -117,12 +139,33 @@ EmbeddableStmtSyntax& ForStmtSyntax::GetBody()
     return impl->body;
 }
 
-ReturnStmtSyntax::ReturnStmtSyntax(optional<ReturnValueInfoSyntax> info)
+BEGIN_IMPLEMENT_JSON_CLASS(ForStmtSyntax)
+    IMPLEMENT_JSON_MEMBER_INDIRECT(impl, initializer)
+    IMPLEMENT_JSON_MEMBER_INDIRECT(impl, condExp)
+    IMPLEMENT_JSON_MEMBER_INDIRECT(impl, continueExp)
+    IMPLEMENT_JSON_MEMBER_INDIRECT(impl, body)
+END_IMPLEMENT_JSON_CLASS()
+
+BEGIN_IMPLEMENT_JSON_CLASS(ContinueStmtSyntax)
+END_IMPLEMENT_JSON_CLASS()
+
+BEGIN_IMPLEMENT_JSON_CLASS(BreakStmtSyntax)
+END_IMPLEMENT_JSON_CLASS()
+
+BEGIN_IMPLEMENT_JSON_STRUCT(ReturnValueSyntaxInfo, syntax)
+    IMPLEMENT_JSON_MEMBER_DIRECT(syntax, value)
+END_IMPLEMENT_JSON_STRUCT()
+
+ReturnStmtSyntax::ReturnStmtSyntax(optional<ReturnValueSyntaxInfo> info)
     : info(std::move(info))
 {
 }
 
 IMPLEMENT_DEFAULTS_DEFAULT(ReturnStmtSyntax)
+
+BEGIN_IMPLEMENT_JSON_CLASS(ReturnStmtSyntax)
+    IMPLEMENT_JSON_MEMBER(info)
+END_IMPLEMENT_JSON_CLASS()
 
 BlockStmtSyntax::BlockStmtSyntax(vector<StmtSyntax> stmts)
     : stmts(std::move(stmts))
@@ -131,6 +174,17 @@ BlockStmtSyntax::BlockStmtSyntax(vector<StmtSyntax> stmts)
 
 IMPLEMENT_DEFAULTS_DEFAULT(BlockStmtSyntax)
 
+BEGIN_IMPLEMENT_JSON_CLASS(BlockStmtSyntax)
+    IMPLEMENT_JSON_MEMBER(stmts)
+END_IMPLEMENT_JSON_CLASS()
+
+BEGIN_IMPLEMENT_JSON_CLASS(BlankStmtSyntax)
+END_IMPLEMENT_JSON_CLASS()
+
+BEGIN_IMPLEMENT_JSON_CLASS(ExpStmtSyntax)
+    IMPLEMENT_JSON_MEMBER(exp)
+END_IMPLEMENT_JSON_CLASS()
+
 TaskStmtSyntax::TaskStmtSyntax(vector<StmtSyntax> body)
     : body(std::move(body))
 {
@@ -138,6 +192,9 @@ TaskStmtSyntax::TaskStmtSyntax(vector<StmtSyntax> body)
 
 IMPLEMENT_DEFAULTS_DEFAULT(TaskStmtSyntax)
 
+BEGIN_IMPLEMENT_JSON_CLASS(TaskStmtSyntax)
+    IMPLEMENT_JSON_MEMBER(body)
+END_IMPLEMENT_JSON_CLASS()
 
 AwaitStmtSyntax::AwaitStmtSyntax(vector<StmtSyntax> body)
     : body(std::move(body))
@@ -146,12 +203,20 @@ AwaitStmtSyntax::AwaitStmtSyntax(vector<StmtSyntax> body)
 
 IMPLEMENT_DEFAULTS_DEFAULT(AwaitStmtSyntax)
 
+BEGIN_IMPLEMENT_JSON_CLASS(AwaitStmtSyntax)
+    IMPLEMENT_JSON_MEMBER(body)
+END_IMPLEMENT_JSON_CLASS()
+
 AsyncStmtSyntax::AsyncStmtSyntax(vector<StmtSyntax> body)
     : body(std::move(body))
 {
 }
 
 IMPLEMENT_DEFAULTS_DEFAULT(AsyncStmtSyntax)
+
+BEGIN_IMPLEMENT_JSON_CLASS(AsyncStmtSyntax)
+    IMPLEMENT_JSON_MEMBER(body)
+END_IMPLEMENT_JSON_CLASS()
 
 struct ForeachStmtSyntax::Impl
 {
@@ -186,6 +251,27 @@ ExpSyntax& ForeachStmtSyntax::GetEnumerable()
 EmbeddableStmtSyntax& ForeachStmtSyntax::GetBody()
 {
     return impl->body;
+}
+
+BEGIN_IMPLEMENT_JSON_CLASS(ForeachStmtSyntax)
+    IMPLEMENT_JSON_MEMBER_INDIRECT(impl, type)
+    IMPLEMENT_JSON_MEMBER_INDIRECT(impl, varName)
+    IMPLEMENT_JSON_MEMBER_INDIRECT(impl, enumerable)
+    IMPLEMENT_JSON_MEMBER_INDIRECT(impl, body)
+END_IMPLEMENT_JSON_CLASS()
+
+BEGIN_IMPLEMENT_JSON_CLASS(YieldStmtSyntax)
+    IMPLEMENT_JSON_MEMBER(value)
+END_IMPLEMENT_JSON_CLASS()
+
+BEGIN_IMPLEMENT_JSON_CLASS(DirectiveStmtSyntax)
+    IMPLEMENT_JSON_MEMBER(name)
+    IMPLEMENT_JSON_MEMBER(args)
+END_IMPLEMENT_JSON_CLASS()
+
+JsonItem ToJson(StmtSyntax& syntax)
+{
+    return std::visit([](auto&& stmt) { return stmt.ToJson(); }, syntax);
 }
 
 }

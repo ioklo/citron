@@ -6,14 +6,16 @@
 #include <Syntax/FuncParamSyntax.h>
 #include <Syntax/GlobalFuncDeclSyntax.h>
 #include <Syntax/TypeDeclSyntax.h>
+#include <Syntax/NamespaceSyntaxElements.h>
+#include <Syntax/ScriptSyntax.h>
 
 #include <TextAnalysis/Lexer.h>
+#include <TextAnalysis/ExpParser.h>
+
 #include "TypeExpParser.h"
 #include "ParserMisc.h"
 #include "StmtParser.h"
-#include "ExpParser.h"
-#include <Syntax/NamespaceElementSyntaxes.h>
-#include <Syntax/ScriptSyntax.h>
+
 
 using namespace std;
 
@@ -633,16 +635,16 @@ optional<ClassDeclSyntax> ParseClassDecl(Lexer* lexer)
     );
 }
 
-optional<NamespaceElementSyntax> ParseNamespaceElement(Lexer* lexer)
+optional<NamespaceSyntaxElement> ParseNamespaceElement(Lexer* lexer)
 {
     if (auto oDecl = ParseNamespaceDecl(lexer))
-        return NamespaceDeclNamespaceElementSyntax(*oDecl);
+        return NamespaceDeclNamespaceSyntaxElement(*oDecl);
     
     if (auto oDecl = ParseTypeDecl(lexer))
-        return TypeDeclNamespaceElementSyntax(*oDecl);
+        return TypeDeclNamespaceSyntaxElement(*oDecl);
 
     if (auto oDecl = ParseGlobalFuncDecl(lexer))
-        return GlobalFuncDeclNamespaceElementSyntax(*oDecl);
+        return GlobalFuncDeclNamespaceSyntaxElement(*oDecl);
 
     return nullopt;
 }
@@ -681,7 +683,7 @@ optional<NamespaceDeclSyntax> ParseNamespaceDecl(Lexer* lexer)
     if (!Accept<LBraceToken>(&curLexer))
         return nullopt;
 
-    vector<NamespaceElementSyntax> elems;
+    vector<NamespaceSyntaxElement> elems;
     // } 가 나올때까지
     while (!Accept<RBraceToken>(&curLexer))
     {
@@ -696,16 +698,16 @@ optional<NamespaceDeclSyntax> ParseNamespaceDecl(Lexer* lexer)
     return NamespaceDeclSyntax(std::move(nsNames), std::move(elems));
 }
 
-optional<ScriptElementSyntax> ParseScriptElement(Lexer* lexer)
+optional<ScriptSyntaxElement> ParseScriptElement(Lexer* lexer)
 {
     if (auto oDecl = ParseNamespaceDecl(lexer))
-        return NamespaceDeclScriptElementSyntax(std::move(*oDecl));
+        return NamespaceDeclScriptSyntaxElement(std::move(*oDecl));
 
     if (auto oDecl = ParseTypeDecl(lexer))
-        return TypeDeclScriptElementSyntax(std::move(*oDecl));
+        return TypeDeclScriptSyntaxElement(std::move(*oDecl));
 
     if (auto oDecl = ParseGlobalFuncDecl(lexer))
-        return GlobalFuncDeclScriptElementSyntax(std::move(*oDecl));
+        return GlobalFuncDeclScriptSyntaxElement(std::move(*oDecl));
 
     return nullopt;
 }
@@ -714,7 +716,7 @@ optional<ScriptSyntax> ParseScript(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
-    vector<ScriptElementSyntax> elems;
+    vector<ScriptSyntaxElement> elems;
     while (!Accept<EndOfFileToken>(&curLexer))
     {
         auto oScriptElem = ParseScriptElement(&curLexer);

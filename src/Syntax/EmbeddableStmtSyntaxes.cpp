@@ -26,6 +26,10 @@ StmtSyntax& SingleEmbeddableStmtSyntax::GetStmt()
     return impl->stmt;
 }
 
+BEGIN_IMPLEMENT_JSON_CLASS(SingleEmbeddableStmtSyntax)
+    IMPLEMENT_JSON_MEMBER_INDIRECT(impl, stmt)
+END_IMPLEMENT_JSON_CLASS()
+
 BlockEmbeddableStmtSyntax::BlockEmbeddableStmtSyntax(vector<StmtSyntax> stmts)
     : stmts(std::move(stmts))
 {
@@ -33,5 +37,13 @@ BlockEmbeddableStmtSyntax::BlockEmbeddableStmtSyntax(vector<StmtSyntax> stmts)
 
 IMPLEMENT_DEFAULTS_DEFAULT(BlockEmbeddableStmtSyntax)
 
+BEGIN_IMPLEMENT_JSON_CLASS(BlockEmbeddableStmtSyntax)
+    IMPLEMENT_JSON_MEMBER(stmts)
+END_IMPLEMENT_JSON_CLASS()
+
+JsonItem ToJson(EmbeddableStmtSyntax& syntax)
+{
+    return std::visit([](auto&& embeddableStmt) { return embeddableStmt.ToJson(); }, syntax);
+}
 
 }

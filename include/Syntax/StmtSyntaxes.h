@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <variant>
+#include <Infra/Json.h>
 
 #include "ExpSyntaxes.h"
 #include "VarDeclSyntax.h"
@@ -49,6 +50,8 @@ public:
     DECLARE_DEFAULTS(CommandStmtSyntax)
 
     std::vector<StringExpSyntax>& GetCommands() { return commands; }
+
+    SYNTAX_API JsonItem ToJson();
 };
 
 // int a = 0, b, c;
@@ -59,6 +62,8 @@ class VarDeclStmtSyntax
 public:
     VarDeclStmtSyntax(VarDeclSyntax varDecl) : varDecl(std::move(varDecl)) { }
     VarDeclSyntax& GetVarDecl() { return varDecl; }
+
+    SYNTAX_API JsonItem ToJson();
 };
 
 // if ($cond) $body else $ElseBody
@@ -75,6 +80,8 @@ public:
     SYNTAX_API ExpSyntax& GetCond();
     SYNTAX_API EmbeddableStmtSyntax& GetBody();
     SYNTAX_API std::optional<EmbeddableStmtSyntax>& GetElseBody();
+
+    SYNTAX_API JsonItem ToJson();
 };
 
 // if (testType varName = exp
@@ -93,6 +100,8 @@ public:
     SYNTAX_API ExpSyntax& GetExp();
     SYNTAX_API EmbeddableStmtSyntax& GetBody();
     SYNTAX_API std::optional<EmbeddableStmtSyntax>& GetElseBody();
+
+    SYNTAX_API JsonItem ToJson();
 };
 
 // recursive { (SingleEmbeddableStmt)body.stmt }
@@ -109,30 +118,39 @@ public:
     SYNTAX_API std::optional<ExpSyntax>& GetCondExp();
     SYNTAX_API std::optional<ExpSyntax>& GetContinueExp();
     SYNTAX_API EmbeddableStmtSyntax& GetBody();
+
+    SYNTAX_API JsonItem ToJson();
 };
 
 class ContinueStmtSyntax
 {
+public:
+    SYNTAX_API JsonItem ToJson();
 };
 
 class BreakStmtSyntax
 {
+public:
+    SYNTAX_API JsonItem ToJson();
 };
 
-struct ReturnValueInfoSyntax
+struct ReturnValueSyntaxInfo
 {
     ExpSyntax value;
 };
 
+SYNTAX_API JsonItem ToJson(ReturnValueSyntaxInfo&);
+
 class ReturnStmtSyntax
 {
-    std::optional<ReturnValueInfoSyntax> info;
+    std::optional<ReturnValueSyntaxInfo> info;
 
 public:
-    SYNTAX_API ReturnStmtSyntax(std::optional<ReturnValueInfoSyntax> info);
+    SYNTAX_API ReturnStmtSyntax(std::optional<ReturnValueSyntaxInfo> info);
     DECLARE_DEFAULTS(ReturnStmtSyntax)
 
-    std::optional<ReturnValueInfoSyntax>& GetInfo() { return info; }
+    std::optional<ReturnValueSyntaxInfo>& GetInfo() { return info; }
+    SYNTAX_API JsonItem ToJson();
 };
 
 // Stmt중간에 명시적으로 { }를 사용한 경우에만 BlockStmt로 나타낸다. 함수, for, async, await, if등에 나타나는 { 이후 구문들은 EmbeddableStmt를 사용한다
@@ -145,10 +163,13 @@ public:
     DECLARE_DEFAULTS(BlockStmtSyntax)
 
     std::vector<StmtSyntax>& GetStmts() { return stmts; }
+    SYNTAX_API JsonItem ToJson();
 };
 
 class BlankStmtSyntax
 {
+public:
+    SYNTAX_API JsonItem ToJson();
 };
 
 class ExpStmtSyntax
@@ -160,6 +181,7 @@ public:
         : exp(exp) { }
 
     ExpSyntax& GetExp() { return exp; }
+    SYNTAX_API JsonItem ToJson();
 };
 
 class TaskStmtSyntax // task { ... }
@@ -171,6 +193,7 @@ public:
     DECLARE_DEFAULTS(TaskStmtSyntax)
 
     std::vector<StmtSyntax>& GetStmts() { return body; }
+    SYNTAX_API JsonItem ToJson();
 };
 
 class AwaitStmtSyntax // await { ... }
@@ -182,6 +205,7 @@ public:
     DECLARE_DEFAULTS(AwaitStmtSyntax)
 
     std::vector<StmtSyntax>& GetStmts() { return body; }
+    SYNTAX_API JsonItem ToJson();
 };
 
 class AsyncStmtSyntax // async { ... }
@@ -193,6 +217,7 @@ public:
     DECLARE_DEFAULTS(AsyncStmtSyntax)
 
     std::vector<StmtSyntax>& GetStmts() { return body; }
+    SYNTAX_API JsonItem ToJson();
 };
 
 // recursive { (SingleEmbeddableStmt)body.stmt }
@@ -209,6 +234,8 @@ public:
     SYNTAX_API std::u32string& GetVarName();
     SYNTAX_API ExpSyntax& GetEnumerable();
     SYNTAX_API EmbeddableStmtSyntax& GetBody();
+
+    SYNTAX_API JsonItem ToJson();
 };
 
 class YieldStmtSyntax
@@ -220,6 +247,8 @@ public:
         : value(value) { }
 
     ExpSyntax& GetValue() { return value; }
+
+    SYNTAX_API JsonItem ToJson();
 };
 
 // Stmt에 사용되는 Directive랑 Decl-Level에서 사용되는 Directive가 다르므로 구분해도 될 것 같다
@@ -234,7 +263,11 @@ public:
 
     std::u32string& GetName() { return name; }
     std::vector<ExpSyntax>& GetArgs() { return args; }
+
+    SYNTAX_API JsonItem ToJson();
 };
+
+SYNTAX_API JsonItem ToJson(StmtSyntax& syntax);
 
 }
 

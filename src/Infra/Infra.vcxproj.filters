@@ -3,19 +3,37 @@
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="..\..\include\Infra\Indirect.h">
-      <Filter>Public</Filter>
+      <Filter>Public Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\Infra\InfraConfig.h">
-      <Filter>Public</Filter>
+      <Filter>Public Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\Infra\Json.h">
+      <Filter>Public Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\Infra\Unreachable.h">
+      <Filter>Public Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\Infra\IWriter.h">
+      <Filter>Public Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\Infra\StringWriter.h">
+      <Filter>Public Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="exports.cpp" />
+    <ClCompile Include="Json.cpp" />
+    <ClCompile Include="StringWriter.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="Public">
+    <Filter Include="Public Headers">
       <UniqueIdentifier>{fc7ce5fa-e9a1-42fe-a3b0-c034267085ed}</UniqueIdentifier>
     </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="vcpkg.json" />
+    <None Include="vcpkg-configuration.json" />
   </ItemGroup>
 </Project>

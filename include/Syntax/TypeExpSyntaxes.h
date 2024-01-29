@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <memory>
+#include <Infra/Json.h>
 
 #include "SyntaxMacros.h"
 
@@ -19,17 +20,21 @@ using TypeExpSyntax = std::variant<
     class LocalTypeExpSyntax
 >;
 
+struct JsonObject;
+
 class IdTypeExpSyntax
 {
     std::u32string name;
     std::vector<TypeExpSyntax> typeArgs;
 
 public:
-    SYNTAX_API IdTypeExpSyntax(std::u32string name, std::vector<TypeExpSyntax> typeArgs);
+    SYNTAX_API IdTypeExpSyntax(std::u32string name, std::vector<TypeExpSyntax> typeArgs = {});
     DECLARE_DEFAULTS(IdTypeExpSyntax)
 
     std::u32string& GetName() { return name; }
     std::vector<TypeExpSyntax>& GetTypeArgs() { return typeArgs; }
+
+    SYNTAX_API JsonItem ToJson();
 };
 
 // recursive, Parent
@@ -46,6 +51,8 @@ public:
     SYNTAX_API TypeExpSyntax& GetParent();
     SYNTAX_API std::u32string& GetMemberName();
     SYNTAX_API std::vector<TypeExpSyntax>& GetTypeArgs();
+
+    SYNTAX_API JsonItem ToJson();
 };
 
 // recursive, InnerTypeExp
@@ -59,6 +66,8 @@ public:
     DECLARE_DEFAULTS(NullableTypeExpSyntax)
 
     SYNTAX_API TypeExpSyntax& GetInnerTypeExp();
+
+    SYNTAX_API JsonItem ToJson();
 };
 
 // recusrive, InnerTypeExp
@@ -72,6 +81,8 @@ public:
     DECLARE_DEFAULTS(LocalPtrTypeExpSyntax)
 
     SYNTAX_API TypeExpSyntax& GetInnerTypeExp();
+
+    SYNTAX_API JsonItem ToJson();
 };
 
 // recursive, InnerTypeExp
@@ -85,6 +96,8 @@ public:
     DECLARE_DEFAULTS(BoxPtrTypeExpSyntax)
 
     SYNTAX_API TypeExpSyntax& GetInnerTypeExp();
+
+    SYNTAX_API JsonItem ToJson();
 };
 
 // local I, innerTypeExp가 interface인지는 여기서 확인하지 않는다
@@ -99,6 +112,11 @@ public:
     DECLARE_DEFAULTS(LocalTypeExpSyntax)
 
     SYNTAX_API TypeExpSyntax& GetInnerTypeExp();
+
+    SYNTAX_API JsonItem ToJson();
 };
+
+
+SYNTAX_API JsonItem ToJson(TypeExpSyntax& typeExp);
 
 } // namespace Citron

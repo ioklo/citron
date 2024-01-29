@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <optional>
+#include <Infra/Json.h>
 
 #include "AccessModifierSyntax.h"
 #include "TypeExpSyntaxes.h"
@@ -48,7 +49,9 @@ public:
     std::u32string& GetName() { return name; }
     std::vector<TypeParamSyntax>& GetTypeParams() { return typeParams; }
     std::vector<FuncParamSyntax>& GetParameters() { return parameters; }
-    std::vector<StmtSyntax>& GetBody() { return body; }    
+    std::vector<StmtSyntax>& GetBody() { return body; }   
+
+    SYNTAX_API JsonItem ToJson();
 };
 
 

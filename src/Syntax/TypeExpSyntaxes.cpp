@@ -3,6 +3,7 @@
 
 #include <utility> // std::move
 
+#include <Infra/Json.h>
 #include <Syntax/SyntaxMacros.h>
 
 using namespace std;
@@ -13,6 +14,11 @@ IdTypeExpSyntax::IdTypeExpSyntax(u32string name, vector<TypeExpSyntax> typeArgs)
     : name(std::move(name)), typeArgs(std::move(typeArgs)) { }
 
 IMPLEMENT_DEFAULTS_DEFAULT(IdTypeExpSyntax)
+
+BEGIN_IMPLEMENT_JSON_CLASS(IdTypeExpSyntax)
+    IMPLEMENT_JSON_MEMBER(name)
+    IMPLEMENT_JSON_MEMBER(typeArgs)
+END_IMPLEMENT_JSON_CLASS()
 
 struct MemberTypeExpSyntax::Impl
 {
@@ -43,6 +49,12 @@ vector<TypeExpSyntax>& MemberTypeExpSyntax::GetTypeArgs()
     return impl->typeArgs;
 }
 
+BEGIN_IMPLEMENT_JSON_CLASS(MemberTypeExpSyntax)
+    IMPLEMENT_JSON_MEMBER_INDIRECT(impl, typeExp)
+    IMPLEMENT_JSON_MEMBER_INDIRECT(impl, name)
+    IMPLEMENT_JSON_MEMBER_INDIRECT(impl, typeArgs)
+END_IMPLEMENT_JSON_CLASS()
+
 struct NullableTypeExpSyntax::Impl
 {
     TypeExpSyntax innerTypeExp;
@@ -52,12 +64,17 @@ NullableTypeExpSyntax::NullableTypeExpSyntax(TypeExpSyntax typeExp)
     : impl(new Impl{ std::move(typeExp)})
 {   
 }
+
 IMPLEMENT_DEFAULTS_PIMPL(NullableTypeExpSyntax)
 
 TypeExpSyntax& NullableTypeExpSyntax::GetInnerTypeExp()
 {
     return impl->innerTypeExp;
 }
+
+BEGIN_IMPLEMENT_JSON_CLASS(NullableTypeExpSyntax)
+    IMPLEMENT_JSON_MEMBER_INDIRECT(impl, innerTypeExp)
+END_IMPLEMENT_JSON_CLASS()
 
 struct LocalPtrTypeExpSyntax::Impl
 {
@@ -77,6 +94,10 @@ TypeExpSyntax& LocalPtrTypeExpSyntax::GetInnerTypeExp()
     return impl->innerTypeExp;
 }
 
+BEGIN_IMPLEMENT_JSON_CLASS(LocalPtrTypeExpSyntax)
+    IMPLEMENT_JSON_MEMBER_INDIRECT(impl, innerTypeExp)
+END_IMPLEMENT_JSON_CLASS()
+
 struct BoxPtrTypeExpSyntax::Impl
 {
     TypeExpSyntax innerTypeExp;
@@ -94,6 +115,10 @@ TypeExpSyntax& BoxPtrTypeExpSyntax::GetInnerTypeExp()
 {
     return impl->innerTypeExp;
 }
+
+BEGIN_IMPLEMENT_JSON_CLASS(BoxPtrTypeExpSyntax)
+    IMPLEMENT_JSON_MEMBER_INDIRECT(impl, innerTypeExp)
+END_IMPLEMENT_JSON_CLASS()
 
 struct LocalTypeExpSyntax::Impl
 {
@@ -113,7 +138,13 @@ TypeExpSyntax& LocalTypeExpSyntax::GetInnerTypeExp()
     return impl->innerTypeExp;
 }
 
+BEGIN_IMPLEMENT_JSON_CLASS(LocalTypeExpSyntax)
+    IMPLEMENT_JSON_MEMBER_INDIRECT(impl, innerTypeExp)
+END_IMPLEMENT_JSON_CLASS()
 
-
+JsonItem ToJson(TypeExpSyntax& typeExp)
+{
+    return std::visit([](auto&& typeExp) { return typeExp.ToJson(); }, typeExp);
+}
 
 }

@@ -25,7 +25,6 @@
     <ClInclude Include="pch.h">
       <Filter>Misc</Filter>
     </ClInclude>
-    <ClInclude Include="ExpParser.h" />
     <ClInclude Include="ParserMisc.h" />
     <ClInclude Include="TypeExpParser.h" />
     <ClInclude Include="StmtParser.h" />
@@ -42,6 +41,9 @@
       <Filter>Public Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\TextAnalysis\Buffer.h">
+      <Filter>Public Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\TextAnalysis\ExpParser.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
   </ItemGroup>

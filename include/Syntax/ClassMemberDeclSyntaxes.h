@@ -6,6 +6,8 @@
 #include <vector>
 #include <variant>
 
+#include <Infra/Json.h>
+
 #include "ArgumentSyntax.h"
 #include "AccessModifierSyntax.h"
 #include "TypeParamSyntax.h"
@@ -29,6 +31,8 @@ public:
     DECLARE_DEFAULTS(ClassMemberTypeDeclSyntax)
 
     SYNTAX_API TypeDeclSyntax& GetTypeDecl();
+
+    SYNTAX_API JsonItem ToJson();
 };
 
 class ClassMemberFuncDeclSyntax
@@ -71,6 +75,8 @@ public:
     std::vector<TypeParamSyntax>& GetTypeParams() { return typeParams; }
     std::vector<FuncParamSyntax>& GetParameters() { return parameters; }
     std::vector<StmtSyntax>& GetBody() { return body; }
+
+    SYNTAX_API JsonItem ToJson();
 };
 
 class ClassConstructorDeclSyntax
@@ -101,6 +107,8 @@ public:
     std::vector<FuncParamSyntax>& GetParameters() { return parameters; }
     std::optional<std::vector<ArgumentSyntax>>& GetBaseArgs() { return baseArgs; }
     std::vector<StmtSyntax>& GetBody() { return body; }
+
+    SYNTAX_API JsonItem ToJson();
 };
 
 class ClassMemberVarDeclSyntax
@@ -123,8 +131,11 @@ public:
     std::optional<AccessModifierSyntax>& GetAccessModifier() { return accessModifier; }
     TypeExpSyntax& GetVarType() { return varType; }
     std::vector<std::u32string>& GetVarNames() { return varNames; }
+
+    SYNTAX_API JsonItem ToJson();
 };
 
 using ClassMemberDeclSyntax = std::variant<ClassMemberTypeDeclSyntax, ClassConstructorDeclSyntax, ClassMemberFuncDeclSyntax, ClassMemberVarDeclSyntax>;
+SYNTAX_API JsonItem ToJson(ClassMemberDeclSyntax& syntax);
 
 } // namespace Citron

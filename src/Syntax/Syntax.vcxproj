@@ -21,7 +21,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\include\Syntax\AccessModifierSyntax.h" />
     <ClInclude Include="..\..\include\Syntax\ArgumentSyntax.h" />
-    <ClInclude Include="..\..\include\Syntax\BinaryOpKindSyntax.h" />
+    <ClInclude Include="..\..\include\Syntax\BinaryOpSyntaxKind.h" />
     <ClInclude Include="..\..\include\Syntax\ClassDeclSyntax.h" />
     <ClInclude Include="..\..\include\Syntax\ClassMemberDeclSyntaxes.h" />
     <ClInclude Include="..\..\include\Syntax\EmbeddableStmtSyntaxes.h" />
@@ -31,11 +31,11 @@
     <ClInclude Include="..\..\include\Syntax\FuncParamSyntax.h" />
     <ClInclude Include="..\..\include\Syntax\GlobalFuncDeclSyntax.h" />
     <ClInclude Include="..\..\include\Syntax\NamespaceDeclSyntax.h" />
-    <ClInclude Include="..\..\include\Syntax\NamespaceElementSyntaxes.h" />
+    <ClInclude Include="..\..\include\Syntax\NamespaceSyntaxElements.h" />
     <ClInclude Include="..\..\include\Syntax\ScriptSyntax.h" />
-    <ClInclude Include="..\..\include\Syntax\ScriptElementSyntaxes.h" />
+    <ClInclude Include="..\..\include\Syntax\ScriptSyntaxElements.h" />
     <ClInclude Include="..\..\include\Syntax\StmtSyntaxes.h" />
-    <ClInclude Include="..\..\include\Syntax\StringExpElementSyntaxes.h" />
+    <ClInclude Include="..\..\include\Syntax\StringExpSyntaxElements.h" />
     <ClInclude Include="..\..\include\Syntax\StructDeclSyntax.h" />
     <ClInclude Include="..\..\include\Syntax\StructMemberDeclSyntaxes.h" />
     <ClInclude Include="..\..\include\Syntax\SyntaxConfig.h" />
@@ -44,13 +44,15 @@
     <ClInclude Include="..\..\include\Syntax\TypeDeclSyntax.h" />
     <ClInclude Include="..\..\include\Syntax\TypeExpSyntaxes.h" />
     <ClInclude Include="..\..\include\Syntax\TypeParamSyntax.h" />
-    <ClInclude Include="..\..\include\Syntax\UnaryOpKindSyntax.h" />
+    <ClInclude Include="..\..\include\Syntax\UnaryOpSyntaxKind.h" />
     <ClInclude Include="..\..\include\Syntax\VarDeclSyntax.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ClassDeclSyntax.cpp" />
     <ClCompile Include="ClassMemberDeclSyntaxes.cpp" />
     <ClCompile Include="EmbeddableStmtSyntaxes.cpp" />
+    <ClCompile Include="EnumDeclSyntax.cpp" />
     <ClCompile Include="ExpSyntaxes.cpp" />
     <ClCompile Include="NamespaceDeclSyntax.cpp" />
     <ClCompile Include="pch.cpp">
@@ -58,6 +60,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="StmtSyntaxes.cpp" />
+    <ClCompile Include="StructDeclSyntax.cpp" />
     <ClCompile Include="StructMemberDeclSyntaxes.cpp" />
     <ClCompile Include="Tokens.cpp" />
     <ClCompile Include="TypeExpSyntaxes.cpp" />

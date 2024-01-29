@@ -145,10 +145,10 @@
   <ItemGroup>
     <ClInclude Include="..\..\include\TextAnalysis\Buffer.h" />
     <ClInclude Include="..\..\include\TextAnalysis\BufferPosition.h" />
+    <ClInclude Include="..\..\include\TextAnalysis\ExpParser.h" />
     <ClInclude Include="..\..\include\TextAnalysis\Lexer.h" />
     <ClInclude Include="..\..\include\TextAnalysis\ScriptParser.h" />
     <ClInclude Include="..\..\include\TextAnalysis\TextAnalysisConfig.h" />
-    <ClInclude Include="ExpParser.h" />
     <ClInclude Include="ParserMisc.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="StmtParser.h" />

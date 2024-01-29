@@ -3,15 +3,16 @@
 
 #include <optional>
 #include <algorithm>
+#include <cassert>
 
 #include <Syntax/StmtSyntaxes.h>
-#include <Syntax/StringExpElementSyntaxes.h>
+#include <Syntax/StringExpSyntaxElements.h>
 #include <Syntax/ExpSyntaxes.h>
+#include <TextAnalysis/ExpParser.h>
 
 #include "TypeExpParser.h"
-#include "ExpParser.h"
 #include "ParserMisc.h"
-#include <cassert>
+
 
 using namespace std;
 
@@ -117,7 +118,7 @@ optional<VarDeclSyntax> ParseVarDecl(Lexer* lexer)
     if (!oVarType)
         return nullopt;
 
-    vector<VarDeclElementSyntax> elems;
+    vector<VarDeclSyntaxElement> elems;
         
     do
     {
@@ -135,7 +136,7 @@ optional<VarDeclSyntax> ParseVarDecl(Lexer* lexer)
                 return nullopt;
         }
 
-        elems.push_back(VarDeclElementSyntax{ std::move(oVarIdToken->text), std::move(oInitExp) });
+        elems.push_back(VarDeclSyntaxElement{ std::move(oVarIdToken->text), std::move(oInitExp) });
 
     } while (Accept<CommaToken>(&curLexer)); // ,가 나오면 계속한다
 
@@ -241,10 +242,10 @@ optional<ReturnStmtSyntax> ParseReturnStmt(Lexer* lexer)
     if (!Accept<ReturnToken>(&curLexer))
         return nullopt;
 
-    optional<ReturnValueInfoSyntax> oReturnValue;
+    optional<ReturnValueSyntaxInfo> oReturnValue;
 
     if (auto oReturnExp = ParseExp(&curLexer))
-        oReturnValue = ReturnValueInfoSyntax{ std::move(*oReturnExp) };
+        oReturnValue = ReturnValueSyntaxInfo{ std::move(*oReturnExp) };
 
     if (!Accept<SemiColonToken>(&curLexer))
         return nullopt;
@@ -367,7 +368,7 @@ optional<StringExpSyntax> ParseSingleCommand(bool bStopRBrace, Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
-    vector<StringExpElementSyntax> elems;
+    vector<StringExpSyntaxElement> elems;
 
     // 새 줄이거나 끝에 다다르면 종료
     while (!curLexer.IsReachedEnd())
@@ -389,21 +390,21 @@ optional<StringExpSyntax> ParseSingleCommand(bool bStopRBrace, Lexer* lexer)
             if (!Accept<RBraceToken>(&curLexer))
                 return nullopt;
 
-            elems.push_back(ExpStringExpElementSyntax{ std::move(*oExp) });
+            elems.push_back(ExpStringExpSyntaxElement{ std::move(*oExp) });
             continue;
         }
 
         // aa$b => $b 이야기
         if (auto oIdToken = Accept<IdentifierToken>(&curLexer, curLexer.LexCommandMode()))
         {
-            elems.push_back(ExpStringExpElementSyntax{ IdentifierExpSyntax(std::move(oIdToken->text), {}) });
+            elems.push_back(ExpStringExpSyntaxElement{ IdentifierExpSyntax(std::move(oIdToken->text), {}) });
             continue;
         }
 
         
         if (auto oTextToken = Accept<TextToken>(&curLexer, curLexer.LexCommandMode()))
         {
-            elems.push_back(TextStringExpElementSyntax{ std::move(oTextToken->text) });
+            elems.push_back(TextStringExpSyntaxElement{ std::move(oTextToken->text) });
             continue;
         }
 
@@ -492,7 +493,7 @@ optional<CommandStmtSyntax> ParseCommandStmt(Lexer* lexer)
 
                 if (elemCount == 1)
                 {
-                    if (auto* textElem = get_if<TextStringExpElementSyntax>(&oSingleCommand->GetElements()[0]))
+                    if (auto* textElem = get_if<TextStringExpSyntaxElement>(&oSingleCommand->GetElements()[0]))
                     {
                         if (all_of(textElem->text.begin(), textElem->text.end(), [](char32_t c) { return u_isWhitespace(c); }))
                             continue;

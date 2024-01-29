@@ -28,6 +28,8 @@ public:
     DECLARE_DEFAULTS(StructMemberTypeDeclSyntax)
 
     SYNTAX_API TypeDeclSyntax& GetTypeDecl();
+
+    SYNTAX_API JsonItem ToJson();
 };
 
 class StructMemberFuncDeclSyntax
@@ -70,6 +72,8 @@ public:
     std::vector<TypeParamSyntax>& GetTypeParams() { return typeParams; }
     std::vector<FuncParamSyntax>& GetParameters() { return parameters; }
     std::vector<StmtSyntax>& GetBody() { return body; }
+
+    SYNTAX_API JsonItem ToJson();
 };
 
 class StructMemberVarDeclSyntax
@@ -90,6 +94,8 @@ public:
     std::optional<AccessModifierSyntax>& GetAccessModifier() { return accessModifier; }
     TypeExpSyntax& GetVarType() { return varType; }
     std::vector<std::u32string>& GetVarNames() { return varNames; }
+
+    SYNTAX_API JsonItem ToJson();
 };
 
 class StructConstructorDeclSyntax
@@ -116,8 +122,11 @@ public:
     std::u32string& GetName() { return name; }
     std::vector<FuncParamSyntax>& GetParameters() { return parameters; }
     std::vector<StmtSyntax>& GetBody() { return body; }
+
+    SYNTAX_API JsonItem ToJson();
 };
 
 using StructMemberDeclSyntax = std::variant<StructMemberTypeDeclSyntax, StructMemberFuncDeclSyntax, StructConstructorDeclSyntax, StructMemberVarDeclSyntax>;
+SYNTAX_API JsonItem ToJson(StructMemberDeclSyntax&);
 
 }

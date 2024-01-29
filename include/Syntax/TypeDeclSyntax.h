@@ -9,5 +9,9 @@
 namespace Citron {
 
 using TypeDeclSyntax = std::variant<ClassDeclSyntax, StructDeclSyntax, EnumDeclSyntax>;
+inline JsonItem ToJson(TypeDeclSyntax& syntax)
+{
+    return std::visit([](auto&& decl) { return decl.ToJson(); }, syntax);
+}
 
 }

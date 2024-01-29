@@ -1,46 +1,55 @@
 #pragma once
 #include "SyntaxConfig.h"
 #include <variant>
+#include <Infra/Json.h>
+
 #include "NamespaceDeclSyntax.h"
 #include "GlobalFuncDeclSyntax.h"
 #include "TypeDeclSyntax.h"
 
 namespace Citron {
 
-class NamespaceDeclScriptElementSyntax
+class NamespaceDeclScriptSyntaxElement
 {
     NamespaceDeclSyntax namespaceDecl;
 
 public:
-    NamespaceDeclScriptElementSyntax(NamespaceDeclSyntax namespaceDecl)
+    NamespaceDeclScriptSyntaxElement(NamespaceDeclSyntax namespaceDecl)
         : namespaceDecl(std::move(namespaceDecl)) { }
 
     NamespaceDeclSyntax& GetNamespaceDecl() { return namespaceDecl; }
+
+    SYNTAX_API JsonItem ToJson();
 };
 
-class GlobalFuncDeclScriptElementSyntax
+class GlobalFuncDeclScriptSyntaxElement
 {
     GlobalFuncDeclSyntax funcDecl;
 
 public:
-    GlobalFuncDeclScriptElementSyntax(GlobalFuncDeclSyntax funcDecl)
+    GlobalFuncDeclScriptSyntaxElement(GlobalFuncDeclSyntax funcDecl)
         : funcDecl(std::move(funcDecl)) { }
 
     GlobalFuncDeclSyntax& GetFuncDecl() { return funcDecl; }
+
+    SYNTAX_API JsonItem ToJson();
 };
 
-class TypeDeclScriptElementSyntax
+class TypeDeclScriptSyntaxElement
 {
     TypeDeclSyntax typeDecl;
 
 public:
-    TypeDeclScriptElementSyntax(TypeDeclSyntax typeDecl)
+    TypeDeclScriptSyntaxElement(TypeDeclSyntax typeDecl)
         : typeDecl(std::move(typeDecl)) { }
 
     TypeDeclSyntax& GetTypeDecl() { return typeDecl; }
+
+    SYNTAX_API JsonItem ToJson();
 };
 
-using ScriptElementSyntax = std::variant<NamespaceDeclScriptElementSyntax, GlobalFuncDeclScriptElementSyntax, TypeDeclScriptElementSyntax>;
+using ScriptSyntaxElement = std::variant<NamespaceDeclScriptSyntaxElement, GlobalFuncDeclScriptSyntaxElement, TypeDeclScriptSyntaxElement>;
+SYNTAX_API JsonItem ToJson(ScriptSyntaxElement& syntax);
 
 } // namespace Citron
 
