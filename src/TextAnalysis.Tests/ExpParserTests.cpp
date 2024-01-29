@@ -18,21 +18,6 @@ optional<ExpSyntax> RunCode(u32string code)
     return ParseExp(&lexer);
 }
 
-string ToJsonString(ExpSyntax syntax)
-{
-    StringWriter writer;
-    ToString(ToJson(syntax), writer);
-    return writer.ToString();
-}
-
-string ToJsonString(optional<ExpSyntax>& oSyntax)
-{
-    if (oSyntax)
-        return ToJsonString(*oSyntax);
-    else
-        return "null";
-}
-
 TEST(ExpParser, ParseIdentifier)
 {
     auto oExp = RunCode(U"x");
@@ -112,7 +97,7 @@ TEST(ExpParser, ParseTestAndTypeTestExp) // left associative
         IdTypeExpSyntax(U"T")
     );
 
-    EXPECT_EQ(ToJsonString(oExp), ToJsonString(expected));
+    EXPECT_SYNTAX_EQ(oExp, expected);
 }
 
 TEST(ExpParser, ParsePrimaryExp)
@@ -175,10 +160,7 @@ TEST(ExpParser, ParseIndirectMemberExp)
         { IdTypeExpSyntax(U"int") }
     );
 
-    auto expStr = ToJsonString(oExp);
-    auto expectedStr = ToJsonString(expected);
-
-    EXPECT_EQ(expStr, expectedStr);
+    EXPECT_SYNTAX_EQ(oExp, expected);
 }
 
 TEST(ExpParser, ParseComplexMemberExpSyntax)
@@ -235,7 +217,7 @@ TEST(ExpParser, ParseNewExp)
         }
     );
 
-    EXPECT_EQ(ToJsonString(oExp), ToJsonString(expected));
+    EXPECT_SYNTAX_EQ(oExp, expected);
 }
 
 TEST(ExpParser, ParseComplexExp)

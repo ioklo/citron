@@ -6,7 +6,7 @@
 #include <Syntax/FuncParamSyntax.h>
 #include <Syntax/GlobalFuncDeclSyntax.h>
 #include <Syntax/TypeDeclSyntax.h>
-#include <Syntax/NamespaceSyntaxElements.h>
+#include <Syntax/NamespaceDeclSyntaxElements.h>
 #include <Syntax/ScriptSyntax.h>
 
 #include <TextAnalysis/Lexer.h>
@@ -415,6 +415,7 @@ optional<StructDeclSyntax> ParseStructDecl(Lexer* lexer)
         elems.push_back(std::move(*oElem));
     }
     
+    *lexer = std::move(curLexer);
     return StructDeclSyntax(oAccessModifier, std::move(oStructName->text), std::move(*oTypeParams), std::move(baseTypes), std::move(elems));
 }
 
@@ -635,16 +636,16 @@ optional<ClassDeclSyntax> ParseClassDecl(Lexer* lexer)
     );
 }
 
-optional<NamespaceSyntaxElement> ParseNamespaceElement(Lexer* lexer)
+optional<NamespaceDeclSyntaxElement> ParseNamespaceElement(Lexer* lexer)
 {
     if (auto oDecl = ParseNamespaceDecl(lexer))
-        return NamespaceDeclNamespaceSyntaxElement(*oDecl);
+        return NamespaceDeclNamespaceDeclSyntaxElement(*oDecl);
     
     if (auto oDecl = ParseTypeDecl(lexer))
-        return TypeDeclNamespaceSyntaxElement(*oDecl);
+        return TypeDeclNamespaceDeclSyntaxElement(*oDecl);
 
     if (auto oDecl = ParseGlobalFuncDecl(lexer))
-        return GlobalFuncDeclNamespaceSyntaxElement(*oDecl);
+        return GlobalFuncDeclNamespaceDeclSyntaxElement(*oDecl);
 
     return nullopt;
 }
@@ -683,7 +684,7 @@ optional<NamespaceDeclSyntax> ParseNamespaceDecl(Lexer* lexer)
     if (!Accept<LBraceToken>(&curLexer))
         return nullopt;
 
-    vector<NamespaceSyntaxElement> elems;
+    vector<NamespaceDeclSyntaxElement> elems;
     // } 가 나올때까지
     while (!Accept<RBraceToken>(&curLexer))
     {

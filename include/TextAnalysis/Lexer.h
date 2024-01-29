@@ -18,7 +18,7 @@ public:
     TEXT_ANALYSIS_API Lexer(BufferPosition pos);
 
 public: // LexStringMode
-    std::optional<LexResult> LexStringMode();
+    TEXT_ANALYSIS_API std::optional<LexResult> LexStringMode();
 private:
     std::optional<LexResult> LexStringModeText();
 
@@ -33,15 +33,13 @@ public: // LexCommandMode
 
     TEXT_ANALYSIS_API bool IsReachedEnd();
 
-private:
+public:
     std::optional<LexResult> LexIdentifier(bool bAllowRawMark);
     std::optional<LexResult> LexKeyword();
     std::optional<LexResult> LexBool();
-    std::optional<LexResult> LexInt();
-    std::optional<LexResult> LexWhitespace(bool bIncludeNewLine);
-    std::optional<LexResult> LexNewLine();
-
-    std::optional<BufferPosition> Consume(const char32_t* sequence);
+    TEXT_ANALYSIS_API std::optional<LexResult> LexInt();
+    TEXT_ANALYSIS_API std::optional<LexResult> LexWhitespace(bool bIncludeNewLine);
+    TEXT_ANALYSIS_API std::optional<LexResult> LexNewLine();
 };
 
 struct LexResult

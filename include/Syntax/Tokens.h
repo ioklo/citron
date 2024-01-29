@@ -191,4 +191,19 @@ using Token = std::variant <
     IdentifierToken
 >;
 
+template<typename TToken, typename = std::enable_if_t<!std::is_same_v<TToken, Token> && std::is_assignable_v<Token, TToken>>>
+bool operator==(const Token& token1, const TToken& token2)
+{
+    const TToken* c = std::get_if<TToken>(&token1);
+    return c && *c == token2; // true if v contains a T that compares equal to t    
 }
+
+template<typename TToken, typename = std::enable_if_t<!std::is_same_v<TToken, Token> && std::is_assignable_v<Token, TToken>>>
+bool operator==(const TToken& token1, const Token& token2)
+{
+    const TToken* c = std::get_if<TToken>(&token2);
+    return c && *c == token1; // true if v contains a T that compares equal to t    
+}
+
+}
+

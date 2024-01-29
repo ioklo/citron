@@ -10,19 +10,19 @@
 namespace Citron {
 
 // forward declarations
-using NamespaceSyntaxElement = std::variant<class GlobalFuncDeclNamespaceSyntaxElement, class NamespaceDeclNamespaceSyntaxElement, class TypeDeclNamespaceSyntaxElement>;
+using NamespaceDeclSyntaxElement = std::variant<class GlobalFuncDeclNamespaceDeclSyntaxElement, class NamespaceDeclNamespaceDeclSyntaxElement, class TypeDeclNamespaceDeclSyntaxElement>;
 
 class NamespaceDeclSyntax
 {
     std::vector<std::u32string> names; // dot seperated names, NS1.NS2
-    std::vector<NamespaceSyntaxElement> elements;
+    std::vector<NamespaceDeclSyntaxElement> elements;
 
 public:
-    SYNTAX_API NamespaceDeclSyntax(std::vector<std::u32string> names, std::vector<NamespaceSyntaxElement> elements);
+    SYNTAX_API NamespaceDeclSyntax(std::vector<std::u32string> names, std::vector<NamespaceDeclSyntaxElement> elements);
     DECLARE_DEFAULTS(NamespaceDeclSyntax)
 
     std::vector<std::u32string>& GetNames() { return names; }
-    std::vector<NamespaceSyntaxElement>& GetElements() { return elements; }
+    std::vector<NamespaceDeclSyntaxElement>& GetElements() { return elements; }
 
     SYNTAX_API JsonItem ToJson();
 };

@@ -11,12 +11,12 @@
 
 namespace Citron {
 
-class GlobalFuncDeclNamespaceSyntaxElement
+class GlobalFuncDeclNamespaceDeclSyntaxElement
 {
     GlobalFuncDeclSyntax funcDecl;
 
 public:
-    GlobalFuncDeclNamespaceSyntaxElement(GlobalFuncDeclSyntax funcDecl)
+    GlobalFuncDeclNamespaceDeclSyntaxElement(GlobalFuncDeclSyntax funcDecl)
         : funcDecl(std::move(funcDecl)) { }
 
     GlobalFuncDeclSyntax& GetFuncDecl() { return funcDecl; }
@@ -24,12 +24,12 @@ public:
     SYNTAX_API JsonItem ToJson();
 };
 
-class NamespaceDeclNamespaceSyntaxElement
+class NamespaceDeclNamespaceDeclSyntaxElement
 {
     NamespaceDeclSyntax namespaceDecl;
 
 public:
-    NamespaceDeclNamespaceSyntaxElement(NamespaceDeclSyntax namespaceDecl)
+    NamespaceDeclNamespaceDeclSyntaxElement(NamespaceDeclSyntax namespaceDecl)
         : namespaceDecl(std::move(namespaceDecl)) { }
 
     NamespaceDeclSyntax& GetNamespaceDecl() { return namespaceDecl; }
@@ -37,12 +37,12 @@ public:
     SYNTAX_API JsonItem ToJson();
 };
 
-class TypeDeclNamespaceSyntaxElement
+class TypeDeclNamespaceDeclSyntaxElement
 {
     TypeDeclSyntax typeDecl;
 
 public:
-    TypeDeclNamespaceSyntaxElement(TypeDeclSyntax typeDecl)
+    TypeDeclNamespaceDeclSyntaxElement(TypeDeclSyntax typeDecl)
         : typeDecl(std::move(typeDecl)) { }
 
     TypeDeclSyntax& GetTypeDecl() { return typeDecl; }
@@ -50,7 +50,7 @@ public:
     SYNTAX_API JsonItem ToJson();
 };
 
-using NamespaceSyntaxElement = std::variant<GlobalFuncDeclNamespaceSyntaxElement, NamespaceDeclNamespaceSyntaxElement, TypeDeclNamespaceSyntaxElement>;
-SYNTAX_API JsonItem ToJson(NamespaceSyntaxElement& syntax);
+using NamespaceDeclSyntaxElement = std::variant<GlobalFuncDeclNamespaceDeclSyntaxElement, NamespaceDeclNamespaceDeclSyntaxElement, TypeDeclNamespaceDeclSyntaxElement>;
+SYNTAX_API JsonItem ToJson(NamespaceDeclSyntaxElement& syntax);
 
 } // namespace Citron

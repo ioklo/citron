@@ -31,7 +31,7 @@
     <ClInclude Include="..\..\include\Syntax\FuncParamSyntax.h" />
     <ClInclude Include="..\..\include\Syntax\GlobalFuncDeclSyntax.h" />
     <ClInclude Include="..\..\include\Syntax\NamespaceDeclSyntax.h" />
-    <ClInclude Include="..\..\include\Syntax\NamespaceSyntaxElements.h" />
+    <ClInclude Include="..\..\include\Syntax\NamespaceDeclSyntaxElements.h" />
     <ClInclude Include="..\..\include\Syntax\ScriptSyntax.h" />
     <ClInclude Include="..\..\include\Syntax\ScriptSyntaxElements.h" />
     <ClInclude Include="..\..\include\Syntax\StmtSyntaxes.h" />
@@ -54,11 +54,15 @@
     <ClCompile Include="EmbeddableStmtSyntaxes.cpp" />
     <ClCompile Include="EnumDeclSyntax.cpp" />
     <ClCompile Include="ExpSyntaxes.cpp" />
+    <ClCompile Include="GlobalFuncDeclSyntax.cpp" />
     <ClCompile Include="NamespaceDeclSyntax.cpp" />
+    <ClCompile Include="NamespaceDeclSyntaxElements.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="ScriptSyntax.cpp" />
+    <ClCompile Include="ScriptSyntaxElements.cpp" />
     <ClCompile Include="StmtSyntaxes.cpp" />
     <ClCompile Include="StructDeclSyntax.cpp" />
     <ClCompile Include="StructMemberDeclSyntaxes.cpp" />

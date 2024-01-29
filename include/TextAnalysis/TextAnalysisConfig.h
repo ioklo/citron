@@ -6,6 +6,6 @@
     #ifdef _DLL
         #define TEXT_ANALYSIS_API __declspec(dllimport)
     #else
-        #define SYNTAX_API
+        #define TEXT_ANALYSIS_API
     #endif
 #endif

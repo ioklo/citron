@@ -43,7 +43,7 @@
     <ClInclude Include="..\..\include\Syntax\NamespaceDeclSyntax.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Syntax\NamespaceSyntaxElements.h">
+    <ClInclude Include="..\..\include\Syntax\NamespaceDeclSyntaxElements.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\Syntax\ScriptSyntaxElements.h">
@@ -102,5 +102,9 @@
     <ClCompile Include="ClassDeclSyntax.cpp" />
     <ClCompile Include="EnumDeclSyntax.cpp" />
     <ClCompile Include="StructDeclSyntax.cpp" />
+    <ClCompile Include="ScriptSyntax.cpp" />
+    <ClCompile Include="ScriptSyntaxElements.cpp" />
+    <ClCompile Include="GlobalFuncDeclSyntax.cpp" />
+    <ClCompile Include="NamespaceDeclSyntaxElements.cpp" />
   </ItemGroup>
 </Project>

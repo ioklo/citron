@@ -168,6 +168,23 @@ public:
         validPos = get_if<ValidBufferPosition>(&pos);
         return true;
     }
+
+    // 성공시 position이 변경
+    bool Consume(const char32_t* sequence)
+    {
+        const char32_t* cp = sequence;
+        BufferIterator inner(pos);
+
+        while (*cp)
+        {
+            if (!inner.Equals(*cp)) return false;
+            if (!inner.Next()) return false;
+            ++cp;
+        }
+
+        pos = std::move(inner.pos);
+        return true;
+    }
 };
 
 optional<LexResult> ResultNextPos(Token token, BufferIterator i)
@@ -305,8 +322,8 @@ optional<LexResult> Lexer::LexNormalModeAfterSkipWhitespace()
 
     for(auto& info : infos)
     {
-        if (auto oNextPos = Consume(info.sequence))
-            return LexResult{ info.token, *oNextPos };
+        if (i.Consume(info.sequence))
+            return LexResult{ info.token, i.MakeLexer() };
     }
 
     if (i.Equals(U'"'))
@@ -456,11 +473,13 @@ optional<LexResult> Lexer::LexKeyword()
 
 optional<LexResult> Lexer::LexBool()
 {
-    if (auto oNextPos = Consume(U"true"))
-        return LexResult{ BoolToken(true), *oNextPos };
+    BufferIterator i(pos);
 
-    if (auto oNextPos = Consume(U"false"))
-        return LexResult{ BoolToken(false), *oNextPos };
+    if (i.Consume(U"true"))
+        return LexResult{ BoolToken(true), i.MakeLexer() };
+
+    if (i.Consume(U"false"))
+        return LexResult{ BoolToken(false), i.MakeLexer() };
 
     return nullopt;
 }
@@ -506,15 +525,13 @@ optional<LexResult> Lexer::LexWhitespace(bool bIncludeNewLine)
         }
 
         // 코멘트 처리
-        auto oCommentBeginPos = Consume(U"//");
+        bool bComment = i.Consume(U"//");
 
-        if (!oCommentBeginPos)
-            oCommentBeginPos = Consume(U"#");
+        if (!bComment)
+            bComment = i.Consume(U"#");
 
-        if (oCommentBeginPos)
+        if (bComment)
         {
-            i = BufferIterator(*oCommentBeginPos);
-
             while (!i.IsReachedEnd() && !i.Equals(U'\r') && !i.Equals(U'\n'))
             {
                 bUpdated = true;
@@ -541,14 +558,12 @@ optional<LexResult> Lexer::LexWhitespace(bool bIncludeNewLine)
 
         if (nextLineModeFailedResult)
         {
-            auto oRNPos = Consume(U"\r\n");
+            auto oRNPos = i.Consume(U"\r\n");
 
             if (oRNPos)
             {   
                 nextLineModeFailedResult = nullopt;
                 bUpdated = true;
-
-                i = BufferIterator(*oRNPos);
                 continue;
             }
             else if (i.Equals(U'\r') || i.Equals(U'\n'))
@@ -593,19 +608,6 @@ optional<LexResult> Lexer::LexNewLine()
         return nullopt;
 }
 
-optional<BufferPosition> Lexer::Consume(const char32_t* sequence)
-{
-    const char32_t* cp = sequence;
-    BufferIterator i(pos);
 
-    while (*cp)
-    {
-        if (!i.Equals(*cp)) return nullopt;
-        if (!i.Next()) return nullopt;
-        ++cp;
-    }
-
-    return i.GetBufferPosition();
-}
 
 }
