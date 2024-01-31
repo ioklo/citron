@@ -171,6 +171,9 @@
     <ClCompile Include="TypeExpParser.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Infra\Infra.vcxproj">
+      <Project>{8e2a32db-279b-4c5c-96c0-bbede676efbf}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\Syntax\Syntax.vcxproj">
       <Project>{74d0511c-d9ae-44b9-9741-007e3b012565}</Project>
     </ProjectReference>

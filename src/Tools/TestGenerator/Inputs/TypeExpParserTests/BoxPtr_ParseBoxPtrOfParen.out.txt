@@ -1,0 +1,11 @@
+{
+    "$type": "BoxPtrTypeExpSyntax",
+    "innerTypeExp": {
+        "$type": "NullableTypeExpSyntax",
+        "innerTypeExp": {
+            "$type": "IdTypeExpSyntax",
+            "name": "T",
+            "typeArgs": []
+        }
+    }
+}

@@ -123,6 +123,7 @@
     <ClCompile Include="ScriptParserTests.g.cpp" />
     <ClCompile Include="StmtParserTests.g.cpp" />
     <ClCompile Include="TestMisc.cpp" />
+    <ClCompile Include="TypeExpParserTests.g.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Infra\Infra.vcxproj">

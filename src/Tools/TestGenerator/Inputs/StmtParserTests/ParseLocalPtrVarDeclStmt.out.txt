@@ -5,12 +5,9 @@
         "type": {
             "$type": "LocalPtrTypeExpSyntax",
             "innerTypeExp": {
-                "$type": "LocalPtrTypeExpSyntax",
-                "innerTypeExp": {
-                    "$type": "IdTypeExpSyntax",
-                    "name": "int",
-                    "typeArgs": []
-                }
+                "$type": "IdTypeExpSyntax",
+                "name": "int",
+                "typeArgs": []
             }
         },
         "elems": [

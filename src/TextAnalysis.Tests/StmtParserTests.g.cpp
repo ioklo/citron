@@ -229,6 +229,56 @@ TEST(StmtParser, ParseExpStmt)
     EXPECT_SYNTAX_EQ(oStmt, expected);
 }
 
+TEST(StmtParser, ParseForStmt)
+{
+    auto [buffer, lexer] = Prepare(UR"---(for (f(); g; h + g) ;)---");
+
+    auto oStmt = ParseStmt(&lexer);
+
+    auto expected = R"---({
+    "$type": "ForStmtSyntax",
+    "initializer": {
+        "$type": "ExpForStmtInitializerSyntax",
+        "exp": {
+            "$type": "CallExpSyntax",
+            "callable": {
+                "$type": "IdentifierExpSyntax",
+                "value": "f",
+                "typeArgs": []
+            },
+            "args": []
+        }
+    },
+    "condExp": {
+        "$type": "IdentifierExpSyntax",
+        "value": "g",
+        "typeArgs": []
+    },
+    "continueExp": {
+        "$type": "BinaryOpExpSyntax",
+        "kind": "Add",
+        "operand0": {
+            "$type": "IdentifierExpSyntax",
+            "value": "h",
+            "typeArgs": []
+        },
+        "operand1": {
+            "$type": "IdentifierExpSyntax",
+            "value": "g",
+            "typeArgs": []
+        }
+    },
+    "body": {
+        "$type": "SingleEmbeddableStmtSyntax",
+        "stmt": {
+            "$type": "BlankStmtSyntax"
+        }
+    }
+})---";
+
+    EXPECT_SYNTAX_EQ(oStmt, expected);
+}
+
 TEST(StmtParser, ParseForeachStmt)
 {
     auto [buffer, lexer] = Prepare(UR"---(foreach( var x in l ) { } )---");
@@ -443,12 +493,9 @@ TEST(StmtParser, ParseLocalPtrVarDeclStmt)
         "type": {
             "$type": "LocalPtrTypeExpSyntax",
             "innerTypeExp": {
-                "$type": "LocalPtrTypeExpSyntax",
-                "innerTypeExp": {
-                    "$type": "IdTypeExpSyntax",
-                    "name": "int",
-                    "typeArgs": []
-                }
+                "$type": "IdTypeExpSyntax",
+                "name": "int",
+                "typeArgs": []
             }
         },
         "elems": [
@@ -525,56 +572,6 @@ TEST(StmtParser, ParseVarDeclStmt)
                 }
             }
         ]
-    }
-})---";
-
-    EXPECT_SYNTAX_EQ(oStmt, expected);
-}
-
-TEST(StmtParser, TestParseForStmt)
-{
-    auto [buffer, lexer] = Prepare(UR"---(for (f(); g; h + g) ;)---");
-
-    auto oStmt = ParseStmt(&lexer);
-
-    auto expected = R"---({
-    "$type": "ForStmtSyntax",
-    "initializer": {
-        "$type": "ExpForStmtInitializerSyntax",
-        "exp": {
-            "$type": "CallExpSyntax",
-            "callable": {
-                "$type": "IdentifierExpSyntax",
-                "value": "f",
-                "typeArgs": []
-            },
-            "args": []
-        }
-    },
-    "condExp": {
-        "$type": "IdentifierExpSyntax",
-        "value": "g",
-        "typeArgs": []
-    },
-    "continueExp": {
-        "$type": "BinaryOpExpSyntax",
-        "kind": "Add",
-        "operand0": {
-            "$type": "IdentifierExpSyntax",
-            "value": "h",
-            "typeArgs": []
-        },
-        "operand1": {
-            "$type": "IdentifierExpSyntax",
-            "value": "g",
-            "typeArgs": []
-        }
-    },
-    "body": {
-        "$type": "SingleEmbeddableStmtSyntax",
-        "stmt": {
-            "$type": "BlankStmtSyntax"
-        }
     }
 })---";
 

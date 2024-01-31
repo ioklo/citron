@@ -6,6 +6,7 @@
 #include <sstream>
 #include <filesystem>
 #include <clocale>
+#include <variant>
 #include <utf8.h>
 #include <Windows.h>
 #include <boost/algorithm/string.hpp>
@@ -59,14 +60,15 @@ void writeAll(path filePath, string contents)
     ofs.close();
 }
 
-// name, inFilePath, outFilePath
-vector<tuple<string, path, path>> GetFiles(path p)
+// name, inFilePath, isFail, outFilePath | failFilePath
+vector<tuple<string, path, bool, path>> GetFiles(path p)
 {
     const string inExt = ".in.txt";
     const string outExt = ".out.txt";
+    const string failExt = ".fail.txt";
     size_t extLength = inExt.length();
 
-    vector<tuple<string, path, path>> results;
+    vector<tuple<string, path, bool, path>> results;
     for (auto& dir_entry : std::filesystem::directory_iterator(p))
     {
         if (!dir_entry.is_regular_file()) continue;
@@ -82,8 +84,21 @@ vector<tuple<string, path, path>> GetFiles(path p)
         auto name = filename.substr(0, lengthWithoutExt);
         auto outFilePath = dir_entry.path().parent_path().append(name + outExt);
 
-        if (!exists(outFilePath)) continue;
-        results.emplace_back(name, inFilePath, outFilePath);
+        if (exists(outFilePath))
+        {
+            results.emplace_back(name, inFilePath, false, outFilePath);
+            continue;
+        }
+
+        auto failFilePath = dir_entry.path().parent_path().append(name + failExt);
+
+        if (exists(failFilePath))
+        {
+            results.emplace_back(name, inFilePath, true, outFilePath);
+            continue;
+        }
+
+        wcout << inFilePath << L": neither .out.txt nor .fail.txt exists";
     }
 
     sort(results.begin(), results.end(), [](auto& x, auto& y) { return get<0>(x) < get<0>(y); });
@@ -134,8 +149,11 @@ using namespace Citron;
     EXPECT_SYNTAX_EQ(oScript, expected);
 }})----";
 
-    for (auto& [name, inFilePath, outFilePath] : GetFiles(testsPath))
-    {	
+    for (auto& [name, inFilePath, bFail, outFilePath] : GetFiles(testsPath))
+    {
+        if (bFail)
+            wcout << inFilePath << L": fail case not supported" << endl;
+
         auto inContents = readAll(inFilePath);
         auto outContents = readAll(outFilePath);
 
@@ -190,13 +208,91 @@ using namespace Citron;
     EXPECT_SYNTAX_EQ(oStmt, expected);
 }})----";
 
-    for (auto& [name, inFilePath, outFilePath] : GetFiles(testsPath))
+    for (auto& [name, inFilePath, bFail, outFilePath] : GetFiles(testsPath))
     {
+        if (bFail)
+            wcout << inFilePath << L": fail case not supported" << endl;
+
         auto inContents = readAll(inFilePath);
         auto outContents = readAll(outFilePath);
 
         auto testContents = fmt::format(templ, "StmtParser", name.c_str(), inContents, outContents);
         oss << testContents << endl << endl;
+    }
+
+    writeAll(resultPath, oss.str());
+}
+
+void GenerateTypeExpParserTests(path inputPath, path srcPath)
+{
+    // input/TypeExpParserTests
+    path testsPath = inputPath;
+    testsPath.append("TypeExpParserTests");
+
+    // src/TestAnalysis.Tests/TypeExpParserTests.g.cpp
+    path resultPath = srcPath;
+
+    resultPath
+        .append("TextAnalysis.Tests")
+        .append("TypeExpParserTests.g.cpp");
+
+    if (!exists(testsPath))
+        return;
+
+    ostringstream oss;
+
+    // insert header
+    oss << R"---(#include "pch.h"
+
+#include <Syntax/Syntax.h>
+#include <TextAnalysis/TypeExpParser.h>
+
+#include <Syntax/ExpSyntaxes.h>
+
+#include "TestMisc.h"
+
+using namespace std;
+using namespace Citron;
+
+)---";
+
+    auto succTempl = R"----(TEST({}, {})
+{{
+    auto [buffer, lexer] = Prepare(UR"---({})---");
+
+    auto oTypeExp = ParseTypeExp(&lexer);
+
+    auto expected = R"---({})---";
+
+    EXPECT_TRUE(lexer.IsReachedEnd());
+    EXPECT_SYNTAX_EQ(oTypeExp, expected);
+}})----";
+
+    auto failTempl = R"----(TEST({}, {})
+{{
+    auto [buffer, lexer] = Prepare(UR"---({})---");
+
+    auto oTypeExp = ParseTypeExp(&lexer);
+
+    EXPECT_TRUE(!lexer.IsReachedEnd());
+}})----";
+
+    for (auto& [name, inFilePath, bFail, outFilePath] : GetFiles(testsPath))
+    {
+        auto inContents = readAll(inFilePath);
+
+        if (!bFail)
+        {
+            auto outContents = readAll(outFilePath);
+
+            auto testContents = fmt::format(succTempl, "TypeExpParser", name.c_str(), inContents, outContents);
+            oss << testContents << endl << endl;
+        }
+        else
+        {
+            auto testContents = fmt::format(failTempl, "TypeExpParser", name.c_str(), inContents);
+            oss << testContents << endl << endl;
+        }
     }
 
     writeAll(resultPath, oss.str());
@@ -225,6 +321,7 @@ int wmain(int argc, wchar_t* argv[])
         
     GenerateScriptParserTests(inputsPath, srcPath);
     GenerateStmtParserTests(inputsPath, srcPath);
+    GenerateTypeExpParserTests(inputsPath, srcPath);
 
     return 0;
 }

@@ -99,7 +99,7 @@ optional<BoxPtrTypeExpSyntax> ParseBoxPtrTypeExp(Lexer* lexer)
 }
 
 // T*
-optional<LocalPtrTypeExpSyntax> ParseLocalPtrTypeExp(Lexer* lexer)
+optional<TypeExpSyntax> ParseLocalPtrTypeExp(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
@@ -112,11 +112,14 @@ optional<LocalPtrTypeExpSyntax> ParseLocalPtrTypeExp(Lexer* lexer)
     // 적어도 한개는 있어야 한다
     if (!Accept<StarToken>(&curLexer))
         return nullopt;
-
+    
     TypeExpSyntax curTypeExp = LocalPtrTypeExpSyntax(*oInnerTypeExp);
 
     while (Accept<StarToken>(&curLexer))
-        curTypeExp = LocalPtrTypeExpSyntax(std::move(curTypeExp));
+    {
+        // NOTICE: LocalPtrTypeExpSyntax(std::move(curTypeExp)); curTypeExp가 LocalPtrTypeExpSyntax라면 감싸는게 아니라 이동생성자가 호출된다
+        curTypeExp = LocalPtrTypeExpSyntax(TypeExpSyntax(std::move(curTypeExp)));
+    }
 
     *lexer = std::move(curLexer);
     return curTypeExp;

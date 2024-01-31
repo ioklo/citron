@@ -1,0 +1,11 @@
+{
+    "$type": "LocalPtrTypeExpSyntax",
+    "innerTypeExp": {
+        "$type": "LocalPtrTypeExpSyntax",
+        "innerTypeExp": {
+            "$type": "IdTypeExpSyntax",
+            "name": "T",
+            "typeArgs": []
+        }
+    }
+}

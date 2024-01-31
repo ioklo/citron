@@ -14,8 +14,6 @@ using JsonItem = std::variant<struct JsonNull, struct JsonBool, struct JsonInt, 
 
 struct JsonNull
 {
-    
-
     bool operator==(const JsonNull& other) const
     {
         return true;

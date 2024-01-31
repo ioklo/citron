@@ -19,6 +19,12 @@
     <Filter Include="Inputs\ScriptParserTests">
       <UniqueIdentifier>{1ad0e68a-c5db-417c-9aa3-8433016235c1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Inputs\StmtParserTests">
+      <UniqueIdentifier>{3c47020d-1c0e-41c4-913d-3f7824dfdd39}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Inputs\TypeExpParserTests">
+      <UniqueIdentifier>{edcc2461-f617-4e22-af1f-77b05d7ba930}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="TestGenerator.cpp">
@@ -65,6 +71,252 @@
     </Text>
     <Text Include="Inputs\ScriptParserTests\ParseStructDecl.out.txt">
       <Filter>Inputs\ScriptParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\StmtParserTests\ParseBlankStmt.in.txt">
+      <Filter>Inputs\StmtParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\StmtParserTests\ParseBlankStmt.out.txt">
+      <Filter>Inputs\StmtParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\StmtParserTests\ParseBlockCommandStmt.in.txt">
+      <Filter>Inputs\StmtParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\StmtParserTests\ParseBlockCommandStmt.out.txt">
+      <Filter>Inputs\StmtParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\StmtParserTests\ParseBlockStmt.in.txt">
+      <Filter>Inputs\StmtParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\StmtParserTests\ParseBlockStmt.out.txt">
+      <Filter>Inputs\StmtParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\StmtParserTests\ParseBoxPtrVarDeclStmt.in.txt">
+      <Filter>Inputs\StmtParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\StmtParserTests\ParseBoxPtrVarDeclStmt.out.txt">
+      <Filter>Inputs\StmtParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\StmtParserTests\ParseBreakStmt.in.txt">
+      <Filter>Inputs\StmtParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\StmtParserTests\ParseBreakStmt.out.txt">
+      <Filter>Inputs\StmtParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\StmtParserTests\ParseContinueStmt.in.txt">
+      <Filter>Inputs\StmtParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\StmtParserTests\ParseContinueStmt.out.txt">
+      <Filter>Inputs\StmtParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\StmtParserTests\ParseDirectiveStmt.in.txt">
+      <Filter>Inputs\StmtParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\StmtParserTests\ParseDirectiveStmt.out.txt">
+      <Filter>Inputs\StmtParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\StmtParserTests\ParseExpStmt.in.txt">
+      <Filter>Inputs\StmtParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\StmtParserTests\ParseExpStmt.out.txt">
+      <Filter>Inputs\StmtParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\StmtParserTests\ParseForeachStmt.in.txt">
+      <Filter>Inputs\StmtParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\StmtParserTests\ParseForeachStmt.out.txt">
+      <Filter>Inputs\StmtParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\StmtParserTests\ParseForStmt.in.txt">
+      <Filter>Inputs\StmtParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\StmtParserTests\ParseForStmt.out.txt">
+      <Filter>Inputs\StmtParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\StmtParserTests\ParseIfIsExpCondStmt.in.txt">
+      <Filter>Inputs\StmtParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\StmtParserTests\ParseIfIsExpCondStmt.out.txt">
+      <Filter>Inputs\StmtParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\StmtParserTests\ParseIfStmt.in.txt">
+      <Filter>Inputs\StmtParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\StmtParserTests\ParseIfStmt.out.txt">
+      <Filter>Inputs\StmtParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\StmtParserTests\ParseIfTestStmtWithVarName.in.txt">
+      <Filter>Inputs\StmtParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\StmtParserTests\ParseIfTestStmtWithVarName.out.txt">
+      <Filter>Inputs\StmtParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\StmtParserTests\ParseInlineCommandStmt.in.txt">
+      <Filter>Inputs\StmtParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\StmtParserTests\ParseInlineCommandStmt.out.txt">
+      <Filter>Inputs\StmtParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\StmtParserTests\ParseLocalPtrVarDeclStmt.in.txt">
+      <Filter>Inputs\StmtParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\StmtParserTests\ParseLocalPtrVarDeclStmt.out.txt">
+      <Filter>Inputs\StmtParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\StmtParserTests\ParseNullableVarDeclStmt.in.txt">
+      <Filter>Inputs\StmtParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\StmtParserTests\ParseNullableVarDeclStmt.out.txt">
+      <Filter>Inputs\StmtParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\StmtParserTests\ParseVarDeclStmt.in.txt">
+      <Filter>Inputs\StmtParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\StmtParserTests\ParseVarDeclStmt.out.txt">
+      <Filter>Inputs\StmtParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\TypeExpParserTests\BoxPtr_ParseAmbiguousLocalAndBoxPtrs.fail.txt">
+      <Filter>Inputs\TypeExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\TypeExpParserTests\BoxPtr_ParseAmbiguousLocalAndBoxPtrs.in.txt">
+      <Filter>Inputs\TypeExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\TypeExpParserTests\BoxPtr_ParseBoxPtrOfIdChain.in.txt">
+      <Filter>Inputs\TypeExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\TypeExpParserTests\BoxPtr_ParseBoxPtrOfIdChain.out.txt">
+      <Filter>Inputs\TypeExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\TypeExpParserTests\BoxPtr_ParseBoxPtrOfNullableRaw.fail.txt">
+      <Filter>Inputs\TypeExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\TypeExpParserTests\BoxPtr_ParseBoxPtrOfNullableRaw.in.txt">
+      <Filter>Inputs\TypeExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\TypeExpParserTests\BoxPtr_ParseBoxPtrOfParen.in.txt">
+      <Filter>Inputs\TypeExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\TypeExpParserTests\BoxPtr_ParseBoxPtrOfParen.out.txt">
+      <Filter>Inputs\TypeExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\TypeExpParserTests\BoxPtr_ParseNestedBoxPtrs.fail.txt">
+      <Filter>Inputs\TypeExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\TypeExpParserTests\BoxPtr_ParseNestedBoxPtrs.in.txt">
+      <Filter>Inputs\TypeExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\TypeExpParserTests\LocalPtr_ParseLocalPtrOfIdChain.in.txt">
+      <Filter>Inputs\TypeExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\TypeExpParserTests\LocalPtr_ParseLocalPtrOfIdChain.out.txt">
+      <Filter>Inputs\TypeExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\TypeExpParserTests\LocalPtr_ParseLocalPtrOfNullableRaw.fail.txt">
+      <Filter>Inputs\TypeExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\TypeExpParserTests\LocalPtr_ParseLocalPtrOfNullableRaw.in.txt">
+      <Filter>Inputs\TypeExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\TypeExpParserTests\LocalPtr_ParseLocalPtrOfParen.in.txt">
+      <Filter>Inputs\TypeExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\TypeExpParserTests\LocalPtr_ParseLocalPtrOfParen.out.txt">
+      <Filter>Inputs\TypeExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\TypeExpParserTests\LocalPtr_ParseNestedLocalPtrs.in.txt">
+      <Filter>Inputs\TypeExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\TypeExpParserTests\LocalPtr_ParseNestedLocalPtrs.out.txt">
+      <Filter>Inputs\TypeExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\TypeExpParserTests\Nullable_ParseDoubleQuestionMark.fail.txt">
+      <Filter>Inputs\TypeExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\TypeExpParserTests\Nullable_ParseDoubleQuestionMark.in.txt">
+      <Filter>Inputs\TypeExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\TypeExpParserTests\Nullable_ParseIdChainNullable.in.txt">
+      <Filter>Inputs\TypeExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\TypeExpParserTests\Nullable_ParseIdChainNullable.out.txt">
+      <Filter>Inputs\TypeExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\TypeExpParserTests\Nullable_ParseNullableBoxPtr.in.txt">
+      <Filter>Inputs\TypeExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\TypeExpParserTests\Nullable_ParseNullableBoxPtr.out.txt">
+      <Filter>Inputs\TypeExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\TypeExpParserTests\Nullable_ParseNullableLocalPtr.in.txt">
+      <Filter>Inputs\TypeExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\TypeExpParserTests\Nullable_ParseNullableLocalPtr.out.txt">
+      <Filter>Inputs\TypeExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\TypeExpParserTests\Nullable_ParseNullableParen.in.txt">
+      <Filter>Inputs\TypeExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\TypeExpParserTests\Nullable_ParseNullableParen.out.txt">
+      <Filter>Inputs\TypeExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\TypeExpParserTests\Paren_ParseWrappedBoxPtr.in.txt">
+      <Filter>Inputs\TypeExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\TypeExpParserTests\Paren_ParseWrappedBoxPtr.out.txt">
+      <Filter>Inputs\TypeExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\TypeExpParserTests\Paren_ParseWrappedIdChain.fail.txt">
+      <Filter>Inputs\TypeExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\TypeExpParserTests\Paren_ParseWrappedIdChain.in.txt">
+      <Filter>Inputs\TypeExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\TypeExpParserTests\Paren_ParseWrappedLocalPtr.in.txt">
+      <Filter>Inputs\TypeExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\TypeExpParserTests\Paren_ParseWrappedLocalPtr.out.txt">
+      <Filter>Inputs\TypeExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\TypeExpParserTests\Paren_ParseWrappedNested.fail.txt">
+      <Filter>Inputs\TypeExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\TypeExpParserTests\Paren_ParseWrappedNested.in.txt">
+      <Filter>Inputs\TypeExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\TypeExpParserTests\Paren_ParseWrappedNullable.in.txt">
+      <Filter>Inputs\TypeExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\TypeExpParserTests\Paren_ParseWrappedNullable.out.txt">
+      <Filter>Inputs\TypeExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\TypeExpParserTests\TopLevel_ParseBoxPtr.in.txt">
+      <Filter>Inputs\TypeExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\TypeExpParserTests\TopLevel_ParseBoxPtr.out.txt">
+      <Filter>Inputs\TypeExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\TypeExpParserTests\TopLevel_ParseIdChain.in.txt">
+      <Filter>Inputs\TypeExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\TypeExpParserTests\TopLevel_ParseIdChain.out.txt">
+      <Filter>Inputs\TypeExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\TypeExpParserTests\TopLevel_ParseLocalPtr.in.txt">
+      <Filter>Inputs\TypeExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\TypeExpParserTests\TopLevel_ParseLocalPtr.out.txt">
+      <Filter>Inputs\TypeExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\TypeExpParserTests\TopLevel_ParseNullable.in.txt">
+      <Filter>Inputs\TypeExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\TypeExpParserTests\TopLevel_ParseNullable.out.txt">
+      <Filter>Inputs\TypeExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\TypeExpParserTests\TopLevel_ParseParenSolo.fail.txt">
+      <Filter>Inputs\TypeExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\TypeExpParserTests\TopLevel_ParseParenSolo.in.txt">
+      <Filter>Inputs\TypeExpParserTests</Filter>
     </Text>
   </ItemGroup>
 </Project>
