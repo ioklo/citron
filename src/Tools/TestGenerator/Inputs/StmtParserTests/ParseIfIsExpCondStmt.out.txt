@@ -1,0 +1,39 @@
+{
+    "$type": "IfStmtSyntax",
+    "cond": {
+        "$type": "IsExpSyntax",
+        "exp": {
+            "$type": "IdentifierExpSyntax",
+            "value": "b",
+            "typeArgs": []
+        },
+        "type": {
+            "$type": "IdTypeExpSyntax",
+            "name": "T",
+            "typeArgs": []
+        }
+    },
+    "body": {
+        "$type": "BlockEmbeddableStmtSyntax",
+        "stmts": []
+    },
+    "elseBody": {
+        "$type": "SingleEmbeddableStmtSyntax",
+        "stmt": {
+            "$type": "IfStmtSyntax",
+            "cond": {
+                "$type": "IdentifierExpSyntax",
+                "value": "c",
+                "typeArgs": []
+            },
+            "body": {
+                "$type": "BlockEmbeddableStmtSyntax",
+                "stmts": []
+            },
+            "elseBody": {
+                "$type": "BlockEmbeddableStmtSyntax",
+                "stmts": []
+            }
+        }
+    }
+}

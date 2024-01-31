@@ -26,8 +26,6 @@
       <Filter>Misc</Filter>
     </ClInclude>
     <ClInclude Include="ParserMisc.h" />
-    <ClInclude Include="TypeExpParser.h" />
-    <ClInclude Include="StmtParser.h" />
     <ClInclude Include="..\..\include\TextAnalysis\TextAnalysisConfig.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
@@ -44,6 +42,12 @@
       <Filter>Public Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\TextAnalysis\ExpParser.h">
+      <Filter>Public Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\TextAnalysis\StmtParser.h">
+      <Filter>Public Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\TextAnalysis\TypeExpParser.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
   </ItemGroup>

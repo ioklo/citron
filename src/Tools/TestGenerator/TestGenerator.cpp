@@ -46,6 +46,12 @@ std::string readAll(path filePath)
 
 void writeAll(path filePath, string contents)
 {
+    if (exists(filePath))
+    {
+        auto prevContents = readAll(filePath);
+        if (contents == prevContents) return;
+    }
+
     filesystem::create_directories(filePath.parent_path());
 
     ofstream ofs(filePath);
@@ -53,70 +59,53 @@ void writeAll(path filePath, string contents)
     ofs.close();
 }
 
-// argv는 프로그램 포함
-// 소스가 utf8로 고정되어서(모든 char*리터럴은 utf-8이다)
-// 일반 main을 쓰면, cout쓸때 utf8로 나가게 된다. 그럼 현재 locale로 conversion하기 귀찮아 져서 wmain을 쓰도록 한다
-int wmain(int argc, wchar_t* argv[])
-{   
-    locale::global(locale(""));
-
-    // wcout << L"abc 안녕하세요 abc";
-    if (argc < 3)
-    {
-        wcout << L"Usage: " << argv[0] << ' ' << L"[Input Directory] [Output Directory]" << endl;
-        wcout << L"   ex: " << argv[0] << ' ' << L". ..\\.." << endl;
-        return 1;
-    }
-    
-    auto testsPath = [argv]() {
-        path path1 = argv[1];
-
-        if (path1.is_absolute())
-            return path1;
-
-        return absolute(path1
-            .append("Inputs")
-            .append("ScriptParserTests"));
-
-    }();
-
-    auto outputPath = [argv]() {
-        path path2 = argv[2];
-
-        if (path2.is_absolute())
-            return path2;
-
-        return absolute(path2.append("TextAnalysis.Tests"));
-    }();
-
-    // TestAnalysis.Tests
-    path resultPath = outputPath;
-    resultPath.append("ScriptParserTests.g.cpp");
-
-    wcout << L"Input Directory: " << testsPath << endl;
-
-    if (!exists(testsPath))
-    {
-        wcout << L"디렉토리가 존재하지 않습니다";
-        return 1;
-    }
-
-    // 1. ScriptParserTests.g.cpp만들기
-    auto templ = R"----(TEST({}, {})
-{{
-    auto [buffer, lexer] = Prepare(UR"---({})---");
-
-    auto oScript = ParseScript(&lexer);
-
-    auto expected = R"---({})---";
-
-    EXPECT_SYNTAX_EQ(oScript, expected);
-}})----";
-
+// name, inFilePath, outFilePath
+vector<tuple<string, path, path>> GetFiles(path p)
+{
     const string inExt = ".in.txt";
     const string outExt = ".out.txt";
     size_t extLength = inExt.length();
 
+    vector<tuple<string, path, path>> results;
+    for (auto& dir_entry : std::filesystem::directory_iterator(p))
+    {
+        if (!dir_entry.is_regular_file()) continue;
+
+        auto inFilePath = dir_entry.path();
+        auto filename = inFilePath.filename().string();
+        
+        if (filename.length() <= extLength) continue;
+
+        size_t lengthWithoutExt = filename.length() - extLength;
+        if (!boost::iequals(string_view(filename).substr(lengthWithoutExt), inExt)) continue;
+
+        auto name = filename.substr(0, lengthWithoutExt);
+        auto outFilePath = dir_entry.path().parent_path().append(name + outExt);
+
+        if (!exists(outFilePath)) continue;
+        results.emplace_back(name, inFilePath, outFilePath);
+    }
+
+    sort(results.begin(), results.end(), [](auto& x, auto& y) { return get<0>(x) < get<0>(y); });
+    return results;
+}
+
+void GenerateScriptParserTests(path inputPath, path srcPath)
+{
+    // input/ScriptParserTests
+    path testsPath = inputPath;
+    testsPath.append("ScriptParserTests");
+
+    // src/TestAnalysis.Tests/ScriptParserTests.g.cpp
+    path resultPath = srcPath;
+
+    resultPath
+        .append("TextAnalysis.Tests")
+        .append("ScriptParserTests.g.cpp");
+
+    if (!exists(testsPath))
+        return;
+    
     ostringstream oss;
 
     // insert header
@@ -133,28 +122,20 @@ using namespace std;
 using namespace Citron;
 
 )---";
-    std::filesystem::directory_iterator di(testsPath);
-    vector<directory_entry> entries(begin(di), end(di));
-    sort(entries.begin(), entries.end());
 
-    for (auto& dir_entry : entries)
-    {
-        if (!dir_entry.is_regular_file()) continue;
+    auto templ = R"----(TEST({}, {})
+{{
+    auto [buffer, lexer] = Prepare(UR"---({})---");
 
-        auto inFilePath = dir_entry.path();
-        auto filename = inFilePath.filename().string();
+    auto oScript = ParseScript(&lexer);
 
-        // ".in.txt" 7글자
-        if (filename.length() <= extLength) continue;
+    auto expected = R"---({})---";
 
-        size_t lengthWithoutExt = filename.length() - extLength;
-        if (!boost::iequals(string_view(filename).substr(lengthWithoutExt), inExt)) continue;
+    EXPECT_SYNTAX_EQ(oScript, expected);
+}})----";
 
-        auto name = filename.substr(0, lengthWithoutExt);
-        auto outFilePath = dir_entry.path().parent_path().append(name + outExt);
-
-        if (!exists(outFilePath)) continue;
-
+    for (auto& [name, inFilePath, outFilePath] : GetFiles(testsPath))
+    {	
         auto inContents = readAll(inFilePath);
         auto outContents = readAll(outFilePath);
 
@@ -162,16 +143,88 @@ using namespace Citron;
         oss << testContents << endl << endl;
     }
 
-    auto resultContents = oss.str();
+    writeAll(resultPath, oss.str());
+}
 
-    if (exists(resultPath))
+void GenerateStmtParserTests(path inputPath, path srcPath)
+{
+    // input/StmtParserTests
+    path testsPath = inputPath;
+    testsPath.append("StmtParserTests");
+
+    // src/TestAnalysis.Tests/StmtParserTests.g.cpp
+    path resultPath = srcPath;
+
+    resultPath
+        .append("TextAnalysis.Tests")
+        .append("StmtParserTests.g.cpp");
+
+    if (!exists(testsPath))
+        return;
+
+    ostringstream oss;
+
+    // insert header
+    oss << R"---(#include "pch.h"
+
+#include <Syntax/Syntax.h>
+#include <TextAnalysis/StmtParser.h>
+
+#include <Syntax/ExpSyntaxes.h>
+
+#include "TestMisc.h"
+
+using namespace std;
+using namespace Citron;
+
+)---";
+
+    auto templ = R"----(TEST({}, {})
+{{
+    auto [buffer, lexer] = Prepare(UR"---({})---");
+
+    auto oStmt = ParseStmt(&lexer);
+
+    auto expected = R"---({})---";
+
+    EXPECT_SYNTAX_EQ(oStmt, expected);
+}})----";
+
+    for (auto& [name, inFilePath, outFilePath] : GetFiles(testsPath))
     {
-        auto prevResultContents = readAll(resultPath);
-        if (resultContents == prevResultContents) return 0;
+        auto inContents = readAll(inFilePath);
+        auto outContents = readAll(outFilePath);
+
+        auto testContents = fmt::format(templ, "StmtParser", name.c_str(), inContents, outContents);
+        oss << testContents << endl << endl;
     }
 
-    writeAll(resultPath, resultContents);
-    return 0;
+    writeAll(resultPath, oss.str());
+}
 
-    // wcout << L"Hello World!\n";
+// argv는 프로그램 포함
+// 소스가 utf8로 고정되어서(모든 char*리터럴은 utf-8이다)
+// 일반 main을 쓰면, cout쓸때 utf8로 나가게 된다. 그럼 현재 locale로 conversion하기 귀찮아 져서 wmain을 쓰도록 한다
+int wmain(int argc, wchar_t* argv[])
+{   
+    locale::global(locale(""));
+
+    // wcout << L"abc 안녕하세요 abc";
+    if (argc < 3)
+    {
+        wcout << L"Usage: " << argv[0] << ' ' << L"[Input Directory] [Source Directory]" << endl;
+        wcout << L"   ex: " << argv[0] << ' ' << L"Inputs ..\\..   (relative to working directory)" << endl;
+        return 1;
+    }
+    
+    auto inputsPath = absolute(argv[1]);
+    auto srcPath = absolute(argv[2]);
+
+    wcout << L"Input Directory: " << inputsPath << endl;
+    wcout << L"Source Directory: " << srcPath << endl;
+        
+    GenerateScriptParserTests(inputsPath, srcPath);
+    GenerateStmtParserTests(inputsPath, srcPath);
+
+    return 0;
 }

@@ -1,0 +1,40 @@
+{
+    "$type": "ForStmtSyntax",
+    "initializer": {
+        "$type": "ExpForStmtInitializerSyntax",
+        "exp": {
+            "$type": "CallExpSyntax",
+            "callable": {
+                "$type": "IdentifierExpSyntax",
+                "value": "f",
+                "typeArgs": []
+            },
+            "args": []
+        }
+    },
+    "condExp": {
+        "$type": "IdentifierExpSyntax",
+        "value": "g",
+        "typeArgs": []
+    },
+    "continueExp": {
+        "$type": "BinaryOpExpSyntax",
+        "kind": "Add",
+        "operand0": {
+            "$type": "IdentifierExpSyntax",
+            "value": "h",
+            "typeArgs": []
+        },
+        "operand1": {
+            "$type": "IdentifierExpSyntax",
+            "value": "g",
+            "typeArgs": []
+        }
+    },
+    "body": {
+        "$type": "SingleEmbeddableStmtSyntax",
+        "stmt": {
+            "$type": "BlankStmtSyntax"
+        }
+    }
+}

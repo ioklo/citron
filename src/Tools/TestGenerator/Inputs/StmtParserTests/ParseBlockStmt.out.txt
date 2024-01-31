@@ -1,0 +1,20 @@
+{
+    "$type": "BlockStmtSyntax",
+    "stmts": [
+        {
+            "$type": "BlockStmtSyntax",
+            "stmts": []
+        },
+        {
+            "$type": "BlockStmtSyntax",
+            "stmts": [
+                {
+                    "$type": "BlankStmtSyntax"
+                }
+            ]
+        },
+        {
+            "$type": "BlankStmtSyntax"
+        }
+    ]
+}

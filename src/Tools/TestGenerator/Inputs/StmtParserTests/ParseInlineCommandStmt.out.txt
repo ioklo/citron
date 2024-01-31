@@ -1,0 +1,26 @@
+{
+    "$type": "CommandStmtSyntax",
+    "commands": [
+        {
+            "$type": "StringExpSyntax",
+            "elements": [
+                {
+                    "$type": "TextStringExpSyntaxElement",
+                    "text": "echo "
+                },
+                {
+                    "$type": "ExpStringExpSyntaxElement",
+                    "exp": {
+                        "$type": "IdentifierExpSyntax",
+                        "value": "a",
+                        "typeArgs": []
+                    }
+                },
+                {
+                    "$type": "TextStringExpSyntaxElement",
+                    "text": "bbb  "
+                }
+            ]
+        }
+    ]
+}

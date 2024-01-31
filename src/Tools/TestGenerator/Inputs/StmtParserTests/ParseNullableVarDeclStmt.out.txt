@@ -1,0 +1,21 @@
+{
+    "$type": "VarDeclStmtSyntax",
+    "varDecl": {
+        "$type": "VarDeclSyntax",
+        "type": {
+            "$type": "NullableTypeExpSyntax",
+            "innerTypeExp": {
+                "$type": "IdTypeExpSyntax",
+                "name": "int",
+                "typeArgs": []
+            }
+        },
+        "elems": [
+            {
+                "$type": "VarDeclSyntaxElement",
+                "varName": "p",
+                "initExp": null
+            }
+        ]
+    }
+}

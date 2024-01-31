@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "TypeExpParser.h"
+#include <TextAnalysis/TypeExpParser.h>
 
 #include <optional>
 #include <vector>

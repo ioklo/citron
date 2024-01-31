@@ -11,10 +11,11 @@
 
 #include <TextAnalysis/Lexer.h>
 #include <TextAnalysis/ExpParser.h>
+#include <TextAnalysis/StmtParser.h>
+#include <TextAnalysis/TypeExpParser.h>
 
-#include "TypeExpParser.h"
 #include "ParserMisc.h"
-#include "StmtParser.h"
+
 
 
 using namespace std;

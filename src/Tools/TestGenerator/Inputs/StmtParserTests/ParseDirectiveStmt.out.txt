@@ -1,0 +1,11 @@
+{
+    "$type": "DirectiveStmtSyntax",
+    "name": "notnull",
+    "args": [
+        {
+            "$type": "IdentifierExpSyntax",
+            "value": "a",
+            "typeArgs": []
+        }
+    ]
+}

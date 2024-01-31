@@ -1,0 +1,18 @@
+{
+    "$type": "ForeachStmtSyntax",
+    "type": {
+        "$type": "IdTypeExpSyntax",
+        "name": "var",
+        "typeArgs": []
+    },
+    "varName": "x",
+    "enumerable": {
+        "$type": "IdentifierExpSyntax",
+        "value": "l",
+        "typeArgs": []
+    },
+    "body": {
+        "$type": "BlockEmbeddableStmtSyntax",
+        "stmts": []
+    }
+}

@@ -1,0 +1,26 @@
+{
+    "$type": "VarDeclStmtSyntax",
+    "varDecl": {
+        "$type": "VarDeclSyntax",
+        "type": {
+            "$type": "IdTypeExpSyntax",
+            "name": "string",
+            "typeArgs": []
+        },
+        "elems": [
+            {
+                "$type": "VarDeclSyntaxElement",
+                "varName": "a",
+                "initExp": {
+                    "$type": "StringExpSyntax",
+                    "elements": [
+                        {
+                            "$type": "TextStringExpSyntaxElement",
+                            "text": "hello"
+                        }
+                    ]
+                }
+            }
+        ]
+    }
+}

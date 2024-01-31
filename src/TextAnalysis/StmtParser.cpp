@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "StmtParser.h"
+#include <TextAnalysis/StmtParser.h>
 
 #include <optional>
 #include <algorithm>
@@ -9,8 +9,8 @@
 #include <Syntax/StringExpSyntaxElements.h>
 #include <Syntax/ExpSyntaxes.h>
 #include <TextAnalysis/ExpParser.h>
+#include <TextAnalysis/TypeExpParser.h>
 
-#include "TypeExpParser.h"
 #include "ParserMisc.h"
 
 

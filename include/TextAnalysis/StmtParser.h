@@ -1,4 +1,5 @@
 #pragma once
+#include "TextAnalysisConfig.h"
 
 #include <optional>
 #include <vector>
@@ -8,7 +9,7 @@ namespace Citron {
 
 class Lexer;
 
-std::optional<StmtSyntax> ParseStmt(Lexer* lexer);
+TEXT_ANALYSIS_API std::optional<StmtSyntax> ParseStmt(Lexer* lexer);
 std::optional<std::vector<StmtSyntax>> ParseBody(Lexer* lexer);
 
 }

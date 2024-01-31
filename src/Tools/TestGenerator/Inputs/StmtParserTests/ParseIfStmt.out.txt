@@ -1,0 +1,31 @@
+{
+    "$type": "IfStmtSyntax",
+    "cond": {
+        "$type": "IdentifierExpSyntax",
+        "value": "b",
+        "typeArgs": []
+    },
+    "body": {
+        "$type": "BlockEmbeddableStmtSyntax",
+        "stmts": []
+    },
+    "elseBody": {
+        "$type": "SingleEmbeddableStmtSyntax",
+        "stmt": {
+            "$type": "IfStmtSyntax",
+            "cond": {
+                "$type": "IdentifierExpSyntax",
+                "value": "c",
+                "typeArgs": []
+            },
+            "body": {
+                "$type": "BlockEmbeddableStmtSyntax",
+                "stmts": []
+            },
+            "elseBody": {
+                "$type": "BlockEmbeddableStmtSyntax",
+                "stmts": []
+            }
+        }
+    }
+}

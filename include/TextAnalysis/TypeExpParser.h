@@ -1,4 +1,5 @@
 #pragma once
+#include "TextAnalysisConfig.h"
 
 #include <optional>
 #include <vector>
@@ -20,5 +21,5 @@ std::optional<TypeExpSyntax> ParseIdChainTypeExp(Lexer* lexer);
 // std::optional<TupleTypeExpSyntax> ParseTupleTypeExp(Lexer* lexer);
 
 std::optional<LocalTypeExpSyntax> ParseLocalTypeExp(Lexer* lexer);
-std::optional<TypeExpSyntax> ParseTypeExp(Lexer* lexer);
+TEXT_ANALYSIS_API std::optional<TypeExpSyntax> ParseTypeExp(Lexer* lexer);
 }
