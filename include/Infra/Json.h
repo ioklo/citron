@@ -112,6 +112,12 @@ JsonItem ToJson(T& t)
     return t.ToJson();
 }
 
+template<typename T>
+JsonItem ToJson(T&& t)
+{
+    return ToJson(t);
+}
+
 template<typename TElem>
 JsonItem ToJson(std::optional<TElem>& oElem)
 {
@@ -119,6 +125,12 @@ JsonItem ToJson(std::optional<TElem>& oElem)
         return ToJson(*oElem);
     else
         return JsonNull();
+}
+
+template<typename TElem>
+JsonItem ToJson(std::optional<TElem>&& oElem)
+{
+    return ToJson(oElem);
 }
 
 template<typename TElem>
@@ -132,10 +144,22 @@ JsonItem ToJson(std::vector<TElem>& elems)
     return JsonArray(std::move(result));
 }
 
+template<typename TElem>
+JsonItem ToJson(std::vector<TElem>&& elems)
+{
+    return ToJson(elems);
+}
+
 inline void ToString(JsonItem& item, class IWriter& writer)
 {
     return std::visit([&writer](auto&& i) { return i.ToString(writer); }, item);
 }
+
+inline void ToString(JsonItem&& item, class IWriter& writer)
+{
+    return ToString(item, writer);
+}
+
 
 }
 

@@ -23,9 +23,8 @@ enum class Mode { Script, Stmt, Exp, TypeExp };
 template<typename T>
 void Print(T t)
 {
-    auto json = ToJson(t);
     StringWriter stringWriter;
-    ToString(json, stringWriter);
+    ToString(ToJson(t), stringWriter);
     cout << stringWriter.ToString();
 }
 
