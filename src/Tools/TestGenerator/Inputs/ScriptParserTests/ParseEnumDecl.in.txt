@@ -1,0 +1,6 @@
+enum X
+{
+    First,
+    Second(int i),
+    Third
+}

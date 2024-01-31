@@ -1,0 +1,12 @@
+public struct S<T> : B, I
+{
+    int x1;
+    public int x2;
+    protected string y;
+    private int z;
+
+    public struct Nested<U> : B, I { int x; }
+
+    static void Func<X>(string s) { }
+    private seq int F2<T>() { yield 4; }
+}

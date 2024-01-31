@@ -1,0 +1,41 @@
+{
+    "$type": "ScriptSyntax",
+    "elems": [
+        {
+            "$type": "TypeDeclScriptSyntaxElement",
+            "typeDecl": {
+                "$type": "EnumDeclSyntax",
+                "accessModifier": null,
+                "name": "X",
+                "typeParams": [],
+                "elems": [
+                    {
+                        "$type": "EnumElemDeclSyntax",
+                        "name": "First",
+                        "memberVars": []
+                    },
+                    {
+                        "$type": "EnumElemDeclSyntax",
+                        "name": "Second",
+                        "memberVars": [
+                            {
+                                "$type": "EnumElemMemberVarDeclSyntax",
+                                "type": {
+                                    "$type": "IdTypeExpSyntax",
+                                    "name": "int",
+                                    "typeArgs": []
+                                },
+                                "name": "i"
+                            }
+                        ]
+                    },
+                    {
+                        "$type": "EnumElemDeclSyntax",
+                        "name": "Third",
+                        "memberVars": []
+                    }
+                ]
+            }
+        }
+    ]
+}

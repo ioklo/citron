@@ -18,92 +18,35 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\include\Syntax\AccessModifierSyntax.h" />
-    <ClInclude Include="..\..\include\Syntax\ArgumentSyntax.h" />
-    <ClInclude Include="..\..\include\Syntax\BinaryOpSyntaxKind.h" />
-    <ClInclude Include="..\..\include\Syntax\ClassDeclSyntax.h" />
-    <ClInclude Include="..\..\include\Syntax\ClassMemberDeclSyntaxes.h" />
-    <ClInclude Include="..\..\include\Syntax\EmbeddableStmtSyntaxes.h" />
-    <ClInclude Include="..\..\include\Syntax\EnumDeclSyntax.h" />
-    <ClInclude Include="..\..\include\Syntax\ExpSyntaxes.h" />
-    <ClInclude Include="..\..\include\Syntax\ForStmtInitializerSyntaxes.h" />
-    <ClInclude Include="..\..\include\Syntax\FuncParamSyntax.h" />
-    <ClInclude Include="..\..\include\Syntax\GlobalFuncDeclSyntax.h" />
-    <ClInclude Include="..\..\include\Syntax\NamespaceDeclSyntax.h" />
-    <ClInclude Include="..\..\include\Syntax\NamespaceDeclSyntaxElements.h" />
-    <ClInclude Include="..\..\include\Syntax\ScriptSyntax.h" />
-    <ClInclude Include="..\..\include\Syntax\ScriptSyntaxElements.h" />
-    <ClInclude Include="..\..\include\Syntax\StmtSyntaxes.h" />
-    <ClInclude Include="..\..\include\Syntax\StringExpSyntaxElements.h" />
-    <ClInclude Include="..\..\include\Syntax\StructDeclSyntax.h" />
-    <ClInclude Include="..\..\include\Syntax\StructMemberDeclSyntaxes.h" />
-    <ClInclude Include="..\..\include\Syntax\Syntax.h" />
-    <ClInclude Include="..\..\include\Syntax\SyntaxConfig.h" />
-    <ClInclude Include="..\..\include\Syntax\SyntaxMacros.h" />
-    <ClInclude Include="..\..\include\Syntax\Tokens.h" />
-    <ClInclude Include="..\..\include\Syntax\TypeDeclSyntax.h" />
-    <ClInclude Include="..\..\include\Syntax\TypeExpSyntaxes.h" />
-    <ClInclude Include="..\..\include\Syntax\TypeParamSyntax.h" />
-    <ClInclude Include="..\..\include\Syntax\UnaryOpSyntaxKind.h" />
-    <ClInclude Include="..\..\include\Syntax\VarDeclSyntax.h" />
-    <ClInclude Include="pch.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="ClassDeclSyntax.cpp" />
-    <ClCompile Include="ClassMemberDeclSyntaxes.cpp" />
-    <ClCompile Include="EmbeddableStmtSyntaxes.cpp" />
-    <ClCompile Include="EnumDeclSyntax.cpp" />
-    <ClCompile Include="ExpSyntaxes.cpp" />
-    <ClCompile Include="GlobalFuncDeclSyntax.cpp" />
-    <ClCompile Include="NamespaceDeclSyntax.cpp" />
-    <ClCompile Include="NamespaceDeclSyntaxElements.cpp" />
-    <ClCompile Include="pch.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="ScriptSyntax.cpp" />
-    <ClCompile Include="ScriptSyntaxElements.cpp" />
-    <ClCompile Include="StmtSyntaxes.cpp" />
-    <ClCompile Include="StructDeclSyntax.cpp" />
-    <ClCompile Include="StructMemberDeclSyntaxes.cpp" />
-    <ClCompile Include="Tokens.cpp" />
-    <ClCompile Include="TypeExpSyntaxes.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Infra\Infra.vcxproj">
-      <Project>{8e2a32db-279b-4c5c-96c0-bbede676efbf}</Project>
-    </ProjectReference>
-  </ItemGroup>
   <PropertyGroup Label="Globals">
-    <VCProjectVersion>16.0</VCProjectVersion>
+    <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{74d0511c-d9ae-44b9-9741-007e3b012565}</ProjectGuid>
-    <RootNamespace>Syntax</RootNamespace>
+    <ProjectGuid>{4d11ee86-4c63-437f-bf7e-737f1b4f1b67}</ProjectGuid>
+    <RootNamespace>TestGenerator</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -116,33 +59,40 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\Common.props" />
+    <Import Project="..\..\Common.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\Common.props" />
+    <Import Project="..\..\Common.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\Common.props" />
+    <Import Project="..\..\Common.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\Common.props" />
+    <Import Project="..\..\Common.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath>Z:\Proj\Citron\externals\utfcpp\source;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>Z:\Proj\Citron\externals\utfcpp\source;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg">
+    <VcpkgEnableManifest>true</VcpkgEnableManifest>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;SYNTAX_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <EnableUAC>false</EnableUAC>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -151,28 +101,27 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;SYNTAX_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <EnableUAC>false</EnableUAC>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;SYNTAX_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <EnableUAC>false</EnableUAC>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -181,17 +130,37 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;SYNTAX_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <EnableUAC>false</EnableUAC>
     </Link>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="TestGenerator.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="vcpkg-configuration.json" />
+    <None Include="vcpkg.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Inputs\ScriptParserTests\ParseComplexScript.in.txt" />
+    <Text Include="Inputs\ScriptParserTests\ParseComplexScript.out.txt" />
+    <Text Include="Inputs\ScriptParserTests\ParseEnumDecl.in.txt" />
+    <Text Include="Inputs\ScriptParserTests\ParseEnumDecl.out.txt" />
+    <Text Include="Inputs\ScriptParserTests\ParseFuncDecl.in.txt" />
+    <Text Include="Inputs\ScriptParserTests\ParseFuncDecl.out.txt" />
+    <Text Include="Inputs\ScriptParserTests\ParseNamespaceDecl.in.txt" />
+    <Text Include="Inputs\ScriptParserTests\ParseNamespaceDecl.out.txt" />
+    <Text Include="Inputs\ScriptParserTests\ParseSimpleScript.in.txt" />
+    <Text Include="Inputs\ScriptParserTests\ParseSimpleScript.out.txt" />
+    <Text Include="Inputs\ScriptParserTests\ParseStructDecl.in.txt" />
+    <Text Include="Inputs\ScriptParserTests\ParseStructDecl.out.txt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

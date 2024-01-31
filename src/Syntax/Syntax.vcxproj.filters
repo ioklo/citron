@@ -88,6 +88,9 @@
     <ClInclude Include="..\..\include\Syntax\VarDeclSyntax.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\Syntax\Syntax.h">
+      <Filter>Public Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />

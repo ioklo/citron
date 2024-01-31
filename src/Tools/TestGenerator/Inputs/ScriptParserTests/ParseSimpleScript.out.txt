@@ -1,0 +1,37 @@
+{
+    "$type": "ScriptSyntax",
+    "elems": [
+        {
+            "$type": "GlobalFuncDeclScriptSyntaxElement",
+            "funcDecl": {
+                "$type": "GlobalFuncDeclSyntax",
+                "accessModifier": null,
+                "bSequence": false,
+                "retType": {
+                    "$type": "IdTypeExpSyntax",
+                    "name": "void",
+                    "typeArgs": []
+                },
+                "name": "Main",
+                "typeParams": [],
+                "parameters": [],
+                "body": [
+                    {
+                        "$type": "CommandStmtSyntax",
+                        "commands": [
+                            {
+                                "$type": "StringExpSyntax",
+                                "elements": [
+                                    {
+                                        "$type": "TextStringExpSyntaxElement",
+                                        "text": "ls -al"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ]
+}

@@ -1,0 +1,1 @@
+void Func(int x, string y, params int z) { int a = 0; }

@@ -1,0 +1,10 @@
+namespace NS1
+{
+    namespace NS2.NS3
+    {
+        void F()
+        {
+
+        }
+    }
+}

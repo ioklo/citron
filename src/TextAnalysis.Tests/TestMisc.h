@@ -85,4 +85,4 @@ std::string ToJsonString(std::optional<TSyntax>& oSyntax)
 
 }
 
-#define EXPECT_SYNTAX_EQ(x, y) EXPECT_EQ(ToJsonString(x), ToJsonString(y))
+#define EXPECT_SYNTAX_EQ(x, expected) EXPECT_EQ(ToJsonString(x), expected)

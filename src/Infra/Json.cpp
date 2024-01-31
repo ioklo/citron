@@ -162,7 +162,7 @@ INFRA_API void JsonObject::ToString(IWriter& writer)
 
     writer.RemoveIndent();
     writer.WriteLine();
-    writer.Write("]");
+    writer.Write("}");
 }
 
 bool JsonObject::operator==(const JsonObject& other) const

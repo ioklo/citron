@@ -111,7 +111,7 @@ JsonItem ToJson(T& t)
 }
 
 template<typename TElem>
-JsonItem ToJson(std::optional<TElem> oElem)
+JsonItem ToJson(std::optional<TElem>& oElem)
 {
     if (oElem)
         return ToJson(*oElem);
